@@ -100,7 +100,41 @@ static inline void drawLines (CDrawContext* pContext, CRect r, int offset = 2)
 	}
 }
 
-#define kMaxValue	7
+CColor arcColors[] = { kBlueCColor, kGreenCColor, kRedCColor };
+#define numArcColors	2
+
+static inline void drawArcs (CDrawContext* pContext, CRect r, int offset = 2)
+{
+	int i = 0;
+	long n = r.height () > r.width () ? r.width () : r.height ();
+	while (r.width () > 1 && r.height () > 1)
+	{
+		pContext->setFrameColor (arcColors[i++]); if (i > numArcColors) i = 0;
+		pContext->drawArc (r, CPoint (r.left, r.top + r.height () / 2), CPoint (r.left + r.width () / 2, r.top));
+		pContext->setFrameColor (arcColors[i++]); if (i > numArcColors) i = 0;
+		pContext->drawArc (r, CPoint (r.left + r.width () / 2, r.top), CPoint (r.right, r.top + r.height () / 2));
+		pContext->setFrameColor (arcColors[i++]); if (i > numArcColors) i = 0;
+		pContext->drawArc (r, CPoint (r.right, r.top + r.height () / 2), CPoint (r.left + r.width () / 2, r.bottom));
+		pContext->setFrameColor (arcColors[i++]); if (i > numArcColors) i = 0;
+		pContext->drawArc (r, CPoint (r.left + r.width () / 2, r.bottom), CPoint (r.left, r.top + r.height () / 2));
+		r.inset (offset, offset);
+	}
+}
+
+static inline void drawEllipses (CDrawContext* pContext, CRect r, int offset = 2)
+{
+	r.inset (10, 0);
+	int i = 0;
+	long n = r.height () > r.width () ? r.width () : r.height ();
+	while (r.width () > 1 && r.height () > 1)
+	{
+		pContext->setFrameColor (arcColors[i++]); if (i > numArcColors) i = 0;
+		pContext->drawEllipse (r);
+		r.inset (offset, offset);
+	}
+}
+
+#define kMaxValue	9
 
 void CDrawTestView::draw (CDrawContext *pContext)
 {
@@ -159,6 +193,20 @@ void CDrawTestView::draw (CDrawContext *pContext)
 			pContext->setDrawMode (kAntialias);
 			pContext->setLineWidth (1);
 			drawLines (pContext, size, 4);
+			break;
+		}
+		case 8:
+		{
+			pContext->setDrawMode (kAntialias);
+			pContext->setLineWidth (4);
+			drawArcs (pContext, size, 8);
+			break;
+		}
+		case 9:
+		{
+			pContext->setDrawMode (kAntialias);
+			pContext->setLineWidth (4);
+			drawEllipses (pContext, size, 8);
 			break;
 		}
 	}
