@@ -108,10 +108,12 @@ void FDebugPrint (char *format, ...)
 	vsprintf (string, format, marker);
 	if (!string)
 		strcpy (string, "Empty string\n");
-	#if MAC
-//	printf (string);
-	#elif WINDOWS
+	#if WINDOWS
 	OutputDebugString (string);
+	#elif MAC && !MACX
+	Str255 pStr;
+	c2pstrcpy (pStr, string);
+	DebugStr (pStr);
 	#else
 	fprintf (stderr, string);
 	#endif
@@ -284,6 +286,10 @@ const char* macXfontNames[] = {
 	"Helvetica",
 	"Symbol"
 };
+
+#ifndef M_PI
+#define	M_PI		3.14159265358979323846	/* pi */
+#endif
 
 static inline double radians(double degrees) { return degrees * M_PI / 180; }
 
@@ -680,8 +686,15 @@ void CDrawContext::lineTo (const CPoint& _point)
 	#if QUARTZ
 	CGContextRef context = beginCGContext ();
 	{
+		if (drawMode == kAntialias)
+			CGContextSetLineWidth (context, 2 * frameWidth);
 		CGContextScaleCTM (context, 1, -1);
 		CGContextTranslateCTM (context, 0.5f, 0.5f);
+
+		// the clipping needs to be set after we translated the transformation matrix
+		CGRect cgClipRect = CGRectMake (clipRect.left, clipRect.top, clipRect.width (), clipRect.height ());
+		CGContextClipToRect (gCGContext, cgClipRect);
+
 		CGContextBeginPath (context);
 		CGContextMoveToPoint (context, penLoc.h, penLoc.v);
 		CGContextAddLineToPoint (context, point.h, point.v);
@@ -818,6 +831,11 @@ void CDrawContext::polyLine (const CPoint *pPoints, long numberOfPoints)
 	{
 		CGContextScaleCTM (context, 1, -1);
 		CGContextTranslateCTM (context, 0.5f, 0.5f);
+
+		// the clipping needs to be set after we translated the transformation matrix
+		CGRect cgClipRect = CGRectMake (clipRect.left, clipRect.top, clipRect.width (), clipRect.height ());
+		CGContextClipToRect (gCGContext, cgClipRect);
+
 		CGContextBeginPath (context);
 		CGContextMoveToPoint (context, pPoints[0].h + offset.h, pPoints[0].v + offset.v);
 		for (long i = 1; i < numberOfPoints; i++)
@@ -1072,12 +1090,17 @@ void CDrawContext::setDrawMode (CDrawMode mode)
 //------------------------------------------------------------------------------
 void CDrawContext::setClipRect (const CRect &clip)
 {
-	clipRect = clip;
-	clipRect.offset (offset.h, offset.v);
+	CRect _clip (clip);
+	_clip.offset (offset.h, offset.v);
+
+	if (clipRect == _clip)
+		return;
+
+	clipRect = _clip;
 
 #if MAC
 	#if QUARTZ
-	if (gCGContext)
+	if (0 && gCGContext)
 	{
 		CGContextRestoreGState (gCGContext);
 		CGContextSaveGState (gCGContext);
@@ -1137,7 +1160,7 @@ void CDrawContext::resetClipRect ()
 		newClip (0, 0, 1000, 1000);
 
 #if (MAC && QUARTZ)
-	if (gCGContext)
+	if (0 && gCGContext)
 	{
 		CGContextRestoreGState (gCGContext);
 		CGContextScaleCTM (gCGContext, 1, -1);
@@ -1202,6 +1225,11 @@ void CDrawContext::fillPolygon (const CPoint *pPoints, long numberOfPoints)
 	{
 		CGContextScaleCTM (context, 1, -1);
 		CGContextTranslateCTM (context, 0.5f, 0.5f);
+
+		// the clipping needs to be set after we translated the transformation matrix
+		CGRect cgClipRect = CGRectMake (clipRect.left, clipRect.top, clipRect.width (), clipRect.height ());
+		CGContextClipToRect (gCGContext, cgClipRect);
+
 		CGContextBeginPath (context);
 		CGContextMoveToPoint (context, pPoints[0].h + offset.h, pPoints[0].v + offset.v);
 		for (long i = 1; i < numberOfPoints; i++)
@@ -1293,9 +1321,16 @@ void CDrawContext::drawRect (const CRect &_rect)
 	#if QUARTZ
 	CGContextRef context = beginCGContext ();
 	{
-		CGRect r = CGRectMake (rect.left, rect.top, rect.width () - 0.5f, rect.height () - 0.5f);
+		if (drawMode == kAntialias)
+			CGContextSetLineWidth (context, 2 * frameWidth);
+		CGRect r = CGRectMake (rect.left, rect.top, rect.width (), rect.height ());
 		CGContextScaleCTM (context, 1, -1);
 		CGContextTranslateCTM (context, 0.5f, 0.5f);
+
+		// the clipping needs to be set after we translated the transformation matrix
+		CGRect cgClipRect = CGRectMake (clipRect.left, clipRect.top, clipRect.width (), clipRect.height ());
+		CGContextClipToRect (gCGContext, cgClipRect);
+
 		CGContextStrokeRect (context, r);
 		releaseCGContext (context);
 	}
@@ -1347,9 +1382,14 @@ void CDrawContext::fillRect (const CRect &_rect)
 	#if QUARTZ
 	CGContextRef context = beginCGContext ();
 	{
-		CGRect r = CGRectMake (rect.left, rect.top, rect.width () - 0.5f, rect.height () - 0.5f);
+		CGRect r = CGRectMake (rect.left, rect.top, rect.width (), rect.height ());
 		CGContextScaleCTM (context, 1, -1);
 		CGContextTranslateCTM (context, 0.5f, 0.5f);
+
+		// the clipping needs to be set after we translated the transformation matrix
+		CGRect cgClipRect = CGRectMake (clipRect.left, clipRect.top, clipRect.width (), clipRect.height ());
+		CGContextClipToRect (gCGContext, cgClipRect);
+
 		CGContextFillRect (context, r);
 		releaseCGContext (context);
 	}
@@ -1392,6 +1432,11 @@ void CDrawContext::drawEllipse (const CRect &_rect)
 	{
 		CGContextScaleCTM (context, 1, -1);
 		CGContextTranslateCTM (context, 0.5f, 0.5f);
+
+		// the clipping needs to be set after we translated the transformation matrix
+		CGRect cgClipRect = CGRectMake (clipRect.left, clipRect.top, clipRect.width (), clipRect.height ());
+		CGContextClipToRect (gCGContext, cgClipRect);
+
 		CGContextBeginPath (context);
 
 		CGRect cgRect = CGRectMake (rect.left, rect.top, rect.width (), rect.height ());
@@ -1433,6 +1478,11 @@ void CDrawContext::fillEllipse (const CRect &_rect)
 	{
 		CGContextScaleCTM (context, 1, -1);
 		CGContextTranslateCTM (context, 0.5f, 0.5f);
+
+		// the clipping needs to be set after we translated the transformation matrix
+		CGRect cgClipRect = CGRectMake (clipRect.left, clipRect.top, clipRect.width (), clipRect.height ());
+		CGContextClipToRect (gCGContext, cgClipRect);
+
 		CGContextBeginPath (context);
 
 		CGRect cgRect = CGRectMake (rect.left, rect.top, rect.width (), rect.height ());
@@ -1616,6 +1666,11 @@ void CDrawContext::drawArc (const CRect &_rect, const CPoint &_point1, const CPo
 	{	// someone who uses this shoud check if this is correct
 		CGContextScaleCTM (context, 1, -1);
 		CGContextTranslateCTM (context, 0.5f, 0.5f);
+
+		// the clipping needs to be set after we translated the transformation matrix
+		CGRect cgClipRect = CGRectMake (clipRect.left, clipRect.top, clipRect.width (), clipRect.height ());
+		CGContextClipToRect (gCGContext, cgClipRect);
+
 		CGContextBeginPath (context);
 		CGContextMoveToPoint (context, point1.x, point1.y);
 		CGContextAddArcToPoint (context, point2.x, point2.y, point1.x, point1.y, rect.width () > rect.height () ? rect.height () /2 : rect.width () /2);
@@ -1791,7 +1846,7 @@ void CDrawContext::setFrameColor (const CColor color)
 #elif MAC
 	#if QUARTZ
 	if (gCGContext)
-		CGContextSetRGBStrokeColor (gCGContext, color.red/255.f, color.green/255.f, color.blue/255.f, color.unused/255.f);
+		CGContextSetRGBStrokeColor (gCGContext, color.red/255.f, color.green/255.f, color.blue/255.f, color.alpha/255.f);
 	#else
 	RGBColor col;
 	CGrafPtr OrigPort;
@@ -1833,7 +1888,7 @@ void CDrawContext::setFillColor (const CColor color)
 #elif MAC
 	#if QUARTZ
 	if (gCGContext)
-		CGContextSetRGBFillColor (gCGContext, color.red/255.f, color.green/255.f, color.blue/255.f, color.unused/255.f);
+		CGContextSetRGBFillColor (gCGContext, color.red/255.f, color.green/255.f, color.blue/255.f, color.alpha/255.f);
 	#else
 	RGBColor col;
 	CGrafPtr OrigPort;
@@ -2053,9 +2108,14 @@ void CDrawContext::drawString (const char *string, const CRect &_rect,
 		}
 
 		CGContextScaleCTM (context, 1, 1);
+
+		// the clipping needs to be set after we translated the transformation matrix
+		CGRect cgClipRect = CGRectMake (clipRect.left, clipRect.bottom * -1, clipRect.width (), clipRect.height ());
+		CGContextClipToRect (gCGContext, cgClipRect);
+
 		CGContextSetShouldAntialias (context, true);
 		CGContextSetTextDrawingMode (context, kCGTextFill);
-		CGContextSetRGBFillColor (context, fontColor.red/255.f, fontColor.green/255.f, fontColor.blue/255.f, fontColor.unused/255.f);
+		CGContextSetRGBFillColor (context, fontColor.red/255.f, fontColor.green/255.f, fontColor.blue/255.f, fontColor.alpha/255.f);
 		CGContextSetTextPosition (context, rect.left - 0.5f, rect.bottom * -1 + 0.5f);
 		CGContextShowText (context, string, strlen (string));
 		releaseCGContext (context);
@@ -2658,7 +2718,7 @@ CGContextRef CDrawContext::beginCGContext ()
 {
 	if (gCGContext)
 	{
-		CGContextRetain (gCGContext);
+//		CGContextRetain (gCGContext);
 		CGContextSaveGState (gCGContext);
 		return gCGContext;
 	}
@@ -2671,7 +2731,7 @@ void CDrawContext::releaseCGContext (CGContextRef context)
 	{
 		CGContextRestoreGState (context);
 		CGContextSynchronize (context);
-		CGContextRelease (context);
+//		CGContextRelease (context);
 	}
 }
 
@@ -3383,16 +3443,21 @@ void CView::setBackground (CBitmap *background)
 		pBackground->remember ();
 }
 
+#define FOREACHSUBVIEW for (CCView *pSv = pFirstView; pSv; pSv = pSv->pNext) {CView *pV = pSv->pView;
+#define ENDFOR }
+
 //-----------------------------------------------------------------------------
 // CFrame Implementation
 //-----------------------------------------------------------------------------
-CFrame::CFrame (const CRect &size, void *pSystemWindow, void *pEditor)
-:	CView (size), pEditor (pEditor), pSystemWindow (pSystemWindow),
-	viewCount (0), maxViews (0), ppViews (0), pModalView (0), pEditView (0),
-	bFirstDraw (true), bDropActive (false), pFrameContext (0), bAddedWindow (false), 
-	pVstWindow (0), defaultCursor (0)
+CFrame::CFrame (const CRect &inSize, void *inSystemWindow, void *inEditor)
+:	CViewContainer (inSize, 0, 0),
+	pSystemWindow (inSystemWindow), pEditor (inEditor),
+	pModalView (0), pEditView (0), bFirstDraw (true), bDropActive (false),
+	pFrameContext (0), bAddedWindow (false), pVstWindow (0), defaultCursor (0)
 {
 	setOpenFlag (true);
+	
+	pParent = this;
 
 #if WINDOWS
 	pHwnd = 0;
@@ -3423,7 +3488,7 @@ CFrame::CFrame (const CRect &size, void *pSystemWindow, void *pEditor)
 			}
 		}
 	}
-	#endif
+	#endif	// DYNAMICALPHABLEND
     
 #elif MOTIF
 	gc = 0;
@@ -3466,18 +3531,47 @@ CFrame::CFrame (const CRect &size, void *pSystemWindow, void *pEditor)
 }
 
 //-----------------------------------------------------------------------------
-CFrame::CFrame (const CRect &rect, char *pTitle, void *pEditor, const long style)
-:	CView (rect), pEditor (pEditor), pSystemWindow (0), viewCount (0),
-	maxViews (0), ppViews (0), pModalView (0), pEditView (0), bFirstDraw (true),
-	pFrameContext (0), defaultCursor (0)
+CFrame::CFrame (const CRect& inSize, const char* inTitle, void* inEditor, const long inStyle)
+:	CViewContainer (inSize, 0, 0),
+	pSystemWindow(0), pEditor(inEditor),
+	pModalView(0), pEditView(0), bFirstDraw(true), bDropActive(false),
+	pFrameContext(0), defaultCursor(0)
 {
 	bAddedWindow  = true;
 	setOpenFlag (false);
+	pParent = this;
 
 #if WINDOWS
 	pHwnd = 0;
 	OleInitialize (0);
 
+	#if DYNAMICALPHABLEND
+	pfnAlphaBlend = 0;
+	pfnTransparentBlt = 0;
+
+	hInstMsimg32dll = LoadLibrary ("msimg32.dll");
+	if (hInstMsimg32dll)
+	{
+		pfnAlphaBlend = (PFNALPHABLEND)GetProcAddress (hInstMsimg32dll, "AlphaBlend");
+
+		// get OS version
+		OSVERSIONINFOEX	osvi;
+
+		memset (&osvi, 0, sizeof (osvi));
+		osvi.dwOSVersionInfoSize = sizeof (osvi);
+
+		if (GetVersionEx ((OSVERSIONINFO *)&osvi))
+		{
+			// Is this win NT or better?
+			if (osvi.dwPlatformId >= VER_PLATFORM_WIN32_NT)
+			{
+				// Yes, then TransparentBlt doesn't have the memory-leak and can be safely used
+				pfnTransparentBlt = (PFNTRANSPARENTBLT)GetProcAddress (hInstMsimg32dll, "TransparentBlt");
+			}
+		}
+	}
+	#endif
+    
 #elif MOTIF
 	gc = 0;
 	depth    = 0;
@@ -3492,12 +3586,12 @@ CFrame::CFrame (const CRect &rect, char *pTitle, void *pEditor, const long style
 
 	#if !PLUGGUI
 	pVstWindow = (VstWindow*)malloc (sizeof (VstWindow));
-	strcpy (((VstWindow*)pVstWindow)->title, pTitle);
+	strcpy (((VstWindow*)pVstWindow)->title, inTitle);
 	((VstWindow*)pVstWindow)->xPos   = (short)size.left;
 	((VstWindow*)pVstWindow)->yPos   = (short)size.top;
 	((VstWindow*)pVstWindow)->width  = (short)size.width ();
 	((VstWindow*)pVstWindow)->height = (short)size.height ();
-	((VstWindow*)pVstWindow)->style  = style;
+	((VstWindow*)pVstWindow)->style  = inStyle;
 	((VstWindow*)pVstWindow)->parent     = 0;
 	((VstWindow*)pVstWindow)->userHandle = 0;
 	((VstWindow*)pVstWindow)->winHandle  = 0;
@@ -3510,8 +3604,6 @@ CFrame::~CFrame ()
 	setCursor (kCursorDefault);
 
 	setDropActive (false);
-
-	removeAll (true);
 
 	if (pFrameContext)
 		delete pFrameContext;
@@ -3792,16 +3884,8 @@ void CFrame::draw (CDrawContext *pContext)
 	if (!pContext)
 		pContext = pFrameContext;
 
-	// draw first the background
-	if (pBackground)
-	{
-		CRect r (0, 0, pBackground->getWidth (), pBackground->getHeight ());
-		pBackground->draw (pContext, r);
-	}
-
-	// and the different children
-	for (long i = 0; i < viewCount; i++)
-		ppViews[i]->draw (pContext);
+	// draw the background and the children
+	CViewContainer::draw(pContext);
 
 	// and the modal view
 	if (pModalView)
@@ -3823,16 +3907,8 @@ void CFrame::drawRect (CDrawContext *pContext, CRect& updateRect)
 	pContext->setClipRect (updateRect);
 	#endif
 	
-	// draw first the background
-	if (pBackground)
-		pBackground->draw (pContext, updateRect, CPoint (updateRect.left, updateRect.top));
-
-	// and the different children
-	for (long i = 0; i < viewCount; i++)
-	{
-		if (ppViews[i]->checkUpdate (updateRect))
-			ppViews[i]->drawRect (pContext, updateRect);
-	}
+	// draw the background and the children
+	CViewContainer::drawRect(pContext, updateRect);
 
 	// and the modal view
 	if (pModalView && pModalView->checkUpdate (updateRect))
@@ -3847,15 +3923,11 @@ void CFrame::drawRect (CDrawContext *pContext, CRect& updateRect)
 void CFrame::draw (CView *pView)
 {
 	CView *pViewToDraw = 0;
-	if (pView)
-	{
+
 		// Search it in the view list
-		for (long i = 0; i < viewCount; i++)
-			if (ppViews[i] == pView)
-			{
-				pViewToDraw = ppViews[i];
-				break;
-			}
+	if (pView && isChild(pView))
+	{
+		pViewToDraw = pView;
 	}
 
 	#if WINDOWS
@@ -3929,16 +4001,9 @@ void CFrame::mouse (CDrawContext *pContext, CPoint &where, long buttons)
 	}
 	else 
 	{
-		for (long i = viewCount - 1; i >= 0; i--)
-		{
-			if (ppViews[i]->getMouseEnabled () && ppViews[i]->hitTest (where, buttons))
-			{
-				ppViews[i]->mouse (pContext, where, buttons);
-				return;
+		CViewContainer::mouse(pContext, where, buttons);
 			}
 		}
-	}
-}
 
 //-----------------------------------------------------------------------------
 long CFrame::onKeyDown (VstKeyCode& keyCode)
@@ -3953,11 +4018,7 @@ long CFrame::onKeyDown (VstKeyCode& keyCode)
 
 	if (result == -1)
 	{
-		for (long i = viewCount - 1; i >= 0; i--)
-		{
-			if ((result = ppViews[i]->onKeyDown (keyCode)) != -1)
-				break;
-		}
+		result = CViewContainer::onKeyDown(keyCode);
 	}
 
 	return result;
@@ -3976,11 +4037,7 @@ long CFrame::onKeyUp (VstKeyCode& keyCode)
 
 	if (result == -1)
 	{
-		for (long i = viewCount - 1; i >= 0; i--)
-		{
-			if ((result = ppViews[i]->onKeyUp (keyCode)) != -1)
-				break;
-		}
+		result = CViewContainer::onKeyUp(keyCode);
 	}
 
 	return result;
@@ -3992,21 +4049,7 @@ bool CFrame::onDrop (void **ptrItems, long nbItems, long type, CPoint &where)
 	if (pModalView || pEditView)
 		return false;
 
-	bool result = false;
-
-	// call the correct child
-	for (long i = viewCount - 1; i >= 0; i--)
-	{
-		if (ppViews[i]->getMouseEnabled () && where.isInside (ppViews[i]->size))
-		{
-			if (ppViews[i]->onDrop (ptrItems, nbItems, type, where))
-			{
-				result = true;
-				break;
-			}
-		}
-	}
-	return result;
+	return CViewContainer::onDrop(ptrItems, nbItems, type, where);
 }
 
 //-----------------------------------------------------------------------------
@@ -4089,15 +4132,28 @@ void CFrame::update (CDrawContext *pContext)
 		pModalView->update (dc);
 	else
 	{
-		if (isDirty ())
+		if (bDirty)
 		{
 			draw (dc);
 			setDirty (false);
 		}
 		else
 		{
-			for (long i = 0; i < viewCount; i++)
-				ppViews[i]->update (dc);
+			#if USE_CLIPPING_DRAWRECT
+			CRect oldClipRect;
+			dc->getClipRect (oldClipRect);
+			#endif
+			FOREACHSUBVIEW
+				#if USE_CLIPPING_DRAWRECT
+				CRect viewSize;
+				viewSize = pV->getViewSize (viewSize);
+				dc->setClipRect (viewSize);
+				#endif
+				pV->update (dc);
+			ENDFOR
+			#if USE_CLIPPING_DRAWRECT
+			dc->setClipRect (oldClipRect);
+			#endif
 		}
 	}
 	#if MACX
@@ -4120,9 +4176,10 @@ bool CFrame::isSomethingDirty ()
 		return true;
 	else
 	{
-		for (long i = 0; i < viewCount; i++)
-			if (ppViews[i]->isDirty ())
+		FOREACHSUBVIEW
+			if (pV->isDirty())
 				return true;
+		ENDFOR
 	}
 	return false;
 }
@@ -4204,10 +4261,10 @@ unsigned long CFrame::getTicks ()
 {
 #if PLUGGUI
 	if (pEditor)
-		((PluginGUIEditor*)pEditor)->getTicks ();
+		return ((PluginGUIEditor*)pEditor)->getTicks();
 #else
 	if (pEditor)
-		return ((AEffGUIEditor*)pEditor)-> getTicks ();
+		return ((AEffGUIEditor*)pEditor)->getTicks();
 #endif
 	return 0;
 }
@@ -4216,9 +4273,9 @@ unsigned long CFrame::getTicks ()
 long CFrame::getKnobMode ()
 {
 #if PLUGGUI
-	return PluginGUIEditor::getKnobMode ();
+	return PluginGUIEditor::getKnobMode();
 #else
-	return AEffGUIEditor::getKnobMode ();
+	return AEffGUIEditor::getKnobMode();
 #endif
 }
 
@@ -4331,6 +4388,12 @@ bool CFrame::getPosition (long &x, long &y)
 	y = (long) frame.top;
 #endif
 	return true;
+}
+
+//-----------------------------------------------------------------------------
+void CFrame::setViewSize(CRect& inRect)
+{
+	setSize(inRect.width(), inRect.height());
 }
 
 //-----------------------------------------------------------------------------
@@ -4458,6 +4521,9 @@ bool CFrame::setSize (long width, long height)
 	parent->SetResizingMode (B_FOLLOW_NONE);
 #endif
 
+	CRect myViewSize(0, 0, size.width(), size.height());
+	CViewContainer::setViewSize(myViewSize);
+
 	return true;
 }
 
@@ -4468,7 +4534,7 @@ bool CFrame::getSize (CRect *pRect)
 		return false;
 
 #if WINDOWS
-	// return the size relatif to the client rect of this window
+	// return the size relative to the client rect of this window
 	// get the main window
 	HWND wnd = GetParent ((HWND)getSystemWindow ());
 	HWND wndParent = GetParent (wnd);
@@ -4526,107 +4592,17 @@ bool CFrame::getSize (CRect *pRect)
 }
 
 //-----------------------------------------------------------------------------
-bool CFrame::addView (CView *pView)
+bool CFrame::getSize(CRect& outSize)
 {
- 	if (viewCount == maxViews)
-	{
-		maxViews += 20;
-		if (ppViews)
-			ppViews = (CView**)realloc (ppViews, maxViews * sizeof (CView*));
-		else
-			ppViews = (CView**)malloc (maxViews * sizeof (CView*));
-		if (ppViews == 0)
-		{
-			maxViews = 0;
-			return false;
-		}
-	}
-	ppViews[viewCount] = pView;
-	viewCount++;
-	
-	pView->pParent = this;
-	pView->attached (this);
-
-	return true;
+	return getSize(&outSize);
 }
 
-//-----------------------------------------------------------------------------
-bool CFrame::removeView (CView *pView, const bool &withForget)
-{
-	bool found = false;
-	for (long i = 0; i < viewCount; i++)
-	{
-		if (found)
-			ppViews[i - 1] = ppViews[i];
-		if (ppViews[i] == pView)
-		{
-			pView->removed (this);
-			if (withForget)
-				pView->forget ();
-			found = true;
-		}
-	}
-	if (found)
-		viewCount--;
-
-	return true;
-}
-
-//-----------------------------------------------------------------------------
-bool CFrame::removeAll (const bool &withForget)
-{
-	if (pEditView)
-	{
-		pEditView->looseFocus ();
-		pEditView = 0;
-	}
-
-	if (ppViews)
-	{
-		for (long i = 0; i < viewCount; i++)
-		{
-			ppViews[i]->removed (this);
-			if (withForget)
-				ppViews[i]->forget ();
-			ppViews[i] = 0;
-		}
-
-		free (ppViews);
-		ppViews = 0;
-		viewCount = 0;
-		maxViews = 0;
-	}
-	return true;
-}
-
-//-----------------------------------------------------------------------------
-bool CFrame::isChild (CView *pView)
-{
-	bool found = false;
-	for (long i = 0; i < viewCount; i++)
-	{
-		if (ppViews[i] == pView)
-		{
-			found = true;
-			break;
-		}
-	}
-	return found;
-}
-
-//-----------------------------------------------------------------------------
-CView *CFrame::getView (long index)
-{
-	if (index >= 0 && index < viewCount)
-		return ppViews[index];
-	return 0;
-}
 
 //-----------------------------------------------------------------------------
 long CFrame::setModalView (CView *pView)
 {
-	if (pView != NULL)
-		if (pModalView)
+	// There's already a modal view so we get out
+	if (pView && pModalView)
 			return 0;
 
 	if (pModalView)
@@ -4675,26 +4651,7 @@ CView *CFrame::getCurrentView ()
 	if (pModalView)
 		return pModalView;
 	
-	CPoint where;
-	getCurrentLocation (where);
-
-	for (long i = viewCount - 1; i >= 0; i--)
-	{
-		if (ppViews[i] && where.isInside (ppViews[i]->mouseableArea))
-			return ppViews[i];
-	}
-	return 0;
-}
-
-//-----------------------------------------------------------------------------
-CView *CFrame::getViewAt (const CPoint& where)
-{
-	for (long i = viewCount - 1; i >= 0; i--)
-	{
-		if (ppViews[i] && where.isInside (ppViews[i]->mouseableArea))
-			return ppViews[i];
-	}
-	return 0;
+	return CViewContainer::getCurrentView();
 }
 
 //-----------------------------------------------------------------------------
@@ -4850,16 +4807,14 @@ void CFrame::setEditView (CView *pView)
 void CFrame::invalidate (const CRect &rect)
 {
 	CRect rectView;
-	long i;
-	for (i = 0; i < viewCount; i++)
+	FOREACHSUBVIEW
+	if (pV)
 	{
-		if (ppViews[i])
-		{
-			ppViews[i]->getViewSize (rectView);
-			if (rect.rectOverlap (rectView))
-				ppViews[i]->setDirty (true);
-		}
-	}   
+		pV->getViewSize(rectView);
+		if (rect.rectOverlap(rectView))
+			pV->setDirty(true);
+	}
+	ENDFOR
 }
 
 //-----------------------------------------------------------------------------
@@ -4878,9 +4833,6 @@ CCView::~CCView ()
 	if (pView)
 		pView->forget (); 
 }
-
-#define FOREACHSUBVIEW for (CCView *pSv = pFirstView; pSv; pSv = pSv->pNext) {CView *pV = pSv->pView;
-#define ENDFOR }
 
 //-----------------------------------------------------------------------------
 // CViewContainer Implementation
@@ -5116,8 +5068,15 @@ void CViewContainer::draw (CDrawContext *pContext)
 		modifyDrawContext (save, pContext);
 	}
 
-	// draw the background
 	CRect r (0, 0, size.width (), size.height ());
+
+ 	#if USE_CLIPPING_DRAWRECT
+	CRect oldClip;
+	pContext->getClipRect (oldClip);
+	pContext->setClipRect (r);
+	#endif
+
+	// draw the background
 	if (pBackground)
 	{
 		if (bTransparencyEnabled)
@@ -5134,9 +5093,18 @@ void CViewContainer::draw (CDrawContext *pContext)
 	
 	// draw each view
 	FOREACHSUBVIEW
+		#if USE_CLIPPING_DRAWRECT
+		CRect vSize;
+		pV->getViewSize (vSize);
+		pContext->setClipRect (vSize);
+		#endif
 		pV->draw (pC);
 	ENDFOR
 
+	#if USE_CLIPPING_DRAWRECT
+	pContext->setClipRect (oldClip);
+	#endif
+	
 	// transfert offscreen
 	if (bDrawInOffscreen)
 		((COffscreenContext*)pC)->copyFrom (pContext, size);
@@ -5155,11 +5123,15 @@ void CViewContainer::drawBackgroundRect (CDrawContext *pContext, CRect& _updateR
 {
 	if (pBackground)
 	{
-		CPoint p (_updateRect.left + backgroundOffset.h, _updateRect.top + backgroundOffset.v);
+		CRect oldClip;
+		pContext->getClipRect (oldClip);
+		pContext->setClipRect (_updateRect);
+		CRect tr (0, 0, pBackground->getWidth (), pBackground->getHeight ());
 		if (bTransparencyEnabled)
-			pBackground->drawTransparent (pContext, _updateRect, p);
+			pBackground->drawTransparent (pContext, tr, backgroundOffset);
 		else
-			pBackground->draw (pContext, _updateRect, p);
+			pBackground->draw (pContext, tr, backgroundOffset);
+		pContext->setClipRect (oldClip);
 	}
 	else if (!bTransparencyEnabled)
 	{
@@ -5203,27 +5175,25 @@ void CViewContainer::drawRect (CDrawContext *pContext, CRect& _updateRect)
 	CRect clientRect (updateRect);
 	clientRect.offset (-size.left, -size.top);
 
+	#if USE_CLIPPING_DRAWRECT
+	CRect oldClip;
+	pContext->getClipRect (oldClip);
+	pContext->setClipRect (clientRect);
+	#endif
+	
 	// draw the background
-	if (pBackground)
-	{
-		CPoint bgoffset (clientRect.left + backgroundOffset.h, clientRect.top+ backgroundOffset.v);
-		if (bTransparencyEnabled)
-			pBackground->drawTransparent (pC, clientRect, bgoffset);
-		else
-			pBackground->draw (pC, clientRect, bgoffset);
-	}
-	else if (!bTransparencyEnabled)
-	{
-		pC->setFillColor (backgroundColor);
-		pC->fillRect (clientRect);
-	}
+	drawBackgroundRect (pC, clientRect);
 	#endif
 	
 	// draw each view
 	FOREACHSUBVIEW
 		if (pV->checkUpdate (clientRect))
-			pV->draw (pC);
+			pV->drawRect (pC, clientRect);
 	ENDFOR
+
+	#if USE_CLIPPING_DRAWRECT
+	pContext->setClipRect (oldClip);
+	#endif
 
 	// transfert offscreen
 	if (bDrawInOffscreen)
@@ -5269,9 +5239,6 @@ void CViewContainer::mouse (CDrawContext *pContext, CPoint &where, long buttons)
 	CPoint where2 (where);
 	where2.offset (-size.left, -size.top);
 
-//	long save[4];
-//	modifyDrawContext (save, pContext, size);
-	
 	if (buttons == -1 && pContext)
 		buttons = pContext->getMouseButtons ();
 
@@ -5286,8 +5253,6 @@ void CViewContainer::mouse (CDrawContext *pContext, CPoint &where, long buttons)
 		}
 		pSv = pSv->pPrevious;
 	}
-	
-//	restoreDrawContext (pContext, save);
 }
 
 //-----------------------------------------------------------------------------
@@ -5402,15 +5367,28 @@ void CViewContainer::update (CDrawContext *pContext)
 				if (bDirty)
 					getParent ()->drawRect (pContext, size);
 				else
-				FOREACHSUBVIEW
-					if (pV->isDirty ())
-					{
-						CRect viewSize;
-						pV->getViewSize (viewSize);
-						viewSize.offset (size.left, size.top);
-						getParent ()->drawRect (pContext, viewSize);
-					}
-				ENDFOR
+				{
+					CPoint topLeft;
+					getFrameTopLeftPos (topLeft);
+					topLeft.offset (-size.left, -size.top);
+					FOREACHSUBVIEW
+						if (pV->isDirty ())
+						{
+							if (pV->notify (this, kMsgCheckIfViewContainer))
+							{
+								pV->update (pContext);
+							}
+							else
+							{
+								CRect viewSize;
+								pV->getViewSize (viewSize);
+								viewSize.offset (size.left, size.top);
+								viewSize.offset (topLeft.x, topLeft.y);
+								getParent ()->drawRect (pContext, viewSize);
+							}
+						}
+					ENDFOR
+				}
 				setDirty (false);
 				return;
 			}
@@ -6246,6 +6224,12 @@ void CBitmap::draw (CDrawContext *pContext, CRect &rect, const CPoint &offset)
 				
 				CGContextScaleCTM (context, 1, 1);
 
+				// the clipping needs to be set after we translated the transformation matrix
+				CRect ccr;
+				pContext->getClipRect (ccr);
+				CGRect cgClipRect = CGRectMake (ccr.left + pContext->offset.h, (ccr.top +  + pContext->offset.v) * -1 - ccr.height (), ccr.width (), ccr.height ());
+				CGContextClipToRect (context, cgClipRect);
+
 				CGRect clipRect;
 				clipRect.origin.x = rect.left + pContext->offset.h;
 			    clipRect.origin.y = (rect.top + pContext->offset.v) * -1  - rect.height ();
@@ -6412,6 +6396,12 @@ void CBitmap::drawTransparent (CDrawContext *pContext, CRect &rect, const CPoint
 				dest.size.height = getHeight ();
 				
 				CGContextScaleCTM (context, 1, 1);
+
+				// the clipping needs to be set after we translated the transformation matrix
+				CRect ccr;
+				pContext->getClipRect (ccr);
+				CGRect cgClipRect = CGRectMake (ccr.left + pContext->offset.h, (ccr.top +  + pContext->offset.v) * -1 - ccr.height (), ccr.width (), ccr.height ());
+				CGContextClipToRect (context, cgClipRect);
 
 				CGRect clipRect;
 				clipRect.origin.x = rect.left + pContext->offset.h;
@@ -6680,6 +6670,12 @@ void CBitmap::drawAlphaBlend (CDrawContext *pContext, CRect &rect, const CPoint 
 				
 				CGContextScaleCTM (context, 1, 1);
 
+				// the clipping needs to be set after we translated the transformation matrix
+				CRect ccr;
+				pContext->getClipRect (ccr);
+				CGRect cgClipRect = CGRectMake (ccr.left + pContext->offset.h, (ccr.top +  + pContext->offset.v) * -1 - ccr.height (), ccr.width (), ccr.height ());
+				CGContextClipToRect (context, cgClipRect);
+
 				CGRect clipRect;
 				clipRect.origin.x = rect.left + pContext->offset.h;
 			    clipRect.origin.y = (rect.top + pContext->offset.v) * -1  - rect.height ();
@@ -6897,7 +6893,6 @@ void CBitmap::closeResource ()
 #endif
 END_NAMESPACE_VSTGUI
 
-#if !PLUGGUI
 //-----------------------------------------------------------------------------
 // CFileSelector Implementation
 //-----------------------------------------------------------------------------
@@ -6918,22 +6913,30 @@ static bool didCancel;
 static char selDirPath[kPathMax];
 #endif
 
-
 BEGIN_NAMESPACE_VSTGUI
 
+#if PLUGGUI
+//-----------------------------------------------------------------------------
+CFileSelector::CFileSelector (void*)
+: vstFileSelect (0)
+{}
+#else
 //-----------------------------------------------------------------------------
 CFileSelector::CFileSelector (AudioEffectX* effect)
 : effect (effect), vstFileSelect (0)
 {}
+#endif
 
 //-----------------------------------------------------------------------------
 CFileSelector::~CFileSelector ()
 {
 	if (vstFileSelect)
 	{
+		#if !PLUGGUI
 		if (effect && effect->canHostDo ("closeFileSelector"))
 			effect->closeFileSelector (vstFileSelect);
-		else 
+		else
+		#endif
 		{
 			if (vstFileSelect->reserved == 1 && vstFileSelect->returnPath)
 			{
@@ -6955,23 +6958,6 @@ CFileSelector::~CFileSelector ()
 	}
 }
 
-#if CARBON
-pascal void navEventProc (const NavEventCallbackMessage callBackSelector, NavCBRecPtr callBackParms, NavCallBackUserData callBackUD);
-pascal void navEventProc (const NavEventCallbackMessage callBackSelector, NavCBRecPtr callBackParms, NavCallBackUserData callBackUD) 
-{
-	AudioEffectX* effect = (AudioEffectX*)callBackUD;
-	switch (callBackSelector)
-	{
-		case kNavCBEvent:
-		{
-			if (callBackParms->eventData.eventDataParms.event->what == nullEvent)
-				effect->masterIdle ();
-			break;
-		}
-	}
-}
-#endif
-
 //-----------------------------------------------------------------------------
 long CFileSelector::run (VstFileSelect *vstFileSelect)
 {
@@ -6980,6 +6966,7 @@ long CFileSelector::run (VstFileSelect *vstFileSelect)
 	if (vstFileSelect->returnPath)
 		vstFileSelect->returnPath[0] = 0;
 
+	#if !PLUGGUI
 	if (effect
 	#if MACX 
 		&& vstFileSelect->command != kVstFileSave 
@@ -6990,6 +6977,7 @@ long CFileSelector::run (VstFileSelect *vstFileSelect)
 			return vstFileSelect->nbReturnPath;
 	}
 	else
+	#endif
 	{
 #if WINDOWS
 		char filter[512];
@@ -7108,8 +7096,10 @@ long CFileSelector::run (VstFileSelect *vstFileSelect)
 			OPENFILENAME ofn = {0};
 			ofn.lStructSize  = sizeof (OPENFILENAME);
 			HWND owner = 0;
+			#if !PLUGGUI
 			if (effect->getEditor () && ((AEffGUIEditor*)effect->getEditor ())->getFrame ())
 				owner = (HWND)((AEffGUIEditor*)effect->getEditor ())->getFrame ()->getSystemWindow ();
+			#endif
 			ofn.hwndOwner    = owner;
 	
 			if (vstFileSelect->command == kVstDirectorySelect) 
@@ -7251,8 +7241,10 @@ long CFileSelector::run (VstFileSelect *vstFileSelect)
 			OPENFILENAME ofn = {0};
 			ofn.lStructSize  = sizeof (OPENFILENAME);
 			HWND owner = 0;
+			#if !PLUGGUI
 			if (effect->getEditor () && ((AEffGUIEditor*)effect->getEditor ())->getFrame ())
 				owner = (HWND)((AEffGUIEditor*)effect->getEditor ())->getFrame ()->getSystemWindow ();
+			#endif
 			ofn.hwndOwner    = owner;
 			ofn.hInstance    = GetInstance ();
 			ofn.lpstrFilter = filter[0] ? filter : 0;
@@ -7296,33 +7288,74 @@ long CFileSelector::run (VstFileSelect *vstFileSelect)
 
 #elif MAC
 #if CARBON
-		NavEventUPP	eventUPP = NewNavEventUPP (navEventProc);
+		#if MACX
+		// new approach for supporting long filenames on mac os x is to use unix path mode
+		// if vstFileSelect->future[0] is 1 on entry and 0 on exit the resulting paths are UTF8 encoded paths
+		bool unixPathMode = (vstFileSelect->future[0] == 1);
+		#endif
+		NavEventUPP	eventUPP = NewNavEventUPP (CFileSelector::navEventProc);
 		if (vstFileSelect->command == kVstFileSave)
 		{
 			NavDialogCreationOptions dialogOptions;
 			NavGetDefaultDialogCreationOptions (&dialogOptions);
-			dialogOptions.windowTitle = CFSTR ("Select a Destination");
-	        CFStringRef defSaveName = 0;
+			dialogOptions.windowTitle = CFStringCreateWithCString (NULL, vstFileSelect->title[0] ? vstFileSelect->title : "Select a Destination", kCFStringEncodingUTF8);
+			CFStringRef defSaveName = 0;
+			#if MACX
+			if (unixPathMode && vstFileSelect->initialPath)
+			{
+				char* name = strrchr (vstFileSelect->initialPath, '/');
+				if (name && name[1] != 0)
+				{
+					defSaveName = dialogOptions.saveFileName = CFStringCreateWithCString (NULL, name+1, kCFStringEncodingUTF8);
+					name[0] = 0;
+					dialogOptions.optionFlags |= kNavPreserveSaveFileExtension;
+				}
+				else if (name == 0)
+				{
+					defSaveName = dialogOptions.saveFileName = CFStringCreateWithCString (NULL, vstFileSelect->initialPath, kCFStringEncodingUTF8);
+					dialogOptions.optionFlags |= kNavPreserveSaveFileExtension;
+					vstFileSelect->initialPath = 0;
+				}
+			}
+			else
+			#endif
 			if (vstFileSelect->initialPath && ((FSSpec*)vstFileSelect->initialPath)->name)
 			{
 				FSSpec* defaultSpec = (FSSpec*)vstFileSelect->initialPath;
 				defSaveName = CFStringCreateWithPascalString (NULL, defaultSpec->name, kCFStringEncodingASCII);
 				if (defSaveName)
+				{
 					dialogOptions.saveFileName = defSaveName;
+					dialogOptions.optionFlags |= kNavPreserveSaveFileExtension;
+				}
 				*defaultSpec->name = 0;
 			}
 			NavDialogRef dialogRef;
-			if (NavCreatePutFileDialog (&dialogOptions, NULL, kNavGenericSignature, eventUPP, effect, &dialogRef) == noErr) 
+			if (NavCreatePutFileDialog (&dialogOptions, NULL, kNavGenericSignature, eventUPP, this, &dialogRef) == noErr) 
 			{
 			    AEDesc defaultLocation;   
 			    AEDesc* defLocPtr = 0;   
 				if (vstFileSelect->initialPath)
 				{
-					FSSpec* defaultSpec = (FSSpec*)vstFileSelect->initialPath;
-			        if (defaultSpec->parID && defaultSpec->vRefNum)
-			        {
-			            if (AECreateDesc (typeFSS, defaultSpec, sizeof(FSSpec), &defaultLocation) == noErr)
-			                defLocPtr = &defaultLocation;
+					#if MACX
+					if (unixPathMode)
+					{
+						FSRef fsRef;
+						if (FSPathMakeRef ((const unsigned char*)vstFileSelect->initialPath, &fsRef, NULL) == noErr)
+						{
+				            if (AECreateDesc (typeFSRef, &fsRef, sizeof(FSRef), &defaultLocation) == noErr)
+				                defLocPtr = &defaultLocation;
+						}
+					}
+					else
+					#endif
+					{
+						FSSpec* defaultSpec = (FSSpec*)vstFileSelect->initialPath;
+				        if (defaultSpec->parID && defaultSpec->vRefNum)
+				        {
+				            if (AECreateDesc (typeFSS, defaultSpec, sizeof(FSSpec), &defaultLocation) == noErr)
+				                defLocPtr = &defaultLocation;
+						}
 					}
 				}
 		        if (defLocPtr)
@@ -7343,26 +7376,60 @@ long CFileSelector::run (VstFileSelect *vstFileSelect)
 				    if (AEGetNthPtr(&navReply.selection, 1, typeFSRef,
 		        		&theAEKeyword, &typeCode, &parentFSRef, sizeof(FSRef), &actualSize) == noErr)
 					{
-						FSSpec spec;
-						FSCatalogInfoBitmap infoBitmap = kFSCatInfoNone;
-						FSGetCatalogInfo (&parentFSRef, infoBitmap, NULL, NULL, &spec, NULL);
-						CInfoPBRec pbRec = {0};	
-						pbRec.dirInfo.ioDrDirID = spec.parID;
-						pbRec.dirInfo.ioVRefNum = spec.vRefNum;
-						pbRec.dirInfo.ioNamePtr = spec.name;
-						if (PBGetCatInfoSync (&pbRec) == noErr)
+						#if MACX
+						if (unixPathMode)
 						{
-							spec.parID = pbRec.dirInfo.ioDrDirID;
-							// the cfstring -> pascalstring can fail if the filename length > 63 (FSSpec sucks)
-							if (CFStringGetPascalString (navReply.saveFileName, (unsigned char*)&spec.name, sizeof (spec.name), kCFStringEncodingASCII))
+							bool success = true;
+							vstFileSelect->nbReturnPath = 1;
+							if (vstFileSelect->returnPath == 0)
 							{
-								vstFileSelect->nbReturnPath = 1;
-								if (!vstFileSelect->returnPath)
+								vstFileSelect->reserved = 1;
+								vstFileSelect->returnPath = new char [PATH_MAX];
+							}
+							if (FSRefMakePath (&parentFSRef, (unsigned char*)vstFileSelect->returnPath, PATH_MAX) == noErr)
+							{
+								char saveFileName [PATH_MAX];
+								if (CFStringGetCString (navReply.saveFileName, saveFileName, PATH_MAX, kCFStringEncodingUTF8))
 								{
-									vstFileSelect->reserved = 1;
-									vstFileSelect->returnPath = new char [sizeof (FSSpec)];
+									strcat (vstFileSelect->returnPath, "/");
+									strcat (vstFileSelect->returnPath, saveFileName);
+									vstFileSelect->future[0] = 0;
 								}
-								memcpy (vstFileSelect->returnPath, &spec, sizeof (FSSpec));
+								else
+									success = false;
+							}
+							else
+								success = false;
+							if (!success && vstFileSelect->reserved)
+							{
+								vstFileSelect->nbReturnPath = 0;
+								delete [] vstFileSelect->returnPath;
+							}
+						}
+						else
+						#endif
+						{
+							FSSpec spec;
+							FSCatalogInfoBitmap infoBitmap = kFSCatInfoNone;
+							FSGetCatalogInfo (&parentFSRef, infoBitmap, NULL, NULL, &spec, NULL);
+							CInfoPBRec pbRec = {0};	
+							pbRec.dirInfo.ioDrDirID = spec.parID;
+							pbRec.dirInfo.ioVRefNum = spec.vRefNum;
+							pbRec.dirInfo.ioNamePtr = spec.name;
+							if (PBGetCatInfoSync (&pbRec) == noErr)
+							{
+								spec.parID = pbRec.dirInfo.ioDrDirID;
+								// the cfstring -> pascalstring can fail if the filename length > 63 (FSSpec sucks)
+								if (CFStringGetPascalString (navReply.saveFileName, (unsigned char*)&spec.name, sizeof (spec.name), kCFStringEncodingASCII))
+								{
+									vstFileSelect->nbReturnPath = 1;
+									if (!vstFileSelect->returnPath)
+									{
+										vstFileSelect->reserved = 1;
+										vstFileSelect->returnPath = new char [sizeof (FSSpec)];
+									}
+									memcpy (vstFileSelect->returnPath, &spec, sizeof (FSSpec));
+								}
 							}
 						}
 					}
@@ -7381,18 +7448,32 @@ long CFileSelector::run (VstFileSelect *vstFileSelect)
 		{
 			NavDialogCreationOptions dialogOptions;
 			NavGetDefaultDialogCreationOptions (&dialogOptions);
-			dialogOptions.windowTitle = CFSTR ("Select Directory");
+			dialogOptions.windowTitle = CFStringCreateWithCString (NULL, vstFileSelect->title[0] ? vstFileSelect->title : "Select Directory", kCFStringEncodingUTF8);
 			NavDialogRef dialogRef;
-			if (NavCreateChooseFolderDialog (&dialogOptions, eventUPP, NULL, effect, &dialogRef) == noErr)
+			if (NavCreateChooseFolderDialog (&dialogOptions, eventUPP, NULL, this, &dialogRef) == noErr)
 			{
 			    AEDesc defaultLocation;   
 			    AEDesc* defLocPtr = 0;   
 				if (vstFileSelect->initialPath)
 				{
-					FSSpec* defaultSpec = (FSSpec*)vstFileSelect->initialPath;
-			        if (defaultSpec->parID && defaultSpec->vRefNum)       
-			            if (AECreateDesc (typeFSS, defaultSpec, sizeof(FSSpec), &defaultLocation) == noErr)
-			                defLocPtr = &defaultLocation;
+					#if MACX
+					if (unixPathMode)
+					{
+						FSRef fsRef;
+						if (FSPathMakeRef ((const unsigned char*)vstFileSelect->initialPath, &fsRef, NULL) == noErr)
+						{
+				            if (AECreateDesc (typeFSRef, &fsRef, sizeof(FSRef), &defaultLocation) == noErr)
+				                defLocPtr = &defaultLocation;
+						}
+					}
+					else
+					#endif
+					{
+						FSSpec* defaultSpec = (FSSpec*)vstFileSelect->initialPath;
+				        if (defaultSpec->parID && defaultSpec->vRefNum)       
+				            if (AECreateDesc (typeFSS, defaultSpec, sizeof(FSSpec), &defaultLocation) == noErr)
+				                defLocPtr = &defaultLocation;
+			        }
 				}
 		        if (defLocPtr)
 		            NavCustomControl (dialogRef, kNavCtlSetLocation, (void*)defLocPtr);
@@ -7406,20 +7487,41 @@ long CFileSelector::run (VstFileSelect *vstFileSelect)
 					AEKeyword theAEKeyword;
 					DescType typeCode;
 					Size actualSize;
-			        // get the FSRef referring to the parent directory
 				    if (AEGetNthPtr(&navReply.selection, 1, typeFSRef,
 		        		&theAEKeyword, &typeCode, &parentFSRef, sizeof(FSRef), &actualSize) == noErr)
 					{
-						FSSpec spec;
-						FSCatalogInfoBitmap infoBitmap = kFSCatInfoNone;
-						FSGetCatalogInfo (&parentFSRef, infoBitmap, NULL, NULL, &spec, NULL);
-						vstFileSelect->nbReturnPath = 1;
-						if (!vstFileSelect->returnPath)
+						#if MACX
+						if (unixPathMode)
 						{
-							vstFileSelect->reserved = 1;
-							vstFileSelect->returnPath = new char [sizeof (FSSpec)];
+							vstFileSelect->nbReturnPath = 1;
+							if (vstFileSelect->returnPath == 0)
+							{
+								vstFileSelect->reserved = 1;
+								vstFileSelect->returnPath = new char [PATH_MAX];
+							}
+							if (FSRefMakePath (&parentFSRef, (unsigned char*)vstFileSelect->returnPath, PATH_MAX) != noErr)
+							{
+								vstFileSelect->nbReturnPath = 0;
+								if (vstFileSelect->reserved)
+									delete [] vstFileSelect->returnPath;
+							}
+							else
+								vstFileSelect->future[0] = 0;
 						}
-						memcpy (vstFileSelect->returnPath, &spec, sizeof (FSSpec));
+						else
+						#endif
+						{
+							FSSpec spec;
+							FSCatalogInfoBitmap infoBitmap = kFSCatInfoNone;
+							FSGetCatalogInfo (&parentFSRef, infoBitmap, NULL, NULL, &spec, NULL);
+							vstFileSelect->nbReturnPath = 1;
+							if (!vstFileSelect->returnPath)
+							{
+								vstFileSelect->reserved = 1;
+								vstFileSelect->returnPath = new char [sizeof (FSSpec)];
+							}
+							memcpy (vstFileSelect->returnPath, &spec, sizeof (FSSpec));
+						}
 					}
 					
 					NavDisposeReply (&navReply);
@@ -7435,25 +7537,40 @@ long CFileSelector::run (VstFileSelect *vstFileSelect)
 			NavGetDefaultDialogCreationOptions (&dialogOptions);
 			if (vstFileSelect->command == kVstFileLoad)
 			{
-				dialogOptions.windowTitle = CFSTR ("Select a File to Open");
+				dialogOptions.windowTitle = CFStringCreateWithCString (NULL, vstFileSelect->title[0] ? vstFileSelect->title : "Select a File to Open", kCFStringEncodingUTF8);
 				dialogOptions.optionFlags &= ~kNavAllowMultipleFiles;
 			}
 			else
 			{
-				dialogOptions.windowTitle = CFSTR ("Select Files to Open");
+				dialogOptions.windowTitle = CFStringCreateWithCString (NULL, vstFileSelect->title[0] ? vstFileSelect->title : "Select Files to Open", kCFStringEncodingUTF8);
 				dialogOptions.optionFlags |= kNavAllowMultipleFiles;
 			}
+			NavObjectFilterUPP objectFilterUPP = NewNavObjectFilterUPP (CFileSelector::navObjectFilterProc);
 			NavDialogRef dialogRef;
-			if (NavCreateGetFileDialog (&dialogOptions, NULL, eventUPP, NULL, NULL, effect, &dialogRef) == noErr)
+			if (NavCreateGetFileDialog (&dialogOptions, NULL, eventUPP, NULL, objectFilterUPP, this, &dialogRef) == noErr)
 			{
 			    AEDesc defaultLocation;   
 			    AEDesc* defLocPtr = 0;   
 				if (vstFileSelect->initialPath)
 				{
-					FSSpec* defaultSpec = (FSSpec*)vstFileSelect->initialPath;
-			        if (defaultSpec->parID && defaultSpec->vRefNum)       
-			            if (AECreateDesc (typeFSS, defaultSpec, sizeof(FSSpec), &defaultLocation) == noErr)
-			                defLocPtr = &defaultLocation;
+					#if MACX
+					if (unixPathMode)
+					{
+						FSRef fsRef;
+						if (FSPathMakeRef ((const unsigned char*)vstFileSelect->initialPath, &fsRef, NULL) == noErr)
+						{
+				            if (AECreateDesc (typeFSRef, &fsRef, sizeof(FSRef), &defaultLocation) == noErr)
+				                defLocPtr = &defaultLocation;
+						}
+					}
+					else
+					#endif
+					{
+						FSSpec* defaultSpec = (FSSpec*)vstFileSelect->initialPath;
+				        if (defaultSpec->parID && defaultSpec->vRefNum)       
+				            if (AECreateDesc (typeFSS, defaultSpec, sizeof(FSSpec), &defaultLocation) == noErr)
+				                defLocPtr = &defaultLocation;
+			        }
 				}
 		        if (defLocPtr)
 		            NavCustomControl (dialogRef, kNavCtlSetLocation, (void*)defLocPtr);
@@ -7475,16 +7592,38 @@ long CFileSelector::run (VstFileSelect *vstFileSelect)
 					    if (AEGetNthPtr(&navReply.selection, 1, typeFSRef,
 			        		&theAEKeyword, &typeCode, &parentFSRef, sizeof(FSRef), &actualSize) == noErr)
 						{
-							FSSpec spec;
-							FSCatalogInfoBitmap infoBitmap = kFSCatInfoNone;
-							FSGetCatalogInfo (&parentFSRef, infoBitmap, NULL, NULL, &spec, NULL);
-							vstFileSelect->nbReturnPath = 1;
-							if (!vstFileSelect->returnPath)
+							#if MACX
+							if (unixPathMode)
 							{
-								vstFileSelect->reserved = 1;
-								vstFileSelect->returnPath = new char [sizeof (FSSpec)];
+								vstFileSelect->nbReturnPath = 1;
+								if (vstFileSelect->returnPath == 0)
+								{
+									vstFileSelect->reserved = 1;
+									vstFileSelect->returnPath = new char [PATH_MAX];
+								}
+								if (FSRefMakePath (&parentFSRef, (unsigned char*)vstFileSelect->returnPath, PATH_MAX) != noErr)
+								{
+									vstFileSelect->nbReturnPath = 0;
+									if (vstFileSelect->reserved)
+										delete [] vstFileSelect->returnPath;
+								}
+								else
+									vstFileSelect->future[0] = 0;
 							}
-							memcpy (vstFileSelect->returnPath, &spec, sizeof (FSSpec));
+							else
+							#endif
+							{
+								FSSpec spec;
+								FSCatalogInfoBitmap infoBitmap = kFSCatInfoNone;
+								FSGetCatalogInfo (&parentFSRef, infoBitmap, NULL, NULL, &spec, NULL);
+								vstFileSelect->nbReturnPath = 1;
+								if (!vstFileSelect->returnPath)
+								{
+									vstFileSelect->reserved = 1;
+									vstFileSelect->returnPath = new char [sizeof (FSSpec)];
+								}
+								memcpy (vstFileSelect->returnPath, &spec, sizeof (FSSpec));
+							}
 						}
 					}
 					else
@@ -7495,18 +7634,31 @@ long CFileSelector::run (VstFileSelect *vstFileSelect)
 					    while (AEGetNthPtr(&navReply.selection, index++, typeFSRef,
 			        		&theAEKeyword, &typeCode, &parentFSRef, sizeof(FSRef), &actualSize) == noErr)
 						{
-							FSSpec spec;
-							FSCatalogInfoBitmap infoBitmap = kFSCatInfoNone;
-							FSGetCatalogInfo (&parentFSRef, infoBitmap, NULL, NULL, &spec, NULL);
-							vstFileSelect->returnMultiplePaths[index-2] = new char[sizeof (FSSpec)];
-							memcpy (vstFileSelect->returnMultiplePaths[index-2], &spec, sizeof (FSSpec));
+							#if MACX
+							if (unixPathMode)
+							{
+								vstFileSelect->returnMultiplePaths[index-2] = new char[PATH_MAX];
+								FSRefMakePath (&parentFSRef, (unsigned char*)vstFileSelect->returnMultiplePaths[index-2], PATH_MAX);
+								vstFileSelect->future[0] = 0;
+							}
+							else
+							#endif
+							{
+								FSSpec spec;
+								FSCatalogInfoBitmap infoBitmap = kFSCatInfoNone;
+								FSGetCatalogInfo (&parentFSRef, infoBitmap, NULL, NULL, &spec, NULL);
+								vstFileSelect->returnMultiplePaths[index-2] = new char[sizeof (FSSpec)];
+								memcpy (vstFileSelect->returnMultiplePaths[index-2], &spec, sizeof (FSSpec));
+							}
 						}
 					}
 				}
+				DisposeNavObjectFilterUPP (objectFilterUPP);
 				DisposeNavEventUPP (eventUPP);
 				NavDialogDispose (dialogRef);
 				return vstFileSelect->nbReturnPath;
 			}
+			DisposeNavObjectFilterUPP (objectFilterUPP);
 		}
 		DisposeNavEventUPP (eventUPP);
 #else
@@ -7615,6 +7767,73 @@ long CFileSelector::run (VstFileSelect *vstFileSelect)
 	}
 	return 0;
 }
+
+#if MAC && CARBON
+//-----------------------------------------------------------------------------
+pascal void CFileSelector::navEventProc (const NavEventCallbackMessage callBackSelector, NavCBRecPtr callBackParms, NavCallBackUserData callBackUD) 
+{
+	CFileSelector* fs = (CFileSelector*)callBackUD;
+	switch (callBackSelector)
+	{
+		case kNavCBEvent:
+		{
+			#if !PLUGGUI
+			AudioEffectX* effect = fs->effect;
+			if (effect && callBackParms->eventData.eventDataParms.event->what == nullEvent)
+				effect->masterIdle ();
+			#endif
+			break;
+		}
+	}
+}
+
+//-----------------------------------------------------------------------------
+pascal Boolean CFileSelector::navObjectFilterProc (AEDesc *theItem, void *info, void *callBackUD, NavFilterModes filterMode)
+{
+    Boolean result = false;
+	CFileSelector* fs = (CFileSelector*)callBackUD;
+    NavFileOrFolderInfo *theInfo = (NavFileOrFolderInfo*)info;
+
+	if (theInfo->isFolder || fs->vstFileSelect->nbFileTypes == 0)
+		result = true;
+	else
+	{
+	    FSRef ref;
+		AECoerceDesc (theItem, typeFSRef, theItem);
+		if (AEGetDescData (theItem, &ref, sizeof (FSRef)) == noErr)
+		{
+			LSItemInfoRecord infoRecord;
+			if (LSCopyItemInfoForRef (&ref, kLSRequestExtension | kLSRequestTypeCreator, &infoRecord) == noErr)
+			{
+				char extension [128];
+				extension[0] = 0;
+				if (infoRecord.extension)
+					CFStringGetCString (infoRecord.extension, extension, 128, kCFStringEncodingUTF8);
+				for (long i = 0; i < fs->vstFileSelect->nbFileTypes; i++)
+				{
+					VstFileType* ft = &fs->vstFileSelect->fileTypes[i];
+					if ((OSType)ft->macType == infoRecord.filetype)
+					{
+						result = true;
+						break;
+					}
+					else if (infoRecord.extension)
+					{
+						if (!strcmp (extension, ft->unixType) || !strcmp (extension, ft->dosType))
+						{
+							result = true;
+							break;
+						}
+					}
+				}
+				if (infoRecord.extension)
+					CFRelease (infoRecord.extension);
+			}
+		}
+	}
+	return result;
+}
+#endif
 
 END_NAMESPACE_VSTGUI
 
@@ -7784,8 +8003,6 @@ UINT APIENTRY WinSaveHook (HWND hdlg, UINT msg, WPARAM wParam, LPARAM lParam)
 }
 #endif
 
-//-----------------------------------------------------------------------------
-#endif // !PLUGGUI
 //-----------------------------------------------------------------------------
 
 #if WINDOWS
@@ -8284,7 +8501,7 @@ long getIndexColor8Bit (CColor color, Display *pDisplay, Colormap colormap)
 		if ((paletteNewColor[i].red   == color.red)   &&
 				(paletteNewColor[i].green == color.green) &&
 				(paletteNewColor[i].blue  == color.blue))
-			return paletteNewColor[i].unused;
+			return paletteNewColor[i].alpha;
 	}
 	
 	// Allocate new color cell
@@ -8303,7 +8520,7 @@ long getIndexColor8Bit (CColor color, Display *pDisplay, Colormap colormap)
 			paletteNewColor[CDrawContext::nbNewColor].red    = color.red;
 			paletteNewColor[CDrawContext::nbNewColor].green  = color.green;
 			paletteNewColor[CDrawContext::nbNewColor].blue   = color.blue;
-			paletteNewColor[CDrawContext::nbNewColor].unused = xcolor.pixel;
+			paletteNewColor[CDrawContext::nbNewColor].alpha = xcolor.pixel;
 			CDrawContext::nbNewColor++;
 		}
 		return xcolor.pixel;
@@ -8336,7 +8553,7 @@ long getIndexColor8Bit (CColor color, Display *pDisplay, Colormap colormap)
 		paletteNewColor[CDrawContext::nbNewColor].red    = color.red;
 		paletteNewColor[CDrawContext::nbNewColor].green  = color.green;
 		paletteNewColor[CDrawContext::nbNewColor].blue   = color.blue;
-		paletteNewColor[CDrawContext::nbNewColor].unused = index;
+		paletteNewColor[CDrawContext::nbNewColor].alpha = index;
 		CDrawContext::nbNewColor++;
 	}
 	return (index);
@@ -8897,6 +9114,19 @@ pascal OSStatus CFrame::carbonEventHandler (EventHandlerCallRef inHandlerCallRef
 					break;
 				}
 				case kEventControlClick:
+				{
+					EventMouseButton buttonState;
+					GetEventParameter (inEvent, kEventParamMouseButton, typeMouseButton, NULL, sizeof (EventMouseButton), NULL, &buttonState);
+					if (buttonState == kEventMouseButtonPrimary)
+					{
+						HIPoint hipoint;
+						GetEventParameter (inEvent, kEventParamMouseLocation, typeHIPoint, NULL, sizeof (HIPoint), NULL, &hipoint);
+						Point qdPoint = { hipoint.y, hipoint.x };
+						TrackControl (frame->controlRef, qdPoint, NULL);
+						result = noErr;
+						break;
+					}
+				}
 				case kEventControlTrack:
 				case kEventControlContextualMenuClick:
 				{
@@ -8908,16 +9138,27 @@ pascal OSStatus CFrame::carbonEventHandler (EventHandlerCallRef inHandlerCallRef
 					if (eventKind == kEventControlContextualMenuClick)
 						buttons = kRButton;
 					else if (eventKind == kEventControlTrack)
+					{
 						buttons = kLButton;
+						GetEventParameter (inEvent, kEventParamKeyModifiers, typeUInt32, NULL, sizeof (UInt32), NULL, &modifiers);
+						if (modifiers & cmdKey)
+							buttons |= kControl;
+						if (modifiers & shiftKey)
+							buttons |= kShift;
+						if (modifiers & optionKey)
+							buttons |= kAlt;
+						if (modifiers & controlKey)
+							buttons |= kApple;
+					}
 					else
 					{
 						GetEventParameter (inEvent, kEventParamKeyModifiers, typeUInt32, NULL, sizeof (UInt32), NULL, &modifiers);
 						GetEventParameter (inEvent, kEventParamMouseButton, typeMouseButton, NULL, sizeof (EventMouseButton), NULL, &buttonState);
-						if (buttonState & kEventMouseButtonPrimary)
+						if (buttonState == kEventMouseButtonPrimary)
 							buttons |= kLButton;
-						if (buttonState & kEventMouseButtonSecondary)
+						if (buttonState == kEventMouseButtonSecondary)
 							buttons |= kRButton;
-						if (buttonState & 4)//kEventMouseButtonTertiary) this define is wrong...Apple ?
+						if (buttonState == kEventMouseButtonTertiary)
 							buttons |= kMButton;
 						if (modifiers & cmdKey)
 							buttons |= kControl;
@@ -8927,12 +9168,6 @@ pascal OSStatus CFrame::carbonEventHandler (EventHandlerCallRef inHandlerCallRef
 							buttons |= kAlt;
 						if (modifiers & controlKey)
 							buttons |= kApple;
-						// for the one buttons
-						if (buttons & kApple && buttons & kLButton)
-						{
-							buttons &= ~(kApple | kLButton);
-							buttons |= kRButton;
-						}
 					}
 					SetUserFocusWindow (window);
 					AdvanceKeyboardFocus (window);

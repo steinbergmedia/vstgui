@@ -1829,6 +1829,9 @@ COptionMenuScheme::COptionMenuScheme ()
 //------------------------------------------------------------------------
 COptionMenuScheme::~COptionMenuScheme ()
 {
+	#if MAC && QUARTZ
+	unregisterWithToolbox ();
+	#endif
 }
 
 //------------------------------------------------------------------------
@@ -1963,15 +1966,18 @@ const EventParamName kEventParamCOptionMenuScheme = 'COMS';
 const EventParamName kEventParamCOptionMenu = 'COM ';
 
 #define kItemHeight		18
-#define kOptionMenuSchemeClassID CFSTR("net.sourceforge.vstgui.COptionMenuSchemeClassID")
 
+static CFStringRef gOptionMenuSchemeClassID = 0;
 static HIObjectClassRef gMenuClassRef = 0;
+static CFIndex gOptionMenuSchemeClassIDRefCount = 0;
 
 //------------------------------------------------------------------------
 void COptionMenuScheme::registerWithToolbox ()
 {
-	if (gMenuClassRef == 0)
+	if (gOptionMenuSchemeClassID == 0)
 	{
+		gOptionMenuSchemeClassID = CFStringCreateWithFormat (NULL, NULL, CFSTR("net.sourceforge.vstgui.COptionMenuSchemeClassID.%d"), this);
+
 		static const EventTypeSpec events[] =
 		{
 			{ kEventClassHIObject, kEventHIObjectConstruct } ,
@@ -1985,10 +1991,10 @@ void COptionMenuScheme::registerWithToolbox ()
 
 			{ kEventClassMenu, kEventMenuCreateFrameView },
 
-			//{ kEventClassScrollable, kEventScrollableGetInfo },
+			{ kEventClassScrollable, kEventScrollableGetInfo },
 		};
 
-		HIObjectRegisterSubclass (	kOptionMenuSchemeClassID,
+		HIObjectRegisterSubclass (	gOptionMenuSchemeClassID,
 									kHIMenuViewClassID,
 									kNilOptions,
 									COptionMenuScheme::eventHandler,
@@ -1996,6 +2002,23 @@ void COptionMenuScheme::registerWithToolbox ()
 									events,
 									NULL,
 									&gMenuClassRef);
+		gOptionMenuSchemeClassIDRefCount = CFGetRetainCount (gOptionMenuSchemeClassID);
+	}
+	else
+		CFRetain (gOptionMenuSchemeClassID);
+}
+
+//------------------------------------------------------------------------
+void COptionMenuScheme::unregisterWithToolbox ()
+{
+	if (gOptionMenuSchemeClassID)
+	{
+		if (CFGetRetainCount (gOptionMenuSchemeClassID) == gOptionMenuSchemeClassIDRefCount)
+		{
+			HIObjectUnregisterClass (gMenuClassRef);
+			gMenuClassRef = 0;
+		}
+		CFRelease (gOptionMenuSchemeClassID);
 	}
 }
 
@@ -2181,7 +2204,7 @@ pascal OSStatus COptionMenuScheme::eventHandler (EventHandlerCallRef inCallRef, 
 							}
 							else if (!strncmp (entryText, kMenuTitle, 2))
 							{
-								state |= kDisabled;
+								state |= kTitle;
 								offset = 2;
 							}
 							else if (!strncmp (entryText, kMenuDisable, 2))
@@ -2907,7 +2930,7 @@ void *COptionMenu::appendItems (long &offsetIdx)
 			COptionMenu* optMenu = this;
 			SetEventParameter (initEvent, kEventParamCOptionMenu, typeVoidPtr, sizeof(COptionMenu*), &optMenu);
 			customMenuDef.defType = kMenuDefClassID;
-			customMenuDef.u.view.classID = kOptionMenuSchemeClassID;
+			customMenuDef.u.view.classID = gOptionMenuSchemeClassID;
 			customMenuDef.u.view.initEvent = initEvent;
 			CreateCustomMenu (&customMenuDef, menuID, 0, &theMenu);
 			ReleaseEvent (initEvent);

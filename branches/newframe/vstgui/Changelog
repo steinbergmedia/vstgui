@@ -1,3 +1,18 @@
+2004-06-12 arne
+
+	* CFrame is now subclassed from CViewContainer (thanks Wolfram Franke for the hard work)
+	  - One thing to check: CFrame::removeView was declared with (CView *pView, const bool &withForget = false), this has changed to 
+	    (CView *pView, const bool &withForget = true). So if you have somewhere in your Code frame->removeView (view) you must change it
+	    to frame->removeView (view, false).
+	* mac: FDebugPrint implementation for Classic and Mac OS X
+	* changed the CColor unused member variable to be alpha all over the place (no more MS C++ internal compiler error)
+	* macosx: the CFileSelector can now be used to get unix path strings. If vstFileSelect->future[0] is 1 the internal implementation will 
+				return unix paths and set vstFileSelect->future[0] to 0. If the host supports openFileSelector vstFileSelect->future[0] will
+				be 1 and the results are in the old FSSpec format.
+	* the CFileSelector is now usable when PLUGGUI is set.
+	* using clipping all over the place
+	* quartz: rechecked the whole graphics drawing functions to work as expected
+
 2004-05-31 arne
 
 	* mac: COptionMenuScheme works now with QUARTZ (Mac OS X 10.3 and above)

@@ -257,12 +257,12 @@ struct CColor
 	CColor& operator () (unsigned char red,
 						unsigned char green,
 						unsigned char blue,
-						unsigned char unused)
+						unsigned char alpha)
 	{
 		this->red   = red;
 		this->green = green;
 		this->blue  = blue;
-		this->unused = unused;
+		this->alpha = alpha;
 		return *this; 
 	}
 
@@ -271,7 +271,7 @@ struct CColor
 		red   = newColor.red;
 		green = newColor.green;
 		blue  = newColor.blue;
-		unused = newColor.unused;
+		alpha = newColor.alpha;
 		return *this; 
 	}
 	
@@ -281,22 +281,20 @@ struct CColor
 		c.red   = ~red;
 		c.green = ~green;
 		c.blue  = ~blue;
-		c.unused = ~unused;
+		c.alpha = ~alpha;
 		return c;
 	}
 
 	bool operator != (const CColor &other) const 
-	{ return (red != other.red || green != other.green || blue  != other.blue); }
+	{ return (red != other.red || green != other.green || blue  != other.blue || alpha != other.alpha); }
 
 	bool operator == (const CColor &other) const
-	{ return (red == other.red && green == other.green && blue  == other.blue); }
+	{ return (red == other.red && green == other.green && blue  == other.blue && alpha == other.alpha); }
 	
 	unsigned char red;
 	unsigned char green;
 	unsigned char blue;
-	union
-	{ unsigned char unused; unsigned char alpha; };
-
+	unsigned char alpha;
 };
 
 // define some basic colors
@@ -808,158 +806,6 @@ protected:
 };
 
 //-----------------------------------------------------------------------------
-// CFrame Declaration
-//-----------------------------------------------------------------------------
-class CFrame : public CView
-{
-public:
-	CFrame (const CRect &size, void *pSystemWindow, void *pEditor);
-	CFrame (const CRect &size, char *pTitle, void *pEditor, const long style = 0);
-	
-	~CFrame ();
-
-	bool open (CPoint *pPoint = 0);
-	bool close ();
-	bool isOpen () { return bOpenFlag; }
-
-	void draw (CDrawContext *pContext);
-	void drawRect (CDrawContext *pContext, CRect& updateRect);
-	void draw (CView *pView = 0);
-	void mouse (CDrawContext *pContext, CPoint &where, long buttons = -1);
-	bool onDrop (void **ptrItems, long nbItems, long type, CPoint &where);
-	bool onWheel (CDrawContext *pContext, const CPoint &where, float distance);
-	long onKeyDown (VstKeyCode& keyCode);
-	long onKeyUp (VstKeyCode& keyCode);
-
-	void update (CDrawContext *pContext);
-	void idle ();
-	void doIdleStuff ();
-
-	// get the current time (in ms)
-	unsigned long getTicks ();
-	long getKnobMode ();
-
-	bool getPosition (long &x, long &y);
-	bool setSize (long width, long height);
-	bool getSize (CRect *pSize);
-
-	virtual bool addView (CView *pView);
-	virtual bool removeView (CView *pView, const bool &withForget = false);
-	virtual bool removeAll (const bool &withForget = true);
-	virtual bool isChild (CView *pView);
-
-	virtual long getNbViews () { return viewCount; }
-	virtual CView *getView (long index);
-
-	long   setModalView (CView *pView);
-	CView *getModalView () { return pModalView; }
-
-	void  beginEdit (long index);
-	void  endEdit (long index);
-
-	bool  getCurrentLocation (CPoint &where);
-	void  setCursor (CCursorType type);
-
-	CView *getCurrentView ();
-	CView *getViewAt (const CPoint& where);
-
-#if WINDOWS
-	HWND getOuterWindow ();
-	void *getSystemWindow () { return pHwnd; }
-#elif BEOS
-	void *getSystemWindow () { return pPlugView; }
-#else
-	void *getSystemWindow () { return pSystemWindow; }
-#endif
-	void *getParentSystemWindow () { return pSystemWindow; }
-	void setParentSystemWindow (void *val) { pSystemWindow = val; }
-
-	virtual void *getEditor () { return pEditor; }
-
-	void   setEditView (CView *pView);
-	CView *getEditView () { return pEditView; }
-
-	bool setDropActive (bool val);
-	bool isDropActive () { return bDropActive; };
-
-	void invalidate (const CRect &rect);
-
-#if MOTIF
-	Colormap getColormap ()   { return colormap; }
-	Visual  *getVisual ()     { return pVisual; }
-	unsigned int getDepth ()  { return depth; }
-	Display *getDisplay ()    { return pDisplay; }
-	Window   getWindow ()     { return window; }
-	void     freeGc ();
-
-	Region   region;
-
-	GC       gc;
-	GC       getGC ()         { return gc; }
-#endif
-
-	void setOpenFlag (bool val) { bOpenFlag = val;};
-	bool getOpenFlag () { return bOpenFlag; };
-
-	//-------------------------------------------
-protected:
-	bool   initFrame (void *pSystemWin);
-	bool   isSomethingDirty ();
-
-	void   *pEditor;
-	
-	void    *pSystemWindow;
-	long    viewCount;
-	long    maxViews;
-	CView   **ppViews;
-	CView   *pModalView;
-	CView   *pEditView;
-
-	bool    bFirstDraw;
-	bool    bOpenFlag;
-	bool    bDropActive;
-
-#if WINDOWS
-	void    *pHwnd;
-	HDC      hdc;
-	HINSTANCE hInstMsimg32dll;
-
-#elif MOTIF
-	Colormap  colormap;
-	Display  *pDisplay;
-	Visual   *pVisual;
-	Window    window;
-	unsigned int depth;
-
-	friend void _destroyCallback (Widget, XtPointer, XtPointer);
-
-#elif BEOS
-	PlugView *pPlugView;
-#endif
-#if QUARTZ
-	void setDrawContext (CDrawContext* context) { pFrameContext = context; }
-	friend class CDrawContext;
-
-	static pascal OSStatus carbonEventHandler (EventHandlerCallRef inHandlerCallRef, EventRef inEvent, void *inUserData);
-	bool registerWithToolbox ();
-	
-	ControlDefSpec controlSpec;
-	ControlRef controlRef;
-	bool hasFocus;
-	EventHandlerRef dragEventHandler;
-	public:
-	void* getPlatformControl () { return controlRef; }
-	protected:
-#endif
-	//-------------------------------------------
-private:
-	CDrawContext *pFrameContext;
-	bool     bAddedWindow;
-	void     *pVstWindow;
-	void     *defaultCursor;
-};
-
-//-----------------------------------------------------------------------------
 // CCView Declaration
 //-----------------------------------------------------------------------------
 class CCView
@@ -1048,6 +894,154 @@ protected:
 	CColor backgroundColor;
 	CPoint backgroundOffset;
 	bool bDrawInOffscreen;
+};
+
+//-----------------------------------------------------------------------------
+// CFrame Declaration
+//-----------------------------------------------------------------------------
+class CFrame : public CViewContainer
+{
+public:
+	CFrame (const CRect &size, void *pSystemWindow, void *pEditor);
+	CFrame (const CRect &size, const char *pTitle, void *pEditor, const long style = 0);
+	
+	~CFrame ();
+
+	virtual bool open (CPoint *pPoint = 0);
+	virtual bool close ();
+	virtual bool isOpen () { return bOpenFlag; }
+
+	virtual void draw (CDrawContext *pContext);
+	virtual void drawRect (CDrawContext *pContext, CRect& updateRect);
+	virtual void draw (CView *pView = 0);
+	virtual void mouse (CDrawContext *pContext, CPoint &where, long buttons = -1);
+	virtual bool onDrop (void **ptrItems, long nbItems, long type, CPoint &where);
+	virtual bool onWheel (CDrawContext *pContext, const CPoint &where, float distance);
+	virtual long onKeyDown (VstKeyCode& keyCode);
+	virtual long onKeyUp (VstKeyCode& keyCode);
+
+	virtual void update (CDrawContext *pContext);
+	virtual void idle ();
+	virtual void doIdleStuff ();
+
+	// get the current time (in ms)
+	virtual unsigned long getTicks ();
+	virtual long getKnobMode ();
+
+	virtual bool getPosition (long &x, long &y);
+	virtual bool setSize (long width, long height);
+	virtual bool getSize (CRect *pSize);
+	virtual bool getSize (CRect &pSize);
+
+	virtual void setViewSize(CRect& inRect);
+
+	virtual long getNbViews () { return viewCount; }
+
+	virtual long   setModalView (CView *pView);
+	virtual CView *getModalView () { return pModalView; }
+
+	virtual void  beginEdit (long index);
+	virtual void  endEdit (long index);
+
+	virtual bool  getCurrentLocation (CPoint &where);
+	virtual void  setCursor (CCursorType type);
+
+	virtual CView *getCurrentView ();
+
+#if WINDOWS
+	HWND getOuterWindow ();
+	void *getSystemWindow () { return pHwnd; }
+#elif BEOS
+	void *getSystemWindow () { return pPlugView; }
+#else
+	void *getSystemWindow () { return pSystemWindow; }
+#endif
+	void *getParentSystemWindow () { return pSystemWindow; }
+	void setParentSystemWindow (void *val) { pSystemWindow = val; }
+
+	virtual void *getEditor () { return pEditor; }
+
+	virtual void   setEditView (CView *pView);
+	virtual CView *getEditView () { return pEditView; }
+
+	virtual bool setDropActive (bool val);
+	virtual bool isDropActive () { return bDropActive; };
+
+	virtual void invalidate (const CRect &rect);
+
+#if MOTIF
+	Colormap getColormap ()   { return colormap; }
+	Visual  *getVisual ()     { return pVisual; }
+	unsigned int getDepth ()  { return depth; }
+	Display *getDisplay ()    { return pDisplay; }
+	Window   getWindow ()     { return window; }
+	void     freeGc ();
+
+	Region   region;
+
+	GC       gc;
+	GC       getGC ()         { return gc; }
+#endif
+
+	virtual void setOpenFlag (bool val) { bOpenFlag = val;};
+	virtual bool getOpenFlag () { return bOpenFlag; };
+
+	//-------------------------------------------
+protected:
+	bool   initFrame (void *pSystemWin);
+	bool   isSomethingDirty ();
+
+	void   *pEditor;
+	
+	void    *pSystemWindow;
+	long    viewCount;
+	long    maxViews;
+	CView   **ppViews;
+	CView   *pModalView;
+	CView   *pEditView;
+
+	bool    bFirstDraw;
+	bool    bOpenFlag;
+	bool    bDropActive;
+
+#if WINDOWS
+	void    *pHwnd;
+	HDC      hdc;
+	HINSTANCE hInstMsimg32dll;
+
+#elif MOTIF
+	Colormap  colormap;
+	Display  *pDisplay;
+	Visual   *pVisual;
+	Window    window;
+	unsigned int depth;
+
+	friend void _destroyCallback (Widget, XtPointer, XtPointer);
+
+#elif BEOS
+	PlugView *pPlugView;
+#endif
+#if QUARTZ
+	void setDrawContext (CDrawContext* context) { pFrameContext = context; }
+	friend class CDrawContext;
+
+	static pascal OSStatus carbonEventHandler (EventHandlerCallRef inHandlerCallRef, EventRef inEvent, void *inUserData);
+	bool registerWithToolbox ();
+	
+	ControlDefSpec controlSpec;
+	ControlRef controlRef;
+	bool hasFocus;
+	EventHandlerRef dragEventHandler;
+	public:
+	void* getPlatformControl () { return controlRef; }
+	protected:
+#endif
+	//-------------------------------------------
+private:
+	CDrawContext *pFrameContext;
+	bool     bAddedWindow;
+	void     *pVstWindow;
+	void     *defaultCursor;
 };
 
 END_NAMESPACE_VSTGUI
