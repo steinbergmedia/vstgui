@@ -571,13 +571,14 @@ protected:
 	CGContextRef beginCGContext ();
 	void releaseCGContext (CGContextRef context);
 	protected:
-	#endif
+	#else
 
 	FontInfo fontInfoStruct;
 	Pattern fillPattern;
 	bool bInitialized;
 	virtual BitMapPtr getBitmap ();
 	virtual void releaseBitmap ();
+	#endif
 	virtual CGrafPtr getPort ();
 	
 #elif MOTIF
@@ -633,10 +634,11 @@ protected:
 #elif MAC
 	#if QUARTZ
 	void* offscreenBitmap;
-	#endif
+	#else
 	BitMapPtr getBitmap ();
 	void releaseBitmap ();
 	CGrafPtr getPort ();
+	#endif
 #endif
 };
 

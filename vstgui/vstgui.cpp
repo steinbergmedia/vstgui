@@ -624,7 +624,7 @@ CDrawContext::~CDrawContext ()
 	{
 		CGContextRestoreGState (gCGContext); // restore the original state
 		CGContextSynchronize (gCGContext);
-		if (!pSystemContext)
+		if (!pSystemContext && pWindow)
 			QDEndCGContext (GetWindowPort ((WindowRef)pWindow), &gCGContext);
 		if (pFrame)
 			pFrame->setDrawContext (0);
@@ -2624,7 +2624,7 @@ void CDrawContext::releaseCGContext (CGContextRef context)
 	}
 }
 
-#endif
+#else
 BitMapPtr CDrawContext::getBitmap ()
 {
 	PixMapHandle pixMap = GetPortPixMap (GetWindowPort ((WindowRef)pWindow));
@@ -2643,9 +2643,15 @@ void CDrawContext::releaseBitmap ()
 	UnlockPixels (pixMap);
 }
 
+#endif
 //-----------------------------------------------------------------------------
 CGrafPtr CDrawContext::getPort ()
 {
+	#if QUARTZ
+	if (pWindow)
+		return (CGrafPtr)GetWindowPort ((WindowRef)pWindow);
+	return 0;
+	#else
 	if (!bInitialized)
 	{
 		CGrafPtr OrigPort;
@@ -2662,6 +2668,7 @@ CGrafPtr CDrawContext::getPort ()
 		bInitialized = true;
 	}
 	return (CGrafPtr)GetWindowPort ((WindowRef)pWindow);
+	#endif
 }
 
 #endif
@@ -2716,6 +2723,7 @@ COffscreenContext::COffscreenContext (CDrawContext *pContext, CBitmap *pBitmapBg
 		if (pBitmapBg->getHandle ())
 		{
 			PixMapHandle pixMap = GetGWorldPixMap ((GWorldPtr)pBitmapBg->getHandle ());
+			LockPixels (pixMap);
 			CGColorSpaceRef colorspace = CGColorSpaceCreateDeviceRGB ();
 			gCGContext = CGBitmapContextCreate (GetPixBaseAddr (pixMap), width, height, GetPixDepth (pixMap), GetPixRowBytes (pixMap), colorspace, kCGImageAlphaFirst);
 			CGColorSpaceRelease (colorspace);
@@ -2940,6 +2948,11 @@ COffscreenContext::~COffscreenContext ()
 	gCGContext = 0;
 	if (offscreenBitmap)
 		free (offscreenBitmap);
+	else if (pBitmapBg && pBitmapBg->getHandle ())
+	{
+		PixMapHandle pixMap = GetGWorldPixMap ((GWorldPtr)pBitmapBg->getHandle ());
+		UnlockPixels (pixMap);
+	}
 	#else
 	if (bDestroyPixmap && pWindow)
 		DisposeGWorld ((GWorldPtr)pWindow);
@@ -3115,7 +3128,7 @@ void COffscreenContext::copyFrom (CDrawContext *pContext, CRect destRect, CPoint
 //-----------------------------------------------------------------------------
 #if MAC
 #if QUARTZ
-#endif
+#else
 BitMapPtr COffscreenContext::getBitmap ()
 {
 	PixMapHandle pixMap = GetGWorldPixMap ((GWorldPtr)pWindow);
@@ -3142,7 +3155,8 @@ CGrafPtr COffscreenContext::getPort ()
 
 	return (CGrafPtr)pWindow;
 }
-#endif
+#endif // QUARTZ
+#endif // MAC
 
 //-----------------------------------------------------------------------------
 char* kMsgCheckIfViewContainer	= "kMsgCheckIfViewContainer";
