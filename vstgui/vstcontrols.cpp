@@ -797,6 +797,10 @@ CTextEdit::CTextEdit (const CRect &size, CControlListener *listener, long tag,
 		strcpy (text, txt);
 	else
 		strcpy (text, "");
+#if MAC
+	// remember our VST plugin's resource map ID (it should be the current one at this moment)
+	pluginResID = CurResFile();
+#endif
 }
 
 //------------------------------------------------------------------------
@@ -1018,8 +1022,67 @@ pascal OSStatus CarbonEventsTextControlProc (EventHandlerCallRef inHandlerCallRe
 							gTextEditCanceled = true;
 						else
 							textEdit->bWasReturnPressed = true;
+
+						WindowRef window = (WindowRef) (textEdit->getParent()->getSystemWindow());
+						GrafPtr	savedPort;
+						bool portChanged = window ? QDSwapPort (GetWindowPort (window), &savedPort) : false;
+
+						// remember the current resource map ID
+						short currentResID = CurResFile();
+						short vstResFileID = textEdit->pluginResID;
+						// if it's different (and if it's valid), set the current resource map ID to our plugin's resource map
+						if ( (vstResFileID != currentResID) && (vstResFileID > 0) )
+							UseResFile(vstResFileID);
+
 						textEdit->looseFocus ();
+
+						// revert the window port, if we changed it
+						if (portChanged)
+							QDSwapPort (savedPort, NULL);
+						// revert the current resource map, if we changed it
+						if ( (currentResID > 0) && (vstResFileID != currentResID) && (vstResFileID > 0) )
+							UseResFile(currentResID);
+
 						result = noErr;
+					}
+					else if (modifiers & cmdKey)
+					{
+						result = noErr;
+						TXNObject text_edit = (TXNObject) (textEdit->platformControl);
+						switch (toupper(macCharCode))
+						{
+							// copy
+							case 'C':
+								if (!TXNIsSelectionEmpty(text_edit))
+								{
+									OSStatus scrapErr = ClearCurrentScrap();
+									scrapErr = TXNCopy(text_edit);
+									result = noErr;
+								}
+								break;
+							// cut
+							case 'X':
+								if (!TXNIsSelectionEmpty(text_edit))
+								{
+									OSStatus scrapErr = ClearCurrentScrap();
+									scrapErr = TXNCut(text_edit);
+									result = noErr;
+								}
+								break;
+							// paste
+							case 'V':
+								TXNPaste(text_edit);
+								result = noErr;
+								break;
+
+							// select all
+							case 'A':
+								TXNSelectAll(text_edit);
+								break;
+
+							default:
+								break;
+						}
 					}
 					else
 					{
@@ -1068,14 +1131,35 @@ pascal OSStatus CarbonEventsTextControlProc (EventHandlerCallRef inHandlerCallRe
 		case kEventClassWindow:
 		{
 			WindowRef window;
-			GetEventParameter (inEvent, kEventParamDirectObject, typeWindowRef, NULL, sizeof (WindowRef), NULL, &window);
+			if (GetEventParameter (inEvent, kEventParamDirectObject, typeWindowRef, NULL, sizeof (WindowRef), NULL, &window) != noErr)
+				break;
 			switch (eventKind)
 			{
 				case kEventWindowDeactivated:
 				{
 					result = CallNextEventHandler (inHandlerCallRef, inEvent);
 					ClearKeyboardFocus (window);
+
+					// set up the correct drawing port for the window
+					GrafPtr	savedPort;
+					bool portChanged = QDSwapPort (GetWindowPort (window), &savedPort);
+
+					// remember the current resource map ID
+					short currentResID = CurResFile();
+					short vstResFileID = textEdit->pluginResID;
+					// if it's different (and if it's valid), set the current resource map ID to our plugin's resource map
+					if ( (vstResFileID != currentResID) && (vstResFileID > 0) )
+						UseResFile(vstResFileID);
+
 					textEdit->looseFocus ();
+
+					// revert the window port, if we changed it
+					if (portChanged)
+						QDSwapPort (savedPort, NULL);
+					// revert the current resource map, if we changed it
+					if ( (currentResID > 0) && (vstResFileID != currentResID) && (vstResFileID > 0) )
+						UseResFile(currentResID);
+
 					break;
 				}
 			}
@@ -1084,6 +1168,12 @@ pascal OSStatus CarbonEventsTextControlProc (EventHandlerCallRef inHandlerCallRe
 	}
 	return result;
 }
+#endif
+
+#if MAC && CALL_NOT_IN_CARBON
+#include <Scrap.h>
+#include <ctype.h>
+#define ClearCurrentScrap	ZeroScrap
 #endif
 
 //------------------------------------------------------------------------
@@ -1142,6 +1232,18 @@ void CTextEdit::takeFocus (CDrawContext *pContext)
 #elif MAC
 	extern long standardFontSize[];
 #if MACX
+	static bool gTXNInititalized = false;
+	if (!gTXNInititalized)
+	{
+		TXNMacOSPreferredFontDescription defaults;  // fontID, pointSize, encoding, and fontStyle
+		defaults.fontID = NULL;
+		defaults.pointSize = kTXNDefaultFontSize;
+		defaults.encoding = CreateTextEncoding(kTextEncodingMacRoman, kTextEncodingDefaultVariant, kTextEncodingDefaultFormat);
+		defaults.fontStyle = kTXNDefaultFontStyle;
+		TXNInitOptions options = 0;
+		TXNInitTextension(&defaults, 1, options);
+		gTXNInititalized = true;
+	}
 	gTextEditCanceled = false;
 	WindowRef window = (WindowRef)getParent ()->getSystemWindow ();
 	TXNFrameOptions iFrameOptions = kTXNMonostyledTextMask | kTXNDisableDragAndDropMask; //kTXNNoKeyboardSyncMask | kTXNDisableDragAndDropMask | kTXNSingleLineOnlyMask | kTXNMonostyledTextMask;
@@ -1199,7 +1301,13 @@ void CTextEdit::takeFocus (CDrawContext *pContext)
 		extern const unsigned char* macXfontNames[];
 		
 		short familyID;
+		#if QUARTZ
+		Str255 fontName;
+		CopyCStringToPascal ((const char*)macXfontNames[fontID], fontName); 
+		GetFNum (fontName, &familyID);
+		#else
 		GetFNum (macXfontNames[fontID], &familyID);
+		#endif
 
 		ATSUFontID fontNameID;
 
@@ -1331,7 +1439,46 @@ void CTextEdit::takeFocus (CDrawContext *pContext)
 					else
 						c = -1;
 				}
-				if (!ende)
+				if (theEvent.modifiers & cmdKey)
+				{
+					switch (toupper(c))
+					{
+						// copy
+						case 'C':
+							if ((**(TEHandle)text_edit).selEnd > (**(TEHandle)text_edit).selStart)
+							{
+								OSStatus scrapErr = ClearCurrentScrap();
+								TECopy((TEHandle)text_edit);
+								if (scrapErr == noErr)
+									scrapErr = TEToScrap();
+							}
+							break;
+						// cut
+						case 'X':
+							if ((**(TEHandle)text_edit).selEnd > (**(TEHandle)text_edit).selStart)
+							{
+								OSStatus scrapErr = ClearCurrentScrap();
+								TECut((TEHandle)text_edit);
+								if (scrapErr == noErr)
+									scrapErr = TEToScrap();
+							}
+							break;
+						// paste
+						case 'V':
+							{
+								OSErr scrapErr = TEFromScrap();
+								TEPaste((TEHandle)text_edit);
+							}
+							break;
+						// select all
+						case 'A':
+							TESetSelect(0, (**(TEHandle)text_edit).teLength, (TEHandle)text_edit);
+							break;
+						default:
+							break;
+					}
+				}
+				else if (!ende)
 					TEKey (c, (TEHandle)text_edit);
 				break;
 			case mouseDown :

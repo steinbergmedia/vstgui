@@ -281,6 +281,9 @@ public:
 	void *platformFontColor;
 	void *platformControl;
 	bool bWasReturnPressed;
+	#if MAC
+	short pluginResID;
+	#endif
 
 protected:
 	void *platformFont;
