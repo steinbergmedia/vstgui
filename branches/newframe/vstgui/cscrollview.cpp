@@ -93,7 +93,7 @@ void CScrollContainer::setScrollOffset (CPoint newOffset, bool redraw)
 	}
 	offset = newOffset;
 
-	if (1) //redraw)
+	if (0) //redraw)
 	{
 		CDrawContext* pContext = getFrame ()->createDrawContext ();
 		CPoint contextOffset = pContext->offset;
@@ -160,6 +160,7 @@ CScrollView::CScrollView (const CRect &size, const CRect &containerSize, CFrame*
 
 	CRect scsize (size);
 	scsize.offset (-scsize.left, -scsize.top);
+	scsize.inset (1, 1);
 	CScrollbar* sb = 0;	
 	if (style & kHorizontalScrollbar)
 	{
@@ -172,7 +173,7 @@ CScrollView::CScrollView (const CRect &size, const CRect &containerSize, CFrame*
 		}
 		hsb = new CScrollbar (sbr, this, kHSBTag, CScrollbar::kHorizontal, containerSize);
 		CViewContainer::addView (hsb);
-		scsize.bottom = sbr.top - 1;
+		scsize.bottom = sbr.top;
 	}
 	if (style & kVerticalScrollbar)
 	{
@@ -185,7 +186,7 @@ CScrollView::CScrollView (const CRect &size, const CRect &containerSize, CFrame*
 		}
 		vsb = new CScrollbar (sbr, this, kVSBTag, CScrollbar::kVertical, containerSize);
 		CViewContainer::addView (vsb);
-		scsize.right = sbr.left - 1;
+		scsize.right = sbr.left;
 	}
 
 	sc = new CScrollContainer (scsize, this->containerSize, pParent);

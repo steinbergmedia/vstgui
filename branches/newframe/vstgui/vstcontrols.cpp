@@ -3,7 +3,7 @@
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 // Standard Control Objects
 //
-// Version 3.0       $Date: 2004-11-29 15:27:24 $
+// Version 3.0       $Date: 2004-12-05 12:30:34 $
 //
 // Added new objects        : Michael Schmidt          08.97
 // Added new objects        : Yvan Grabit              01.98
@@ -66,6 +66,14 @@ extern const char *gStandardFontName [];
 //------------------------------------------------------------------------
 // CControl
 //------------------------------------------------------------------------
+/*! @class CControl
+This object manages the tag identification and the value of a control object.
+
+Note:
+Since version 2.1, when an object uses the transparency for its background and draws on it (tranparency area)
+or the transparency area changes during different draws (CMovieBitmap ,...), the background will be false (not updated),
+you have to rewrite the draw function in order to redraw the background and then call the draw of the object.
+*/
 CControl::CControl (const CRect &size, CControlListener *listener, long tag,
  CBitmap *pBackground)
 :	CView (size), 
@@ -275,6 +283,11 @@ bool CControl::setAttribute (const CViewAttributeID id, const long inSize, void*
 //------------------------------------------------------------------------
 // COnOffButton
 //------------------------------------------------------------------------
+/*! @class COnOffButton
+Define a button with 2 positions.
+The pixmap includes the 2 subpixmaps (i.e the rectangle used for the display of this button is half-height of the pixmap).
+When its value changes, the listener is called.
+*/
 COnOffButton::COnOffButton (const CRect &size, CControlListener *listener, long tag,
                             CBitmap *background)
 :	CControl (size, listener, tag, background)
@@ -338,6 +351,12 @@ void COnOffButton::mouse (CDrawContext *pContext, CPoint &where, long button)
 //------------------------------------------------------------------------
 // CKnob
 //------------------------------------------------------------------------
+/*! @class CKnob
+Define a knob with a given background and foreground handle.
+The handle describes a circle over the background (between -45deg and +225deg).
+By clicking Alt+Left Mouse the default value is used.
+By clicking Alt+Left Mouse the value changes with a vertical move (version 2.1)
+*/
 CKnob::CKnob (const CRect &size, CControlListener *listener, long tag,
               CBitmap *background, CBitmap *handle, const CPoint &offset)
 :	CControl (size, listener, tag, background), offset (offset), pHandle (handle)
@@ -702,6 +721,11 @@ void CKnob::setHandleBitmap (CBitmap *bitmap)
 //------------------------------------------------------------------------
 // CParamDisplay
 //------------------------------------------------------------------------
+/*! @class CParamDisplay
+Define a rectangle view where a text-value can be displayed with a given font and color.
+The user can specify its convert function (from float to char) by default the string format is "%2.2f".
+The text-value is centered in the given rect.
+*/
 CParamDisplay::CParamDisplay (const CRect &size, CBitmap *background, const long style)
 :	CControl (size, 0, 0, background), stringConvert (0), stringConvert2 (0), string2FloatConvert (0),
 	horiTxtAlign (kCenterText), style (style), bTextTransparencyEnabled (true)
@@ -917,6 +941,11 @@ void CParamDisplay::setString2FloatConvert (void (*convert) (char *string, float
 //------------------------------------------------------------------------
 // CTextEdit
 //------------------------------------------------------------------------
+/*! @class CTextEdit
+Define a rectangle view where a text-value can be displayed and edited with a given font and color.
+The user can specify its convert function (from char to char). The text-value is centered in the given rect.
+A pixmap can be used as background.
+*/
 CTextEdit::CTextEdit (const CRect &size, CControlListener *listener, long tag,
 	const char *txt, CBitmap *background, const long style)
 :	CParamDisplay (size, background, style), platformFontColor (0), platformControl (0),
@@ -1933,6 +1962,14 @@ void CTextEdit::setTextEditConvert (void (*convert) (char *input, char *string,
 //------------------------------------------------------------------------
 // COptionMenuScheme
 //------------------------------------------------------------------------
+/*! @class COptionMenuScheme
+Used to define the appearance (font color, background color...) of a popup-menu.
+To define the scheme of a menu, use the appropriate setScheme method (see COptionMenu).
+@section coptionmenuscheme_new_in_3_0 New since 3.0
+You can also use the global variable gOptionMenuScheme to use one scheme on all menus.
+@section coptionmenuscheme_note Note
+If you want to use it on Mac OS X, you must set the macro MAC_ENABLE_MENU_SCHEME (needs Mac OS X 10.3 or higher)
+*/
 COptionMenuScheme* gOptionMenuScheme = 0;
 
 //------------------------------------------------------------------------
@@ -2423,6 +2460,12 @@ pascal OSStatus COptionMenuScheme::eventHandler (EventHandlerCallRef inCallRef, 
 //------------------------------------------------------------------------
 // COptionMenu
 //------------------------------------------------------------------------
+/*! @class COptionMenu
+Define a rectangle view where a text-value can be displayed with a given font and color.
+The text-value is centered in the given rect.
+A pixmap can be used as background, a second pixmap can be used when the option menu is popuped.
+There are 2 styles with or without a shadowed text. When a mouse click occurs, a popup menu is displayed.
+*/
 COptionMenu::COptionMenu (const CRect &size, CControlListener *listener, long tag,
                           CBitmap *background, CBitmap *bgWhenClick, const long style)
 :	CParamDisplay (size, background, style), bgWhenClick (bgWhenClick), nbItemsPerColumn (-1),
@@ -3690,6 +3733,10 @@ void COptionMenu::setCurrentSelected (void *itemSelected)
 //------------------------------------------------------------------------
 // CAnimKnob
 //------------------------------------------------------------------------
+/*! @class CAnimKnob
+Such as a CKnob control object, but there is a unique pixmap which contains different views (subpixmaps) of this knob.
+According to the value, a specific subpixmap is displayed. The different subpixmaps are stacked in the pixmap object.
+*/
 CAnimKnob::CAnimKnob (const CRect &size, CControlListener *listener, long tag,
                       CBitmap *background, CPoint &offset)
 : CKnob (size, listener, tag, background, 0, offset), bInverseBitmap (false)
@@ -3750,6 +3797,12 @@ void CAnimKnob::draw (CDrawContext *pContext)
 //------------------------------------------------------------------------
 // CVerticalSwitch
 //------------------------------------------------------------------------
+/*! @class CVerticalSwitch
+Define a switch with a given number of positions, the current position is defined by the position
+of the last click on this object (the object is divided in its height by the number of position).
+Each position has its subpixmap, each subpixmap is stacked in the given handle pixmap.
+By clicking Alt+Left Mouse the default value is used.
+*/
 CVerticalSwitch::CVerticalSwitch (const CRect &size, CControlListener *listener, long tag,
                                   CBitmap *background, CPoint &offset)
 : CControl (size, listener, tag, background), offset (offset)
@@ -3843,6 +3896,9 @@ void CVerticalSwitch::mouse (CDrawContext *pContext, CPoint &where, long button)
 //------------------------------------------------------------------------
 // CHorizontalSwitch
 //------------------------------------------------------------------------
+/*! @class CHorizontalSwitch
+Same as the CVerticalSwitch but horizontal.
+*/
 CHorizontalSwitch::CHorizontalSwitch (const CRect &size, CControlListener *listener, long tag,
 								  CBitmap *background, CPoint &offset)
 : CControl (size, listener, tag, background), offset (offset)
@@ -3937,7 +3993,12 @@ void CHorizontalSwitch::mouse (CDrawContext *pContext, CPoint &where, long butto
 //------------------------------------------------------------------------
 // CRockerSwitch
 //------------------------------------------------------------------------
-// Switch, which releases itself after being clicked
+/*! @class CRockerSwitch
+Define a rocker switch with 3 states using 3 subpixmaps.
+One click on its leftside, then the first subpixmap is displayed.
+One click on its rightside, then the third subpixmap is displayed.
+When the mouse button is relaxed, the second subpixmap is framed.
+*/
 CRockerSwitch::CRockerSwitch (const CRect &size, CControlListener *listener, long tag,              // identifier tag (ID)
                               CBitmap *background, CPoint &offset, const long style)
 :	CControl (size, listener, tag, background), offset (offset), style (style)
@@ -4090,6 +4151,9 @@ bool CRockerSwitch::onWheel (CDrawContext *pContext, const CPoint &where, float 
 //------------------------------------------------------------------------
 // CMovieBitmap
 //------------------------------------------------------------------------
+/*! @class CMovieBitmap
+A movie pixmap allows to display different subpixmaps according to its current value.
+*/
 CMovieBitmap::CMovieBitmap (const CRect &size, CControlListener *listener, long tag,
                             CBitmap *background, CPoint &offset)
   :	CControl (size, listener, tag, background), offset (offset),
@@ -4137,7 +4201,9 @@ void CMovieBitmap::draw (CDrawContext *pContext)
 //------------------------------------------------------------------------
 // CMovieButton
 //------------------------------------------------------------------------
-// simulating a real windows-button
+/*! @class CMovieButton
+A movie button is a bi-states button with 2 subpixmaps. These subpixmaps are stacked in the pixmap.
+*/
 CMovieButton::CMovieButton (const CRect &size, CControlListener *listener, long tag,              // identifier tag (ID)
                             CBitmap *background, CPoint &offset)
 : CControl (size, listener, tag, background), offset (offset), buttonState (value)
@@ -4244,6 +4310,10 @@ void CMovieButton::mouse (CDrawContext *pContext, CPoint &where, long button)
 //------------------------------------------------------------------------
 // CAutoAnimation
 //------------------------------------------------------------------------
+/*! @class CAutoAnimation
+An auto-animation control contains a given number of subpixmap which can be displayed in loop.
+Two functions allows to get the previous or the next subpixmap (these functions increase or decrease the current value of this control).
+*/
 // displays bitmaps within a (child-) window
 CAutoAnimation::CAutoAnimation (const CRect &size, CControlListener *listener, long tag,
                                 CBitmap *background, CPoint &offset)
@@ -4287,8 +4357,8 @@ void CAutoAnimation::draw (CDrawContext *pContext)
 			else
 				pBackground->draw (pContext, size, where);
 		}
-		setDirty (false);
 	}
+	setDirty (false);
 }
 
 //------------------------------------------------------------------------
@@ -4320,7 +4390,7 @@ void CAutoAnimation::mouse (CDrawContext *pContext, CPoint &where, long button)
 	{                                                                       
 		// stop info animation
 		value = 0; // draw first pic of bitmap
-		draw (pContext);
+		setDirty ();
 		closeWindow ();
 	}
 }
@@ -4357,6 +4427,12 @@ void CAutoAnimation::previousPixmap ()
 //------------------------------------------------------------------------
 // CSlider
 //------------------------------------------------------------------------
+/*! @class CSlider
+Define a slider with a given background and handle.
+The range of variation of the handle should be defined.
+By default the handler is drawn with transparency (white color).
+By clicking Alt+Left Mouse the default value is used.
+*/
 CSlider::CSlider (const CRect &rect, CControlListener *listener, long tag,
                   long      iMinPos, // min position in pixel
                   long      iMaxPos, // max position in pixel
@@ -4754,6 +4830,9 @@ void CSlider::setHandle (CBitmap *_pHandle)
 //------------------------------------------------------------------------
 // CVerticalSlider
 //------------------------------------------------------------------------
+/*! @class CVerticalSlider
+This is the vertical slider. See CSlider.
+*/
 CVerticalSlider::CVerticalSlider (const CRect &rect, CControlListener *listener, long tag,
                                   long      iMinPos, // min position in pixel
                                   long      iMaxPos, // max position in pixel
@@ -4779,6 +4858,9 @@ CVerticalSlider::CVerticalSlider (const CRect &rect, CControlListener *listener,
 //------------------------------------------------------------------------
 // CHorizontalSlider
 //------------------------------------------------------------------------
+/*! @class CHorizontalSlider
+This is the horizontal slider. See CSlider.
+*/
 CHorizontalSlider::CHorizontalSlider (const CRect &rect, CControlListener *listener, long tag,
                                   long      iMinPos, // min Y position in pixel
                                   long      iMaxPos, // max Y position in pixel
@@ -4804,7 +4886,10 @@ CHorizontalSlider::CHorizontalSlider (const CRect &rect, CControlListener *liste
 //------------------------------------------------------------------------
 // CSpecialDigit
 //------------------------------------------------------------------------
-// special display with custom digits (0...9)
+/*! @class CSpecialDigit
+Can be used to display a counter with maximum 7 digits.
+All digit have the same size and are stacked in height in the pixmap.
+*/
 CSpecialDigit::CSpecialDigit (const CRect &size,
                               CControlListener *listener,
                               long      tag,        // tag identifier
@@ -4904,7 +4989,11 @@ float CSpecialDigit::getNormValue () const
 //------------------------------------------------------------------------
 // CKickButton
 //------------------------------------------------------------------------
-// Button, which releases itself after being clicked
+/*! @class CKickButton
+Define a button with 2 states using 2 subpixmaps.
+One click on it, then the second subpixmap is displayed.
+When the mouse button is relaxed, the first subpixmap is framed.
+*/
 CKickButton::CKickButton (const CRect &size, CControlListener *listener, long tag,
                           CBitmap *background, CPoint &offset)
 :	CControl (size, listener, tag, background), offset (offset)
@@ -5005,6 +5094,11 @@ void CKickButton::mouse (CDrawContext *pContext, CPoint &where, long button)
 //------------------------------------------------------------------------
 // CSplashScreen
 //------------------------------------------------------------------------
+/*! @class CSplashScreen
+One click on its activated region and its pixmap is displayed, in this state the other control can not be used,
+an another click on the displayed area reinstalls the normal frame.
+This can be used to display a help view over the other views.
+*/
 // one click draw its pixmap, an another click redraw its parent
 CSplashScreen::CSplashScreen (const CRect &size, CControlListener *listener, long tag,
                               CBitmap *background,

@@ -2,7 +2,7 @@
 // VST Plug-Ins SDK
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 //
-// Version 3.0       $Date: 2004-12-03 15:07:21 $
+// Version 3.0       $Date: 2004-12-05 12:30:35 $
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
@@ -273,7 +273,7 @@ struct CColor
 		return *this; 
 	}
 
-	CColor& operator = (CColor newColor)
+	CColor& operator = (const CColor& newColor)
 	{
 		red   = newColor.red;
 		green = newColor.green;
@@ -478,6 +478,7 @@ private:
 
 //-----------------------------------------------------------------------------
 // CDrawContext Declaration
+//! A drawing context encapsulates the drawing context of the underlying OS. It implements the drawing functions.
 //-----------------------------------------------------------------------------
 class CDrawContext : public CReferenceCounter
 {
@@ -503,9 +504,9 @@ public:
 	void fillEllipse (const CRect &rect);	///< draw a filled ellipse
 	
 	void drawPoint (const CPoint &point, CColor color);	///< draw a point
-	CColor getPoint (const CPoint& point);	///< get the color of a point (deprecated)
+	CColor getPoint (const CPoint& point); ///< \deprecated
 
-	void floodFill (const CPoint& start);	///< deprecated
+	void floodFill (const CPoint& start); ///< \deprecated
 	
 	void       setLineStyle (CLineStyle style);				///< set the current line style
 	CLineStyle getLineStyle () const { return lineStyle; }	///< get the current line style
@@ -631,6 +632,7 @@ protected:
 
 //-----------------------------------------------------------------------------
 // COffscreenContext Declaration
+//! A drawing device which uses a pixmap as its drawing surface.
 //-----------------------------------------------------------------------------
 class COffscreenContext : public CDrawContext
 {
@@ -679,17 +681,18 @@ protected:
 
 //-----------------------------------------------------------------------------
 // CBitmap Declaration
+//! Encapsulates various platform depended kinds of bitmaps.
 //-----------------------------------------------------------------------------
 class CBitmap : public CReferenceCounter
 {
 public:
-	CBitmap (long resourceID);
-	CBitmap (CFrame &frame, long width, long height);
+	CBitmap (long resourceID);	///< Create a pixmap from a resource identifier
+	CBitmap (CFrame &frame, long width, long height);	///< Create a pixmap with a given size.
 	virtual ~CBitmap ();
 
-	void draw (CDrawContext *pContext, CRect &rect, const CPoint &offset = CPoint (0, 0));
+	void draw (CDrawContext *pContext, CRect &rect, const CPoint &offset = CPoint (0, 0));	///< Draw the pixmap using a given rect as output position and a given offset of its source pixmap.
 	void drawTransparent (CDrawContext *pContext, CRect &rect, const CPoint &offset = CPoint (0, 0));
-	void drawAlphaBlend  (CDrawContext *pContext, CRect &rect, const CPoint &offset = CPoint (0, 0), unsigned char alpha = 128);
+	void drawAlphaBlend  (CDrawContext *pContext, CRect &rect, const CPoint &offset = CPoint (0, 0), unsigned char alpha = 128);	///< Same as CBitmap::draw except that it uses the alpha value to draw the bitmap alpha blended.
 
 	inline long getWidth () const { return width; }
 	inline long getHeight () const { return height; }
@@ -830,9 +833,9 @@ public:
 #if ENABLE_DEPRECATED_METHODS
 	// deprecated methods will be placed here, so that people who really need them can turn the macro on
 
-	virtual void setParentView (CView *pParentView) { this->pParentView = pParentView; }
-	virtual void setFrame (CFrame *pParent) { this->pParentFrame = pParent; }
-	virtual void getFrameTopLeftPos (CPoint& topLeft) const;
+	virtual void setParentView (CView *pParentView) { this->pParentView = pParentView; }  ///< \deprecated
+	virtual void setFrame (CFrame *pParent) { this->pParentFrame = pParent; }  ///< \deprecated
+	virtual void getFrameTopLeftPos (CPoint& topLeft) const; ///< \deprecated
 #endif
 	//-------------------------------------------
 protected:
@@ -861,6 +864,7 @@ extern char* kMsgCheckIfViewContainer;
 
 //-----------------------------------------------------------------------------
 // CViewContainer Declaration
+//! Container Class of CView objects.
 //-----------------------------------------------------------------------------
 class CViewContainer : public CView
 {

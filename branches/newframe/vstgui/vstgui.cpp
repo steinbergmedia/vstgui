@@ -2,7 +2,7 @@
 // VST Plug-Ins SDK
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 //
-// Version 3.0       $Date: 2004-12-03 15:07:05 $ 
+// Version 3.0       $Date: 2004-12-05 12:30:34 $ 
 //
 // Added Motif/Windows vers.: Yvan Grabit              01.98
 // Added Mac version        : Charlie Steinberg        02.98
@@ -4236,7 +4236,8 @@ void CFrame::drawRect (CDrawContext *pContext, const CRect& updateRect)
 	#endif
 	
 	// draw the background and the children
-	CViewContainer::drawRect (pContext, updateRect);
+	if (updateRect.getWidth () > 0 && updateRect.getHeight () > 0)
+		CViewContainer::drawRect (pContext, updateRect);
 
 	#if USE_CLIPPING_DRAWRECT
 	pContext->setClipRect (oldClip);
@@ -5106,6 +5107,9 @@ CViewContainer::CViewContainer (const CRect &rect, CFrame *pParent, CBitmap *pBa
 	this->pParentFrame = pParent;
 	setBackground (pBackground);
 	backgroundColor = kBlackCColor;	
+	#if NEW_UPDATE_MECHANISM
+	mode = kOnlyDirtyUpdate;
+	#endif
 }
 
 //-----------------------------------------------------------------------------
@@ -5465,6 +5469,8 @@ void CViewContainer::drawRect (CDrawContext *pContext, const CRect& _updateRect)
 			#if USE_CLIPPING_DRAWRECT
 			CRect viewSize = pV->getViewSize (viewSize);
 			viewSize.bound (newClip);
+			if (viewSize.getWidth () == 0 || viewSize.getHeight () == 0)
+				continue;
 			pC->setClipRect (viewSize);
 			#endif
 			pV->drawRect (pC, clientRect);
@@ -5502,7 +5508,35 @@ void CViewContainer::redrawRect (CDrawContext* context, const CRect& rect)
 			pParentFrame->drawRect (context, _rect);
 	}
 	else
+	{
+		long save[4];
+		if (pParentView)
+		{
+			CPoint off;
+			pParentView->localToFrame (off);
+			// store
+			save[0] = context->offsetScreen.h;
+			save[1] = context->offsetScreen.v;
+			save[2] = context->offset.h;
+			save[3] = context->offset.v;
+
+			context->offsetScreen.h += off.x;
+			context->offsetScreen.v += off.y;
+			context->offset.h += off.x;
+			context->offset.v += off.y;
+		}
+
 		drawRect (context, _rect);
+
+		if (pParentView)
+		{
+			// restore
+			context->offsetScreen.h = save[0];
+			context->offsetScreen.v = save[1];
+			context->offset.h = save[2];
+			context->offset.v = save[3];
+		}
+	}
 }
 
 //-----------------------------------------------------------------------------
@@ -5636,7 +5670,8 @@ bool CViewContainer::onDrop (CDrawContext* context, CDragContainer* drag, const 
 		result = currentDragView->onDrop (context, drag, where2);
 		currentDragView->onDragLeave (context, drag, where2);
 	}
-
+	currentDragView = 0;
+	
 	restoreDrawContext (context, save);
 
 	return result;
@@ -6079,6 +6114,16 @@ protected:
 //-----------------------------------------------------------------------------
 // CBitmap Implementation
 //-----------------------------------------------------------------------------
+/*! @class CBitmap
+@section cbitmap_macos Classic Apple Mac OS
+The Bitmaps are PICTs and stored inside the resource fork.
+@section cbitmap_macosx Apple Mac OS X
+The Bitmaps can be of type PNG, JPEG, PICT, BMP and are stored in the Resources folder of the plugin bundle.
+They must be named bmp00100.png (or bmp00100.jpg). The number is the resource id.
+@section cbitmap_windows Microsoft Windows
+The Bitmaps are .bmp files and must be included in the plug (usually using a .rc file).
+It's also possible to use png as of version 3.0 if you define the macro USE_LIBPNG.
+*/
 CBitmap::CBitmap (long resourceID)
 	: resourceID (resourceID), width (0), height (0)
 {
@@ -6534,34 +6579,33 @@ bool CBitmap::loadFromPath (const void* platformPath)
 			}
 		}
 		CFRelease (extension);
+		if (result)
+			return result;
 	}
 	#endif
-	if (cgImage == NULL)
+	FSRef fsRef;
+	if (CFURLGetFSRef (url, &fsRef))
 	{
-		FSRef fsRef;
-		if (CFURLGetFSRef (url, &fsRef))
+		FSSpec fsSpec;
+		FSCatalogInfoBitmap infoBitmap = kFSCatInfoNone;
+		if (FSGetCatalogInfo (&fsRef, infoBitmap, NULL, NULL, &fsSpec, NULL) == noErr)
 		{
-			FSSpec fsSpec;
-			FSCatalogInfoBitmap infoBitmap = kFSCatInfoNone;
-			if (FSGetCatalogInfo (&fsRef, infoBitmap, NULL, NULL, &fsSpec, NULL) == noErr)
+			ComponentInstance gi;
+			GetGraphicsImporterForFile (&fsSpec, &gi);
+			if (gi)
 			{
-				ComponentInstance gi;
-				GetGraphicsImporterForFile (&fsSpec, &gi);
-				if (gi)
+				Rect r;
+				GraphicsImportGetSourceRect (gi, &r);
+				OSErr err = NewGWorld ((GWorldPtr*)&pHandle, 32, &r, 0, 0, 0);
+				if (!err)
 				{
-					Rect r;
-					GraphicsImportGetSourceRect (gi, &r);
-					OSErr err = NewGWorld ((GWorldPtr*)&pHandle, 32, &r, 0, 0, 0);
-					if (!err)
-					{
-						width = r.right;
-						height = r.bottom;
-						GraphicsImportSetGWorld (gi, (GWorldPtr)pHandle, 0);
-						GraphicsImportDraw (gi);
-						result = true;
-					}
-					CloseComponent (gi);
+					width = r.right;
+					height = r.bottom;
+					GraphicsImportSetGWorld (gi, (GWorldPtr)pHandle, 0);
+					GraphicsImportDraw (gi);
+					result = true;
 				}
+				CloseComponent (gi);
 			}
 		}
 	}
@@ -8474,7 +8518,7 @@ pascal Boolean CFileSelector::navObjectFilterProc (AEDesc *theItem, void *info, 
 					}
 					else if (infoRecord.extension)
 					{
-						if (!strcmp (extension, ft->unixType) || !strcmp (extension, ft->dosType))
+						if (!strcasecmp (extension, ft->unixType) || !strcasecmp (extension, ft->dosType))
 						{
 							result = true;
 							break;

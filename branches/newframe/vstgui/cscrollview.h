@@ -46,6 +46,7 @@ class CScrollContainer;
 
 //-----------------------------------------------------------------------------
 class CScrollView : public CViewContainer, CControlListener
+//! a scrollable view
 //-----------------------------------------------------------------------------
 {
 public:
@@ -54,11 +55,11 @@ public:
 
 	// style
 	enum {
-		kHorizontalScrollbar	= 1 << 1,
-		kVerticalScrollbar 		= 1 << 2
+		kHorizontalScrollbar	= 1 << 1,	///< add a horizontal scrollbar
+		kVerticalScrollbar 		= 1 << 2	///< add a vertical scrollbar
 	};
 
-	virtual void setContainerSize (const CRect& cs);
+	virtual void setContainerSize (const CRect& cs); ///< set the virtual size of this container
 	virtual void addView (CView *pView);
 	virtual void drawBackgroundRect (CDrawContext *pContext, CRect& _updateRect);
 	virtual bool onWheel (CDrawContext *pContext, const CPoint &where, float distance);
@@ -67,6 +68,7 @@ public:
 	virtual CScrollbar* getVerticalScrollbar () const { return vsb; }
 	virtual CScrollbar* getHorizontalScrollbar () const { return hsb; }
 	
+	CLASS_METHODS(CScrollView, CViewContainer)
 //-----------------------------------------------------------------------------
 protected:
 	CScrollContainer* sc;
@@ -100,6 +102,7 @@ public:
 	virtual void redrawRect (CDrawContext* context, const CRect& rect);
 	virtual bool isDirty () const;
 
+	CLASS_METHODS(CScrollContainer, CViewContainer)
 //-----------------------------------------------------------------------------
 protected:
 	CRect containerSize;
@@ -117,6 +120,7 @@ public:
 
 //-----------------------------------------------------------------------------
 class CScrollbar : public CControl
+//! a scrollbar control
 //-----------------------------------------------------------------------------
 {
 public:
@@ -132,14 +136,23 @@ public:
 	virtual void setScrollSize (const CRect& ssize);
 	virtual void setStep (float newStep) { stepValue = newStep; }
 
-	void setFrameColor (const CColor& color) { frameColor = color; }
-	void setScrollerColor (const CColor& color) { scrollerColor = color; }
-	void setBackgroundColor (const CColor& color) { backgroundColor = color; }
+	CRect& getScrollSize (CRect& rect) const { rect = scrollSize; return rect; }
+	float getStep () const { return stepValue; }
+
+	virtual void setFrameColor (const CColor& color) { frameColor = color; }
+	virtual void setScrollerColor (const CColor& color) { scrollerColor = color; }
+	virtual void setBackgroundColor (const CColor& color) { backgroundColor = color; }
+
+	CColor getFrameColor () const { return frameColor; }
+	CColor getScrollerColor () const { return scrollerColor; }
+	CColor getBackgroundColor () const { return backgroundColor; }
 
 	virtual void draw (CDrawContext* pContext);
 	virtual void mouse (CDrawContext* pContext, CPoint& where, long buttons = -1);
 	virtual bool onWheel (CDrawContext *pContext, const CPoint &where, float distance);
 
+	CLASS_METHODS(CScrollbar, CControl)
+//-----------------------------------------------------------------------------
 protected:
 	void drawBackground (CDrawContext* pContext);
 	void drawScroller (CDrawContext* pContext, const CRect& size);

@@ -3,7 +3,7 @@
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 // Standard Control Objects
 //
-// Version 3.0       $Date: 2004-11-29 15:27:24 $
+// Version 3.0       $Date: 2004-12-05 12:30:34 $
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
@@ -126,6 +126,9 @@ extern const CViewAttributeID kCControlAttributeTag;
 extern const CViewAttributeID kCControlAttributeValue;
 
 //-----------------------------------------------------------------------------
+// CControl Declaration
+//! base class of all VSTGUI controls
+//-----------------------------------------------------------------------------
 class CControl : public CView
 {
 public:
@@ -195,6 +198,8 @@ protected:
 
 
 //-----------------------------------------------------------------------------
+// COnOffButton Declaration
+//! a button control with 2 states
 //-----------------------------------------------------------------------------
 class COnOffButton : public CControl
 {
@@ -211,6 +216,8 @@ public:
 
 
 //-----------------------------------------------------------------------------
+// CParamDisplay Declaration
+//! a parameter display control
 //-----------------------------------------------------------------------------
 class CParamDisplay : public CControl
 {
@@ -275,6 +282,8 @@ protected:
 
 
 //-----------------------------------------------------------------------------
+// CTextEdit Declaration
+//! a text edit control
 //-----------------------------------------------------------------------------
 class CTextEdit : public CParamDisplay
 {
@@ -320,6 +329,7 @@ protected:
 
 
 //-----------------------------------------------------------------------------
+// COptionMenuScheme Declaration
 //-----------------------------------------------------------------------------
 class COptionMenuScheme : public CReferenceCounter
 {
@@ -359,6 +369,8 @@ protected:
 extern COptionMenuScheme* gOptionMenuScheme;
 
 //-----------------------------------------------------------------------------
+// COptionMenu Declaration
+//! a popup menu control
 //-----------------------------------------------------------------------------
 class COptionMenu : public CParamDisplay
 {
@@ -449,6 +461,8 @@ protected:
 
 
 //-----------------------------------------------------------------------------
+// CKnob Declaration
+//! a knob control
 //-----------------------------------------------------------------------------
 class CKnob : public CControl
 {
@@ -500,6 +514,8 @@ protected:
 };
 
 //-----------------------------------------------------------------------------
+// CAnimKnob Declaration
+//! a bitmap knob control
 //-----------------------------------------------------------------------------
 class CAnimKnob : public CKnob
 {
@@ -525,6 +541,8 @@ protected:
 };
 
 //-----------------------------------------------------------------------------
+// CVerticalSwitch Declaration
+//! a vertical switch control
 //-----------------------------------------------------------------------------
 class CVerticalSwitch : public CControl
 {
@@ -552,6 +570,8 @@ protected:
 
 
 //-----------------------------------------------------------------------------
+// CHorizontalSwitch Declaration
+//! a horizontal switch control
 //-----------------------------------------------------------------------------
 class CHorizontalSwitch : public CControl
 {
@@ -579,6 +599,8 @@ protected:
 
 
 //-----------------------------------------------------------------------------
+// CRockerSwitch Declaration
+//! a switch control with 3 sub bitmaps
 //-----------------------------------------------------------------------------
 class CRockerSwitch : public CControl
 {
@@ -604,6 +626,8 @@ protected:
 
 
 //-----------------------------------------------------------------------------
+// CMovieBitmap Declaration
+//! a bitmap control that displays different bitmaps according to its current value
 //-----------------------------------------------------------------------------
 class CMovieBitmap : public CControl
 {
@@ -628,6 +652,8 @@ protected:
 
 
 //-----------------------------------------------------------------------------
+// CMovieButton Declaration
+//! a bi-states button with 2 subbitmaps
 //-----------------------------------------------------------------------------
 class CMovieButton : public CControl
 {
@@ -652,6 +678,8 @@ protected:
 
 
 //-----------------------------------------------------------------------------
+// CAutoAnimation Declaration
+//!
 //-----------------------------------------------------------------------------
 class CAutoAnimation : public CControl
 {
@@ -689,6 +717,8 @@ protected:
 
 
 //-----------------------------------------------------------------------------
+// CSlider Declaration
+//! a slider control
 //-----------------------------------------------------------------------------
 class CSlider : public CControl
 {
@@ -756,6 +786,8 @@ protected:
 };
 
 //-----------------------------------------------------------------------------
+// CVerticalSlider Declaration
+//! a vertical slider control
 //-----------------------------------------------------------------------------
 class CVerticalSlider : public CSlider
 {
@@ -778,6 +810,8 @@ public:
 };
 
 //-----------------------------------------------------------------------------
+// CHorizontalSlider Declaration
+//! a horizontal slider control
 //-----------------------------------------------------------------------------
 class CHorizontalSlider : public CSlider
 {
@@ -801,8 +835,9 @@ public:
 
 
 //-----------------------------------------------------------------------------
+// CSpecialDigit Declaration
+//! special display with custom numbers (0...9)
 //-----------------------------------------------------------------------------
-// special display with custom numbers (0...9)
 class CSpecialDigit : public CControl
 {
 public:
@@ -832,6 +867,8 @@ protected:
 
 
 //-----------------------------------------------------------------------------
+// CKickButton Declaration
+//!
 //-----------------------------------------------------------------------------
 class CKickButton : public CControl
 {
@@ -855,6 +892,8 @@ protected:
 
 
 //-----------------------------------------------------------------------------
+// CSplashScreen Declaration
+//!
 //-----------------------------------------------------------------------------
 class CSplashScreen : public CControl
 {
@@ -883,6 +922,8 @@ protected:
 
 
 //-----------------------------------------------------------------------------
+// CVuMeter Declaration
+//!
 //-----------------------------------------------------------------------------
 class CVuMeter : public CControl
 {
@@ -923,6 +964,8 @@ struct VstFileSelect;
 #endif
 
 //-----------------------------------------------------------------------------
+// CFileSelector Declaration
+//!
 //-----------------------------------------------------------------------------
 class CFileSelector
 {
