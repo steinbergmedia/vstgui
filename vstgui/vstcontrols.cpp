@@ -2305,7 +2305,7 @@ void COptionMenu::mouse (CDrawContext *pContext, CPoint &where, long button)
 	if (!bMouseEnabled || !getParent () || !pContext)
 		return;
 
-	lastButton = (button =! -1) ? button : pContext->getMouseButtons ();
+	lastButton = (button != -1) ? button : pContext->getMouseButtons ();
 	if (lastButton & (kLButton|kRButton|kApple))
 	{
 		if (bgWhenClick)

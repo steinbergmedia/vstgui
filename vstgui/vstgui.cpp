@@ -528,11 +528,13 @@ CDrawContext::CDrawContext (CFrame *pFrame, void *pSystemContext, void *pWindow)
 		}
 		offsetScreen.x = bounds.origin.x;
 		offsetScreen.y = bounds.origin.y;
+		clipRect (0, 0, bounds.size.width, bounds.size.height);
 	}
 	#endif
 	gCGContext = 0;
 	if (pSystemContext)
 	{
+		CGContextSaveGState (gCGContext); // save the original state
 		gCGContext = (CGContextRef) pSystemContext;
 		CGContextScaleCTM (gCGContext, 1, -1);
 		CGContextSetShouldAntialias (gCGContext, false);
@@ -546,6 +548,7 @@ CDrawContext::CDrawContext (CFrame *pFrame, void *pSystemContext, void *pWindow)
 		OSStatus err = QDBeginCGContext (port, &gCGContext);
 		if (err == noErr)
 		{
+			CGContextSaveGState (gCGContext); // save the original state
 			SyncCGContextOriginWithPort (gCGContext, port);
 			Rect rect;
 			GetPortBounds (port, &rect);
@@ -617,6 +620,7 @@ CDrawContext::~CDrawContext ()
 #elif (MAC && QUARTZ)
 	if (gCGContext)
 	{
+		CGContextRestoreGState (gCGContext); // restore the original state
 		CGContextSynchronize (gCGContext);
 		if (!pSystemContext)
 			QDEndCGContext (GetWindowPort ((WindowRef)pWindow), &gCGContext);
@@ -898,7 +902,7 @@ void CDrawContext::setLineStyle (CLineStyle style)
 		if (lineStyle == kLineOnOffDash)
 		{
 			dotf[0] = .5f;
-			dotf[0] = 1.5f;
+			dotf[1] = 1.5f;
 		}
 		CGContextSetLineDash (gCGContext, offset, dotf, 2);
 	}
@@ -2262,7 +2266,11 @@ void CDrawContext::getMouseLocation (CPoint &point)
 
 #elif MAC
 	Point where;
+	CGrafPtr savedPort;
+	Boolean portChanged = QDSwapPort (getPort (), &savedPort);
 	GetMouse (&where);
+	if (portChanged)
+		QDSwapPort (savedPort, NULL);
 	point (where.h, where.v);
 	
 #elif MOTIF
@@ -3500,7 +3508,13 @@ bool CFrame::initFrame (void *systemWin)
 	WindowAttributes attributes;
 	GetWindowAttributes ((WindowRef)systemWin, &attributes);
 	if (attributes & kWindowCompositingAttribute) 
-		HIViewAddSubview (HIViewGetRoot ((WindowRef)systemWin), controlRef);
+	{
+		HIViewRef contentView;
+		HIViewRef rootView = HIViewGetRoot ((WindowRef)systemWin);
+		if (HIViewFindByID (rootView, kHIViewWindowContentID, &contentView) != noErr)
+			contentView = rootView;
+		HIViewAddSubview (contentView, controlRef);
+	}
 	else
 	{
 		ControlRef rootControl;
@@ -8483,7 +8497,7 @@ pascal OSStatus CFrame::carbonEventHandler (EventHandlerCallRef inHandlerCallRef
 						if (result == noErr)
 						{
 							Boolean accept = true;
-							SetEventParameter (inEvent, kEventParamControlWouldAcceptDrop, typeBoolean, sizeof (Boolean), &accept);
+							SetEventParameter (inEvent, 'cldg' /*kEventParamControlWouldAcceptDrop*/, typeBoolean, sizeof (Boolean), &accept);
 							SetThemeCursor (kThemeCopyArrowCursor);
 						}
 					}
