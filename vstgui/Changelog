@@ -1,3 +1,9 @@
+2004-03-19 arne
+
+	* add CView::getFrameTopLeftPos method to get the topleft position of the view relative to the frame
+	* call AEffGUIEditor instead of AudioEffectX for beginEdit and endEdit
+	* mac: small changes to allow to use a CDrawContext on every Window even those without a CFrame
+
 2004-03-01 arne
 
 	* mac : fix for RGBA Bitmaps on Displays with less than million colors
