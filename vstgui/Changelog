@@ -1,3 +1,11 @@
+2003-12-15 arne
+
+	* fix a typo in COptionMenu::mouse
+	* mac: fix a typo in CDrawContext::setLineStyle
+	* mac: fix for CDrawContext::getMouseLocation problem with DP 4
+	* mac: on compositing windows the control is now added to the kHIViewWindowContentID if it exists.
+	* mac: should compile on Mac OS X 10.2 again if CARBON_EVENTS are defined.
+	
 2003-12-05 arne
 
 	* fix compile problem of COptionMenu::takeFocus on Windows
