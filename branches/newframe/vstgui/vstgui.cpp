@@ -1437,6 +1437,7 @@ void CDrawContext::drawEllipse (const CRect &_rect)
 		CGRect cgClipRect = CGRectMake (clipRect.left, clipRect.top, clipRect.width (), clipRect.height ());
 		CGContextClipToRect (gCGContext, cgClipRect);
 
+		CGContextSaveGState (context);
 		CGContextBeginPath (context);
 
 		CGRect cgRect = CGRectMake (rect.left, rect.top, rect.width (), rect.height ());
@@ -1450,6 +1451,7 @@ void CDrawContext::drawEllipse (const CRect &_rect)
 	    CGContextAddArc (context, 0, 0, 1, radians (0), radians (360), 0);
 
 		CGContextClosePath (context);
+		CGContextRestoreGState (context);
 		CGContextDrawPath (context, kCGPathStroke);
 		releaseCGContext (context);
 	}
@@ -1483,6 +1485,7 @@ void CDrawContext::fillEllipse (const CRect &_rect)
 		CGRect cgClipRect = CGRectMake (clipRect.left, clipRect.top, clipRect.width (), clipRect.height ());
 		CGContextClipToRect (gCGContext, cgClipRect);
 
+		CGContextSaveGState (context);
 		CGContextBeginPath (context);
 
 		CGRect cgRect = CGRectMake (rect.left, rect.top, rect.width (), rect.height ());
@@ -1496,6 +1499,7 @@ void CDrawContext::fillEllipse (const CRect &_rect)
 	    CGContextAddArc (context, 0, 0, 1, radians (0), radians (360), 0);
 
 		CGContextClosePath (context);
+		CGContextRestoreGState (context);
 		CGContextDrawPath (context, kCGPathFill);
 		releaseCGContext (context);
 	}
@@ -1644,6 +1648,28 @@ void CDrawContext::floodFill (const CPoint& _start)
 	#endif
 }
 
+#if QUARTZ
+void addOvalToPath(CGContextRef c, CPoint center, float a, float b, float start_angle, float arc_angle, int pie)
+{
+	float CGstart_angle = start_angle;
+	CGContextSaveGState (c);
+	CGContextTranslateCTM (c, center.x, center.y);
+	CGContextScaleCTM (c, a, b);
+	if (pie) 
+		CGContextMoveToPoint (c, 0, 0);
+	else 
+		CGContextMoveToPoint (c, cos (radians (CGstart_angle)), sin (radians (CGstart_angle)));
+	long dir = arc_angle > 0 ? 1 : 0;
+	CGContextAddArc(c, 0, 0, 1, radians (CGstart_angle), radians (CGstart_angle - arc_angle), dir);
+	CGContextAddArc(c, 0, 0, 1, radians (CGstart_angle - arc_angle), radians (CGstart_angle), dir ? 0 : 1);
+	if (pie)
+	{
+		CGContextClosePath(c);
+	}
+	CGContextRestoreGState(c);
+}
+#endif
+
 //-----------------------------------------------------------------------------
 void CDrawContext::drawArc (const CRect &_rect, const CPoint &_point1, const CPoint &_point2)
 {
@@ -1659,25 +1685,6 @@ void CDrawContext::drawArc (const CRect &_rect, const CPoint &_point1, const CPo
 
 	Arc ((HDC)pSystemContext, rect.left, rect.top, rect.right + 1, rect.bottom + 1, 
 			 point1.h, point1.v, point2.h, point2.v);
-
-#elif QUARTZ
-
-	CGContextRef context = beginCGContext ();
-	{	// someone who uses this shoud check if this is correct
-		CGContextScaleCTM (context, 1, -1);
-		CGContextTranslateCTM (context, 0.5f, 0.5f);
-
-		// the clipping needs to be set after we translated the transformation matrix
-		CGRect cgClipRect = CGRectMake (clipRect.left, clipRect.top, clipRect.width (), clipRect.height ());
-		CGContextClipToRect (gCGContext, cgClipRect);
-
-		CGContextBeginPath (context);
-		CGContextMoveToPoint (context, point1.x, point1.y);
-		CGContextAddArcToPoint (context, point2.x, point2.y, point1.x, point1.y, rect.width () > rect.height () ? rect.height () /2 : rect.width () /2);
-		CGContextClosePath (context);
-		CGContextDrawPath (context, kCGPathStroke);
-		releaseCGContext (context);
-	}
 
 #elif MAC || MOTIF || BEOS
 	
@@ -1697,6 +1704,26 @@ void CDrawContext::drawArc (const CRect &_rect, const CPoint &_point1, const CPo
 	}
 
 #if MAC
+
+	#if QUARTZ
+	angle1 /= 64;
+	angle2 /= 64;
+	CGContextRef context = beginCGContext ();
+	{	// someone who uses this shoud check if this is correct
+		CGContextScaleCTM (context, 1, -1);
+		CGContextTranslateCTM (context, 0.5f, 0.5f);
+
+		// the clipping needs to be set after we translated the transformation matrix
+		CGRect cgClipRect = CGRectMake (clipRect.left, clipRect.top, clipRect.width (), clipRect.height ());
+		CGContextClipToRect (gCGContext, cgClipRect);
+
+		CGContextBeginPath (context);
+		addOvalToPath (context, CPoint (rect.left + rect.width () / 2, rect.top + rect.height () / 2), rect.width () / 2, rect.height () / 2, angle1, angle2, 0);
+		CGContextClosePath (context);
+		CGContextDrawPath (context, kCGPathStroke);
+		releaseCGContext (context);
+	}
+	#else
 	Rect     rr;
 	CGrafPtr OrigPort;
 	GDHandle OrigDevice;
@@ -1708,7 +1735,8 @@ void CDrawContext::drawArc (const CRect &_rect, const CPoint &_point1, const CPo
 	CRect2Rect (rect, rr);
 	FrameArc (&rr, 90 - (angle1 / 64), -angle2 / 64);
 	SetGWorld (OrigPort, OrigDevice);
-        
+	#endif
+	        
 #elif MOTIF
 	XDrawArc (XDRAWPARAM, rect.left, rect.top, rect.width (), rect.height (),
 						angle1, angle2);
@@ -2735,26 +2763,31 @@ void CDrawContext::releaseCGContext (CGContextRef context)
 	}
 }
 
-#else
+#endif
 BitMapPtr CDrawContext::getBitmap ()
 {
+	#if QUARTZ
+	return (BitMapPtr)GetPortBitMapForCopyBits (GetWindowPort ((WindowRef)pWindow));
+	#else
 	PixMapHandle pixMap = GetPortPixMap (GetWindowPort ((WindowRef)pWindow));
 	if (pixMap)
 	{
 		LockPixels (pixMap);
 		return (BitMapPtr)*pixMap;
 	}
+	#endif
 	return 0;
 }
 
 //-----------------------------------------------------------------------------
 void CDrawContext::releaseBitmap ()
 {
+	#if !QUARTZ
 	PixMapHandle pixMap = GetPortPixMap (GetWindowPort ((WindowRef)pWindow));
 	UnlockPixels (pixMap);
+	#endif
 }
 
-#endif
 //-----------------------------------------------------------------------------
 CGrafPtr CDrawContext::getPort ()
 {
@@ -2829,6 +2862,7 @@ COffscreenContext::COffscreenContext (CDrawContext *pContext, CBitmap *pBitmapBg
 
 #elif MAC
 	#if QUARTZ
+	offscreenBitmap = 0;
 	if (drawInBitmap)
 	{
 		if (pBitmapBg->getHandle ())
@@ -2836,7 +2870,9 @@ COffscreenContext::COffscreenContext (CDrawContext *pContext, CBitmap *pBitmapBg
 			PixMapHandle pixMap = GetGWorldPixMap ((GWorldPtr)pBitmapBg->getHandle ());
 			LockPixels (pixMap);
 			CGColorSpaceRef colorspace = CGColorSpaceCreateDeviceRGB ();
-			gCGContext = CGBitmapContextCreate (GetPixBaseAddr (pixMap), width, height, GetPixDepth (pixMap), GetPixRowBytes (pixMap), colorspace, kCGImageAlphaFirst);
+			size_t pixDepth = GetPixDepth (pixMap) / 4;
+			size_t rowBytes = GetPixRowBytes (pixMap);
+			gCGContext = CGBitmapContextCreate (GetPixBaseAddr (pixMap), width, height, pixDepth, rowBytes, colorspace, kCGImageAlphaPremultipliedFirst);
 			CGColorSpaceRelease (colorspace);
 			if (gCGContext)
 				CGContextTranslateCTM (gCGContext, 0, (float)height);
@@ -2960,7 +2996,7 @@ COffscreenContext::COffscreenContext (CFrame *pFrame, long width, long height, c
 		8,              // bits per component 
 		bitmapBytesPerRow, 
 		colorSpace, 
-		kCGImageAlphaPremultipliedLast);
+		kCGImageAlphaPremultipliedFirst);
 
 		if( context == NULL ) 
 		{
@@ -3094,13 +3130,14 @@ void COffscreenContext::copyTo (CDrawContext* pContext, CRect& srcRect, CPoint d
 			SRCCOPY);
 			
 #elif MAC
+	#if QUARTZ
+	if (!pBitmapBg)
+		return;
+	#else
 	if (!pWindow)
 		return;
-
-	#if QUARTZ
-	// no direct quartz equivalent
-
-	#else
+	#endif
+	
 	Rect source, dest;
 	RGBColor savedForeColor, savedBackColor;
 	
@@ -3125,7 +3162,6 @@ void COffscreenContext::copyTo (CDrawContext* pContext, CRect& srcRect, CPoint d
 
 	RGBForeColor (&savedForeColor);
 	RGBBackColor (&savedBackColor);
-	#endif
 #endif
 }
 
@@ -3238,10 +3274,11 @@ void COffscreenContext::copyFrom (CDrawContext *pContext, CRect destRect, CPoint
 
 //-----------------------------------------------------------------------------
 #if MAC
-#if QUARTZ
-#else
 BitMapPtr COffscreenContext::getBitmap ()
 {
+	#if QUARTZ
+	return (BitMapPtr)GetPortBitMapForCopyBits ((GWorldPtr)pBitmapBg->getHandle ());
+	#else
 	PixMapHandle pixMap = GetGWorldPixMap ((GWorldPtr)pWindow);
 	if (pixMap)
 	{
@@ -3249,15 +3286,20 @@ BitMapPtr COffscreenContext::getBitmap ()
 		return (BitMapPtr)*pixMap;
 	}
 	return 0;
+	#endif
 }
 
 //-----------------------------------------------------------------------------
 void COffscreenContext::releaseBitmap ()
 {
+	#if QUARTZ
+	#else
 	PixMapHandle pixMap = GetGWorldPixMap ((GWorldPtr)pWindow);
 	UnlockPixels (pixMap);
+	#endif
 }
 
+#if !QUARTZ
 //-----------------------------------------------------------------------------
 CGrafPtr COffscreenContext::getPort ()
 {
@@ -3276,7 +3318,7 @@ char* kMsgCheckIfViewContainer	= "kMsgCheckIfViewContainer";
 // CView
 //-----------------------------------------------------------------------------
 CView::CView (const CRect& size)
-:	nbReference (1), size (size), mouseableArea (size), pParent (0), pParentView (0),
+:	size (size), mouseableArea (size), pParent (0), pParentView (0),
 	bDirty (false), bMouseEnabled (true), bTransparencyEnabled (false), pBackground (0)
 {
 	#if DEBUG
@@ -3292,9 +3334,6 @@ CView::~CView ()
 
 	#if DEBUG
 	gNbCView--;
-
-	if (nbReference > 1)
-		FDebugPrint ("nbReference is %d when trying to delete CView\n", nbReference);		
 	#endif
 }
 
@@ -3407,23 +3446,6 @@ void CView::setViewSize (CRect &rect)
 {
 	size = rect;
 	setDirty ();
-}
-
-//-----------------------------------------------------------------------------
-void CView::remember ()
-{
-	nbReference++;
-}
-
-//-----------------------------------------------------------------------------
-void CView::forget ()
-{
-	if (nbReference > 0)
-	{
-		nbReference--;
-		if (nbReference == 0)
-			delete this;
-	}
 }
 
 //-----------------------------------------------------------------------------
@@ -3606,7 +3628,7 @@ CFrame::~CFrame ()
 	setDropActive (false);
 
 	if (pFrameContext)
-		delete pFrameContext;
+		pFrameContext->forget ();
 
 #if WINDOWS
 	OleUninitialize ();
@@ -3876,6 +3898,35 @@ void CFrame::freeGc ()
 #endif
 
 //-----------------------------------------------------------------------------
+CDrawContext* CFrame::createDrawContext ()
+{
+	if (pFrameContext)
+	{
+		pFrameContext->remember ();
+		return pFrameContext;
+	}
+	CDrawContext* pContext = 0;
+	#if WINDOWS
+	HDC hdc2 = GetDC ((HWND)getSystemWindow ());
+	#if DEBUG
+	gNbDC++;
+	#endif
+	pContext = new CDrawContext (this, hdc2, getSystemWindow ());
+
+	#elif MAC
+	pContext = new CDrawContext (this, NULL, getSystemWindow ());
+
+	#elif MOTIF
+	pContext = new CDrawContext (this, gc, (void*)window);
+
+	#elif BEOS
+	pContext = new CDrawContext (this, pPlugView, 0);
+	#endif
+	
+	return pContext;
+}
+
+//-----------------------------------------------------------------------------
 void CFrame::draw (CDrawContext *pContext)
 {
 	if (bFirstDraw)
@@ -3886,10 +3937,6 @@ void CFrame::draw (CDrawContext *pContext)
 
 	// draw the background and the children
 	CViewContainer::draw(pContext);
-
-	// and the modal view
-	if (pModalView)
-		pModalView->draw (pContext);
 }
 
 //-----------------------------------------------------------------------------
@@ -3897,26 +3944,39 @@ void CFrame::drawRect (CDrawContext *pContext, CRect& updateRect)
 {
 	if (bFirstDraw)
 		bFirstDraw = false;
-	
+
+	#if WINDOWS
+	HDC hdc2;
+	#endif
+
+	bool localContext = false;	
 	if (!pContext)
+	{
 		pContext = pFrameContext;
+		if (!pContext)
+		{
+			localContext = true;
+			pContext = createDrawContext ();
+		}
+	}
 
 	#if USE_CLIPPING_DRAWRECT
 	CRect oldClip;
 	pContext->getClipRect (oldClip);
-	pContext->setClipRect (updateRect);
+	CRect newClip (updateRect);
+	newClip.bound (oldClip);
+	pContext->setClipRect (newClip);
 	#endif
 	
 	// draw the background and the children
 	CViewContainer::drawRect(pContext, updateRect);
 
-	// and the modal view
-	if (pModalView && pModalView->checkUpdate (updateRect))
-		pModalView->draw (pContext);
-
 	#if USE_CLIPPING_DRAWRECT
 	pContext->setClipRect (oldClip);
 	#endif
+
+	if (localContext)
+		pContext->forget ();
 }
 
 //-----------------------------------------------------------------------------
@@ -3939,22 +3999,7 @@ void CFrame::draw (CView *pView)
 	if (!pContext)
 	{
 		localContext = true;
-	#if WINDOWS
-		hdc2 = GetDC ((HWND)getSystemWindow ());
-		#if DEBUG
-		gNbDC++;
-		#endif
-		pContext = new CDrawContext (this, hdc2, getSystemWindow ());
-
-	#elif MAC
-		pContext = new CDrawContext (this, NULL, getSystemWindow ());
-
-	#elif MOTIF
-		pContext = new CDrawContext (this, gc, (void*)window);
-
-	#elif BEOS
-		pContext = new CDrawContext (this, pPlugView, 0);
-	#endif
+		pContext = createDrawContext ();
 	}
 
 	if (pContext)
@@ -3965,7 +4010,7 @@ void CFrame::draw (CView *pView)
 			draw (pContext);
 
 		if (localContext)
-			delete pContext;
+			pContext->forget ();
 	}
 
 	#if WINDOWS
@@ -4002,8 +4047,8 @@ void CFrame::mouse (CDrawContext *pContext, CPoint &where, long buttons)
 	else 
 	{
 		CViewContainer::mouse(pContext, where, buttons);
-			}
-		}
+	}
+}
 
 //-----------------------------------------------------------------------------
 long CFrame::onKeyDown (VstKeyCode& keyCode)
@@ -4074,30 +4119,13 @@ bool CFrame::onWheel (CDrawContext *pContext, const CPoint &where, float distanc
 		if (!pContext2)
 		{
 			localContext = true;
-		#if WINDOWS
-			hdc2 = GetDC ((HWND)getSystemWindow ());
-			#if DEBUG
-			gNbDC++;
-			#endif
-			pContext2 = new CDrawContext (this, hdc2, getSystemWindow ());
-
-		#elif MAC
-			pContext2 = new CDrawContext (this, NULL, getSystemWindow ());
-
-		#elif MOTIF
-			pContext2 = new CDrawContext (this, gc, (void*)window);
-
-		#elif BEOS
-			if (pPlugView->LockLooperWithTimeout (0) != B_OK)
-				return false;
-			pContext2 = new CDrawContext (this, pPlugView, 0);
-		#endif
+			pContext = createDrawContext ();
 		}
 
 		result = view->onWheel (pContext2, where, distance);
 
 		if (localContext)
-			delete pContext2;
+			pContext2->forget ();
 	
 	#if WINDOWS
 		if (!pFrameContext && !pContext)
@@ -4128,34 +4156,32 @@ void CFrame::update (CDrawContext *pContext)
 	#else
 	CDrawContext* dc = pContext;
 	#endif
-	if (pModalView)
-		pModalView->update (dc);
+
+	if (bDirty)
+	{
+		draw (dc);
+		setDirty (false);
+	}
 	else
 	{
-		if (bDirty)
-		{
-			draw (dc);
-			setDirty (false);
-		}
-		else
-		{
+		#if USE_CLIPPING_DRAWRECT
+		CRect oldClipRect;
+		dc->getClipRect (oldClipRect);
+		#endif
+		FOREACHSUBVIEW
 			#if USE_CLIPPING_DRAWRECT
-			CRect oldClipRect;
-			dc->getClipRect (oldClipRect);
+			CRect viewSize;
+			viewSize = pV->getViewSize (viewSize);
+			viewSize.bound (oldClipRect);
+			dc->setClipRect (viewSize);
 			#endif
-			FOREACHSUBVIEW
-				#if USE_CLIPPING_DRAWRECT
-				CRect viewSize;
-				viewSize = pV->getViewSize (viewSize);
-				dc->setClipRect (viewSize);
-				#endif
-				pV->update (dc);
-			ENDFOR
-			#if USE_CLIPPING_DRAWRECT
-			dc->setClipRect (oldClipRect);
-			#endif
-		}
+			pV->update (dc);
+		ENDFOR
+		#if USE_CLIPPING_DRAWRECT
+		dc->setClipRect (oldClipRect);
+		#endif
 	}
+
 	#if MACX
 	if (QDIsPortBufferDirty (GetWindowPort ((WindowRef)pSystemWindow)))
 	{
@@ -4172,7 +4198,7 @@ void CFrame::update (CDrawContext *pContext)
 //-----------------------------------------------------------------------------
 bool CFrame::isSomethingDirty ()
 {
-	if (pModalView || isDirty ())
+	if (/*pModalView ||*/ isDirty ())
 		return true;
 	else
 	{
@@ -4206,30 +4232,17 @@ void CFrame::idle ()
 	if (!pContext)
 	{
 		localContext = true;
-	#if WINDOWS
-		hdc2 = GetDC ((HWND)getSystemWindow ());
-		#if DEBUG
-		gNbDC++;
-		#endif
-		pContext = new CDrawContext (this, hdc2, getSystemWindow ());
-
-	#elif MAC
-		pContext = new CDrawContext (this, NULL, getSystemWindow ());
-
-	#elif MOTIF
-		pContext = new CDrawContext (this, gc, (void*)window);
-
-	#elif BEOS
+		#if BEOS
 		if (pPlugView->LockLooperWithTimeout (0) != B_OK)
 			return;
-		pContext = new CDrawContext (this, pPlugView, 0);
-	#endif
+		#endif
+		pContext = createDrawContext ();
 	}
 
 	update (pContext);
 
 	if (localContext)
-		delete pContext;
+		pContext->forget ();
 
 	#if WINDOWS
 	if (!pFrameContext)
@@ -4616,11 +4629,11 @@ long CFrame::setModalView (CView *pView)
 			return 0;
 
 	if (pModalView)
-		pModalView->removed (this);
+		removeView (pModalView);
 	
 	pModalView = pView;
 	if (pModalView)
-		pModalView->attached (this);
+		addView (pModalView);
 
 	return 1;
 }
@@ -4682,33 +4695,13 @@ bool CFrame::getCurrentLocation (CPoint &where)
 #endif
 
 	// create a local context
-	bool localContext = true;
-	CDrawContext *pContextTemp = 0;
-
-#if MAC
-	#if QUARTZ
-	if (pFrameContext)
-	{
-		pContextTemp = pFrameContext;
-		localContext = false;
-	}
-	else
-	#endif
-	pContextTemp = new CDrawContext (this, NULL, this->getSystemWindow ());
-
-#elif MOTIF
-	pContextTemp = new CDrawContext (this, this->getGC (), (void *)this->getWindow ());
-
-#elif BEOS
-	pContextTemp = new CDrawContext (this, this->getSystemWindow (), NULL);
-#endif
+	CDrawContext *pContextTemp = createDrawContext ();
 
 	// get the current position
 	if (pContextTemp)
 	{
 		pContextTemp->getMouseLocation (where);
-		if (localContext)
-			delete pContextTemp;
+		pContextTemp->forget ();
 	}
 	return true;
 }
@@ -4868,7 +4861,7 @@ CViewContainer::~CViewContainer ()
 
 	#if !BEOS
 	 if (pOffscreenContext)
-		delete pOffscreenContext;
+		pOffscreenContext->forget ();
 	pOffscreenContext = 0;
 	#endif
 }
@@ -4881,7 +4874,7 @@ void CViewContainer::setViewSize (CRect &rect)
 	#if !BEOS
 	if (pOffscreenContext && bDrawInOffscreen)
 	{
-		delete pOffscreenContext;
+		pOffscreenContext->forget ();
 		pOffscreenContext = new COffscreenContext (pParent, size.width (), size.height (), kBlackCColor);
 	}
 	#endif
@@ -5083,7 +5076,9 @@ void CViewContainer::draw (CDrawContext *pContext)
  	#if USE_CLIPPING_DRAWRECT
 	CRect oldClip;
 	pContext->getClipRect (oldClip);
-	pContext->setClipRect (r);
+	CRect newClip (r);
+	newClip.bound (oldClip);
+	pContext->setClipRect (newClip);
 	#endif
 
 	// draw the background
@@ -5106,6 +5101,7 @@ void CViewContainer::draw (CDrawContext *pContext)
 		#if USE_CLIPPING_DRAWRECT
 		CRect vSize;
 		pV->getViewSize (vSize);
+		vSize.bound (oldClip);
 		pContext->setClipRect (vSize);
 		#endif
 		pV->draw (pC);
@@ -5135,7 +5131,9 @@ void CViewContainer::drawBackgroundRect (CDrawContext *pContext, CRect& _updateR
 	{
 		CRect oldClip;
 		pContext->getClipRect (oldClip);
-		pContext->setClipRect (_updateRect);
+		CRect newClip (_updateRect);
+		newClip.bound (oldClip);
+		pContext->setClipRect (newClip);
 		CRect tr (0, 0, pBackground->getWidth (), pBackground->getHeight ());
 		if (bTransparencyEnabled)
 			pBackground->drawTransparent (pContext, tr, backgroundOffset);
@@ -5188,7 +5186,9 @@ void CViewContainer::drawRect (CDrawContext *pContext, CRect& _updateRect)
 	#if USE_CLIPPING_DRAWRECT
 	CRect oldClip;
 	pContext->getClipRect (oldClip);
-	pContext->setClipRect (clientRect);
+	CRect newClip (clientRect);
+	newClip.bound (oldClip);
+	pContext->setClipRect (newClip);
 	#endif
 	
 	// draw the background
@@ -5533,7 +5533,7 @@ bool CViewContainer::removed (CView* parent)
 {
 	#if !BEOS
 	 if (pOffscreenContext)
-		delete pOffscreenContext;
+		pOffscreenContext->forget ();
 	pOffscreenContext = 0;
 	#endif
 
@@ -5560,7 +5560,7 @@ void CViewContainer::useOffscreen (bool b)
 	#if !BEOS
 	if (!bDrawInOffscreen && pOffscreenContext)
 	{
-		delete pOffscreenContext;
+		pOffscreenContext->forget ();
 		pOffscreenContext = 0;
 	}
 	#endif
@@ -5648,7 +5648,7 @@ protected:
 // CBitmap Implementation
 //-----------------------------------------------------------------------------
 CBitmap::CBitmap (long resourceID)
-	: resourceID (resourceID), nbReference (1), width (0), height (0)
+	: resourceID (resourceID), width (0), height (0)
 {
 	#if DEBUG
 	gNbCBitmap++;
@@ -5927,7 +5927,7 @@ CBitmap::CBitmap (long resourceID)
 
 //-----------------------------------------------------------------------------
 CBitmap::CBitmap (CFrame &frame, long width, long height)
-	: nbReference (1), width (width), height (height)
+	: width (width), height (height)
 {
 	#if DEBUG
 	gNbCBitmap++;
@@ -5973,7 +5973,7 @@ CBitmap::CBitmap (CFrame &frame, long width, long height)
 
 //-----------------------------------------------------------------------------
 CBitmap::CBitmap ()
-	: nbReference (1), width (0), height (0), resourceID (0)
+	: width (0), height (0), resourceID (0)
 {
 	#if WINDOWS
 	pHandle = 0;
@@ -6054,23 +6054,6 @@ bool CBitmap::isLoaded ()
 	return false;
 }
 
-//-----------------------------------------------------------------------------
-void CBitmap::remember ()
-{
-	nbReference++;
-}
-
-//-----------------------------------------------------------------------------
-void CBitmap::forget ()
-{
-	if (nbReference > 0)
-	{
-		nbReference--;
-		if (nbReference == 0)
-			delete this;
-	}
-}
-
 #if QUARTZ
 #if OLD_TRANSPARENT_BITMAP_MODE
 class CDataProvider 
@@ -6135,7 +6118,7 @@ public:
 CGImageRef CBitmap::createCGImage (bool transparent)
 {
 	PixMapHandle pixMap = GetGWorldPixMap ((GWorldPtr)pHandle);
-
+	
 	Rect bounds;
 	GetPixBounds (pixMap, &bounds);
 
@@ -9100,7 +9083,7 @@ pascal OSStatus CFrame::carbonEventHandler (EventHandlerCallRef inHandlerCallRef
 			{
 				case kEventControlInitialize:
 				{
-					UInt32 controlFeatures = kControlSupportsDragAndDrop | kControlSupportsFocus | kControlHandlesTracking;
+					UInt32 controlFeatures = kControlSupportsDragAndDrop | kControlSupportsFocus | kControlHandlesTracking | kControlSupportsEmbedding;
 					SetEventParameter (inEvent, kEventParamControlFeatures, typeUInt32, sizeof (UInt32), &controlFeatures);
 					result = noErr;
 					break;
@@ -9108,9 +9091,19 @@ pascal OSStatus CFrame::carbonEventHandler (EventHandlerCallRef inHandlerCallRef
 				case kEventControlDraw:
 				{
 					CGContextRef cgcontext = 0;
-					OSStatus result = GetEventParameter (inEvent, kEventParamCGContextRef, typeCGContextRef, NULL, sizeof (cgcontext), NULL, &cgcontext); 				
+					OSStatus result = GetEventParameter (inEvent, kEventParamCGContextRef, typeCGContextRef, NULL, sizeof (cgcontext), NULL, &cgcontext);
 					CDrawContext context (frame, (result == noErr) ? cgcontext : NULL, window);
-					frame->draw (&context);
+					RgnHandle dirtyRegion;
+					if (GetEventParameter (inEvent, kEventParamRgnHandle, typeQDRgnHandle, NULL, sizeof (RgnHandle), NULL, &dirtyRegion) == noErr)
+					{
+						Rect bounds;
+						GetRegionBounds (dirtyRegion, &bounds);
+						CRect updateRect;
+						Rect2CRect (bounds, updateRect);
+						frame->drawRect (&context, updateRect);
+					}
+					else
+						frame->draw (&context);
 					result = noErr;
 					break;
 				}
@@ -9127,11 +9120,7 @@ pascal OSStatus CFrame::carbonEventHandler (EventHandlerCallRef inHandlerCallRef
 					GetEventParameter (inEvent, kEventParamMouseButton, typeMouseButton, NULL, sizeof (EventMouseButton), NULL, &buttonState);
 					if (buttonState == kEventMouseButtonPrimary)
 					{
-						HIPoint hipoint;
-						GetEventParameter (inEvent, kEventParamMouseLocation, typeHIPoint, NULL, sizeof (HIPoint), NULL, &hipoint);
-						Point qdPoint = { hipoint.y, hipoint.x };
-						TrackControl (frame->controlRef, qdPoint, NULL);
-						result = noErr;
+						result = CallNextEventHandler (inHandlerCallRef, inEvent);
 						break;
 					}
 				}
@@ -9181,7 +9170,7 @@ pascal OSStatus CFrame::carbonEventHandler (EventHandlerCallRef inHandlerCallRef
 					AdvanceKeyboardFocus (window);
 					SetKeyboardFocus (window, frame->controlRef, kControlFocusNextPart);
 					Point point = {hipoint.y, hipoint.x};
-					if (eventKind != kEventControlContextualMenuClick)
+					if (eventKind == kEventControlClick)
 						QDGlobalToLocalPoint (GetWindowPort (window), &point);
 					CDrawContext context (frame, NULL, window);
 					CPoint p (point.h, point.v);

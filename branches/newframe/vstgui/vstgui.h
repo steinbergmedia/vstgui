@@ -450,9 +450,26 @@ enum CKnobMode
 };
 
 //-----------------------------------------------------------------------------
+// CReferenceCounter Declaration (Reference Counting)
+//-----------------------------------------------------------------------------
+class CReferenceCounter
+{
+public:
+	CReferenceCounter () : nbReference (1) {}
+	virtual ~CReferenceCounter () {}
+	
+	void forget () { nbReference--; if (nbReference == 0) delete this; }
+	void remember () { nbReference++; }
+	long getNbReference () { return nbReference; }
+
+private:
+	long nbReference;
+};
+
+//-----------------------------------------------------------------------------
 // CDrawContext Declaration
 //-----------------------------------------------------------------------------
-class CDrawContext
+class CDrawContext : public CReferenceCounter
 {
 public:
 	CDrawContext (CFrame *pFrame, void *pSystemContext, void *pWindow = 0);
@@ -574,9 +591,9 @@ protected:
 	FontInfo fontInfoStruct;
 	Pattern fillPattern;
 	bool bInitialized;
+	#endif
 	virtual BitMapPtr getBitmap ();
 	virtual void releaseBitmap ();
-	#endif
 	virtual CGrafPtr getPort ();
 	
 #elif MOTIF
@@ -632,9 +649,9 @@ protected:
 #elif MAC
 	#if QUARTZ
 	void* offscreenBitmap;
-	#else
 	BitMapPtr getBitmap ();
 	void releaseBitmap ();
+	#else
 	CGrafPtr getPort ();
 	#endif
 #endif
@@ -644,7 +661,7 @@ protected:
 //-----------------------------------------------------------------------------
 // CBitmap Declaration
 //-----------------------------------------------------------------------------
-class CBitmap
+class CBitmap : public CReferenceCounter
 {
 public:
 	CBitmap (long resourceID);
@@ -657,10 +674,6 @@ public:
 
 	inline long getWidth ()  { return width; }
 	inline long getHeight () { return height; }
-
-	void forget ();
-	void remember ();
-	long getNbReference () { return nbReference; }
 
 	bool isLoaded ();
 	void *getHandle ();
@@ -683,7 +696,6 @@ protected:
 	CBitmap ();
 
 	long resourceID;
-	long nbReference;
 	long width;
 	long height;
 
@@ -720,7 +732,7 @@ enum {
 //-----------------------------------------------------------------------------
 // CView Declaration
 //-----------------------------------------------------------------------------
-class CView
+class CView : public CReferenceCounter
 {
 public:
 	CView (const CRect &size);
@@ -778,10 +790,6 @@ public:
 	virtual bool removed (CView* parent) { return true; }   // it has have been removed from parent view
 	virtual bool attached (CView* view) { return true; }    // it has been attached to a view
 
-	virtual void forget ();
-	virtual void remember ();
-	virtual	long getNbReference () { return nbReference; }
-
 	virtual void getMouseLocation (CDrawContext* context, CPoint &point);
 	virtual void getFrameTopLeftPos (CPoint& topLeft);
 
@@ -790,8 +798,6 @@ protected:
 	friend class CControl;
 	friend class CFrame;
 	friend class CViewContainer;
-
-	long nbReference;
 
 	CRect  size;
 	CRect  mouseableArea;
@@ -830,7 +836,7 @@ class CViewContainer : public CView
 {
 public:
 	CViewContainer (const CRect &size, CFrame *pParent, CBitmap *pBackground = 0);
-	~CViewContainer ();
+	virtual ~CViewContainer ();
 
 	virtual void addView (CView *pView);
 	virtual void addView (CView *pView, CRect &mouseableArea, bool mouseEnabled = true);
@@ -906,7 +912,7 @@ public:
 	CFrame (const CRect &size, void *pSystemWindow, void *pEditor);
 	CFrame (const CRect &size, const char *pTitle, void *pEditor, const long style = 0);
 	
-	~CFrame ();
+	virtual ~CFrame ();
 
 	virtual bool open (CPoint *pPoint = 0);
 	virtual bool close ();
@@ -948,6 +954,8 @@ public:
 	virtual void  setCursor (CCursorType type);
 
 	virtual CView *getCurrentView ();
+
+	CDrawContext* createDrawContext ();
 
 #if WINDOWS
 	HWND getOuterWindow ();
@@ -1023,7 +1031,7 @@ protected:
 	PlugView *pPlugView;
 #endif
 #if QUARTZ
-	void setDrawContext (CDrawContext* context) { pFrameContext = context; }
+	void setDrawContext (CDrawContext* context) { if (pFrameContext) pFrameContext->forget (); pFrameContext = context; if (context) context->remember (); }
 	friend class CDrawContext;
 
 	static pascal OSStatus carbonEventHandler (EventHandlerCallRef inHandlerCallRef, EventRef inEvent, void *inUserData);

@@ -1,3 +1,12 @@
+2004-06-26 arne
+
+	* the modal view is now added to the frame like all other views.
+	* added a reference counting class. CView, CBitmap and CDrawContext are subclasses of it.
+	* clip handling is more consistent now.
+	* some quartz changes:	- first try to implement CDrawDevice::drawArc (not yet finished)
+							- COffscreenContext is now more implemented, copyTo works in most situations
+							- native mac controls can now be embedded into the frame, but it does only work correct with compositing enabled windows
+	
 2004-06-20 arne
 
 	* AEffGUIEditor::draw will now draw only the rectangle it should, or as in the past the whole editor if no rect is given.

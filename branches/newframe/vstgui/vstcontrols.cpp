@@ -675,7 +675,9 @@ void CParamDisplay::drawText (CDrawContext *pContext, char *string, CBitmap *new
 	{
 		CRect oldClip;
 		pContext->getClipRect (oldClip);
-		pContext->setClipRect (size);
+		CRect newClip (size);
+		newClip.bound (oldClip);
+		pContext->setClipRect (newClip);
 		pContext->setFont (fontID, 0, txtFace);
 	
 		// draw darker text (as shadow)
