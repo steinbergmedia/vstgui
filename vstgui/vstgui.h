@@ -291,7 +291,9 @@ struct CColor
 	unsigned char red;
 	unsigned char green;
 	unsigned char blue;
-	unsigned char unused;
+	union
+	{ unsigned char unused; unsigned char alpha; };
+
 };
 
 // define some basic colors
@@ -383,7 +385,8 @@ enum CDrawMode
 {
 	kCopyMode = 0,
 	kOrMode,
-	kXorMode
+	kXorMode,
+	kAntialias
 };
 
 //----------------------------
@@ -559,6 +562,14 @@ protected:
 	long iPenStyle;
 
 #elif MAC
+	#if QUARTZ
+	CGContextRef gCGContext;
+	public:
+	CGContextRef beginCGContext ();
+	void releaseCGContext (CGContextRef context);
+	protected:
+	#endif
+
 	FontInfo fontInfoStruct;
 	Pattern fillPattern;
 	bool bInitialized;
@@ -617,6 +628,9 @@ protected:
 	BBitmap *offscreenBitmap;
 
 #elif MAC
+	#if QUARTZ
+	void* offscreenBitmap;
+	#endif
 	BitMapPtr getBitmap ();
 	void releaseBitmap ();
 	CGrafPtr getPort ();
@@ -678,6 +692,9 @@ protected:
 	void *pMask;
 
 #elif MAC
+	#if QUARTZ
+	CGImageRef createCGImage (bool transparent = false);
+	#endif
 	void* pHandle;
 	void* pMask;
 
@@ -905,7 +922,17 @@ protected:
 #elif BEOS
 	PlugView *pPlugView;
 #endif
-
+#if QUARTZ
+	void setDrawContext (CDrawContext* context) { pFrameContext = context; }
+	friend class CDrawContext;
+#endif
+#if CARBON_EVENTS
+	static pascal OSStatus carbonEventHandler (EventHandlerCallRef inHandlerCallRef, EventRef inEvent, void *inUserData);
+	bool registerWithToolbox ();
+	
+	ControlDefSpec controlSpec;
+	ControlRef controlRef;
+#endif
 	//-------------------------------------------
 private:
 	CDrawContext *pFrameContext;
