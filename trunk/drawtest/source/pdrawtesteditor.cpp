@@ -72,7 +72,7 @@ protected:
 	DrawTestEditor* editor;
 };
 
-DrawTestEditor::DrawTestEditor (AudioEffectX* effect)
+DrawTestEditor::DrawTestEditor (void* effect)
 : AEffGUIEditor (effect)
 {
 	backgroundBitmap = new CBitmap (kBackgroundBitmap);
