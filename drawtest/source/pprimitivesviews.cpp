@@ -2,6 +2,99 @@
 #include "pprimitivesviews.h"
 #endif
 
+const CColor kBlueAlphaCColor	= {   0,   0, 255, 200};
+const CColor kRedAlphaCColor	= { 255,   0,   0, 200};
+const CColor kYellowAlphaCColor = { 255, 255,   0, 200};
+const CColor kGreenAlphaCColor  = {   0, 255,   0, 200};
+const CColor kMagentaAlphaCColor= { 255,   0, 255, 200};
+
+PMiscView::PMiscView (const CRect& size)
+: CView (size), xOffset (0), yOffset (0)
+{
+	setTransparency (true);
+}
+
+void PMiscView::mouse (CDrawContext* pContext, CPoint &where, long buttons)
+{
+	if (pContext->waitDrag ())
+	{
+		while (pContext->getMouseButtons () == kLButton)
+		{
+			CPoint cl;
+			getMouseLocation (pContext, cl);
+			if (cl != where)
+			{
+				xOffset -= (where.x - cl.x);
+				yOffset -= (where.y - cl.y);
+				where = cl;
+				setDirty (true);
+			}
+			getFrame ()->doIdleStuff ();
+		}
+	}
+}
+
+static inline void offsetPoints (CPoint* points, long numPoints, CPoint offset)
+{
+	for (long i = 0; i < numPoints; i++)
+		points[i].offset (offset.x, offset.y);
+}
+
+void PMiscView::draw (CDrawContext* pContext)
+{
+	drawGrid (pContext);
+	CPoint polyPoints[10];
+	polyPoints[0] = CPoint (50,0);
+	polyPoints[1] = CPoint (100,50);
+	polyPoints[2] = CPoint (50,100);
+	polyPoints[3] = CPoint (0,50);
+	offsetPoints (polyPoints, 4, CPoint (size.left + xOffset, size.top + yOffset));
+	pContext->setDrawMode (kAntialias);
+	pContext->setFrameColor (kBlackCColor);
+	pContext->drawPolygon (polyPoints, 4, kDrawStroked);
+	offsetPoints (polyPoints, 4, CPoint (50, 0));
+	pContext->setFillColor (kBlueAlphaCColor);
+	pContext->drawPolygon (polyPoints, 4, kDrawFilled);
+	offsetPoints (polyPoints, 4, CPoint (50, 0));
+	pContext->setFillColor (kRedAlphaCColor);
+	pContext->drawPolygon (polyPoints, 4, kDrawFilledAndStroked);
+
+	CRect ellipseRect (200, 0, 300, 100);
+	ellipseRect.offset (size.left + xOffset, size.top + yOffset);
+	pContext->drawEllipse (ellipseRect, kDrawStroked);
+	ellipseRect.offset (50, 0);
+	pContext->setFillColor (kBlueAlphaCColor);
+	pContext->drawEllipse (ellipseRect, kDrawFilled);
+	ellipseRect.offset (50, 0);
+	pContext->setFillColor (kRedAlphaCColor);
+	pContext->drawEllipse (ellipseRect, kDrawFilledAndStroked);
+
+	setDirty (false);
+}
+
+void PMiscView::drawGrid (CDrawContext* pContext)
+{
+	static long gridOffset = 10;
+	long x = size.left;
+	long y = size.top;
+	long numHLines = size.getWidth () / gridOffset + 1;
+	long numVLines = size.getHeight () / gridOffset + 1;
+	CPoint* points = new CPoint [numHLines*2 + numVLines*2];
+	for (long i = 0; i < numHLines*2; i+=2, x += gridOffset)
+	{
+		points[i] = CPoint (x, size.top);
+		points[i+1] = CPoint (x, size.bottom);
+	}
+	for (long i = 0; i < numVLines*2; i+=2, y += gridOffset)
+	{
+		points[numHLines*2+i] = CPoint (size.left, y);
+		points[numHLines*2+i+1] = CPoint (size.right, y);
+	}
+	pContext->setDrawMode (kCopyMode);
+	pContext->setFrameColor (kGreyCColor);
+	pContext->drawLines (points, numHLines+numVLines);
+}
+
 PLinesView::PLinesView (const CRect& size)
 : CView (size)
 {
@@ -93,14 +186,8 @@ PRectsView::PRectsView (const CRect& size)
 	setTransparency (true);
 }
 
-const CColor kBlueAlphaCColor	= {   0,   0, 255, 200};
-const CColor kYellowAlphaCColor = { 255, 255,   0, 200};
-const CColor kGreenAlphaCColor  = {   0, 255,   0, 200};
-const CColor kMagentaAlphaCColor= { 255,   0, 255, 200};
-
 void PRectsView::draw (CDrawContext *context)
 {
-	int i;
 	char text[512];
 	text[0] = 0;
 	context->setFont (kNormalFontSmall);
@@ -122,22 +209,22 @@ void PRectsView::draw (CDrawContext *context)
 	CRect r2 (r1);
 	r2.inset (1, 1);
 	context->setFillColor (kBlueAlphaCColor);
-	context->fillRect (r2);	
+	context->drawRect (r2, kDrawFilledAndStroked);	
 	r2  = r1;
 	r2.offset (r2.getWidth (), 0);
 	r2.inset (1,1);
 	context->setFillColor (kYellowAlphaCColor);
-	context->fillRect (r2);	
+	context->drawRect (r2, kDrawFilledAndStroked);	
 	r2 = r1;
 	r2.offset (0, r2.getHeight ());
 	r2.inset (1,1);
 	context->setFillColor (kGreenAlphaCColor);
-	context->fillRect (r2);	
+	context->drawRect (r2, kDrawFilledAndStroked);	
 	r2 = r1;
 	r2.offset (r2.getWidth (), r2.getHeight ());
 	r2.inset (1,1);
 	context->setFillColor (kMagentaAlphaCColor);
-	context->fillRect (r2);	
+	context->drawRect (r2, kDrawFilledAndStroked);	
 
 	r2 = r;
 	r2.inset (r2.getWidth () / 4, r2.getHeight () / 4);
