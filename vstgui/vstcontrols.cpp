@@ -2652,8 +2652,6 @@ void COptionMenu::takeFocus (CDrawContext *pContext)
 #if MAC || WINDOWS
 	// calculate Screen Position
 	#if WINDOWS
-	MSG msg;
-	long result = -1;
 	HWND hwnd = (HWND)getParent ()->getSystemWindow ();
 
 	#endif
@@ -2689,7 +2687,6 @@ void COptionMenu::takeFocus (CDrawContext *pContext)
 #if WINDOWS
 	MSG msg;
 	long result = -1;
-	HWND hwnd = (HWND)getParent ()->getSystemWindow ();
 
 	//---Create the popup menu---
 	long offIdx = 0;
