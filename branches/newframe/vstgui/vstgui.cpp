@@ -689,11 +689,11 @@ void CDrawContext::lineTo (const CPoint& _point)
 		if (drawMode == kAntialias)
 			CGContextSetLineWidth (context, 2 * frameWidth);
 		CGContextScaleCTM (context, 1, -1);
-		CGContextTranslateCTM (context, 0.5f, 0.5f);
 
-		// the clipping needs to be set after we translated the transformation matrix
 		CGRect cgClipRect = CGRectMake (clipRect.left, clipRect.top, clipRect.width (), clipRect.height ());
 		CGContextClipToRect (gCGContext, cgClipRect);
+
+		CGContextTranslateCTM (context, 0.5f, 0.5f);
 
 		CGContextBeginPath (context);
 		CGContextMoveToPoint (context, penLoc.h, penLoc.v);
@@ -830,11 +830,11 @@ void CDrawContext::polyLine (const CPoint *pPoints, long numberOfPoints)
 	CGContextRef context = beginCGContext ();
 	{
 		CGContextScaleCTM (context, 1, -1);
-		CGContextTranslateCTM (context, 0.5f, 0.5f);
 
-		// the clipping needs to be set after we translated the transformation matrix
 		CGRect cgClipRect = CGRectMake (clipRect.left, clipRect.top, clipRect.width (), clipRect.height ());
 		CGContextClipToRect (gCGContext, cgClipRect);
+
+		CGContextTranslateCTM (context, 0.5f, 0.5f);
 
 		CGContextBeginPath (context);
 		CGContextMoveToPoint (context, pPoints[0].h + offset.h, pPoints[0].v + offset.v);
@@ -1224,11 +1224,11 @@ void CDrawContext::fillPolygon (const CPoint *pPoints, long numberOfPoints)
 	CGContextRef context = beginCGContext ();
 	{
 		CGContextScaleCTM (context, 1, -1);
-		CGContextTranslateCTM (context, 0.5f, 0.5f);
 
-		// the clipping needs to be set after we translated the transformation matrix
 		CGRect cgClipRect = CGRectMake (clipRect.left, clipRect.top, clipRect.width (), clipRect.height ());
 		CGContextClipToRect (gCGContext, cgClipRect);
+
+		CGContextTranslateCTM (context, 0.5f, 0.5f);
 
 		CGContextBeginPath (context);
 		CGContextMoveToPoint (context, pPoints[0].h + offset.h, pPoints[0].v + offset.v);
@@ -1325,11 +1325,11 @@ void CDrawContext::drawRect (const CRect &_rect)
 			CGContextSetLineWidth (context, 2 * frameWidth);
 		CGRect r = CGRectMake (rect.left, rect.top, rect.width (), rect.height ());
 		CGContextScaleCTM (context, 1, -1);
-		CGContextTranslateCTM (context, 0.5f, 0.5f);
 
-		// the clipping needs to be set after we translated the transformation matrix
 		CGRect cgClipRect = CGRectMake (clipRect.left, clipRect.top, clipRect.width (), clipRect.height ());
 		CGContextClipToRect (gCGContext, cgClipRect);
+
+		CGContextTranslateCTM (context, 0.5f, 0.5f);
 
 		CGContextStrokeRect (context, r);
 		releaseCGContext (context);
@@ -1384,11 +1384,11 @@ void CDrawContext::fillRect (const CRect &_rect)
 	{
 		CGRect r = CGRectMake (rect.left, rect.top, rect.width (), rect.height ());
 		CGContextScaleCTM (context, 1, -1);
-		CGContextTranslateCTM (context, 0.5f, 0.5f);
 
-		// the clipping needs to be set after we translated the transformation matrix
 		CGRect cgClipRect = CGRectMake (clipRect.left, clipRect.top, clipRect.width (), clipRect.height ());
 		CGContextClipToRect (gCGContext, cgClipRect);
+
+		CGContextTranslateCTM (context, 0.5f, 0.5f);
 
 		CGContextFillRect (context, r);
 		releaseCGContext (context);
@@ -1431,11 +1431,11 @@ void CDrawContext::drawEllipse (const CRect &_rect)
 	CGContextRef context = beginCGContext ();
 	{
 		CGContextScaleCTM (context, 1, -1);
-		CGContextTranslateCTM (context, 0.5f, 0.5f);
 
-		// the clipping needs to be set after we translated the transformation matrix
 		CGRect cgClipRect = CGRectMake (clipRect.left, clipRect.top, clipRect.width (), clipRect.height ());
 		CGContextClipToRect (gCGContext, cgClipRect);
+
+		CGContextTranslateCTM (context, 0.5f, 0.5f);
 
 		CGContextSaveGState (context);
 		CGContextBeginPath (context);
@@ -1479,11 +1479,11 @@ void CDrawContext::fillEllipse (const CRect &_rect)
 	CGContextRef context = beginCGContext ();
 	{
 		CGContextScaleCTM (context, 1, -1);
-		CGContextTranslateCTM (context, 0.5f, 0.5f);
 
-		// the clipping needs to be set after we translated the transformation matrix
 		CGRect cgClipRect = CGRectMake (clipRect.left, clipRect.top, clipRect.width (), clipRect.height ());
 		CGContextClipToRect (gCGContext, cgClipRect);
+
+		CGContextTranslateCTM (context, 0.5f, 0.5f);
 
 		CGContextSaveGState (context);
 		CGContextBeginPath (context);
@@ -1711,11 +1711,11 @@ void CDrawContext::drawArc (const CRect &_rect, const CPoint &_point1, const CPo
 	CGContextRef context = beginCGContext ();
 	{	// someone who uses this shoud check if this is correct
 		CGContextScaleCTM (context, 1, -1);
-		CGContextTranslateCTM (context, 0.5f, 0.5f);
 
-		// the clipping needs to be set after we translated the transformation matrix
 		CGRect cgClipRect = CGRectMake (clipRect.left, clipRect.top, clipRect.width (), clipRect.height ());
 		CGContextClipToRect (gCGContext, cgClipRect);
+
+		CGContextTranslateCTM (context, 0.5f, 0.5f);
 
 		CGContextBeginPath (context);
 		addOvalToPath (context, CPoint (rect.left + rect.width () / 2, rect.top + rect.height () / 2), rect.width () / 2, rect.height () / 2, angle1, angle2, 0);
@@ -2137,7 +2137,6 @@ void CDrawContext::drawString (const char *string, const CRect &_rect,
 
 		CGContextScaleCTM (context, 1, 1);
 
-		// the clipping needs to be set after we translated the transformation matrix
 		CGRect cgClipRect = CGRectMake (clipRect.left, clipRect.bottom * -1, clipRect.width (), clipRect.height ());
 		CGContextClipToRect (gCGContext, cgClipRect);
 
@@ -5361,7 +5360,14 @@ void CViewContainer::update (CDrawContext *pContext)
 			{
 				#if USE_ALPHA_BLEND
 				if (bTransparencyEnabled)
-					getParent ()->drawRect (pContext, size);
+				{
+					CPoint topLeft;
+					getFrameTopLeftPos (topLeft);
+					topLeft.offset (-size.left, -size.top);
+					CRect updateRect (size);
+					updateRect.offset (topLeft.x, topLeft.y);
+					getParent ()->drawRect (pContext, updateRect);
+				}
 				else
 				#endif
 				draw (pContext);
@@ -5375,14 +5381,23 @@ void CViewContainer::update (CDrawContext *pContext)
 			if (bTransparencyEnabled)
 			{
 				if (bDirty)
-					getParent ()->drawRect (pContext, size);
-				else
 				{
 					CPoint topLeft;
 					getFrameTopLeftPos (topLeft);
 					topLeft.offset (-size.left, -size.top);
+					CRect updateRect (size);
+					updateRect.offset (topLeft.x, topLeft.y);
+					getParent ()->drawRect (pContext, updateRect);
+				}
+				else
+				{
+					CRect updateRect (size);
+					updateRect.offset (-size.left, -size.top);
+					CPoint topLeft;
+					getFrameTopLeftPos (topLeft);
+					topLeft.offset (-size.left, -size.top);
 					FOREACHSUBVIEW
-						if (pV->isDirty ())
+						if (pV->isDirty () && pV->checkUpdate (updateRect))
 						{
 							if (pV->notify (this, kMsgCheckIfViewContainer))
 							{
@@ -6217,7 +6232,6 @@ void CBitmap::draw (CDrawContext *pContext, CRect &rect, const CPoint &offset)
 				
 				CGContextScaleCTM (context, 1, 1);
 
-				// the clipping needs to be set after we translated the transformation matrix
 				CRect ccr;
 				pContext->getClipRect (ccr);
 				CGRect cgClipRect = CGRectMake (ccr.left + pContext->offset.h, (ccr.top +  + pContext->offset.v) * -1 - ccr.height (), ccr.width (), ccr.height ());
@@ -6390,7 +6404,6 @@ void CBitmap::drawTransparent (CDrawContext *pContext, CRect &rect, const CPoint
 				
 				CGContextScaleCTM (context, 1, 1);
 
-				// the clipping needs to be set after we translated the transformation matrix
 				CRect ccr;
 				pContext->getClipRect (ccr);
 				CGRect cgClipRect = CGRectMake (ccr.left + pContext->offset.h, (ccr.top +  + pContext->offset.v) * -1 - ccr.height (), ccr.width (), ccr.height ());
@@ -6663,7 +6676,6 @@ void CBitmap::drawAlphaBlend (CDrawContext *pContext, CRect &rect, const CPoint 
 				
 				CGContextScaleCTM (context, 1, 1);
 
-				// the clipping needs to be set after we translated the transformation matrix
 				CRect ccr;
 				pContext->getClipRect (ccr);
 				CGRect cgClipRect = CGRectMake (ccr.left + pContext->offset.h, (ccr.top +  + pContext->offset.v) * -1 - ccr.height (), ccr.width (), ccr.height ());

@@ -1,3 +1,8 @@
+2004-06-28 arne
+
+	* quartz: fix clipping issues
+	* fix a bug in CViewContainer's update method if the container is transparent and embedded into another CViewContainer
+
 2004-06-26 arne
 
 	* the modal view is now added to the frame like all other views.
