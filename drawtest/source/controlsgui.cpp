@@ -510,6 +510,7 @@ void ControlsGUI::valueChanged (CDrawContext *pContext, CControl *pControl)
 				vstFileSelect.fileTypes   = (VstFileType*)&types;
 				vstFileSelect.returnPath  = new char[1024];
 				vstFileSelect.initialPath = 0;
+				vstFileSelect.future[0] = 1;	// utf-8 path on macosx
 				CFileSelector selector (NULL);
 				if (selector.run (&vstFileSelect))
 				{

@@ -171,4 +171,11 @@ void DrawTestEffect::processReplacing (float **inputs, float **outputs, long sam
 {
 }
 
+long DrawTestEffect::canDo (char* text)
+{
+	if (!strcmp (text, "wantsUTF8Paths"))
+		return 1;
+	return 0;
+}
+
 #endif
