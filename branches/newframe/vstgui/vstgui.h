@@ -771,7 +771,8 @@ public:
 	
 	virtual void setParent (CFrame *pParent) { this->pParent = pParent; }
 	CFrame *getParent () { return pParent; }
-	
+	CFrame *getFrame () { return pParent; }
+
 	virtual void *getEditor ();
 
 	virtual bool removed (CView* parent) { return true; }   // it has have been removed from parent view
