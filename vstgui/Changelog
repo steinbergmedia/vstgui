@@ -1,3 +1,21 @@
+2003-11-15 arne
+
+	***************
+	*** WARNING ***
+	***************
+	existing code need to be changed !!!
+	You need to change your CView::mouse methods to add the buttons parameter and your calls to CDrawContext::getMouseLocation inside CViews should be changed to call CView::getMouseLocation instead.
+	***************
+	
+	* fixed the CViewContainer stuff with Quartz.
+		NOTE :	I had to change the way how the view can get the current mouse location. It has to ask itself now as the CView class can 
+				check if it is embedded into a CViewContainer which the CDrawDevice couldn't.
+	* all mouse methods get another parameter: long buttons
+
+	Mac Only:
+	* changed the drag and drop stuff for Carbon Events
+	* With CARBON_EVENTS == 1, CFrame acts now like a Mac Toolbox Control. It works even on compositing enabled windows and on non left-top positions. 
+
 2003-11-12 arne
 
 	* Bugfix for CFrame::setSize for hosts which support "audioMasterSizeWindow" submitted by Justus Henkmann (TC Works)

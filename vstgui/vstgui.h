@@ -179,6 +179,9 @@ struct CRect
 	inline long width () const  { return right - left; }
 	inline long height () const { return bottom - top; }
 
+	inline void setWidth (long width) { right = left + width; }
+	inline void setHeight (long height) { bottom = top + height; }
+
 	CRect &offset (long x, long y)
 	{ left += x; right += x; top += y; bottom += y; return *this; }
 
@@ -723,7 +726,7 @@ public:
 	virtual void draw (CDrawContext *pContext);
 	virtual void drawRect (CDrawContext *pContext, CRect& updateRect) { draw (pContext); }
 	virtual bool checkUpdate (CRect& updateRect) { return updateRect.rectOverlap (size); }
-	virtual void mouse (CDrawContext *pContext, CPoint &where);
+	virtual void mouse (CDrawContext *pContext, CPoint &where, long buttons = -1);
 	virtual void update (CDrawContext *pContext);
 	virtual long notify (CView* sender, const char* message);
 	
@@ -771,6 +774,8 @@ public:
 	virtual void remember ();
 	virtual	long getNbReference () { return nbReference; }
 
+	virtual void getMouseLocation (CDrawContext* context, CPoint &point);
+
 	//-------------------------------------------
 protected:
 	friend class CControl;
@@ -808,7 +813,7 @@ public:
 	void draw (CDrawContext *pContext);
 	void drawRect (CDrawContext *pContext, CRect& updateRect);
 	void draw (CView *pView = 0);
-	void mouse (CDrawContext *pContext, CPoint &where);
+	void mouse (CDrawContext *pContext, CPoint &where, long buttons = -1);
 	bool onDrop (void **ptrItems, long nbItems, long type, CPoint &where);
 	bool onWheel (CDrawContext *pContext, const CPoint &where, float distance);
 	long onKeyDown (VstKeyCode& keyCode);
@@ -932,6 +937,10 @@ protected:
 	
 	ControlDefSpec controlSpec;
 	ControlRef controlRef;
+	EventHandlerRef dragEventHandler;
+	public:
+	void* getPlatformControl () { return controlRef; }
+	protected:
 #endif
 	//-------------------------------------------
 private:
@@ -955,6 +964,9 @@ public:
 	CCView   *pPrevious;
 };
 
+// Message to check if View is a CViewContainer
+extern char* kMsgCheckIfViewContainer;
+
 //-----------------------------------------------------------------------------
 // CViewContainer Declaration
 //-----------------------------------------------------------------------------
@@ -975,7 +987,7 @@ public:
 
 	virtual void draw (CDrawContext *pContext);
 	virtual void drawRect (CDrawContext *pContext, CRect& updateRect);
-	virtual void mouse (CDrawContext *pContext, CPoint &where);
+	virtual void mouse (CDrawContext *pContext, CPoint &where, long buttons = -1);
 	virtual bool onDrop (void **ptrItems, long nbItems, long type, CPoint &where);
 	virtual bool onWheel (CDrawContext *pContext, const CPoint &where, float distance);
 	virtual void update (CDrawContext *pContext);
@@ -1013,6 +1025,9 @@ public:
 	virtual bool attached (CView* view);
 		
 	CView *getCurrentView ();
+
+	void modifyDrawContext (long save[4], CDrawContext* pContext);
+	void restoreDrawContext (CDrawContext* pContext, long save[4]);
 
 	//-------------------------------------------
 protected:
