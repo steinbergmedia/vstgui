@@ -1817,7 +1817,7 @@ COptionMenuScheme::COptionMenuScheme ()
 	disableTextColor = kWhiteCColor;
 #endif
 	font = kNormalFontSmall;
-	#if MAC && QUARTZ
+	#if MAC_ENABLE_MENU_SCHEME
 	registerWithToolbox ();
 	#endif
 }
@@ -1825,7 +1825,7 @@ COptionMenuScheme::COptionMenuScheme ()
 //------------------------------------------------------------------------
 COptionMenuScheme::~COptionMenuScheme ()
 {
-	#if MAC && QUARTZ
+	#if MAC_ENABLE_MENU_SCHEME
 	unregisterWithToolbox ();
 	#endif
 }
@@ -1948,7 +1948,9 @@ void COptionMenuScheme::drawItem (const char* text, long itemId, long state, CDr
 		pContext->drawString (text, r, false, kLeftText);
 }
 
-#if MAC && QUARTZ
+#if MAC_ENABLE_MENU_SCHEME
+#define kHIMenuViewClassID              CFSTR("com.apple.HIMenuView")
+
 struct HIMenuScheme
 {
 	HIViewRef hiView;
@@ -2913,7 +2915,7 @@ void *COptionMenu::appendItems (long &offsetIdx)
 		
 	MenuHandle theMenu = 0;
 	//---Create the menu
-	#if QUARTZ
+	#if MAC_ENABLE_MENU_SCHEME
 	extern long pSystemVersion;
 	if ((scheme || gOptionMenuScheme) && pSystemVersion >= 0x1030)
 	{

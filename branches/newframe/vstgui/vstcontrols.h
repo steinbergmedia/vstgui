@@ -333,7 +333,7 @@ protected:
 
 	virtual void drawItemBack (CDrawContext* pContext, const CRect& rect, bool hilite);
 
-	#if QUARTZ
+	#if MAC_ENABLE_MENU_SCHEME
 	static pascal OSStatus eventHandler (EventHandlerCallRef inCallRef, EventRef inEvent, void *inUserData);
 	void registerWithToolbox ();
 	void unregisterWithToolbox ();

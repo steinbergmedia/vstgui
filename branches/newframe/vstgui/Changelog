@@ -1,3 +1,7 @@
+2004-08-25 arne
+
+	* mac: change COptionMenuScheme implementation to be optional as it only works for OSX Version >= 10.3 (macro: MAC_ENABLE_MENU_SCHEME)
+
 2004-08-15 arne
 
 	* added CView::acceptDrop. On Mac OS this changes the mouse cursor if a view accepts a drop. For Windows there is currently no action. But it should follow. And maybe it will change so that a real tracking is possible.
