@@ -1,3 +1,8 @@
+2004-08-15 arne
+
+	* added CView::acceptDrop. On Mac OS this changes the mouse cursor if a view accepts a drop. For Windows there is currently no action. But it should follow. And maybe it will change so that a real tracking is possible.
+	* with the new update mechanism the modal view is now updated first in CFrame::update, to make sure it will be drawn in all circumstances, even if it is transparent and a view below it is dirty.
+
 2004-08-06 arne
 
 	* quartz:	- cache the CGImageRef, so that it is not created every time the CBitmap is drawn. (Performace will be much better with the next os release)

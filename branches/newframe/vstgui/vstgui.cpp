@@ -4164,6 +4164,10 @@ void CFrame::update (CDrawContext *pContext)
 		CRect oldClipRect;
 		dc->getClipRect (oldClipRect);
 		#endif
+		#if NEW_UPDATE_MECHANISM
+		if (pModalView && pModalView->isDirty ())
+			pModalView->update (dc);
+		#endif
 		FOREACHSUBVIEW
 			#if USE_CLIPPING_DRAWRECT
 			CRect viewSize;
@@ -5345,6 +5349,34 @@ bool CViewContainer::onWheel (CDrawContext *pContext, const CPoint &where, float
 		result = view->onWheel (pContext, where2, distance);
 
 		restoreDrawContext (pContext, save);
+	}
+	return result;
+}
+
+//-----------------------------------------------------------------------------
+bool CViewContainer::acceptDrop (long type, CPoint &where)
+{
+	if (!pParent)
+		return false;
+
+	// convert to relativ pos
+	CPoint where2 (where);
+	where2.offset (-size.left, -size.top);
+
+	bool result = false;
+	CCView *pSv = pLastView;
+	while (pSv)
+	{
+		CView *pV = pSv->pView;
+		if (pV && pV->getMouseEnabled () && where2.isInside (pV->mouseableArea))
+		{
+			if (pV->acceptDrop (type, where2))
+			{
+				result = true;
+				break;
+			}
+		}
+		pSv = pSv->pPrevious;
 	}
 	return result;
 }
@@ -8704,6 +8736,7 @@ public:
 private:
 	long refCount;
 	bool accept;
+	unsigned long dragType;
 	VSTGUI_CFrame* pFrame;
 };
 
@@ -8717,7 +8750,7 @@ void* createDropTarget (VSTGUI_CFrame* pFrame)
 
 //-----------------------------------------------------------------------------
 CDropTarget::CDropTarget (VSTGUI_CFrame* pFrame)
-: refCount (0), pFrame (pFrame)
+: refCount (0), pFrame (pFrame), dragType (0)
 {
 }
 
@@ -8766,6 +8799,7 @@ STDMETHODIMP CDropTarget::DragEnter (IDataObject *dataObject, DWORD keyState, PO
 		FORMATETC formatTEXTDrop = {CF_TEXT, 0, DVASPECT_CONTENT, -1, TYMED_HGLOBAL};
 		if (S_OK == dataObject->QueryGetData (&formatTEXTDrop))
 		{
+			dragType = VSTGUI_kDropText;
 			accept = true;
 			return DragOver (keyState, pt, effect);
 		}
@@ -8773,6 +8807,7 @@ STDMETHODIMP CDropTarget::DragEnter (IDataObject *dataObject, DWORD keyState, PO
 		FORMATETC formatHDrop = {CF_HDROP, 0, DVASPECT_CONTENT, -1, TYMED_HGLOBAL};
 		if (S_OK == dataObject->QueryGetData (&formatHDrop))
 		{
+			dragType = VSTGUI_kDropFiles;
 			accept = true;
 			return DragOver (keyState, pt, effect);
 		}
@@ -8787,6 +8822,18 @@ STDMETHODIMP CDropTarget::DragOver (DWORD keyState, POINTL pt, DWORD *effect)
 {
 	if (accept)
 	{
+		#if 0
+		VSTGUI_CPoint where;
+		pFrame->getMouseLocation (where);
+		if (pFrame->acceptsDrop (dragType, where))
+		{
+			// add visual feedback here
+		}
+		else
+		{
+			// add visual feedback here
+		}
+		#endif
 		if (keyState & MK_CONTROL)
 			*effect = DROPEFFECT_COPY;
 		else
@@ -8933,6 +8980,9 @@ bool checkResolveLink (const char* nativePath, char* resolved)
 }
 
 #elif MAC
+static long dragType = 0;
+static unsigned long themeCursorNotAllow = 0;
+
 #if MAC_OLD_DRAG
 //-----------------------------------------------------------------------------
 // Drop Implementation
@@ -8941,19 +8991,26 @@ bool checkResolveLink (const char* nativePath, char* resolved)
 #include "Drag.h"
 #endif
 
-pascal short drag_receiver (WindowPtr w, void* ref, DragReference drag);
+pascal static short drag_receiver (WindowPtr w, void* ref, DragReference drag);
+pascal static OSErr drag_tracker (DragTrackingMessage message, WindowRef theWindow, void *handlerRefCon, DragRef theDrag);
 
 static DragReceiveHandlerUPP drh;
+static DragTrackingHandlerUPP dth;
 
 static bool gEventDragWorks = false;
 //-------------------------------------------------------------------------------------------
 void install_drop (CFrame *frame)
 {
 	drh = NewDragReceiveHandlerUPP (drag_receiver);
+	dth = NewDragTrackingHandlerUPP (drag_tracker);
 #if CARBON
 	InstallReceiveHandler (drh, (WindowRef)(frame->getSystemWindow ()), (void*)frame);
+	InstallTrackingHandler (dth, (WindowRef)(frame->getSystemWindow ()), (void*)frame);
+	if (pSystemVersion >= 0x1020)
+		themeCursorNotAllow = 18; // kThemeNotAllowedCursor
 #else
 	InstallReceiveHandler (drh, (GrafPort*)(frame->getSystemWindow ()), (void*)frame);
+	InstallTrackingHandler (dth, (GrafPort*)(frame->getSystemWindow ()), (void*)frame);
 #endif
 }
 
@@ -8962,9 +9019,81 @@ void remove_drop (CFrame *frame)
 {
 #if CARBON
 	RemoveReceiveHandler (drh, (WindowRef)(frame->getSystemWindow ()));
+	RemoveTrackingHandler (dth, (WindowRef)(frame->getSystemWindow ()));
 #else
 	RemoveReceiveHandler (drh, (GrafPort*)(frame->getSystemWindow ()));
+	RemoveTrackingHandler (dth, (GrafPort*)(frame->getSystemWindow ()));
 #endif
+}
+
+// drag tracking for visual feedback
+pascal OSErr drag_tracker (DragTrackingMessage message, WindowRef theWindow, void *handlerRefCon, DragRef dragRef)
+{
+	OSErr result = dragNotAcceptedErr;
+	CFrame* frame = (CFrame*)handlerRefCon;
+	switch (message)
+	{
+		case kDragTrackingEnterWindow:
+		{
+			UInt16 numItems;
+			CountDragItems (dragRef, &numItems);
+			if (numItems > 0)
+			{
+				long size;
+				for (UInt16 i = 1; i <= numItems; i++)
+				{
+					DragItemRef itemRef;
+					if (GetDragItemReferenceNumber (dragRef, i, &itemRef) == noErr)
+					{
+						if (GetFlavorDataSize (dragRef, itemRef, flavorTypeHFS, &size) == noErr)
+						{
+							dragType = VSTGUI_kDropFiles;
+							result = noErr;
+						}
+						if (GetFlavorDataSize (dragRef, itemRef, 'TEXT', &size) == noErr)
+						{
+							dragType = VSTGUI_kDropText;
+							result = noErr;
+						}
+						if (GetFlavorDataSize (dragRef, itemRef, 'XML ', &size) == noErr)
+						{
+							dragType = VSTGUI_kDropText;
+							result = noErr;
+						}
+						if (result == noErr)
+							break;
+					}
+				}
+			}
+			if (result == noErr)
+			{
+				CPoint where;
+				frame->getCurrentLocation (where);
+				if (frame->acceptDrop (dragType, where))
+					SetThemeCursor (kThemeCopyArrowCursor);
+				else
+					SetThemeCursor (themeCursorNotAllow);
+			}
+			break;
+		}
+		case kDragTrackingLeaveWindow:
+		{
+			dragType = 0;
+			SetThemeCursor (kThemeArrowCursor);
+			break;
+		}
+		case kDragTrackingInWindow:
+		{
+			CPoint where;
+			frame->getCurrentLocation (where);
+			if (frame->acceptDrop (dragType, where))
+				SetThemeCursor (kThemeCopyArrowCursor);
+			else
+				SetThemeCursor (themeCursorNotAllow);
+			break;
+		}
+	}
+	return noErr;
 }
 
 //-------------------------------------------------------------------------------------------
@@ -9260,6 +9389,7 @@ pascal OSStatus CFrame::carbonEventHandler (EventHandlerCallRef inHandlerCallRef
 					#if MAC_OLD_DRAG
 					gEventDragWorks = true;
 					#endif
+					dragType = 0;
 					DragRef dragRef;
 					if (GetEventParameter (inEvent, kEventParamDragRef, typeDragRef, NULL, sizeof (DragRef), NULL, &dragRef) == noErr)
 					{
@@ -9274,11 +9404,20 @@ pascal OSStatus CFrame::carbonEventHandler (EventHandlerCallRef inHandlerCallRef
 								if (GetDragItemReferenceNumber (dragRef, i, &itemRef) == noErr)
 								{
 									if (GetFlavorDataSize (dragRef, itemRef, flavorTypeHFS, &size) == noErr)
+									{
+										dragType = VSTGUI_kDropFiles;
 										result = noErr;
+									}
 									if (GetFlavorDataSize (dragRef, itemRef, 'TEXT', &size) == noErr)
+									{
+										dragType = VSTGUI_kDropText;
 										result = noErr;
+									}
 									if (GetFlavorDataSize (dragRef, itemRef, 'XML ', &size) == noErr)
+									{
+										dragType = VSTGUI_kDropText;
 										result = noErr;
+									}
 									if (result == noErr)
 										break;
 								}
@@ -9288,18 +9427,30 @@ pascal OSStatus CFrame::carbonEventHandler (EventHandlerCallRef inHandlerCallRef
 						{
 							Boolean accept = true;
 							SetEventParameter (inEvent, 'cldg' /*kEventParamControlWouldAcceptDrop*/, typeBoolean, sizeof (Boolean), &accept);
-							SetThemeCursor (kThemeCopyArrowCursor);
+							CPoint where;
+							frame->getCurrentLocation (where);
+							if (frame->acceptDrop (dragType, where))
+								SetThemeCursor (kThemeCopyArrowCursor);
+							else
+								SetThemeCursor (kThemeNotAllowedCursor);
 						}
 					}
 					break;
 				}
 				case kEventControlDragWithin:
 				{
+					CPoint where;
+					frame->getCurrentLocation (where);
+					if (frame->acceptDrop (dragType, where))
+						SetThemeCursor (kThemeCopyArrowCursor);
+					else
+						SetThemeCursor (kThemeNotAllowedCursor);
 					result = noErr;
 					break;
 				}
 				case kEventControlDragLeave:
 				{
+					dragType = 0;
 					SetThemeCursor (kThemeArrowCursor);
 					result = noErr;
 					break;
@@ -9372,8 +9523,8 @@ pascal OSStatus CFrame::carbonEventHandler (EventHandlerCallRef inHandlerCallRef
 							if (string)
 							{
 								frame->onDrop ((void**)&string, size, VSTGUI_kDropText, where);
-										
 								delete []string;
+								return noErr;
 							}
 						}
 					}

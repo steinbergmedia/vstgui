@@ -757,6 +757,8 @@ public:
 	virtual bool onDrop (void **ptrItems, long nbItems, long type, CPoint &where);
 	virtual bool onWheel (CDrawContext *pContext, const CPoint &where, float distance);
 
+	virtual bool acceptDrop (long type, CPoint &where) { return false; }	// under evaluation
+
 	virtual void looseFocus (CDrawContext *pContext = 0);
 	virtual void takeFocus (CDrawContext *pContext = 0);
 
@@ -863,6 +865,8 @@ public:
 	virtual bool hitTest (const CPoint& where, const long buttons = -1);
 	virtual long onKeyDown (VstKeyCode& keyCode);
 	virtual long onKeyUp (VstKeyCode& keyCode);
+
+	virtual bool acceptDrop (long type, CPoint &where);
 
 	virtual void looseFocus (CDrawContext *pContext = 0);
 	virtual void takeFocus (CDrawContext *pContext = 0);
