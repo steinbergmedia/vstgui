@@ -136,7 +136,7 @@
 					</tr>
 				</tbody>
 			</table>
-			<p><div class="cpp">virtual void mouse (<a href="CDrawContext.html">CDrawContext</a> * context, <a href="CPoint.html">CPoint</a> &amp;where);</div>
+			<p><div class="cpp">virtual void mouse (<a href="CDrawContext.html">CDrawContext</a> * context, <a href="CPoint.html">CPoint</a> &amp;where, long buttons = -1);</div>
 <P></P>
 			<table width="100%" cellpadding="0" cellspacing="0" border="1" bordercolor="#000000">
 				<tbody>
@@ -152,11 +152,16 @@
 						<td>Where the mouse click occured. Coordonates are in pixel relative to the 
 							parent's frame.</td>
 					</tr>
+					<tr>
+						<th align="right" valign="top">
+							<code>buttons</code></th>
+						<td>Which mouse buttons and modifier keys are pressed.</td>
+					</tr>
 				</tbody>
 			</table>
 			<h4>AEffGUIEditor :</h4>
 			<p>Calls <code><a href="CFrame.html">frame</a> -&gt;<a href="CFrame.html#mouse">mouse</a>
-					(x, y)</code>.</p>
+					(context, where, buttons)</code>.</p>
 			<h4>See also :</h4>
 			<ul>
 				<li>
@@ -281,7 +286,7 @@
 					<tr>
 						<th align="right" valign="top">
 							<code>type</code></th>
-						<td>A constant from <a href="file:///C:/Dokumente%20und%20Einstellungen/pcamillieri/Eigene%20Dateien/Data/VST%20SDK/vstsdk-doc/html/plug/gui/CDropType.html">
+						<td>A constant from <a href="CDropType.html">
 								CDropType</a>
 						</td>
 					</tr>
@@ -324,6 +329,24 @@
 			<p><div class="cpp">virtual bool onWheel (<a href="CDrawContext.html">CDrawContext</a> *pContext, const <a href="CPoint.html">CPoint</a> &amp;where, float distance);</div>
 <P></P>
 			<p><code></code></p>
+			<p><code></code></p>
+			<hr width="100%" size="2">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="onWheel">getMouseLocation</a>
+							</h4>
+						</td>
+						<td align="right">
+							<h4>CVS</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">virtual void getMouseLoaction (<a href="CDrawContext.html">CDrawContext</a> *pContext, <a href="CPoint.html">CPoint</a> &amp;where);</div>
+<P></P>
+			<p>Returns the current position of the mouse relative to the parent view.</p>
 			<p><code></code></p>
 			<hr noshade size="4">
 			<table width="100%">
