@@ -1,0 +1,17 @@
+2003-09-17 arne
+
+	* Added Carbon Events handling (#define CARBON_EVENTS 1)
+	* Implemented QUARTZ drawing. (#define QUARTZ 1)
+	* CSlider doesn't use a COffscreenContext for drawing on MacOSX anymore
+
+	Quartz Notes:
+		- Not all graphic operations we use in vstgui have an equivalent in quartz.
+			Currently unsupported are : 
+				- all drawing modes except kCopyMode
+				- getPoint ()
+				_ floodFill ()
+				- copy from Screen to Offscreen
+
+		- to support alpha drawing on all operations I have made changes to CColor. The 4th variable is now the alpha value where 255 is opaque and 0 is transparent.
+		- transparent bitmap drawing is now handled with the alpha value of the bitmap, if you want the old behaviour turn on OLD_TRANSPARENT_BITMAP_MODE
+		- because of some strange things with CViewContainers while doing mouse downs the drawcontext has an offset which results in wrong drawing. This needs to be fixed !!!

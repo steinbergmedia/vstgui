@@ -1540,9 +1540,11 @@ void CTextEdit::looseFocus (CDrawContext *pContext)
 	delete textView;
 
 #endif
+	bool localContext = false;
 	CDrawContext *pContextTemp = 0;
 	if (!pContext)
 	{
+		localContext = true;
 		// create a local context
 #if WINDOWS
 		hwnd = (HWND)getParent ()->getSystemWindow ();
@@ -1574,7 +1576,7 @@ void CTextEdit::looseFocus (CDrawContext *pContext)
 	if (strcmp (oldText, text) && listener)
 		listener->valueChanged (pContextTemp, this);
 	
-	if (!pContext)
+	if (localContext)
 	{
 		if (pContextTemp)
 			delete pContextTemp;
@@ -3578,9 +3580,9 @@ bool CSlider::attached (CView *parent)
 {
 	if (pOScreen)
 		delete pOScreen;
-
+	#if !MACX
 	pOScreen = new COffscreenContext (getParent (), widthControl, heightControl, kBlackCColor);
-		
+	#endif		
 	return CControl::attached (parent);
 }
 
@@ -3598,6 +3600,8 @@ bool CSlider::removed (CView *parent)
 //------------------------------------------------------------------------
 void CSlider::draw (CDrawContext *pContext)
 {
+	CDrawContext* drawContext = pOScreen ? pOScreen : pContext;
+
 	float fValue;
 	if (style & kLeft || style & kTop)
 		fValue = value;
@@ -3606,12 +3610,14 @@ void CSlider::draw (CDrawContext *pContext)
 	
 	// (re)draw background
 	CRect rect (0, 0, widthControl, heightControl);
+	if (!pOScreen)
+		rect.offset (size.left, size.top);
 	if (pBackground)
 	{
 		if (bTransparencyEnabled)
-			pBackground->drawTransparent (pOScreen, rect, offset);
+			pBackground->drawTransparent (drawContext, rect, offset);
 		else
-			pBackground->draw (pOScreen, rect, offset);
+			pBackground->draw (drawContext, rect, offset);
 	}
 	
 	// calc new coords of slider
@@ -3638,17 +3644,20 @@ void CSlider::draw (CDrawContext *pContext)
 		rectNew.bottom = rectNew.top + heightOfSlider;
 		rectNew.bottom = (rectNew.bottom > maxTmp) ? maxTmp : rectNew.bottom;
 	}
+	if (!pOScreen)
+		rectNew.offset (size.left, size.top);
 
 	// draw slider at new position
 	if (pHandle)
 	{
 		if (bDrawTransparentEnabled)
-			pHandle->drawTransparent (pOScreen, rectNew);
+			pHandle->drawTransparent (drawContext, rectNew);
 		else 
-			pHandle->draw (pOScreen, rectNew);
+			pHandle->draw (drawContext, rectNew);
 	}
 
-	pOScreen->copyFrom (pContext, size);
+	if (pOScreen)
+		pOScreen->copyFrom (pContext, size);
 	
 	setDirty (false);
 }
