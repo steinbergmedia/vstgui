@@ -679,6 +679,9 @@ void CParamDisplay::drawText (CDrawContext *pContext, char *string, CBitmap *new
 
 	if (!(style & kNoTextStyle) && string)
 	{
+		CRect oldClip;
+		pContext->getClipRect (oldClip);
+		pContext->setClipRect (size);
 		pContext->setFont (fontID, 0, txtFace);
 	
 		// draw darker text (as shadow)
@@ -691,6 +694,7 @@ void CParamDisplay::drawText (CDrawContext *pContext, char *string, CBitmap *new
 		}
 		pContext->setFontColor (fontColor);
 		pContext->drawString (string, size, !bTextTransparencyEnabled, horiTxtAlign);
+		pContext->setClipRect (oldClip);
 	}
 }
 
@@ -2008,6 +2012,14 @@ bool COptionMenu::allocateMenu (long nb)
 	nbAllocated = newAllocated;
 
 	return true;
+}
+
+//------------------------------------------------------------------------
+COptionMenu* COptionMenu::getSubMenu (long idx)
+{
+	if (submenuEntry && idx < nbSubMenus)
+		return submenuEntry[idx];
+	return 0;
 }
 
 //------------------------------------------------------------------------

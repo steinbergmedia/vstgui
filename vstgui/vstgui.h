@@ -490,7 +490,7 @@ public:
 	CDrawMode getDrawMode () { return drawMode; }
 
 	void   setClipRect (const CRect &clip);
-	CRect &getClipRect (CRect &clip) { clip = clipRect; return clip; }
+	CRect &getClipRect (CRect &clip) { clip = clipRect; clip.offset (-offset.h, -offset.v); return clip; }
 	void   resetClipRect ();
 
 	void   setFillColor  (const CColor color);
@@ -754,7 +754,7 @@ public:
 	virtual void setMouseableArea (const CRect &rect)  { mouseableArea = rect; }
 	virtual CRect &getMouseableArea (CRect &rect) { rect = mouseableArea; return rect;}
 
-	virtual bool hitTest (const CPoint& where, const long buttons = -1) { return where.isInside (size); }
+	virtual bool hitTest (const CPoint& where, const long buttons = -1) { return where.isInside (mouseableArea); }
 
 	virtual void setTransparency (bool val) { bTransparencyEnabled = val; }
 	virtual bool getTransparency () { return bTransparencyEnabled; }
@@ -938,8 +938,7 @@ protected:
 #if QUARTZ
 	void setDrawContext (CDrawContext* context) { pFrameContext = context; }
 	friend class CDrawContext;
-#endif
-#if CARBON_EVENTS
+
 	static pascal OSStatus carbonEventHandler (EventHandlerCallRef inHandlerCallRef, EventRef inEvent, void *inUserData);
 	bool registerWithToolbox ();
 	
