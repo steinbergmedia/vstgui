@@ -1941,6 +1941,7 @@ void CDrawContext::drawString (const char *string, const CRect &_rect,
 	CGContextRef context = beginCGContext ();
 	if (context)
 	{
+		setClipRect (rect);
 		long strWidth = getStringWidth (string);
 		rect.bottom -= rect.height ()/2 - fontSize / 2 + 1;
 		switch (hAlign)
@@ -8213,12 +8214,16 @@ pascal OSStatus CFrame::carbonEventHandler (EventHandlerCallRef inHandlerCallRef
 	CFrame* frame = (CFrame*)inUserData;
 	EventClass eventClass = GetEventClass (inEvent);
 	EventKind eventKind = GetEventKind (inEvent);
+	WindowRef window = (WindowRef)frame->getSystemWindow ();
 
-	// we only set the port because of the old style getMouseLocation call in CDrawContext
+	// WARNING :
+	// I've not implemented the old style resource file handling.
+	// Use the CFBundleCopyResourceURL... functions to get your resources.
+
+	// with quartz we only set the port because of the old style getMouseLocation call in CDrawContext
 	// if this lib changes its internal event handling, we don't need it anymore !
-	GrafPtr	savePort;
-	GetPort (&savePort);
-	SetPort ((GrafPtr)GetWindowPort ((WindowRef)frame->getSystemWindow ()));
+	GrafPtr	savedPort;
+	bool portChanged = QDSwapPort (GetWindowPort (window), &savedPort);
 
 	switch (eventClass)
 	{
@@ -8230,21 +8235,21 @@ pascal OSStatus CFrame::carbonEventHandler (EventHandlerCallRef inHandlerCallRef
 				{
 					CGContextRef cgcontext;
 					OSStatus result = GetEventParameter (inEvent, kEventParamCGContextRef, typeCGContextRef, NULL, sizeof (cgcontext), NULL, &cgcontext); 				
-					CDrawContext context (frame, (result == noErr) ? cgcontext : NULL, frame->getSystemWindow ());
+					CDrawContext context (frame, (result == noErr) ? cgcontext : NULL, window);
 					frame->draw (&context);
 					result = noErr;
 					break;
 				}
 				case kEventControlClick:
 				{
-					SetUserFocusWindow ((WindowRef)frame->getSystemWindow ());
-					AdvanceKeyboardFocus ((WindowRef)frame->getSystemWindow ());
-					SetKeyboardFocus ((WindowRef)frame->getSystemWindow (), frame->controlRef, kControlFocusNextPart);
+					SetUserFocusWindow (window);
+					AdvanceKeyboardFocus (window);
+					SetKeyboardFocus (window, frame->controlRef, kControlFocusNextPart);
 					HIPoint hipoint;
 					GetEventParameter (inEvent, kEventParamMouseLocation, typeHIPoint, NULL, sizeof (HIPoint), NULL, &hipoint);
 					Point point = {hipoint.y, hipoint.x};
-					QDGlobalToLocalPoint (GetWindowPort ((WindowRef)frame->getSystemWindow ()), &point);
-					CDrawContext context (frame, NULL, frame->getSystemWindow ());
+					QDGlobalToLocalPoint (GetWindowPort (window), &point);
+					CDrawContext context (frame, NULL, window);
 					CPoint p (point.h, point.v);
 					frame->mouse (&context, p);
 					result = noErr;
@@ -8254,7 +8259,7 @@ pascal OSStatus CFrame::carbonEventHandler (EventHandlerCallRef inHandlerCallRef
 				{
 					HIPoint hipoint;
 					GetEventParameter (inEvent, kEventParamMouseLocation, typeHIPoint, NULL, sizeof (HIPoint), NULL, &hipoint);
-					CDrawContext context (frame, NULL, frame->getSystemWindow ());
+					CDrawContext context (frame, NULL, window);
 					CPoint p (hipoint.x, hipoint.y);
 					frame->mouse (&context, p);
 					result = noErr;
@@ -8278,8 +8283,8 @@ pascal OSStatus CFrame::carbonEventHandler (EventHandlerCallRef inHandlerCallRef
 					GetEventParameter (inEvent, kEventParamMouseWheelAxis, typeMouseWheelAxis, NULL, sizeof (EventMouseWheelAxis), NULL, &wheelAxis);
 					GetEventParameter (inEvent, kEventParamMouseWheelDelta, typeLongInteger, NULL, sizeof (SInt32), NULL, &wheelDelta);
 					Point point = {hipoint.y, hipoint.x};
-					QDGlobalToLocalPoint (GetWindowPort ((WindowRef)frame->getSystemWindow ()), &point);
-					CDrawContext context (frame, NULL, frame->getSystemWindow ());
+					QDGlobalToLocalPoint (GetWindowPort (window), &point);
+					CDrawContext context (frame, NULL, window);
 					CPoint p (point.h, point.v);
 					frame->onWheel (&context, p, wheelDelta);					
 					result = noErr;
@@ -8303,7 +8308,8 @@ pascal OSStatus CFrame::carbonEventHandler (EventHandlerCallRef inHandlerCallRef
 			break;
 		}
 	}
-	SetPort (savePort);
+	if (portChanged)
+		QDSwapPort (savedPort, NULL);
 	return result;
 }
 #endif
