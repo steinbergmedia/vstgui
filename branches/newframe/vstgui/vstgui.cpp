@@ -2,7 +2,7 @@
 // VST Plug-Ins SDK
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 //
-// Version 3.0       $Date: 2004-11-29 15:27:24 $ 
+// Version 3.0       $Date: 2004-12-03 15:07:05 $ 
 //
 // Added Motif/Windows vers.: Yvan Grabit              01.98
 // Added Mac version        : Charlie Steinberg        02.98
@@ -3531,6 +3531,10 @@ char* kMsgCheckIfViewContainer	= "kMsgCheckIfViewContainer";
 //-----------------------------------------------------------------------------
 // CView
 //-----------------------------------------------------------------------------
+/*! @class CView
+
+*/
+//-----------------------------------------------------------------------------
 CView::CView (const CRect& size)
 :	size (size), mouseableArea (size), pParentFrame (0), pParentView (0),
 	bDirty (false), bMouseEnabled (true), bTransparencyEnabled (false), pBackground (0), pReferencePointer (0)
@@ -4492,7 +4496,7 @@ long CFrame::getKnobMode () const
 
 //-----------------------------------------------------------------------------
 #if WINDOWS
-HWND CFrame::getOuterWindow ()
+HWND CFrame::getOuterWindow () const
 {
 	int diffWidth, diffHeight;
 	RECT  rctTempWnd, rctPluginWnd;
@@ -8749,7 +8753,7 @@ LONG_PTR WINAPI WindowProc (HWND hwnd, UINT message, WPARAM wParam, LPARAM lPara
 	{
 		if (pFrame)
 		{
-			VSTGUI_CTextEdit *textEdit = (VSTGUI_CTextEdit*)pFrame->getEditView ();
+			VSTGUI_CTextEdit *textEdit = (VSTGUI_CTextEdit*)pFrame->getFocusView ();
 			if (textEdit)
 			{
 				VSTGUI_CColor fontColor = textEdit->getFontColor ();
@@ -8795,7 +8799,7 @@ LONG_PTR WINAPI WindowProc (HWND hwnd, UINT message, WPARAM wParam, LPARAM lPara
 		MEASUREITEMSTRUCT* ms = (MEASUREITEMSTRUCT*)lParam;
 		if (pFrame && ms && ms->CtlType == ODT_MENU && ms->itemData)
 		{
-			VSTGUI_COptionMenu* optMenu = (VSTGUI_COptionMenu*)pFrame->getEditView ();
+			VSTGUI_COptionMenu* optMenu = (VSTGUI_COptionMenu*)pFrame->getFocusView ();
 			if (optMenu && optMenu->getScheme ())
 			{
 				VSTGUI_CPoint size;
@@ -8816,7 +8820,7 @@ LONG_PTR WINAPI WindowProc (HWND hwnd, UINT message, WPARAM wParam, LPARAM lPara
 		DRAWITEMSTRUCT* ds = (DRAWITEMSTRUCT*)lParam;
 		if (pFrame && ds && ds->CtlType == ODT_MENU && ds->itemData)
 		{
-			VSTGUI_COptionMenu* optMenu = (VSTGUI_COptionMenu*)pFrame->getEditView ();
+			VSTGUI_COptionMenu* optMenu = (VSTGUI_COptionMenu*)pFrame->getFocusView ();
 			if (optMenu && optMenu->getScheme ())
 			{
 				long state = 0;
@@ -9113,7 +9117,7 @@ void _eventHandler (Widget w, XtPointer clientData, XEvent *event, char *p)
 		XCrossingEvent *xevent = (XCrossingEvent*)event;
 		
 		CFrame* pFrame = (CFrame*)clientData;
-		if (pFrame && pFrame->getEditView ())
+		if (pFrame && pFrame->getFocusView ())
 		{
 			if (xevent->x < 0 || xevent->x >= pFrame->getWidth () ||
 					xevent->y < 0 || xevent->y >= pFrame->getHeight ())
@@ -9121,8 +9125,8 @@ void _eventHandler (Widget w, XtPointer clientData, XEvent *event, char *p)
 				// if button pressed => don't defocus
 				if (xevent->state & (Button1Mask|Button2Mask|Button3Mask))
 					break;
-				pFrame->getEditView ()->looseFocus ();
-				pFrame->setEditView (0);
+				pFrame->getFocusView ()->looseFocus ();
+				pFrame->setFocusView (0);
 			}
 		}
 		break;
