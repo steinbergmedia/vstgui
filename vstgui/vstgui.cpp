@@ -5451,7 +5451,7 @@ CBitmap::CBitmap (long resourceID)
 						{
 							Rect r;
 							GraphicsImportGetSourceRect (gi, &r);
-							OSErr err = NewGWorld ((GWorldPtr*)&pHandle, 0, &r, 0, 0, 0);
+							OSErr err = NewGWorld ((GWorldPtr*)&pHandle, 32, &r, 0, 0, 0);
 							if (!err)
 							{
 								width = r.right;
