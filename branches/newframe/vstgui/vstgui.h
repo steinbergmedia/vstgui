@@ -872,7 +872,7 @@ public:
 	virtual void setBackgroundOffset (const CPoint &p) { backgroundOffset = p; }
 	virtual const CPoint& getBackgroundOffset () { return backgroundOffset; }
 
-	void drawBackgroundRect (CDrawContext *pContext, CRect& _updateRect);
+	virtual void drawBackgroundRect (CDrawContext *pContext, CRect& _updateRect);
 
 	enum {
 		kNormalUpdate = 0,

@@ -1,3 +1,7 @@
+2004-07-12 arne
+
+	* quartz: fix a bug in COffscreenContext::copyTo if the offsetScreen point of the context is not at 0:0
+
 2004-06-28 arne
 
 	* quartz: fix clipping issues

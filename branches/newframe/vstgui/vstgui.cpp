@@ -3157,8 +3157,8 @@ void COffscreenContext::copyTo (CDrawContext* pContext, CRect& srcRect, CPoint d
 	Rect source, dest;
 	RGBColor savedForeColor, savedBackColor;
 	
-	source.left   = srcRect.left + pContext->offset.h;
-	source.top    = srcRect.top + pContext->offset.v;
+	source.left   = srcRect.left + pContext->offset.h + pContext->offsetScreen.h;
+	source.top    = srcRect.top + pContext->offset.v + pContext->offsetScreen.v;
 	source.right  = source.left + srcRect.right - srcRect.left;
 	source.bottom = source.top + srcRect.bottom - srcRect.top;
 	
@@ -9058,6 +9058,10 @@ pascal OSStatus CFrame::carbonEventHandler (EventHandlerCallRef inHandlerCallRef
 						GetRegionBounds (dirtyRegion, &bounds);
 						CRect updateRect;
 						Rect2CRect (bounds, updateRect);
+						WindowAttributes windowAttributes;
+						GetWindowAttributes (window, &windowAttributes);
+						if (!(windowAttributes & kWindowCompositingAttribute))
+							updateRect.offset (-context.offsetScreen.x, -context.offsetScreen.y);
 						frame->drawRect (&context, updateRect);
 					}
 					else
