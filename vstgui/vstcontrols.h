@@ -190,7 +190,7 @@ public:
 	virtual ~COnOffButton ();
 
 	virtual void draw (CDrawContext*);
-	virtual void mouse (CDrawContext *pContext, CPoint &where);
+	virtual void mouse (CDrawContext *pContext, CPoint &where, long button = -1);
 };
 
 
@@ -269,7 +269,7 @@ public:
 	virtual void getText (char *txt);
 
 	virtual	void draw (CDrawContext *pContext);
-	virtual	void mouse (CDrawContext *pContext, CPoint &where);
+	virtual	void mouse (CDrawContext *pContext, CPoint &where, long button = -1);
 
 	virtual void setTextEditConvert (void (*editConvert) (char *input, char *string));
 	virtual void setTextEditConvert (void (*editConvert2) (char *input, char *string,
@@ -364,7 +364,7 @@ public:
 	virtual bool isCheckEntry (long index);
 
 	virtual	void draw (CDrawContext *pContext);
-	virtual	void mouse (CDrawContext *pContext, CPoint &where);
+	virtual	void mouse (CDrawContext *pContext, CPoint &where, long button = -1);
 
 	virtual	void takeFocus (CDrawContext *pContext = 0);
 	virtual	void looseFocus (CDrawContext *pContext = 0);
@@ -432,7 +432,7 @@ public:
 	virtual ~CKnob ();
 
 	virtual void draw (CDrawContext *pContext);
-	virtual	void mouse (CDrawContext *pContext, CPoint &where);
+	virtual	void mouse (CDrawContext *pContext, CPoint &where, long button = -1);
 	virtual bool onWheel (CDrawContext *pContext, const CPoint &where, float distance);
 	virtual long onKeyDown (VstKeyCode& keyCode);
 
@@ -505,7 +505,7 @@ public:
 	virtual ~CVerticalSwitch ();
 
 	virtual void draw (CDrawContext*);
-	virtual void mouse (CDrawContext *pContext, CPoint &where);
+	virtual void mouse (CDrawContext *pContext, CPoint &where, long button = -1);
 
 protected:
 	CPoint   offset;
@@ -529,7 +529,7 @@ public:
 	virtual	~CHorizontalSwitch ();
 
 	virtual void draw (CDrawContext*);
-	virtual void mouse (CDrawContext *pContext, CPoint &where);
+	virtual void mouse (CDrawContext *pContext, CPoint &where, long button = -1);
 
 protected:
 	CPoint   offset;
@@ -550,7 +550,7 @@ public:
 	virtual ~CRockerSwitch ();
 
 	virtual void draw (CDrawContext*);
-	virtual void mouse (CDrawContext *pContext, CPoint &where);
+	virtual void mouse (CDrawContext *pContext, CPoint &where, long button = -1);
 	virtual bool onWheel (CDrawContext *pContext, const CPoint &where, float distance);
 
 protected:
@@ -591,7 +591,7 @@ public:
 	virtual ~CMovieButton ();	
 
 	virtual void draw (CDrawContext*);
-	virtual void mouse (CDrawContext *pContext, CPoint &where);
+	virtual void mouse (CDrawContext *pContext, CPoint &where, long button = -1);
 
 protected:
 	CPoint   offset;
@@ -612,7 +612,7 @@ public:
 	virtual ~CAutoAnimation ();
 
 	virtual void draw (CDrawContext*);
-	virtual void mouse (CDrawContext *pContext, CPoint &where);
+	virtual void mouse (CDrawContext *pContext, CPoint &where, long button = -1);
 
 	virtual void openWindow (void);
 	virtual void closeWindow (void);
@@ -659,7 +659,7 @@ public:
 	virtual bool attached (CView *parent);
 	virtual bool removed (CView *parent);
 	virtual void draw (CDrawContext*);
-	virtual void mouse (CDrawContext *pContext, CPoint &where);
+	virtual void mouse (CDrawContext *pContext, CPoint &where, long button = -1);
 	virtual bool onWheel (CDrawContext *pContext, const CPoint &where, float distance);
 	virtual long onKeyDown (VstKeyCode& keyCode);
 
@@ -783,7 +783,7 @@ public:
 	virtual ~CKickButton ();	
 
 	virtual void draw (CDrawContext*);
-	virtual void mouse (CDrawContext *pContext, CPoint &where);
+	virtual void mouse (CDrawContext *pContext, CPoint &where, long button = -1);
 
 protected:
 	CPoint   offset;
@@ -804,7 +804,7 @@ public:
   
 	virtual void draw (CDrawContext*);
 	virtual bool hitTest (const CPoint& where, const long buttons = -1);
-	virtual void mouse (CDrawContext *pContext, CPoint &where);
+	virtual void mouse (CDrawContext *pContext, CPoint &where, long button = -1);
 	virtual void unSplash ();
 
 protected:
