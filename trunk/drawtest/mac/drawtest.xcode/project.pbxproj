@@ -750,6 +750,7 @@
 		};
 		8BA05A56072072A900365D66 = {
 			children = (
+				F4C9F47307B2379F00010DAD,
 				0CF355FB07B17600002BFE50,
 				0CF355FC07B17600002BFE50,
 				0CF355BE07B173A3002BFE50,
@@ -762,7 +763,7 @@
 				0CF355C507B173A3002BFE50,
 			);
 			isa = PBXGroup;
-			name = "AU Source";
+			name = Source;
 			refType = 4;
 			sourceTree = "<group>";
 		};
@@ -1704,6 +1705,12 @@
 				F4C9F1E607B232D600010DAD,
 				F4C9F1E707B232D600010DAD,
 				F4C9F20607B2335F00010DAD,
+				F4C9F46E07B2378600010DAD,
+				F4C9F46F07B2378800010DAD,
+				F4C9F47007B2378900010DAD,
+				F4C9F47107B2378B00010DAD,
+				F4C9F47207B2378D00010DAD,
+				F4C9F47407B2379F00010DAD,
 			);
 			isa = PBXSourcesBuildPhase;
 			runOnlyForDeploymentPostprocessing = 0;
@@ -1989,6 +1996,51 @@
 		};
 		F4C9F21E07B233A100010DAD = {
 			fileRef = 0C1C289907AC2824007128C4;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		F4C9F46E07B2378600010DAD = {
+			fileRef = 0CF355FB07B17600002BFE50;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		F4C9F46F07B2378800010DAD = {
+			fileRef = 0CF355BE07B173A3002BFE50;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		F4C9F47007B2378900010DAD = {
+			fileRef = 0CF355C007B173A3002BFE50;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		F4C9F47107B2378B00010DAD = {
+			fileRef = 0CF355C207B173A3002BFE50;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		F4C9F47207B2378D00010DAD = {
+			fileRef = 0CF355C407B173A3002BFE50;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		F4C9F47307B2379F00010DAD = {
+			fileEncoding = 30;
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.cpp.cpp;
+			name = pdrawtestmain.cpp;
+			path = ../source/pdrawtestmain.cpp;
+			refType = 2;
+			sourceTree = SOURCE_ROOT;
+		};
+		F4C9F47407B2379F00010DAD = {
+			fileRef = F4C9F47307B2379F00010DAD;
 			isa = PBXBuildFile;
 			settings = {
 			};
