@@ -178,7 +178,7 @@ long   useCount = 0;
 char   className[20];
 bool   InitWindowClass ();
 void   ExitWindowClass ();
-LONG WINAPI WindowProc (HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam);
+LONG_PTR WINAPI WindowProc (HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam);
 
 static HANDLE CreateMaskBitmap (CDrawContext* pContext, CRect& rect, CColor transparentColor);
 static void   DrawTransparent (CDrawContext* pContext, CRect& rect, const CPoint& offset, HDC hdcBitmap, POINT ptSize, HBITMAP pMask, COLORREF color);
@@ -2039,7 +2039,7 @@ long CDrawContext::getStringWidth (const char *pStr)
         
 	#elif WINDOWS
 	SIZE size;
-	GetTextExtentPoint32 ((HDC)pSystemContext, pStr, strlen (pStr), &size);
+	GetTextExtentPoint32 ((HDC)pSystemContext, pStr, (int)strlen (pStr), &size);
 	result = (long)size.cx;
 
 	#elif MOTIF
@@ -2072,16 +2072,16 @@ void CDrawContext::drawString (const char *string, const CRect &_rect,
 	{
 	case kCenterText:
 		// without DT_SINGLELINE no vertical center alignment here
-		DrawText ((HDC)pSystemContext, string, strlen (string), &Rect, flag + DT_CENTER);
+		DrawText ((HDC)pSystemContext, string, (int)strlen (string), &Rect, flag + DT_CENTER);
 		break;
 		
 	case kRightText:
-		DrawText ((HDC)pSystemContext, string, strlen (string), &Rect, flag + DT_RIGHT);
+		DrawText ((HDC)pSystemContext, string, (int)strlen (string), &Rect, flag + DT_RIGHT);
 		break;
 		
 	default : // left adjust
 		Rect.left++;
-		DrawText ((HDC)pSystemContext, string, strlen (string), &Rect, flag + DT_LEFT);
+		DrawText ((HDC)pSystemContext, string, (int)strlen (string), &Rect, flag + DT_LEFT);
 	}
 
 	SetBkMode ((HDC)pSystemContext, TRANSPARENT);
@@ -3748,7 +3748,7 @@ bool CFrame::initFrame (void *systemWin)
 			 0, 0, size.width (), size.height (), 
 			 (HWND)pSystemWindow, NULL, GetInstance (), NULL);
 
-	SetWindowLong ((HWND)pHwnd, GWL_USERDATA, (long)this);
+	SetWindowLongPtr ((HWND)pHwnd, GWLP_USERDATA, (LONG_PTR)this);
 
 #elif MAC
 
@@ -4307,7 +4307,12 @@ HWND CFrame::getOuterWindow ()
 		// Looking for size mismatch
 		if ((abs (diffWidth) > 60) || (abs (diffHeight) > 60)) // parent belongs to host
 			return (hTempWnd);
-		 
+
+		if (diffWidth < 0)
+			diffWidth = 0;
+        if (diffHeight < 0)
+			diffHeight = 0; 
+		
 		// get the next parent window
 		hTempWnd = GetParent (hTempWnd);
 	}
@@ -4467,6 +4472,11 @@ bool CFrame::setSize (long width, long height)
 		
 		if ((diffWidth > 80) || (diffHeight > 80)) // parent belongs to host
 			return true;
+
+		if (diffWidth < 0)
+			diffWidth = 0;
+        if (diffHeight < 0)
+			diffHeight = 0;
 		
 		hTempWnd = hTempParentWnd;
 	}
@@ -6906,7 +6916,7 @@ END_NAMESPACE_VSTGUI
 #if WINDOWS
 UINT APIENTRY SelectDirectoryHook (HWND hdlg, UINT message, WPARAM wParam, LPARAM lParam);
 LRESULT CALLBACK SelectDirectoryButtonProc (HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam);
-FARPROC fpOldSelectDirectoryButtonProc;
+WNDPROC fpOldSelectDirectoryButtonProc;
 UINT APIENTRY WinSaveHook (HWND hdlg, UINT msg, WPARAM wParam, LPARAM lParam);
 static bool folderSelected;
 static bool didCancel;
@@ -7142,7 +7152,7 @@ long CFileSelector::run (VstFileSelect *vstFileSelect)
 					{
 						vstFileSelect->reserved = 1;
 						vstFileSelect->returnPath = new char[strlen (ofn.lpstrFile) + 1];
-						vstFileSelect->sizeReturnPath = strlen (ofn.lpstrFile) + 1;			
+						vstFileSelect->sizeReturnPath = (long)strlen (ofn.lpstrFile) + 1;			
 					}
 					strcpy (vstFileSelect->returnPath, ofn.lpstrFile);
 					break;
@@ -7151,7 +7161,7 @@ long CFileSelector::run (VstFileSelect *vstFileSelect)
 					{
 					char string[kPathMax], directory[kPathMax];
 					char *previous = ofn.lpstrFile;
-					long len;
+					size_t len;
 					bool dirFound = false;
 					bool first = true;
 					directory[0] = 0; // !!
@@ -7201,7 +7211,7 @@ long CFileSelector::run (VstFileSelect *vstFileSelect)
 					{
 						vstFileSelect->reserved = 1;
 						vstFileSelect->returnPath = new char[strlen (selDirPath) + 1];
-						vstFileSelect->sizeReturnPath = strlen (selDirPath) + 1;			
+						vstFileSelect->sizeReturnPath = (long)strlen (selDirPath) + 1;			
 					}
 					strcpy (vstFileSelect->returnPath, selDirPath);
 				}
@@ -7272,7 +7282,7 @@ long CFileSelector::run (VstFileSelect *vstFileSelect)
 				{
 					vstFileSelect->reserved = 1;
 					vstFileSelect->returnPath = new char[strlen (ofn.lpstrFile) + 1];
-					vstFileSelect->sizeReturnPath = strlen (ofn.lpstrFile) + 1;			
+					vstFileSelect->sizeReturnPath = (long)strlen (ofn.lpstrFile) + 1;			
 				}
 				strcpy (vstFileSelect->returnPath, ofn.lpstrFile);
 			
@@ -7871,16 +7881,14 @@ UINT APIENTRY SelectDirectoryHook (HWND hdlg, UINT message, WPARAM wParam, LPARA
 	} break;
 
 	case WM_INITDIALOG:
-		fpOldSelectDirectoryButtonProc = (FARPROC)SetWindowLong (
+		fpOldSelectDirectoryButtonProc = (WNDPROC)SetWindowLongPtr (
 					GetDlgItem (GetParent (hdlg), IDOK), 
-					GWL_WNDPROC, 
-					(long) SelectDirectoryButtonProc);
-
+					GWLP_WNDPROC, (LONG_PTR)SelectDirectoryButtonProc);
 		break;
 		
 	case WM_DESTROY:
 		SetWindowLong (GetDlgItem (GetParent (hdlg), IDOK), 
-				GWL_WNDPROC, (long) fpOldSelectDirectoryButtonProc);
+				GWLP_WNDPROC, (LONG_PTR)fpOldSelectDirectoryButtonProc);
 	}
 	return false;
 }
@@ -7955,7 +7963,7 @@ static void showPathInWindowTitle (HWND hParent, LPOFNOTIFY lpon)
 	OPENFILENAME *ofn = lpon->lpOFN;
 	char text[WINDOWTEXTSIZE];
 	char *p;
-	int  len;
+	size_t len;
 
 	// Put the path into the Window Title
 	if (lpon->lpOFN->lpstrTitle)
@@ -8033,7 +8041,7 @@ bool InitWindowClass ()
 	useCount++;
 	if (useCount == 1)
 	{
-		sprintf (className, "Plugin%08x", GetInstance ());
+		sprintf (className, "Plugin%08l", GetInstance ());
 		
 		WNDCLASS windowClass;
 		windowClass.style = CS_GLOBALCLASS;//|CS_OWNDC; // add Private-DC constant 
@@ -8078,10 +8086,10 @@ void ExitWindowClass ()
 }
 
 //-----------------------------------------------------------------------------
-LONG WINAPI WindowProc (HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
+LONG_PTR WINAPI WindowProc (HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
 	USING_NAMESPACE_VSTGUI
-	CFrame* pFrame = (CFrame*)GetWindowLong (hwnd, GWL_USERDATA);
+	CFrame* pFrame = (CFrame*)GetWindowLongPtr (hwnd, GWLP_USERDATA);
 
 	switch (message)
 	{
@@ -8823,7 +8831,7 @@ STDMETHODIMP UDropTarget::Drop (IDataObject *dataObject, DWORD keyState, POINTL 
 			case 1:
 				{
 					void* data = GlobalLock (medium.hGlobal);
-					long dataSize = GlobalSize (medium.hGlobal);
+					long dataSize = (long)GlobalSize (medium.hGlobal);
 					if (data && dataSize)
 					{
 						VSTGUI_CPoint where;

@@ -465,7 +465,7 @@ void CKnob::compute ()
 {
 	aCoef = (vmax - vmin) / rangeAngle;
 	bCoef = vmin - aCoef * startAngle;
-	halfAngle = ((float)k2PI - fabsf (rangeAngle)) / 2.f;
+	halfAngle = ((float)k2PI - fabsf (rangeAngle)) * 0.5f;
 	setDirty ();
 }
 
@@ -601,17 +601,12 @@ void CParamDisplay::setStyle (long val)
 void CParamDisplay::draw (CDrawContext *pContext)
 {
 	char string[256];
+	string[0] = 0;
 
 	if (stringConvert2)
-	{
-		string[0] = 0;
 		stringConvert2 (value, string, userData);
-	}
 	else if (stringConvert)
-	{
-		string[0] = 0;
 		stringConvert (value, string);
-	}
 	else
 		sprintf (string, "%2.2f", value);
 
@@ -844,17 +839,12 @@ void CTextEdit::draw (CDrawContext *pContext)
 	}
 
 	char string[256];
+	string[0] = 0;
 
 	if (editConvert2)
-	{
-		string[0] = 0;
 		editConvert2 (text, string, userData);
-	}
 	else if (editConvert)
-	{
-		string[0] = 0;
 		editConvert (text, string);
-	}
 	// Allow to display strings through the stringConvert
 	// callbacks inherited from CParamDisplay
 	else if (stringConvert2)
@@ -931,8 +921,8 @@ extern const char *standardFontName [];
 #endif
 
 static WINDOWSPROC oldWndProcEdit;
-LONG WINAPI WindowProcEdit (HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam);
-LONG WINAPI WindowProcEdit (HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
+LONG_PTR WINAPI WindowProcEdit (HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam);
+LONG_PTR WINAPI WindowProcEdit (HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 {	
 	switch (message)
 	{
@@ -946,7 +936,7 @@ LONG WINAPI WindowProcEdit (HWND hwnd, UINT message, WPARAM wParam, LPARAM lPara
 		{
 			if (wParam == VK_RETURN)
 			{
-				CTextEdit *textEdit = (CTextEdit*) GetWindowLong (hwnd, GWL_USERDATA);
+				CTextEdit *textEdit = (CTextEdit*) GetWindowLongPtr (hwnd, GWLP_USERDATA);
 				if (textEdit)
 				{
 					textEdit->bWasReturnPressed = true;
@@ -957,7 +947,7 @@ LONG WINAPI WindowProcEdit (HWND hwnd, UINT message, WPARAM wParam, LPARAM lPara
 
 		case WM_KILLFOCUS:
 		{
-			CTextEdit *textEdit = (CTextEdit*) GetWindowLong (hwnd, GWL_USERDATA);
+			CTextEdit *textEdit = (CTextEdit*) GetWindowLongPtr (hwnd, GWLP_USERDATA);
 			if (textEdit)
 				textEdit->looseFocus ();
 		} break;
@@ -1257,14 +1247,14 @@ void CTextEdit::takeFocus (CDrawContext *pContext)
 	platformFont = (HANDLE)CreateFontIndirect (&logfont);
 	platformFontColor = 0;
 
-	SetWindowLong ((HWND)platformControl, GWL_USERDATA, (long)this);
-	SendMessage ((HWND)platformControl, WM_SETFONT, (unsigned int)platformFont, true);
+	SetWindowLongPtr ((HWND)platformControl, GWLP_USERDATA, (LONG_PTR)this);
+	SendMessage ((HWND)platformControl, WM_SETFONT, (WPARAM)platformFont, true);
 	SendMessage ((HWND)platformControl, EM_SETMARGINS, EC_LEFTMARGIN|EC_RIGHTMARGIN, MAKELONG (0, 0));
 	SendMessage ((HWND)platformControl, EM_SETSEL, 0, -1);
 	SendMessage ((HWND)platformControl, EM_LIMITTEXT, 255, 0);
 	SetFocus ((HWND)platformControl);
 
-	oldWndProcEdit = (WINDOWSPROC)SetWindowLong ((HWND)platformControl, GWL_WNDPROC, (long)WindowProcEdit);
+	oldWndProcEdit = (WINDOWSPROC)SetWindowLongPtr ((HWND)platformControl, GWLP_WNDPROC, (LONG_PTR)WindowProcEdit);
 
 #elif MAC
 	extern long standardFontSize[];
@@ -2873,7 +2863,7 @@ void *COptionMenu::appendItems (long &offsetIdx)
 					if (submenu)
 					{
 						idxSubmenu++;
-						AppendMenu ((HMENU)menu, flags|MF_POPUP|MF_ENABLED, (UINT)submenu, entry[i] + 2);
+						AppendMenu ((HMENU)menu, flags|MF_POPUP|MF_ENABLED, (UINT_PTR)submenu, entry[i] + 2);
 					}
 					else
 						continue;
