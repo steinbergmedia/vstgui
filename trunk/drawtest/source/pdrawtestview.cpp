@@ -21,6 +21,7 @@
 #include "pdrawtestview.h"
 #endif
 
+#include <stdio.h>
 
 CDrawTestView::CDrawTestView (const CRect& size)
 : CView (size)
@@ -86,13 +87,14 @@ static inline void drawLines (CDrawContext* pContext, CRect r, int offset = 2)
 {
 	CRect size (r);
 	pContext->setFrameColor (kBlueCColor);
-	for (int i = 0; i < size.height (); i++)
+	int i;
+	for (i = 0; i < size.height (); i++)
 	{
 		pContext->moveTo (CPoint (r.left, r.top));
 		pContext->lineTo (CPoint (r.right, r.bottom));
 		r.offset (0, offset);
 	}
-	for (int i = 0; i < size.height (); i++)
+	for (i = 0; i < size.height (); i++)
 	{
 		size.offset (0, -offset);
 		pContext->moveTo (CPoint (size.left, size.top));
@@ -100,7 +102,9 @@ static inline void drawLines (CDrawContext* pContext, CRect r, int offset = 2)
 	}
 }
 
-CColor arcColors[] = { kBlueCColor, kGreenCColor, kRedCColor };
+
+CColor arcColors[] = { {0,0,255,255}, {0,255,0,255}, {255,0,0,255} };
+
 #define numArcColors	2
 
 static inline void drawArcs (CDrawContext* pContext, CRect r, int offset = 2)
