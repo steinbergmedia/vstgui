@@ -9,22 +9,22 @@
 		<p><code>#include &lt;vstgui.h&gt;</code></p>
 		<p><code>struct CColor;</code></p>
 		<p>Structure used for the definition of a color. It is defined by 4 unsigned char 
-			values : <code>red</code>, <code>green</code>, <code>blue</code>, <code>unused</code>.</p>
+			values : <code>red</code>, <code>green</code>, <code>blue</code>, <code>unused(alpha)</code>.</p>
 		<p>The predefined variable <code>kTransparentCColor</code> (set to the white color 
 			(255, 255, 255)) is used as transparency color for the pixmap.</p>
 		<p>There are some other predefined colors :</p>
 		<table width="100%" cellpadding="0" cellspacing="0" border="1" bordercolor="#000000">
 			<tr>
-				<th>
+				<th width="60%">
 					CColor</th>
-				<th>
+				<th width="10%">
 					<font color="#FF0000">red</font></th>
-				<th>
+				<th width="10%">
 					<font color="#00FF00">green</font></th>
-				<th>
+				<th width="10%">
 					<font color="0000FF">blue</font></th>
-				<th>
-					unused</th>
+				<th width="10%">
+					unused(alpha)</th>
 			</tr>
 			<tr>
 				<th align="left">
@@ -32,7 +32,7 @@
 				<td>255</td>
 				<td>255</td>
 				<td>255</td>
-				<td>0</td>
+				<td>255</td>
 			</tr>
 			<tr>
 				<th align="left">
@@ -40,7 +40,7 @@
 				<td>0</td>
 				<td>0</td>
 				<td>0</td>
-				<td>0</td>
+				<td>255</td>
 			</tr>
 			<tr>
 				<th align="left">
@@ -48,7 +48,7 @@
 				<td>255</td>
 				<td>255</td>
 				<td>255</td>
-				<td>0</td>
+				<td>255</td>
 			</tr>
 			<tr>
 				<th align="left">
@@ -56,7 +56,7 @@
 				<td>127</td>
 				<td>127</td>
 				<td>127</td>
-				<td>0</td>
+				<td>255</td>
 			</tr>
 			<tr>
 				<th align="left">
@@ -64,7 +64,7 @@
 				<td>255</td>
 				<td>0</td>
 				<td>0</td>
-				<td>0</td>
+				<td>255</td>
 			</tr>
 			<tr>
 				<th align="left">
@@ -72,7 +72,7 @@
 				<td>0</td>
 				<td>255</td>
 				<td>0</td>
-				<td>0</td>
+				<td>255</td>
 			</tr>
 			<tr>
 				<th align="left">
@@ -80,7 +80,7 @@
 				<td>0</td>
 				<td>0</td>
 				<td>255</td>
-				<td>0</td>
+				<td>255</td>
 			</tr>
 			<tr>
 				<th align="left">
@@ -88,7 +88,7 @@
 				<td>255</td>
 				<td>255</td>
 				<td>0</td>
-				<td>0</td>
+				<td>255</td>
 			</tr>
 			<tr>
 				<th align="left">
@@ -96,7 +96,7 @@
 				<td>255</td>
 				<td>0</td>
 				<td>255</td>
-				<td>0</td>
+				<td>255</td>
 			</tr>
 			<tr>
 				<th align="left">
@@ -104,7 +104,7 @@
 				<td>0</td>
 				<td>255</td>
 				<td>255</td>
-				<td>0</td>
+				<td>255</td>
 			</tr>
 		</table>
 		<hr noShade SIZE="4">
@@ -120,10 +120,10 @@
 		<p>Overloads the <code>()</code> operator.</p>
 		<h4>Example :</h4>
 		<code>
-			<pre>CColor blackColor (0, 0, 0, 0);
-CColor whiteColor (255, 255, 255,0);
-CColor greenColor (0, 255, 0, 0);
-CColor redColor (255, 0, 0, 0);</pre>
+			<pre>CColor blackColor (0, 0, 0, 255);
+CColor whiteColor (255, 255, 255,255);
+CColor greenColor (0, 255, 0, 255);
+CColor redColor (255, 0, 0, 255);</pre>
 		</code>
 		<hr noShade SIZE="4">
 		<table width="100%">
