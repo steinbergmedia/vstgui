@@ -27,7 +27,7 @@
 class DrawTestEditor : public AEffGUIEditor, CControlListener
 {
 public:
-	DrawTestEditor (AudioEffectX* effect);
+	DrawTestEditor (void* effect);
 	~DrawTestEditor ();
 
 	void setTabView (CFrame* frame, const CRect& r, long position);
