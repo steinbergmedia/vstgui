@@ -1,7 +1,11 @@
+2003-12-05 arne
+
+	* fix compile problem of COptionMenu::takeFocus on Windows
+
 2003-12-04 arne
 
 	* fix for nested CViewContainers
-	* fix for using vstgui for other than VST ;-)
+	* Mac: fix for using vstgui for other than VST ;-)
 
 2003-11-15 arne
 
