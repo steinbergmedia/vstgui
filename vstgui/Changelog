@@ -1,3 +1,9 @@
+2004-02-01 arne
+
+	* add empty CBitmap constructor for easy subclassing
+	* mac : add beginEdit/endEndit hook for AudioUnits
+	* windows : fix for CFrame::setSize for Orion submitted by Ben Allison
+
 2004-01-02 arne
 
 	* mac: corrected code for right mouse click with carbon events

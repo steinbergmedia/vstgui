@@ -4201,8 +4201,8 @@ bool CFrame::setSize (long width, long height)
 		
 		SetWindowPos (hTempWnd, HWND_TOP, 0, 0, width + diffWidth, height + diffHeight, SWP_NOMOVE);
 		
-		diffWidth  = (rctParentWnd.right - rctParentWnd.left) - (rctTempWnd.right - rctTempWnd.left);
-		diffHeight = (rctParentWnd.bottom - rctParentWnd.top) - (rctTempWnd.bottom - rctTempWnd.top);
+		diffWidth  += (rctParentWnd.right - rctParentWnd.left) - (rctTempWnd.right - rctTempWnd.left);
+		diffHeight += (rctParentWnd.bottom - rctParentWnd.top) - (rctTempWnd.bottom - rctTempWnd.top);
 		
 		if ((diffWidth > 80) || (diffHeight > 80)) // parent belongs to host
 			return true;
@@ -4455,6 +4455,10 @@ long CFrame::setModalView (CView *pView)
 void CFrame::beginEdit (long index)
 {
 #if PLUGGUI
+	#if AU
+	if (pEditor)
+		((PluginGUIEditor*)pEditor)->beginEdit (index);
+	#endif
 #else
 	if (pEditor)
 		((AudioEffectX*)(((AEffGUIEditor*)pEditor)->getEffect ()))->beginEdit (index);
@@ -4465,6 +4469,10 @@ void CFrame::beginEdit (long index)
 void CFrame::endEdit (long index)
 {
 #if PLUGGUI
+	#if AU
+	if (pEditor)
+		((PluginGUIEditor*)pEditor)->endEdit (index);
+	#endif
 #else
 	if (pEditor)
 		((AudioEffectX*)(((AEffGUIEditor*)pEditor)->getEffect ()))->endEdit (index);
@@ -5450,6 +5458,7 @@ CBitmap::CBitmap (long resourceID)
 						}
 					}
 				}
+				CFRelease (url);
 			}
 			else
 			{
@@ -5604,6 +5613,28 @@ CBitmap::CBitmap (CFrame &frame, long width, long height)
 #endif
 	
 	setTransparentColor (kTransparentCColor);
+}
+
+//-----------------------------------------------------------------------------
+CBitmap::CBitmap ()
+	: nbReference (1), width (0), height (0), resourceID (0)
+{
+	#if WINDOWS
+	pHandle = 0;
+	pMask = 0;
+	
+	#elif MAC
+	pHandle = 0;
+	pMask = 0;
+	
+	#elif MOTIF
+	pMask = 0;
+	pHandle = 0;
+	
+	#elif BEOS
+	bbitmap = 0;
+
+	#endif
 }
 
 //-----------------------------------------------------------------------------
