@@ -1,0 +1,335 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+	<head>
+		<base target="vstdoc">
+		<title>CBitmap</title>
+		<link rel="stylesheet" href="../sdkdoc.css" type="text/css">
+	</head>
+	<body>
+		<div>
+			<h2>CBitmap</h2>
+			<p><code>#include &lt;vstgui.h&gt;</code></p>
+			<p><code>class CBitmap;</code></p>
+			<p>The pixmap class encapsulates various platform depended kinds of bitmaps. The 
+				pixmap objects are used to defined the graphic of a control object (such as a 
+				button, slider, ...).</p>
+			<hr noshade="noshade" size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="" ccbitmap="">CBitmap</a>
+							</h4>
+						</td>
+						<td align="right">
+							<h4>1.0</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">CBitmap (int resourceID);</div></p>
+			<p>Create a pixmap from a resource identifier.</p>
+			<h4>Example :</h4>
+			<code>
+				<pre>long MyEditor::open (void *ptr)<br>{<br>	...<br>	myPixmap = new CBitmap (kMyPixmapID);<br>	...<br>}</pre>
+			</code>
+			<hr noshade="noshade" size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="" ccbitmap2="">CBitmap</a>
+							</h4>
+						</td>
+						<td align="right">
+							<h4>1.0</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">CBitmap (<a href="CFrame.html">CFrame</a> &amp;frame, int width, int height);</div></p>
+			<p>Create a pixmap with a given size.</p>
+			<table width="100%" cellpadding="0" cellspacing="0" border="1" bordercolor="#000000">
+				<tbody>
+					<tr>
+						<th align="right" valign="top">
+							<code>frame</code></th>
+						<td>-</td>
+					</tr>
+					<tr>
+						<th align="right" valign="top">
+							<code>width</code></th>
+						<td>The pixmap's width.</td>
+					</tr>
+					<tr>
+						<th align="right" valign="top">
+							<code>height</code></th>
+						<td>The pixmap's height.</td>
+					</tr>
+				</tbody>
+			</table>
+			<hr noshade="noshade" size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="" dcbitmap="">~CBitmap</a>
+							</h4>
+						</td>
+						<td align="right">
+							<h4>1.0</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">~CBitmap ();</div></p>
+			<p>Destroy a pixmap object.</p>
+			<hr noshade="noshade" size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="" draw="">draw</a>
+							</h4>
+						</td>
+						<td align="right">
+							<h4>1.0</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">void draw (<a href="CDrawContext.html">CDrawContext</a> *drawContext, <a href="CRect.html">CRect</a> &amp;rect, const <a href="CPoint.html">CPoint</a> &amp; offset = <a href="CPoint.html">CPoint</a> (0, 0));</div></p>
+			<p>Draw the pixmap using a given rect as output position and a given offset of its 
+				source pixmap.</p>
+			<table width="100%" cellpadding="0" cellspacing="0" border="1" bordercolor="#000000">
+				<tbody>
+					<tr>
+						<th align="right" valign="top">
+							<code>drawContext</code></th>
+						<td>-</td>
+					</tr>
+					<tr>
+						<th align="right" valign="top">
+							<code>rect</code></th>
+						<td>The output position</td>
+					</tr>
+					<tr>
+						<th align="right" valign="top">
+							<code>offset</code></th>
+						<td>An offset in the source pixmap.</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><img src="images/CBitmap.jpg" alt="[bitmap::draw]">
+			</p>
+			<hr noshade="noshade" size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="" drawtransparent="">drawTransparent</a>
+							</h4>
+						</td>
+						<td align="right">
+							<h4>1.0</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">void drawTransparent (<a href="CDrawContext.html">CDrawContext</a> *context, <a href="CRect.html">CRect</a> &amp;rect, const <a href="CPoint.html">CPoint</a> &amp; offset = <a href="CPoint.html">CPoint</a> (0, 0));</div></p>
+			<p>Same as previous function, but the color White (defined as 255, 255, 255) is 
+				used as transparency color.</p>
+			<hr noshade="noshade" size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="" drawalphablend="">drawAlphaBlend</a>
+							</h4>
+						</td>
+						<td align="right">
+							<h4>2.2</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">void drawAlphaBlend (<a href="CDrawContext.html">CDrawContext</a> *pContext, <a href="CRect.html">CRect</a> &amp;rect, <br>const <a href="CPoint.html">CPoint</a> &amp;offset = <a href="CPoint.html">CPoint</a> (0, 0), unsigned char alpha = 128);</div></p>
+			<p>Used to blend the bitmap with the background. Transparency effect can be 
+				regulated thanks to the alpha parameter.<br>
+			</p>
+			<hr noshade="noshade" size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="" getwidth="">getWidth</a>
+							</h4>
+						</td>
+						<td align="right">
+							<h4>1.0</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">int getWidth ();</div></p>
+			<p>Returns the width of the pixmap.</p>
+			<hr noshade="noshade" size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="" getheight="">getHeight</a>
+							</h4>
+						</td>
+						<td align="right">
+							<h4>1.0</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">int getHeight ();</div></p>
+			<p>Returns the height of the pixmap.</p>
+			<hr noshade="noshade" size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="" forget="">forget</a>
+							</h4>
+						</td>
+						<td align="right">
+							<h4>1.0</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">void forget ();</div></p>
+			<p>Try to destroy itself if no more reference on it.</p>
+			<hr noshade="noshade" size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="" remember="">remember</a>
+							</h4>
+						</td>
+						<td align="right">
+							<h4>1.0</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">void remember ();</div></p>
+			<p>Add a reference to this pixmap.</p>
+			<hr noshade="noshade" size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="getNbReference">getNbReference</a>
+							</h4>
+						</td>
+						<td align="right">
+							<h4>2.0$</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">long getNbReference ();</div></p>
+			<p>Returns the number of references to this pixmap.</p>
+			<hr noshade="noshade" size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="" gethandle="">getHandle</a>
+							</h4>
+						</td>
+						<td align="right">
+							<h4>1.0</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">void *getHandle ();</div></p>
+			<p>Returns the handle of the pixmap.</p>
+			<hr noshade="noshade" size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="isLoaded">isLoaded</a>
+							</h4>
+						</td>
+						<td align="right">
+							<h4>2.0</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">bool isLoaded ();</div></p>
+			<p>Returns <code>true</code> if the pixmap is loaded.
+			</p>
+			<hr noshade="noshade" size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="setTransparentColor">setTransparentColor</a>
+							</h4>
+						</td>
+						<td align="right">
+							<h4>2.2</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">void setTransparentColor (const <a href="CColor.html">CColor</a> color);</div></p>
+			<p>Sets the transparent color for the bitmap.<br>
+			</p>
+			<hr noshade="noshade" size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="getTransparentColor">getTransparentColor</a>
+							</h4>
+						</td>
+						<td align="right">
+							<h4>2.2</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp"><a href="CColor.html">CColor</a> getTransparentColor ();</div></p>
+			<p>Returns the transparent color for the bitmap.<br>
+			</p>
+			<hr width="100%" size="2">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="setTransparencyMask">setTransparencyMask</a>
+							</h4>
+						</td>
+						<td align="right">
+							<h4>2.2</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">void setTransparencyMask (<a href="CDrawContext.html">CDrawContext</a>* pContext, const <a href="CPoint.html">CPoint</a>&amp; offset);</div></p>
+			<p>Creates a mask bitmap with the transparent color of the bitmap.<br>
+			</p>
+			<hr noshade="noshade" size="4">
+			<div align="center">Copyright &copy;2003 <a href="http://www.steinberg.net" target="_blank">
+					<u>Steinberg Media Technologies GmbH</u></a>.
+			</div>
+			<DIV align=center><FONT size=1>Last Modified:
+			<SCRIPT language=Javascript %>document.writeln(document.lastModified);</SCRIPT>
+			</FONT></DIV>
+			<br>
+		</div>
+		<br>
+	</body>
+</html>

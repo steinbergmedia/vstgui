@@ -1,0 +1,52 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+	<head>
+		<base target="vstdoc">
+		<title>CControlListener</title>
+		<link rel="stylesheet" href="../sdkdoc.css" type="text/css">
+	</head>
+	<body>
+		<div>
+			<h2>CControlListener</h2>
+			<p><code>#include &lt;vstcontrols.h&gt;</code></p>
+			<p><code>class CControlListener;</code></p>
+			<p>This is a virtual class used to create concrete class which encapsulates the 
+				callback function (called when the value of a control object changes).</p>
+			<hr noshade="noshade" size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="valueChanged">valueChanged</a></h4>
+						</td>
+						<td align="right">
+							<h4>1.0</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">virtual void valueChanged (<a href="CDrawContext.html">CDrawContext</a> *context,<a href="CControl.html">CControl</a> *control);</div>
+			</p>
+			<p>Function called when the value of a control is changed.</p>
+			<h4>Example :</h4>
+			<code>
+				<pre>class MyGUIEditor : public <a href="AEffGUIEditor.html">AEffGUIEditor</a>,<br>                    public CControlListener<br>{<br>public :<br>    ....	<br>protected:<br>    virtual void update ();<br>private :<br>    void valueChanged (<a
+ href="CDrawContext.html">CDrawContext</a> *context,<br>                       <a
+ href="CControl.html">Control</a> *control);<br>};<br><br>MyGUIEditor::valueChanged (CDrawContext *context,<br>                           CControl *control)	{<br>    int tag = control-&gt;<a
+ href="CControl.html#getTag">getTag</a> ();<br>    float value = control-&gt;<a
+ href="CControl.html#getValue">getValue</a> ();<br>    <br>    switch (tag)	{<br>        case kMyTag :<br>             effect-&gt;<a
+ href="../1.0/AudioEffect.html">setParameterAutomated</a> (tag, value);<br>             myControl-&gt;<a
+ href="CControl.html#update">update</a> (context);<br>            break;<br>    }<br>}</pre>
+			</code>
+			<hr noshade="noshade" size="4">
+			<div align="center">Copyright &copy;2003 <a href="http://www.steinberg.net" target="_blank">
+					<u>Steinberg Media Technologies GmbH</u></a>.
+			</div>
+			<DIV align=center><FONT size=1>Last Modified:
+			<SCRIPT language=Javascript %>document.writeln(document.lastModified);</SCRIPT>
+			</FONT></DIV>
+			<br>
+		</div>
+		<br>
+	</body>
+</html>

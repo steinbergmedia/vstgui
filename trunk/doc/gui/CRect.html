@@ -1,0 +1,267 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+  		<base target="vstdoc">
+  <title>CRect</title>
+     		 		   
+  <link rel="stylesheet" href="../sdkdoc.css" type="text/css">
+</head>
+ 	<body>
+<div>  		 
+<h2>CRect</h2>
+  		 
+<p><code>#include &lt;vstgui.h&gt;</code></p>
+  		 
+<p><code>struct CRect;</code></p>
+  		 
+<p>Structure used for the definition and support of the rectangle (values 
+in  			pixel).</p>
+  		 
+<hr noshade="noshade" size="4"> 		 
+<table width="100%">
+  			<tbody>
+     <tr>
+  				<td align="left">       
+      <h4><a name="cCRect1">CRect</a></h4>
+  				</td>
+  				<td align="right">       
+      <h4>1.0</h4>
+  				</td>
+  			</tr>
+  		   
+  </tbody> 
+</table>
+  		  
+<div class="cpp">CRect (long left = 0, long top = 0, long right = 0, long bottom = 0);</div>
+   		 
+<p>Creates a rectangle, given each coordinate.</p>
+  		 
+<p><img src="images/CRect.jpg" alt="[CRect]" width="214" height="142">
+ </p>
+  		 
+<h4>Example :</h4>
+  		<code> 			 
+<pre>CBitmap *myBitmap = new CBitmap (kMyBitmapID);<br>CRect size (0, 0, myBitmap-&gt;getWidth(),<br>    myBitmap-&gt;getHeight ());<br>...</pre>
+  		</code> 		 
+<hr noshade="noshade" size="4"> 		 
+<table width="100%">
+  			<tbody>
+     <tr>
+  				<td align="left">       
+      <h4><a name="cCRect2">CRect</a></h4>
+  				</td>
+  				<td align="right">       
+      <h4>1.0</h4>
+  				</td>
+  			</tr>
+  		   
+  </tbody> 
+</table>
+  		  
+<div class="cpp">CRect (const CRect &amp;r);</div>
+   		 
+<p>Creates a rectangle, given another rectangle.</p>
+  		 
+<hr noshade="noshade" size="4"> 		 
+<table width="100%">
+  			<tbody>
+     <tr>
+  				<td align="left">       
+      <h4><a name="operator">operator ()</a></h4>
+  				</td>
+  				<td align="right">       
+      <h4>1.0</h4>
+  				</td>
+  			</tr>
+  		   
+  </tbody> 
+</table>
+  		  
+<div class="cpp">CRect &amp;operator () (long left, long top, long right, long bottom);</div>
+   		 
+<p>Overloads the <code>()</code> operator.</p>
+  		 
+<hr noshade="noshade" size="4"> 		 
+<table width="100%">
+  			<tbody>
+     <tr>
+  				<td align="left">       
+      <h4><a name="operator2">operator ==</a></h4>
+  				</td>
+  				<td align="right">       
+      <h4>2.1</h4>
+  				</td>
+  			</tr>
+  		   
+  </tbody> 
+</table>
+  		  
+<div class="cpp">bool operator == (const CRect &amp;other) const;</div>
+   		 
+<p>Overloads the <code>==</code> operator.</p>
+  		 
+<hr noshade="noshade" size="4"> 		 
+<table width="100%">
+  			<tbody>
+     <tr>
+  				<td align="left">       
+      <h4><a name="operator3">operator !=</a></h4>
+  				</td>
+  				<td align="right">       
+      <h4>2.1</h4>
+  				</td>
+  			</tr>
+  		   
+  </tbody> 
+</table>
+  		  
+<div class="cpp"> bool operator != (const CRect &amp;other) const;</div>
+   		 
+<p>Overloads the <code>!=</code> operator.</p>
+  		 
+<hr noshade="noshade" size="4"> 		 
+<table width="100%">
+  			<tbody>
+     <tr>
+  				<td align="left">       
+      <h4><a name="width">width</a></h4>
+  				</td>
+  				<td align="right">       
+      <h4>1.0</h4>
+  				</td>
+  			</tr>
+  		   
+  </tbody> 
+</table>
+  		  
+<div class="cpp">long width ();</div>
+   		 
+<p>Returns the width of the rectangle.</p>
+  		 
+<hr noshade="noshade" size="4"> 		 
+<table width="100%">
+  			<tbody>
+     <tr>
+  				<td align="left">       
+      <h4><a name="height">height</a></h4>
+  				</td>
+  				<td align="right">       
+      <h4>1.0</h4>
+  				</td>
+  			</tr>
+  		   
+  </tbody> 
+</table>
+  		  
+<div class="cpp">long height ();</div>
+   		 
+<p>Returns the height of the rectangle.</p>
+  		 
+<hr noshade="noshade" size="4"> 		 
+<table width="100%">
+  			<tbody>
+     <tr>
+  				<td align="left">       
+      <h4><a name="offset">offset</a></h4>
+  				</td>
+  				<td align="right">       
+      <h4>1.0</h4>
+  				</td>
+  			</tr>
+  		   
+  </tbody> 
+</table>
+  		  
+<div class="cpp">void offset (long x, long y);</div>
+   		 
+<p>Add an offset to the rectangle.</p>
+  		 
+<hr noshade="noshade" size="4"> 		 
+<table width="100%">
+  			<tbody>
+     <tr>
+  				<td align="left">       
+      <h4><a name="inset">inset</a></h4>
+  				</td>
+  				<td align="right">       
+      <h4>2.1</h4>
+  				</td>
+  			</tr>
+  		   
+  </tbody> 
+</table>
+  		  
+<div class="cpp">CRect &amp;inset (long deltaX, long deltaY); </div>
+  		   		 
+<p>Inset the rectangle to specified delta values.</p>
+  		 
+<hr noshade="noshade" size="4"> 		 
+<table width="100%">
+  			<tbody>
+     <tr>
+  				<td align="left">       
+      <h4><a name="pointInside">pointInside</a></h4>
+  				</td>
+  				<td align="right">       
+      <h4>2.0</h4>
+  				</td>
+  			</tr>
+  		   
+  </tbody> 
+</table>
+  		  
+<div class="cpp">bool pointInside (const CPoint&amp; where) const;</div>
+   		 
+<p>Checks if the point is inside this rect.</p>
+  		 
+<hr noshade="noshade" size="4"> 		 
+<table width="100%">
+  			<tbody>
+     <tr>
+  				<td align="left">       
+      <h4><a name="isEmpty">isEmpty</a></h4>
+  				</td>
+  				<td align="right">       
+      <h4>2.2</h4>
+  				</td>
+  			</tr>
+  		   
+  </tbody> 
+</table>
+  		  
+<div class="cpp">bool isEmpty () const;</div>
+   		 
+<p>-</p>
+  		 
+<hr noshade="noshade" size="4"> 		 
+<table width="100%">
+  			<tbody>
+     <tr>
+  				<td align="left">       
+      <h4><a name="rectOverlap">rectOverlap</a></h4>
+  				</td>
+  				<td align="right">       
+      <h4>2.1</h4>
+  				</td>
+  			</tr>
+  		   
+  </tbody> 
+</table>
+  		  
+<div class="cpp">bool rectOverlap (const CRect&amp; rect) const;</div>
+   		 
+<p>Checks if it is overlapped by the given rect.</p>
+  		 
+<hr noshade="noshade" size="4"> 		 
+<div align="center">Copyright &copy;2003 <a
+ href="http://www.steinberg.net" target="_blank"><u>Steinberg  					Media 
+Technologies GmbH</u></a>. 
+</div>
+<DIV align=center><FONT size=1>Last Modified:
+<SCRIPT language=Javascript %>document.writeln(document.lastModified);</SCRIPT>
+</FONT></DIV>
+  	<br>
+ </div>
+ 
+</body>
+</html>

@@ -1,0 +1,132 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+	<head>
+		<base target="vstdoc">
+		<title>CKickButton</title>
+		<link rel="stylesheet" href="../sdkdoc.css" type="text/css">
+	</head>
+	<body>
+		<div>
+			<h2>CKickButton</h2>
+			<p><code>#include &lt;vstcontrols.h&gt;</code></p>
+			<p><code>class CKickButton : public <a href="CControl.html">CControl</a>;</code></p>
+			<p>Define a button with 2 states using 2 subpixmaps. One click on it, then the 
+				second subpixmap is displayed. When the mouse button is relaxed, the first 
+				subpixmap is framed.</p>
+			<hr noshade="noshade" size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="cCKickButton">CKickButton</a></h4>
+						</td>
+						<td align="right">
+							<h4>1.0</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">CKickButton (<a href="CRect.html">CRect</a> &amp;size, <a href="CControlListener.html">CControlListener</a> *listener, long tag, long heightOfOneImage, <a href="CBitmap.html">CBitmap</a> *handle, <a href="CPoint.html">CPoint</a> &amp;offset);</div></p>
+			<p>Creates a kick button object.</p>
+			<table width="100%" cellpadding="0" cellspacing="0" border="1" bordercolor="#000000">
+				<tbody>
+					<tr>
+						<th align="right" valign="top">
+							<code>size</code></th>
+						<td>The enclosing rectangle, in relative to the parent frame.</td>
+					</tr>
+					<tr>
+						<th align="right" valign="top">
+							<code>listener</code></th>
+						<td>The object responsible for handling events in this control.</td>
+					</tr>
+					<tr>
+						<th align="right" valign="top">
+							<code>tag</code></th>
+						<td>The index of the control</td>
+					</tr>
+					<tr>
+						<th align="right" valign="top">
+							<code>heightOfOneImage</code></th>
+						<td>The height of one image, in pixel.</td>
+					</tr>
+					<tr>
+						<th align="right" valign="top">
+							<code>handle</code></th>
+						<td>The pixmap containing the images of the two different states.</td>
+					</tr>
+					<tr>
+						<th align="right" valign="top">
+							<code>offset</code></th>
+						<td>-</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><img src="images/source.jpg" alt="[source]" width="16" height="16"> <a href="sources/sCKickButton.html" target="sources">
+					source</a></p>
+			<hr noshade="noshade" size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="dCKickButton">~CKickButton</a></h4>
+						</td>
+						<td align="right">
+							<h4>1.0</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">~CKickButton ();</div></p>
+			<p>Destroys a kickButton object. The pixmap is destroyed if there is no more 
+				reference on it.</p>
+			<p><img src="images/source.jpg" alt="[source]" width="16" height="16"> <a href="sources/sCKickButton.html" target="sources">
+					source</a></p>
+			<hr noshade="noshade" size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="draw">draw</a></h4>
+						</td>
+						<td align="right">
+							<h4>1.0</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">void draw (<a href="CDrawContext.html">CDrawContext</a>*);</div></p>
+			<br>
+			Called when this control object needs to be drawn.
+			<p><img src="images/source.jpg" alt="[source]" width="16" height="16"> <a href="sources/sCKickButton.html" target="sources">
+					source</a></p>
+			<hr noshade="noshade" size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="mouse">mouse</a></h4>
+						</td>
+						<td align="right">
+							<h4>1.0</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">void mouse (<a href="CDrawContext.html">CDrawContext</a> *context, <a href="CPoint.html">CPoint</a> &amp;where);</div></p>
+			<p>Called when there is a mouse-click inside this control object.</p>
+			<p><img src="images/source.jpg" alt="[source]" width="16" height="16"> <a href="sources/sCKickButton.html" target="sources">
+					source</a></p>
+			<hr noshade="noshade" size="4">
+			<div align="center">Copyright &copy;2003 <a href="http://www.steinberg.net" target="_blank">
+					<u>Steinberg Media Technologies GmbH</u></a>.
+			</div>
+			<DIV align=center><FONT size=1>Last Modified:
+			<SCRIPT language=Javascript %>document.writeln(document.lastModified);</SCRIPT>
+			</FONT></DIV>
+			<br>
+		</div>
+		<br>
+		<br>
+	</body>
+</html>

@@ -1,0 +1,317 @@
+<html>
+<head>
+    <title>controlsgui.cpp</title>
+	
+<link rel="stylesheet" href="../../formate.txt" type="text/css">
+</head>
+<body>
+
+<code>
+<pre>//------------------------------------------------------------------------
+//-
+//- Project     : Use different Controls of VSTGUI
+//- Filename    : controlsgui.cpp
+//- Created by  : Yvan Grabit
+//- Description :
+//-
+//- &copy; 2003 Steinberg Media Technologies GmbH, All Rights Reserved
+//------------------------------------------------------------------------
+
+#ifndef __controlsgui__
+#include "<a href="controlsgui.h.html">controlsgui.h</a>"
+#endif
+
+#ifndef __controlsguieditor__
+#include "<a href="controlsguieditor.h.html">controlsguieditor.h</a>"
+#endif
+
+#include &lt;stdio.h&gt;
+#include &lt;string.h&gt;
+
+// global
+
+extern bool oome;
+
+
+//-----------------------------------------------------------------------------
+class Program
+{
+public:
+    Program () {}
+
+    void setValue (float val) { value = val; }
+
+protected:
+    friend Controlsgui;
+
+    float value;
+    char name[24];
+};
+
+
+
+//-----------------------------------------------------------------------------
+Controlsgui::Controlsgui (audioMasterCallback audioMaster) :
+  AudioEffectX (audioMaster, 4, kNumParams)
+{
+    setNumInputs (2);
+    setNumOutputs (2);
+    hasVu (false);
+    canMono (true);
+    canProcessReplacing ();
+    setUniqueID (CCONST ('C', 'o', 'n', '9'));
+
+    // init programs
+    programs = new Program[numPrograms];
+    if (programs)
+        for (int i = 0; i &lt; numPrograms; i++)
+        {
+            Program *prg = &amp;programs[i];
+            prg-&gt;setValue ((float)i / (float)(numPrograms - 1));
+            sprintf (prg-&gt;name, "Prog %d", i + 1);
+        }
+
+    fSliderValue = 0.f;
+
+    editor = new ControlsguiEditor (this);
+}
+
+//-----------------------------------------------------------------------------
+Controlsgui::~Controlsgui ()
+{
+    if (programs)
+        delete[] programs;
+}
+
+//-----------------------------------------------------------------------------
+void Controlsgui::resume ()
+{
+    if (editor)
+        ((ControlsguiEditor*)editor)-&gt;resume ();
+}
+
+//-----------------------------------------------------------------------------
+void Controlsgui::suspend ()
+{
+    if (editor)
+        ((ControlsguiEditor*)editor)-&gt;suspend ();
+}
+
+//-----------------------------------------------------------------------------
+bool Controlsgui::keysRequired ()
+{
+    if (editor)
+        return ((ControlsguiEditor*)editor)-&gt;keysRequired ();
+    else
+        return false;
+}
+
+//-----------------------------------------------------------------------------
+bool Controlsgui::string2parameter (long index, char* text)
+{
+    bool v = false;
+
+    
+    switch (index)
+    {
+        case kSliderVTag :
+        case kSliderHTag :
+        case kKnobTag :
+            if (text)
+            {
+                sscanf (text, "%f", &amp;fSliderValue);
+                if (fSliderValue &lt; 0.f)
+                    fSliderValue = 0.f;
+                else if (fSliderValue &gt; 1.f)
+                    fSliderValue = 1.f;
+
+                Program* ap = programs + curProgram;
+                ap-&gt;setValue (fSliderValue);
+            }
+            v = true;
+        break;
+
+        default:
+            v = false;
+    }
+
+    return v;
+}
+
+//-----------------------------------------------------------------------------
+void Controlsgui::setBlockSize (long size)
+{
+    AudioEffect::setBlockSize (size);
+}
+
+//-----------------------------------------------------------------------------
+void Controlsgui::setProgram (long program)
+{
+    curProgram = program;
+    Program* ap = programs + curProgram;
+    
+    setParameter (kKnobTag, ap-&gt;value);
+}
+
+//-----------------------------------------------------------------------------
+void Controlsgui::setProgramName (char *name)
+{
+    strcpy (programs[curProgram].name, name);
+}
+
+//-----------------------------------------------------------------------------
+void Controlsgui::getProgramName (char *name)
+{
+    strcpy (name, programs[curProgram].name);
+}
+
+//-------------------------------------------------------------------------
+bool Controlsgui::getProgramNameIndexed (long category, long index, char* text)
+{
+    if (index &gt;= 0 &amp;&amp; index &lt; numPrograms)
+    {
+        if (!strcmp (programs[index].name, "Init"))
+            sprintf (text, "%s %d", programs[index].name, index + 1);
+        else
+            strcpy (text, programs[index].name);
+
+        return true;
+    }
+    return false;
+}
+//-----------------------------------------------------------------------------
+void Controlsgui::setParameter (long index, float value)
+{
+    Program* ap = programs + curProgram;
+
+    switch (index)
+    {
+            case kSliderVTag :
+            case kSliderHTag :
+            case kKnobTag :
+                ap-&gt;value = fSliderValue = value;
+                break;
+    }
+    if (editor)
+        ((AEffGUIEditor*)editor)-&gt;setParameter (index, value);
+}
+
+//-----------------------------------------------------------------------------
+float Controlsgui::getParameter (long index)
+{
+    float v = 0;
+
+    switch (index)
+    {
+    case kSliderVTag :
+    case kSliderHTag :
+    case kKnobTag :
+        v = fSliderValue;
+        break;
+    }
+    return v;
+}
+
+//-----------------------------------------------------------------------------
+void Controlsgui::getParameterDisplay (long index, char *text)
+{
+    switch (index)
+    {
+    case kSliderHTag :
+    case kSliderVTag :
+    case kKnobTag :
+        sprintf (text, "%.6f", fSliderValue);
+        break;
+
+    default :
+        strcpy (text, "0");
+    }
+}
+
+//-----------------------------------------------------------------------------
+void Controlsgui::getParameterLabel (long index, char *text)
+{
+    switch (index)
+    {
+    case kSliderHTag :
+    case kSliderVTag :
+    case kKnobTag :
+        strcpy (text, "float");
+        break;
+
+    default :
+        strcpy (text, "-");
+    }
+}
+
+//-----------------------------------------------------------------------------
+void Controlsgui::getParameterName (long index, char *text)
+{
+    switch (index)
+    {
+    case kSliderHTag :
+        strcpy (text, "Slider H");
+        break;
+    case kSliderVTag :
+        sprintf (text, "Slider V");
+        break;
+    case kKnobTag :
+        sprintf (text, "Knob");
+        break;
+
+    default :
+        strcpy (text, "-");
+    }
+}
+
+//-----------------------------------------------------------------------------
+void Controlsgui::process (float **inputs, float **outputs, long sampleFrames)
+{
+    outputs = outputs;
+}
+
+//-----------------------------------------------------------------------------
+void Controlsgui::processReplacing (float **inputs, float **outputs, long sampleFrames)
+{
+    float *in1 = inputs[0];
+    float *in2 = inputs[1];
+    float *out1 = outputs[0];
+    float *out2 = outputs[1];
+    
+#if 0
+    VstTimeInfo *timeInfo = getTimeInfo (kVstPpqPosValid|kVstTempoValid|kVstBarsValid | kVstTimeSigValid|kVstCyclePosValid|kVstSmpteValid);
+    if (timeInfo)
+    {
+        fprintf (stderr, "timeInfo\n");
+        fprintf (stderr, "\tsamplePos     %f\n", timeInfo-&gt;samplePos);
+        fprintf (stderr, "\tsampleRate    %f\n", timeInfo-&gt;sampleRate);
+        fprintf (stderr, "\tnanoSeconds   %f\n", timeInfo-&gt;nanoSeconds);
+        fprintf (stderr, "\tppqPos        %f\n", timeInfo-&gt;ppqPos);
+        fprintf (stderr, "\ttempo         %f\n",  timeInfo-&gt;tempo);
+        fprintf (stderr, "\tcycleStartPos %f\n", timeInfo-&gt;cycleStartPos);
+        fprintf (stderr, "\tcycleEndPos   %f\n", timeInfo-&gt;cycleEndPos);
+        fprintf (stderr, "\ttimeSigNumerator   %d\n", timeInfo-&gt;timeSigNumerator);
+        fprintf (stderr, "\ttimeSigDenominator %d\n", timeInfo-&gt;timeSigDenominator);
+        fprintf (stderr, "\tbarStartPos        %f\n", timeInfo-&gt;barStartPos);
+        fprintf (stderr, "\tsmpteOffset        %d\n", timeInfo-&gt;smpteOffset);
+        fprintf (stderr, "\tsmpteFrameRate     %d\n", timeInfo-&gt;smpteFrameRate);
+        fprintf (stderr, "\tsamplesToNextClock %d\n", timeInfo-&gt;samplesToNextClock);
+    }
+
+
+    if(out1 != in1)
+        memcpy(out1, in1, sampleFrames * 4);
+    if(out2 != in2)
+        memcpy(out2, in2, sampleFrames * 4);
+#else
+    if (out1 != in1)
+        memcpy (out1, in1, sampleFrames * 4);
+    if (out2 != in2)
+        memcpy (out2, in2, sampleFrames * 4);
+#endif
+}
+</pre>
+</code>
+
+</body>
+</html>

@@ -1,0 +1,54 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+  <title>Unix</title>
+    		<base target="vstdoc">
+             		 		         
+  <link rel="stylesheet" type="text/css" href="../sdkdoc.css">
+</head>
+  <body>
+   
+<div>  		   
+<h2>Unix stations with MOTIF</h2>
+    		   
+<h2>Pixmaps :</h2>
+    		   
+<p>An array of type CResTable, named xpmResources, must be defined in one 
+ of the  			VST Plug-ins files, and the files, which contain the pixmaps used,
+ have to be  			included too. These pixmap files are in XPM format (XPM stands
+ for X PixMap).  			For futher informations about this format see the location
+ :</p>
+    		<a href="http://www.inria.fr/koala/lehors/xpm.html"
+ target="_blank">http://www.inria.fr/koala/lehors/xpm.html</a>   		   
+<p><code>CResTable</code> is defined as an array of :</p>
+    		<code> 			   
+<pre>struct CResTableEntry { <br>    int id;        // ident <br>    char **xpm;  // pointer to the xpm structure <br>};</pre>
+    		</code> 		   
+<p><code>id</code> is the ident which will be used to initialize a bitmap 
+ object. <code> 				xpm</code> is a pointer to a structure defined in the 
+pixmap XPM format.</p>
+    		   
+<p>Note that the last element of this array should be <code>{0, 0}</code> 
+ !</p>
+    		   
+<h4>Example :</h4>
+    		<code> 			   
+<pre>enum {<br>    // MUST BE &gt;= 128 (for MAC) !!<br>    kBackgroundBitmap =1000, <br>    kLeftRightBitmap <br>}; <br><br>#if MOTIF <br>    #include "sco100.xpm" <br>    #include "sco101.xpm" <br><br>    CResTable xpmResources = { <br>        {kBackgroundBitmap , sco100}, <br>        {kLeftRightBitmap  , sco101}, <br>        {0, 0} <br>    }; <br>#endif <br><br>// init the bitmap with the identifier <br><br>CBitmap *bitmap = new CBitmap (kBackgroundBitmap); <br>...</pre>
+    		</code> 		   
+<p>With sco100.xpm, for example:</p>
+    		<code> 			   
+<pre>/* XPM */ <br>static char *sco100[] = { <br>    /* width height num_colors chars_per_pixel */ <br>    "    7     7        3           1", <br>    /* colors */ <br>    "# c #ffe0e0", <br>    "a c #ffb7b7", <br>    /* pixels */ <br>    "..###..", <br>    ".#####.", <br>    "##aa###", <br>    "##aa###", <br>    "##aa###", <br>    ".#####.", <br>    "..###.." <br>};</pre>
+    		</code> 		   
+<hr noshade size="4"> 		   
+<div align="center">Copyright &copy;2003 <a
+ href="http://www.steinberg.net" target="_blank"><u>Steinberg  					Media 
+ Technologies GmbH</u></a>. 		</div>
+    	<br>
+   </div>
+<DIV align=center><FONT size=1>Last Modified:
+<SCRIPT language=Javascript %>document.writeln(document.lastModified);</SCRIPT>
+ </FONT>
+    <br></DIV>
+ 
+</body>
+</html>

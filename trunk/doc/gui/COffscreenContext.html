@@ -1,0 +1,255 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+	<head>
+		<title>COffscreenContext</title>
+		<base target="vstdoc">
+		<link rel="stylesheet" href="../sdkdoc.css" type="text/css">
+	</head>
+	<body>
+		<div>
+			<h2>COffscreenContext</h2>
+			<p><code>#include &lt;vstgui.h&gt;</code></p>
+			<p><code>class COffscreenContext : public <a href="CDrawContext.html">CDrawContext</a>;</code></p>
+			<p>An offscreen context is a drawing device which uses a <a href="CBitmap.html">pixmap</a>
+				as its drawing surface. The creation of this pixmap for drawing is supplied by 
+				the application, which allows the creation of bitmaps on the fly using normal 
+				drawing methods defined in the <code><a href="CDrawContext.html">CDrawContext</a></code>
+				class.</p>
+			<hr noshade size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="COffscreenContext1">COffscreenContext</a></h4>
+						</td>
+						<td align="right">
+							<h4>1.0</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table
+> 
+			<p><div class="cpp">COffscreenContext (<a href="CDrawContext.html">CDrawContext</a> *context, <a href="CBitmap.html">CBitmap</a> *bitmap);</div>
+<P></P
+> 
+			<p>Create an offscreen context with the given pixmap.
+			</p>
+			<table width="100%" cellpadding="0" cellspacing="0" border="1" bordercolor="#000000">
+				<tbody>
+					<tr>
+						<th align="right" valign="top">
+							<code>context</code></th>
+						<td><br>
+						</td>
+					</tr>
+					<tr>
+						<th align="right" valign="top">
+							<code>bitmap</code></th>
+						<td>A background pixmap.Its size will determine the size of the offscreen.</td>
+					</tr>
+				</tbody>
+			</table>
+			<hr noshade size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="cCOffscreenContext2">COffscreenContext</a></h4>
+						</td>
+						<td align="right">
+							<h4>1.0</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table
+> 
+			<p><div class="cpp">COffscreenContext (<a href="CFrame.html">CFrame</a> *frame, long width, long height, const <a href="CColor.html">CColor</a> backgroundColor = kBlackCColor);</div>
+<P></P
+> 
+			<p>Create an offscreen context with the given height, width and background color.</p>
+			<table width="100%" cellpadding="0" cellspacing="0" border="1" bordercolor="#000000">
+				<tbody>
+					<tr>
+						<th align="right" valign="top">
+							<code>frame</code></th>
+						<td>The frame this offscreen context is attached to.</td>
+					</tr>
+					<tr>
+						<th align="right" valign="top">
+							<code>width</code></th>
+						<td>The width of this offscreen context.</td>
+					</tr>
+					<tr>
+						<th align="right" valign="top">
+							<code>height</code></th>
+						<td>The height of this offscreen context.</td>
+					</tr>
+					<tr>
+						<th align="right" valign="top">
+							<code>backgroundColor</code></th>
+						<td>The background color of this offscreen context.</td>
+					</tr>
+				</tbody>
+			</table>
+			<hr noshade size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="dCOffscreenContext">~COffscreenContext</a></h4>
+						</td>
+						<td align="right">
+							<h4>1.0</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">virtual ~COffscreenContext ();</div>
+<P></P>
+			<p>Destroy an offscreenContext object.</p>
+			<hr noshade size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="copyFrom">copyFrom</a></h4>
+						</td>
+						<td align="right">
+							<h4>2.1</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table
+> 
+			<p><div class="cpp">void copyFrom (<a href="CDrawContext.html">CDrawContext</a> *pContext, <a href="CRect.html">CRect</a> destRect, <a href="CPoint.html">CPoint</a> srcOffset = CPoint (0, 0));</div>
+<P></P
+> 
+			<p>Copy the offscreen pixmap to the given context with a given destination 
+				rectangle and an offset position in the source.</p>
+			<table width="100%" cellpadding="0" cellspacing="0" border="1" bordercolor="#000000">
+				<tbody>
+					<tr>
+						<th align="right" valign="top">
+							<code>pContext</code></th>
+						<td>The target context.</td>
+					</tr>
+					<tr>
+						<th align="right" valign="top">
+							<code>destRect</code></th>
+						<td>The destination rectangle in the target context.</td>
+					</tr>
+					<tr>
+						<th align="right" valign="top">
+							<code>srcOffset</code></th>
+						<td>An offset position in the source.</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><img src="images/COffscreenContext.jpg" alt="[copyFrom]">
+			</p>
+			<h4>Example :</h4>
+			<code>
+				<pre>bitmapOc = new CBitmap (128);<br>...<br><br>void ScoView::draw (CDrawContext *pContext)<br>{<br>    // this must be local<br>    COffscreenContext *oc = new COffscreenContext (<br>        getParent (), 80, 100, kBlackCColor<br>    );<br>  <br>    CRect rctScreen (0, 0, 80, 100);<br><br>    // draw the background<br>    if (bitmapOc)<br>        bitmapOc&gt;draw (oc, rctScreen);<br><br>    long x, y;<br>    CPoint p;<br>    CColor greenColor = {0, 255, 0, 0};<br>    oc-&gt;setFrameColor (greenColor);<br>    oc-&gt;moveTo (p(x, y));<br>    ...<br>    // draw the line<br>    oc-&gt;lineTo (p(x, y));<br>    ...<br>    // copyFrom the offscreen to the current context<br>    CRect rect (20, 50, 100, 150);<br>    oc-&gt;copyFrom (context, rect, p (0, 0));<br>                        <br>    // don't forget to delete the offscreen<br>    delete oc;<br>}</pre>
+			</code>
+			<hr noshade size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="copyto">copyTo</a></h4>
+						</td>
+						<td align="right">
+							<h4>2.2</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table
+> 
+			<p><div class="cpp">void copyTo (CDrawContext* pContext, CRect&amp; srcRect, CPoint destOffset = CPoint (0, 0));</div>
+<P></P>
+			<p>This is the copyFrom' s opposite : it is used to make the area offscreen.<br>
+			</p>
+			<hr width="100%" size="2">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="transfert">transfert</a></h4>
+						</td>
+						<td align="right">
+							<h4>1.0</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table
+> 
+			<p><div class="cpp">void transfert (<a href="CDrawContext.html">CDrawContext</a> *context, <a href="CRect.html">CRect</a> destRect, <a href="CPoint.html">CPoint</a> srcOffset = <a href="CPoint.html">CPoint</a> (0, 0));</div>
+<P></P
+> 
+			<p>Tranfers the offscreen pixmap to the given context.</p>
+			<table width="100%" cellpadding="0" cellspacing="0" border="1" bordercolor="#000000">
+				<tbody>
+					<tr>
+						<th align="right" valign="top">
+							<code>context</code></th>
+						<td>The target context.</td>
+					</tr>
+					<tr>
+						<th align="right" valign="top">
+							<code>destRect</code></th>
+						<td>The destination rectangle in the target context.</td>
+					</tr>
+					<tr>
+						<th align="right" valign="top">
+							<code>srcOffset</code></th>
+						<td>An offset position in the source.</td>
+					</tr>
+				</tbody>
+			</table>
+			<h4>Note :</h4>
+			<p>This method is depreciated and will be replaced by <code><a href="#copyFrom">copyFrom</a></code>.
+			</p>
+			<hr noshade size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="getWidth">getWidth</a></h4>
+						</td>
+						<td align="right">
+							<h4>1.0</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">int getWidth ();</div>
+<P></P>
+			<p>Returns the width of this offscreen.</p>
+			<hr noshade size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="getHeight">getHeight</a></h4>
+						</td>
+						<td align="right">
+							<h4>1.0</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">int getHeight ();</div>
+<P></P>
+			<p>Returns the height of this offscreen.</p>
+			<hr noshade size="4">
+			<div align="center">Copyright &copy;2003 <a href="http://www.steinberg.net" target="_blank">
+					<u>Steinberg Media Technologies GmbH</u></a>.
+			</div>
+			<DIV align=center><FONT size=1>Last Modified:
+			<SCRIPT language=Javascript %>document.writeln(document.lastModified);</SCRIPT>
+			</FONT></DIV>
+			<br>
+		</div>
+		<br>
+	</body>
+</html>
