@@ -48,16 +48,17 @@ void PMiscView::draw (CDrawContext* pContext)
 	polyPoints[1] = CPoint (100,50);
 	polyPoints[2] = CPoint (50,100);
 	polyPoints[3] = CPoint (0,50);
-	offsetPoints (polyPoints, 4, CPoint (size.left + xOffset, size.top + yOffset));
+	polyPoints[4] = CPoint (50,0);
+	offsetPoints (polyPoints, 5, CPoint (size.left + xOffset, size.top + yOffset));
 	pContext->setDrawMode (kAntialias);
 	pContext->setFrameColor (kBlackCColor);
-	pContext->drawPolygon (polyPoints, 4, kDrawStroked);
-	offsetPoints (polyPoints, 4, CPoint (50, 0));
+	pContext->drawPolygon (polyPoints, 5, kDrawStroked);
+	offsetPoints (polyPoints, 5, CPoint (50, 0));
 	pContext->setFillColor (kBlueAlphaCColor);
-	pContext->drawPolygon (polyPoints, 4, kDrawFilled);
-	offsetPoints (polyPoints, 4, CPoint (50, 0));
+	pContext->drawPolygon (polyPoints, 5, kDrawFilled);
+	offsetPoints (polyPoints, 5, CPoint (50, 0));
 	pContext->setFillColor (kRedAlphaCColor);
-	pContext->drawPolygon (polyPoints, 4, kDrawFilledAndStroked);
+	pContext->drawPolygon (polyPoints, 5, kDrawFilledAndStroked);
 
 	CRect ellipseRect (200, 0, 300, 100);
 	ellipseRect.offset (size.left + xOffset, size.top + yOffset);
