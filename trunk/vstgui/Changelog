@@ -1,3 +1,10 @@
+2004-05-31 arne
+
+	* mac: COptionMenuScheme works now with QUARTZ
+	* mac: QUARTZ implementation of CDrawContext::drawEllipse and fillEllipse 
+	* added a global COptionMenuScheme variable, if set all menues will use it
+	* fix a possible crash in COptionMenu::mouse (thanks Wolfram Franke)
+
 2004-05-22 arne
 
 	* moved pBackgroundBitmap and its accessors into CView from CViewContainer, CFrame and CControl as suggested by Wolfram Franke
