@@ -3496,7 +3496,7 @@ bool CFrame::initFrame (void *systemWin)
 	}
 	SetControlDragTrackingEnabled (controlRef, true);
 	SetAutomaticControlDragTrackingEnabledForWindow ((WindowRef)systemWin, true);
-	#if !PLUGGUI
+	#if !AU // for AudioUnits define AU and embed the controlRef at your AUCarbonViewBase
 	WindowAttributes attributes;
 	GetWindowAttributes ((WindowRef)systemWin, &attributes);
 	if (attributes & kWindowCompositingAttribute) 
@@ -3505,6 +3505,8 @@ bool CFrame::initFrame (void *systemWin)
 	{
 		ControlRef rootControl;
 		GetRootControl ((WindowRef)systemWin, &rootControl);
+		if (rootControl == NULL)
+			CreateRootControl ((WindowRef)systemWin, &rootControl);
 		EmbedControl(controlRef, rootControl);	
 	}
 	#endif
@@ -5338,46 +5340,16 @@ void CViewContainer::useOffscreen (bool b)
 //-----------------------------------------------------------------------------
 void CViewContainer::modifyDrawContext (long save[4], CDrawContext* pContext)
 {
-	// get the position of the context in the screen
-	long offParentX = 0;
-	long offParentY = 0;
-
-	#if WINDOWS
-	RECT rctTempWnd;
-	GetWindowRect ((HWND)(pContext->getWindow ()), &rctTempWnd);
-	offParentX = rctTempWnd.left;
-	offParentY = rctTempWnd.top;	
-	#elif MACX && CARBON_EVENTS
-	if (getParent ())
-	{
-		HIRect bounds;
-		HIViewGetFrame ((HIViewRef)getParent ()->getPlatformControl (), &bounds);
-		if (pWindow)
-		{
-			WindowAttributes attr;
-			GetWindowAttributes ((WindowRef)getParent ()->getSystemWindow (), &attr);
-			if (attr & kWindowCompositingAttribute)
-			{
-				HIViewRef contentView;
-				HIViewFindByID (HIViewGetRoot ((WindowRef)getParent ()->getSystemWindow ()), kHIViewWindowContentID, &contentView);
-				HIViewConvertRect (&bounds, (HIViewRef)getParent ()->getPlatformControl (), contentView);
-			}
-		}
-		offParentX = bounds.origin.x;
-		offParentY = bounds.origin.y;
-	}
-	#endif
-
 	// store
 	save[0] = pContext->offsetScreen.h;
 	save[1] = pContext->offsetScreen.v;
 	save[2] = pContext->offset.h;
 	save[3] = pContext->offset.v;
 
-	pContext->offsetScreen.h = size.left + offParentX;
-	pContext->offsetScreen.v = size.top + offParentY;
-	pContext->offset.h = size.left;
-	pContext->offset.v = size.top;
+	pContext->offsetScreen.h += size.left;
+	pContext->offsetScreen.v += size.top;
+	pContext->offset.h += size.left;
+	pContext->offset.v += size.top;
 }
 
 //-----------------------------------------------------------------------------
