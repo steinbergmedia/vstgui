@@ -2,7 +2,7 @@
 // VST Plug-Ins SDK
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 //
-// Version 3.0       $Date: 2004-12-05 12:30:34 $ 
+// Version 3.0       $Date: 2004-12-05 15:53:31 $ 
 //
 // Added Motif/Windows vers.: Yvan Grabit              01.98
 // Added Mac version        : Charlie Steinberg        02.98
@@ -6305,6 +6305,7 @@ void CBitmap::dispose ()
 
 	pHandle = 0;
 	pMask = 0;
+	noAlpha = false;
 		
 	#elif MAC
 	#if QUARTZ
@@ -6463,7 +6464,8 @@ bool CBitmap::loadFromResource (long resourceID)
 	if (pHandle && GetObject (pHandle, sizeof (bm), &bm))
 	{
 		width  = bm.bmWidth; 
-		height = bm.bmHeight; 
+		height = bm.bmHeight;
+		noAlpha = true;
 		return true;
 	}
 	
@@ -7072,8 +7074,14 @@ void CBitmap::drawAlphaBlend (CDrawContext *pContext, CRect &rect, const CPoint 
 		blendFunction.BlendOp = AC_SRC_OVER;
 		blendFunction.BlendFlags = 0;
 		blendFunction.SourceConstantAlpha = alpha;
+		#if USE_ALPHA_BLEND
+		if (noAlpha)
+			blendFunction.AlphaFormat = 0;//AC_SRC_NO_ALPHA;
+		else
+			blendFunction.AlphaFormat = AC_SRC_ALPHA;
+		#else
 		blendFunction.AlphaFormat = 0;//AC_SRC_NO_ALPHA;
-
+		#endif
 		#if DYNAMICALPHABLEND
 		(*pfnAlphaBlend) ((HDC)pContext->pSystemContext, 
 					rect.left + pContext->offset.h, rect.top + pContext->offset.v,
