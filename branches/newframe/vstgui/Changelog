@@ -1,3 +1,15 @@
+2005-01-04 arne
+
+	* the following CDrawContext methods have a new optional parameter "CDrawStyle": drawPolygon, drawRect, drawArc, drawEllipse.
+	  the draw style is either kDrawStroked, kDrawFilled or kDrawFilledAndStroked.
+	* added another cursor : kCursorHand
+	* fixed some problems compiling the code on microsoft windows.
+	* fixed some problems with alphablending bitmaps on windows.
+	* added example plugguieditor.cpp file to be used for non VST usage. (There's an example AU plug in the drawtest module)
+	* added CTabView class.
+	* changed constructor of AEffGUIEditor to take a void instead of an AudioEffect pointer, so that subclassing 
+	  either from PluginGUIEditor or AEffGUIEditor is as simple as possible.
+
 2004-11-29 arne
 
 	* started to clean up the code (check your code, many methods in CView, CViewContainer & CFrame are declared const now)

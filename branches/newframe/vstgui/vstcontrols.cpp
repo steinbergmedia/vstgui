@@ -3,7 +3,7 @@
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 // Standard Control Objects
 //
-// Version 3.0       $Date: 2004-12-05 12:30:34 $
+// Version 3.0       $Date: 2005-01-04 14:30:45 $
 //
 // Added new objects        : Michael Schmidt          08.97
 // Added new objects        : Yvan Grabit              01.98
@@ -2092,7 +2092,8 @@ void COptionMenuScheme::drawItem (const char* text, long itemId, long state, CDr
 			pContext->setFontColor (textColor);
 	}
 
-	char *ptr = strstr (text, "\t");
+	// this needs to be done right, without changing the text pointer in anyway ;-)
+	char *ptr = (char*)strstr (text, "\t");
 	if (ptr)
 	{
 		char modifier[32];
@@ -2251,7 +2252,7 @@ pascal OSStatus COptionMenuScheme::eventHandler (EventHandlerCallRef inCallRef, 
 					{
 						scheme->menu->getEntry (i, temp);
 						scheme->scheme->getItemSize (temp, scheme->offscreenContext, size);
-						yPos += size.y;
+						yPos += size.y + 1;
 						if (yPos >= mouseLoc.y)
 						{
 							partHit = i + 1;
@@ -2278,6 +2279,7 @@ pascal OSStatus COptionMenuScheme::eventHandler (EventHandlerCallRef inCallRef, 
 						if (r.size.width < size.x)
 							r.size.width = size.x;
 					}
+					r.size.height += scheme->menu->getNbEntries ();
 					scheme->maxWidth = r.size.width;
 					SetEventParameter (inEvent, kEventParamControlOptimalBounds, typeHIRect, sizeof (HIRect), &r);
 					err = noErr;
@@ -2306,6 +2308,7 @@ pascal OSStatus COptionMenuScheme::eventHandler (EventHandlerCallRef inCallRef, 
 								r.size.width = size.x;
 						}
 						scheme->maxWidth = r.size.width;
+						r.size.height += scheme->menu->getNbEntries ();
 					}
 					else
 					{
@@ -2320,7 +2323,7 @@ pascal OSStatus COptionMenuScheme::eventHandler (EventHandlerCallRef inCallRef, 
 						}
 						r.size.width = scheme->maxWidth;
 					}
-					SetRectRgn (outRegion, (short) r.origin.x, (short) r.origin.y,(short) r.origin.x + r.size.width, (short) r.origin.y+ r.size.height);
+					SetRectRgn (outRegion, (short) r.origin.x, (short) r.origin.y,(short) r.origin.x + r.size.width, (short) r.origin.y+ r.size.height + 1);
 					err = noErr;
 					break;
 				}
@@ -2371,8 +2374,9 @@ pascal OSStatus COptionMenuScheme::eventHandler (EventHandlerCallRef inCallRef, 
 								offset = 2;
 							}
 							rect.setHeight (size.y);
+							context.setClipRect (rect);
 							scheme->scheme->drawItem (entryText+offset, i, state, &context, rect);
-							rect.offset (0, size.y);
+							rect.offset (0, size.y + 1);
 						}
 					}
 					break;
@@ -3453,11 +3457,13 @@ void COptionMenu::takeFocus (CDrawContext *pContext)
 
 	long gx, gy;
 	Point LToG;
-	CRect myFrameRect;
+//	CRect myFrameRect;
 	getFrame()->getPosition(gx, gy);
-	getFrame()->getSize(&myFrameRect);
-	LToG.v = gy + rect.top + offset - myFrameRect.top;
-	LToG.h = gx + rect.left + size.left - myFrameRect.left;
+//	getFrame()->getSize(&myFrameRect);
+//	LToG.v = gy + rect.top + offset - myFrameRect.top;
+//	LToG.h = gx + rect.left + size.left - myFrameRect.left;
+	LToG.v = gy + rect.top + offset;
+	LToG.h = gx + rect.left + size.left;
 		
 	//---Create the popup menu---
 	long offIdx = 0;

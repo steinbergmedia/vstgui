@@ -2,7 +2,7 @@
 // VST Plug-Ins SDK
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 //
-// Version 3.0       $Date: 2004-12-05 15:53:31 $ 
+// Version 3.0       $Date: 2005-01-04 14:30:44 $ 
 //
 // Added Motif/Windows vers.: Yvan Grabit              01.98
 // Added Mac version        : Charlie Steinberg        02.98
@@ -486,7 +486,12 @@ CColor kCyanCColor   = {0  , 255, 255, 255};
 //-----------------------------------------------------------------------------
 // CDrawContext Implementation
 //-----------------------------------------------------------------------------
-
+/**
+ * CDrawContext constructor.
+ * @param inFrame the parent CFrame
+ * @param inSystemContext the platform system context, can be NULL
+ * @param inWindow the platform window object
+ */
 CDrawContext::CDrawContext (CFrame *inFrame, void *inSystemContext, void *inWindow)
 :	pSystemContext (inSystemContext), pWindow (inWindow), pFrame (inFrame), 
 	frameWidth (0), lineStyle (kLineOnOffDash), drawMode (kAntialias), fontId (kNumStandardFonts), fontSize (-1)
@@ -544,12 +549,17 @@ CDrawContext::CDrawContext (CFrame *inFrame, void *inSystemContext, void *inWind
 	{
 		HIRect bounds;
 		HIViewGetFrame ((HIViewRef)pFrame->getPlatformControl (), &bounds);
-/*		if (pWindow)
+		if (pWindow)
 		{
-			HIViewRef contentView;
-			HIViewFindByID (HIViewGetRoot ((WindowRef)pWindow), kHIViewWindowContentID, &contentView);
-			HIViewConvertRect (&bounds, (HIViewRef)pFrame->getPlatformControl (), contentView);
-		}*/
+			WindowAttributes attr;
+			GetWindowAttributes ((WindowRef)pWindow, &attr);
+			if (attr & kWindowCompositingAttribute)
+			{
+				HIViewRef contentView;
+				HIViewFindByID (HIViewGetRoot ((WindowRef)pWindow), kHIViewWindowContentID, &contentView);
+				HIViewConvertRect (&bounds, (HIViewRef)pFrame->getPlatformControl (), contentView);
+			}
+		}
 		offsetScreen.x = bounds.origin.x;
 		offsetScreen.y = bounds.origin.y;
 		clipRect (0, 0, bounds.size.width, bounds.size.height);
@@ -675,290 +685,6 @@ CDrawContext::~CDrawContext ()
 	{
 		pView->Flush ();
 		pView->UnlockLooper ();
-	}
-#endif
-}
-
-//-----------------------------------------------------------------------------
-void CDrawContext::moveTo (const CPoint &_point)
-{
-	CPoint point (_point);
-	point.offset (offset.h, offset.v);
-
-#if WINDOWS
-	MoveToEx ((HDC)pSystemContext, point.h, point.v, NULL);
-  
-#elif MAC
-	#if QUARTZ
-	#else
-	CGrafPtr OrigPort;
-	GDHandle OrigDevice;
-	GetGWorld (&OrigPort, &OrigDevice); // get current GrafPort
-	SetGWorld (getPort (), NULL);       // activate our GWorld
-	MoveTo (point.h, point.v);
-	SetGWorld (OrigPort, OrigDevice);
-	#endif
-  	penLoc = point;
-  	
-#elif MOTIF || BEOS
-	penLoc = point;
-#endif
-}
-
-//-----------------------------------------------------------------------------
-void CDrawContext::lineTo (const CPoint& _point)
-{
-	CPoint point (_point);
-	point.offset (offset.h, offset.v);
-
-#if WINDOWS
-	LineTo ((HDC)pSystemContext, point.h, point.v);
-	
-#elif MAC
-	#if QUARTZ
-	CGContextRef context = beginCGContext ();
-	{
-		if (drawMode == kAntialias)
-			CGContextSetLineWidth (context, 2 * frameWidth);
-		CGContextScaleCTM (context, 1, -1);
-		CGContextTranslateCTM (context, 0.5f, 0.5f);
-
-		CGRect cgClipRect = CGRectMake (clipRect.left, clipRect.top, clipRect.width (), clipRect.height ());
-		CGContextClipToRect (gCGContext, cgClipRect);
-
-		QuartzSetLineDash (context, lineStyle, frameWidth);
-
-		CGContextBeginPath (context);
-		CGContextMoveToPoint (context, penLoc.h, penLoc.v);
-		CGContextAddLineToPoint (context, point.h, point.v);
-		CGContextClosePath (context);
-		CGContextDrawPath (context, kCGPathStroke);
-		releaseCGContext (context);
-	}
-	penLoc = point;
-	#else
-	CGrafPtr OrigPort;
-	GDHandle OrigDevice;
-	GetGWorld (&OrigPort, &OrigDevice); // get current GrafPort
-	SetGWorld (getPort (), NULL);       // activate our GWorld
-	RGBColor col;
-	CColor2RGBColor (frameColor, col);
-	RGBForeColor (&col);
-	#if 1
-	if (point.v == penLoc.v)
-	{
-		CPoint old = point;
-		if (point.h > penLoc.h)
-			point.h--;
-		else
-			point.h++;
-		penLoc = old;
-		LineTo (point.h, point.v);
-		MoveTo (penLoc.h, penLoc.v);
-	}
-	else if (point.h == penLoc.h)
-	{
-		CPoint old = point;
-		if (point.v > penLoc.v)
-			point.v--;
-		else
-			point.v++;
-		penLoc = old;
-		LineTo (point.h, point.v);
-		MoveTo (penLoc.h, penLoc.v);
-	}
-	else
-	{
-		penLoc = point;	
-		LineTo (point.h, point.v);
-	}
-	#else
-	if (point.v > penLoc.v)
-		point.v--;
-	else if (point.v < penLoc.v)
-		point.v++;
-	if (point.h > penLoc.h)
-		point.h--;
-	else if (point.h < penLoc.h)
-		point.h++;
-	penLoc = point;
-	LineTo (point.h, point.v);
-	#endif
-	SetGWorld (OrigPort, OrigDevice);
-	#endif
-
-#elif MOTIF
-	CPoint start (penLoc);
-	CPoint end (point);
-	if (start.h == end.h)
-	{
-		if (start.v < -5)
-			start.v = -5;
-		else if (start.v > 10000)
-			start.v = 10000;
-		
-		if (end.v < -5)
-			end.v = -5;
-		else if (end.v > 10000)
-			end.v = 10000;
-	}
-	if (start.v == end.v)
-	{
-		if (start.h < -5)
-			start.h = -5;
-		else if (start.h > 10000)
-			start.h = 10000;
-		
-		if (end.h < -5)
-			end.h = -5;
-		else if (end.h > 10000)
-			end.h = 10000;
-	}
-	XDrawLine (XDRAWPARAM, start.h, start.v, end.h, end.v);
-	
-	// keep trace of the new position
-	penLoc = point;
-
-#elif BEOS
-	rgb_color c = { frameColor.red, frameColor.green, frameColor.blue, 255 };
-	pView->SetHighColor (c);
-	pView->SetDrawingMode (modeToPlatform [drawMode]);
-	pView->SetPenSize (frameWidth);
-	lineFromTo (penLoc, point);
-	penLoc = point;
-#endif
-}
-
-//-----------------------------------------------------------------------------
-void CDrawContext::drawLines (const CPoint* points, const long& numLines)
-{
-	#if QUARTZ
-	CGContextRef context = beginCGContext ();
-	if (context) 
-	{
-		if (drawMode == kAntialias)
-			CGContextSetLineWidth (context, 2 * frameWidth);
-		CGContextScaleCTM (context, 1, -1);
-
-		CGRect cgClipRect = CGRectMake (clipRect.left, clipRect.top, clipRect.width (), clipRect.height ());
-		CGContextClipToRect (context, cgClipRect);
-
-		CGContextBeginPath (context);
-		for (long i = 0; i < numLines * 2; i+=2)
-		{
-			CPoint p1 (points[i]);
-			CPoint p2 (points[i+1]);
-			p1.offset (offset.x, offset.y);
-			p2.offset (offset.x, offset.y);
-			CGContextMoveToPoint (context, p1.x, p1.y);
-			CGContextAddLineToPoint (context, p2.x, p2.y);
-		}
-		CGContextDrawPath (context, kCGPathStroke);
-		releaseCGContext (context);
-	}
-
-	#else
-	// default implementation, when no platform optimized code is implemented
-	for (long i = 0; i < numLines * 2; i+=2)
-	{
-		moveTo (points[i]);
-		lineTo (points[i+1]);
-	}
-	#endif
-}
-
-//-----------------------------------------------------------------------------
-void CDrawContext::polyLine (const CPoint *pPoints, long numberOfPoints)
-{
-#if WINDOWS
-	POINT points[30];
-	POINT *polyPoints;
-	bool allocated = false;
-
-	if (numberOfPoints > 30)
-	{
-		polyPoints = (POINT*)new char [numberOfPoints * sizeof (POINT)];
-		if (!polyPoints)
-			return;
-		allocated = true;
-	}
-	else
-		polyPoints = points;
-
-	for (long i = 0; i < numberOfPoints; i++)
-	{
-		polyPoints[i].x = pPoints[i].h + offset.h;
-		polyPoints[i].y = pPoints[i].v + offset.v;
-	}
-
-	Polyline ((HDC)pSystemContext, polyPoints, numberOfPoints);
-
-	if (allocated)
-		delete[] polyPoints;
-
-#elif MAC
-	#if QUARTZ
-	CGContextRef context = beginCGContext ();
-	{
-		CGContextScaleCTM (context, 1, -1);
-		CGContextTranslateCTM (context, 0.5f, 0.5f);
-
-		CGRect cgClipRect = CGRectMake (clipRect.left, clipRect.top, clipRect.width (), clipRect.height ());
-		CGContextClipToRect (gCGContext, cgClipRect);
-
-		QuartzSetLineDash (context, lineStyle, frameWidth);
-
-		CGContextBeginPath (context);
-		CGContextMoveToPoint (context, pPoints[0].h + offset.h, pPoints[0].v + offset.v);
-		for (long i = 1; i < numberOfPoints; i++)
-			CGContextAddLineToPoint (context, pPoints[i].h + offset.h, pPoints[i].v + offset.v);
-		CGContextClosePath (context);
-		CGContextDrawPath (context, kCGPathStroke);
-		releaseCGContext (context);
-	}
-	#else
-	CGrafPtr OrigPort;
-	GDHandle OrigDevice;
-	GetGWorld (&OrigPort, &OrigDevice);
-	SetGWorld (getPort (), NULL);
-	RGBColor col;
-	CColor2RGBColor (frameColor, col);
-	RGBForeColor (&col);
-	MoveTo (pPoints[0].h, pPoints[0].v);
-	for (long i = 1; i < numberOfPoints; i++)
-		LineTo (pPoints[i].h + offset.h, pPoints[i].v + offset.v);
-	SetGWorld (OrigPort, OrigDevice);
-	#endif
-
-#elif MOTIF
-	XPoint* pt = (XPoint*)malloc (numberOfPoints * sizeof (XPoint));
-	if (!pt)
-		return;
-	for (long i = 0; i < numberOfPoints; i++)
-	{
-		pt[i].x = (short)pPoints[i].h + offset.h;
-		pt[i].y = (short)pPoints[i].v + offset.v;
-	}
-	
-	XDrawLines (XDRAWPARAM, pt, numberOfPoints, CoordModeOrigin);
-
-	free (pt);
-
-#elif BEOS
-	rgb_color c = { frameColor.red, frameColor.green, frameColor.blue, 255 };
-	pView->SetHighColor (c);
-	pView->SetDrawingMode (modeToPlatform [drawMode]);
-	pView->SetPenSize (frameWidth);
-
-	CPoint begin (pPoints[0]);
-	begin.offset (offset.h, offset.v);
-	CPoint end;
-	for (long i = 1; i < numberOfPoints; i++)
-	{
-		end = pPoints[i];
-		end.offset (offset.h, offset.v);
-		lineFromTo (begin, end);
-		begin = end;
 	}
 #endif
 }
@@ -1257,6 +983,305 @@ void CDrawContext::resetClipRect ()
 }
 
 //-----------------------------------------------------------------------------
+void CDrawContext::moveTo (const CPoint &_point)
+{
+	CPoint point (_point);
+	point.offset (offset.h, offset.v);
+
+#if WINDOWS
+	MoveToEx ((HDC)pSystemContext, point.h, point.v, NULL);
+  
+#elif MAC
+	#if QUARTZ
+	#else
+	CGrafPtr OrigPort;
+	GDHandle OrigDevice;
+	GetGWorld (&OrigPort, &OrigDevice); // get current GrafPort
+	SetGWorld (getPort (), NULL);       // activate our GWorld
+	MoveTo (point.h, point.v);
+	SetGWorld (OrigPort, OrigDevice);
+	#endif
+  	penLoc = point;
+  	
+#elif MOTIF || BEOS
+	penLoc = point;
+#endif
+}
+
+//-----------------------------------------------------------------------------
+void CDrawContext::lineTo (const CPoint& _point)
+{
+	CPoint point (_point);
+	point.offset (offset.h, offset.v);
+
+#if WINDOWS
+	LineTo ((HDC)pSystemContext, point.h, point.v);
+	
+#elif MAC
+	#if QUARTZ
+	CGContextRef context = beginCGContext ();
+	{
+		if (drawMode == kAntialias)
+			CGContextSetLineWidth (context, 2 * frameWidth);
+		CGContextScaleCTM (context, 1, -1);
+		CGContextTranslateCTM (context, 0.5f, 0.5f);
+
+		CGRect cgClipRect = CGRectMake (clipRect.left, clipRect.top, clipRect.width (), clipRect.height ());
+		CGContextClipToRect (gCGContext, cgClipRect);
+
+		QuartzSetLineDash (context, lineStyle, frameWidth);
+
+		CGContextBeginPath (context);
+		CGContextMoveToPoint (context, penLoc.h, penLoc.v);
+		CGContextAddLineToPoint (context, point.h, point.v);
+		CGContextDrawPath (context, kCGPathStroke);
+		releaseCGContext (context);
+	}
+	penLoc = point;
+	#else
+	CGrafPtr OrigPort;
+	GDHandle OrigDevice;
+	GetGWorld (&OrigPort, &OrigDevice); // get current GrafPort
+	SetGWorld (getPort (), NULL);       // activate our GWorld
+	RGBColor col;
+	CColor2RGBColor (frameColor, col);
+	RGBForeColor (&col);
+	#if 1
+	if (point.v == penLoc.v)
+	{
+		CPoint old = point;
+		if (point.h > penLoc.h)
+			point.h--;
+		else
+			point.h++;
+		penLoc = old;
+		LineTo (point.h, point.v);
+		MoveTo (penLoc.h, penLoc.v);
+	}
+	else if (point.h == penLoc.h)
+	{
+		CPoint old = point;
+		if (point.v > penLoc.v)
+			point.v--;
+		else
+			point.v++;
+		penLoc = old;
+		LineTo (point.h, point.v);
+		MoveTo (penLoc.h, penLoc.v);
+	}
+	else
+	{
+		penLoc = point;	
+		LineTo (point.h, point.v);
+	}
+	#else
+	if (point.v > penLoc.v)
+		point.v--;
+	else if (point.v < penLoc.v)
+		point.v++;
+	if (point.h > penLoc.h)
+		point.h--;
+	else if (point.h < penLoc.h)
+		point.h++;
+	penLoc = point;
+	LineTo (point.h, point.v);
+	#endif
+	SetGWorld (OrigPort, OrigDevice);
+	#endif
+
+#elif MOTIF
+	CPoint start (penLoc);
+	CPoint end (point);
+	if (start.h == end.h)
+	{
+		if (start.v < -5)
+			start.v = -5;
+		else if (start.v > 10000)
+			start.v = 10000;
+		
+		if (end.v < -5)
+			end.v = -5;
+		else if (end.v > 10000)
+			end.v = 10000;
+	}
+	if (start.v == end.v)
+	{
+		if (start.h < -5)
+			start.h = -5;
+		else if (start.h > 10000)
+			start.h = 10000;
+		
+		if (end.h < -5)
+			end.h = -5;
+		else if (end.h > 10000)
+			end.h = 10000;
+	}
+	XDrawLine (XDRAWPARAM, start.h, start.v, end.h, end.v);
+	
+	// keep trace of the new position
+	penLoc = point;
+
+#elif BEOS
+	rgb_color c = { frameColor.red, frameColor.green, frameColor.blue, 255 };
+	pView->SetHighColor (c);
+	pView->SetDrawingMode (modeToPlatform [drawMode]);
+	pView->SetPenSize (frameWidth);
+	lineFromTo (penLoc, point);
+	penLoc = point;
+#endif
+}
+
+//-----------------------------------------------------------------------------
+void CDrawContext::drawLines (const CPoint* points, const long& numLines)
+{
+	#if QUARTZ
+	CGContextRef context = beginCGContext ();
+	if (context) 
+	{
+		if (drawMode == kAntialias)
+			CGContextSetLineWidth (context, 2 * frameWidth);
+		CGContextScaleCTM (context, 1, -1);
+
+		CGRect cgClipRect = CGRectMake (clipRect.left, clipRect.top, clipRect.width (), clipRect.height ());
+		CGContextClipToRect (context, cgClipRect);
+
+		CGContextBeginPath (context);
+		for (long i = 0; i < numLines * 2; i+=2)
+		{
+			CGContextMoveToPoint (context, points[i].x + offset.x, points[i].y + offset.y);
+			CGContextAddLineToPoint (context, points[i+1].x + offset.x, points[i+1].y + offset.y);
+		}
+		CGContextDrawPath (context, kCGPathStroke);
+		releaseCGContext (context);
+	}
+
+	#else
+	// default implementation, when no platform optimized code is implemented
+	for (long i = 0; i < numLines * 2; i+=2)
+	{
+		moveTo (points[i]);
+		lineTo (points[i+1]);
+	}
+	#endif
+}
+
+//-----------------------------------------------------------------------------
+void CDrawContext::drawPolygon (const CPoint *pPoints, long numberOfPoints, const CDrawStyle drawStyle)
+{
+#if MAC && QUARTZ
+	CGContextRef context = beginCGContext ();
+	{
+		CGPathDrawingMode m = kCGPathStroke;
+		switch (drawStyle)
+		{
+			case kDrawFilled : m = kCGPathFill; break;
+			case kDrawFilledAndStroked : m = kCGPathFillStroke; break;
+		}
+
+		CGContextScaleCTM (context, 1, -1);
+		CGContextTranslateCTM (context, 0.5f, 0.5f);
+
+		CGRect cgClipRect = CGRectMake (clipRect.left, clipRect.top, clipRect.width (), clipRect.height ());
+		CGContextClipToRect (gCGContext, cgClipRect);
+
+		QuartzSetLineDash (context, lineStyle, frameWidth);
+
+		CGContextBeginPath (context);
+		CGContextMoveToPoint (context, pPoints[0].h + offset.h, pPoints[0].v + offset.v);
+		for (long i = 1; i < numberOfPoints; i++)
+			CGContextAddLineToPoint (context, pPoints[i].h + offset.h, pPoints[i].v + offset.v);
+		CGContextDrawPath (context, m);
+		releaseCGContext (context);
+	}
+#else
+	if (drawStyle == kDrawFilled || drawStyle == kDrawFilledAndStroked)
+		fillPolygon (pPoints, numberOfPoints);
+	if (drawStyle == kDrawStroked || drawStyle == kDrawFilledAndStroked)
+		polyLine (pPoints, numberOfPoints);
+#endif
+}
+
+//-----------------------------------------------------------------------------
+void CDrawContext::polyLine (const CPoint *pPoints, long numberOfPoints)
+{
+#if WINDOWS
+	POINT points[30];
+	POINT *polyPoints;
+	bool allocated = false;
+
+	if (numberOfPoints > 30)
+	{
+		polyPoints = (POINT*)new char [numberOfPoints * sizeof (POINT)];
+		if (!polyPoints)
+			return;
+		allocated = true;
+	}
+	else
+		polyPoints = points;
+
+	for (long i = 0; i < numberOfPoints; i++)
+	{
+		polyPoints[i].x = pPoints[i].h + offset.h;
+		polyPoints[i].y = pPoints[i].v + offset.v;
+	}
+
+	Polyline ((HDC)pSystemContext, polyPoints, numberOfPoints);
+
+	if (allocated)
+		delete[] polyPoints;
+
+#elif MAC
+	#if QUARTZ
+	drawPolygon (pPoints, numberOfPoints);
+
+	#else
+	CGrafPtr OrigPort;
+	GDHandle OrigDevice;
+	GetGWorld (&OrigPort, &OrigDevice);
+	SetGWorld (getPort (), NULL);
+	RGBColor col;
+	CColor2RGBColor (frameColor, col);
+	RGBForeColor (&col);
+	MoveTo (pPoints[0].h, pPoints[0].v);
+	for (long i = 1; i < numberOfPoints; i++)
+		LineTo (pPoints[i].h + offset.h, pPoints[i].v + offset.v);
+	SetGWorld (OrigPort, OrigDevice);
+	#endif
+
+#elif MOTIF
+	XPoint* pt = (XPoint*)malloc (numberOfPoints * sizeof (XPoint));
+	if (!pt)
+		return;
+	for (long i = 0; i < numberOfPoints; i++)
+	{
+		pt[i].x = (short)pPoints[i].h + offset.h;
+		pt[i].y = (short)pPoints[i].v + offset.v;
+	}
+	
+	XDrawLines (XDRAWPARAM, pt, numberOfPoints, CoordModeOrigin);
+
+	free (pt);
+
+#elif BEOS
+	rgb_color c = { frameColor.red, frameColor.green, frameColor.blue, 255 };
+	pView->SetHighColor (c);
+	pView->SetDrawingMode (modeToPlatform [drawMode]);
+	pView->SetPenSize (frameWidth);
+
+	CPoint begin (pPoints[0]);
+	begin.offset (offset.h, offset.v);
+	CPoint end;
+	for (long i = 1; i < numberOfPoints; i++)
+	{
+		end = pPoints[i];
+		end.offset (offset.h, offset.v);
+		lineFromTo (begin, end);
+		begin = end;
+	}
+#endif
+}
+
+//-----------------------------------------------------------------------------
 void CDrawContext::fillPolygon (const CPoint *pPoints, long numberOfPoints)
 {
 	// Don't draw boundary
@@ -1291,22 +1316,8 @@ void CDrawContext::fillPolygon (const CPoint *pPoints, long numberOfPoints)
 
 #elif MAC
 	#if QUARTZ
-	CGContextRef context = beginCGContext ();
-	{
-		CGContextScaleCTM (context, 1, -1);
-		CGContextTranslateCTM (context, 0.5f, 0.5f);
+	drawPolygon (pPoints, numberOfPoints, kDrawFilled);
 
-		CGRect cgClipRect = CGRectMake (clipRect.left, clipRect.top, clipRect.width (), clipRect.height ());
-		CGContextClipToRect (gCGContext, cgClipRect);
-
-		CGContextBeginPath (context);
-		CGContextMoveToPoint (context, pPoints[0].h + offset.h, pPoints[0].v + offset.v);
-		for (long i = 1; i < numberOfPoints; i++)
-			CGContextAddLineToPoint (context, pPoints[i].h + offset.h, pPoints[i].v + offset.v);
-		CGContextClosePath (context);
-		CGContextDrawPath (context, kCGPathFill);
-		releaseCGContext (context);
-	}
 	#else
 	CGrafPtr   OrigPort;
 	GDHandle   OrigDevice;
@@ -1374,34 +1385,55 @@ void CDrawContext::fillPolygon (const CPoint *pPoints, long numberOfPoints)
 }
 
 //-----------------------------------------------------------------------------
-void CDrawContext::drawRect (const CRect &_rect)
+void CDrawContext::drawRect (const CRect &_rect, const CDrawStyle drawStyle)
 {
 	CRect rect (_rect);
 	rect.offset (offset.h, offset.v);
 
 #if WINDOWS
-	MoveToEx ((HDC)pSystemContext, rect.left, rect.top, NULL);
-	LineTo ((HDC)pSystemContext, rect.right, rect.top);
-	LineTo ((HDC)pSystemContext, rect.right, rect.bottom);
-	LineTo ((HDC)pSystemContext, rect.left, rect.bottom);
-	LineTo ((HDC)pSystemContext, rect.left, rect.top);
+	if (drawStyle == kDrawFilled || drawStyle == kDrawFilledAndStroked)
+	{
+		RECT wr = {rect.left, rect.top, rect.right, rect.bottom};
+		HANDLE nullPen = GetStockObject (NULL_PEN);
+		HANDLE oldPen  = SelectObject ((HDC)pSystemContext, nullPen);
+		FillRect ((HDC)pSystemContext, &wr, (HBRUSH)pBrush);
+		SelectObject ((HDC)pSystemContext, oldPen);
+	}
+	if (drawStyle == kDrawStroked || drawStyle == kDrawFilledAndStroked)
+	{
+		MoveToEx ((HDC)pSystemContext, rect.left, rect.top, NULL);
+		LineTo ((HDC)pSystemContext, rect.right, rect.top);
+		LineTo ((HDC)pSystemContext, rect.right, rect.bottom);
+		LineTo ((HDC)pSystemContext, rect.left, rect.bottom);
+		LineTo ((HDC)pSystemContext, rect.left, rect.top);
+	}
 	
 #elif MAC
 	#if QUARTZ
 	CGContextRef context = beginCGContext ();
 	{
+		CGPathDrawingMode m = kCGPathStroke;
+		switch (drawStyle)
+		{
+			case kDrawFilled : m = kCGPathFill; break;
+			case kDrawFilledAndStroked : m = kCGPathFillStroke; break;
+		}
+
 		if (drawMode == kAntialias)
 			CGContextSetLineWidth (context, 2 * frameWidth);
 		CGRect r = CGRectMake (rect.left, rect.top, rect.width (), rect.height ());
 		CGContextScaleCTM (context, 1, -1);
 		CGContextTranslateCTM (context, 0.5f, 0.5f);
 
-		CGRect cgClipRect = CGRectMake (clipRect.left - 0.5f, clipRect.top - 0.5f, clipRect.width () + 0.5f, clipRect.height () + 0.5f);
+		CGRect cgClipRect = CGRectMake (clipRect.left, clipRect.top, clipRect.width (), clipRect.height ());
 		CGContextClipToRect (gCGContext, cgClipRect);
 
 		QuartzSetLineDash (context, lineStyle, frameWidth);
 
-		CGContextStrokeRect (context, r);
+		if (drawStyle == kDrawFilled || drawStyle == kDrawFilledAndStroked)
+			CGContextFillRect (context, r);
+		if (drawStyle == kDrawStroked || drawStyle == kDrawFilledAndStroked)
+			CGContextStrokeRect (context, r);
 		releaseCGContext (context);
 	}
 	#else
@@ -1409,14 +1441,27 @@ void CDrawContext::drawRect (const CRect &_rect)
 	GDHandle OrigDevice;
 	GetGWorld (&OrigPort, &OrigDevice);	// get current GrafPort
 	SetGWorld (getPort (), NULL);       // activate our GWorld
-	RGBColor col;
-	CColor2RGBColor (frameColor, col);
-	RGBForeColor (&col);
-	MoveTo (rect.left, rect.top);
-	LineTo (rect.right, rect.top);
-	LineTo (rect.right, rect.bottom);
-	LineTo (rect.left, rect.bottom);
-	LineTo (rect.left, rect.top);
+	
+	if (drawStyle == kDrawFilled || drawStyle == kDrawFilledAndStroked)
+	{
+		Rect rr;
+		RGBColor col;
+		CColor2RGBColor (fillColor, col);
+		RGBForeColor (&col);
+		CRect2Rect (rect, rr);
+		FillRect (&rr, &fillPattern);
+	}
+	if (drawStyle == kDrawStroked || drawStyle == kDrawFilledAndStroked)
+	{
+		RGBColor col;
+		CColor2RGBColor (frameColor, col);
+		RGBForeColor (&col);
+		MoveTo (rect.left, rect.top);
+		LineTo (rect.right, rect.top);
+		LineTo (rect.right, rect.bottom);
+		LineTo (rect.left, rect.bottom);
+		LineTo (rect.left, rect.top);
+	}
 	SetGWorld (OrigPort, OrigDevice);
 	#endif
 
@@ -1491,7 +1536,7 @@ void CDrawContext::fillRect (const CRect &_rect)
 }
 
 //-----------------------------------------------------------------------------
-void CDrawContext::drawEllipse (const CRect &_rect)
+void CDrawContext::drawEllipse (const CRect &_rect, const CDrawStyle drawStyle)
 {
 	#if QUARTZ
 	CRect rect (_rect);
@@ -1505,28 +1550,33 @@ void CDrawContext::drawEllipse (const CRect &_rect)
 		CGRect cgClipRect = CGRectMake (clipRect.left, clipRect.top, clipRect.width (), clipRect.height ());
 		CGContextClipToRect (gCGContext, cgClipRect);
 
+		CGPathDrawingMode m = kCGPathStroke;
+		switch (drawStyle)
+		{
+			case kDrawFilled : m = kCGPathFill; break;
+			case kDrawFilledAndStroked : m = kCGPathFillStroke; break;
+		}
 		if (rect.width () != rect.height ())
 		{
+			CGContextSaveGState (context);
 
-		CGContextSaveGState (context);
+			QuartzSetLineDash (context, lineStyle, frameWidth);
 
-		QuartzSetLineDash (context, lineStyle, frameWidth);
+			CGContextBeginPath (context);
 
-		CGContextBeginPath (context);
+			CGRect cgRect = CGRectMake (rect.left, rect.top, rect.width (), rect.height ());
+			CGPoint center = CGPointMake (CGRectGetMidX (cgRect), CGRectGetMidY (cgRect));
+			float a = CGRectGetWidth (cgRect) / 2;
+			float b = CGRectGetHeight (cgRect) / 2;
 
-		CGRect cgRect = CGRectMake (rect.left, rect.top, rect.width (), rect.height ());
-		CGPoint center = CGPointMake (CGRectGetMidX (cgRect), CGRectGetMidY (cgRect));
-		float a = CGRectGetWidth (cgRect) / 2;
-		float b = CGRectGetHeight (cgRect) / 2;
+		    CGContextTranslateCTM (context, center.x, center.y);
+		    CGContextScaleCTM (context, a, b);
+		    CGContextMoveToPoint (context, 1, 0);
+		    CGContextAddArc (context, 0, 0, 1, radians (0), radians (360), 0);
 
-	    CGContextTranslateCTM (context, center.x, center.y);
-	    CGContextScaleCTM (context, a, b);
-	    CGContextMoveToPoint (context, 1, 0);
-	    CGContextAddArc (context, 0, 0, 1, radians (0), radians (360), 0);
-
-		CGContextClosePath (context);
-		CGContextRestoreGState (context);
-			CGContextDrawPath (context, kCGPathStroke);
+			CGContextClosePath (context);
+			CGContextRestoreGState (context);
+			CGContextDrawPath (context, m);
 		}
 		else
 		{
@@ -1534,7 +1584,7 @@ void CDrawContext::drawEllipse (const CRect &_rect)
 			CGContextBeginPath (context);
 			CGContextAddArc (context, rect.left + radius, rect.top + radius, radius, radians (0), radians (360), 0);
 			CGContextClosePath (context);
-		CGContextDrawPath (context, kCGPathStroke);
+			CGContextDrawPath (context, m);
 		}
 		releaseCGContext (context);
 	}
@@ -1746,7 +1796,7 @@ void addOvalToPath(CGContextRef c, CPoint center, float a, float b, float start_
 #endif
 
 //-----------------------------------------------------------------------------
-void CDrawContext::drawArc (const CRect &_rect, const float _startAngle, const float _endAngle) // in degree
+void CDrawContext::drawArc (const CRect &_rect, const float _startAngle, const float _endAngle, const CDrawStyle drawStyle) // in degree
 {
 	CRect rect (_rect);
 	rect.offset (offset.h, offset.v);
@@ -1766,8 +1816,19 @@ void CDrawContext::drawArc (const CRect &_rect, const float _startAngle, const f
 	point1.offset (offset.h, offset.v);
 	point2.offset (offset.h, offset.v);
 
-	Arc ((HDC)pSystemContext, rect.left, rect.top, rect.right + 1, rect.bottom + 1, 
-			 point1.h, point1.v, point2.h, point2.v);
+	if (drawStyle == kDrawFilled || drawStyle == kDrawFilledAndStroked)
+	{
+		HANDLE nullPen = GetStockObject (NULL_PEN);
+		HANDLE oldPen  = SelectObject ((HDC)pSystemContext, nullPen);
+		Pie ((HDC)pSystemContext, rect.left, rect.top, rect.right + 1, rect.bottom + 1, 
+				 point1.h, point1.v, point2.h, point2.v);
+		SelectObject ((HDC)pSystemContext, oldPen);
+	}
+	if (drawStyle == kDrawStroked || drawStyle == kDrawFilledAndStroked)
+	{
+		Arc ((HDC)pSystemContext, rect.left, rect.top, rect.right + 1, rect.bottom + 1, 
+				 point1.h, point1.v, point2.h, point2.v);
+	}
 
 	#elif MOTIF
 
@@ -1779,6 +1840,12 @@ void CDrawContext::drawArc (const CRect &_rect, const float _startAngle, const f
 	#if QUARTZ
 	CGContextRef context = beginCGContext ();
 	{
+		CGPathDrawingMode m = kCGPathStroke;
+		switch (drawStyle)
+		{
+			case kDrawFilled : m = kCGPathFill; break;
+			case kDrawFilledAndStroked : m = kCGPathFillStroke; break;
+		}
 		CGContextScaleCTM (context, 1, -1);
 		CGContextTranslateCTM (context, 0.5f, 0.5f);
 
@@ -1790,7 +1857,7 @@ void CDrawContext::drawArc (const CRect &_rect, const float _startAngle, const f
 		CGContextBeginPath (context);
 		addOvalToPath (context, CPoint (rect.left + rect.width () / 2, rect.top + rect.height () / 2), rect.width () / 2, rect.height () / 2, -_startAngle, -_endAngle);
 
-		CGContextDrawPath (context, kCGPathStroke);
+		CGContextDrawPath (context, m);
 		releaseCGContext (context);
 	}
 	#else
@@ -3761,6 +3828,12 @@ bool CView::setAttribute (const CViewAttributeID id, const long inSize, void* in
 //-----------------------------------------------------------------------------
 // CFrame Implementation
 //-----------------------------------------------------------------------------
+/*! @class CFrame
+It creates a platform dependend view object. 
+On classic Mac OS it just draws into the provided window.
+On Mac OS X it is a ControlRef. 
+On Windows it's a WS_CHILD Window.
+*/
 CFrame::CFrame (const CRect &inSize, void *inSystemWindow, void *inEditor)
 :	CViewContainer (inSize, 0, 0),
 	pSystemWindow (inSystemWindow), pEditor (inEditor),
@@ -4275,10 +4348,7 @@ void CFrame::mouse (CDrawContext *pContext, CPoint &where, long buttons)
 		pContext = pFrameContext;
 	
 	if (pFocusView)
-	{
-		pFocusView->looseFocus ();
-		pFocusView = 0;
-	}
+		setFocusView (NULL);
 
 	if (buttons == -1 && pContext)
 		buttons = pContext->getMouseButtons ();
@@ -4437,6 +4507,12 @@ void CFrame::idle ()
 	if (!getOpenFlag ())
 		return;
 
+	#if MAC
+	// if the window is collapsed, we don't need to draw anything
+	if (pSystemWindow && IsWindowCollapsed ((WindowRef)pSystemWindow))
+		return;
+	#endif
+	
 	// don't do an idle before a draw
 	if (bFirstDraw)
 		return;
@@ -4597,16 +4673,23 @@ bool CFrame::getPosition (long &x, long &y) const
 	y   = bounds.top;
 
 	#if QUARTZ
-	HIViewRef contentView = 0;
-	HIViewFindByID (HIViewGetRoot ((WindowRef)pSystemWindow), kHIViewWindowContentID, &contentView);
-	if (contentView)
+	WindowAttributes attr;
+	GetWindowAttributes ((WindowRef)pSystemWindow, &attr);
+	if (attr & kWindowCompositingAttribute)
 	{
-		HIPoint p = { 0.f, 0.f };
-		if (HIViewConvertPoint (&p, controlRef, contentView) == noErr)
-		{
-			x += p.x;
-			y += p.y;
-		}
+		HIViewRef contentView;
+		HIViewFindByID (HIViewGetRoot ((WindowRef)pWindow), kHIViewWindowContentID, &contentView);
+		HIPoint hip = { 0.f, 0.f };
+		HIViewConvertPoint (&hip, controlRef, contentView);
+		x += hip.x;
+		y += hip.y;
+	}
+	else
+	{
+		HIRect hirect;
+		HIViewGetFrame ((HIViewRef)controlRef, &hirect);
+		x += hirect.origin.x;
+		y += hirect.origin.y;
 	}
 	#endif
 
@@ -5059,7 +5142,9 @@ void CFrame::setFocusView (CView *pView)
 	pFocusView = pView;
 
 	if (pOldFocusView)
+	{
 		pOldFocusView->looseFocus ();
+	}
 }
 
 //-----------------------------------------------------------------------------
@@ -5096,6 +5181,12 @@ CCView::~CCView ()
 //-----------------------------------------------------------------------------
 // CViewContainer Implementation
 //-----------------------------------------------------------------------------
+/**
+ * CViewContainer constructor.
+ * @param rect the size of the container
+ * @param pParent the parent CFrame
+ * @param pBackground the background bitmap, can be NULL
+ */
 CViewContainer::CViewContainer (const CRect &rect, CFrame *pParent, CBitmap *pBackground)
 : CView (rect), pFirstView (0), pLastView (0), 
  mode (kNormalUpdate), pOffscreenContext (0), bDrawInOffscreen (true), currentDragView (0)
@@ -5126,6 +5217,9 @@ CViewContainer::~CViewContainer ()
 }
 
 //-----------------------------------------------------------------------------
+/**
+ * @param rect the new size of the container
+ */
 void CViewContainer::setViewSize (CRect &rect)
 {
 	CView::setViewSize (rect);
@@ -5140,6 +5234,9 @@ void CViewContainer::setViewSize (CRect &rect)
 }
 
 //-----------------------------------------------------------------------------
+/**
+ * @param color the new background color of the container
+ */
 void CViewContainer::setBackgroundColor (CColor color)
 {
 	backgroundColor = color;
@@ -5154,6 +5251,9 @@ long CViewContainer::notify (CView* sender, const char* message)
 }
 
 //-----------------------------------------------------------------------------
+/**
+ * @param pView the view object to add to this container
+ */
 void CViewContainer::addView (CView *pView)
 {
 	if (!pView)
@@ -5182,6 +5282,11 @@ void CViewContainer::addView (CView *pView)
 }
 
 //-----------------------------------------------------------------------------
+/**
+ * @param pView the view object to add to this container
+ * @param mouseableArea the view area in where the view will get mouse events
+ * @param mouseEnabled bool to set if view will get mouse events
+ */
 void CViewContainer::addView (CView *pView, CRect &mouseableArea, bool mouseEnabled)
 {
 	if (!pView)
@@ -5194,6 +5299,9 @@ void CViewContainer::addView (CView *pView, CRect &mouseableArea, bool mouseEnab
 }
 
 //-----------------------------------------------------------------------------
+/**
+ * @param withForget bool to indicate if the view's reference counter should be decreased after removed from the container
+ */
 void CViewContainer::removeAll (const bool &withForget)
 {
 	CCView *pV = pFirstView;
@@ -5216,6 +5324,10 @@ void CViewContainer::removeAll (const bool &withForget)
 }
 
 //-----------------------------------------------------------------------------
+/**
+ * @param pView the view which should be removed from the container
+ * @param withForget bool to indicate if the view's reference counter should be decreased after removed from the container
+ */
 void CViewContainer::removeView (CView *pView, const bool &withForget)
 {
 	CCView *pV = pFirstView;
@@ -5256,6 +5368,9 @@ void CViewContainer::removeView (CView *pView, const bool &withForget)
 }
 
 //-----------------------------------------------------------------------------
+/**
+ * @param pView the view which should be checked if it is a child of this container
+ */
 bool CViewContainer::isChild (CView *pView) const
 {
 	bool found = false;
@@ -5287,6 +5402,9 @@ long CViewContainer::getNbViews () const
 }
 
 //-----------------------------------------------------------------------------
+/**
+ * @param index the index of the view to return
+ */
 CView *CViewContainer::getView (long index) const
 {
 	long nb = 0;
@@ -5302,6 +5420,9 @@ CView *CViewContainer::getView (long index) const
 }
 
 //-----------------------------------------------------------------------------
+/**
+ * @param pContext the context which to use to draw this container and its subviews
+ */
 void CViewContainer::draw (CDrawContext *pContext)
 {
 	CDrawContext *pC;
@@ -5388,6 +5509,10 @@ void CViewContainer::draw (CDrawContext *pContext)
 }
 
 //-----------------------------------------------------------------------------
+/**
+ * @param pContext the context which to use to draw the background
+ * @param _updateRect the area which to draw
+ */
 void CViewContainer::drawBackgroundRect (CDrawContext *pContext, CRect& _updateRect)
 {
 	if (pBackground)
@@ -5412,6 +5537,10 @@ void CViewContainer::drawBackgroundRect (CDrawContext *pContext, CRect& _updateR
 }
 
 //-----------------------------------------------------------------------------
+/**
+ * @param pContext the context which to use to draw
+ * @param _updateRect the area which to draw
+ */
 void CViewContainer::drawRect (CDrawContext *pContext, const CRect& _updateRect)
 {
 	CDrawContext *pC;
@@ -5481,7 +5610,7 @@ void CViewContainer::drawRect (CDrawContext *pContext, const CRect& _updateRect)
 	pC->setClipRect (oldClip2);
 	#endif
 
-	// transfert offscreen
+	// transfer offscreen
 	if (bDrawInOffscreen)
 		((COffscreenContext*)pC)->copyFrom (pContext, updateRect, CPoint (clientRect.left, clientRect.top));
 	else
@@ -5495,6 +5624,10 @@ void CViewContainer::drawRect (CDrawContext *pContext, const CRect& _updateRect)
 }
 
 //-----------------------------------------------------------------------------
+/**
+ * @param context the context which to use to redraw this container
+ * @param rect the area which to redraw
+ */
 void CViewContainer::redrawRect (CDrawContext* context, const CRect& rect)
 {
 	CRect _rect (rect);
@@ -6119,10 +6252,10 @@ protected:
 The Bitmaps are PICTs and stored inside the resource fork.
 @section cbitmap_macosx Apple Mac OS X
 The Bitmaps can be of type PNG, JPEG, PICT, BMP and are stored in the Resources folder of the plugin bundle.
-They must be named bmp00100.png (or bmp00100.jpg). The number is the resource id.
+They must be named bmp00100.png (or bmp00100.jpg, etc). The number is the resource id.
 @section cbitmap_windows Microsoft Windows
 The Bitmaps are .bmp files and must be included in the plug (usually using a .rc file).
-It's also possible to use png as of version 3.0 if you define the macro USE_LIBPNG.
+It's also possible to use png as of version 3.0 if you define the macro USE_LIBPNG and include the libpng and zlib libraries/sources to your project.
 */
 CBitmap::CBitmap (long resourceID)
 	: resourceID (resourceID), width (0), height (0)
@@ -6563,7 +6696,7 @@ bool CBitmap::loadFromPath (const void* platformPath)
 	CFURLRef url = (CFURLRef)platformPath;
 
 	#if QUARTZ
-	if ((pSystemVersion >= 0x1040))
+	if (false && (pSystemVersion >= 0x1040))
 	{
 		CFStringRef extension = CFURLCopyPathExtension (url);
 		if (CFStringCompare (extension, CFSTR("png"), kCFCompareCaseInsensitive) == kCFCompareEqualTo)
@@ -9828,8 +9961,8 @@ pascal OSStatus CFrame::carbonEventHandler (EventHandlerCallRef inHandlerCallRef
 						QDGlobalToLocalPoint (GetWindowPort (window), &point);
 					CDrawContext* context = frame->createDrawContext ();
 					CPoint p (point.h, point.v);
-//					if (!(eventKind == kEventControlContextualMenuClick && windowAttributes & kWindowCompositingAttribute))
-//						p.offset (-context.offsetScreen.x, -context.offsetScreen.y);
+					if (!(windowAttributes & kWindowCompositingAttribute))
+						p.offset (-context->offsetScreen.x, -context->offsetScreen.y);
 					frame->mouse (context, p, buttons);
 					context->forget ();
 					result = noErr;

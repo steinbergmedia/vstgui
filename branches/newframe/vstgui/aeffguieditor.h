@@ -56,7 +56,7 @@ class AEffGUIEditor : public AEffEditor
 {
 public :
 
-	AEffGUIEditor (AudioEffect *pEffect);
+	AEffGUIEditor (void *pEffect);
 
 	virtual ~AEffGUIEditor ();
 

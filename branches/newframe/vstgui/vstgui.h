@@ -2,7 +2,7 @@
 // VST Plug-Ins SDK
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 //
-// Version 3.0       $Date: 2004-12-05 15:53:32 $
+// Version 3.0       $Date: 2005-01-04 14:30:44 $
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
@@ -446,7 +446,7 @@ enum CCursorType
 	kCursorNWSESize,
 	kCursorCopy,
 	kCursorNotAllowed,
-	kCursorHand,
+	kCursorHand
 };
 
 //----------------------------
@@ -457,6 +457,16 @@ enum CKnobMode
 	kCircularMode = 0,
 	kRelativCircularMode,
 	kLinearMode
+};
+
+//----------------------------
+// Draw Style
+//----------------------------
+enum CDrawStyle
+{
+	kDrawStroked = 0,
+	kDrawFilled,
+	kDrawFilledAndStroked
 };
 
 //-----------------------------------------------------------------------------
@@ -490,17 +500,18 @@ public:
 	void lineTo (const CPoint &point);	///< draw a line from current position to point
 	void drawLines (const CPoint* points, const long& numberOfLines);	///< draw multiple lines at once
 
+	void drawPolygon (const CPoint *pPoints, long numberOfPoints, const CDrawStyle drawStyle = kDrawStroked); ///< draw a polygon
 	void polyLine (const CPoint *pPoint, long numberOfPoints);	///< draw a stroked polygon
 	void fillPolygon (const CPoint *pPoint, long numberOfPoints);	///< draw a filled polygon
 
-	void drawRect (const CRect &rect);	///< draw a stroked rect
+	void drawRect (const CRect &rect, const CDrawStyle drawStyle = kDrawStroked);	///< draw a stroked rect
 	void fillRect (const CRect &rect);	///< draw a filled rect
 
-	void drawArc (const CRect &rect, const float startAngle1, const float endAngle2);	///< draw a stroked arc, where the angles are in degree
+	void drawArc (const CRect &rect, const float startAngle1, const float endAngle2, const CDrawStyle drawStyle = kDrawStroked);	///< draw a stroked arc, where the angles are in degree
 	void drawArc (const CRect &rect, const CPoint &point1, const CPoint &point2);		///< draw a stroked arc between point1 and point2
 	void fillArc (const CRect &rect, const CPoint &point1, const CPoint &point2);		///< draw a filled arc between point1 and point2
 
-	void drawEllipse (const CRect &rect);	///< draw a stroked ellipse
+	void drawEllipse (const CRect &rect, const CDrawStyle drawStyle = kDrawStroked);	///< draw an ellipse
 	void fillEllipse (const CRect &rect);	///< draw a filled ellipse
 	
 	void drawPoint (const CPoint &point, CColor color);	///< draw a point
@@ -954,6 +965,7 @@ protected:
 
 //-----------------------------------------------------------------------------
 // CFrame Declaration
+//! The CFrame is the parent view of all views.
 //-----------------------------------------------------------------------------
 class CFrame : public CViewContainer
 {

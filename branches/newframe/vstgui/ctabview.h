@@ -50,9 +50,10 @@ class CTabView : public CViewContainer, public CControlListener
 {
 public:
 	CTabView (const CRect& size, CFrame* parent, CBitmap* tabBitmap, CBitmap* background = 0, long tabPosition = kPositionTop, long style = 0);
+	CTabView (const CRect& size, CFrame* parent, const CRect& tabSize, CBitmap* background = 0, long tabPosition = kPositionTop, long style = 0);
 	virtual ~CTabView ();
 	
-	virtual bool addTab (CView* view, const char* name = 0);
+	virtual bool addTab (CView* view, const char* name = 0, CBitmap* tabBitmap = 0);
 	virtual bool removeTab (CView* view);
 	virtual bool removeAllTabs ();
 	virtual bool selectTab (long index);
@@ -68,9 +69,11 @@ public:
 
 	virtual void valueChanged (CDrawContext *pContext, CControl *pControl);
 //-----------------------------------------------------------------------------
+	CLASS_METHODS (CTabView, CViewContainer)
 protected:
 	void setCurrentChild (CTabChildView* childView);
 
+	CRect tabSize;
 	CBitmap* tabBitmap;
 	long tabPosition;
 	long style;

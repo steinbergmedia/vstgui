@@ -45,6 +45,7 @@ class CTabButton : public COnOffButton
 public:
 	CTabButton (const CRect &size, CControlListener *listener, long tag, CBitmap *background, const char* inName)
 	: COnOffButton (size, listener, tag, background)
+	, name (0)
 	{
 		if (inName)
 		{
@@ -147,7 +148,26 @@ CTabView::CTabView (const CRect& size, CFrame* parent, CBitmap* tabBitmap, CBitm
 , numberOfChilds (0)
 {
 	if (tabBitmap)
+	{
 		tabBitmap->remember ();
+		tabSize.right = tabBitmap->getWidth ();
+		tabSize.bottom = tabBitmap->getHeight ();
+	}
+	setMode (kOnlyDirtyUpdate);
+}
+
+//-----------------------------------------------------------------------------
+CTabView::CTabView (const CRect& size, CFrame* parent, const CRect& tabSize, CBitmap* background, long tabPosition, long style)
+: CViewContainer (size, parent, background)
+, tabBitmap (0)
+, tabPosition (tabPosition)
+, style (style)
+, firstChild (0)
+, lastChild (0)
+, currentChild (0)
+, numberOfChilds (0)
+, tabSize (tabSize)
+{
 	setMode (kOnlyDirtyUpdate);
 }
 
@@ -160,22 +180,24 @@ CTabView::~CTabView ()
 }
 
 //-----------------------------------------------------------------------------
-bool CTabView::addTab (CView* view, const char* name)
+bool CTabView::addTab (CView* view, const char* name, CBitmap* tabBitmap)
 {
 	if (!view)
 		return false;
+	if (tabBitmap == 0)
+		tabBitmap = this->tabBitmap;
 
-	CRect ts (0, 0, tabBitmap->getWidth (), tabBitmap->getHeight () / 2);
+	CRect ts (0, 0, tabSize.getWidth (), tabSize.getHeight () / 2);
 	switch (tabPosition)
 	{
 		case kPositionTop:
-			ts.offset (tabBitmap->getWidth () * numberOfChilds, 0); break;
+			ts.offset (tabSize.getWidth () * numberOfChilds, 0); break;
 		case kPositionBottom:
-			ts.offset (tabBitmap->getWidth () * numberOfChilds, size.getHeight () - tabBitmap->getHeight () / 2); break;
+			ts.offset (tabSize.getWidth () * numberOfChilds, size.getHeight () - tabSize.getHeight () / 2); break;
 		case kPositionLeft:
-			ts.offset (0, tabBitmap->getHeight () / 2 * numberOfChilds); break;
+			ts.offset (0, tabSize.getHeight () / 2 * numberOfChilds); break;
 		case kPositionRight:
-			ts.offset (size.getWidth () - tabBitmap->getWidth (), tabBitmap->getHeight () / 2 * numberOfChilds); break;
+			ts.offset (size.getWidth () - tabSize.getWidth (), tabSize.getHeight () / 2 * numberOfChilds); break;
 	}
 	CTabButton* b = new CTabButton (ts, this, numberOfChilds, tabBitmap, name);
 	b->setTransparency (true);
@@ -285,10 +307,8 @@ void CTabView::setCurrentChild (CTabChildView* childView)
 		addView (currentChild->view);
 		if (currentChild->button)
 			currentChild->button->setValue (1.f);
-		currentChild->view->setDirty ();
 	}
-	else
-		setDirty ();
+	setDirty ();
 }
 
 //-----------------------------------------------------------------------------
@@ -306,13 +326,13 @@ CRect& CTabView::getTabViewSize (CRect& rect) const
 	switch (tabPosition)
 	{
 		case kPositionTop:
-			rect.top += tabBitmap->getHeight () / 2; break;
+			rect.top += tabSize.getHeight () / 2; break;
 		case kPositionBottom:
-			rect.bottom -= tabBitmap->getHeight () / 2; break;
+			rect.bottom -= tabSize.getHeight () / 2; break;
 		case kPositionLeft:
-			rect.left += tabBitmap->getWidth (); break;
+			rect.left += tabSize.getWidth (); break;
 		case kPositionRight:
-			rect.right -= tabBitmap->getWidth (); break;
+			rect.right -= tabSize.getWidth (); break;
 	}
 	return rect;
 }

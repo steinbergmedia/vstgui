@@ -57,10 +57,10 @@ unsigned long _getTicks ();
 //-----------------------------------------------------------------------------
 // AEffGUIEditor Implementation
 //-----------------------------------------------------------------------------
-AEffGUIEditor::AEffGUIEditor (AudioEffect *pEffect) 
-	: AEffEditor (pEffect), frame (0), inIdleStuff (false)
+AEffGUIEditor::AEffGUIEditor (void *pEffect) 
+	: AEffEditor ((AudioEffect*)pEffect), frame (0), inIdleStuff (false)
 {
-	pEffect->setEditor (this);
+	((AudioEffect*)pEffect)->setEditor (this);
 	systemWindow = 0;
 	lLastTicks   = getTicks ();
 
