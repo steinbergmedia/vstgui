@@ -3166,7 +3166,7 @@ char* kMsgCheckIfViewContainer	= "kMsgCheckIfViewContainer";
 //-----------------------------------------------------------------------------
 CView::CView (const CRect& size)
 :	nbReference (1), size (size), mouseableArea (size), pParent (0), pParentView (0),
-	bDirty (false), bMouseEnabled (true), bTransparencyEnabled (false)
+	bDirty (false), bMouseEnabled (true), bTransparencyEnabled (false), pBackground (0)
 {
 	#if DEBUG
 	gNbCView++;
@@ -3176,6 +3176,9 @@ CView::CView (const CRect& size)
 //-----------------------------------------------------------------------------
 CView::~CView ()
 {
+	if (pBackground)
+		pBackground->forget ();
+
 	#if DEBUG
 	gNbCView--;
 
@@ -3318,11 +3321,22 @@ void *CView::getEditor ()
 	return pParent ? pParent->getEditor () : 0; 
 }
 
+
+//-----------------------------------------------------------------------------
+void CView::setBackground (CBitmap *background)
+{
+	if (pBackground)
+		pBackground->forget ();
+	pBackground = background;
+	if (pBackground)
+		pBackground->remember ();
+}
+
 //-----------------------------------------------------------------------------
 // CFrame Implementation
 //-----------------------------------------------------------------------------
 CFrame::CFrame (const CRect &size, void *pSystemWindow, void *pEditor)
-:	CView (size), pEditor (pEditor), pSystemWindow (pSystemWindow), pBackground (0),
+:	CView (size), pEditor (pEditor), pSystemWindow (pSystemWindow),
 	viewCount (0), maxViews (0), ppViews (0), pModalView (0), pEditView (0),
 	bFirstDraw (true), bDropActive (false), pFrameContext (0), bAddedWindow (false), 
 	pVstWindow (0), defaultCursor (0)
@@ -3402,7 +3416,7 @@ CFrame::CFrame (const CRect &size, void *pSystemWindow, void *pEditor)
 
 //-----------------------------------------------------------------------------
 CFrame::CFrame (const CRect &rect, char *pTitle, void *pEditor, const long style)
-:	CView (rect), pEditor (pEditor), pSystemWindow (0), pBackground (0), viewCount (0),
+:	CView (rect), pEditor (pEditor), pSystemWindow (0), viewCount (0),
 	maxViews (0), ppViews (0), pModalView (0), pEditView (0), bFirstDraw (true),
 	pFrameContext (0), defaultCursor (0)
 {
@@ -3447,9 +3461,6 @@ CFrame::~CFrame ()
 	setDropActive (false);
 
 	removeAll (true);
-
-	if (pBackground)
-		pBackground->forget ();
 
 	if (pFrameContext)
 		delete pFrameContext;
@@ -4464,16 +4475,6 @@ bool CFrame::getSize (CRect *pRect)
 }
 
 //-----------------------------------------------------------------------------
-void CFrame::setBackground (CBitmap *background)
-{
-	if (pBackground)
-		pBackground->forget ();
-	pBackground = background;
-	if (pBackground)
-		pBackground->remember ();
-}
-
-//-----------------------------------------------------------------------------
 bool CFrame::addView (CView *pView)
 {
  	if (viewCount == maxViews)
@@ -4834,7 +4835,7 @@ CCView::~CCView ()
 // CViewContainer Implementation
 //-----------------------------------------------------------------------------
 CViewContainer::CViewContainer (const CRect &rect, CFrame *pParent, CBitmap *pBackground)
-: CView (rect), pFirstView (0), pLastView (0), pBackground (pBackground),
+: CView (rect), pFirstView (0), pLastView (0), 
  mode (kNormalUpdate), pOffscreenContext (0), bDrawInOffscreen (true)
 {
 	#if MACX || USE_ALPHA_BLEND
@@ -4842,17 +4843,13 @@ CViewContainer::CViewContainer (const CRect &rect, CFrame *pParent, CBitmap *pBa
 	#endif
 	backgroundOffset (0, 0);
 	this->pParent = pParent;
-	if (pBackground)
-		pBackground->remember ();
+	setBackground (pBackground);
 	backgroundColor = kBlackCColor;	
 }
 
 //-----------------------------------------------------------------------------
 CViewContainer::~CViewContainer ()
 {
-	 if (pBackground)
-		 pBackground->forget ();
-
 	// remove all views
 	removeAll (true);
 
@@ -4875,16 +4872,6 @@ void CViewContainer::setViewSize (CRect &rect)
 		pOffscreenContext = new COffscreenContext (pParent, size.width (), size.height (), kBlackCColor);
 	}
 	#endif
-}
-
-//-----------------------------------------------------------------------------
-void CViewContainer::setBackground (CBitmap *background)
-{
-	if (pBackground)
-		pBackground->forget ();
-	pBackground = background;
-	if (pBackground)
-		pBackground->remember ();
 }
 
 //-----------------------------------------------------------------------------
@@ -5914,8 +5901,6 @@ CBitmap::CBitmap (CFrame &frame, long width, long height)
 	pMask = 0;
 
 #elif MAC
-    #if QUARTZ
-    #else
 	pHandle = 0;
 	pMask = 0;
 	
@@ -5923,9 +5908,14 @@ CBitmap::CBitmap (CFrame &frame, long width, long height)
 	r.left = r.top = 0;
 	r.right = width;
 	r.bottom = height;
+
+    #if QUARTZ
+	NewGWorld ((GWorldPtr*)&pHandle, 32, &r, 0, 0, 0);
+
+    #else
 	NewGWorld ((GWorldPtr*)&pHandle, 0, &r, 0, 0, 0);
-        #endif
-	// todo: init pixels
+
+	#endif
 
 #elif MOTIF
 	pXdisplay = frame.getDisplay ();
@@ -8450,7 +8440,10 @@ STDMETHODIMP_(ULONG) UDropTarget::Release (void)
 {
 	refCount--;
 	if (refCount <= 0)
+	{
 		delete this;
+		return 0;
+	}
 	return refCount;
 }
 
