@@ -11,6 +11,7 @@
 // Added new functions      : Matthias Juwan           12.01
 // Added MacOSX version     : Arne Scheffler           02.03
 // Added Quartz stuff		: Arne Scheffler           08.03
+// Added Win Alpha Blending : Arne Scheffler           04.04
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
@@ -55,7 +56,8 @@
 #include <math.h>
 #include <string.h>
 
-#define USE_CLIPPING_DRAWRECT	QUARTZ
+#define USE_ALPHA_BLEND			QUARTZ || USE_LIBPNG
+#define USE_CLIPPING_DRAWRECT	USE_ALPHA_BLEND
 #define MAC_OLD_DRAG			1
 
 //-----------------------------------------------------------------------------
@@ -126,6 +128,7 @@ static bool swapped_mouse_buttons = false;
 #include <windows.h>
 #include <shlobj.h>
 #include <shellapi.h>
+#include <zmouse.h>
 
 #if DYNAMICALPHABLEND
 typedef  BOOL (WINAPI *PFNALPHABLEND)(
@@ -187,6 +190,10 @@ const char* standardFontName[] = {
 	"Arial", "Arial", "Arial", 
 	"Arial", "Symbol" };
 END_NAMESPACE_VSTGUI
+
+#if USE_LIBPNG
+#include "png.h"
+#endif
 
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
@@ -446,7 +453,7 @@ void CRect::bound (const CRect& rect)
 
 BEGIN_NAMESPACE_VSTGUI
 
-CColor kTransparentCColor = {255, 255, 255, 255};
+CColor kTransparentCColor = {255, 255, 255, 0};
 CColor kBlackCColor  = {0,     0,   0, 255};
 CColor kWhiteCColor  = {255, 255, 255, 255};
 CColor kGreyCColor   = {127, 127, 127, 255};
@@ -3237,7 +3244,7 @@ void CView::update (CDrawContext *pContext)
 {
 	if (isDirty ())
 	{
-		#if QUARTZ
+		#if USE_ALPHA_BLEND
 		if (pContext)
 		{
 			if (bTransparencyEnabled)
@@ -3580,6 +3587,7 @@ bool CFrame::initFrame (void *systemWin)
 		return false;
 	
 #if WINDOWS
+
 	InitWindowClass ();
 	pHwnd = CreateWindowEx (0, className, "Window",
 			 WS_CHILD | WS_VISIBLE, 
@@ -4006,20 +4014,28 @@ void CFrame::update (CDrawContext *pContext)
 {
 	if (!getOpenFlag ())
 		return;
-	
+
+	#if WINDOWS && USE_ALPHA_BLEND
+	CDrawContext* oldFrameContext = pFrameContext;
+	COffscreenContext* dc = new COffscreenContext (this, size.width (), size.height ());
+	dc->copyTo (pContext, size);
+	pFrameContext = dc;
+	#else
+	CDrawContext* dc = pContext;
+	#endif
 	if (pModalView)
-		pModalView->update (pContext);
+		pModalView->update (dc);
 	else
 	{
 		if (isDirty ())
 		{
-			draw (pContext);
+			draw (dc);
 			setDirty (false);
 		}
 		else
 		{
 			for (long i = 0; i < viewCount; i++)
-				ppViews[i]->update (pContext);
+				ppViews[i]->update (dc);
 		}
 	}
 	#if MACX
@@ -4027,6 +4043,11 @@ void CFrame::update (CDrawContext *pContext)
 	{
 		QDFlushPortBuffer (GetWindowPort ((WindowRef)pSystemWindow), NULL);
 	}
+	#endif
+	#if WINDOWS && USE_ALPHA_BLEND
+	dc->copyFrom (pContext, size);
+	delete dc;
+	pFrameContext = oldFrameContext;
 	#endif
 }
 
@@ -4816,7 +4837,7 @@ CViewContainer::CViewContainer (const CRect &rect, CFrame *pParent, CBitmap *pBa
 : CView (rect), pFirstView (0), pLastView (0), pBackground (pBackground),
  mode (kNormalUpdate), pOffscreenContext (0), bDrawInOffscreen (true)
 {
-	#if MACX
+	#if MACX || USE_ALPHA_BLEND
 	bDrawInOffscreen = false;
 	#endif
 	backgroundOffset (0, 0);
@@ -4848,7 +4869,7 @@ void CViewContainer::setViewSize (CRect &rect)
 	CView::setViewSize (rect);
 
 	#if !BEOS
-	if (pOffscreenContext)
+	if (pOffscreenContext && bDrawInOffscreen)
 	{
 		delete pOffscreenContext;
 		pOffscreenContext = new COffscreenContext (pParent, size.width (), size.height (), kBlackCColor);
@@ -5044,6 +5065,10 @@ void CViewContainer::draw (CDrawContext *pContext)
 	#else
 	if (!pOffscreenContext && bDrawInOffscreen)
 		pOffscreenContext = new COffscreenContext (pParent, size.width (), size.height (), kBlackCColor);
+	#if USE_ALPHA_BLEND
+	if (pOffscreenContext && bTransparencyEnabled)
+		pOffscreenContext->copyTo (pContext, size);
+	#endif
 
 	if (bDrawInOffscreen)
 		pC = pOffscreenContext;
@@ -5121,6 +5146,10 @@ void CViewContainer::drawRect (CDrawContext *pContext, CRect& _updateRect)
 	#else
 	if (!pOffscreenContext && bDrawInOffscreen)
 		pOffscreenContext = new COffscreenContext (pParent, size.width (), size.height (), kBlackCColor);
+	#if USE_ALPHA_BLEND
+	if (pOffscreenContext && bTransparencyEnabled)
+		pOffscreenContext->copyTo (pContext, size);
+	#endif
 
 	if (bDrawInOffscreen)
 		pC = pOffscreenContext;
@@ -5317,7 +5346,7 @@ void CViewContainer::update (CDrawContext *pContext)
 		case kNormalUpdate:
 			if (isDirty ())
 			{
-				#if QUARTZ
+				#if USE_ALPHA_BLEND
 				if (bTransparencyEnabled)
 					getParent ()->drawRect (pContext, size);
 				else
@@ -5329,7 +5358,7 @@ void CViewContainer::update (CDrawContext *pContext)
 	
 		//---Redraw only dirty controls-----
 		case kOnlyDirtyUpdate:
-			#if QUARTZ
+			#if USE_ALPHA_BLEND
 			if (bTransparencyEnabled)
 			{
 				if (bDirty)
@@ -5344,6 +5373,7 @@ void CViewContainer::update (CDrawContext *pContext)
 						getParent ()->drawRect (pContext, viewSize);
 					}
 				ENDFOR
+				setDirty (false);
 				return;
 			}
 			#endif
@@ -5535,6 +5565,59 @@ void CViewContainer::restoreDrawContext (CDrawContext* pContext, long save[4])
 	pContext->offset.v = save[3];
 }
 
+#if WINDOWS && USE_LIBPNG
+class PNGResourceStream
+{
+public:
+		PNGResourceStream ()
+		: streamPos (0)
+		, resData (0)
+		, resSize (0)
+		{
+		}
+
+		~PNGResourceStream ()
+		{
+		}
+
+		bool open (long resourceID)
+		{
+			HRSRC rsrc = FindResource (GetInstance (), MAKEINTRESOURCE (resourceID), "PNG");
+			if (rsrc)
+			{
+				resSize = SizeofResource (GetInstance (), rsrc);
+				HGLOBAL resDataLoad = LoadResource (GetInstance (), rsrc);
+				if (resDataLoad)
+				{
+					resData = LockResource (resDataLoad);
+					return true;
+				}
+			}
+			return false;
+		}
+
+		void read (unsigned char* ptr, size_t size)
+		{
+			if (streamPos + size <= resSize)
+			{
+				memcpy (ptr, ((unsigned char*)resData+streamPos), size);
+				streamPos += size;
+			}
+		}
+
+		static void readCallback (png_struct* pngPtr, unsigned char* ptr, size_t size)
+		{
+			void* obj = png_get_io_ptr (pngPtr);
+			if(obj)
+				((PNGResourceStream*)obj)->read (ptr, size);
+		}
+protected:
+	HGLOBAL resData;
+	unsigned long streamPos;
+	unsigned long resSize;
+};
+#endif
+
 //-----------------------------------------------------------------------------
 // CBitmap Implementation
 //-----------------------------------------------------------------------------
@@ -5547,6 +5630,99 @@ CBitmap::CBitmap (long resourceID)
 
 #if WINDOWS
 	pMask = 0;
+	pHandle = 0;
+	#if USE_LIBPNG
+	PNGResourceStream resStream;
+	if (resStream.open (resourceID))
+	{
+		// setup libpng
+		png_structp png_ptr;
+		png_infop info_ptr;
+		png_ptr = png_create_read_struct (PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
+		if (png_ptr)
+		{
+			info_ptr = png_create_info_struct (png_ptr);
+			if (info_ptr)
+			{
+				if(setjmp (png_jmpbuf (png_ptr)) == 0)
+				{
+					int bit_depth, color_type;
+					png_set_read_fn (png_ptr, (void *)&resStream, PNGResourceStream::readCallback);
+					png_read_info (png_ptr, info_ptr);
+					png_get_IHDR (png_ptr, info_ptr, (png_uint_32*)&width, (png_uint_32*)&height, &bit_depth, &color_type, 0, 0, 0);
+					long bytesPerRow = width * (32 / 8);
+					while (bytesPerRow & 0x03)
+						bytesPerRow++;
+					// create BITMAP
+					BITMAPINFO* bmInfo = new BITMAPINFO;
+					BITMAPINFOHEADER* header = (BITMAPINFOHEADER*)bmInfo;
+					memset (header, 0, sizeof(BITMAPINFOHEADER));
+					header->biSize = sizeof(BITMAPINFOHEADER);
+					header->biWidth = width;
+					header->biHeight = height;
+					header->biPlanes = 1;
+					header->biBitCount = 32;
+					header->biCompression = BI_RGB;
+					header->biClrUsed = 0;
+					void* bits;
+					pHandle = CreateDIBSection (NULL, bmInfo, DIB_RGB_COLORS, &bits, NULL, 0);
+					delete bmInfo;
+					if (pHandle)
+					{
+						if(color_type == PNG_COLOR_TYPE_PALETTE)
+							png_set_palette_to_rgb (png_ptr);
+						if(color_type == PNG_COLOR_TYPE_GRAY || color_type == PNG_COLOR_TYPE_GRAY_ALPHA)
+							png_set_gray_to_rgb (png_ptr);
+						if(color_type == PNG_COLOR_TYPE_GRAY && bit_depth < 8)
+							png_set_gray_1_2_4_to_8 (png_ptr);
+						if(png_get_valid (png_ptr, info_ptr, PNG_INFO_tRNS))
+							png_set_tRNS_to_alpha (png_ptr);
+						else
+							png_set_filler (png_ptr, 0xFF, PNG_FILLER_AFTER);
+						if(bit_depth == 16)
+						{
+							png_set_swap (png_ptr);
+							png_set_strip_16 (png_ptr);
+						}
+						if(color_type == PNG_COLOR_TYPE_RGB || color_type == PNG_COLOR_TYPE_RGB_ALPHA)
+							png_set_bgr (png_ptr);
+						png_read_update_info (png_ptr, info_ptr);
+
+						unsigned char** rows = new unsigned char*[1];
+						rows[0] = (unsigned char*)bits + (height-1) * bytesPerRow;
+						for (long i = 0; i < height; i++)
+						{
+							png_read_rows (png_ptr, rows, NULL, 1);
+							rows[0] -= bytesPerRow;
+						}
+						delete [] rows;
+						png_read_end (png_ptr, 0);
+						// premultiply alpha
+						unsigned long* pixelPtr = (unsigned long*)bits;
+						for (int y = 0; y <height; y++)
+						{
+							for (int x = 0; x < width; x++)
+							{
+								unsigned char* pixel = (unsigned char*)pixelPtr;
+								if (pixel[3] != 0)
+								{
+									pixel[0] = ((pixel[0] * pixel[3]) >> 8);
+									pixel[1] = ((pixel[1] * pixel[3]) >> 8);
+									pixel[2] = ((pixel[2] * pixel[3]) >> 8);
+								}
+								else
+									*pixelPtr = 0UL;
+								pixelPtr++;
+							}
+						}
+					}
+				}
+			}
+			png_destroy_read_struct (&png_ptr, &info_ptr, NULL);
+		}
+		return;
+	}
+	#endif
 	pHandle = LoadBitmap (GetInstance (), MAKEINTRESOURCE (resourceID));
 	BITMAP bm;
 	if (pHandle && GetObject (pHandle, sizeof (bm), &bm))
@@ -5963,6 +6139,40 @@ CGImageRef CBitmap::createCGImage (bool transparent)
 void CBitmap::draw (CDrawContext *pContext, CRect &rect, const CPoint &offset)
 {
 #if WINDOWS
+#if USE_ALPHA_BLEND
+	if (pHandle)
+	{
+		HGDIOBJ hOldObj;
+		HDC hdcMemory = CreateCompatibleDC ((HDC)pContext->pSystemContext);
+		hOldObj = SelectObject (hdcMemory, pHandle);
+
+		BLENDFUNCTION blendFunction;
+		blendFunction.BlendOp = AC_SRC_OVER;
+		blendFunction.BlendFlags = 0;
+		blendFunction.SourceConstantAlpha = 0xff;
+		blendFunction.AlphaFormat = AC_SRC_ALPHA;
+
+		#if DYNAMICALPHABLEND
+		(*pfnAlphaBlend) ((HDC)pContext->pSystemContext, 
+					rect.left + pContext->offset.h, rect.top + pContext->offset.v,
+					rect.width (), rect.height (), 
+					(HDC)hdcMemory,
+					offset.h, offset.v,
+					rect.width (), rect.height (),
+					blendFunction);
+		#else
+		AlphaBlend ((HDC)pContext->pSystemContext, 
+					rect.left + pContext->offset.h, rect.top + pContext->offset.v,
+					rect.width (), rect.height (), 
+					(HDC)hdcMemory,
+					offset.h, offset.v,
+					rect.width (), rect.height (),
+					blendFunction);
+		#endif
+		SelectObject (hdcMemory, hOldObj);
+		DeleteDC (hdcMemory);
+	}
+#else
 	if (pHandle)
 	{
 		HGDIOBJ hOldObj;
@@ -5974,7 +6184,7 @@ void CBitmap::draw (CDrawContext *pContext, CRect &rect, const CPoint &offset)
 		SelectObject (hdcMemory, hOldObj);
 		DeleteDC (hdcMemory);
 	}
-
+#endif
 #elif MAC
 
 	#if QUARTZ
@@ -6092,6 +6302,40 @@ void CBitmap::draw (CDrawContext *pContext, CRect &rect, const CPoint &offset)
 void CBitmap::drawTransparent (CDrawContext *pContext, CRect &rect, const CPoint &offset)
 {
 #if WINDOWS
+#if USE_ALPHA_BLEND
+	if (pHandle)
+	{
+		HGDIOBJ hOldObj;
+		HDC hdcMemory = CreateCompatibleDC ((HDC)pContext->pSystemContext);
+		hOldObj = SelectObject (hdcMemory, pHandle);
+
+		BLENDFUNCTION blendFunction;
+		blendFunction.BlendOp = AC_SRC_OVER;
+		blendFunction.BlendFlags = 0;
+		blendFunction.SourceConstantAlpha = 0xff;
+		blendFunction.AlphaFormat = AC_SRC_ALPHA;
+
+		#if DYNAMICALPHABLEND
+		(*pfnAlphaBlend) ((HDC)pContext->pSystemContext, 
+					rect.left + pContext->offset.h, rect.top + pContext->offset.v,
+					rect.width (), rect.height (), 
+					(HDC)hdcMemory,
+					offset.h, offset.v,
+					rect.width (), rect.height (),
+					blendFunction);
+		#else
+		AlphaBlend ((HDC)pContext->pSystemContext, 
+					rect.left + pContext->offset.h, rect.top + pContext->offset.v,
+					rect.width (), rect.height (), 
+					(HDC)hdcMemory,
+					offset.h, offset.v,
+					rect.width (), rect.height (),
+					blendFunction);
+		#endif
+		SelectObject (hdcMemory, hOldObj);
+		DeleteDC (hdcMemory);
+	}
+#else
 	BITMAP bm;
 	HDC hdcBitmap;
 	POINT ptSize;
@@ -6107,7 +6351,7 @@ void CBitmap::drawTransparent (CDrawContext *pContext, CRect &rect, const CPoint
 	DrawTransparent (pContext, rect, offset, hdcBitmap, ptSize, (HBITMAP)pMask, RGB(transparentCColor.red, transparentCColor.green, transparentCColor.blue));
 
 	DeleteDC (hdcBitmap);
-	
+#endif	
 #elif MAC
 
 	#if QUARTZ
@@ -7583,6 +7827,20 @@ LONG WINAPI WindowProc (HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 	switch (message)
 	{
+	case WM_MOUSEWHEEL:
+	{
+		if(pFrame)
+		{
+			HDC hdc = GetDC (hwnd);
+			VSTGUI_CDrawContext *pContext = new VSTGUI_CDrawContext (pFrame, hdc,hwnd);
+			VSTGUI_CPoint where (LOWORD (lParam), HIWORD (lParam));
+			short zDelta = (short) HIWORD(wParam);
+			pFrame->onWheel(pContext, where, float(zDelta)/WHEEL_DELTA);
+			delete pContext;
+			ReleaseDC (hwnd, hdc);
+		}
+		break;
+	}
 	case WM_CTLCOLOREDIT:
 	{
 		if (pFrame)

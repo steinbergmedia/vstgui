@@ -76,21 +76,22 @@
 //------------------
 enum CControlEnum
 {
-	kHorizontal = 1 << 0,
-	kVertical   = 1 << 1,
-	kShadowText = 1 << 2,
-	kLeft       = 1 << 3,
-	kRight      = 1 << 4,
-	kTop        = 1 << 5,
-	kBottom     = 1 << 6,
-	k3DIn       = 1 << 7,
-	k3DOut      = 1 << 8,
-	kPopupStyle = 1 << 9,
-	kCheckStyle = 1 << 10,
+	kHorizontal			= 1 << 0,
+	kVertical			= 1 << 1,
+	kShadowText			= 1 << 2,
+	kLeft				= 1 << 3,
+	kRight				= 1 << 4,
+	kTop				= 1 << 5,
+	kBottom				= 1 << 6,
+	k3DIn				= 1 << 7,
+	k3DOut				= 1 << 8,
+	kPopupStyle			= 1 << 9,
+	kCheckStyle			= 1 << 10,
 	kMultipleCheckStyle,
-	kNoTextStyle = 1 << 11,
-	kNoDrawStyle = 1 << 12,
-	kDoubleClickStyle = 1 << 13
+	kNoTextStyle		= 1 << 11,
+	kNoDrawStyle		= 1 << 12,
+	kDoubleClickStyle	= 1 << 13,
+	kNoFrame			= 1 << 14
 };
 
 //---------------------------

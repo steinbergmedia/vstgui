@@ -1,5 +1,7 @@
 2004-04-17 arne
 
+	* windows: support for alpha blended images like it is on Mac OS X with quartz
+		   note: this implementation uses libpng (makro is USE_LIBPNG)
 	* CDrawContext::setClipRect uses the offset now
 	* COptionMenu::getSubMenu added
 	* mac: fixed some quartz drawing stuff
