@@ -777,6 +777,7 @@ public:
 	virtual	long getNbReference () { return nbReference; }
 
 	virtual void getMouseLocation (CDrawContext* context, CPoint &point);
+	virtual void getFrameTopLeftPos (CPoint& topLeft);
 
 	//-------------------------------------------
 protected:
