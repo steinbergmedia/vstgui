@@ -3,7 +3,7 @@
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 // Standard Control Objects
 //
-// Version 3.0       $Date: 2005-03-25 14:30:39 $
+// Version 3.0       $Date: 2005-03-25 15:08:22 $
 //
 // Added new objects        : Michael Schmidt          08.97
 // Added new objects        : Yvan Grabit              01.98
@@ -1782,17 +1782,13 @@ void CTextEdit::takeFocus (CDrawContext *pContext)
 //------------------------------------------------------------------------
 void CTextEdit::looseFocus (CDrawContext *pContext)
 {
-	#if MACX
-	if (platformControl == 0)
-		return;
-	#else
-	if (platformControl == 0 || getFrame ()->getFocusView () != this) 
-		return;
-	#endif
-	
 	// Call this yet to avoid recursive call
 	endEdit();
-	getFrame ()->setFocusView (0);
+	if (getFrame ()->getFocusView () == this)
+		getFrame ()->setFocusView (0);
+
+	if (platformControl == 0)
+		return;
 
 	char oldText[256];
 	strcpy (oldText, text);

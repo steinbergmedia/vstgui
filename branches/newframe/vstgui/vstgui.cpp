@@ -2,7 +2,7 @@
 // VST Plug-Ins SDK
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 //
-// Version 3.0       $Date: 2005-03-25 14:30:39 $ 
+// Version 3.0       $Date: 2005-03-25 15:08:26 $ 
 //
 // Added Motif/Windows vers.: Yvan Grabit              01.98
 // Added Mac version        : Charlie Steinberg        02.98
@@ -1497,7 +1497,7 @@ void CDrawContext::fillRect (const CRect &_rect)
 
 	// Don't draw boundary
 #if WINDOWS
-	RECT wr = {rect.left + 1, rect.top + 1, rect.right, rect.bottom};
+	RECT wr = {rect.left, rect.top, rect.right, rect.bottom};
 	HANDLE nullPen = GetStockObject (NULL_PEN);
 	HANDLE oldPen  = SelectObject ((HDC)pSystemContext, nullPen);
 	FillRect ((HDC)pSystemContext, &wr, (HBRUSH)pBrush);
@@ -4365,14 +4365,15 @@ bool CFrame::setDropActive (bool val)
 	if (!pHwnd)
 		return false;
 	if (dropTarget)
-		delete (IDropTarget*)dropTarget;
+	{
+		RevokeDragDrop ((HWND)pHwnd);
+		dropTarget = 0;
+	}
 	if (val)
 	{
 		dropTarget = createDropTarget (this);
 		RegisterDragDrop ((HWND)pHwnd, (IDropTarget*)dropTarget);
 	}
-	else
-		RevokeDragDrop ((HWND)pHwnd);
 
 #elif MAC
 #if MAC_OLD_DRAG
