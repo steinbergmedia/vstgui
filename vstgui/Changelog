@@ -1,3 +1,7 @@
+2004-01-02 arne
+
+	* mac: corrected code for right mouse click with carbon events
+
 2003-12-15 arne
 
 	* fix a typo in COptionMenu::mouse

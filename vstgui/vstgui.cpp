@@ -8420,37 +8420,45 @@ pascal OSStatus CFrame::carbonEventHandler (EventHandlerCallRef inHandlerCallRef
 					HIPoint hipoint;
 					UInt32 modifiers;
 					GetEventParameter (inEvent, kEventParamMouseLocation, typeHIPoint, NULL, sizeof (HIPoint), NULL, &hipoint);
-					GetEventParameter (inEvent, kEventParamKeyModifiers, typeUInt32, NULL, sizeof (UInt32), NULL, &modifiers);
-					GetEventParameter (inEvent, kEventParamMouseButton, typeMouseButton, NULL, sizeof (EventMouseButton), NULL, &buttonState);
-					if (buttonState & kEventMouseButtonPrimary)
-						buttons |= kLButton;
-					if (buttonState & kEventMouseButtonSecondary)
-						buttons |= kRButton;
-					if (buttonState & 4)//kEventMouseButtonTertiary) this define is wrong...Apple ?
-						buttons |= kMButton;
-					if (modifiers & cmdKey)
-						buttons |= kControl;
-					if (modifiers & shiftKey)
-						buttons |= kShift;
-					if (modifiers & optionKey)
-						buttons |= kAlt;
-					if (modifiers & controlKey)
-						buttons |= kApple;
-					// for the one buttons
-					if (buttons & kApple && buttons & kLButton)
+					if (eventKind == kEventControlContextualMenuClick)
+						buttons = kRButton;
+					else
 					{
-						buttons &= ~(kApple | kLButton);
-						buttons |= kRButton;
+						GetEventParameter (inEvent, kEventParamKeyModifiers, typeUInt32, NULL, sizeof (UInt32), NULL, &modifiers);
+						GetEventParameter (inEvent, kEventParamMouseButton, typeMouseButton, NULL, sizeof (EventMouseButton), NULL, &buttonState);
+						if (buttonState & kEventMouseButtonPrimary)
+							buttons |= kLButton;
+						if (buttonState & kEventMouseButtonSecondary)
+							buttons |= kRButton;
+						if (buttonState & 4)//kEventMouseButtonTertiary) this define is wrong...Apple ?
+							buttons |= kMButton;
+						if (modifiers & cmdKey)
+							buttons |= kControl;
+						if (modifiers & shiftKey)
+							buttons |= kShift;
+						if (modifiers & optionKey)
+							buttons |= kAlt;
+						if (modifiers & controlKey)
+							buttons |= kApple;
+						// for the one buttons
+						if (buttons & kApple && buttons & kLButton)
+						{
+							buttons &= ~(kApple | kLButton);
+							buttons |= kRButton;
+						}
 					}
-
 					SetUserFocusWindow (window);
 					AdvanceKeyboardFocus (window);
 					SetKeyboardFocus (window, frame->controlRef, kControlFocusNextPart);
 					Point point = {hipoint.y, hipoint.x};
-					QDGlobalToLocalPoint (GetWindowPort (window), &point);
+					if (eventKind != kEventControlContextualMenuClick)
+						QDGlobalToLocalPoint (GetWindowPort (window), &point);
 					CDrawContext context (frame, NULL, window);
 					CPoint p (point.h, point.v);
-					p.offset (-context.offsetScreen.x, -context.offsetScreen.y);
+					WindowAttributes windowAttributes;
+					GetWindowAttributes (window, &windowAttributes);
+					if (!(eventKind == kEventControlContextualMenuClick && windowAttributes & kWindowCompositingAttribute))
+						p.offset (-context.offsetScreen.x, -context.offsetScreen.y);
 					frame->mouse (&context, p, buttons);
 					result = noErr;
 					break;
