@@ -1337,7 +1337,7 @@ void CTextEdit::takeFocus (CDrawContext *pContext)
 		CopyCStringToPascal ((const char*)gMacXfontNames[fontID], fontName); 
 		GetFNum (fontName, &familyID);
 		#else
-		GetFNum (macXfontNames[fontID], &familyID);
+		GetFNum (gMacXfontNames[fontID], &familyID);
 		#endif
 
 		ATSUFontID fontNameID;
@@ -3236,8 +3236,12 @@ void COptionMenu::takeFocus (CDrawContext *pContext)
 	LToG.h += rect.left;
 	LToG.v += rect.top;
 
+	#if TARGET_API_MAC_CARBON
+	QDLocalToGlobalPoint (GetWindowPort (theWindow), &LToG);
+	#else
 	LocalToGlobal (&LToG);
-	
+	#endif
+		
 	//---Create the popup menu---
 	long offIdx = 0;
 	MenuHandle theMenu = (MenuHandle)appendItems (offIdx);
@@ -3260,6 +3264,7 @@ void COptionMenu::takeFocus (CDrawContext *pContext)
 	int menuItemSize = (menuHeight + nbEntries - 1) / nbEntries;
 
 	setDirty (false);	
+
 	//---Popup the Menu
 	long popUpItem = 1;
 	long PopUpMenuItem = 0;
@@ -3278,7 +3283,7 @@ void COptionMenu::takeFocus (CDrawContext *pContext)
 	}
 	else
 		PopUpMenuItem = PopUpMenuSelect (theMenu, LToG.v, LToG.h, popUpItem);
-		
+
 	//---Destroy the menu----
 	removeItems ();
 	

@@ -741,7 +741,7 @@ public:
 
 	void redraw ();
 	virtual void draw (CDrawContext *pContext);
-	virtual void drawRect (CDrawContext *pContext, CRect& updateRect) { draw (pContext); }
+	virtual void drawRect (CDrawContext *pContext, const CRect& updateRect) { draw (pContext); }
 	virtual bool checkUpdate (CRect& updateRect) { return updateRect.rectOverlap (size); }
 	virtual void mouse (CDrawContext *pContext, CPoint &where, long buttons = -1);
 	virtual long notify (CView* sender, const char* message);
@@ -792,6 +792,8 @@ public:
 
 	virtual void getMouseLocation (CDrawContext* context, CPoint &point);
 	virtual void getFrameTopLeftPos (CPoint& topLeft);
+
+	virtual void redrawRect (CDrawContext* context, const CRect& rect);
 
 	//-------------------------------------------
 protected:
@@ -851,7 +853,7 @@ public:
 	virtual long notify (CView* sender, const char* message);
 
 	virtual void draw (CDrawContext *pContext);
-	virtual void drawRect (CDrawContext *pContext, CRect& updateRect);
+	virtual void drawRect (CDrawContext *pContext, const CRect& updateRect);
 	virtual void mouse (CDrawContext *pContext, CPoint &where, long buttons = -1);
 	virtual bool onDrop (void **ptrItems, long nbItems, long type, CPoint &where);
 	virtual bool onWheel (CDrawContext *pContext, const CPoint &where, float distance);
@@ -893,6 +895,8 @@ public:
 	void modifyDrawContext (long save[4], CDrawContext* pContext);
 	void restoreDrawContext (CDrawContext* pContext, long save[4]);
 
+	virtual void redrawRect (CDrawContext* context, const CRect& rect);
+
 	//-------------------------------------------
 protected:
 	bool hitTestSubViews (const CPoint& where, const long buttons = -1);
@@ -922,7 +926,7 @@ public:
 	virtual bool isOpen () { return bOpenFlag; }
 
 	virtual void draw (CDrawContext *pContext);
-	virtual void drawRect (CDrawContext *pContext, CRect& updateRect);
+	virtual void drawRect (CDrawContext *pContext, const CRect& updateRect);
 	virtual void draw (CView *pView = 0);
 	virtual void mouse (CDrawContext *pContext, CPoint &where, long buttons = -1);
 	virtual bool onDrop (void **ptrItems, long nbItems, long type, CPoint &where);

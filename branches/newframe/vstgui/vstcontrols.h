@@ -160,6 +160,7 @@ public:
 	virtual void bounceValue ();
 
 	CControlListener* getListener () { return listener; }
+	void setListener (CControlListener* l) { listener = l; }
 	bool isDoubleClick ();
 
 protected:

@@ -60,6 +60,7 @@
 #define USE_ALPHA_BLEND			QUARTZ || USE_LIBPNG
 #define USE_CLIPPING_DRAWRECT	1
 #define MAC_OLD_DRAG			1
+#define NEW_UPDATE_MECHANISM	1
 
 #if !WINDOWS
 // For OS which allows a lot of Drawing contexts
@@ -2455,6 +2456,16 @@ void CDrawContext::getMouseLocation (CPoint &point)
 	point (where.x, where.y);
 
 #elif MACX
+	#if 0 // QUARTZ // does not work sic!
+	Point where;
+	UInt32 mod;
+	MouseTrackingResult result;
+	if (TrackMouseLocationWithOptions ((CGrafPtr)-1, 0, kEventDurationNoWait, &where, &mod, &result) == noErr)
+	{
+		QDGlobalToLocalPoint (getPort (), &where);
+		point (where.h, where.v);
+	}
+	#else
 	Point where;
 	CGrafPtr savedPort;
 	Boolean portChanged = QDSwapPort (getPort (), &savedPort);
@@ -2462,6 +2473,7 @@ void CDrawContext::getMouseLocation (CPoint &point)
 	if (portChanged)
 		QDSwapPort (savedPort, NULL);
 	point (where.h, where.v);
+	#endif
 #elif MAC
 	Point where;
 	GetMouse (&where);
@@ -2761,7 +2773,6 @@ CGContextRef CDrawContext::beginCGContext ()
 {
 	if (gCGContext)
 	{
-//		CGContextRetain (gCGContext);
 		CGContextSaveGState (gCGContext);
 		return gCGContext;
 	}
@@ -2774,7 +2785,6 @@ void CDrawContext::releaseCGContext (CGContextRef context)
 	{
 		CGContextRestoreGState (context);
 		CGContextSynchronize (context);
-//		CGContextRelease (context);
 	}
 }
 
@@ -3387,6 +3397,16 @@ void CView::redraw ()
 }
 
 //-----------------------------------------------------------------------------
+void CView::redrawRect (CDrawContext* context, const CRect& rect)
+{
+	// we always pass it on to the parent view as it knows what else must be drawn (needed for nested view containers)
+	if (pParentView)
+		pParentView->redrawRect (context, rect);
+	else if (pParent)
+		pParent->drawRect (context, rect);
+}
+
+//-----------------------------------------------------------------------------
 void CView::draw (CDrawContext *pContext)
 {
 	setDirty (false);
@@ -3413,6 +3433,12 @@ void CView::update (CDrawContext *pContext)
 {
 	if (isDirty ())
 	{
+		#if NEW_UPDATE_MECHANISM
+		if (pContext)
+			redrawRect (pContext, size);
+		else
+			redraw ();
+		#else
 		#if USE_ALPHA_BLEND
 		if (pContext)
 		{
@@ -3427,6 +3453,7 @@ void CView::update (CDrawContext *pContext)
 		#endif
 		else
 			redraw ();
+		#endif // !NEW_UPDATE_MECHANISM
 		setDirty (false);
 	}
 }
@@ -3939,7 +3966,7 @@ void CFrame::draw (CDrawContext *pContext)
 }
 
 //-----------------------------------------------------------------------------
-void CFrame::drawRect (CDrawContext *pContext, CRect& updateRect)
+void CFrame::drawRect (CDrawContext *pContext, const CRect& updateRect)
 {
 	if (bFirstDraw)
 		bFirstDraw = false;
@@ -4151,7 +4178,7 @@ void CFrame::update (CDrawContext *pContext)
 		#endif
 	}
 
-	#if MACX
+	#if MACX && !QUARTZ
 	if (QDIsPortBufferDirty (GetWindowPort ((WindowRef)pSystemWindow)))
 	{
 		QDFlushPortBuffer (GetWindowPort ((WindowRef)pSystemWindow), NULL);
@@ -5104,7 +5131,7 @@ void CViewContainer::drawBackgroundRect (CDrawContext *pContext, CRect& _updateR
 }
 
 //-----------------------------------------------------------------------------
-void CViewContainer::drawRect (CDrawContext *pContext, CRect& _updateRect)
+void CViewContainer::drawRect (CDrawContext *pContext, const CRect& _updateRect)
 {
 	CDrawContext *pC;
 	long save[4];
@@ -5171,6 +5198,23 @@ void CViewContainer::drawRect (CDrawContext *pContext, CRect& _updateRect)
 	#endif
 
 	setDirty (false);
+}
+
+//-----------------------------------------------------------------------------
+void CViewContainer::redrawRect (CDrawContext* context, const CRect& rect)
+{
+	CRect _rect (rect);
+	_rect.offset (size.left, size.top);
+	if (bTransparencyEnabled)
+	{
+		// as this is transparent, we call the parentview to redraw this area.
+		if (pParentView)
+			pParentView->redrawRect (context, _rect);
+		else if (pParent)
+			pParent->drawRect (context, _rect);
+	}
+	else
+		drawRect (context, _rect);
 }
 
 //-----------------------------------------------------------------------------
@@ -5314,6 +5358,10 @@ void CViewContainer::update (CDrawContext *pContext)
 		case kNormalUpdate:
 			if (isDirty ())
 			{
+				#if NEW_UPDATE_MECHANISM
+				CRect ur (0, 0, size.width (), size.height ());
+				redrawRect (pContext, ur);
+				#else
 				#if USE_ALPHA_BLEND
 				if (bTransparencyEnabled)
 				{
@@ -5327,12 +5375,35 @@ void CViewContainer::update (CDrawContext *pContext)
 				else
 				#endif
 				draw (pContext);
+				#endif // !NEW_UPDATE_MECHANISM
 				setDirty (false);
 			}
 		break;
 	
 		//---Redraw only dirty controls-----
 		case kOnlyDirtyUpdate:
+		{
+			#if NEW_UPDATE_MECHANISM
+			if (bDirty)
+			{
+				CRect ur (0, 0, size.width (), size.height ());
+				redrawRect (pContext, ur);
+			}
+			else
+			{
+				CRect updateRect (size);
+				updateRect.offset (-size.left, -size.top);
+				FOREACHSUBVIEW
+					if (pV->isDirty () && pV->checkUpdate (updateRect))
+					{
+						if (pV->notify (this, kMsgCheckIfViewContainer))
+							pV->update (pContext);
+						else
+							pV->redrawRect (pContext, pV->size);
+					}
+				ENDFOR
+			}
+			#else
 			#if USE_ALPHA_BLEND
 			if (bTransparencyEnabled)
 			{
@@ -5417,8 +5488,10 @@ void CViewContainer::update (CDrawContext *pContext)
 
 				restoreDrawContext (pContext, save);
 			}
+			#endif // !NEW_UPDATE_MECHANISM
 			setDirty (false);
 		break;
+		}
 	}
 }
 
@@ -8994,8 +9067,8 @@ bool CFrame::registerWithToolbox ()
 									{kEventClassControl, kEventControlDragLeave},
 									{kEventClassControl, kEventControlDragReceive},
 									{kEventClassControl, kEventControlInitialize},
-									{kEventClassControl, kEventControlSetFocusPart},
-									{kEventClassControl, kEventControlGetFocusPart}
+									//{kEventClassControl, kEventControlSetFocusPart},
+									//{kEventClassControl, kEventControlGetFocusPart}
 								};
 
 	ToolboxObjectClassRef controlClass = NULL;
@@ -9030,8 +9103,8 @@ pascal OSStatus CFrame::carbonEventHandler (EventHandlerCallRef inHandlerCallRef
 
 	// with quartz we only set the port because of the old style getMouseLocation call in CDrawContext
 	// if this lib changes its internal event handling, we don't need it anymore !
-	GrafPtr	savedPort;
-	bool portChanged = QDSwapPort (GetWindowPort (window), &savedPort);
+//	GrafPtr	savedPort;
+//	bool portChanged = QDSwapPort (GetWindowPort (window), &savedPort);
 
 	switch (eventClass)
 	{
@@ -9128,9 +9201,9 @@ pascal OSStatus CFrame::carbonEventHandler (EventHandlerCallRef inHandlerCallRef
 						if (modifiers & controlKey)
 							buttons |= kApple;
 					}
-					SetUserFocusWindow (window);
-					AdvanceKeyboardFocus (window);
-					SetKeyboardFocus (window, frame->controlRef, kControlFocusNextPart);
+					//SetUserFocusWindow (window);
+					//AdvanceKeyboardFocus (window);
+					//SetKeyboardFocus (window, frame->controlRef, kControlFocusNextPart);
 					Point point = {hipoint.y, hipoint.x};
 					if (eventKind == kEventControlClick)
 						QDGlobalToLocalPoint (GetWindowPort (window), &point);
@@ -9351,8 +9424,8 @@ pascal OSStatus CFrame::carbonEventHandler (EventHandlerCallRef inHandlerCallRef
 			break;
 		}
 	}
-	if (portChanged)
-		QDSwapPort (savedPort, NULL);
+//	if (portChanged)
+//		QDSwapPort (savedPort, NULL);
 	return result;
 }
 #endif
