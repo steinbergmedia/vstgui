@@ -540,7 +540,8 @@ CDrawContext::CDrawContext (CFrame *pFrame, void *pSystemContext, void *pWindow)
 		CGContextSetShouldAntialias (gCGContext, false);
 		CGContextSaveGState (gCGContext);
 		setClipRect (clipRect);
-		pFrame->setDrawContext (this);
+		if (pFrame)
+			pFrame->setDrawContext (this);
 	}
 	else if (pWindow)
 	{
@@ -557,7 +558,8 @@ CDrawContext::CDrawContext (CFrame *pFrame, void *pSystemContext, void *pWindow)
 			CGContextSetShouldAntialias (gCGContext, false);
 			CGContextSaveGState (gCGContext);
 			setClipRect (clipRect);
-			pFrame->setDrawContext (this);
+			if (pFrame)
+				pFrame->setDrawContext (this);
 		}
 	}
 
@@ -624,7 +626,8 @@ CDrawContext::~CDrawContext ()
 		CGContextSynchronize (gCGContext);
 		if (!pSystemContext)
 			QDEndCGContext (GetWindowPort ((WindowRef)pWindow), &gCGContext);
-		pFrame->setDrawContext (0);
+		if (pFrame)
+			pFrame->setDrawContext (0);
 	}
 #elif MOTIF
 #elif BEOS
@@ -3108,6 +3111,15 @@ void CView::getMouseLocation (CDrawContext* context, CPoint &point)
 }
 
 //-----------------------------------------------------------------------------
+void CView::getFrameTopLeftPos (CPoint& topLeft)
+{
+	topLeft.h += size.left;
+	topLeft.v += size.top;
+	if (pParentView && pParentView->notify (this, kMsgCheckIfViewContainer) == kMessageNotified)
+		pParentView->getFrameTopLeftPos (topLeft);
+}
+
+//-----------------------------------------------------------------------------
 void CView::redraw ()
 {
 	if (pParent)
@@ -4466,7 +4478,8 @@ void CFrame::beginEdit (long index)
 	#endif
 #else
 	if (pEditor)
-		((AudioEffectX*)(((AEffGUIEditor*)pEditor)->getEffect ()))->beginEdit (index);
+		((AEffGUIEditor*)pEditor)->beginEdit (index);
+//		((AudioEffectX*)(((AEffGUIEditor*)pEditor)->getEffect ()))->beginEdit (index);
 #endif
 }
 
@@ -4480,7 +4493,8 @@ void CFrame::endEdit (long index)
 	#endif
 #else
 	if (pEditor)
-		((AudioEffectX*)(((AEffGUIEditor*)pEditor)->getEffect ()))->endEdit (index);
+		((AEffGUIEditor*)pEditor)->endEdit (index);
+//		((AudioEffectX*)(((AEffGUIEditor*)pEditor)->getEffect ()))->endEdit (index);
 #endif
 }
 
@@ -5487,7 +5501,7 @@ CBitmap::CBitmap (long resourceID)
 			width  = info.sourceRect.right;
 			height = info.sourceRect.bottom;
 			
-			OSErr err = NewGWorld ((GWorldPtr*)&pHandle, 0, &info.sourceRect, 0, 0, 0);
+			OSErr err = NewGWorld ((GWorldPtr*)&pHandle, 32, &info.sourceRect, 0, 0, 0);
 			if (!err)
 			{
 				GWorldPtr oldPort;
@@ -5805,7 +5819,7 @@ CGImageRef CBitmap::createCGImage (bool transparent)
 	CGImageAlphaInfo alphaInfo = kCGImageAlphaFirst;
 	if (GetPixDepth (pixMap) != 32)
 		alphaInfo = kCGImageAlphaNone;
-	image = CGImageCreate (bounds.right - bounds.left, bounds.bottom - bounds.top, 8 , pixDepth, pixRowBytes, colorspace, alphaInfo, provider, NULL, 0, kCGRenderingIntentDefault);
+	image = CGImageCreate (bounds.right - bounds.left, bounds.bottom - bounds.top, 8 , pixDepth, pixRowBytes, colorspace, alphaInfo, provider, NULL, true, kCGRenderingIntentDefault);
 	CGDataProviderRelease (provider);
 	CGColorSpaceRelease (colorspace);
 
