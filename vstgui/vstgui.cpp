@@ -2660,7 +2660,10 @@ void CView::update (CDrawContext *pContext)
 {
 	if (isDirty ())
 	{
-		draw (pContext);
+		if (pContext)
+			draw (pContext);
+		else
+			redraw ();
 		setDirty (false);
 	}
 }
@@ -4782,7 +4785,11 @@ CBitmap::CBitmap (long resourceID)
 	pHandle = 0;
 	pMask = 0;
 	
-	#if (MACX && !PLUGGUI)
+	#if MACX
+	#if PLUGGUI
+	extern CFBundleRef ghInst;
+	CFBundleRef gBundleRef = ghInst;
+	#endif
 	if (gBundleRef)
 	{
 		char filename [PATH_MAX];
@@ -4830,7 +4837,9 @@ CBitmap::CBitmap (long resourceID)
 			}
 			else
 			{
-				fprintf (stderr, "Bitmap Nr.:%d not found.\n", (int)resourceID);
+				#if DEVELOPMENT
+				fprintf (stderr, "Bitmap Nr.:%d not found.\n", resourceID);
+				#endif
 			}
 		}
 	}
@@ -7335,9 +7344,9 @@ bool checkResolveLink (const char* nativePath, char* resolved)
 			if (SUCCEEDED (hres))
 			{
 				// Ensure string is Unicode.
-				MultiByteToWideChar (CP_ACP, 0, nativePath, -1, wsz, 2048);
+				MultiByteToWideChar (CP_ACP, 0, nativePath, -1, (LPWSTR)wsz, 2048);
 				// Load the shell link.
-				hres = ppf->Load (wsz, STGM_READ);
+				hres = ppf->Load ((LPWSTR)wsz, STGM_READ);
 				if (SUCCEEDED (hres))
 				{					
 					hres = psl->Resolve (0, MAKELONG (SLR_ANY_MATCH | SLR_NO_UI, 500));

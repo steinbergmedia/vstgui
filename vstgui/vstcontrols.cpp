@@ -1501,6 +1501,8 @@ void CTextEdit::looseFocus (CDrawContext *pContext)
 			text [(s > 255) ? 255 : s] = 0;
 			DisposeHandle (dataHandle);
 		}
+		else
+			text[0] = 0;
 	}
 
 	TXNFocus ((TXNObject)platformControl, false);
@@ -2641,6 +2643,7 @@ void COptionMenu::takeFocus (CDrawContext *pContext)
 	// Calculate the size of one menu item (round to the next int)
 	int menuItemSize = (menuHeight + nbEntries - 1) / nbEntries;
 	
+	setDirty (false);	
 	//---Popup the Menu
 	long popUpItem = 1;
 	long PopUpMenuItem = 0;
@@ -3812,7 +3815,6 @@ long CSlider::onKeyDown (VstKeyCode& keyCode)
 		} return 1;
 	}
 #endif
-
 	return -1;
 }
 
