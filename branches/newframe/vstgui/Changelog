@@ -1,3 +1,8 @@
+2004-06-20 arne
+
+	* AEffGUIEditor::draw will now draw only the rectangle it should, or as in the past the whole editor if no rect is given.
+	* windows: 64 bit compatibility
+
 2004-06-12 arne
 
 	* CFrame is now subclassed from CViewContainer (thanks Wolfram Franke for the hard work)

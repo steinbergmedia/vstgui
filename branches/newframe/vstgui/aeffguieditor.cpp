@@ -104,10 +104,17 @@ long AEffGUIEditor::onKeyUp (VstKeyCode &keyCode)
 //-----------------------------------------------------------------------------
 void AEffGUIEditor::draw (ERect *ppErect)
 {
-	ppErect = ppErect;	// not yet supported, is 0!
-
 	if (frame)
-		frame->draw ();
+	{
+		if (ppErect)
+		{
+			CRect r (ppErect->left, ppErect->top, ppErect->right, ppErect->bottom);
+			CDrawContext context (frame, NULL, systemWindow);
+			frame->drawRect (&context, r);
+		}
+		else
+			frame->draw ();
+	}
 }
 
 #if MAC
