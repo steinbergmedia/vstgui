@@ -939,6 +939,7 @@ protected:
 	
 	ControlDefSpec controlSpec;
 	ControlRef controlRef;
+	bool hasFocus;
 	EventHandlerRef dragEventHandler;
 	public:
 	void* getPlatformControl () { return controlRef; }

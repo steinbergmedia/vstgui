@@ -3495,6 +3495,7 @@ bool CFrame::initFrame (void *systemWin)
 	if (!registerWithToolbox ())
 		return false;
 
+	hasFocus = false;
 	Rect r = {size.top, size.left, size.bottom, size.right};
 	OSStatus status = CreateCustomControl (NULL, &r, &controlSpec, NULL, &controlRef);
 	if (status != noErr)
@@ -8496,11 +8497,19 @@ pascal OSStatus CFrame::carbonEventHandler (EventHandlerCallRef inHandlerCallRef
 				}
 				case kEventControlGetFocusPart:
 				{
+					ControlPartCode code = frame->hasFocus ? kControlContentMetaPart : kControlFocusNoPart;
+					SetEventParameter (inEvent, kEventParamControlPart, typeControlPartCode, sizeof (ControlPartCode), &code);
 					result = noErr;
 					break;
 				}
 				case kEventControlSetFocusPart:
 				{
+					ControlPartCode code;
+					GetEventParameter (inEvent, kEventParamControlPart, typeControlPartCode, NULL, sizeof (ControlPartCode), NULL, &code);
+					if (code == kControlFocusNoPart)
+						frame->hasFocus = false;
+					else
+						frame->hasFocus = true;
 					result = noErr;
 					break;
 				}

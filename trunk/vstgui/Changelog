@@ -1,3 +1,7 @@
+2004-02-06 arne
+
+	* mac : focus fix
+
 2004-02-01 arne
 
 	* add empty CBitmap constructor for easy subclassing
