@@ -304,9 +304,9 @@ class COptionMenuScheme
 {
 public:
 	COptionMenuScheme ();
-	virtual ~COptionMenuScheme () {}
+	virtual ~COptionMenuScheme ();
 
-	enum { kChecked = 0x01, kDisabled = 0x02, kSelected = 0x04 };
+	enum { kChecked = 0x01, kDisabled = 0x02, kSelected = 0x04, kSubMenu = 0x08 };
 
 	virtual void getItemSize (const char* text, CDrawContext* pContext, CPoint& size);
 	virtual void drawItem (const char* text, long itemId, long state, CDrawContext* pContext, const CRect& rect);	
@@ -331,8 +331,15 @@ protected:
 	CFont font;
 
 	virtual void drawItemBack (CDrawContext* pContext, const CRect& rect, bool hilite);
+
+	#if QUARTZ
+	static pascal OSStatus eventHandler (EventHandlerCallRef inCallRef, EventRef inEvent, void *inUserData);
+	void registerWithToolbox ();
+	#endif
 };
 
+//-----------------------------------------------------------------------------
+extern COptionMenuScheme* gOptionMenuScheme;
 
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
