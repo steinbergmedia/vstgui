@@ -2,7 +2,7 @@
 // VST Plug-Ins SDK
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 //
-// Version 3.0       $Date: 2004-08-30 12:38:19 $
+// Version 3.0       $Date: 2004-10-03 14:47:20 $
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
@@ -344,6 +344,14 @@ extern CColor kMagentaCColor;
 #define kMicroSymbol       "\xB5"
 #define kPerthousandSymbol "\xE4"
 #endif
+
+//-----------------------------------------------------------------------------
+typedef unsigned long CViewAttributeID;
+//-----------------------------------------------------------------------------
+// Attributes
+//		all attributes where the first letter is lowercase are reserved for the vstgui lib
+
+extern const CViewAttributeID kCViewAttributeReferencePointer;
 
 //-----------------------------------------------------------------------------
 //-----------
@@ -824,11 +832,17 @@ public:
 
 	virtual void getMouseLocation (CDrawContext* context, CPoint &point);
 	virtual void getFrameTopLeftPos (CPoint& topLeft);
+	virtual CPoint& frameToLocal (CPoint& point);
+	virtual CPoint& localToFrame (CPoint& point);
 
 	virtual void redrawRect (CDrawContext* context, const CRect& rect);
 
 	virtual bool isTypeOf (const char* s) const
 		{ return (!strcmp (s, "CView")); }
+
+	virtual bool getAttributeSize (const CViewAttributeID id, long& outSize) const;
+	virtual bool getAttribute (const CViewAttributeID id, const long inSize, void* outData, long& outSize) const;
+	virtual bool setAttribute (const CViewAttributeID id, const long inSize, void* inData);
 
 	//-------------------------------------------
 protected:
@@ -847,6 +861,7 @@ protected:
 	bool  bTransparencyEnabled;
 	
 	CBitmap* pBackground;
+	void* pReferencePointer;
 
 	virtual void update (CDrawContext *pContext); // don't call this !!!
 };
@@ -927,8 +942,11 @@ public:
 	virtual bool removed (CView* parent);
 	virtual bool attached (CView* view);
 		
+	virtual CPoint& frameToLocal (CPoint& point);
+	virtual CPoint& localToFrame (CPoint& point);
+
 	CView *getCurrentView ();
-	CView *getViewAt (const CPoint& where);
+	CView *getViewAt (const CPoint& where, bool deep = false);
 
 	void modifyDrawContext (long save[4], CDrawContext* pContext);
 	void restoreDrawContext (CDrawContext* pContext, long save[4]);
@@ -983,6 +1001,7 @@ public:
 	virtual unsigned long getTicks ();
 	virtual long getKnobMode ();
 
+	virtual bool setPosition (long x, long y);
 	virtual bool getPosition (long &x, long &y);
 	virtual bool setSize (long width, long height);
 	virtual bool getSize (CRect *pSize);

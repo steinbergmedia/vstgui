@@ -3,7 +3,7 @@
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 // Standard Control Objects
 //
-// Version 3.0       $Date: 2004-08-30 12:38:19 $
+// Version 3.0       $Date: 2004-10-03 14:47:20 $
 //
 // Added new objects        : Michael Schmidt          08.97
 // Added new objects        : Yvan Grabit              01.98
@@ -99,6 +99,7 @@ CControl::~CControl ()
 void CControl::beginEdit ()
 {
 	// begin of edit parameter
+	getFrame ()->setEditView(this);
 	getFrame ()->beginEdit (tag);
 }
 
@@ -107,6 +108,7 @@ void CControl::endEdit ()
 {
 	// end of edit parameter
 	getFrame ()->endEdit (tag);
+	getFrame ()->setEditView(0);
 }
 
 //------------------------------------------------------------------------
@@ -190,6 +192,85 @@ bool CControl::isDoubleClick ()
 		return false;
 	}
 	return true;
+}
+
+//-----------------------------------------------------------------------------
+const CViewAttributeID kCControlAttributeTag = 'cctg';
+const CViewAttributeID kCControlAttributeValue = 'ccvl';
+
+//-----------------------------------------------------------------------------
+bool CControl::getAttributeSize (const CViewAttributeID id, long& outSize) const
+{
+	switch (id)
+	{
+		case kCControlAttributeTag:
+		{
+			outSize = sizeof (long);
+			return true;
+		}
+		case kCControlAttributeValue:
+		{
+			outSize = sizeof (float);
+			return true;
+		}
+	}
+	return CView::getAttributeSize (id, outSize);
+}
+
+//-----------------------------------------------------------------------------
+bool CControl::getAttribute (const CViewAttributeID id, const long inSize, void* outData, long& outSize) const
+{
+	switch (id)
+	{
+		case kCControlAttributeTag:
+		{
+			if (inSize >= sizeof (long))
+			{
+				outSize = sizeof (long);
+				*(long*)outData = tag;
+				return true;
+			}
+			break;
+		}
+		case kCControlAttributeValue:
+		{
+			if (inSize >= sizeof (float))
+			{
+				outSize = sizeof (float);
+				*(float*)outData = value;
+				return true;
+			}
+			break;
+		}
+	}
+	return CView::getAttribute (id, inSize, outData, outSize);
+}
+
+//-----------------------------------------------------------------------------
+bool CControl::setAttribute (const CViewAttributeID id, const long inSize, void* inData)
+{
+	switch (id)
+	{
+		case kCControlAttributeTag:
+		{
+			if (inSize == sizeof (long))
+			{
+				tag = *(long*)inData;
+				return true;
+			}
+			break;
+		}
+		case kCControlAttributeValue:
+		{
+			if (inSize == sizeof (float))
+			{
+				value = *(float*)inData;
+				return true;
+			}
+			break;
+		}
+	}
+	return CView::setAttribute (id, inSize, inData);
 }
 
 //------------------------------------------------------------------------
@@ -393,7 +474,6 @@ void CKnob::mouse (CDrawContext *pContext, CPoint &where, long button)
 
 	// begin of edit parameter
 	beginEdit ();
-	getFrame ()->setEditView (this);
 	do
 	{
 		button = pContext->getMouseButtons ();
@@ -947,7 +1027,7 @@ void CTextEdit::mouse (CDrawContext *pContext, CPoint &where, long button)
 				if (!isDoubleClick ())
 					return;
 		
-			getFrame ()->setEditView (this);
+			beginEdit();
 			takeFocus (pContext);
 		}
 	}
@@ -1067,8 +1147,8 @@ pascal OSStatus CarbonEventsTextControlProc (EventHandlerCallRef inHandlerCallRe
 pascal OSStatus CarbonEventsTextControlProc (EventHandlerCallRef inHandlerCallRef, EventRef inEvent, void *inUserData)
 {
 	OSStatus result = eventNotHandledErr;
-	EventClass eventClass = GetEventClass (inEvent);
-	EventKind eventKind = GetEventKind (inEvent);
+	UInt32 eventClass = GetEventClass (inEvent);
+	UInt32 eventKind = GetEventKind (inEvent);
 	CTextEdit* textEdit = (CTextEdit*)inUserData;
 
 	switch (eventClass)
@@ -1255,11 +1335,11 @@ void CTextEdit::takeFocus (CDrawContext *pContext)
 	// calculate offset for CViewContainers
 	CRect rect (size);
 	CView* parent = getParentView ();
+	CRect vSize;
 	while (parent)
 	{
 		if (parent->notify (this, kMsgCheckIfViewContainer) == kMessageNotified)
 		{
-			CRect vSize;
 			parent->getViewSize (vSize);
 			rect.offset (vSize.left, vSize.top);
 		}
@@ -1682,7 +1762,7 @@ void CTextEdit::looseFocus (CDrawContext *pContext)
 	#endif
 	
 	// Call this yet to avoid recursive call
-	getFrame ()->setEditView (0);
+	endEdit();
 
 	char oldText[256];
 	strcpy (oldText, text);
@@ -2075,8 +2155,8 @@ void COptionMenuScheme::unregisterWithToolbox ()
 pascal OSStatus COptionMenuScheme::eventHandler (EventHandlerCallRef inCallRef, EventRef inEvent, void *inUserData)
 {
 	OSStatus err = eventNotHandledErr;
-	EventClass eventClass = GetEventClass (inEvent);
-	EventKind eventKind = GetEventKind (inEvent);
+	UInt32 eventClass = GetEventClass (inEvent);
+	UInt32 eventKind = GetEventKind (inEvent);
 	HIMenuScheme* scheme = (HIMenuScheme*)inUserData;
 	
 	switch (eventClass)
@@ -2787,7 +2867,7 @@ void COptionMenu::mouse (CDrawContext *pContext, CPoint &where, long button)
 			drawText (pContext, string, bgWhenClick);
 		}
 
-		getFrame ()->setEditView (this);
+		beginEdit();
 		takeFocus (pContext);
 	}
 }
@@ -2975,12 +3055,12 @@ void *COptionMenu::appendItems (long &offsetIdx)
 		if (CreateEvent (NULL, kEventClassHIObject, kEventHIObjectInitialize, 0, 0, &initEvent) == noErr)
 		{
 			MenuDefSpec customMenuDef;
-			SetEventParameter (initEvent, kEventParamCOptionMenuScheme, typeVoidPtr, sizeof(COptionMenuScheme*), &s);
 			COptionMenu* optMenu = this;
 			SetEventParameter (initEvent, kEventParamCOptionMenu, typeVoidPtr, sizeof(COptionMenu*), &optMenu);
 			customMenuDef.defType = kMenuDefClassID;
 			customMenuDef.u.view.classID = gOptionMenuSchemeClassID;
 			customMenuDef.u.view.initEvent = initEvent;
+			SetEventParameter (initEvent, kEventParamCOptionMenuScheme, typeVoidPtr, sizeof(COptionMenuScheme*), &s);
 			CreateCustomMenu (&customMenuDef, menuID, 0, &theMenu);
 			ReleaseEvent (initEvent);
 			if (theMenu == NULL)
@@ -3268,8 +3348,6 @@ void COptionMenu::takeFocus (CDrawContext *pContext)
 	//---Destroy the menu----
 	removeItems ();
 	
-	getFrame ()->setEditView (0);
-
 	//---Update the dependencies
 	if (result != -1 || bgWhenClick)
 	{
@@ -3316,11 +3394,14 @@ void COptionMenu::takeFocus (CDrawContext *pContext)
 		}
 	}
 
+	endEdit();
+
+
 #elif MAC
 	// no entries, no menu
 	if (nbEntries == 0)
 	{
-		getFrame ()->setEditView (0);
+		endEdit();
 		return;
 	}
 	
@@ -3329,25 +3410,19 @@ void COptionMenu::takeFocus (CDrawContext *pContext)
 	
 	//---Transform local coordinates to global coordinates
 	long offset;
-	if (style & kPopupStyle)
-		offset = (int)size.top;
-	else
-		offset = (int)size.bottom;
-	
-	Rect bounds;
-	GetPortBounds (GetWindowPort (theWindow), &bounds);
-	Point LToG;
-	LToG.v = bounds.top + offset;
-	LToG.h = bounds.left + size.left;
-	
-	LToG.h += rect.left;
-	LToG.v += rect.top;
 
-	#if TARGET_API_MAC_CARBON
-	QDLocalToGlobalPoint (GetWindowPort (theWindow), &LToG);
-	#else
-	LocalToGlobal (&LToG);
-	#endif
+	if (style & kPopupStyle)
+		offset = size.top;
+	else
+		offset = size.bottom;
+
+	long gx, gy;
+	Point LToG;
+	CRect myFrameRect;
+	getFrame()->getPosition(gx, gy);
+	getFrame()->getSize(&myFrameRect);
+	LToG.v = gy + rect.top + offset - myFrameRect.top;
+	LToG.h = gx + rect.left + size.left - myFrameRect.left;
 		
 	//---Create the popup menu---
 	long offIdx = 0;
@@ -3359,6 +3434,7 @@ void COptionMenu::takeFocus (CDrawContext *pContext)
 	// Get a handle to the screen
 	RgnHandle rgn = GetGrayRgn ();
 	#if TARGET_API_MAC_CARBON
+	Rect bounds;
 	GetRegionBounds (rgn, &bounds);
 	int bottom      = bounds.bottom;
 	long menuHeight = GetMenuHeight (theMenu);
@@ -3375,6 +3451,7 @@ void COptionMenu::takeFocus (CDrawContext *pContext)
 	//---Popup the Menu
 	long popUpItem = 1;
 	long PopUpMenuItem = 0;
+
 	if (LToG.v + menuHeight >= bottom - menuItemSize / 2)
 	{
 		if (nbEntries * menuItemSize >= bottom)
@@ -3434,8 +3511,7 @@ void COptionMenu::takeFocus (CDrawContext *pContext)
 		if (!pContext && pContextTemp)
 			delete pContextTemp;
 	}
-	if (getFrame ()->getEditView () == this)
-		getFrame ()->setEditView (0);
+	endEdit();
 
 #elif MOTIF
 	Arg args[10];
@@ -3564,7 +3640,7 @@ void COptionMenu::takeFocus (CDrawContext *pContext)
 		}
 	}
 	delete popup;
-	getFrame ()->setEditView (0);
+	endEdit();
 #endif
 }
 
@@ -4564,7 +4640,6 @@ void CSlider::mouse (CDrawContext *pContext, CPoint &where, long button)
 
 	// begin of edit parameter
 	beginEdit ();
-	getFrame ()->setEditView (this);
 
 	while (1)
 	{

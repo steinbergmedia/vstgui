@@ -3,7 +3,7 @@
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 // Standard Control Objects
 //
-// Version 3.0       $Date: 2004-08-30 12:38:19 $
+// Version 3.0       $Date: 2004-10-03 14:47:20 $
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
@@ -121,7 +121,10 @@ class AudioEffectX;
 //-----------------------------------------------------------------------------
 BEGIN_NAMESPACE_VSTGUI
 //-----------------------------------------------------------------------------
-	
+
+extern const CViewAttributeID kCControlAttributeTag;
+extern const CViewAttributeID kCControlAttributeValue;
+
 //-----------------------------------------------------------------------------
 class CControl : public CView
 {
@@ -167,6 +170,10 @@ public:
 	CControlListener* getListener () { return listener; }
 	void setListener (CControlListener* l) { listener = l; }
 	bool isDoubleClick ();
+
+	virtual bool getAttributeSize (const CViewAttributeID id, long& outSize) const;
+	virtual bool getAttribute (const CViewAttributeID id, const long inSize, void* outData, long& outSize) const;
+	virtual bool setAttribute (const CViewAttributeID id, const long inSize, void* inData);
 
 	CLASS_METHODS(CControl, CView)
 

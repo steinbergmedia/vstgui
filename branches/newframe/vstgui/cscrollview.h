@@ -97,6 +97,7 @@ public:
 	CRect getContainerSize () const { return containerSize; }
 	void setContainerSize (const CRect& cs);
 	
+	virtual void redrawRect (CDrawContext* context, const CRect& rect);
 	virtual bool isDirty ();
 
 //-----------------------------------------------------------------------------

@@ -2,7 +2,7 @@
 // VST Plug-Ins SDK
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 //
-// Version 3.0       $Date: 2004-08-30 12:38:19 $ 
+// Version 3.0       $Date: 2004-10-03 14:47:20 $ 
 //
 // Added Motif/Windows vers.: Yvan Grabit              01.98
 // Added Mac version        : Charlie Steinberg        02.98
@@ -540,12 +540,12 @@ CDrawContext::CDrawContext (CFrame *inFrame, void *inSystemContext, void *inWind
 	{
 		HIRect bounds;
 		HIViewGetFrame ((HIViewRef)pFrame->getPlatformControl (), &bounds);
-		if (pWindow)
+/*		if (pWindow)
 		{
 			HIViewRef contentView;
 			HIViewFindByID (HIViewGetRoot ((WindowRef)pWindow), kHIViewWindowContentID, &contentView);
 			HIViewConvertRect (&bounds, (HIViewRef)pFrame->getPlatformControl (), contentView);
-		}
+		}*/
 		offsetScreen.x = bounds.origin.x;
 		offsetScreen.y = bounds.origin.y;
 		clipRect (0, 0, bounds.size.width, bounds.size.height);
@@ -708,11 +708,10 @@ void CDrawContext::lineTo (const CPoint& _point)
 		if (drawMode == kAntialias)
 			CGContextSetLineWidth (context, 2 * frameWidth);
 		CGContextScaleCTM (context, 1, -1);
+		CGContextTranslateCTM (context, 0.5f, 0.5f);
 
 		CGRect cgClipRect = CGRectMake (clipRect.left, clipRect.top, clipRect.width (), clipRect.height ());
 		CGContextClipToRect (gCGContext, cgClipRect);
-
-		CGContextTranslateCTM (context, 0.5f, 0.5f);
 
 		CGContextBeginPath (context);
 		CGContextMoveToPoint (context, penLoc.h, penLoc.v);
@@ -849,11 +848,10 @@ void CDrawContext::polyLine (const CPoint *pPoints, long numberOfPoints)
 	CGContextRef context = beginCGContext ();
 	{
 		CGContextScaleCTM (context, 1, -1);
+		CGContextTranslateCTM (context, 0.5f, 0.5f);
 
 		CGRect cgClipRect = CGRectMake (clipRect.left, clipRect.top, clipRect.width (), clipRect.height ());
 		CGContextClipToRect (gCGContext, cgClipRect);
-
-		CGContextTranslateCTM (context, 0.5f, 0.5f);
 
 		CGContextBeginPath (context);
 		CGContextMoveToPoint (context, pPoints[0].h + offset.h, pPoints[0].v + offset.v);
@@ -1243,11 +1241,10 @@ void CDrawContext::fillPolygon (const CPoint *pPoints, long numberOfPoints)
 	CGContextRef context = beginCGContext ();
 	{
 		CGContextScaleCTM (context, 1, -1);
+		CGContextTranslateCTM (context, 0.5f, 0.5f);
 
 		CGRect cgClipRect = CGRectMake (clipRect.left, clipRect.top, clipRect.width (), clipRect.height ());
 		CGContextClipToRect (gCGContext, cgClipRect);
-
-		CGContextTranslateCTM (context, 0.5f, 0.5f);
 
 		CGContextBeginPath (context);
 		CGContextMoveToPoint (context, pPoints[0].h + offset.h, pPoints[0].v + offset.v);
@@ -1344,11 +1341,10 @@ void CDrawContext::drawRect (const CRect &_rect)
 			CGContextSetLineWidth (context, 2 * frameWidth);
 		CGRect r = CGRectMake (rect.left, rect.top, rect.width (), rect.height ());
 		CGContextScaleCTM (context, 1, -1);
-
-		CGRect cgClipRect = CGRectMake (clipRect.left, clipRect.top, clipRect.width (), clipRect.height ());
-		CGContextClipToRect (gCGContext, cgClipRect);
-
 		CGContextTranslateCTM (context, 0.5f, 0.5f);
+
+		CGRect cgClipRect = CGRectMake (clipRect.left - 0.5f, clipRect.top - 0.5f, clipRect.width () + 0.5f, clipRect.height () + 0.5f);
+		CGContextClipToRect (gCGContext, cgClipRect);
 
 		CGContextStrokeRect (context, r);
 		releaseCGContext (context);
@@ -1403,11 +1399,10 @@ void CDrawContext::fillRect (const CRect &_rect)
 	{
 		CGRect r = CGRectMake (rect.left, rect.top, rect.width (), rect.height ());
 		CGContextScaleCTM (context, 1, -1);
-
-		CGRect cgClipRect = CGRectMake (clipRect.left, clipRect.top, clipRect.width (), clipRect.height ());
-		CGContextClipToRect (gCGContext, cgClipRect);
-
 		CGContextTranslateCTM (context, 0.5f, 0.5f);
+
+		CGRect cgClipRect = CGRectMake (clipRect.left - 0.5f, clipRect.top - 0.5f, clipRect.width () + 0.5f, clipRect.height () + 0.5f);
+		CGContextClipToRect (gCGContext, cgClipRect);
 
 		CGContextFillRect (context, r);
 		releaseCGContext (context);
@@ -1450,11 +1445,10 @@ void CDrawContext::drawEllipse (const CRect &_rect)
 	CGContextRef context = beginCGContext ();
 	{
 		CGContextScaleCTM (context, 1, -1);
+		CGContextTranslateCTM (context, 0.5f, 0.5f);
 
 		CGRect cgClipRect = CGRectMake (clipRect.left, clipRect.top, clipRect.width (), clipRect.height ());
 		CGContextClipToRect (gCGContext, cgClipRect);
-
-		CGContextTranslateCTM (context, 0.5f, 0.5f);
 
 		if (rect.width () != rect.height ())
 		{
@@ -1510,11 +1504,10 @@ void CDrawContext::fillEllipse (const CRect &_rect)
 	CGContextRef context = beginCGContext ();
 	{
 		CGContextScaleCTM (context, 1, -1);
+		CGContextTranslateCTM (context, 0.5f, 0.5f);
 
 		CGRect cgClipRect = CGRectMake (clipRect.left, clipRect.top, clipRect.width (), clipRect.height ());
 		CGContextClipToRect (gCGContext, cgClipRect);
-
-		CGContextTranslateCTM (context, 0.5f, 0.5f);
 
 		CGContextSaveGState (context);
 		CGContextBeginPath (context);
@@ -1729,11 +1722,10 @@ void CDrawContext::drawArc (const CRect &_rect, const float _startAngle, const f
 	CGContextRef context = beginCGContext ();
 	{
 		CGContextScaleCTM (context, 1, -1);
+		CGContextTranslateCTM (context, 0.5f, 0.5f);
 
 		CGRect cgClipRect = CGRectMake (clipRect.left, clipRect.top, clipRect.width (), clipRect.height ());
 		CGContextClipToRect (gCGContext, cgClipRect);
-
-		CGContextTranslateCTM (context, 0.5f, 0.5f);
 
 		CGContextBeginPath (context);
 		addOvalToPath (context, CPoint (rect.left + rect.width () / 2, rect.top + rect.height () / 2), rect.width () / 2, rect.height () / 2, -_startAngle, -_endAngle);
@@ -1807,11 +1799,10 @@ void CDrawContext::drawArc (const CRect &_rect, const CPoint &_point1, const CPo
 	CGContextRef context = beginCGContext ();
 	{
 		CGContextScaleCTM (context, 1, -1);
+		CGContextTranslateCTM (context, 0.5f, 0.5f);
 
 		CGRect cgClipRect = CGRectMake (clipRect.left, clipRect.top, clipRect.width (), clipRect.height ());
 		CGContextClipToRect (gCGContext, cgClipRect);
-
-		CGContextTranslateCTM (context, 0.5f, 0.5f);
 
 		CGContextBeginPath (context);
 		addOvalToPath (context, CPoint (rect.left + rect.width () / 2, rect.top + rect.height () / 2), rect.width () / 2, rect.height () / 2, 90-angle1, (90-angle1)-angle2);
@@ -1889,11 +1880,10 @@ void CDrawContext::fillArc (const CRect &_rect, const CPoint &_point1, const CPo
 	CGContextRef context = beginCGContext ();
 	{
 		CGContextScaleCTM (context, 1, -1);
+		CGContextTranslateCTM (context, 0.5f, 0.5f);
 
 		CGRect cgClipRect = CGRectMake (clipRect.left, clipRect.top, clipRect.width (), clipRect.height ());
 		CGContextClipToRect (gCGContext, cgClipRect);
-
-		CGContextTranslateCTM (context, 0.5f, 0.5f);
 
 		CGContextBeginPath (context);
 		addOvalToPath (context, CPoint (rect.left + rect.width () / 2, rect.top + rect.height () / 2), rect.width () / 2, rect.height () / 2, -angle1, -angle2);
@@ -2098,8 +2088,17 @@ void CDrawContext::setFont (CFont fontID, const long size, long style)
   
 #elif MAC
 	#if QUARTZ
+	char myMacXFontName[255];
+	strcpy(myMacXFontName, gMacXfontNames[fontId]);
+	if (style & kBoldFace)
+		strcat(myMacXFontName, " Bold");
+	if (style & kItalicFace)
+		strcat(myMacXFontName, " Italic");
+	if (style & kUnderlineFace)
+		strcat(myMacXFontName, " Underline");
+	
 	if (gCGContext)
-		CGContextSelectFont (gCGContext, (const char*)gMacXfontNames[fontId], fontSize, kCGEncodingMacRoman);
+		CGContextSelectFont (gCGContext, (const char*)myMacXFontName, fontSize, kCGEncodingMacRoman);
 	#else
 	CGrafPtr OrigPort;
 	GDHandle OrigDevice;
@@ -3440,7 +3439,7 @@ char* kMsgCheckIfViewContainer	= "kMsgCheckIfViewContainer";
 //-----------------------------------------------------------------------------
 CView::CView (const CRect& size)
 :	size (size), mouseableArea (size), pParentFrame (0), pParentView (0),
-	bDirty (false), bMouseEnabled (true), bTransparencyEnabled (false), pBackground (0)
+	bDirty (false), bMouseEnabled (true), bTransparencyEnabled (false), pBackground (0), pReferencePointer (0)
 {
 	#if DEBUG
 	gNbCView++;
@@ -3482,6 +3481,22 @@ void CView::getFrameTopLeftPos (CPoint& topLeft)
 	topLeft.v += size.top;
 	if (pParentView && pParentView->notify (this, kMsgCheckIfViewContainer) == kMessageNotified)
 		pParentView->getFrameTopLeftPos (topLeft);
+}
+
+//-----------------------------------------------------------------------------
+CPoint& CView::frameToLocal (CPoint& point)
+{
+	if (pParentView && pParentView->isTypeOf ("CViewContainer"))
+		return pParentView->frameToLocal (point);
+	return point;
+}
+
+//-----------------------------------------------------------------------------
+CPoint& CView::localToFrame (CPoint& point)
+{
+	if (pParentView && pParentView->isTypeOf ("CViewContainer"))
+		return pParentView->localToFrame (point);
+	return point;
 }
 
 //-----------------------------------------------------------------------------
@@ -3595,6 +3610,49 @@ void CView::setBackground (CBitmap *background)
 	pBackground = background;
 	if (pBackground)
 		pBackground->remember ();
+}
+
+//-----------------------------------------------------------------------------
+const CViewAttributeID kCViewAttributeReferencePointer = 'cvrp';
+
+//-----------------------------------------------------------------------------
+bool CView::getAttributeSize (const CViewAttributeID id, long& outSize) const
+{
+	if (id == kCViewAttributeReferencePointer)
+	{
+		outSize = sizeof (void*);
+		return true;
+	}
+	return false;
+}
+
+//-----------------------------------------------------------------------------
+bool CView::getAttribute (const CViewAttributeID id, const long inSize, void* outData, long& outSize) const
+{
+	if (id == kCViewAttributeReferencePointer)
+	{
+		if (inSize >= sizeof (void*))
+		{
+			outSize = sizeof (pReferencePointer);
+			*(void**)outData = pReferencePointer;
+			return true;
+		}
+	}
+	return false;
+}
+
+//-----------------------------------------------------------------------------
+bool CView::setAttribute (const CViewAttributeID id, const long inSize, void* inData)
+{
+	if (id == kCViewAttributeReferencePointer)
+	{
+		if (inSize == sizeof (void*))
+		{
+			pReferencePointer = *(void**)inData;
+			return true;
+		}
+	}
+	return false;
 }
 
 #define FOREACHSUBVIEW for (CCView *pSv = pFirstView; pSv; pSv = pSv->pNext) {CView *pV = pSv->pView;
@@ -4379,6 +4437,35 @@ HWND CFrame::getOuterWindow ()
 #endif
 
 //-----------------------------------------------------------------------------
+bool CFrame::setPosition (long x, long y)
+{
+	if (!getOpenFlag ())
+		return false;
+#if MAC
+	#if QUARTZ
+	if (controlRef)
+	{
+		HIRect r;
+		if (HIViewGetFrame (controlRef, &r) != noErr)
+			return false;
+		if (HIViewMoveBy (controlRef, x - r.origin.x, y - r.origin.y) != noErr)
+			return false;
+		return true;
+	}
+	#else
+	return false;
+	#endif
+#elif WINDOWS
+	// not implemented yet
+
+#else
+	// not implemented yet
+
+#endif
+	return false;
+}
+
+//-----------------------------------------------------------------------------
 bool CFrame::getPosition (long &x, long &y)
 {
 	if (!getOpenFlag ())
@@ -4621,6 +4708,18 @@ bool CFrame::getSize (CRect *pRect)
 	pRect->bottom = pRect->top  + rctTempWnd.bottom - rctTempWnd.top;
 
 #elif MAC
+	#if QUARTZ
+	HIRect hiRect;
+	if (HIViewGetFrame (controlRef, &hiRect) == noErr)
+	{
+		pRect->left = hiRect.origin.x;
+		pRect->top = hiRect.origin.y;
+		pRect->setWidth (hiRect.size.width);
+		pRect->setHeight (hiRect.size.height);
+		return true;
+	}
+	#endif
+
 	Rect bounds;
 	GetPortBounds (GetWindowPort ((WindowRef)getSystemWindow ()), &bounds);
 
@@ -5696,9 +5795,8 @@ CView *CViewContainer::getCurrentView ()
 	CPoint where;
 	pParentFrame->getCurrentLocation (where);
 
-	// convert to relativ pos
-	where.offset (-size.left, -size.top);
-
+	frameToLocal (where);
+	
 	CCView *pSv = pLastView;
 	while (pSv)
 	{
@@ -5712,7 +5810,7 @@ CView *CViewContainer::getCurrentView ()
 }
 
 //-----------------------------------------------------------------------------
-CView *CViewContainer::getViewAt (const CPoint& p)
+CView *CViewContainer::getViewAt (const CPoint& p, bool deep)
 {
 	if (!pParentFrame)
 		return 0;
@@ -5727,11 +5825,36 @@ CView *CViewContainer::getViewAt (const CPoint& p)
 	{
 		CView *pV = pSv->pView;
 		if (pV && where.isInside (pV->mouseableArea))
+		{
+			if (deep)
+			{
+				if (pV->isTypeOf ("CViewContainer"))
+					return ((CViewContainer*)pV)->getViewAt (where, deep);
+			}
 			return pV;
+		}
 		pSv = pSv->pPrevious;
 	}
 
 	return 0;
+}
+
+//-----------------------------------------------------------------------------
+CPoint& CViewContainer::frameToLocal (CPoint& point)
+{
+	point.offset (-size.left, -size.top);
+	if (pParentView && pParentView->isTypeOf ("CViewContainer"))
+		return pParentView->frameToLocal (point);
+	return point;
+}
+
+//-----------------------------------------------------------------------------
+CPoint& CViewContainer::localToFrame (CPoint& point)
+{
+	point.offset (size.left, size.top);
+	if (pParentView && pParentView->isTypeOf ("CViewContainer"))
+		return pParentView->localToFrame (point);
+	return point;
 }
 
 //-----------------------------------------------------------------------------
@@ -6374,38 +6497,8 @@ void CBitmap::draw (CDrawContext *pContext, CRect &rect, const CPoint &offset)
 {
 #if WINDOWS
 #if USE_ALPHA_BLEND
-	if (pHandle)
-	{
-		HGDIOBJ hOldObj;
-		HDC hdcMemory = CreateCompatibleDC ((HDC)pContext->pSystemContext);
-		hOldObj = SelectObject (hdcMemory, pHandle);
+	drawAlphaBlend (pContext, rect, offset, 255);
 
-		BLENDFUNCTION blendFunction;
-		blendFunction.BlendOp = AC_SRC_OVER;
-		blendFunction.BlendFlags = 0;
-		blendFunction.SourceConstantAlpha = 0xff;
-		blendFunction.AlphaFormat = AC_SRC_ALPHA;
-
-		#if DYNAMICALPHABLEND
-		(*pfnAlphaBlend) ((HDC)pContext->pSystemContext, 
-					rect.left + pContext->offset.h, rect.top + pContext->offset.v,
-					rect.width (), rect.height (), 
-					(HDC)hdcMemory,
-					offset.h, offset.v,
-					rect.width (), rect.height (),
-					blendFunction);
-		#else
-		AlphaBlend ((HDC)pContext->pSystemContext, 
-					rect.left + pContext->offset.h, rect.top + pContext->offset.v,
-					rect.width (), rect.height (), 
-					(HDC)hdcMemory,
-					offset.h, offset.v,
-					rect.width (), rect.height (),
-					blendFunction);
-		#endif
-		SelectObject (hdcMemory, hOldObj);
-		DeleteDC (hdcMemory);
-	}
 #else
 	if (pHandle)
 	{
@@ -6422,43 +6515,8 @@ void CBitmap::draw (CDrawContext *pContext, CRect &rect, const CPoint &offset)
 #elif MAC
 
 	#if QUARTZ
-	if (pHandle)
-	{
-		CGContextRef context = pContext->beginCGContext ();
-		if (context)
-		{
-			CGImageRef image = createCGImage ();
+	drawAlphaBlend (pContext, rect, offset, 255);
 
-			if (image)
-			{
-				CGRect dest;
-				dest.origin.x = rect.left - offset.h + pContext->offset.h;
-				dest.origin.y = (rect.top + pContext->offset.v) * -1 - (getHeight () - offset.v);
-				dest.size.width = getWidth ();
-				dest.size.height = getHeight ();
-				
-				CGContextScaleCTM (context, 1, 1);
-
-				CRect ccr;
-				pContext->getClipRect (ccr);
-				CGRect cgClipRect = CGRectMake (ccr.left + pContext->offset.h, (ccr.top +  + pContext->offset.v) * -1 - ccr.height (), ccr.width (), ccr.height ());
-				CGContextClipToRect (context, cgClipRect);
-
-				CGRect clipRect;
-				clipRect.origin.x = rect.left + pContext->offset.h;
-			    clipRect.origin.y = (rect.top + pContext->offset.v) * -1  - rect.height ();
-			    clipRect.size.width = rect.width (); 
-			    clipRect.size.height = rect.height ();
-				
-				CGContextClipToRect (context, clipRect);
-
-				CGContextDrawImage (context, dest, image);
-				CGImageRelease (image);
-			}
-		}
-		pContext->releaseCGContext (context);
-	}
-	
 	#else
 	Rect source, dest;
 	dest.top    = rect.top  + pContext->offset.v;
@@ -6498,8 +6556,8 @@ void CBitmap::draw (CDrawContext *pContext, CRect &rect, const CPoint &offset)
 	}
 	
 	pContext->releaseBitmap ();
-        #endif
-        
+	#endif
+
 #elif MOTIF
 	if (!pHandle)
 	{
@@ -6542,38 +6600,8 @@ void CBitmap::drawTransparent (CDrawContext *pContext, CRect &rect, const CPoint
 {
 #if WINDOWS
 #if USE_ALPHA_BLEND
-	if (pHandle)
-	{
-		HGDIOBJ hOldObj;
-		HDC hdcMemory = CreateCompatibleDC ((HDC)pContext->pSystemContext);
-		hOldObj = SelectObject (hdcMemory, pHandle);
+	drawAlphaBlend (pContext, rect, offset, 255);
 
-		BLENDFUNCTION blendFunction;
-		blendFunction.BlendOp = AC_SRC_OVER;
-		blendFunction.BlendFlags = 0;
-		blendFunction.SourceConstantAlpha = 0xff;
-		blendFunction.AlphaFormat = AC_SRC_ALPHA;
-
-		#if DYNAMICALPHABLEND
-		(*pfnAlphaBlend) ((HDC)pContext->pSystemContext, 
-					rect.left + pContext->offset.h, rect.top + pContext->offset.v,
-					rect.width (), rect.height (), 
-					(HDC)hdcMemory,
-					offset.h, offset.v,
-					rect.width (), rect.height (),
-					blendFunction);
-		#else
-		AlphaBlend ((HDC)pContext->pSystemContext, 
-					rect.left + pContext->offset.h, rect.top + pContext->offset.v,
-					rect.width (), rect.height (), 
-					(HDC)hdcMemory,
-					offset.h, offset.v,
-					rect.width (), rect.height (),
-					blendFunction);
-		#endif
-		SelectObject (hdcMemory, hOldObj);
-		DeleteDC (hdcMemory);
-	}
 #else
 	BITMAP bm;
 	HDC hdcBitmap;
@@ -6594,42 +6622,7 @@ void CBitmap::drawTransparent (CDrawContext *pContext, CRect &rect, const CPoint
 #elif MAC
 
 	#if QUARTZ
-	if (pHandle)
-	{
-		CGContextRef context = pContext->beginCGContext ();
-		if (context)
-		{
-			CGImageRef image = createCGImage (true);
-
-			if (image)
-			{
-				CGRect dest;
-				dest.origin.x = rect.left + offset.h + pContext->offset.h;
-				dest.origin.y = (rect.top + pContext->offset.v) * -1 - (getHeight () - offset.v);
-				dest.size.width = getWidth ();
-				dest.size.height = getHeight ();
-				
-				CGContextScaleCTM (context, 1, 1);
-
-				CRect ccr;
-				pContext->getClipRect (ccr);
-				CGRect cgClipRect = CGRectMake (ccr.left + pContext->offset.h, (ccr.top +  + pContext->offset.v) * -1 - ccr.height (), ccr.width (), ccr.height ());
-				CGContextClipToRect (context, cgClipRect);
-
-				CGRect clipRect;
-				clipRect.origin.x = rect.left + pContext->offset.h;
-			    clipRect.origin.y = (rect.top + pContext->offset.v) * -1  - rect.height ();
-			    clipRect.size.width = rect.width (); 
-			    clipRect.size.height = rect.height ();
-				
-				CGContextClipToRect (context, clipRect);
-
-				CGContextDrawImage (context, dest, image);
-				CGImageRelease (image);
-			}
-		}
-		pContext->releaseCGContext (context);
-	}
+	drawAlphaBlend (pContext, rect, offset, 255);
 
 	#else
 	Rect source, dest;
@@ -6876,7 +6869,7 @@ void CBitmap::drawAlphaBlend (CDrawContext *pContext, CRect &rect, const CPoint 
 			if (image)
 			{
 				CGRect dest;
-				dest.origin.x = rect.left + offset.h + pContext->offset.h;
+				dest.origin.x = rect.left - offset.h + pContext->offset.h;
 				dest.origin.y = (rect.top + pContext->offset.v) * -1 - (getHeight () - offset.v);
 				dest.size.width = getWidth ();
 				dest.size.height = getHeight ();
@@ -9545,8 +9538,8 @@ pascal OSStatus CFrame::carbonEventHandler (EventHandlerCallRef inHandlerCallRef
 {
 	OSStatus result = eventNotHandledErr;
 	CFrame* frame = (CFrame*)inUserData;
-	EventClass eventClass = GetEventClass (inEvent);
-	EventKind eventKind = GetEventKind (inEvent);
+	UInt32 eventClass = GetEventClass (inEvent);
+	UInt32 eventKind = GetEventKind (inEvent);
 	WindowRef window = (WindowRef)frame->getSystemWindow ();
 
 	// WARNING :
@@ -9666,15 +9659,15 @@ pascal OSStatus CFrame::carbonEventHandler (EventHandlerCallRef inHandlerCallRef
 					//SetUserFocusWindow (window);
 					//AdvanceKeyboardFocus (window);
 					//SetKeyboardFocus (window, frame->controlRef, kControlFocusNextPart);
+					WindowAttributes windowAttributes;
+					GetWindowAttributes (window, &windowAttributes);
 					Point point = {hipoint.y, hipoint.x};
-					if (eventKind == kEventControlClick)
+					if (eventKind == kEventControlClick && !(windowAttributes & kWindowCompositingAttribute))
 						QDGlobalToLocalPoint (GetWindowPort (window), &point);
 					CDrawContext context (frame, NULL, window);
 					CPoint p (point.h, point.v);
-					WindowAttributes windowAttributes;
-					GetWindowAttributes (window, &windowAttributes);
-					if (!(eventKind == kEventControlContextualMenuClick && windowAttributes & kWindowCompositingAttribute))
-						p.offset (-context.offsetScreen.x, -context.offsetScreen.y);
+//					if (!(eventKind == kEventControlContextualMenuClick && windowAttributes & kWindowCompositingAttribute))
+//						p.offset (-context.offsetScreen.x, -context.offsetScreen.y);
 					frame->mouse (&context, p, buttons);
 					result = noErr;
 					break;

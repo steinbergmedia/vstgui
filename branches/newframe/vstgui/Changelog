@@ -1,3 +1,15 @@
+2004-10-03 arne
+
+	* added generic attributes interface to the CView class (see CViewAttributes.rtf)
+	* added CFrame::setPosition to change the location of the view inside it's parent view (mac quartz only at the moment)
+	* some mac quartz bugfixes
+	* some bugfixes for CScrollView
+	* added localToFrame and frameToLocal methods to CView
+	* bugfix for CViewContainer::getCurrentView (). Didn't work for nested containers (W.Franke)
+	* quartz: CFrame::getSize returns the size of the mac control now instead of the window
+	* CViewContainer::getViewAt changed so that you can get the deepest view at that position
+	* CControls set now the editView of the frame on beginEdit and set it to zero at endEdit (W.Franke)
+	
 2004-08-30 arne
 
 	**** bump version to 3.0 !

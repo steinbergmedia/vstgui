@@ -109,6 +109,24 @@ void CScrollContainer::setScrollOffset (CPoint newOffset, bool redraw)
 }
 
 //-----------------------------------------------------------------------------
+void CScrollContainer::redrawRect (CDrawContext* context, const CRect& rect)
+{
+	CRect _rect (rect);
+	_rect.offset (size.left, size.top);
+	_rect.bound (size);
+	if (bTransparencyEnabled)
+	{
+		// as this is transparent, we call the parentview to redraw this area.
+		if (pParentView)
+			pParentView->redrawRect (context, _rect);
+		else if (pParentFrame)
+			pParentFrame->drawRect (context, _rect);
+	}
+	else
+		drawRect (context, _rect);
+}
+
+//-----------------------------------------------------------------------------
 bool CScrollContainer::isDirty ()
 {
 	if (bDirty)
@@ -147,8 +165,6 @@ CScrollView::CScrollView (const CRect &size, const CRect &containerSize, CFrame*
 	{
 		CRect sbr (size);
 		sbr.offset (-size.left, -size.top);
-		sbr.bottom--;
-		sbr.right--;
 		sbr.top = sbr.bottom - scrollbarWidth;
 		if (style & kVerticalScrollbar)
 		{
@@ -162,8 +178,6 @@ CScrollView::CScrollView (const CRect &size, const CRect &containerSize, CFrame*
 	{
 		CRect sbr (size);
 		sbr.offset (-size.left, -size.top);
-		sbr.bottom--;
-		sbr.right--;
 		sbr.left = sbr.right - scrollbarWidth;
 		if (style & kHorizontalScrollbar)
 		{
@@ -244,8 +258,6 @@ void CScrollView::drawBackgroundRect (CDrawContext *pContext, CRect& _updateRect
 {
 	CRect r (size);
 	r.offset (-r.left, -r.top);
-	r.right--;
-	r.bottom--;
 	pContext->setFrameColor (kBlackCColor);
 	pContext->setLineWidth (1);
 	pContext->drawRect (r);
