@@ -1,0 +1,111 @@
+<html>
+<head>
+	<base target="vstdoc">
+	<title>CSpecialDigit</title>
+	
+<link rel="stylesheet" href="../../formate.txt" type="text/css">
+</head>
+<body>
+
+<code><pre>
+//------------------------------------------------------------------------
+// CSpecialDigit
+//------------------------------------------------------------------------
+// special display with custom digits (0...9)
+CSpecialDigit::CSpecialDigit (const CRect &size,
+                              CControlListener *listener,
+                              long      tag,        // tag identifier
+                              long     dwPos,      // actual value
+                              long      iNumbers,   // amount of numbers (max 7)
+                              long      *xpos,      // array of all XPOS
+                              long      *ypos,      // array of all YPOS
+                              long      width,      // width of ONE number
+                              long      height,     // height of ONE number
+                              CBitmap  *background)    // bitmap numbers
+  :	CControl (size, listener, tag, background),
+		iNumbers (iNumbers), width (width), height (height)
+{
+	setValue ((float)dwPos);          // actual value
+
+	if (iNumbers > 7)
+		iNumbers = 7;
+
+	// store coordinates of x/y pos of each digit
+	for (long i = 0; i < iNumbers; i++)
+	{
+		this->xpos[i] = xpos[i];
+		this->ypos[i] = ypos[i];
+	}
+
+	setMax ((float)pow (10, iNumbers) - 1.0f);
+	setMin (0.0f);
+}
+
+//------------------------------------------------------------------------
+CSpecialDigit::~CSpecialDigit ()
+{}
+
+//------------------------------------------------------------------------
+void CSpecialDigit::draw (CDrawContext *pContext)
+{
+	CPoint  where;
+	CRect   rectDest;
+	long    i, j;
+	long    dwValue;
+	long     one_digit[16];
+  
+	if ((long)value >= getMax ()) 
+		dwValue = (long)getMax ();
+	else if ((long)value < getMin ()) 
+		dwValue = (long)getMin ();
+	else
+		dwValue = (long)value;
+	
+	for (i = 0, j = ((long)getMax () + 1) / 10; i < iNumbers; i++, j /= 10)
+	{
+		one_digit[i] = dwValue / j;
+		dwValue -= (one_digit[i] * j);
+	}
+	
+	where.h = 0;
+	for (i = 0; i < iNumbers; i++)
+	{	
+		j = one_digit[i];
+		if (j > 9)
+			j = 9;
+		
+		rectDest.left   = xpos[i];
+		rectDest.top    = ypos[i];
+		
+		rectDest.right  = rectDest.left + width;
+		rectDest.bottom = rectDest.top  + height;		
+		
+		// where = src from bitmap
+		where.v = j * height;
+		if (pBackground)
+		{
+			if (bTransparencyEnabled)
+				pBackground->drawTransparent (pContext, rectDest, where);
+			else
+				pBackground->draw (pContext, rectDest, where);
+		}
+	}
+		
+	setDirty (false);
+}
+
+//------------------------------------------------------------------------
+float CSpecialDigit::getNormValue ()
+{ 
+	float fTemp;
+	fTemp = value / getMax ();
+	if (fTemp > 1.0f)
+		fTemp = 1.0f;
+	else if (fTemp < 0.0f) 
+		fTemp = 0.0f;
+	
+	return fTemp;
+}
+</pre></code>
+</body>
+</html>

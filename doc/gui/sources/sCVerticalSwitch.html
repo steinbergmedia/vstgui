@@ -1,0 +1,93 @@
+<html>
+<head>
+	<base target="vstdoc">
+	<title>CVerticalSwitch</title>
+	
+<link rel="stylesheet" href="../../formate.txt" type="text/css">
+	
+</head>
+<body>
+
+<code><pre>
+//------------------------------------------------------------------------
+// CVerticalSwitch
+//------------------------------------------------------------------------
+CVerticalSwitch::CVerticalSwitch (const CRect &size, CControlListener *listener, long tag,
+                                  long subPixmaps,       // number of subPixmaps
+                                  long heightOfOneImage, // height of one image in pixel
+                                  long iMaxPositions,
+                                  CBitmap *background, CPoint &offset)
+: CControl (size, listener, tag, background), offset (offset),
+	subPixmaps (subPixmaps), heightOfOneImage (heightOfOneImage),
+	iMaxPositions (iMaxPositions)
+{
+	setDefaultValue (0.f);
+}
+
+//------------------------------------------------------------------------
+CVerticalSwitch::~CVerticalSwitch ()
+{}
+
+//------------------------------------------------------------------------
+void CVerticalSwitch::draw (CDrawContext *pContext)
+{
+	if (pBackground)
+	{
+		// source position in bitmap
+		CPoint where (0, heightOfOneImage * ((long)(value * (iMaxPositions - 1) + 0.5f)));
+
+		if (bTransparencyEnabled)
+			pBackground->drawTransparent (pContext, size, where);
+		else
+			pBackground->draw (pContext, size, where);
+	}
+	setDirty (false);
+}
+
+//------------------------------------------------------------------------
+void CVerticalSwitch::mouse (CDrawContext *pContext, CPoint &where)
+{
+	if (!bMouseEnabled)
+		return;
+	
+	long button = pContext->getMouseButtons ();
+	if (!(button & kLButton))
+		return;
+
+	// set the default value
+	if (button == (kControl|kLButton))
+	{
+		value = getDefaultValue ();
+		if (isDirty () && listener)
+			listener->valueChanged (pContext, this);
+		return;
+	}
+
+	double coef = (double)heightOfOneImage / (double)iMaxPositions;
+
+	// begin of edit parameter
+	getParent ()->beginEdit (tag);
+	do
+	{
+		value = (long)((where.v - size.top) / coef) / (float)(iMaxPositions - 1);
+		if (value > 1.f)
+			value = 1.f;
+		else if (value < 0.f)
+			value = 0.f;
+
+		if (isDirty () && listener)
+			listener->valueChanged (pContext, this);
+		
+		pContext->getMouseLocation (where);
+		
+		doIdleStuff ();
+	}
+	while (pContext->getMouseButtons () == button);
+
+	// end of edit parameter
+	getParent ()->endEdit (tag);
+}
+
+</pre></code>
+</body>
+</html>

@@ -1,0 +1,145 @@
+<html>
+<head>
+	<base target="vstdoc">
+	<title>CRockerSwitch</title>
+	
+<link rel="stylesheet" href="../../formate.txt" type="text/css">
+</head>
+<body>
+
+<code><pre>//------------------------------------------------------------------------
+// CRockerSwitch
+//------------------------------------------------------------------------
+// Switch, which releases itself after being clicked
+CRockerSwitch::CRockerSwitch (const CRect &size,
+                              CControlListener *listener, 
+                              long tag,              // identifier tag (ID)
+                              long heightOfOneImage, // height of one image in pixel
+                              CBitmap *background,
+                              CPoint  &offset, const long style)
+:	CControl (size, listener, tag, background), offset (offset), 
+	heightOfOneImage (heightOfOneImage), style (style)
+{}
+
+//------------------------------------------------------------------------
+CRockerSwitch::~CRockerSwitch ()
+{}
+
+//------------------------------------------------------------------------
+void CRockerSwitch::draw (CDrawContext *pContext)
+{
+	CPoint where (offset.h, offset.v);
+
+	if (value == 1.f)
+		where.v += 2 * heightOfOneImage;
+	else if (value == 0.f)
+		where.v += heightOfOneImage;
+
+	if (pBackground)
+	{
+		if (bTransparencyEnabled)
+			pBackground->drawTransparent (pContext, size, where);
+		else
+			pBackground->draw (pContext, size, where);
+	}
+	setDirty (false);
+}
+
+//------------------------------------------------------------------------
+void CRockerSwitch::mouse (CDrawContext *pContext, CPoint &where)
+{
+	if (!bMouseEnabled)
+		return;
+
+	long button = pContext->getMouseButtons ();
+	if (!(button & kLButton))
+		return;
+
+	float fEntryState = value;
+
+	long  width_2 = size.width () / 2;
+	long  height_2 = size.height () / 2;
+	if (button)
+	{
+		// begin of edit parameter
+		getParent ()->beginEdit (tag);
+		do
+		{
+			if (style & kHorizontal) 
+			{
+				if (where.h >= size.left && where.v >= size.top  &&
+					where.h <= (size.left + width_2) && where.v <= size.bottom)
+					value = -1.0f;
+				else if (where.h >= (size.left + width_2) && where.v >= size.top  &&
+					where.h <= size.right && where.v <= size.bottom)
+					value = 1.0f;
+				else
+					value = fEntryState;
+			}
+			else
+			{
+				if (where.h >= size.left && where.v >= size.top  &&
+					where.h <= size.right && where.v <= (size.top + height_2))
+					value = -1.0f;
+				else if (where.h >= size.left && where.v >= (size.top + height_2) &&
+					where.h <= size.right && where.v <= size.bottom)
+					value = 1.0f;
+				else
+					value = fEntryState;
+			}
+
+			if (isDirty () && listener)
+				listener->valueChanged (pContext, this);
+
+			pContext->getMouseLocation (where);
+
+			doIdleStuff ();
+		}
+		while (pContext->getMouseButtons ());
+
+		// end of edit parameter
+		getParent ()->endEdit (tag);
+	}
+	else
+	{
+		if (where.h >= size.left && where.v >= size.top  &&
+				where.h <= (size.left + width_2) && where.v <= size.bottom)
+			value = -1.0f;
+		else if (where.h >= (size.left + width_2) && where.v >= size.top  &&
+				where.h <= size.right && where.v <= size.bottom)
+			value = 1.0f;
+
+		if (listener)
+			listener->valueChanged (pContext, this);
+	}
+
+	value = 0.f;  // set button to UNSELECTED state
+	if (listener)
+		listener->valueChanged (pContext, this);
+}
+
+//------------------------------------------------------------------------
+bool CRockerSwitch::onWheel (CDrawContext *pContext, const CPoint &where, float distance)
+{
+	if (!bMouseEnabled)
+		return false;
+
+	if (distance > 0)
+		value = -1.0f;
+	else
+		value = 1.0f;
+
+	if (isDirty () && listener)
+		listener->valueChanged (pContext, this);
+
+	value = 0.0f;  // set button to UNSELECTED state
+	if (listener)
+		listener->valueChanged (pContext, this);
+	return true;
+
+}
+</pre></code>
+
+
+</body>
+</html>

@@ -1,0 +1,64 @@
+<html>
+<head>
+	<base target="vstdoc">
+	<title>COnOffButton</title>
+	
+<link rel="stylesheet" href="../../formate.txt" type="text/css">
+</head>
+<body>
+
+
+<code><pre>
+//------------------------------------------------------------------------
+// COnOffButton
+//------------------------------------------------------------------------
+COnOffButton::COnOffButton (const CRect &size, CControlListener *listener, long tag,
+                            CBitmap *background)
+:	CControl (size, listener, tag, background)
+{}
+
+//------------------------------------------------------------------------
+COnOffButton::~COnOffButton ()
+{}
+
+//------------------------------------------------------------------------
+void COnOffButton::draw (CDrawContext *pContext)
+{
+	long off;
+
+	if (value && pBackground)
+		off = pBackground->getHeight () / 2;
+	else
+		off = 0;
+
+	if (pBackground)
+	{
+		if (bTransparencyEnabled)
+			pBackground->drawTransparent (pContext, size, CPoint (0, off));
+		else
+			pBackground->draw (pContext, size, CPoint (0, off));
+	}
+	setDirty (false);
+}
+
+//------------------------------------------------------------------------
+void COnOffButton::mouse (CDrawContext *pContext, CPoint &where)
+{
+	if (!bMouseEnabled)
+		return;
+
+ 	long button = pContext->getMouseButtons ();
+	if (!(button & kLButton))
+		return;
+
+	value = ((long)value) ? 0.f : 1.f;
+
+	doIdleStuff ();
+	if (listener)
+		listener->valueChanged (pContext, this);
+}
+</pre></code>
+
+
+</body>
+</html>

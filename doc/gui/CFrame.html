@@ -1,0 +1,964 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+	<head>
+		<base target="vstdoc">
+		<title>CFrame</title>
+		<link rel="stylesheet" href="../sdkdoc.css" type="text/css">
+	</head>
+	<body>
+		<div>
+			<h2>CFrame</h2>
+			<p><code>#include &lt;vstgui.h&gt;</code></p>
+			<p><code>class CFrame : public <a href="CView.html">CView</a>;</code></p>
+			<p>A frame is an user interface object that is used to draw a frame around other 
+				objects. A plug-in create a frame, where the other views (control objects) are 
+				attached.</p>
+			<hr noshade="noshade" size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="cCFrame">CFrame</a></h4>
+						</td>
+						<td align="right">
+							<h4>1.0</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">CFrame (<a href="CRect.html">CRect</a> &amp;size, void *systemWindow, <a href="AEffGUIEditor.html">AEffGUIEditor</a> *editor);</div>
+			</p>
+			<p>Create a frame with a given rect, the plug-in uses it to construct a frame.</p>
+			<table width="100%" cellpadding="0" cellspacing="0" border="1" bordercolor="#000000">
+				<tbody>
+					<tr>
+						<th align="right" valign="top">
+							<code>size</code></th>
+						<td>The enclosing rectangle, giving the size of the frame.</td>
+					</tr>
+					<tr>
+						<th align="right" valign="top">
+							<code>systemWindow</code></th>
+						<td>Initialized by the host appliaction.</td>
+					</tr>
+					<tr>
+						<th align="right" valign="top">
+							<code>editor</code></th>
+						<td>The editor the frame belongs to.</td>
+					</tr>
+				</tbody>
+			</table>
+			<h4>Example :</h4>
+			<code>
+				<pre>long MyEditor::open (void *ptr)<br>{<br>    AEffGUIEditor::open (ptr);<br>	<br>    CRect size (<br>        0,<br>        0,<br>        myBackgroundPixmap-&gt;getWidth (),<br>        myBackgroundPixmap-&gt;getHeight ()<br>    );<br>    frame = new CFrame (size, ptr, this);<br>    ...<br>}</pre>
+			</code>
+			<hr noshade="noshade" size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="cCFrame2">CFrame</a></h4>
+						</td>
+						<td align="right">
+							<h4>1.0</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">CFrame (<a href="CRect.html">CRect</a> &amp;size, char *title, <a href="AEffGUIEditor.html">AEffGUIEditor</a> *editor, const int style = 0);</div>
+			</p>
+			<p>Create a frame with a given rect which is displayed.</p>
+			<table width="100%" cellpadding="0" cellspacing="0" border="1" bordercolor="#000000">
+				<tbody>
+					<tr>
+						<th align="right" valign="top">
+							<code>size</code></th>
+						<td>The enclosing rectangle of the frame.</td>
+					</tr>
+					<tr>
+						<th align="right" valign="top">
+							<code>title</code></th>
+						<td>-</td>
+					</tr>
+					<tr>
+						<th align="right" valign="top">
+							<code>editor</code></th>
+						<td>The editor the frame belongs to.</td>
+					</tr>
+					<tr>
+						<th align="right" valign="top">
+							<code>style</code></th>
+						<td>-</td>
+					</tr>
+				</tbody>
+			</table>
+			<h4>Note :</h4>
+			<p>Use <code><a href="#close">close</a></code> and <code><a href="#open">open</a></code>
+				to display or undisplay this frame.</p>
+			<hr noshade="noshade" size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="dCFrame">~CFrame</a></h4>
+						</td>
+						<td align="right">
+							<h4>1.0</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">~CFrame ();</div>
+			</p>
+			<p>Destroy a frame object.
+			</p>
+			<hr noshade="noshade" size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="open">open</a></h4>
+						</td>
+						<td align="right">
+							<h4>1.0</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">bool open (<a href="CPoint.html">CPoint</a> *point = 0);</div>
+			</p>
+			<p>Open this frame at a given position.</p>
+			<h4>Note :</h4>
+			<p>Use only with the <a href="#cCFrame2">2nd contructor</a>.</p>
+			<hr noshade="noshade" size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="close">close</a></h4>
+						</td>
+						<td align="right">
+							<h4>1.0</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">bool close ();</div>
+			</p>
+			<p>Close this frame.</p>
+			<h4>Note :</h4>
+			<p>Use only with the <a href="#cCFrame2">2nd contructor</a>.</p>
+			<hr noshade="noshade" size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="isOpen">isOpen</a></h4>
+						</td>
+						<td align="right">
+							<h4>1.0</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">bool isOpen ();</div>
+			</p>
+			<p>Returns true if the frame is open.</p>
+			<hr noshade="noshade" size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="draw">draw</a></h4>
+						</td>
+						<td align="right">
+							<h4>1.0</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">void draw (<a href="CDrawContext.html">CDrawContext</a> *context);</div>
+			</p>
+			<p>Called when the frame has to be drawn. The background pixmap and the added view 
+				are also drawn.</p>
+			<hr width="100%" size="2">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="drawRect">drawRect</a></h4>
+						</td>
+						<td align="right">
+							<h4>2.2</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">void drawRect (<a href="CDrawContext.html">CDrawContext</a>*pContext, CRect&amp; updateRect);</div>
+			</p>
+			<p>Called when a specific Rect of the frame has to be drawn.</p>
+			<hr noshade="noshade" size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="draw2">draw</a></h4>
+						</td>
+						<td align="right">
+							<h4>1.0</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">void draw (<a href="CView.html">CView</a> *view = 0);</div>
+			</p>
+			<p>Draw the specified view attached to the frame. If view is null then all views 
+				attached to the frame are drawn.</p>
+			<hr noshade="noshade" size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="mouse">mouse</a></h4>
+						</td>
+						<td align="right">
+							<h4>1.0</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">void mouse (<a href="CDrawContext.html">CDrawContext</a> *context, <a href="CPoint.html"><br>CPoint</a> &amp;where);</div>
+			</p>
+			<p>Called when a mouse-click occurs. Dispatch the event to the added view (such as <a href="CView.html#mouse">
+					controls</a>).</p>
+			<hr width="100%" size="2">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="onDrop">onDrop</a></h4>
+						</td>
+						<td align="right">
+							<h4>2.0</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">virtual bool onDrop (void **ptrItems, long nbItems, long type, <a href="CPoint.html">CPoint</a> &amp;where);</div>
+			</p>
+			<p>Something has been dropped here...<br>
+			</p>
+			<h4>See also :</h4>
+			<ul>
+				<li>
+					<code><a href="CView.html">CView</a></code></li>
+			</ul>
+			<p>
+			</p>
+			<hr width="100%" size="2">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="onWheel">onWheel</a></h4>
+						</td>
+						<td align="right">
+							<h4>2.1</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">bool onWheel (<a href="CDrawContext.html">CDrawContext</a> *pContext, const CPoint &amp;where, float distance);</div>
+			</p>
+			<hr width="100%" size="2">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="onKeyDown">onKeyDown</a></h4>
+						</td>
+						<td align="right">
+							<h4>2.2<br>
+							</h4>
+							<br>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">void onKeyDown (<a href="VstKeyCode.html">VstKeyCode</a>&amp; keyCode);<br>
+				</div>
+			</p>
+			<p>The user hits a key.<code><br>
+				</code>
+			</p>
+			<hr width="100%" size="2">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="onKeyUp">onKeyUp</a></h4>
+						</td>
+						<td align="right">
+							<h4>2.2</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">void onKeyUp (<a href="VstKeyCode.html">VstKeyCode</a>&amp; keyCode);<br>
+				</div>
+			</p>
+			<p>The user releases the key.<br>
+			</p>
+			<p><code></code></p>
+			<p><code></code></p>
+			<hr noshade="noshade" size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="update">update</a></h4>
+						</td>
+						<td align="right">
+							<h4>1.0</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">void update (<a href="CDrawContext.html">CDrawContext</a> *context);</div>
+			</p>
+			<p>Called for a update. Only the added view which have a modified value are 
+				redrawn.</p>
+			<hr noshade="noshade" size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="idle">idle</a></h4>
+						</td>
+						<td align="right">
+							<h4>1.0</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">void idle ();</div>
+			</p>
+			<p>Called from VST every Xms for an update. Update the content of the frame.</p>
+			<hr noshade="noshade" size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="doIdleStuff">doIdleStuff</a></h4>
+						</td>
+						<td align="right">
+							<h4>1.0</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">void doIdleStuff ();</div>
+			</p>
+			<p>Call the doIdleStuff of the editor.</p>
+			<hr noshade="noshade" size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="getTicks">getTicks</a></h4>
+						</td>
+						<td align="right">
+							<h4>2.2</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">unsigned long getTicks ();</div>
+			</p>
+			<p>Returns system time.<br>
+			</p>
+			<hr noshade="noshade" size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="getKnobMode">getKnobMode</a></h4>
+						</td>
+						<td align="right">
+							<h4>2.2</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">long getKnobMode ();</div>
+			</p>
+			<p>Returns the knob mode (can be circular, relativ circular, or linear).<br>
+			</p>
+			<hr noshade="noshade" size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="getPosition">getPosition</a></h4>
+						</td>
+						<td align="right">
+							<h4>1.0</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">bool getPosition (int &amp;x, int &amp;y);</div>
+			</p>
+			<p>Gets the position of the window including the frame (top-left corner of the 
+				Window).</p>
+			<hr noshade="noshade" size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="setSize">setSize</a></h4>
+						</td>
+						<td align="right">
+							<h4>1.0</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">bool setSize (int width, int height);</div>
+			</p>
+			<p>Sets a new size to the frame with the given new values.</p>
+			<hr noshade="noshade" size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="getSize">getSize</a></h4>
+						</td>
+						<td align="right">
+							<h4>1.0</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">bool getSize (<a href="CRect.html">CRect</a> *rect);</div>
+			</p>
+			<p>Gets the size of the frame in the screen.</p>
+			<hr noshade="noshade" size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="setBackground">setBackground</a></h4>
+						</td>
+						<td align="right">
+							<h4>1.0</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">void setBackground (<a href="CBitmap.html">CBitmap</a> *background);</div>
+			</p>
+			<p>Sets the background pixmap of the frame.</p>
+			<hr noshade="noshade" size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="getBackground">getBackground</a></h4>
+						</td>
+						<td align="right">
+							<h4>1.0</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp"><a href="CBitmap.html">CBitmap</a> *getBackground ();</div>
+			</p>
+			<p>Returns the background pixmap of the frame.</p>
+			<hr noshade="noshade" size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="addView">addView</a></h4>
+						</td>
+						<td align="right">
+							<h4>1.0</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">virtual bool addView (<a href="CView.html">CView</a> *view);</div>
+			</p>
+			<p>Add a view (a control object) to the frame.</p>
+			<hr noshade="noshade" size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="removeView">removeView</a></h4>
+						</td>
+						<td align="right">
+							<h4>1.0</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">virtual bool removeView (<a href="CView.html">CView</a> *pView, const bool &amp;withForget = false);</div>
+			</p>
+			<p>Remove a view of the frame.</p>
+			<hr width="100%" size="2">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="removeAll">removeAll</a></h4>
+						</td>
+						<td align="right">
+							<h4>2.2</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">virtual bool removeAll (const bool &amp;withForget = true);</div>
+			</p>
+			<p>Remove all views of the frame..</p>
+			<hr noshade="noshade" size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="isChild">isChild</a></h4>
+						</td>
+						<td align="right">
+							<h4>2.0</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">virtual bool isChild (<a href="CView.html">CView</a> *pView);</div>
+			</p>
+			<p>Check whether pView is contained by the frame.<br>
+			</p>
+			<hr width="100%" size="2">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="getNbViews">getNbViews</a></h4>
+						</td>
+						<td align="right">
+							<h4>2.2</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">virtual long getNbViews ();</div>
+			</p>
+			<p>Returns the number of views inside the frame.</p>
+			<hr width="100%" size="2">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="getView">getView</a></h4>
+						</td>
+						<td align="right">
+							<h4>2.2</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">virtual <a href="CView.html">CView</a> *getView (long index);</div>
+			</p>
+			<p>Returns the view number index from the views contained by the frame.<code><br>
+				</code>
+			</p>
+			<hr noshade="noshade" size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="setModalView">setModalView</a></h4>
+						</td>
+						<td align="right">
+							<h4>1.0</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">bool setModalView (<a href="CView.html">CView</a> *view);</div>
+			</p>
+			<p>Sets the given view as a modal view. The other added view are not updated. The 
+				value False is returned if the frame is already in modal view.</p>
+			<p>To unset the modal view, call this function with NULL.</p>
+			<hr noshade="noshade" size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="getModalView">getModalView</a></h4>
+						</td>
+						<td align="right">
+							<h4>2.1</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp"><a href="CView.html">CView</a> *getModalView ();</div>
+			</p>
+			<p>Returns which view in the frame is in modal view.<br>
+			</p>
+			<hr noshade="noshade" size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="getSystemWindow">getSystemWindow</a></h4>
+						</td>
+						<td align="right">
+							<h4>1.0</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">void *getSystemWindow ();</div>
+			</p>
+			<p>Each host provides a window (for a plug-in) which is platform-dependant. But 
+				VSTGUI defines another window (directly embedded in the one provided by the 
+				host) which is platform-independent. Calling <code>getSystemWindow </code>returns 
+				a pointer to the window provided by VSTGUI; <code>getParentSystemWindow (</code>see 
+				below) returns a pointer to the window provided by the host.<br>
+			</p>
+			<br>
+			<hr width="100%" size="2">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="getParentSystemWindow">getParentSystemWindow</a></h4>
+						</td>
+						<td align="right">
+							<h4>2.2</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">void *getParentSystemWindow ();</div>
+			</p>
+			<hr width="100%" size="2">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="setParentSystemWindow">setParentSystemWindow</a></h4>
+						</td>
+						<td align="right">
+							<h4>2.2</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">void setParentSystemWindow (void *val);</div>
+			</p>
+			<p>Sets the ParentSystemWindow to val.<br>
+			</p>
+			<p><code></code></p>
+			<p><code></code></p>
+			<hr noshade="noshade" size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="getEditor">getEditor</a></h4>
+						</td>
+						<td align="right">
+							<h4>1.0</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp"><a href="AEffGUIEditor.html">AEffGUIEditor</a> *getEditor ();</div>
+			</p>
+			<p>Returns a pointer on the editor of the frame.</p>
+			<hr noshade="noshade" size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="getEditor2">getEditor</a></h4>
+						</td>
+						<td align="right">
+							<h4>2.2</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">virtual void *getEditor ();</div>
+			</p>
+			<p>Returns a pointer on the editor of the frame.</p>
+			<hr noshade="noshade" size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="setEditView">setEditView</a></h4>
+						</td>
+						<td align="right">
+							<h4>1.0</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">void setEditView (<a href="CView.html">CView</a> *view);</div>
+			</p>
+			<p>Sets the current edited view.</p>
+			<hr noshade="noshade" size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="getEditView">getEditView</a></h4>
+						</td>
+						<td align="right">
+							<h4>1.0</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp"><a href="CView.html">CView</a> *getEditView ();</div>
+			</p>
+			<p>Returns the current edited view.</p>
+			<hr noshade="noshade" size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="setDropActive"></a>setDropActive</h4>
+						</td>
+						<td align="right">
+							<h4>2.2</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<ul>
+			</ul>
+			<!--
+
+
+
+
+
+<hr noShade SIZE="4"><table width="100%">
+<tr>
+	<td align="left"><h4><a name="removeAll">removeAll</a></h4></td>
+	<td align="right"><h4>2.1</h4></td>
+</tr>
+</table>
+<p><code>virtual bool removeAll (const bool &amp;withForget = true);</code></p>
+<p>-</p>
+	
+
+	
+
+
+<hr noShade SIZE="4"><table width="100%">
+<tr>
+	<td align="left"><h4><a name="beginEdit">beginEdit</a></h4></td>
+	<td align="right"><h4>2.1</h4></td>
+</tr>
+</table>
+<p><code>void  beginEdit (long index);</code></p>
+<p>-</p>
+
+
+<hr noShade SIZE="4"><table width="100%">
+<tr>
+	<td align="left"><h4><a name="endEdit">endEdit</a></h4></td>
+	<td align="right"><h4>2.1</h4></td>
+</tr>
+</table>
+<p><code>void endEdit (long index);</code></p>
+<p>-</p>
+	
+
+<hr noShade SIZE="4"><table width="100%">
+<tr>
+	<td align="left"><h4><a name="getCurrentLocation">getCurrentLocation</a></h4></td>
+	<td align="right"><h4>2.1</h4></td>
+</tr>
+</table>
+<p><code>bool getCurrentLocation (<a href="CPoint.html">CPoint</a> &amp;where);</code></p>
+<p>-</p>
+
+
+<hr noShade SIZE="4"><table width="100%">
+<tr>
+	<td align="left"><h4><a name="setCursor">setCursor</a></h4></td>
+	<td align="right"><h4>2.1</h4></td>
+</tr>
+</table>
+<p><code>void setCursor (CCursorType type);</code></p>
+<p>-</p>
+	
+
+<hr noShade SIZE="4"><table width="100%">
+<tr>
+	<td align="left"><h4><a name="getCurrentView">getCurrentView</a></h4></td>
+	<td align="right"><h4>2.1</h4></td>
+</tr>
+</table>
+<p><code><a href="CView.html">CView</a> *getCurrentView ();</code></p>
+<p>-</p>
+
+
+<hr noShade SIZE="4"><table width="100%">
+<tr>
+	<td align="left"><h4><a name="getParentSystemWindow">getParentSystemWindow</a></h4></td>
+	<td align="right"><h4>2.1</h4></td>
+</tr>
+</table>
+<p><code>void *getParentSystemWindow ();</code></p>
+<p>-</p>
+
+
+<hr noShade SIZE="4"><table width="100%">
+<tr>
+	<td align="left"><h4><a name="setParentSystemWindow">setParentSystemWindow</a></h4></td>
+	<td align="right"><h4>2.1</h4></td>
+</tr>
+</table>
+<p><code>void setParentSystemWindow (void *val);</code></p>
+<p>-</p>
+
+
+<hr noShade SIZE="4"><table width="100%">
+<tr>
+	<td align="left"><h4><a name="setDropActive">setDropActive</a></h4></td>
+	<td align="right"><h4>2.1</h4></td>
+</tr>
+</table>
+<p><code>bool setDropActive (bool val);</code></p>
+<p>-</p>
+
+
+<hr noShade SIZE="4"><table width="100%">
+<tr>
+	<td align="left"><h4><a name="isDropActive">isDropActive</a></h4></td>
+	<td align="right"><h4>2.1</h4></td>
+</tr>
+</table>
+<p><code>bool isDropActive ();</code></p>
+<p>-</p>
+
+
+<hr noShade SIZE="4"><table width="100%">
+<tr>
+	<td align="left"><h4><a name="setOpenFlag">setOpenFlag</a></h4></td>
+	<td align="right"><h4>2.1</h4></td>
+</tr>
+</table>
+<p><code>void setOpenFlag (bool val);</code></p>
+<p>-</p>
+
+
+<hr noShade SIZE="4"><table width="100%">
+<tr>
+	<td align="left"><h4><a name="getOpenFlag">getOpenFlag</a></h4></td>
+	<td align="right"><h4>2.1</h4></td>
+</tr>
+</table>
+<p><code>bool getOpenFlag ();</code></p>
+<p>-</p>
+
+
+-->
+<div class="cpp">bool setDropActive (bool val);</div>
+			<br>
+			<br>
+			This frame will accept to be used as a drop target.<br>
+			<hr width="100%" size="2">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="isDropActive">isDropActive</a></h4>
+						</td>
+						<td align="right">
+							<h4>2.2</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">bool isDropActive ();</div>
+			</p>
+			<p>Does this frame accept to be used as a drop target?<code><br>
+				</code>
+			</p>
+			<hr width="100%" size="2">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="invalidate">invalidate</a></h4>
+						</td>
+						<td align="right">
+							<h4>2.2</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">void invalidate (const <a href="CRect.html">CRect</a> &amp;rect);</div>
+			</p>
+			<p>All views contained by the frame in this rect are set dirty.<br>
+			</p>
+			<hr width="100%" size="2">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="setOpenFlag">setOpenFlag</a></h4>
+						</td>
+						<td align="right">
+							<h4>2.2</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">void setOpenFlag (bool val);</div>
+			</p>
+			<p><code>Set to true if the frame is open.<br>
+				</code>
+			</p>
+			<hr width="100%" size="2">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="getOpenFlag">getOpenFlag</a></h4>
+						</td>
+						<td align="right">
+							<h4>2.2</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">bool getOpenFlag ();</div>
+			</p>
+			<p><code></code></p>
+			<p><code></code></p>
+			<p><code></code></p>
+			Is the frame open?.<br>
+			<hr noshade="noshade" size="4">
+			<div align="center">Copyright &copy;2003 <a href="http://www.steinberg.net" target="_blank">
+					<u>Steinberg Media Technologies GmbH</u></a>.
+			</div>
+			<DIV align=center><FONT size=1>Last Modified:
+			<SCRIPT language=Javascript %>document.writeln(document.lastModified);</SCRIPT>
+			</FONT></DIV>
+			<br>
+		</div>
+		<br>
+	</body>
+</html>
