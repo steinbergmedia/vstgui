@@ -2070,9 +2070,42 @@ void CDrawContext::drawString (const char *string, const CRect &_rect,
 		GetClip (saveRgn);
 		
 		ClipRect (&compositeClip);
+
+		#if CARBON
+		CFStringRef str;
+
+		// Create a unicode string
+		str = CFStringCreateWithCString(NULL, string, kCFStringEncodingMacRoman);
+	
+		// Initialize proper text box options
+		TXNTextBoxOptionsData myOptions;
+		myOptions.optionTags = kTXNSetJustificationMask;
+		myOptions.justification = kTXNFlushLeft;
+
+		// Determine the vertical alignment of the text box.
+		// It is centered vertically.
+		// Somehow, the yPos calculation above doesn't work here
+		// or I am too stupid to understand it. Therefore I calculate
+		// the text position in the surrounding control rect myself.
+		long myHeight = (rect.height() - fontHeight) / 2;
+		if (myHeight>0)
+		{
+			stringsRect.top += myHeight;
+			stringsRect.bottom += myHeight;
+		}
+		stringsRect.left = xPos;
+		stringsRect.right = xPos + width;//rect.width();
+	
+		// Draw the unicode string
+		TXNDrawCFStringTextBox (str, &stringsRect, NULL, &myOptions);
+
+		// Release the unicode string
+		CFRelease(str);
+		#else
 		MoveTo (xPos, yPos);
 		DrawText ((Ptr)string, 0, stringLength);
-
+		#endif
+		
 		SetClip (saveRgn);
 		DisposeRgn (saveRgn);
 		TextMode (srcOr);
@@ -2328,7 +2361,21 @@ bool CDrawContext::waitDoubleClick ()
 	}
 
 #elif MAC
-	#if MACX // todo: use Carbon Events
+	#if MACX
+	#if CARBON_EVENTS
+	EventTimeout timeout = GetDblTime () * kEventDurationSecond / 60;
+	const EventTypeSpec eventTypes[] = { { kEventClassMouse, kEventMouseDown }, { kEventClassMouse, kEventMouseDragged } };
+	EventRef event;
+	if (ReceiveNextEvent (GetEventTypeCount (eventTypes), eventTypes, timeout, true, &event) == noErr)
+	{
+		if (GetEventKind (event) == kEventMouseDown)
+		{
+			doubleClick = true;
+		}
+		ReleaseEvent (event);
+	}
+	
+	#else
 	unsigned long clickTime, doubletime;
 	EventRecord downEvent;
 
@@ -2342,6 +2389,7 @@ bool CDrawContext::waitDoubleClick ()
 			break;
 		}
 	}
+	#endif // !CARBON_EVENTS
 
 	#else
 	long clickTime, doubleTime;
@@ -2417,6 +2465,24 @@ bool CDrawContext::waitDoubleClick ()
 //-----------------------------------------------------------------------------
 bool CDrawContext::waitDrag ()
 {
+	#if MACX && CARBON_EVENTS
+	bool dragged = false;
+	if (GetCurrentEventButtonState () & kEventMouseButtonPrimary)
+	{
+		const EventTypeSpec eventTypes[] = { { kEventClassMouse, kEventMouseUp }, { kEventClassMouse, kEventMouseDown }, { kEventClassMouse, kEventMouseDragged } };
+		EventRef event;
+		if (ReceiveNextEvent (GetEventTypeCount (eventTypes), eventTypes, kEventDurationForever, true, &event) == noErr)
+		{
+			if (GetEventKind (event) == kEventMouseDragged)
+			{
+				dragged = true;
+			}
+			ReleaseEvent (event);
+		}
+	}
+	return dragged;
+
+	#else
 	if (!pFrame)
 		return false;
 	
@@ -2445,6 +2511,7 @@ bool CDrawContext::waitDrag ()
 			return true;
 	}
 	return false;
+	#endif
 }
 
 //-----------------------------------------------------------------------------
@@ -2551,8 +2618,8 @@ void CDrawContext::releaseCGContext (CGContextRef context)
 {
 	if (context)
 	{
-		CGContextSynchronize (context);
 		CGContextRestoreGState (context);
+		CGContextSynchronize (context);
 		CGContextRelease (context);
 	}
 }
@@ -6560,7 +6627,8 @@ long CFileSelector::run (VstFileSelect *vstFileSelect)
 {
 	this->vstFileSelect = vstFileSelect;
 	vstFileSelect->nbReturnPath = 0;
-	vstFileSelect->returnPath[0] = 0;
+	if (vstFileSelect->returnPath)
+		vstFileSelect->returnPath[0] = 0;
 
 	if (effect
 	#if MACX 
@@ -8385,8 +8453,8 @@ bool CFrame::registerWithToolbox ()
 									{kEventClassControl, kEventControlClick},
 									{kEventClassControl, kEventControlTrack},
 									{kEventClassControl, kEventControlContextualMenuClick},
-									{kEventClassKeyboard, kEventRawKeyDown},
-									{kEventClassKeyboard, kEventRawKeyRepeat},
+									//{kEventClassKeyboard, kEventRawKeyDown},
+									//{kEventClassKeyboard, kEventRawKeyRepeat},
 									{kEventClassMouse, kEventMouseWheelMoved},
 									{kEventClassControl, kEventControlDragEnter},
 									{kEventClassControl, kEventControlDragWithin},
@@ -8440,7 +8508,7 @@ pascal OSStatus CFrame::carbonEventHandler (EventHandlerCallRef inHandlerCallRef
 			{
 				case kEventControlInitialize:
 				{
-					UInt32 controlFeatures = kControlSupportsDragAndDrop | kControlSupportsFocus;
+					UInt32 controlFeatures = kControlSupportsDragAndDrop | kControlSupportsFocus | kControlHandlesTracking;
 					SetEventParameter (inEvent, kEventParamControlFeatures, typeUInt32, sizeof (UInt32), &controlFeatures);
 					result = noErr;
 					break;
@@ -8461,8 +8529,8 @@ pascal OSStatus CFrame::carbonEventHandler (EventHandlerCallRef inHandlerCallRef
 					result = noErr;
 					break;
 				}
-				case kEventControlTrack:
 				case kEventControlClick:
+				case kEventControlTrack:
 				case kEventControlContextualMenuClick:
 				{
 					long buttons = 0;
@@ -8472,6 +8540,8 @@ pascal OSStatus CFrame::carbonEventHandler (EventHandlerCallRef inHandlerCallRef
 					GetEventParameter (inEvent, kEventParamMouseLocation, typeHIPoint, NULL, sizeof (HIPoint), NULL, &hipoint);
 					if (eventKind == kEventControlContextualMenuClick)
 						buttons = kRButton;
+					else if (eventKind == kEventControlTrack)
+						buttons = kLButton;
 					else
 					{
 						GetEventParameter (inEvent, kEventParamKeyModifiers, typeUInt32, NULL, sizeof (UInt32), NULL, &modifiers);

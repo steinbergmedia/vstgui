@@ -1,3 +1,12 @@
+2004-03-23 arne
+
+	* CTextEdit use the CParamDisplay::stringConvert functions to draw text
+	* Fix of possible crash in CFileSelector::run
+	* CFM Carbon plugs can now draw text antialiased even if the host does not support it
+	(Thanks to Wolfram Franke for this stuff)
+
+	* mac: added waitDoubleClick and waitDrag with carbon events
+
 2004-03-19 arne
 
 	* add CView::getFrameTopLeftPos method to get the topleft position of the view relative to the frame

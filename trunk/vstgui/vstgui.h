@@ -698,7 +698,7 @@ protected:
 
 #elif MAC
 	#if QUARTZ
-	CGImageRef createCGImage (bool transparent = false);
+	virtual CGImageRef createCGImage (bool transparent = false);
 	#endif
 	void* pHandle;
 	void* pMask;
