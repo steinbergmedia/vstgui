@@ -1,0 +1,81 @@
+<html>
+<head>
+	<base target="vstdoc">
+	<title>CSplashScreen</title>
+	
+<link rel="stylesheet" href="../../formate.txt" type="text/css">
+</head>
+<body>
+
+<code><pre>
+//------------------------------------------------------------------------
+// CSplashScreen
+//------------------------------------------------------------------------
+// one click draw its pixmap, an another click redraw its parent
+CSplashScreen::CSplashScreen (const CRect &size,
+                              CControlListener *listener, 
+                              long     tag,
+                              CBitmap *background,
+                              CRect   &toDisplay,
+                              CPoint  &offset)
+:	CControl (size, listener, tag, background), 
+	toDisplay (toDisplay), offset (offset)
+{}
+
+//------------------------------------------------------------------------
+CSplashScreen::~CSplashScreen ()
+{}
+
+//------------------------------------------------------------------------
+void CSplashScreen::draw (CDrawContext *pContext)
+{
+	if (value && pBackground)
+	{
+		if (bTransparencyEnabled)
+			pBackground->drawTransparent (pContext, toDisplay, offset);
+		else
+			pBackground->draw (pContext, toDisplay, offset);
+	}
+	setDirty (false);
+}
+
+//------------------------------------------------------------------------
+void CSplashScreen::mouse (CDrawContext *pContext, CPoint &where)
+{
+	if (!bMouseEnabled)
+		return;
+
+	long button = pContext->getMouseButtons ();
+	if (!(button & kLButton))
+		return;
+
+	value = !value;
+	if (value)
+	{
+		if (getParent () && getParent ()->setModalView (this))
+		{
+			keepSize = size;
+			size = toDisplay;
+			draw (pContext);
+			if (listener)
+				listener->valueChanged (pContext, this);
+		}
+	}
+	else
+	{
+		size = keepSize;
+		if (getParent ())
+		{
+			getParent ()->setModalView (NULL);
+			getParent ()->draw (pContext);
+		}
+		if (listener)
+			listener->valueChanged (pContext, this);
+	}
+	setDirty ();
+}
+</pre></code>
+
+
+</body>
+</html>

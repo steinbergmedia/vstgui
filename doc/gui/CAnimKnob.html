@@ -1,0 +1,145 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+	<head>
+		<base target="vstdoc">
+		<title>CAnimKnob</title>
+		<link rel="stylesheet" type="text/css" href="../sdkdoc.css">
+	</head>
+	<body>
+		<div>
+			<h2>CAnimKnob</h2>
+			<p><code>#include &lt;vstcontrols.h&gt;</code></p>
+			<p><code>class CAnimKnob : public <a href="CKnob.html">CKnob</a> ;</code></p>
+			<p>Such as a knob control object, but there is a unique pixmap which contains 
+				different views (subpixmaps) of this knob. According to the value, a specific 
+				subpixmap is displayed. The different subpixmaps are stacked in the pixmap 
+				object.</p>
+			<hr noshade="noshade" size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="cCAnimKnob">CAnimKnob</a>
+							</h4>
+						</td>
+						<td align="right">
+							<h4>1.0</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">CAnimKnob (<a href="CRect.html">CRect</a> &amp;size, <a href="CControlListener.html">CControlListener</a> *listener, long tag, long subpixmaps, long heightOfOneImage, <a href="CBitmap.html">CBitmap</a> *handle, <a href="CPoint.html">CPoint</a> &amp;offset);</div></p>
+			<p>Create an animated knob.</p>
+			<table width="100%" cellpadding="0" cellspacing="0" border="1" bordercolor="#000000">
+				<tbody>
+					<tr>
+						<th align="right" valign="top">
+							<code>size</code></th>
+						<td>The coordinatees of the enclosing rectangle, relative to the parent frame.</td>
+					</tr>
+					<tr>
+						<th align="right" valign="top">
+							<code>listener</code></th>
+						<td>The object responsible for handling events in this control.</td>
+					</tr>
+					<tr>
+						<th align="right" valign="top">
+							<code>tag</code></th>
+						<td>The index of this control.</td>
+					</tr>
+					<tr>
+						<th align="right" valign="top">
+							<code>subpixmaps</code></th>
+						<td>the number of images stacked in the pixmap.</td>
+					</tr>
+					<tr>
+						<th align="right" valign="top">
+							<code>heightOfOneImage</code></th>
+						<td>The height of one of the images, in pixel.</td>
+					</tr>
+					<tr>
+						<th align="right" valign="top">
+							<code>handle</code></th>
+						<td>The pixmap containing the images.</td>
+					</tr>
+					<tr>
+						<th align="right" valign="top">
+							<code>offset</code></th>
+						<td><br>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><img src="images/source.jpg" alt="[source]"> <a href="sources/sCAnimKnob.html#" target="sources">
+					source</a>
+			</p>
+			<hr noshade="noshade" size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="dCAnimKnob">~CAnimKnob</a>
+							</h4>
+						</td>
+						<td align="right">
+							<h4>1.0</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">~CAnimKnob ();</div></p>
+			<p>Destroy an animKnob object. The pixmap is destroyed if there is no more 
+				reference on it.</p>
+			<p><img src="images/source.jpg" alt="[source]"> <a href="sources/sCAnimKnob.html" target="sources">
+					source</a>
+			</p>
+			<hr noshade="noshade" size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="draw">draw</a>
+							</h4>
+						</td>
+						<td align="right">
+							<h4>1.0</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">void draw (<a href="CDrawContext.html">CDrawContext</a>* pContext);</div></p>
+			<p>Called when this control object needs to be drawed.</p>
+			<p><img src="images/source.jpg" alt="[source]"> <a href="sources/sCAnimKnob.html" target="sources">
+					source</a></p>
+			<hr width="100%" size="2">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="setInverseBitmap">setInverseBitmap</a>
+							</h4>
+						</td>
+						<td align="right">
+							<h4>2.2</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">void setInverseBitmap (bool val);</div>
+			</p>
+			<p>Set to true if the bitmap should be drawn inversed.<br>
+			</p>
+			<ul>
+			</ul>
+			<hr noshade="noshade" size="4">
+			<div align="center">Copyright &copy;2003 <a href="http://www.steinberg.net" target="_blank">
+					<u>Steinberg Media Technologies GmbH</u></a>.
+			</div>
+			<DIV align=center><FONT size=1>Last Modified:
+			<SCRIPT language=Javascript %>document.writeln(document.lastModified);</SCRIPT>
+			</FONT></DIV>
+			<br>
+		</div>
+		<br>
+	</body>
+</html>

@@ -1,0 +1,170 @@
+<html>
+	<head>
+		<base target="vstdoc">
+		<title>CColor</title>
+		<link rel="stylesheet" type="text/css" href="../sdkdoc.css">
+	</head>
+	<body><div>
+		<h2>CColor</h2>
+		<p><code>#include &lt;vstgui.h&gt;</code></p>
+		<p><code>struct CColor;</code></p>
+		<p>Structure used for the definition of a color. It is defined by 4 unsigned char 
+			values : <code>red</code>, <code>green</code>, <code>blue</code>, <code>unused</code>.</p>
+		<p>The predefined variable <code>kTransparentCColor</code> (set to the white color 
+			(255, 255, 255)) is used as transparency color for the pixmap.</p>
+		<p>There are some other predefined colors :</p>
+		<table width="100%" cellpadding="0" cellspacing="0" border="1" bordercolor="#000000">
+			<tr>
+				<th>
+					CColor</th>
+				<th>
+					<font color="#FF0000">red</font></th>
+				<th>
+					<font color="#00FF00">green</font></th>
+				<th>
+					<font color="0000FF">blue</font></th>
+				<th>
+					unused</th>
+			</tr>
+			<tr>
+				<th align="left">
+					kTransparentCColor</th>
+				<td>255</td>
+				<td>255</td>
+				<td>255</td>
+				<td>0</td>
+			</tr>
+			<tr>
+				<th align="left">
+					<font color="#000000">kBlackCColor</font></th>
+				<td>0</td>
+				<td>0</td>
+				<td>0</td>
+				<td>0</td>
+			</tr>
+			<tr>
+				<th align="left">
+					kWhiteCColor</th>
+				<td>255</td>
+				<td>255</td>
+				<td>255</td>
+				<td>0</td>
+			</tr>
+			<tr>
+				<th align="left">
+					<font color="#808080">kGreyCColor</font></th>
+				<td>127</td>
+				<td>127</td>
+				<td>127</td>
+				<td>0</td>
+			</tr>
+			<tr>
+				<th align="left">
+					<font color="#FF0000">kRedCColor</font></th>
+				<td>255</td>
+				<td>0</td>
+				<td>0</td>
+				<td>0</td>
+			</tr>
+			<tr>
+				<th align="left">
+					<font color="#00FF00">kGreenCColor</font></th>
+				<td>0</td>
+				<td>255</td>
+				<td>0</td>
+				<td>0</td>
+			</tr>
+			<tr>
+				<th align="left">
+					<font color="#0000FF">kBlueCColor</font></th>
+				<td>0</td>
+				<td>0</td>
+				<td>255</td>
+				<td>0</td>
+			</tr>
+			<tr>
+				<th align="left">
+					<font color="#FFFF00">kYellowCColor</font></th>
+				<td>255</td>
+				<td>255</td>
+				<td>0</td>
+				<td>0</td>
+			</tr>
+			<tr>
+				<th align="left">
+					<font color="#FF00FF">kCyanCColor</font></th>
+				<td>255</td>
+				<td>0</td>
+				<td>255</td>
+				<td>0</td>
+			</tr>
+			<tr>
+				<th align="left">
+					<font color="#00FFFF">kMagentaCColor</font></th>
+				<td>0</td>
+				<td>255</td>
+				<td>255</td>
+				<td>0</td>
+			</tr>
+		</table>
+		<hr noShade SIZE="4">
+		<table width="100%">
+			<tr>
+				<td align="left"><h3><a name="operator1">operator ()</a></h3>
+				</td>
+				<td align="right"><h3>1.0</h3>
+				</td>
+			</tr>
+		</table>
+		<p><div class="cpp">CColor &amp;operator () (unsigned char red, unsigned char green, unsigned char blue, unsigned char unused);</div></p>
+		<p>Overloads the <code>()</code> operator.</p>
+		<h4>Example :</h4>
+		<code>
+			<pre>CColor blackColor (0, 0, 0, 0);
+CColor whiteColor (255, 255, 255,0);
+CColor greenColor (0, 255, 0, 0);
+CColor redColor (255, 0, 0, 0);</pre>
+		</code>
+		<hr noShade SIZE="4">
+		<table width="100%">
+			<tr>
+				<td align="left"><h3><a name="operator2">operator =</a></h3>
+				</td>
+				<td align="right"><h3>1.0</h3>
+				</td>
+			</tr>
+		</table>
+		<p><div class="cpp">CColor &amp;operator = (CColor newColor);</div></p>
+		<p>Overloads the <code>=</code> operator.</p>
+		<hr noShade SIZE="4">
+		<table width="100%">
+			<tr>
+				<td align="left"><h3><a name="operator3">operator ==</a></h3>
+				</td>
+				<td align="right"><h3>2.1</h3>
+				</td>
+			</tr>
+		</table>
+		<p><div class="cpp">bool operator == (const CColor &other) const;</div></p>
+		<p>Overloads the <code>==</code> operator.</p>
+		<hr noShade SIZE="4">
+		<table width="100%">
+			<tr>
+				<td align="left"><h3><a name="operator4">operator !=</a></h3>
+				</td>
+				<td align="right"><h3>2.1</h3>
+				</td>
+			</tr>
+		</table>
+		<p><div class="cpp">bool operator != (const CColor &other) const;</div></p>
+		<p>Overloads the <code>!=</code> operator.</p>
+		<hr noShade SIZE="4">
+		<div align="center">Copyright &copy;2003 <a href="http://www.steinberg.net" target="_blank"><u>Steinberg 
+					Media Technologies GmbH</u></a>.
+		</div>
+		<DIV align=center><FONT size=1>Last Modified:
+		<SCRIPT language=Javascript %>document.writeln(document.lastModified);</SCRIPT>
+		</FONT></DIV>
+		</div>
+	</body>
+</html>

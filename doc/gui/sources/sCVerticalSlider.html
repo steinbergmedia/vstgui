@@ -1,0 +1,40 @@
+<html>
+<head>
+	<base target="vstdoc">
+	<title>CVerticalSlider</title>
+	
+<link rel="stylesheet" href="../../formate.txt" type="text/css">
+</head>
+<body>
+
+
+<code><pre>
+//------------------------------------------------------------------------
+// CVerticalSlider
+//------------------------------------------------------------------------
+CVerticalSlider::CVerticalSlider (const CRect &rect, CControlListener *listener, long tag,
+                                  long      iMinPos, // min position in pixel
+                                  long      iMaxPos, // max position in pixel
+                                  CBitmap  *handle,  // bitmap of slider
+                                  CBitmap  *background, // bitmap of background
+                                  CPoint   &offset,  // offset in the background
+                                  const long style)  // style (kLeft, kRight)
+  :	CSlider (rect, listener, tag, iMinPos, iMaxPos, handle, background, offset, style|kVertical)
+{}
+
+//------------------------------------------------------------------------
+CVerticalSlider::CVerticalSlider (const CRect &rect, CControlListener *listener, long tag,
+                          CPoint   &offsetHandle,    // handle offset
+                          long     rangeHandle, // size of handle range
+                          CBitmap  *handle,     // bitmap of slider
+                          CBitmap  *background, // bitmap of background
+                          CPoint   &offset,     // offset in the background
+                          const long style)     // style (kLeft, kRight)
+:	CSlider (rect, listener, tag, offsetHandle, rangeHandle, handle, background, offset, style|kVertical)
+{}
+
+</pre></code>
+
+
+</body>
+</html>

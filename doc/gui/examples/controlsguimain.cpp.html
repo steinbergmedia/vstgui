@@ -1,0 +1,75 @@
+<html>
+<head>
+    <title>controlsguimain.cpp</title>
+	
+<link rel="stylesheet" href="../../formate.txt" type="text/css">
+</head>
+<body>
+
+<code>
+<pre>//------------------------------------------------------------------------
+//-
+//- Project     : Use different Controls of VSTGUI
+//- Filename    : controlsguimain.cpp
+//- Created by  : Yvan Grabit
+//- Description :
+//-
+//- &copy; 1999, Steinberg Soft und Hardware GmbH, All Rights Reserved
+//------------------------------------------------------------------------
+
+#ifndef __controlsgui__
+#include "<a href="controlsgui.h.html">controlsgui.h</a>"
+#endif
+
+static AudioEffect *effect = 0;
+bool oome = false;
+
+#if MAC
+#pragma export on
+#endif
+
+// prototype of the export function main
+#if BEOS
+#define main main_plugin
+extern "C" __declspec(dllexport) AEffect *main_plugin (audioMasterCallback audioMaster);
+
+#else
+AEffect *main (audioMasterCallback audioMaster);
+#endif
+
+
+AEffect *main (audioMasterCallback audioMaster)
+{
+    // get vst version
+    if (!audioMaster (0, audioMasterVersion, 0, 0, 0, 0))
+        return 0;  // old version
+
+    effect = new Controlsgui (audioMaster);
+    if (!effect)
+        return 0;
+    if (oome)
+    {
+        delete effect;
+        return 0;
+    }
+    return effect-&gt;getAeffect ();
+}
+
+#if MAC
+#pragma export off
+#endif
+
+
+#if WIN32
+#include &lt;windows.h&gt;
+void* hInstance;
+BOOL WINAPI DllMain (HINSTANCE hInst, DWORD dwReason, LPVOID lpvReserved)
+{
+    hInstance = hInst;
+    return 1;
+}
+#endif</pre>
+</code>
+
+</body>
+</html>

@@ -1,0 +1,221 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+	<head>
+		<base target="vstdoc">
+		<title>CTextEdit</title>
+		<link rel="stylesheet" href="../sdkdoc.css" type="text/css">
+	</head>
+	<body>
+		<div>
+			<h2>CTextEdit</h2>
+			<p><code>#include &lt;vstcontrols.h&gt;</code></p>
+			<p><code>class CTextEdit : public <a href="CParamDisplay.html">CParamDisplay</a>;</code></p>
+			<p>Define a rectangle view where a text-value can be displayed and edited with a 
+				given font and color. The user can specify its convert function (from char to 
+				char). The text-value is centered in the given rect. A pixmap can be used as 
+				background.</p>
+			<hr noshade="noshade" size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="cCTextEdit">CTextEdit</a></h4>
+						</td>
+						<td align="right">
+							<h4>1.0</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">CTextEdit (<a href="CRect.html">CRect</a> &amp;size, <a href="CControlListener.html">CControlListener</a> *listener, int tag, const char *txt = 0, <a href="CBitmap.html">CBitmap</a> *background = 0, int style = 0);</div>
+			</p>
+			<p>Creates a textEdit object.</p>
+			<table width="100%" cellpadding="0" cellspacing="0" border="1" bordercolor="#000000">
+				<tbody>
+					<tr>
+						<th align="right" valign="top">
+							<code>size</code></th>
+						<td>The coordinates of the enclosing rectangle, relative to the parent frame.</td>
+					</tr>
+					<tr>
+						<th align="right" valign="top">
+							<code>listener</code></th>
+						<td>The object responsible for handling events in this control.</td>
+					</tr>
+					<tr>
+						<th align="right" valign="top">
+							<code>tag</code></th>
+						<td>The index of this control.</td>
+					</tr>
+					<tr>
+						<th align="right" valign="top">
+							<code>txt</code></th>
+						<td><br>
+						</td>
+					</tr>
+					<tr>
+						<th align="right" valign="top">
+							<code>background</code></th>
+						<td>An optional background pixmap.</td>
+					</tr>
+					<tr>
+						<th align="right" valign="top">
+							<code>style</code></th>
+						<td>3D effects or shadow effects can be addded by using one of the values in <code><a href="CControlEnum.html">
+									CControlEnum</a></code>.</td>
+					</tr>
+				</tbody>
+			</table>
+			<hr noshade="noshade" size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="dCTextEdit">~CTextEdit</a></h4>
+						</td>
+						<td align="right">
+							<h4>1.0</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">~CTextEdit ();</div>
+			</p>
+			<p>Destroys a textEdit object.</p>
+			<hr noshade="noshade" size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="setText">setText</a></h4>
+						</td>
+						<td align="right">
+							<h4>1.0</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">void setText (char *txt);</div>
+			</p>
+			<p>Sets the current text.</p>
+			<hr noshade="noshade" size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="getText">getText</a></h4>
+						</td>
+						<td align="right">
+							<h4>1.0</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">void getText (char *txt);</div>
+			</p>
+			<p>Returns the current text.</p>
+			<hr noshade="noshade" size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="draw">draw</a></h4>
+						</td>
+						<td align="right">
+							<h4>1.0</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">void draw (<a href="CDrawContext.html">CDrawContext</a>*);</div>
+			</p>
+			<p>Called when this control object needs to be drawed.</p>
+			<hr noshade="noshade" size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="mouse">mouse</a></h4>
+						</td>
+						<td align="right">
+							<h4>1.0</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">void mouse (<a href="CDrawContext.html">CDrawContext</a> *context, <a href="CPoint.html">CPoint</a>&amp; where);</div>
+			</p>
+			<p>Called when there is a mouse-click inside this control object. After a click the 
+				text can be edited.</p>
+			<hr noshade="noshade" size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="setTextEditConvert">setTextEditConvert</a></h4>
+						</td>
+						<td align="right">
+							<h4>1.0</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">void setTextEditConvert (void (*stringConvert) (char *input, char *string));</div></p>
+			<p>Sets the value to string conversion routine.</p>
+			<hr noshade="noshade" size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="setTextEditConvert2">setTextEditConvert</a></h4>
+						</td>
+						<td align="right">
+							<h4>2.0</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">void CTextEdit::setTextEditConvert (float, char*, void *userData);</div></p>
+			<p>Sets the value to string conversion routine.</p>
+			<hr noshade="noshade" size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="takeFocus">takeFocus</a></h4>
+						</td>
+						<td align="right">
+							<h4>1.0</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">void takeFocus ();</div></p>
+			<p>-</p>
+			<hr noshade="noshade" size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="looseFocus">looseFocus</a></h4>
+						</td>
+						<td align="right">
+							<h4>1.0</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">void looseFocus ();</div></p>
+			<p>-</p>
+			<hr noshade="noshade" size="4">
+			<div align="center">Copyright &copy;2003 <a href="http://www.steinberg.net" target="_blank">
+					<u>Steinberg Media Technologies GmbH</u></a>.
+			</div>
+			<DIV align=center><FONT size=1>Last Modified:
+			<SCRIPT language=Javascript %>document.writeln(document.lastModified);</SCRIPT>
+			</FONT></DIV>
+			<br>
+		</div>
+		<br>
+	</body>
+</html>

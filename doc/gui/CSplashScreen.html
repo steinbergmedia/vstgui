@@ -1,0 +1,181 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+	<head>
+		<base target="vstdoc">
+		<title>CSplashScreen</title>
+		<link rel="stylesheet" href="../sdkdoc.css" type="text/css">
+	</head>
+	<body>
+		<div>
+			<h2>CSplashScreen</h2>
+			<p><code>#include &lt;vstcontrols.h&gt;</code></p>
+			<p><code>class CSplashScreen : public <a href="CControl.html">CControl</a>;</code></p>
+			<p>One click on its activated region and its pixmap is displayed, in this state the 
+				other control can not be used, an another click on the displayed area 
+				reinstalls the normal frame. This can be used to display a help view over the 
+				other views.</p>
+			<hr noshade="noshade" size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td lign="left">
+							<h4><a name="cCSplashScreen">CSplashScreen</a></h4>
+						</td>
+						<td align="right">
+							<h4>1.0</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">CSplashScreen (<a href="CRect.html">CRect</a> &amp;size, <a href="CControlListener.html">CControlListener</a> *listener, long tag, <a href="CBitmap.html">CBitmap</a>*handle,<a href="CRect.html">CRect</a> &amp;toDisplay, <a href="CPoint.html">CPoint</a>&amp; offset);</div>
+			</p>
+			<p>Creates a splashScreen object.</p>
+			<table width="100%" cellpadding="0" cellspacing="0" border="1" bordercolor="#000000">
+				<tbody>
+					<tr>
+						<th align="right" valign="top">
+							<code>size</code></th>
+						<td>The rectangle enclosing the activate region, where a click will display the 
+							pixmap, relative to the parent frame.</td>
+					</tr>
+					<tr>
+						<th align="right" valign="top">
+							<code>listener</code></th>
+						<td>The object responsible for handling events triggered by this splash screen.</td>
+					</tr>
+					<tr>
+						<th align="right" valign="top">
+							<code>tag</code></th>
+						<td>The index of this control.</td>
+					</tr>
+					<tr>
+						<th align="right" valign="top">
+							<code>handle</code></th>
+						<td>The pixmap to display.</td>
+					</tr>
+					<tr>
+						<th align="right" valign="top">
+							<code>toDisplay</code></th>
+						<td>The rectangle where the pixmap is displayed and where a click erases this 
+							display, in the parent frame's local coordinates.</td>
+					</tr>
+					<tr>
+						<th align="right" valign="top">
+							<code>offset</code></th>
+						<td><br>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p>&nbsp;</p>
+			<p><img src="images/source.jpg" alt="[source]" width="16" height="16"> <a href="sources/sCSplashScreen.html" target="sources">
+					source</a></p>
+			<p><img src="images/CSplashScreen.jpg" alt="[CSplashScreen]" width="264" height="96">
+			</p>
+			<hr noshade="noshade" size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td lign="left">
+							<h4><a name="dCSplashScreen">~CSplashScreen</a></h4>
+						</td>
+						<td align="right">
+							<h4>1.0</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">~CSplashScreen ();</div>
+			</p>
+			<p>Destroys a splashScreen object. The pixmap is destroyed if there is no more 
+				reference on it.</p>
+			<p><img src="images/source.jpg" alt="[source]" width="16" height="16"> <a href="sources/sCSplashScreen.html" target="sources">
+					source</a></p>
+			<hr noshade="noshade" size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td lign="left">
+							<h4><a name="draw">draw</a></h4>
+						</td>
+						<td align="right">
+							<h4>1.0</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">void draw (<a href="CDrawContext.html">CDrawContext</a>*);</div>
+			</p>
+			<p>Called when this control object needs to be drawed.</p>
+			<p><img src="images/source.jpg" alt="[source]" width="16" height="16"> <a href="sources/sCSplashScreen.html" target="sources">
+					source</a></p>
+			<hr width="100%" size="2">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td lign="left">
+							<h4><a name="hitTest">hitTest</a></h4>
+						</td>
+						<td align="right">
+							<h4>2.2</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">void hitTest (CPoint&amp; where, long buttons);</div>
+			</p>
+			<p>Check whether the mouse click occured inside the splash screen..<br>
+			</p>
+			<hr noshade="noshade" size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td lign="left">
+							<h4><a name="mouse">mouse</a></h4>
+						</td>
+						<td align="right">
+							<h4>1.0</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">void mouse (<a href="CDrawContext.html">CDrawContext</a> *context, <a href="CPoint.html">CPoint</a>&amp;where);</div>
+			</p>
+			<p>Called when there is a mouse-click inside this control object.</p>
+			<p><img src="images/source.jpg" alt="[source]" width="16" height="16"> <a href="sources/sCSplashScreen.html" target="sources">
+					source</a></p>
+			<h4>See also :</h4>
+			<ul>
+				<li>
+					The <code>CControlListener</code>'s <code><a href="CControlListener.html#valueChanged">valueChanged</a></code>
+					method which is called when the value has changed.</li>
+			</ul>
+			<hr width="100%" size="2">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td lign="left">
+							<h4><a name="unSplash">unSplash</a></h4>
+						</td>
+						<td align="right">
+							<h4>2.2</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">void unSplash ();</div>
+			</p>
+			<p>Called to make the splash screen disappear.<br>
+			</p>
+			<hr noshade="noshade" size="4">
+			<div align="center">Copyright &copy;2003 <a href="http://www.steinberg.net" target="_blank">
+					<u>Steinberg Media Technologies GmbH</u></a>.
+			</div>
+			<DIV align=center><FONT size=1>Last Modified:
+			<SCRIPT language=Javascript %>document.writeln(document.lastModified);</SCRIPT>
+			</FONT></DIV>
+			<br>
+		</div>
+		<br>
+	</body>
+</html>

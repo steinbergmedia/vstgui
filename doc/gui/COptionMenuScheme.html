@@ -1,0 +1,203 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+	<head>
+		<title>COptionMenuScheme</title>
+		<base target="vstdoc">
+		<link rel="stylesheet" href="../sdkdoc.css" type="text/css">
+	</head>
+	<body>
+		<div>
+			<h2>COptionMenuScheme</h2>
+			<p><code>#include &lt;vstcontrols.h&gt;</code></p>
+			<p><code> class COptionMenuScheme;</code></p>
+			<p>Used to define the appearance (font color, background color...) of a popup-menu. 
+				To define the scheme of a menu, use the appropriate <code>setScheme</code> method 
+				(see <a href="COptionMenu.html">COptionMenu</a>).<code></code></p>
+			<hr noshade size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="cCOptionMenuScheme">COptionMenuScheme</a></h4>
+						</td>
+						<td align="right">
+							<h4>2.2</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">COptionMenuScheme ();</div>
+<P></P>
+			<p>Creates an option popup-menu scheme.</p>
+			<code></code>
+			<hr noshade size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="dCOptionMenuScheme">~COptionMenuScheme</a></h4>
+						</td>
+						<td align="right">
+							<h4>2.2<br>
+							</h4>
+							<br>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">~COptionMenuScheme ();</div>
+<P></P>
+			<p>Destroys an option menu scheme object.</p>
+			<hr width="100%" size="2">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="getItemSize">getItemSize</a></h4>
+						</td>
+						<td align="right">
+							<h4>2.2<br>
+							</h4>
+							<br>
+						</td>
+					</tr>
+				</tbody>
+			</table
+>
+			<p><div class="cpp">virtual void getItemSize (const char* text, <a href="CDrawContext.html">CDrawContext</a>* pContext, <a href="CPoint.html">CPoint</a>&amp; size);</div>
+<P></P>
+			<p>Returns the size of an item. Items can be :
+				<br>
+			</p>
+			<ul>
+				<li>
+					kMenuTitle, pre-defined as "-T" 
+  
+				<li>
+					kMenuSeparator, pre-defined as "-" 
+  
+				<li>
+					kMenuDisable, pre-defined as "-G" 
+  
+				<li>
+					kMenuSubMenu "-M"<br>
+				</li>
+			</ul>
+			<hr width="100%" size="2">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="drawItem">drawItem</a></h4>
+						</td>
+						<td align="right">
+							<h4>2.2</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table
+> 
+			<p><div class="cpp">virtual void drawItem (const char* text, long itemId, long state, <a href="CDrawContext.html">CDrawContext</a>* pContext, const <a href="CRect.html">CRect</a>&amp; rect);</div>
+<P></P
+> 
+			<p><code></code></p>
+			<hr noshade size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="setColors">setColors</a></h4>
+						</td>
+						<td align="right">
+							<h4>2.2</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table
+> 
+			<p><div class="cpp">void setColors (<a href="CColor.html">CColor</a> backgroundColor, <a href="CColor.html">CColor</a> selectionColor, <a href="CColor.html"><br>CColor</a> textColor, <a href="CColor.html">CColor</a> hiliteTextColor,<a href="CColor.html"> CColor</a> disableTextColor);</div>
+<P></P
+> 
+			<hr noshade size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="setFont">setFont</a></h4>
+						</td>
+						<td align="right">
+							<h4>2.2</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">void setFont (<a href="CFont.html">CFont</a> f);</div>
+<P></P>
+			<hr noshade size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="forget">forget</a></h4>
+						</td>
+						<td align="right">
+							<h4>2.2</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">virtual void forget ();</div>
+<P></P>
+			Used to tell the scheme that one of the menu which uses it don't use it 
+			anymore. When no menu use the scheme, it is deleted.<br>
+			<br>
+			<hr noshade size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="remember">remember</a></h4>
+						</td>
+						<td align="right">
+							<h4>2.2</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">virtual void remember ();</div>
+<P></P>
+			Used to tell the scheme that it is used by a menu.<code> </code>
+			<hr noshade size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="getNbReference">getNbReference</a></h4>
+						</td>
+						<td align="right">
+							<h4>2.2</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">virtual long getNbReference ();</div>
+<P></P>
+			<p>Returns the number of menus using this scheme.<br>
+			</p>
+			<p><code><br>
+				</code>
+			</p>
+			<ul>
+			</ul>
+			<hr noshade size="4">
+			<div align="center">Copyright &copy;2003 <a href="http://www.steinberg.net" target="_blank">
+					<u>Steinberg Media Technologies GmbH</u></a>.
+			</div>
+			<DIV align=center><FONT size=1>Last Modified:
+			<SCRIPT language=Javascript %>document.writeln(document.lastModified);</SCRIPT>
+			</FONT></DIV>
+			<br>
+		</div>
+		<br>
+	</body>
+</html>

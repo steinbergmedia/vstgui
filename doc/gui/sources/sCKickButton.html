@@ -1,0 +1,99 @@
+<html>
+<head>
+	<base target="vstdoc">
+	<title>CKickButton</title>
+	
+<link rel="stylesheet" href="../../formate.txt" type="text/css">
+</head>
+<body>
+
+<code><pre>
+//------------------------------------------------------------------------
+// CKickButton
+//------------------------------------------------------------------------
+// Button, which releases itself after being clicked
+CKickButton::CKickButton (const CRect &size,
+                              CControlListener *listener, 
+                              long tag,              // identifier tag (ID)
+                              long heightOfOneImage, // height of one image in pixel
+                              CBitmap *background,
+                              CPoint  &offset)
+:	CControl (size, listener, tag, background), offset (offset), 
+	heightOfOneImage (heightOfOneImage)
+{}
+
+//------------------------------------------------------------------------
+CKickButton::~CKickButton ()
+{}
+
+//------------------------------------------------------------------------
+void CKickButton::draw (CDrawContext *pContext)
+{
+	CPoint where (offset.h, offset.v);
+
+	bounceValue ();
+
+	if (value)
+		where.v += heightOfOneImage;
+
+	if (pBackground)
+	{
+		if (bTransparencyEnabled)
+			pBackground->drawTransparent (pContext, size, where);
+		else
+			pBackground->draw (pContext, size, where);
+	}
+	setDirty (false);
+}
+
+//------------------------------------------------------------------------
+void CKickButton::mouse (CDrawContext *pContext, CPoint &where)
+{
+	if (!bMouseEnabled)
+		return;
+	
+	long button = pContext->getMouseButtons ();
+	if (!(button & kLButton))
+		return;
+
+	// this simulates a real windows button
+	float fEntryState = value;
+
+	if (pContext->getMouseButtons () == kLButton)
+	{
+		// begin of edit parameter
+		getParent ()->beginEdit (tag);
+		do
+		{
+			if (where.h >= size.left && where.v >= size.top  &&
+			    where.h <= size.right && where.v <= size.bottom)
+				value = !fEntryState;
+			else
+				value = fEntryState;
+			
+			if (isDirty () && listener)
+				listener->valueChanged (pContext, this);
+			
+			pContext->getMouseLocation (where);
+			
+			doIdleStuff ();
+		}
+		while (pContext->getMouseButtons () == kLButton);
+		
+		// end of edit parameter
+		getParent ()->endEdit (tag);
+	}
+	else
+	{
+		value = !value;
+		if (listener)
+			listener->valueChanged (pContext, this);
+	}
+
+	value = 0.0f;  // set button to UNSELECTED state
+	if (listener)
+		listener->valueChanged (pContext, this);
+}
+</pre></code>
+</body>
+</html>

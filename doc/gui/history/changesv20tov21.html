@@ -1,0 +1,42 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+    		         
+  <meta http-equiv="Content-Type"
+ content="text/html; charset=iso-8859-1">
+  <title>VST-GUI Classes</title>
+             		 		         
+  <link rel="stylesheet" type="text/css" href="../../../../sdkdoc.css">
+</head>
+  <body>
+   
+<div>  		<a name="AEffGUIEditor"></a> 		   
+<h3>Changes between VSTGUI V2.0 and V2.1</h3>
+    		   
+<hr width="100%"> 		   
+<div align="center"><img src="../images/vstpluglogo.jpg" border="0"
+ height="88" width="151">
+    			<br>
+    		</div>
+    		   
+<hr width="100%"> 		   
+<h3>In vstgui.h file</h3>
+    		   
+<pre>----------------------------------------------------------------------------<br>11.05.01 Yvan Grabit<br>	add function<br> 		virtual bool CView::removed (CView* parent) { return true; }   // it has have been removed from parent view<br> 		virtual bool CView::attached (CView* view) { return true; }    // it has been attached to a view<br>		CFont CDrawContext::getFont ();<br><br>----------------------------------------------------------------------------<br>23.04.01 Yvan Grabit<br>	change function<br>		void CDrawContext::setFont (CFont fontID, const long size = 0, long style = 0);<br>		with style Text Face<br>			enum CTxtFace<br>			{<br>				kNormalFace    = 0,<br>				kBoldFace      = 1,<br>				kItalicFace    = 2,<br>				kUnderlineFace = 4<br>			};<br><br>----------------------------------------------------------------------------<br>23.04.01 Yvan Grabit<br>	add function<br>		CView *CFrame::getModalView ();<br>    fixed bug for MAC (textEdit)<br><br>----------------------------------------------------------------------------<br>21.02.01 Yvan Grabit<br>	add function<br>		virtual void CViewContainer::setBackgroundOffset (const CPoint &amp;p);<br><br>----------------------------------------------------------------------------<br>21.02.01 Yvan Grabit<br>    change CRect &amp;size =&gt; const CRect &amp;size : for new Codewarrior<br><br>----------------------------------------------------------------------------<br>30.01.01 Yvan Grabit<br>    add functions:<br>	virtual void CView::forget ();<br>	virtual void CView::remember ();<br>	virtual	long CView::getNbReference ();<br>	virtual bool CView::onWheel (CDrawContext *pContext, const CPoint &amp;where, float distance);<br>	virtual CRect &amp;CView::getViewSize (CRect &amp;rect);<br><br>---------------------------------------------------------------------------<br>09.01.01 Yvan Grabit<br>    add functions:<br>	bool CRect rectOverlap (const CRect&amp; rect);<br>	virtual bool CVerticalSlider::onWheel (CDrawContext *pContext, const CPoint &amp;where, float distance);<br>	virtual bool CHorizontalSlider::onWheel (CDrawContext *pContext, const CPoint &amp;where, float distance);<br>	virtual bool CKnob::onWheel (CDrawContext *pContext, const CPoint &amp;where, float distance);<br><br></pre>
+    		<br>
+    		   
+<hr width="100%"> 		   
+<h3>In vstcontrols.h file</h3>
+    		   
+<pre>----------------------------------------------------------------------------<br>11.05.01 Yvan Grabit<br>    change all int into long<br>	fixed in textedit<br>	add function<br>		void CParamDisplay::setTxtFace (CTxtFace txtFace);<br>		CTxtFace CParamDisplay::getTxtFace ();<br><br>----------------------------------------------------------------------------<br>22.03.01 Yvan Grabit<br>	add functions:<br>		virtual void CHorizontalSlider::setZoomFactor (float val);<br>		virtual float CHorizontalSlider::getZoomFactor ();<br>		virtual void CVerticalSlider::setZoomFactor (float val);<br>		virtual float CVerticalSlider::getZoomFactor ();<br>		virtual void CKnob::setZoomFactor (float val);<br>		virtual float CKnob::getZoomFactor ();<br><br>----------------------------------------------------------------------------<br>21.02.01 Yvan Grabit<br>	add functions:<br>	virtual void COptionMenu::setNbItemsPerColumn (long val);<br>	virtual long COptionMenu::getNbItemsPerColumn ();<br><br>----------------------------------------------------------------------------<br>21.02.01 Yvan Grabit<br>    change CRect &amp;size =&gt; const CRect &amp;size : for new Codewarrior<br>	add class CFileSelector<br><br>----------------------------------------------------------------------------<br>19.02.01 Yvan Grabit<br>    add style for textedit: kDoubleClickStyle<br><br>----------------------------------------------------------------------------<br>12.02.01 Yvan Grabit<br>    add function:<br>	void CKnob::setHandleBitmap (CBitmap *bitmap);<br><br>----------------------------------------------------------------------------<br>06.02.01 Yvan Grabit<br>    modify control:<br>	add in contructor CRockerSwitch (const int style = kHorizontal)<br><br>----------------------------------------------------------------------------<br>30.01.01 Yvan Grabit<br>    add functions:<br>	virtual void  CControl::setWheelInc (float val);<br>	virtual float CControl::getWheelInc ();<br>	virtual void CControl::bounceValue ();<br><br><br></pre>
+    		   
+<hr noshade="noshade" size="4"> 		   
+<div align="center">Copyright &copy;2003 <a
+ href="http://www.steinberg.net" target="_blank"><u>Steinberg  					Media 
+ Technologies GmbH</u></a>. 		</div>
+    	<br>
+   </div>
+    <br>
+ 
+</body>
+</html>
