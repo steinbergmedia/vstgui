@@ -1796,7 +1796,9 @@ void CTextEdit::setTextEditConvert (void (*convert) (char *input, char *string,
 //------------------------------------------------------------------------
 // COptionMenuScheme
 //------------------------------------------------------------------------
+COptionMenuScheme* gOptionMenuScheme = 0;
 
+//------------------------------------------------------------------------
 COptionMenuScheme::COptionMenuScheme ()
 : nbReference (1)
 {
@@ -1819,6 +1821,14 @@ COptionMenuScheme::COptionMenuScheme ()
 	disableTextColor = kWhiteCColor;
 #endif
 	font = kNormalFontSmall;
+	#if MAC && QUARTZ
+	registerWithToolbox ();
+	#endif
+}
+
+//------------------------------------------------------------------------
+COptionMenuScheme::~COptionMenuScheme ()
+{
 }
 
 //------------------------------------------------------------------------
@@ -1843,16 +1853,25 @@ void COptionMenuScheme::getItemSize (const char* text, CDrawContext* pContext, C
 {
 	if (!strcmp (text, kMenuSeparator)) // separator
 	{
+		#if MAC
+		size.h = 6;
+		size.v = 9;
+		#else
 		// was: size.h = size.v = 6;
 		size.h = 6;
 		size.v = 18;
 		// separators must have same height, otherwise we have problems
 		// in multi-column menus :(
+		#endif
 	}
 	else
 	{
+		pContext->setFont (font);
 		size.h = pContext->getStringWidth (text) + 18;
 		size.v = 18;
+		#if MAC
+		size.h += 18;
+		#endif
 	}
 }
 
@@ -1876,11 +1895,14 @@ void COptionMenuScheme::drawItem (const char* text, long itemId, long state, CDr
 	if (!strcmp (text, kMenuSeparator))
 	{
 		long y = rect.top + rect.height () / 2;
+
+		const CColor bc = { 0, 0, 0, 150};
+		const CColor wc = { 255, 255, 255, 150};
 		
-		pContext->setFrameColor (kBlackCColor);
+		pContext->setFrameColor (bc);
 		pContext->moveTo (CPoint (rect.left + 2, y - 1));
 		pContext->lineTo (CPoint (rect.right - 2, y - 1));
-		pContext->setFrameColor (kWhiteCColor);
+		pContext->setFrameColor (wc);
 		pContext->moveTo (CPoint (rect.left + 2, y));
 		pContext->lineTo (CPoint (rect.right - 2, y));
 		return;
@@ -1926,6 +1948,333 @@ void COptionMenuScheme::drawItem (const char* text, long itemId, long state, CDr
 	else
 		pContext->drawString (text, r, false, kLeftText);
 }
+
+#if MAC && QUARTZ
+struct HIMenuScheme
+{
+	HIViewRef hiView;
+	COptionMenuScheme* scheme;
+	COptionMenu* menu;
+	COffscreenContext* offscreenContext;
+	float maxWidth;
+};
+
+const EventParamName kEventParamCOptionMenuScheme = 'COMS';
+const EventParamName kEventParamCOptionMenu = 'COM ';
+
+#define kItemHeight		18
+#define kOptionMenuSchemeClassID CFSTR("net.sourceforge.vstgui.COptionMenuSchemeClassID")
+
+static HIObjectClassRef gMenuClassRef = 0;
+
+//------------------------------------------------------------------------
+void COptionMenuScheme::registerWithToolbox ()
+{
+	if (gMenuClassRef == 0)
+	{
+		static const EventTypeSpec events[] =
+		{
+			{ kEventClassHIObject, kEventHIObjectConstruct } ,
+			{ kEventClassHIObject, kEventHIObjectInitialize },
+			{ kEventClassHIObject, kEventHIObjectDestruct },
+
+			{ kEventClassControl, kEventControlHitTest },
+			{ kEventClassControl, kEventControlGetPartRegion },
+			{ kEventClassControl, kEventControlDraw },
+			{ kEventClassControl, kEventControlGetOptimalBounds },
+
+			{ kEventClassMenu, kEventMenuCreateFrameView },
+
+			//{ kEventClassScrollable, kEventScrollableGetInfo },
+		};
+
+		HIObjectRegisterSubclass (	kOptionMenuSchemeClassID,
+									kHIMenuViewClassID,
+									kNilOptions,
+									COptionMenuScheme::eventHandler,
+									GetEventTypeCount (events),
+									events,
+									NULL,
+									&gMenuClassRef);
+	}
+}
+
+//------------------------------------------------------------------------
+pascal OSStatus COptionMenuScheme::eventHandler (EventHandlerCallRef inCallRef, EventRef inEvent, void *inUserData)
+{
+	OSStatus err = eventNotHandledErr;
+	EventClass eventClass = GetEventClass (inEvent);
+	EventKind eventKind = GetEventKind (inEvent);
+	HIMenuScheme* scheme = (HIMenuScheme*)inUserData;
+	
+	switch (eventClass)
+	{
+		case kEventClassHIObject:
+		{
+			switch (eventKind)
+			{
+				case kEventHIObjectConstruct:
+				{
+					scheme = (HIMenuScheme*)calloc (1, sizeof (HIMenuScheme));
+					GetEventParameter (inEvent, kEventParamHIObjectInstance, typeHIObjectRef, NULL, sizeof (HIObjectRef), NULL, &scheme->hiView);
+					SetEventParameter (inEvent, kEventParamHIObjectInstance, typeVoidPtr, sizeof (HIMenuScheme*), &scheme);
+					scheme->maxWidth = 100;
+					err = noErr;
+					break;
+				}
+				case kEventHIObjectInitialize:
+				{
+					err = CallNextEventHandler (inCallRef, inEvent);
+					if (err == noErr)
+					{
+						GetEventParameter (inEvent, kEventParamCOptionMenuScheme, typeVoidPtr, NULL, sizeof (COptionMenuScheme*), NULL, &scheme->scheme);
+						GetEventParameter (inEvent, kEventParamCOptionMenu, typeVoidPtr, NULL, sizeof (COptionMenu*), NULL, &scheme->menu);
+						scheme->scheme->remember ();
+						scheme->menu->remember ();
+						scheme->offscreenContext = new COffscreenContext (scheme->menu->getParent (), 600, 100);
+					}
+					break;
+				}
+				case kEventHIObjectDestruct:
+				{
+					delete scheme->offscreenContext;
+					scheme->scheme->forget ();
+					scheme->menu->forget ();
+					free (scheme);
+					err = noErr;
+					break;
+				}
+			}
+			break;
+		}
+		case kEventClassControl:
+		{
+			HIViewRef control;
+			GetEventParameter (inEvent, kEventParamDirectObject, typeControlRef, NULL, sizeof (HIViewRef), NULL, &control);
+			switch (eventKind)
+			{
+				case kEventControlInitialize:
+				{
+					err = CallNextEventHandler (inCallRef, inEvent);
+					break;
+				}
+				case kEventControlHitTest:
+				{
+					HIPoint mouseLoc;
+					GetEventParameter (inEvent, kEventParamMouseLocation, typeHIPoint, NULL, sizeof (mouseLoc), NULL, &mouseLoc);
+					ControlPartCode partHit = mouseLoc.y / kItemHeight + 1;
+					char temp[1024];
+					CPoint size;
+					long yPos = 0;
+					for (long i = 0; i < scheme->menu->getNbEntries (); i++)
+					{
+						scheme->menu->getEntry (i, temp);
+						scheme->scheme->getItemSize (temp, scheme->offscreenContext, size);
+						yPos += size.y;
+						if (yPos >= mouseLoc.y)
+						{
+							partHit = i + 1;
+							break;
+						}
+					}
+					SetEventParameter (inEvent, kEventParamControlPart, typeControlPartCode, sizeof (partHit), &partHit);
+					err = noErr;
+					break;
+				}
+				case kEventControlGetOptimalBounds:
+				{
+					HIRect r = { {0, 0}, { 0, 0 }};
+					r.size.width = scheme->maxWidth;
+					char temp[1024];
+					CPoint size;
+					for (long i = 0; i < scheme->menu->getNbEntries (); i++)
+					{
+						scheme->menu->getEntry (i, temp);
+						scheme->scheme->getItemSize (temp, scheme->offscreenContext, size);
+						if (!strncmp (temp, kMenuSubMenu, 2))
+							size.x += 16;
+						r.size.height += size.y;
+						if (r.size.width < size.x)
+							r.size.width = size.x;
+					}
+					scheme->maxWidth = r.size.width;
+					SetEventParameter (inEvent, kEventParamControlOptimalBounds, typeHIRect, sizeof (HIRect), &r);
+					err = noErr;
+					break;
+				}
+				case kEventControlGetPartRegion:
+				{
+					HIRect r = { {0, 0}, { 0, 0 }};
+					ControlPartCode whichItem;
+					RgnHandle outRegion = NULL;
+					GetEventParameter (inEvent, kEventParamControlPart, typeControlPartCode, NULL, sizeof (whichItem), NULL, &whichItem);
+					GetEventParameter (inEvent, kEventParamControlRegion, typeQDRgnHandle, NULL, sizeof(outRegion), NULL, &outRegion);
+					if (whichItem <= 0)
+					{
+						r.size.width = scheme->maxWidth;
+						char temp[1024];
+						CPoint size;
+						for (long i = 0; i < scheme->menu->getNbEntries (); i++)
+						{
+							scheme->menu->getEntry (i, temp);
+							scheme->scheme->getItemSize (temp, scheme->offscreenContext, size);
+							if (!strncmp (temp, kMenuSubMenu, 2))
+								size.x += 16;
+							r.size.height += size.y;
+							if (r.size.width < size.x)
+								r.size.width = size.x;
+						}
+						scheme->maxWidth = r.size.width;
+					}
+					else
+					{
+						char temp[1024];
+						CPoint size;
+						for (long i = 0; i < whichItem; i++)
+						{
+							r.origin.y += size.y;
+							scheme->menu->getEntry (i, temp);
+							scheme->scheme->getItemSize (temp, scheme->offscreenContext, size);
+							r.size.height += size.y;
+						}
+						r.size.width = scheme->maxWidth;
+					}
+					SetRectRgn (outRegion, (short) r.origin.x, (short) r.origin.y,(short) r.origin.x + r.size.width, (short) r.origin.y+ r.size.height);
+					err = noErr;
+					break;
+				}
+				case kEventControlDraw:
+				{
+					CGContextRef cgContext;
+					GetEventParameter (inEvent, kEventParamCGContextRef, typeCGContextRef, NULL, sizeof (cgContext), NULL, &cgContext);
+					HIRect r;
+					HIViewGetBounds (control, &r);
+					CGContextClearRect (cgContext, r);
+					if (control != scheme->hiView)
+					{
+						err = noErr;
+						break;
+					}
+					ControlPartCode focusPart;
+					HIViewGetFocusPart (scheme->hiView, &focusPart);
+					focusPart--;
+					WindowRef window = HIViewGetWindow (scheme->hiView);
+					CDrawContext context (NULL, cgContext, window);
+					char entryText[1024];
+					CPoint size;
+					CRect rect (0, 0);
+					rect.setHeight (kItemHeight);
+					rect.setWidth (scheme->maxWidth);
+					for (int i = 0; i < scheme->menu->getNbEntries (); i++)
+					{
+						if (scheme->menu->getEntry (i, entryText))
+						{
+							scheme->scheme->getItemSize (entryText, &context, size);
+							long state = scheme->menu->isCheckEntry (i) ? kChecked : 0;
+							if (focusPart >= 0 && focusPart == i)
+								state |= kSelected;
+							long offset = 0;
+							if (!strncmp (entryText, kMenuSubMenu, 2))
+							{
+								state |= kSubMenu;
+								offset = 2;
+							}
+							else if (!strncmp (entryText, kMenuTitle, 2))
+							{
+								state |= kDisabled;
+								offset = 2;
+							}
+							else if (!strncmp (entryText, kMenuDisable, 2))
+							{
+								state |= kDisabled;
+								offset = 2;
+							}
+							rect.setHeight (size.y);
+							scheme->scheme->drawItem (entryText+offset, i, state, &context, rect);
+							rect.offset (0, size.y);
+						}
+					}
+					break;
+				}
+				case kEventControlGetFrameMetrics:
+				{
+					err = CallNextEventHandler (inCallRef, inEvent);
+					HIViewFrameMetrics	metrics;
+					GetEventParameter (inEvent, kEventParamControlFrameMetrics, typeControlFrameMetrics, NULL, sizeof (metrics), NULL, &metrics);
+					metrics.top = metrics.bottom = 0;
+					SetEventParameter (inEvent, kEventParamControlFrameMetrics, typeControlFrameMetrics, sizeof (metrics), &metrics);
+					break;
+				}
+				case kEventControlOwningWindowChanged:
+				{
+					WindowRef newWindow = GetControlOwner (control);
+					HIWindowChangeFeatures (newWindow, 0, kWindowIsOpaque);
+					err = noErr;
+					HIViewRef root = HIViewGetRoot (newWindow);
+					if (root)
+					{
+						HIRect bounds, frame;
+						HIViewGetBounds (root, &bounds);
+						HIViewGetFrame (root, &frame);
+					}
+					break;
+				}
+			}
+			break;
+		}
+		case kEventClassMenu:
+		{
+			switch (eventKind)
+			{
+				case kEventMenuCreateFrameView:
+				{
+					err = CallNextEventHandler (inCallRef, inEvent);
+					HIViewRef frameView;
+					GetEventParameter (inEvent, kEventParamMenuFrameView, typeControlRef, NULL, sizeof (ControlRef), NULL, &frameView);
+					HIViewFindByID (frameView, kHIViewWindowContentID, &frameView);
+					if (frameView)
+					{
+						EventTypeSpec events [] = { { kEventClassControl, kEventControlDraw }, { kEventClassControl, kEventControlOwningWindowChanged }, { kEventClassControl, kEventControlGetFrameMetrics } };
+						InstallControlEventHandler (frameView, COptionMenuScheme::eventHandler, GetEventTypeCount (events), events, scheme, NULL);
+					}
+					break;
+				}
+			}
+			break;
+		}
+		case kEventClassScrollable:
+		{
+			switch (eventKind)
+			{
+				case kEventScrollableGetInfo:
+				{
+					HISize size;
+					HIPoint origin = { 0, 0 };
+
+					size.width = 200;
+					size.height = kItemHeight * (scheme->menu->getNbEntries () + 1);;
+
+					SetEventParameter(inEvent, kEventParamImageSize, typeHISize, sizeof( size ), &size );
+					SetEventParameter(inEvent, kEventParamViewSize, typeHISize, sizeof( size ), &size );
+					SetEventParameter(inEvent, kEventParamOrigin, typeHIPoint, sizeof( origin ), &origin );
+
+					// line size is 1/10th total size
+					size.width /= 10;
+					size.height /= 10;
+
+					SetEventParameter(inEvent, kEventParamLineSize, typeHISize, sizeof( size ), &size );
+
+					err = noErr;
+					break;
+				}
+			}
+			break;
+		}
+	}
+	
+	return err;
+}
+#endif
 
 //------------------------------------------------------------------------
 // COptionMenu
@@ -2358,7 +2707,10 @@ void COptionMenu::mouse (CDrawContext *pContext, CPoint &where, long button)
 		if (bgWhenClick)
 		{
 			char string[256];
-			sprintf (string, "%s", entry[currentIndex]);
+			if (currentIndex >= 0)
+				sprintf (string, "%s", entry[currentIndex]);
+			else
+				string[0] = 0;
 		
 			drawText (pContext, string, bgWhenClick);
 		}
@@ -2467,7 +2819,7 @@ void *COptionMenu::appendItems (long &offsetIdx)
 #if WINDOWS
 	void *menu = (void*)CreatePopupMenu ();
 	
-	bool ownerDraw = scheme != 0;
+	bool ownerDraw = (scheme != 0) || (gOptionMenuScheme != 0);
 
 	int flags = 0;
 	long idxSubmenu = 0;
@@ -2540,8 +2892,31 @@ void *COptionMenu::appendItems (long &offsetIdx)
 	//---Get an non-existing ID for the menu:
 	menuID = UniqueID ('MENU');
 		
+	MenuHandle theMenu = 0;
 	//---Create the menu
-	MenuHandle theMenu = NewMenu (menuID, "\pPopUp");
+	#if QUARTZ
+	if (scheme || gOptionMenuScheme)
+	{
+		COptionMenuScheme* s = gOptionMenuScheme ? gOptionMenuScheme : scheme;
+		EventRef initEvent = NULL;
+		if (CreateEvent (NULL, kEventClassHIObject, kEventHIObjectInitialize, 0, 0, &initEvent) == noErr)
+		{
+			MenuDefSpec customMenuDef;
+			SetEventParameter (initEvent, kEventParamCOptionMenuScheme, typeVoidPtr, sizeof(COptionMenuScheme*), &s);
+			COptionMenu* optMenu = this;
+			SetEventParameter (initEvent, kEventParamCOptionMenu, typeVoidPtr, sizeof(COptionMenu*), &optMenu);
+			customMenuDef.defType = kMenuDefClassID;
+			customMenuDef.u.view.classID = kOptionMenuSchemeClassID;
+			customMenuDef.u.view.initEvent = initEvent;
+			CreateCustomMenu (&customMenuDef, menuID, 0, &theMenu);
+			ReleaseEvent (initEvent);
+			if (theMenu == NULL)
+				return NULL;
+		}
+	}
+	else
+	#endif
+		theMenu = NewMenu (menuID, "\pPopUp");
 
 	Str255 menuItem;
 	char text2[256];
@@ -2863,7 +3238,7 @@ void COptionMenu::takeFocus (CDrawContext *pContext)
 
 	// Calculate the size of one menu item (round to the next int)
 	int menuItemSize = (menuHeight + nbEntries - 1) / nbEntries;
-	
+
 	setDirty (false);	
 	//---Popup the Menu
 	long popUpItem = 1;

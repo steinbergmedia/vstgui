@@ -285,6 +285,8 @@ const char* macXfontNames[] = {
 	"Symbol"
 };
 
+static inline double radians(double degrees) { return degrees * M_PI / 180; }
+
 #else
 const unsigned char* macXfontNames[] = {
 	"\pArial",
@@ -1382,8 +1384,35 @@ void CDrawContext::fillRect (const CRect &_rect)
 //-----------------------------------------------------------------------------
 void CDrawContext::drawEllipse (const CRect &_rect)
 {
+	#if QUARTZ
+	CRect rect (_rect);
+	rect.offset (offset.h, offset.v);
+
+	CGContextRef context = beginCGContext ();
+	{
+		CGContextScaleCTM (context, 1, -1);
+		CGContextTranslateCTM (context, 0.5f, 0.5f);
+		CGContextBeginPath (context);
+
+		CGRect cgRect = CGRectMake (rect.left, rect.top, rect.width (), rect.height ());
+		CGPoint center = CGPointMake (CGRectGetMidX (cgRect), CGRectGetMidY (cgRect));
+		float a = CGRectGetWidth (cgRect) / 2;
+		float b = CGRectGetHeight (cgRect) / 2;
+
+	    CGContextTranslateCTM (context, center.x, center.y);
+	    CGContextScaleCTM (context, a, b);
+	    CGContextMoveToPoint (context, 1, 0);
+	    CGContextAddArc (context, 0, 0, 1, radians (0), radians (360), 0);
+
+		CGContextClosePath (context);
+		CGContextDrawPath (context, kCGPathStroke);
+		releaseCGContext (context);
+	}
+
+	#else
 	CPoint point (_rect.left + (_rect.right - _rect.left) / 2, _rect.top);
 	drawArc (_rect, point, point);
+	#endif
 }
 
 //-----------------------------------------------------------------------------
@@ -1398,6 +1427,28 @@ void CDrawContext::fillEllipse (const CRect &_rect)
 	HANDLE oldPen  = SelectObject ((HDC)pSystemContext, nullPen);
 	Ellipse ((HDC)pSystemContext, rect.left + 1, rect.top + 1, rect.right + 1, rect.bottom + 1);
 	SelectObject ((HDC)pSystemContext, oldPen);
+
+#elif QUARTZ
+	CGContextRef context = beginCGContext ();
+	{
+		CGContextScaleCTM (context, 1, -1);
+		CGContextTranslateCTM (context, 0.5f, 0.5f);
+		CGContextBeginPath (context);
+
+		CGRect cgRect = CGRectMake (rect.left, rect.top, rect.width (), rect.height ());
+		CGPoint center = CGPointMake (CGRectGetMidX (cgRect), CGRectGetMidY (cgRect));
+		float a = CGRectGetWidth (cgRect) / 2;
+		float b = CGRectGetHeight (cgRect) / 2;
+
+	    CGContextTranslateCTM (context, center.x, center.y);
+	    CGContextScaleCTM (context, a, b);
+	    CGContextMoveToPoint (context, 1, 0);
+	    CGContextAddArc (context, 0, 0, 1, radians (0), radians (360), 0);
+
+		CGContextClosePath (context);
+		CGContextDrawPath (context, kCGPathFill);
+		releaseCGContext (context);
+	}
 
 #else
 	CPoint point (_rect.left + ((_rect.right - _rect.left) / 2), _rect.top);
