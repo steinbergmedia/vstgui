@@ -3,7 +3,7 @@
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 // Standard Control Objects
 //
-// Version 3.0       $Date: 2005-01-04 14:30:45 $
+// Version 3.0       $Date: 2005-02-25 12:11:33 $
 //
 // Added new objects        : Michael Schmidt          08.97
 // Added new objects        : Yvan Grabit              01.98
@@ -1441,7 +1441,7 @@ void CTextEdit::takeFocus (CDrawContext *pContext)
 	if (!gTXNInititalized)
 	{
 		TXNMacOSPreferredFontDescription defaults;  // fontID, pointSize, encoding, and fontStyle
-		defaults.fontID = NULL;
+		defaults.fontID = 0;
 		defaults.pointSize = kTXNDefaultFontSize;
 		defaults.encoding = CreateTextEncoding(kTextEncodingMacRoman, kTextEncodingDefaultVariant, kTextEncodingDefaultFormat);
 		defaults.fontStyle = kTXNDefaultFontStyle;
@@ -3455,7 +3455,7 @@ void COptionMenu::takeFocus (CDrawContext *pContext)
 	else
 		offset = size.bottom;
 
-	long gx, gy;
+	CCoord gx, gy;
 	Point LToG;
 //	CRect myFrameRect;
 	getFrame()->getPosition(gx, gy);

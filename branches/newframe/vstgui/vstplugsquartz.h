@@ -10,7 +10,6 @@
 #define TARGET_API_MAC_CARBON 1
 #define USENAVSERVICES 1
 
-#define __DEBUGGING__
 #define __CF_USE_FRAMEWORK_INCLUDES__
 
 #if __MWERKS__

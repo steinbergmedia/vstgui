@@ -259,7 +259,10 @@ void AEffGUIEditor::doIdleStuff ()
 		if (currentTicks < lLastTicks - kIdleRate2)
 			return;
 	}
-	idle (); // TEST
+
+	AEffEditor::idle ();
+	if (frame)
+		frame->idle ();
 
 	#if WINDOWS
 	if (PeekMessage (&windowsMessage, NULL, WM_PAINT, WM_PAINT, PM_REMOVE))

@@ -2,7 +2,7 @@
 // VST Plug-Ins SDK
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 //
-// Version 3.0       $Date: 2005-01-04 14:30:44 $ 
+// Version 3.0       $Date: 2005-02-25 12:11:33 $ 
 //
 // Added Motif/Windows vers.: Yvan Grabit              01.98
 // Added Mac version        : Charlie Steinberg        02.98
@@ -126,6 +126,7 @@ void DebugPrint (char *format, ...)
 
 #if WINDOWS
 static bool bSwapped_mouse_buttons = false; 
+OSVERSIONINFOEX	gSystemVersion;
 
 // Alpha blending for Windows using library : msimg32.dll
 #define DYNAMICALPHABLEND   1
@@ -549,6 +550,7 @@ CDrawContext::CDrawContext (CFrame *inFrame, void *inSystemContext, void *inWind
 	{
 		HIRect bounds;
 		HIViewGetFrame ((HIViewRef)pFrame->getPlatformControl (), &bounds);
+		#if AU
 		if (pWindow)
 		{
 			WindowAttributes attr;
@@ -560,6 +562,7 @@ CDrawContext::CDrawContext (CFrame *inFrame, void *inSystemContext, void *inWind
 				HIViewConvertRect (&bounds, (HIViewRef)pFrame->getPlatformControl (), contentView);
 			}
 		}
+		#endif
 		offsetScreen.x = bounds.origin.x;
 		offsetScreen.y = bounds.origin.y;
 		clipRect (0, 0, bounds.size.width, bounds.size.height);
@@ -768,7 +771,7 @@ void CDrawContext::setLineStyle (CLineStyle style)
 }
 
 //-----------------------------------------------------------------------------
-void CDrawContext::setLineWidth (long width)
+void CDrawContext::setLineWidth (CCoord width)
 {
 	if (frameWidth == width)
 		return;
@@ -901,7 +904,7 @@ void CDrawContext::setClipRect (const CRect &clip)
 		CGContextRestoreGState (gCGContext);
 		CGContextSaveGState (gCGContext);
 		CGContextScaleCTM (gCGContext, 1, -1);
-		CGRect cgClipRect = CGRectMake (clipRect.left, clipRect.top, clipRect.width (), clipRect.height ());
+		CGRect cgClipRect = CGRectMake (clipRect.left, clipRect.top, clipRect.width ()-1.f, clipRect.height ()-1.f);
 		CGContextClipToRect (gCGContext, cgClipRect);
 		CGContextScaleCTM (gCGContext, 1, -1);
 		setLineWidth (frameWidth);
@@ -1026,7 +1029,7 @@ void CDrawContext::lineTo (const CPoint& _point)
 		CGContextScaleCTM (context, 1, -1);
 		CGContextTranslateCTM (context, 0.5f, 0.5f);
 
-		CGRect cgClipRect = CGRectMake (clipRect.left, clipRect.top, clipRect.width (), clipRect.height ());
+		CGRect cgClipRect = CGRectMake (clipRect.left, clipRect.top, clipRect.width ()-1.f, clipRect.height ()-1.f);
 		CGContextClipToRect (gCGContext, cgClipRect);
 
 		QuartzSetLineDash (context, lineStyle, frameWidth);
@@ -1142,8 +1145,10 @@ void CDrawContext::drawLines (const CPoint* points, const long& numLines)
 			CGContextSetLineWidth (context, 2 * frameWidth);
 		CGContextScaleCTM (context, 1, -1);
 
-		CGRect cgClipRect = CGRectMake (clipRect.left, clipRect.top, clipRect.width (), clipRect.height ());
+		CGRect cgClipRect = CGRectMake (clipRect.left, clipRect.top, clipRect.width ()-1.f, clipRect.height ()-1.f);
 		CGContextClipToRect (context, cgClipRect);
+
+		QuartzSetLineDash (context, lineStyle, frameWidth);
 
 		CGContextBeginPath (context);
 		for (long i = 0; i < numLines * 2; i+=2)
@@ -1181,7 +1186,7 @@ void CDrawContext::drawPolygon (const CPoint *pPoints, long numberOfPoints, cons
 		CGContextScaleCTM (context, 1, -1);
 		CGContextTranslateCTM (context, 0.5f, 0.5f);
 
-		CGRect cgClipRect = CGRectMake (clipRect.left, clipRect.top, clipRect.width (), clipRect.height ());
+		CGRect cgClipRect = CGRectMake (clipRect.left, clipRect.top, clipRect.width ()-1.f, clipRect.height ()-1.f);
 		CGContextClipToRect (gCGContext, cgClipRect);
 
 		QuartzSetLineDash (context, lineStyle, frameWidth);
@@ -1402,9 +1407,9 @@ void CDrawContext::drawRect (const CRect &_rect, const CDrawStyle drawStyle)
 	if (drawStyle == kDrawStroked || drawStyle == kDrawFilledAndStroked)
 	{
 		MoveToEx ((HDC)pSystemContext, rect.left, rect.top, NULL);
-		LineTo ((HDC)pSystemContext, rect.right, rect.top);
-		LineTo ((HDC)pSystemContext, rect.right, rect.bottom);
-		LineTo ((HDC)pSystemContext, rect.left, rect.bottom);
+		LineTo ((HDC)pSystemContext, rect.right-1, rect.top);
+		LineTo ((HDC)pSystemContext, rect.right-1, rect.bottom-1);
+		LineTo ((HDC)pSystemContext, rect.left, rect.bottom-1);
 		LineTo ((HDC)pSystemContext, rect.left, rect.top);
 	}
 	
@@ -1425,7 +1430,7 @@ void CDrawContext::drawRect (const CRect &_rect, const CDrawStyle drawStyle)
 		CGContextScaleCTM (context, 1, -1);
 		CGContextTranslateCTM (context, 0.5f, 0.5f);
 
-		CGRect cgClipRect = CGRectMake (clipRect.left, clipRect.top, clipRect.width (), clipRect.height ());
+		CGRect cgClipRect = CGRectMake (clipRect.left, clipRect.top, clipRect.width ()-1.f, clipRect.height ()-1.f);
 		CGContextClipToRect (gCGContext, cgClipRect);
 
 		QuartzSetLineDash (context, lineStyle, frameWidth);
@@ -1433,7 +1438,11 @@ void CDrawContext::drawRect (const CRect &_rect, const CDrawStyle drawStyle)
 		if (drawStyle == kDrawFilled || drawStyle == kDrawFilledAndStroked)
 			CGContextFillRect (context, r);
 		if (drawStyle == kDrawStroked || drawStyle == kDrawFilledAndStroked)
+		{
+			r.size.width--;
+			r.size.height--;
 			CGContextStrokeRect (context, r);
+		}
 		releaseCGContext (context);
 	}
 	#else
@@ -1501,7 +1510,7 @@ void CDrawContext::fillRect (const CRect &_rect)
 		CGContextScaleCTM (context, 1, -1);
 		CGContextTranslateCTM (context, 0.5f, 0.5f);
 
-		CGRect cgClipRect = CGRectMake (clipRect.left - 0.5f, clipRect.top - 0.5f, clipRect.width () + 0.5f, clipRect.height () + 0.5f);
+		CGRect cgClipRect = CGRectMake (clipRect.left, clipRect.top, clipRect.width ()-1.f, clipRect.height ()-1.f);
 		CGContextClipToRect (gCGContext, cgClipRect);
 
 		CGContextFillRect (context, r);
@@ -1547,7 +1556,7 @@ void CDrawContext::drawEllipse (const CRect &_rect, const CDrawStyle drawStyle)
 		CGContextScaleCTM (context, 1, -1);
 		CGContextTranslateCTM (context, 0.5f, 0.5f);
 
-		CGRect cgClipRect = CGRectMake (clipRect.left, clipRect.top, clipRect.width (), clipRect.height ());
+		CGRect cgClipRect = CGRectMake (clipRect.left, clipRect.top, clipRect.width ()-1.f, clipRect.height ()-1.f);
 		CGContextClipToRect (gCGContext, cgClipRect);
 
 		CGPathDrawingMode m = kCGPathStroke;
@@ -1614,7 +1623,7 @@ void CDrawContext::fillEllipse (const CRect &_rect)
 		CGContextScaleCTM (context, 1, -1);
 		CGContextTranslateCTM (context, 0.5f, 0.5f);
 
-		CGRect cgClipRect = CGRectMake (clipRect.left, clipRect.top, clipRect.width (), clipRect.height ());
+		CGRect cgClipRect = CGRectMake (clipRect.left, clipRect.top, clipRect.width ()-1.f, clipRect.height ()-1.f);
 		CGContextClipToRect (gCGContext, cgClipRect);
 
 		CGContextSaveGState (context);
@@ -1849,7 +1858,7 @@ void CDrawContext::drawArc (const CRect &_rect, const float _startAngle, const f
 		CGContextScaleCTM (context, 1, -1);
 		CGContextTranslateCTM (context, 0.5f, 0.5f);
 
-		CGRect cgClipRect = CGRectMake (clipRect.left, clipRect.top, clipRect.width (), clipRect.height ());
+		CGRect cgClipRect = CGRectMake (clipRect.left, clipRect.top, clipRect.width ()-1.f, clipRect.height ()-1.f);
 		CGContextClipToRect (gCGContext, cgClipRect);
 
 		QuartzSetLineDash (context, lineStyle, frameWidth);
@@ -1928,7 +1937,7 @@ void CDrawContext::drawArc (const CRect &_rect, const CPoint &_point1, const CPo
 		CGContextScaleCTM (context, 1, -1);
 		CGContextTranslateCTM (context, 0.5f, 0.5f);
 
-		CGRect cgClipRect = CGRectMake (clipRect.left, clipRect.top, clipRect.width (), clipRect.height ());
+		CGRect cgClipRect = CGRectMake (clipRect.left, clipRect.top, clipRect.width ()-1.f, clipRect.height ()-1.f);
 		CGContextClipToRect (gCGContext, cgClipRect);
 
 		QuartzSetLineDash (context, lineStyle, frameWidth);
@@ -2010,7 +2019,7 @@ void CDrawContext::fillArc (const CRect &_rect, const CPoint &_point1, const CPo
 		CGContextScaleCTM (context, 1, -1);
 		CGContextTranslateCTM (context, 0.5f, 0.5f);
 
-		CGRect cgClipRect = CGRectMake (clipRect.left, clipRect.top, clipRect.width (), clipRect.height ());
+		CGRect cgClipRect = CGRectMake (clipRect.left, clipRect.top, clipRect.width ()-1.f, clipRect.height ()-1.f);
 		CGContextClipToRect (gCGContext, cgClipRect);
 
 		CGContextBeginPath (context);
@@ -2285,9 +2294,9 @@ void CDrawContext::setFont (CFont fontID, const long size, long style)
 }
 
 //------------------------------------------------------------------------------
-long CDrawContext::getStringWidth (const char *pStr)
+CCoord CDrawContext::getStringWidth (const char *pStr)
 {
-	long result = 0;
+	CCoord result = 0;
 
 	#if MAC
 	#if QUARTZ
@@ -3481,7 +3490,7 @@ void COffscreenContext::copyFrom (CDrawContext *pContext, CRect destRect, CPoint
 		if (image)
 		{
 			CGRect dest;
-			dest.origin.x = destRect.left + srcOffset.h + pContext->offset.h;
+			dest.origin.x = destRect.left - srcOffset.h + pContext->offset.h;
 			dest.origin.y = (destRect.top + pContext->offset.v) * -1 - (getHeight () - srcOffset.v);
 			dest.size.width = getWidth ();
 			dest.size.height = getHeight ();
@@ -3822,6 +3831,22 @@ bool CView::setAttribute (const CViewAttributeID id, const long inSize, void* in
 	return false;
 }
 
+#if DEBUG
+//-----------------------------------------------------------------------------
+void CView::dumpInfo ()
+{
+	CRect viewRect = getViewSize (viewRect);
+	DebugPrint ("left:%4d, top:%4d, width:%4d, height:%4d ", viewRect.left, viewRect.top, viewRect.getWidth (), viewRect.getHeight ());
+	if (getMouseEnabled ())
+		DebugPrint ("(Mouse Enabled) ");
+	if (getTransparency ())
+		DebugPrint ("(Transparent) ");
+	CRect mouseRect = getMouseableArea (mouseRect);
+	if (mouseRect != viewRect)
+		DebugPrint (" (Mouseable Area: left:%4d, top:%4d, width:%4d, height:%4d ", mouseRect.left, mouseRect.top, mouseRect.getWidth (), mouseRect.getHeight ());
+}
+#endif
+
 #define FOREACHSUBVIEW for (CCView *pSv = pFirstView; pSv; pSv = pSv->pNext) {CView *pV = pSv->pView;
 #define ENDFOR }
 
@@ -3858,15 +3883,13 @@ CFrame::CFrame (const CRect &inSize, void *inSystemWindow, void *inEditor)
 		pfnAlphaBlend = (PFNALPHABLEND)GetProcAddress (hInstMsimg32dll, "AlphaBlend");
 
 		// get OS version
-		OSVERSIONINFOEX	osvi;
+		memset (&gSystemVersion, 0, sizeof (gSystemVersion));
+		gSystemVersion.dwOSVersionInfoSize = sizeof (gSystemVersion);
 
-		memset (&osvi, 0, sizeof (osvi));
-		osvi.dwOSVersionInfoSize = sizeof (osvi);
-
-		if (GetVersionEx ((OSVERSIONINFO *)&osvi))
+		if (GetVersionEx ((OSVERSIONINFO *)&gSystemVersion))
 		{
 			// Is this win NT or better?
-			if (osvi.dwPlatformId >= VER_PLATFORM_WIN32_NT)
+			if (gSystemVersion.dwPlatformId >= VER_PLATFORM_WIN32_NT)
 			{
 				// Yes, then TransparentBlt doesn't have the memory-leak and can be safely used
 				pfnTransparentBlt = (PFNTRANSPARENTBLT)GetProcAddress (hInstMsimg32dll, "TransparentBlt");
@@ -4162,6 +4185,7 @@ bool CFrame::initFrame (void *systemWin)
 		EmbedControl(controlRef, rootControl);	
 	}
 	size.offset (-size.left, -size.top);
+	mouseableArea.offset (-size.left, -size.top);
 	#endif
 	#endif
 	
@@ -4546,6 +4570,10 @@ void CFrame::doIdleStuff ()
 	if (pEditor)
 		((AEffGUIEditor*)pEditor)->doIdleStuff ();
 #endif
+#if (MAC && QUARTZ)
+	if (pFrameContext)
+		pFrameContext->synchronizeCGContext ();
+#endif
 }
 
 //-----------------------------------------------------------------------------
@@ -4614,7 +4642,7 @@ HWND CFrame::getOuterWindow () const
 #endif
 
 //-----------------------------------------------------------------------------
-bool CFrame::setPosition (long x, long y)
+bool CFrame::setPosition (CCoord x, CCoord y)
 {
 	if (!getOpenFlag ())
 		return false;
@@ -4643,7 +4671,7 @@ bool CFrame::setPosition (long x, long y)
 }
 
 //-----------------------------------------------------------------------------
-bool CFrame::getPosition (long &x, long &y) const
+bool CFrame::getPosition (CCoord &x, CCoord &y) const
 {
 	if (!getOpenFlag ())
 		return false;
@@ -4730,7 +4758,7 @@ void CFrame::setViewSize (CRect& inRect)
 }
 
 //-----------------------------------------------------------------------------
-bool CFrame::setSize (long width, long height)
+bool CFrame::setSize (CCoord width, CCoord height)
 {
 	if (!getOpenFlag ())
 		return false;
@@ -4765,8 +4793,8 @@ bool CFrame::setSize (long width, long height)
 #endif
 
 	// keep old values
-	long oldWidth  = size.width ();
-	long oldHeight = size.height ();
+	CCoord oldWidth  = size.width ();
+	CCoord oldHeight = size.height ();
 
 	// set the new size
 	size.right  = size.left + width;
@@ -5160,6 +5188,16 @@ void CFrame::invalidate (const CRect &rect)
 	}
 	ENDFOR
 }
+
+#if DEBUG
+//-----------------------------------------------------------------------------
+void CFrame::dumpHierarchy ()
+{
+	dumpInfo ();
+	DebugPrint ("\n");
+	CViewContainer::dumpHierarchy ();
+}
+#endif
 
 //-----------------------------------------------------------------------------
 // CCView Implementation
@@ -6191,6 +6229,33 @@ void CViewContainer::restoreDrawContext (CDrawContext* pContext, long save[4])
 	pContext->offset.v = save[3];
 }
 
+#if DEBUG
+static long _debugDumpLevel = 0;
+//-----------------------------------------------------------------------------
+void CViewContainer::dumpInfo ()
+{
+	static const char* modeString[] = { "Normal Update Mode", "Only Dirty Update Mode"};
+	DebugPrint ("CViewContainer: Mode: %s, Offscreen:%s ", modeString[mode], bDrawInOffscreen ? "Yes" : "No");
+	CView::dumpInfo ();
+}
+
+//-----------------------------------------------------------------------------
+void CViewContainer::dumpHierarchy ()
+{
+	_debugDumpLevel++;
+	FOREACHSUBVIEW
+		for (long i = 0; i < _debugDumpLevel; i++)
+			DebugPrint ("\t");
+		pV->dumpInfo ();
+		DebugPrint ("\n");
+		if (pV->isTypeOf ("CViewContainer"))
+			((CViewContainer*)pV)->dumpHierarchy ();
+	ENDFOR
+	_debugDumpLevel--;
+}
+
+#endif
+
 #if WINDOWS && USE_LIBPNG
 class PNGResourceStream
 {
@@ -6346,7 +6411,7 @@ CBitmap::CBitmap (long resourceID)
 }
 
 //-----------------------------------------------------------------------------
-CBitmap::CBitmap (CFrame &frame, long width, long height)
+CBitmap::CBitmap (CFrame &frame, CCoord width, CCoord height)
 	: width (width), height (height)
 {
 	#if DEBUG
@@ -7216,13 +7281,45 @@ void CBitmap::drawAlphaBlend (CDrawContext *pContext, CRect &rect, const CPoint 
 		blendFunction.AlphaFormat = 0;//AC_SRC_NO_ALPHA;
 		#endif
 		#if DYNAMICALPHABLEND
-		(*pfnAlphaBlend) ((HDC)pContext->pSystemContext, 
-					rect.left + pContext->offset.h, rect.top + pContext->offset.v,
-					rect.width (), rect.height (), 
-					(HDC)hdcMemory,
-					offset.h, offset.v,
-					rect.width (), rect.height (),
-					blendFunction);
+		// check for Win98 as it has a bug in AlphaBlend
+		if (gSystemVersion.dwMajorVersion == 4 && gSystemVersion.dwPlatformId == VER_PLATFORM_WIN32_WINDOWS && gSystemVersion.dwMinorVersion == 10)
+		{
+			HGDIOBJ hOldObj1;
+			HDC hdcMemory1 = CreateCompatibleDC ((HDC)pContext->pSystemContext);
+			HBITMAP hbmp = CreateCompatibleBitmap(hdcMemory, rect.width(), rect.height());
+			//this does NOT work:
+			//HBITMAP hbmp = CreateCompatibleBitmap(hdcMemory1, rect.width(), rect.height());
+			hOldObj1 = SelectObject (hdcMemory1, hbmp);
+
+			//copy contents of original picture in hdcMemory 
+			//from the offset to hdcMemory1 (0,0)
+			long res = BitBlt((HDC)hdcMemory1, 
+					0, 0, 
+					rect.width(), rect.height(), 
+					(HDC)hdcMemory, offset.h, offset.v, SRCCOPY);
+
+			//Copy the resulting image with alpha blending:
+			(*pfnAlphaBlend) ((HDC)pContext->pSystemContext, 
+						rect.left + pContext->offset.h, rect.top + pContext->offset.v,
+						rect.width (), rect.height (), 
+						hdcMemory1,
+						0, 0,//the offset is done in BitBlt
+						rect.width (), rect.height (),
+						blendFunction);
+			SelectObject (hdcMemory1, hOldObj1);
+			DeleteDC(hdcMemory1);
+			DeleteObject(hbmp);
+		}
+		else
+		{
+			(*pfnAlphaBlend) ((HDC)pContext->pSystemContext, 
+						rect.left + pContext->offset.h, rect.top + pContext->offset.v,
+						rect.width (), rect.height (), 
+						(HDC)hdcMemory,
+						offset.h, offset.v,
+						rect.width (), rect.height (),
+						blendFunction);
+		}
 		#else
 		AlphaBlend ((HDC)pContext->pSystemContext, 
 					rect.left + pContext->offset.h, rect.top + pContext->offset.v,
@@ -9655,7 +9752,6 @@ bool checkResolveLink (const char* nativePath, char* resolved)
 
 #elif MAC
 BEGIN_NAMESPACE_VSTGUI
-static long dragType = 0;
 
 #if MAC_OLD_DRAG
 //-----------------------------------------------------------------------------

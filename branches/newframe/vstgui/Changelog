@@ -1,3 +1,8 @@
+2005-02-18 arne
+
+	* new coordinate typedef CCoord, so that we have the possibility to change the coordinate system to floating point
+	* small bugfix in CDrawDevice::drawRect
+	
 2005-01-04 arne
 
 	* the following CDrawContext methods have a new optional parameter "CDrawStyle": drawPolygon, drawRect, drawArc, drawEllipse.

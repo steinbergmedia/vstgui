@@ -2,7 +2,7 @@
 // VST Plug-Ins SDK
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 //
-// Version 3.0       $Date: 2005-01-04 14:30:44 $
+// Version 3.0       $Date: 2005-02-25 12:11:34 $
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
@@ -150,16 +150,22 @@ struct CPoint;
 	virtual bool isTypeOf (const char* s) const \
 		{ return (!strcmp (s, (#name))) ? true : parent::isTypeOf (s); }\
 
+#ifdef VSTGUI_FLOAT_COORDINATES
+typedef float CCoord;
+#else
+typedef long CCoord;
+#endif
+
 //-----------------------------------------------------------------------------
 // Structure CRect
 //-----------------------------------------------------------------------------
 struct CRect
 {
-	CRect (long left = 0, long top = 0, long right = 0, long bottom = 0)
+	CRect (CCoord left = 0, CCoord top = 0, CCoord right = 0, CCoord bottom = 0)
 	:	left (left), top (top), right (right), bottom (bottom) {}
 	CRect (const CRect& r)
 	:	left (r.left), top (r.top), right (r.right), bottom (r.bottom) {}
-	CRect& operator () (long left, long top, long right, long bottom)
+	CRect& operator () (CCoord left, CCoord top, CCoord right, CCoord bottom)
 	{
 		if (left < right)
 			this->left = left, this->right = right;
@@ -180,23 +186,23 @@ struct CRect
 	{ return (left == other.left && right == other.right &&
 				top == other.top && bottom == other.bottom); }
 	
-	inline long width () const  { return right - left; }
-	inline long height () const { return bottom - top; }
+	inline CCoord width () const  { return right - left; }
+	inline CCoord height () const { return bottom - top; }
 
-	inline long getWidth () const  { return right - left; }
-	inline long getHeight () const { return bottom - top; }
+	inline CCoord getWidth () const  { return right - left; }
+	inline CCoord getHeight () const { return bottom - top; }
 
-	inline void setWidth (long width) { right = left + width; }
-	inline void setHeight (long height) { bottom = top + height; }
+	inline void setWidth (CCoord width) { right = left + width; }
+	inline void setHeight (CCoord height) { bottom = top + height; }
 
-	CRect &offset (long x, long y)
+	CRect &offset (CCoord x, CCoord y)
 	{ left += x; right += x; top += y; bottom += y; return *this; }
 
-	CRect &inset (long deltaX, long deltaY)
+	CRect &inset (CCoord deltaX, CCoord deltaY)
 	{ left += deltaX; right -= deltaX; top += deltaY; bottom -= deltaY;
     return *this; }
 
-	CRect &moveTo (long x, long y)
+	CRect &moveTo (CCoord x, CCoord y)
 	{ long vDiff = y - top; long hDiff = x - left; 
 	top += vDiff; bottom += vDiff; left += hDiff; right += hDiff;
 	return *this; }
@@ -216,16 +222,16 @@ struct CRect
 	void bound (const CRect& rect);
 
 	union
-	{ long left; long x;};
+	{ CCoord left; CCoord x;};
 
 	union
-	{ long top; long y;};
+	{ CCoord top; CCoord y;};
 
 	union
-	{ long right; long x2;};
+	{ CCoord right; CCoord x2;};
 
 	union
-	{ long bottom; long y2;};
+	{ CCoord bottom; CCoord y2;};
 };
 
 //-----------------------------------------------------------------------------
@@ -233,8 +239,8 @@ struct CRect
 //-----------------------------------------------------------------------------
 struct CPoint
 {
-	CPoint (long h = 0, long v = 0) : h (h), v (v) {}
-	CPoint& operator () (long h, long v) 
+	CPoint (CCoord h = 0, CCoord v = 0) : h (h), v (v) {}
+	CPoint& operator () (CCoord h, CCoord v)
 	{ this->h = h; this->v = v; return *this; }
 
 	bool isInside (CRect& r) const
@@ -246,14 +252,14 @@ struct CPoint
 	bool operator == (const CPoint &other) const
 	{ return (h == other.h && v == other.v); }
 
-	CPoint &offset (long h, long v)
+	CPoint &offset (CCoord h, CCoord v)
 	{ this->h += h; this->v += v; return *this; }
 
 	union
-	{ long h; long x;};
+	{ CCoord h; CCoord x;};
 
 	union
-	{ long v; long y;};
+	{ CCoord v; CCoord y;};
 };
 
 //-----------------------------------------------------------------------------
@@ -522,8 +528,8 @@ public:
 	void       setLineStyle (CLineStyle style);				///< set the current line style
 	CLineStyle getLineStyle () const { return lineStyle; }	///< get the current line style
 
-	void   setLineWidth (long width);						///< set the current line width
-	long   getLineWidth () const { return frameWidth; }		///< get the current line width
+	void   setLineWidth (CCoord width);						///< set the current line width
+	CCoord getLineWidth () const { return frameWidth; }		///< get the current line width
 
 	void      setDrawMode (CDrawMode mode);					///< set the current draw mode, see CDrawMode
 	CDrawMode getDrawMode () const { return drawMode; }		///< get the current draw mode, see CDrawMode
@@ -544,7 +550,7 @@ public:
 	CFont  getFont () const { return fontId; }							///< get current font
 	long   getFontSize () const { return fontSize; }	///< get current font size
 
-	long getStringWidth (const char* pStr);	///< get the width of a string
+	CCoord getStringWidth (const char* pStr);	///< get the width of a string
 
 	void drawString (const char *pString, const CRect &rect, const short opaque = false,
 					 const CHoriTxtAlign hAlign = kCenterText);	///< draw a string
@@ -590,7 +596,7 @@ protected:
 	CColor fontColor;
 	CPoint penLoc;
 
-	long   frameWidth;
+	CCoord   frameWidth;
 	CColor frameColor;
 	CColor fillColor;
 	CLineStyle lineStyle;
@@ -656,15 +662,15 @@ public:
 	void copyFrom (CDrawContext *pContext, CRect destRect, CPoint srcOffset = CPoint (0, 0));	///< copy from offscreen to pContext
 	void copyTo (CDrawContext* pContext, CRect& srcRect, CPoint destOffset = CPoint (0, 0));	///< copy to offscreen from pContext
 
-	inline long getWidth () const { return width; }
-	inline long getHeight () const { return height; }
+	inline CCoord getWidth () const { return width; }
+	inline CCoord getHeight () const { return height; }
 
 	//-------------------------------------------
 protected:
 	CBitmap *pBitmap;
 	CBitmap *pBitmapBg;
-	long    height;
-	long    width;
+	CCoord    height;
+	CCoord    width;
 	bool    bDestroyPixmap;
 
 	CColor  backgroundColor;
@@ -698,15 +704,15 @@ class CBitmap : public CReferenceCounter
 {
 public:
 	CBitmap (long resourceID);	///< Create a pixmap from a resource identifier
-	CBitmap (CFrame &frame, long width, long height);	///< Create a pixmap with a given size.
+	CBitmap (CFrame &frame, CCoord width, CCoord height);	///< Create a pixmap with a given size.
 	virtual ~CBitmap ();
 
-	void draw (CDrawContext *pContext, CRect &rect, const CPoint &offset = CPoint (0, 0));	///< Draw the pixmap using a given rect as output position and a given offset of its source pixmap.
-	void drawTransparent (CDrawContext *pContext, CRect &rect, const CPoint &offset = CPoint (0, 0));
-	void drawAlphaBlend  (CDrawContext *pContext, CRect &rect, const CPoint &offset = CPoint (0, 0), unsigned char alpha = 128);	///< Same as CBitmap::draw except that it uses the alpha value to draw the bitmap alpha blended.
+	virtual void draw (CDrawContext *pContext, CRect &rect, const CPoint &offset = CPoint (0, 0));	///< Draw the pixmap using a given rect as output position and a given offset of its source pixmap.
+	virtual void drawTransparent (CDrawContext *pContext, CRect &rect, const CPoint &offset = CPoint (0, 0));
+	virtual void drawAlphaBlend  (CDrawContext *pContext, CRect &rect, const CPoint &offset = CPoint (0, 0), unsigned char alpha = 128);	///< Same as CBitmap::draw except that it uses the alpha value to draw the bitmap alpha blended.
 
-	inline long getWidth () const { return width; }
-	inline long getHeight () const { return height; }
+	inline CCoord getWidth () const { return width; }
+	inline CCoord getHeight () const { return height; }
 
 	bool isLoaded () const;
 	void *getHandle () const;
@@ -733,8 +739,8 @@ protected:
 	virtual bool loadFromPath (const void* platformPath);	// load from a platform path. On Windows it's a C string and on Mac OS X its a CFURLRef.
 
 	long resourceID;
-	long width;
-	long height;
+	CCoord width;
+	CCoord height;
 
 	CColor transparentCColor;
 
@@ -813,8 +819,8 @@ public:
 	virtual void setTransparency (bool val) { bTransparencyEnabled = val; }			///< set views transparent state
 	virtual bool getTransparency () const { return bTransparencyEnabled; }			///< is view transparent ?
 
-	long getHeight () const { return size.height (); }								///< get the height of the view
-	long getWidth ()  const { return size.width (); }								///< get the width of the view
+	CCoord getHeight () const { return size.height (); }								///< get the height of the view
+	CCoord getWidth ()  const { return size.width (); }								///< get the width of the view
 
 	virtual void setViewSize (CRect &rect);											///< set views size
 	virtual CRect &getViewSize (CRect &rect) const { rect = size; return rect; }	///< returns the current view size
@@ -838,6 +844,10 @@ public:
 	virtual long notify (CView* sender, const char* message);
 	void redraw ();
 	virtual void redrawRect (CDrawContext* context, const CRect& rect);
+
+	#if DEBUG
+	virtual void dumpInfo ();
+	#endif
 
 	virtual bool isTypeOf (const char* s) const
 		{ return (!strcmp (s, "CView")); }
@@ -948,6 +958,11 @@ public:
 
 	CLASS_METHODS(CViewContainer, CView)
 
+	#if DEBUG
+	virtual void dumpInfo ();
+	virtual void dumpHierarchy ();
+	#endif
+
 	//-------------------------------------------
 protected:
 	bool hitTestSubViews (const CPoint& where, const long buttons = -1);
@@ -985,10 +1000,10 @@ public:
 	virtual unsigned long getTicks () const;	///< get the current time (in ms)
 	virtual long getKnobMode () const;			///< get hosts knob mode
 
-	virtual bool setPosition (long x, long y);
-	virtual bool getPosition (long &x, long &y) const;
+	virtual bool setPosition (CCoord x, CCoord y);
+	virtual bool getPosition (CCoord &x, CCoord &y) const;
 
-	virtual bool setSize (long width, long height);
+	virtual bool setSize (CCoord width, CCoord height);
 	virtual bool getSize (CRect *pSize) const;
 	virtual bool getSize (CRect &pSize) const;
 
@@ -1051,6 +1066,10 @@ public:
 	GC       gc;
 	GC       getGC ()         const { return gc; }
 #endif
+
+	#if DEBUG
+	virtual void dumpHierarchy ();
+	#endif
 
 	CLASS_METHODS(CFrame, CViewContainer)
 
