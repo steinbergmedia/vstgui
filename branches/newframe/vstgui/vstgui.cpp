@@ -2,7 +2,7 @@
 // VST Plug-Ins SDK
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 //
-// Version 3.0       $Date: 2005-02-25 12:11:33 $ 
+// Version 3.0       $Date: 2005-03-05 14:03:06 $ 
 //
 // Added Motif/Windows vers.: Yvan Grabit              01.98
 // Added Mac version        : Charlie Steinberg        02.98
@@ -280,7 +280,7 @@ long pSystemVersion;
 
 #if MACX
 //-----------------------------------------------------------------------------
-#include <QuickTime/ImageCompression.h>
+#include <QuickTime/QuickTime.h>
 
 #if QUARTZ
 const char* gMacXfontNames[] = {
@@ -1027,7 +1027,7 @@ void CDrawContext::lineTo (const CPoint& _point)
 		if (drawMode == kAntialias)
 			CGContextSetLineWidth (context, 2 * frameWidth);
 		CGContextScaleCTM (context, 1, -1);
-		CGContextTranslateCTM (context, 0.5f, 0.5f);
+			CGContextTranslateCTM (context, 0.5f, 0.5f);
 
 		CGRect cgClipRect = CGRectMake (clipRect.left, clipRect.top, clipRect.width ()-1.f, clipRect.height ()-1.f);
 		CGContextClipToRect (gCGContext, cgClipRect);
@@ -1435,14 +1435,15 @@ void CDrawContext::drawRect (const CRect &_rect, const CDrawStyle drawStyle)
 
 		QuartzSetLineDash (context, lineStyle, frameWidth);
 
-		if (drawStyle == kDrawFilled || drawStyle == kDrawFilledAndStroked)
-			CGContextFillRect (context, r);
-		if (drawStyle == kDrawStroked || drawStyle == kDrawFilledAndStroked)
-		{
-			r.size.width--;
-			r.size.height--;
-			CGContextStrokeRect (context, r);
-		}
+		CGContextBeginPath (context);
+		CGContextMoveToPoint (context, rect.left, rect.top);
+		CGContextAddLineToPoint (context, rect.right, rect.top);
+		CGContextAddLineToPoint (context, rect.right, rect.bottom);
+		CGContextAddLineToPoint (context, rect.left, rect.bottom);
+		CGContextClosePath (context);
+
+		CGContextDrawPath (context, m);
+
 		releaseCGContext (context);
 	}
 	#else
@@ -1466,9 +1467,9 @@ void CDrawContext::drawRect (const CRect &_rect, const CDrawStyle drawStyle)
 		CColor2RGBColor (frameColor, col);
 		RGBForeColor (&col);
 		MoveTo (rect.left, rect.top);
-		LineTo (rect.right, rect.top);
-		LineTo (rect.right, rect.bottom);
-		LineTo (rect.left, rect.bottom);
+		LineTo (rect.right-1, rect.top);
+		LineTo (rect.right-1, rect.bottom-1);
+		LineTo (rect.left, rect.bottom-1);
 		LineTo (rect.left, rect.top);
 	}
 	SetGWorld (OrigPort, OrigDevice);
@@ -3871,6 +3872,7 @@ CFrame::CFrame (const CRect &inSize, void *inSystemWindow, void *inEditor)
 
 #if WINDOWS
 	pHwnd = 0;
+	dropTarget = 0;
 	OleInitialize (0);
 
 	#if DYNAMICALPHABLEND
@@ -3945,6 +3947,7 @@ CFrame::CFrame (const CRect& inSize, const char* inTitle, void* inEditor, const 
 
 #if WINDOWS
 	pHwnd = 0;
+	dropTarget = 0;
 	OleInitialize (0);
 
 	#if DYNAMICALPHABLEND
@@ -4247,8 +4250,13 @@ bool CFrame::setDropActive (bool val)
 #if WINDOWS
 	if (!pHwnd)
 		return false;
+	if (dropTarget)
+		delete (IDropTarget*)dropTarget;
 	if (val)
-		RegisterDragDrop ((HWND)pHwnd, (IDropTarget*)createDropTarget (this));
+	{
+		dropTarget = createDropTarget (this);
+		RegisterDragDrop ((HWND)pHwnd, (IDropTarget*)dropTarget);
+	}
 	else
 		RevokeDragDrop ((HWND)pHwnd);
 
@@ -4485,8 +4493,7 @@ void CFrame::update (CDrawContext *pContext)
 		#endif
 		FOREACHSUBVIEW
 			#if USE_CLIPPING_DRAWRECT
-			CRect viewSize;
-			viewSize = pV->getViewSize (viewSize);
+			CRect viewSize (pV->size);
 			viewSize.bound (oldClipRect);
 			dc->setClipRect (viewSize);
 			#endif
@@ -5521,8 +5528,7 @@ void CViewContainer::draw (CDrawContext *pContext)
 	// draw each view
 	FOREACHSUBVIEW
 		#if USE_CLIPPING_DRAWRECT
-		CRect vSize;
-		pV->getViewSize (vSize);
+		CRect vSize (pV->size);
 		vSize.bound (oldClip);
 		pC->setClipRect (vSize);
 		#endif
@@ -5634,7 +5640,7 @@ void CViewContainer::drawRect (CDrawContext *pContext, const CRect& _updateRect)
 		if (pV->checkUpdate (clientRect))
 		{
 			#if USE_CLIPPING_DRAWRECT
-			CRect viewSize = pV->getViewSize (viewSize);
+			CRect viewSize (pV->size);
 			viewSize.bound (newClip);
 			if (viewSize.getWidth () == 0 || viewSize.getHeight () == 0)
 				continue;
@@ -6002,8 +6008,7 @@ void CViewContainer::update (CDrawContext *pContext)
 							else
 							{
 								CPoint offset;
-								CRect viewSize;
-								pV->getViewSize (viewSize);
+								CRect viewSize (pV->size);
 								pV->localToFrame (offset);
 								viewSize.offset (offset.x, offset.y);
 								getFrame ()->drawRect (pContext, viewSize);
@@ -6047,8 +6052,7 @@ void CViewContainer::update (CDrawContext *pContext)
 							oldMode = child->getMode ();
 							child->setMode (kNormalUpdate);
 						}
-						CRect viewSize;
-						pV->getViewSize (viewSize);
+						CRect viewSize (pV->size);
 						drawBackgroundRect (pContext, viewSize);
 						pV->update (pContext);
 						if (child)
@@ -8229,6 +8233,10 @@ long CFileSelector::run (VstFileSelect *vstFileSelect)
 		// new approach for supporting long filenames on mac os x is to use unix path mode
 		// if vstFileSelect->future[0] is 1 on entry and 0 on exit the resulting paths are UTF8 encoded paths
 		bool unixPathMode = (vstFileSelect->future[0] == 1);
+		#if !PLUGGUI
+		if (effect && effect->canDo ("wantsUTF8Paths"))
+			unixPathMode = true;
+		#endif
 		#endif
 		NavEventUPP	eventUPP = NewNavEventUPP (CFileSelector::navEventProc);
 		if (vstFileSelect->command == kVstFileSave)

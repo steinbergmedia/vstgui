@@ -3,7 +3,7 @@
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 // Standard Control Objects
 //
-// Version 3.0       $Date: 2005-02-25 12:11:33 $
+// Version 3.0       $Date: 2005-03-05 14:03:05 $
 //
 // Added new objects        : Michael Schmidt          08.97
 // Added new objects        : Yvan Grabit              01.98
@@ -4914,11 +4914,26 @@ CSpecialDigit::CSpecialDigit (const CRect &size,
 	if (iNumbers > 7)
 		iNumbers = 7;
 
-	// store coordinates of x/y pos of each digit
-	for (long i = 0; i < iNumbers; i++)
+	if (xpos == NULL)
 	{
-		this->xpos[i] = xpos[i];
-		this->ypos[i] = ypos[i];
+		// automatically init xpos/ypos if not provided by caller
+		const int numw = background->getWidth();
+		int x = size.left;
+		for (long i = 0; i < iNumbers; i++)
+		{
+			this->xpos[i] = x; 
+			this->ypos[i] = size.top;
+			x += numw;
+		}
+	} 
+	else 
+	{
+		// store coordinates of x/y pos of each digit
+		for (long i = 0; i < iNumbers; i++)
+		{
+			this->xpos[i] = xpos[i];
+			this->ypos[i] = ypos[i];
+		}
 	}
 
 	setMax ((float)pow (10, iNumbers) - 1.0f);

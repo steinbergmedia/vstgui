@@ -2,7 +2,7 @@
 // VST Plug-Ins SDK
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 //
-// Version 3.0       $Date: 2005-02-25 12:11:34 $
+// Version 3.0       $Date: 2005-03-05 14:03:06 $
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
@@ -1089,9 +1089,9 @@ protected:
 	bool    bDropActive;
 
 #if WINDOWS
-	void    *pHwnd;
-	//HDC      hdc;
+	void      *pHwnd;
 	HINSTANCE hInstMsimg32dll;
+	void*     dropTarget;
 
 #elif MOTIF
 	Colormap  colormap;

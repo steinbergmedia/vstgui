@@ -452,30 +452,34 @@ bool CScrollbar::onWheel (CDrawContext *pContext, const CPoint &where, float dis
 //-----------------------------------------------------------------------------
 void CScrollbar::drawBackground (CDrawContext* pContext)
 {
+	CRect r (size);
+	r.right--;
+	r.bottom--;
 	if (drawer)
-		drawer->drawScrollbarBackground (pContext, size, style, this);
+		drawer->drawScrollbarBackground (pContext, r, style, this);
 	else
 	{
 		pContext->setLineWidth (1);
 		pContext->setFillColor (backgroundColor);
-		pContext->fillRect (size);
 		pContext->setFrameColor (frameColor);
-		pContext->drawRect (size);
+		pContext->drawRect (r, kDrawFilledAndStroked);
 	}
 }
 
 //-----------------------------------------------------------------------------
 void CScrollbar::drawScroller (CDrawContext* pContext, const CRect& size)
 {
+	CRect r (size);
+	r.right--;
+	r.bottom--;
 	if (drawer)
-		drawer->drawScrollbarScroller (pContext, size, style, this);
+		drawer->drawScrollbarScroller (pContext, r, style, this);
 	else
 	{
 		pContext->setLineWidth (1);
 		pContext->setFillColor (scrollerColor);
-		pContext->fillRect (size);
 		pContext->setFrameColor (frameColor);
-		pContext->drawRect (size);
+		pContext->drawRect (r, kDrawFilledAndStroked);
 	}
 }
 
