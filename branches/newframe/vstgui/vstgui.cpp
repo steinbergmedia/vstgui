@@ -2,7 +2,7 @@
 // VST Plug-Ins SDK
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 //
-// Version 3.0       $Date: 2004-10-03 14:47:20 $ 
+// Version 3.0       $Date: 2004-11-29 15:27:24 $ 
 //
 // Added Motif/Windows vers.: Yvan Grabit              01.98
 // Added Mac version        : Charlie Steinberg        02.98
@@ -297,7 +297,9 @@ const char* gMacXfontNames[] = {
 #define	M_PI		3.14159265358979323846	/* pi */
 #endif
 
+static inline void QuartzSetLineDash (CGContextRef context, CLineStyle style, long lineWidth);
 static inline double radians (double degrees) { return degrees * M_PI / 180; }
+CGColorSpaceRef GetGenericRGBColorSpace ();
 
 #else
 const unsigned char* gMacXfontNames[] = {
@@ -487,7 +489,7 @@ CColor kCyanCColor   = {0  , 255, 255, 255};
 
 CDrawContext::CDrawContext (CFrame *inFrame, void *inSystemContext, void *inWindow)
 :	pSystemContext (inSystemContext), pWindow (inWindow), pFrame (inFrame), 
-	frameWidth (1), lineStyle (kLineSolid), drawMode (kCopyMode)
+	frameWidth (0), lineStyle (kLineOnOffDash), drawMode (kAntialias), fontId (kNumStandardFonts), fontSize (-1)
 	#if WINDOWS
 	,pBrush (0), pFont (0), pPen (0), pOldBrush (0), pOldPen (0), pOldFont (0)
 	#elif MAC && !QUARTZ
@@ -503,9 +505,11 @@ CDrawContext::CDrawContext (CFrame *inFrame, void *inSystemContext, void *inWind
 		pFrame->getViewSize (clipRect);
 	else
 		clipRect (0, 0, 1000, 1000);
-	frameColor = kWhiteCColor;
-	fillColor  = kBlackCColor;
-	fontColor  = kWhiteCColor;
+
+	const CColor notInitalized = {0, 0, 0, 0};
+	frameColor = notInitalized;
+	fillColor  = notInitalized;
+	fontColor  = notInitalized;
 
 	// offsets use by offscreen
 	offset (0, 0);
@@ -553,10 +557,12 @@ CDrawContext::CDrawContext (CFrame *inFrame, void *inSystemContext, void *inWind
 	gCGContext = 0;
 	if (pSystemContext)
 	{
-		CGContextSaveGState (gCGContext); // save the original state
 		gCGContext = (CGContextRef) pSystemContext;
+		CGContextSaveGState (gCGContext); // save the original state
 		CGContextScaleCTM (gCGContext, 1, -1);
 		CGContextSetShouldAntialias (gCGContext, false);
+		CGContextSetFillColorSpace (gCGContext, GetGenericRGBColorSpace ());
+		CGContextSetStrokeColorSpace (gCGContext, GetGenericRGBColorSpace ()); 
 		CGContextSaveGState (gCGContext);
 		setClipRect (clipRect);
 		if (pFrame)
@@ -575,15 +581,19 @@ CDrawContext::CDrawContext (CFrame *inFrame, void *inSystemContext, void *inWind
 			CGContextTranslateCTM (gCGContext, 0, rect.bottom - rect.top);
 			CGContextTranslateCTM (gCGContext, offsetScreen.x, -offsetScreen.y);
 			CGContextSetShouldAntialias (gCGContext, false);
+			CGContextSetFillColorSpace (gCGContext, GetGenericRGBColorSpace ());
+			CGContextSetStrokeColorSpace (gCGContext, GetGenericRGBColorSpace ()); 
 			CGContextSaveGState (gCGContext);
 			setClipRect (clipRect);
 			if (pFrame)
 				pFrame->setDrawContext (this);
 		}
 	}
+	needToSynchronizeCGContext = false;
 
 	#else
 	pSystemContext = pWindow;
+
 	#endif
 	
 #elif MOTIF 
@@ -603,16 +613,18 @@ CDrawContext::CDrawContext (CFrame *inFrame, void *inSystemContext, void *inWind
 
 #endif
 
-	if (pSystemContext)
+	if (1 || pSystemContext)
 	{
 		// set the default values
-		setFrameColor (frameColor);
-		setLineStyle (lineStyle);
-		
+		setFrameColor (kWhiteCColor);
+		setLineStyle (kLineSolid);
+		setLineWidth (1);
 #if !MOTIF
-		setFillColor (fillColor);
-		setFontColor (fontColor);
+		setFillColor (kBlackCColor);
+		setFontColor (kWhiteCColor);
 #endif
+		setFont (kSystemFont);
+		setDrawMode (kCopyMode);
 	}
 }
 
@@ -650,6 +662,7 @@ CDrawContext::~CDrawContext ()
 	if (gCGContext)
 	{
 		CGContextRestoreGState (gCGContext); // restore the original state
+		CGContextRestoreGState (gCGContext); // we need to do it twice !!!
 		CGContextSynchronize (gCGContext);
 		if (!pSystemContext && pWindow)
 			QDEndCGContext (GetWindowPort ((WindowRef)pWindow), &gCGContext);
@@ -712,6 +725,8 @@ void CDrawContext::lineTo (const CPoint& _point)
 
 		CGRect cgClipRect = CGRectMake (clipRect.left, clipRect.top, clipRect.width (), clipRect.height ());
 		CGContextClipToRect (gCGContext, cgClipRect);
+
+		QuartzSetLineDash (context, lineStyle, frameWidth);
 
 		CGContextBeginPath (context);
 		CGContextMoveToPoint (context, penLoc.h, penLoc.v);
@@ -815,6 +830,44 @@ void CDrawContext::lineTo (const CPoint& _point)
 }
 
 //-----------------------------------------------------------------------------
+void CDrawContext::drawLines (const CPoint* points, const long& numLines)
+{
+	#if QUARTZ
+	CGContextRef context = beginCGContext ();
+	if (context) 
+	{
+		if (drawMode == kAntialias)
+			CGContextSetLineWidth (context, 2 * frameWidth);
+		CGContextScaleCTM (context, 1, -1);
+
+		CGRect cgClipRect = CGRectMake (clipRect.left, clipRect.top, clipRect.width (), clipRect.height ());
+		CGContextClipToRect (context, cgClipRect);
+
+		CGContextBeginPath (context);
+		for (long i = 0; i < numLines * 2; i+=2)
+		{
+			CPoint p1 (points[i]);
+			CPoint p2 (points[i+1]);
+			p1.offset (offset.x, offset.y);
+			p2.offset (offset.x, offset.y);
+			CGContextMoveToPoint (context, p1.x, p1.y);
+			CGContextAddLineToPoint (context, p2.x, p2.y);
+		}
+		CGContextDrawPath (context, kCGPathStroke);
+		releaseCGContext (context);
+	}
+
+	#else
+	// default implementation, when no platform optimized code is implemented
+	for (long i = 0; i < numLines * 2; i+=2)
+	{
+		moveTo (points[i]);
+		lineTo (points[i+1]);
+	}
+	#endif
+}
+
+//-----------------------------------------------------------------------------
 void CDrawContext::polyLine (const CPoint *pPoints, long numberOfPoints)
 {
 #if WINDOWS
@@ -852,6 +905,8 @@ void CDrawContext::polyLine (const CPoint *pPoints, long numberOfPoints)
 
 		CGRect cgClipRect = CGRectMake (clipRect.left, clipRect.top, clipRect.width (), clipRect.height ());
 		CGContextClipToRect (gCGContext, cgClipRect);
+
+		QuartzSetLineDash (context, lineStyle, frameWidth);
 
 		CGContextBeginPath (context);
 		CGContextMoveToPoint (context, pPoints[0].h + offset.h, pPoints[0].v + offset.v);
@@ -911,6 +966,9 @@ void CDrawContext::polyLine (const CPoint *pPoints, long numberOfPoints)
 //-----------------------------------------------------------------------------
 void CDrawContext::setLineStyle (CLineStyle style)
 {
+	if (lineStyle == style)
+		return;
+
 	lineStyle = style;
 
 #if WINDOWS
@@ -935,17 +993,9 @@ void CDrawContext::setLineStyle (CLineStyle style)
 
 #elif MAC
 	#if QUARTZ
-	if (gCGContext)
-	{
-		float offset = 0;
-		float dotf[2] = { 0.5, 0.5 };
-		if (lineStyle == kLineOnOffDash)
-		{
-			dotf[0] = .5f;
-			dotf[1] = 1.5f;
-		}
-		CGContextSetLineDash (gCGContext, offset, dotf, 2);
-	}
+
+	// nothing to do here
+
 	#else
 	CGrafPtr OrigPort;
 	GDHandle OrigDevice;
@@ -994,6 +1044,9 @@ void CDrawContext::setLineStyle (CLineStyle style)
 //-----------------------------------------------------------------------------
 void CDrawContext::setLineWidth (long width)
 {
+	if (frameWidth == width)
+		return;
+
 	frameWidth = width;
 	
 #if WINDOWS
@@ -1346,6 +1399,8 @@ void CDrawContext::drawRect (const CRect &_rect)
 		CGRect cgClipRect = CGRectMake (clipRect.left - 0.5f, clipRect.top - 0.5f, clipRect.width () + 0.5f, clipRect.height () + 0.5f);
 		CGContextClipToRect (gCGContext, cgClipRect);
 
+		QuartzSetLineDash (context, lineStyle, frameWidth);
+
 		CGContextStrokeRect (context, r);
 		releaseCGContext (context);
 	}
@@ -1454,6 +1509,9 @@ void CDrawContext::drawEllipse (const CRect &_rect)
 		{
 
 		CGContextSaveGState (context);
+
+		QuartzSetLineDash (context, lineStyle, frameWidth);
+
 		CGContextBeginPath (context);
 
 		CGRect cgRect = CGRectMake (rect.left, rect.top, rect.width (), rect.height ());
@@ -1538,9 +1596,9 @@ void CDrawContext::fillEllipse (const CRect &_rect)
 void CDrawContext::drawPoint (const CPoint &_point, CColor color)
 {
 	CPoint point (_point);
-	point.offset (offset.h, offset.v);
 
 #if WINDOWS
+	point.offset (offset.h, offset.v);
 	SetPixel ((HDC)pSystemContext, point.h, point.v, RGB(color.red, color.green, color.blue));
 
 #elif MOTIF
@@ -1727,6 +1785,8 @@ void CDrawContext::drawArc (const CRect &_rect, const float _startAngle, const f
 		CGRect cgClipRect = CGRectMake (clipRect.left, clipRect.top, clipRect.width (), clipRect.height ());
 		CGContextClipToRect (gCGContext, cgClipRect);
 
+		QuartzSetLineDash (context, lineStyle, frameWidth);
+
 		CGContextBeginPath (context);
 		addOvalToPath (context, CPoint (rect.left + rect.width () / 2, rect.top + rect.height () / 2), rect.width () / 2, rect.height () / 2, -_startAngle, -_endAngle);
 
@@ -1804,9 +1864,10 @@ void CDrawContext::drawArc (const CRect &_rect, const CPoint &_point1, const CPo
 		CGRect cgClipRect = CGRectMake (clipRect.left, clipRect.top, clipRect.width (), clipRect.height ());
 		CGContextClipToRect (gCGContext, cgClipRect);
 
+		QuartzSetLineDash (context, lineStyle, frameWidth);
+
 		CGContextBeginPath (context);
 		addOvalToPath (context, CPoint (rect.left + rect.width () / 2, rect.top + rect.height () / 2), rect.width () / 2, rect.height () / 2, 90-angle1, (90-angle1)-angle2);
-//		CGContextClosePath (context);
 		CGContextDrawPath (context, kCGPathStroke);
 		releaseCGContext (context);
 	}
@@ -1961,6 +2022,9 @@ void CDrawContext::setFontColor (const CColor color)
 //-----------------------------------------------------------------------------
 void CDrawContext::setFrameColor (const CColor color)
 {
+	if (frameColor == color)
+		return;
+		
 	frameColor = color;
 
 #if WINDOWS
@@ -1999,6 +2063,9 @@ void CDrawContext::setFrameColor (const CColor color)
 //-----------------------------------------------------------------------------
 void CDrawContext::setFillColor (const CColor color)
 {
+	if (fillColor == color)
+		return;
+
 	fillColor = color;
 
 #if WINDOWS
@@ -2047,6 +2114,9 @@ void CDrawContext::setFont (CFont fontID, const long size, long style)
 {
 	if (fontID < 0 || fontID >= kNumStandardFonts)
 		fontID = kSystemFont;
+
+	if (fontId == fontID && fontSize == (size != 0 ? size : gStandardFontSize[fontID]))
+		return;
 
 	fontId = fontID;
 	if (size != 0)
@@ -2775,6 +2845,15 @@ bool CDrawContext::waitDrag ()
 }
 
 //-----------------------------------------------------------------------------
+void CDrawContext::forget ()
+{
+	#if QUARTZ
+	synchronizeCGContext ();
+	#endif
+	CReferenceCounter::forget ();
+}
+
+//-----------------------------------------------------------------------------
 #if MOTIF
 //-----------------------------------------------------------------------------
 long CDrawContext::getIndexColor (CColor color)
@@ -2878,7 +2957,26 @@ void CDrawContext::releaseCGContext (CGContextRef context)
 	if (context)
 	{
 		CGContextRestoreGState (context);
-		CGContextSynchronize (context);
+		needToSynchronizeCGContext = true;
+	}
+}
+
+void CDrawContext::synchronizeCGContext ()
+{
+	if (needToSynchronizeCGContext && gCGContext)
+	{
+		CGContextSynchronize (gCGContext);
+		needToSynchronizeCGContext = false;
+	}
+}
+
+void QuartzSetLineDash (CGContextRef context, CLineStyle style, long lineWidth)
+{
+	if (style == kLineOnOffDash)
+	{
+		float offset = 0;
+		float dotf[2] = { lineWidth*0.5f, lineWidth*1.5f };
+		CGContextSetLineDash (context, offset, dotf, 2);
 	}
 }
 
@@ -2988,13 +3086,15 @@ COffscreenContext::COffscreenContext (CDrawContext *pContext, CBitmap *pBitmapBg
 		{
 			PixMapHandle pixMap = GetGWorldPixMap ((GWorldPtr)pBitmapBg->getHandle ());
 			LockPixels (pixMap);
-			CGColorSpaceRef colorspace = CGColorSpaceCreateDeviceRGB ();
 			size_t pixDepth = GetPixDepth (pixMap) / 4;
 			size_t rowBytes = GetPixRowBytes (pixMap);
-			gCGContext = CGBitmapContextCreate (GetPixBaseAddr (pixMap), width, height, pixDepth, rowBytes, colorspace, kCGImageAlphaPremultipliedFirst);
-			CGColorSpaceRelease (colorspace);
+			gCGContext = CGBitmapContextCreate (GetPixBaseAddr (pixMap), width, height, pixDepth, rowBytes, GetGenericRGBColorSpace (), kCGImageAlphaPremultipliedFirst);
 			if (gCGContext)
+			{
 				CGContextTranslateCTM (gCGContext, 0, (float)height);
+				CGContextSetFillColorSpace (gCGContext, GetGenericRGBColorSpace ());
+				CGContextSetStrokeColorSpace (gCGContext, GetGenericRGBColorSpace ());
+			}
 		}
 	}
 	else
@@ -3091,7 +3191,6 @@ COffscreenContext::COffscreenContext (CFrame *pFrame, long width, long height, c
 #elif MAC
 	#if QUARTZ
 	CGContextRef    context = NULL; 
-	CGColorSpaceRef colorSpace; 
 	int             bitmapByteCount; 
 	int             bitmapBytesPerRow; 
 
@@ -3099,9 +3198,6 @@ COffscreenContext::COffscreenContext (CFrame *pFrame, long width, long height, c
 	// (8 bits each of alpha, R, G, B) 
 	bitmapBytesPerRow   = width * 4; 
 	bitmapByteCount     = bitmapBytesPerRow * height; 
-
-	// create an RGB color space 
-	colorSpace = CGColorSpaceCreateDeviceRGB ();
 
 	// create the bitmap 
 	offscreenBitmap = malloc (bitmapByteCount);
@@ -3114,7 +3210,7 @@ COffscreenContext::COffscreenContext (CFrame *pFrame, long width, long height, c
 		height, 
 		8,              // bits per component 
 		bitmapBytesPerRow, 
-		colorSpace, 
+		GetGenericRGBColorSpace (), 
 		kCGImageAlphaPremultipliedFirst);
 
 		if (context == NULL)
@@ -3127,11 +3223,11 @@ COffscreenContext::COffscreenContext (CFrame *pFrame, long width, long height, c
 		else
 		{
 			CGContextTranslateCTM (context, 0, (float)height);
+			CGContextSetFillColorSpace (context, GetGenericRGBColorSpace ());
+			CGContextSetStrokeColorSpace (context, GetGenericRGBColorSpace ()); 
 		}
 	}
 
-	// the context retains the color space, so we can release it 
-	CGColorSpaceRelease (colorSpace);
 	gCGContext = context;
 
 	#else
@@ -3313,9 +3409,8 @@ void COffscreenContext::copyFrom (CDrawContext *pContext, CRect destRect, CPoint
 
 		CGImageRef image = 0;
 		CGDataProviderRef provider = CGDataProviderCreateWithData (NULL, CGBitmapContextGetData (gCGContext), size, NULL);
-		CGColorSpaceRef colorspace = CGColorSpaceCreateDeviceRGB ();
 		CGImageAlphaInfo alphaInfo = CGBitmapContextGetAlphaInfo (gCGContext);
-		image = CGImageCreate (CGBitmapContextGetWidth (gCGContext), CGBitmapContextGetHeight (gCGContext), 8 , pixDepth, pixRowBytes, colorspace, alphaInfo, provider, NULL, 0, kCGRenderingIntentDefault);
+		image = CGImageCreate (CGBitmapContextGetWidth (gCGContext), CGBitmapContextGetHeight (gCGContext), 8 , pixDepth, pixRowBytes, GetGenericRGBColorSpace (), alphaInfo, provider, NULL, 0, kCGRenderingIntentDefault);
 		if (image)
 		{
 			CGRect dest;
@@ -3339,7 +3434,6 @@ void COffscreenContext::copyFrom (CDrawContext *pContext, CRect destRect, CPoint
 			CGImageRelease (image);
 		}
 		CGDataProviderRelease (provider);
-		CGColorSpaceRelease (colorspace);
 		
 		pContext->releaseCGContext (context);
 	}
@@ -3474,17 +3568,19 @@ void CView::getMouseLocation (CDrawContext* context, CPoint &point)
 	}
 }
 
+#if ENABLE_DEPRECATED_METHODS
 //-----------------------------------------------------------------------------
-void CView::getFrameTopLeftPos (CPoint& topLeft)
+void CView::getFrameTopLeftPos (CPoint& topLeft) const
 {
 	topLeft.h += size.left;
 	topLeft.v += size.top;
 	if (pParentView && pParentView->notify (this, kMsgCheckIfViewContainer) == kMessageNotified)
 		pParentView->getFrameTopLeftPos (topLeft);
 }
+#endif
 
 //-----------------------------------------------------------------------------
-CPoint& CView::frameToLocal (CPoint& point)
+CPoint& CView::frameToLocal (CPoint& point) const
 {
 	if (pParentView && pParentView->isTypeOf ("CViewContainer"))
 		return pParentView->frameToLocal (point);
@@ -3492,7 +3588,7 @@ CPoint& CView::frameToLocal (CPoint& point)
 }
 
 //-----------------------------------------------------------------------------
-CPoint& CView::localToFrame (CPoint& point)
+CPoint& CView::localToFrame (CPoint& point) const
 {
 	if (pParentView && pParentView->isTypeOf ("CViewContainer"))
 		return pParentView->localToFrame (point);
@@ -3596,7 +3692,7 @@ void CView::setViewSize (CRect &rect)
 }
 
 //-----------------------------------------------------------------------------
-void *CView::getEditor ()
+void *CView::getEditor () const
 { 
 	return pParentFrame ? pParentFrame->getEditor () : 0; 
 }
@@ -3664,7 +3760,7 @@ bool CView::setAttribute (const CViewAttributeID id, const long inSize, void* in
 CFrame::CFrame (const CRect &inSize, void *inSystemWindow, void *inEditor)
 :	CViewContainer (inSize, 0, 0),
 	pSystemWindow (inSystemWindow), pEditor (inEditor),
-	pModalView (0), pEditView (0), bFirstDraw (true), bDropActive (false),
+	pModalView (0), pFocusView (0), bFirstDraw (true), bDropActive (false),
 	pFrameContext (0), bAddedWindow (false), pVstWindow (0), defaultCursor (0)
 {
 	setOpenFlag (true);
@@ -3716,7 +3812,7 @@ CFrame::CFrame (const CRect &inSize, void *inSystemWindow, void *inEditor)
 	initFrame (pSystemWindow);
 
 #if WINDOWS
-#if USE_GLOBAL_CONTEXT
+	#if USE_GLOBAL_CONTEXT
 	pFrameContext = new CDrawContext (this, 0, getSystemWindow ());
 	#endif
 
@@ -3740,7 +3836,7 @@ CFrame::CFrame (const CRect &inSize, void *inSystemWindow, void *inEditor)
 CFrame::CFrame (const CRect& inSize, const char* inTitle, void* inEditor, const long inStyle)
 :	CViewContainer (inSize, 0, 0),
 	pSystemWindow (0), pEditor (inEditor), pVstWindow (0), 
-	pModalView (0), pEditView (0), bFirstDraw (true), bDropActive (false),
+	pModalView (0), pFocusView (0), bFirstDraw (true), bDropActive (false),
 	pFrameContext (0), defaultCursor (0)
 {
 	bAddedWindow  = true;
@@ -4173,10 +4269,10 @@ void CFrame::mouse (CDrawContext *pContext, CPoint &where, long buttons)
 	if (!pContext)
 		pContext = pFrameContext;
 	
-	if (pEditView)
+	if (pFocusView)
 	{
-		pEditView->looseFocus ();
-		pEditView = 0;
+		pFocusView->looseFocus ();
+		pFocusView = 0;
 	}
 
 	if (buttons == -1 && pContext)
@@ -4198,8 +4294,8 @@ long CFrame::onKeyDown (VstKeyCode& keyCode)
 {
 	long result = -1;
 
-	if (pEditView)
-		result = pEditView->onKeyDown (keyCode);
+	if (pFocusView)
+		result = pFocusView->onKeyDown (keyCode);
 
 	if (result == -1 && pModalView)
 		result = pModalView->onKeyDown (keyCode);
@@ -4217,8 +4313,8 @@ long CFrame::onKeyUp (VstKeyCode& keyCode)
 {
 	long result = -1;
 
-	if (pEditView)
-		result = pEditView->onKeyUp (keyCode);
+	if (pFocusView)
+		result = pFocusView->onKeyUp (keyCode);
 
 	if (result == -1 && pModalView)
 		result = pModalView->onKeyUp (keyCode);
@@ -4316,7 +4412,7 @@ void CFrame::update (CDrawContext *pContext)
 }
 
 //-----------------------------------------------------------------------------
-bool CFrame::isSomethingDirty ()
+bool CFrame::isSomethingDirty () const
 {
 	if (/*pModalView ||*/ isDirty ())
 		return true;
@@ -4343,16 +4439,16 @@ void CFrame::idle ()
 	if (!isSomethingDirty ())
 		return;
 		
+	#if BEOS
+	if (pPlugView->LockLooperWithTimeout (0) != B_OK)
+		return;
+	#endif
+
 	CDrawContext *pContext = createDrawContext ();
 	
-		#if BEOS
-		if (pPlugView->LockLooperWithTimeout (0) != B_OK)
-			return;
-		#endif
-
 	update (pContext);
 
-		pContext->forget ();
+	pContext->forget ();
 
 	#if BEOS
 	pPlugView->UnlockLooper ();
@@ -4372,7 +4468,7 @@ void CFrame::doIdleStuff ()
 }
 
 //-----------------------------------------------------------------------------
-unsigned long CFrame::getTicks ()
+unsigned long CFrame::getTicks () const
 {
 #if PLUGGUI
 	if (pEditor)
@@ -4385,7 +4481,7 @@ unsigned long CFrame::getTicks ()
 }
 
 //-----------------------------------------------------------------------------
-long CFrame::getKnobMode ()
+long CFrame::getKnobMode () const
 {
 #if PLUGGUI
 	return PluginGUIEditor::getKnobMode ();
@@ -4466,7 +4562,7 @@ bool CFrame::setPosition (long x, long y)
 }
 
 //-----------------------------------------------------------------------------
-bool CFrame::getPosition (long &x, long &y)
+bool CFrame::getPosition (long &x, long &y) const
 {
 	if (!getOpenFlag ())
 		return false;
@@ -4634,7 +4730,7 @@ bool CFrame::setSize (long width, long height)
 		GetPortBounds (GetWindowPort ((WindowRef)getSystemWindow ()), &bounds);
 		SizeWindow ((WindowRef)getSystemWindow (), (bounds.right - bounds.left) - oldWidth + width,
 								(bounds.bottom - bounds.top) - oldHeight + height, true);
-		#if MACX
+		#if MACX && !QUARTZ
 		SetPort (GetWindowPort ((WindowRef)getSystemWindow ()));
 		#endif
 		#if QUARTZ
@@ -4681,7 +4777,7 @@ bool CFrame::setSize (long width, long height)
 }
 
 //-----------------------------------------------------------------------------
-bool CFrame::getSize (CRect *pRect)
+bool CFrame::getSize (CRect *pRect) const
 {
 	if (!getOpenFlag ())
 		return false;
@@ -4757,7 +4853,7 @@ bool CFrame::getSize (CRect *pRect)
 }
 
 //-----------------------------------------------------------------------------
-bool CFrame::getSize (CRect& outSize)
+bool CFrame::getSize (CRect& outSize) const
 {
 	return getSize (&outSize);
 }
@@ -4790,7 +4886,6 @@ void CFrame::beginEdit (long index)
 #else
 	if (pEditor)
 		((AEffGUIEditor*)pEditor)->beginEdit (index);
-//		((AudioEffectX*)(((AEffGUIEditor*)pEditor)->getEffect ()))->beginEdit (index);
 #endif
 }
 
@@ -4805,12 +4900,11 @@ void CFrame::endEdit (long index)
 #else
 	if (pEditor)
 		((AEffGUIEditor*)pEditor)->endEdit (index);
-//		((AudioEffectX*)(((AEffGUIEditor*)pEditor)->getEffect ()))->endEdit (index);
 #endif
 }
 
 //-----------------------------------------------------------------------------
-CView *CFrame::getCurrentView ()
+CView *CFrame::getCurrentView () const
 {
 	if (pModalView)
 		return pModalView;
@@ -4877,6 +4971,12 @@ void CFrame::setCursor (CCursorType type)
 		case kCursorSizeAll:
 			SetCursor (LoadCursor (0, IDC_SIZEALL));
 			break;
+		case kCursorNotAllowed:
+			SetCursor (LoadCursor (0, IDC_NO));
+			break;
+		case kCursorHand:
+			SetCursor (LoadCursor (0, IDC_HAND));
+			break;
 		default:
 			SetCursor ((HCURSOR)defaultCursor);
 			break;
@@ -4908,6 +5008,9 @@ void CFrame::setCursor (CCursorType type)
 			break;
 		case kCursorNotAllowed:
 			SetThemeCursor (pSystemVersion < 0x1020 ? kThemeArrowCursor : kThemeNotAllowedCursor);
+			break;
+		case kCursorHand:
+			SetThemeCursor (kThemeOpenHandCursor);
 			break;
 		default:
 			SetThemeCursor (kThemeArrowCursor);
@@ -4945,13 +5048,13 @@ void CFrame::setCursor (CCursorType type)
 }
 
 //-----------------------------------------------------------------------------
-void CFrame::setEditView (CView *pView)
+void CFrame::setFocusView (CView *pView)
 {
-	CView *pOldEditView = pEditView;
-	pEditView = pView;
+	CView *pOldFocusView = pFocusView;
+	pFocusView = pView;
 
-	if (pOldEditView)
-		pOldEditView->looseFocus ();
+	if (pOldFocusView)
+		pOldFocusView->looseFocus ();
 }
 
 //-----------------------------------------------------------------------------
@@ -5145,7 +5248,7 @@ void CViewContainer::removeView (CView *pView, const bool &withForget)
 }
 
 //-----------------------------------------------------------------------------
-bool CViewContainer::isChild (CView *pView)
+bool CViewContainer::isChild (CView *pView) const
 {
 	bool found = false;
 
@@ -5163,7 +5266,7 @@ bool CViewContainer::isChild (CView *pView)
 }
 
 //-----------------------------------------------------------------------------
-long CViewContainer::getNbViews ()
+long CViewContainer::getNbViews () const
 {
 	long nb = 0;
 	CCView *pV = pFirstView;
@@ -5176,7 +5279,7 @@ long CViewContainer::getNbViews ()
 }
 
 //-----------------------------------------------------------------------------
-CView *CViewContainer::getView (long index)
+CView *CViewContainer::getView (long index) const
 {
 	long nb = 0;
 	CCView *pV = pFirstView;
@@ -5622,11 +5725,10 @@ void CViewContainer::update (CDrawContext *pContext)
 				#if USE_ALPHA_BLEND
 				if (bTransparencyEnabled)
 				{
-					CPoint topLeft;
-					getFrameTopLeftPos (topLeft);
-					topLeft.offset (-size.left, -size.top);
 					CRect updateRect (size);
-					updateRect.offset (topLeft.x, topLeft.y);
+					CPoint offset (0,0);
+					localToFrame (offset);
+					updateRect.offset (offset.x, offset.y);
 					getFrame ()->drawRect (pContext, updateRect);
 				}
 				else
@@ -5670,20 +5772,16 @@ void CViewContainer::update (CDrawContext *pContext)
 			{
 				if (bDirty)
 				{
-					CPoint topLeft;
-					getFrameTopLeftPos (topLeft);
-					topLeft.offset (-size.left, -size.top);
 					CRect updateRect (size);
-					updateRect.offset (topLeft.x, topLeft.y);
+					CPoint offset (0,0);
+					localToFrame (offset);
+					updateRect.offset (offset.x, offset.y);
 					getFrame ()->drawRect (pContext, updateRect);
 				}
 				else
 				{
 					CRect updateRect (size);
 					updateRect.offset (-size.left, -size.top);
-					CPoint topLeft;
-					getFrameTopLeftPos (topLeft);
-					topLeft.offset (-size.left, -size.top);
 					FOREACHSUBVIEW
 						if (pV->isDirty () && pV->checkUpdate (updateRect))
 						{
@@ -5693,10 +5791,11 @@ void CViewContainer::update (CDrawContext *pContext)
 							}
 							else
 							{
+								CPoint offset;
 								CRect viewSize;
 								pV->getViewSize (viewSize);
-								viewSize.offset (size.left, size.top);
-								viewSize.offset (topLeft.x, topLeft.y);
+								pV->localToFrame (offset);
+								viewSize.offset (offset.x, offset.y);
 								getFrame ()->drawRect (pContext, viewSize);
 							}
 						}
@@ -5773,7 +5872,7 @@ void CViewContainer::takeFocus (CDrawContext *pContext)
 }
 
 //-----------------------------------------------------------------------------
-bool CViewContainer::isDirty ()
+bool CViewContainer::isDirty () const
 {
 	if (bDirty)
 		return true;
@@ -5786,7 +5885,7 @@ bool CViewContainer::isDirty ()
 }
 
 //-----------------------------------------------------------------------------
-CView *CViewContainer::getCurrentView ()
+CView *CViewContainer::getCurrentView () const
 {
 	if (!pParentFrame)
 		return 0;
@@ -5810,7 +5909,7 @@ CView *CViewContainer::getCurrentView ()
 }
 
 //-----------------------------------------------------------------------------
-CView *CViewContainer::getViewAt (const CPoint& p, bool deep)
+CView *CViewContainer::getViewAt (const CPoint& p, bool deep) const
 {
 	if (!pParentFrame)
 		return 0;
@@ -5840,7 +5939,7 @@ CView *CViewContainer::getViewAt (const CPoint& p, bool deep)
 }
 
 //-----------------------------------------------------------------------------
-CPoint& CViewContainer::frameToLocal (CPoint& point)
+CPoint& CViewContainer::frameToLocal (CPoint& point) const
 {
 	point.offset (-size.left, -size.top);
 	if (pParentView && pParentView->isTypeOf ("CViewContainer"))
@@ -5849,7 +5948,7 @@ CPoint& CViewContainer::frameToLocal (CPoint& point)
 }
 
 //-----------------------------------------------------------------------------
-CPoint& CViewContainer::localToFrame (CPoint& point)
+CPoint& CViewContainer::localToFrame (CPoint& point) const
 {
 	point.offset (size.left, size.top);
 	if (pParentView && pParentView->isTypeOf ("CViewContainer"))
@@ -5983,206 +6082,14 @@ CBitmap::CBitmap (long resourceID)
 	gNbCBitmap++;
 	#endif
 
-#if WINDOWS
+#if WINDOWS || MAC
 	pMask = 0;
 	pHandle = 0;
-	#if USE_LIBPNG
-	PNGResourceStream resStream;
-	if (resStream.open (resourceID))
-	{
-		// setup libpng
-		png_structp png_ptr;
-		png_infop info_ptr;
-		png_ptr = png_create_read_struct (PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
-		if (png_ptr)
-		{
-			info_ptr = png_create_info_struct (png_ptr);
-			if (info_ptr)
-			{
-				if (setjmp (png_jmpbuf (png_ptr)) == 0)
-				{
-					int bit_depth, color_type;
-					png_set_read_fn (png_ptr, (void *)&resStream, PNGResourceStream::readCallback);
-					png_read_info (png_ptr, info_ptr);
-					png_get_IHDR (png_ptr, info_ptr, (png_uint_32*)&width, (png_uint_32*)&height, &bit_depth, &color_type, 0, 0, 0);
-					long bytesPerRow = width * (32 / 8);
-					while (bytesPerRow & 0x03)
-						bytesPerRow++;
-					// create BITMAP
-					BITMAPINFO* bmInfo = new BITMAPINFO;
-					BITMAPINFOHEADER* header = (BITMAPINFOHEADER*)bmInfo;
-					memset (header, 0, sizeof(BITMAPINFOHEADER));
-					header->biSize = sizeof(BITMAPINFOHEADER);
-					header->biWidth = width;
-					header->biHeight = height;
-					header->biPlanes = 1;
-					header->biBitCount = 32;
-					header->biCompression = BI_RGB;
-					header->biClrUsed = 0;
-					void* bits;
-					pHandle = CreateDIBSection (NULL, bmInfo, DIB_RGB_COLORS, &bits, NULL, 0);
-					delete bmInfo;
-					if (pHandle)
-					{
-						if (color_type == PNG_COLOR_TYPE_PALETTE)
-							png_set_palette_to_rgb (png_ptr);
-						if (color_type == PNG_COLOR_TYPE_GRAY || color_type == PNG_COLOR_TYPE_GRAY_ALPHA)
-							png_set_gray_to_rgb (png_ptr);
-						if (color_type == PNG_COLOR_TYPE_GRAY && bit_depth < 8)
-							png_set_gray_1_2_4_to_8 (png_ptr);
-						if (png_get_valid (png_ptr, info_ptr, PNG_INFO_tRNS))
-							png_set_tRNS_to_alpha (png_ptr);
-						else
-							png_set_filler (png_ptr, 0xFF, PNG_FILLER_AFTER);
-						if (bit_depth == 16)
-						{
-							png_set_swap (png_ptr);
-							png_set_strip_16 (png_ptr);
-						}
-						if (color_type == PNG_COLOR_TYPE_RGB || color_type == PNG_COLOR_TYPE_RGB_ALPHA)
-							png_set_bgr (png_ptr);
-						png_read_update_info (png_ptr, info_ptr);
-
-						unsigned char** rows = new unsigned char*[1];
-						rows[0] = (unsigned char*)bits + (height-1) * bytesPerRow;
-						for (long i = 0; i < height; i++)
-						{
-							png_read_rows (png_ptr, rows, NULL, 1);
-							rows[0] -= bytesPerRow;
-						}
-						delete [] rows;
-						png_read_end (png_ptr, 0);
-						// premultiply alpha
-						unsigned long* pixelPtr = (unsigned long*)bits;
-						for (int y = 0; y <height; y++)
-						{
-							for (int x = 0; x < width; x++)
-							{
-								unsigned char* pixel = (unsigned char*)pixelPtr;
-								if (pixel[3] != 0)
-								{
-									pixel[0] = ((pixel[0] * pixel[3]) >> 8);
-									pixel[1] = ((pixel[1] * pixel[3]) >> 8);
-									pixel[2] = ((pixel[2] * pixel[3]) >> 8);
-								}
-								else
-									*pixelPtr = 0UL;
-								pixelPtr++;
-							}
-						}
-					}
-				}
-			}
-			png_destroy_read_struct (&png_ptr, &info_ptr, NULL);
-		}
-		return;
-	}
-	#endif
-	pHandle = LoadBitmap (GetInstance (), MAKEINTRESOURCE (resourceID));
-	BITMAP bm;
-	if (pHandle && GetObject (pHandle, sizeof (bm), &bm))
-	{
-		width  = bm.bmWidth; 
-		height = bm.bmHeight; 
-	}
-
-#elif MAC
-	
-	pHandle = 0;
-	pMask = 0;
 	#if QUARTZ
 	cgImage = 0;
 	#endif
-	#if MACX
-	#if PLUGGUI
-	extern CFBundleRef ghInst;
-	CFBundleRef gBundleRef = ghInst;
-	#endif
-	if (gBundleRef)
-	{
-		char filename [PATH_MAX];
-		sprintf (filename, "bmp%05d", (int)resourceID);
-		CFStringRef cfStr = CFStringCreateWithCString (NULL, filename, kCFStringEncodingASCII);
-		if (cfStr)
-		{
-			CFURLRef url = NULL;
-			int i = 0;
-			while (url == NULL)
-			{
-				static CFStringRef resTypes [] = { CFSTR("bmp"), CFSTR("png"), CFSTR("jpg"), CFSTR("pict"), NULL };
-				url = CFBundleCopyResourceURL ((CFBundleRef)gBundleRef, cfStr, resTypes[i], NULL);
-				if (resTypes[++i] == NULL)
-					break;
-			}
-			CFRelease (cfStr);
-			if (url)
-			{
-				FSRef fsRef;
-				if (CFURLGetFSRef (url, &fsRef))
-				{
-					FSSpec fsSpec;
-					FSCatalogInfoBitmap infoBitmap = kFSCatInfoNone;
-					if (FSGetCatalogInfo (&fsRef, infoBitmap, NULL, NULL, &fsSpec, NULL) == noErr)
-					{
-						ComponentInstance gi;
-						GetGraphicsImporterForFile (&fsSpec, &gi);
-						if (gi)
-						{
-							Rect r;
-							GraphicsImportGetSourceRect (gi, &r);
-							OSErr err = NewGWorld ((GWorldPtr*)&pHandle, 32, &r, 0, 0, 0);
-							if (!err)
-							{
-								width = r.right;
-								height = r.bottom;
-								GraphicsImportSetGWorld (gi, (GWorldPtr)pHandle, 0);
-								GraphicsImportDraw (gi);
-							}
-							CloseComponent (gi);
-						}
-					}
-				}
-				CFRelease (url);
-			}
-			else
-			{
-				#if DEVELOPMENT
-				fprintf (stderr, "Bitmap Nr.:%d not found.\n", resourceID);
-				#endif
-			}
-		}
-	}
-	#endif
-	
-	if (pHandle == 0)
-	{
-		Handle picHandle = GetResource ('PICT', resourceID);
-		if (picHandle)
-		{
-			HLock (picHandle);
-			
-			PictInfo info;
-			GetPictInfo ((PicHandle)picHandle, &info, recordComments, 0, systemMethod, 0);
-			width  = info.sourceRect.right;
-			height = info.sourceRect.bottom;
-			
-			OSErr err = NewGWorld ((GWorldPtr*)&pHandle, 32, &info.sourceRect, 0, 0, 0);
-			if (!err)
-			{
-				GWorldPtr oldPort;
-				GDHandle oldDevice;
-				GetGWorld (&oldPort, &oldDevice);
-				SetGWorld ((GWorldPtr)pHandle, 0);
-				
-				DrawPicture ((PicHandle)picHandle, &info.sourceRect);
-				
-				SetGWorld (oldPort, oldDevice);
-			}
 
-			HUnlock (picHandle);
-			ReleaseResource (picHandle);
-		}
-	}
+	loadFromResource (resourceID);
 
 #elif MOTIF
 	bool found = false;
@@ -6330,6 +6237,12 @@ CBitmap::CBitmap ()
 //-----------------------------------------------------------------------------
 CBitmap::~CBitmap ()
 {
+	dispose ();
+}
+
+//-----------------------------------------------------------------------------
+void CBitmap::dispose ()
+{
 	#if DEBUG
 	gNbCBitmap--;
 	gBitmapAllocation -= height * width;
@@ -6340,31 +6253,48 @@ CBitmap::~CBitmap ()
 		DeleteObject (pHandle);
 	if (pMask)
 		DeleteObject (pMask);
-	
+
+	pHandle = 0;
+	pMask = 0;
+		
 	#elif MAC
 	#if QUARTZ
 	if (cgImage)
 		CGImageRelease ((CGImageRef)cgImage);
+	cgImage = 0;
 	#endif
 	if (pHandle)
 		DisposeGWorld ((GWorldPtr)pHandle);
 	if (pMask)
 		DisposeGWorld ((GWorldPtr)pMask);
 
+	pHandle = 0;
+	pMask = 0;
+	
 	#elif MOTIF
 	if (pHandle)
 		XFreePixmap (pXdisplay, (Pixmap)pHandle);
 	if (pMask) 
 		XFreePixmap (pXdisplay, (Pixmap)pMask);
 
+	pHandle = 0;
+	pMask = 0;
+	
 	#elif BEOS
 	if (bbitmap)
 		delete bbitmap;
+	
+	bbitmap = 0;
+
 	#endif
+
+	width = 0;
+	height = 0;
+
 }
 
 //-----------------------------------------------------------------------------
-void *CBitmap::getHandle ()
+void *CBitmap::getHandle () const
  {
 	#if WINDOWS||MOTIF
 	return pHandle; 
@@ -6378,12 +6308,277 @@ void *CBitmap::getHandle ()
 }
 
 //-----------------------------------------------------------------------------
-bool CBitmap::isLoaded ()
+bool CBitmap::loadFromResource (long resourceID)
+{
+	bool result = false;
+
+	dispose ();
+	
+	//---------------------------------------------------------------------------------------------
+	#if WINDOWS
+	//---------------------------------------------------------------------------------------------
+	#if USE_LIBPNG
+	PNGResourceStream resStream;
+	if (resStream.open (resourceID))
+	{
+		// setup libpng
+		png_structp png_ptr;
+		png_infop info_ptr;
+		png_ptr = png_create_read_struct (PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
+		if (png_ptr)
+		{
+			info_ptr = png_create_info_struct (png_ptr);
+			if (info_ptr)
+			{
+				if (setjmp (png_jmpbuf (png_ptr)) == 0)
+				{
+					int bit_depth, color_type;
+					png_set_read_fn (png_ptr, (void *)&resStream, PNGResourceStream::readCallback);
+					png_read_info (png_ptr, info_ptr);
+					png_get_IHDR (png_ptr, info_ptr, (png_uint_32*)&width, (png_uint_32*)&height, &bit_depth, &color_type, 0, 0, 0);
+					long bytesPerRow = width * (32 / 8);
+					while (bytesPerRow & 0x03)
+						bytesPerRow++;
+					// create BITMAP
+					BITMAPINFO* bmInfo = new BITMAPINFO;
+					BITMAPINFOHEADER* header = (BITMAPINFOHEADER*)bmInfo;
+					memset (header, 0, sizeof(BITMAPINFOHEADER));
+					header->biSize = sizeof(BITMAPINFOHEADER);
+					header->biWidth = width;
+					header->biHeight = height;
+					header->biPlanes = 1;
+					header->biBitCount = 32;
+					header->biCompression = BI_RGB;
+					header->biClrUsed = 0;
+					void* bits;
+					pHandle = CreateDIBSection (NULL, bmInfo, DIB_RGB_COLORS, &bits, NULL, 0);
+					delete bmInfo;
+					if (pHandle)
+					{
+						if (color_type == PNG_COLOR_TYPE_PALETTE)
+							png_set_palette_to_rgb (png_ptr);
+						if (color_type == PNG_COLOR_TYPE_GRAY || color_type == PNG_COLOR_TYPE_GRAY_ALPHA)
+							png_set_gray_to_rgb (png_ptr);
+						if (color_type == PNG_COLOR_TYPE_GRAY && bit_depth < 8)
+							png_set_gray_1_2_4_to_8 (png_ptr);
+						if (png_get_valid (png_ptr, info_ptr, PNG_INFO_tRNS))
+							png_set_tRNS_to_alpha (png_ptr);
+						else
+							png_set_filler (png_ptr, 0xFF, PNG_FILLER_AFTER);
+						if (bit_depth == 16)
+						{
+							png_set_swap (png_ptr);
+							png_set_strip_16 (png_ptr);
+						}
+						if (color_type == PNG_COLOR_TYPE_RGB || color_type == PNG_COLOR_TYPE_RGB_ALPHA)
+							png_set_bgr (png_ptr);
+						png_read_update_info (png_ptr, info_ptr);
+
+						unsigned char** rows = new unsigned char*[1];
+						rows[0] = (unsigned char*)bits + (height-1) * bytesPerRow;
+						for (long i = 0; i < height; i++)
+						{
+							png_read_rows (png_ptr, rows, NULL, 1);
+							rows[0] -= bytesPerRow;
+						}
+						delete [] rows;
+						png_read_end (png_ptr, 0);
+						// premultiply alpha
+						unsigned long* pixelPtr = (unsigned long*)bits;
+						for (int y = 0; y <height; y++)
+						{
+							for (int x = 0; x < width; x++)
+							{
+								unsigned char* pixel = (unsigned char*)pixelPtr;
+								if (pixel[3] != 0)
+								{
+									pixel[0] = ((pixel[0] * pixel[3]) >> 8);
+									pixel[1] = ((pixel[1] * pixel[3]) >> 8);
+									pixel[2] = ((pixel[2] * pixel[3]) >> 8);
+								}
+								else
+									*pixelPtr = 0UL;
+								pixelPtr++;
+							}
+						}
+					}
+				}
+			}
+			png_destroy_read_struct (&png_ptr, &info_ptr, NULL);
+		}
+		return true;
+	}
+	#endif
+	pHandle = LoadBitmap (GetInstance (), MAKEINTRESOURCE (resourceID));
+	BITMAP bm;
+	if (pHandle && GetObject (pHandle, sizeof (bm), &bm))
+	{
+		width  = bm.bmWidth; 
+		height = bm.bmHeight; 
+		return true;
+	}
+	
+	//---------------------------------------------------------------------------------------------
+	#elif MAC
+	//---------------------------------------------------------------------------------------------
+	pHandle = 0;
+	pMask = 0;
+	#if QUARTZ
+	cgImage = 0;
+	#endif
+	#if MACX
+	#if PLUGGUI
+	extern CFBundleRef ghInst;
+	CFBundleRef gBundleRef = ghInst;
+	#endif
+	if (gBundleRef)
+	{
+		// find the bitmap in our Bundle. It must be in the form of bmp00123.png, where the resource id would be 123.
+		char filename [PATH_MAX];
+		sprintf (filename, "bmp%05d", (int)resourceID);
+		CFStringRef cfStr = CFStringCreateWithCString (NULL, filename, kCFStringEncodingASCII);
+		if (cfStr)
+		{
+			CFURLRef url = NULL;
+			int i = 0;
+			while (url == NULL)
+			{
+				static CFStringRef resTypes [] = { CFSTR("png"), CFSTR("bmp"), CFSTR("jpg"), CFSTR("pict"), NULL };
+				url = CFBundleCopyResourceURL ((CFBundleRef)gBundleRef, cfStr, resTypes[i], NULL);
+				if (resTypes[++i] == NULL)
+					break;
+			}
+			CFRelease (cfStr);
+			if (url)
+			{
+				result = loadFromPath (url);
+				CFRelease (url);
+			}
+			else
+			{
+				#if DEVELOPMENT
+				fprintf (stderr, "Bitmap Nr.:%d not found.\n", resourceID);
+				#endif
+			}
+		}
+	}
+	#endif
+	
+	if (!result && pHandle == 0)
+	{
+		Handle picHandle = GetResource ('PICT', resourceID);
+		if (picHandle)
+		{
+			HLock (picHandle);
+			
+			PictInfo info;
+			GetPictInfo ((PicHandle)picHandle, &info, recordComments, 0, systemMethod, 0);
+			width  = info.sourceRect.right;
+			height = info.sourceRect.bottom;
+			
+			OSErr err = NewGWorld ((GWorldPtr*)&pHandle, 32, &info.sourceRect, 0, 0, 0);
+			if (!err)
+			{
+				GWorldPtr oldPort;
+				GDHandle oldDevice;
+				GetGWorld (&oldPort, &oldDevice);
+				SetGWorld ((GWorldPtr)pHandle, 0);
+				
+				DrawPicture ((PicHandle)picHandle, &info.sourceRect);
+				
+				SetGWorld (oldPort, oldDevice);
+				result = true;
+			}
+
+			HUnlock (picHandle);
+			ReleaseResource (picHandle);
+		}
+	}
+
+	#else
+	// other platforms go here
+	#endif
+	return result;
+}
+
+//-----------------------------------------------------------------------------
+bool CBitmap::loadFromPath (const void* platformPath)
+{
+	bool result = false;
+
+	dispose ();
+
+	#if MACX
+	CFURLRef url = (CFURLRef)platformPath;
+
+	#if QUARTZ
+	if ((pSystemVersion >= 0x1040))
+	{
+		CFStringRef extension = CFURLCopyPathExtension (url);
+		if (CFStringCompare (extension, CFSTR("png"), kCFCompareCaseInsensitive) == kCFCompareEqualTo)
+		{
+			// this code is up to 5 times faster as the data is decoded when the bitmap is first drawn
+			// but you don't have access to the pixels
+			CGDataProviderRef source = CGDataProviderCreateWithURL (url);
+			if (source)
+			{
+				cgImage = CGImageCreateWithPNGDataProvider (source, NULL, false, kCGRenderingIntentDefault);
+				CGDataProviderRelease (source);
+				width = CGImageGetWidth ((CGImageRef)cgImage);
+				height = CGImageGetHeight ((CGImageRef)cgImage);
+				result = true;
+			}
+		}
+		CFRelease (extension);
+	}
+	#endif
+	if (cgImage == NULL)
+	{
+		FSRef fsRef;
+		if (CFURLGetFSRef (url, &fsRef))
+		{
+			FSSpec fsSpec;
+			FSCatalogInfoBitmap infoBitmap = kFSCatInfoNone;
+			if (FSGetCatalogInfo (&fsRef, infoBitmap, NULL, NULL, &fsSpec, NULL) == noErr)
+			{
+				ComponentInstance gi;
+				GetGraphicsImporterForFile (&fsSpec, &gi);
+				if (gi)
+				{
+					Rect r;
+					GraphicsImportGetSourceRect (gi, &r);
+					OSErr err = NewGWorld ((GWorldPtr*)&pHandle, 32, &r, 0, 0, 0);
+					if (!err)
+					{
+						width = r.right;
+						height = r.bottom;
+						GraphicsImportSetGWorld (gi, (GWorldPtr)pHandle, 0);
+						GraphicsImportDraw (gi);
+						result = true;
+					}
+					CloseComponent (gi);
+				}
+			}
+		}
+	}
+	#elif WINDOWS
+	// todo
+	
+	#endif
+	
+	return result;
+}
+
+//-----------------------------------------------------------------------------
+bool CBitmap::isLoaded () const
 {
 	#if MOTIF
 	if (ppDataXpm)
 		return true;
 	
+	#elif QUARTZ
+	if (cgImage || getHandle ())
+		return true;
 	#else
 	if (getHandle ())
 		return true;
@@ -6478,13 +6673,11 @@ CGImageRef CBitmap::createCGImage (bool transparent)
 	else
 	#endif
 		provider = CGDataProviderCreateWithData (NULL, GetPixBaseAddr (pixMap), size, NULL);
-	CGColorSpaceRef colorspace = CGColorSpaceCreateDeviceRGB ();
 	CGImageAlphaInfo alphaInfo = kCGImageAlphaFirst;
 	if (GetPixDepth (pixMap) != 32)
 		alphaInfo = kCGImageAlphaNone;
-	image = CGImageCreate (bounds.right - bounds.left, bounds.bottom - bounds.top, 8 , pixDepth, pixRowBytes, colorspace, alphaInfo, provider, NULL, true, kCGRenderingIntentDefault);
+	image = CGImageCreate (bounds.right - bounds.left, bounds.bottom - bounds.top, 8 , pixDepth, pixRowBytes, GetGenericRGBColorSpace (), alphaInfo, provider, NULL, true, kCGRenderingIntentDefault);
 	CGDataProviderRelease (provider);
-	CGColorSpaceRelease (colorspace);
 
 	cgImage = image;
 	CGImageRetain (image);
@@ -6857,12 +7050,13 @@ void CBitmap::drawAlphaBlend (CDrawContext *pContext, CRect &rect, const CPoint 
 #elif MAC
 
     #if QUARTZ
-	if (pHandle)
+	if (pHandle || cgImage)
 	{
 		CGContextRef context = pContext->beginCGContext ();
 		if (context)
 		{
-			CGContextSetAlpha (context, (float)alpha / 255.f);
+			if (alpha != 255)
+				CGContextSetAlpha (context, (float)alpha / 255.f);
 			
 			CGImageRef image = createCGImage ();
 
@@ -6874,8 +7068,6 @@ void CBitmap::drawAlphaBlend (CDrawContext *pContext, CRect &rect, const CPoint 
 				dest.size.width = getWidth ();
 				dest.size.height = getHeight ();
 				
-				CGContextScaleCTM (context, 1, 1);
-
 				CRect ccr;
 				pContext->getClipRect (ccr);
 				CGRect cgClipRect = CGRectMake (ccr.left + pContext->offset.h, (ccr.top +  + pContext->offset.v) * -1 - ccr.height (), ccr.width (), ccr.height ());
@@ -6892,8 +7084,8 @@ void CBitmap::drawAlphaBlend (CDrawContext *pContext, CRect &rect, const CPoint 
 				CGContextDrawImage (context, dest, image);
 				CGImageRelease (image);
 			}
+			pContext->releaseCGContext (context);
 		}
-		pContext->releaseCGContext (context);
 	}
 	
     #else
@@ -6949,6 +7141,11 @@ void CBitmap::drawAlphaBlend (CDrawContext *pContext, CRect &rect, const CPoint 
 void CBitmap::setTransparentColor (const CColor color)
 {
 	transparentCColor = color;
+#if QUARTZ && OLD_TRANSPARENT_BITMAP_MODE
+	if (cgImage)
+		CGImageRelease ((CGImageRef)cgImage);
+	cgImage = 0;
+#endif
 }
 
 //-----------------------------------------------------------------------------
@@ -7148,7 +7345,7 @@ CDragContainer::~CDragContainer ()
 }
 
 //-----------------------------------------------------------------------------
-long CDragContainer::getType (long idx)
+long CDragContainer::getType (long idx) const
 {
 	#if MACX
 	DragItemRef itemRef;
@@ -7157,7 +7354,7 @@ long CDragContainer::getType (long idx)
 		FlavorType type;
 		if (GetFlavorType ((DragRef)platformDrag, itemRef, 1, &type) == noErr)
 		{
-			if (type == flavorTypeHFS)
+			if (type == flavorTypeHFS || type == typeFileURL)
 				return kFile;
 			else if (type == 'TEXT' || type == 'XML ')
 				return kText;
@@ -7229,7 +7426,24 @@ void* CDragContainer::next (long& size, long& type)
 							type = kFile;
 							return lastItem;
 						}
+						}
 					}
+			}
+			else if (flavorType == typeFileURL)
+			{
+				if (GetFlavorDataSize ((DragRef)platformDrag, itemRef, typeFileURL, &flavorSize) == noErr)
+				{
+					void* bytes = malloc (flavorSize);
+					if (GetFlavorData ((DragRef)platformDrag, itemRef, typeFileURL, bytes, &flavorSize, 0L) == noErr)
+					{
+						CFURLRef url = CFURLCreateWithBytes (NULL, (const unsigned char*)bytes, flavorSize, kCFStringEncodingUTF8, NULL);
+						lastItem = malloc (PATH_MAX);
+						CFURLGetFileSystemRepresentation (url, false, (unsigned char*)lastItem, PATH_MAX);
+						CFRelease (url);
+						type = kFile;
+					}
+					free (bytes);
+					return lastItem;
 				}
 			}
 			else
@@ -7296,7 +7510,7 @@ void* CDragContainer::next (long& size, long& type)
 				checkResolveLink (fileDropped, fileDropped);
 				lastItem = malloc (strlen (fileDropped)+1);
 				strcpy ((char*)lastItem, fileDropped);
-				size = strlen ((const char*)lastItem);
+				size = (long)strlen ((const char*)lastItem);
 				type = kFile;
 				return lastItem;
 			}
@@ -9143,25 +9357,6 @@ STDMETHODIMP_(ULONG) CDropTarget::Release (void)
 //-----------------------------------------------------------------------------
 STDMETHODIMP CDropTarget::DragEnter (IDataObject *dataObject, DWORD keyState, POINTL pt, DWORD *effect)
 {
-	/*
-	accept = false;
-	if (dataObject)
-	{
-		FORMATETC formatTEXTDrop = {CF_TEXT, 0, DVASPECT_CONTENT, -1, TYMED_HGLOBAL};
-		if (S_OK == dataObject->QueryGetData (&formatTEXTDrop))
-		{
-			accept = true;
-			return DragOver (keyState, pt, effect);
-		}
-
-		FORMATETC formatHDrop = {CF_HDROP, 0, DVASPECT_CONTENT, -1, TYMED_HGLOBAL};
-		if (S_OK == dataObject->QueryGetData (&formatHDrop))
-		{
-			accept = true;
-			return DragOver (keyState, pt, effect);
-		}
-	}
-	*/
 	if (dataObject && pFrame)
 	{
 		gDragContainer = new CDragContainer (dataObject);
@@ -9180,16 +9375,6 @@ STDMETHODIMP CDropTarget::DragEnter (IDataObject *dataObject, DWORD keyState, PO
 //-----------------------------------------------------------------------------
 STDMETHODIMP CDropTarget::DragOver (DWORD keyState, POINTL pt, DWORD *effect)
 {
-/*	if (accept)
-	{
-		if (keyState & MK_CONTROL)
-			*effect = DROPEFFECT_COPY;
-		else
-			*effect = DROPEFFECT_MOVE;
-	}
-	else
-		*effect = DROPEFFECT_NONE;
-	*/
 	if (gDragContainer && pFrame)
 	{
 		CDrawContext* context = pFrame->createDrawContext ();
@@ -9231,84 +9416,6 @@ STDMETHODIMP CDropTarget::Drop (IDataObject *dataObject, DWORD keyState, POINTL 
 		gDragContainer->forget ();
 		gDragContainer = 0;
 	}
-/*	if (pFrame)
-	{
-		void* hDrop = 0;
-		STGMEDIUM medium;
-		FORMATETC formatTEXTDrop = {CF_TEXT,  0, DVASPECT_CONTENT, -1, TYMED_HGLOBAL};
-		FORMATETC formatHDrop    = {CF_HDROP, 0, DVASPECT_CONTENT, -1, TYMED_HGLOBAL};
-
-		long type = 0; // 0 = file, 1 = text
-
-		HRESULT hr = dataObject->GetData (&formatTEXTDrop, &medium);
-		if (hr != S_OK)
-			hr = dataObject->GetData (&formatHDrop, &medium);
-		else
-			type = 1;
-		if (hr == S_OK)
-			hDrop = medium.hGlobal;
-
-		if (hDrop)
-		{
-			switch (type)
-			{
-			//---File----------------------
-			case 0:
-				{
-					long nbOfItems = (long)DragQueryFile ((HDROP)hDrop, 0xFFFFFFFFL, 0, 0);
-					char fileDropped[1024];
-
-					if (nbOfItems > 0) 
-					{
-						char **ptrItems = new char* [nbOfItems];
-						long itemIndex = 0;
-						long nbRealItems = 0;
-						while (itemIndex < nbOfItems)
-						{
-							if (DragQueryFile ((HDROP)hDrop, itemIndex, fileDropped, sizeof (fileDropped))) 
-							{
-								// resolve link
-								checkResolveLink (fileDropped, fileDropped);
-
-								ptrItems[nbRealItems] = new char [sizeof (fileDropped)];
-								strcpy ((char*)ptrItems[nbRealItems], fileDropped);
-								nbRealItems++;
-							}
-
-							itemIndex++;
-						}
-						VSTGUI_CPoint where;
-						pFrame->getCurrentLocation (where);
-						pFrame->onDrop ((void**)ptrItems, nbOfItems, VSTGUI_kDropFiles, where);
-						for (long i = 0; i < nbRealItems; i++)
-							delete []ptrItems[i];
-						delete []ptrItems;
-					}
-				} break;
-
-			//---TEXT----------------------------
-			case 1:
-				{
-					void* data = GlobalLock (medium.hGlobal);
-					long dataSize = (long)GlobalSize (medium.hGlobal);
-					if (data && dataSize)
-					{
-						VSTGUI_CPoint where;
-						pFrame->getCurrentLocation (where);
-						pFrame->onDrop ((void**)&data, dataSize, VSTGUI_kDropText, where);
-					}
-
-					GlobalUnlock (medium.hGlobal);
-					if (medium.pUnkForRelease)
-						medium.pUnkForRelease->Release ();
-					else
-						GlobalFree (medium.hGlobal);
-				} break;
-			}
-		}
-	}
-	
-	DragLeave ();*/
 	return S_OK;
 }
 
@@ -9360,7 +9467,6 @@ bool checkResolveLink (const char* nativePath, char* resolved)
 #elif MAC
 BEGIN_NAMESPACE_VSTGUI
 static long dragType = 0;
-static unsigned long themeCursorNotAllow = 0;
 
 #if MAC_OLD_DRAG
 //-----------------------------------------------------------------------------
@@ -9386,8 +9492,6 @@ void install_drop (CFrame *frame)
 #if TARGET_API_MAC_CARBON
 	InstallReceiveHandler (drh, (WindowRef)(frame->getSystemWindow ()), (void*)frame);
 	InstallTrackingHandler (dth, (WindowRef)(frame->getSystemWindow ()), (void*)frame);
-	if (pSystemVersion >= 0x1020)
-		themeCursorNotAllow = kThemeNotAllowedCursor;
 #else
 	InstallReceiveHandler (drh, (GrafPort*)(frame->getSystemWindow ()), (void*)frame);
 	InstallTrackingHandler (dth, (GrafPort*)(frame->getSystemWindow ()), (void*)frame);
@@ -9404,6 +9508,8 @@ void remove_drop (CFrame *frame)
 	RemoveReceiveHandler (drh, (GrafPort*)(frame->getSystemWindow ()));
 	RemoveTrackingHandler (dth, (GrafPort*)(frame->getSystemWindow ()));
 #endif
+	DisposeDragReceiveHandlerUPP (drh);
+	DisposeDragTrackingHandlerUPP (dth);
 }
 
 // drag tracking for visual feedback
@@ -9664,11 +9770,12 @@ pascal OSStatus CFrame::carbonEventHandler (EventHandlerCallRef inHandlerCallRef
 					Point point = {hipoint.y, hipoint.x};
 					if (eventKind == kEventControlClick && !(windowAttributes & kWindowCompositingAttribute))
 						QDGlobalToLocalPoint (GetWindowPort (window), &point);
-					CDrawContext context (frame, NULL, window);
+					CDrawContext* context = frame->createDrawContext ();
 					CPoint p (point.h, point.v);
 //					if (!(eventKind == kEventControlContextualMenuClick && windowAttributes & kWindowCompositingAttribute))
 //						p.offset (-context.offsetScreen.x, -context.offsetScreen.y);
-					frame->mouse (&context, p, buttons);
+					frame->mouse (context, p, buttons);
+					context->forget ();
 					result = noErr;
 					break;
 				}
@@ -9826,6 +9933,73 @@ pascal OSStatus CFrame::carbonEventHandler (EventHandlerCallRef inHandlerCallRef
 //		QDSwapPort (savedPort, NULL);
 	return result;
 }
+
+// code from CarbonSketch Example Code
+#define	kGenericRGBProfilePathStr       "/System/Library/ColorSync/Profiles/Generic RGB Profile.icc"
+
+class QuartzStatics
+{
+public:
+	//-----------------------------------------------------------------------------
+	QuartzStatics ()
+	: genericRGBColorSpace (0)
+	{
+		CreateGenericRGBColorSpace ();
+	}
+
+	//-----------------------------------------------------------------------------
+	~QuartzStatics ()
+	{
+		// we don't want to leak ;-)
+		CGColorSpaceRelease (genericRGBColorSpace);
+	}
+	
+	inline CGColorSpaceRef getGenericRGBColorSpace () { return genericRGBColorSpace; }
+
+protected:
+	//-----------------------------------------------------------------------------
+	CMProfileRef OpenGenericProfile(void)
+	{
+		CMProfileLocation 	loc;
+		CMProfileRef cmProfile;
+			
+		loc.locType = cmPathBasedProfile;
+		strcpy(loc.u.pathLoc.path, kGenericRGBProfilePathStr);
+	
+		if (CMOpenProfile(&cmProfile, &loc) != noErr)
+			cmProfile = NULL;
+		
+	    return cmProfile;
+	}
+
+	//-----------------------------------------------------------------------------
+	void CreateGenericRGBColorSpace(void)
+	{
+		CMProfileRef genericRGBProfile = OpenGenericProfile();
+	
+		if (genericRGBProfile)
+		{
+			genericRGBColorSpace = CGColorSpaceCreateWithPlatformColorSpace(genericRGBProfile);
+			if (genericRGBColorSpace == NULL)
+				fprintf(stderr, "couldn't create the generic RGB color space\n");
+			
+			// we opened the profile so it is up to us to close it
+			CMCloseProfile(genericRGBProfile); 
+		}
+		else
+			genericRGBColorSpace = CGColorSpaceCreateDeviceRGB ();
+	}
+
+	CGColorSpaceRef genericRGBColorSpace;
+};
+
+static QuartzStatics _gQuartzStatics;
+
+inline CGColorSpaceRef GetGenericRGBColorSpace ()
+{
+	return _gQuartzStatics.getGenericRGBColorSpace ();
+}
+
 END_NAMESPACE_VSTGUI
 #endif
 

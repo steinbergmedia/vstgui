@@ -3,7 +3,7 @@
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 // Standard Control Objects
 //
-// Version 3.0       $Date: 2004-10-03 14:47:20 $
+// Version 3.0       $Date: 2004-11-29 15:27:24 $
 //
 // Added new objects        : Michael Schmidt          08.97
 // Added new objects        : Yvan Grabit              01.98
@@ -99,7 +99,7 @@ CControl::~CControl ()
 void CControl::beginEdit ()
 {
 	// begin of edit parameter
-	getFrame ()->setEditView(this);
+	getFrame ()->setFocusView(this);
 	getFrame ()->beginEdit (tag);
 }
 
@@ -108,11 +108,10 @@ void CControl::endEdit ()
 {
 	// end of edit parameter
 	getFrame ()->endEdit (tag);
-	getFrame ()->setEditView(0);
 }
 
 //------------------------------------------------------------------------
-bool CControl::isDirty ()
+bool CControl::isDirty () const
 {
 	if (oldValue != value || CView::isDirty ())
 		return true;
@@ -607,7 +606,7 @@ void CKnob::compute ()
 }
 
 //------------------------------------------------------------------------
-void CKnob::valueToPoint (CPoint &point)
+void CKnob::valueToPoint (CPoint &point) const
 {
 	float alpha = (value - bCoef) / aCoef;
 	point.h = (long)(radius + cosf (alpha) * (radius - inset) + 0.5f);
@@ -615,7 +614,7 @@ void CKnob::valueToPoint (CPoint &point)
 }
 
 //------------------------------------------------------------------------
-float CKnob::valueFromPoint (CPoint &point)
+float CKnob::valueFromPoint (CPoint &point) const
 {
 	float v;
 	float alpha = (float)atan2 (radius - point.v, point.h - radius);
@@ -956,10 +955,20 @@ void CTextEdit::setText (char *txt)
 			setDirty ();
 		}
 	}
+	else
+	{
+		if (strcmp (text, ""))
+		{
+			strcpy (text, "");
+
+			// to force the redraw
+			setDirty ();
+		}
+	}
 }
 
 //------------------------------------------------------------------------
-void CTextEdit::getText (char *txt)
+void CTextEdit::getText (char *txt) const
 {
 	if (txt)
 		strcpy (txt, text);
@@ -1021,7 +1030,7 @@ void CTextEdit::mouse (CDrawContext *pContext, CPoint &where, long button)
 
 	if (button & kLButton)
 	{
-		if (getFrame ()->getEditView () != this)
+		if (getFrame ()->getFocusView () != this)
 		{
 			if (style & kDoubleClickStyle)
 				if (!isDoubleClick ())
@@ -1757,12 +1766,13 @@ void CTextEdit::looseFocus (CDrawContext *pContext)
 	if (platformControl == 0)
 		return;
 	#else
-	if (platformControl == 0 || getFrame ()->getEditView () != this) 
+	if (platformControl == 0 || getFrame ()->getFocusView () != this) 
 		return;
 	#endif
 	
 	// Call this yet to avoid recursive call
 	endEdit();
+	getFrame ()->setFocusView (0);
 
 	char oldText[256];
 	strcpy (oldText, text);
@@ -1927,7 +1937,6 @@ COptionMenuScheme* gOptionMenuScheme = 0;
 
 //------------------------------------------------------------------------
 COptionMenuScheme::COptionMenuScheme ()
-: nbReference (1)
 {
 #if WINDOWS
 	COLORREF c = GetSysColor (COLOR_MENU);
@@ -1959,23 +1968,6 @@ COptionMenuScheme::~COptionMenuScheme ()
 	#if MAC_ENABLE_MENU_SCHEME
 	unregisterWithToolbox ();
 	#endif
-}
-
-//------------------------------------------------------------------------
-void COptionMenuScheme::remember ()
-{
-	nbReference++;
-}
-
-//------------------------------------------------------------------------
-void COptionMenuScheme::forget ()
-{
-	if (nbReference > 0)
-	{
-		nbReference--;
-		if (nbReference == 0)
-			delete this;
-	}
 }
 
 //------------------------------------------------------------------------
@@ -2530,7 +2522,7 @@ bool COptionMenu::allocateMenu (long nb)
 }
 
 //------------------------------------------------------------------------
-COptionMenu* COptionMenu::getSubMenu (long idx)
+COptionMenu* COptionMenu::getSubMenu (long idx) const
 {
 	if (submenuEntry && idx < nbSubMenus)
 		return submenuEntry[idx];
@@ -2640,7 +2632,7 @@ bool COptionMenu::addEntry (char *txt, long index)
 }
 
 //------------------------------------------------------------------------
-long COptionMenu::getCurrent (char *txt, bool countSeparator)
+long COptionMenu::getCurrent (char *txt, bool countSeparator) const
 {
 	if (currentIndex < 0)
 		return -1;
@@ -2691,6 +2683,8 @@ bool COptionMenu::setCurrent (long index, bool countSeparator)
 		}
 		currentIndex = newCurrent - 1;
 	}
+	if (style & (kMultipleCheckStyle & ~kCheckStyle))
+		check[currentIndex] = !check[currentIndex];
 
 	// to force the redraw
 	setDirty ();
@@ -2699,7 +2693,7 @@ bool COptionMenu::setCurrent (long index, bool countSeparator)
 }
 
 //------------------------------------------------------------------------
-bool COptionMenu::getEntry (long index, char *txt)
+bool COptionMenu::getEntry (long index, char *txt) const
 {
 	if (index < 0 || index >= nbEntries)
 		return false;
@@ -2785,7 +2779,7 @@ bool COptionMenu::removeAllEntry ()
 }
 
 //------------------------------------------------------------------------
-long COptionMenu::getIndex (char *txt)
+long COptionMenu::getIndex (char *txt) const
 {
 	if (!txt)
 		return -1;
@@ -2823,7 +2817,7 @@ bool COptionMenu::checkEntryAlone (long index)
 }
 
 //------------------------------------------------------------------------
-bool COptionMenu::isCheckEntry (long index)
+bool COptionMenu::isCheckEntry (long index) const
 {
 	if (index < 0 || index >= nbEntries)
 		return false;
@@ -2904,7 +2898,7 @@ static void _activateCallback (Widget item, XtPointer clientData, XtPointer call
 #endif
 
 //------------------------------------------------------------------------
-COptionMenu *COptionMenu::getLastItemMenu (long &idxInMenu)
+COptionMenu *COptionMenu::getLastItemMenu (long &idxInMenu) const
 {
 	idxInMenu = lastMenu ? (long)lastMenu->getValue (): -1;
 	return lastMenu;
@@ -3394,14 +3388,12 @@ void COptionMenu::takeFocus (CDrawContext *pContext)
 		}
 	}
 
-	endEdit();
-
-
 #elif MAC
 	// no entries, no menu
 	if (nbEntries == 0)
 	{
 		endEdit();
+		getFrame ()->setFocusView (0);
 		return;
 	}
 	
@@ -3511,7 +3503,6 @@ void COptionMenu::takeFocus (CDrawContext *pContext)
 		if (!pContext && pContextTemp)
 			delete pContextTemp;
 	}
-	endEdit();
 
 #elif MOTIF
 	Arg args[10];
@@ -3640,8 +3631,10 @@ void COptionMenu::takeFocus (CDrawContext *pContext)
 		}
 	}
 	delete popup;
-	endEdit();
 #endif
+
+	getFrame ()->setFocusView (0);
+	endEdit();
 }
 
 //------------------------------------------------------------------------
@@ -4895,7 +4888,7 @@ void CSpecialDigit::draw (CDrawContext *pContext)
 }
 
 //------------------------------------------------------------------------
-float CSpecialDigit::getNormValue ()
+float CSpecialDigit::getNormValue () const
 { 
 	float fTemp;
 	fTemp = value / getMax ();
@@ -5018,7 +5011,7 @@ CSplashScreen::CSplashScreen (const CRect &size, CControlListener *listener, lon
                               CRect   &toDisplay,
                               CPoint  &offset)
 :	CControl (size, listener, tag, background), 
-	toDisplay (toDisplay), offset (offset)
+	toDisplay (toDisplay), offset (offset), bitmapTransparency (255)
 {}
 
 //------------------------------------------------------------------------
@@ -5026,12 +5019,24 @@ CSplashScreen::~CSplashScreen ()
 {}
 
 //------------------------------------------------------------------------
+void CSplashScreen::setBitmapTransparency (unsigned char transparency)
+{
+	bitmapTransparency = transparency;
+	setTransparency (bitmapTransparency != 255);
+}
+
+//------------------------------------------------------------------------
 void CSplashScreen::draw (CDrawContext *pContext)
 {
 	if (value && pBackground)
 	{
 		if (bTransparencyEnabled)
+		{
+			if (bitmapTransparency)
+				pBackground->drawAlphaBlend (pContext, toDisplay, offset, bitmapTransparency);
+			else
 			pBackground->drawTransparent (pContext, toDisplay, offset);
+		}
 		else
 			pBackground->draw (pContext, toDisplay, offset);
 	}

@@ -127,7 +127,7 @@ void CScrollContainer::redrawRect (CDrawContext* context, const CRect& rect)
 }
 
 //-----------------------------------------------------------------------------
-bool CScrollContainer::isDirty ()
+bool CScrollContainer::isDirty () const
 {
 	if (bDirty)
 		return true;

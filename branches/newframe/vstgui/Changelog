@@ -1,3 +1,16 @@
+2004-11-29 arne
+
+	* started to clean up the code (check your code, many methods in CView, CViewContainer & CFrame are declared const now)
+	* started to make a better documentation (see the headers), more to come
+	* renamed pEditView in CFrame to pFocusView as well as setEditView to setFocusView and getEditView to getFocusView ;-)
+	* the following methods in CView are now deprecated : setParentView, setFrame, getFrameTopLeftPos
+	* removed old windows drag&drop code
+	* use generic rgb color space for quartz code
+	* fix an issue with quartz and OLD_TRANSPARENT_BITMAP_MODE when the transparency color changed
+	* some drawing optimizations
+	* new method in CDrawContext to draw multiple lines at once : CDrawContext::drawLines ()
+	* if you call beginEdit in any CControl class the control will be the focus view now
+
 2004-10-03 arne
 
 	* added generic attributes interface to the CView class (see CViewAttributes.rtf)

@@ -3,7 +3,7 @@
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 // Standard Control Objects
 //
-// Version 3.0       $Date: 2004-10-03 14:47:20 $
+// Version 3.0       $Date: 2004-11-29 15:27:24 $
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
@@ -137,22 +137,22 @@ public:
 	virtual void  doIdleStuff () { if (pParentFrame) pParentFrame->doIdleStuff (); }
 
 	virtual void  setValue (float val) { value = val; }
-	virtual float getValue () { return value; };
+	virtual float getValue () const { return value; };
 
 	virtual void  setMin (float val) { vmin = val; }
-	virtual float getMin () { return vmin; }
+	virtual float getMin () const { return vmin; }
 	virtual void  setMax (float val) { vmax = val; }
-	virtual float getMax () { return vmax; }
+	virtual float getMax () const { return vmax; }
 
 	virtual void  setOldValue (float val) { oldValue = val; }
-	virtual	float getOldValue (void) { return oldValue; }
+	virtual	float getOldValue (void) const { return oldValue; }
 	virtual void  setDefaultValue (float val) { defaultValue = val; }
-	virtual	float getDefaultValue (void) { return defaultValue; }
+	virtual	float getDefaultValue (void) const { return defaultValue; }
 
 	virtual void  setTag (long val) { tag = val; }
-	inline  long  getTag () { return tag; }
+	inline  long  getTag () const { return tag; }
 
-	virtual bool  isDirty ();
+	virtual bool  isDirty () const;
 	virtual void  setDirty (const bool val = true);
 
 	virtual void beginEdit ();
@@ -162,12 +162,12 @@ public:
 	virtual void copyBackOffset ();
 
 	virtual void  setWheelInc (float val) { wheelInc = val; }
-	virtual float getWheelInc () { return wheelInc; }
+	virtual float getWheelInc () const { return wheelInc; }
 
 	virtual void bounceValue ();
 	virtual bool checkDefaultValue (CDrawContext *pContext, long button);
 
-	CControlListener* getListener () { return listener; }
+	CControlListener* getListener () const { return listener; }
 	void setListener (CControlListener* l) { listener = l; }
 	bool isDoubleClick ();
 
@@ -219,19 +219,19 @@ public:
 	virtual ~CParamDisplay ();
 	
 	virtual void setFont (CFont fontID);
-	CFont getFont () { return fontID; }
+	CFont getFont () const { return fontID; }
 
 	virtual void setFontColor (CColor color);
-	CColor getFontColor () { return fontColor; }
+	CColor getFontColor () const { return fontColor; }
 
 	virtual void setBackColor (CColor color);
-	CColor getBackColor () { return backColor; }
+	CColor getBackColor () const { return backColor; }
 
 	virtual void setFrameColor (CColor color);
-	CColor getFrameColor () { return frameColor; }
+	CColor getFrameColor () const { return frameColor; }
 
 	virtual void setShadowColor (CColor color);
-	CColor getShadowColor () { return shadowColor; }
+	CColor getShadowColor () const { return shadowColor; }
 
 	virtual void setHoriAlign (CHoriTxtAlign hAlign);
 
@@ -241,15 +241,15 @@ public:
 	virtual void setString2FloatConvert (void (*convert) (char *string, float &output));
 
 	virtual void setStyle (long val);
-	long getStyle () { return style; }
+	long getStyle () const { return style; }
 
 	virtual void setTxtFace (CTxtFace val);
-	CTxtFace getTxtFace () { return txtFace; }
+	CTxtFace getTxtFace () const { return txtFace; }
 
 	virtual void draw (CDrawContext *pContext);
 
 	virtual void setTextTransparency (bool val) { bTextTransparencyEnabled = val; }
-	bool getTextTransparency () { return bTextTransparencyEnabled; }
+	bool getTextTransparency () const { return bTextTransparencyEnabled; }
 
 	CLASS_METHODS(CParamDisplay, CControl)
 
@@ -284,7 +284,7 @@ public:
 	virtual ~CTextEdit ();
 
 	virtual void setText (char *txt);
-	virtual void getText (char *txt);
+	virtual void getText (char *txt) const;
 
 	virtual	void draw (CDrawContext *pContext);
 	virtual	void mouse (CDrawContext *pContext, CPoint &where, long button = -1);
@@ -321,7 +321,7 @@ protected:
 
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
-class COptionMenuScheme
+class COptionMenuScheme : public CReferenceCounter
 {
 public:
 	COptionMenuScheme ();
@@ -337,13 +337,7 @@ public:
 	hiliteTextColor = htext; disableTextColor = dtext;}
 	
 	void setFont (CFont f) { font = f; }
-
-	virtual void forget ();
-	virtual void remember ();
-	virtual	long getNbReference () { return nbReference; }
-
 protected:
-	long nbReference;
 
 	CColor backgroundColor;
 	CColor selectionColor;
@@ -379,18 +373,18 @@ public:
 	virtual void setValue (float val);
 	virtual bool addEntry (COptionMenu *subMenu, char *txt);
 	virtual	bool addEntry (char *txt, long index = -1);
-	virtual	long getCurrent (char *txt = 0, bool countSeparator = true);
+	virtual	long getCurrent (char *txt = 0, bool countSeparator = true) const;
 	virtual	bool setCurrent (long index, bool countSeparator = true);
-	virtual	bool getEntry (long index, char *txt);
+	virtual	bool getEntry (long index, char *txt) const;
 	virtual	bool setEntry (long index, char *txt);
 	virtual	bool removeEntry (long index);
 	virtual	bool removeAllEntry ();
-	virtual long getNbEntries () { return nbEntries; }
-	virtual long getIndex (char *txt);
+	virtual long getNbEntries () const { return nbEntries; }
+	virtual long getIndex (char *txt) const;
 
 	virtual bool checkEntry (long index, bool state);
 	virtual bool checkEntryAlone (long index);
-	virtual bool isCheckEntry (long index);
+	virtual bool isCheckEntry (long index) const;
 
 	virtual	void draw (CDrawContext *pContext);
 	virtual	void mouse (CDrawContext *pContext, CPoint &where, long button = -1);
@@ -399,23 +393,23 @@ public:
 	virtual	void looseFocus (CDrawContext *pContext = 0);
 
 	virtual void setNbItemsPerColumn (long val) { nbItemsPerColumn = val; }
-	virtual long getNbItemsPerColumn () { return nbItemsPerColumn; }
+	virtual long getNbItemsPerColumn () const { return nbItemsPerColumn; }
 
 #if MOTIF
 	void    setCurrentSelected (void *itemSelected);
 #elif MAC
-	short   getMenuID () { return menuID; }
+	short   getMenuID () const { return menuID; }
 #endif
 
-	long getLastResult () { return lastResult; }
-	COptionMenu *getLastItemMenu (long &idxInMenu);
+	long getLastResult () const { return lastResult; }
+	COptionMenu *getLastItemMenu (long &idxInMenu) const;
 
 	void setScheme (COptionMenuScheme* s) { scheme = s; }
-	virtual COptionMenuScheme* getScheme () { return scheme; }
+	virtual COptionMenuScheme* getScheme () const { return scheme; }
 
 	virtual void setPrefixNumbers (long preCount);
 
-	COptionMenu* getSubMenu (long idx);
+	COptionMenu* getSubMenu (long idx) const;
 
 	CLASS_METHODS(COptionMenu, CParamDisplay)
 
@@ -471,13 +465,13 @@ public:
 	virtual void drawHandle (CDrawContext *pContext);
 
 	virtual void  setStartAngle (float val);
-	virtual float getStartAngle () { return startAngle; }
+	virtual float getStartAngle () const { return startAngle; }
 
 	virtual void  setRangeAngle (float val);
-	virtual float getRangeAngle () { return rangeAngle; }
+	virtual float getRangeAngle () const { return rangeAngle; }
 
-	virtual void  valueToPoint (CPoint &point);
-	virtual float valueFromPoint (CPoint &point);
+	virtual void  valueToPoint (CPoint &point) const;
+	virtual float valueFromPoint (CPoint &point) const;
 
 	virtual void setInsetValue (long val) { inset = val; }
 
@@ -487,7 +481,7 @@ public:
 	virtual void setHandleBitmap (CBitmap *bitmap);
 
 	virtual void  setZoomFactor (float val) { zoomFactor = val; }
-	virtual float getZoomFactor () { return zoomFactor; }
+	virtual float getZoomFactor () const { return zoomFactor; }
 
 	CLASS_METHODS(CKnob, CControl)
 
@@ -679,7 +673,7 @@ public:
 	virtual void nextPixmap (void);
 	virtual void previousPixmap (void);
 
-	bool    isWindowOpened () { return bWindowOpened; }
+	bool    isWindowOpened () const { return bWindowOpened; }
 
 	CLASS_METHODS(CAutoAnimation, CControl)
 
@@ -726,14 +720,14 @@ public:
 
 	virtual void setDrawTransparentHandle (bool val) { bDrawTransparentEnabled = val; }
 	virtual void setFreeClick (bool val) { bFreeClick = val; }
-	virtual bool getFreeClick () { return bFreeClick; }
+	virtual bool getFreeClick () const { return bFreeClick; }
 	virtual void setOffsetHandle (CPoint &val);
 
 	virtual void     setHandle (CBitmap* pHandle);
-	virtual CBitmap *getHandle () { return pHandle; }
+	virtual CBitmap *getHandle () const { return pHandle; }
 
 	virtual void  setZoomFactor (float val) { zoomFactor = val; }
-	virtual float getZoomFactor () { return zoomFactor; }
+	virtual float getZoomFactor () const { return zoomFactor; }
 
 	CLASS_METHODS(CSlider, CControl)
 
@@ -824,7 +818,7 @@ public:
 	
 	virtual void  draw (CDrawContext*);
 
-	virtual float getNormValue (void);
+	virtual float getNormValue (void) const;
 
 	CLASS_METHODS(CSpecialDigit, CControl)
 
@@ -876,12 +870,15 @@ public:
 	virtual void mouse (CDrawContext *pContext, CPoint &where, long button = -1);
 	virtual void unSplash ();
 
+	void setBitmapTransparency (unsigned char transparency);
+
 	CLASS_METHODS(CSplashScreen, CControl)
 
 protected:
-	CRect    toDisplay;
-	CRect    keepSize;
-	CPoint   offset;
+	CRect	toDisplay;
+	CRect	keepSize;
+	CPoint	offset;
+	unsigned char bitmapTransparency;
 };
 
 
@@ -899,10 +896,10 @@ public:
 	virtual bool attached (CView *parent);
 	virtual bool removed (CView *parent);
 	virtual void draw (CDrawContext *pContext);
-	virtual void  setDirty (const bool val = true);
+	virtual void setDirty (const bool val = true);
 	
 	void setUseOffscreen (bool val = true);
-	bool getUseOffscreen () { return bUseOffscreen; }
+	bool getUseOffscreen () const { return bUseOffscreen; }
 
 	CLASS_METHODS(CVuMeter, CControl)
 
