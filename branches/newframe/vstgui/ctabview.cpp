@@ -38,6 +38,8 @@
 
 BEGIN_NAMESPACE_VSTGUI
 
+#define  kTabButtonTagStart	20000
+
 //-----------------------------------------------------------------------------
 class CTabButton : public COnOffButton
 //-----------------------------------------------------------------------------
@@ -199,7 +201,7 @@ bool CTabView::addTab (CView* view, const char* name, CBitmap* tabBitmap)
 		case kPositionRight:
 			ts.offset (size.getWidth () - tabSize.getWidth (), tabSize.getHeight () / 2 * numberOfChilds); break;
 	}
-	CTabButton* b = new CTabButton (ts, this, numberOfChilds, tabBitmap, name);
+	CTabButton* b = new CTabButton (ts, this, numberOfChilds + kTabButtonTagStart, tabBitmap, name);
 	b->setTransparency (true);
 	addView (b);
 	CTabChildView* v = new CTabChildView (view);
@@ -315,7 +317,7 @@ void CTabView::setCurrentChild (CTabChildView* childView)
 void CTabView::valueChanged (CDrawContext *pContext, CControl *pControl)
 {
 	if (pControl->isTypeOf ("CTabButton"))
-		selectTab (pControl->getTag ());
+		selectTab (pControl->getTag () - kTabButtonTagStart);
 }
 
 //-----------------------------------------------------------------------------

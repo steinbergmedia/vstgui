@@ -3,7 +3,7 @@
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 // Standard Control Objects
 //
-// Version 3.0       $Date: 2004-12-05 12:30:34 $
+// Version 3.0       $Date: 2005-03-25 14:30:39 $
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
@@ -122,9 +122,6 @@ class AudioEffectX;
 BEGIN_NAMESPACE_VSTGUI
 //-----------------------------------------------------------------------------
 
-extern const CViewAttributeID kCControlAttributeTag;
-extern const CViewAttributeID kCControlAttributeValue;
-
 //-----------------------------------------------------------------------------
 // CControl Declaration
 //! base class of all VSTGUI controls
@@ -173,10 +170,6 @@ public:
 	CControlListener* getListener () const { return listener; }
 	void setListener (CControlListener* l) { listener = l; }
 	bool isDoubleClick ();
-
-	virtual bool getAttributeSize (const CViewAttributeID id, long& outSize) const;
-	virtual bool getAttribute (const CViewAttributeID id, const long inSize, void* outData, long& outSize) const;
-	virtual bool setAttribute (const CViewAttributeID id, const long inSize, void* inData);
 
 	CLASS_METHODS(CControl, CView)
 
@@ -310,6 +303,9 @@ public:
 	bool bWasReturnPressed;
 	#if MAC
 	short pluginResID;
+	#if QUARTZ
+	HIViewRef textControl;
+	#endif
 	#endif
 
 	CLASS_METHODS(CTextEdit, CParamDisplay)
@@ -528,6 +524,8 @@ public:
                CBitmap *background, CPoint &offset);
 	virtual ~CAnimKnob ();
 
+	virtual bool isDirty () const;
+
 	virtual void draw (CDrawContext* pContext);
 
 	void setInverseBitmap (bool val) { bInverseBitmap = val; }
@@ -538,6 +536,7 @@ protected:
 	long subPixmaps;		// number of subPixmaps
 	long heightOfOneImage;
 	bool bInverseBitmap;
+	CPoint lastDrawnPoint;
 };
 
 //-----------------------------------------------------------------------------

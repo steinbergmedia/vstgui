@@ -3,7 +3,7 @@
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 // Standard Control Objects
 //
-// Version 3.0       $Date: 2005-03-05 14:03:05 $
+// Version 3.0       $Date: 2005-03-25 14:30:39 $
 //
 // Added new objects        : Michael Schmidt          08.97
 // Added new objects        : Yvan Grabit              01.98
@@ -199,85 +199,6 @@ bool CControl::isDoubleClick ()
 		return false;
 	}
 	return true;
-}
-
-//-----------------------------------------------------------------------------
-const CViewAttributeID kCControlAttributeTag = 'cctg';
-const CViewAttributeID kCControlAttributeValue = 'ccvl';
-
-//-----------------------------------------------------------------------------
-bool CControl::getAttributeSize (const CViewAttributeID id, long& outSize) const
-{
-	switch (id)
-	{
-		case kCControlAttributeTag:
-		{
-			outSize = sizeof (long);
-			return true;
-		}
-		case kCControlAttributeValue:
-		{
-			outSize = sizeof (float);
-			return true;
-		}
-	}
-	return CView::getAttributeSize (id, outSize);
-}
-
-//-----------------------------------------------------------------------------
-bool CControl::getAttribute (const CViewAttributeID id, const long inSize, void* outData, long& outSize) const
-{
-	switch (id)
-	{
-		case kCControlAttributeTag:
-		{
-			if (inSize >= sizeof (long))
-			{
-				outSize = sizeof (long);
-				*(long*)outData = tag;
-				return true;
-			}
-			break;
-		}
-		case kCControlAttributeValue:
-		{
-			if (inSize >= sizeof (float))
-			{
-				outSize = sizeof (float);
-				*(float*)outData = value;
-				return true;
-			}
-			break;
-		}
-	}
-	return CView::getAttribute (id, inSize, outData, outSize);
-}
-
-//-----------------------------------------------------------------------------
-bool CControl::setAttribute (const CViewAttributeID id, const long inSize, void* inData)
-{
-	switch (id)
-	{
-		case kCControlAttributeTag:
-		{
-			if (inSize == sizeof (long))
-			{
-				tag = *(long*)inData;
-				return true;
-			}
-			break;
-		}
-		case kCControlAttributeValue:
-		{
-			if (inSize == sizeof (float))
-			{
-				value = *(float*)inData;
-				return true;
-			}
-			break;
-		}
-	}
-	return CView::setAttribute (id, inSize, inData);
 }
 
 //------------------------------------------------------------------------
@@ -965,6 +886,9 @@ CTextEdit::CTextEdit (const CRect &size, CControlListener *listener, long tag,
 	// remember our VST plugin's resource map ID (it should be the current one at this moment)
 	pluginResID = CurResFile();
 #endif
+#if QUARTZ
+	textControl = 0;
+#endif
 }
 
 //------------------------------------------------------------------------
@@ -1009,6 +933,13 @@ void CTextEdit::draw (CDrawContext *pContext)
 	if (platformControl)
 	{
 		#if MACX
+		#if QUARTZ
+		if (textControl)
+		{
+			HIViewSetNeedsDisplay (textControl, true);
+		}
+		else
+		#endif
 		TXNDraw ((TXNObject)platformControl, NULL);
 		#endif
 		setDirty (false);
@@ -1233,6 +1164,10 @@ pascal OSStatus CarbonEventsTextControlProc (EventHandlerCallRef inHandlerCallRe
 
 						result = noErr;
 					}
+					#if QUARTZ
+					else if (textEdit->textControl)
+						break;
+					#endif
 					else if (modifiers & cmdKey)
 					{
 						result = noErr;
@@ -1433,9 +1368,66 @@ void CTextEdit::takeFocus (CDrawContext *pContext)
 
 #elif MAC
 #if MACX
+	WindowRef window = (WindowRef)getFrame ()->getSystemWindow ();
 	#if QUARTZ
 	if (pContext)
 		rect.offset (pContext->offsetScreen.h, pContext->offsetScreen.v);
+	WindowAttributes winAttributes;
+	GetWindowAttributes (window, &winAttributes);
+	if (winAttributes & kWindowCompositingAttribute)
+	{
+		Rect r;
+		r.left   = rect.left;// + 2;
+		r.right  = rect.right;// - 4;
+		r.top    = rect.top;// + 2;
+		r.bottom = rect.bottom;// - 4;
+		if (rect.getHeight () > gStandardFontSize [fontID])
+		{
+			r.top = rect.top + rect.getHeight () / 2 - gStandardFontSize [fontID] / 2 + 1;
+			r.bottom = r.top + gStandardFontSize [fontID];
+		}
+		if (CreateEditUnicodeTextControl (NULL, &r, NULL, false, NULL, &textControl) == noErr)
+		{
+			HIViewAddSubview ((HIViewRef)getFrame ()->getPlatformControl (), textControl);
+			HIViewSetFirstSubViewFocus ((HIViewRef)getFrame ()->getPlatformControl (), textControl);
+			HIViewAdvanceFocus ((HIViewRef)getFrame ()->getPlatformControl (), 0);
+			EventTypeSpec eventTypes[] = { { kEventClassWindow, kEventWindowDeactivated }, { kEventClassKeyboard, kEventRawKeyDown }, { kEventClassKeyboard, kEventRawKeyRepeat } };
+			InstallControlEventHandler (textControl, CarbonEventsTextControlProc, GetEventTypeCount (eventTypes), eventTypes, this, &gTextEditEventHandler);
+			platformControl = textControl;
+			if (strlen (text) > 0)
+			{
+				CFStringRef textString = CFStringCreateWithCString (NULL, text, kCFStringEncodingUTF8);
+				if (textString)
+				{
+					SetControlData (textControl, kControlEditTextPart, kControlEditTextCFStringTag, sizeof (CFStringRef), &textString);
+					CFRelease (textString);
+				}
+				ControlEditTextSelectionRec selection;
+				selection.selStart = 0;
+				selection.selEnd = strlen (text);
+				SetControlData (textControl, kControlEditTextPart, kControlEditTextSelectionTag, sizeof (ControlEditTextSelectionRec), &selection);
+			}
+			Boolean singleLineStyle = true;
+			SetControlData (textControl, kControlEditTextPart, kControlEditTextSingleLineTag, sizeof (Boolean), &singleLineStyle);
+			ControlFontStyleRec fontStyle;
+			memset (&fontStyle, 0, sizeof (fontStyle));
+			fontStyle.flags = kControlUseJustMask | kControlUseSizeMask | kControlUseFontMask;
+			switch (horiTxtAlign)
+			{
+				case kLeftText: fontStyle.just = teFlushLeft; break;
+				case kRightText: fontStyle.just = teFlushRight; break;
+				default: fontStyle.just = teCenter; break;
+			}
+			fontStyle.size = gStandardFontSize [fontID];
+			extern const char* gMacXfontNames[];
+			Str255 fontName;
+			CopyCStringToPascal ((const char*)gMacXfontNames[fontID], fontName); 
+			GetFNum (fontName, &fontStyle.font);
+			SetControlData (textControl, kControlEditTextPart, kControlFontStyleTag, sizeof (fontStyle), &fontStyle);
+			HIViewSetVisible (textControl, true);
+		}
+		return;
+	}
 	#endif
 	static bool gTXNInititalized = false;
 	if (!gTXNInititalized)
@@ -1450,21 +1442,21 @@ void CTextEdit::takeFocus (CDrawContext *pContext)
 		gTXNInititalized = true;
 	}
 	gTextEditCanceled = false;
-	WindowRef window = (WindowRef)getFrame ()->getSystemWindow ();
 	TXNFrameOptions iFrameOptions = kTXNMonostyledTextMask | kTXNDisableDragAndDropMask | kTXNSingleLineOnlyMask; //kTXNNoKeyboardSyncMask | kTXNDisableDragAndDropMask | kTXNSingleLineOnlyMask | kTXNMonostyledTextMask;
-	TXNObject txnObj = 0;
 	TXNFrameID frameID = 0;
 	TXNObjectRefcon iRefCon = 0;
+	TXNObject object;
 	Rect r;
 	r.left   = rect.left;
 	r.right  = rect.right;
 	r.top    = rect.top;
 	r.bottom = rect.bottom;
-	OSStatus err = TXNNewObject (NULL, window, &r, iFrameOptions, kTXNTextEditStyleFrameType, kTXNSingleStylePerTextDocumentResType, kTXNMacOSEncoding, &txnObj, &frameID, iRefCon);
+	OSStatus err;
+	err = TXNNewObject (NULL, window, &r, iFrameOptions, kTXNTextEditStyleFrameType, kTXNSingleStylePerTextDocumentResType, kTXNMacOSEncoding, &object, &frameID, iRefCon);
 	if (err == noErr)
 	{
-		TXNSetFrameBounds (txnObj, r.top, r.left, r.bottom, r.right, frameID);
-		platformControl = txnObj;
+		platformControl = object;
+		TXNSetFrameBounds ((TXNObject)platformControl, r.top, r.left, r.bottom, r.right, frameID);
 
 		if (strlen (text) > 0)
 			TXNSetData ((TXNObject)platformControl, kTXNTextData, (void*)text, strlen (text), kTXNStartOffset, kTXNEndOffset);
@@ -1479,7 +1471,7 @@ void CTextEdit::takeFocus (CDrawContext *pContext)
 		TXNBackground txnBackground;
 		txnBackground.bgType = kTXNBackgroundTypeRGB;
 		txnBackground.bg.color = rgbBackColor;
-		TXNSetBackground (txnObj, &txnBackground);
+		TXNSetBackground ((TXNObject)platformControl, &txnBackground);
 		// set justification
 		TXNControlTag	controlTag[1];
 		TXNControlData	controlData[1];
@@ -1492,7 +1484,7 @@ void CTextEdit::takeFocus (CDrawContext *pContext)
 		}
 		controlTag[0] = kTXNJustificationTag;
 		controlData[0].sValue = just;
-		TXNSetTXNObjectControls (txnObj, false, 1, controlTag, controlData);
+		TXNSetTXNObjectControls ((TXNObject)platformControl, false, 1, controlTag, controlData);
 		// set font
 		TXNTypeAttributes attributes[3];
 		// font name
@@ -1524,16 +1516,15 @@ void CTextEdit::takeFocus (CDrawContext *pContext)
 		attributes[2].size = kTXNQDFontColorAttributeSize;
 		attributes[2].data.dataPtr = &rgbTextColor;
 
-		TXNSetTypeAttributes (txnObj, 3, attributes, kTXNStartOffset, kTXNEndOffset);
+		TXNSetTypeAttributes ((TXNObject)platformControl, 3, attributes, kTXNStartOffset, kTXNEndOffset);
 
 		SetUserFocusWindow (window);
 		AdvanceKeyboardFocus (window);
-		TXNActivate (txnObj, frameID, false);
-		TXNFocus (txnObj, true);
-		TXNSelectAll ((TXNObject)platformControl);
-			
+		TXNActivate ((TXNObject)platformControl, frameID, false);
+		TXNFocus ((TXNObject)platformControl, true);
 		EventTypeSpec eventTypes[] = { { kEventClassMouse, kEventMouseMoved }, { kEventClassMouse, kEventMouseDown }, { kEventClassMouse, kEventMouseUp }, { kEventClassWindow, kEventWindowDeactivated }, { kEventClassKeyboard, kEventRawKeyDown }, { kEventClassKeyboard, kEventRawKeyRepeat } };
 		InstallWindowEventHandler (window, CarbonEventsTextControlProc, GetEventTypeCount (eventTypes), eventTypes, this, &gTextEditEventHandler);
+		TXNSelectAll ((TXNObject)platformControl);
 
 	}
 
@@ -1834,31 +1825,57 @@ void CTextEdit::looseFocus (CDrawContext *pContext)
 	if (gTextEditEventHandler)
 		RemoveEventHandler (gTextEditEventHandler);
 	gTextEditEventHandler = 0;
-
-	if (!gTextEditCanceled)
+	#if QUARTZ
+	if (textControl)
 	{
-		CharsHandle dataHandle;
-		TXNGetDataEncoded ((TXNObject)platformControl, kTXNStartOffset, kTXNEndOffset, &dataHandle, kTXNTextData);
-		if (dataHandle != NULL && GetHandleSize (dataHandle) > 0)
+		CFStringRef cfstr;
+		if (!gTextEditCanceled && GetControlData (textControl, kControlEditTextPart, kControlEditTextCFStringTag, sizeof cfstr, (void*)&cfstr, NULL) == noErr)
 		{
-			long s = GetHandleSize (dataHandle);
-			strncpy (text, *dataHandle, (s > 255) ? 255 : s);
-			text [(s > 255) ? 255 : s] = 0;
-			DisposeHandle (dataHandle);
+			CFStringGetCString (cfstr, text, 255, kCFStringEncodingUTF8);
+			CFRelease (cfstr);
 		}
-		else
-			text[0] = 0;
+		HIViewSetVisible (textControl, false);
+		HIViewRemoveFromSuperview (textControl);
+		textControl = 0;
+		pParentFrame->setCursor (kCursorDefault);
 	}
-
-	TXNFocus ((TXNObject)platformControl, false);
+	else
+	#endif
+	{
+		if (!gTextEditCanceled)
+		{
+			CharsHandle dataHandle;
+			TXNGetDataEncoded ((TXNObject)platformControl, kTXNStartOffset, kTXNEndOffset, &dataHandle, kTXNTextData);
+			if (dataHandle != NULL && GetHandleSize (dataHandle) > 0)
+			{
+				long s = GetHandleSize (dataHandle);
+				strncpy (text, *dataHandle, (s > 255) ? 255 : s);
+				text [(s > 255) ? 255 : s] = 0;
+				DisposeHandle (dataHandle);
+			}
+			else
+				text[0] = 0;
+		}
+		TXNFocus ((TXNObject)platformControl, false);
+		TXNDeleteObject ((TXNObject)platformControl);
+	}
 	
-	Rect size;
-	TXNGetViewRect ((TXNObject)platformControl, &size);
-	TXNDeleteObject ((TXNObject)platformControl);
 	platformControl = 0;
 
 	setDirty (true);
-	doIdleStuff ();
+
+	#if 0//QUARTZ
+	CRect fr (size);
+	CPoint offset;
+	localToFrame (offset);
+	fr.offset (offset.x, offset.y);
+	
+	RgnHandle rgn = NewRgn ();
+	MacSetRectRgn (rgn, fr.left, fr.top, fr.right, fr.bottom);
+	HIViewSetNeedsDisplayInRegion ((HIViewRef)getFrame ()->getPlatformControl () , rgn, true);
+	DisposeRgn (rgn);
+	#endif
+//	doIdleStuff ();
 	
 	#else
 
@@ -3767,6 +3784,19 @@ CAnimKnob::CAnimKnob (const CRect &size, CControlListener *listener, long tag,
 CAnimKnob::~CAnimKnob ()
 {}
 
+//-----------------------------------------------------------------------------------------------
+bool CAnimKnob::isDirty () const
+{
+	if (!bDirty)
+	{
+		CPoint p;
+		valueToPoint (p);
+		if (p == lastDrawnPoint)
+			return false;
+	}
+	return CKnob::isDirty ();
+}
+
 //------------------------------------------------------------------------
 void CAnimKnob::draw (CDrawContext *pContext)
 {
@@ -3797,6 +3827,7 @@ void CAnimKnob::draw (CDrawContext *pContext)
 		else
 			pBackground->draw (pContext, size, where);
 	}
+	valueToPoint (lastDrawnPoint);
 	setDirty (false);
 }
 

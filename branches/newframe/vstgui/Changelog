@@ -1,3 +1,11 @@
+2005-03-25 arne
+
+	* quartz: fix drawing of transparent bitmaps when OLD_TRANSPARENT_BITMAP_MODE is defined
+	* fix a bug for quickdraw's CDrawContext::setClipRect
+	* quartz: on composited windows, the ctextedit creates a native UnicodeTextControl instead of an MLTE Object
+	* a try to fix redraw problems if the system sends a redraw and some views won't get updated completly
+	* changed the implementation of CView Attributes. Documentation removed. Will be updated before the 3.0 release.
+
 2005-03-05 arne
 
 	* fixed a memory leak on windows with IDropTarget (thanks bigtick)

@@ -220,6 +220,14 @@ short fixResRefNum;
 
 CFBundleRef ghInst = 0;
 
+#if BUILD_APPLICATION
+void InitMachOLibrary ()
+{
+	ghInst = CFBundleGetMainBundle ();
+}
+
+void ExitMachOLibrary () {}
+#else
 // -----------------------------------------------------------------------------
 static CFBundleRef _CFXBundleCreateFromImageName (CFAllocatorRef allocator, const char* image_name);
 static CFBundleRef _CFXBundleCreateFromImageName (CFAllocatorRef allocator, const char* image_name)
@@ -254,6 +262,8 @@ void InitMachOLibrary ();
 void InitMachOLibrary ()
 {
 	const mach_header* header = &_mh_bundle_header;
+	if (header == 0)
+		return;
 
 	const char* imagename = 0;
 	/* determine the image name, TODO: ther have to be a better way */
@@ -280,4 +290,5 @@ void ExitMachOLibrary ()
 		CFRelease (ghInst);
 }
 
+#endif
 #endif

@@ -2,7 +2,7 @@
 // VST Plug-Ins SDK
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 //
-// Version 3.0       $Date: 2005-03-05 14:03:06 $ 
+// Version 3.0       $Date: 2005-03-25 14:30:39 $ 
 //
 // Added Motif/Windows vers.: Yvan Grabit              01.98
 // Added Mac version        : Charlie Steinberg        02.98
@@ -917,7 +917,7 @@ void CDrawContext::setClipRect (const CRect &clip)
 	
 	#else
 	Rect r;
-	CRect2Rect (clip, r);
+	CRect2Rect (_clip, r);
 
 	CGrafPtr OrigPort;
 	GDHandle OrigDevice;
@@ -3603,6 +3603,41 @@ CGrafPtr COffscreenContext::getPort ()
 #endif // MAC
 
 //-----------------------------------------------------------------------------
+class CAttributeListEntry
+{
+public:
+	CAttributeListEntry (long size, CViewAttributeID id)
+	: nextEntry (0)
+	, pointer (0)
+	, sizeOfPointer (size)
+	, id (id)
+	{
+		pointer = malloc (size);
+	}
+
+	~CAttributeListEntry ()
+	{
+		if (pointer)
+			free (pointer);
+	}
+
+	const CViewAttributeID getID () const { return id; }
+	const long getSize () const { return sizeOfPointer; }
+	void* getPointer () const { return pointer; }
+	CAttributeListEntry* getNext () const { return nextEntry; }
+	
+	void setNext (CAttributeListEntry* entry) { nextEntry = entry; }
+
+protected:
+	CAttributeListEntry () : nextEntry (0), pointer (0), sizeOfPointer (0), id (0) {}
+
+	CAttributeListEntry* nextEntry;
+	void* pointer;
+	long sizeOfPointer;
+	CViewAttributeID id;
+};
+
+//-----------------------------------------------------------------------------
 char* kMsgCheckIfViewContainer	= "kMsgCheckIfViewContainer";
 
 //-----------------------------------------------------------------------------
@@ -3613,8 +3648,15 @@ char* kMsgCheckIfViewContainer	= "kMsgCheckIfViewContainer";
 */
 //-----------------------------------------------------------------------------
 CView::CView (const CRect& size)
-:	size (size), mouseableArea (size), pParentFrame (0), pParentView (0),
-	bDirty (false), bMouseEnabled (true), bTransparencyEnabled (false), pBackground (0), pReferencePointer (0)
+: size (size)
+, mouseableArea (size)
+, pParentFrame (0)
+, pParentView (0)
+, bDirty (false)
+, bMouseEnabled (true)
+, bTransparencyEnabled (false)
+, pBackground (0)
+, pAttributeList (0)
 {
 	#if DEBUG
 	gNbCView++;
@@ -3627,6 +3669,16 @@ CView::~CView ()
 	if (pBackground)
 		pBackground->forget ();
 
+	if (pAttributeList)
+	{
+		CAttributeListEntry* entry = pAttributeList;
+		while (entry)
+		{
+			CAttributeListEntry* nextEntry = entry->getNext ();
+			delete entry;
+			entry = nextEntry;
+		}
+	}
 	#if DEBUG
 	gNbCView--;
 	#endif
@@ -3787,31 +3839,59 @@ void CView::setBackground (CBitmap *background)
 	pBackground = background;
 	if (pBackground)
 		pBackground->remember ();
+	setDirty (true);
 }
 
 //-----------------------------------------------------------------------------
 const CViewAttributeID kCViewAttributeReferencePointer = 'cvrp';
 
 //-----------------------------------------------------------------------------
+/**
+ * @param id the ID of the Attribute
+ * @param outSize on return the size of the attribute
+ */
 bool CView::getAttributeSize (const CViewAttributeID id, long& outSize) const
 {
-	if (id == kCViewAttributeReferencePointer)
+	if (pAttributeList)
 	{
-		outSize = sizeof (void*);
-		return true;
+		CAttributeListEntry* entry = pAttributeList;
+		while (entry)
+		{
+			if (entry->getID () == id)
+				break;
+			entry = entry->getNext ();
+		}
+		if (entry)
+		{
+			outSize = entry->getSize ();
+			return true;
+		}
 	}
 	return false;
 }
 
 //-----------------------------------------------------------------------------
+/**
+ * @param id the ID of the Attribute
+ * @param inSize the size of the outData pointer
+ * @param outData a pointer where to copy the attribute data
+ * @param outSize the size in bytes which was copied into outData
+ */
 bool CView::getAttribute (const CViewAttributeID id, const long inSize, void* outData, long& outSize) const
 {
-	if (id == kCViewAttributeReferencePointer)
+	if (pAttributeList)
 	{
-		if (inSize >= sizeof (void*))
+		CAttributeListEntry* entry = pAttributeList;
+		while (entry)
 		{
-			outSize = sizeof (pReferencePointer);
-			*(void**)outData = pReferencePointer;
+			if (entry->getID () == id)
+				break;
+			entry = entry->getNext ();
+		}
+		if (entry && inSize >= entry->getSize ())
+		{
+			outSize = entry->getSize ();
+			memcpy (outData, entry->getPointer (), outSize);
 			return true;
 		}
 	}
@@ -3819,17 +3899,51 @@ bool CView::getAttribute (const CViewAttributeID id, const long inSize, void* ou
 }
 
 //-----------------------------------------------------------------------------
+/**
+ * copies data into the attribute. If it does not exist, creates a new attribute.
+ * @param id the ID of the Attribute
+ * @param inSize the size of the outData pointer
+ * @param inData a pointer to the data
+ */
 bool CView::setAttribute (const CViewAttributeID id, const long inSize, void* inData)
 {
-	if (id == kCViewAttributeReferencePointer)
+	CAttributeListEntry* lastEntry = 0;
+	if (pAttributeList)
 	{
-		if (inSize == sizeof (void*))
+		CAttributeListEntry* entry = pAttributeList;
+		while (entry)
 		{
-			pReferencePointer = *(void**)inData;
-			return true;
+			if (entry->getID () == id)
+				break;
+			if (entry->getNext () == 0)
+				lastEntry = entry;
+			entry = entry->getNext ();
+		}
+		if (entry)
+		{
+			if (entry->getSize () >= inSize)
+			{
+				memcpy (entry->getPointer (), inData, inSize);
+				return true;
+			}
+			else
+				return false;
 		}
 	}
-	return false;
+	
+	// create a new attribute
+	CAttributeListEntry* newEntry = new CAttributeListEntry (inSize, id);
+	memcpy (newEntry->getPointer (), inData, inSize);
+	if (lastEntry)
+		lastEntry->setNext (newEntry);
+	else if (!pAttributeList)
+		pAttributeList = newEntry;
+	else
+	{
+		delete newEntry;
+		return false;
+	}
+	return true;
 }
 
 #if DEBUG
@@ -5285,6 +5399,7 @@ void CViewContainer::setViewSize (CRect &rect)
 void CViewContainer::setBackgroundColor (CColor color)
 {
 	backgroundColor = color;
+	setDirty (true);
 }
 
 //------------------------------------------------------------------------------
@@ -5375,6 +5490,8 @@ void CViewContainer::removeAll (const bool &withForget)
  */
 void CViewContainer::removeView (CView *pView, const bool &withForget)
 {
+	if (pParentFrame && pParentFrame->getFocusView () == pView)
+		pParentFrame->setFocusView (0);
 	CCView *pV = pFirstView;
 	while (pV)
 	{
@@ -5580,6 +5697,8 @@ void CViewContainer::drawBackgroundRect (CDrawContext *pContext, CRect& _updateR
 	}
 }
 
+#define EVENT_DRAW_FIX 1
+
 //-----------------------------------------------------------------------------
 /**
  * @param pContext the context which to use to draw
@@ -5646,7 +5765,14 @@ void CViewContainer::drawRect (CDrawContext *pContext, const CRect& _updateRect)
 				continue;
 			pC->setClipRect (viewSize);
 			#endif
+			#if EVENT_DRAW_FIX	// this is needed because of draw events from the system, which may cause to only draw some parts of the views
+			bool wasDirty = pV->bDirty;
+			#endif
 			pV->drawRect (pC, clientRect);
+			#if EVENT_DRAW_FIX
+			if (wasDirty && pV->size != viewSize)
+				pV->setDirty (true);
+			#endif
 		}
 	ENDFOR
 
@@ -5664,7 +5790,10 @@ void CViewContainer::drawRect (CDrawContext *pContext, const CRect& _updateRect)
 	delete pC;
 	#endif
 
-	setDirty (false);
+#if EVENT_DRAW_FIX
+	if (bDirty && newClip == size)
+#endif
+		setDirty (false);
 }
 
 //-----------------------------------------------------------------------------
@@ -6907,6 +7036,9 @@ CGImageRef CBitmap::createCGImage (bool transparent)
 		CGImageRetain ((CGImageRef)cgImage);
 		return (CGImageRef)cgImage;
 	}
+	if (!pHandle)
+		return NULL;
+
 	PixMapHandle pixMap = GetGWorldPixMap ((GWorldPtr)pHandle);
 	
 	Rect bounds;
@@ -7067,7 +7199,16 @@ void CBitmap::drawTransparent (CDrawContext *pContext, CRect &rect, const CPoint
 #elif MAC
 
 	#if QUARTZ
+	#if OLD_TRANSPARENT_BITMAP_MODE
+	CGImageRef image = createCGImage (true);
+	if (image)
+	{
+		drawAlphaBlend (pContext, rect, offset, 255);
+		CGImageRelease (image);
+	}
+	#else
 	drawAlphaBlend (pContext, rect, offset, 255);
+	#endif
 
 	#else
 	Rect source, dest;
@@ -9980,6 +10121,7 @@ pascal OSStatus CFrame::carbonEventHandler (EventHandlerCallRef inHandlerCallRef
 					RgnHandle dirtyRegion;
 					if (GetEventParameter (inEvent, kEventParamRgnHandle, typeQDRgnHandle, NULL, sizeof (RgnHandle), NULL, &dirtyRegion) == noErr)
 					{
+						bool frameWasDirty = frame->bDirty;
 						Rect bounds;
 						GetRegionBounds (dirtyRegion, &bounds);
 						CRect updateRect;
@@ -9989,6 +10131,8 @@ pascal OSStatus CFrame::carbonEventHandler (EventHandlerCallRef inHandlerCallRef
 						if (!(windowAttributes & kWindowCompositingAttribute))
 							updateRect.offset (-context->offsetScreen.x, -context->offsetScreen.y);
 						frame->drawRect (context, updateRect);
+						if (frameWasDirty && updateRect != frame->size)
+							frame->setDirty (true);
 					}
 					else
 						frame->draw (context);

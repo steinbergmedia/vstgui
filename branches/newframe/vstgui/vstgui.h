@@ -2,7 +2,7 @@
 // VST Plug-Ins SDK
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 //
-// Version 3.0       $Date: 2005-03-05 14:03:06 $
+// Version 3.0       $Date: 2005-03-25 14:30:39 $
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
@@ -40,7 +40,7 @@
 	#define WINDOWS 1
 #elif SGI | SUN
 	#define MOTIF 1
-#elif __MWERKS__
+#elif __MWERKS__ || __APPLE_CC__
 	#define MAC 1
 #elif __BEOS__
 	#define BEOS 1
@@ -356,6 +356,7 @@ extern CColor kMagentaCColor;
 
 class CDragContainer;
 class CCView;
+class CAttributeListEntry;
 
 //-----------------------------------------------------------------------------
 typedef unsigned long CViewAttributeID;
@@ -833,9 +834,9 @@ public:
 	virtual CPoint& frameToLocal (CPoint& point) const;		///< conversion from frame coordinates to local view coordinates
 	virtual CPoint& localToFrame (CPoint& point) const;		///< conversion from local view coordinates to frame coordinates
 
-	virtual bool getAttributeSize (const CViewAttributeID id, long& outSize) const;									///< get the size of an attribute
-	virtual bool getAttribute (const CViewAttributeID id, const long inSize, void* outData, long& outSize) const;	///< get an attribute
-	virtual bool setAttribute (const CViewAttributeID id, const long inSize, void* inData);							///< set an attribute
+	bool getAttributeSize (const CViewAttributeID id, long& outSize) const;									///< get the size of an attribute
+	bool getAttribute (const CViewAttributeID id, const long inSize, void* outData, long& outSize) const;	///< get an attribute
+	bool setAttribute (const CViewAttributeID id, const long inSize, void* inData);							///< set an attribute
 
 	CView  *getParentView () const { return pParentView; }
 	CFrame *getFrame () const { return pParentFrame; }
@@ -876,7 +877,7 @@ protected:
 	bool  bTransparencyEnabled;
 	
 	CBitmap* pBackground;
-	void* pReferencePointer;
+	CAttributeListEntry* pAttributeList;
 
 	virtual void update (CDrawContext *pContext); // don't call this !!!
 };
@@ -1051,6 +1052,7 @@ public:
 	virtual void update (CDrawContext *pContext);
 	virtual void setViewSize (CRect& inRect);
 	virtual CView *getCurrentView () const;
+
 	virtual void *getEditor () const { return pEditor; }
 
 #if MOTIF
