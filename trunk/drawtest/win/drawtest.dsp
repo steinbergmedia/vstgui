@@ -65,9 +65,10 @@ LINK32=link.exe
 # PROP Use_Debug_Libraries 1
 # PROP Output_Dir "Debug"
 # PROP Intermediate_Dir "Debug"
+# PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MTd /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "DRAWTEST_EXPORTS" /YX /FD /GZ /c
-# ADD CPP /nologo /MTd /W3 /Gm /GX /ZI /Od /I "..\vstsdk2.3\\" /I "..\..\vstgui\\" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "DRAWTEST_EXPORTS" /YX /FD /GZ /c
+# ADD CPP /nologo /MTd /W3 /Gm /GX /ZI /Od /I "..\vstsdk2.3\\" /I "..\..\vstgui\\" /I "..\..\..\sdk\libpng" /I "..\..\..\sdk\zlib" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "DRAWTEST_EXPORTS" /D USE_LIBPNG=1 /FR /YX /FD /GZ /c
 # ADD BASE MTL /nologo /D "_DEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "_DEBUG" /mktyplib203 /win32
 # ADD BASE RSC /l 0x809 /d "_DEBUG"
@@ -77,7 +78,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /dll /debug /machine:I386 /pdbtype:sept
-# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /dll /debug /machine:I386 /pdbtype:sept
+# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /dll /debug /machine:I386 /out:"C:\Program Files\Steinberg\VstPlugins\drawtest.dll" /pdbtype:sept
 
 !ENDIF 
 
@@ -94,6 +95,14 @@ LINK32=link.exe
 # Begin Source File
 
 SOURCE=..\..\vstgui\aeffguieditor.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\vstgui\cscrollview.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\vstgui\ctabview.cpp
 # End Source File
 # Begin Source File
 
@@ -116,6 +125,186 @@ SOURCE=..\vstsdk2.3\AudioEffect.cpp
 SOURCE=..\vstsdk2.3\audioeffectx.cpp
 # End Source File
 # End Group
+# Begin Group "libpng"
+
+# PROP Default_Filter ""
+# Begin Source File
+
+SOURCE=..\..\..\sdk\libpng\png.c
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\sdk\libpng\png.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\sdk\libpng\pngasmrd.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\sdk\libpng\pngconf.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\sdk\libpng\pngerror.c
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\sdk\libpng\pnggccrd.c
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\sdk\libpng\pngget.c
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\sdk\libpng\pngmem.c
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\sdk\libpng\pngpread.c
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\sdk\libpng\pngread.c
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\sdk\libpng\pngrio.c
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\sdk\libpng\pngrtran.c
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\sdk\libpng\pngrutil.c
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\sdk\libpng\pngset.c
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\sdk\libpng\pngtrans.c
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\sdk\libpng\pngvcrd.c
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\sdk\libpng\pngwio.c
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\sdk\libpng\pngwrite.c
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\sdk\libpng\pngwtran.c
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\sdk\libpng\pngwutil.c
+# End Source File
+# End Group
+# Begin Group "zlib"
+
+# PROP Default_Filter ""
+# Begin Source File
+
+SOURCE=..\..\..\sdk\zlib\adler32.c
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\sdk\zlib\compress.c
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\sdk\zlib\crc32.c
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\sdk\zlib\crc32.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\sdk\zlib\deflate.c
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\sdk\zlib\deflate.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\sdk\zlib\gzio.c
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\sdk\zlib\infback.c
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\sdk\zlib\inffast.c
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\sdk\zlib\inffast.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\sdk\zlib\inffixed.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\sdk\zlib\inflate.c
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\sdk\zlib\inflate.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\sdk\zlib\inftrees.c
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\sdk\zlib\inftrees.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\sdk\zlib\trees.c
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\sdk\zlib\trees.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\sdk\zlib\uncompr.c
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\sdk\zlib\zconf.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\sdk\zlib\zlib.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\sdk\zlib\zutil.c
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\sdk\zlib\zutil.h
+# End Source File
+# End Group
+# Begin Source File
+
+SOURCE=..\source\controlsgui.cpp
+# End Source File
 # Begin Source File
 
 SOURCE=.\drawtest.def
@@ -140,10 +329,36 @@ SOURCE=..\source\pdrawtestview.cpp
 # Begin Group "Header Files"
 
 # PROP Default_Filter "h;hpp;hxx;hm;inl"
+# Begin Source File
+
+SOURCE=..\..\vstgui\aeffguieditor.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\vstgui\vstcontrols.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\vstgui\vstgui.h
+# End Source File
 # End Group
 # Begin Group "Resource Files"
 
 # PROP Default_Filter "ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe"
+# Begin Source File
+
+SOURCE=.\drawtest.rc
+
+!IF  "$(CFG)" == "drawtest - Win32 Release"
+
+!ELSEIF  "$(CFG)" == "drawtest - Win32 Debug"
+
+# ADD BASE RSC /l 0x809
+# ADD RSC /l 0x809 /i "..\resources"
+
+!ENDIF 
+
+# End Source File
 # End Group
 # End Target
 # End Project
