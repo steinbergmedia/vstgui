@@ -672,6 +672,11 @@ public:
 #if BEOS
 	static void closeResource ();
 #endif
+#if MACX
+	#if QUARTZ
+	virtual CGImageRef createCGImage (bool transparent = false);
+	#endif
+#endif
 
 	//-------------------------------------------
 protected:
@@ -697,9 +702,6 @@ protected:
 	void *pMask;
 
 #elif MAC
-	#if QUARTZ
-	virtual CGImageRef createCGImage (bool transparent = false);
-	#endif
 	void* pHandle;
 	void* pMask;
 
@@ -855,6 +857,7 @@ public:
 	void  setCursor (CCursorType type);
 
 	CView *getCurrentView ();
+	CView *getViewAt (const CPoint& where);
 
 #if WINDOWS
 	HWND getOuterWindow ();
@@ -1029,6 +1032,7 @@ public:
 	virtual bool attached (CView* view);
 		
 	CView *getCurrentView ();
+	CView *getViewAt (const CPoint& where);
 
 	void modifyDrawContext (long save[4], CDrawContext* pContext);
 	void restoreDrawContext (CDrawContext* pContext, long save[4]);
