@@ -36,6 +36,8 @@
 #include "ctabview.h"
 #endif
 
+BEGIN_NAMESPACE_VSTGUI
+
 //-----------------------------------------------------------------------------
 class CTabButton : public COnOffButton
 //-----------------------------------------------------------------------------
@@ -316,3 +318,4 @@ CRect& CTabView::getTabViewSize (CRect& rect) const
 }
 
 
+END_NAMESPACE_VSTGUI
