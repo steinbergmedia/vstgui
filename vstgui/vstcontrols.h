@@ -386,6 +386,8 @@ public:
 
 	virtual void setPrefixNumbers (long preCount);
 
+	COptionMenu* getSubMenu (long idx);
+
 protected:
 	COptionMenu *getItemMenu (long idx, long &idxInMenu, long &offsetIdx);
 	void    removeItems ();

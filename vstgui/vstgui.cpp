@@ -510,27 +510,20 @@ CDrawContext::CDrawContext (CFrame *pFrame, void *pSystemContext, void *pWindow)
 
 #elif MAC
 	#if QUARTZ
-	#if CARBON_EVENTS
-	WindowAttributes attr = 0;
 	if (pFrame && (pSystemContext || pWindow))
 	{
 		HIRect bounds;
 		HIViewGetFrame ((HIViewRef)pFrame->getPlatformControl (), &bounds);
 		if (pWindow)
 		{
-			GetWindowAttributes ((WindowRef)pWindow, &attr);
-			if (attr & kWindowCompositingAttribute)
-			{
-				HIViewRef contentView;
-				HIViewFindByID (HIViewGetRoot ((WindowRef)pWindow), kHIViewWindowContentID, &contentView);
-				HIViewConvertRect (&bounds, (HIViewRef)pFrame->getPlatformControl (), contentView);
-			}
+			HIViewRef contentView;
+			HIViewFindByID (HIViewGetRoot ((WindowRef)pWindow), kHIViewWindowContentID, &contentView);
+			HIViewConvertRect (&bounds, (HIViewRef)pFrame->getPlatformControl (), contentView);
 		}
 		offsetScreen.x = bounds.origin.x;
 		offsetScreen.y = bounds.origin.y;
 		clipRect (0, 0, bounds.size.width, bounds.size.height);
 	}
-	#endif
 	gCGContext = 0;
 	if (pSystemContext)
 	{
@@ -1071,6 +1064,7 @@ void CDrawContext::setDrawMode (CDrawMode mode)
 void CDrawContext::setClipRect (const CRect &clip)
 {
 	clipRect = clip;
+	clipRect.offset (offset.h, offset.v);
 
 #if MAC
 	#if QUARTZ
@@ -1103,7 +1097,7 @@ void CDrawContext::setClipRect (const CRect &clip)
 	#endif
 
 #elif WINDOWS
-	RECT r = {clip.left, clip.top, clip.right, clip.bottom};
+	RECT r = {clipRect.left, clipRect.top, clipRect.right, clipRect.bottom};
 	HRGN hRgn  = CreateRectRgn (r.left, r.top, r.right, r.bottom);
 	SelectClipRgn ((HDC)pSystemContext, hRgn);
 	DeleteObject (hRgn);
@@ -1112,12 +1106,12 @@ void CDrawContext::setClipRect (const CRect &clip)
 	XRectangle r;
 	r.x = 0;
 	r.y = 0;
-	r.width  = clip.right - clip.left;
-	r.height = clip.bottom - clip.top;
-	XSetClipRectangles (XGCPARAM, clip.left, clip.top, &r, 1, Unsorted); 
+	r.width  = clipRect.right - clipRect.left;
+	r.height = clipRect.bottom - clipRect.top;
+	XSetClipRectangles (XGCPARAM, clipRect.left, clipRect.top, &r, 1, Unsorted); 
 
 #elif BEOS
-	clipping_rect r = {clip.left, clip.top, clip.right - 1, clip.bottom - 1};	
+	clipping_rect r = {clipRect.left, clipRect.top, clipRect.right - 1, clipRect.bottom - 1};	
 	BRegion region;
 	region.Set (r);
 	pView->ConstrainClippingRegion (&region);
@@ -1290,7 +1284,7 @@ void CDrawContext::drawRect (const CRect &_rect)
 	#if QUARTZ
 	CGContextRef context = beginCGContext ();
 	{
-		CGRect r = CGRectMake (rect.left, rect.top, rect.width (), rect.height ());
+		CGRect r = CGRectMake (rect.left, rect.top, rect.width () - 0.5f, rect.height () - 0.5f);
 		CGContextScaleCTM (context, 1, -1);
 		CGContextTranslateCTM (context, 0.5f, 0.5f);
 		CGContextStrokeRect (context, r);
@@ -1344,7 +1338,7 @@ void CDrawContext::fillRect (const CRect &_rect)
 	#if QUARTZ
 	CGContextRef context = beginCGContext ();
 	{
-		CGRect r = CGRectMake (rect.left, rect.top, rect.width (), rect.height ());
+		CGRect r = CGRectMake (rect.left, rect.top, rect.width () - 0.5f, rect.height () - 0.5f);
 		CGContextScaleCTM (context, 1, -1);
 		CGContextTranslateCTM (context, 0.5f, 0.5f);
 		CGContextFillRect (context, r);
@@ -1984,7 +1978,6 @@ void CDrawContext::drawString (const char *string, const CRect &_rect,
 	CGContextRef context = beginCGContext ();
 	if (context)
 	{
-		setClipRect (rect);
 		long strWidth = getStringWidth (string);
 		rect.bottom -= rect.height ()/2 - fontSize / 2 + 1;
 		switch (hAlign)
@@ -2005,7 +1998,7 @@ void CDrawContext::drawString (const char *string, const CRect &_rect,
 		CGContextSetShouldAntialias (context, true);
 		CGContextSetTextDrawingMode (context, kCGTextFill);
 		CGContextSetRGBFillColor (context, fontColor.red/255.f, fontColor.green/255.f, fontColor.blue/255.f, fontColor.unused/255.f);
-		CGContextSetTextPosition (context, rect.left, rect.bottom * -1);
+		CGContextSetTextPosition (context, rect.left - 0.5f, rect.bottom * -1 + 0.5f);
 		CGContextShowText (context, string, strlen (string));
 		releaseCGContext (context);
 	}
@@ -2362,7 +2355,7 @@ bool CDrawContext::waitDoubleClick ()
 
 #elif MAC
 	#if MACX
-	#if CARBON_EVENTS
+	#if QUARTZ
 	EventTimeout timeout = GetDblTime () * kEventDurationSecond / 60;
 	const EventTypeSpec eventTypes[] = { { kEventClassMouse, kEventMouseDown }, { kEventClassMouse, kEventMouseDragged } };
 	EventRef event;
@@ -2389,7 +2382,7 @@ bool CDrawContext::waitDoubleClick ()
 			break;
 		}
 	}
-	#endif // !CARBON_EVENTS
+	#endif // !QUARTZ
 
 	#else
 	long clickTime, doubleTime;
@@ -2465,7 +2458,7 @@ bool CDrawContext::waitDoubleClick ()
 //-----------------------------------------------------------------------------
 bool CDrawContext::waitDrag ()
 {
-	#if MACX && CARBON_EVENTS
+	#if MACX && QUARTZ
 	bool dragged = false;
 	if (GetCurrentEventButtonState () & kEventMouseButtonPrimary)
 	{
@@ -3502,7 +3495,7 @@ CFrame::~CFrame ()
 	CBitmap::closeResource ();	// must be done only once at the end of the story.
 #endif
 
-#if MAC && CARBON_EVENTS
+#if MAC && QUARTZ
 	if (controlRef)
 		DisposeControl (controlRef);
 	if (controlSpec.u.classRef)
@@ -3597,7 +3590,7 @@ bool CFrame::initFrame (void *systemWin)
 
 #elif MAC
 
-	#if CARBON_EVENTS
+	#if QUARTZ
 	dragEventHandler = 0;
 	if (!registerWithToolbox ())
 		return false;
@@ -3755,6 +3748,8 @@ void CFrame::drawRect (CDrawContext *pContext, CRect& updateRect)
 		pContext = pFrameContext;
 
 	#if USE_CLIPPING_DRAWRECT
+	CRect oldClip;
+	pContext->getClipRect (oldClip);
 	pContext->setClipRect (updateRect);
 	#endif
 	
@@ -3774,7 +3769,7 @@ void CFrame::drawRect (CDrawContext *pContext, CRect& updateRect)
 		pModalView->draw (pContext);
 
 	#if USE_CLIPPING_DRAWRECT
-	pContext->resetClipRect ();
+	pContext->setClipRect (oldClip);
 	#endif
 }
 
@@ -3986,8 +3981,6 @@ bool CFrame::onWheel (CDrawContext *pContext, const CPoint &where, float distanc
 		#endif
 		}
 
-		CPoint where;
-		getCurrentLocation (where);
 		result = view->onWheel (pContext2, where, distance);
 
 		if (localContext)
@@ -4213,6 +4206,20 @@ bool CFrame::getPosition (long &x, long &y)
 	x   = bounds.left;
 	y   = bounds.top;
 
+	#if QUARTZ
+	HIViewRef contentView = 0;
+	HIViewFindByID (HIViewGetRoot ((WindowRef)pSystemWindow), kHIViewWindowContentID, &contentView);
+	if (contentView)
+	{
+		HIPoint p = { 0.f, 0.f };
+		if (HIViewConvertPoint (&p, controlRef, contentView) == noErr)
+		{
+			x += p.x;
+			y += p.y;
+		}
+	}
+	#endif
+
 #elif MOTIF
 	Position xWin, yWin;
 
@@ -4267,7 +4274,7 @@ bool CFrame::setSize (long width, long height)
 				#if WINDOWS
 				SetWindowPos ((HWND)pHwnd, HWND_TOP, 0, 0, width, height, SWP_NOMOVE);
 				
-				#elif (MAC && CARBON_EVENTS)
+				#elif (MAC && QUARTZ)
 				Rect bounds;
 				CRect2Rect (size, bounds);
 				SetControlBounds (controlRef, &bounds);
@@ -4331,7 +4338,7 @@ bool CFrame::setSize (long width, long height)
 		#if MACX
 		SetPort (GetWindowPort ((WindowRef)getSystemWindow ()));
 		#endif
-		#if CARBON_EVENTS
+		#if QUARTZ
 		CRect2Rect (size, bounds);
 		SetControlBounds (controlRef, &bounds);
 		#endif
@@ -8407,7 +8414,7 @@ void remove_drop (CFrame *frame)
 //-------------------------------------------------------------------------------------------
 pascal short drag_receiver (WindowPtr w, void* ref, DragReference drag)
 {
-	#if CARBON_EVENTS
+	#if QUARTZ
 	if (gEventDragWorks)
 		return noErr;
 	#endif
@@ -8496,7 +8503,7 @@ pascal short drag_receiver (WindowPtr w, void* ref, DragReference drag)
 }
 #endif // MAC_OLD_DRAG
 
-#if CARBON_EVENTS
+#if QUARTZ
 #define defControlStringMask	CFSTR ("net.sourceforge.vstgui.%d")
 
 bool CFrame::registerWithToolbox ()
