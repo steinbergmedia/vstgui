@@ -1,3 +1,7 @@
+2003-11-12 arne
+
+	* Bugfix for CFrame::setSize for hosts which support "audioMasterSizeWindow" submitted by Justus Henkmann (TC Works)
+
 2003-10-10 arne
 	
 	* Bugfix for COptionMenu::addEntry submitted by Nicolas Bronnec
