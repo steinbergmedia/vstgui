@@ -21,4 +21,17 @@ public:
 	virtual void draw (CDrawContext *pContext);
 };
 
+class PMiscView : public CView
+{
+public:
+	PMiscView (const CRect& size);
+	
+	virtual void draw (CDrawContext* pContext);
+	virtual void mouse (CDrawContext* pContext, CPoint &where, long buttons = -1);
+protected:
+	void drawGrid (CDrawContext* pContext);
+	long xOffset;
+	long yOffset;
+};
+
 #endif
