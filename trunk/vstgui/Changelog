@@ -1,3 +1,7 @@
+2004-02-16 arne
+
+	* mac : fix compile error in CDrawContext::getMouseLocation when compiling for CFM plugs
+
 2004-02-06 arne
 
 	* mac : focus fix

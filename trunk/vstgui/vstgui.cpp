@@ -2264,13 +2264,17 @@ void CDrawContext::getMouseLocation (CPoint &point)
 	GetCursorPos (&where);
 	point (where.x, where.y);
 
-#elif MAC
+#elif MACX
 	Point where;
 	CGrafPtr savedPort;
 	Boolean portChanged = QDSwapPort (getPort (), &savedPort);
 	GetMouse (&where);
 	if (portChanged)
 		QDSwapPort (savedPort, NULL);
+	point (where.h, where.v);
+#elif MAC
+	Point where;
+	GetMouse (&where);
 	point (where.h, where.v);
 	
 #elif MOTIF
