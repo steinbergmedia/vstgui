@@ -109,8 +109,10 @@ class CControlListener
 public:
 	#if USE_NAMESPACE
 	virtual void valueChanged (VSTGUI::CDrawContext *pContext, VSTGUI::CControl *pControl) = 0;
+	virtual long controlModifierClicked (VSTGUI::CDrawContext *pContext, VSTGUI::CControl *pControl, long button) = 0;	// return 1 if you want the control to not handle it, otherwise 0
 	#else
 	virtual void valueChanged (CDrawContext *pContext, CControl *pControl) = 0;
+	virtual long controlModifierClicked (CDrawContext *pContext, CControl *pControl, long button) = 0;	// return 1 if you want the control to not handle it, otherwise 0
 	#endif
 };
 
