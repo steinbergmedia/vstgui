@@ -23,10 +23,13 @@
 
 #include <stdio.h>
 
+static long diffX, diffY;
+
 CDrawTestView::CDrawTestView (const CRect& size)
 : CView (size)
 , value (0)
 {
+	diffX = diffY = 0;
 }
 
 static inline void testDrawRect (CDrawContext *pContext, CRect r, int _offset = 0)
@@ -109,6 +112,7 @@ CColor arcColors[] = { {0,0,255,255}, {255,0,255,255}, {0,255,0,255}, {255,0,0,2
 
 static inline void drawArcs (CDrawContext* pContext, CRect r, int offset = 2)
 {
+	r.inset (diffX, diffY);
 	int i = 0;
 	long n = r.height () > r.width () ? r.width () : r.height ();
 	while (r.width () > 1 && r.height () > 1)
@@ -127,7 +131,7 @@ static inline void drawArcs (CDrawContext* pContext, CRect r, int offset = 2)
 
 static inline void drawEllipses (CDrawContext* pContext, CRect r, int offset = 2)
 {
-	r.inset (10, 0);
+	r.inset (diffX, diffY);
 	int i = 0;
 	long n = r.height () > r.width () ? r.width () : r.height ();
 	while (r.width () > 1 && r.height () > 1)
@@ -230,9 +234,29 @@ void CDrawTestView::mouse (CDrawContext* pContext, CPoint& where, long buttons)
 {
 	if (buttons & kLButton)
 	{
-		value++;
-		if (value > kMaxValue)
-			value = 0;
+		if (buttons & kShift)
+		{
+			CPoint start (where);
+			while ((buttons = pContext->getMouseButtons ()))
+			{
+				if (pContext->waitDrag ())
+				{
+					CPoint now;
+					getMouseLocation (pContext, now);
+					diffX += start.x - now.x;
+					diffY += start.y - now.y;
+					start = now;
+					setDirty (true);
+					if (pParent) pParent->doIdleStuff ();
+				}
+			}
+		}
+		else
+		{
+			value++;
+			if (value > kMaxValue)
+				value = 0;
+		}
 	}
 	setDirty (true);
 }
