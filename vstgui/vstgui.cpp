@@ -2716,7 +2716,7 @@ COffscreenContext::COffscreenContext (CFrame *pFrame, long width, long height, c
 
 		if( context == NULL ) 
 		{
-			// the context couldnÕt be created for some reason, 
+			// the context couldn't be created for some reason, 
 			// and we have no use for the bitmap without the context 
 			free (offscreenBitmap);
 			offscreenBitmap = 0;
@@ -4063,6 +4063,9 @@ bool CFrame::setSize (long width, long height)
 		{
 			if (effect->sizeWindow (width, height))
 			{
+				size.right = size.left + width;
+				size.bottom = size.top + height;
+
 				#if WINDOWS
 				SetWindowPos ((HWND)pHwnd, HWND_TOP, 0, 0, width, height, SWP_NOMOVE);
 				#endif
