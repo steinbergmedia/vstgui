@@ -2895,7 +2895,8 @@ void *COptionMenu::appendItems (long &offsetIdx)
 	MenuHandle theMenu = 0;
 	//---Create the menu
 	#if QUARTZ
-	if (scheme || gOptionMenuScheme)
+	extern long pSystemVersion;
+	if ((scheme || gOptionMenuScheme) && pSystemVersion >= 0x1030)
 	{
 		COptionMenuScheme* s = gOptionMenuScheme ? gOptionMenuScheme : scheme;
 		EventRef initEvent = NULL;
