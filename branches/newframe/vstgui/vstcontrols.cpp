@@ -60,6 +60,10 @@ BEGIN_NAMESPACE_VSTGUI
  #endif
 #endif
 
+// some external variables (vstgui.cpp)
+extern long gStandardFontSize [];
+extern const char *gStandardFontName [];
+
 //------------------------------------------------------------------------
 // CControl
 //------------------------------------------------------------------------
@@ -318,7 +322,7 @@ void CKnob::mouse (CDrawContext *pContext, CPoint &where, long button)
 	CPoint firstPoint;
 	bool  modeLinear = false;
 	float fEntryState = value;
-	float middle = (vmax - vmin) / 2.f;
+	float middle = (vmax - vmin) * 0.5f;
 	float range = 200.f;
 	float coef = (vmax - vmin) / range;
 	long  oldButton = button;
@@ -413,7 +417,11 @@ bool CKnob::onWheel (CDrawContext *pContext, const CPoint &where, float distance
 	bounceValue ();
 
 	if (isDirty () && listener)
+	{
+		getParent ()->beginEdit (tag);
 		listener->valueChanged (pContext, this);
+		getParent ()->endEdit (tag);
+	}
 	return true;
 }
 
@@ -961,7 +969,7 @@ LONG_PTR WINAPI WindowProcEdit (HWND hwnd, UINT message, WPARAM wParam, LPARAM l
 //------------------------------------------------------------------------
 #elif MOTIF
 #include <Xm/Text.h>
-extern XFontStruct *fontStructs[];
+extern XFontStruct *gFontStructs[];
 #endif
 
 //------------------------------------------------------------------------
@@ -972,19 +980,17 @@ extern XFontStruct *fontStructs[];
 class BeTextView : public BTextView
 {
 public:
-					BeTextView (  CTextEdit* 	cTextEdit,
-								  BRect			frame,
-								  const char	*name,
-								  BRect			textRect);
-			void	MakeFocus (bool focusState = true);
-			void	KeyDown (const char *bytes, int32 numBytes);
+	BeTextView (CTextEdit* cTextEdit, BRect frame,
+				const char *name, BRect textRect);
+	void MakeFocus (bool focusState = true);
+	void KeyDown (const char *bytes, int32 numBytes);
 private:
 	CTextEdit *cTextEdit;
 };
 
 //------------------------------------------------------------------------
-BeTextView::BeTextView (CTextEdit* cTextEdit, BRect frame, const char *name, BRect textRect) :
-				BTextView (frame, name, textRect, B_FOLLOW_NONE), cTextEdit (cTextEdit)
+BeTextView::BeTextView (CTextEdit* cTextEdit, BRect frame, const char *name, BRect textRect)
+: BTextView (frame, name, textRect, B_FOLLOW_NONE), cTextEdit (cTextEdit)
 {}
 
 //------------------------------------------------------------------------
@@ -1232,14 +1238,14 @@ void CTextEdit::takeFocus (CDrawContext *pContext)
 	// get/set the current font
 	LOGFONT logfont = {0};
 
-	long fontH = standardFontSize [fontID];
+	long fontH = gStandardFontSize [fontID];
 	if (fontH > rect.height () - 2)
 		fontH = rect.height () - 2;
 
 	logfont.lfWeight = FW_NORMAL;
 	logfont.lfHeight = -fontH;
 	logfont.lfPitchAndFamily = VARIABLE_PITCH | FF_SWISS;
-	strcpy (logfont.lfFaceName, standardFontName[fontID]);
+	strcpy (logfont.lfFaceName, gStandardFontName[fontID]);
 
 	logfont.lfClipPrecision	 = CLIP_STROKE_PRECIS;
 	logfont.lfOutPrecision	 = OUT_STRING_PRECIS;
@@ -1259,7 +1265,6 @@ void CTextEdit::takeFocus (CDrawContext *pContext)
 	oldWndProcEdit = (WINDOWSPROC)SetWindowLongPtr ((HWND)platformControl, GWLP_WNDPROC, (LONG_PTR)WindowProcEdit);
 
 #elif MAC
-	extern long standardFontSize[];
 #if MACX
 	#if QUARTZ
 	if (pContext)
@@ -1279,7 +1284,7 @@ void CTextEdit::takeFocus (CDrawContext *pContext)
 	}
 	gTextEditCanceled = false;
 	WindowRef window = (WindowRef)getParent ()->getSystemWindow ();
-	TXNFrameOptions iFrameOptions = kTXNMonostyledTextMask | kTXNDisableDragAndDropMask; //kTXNNoKeyboardSyncMask | kTXNDisableDragAndDropMask | kTXNSingleLineOnlyMask | kTXNMonostyledTextMask;
+	TXNFrameOptions iFrameOptions = kTXNMonostyledTextMask | kTXNDisableDragAndDropMask | kTXNSingleLineOnlyMask; //kTXNNoKeyboardSyncMask | kTXNDisableDragAndDropMask | kTXNSingleLineOnlyMask | kTXNMonostyledTextMask;
 	TXNObject txnObj = 0;
 	TXNFrameID frameID = 0;
 	TXNObjectRefcon iRefCon = 0;
@@ -1298,10 +1303,10 @@ void CTextEdit::takeFocus (CDrawContext *pContext)
 			TXNSetData ((TXNObject)platformControl, kTXNTextData, (void*)text, strlen (text), kTXNStartOffset, kTXNEndOffset);
 		// set background
 		extern void CColor2RGBColor (const CColor &cc, RGBColor &rgb);
-		RGBColor rgbBackColor;
-		CColor2RGBColor (backColor, rgbBackColor);
-		RGBColor rgbTextColor = { 0, 0, 0 };
-		CColor2RGBColor (fontColor, rgbTextColor);
+		RGBColor rgbBackColor = { 0, 0, 0};
+		CColor2RGBColor (kWhiteCColor /*backColor*/, rgbBackColor);
+		RGBColor rgbTextColor = { 32767, 32767, 32767 };
+		CColor2RGBColor (kBlackCColor /*fontColor*/, rgbTextColor);
 		RGBBackColor (&rgbBackColor);
 		RGBForeColor (&rgbTextColor);
 		TXNBackground txnBackground;
@@ -1324,12 +1329,12 @@ void CTextEdit::takeFocus (CDrawContext *pContext)
 		// set font
 		TXNTypeAttributes attributes[3];
 		// font name
-		extern const unsigned char* macXfontNames[];
+		extern const unsigned char* gMacXfontNames[];
 		
 		short familyID;
 		#if QUARTZ
 		Str255 fontName;
-		CopyCStringToPascal ((const char*)macXfontNames[fontID], fontName); 
+		CopyCStringToPascal ((const char*)gMacXfontNames[fontID], fontName); 
 		GetFNum (fontName, &familyID);
 		#else
 		GetFNum (macXfontNames[fontID], &familyID);
@@ -1343,7 +1348,7 @@ void CTextEdit::takeFocus (CDrawContext *pContext)
 		attributes[0].size = sizeof(ATSUFontID);
 		attributes[0].data.dataPtr = &fontNameID;
 		// size
-		long fontSize = standardFontSize [fontID] << 16; // needs to be in Fixed format
+		long fontSize = gStandardFontSize [fontID] << 16; // needs to be in Fixed format
 		attributes[1].tag = kTXNQDFontSizeAttribute;
 		attributes[1].size = kTXNFontSizeAttributeSize;
 		attributes[1].data.dataValue = fontSize;
@@ -1354,18 +1359,15 @@ void CTextEdit::takeFocus (CDrawContext *pContext)
 
 		TXNSetTypeAttributes (txnObj, 3, attributes, kTXNStartOffset, kTXNEndOffset);
 
-		TXNActivate (txnObj, frameID, false);
 		SetUserFocusWindow (window);
 		AdvanceKeyboardFocus (window);
+		TXNActivate (txnObj, frameID, false);
 		TXNFocus (txnObj, true);
 		TXNSelectAll ((TXNObject)platformControl);
 			
 		EventTypeSpec eventTypes[] = { { kEventClassMouse, kEventMouseMoved }, { kEventClassMouse, kEventMouseDown }, { kEventClassMouse, kEventMouseUp }, { kEventClassWindow, kEventWindowDeactivated }, { kEventClassKeyboard, kEventRawKeyDown }, { kEventClassKeyboard, kEventRawKeyRepeat } };
 		InstallWindowEventHandler (window, CarbonEventsTextControlProc, GetEventTypeCount (eventTypes), eventTypes, this, &gTextEditEventHandler);
 
-		TXNShowSelection((TXNObject)platformControl, false);
-		TXNForceUpdate((TXNObject)platformControl);
-		TXNUpdate((TXNObject)platformControl);
 	}
 
 #else
@@ -1413,7 +1415,7 @@ void CTextEdit::takeFocus (CDrawContext *pContext)
 	#endif
 	
 	TextFont (kFontIDHelvetica);
-	TextSize (standardFontSize [fontID]);
+	TextSize (gStandardFontSize [fontID]);
 
 	text_edit = TENew (&rect, &vrect);
 	
@@ -1593,11 +1595,9 @@ void CTextEdit::takeFocus (CDrawContext *pContext)
 	BFont	font;
 	if (fontID < 0 || fontID >= kNumStandardFonts)
 		fontID = kSystemFont;
-	extern long standardFontSize[];
-	extern const char* standardFontName[];
-	extern const char* standardFontStyle[];
-	font.SetFamilyAndStyle (standardFontName[fontID], standardFontStyle[fontID]);
-	font.SetSize (standardFontSize[fontID]);
+	extern const char* gStandardFontStyle[];
+	font.SetFamilyAndStyle (gStandardFontName[fontID], gStandardFontStyle[fontID]);
+	font.SetSize (gStandardFontSize[fontID]);
 	rgb_color c = { fontColor.red, fontColor.green, fontColor.blue, 255 };
 	textView->SetFontAndColor (&font, B_FONT_FAMILY_AND_STYLE | B_FONT_SIZE, &c);
 	rgb_color cv = { backColor.red, backColor.green, backColor.blue, 255 };
@@ -1750,9 +1750,13 @@ void CTextEdit::looseFocus (CDrawContext *pContext)
 		pContextTemp = pContext;
 
 	// update dependency
-	if (strcmp (oldText, text) && listener)
+	bool change = false;
+	if (strcmp (oldText, text))
+	{
+		change = true;
+		if (listener)
 		listener->valueChanged (pContextTemp, this);
-	
+	}
 	if (localContext)
 	{
 		if (pContextTemp)
@@ -4806,23 +4810,25 @@ void CSplashScreen::mouse (CDrawContext *pContext, CPoint &where, long button)
 		{
 			keepSize = size;
 			size = toDisplay;
-			draw (pContext);
+			mouseableArea = size;
+//			draw (pContext);
 			if (listener)
 				listener->valueChanged (pContext, this);
 		}
+		setDirty ();
 	}
 	else
 	{
 		size = keepSize;
-		if (getParent ())
-		{
-			getParent ()->setModalView (NULL);
-			getParent ()->draw (pContext);
-		}
+		mouseableArea = size;
 		if (listener)
 			listener->valueChanged (pContext, this);
+		if (getParent ())
+		{
+			getParent ()->setDirty (true);
+			getParent ()->setModalView (NULL);
+		}
 	}
-	setDirty ();
 }
 
 //------------------------------------------------------------------------
@@ -4848,7 +4854,8 @@ void CSplashScreen::unSplash ()
 CVuMeter::CVuMeter (const CRect &size, CBitmap *onBitmap, CBitmap *offBitmap,
                     long nbLed, const long style)
 	: CControl (size, 0, 0),
-	  onBitmap (onBitmap), offBitmap (offBitmap), nbLed (nbLed), style (style)
+	  onBitmap (onBitmap), offBitmap (offBitmap), pOScreen (0),
+	  nbLed (nbLed), style (style)
 {
 	setDecreaseStepValue (0.1f);
 	
@@ -4876,14 +4883,53 @@ void CVuMeter::setDirty (const bool val)
 	CView::setDirty (val);
 }
 
+//-----------------------------------------------------------------------------
+bool CVuMeter::attached (CView *parent)
+{
+	if (pOScreen)
+		delete pOScreen;
+
+	if (bUseOffscreen)
+	{
+		pOScreen = new COffscreenContext (getParent (), size.width (), size.height (), kBlackCColor);
+		rectOn  (0, 0, size.width (), size.height ());
+		rectOff (0, 0, size.width (), size.height ());
+	}
+	else
+	{
+		rectOn  (size.left, size.top, size.right, size.bottom);
+		rectOff (size.left, size.top, size.right, size.bottom);
+	}
+
+	return CControl::attached (parent);
+}
+
 //------------------------------------------------------------------------
-void CVuMeter::draw (CDrawContext *pContext)
+void CVuMeter::setUseOffscreen (bool val)
+{
+	bUseOffscreen = val;
+}
+
+//-----------------------------------------------------------------------------
+bool CVuMeter::removed (CView *parent)
+{
+	if (pOScreen)
+	{
+		delete pOScreen;
+		pOScreen = 0;
+	}
+	return CControl::removed (parent);
+}
+
+//------------------------------------------------------------------------
+void CVuMeter::draw (CDrawContext *_pContext)
 {
 	if (!onBitmap) 
 		return;
 
 	CPoint pointOn;
 	CPoint pointOff;
+	CDrawContext *pContext = _pContext;
 
 	bounceValue ();
 	
@@ -4892,10 +4938,22 @@ void CVuMeter::draw (CDrawContext *pContext)
 		newValue = value;
 	oldValue = newValue;
 
+	if (bUseOffscreen)
+	{
+		if (!pOScreen)
+		{
+			pOScreen = new COffscreenContext (getParent (), size.width (), size.height (), kBlackCColor);
+			rectOn  (0, 0, size.width (), size.height ());
+			rectOff (0, 0, size.width (), size.height ());
+		}
+		pContext = pOScreen;
+	}
+
 	if (style & kHorizontal) 
 	{
 		long tmp = (long)(((long)(nbLed * newValue + 0.5f) / (float)nbLed) * onBitmap->getWidth ());
 		pointOff (tmp, 0);
+		if (!bUseOffscreen)
 		tmp += size.left;
 
 		rectOff.left = tmp;
@@ -4905,11 +4963,13 @@ void CVuMeter::draw (CDrawContext *pContext)
 	{
 		long tmp = (long)(((long)(nbLed * (getMax () - newValue) + 0.5f) / (float)nbLed) * onBitmap->getHeight ());
 		pointOn (0, tmp);
+		if (!bUseOffscreen)
 		tmp += size.top;
 
 		rectOff.bottom = tmp;
 		rectOn.top     = tmp;
 	}
+
 	if (offBitmap)
 	{
 		if (bTransparencyEnabled)
@@ -4922,6 +4982,10 @@ void CVuMeter::draw (CDrawContext *pContext)
 		onBitmap->drawTransparent (pContext, rectOn, pointOn);
 	else
 		onBitmap->draw (pContext, rectOn, pointOn);
+
+	if (pOScreen)
+		pOScreen->copyFrom (_pContext, size);
+	setDirty (false);
 }
 
 END_NAMESPACE_VSTGUI

@@ -48,7 +48,7 @@
 #define kIdleRateMin   4 // minimum time between 2 idles in ms
 
 #if WINDOWS
-struct tagMSG windowsMessage;
+static struct tagMSG windowsMessage;
 #endif
 
 #if MOTIF
@@ -193,7 +193,12 @@ long AEffGUIEditor::setKnobMode (int val)
 bool AEffGUIEditor::onWheel (float distance)
 {
 	if (frame)
-		return frame->onWheel (0, CPoint (), distance);
+	{
+		CDrawContext context (frame, NULL, systemWindow);
+		CPoint where;
+		context.getMouseLocation (where);
+		return frame->onWheel (&context, where, distance);
+	}
 	
 	return false;
 }

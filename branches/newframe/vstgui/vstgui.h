@@ -578,6 +578,7 @@ protected:
 	void *pOldPen;
 	void *pOldFont;
 	long iPenStyle;
+	HDC  pHDC;
 
 #elif MAC
 	#if QUARTZ
@@ -649,11 +650,11 @@ protected:
 #elif MAC
 	#if QUARTZ
 	void* offscreenBitmap;
-	BitMapPtr getBitmap ();
-	void releaseBitmap ();
 	#else
 	CGrafPtr getPort ();
 	#endif
+	BitMapPtr getBitmap ();
+	void releaseBitmap ();
 #endif
 };
 
@@ -743,7 +744,6 @@ public:
 	virtual void drawRect (CDrawContext *pContext, CRect& updateRect) { draw (pContext); }
 	virtual bool checkUpdate (CRect& updateRect) { return updateRect.rectOverlap (size); }
 	virtual void mouse (CDrawContext *pContext, CPoint &where, long buttons = -1);
-	virtual void update (CDrawContext *pContext);
 	virtual long notify (CView* sender, const char* message);
 	
 	virtual void setBackground (CBitmap *background);
@@ -810,6 +810,9 @@ protected:
 	bool  bTransparencyEnabled;
 	
 	CBitmap* pBackground;
+
+
+	virtual void update (CDrawContext *pContext); // don't call this !!!
 };
 
 //-----------------------------------------------------------------------------
@@ -1015,7 +1018,7 @@ protected:
 
 #if WINDOWS
 	void    *pHwnd;
-	HDC      hdc;
+	//HDC      hdc;
 	HINSTANCE hInstMsimg32dll;
 
 #elif MOTIF
@@ -1031,7 +1034,7 @@ protected:
 	PlugView *pPlugView;
 #endif
 #if QUARTZ
-	void setDrawContext (CDrawContext* context) { if (pFrameContext) pFrameContext->forget (); pFrameContext = context; if (context) context->remember (); }
+	void setDrawContext (CDrawContext* context) { pFrameContext = context; }
 	friend class CDrawContext;
 
 	static pascal OSStatus carbonEventHandler (EventHandlerCallRef inHandlerCallRef, EventRef inEvent, void *inUserData);

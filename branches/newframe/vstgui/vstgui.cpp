@@ -56,9 +56,15 @@
 #include <math.h>
 #include <string.h>
 
+//---Some defines-------------------------------------
 #define USE_ALPHA_BLEND			QUARTZ || USE_LIBPNG
-#define USE_CLIPPING_DRAWRECT	USE_ALPHA_BLEND
+#define USE_CLIPPING_DRAWRECT	1
 #define MAC_OLD_DRAG			1
+
+#if !WINDOWS
+// For OS which allows a lot of Drawing contexts
+#define USE_GLOBAL_CONTEXT 1
+#endif
 
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
@@ -84,11 +90,8 @@
 #define VSTGUI_COptionMenuScheme COptionMenuScheme
 #endif
 
-#if !WINDOWS
-#define USE_GLOBAL_CONTEXT 1
-#endif
-
-#if DEBUG //---For Debugging------------------------
+//---For Debugging------------------------
+#if DEBUG
 
 long gNbCBitmap = 0;
 long gNbCView = 0;
@@ -99,8 +102,8 @@ long gNbDC = 0;
 
 #include <stdarg.h>
 
-void FDebugPrint (char *format, ...);
-void FDebugPrint (char *format, ...)
+void DebugPrint (char *format, ...);
+void DebugPrint (char *format, ...)
 {
 	char string[300];
 	va_list marker;
@@ -118,12 +121,13 @@ void FDebugPrint (char *format, ...)
 	fprintf (stderr, string);
 	#endif
 }
-#endif //---For Debugging------------------------
+#endif
+//---End For Debugging------------------------
 
 #if WINDOWS
+static bool bSwapped_mouse_buttons = false; 
 
-static bool swapped_mouse_buttons = false; 
-
+// Alpha blending for Windows using library : msimg32.dll
 #define DYNAMICALPHABLEND   1
 
 #define WIN32_LEAN_AND_MEAN 1
@@ -174,10 +178,10 @@ PFNTRANSPARENTBLT	pfnTransparentBlt = NULL;
 	inline HINSTANCE GetInstance () { return (HINSTANCE)hInstance; }
 #endif
 
-long   useCount = 0;
-char   className[20];
-bool   InitWindowClass ();
-void   ExitWindowClass ();
+static long   gUseCount = 0;
+static char   gClassName[20];
+static bool   InitWindowClass ();
+static void   ExitWindowClass ();
 LONG_PTR WINAPI WindowProc (HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam);
 
 static HANDLE CreateMaskBitmap (CDrawContext* pContext, CRect& rect, CColor transparentColor);
@@ -186,8 +190,8 @@ static bool   checkResolveLink (const char* nativePath, char* resolved);
 static void   *createDropTarget (VSTGUI_CFrame* pFrame);
 
 BEGIN_NAMESPACE_VSTGUI
-long        standardFontSize[] = { 12, 18, 14, 12, 11, 10, 9, 13 };
-const char* standardFontName[] = {
+long        gStandardFontSize[] = { 12, 18, 14, 12, 11, 10, 9, 13 };
+const char* gStandardFontName[] = {
 	"Arial", "Arial", "Arial", 
 	"Arial", "Arial", "Arial", 
 	"Arial", "Symbol" };
@@ -201,7 +205,7 @@ END_NAMESPACE_VSTGUI
 //-----------------------------------------------------------------------------
 #elif MOTIF
 
- #define USE_XPM 0
+ #define USE_XPM     0
  #define TEST_REGION 0
 
  #if USE_XPM
@@ -226,12 +230,12 @@ END_NAMESPACE_VSTGUI
  #define XGCPARAM   pDisplay, (GC)pSystemContext
 
 // init the static variable about font
-bool fontInit = false;
-XFontStruct *fontStructs[] = {0, 0, 0, 0, 0, 0, 0};
+bool gFontInit = false;
+XFontStruct *gFontStructs[] = {0, 0, 0, 0, 0, 0, 0};
 
 struct SFontTable {char* name; char* string;};
 
-static SFontTable fontTable[] = {
+static SFontTable gFontTable[] = {
   {"SystemFont",        "-adobe-helvetica-bold-r-*-*-12-*-*-*-*-*-*-*"},   // kSystemFont
   {"NormalFontVeryBig", "-adobe-helvetica-medium-r-*-*-18-*-*-*-*-*-*-*"}, // kNormalFontVeryBig
   {"NormalFontBig",     "-adobe-helvetica-medium-r-normal-*-14-*-*-*-*-*-*-*"}, // kNormalFontBig
@@ -242,7 +246,7 @@ static SFontTable fontTable[] = {
   {"SymbolFont",        "-adobe-symbol-medium-r-*-*-12-*-*-*-*-*-*-*"}     // kSymbolFont
 };
 
-long standardFontSize[] = { 12, 16, 14, 12, 10, 9, 8, 10 };
+long gStandardFontSize[] = { 12, 16, 14, 12, 10, 9, 8, 10 };
 
 //-----------------------------------------------------------------------------
 // declaration of different local functions
@@ -276,7 +280,7 @@ long pSystemVersion;
 #include <QuickTime/ImageCompression.h>
 
 #if QUARTZ
-const char* macXfontNames[] = {
+const char* gMacXfontNames[] = {
 	"Helvetica",
 	"Helvetica",
 	"Helvetica",
@@ -291,10 +295,10 @@ const char* macXfontNames[] = {
 #define	M_PI		3.14159265358979323846	/* pi */
 #endif
 
-static inline double radians(double degrees) { return degrees * M_PI / 180; }
+static inline double radians (double degrees) { return degrees * M_PI / 180; }
 
 #else
-const unsigned char* macXfontNames[] = {
+const unsigned char* gMacXfontNames[] = {
 	"\pArial",
 	"\pArial",
 	"\pArial",
@@ -314,7 +318,7 @@ const unsigned char* macXfontNames[] = {
 #include <PictUtils.h>
 #endif
 
-long standardFontSize[] = { 12, 18, 14, 12, 10, 9, 9, 12 };
+long gStandardFontSize[] = { 12, 18, 14, 12, 10, 9, 9, 12 };
 
 long convertPoint2Angle (CPoint &pm, CPoint &pt);
 void RectNormalize (Rect& rect);
@@ -375,9 +379,9 @@ void CColor2RGBColor (const CColor &cc, RGBColor &rgb)
 //-----------------------------------------------------------------------------
 void RGBColor2CColor (const RGBColor &rgb, CColor &cc)
 {
-	cc.red   = rgb.red  / 257;
+	cc.red   = rgb.red   / 257;
 	cc.green = rgb.green / 257;
-	cc.blue  = rgb.blue / 257;
+	cc.blue  = rgb.blue  / 257;
 }
 
 //-----------------------------------------------------------------------------
@@ -413,15 +417,15 @@ drawing_mode modeToPlatform [] = {
 	B_OP_COPY, B_OP_OVER, B_OP_INVERT
 };
 
-long standardFontSize[] = { 12, 18, 14, 12, 11, 10, 9, 12 };
+long gStandardFontSize[] = { 12, 18, 14, 12, 11, 10, 9, 12 };
 const char*	standardFont  = "Swis721 BT";
 const char* standardFontS = "Roman";
 const char* systemFont    = "Swis721 BT";
 const char* systemFontS   = "Bold";
-const char* standardFontName[] = { systemFont,
+const char* gStandardFontName[] = { systemFont,
 	standardFont, standardFont, standardFont, standardFont, standardFont,
 	standardFont };
-const char* standardFontStyle[] = { systemFontS,
+const char* gStandardFontStyle[] = { systemFontS,
 	standardFontS, standardFontS, standardFontS, standardFontS, standardFontS,
 	standardFontS };
 #endif
@@ -478,8 +482,8 @@ CColor kCyanCColor   = {0  , 255, 255, 255};
 // CDrawContext Implementation
 //-----------------------------------------------------------------------------
 
-CDrawContext::CDrawContext (CFrame *pFrame, void *pSystemContext, void *pWindow)
-:	pSystemContext (pSystemContext), pWindow (pWindow), pFrame (pFrame), 
+CDrawContext::CDrawContext (CFrame *inFrame, void *inSystemContext, void *inWindow)
+:	pSystemContext (inSystemContext), pWindow (inWindow), pFrame (inFrame), 
 	frameWidth (1), lineStyle (kLineSolid), drawMode (kCopyMode)
 	#if WINDOWS
 	,pBrush (0), pFont (0), pPen (0), pOldBrush (0), pOldPen (0), pOldFont (0)
@@ -505,6 +509,10 @@ CDrawContext::CDrawContext (CFrame *pFrame, void *pSystemContext, void *pWindow)
 	offsetScreen (0, 0);
 
 #if WINDOWS
+	pHDC = 0;
+	if (!pSystemContext && pWindow)
+		pSystemContext = pHDC = GetDC ((HWND)pWindow);
+
 	if (pSystemContext)
 	{
 		pOldBrush  = GetCurrentObject ((HDC)pSystemContext, OBJ_BRUSH);
@@ -627,6 +635,14 @@ CDrawContext::~CDrawContext ()
 	if (pFont)
 		DeleteObject (pFont);
   
+	if (pHDC)
+	{
+		ReleaseDC ((HWND)pWindow, pHDC);
+		#if DEBUG
+		gNbDC--;
+		#endif
+	}
+
 #elif (MAC && QUARTZ)
 	if (gCGContext)
 	{
@@ -1765,7 +1781,7 @@ void CDrawContext::fillArc (const CRect &_rect, const CPoint &_point1, const CPo
 
 	// Don't draw boundary
 #if WINDOWS
-	HANDLE nullPen = GetStockObject(NULL_PEN);
+	HANDLE nullPen = GetStockObject (NULL_PEN);
 	HANDLE oldPen  = SelectObject ((HDC)pSystemContext, nullPen);
 	Pie ((HDC)pSystemContext, offset.h + rect.left + 1, offset.v + rect.top + 1, offset.h + rect.right, offset.v + rect.bottom, 
 			 point1.h, point1.v, point2.h, point2.v);
@@ -1950,7 +1966,7 @@ void CDrawContext::setFont (CFont fontID, const long size, long style)
 	if (size != 0)
 		fontSize = size;
 	else
-		fontSize = standardFontSize [fontID];
+		fontSize = gStandardFontSize[fontID];
 
 #if WINDOWS
 	LOGFONT logfont = {0};
@@ -1966,7 +1982,7 @@ void CDrawContext::setFont (CFont fontID, const long size, long style)
 	
 	logfont.lfHeight         = -fontSize;
 	logfont.lfPitchAndFamily = VARIABLE_PITCH | FF_SWISS;
-	strcpy (logfont.lfFaceName, standardFontName[fontID]);
+	strcpy (logfont.lfFaceName, gStandardFontName[fontID]);
 
 	if (fontID == kSymbolFont)
 		logfont.lfPitchAndFamily = DEFAULT_PITCH | FF_DECORATIVE;
@@ -1987,7 +2003,7 @@ void CDrawContext::setFont (CFont fontID, const long size, long style)
 #elif MAC
 	#if QUARTZ
 	if (gCGContext)
-		CGContextSelectFont (gCGContext, (const char*)macXfontNames[fontId], fontSize, kCGEncodingMacRoman);
+		CGContextSelectFont (gCGContext, (const char*)gMacXfontNames[fontId], fontSize, kCGEncodingMacRoman);
 	#else
 	CGrafPtr OrigPort;
 	GDHandle OrigDevice;
@@ -2003,7 +2019,7 @@ void CDrawContext::setFont (CFont fontID, const long size, long style)
 		#if MACX
 		short familyID;
 		
-		GetFNum (macXfontNames[fontID], &familyID);
+		GetFNum (gMacXfontNames[fontID], &familyID);
 
 		TextFont (familyID);
 		
@@ -2024,13 +2040,13 @@ void CDrawContext::setFont (CFont fontID, const long size, long style)
 	#endif
         
 #elif MOTIF
-	XSetFont (XGCPARAM, fontStructs[fontID]->fid);
+	XSetFont (XGCPARAM, gFontStructs[fontID]->fid);
 	
 	// keep trace of the current font
-	pFontInfoStruct = fontStructs[fontID];
+	pFontInfoStruct = gFontStructs[fontID];
 
 #elif BEOS
-	font.SetFamilyAndStyle (standardFontName[fontID], standardFontStyle[fontID]);
+	font.SetFamilyAndStyle (gStandardFontName[fontID], gStandardFontStyle[fontID]);
 	font.SetSize (fontSize);
 	pView->SetFont (&font, B_FONT_FAMILY_AND_STYLE | B_FONT_SIZE);
 #endif
@@ -2225,20 +2241,20 @@ void CDrawContext::drawString (const char *string, const CRect &_rect,
 		// Somehow, the yPos calculation above doesn't work here
 		// or I am too stupid to understand it. Therefore I calculate
 		// the text position in the surrounding control rect myself.
-		long myHeight = (rect.height() - fontHeight) / 2;
+		long myHeight = (rect.height () - fontHeight) / 2;
 		if (myHeight>0)
 		{
 			stringsRect.top += myHeight;
 			stringsRect.bottom += myHeight;
 		}
 		stringsRect.left = xPos;
-		stringsRect.right = xPos + width;//rect.width();
+		stringsRect.right = xPos + width;//rect.width ();
 	
 		// Draw the unicode string
 		TXNDrawCFStringTextBox (str, &stringsRect, NULL, &myOptions);
 
 		// Release the unicode string
-		CFRelease(str);
+		CFRelease (str);
 		#else
 		MoveTo (xPos, yPos);
 		DrawText ((Ptr)string, 0, stringLength);
@@ -2330,11 +2346,11 @@ long CDrawContext::getMouseButtons ()
 	
 #if WINDOWS
 	if (GetAsyncKeyState (VK_LBUTTON) < 0)
-		buttons |= (swapped_mouse_buttons ? kRButton : kLButton);
+		buttons |= (bSwapped_mouse_buttons ? kRButton : kLButton);
 	if (GetAsyncKeyState (VK_MBUTTON) < 0)
 		buttons |= kMButton;
 	if (GetAsyncKeyState (VK_RBUTTON) < 0)
-		buttons |= (swapped_mouse_buttons ? kLButton : kRButton);
+		buttons |= (bSwapped_mouse_buttons ? kLButton : kRButton);
 	
 	if (GetAsyncKeyState (VK_SHIFT)   < 0)
 		buttons |= kShift;
@@ -2997,7 +3013,7 @@ COffscreenContext::COffscreenContext (CFrame *pFrame, long width, long height, c
 		colorSpace, 
 		kCGImageAlphaPremultipliedFirst);
 
-		if( context == NULL ) 
+		if (context == NULL)
 		{
 			// the context couldn't be created for some reason, 
 			// and we have no use for the bitmap without the context 
@@ -3011,7 +3027,7 @@ COffscreenContext::COffscreenContext (CFrame *pFrame, long width, long height, c
 	}
 
 	// the context retains the color space, so we can release it 
-	CGColorSpaceRelease( colorSpace ); 
+	CGColorSpaceRelease (colorSpace);
 	gCGContext = context;
 
 	#else
@@ -3080,6 +3096,7 @@ COffscreenContext::~COffscreenContext ()
 	if (pSystemContext)
 	{
 		DeleteDC ((HDC)pSystemContext);
+		pSystemContext = 0;
 		#if DEBUG
 		gNbDC--;
 		#endif
@@ -3525,15 +3542,9 @@ CFrame::CFrame (const CRect &inSize, void *inSystemWindow, void *inEditor)
 	initFrame (pSystemWindow);
 
 #if WINDOWS
-
 #if USE_GLOBAL_CONTEXT
-	hdc = GetDC ((HWND)getSystemWindow ());
-	#if DEBUG
-	gNbDC++;
+	pFrameContext = new CDrawContext (this, 0, getSystemWindow ());
 	#endif
-
-	pFrameContext = new CDrawContext (this, hdc, getSystemWindow ());
-#endif
 
 #elif MAC
 	Gestalt (gestaltSystemVersion, &pSystemVersion);
@@ -3554,9 +3565,9 @@ CFrame::CFrame (const CRect &inSize, void *inSystemWindow, void *inEditor)
 //-----------------------------------------------------------------------------
 CFrame::CFrame (const CRect& inSize, const char* inTitle, void* inEditor, const long inStyle)
 :	CViewContainer (inSize, 0, 0),
-	pSystemWindow(0), pEditor(inEditor),
-	pModalView(0), pEditView(0), bFirstDraw(true), bDropActive(false),
-	pFrameContext(0), defaultCursor(0)
+	pSystemWindow (0), pEditor (inEditor),
+	pModalView (0), pEditView (0), bFirstDraw (true), bDropActive (false),
+	pFrameContext (0), defaultCursor (0)
 {
 	bAddedWindow  = true;
 	setOpenFlag (false);
@@ -3639,13 +3650,6 @@ CFrame::~CFrame ()
 		
 	if (pHwnd)
 	{
-	#if USE_GLOBAL_CONTEXT
-		ReleaseDC ((HWND)getSystemWindow (), hdc);
-		#if DEBUG
-		gNbDC--;
-		#endif
-	#endif
-
 		SetWindowLong ((HWND)pHwnd, GWL_USERDATA, (long)NULL);
 		DestroyWindow ((HWND)pHwnd);
 
@@ -3764,7 +3768,7 @@ bool CFrame::initFrame (void *systemWin)
 #if WINDOWS
 
 	InitWindowClass ();
-	pHwnd = CreateWindowEx (0, className, "Window",
+	pHwnd = CreateWindowEx (0, gClassName, "Window",
 			 WS_CHILD | WS_VISIBLE, 
 			 0, 0, size.width (), size.height (), 
 			 (HWND)pSystemWindow, NULL, GetInstance (), NULL);
@@ -3836,14 +3840,14 @@ bool CFrame::initFrame (void *systemWin)
 	depth    = attr.depth;
 
 	// init and load the fonts
-	if (!fontInit)
+	if (!gFontInit)
 	{
 		for (long i = 0; i < kNumStandardFonts; i++) 
 		{
-			fontStructs[i] = XLoadQueryFont (pDisplay, fontTable[i].string);
-			assert (fontStructs[i] != 0);
+			gFontStructs[i] = XLoadQueryFont (pDisplay, gFontTable[i].string);
+			assert (gFontStructs[i] != 0);
 		}
-		fontInit = true;
+		gFontInit = true;
 	}
 
 #elif BEOS
@@ -3906,11 +3910,7 @@ CDrawContext* CFrame::createDrawContext ()
 	}
 	CDrawContext* pContext = 0;
 	#if WINDOWS
-	HDC hdc2 = GetDC ((HWND)getSystemWindow ());
-	#if DEBUG
-	gNbDC++;
-	#endif
-	pContext = new CDrawContext (this, hdc2, getSystemWindow ());
+	pContext = new CDrawContext (this, NULL, getSystemWindow ());
 
 	#elif MAC
 	pContext = new CDrawContext (this, NULL, getSystemWindow ());
@@ -3935,7 +3935,7 @@ void CFrame::draw (CDrawContext *pContext)
 		pContext = pFrameContext;
 
 	// draw the background and the children
-	CViewContainer::draw(pContext);
+	CViewContainer::draw (pContext);
 }
 
 //-----------------------------------------------------------------------------
@@ -3943,10 +3943,6 @@ void CFrame::drawRect (CDrawContext *pContext, CRect& updateRect)
 {
 	if (bFirstDraw)
 		bFirstDraw = false;
-
-	#if WINDOWS
-	HDC hdc2;
-	#endif
 
 	bool localContext = false;	
 	if (!pContext)
@@ -3968,7 +3964,7 @@ void CFrame::drawRect (CDrawContext *pContext, CRect& updateRect)
 	#endif
 	
 	// draw the background and the children
-	CViewContainer::drawRect(pContext, updateRect);
+	CViewContainer::drawRect (pContext, updateRect);
 
 	#if USE_CLIPPING_DRAWRECT
 	pContext->setClipRect (oldClip);
@@ -3989,10 +3985,6 @@ void CFrame::draw (CView *pView)
 		pViewToDraw = pView;
 	}
 
-	#if WINDOWS
-	HDC hdc2;
-	#endif
-
 	bool localContext = false;	
 	CDrawContext *pContext = pFrameContext;
 	if (!pContext)
@@ -4011,16 +4003,6 @@ void CFrame::draw (CView *pView)
 		if (localContext)
 			pContext->forget ();
 	}
-
-	#if WINDOWS
-	if (!pFrameContext)
-	{
-		ReleaseDC ((HWND)getSystemWindow (), hdc2);
-		#if DEBUG
-		gNbDC--;
-		#endif
-	}
-	#endif
 }
 
 //-----------------------------------------------------------------------------
@@ -4045,7 +4027,7 @@ void CFrame::mouse (CDrawContext *pContext, CPoint &where, long buttons)
 	}
 	else 
 	{
-		CViewContainer::mouse(pContext, where, buttons);
+		CViewContainer::mouse (pContext, where, buttons);
 	}
 }
 
@@ -4110,10 +4092,6 @@ bool CFrame::onWheel (CDrawContext *pContext, const CPoint &where, float distanc
 		else
 			pContext2 = pFrameContext;
 
-		#if WINDOWS
-		HDC hdc2;
-		#endif
-
 		bool localContext = false;
 		if (!pContext2)
 		{
@@ -4126,15 +4104,7 @@ bool CFrame::onWheel (CDrawContext *pContext, const CPoint &where, float distanc
 		if (localContext)
 			pContext2->forget ();
 	
-	#if WINDOWS
-		if (!pFrameContext && !pContext)
-		{
-			ReleaseDC ((HWND)getSystemWindow (), hdc2);
-			#if DEBUG
-			gNbDC--;
-			#endif
-		}
-	#elif BEOS
+	#if BEOS
 		pPlugView->UnlockLooper ();
 	#endif
 	}
@@ -4202,7 +4172,7 @@ bool CFrame::isSomethingDirty ()
 	else
 	{
 		FOREACHSUBVIEW
-			if (pV->isDirty())
+			if (pV->isDirty ())
 				return true;
 		ENDFOR
 	}
@@ -4222,10 +4192,6 @@ void CFrame::idle ()
 	if (!isSomethingDirty ())
 		return;
 		
-	#if WINDOWS
-	HDC hdc2;
-	#endif
-
 	bool localContext = false;
 	CDrawContext *pContext = pFrameContext;
 	if (!pContext)
@@ -4243,15 +4209,7 @@ void CFrame::idle ()
 	if (localContext)
 		pContext->forget ();
 
-	#if WINDOWS
-	if (!pFrameContext)
-	{
-		ReleaseDC ((HWND)getSystemWindow (), hdc2);
-		#if DEBUG
-		gNbDC--;
-		#endif
-	}
-	#elif BEOS
+	#if BEOS
 	pPlugView->UnlockLooper ();
 	#endif
 }
@@ -4273,10 +4231,10 @@ unsigned long CFrame::getTicks ()
 {
 #if PLUGGUI
 	if (pEditor)
-		return ((PluginGUIEditor*)pEditor)->getTicks();
+		return ((PluginGUIEditor*)pEditor)->getTicks ();
 #else
 	if (pEditor)
-		return ((AEffGUIEditor*)pEditor)->getTicks();
+		return ((AEffGUIEditor*)pEditor)->getTicks ();
 #endif
 	return 0;
 }
@@ -4285,9 +4243,9 @@ unsigned long CFrame::getTicks ()
 long CFrame::getKnobMode ()
 {
 #if PLUGGUI
-	return PluginGUIEditor::getKnobMode();
+	return PluginGUIEditor::getKnobMode ();
 #else
-	return AEffGUIEditor::getKnobMode();
+	return AEffGUIEditor::getKnobMode ();
 #endif
 }
 
@@ -4408,9 +4366,9 @@ bool CFrame::getPosition (long &x, long &y)
 }
 
 //-----------------------------------------------------------------------------
-void CFrame::setViewSize(CRect& inRect)
+void CFrame::setViewSize (CRect& inRect)
 {
-	setSize(inRect.width(), inRect.height());
+	setSize (inRect.width (), inRect.height ());
 }
 
 //-----------------------------------------------------------------------------
@@ -4419,8 +4377,7 @@ bool CFrame::setSize (long width, long height)
 	if (!getOpenFlag ())
 		return false;
 	
-	if ((width == size.width ()) &&
-		 (height == size.height ()))
+	if ((width == size.width ()) && (height == size.height ()))
 	 return false;
 
 #if !PLUGGUI
@@ -4543,8 +4500,8 @@ bool CFrame::setSize (long width, long height)
 	parent->SetResizingMode (B_FOLLOW_NONE);
 #endif
 
-	CRect myViewSize(0, 0, size.width(), size.height());
-	CViewContainer::setViewSize(myViewSize);
+	CRect myViewSize (0, 0, size.width (), size.height ());
+	CViewContainer::setViewSize (myViewSize);
 
 	return true;
 }
@@ -4614,11 +4571,10 @@ bool CFrame::getSize (CRect *pRect)
 }
 
 //-----------------------------------------------------------------------------
-bool CFrame::getSize(CRect& outSize)
+bool CFrame::getSize (CRect& outSize)
 {
-	return getSize(&outSize);
+	return getSize (&outSize);
 }
-
 
 //-----------------------------------------------------------------------------
 long CFrame::setModalView (CView *pView)
@@ -4628,7 +4584,7 @@ long CFrame::setModalView (CView *pView)
 			return 0;
 
 	if (pModalView)
-		removeView (pModalView);
+		removeView (pModalView, false);
 	
 	pModalView = pView;
 	if (pModalView)
@@ -4673,7 +4629,7 @@ CView *CFrame::getCurrentView ()
 	if (pModalView)
 		return pModalView;
 	
-	return CViewContainer::getCurrentView();
+	return CViewContainer::getCurrentView ();
 }
 
 //-----------------------------------------------------------------------------
@@ -4812,9 +4768,9 @@ void CFrame::invalidate (const CRect &rect)
 	FOREACHSUBVIEW
 	if (pV)
 	{
-		pV->getViewSize(rectView);
-		if (rect.rectOverlap(rectView))
-			pV->setDirty(true);
+		pV->getViewSize (rectView);
+		if (rect.rectOverlap (rectView))
+			pV->setDirty (true);
 	}
 	ENDFOR
 }
@@ -4988,7 +4944,7 @@ void CViewContainer::removeView (CView *pView, const bool &withForget)
 				else
 					pLastView = 0;	
 			}
-			pV = pNext;
+			break;
 		}
 		else
 			pV = pV->pNext;
@@ -5649,7 +5605,7 @@ public:
 		static void readCallback (png_struct* pngPtr, unsigned char* ptr, size_t size)
 		{
 			void* obj = png_get_io_ptr (pngPtr);
-			if(obj)
+			if (obj)
 				((PNGResourceStream*)obj)->read (ptr, size);
 		}
 protected:
@@ -5685,7 +5641,7 @@ CBitmap::CBitmap (long resourceID)
 			info_ptr = png_create_info_struct (png_ptr);
 			if (info_ptr)
 			{
-				if(setjmp (png_jmpbuf (png_ptr)) == 0)
+				if (setjmp (png_jmpbuf (png_ptr)) == 0)
 				{
 					int bit_depth, color_type;
 					png_set_read_fn (png_ptr, (void *)&resStream, PNGResourceStream::readCallback);
@@ -5710,22 +5666,22 @@ CBitmap::CBitmap (long resourceID)
 					delete bmInfo;
 					if (pHandle)
 					{
-						if(color_type == PNG_COLOR_TYPE_PALETTE)
+						if (color_type == PNG_COLOR_TYPE_PALETTE)
 							png_set_palette_to_rgb (png_ptr);
-						if(color_type == PNG_COLOR_TYPE_GRAY || color_type == PNG_COLOR_TYPE_GRAY_ALPHA)
+						if (color_type == PNG_COLOR_TYPE_GRAY || color_type == PNG_COLOR_TYPE_GRAY_ALPHA)
 							png_set_gray_to_rgb (png_ptr);
-						if(color_type == PNG_COLOR_TYPE_GRAY && bit_depth < 8)
+						if (color_type == PNG_COLOR_TYPE_GRAY && bit_depth < 8)
 							png_set_gray_1_2_4_to_8 (png_ptr);
-						if(png_get_valid (png_ptr, info_ptr, PNG_INFO_tRNS))
+						if (png_get_valid (png_ptr, info_ptr, PNG_INFO_tRNS))
 							png_set_tRNS_to_alpha (png_ptr);
 						else
 							png_set_filler (png_ptr, 0xFF, PNG_FILLER_AFTER);
-						if(bit_depth == 16)
+						if (bit_depth == 16)
 						{
 							png_set_swap (png_ptr);
 							png_set_strip_16 (png_ptr);
 						}
-						if(color_type == PNG_COLOR_TYPE_RGB || color_type == PNG_COLOR_TYPE_RGB_ALPHA)
+						if (color_type == PNG_COLOR_TYPE_RGB || color_type == PNG_COLOR_TYPE_RGB_ALPHA)
 							png_set_bgr (png_ptr);
 						png_read_update_info (png_ptr, info_ptr);
 
@@ -6597,10 +6553,10 @@ void CBitmap::drawTransparent (CDrawContext *pContext, CRect &rect, const CPoint
 	if (!transparencySet)
 	{
 		uint32 c32 = transparentCColor.red | (transparentCColor.green  << 8) | (transparentCColor.blue << 16);
-		uint32 *pix = (uint32*) bbitmap->Bits();
+		uint32 *pix = (uint32*) bbitmap->Bits ();
 		uint32 ctr = B_TRANSPARENT_32_BIT.red | (B_TRANSPARENT_32_BIT.green << 8) | (B_TRANSPARENT_32_BIT.blue << 16) | (B_TRANSPARENT_32_BIT.alpha << 24);
 		
-		for (int32 z = 0, count = bbitmap->BitsLength() / 4; z < count; z++)
+		for (int32 z = 0, count = bbitmap->BitsLength () / 4; z < count; z++)
 		{
 			if ((pix[z] & 0xffffff) == c32) 
 				pix[z] = ctr;
@@ -6662,7 +6618,7 @@ void CBitmap::drawAlphaBlend (CDrawContext *pContext, CRect &rect, const CPoint 
 		CGContextRef context = pContext->beginCGContext ();
 		if (context)
 		{
-			CGContextSetAlpha (context, (float)alpha/255.f);
+			CGContextSetAlpha (context, (float)alpha / 255.f);
 			
 			CGImageRef image = createCGImage ();
 
@@ -6909,12 +6865,12 @@ END_NAMESPACE_VSTGUI
 #define kPathMax        1024
 
 #if WINDOWS
-UINT APIENTRY SelectDirectoryHook (HWND hdlg, UINT message, WPARAM wParam, LPARAM lParam);
-LRESULT CALLBACK SelectDirectoryButtonProc (HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam);
+static UINT APIENTRY SelectDirectoryHook (HWND hdlg, UINT message, WPARAM wParam, LPARAM lParam);
+static LRESULT CALLBACK SelectDirectoryButtonProc (HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam);
 WNDPROC fpOldSelectDirectoryButtonProc;
-UINT APIENTRY WinSaveHook (HWND hdlg, UINT msg, WPARAM wParam, LPARAM lParam);
-static bool folderSelected;
-static bool didCancel;
+static UINT APIENTRY WinSaveHook (HWND hdlg, UINT msg, WPARAM wParam, LPARAM lParam);
+static bool bFolderSelected;
+static bool bDidCancel;
 static char selDirPath[kPathMax];
 #endif
 
@@ -7134,10 +7090,10 @@ long CFileSelector::run (VstFileSelect *vstFileSelect)
 				ofn.Flags |= OFN_ALLOWMULTISELECT;
 		
 			vstFileSelect->nbReturnPath = 0;
-			didCancel = true;
+			bDidCancel = true;
 
 			if (GetOpenFileName (&ofn) || 
-				((vstFileSelect->command == kVstDirectorySelect) && !didCancel && strlen (selDirPath) != 0))  
+				((vstFileSelect->command == kVstDirectorySelect) && !bDidCancel && strlen (selDirPath) != 0))  
 			{
 				switch (vstFileSelect->command)
 				{
@@ -7857,7 +7813,7 @@ UINT APIENTRY SelectDirectoryHook (HWND hdlg, UINT message, WPARAM wParam, LPARA
 		{
 		case CDN_FILEOK:
 			CommDlg_OpenSave_GetFolderPath (GetParent (hdlg), selDirPath, kPathMax);
-			didCancel = false;
+			bDidCancel = false;
 			break;
 		
 		case CDN_INITDONE: {
@@ -7904,7 +7860,7 @@ LRESULT CALLBACK SelectDirectoryButtonProc (HWND hwnd, UINT message, WPARAM wPar
 		GetWindowText (hwnd, mode, 256);
 		if (!strcmp (mode, stringSelect))
 		{
-			folderSelected = true;
+			bFolderSelected = true;
 			char oldDirPath[kPathMax];
 			CommDlg_OpenSave_GetFolderPath (GetParent (hwnd), oldDirPath, kPathMax);
 			// you need a lot of tricks to get name of currently selected folder:
@@ -7919,15 +7875,15 @@ LRESULT CALLBACK SelectDirectoryButtonProc (HWND hwnd, UINT message, WPARAM wPar
 				if (strcmp (oldDirPath, selDirPath) == 0 || selDirPath [0] == 0)
 				{
 					// the same folder as the old one, means nothing selected: close
-					folderSelected = true;
-					didCancel = false;
+					bFolderSelected = true;
+					bDidCancel = false;
 					PostMessage (GetParent (hwnd), WM_CLOSE, 0, 0);
 					return false;
 				}
 				else
 				{
 					// another folder is selected: browse into it
-					folderSelected = false;
+					bFolderSelected = false;
 					return true;
 				}
 			}
@@ -7936,13 +7892,13 @@ LRESULT CALLBACK SelectDirectoryButtonProc (HWND hwnd, UINT message, WPARAM wPar
 				if (strcmp (oldDirPath, selDirPath) == 0 || selDirPath [0] == 0)
 				{
 					// the same folder as the old one, means nothing selected: stay open
-					folderSelected = false;
+					bFolderSelected = false;
 					return true;
 				}
 			}
 		}
 
-		didCancel = false;
+		bDidCancel = false;
 		PostMessage (GetParent (hwnd), WM_CLOSE, 0, 0); 
 		return false;
 	} break;
@@ -8033,31 +7989,31 @@ LRESULT CALLBACK MouseProc (int nCode, WPARAM wParam, LPARAM lParam)
 //-----------------------------------------------------------------------------
 bool InitWindowClass ()
 {
-	useCount++;
-	if (useCount == 1)
+	gUseCount++;
+	if (gUseCount == 1)
 	{
-		sprintf (className, "Plugin%08l", GetInstance ());
+		sprintf (gClassName, "Plugin%x", GetInstance ());
 		
 		WNDCLASS windowClass;
 		windowClass.style = CS_GLOBALCLASS;//|CS_OWNDC; // add Private-DC constant 
 
 		windowClass.lpfnWndProc = WindowProc; 
-		windowClass.cbClsExtra = 0; 
-		windowClass.cbWndExtra = 0; 
-		windowClass.hInstance = GetInstance (); 
+		windowClass.cbClsExtra  = 0; 
+		windowClass.cbWndExtra  = 0; 
+		windowClass.hInstance   = GetInstance (); 
 		windowClass.hIcon = 0; 
 
 		windowClass.hCursor = LoadCursor (NULL, IDC_ARROW);
 		windowClass.hbrBackground = GetSysColorBrush (COLOR_BTNFACE); 
-		windowClass.lpszMenuName = 0; 
-		windowClass.lpszClassName = className; 
+		windowClass.lpszMenuName  = 0; 
+		windowClass.lpszClassName = gClassName; 
 		RegisterClass (&windowClass);
 
 		#if USE_MOUSE_HOOK
-		MouseHook = SetWindowsHookEx (WH_MOUSE, MouseProc,(GetInstance (), 0);
+		MouseHook = SetWindowsHookEx (WH_MOUSE, MouseProc, GetInstance (), 0);
 		#endif
 
-		swapped_mouse_buttons = GetSystemMetrics (SM_SWAPBUTTON) > 0;
+		bSwapped_mouse_buttons = GetSystemMetrics (SM_SWAPBUTTON) > 0;
 	}
 	return true;
 }
@@ -8065,10 +8021,10 @@ bool InitWindowClass ()
 //-----------------------------------------------------------------------------
 void ExitWindowClass ()
 {
-	useCount--;
-	if (useCount == 0)
+	gUseCount--;
+	if (gUseCount == 0)
 	{
-		UnregisterClass (className, GetInstance ());
+		UnregisterClass (gClassName, GetInstance ());
 
 		#if USE_MOUSE_HOOK
 		if (MouseHook)
@@ -8090,15 +8046,12 @@ LONG_PTR WINAPI WindowProc (HWND hwnd, UINT message, WPARAM wParam, LPARAM lPara
 	{
 	case WM_MOUSEWHEEL:
 	{
-		if(pFrame)
+		if (pFrame)
 		{
-			HDC hdc = GetDC (hwnd);
-			VSTGUI_CDrawContext *pContext = new VSTGUI_CDrawContext (pFrame, hdc,hwnd);
+			VSTGUI_CDrawContext context (pFrame, 0, hwnd);
 			VSTGUI_CPoint where (LOWORD (lParam), HIWORD (lParam));
 			short zDelta = (short) HIWORD(wParam);
-			pFrame->onWheel(pContext, where, float(zDelta)/WHEEL_DELTA);
-			delete pContext;
-			ReleaseDC (hwnd, hdc);
+			pFrame->onWheel (&context, where, (float)zDelta / WHEEL_DELTA);
 		}
 		break;
 	}
@@ -8132,15 +8085,14 @@ LONG_PTR WINAPI WindowProc (HWND hwnd, UINT message, WPARAM wParam, LPARAM lPara
 			PAINTSTRUCT ps;
 			HDC hdc = BeginPaint (hwnd, &ps);
 
-			VSTGUI_CDrawContext *pContext = new VSTGUI_CDrawContext (pFrame, hdc, hwnd);
+			VSTGUI_CDrawContext context (pFrame, hdc, hwnd);
 			
 			#if 1
 			CRect updateRect (ps.rcPaint.left, ps.rcPaint.top, ps.rcPaint.right, ps.rcPaint.bottom);
-			pFrame->drawRect (pContext, updateRect);
+			pFrame->drawRect (&context, updateRect);
 			#else
-			pFrame->draw (pContext);
+			pFrame->draw (&context);
 			#endif
-			delete pContext;
 
 			EndPaint (hwnd, &ps);
 			return 0;
@@ -8158,11 +8110,8 @@ LONG_PTR WINAPI WindowProc (HWND hwnd, UINT message, WPARAM wParam, LPARAM lPara
 			{
 				VSTGUI_CPoint size;
 
-				HDC hdc = GetDC (hwnd);
-				VSTGUI_CDrawContext* pContext = new VSTGUI_CDrawContext (pFrame, hdc, hwnd);
-				optMenu->getScheme ()->getItemSize ((const char*)ms->itemData, pContext, size);
-				delete pContext;
-				ReleaseDC (hwnd, hdc);
+				VSTGUI_CDrawContext context (pFrame, 0, hwnd);
+				optMenu->getScheme ()->getItemSize ((const char*)ms->itemData, &context, size);
 
 				ms->itemWidth  = size.h;
 				ms->itemHeight = size.v;
@@ -8206,12 +8155,9 @@ LONG_PTR WINAPI WindowProc (HWND hwnd, UINT message, WPARAM wParam, LPARAM lPara
 		if (pFrame)
 		{
 		#if 1
-			HDC hdc = GetDC (hwnd);
-			VSTGUI_CDrawContext *pContext = new VSTGUI_CDrawContext (pFrame, hdc, hwnd);
+			VSTGUI_CDrawContext context (pFrame, 0, hwnd);
 			VSTGUI_CPoint where (LOWORD (lParam), HIWORD (lParam));
-			pFrame->mouse (pContext, where);
-			delete pContext;
-			ReleaseDC (hwnd, hdc);
+			pFrame->mouse (&context, where);
 		#else
 			VSTGUI_CPoint where (LOWORD (lParam), HIWORD (lParam));
 			pFrame->mouse ((VSTGUI_CDrawContext*)0, where);
@@ -8309,34 +8255,34 @@ void DrawTransparent (CDrawContext* pContext, CRect& rect, const CPoint& offset,
 	else
 	{
 		// OPTIMIZATION: we only do five instead of EIGHT blits
-		HDC		hdcSystemContext = (HDC)pContext->getSystemContext();
+		HDC		hdcSystemContext = (HDC)pContext->getSystemContext ();
 		HDC		hdcMask = CreateCompatibleDC (hdcSystemContext);
 		HDC		hdcMem = CreateCompatibleDC (hdcSystemContext);
 		HBITMAP	bmAndMem;
 		HBITMAP	bmMemOld, bmMaskOld;
 
 		long	x, y;
-		long	width = rect.width();
-		long	height = rect.height();
+		long	width = rect.width ();
+		long	height = rect.height ();
 
 		x = rect.x + pContext->offset.x;
 		y = rect.y + pContext->offset.y;
 
 		bmAndMem = CreateCompatibleBitmap(hdcSystemContext, width, height);
 
-		bmMaskOld   = (HBITMAP)SelectObject(hdcMask, pMask);
+		bmMaskOld   = (HBITMAP)SelectObject (hdcMask, pMask);
 		bmMemOld    = (HBITMAP)SelectObject (hdcMem, bmAndMem);
 
-		BitBlt(hdcMem, 0, 0, width, height, hdcSystemContext, x, y, SRCCOPY);
-		BitBlt(hdcMem, 0, 0, width, height, hdcBitmap, offset.x, offset.y, SRCINVERT);
-		BitBlt(hdcMem, 0, 0, width, height, hdcMask, offset.x, offset.y, SRCAND);
-		BitBlt(hdcMem, 0, 0, width, height, hdcBitmap, offset.x, offset.y, SRCINVERT);
-		BitBlt(hdcSystemContext, x, y, width, height, hdcMem, 0, 0, SRCCOPY);
+		BitBlt (hdcMem, 0, 0, width, height, hdcSystemContext, x, y, SRCCOPY);
+		BitBlt (hdcMem, 0, 0, width, height, hdcBitmap, offset.x, offset.y, SRCINVERT);
+		BitBlt (hdcMem, 0, 0, width, height, hdcMask, offset.x, offset.y, SRCAND);
+		BitBlt (hdcMem, 0, 0, width, height, hdcBitmap, offset.x, offset.y, SRCINVERT);
+		BitBlt (hdcSystemContext, x, y, width, height, hdcMem, 0, 0, SRCCOPY);
 
-		DeleteObject(SelectObject(hdcMem, bmMemOld));
-		SelectObject(hdcMask, bmMaskOld);
+		DeleteObject (SelectObject (hdcMem, bmMemOld));
+		SelectObject (hdcMask, bmMaskOld);
 
-		DeleteDC(hdcMem);
+		DeleteDC (hdcMem);
 		DeleteDC(hdcMask);
 	}
 }
@@ -8646,11 +8592,11 @@ void PlugView::MessageReceived (BMessage *msg)
 //-----------------------------------------------------------------------------
 // Drop Implementation
 //-----------------------------------------------------------------------------
-class UDropTarget : public IDropTarget
+class CDropTarget : public IDropTarget
 {	
 public:
-	UDropTarget (VSTGUI_CFrame* pFrame);
-	virtual ~UDropTarget ();
+	CDropTarget (VSTGUI_CFrame* pFrame);
+	virtual ~CDropTarget ();
 
 	// IUnknown
 	STDMETHOD (QueryInterface) (REFIID riid, void** object);
@@ -8669,26 +8615,26 @@ private:
 };
 
 //-----------------------------------------------------------------------------
-// UDropTarget
+// CDropTarget
 //-----------------------------------------------------------------------------
 void* createDropTarget (VSTGUI_CFrame* pFrame)
 {
-	return new UDropTarget (pFrame);
+	return new CDropTarget (pFrame);
 }
 
 //-----------------------------------------------------------------------------
-UDropTarget::UDropTarget (VSTGUI_CFrame* pFrame)
+CDropTarget::CDropTarget (VSTGUI_CFrame* pFrame)
 : refCount (0), pFrame (pFrame)
 {
 }
 
 //-----------------------------------------------------------------------------
-UDropTarget::~UDropTarget ()
+CDropTarget::~CDropTarget ()
 {
 }
 
 //-----------------------------------------------------------------------------
-STDMETHODIMP UDropTarget::QueryInterface (REFIID riid, void** object)
+STDMETHODIMP CDropTarget::QueryInterface (REFIID riid, void** object)
 {
 	if (riid == IID_IDropTarget || riid == IID_IUnknown)
 	{
@@ -8701,13 +8647,13 @@ STDMETHODIMP UDropTarget::QueryInterface (REFIID riid, void** object)
 }
 
 //-----------------------------------------------------------------------------
-STDMETHODIMP_(ULONG) UDropTarget::AddRef (void)
+STDMETHODIMP_(ULONG) CDropTarget::AddRef (void)
 {
 	return ++refCount;
 }
 
 //-----------------------------------------------------------------------------
-STDMETHODIMP_(ULONG) UDropTarget::Release (void)
+STDMETHODIMP_(ULONG) CDropTarget::Release (void)
 {
 	refCount--;
 	if (refCount <= 0)
@@ -8719,7 +8665,7 @@ STDMETHODIMP_(ULONG) UDropTarget::Release (void)
 }
 
 //-----------------------------------------------------------------------------
-STDMETHODIMP UDropTarget::DragEnter (IDataObject *dataObject, DWORD keyState, POINTL pt, DWORD *effect)
+STDMETHODIMP CDropTarget::DragEnter (IDataObject *dataObject, DWORD keyState, POINTL pt, DWORD *effect)
 {
 	accept = false;
 	if (dataObject)
@@ -8744,7 +8690,7 @@ STDMETHODIMP UDropTarget::DragEnter (IDataObject *dataObject, DWORD keyState, PO
 }
 
 //-----------------------------------------------------------------------------
-STDMETHODIMP UDropTarget::DragOver (DWORD keyState, POINTL pt, DWORD *effect)
+STDMETHODIMP CDropTarget::DragOver (DWORD keyState, POINTL pt, DWORD *effect)
 {
 	if (accept)
 	{
@@ -8759,13 +8705,13 @@ STDMETHODIMP UDropTarget::DragOver (DWORD keyState, POINTL pt, DWORD *effect)
 }
 
 //-----------------------------------------------------------------------------
-STDMETHODIMP UDropTarget::DragLeave (void)
+STDMETHODIMP CDropTarget::DragLeave (void)
 {
 	return S_OK;
 }
 
 //-----------------------------------------------------------------------------
-STDMETHODIMP UDropTarget::Drop (IDataObject *dataObject, DWORD keyState, POINTL pt, DWORD *effect)
+STDMETHODIMP CDropTarget::Drop (IDataObject *dataObject, DWORD keyState, POINTL pt, DWORD *effect)
 {
 	if (pFrame)
 	{

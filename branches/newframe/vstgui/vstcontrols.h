@@ -834,15 +834,23 @@ public:
   
 	virtual void setDecreaseStepValue (float value) { decreaseValue = value; }
 
+	virtual bool attached (CView *parent);
+	virtual bool removed (CView *parent);
 	virtual void draw (CDrawContext *pContext);
 	virtual void  setDirty (const bool val = true);
+	
+	void setUseOffscreen (bool val = true);
+	bool getUseOffscreen () { return bUseOffscreen; }
 
 protected:
 	CBitmap *onBitmap;
 	CBitmap *offBitmap;
+	COffscreenContext *pOScreen;
+	
 	long     nbLed;
 	long     style;
 	float    decreaseValue;
+	bool	 bUseOffscreen;
 
 	CRect    rectOn;
 	CRect    rectOff;
