@@ -1,3 +1,8 @@
+2004-04-11 arne
+	
+	* CViewContainer should be completely nestable now
+	* mac: implemented the quartz offscreencontext for existing bitmaps
+	
 2004-03-23 arne
 
 	* CTextEdit use the CParamDisplay::stringConvert functions to draw text

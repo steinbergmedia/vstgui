@@ -2712,9 +2712,19 @@ COffscreenContext::COffscreenContext (CDrawContext *pContext, CBitmap *pBitmapBg
 #elif MAC
 	#if QUARTZ
 	if (drawInBitmap)
-	{} // todo !!!
-	else
 	{
+		if (pBitmapBg->getHandle ())
+		{
+			PixMapHandle pixMap = GetGWorldPixMap ((GWorldPtr)pBitmapBg->getHandle ());
+			CGColorSpaceRef colorspace = CGColorSpaceCreateDeviceRGB ();
+			gCGContext = CGBitmapContextCreate (GetPixBaseAddr (pixMap), width, height, GetPixDepth (pixMap), GetPixRowBytes (pixMap), colorspace, kCGImageAlphaFirst);
+			CGColorSpaceRelease (colorspace);
+			if (gCGContext)
+				CGContextTranslateCTM (gCGContext, 0, (float)height);
+		}
+	}
+	else
+	{ // todo !!!
 	}
 	
 	#else
@@ -3925,7 +3935,7 @@ bool CFrame::onWheel (CDrawContext *pContext, const CPoint &where, float distanc
 {
 	bool result = false;
 
-	CView *view = getCurrentView ();
+	CView *view = pModalView ? pModalView : getViewAt (where);
 	if (view)
 	{
 		CDrawContext *pContext2;
@@ -4574,6 +4584,17 @@ CView *CFrame::getCurrentView ()
 	CPoint where;
 	getCurrentLocation (where);
 
+	for (long i = viewCount - 1; i >= 0; i--)
+	{
+		if (ppViews[i] && where.isInside (ppViews[i]->mouseableArea))
+			return ppViews[i];
+	}
+	return 0;
+}
+
+//-----------------------------------------------------------------------------
+CView *CFrame::getViewAt (const CPoint& where)
+{
 	for (long i = viewCount - 1; i >= 0; i--)
 	{
 		if (ppViews[i] && where.isInside (ppViews[i]->mouseableArea))
@@ -5249,7 +5270,7 @@ bool CViewContainer::onDrop (void **ptrItems, long nbItems, long type, CPoint &w
 bool CViewContainer::onWheel (CDrawContext *pContext, const CPoint &where, float distance)
 {
 	bool result = false;
-	CView *view = getCurrentView ();
+	CView *view = getViewAt (where);
 	if (view)
 	{
 		// convert to relativ pos
@@ -5391,6 +5412,29 @@ CView *CViewContainer::getCurrentView ()
 	// get the current position
 	CPoint where;
 	pParent->getCurrentLocation (where);
+
+	// convert to relativ pos
+	where.offset (-size.left, -size.top);
+
+	CCView *pSv = pLastView;
+	while (pSv)
+	{
+		CView *pV = pSv->pView;
+		if (pV && where.isInside (pV->mouseableArea))
+			return pV;
+		pSv = pSv->pPrevious;
+	}
+
+	return 0;
+}
+
+//-----------------------------------------------------------------------------
+CView *CViewContainer::getViewAt (const CPoint& p)
+{
+	if (!pParent)
+		return 0;
+
+	CPoint where (p);
 
 	// convert to relativ pos
 	where.offset (-size.left, -size.top);
