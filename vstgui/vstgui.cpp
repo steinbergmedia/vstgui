@@ -267,7 +267,7 @@ bool xpmGetValues (char **ppDataXpm, long *pWidth, long *pHeight, long *pNcolor,
 //-----------------------------------------------------------------------------
 #elif MAC
 
-static long pSystemVersion;
+long pSystemVersion;
 
 #if MACX
 //-----------------------------------------------------------------------------
