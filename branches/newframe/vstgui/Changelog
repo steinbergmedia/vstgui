@@ -1,3 +1,19 @@
+2004-08-30 arne
+
+	**** bump version to 3.0 !
+	
+	* change CView::getParent to CView::getFrame
+	* correct implementation of beginEdit and endEdit in all CControls, you should change your code of custom controls from getParent->beginEdit (tag) to beginEdit () ;-)
+	* new drawArc method in CDrawContext which takes angels as parameters
+	* added some kind of runtime type information.
+	* mac: changed the kInfinitySymbol to be 'oo' as the mac character is not available in Helvetica
+	* added two new cursor types (kCursorCopy & kCursorNotAllowed). (Currently only for Mac OS X, Windows will follow)
+	* complete new drag & drop implementation. Now all views can react if something is dragged over it.
+	* some fixes to the update methods when drawing with offsets and COffscreenContexts.
+	* mac: the macro 'CARBON' is changed to 'TARGET_API_MAC_CARBON' as this is what the Mac OS itself uses.
+	* mac: compiling with VSTGUI as namespace works now
+	* mac: use current API for creating menus. (fixes some bugs with the old implementation, where you could not create menuitems like "-3db")
+	
 2004-08-25 arne
 
 	* mac: change COptionMenuScheme implementation to be optional as it only works for OSX Version >= 10.3 (macro: MAC_ENABLE_MENU_SCHEME)

@@ -2,11 +2,11 @@
 // VST Plug-Ins SDK
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 //
-// Version 2.2       Date : 25/03/03
+// Version 3.0       $Date: 2004-08-30 12:38:19 $
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
-// © 2003, Steinberg Media Technologies, All Rights Reserved
+// © 2004, Steinberg Media Technologies, All Rights Reserved
 //-----------------------------------------------------------------------------
 // Redistribution and use in source and binary forms, with or without modification,
 // are permitted provided that the following conditions are met:
@@ -145,6 +145,10 @@ struct VstKeyCode;
 BEGIN_NAMESPACE_VSTGUI
 
 struct CPoint;
+
+#define CLASS_METHODS(name, parent)             \
+	virtual bool isTypeOf (const char* s) const \
+		{ return (!strcmp (s, (#name))) ? true : parent::isTypeOf (s); }\
 
 //-----------------------------------------------------------------------------
 // Structure CRect
@@ -327,13 +331,13 @@ extern CColor kMagentaCColor;
 #define kInfiniteSymbol    "\xE2\x88\x9E"
 #define kCopyrightSymbol   "\xC2\xA9"
 #define kTrademarkSymbol   "\xE2\x84\xA2"
-#define kRegisteredSymbol	 "\xC2\xAE"
+#define kRegisteredSymbol	"\xC2\xAE"
 #define kMicroSymbol       "\xC2\xB5"
 #define kPerthousandSymbol "\xE2\x80\xB0"
 
 #elif MAC
 #define kDegreeSymbol      "\xA1"
-#define kInfiniteSymbol    "\xB0"
+#define kInfiniteSymbol    "oo"
 #define kCopyrightSymbol   "\xA9"
 #define kTrademarkSymbol   "\xAA"
 #define kRegisteredSymbol  "\xA8"
@@ -415,17 +419,6 @@ enum CButton
 };
 
 //----------------------------
-// Drop Type
-//----------------------------
-enum CDropType
-{
-	kDropFiles = 0,
-	kDropText,
-
-	kDropUser = 1000
-};
-
-//----------------------------
 // Cursor Type
 //----------------------------
 enum CCursorType
@@ -436,7 +429,9 @@ enum CCursorType
 	kCursorVSize,
 	kCursorSizeAll,
 	kCursorNESWSize,
-	kCursorNWSESize
+	kCursorNWSESize,
+	kCursorCopy,
+	kCursorNotAllowed
 };
 
 //----------------------------
@@ -467,6 +462,36 @@ private:
 };
 
 //-----------------------------------------------------------------------------
+// CDragContainer Declaration
+//-----------------------------------------------------------------------------
+class CDragContainer : public CReferenceCounter
+{
+public:
+	CDragContainer (void* platformDrag);
+	~CDragContainer ();
+
+	void* first (long& size, long& type);		// returns pointer on a char array if type is known
+	void* next (long& size, long& type);		// returns pointer on a char array if type is known
+	
+	long getType (long idx);
+	long getCount () { return nbItems; }
+
+	enum {
+		kFile = 0,
+		kText,
+
+		kUnknown = -1
+	};
+
+protected:
+	void* platformDrag;
+	long nbItems;
+	
+	long iterator;
+	void* lastItem;
+};
+
+//-----------------------------------------------------------------------------
 // CDrawContext Declaration
 //-----------------------------------------------------------------------------
 class CDrawContext : public CReferenceCounter
@@ -484,6 +509,7 @@ public:
 	void drawRect (const CRect &rect);
 	void fillRect (const CRect &rect);
 
+	void drawArc (const CRect &rect, const float startAngle1, const float endAngle2); // in degree
 	void drawArc (const CRect &rect, const CPoint &point1, const CPoint &point2);
 	void fillArc (const CRect &rect, const CPoint &point1, const CPoint &point2);
 
@@ -518,6 +544,7 @@ public:
 	CColor getFontColor () { return fontColor; }
 	void   setFont (CFont fontID, const long size = 0, long style = 0);
 	CFont  getFont () { return fontId; }
+	long   getFontSize () const { return fontSize; }
 
 	long getStringWidth (const char* pStr);
 
@@ -754,10 +781,12 @@ public:
 	virtual long onKeyDown (VstKeyCode& keyCode);
 	virtual long onKeyUp (VstKeyCode& keyCode);
 
-	virtual bool onDrop (void **ptrItems, long nbItems, long type, CPoint &where);
 	virtual bool onWheel (CDrawContext *pContext, const CPoint &where, float distance);
 
-	virtual bool acceptDrop (long type, CPoint &where) { return false; }	// under evaluation
+	virtual bool onDrop (CDrawContext* context, CDragContainer* drag, const CPoint& where) { return false; }
+	virtual void onDragEnter (CDrawContext* context, CDragContainer* drag, const CPoint& where) {}
+	virtual void onDragLeave (CDrawContext* context, CDragContainer* drag, const CPoint& where) {}
+	virtual void onDragMove (CDrawContext* context, CDragContainer* drag, const CPoint& where) {}
 
 	virtual void looseFocus (CDrawContext *pContext = 0);
 	virtual void takeFocus (CDrawContext *pContext = 0);
@@ -785,9 +814,8 @@ public:
 	virtual void setParentView (CView *pParentView) { this->pParentView = pParentView; }
 	CView  *getParentView () { return pParentView; }
 	
-	virtual void setParent (CFrame *pParent) { this->pParent = pParent; }
-	CFrame *getParent () { return pParent; }
-	CFrame *getFrame () { return pParent; }
+	virtual void setFrame (CFrame *pParent) { this->pParentFrame = pParent; }
+	CFrame *getFrame () { return pParentFrame; }
 
 	virtual void *getEditor ();
 
@@ -799,6 +827,9 @@ public:
 
 	virtual void redrawRect (CDrawContext* context, const CRect& rect);
 
+	virtual bool isTypeOf (const char* s) const
+		{ return (!strcmp (s, "CView")); }
+
 	//-------------------------------------------
 protected:
 	friend class CControl;
@@ -808,7 +839,7 @@ protected:
 	CRect  size;
 	CRect  mouseableArea;
 
-	CFrame *pParent;
+	CFrame *pParentFrame;
 	CView  *pParentView;
 
 	bool  bDirty;
@@ -816,7 +847,6 @@ protected:
 	bool  bTransparencyEnabled;
 	
 	CBitmap* pBackground;
-
 
 	virtual void update (CDrawContext *pContext); // don't call this !!!
 };
@@ -859,14 +889,16 @@ public:
 	virtual void draw (CDrawContext *pContext);
 	virtual void drawRect (CDrawContext *pContext, const CRect& updateRect);
 	virtual void mouse (CDrawContext *pContext, CPoint &where, long buttons = -1);
-	virtual bool onDrop (void **ptrItems, long nbItems, long type, CPoint &where);
 	virtual bool onWheel (CDrawContext *pContext, const CPoint &where, float distance);
 	virtual void update (CDrawContext *pContext);
 	virtual bool hitTest (const CPoint& where, const long buttons = -1);
 	virtual long onKeyDown (VstKeyCode& keyCode);
 	virtual long onKeyUp (VstKeyCode& keyCode);
 
-	virtual bool acceptDrop (long type, CPoint &where);
+	virtual bool onDrop (CDrawContext* context, CDragContainer* drag, const CPoint& where);
+	virtual void onDragEnter (CDrawContext* context, CDragContainer* drag, const CPoint& where);
+	virtual void onDragLeave (CDrawContext* context, CDragContainer* drag, const CPoint& where);
+	virtual void onDragMove (CDrawContext* context, CDragContainer* drag, const CPoint& where);
 
 	virtual void looseFocus (CDrawContext *pContext = 0);
 	virtual void takeFocus (CDrawContext *pContext = 0);
@@ -903,6 +935,8 @@ public:
 
 	virtual void redrawRect (CDrawContext* context, const CRect& rect);
 
+	CLASS_METHODS(CViewContainer, CView)
+
 	//-------------------------------------------
 protected:
 	bool hitTestSubViews (const CPoint& where, const long buttons = -1);
@@ -914,6 +948,8 @@ protected:
 	CColor backgroundColor;
 	CPoint backgroundOffset;
 	bool bDrawInOffscreen;
+
+	CView* currentDragView;
 };
 
 //-----------------------------------------------------------------------------
@@ -935,7 +971,6 @@ public:
 	virtual void drawRect (CDrawContext *pContext, const CRect& updateRect);
 	virtual void draw (CView *pView = 0);
 	virtual void mouse (CDrawContext *pContext, CPoint &where, long buttons = -1);
-	virtual bool onDrop (void **ptrItems, long nbItems, long type, CPoint &where);
 	virtual bool onWheel (CDrawContext *pContext, const CPoint &where, float distance);
 	virtual long onKeyDown (VstKeyCode& keyCode);
 	virtual long onKeyUp (VstKeyCode& keyCode);
@@ -954,8 +989,6 @@ public:
 	virtual bool getSize (CRect &pSize);
 
 	virtual void setViewSize(CRect& inRect);
-
-	virtual long getNbViews () { return viewCount; }
 
 	virtual long   setModalView (CView *pView);
 	virtual CView *getModalView () { return pModalView; }
@@ -1008,6 +1041,8 @@ public:
 	virtual void setOpenFlag (bool val) { bOpenFlag = val;};
 	virtual bool getOpenFlag () { return bOpenFlag; };
 
+	CLASS_METHODS(CFrame, CViewContainer)
+
 	//-------------------------------------------
 protected:
 	bool   initFrame (void *pSystemWin);
@@ -1016,9 +1051,6 @@ protected:
 	void   *pEditor;
 	
 	void    *pSystemWindow;
-	long    viewCount;
-	long    maxViews;
-	CView   **ppViews;
 	CView   *pModalView;
 	CView   *pEditView;
 

@@ -2,9 +2,8 @@
 // VST Plug-Ins SDK
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 //
-// Version 2.2       Date : 14/05/03
+// Version 3.0       $Date: 2004-08-30 12:38:19 $ 
 //
-// First version            : Wolfgang Kundrus         06.97
 // Added Motif/Windows vers.: Yvan Grabit              01.98
 // Added Mac version        : Charlie Steinberg        02.98
 // Added BeOS version       : Georges-Edouard Berenger 05.99
@@ -15,7 +14,7 @@
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
-// © 2003, Steinberg Media Technologies, All Rights Reserved
+// © 2004, Steinberg Media Technologies, All Rights Reserved
 //-----------------------------------------------------------------------------
 // Redistribution and use in source and binary forms, with or without modification,
 // are permitted provided that the following conditions are met:
@@ -70,26 +69,26 @@
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 #if USE_NAMESPACE
-#define VSTGUI_CFrame     VSTGUI::CFrame
-#define VSTGUI_CPoint     VSTGUI::CPoint
-#define VSTGUI_kDropFiles VSTGUI::kDropFiles
-#define VSTGUI_kDropText  VSTGUI::kDropText
-#define VSTGUI_CTextEdit  VSTGUI::CTextEdit
-#define VSTGUI_CColor     VSTGUI::CColor
-#define VSTGUI_CDrawContext VSTGUI::CDrawContext
-#define VSTGUI_COptionMenu VSTGUI::COptionMenu
-#define VSTGUI_COptionMenuScheme VSTGUI::COptionMenuScheme
+#define VSTGUI_CFrame				VSTGUI::CFrame
+#define VSTGUI_CPoint				VSTGUI::CPoint
+#define VSTGUI_CTextEdit			VSTGUI::CTextEdit
+#define VSTGUI_CColor				VSTGUI::CColor
+#define VSTGUI_CDrawContext			VSTGUI::CDrawContext
+#define VSTGUI_COptionMenu			VSTGUI::COptionMenu
+#define VSTGUI_COptionMenuScheme	VSTGUI::COptionMenuScheme
+#define VSTGUI_CDragContainer		VSTGUI::CDragContainer
 #else
 #define VSTGUI_CFrame     CFrame
 #define VSTGUI_CPoint     CPoint
-#define VSTGUI_kDropFiles kDropFiles
-#define VSTGUI_kDropText  kDropText
 #define VSTGUI_CTextEdit  CTextEdit
 #define VSTGUI_CColor     CColor
 #define VSTGUI_CDrawContext CDrawContext
 #define VSTGUI_COptionMenu COptionMenu
 #define VSTGUI_COptionMenuScheme COptionMenuScheme
+#define VSTGUI_CDragContainer	CDragContainer
 #endif
+
+static VSTGUI_CDragContainer* gDragContainer = 0;
 
 //---For Debugging------------------------
 #if DEBUG
@@ -136,6 +135,7 @@ static bool bSwapped_mouse_buttons = false;
 #include <shlobj.h>
 #include <shellapi.h>
 #include <zmouse.h>
+#include <commdlg.h>
 
 #if DYNAMICALPHABLEND
 typedef  BOOL (WINAPI *PFNALPHABLEND)(
@@ -242,8 +242,8 @@ static SFontTable gFontTable[] = {
   {"NormalFontBig",     "-adobe-helvetica-medium-r-normal-*-14-*-*-*-*-*-*-*"}, // kNormalFontBig
   {"NormalFont",        "-adobe-helvetica-medium-r-*-*-12-*-*-*-*-*-*-*"}, // kNormalFont
   {"NormalFontSmall",   "-adobe-helvetica-medium-r-*-*-10-*-*-*-*-*-*-*"}, // kNormalFontSmall
-  {"NormalFontSmaller",   "-adobe-helvetica-medium-r-*-*-9-*-*-*-*-*-*-*"}, // kNormalFontSmaller
-  {"NormalFontVerySmall", "-adobe-helvetica-medium-r-*-*-8-*-*-*-*-*-*-*"},  // kNormalFontVerySmall
+  {"NormalFontSmaller", "-adobe-helvetica-medium-r-*-*-9-*-*-*-*-*-*-*"},  // kNormalFontSmaller
+  {"NormalFontVerySmall", "-adobe-helvetica-medium-r-*-*-8-*-*-*-*-*-*-*"}, // kNormalFontVerySmall
   {"SymbolFont",        "-adobe-symbol-medium-r-*-*-12-*-*-*-*-*-*-*"}     // kSymbolFont
 };
 
@@ -273,6 +273,7 @@ bool xpmGetValues (char **ppDataXpm, long *pWidth, long *pHeight, long *pNcolor,
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 #elif MAC
+BEGIN_NAMESPACE_VSTGUI
 
 long pSystemVersion;
 
@@ -385,6 +386,7 @@ void RGBColor2CColor (const RGBColor &rgb, CColor &cc)
 	cc.blue  = rgb.blue  / 257;
 }
 
+END_NAMESPACE_VSTGUI
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 #elif BEOS
@@ -1454,6 +1456,9 @@ void CDrawContext::drawEllipse (const CRect &_rect)
 
 		CGContextTranslateCTM (context, 0.5f, 0.5f);
 
+		if (rect.width () != rect.height ())
+		{
+
 		CGContextSaveGState (context);
 		CGContextBeginPath (context);
 
@@ -1469,7 +1474,16 @@ void CDrawContext::drawEllipse (const CRect &_rect)
 
 		CGContextClosePath (context);
 		CGContextRestoreGState (context);
+			CGContextDrawPath (context, kCGPathStroke);
+		}
+		else
+		{
+			float radius = rect.width () * 0.5f;
+			CGContextBeginPath (context);
+			CGContextAddArc (context, rect.left + radius, rect.top + radius, radius, radians (0), radians (360), 0);
+			CGContextClosePath (context);
 		CGContextDrawPath (context, kCGPathStroke);
+		}
 		releaseCGContext (context);
 	}
 
@@ -1666,26 +1680,91 @@ void CDrawContext::floodFill (const CPoint& _start)
 }
 
 #if QUARTZ
-void addOvalToPath(CGContextRef c, CPoint center, float a, float b, float start_angle, float arc_angle, int pie)
+void addOvalToPath(CGContextRef c, CPoint center, float a, float b, float start_angle, float end_angle)
 {
-	float CGstart_angle = start_angle;
 	CGContextSaveGState (c);
 	CGContextTranslateCTM (c, center.x, center.y);
 	CGContextScaleCTM (c, a, b);
-	if (pie) 
-		CGContextMoveToPoint (c, 0, 0);
-	else 
-		CGContextMoveToPoint (c, cos (radians (CGstart_angle)), sin (radians (CGstart_angle)));
-	long dir = arc_angle > 0 ? 1 : 0;
-	CGContextAddArc(c, 0, 0, 1, radians (CGstart_angle), radians (CGstart_angle - arc_angle), dir);
-	CGContextAddArc(c, 0, 0, 1, radians (CGstart_angle - arc_angle), radians (CGstart_angle), dir ? 0 : 1);
-	if (pie)
-	{
-		CGContextClosePath(c);
-	}
+
+	CGContextMoveToPoint (c, cos (radians (start_angle)), sin (radians (start_angle)));
+
+	CGContextAddArc(c, 0, 0, 1, radians (start_angle), radians (end_angle), 1);
+
 	CGContextRestoreGState(c);
 }
 #endif
+
+//-----------------------------------------------------------------------------
+void CDrawContext::drawArc (const CRect &_rect, const float _startAngle, const float _endAngle) // in degree
+{
+	CRect rect (_rect);
+	rect.offset (offset.h, offset.v);
+
+	#if WINDOWS
+	float startRad = (float)(k2PI * _startAngle / 360.f);
+	float endRad   = (float)(k2PI * _endAngle / 360.f);
+	
+	CPoint point1, point2;
+	long midX = _rect.width () / 2;
+	long midY = _rect.height () / 2;
+
+	point1.x = (long)(midX + midX * cosf (startRad));
+	point1.y = (long)(midY - midY * sinf (startRad));
+	point2.x = (long)(midX + midX * cosf (endRad));
+	point2.y = (long)(midY - midY * sinf (endRad));
+	point1.offset (offset.h, offset.v);
+	point2.offset (offset.h, offset.v);
+
+	Arc ((HDC)pSystemContext, rect.left, rect.top, rect.right + 1, rect.bottom + 1, 
+			 point1.h, point1.v, point2.h, point2.v);
+
+	#elif MOTIF
+
+	XDrawArc (XDRAWPARAM, rect.left, rect.top, rect.width (), rect.height (),
+						_startAngle * 64, _endAngle * 64);
+
+	#elif MAC
+
+	#if QUARTZ
+	CGContextRef context = beginCGContext ();
+	{
+		CGContextScaleCTM (context, 1, -1);
+
+		CGRect cgClipRect = CGRectMake (clipRect.left, clipRect.top, clipRect.width (), clipRect.height ());
+		CGContextClipToRect (gCGContext, cgClipRect);
+
+		CGContextTranslateCTM (context, 0.5f, 0.5f);
+
+		CGContextBeginPath (context);
+		addOvalToPath (context, CPoint (rect.left + rect.width () / 2, rect.top + rect.height () / 2), rect.width () / 2, rect.height () / 2, -_startAngle, -_endAngle);
+
+		CGContextDrawPath (context, kCGPathStroke);
+		releaseCGContext (context);
+	}
+	#else
+	Rect     rr;
+	CGrafPtr OrigPort;
+	GDHandle OrigDevice;
+	GetGWorld (&OrigPort, &OrigDevice);
+	SetGWorld (getPort (), NULL);
+	RGBColor col;
+	CColor2RGBColor (frameColor, col);
+	RGBForeColor (&col);
+	CRect2Rect (rect, rr);
+	FrameArc (&rr, 90 - _startAngle, -_endAngle);
+	SetGWorld (OrigPort, OrigDevice);
+	#endif
+
+	#elif BEOS
+	rgb_color c = { frameColor.red, frameColor.green, frameColor.blue, 255 };
+	pView->SetHighColor (c);
+	pView->SetDrawingMode (modeToPlatform [drawMode]);
+	BRect r (rect.left, rect.top, rect.right, rect.bottom);
+	pView->SetPenSize (frameWidth);
+	pView->StrokeArc (r, _startAngle, _endAngle);
+
+	#endif
+}
 
 //-----------------------------------------------------------------------------
 void CDrawContext::drawArc (const CRect &_rect, const CPoint &_point1, const CPoint &_point2)
@@ -1726,7 +1805,7 @@ void CDrawContext::drawArc (const CRect &_rect, const CPoint &_point1, const CPo
 	angle1 /= 64;
 	angle2 /= 64;
 	CGContextRef context = beginCGContext ();
-	{	// someone who uses this shoud check if this is correct
+	{
 		CGContextScaleCTM (context, 1, -1);
 
 		CGRect cgClipRect = CGRectMake (clipRect.left, clipRect.top, clipRect.width (), clipRect.height ());
@@ -1735,8 +1814,8 @@ void CDrawContext::drawArc (const CRect &_rect, const CPoint &_point1, const CPo
 		CGContextTranslateCTM (context, 0.5f, 0.5f);
 
 		CGContextBeginPath (context);
-		addOvalToPath (context, CPoint (rect.left + rect.width () / 2, rect.top + rect.height () / 2), rect.width () / 2, rect.height () / 2, angle1, angle2, 0);
-		CGContextClosePath (context);
+		addOvalToPath (context, CPoint (rect.left + rect.width () / 2, rect.top + rect.height () / 2), rect.width () / 2, rect.height () / 2, 90-angle1, (90-angle1)-angle2);
+//		CGContextClosePath (context);
 		CGContextDrawPath (context, kCGPathStroke);
 		releaseCGContext (context);
 	}
@@ -1805,7 +1884,23 @@ void CDrawContext::fillArc (const CRect &_rect, const CPoint &_point1, const CPo
 
 #if MAC
 	#if QUARTZ
-	// check drawArc and implement it here
+	angle1 /= 64;
+	angle2 /= 64;
+	CGContextRef context = beginCGContext ();
+	{
+		CGContextScaleCTM (context, 1, -1);
+
+		CGRect cgClipRect = CGRectMake (clipRect.left, clipRect.top, clipRect.width (), clipRect.height ());
+		CGContextClipToRect (gCGContext, cgClipRect);
+
+		CGContextTranslateCTM (context, 0.5f, 0.5f);
+
+		CGContextBeginPath (context);
+		addOvalToPath (context, CPoint (rect.left + rect.width () / 2, rect.top + rect.height () / 2), rect.width () / 2, rect.height () / 2, -angle1, -angle2);
+		CGContextClosePath (context);
+		CGContextDrawPath (context, kCGPathFill);
+		releaseCGContext (context);
+	}
 	
 	#else
 	Rect     rr;
@@ -2226,7 +2321,7 @@ void CDrawContext::drawString (const char *string, const CRect &_rect,
 		
 		ClipRect (&compositeClip);
 
-		#if CARBON
+		#if TARGET_API_MAC_CARBON
 		CFStringRef str;
 
 		// Create a unicode string
@@ -3344,7 +3439,7 @@ char* kMsgCheckIfViewContainer	= "kMsgCheckIfViewContainer";
 // CView
 //-----------------------------------------------------------------------------
 CView::CView (const CRect& size)
-:	size (size), mouseableArea (size), pParent (0), pParentView (0),
+:	size (size), mouseableArea (size), pParentFrame (0), pParentView (0),
 	bDirty (false), bMouseEnabled (true), bTransparencyEnabled (false), pBackground (0)
 {
 	#if DEBUG
@@ -3392,8 +3487,8 @@ void CView::getFrameTopLeftPos (CPoint& topLeft)
 //-----------------------------------------------------------------------------
 void CView::redraw ()
 {
-	if (pParent)
-		pParent->draw (this);
+	if (pParentFrame)
+		pParentFrame->draw (this);
 }
 
 //-----------------------------------------------------------------------------
@@ -3402,8 +3497,8 @@ void CView::redrawRect (CDrawContext* context, const CRect& rect)
 	// we always pass it on to the parent view as it knows what else must be drawn (needed for nested view containers)
 	if (pParentView)
 		pParentView->redrawRect (context, rect);
-	else if (pParent)
-		pParent->drawRect (context, rect);
+	else if (pParentFrame)
+		pParentFrame->drawRect (context, rect);
 }
 
 //-----------------------------------------------------------------------------
@@ -3415,12 +3510,6 @@ void CView::draw (CDrawContext *pContext)
 //-----------------------------------------------------------------------------
 void CView::mouse (CDrawContext *pContext, CPoint &where, long buttons)
 {}
-
-//-----------------------------------------------------------------------------
-bool CView::onDrop (void **ptrItems, long nbItems, long type, CPoint &where)
-{
-	return false;
-}
 
 //-----------------------------------------------------------------------------
 bool CView::onWheel (CDrawContext *pContext, const CPoint &where, float distance)
@@ -3443,7 +3532,7 @@ void CView::update (CDrawContext *pContext)
 		if (pContext)
 		{
 			if (bTransparencyEnabled)
-				getParent ()->drawRect (pContext, size);
+				getFrame ()->drawRect (pContext, size);
 			else
 				draw (pContext);
 		}
@@ -3494,7 +3583,7 @@ void CView::setViewSize (CRect &rect)
 //-----------------------------------------------------------------------------
 void *CView::getEditor ()
 { 
-	return pParent ? pParent->getEditor () : 0; 
+	return pParentFrame ? pParentFrame->getEditor () : 0; 
 }
 
 
@@ -3522,7 +3611,7 @@ CFrame::CFrame (const CRect &inSize, void *inSystemWindow, void *inEditor)
 {
 	setOpenFlag (true);
 	
-	pParent = this;
+	pParentFrame = this;
 
 #if WINDOWS
 	pHwnd = 0;
@@ -3592,13 +3681,13 @@ CFrame::CFrame (const CRect &inSize, void *inSystemWindow, void *inEditor)
 //-----------------------------------------------------------------------------
 CFrame::CFrame (const CRect& inSize, const char* inTitle, void* inEditor, const long inStyle)
 :	CViewContainer (inSize, 0, 0),
-	pSystemWindow (0), pEditor (inEditor),
+	pSystemWindow (0), pEditor (inEditor), pVstWindow (0), 
 	pModalView (0), pEditView (0), bFirstDraw (true), bDropActive (false),
 	pFrameContext (0), defaultCursor (0)
 {
 	bAddedWindow  = true;
 	setOpenFlag (false);
-	pParent = this;
+	pParentFrame = this;
 
 #if WINDOWS
 	pHwnd = 0;
@@ -3660,6 +3749,9 @@ CFrame::CFrame (const CRect& inSize, const char* inTitle, void* inEditor, const 
 //-----------------------------------------------------------------------------
 CFrame::~CFrame ()
 {
+	if (pModalView)
+		removeView (pModalView, false);
+
 	setCursor (kCursorDefault);
 
 	setDropActive (false);
@@ -3838,6 +3930,7 @@ bool CFrame::initFrame (void *systemWin)
 			CreateRootControl ((WindowRef)systemWin, &rootControl);
 		EmbedControl(controlRef, rootControl);	
 	}
+	size.offset (-size.left, -size.top);
 	#endif
 	#endif
 	
@@ -3935,11 +4028,9 @@ CDrawContext* CFrame::createDrawContext ()
 		pFrameContext->remember ();
 		return pFrameContext;
 	}
-	CDrawContext* pContext = 0;
-	#if WINDOWS
-	pContext = new CDrawContext (this, NULL, getSystemWindow ());
 
-	#elif MAC
+	CDrawContext* pContext = 0;
+	#if WINDOWS || MAC
 	pContext = new CDrawContext (this, NULL, getSystemWindow ());
 
 	#elif MOTIF
@@ -3974,12 +4065,8 @@ void CFrame::drawRect (CDrawContext *pContext, const CRect& updateRect)
 	bool localContext = false;	
 	if (!pContext)
 	{
-		pContext = pFrameContext;
-		if (!pContext)
-		{
-			localContext = true;
-			pContext = createDrawContext ();
-		}
+		localContext = true;
+		pContext = createDrawContext ();
 	}
 
 	#if USE_CLIPPING_DRAWRECT
@@ -4008,18 +4095,9 @@ void CFrame::draw (CView *pView)
 
 		// Search it in the view list
 	if (pView && isChild(pView))
-	{
 		pViewToDraw = pView;
-	}
 
-	bool localContext = false;	
-	CDrawContext *pContext = pFrameContext;
-	if (!pContext)
-	{
-		localContext = true;
-		pContext = createDrawContext ();
-	}
-
+	CDrawContext *pContext = createDrawContext ();
 	if (pContext)
 	{
 		if (pViewToDraw)
@@ -4027,8 +4105,7 @@ void CFrame::draw (CView *pView)
 		else
 			draw (pContext);
 
-		if (localContext)
-			pContext->forget ();
+		pContext->forget ();
 	}
 }
 
@@ -4097,15 +4174,6 @@ long CFrame::onKeyUp (VstKeyCode& keyCode)
 }
 
 //-----------------------------------------------------------------------------
-bool CFrame::onDrop (void **ptrItems, long nbItems, long type, CPoint &where)
-{
-	if (pModalView || pEditView)
-		return false;
-
-	return CViewContainer::onDrop(ptrItems, nbItems, type, where);
-}
-
-//-----------------------------------------------------------------------------
 bool CFrame::onWheel (CDrawContext *pContext, const CPoint &where, float distance)
 {
 	bool result = false;
@@ -4113,23 +4181,17 @@ bool CFrame::onWheel (CDrawContext *pContext, const CPoint &where, float distanc
 	CView *view = pModalView ? pModalView : getViewAt (where);
 	if (view)
 	{
-		CDrawContext *pContext2;
-		if (pContext)
-			pContext2 = pContext;
-		else
-			pContext2 = pFrameContext;
-
 		bool localContext = false;
-		if (!pContext2)
+		if (!pContext)
 		{
 			localContext = true;
 			pContext = createDrawContext ();
 		}
 
-		result = view->onWheel (pContext2, where, distance);
+		result = view->onWheel (pContext, where, distance);
 
 		if (localContext)
-			pContext2->forget ();
+			pContext->forget ();
 	
 	#if BEOS
 		pPlugView->UnlockLooper ();
@@ -4223,21 +4285,15 @@ void CFrame::idle ()
 	if (!isSomethingDirty ())
 		return;
 		
-	bool localContext = false;
-	CDrawContext *pContext = pFrameContext;
-	if (!pContext)
-	{
-		localContext = true;
+	CDrawContext *pContext = createDrawContext ();
+	
 		#if BEOS
 		if (pPlugView->LockLooperWithTimeout (0) != B_OK)
 			return;
 		#endif
-		pContext = createDrawContext ();
-	}
 
 	update (pContext);
 
-	if (localContext)
 		pContext->forget ();
 
 	#if BEOS
@@ -4681,20 +4737,21 @@ bool CFrame::getCurrentLocation (CPoint &where)
 #endif
 
 	// create a local context
-	CDrawContext *pContextTemp = createDrawContext ();
-
-	// get the current position
-	if (pContextTemp)
+	CDrawContext *pContext = createDrawContext ();
+	if (pContext)
 	{
-		pContextTemp->getMouseLocation (where);
-		pContextTemp->forget ();
+	// get the current position
+		pContext->getMouseLocation (where);
+		pContext->forget ();
 	}
 	return true;
 }
 
 #if MACX
-#define kThemeResizeUpDownCursor      21
+#define kThemeResizeUpDownCursor	21
+#define kThemeNotAllowedCursor		18
 #endif
+
 //-----------------------------------------------------------------------------
 void CFrame::setCursor (CCursorType type)
 {
@@ -4703,9 +4760,6 @@ void CFrame::setCursor (CCursorType type)
 		defaultCursor = GetCursor ();
 	switch (type)
 	{
-		case kCursorDefault:
-			SetCursor ((HCURSOR)defaultCursor);
-			break;
 		case kCursorWait:
 			SetCursor (LoadCursor (0, IDC_WAIT));
 			break;
@@ -4724,14 +4778,14 @@ void CFrame::setCursor (CCursorType type)
 		case kCursorSizeAll:
 			SetCursor (LoadCursor (0, IDC_SIZEALL));
 			break;
+		default:
+			SetCursor ((HCURSOR)defaultCursor);
+			break;
 	}
 	#elif MAC
 	#if MACX
 	switch (type)
 	{
-		case kCursorDefault:
-			SetThemeCursor (kThemeArrowCursor);
-			break;
 		case kCursorWait:
 			SetThemeCursor (kThemeWatchCursor);
 			break;
@@ -4750,15 +4804,21 @@ void CFrame::setCursor (CCursorType type)
 		case kCursorSizeAll:
 			SetThemeCursor (kThemeCrossCursor);
 			break;
+		case kCursorCopy:
+			SetThemeCursor (kThemeCopyArrowCursor);
+			break;
+		case kCursorNotAllowed:
+			SetThemeCursor (pSystemVersion < 0x1020 ? kThemeArrowCursor : kThemeNotAllowedCursor);
+			break;
+		default:
+			SetThemeCursor (kThemeArrowCursor);
+			break;
 	}
 	#else
 	//if (!defaultCursor)
 	//	defaultCursor = GetCursor (0);
 	switch (type)
 	{
-		case kCursorDefault:
-			InitCursor ();
-			break;
 		case kCursorWait:
 			SetCursor (*GetCursor (watchCursor));
 			break;
@@ -4776,6 +4836,9 @@ void CFrame::setCursor (CCursorType type)
 			break;
 		case kCursorSizeAll:
 			SetCursor (*GetCursor (plusCursor));
+			break;
+		default:
+			InitCursor ();
 			break;
 	}
 	#endif
@@ -4828,13 +4891,13 @@ CCView::~CCView ()
 //-----------------------------------------------------------------------------
 CViewContainer::CViewContainer (const CRect &rect, CFrame *pParent, CBitmap *pBackground)
 : CView (rect), pFirstView (0), pLastView (0), 
- mode (kNormalUpdate), pOffscreenContext (0), bDrawInOffscreen (true)
+ mode (kNormalUpdate), pOffscreenContext (0), bDrawInOffscreen (true), currentDragView (0)
 {
 	#if MACX || USE_ALPHA_BLEND
 	bDrawInOffscreen = false;
 	#endif
 	backgroundOffset (0, 0);
-	this->pParent = pParent;
+	this->pParentFrame = pParent;
 	setBackground (pBackground);
 	backgroundColor = kBlackCColor;	
 }
@@ -4861,7 +4924,7 @@ void CViewContainer::setViewSize (CRect &rect)
 	if (pOffscreenContext && bDrawInOffscreen)
 	{
 		pOffscreenContext->forget ();
-		pOffscreenContext = new COffscreenContext (pParent, size.width (), size.height (), kBlackCColor);
+		pOffscreenContext = new COffscreenContext (pParentFrame, size.width (), size.height (), kBlackCColor);
 	}
 	#endif
 }
@@ -4888,7 +4951,7 @@ void CViewContainer::addView (CView *pView)
 
 	CCView *pSv = new CCView (pView);
 	
-	pView->pParent = pParent;
+	pView->pParentFrame = pParentFrame;
 	pView->pParentView = this;
 
 	CCView *pV = pFirstView;
@@ -5039,11 +5102,11 @@ void CViewContainer::draw (CDrawContext *pContext)
 	if (pBackground)
 		pC = new COffscreenContext (pContext, pBackground);
 	else
-		pC = new COffscreenContext (pParent, size.width (), size.height (), backgroundColor);
+		pC = new COffscreenContext (pParentFrame, size.width (), size.height (), backgroundColor);
 	
 	#else
 	if (!pOffscreenContext && bDrawInOffscreen)
-		pOffscreenContext = new COffscreenContext (pParent, size.width (), size.height (), kBlackCColor);
+		pOffscreenContext = new COffscreenContext (pParentFrame, size.width (), size.height (), kBlackCColor);
 	#if USE_ALPHA_BLEND
 	if (pOffscreenContext && bTransparencyEnabled)
 		pOffscreenContext->copyTo (pContext, size);
@@ -5062,9 +5125,13 @@ void CViewContainer::draw (CDrawContext *pContext)
  	#if USE_CLIPPING_DRAWRECT
 	CRect oldClip;
 	pContext->getClipRect (oldClip);
+	CRect oldClip2 (oldClip);
+	if (bDrawInOffscreen && getFrame () != this)
+		oldClip.offset (-oldClip.left, -oldClip.top);
+		
 	CRect newClip (r);
 	newClip.bound (oldClip);
-	pContext->setClipRect (newClip);
+	pC->setClipRect (newClip);
 	#endif
 
 	// draw the background
@@ -5088,13 +5155,13 @@ void CViewContainer::draw (CDrawContext *pContext)
 		CRect vSize;
 		pV->getViewSize (vSize);
 		vSize.bound (oldClip);
-		pContext->setClipRect (vSize);
+		pC->setClipRect (vSize);
 		#endif
 		pV->draw (pC);
 	ENDFOR
 
 	#if USE_CLIPPING_DRAWRECT
-	pContext->setClipRect (oldClip);
+	pC->setClipRect (oldClip2);
 	#endif
 	
 	// transfert offscreen
@@ -5145,11 +5212,11 @@ void CViewContainer::drawRect (CDrawContext *pContext, const CRect& _updateRect)
 	if (pBackground)
 		pC = new COffscreenContext (pContext, pBackground);
 	else
-		pC = new COffscreenContext (pParent, size.width (), size.height (), backgroundColor);
+		pC = new COffscreenContext (pParentFrame, size.width (), size.height (), backgroundColor);
 	
 	#else
 	if (!pOffscreenContext && bDrawInOffscreen)
-		pOffscreenContext = new COffscreenContext (pParent, size.width (), size.height (), kBlackCColor);
+		pOffscreenContext = new COffscreenContext (pParentFrame, size.width (), size.height (), kBlackCColor);
 	#if USE_ALPHA_BLEND
 	if (pOffscreenContext && bTransparencyEnabled)
 		pOffscreenContext->copyTo (pContext, size);
@@ -5172,9 +5239,13 @@ void CViewContainer::drawRect (CDrawContext *pContext, const CRect& _updateRect)
 	#if USE_CLIPPING_DRAWRECT
 	CRect oldClip;
 	pContext->getClipRect (oldClip);
+	CRect oldClip2 (oldClip);
+	if (bDrawInOffscreen && getFrame () != this)
+		oldClip.offset (-oldClip.left, -oldClip.top);
+	
 	CRect newClip (clientRect);
 	newClip.bound (oldClip);
-	pContext->setClipRect (newClip);
+	pC->setClipRect (newClip);
 	#endif
 	
 	// draw the background
@@ -5184,11 +5255,18 @@ void CViewContainer::drawRect (CDrawContext *pContext, const CRect& _updateRect)
 	// draw each view
 	FOREACHSUBVIEW
 		if (pV->checkUpdate (clientRect))
+		{
+			#if USE_CLIPPING_DRAWRECT
+			CRect viewSize = pV->getViewSize (viewSize);
+			viewSize.bound (newClip);
+			pC->setClipRect (viewSize);
+			#endif
 			pV->drawRect (pC, clientRect);
+		}
 	ENDFOR
 
 	#if USE_CLIPPING_DRAWRECT
-	pContext->setClipRect (oldClip);
+	pC->setClipRect (oldClip2);
 	#endif
 
 	// transfert offscreen
@@ -5214,8 +5292,8 @@ void CViewContainer::redrawRect (CDrawContext* context, const CRect& rect)
 		// as this is transparent, we call the parentview to redraw this area.
 		if (pParentView)
 			pParentView->redrawRect (context, _rect);
-		else if (pParent)
-			pParent->drawRect (context, _rect);
+		else if (pParentFrame)
+			pParentFrame->drawRect (context, _rect);
 	}
 	else
 		drawRect (context, _rect);
@@ -5305,34 +5383,6 @@ long CViewContainer::onKeyUp (VstKeyCode& keyCode)
 }
 
 //-----------------------------------------------------------------------------
-bool CViewContainer::onDrop (void **ptrItems, long nbItems, long type, CPoint &where)
-{
-	if (!pParent)
-		return false;
-
-	// convert to relativ pos
-	CPoint where2 (where);
-	where2.offset (-size.left, -size.top);
-
-	bool result = false;
-	CCView *pSv = pLastView;
-	while (pSv)
-	{
-		CView *pV = pSv->pView;
-		if (pV && pV->getMouseEnabled () && where2.isInside (pV->mouseableArea))
-		{
-			if (pV->onDrop (ptrItems, nbItems, type, where2))
-			{
-				result = true;
-				break;
-			}
-		}
-		pSv = pSv->pPrevious;
-	}
-	return result;
-}
-
-//-----------------------------------------------------------------------------
 bool CViewContainer::onWheel (CDrawContext *pContext, const CPoint &where, float distance)
 {
 	bool result = false;
@@ -5354,31 +5404,107 @@ bool CViewContainer::onWheel (CDrawContext *pContext, const CPoint &where, float
 }
 
 //-----------------------------------------------------------------------------
-bool CViewContainer::acceptDrop (long type, CPoint &where)
+bool CViewContainer::onDrop (CDrawContext* context, CDragContainer* drag, const CPoint& where)
 {
-	if (!pParent)
+	if (!pParentFrame)
 		return false;
+
+	bool result = false;
+
+	long save[4];
+	modifyDrawContext (save, context);
 
 	// convert to relativ pos
 	CPoint where2 (where);
 	where2.offset (-size.left, -size.top);
 
-	bool result = false;
-	CCView *pSv = pLastView;
-	while (pSv)
+	CView* view = getViewAt (where);
+	if (view != currentDragView)
 	{
-		CView *pV = pSv->pView;
-		if (pV && pV->getMouseEnabled () && where2.isInside (pV->mouseableArea))
-		{
-			if (pV->acceptDrop (type, where2))
-			{
-				result = true;
-				break;
-			}
-		}
-		pSv = pSv->pPrevious;
+		if (currentDragView)
+			currentDragView->onDragLeave (context, drag, where2);
+		currentDragView = view;
 	}
+	if (currentDragView)
+	{
+		result = currentDragView->onDrop (context, drag, where2);
+		currentDragView->onDragLeave (context, drag, where2);
+	}
+
+	restoreDrawContext (context, save);
+
 	return result;
+}
+
+//-----------------------------------------------------------------------------
+void CViewContainer::onDragEnter (CDrawContext* context, CDragContainer* drag, const CPoint& where)
+{
+	if (!pParentFrame)
+		return;
+	
+	long save[4];
+	modifyDrawContext (save, context);
+
+	// convert to relativ pos
+	CPoint where2 (where);
+	where2.offset (-size.left, -size.top);
+
+	if (currentDragView)
+		currentDragView->onDragLeave (context, drag, where2);
+	CView* view = getViewAt (where);
+	currentDragView = view;
+	if (view)
+		view->onDragEnter (context, drag, where2);
+	
+	restoreDrawContext (context, save);
+}
+
+//-----------------------------------------------------------------------------
+void CViewContainer::onDragLeave (CDrawContext* context, CDragContainer* drag, const CPoint& where)
+{
+	if (!pParentFrame)
+		return;
+	
+	long save[4];
+	modifyDrawContext (save, context);
+
+	// convert to relativ pos
+	CPoint where2 (where);
+	where2.offset (-size.left, -size.top);
+
+	if (currentDragView)
+		currentDragView->onDragLeave (context, drag, where2);
+	currentDragView = 0;
+
+	restoreDrawContext (context, save);
+}
+
+//-----------------------------------------------------------------------------
+void CViewContainer::onDragMove (CDrawContext* context, CDragContainer* drag, const CPoint& where)
+{
+	if (!pParentFrame)
+		return;
+	
+	long save[4];
+	modifyDrawContext (save, context);
+
+	// convert to relativ pos
+	CPoint where2 (where);
+	where2.offset (-size.left, -size.top);
+
+	CView* view = getViewAt (where);
+	if (view != currentDragView)
+	{
+		if (currentDragView)
+			currentDragView->onDragLeave (context, drag, where2);
+		if (view)
+			view->onDragEnter (context, drag, where2);
+		currentDragView = view;
+	}
+	else if (currentDragView)
+		currentDragView->onDragMove (context, drag, where2);
+	
+	restoreDrawContext (context, save);
 }
 
 //-----------------------------------------------------------------------------
@@ -5402,7 +5528,7 @@ void CViewContainer::update (CDrawContext *pContext)
 					topLeft.offset (-size.left, -size.top);
 					CRect updateRect (size);
 					updateRect.offset (topLeft.x, topLeft.y);
-					getParent ()->drawRect (pContext, updateRect);
+					getFrame ()->drawRect (pContext, updateRect);
 				}
 				else
 				#endif
@@ -5450,7 +5576,7 @@ void CViewContainer::update (CDrawContext *pContext)
 					topLeft.offset (-size.left, -size.top);
 					CRect updateRect (size);
 					updateRect.offset (topLeft.x, topLeft.y);
-					getParent ()->drawRect (pContext, updateRect);
+					getFrame ()->drawRect (pContext, updateRect);
 				}
 				else
 				{
@@ -5472,7 +5598,7 @@ void CViewContainer::update (CDrawContext *pContext)
 								pV->getViewSize (viewSize);
 								viewSize.offset (size.left, size.top);
 								viewSize.offset (topLeft.x, topLeft.y);
-								getParent ()->drawRect (pContext, viewSize);
+								getFrame ()->drawRect (pContext, viewSize);
 							}
 						}
 					ENDFOR
@@ -5563,12 +5689,12 @@ bool CViewContainer::isDirty ()
 //-----------------------------------------------------------------------------
 CView *CViewContainer::getCurrentView ()
 {
-	if (!pParent)
+	if (!pParentFrame)
 		return 0;
 
 	// get the current position
 	CPoint where;
-	pParent->getCurrentLocation (where);
+	pParentFrame->getCurrentLocation (where);
 
 	// convert to relativ pos
 	where.offset (-size.left, -size.top);
@@ -5588,7 +5714,7 @@ CView *CViewContainer::getCurrentView ()
 //-----------------------------------------------------------------------------
 CView *CViewContainer::getViewAt (const CPoint& p)
 {
-	if (!pParent)
+	if (!pParentFrame)
 		return 0;
 
 	CPoint where (p);
@@ -5626,7 +5752,7 @@ bool CViewContainer::attached (CView* view)
 	#if !BEOS
 	// create offscreen bitmap
 	if (!pOffscreenContext && bDrawInOffscreen)
-		pOffscreenContext = new COffscreenContext (pParent, size.width (), size.height (), kBlackCColor);
+		pOffscreenContext = new COffscreenContext (pParentFrame, size.width (), size.height (), kBlackCColor);
 	#endif
 
 	return true;
@@ -6977,6 +7103,238 @@ void CBitmap::closeResource ()
 
 //----------------------------------------------------------------------------
 #endif
+
+
+//-----------------------------------------------------------------------------
+// CDragContainer Implementation
+//-----------------------------------------------------------------------------
+CDragContainer::CDragContainer (void* platformDrag)
+: platformDrag (platformDrag)
+, nbItems (0)
+, iterator (0)
+, lastItem (0)
+{
+	#if MAC
+	DragRef dragRef = (DragRef)platformDrag;
+	UInt16 numItems;
+	CountDragItems (dragRef, &numItems);
+	nbItems = numItems;
+	
+	#elif WINDOWS
+	
+	IDataObject* dataObject = (IDataObject*)platformDrag;
+	STGMEDIUM medium;
+	FORMATETC formatTEXTDrop = {CF_TEXT,  0, DVASPECT_CONTENT, -1, TYMED_HGLOBAL};
+	FORMATETC formatHDrop    = {CF_HDROP, 0, DVASPECT_CONTENT, -1, TYMED_HGLOBAL};
+
+	long type = 0; // 0 = file, 1 = text
+
+	HRESULT hr = dataObject->GetData (&formatTEXTDrop, &medium);
+	if (hr != S_OK)
+		hr = dataObject->GetData (&formatHDrop, &medium);
+	else
+		type = 1;
+	
+	if (type == 0)
+		nbItems = (long)DragQueryFile ((HDROP)medium.hGlobal, 0xFFFFFFFFL, 0, 0);
+	else
+		nbItems = 1;
+	
+	#else
+	#endif
+}
+
+//-----------------------------------------------------------------------------
+CDragContainer::~CDragContainer ()
+{
+	if (lastItem)
+	{
+		free (lastItem);
+		lastItem = 0;
+	}
+}
+
+//-----------------------------------------------------------------------------
+long CDragContainer::getType (long idx)
+{
+	#if MACX
+	DragItemRef itemRef;
+	if (GetDragItemReferenceNumber ((DragRef)platformDrag, idx+1, &itemRef) == noErr)
+	{
+		FlavorType type;
+		if (GetFlavorType ((DragRef)platformDrag, itemRef, 1, &type) == noErr)
+		{
+			if (type == flavorTypeHFS)
+				return kFile;
+			else if (type == 'TEXT' || type == 'XML ')
+				return kText;
+		}
+	}
+	#elif WINDOWS
+	IDataObject* dataObject = (IDataObject*)platformDrag;
+	STGMEDIUM medium;
+	FORMATETC formatTEXTDrop = {CF_TEXT,  0, DVASPECT_CONTENT, -1, TYMED_HGLOBAL};
+	FORMATETC formatHDrop    = {CF_HDROP, 0, DVASPECT_CONTENT, -1, TYMED_HGLOBAL};
+
+	long type = 0; // 0 = file, 1 = text
+
+	HRESULT hr = dataObject->GetData (&formatTEXTDrop, &medium);
+	if (hr != S_OK)
+		hr = dataObject->GetData (&formatHDrop, &medium);
+	else
+		type = 1;
+	if (type == 0)
+		return kFile;
+	else
+		return kText;
+
+	#else
+	// not implemented
+	#endif
+	return kUnknown;
+}
+
+//-----------------------------------------------------------------------------
+void* CDragContainer::first (long& size, long& type)
+{
+	iterator = 0;
+	return next (size, type);
+}
+
+//-----------------------------------------------------------------------------
+void* CDragContainer::next (long& size, long& type)
+{
+	if (lastItem)
+	{
+		free (lastItem);
+		lastItem = 0;
+	}
+	size = 0;
+	type = kUnknown;
+	#if MACX
+	long flavorSize;
+	DragItemRef itemRef;
+	if (GetDragItemReferenceNumber ((DragRef)platformDrag, ++iterator, &itemRef) == noErr)
+	{
+		FlavorType flavorType;
+		if (GetFlavorType ((DragRef)platformDrag, itemRef, 1, &flavorType) == noErr)
+		{
+			if (flavorType == flavorTypeHFS)
+			{
+				HFSFlavor     hfs;
+				if (GetFlavorDataSize ((DragRef)platformDrag, itemRef, flavorTypeHFS, &flavorSize) == noErr)
+				{ 
+					GetFlavorData ((DragRef)platformDrag, itemRef, flavorTypeHFS, &hfs, &flavorSize, 0L);
+					
+					FSRef fsRef;
+					if (FSpMakeFSRef (&hfs.fileSpec, &fsRef) == noErr)
+					{
+						lastItem = malloc (PATH_MAX);
+						if (FSRefMakePath (&fsRef, (unsigned char*)lastItem, PATH_MAX) == noErr)
+						{
+							size = strlen ((const char*)lastItem);
+							type = kFile;
+							return lastItem;
+						}
+					}
+				}
+			}
+			else
+			{
+				if (GetFlavorDataSize ((DragRef)platformDrag, itemRef, flavorType, &flavorSize) == noErr)
+				{
+					lastItem = malloc (flavorSize + 1);
+					((char*)lastItem)[0] = 0;
+					if (GetFlavorData ((DragRef)platformDrag, itemRef, flavorType, lastItem, &flavorSize, 0) == noErr)
+					{
+						((char*)lastItem)[flavorSize] = 0;
+						size = flavorSize;
+						if (flavorType == 'TEXT' || flavorType == 'XML ')
+							type = kText;
+						return lastItem;
+					}
+				}
+				else
+				{
+					if (GetFlavorDataSize ((DragRef)platformDrag, itemRef, 'TEXT', &flavorSize) == noErr)
+					{
+						lastItem = malloc (flavorSize + 1);
+						((char*)lastItem)[0] = 0;
+						if (GetFlavorData ((DragRef)platformDrag, itemRef, 'TEXT', lastItem, &flavorSize, 0) == noErr)
+						{
+							((char*)lastItem)[flavorSize] = 0;
+							size = flavorSize;
+							type = kText;
+							return lastItem;
+						}
+					}
+				}
+				
+			}
+		}
+	}
+	#elif WINDOWS
+	IDataObject* dataObject = (IDataObject*)platformDrag;
+	void* hDrop = 0;
+	STGMEDIUM medium;
+	FORMATETC formatTEXTDrop = {CF_TEXT,  0, DVASPECT_CONTENT, -1, TYMED_HGLOBAL};
+	FORMATETC formatHDrop    = {CF_HDROP, 0, DVASPECT_CONTENT, -1, TYMED_HGLOBAL};
+
+	long wintype = 0; // 0 = file, 1 = text
+
+	HRESULT hr = dataObject->GetData (&formatTEXTDrop, &medium);
+	if (hr != S_OK)
+		hr = dataObject->GetData (&formatHDrop, &medium);
+	else
+		wintype = 1;
+	if (hr == S_OK)
+		hDrop = medium.hGlobal;
+
+	if (hDrop)
+	{
+		if (wintype == 0)
+		{
+			char fileDropped[1024];
+
+			long nbRealItems = 0;
+			if (DragQueryFile ((HDROP)hDrop, iterator++, fileDropped, sizeof (fileDropped))) 
+			{
+				// resolve link
+				checkResolveLink (fileDropped, fileDropped);
+				lastItem = malloc (strlen (fileDropped)+1);
+				strcpy ((char*)lastItem, fileDropped);
+				size = strlen ((const char*)lastItem);
+				type = kFile;
+				return lastItem;
+			}
+		}
+		else if (iterator++ == 0)
+		//---TEXT----------------------------
+		{
+			void* data = GlobalLock (medium.hGlobal);
+			long dataSize = (long)GlobalSize (medium.hGlobal);
+			if (data && dataSize)
+			{
+				lastItem = malloc (dataSize+1);
+				memcpy (lastItem, data, dataSize);
+				size = dataSize;
+				type = kText;
+			}
+
+			GlobalUnlock (medium.hGlobal);
+			if (medium.pUnkForRelease)
+				medium.pUnkForRelease->Release ();
+			else
+				GlobalFree (medium.hGlobal);
+			return lastItem;
+		}
+	}
+	#else
+	// not implemented
+	#endif
+	return NULL;
+}
+
 END_NAMESPACE_VSTGUI
 
 //-----------------------------------------------------------------------------
@@ -7373,7 +7731,7 @@ long CFileSelector::run (VstFileSelect *vstFileSelect)
 		}
 
 #elif MAC
-#if CARBON
+#if TARGET_API_MAC_CARBON
 		#if MACX
 		// new approach for supporting long filenames on mac os x is to use unix path mode
 		// if vstFileSelect->future[0] is 1 on entry and 0 on exit the resulting paths are UTF8 encoded paths
@@ -7846,7 +8204,7 @@ long CFileSelector::run (VstFileSelect *vstFileSelect)
 				return 1;
 			}
 		}
-#endif // CARBON
+#endif // TARGET_API_MAC_CARBON
 #else
 		//CAlert::alert ("The current Host application doesn't support FileSelector !", "Warning");
 #endif
@@ -7854,7 +8212,7 @@ long CFileSelector::run (VstFileSelect *vstFileSelect)
 	return 0;
 }
 
-#if MAC && CARBON
+#if MAC && TARGET_API_MAC_CARBON
 //-----------------------------------------------------------------------------
 pascal void CFileSelector::navEventProc (const NavEventCallbackMessage callBackSelector, NavCBRecPtr callBackParms, NavCallBackUserData callBackUD) 
 {
@@ -7924,7 +8282,7 @@ pascal Boolean CFileSelector::navObjectFilterProc (AEDesc *theItem, void *info, 
 END_NAMESPACE_VSTGUI
 
 #if WINDOWS
-#include <Commdlg.h>
+#include <dlgs.h>
 //-----------------------------------------------------------------------------
 UINT APIENTRY SelectDirectoryHook (HWND hdlg, UINT message, WPARAM wParam, LPARAM lParam)
 {
@@ -7957,7 +8315,7 @@ UINT APIENTRY SelectDirectoryHook (HWND hdlg, UINT message, WPARAM wParam, LPARA
 	} break;
 
 	case WM_INITDIALOG:
-		fpOldSelectDirectoryButtonProc = (WNDPROC)SetWindowLongPtr (
+		fpOldSelectDirectoryButtonProc = /*(FARPROC)*/(WNDPROC)SetWindowLongPtr (
 					GetDlgItem (GetParent (hdlg), IDOK), 
 					GWLP_WNDPROC, (LONG_PTR)SelectDirectoryButtonProc);
 		break;
@@ -8736,7 +9094,6 @@ public:
 private:
 	long refCount;
 	bool accept;
-	unsigned long dragType;
 	VSTGUI_CFrame* pFrame;
 };
 
@@ -8750,7 +9107,7 @@ void* createDropTarget (VSTGUI_CFrame* pFrame)
 
 //-----------------------------------------------------------------------------
 CDropTarget::CDropTarget (VSTGUI_CFrame* pFrame)
-: refCount (0), pFrame (pFrame), dragType (0)
+: refCount (0), pFrame (pFrame)
 {
 }
 
@@ -8793,13 +9150,13 @@ STDMETHODIMP_(ULONG) CDropTarget::Release (void)
 //-----------------------------------------------------------------------------
 STDMETHODIMP CDropTarget::DragEnter (IDataObject *dataObject, DWORD keyState, POINTL pt, DWORD *effect)
 {
+	/*
 	accept = false;
 	if (dataObject)
 	{
 		FORMATETC formatTEXTDrop = {CF_TEXT, 0, DVASPECT_CONTENT, -1, TYMED_HGLOBAL};
 		if (S_OK == dataObject->QueryGetData (&formatTEXTDrop))
 		{
-			dragType = VSTGUI_kDropText;
 			accept = true;
 			return DragOver (keyState, pt, effect);
 		}
@@ -8807,12 +9164,22 @@ STDMETHODIMP CDropTarget::DragEnter (IDataObject *dataObject, DWORD keyState, PO
 		FORMATETC formatHDrop = {CF_HDROP, 0, DVASPECT_CONTENT, -1, TYMED_HGLOBAL};
 		if (S_OK == dataObject->QueryGetData (&formatHDrop))
 		{
-			dragType = VSTGUI_kDropFiles;
 			accept = true;
 			return DragOver (keyState, pt, effect);
 		}
 	}
-
+	*/
+	if (dataObject && pFrame)
+	{
+		gDragContainer = new CDragContainer (dataObject);
+		CDrawContext* context = pFrame->createDrawContext ();
+		VSTGUI_CPoint where;
+		pFrame->getMouseLocation (context, where);
+		pFrame->onDragEnter (context, gDragContainer, where);
+		context->forget ();
+		*effect = DROPEFFECT_MOVE;
+	}
+	else
 	*effect = DROPEFFECT_NONE;
 	return S_OK;
 }
@@ -8820,20 +9187,8 @@ STDMETHODIMP CDropTarget::DragEnter (IDataObject *dataObject, DWORD keyState, PO
 //-----------------------------------------------------------------------------
 STDMETHODIMP CDropTarget::DragOver (DWORD keyState, POINTL pt, DWORD *effect)
 {
-	if (accept)
+/*	if (accept)
 	{
-		#if 0
-		VSTGUI_CPoint where;
-		pFrame->getMouseLocation (where);
-		if (pFrame->acceptsDrop (dragType, where))
-		{
-			// add visual feedback here
-		}
-		else
-		{
-			// add visual feedback here
-		}
-		#endif
 		if (keyState & MK_CONTROL)
 			*effect = DROPEFFECT_COPY;
 		else
@@ -8841,19 +9196,49 @@ STDMETHODIMP CDropTarget::DragOver (DWORD keyState, POINTL pt, DWORD *effect)
 	}
 	else
 		*effect = DROPEFFECT_NONE;
+	*/
+	if (gDragContainer && pFrame)
+	{
+		CDrawContext* context = pFrame->createDrawContext ();
+		VSTGUI_CPoint where;
+		pFrame->getMouseLocation (context, where);
+		pFrame->onDragMove (context, gDragContainer, where);
+		context->forget ();
+		*effect = DROPEFFECT_MOVE;
+	}
 	return S_OK;
 }
 
 //-----------------------------------------------------------------------------
 STDMETHODIMP CDropTarget::DragLeave (void)
 {
+	if (gDragContainer && pFrame)
+	{
+		CDrawContext* context = pFrame->createDrawContext ();
+		VSTGUI_CPoint where;
+		pFrame->getMouseLocation (context, where);
+		pFrame->onDragLeave (context, gDragContainer, where);
+		context->forget ();
+		gDragContainer->forget ();
+		gDragContainer = 0;
+	}
 	return S_OK;
 }
 
 //-----------------------------------------------------------------------------
 STDMETHODIMP CDropTarget::Drop (IDataObject *dataObject, DWORD keyState, POINTL pt, DWORD *effect)
 {
-	if (pFrame)
+	if (gDragContainer && pFrame)
+	{
+		CDrawContext* context = pFrame->createDrawContext ();
+		VSTGUI_CPoint where;
+		pFrame->getMouseLocation (context, where);
+		pFrame->onDrop (context, gDragContainer, where);
+		context->forget ();
+		gDragContainer->forget ();
+		gDragContainer = 0;
+	}
+/*	if (pFrame)
 	{
 		void* hDrop = 0;
 		STGMEDIUM medium;
@@ -8930,7 +9315,7 @@ STDMETHODIMP CDropTarget::Drop (IDataObject *dataObject, DWORD keyState, POINTL 
 		}
 	}
 	
-	DragLeave ();
+	DragLeave ();*/
 	return S_OK;
 }
 
@@ -8980,6 +9365,7 @@ bool checkResolveLink (const char* nativePath, char* resolved)
 }
 
 #elif MAC
+BEGIN_NAMESPACE_VSTGUI
 static long dragType = 0;
 static unsigned long themeCursorNotAllow = 0;
 
@@ -8998,16 +9384,17 @@ static DragReceiveHandlerUPP drh;
 static DragTrackingHandlerUPP dth;
 
 static bool gEventDragWorks = false;
+
 //-------------------------------------------------------------------------------------------
 void install_drop (CFrame *frame)
 {
 	drh = NewDragReceiveHandlerUPP (drag_receiver);
 	dth = NewDragTrackingHandlerUPP (drag_tracker);
-#if CARBON
+#if TARGET_API_MAC_CARBON
 	InstallReceiveHandler (drh, (WindowRef)(frame->getSystemWindow ()), (void*)frame);
 	InstallTrackingHandler (dth, (WindowRef)(frame->getSystemWindow ()), (void*)frame);
 	if (pSystemVersion >= 0x1020)
-		themeCursorNotAllow = 18; // kThemeNotAllowedCursor
+		themeCursorNotAllow = kThemeNotAllowedCursor;
 #else
 	InstallReceiveHandler (drh, (GrafPort*)(frame->getSystemWindow ()), (void*)frame);
 	InstallTrackingHandler (dth, (GrafPort*)(frame->getSystemWindow ()), (void*)frame);
@@ -9017,7 +9404,7 @@ void install_drop (CFrame *frame)
 //-------------------------------------------------------------------------------------------
 void remove_drop (CFrame *frame)
 {
-#if CARBON
+#if TARGET_API_MAC_CARBON
 	RemoveReceiveHandler (drh, (WindowRef)(frame->getSystemWindow ()));
 	RemoveTrackingHandler (dth, (WindowRef)(frame->getSystemWindow ()));
 #else
@@ -9029,67 +9416,49 @@ void remove_drop (CFrame *frame)
 // drag tracking for visual feedback
 pascal OSErr drag_tracker (DragTrackingMessage message, WindowRef theWindow, void *handlerRefCon, DragRef dragRef)
 {
+	#if QUARTZ
+	if (gEventDragWorks)
+		return noErr;
+	#endif
+
 	OSErr result = dragNotAcceptedErr;
 	CFrame* frame = (CFrame*)handlerRefCon;
 	switch (message)
 	{
 		case kDragTrackingEnterWindow:
 		{
-			UInt16 numItems;
-			CountDragItems (dragRef, &numItems);
-			if (numItems > 0)
-			{
-				long size;
-				for (UInt16 i = 1; i <= numItems; i++)
-				{
-					DragItemRef itemRef;
-					if (GetDragItemReferenceNumber (dragRef, i, &itemRef) == noErr)
-					{
-						if (GetFlavorDataSize (dragRef, itemRef, flavorTypeHFS, &size) == noErr)
-						{
-							dragType = VSTGUI_kDropFiles;
-							result = noErr;
-						}
-						if (GetFlavorDataSize (dragRef, itemRef, 'TEXT', &size) == noErr)
-						{
-							dragType = VSTGUI_kDropText;
-							result = noErr;
-						}
-						if (GetFlavorDataSize (dragRef, itemRef, 'XML ', &size) == noErr)
-						{
-							dragType = VSTGUI_kDropText;
-							result = noErr;
-						}
-						if (result == noErr)
-							break;
-					}
-				}
-			}
-			if (result == noErr)
-			{
-				CPoint where;
-				frame->getCurrentLocation (where);
-				if (frame->acceptDrop (dragType, where))
-					SetThemeCursor (kThemeCopyArrowCursor);
-				else
-					SetThemeCursor (themeCursorNotAllow);
-			}
+			if (gDragContainer)
+				gDragContainer->forget ();
+			gDragContainer = new CDragContainer (dragRef);
+
+			CDrawContext* context = frame->createDrawContext ();
+			VSTGUI_CPoint where;
+			frame->setCursor (kCursorNotAllowed);
+			frame->getMouseLocation (context, where);
+			frame->onDragEnter (context, gDragContainer, where);
+			context->forget ();
 			break;
 		}
 		case kDragTrackingLeaveWindow:
 		{
-			dragType = 0;
-			SetThemeCursor (kThemeArrowCursor);
+			CDrawContext* context = frame->createDrawContext ();
+			VSTGUI_CPoint where;
+			frame->getMouseLocation (context, where);
+			frame->onDragLeave (context, gDragContainer, where);
+			frame->setCursor (kCursorDefault);
+			context->forget ();
+			gDragContainer->forget ();
+			gDragContainer = NULL;
 			break;
 		}
 		case kDragTrackingInWindow:
 		{
-			CPoint where;
-			frame->getCurrentLocation (where);
-			if (frame->acceptDrop (dragType, where))
-				SetThemeCursor (kThemeCopyArrowCursor);
-			else
-				SetThemeCursor (themeCursorNotAllow);
+			CDrawContext* context = frame->createDrawContext ();
+			VSTGUI_CPoint where;
+			frame->getMouseLocation (context, where);
+			frame->onDragMove (context, gDragContainer, where);
+			context->forget ();
+
 			break;
 		}
 	}
@@ -9109,87 +9478,21 @@ pascal short drag_receiver (WindowPtr w, void* ref, DragReference drag)
 		return noErr;
 	#endif
 
-	unsigned short i, items;
-	ItemReference item;
-	long          size;
-	HFSFlavor     hfs;
-	void*         pack;
-
-	// get num of items
-	CountDragItems (drag, &items);
-	if (items <= 0)
-		return cantGetFlavorErr;
-			
-	char **ptrItems = new char* [items];
-	long nbFileItems = 0;
-	CFrame *pFrame = (CFrame*)ref;
-	char* string = 0;
-		
-	// for each items
-	for (i = 1; i <= items; i++)
-	{
-		pack = NULL;
-	
-		GetDragItemReferenceNumber (drag, i, &item);
-
-		//---try file--------------------------
-		if (GetFlavorDataSize (drag, item, flavorTypeHFS, &size) == noErr)
-		{ 
-			GetFlavorData (drag, item, flavorTypeHFS, &hfs, &size, 0L);
-			
-			ptrItems[nbFileItems] = new char [sizeof (FSSpec)];
-			memcpy (ptrItems[nbFileItems], &hfs.fileSpec, sizeof (FSSpec));
-			nbFileItems++;
-		}
-		
-		//---try Text-------------------------
-		else if (GetFlavorDataSize (drag, item, 'TEXT', &size) == noErr)
-		{
-			string = new char [size + 2];
-			if (string)
-			{
-				GetFlavorData (drag, item, 'TEXT', string, &size, 0);
-				string[size] = 0;
-			}
-			break;
-		}
-		
-		//---try XML text----------------------
-		else if (GetFlavorDataSize (drag, item, 'XML ', &size) == noErr)
-		{
-			string = new char [size + 2];
-			if (string)
-			{
-				GetFlavorData (drag, item, 'XML ', string, &size, 0);
-				string[size] = 0;
-			}
-			break;
-		}
-	} // end for eac items
-	
-	// call the frame
-	if (nbFileItems)
-	{
-		VSTGUI_CPoint where;
-		pFrame->getCurrentLocation (where);
-		pFrame->onDrop ((void**)ptrItems, nbFileItems, VSTGUI_kDropFiles, where);
-		for (long i = 0; i < nbFileItems; i++)
-				delete []ptrItems[i];
-		delete []ptrItems;
+	if (!gDragContainer)
 		return noErr;
-	}
-	if (string)
-	{
+	
+	CFrame* frame = (CFrame*) ref;
+	
+	CDrawContext* context = frame->createDrawContext ();
 		VSTGUI_CPoint where;
-		pFrame->getCurrentLocation (where);
-		pFrame->onDrop ((void**)&string, size, VSTGUI_kDropText, where);
-				
-		delete []string;
-	}
-	
-	
-	delete []ptrItems;
-	return cantGetFlavorErr;
+	frame->getMouseLocation (context, where);
+	frame->onDrop (context, gDragContainer, where);
+	frame->setCursor (kCursorDefault);
+	context->forget ();
+
+	gDragContainer->forget ();
+	gDragContainer = NULL;
+	return noErr;
 }
 #endif // MAC_OLD_DRAG
 
@@ -9270,9 +9573,18 @@ pascal OSStatus CFrame::carbonEventHandler (EventHandlerCallRef inHandlerCallRef
 				}
 				case kEventControlDraw:
 				{
-					CGContextRef cgcontext = 0;
-					OSStatus result = GetEventParameter (inEvent, kEventParamCGContextRef, typeCGContextRef, NULL, sizeof (cgcontext), NULL, &cgcontext);
-					CDrawContext context (frame, (result == noErr) ? cgcontext : NULL, window);
+					CDrawContext* context = 0;
+					if (frame->pFrameContext)
+					{
+						context = frame->pFrameContext;
+						context->remember ();
+					}
+					else
+					{
+						CGContextRef cgcontext = 0;
+						OSStatus res = GetEventParameter (inEvent, kEventParamCGContextRef, typeCGContextRef, NULL, sizeof (cgcontext), NULL, &cgcontext);
+						context = new CDrawContext (frame, (res == noErr) ? cgcontext : NULL, window);
+					}
 					RgnHandle dirtyRegion;
 					if (GetEventParameter (inEvent, kEventParamRgnHandle, typeQDRgnHandle, NULL, sizeof (RgnHandle), NULL, &dirtyRegion) == noErr)
 					{
@@ -9283,11 +9595,12 @@ pascal OSStatus CFrame::carbonEventHandler (EventHandlerCallRef inHandlerCallRef
 						WindowAttributes windowAttributes;
 						GetWindowAttributes (window, &windowAttributes);
 						if (!(windowAttributes & kWindowCompositingAttribute))
-							updateRect.offset (-context.offsetScreen.x, -context.offsetScreen.y);
-						frame->drawRect (&context, updateRect);
+							updateRect.offset (-context->offsetScreen.x, -context->offsetScreen.y);
+						frame->drawRect (context, updateRect);
 					}
 					else
-						frame->draw (&context);
+						frame->draw (context);
+					context->forget ();
 					result = noErr;
 					break;
 				}
@@ -9389,145 +9702,66 @@ pascal OSStatus CFrame::carbonEventHandler (EventHandlerCallRef inHandlerCallRef
 					#if MAC_OLD_DRAG
 					gEventDragWorks = true;
 					#endif
-					dragType = 0;
+
 					DragRef dragRef;
 					if (GetEventParameter (inEvent, kEventParamDragRef, typeDragRef, NULL, sizeof (DragRef), NULL, &dragRef) == noErr)
 					{
-						UInt16 numItems;
-						CountDragItems (dragRef, &numItems);
-						if (numItems > 0)
-						{
-							long size;
-							for (UInt16 i = 1; i <= numItems; i++)
-							{
-								DragItemRef itemRef;
-								if (GetDragItemReferenceNumber (dragRef, i, &itemRef) == noErr)
-								{
-									if (GetFlavorDataSize (dragRef, itemRef, flavorTypeHFS, &size) == noErr)
-									{
-										dragType = VSTGUI_kDropFiles;
-										result = noErr;
-									}
-									if (GetFlavorDataSize (dragRef, itemRef, 'TEXT', &size) == noErr)
-									{
-										dragType = VSTGUI_kDropText;
-										result = noErr;
-									}
-									if (GetFlavorDataSize (dragRef, itemRef, 'XML ', &size) == noErr)
-									{
-										dragType = VSTGUI_kDropText;
-										result = noErr;
-									}
-									if (result == noErr)
-										break;
-								}
-							}
-						}
-						if (result == noErr)
-						{
-							Boolean accept = true;
-							SetEventParameter (inEvent, 'cldg' /*kEventParamControlWouldAcceptDrop*/, typeBoolean, sizeof (Boolean), &accept);
-							CPoint where;
-							frame->getCurrentLocation (where);
-							if (frame->acceptDrop (dragType, where))
-								SetThemeCursor (kThemeCopyArrowCursor);
-							else
-								SetThemeCursor (kThemeNotAllowedCursor);
-						}
+						gDragContainer = new CDragContainer (dragRef);
+						
+						CDrawContext* context = frame->createDrawContext ();
+						VSTGUI_CPoint where;
+						frame->setCursor (kCursorNotAllowed);
+						frame->getMouseLocation (context, where);
+						frame->onDragEnter (context, gDragContainer, where);
+						context->forget ();
+
+						bool acceptDrop = true;
+						SetEventParameter (inEvent, kEventParamControlWouldAcceptDrop, typeBoolean, sizeof (bool), &acceptDrop);
 					}
+										result = noErr;
 					break;
 				}
 				case kEventControlDragWithin:
 				{
-					CPoint where;
-					frame->getCurrentLocation (where);
-					if (frame->acceptDrop (dragType, where))
-						SetThemeCursor (kThemeCopyArrowCursor);
-					else
-						SetThemeCursor (kThemeNotAllowedCursor);
+					if (gDragContainer)
+					{
+						CDrawContext* context = frame->createDrawContext ();
+						VSTGUI_CPoint where;
+						frame->getMouseLocation (context, where);
+						frame->onDragMove (context, gDragContainer, where);
+						context->forget ();
+					}
 					result = noErr;
 					break;
 				}
 				case kEventControlDragLeave:
 				{
-					dragType = 0;
-					SetThemeCursor (kThemeArrowCursor);
+					if (gDragContainer)
+					{
+						CDrawContext* context = frame->createDrawContext ();
+						VSTGUI_CPoint where;
+						frame->getMouseLocation (context, where);
+						frame->onDragLeave (context, gDragContainer, where);
+						frame->setCursor (kCursorDefault);
+						context->forget ();
+					}
 					result = noErr;
 					break;
 				}
 				case kEventControlDragReceive:
 				{
-					DragRef dragRef;
-					if (GetEventParameter (inEvent, kEventParamDragRef, typeDragRef, NULL, sizeof (DragRef), NULL, &dragRef) == noErr)
+					if (gDragContainer)
 					{
-						UInt16 numItems;
-						CountDragItems (dragRef, &numItems);
-						if (numItems > 0)
-						{
-							VSTGUI_CPoint where (-1, -1);
-							char **ptrItems = new char* [numItems];
-							long nbFileItems = 0;
-							char* string = 0;
-							long size;
-							HFSFlavor hfs;
-							for (UInt16 i = 1; i <= numItems; i++)
-							{
-								DragItemRef itemRef;
-								if (GetDragItemReferenceNumber (dragRef, i, &itemRef) == noErr)
-								{
-									//---try file--------------------------
-									if (GetFlavorDataSize (dragRef, itemRef, flavorTypeHFS, &size) == noErr)
-									{ 
-										GetFlavorData (dragRef, itemRef, flavorTypeHFS, &hfs, &size, 0L);
-										
-										ptrItems[nbFileItems] = new char [sizeof (FSSpec)];
-										memcpy (ptrItems[nbFileItems], &hfs.fileSpec, sizeof (FSSpec));
-										nbFileItems++;
-									}
-									
-									//---try Text-------------------------
-									else if (GetFlavorDataSize (dragRef, itemRef, 'TEXT', &size) == noErr)
-									{
-										string = new char [size + 2];
-										if (string)
-										{
-											GetFlavorData (dragRef, itemRef, 'TEXT', string, &size, 0);
-											string[size] = 0;
-										}
-										break;
-									}
-									
-									//---try XML text----------------------
-									else if (GetFlavorDataSize (dragRef, itemRef, 'XML ', &size) == noErr)
-									{
-										string = new char [size + 2];
-										if (string)
-										{
-											GetFlavorData (dragRef, itemRef, 'XML ', string, &size, 0);
-											string[size] = 0;
-										}
-										break;
-									}
-								} // end for eac items
-							}
-							// call the frame
-							frame->getCurrentLocation (where);
-							if (nbFileItems)
-							{
-								frame->onDrop ((void**)ptrItems, nbFileItems, VSTGUI_kDropFiles, where);
-								for (long i = 0; i < nbFileItems; i++)
-										delete []ptrItems[i];
-								delete []ptrItems;
-								return noErr;
-							}
-							if (string)
-							{
-								frame->onDrop ((void**)&string, size, VSTGUI_kDropText, where);
-								delete []string;
-								return noErr;
-							}
-						}
+						CDrawContext* context = frame->createDrawContext ();
+						VSTGUI_CPoint where;
+						frame->getMouseLocation (context, where);
+						frame->onDrop (context, gDragContainer, where);
+						frame->setCursor (kCursorDefault);
+						context->forget ();
+						gDragContainer->forget ();
+						gDragContainer = 0;
 					}
+					result = noErr;
 					break;
 				}
 			}
@@ -9599,6 +9833,7 @@ pascal OSStatus CFrame::carbonEventHandler (EventHandlerCallRef inHandlerCallRef
 //		QDSwapPort (savedPort, NULL);
 	return result;
 }
+END_NAMESPACE_VSTGUI
 #endif
 
 #endif

@@ -2,14 +2,13 @@
 // VST Plug-Ins SDK
 // VSTGUI: Graphical User Interface Framework for VST plugins
 //
-// Version 2.2         Date : 20/11/01
+// Version 3.0       Date : 30/06/04
 //
-// © 2003, Steinberg Media Technologies, All Rights Reserved
 //-----------------------------------------------------------------------------
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
-// © 2003, Steinberg Media Technologies, All Rights Reserved
+// © 2004, Steinberg Media Technologies, All Rights Reserved
 //-----------------------------------------------------------------------------
 // Redistribution and use in source and binary forms, with or without modification,
 // are permitted provided that the following conditions are met:
@@ -244,14 +243,14 @@ unsigned long AEffGUIEditor::getTicks ()
 //-----------------------------------------------------------------------------
 void AEffGUIEditor::doIdleStuff ()
 {
-	#if !(MAC && !CARBON)
+	#if !(MAC && !TARGET_API_MAC_CARBON)
 	// get the current time
 	unsigned long currentTicks = getTicks ();
 
 	// YG TEST idle ();
 	if (currentTicks < lLastTicks)
 	{
-		#if (MAC && CARBON)
+		#if (MAC && TARGET_API_MAC_CARBON)
 		RunCurrentEventLoop (kEventDurationMillisecond * kIdleRateMin);
 		#else
 		wait (kIdleRateMin);
