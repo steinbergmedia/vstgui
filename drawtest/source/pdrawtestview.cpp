@@ -28,9 +28,9 @@ CDrawTestView::CDrawTestView (const CRect& size)
 {
 }
 
-static inline void testDrawRect (CDrawContext *pContext, CRect r)
+static inline void testDrawRect (CDrawContext *pContext, CRect r, int _offset = 0)
 {
-	int offset = pContext->getLineWidth ();
+	int offset = _offset ? _offset : pContext->getLineWidth ();
 	int i = 0;
 	while (r.width () > 1 && r.height () > 1)
 	{
@@ -57,9 +57,9 @@ static inline void testFillRect (CDrawContext *pContext, CRect r)
 	}
 }
 
-static inline void testDrawLine (CDrawContext *pContext, CRect r)
+static inline void testDrawLine (CDrawContext *pContext, CRect r, int _offset = 0)
 {
-	int offset = pContext->getLineWidth ();
+	int offset = _offset ? _offset : pContext->getLineWidth ();
 	int i = 0;
 	while (r.width () > 1 && r.height () > 1)
 	{
@@ -82,13 +82,33 @@ static inline void clearRect (CDrawContext* pContext, const CRect& r)
 	pContext->fillRect (r);
 }
 
-#define kMaxValue	5
+static inline void drawLines (CDrawContext* pContext, CRect r, int offset = 2)
+{
+	CRect size (r);
+	pContext->setFrameColor (kBlueCColor);
+	for (int i = 0; i < size.height (); i++)
+	{
+		pContext->moveTo (CPoint (r.left, r.top));
+		pContext->lineTo (CPoint (r.right, r.bottom));
+		r.offset (0, offset);
+	}
+	for (int i = 0; i < size.height (); i++)
+	{
+		size.offset (0, -offset);
+		pContext->moveTo (CPoint (size.left, size.top));
+		pContext->lineTo (CPoint (size.right, size.bottom));
+	}
+}
+
+#define kMaxValue	7
 
 void CDrawTestView::draw (CDrawContext *pContext)
 {
 	CRect r (size);
 	clearRect (pContext, r);
 
+	AEffGUIEditor* editor = (AEffGUIEditor*)getEditor ();
+	unsigned long startTime = editor->getTicks ();
 	switch (value)
 	{
 		case 0:
@@ -100,7 +120,7 @@ void CDrawTestView::draw (CDrawContext *pContext)
 		case 1:
 		{
 			pContext->setLineWidth (1);
-			testDrawLine (pContext, size);
+			testDrawLine (pContext, size, 2);
 			break;
 		}
 		case 2:
@@ -128,16 +148,30 @@ void CDrawTestView::draw (CDrawContext *pContext)
 			testDrawLine (pContext, size);
 			break;
 		}
+		case 6:
+		{
+			pContext->setLineWidth (1);
+			drawLines (pContext, size, 4);
+			break;
+		}
+		case 7:
+		{
+			pContext->setDrawMode (kAntialias);
+			pContext->setLineWidth (1);
+			drawLines (pContext, size, 4);
+			break;
+		}
 	}
-	
+	unsigned long stopTime = editor->getTicks ();
+
 	char str[256];
-	sprintf (str, "DrawMode : %d", value);
+	sprintf (str, "Drawing took %d ticks", stopTime-startTime);
 	pContext->setFont (kSystemFont);
 	pContext->setFontColor (kWhiteCColor);
 	pContext->drawString (str, r);
 	pContext->setFontColor (kBlackCColor);
 	r.offset (-1, -1);
-	pContext->drawString (str, r);
+	pContext->drawString (str, r, true);
 }
 
 void CDrawTestView::mouse (CDrawContext* pContext, CPoint& where, long buttons)
