@@ -649,7 +649,7 @@ void CParamDisplay::drawText (CDrawContext *pContext, char *string, CBitmap *new
 			pContext->setFillColor (backColor);
 			pContext->fillRect (size);
 	
-			if (!(style & (k3DIn|k3DOut))) 
+			if (!(style & (k3DIn|k3DOut|kNoFrame))) 
 			{
 				pContext->setFrameColor (frameColor);
 				pContext->drawRect (size);
@@ -3801,6 +3801,10 @@ void CSlider::draw (CDrawContext *pContext)
 {
 	CDrawContext* drawContext = pOScreen ? pOScreen : pContext;
 
+	#if 1
+	if (pOScreen && bTransparencyEnabled)
+		pOScreen->copyTo (pContext, size);
+	#endif
 	float fValue;
 	if (style & kLeft || style & kTop)
 		fValue = value;
