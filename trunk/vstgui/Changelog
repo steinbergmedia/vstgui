@@ -1,6 +1,6 @@
 2004-05-31 arne
 
-	* mac: COptionMenuScheme works now with QUARTZ
+	* mac: COptionMenuScheme works now with QUARTZ (Mac OS X 10.3 and above)
 	* mac: QUARTZ implementation of CDrawContext::drawEllipse and fillEllipse 
 	* added a global COptionMenuScheme variable, if set all menues will use it
 	* fix a possible crash in COptionMenu::mouse (thanks Wolfram Franke)
