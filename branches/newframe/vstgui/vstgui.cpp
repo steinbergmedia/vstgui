@@ -5399,7 +5399,11 @@ void CViewContainer::update (CDrawContext *pContext)
 						if (pV->notify (this, kMsgCheckIfViewContainer))
 							pV->update (pContext);
 						else
-							pV->redrawRect (pContext, pV->size);
+						{
+							CRect drawSize (pV->size);
+							drawSize.bound (updateRect);
+							pV->redrawRect (pContext, drawSize);
+						}
 					}
 				ENDFOR
 			}
