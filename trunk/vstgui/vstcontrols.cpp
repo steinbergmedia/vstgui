@@ -209,6 +209,11 @@ void COnOffButton::mouse (CDrawContext *pContext, CPoint &where, long button)
 	if (!(button & kLButton))
 		return;
 
+	if (listener && button & (kAlt | kShift | kControl | kApple))
+	{
+		if (listener->controlModifierClicked (pContext, this, button) != 0)
+			return;
+	}
 	value = ((long)value) ? 0.f : 1.f;
 	doIdleStuff ();
 	if (listener)
@@ -305,6 +310,12 @@ void CKnob::mouse (CDrawContext *pContext, CPoint &where, long button)
 	if (button == -1) button = pContext->getMouseButtons ();
 	if (!(button & kLButton))
 		return;
+
+	if (listener && button & (kAlt | kShift | kControl | kApple))
+	{
+		if (listener->controlModifierClicked (pContext, this, button) != 0)
+			return;
+	}
 
 	// set the default value
 	if (button == (kControl|kLButton))
@@ -884,6 +895,13 @@ void CTextEdit::mouse (CDrawContext *pContext, CPoint &where, long button)
 		return;
 
 	if (button == -1) button = pContext->getMouseButtons ();
+
+	if (listener && button & (kAlt | kShift | kControl | kApple))
+	{
+		if (listener->controlModifierClicked (pContext, this, button) != 0)
+			return;
+	}
+
 	if (button & kLButton)
 	{
 		if (getParent ()->getEditView () != this)
@@ -1263,6 +1281,10 @@ void CTextEdit::takeFocus (CDrawContext *pContext)
 #elif MAC
 	extern long standardFontSize[];
 #if MACX
+	#if QUARTZ
+	if (pContext)
+		rect.offset (pContext->offsetScreen.h, pContext->offsetScreen.v);
+	#endif
 	static bool gTXNInititalized = false;
 	if (!gTXNInititalized)
 	{
@@ -1360,6 +1382,10 @@ void CTextEdit::takeFocus (CDrawContext *pContext)
 			
 		EventTypeSpec eventTypes[] = { { kEventClassMouse, kEventMouseMoved }, { kEventClassMouse, kEventMouseDown }, { kEventClassMouse, kEventMouseUp }, { kEventClassWindow, kEventWindowDeactivated }, { kEventClassKeyboard, kEventRawKeyDown }, { kEventClassKeyboard, kEventRawKeyRepeat } };
 		InstallWindowEventHandler (window, CarbonEventsTextControlProc, GetEventTypeCount (eventTypes), eventTypes, this, &gTextEditEventHandler);
+
+		TXNShowSelection((TXNObject)platformControl, false);
+		TXNForceUpdate((TXNObject)platformControl);
+		TXNUpdate((TXNObject)platformControl);
 	}
 
 #else
@@ -2332,6 +2358,13 @@ void COptionMenu::mouse (CDrawContext *pContext, CPoint &where, long button)
 		return;
 
 	lastButton = (button != -1) ? button : pContext->getMouseButtons ();
+
+	if (listener && button & (kAlt | kShift | kControl | kApple))
+	{
+		if (listener->controlModifierClicked (pContext, this, button) != 0)
+			return;
+	}
+
 	if (lastButton & (kLButton|kRButton|kApple))
 	{
 		if (bgWhenClick)
@@ -3185,6 +3218,12 @@ void CVerticalSwitch::mouse (CDrawContext *pContext, CPoint &where, long button)
 	if (!(button & kLButton))
 		return;
 
+	if (listener && button & (kAlt | kShift | kControl | kApple))
+	{
+		if (listener->controlModifierClicked (pContext, this, button) != 0)
+			return;
+	}
+
 	// set the default value
 	if (button == (kControl|kLButton))
 	{
@@ -3265,6 +3304,13 @@ void CHorizontalSwitch::mouse (CDrawContext *pContext, CPoint &where, long butto
 		return;
 
 	if (button == -1) button = pContext->getMouseButtons ();
+
+	if (listener && button & (kAlt | kShift | kControl | kApple))
+	{
+		if (listener->controlModifierClicked (pContext, this, button) != 0)
+			return;
+	}
+
 	if (!(button & kLButton))
 		return;
 	
@@ -3349,6 +3395,13 @@ void CRockerSwitch::mouse (CDrawContext *pContext, CPoint &where, long button)
 		return;
 
 	if (button == -1) button = pContext->getMouseButtons ();
+
+	if (listener && button & (kAlt | kShift | kControl | kApple))
+	{
+		if (listener->controlModifierClicked (pContext, this, button) != 0)
+			return;
+	}
+
 	if (!(button & kLButton))
 		return;
 
@@ -3524,6 +3577,13 @@ void CMovieButton::mouse (CDrawContext *pContext, CPoint &where, long button)
 		return;
 
 	if (button == -1) button = pContext->getMouseButtons ();
+
+	if (listener && button & (kAlt | kShift | kControl | kApple))
+	{
+		if (listener->controlModifierClicked (pContext, this, button) != 0)
+			return;
+	}
+
 	if (!(button & kLButton))
 		return;
 
@@ -3616,6 +3676,13 @@ void CAutoAnimation::mouse (CDrawContext *pContext, CPoint &where, long button)
 		return;
 	
 	if (button == -1) button = pContext->getMouseButtons ();
+
+	if (listener && button & (kAlt | kShift | kControl | kApple))
+	{
+		if (listener->controlModifierClicked (pContext, this, button) != 0)
+			return;
+	}
+
 	if (!(button & kLButton))
 		return;
 
@@ -3872,6 +3939,12 @@ void CSlider::mouse (CDrawContext *pContext, CPoint &where, long button)
 		return;
 
 	if (button == -1) button = pContext->getMouseButtons ();
+
+	if (listener && button & (kAlt | kShift | kControl | kApple))
+	{
+		if (listener->controlModifierClicked (pContext, this, button) != 0)
+			return;
+	}
 
 	// set the default value
 	if (button == (kControl|kLButton))
@@ -4240,6 +4313,13 @@ void CKickButton::mouse (CDrawContext *pContext, CPoint &where, long button)
 		return;
 	
 	if (button == -1) button = pContext->getMouseButtons ();
+
+	if (listener && button & (kAlt | kShift | kControl | kApple))
+	{
+		if (listener->controlModifierClicked (pContext, this, button) != 0)
+			return;
+	}
+
 	if (!(button & kLButton))
 		return;
 
@@ -4330,6 +4410,13 @@ void CSplashScreen::mouse (CDrawContext *pContext, CPoint &where, long button)
 		return;
 
 	if (button == -1) button = pContext->getMouseButtons ();
+
+	if (listener && button & (kAlt | kShift | kControl | kApple))
+	{
+		if (listener->controlModifierClicked (pContext, this, button) != 0)
+			return;
+	}
+
 	if (!(button & kLButton))
 		return;
 

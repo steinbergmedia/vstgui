@@ -1,3 +1,13 @@
+2004-04-27 arne
+
+	* changed CControlListener and added a method to intercept modifier clicks so the listener can decide if the control should handle
+	  this click. This makes it easy to implement some kind of 'MIDI Learn' functionality.
+	  Note: you need to implement this new method in your CControlListener, otherwise there will be compile errors. If you don't want 
+	        this feature, just return 0.
+	* changed all controls to support the new CControlListener method.
+	* mac: bugfix for CTextEdit::takeFocus under quartz.
+	* mac: changed fonts from arial to helvetica as on some OS X installations arial is not installed.
+	
 2004-04-17 arne
 
 	* windows: support for alpha blended images like it is on Mac OS X with quartz
