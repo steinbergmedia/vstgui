@@ -68,6 +68,15 @@ public:
 		CTabView::mouse (pContext, where, button);
 	}
 
+	virtual bool selectTab (long index)
+	{
+		bool result = CTabView::selectTab (index);
+		#if DEBUG
+		getFrame ()->dumpHierarchy ();
+		#endif
+		return result;
+	}
+
 protected:
 	DrawTestEditor* editor;
 };
@@ -122,6 +131,9 @@ void DrawTestEditor::setTabView (CFrame* frame, const CRect& r, long position)
 
 	testView = new PRectsView (tabSize);
 	tabView->addTab (testView, "Rects");
+
+	testView = new PMiscView (tabSize);
+	tabView->addTab (testView, "Misc");
 
 	// the third tab is the old controlsgui view embeded into a container view
 	CRect controlsGUISize (0, 0, 420, 210);
