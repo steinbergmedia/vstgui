@@ -10,6 +10,7 @@
 // Added BeOS version       : Georges-Edouard Berenger 05.99
 // Added new functions      : Matthias Juwan           12.01
 // Added MacOSX version     : Arne Scheffler           02.03
+// Added Quartz stuff		: Arne Scheffler           08.03
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
@@ -53,6 +54,8 @@
 #include <stdlib.h>
 #include <math.h>
 #include <string.h>
+
+#define USE_CLIPPING_DRAWRECT	QUARTZ
 
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
@@ -260,6 +263,18 @@ bool xpmGetValues (char **ppDataXpm, long *pWidth, long *pHeight, long *pNcolor,
 //-----------------------------------------------------------------------------
 #include <QuickTime/ImageCompression.h>
 
+#if QUARTZ
+const char* macXfontNames[] = {
+	"Arial",
+	"Arial",
+	"Arial",
+	"Arial",
+	"Arial",
+	"Arial",
+	"Arial",
+	"Symbol"
+};
+#else
 const unsigned char* macXfontNames[] = {
 	"\pArial",
 	"\pArial",
@@ -270,6 +285,7 @@ const unsigned char* macXfontNames[] = {
 	"\pArial",
 	"\pSymbol"
 };
+#endif
 
 //-----------------------------------------------------------------------------
 #else
@@ -424,16 +440,16 @@ void CRect::bound (const CRect& rect)
 
 BEGIN_NAMESPACE_VSTGUI
 
-CColor kTransparentCColor = {255, 255, 255, 0};
-CColor kBlackCColor  = {0,     0,   0, 0};
-CColor kWhiteCColor  = {255, 255, 255, 0};
-CColor kGreyCColor   = {127, 127, 127, 0};
-CColor kRedCColor    = {255,   0,   0, 0};
-CColor kGreenCColor  = {0  , 255,   0, 0};
-CColor kBlueCColor   = {0  ,   0, 255, 0};
-CColor kYellowCColor = {255, 255,   0, 0};
-CColor kMagentaCColor= {255,   0, 255, 0};
-CColor kCyanCColor   = {0  , 255, 255, 0};
+CColor kTransparentCColor = {255, 255, 255, 255};
+CColor kBlackCColor  = {0,     0,   0, 255};
+CColor kWhiteCColor  = {255, 255, 255, 255};
+CColor kGreyCColor   = {127, 127, 127, 255};
+CColor kRedCColor    = {255,   0,   0, 255};
+CColor kGreenCColor  = {0  , 255,   0, 255};
+CColor kBlueCColor   = {0  ,   0, 255, 255};
+CColor kYellowCColor = {255, 255,   0, 255};
+CColor kMagentaCColor= {255,   0, 255, 255};
+CColor kCyanCColor   = {0  , 255, 255, 255};
 
 #define kDragDelay 0
 
@@ -446,7 +462,7 @@ CDrawContext::CDrawContext (CFrame *pFrame, void *pSystemContext, void *pWindow)
 	frameWidth (1), lineStyle (kLineSolid), drawMode (kCopyMode)
 	#if WINDOWS
 	,pBrush (0), pFont (0), pPen (0), pOldBrush (0), pOldPen (0), pOldFont (0)
-	#elif MAC
+	#elif MAC && !QUARTZ
 	,bInitialized (false)
 	#endif
 {
@@ -486,6 +502,30 @@ CDrawContext::CDrawContext (CFrame *pFrame, void *pSystemContext, void *pWindow)
 		offsetScreen.v = rctTempWnd.top;
 	}
 
+#elif MAC
+	#if QUARTZ
+	gCGContext = 0;
+	if (pSystemContext)
+		gCGContext = (CGContextRef) pSystemContext;
+	else if (pWindow)
+	{
+		GrafPtr port = GetWindowPort ((WindowRef)pWindow);
+		OSStatus err = QDBeginCGContext (port, &gCGContext);
+		if (err == noErr)
+		{
+			SyncCGContextOriginWithPort (gCGContext, port);
+			Rect rect;
+			GetPortBounds (port, &rect);
+			CGContextTranslateCTM (gCGContext, 0, rect.bottom - rect.top);
+			CGContextSetShouldAntialias (gCGContext, false);
+			CGContextSaveGState (gCGContext);
+			pFrame->setDrawContext (this);
+		}
+	}
+	#else
+	pSystemContext = pWindow;
+	#endif
+	
 #elif MOTIF 
 	if (pFrame)
 		pDisplay = pFrame->getDisplay ();
@@ -538,7 +578,14 @@ CDrawContext::~CDrawContext ()
 	if (pFont)
 		DeleteObject (pFont);
   
-#elif MAC
+#elif (MAC && QUARTZ)
+	if (pWindow && gCGContext)
+	{
+		CGContextFlush (gCGContext);
+		if (!pSystemContext)
+			QDEndCGContext (GetWindowPort ((WindowRef)pWindow), &gCGContext);
+		pFrame->setDrawContext (0);
+	}
 #elif MOTIF
 #elif BEOS
 	if (pView)
@@ -559,12 +606,15 @@ void CDrawContext::moveTo (const CPoint &_point)
 	MoveToEx ((HDC)pSystemContext, point.h, point.v, NULL);
   
 #elif MAC
+	#if QUARTZ
+	#else
 	CGrafPtr OrigPort;
 	GDHandle OrigDevice;
 	GetGWorld (&OrigPort, &OrigDevice); // get current GrafPort
 	SetGWorld (getPort (), NULL);       // activate our GWorld
 	MoveTo (point.h, point.v);
 	SetGWorld (OrigPort, OrigDevice);
+	#endif
   	penLoc = point;
   	
 #elif MOTIF || BEOS
@@ -582,6 +632,20 @@ void CDrawContext::lineTo (const CPoint& _point)
 	LineTo ((HDC)pSystemContext, point.h, point.v);
 	
 #elif MAC
+	#if QUARTZ
+	CGContextRef context = beginCGContext ();
+	{
+		CGContextScaleCTM (context, 1, -1);
+		CGContextTranslateCTM (context, 0.5f, 0.5f);
+		CGContextBeginPath (context);
+		CGContextMoveToPoint (context, penLoc.h, penLoc.v);
+		CGContextAddLineToPoint (context, point.h, point.v);
+		CGContextClosePath (context);
+		CGContextDrawPath (context, kCGPathStroke);
+		releaseCGContext (context);
+	}
+	penLoc = point;
+	#else
 	CGrafPtr OrigPort;
 	GDHandle OrigDevice;
 	GetGWorld (&OrigPort, &OrigDevice); // get current GrafPort
@@ -630,6 +694,7 @@ void CDrawContext::lineTo (const CPoint& _point)
 	LineTo (point.h, point.v);
 	#endif
 	SetGWorld (OrigPort, OrigDevice);
+	#endif
 
 #elif MOTIF
 	CPoint start (penLoc);
@@ -703,6 +768,20 @@ void CDrawContext::polyLine (const CPoint *pPoints, long numberOfPoints)
 		delete[] polyPoints;
 
 #elif MAC
+	#if QUARTZ
+	CGContextRef context = beginCGContext ();
+	{
+		CGContextScaleCTM (context, 1, -1);
+		CGContextTranslateCTM (context, 0.5f, 0.5f);
+		CGContextBeginPath (context);
+		CGContextMoveToPoint (context, pPoints[0].h + offset.h, pPoints[0].v + offset.v);
+		for (long i = 1; i < numberOfPoints; i++)
+			CGContextAddLineToPoint (context, pPoints[i].h + offset.h, pPoints[i].v + offset.v);
+		CGContextClosePath (context);
+		CGContextDrawPath (context, kCGPathStroke);
+		releaseCGContext (context);
+	}
+	#else
 	CGrafPtr OrigPort;
 	GDHandle OrigDevice;
 	GetGWorld (&OrigPort, &OrigDevice);
@@ -714,6 +793,7 @@ void CDrawContext::polyLine (const CPoint *pPoints, long numberOfPoints)
 	for (long i = 1; i < numberOfPoints; i++)
 		LineTo (pPoints[i].h + offset.h, pPoints[i].v + offset.v);
 	SetGWorld (OrigPort, OrigDevice);
+	#endif
 
 #elif MOTIF
 	XPoint* pt = (XPoint*)malloc (numberOfPoints * sizeof (XPoint));
@@ -774,6 +854,19 @@ void CDrawContext::setLineStyle (CLineStyle style)
 	pPen = newPen;
 
 #elif MAC
+	#if QUARTZ
+	if (gCGContext)
+	{
+		float offset = 0;
+		float dotf[2] = { 0.5, 0.5 };
+		if (lineStyle == kLineOnOffDash)
+		{
+			dotf[0] = .5f;
+			dotf[0] = 1.5f;
+		}
+		CGContextSetLineDash (gCGContext, offset, dotf, 2);
+	}
+	#else
 	CGrafPtr OrigPort;
 	GDHandle OrigDevice;
 	if (pWindow)
@@ -794,6 +887,7 @@ void CDrawContext::setLineStyle (CLineStyle style)
 		SetPenState (&penState);
 		SetGWorld (OrigPort, OrigDevice);
 	}
+	#endif
 
 #elif MOTIF
 	long line_width;
@@ -833,6 +927,10 @@ void CDrawContext::setLineWidth (long width)
 	pPen = newPen;
 	
 #elif MAC
+	#if QUARTZ
+	if (gCGContext)
+		CGContextSetLineWidth (gCGContext, width);
+	#else
 	CGrafPtr OrigPort;
 	GDHandle OrigDevice;
 	if (pWindow)
@@ -846,6 +944,7 @@ void CDrawContext::setLineWidth (long width)
 		SetPenState (&penState);
 		SetGWorld (OrigPort, OrigDevice);
 	}
+	#endif
 #elif MOTIF
 	setLineStyle (lineStyle);
 #endif
@@ -876,6 +975,12 @@ void CDrawContext::setDrawMode (CDrawMode mode)
 	SetROP2 ((HDC)pSystemContext, iMode);
 
 #elif MAC
+	#if QUARTZ
+	// quartz only support antialias
+	if (gCGContext)
+			CGContextSetShouldAntialias (gCGContext, drawMode == kAntialias ? true : false);
+
+	#else
 	if (pWindow)
 	{
 		CGrafPtr OrigPort;
@@ -899,6 +1004,7 @@ void CDrawContext::setDrawMode (CDrawMode mode)
 		
 		SetGWorld (OrigPort, OrigDevice);
 	}
+	#endif
 
 #elif MOTIF
 	long iMode = 0;
@@ -924,6 +1030,24 @@ void CDrawContext::setClipRect (const CRect &clip)
 	clipRect = clip;
 
 #if MAC
+	#if QUARTZ
+	if (gCGContext)
+	{
+		CGContextRestoreGState (gCGContext);
+		CGContextSaveGState (gCGContext);
+		CGContextScaleCTM (gCGContext, 1, -1);
+		CGRect cgClipRect = CGRectMake (clip.left, clip.top, clip.width (), clip.height ());
+		CGContextClipToRect (gCGContext, cgClipRect);
+		CGContextScaleCTM (gCGContext, 1, -1);
+		setLineWidth (frameWidth);
+		setLineStyle (lineStyle);
+		setFrameColor (frameColor);
+		setFillColor (fillColor);
+		setFont (fontId, fontSize);
+		setDrawMode (drawMode);
+	}
+	
+	#else
 	Rect r;
 	CRect2Rect (clip, r);
 
@@ -933,6 +1057,7 @@ void CDrawContext::setClipRect (const CRect &clip)
 	SetGWorld (getPort (), NULL);
 	ClipRect (&r);
 	SetGWorld (OrigPort, OrigDevice);
+	#endif
 
 #elif WINDOWS
 	RECT r = {clip.left, clip.top, clip.right, clip.bottom};
@@ -965,7 +1090,24 @@ void CDrawContext::resetClipRect ()
 	else
 		newClip (0, 0, 1000, 1000);
 
-#if MAC || WINDOWS || MOTIF
+#if (MAC && QUARTZ)
+	if (gCGContext)
+	{
+		CGContextRestoreGState (gCGContext);
+		CGContextScaleCTM (gCGContext, 1, -1);
+		CGRect cgClipRect = CGRectMake (newClip.left, newClip.top, newClip.width (), newClip.height ());
+		CGContextClipToRect (gCGContext, cgClipRect);
+		CGContextScaleCTM (gCGContext, 1, -1);
+		CGContextSaveGState (gCGContext);
+		setLineWidth (frameWidth);
+		setLineStyle (lineStyle);
+		setFrameColor (frameColor);
+		setFillColor (fillColor);
+		setFont (fontId, fontSize);
+		setDrawMode (drawMode);
+	}
+
+#elif MAC || WINDOWS || MOTIF
 	setClipRect (newClip);
 
 #elif BEOS
@@ -1009,6 +1151,20 @@ void CDrawContext::fillPolygon (const CPoint *pPoints, long numberOfPoints)
 		delete[] polyPoints;
 
 #elif MAC
+	#if QUARTZ
+	CGContextRef context = beginCGContext ();
+	{
+		CGContextScaleCTM (context, 1, -1);
+		CGContextTranslateCTM (context, 0.5f, 0.5f);
+		CGContextBeginPath (context);
+		CGContextMoveToPoint (context, pPoints[0].h + offset.h, pPoints[0].v + offset.v);
+		for (long i = 1; i < numberOfPoints; i++)
+			CGContextAddLineToPoint (context, pPoints[i].h + offset.h, pPoints[i].v + offset.v);
+		CGContextClosePath (context);
+		CGContextDrawPath (context, kCGPathFill);
+		releaseCGContext (context);
+	}
+	#else
 	CGrafPtr   OrigPort;
 	GDHandle   OrigDevice;
 	PolyHandle thePoly;
@@ -1031,6 +1187,7 @@ void CDrawContext::fillPolygon (const CPoint *pPoints, long numberOfPoints)
 	KillPoly (thePoly);                 // deallocate all memory used here 
 	DisposePixPat (pixPatHandle);
 	SetGWorld (OrigPort, OrigDevice);
+	#endif
 	
 #elif MOTIF
 	// convert the points
@@ -1087,6 +1244,16 @@ void CDrawContext::drawRect (const CRect &_rect)
 	LineTo ((HDC)pSystemContext, rect.left, rect.top);
 	
 #elif MAC
+	#if QUARTZ
+	CGContextRef context = beginCGContext ();
+	{
+		CGRect r = CGRectMake (rect.left, rect.top, rect.width (), rect.height ());
+		CGContextScaleCTM (context, 1, -1);
+		CGContextTranslateCTM (context, 0.5f, 0.5f);
+		CGContextStrokeRect (context, r);
+		releaseCGContext (context);
+	}
+	#else
 	CGrafPtr OrigPort;
 	GDHandle OrigDevice;
 	GetGWorld (&OrigPort, &OrigDevice);	// get current GrafPort
@@ -1100,6 +1267,7 @@ void CDrawContext::drawRect (const CRect &_rect)
 	LineTo (rect.left, rect.bottom);
 	LineTo (rect.left, rect.top);
 	SetGWorld (OrigPort, OrigDevice);
+	#endif
 
 #elif MOTIF
 	XDrawRectangle (XDRAWPARAM, rect.left, rect.top, rect.width (), rect.height ());
@@ -1130,6 +1298,16 @@ void CDrawContext::fillRect (const CRect &_rect)
 	SelectObject ((HDC)pSystemContext, oldPen);
 
 #elif MAC
+	#if QUARTZ
+	CGContextRef context = beginCGContext ();
+	{
+		CGRect r = CGRectMake (rect.left, rect.top, rect.width (), rect.height ());
+		CGContextScaleCTM (context, 1, -1);
+		CGContextTranslateCTM (context, 0.5f, 0.5f);
+		CGContextFillRect (context, r);
+		releaseCGContext (context);
+	}
+	#else
 	Rect     rr;
 	CGrafPtr OrigPort;
 	GDHandle OrigDevice;
@@ -1143,6 +1321,7 @@ void CDrawContext::fillRect (const CRect &_rect)
 	rr.top++;
 	FillRect (&rr, &fillPattern);
 	SetGWorld (OrigPort, OrigDevice);
+	#endif
 
 #elif MOTIF
 	XFillRectangle (XDRAWPARAM, rect.left + 1, rect.top + 1, rect.width () - 1, rect.height () - 1);
@@ -1237,6 +1416,10 @@ CColor CDrawContext::getPoint (const CPoint& _point)
 	color.blue  = GetBValue (c);
 
 	#elif MAC
+	#if QUARTZ
+	// no quartz equivalent
+	
+	#else
 	CGrafPtr OrigPort;
 	GDHandle OrigDevice;
 	GetGWorld (&OrigPort, &OrigDevice);
@@ -1245,6 +1428,7 @@ CColor CDrawContext::getPoint (const CPoint& _point)
 	GetCPixel (point.h, point.v, &cPix);
 	RGBColor2CColor (cPix, color);
 	SetGWorld (OrigPort, OrigDevice);
+	#endif
 	#endif
 
 	return color;
@@ -1261,6 +1445,10 @@ void CDrawContext::floodFill (const CPoint& _start)
 	ExtFloodFill ((HDC)pSystemContext, start.h, start.v, c, FLOODFILLSURFACE);
 	
 	#elif MAC
+	#if QUARTZ
+	// no quartz equivalent
+	
+	#else
 	CGrafPtr oldPort;
 	GDHandle oldDevice;
 	GetGWorld (&oldPort, &oldDevice);
@@ -1308,6 +1496,7 @@ void CDrawContext::floodFill (const CPoint& _start)
 
 	SetGWorld (oldPort, oldDevice);
 	#endif
+	#endif
 }
 
 //-----------------------------------------------------------------------------
@@ -1325,6 +1514,20 @@ void CDrawContext::drawArc (const CRect &_rect, const CPoint &_point1, const CPo
 
 	Arc ((HDC)pSystemContext, rect.left, rect.top, rect.right + 1, rect.bottom + 1, 
 			 point1.h, point1.v, point2.h, point2.v);
+
+#elif QUARTZ
+
+	CGContextRef context = beginCGContext ();
+	{	// someone who uses this shoud check if this is correct
+		CGContextScaleCTM (context, 1, -1);
+		CGContextTranslateCTM (context, 0.5f, 0.5f);
+		CGContextBeginPath (context);
+		CGContextMoveToPoint (context, point1.x, point1.y);
+		CGContextAddArcToPoint (context, point2.x, point2.y, point1.x, point1.y, rect.width () > rect.height () ? rect.height () /2 : rect.width () /2);
+		CGContextClosePath (context);
+		CGContextDrawPath (context, kCGPathStroke);
+		releaseCGContext (context);
+	}
 
 #elif MAC || MOTIF || BEOS
 	
@@ -1355,7 +1558,7 @@ void CDrawContext::drawArc (const CRect &_rect, const CPoint &_point1, const CPo
 	CRect2Rect (rect, rr);
 	FrameArc (&rr, 90 - (angle1 / 64), -angle2 / 64);
 	SetGWorld (OrigPort, OrigDevice);
-	
+        
 #elif MOTIF
 	XDrawArc (XDRAWPARAM, rect.left, rect.top, rect.width (), rect.height (),
 						angle1, angle2);
@@ -1406,6 +1609,10 @@ void CDrawContext::fillArc (const CRect &_rect, const CPoint &_point1, const CPo
 	}
 
 #if MAC
+	#if QUARTZ
+	// check drawArc and implement it here
+	
+	#else
 	Rect     rr;
 	CGrafPtr OrigPort;
 	GDHandle OrigDevice;
@@ -1422,7 +1629,8 @@ void CDrawContext::fillArc (const CRect &_rect, const CPoint &_point1, const CPo
 	FillArc (&rr, 90 - (angle1 / 64), -angle2 / 64, &fillPattern);
 
 	SetGWorld (OrigPort, OrigDevice);
-
+	#endif
+        
 #elif MOTIF
 	XFillArc (XDRAWPARAM, rect.left, rect.top, rect.width (), rect.height (),
 				angle1, angle2);
@@ -1447,6 +1655,10 @@ void CDrawContext::setFontColor (const CColor color)
 	SetTextColor ((HDC)pSystemContext, RGB (fontColor.red, fontColor.green, fontColor.blue));
 	
 #elif MAC
+	#if QUARTZ
+	// on quartz the fill color is the font color
+
+	#else
 	RGBColor col;
 	CGrafPtr OrigPort;
 	GDHandle OrigDevice;
@@ -1458,7 +1670,8 @@ void CDrawContext::setFontColor (const CColor color)
 		RGBForeColor (&col);
 		SetGWorld (OrigPort, OrigDevice);
 	}
-
+	#endif
+        
 #elif MOTIF
 	setFrameColor (fontColor);
 
@@ -1481,6 +1694,10 @@ void CDrawContext::setFrameColor (const CColor color)
 	pPen = newPen;
 
 #elif MAC
+	#if QUARTZ
+	if (gCGContext)
+		CGContextSetRGBStrokeColor (gCGContext, color.red/255.f, color.green/255.f, color.blue/255.f, color.unused/255.f);
+	#else
 	RGBColor col;
 	CGrafPtr OrigPort;
 	GDHandle OrigDevice;
@@ -1492,7 +1709,8 @@ void CDrawContext::setFrameColor (const CColor color)
 		RGBForeColor (&col);
 		SetGWorld (OrigPort, OrigDevice);
 	}
-
+	#endif
+        
 #elif MOTIF
 	XSetForeground (XGCPARAM, getIndexColor (frameColor));
 #endif
@@ -1518,6 +1736,10 @@ void CDrawContext::setFillColor (const CColor color)
 	pBrush = newBrush;
 	
 #elif MAC
+	#if QUARTZ
+	if (gCGContext)
+		CGContextSetRGBFillColor (gCGContext, color.red/255.f, color.green/255.f, color.blue/255.f, color.unused/255.f);
+	#else
 	RGBColor col;
 	CGrafPtr OrigPort;
 	GDHandle OrigDevice;
@@ -1529,7 +1751,8 @@ void CDrawContext::setFillColor (const CColor color)
 		RGBForeColor (&col);
 		SetGWorld (OrigPort, OrigDevice);
 	}
-
+	#endif
+        
 #elif MOTIF
 	// set the background for the text
 	XSetBackground (XGCPARAM, getIndexColor (fillColor));
@@ -1584,6 +1807,10 @@ void CDrawContext::setFont (CFont fontID, const long size, long style)
 	pFont = newFont;
   
 #elif MAC
+	#if QUARTZ
+	if (gCGContext)
+		CGContextSelectFont (gCGContext, (const char*)macXfontNames[fontId], fontSize, kCGEncodingMacRoman);
+	#else
 	CGrafPtr OrigPort;
 	GDHandle OrigDevice;
 	if (pWindow)
@@ -1616,7 +1843,8 @@ void CDrawContext::setFont (CFont fontID, const long size, long style)
 		GetFontInfo (&fontInfoStruct);
 		SetGWorld (OrigPort, OrigDevice);
 	}
-
+	#endif
+        
 #elif MOTIF
 	XSetFont (XGCPARAM, fontStructs[fontID]->fid);
 	
@@ -1636,6 +1864,19 @@ long CDrawContext::getStringWidth (const char *pStr)
 	long result = 0;
 
 	#if MAC
+	#if QUARTZ
+	CGContextRef context = beginCGContext ();
+	if (context)
+	{
+		CGContextScaleCTM (context, 1, 1);
+		CGContextSetTextDrawingMode (context, kCGTextInvisible);
+		CGContextSetTextPosition (context, 0.f, 0.f);
+		CGContextShowText (context, pStr, strlen (pStr));
+		CGPoint p = CGContextGetTextPosition (context);
+		result = p.x;
+		releaseCGContext (context);
+	}
+	#else
 	CGrafPtr OrigPort;
 	GDHandle OrigDevice;
 	GetGWorld (&OrigPort, &OrigDevice);
@@ -1644,7 +1885,8 @@ long CDrawContext::getStringWidth (const char *pStr)
 	result = (long)TextWidth (pStr, 0, strlen (pStr));
 
 	SetGWorld (OrigPort, OrigDevice);
-
+	#endif
+        
 	#elif WINDOWS
 	SIZE size;
 	GetTextExtentPoint32 ((HDC)pSystemContext, pStr, strlen (pStr), &size);
@@ -1695,6 +1937,36 @@ void CDrawContext::drawString (const char *string, const CRect &_rect,
 	SetBkMode ((HDC)pSystemContext, TRANSPARENT);
 
 #elif MAC
+	#if QUARTZ
+	CGContextRef context = beginCGContext ();
+	if (context)
+	{
+		long strWidth = getStringWidth (string);
+		rect.bottom -= rect.height ()/2 - fontSize / 2 + 1;
+		switch (hAlign)
+		{
+			case kCenterText:
+			{
+				rect.left += rect.width () / 2 - strWidth/2;
+				break;
+			}
+			case kRightText:
+				rect.left = rect.right - strWidth;
+				break;
+			default : // left adjust
+				rect.left++;
+		}
+
+		CGContextScaleCTM (context, 1, 1);
+		CGContextSetShouldAntialias (context, true);
+		CGContextSetTextDrawingMode (context, kCGTextFill);
+		CGContextSetRGBFillColor (context, fontColor.red/255.f, fontColor.green/255.f, fontColor.blue/255.f, fontColor.unused/255.f);
+		CGContextSetTextPosition (context, rect.left, rect.bottom * -1);
+		CGContextShowText (context, string, strlen (string));
+		releaseCGContext (context);
+	}
+
+	#else
 	CGrafPtr OrigPort;
 	GDHandle OrigDevice;
 	int width;
@@ -1762,7 +2034,8 @@ void CDrawContext::drawString (const char *string, const CRect &_rect,
 		TextMode (srcOr);
 		SetGWorld (OrigPort, OrigDevice);
 	}
-
+        #endif
+        
 #elif MOTIF
 	int width;
 	int fontHeight = pFontInfoStruct->ascent + pFontInfoStruct->descent;
@@ -2002,7 +2275,7 @@ bool CDrawContext::waitDoubleClick ()
 	}
 
 #elif MAC
-	#if MACX
+	#if MACX // todo: use Carbon Events
 	unsigned long clickTime, doubletime;
 	EventRecord downEvent;
 
@@ -2209,6 +2482,29 @@ void CDrawContext::lineFromTo (CPoint& cstart, CPoint& cend)
 
 //-----------------------------------------------------------------------------
 #elif MAC
+#if QUARTZ
+CGContextRef CDrawContext::beginCGContext ()
+{
+	if (gCGContext)
+	{
+		CGContextRetain (gCGContext);
+		CGContextSaveGState (gCGContext);
+		return gCGContext;
+	}
+	return 0;
+}
+
+void CDrawContext::releaseCGContext (CGContextRef context)
+{
+	if (context)
+	{
+		CGContextSynchronize (context);
+		CGContextRestoreGState (context);
+		CGContextRelease (context);
+	}
+}
+
+#endif
 BitMapPtr CDrawContext::getBitmap ()
 {
 	PixMapHandle pixMap = GetPortPixMap (GetWindowPort ((WindowRef)pWindow));
@@ -2294,6 +2590,14 @@ COffscreenContext::COffscreenContext (CDrawContext *pContext, CBitmap *pBitmapBg
 	oldBitmap = SelectObject ((HDC)pSystemContext, pWindow);
 
 #elif MAC
+	#if QUARTZ
+	if (drawInBitmap)
+	{} // todo !!!
+	else
+	{
+	}
+	
+	#else
 	
 	if (drawInBitmap)
 		pWindow = pBitmapBg->getHandle ();
@@ -2309,7 +2613,8 @@ COffscreenContext::COffscreenContext (CDrawContext *pContext, CBitmap *pBitmapBg
 	}
 
 	StuffHex (&fillPattern, "\pFFFFFFFFFFFFFFFF");
-
+	#endif
+        
 #elif MOTIF
  	// if no bitmap handle => create one
 	if (!pWindow)
@@ -2380,6 +2685,52 @@ COffscreenContext::COffscreenContext (CFrame *pFrame, long width, long height, c
 	drawRect (r);
 
 #elif MAC
+	#if QUARTZ
+	CGContextRef    context = NULL; 
+	CGColorSpaceRef colorSpace; 
+	int             bitmapByteCount; 
+	int             bitmapBytesPerRow; 
+
+	// each pixel is represented by four bytes 
+	// (8 bits each of alpha, R, G, B) 
+	bitmapBytesPerRow   = width * 4; 
+	bitmapByteCount     = bitmapBytesPerRow * height; 
+
+	// create an RGB color space 
+	colorSpace = CGColorSpaceCreateDeviceRGB ();
+
+	// create the bitmap 
+	offscreenBitmap = malloc (bitmapByteCount);
+	if (offscreenBitmap != NULL)
+	{
+		memset (offscreenBitmap, 0, bitmapByteCount);
+		// create the context 
+		context = CGBitmapContextCreate (offscreenBitmap,
+		width, 
+		height, 
+		8,              // bits per component 
+		bitmapBytesPerRow, 
+		colorSpace, 
+		kCGImageAlphaPremultipliedLast);
+
+		if( context == NULL ) 
+		{
+			// the context couldnÕt be created for some reason, 
+			// and we have no use for the bitmap without the context 
+			free (offscreenBitmap);
+			offscreenBitmap = 0;
+		}
+		else
+		{
+			CGContextTranslateCTM (context, 0, (float)height);
+		}
+	}
+
+	// the context retains the color space, so we can release it 
+	CGColorSpaceRelease( colorSpace ); 
+	gCGContext = context;
+
+	#else
 	QDErr	err;
 	Rect	GWRect;
 	
@@ -2397,7 +2748,8 @@ COffscreenContext::COffscreenContext (CFrame *pFrame, long width, long height, c
 	setFrameColor (backgroundColor);
 	fillRect (r);
 	drawRect (r);
-	
+	#endif
+        
 #elif MOTIF
 	Drawable dWindow = pFrame->getWindow ();
 
@@ -2452,9 +2804,17 @@ COffscreenContext::~COffscreenContext ()
 		DeleteObject (pWindow);
 
 #elif MAC
+	#if QUARTZ
+	if (gCGContext)
+		CGContextRelease (gCGContext);
+	gCGContext = 0;
+	if (offscreenBitmap)
+		free (offscreenBitmap);
+	#else
 	if (bDestroyPixmap && pWindow)
 		DisposeGWorld ((GWorldPtr)pWindow);
-
+	#endif
+        
 #elif MOTIF
 	if (bDestroyPixmap && pWindow)
 		XFreePixmap (pDisplay, (Pixmap)pWindow);
@@ -2483,6 +2843,10 @@ void COffscreenContext::copyTo (CDrawContext* pContext, CRect& srcRect, CPoint d
 	if (!pWindow)
 		return;
 
+	#if QUARTZ
+	// no direct quartz equivalent
+
+	#else
 	Rect source, dest;
 	RGBColor savedForeColor, savedBackColor;
 	
@@ -2507,6 +2871,7 @@ void COffscreenContext::copyTo (CDrawContext* pContext, CRect& srcRect, CPoint d
 
 	RGBForeColor (&savedForeColor);
 	RGBBackColor (&savedBackColor);
+	#endif
 #endif
 }
 
@@ -2526,6 +2891,49 @@ void COffscreenContext::copyFrom (CDrawContext *pContext, CRect destRect, CPoint
 					SRCCOPY);                           // dwROP
 
 #elif MAC
+	#if QUARTZ
+	if (!gCGContext)
+		return;
+	CGContextRef context = pContext->beginCGContext ();
+	if (context)
+	{
+		size_t pixRowBytes = CGBitmapContextGetBytesPerRow (gCGContext);
+		short pixDepth = CGBitmapContextGetBitsPerPixel (gCGContext);
+		size_t size = pixRowBytes * CGBitmapContextGetHeight (gCGContext);
+
+		CGImageRef image = 0;
+		CGDataProviderRef provider = CGDataProviderCreateWithData (NULL, CGBitmapContextGetData (gCGContext), size, NULL);
+		CGColorSpaceRef colorspace = CGColorSpaceCreateDeviceRGB ();
+		CGImageAlphaInfo alphaInfo = CGBitmapContextGetAlphaInfo (gCGContext);
+		image = CGImageCreate (CGBitmapContextGetWidth (gCGContext), CGBitmapContextGetHeight (gCGContext), 8 , pixDepth, pixRowBytes, colorspace, alphaInfo, provider, NULL, 0, kCGRenderingIntentDefault);
+		if (image)
+		{
+			CGRect dest;
+			dest.origin.x = destRect.left + srcOffset.h + pContext->offset.h;
+			dest.origin.y = (destRect.top + pContext->offset.v) * -1 - (getHeight () - srcOffset.v);
+			dest.size.width = getWidth ();
+			dest.size.height = getHeight ();
+			
+			CGContextScaleCTM (context, 1, 1);
+
+			CGRect clipRect;
+			clipRect.origin.x = destRect.left + pContext->offset.h;
+		    clipRect.origin.y = (destRect.top + pContext->offset.v) * -1  - destRect.height ();
+		    clipRect.size.width = destRect.width (); 
+		    clipRect.size.height = destRect.height ();
+			
+			CGContextClipToRect (context, clipRect);
+
+			CGContextDrawImage (context, dest, image);
+			
+			CGImageRelease (image);
+		}
+		CGDataProviderRelease (provider);
+		CGColorSpaceRelease (colorspace);
+		
+		pContext->releaseCGContext (context);
+	}
+	#else
 	if (!pWindow)
 		return;
 
@@ -2556,6 +2964,7 @@ void COffscreenContext::copyFrom (CDrawContext *pContext, CRect destRect, CPoint
 
 	RGBForeColor (&savedForeColor);
 	RGBBackColor (&savedBackColor);
+	#endif
 
 #elif MOTIF
 	XCopyArea (pDisplay, (Drawable)pWindow, (Drawable)pContext->getWindow (),
@@ -2575,6 +2984,8 @@ void COffscreenContext::copyFrom (CDrawContext *pContext, CRect destRect, CPoint
 
 //-----------------------------------------------------------------------------
 #if MAC
+#if QUARTZ
+#endif
 BitMapPtr COffscreenContext::getBitmap ()
 {
 	PixMapHandle pixMap = GetGWorldPixMap ((GWorldPtr)pWindow);
@@ -2660,8 +3071,18 @@ void CView::update (CDrawContext *pContext)
 {
 	if (isDirty ())
 	{
+		#if QUARTZ
+		if (pContext)
+		{
+			if (bTransparencyEnabled)
+				getParent ()->drawRect (pContext, size);
+			else
+				draw (pContext);
+		}
+		#else
 		if (pContext)
 			draw (pContext);
+		#endif
 		else
 			redraw ();
 		setDirty (false);
@@ -2791,9 +3212,14 @@ CFrame::CFrame (const CRect &size, void *pSystemWindow, void *pEditor)
 #endif
 
 #elif MAC
+	#if QUARTZ
+	pFrameContext = 0;
+
+	#else
 	pFrameContext = new CDrawContext (this, getSystemWindow (), getSystemWindow ());
 	pFrameContext->offset.h = size.left;
 	pFrameContext->offset.v = size.top;
+	#endif
 	
 #elif MOTIF
 	pFrameContext = new CDrawContext (this, gc, (void*)window);
@@ -2901,6 +3327,18 @@ CFrame::~CFrame ()
 #if BEOS
 	CBitmap::closeResource ();	// must be done only once at the end of the story.
 #endif
+
+#if MAC && CARBON_EVENTS
+	if (controlRef)
+		DisposeControl (controlRef);
+	if (controlSpec.u.classRef)
+	{
+		OSStatus status = UnregisterToolboxObjectClass ((ToolboxObjectClassRef)controlSpec.u.classRef);
+		if (status != noErr)
+			fprintf (stderr, "UnregisterToolboxObjectClass failed : %d\n", status);
+	}
+#endif
+
 }
 
 //-----------------------------------------------------------------------------
@@ -2985,6 +3423,19 @@ bool CFrame::initFrame (void *systemWin)
 
 #elif MAC
 
+	#if CARBON_EVENTS
+	if (!registerWithToolbox ())
+		return false;
+
+	Rect r = {size.top, size.left, size.bottom, size.right};
+	OSStatus status = CreateCustomControl ((WindowRef)systemWin, &r, &controlSpec, NULL, &controlRef);
+	if (status != noErr)
+	{
+		fprintf (stderr, "Could not create Control : %d\n", status);
+		return false;
+	}
+	#endif
+	
 #elif MOTIF
 	// attach the callbacks
 	XtAddCallback ((Widget)systemWin, XmNexposeCallback, _drawingAreaCallback, this);
@@ -3103,6 +3554,10 @@ void CFrame::drawRect (CDrawContext *pContext, CRect& updateRect)
 	if (!pContext)
 		pContext = pFrameContext;
 
+	#if USE_CLIPPING_DRAWRECT
+	pContext->setClipRect (updateRect);
+	#endif
+	
 	// draw first the background
 	if (pBackground)
 		pBackground->draw (pContext, updateRect, CPoint (updateRect.left, updateRect.top));
@@ -3117,6 +3572,10 @@ void CFrame::drawRect (CDrawContext *pContext, CRect& updateRect)
 	// and the modal view
 	if (pModalView && pModalView->checkUpdate (updateRect))
 		pModalView->draw (pContext);
+
+	#if USE_CLIPPING_DRAWRECT
+	pContext->resetClipRect ();
+	#endif
 }
 
 //-----------------------------------------------------------------------------
@@ -3137,10 +3596,12 @@ void CFrame::draw (CView *pView)
 	#if WINDOWS
 	HDC hdc2;
 	#endif
-	
+
+	bool localContext = false;	
 	CDrawContext *pContext = pFrameContext;
 	if (!pContext)
 	{
+		localContext = true;
 	#if WINDOWS
 		hdc2 = GetDC ((HWND)getSystemWindow ());
 		#if DEBUG
@@ -3149,7 +3610,7 @@ void CFrame::draw (CView *pView)
 		pContext = new CDrawContext (this, hdc2, getSystemWindow ());
 
 	#elif MAC
-		pContext = new CDrawContext (this, getSystemWindow (), getSystemWindow ());
+		pContext = new CDrawContext (this, NULL, getSystemWindow ());
 
 	#elif MOTIF
 		pContext = new CDrawContext (this, gc, (void*)window);
@@ -3166,7 +3627,7 @@ void CFrame::draw (CView *pView)
 		else
 			draw (pContext);
 
-		if (!pFrameContext)
+		if (localContext)
 			delete pContext;
 	}
 
@@ -3302,8 +3763,10 @@ bool CFrame::onWheel (CDrawContext *pContext, const CPoint &where, float distanc
 		HDC hdc2;
 		#endif
 
+		bool localContext = false;
 		if (!pContext2)
 		{
+			localContext = true;
 		#if WINDOWS
 			hdc2 = GetDC ((HWND)getSystemWindow ());
 			#if DEBUG
@@ -3312,7 +3775,7 @@ bool CFrame::onWheel (CDrawContext *pContext, const CPoint &where, float distanc
 			pContext2 = new CDrawContext (this, hdc2, getSystemWindow ());
 
 		#elif MAC
-			pContext2 = new CDrawContext (this, getSystemWindow (), getSystemWindow ());
+			pContext2 = new CDrawContext (this, NULL, getSystemWindow ());
 
 		#elif MOTIF
 			pContext2 = new CDrawContext (this, gc, (void*)window);
@@ -3328,7 +3791,7 @@ bool CFrame::onWheel (CDrawContext *pContext, const CPoint &where, float distanc
 		getCurrentLocation (where);
 		result = view->onWheel (pContext2, where, distance);
 
-		if (!pFrameContext && !pContext)
+		if (localContext)
 			delete pContext2;
 	
 	#if WINDOWS
@@ -3406,9 +3869,11 @@ void CFrame::idle ()
 	HDC hdc2;
 	#endif
 
+	bool localContext = false;
 	CDrawContext *pContext = pFrameContext;
 	if (!pContext)
 	{
+		localContext = true;
 	#if WINDOWS
 		hdc2 = GetDC ((HWND)getSystemWindow ());
 		#if DEBUG
@@ -3417,7 +3882,7 @@ void CFrame::idle ()
 		pContext = new CDrawContext (this, hdc2, getSystemWindow ());
 
 	#elif MAC
-		pContext = new CDrawContext (this, getSystemWindow (), getSystemWindow ());
+		pContext = new CDrawContext (this, NULL, getSystemWindow ());
 
 	#elif MOTIF
 		pContext = new CDrawContext (this, gc, (void*)window);
@@ -3431,7 +3896,7 @@ void CFrame::idle ()
 
 	update (pContext);
 
-	if (!pFrameContext)
+	if (localContext)
 		delete pContext;
 
 	#if WINDOWS
@@ -3938,10 +4403,19 @@ bool CFrame::getCurrentLocation (CPoint &where)
 #endif
 
 	// create a local context
+	bool localContext = true;
 	CDrawContext *pContextTemp = 0;
 
 #if MAC
-	pContextTemp = new CDrawContext (this, this->getSystemWindow (), this->getSystemWindow ());
+	#if QUARTZ
+	if (pFrameContext)
+	{
+		pContextTemp = pFrameContext;
+		localContext = false;
+	}
+	else
+	#endif
+	pContextTemp = new CDrawContext (this, NULL, this->getSystemWindow ());
 
 #elif MOTIF
 	pContextTemp = new CDrawContext (this, this->getGC (), (void *)this->getWindow ());
@@ -3954,7 +4428,8 @@ bool CFrame::getCurrentLocation (CPoint &where)
 	if (pContextTemp)
 	{
 		pContextTemp->getMouseLocation (where);
-		delete pContextTemp;
+		if (localContext)
+			delete pContextTemp;
 	}
 	return true;
 }
@@ -4962,6 +5437,8 @@ CBitmap::CBitmap (CFrame &frame, long width, long height)
 	pMask = 0;
 
 #elif MAC
+    #if QUARTZ
+    #else
 	pHandle = 0;
 	pMask = 0;
 	
@@ -4970,7 +5447,7 @@ CBitmap::CBitmap (CFrame &frame, long width, long height)
 	r.right = width;
 	r.bottom = height;
 	NewGWorld ((GWorldPtr*)&pHandle, 0, &r, 0, 0, 0);
-
+        #endif
 	// todo: init pixels
 
 #elif MOTIF
@@ -5066,6 +5543,99 @@ void CBitmap::forget ()
 	}
 }
 
+#if QUARTZ
+#if OLD_TRANSPARENT_BITMAP_MODE
+class CDataProvider 
+{
+public:
+	CDataProvider (CBitmap* bitmap) : bmp (bitmap) 
+	{ 
+		pos = 0; 
+		PixMapHandle pixMap = GetGWorldPixMap ((GWorldPtr)bmp->getHandle ());
+		ptr = (unsigned char*)GetPixBaseAddr (pixMap);
+		color = bmp->getTransparentColor ();
+	}
+
+	static size_t getBytes (void *info, void *buffer, size_t count)
+	{	// this could be optimized ;-)
+		CDataProvider* p = (CDataProvider*)info;
+		unsigned char* dst = (unsigned char*)buffer;
+		unsigned char* src = p->ptr + p->pos;
+		for (unsigned long i = 0; i < count / 4; i++)
+		{
+			if (src[1] == p->color.red && src[2] == p->color.green && src[3] == p->color.blue)
+			{
+				*dst++ = 0;
+				src++;
+			}
+			else
+				*dst++ = *src++;
+			*dst++ = *src++;
+			*dst++ = *src++;
+			*dst++ = *src++;
+		}
+		p->pos += count;
+		return count;
+	}
+
+	static void skipBytes (void *info, size_t count)
+	{
+		CDataProvider* p = (CDataProvider*)info;
+		p->pos += count;
+	}
+
+	static void rewind (void *info)
+	{
+		CDataProvider* p = (CDataProvider*)info;
+		p->pos = 0;
+	}
+
+	static void releaseProvider (void *info)
+	{
+		CDataProvider* p = (CDataProvider*)info;
+		delete p;
+	}
+
+	unsigned long pos;
+	CBitmap* bmp;
+	unsigned char* ptr;
+	CColor color;
+};
+#endif // OLD_TRANSPARENT_BITMAP_MODE
+
+//-----------------------------------------------------------------------------
+CGImageRef CBitmap::createCGImage (bool transparent)
+{
+	PixMapHandle pixMap = GetGWorldPixMap ((GWorldPtr)pHandle);
+
+	Rect bounds;
+	GetPixBounds (pixMap, &bounds);
+
+	size_t pixRowBytes = GetPixRowBytes (pixMap);
+	short pixDepth = GetPixDepth (pixMap);
+	size_t size = pixRowBytes * (bounds.bottom - bounds.top);
+
+	CGImageRef image = 0;
+	CGDataProviderRef provider = 0;
+	#if OLD_TRANSPARENT_BITMAP_MODE
+	static CGDataProviderCallbacks callbacks = { CDataProvider::getBytes, CDataProvider::skipBytes, CDataProvider::rewind, CDataProvider::releaseProvider };
+	if (transparent)
+		provider = CGDataProviderCreate (new CDataProvider (this), &callbacks);
+	else
+	#endif
+		provider = CGDataProviderCreateWithData (NULL, GetPixBaseAddr (pixMap), size, NULL);
+	CGColorSpaceRef colorspace = CGColorSpaceCreateDeviceRGB ();
+	CGImageAlphaInfo alphaInfo = kCGImageAlphaFirst;
+	if (GetPixDepth (pixMap) != 32)
+		alphaInfo = kCGImageAlphaNone;
+	image = CGImageCreate (bounds.right - bounds.left, bounds.bottom - bounds.top, 8 , pixDepth, pixRowBytes, colorspace, alphaInfo, provider, NULL, 0, kCGRenderingIntentDefault);
+	CGDataProviderRelease (provider);
+	CGColorSpaceRelease (colorspace);
+
+	return image;
+}
+#endif
+
 //-----------------------------------------------------------------------------
 void CBitmap::draw (CDrawContext *pContext, CRect &rect, const CPoint &offset)
 {
@@ -5084,6 +5654,40 @@ void CBitmap::draw (CDrawContext *pContext, CRect &rect, const CPoint &offset)
 
 #elif MAC
 
+	#if QUARTZ
+	if (pHandle)
+	{
+		CGContextRef context = pContext->beginCGContext ();
+		if (context)
+		{
+			CGImageRef image = createCGImage ();
+
+			if (image)
+			{
+				CGRect dest;
+				dest.origin.x = rect.left - offset.h + pContext->offset.h;
+				dest.origin.y = (rect.top + pContext->offset.v) * -1 - (getHeight () - offset.v);
+				dest.size.width = getWidth ();
+				dest.size.height = getHeight ();
+				
+				CGContextScaleCTM (context, 1, 1);
+
+				CGRect clipRect;
+				clipRect.origin.x = rect.left + pContext->offset.h;
+			    clipRect.origin.y = (rect.top + pContext->offset.v) * -1  - rect.height ();
+			    clipRect.size.width = rect.width (); 
+			    clipRect.size.height = rect.height ();
+				
+				CGContextClipToRect (context, clipRect);
+
+				CGContextDrawImage (context, dest, image);
+				CGImageRelease (image);
+			}
+		}
+		pContext->releaseCGContext (context);
+	}
+	
+	#else
 	Rect source, dest;
 	dest.top    = rect.top  + pContext->offset.v;
 	dest.left   = rect.left + pContext->offset.h;
@@ -5122,7 +5726,8 @@ void CBitmap::draw (CDrawContext *pContext, CRect &rect, const CPoint &offset)
 	}
 	
 	pContext->releaseBitmap ();
-
+        #endif
+        
 #elif MOTIF
 	if (!pHandle)
 	{
@@ -5182,6 +5787,40 @@ void CBitmap::drawTransparent (CDrawContext *pContext, CRect &rect, const CPoint
 	
 #elif MAC
 
+	#if QUARTZ
+	if (pHandle)
+	{
+		CGContextRef context = pContext->beginCGContext ();
+		if (context)
+		{
+			CGImageRef image = createCGImage (true);
+
+			if (image)
+			{
+				CGRect dest;
+				dest.origin.x = rect.left + offset.h + pContext->offset.h;
+				dest.origin.y = (rect.top + pContext->offset.v) * -1 - (getHeight () - offset.v);
+				dest.size.width = getWidth ();
+				dest.size.height = getHeight ();
+				
+				CGContextScaleCTM (context, 1, 1);
+
+				CGRect clipRect;
+				clipRect.origin.x = rect.left + pContext->offset.h;
+			    clipRect.origin.y = (rect.top + pContext->offset.v) * -1  - rect.height ();
+			    clipRect.size.width = rect.width (); 
+			    clipRect.size.height = rect.height ();
+				
+				CGContextClipToRect (context, clipRect);
+
+				CGContextDrawImage (context, dest, image);
+				CGImageRelease (image);
+			}
+		}
+		pContext->releaseCGContext (context);
+	}
+
+	#else
 	Rect source, dest;
 	dest.top    = rect.top  + pContext->offset.v;
 	dest.left   = rect.left + pContext->offset.h;
@@ -5236,7 +5875,8 @@ void CBitmap::drawTransparent (CDrawContext *pContext, CRect &rect, const CPoint
 	}
 
 	pContext->releaseBitmap ();
-	
+	#endif
+        
 #elif MOTIF
 	if (!pHandle) 
 	{
@@ -5412,6 +6052,42 @@ void CBitmap::drawAlphaBlend (CDrawContext *pContext, CRect &rect, const CPoint 
 
 #elif MAC
 
+    #if QUARTZ
+	if (pHandle)
+	{
+		CGContextRef context = pContext->beginCGContext ();
+		if (context)
+		{
+			CGContextSetAlpha (context, (float)alpha/255.f);
+			
+			CGImageRef image = createCGImage ();
+
+			if (image)
+			{
+				CGRect dest;
+				dest.origin.x = rect.left + offset.h + pContext->offset.h;
+				dest.origin.y = (rect.top + pContext->offset.v) * -1 - (getHeight () - offset.v);
+				dest.size.width = getWidth ();
+				dest.size.height = getHeight ();
+				
+				CGContextScaleCTM (context, 1, 1);
+
+				CGRect clipRect;
+				clipRect.origin.x = rect.left + pContext->offset.h;
+			    clipRect.origin.y = (rect.top + pContext->offset.v) * -1  - rect.height ();
+			    clipRect.size.width = rect.width (); 
+			    clipRect.size.height = rect.height ();
+				
+				CGContextClipToRect (context, clipRect);
+
+				CGContextDrawImage (context, dest, image);
+				CGImageRelease (image);
+			}
+		}
+		pContext->releaseCGContext (context);
+	}
+	
+    #else
 	Rect source, dest;
 	dest.top    = rect.top  + pContext->offset.v;
 	dest.left   = rect.left + pContext->offset.h;
@@ -5457,6 +6133,7 @@ void CBitmap::drawAlphaBlend (CDrawContext *pContext, CRect &rect, const CPoint 
 	}
 
 	pContext->releaseBitmap ();
+        #endif
 #endif
 }
 //-----------------------------------------------------------------------------
@@ -5477,6 +6154,8 @@ void CBitmap::setTransparencyMask (CDrawContext* pContext, const CPoint& offset)
 	pMask = CreateMaskBitmap (pContext, r, transparentCColor);
 
 #elif MAC
+	#if QUARTZ
+	#else
 	if (pMask)
 		DisposeGWorld ((GWorldPtr)pMask);
 	pMask = 0;
@@ -5526,7 +6205,8 @@ void CBitmap::setTransparencyMask (CDrawContext* pContext, const CPoint& offset)
 				
 		SetGWorld (oldPort, oldDevice);
 	}
-	
+	#endif
+        
 #else
 	// todo: implement me!
 #endif
@@ -7490,6 +8170,143 @@ pascal short drag_receiver (WindowPtr w, void* ref, DragReference drag)
 	delete []ptrItems;
 	return cantGetFlavorErr;
 }
+
+#if CARBON_EVENTS
+#define defControlStringMask	CFSTR ("net.sourceforge.vstgui.%d-%d")
+
+bool CFrame::registerWithToolbox ()
+{
+	CFStringRef defControlString = CFStringCreateWithFormat (NULL, NULL, defControlStringMask, gBundleRef, CFGetRetainCount (gBundleRef));
+
+	controlSpec.defType = kControlDefObjectClass;
+	controlSpec.u.classRef = NULL;
+
+	EventTypeSpec eventTypes[] = {	{kEventClassControl, kEventControlDraw},
+									{kEventClassControl, kEventControlClick},
+									{kEventClassControl, kEventControlContextualMenuClick},
+									{kEventClassKeyboard, kEventRawKeyDown},
+									{kEventClassKeyboard, kEventRawKeyRepeat},
+									{kEventClassMouse, kEventMouseWheelMoved}
+								};
+
+	ToolboxObjectClassRef controlClass = NULL;
+
+	OSStatus status = RegisterToolboxObjectClass (	defControlString,
+													NULL,
+													GetEventTypeCount (eventTypes),
+													eventTypes,
+													NewEventHandlerUPP (CFrame::carbonEventHandler),
+													this,
+													&controlClass);
+	if (status == noErr)
+		controlSpec.u.classRef = controlClass;
+
+	CFRelease (defControlString);
+
+	return (controlSpec.u.classRef != NULL);
+}
+
+//---------------------------------------------------------------------------------------
+pascal OSStatus CFrame::carbonEventHandler (EventHandlerCallRef inHandlerCallRef, EventRef inEvent, void *inUserData)
+{
+	OSStatus result = eventNotHandledErr;
+	CFrame* frame = (CFrame*)inUserData;
+	EventClass eventClass = GetEventClass (inEvent);
+	EventKind eventKind = GetEventKind (inEvent);
+
+	// we only set the port because of the old style getMouseLocation call in CDrawContext
+	// if this lib changes its internal event handling, we don't need it anymore !
+	GrafPtr	savePort;
+	GetPort (&savePort);
+	SetPort ((GrafPtr)GetWindowPort ((WindowRef)frame->getSystemWindow ()));
+
+	switch (eventClass)
+	{
+		case kEventClassControl:
+		{
+			switch (eventKind)
+			{
+				case kEventControlDraw:
+				{
+					CGContextRef cgcontext;
+					OSStatus result = GetEventParameter (inEvent, kEventParamCGContextRef, typeCGContextRef, NULL, sizeof (cgcontext), NULL, &cgcontext); 				
+					CDrawContext context (frame, (result == noErr) ? cgcontext : NULL, frame->getSystemWindow ());
+					frame->draw (&context);
+					result = noErr;
+					break;
+				}
+				case kEventControlClick:
+				{
+					SetUserFocusWindow ((WindowRef)frame->getSystemWindow ());
+					AdvanceKeyboardFocus ((WindowRef)frame->getSystemWindow ());
+					SetKeyboardFocus ((WindowRef)frame->getSystemWindow (), frame->controlRef, kControlFocusNextPart);
+					HIPoint hipoint;
+					GetEventParameter (inEvent, kEventParamMouseLocation, typeHIPoint, NULL, sizeof (HIPoint), NULL, &hipoint);
+					Point point = {hipoint.y, hipoint.x};
+					QDGlobalToLocalPoint (GetWindowPort ((WindowRef)frame->getSystemWindow ()), &point);
+					CDrawContext context (frame, NULL, frame->getSystemWindow ());
+					CPoint p (point.h, point.v);
+					frame->mouse (&context, p);
+					result = noErr;
+					break;
+				}
+				case kEventControlContextualMenuClick:
+				{
+					HIPoint hipoint;
+					GetEventParameter (inEvent, kEventParamMouseLocation, typeHIPoint, NULL, sizeof (HIPoint), NULL, &hipoint);
+					CDrawContext context (frame, NULL, frame->getSystemWindow ());
+					CPoint p (hipoint.x, hipoint.y);
+					frame->mouse (&context, p);
+					result = noErr;
+					break;
+				}
+			}
+			break;
+		}
+		case kEventClassMouse:
+		{
+			switch (eventKind)
+			{
+				case kEventMouseWheelMoved:
+				{
+					HIPoint hipoint;
+					SInt32 wheelDelta;
+					EventMouseWheelAxis wheelAxis;
+					WindowRef windowRef;
+					GetEventParameter (inEvent, kEventParamWindowRef, typeWindowRef, NULL, sizeof (WindowRef), NULL, &windowRef);
+					GetEventParameter (inEvent, kEventParamMouseLocation, typeHIPoint, NULL, sizeof (HIPoint), NULL, &hipoint);
+					GetEventParameter (inEvent, kEventParamMouseWheelAxis, typeMouseWheelAxis, NULL, sizeof (EventMouseWheelAxis), NULL, &wheelAxis);
+					GetEventParameter (inEvent, kEventParamMouseWheelDelta, typeLongInteger, NULL, sizeof (SInt32), NULL, &wheelDelta);
+					Point point = {hipoint.y, hipoint.x};
+					QDGlobalToLocalPoint (GetWindowPort ((WindowRef)frame->getSystemWindow ()), &point);
+					CDrawContext context (frame, NULL, frame->getSystemWindow ());
+					CPoint p (point.h, point.v);
+					frame->onWheel (&context, p, wheelDelta);					
+					result = noErr;
+					break;
+				}
+			}
+			break;
+		}
+		case kEventClassKeyboard:
+		{
+			// we never get here, hmm, who needs key input should take care of this and debug it ;-)
+			switch (eventKind)
+			{
+				case kEventRawKeyDown:
+				case kEventRawKeyRepeat:
+				{
+					fprintf (stderr, "key down\n");
+					break;
+				}
+			}
+			break;
+		}
+	}
+	SetPort (savePort);
+	return result;
+}
+#endif
 
 #endif
 
