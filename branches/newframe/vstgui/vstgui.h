@@ -717,7 +717,9 @@ protected:
 #elif MAC
 	void* pHandle;
 	void* pMask;
-
+	#if QUARTZ
+	void* cgImage;
+	#endif
 #elif BEOS
 	static BResources *resourceFile;
 	BBitmap    *bbitmap;
@@ -760,7 +762,7 @@ public:
 
 	virtual bool isDirty () { return bDirty; }
 	virtual void setDirty (const bool val = true) { bDirty = val; }
-
+	
 	virtual void setMouseEnabled (const bool bEnable = true) { bMouseEnabled = bEnable; }
 	virtual bool getMouseEnabled () { return bMouseEnabled; }
 

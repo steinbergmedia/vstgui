@@ -1,3 +1,8 @@
+2004-08-06 arne
+
+	* quartz:	- cache the CGImageRef, so that it is not created every time the CBitmap is drawn. (Performace will be much better with the next os release)
+				- remove the SetPort/GetPort stuff in AEffGUIEditor. It is not needed anymore.
+
 2004-07-30 arne
 
 	* better streamlined mechanism for CViewContainer::update (you can turn this off, if it does not work for you in vstgui.cpp with the NEW_UPDATE_MECHANISM macro at the top)

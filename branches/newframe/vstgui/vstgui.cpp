@@ -5809,7 +5809,9 @@ CBitmap::CBitmap (long resourceID)
 	
 	pHandle = 0;
 	pMask = 0;
-	
+	#if QUARTZ
+	cgImage = 0;
+	#endif
 	#if MACX
 	#if PLUGGUI
 	extern CFBundleRef ghInst;
@@ -5998,7 +6000,7 @@ CBitmap::CBitmap (CFrame &frame, long width, long height)
 
     #if QUARTZ
 	NewGWorld ((GWorldPtr*)&pHandle, 32, &r, 0, 0, 0);
-
+	cgImage = 0;
     #else
 	NewGWorld ((GWorldPtr*)&pHandle, 0, &r, 0, 0, 0);
 
@@ -6030,6 +6032,9 @@ CBitmap::CBitmap ()
 	#elif MAC
 	pHandle = 0;
 	pMask = 0;
+	#if QUARTZ
+	cgImage = 0;
+	#endif
 	
 	#elif MOTIF
 	pMask = 0;
@@ -6056,6 +6061,10 @@ CBitmap::~CBitmap ()
 		DeleteObject (pMask);
 	
 	#elif MAC
+	#if QUARTZ
+	if (cgImage)
+		CGImageRelease ((CGImageRef)cgImage);
+	#endif
 	if (pHandle)
 		DisposeGWorld ((GWorldPtr)pHandle);
 	if (pMask)
@@ -6165,6 +6174,11 @@ public:
 //-----------------------------------------------------------------------------
 CGImageRef CBitmap::createCGImage (bool transparent)
 {
+	if (cgImage)
+	{
+		CGImageRetain ((CGImageRef)cgImage);
+		return (CGImageRef)cgImage;
+	}
 	PixMapHandle pixMap = GetGWorldPixMap ((GWorldPtr)pHandle);
 	
 	Rect bounds;
@@ -6191,6 +6205,8 @@ CGImageRef CBitmap::createCGImage (bool transparent)
 	CGDataProviderRelease (provider);
 	CGColorSpaceRelease (colorspace);
 
+	cgImage = image;
+	CGImageRetain (image);
 	return image;
 }
 #endif
