@@ -2029,6 +2029,9 @@ bool COptionMenu::addEntry (COptionMenu *subMenu, char *txt)
 
 	nbEntries++;
 
+	if (currentIndex < 0)
+		currentIndex = 0;
+	
 	return true;
 }
 
