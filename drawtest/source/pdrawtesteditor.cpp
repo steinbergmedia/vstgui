@@ -22,6 +22,7 @@
 #include "cscrollview.h"
 #include "ctabview.h"
 #include "controlsgui.h"
+#include "pprimitivesviews.h"
 
 enum {
 	kBackgroundBitmap	= 1,
@@ -105,6 +106,7 @@ void DrawTestEditor::setTabView (CFrame* frame, const CRect& r, long position)
 	CRect containerSize;
 	containerSize.right = testBitmap->getWidth ();
 	containerSize.bottom = testBitmap->getHeight ();
+	// the first tab is a scroll view with a movie bitmap
 	CScrollView* scrollview = new CScrollView (tabSize, containerSize, frame, CScrollView::kHorizontalScrollbar|CScrollView::kVerticalScrollbar);
 	CPoint p (0,0);
 	testView = new CMovieBitmap (containerSize, NULL, 0, 1, testBitmap->getHeight (), testBitmap, p);
@@ -112,16 +114,22 @@ void DrawTestEditor::setTabView (CFrame* frame, const CRect& r, long position)
 	scrollview->addView (testView);
 	tabView->addTab (scrollview, "Scroll View");
 
-	testView = new CDrawTestView (tabSize);
-	tabView->addTab (testView, "Primitives");
-	
+	// the second tab is a draw primitives view
+//	testView = new CDrawTestView (tabSize);
+//	tabView->addTab (testView, "Primitives");
+	testView = new PLinesView (tabSize);
+	tabView->addTab (testView, "Lines");
+
+	testView = new PRectsView (tabSize);
+	tabView->addTab (testView, "Rects");
+
+	// the third tab is the old controlsgui view embeded into a container view
 	CRect controlsGUISize (0, 0, 420, 210);
 	controlsGUISize.offset (5, 5);
 	testView = new ControlsGUI (controlsGUISize, frame);
 
 	CViewContainer* controlContainer = new CViewContainer (tabSize, frame);
 	controlContainer->setTransparency (true);
-	controlContainer->setMode (CViewContainer::kOnlyDirtyUpdate);
 	controlContainer->addView (testView);
 	
 	tabView->addTab (controlContainer, "Controls");
