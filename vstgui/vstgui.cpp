@@ -275,13 +275,13 @@ static long pSystemVersion;
 
 #if QUARTZ
 const char* macXfontNames[] = {
-	"Arial",
-	"Arial",
-	"Arial",
-	"Arial",
-	"Arial",
-	"Arial",
-	"Arial",
+	"Helvetica",
+	"Helvetica",
+	"Helvetica",
+	"Helvetica",
+	"Helvetica",
+	"Helvetica",
+	"Helvetica",
 	"Symbol"
 };
 
