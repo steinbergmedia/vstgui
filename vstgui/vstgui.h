@@ -649,7 +649,7 @@ class CBitmap
 public:
 	CBitmap (long resourceID);
 	CBitmap (CFrame &frame, long width, long height);
-	~CBitmap ();
+	virtual ~CBitmap ();
 
 	void draw (CDrawContext *pContext, CRect &rect, const CPoint &offset = CPoint (0, 0));
 	void drawTransparent (CDrawContext *pContext, CRect &rect, const CPoint &offset = CPoint (0, 0));
@@ -675,6 +675,8 @@ public:
 
 	//-------------------------------------------
 protected:
+	CBitmap ();
+
 	long resourceID;
 	long nbReference;
 	long width;
