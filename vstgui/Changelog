@@ -1,3 +1,9 @@
+2003-09-18 arne
+
+	* incorporated Marc Poirier's CTextEdit fixes
+	* quartz: bugfix in drawString, set cliprect so that the text won't draw outside
+	* carbon events: some code cleanup
+
 2003-09-17 arne
 
 	* Added Carbon Events handling (#define CARBON_EVENTS 1)
