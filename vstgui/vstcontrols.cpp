@@ -852,6 +852,20 @@ void CTextEdit::draw (CDrawContext *pContext)
 		string[0] = 0;
 		editConvert (text, string);
 	}
+	// Allow to display strings through the stringConvert
+	// callbacks inherited from CParamDisplay
+	else if (stringConvert2)
+	{
+		string[0] = 0;
+		stringConvert2 (value, string, userData);
+		strcpy(text, string);
+	}
+	else if (stringConvert)
+	{
+		string[0] = 0;
+		stringConvert (value, string);
+		strcpy(text, string);
+	}
 	else
 		sprintf (string, "%s", text);
 
@@ -2799,7 +2813,7 @@ void COptionMenu::takeFocus (CDrawContext *pContext)
 	//---Create the popup menu---
 	long offIdx = 0;
 	MenuHandle theMenu = (MenuHandle)appendItems (offIdx);
-		
+
 	// Calculate the menu size (height and width)
 	CalcMenuSize (theMenu);
 	
