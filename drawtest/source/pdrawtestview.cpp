@@ -103,9 +103,9 @@ static inline void drawLines (CDrawContext* pContext, CRect r, int offset = 2)
 }
 
 
-CColor arcColors[] = { {0,0,255,255}, {0,255,0,255}, {255,0,0,255} };
+CColor arcColors[] = { {0,0,255,255}, {255,0,255,255}, {0,255,0,255}, {255,0,0,255}, {255, 255, 0, 255} };
 
-#define numArcColors	2
+#define numArcColors	4
 
 static inline void drawArcs (CDrawContext* pContext, CRect r, int offset = 2)
 {
@@ -114,13 +114,13 @@ static inline void drawArcs (CDrawContext* pContext, CRect r, int offset = 2)
 	while (r.width () > 1 && r.height () > 1)
 	{
 		pContext->setFrameColor (arcColors[i++]); if (i > numArcColors) i = 0;
-		pContext->drawArc (r, CPoint (r.left, r.top + r.height () / 2), CPoint (r.left + r.width () / 2, r.top));
+		pContext->drawArc (r, CPoint (r.left, r.top + r.height () / 2), CPoint (r.left + r.width () / 2, r.bottom));
 		pContext->setFrameColor (arcColors[i++]); if (i > numArcColors) i = 0;
-		pContext->drawArc (r, CPoint (r.left + r.width () / 2, r.top), CPoint (r.right, r.top + r.height () / 2));
+		pContext->drawArc (r, CPoint (r.left + r.width () / 2, r.bottom), CPoint (r.right, r.top + r.height () / 2));
 		pContext->setFrameColor (arcColors[i++]); if (i > numArcColors) i = 0;
-		pContext->drawArc (r, CPoint (r.right, r.top + r.height () / 2), CPoint (r.left + r.width () / 2, r.bottom));
+		pContext->drawArc (r, CPoint (r.right, r.top + r.height () / 2), CPoint (r.left + r.width () / 2, r.top));
 		pContext->setFrameColor (arcColors[i++]); if (i > numArcColors) i = 0;
-		pContext->drawArc (r, CPoint (r.left + r.width () / 2, r.bottom), CPoint (r.left, r.top + r.height () / 2));
+		pContext->drawArc (r, CPoint (r.left + r.width () / 2, r.top), CPoint (r.left, r.top + r.height () / 2));
 		r.inset (offset, offset);
 	}
 }
