@@ -143,7 +143,7 @@ long AEffGUIEditor::open (void *ptr)
 //-----------------------------------------------------------------------------
 void AEffGUIEditor::idle ()
 {
-#if MAC
+#if MAC && !QUARTZ
 	GrafPtr	savePort;
 	GetPort (&savePort);
 	SetPort ((GrafPtr)GetWindowPort ((WindowRef)systemWindow));
