@@ -151,9 +151,6 @@ public:
 	virtual bool  isDirty ();
 	virtual void  setDirty (const bool val = true);
 
-	virtual void     setBackground (CBitmap* pBackground);
-	virtual CBitmap *getBackground () { return pBackground; }
-
 	virtual void setBackOffset (CPoint &offset);
 	virtual void copyBackOffset ();
 
@@ -178,7 +175,6 @@ protected:
 	long lastTicks;
 	long delta;
 
-	CBitmap *pBackground;
 	CPoint	backOffset;
 };
 

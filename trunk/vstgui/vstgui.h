@@ -736,6 +736,9 @@ public:
 	virtual void update (CDrawContext *pContext);
 	virtual long notify (CView* sender, const char* message);
 	
+	virtual void setBackground (CBitmap *background);
+	virtual CBitmap *getBackground () { return pBackground; }
+
 	virtual long onKeyDown (VstKeyCode& keyCode);
 	virtual long onKeyUp (VstKeyCode& keyCode);
 
@@ -800,6 +803,8 @@ protected:
 	bool  bDirty;
 	bool  bMouseEnabled;
 	bool  bTransparencyEnabled;
+	
+	CBitmap* pBackground;
 };
 
 //-----------------------------------------------------------------------------
@@ -837,9 +842,6 @@ public:
 	bool getPosition (long &x, long &y);
 	bool setSize (long width, long height);
 	bool getSize (CRect *pSize);
-
-	void     setBackground (CBitmap *pBackground);
-	CBitmap *getBackground () { return pBackground; }
 
 	virtual bool addView (CView *pView);
 	virtual bool removeView (CView *pView, const bool &withForget = false);
@@ -907,7 +909,6 @@ protected:
 	void   *pEditor;
 	
 	void    *pSystemWindow;
-	CBitmap *pBackground;
 	long    viewCount;
 	long    maxViews;
 	CView   **ppViews;
@@ -1012,8 +1013,6 @@ public:
 	virtual CColor getBackgroundColor () { return backgroundColor; }
 	virtual void setViewSize (CRect &rect);
 
-	virtual void setBackground (CBitmap *background);
-	virtual CBitmap *getBackground () { return pBackground; }
 	virtual void setBackgroundOffset (const CPoint &p) { backgroundOffset = p; }
 	virtual const CPoint& getBackgroundOffset () { return backgroundOffset; }
 
@@ -1044,7 +1043,6 @@ protected:
 
 	CCView  *pFirstView;
 	CCView  *pLastView;
-	CBitmap *pBackground;
 	long mode;
 	COffscreenContext *pOffscreenContext;
 	CColor backgroundColor;

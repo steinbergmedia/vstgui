@@ -1,3 +1,9 @@
+2004-05-22 arne
+
+	* moved pBackgroundBitmap and its accessors into CView from CViewContainer, CFrame and CControl as suggested by Wolfram Franke
+	* mac: added implementation for quartz CBitmap::CBitmap (CFrame &frame, long width, long height) 
+	* windows: prevent a free memory read in UDropTarget::Release (submitted by Justin Caldicott)
+
 2004-04-27 arne
 
 	* changed CControlListener and added a method to intercept modifier clicks so the listener can decide if the control should handle

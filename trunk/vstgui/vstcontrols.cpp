@@ -67,7 +67,7 @@ CControl::CControl (const CRect &size, CControlListener *listener, long tag,
  CBitmap *pBackground)
 :	CView (size), 
 	listener (listener), tag (tag), oldValue (1), defaultValue (0.5f),
-	value (0), vmin (0), vmax (1.f), wheelInc (0.1f), lastTicks (-1), pBackground (pBackground)
+	value (0), vmin (0), vmax (1.f), wheelInc (0.1f), lastTicks (-1)
 {
 	#if WINDOWS
 		delta = GetDoubleClickTime ();
@@ -84,15 +84,12 @@ CControl::CControl (const CRect &size, CControlListener *listener, long tag,
 	setMouseEnabled (true);
 	backOffset (0 ,0);
 
-	if (pBackground)
-		pBackground->remember ();
+	setBackground (pBackground);
 }
 
 //------------------------------------------------------------------------
 CControl::~CControl ()
 {
-	if (pBackground)
-		pBackground->forget ();
 }
 
 //------------------------------------------------------------------------
@@ -118,15 +115,6 @@ void CControl::setDirty (const bool val)
 		oldValue = value;
 }
 
-//------------------------------------------------------------------------
-void CControl::setBackground (CBitmap *_pBackground)
-{
-	if (pBackground)
-		pBackground->forget ();
-	pBackground = _pBackground;
-	if (pBackground)
-		pBackground->remember ();
-}
 //------------------------------------------------------------------------
 void CControl::setBackOffset (CPoint &offset)
 {
