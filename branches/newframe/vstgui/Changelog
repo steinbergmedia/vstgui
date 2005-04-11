@@ -1,3 +1,10 @@
+2005-04-11 arne
+
+	* removed CFrame::isSomethingDirty
+	* added a check in CViewContainer::isDirty if the subview is inside the view container size
+	* fix for overlapping views not drawn everytime
+	* quartz: fix some drawing bugs
+
 2005-03-25 arne
 
 	* quartz: fix drawing of transparent bitmaps when OLD_TRANSPARENT_BITMAP_MODE is defined

@@ -55,8 +55,9 @@ public:
 			strcpy (name, inName);
 		}
 		activeTextColor = kBlackCColor;
-		inactiveTextColor = kWhiteCColor;
+		inactiveTextColor (90, 90, 90, 255);
 		textFont = kSystemFont;
+		fontSize = 12;
 	}
 
 	virtual ~CTabButton ()
@@ -70,7 +71,7 @@ public:
 		COnOffButton::draw (pContext);
 		if (name)
 		{
-			pContext->setFont (textFont);
+			pContext->setFont (textFont, fontSize);
 			pContext->setFontColor (value ? activeTextColor : inactiveTextColor);
 			pContext->drawString (name, size, false);
 		}
@@ -104,6 +105,7 @@ public:
 	void setTextFont (const CFont& font) { textFont = font; }
 	void setActiveTextColor (const CColor& color) { activeTextColor = color; }
 	void setInactiveTextColor (const CColor& color) { inactiveTextColor = color; }
+	void setTextSize (const long& textSize) { fontSize = textSize; }
 
 	CLASS_METHODS (CTabButton, COnOffButton)
 protected:
@@ -111,6 +113,7 @@ protected:
 	CFont textFont;
 	CColor activeTextColor;
 	CColor inactiveTextColor;
+	long fontSize;
 };
 
 //-----------------------------------------------------------------------------
@@ -176,6 +179,7 @@ CTabView::CTabView (const CRect& size, CFrame* parent, const CRect& tabSize, CBi
 //-----------------------------------------------------------------------------
 CTabView::~CTabView ()
 {
+	pParentFrame = 0;
 	removeAllTabs ();
 	if (tabBitmap)
 		tabBitmap->forget ();
@@ -339,5 +343,18 @@ CRect& CTabView::getTabViewSize (CRect& rect) const
 	return rect;
 }
 
+//-----------------------------------------------------------------------------
+void CTabView::setTabFontStyle (const CFont& font, long fontSize, CColor selectedColor, CColor deselectedColor)
+{
+	CTabChildView* v = firstChild;
+	while (v)
+	{
+		v->button->setTextFont (font);
+		v->button->setTextSize (fontSize);
+		v->button->setActiveTextColor (selectedColor);
+		v->button->setInactiveTextColor (deselectedColor);
+		v = v->next;
+	}
+}
 
 END_NAMESPACE_VSTGUI

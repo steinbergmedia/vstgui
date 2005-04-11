@@ -220,7 +220,7 @@ short fixResRefNum;
 
 CFBundleRef ghInst = 0;
 
-#if BUILD_APPLICATION
+#if PLUGGUI_STANDALONE
 void InitMachOLibrary ()
 {
 	ghInst = CFBundleGetMainBundle ();

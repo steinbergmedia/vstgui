@@ -3,7 +3,7 @@
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 // Standard Control Objects
 //
-// Version 3.0       $Date: 2005-03-25 14:30:39 $
+// Version 3.0       $Date: 2005-04-11 16:35:19 $
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
@@ -1055,4 +1055,4 @@ enum {
 
 END_NAMESPACE_VSTGUI
 
-#endif
+#endif	// __vstcontrol__

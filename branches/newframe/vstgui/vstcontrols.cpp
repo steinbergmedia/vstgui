@@ -3,7 +3,7 @@
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 // Standard Control Objects
 //
-// Version 3.0       $Date: 2005-03-25 15:08:22 $
+// Version 3.0       $Date: 2005-04-11 16:35:19 $
 //
 // Added new objects        : Michael Schmidt          08.97
 // Added new objects        : Yvan Grabit              01.98
@@ -5266,6 +5266,10 @@ CVuMeter::CVuMeter (const CRect &size, CBitmap *onBitmap, CBitmap *offBitmap,
 	  nbLed (nbLed), style (style)
 {
 	setDecreaseStepValue (0.1f);
+
+#if WINDOWS && !USE_LIBPNG
+	setUseOffscreen (true);
+#endif
 	
 	if (onBitmap)
 		onBitmap->remember ();

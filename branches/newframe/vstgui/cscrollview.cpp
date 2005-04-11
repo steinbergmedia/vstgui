@@ -160,7 +160,6 @@ CScrollView::CScrollView (const CRect &size, const CRect &containerSize, CFrame*
 
 	CRect scsize (size);
 	scsize.offset (-scsize.left, -scsize.top);
-	scsize.inset (1, 1);
 	CScrollbar* sb = 0;	
 	if (style & kHorizontalScrollbar)
 	{
@@ -169,7 +168,7 @@ CScrollView::CScrollView (const CRect &size, const CRect &containerSize, CFrame*
 		sbr.top = sbr.bottom - scrollbarWidth;
 		if (style & kVerticalScrollbar)
 		{
-			sbr.right -= scrollbarWidth;
+			sbr.right -= (scrollbarWidth - 1);
 		}
 		hsb = new CScrollbar (sbr, this, kHSBTag, CScrollbar::kHorizontal, containerSize);
 		CViewContainer::addView (hsb);
@@ -182,7 +181,7 @@ CScrollView::CScrollView (const CRect &size, const CRect &containerSize, CFrame*
 		sbr.left = sbr.right - scrollbarWidth;
 		if (style & kHorizontalScrollbar)
 		{
-			sbr.bottom -= scrollbarWidth;
+			sbr.bottom -= (scrollbarWidth - 1);
 		}
 		vsb = new CScrollbar (sbr, this, kVSBTag, CScrollbar::kVertical, containerSize);
 		CViewContainer::addView (vsb);
@@ -453,8 +452,6 @@ bool CScrollbar::onWheel (CDrawContext *pContext, const CPoint &where, float dis
 void CScrollbar::drawBackground (CDrawContext* pContext)
 {
 	CRect r (size);
-	r.right--;
-	r.bottom--;
 	if (drawer)
 		drawer->drawScrollbarBackground (pContext, r, style, this);
 	else
@@ -470,8 +467,6 @@ void CScrollbar::drawBackground (CDrawContext* pContext)
 void CScrollbar::drawScroller (CDrawContext* pContext, const CRect& size)
 {
 	CRect r (size);
-	r.right--;
-	r.bottom--;
 	if (drawer)
 		drawer->drawScrollbarScroller (pContext, r, style, this);
 	else
