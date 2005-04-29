@@ -1,3 +1,10 @@
+2005-04-29 arne
+
+	* added CTextLabel
+	* mac: the CFrame can be placed into HIScrollViews
+	* mac: using static objects for Quicktime GraphicsImporter to speed up loading of images
+	* mac: using CGImageCreateImageInRect on 10.4 for faster drawing of clipped images
+
 2005-04-11 arne
 
 	* removed CFrame::isSomethingDirty
