@@ -2,7 +2,7 @@
 // VST Plug-Ins SDK
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 //
-// Version 3.0       $Date: 2005-04-11 16:35:19 $ 
+// Version 3.0       $Date: 2005-04-29 13:44:27 $ 
 //
 // Added Motif/Windows vers.: Yvan Grabit              01.98
 // Added Mac version        : Charlie Steinberg        02.98
@@ -303,6 +303,16 @@ static inline void QuartzSetupClip (CGContextRef context, const CRect clipRect);
 static inline double radians (double degrees) { return degrees * M_PI / 180; }
 CGColorSpaceRef GetGenericRGBColorSpace ();
 
+typedef CGImageRef (*CGImageCreateWithImageInRectProc) (CGImageRef image, CGRect rect);
+static CGImageCreateWithImageInRectProc _CGImageCreateWithImageInRect = NULL;
+
+// cache graphics importer
+static ComponentInstance bmpGI = 0;
+static ComponentInstance pngGI = 0;
+static ComponentInstance jpgGI = 0;
+static ComponentInstance pictGI = 0;
+
+
 #else
 const unsigned char* gMacXfontNames[] = {
 	"\pArial",
@@ -503,7 +513,7 @@ CDrawContext::CDrawContext (CFrame *inFrame, void *inSystemContext, void *inWind
 , drawMode (kAntialias)
 , fontId (kNumStandardFonts)
 , fontSize (-1)
-	#if WINDOWS
+#if WINDOWS
 , pBrush (0), pFont (0), pPen (0)
 , pOldBrush (0), pOldFont (0), pOldPen (0)
 #elif MAC && !QUARTZ
@@ -574,6 +584,7 @@ CDrawContext::CDrawContext (CFrame *inFrame, void *inSystemContext, void *inWind
 		offsetScreen.x = bounds.origin.x;
 		offsetScreen.y = bounds.origin.y;
 		clipRect (0, 0, bounds.size.width, bounds.size.height);
+		clipRect.offset (pFrame->hiScrollOffset.x, pFrame->hiScrollOffset.y);
 	}
 	gCGContext = 0;
 	if (pSystemContext)
@@ -601,6 +612,7 @@ CDrawContext::CDrawContext (CFrame *inFrame, void *inSystemContext, void *inWind
 			GetPortBounds (port, &rect);
 			CGContextTranslateCTM (gCGContext, 0, rect.bottom - rect.top);
 			CGContextTranslateCTM (gCGContext, offsetScreen.x, -offsetScreen.y);
+			CGContextTranslateCTM (gCGContext, -pFrame->hiScrollOffset.x, pFrame->hiScrollOffset.y);
 			CGContextSetShouldAntialias (gCGContext, false);
 			CGContextSetFillColorSpace (gCGContext, GetGenericRGBColorSpace ());
 			CGContextSetStrokeColorSpace (gCGContext, GetGenericRGBColorSpace ()); 
@@ -2695,6 +2707,9 @@ void CDrawContext::getMouseLocation (CPoint &point)
 		QDSwapPort (savedPort, NULL);
 	point (where.h, where.v);
 	#endif
+	#if QUARTZ
+	point.offset (pFrame->hiScrollOffset.x,pFrame->hiScrollOffset.y);
+	#endif
 #elif MAC
 	Point where;
 	GetMouse (&where);
@@ -4057,7 +4072,6 @@ CFrame::CFrame (const CRect &inSize, void *inSystemWindow, void *inEditor)
 	Gestalt (gestaltSystemVersion, &pSystemVersion);
 	#if QUARTZ
 	pFrameContext = 0;
-	
 	#else
 	pFrameContext = new CDrawContext (this, getSystemWindow (), getSystemWindow ());
 	pFrameContext->offset.h = size.left;
@@ -4208,7 +4222,6 @@ CFrame::~CFrame ()
 			fprintf (stderr, "UnregisterToolboxObjectClass failed : %d\n", status);
 	}
 #endif
-
 }
 
 //-----------------------------------------------------------------------------
@@ -4853,6 +4866,8 @@ bool CFrame::getPosition (CCoord &x, CCoord &y) const
 		x += hirect.origin.x;
 		y += hirect.origin.y;
 	}
+	x -= hiScrollOffset.x;
+	y -= hiScrollOffset.y;
 	#endif
 
 #elif MOTIF
@@ -6913,32 +6928,9 @@ bool CBitmap::loadFromPath (const void* platformPath)
 
 	dispose ();
 
-	#if MACX
+	#if QUARTZ
 	CFURLRef url = (CFURLRef)platformPath;
 
-	#if QUARTZ
-	if (false && (pSystemVersion >= 0x1040))
-	{
-		CFStringRef extension = CFURLCopyPathExtension (url);
-		if (CFStringCompare (extension, CFSTR("png"), kCFCompareCaseInsensitive) == kCFCompareEqualTo)
-		{
-			// this code is up to 5 times faster as the data is decoded when the bitmap is first drawn
-			// but you don't have access to the pixels
-			CGDataProviderRef source = CGDataProviderCreateWithURL (url);
-			if (source)
-			{
-				cgImage = CGImageCreateWithPNGDataProvider (source, NULL, false, kCGRenderingIntentDefault);
-				CGDataProviderRelease (source);
-				width = CGImageGetWidth ((CGImageRef)cgImage);
-				height = CGImageGetHeight ((CGImageRef)cgImage);
-				result = true;
-			}
-		}
-		CFRelease (extension);
-		if (result)
-			return result;
-	}
-	#endif
 	FSRef fsRef;
 	if (CFURLGetFSRef (url, &fsRef))
 	{
@@ -6946,22 +6938,54 @@ bool CBitmap::loadFromPath (const void* platformPath)
 		FSCatalogInfoBitmap infoBitmap = kFSCatInfoNone;
 		if (FSGetCatalogInfo (&fsRef, infoBitmap, NULL, NULL, &fsSpec, NULL) == noErr)
 		{
-			ComponentInstance gi;
-			GetGraphicsImporterForFile (&fsSpec, &gi);
-			if (gi)
+			ComponentInstance* gi = 0;
+			CFStringRef ext = CFURLCopyPathExtension (url);
+			if (ext == 0)
+				return false;
+			if (CFStringCompare (ext, CFSTR("bmp"), 0) == kCFCompareEqualTo)
+				gi = &bmpGI;
+			else if (CFStringCompare (ext, CFSTR("png"), 0) == kCFCompareEqualTo)
+				gi = &pngGI;
+			else if (CFStringCompare (ext, CFSTR("jpg"), 0) == kCFCompareEqualTo)
+				gi = &jpgGI;
+			else if (CFStringCompare (ext, CFSTR("pict"), 0) == kCFCompareEqualTo)
+				gi = &pictGI;
+			CFRelease (ext);
+
+			if (*gi == 0)
+				GetGraphicsImporterForFile (&fsSpec, gi);
+			else
+				if (GraphicsImportSetDataFile (*gi, &fsSpec) != noErr)
+					return false;
+			if (*gi)
 			{
-				Rect r;
-				GraphicsImportGetSourceRect (gi, &r);
-				OSErr err = NewGWorld ((GWorldPtr*)&pHandle, 32, &r, 0, 0, 0);
-				if (!err)
+				#if !OLD_TRANSPARENT_BITMAP_MODE
+				#ifdef MAC_OS_X_VERSION_10_3
+				if (GraphicsImportCreateCGImage)
 				{
-					width = r.right;
-					height = r.bottom;
-					GraphicsImportSetGWorld (gi, (GWorldPtr)pHandle, 0);
-					GraphicsImportDraw (gi);
-					result = true;
+					if (GraphicsImportCreateCGImage (*gi, (CGImageRef*)&cgImage, 0) == noErr)
+					{
+						width = CGImageGetWidth ((CGImageRef)cgImage);
+						height = CGImageGetHeight ((CGImageRef)cgImage);
+						result = true;
+					}
 				}
-				CloseComponent (gi);
+				else
+				#endif
+				#endif
+				{
+					Rect r;
+					GraphicsImportGetSourceRect (*gi, &r);
+					OSErr err = NewGWorld ((GWorldPtr*)&pHandle, 32, &r, 0, 0, 0);
+					if (!err)
+					{
+						width = r.right;
+						height = r.bottom;
+						GraphicsImportSetGWorld (*gi, (GWorldPtr)pHandle, 0);
+						GraphicsImportDraw (*gi);
+						result = true;
+					}
+				}
 			}
 		}
 	}
@@ -7504,6 +7528,47 @@ void CBitmap::drawAlphaBlend (CDrawContext *pContext, CRect &rect, const CPoint 
 #elif MAC
 
     #if QUARTZ
+    if (_CGImageCreateWithImageInRect)	// this is much faster on Mac OS X 10.4 and above
+    {
+        if (pHandle || cgImage)
+        {
+            CGContextRef context = pContext->beginCGContext ();
+            if (context)
+            {
+                if (alpha != 255)
+                    CGContextSetAlpha (context, (float)alpha / 255.f);
+        
+                CGImageRef image = createCGImage ();
+
+                if (image)
+                {
+                    CRect ccr;
+                    pContext->getClipRect (ccr);
+                    CGRect clipRect = CGRectMake (ccr.left - rect.left + offset.h, ccr.top - rect.top + offset.v, ccr.width (), ccr.height ());
+                    CGRect subRect = CGRectMake (offset.h, offset.v, getWidth (), getHeight ());
+                    subRect = CGRectIntersection (clipRect, subRect);
+                    if (subRect.size.width && subRect.size.height)
+                    {
+                        CGImageRef subImage = _CGImageCreateWithImageInRect (image, subRect);
+                        if (subImage)
+                        {
+                            CGRect dest;
+                            dest.origin.x = subRect.origin.x + pContext->offset.h - offset.h + rect.left;
+                            dest.origin.y = subRect.origin.y + pContext->offset.v - offset.v + rect.top;
+                            dest.size.width = subRect.size.width;
+                            dest.size.height = subRect.size.height;
+                            CGContextScaleCTM (context, 1, -1);
+                            HIViewDrawCGImage (context, &dest, subImage);
+                            CGImageRelease (subImage);
+                        }
+                    }
+                    CGImageRelease (image);
+                }
+                pContext->releaseCGContext (context);
+            }
+        }
+        return;
+    }
 	if (pHandle || cgImage)
 	{
 		CGContextRef context = pContext->beginCGContext ();
@@ -10036,7 +10101,7 @@ pascal short drag_receiver (WindowPtr w, void* ref, DragReference drag)
 	CFrame* frame = (CFrame*) ref;
 	
 	CDrawContext* context = frame->createDrawContext ();
-		VSTGUI_CPoint where;
+	VSTGUI_CPoint where;
 	frame->getMouseLocation (context, where);
 	frame->onDrop (context, gDragContainer, where);
 	frame->setCursor (kCursorDefault);
@@ -10071,6 +10136,9 @@ bool CFrame::registerWithToolbox ()
 									{kEventClassControl, kEventControlDragLeave},
 									{kEventClassControl, kEventControlDragReceive},
 									{kEventClassControl, kEventControlInitialize},
+									{kEventClassControl, kEventControlGetClickActivation},
+									{kEventClassScrollable, kEventScrollableGetInfo},
+									{kEventClassScrollable, kEventScrollableScrollTo},
 									//{kEventClassControl, kEventControlSetFocusPart},
 									//{kEventClassControl, kEventControlGetFocusPart}
 								};
@@ -10107,6 +10175,38 @@ pascal OSStatus CFrame::carbonEventHandler (EventHandlerCallRef inHandlerCallRef
 
 	switch (eventClass)
 	{
+		case kEventClassScrollable:
+		{
+			switch (eventKind)
+			{
+				case kEventScrollableGetInfo:
+				{
+					HISize cs = {frame->getWidth (), frame->getHeight ()};
+					SetEventParameter (inEvent, kEventParamImageSize, typeHISize, sizeof (HISize), &cs);
+					HIPoint origin = {frame->hiScrollOffset.x, frame->hiScrollOffset.y};
+					SetEventParameter (inEvent, kEventParamOrigin, typeHIPoint, sizeof (HIPoint), &origin);
+					HISize lineSize = {50.0, 20.0};
+					SetEventParameter(inEvent, kEventParamLineSize, typeHISize, sizeof(lineSize), &lineSize);
+					HIRect bounds;
+					HIViewGetBounds ((HIViewRef)frame->controlRef, &bounds);
+					SetEventParameter(inEvent, kEventParamViewSize, typeHISize, sizeof(bounds.size), &bounds.size);
+					result = noErr;
+					break;
+				}
+				case kEventScrollableScrollTo:
+				{
+					HIPoint where;
+					GetEventParameter(inEvent, kEventParamOrigin, typeHIPoint, NULL, sizeof(where), NULL, &where);
+					frame->hiScrollOffset.x = where.x;
+					frame->hiScrollOffset.y = where.y;
+					HIViewSetBoundsOrigin((HIViewRef)frame->controlRef, where.x, where.y);
+					HIViewSetNeedsDisplay((HIViewRef)frame->controlRef, true);
+					result = noErr;
+					break;
+				}
+			}
+			break;
+		}
 		case kEventClassControl:
 		{
 			switch (eventKind)
@@ -10151,6 +10251,13 @@ pascal OSStatus CFrame::carbonEventHandler (EventHandlerCallRef inHandlerCallRef
 					else
 						frame->draw (context);
 					context->forget ();
+					result = noErr;
+					break;
+				}
+				case kEventControlGetClickActivation:
+				{
+					ClickActivationResult activation = kActivateAndHandleClick;
+					SetEventParameter (inEvent, kEventParamClickActivation, typeClickActivationResult, sizeof (ClickActivationResult), &activation);
 					result = noErr;
 					break;
 				}
@@ -10337,6 +10444,7 @@ pascal OSStatus CFrame::carbonEventHandler (EventHandlerCallRef inHandlerCallRef
 					CDrawContext context (frame, NULL, window);
 					CPoint p (point.h, point.v);
 					p.offset (-context.offsetScreen.x, -context.offsetScreen.y);
+					p.offset (frame->hiScrollOffset.x, frame->hiScrollOffset.y);
 					frame->onWheel (&context, p, wheelDelta);					
 					result = noErr;
 					break;
@@ -10394,6 +10502,11 @@ public:
 	: genericRGBColorSpace (0)
 	{
 		CreateGenericRGBColorSpace ();
+        CFBundleRef hiToolboxBundle = CFBundleGetBundleWithIdentifier (CFSTR("com.apple.CoreGraphics"));
+        if (hiToolboxBundle)
+        {
+            _CGImageCreateWithImageInRect = (CGImageCreateWithImageInRectProc)CFBundleGetFunctionPointerForName (hiToolboxBundle, CFSTR("CGImageCreateWithImageInRect"));
+        }
 	}
 
 	//-----------------------------------------------------------------------------
@@ -10401,6 +10514,19 @@ public:
 	{
 		// we don't want to leak ;-)
 		CGColorSpaceRelease (genericRGBColorSpace);
+
+		if (bmpGI)
+			CloseComponent (bmpGI);
+		if (pngGI)
+			CloseComponent (pngGI);
+		if (jpgGI)
+			CloseComponent (jpgGI);
+		if (pictGI)
+			CloseComponent (pictGI);
+		bmpGI = 0;
+		pngGI = 0;
+		jpgGI = 0;
+		pictGI = 0;
 	}
 	
 	inline CGColorSpaceRef getGenericRGBColorSpace () { return genericRGBColorSpace; }

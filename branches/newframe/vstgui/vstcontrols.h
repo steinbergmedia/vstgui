@@ -3,7 +3,7 @@
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 // Standard Control Objects
 //
-// Version 3.0       $Date: 2005-04-11 16:35:19 $
+// Version 3.0       $Date: 2005-04-29 13:44:27 $
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
@@ -273,6 +273,28 @@ protected:
 	bool    bTextTransparencyEnabled;
 };
 
+
+//-----------------------------------------------------------------------------
+// CLabel Declaration
+//! a text label
+//-----------------------------------------------------------------------------
+class CTextLabel : public CParamDisplay
+{
+public:
+	CTextLabel (const CRect& size, const char* txt = 0, CBitmap* background = 0, const long style = 0);
+	~CTextLabel ();
+	
+	virtual void setText (const char* txt);
+	virtual const char* getText () const;
+	
+	virtual	void draw (CDrawContext *pContext);
+
+	CLASS_METHODS(CTextLabel, CParamDisplay)
+
+protected:
+	void freeText ();
+	char* text;
+};
 
 //-----------------------------------------------------------------------------
 // CTextEdit Declaration

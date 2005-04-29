@@ -2,7 +2,7 @@
 // VST Plug-Ins SDK
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 //
-// Version 3.0       $Date: 2005-04-11 16:35:20 $
+// Version 3.0       $Date: 2005-04-29 13:44:28 $
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
@@ -1116,6 +1116,7 @@ protected:
 	ControlDefSpec controlSpec;
 	ControlRef controlRef;
 	bool hasFocus;
+	CPoint hiScrollOffset;
 	EventHandlerRef dragEventHandler;
 	public:
 	void* getPlatformControl () const { return controlRef; }

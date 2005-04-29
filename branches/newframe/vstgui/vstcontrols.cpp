@@ -3,7 +3,7 @@
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 // Standard Control Objects
 //
-// Version 3.0       $Date: 2005-04-11 16:35:19 $
+// Version 3.0       $Date: 2005-04-29 13:44:27 $
 //
 // Added new objects        : Michael Schmidt          08.97
 // Added new objects        : Yvan Grabit              01.98
@@ -75,7 +75,7 @@ or the transparency area changes during different draws (CMovieBitmap ,...), the
 you have to rewrite the draw function in order to redraw the background and then call the draw of the object.
 */
 CControl::CControl (const CRect &size, CControlListener *listener, long tag,
- CBitmap *pBackground)
+					CBitmap *pBackground)
 :	CView (size), 
 	listener (listener), tag (tag), oldValue (1), defaultValue (0.5f),
 	value (0), vmin (0), vmax (1.f), wheelInc (0.1f), lastTicks (-1)
@@ -858,6 +858,56 @@ void CParamDisplay::setString2FloatConvert (void (*convert) (char *string, float
 	string2FloatConvert = convert;
 }
 
+//------------------------------------------------------------------------
+// CTextLabel
+//------------------------------------------------------------------------
+/*! @class CTextLabel
+*/
+CTextLabel::CTextLabel (const CRect& size, const char* txt, CBitmap* background, const long style)
+: CParamDisplay (size, background, style)
+, text (0)
+{
+	setText (txt);
+}
+
+//------------------------------------------------------------------------
+CTextLabel::~CTextLabel ()
+{
+	freeText ();
+}
+
+//------------------------------------------------------------------------
+void CTextLabel::freeText ()
+{
+	if (text)
+		free (text);
+	text = 0;
+}
+
+//------------------------------------------------------------------------
+void CTextLabel::setText (const char* txt)
+{
+	freeText ();
+	if (txt)
+	{
+		text = (char*)malloc (strlen (txt)+1);
+		strcpy (text, txt);
+	}
+}
+
+//------------------------------------------------------------------------
+const char* CTextLabel::getText () const
+{
+	return text;
+}
+
+//------------------------------------------------------------------------
+void CTextLabel::draw (CDrawContext *pContext)
+{
+	drawText (pContext, text);
+	setDirty (false);
+}
+
 
 //------------------------------------------------------------------------
 // CTextEdit
@@ -1370,8 +1420,6 @@ void CTextEdit::takeFocus (CDrawContext *pContext)
 #if MACX
 	WindowRef window = (WindowRef)getFrame ()->getSystemWindow ();
 	#if QUARTZ
-	if (pContext)
-		rect.offset (pContext->offsetScreen.h, pContext->offsetScreen.v);
 	WindowAttributes winAttributes;
 	GetWindowAttributes (window, &winAttributes);
 	if (winAttributes & kWindowCompositingAttribute)
@@ -1428,6 +1476,8 @@ void CTextEdit::takeFocus (CDrawContext *pContext)
 		}
 		return;
 	}
+	if (pContext)
+		rect.offset (pContext->offsetScreen.h, pContext->offsetScreen.v);
 	#endif
 	static bool gTXNInititalized = false;
 	if (!gTXNInititalized)
@@ -1936,7 +1986,7 @@ void CTextEdit::looseFocus (CDrawContext *pContext)
 	{
 		change = true;
 		if (listener)
-		listener->valueChanged (pContextTemp, this);
+			listener->valueChanged (pContextTemp, this);
 	}
 	if (localContext)
 	{
@@ -3468,7 +3518,7 @@ void COptionMenu::takeFocus (CDrawContext *pContext)
 	else
 		offset = size.bottom;
 
-	CCoord gx, gy;
+	CCoord gx = 0, gy = 0;
 	Point LToG;
 //	CRect myFrameRect;
 	getFrame()->getPosition(gx, gy);
@@ -5051,7 +5101,7 @@ CKickButton::CKickButton (const CRect &size, CControlListener *listener, long ta
 
 //------------------------------------------------------------------------
 CKickButton::CKickButton (const CRect &size, CControlListener *listener, long tag,
-                              long heightOfOneImage, // height of one image in pixel
+                          long heightOfOneImage, // height of one image in pixel
                           CBitmap *background, CPoint &offset)
 :	CControl (size, listener, tag, background), offset (offset), 
 	heightOfOneImage (heightOfOneImage)
