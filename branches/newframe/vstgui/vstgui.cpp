@@ -2,7 +2,7 @@
 // VST Plug-Ins SDK
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 //
-// Version 3.0       $Date: 2005-04-29 13:44:27 $ 
+// Version 3.0       $Date: 2005-04-30 10:40:56 $ 
 //
 // Added Motif/Windows vers.: Yvan Grabit              01.98
 // Added Mac version        : Charlie Steinberg        02.98
@@ -6494,7 +6494,7 @@ The Bitmaps are .bmp files and must be included in the plug (usually using a .rc
 It's also possible to use png as of version 3.0 if you define the macro USE_LIBPNG and include the libpng and zlib libraries/sources to your project.
 */
 CBitmap::CBitmap (long resourceID)
-	: resourceID (resourceID), width (0), height (0)
+	: resourceID (resourceID), width (0), height (0), noAlpha (true)
 {
 	#if DEBUG
 	gNbCBitmap++;
@@ -6583,7 +6583,7 @@ CBitmap::CBitmap (long resourceID)
 
 //-----------------------------------------------------------------------------
 CBitmap::CBitmap (CFrame &frame, CCoord width, CCoord height)
-	: width (width), height (height)
+	: width (width), height (height), noAlpha (true)
 {
 	#if DEBUG
 	gNbCBitmap++;
@@ -6629,7 +6629,7 @@ CBitmap::CBitmap (CFrame &frame, CCoord width, CCoord height)
 
 //-----------------------------------------------------------------------------
 CBitmap::CBitmap ()
-	: width (0), height (0), resourceID (0)
+	: width (0), height (0), resourceID (0), noAlpha (true)
 {
 	#if WINDOWS
 	pHandle = 0;
@@ -6825,6 +6825,7 @@ bool CBitmap::loadFromResource (long resourceID)
 			}
 			png_destroy_read_struct (&png_ptr, &info_ptr, NULL);
 		}
+		noAlpha = false;
 		return true;
 	}
 	#endif
@@ -6945,7 +6946,10 @@ bool CBitmap::loadFromPath (const void* platformPath)
 			if (CFStringCompare (ext, CFSTR("bmp"), 0) == kCFCompareEqualTo)
 				gi = &bmpGI;
 			else if (CFStringCompare (ext, CFSTR("png"), 0) == kCFCompareEqualTo)
+			{
 				gi = &pngGI;
+				noAlpha = false;
+			}
 			else if (CFStringCompare (ext, CFSTR("jpg"), 0) == kCFCompareEqualTo)
 				gi = &jpgGI;
 			else if (CFStringCompare (ext, CFSTR("pict"), 0) == kCFCompareEqualTo)
@@ -6959,9 +6963,8 @@ bool CBitmap::loadFromPath (const void* platformPath)
 					return false;
 			if (*gi)
 			{
-				#if !OLD_TRANSPARENT_BITMAP_MODE
 				#ifdef MAC_OS_X_VERSION_10_3
-				if (GraphicsImportCreateCGImage)
+				if (!noAlpha && GraphicsImportCreateCGImage)
 				{
 					if (GraphicsImportCreateCGImage (*gi, (CGImageRef*)&cgImage, 0) == noErr)
 					{
@@ -6971,7 +6974,6 @@ bool CBitmap::loadFromPath (const void* platformPath)
 					}
 				}
 				else
-				#endif
 				#endif
 				{
 					Rect r;
@@ -7016,7 +7018,6 @@ bool CBitmap::isLoaded () const
 }
 
 #if QUARTZ
-#if OLD_TRANSPARENT_BITMAP_MODE
 class CDataProvider 
 {
 public:
@@ -7073,7 +7074,6 @@ public:
 	unsigned char* ptr;
 	CColor color;
 };
-#endif // OLD_TRANSPARENT_BITMAP_MODE
 
 //-----------------------------------------------------------------------------
 CGImageRef CBitmap::createCGImage (bool transparent)
@@ -7097,12 +7097,10 @@ CGImageRef CBitmap::createCGImage (bool transparent)
 
 	CGImageRef image = 0;
 	CGDataProviderRef provider = 0;
-	#if OLD_TRANSPARENT_BITMAP_MODE
 	static CGDataProviderCallbacks callbacks = { CDataProvider::getBytes, CDataProvider::skipBytes, CDataProvider::rewind, CDataProvider::releaseProvider };
 	if (transparent)
 		provider = CGDataProviderCreate (new CDataProvider (this), &callbacks);
 	else
-	#endif
 		provider = CGDataProviderCreateWithData (NULL, GetPixBaseAddr (pixMap), size, NULL);
 	CGImageAlphaInfo alphaInfo = kCGImageAlphaFirst;
 	if (GetPixDepth (pixMap) != 32)
@@ -7120,10 +7118,14 @@ CGImageRef CBitmap::createCGImage (bool transparent)
 void CBitmap::draw (CDrawContext *pContext, CRect &rect, const CPoint &offset)
 {
 #if WINDOWS
-#if USE_ALPHA_BLEND
-	drawAlphaBlend (pContext, rect, offset, 255);
+	#if USE_ALPHA_BLEND
+	if (!noAlpha)
+	{
+		drawAlphaBlend (pContext, rect, offset, 255);
+		return;
+	}
+	#endif	
 
-#else
 	if (pHandle)
 	{
 		HGDIOBJ hOldObj;
@@ -7135,7 +7137,7 @@ void CBitmap::draw (CDrawContext *pContext, CRect &rect, const CPoint &offset)
 		SelectObject (hdcMemory, hOldObj);
 		DeleteDC (hdcMemory);
 	}
-#endif
+
 #elif MAC
 
 	#if QUARTZ
@@ -7223,10 +7225,14 @@ void CBitmap::draw (CDrawContext *pContext, CRect &rect, const CPoint &offset)
 void CBitmap::drawTransparent (CDrawContext *pContext, CRect &rect, const CPoint &offset)
 {
 #if WINDOWS
-#if USE_ALPHA_BLEND
-	drawAlphaBlend (pContext, rect, offset, 255);
+	#if USE_ALPHA_BLEND
+	if (!noAlpha)
+	{
+		drawAlphaBlend (pContext, rect, offset, 255);
+		return;
+	}
+	#endif	
 
-#else
 	BITMAP bm;
 	HDC hdcBitmap;
 	POINT ptSize;
@@ -7242,20 +7248,21 @@ void CBitmap::drawTransparent (CDrawContext *pContext, CRect &rect, const CPoint
 	DrawTransparent (pContext, rect, offset, hdcBitmap, ptSize, (HBITMAP)pMask, RGB(transparentCColor.red, transparentCColor.green, transparentCColor.blue));
 
 	DeleteDC (hdcBitmap);
-#endif	
+
 #elif MAC
 
 	#if QUARTZ
-	#if OLD_TRANSPARENT_BITMAP_MODE
-	CGImageRef image = createCGImage (true);
-	if (image)
+	if (noAlpha)
 	{
-		drawAlphaBlend (pContext, rect, offset, 255);
-		CGImageRelease (image);
+		CGImageRef image = createCGImage (true);
+		if (image)
+		{
+			drawAlphaBlend (pContext, rect, offset, 255);
+			CGImageRelease (image);
+		}
 	}
-	#else
-	drawAlphaBlend (pContext, rect, offset, 255);
-	#endif
+	else
+		drawAlphaBlend (pContext, rect, offset, 255);
 
 	#else
 	Rect source, dest;
@@ -7660,10 +7667,13 @@ void CBitmap::drawAlphaBlend (CDrawContext *pContext, CRect &rect, const CPoint 
 void CBitmap::setTransparentColor (const CColor color)
 {
 	transparentCColor = color;
-#if QUARTZ && OLD_TRANSPARENT_BITMAP_MODE
-	if (cgImage)
-		CGImageRelease ((CGImageRef)cgImage);
-	cgImage = 0;
+#if QUARTZ
+	if (noAlpha)
+	{
+		if (cgImage)
+			CGImageRelease ((CGImageRef)cgImage);
+		cgImage = 0;
+	}
 #endif
 }
 

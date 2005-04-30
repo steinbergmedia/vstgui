@@ -2,7 +2,7 @@
 // VST Plug-Ins SDK
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 //
-// Version 3.0       $Date: 2005-04-29 13:44:28 $
+// Version 3.0       $Date: 2005-04-30 10:40:56 $
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
@@ -744,11 +744,11 @@ protected:
 	CCoord height;
 
 	CColor transparentCColor;
+	bool noAlpha;
 
 #if WINDOWS
 	void *pHandle;
 	void *pMask;
-	bool noAlpha;
 
 #elif MOTIF
 	void *createPixmapFromXpm (CDrawContext *pContext);

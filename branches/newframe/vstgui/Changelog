@@ -1,3 +1,8 @@
+2005-04-30 arne
+
+	* windows: with libpng, when a bmp image was loaded, don't use AlphaBlend instead use old BitBlt.
+	* quartz: non png images can be drawn with transparent color again.
+
 2005-04-29 arne
 
 	* added CTextLabel
