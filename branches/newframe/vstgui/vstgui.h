@@ -2,7 +2,7 @@
 // VST Plug-Ins SDK
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 //
-// Version 3.0       $Date: 2005-04-30 10:40:56 $
+// Version 3.0       $Date: 2005-05-05 15:56:10 $
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
@@ -722,6 +722,9 @@ public:
 	CColor getTransparentColor () const { return transparentCColor; }
 	void setTransparencyMask (CDrawContext* pContext, const CPoint& offset = CPoint (0, 0));
 
+	void setNoAlpha (bool state) { noAlpha = state; }
+	bool getNoAlpha () const { return noAlpha; }
+
 #if BEOS
 	static void closeResource ();
 #endif
@@ -1116,10 +1119,10 @@ protected:
 	ControlDefSpec controlSpec;
 	ControlRef controlRef;
 	bool hasFocus;
-	CPoint hiScrollOffset;
 	EventHandlerRef dragEventHandler;
 	public:
 	void* getPlatformControl () const { return controlRef; }
+	CPoint hiScrollOffset;
 	protected:
 #endif
 	//-------------------------------------------

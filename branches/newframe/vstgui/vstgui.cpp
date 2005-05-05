@@ -2,7 +2,7 @@
 // VST Plug-Ins SDK
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 //
-// Version 3.0       $Date: 2005-04-30 10:40:56 $ 
+// Version 3.0       $Date: 2005-05-05 15:56:09 $ 
 //
 // Added Motif/Windows vers.: Yvan Grabit              01.98
 // Added Mac version        : Charlie Steinberg        02.98
@@ -568,8 +568,7 @@ CDrawContext::CDrawContext (CFrame *inFrame, void *inSystemContext, void *inWind
 	{
 		HIRect bounds;
 		HIViewGetFrame ((HIViewRef)pFrame->getPlatformControl (), &bounds);
-		#if AU
-		if (pWindow)
+		if (pWindow || !pSystemContext)
 		{
 			WindowAttributes attr;
 			GetWindowAttributes ((WindowRef)pWindow, &attr);
@@ -577,10 +576,12 @@ CDrawContext::CDrawContext (CFrame *inFrame, void *inSystemContext, void *inWind
 			{
 				HIViewRef contentView;
 				HIViewFindByID (HIViewGetRoot ((WindowRef)pWindow), kHIViewWindowContentID, &contentView);
-				HIViewConvertRect (&bounds, (HIViewRef)pFrame->getPlatformControl (), contentView);
+				if (HIViewGetSuperview ((HIViewRef)pFrame->getPlatformControl ()) != contentView)
+					HIViewConvertRect (&bounds, (HIViewRef)pFrame->getPlatformControl (), contentView);
+				bounds.origin.x += pFrame->hiScrollOffset.x;
+				bounds.origin.y += pFrame->hiScrollOffset.y;
 			}
 		}
-		#endif
 		offsetScreen.x = bounds.origin.x;
 		offsetScreen.y = bounds.origin.y;
 		clipRect (0, 0, bounds.size.width, bounds.size.height);
@@ -615,7 +616,10 @@ CDrawContext::CDrawContext (CFrame *inFrame, void *inSystemContext, void *inWind
 			CGContextTranslateCTM (gCGContext, -pFrame->hiScrollOffset.x, pFrame->hiScrollOffset.y);
 			CGContextSetShouldAntialias (gCGContext, false);
 			CGContextSetFillColorSpace (gCGContext, GetGenericRGBColorSpace ());
-			CGContextSetStrokeColorSpace (gCGContext, GetGenericRGBColorSpace ()); 
+			CGContextSetStrokeColorSpace (gCGContext, GetGenericRGBColorSpace ());
+			CGContextScaleCTM (gCGContext, 1, -1);
+			QuartzSetupClip (gCGContext, clipRect);
+			CGContextScaleCTM (gCGContext, 1, -1);
 			CGContextSaveGState (gCGContext);
 			setClipRect (clipRect);
 			if (pFrame)
@@ -7551,7 +7555,7 @@ void CBitmap::drawAlphaBlend (CDrawContext *pContext, CRect &rect, const CPoint 
                 {
                     CRect ccr;
                     pContext->getClipRect (ccr);
-                    CGRect clipRect = CGRectMake (ccr.left - rect.left + offset.h, ccr.top - rect.top + offset.v, ccr.width (), ccr.height ());
+                     CGRect clipRect = CGRectMake (ccr.left - rect.left + offset.h, ccr.top - rect.top + offset.v, ccr.width (), ccr.height ());
                     CGRect subRect = CGRectMake (offset.h, offset.v, getWidth (), getHeight ());
                     subRect = CGRectIntersection (clipRect, subRect);
                     if (subRect.size.width && subRect.size.height)
@@ -10147,6 +10151,7 @@ bool CFrame::registerWithToolbox ()
 									{kEventClassControl, kEventControlDragReceive},
 									{kEventClassControl, kEventControlInitialize},
 									{kEventClassControl, kEventControlGetClickActivation},
+									{kEventClassControl, kEventControlGetOptimalBounds},
 									{kEventClassScrollable, kEventScrollableGetInfo},
 									{kEventClassScrollable, kEventScrollableScrollTo},
 									//{kEventClassControl, kEventControlSetFocusPart},
@@ -10347,6 +10352,13 @@ pascal OSStatus CFrame::carbonEventHandler (EventHandlerCallRef inHandlerCallRef
 					result = noErr;
 					break;
 				}
+				case kEventControlGetOptimalBounds:
+				{
+					HIRect optimalBounds = { {0, 0}, { frame->getWidth (), frame->getHeight ()}};
+					SetEventParameter (inEvent, kEventParamControlOptimalBounds, typeHIRect, sizeof (HIRect), &optimalBounds);
+					result = noErr;
+					break;
+				}
 				case kEventControlGetFocusPart:
 				{
 					ControlPartCode code = frame->hasFocus ? kControlContentMetaPart : kControlFocusNoPart;
@@ -10513,7 +10525,7 @@ public:
 	{
 		CreateGenericRGBColorSpace ();
         CFBundleRef hiToolboxBundle = CFBundleGetBundleWithIdentifier (CFSTR("com.apple.CoreGraphics"));
-        if (hiToolboxBundle)
+        if (false && hiToolboxBundle)
         {
             _CGImageCreateWithImageInRect = (CGImageCreateWithImageInRectProc)CFBundleGetFunctionPointerForName (hiToolboxBundle, CFSTR("CGImageCreateWithImageInRect"));
         }

@@ -3,7 +3,7 @@
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 // Standard Control Objects
 //
-// Version 3.0       $Date: 2005-04-29 13:44:27 $
+// Version 3.0       $Date: 2005-05-05 15:56:09 $
 //
 // Added new objects        : Michael Schmidt          08.97
 // Added new objects        : Yvan Grabit              01.98
@@ -2315,7 +2315,7 @@ pascal OSStatus COptionMenuScheme::eventHandler (EventHandlerCallRef inCallRef, 
 					{
 						scheme->menu->getEntry (i, temp);
 						scheme->scheme->getItemSize (temp, scheme->offscreenContext, size);
-						yPos += size.y + 1;
+						yPos += size.y;
 						if (yPos >= mouseLoc.y)
 						{
 							partHit = i + 1;
@@ -2342,7 +2342,7 @@ pascal OSStatus COptionMenuScheme::eventHandler (EventHandlerCallRef inCallRef, 
 						if (r.size.width < size.x)
 							r.size.width = size.x;
 					}
-					r.size.height += scheme->menu->getNbEntries ();
+					//r.size.height += scheme->menu->getNbEntries ();
 					scheme->maxWidth = r.size.width;
 					SetEventParameter (inEvent, kEventParamControlOptimalBounds, typeHIRect, sizeof (HIRect), &r);
 					err = noErr;
@@ -2436,10 +2436,10 @@ pascal OSStatus COptionMenuScheme::eventHandler (EventHandlerCallRef inCallRef, 
 								state |= kDisabled;
 								offset = 2;
 							}
-							rect.setHeight (size.y);
+							rect.setHeight (size.y+1);
 							context.setClipRect (rect);
 							scheme->scheme->drawItem (entryText+offset, i, state, &context, rect);
-							rect.offset (0, size.y + 1);
+							rect.offset (0, size.y);
 						}
 					}
 					break;
@@ -3396,12 +3396,30 @@ void COptionMenu::takeFocus (CDrawContext *pContext)
 		rect.top  = pContext->offsetScreen.v;
 	}
 	else
-	{ // do we really get a focus without a drawcontext ?
+	{
 		#if WINDOWS
 		RECT rctWinParent;
 		GetWindowRect (hwnd, &rctWinParent);
 		rect.left = rctWinParent.left;
 		rect.top  = rctWinParent.top;
+		#elif QUARTZ
+		HIRect bounds;
+		HIViewRef control = (HIViewRef)getFrame ()->getPlatformControl ();
+		HIViewGetFrame (control, &bounds);
+		WindowRef window = (WindowRef)getFrame ()->getSystemWindow ();
+		WindowAttributes attr;
+		GetWindowAttributes (window, &attr);
+		if (attr & kWindowCompositingAttribute)
+		{
+			HIViewRef contentView;
+			HIViewFindByID (HIViewGetRoot (window), kHIViewWindowContentID, &contentView);
+			if (HIViewGetSuperview (control) != contentView)
+				HIViewConvertRect (&bounds, control, contentView);
+			bounds.origin.x += getFrame ()->hiScrollOffset.x;
+			bounds.origin.y += getFrame ()->hiScrollOffset.y;
+		}
+		rect.left = bounds.origin.x;
+		rect.top = bounds.origin.y;
 		#endif
 	}
 	CView* parent = getParentView ();

@@ -1,3 +1,8 @@
+2005-05-05 arne
+
+	* added CBitmap::setNoAlpha(..) and CBitmap::getNoAlpha(). You can set this for PNG images which don't have an alpha channel to speed up drawing on windows.
+	* quartz: some window compositing fixes
+
 2005-04-30 arne
 
 	* windows: with libpng, when a bmp image was loaded, don't use AlphaBlend instead use old BitBlt.
