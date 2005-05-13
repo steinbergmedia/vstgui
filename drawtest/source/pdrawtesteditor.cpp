@@ -53,14 +53,25 @@ public:
 				menu->addEntry ("Tabs Right");
 				menu->addEntry ("Tabs Top");
 				menu->addEntry ("Tabs Bottom");
+				menu->addEntry ("-");
+				menu->addEntry ("Align Tabs Centered");
+				menu->addEntry ("Align Tabs Left/Top");
+				menu->addEntry ("Align Tabs Right/Bottom");
 				getFrame ()->addView (menu);
 				menu->takeFocus ();
 				long res = menu->getLastResult ();
 				getFrame ()->removeView (menu);
 				if (res != -1)
 				{
-					r = size;
-					editor->setTabView (getFrame (), r, res);
+					if (res < 4)
+					{
+						r = size;
+						editor->setTabView (getFrame (), r, res);
+					}
+					else
+					{
+						alignTabs (kAlignCenter + res - 5);
+					}
 				}
 				return;
 			}
@@ -79,6 +90,25 @@ public:
 
 protected:
 	DrawTestEditor* editor;
+};
+
+class MyColoredView : public CView
+{
+public:
+	MyColoredView (const CRect& size) : CView (size) {}
+
+	void draw (CDrawContext* context)
+	{
+		context->setFillColor (backgroundColor);
+		context->setFrameColor (kBlackCColor);
+		context->drawRect (size, kDrawFilledAndStroked);
+		setDirty (false);
+	}
+
+	void setBackgroundColor (const CColor& c) { backgroundColor = c; }
+
+protected:	
+	CColor backgroundColor;
 };
 
 DrawTestEditor::DrawTestEditor (void* effect)
@@ -109,6 +139,7 @@ void DrawTestEditor::setTabView (CFrame* frame, const CRect& r, long position)
 	tabView->setTransparency (true);
 	frame->addView (tabView);
 	CRect tabSize = tabView->getTabViewSize (tabSize);
+//	tabSize.inset (1, 1);
 	// add tabs
 	CView* testView;
 	CBitmap* testBitmap = new CBitmap (kTestBitmap);
@@ -146,6 +177,47 @@ void DrawTestEditor::setTabView (CFrame* frame, const CRect& r, long position)
 	
 	tabView->addTab (controlContainer, "Controls");
 
+	CColor redColor = {255, 0, 0, 150};
+	CColor greenColor = {0, 255, 0, 150};
+	CColor blueColor = {0, 0, 255, 150};
+
+	CViewContainer* clipView = new CViewContainer (tabSize, frame);
+	clipView->setTransparency (true);
+	CRect clipViewSize (0, 0, tabSize.getWidth () / 4, tabSize.getHeight () / 2);
+	MyColoredView* cv = new MyColoredView (clipViewSize);
+	cv->setBackgroundColor (redColor);
+	clipView->addView (cv);
+	clipViewSize.offset (clipViewSize.getWidth (), 0);
+	cv = new MyColoredView (clipViewSize);
+	cv->setBackgroundColor (greenColor);
+	clipView->addView (cv);
+	clipViewSize.offset (clipViewSize.getWidth (), 0);
+	cv = new MyColoredView (clipViewSize);
+	cv->setBackgroundColor (blueColor);
+	clipView->addView (cv);
+	clipViewSize.offset (clipViewSize.getWidth (), 0);
+	cv = new MyColoredView (clipViewSize);
+	cv->setBackgroundColor (redColor);
+	clipView->addView (cv);
+	clipViewSize (0, tabSize.getHeight () / 2, tabSize.getWidth () / 4, tabSize.getHeight ());
+	cv = new MyColoredView (clipViewSize);
+	cv->setBackgroundColor (greenColor);
+	clipView->addView (cv);
+	clipViewSize.offset (clipViewSize.getWidth (), 0);
+	cv = new MyColoredView (clipViewSize);
+	cv->setBackgroundColor (blueColor);
+	clipView->addView (cv);
+	clipViewSize.offset (clipViewSize.getWidth (), 0);
+	cv = new MyColoredView (clipViewSize);
+	cv->setBackgroundColor (redColor);
+	clipView->addView (cv);
+	clipViewSize.offset (clipViewSize.getWidth (), 0);
+	cv = new MyColoredView (clipViewSize);
+	cv->setBackgroundColor (greenColor);
+	clipView->addView (cv);
+	
+	tabView->addTab (clipView, "Clip Test");
+	tabView->alignTabs (CTabView::kAlignCenter);
 
 	tabButtonBitmap->forget ();
 	frame->setDirty ();
@@ -158,6 +230,8 @@ long DrawTestEditor::open (void *ptr)
 	CFrame* frame = new CFrame (size, ptr, this);
 	frame->setBackground (backgroundBitmap);
 	size.inset (8, 8);
+	size.top++; // the background bitmap is not correct
+	size.left++; // the background bitmap is not correct
 	setTabView (frame, size, CTabView::kPositionBottom);
 	// last but not least set the class variable frame to our newly created frame
 	this->frame = frame;
