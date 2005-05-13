@@ -35,5 +35,6 @@ plist
 		key "CFBundleSignature" value string __OUTPUT_CREATOR__
 		key "CFBundleBuildDate" value string __DATE__
 		key "CFBundleIconFile" value string BUNDLE_ICON
+		key "VSTWindowCompositing" value boolean true
 	}
 }

@@ -36,12 +36,12 @@
 		};
 		089C1671FE841209C02AAC07 = {
 			children = (
+				F40BD99607D3B28F00E1073A,
 				0C1C289B07AC283C007128C4,
 				0C1C289907AC2824007128C4,
 				8B5C7F83076FB26000A15F61,
 				8BA05B01072074F900365D66,
 				8BA05AF9072074E100365D66,
-				8BA05AFA072074E100365D66,
 				08EA7FFBFE8413EDC02AAC07,
 			);
 			isa = PBXGroup;
@@ -715,6 +715,7 @@
 				GCC_ENABLE_FIX_AND_CONTINUE = YES;
 				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
 				GCC_OPTIMIZATION_LEVEL = 0;
+				MACOSX_DEPLOYMENT_TARGET = 10.2;
 				OPTIMIZATION_CFLAGS = "-O0";
 				ZERO_LINK = YES;
 			};
@@ -1409,22 +1410,8 @@
 			refType = 0;
 			sourceTree = "<absolute>";
 		};
-		8BA05AFA072074E100365D66 = {
-			isa = PBXFileReference;
-			lastKnownFileType = wrapper.framework;
-			name = AudioUnit.framework;
-			path = /System/Library/Frameworks/AudioUnit.framework;
-			refType = 0;
-			sourceTree = "<absolute>";
-		};
 		8BA05AFC072074E100365D66 = {
 			fileRef = 8BA05AF9072074E100365D66;
-			isa = PBXBuildFile;
-			settings = {
-			};
-		};
-		8BA05AFD072074E100365D66 = {
-			fileRef = 8BA05AFA072074E100365D66;
 			isa = PBXBuildFile;
 			settings = {
 			};
@@ -1497,7 +1484,7 @@
 			buildSettings = {
 				DEPLOYMENT_LOCATION = NO;
 				EXPORTED_SYMBOLS_FILE = audiounit.exp;
-				FRAMEWORK_SEARCH_PATHS = "";
+				FRAMEWORK_SEARCH_PATHS = /Volumes/DATA/subversion/svn/vstgui/drawtest/mac;
 				GCC_ENABLE_TRIGRAPHS = NO;
 				GCC_GENERATE_DEBUGGING_SYMBOLS = NO;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
@@ -1629,10 +1616,10 @@
 			files = (
 				8D01CCCE0486CAD60068D4B7,
 				8BA05AFC072074E100365D66,
-				8BA05AFD072074E100365D66,
 				8BA05B02072074F900365D66,
 				0C1C289A07AC2824007128C4,
 				0C1C289C07AC283C007128C4,
+				F40BD99707D3B28F00E1073A,
 			);
 			isa = PBXFrameworksBuildPhase;
 			runOnlyForDeploymentPostprocessing = 0;
@@ -1669,6 +1656,20 @@
 //F42
 //F43
 //F44
+		F40BD99607D3B28F00E1073A = {
+			isa = PBXFileReference;
+			lastKnownFileType = wrapper.framework;
+			name = AudioUnit.framework;
+			path = /Volumes/DATA/subversion/svn/vstgui/drawtest/mac/AudioUnit.framework;
+			refType = 0;
+			sourceTree = "<absolute>";
+		};
+		F40BD99707D3B28F00E1073A = {
+			fileRef = F40BD99607D3B28F00E1073A;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
 		F4C9F1D007B2320800010DAD = {
 			buildActionMask = 2147483647;
 			files = (
@@ -1740,7 +1741,6 @@
 				INFOPLIST_FILE = Info.plist;
 				INSTALL_PATH = "$(USER_LIBRARY_DIR)/Audio/Plug-Ins/VST";
 				LIBRARY_STYLE = BUNDLE;
-				OPTIMIZATION_CFLAGS = "";
 				OTHER_CFLAGS = "";
 				OTHER_LDFLAGS = "-framework Carbon";
 				OTHER_REZFLAGS = "";
