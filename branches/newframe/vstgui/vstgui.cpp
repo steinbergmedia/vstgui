@@ -2,7 +2,7 @@
 // VST Plug-Ins SDK
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 //
-// Version 3.0       $Date: 2005-05-05 15:56:09 $ 
+// Version 3.0       $Date: 2005-05-13 07:21:30 $ 
 //
 // Added Motif/Windows vers.: Yvan Grabit              01.98
 // Added Mac version        : Charlie Steinberg        02.98
@@ -303,8 +303,10 @@ static inline void QuartzSetupClip (CGContextRef context, const CRect clipRect);
 static inline double radians (double degrees) { return degrees * M_PI / 180; }
 CGColorSpaceRef GetGenericRGBColorSpace ();
 
+typedef void (*CGContextStrokeLineSegmentsProc) (CGContextRef c, const CGPoint points[], size_t count);
 typedef CGImageRef (*CGImageCreateWithImageInRectProc) (CGImageRef image, CGRect rect);
 static CGImageCreateWithImageInRectProc _CGImageCreateWithImageInRect = NULL;
+static CGContextStrokeLineSegmentsProc _CGContextStrokeLineSegments = NULL;
 
 // cache graphics importer
 static ComponentInstance bmpGI = 0;
@@ -1170,13 +1172,31 @@ void CDrawContext::drawLines (const CPoint* points, const long& numLines)
 		QuartzSetupClip (gCGContext, clipRect);
 		QuartzSetLineDash (context, lineStyle, frameWidth);
 
-		CGContextBeginPath (context);
-		for (long i = 0; i < numLines * 2; i+=2)
+		#ifdef MAC_OS_X_VERSION_10_4
+		if (_CGContextStrokeLineSegments)
 		{
-			CGContextMoveToPoint (context, points[i].x + offset.x, points[i].y + offset.y);
-			CGContextAddLineToPoint (context, points[i+1].x + offset.x, points[i+1].y + offset.y);
+			CGPoint* cgPoints = new CGPoint[numLines*2];
+			for (long i = 0; i < numLines * 2; i += 2)
+			{
+				cgPoints[i].x = points[i].x + offset.x;
+				cgPoints[i+1].x = points[i+1].x + offset.x;
+				cgPoints[i].y = points[i].y + offset.y;
+				cgPoints[i+1].y = points[i+1].y + offset.y;
+			}
+			_CGContextStrokeLineSegments (context, cgPoints, numLines*2);
+			delete [] cgPoints;
 		}
-		CGContextDrawPath (context, kCGPathStroke);
+		else
+		#endif
+		{
+			CGContextBeginPath (context);
+			for (long i = 0; i < numLines * 2; i += 2)
+			{
+				CGContextMoveToPoint (context, points[i].x + offset.x, points[i].y + offset.y);
+				CGContextAddLineToPoint (context, points[i+1].x + offset.x, points[i+1].y + offset.y);
+			}
+			CGContextDrawPath (context, kCGPathStroke);
+		}
 		releaseCGContext (context);
 	}
 
@@ -3678,7 +3698,7 @@ char* kMsgCheckIfViewContainer	= "kMsgCheckIfViewContainer";
 // CView
 //-----------------------------------------------------------------------------
 /*! @class CView
-
+base class of all view objects
 */
 //-----------------------------------------------------------------------------
 CView::CView (const CRect& size)
@@ -4345,9 +4365,9 @@ bool CFrame::initFrame (void *systemWin)
 			CreateRootControl ((WindowRef)systemWin, &rootControl);
 		EmbedControl(controlRef, rootControl);	
 	}
+	#endif
 	size.offset (-size.left, -size.top);
 	mouseableArea.offset (-size.left, -size.top);
-	#endif
 	#endif
 	
 #elif MOTIF
@@ -4856,12 +4876,13 @@ bool CFrame::getPosition (CCoord &x, CCoord &y) const
 	GetWindowAttributes ((WindowRef)pSystemWindow, &attr);
 	if (attr & kWindowCompositingAttribute)
 	{
+/*		HIPoint hip = { 0.f, 0.f };
 		HIViewRef contentView;
-		HIViewFindByID (HIViewGetRoot ((WindowRef)pWindow), kHIViewWindowContentID, &contentView);
-		HIPoint hip = { 0.f, 0.f };
-		HIViewConvertPoint (&hip, controlRef, contentView);
+		HIViewFindByID (HIViewGetRoot ((WindowRef)pSystemWindow), kHIViewWindowContentID, &contentView);
+		if (HIViewGetSuperview ((HIViewRef)controlRef) != contentView)
+			HIViewConvertPoint (&hip, controlRef, contentView);
 		x += hip.x;
-		y += hip.y;
+		y += hip.y;*/
 	}
 	else
 	{
@@ -4993,6 +5014,29 @@ bool CFrame::setSize (CCoord width, CCoord height)
 		SetWindowPos (hTempWnd, HWND_TOP, 0, 0, width + diffWidth, height + diffHeight, SWP_NOMOVE);
 
 #elif MAC
+	#if QUARTZ
+	if (getSystemWindow ())
+	{
+		WindowAttributes windowAttributes;
+		GetWindowAttributes ((WindowRef)getSystemWindow (), &windowAttributes);
+		if (!(windowAttributes & kWindowCompositingAttribute))
+		{
+			Rect bounds;
+			GetPortBounds (GetWindowPort ((WindowRef)getSystemWindow ()), &bounds);
+			SizeWindow ((WindowRef)getSystemWindow (), (bounds.right - bounds.left) - oldWidth + width,
+									(bounds.bottom - bounds.top) - oldHeight + height, true);
+		}
+	}
+	if (controlRef)
+	{
+		HIRect frameRect;
+		HIViewGetFrame (controlRef, &frameRect);
+		frameRect.size.width = width;
+		frameRect.size.height = height;
+		HIViewSetFrame (controlRef, &frameRect);
+	}
+
+	#else
 	if (getSystemWindow ())
 	{
 		Rect bounds;
@@ -5007,7 +5051,8 @@ bool CFrame::setSize (CCoord width, CCoord height)
 		SetControlBounds (controlRef, &bounds);
 		#endif
 	}
-
+	#endif
+	
 #elif MOTIF
 	Dimension heightWin, widthWin;
 
@@ -6488,6 +6533,9 @@ protected:
 // CBitmap Implementation
 //-----------------------------------------------------------------------------
 /*! @class CBitmap
+@section cbitmap_alphablend Alpha Blend and Transparency
+With Version 3.0 of VSTGUI it is possible to use alpha blended bitmaps. This comes free on Mac OS X and with Windows you need to include libpng.
+Per default PNG images will be rendered alpha blended. If you want to use a transparency color with PNG Bitmaps, you need to call setNoAlpha(true) on the bitmap and set the transparency color.
 @section cbitmap_macos Classic Apple Mac OS
 The Bitmaps are PICTs and stored inside the resource fork.
 @section cbitmap_macosx Apple Mac OS X
@@ -7556,7 +7604,7 @@ void CBitmap::drawAlphaBlend (CDrawContext *pContext, CRect &rect, const CPoint 
                     CRect ccr;
                     pContext->getClipRect (ccr);
                      CGRect clipRect = CGRectMake (ccr.left - rect.left + offset.h, ccr.top - rect.top + offset.v, ccr.width (), ccr.height ());
-                    CGRect subRect = CGRectMake (offset.h, offset.v, getWidth (), getHeight ());
+                    CGRect subRect = CGRectMake (offset.h, offset.v, rect.getWidth (), rect.getHeight ());
                     subRect = CGRectIntersection (clipRect, subRect);
                     if (subRect.size.width && subRect.size.height)
                     {
@@ -10463,11 +10511,12 @@ pascal OSStatus CFrame::carbonEventHandler (EventHandlerCallRef inHandlerCallRef
 					GetEventParameter (inEvent, kEventParamMouseWheelDelta, typeLongInteger, NULL, sizeof (SInt32), NULL, &wheelDelta);
 					Point point = {hipoint.y, hipoint.x};
 					QDGlobalToLocalPoint (GetWindowPort (window), &point);
-					CDrawContext context (frame, NULL, window);
+					CDrawContext* context = frame->createDrawContext ();
 					CPoint p (point.h, point.v);
-					p.offset (-context.offsetScreen.x, -context.offsetScreen.y);
+					p.offset (-context->offsetScreen.x, -context->offsetScreen.y);
 					p.offset (frame->hiScrollOffset.x, frame->hiScrollOffset.y);
-					frame->onWheel (&context, p, wheelDelta);					
+					frame->onWheel (context, p, wheelDelta);
+					context->forget ();
 					result = noErr;
 					break;
 				}
@@ -10524,10 +10573,11 @@ public:
 	: genericRGBColorSpace (0)
 	{
 		CreateGenericRGBColorSpace ();
-        CFBundleRef hiToolboxBundle = CFBundleGetBundleWithIdentifier (CFSTR("com.apple.CoreGraphics"));
-        if (false && hiToolboxBundle)
+        CFBundleRef coregraphicsBundle = CFBundleGetBundleWithIdentifier (CFSTR("com.apple.CoreGraphics"));
+        if (coregraphicsBundle)
         {
-            _CGImageCreateWithImageInRect = (CGImageCreateWithImageInRectProc)CFBundleGetFunctionPointerForName (hiToolboxBundle, CFSTR("CGImageCreateWithImageInRect"));
+            _CGImageCreateWithImageInRect = (CGImageCreateWithImageInRectProc)CFBundleGetFunctionPointerForName (coregraphicsBundle, CFSTR("CGImageCreateWithImageInRect"));
+            _CGContextStrokeLineSegments = (CGContextStrokeLineSegmentsProc)CFBundleGetFunctionPointerForName (coregraphicsBundle, CFSTR("CGContextStrokeLineSegments"));
         }
 	}
 

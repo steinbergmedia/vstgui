@@ -2,7 +2,7 @@
 // VST Plug-Ins SDK
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 //
-// Version 3.0       $Date: 2005-05-05 15:56:10 $
+// Version 3.0       $Date: 2005-05-13 07:21:30 $
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
@@ -42,6 +42,11 @@
 	#define MOTIF 1
 #elif __MWERKS__ || __APPLE_CC__
 	#define MAC 1
+	#if __MACH__
+	#define MACX 1
+	#define QUARTZ 1
+	#define TARGET_API_MAC_CARBON 1
+	#endif
 #elif __BEOS__
 	#define BEOS 1
 #endif

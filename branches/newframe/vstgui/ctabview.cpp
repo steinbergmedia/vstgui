@@ -357,4 +357,49 @@ void CTabView::setTabFontStyle (const CFont& font, long fontSize, CColor selecte
 	}
 }
 
+//-----------------------------------------------------------------------------
+void CTabView::alignTabs (long alignment)
+{
+	CCoord allTabsWidth;
+	CCoord viewWidth;
+	CCoord offset = 0;
+	CRect ts (0, 0, tabSize.getWidth (), tabSize.getHeight () / 2);
+	if (tabPosition == kPositionTop || tabPosition == kPositionBottom)
+	{
+		allTabsWidth = tabSize.getWidth () * numberOfChilds;
+		viewWidth = size.getWidth ();
+	}
+	else
+	{
+		allTabsWidth = (tabSize.getHeight () / 2) * numberOfChilds;
+		viewWidth = size.getHeight ();
+	}
+	if (alignment == kAlignCenter)
+		offset = (viewWidth - allTabsWidth) / 2;
+	else if (alignment == kAlignLeft)
+		offset = 0;
+	else if (alignment == kAlignRight)
+		offset = viewWidth - allTabsWidth;
+	if (tabPosition == kPositionTop)
+		ts.offset (offset, 0);
+	else if (tabPosition == kPositionBottom)
+		ts.offset (offset, size.getHeight () - tabSize.getHeight () / 2);
+	else if (tabPosition == kPositionLeft)
+		ts.offset (0, offset);
+	else if (tabPosition == kPositionRight)
+		ts.offset (size.getWidth () - tabSize.getWidth (), offset);
+	CTabChildView* v = firstChild;
+	while (v)
+	{
+		v->button->setViewSize (ts);
+		v->button->setMouseableArea (ts);
+		if (tabPosition == kPositionTop || tabPosition == kPositionBottom)
+			ts.offset (tabSize.getWidth (), 0);
+		else
+			ts.offset (0, tabSize.getHeight () / 2);
+		v = v->next;
+	}
+	setDirty (true);
+}
+
 END_NAMESPACE_VSTGUI

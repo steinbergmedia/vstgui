@@ -1,3 +1,10 @@
+2005-05-13 arne
+
+	* quartz: if the CFrame is embedded into a window composited window, the setSize(..) method does not resize the window anymore.
+	* quartz: some window compositing fixes
+	* the tabs in a CTabView can be aligned
+	* mac os x: quartz will be used per default now
+
 2005-05-05 arne
 
 	* added CBitmap::setNoAlpha(..) and CBitmap::getNoAlpha(). You can set this for PNG images which don't have an alpha channel to speed up drawing on windows.

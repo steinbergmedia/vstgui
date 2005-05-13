@@ -3,7 +3,7 @@
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 // Standard Control Objects
 //
-// Version 3.0       $Date: 2005-05-05 15:56:09 $
+// Version 3.0       $Date: 2005-05-13 07:21:29 $
 //
 // Added new objects        : Michael Schmidt          08.97
 // Added new objects        : Yvan Grabit              01.98
@@ -1948,37 +1948,29 @@ void CTextEdit::looseFocus (CDrawContext *pContext)
 	delete textView;
 
 #endif
-	bool localContext = false;
-	CDrawContext *pContextTemp = 0;
+	CPoint origOffset;
+	bool resetContextOffset = false;
 	if (!pContext)
 	{
-		localContext = true;
 		// create a local context
-#if WINDOWS
-		hwnd = (HWND)getFrame ()->getSystemWindow ();
-		hdc = GetDC (hwnd);
-		pContextTemp = new CDrawContext (getFrame (), hdc, hwnd);
-
-#elif MAC
-		pContextTemp = new CDrawContext (getFrame (), getFrame ()->getSystemWindow (), getFrame ()->getSystemWindow ());
-
-#elif MOTIF
-		pContextTemp = new CDrawContext (getFrame (), getFrame ()->getGC (), (void *)getFrame ()->getWindow ());
-
-#elif BEOS
-		pContextTemp = new CDrawContext (getFrame (), getFrame ()->getSystemWindow (), NULL);
-#endif
+		pContext = getFrame ()->createDrawContext ();
 		if (getParentView ())
 		{
+			resetContextOffset = true;
+			origOffset.x = pContext->offset.x;
+			origOffset.y = pContext->offset.y;
 			CView *view= getParentView ();
 			CRect rect2;
 			view->getViewSize (rect2);
-			pContextTemp->offset.h = rect2.left;
-			pContextTemp->offset.v = rect2.top;
+			CPoint offset;
+			view->localToFrame (offset);
+			rect2.offset (offset.x, offset.y);
+			pContext->offset.h = rect2.left;
+			pContext->offset.v = rect2.top;
 		}
 	}
 	else
-		pContextTemp = pContext;
+		pContext->remember ();
 
 	// update dependency
 	bool change = false;
@@ -1986,19 +1978,16 @@ void CTextEdit::looseFocus (CDrawContext *pContext)
 	{
 		change = true;
 		if (listener)
-			listener->valueChanged (pContextTemp, this);
-	}
-	if (localContext)
-	{
-		if (pContextTemp)
-			delete pContextTemp;
-
-		#if WINDOWS
-		ReleaseDC (hwnd, hdc);
-		#endif
+			listener->valueChanged (pContext, this);
 	}
 
 	platformControl = 0;
+	if (resetContextOffset)
+	{
+		pContext->offset.x = origOffset.x;
+		pContext->offset.y = origOffset.y;
+	}
+	pContext->forget ();
 
 	CView* receiver = pParentView ? pParentView : pParentFrame;
 	if (receiver)
@@ -3538,11 +3527,7 @@ void COptionMenu::takeFocus (CDrawContext *pContext)
 
 	CCoord gx = 0, gy = 0;
 	Point LToG;
-//	CRect myFrameRect;
 	getFrame()->getPosition(gx, gy);
-//	getFrame()->getSize(&myFrameRect);
-//	LToG.v = gy + rect.top + offset - myFrameRect.top;
-//	LToG.h = gx + rect.left + size.left - myFrameRect.left;
 	LToG.v = gy + rect.top + offset;
 	LToG.h = gx + rect.left + size.left;
 		
@@ -3603,14 +3588,13 @@ void COptionMenu::takeFocus (CDrawContext *pContext)
 		if (bgWhenClick)
 			setDirty ();
 
-		CDrawContext *pContextTemp = 0;
 		if (!pContext && menuIDResult != 0)
 		{
-			// create a local context
-			pContextTemp = new CDrawContext (getFrame (), 0, theWindow);
+			pContext = getFrame ()->createDrawContext ();
 		}
-		else
-			pContextTemp = pContext;
+		else if (pContext)
+			pContext->remember ();
+
 		if (menuIDResult != 0)
 		{
 			long idx = 0;
@@ -3621,17 +3605,12 @@ void COptionMenu::takeFocus (CDrawContext *pContext)
 				lastMenu = menu;
 				menu->setValue (result);
 				if (listener)
-					listener->valueChanged (pContextTemp, menu);
+					listener->valueChanged (pContext, menu);
 			}
 		}
 
-		// redraw the display
-		// AAAAARRRRGHHHHHHHHHHHHH!!
-		//doIdleStuff ();
-		//setDirty (false);
-
-		if (!pContext && pContextTemp)
-			delete pContextTemp;
+		if (pContext)
+			pContext->forget ();
 	}
 
 #elif MOTIF
