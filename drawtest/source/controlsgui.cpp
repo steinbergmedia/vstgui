@@ -400,17 +400,10 @@ ControlsGUI::ControlsGUI (const CRect &inSize, CFrame *frame, CBitmap *pBackgrou
 	//--CSpecialDigit--------------------------------------
 	CBitmap *specialDigitBitmap = new CBitmap (kDigitBitmap);
 
- 	size (0, 0, specialDigitBitmap->getWidth (), specialDigitBitmap->getHeight () / 10);
+ 	size (0, 0, specialDigitBitmap->getWidth () * 7, specialDigitBitmap->getHeight () / 10);
 	size.offset (210 + 10, 140 + 30);
 
-	long xpos[10];
-	long ypos[10];
-	for (long i = 0; i < 10; i++) 
-	{
-	  xpos[i] = size.left + i * (specialDigitBitmap->getWidth ());
-	  ypos[i] = size.top;
-	}
-	cSpecialDigit = new CSpecialDigit (size, this, kDigitTag, 0, 7, xpos, ypos, specialDigitBitmap->getWidth (), specialDigitBitmap->getHeight () / 10 , specialDigitBitmap);
+	cSpecialDigit = new CSpecialDigit (size, this, kDigitTag, 0, 7, 0, 0, specialDigitBitmap->getWidth (), specialDigitBitmap->getHeight () / 10 , specialDigitBitmap);
 	addView (cSpecialDigit);
 	specialDigitBitmap->forget ();
 
@@ -464,6 +457,11 @@ ControlsGUI::ControlsGUI (const CRect &inSize, CFrame *frame, CBitmap *pBackgrou
 		cLabel2->setBackColor (kGreyCColor);
 		addView (cLabel2);
 	}
+	
+	size (inSize.right, inSize.bottom, inSize.right + 100, inSize.bottom + 100);
+	CLabel* outsideLabel = new CLabel (size, "This label is outside its superview");
+	addView (outsideLabel);
+	outsideLabel->setDirty (true);
 }
 
 void ControlsGUI::valueChanged (CDrawContext *pContext, CControl *pControl)

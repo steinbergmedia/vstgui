@@ -94,6 +94,7 @@ void PMiscView::drawGrid (CDrawContext* pContext)
 	pContext->setDrawMode (kCopyMode);
 	pContext->setFrameColor (kGreyCColor);
 	pContext->drawLines (points, numHLines+numVLines);
+	delete [] points;
 }
 
 PLinesView::PLinesView (const CRect& size)
@@ -108,7 +109,7 @@ void PLinesView::draw (CDrawContext *context)
 	char text[512];
 	text[0] = 0;
 	context->setFont (kNormalFontSmall);
-	context->setFrameColor (kBlackCColor);
+	context->setFrameColor (kWhiteCColor);
 	context->setFontColor (kBlackCColor);
 	CRect r (size);
 	r.left += 10;
@@ -196,9 +197,9 @@ void PRectsView::draw (CDrawContext *context)
 	context->setFontColor (kBlackCColor);
 	CRect r (size);
 	context->drawRect (r);
-	r.inset (1,1);
+//	r.inset (1,1);
 	context->setFillColor (kWhiteCColor);
-	context->fillRect (r);
+	context->drawRect (r,kDrawFilled);
 	r.inset (2, 2);
 	context->setDrawMode (kAntialias);
 	context->drawRect (r);

@@ -129,7 +129,7 @@ public:
 			editor = new DrawTestEditor (unit);
 			WindowRef window = GetCarbonWindow ();
 			editor->open (window);
-			HIViewMoveBy ((HIViewRef)editor->getFrame ()->getPlatformControl (), xoffset, yoffset);
+//			HIViewMoveBy ((HIViewRef)editor->getFrame ()->getPlatformControl (), xoffset, yoffset);
 			EmbedControl ((HIViewRef)editor->getFrame ()->getPlatformControl ());
 			CRect fsize = editor->getFrame ()->getViewSize (fsize);
 			SizeControl (mCarbonPane, fsize.width (), fsize.height ());
