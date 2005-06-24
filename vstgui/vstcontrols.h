@@ -3,11 +3,11 @@
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 // Standard Control Objects
 //
-// Version 2.2         Date : 25/03/03
+// Version 3.0       $Date: 2005-06-24 10:47:07 $
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
-// © 2003, Steinberg Media Technologies, All Rights Reserved
+// © 2004, Steinberg Media Technologies, All Rights Reserved
 //-----------------------------------------------------------------------------
 // Redistribution and use in source and binary forms, with or without modification,
 // are permitted provided that the following conditions are met:
@@ -109,10 +109,10 @@ class CControlListener
 public:
 	#if USE_NAMESPACE
 	virtual void valueChanged (VSTGUI::CDrawContext *pContext, VSTGUI::CControl *pControl) = 0;
-	virtual long controlModifierClicked (VSTGUI::CDrawContext *pContext, VSTGUI::CControl *pControl, long button) = 0;	// return 1 if you want the control to not handle it, otherwise 0
+	virtual long controlModifierClicked (VSTGUI::CDrawContext *pContext, VSTGUI::CControl *pControl, long button) { return 0; }	// return 1 if you want the control to not handle it, otherwise 0
 	#else
 	virtual void valueChanged (CDrawContext *pContext, CControl *pControl) = 0;
-	virtual long controlModifierClicked (CDrawContext *pContext, CControl *pControl, long button) = 0;	// return 1 if you want the control to not handle it, otherwise 0
+	virtual long controlModifierClicked (CDrawContext *pContext, CControl *pControl, long button) { return 0; }	// return 1 if you want the control to not handle it, otherwise 0
 	#endif
 };
 
@@ -121,6 +121,10 @@ class AudioEffectX;
 //-----------------------------------------------------------------------------
 BEGIN_NAMESPACE_VSTGUI
 //-----------------------------------------------------------------------------
+
+//-----------------------------------------------------------------------------
+// CControl Declaration
+//! base class of all VSTGUI controls
 //-----------------------------------------------------------------------------
 class CControl : public CView
 {
@@ -130,37 +134,44 @@ public:
 	virtual ~CControl ();
 
 	virtual void  draw (CDrawContext *pContext) = 0;
-	virtual void  doIdleStuff () { if (pParent) pParent->doIdleStuff (); }
+	virtual void  doIdleStuff () { if (pParentFrame) pParentFrame->doIdleStuff (); }
 
 	virtual void  setValue (float val) { value = val; }
-	virtual float getValue () { return value; };
+	virtual float getValue () const { return value; };
 
 	virtual void  setMin (float val) { vmin = val; }
-	virtual float getMin () { return vmin; }
+	virtual float getMin () const { return vmin; }
 	virtual void  setMax (float val) { vmax = val; }
-	virtual float getMax () { return vmax; }
+	virtual float getMax () const { return vmax; }
 
 	virtual void  setOldValue (float val) { oldValue = val; }
-	virtual	float getOldValue (void) { return oldValue; }
+	virtual	float getOldValue (void) const { return oldValue; }
 	virtual void  setDefaultValue (float val) { defaultValue = val; }
-	virtual	float getDefaultValue (void) { return defaultValue; }
+	virtual	float getDefaultValue (void) const { return defaultValue; }
 
 	virtual void  setTag (long val) { tag = val; }
-	inline  long  getTag () { return tag; }
+	inline  long  getTag () const { return tag; }
 
-	virtual bool  isDirty ();
+	virtual bool  isDirty () const;
 	virtual void  setDirty (const bool val = true);
+
+	virtual void beginEdit ();
+	virtual void endEdit ();
 
 	virtual void setBackOffset (CPoint &offset);
 	virtual void copyBackOffset ();
 
 	virtual void  setWheelInc (float val) { wheelInc = val; }
-	virtual float getWheelInc () { return wheelInc; }
+	virtual float getWheelInc () const { return wheelInc; }
 
 	virtual void bounceValue ();
+	virtual bool checkDefaultValue (CDrawContext *pContext, long button);
 
-	CControlListener* getListener () { return listener; }
+	CControlListener* getListener () const { return listener; }
+	void setListener (CControlListener* l) { listener = l; }
 	bool isDoubleClick ();
+
+	CLASS_METHODS(CControl, CView)
 
 protected:
 	CControlListener *listener;
@@ -180,6 +191,8 @@ protected:
 
 
 //-----------------------------------------------------------------------------
+// COnOffButton Declaration
+//! a button control with 2 states
 //-----------------------------------------------------------------------------
 class COnOffButton : public CControl
 {
@@ -190,10 +203,14 @@ public:
 
 	virtual void draw (CDrawContext*);
 	virtual void mouse (CDrawContext *pContext, CPoint &where, long button = -1);
+
+	CLASS_METHODS(COnOffButton, CControl)
 };
 
 
 //-----------------------------------------------------------------------------
+// CParamDisplay Declaration
+//! a parameter display control
 //-----------------------------------------------------------------------------
 class CParamDisplay : public CControl
 {
@@ -202,19 +219,19 @@ public:
 	virtual ~CParamDisplay ();
 	
 	virtual void setFont (CFont fontID);
-	CFont getFont () { return fontID; }
+	CFont getFont () const { return fontID; }
 
 	virtual void setFontColor (CColor color);
-	CColor getFontColor () { return fontColor; }
+	CColor getFontColor () const { return fontColor; }
 
 	virtual void setBackColor (CColor color);
-	CColor getBackColor () { return backColor; }
+	CColor getBackColor () const { return backColor; }
 
 	virtual void setFrameColor (CColor color);
-	CColor getFrameColor () { return frameColor; }
+	CColor getFrameColor () const { return frameColor; }
 
 	virtual void setShadowColor (CColor color);
-	CColor getShadowColor () { return shadowColor; }
+	CColor getShadowColor () const { return shadowColor; }
 
 	virtual void setHoriAlign (CHoriTxtAlign hAlign);
 
@@ -224,15 +241,17 @@ public:
 	virtual void setString2FloatConvert (void (*convert) (char *string, float &output));
 
 	virtual void setStyle (long val);
-	long getStyle () { return style; }
+	long getStyle () const { return style; }
 
 	virtual void setTxtFace (CTxtFace val);
-	CTxtFace getTxtFace () { return txtFace; }
+	CTxtFace getTxtFace () const { return txtFace; }
 
 	virtual void draw (CDrawContext *pContext);
 
 	virtual void setTextTransparency (bool val) { bTextTransparencyEnabled = val; }
-	bool getTextTransparency () { return bTextTransparencyEnabled; }
+	bool getTextTransparency () const { return bTextTransparencyEnabled; }
+
+	CLASS_METHODS(CParamDisplay, CControl)
 
 protected:
 	void drawText (CDrawContext *pContext, char *string, CBitmap *newBack = 0);
@@ -256,6 +275,30 @@ protected:
 
 
 //-----------------------------------------------------------------------------
+// CLabel Declaration
+//! a text label
+//-----------------------------------------------------------------------------
+class CTextLabel : public CParamDisplay
+{
+public:
+	CTextLabel (const CRect& size, const char* txt = 0, CBitmap* background = 0, const long style = 0);
+	~CTextLabel ();
+	
+	virtual void setText (const char* txt);
+	virtual const char* getText () const;
+	
+	virtual	void draw (CDrawContext *pContext);
+
+	CLASS_METHODS(CTextLabel, CParamDisplay)
+
+protected:
+	void freeText ();
+	char* text;
+};
+
+//-----------------------------------------------------------------------------
+// CTextEdit Declaration
+//! a text edit control
 //-----------------------------------------------------------------------------
 class CTextEdit : public CParamDisplay
 {
@@ -265,7 +308,7 @@ public:
 	virtual ~CTextEdit ();
 
 	virtual void setText (char *txt);
-	virtual void getText (char *txt);
+	virtual void getText (char *txt) const;
 
 	virtual	void draw (CDrawContext *pContext);
 	virtual	void mouse (CDrawContext *pContext, CPoint &where, long button = -1);
@@ -282,7 +325,12 @@ public:
 	bool bWasReturnPressed;
 	#if MAC
 	short pluginResID;
+	#if QUARTZ
+	HIViewRef textControl;
 	#endif
+	#endif
+
+	CLASS_METHODS(CTextEdit, CParamDisplay)
 
 protected:
 	void *platformFont;
@@ -299,14 +347,15 @@ protected:
 
 
 //-----------------------------------------------------------------------------
+// COptionMenuScheme Declaration
 //-----------------------------------------------------------------------------
-class COptionMenuScheme
+class COptionMenuScheme : public CReferenceCounter
 {
 public:
 	COptionMenuScheme ();
 	virtual ~COptionMenuScheme ();
 
-	enum { kChecked = 0x01, kDisabled = 0x02, kSelected = 0x04, kSubMenu = 0x08 };
+	enum { kChecked = 0x01, kDisabled = 0x02, kSelected = 0x04, kSubMenu = 0x08, kTitle = 0x10 };
 
 	virtual void getItemSize (const char* text, CDrawContext* pContext, CPoint& size);
 	virtual void drawItem (const char* text, long itemId, long state, CDrawContext* pContext, const CRect& rect);	
@@ -316,12 +365,7 @@ public:
 	hiliteTextColor = htext; disableTextColor = dtext;}
 	
 	void setFont (CFont f) { font = f; }
-
-	virtual void forget ();
-	virtual void remember ();
-	virtual	long getNbReference () { return nbReference; }
 protected:
-	long nbReference;
 
 	CColor backgroundColor;
 	CColor selectionColor;
@@ -332,9 +376,10 @@ protected:
 
 	virtual void drawItemBack (CDrawContext* pContext, const CRect& rect, bool hilite);
 
-	#if QUARTZ
+	#if MAC_ENABLE_MENU_SCHEME
 	static pascal OSStatus eventHandler (EventHandlerCallRef inCallRef, EventRef inEvent, void *inUserData);
 	void registerWithToolbox ();
+	void unregisterWithToolbox ();
 	#endif
 };
 
@@ -342,6 +387,8 @@ protected:
 extern COptionMenuScheme* gOptionMenuScheme;
 
 //-----------------------------------------------------------------------------
+// COptionMenu Declaration
+//! a popup menu control
 //-----------------------------------------------------------------------------
 class COptionMenu : public CParamDisplay
 {
@@ -356,18 +403,18 @@ public:
 	virtual void setValue (float val);
 	virtual bool addEntry (COptionMenu *subMenu, char *txt);
 	virtual	bool addEntry (char *txt, long index = -1);
-	virtual	long getCurrent (char *txt = 0, bool countSeparator = true);
+	virtual	long getCurrent (char *txt = 0, bool countSeparator = true) const;
 	virtual	bool setCurrent (long index, bool countSeparator = true);
-	virtual	bool getEntry (long index, char *txt);
+	virtual	bool getEntry (long index, char *txt) const;
 	virtual	bool setEntry (long index, char *txt);
 	virtual	bool removeEntry (long index);
 	virtual	bool removeAllEntry ();
-	virtual long getNbEntries () { return nbEntries; }
-	virtual long getIndex (char *txt);
+	virtual long getNbEntries () const { return nbEntries; }
+	virtual long getIndex (char *txt) const;
 
 	virtual bool checkEntry (long index, bool state);
 	virtual bool checkEntryAlone (long index);
-	virtual bool isCheckEntry (long index);
+	virtual bool isCheckEntry (long index) const;
 
 	virtual	void draw (CDrawContext *pContext);
 	virtual	void mouse (CDrawContext *pContext, CPoint &where, long button = -1);
@@ -376,23 +423,25 @@ public:
 	virtual	void looseFocus (CDrawContext *pContext = 0);
 
 	virtual void setNbItemsPerColumn (long val) { nbItemsPerColumn = val; }
-	virtual long getNbItemsPerColumn () { return nbItemsPerColumn; }
+	virtual long getNbItemsPerColumn () const { return nbItemsPerColumn; }
 
 #if MOTIF
 	void    setCurrentSelected (void *itemSelected);
 #elif MAC
-	short   getMenuID () { return menuID; }
+	short   getMenuID () const { return menuID; }
 #endif
 
-	long getLastResult () { return lastResult; }
-	COptionMenu *getLastItemMenu (long &idxInMenu);
+	long getLastResult () const { return lastResult; }
+	COptionMenu *getLastItemMenu (long &idxInMenu) const;
 
 	void setScheme (COptionMenuScheme* s) { scheme = s; }
-	virtual COptionMenuScheme* getScheme () { return scheme; }
+	virtual COptionMenuScheme* getScheme () const { return scheme; }
 
 	virtual void setPrefixNumbers (long preCount);
 
-	COptionMenu* getSubMenu (long idx);
+	COptionMenu* getSubMenu (long idx) const;
+
+	CLASS_METHODS(COptionMenu, CParamDisplay)
 
 protected:
 	COptionMenu *getItemMenu (long idx, long &idxInMenu, long &offsetIdx);
@@ -430,13 +479,14 @@ protected:
 
 
 //-----------------------------------------------------------------------------
+// CKnob Declaration
+//! a knob control
 //-----------------------------------------------------------------------------
 class CKnob : public CControl
 {
 public:
 	CKnob (const CRect &size, CControlListener *listener, long tag, 
-           CBitmap *background,
-           CBitmap *handle, const CPoint &offset);
+           CBitmap *background, CBitmap *handle, const CPoint &offset);
 	virtual ~CKnob ();
 
 	virtual void draw (CDrawContext *pContext);
@@ -447,13 +497,13 @@ public:
 	virtual void drawHandle (CDrawContext *pContext);
 
 	virtual void  setStartAngle (float val);
-	virtual float getStartAngle () { return startAngle; }
+	virtual float getStartAngle () const { return startAngle; }
 
 	virtual void  setRangeAngle (float val);
-	virtual float getRangeAngle () { return rangeAngle; }
+	virtual float getRangeAngle () const { return rangeAngle; }
 
-	virtual void  valueToPoint (CPoint &point);
-	virtual float valueFromPoint (CPoint &point);
+	virtual void  valueToPoint (CPoint &point) const;
+	virtual float valueFromPoint (CPoint &point) const;
 
 	virtual void setInsetValue (long val) { inset = val; }
 
@@ -463,7 +513,9 @@ public:
 	virtual void setHandleBitmap (CBitmap *bitmap);
 
 	virtual void  setZoomFactor (float val) { zoomFactor = val; }
-	virtual float getZoomFactor () { return zoomFactor; }
+	virtual float getZoomFactor () const { return zoomFactor; }
+
+	CLASS_METHODS(CKnob, CControl)
 
 protected:
 	void compute ();
@@ -480,31 +532,44 @@ protected:
 };
 
 //-----------------------------------------------------------------------------
+// CAnimKnob Declaration
+//! a bitmap knob control
 //-----------------------------------------------------------------------------
 class CAnimKnob : public CKnob
 {
 public:
+	CAnimKnob (const CRect &size, CControlListener *listener, long tag, 
+               CBitmap *background, CPoint &offset);
 	CAnimKnob (const CRect &size, CControlListener *listener, long tag, 
                long subPixmaps,        // number of subPixmaps
                long heightOfOneImage,  // pixel
                CBitmap *background, CPoint &offset);
 	virtual ~CAnimKnob ();
 
+	virtual bool isDirty () const;
+
 	virtual void draw (CDrawContext* pContext);
 
 	void setInverseBitmap (bool val) { bInverseBitmap = val; }
+
+	CLASS_METHODS(CAnimKnob, CKnob)
 
 protected:
 	long subPixmaps;		// number of subPixmaps
 	long heightOfOneImage;
 	bool bInverseBitmap;
+	CPoint lastDrawnPoint;
 };
 
 //-----------------------------------------------------------------------------
+// CVerticalSwitch Declaration
+//! a vertical switch control
 //-----------------------------------------------------------------------------
 class CVerticalSwitch : public CControl
 {
 public:
+	CVerticalSwitch (const CRect &size, CControlListener *listener, long tag, 
+                     CBitmap *background, CPoint &offset);
 	CVerticalSwitch (const CRect &size, CControlListener *listener, long tag, 
                      long subPixmaps,         // number of subPixmaps
                      long heightOfOneImage,   // pixel
@@ -515,6 +580,8 @@ public:
 	virtual void draw (CDrawContext*);
 	virtual void mouse (CDrawContext *pContext, CPoint &where, long button = -1);
 
+	CLASS_METHODS(CVerticalSwitch, CControl)
+
 protected:
 	CPoint   offset;
 	long     subPixmaps;            // number of subPixmaps
@@ -524,20 +591,25 @@ protected:
 
 
 //-----------------------------------------------------------------------------
+// CHorizontalSwitch Declaration
+//! a horizontal switch control
 //-----------------------------------------------------------------------------
 class CHorizontalSwitch : public CControl
 {
 public:
 	CHorizontalSwitch (const CRect &size, CControlListener *listener, long tag, 
+                       CBitmap *background, CPoint &offset);
+	CHorizontalSwitch (const CRect &size, CControlListener *listener, long tag, 
                        long subPixmaps,        // number of subPixmaps
                        long heightOfOneImage,  // pixel
                        long iMaxPositions,
-                       CBitmap *background,
-                       CPoint &offset);
+                       CBitmap *background, CPoint &offset);
 	virtual	~CHorizontalSwitch ();
 
 	virtual void draw (CDrawContext*);
 	virtual void mouse (CDrawContext *pContext, CPoint &where, long button = -1);
+
+	CLASS_METHODS(CHorizontalSwitch, CControl)
 
 protected:
 	CPoint   offset;
@@ -548,10 +620,14 @@ protected:
 
 
 //-----------------------------------------------------------------------------
+// CRockerSwitch Declaration
+//! a switch control with 3 sub bitmaps
 //-----------------------------------------------------------------------------
 class CRockerSwitch : public CControl
 {
 public:
+	CRockerSwitch (const CRect &size, CControlListener *listener, long tag, 
+                   CBitmap *background, CPoint &offset, const long style = kHorizontal);
 	CRockerSwitch (const CRect &size, CControlListener *listener, long tag, 
                    long heightOfOneImage,  // pixel
                    CBitmap *background, CPoint &offset, const long style = kHorizontal);
@@ -561,6 +637,8 @@ public:
 	virtual void mouse (CDrawContext *pContext, CPoint &where, long button = -1);
 	virtual bool onWheel (CDrawContext *pContext, const CPoint &where, float distance);
 
+	CLASS_METHODS(CRockerSwitch, CControl)
+
 protected:
 	CPoint   offset;
 	long     heightOfOneImage;
@@ -569,10 +647,14 @@ protected:
 
 
 //-----------------------------------------------------------------------------
+// CMovieBitmap Declaration
+//! a bitmap control that displays different bitmaps according to its current value
 //-----------------------------------------------------------------------------
 class CMovieBitmap : public CControl
 {
 public:
+	CMovieBitmap (const CRect &size, CControlListener *listener, long tag, 
+                  CBitmap *background, CPoint &offset);
 	CMovieBitmap (const CRect &size, CControlListener *listener, long tag, 
                   long subPixmaps,        // number of subPixmaps
                   long heightOfOneImage,  // pixel
@@ -580,6 +662,8 @@ public:
 	virtual	~CMovieBitmap ();
 
 	virtual void draw (CDrawContext*);
+
+	CLASS_METHODS(CMovieBitmap, CControl)
 
 protected:
 	CPoint   offset;
@@ -589,10 +673,14 @@ protected:
 
 
 //-----------------------------------------------------------------------------
+// CMovieButton Declaration
+//! a bi-states button with 2 subbitmaps
 //-----------------------------------------------------------------------------
 class CMovieButton : public CControl
 {
 public:
+	CMovieButton (const CRect &size, CControlListener *listener, long tag, 
+                  CBitmap *background, CPoint &offset);
 	CMovieButton (const CRect &size, CControlListener *listener, long tag, 
                   long heightOfOneImage,  // pixel
                   CBitmap *background, CPoint &offset);
@@ -600,6 +688,8 @@ public:
 
 	virtual void draw (CDrawContext*);
 	virtual void mouse (CDrawContext *pContext, CPoint &where, long button = -1);
+
+	CLASS_METHODS(CMovieButton, CControl)
 
 protected:
 	CPoint   offset;
@@ -609,10 +699,14 @@ protected:
 
 
 //-----------------------------------------------------------------------------
+// CAutoAnimation Declaration
+//!
 //-----------------------------------------------------------------------------
 class CAutoAnimation : public CControl
 {
 public:
+	CAutoAnimation (const CRect &size, CControlListener *listener, long tag, 
+                    CBitmap *background, CPoint &offset);
 	CAutoAnimation (const CRect &size, CControlListener *listener, long tag, 
                     long subPixmaps,        // number of subPixmaps...
                     long heightOfOneImage,  // pixel
@@ -628,7 +722,9 @@ public:
 	virtual void nextPixmap (void);
 	virtual void previousPixmap (void);
 
-	bool    isWindowOpened () { return bWindowOpened; }
+	bool    isWindowOpened () const { return bWindowOpened; }
+
+	CLASS_METHODS(CAutoAnimation, CControl)
 
 protected:
 	CPoint   offset;
@@ -642,6 +738,8 @@ protected:
 
 
 //-----------------------------------------------------------------------------
+// CSlider Declaration
+//! a slider control
 //-----------------------------------------------------------------------------
 class CSlider : public CControl
 {
@@ -673,14 +771,16 @@ public:
 
 	virtual void setDrawTransparentHandle (bool val) { bDrawTransparentEnabled = val; }
 	virtual void setFreeClick (bool val) { bFreeClick = val; }
-	virtual bool getFreeClick () { return bFreeClick; }
+	virtual bool getFreeClick () const { return bFreeClick; }
 	virtual void setOffsetHandle (CPoint &val);
 
 	virtual void     setHandle (CBitmap* pHandle);
-	virtual CBitmap *getHandle () { return pHandle; }
+	virtual CBitmap *getHandle () const { return pHandle; }
 
 	virtual void  setZoomFactor (float val) { zoomFactor = val; }
-	virtual float getZoomFactor () { return zoomFactor; }
+	virtual float getZoomFactor () const { return zoomFactor; }
+
+	CLASS_METHODS(CSlider, CControl)
 
 protected:
 	CPoint   offset; 
@@ -707,6 +807,8 @@ protected:
 };
 
 //-----------------------------------------------------------------------------
+// CVerticalSlider Declaration
+//! a vertical slider control
 //-----------------------------------------------------------------------------
 class CVerticalSlider : public CSlider
 {
@@ -729,6 +831,8 @@ public:
 };
 
 //-----------------------------------------------------------------------------
+// CHorizontalSlider Declaration
+//! a horizontal slider control
 //-----------------------------------------------------------------------------
 class CHorizontalSlider : public CSlider
 {
@@ -752,8 +856,9 @@ public:
 
 
 //-----------------------------------------------------------------------------
+// CSpecialDigit Declaration
+//! special display with custom numbers (0...9)
 //-----------------------------------------------------------------------------
-// special display with custom numbers (0...9)
 class CSpecialDigit : public CControl
 {
 public:
@@ -769,7 +874,9 @@ public:
 	
 	virtual void  draw (CDrawContext*);
 
-	virtual float getNormValue (void);
+	virtual float getNormValue (void) const;
+
+	CLASS_METHODS(CSpecialDigit, CControl)
 
 protected:
 	long     iNumbers;   // amount of numbers
@@ -781,10 +888,14 @@ protected:
 
 
 //-----------------------------------------------------------------------------
+// CKickButton Declaration
+//!
 //-----------------------------------------------------------------------------
 class CKickButton : public CControl
 {
 public:
+	CKickButton (const CRect &size, CControlListener *listener, long tag, 
+                 CBitmap *background, CPoint &offset);
 	CKickButton (const CRect &size, CControlListener *listener, long tag, 
                  long heightOfOneImage,  // pixel
                  CBitmap *background, CPoint &offset);
@@ -793,6 +904,8 @@ public:
 	virtual void draw (CDrawContext*);
 	virtual void mouse (CDrawContext *pContext, CPoint &where, long button = -1);
 
+	CLASS_METHODS(CKickButton, CControl)
+
 protected:
 	CPoint   offset;
 	long     heightOfOneImage;
@@ -800,6 +913,8 @@ protected:
 
 
 //-----------------------------------------------------------------------------
+// CSplashScreen Declaration
+//!
 //-----------------------------------------------------------------------------
 class CSplashScreen : public CControl
 {
@@ -815,14 +930,21 @@ public:
 	virtual void mouse (CDrawContext *pContext, CPoint &where, long button = -1);
 	virtual void unSplash ();
 
+	void setBitmapTransparency (unsigned char transparency);
+
+	CLASS_METHODS(CSplashScreen, CControl)
+
 protected:
-	CRect    toDisplay;
-	CRect    keepSize;
-	CPoint   offset;
+	CRect	toDisplay;
+	CRect	keepSize;
+	CPoint	offset;
+	unsigned char bitmapTransparency;
 };
 
 
 //-----------------------------------------------------------------------------
+// CVuMeter Declaration
+//!
 //-----------------------------------------------------------------------------
 class CVuMeter : public CControl
 {
@@ -833,38 +955,126 @@ public:
   
 	virtual void setDecreaseStepValue (float value) { decreaseValue = value; }
 
+	virtual bool attached (CView *parent);
+	virtual bool removed (CView *parent);
 	virtual void draw (CDrawContext *pContext);
-	virtual void  setDirty (const bool val = true);
+	virtual void setDirty (const bool val = true);
+	
+	void setUseOffscreen (bool val = true);
+	bool getUseOffscreen () const { return bUseOffscreen; }
+
+	CLASS_METHODS(CVuMeter, CControl)
 
 protected:
 	CBitmap *onBitmap;
 	CBitmap *offBitmap;
+	COffscreenContext *pOScreen;
+	
 	long     nbLed;
 	long     style;
 	float    decreaseValue;
+	bool	 bUseOffscreen;
 
 	CRect    rectOn;
 	CRect    rectOff;
 };
 
 
-#if !PLUGGUI
+#if PLUGGUI
+struct VstFileSelect;
+#endif
+
 //-----------------------------------------------------------------------------
+// CFileSelector Declaration
+//!
 //-----------------------------------------------------------------------------
 class CFileSelector
 {
 public:
+	#if PLUGGUI
+	CFileSelector (void*);
+	#else
 	CFileSelector (AudioEffectX* effect);
+	#endif
 	virtual ~CFileSelector ();
 
 	long run (VstFileSelect *vstFileSelect);
 
 protected:
+	#if !PLUGGUI
 	AudioEffectX* effect;
+	#endif
 	VstFileSelect *vstFileSelect;
+
+	#if MAC && TARGET_API_MAC_CARBON
+	static pascal void navEventProc (const NavEventCallbackMessage callBackSelector, NavCBRecPtr callBackParms, NavCallBackUserData callBackUD);
+	static pascal Boolean navObjectFilterProc (AEDesc *theItem, void *info, void *callBackUD, NavFilterModes filterMode);
+	#endif
+};
+
+#if PLUGGUI
+struct VstFileType
+{
+	VstFileType (char* _name, char *_macType, char *_dosType, char *_unixType = 0, char *_mimeType1 = 0, char *_mimeType2 = 0)
+	{
+		if (_name)
+			strcpy (name, _name);
+		if (_macType)
+			strcpy (macType, _macType);
+		if (_dosType)
+			strcpy (dosType, _dosType);
+		if (_unixType)
+			strcpy (unixType, _unixType);
+		if (_mimeType1)
+			strcpy (mimeType1, _mimeType1);
+		if (_mimeType2)
+			strcpy (mimeType2, _mimeType2);
+	}
+	char name[128];
+	char macType[8];
+	char dosType[8];
+	char unixType[8];
+	char mimeType1[128];
+	char mimeType2[128];
+};
+
+struct VstFileSelect
+{
+	long command;           // see enum kVstFileLoad....
+	long type;              // see enum kVstFileType...
+
+	long macCreator;        // optional: 0 = no creator
+
+	long nbFileTypes;       // nb of fileTypes to used
+	VstFileType *fileTypes; // list of fileTypes
+
+	char title[1024];       // text display in the file selector's title
+
+	char *initialPath;      // initial path
+
+	char *returnPath;       // use with kVstFileLoad and kVstDirectorySelect
+							// if null is passed, the host will allocated memory
+							// the plugin should then called closeOpenFileSelector for freeing memory
+	long sizeReturnPath; 
+
+	char **returnMultiplePaths; // use with kVstMultipleFilesLoad
+								// the host allocates this array. The plugin should then called closeOpenFileSelector for freeing memory
+	long nbReturnPath;			// number of selected paths
+
+	long reserved;				// reserved for host application
+	char future[116];			// future use
+};
+
+enum {
+	kVstFileLoad = 0,
+	kVstFileSave,
+	kVstMultipleFilesLoad,
+	kVstDirectorySelect,
+
+	kVstFileType = 0
 };
 #endif
 
 END_NAMESPACE_VSTGUI
 
-#endif
+#endif	// __vstcontrol__

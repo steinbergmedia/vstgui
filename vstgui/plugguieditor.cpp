@@ -34,12 +34,8 @@
 // OF THE POSSIBILITY OF SUCH DAMAGE.
 //-----------------------------------------------------------------------------
 
-#ifndef __aeffguieditor__
-#include "aeffguieditor.h"
-#endif
-
-#ifndef __audioeffectx__
-#include "audioeffectx.h"
+#ifndef __plugguieditor__
+#include "plugguieditor.h"
 #endif
 
 #define kIdleRate    100 // host idle rate in ms
@@ -50,17 +46,16 @@
 static struct tagMSG windowsMessage;
 #endif
 
-#if MOTIF
-unsigned long _getTicks ();
-#endif
-
 //-----------------------------------------------------------------------------
-// AEffGUIEditor Implementation
+// PluginGUIEditor Implementation
 //-----------------------------------------------------------------------------
-AEffGUIEditor::AEffGUIEditor (void *pEffect) 
-	: AEffEditor ((AudioEffect*)pEffect), frame (0), inIdleStuff (false)
+/*! @class PluginGUIEditor
+This is the same as the AEffGUIEditor class except that this one allows
+the VSTGUI lib to build without VST dependencies.
+*/
+PluginGUIEditor::PluginGUIEditor (void *pEffect) 
+	: effect (pEffect), frame (0), inIdleStuff (false)
 {
-	((AudioEffect*)pEffect)->setEditor (this);
 	systemWindow = 0;
 	lLastTicks   = getTicks ();
 
@@ -74,7 +69,7 @@ AEffGUIEditor::AEffGUIEditor (void *pEffect)
 }
 
 //-----------------------------------------------------------------------------
-AEffGUIEditor::~AEffGUIEditor () 
+PluginGUIEditor::~PluginGUIEditor () 
 {
 	#if WINDOWS
 	OleUninitialize ();
@@ -86,22 +81,7 @@ AEffGUIEditor::~AEffGUIEditor ()
 }
 
 //-----------------------------------------------------------------------------
-#if VST_2_1_EXTENSIONS
-long AEffGUIEditor::onKeyDown (VstKeyCode &keyCode)
-{
-	
-	return frame ? frame->onKeyDown (keyCode) : -1;
-}
-
-//-----------------------------------------------------------------------------
-long AEffGUIEditor::onKeyUp (VstKeyCode &keyCode)
-{
-	return frame ? frame->onKeyUp (keyCode) : -1;
-}
-#endif
-
-//-----------------------------------------------------------------------------
-void AEffGUIEditor::draw (ERect *ppErect)
+void PluginGUIEditor::draw (ERect *ppErect)
 {
 	if (frame)
 	{
@@ -116,80 +96,32 @@ void AEffGUIEditor::draw (ERect *ppErect)
 	}
 }
 
-#if MAC
 //-----------------------------------------------------------------------------
-long AEffGUIEditor::mouse (long x, long y)
+long PluginGUIEditor::open (void *ptr)
 {
-	CDrawContext context (frame, NULL, systemWindow);
-	CPoint where (x, y);
-
-	if (frame)
-		frame->mouse (&context, where);
-
-	return 1;
-}
-#endif
-
-//-----------------------------------------------------------------------------
-long AEffGUIEditor::open (void *ptr)
-{
-	// add this to update the value the first time
-	postUpdate ();
-
-	return AEffEditor::open (ptr);
+	systemWindow = ptr;
+	return 0;
 }
 
 //-----------------------------------------------------------------------------
-void AEffGUIEditor::idle ()
+void PluginGUIEditor::idle ()
 {
-#if MAC && !QUARTZ
-	GrafPtr	savePort;
-	GetPort (&savePort);
-	SetPort ((GrafPtr)GetWindowPort ((WindowRef)systemWindow));
-
-	AEffEditor::idle ();
 	if (frame)
 		frame->idle ();
-
-	SetPort (savePort);
-#else
-
-	#if BEOS
-	PlugView *plugView = 0;
-	if (frame)
-	{
-		plugView = (PlugView *) frame->getSystemWindow ();
-		if (plugView->LockLooperWithTimeout (0) != B_OK)
-			return;
-	}
-	#else
-	if (inIdleStuff)
-		return;
-	#endif
-
-	AEffEditor::idle ();
-	if (frame)
-		frame->idle ();
-		
-	#if BEOS
-	if (frame)
-		plugView->UnlockLooper ();
-	#endif
-#endif
 }
 
 //-----------------------------------------------------------------------------
-long AEffGUIEditor::knobMode = kCircularMode;
+long PluginGUIEditor::knobMode = kCircularMode;
 
 //-----------------------------------------------------------------------------
-long AEffGUIEditor::setKnobMode (int val) 
+long PluginGUIEditor::setKnobMode (int val) 
 {
-	AEffGUIEditor::knobMode = val;
+	PluginGUIEditor::knobMode = val;
 	return 1;
 }
 
 //-----------------------------------------------------------------------------
-bool AEffGUIEditor::onWheel (float distance)
+bool PluginGUIEditor::onWheel (float distance)
 {
 	if (frame)
 	{
@@ -203,7 +135,7 @@ bool AEffGUIEditor::onWheel (float distance)
 }
 
 //-----------------------------------------------------------------------------
-void AEffGUIEditor::wait (unsigned long ms)
+void PluginGUIEditor::wait (unsigned long ms)
 {
 	#if MAC
 	unsigned long ticks;
@@ -212,17 +144,11 @@ void AEffGUIEditor::wait (unsigned long ms)
 	#elif WINDOWS
 	Sleep (ms);
 
-	#elif SGI
-	struct timespec sleeptime = {0, ms * 1000000};
-	nanosleep (&sleeptime, NULL);
-
-	#elif BEOS
-	snooze (ms * 1000);
 	#endif
 }
 
 //-----------------------------------------------------------------------------
-unsigned long AEffGUIEditor::getTicks ()
+unsigned long PluginGUIEditor::getTicks ()
 {
 	#if MAC
 	return (TickCount () * 1000) / 60;
@@ -230,20 +156,14 @@ unsigned long AEffGUIEditor::getTicks ()
 	#elif WINDOWS
 	return (unsigned long)GetTickCount ();
 	
-	#elif MOTIF
-	return _getTicks ();
-
-	#elif BEOS
-	return (system_time () / 1000);
 	#endif
 
 	return 0;
 }
 
 //-----------------------------------------------------------------------------
-void AEffGUIEditor::doIdleStuff ()
+void PluginGUIEditor::doIdleStuff ()
 {
-	#if !(MAC && !TARGET_API_MAC_CARBON)
 	// get the current time
 	unsigned long currentTicks = getTicks ();
 
@@ -259,10 +179,7 @@ void AEffGUIEditor::doIdleStuff ()
 		if (currentTicks < lLastTicks - kIdleRate2)
 			return;
 	}
-
-	AEffEditor::idle ();
-	if (frame)
-		frame->idle ();
+	idle (); // TEST
 
 	#if WINDOWS
 	if (PeekMessage (&windowsMessage, NULL, WM_PAINT, WM_PAINT, PM_REMOVE))
@@ -280,47 +197,15 @@ void AEffGUIEditor::doIdleStuff ()
 
 	// save the next time
  	lLastTicks = currentTicks + kIdleRate;
-	#endif
-
-	inIdleStuff = true;
-
-	#if !BEOS
-	if (effect)
-		effect->masterIdle ();
-	#endif
-
-	inIdleStuff = false;
 }
 
 //-----------------------------------------------------------------------------
-long AEffGUIEditor::getRect (ERect **ppErect)
+long PluginGUIEditor::getRect (ERect **ppErect)
 {
 	*ppErect = &rect;
 	return true;
 }
 
-#if MOTIF
-//-----------------------------------------------------------------------------
-unsigned long _getTicks ()
-{
-	#if SGI
-	long long time;
-	syssgi (SGI_GET_UST, &time, 0);
-	return time / 1000000;
-	
-	#elif SUN
-	hrtime_t nanosecs = gethrtime ();
-	return (unsigned long long)nanosecs / 1000000UL;
-	
-	#elif LINUX
-	// gettimeofday is not what we need here, checkout API for hw time
-	struct timeval tv;
-	struct timezone tz;
-	gettimeofday (&tv, &tz);
-	return tv.tv_sec * 1000 + tv.tv_usec / 1000;
-	#endif
-}
-#endif
 #if MACX
 // -----------------------------------------------------------------------------
 // -----------------------------------------------------------------------------
@@ -333,8 +218,16 @@ extern "C" {
 short localizedResRefNum;
 short fixResRefNum;
 
-void* gBundleRef = 0;
+CFBundleRef ghInst = 0;
 
+#if PLUGGUI_STANDALONE
+void InitMachOLibrary ()
+{
+	ghInst = CFBundleGetMainBundle ();
+}
+
+void ExitMachOLibrary () {}
+#else
 // -----------------------------------------------------------------------------
 static CFBundleRef _CFXBundleCreateFromImageName (CFAllocatorRef allocator, const char* image_name);
 static CFBundleRef _CFXBundleCreateFromImageName (CFAllocatorRef allocator, const char* image_name)
@@ -369,6 +262,8 @@ void InitMachOLibrary ();
 void InitMachOLibrary ()
 {
 	const mach_header* header = &_mh_bundle_header;
+	if (header == 0)
+		return;
 
 	const char* imagename = 0;
 	/* determine the image name, TODO: ther have to be a better way */
@@ -384,15 +279,16 @@ void InitMachOLibrary ()
 	if (imagename == 0)
 	return;
 	/* get the bundle of a header, TODO: ther have to be a better way */
-	gBundleRef = (void*)_CFXBundleCreateFromImageName (NULL, imagename);
+	ghInst = _CFXBundleCreateFromImageName (NULL, imagename);
 }
 
 // -----------------------------------------------------------------------------
 void ExitMachOLibrary ();
 void ExitMachOLibrary ()
 {
-	if (gBundleRef)
-		CFRelease (gBundleRef);
+	if (ghInst)
+		CFRelease (ghInst);
 }
 
+#endif
 #endif
