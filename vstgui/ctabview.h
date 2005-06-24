@@ -1,10 +1,8 @@
 //-----------------------------------------------------------------------------
 // VST Plug-Ins SDK
-// VSTGUI: Graphical User Interface Framework for VST plugins
+// VSTGUI: Graphical User Interface Framework not only for VST plugins : 
 //
-// Version 3.0       Date : 30/06/04
-//
-//-----------------------------------------------------------------------------
+// CTabView written 2004 by Arne Scheffler
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
@@ -34,93 +32,69 @@
 // OF THE POSSIBILITY OF SUCH DAMAGE.
 //-----------------------------------------------------------------------------
 
-#ifndef __aeffguieditor__
-#define __aeffguieditor__
+#ifndef __ctabview__
+#define __ctabview__
 
-#ifndef __AEffEditor__
-#include "AEffEditor.hpp"
+#ifndef __vstcontrols__
+#include "vstcontrols.h"
 #endif
 
-#ifndef __audioeffectx__
-#include "audioeffectx.h"
-#endif
+BEGIN_NAMESPACE_VSTGUI
 
-#ifndef __vstgui__
-#include "vstgui.h"
-#endif
+class CTabChildView;
 
 //-----------------------------------------------------------------------------
-// AEffGUIEditor Declaration
+class CTabView : public CViewContainer, public CControlListener
+//! a tab view
 //-----------------------------------------------------------------------------
-class AEffGUIEditor : public AEffEditor
 {
-public :
+public:
+	CTabView (const CRect& size, CFrame* parent, CBitmap* tabBitmap, CBitmap* background = 0, long tabPosition = kPositionTop, long style = 0);
+	CTabView (const CRect& size, CFrame* parent, const CRect& tabSize, CBitmap* background = 0, long tabPosition = kPositionTop, long style = 0);
+	virtual ~CTabView ();
+	
+	virtual bool addTab (CView* view, const char* name = 0, CBitmap* tabBitmap = 0);
+	virtual bool removeTab (CView* view);
+	virtual bool removeAllTabs ();
+	virtual bool selectTab (long index);
 
-	AEffGUIEditor (void *pEffect);
+	virtual CRect& getTabViewSize (CRect& rect) const;
 
-	virtual ~AEffGUIEditor ();
+	virtual void setTabFontStyle (const CFont& font, long fontSize = 12, CColor selectedColor = kBlackCColor, CColor deselectedColor = kWhiteCColor); ///< call this after the tabs are added. Tabs added after this call will have the default font style.
 
-	virtual void setParameter (long index, float value) { postUpdate (); } 
-	virtual long getRect (ERect **ppRect);
-	virtual long open (void *ptr);
-	virtual void idle ();
-	virtual void draw (ERect *pRect);
+	virtual void alignTabs (long alignment = kAlignCenter); ///< call this after you have added all tabs
 
-	#if VST_2_1_EXTENSIONS
-	virtual long onKeyDown (VstKeyCode &keyCode);
-	virtual long onKeyUp (VstKeyCode &keyCode);
-	#endif
+	enum {
+		kPositionLeft = 0,
+		kPositionRight,
+		kPositionTop,
+		kPositionBottom,
+	};
 
-	#if MAC
-	virtual long mouse (long x, long y);
-	#endif
+	enum {
+		kAlignCenter = 0,
+		kAlignLeft,
+		kAlignRight,
+		kAlignTop = kAlignLeft,
+		kAlignBottom = kAlignRight
+	};
 
-	// wait (in ms)
-	void wait (unsigned long ms);
-
-	// get the current time (in ms)
-	unsigned long getTicks ();
-
-	// feedback to appli.
-	virtual void doIdleStuff ();
-
-	// get the effect attached to this editor
-	AudioEffect *getEffect () { return effect; }
-
-	// get version of this VSTGUI
-	long getVstGuiVersion () { return (VSTGUI_VERSION_MAJOR << 16) + VSTGUI_VERSION_MINOR; }
-
-	// set/get the knob mode
-	virtual long setKnobMode (int val);
-	static  long getKnobMode () { return knobMode; }
-
-	virtual bool onWheel (float distance);
-
-	// get the CFrame object
-	#if USE_NAMESPACE
-	VSTGUI::CFrame *getFrame () { return frame; }
-	#else
-	CFrame *getFrame () { return frame; }
-	#endif
-
-	virtual void beginEdit (long index) { ((AudioEffectX*)effect)->beginEdit (index); }
-	virtual void endEdit (long index) { ((AudioEffectX*)effect)->endEdit (index); }
-
-//---------------------------------------
+	virtual void valueChanged (CDrawContext *pContext, CControl *pControl);
+//-----------------------------------------------------------------------------
+	CLASS_METHODS (CTabView, CViewContainer)
 protected:
-	ERect   rect;
+	void setCurrentChild (CTabChildView* childView);
 
-	#if USE_NAMESPACE
-	VSTGUI::CFrame *frame;
-	#else
-	CFrame *frame;
-	#endif
-
-private:
-	unsigned long lLastTicks;
-	bool inIdleStuff;
-
-	static long knobMode;
+	unsigned long numberOfChilds;
+	long tabPosition;
+	long style;
+	CRect tabSize;
+	CBitmap* tabBitmap;
+	CTabChildView* firstChild;
+	CTabChildView* lastChild;
+	CTabChildView* currentChild;
 };
+
+END_NAMESPACE_VSTGUI
 
 #endif
