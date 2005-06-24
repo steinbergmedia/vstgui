@@ -1,3 +1,164 @@
+2005-05-13 arne
+
+	* quartz: if the CFrame is embedded into a window composited window, the setSize(..) method does not resize the window anymore.
+	* quartz: some window compositing fixes
+	* the tabs in a CTabView can be aligned
+	* mac os x: quartz will be used per default now
+
+2005-05-05 arne
+
+	* added CBitmap::setNoAlpha(..) and CBitmap::getNoAlpha(). You can set this for PNG images which don't have an alpha channel to speed up drawing on windows.
+	* quartz: some window compositing fixes
+
+2005-04-30 arne
+
+	* windows: with libpng, when a bmp image was loaded, don't use AlphaBlend instead use old BitBlt.
+	* quartz: non png images can be drawn with transparent color again.
+
+2005-04-29 arne
+
+	* added CTextLabel
+	* mac: the CFrame can be placed into HIScrollViews
+	* mac: using static objects for Quicktime GraphicsImporter to speed up loading of images
+	* mac: using CGImageCreateImageInRect on 10.4 for faster drawing of clipped images
+
+2005-04-11 arne
+
+	* removed CFrame::isSomethingDirty
+	* added a check in CViewContainer::isDirty if the subview is inside the view container size
+	* fix for overlapping views not drawn everytime
+	* quartz: fix some drawing bugs
+
+2005-03-25 arne
+
+	* quartz: fix drawing of transparent bitmaps when OLD_TRANSPARENT_BITMAP_MODE is defined
+	* fix a bug for quickdraw's CDrawContext::setClipRect
+	* quartz: on composited windows, the ctextedit creates a native UnicodeTextControl instead of an MLTE Object
+	* a try to fix redraw problems if the system sends a redraw and some views won't get updated completly
+	* changed the implementation of CView Attributes. Documentation removed. Will be updated before the 3.0 release.
+
+2005-03-05 arne
+
+	* fixed a memory leak on windows with IDropTarget (thanks bigtick)
+	* add automatic initialization of the xpos and ypos vars in the CSpecialDigit constructor (thanks bigtick)
+
+2005-02-18 arne
+
+	* new coordinate typedef CCoord, so that we have the possibility to change the coordinate system to floating point
+	* small bugfix in CDrawDevice::drawRect
+	
+2005-01-04 arne
+
+	* the following CDrawContext methods have a new optional parameter "CDrawStyle": drawPolygon, drawRect, drawArc, drawEllipse.
+	  the draw style is either kDrawStroked, kDrawFilled or kDrawFilledAndStroked.
+	* added another cursor : kCursorHand
+	* fixed some problems compiling the code on microsoft windows.
+	* fixed some problems with alphablending bitmaps on windows.
+	* added example plugguieditor.cpp file to be used for non VST usage. (There's an example AU plug in the drawtest module)
+	* added CTabView class.
+	* changed constructor of AEffGUIEditor to take a void instead of an AudioEffect pointer, so that subclassing 
+	  either from PluginGUIEditor or AEffGUIEditor is as simple as possible.
+
+2004-11-29 arne
+
+	* started to clean up the code (check your code, many methods in CView, CViewContainer & CFrame are declared const now)
+	* started to make a better documentation (see the headers), more to come
+	* renamed pEditView in CFrame to pFocusView as well as setEditView to setFocusView and getEditView to getFocusView ;-)
+	* the following methods in CView are now deprecated : setParentView, setFrame, getFrameTopLeftPos
+	* removed old windows drag&drop code
+	* use generic rgb color space for quartz code
+	* fix an issue with quartz and OLD_TRANSPARENT_BITMAP_MODE when the transparency color changed
+	* some drawing optimizations
+	* new method in CDrawContext to draw multiple lines at once : CDrawContext::drawLines ()
+	* if you call beginEdit in any CControl class the control will be the focus view now
+
+2004-10-03 arne
+
+	* added generic attributes interface to the CView class (see CViewAttributes.rtf)
+	* added CFrame::setPosition to change the location of the view inside it's parent view (mac quartz only at the moment)
+	* some mac quartz bugfixes
+	* some bugfixes for CScrollView
+	* added localToFrame and frameToLocal methods to CView
+	* bugfix for CViewContainer::getCurrentView (). Didn't work for nested containers (W.Franke)
+	* quartz: CFrame::getSize returns the size of the mac control now instead of the window
+	* CViewContainer::getViewAt changed so that you can get the deepest view at that position
+	* CControls set now the editView of the frame on beginEdit and set it to zero at endEdit (W.Franke)
+	
+2004-08-30 arne
+
+	**** bump version to 3.0 !
+	
+	* change CView::getParent to CView::getFrame
+	* correct implementation of beginEdit and endEdit in all CControls, you should change your code of custom controls from getParent->beginEdit (tag) to beginEdit () ;-)
+	* new drawArc method in CDrawContext which takes angels as parameters
+	* added some kind of runtime type information.
+	* mac: changed the kInfinitySymbol to be 'oo' as the mac character is not available in Helvetica
+	* added two new cursor types (kCursorCopy & kCursorNotAllowed). (Currently only for Mac OS X, Windows will follow)
+	* complete new drag & drop implementation. Now all views can react if something is dragged over it.
+	* some fixes to the update methods when drawing with offsets and COffscreenContexts.
+	* mac: the macro 'CARBON' is changed to 'TARGET_API_MAC_CARBON' as this is what the Mac OS itself uses.
+	* mac: compiling with VSTGUI as namespace works now
+	* mac: use current API for creating menus. (fixes some bugs with the old implementation, where you could not create menuitems like "-3db")
+	
+2004-08-25 arne
+
+	* mac: change COptionMenuScheme implementation to be optional as it only works for OSX Version >= 10.3 (macro: MAC_ENABLE_MENU_SCHEME)
+
+2004-08-15 arne
+
+	* added CView::acceptDrop. On Mac OS this changes the mouse cursor if a view accepts a drop. For Windows there is currently no action. But it should follow. And maybe it will change so that a real tracking is possible.
+	* with the new update mechanism the modal view is now updated first in CFrame::update, to make sure it will be drawn in all circumstances, even if it is transparent and a view below it is dirty.
+
+2004-08-06 arne
+
+	* quartz:	- cache the CGImageRef, so that it is not created every time the CBitmap is drawn. (Performace will be much better with the next os release)
+				- remove the SetPort/GetPort stuff in AEffGUIEditor. It is not needed anymore.
+
+2004-07-30 arne
+
+	* better streamlined mechanism for CViewContainer::update (you can turn this off, if it does not work for you in vstgui.cpp with the NEW_UPDATE_MECHANISM macro at the top)
+	  	this is not tested with Containers using offscreens (but should work). This should fix the problem that non-transparent containers were not really nestable.
+	* quartz: removed the focus handlers for now as most hosts does not set the focus back on their windows if someone clicks into it. This way they get all key downs again.
+	* added setListener() to CControl
+	
+2004-07-12 arne
+
+	* quartz: fix a bug in COffscreenContext::copyTo if the offsetScreen point of the context is not at 0:0
+
+2004-06-28 arne
+
+	* quartz: fix clipping issues
+	* fix a bug in CViewContainer's update method if the container is transparent and embedded into another CViewContainer
+
+2004-06-26 arne
+
+	* the modal view is now added to the frame like all other views.
+	* added a reference counting class. CView, CBitmap and CDrawContext are subclasses of it.
+	* clip handling is more consistent now.
+	* some quartz changes:	- first try to implement CDrawDevice::drawArc (not yet finished)
+							- COffscreenContext is now more implemented, copyTo works in most situations
+							- native mac controls can now be embedded into the frame, but it does only work correct with compositing enabled windows
+	
+2004-06-20 arne
+
+	* AEffGUIEditor::draw will now draw only the rectangle it should, or as in the past the whole editor if no rect is given.
+	* windows: 64 bit compatibility
+
+2004-06-12 arne
+
+	* CFrame is now subclassed from CViewContainer (thanks Wolfram Franke for the hard work)
+	  - One thing to check: CFrame::removeView was declared with (CView *pView, const bool &withForget = false), this has changed to 
+	    (CView *pView, const bool &withForget = true). So if you have somewhere in your Code frame->removeView (view) you must change it
+	    to frame->removeView (view, false).
+	* mac: FDebugPrint implementation for Classic and Mac OS X
+	* changed the CColor unused member variable to be alpha all over the place (no more MS C++ internal compiler error)
+	* macosx: the CFileSelector can now be used to get unix path strings. If vstFileSelect->future[0] is 1 the internal implementation will 
+				return unix paths and set vstFileSelect->future[0] to 0. If the host supports openFileSelector vstFileSelect->future[0] will
+				be 1 and the results are in the old FSSpec format.
+	* the CFileSelector is now usable when PLUGGUI is set.
+	* using clipping all over the place
+	* quartz: rechecked the whole graphics drawing functions to work as expected
+
 2004-05-31 arne
 
 	* mac: COptionMenuScheme works now with QUARTZ (Mac OS X 10.3 and above)

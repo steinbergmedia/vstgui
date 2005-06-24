@@ -2,11 +2,11 @@
 // VST Plug-Ins SDK
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 //
-// Version 2.2       Date : 25/03/03
+// Version 3.0       $Date: 2005-06-24 10:47:07 $
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
-// © 2003, Steinberg Media Technologies, All Rights Reserved
+// © 2004, Steinberg Media Technologies, All Rights Reserved
 //-----------------------------------------------------------------------------
 // Redistribution and use in source and binary forms, with or without modification,
 // are permitted provided that the following conditions are met:
@@ -40,8 +40,13 @@
 	#define WINDOWS 1
 #elif SGI | SUN
 	#define MOTIF 1
-#elif __MWERKS__
+#elif __MWERKS__ || __APPLE_CC__
 	#define MAC 1
+	#if __MACH__
+	#define MACX 1
+	#define QUARTZ 1
+	#define TARGET_API_MAC_CARBON 1
+	#endif
 #elif __BEOS__
 	#define BEOS 1
 #endif
@@ -61,8 +66,8 @@
 #endif
 
 // VSTGUI Version
-#define VSTGUI_VERSION_MAJOR  2
-#define VSTGUI_VERSION_MINOR  2
+#define VSTGUI_VERSION_MAJOR  3
+#define VSTGUI_VERSION_MINOR  0
 
 //----------------------------------------------------
 //----------------------------------------------------
@@ -146,16 +151,26 @@ BEGIN_NAMESPACE_VSTGUI
 
 struct CPoint;
 
+#define CLASS_METHODS(name, parent)             \
+	virtual bool isTypeOf (const char* s) const \
+		{ return (!strcmp (s, (#name))) ? true : parent::isTypeOf (s); }\
+
+#ifdef VSTGUI_FLOAT_COORDINATES
+typedef float CCoord;
+#else
+typedef long CCoord;
+#endif
+
 //-----------------------------------------------------------------------------
 // Structure CRect
 //-----------------------------------------------------------------------------
 struct CRect
 {
-	CRect (long left = 0, long top = 0, long right = 0, long bottom = 0)
+	CRect (CCoord left = 0, CCoord top = 0, CCoord right = 0, CCoord bottom = 0)
 	:	left (left), top (top), right (right), bottom (bottom) {}
 	CRect (const CRect& r)
 	:	left (r.left), top (r.top), right (r.right), bottom (r.bottom) {}
-	CRect& operator () (long left, long top, long right, long bottom)
+	CRect& operator () (CCoord left, CCoord top, CCoord right, CCoord bottom)
 	{
 		if (left < right)
 			this->left = left, this->right = right;
@@ -176,20 +191,23 @@ struct CRect
 	{ return (left == other.left && right == other.right &&
 				top == other.top && bottom == other.bottom); }
 	
-	inline long width () const  { return right - left; }
-	inline long height () const { return bottom - top; }
+	inline CCoord width () const  { return right - left; }
+	inline CCoord height () const { return bottom - top; }
 
-	inline void setWidth (long width) { right = left + width; }
-	inline void setHeight (long height) { bottom = top + height; }
+	inline CCoord getWidth () const  { return right - left; }
+	inline CCoord getHeight () const { return bottom - top; }
 
-	CRect &offset (long x, long y)
+	inline void setWidth (CCoord width) { right = left + width; }
+	inline void setHeight (CCoord height) { bottom = top + height; }
+
+	CRect &offset (CCoord x, CCoord y)
 	{ left += x; right += x; top += y; bottom += y; return *this; }
 
-	CRect &inset (long deltaX, long deltaY)
+	CRect &inset (CCoord deltaX, CCoord deltaY)
 	{ left += deltaX; right -= deltaX; top += deltaY; bottom -= deltaY;
     return *this; }
 
-	CRect &moveTo (long x, long y)
+	CRect &moveTo (CCoord x, CCoord y)
 	{ long vDiff = y - top; long hDiff = x - left; 
 	top += vDiff; bottom += vDiff; left += hDiff; right += hDiff;
 	return *this; }
@@ -209,16 +227,16 @@ struct CRect
 	void bound (const CRect& rect);
 
 	union
-	{ long left; long x;};
+	{ CCoord left; CCoord x;};
 
 	union
-	{ long top; long y;};
+	{ CCoord top; CCoord y;};
 
 	union
-	{ long right; long x2;};
+	{ CCoord right; CCoord x2;};
 
 	union
-	{ long bottom; long y2;};
+	{ CCoord bottom; CCoord y2;};
 };
 
 //-----------------------------------------------------------------------------
@@ -226,8 +244,8 @@ struct CRect
 //-----------------------------------------------------------------------------
 struct CPoint
 {
-	CPoint (long h = 0, long v = 0) : h (h), v (v) {}
-	CPoint& operator () (long h, long v) 
+	CPoint (CCoord h = 0, CCoord v = 0) : h (h), v (v) {}
+	CPoint& operator () (CCoord h, CCoord v)
 	{ this->h = h; this->v = v; return *this; }
 
 	bool isInside (CRect& r) const
@@ -239,14 +257,14 @@ struct CPoint
 	bool operator == (const CPoint &other) const
 	{ return (h == other.h && v == other.v); }
 
-	CPoint &offset (long h, long v)
+	CPoint &offset (CCoord h, CCoord v)
 	{ this->h += h; this->v += v; return *this; }
 
 	union
-	{ long h; long x;};
+	{ CCoord h; CCoord x;};
 
 	union
-	{ long v; long y;};
+	{ CCoord v; CCoord y;};
 };
 
 //-----------------------------------------------------------------------------
@@ -257,21 +275,21 @@ struct CColor
 	CColor& operator () (unsigned char red,
 						unsigned char green,
 						unsigned char blue,
-						unsigned char unused)
+						unsigned char alpha)
 	{
 		this->red   = red;
 		this->green = green;
 		this->blue  = blue;
-		this->unused = unused;
+		this->alpha = alpha;
 		return *this; 
 	}
 
-	CColor& operator = (CColor newColor)
+	CColor& operator = (const CColor& newColor)
 	{
 		red   = newColor.red;
 		green = newColor.green;
 		blue  = newColor.blue;
-		unused = newColor.unused;
+		alpha = newColor.alpha;
 		return *this; 
 	}
 	
@@ -281,22 +299,20 @@ struct CColor
 		c.red   = ~red;
 		c.green = ~green;
 		c.blue  = ~blue;
-		c.unused = ~unused;
+		c.alpha = ~alpha;
 		return c;
 	}
 
 	bool operator != (const CColor &other) const 
-	{ return (red != other.red || green != other.green || blue  != other.blue); }
+	{ return (red != other.red || green != other.green || blue  != other.blue || alpha != other.alpha); }
 
 	bool operator == (const CColor &other) const
-	{ return (red == other.red && green == other.green && blue  == other.blue); }
+	{ return (red == other.red && green == other.green && blue  == other.blue && alpha == other.alpha); }
 	
 	unsigned char red;
 	unsigned char green;
 	unsigned char blue;
-	union
-	{ unsigned char unused; unsigned char alpha; };
-
+	unsigned char alpha;
 };
 
 // define some basic colors
@@ -329,19 +345,31 @@ extern CColor kMagentaCColor;
 #define kInfiniteSymbol    "\xE2\x88\x9E"
 #define kCopyrightSymbol   "\xC2\xA9"
 #define kTrademarkSymbol   "\xE2\x84\xA2"
-#define kRegisteredSymbol	 "\xC2\xAE"
+#define kRegisteredSymbol	"\xC2\xAE"
 #define kMicroSymbol       "\xC2\xB5"
 #define kPerthousandSymbol "\xE2\x80\xB0"
 
 #elif MAC
 #define kDegreeSymbol      "\xA1"
-#define kInfiniteSymbol    "\xB0"
+#define kInfiniteSymbol    "oo"
 #define kCopyrightSymbol   "\xA9"
 #define kTrademarkSymbol   "\xAA"
 #define kRegisteredSymbol  "\xA8"
 #define kMicroSymbol       "\xB5"
 #define kPerthousandSymbol "\xE4"
 #endif
+
+class CDragContainer;
+class CCView;
+class CAttributeListEntry;
+
+//-----------------------------------------------------------------------------
+typedef unsigned long CViewAttributeID;
+//-----------------------------------------------------------------------------
+// Attributes
+//		all attributes where the first letter is lowercase are reserved for the vstgui lib
+
+extern const CViewAttributeID kCViewAttributeReferencePointer;	// 'cvrp'
 
 //-----------------------------------------------------------------------------
 //-----------
@@ -417,17 +445,6 @@ enum CButton
 };
 
 //----------------------------
-// Drop Type
-//----------------------------
-enum CDropType
-{
-	kDropFiles = 0,
-	kDropText,
-
-	kDropUser = 1000
-};
-
-//----------------------------
 // Cursor Type
 //----------------------------
 enum CCursorType
@@ -438,7 +455,10 @@ enum CCursorType
 	kCursorVSize,
 	kCursorSizeAll,
 	kCursorNESWSize,
-	kCursorNWSESize
+	kCursorNWSESize,
+	kCursorCopy,
+	kCursorNotAllowed,
+	kCursorHand
 };
 
 //----------------------------
@@ -451,68 +471,100 @@ enum CKnobMode
 	kLinearMode
 };
 
+//----------------------------
+// Draw Style
+//----------------------------
+enum CDrawStyle
+{
+	kDrawStroked = 0,
+	kDrawFilled,
+	kDrawFilledAndStroked
+};
+
+//-----------------------------------------------------------------------------
+// CReferenceCounter Declaration (Reference Counting)
+//-----------------------------------------------------------------------------
+class CReferenceCounter
+{
+public:
+	CReferenceCounter () : nbReference (1) {}
+	virtual ~CReferenceCounter () {}
+	
+	virtual void forget () { nbReference--; if (nbReference == 0) delete this; }
+	virtual void remember () { nbReference++; }
+	long getNbReference () const { return nbReference; }
+
+private:
+	long nbReference;
+};
+
 //-----------------------------------------------------------------------------
 // CDrawContext Declaration
+//! A drawing context encapsulates the drawing context of the underlying OS. It implements the drawing functions.
 //-----------------------------------------------------------------------------
-class CDrawContext
+class CDrawContext : public CReferenceCounter
 {
 public:
 	CDrawContext (CFrame *pFrame, void *pSystemContext, void *pWindow = 0);
 	virtual ~CDrawContext ();	
 
-	void moveTo (const CPoint &point);
-	void lineTo (const CPoint &point);
+	void moveTo (const CPoint &point);	///< move line position to point
+	void lineTo (const CPoint &point);	///< draw a line from current position to point
+	void drawLines (const CPoint* points, const long& numberOfLines);	///< draw multiple lines at once
 
-	void polyLine (const CPoint *pPoint, long numberOfPoints);
-	void fillPolygon (const CPoint *pPoint, long numberOfPoints);
+	void drawPolygon (const CPoint *pPoints, long numberOfPoints, const CDrawStyle drawStyle = kDrawStroked); ///< draw a polygon
+	void polyLine (const CPoint *pPoint, long numberOfPoints);	///< draw a stroked polygon
+	void fillPolygon (const CPoint *pPoint, long numberOfPoints);	///< draw a filled polygon
 
-	void drawRect (const CRect &rect);
-	void fillRect (const CRect &rect);
+	void drawRect (const CRect &rect, const CDrawStyle drawStyle = kDrawStroked);	///< draw a stroked rect
+	void fillRect (const CRect &rect);	///< draw a filled rect
 
-	void drawArc (const CRect &rect, const CPoint &point1, const CPoint &point2);
-	void fillArc (const CRect &rect, const CPoint &point1, const CPoint &point2);
+	void drawArc (const CRect &rect, const float startAngle1, const float endAngle2, const CDrawStyle drawStyle = kDrawStroked);	///< draw a stroked arc, where the angles are in degree
+	void drawArc (const CRect &rect, const CPoint &point1, const CPoint &point2);		///< draw a stroked arc between point1 and point2
+	void fillArc (const CRect &rect, const CPoint &point1, const CPoint &point2);		///< draw a filled arc between point1 and point2
 
-	void drawEllipse (const CRect &rect);
-	void fillEllipse (const CRect &rect);
+	void drawEllipse (const CRect &rect, const CDrawStyle drawStyle = kDrawStroked);	///< draw an ellipse
+	void fillEllipse (const CRect &rect);	///< draw a filled ellipse
 	
-	void drawPoint (const CPoint &point, CColor color);
-	CColor getPoint (const CPoint& point);
+	void drawPoint (const CPoint &point, CColor color);	///< draw a point
+	CColor getPoint (const CPoint& point); ///< \deprecated
 
-	void floodFill (const CPoint& start);
+	void floodFill (const CPoint& start); ///< \deprecated
 	
-	void       setLineStyle (CLineStyle style);
-	CLineStyle getLineStyle () { return lineStyle; }
+	void       setLineStyle (CLineStyle style);				///< set the current line style
+	CLineStyle getLineStyle () const { return lineStyle; }	///< get the current line style
 
-	void   setLineWidth (long width);
-	long   getLineWidth () { return frameWidth; }
+	void   setLineWidth (CCoord width);						///< set the current line width
+	CCoord getLineWidth () const { return frameWidth; }		///< get the current line width
 
-	void      setDrawMode (CDrawMode mode);
-	CDrawMode getDrawMode () { return drawMode; }
+	void      setDrawMode (CDrawMode mode);					///< set the current draw mode, see CDrawMode
+	CDrawMode getDrawMode () const { return drawMode; }		///< get the current draw mode, see CDrawMode
 
-	void   setClipRect (const CRect &clip);
-	CRect &getClipRect (CRect &clip) { clip = clipRect; clip.offset (-offset.h, -offset.v); return clip; }
-	void   resetClipRect ();
+	void   setClipRect (const CRect &clip);					///< set the current clip
+	CRect &getClipRect (CRect &clip) const { clip = clipRect; clip.offset (-offset.h, -offset.v); return clip; }	///< get the current clip
+	void   resetClipRect ();	///< reset the clip to the default state
 
-	void   setFillColor  (const CColor color);
-	CColor getFillColor () { return fillColor; }
+	void   setFillColor  (const CColor color);			///< set current fill color
+	CColor getFillColor () const { return fillColor; }	///< get current fill color
 
-	void   setFrameColor (const CColor color);
-	CColor getFrameColor () { return frameColor; }
+	void   setFrameColor (const CColor color);				///< set current stroke color
+	CColor getFrameColor () const { return frameColor; }	///< get current stroke color
 
-	void   setFontColor (const CColor color);
-	CColor getFontColor () { return fontColor; }
-	void   setFont (CFont fontID, const long size = 0, long style = 0);
-	CFont  getFont () { return fontId; }
+	void   setFontColor (const CColor color);			///< set current font color
+	CColor getFontColor () const { return fontColor; }	///< get current font color
+	void   setFont (CFont fontID, const long size = 0, long style = 0);	///< set current font
+	CFont  getFont () const { return fontId; }							///< get current font
+	long   getFontSize () const { return fontSize; }	///< get current font size
 
-	long getStringWidth (const char* pStr);
+	CCoord getStringWidth (const char* pStr);	///< get the width of a string
 
 	void drawString (const char *pString, const CRect &rect, const short opaque = false,
-					 const CHoriTxtAlign hAlign = kCenterText);
+					 const CHoriTxtAlign hAlign = kCenterText);	///< draw a string
 
-	long getMouseButtons ();
-	void getMouseLocation (CPoint &point);
-	bool waitDoubleClick ();
-	bool waitDrag ();
+	long getMouseButtons ();	///< get current mouse buttons
+	void getMouseLocation (CPoint &point);	///< get current mouse location. should not be used, see CView::getMouseLocation
+	bool waitDoubleClick ();	///< check if another mouse click occurs in the near future
+	bool waitDrag ();			///< check if the mouse will be dragged
 
 #if MOTIF
 	long getIndexColor (CColor color);
@@ -525,13 +577,15 @@ public:
 
 	void *getWindow () { return pWindow; }
 	void setWindow (void *ptr)  { pWindow = ptr; }
-	void getLoc (CPoint &where) { where = penLoc; }
-	CFrame* getFrame () { return pFrame; }
+	void getLoc (CPoint &where) const { where = penLoc; }
+	CFrame* getFrame () const { return pFrame; }
 
 	CPoint offsetScreen;
 	CPoint offset;
 
-	void   *getSystemContext () { return pSystemContext; }
+	void   *getSystemContext () const { return pSystemContext; }
+
+	virtual void forget ();
 
 	//-------------------------------------------
 protected:
@@ -548,7 +602,7 @@ protected:
 	CColor fontColor;
 	CPoint penLoc;
 
-	long   frameWidth;
+	CCoord   frameWidth;
 	CColor frameColor;
 	CColor fillColor;
 	CLineStyle lineStyle;
@@ -563,22 +617,26 @@ protected:
 	void *pOldPen;
 	void *pOldFont;
 	long iPenStyle;
+	HDC  pHDC;
 
 #elif MAC
 	#if QUARTZ
 	CGContextRef gCGContext;
+	bool needToSynchronizeCGContext;
 	public:
+	CGContextRef getCGContext () const { return gCGContext; }
 	CGContextRef beginCGContext ();
 	void releaseCGContext (CGContextRef context);
+	void synchronizeCGContext ();
 	protected:
 	#else
 
 	FontInfo fontInfoStruct;
 	Pattern fillPattern;
 	bool bInitialized;
+	#endif
 	virtual BitMapPtr getBitmap ();
 	virtual void releaseBitmap ();
-	#endif
 	virtual CGrafPtr getPort ();
 	
 #elif MOTIF
@@ -597,6 +655,7 @@ protected:
 
 //-----------------------------------------------------------------------------
 // COffscreenContext Declaration
+//! A drawing device which uses a pixmap as its drawing surface.
 //-----------------------------------------------------------------------------
 class COffscreenContext : public CDrawContext
 {
@@ -606,18 +665,18 @@ public:
 
 	virtual ~COffscreenContext ();
 	
-	void copyFrom (CDrawContext *pContext, CRect destRect, CPoint srcOffset = CPoint (0, 0));
-	void copyTo (CDrawContext* pContext, CRect& srcRect, CPoint destOffset = CPoint (0, 0));
+	void copyFrom (CDrawContext *pContext, CRect destRect, CPoint srcOffset = CPoint (0, 0));	///< copy from offscreen to pContext
+	void copyTo (CDrawContext* pContext, CRect& srcRect, CPoint destOffset = CPoint (0, 0));	///< copy to offscreen from pContext
 
-	inline long getWidth ()  { return width; }
-	inline long getHeight () { return height; }
+	inline CCoord getWidth () const { return width; }
+	inline CCoord getHeight () const { return height; }
 
 	//-------------------------------------------
 protected:
 	CBitmap *pBitmap;
 	CBitmap *pBitmapBg;
-	long    height;
-	long    width;
+	CCoord    height;
+	CCoord    width;
 	bool    bDestroyPixmap;
 
 	CColor  backgroundColor;
@@ -635,41 +694,41 @@ protected:
 	#if QUARTZ
 	void* offscreenBitmap;
 	#else
-	BitMapPtr getBitmap ();
-	void releaseBitmap ();
 	CGrafPtr getPort ();
 	#endif
+	BitMapPtr getBitmap ();
+	void releaseBitmap ();
 #endif
 };
 
 
 //-----------------------------------------------------------------------------
 // CBitmap Declaration
+//! Encapsulates various platform depended kinds of bitmaps.
 //-----------------------------------------------------------------------------
-class CBitmap
+class CBitmap : public CReferenceCounter
 {
 public:
-	CBitmap (long resourceID);
-	CBitmap (CFrame &frame, long width, long height);
+	CBitmap (long resourceID);	///< Create a pixmap from a resource identifier
+	CBitmap (CFrame &frame, CCoord width, CCoord height);	///< Create a pixmap with a given size.
 	virtual ~CBitmap ();
 
-	void draw (CDrawContext *pContext, CRect &rect, const CPoint &offset = CPoint (0, 0));
-	void drawTransparent (CDrawContext *pContext, CRect &rect, const CPoint &offset = CPoint (0, 0));
-	void drawAlphaBlend  (CDrawContext *pContext, CRect &rect, const CPoint &offset = CPoint (0, 0), unsigned char alpha = 128);
+	virtual void draw (CDrawContext *pContext, CRect &rect, const CPoint &offset = CPoint (0, 0));	///< Draw the pixmap using a given rect as output position and a given offset of its source pixmap.
+	virtual void drawTransparent (CDrawContext *pContext, CRect &rect, const CPoint &offset = CPoint (0, 0));
+	virtual void drawAlphaBlend  (CDrawContext *pContext, CRect &rect, const CPoint &offset = CPoint (0, 0), unsigned char alpha = 128);	///< Same as CBitmap::draw except that it uses the alpha value to draw the bitmap alpha blended.
 
-	inline long getWidth ()  { return width; }
-	inline long getHeight () { return height; }
+	inline CCoord getWidth () const { return width; }
+	inline CCoord getHeight () const { return height; }
 
-	void forget ();
-	void remember ();
-	long getNbReference () { return nbReference; }
-
-	bool isLoaded ();
-	void *getHandle ();
+	bool isLoaded () const;
+	void *getHandle () const;
 	
 	void setTransparentColor (const CColor color);
-	CColor getTransparentColor () { return transparentCColor; }
+	CColor getTransparentColor () const { return transparentCColor; }
 	void setTransparencyMask (CDrawContext* pContext, const CPoint& offset = CPoint (0, 0));
+
+	void setNoAlpha (bool state) { noAlpha = state; }
+	bool getNoAlpha () const { return noAlpha; }
 
 #if BEOS
 	static void closeResource ();
@@ -684,12 +743,16 @@ public:
 protected:
 	CBitmap ();
 
+	virtual void dispose ();
+	virtual bool loadFromResource (long resourceID);
+	virtual bool loadFromPath (const void* platformPath);	// load from a platform path. On Windows it's a C string and on Mac OS X its a CFURLRef.
+
 	long resourceID;
-	long nbReference;
-	long width;
-	long height;
+	CCoord width;
+	CCoord height;
 
 	CColor transparentCColor;
+	bool noAlpha;
 
 #if WINDOWS
 	void *pHandle;
@@ -706,7 +769,9 @@ protected:
 #elif MAC
 	void* pHandle;
 	void* pMask;
-
+	#if QUARTZ
+	void* cgImage;
+	#endif
 #elif BEOS
 	static BResources *resourceFile;
 	BBitmap    *bbitmap;
@@ -722,82 +787,97 @@ enum {
 //-----------------------------------------------------------------------------
 // CView Declaration
 //-----------------------------------------------------------------------------
-class CView
+class CView : public CReferenceCounter
 {
 public:
 	CView (const CRect &size);
 	virtual ~CView ();
 
-	void redraw ();
-	virtual void draw (CDrawContext *pContext);
-	virtual void drawRect (CDrawContext *pContext, CRect& updateRect) { draw (pContext); }
-	virtual bool checkUpdate (CRect& updateRect) { return updateRect.rectOverlap (size); }
-	virtual void mouse (CDrawContext *pContext, CPoint &where, long buttons = -1);
-	virtual void update (CDrawContext *pContext);
+	virtual void draw (CDrawContext *pContext);	///< called if the view should draw itself
+	virtual void drawRect (CDrawContext *pContext, const CRect& updateRect) { draw (pContext); }	///< called if the view should draw itself
+	virtual bool checkUpdate (CRect& updateRect) const { return updateRect.rectOverlap (size); }
+	virtual void mouse (CDrawContext *pContext, CPoint &where, long buttons = -1);	///< called if a mouse click event occurs
+	
+	virtual void setBackground (CBitmap *background);				///< set the background image of this view
+	virtual CBitmap *getBackground () const { return pBackground; }	///< get the background image of this view
+
+	virtual long onKeyDown (VstKeyCode& keyCode);	///< called if a key down event occurs and this view has focus
+	virtual long onKeyUp (VstKeyCode& keyCode);		///< called if a key up event occurs and this view has focus
+
+	virtual bool onWheel (CDrawContext *pContext, const CPoint &where, float distance);	///< called if a mouse wheel event is happening over this view
+
+	virtual bool onDrop (CDrawContext* context, CDragContainer* drag, const CPoint& where) { return false; }	///< called if a drag is dropped onto this view
+	virtual void onDragEnter (CDrawContext* context, CDragContainer* drag, const CPoint& where) {}				///< called if a drag is entering this view
+	virtual void onDragLeave (CDrawContext* context, CDragContainer* drag, const CPoint& where) {}				///< called if a drag is leaving this view
+	virtual void onDragMove (CDrawContext* context, CDragContainer* drag, const CPoint& where) {}				///< called if a drag is current moved over this view
+
+	virtual void looseFocus (CDrawContext *pContext = 0);										///< called if view should loose focus
+	virtual void takeFocus (CDrawContext *pContext = 0);										///< called if view should take focus
+
+	virtual bool isDirty () const { return bDirty; }											///< check if view is dirty
+	virtual void setDirty (const bool val = true) { bDirty = val; }								///< set the view to dirty so that it is redrawn in the next idle. Thread Safe !
+	
+	virtual void setMouseEnabled (const bool bEnable = true) { bMouseEnabled = bEnable; }		///< turn on/off mouse usage for this view
+	virtual bool getMouseEnabled () const { return bMouseEnabled; }								///< get the state of wheather this view uses the mouse or not
+
+	virtual void setMouseableArea (const CRect &rect)  { mouseableArea = rect; }				///< set the area in which the view reacts to the mouse
+	virtual CRect &getMouseableArea (CRect &rect) const { rect = mouseableArea; return rect;}	///< get the area in which the view reacts to the mouse
+
+	virtual bool hitTest (const CPoint& where, const long buttons = -1) { return where.isInside (mouseableArea); }	///< check if where hits this view
+
+	virtual void setTransparency (bool val) { bTransparencyEnabled = val; }			///< set views transparent state
+	virtual bool getTransparency () const { return bTransparencyEnabled; }			///< is view transparent ?
+
+	CCoord getHeight () const { return size.height (); }								///< get the height of the view
+	CCoord getWidth ()  const { return size.width (); }								///< get the width of the view
+
+	virtual void setViewSize (CRect &rect);											///< set views size
+	virtual CRect &getViewSize (CRect &rect) const { rect = size; return rect; }	///< returns the current view size
+
+	virtual bool removed (CView* parent) { return true; }   ///< view is removed from parent view
+	virtual bool attached (CView* view) { return true; }    ///< view is attached to a parent view
+
+	virtual void getMouseLocation (CDrawContext* context, CPoint &point);	///< get current mouse location in local view coordinates
+
+	virtual CPoint& frameToLocal (CPoint& point) const;		///< conversion from frame coordinates to local view coordinates
+	virtual CPoint& localToFrame (CPoint& point) const;		///< conversion from local view coordinates to frame coordinates
+
+	bool getAttributeSize (const CViewAttributeID id, long& outSize) const;									///< get the size of an attribute
+	bool getAttribute (const CViewAttributeID id, const long inSize, void* outData, long& outSize) const;	///< get an attribute
+	bool setAttribute (const CViewAttributeID id, const long inSize, void* inData);							///< set an attribute
+
+	CView  *getParentView () const { return pParentView; }
+	CFrame *getFrame () const { return pParentFrame; }
+	virtual void *getEditor () const;
+
 	virtual long notify (CView* sender, const char* message);
-	
-	virtual void setBackground (CBitmap *background);
-	virtual CBitmap *getBackground () { return pBackground; }
+	void redraw ();
+	virtual void redrawRect (CDrawContext* context, const CRect& rect);
 
-	virtual long onKeyDown (VstKeyCode& keyCode);
-	virtual long onKeyUp (VstKeyCode& keyCode);
+	#if DEBUG
+	virtual void dumpInfo ();
+	#endif
 
-	virtual bool onDrop (void **ptrItems, long nbItems, long type, CPoint &where);
-	virtual bool onWheel (CDrawContext *pContext, const CPoint &where, float distance);
+	virtual bool isTypeOf (const char* s) const
+		{ return (!strcmp (s, "CView")); }
 
-	virtual void looseFocus (CDrawContext *pContext = 0);
-	virtual void takeFocus (CDrawContext *pContext = 0);
+#if ENABLE_DEPRECATED_METHODS
+	// deprecated methods will be placed here, so that people who really need them can turn the macro on
 
-	virtual bool isDirty () { return bDirty; }
-	virtual void setDirty (const bool val = true) { bDirty = val; }
-
-	virtual void setMouseEnabled (const bool bEnable = true) { bMouseEnabled = bEnable; }
-	virtual bool getMouseEnabled () { return bMouseEnabled; }
-
-	virtual void setMouseableArea (const CRect &rect)  { mouseableArea = rect; }
-	virtual CRect &getMouseableArea (CRect &rect) { rect = mouseableArea; return rect;}
-
-	virtual bool hitTest (const CPoint& where, const long buttons = -1) { return where.isInside (mouseableArea); }
-
-	virtual void setTransparency (bool val) { bTransparencyEnabled = val; }
-	virtual bool getTransparency () { return bTransparencyEnabled; }
-
-	long getHeight () { return size.height (); }
-	long getWidth ()  { return size.width (); }
-
-	virtual void setViewSize (CRect &rect);
-	virtual CRect &getViewSize (CRect &rect) { rect = size; return rect; }
-
-	virtual void setParentView (CView *pParentView) { this->pParentView = pParentView; }
-	CView  *getParentView () { return pParentView; }
-	
-	virtual void setParent (CFrame *pParent) { this->pParent = pParent; }
-	CFrame *getParent () { return pParent; }
-	
-	virtual void *getEditor ();
-
-	virtual bool removed (CView* parent) { return true; }   // it has have been removed from parent view
-	virtual bool attached (CView* view) { return true; }    // it has been attached to a view
-
-	virtual void forget ();
-	virtual void remember ();
-	virtual	long getNbReference () { return nbReference; }
-
-	virtual void getMouseLocation (CDrawContext* context, CPoint &point);
-	virtual void getFrameTopLeftPos (CPoint& topLeft);
-
+	virtual void setParentView (CView *pParentView) { this->pParentView = pParentView; }  ///< \deprecated
+	virtual void setFrame (CFrame *pParent) { this->pParentFrame = pParent; }  ///< \deprecated
+	virtual void getFrameTopLeftPos (CPoint& topLeft) const; ///< \deprecated
+#endif
 	//-------------------------------------------
 protected:
 	friend class CControl;
 	friend class CFrame;
 	friend class CViewContainer;
 
-	long nbReference;
-
 	CRect  size;
 	CRect  mouseableArea;
 
-	CFrame *pParent;
+	CFrame *pParentFrame;
 	CView  *pParentView;
 
 	bool  bDirty;
@@ -805,124 +885,222 @@ protected:
 	bool  bTransparencyEnabled;
 	
 	CBitmap* pBackground;
+	CAttributeListEntry* pAttributeList;
+
+	virtual void update (CDrawContext *pContext); // don't call this !!!
+};
+
+// Message to check if View is a CViewContainer
+extern char* kMsgCheckIfViewContainer;
+
+//-----------------------------------------------------------------------------
+// CViewContainer Declaration
+//! Container Class of CView objects.
+//-----------------------------------------------------------------------------
+class CViewContainer : public CView
+{
+public:
+	CViewContainer (const CRect &size, CFrame *pParent, CBitmap *pBackground = 0);
+	virtual ~CViewContainer ();
+
+	virtual void addView (CView *pView);	///< add a child view
+	virtual void addView (CView *pView, CRect &mouseableArea, bool mouseEnabled = true);	///< add a child view
+	virtual void removeView (CView *pView, const bool &withForget = true);	///< remove a child view
+	virtual void removeAll (const bool &withForget = true);	///< remove all child views
+	virtual bool isChild (CView *pView) const;	///< check if pView is a child view of this container
+	virtual long getNbViews () const;			///< get the number of child views
+	virtual CView *getView (long index) const;	///< get the child view at index
+
+	virtual void setBackgroundColor (const CColor color);	///< set the background color (will only be drawn if this container is not set to transparent and does not have a background bitmap)
+	virtual CColor getBackgroundColor () const { return backgroundColor; }	///< get the background color
+	virtual void setBackgroundOffset (const CPoint &p) { backgroundOffset = p; }	///< set the offset of the background bitmap
+	virtual const CPoint& getBackgroundOffset () const { return backgroundOffset; }	///< get the offset of the background bitmap
+
+	virtual void drawBackgroundRect (CDrawContext *pContext, CRect& _updateRect);	///< draw the background
+
+	enum {
+		kNormalUpdate = 0,		///< this mode redraws the whole container if something is dirty
+		kOnlyDirtyUpdate		///< this mode only redraws the views which are dirty
+	};
+
+	virtual void setMode (long val) { mode = val; }	///< set the update mode
+	virtual long getMode () const { return mode; }	///< get the update mode
+
+	virtual void useOffscreen (bool b);	///< turn on/off using an offscreen
+
+	virtual CView *getCurrentView () const;	///< get the current view under the mouse
+	virtual CView *getViewAt (const CPoint& where, bool deep = false) const;	///< get the view at point where
+
+	void modifyDrawContext (long save[4], CDrawContext* pContext);
+	void restoreDrawContext (CDrawContext* pContext, long save[4]);
+
+	// CView
+	virtual void draw (CDrawContext *pContext);
+	virtual void drawRect (CDrawContext *pContext, const CRect& updateRect);
+	virtual void mouse (CDrawContext *pContext, CPoint &where, long buttons = -1);
+	virtual bool onWheel (CDrawContext *pContext, const CPoint &where, float distance);
+	virtual void update (CDrawContext *pContext);
+	virtual bool hitTest (const CPoint& where, const long buttons = -1);
+	virtual long onKeyDown (VstKeyCode& keyCode);
+	virtual long onKeyUp (VstKeyCode& keyCode);
+	virtual long notify (CView* sender, const char* message);
+
+	virtual bool onDrop (CDrawContext* context, CDragContainer* drag, const CPoint& where);
+	virtual void onDragEnter (CDrawContext* context, CDragContainer* drag, const CPoint& where);
+	virtual void onDragLeave (CDrawContext* context, CDragContainer* drag, const CPoint& where);
+	virtual void onDragMove (CDrawContext* context, CDragContainer* drag, const CPoint& where);
+
+	virtual void looseFocus (CDrawContext *pContext = 0);
+	virtual void takeFocus (CDrawContext *pContext = 0);
+
+	virtual bool isDirty () const;
+
+	virtual void setViewSize (CRect &rect);
+
+	virtual bool removed (CView* parent);
+	virtual bool attached (CView* view);
+		
+	virtual CPoint& frameToLocal (CPoint& point) const;
+	virtual CPoint& localToFrame (CPoint& point) const;
+
+	virtual void redrawRect (CDrawContext* context, const CRect& rect);
+
+	CLASS_METHODS(CViewContainer, CView)
+
+	#if DEBUG
+	virtual void dumpInfo ();
+	virtual void dumpHierarchy ();
+	#endif
+
+	//-------------------------------------------
+protected:
+	bool hitTestSubViews (const CPoint& where, const long buttons = -1);
+
+	CCView  *pFirstView;
+	CCView  *pLastView;
+	long mode;
+	COffscreenContext *pOffscreenContext;
+	CColor backgroundColor;
+	CPoint backgroundOffset;
+	bool bDrawInOffscreen;
+
+	CView* currentDragView;
 };
 
 //-----------------------------------------------------------------------------
 // CFrame Declaration
+//! The CFrame is the parent view of all views.
 //-----------------------------------------------------------------------------
-class CFrame : public CView
+class CFrame : public CViewContainer
 {
 public:
 	CFrame (const CRect &size, void *pSystemWindow, void *pEditor);
-	CFrame (const CRect &size, char *pTitle, void *pEditor, const long style = 0);
+	CFrame (const CRect &size, const char *pTitle, void *pEditor, const long style = 0);
 	
-	~CFrame ();
+	virtual ~CFrame ();
 
-	bool open (CPoint *pPoint = 0);
-	bool close ();
-	bool isOpen () { return bOpenFlag; }
+	virtual bool open (CPoint *pPoint = 0);
+	virtual bool close ();
+	virtual bool isOpen () const { return bOpenFlag; }
 
-	void draw (CDrawContext *pContext);
-	void drawRect (CDrawContext *pContext, CRect& updateRect);
-	void draw (CView *pView = 0);
-	void mouse (CDrawContext *pContext, CPoint &where, long buttons = -1);
-	bool onDrop (void **ptrItems, long nbItems, long type, CPoint &where);
-	bool onWheel (CDrawContext *pContext, const CPoint &where, float distance);
-	long onKeyDown (VstKeyCode& keyCode);
-	long onKeyUp (VstKeyCode& keyCode);
+	virtual void idle ();
+	virtual void doIdleStuff ();
 
-	void update (CDrawContext *pContext);
-	void idle ();
-	void doIdleStuff ();
+	virtual unsigned long getTicks () const;	///< get the current time (in ms)
+	virtual long getKnobMode () const;			///< get hosts knob mode
 
-	// get the current time (in ms)
-	unsigned long getTicks ();
-	long getKnobMode ();
+	virtual bool setPosition (CCoord x, CCoord y);
+	virtual bool getPosition (CCoord &x, CCoord &y) const;
 
-	bool getPosition (long &x, long &y);
-	bool setSize (long width, long height);
-	bool getSize (CRect *pSize);
+	virtual bool setSize (CCoord width, CCoord height);
+	virtual bool getSize (CRect *pSize) const;
+	virtual bool getSize (CRect &pSize) const;
 
-	virtual bool addView (CView *pView);
-	virtual bool removeView (CView *pView, const bool &withForget = false);
-	virtual bool removeAll (const bool &withForget = true);
-	virtual bool isChild (CView *pView);
+	virtual long   setModalView (CView *pView);
+	virtual CView *getModalView () const { return pModalView; }
 
-	virtual long getNbViews () { return viewCount; }
-	virtual CView *getView (long index);
+	virtual void  beginEdit (long index);
+	virtual void  endEdit (long index);
 
-	long   setModalView (CView *pView);
-	CView *getModalView () { return pModalView; }
+	virtual bool  getCurrentLocation (CPoint &where);
+	virtual void  setCursor (CCursorType type);
 
-	void  beginEdit (long index);
-	void  endEdit (long index);
+	virtual void   setFocusView (CView *pView);
+	virtual CView *getFocusView () const { return pFocusView; }
 
-	bool  getCurrentLocation (CPoint &where);
-	void  setCursor (CCursorType type);
+	virtual bool setDropActive (bool val);
+	virtual bool isDropActive () const { return bDropActive; };
 
-	CView *getCurrentView ();
-	CView *getViewAt (const CPoint& where);
+	CDrawContext* createDrawContext ();
 
-#if WINDOWS
-	HWND getOuterWindow ();
-	void *getSystemWindow () { return pHwnd; }
-#elif BEOS
-	void *getSystemWindow () { return pPlugView; }
-#else
-	void *getSystemWindow () { return pSystemWindow; }
-#endif
-	void *getParentSystemWindow () { return pSystemWindow; }
+	virtual void setOpenFlag (bool val) { bOpenFlag = val;};
+	virtual bool getOpenFlag () const { return bOpenFlag; };
+
+	virtual void invalidate (const CRect &rect);
+
+	#if WINDOWS
+	HWND getOuterWindow () const;
+	void *getSystemWindow () const { return pHwnd; }
+	#elif BEOS
+	void *getSystemWindow () const { return pPlugView; }
+	#else
+	void *getSystemWindow () const { return pSystemWindow; }
+	#endif
+	void *getParentSystemWindow () const { return pSystemWindow; }
 	void setParentSystemWindow (void *val) { pSystemWindow = val; }
 
-	virtual void *getEditor () { return pEditor; }
+	// CView
+	virtual void draw (CDrawContext *pContext);
+	virtual void drawRect (CDrawContext *pContext, const CRect& updateRect);
+	virtual void draw (CView *pView = 0);
+	virtual void mouse (CDrawContext *pContext, CPoint &where, long buttons = -1);
+	virtual bool onWheel (CDrawContext *pContext, const CPoint &where, float distance);
+	virtual long onKeyDown (VstKeyCode& keyCode);
+	virtual long onKeyUp (VstKeyCode& keyCode);
+	virtual void update (CDrawContext *pContext);
+	virtual void setViewSize (CRect& inRect);
+	virtual CView *getCurrentView () const;
 
-	void   setEditView (CView *pView);
-	CView *getEditView () { return pEditView; }
-
-	bool setDropActive (bool val);
-	bool isDropActive () { return bDropActive; };
-
-	void invalidate (const CRect &rect);
+	virtual void *getEditor () const { return pEditor; }
 
 #if MOTIF
-	Colormap getColormap ()   { return colormap; }
-	Visual  *getVisual ()     { return pVisual; }
-	unsigned int getDepth ()  { return depth; }
-	Display *getDisplay ()    { return pDisplay; }
-	Window   getWindow ()     { return window; }
+	Colormap getColormap ()   const { return colormap; }
+	Visual  *getVisual ()     const { return pVisual; }
+	unsigned int getDepth ()  const { return depth; }
+	Display *getDisplay ()    const { return pDisplay; }
+	Window   getWindow ()     const { return window; }
 	void     freeGc ();
 
 	Region   region;
 
 	GC       gc;
-	GC       getGC ()         { return gc; }
+	GC       getGC ()         const { return gc; }
 #endif
 
-	void setOpenFlag (bool val) { bOpenFlag = val;};
-	bool getOpenFlag () { return bOpenFlag; };
+	#if DEBUG
+	virtual void dumpHierarchy ();
+	#endif
+
+	CLASS_METHODS(CFrame, CViewContainer)
 
 	//-------------------------------------------
 protected:
 	bool   initFrame (void *pSystemWin);
-	bool   isSomethingDirty ();
 
 	void   *pEditor;
 	
 	void    *pSystemWindow;
-	long    viewCount;
-	long    maxViews;
-	CView   **ppViews;
 	CView   *pModalView;
-	CView   *pEditView;
+	CView   *pFocusView;
 
 	bool    bFirstDraw;
 	bool    bOpenFlag;
 	bool    bDropActive;
 
 #if WINDOWS
-	void    *pHwnd;
-	HDC      hdc;
+	void      *pHwnd;
 	HINSTANCE hInstMsimg32dll;
+	void*     dropTarget;
 
 #elif MOTIF
 	Colormap  colormap;
@@ -948,7 +1126,8 @@ protected:
 	bool hasFocus;
 	EventHandlerRef dragEventHandler;
 	public:
-	void* getPlatformControl () { return controlRef; }
+	void* getPlatformControl () const { return controlRef; }
+	CPoint hiScrollOffset;
 	protected:
 #endif
 	//-------------------------------------------
@@ -957,6 +1136,36 @@ private:
 	bool     bAddedWindow;
 	void     *pVstWindow;
 	void     *defaultCursor;
+};
+
+//-----------------------------------------------------------------------------
+// CDragContainer Declaration
+//-----------------------------------------------------------------------------
+class CDragContainer : public CReferenceCounter
+{
+public:
+	CDragContainer (void* platformDrag);
+	~CDragContainer ();
+
+	void* first (long& size, long& type);		///< returns pointer on a char array if type is known
+	void* next (long& size, long& type);		///< returns pointer on a char array if type is known
+	
+	long getType (long idx) const;
+	long getCount () const { return nbItems; }
+
+	enum {
+		kFile = 0,
+		kText,
+
+		kUnknown = -1
+	};
+
+protected:
+	void* platformDrag;
+	long nbItems;
+	
+	long iterator;
+	void* lastItem;
 };
 
 //-----------------------------------------------------------------------------
@@ -973,83 +1182,6 @@ public:
 	CCView   *pPrevious;
 };
 
-// Message to check if View is a CViewContainer
-extern char* kMsgCheckIfViewContainer;
-
-//-----------------------------------------------------------------------------
-// CViewContainer Declaration
-//-----------------------------------------------------------------------------
-class CViewContainer : public CView
-{
-public:
-	CViewContainer (const CRect &size, CFrame *pParent, CBitmap *pBackground = 0);
-	~CViewContainer ();
-
-	virtual void addView (CView *pView);
-	virtual void addView (CView *pView, CRect &mouseableArea, bool mouseEnabled = true);
-	virtual void removeView (CView *pView, const bool &withForget = true);
-	virtual void removeAll (const bool &withForget = true);
-	virtual bool isChild (CView *pView);
-	virtual long getNbViews ();
-	virtual CView *getView (long index);
-	virtual long notify (CView* sender, const char* message);
-
-	virtual void draw (CDrawContext *pContext);
-	virtual void drawRect (CDrawContext *pContext, CRect& updateRect);
-	virtual void mouse (CDrawContext *pContext, CPoint &where, long buttons = -1);
-	virtual bool onDrop (void **ptrItems, long nbItems, long type, CPoint &where);
-	virtual bool onWheel (CDrawContext *pContext, const CPoint &where, float distance);
-	virtual void update (CDrawContext *pContext);
-	virtual bool hitTest (const CPoint& where, const long buttons = -1);
-	virtual long onKeyDown (VstKeyCode& keyCode);
-	virtual long onKeyUp (VstKeyCode& keyCode);
-
-	virtual void looseFocus (CDrawContext *pContext = 0);
-	virtual void takeFocus (CDrawContext *pContext = 0);
-
-	virtual bool isDirty ();
-
-	virtual void setBackgroundColor (const CColor color);
-	virtual CColor getBackgroundColor () { return backgroundColor; }
-	virtual void setViewSize (CRect &rect);
-
-	virtual void setBackgroundOffset (const CPoint &p) { backgroundOffset = p; }
-	virtual const CPoint& getBackgroundOffset () { return backgroundOffset; }
-
-	void drawBackgroundRect (CDrawContext *pContext, CRect& _updateRect);
-
-	enum {
-		kNormalUpdate = 0,
-		kOnlyDirtyUpdate
-	};
-
-	virtual void setMode (long val) { mode = val; }
-	virtual long getMode () { return mode; }
-
-	virtual void useOffscreen (bool b);
-
-	virtual bool removed (CView* parent);
-	virtual bool attached (CView* view);
-		
-	CView *getCurrentView ();
-	CView *getViewAt (const CPoint& where);
-
-	void modifyDrawContext (long save[4], CDrawContext* pContext);
-	void restoreDrawContext (CDrawContext* pContext, long save[4]);
-
-	//-------------------------------------------
-protected:
-	bool hitTestSubViews (const CPoint& where, const long buttons = -1);
-
-	CCView  *pFirstView;
-	CCView  *pLastView;
-	long mode;
-	COffscreenContext *pOffscreenContext;
-	CColor backgroundColor;
-	CPoint backgroundOffset;
-	bool bDrawInOffscreen;
-};
-
 END_NAMESPACE_VSTGUI
 
 // include the control objects
@@ -1057,7 +1189,94 @@ END_NAMESPACE_VSTGUI
 #include "vstcontrols.h"
 #endif
 
+#if PLUGGUI
+// define VstKeyCode for non VST useage
+
+//---Structure and enum used for keyUp/keyDown-----
+struct VstKeyCode
+{
+	long character;
+	unsigned char virt;     // see enum VstVirtualKey
+	unsigned char modifier; // see enum VstModifierKey
+};
+
+//---Used by member virt of VstKeyCode-------------
+enum VstVirtualKey 
+{
+	VKEY_BACK = 1, 
+	VKEY_TAB, 
+	VKEY_CLEAR, 
+	VKEY_RETURN, 
+	VKEY_PAUSE, 
+	VKEY_ESCAPE, 
+	VKEY_SPACE, 
+	VKEY_NEXT, 
+	VKEY_END, 
+	VKEY_HOME, 
+
+	VKEY_LEFT, 
+	VKEY_UP, 
+	VKEY_RIGHT, 
+	VKEY_DOWN, 
+	VKEY_PAGEUP, 
+	VKEY_PAGEDOWN, 
+
+	VKEY_SELECT, 
+	VKEY_PRINT, 
+	VKEY_ENTER, 
+	VKEY_SNAPSHOT, 
+	VKEY_INSERT, 
+	VKEY_DELETE, 
+	VKEY_HELP, 
+	VKEY_NUMPAD0, 
+	VKEY_NUMPAD1, 
+	VKEY_NUMPAD2, 
+	VKEY_NUMPAD3, 
+	VKEY_NUMPAD4, 
+	VKEY_NUMPAD5, 
+	VKEY_NUMPAD6, 
+	VKEY_NUMPAD7, 
+	VKEY_NUMPAD8, 
+	VKEY_NUMPAD9, 
+	VKEY_MULTIPLY, 
+	VKEY_ADD, 
+	VKEY_SEPARATOR, 
+	VKEY_SUBTRACT, 
+	VKEY_DECIMAL, 
+	VKEY_DIVIDE, 
+	VKEY_F1, 
+	VKEY_F2, 
+	VKEY_F3, 
+	VKEY_F4, 
+	VKEY_F5, 
+	VKEY_F6, 
+	VKEY_F7, 
+	VKEY_F8, 
+	VKEY_F9, 
+	VKEY_F10, 
+	VKEY_F11, 
+	VKEY_F12, 
+	VKEY_NUMLOCK, 
+	VKEY_SCROLL,
+
+	VKEY_SHIFT,
+	VKEY_CONTROL,
+	VKEY_ALT,
+
+	VKEY_EQUALS
+};
+
+//---Used by member modifier of VstKeyCode---------
+enum VstModifierKey
+{
+	MODIFIER_SHIFT     = 1<<0, // Shift
+	MODIFIER_ALTERNATE = 1<<1, // Alt
+	MODIFIER_COMMAND   = 1<<2, // Control on Mac
+	MODIFIER_CONTROL   = 1<<3  // Ctrl on PC, Apple on Mac
+};
+#endif
+
 USING_NAMESPACE_VSTGUI
 
 //-End VSTGUI.H--------------------------------------
-#endif
+#endif	// __vstgui__

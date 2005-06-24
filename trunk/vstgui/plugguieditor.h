@@ -34,46 +34,39 @@
 // OF THE POSSIBILITY OF SUCH DAMAGE.
 //-----------------------------------------------------------------------------
 
-#ifndef __aeffguieditor__
-#define __aeffguieditor__
-
-#ifndef __AEffEditor__
-#include "AEffEditor.hpp"
-#endif
-
-#ifndef __audioeffectx__
-#include "audioeffectx.h"
-#endif
+#ifndef __plugguieditor__
+#define __plugguieditor__
 
 #ifndef __vstgui__
 #include "vstgui.h"
 #endif
 
+//----------------------------------------------------------------------
+struct ERect
+{
+	short top;
+	short left;
+	short bottom;
+	short right;
+};
+
 //-----------------------------------------------------------------------------
 // AEffGUIEditor Declaration
 //-----------------------------------------------------------------------------
-class AEffGUIEditor : public AEffEditor
+class PluginGUIEditor
 {
 public :
 
-	AEffGUIEditor (void *pEffect);
+	PluginGUIEditor (void *pEffect);
 
-	virtual ~AEffGUIEditor ();
+	virtual ~PluginGUIEditor ();
 
-	virtual void setParameter (long index, float value) { postUpdate (); } 
+	virtual void setParameter (long index, float value) {} 
 	virtual long getRect (ERect **ppRect);
 	virtual long open (void *ptr);
+	virtual void close () { systemWindow = 0; }
 	virtual void idle ();
 	virtual void draw (ERect *pRect);
-
-	#if VST_2_1_EXTENSIONS
-	virtual long onKeyDown (VstKeyCode &keyCode);
-	virtual long onKeyUp (VstKeyCode &keyCode);
-	#endif
-
-	#if MAC
-	virtual long mouse (long x, long y);
-	#endif
 
 	// wait (in ms)
 	void wait (unsigned long ms);
@@ -85,7 +78,7 @@ public :
 	virtual void doIdleStuff ();
 
 	// get the effect attached to this editor
-	AudioEffect *getEffect () { return effect; }
+	void *getEffect () { return effect; }
 
 	// get version of this VSTGUI
 	long getVstGuiVersion () { return (VSTGUI_VERSION_MAJOR << 16) + VSTGUI_VERSION_MINOR; }
@@ -103,8 +96,8 @@ public :
 	CFrame *getFrame () { return frame; }
 	#endif
 
-	virtual void beginEdit (long index) { ((AudioEffectX*)effect)->beginEdit (index); }
-	virtual void endEdit (long index) { ((AudioEffectX*)effect)->endEdit (index); }
+	virtual void beginEdit (long index) {}
+	virtual void endEdit (long index) {}
 
 //---------------------------------------
 protected:
@@ -115,6 +108,9 @@ protected:
 	#else
 	CFrame *frame;
 	#endif
+
+	void* effect;
+	void* systemWindow;
 
 private:
 	unsigned long lLastTicks;
