@@ -2,7 +2,7 @@
 // VST Plug-Ins SDK
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 //
-// Version 3.0       $Date: 2005-06-24 10:47:07 $ 
+// Version 3.0       $Date: 2005-07-02 10:57:40 $ 
 //
 // Added Motif/Windows vers.: Yvan Grabit              01.98
 // Added Mac version        : Charlie Steinberg        02.98
@@ -298,7 +298,7 @@ const char* gMacXfontNames[] = {
 #define	M_PI		3.14159265358979323846	/* pi */
 #endif
 
-static inline void QuartzSetLineDash (CGContextRef context, CLineStyle style, long lineWidth);
+static inline void QuartzSetLineDash (CGContextRef context, CLineStyle style, CCoord lineWidth);
 static inline void QuartzSetupClip (CGContextRef context, const CRect clipRect);
 static inline double radians (double degrees) { return degrees * M_PI / 180; }
 CGColorSpaceRef GetGenericRGBColorSpace ();
@@ -370,10 +370,10 @@ void RectNormalize (Rect& rect)
 //-----------------------------------------------------------------------------
 void CRect2Rect (const CRect &cr, Rect &rr)
 {
-	rr.left   = cr.left;
-	rr.right  = cr.right;
-	rr.top    = cr.top;
-	rr.bottom = cr.bottom;
+	rr.left   = (short)cr.left;
+	rr.right  = (short)cr.right;
+	rr.top    = (short)cr.top;
+	rr.bottom = (short)cr.bottom;
 	RectNormalize (rr);
 }
 
@@ -1697,7 +1697,7 @@ void CDrawContext::drawPoint (const CPoint &_point, CColor color)
 	setFrameColor (oldframecolor);
 
 #elif MAC
-	int oldframeWidth = frameWidth;
+	CCoord oldframeWidth = frameWidth;
 	CColor oldframecolor = frameColor;
 	setLineWidth (1);
 	setFrameColor (color);
@@ -2398,7 +2398,7 @@ void CDrawContext::drawString (const char *string, const CRect &_rect,
 	CGContextRef context = beginCGContext ();
 	if (context)
 	{
-		long strWidth = getStringWidth (string);
+		CCoord strWidth = getStringWidth (string);
 		rect.bottom -= rect.height ()/2 - fontSize / 2 + 1;
 		switch (hAlign)
 		{
@@ -3081,7 +3081,7 @@ void QuartzSetupClip (CGContextRef context, const CRect clipRect)
 }
 
 //-----------------------------------------------------------------------------
-void QuartzSetLineDash (CGContextRef context, CLineStyle style, long lineWidth)
+void QuartzSetLineDash (CGContextRef context, CLineStyle style, CCoord lineWidth)
 {
 	if (style == kLineOnOffDash)
 	{
@@ -3167,7 +3167,7 @@ COffscreenContext::COffscreenContext (CDrawContext *pContext, CBitmap *pBitmapBg
 
 	#if DEBUG
 	gNbCOffscreenContext++;
-	gBitmapAllocation += height * width;
+	gBitmapAllocation += (long)height * (long)width;
 	#endif
 		
 	bDestroyPixmap = false;
@@ -3203,7 +3203,7 @@ COffscreenContext::COffscreenContext (CDrawContext *pContext, CBitmap *pBitmapBg
 			LockPixels (pixMap);
 			size_t pixDepth = GetPixDepth (pixMap) / 4;
 			size_t rowBytes = GetPixRowBytes (pixMap);
-			gCGContext = CGBitmapContextCreate (GetPixBaseAddr (pixMap), width, height, pixDepth, rowBytes, GetGenericRGBColorSpace (), kCGImageAlphaPremultipliedFirst);
+			gCGContext = CGBitmapContextCreate (GetPixBaseAddr (pixMap), (size_t)width, (size_t)height, pixDepth, rowBytes, GetGenericRGBColorSpace (), kCGImageAlphaPremultipliedFirst);
 			if (gCGContext)
 			{
 				CGContextTranslateCTM (gCGContext, 0, (float)height);
@@ -3418,7 +3418,7 @@ COffscreenContext::~COffscreenContext ()
 {
 	#if DEBUG
 	gNbCOffscreenContext--;
-	gBitmapAllocation -= height * width;
+	gBitmapAllocation -= (long)height * (long)width;
 	#endif
 
 	if (pBitmap)
@@ -3492,15 +3492,15 @@ void COffscreenContext::copyTo (CDrawContext* pContext, CRect& srcRect, CPoint d
 	Rect source, dest;
 	RGBColor savedForeColor, savedBackColor;
 	
-	source.left   = srcRect.left + pContext->offset.h + pContext->offsetScreen.h;
-	source.top    = srcRect.top + pContext->offset.v + pContext->offsetScreen.v;
-	source.right  = source.left + srcRect.right - srcRect.left;
-	source.bottom = source.top + srcRect.bottom - srcRect.top;
+	source.left   = (short)(srcRect.left + pContext->offset.h + pContext->offsetScreen.h);
+	source.top    = (short)(srcRect.top + pContext->offset.v + pContext->offsetScreen.v);
+	source.right  = (short)(source.left + srcRect.right - srcRect.left);
+	source.bottom = (short)(source.top + srcRect.bottom - srcRect.top);
 	
-	dest.left   = destOffset.h;
-	dest.top    = destOffset.v;
-	dest.right  = dest.left + srcRect.right - srcRect.left;
-	dest.bottom = dest.top + srcRect.bottom - srcRect.top;
+	dest.left   = (short)destOffset.h;
+	dest.top    = (short)destOffset.v;
+	dest.right  = (short)(dest.left + srcRect.right - srcRect.left);
+	dest.bottom = (short)(dest.top + srcRect.bottom - srcRect.top);
 
 	GetForeColor (&savedForeColor);
 	GetBackColor (&savedBackColor);
@@ -3749,7 +3749,7 @@ void CView::getMouseLocation (CDrawContext* context, CPoint &point)
 	{
 		if (pParentView && pParentView->notify (this, kMsgCheckIfViewContainer) == kMessageNotified)
 		{
-			long save[4];
+			CCoord save[4];
 			((CViewContainer*)pParentView)->modifyDrawContext (save, context);
 			pParentView->getMouseLocation (context, point);
 			((CViewContainer*)pParentView)->restoreDrawContext (context, save);
@@ -4020,6 +4020,7 @@ void CView::dumpInfo ()
 #endif
 
 #define FOREACHSUBVIEW for (CCView *pSv = pFirstView; pSv; pSv = pSv->pNext) {CView *pV = pSv->pView;
+#define FOREACHSUBVIEW_REVERSE(reverse) for (CCView *pSv = reverse ? pLastView : pFirstView; pSv; pSv = reverse ? pSv->pPrevious : pSv->pNext) {CView *pV = pSv->pView;
 #define ENDFOR }
 
 //-----------------------------------------------------------------------------
@@ -4341,7 +4342,7 @@ bool CFrame::initFrame (void *systemWin)
 		return false;
 
 	hasFocus = false;
-	Rect r = {size.top, size.left, size.bottom, size.right};
+	Rect r = {(short)size.top, (short)size.left, (short)size.bottom, (short)size.right};
 	OSStatus status = CreateCustomControl (NULL, &r, &controlSpec, NULL, &controlRef);
 	if (status != noErr)
 	{
@@ -4589,6 +4590,9 @@ long CFrame::onKeyDown (VstKeyCode& keyCode)
 
 	if (result == -1 && pModalView)
 		result = pModalView->onKeyDown (keyCode);
+
+	if (result == -1 && keyCode.virt == VKEY_TAB)
+		result = advanceNextFocusView (pFocusView, (keyCode.modifier & MODIFIER_SHIFT) ? true : false) ? 1 : -1;
 
 	return result;
 }
@@ -4940,7 +4944,7 @@ bool CFrame::setSize (CCoord width, CCoord height)
 		AudioEffectX* effect = (AudioEffectX*)((AEffGUIEditor*)pEditor)->getEffect ();
 		if (effect && effect->canHostDo ("sizeWindow"))
 		{
-			if (effect->sizeWindow (width, height))
+			if (effect->sizeWindow ((long)width, (long)height))
 			{
 				size.right = size.left + width;
 				size.bottom = size.top + height;
@@ -5017,8 +5021,8 @@ bool CFrame::setSize (CCoord width, CCoord height)
 		{
 			Rect bounds;
 			GetPortBounds (GetWindowPort ((WindowRef)getSystemWindow ()), &bounds);
-			SizeWindow ((WindowRef)getSystemWindow (), (bounds.right - bounds.left) - oldWidth + width,
-									(bounds.bottom - bounds.top) - oldHeight + height, true);
+			SizeWindow ((WindowRef)getSystemWindow (), (short)((bounds.right - bounds.left) - oldWidth + width),
+									(short)((bounds.bottom - bounds.top) - oldHeight + height), true);
 		}
 	}
 	if (controlRef)
@@ -5360,11 +5364,55 @@ void CFrame::setFocusView (CView *pView)
 {
 	CView *pOldFocusView = pFocusView;
 	pFocusView = pView;
+	if (pFocusView && pFocusView->wantsFocus ())
+		pFocusView->setDirty ();
 
 	if (pOldFocusView)
 	{
 		pOldFocusView->looseFocus ();
+		if (pOldFocusView->wantsFocus ())
+			pOldFocusView->setDirty ();
 	}
+}
+
+//-----------------------------------------------------------------------------
+bool CFrame::advanceNextFocusView (CView* oldFocus, bool reverse)
+{
+	if (pModalView)
+		return false; // currently not supported, but should be done sometime
+	if (oldFocus == 0)
+	{
+		if (pFocusView == 0)
+			return CViewContainer::advanceNextFocusView (0, reverse);
+		oldFocus = pFocusView;
+	}
+	if (isChild (oldFocus))
+	{
+		if (CViewContainer::advanceNextFocusView (oldFocus, reverse))
+			return true;
+		else
+			return CViewContainer::advanceNextFocusView (0, reverse);
+	}
+	CView* parentView = oldFocus->getParentView ();
+	if (parentView && parentView->isTypeOf ("CViewContainer"))
+	{
+		CView* tempOldFocus = oldFocus;
+		CViewContainer* vc = (CViewContainer*)parentView;
+		while (vc)
+		{
+			if (vc->advanceNextFocusView (tempOldFocus, reverse))
+				return true;
+			else
+			{
+				tempOldFocus = vc;
+				if (vc->getParentView () && vc->getParentView ()->isTypeOf ("CViewContainer"))
+					vc = (CViewContainer*)vc->getParentView ();
+				else
+					vc = 0;
+			}
+		}
+	}
+	return CViewContainer::advanceNextFocusView (oldFocus, reverse);
 }
 
 //-----------------------------------------------------------------------------
@@ -5458,7 +5506,7 @@ void CViewContainer::setViewSize (CRect &rect)
 	if (pOffscreenContext && bDrawInOffscreen)
 	{
 		pOffscreenContext->forget ();
-		pOffscreenContext = new COffscreenContext (pParentFrame, size.width (), size.height (), kBlackCColor);
+		pOffscreenContext = new COffscreenContext (pParentFrame, (long)size.width (), (long)size.height (), kBlackCColor);
 	}
 	#endif
 }
@@ -5659,7 +5707,7 @@ CView *CViewContainer::getView (long index) const
 void CViewContainer::draw (CDrawContext *pContext)
 {
 	CDrawContext *pC;
-	long save[4];
+	CCoord save[4];
 
 	#if BEOS
 	// create offscreen
@@ -5670,7 +5718,7 @@ void CViewContainer::draw (CDrawContext *pContext)
 	
 	#else
 	if (!pOffscreenContext && bDrawInOffscreen)
-		pOffscreenContext = new COffscreenContext (pParentFrame, size.width (), size.height (), kBlackCColor);
+		pOffscreenContext = new COffscreenContext (pParentFrame, (long)size.width (), (long)size.height (), kBlackCColor);
 	#if USE_ALPHA_BLEND
 	if (pOffscreenContext && bTransparencyEnabled)
 		pOffscreenContext->copyTo (pContext, size);
@@ -5778,7 +5826,7 @@ void CViewContainer::drawBackgroundRect (CDrawContext *pContext, CRect& _updateR
 void CViewContainer::drawRect (CDrawContext *pContext, const CRect& _updateRect)
 {
 	CDrawContext *pC;
-	long save[4];
+	CCoord save[4];
 
 	#if BEOS
 	// create offscreen
@@ -5789,7 +5837,7 @@ void CViewContainer::drawRect (CDrawContext *pContext, const CRect& _updateRect)
 	
 	#else
 	if (!pOffscreenContext && bDrawInOffscreen)
-		pOffscreenContext = new COffscreenContext (pParentFrame, size.width (), size.height (), kBlackCColor);
+		pOffscreenContext = new COffscreenContext (pParentFrame, (long)size.width (), (long)size.height (), kBlackCColor);
 	#if USE_ALPHA_BLEND
 	if (pOffscreenContext && bTransparencyEnabled)
 		pOffscreenContext->copyTo (pContext, size);
@@ -5888,7 +5936,7 @@ void CViewContainer::redrawRect (CDrawContext* context, const CRect& rect)
 	}
 	else
 	{
-		long save[4];
+		CCoord save[4];
 		if (pParentView)
 		{
 			CPoint off;
@@ -6012,7 +6060,7 @@ bool CViewContainer::onWheel (CDrawContext *pContext, const CPoint &where, float
 		CPoint where2 (where);
 		where2.offset (-size.left, -size.top);
 
-		long save[4];
+		CCoord save[4];
 		modifyDrawContext (save, pContext);
 	
 		result = view->onWheel (pContext, where2, distance);
@@ -6030,7 +6078,7 @@ bool CViewContainer::onDrop (CDrawContext* context, CDragContainer* drag, const 
 
 	bool result = false;
 
-	long save[4];
+	CCoord save[4];
 	modifyDrawContext (save, context);
 
 	// convert to relativ pos
@@ -6062,7 +6110,7 @@ void CViewContainer::onDragEnter (CDrawContext* context, CDragContainer* drag, c
 	if (!pParentFrame)
 		return;
 	
-	long save[4];
+	CCoord save[4];
 	modifyDrawContext (save, context);
 
 	// convert to relativ pos
@@ -6085,7 +6133,7 @@ void CViewContainer::onDragLeave (CDrawContext* context, CDragContainer* drag, c
 	if (!pParentFrame)
 		return;
 	
-	long save[4];
+	CCoord save[4];
 	modifyDrawContext (save, context);
 
 	// convert to relativ pos
@@ -6105,7 +6153,7 @@ void CViewContainer::onDragMove (CDrawContext* context, CDragContainer* drag, co
 	if (!pParentFrame)
 		return;
 	
-	long save[4];
+	CCoord save[4];
 	modifyDrawContext (save, context);
 
 	// convert to relativ pos
@@ -6288,6 +6336,36 @@ void CViewContainer::takeFocus (CDrawContext *pContext)
 }
 
 //-----------------------------------------------------------------------------
+bool CViewContainer::advanceNextFocusView (CView* oldFocus, bool reverse)
+{
+	bool foundOld = false;
+	FOREACHSUBVIEW_REVERSE(reverse)
+		if (oldFocus && !foundOld)
+		{
+			if (oldFocus == pV)
+			{
+				foundOld = true;
+				continue;
+			}
+		}
+		else
+		{
+			if (pV->wantsFocus ())
+			{
+				getFrame ()->setFocusView (pV);
+				return true;
+			}
+			else if (pV->isTypeOf ("CViewContainer"))
+			{
+				if (((CViewContainer*)pV)->advanceNextFocusView (0, reverse))
+					return true;
+			}
+		}
+	ENDFOR
+	return false;
+}
+
+//-----------------------------------------------------------------------------
 bool CViewContainer::isDirty () const
 {
 	if (bDirty)
@@ -6398,7 +6476,7 @@ bool CViewContainer::attached (CView* view)
 	#if !BEOS
 	// create offscreen bitmap
 	if (!pOffscreenContext && bDrawInOffscreen)
-		pOffscreenContext = new COffscreenContext (pParentFrame, size.width (), size.height (), kBlackCColor);
+		pOffscreenContext = new COffscreenContext (pParentFrame, (long)size.width (), (long)size.height (), kBlackCColor);
 	#endif
 
 	return true;
@@ -6419,7 +6497,7 @@ void CViewContainer::useOffscreen (bool b)
 }
 
 //-----------------------------------------------------------------------------
-void CViewContainer::modifyDrawContext (long save[4], CDrawContext* pContext)
+void CViewContainer::modifyDrawContext (CCoord save[4], CDrawContext* pContext)
 {
 	// store
 	save[0] = pContext->offsetScreen.h;
@@ -6434,7 +6512,7 @@ void CViewContainer::modifyDrawContext (long save[4], CDrawContext* pContext)
 }
 
 //-----------------------------------------------------------------------------
-void CViewContainer::restoreDrawContext (CDrawContext* pContext, long save[4])
+void CViewContainer::restoreDrawContext (CDrawContext* pContext, CCoord save[4])
 {
 	// restore
 	pContext->offsetScreen.h = save[0];
@@ -6623,7 +6701,7 @@ CBitmap::CBitmap (long resourceID)
 	setTransparentColor (kTransparentCColor);
 	
 	#if DEBUG
-	gBitmapAllocation += height * width;
+	gBitmapAllocation += (long)height * (long)width;
 	#endif
 }
 
@@ -6647,8 +6725,8 @@ CBitmap::CBitmap (CFrame &frame, CCoord width, CCoord height)
 	
 	Rect r;
 	r.left = r.top = 0;
-	r.right = width;
-	r.bottom = height;
+	r.right = (short)width;
+	r.bottom = (short)height;
 
     #if QUARTZ
 	NewGWorld ((GWorldPtr*)&pHandle, 32, &r, 0, 0, 0);
@@ -6712,7 +6790,7 @@ void CBitmap::dispose ()
 {
 	#if DEBUG
 	gNbCBitmap--;
-	gBitmapAllocation -= height * width;
+	gBitmapAllocation -= (long)height * (long)width;
 	#endif
 
 	#if WINDOWS
@@ -7154,7 +7232,7 @@ CGImageRef CBitmap::createCGImage (bool transparent)
 	CGImageAlphaInfo alphaInfo = kCGImageAlphaFirst;
 	if (GetPixDepth (pixMap) != 32)
 		alphaInfo = kCGImageAlphaNone;
-	image = CGImageCreate (bounds.right - bounds.left, bounds.bottom - bounds.top, 8 , pixDepth, pixRowBytes, GetGenericRGBColorSpace (), alphaInfo, provider, NULL, true, kCGRenderingIntentDefault);
+	image = CGImageCreate (bounds.right - bounds.left, bounds.bottom - bounds.top, 8 , pixDepth, pixRowBytes, GetGenericRGBColorSpace (), alphaInfo, provider, NULL, false, kCGRenderingIntentDefault);
 	CGDataProviderRelease (provider);
 
 	cgImage = image;
@@ -8152,7 +8230,8 @@ CFileSelector::CFileSelector (void*)
 #else
 //-----------------------------------------------------------------------------
 CFileSelector::CFileSelector (AudioEffectX* effect)
-: effect (effect), vstFileSelect (0)
+: effect (effect)
+, vstFileSelect (0)
 {}
 #endif
 
@@ -9558,6 +9637,7 @@ void DrawTransparent (CDrawContext* pContext, CRect& rect, const CPoint& offset,
 
 //-----------------------------------------------------------------------------
 #if MAC || MOTIF || BEOS
+BEGIN_NAMESPACE_VSTGUI
 // return a degre value between [0, 360 * 64[
 long convertPoint2Angle (CPoint &pm, CPoint &pt)
 {
@@ -9596,6 +9676,7 @@ long convertPoint2Angle (CPoint &pm, CPoint &pt)
 	}
 	return angle;
 }
+END_NAMESPACE_VSTGUI
 #endif
 
 
@@ -10186,8 +10267,8 @@ bool CFrame::registerWithToolbox ()
 									{kEventClassControl, kEventControlClick},
 									{kEventClassControl, kEventControlTrack},
 									{kEventClassControl, kEventControlContextualMenuClick},
-									//{kEventClassKeyboard, kEventRawKeyDown},
-									//{kEventClassKeyboard, kEventRawKeyRepeat},
+									{kEventClassKeyboard, kEventRawKeyDown},
+									{kEventClassKeyboard, kEventRawKeyRepeat},
 									{kEventClassMouse, kEventMouseWheelMoved},
 									{kEventClassControl, kEventControlDragEnter},
 									{kEventClassControl, kEventControlDragWithin},
@@ -10198,8 +10279,8 @@ bool CFrame::registerWithToolbox ()
 									{kEventClassControl, kEventControlGetOptimalBounds},
 									{kEventClassScrollable, kEventScrollableGetInfo},
 									{kEventClassScrollable, kEventScrollableScrollTo},
-									//{kEventClassControl, kEventControlSetFocusPart},
-									//{kEventClassControl, kEventControlGetFocusPart}
+//									{kEventClassControl, kEventControlSetFocusPart},
+//									{kEventClassControl, kEventControlGetFocusPart}
 								};
 
 	ToolboxObjectClassRef controlClass = NULL;
@@ -10325,7 +10406,7 @@ pascal OSStatus CFrame::carbonEventHandler (EventHandlerCallRef inHandlerCallRef
 			{
 				case kEventControlInitialize:
 				{
-					UInt32 controlFeatures = kControlSupportsDragAndDrop | kControlSupportsFocus | kControlHandlesTracking | kControlSupportsEmbedding;
+					UInt32 controlFeatures = kControlSupportsDragAndDrop | kControlSupportsFocus | kControlHandlesTracking | kControlSupportsEmbedding | kHIViewFeatureGetsFocusOnClick;
 					SetEventParameter (inEvent, kEventParamControlFeatures, typeUInt32, sizeof (UInt32), &controlFeatures);
 					result = noErr;
 					break;
@@ -10458,20 +10539,40 @@ pascal OSStatus CFrame::carbonEventHandler (EventHandlerCallRef inHandlerCallRef
 				}
 				case kEventControlGetFocusPart:
 				{
-					ControlPartCode code = frame->hasFocus ? kControlContentMetaPart : kControlFocusNoPart;
-					SetEventParameter (inEvent, kEventParamControlPart, typeControlPartCode, sizeof (ControlPartCode), &code);
-					result = noErr;
+					WindowAttributes windowAttributes;
+					GetWindowAttributes (window, &windowAttributes);
+					if (windowAttributes & kWindowCompositingAttribute)
+					{
+						ControlPartCode code = frame->hasFocus ? 1300 : kControlFocusNoPart;
+						SetEventParameter (inEvent, kEventParamControlPart, typeControlPartCode, sizeof (ControlPartCode), &code);
+						result = noErr;
+					}
 					break;
 				}
 				case kEventControlSetFocusPart:
 				{
-					ControlPartCode code;
-					GetEventParameter (inEvent, kEventParamControlPart, typeControlPartCode, NULL, sizeof (ControlPartCode), NULL, &code);
-					if (code == kControlFocusNoPart)
-						frame->hasFocus = false;
-					else
-						frame->hasFocus = true;
-					result = noErr;
+					WindowAttributes windowAttributes;
+					GetWindowAttributes (window, &windowAttributes);
+					if (windowAttributes & kWindowCompositingAttribute)
+					{
+						ControlPartCode code;
+						GetEventParameter (inEvent, kEventParamControlPart, typeControlPartCode, NULL, sizeof (ControlPartCode), NULL, &code);
+						if (code == kControlFocusNoPart)
+						{
+							frame->hasFocus = false;
+						}
+						else
+						{
+							frame->hasFocus = true;
+							if (code == kControlFocusNextPart)
+								frame->advanceNextFocusView (frame->pFocusView);
+							else if (code == kControlFocusPrevPart)
+								frame->advanceNextFocusView (frame->pFocusView, true);
+							code = 1300;
+						}
+						SetEventParameter (inEvent, kEventParamControlPart, typeControlPartCode, sizeof (code), &code);
+						result = noErr;
+					}
 					break;
 				}
 				case kEventControlDragEnter:
@@ -10574,58 +10675,62 @@ pascal OSStatus CFrame::carbonEventHandler (EventHandlerCallRef inHandlerCallRef
 		}
 		case kEventClassKeyboard:
 		{
-			switch (eventKind)
+			if (frame->hasFocus)
 			{
-				case kEventRawKeyDown:
-				case kEventRawKeyRepeat:
+				switch (eventKind)
 				{
-					// todo: make this work
-					char character = 0;
-					UInt32 keyCode = 0;
-					UInt32 modifiers = 0;
-					GetEventParameter (inEvent, kEventParamKeyMacCharCodes, typeChar, NULL, sizeof (char), NULL, &character);
-					GetEventParameter (inEvent, kEventParamKeyCode, typeUInt32, NULL, sizeof (UInt32), NULL, &keyCode);
-					GetEventParameter (inEvent, kEventParamKeyModifiers, typeUInt32, NULL, sizeof (UInt32), NULL, &modifiers);
-					char scanCode = keyCode;
-					VstKeyCode vstKeyCode;
-					memset (&vstKeyCode, 0, sizeof (VstKeyCode));
-					KeyboardLayoutRef layout;
-					if (KLGetCurrentKeyboardLayout (&layout) == noErr)
+					case kEventRawKeyDown:
+					case kEventRawKeyRepeat:
 					{
-						const void* pKCHR = 0;
-						KLGetKeyboardLayoutProperty (layout, kKLKCHRData, &pKCHR);
-						if (pKCHR)
+						// todo: make this work
+
+						char character = 0;
+						UInt32 keyCode = 0;
+						UInt32 modifiers = 0;
+						GetEventParameter (inEvent, kEventParamKeyMacCharCodes, typeChar, NULL, sizeof (char), NULL, &character);
+						GetEventParameter (inEvent, kEventParamKeyCode, typeUInt32, NULL, sizeof (UInt32), NULL, &keyCode);
+						GetEventParameter (inEvent, kEventParamKeyModifiers, typeUInt32, NULL, sizeof (UInt32), NULL, &modifiers);
+						char scanCode = keyCode;
+						VstKeyCode vstKeyCode;
+						memset (&vstKeyCode, 0, sizeof (VstKeyCode));
+						KeyboardLayoutRef layout;
+						if (KLGetCurrentKeyboardLayout (&layout) == noErr)
 						{
-							static UInt32 keyTranslateState = 0;
-							vstKeyCode.character = KeyTranslate (pKCHR, keyCode, &keyTranslateState);
-							if (modifiers & shiftKey)
+							const void* pKCHR = 0;
+							KLGetKeyboardLayoutProperty (layout, kKLKCHRData, &pKCHR);
+							if (pKCHR)
 							{
-								vstKeyCode.character = toupper (vstKeyCode.character);
+								static UInt32 keyTranslateState = 0;
+								vstKeyCode.character = KeyTranslate (pKCHR, keyCode, &keyTranslateState);
+								if (modifiers & shiftKey)
+								{
+									vstKeyCode.character = toupper (vstKeyCode.character);
+								}
 							}
 						}
-					}
-					short entries = sizeof (keyTable) / (sizeof (short));
-					for (int i = 0; i < entries; i += 2)
-					{
-						if (keyTable[i + 1] == scanCode)
+						short entries = sizeof (keyTable) / (sizeof (short));
+						for (int i = 0; i < entries; i += 2)
 						{
-							vstKeyCode.virt = keyTable[i];
-							vstKeyCode.character = 0;
-							break;
+							if (keyTable[i + 1] == scanCode)
+							{
+								vstKeyCode.virt = keyTable[i];
+								vstKeyCode.character = 0;
+								break;
+							}
 						}
+						if (modifiers & cmdKey)
+							vstKeyCode.modifier |= MODIFIER_CONTROL;
+						if (modifiers & shiftKey)
+							vstKeyCode.modifier |= MODIFIER_SHIFT;
+						if (modifiers & optionKey)
+							vstKeyCode.modifier |= MODIFIER_ALTERNATE;
+						if (modifiers & controlKey)
+							vstKeyCode.modifier |= MODIFIER_COMMAND;
+						if (frame->onKeyDown (vstKeyCode) != -1)
+							result = noErr;
+						
+						break;
 					}
-					if (modifiers & cmdKey)
-						vstKeyCode.modifier |= MODIFIER_CONTROL;
-					if (modifiers & shiftKey)
-						vstKeyCode.modifier |= MODIFIER_SHIFT;
-					if (modifiers & optionKey)
-						vstKeyCode.modifier |= MODIFIER_ALTERNATE;
-					if (modifiers & controlKey)
-						vstKeyCode.modifier |= MODIFIER_COMMAND;
-					if (frame->onKeyDown (vstKeyCode) != -1)
-						result = noErr;
-					
-					break;
 				}
 			}
 			break;

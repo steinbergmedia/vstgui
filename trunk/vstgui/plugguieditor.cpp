@@ -215,10 +215,11 @@ extern "C" {
 }
 #include <CoreFoundation/CFBundle.h>
 
-short localizedResRefNum;
-short fixResRefNum;
+BEGIN_NAMESPACE_VSTGUI
 
 CFBundleRef ghInst = 0;
+
+END_NAMESPACE_VSTGUI
 
 #if PLUGGUI_STANDALONE
 void InitMachOLibrary ()

@@ -165,7 +165,7 @@ protected:
 	CRect scrollerArea;
 
 	float stepValue;	
-	long scrollerLength;
+	CCoord scrollerLength;
 
 	CColor frameColor;
 	CColor scrollerColor;
