@@ -2,7 +2,7 @@
 // VST Plug-Ins SDK
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 //
-// Version 3.0       $Date: 2005-07-02 10:57:40 $ 
+// Version 3.0       $Date: 2005-07-02 13:41:28 $ 
 //
 // Added Motif/Windows vers.: Yvan Grabit              01.98
 // Added Mac version        : Charlie Steinberg        02.98
@@ -74,6 +74,7 @@
 #define VSTGUI_CTextEdit			VSTGUI::CTextEdit
 #define VSTGUI_CColor				VSTGUI::CColor
 #define VSTGUI_CDrawContext			VSTGUI::CDrawContext
+#define VSTGUI_COffscreenContext	VSTGUI::COffscreenContext
 #define VSTGUI_COptionMenu			VSTGUI::COptionMenu
 #define VSTGUI_COptionMenuScheme	VSTGUI::COptionMenuScheme
 #define VSTGUI_CDragContainer		VSTGUI::CDragContainer
@@ -83,6 +84,7 @@
 #define VSTGUI_CTextEdit  CTextEdit
 #define VSTGUI_CColor     CColor
 #define VSTGUI_CDrawContext CDrawContext
+#define VSTGUI_COffscreenContext COffscreenContext
 #define VSTGUI_COptionMenu COptionMenu
 #define VSTGUI_COptionMenuScheme COptionMenuScheme
 #define VSTGUI_CDragContainer	CDragContainer
@@ -4052,6 +4054,7 @@ CFrame::CFrame (const CRect &inSize, void *inSystemWindow, void *inEditor)
 #if WINDOWS
 	pHwnd = 0;
 	dropTarget = 0;
+	backBuffer = 0;
 	OleInitialize (0);
 
 	#if DYNAMICALPHABLEND
@@ -4132,6 +4135,7 @@ CFrame::CFrame (const CRect& inSize, const char* inTitle, void* inEditor, const 
 #if WINDOWS
 	pHwnd = 0;
 	dropTarget = 0;
+	backBuffer = 0;
 	OleInitialize (0);
 
 	#if DYNAMICALPHABLEND
@@ -4202,7 +4206,10 @@ CFrame::~CFrame ()
 
 #if WINDOWS
 	OleUninitialize ();
-	
+
+	if (backBuffer)
+		backBuffer->forget ();
+
 	#if DYNAMICALPHABLEND
 	if (hInstMsimg32dll)
 		FreeLibrary (hInstMsimg32dll);
@@ -4646,9 +4653,7 @@ void CFrame::update (CDrawContext *pContext)
 
 	#if WINDOWS && USE_ALPHA_BLEND
 	CDrawContext* oldFrameContext = pFrameContext;
-	COffscreenContext* dc = new COffscreenContext (this, size.width (), size.height ());
-	dc->copyTo (pContext, size);
-	pFrameContext = dc;
+	CDrawContext* dc = pFrameContext = getBackBuffer ();
 	#else
 	CDrawContext* dc = pContext;
 	#endif
@@ -4688,8 +4693,7 @@ void CFrame::update (CDrawContext *pContext)
 	}
 	#endif
 	#if WINDOWS && USE_ALPHA_BLEND
-	dc->copyFrom (pContext, size);
-	delete dc;
+	backBuffer->copyFrom (pContext, size);
 	pFrameContext = oldFrameContext;
 	#endif
 }
@@ -4770,6 +4774,16 @@ long CFrame::getKnobMode () const
 
 //-----------------------------------------------------------------------------
 #if WINDOWS
+COffscreenContext* CFrame::getBackBuffer ()
+{
+	#if WINDOWS && USE_ALPHA_BLEND
+	if (!backBuffer)
+		backBuffer = new COffscreenContext (this, size.width (), size.height ());
+	#endif
+
+	return backBuffer;
+}
+
 HWND CFrame::getOuterWindow () const
 {
 	int diffWidth, diffHeight;
@@ -4938,6 +4952,11 @@ bool CFrame::setSize (CCoord width, CCoord height)
 	if ((width == size.width ()) && (height == size.height ()))
 	 return false;
 
+#if WINDOWS
+	if (backBuffer)
+		backBuffer->forget ();
+	backBuffer = 0;
+#endif
 #if !PLUGGUI
 	if (pEditor)
 	{
@@ -6897,7 +6916,8 @@ bool CBitmap::loadFromResource (long resourceID)
 					header->biCompression = BI_RGB;
 					header->biClrUsed = 0;
 					void* bits;
-					pHandle = CreateDIBSection (NULL, bmInfo, DIB_RGB_COLORS, &bits, NULL, 0);
+					HDC dstDC = 0; //CreateCompatibleDC (0);
+					pHandle = CreateDIBSection (dstDC, bmInfo, DIB_RGB_COLORS, &bits, NULL, 0);
 					delete bmInfo;
 					if (pHandle)
 					{
@@ -6947,6 +6967,43 @@ bool CBitmap::loadFromResource (long resourceID)
 								pixelPtr++;
 							}
 						}
+						if (dstDC)
+							DeleteDC (dstDC);
+#if 0
+						HDC srcDC = CreateCompatibleDC (0);
+						SelectObject (srcDC, pHandle);
+
+						HDC dstDC = CreateCompatibleDC (0);
+						this->pHandle = CreateCompatibleBitmap (dstDC, width, height);
+						SelectObject (dstDC, this->pHandle);
+
+						BLENDFUNCTION blendFunction;
+						blendFunction.BlendOp = AC_SRC_OVER;
+						blendFunction.BlendFlags = 0;
+						blendFunction.SourceConstantAlpha = 255;
+						#if USE_ALPHA_BLEND
+						if (noAlpha)
+							blendFunction.AlphaFormat = 0;//AC_SRC_NO_ALPHA;
+						else
+							blendFunction.AlphaFormat = AC_SRC_ALPHA;
+						#else
+						blendFunction.AlphaFormat = 0;//AC_SRC_NO_ALPHA;
+						#endif
+						#if DYNAMICALPHABLEND
+						(*pfnAlphaBlend) (dstDC, 
+									0, 0,
+									width, height, 
+									srcDC,
+									0, 0,
+									width, height,
+									blendFunction);
+						#else
+						#endif
+
+						DeleteDC (srcDC);
+						DeleteDC (dstDC);
+						DeleteObject (pHandle);
+#endif
 					}
 				}
 			}
@@ -9432,14 +9489,20 @@ LONG_PTR WINAPI WindowProc (HWND hwnd, UINT message, WPARAM wParam, LPARAM lPara
 			PAINTSTRUCT ps;
 			HDC hdc = BeginPaint (hwnd, &ps);
 
-			VSTGUI_CDrawContext context (pFrame, hdc, hwnd);
+			VSTGUI_CDrawContext* context = pFrame->getBackBuffer ();
+			if (!context)
+				context = new VSTGUI_CDrawContext (pFrame, hdc, hwnd);
 			
-			#if 1
 			CRect updateRect (ps.rcPaint.left, ps.rcPaint.top, ps.rcPaint.right, ps.rcPaint.bottom);
-			pFrame->drawRect (&context, updateRect);
-			#else
-			pFrame->draw (&context);
-			#endif
+			pFrame->drawRect (context, updateRect);
+
+			if (pFrame->getBackBuffer ())
+			{
+				VSTGUI_CDrawContext localContext (pFrame, hdc, hwnd);
+				pFrame->getBackBuffer ()->copyFrom (&localContext, updateRect, CPoint (ps.rcPaint.left, ps.rcPaint.top));
+			}
+			else
+				context->forget ();
 
 			EndPaint (hwnd, &ps);
 			return 0;

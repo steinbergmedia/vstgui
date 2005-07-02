@@ -2,7 +2,7 @@
 // VST Plug-Ins SDK
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 //
-// Version 3.0       $Date: 2005-07-02 10:57:40 $
+// Version 3.0       $Date: 2005-07-02 13:41:28 $
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
@@ -1052,6 +1052,7 @@ public:
 	#if WINDOWS
 	HWND getOuterWindow () const;
 	void *getSystemWindow () const { return pHwnd; }
+	COffscreenContext* getBackBuffer ();
 	#elif BEOS
 	void *getSystemWindow () const { return pPlugView; }
 	#else
@@ -1112,6 +1113,7 @@ protected:
 	void      *pHwnd;
 	HINSTANCE hInstMsimg32dll;
 	void*     dropTarget;
+	COffscreenContext* backBuffer;
 
 #elif MOTIF
 	Colormap  colormap;
