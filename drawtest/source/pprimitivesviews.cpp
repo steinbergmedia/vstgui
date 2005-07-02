@@ -2,6 +2,8 @@
 #include "pprimitivesviews.h"
 #endif
 
+#include <stdio.h>
+
 const CColor kBlueAlphaCColor	= {   0,   0, 255, 200};
 const CColor kRedAlphaCColor	= { 255,   0,   0, 200};
 const CColor kYellowAlphaCColor = { 255, 255,   0, 200};
@@ -81,12 +83,13 @@ void PMiscView::drawGrid (CDrawContext* pContext)
 	long numHLines = size.getWidth () / gridOffset + 1;
 	long numVLines = size.getHeight () / gridOffset + 1;
 	CPoint* points = new CPoint [numHLines*2 + numVLines*2];
-	for (long i = 0; i < numHLines*2; i+=2, x += gridOffset)
+	long i;
+	for (i = 0; i < numHLines*2; i+=2, x += gridOffset)
 	{
 		points[i] = CPoint (x, size.top);
 		points[i+1] = CPoint (x, size.bottom);
 	}
-	for (long i = 0; i < numVLines*2; i+=2, y += gridOffset)
+	for (i = 0; i < numVLines*2; i+=2, y += gridOffset)
 	{
 		points[numHLines*2+i] = CPoint (size.left, y);
 		points[numHLines*2+i+1] = CPoint (size.right, y);

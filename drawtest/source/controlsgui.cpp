@@ -2,6 +2,8 @@
 #include "controlsgui.h"
 #endif
 
+#include <stdio.h>
+
 enum
 {
 	// bitmaps
