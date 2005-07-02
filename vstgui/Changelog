@@ -1,3 +1,13 @@
+2005-06-25 arne
+
+	* adding keyboard focus navigation
+	* add bool bWantsFocus to CView. If this is set the view is included in keyboard focus navigation.
+
+2005-06-24 arne
+
+	* merge newframe back to main
+	* fixed some gcc warnings
+
 2005-05-13 arne
 
 	* quartz: if the CFrame is embedded into a window composited window, the setSize(..) method does not resize the window anymore.

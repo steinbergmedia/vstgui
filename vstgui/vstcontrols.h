@@ -3,7 +3,7 @@
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 // Standard Control Objects
 //
-// Version 3.0       $Date: 2005-06-24 10:47:07 $
+// Version 3.0       $Date: 2005-07-02 10:57:40 $
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
@@ -542,7 +542,7 @@ public:
                CBitmap *background, CPoint &offset);
 	CAnimKnob (const CRect &size, CControlListener *listener, long tag, 
                long subPixmaps,        // number of subPixmaps
-               long heightOfOneImage,  // pixel
+               CCoord heightOfOneImage,  // pixel
                CBitmap *background, CPoint &offset);
 	virtual ~CAnimKnob ();
 
@@ -555,10 +555,10 @@ public:
 	CLASS_METHODS(CAnimKnob, CKnob)
 
 protected:
-	long subPixmaps;		// number of subPixmaps
-	long heightOfOneImage;
-	bool bInverseBitmap;
-	CPoint lastDrawnPoint;
+	long	subPixmaps;		// number of subPixmaps
+	CCoord	heightOfOneImage;
+	bool	bInverseBitmap;
+	CPoint	lastDrawnPoint;
 };
 
 //-----------------------------------------------------------------------------
@@ -572,7 +572,7 @@ public:
                      CBitmap *background, CPoint &offset);
 	CVerticalSwitch (const CRect &size, CControlListener *listener, long tag, 
                      long subPixmaps,         // number of subPixmaps
-                     long heightOfOneImage,   // pixel
+                     CCoord heightOfOneImage,   // pixel
                      long iMaxPositions,
                      CBitmap *background, CPoint &offset);
 	virtual ~CVerticalSwitch ();
@@ -583,10 +583,10 @@ public:
 	CLASS_METHODS(CVerticalSwitch, CControl)
 
 protected:
-	CPoint   offset;
-	long     subPixmaps;            // number of subPixmaps
-	long     heightOfOneImage;
-	long     iMaxPositions;
+	CPoint	offset;
+	long	subPixmaps;            // number of subPixmaps
+	CCoord	heightOfOneImage;
+	long	iMaxPositions;
 };
 
 
@@ -601,7 +601,7 @@ public:
                        CBitmap *background, CPoint &offset);
 	CHorizontalSwitch (const CRect &size, CControlListener *listener, long tag, 
                        long subPixmaps,        // number of subPixmaps
-                       long heightOfOneImage,  // pixel
+                       CCoord heightOfOneImage,  // pixel
                        long iMaxPositions,
                        CBitmap *background, CPoint &offset);
 	virtual	~CHorizontalSwitch ();
@@ -612,10 +612,10 @@ public:
 	CLASS_METHODS(CHorizontalSwitch, CControl)
 
 protected:
-	CPoint   offset;
-	long     subPixmaps;        // number of subPixmaps
-	long     heightOfOneImage;
-	long     iMaxPositions;
+	CPoint	offset;
+	long	subPixmaps;        // number of subPixmaps
+	long	iMaxPositions;
+	CCoord	heightOfOneImage;
 };
 
 
@@ -629,7 +629,7 @@ public:
 	CRockerSwitch (const CRect &size, CControlListener *listener, long tag, 
                    CBitmap *background, CPoint &offset, const long style = kHorizontal);
 	CRockerSwitch (const CRect &size, CControlListener *listener, long tag, 
-                   long heightOfOneImage,  // pixel
+                   CCoord heightOfOneImage,  // pixel
                    CBitmap *background, CPoint &offset, const long style = kHorizontal);
 	virtual ~CRockerSwitch ();
 
@@ -640,9 +640,9 @@ public:
 	CLASS_METHODS(CRockerSwitch, CControl)
 
 protected:
-	CPoint   offset;
-	long     heightOfOneImage;
-	long     style;
+	CPoint	offset;
+	CCoord	heightOfOneImage;
+	long	style;
 };
 
 
@@ -657,7 +657,7 @@ public:
                   CBitmap *background, CPoint &offset);
 	CMovieBitmap (const CRect &size, CControlListener *listener, long tag, 
                   long subPixmaps,        // number of subPixmaps
-                  long heightOfOneImage,  // pixel
+                  CCoord heightOfOneImage,  // pixel
                   CBitmap *background, CPoint &offset);
 	virtual	~CMovieBitmap ();
 
@@ -666,9 +666,9 @@ public:
 	CLASS_METHODS(CMovieBitmap, CControl)
 
 protected:
-	CPoint   offset;
-	long     subPixmaps;         // number of subPixmaps
-	long     heightOfOneImage;
+	CPoint	offset;
+	long	subPixmaps;         // number of subPixmaps
+	CCoord	heightOfOneImage;
 };
 
 
@@ -682,7 +682,7 @@ public:
 	CMovieButton (const CRect &size, CControlListener *listener, long tag, 
                   CBitmap *background, CPoint &offset);
 	CMovieButton (const CRect &size, CControlListener *listener, long tag, 
-                  long heightOfOneImage,  // pixel
+                  CCoord heightOfOneImage,  // pixel
                   CBitmap *background, CPoint &offset);
 	virtual ~CMovieButton ();	
 
@@ -693,7 +693,7 @@ public:
 
 protected:
 	CPoint   offset;
-	long     heightOfOneImage;
+	CCoord   heightOfOneImage;
 	float    buttonState;
 };
 
@@ -709,7 +709,7 @@ public:
                     CBitmap *background, CPoint &offset);
 	CAutoAnimation (const CRect &size, CControlListener *listener, long tag, 
                     long subPixmaps,        // number of subPixmaps...
-                    long heightOfOneImage,  // pixel
+                    CCoord heightOfOneImage,  // pixel
                     CBitmap *background, CPoint &offset);
 	virtual ~CAutoAnimation ();
 
@@ -727,13 +727,13 @@ public:
 	CLASS_METHODS(CAutoAnimation, CControl)
 
 protected:
-	CPoint   offset;
+	CPoint	offset;
 
-	long     subPixmaps;
-	long     heightOfOneImage;
-	long     totalHeightOfBitmap;
+	long	subPixmaps;
+	CCoord	heightOfOneImage;
+	CCoord	totalHeightOfBitmap;
 
-	bool     bWindowOpened;
+	bool	bWindowOpened;
 };
 
 
@@ -789,18 +789,17 @@ protected:
 	CBitmap *pHandle;
 	COffscreenContext *pOScreen;
 
-	long     widthOfSlider; // size of the handle-slider
-	long     heightOfSlider;
+	long	style;
 
-	long     rangeHandle;
-	long     style;
-
-	long     minTmp;
-	long     maxTmp;
-	long     minPos;
-	long     widthControl;
-	long     heightControl;
-	float    zoomFactor;
+	CCoord	widthOfSlider; // size of the handle-slider
+	CCoord	heightOfSlider;
+	CCoord	rangeHandle;
+	CCoord	minTmp;
+	CCoord	maxTmp;
+	CCoord	minPos;
+	CCoord	widthControl;
+	CCoord	heightControl;
+	float	zoomFactor;
 
 	bool     bDrawTransparentEnabled;
 	bool     bFreeClick;
@@ -897,7 +896,7 @@ public:
 	CKickButton (const CRect &size, CControlListener *listener, long tag, 
                  CBitmap *background, CPoint &offset);
 	CKickButton (const CRect &size, CControlListener *listener, long tag, 
-                 long heightOfOneImage,  // pixel
+                 CCoord heightOfOneImage,  // pixel
                  CBitmap *background, CPoint &offset);
 	virtual ~CKickButton ();	
 
@@ -907,8 +906,8 @@ public:
 	CLASS_METHODS(CKickButton, CControl)
 
 protected:
-	CPoint   offset;
-	long     heightOfOneImage;
+	CPoint	offset;
+	CCoord	heightOfOneImage;
 };
 
 

@@ -2,7 +2,7 @@
 // VST Plug-Ins SDK
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 //
-// Version 3.0       $Date: 2005-06-24 10:47:07 $
+// Version 3.0       $Date: 2005-07-02 10:57:40 $
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
@@ -45,7 +45,12 @@
 	#if __MACH__
 	#define MACX 1
 	#define QUARTZ 1
+	#ifndef TARGET_API_MAC_CARBON
 	#define TARGET_API_MAC_CARBON 1
+	#endif
+	#ifndef __CF_USE_FRAMEWORK_INCLUDES__
+	#define __CF_USE_FRAMEWORK_INCLUDES__ 1
+	#endif
 	#endif
 #elif __BEOS__
 	#define BEOS 1
@@ -208,7 +213,7 @@ struct CRect
     return *this; }
 
 	CRect &moveTo (CCoord x, CCoord y)
-	{ long vDiff = y - top; long hDiff = x - left; 
+	{ CCoord vDiff = y - top; CCoord hDiff = x - left; 
 	top += vDiff; bottom += vDiff; left += hDiff; right += hDiff;
 	return *this; }
 
@@ -854,6 +859,9 @@ public:
 	void redraw ();
 	virtual void redrawRect (CDrawContext* context, const CRect& rect);
 
+	virtual bool wantsFocus () const { return bWantsFocus; }			///< check if view supports focus
+	virtual void setWantsFocus (bool state) { bWantsFocus = state; }	///< set focus support on/off
+
 	#if DEBUG
 	virtual void dumpInfo ();
 	#endif
@@ -883,6 +891,7 @@ protected:
 	bool  bDirty;
 	bool  bMouseEnabled;
 	bool  bTransparencyEnabled;
+	bool  bWantsFocus;
 	
 	CBitmap* pBackground;
 	CAttributeListEntry* pAttributeList;
@@ -931,8 +940,8 @@ public:
 	virtual CView *getCurrentView () const;	///< get the current view under the mouse
 	virtual CView *getViewAt (const CPoint& where, bool deep = false) const;	///< get the view at point where
 
-	void modifyDrawContext (long save[4], CDrawContext* pContext);
-	void restoreDrawContext (CDrawContext* pContext, long save[4]);
+	void modifyDrawContext (CCoord save[4], CDrawContext* pContext);
+	void restoreDrawContext (CDrawContext* pContext, CCoord save[4]);
 
 	// CView
 	virtual void draw (CDrawContext *pContext);
@@ -952,6 +961,7 @@ public:
 
 	virtual void looseFocus (CDrawContext *pContext = 0);
 	virtual void takeFocus (CDrawContext *pContext = 0);
+	virtual bool advanceNextFocusView (CView* oldFocus, bool reverse = false);
 
 	virtual bool isDirty () const;
 
@@ -989,7 +999,7 @@ protected:
 
 //-----------------------------------------------------------------------------
 // CFrame Declaration
-//! The CFrame is the parent view of all views.
+//! The CFrame is the parent container of all views.
 //-----------------------------------------------------------------------------
 class CFrame : public CViewContainer
 {
@@ -1027,6 +1037,7 @@ public:
 
 	virtual void   setFocusView (CView *pView);
 	virtual CView *getFocusView () const { return pFocusView; }
+	virtual bool advanceNextFocusView (CView* oldFocus, bool reverse = false);
 
 	virtual bool setDropActive (bool val);
 	virtual bool isDropActive () const { return bDropActive; };

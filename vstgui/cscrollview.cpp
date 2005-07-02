@@ -307,7 +307,7 @@ void CScrollbar::setScrollSize (const CRect& ssize)
 //-----------------------------------------------------------------------------
 void CScrollbar::calculateScrollerLength ()
 {
-	long newScrollerLength = scrollerLength;
+	CCoord newScrollerLength = scrollerLength;
 	if (style == kHorizontal)
 	{
 		float factor = (float)size.width () / (float)scrollSize.width ();
@@ -333,8 +333,8 @@ void CScrollbar::calculateScrollerLength ()
 CRect CScrollbar::getScrollerRect ()
 {
 	CRect scrollerRect (scrollerArea);
-	long l = (style == kHorizontal) ? scrollerArea.width () : scrollerArea.height ();
-	long scrollerOffset = value * (l - scrollerLength);
+	CCoord l = (style == kHorizontal) ? scrollerArea.width () : scrollerArea.height ();
+	CCoord scrollerOffset = value * (l - scrollerLength);
 	if (style == kHorizontal)
 	{
 		scrollerRect.setWidth (scrollerLength);
