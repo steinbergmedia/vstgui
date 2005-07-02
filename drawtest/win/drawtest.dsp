@@ -325,6 +325,10 @@ SOURCE=..\source\pdrawtestmain.cpp
 
 SOURCE=..\source\pdrawtestview.cpp
 # End Source File
+# Begin Source File
+
+SOURCE=..\source\pprimitivesviews.cpp
+# End Source File
 # End Group
 # Begin Group "Header Files"
 
