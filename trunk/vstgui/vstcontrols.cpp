@@ -3,7 +3,7 @@
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 // Standard Control Objects
 //
-// Version 3.0       $Date: 2005-07-02 10:57:40 $
+// Version 3.0       $Date: 2005-07-02 11:08:11 $
 //
 // Added new objects        : Michael Schmidt          08.97
 // Added new objects        : Yvan Grabit              01.98
@@ -1845,8 +1845,6 @@ void CTextEdit::looseFocus (CDrawContext *pContext)
 	strcpy (oldText, text);
 	
 #if WINDOWS
-	HWND hwnd;
-	HDC hdc;
 	char newText[255];
 	GetWindowText ((HWND)platformControl, newText, 255);
 	strcpy (text, newText);
