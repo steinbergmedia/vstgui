@@ -3,7 +3,7 @@
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 // Standard Control Objects
 //
-// Version 3.0       $Date: 2005-06-24 10:47:06 $
+// Version 3.0       $Date: 2005-07-02 10:57:40 $
 //
 // Added new objects        : Michael Schmidt          08.97
 // Added new objects        : Yvan Grabit              01.98
@@ -96,6 +96,7 @@ CControl::CControl (const CRect &size, CControlListener *listener, long tag,
 	backOffset (0 ,0);
 
 	setBackground (pBackground);
+	setWantsFocus (true);
 }
 
 //------------------------------------------------------------------------
@@ -221,7 +222,7 @@ COnOffButton::~COnOffButton ()
 //------------------------------------------------------------------------
 void COnOffButton::draw (CDrawContext *pContext)
 {
-	long off;
+	CCoord off;
 
 	if (value && pBackground)
 		off = pBackground->getHeight () / 2;
@@ -329,8 +330,8 @@ void CKnob::drawHandle (CDrawContext *pContext)
 
 	if (pHandle)
 	{
-		long width  = pHandle->getWidth ();
-		long height = pHandle->getHeight ();
+		long width  = (long)pHandle->getWidth ();
+		long height = (long)pHandle->getHeight ();
 		where.offset (size.left - width / 2, size.top - height / 2);
 
 		CRect handleSize (0, 0, width, height);
@@ -421,7 +422,7 @@ void CKnob::mouse (CDrawContext *pContext, CPoint &where, long button)
 			oldWhere = where;
 			if (modeLinear)
 			{
-				long diff = (firstPoint.v - where.v) + (where.h - firstPoint.h);
+				CCoord diff = (firstPoint.v - where.v) + (where.h - firstPoint.h);
 				if (button != oldButton)
 				{
 					range = 200.f;
@@ -1425,14 +1426,14 @@ void CTextEdit::takeFocus (CDrawContext *pContext)
 	if (winAttributes & kWindowCompositingAttribute)
 	{
 		Rect r;
-		r.left   = rect.left;// + 2;
-		r.right  = rect.right;// - 4;
-		r.top    = rect.top;// + 2;
-		r.bottom = rect.bottom;// - 4;
+		r.left   = (short)rect.left;// + 2;
+		r.right  = (short)rect.right;// - 4;
+		r.top    = (short)rect.top;// + 2;
+		r.bottom = (short)rect.bottom;// - 4;
 		if (rect.getHeight () > gStandardFontSize [fontID])
 		{
-			r.top = rect.top + rect.getHeight () / 2 - gStandardFontSize [fontID] / 2 + 1;
-			r.bottom = r.top + gStandardFontSize [fontID];
+			r.top = (short)(rect.top + rect.getHeight () / 2 - gStandardFontSize [fontID] / 2 + 1);
+			r.bottom = (short)(r.top + gStandardFontSize [fontID]);
 		}
 		if (CreateEditUnicodeTextControl (NULL, &r, NULL, false, NULL, &textControl) == noErr)
 		{
@@ -1497,10 +1498,10 @@ void CTextEdit::takeFocus (CDrawContext *pContext)
 	TXNObjectRefcon iRefCon = 0;
 	TXNObject object;
 	Rect r;
-	r.left   = rect.left;
-	r.right  = rect.right;
-	r.top    = rect.top;
-	r.bottom = rect.bottom;
+	r.left   = (short)rect.left;
+	r.right  = (short)rect.right;
+	r.top    = (short)rect.top;
+	r.bottom = (short)rect.bottom;
 	OSStatus err;
 	err = TXNNewObject (NULL, window, &r, iFrameOptions, kTXNTextEditStyleFrameType, kTXNSingleStylePerTextDocumentResType, kTXNMacOSEncoding, &object, &frameID, iRefCon);
 	if (err == noErr)
@@ -2105,7 +2106,7 @@ void COptionMenuScheme::drawItem (const char* text, long itemId, long state, CDr
 
 	if (!strcmp (text, kMenuSeparator))
 	{
-		long y = rect.top + rect.height () / 2;
+		CCoord y = rect.top + rect.height () / 2;
 
 		const CColor bc = { 0, 0, 0, 150};
 		const CColor wc = { 255, 255, 255, 150};
@@ -3517,15 +3518,15 @@ void COptionMenu::takeFocus (CDrawContext *pContext)
 	long offset;
 
 	if (style & kPopupStyle)
-		offset = size.top;
+		offset = (long)size.top;
 	else
-		offset = size.bottom;
+		offset = (long)size.bottom;
 
 	CCoord gx = 0, gy = 0;
 	Point LToG;
 	getFrame()->getPosition(gx, gy);
-	LToG.v = gy + rect.top + offset;
-	LToG.h = gx + rect.left + size.left;
+	LToG.v = (short)(gy + rect.top + offset);
+	LToG.h = (short)(gx + rect.left + size.left);
 		
 	//---Create the popup menu---
 	long offIdx = 0;
@@ -3804,14 +3805,14 @@ CAnimKnob::CAnimKnob (const CRect &size, CControlListener *listener, long tag,
 : CKnob (size, listener, tag, background, 0, offset), bInverseBitmap (false)
 {
 	heightOfOneImage = size.height ();
-	subPixmaps = background->getHeight () / heightOfOneImage;
+	subPixmaps = (short)(background->getHeight () / heightOfOneImage);
 	inset = 0;
 }
 
 //------------------------------------------------------------------------
 CAnimKnob::CAnimKnob (const CRect &size, CControlListener *listener, long tag,
                       long subPixmaps,         // number of subPixmaps
-                      long heightOfOneImage,   // height of one image in pixel
+                      CCoord heightOfOneImage,   // height of one image in pixel
                       CBitmap *background, CPoint &offset)
 : CKnob (size, listener, tag, background, 0, offset), 
    subPixmaps (subPixmaps), heightOfOneImage (heightOfOneImage), bInverseBitmap (false)
@@ -3842,12 +3843,12 @@ void CAnimKnob::draw (CDrawContext *pContext)
 	CPoint where (0, 0);
 	if (value >= 0.f) 
 	{
-		long tmp = heightOfOneImage * (subPixmaps - 1);
+		CCoord tmp = heightOfOneImage * (subPixmaps - 1);
 		if (bInverseBitmap)
 			where.v = (long)((1 - value) * (float)tmp);
 		else
 			where.v = (long)(value * (float)tmp);
-		for (long realY = 0; realY <= tmp; realY += heightOfOneImage) 
+		for (CCoord realY = 0; realY <= tmp; realY += heightOfOneImage) 
 		{
 			if (where.v < realY) 
 			{
@@ -3884,7 +3885,7 @@ CVerticalSwitch::CVerticalSwitch (const CRect &size, CControlListener *listener,
 : CControl (size, listener, tag, background), offset (offset)
 {
 	heightOfOneImage = size.height ();
-	subPixmaps = background->getHeight () / heightOfOneImage;
+	subPixmaps = (long)(background->getHeight () / heightOfOneImage);
 	iMaxPositions = subPixmaps;
 
 	setDefaultValue (0.f);
@@ -3893,7 +3894,7 @@ CVerticalSwitch::CVerticalSwitch (const CRect &size, CControlListener *listener,
 //------------------------------------------------------------------------
 CVerticalSwitch::CVerticalSwitch (const CRect &size, CControlListener *listener, long tag,
                                   long subPixmaps,       // number of subPixmaps
-                                  long heightOfOneImage, // height of one image in pixel
+                                  CCoord heightOfOneImage, // height of one image in pixel
                                   long iMaxPositions,
                                   CBitmap *background, CPoint &offset)
 : CControl (size, listener, tag, background), offset (offset),
@@ -3980,7 +3981,7 @@ CHorizontalSwitch::CHorizontalSwitch (const CRect &size, CControlListener *liste
 : CControl (size, listener, tag, background), offset (offset)
 {
 	heightOfOneImage = size.width ();
-	subPixmaps = background->getWidth () / heightOfOneImage;
+	subPixmaps = (long)(background->getWidth () / heightOfOneImage);
 	iMaxPositions = subPixmaps;
 
 	setDefaultValue (0.f);
@@ -3989,7 +3990,7 @@ CHorizontalSwitch::CHorizontalSwitch (const CRect &size, CControlListener *liste
 //------------------------------------------------------------------------
 CHorizontalSwitch::CHorizontalSwitch (const CRect &size, CControlListener *listener, long tag,
                                   long subPixmaps,   // number of subPixmaps
-                                  long heightOfOneImage, // height of one image in pixel
+                                  CCoord heightOfOneImage, // height of one image in pixel
                                   long iMaxPositions,
                                   CBitmap *background, CPoint &offset)
 : CControl (size, listener, tag, background), offset (offset),
@@ -4084,7 +4085,7 @@ CRockerSwitch::CRockerSwitch (const CRect &size, CControlListener *listener, lon
 
 //------------------------------------------------------------------------
 CRockerSwitch::CRockerSwitch (const CRect &size, CControlListener *listener, long tag,              // identifier tag (ID)
-                              long heightOfOneImage, // height of one image in pixel
+                              CCoord heightOfOneImage, // height of one image in pixel
                               CBitmap *background, CPoint &offset, const long style)
 :	CControl (size, listener, tag, background), offset (offset), 
 	heightOfOneImage (heightOfOneImage), style (style)
@@ -4133,8 +4134,8 @@ void CRockerSwitch::mouse (CDrawContext *pContext, CPoint &where, long button)
 
 	float fEntryState = value;
 
-	long  width_2  = size.width () / 2;
-	long  height_2 = size.height () / 2;
+	CCoord  width_2  = size.width () / 2;
+	CCoord  height_2 = size.height () / 2;
 	
 	// begin of edit parameter
 	beginEdit ();
@@ -4236,13 +4237,13 @@ CMovieBitmap::CMovieBitmap (const CRect &size, CControlListener *listener, long 
 		subPixmaps (subPixmaps), heightOfOneImage (heightOfOneImage)
 {
 	heightOfOneImage = size.height ();
-	subPixmaps = background->getHeight () / heightOfOneImage;
+	subPixmaps = (long)(background->getHeight () / heightOfOneImage);
 }
 
 //------------------------------------------------------------------------
 CMovieBitmap::CMovieBitmap (const CRect &size, CControlListener *listener, long tag,
                             long subPixmaps,        // number of subPixmaps
-                            long heightOfOneImage,  // height of one image in pixel
+                            CCoord heightOfOneImage,  // height of one image in pixel
                             CBitmap *background, CPoint &offset)
   :	CControl (size, listener, tag, background), offset (offset),
 		subPixmaps (subPixmaps), heightOfOneImage (heightOfOneImage)
@@ -4289,7 +4290,7 @@ CMovieButton::CMovieButton (const CRect &size, CControlListener *listener, long 
 
 //------------------------------------------------------------------------
 CMovieButton::CMovieButton (const CRect &size, CControlListener *listener, long tag,
-                            long heightOfOneImage, // height of one image in pixel
+                            CCoord heightOfOneImage, // height of one image in pixel
                             CBitmap *background, CPoint &offset)
 	:	CControl (size, listener, tag, background), offset (offset),
 		heightOfOneImage (heightOfOneImage), buttonState (value)
@@ -4396,7 +4397,7 @@ CAutoAnimation::CAutoAnimation (const CRect &size, CControlListener *listener, l
 : CControl (size, listener, tag, background), offset (offset), bWindowOpened (false)
 {
 	heightOfOneImage = size.height ();
-	subPixmaps = background->getHeight () / heightOfOneImage;
+	subPixmaps = (long)(background->getHeight () / heightOfOneImage);
 
 	totalHeightOfBitmap = heightOfOneImage * subPixmaps;
 }
@@ -4404,7 +4405,7 @@ CAutoAnimation::CAutoAnimation (const CRect &size, CControlListener *listener, l
 //------------------------------------------------------------------------
 CAutoAnimation::CAutoAnimation (const CRect &size, CControlListener *listener, long tag,
                                 long subPixmaps,	 // number of subPixmaps...
-                                long heightOfOneImage, // height of one image in pixel
+                                CCoord heightOfOneImage, // height of one image in pixel
                                 CBitmap *background, CPoint &offset)
 	:	CControl (size, listener, tag, background), offset (offset),
 		subPixmaps (subPixmaps), heightOfOneImage (heightOfOneImage),
@@ -4728,7 +4729,7 @@ void CSlider::mouse (CDrawContext *pContext, CPoint &where, long button)
 	if (!(button & kLButton))
 		return;
 
-	long delta;
+	CCoord delta;
 	if (style & kHorizontal)
 		delta = size.left + offsetHandle.h;
 	else
@@ -4740,7 +4741,7 @@ void CSlider::mouse (CDrawContext *pContext, CPoint &where, long button)
 			fValue = value;
 		else 
 			fValue = 1.f - value;
-		long actualPos;
+		CCoord actualPos;
 		CRect rect;
 
 		if (style & kHorizontal)
@@ -4987,12 +4988,12 @@ CSpecialDigit::CSpecialDigit (const CRect &size,
 	if (xpos == NULL)
 	{
 		// automatically init xpos/ypos if not provided by caller
-		const int numw = background->getWidth();
-		int x = size.left;
+		const int numw = (const int)background->getWidth();
+		int x = (int)size.left;
 		for (long i = 0; i < iNumbers; i++)
 		{
 			this->xpos[i] = x; 
-			this->ypos[i] = size.top;
+			this->ypos[i] = (long)size.top;
 			x += numw;
 		}
 	} 
@@ -5094,7 +5095,7 @@ CKickButton::CKickButton (const CRect &size, CControlListener *listener, long ta
 
 //------------------------------------------------------------------------
 CKickButton::CKickButton (const CRect &size, CControlListener *listener, long tag,
-                          long heightOfOneImage, // height of one image in pixel
+                          CCoord heightOfOneImage, // height of one image in pixel
                           CBitmap *background, CPoint &offset)
 :	CControl (size, listener, tag, background), offset (offset), 
 	heightOfOneImage (heightOfOneImage)
@@ -5346,7 +5347,7 @@ bool CVuMeter::attached (CView *parent)
 
 	if (bUseOffscreen)
 	{
-		pOScreen = new COffscreenContext (getFrame (), size.width (), size.height (), kBlackCColor);
+		pOScreen = new COffscreenContext (getFrame (), (long)size.width (), (long)size.height (), kBlackCColor);
 		rectOn  (0, 0, size.width (), size.height ());
 		rectOff (0, 0, size.width (), size.height ());
 	}
@@ -5397,7 +5398,7 @@ void CVuMeter::draw (CDrawContext *_pContext)
 	{
 		if (!pOScreen)
 		{
-			pOScreen = new COffscreenContext (getFrame (), size.width (), size.height (), kBlackCColor);
+			pOScreen = new COffscreenContext (getFrame (), (long)size.width (), (long)size.height (), kBlackCColor);
 			rectOn  (0, 0, size.width (), size.height ());
 			rectOff (0, 0, size.width (), size.height ());
 		}
@@ -5406,7 +5407,7 @@ void CVuMeter::draw (CDrawContext *_pContext)
 
 	if (style & kHorizontal) 
 	{
-		long tmp = (long)(((long)(nbLed * newValue + 0.5f) / (float)nbLed) * onBitmap->getWidth ());
+		CCoord tmp = (long)(((long)(nbLed * newValue + 0.5f) / (float)nbLed) * onBitmap->getWidth ());
 		pointOff (tmp, 0);
 		if (!bUseOffscreen)
 		tmp += size.left;
@@ -5416,7 +5417,7 @@ void CVuMeter::draw (CDrawContext *_pContext)
 	}
 	else 
 	{
-		long tmp = (long)(((long)(nbLed * (getMax () - newValue) + 0.5f) / (float)nbLed) * onBitmap->getHeight ());
+		CCoord tmp = (long)(((long)(nbLed * (getMax () - newValue) + 0.5f) / (float)nbLed) * onBitmap->getHeight ());
 		pointOn (0, tmp);
 		if (!bUseOffscreen)
 		tmp += size.top;
