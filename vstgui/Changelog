@@ -1,3 +1,9 @@
+2005-07-02 arne
+
+	* windows: CFrame uses a backbuffer now when USE_ALPHA_BLEND is on. This fixes a performance issue with some graphic cards.
+				The drawback at the moment is, that drawing can only occur when the CFrame calls the views to draw. You can not draw anymore
+				by creating your own drawcontext.
+
 2005-06-25 arne
 
 	* adding keyboard focus navigation
