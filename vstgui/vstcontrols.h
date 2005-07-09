@@ -3,7 +3,7 @@
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 // Standard Control Objects
 //
-// Version 3.0       $Date: 2005-07-02 10:57:40 $
+// Version 3.0       $Date: 2005-07-09 13:27:12 $
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
@@ -198,13 +198,23 @@ class COnOffButton : public CControl
 {
 public:
 	COnOffButton (const CRect &size, CControlListener *listener, long tag,
-                  CBitmap *background);
+                  CBitmap *background, long style = kPreListenerUpdate);
 	virtual ~COnOffButton ();
 
 	virtual void draw (CDrawContext*);
 	virtual void mouse (CDrawContext *pContext, CPoint &where, long button = -1);
 
+	virtual long getStyle () const { return style; }
+	virtual void setStyle (long newStyle) { style = newStyle; }
+
+	enum {
+		kPreListenerUpdate,			///< listener will be called after doIdleStuff was called
+		kPostListenerUpdate,		///< listener will be called before doIdleStuff is called
+	};
+
 	CLASS_METHODS(COnOffButton, CControl)
+protected:
+	long style;
 };
 
 
