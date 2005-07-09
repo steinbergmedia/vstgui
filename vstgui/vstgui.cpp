@@ -2,7 +2,7 @@
 // VST Plug-Ins SDK
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 //
-// Version 3.0       $Date: 2005-07-02 13:41:28 $ 
+// Version 3.0       $Date: 2005-07-09 13:27:12 $ 
 //
 // Added Motif/Windows vers.: Yvan Grabit              01.98
 // Added Mac version        : Charlie Steinberg        02.98
@@ -1059,7 +1059,6 @@ void CDrawContext::lineTo (const CPoint& _point)
 	{
 		CGContextScaleCTM (context, 1, -1);
 
-		QuartzSetupClip (gCGContext, clipRect);
 		QuartzSetLineDash (context, lineStyle, frameWidth);
 
 		CGContextBeginPath (context);
@@ -1171,7 +1170,6 @@ void CDrawContext::drawLines (const CPoint* points, const long& numLines)
 	{
 		CGContextScaleCTM (context, 1, -1);
 
-		QuartzSetupClip (gCGContext, clipRect);
 		QuartzSetLineDash (context, lineStyle, frameWidth);
 
 		#ifdef MAC_OS_X_VERSION_10_4
@@ -1228,7 +1226,6 @@ void CDrawContext::drawPolygon (const CPoint *pPoints, long numberOfPoints, cons
 
 		CGContextScaleCTM (context, 1, -1);
 
-		QuartzSetupClip (gCGContext, clipRect);
 		QuartzSetLineDash (context, lineStyle, frameWidth);
 
 		CGContextBeginPath (context);
@@ -1468,7 +1465,6 @@ void CDrawContext::drawRect (const CRect &_rect, const CDrawStyle drawStyle)
 		CGRect r = CGRectMake (rect.left, rect.top+1, rect.width () - 1, rect.height () - 1);
 		CGContextScaleCTM (context, 1, -1);
 
-		QuartzSetupClip (gCGContext, clipRect);
 		QuartzSetLineDash (context, lineStyle, frameWidth);
 
 		CGContextBeginPath (context);
@@ -1546,8 +1542,6 @@ void CDrawContext::fillRect (const CRect &_rect)
 		CGRect r = CGRectMake (rect.left, rect.top, rect.width (), rect.height ());
 		CGContextScaleCTM (context, 1, -1);
 
-		QuartzSetupClip (gCGContext, clipRect);
-
 		CGContextFillRect (context, r);
 		releaseCGContext (context);
 	}
@@ -1589,8 +1583,6 @@ void CDrawContext::drawEllipse (const CRect &_rect, const CDrawStyle drawStyle)
 	CGContextRef context = beginCGContext ();
 	{
 		CGContextScaleCTM (context, 1, -1);
-
-		QuartzSetupClip (gCGContext, clipRect);
 
 		CGPathDrawingMode m;
 		switch (drawStyle)
@@ -1655,8 +1647,6 @@ void CDrawContext::fillEllipse (const CRect &_rect)
 	CGContextRef context = beginCGContext ();
 	{
 		CGContextScaleCTM (context, 1, -1);
-
-		QuartzSetupClip (gCGContext, clipRect);
 
 		CGContextSaveGState (context);
 		CGContextBeginPath (context);
@@ -1890,7 +1880,6 @@ void CDrawContext::drawArc (const CRect &_rect, const float _startAngle, const f
 		}
 		CGContextScaleCTM (context, 1, -1);
 
-		QuartzSetupClip (gCGContext, clipRect);
 		QuartzSetLineDash (context, lineStyle, frameWidth);
 
 		CGContextBeginPath (context);
@@ -1965,7 +1954,6 @@ void CDrawContext::drawArc (const CRect &_rect, const CPoint &_point1, const CPo
 	{
 		CGContextScaleCTM (context, 1, -1);
 
-		QuartzSetupClip (gCGContext, clipRect);
 		QuartzSetLineDash (context, lineStyle, frameWidth);
 
 		CGContextBeginPath (context);
@@ -2043,8 +2031,6 @@ void CDrawContext::fillArc (const CRect &_rect, const CPoint &_point1, const CPo
 	CGContextRef context = beginCGContext ();
 	{
 		CGContextScaleCTM (context, 1, -1);
-
-		QuartzSetupClip (gCGContext, clipRect);
 
 		CGContextBeginPath (context);
 		addOvalToPath (context, CPoint (rect.left + rect.width () / 2, rect.top + rect.height () / 2), rect.width () / 2, rect.height () / 2, -angle1, -angle2);
@@ -2417,8 +2403,6 @@ void CDrawContext::drawString (const char *string, const CRect &_rect,
 		}
 
 		CGContextScaleCTM (context, 1, -1);
-
-		QuartzSetupClip (context, clipRect);
 
 		CGContextSetShouldAntialias (context, true);
 		CGContextSetTextDrawingMode (context, kCGTextFill);
@@ -3050,6 +3034,9 @@ CGContextRef CDrawContext::beginCGContext ()
 	if (gCGContext)
 	{
 		CGContextSaveGState (gCGContext);
+		CGContextScaleCTM (gCGContext, 1, -1);
+		QuartzSetupClip (gCGContext, clipRect);
+		CGContextScaleCTM (gCGContext, 1, -1);
 		return gCGContext;
 	}
 	return 0;
@@ -3808,6 +3795,13 @@ void CView::redrawRect (CDrawContext* context, const CRect& rect)
 //-----------------------------------------------------------------------------
 void CView::draw (CDrawContext *pContext)
 {
+	if (pBackground)
+	{
+		if (bTransparencyEnabled)
+			pBackground->drawTransparent (pContext, size);
+		else
+			pBackground->draw (pContext, size);
+	}
 	setDirty (false);
 }
 
@@ -4042,6 +4036,7 @@ CFrame::CFrame (const CRect &inSize, void *inSystemWindow, void *inEditor)
 , pFocusView (0)
 , bFirstDraw (true)
 , bDropActive (false)
+, bUpdatesDisabled (false)
 , pFrameContext (0)
 , bAddedWindow (false)
 , pVstWindow (0)
@@ -4124,6 +4119,7 @@ CFrame::CFrame (const CRect& inSize, const char* inTitle, void* inEditor, const 
 , pFocusView (0)
 , bFirstDraw (true)
 , bDropActive (false)
+, bUpdatesDisabled (false)
 , pFrameContext (0)
 , pVstWindow (0) 
 , defaultCursor (0)
@@ -4648,7 +4644,7 @@ bool CFrame::onWheel (CDrawContext *pContext, const CPoint &where, float distanc
 //-----------------------------------------------------------------------------
 void CFrame::update (CDrawContext *pContext)
 {
-	if (!getOpenFlag ())
+	if (!getOpenFlag () || updatesDisabled ())
 		return;
 
 	#if WINDOWS && USE_ALPHA_BLEND
@@ -5904,7 +5900,7 @@ void CViewContainer::drawRect (CDrawContext *pContext, const CRect& _updateRect)
 			pC->setClipRect (viewSize);
 			#endif
 			#if EVENT_DRAW_FIX	// this is needed because of draw events from the system, which may cause to only draw some parts of the views
-			bool wasDirty = pV->bDirty;
+			bool wasDirty = pV->isDirty ();
 			#endif
 			pV->drawRect (pC, clientRect);
 			#if EVENT_DRAW_FIX
