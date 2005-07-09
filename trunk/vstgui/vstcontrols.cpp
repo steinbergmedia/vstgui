@@ -3,7 +3,7 @@
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 // Standard Control Objects
 //
-// Version 3.0       $Date: 2005-07-02 11:08:11 $
+// Version 3.0       $Date: 2005-07-09 13:27:12 $
 //
 // Added new objects        : Michael Schmidt          08.97
 // Added new objects        : Yvan Grabit              01.98
@@ -211,8 +211,9 @@ The pixmap includes the 2 subpixmaps (i.e the rectangle used for the display of 
 When its value changes, the listener is called.
 */
 COnOffButton::COnOffButton (const CRect &size, CControlListener *listener, long tag,
-                            CBitmap *background)
-:	CControl (size, listener, tag, background)
+                            CBitmap *background, long style)
+: CControl (size, listener, tag, background)
+, style (style)
 {}
 
 //------------------------------------------------------------------------
@@ -255,9 +256,21 @@ void COnOffButton::mouse (CDrawContext *pContext, CPoint &where, long button)
 			return;
 	}
 	value = ((long)value) ? 0.f : 1.f;
+	
+	if (listener && style == kPostListenerUpdate)
+	{
+		// begin of edit parameter
+		beginEdit ();
+	
+		listener->valueChanged (pContext, this);
+	
+		// end of edit parameter
+		endEdit ();
+	}
+	
 	doIdleStuff ();
 	
-	if (listener)
+	if (listener && style == kPreListenerUpdate)
 	{
 		// begin of edit parameter
 		beginEdit ();

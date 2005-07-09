@@ -2,7 +2,7 @@
 // VST Plug-Ins SDK
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 //
-// Version 3.0       $Date: 2005-07-02 13:41:28 $
+// Version 3.0       $Date: 2005-07-09 13:27:28 $
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
@@ -1049,6 +1049,9 @@ public:
 
 	virtual void invalidate (const CRect &rect);
 
+	virtual bool updatesDisabled () const { return bUpdatesDisabled; }
+	virtual bool updatesDisabled (bool state) { bool before = bUpdatesDisabled; bUpdatesDisabled = state; return before; }
+
 	#if WINDOWS
 	HWND getOuterWindow () const;
 	void *getSystemWindow () const { return pHwnd; }
@@ -1108,6 +1111,7 @@ protected:
 	bool    bFirstDraw;
 	bool    bOpenFlag;
 	bool    bDropActive;
+	bool	bUpdatesDisabled;
 
 #if WINDOWS
 	void      *pHwnd;

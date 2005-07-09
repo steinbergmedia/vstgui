@@ -1,3 +1,10 @@
+2005-07-09 arne
+
+	* the CView::draw method now draws the background image if it has one.
+	* new CFrame::updatesDisabled method to lock idle updates.
+	* bug fix for overlapping control drawing.
+	* add a style to COnOffButton so that the listener can be called before doIdleStuff is called.
+
 2005-07-02 arne
 
 	* windows: CFrame uses a backbuffer now when USE_ALPHA_BLEND is on. This fixes a performance issue with some graphic cards.
