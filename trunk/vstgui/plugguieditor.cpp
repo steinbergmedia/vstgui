@@ -217,14 +217,20 @@ extern "C" {
 
 BEGIN_NAMESPACE_VSTGUI
 
-CFBundleRef ghInst = 0;
+void* gBundleRef = 0;
 
 END_NAMESPACE_VSTGUI
+
+#if USE_NAMESPACE
+#define VSTGUI_BUNDLEREF VSTGUI::gBundleRef
+#else
+#define VSTGUI_BUNDLEREF gBundleRef
+#endif
 
 #if PLUGGUI_STANDALONE
 void InitMachOLibrary ()
 {
-	ghInst = CFBundleGetMainBundle ();
+	VSTGUI_BUNDLEREF = CFBundleGetMainBundle ();
 }
 
 void ExitMachOLibrary () {}
@@ -280,15 +286,15 @@ void InitMachOLibrary ()
 	if (imagename == 0)
 	return;
 	/* get the bundle of a header, TODO: ther have to be a better way */
-	ghInst = _CFXBundleCreateFromImageName (NULL, imagename);
+	VSTGUI_BUNDLEREF = _CFXBundleCreateFromImageName (NULL, imagename);
 }
 
 // -----------------------------------------------------------------------------
 void ExitMachOLibrary ();
 void ExitMachOLibrary ()
 {
-	if (ghInst)
-		CFRelease (ghInst);
+	if (VSTGUI_BUNDLEREF)
+		CFRelease (VSTGUI_BUNDLEREF);
 }
 
 #endif
