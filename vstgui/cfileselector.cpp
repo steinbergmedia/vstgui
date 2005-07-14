@@ -2,7 +2,7 @@
 // VST Plug-Ins SDK
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 //
-// Version 3.0       $Date: 2005-07-14 10:26:11 $ 
+// Version 3.0       $Date: 2005-07-14 10:34:34 $ 
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
@@ -247,7 +247,7 @@ long CFileSelector::run (VstFileSelect *vstFileSelect)
 			ofn.lStructSize  = sizeof (OPENFILENAME);
 			HWND owner = 0;
 			#if !PLUGGUI
-			if (((AudioEffectX*)ptr)->getEditor () && ((AEffGUIEditor*)((AudioEffectX*)ptr)->getEditor ())->getFrame ())
+			if (ptr && ((AudioEffectX*)ptr)->getEditor () && ((AEffGUIEditor*)((AudioEffectX*)ptr)->getEditor ())->getFrame ())
 				owner = (HWND)((AEffGUIEditor*)((AudioEffectX*)ptr)->getEditor ())->getFrame ()->getSystemWindow ();
 			#endif
 			ofn.hwndOwner    = owner;
