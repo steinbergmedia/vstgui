@@ -3,7 +3,7 @@
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 // Standard Control Objects
 //
-// Version 3.0       $Date: 2005-07-09 13:27:12 $
+// Version 3.0       $Date: 2005-07-14 10:07:17 $
 //
 // Added new objects        : Michael Schmidt          08.97
 // Added new objects        : Yvan Grabit              01.98
@@ -46,6 +46,8 @@
 #ifndef __vstcontrols__
 #include "vstcontrols.h"
 #endif
+
+#include "vstkeycode.h"
 
 BEGIN_NAMESPACE_VSTGUI
 
@@ -2001,12 +2003,12 @@ void CTextEdit::looseFocus (CDrawContext *pContext)
 	}
 	pContext->forget ();
 
+	if (change)
+		doIdleStuff ();
+
 	CView* receiver = pParentView ? pParentView : pParentFrame;
 	if (receiver)
 		receiver->notify (this, "LooseFocus");
-
-	if (change)
-		doIdleStuff ();
 }
 
 //------------------------------------------------------------------------

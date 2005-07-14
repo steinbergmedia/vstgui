@@ -330,10 +330,17 @@ extern "C" {
 }
 #include <CoreFoundation/CFBundle.h>
 
-short localizedResRefNum;
-short fixResRefNum;
+BEGIN_NAMESPACE_VSTGUI
 
 void* gBundleRef = 0;
+
+END_NAMESPACE_VSTGUI
+
+#if USE_NAMESPACE
+#define VSTGUI_BUNDLEREF VSTGUI::gBundleRef
+#else
+#define VSTGUI_BUNDLEREF gBundleRef
+#endif
 
 // -----------------------------------------------------------------------------
 static CFBundleRef _CFXBundleCreateFromImageName (CFAllocatorRef allocator, const char* image_name);
@@ -384,15 +391,15 @@ void InitMachOLibrary ()
 	if (imagename == 0)
 	return;
 	/* get the bundle of a header, TODO: ther have to be a better way */
-	gBundleRef = (void*)_CFXBundleCreateFromImageName (NULL, imagename);
+	VSTGUI_BUNDLEREF = (void*)_CFXBundleCreateFromImageName (NULL, imagename);
 }
 
 // -----------------------------------------------------------------------------
 void ExitMachOLibrary ();
 void ExitMachOLibrary ()
 {
-	if (gBundleRef)
-		CFRelease (gBundleRef);
+	if (VSTGUI_BUNDLEREF)
+		CFRelease (VSTGUI_BUNDLEREF);
 }
 
 #endif

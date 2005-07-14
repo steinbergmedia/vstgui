@@ -1,3 +1,8 @@
+2005-07-14 arne
+
+	* moved CFileSelector in its own file
+	* quartz: fixed some bugs with COffscreenContext
+
 2005-07-09 arne
 
 	* the CView::draw method now draws the background image if it has one.
