@@ -98,6 +98,10 @@ SOURCE=..\..\vstgui\aeffguieditor.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=..\..\vstgui\cfileselector.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\vstgui\cscrollview.cpp
 # End Source File
 # Begin Source File
