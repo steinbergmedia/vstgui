@@ -2,6 +2,8 @@
 #include "controlsgui.h"
 #endif
 
+#include "cfileselector.h"
+
 #include <stdio.h>
 
 enum
