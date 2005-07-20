@@ -260,9 +260,7 @@ void AEffGUIEditor::doIdleStuff ()
 			return;
 	}
 
-	AEffEditor::idle ();
-	if (frame)
-		frame->idle ();
+	idle ();
 
 	#if WINDOWS
 	if (PeekMessage (&windowsMessage, NULL, WM_PAINT, WM_PAINT, PM_REMOVE))
