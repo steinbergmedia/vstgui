@@ -3,7 +3,7 @@
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 // Standard Control Objects
 //
-// Version 3.0       $Date: 2005-07-14 10:07:17 $
+// Version 3.0       $Date: 2005-07-22 08:55:08 $
 //
 // Added new objects        : Michael Schmidt          08.97
 // Added new objects        : Yvan Grabit              01.98
@@ -98,7 +98,6 @@ CControl::CControl (const CRect &size, CControlListener *listener, long tag,
 	backOffset (0 ,0);
 
 	setBackground (pBackground);
-	setWantsFocus (true);
 }
 
 //------------------------------------------------------------------------
@@ -314,6 +313,8 @@ CKnob::CKnob (const CRect &size, CControlListener *listener, long tag,
 	setStartAngle ((float)(5.f * kPI / 4.f));
 	setRangeAngle ((float)(-3.f * kPI / 2.f));
 	zoomFactor = 1.5f;
+
+	setWantsFocus (true);
 }
 
 //------------------------------------------------------------------------
@@ -504,7 +505,6 @@ bool CKnob::onWheel (CDrawContext *pContext, const CPoint &where, float distance
 //------------------------------------------------------------------------
 long CKnob::onKeyDown (VstKeyCode& keyCode)
 {
-#if !PLUGGUI
 	switch (keyCode.virt)
 	{
 	case VKEY_UP :
@@ -534,7 +534,6 @@ long CKnob::onKeyDown (VstKeyCode& keyCode)
 			}
 		} return 1;
 	}
-#endif
 	return -1;
 }
 
@@ -4566,6 +4565,8 @@ CSlider::CSlider (const CRect &rect, CControlListener *listener, long tag,
 	}
 
 	zoomFactor = 10.f;
+
+	setWantsFocus (true);
 }
 
 //------------------------------------------------------------------------
@@ -4603,6 +4604,8 @@ CSlider::CSlider (const CRect &rect, CControlListener *listener, long tag,
 	setOffsetHandle (offsetHandle);
 	
 	zoomFactor = 10.f;
+
+	setWantsFocus (true);
 }
 
 //------------------------------------------------------------------------
@@ -4868,7 +4871,6 @@ bool CSlider::onWheel (CDrawContext *pContext, const CPoint &where, float distan
 //------------------------------------------------------------------------
 long CSlider::onKeyDown (VstKeyCode& keyCode)
 {
-#if !PLUGGUI
 	switch (keyCode.virt)
 	{
 	case VKEY_UP :
@@ -4898,7 +4900,6 @@ long CSlider::onKeyDown (VstKeyCode& keyCode)
 			}
 		} return 1;
 	}
-#endif
 	return -1;
 }
 
