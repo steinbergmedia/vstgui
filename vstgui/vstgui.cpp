@@ -2,7 +2,7 @@
 // VST Plug-Ins SDK
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 //
-// Version 3.0       $Date: 2005-07-14 10:07:17 $ 
+// Version 3.0       $Date: 2005-07-22 15:56:49 $ 
 //
 // Added Motif/Windows vers.: Yvan Grabit              01.98
 // Added Mac version        : Charlie Steinberg        02.98
@@ -1057,10 +1057,8 @@ void CDrawContext::lineTo (const CPoint& _point)
 	
 #elif MAC
 	#if QUARTZ
-	CGContextRef context = beginCGContext ();
+	CGContextRef context = beginCGContext (true);
 	{
-		CGContextScaleCTM (context, 1, -1);
-
 		QuartzSetLineDash (context, lineStyle, frameWidth);
 
 		CGContextBeginPath (context);
@@ -1167,11 +1165,9 @@ void CDrawContext::lineTo (const CPoint& _point)
 void CDrawContext::drawLines (const CPoint* points, const long& numLines)
 {
 	#if QUARTZ
-	CGContextRef context = beginCGContext ();
+	CGContextRef context = beginCGContext (true);
 	if (context) 
 	{
-		CGContextScaleCTM (context, 1, -1);
-
 		QuartzSetLineDash (context, lineStyle, frameWidth);
 
 		#ifdef MAC_OS_X_VERSION_10_4
@@ -1216,7 +1212,7 @@ void CDrawContext::drawLines (const CPoint* points, const long& numLines)
 void CDrawContext::drawPolygon (const CPoint *pPoints, long numberOfPoints, const CDrawStyle drawStyle)
 {
 #if MAC && QUARTZ
-	CGContextRef context = beginCGContext ();
+	CGContextRef context = beginCGContext (true);
 	{
 		CGPathDrawingMode m;
 		switch (drawStyle)
@@ -1225,8 +1221,6 @@ void CDrawContext::drawPolygon (const CPoint *pPoints, long numberOfPoints, cons
 			case kDrawFilledAndStroked : m = kCGPathFillStroke; break;
 			default : m = kCGPathStroke; break;
 		}
-
-		CGContextScaleCTM (context, 1, -1);
 
 		QuartzSetLineDash (context, lineStyle, frameWidth);
 
@@ -1454,7 +1448,7 @@ void CDrawContext::drawRect (const CRect &_rect, const CDrawStyle drawStyle)
 	
 #elif MAC
 	#if QUARTZ
-	CGContextRef context = beginCGContext ();
+	CGContextRef context = beginCGContext (true);
 	{
 		CGPathDrawingMode m;
 		switch (drawStyle)
@@ -1465,7 +1459,6 @@ void CDrawContext::drawRect (const CRect &_rect, const CDrawStyle drawStyle)
 		}
 
 		CGRect r = CGRectMake (rect.left, rect.top+1, rect.width () - 1, rect.height () - 1);
-		CGContextScaleCTM (context, 1, -1);
 
 		QuartzSetLineDash (context, lineStyle, frameWidth);
 
@@ -1539,11 +1532,9 @@ void CDrawContext::fillRect (const CRect &_rect)
 
 #elif MAC
 	#if QUARTZ
-	CGContextRef context = beginCGContext ();
+	CGContextRef context = beginCGContext (true);
 	{
 		CGRect r = CGRectMake (rect.left, rect.top, rect.width (), rect.height ());
-		CGContextScaleCTM (context, 1, -1);
-
 		CGContextFillRect (context, r);
 		releaseCGContext (context);
 	}
@@ -1582,10 +1573,8 @@ void CDrawContext::drawEllipse (const CRect &_rect, const CDrawStyle drawStyle)
 	CRect rect (_rect);
 	rect.offset (offset.h, offset.v);
 
-	CGContextRef context = beginCGContext ();
+	CGContextRef context = beginCGContext (true);
 	{
-		CGContextScaleCTM (context, 1, -1);
-
 		CGPathDrawingMode m;
 		switch (drawStyle)
 		{
@@ -1646,10 +1635,8 @@ void CDrawContext::fillEllipse (const CRect &_rect)
 	SelectObject ((HDC)pSystemContext, oldPen);
 
 #elif QUARTZ
-	CGContextRef context = beginCGContext ();
+	CGContextRef context = beginCGContext (true);
 	{
-		CGContextScaleCTM (context, 1, -1);
-
 		CGContextSaveGState (context);
 		CGContextBeginPath (context);
 
@@ -1871,7 +1858,7 @@ void CDrawContext::drawArc (const CRect &_rect, const float _startAngle, const f
 	#elif MAC
 
 	#if QUARTZ
-	CGContextRef context = beginCGContext ();
+	CGContextRef context = beginCGContext (true);
 	{
 		CGPathDrawingMode m;
 		switch (drawStyle)
@@ -1880,8 +1867,6 @@ void CDrawContext::drawArc (const CRect &_rect, const float _startAngle, const f
 			case kDrawFilledAndStroked : m = kCGPathFillStroke; break;
 			default : m = kCGPathStroke; break;
 		}
-		CGContextScaleCTM (context, 1, -1);
-
 		QuartzSetLineDash (context, lineStyle, frameWidth);
 
 		CGContextBeginPath (context);
@@ -1952,10 +1937,8 @@ void CDrawContext::drawArc (const CRect &_rect, const CPoint &_point1, const CPo
 	#if QUARTZ
 	angle1 /= 64;
 	angle2 /= 64;
-	CGContextRef context = beginCGContext ();
+	CGContextRef context = beginCGContext (true);
 	{
-		CGContextScaleCTM (context, 1, -1);
-
 		QuartzSetLineDash (context, lineStyle, frameWidth);
 
 		CGContextBeginPath (context);
@@ -2030,10 +2013,8 @@ void CDrawContext::fillArc (const CRect &_rect, const CPoint &_point1, const CPo
 	#if QUARTZ
 	angle1 /= 64;
 	angle2 /= 64;
-	CGContextRef context = beginCGContext ();
+	CGContextRef context = beginCGContext (true);
 	{
-		CGContextScaleCTM (context, 1, -1);
-
 		CGContextBeginPath (context);
 		addOvalToPath (context, CPoint (rect.left + rect.width () / 2, rect.top + rect.height () / 2), rect.width () / 2, rect.height () / 2, -angle1, -angle2);
 		CGContextClosePath (context);
@@ -2312,10 +2293,9 @@ CCoord CDrawContext::getStringWidth (const char *pStr)
 
 	#if MAC
 	#if QUARTZ
-	CGContextRef context = beginCGContext ();
+	CGContextRef context = beginCGContext (true);
 	if (context)
 	{
-		CGContextScaleCTM (context, 1, 1);
 		CGContextSetTextDrawingMode (context, kCGTextInvisible);
 		CGContextSetTextPosition (context, 0.f, 0.f);
 		CGContextShowText (context, pStr, strlen (pStr));
@@ -2385,7 +2365,7 @@ void CDrawContext::drawString (const char *string, const CRect &_rect,
 
 #elif MAC
 	#if QUARTZ
-	CGContextRef context = beginCGContext ();
+	CGContextRef context = beginCGContext (true);
 	if (context)
 	{
 		CCoord strWidth = getStringWidth (string);
@@ -2403,8 +2383,6 @@ void CDrawContext::drawString (const char *string, const CRect &_rect,
 			default : // left adjust
 				rect.left++;
 		}
-
-		CGContextScaleCTM (context, 1, -1);
 
 		CGContextSetShouldAntialias (context, true);
 		CGContextSetTextDrawingMode (context, kCGTextFill);
@@ -3031,14 +3009,15 @@ void CDrawContext::lineFromTo (CPoint& cstart, CPoint& cend)
 #elif MAC
 #if QUARTZ
 //-----------------------------------------------------------------------------
-CGContextRef CDrawContext::beginCGContext ()
+CGContextRef CDrawContext::beginCGContext (bool swapYAxis)
 {
 	if (gCGContext)
 	{
 		CGContextSaveGState (gCGContext);
 		CGContextScaleCTM (gCGContext, 1, -1);
 		QuartzSetupClip (gCGContext, clipRect);
-		CGContextScaleCTM (gCGContext, 1, -1);
+		if (!swapYAxis)
+			CGContextScaleCTM (gCGContext, 1, -1);
 		return gCGContext;
 	}
 	return 0;
@@ -3552,8 +3531,6 @@ void COffscreenContext::copyFrom (CDrawContext *pContext, CRect destRect, CPoint
 			dest.size.width = getWidth ();
 			dest.size.height = getHeight ();
 			
-			CGContextScaleCTM (context, 1, 1);
-
 			CGRect clipRect;
 			clipRect.origin.x = destRect.left + pContext->offset.h;
 		    clipRect.origin.y = (destRect.top + pContext->offset.v) * -1  - destRect.height ();
@@ -3727,6 +3704,7 @@ CView::CView (const CRect& size)
 , bDirty (false)
 , bMouseEnabled (true)
 , bTransparencyEnabled (false)
+, bWantsFocus (false)
 , pBackground (0)
 , pAttributeList (0)
 {
@@ -5431,7 +5409,10 @@ bool CFrame::advanceNextFocusView (CView* oldFocus, bool reverse)
 		if (CViewContainer::advanceNextFocusView (oldFocus, reverse))
 			return true;
 		else
-			return CViewContainer::advanceNextFocusView (0, reverse);
+		{
+			setFocusView (NULL);
+			return false;
+		}
 	}
 	CView* parentView = oldFocus->getParentView ();
 	if (parentView && parentView->isTypeOf ("CViewContainer"))
@@ -5856,8 +5837,6 @@ void CViewContainer::drawBackgroundRect (CDrawContext *pContext, CRect& _updateR
 	}
 }
 
-#define EVENT_DRAW_FIX 1
-
 //-----------------------------------------------------------------------------
 /**
  * @param pContext the context which to use to draw
@@ -5924,16 +5903,22 @@ void CViewContainer::drawRect (CDrawContext *pContext, const CRect& _updateRect)
 				continue;
 			pC->setClipRect (viewSize);
 			#endif
-			#if EVENT_DRAW_FIX	// this is needed because of draw events from the system, which may cause to only draw some parts of the views
+
 			bool wasDirty = pV->isDirty ();
-			#endif
 			pV->drawRect (pC, clientRect);
-			#if EVENT_DRAW_FIX
+			
+			#if DEBUG_FOCUS_DRAWING
+			if (getFrame ()->getFocusView() == pV && pV->wantsFocus ())
+			{
+				pC->setDrawMode (kCopyMode);
+				pC->setFrameColor (kRedCColor);
+				pC->drawRect (pV->size);
+			}
+			#endif
 			if (wasDirty && pV->size != viewSize && !isTypeOf ("CScrollContainer"))
 			{
 				pV->setDirty (true);
 			}
-			#endif
 		}
 	ENDFOR
 
@@ -9249,8 +9234,8 @@ bool CFrame::registerWithToolbox ()
 									{kEventClassControl, kEventControlGetOptimalBounds},
 									{kEventClassScrollable, kEventScrollableGetInfo},
 									{kEventClassScrollable, kEventScrollableScrollTo},
-//									{kEventClassControl, kEventControlSetFocusPart},
-//									{kEventClassControl, kEventControlGetFocusPart}
+									{kEventClassControl, kEventControlSetFocusPart},
+									{kEventClassControl, kEventControlGetFocusPart},
 								};
 
 	ToolboxObjectClassRef controlClass = NULL;
@@ -9326,6 +9311,8 @@ static short keyTable[] = {
 #ifndef kHIViewFeatureGetsFocusOnClick
 #define   kHIViewFeatureGetsFocusOnClick (1 << 8)
 #endif
+
+bool hiToolboxAllowFocusChange = false;	// if this is true, the hitoolbox will set focus on our control and we will receive key down events. The drawback is that the host doesn't get any keys anymore...
 
 //---------------------------------------------------------------------------------------
 pascal OSStatus CFrame::carbonEventHandler (EventHandlerCallRef inHandlerCallRef, EventRef inEvent, void *inUserData)
@@ -9513,11 +9500,9 @@ pascal OSStatus CFrame::carbonEventHandler (EventHandlerCallRef inHandlerCallRef
 				}
 				case kEventControlGetFocusPart:
 				{
-					WindowAttributes windowAttributes;
-					GetWindowAttributes (window, &windowAttributes);
-					if (windowAttributes & kWindowCompositingAttribute)
+					if (hiToolboxAllowFocusChange)
 					{
-						ControlPartCode code = frame->hasFocus ? 1300 : kControlFocusNoPart;
+						ControlPartCode code = frame->hasFocus ? 127 : kControlFocusNoPart;
 						SetEventParameter (inEvent, kEventParamControlPart, typeControlPartCode, sizeof (ControlPartCode), &code);
 						result = noErr;
 					}
@@ -9525,24 +9510,32 @@ pascal OSStatus CFrame::carbonEventHandler (EventHandlerCallRef inHandlerCallRef
 				}
 				case kEventControlSetFocusPart:
 				{
-					WindowAttributes windowAttributes;
-					GetWindowAttributes (window, &windowAttributes);
-					if (windowAttributes & kWindowCompositingAttribute)
+					if (hiToolboxAllowFocusChange)
 					{
 						ControlPartCode code;
 						GetEventParameter (inEvent, kEventParamControlPart, typeControlPartCode, NULL, sizeof (ControlPartCode), NULL, &code);
 						if (code == kControlFocusNoPart)
 						{
 							frame->hasFocus = false;
+							frame->setFocusView (NULL);
 						}
 						else
 						{
-							frame->hasFocus = true;
+							bool anfResult = false;
 							if (code == kControlFocusNextPart)
-								frame->advanceNextFocusView (frame->pFocusView);
+								anfResult = frame->advanceNextFocusView (frame->pFocusView);
 							else if (code == kControlFocusPrevPart)
-								frame->advanceNextFocusView (frame->pFocusView, true);
-							code = 1300;
+								anfResult = frame->advanceNextFocusView (frame->pFocusView, true);
+							if (anfResult)
+							{
+								frame->hasFocus = true;
+								code = 127;
+							}
+							else
+							{
+								frame->hasFocus = false;
+								code = kControlFocusNoPart;
+							}
 						}
 						SetEventParameter (inEvent, kEventParamControlPart, typeControlPartCode, sizeof (code), &code);
 						result = noErr;
@@ -9570,7 +9563,7 @@ pascal OSStatus CFrame::carbonEventHandler (EventHandlerCallRef inHandlerCallRef
 						bool acceptDrop = true;
 						SetEventParameter (inEvent, kEventParamControlWouldAcceptDrop, typeBoolean, sizeof (bool), &acceptDrop);
 					}
-										result = noErr;
+					result = noErr;
 					break;
 				}
 				case kEventControlDragWithin:
@@ -9625,20 +9618,17 @@ pascal OSStatus CFrame::carbonEventHandler (EventHandlerCallRef inHandlerCallRef
 			{
 				case kEventMouseWheelMoved:
 				{
-					HIPoint hipoint;
+					HIPoint windowHIPoint;
 					SInt32 wheelDelta;
 					EventMouseWheelAxis wheelAxis;
 					WindowRef windowRef;
 					GetEventParameter (inEvent, kEventParamWindowRef, typeWindowRef, NULL, sizeof (WindowRef), NULL, &windowRef);
-					GetEventParameter (inEvent, kEventParamMouseLocation, typeHIPoint, NULL, sizeof (HIPoint), NULL, &hipoint);
 					GetEventParameter (inEvent, kEventParamMouseWheelAxis, typeMouseWheelAxis, NULL, sizeof (EventMouseWheelAxis), NULL, &wheelAxis);
 					GetEventParameter (inEvent, kEventParamMouseWheelDelta, typeLongInteger, NULL, sizeof (SInt32), NULL, &wheelDelta);
-					Point point = {(short)hipoint.y, (short)hipoint.x};
-					QDGlobalToLocalPoint (GetWindowPort (window), &point);
+					GetEventParameter (inEvent, kEventParamWindowMouseLocation, typeHIPoint, NULL, sizeof (HIPoint), NULL, &windowHIPoint);
+					HIViewConvertPoint (&windowHIPoint, HIViewGetRoot (windowRef), frame->controlRef);
+					CPoint p (windowHIPoint.x, windowHIPoint.y);
 					CDrawContext* context = frame->createDrawContext ();
-					CPoint p (point.h, point.v);
-					p.offset (-context->offsetScreen.x, -context->offsetScreen.y);
-					p.offset (frame->hiScrollOffset.x, frame->hiScrollOffset.y);
 					frame->onWheel (context, p, wheelDelta);
 					context->forget ();
 					result = noErr;
