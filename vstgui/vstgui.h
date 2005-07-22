@@ -2,7 +2,7 @@
 // VST Plug-Ins SDK
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 //
-// Version 3.0       $Date: 2005-07-14 10:07:17 $
+// Version 3.0       $Date: 2005-07-22 15:56:52 $
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
@@ -632,7 +632,7 @@ protected:
 	bool needToSynchronizeCGContext;
 	public:
 	CGContextRef getCGContext () const { return gCGContext; }
-	CGContextRef beginCGContext ();
+	CGContextRef beginCGContext (bool swapYAxis = false);
 	void releaseCGContext (CGContextRef context);
 	void synchronizeCGContext ();
 	

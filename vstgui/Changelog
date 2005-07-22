@@ -1,5 +1,11 @@
 2005-07-22 arne
 
+	* quartz: little optimization in CDrawContext::beginCGContext
+	* quartz: cleaned up the event handler
+	* stop advancing focus if the last focusable control has focus.
+
+2005-07-22 arne
+
 	* fixed a regression bug in AEffGUIEditor, where idle() was not called
 	* only CKnob and CSlider want focus, as they are the only controls handling key strokes.
 
