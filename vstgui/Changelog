@@ -1,3 +1,8 @@
+2005-07-29 arne
+
+	* bugfix: CDrawContext doesn't remember font style and does not change the font if only the font style changed.
+	* quartz: keyboard event handling works now, so that hosts will get all key events we don't handle.
+	
 2005-07-22 arne
 
 	* quartz: little optimization in CDrawContext::beginCGContext

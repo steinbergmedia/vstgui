@@ -2,7 +2,7 @@
 // VST Plug-Ins SDK
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 //
-// Version 3.0       $Date: 2005-07-22 15:56:49 $ 
+// Version 3.0       $Date: 2005-07-29 10:05:17 $ 
 //
 // Added Motif/Windows vers.: Yvan Grabit              01.98
 // Added Mac version        : Charlie Steinberg        02.98
@@ -515,6 +515,7 @@ CDrawContext::CDrawContext (CFrame *inFrame, void *inSystemContext, void *inWind
 , pWindow (inWindow)
 , pFrame (inFrame)
 , fontSize (-1)
+, fontStyle (0)
 , fontId (kNumStandardFonts)
 , frameWidth (0)
 , lineStyle (kLineOnOffDash)
@@ -2184,9 +2185,10 @@ void CDrawContext::setFont (CFont fontID, const long size, long style)
 	if (fontID < 0 || fontID >= kNumStandardFonts)
 		fontID = kSystemFont;
 
-	if (fontId == fontID && fontSize == (size != 0 ? size : gStandardFontSize[fontID]))
+	if (fontId == fontID && fontSize == (size != 0 ? size : gStandardFontSize[fontID]) && fontStyle == style)
 		return;
 
+	fontStyle = style;
 	fontId = fontID;
 	if (size != 0)
 		fontSize = size;
@@ -4355,6 +4357,11 @@ bool CFrame::initFrame (void *systemWin)
 		fprintf (stderr, "Could not create Control : %d\n", (int)status);
 		return false;
 	}
+	EventTypeSpec keyWorkaroundEvents[] = {
+		{ kEventClassTextInput, kEventTextInputUnicodeForKeyEvent }
+	};
+	InstallWindowEventHandler ((WindowRef)systemWin, carbonEventHandler, GetEventTypeCount (keyWorkaroundEvents), keyWorkaroundEvents, this, NULL);
+	
 	SetControlDragTrackingEnabled (controlRef, true);
 	SetAutomaticControlDragTrackingEnabledForWindow ((WindowRef)systemWin, true);
 	#if !AU // for AudioUnits define AU and embed the controlRef at your AUCarbonViewBase
@@ -9312,7 +9319,7 @@ static short keyTable[] = {
 #define   kHIViewFeatureGetsFocusOnClick (1 << 8)
 #endif
 
-bool hiToolboxAllowFocusChange = false;	// if this is true, the hitoolbox will set focus on our control and we will receive key down events. The drawback is that the host doesn't get any keys anymore...
+bool hiToolboxAllowFocusChange = true;
 
 //---------------------------------------------------------------------------------------
 pascal OSStatus CFrame::carbonEventHandler (EventHandlerCallRef inHandlerCallRef, EventRef inEvent, void *inUserData)
@@ -9632,6 +9639,20 @@ pascal OSStatus CFrame::carbonEventHandler (EventHandlerCallRef inHandlerCallRef
 					frame->onWheel (context, p, wheelDelta);
 					context->forget ();
 					result = noErr;
+					break;
+				}
+			}
+			break;
+		}
+		case kEventClassTextInput:
+		{
+			switch (eventKind)
+			{
+				case kEventTextInputUnicodeForKeyEvent:
+				{
+					// The Standard Event Handler of a window would return noErr even though no one has handled the key event. 
+					// This prevents the standard handler to be called for this event.
+					result = eventPassToNextTargetErr;
 					break;
 				}
 			}
