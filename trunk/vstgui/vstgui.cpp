@@ -2,7 +2,7 @@
 // VST Plug-Ins SDK
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 //
-// Version 3.0       $Date: 2005-07-29 10:05:17 $ 
+// Version 3.0       $Date: 2005-07-31 13:45:00 $ 
 //
 // Added Motif/Windows vers.: Yvan Grabit              01.98
 // Added Mac version        : Charlie Steinberg        02.98
@@ -9650,8 +9650,17 @@ pascal OSStatus CFrame::carbonEventHandler (EventHandlerCallRef inHandlerCallRef
 			{
 				case kEventTextInputUnicodeForKeyEvent:
 				{
-					// The Standard Event Handler of a window would return noErr even though no one has handled the key event. 
-					// This prevents the standard handler to be called for this event.
+					// The "Standard Event Handler" of a window would return noErr even though no one has handled the key event. 
+					// This prevents the "Standard Handler" to be called for this event, with the exception of the tab key as it is used for control focus changes.
+					EventRef rawKeyEvent;
+					GetEventParameter (inEvent, kEventParamTextInputSendKeyboardEvent, typeEventRef, NULL, sizeof (EventRef), NULL, &rawKeyEvent);
+					if (rawKeyEvent)
+					{
+						UInt32 keyCode = 0;
+						GetEventParameter (rawKeyEvent, kEventParamKeyCode, typeUInt32, NULL, sizeof (UInt32), NULL, &keyCode);
+						if (keyCode == keyTable[VKEY_TAB+1])
+							return result;
+					}
 					result = eventPassToNextTargetErr;
 					break;
 				}
