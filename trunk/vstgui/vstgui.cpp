@@ -2,7 +2,7 @@
 // VST Plug-Ins SDK
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 //
-// Version 3.0       $Date: 2005-07-31 13:45:00 $ 
+// Version 3.0       $Date: 2005-08-12 12:45:00 $ 
 //
 // Added Motif/Windows vers.: Yvan Grabit              01.98
 // Added Mac version        : Charlie Steinberg        02.98
@@ -3821,6 +3821,12 @@ bool CView::onWheel (CDrawContext *pContext, const CPoint &where, float distance
 }
 
 //------------------------------------------------------------------------
+bool CView::onWheel (CDrawContext *pContext, const CPoint &where, const CMouseWheelAxis axis, float distance)
+{
+	return onWheel (pContext, where, distance);
+}
+
+//------------------------------------------------------------------------
 void CView::update (CDrawContext *pContext)
 {
 	if (isDirty ())
@@ -4624,8 +4630,8 @@ long CFrame::onKeyUp (VstKeyCode& keyCode)
 	return result;
 }
 
-//-----------------------------------------------------------------------------
-bool CFrame::onWheel (CDrawContext *pContext, const CPoint &where, float distance)
+//------------------------------------------------------------------------
+bool CFrame::onWheel (CDrawContext *pContext, const CPoint &where, const CMouseWheelAxis axis, float distance)
 {
 	bool result = false;
 
@@ -4639,7 +4645,7 @@ bool CFrame::onWheel (CDrawContext *pContext, const CPoint &where, float distanc
 			pContext = createDrawContext ();
 		}
 
-		result = view->onWheel (pContext, where, distance);
+		result = view->onWheel (pContext, where, axis, distance);
 
 		if (localContext)
 			pContext->forget ();
@@ -4649,6 +4655,12 @@ bool CFrame::onWheel (CDrawContext *pContext, const CPoint &where, float distanc
 	#endif
 	}
 	return result;
+}
+
+//-----------------------------------------------------------------------------
+bool CFrame::onWheel (CDrawContext *pContext, const CPoint &where, float distance)
+{
+	return onWheel (pContext, where, kMouseWheelAxisY, distance);
 }
 		
 //-----------------------------------------------------------------------------
@@ -6082,7 +6094,7 @@ long CViewContainer::onKeyUp (VstKeyCode& keyCode)
 }
 
 //-----------------------------------------------------------------------------
-bool CViewContainer::onWheel (CDrawContext *pContext, const CPoint &where, float distance)
+bool CViewContainer::onWheel (CDrawContext *pContext, const CPoint &where, const CMouseWheelAxis axis, float distance)
 {
 	bool result = false;
 	CView *view = getViewAt (where);
@@ -6095,11 +6107,17 @@ bool CViewContainer::onWheel (CDrawContext *pContext, const CPoint &where, float
 		CCoord save[4];
 		modifyDrawContext (save, pContext);
 	
-		result = view->onWheel (pContext, where2, distance);
+		result = view->onWheel (pContext, where2, axis, distance);
 
 		restoreDrawContext (pContext, save);
 	}
 	return result;
+}
+
+//-----------------------------------------------------------------------------
+bool CViewContainer::onWheel (CDrawContext *pContext, const CPoint &where, float distance)
+{
+	return onWheel (pContext, where, kMouseWheelAxisY, distance);
 }
 
 //-----------------------------------------------------------------------------
@@ -9625,6 +9643,7 @@ pascal OSStatus CFrame::carbonEventHandler (EventHandlerCallRef inHandlerCallRef
 			{
 				case kEventMouseWheelMoved:
 				{
+					UInt32 modifiers;
 					HIPoint windowHIPoint;
 					SInt32 wheelDelta;
 					EventMouseWheelAxis wheelAxis;
@@ -9633,10 +9652,14 @@ pascal OSStatus CFrame::carbonEventHandler (EventHandlerCallRef inHandlerCallRef
 					GetEventParameter (inEvent, kEventParamMouseWheelAxis, typeMouseWheelAxis, NULL, sizeof (EventMouseWheelAxis), NULL, &wheelAxis);
 					GetEventParameter (inEvent, kEventParamMouseWheelDelta, typeLongInteger, NULL, sizeof (SInt32), NULL, &wheelDelta);
 					GetEventParameter (inEvent, kEventParamWindowMouseLocation, typeHIPoint, NULL, sizeof (HIPoint), NULL, &windowHIPoint);
+					GetEventParameter (inEvent, kEventParamKeyModifiers, typeUInt32, NULL, sizeof (UInt32), NULL, &modifiers);
 					HIViewConvertPoint (&windowHIPoint, HIViewGetRoot (windowRef), frame->controlRef);
 					CPoint p (windowHIPoint.x, windowHIPoint.y);
 					CDrawContext* context = frame->createDrawContext ();
-					frame->onWheel (context, p, wheelDelta);
+					CMouseWheelAxis axis = kMouseWheelAxisX;
+					if (wheelAxis == kEventMouseWheelAxisY && !(modifiers & cmdKey))
+						axis = kMouseWheelAxisY;
+					frame->onWheel (context, p, axis, wheelDelta);
 					context->forget ();
 					result = noErr;
 					break;

@@ -62,7 +62,7 @@ public:
 	virtual void setContainerSize (const CRect& cs); ///< set the virtual size of this container
 	virtual void addView (CView *pView);
 	virtual void drawBackgroundRect (CDrawContext *pContext, CRect& _updateRect);
-	virtual bool onWheel (CDrawContext *pContext, const CPoint &where, float distance);
+	virtual bool onWheel (CDrawContext *pContext, const CPoint &where, const CMouseWheelAxis axis, float distance);
 	virtual void valueChanged (CDrawContext *pContext, CControl *pControl);
 
 	virtual CScrollbar* getVerticalScrollbar () const { return vsb; }

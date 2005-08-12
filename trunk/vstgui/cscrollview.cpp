@@ -265,11 +265,16 @@ void CScrollView::drawBackgroundRect (CDrawContext *pContext, CRect& _updateRect
 }
 
 //-----------------------------------------------------------------------------
-bool CScrollView::onWheel (CDrawContext *pContext, const CPoint &where, float distance)
+bool CScrollView::onWheel (CDrawContext *pContext, const CPoint &where, const CMouseWheelAxis axis, float distance)
 {
-	bool result = CViewContainer::onWheel (pContext, where, distance);
-	if (!result && vsb)
-		result = vsb->onWheel (pContext, where, distance);
+	bool result = CViewContainer::onWheel (pContext, where, axis, distance);
+	if (!result)
+	{
+		if (vsb && axis == kMouseWheelAxisY)
+			result = vsb->onWheel (pContext, where, distance);
+		else if (hsb && axis == kMouseWheelAxisX)
+			result = hsb->onWheel (pContext, where, distance);
+	}
 	return result;
 }
 
