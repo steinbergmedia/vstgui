@@ -3,7 +3,7 @@
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 // Standard Control Objects
 //
-// Version 3.0       $Date: 2005-07-22 08:55:08 $
+// Version 3.0       $Date: 2005-08-12 12:45:00 $
 //
 // Added new objects        : Michael Schmidt          08.97
 // Added new objects        : Yvan Grabit              01.98
@@ -51,7 +51,7 @@
 
 BEGIN_NAMESPACE_VSTGUI
 
-#ifdef __MACH__
+#ifdef __MACH__ && __MWERKS__
  #ifndef cosf
  #define cosf (float)cos
  #endif
@@ -954,6 +954,7 @@ CTextEdit::CTextEdit (const CRect &size, CControlListener *listener, long tag,
 #if QUARTZ
 	textControl = 0;
 #endif
+	setWantsFocus (true);
 }
 
 //------------------------------------------------------------------------

@@ -1,3 +1,7 @@
+2005-08-12 arne
+
+	* initial support for X/Y mouse wheel (currently only macosx, don't know how ms windows handles this)
+	
 2005-07-29 arne
 
 	* bugfix: CDrawContext doesn't remember font style and does not change the font if only the font style changed.

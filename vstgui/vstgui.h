@@ -2,7 +2,7 @@
 // VST Plug-Ins SDK
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 //
-// Version 3.0       $Date: 2005-07-29 10:05:17 $
+// Version 3.0       $Date: 2005-08-12 12:45:00 $
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
@@ -488,6 +488,12 @@ enum CDrawStyle
 	kDrawFilledAndStroked
 };
 
+enum CMouseWheelAxis
+{
+	kMouseWheelAxisX = 0,
+	kMouseWheelAxisY
+};
+
 //-----------------------------------------------------------------------------
 // CReferenceCounter Declaration (Reference Counting)
 //-----------------------------------------------------------------------------
@@ -816,6 +822,7 @@ public:
 	virtual long onKeyUp (VstKeyCode& keyCode);		///< called if a key up event occurs and this view has focus
 
 	virtual bool onWheel (CDrawContext *pContext, const CPoint &where, float distance);	///< called if a mouse wheel event is happening over this view
+	virtual bool onWheel (CDrawContext *pContext, const CPoint &where, const CMouseWheelAxis axis, float distance);	///< called if a mouse wheel event is happening over this view
 
 	virtual bool onDrop (CDrawContext* context, CDragContainer* drag, const CPoint& where) { return false; }	///< called if a drag is dropped onto this view
 	virtual void onDragEnter (CDrawContext* context, CDragContainer* drag, const CPoint& where) {}				///< called if a drag is entering this view
@@ -954,6 +961,7 @@ public:
 	virtual void drawRect (CDrawContext *pContext, const CRect& updateRect);
 	virtual void mouse (CDrawContext *pContext, CPoint &where, long buttons = -1);
 	virtual bool onWheel (CDrawContext *pContext, const CPoint &where, float distance);
+	virtual bool onWheel (CDrawContext *pContext, const CPoint &where, const CMouseWheelAxis axis, float distance);
 	virtual void update (CDrawContext *pContext);
 	virtual bool hitTest (const CPoint& where, const long buttons = -1);
 	virtual long onKeyDown (VstKeyCode& keyCode);
@@ -1076,6 +1084,7 @@ public:
 	virtual void draw (CView *pView = 0);
 	virtual void mouse (CDrawContext *pContext, CPoint &where, long buttons = -1);
 	virtual bool onWheel (CDrawContext *pContext, const CPoint &where, float distance);
+	virtual bool onWheel (CDrawContext *pContext, const CPoint &where, const CMouseWheelAxis axis, float distance);
 	virtual long onKeyDown (VstKeyCode& keyCode);
 	virtual long onKeyUp (VstKeyCode& keyCode);
 	virtual void update (CDrawContext *pContext);
