@@ -2,7 +2,7 @@
 // VST Plug-Ins SDK
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 //
-// Version 3.0       $Date: 2005-08-22 18:16:43 $ 
+// Version 3.5       $Date: 2005-08-22 18:40:55 $ 
 //
 // Added Motif/Windows vers.: Yvan Grabit              01.98
 // Added Mac version        : Charlie Steinberg        02.98
@@ -59,14 +59,7 @@
 
 //---Some defines-------------------------------------
 #define USE_ALPHA_BLEND			QUARTZ || USE_LIBPNG
-#define USE_CLIPPING_DRAWRECT	1
 #define MAC_OLD_DRAG			1
-#define NEW_UPDATE_MECHANISM	1
-
-#if !WINDOWS
-// For OS which allows a lot of Drawing contexts
-#define USE_GLOBAL_CONTEXT 1
-#endif
 
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
@@ -3447,27 +3440,10 @@ void CView::update (CDrawContext *pContext)
 {
 	if (isDirty ())
 	{
-		#if NEW_UPDATE_MECHANISM
 		if (pContext)
 			redrawRect (pContext, size);
 		else
 			redraw ();
-		#else
-		#if USE_ALPHA_BLEND
-		if (pContext)
-		{
-			if (bTransparencyEnabled)
-				getFrame ()->drawRect (pContext, size);
-			else
-				draw (pContext);
-		}
-		#else
-		if (pContext)
-			draw (pContext);
-		#endif
-		else
-			redraw ();
-		#endif // !NEW_UPDATE_MECHANISM
 		setDirty (false);
 	}
 }
@@ -3711,9 +3687,6 @@ CFrame::CFrame (const CRect &inSize, void *inSystemWindow, void *inEditor)
 	initFrame (pSystemWindow);
 
 #if WINDOWS
-	#if USE_GLOBAL_CONTEXT
-	pFrameContext = new CDrawContext (this, 0, getSystemWindow ());
-	#endif
 
 #elif MAC
 	Gestalt (gestaltSystemVersion, &pSystemVersion);
@@ -4065,21 +4038,17 @@ void CFrame::drawRect (CDrawContext *pContext, const CRect& updateRect)
 		pContext = createDrawContext ();
 	}
 
-	#if USE_CLIPPING_DRAWRECT
 	CRect oldClip;
 	pContext->getClipRect (oldClip);
 	CRect newClip (updateRect);
 	newClip.bound (oldClip);
 	pContext->setClipRect (newClip);
-	#endif
 	
 	// draw the background and the children
 	if (updateRect.getWidth () > 0 && updateRect.getHeight () > 0)
 		CViewContainer::drawRect (pContext, updateRect);
 
-	#if USE_CLIPPING_DRAWRECT
 	pContext->setClipRect (oldClip);
-	#endif
 
 	if (localContext)
 		pContext->forget ();
@@ -4213,25 +4182,17 @@ void CFrame::update (CDrawContext *pContext)
 	}
 	else
 	{
-		#if USE_CLIPPING_DRAWRECT
 		CRect oldClipRect;
 		dc->getClipRect (oldClipRect);
-		#endif
-		#if NEW_UPDATE_MECHANISM
 		if (pModalView && pModalView->isDirty ())
 			pModalView->update (dc);
-		#endif
 		FOREACHSUBVIEW
-			#if USE_CLIPPING_DRAWRECT
 			CRect viewSize (pV->size);
 			viewSize.bound (oldClipRect);
 			dc->setClipRect (viewSize);
-			#endif
 			pV->update (dc);
 		ENDFOR
-		#if USE_CLIPPING_DRAWRECT
 		dc->setClipRect (oldClipRect);
-		#endif
 	}
 
 	#if MACX && !QUARTZ
@@ -4980,9 +4941,7 @@ CViewContainer::CViewContainer (const CRect &rect, CFrame *pParent, CBitmap *pBa
 	this->pParentFrame = pParent;
 	setBackground (pBackground);
 	backgroundColor = kBlackCColor;	
-	#if NEW_UPDATE_MECHANISM
 	mode = kOnlyDirtyUpdate;
-	#endif
 }
 
 //-----------------------------------------------------------------------------
@@ -5238,7 +5197,6 @@ void CViewContainer::draw (CDrawContext *pContext)
 
 	CRect r (0, 0, size.width (), size.height ());
 
- 	#if USE_CLIPPING_DRAWRECT
 	CRect oldClip;
 	pContext->getClipRect (oldClip);
 	CRect oldClip2 (oldClip);
@@ -5248,7 +5206,6 @@ void CViewContainer::draw (CDrawContext *pContext)
 	CRect newClip (r);
 	newClip.bound (oldClip);
 	pC->setClipRect (newClip);
-	#endif
 
 	// draw the background
 	if (pBackground)
@@ -5267,17 +5224,13 @@ void CViewContainer::draw (CDrawContext *pContext)
 	
 	// draw each view
 	FOREACHSUBVIEW
-		#if USE_CLIPPING_DRAWRECT
 		CRect vSize (pV->size);
 		vSize.bound (oldClip);
 		pC->setClipRect (vSize);
-		#endif
 		pV->draw (pC);
 	ENDFOR
 
-	#if USE_CLIPPING_DRAWRECT
 	pC->setClipRect (oldClip2);
-	#endif
 	
 	// transfert offscreen
 	if (bDrawInOffscreen)
@@ -5359,7 +5312,6 @@ void CViewContainer::drawRect (CDrawContext *pContext, const CRect& _updateRect)
 	CRect clientRect (updateRect);
 	clientRect.offset (-size.left, -size.top);
 
-	#if USE_CLIPPING_DRAWRECT
 	CRect oldClip;
 	pContext->getClipRect (oldClip);
 	CRect oldClip2 (oldClip);
@@ -5369,7 +5321,6 @@ void CViewContainer::drawRect (CDrawContext *pContext, const CRect& _updateRect)
 	CRect newClip (clientRect);
 	newClip.bound (oldClip);
 	pC->setClipRect (newClip);
-	#endif
 	
 	// draw the background
 	drawBackgroundRect (pC, clientRect);
@@ -5379,13 +5330,11 @@ void CViewContainer::drawRect (CDrawContext *pContext, const CRect& _updateRect)
 	FOREACHSUBVIEW
 		if (pV->checkUpdate (clientRect))
 		{
-			#if USE_CLIPPING_DRAWRECT
 			CRect viewSize (pV->size);
 			viewSize.bound (newClip);
 			if (viewSize.getWidth () == 0 || viewSize.getHeight () == 0)
 				continue;
 			pC->setClipRect (viewSize);
-			#endif
 
 			bool wasDirty = pV->isDirty ();
 			pV->drawRect (pC, clientRect);
@@ -5405,9 +5354,7 @@ void CViewContainer::drawRect (CDrawContext *pContext, const CRect& _updateRect)
 		}
 	ENDFOR
 
-	#if USE_CLIPPING_DRAWRECT
 	pC->setClipRect (oldClip2);
-	#endif
 
 	// transfer offscreen
 	if (bDrawInOffscreen)
@@ -5698,23 +5645,8 @@ void CViewContainer::update (CDrawContext *pContext)
 		case kNormalUpdate:
 			if (isDirty ())
 			{
-				#if NEW_UPDATE_MECHANISM
 				CRect ur (0, 0, size.width (), size.height ());
 				redrawRect (pContext, ur);
-				#else
-				#if USE_ALPHA_BLEND
-				if (bTransparencyEnabled)
-				{
-					CRect updateRect (size);
-					CPoint offset (0,0);
-					localToFrame (offset);
-					updateRect.offset (offset.x, offset.y);
-					getFrame ()->drawRect (pContext, updateRect);
-				}
-				else
-				#endif
-				draw (pContext);
-				#endif // !NEW_UPDATE_MECHANISM
 				setDirty (false);
 			}
 		break;
@@ -5722,7 +5654,6 @@ void CViewContainer::update (CDrawContext *pContext)
 		//---Redraw only dirty controls-----
 		case kOnlyDirtyUpdate:
 		{
-			#if NEW_UPDATE_MECHANISM
 			if (bDirty)
 			{
 				CRect ur (0, 0, size.width (), size.height ());
@@ -5746,87 +5677,6 @@ void CViewContainer::update (CDrawContext *pContext)
 					}
 				ENDFOR
 			}
-			#else
-			#if USE_ALPHA_BLEND
-			if (bTransparencyEnabled)
-			{
-				if (bDirty)
-				{
-					CRect updateRect (size);
-					CPoint offset (0,0);
-					localToFrame (offset);
-					updateRect.offset (offset.x, offset.y);
-					getFrame ()->drawRect (pContext, updateRect);
-				}
-				else
-				{
-					CRect updateRect (size);
-					updateRect.offset (-size.left, -size.top);
-					FOREACHSUBVIEW
-						if (pV->isDirty () && pV->checkUpdate (updateRect))
-						{
-							if (pV->notify (this, kMsgCheckIfViewContainer))
-							{
-								pV->update (pContext);
-							}
-							else
-							{
-								CPoint offset;
-								CRect viewSize (pV->size);
-								pV->localToFrame (offset);
-								viewSize.offset (offset.x, offset.y);
-								getFrame ()->drawRect (pContext, viewSize);
-							}
-						}
-					ENDFOR
-				}
-				setDirty (false);
-				return;
-			}
-			#endif
-			if (bDirty)
-				draw (pContext);
-			else if (bDrawInOffscreen && pOffscreenContext) 
-			{
-				bool doCopy = false;
-				if (isDirty ())
-					doCopy = true;
-
-				FOREACHSUBVIEW
-					pV->update (pOffscreenContext);
-				ENDFOR
-
-				// transfert offscreen
-				if (doCopy)
-					pOffscreenContext->copyFrom (pContext, size);
-			}
-			else
-			{
-				long save[4];
-				modifyDrawContext (save, pContext);
-
-				FOREACHSUBVIEW
-					if (pV->isDirty ())
-					{
-						long oldMode = 0;
-						CViewContainer* child = 0;
-						if (pV->notify (this, kMsgCheckIfViewContainer))
-						{
-							child = (CViewContainer*)pV;
-							oldMode = child->getMode ();
-							child->setMode (kNormalUpdate);
-						}
-						CRect viewSize (pV->size);
-						drawBackgroundRect (pContext, viewSize);
-						pV->update (pContext);
-						if (child)
-							child->setMode (oldMode);
-					}
-				ENDFOR
-
-				restoreDrawContext (pContext, save);
-			}
-			#endif // !NEW_UPDATE_MECHANISM
 			setDirty (false);
 		break;
 		}
