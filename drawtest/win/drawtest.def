@@ -1,3 +1,0 @@
-LIBRARY			drawtest
-DESCRIPTION		'drawtest'
-EXPORTS			main

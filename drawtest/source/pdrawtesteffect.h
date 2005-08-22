@@ -33,7 +33,6 @@ public:
 	virtual void process (float **inputs, float **outputs, long sampleFrames);
 	virtual void processReplacing (float **inputs, float **outputs, long sampleFrames);
 
-	long canDo (char* text);
 };
 
 #endif

@@ -20,25 +20,20 @@
 #ifndef __pdrawtesteditor__
 #define __pdrawtesteditor__
 
-#ifndef __vstcontrols__
-#include "vstcontrols.h"
+#ifndef __vstgui__
+#include "vstgui.h"
 #endif
 
-class DrawTestEditor : public AEffGUIEditor, CControlListener
+class DrawTestEditor : public AEffGUIEditor
 {
 public:
-	DrawTestEditor (void* effect);
-	virtual ~DrawTestEditor ();
-
-	void setTabView (CFrame* frame, const CRect& r, long position);
-
-	virtual void valueChanged (CDrawContext *pContext, CControl *pControl);
+	DrawTestEditor (AudioEffectX* effect);
+	~DrawTestEditor ();
 
 protected:
 	virtual long open (void *ptr);
 	virtual void close ();
 
-	CBitmap* backgroundBitmap;
 };
 
 #endif

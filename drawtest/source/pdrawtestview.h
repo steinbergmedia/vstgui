@@ -24,8 +24,6 @@
 #include "vstgui.h"
 #endif
 
-BEGIN_NAMESPACE_VSTGUI
-
 class CDrawTestView : public CView
 {
 public:
@@ -38,7 +36,5 @@ public:
 protected:
 	int value;
 };
-
-END_NAMESPACE_VSTGUI
 
 #endif
