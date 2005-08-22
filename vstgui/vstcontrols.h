@@ -3,7 +3,7 @@
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 // Standard Control Objects
 //
-// Version 3.0       $Date: 2005-07-14 10:07:17 $
+// Version 3.0       $Date: 2005-08-22 18:16:43 $
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
@@ -435,9 +435,7 @@ public:
 	virtual void setNbItemsPerColumn (long val) { nbItemsPerColumn = val; }
 	virtual long getNbItemsPerColumn () const { return nbItemsPerColumn; }
 
-#if MOTIF
-	void    setCurrentSelected (void *itemSelected);
-#elif MAC
+#if MAC
 	short   getMenuID () const { return menuID; }
 #endif
 
@@ -467,9 +465,7 @@ protected:
 	COptionMenu **submenuEntry;
 	bool    *check;
 
-#if MOTIF
-	void    *itemWidget[MAX_ENTRY];
-#elif MAC
+#if MAC
 	short   menuID;
 #endif
 
