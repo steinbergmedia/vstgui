@@ -3,7 +3,7 @@
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 // Standard Control Objects
 //
-// Version 3.0       $Date: 2005-08-12 12:45:00 $
+// Version 3.0       $Date: 2005-08-22 18:16:43 $
 //
 // Added new objects        : Michael Schmidt          08.97
 // Added new objects        : Yvan Grabit              01.98
@@ -1131,13 +1131,7 @@ LONG_PTR WINAPI WindowProcEdit (HWND hwnd, UINT message, WPARAM wParam, LPARAM l
 }
 
 //------------------------------------------------------------------------
-#elif MOTIF
-#include <Xm/Text.h>
-extern XFontStruct *gFontStructs[];
-#endif
-
-//------------------------------------------------------------------------
-#if BEOS
+#elif BEOS
 #include <TextView.h>
 #include <Window.h>
 
@@ -1763,48 +1757,6 @@ void CTextEdit::takeFocus (CDrawContext *pContext)
 	looseFocus ();
 	
 #endif
-#elif MOTIF
-	// we have to add the Text to the parent !!
-	Dimension posX, posY;
-	Widget widget = (Widget)(getFrame ()->getSystemWindow ());
-	XtVaGetValues (widget, XmNx, &posX, XmNy, &posY, 0);
-  
-	Arg args[20];
-	int n = 0;
-	XtSetArg (args[n], XmNx, size.left + posX); n++;
-	XtSetArg (args[n], XmNy, size.top + posY); n++;
-	XtSetArg (args[n], XmNwidth, size.width () + 1); n++;
-	XtSetArg (args[n], XmNheight, size.height () + 2); n++;
-	
-	XtSetArg (args[n], XmNvalue, text); n++;
-	
-	XtSetArg (args[n], XmNshadowType, XmSHADOW_IN); n++;
-	XtSetArg (args[n], XmNshadowThickness, 0); n++;
-	XtSetArg (args[n], XmNcursorPositionVisible, true); n++;
-
-	XtSetArg (args[n], XmNmarginWidth, 0); n++;
-	XtSetArg (args[n], XmNmarginHeight, 0); n++;
-	XtSetArg (args[n], XmNresizeHeight, True); n++;
-	XtSetArg (args[n], XmNborderWidth, 0); n++;
-	XtSetArg (args[n], XmNeditMode, XmSINGLE_LINE_EDIT); n++;
-	
-	// get/set the current font
-	XmFontList fl = 0;
-	XFontStruct* fs = fontStructs[fontID];
-	if (fs)
-	{
-		XmFontListEntry entry = XmFontListEntryCreate (XmFONTLIST_DEFAULT_TAG, XmFONT_IS_FONT, fs);
-		XmFontList fl = XmFontListAppendEntry (0, entry);
-		XtSetArg (args[n], XmNfontList, fl); n++;
-	}
-
-	platformControl = XmCreateText (XtParent (widget), "Text", args, n);
-	XtManageChild ((Widget)platformControl);
-	if (fl)
-		XmFontListFree (fl);
-	XmTextSetSelection ((Widget)platformControl, 0, strlen (text), 0);
-	XmTextSetHighlight ((Widget)platformControl, 0, strlen (text), XmHIGHLIGHT_SELECTED);
-
 #elif BEOS
 	BView* plugView = (BView*) getFrame ()->getSystemWindow ();
 	CRect rect;
@@ -1942,14 +1894,6 @@ void CTextEdit::looseFocus (CDrawContext *pContext)
 	strcpy (text, (char*)platformControl);
 	delete[] platformControl;
 	#endif
-#elif MOTIF
-	char *pNewText = XmTextGetString ((Widget)platformControl);
-	strcpy (text, pNewText);
-	XtFree (pNewText);
-	
-	XtUnmanageChild ((Widget)platformControl);
-	XtDestroyWidget ((Widget)platformControl);
-
 #elif BEOS
 	BTextView* textView = (BTextView*) platformControl;
 	strncpy (text, textView->Text (), 255);
@@ -2980,31 +2924,6 @@ void COptionMenu::mouse (CDrawContext *pContext, CPoint &where, long button)
 }
 
 //------------------------------------------------------------------------
-#if MOTIF
-#include <Xm/RowColumn.h>
-#include <Xm/ToggleB.h>
-#include <Xm/PushB.h>
-#include <Xm/SeparatoG.h>
-
-static void _unmapCallback (Widget item, XtPointer clientData, XtPointer callData);
-static void _activateCallback (Widget item, XtPointer clientData, XtPointer callData);
-
-//------------------------------------------------------------------------
-static void _unmapCallback (Widget item, XtPointer clientData, XtPointer callData)
-{
-	COptionMenu *optionMenu= (COptionMenu*)clientData;
-	optionMenu->looseFocus ();
-}
-
-//------------------------------------------------------------------------
-static void _activateCallback (Widget item, XtPointer clientData, XtPointer callData)
-{
-	COptionMenu *optionMenu= (COptionMenu*)clientData;
-	optionMenu->setCurrentSelected ((void*)item);
-}
-#endif
-
-//------------------------------------------------------------------------
 #if BEOS
 #include <PopUpMenu.h>
 #include <MenuItem.h>
@@ -3623,72 +3542,6 @@ void COptionMenu::takeFocus (CDrawContext *pContext)
 			pContext->forget ();
 	}
 
-#elif MOTIF
-	Arg args[10];
-	int n = 0;
-	
-	// get the position of the pParent
-	CRect rect;
-	getFrame ()->getSize (&rect);
-
-	if (pContext)
-	{
-		rect.left += pContext->offset.h;
-		rect.top  += pContext->offset.v;
-	}
-
-	// create a popup menu
-	int offset;
-	if (style & kPopupStyle)
-		offset = (int)(rect.top + size.top);
-	else
-		offset = (int)(rect.top + size.bottom);
-
-	XtSetArg (args[n], XmNx, rect.left + size.left); n++;
-	XtSetArg (args[n], XmNy, offset); n++;
-	XtSetArg (args[n], XmNmenuHistory, currentIndex); n++;
-	XtSetArg (args[n], XmNtraversalOn, true); n++;
-
-	platformControl = (void*)XmCreatePopupMenu ((Widget)(getFrame ()->getSystemWindow ()), 
-			"popup", args, n);
-
-	XtAddCallback ((Widget)platformControl, XmNunmapCallback, _unmapCallback, this);
-
-	// insert the menu items
-	for (long i = 0; i < nbEntries; i++)
-	{
-		if (!strcmp (entry[i], kMenuSeparator))
-		{
-			itemWidget[i] = (void*)XtCreateManagedWidget ("separator", 
-							 xmSeparatorGadgetClass, (Widget)platformControl, 0, 0);
-		}
-		else
-		{
-			if (multipleCheck)
-			{
-				itemWidget[i] = (void*)XtVaCreateManagedWidget (entry[i], 
-					xmToggleButtonWidgetClass, (Widget)platformControl,
-					XmNset, check[i], XmNvisibleWhenOff, false, 0);
-				XtAddCallback ((Widget)itemWidget[i], XmNvalueChangedCallback, _activateCallback, this);
-			}
-			else if (style & kCheckStyle)
-			{
-				itemWidget[i] = (void*)XtVaCreateManagedWidget (entry[i], 
-					xmToggleButtonWidgetClass, (Widget)platformControl,
-					XmNset, (i == currentIndex) ? true : false, XmNvisibleWhenOff, false, 0);
-				XtAddCallback ((Widget)itemWidget[i], XmNvalueChangedCallback, _activateCallback, this);
-			}
-			else 
-			{
-				itemWidget[i] = (void*)XtVaCreateManagedWidget (entry[i], 
-					xmPushButtonWidgetClass, (Widget)platformControl, 0);
-				XtAddCallback ((Widget)itemWidget[i], XmNactivateCallback, _activateCallback, this);
-			}
-		}
-	}
-
-	XtManageChild ((Widget)platformControl);
-
 #elif BEOS
 	BPopUpMenu* popup = new BPopUpMenu ("popup", false, false);
 	BMessage*	message;
@@ -3764,47 +3617,10 @@ void COptionMenu::looseFocus (CDrawContext *pContext)
 
 #if WINDOWS
 #elif MAC
-#elif MOTIF
-	for (long i = 0; i < nbEntries; i++)
-		if (itemWidget[i])
-			XtDestroyWidget ((Widget)itemWidget[i]);
-
-	if (platformControl)
-	{
-		XtUnmanageChild ((Widget)platformControl);
-		XtDestroyWidget ((Widget)platformControl);
-	}
 #endif
 
 	platformControl = 0;
 }
-
-#if MOTIF
-//------------------------------------------------------------------------
-void COptionMenu::setCurrentSelected (void *itemSelected)
-{
-	// retrieve the current index
-	if (itemSelected != 0)
-	{
-		for (long i = 0; i < nbEntries; i++)
-			if (itemWidget[i] == itemSelected)
-			{
-				currentIndex = i;
-				break;
-			}
-	}
-
-	// update dependency
-	CDrawContext *pContext = new CDrawContext (getFrame (), (void*)getFrame ()->getGC (), (void*)getFrame ()->getWindow ());
-
-	setValue (currentIndex);
-
-	if (listener)
-		listener->valueChanged (pContext, this);
-	delete pContext;
-}
-#endif
-
 
 //------------------------------------------------------------------------
 // CAnimKnob

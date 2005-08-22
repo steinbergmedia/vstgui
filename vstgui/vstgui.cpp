@@ -2,7 +2,7 @@
 // VST Plug-Ins SDK
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 //
-// Version 3.0       $Date: 2005-08-12 12:45:00 $ 
+// Version 3.0       $Date: 2005-08-22 18:16:43 $ 
 //
 // Added Motif/Windows vers.: Yvan Grabit              01.98
 // Added Mac version        : Charlie Steinberg        02.98
@@ -209,72 +209,6 @@ END_NAMESPACE_VSTGUI
 
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
-#elif MOTIF
-
- #define USE_XPM     0
- #define TEST_REGION 0
-
- #if USE_XPM
-  #include <X11/xpm.h>
- #endif
-
- #include <X11/Xlib.h>
- #include <Xm/DrawingA.h>
- #include <assert.h>
- #include <Xm/MwmUtil.h>
- #include <Xm/DialogS.h>
- #include <time.h>
-
- #if SGI
-   #include <sys/syssgi.h>
- #elif SUN
- #elif LINUX
- #endif
-
- #define XDRAWPARAM pDisplay, (Window)pWindow, (GC)pSystemContext
- #define XWINPARAM  pDisplay, (Window)pWindow
- #define XGCPARAM   pDisplay, (GC)pSystemContext
-
-// init the static variable about font
-bool gFontInit = false;
-XFontStruct *gFontStructs[] = {0, 0, 0, 0, 0, 0, 0};
-
-struct SFontTable {char* name; char* string;};
-
-static SFontTable gFontTable[] = {
-  {"SystemFont",        "-adobe-helvetica-bold-r-*-*-12-*-*-*-*-*-*-*"},   // kSystemFont
-  {"NormalFontVeryBig", "-adobe-helvetica-medium-r-*-*-18-*-*-*-*-*-*-*"}, // kNormalFontVeryBig
-  {"NormalFontBig",     "-adobe-helvetica-medium-r-normal-*-14-*-*-*-*-*-*-*"}, // kNormalFontBig
-  {"NormalFont",        "-adobe-helvetica-medium-r-*-*-12-*-*-*-*-*-*-*"}, // kNormalFont
-  {"NormalFontSmall",   "-adobe-helvetica-medium-r-*-*-10-*-*-*-*-*-*-*"}, // kNormalFontSmall
-  {"NormalFontSmaller", "-adobe-helvetica-medium-r-*-*-9-*-*-*-*-*-*-*"},  // kNormalFontSmaller
-  {"NormalFontVerySmall", "-adobe-helvetica-medium-r-*-*-8-*-*-*-*-*-*-*"}, // kNormalFontVerySmall
-  {"SymbolFont",        "-adobe-symbol-medium-r-*-*-12-*-*-*-*-*-*-*"}     // kSymbolFont
-};
-
-long gStandardFontSize[] = { 12, 16, 14, 12, 10, 9, 8, 10 };
-
-//-----------------------------------------------------------------------------
-// declaration of different local functions
-long convertPoint2Angle (CPoint &pm, CPoint &pt);
-
-// callback for the frame
-void _drawingAreaCallback (Widget widget, XtPointer clientData, XtPointer callData);
-void _eventHandler (Widget w, XtPointer clientData, XEvent *event, char *p);
-void _destroyCallback (Widget widget, XtPointer clientData, XtPointer callData);
-
-// stuff for color
-long getIndexColor8Bit (CColor color, Display *pDisplay, Colormap colormap);
-long CDrawContext::nbNewColor = 0;
-static CColor paletteNewColor[256];
-
-//------ our user-defined XPM functions
-bool xpmGetValues (char **ppDataXpm, long *pWidth, long *pHeight, long *pNcolor, long *pCpp);
-
- #if !USE_XPM
-  #include "xpmloader.cpp"
- #endif
-
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 #elif MAC
@@ -645,16 +579,6 @@ CDrawContext::CDrawContext (CFrame *inFrame, void *inSystemContext, void *inWind
 
 	#endif
 	
-#elif MOTIF 
-	if (pFrame)
-		pDisplay = pFrame->getDisplay ();
-	
-	// set the current font
-	if (pSystemContext)
-		setFont (kNormalFont);
-	else
-		fprintf (stderr, "Error in CDrawContext::CDrawContext : pSystemContext must not be Null!!!\n");
-
 #elif BEOS
 	pView = (BView*) pSystemContext;
 	if (pView)
@@ -668,10 +592,8 @@ CDrawContext::CDrawContext (CFrame *inFrame, void *inSystemContext, void *inWind
 		setFrameColor (kWhiteCColor);
 		setLineStyle (kLineSolid);
 		setLineWidth (1);
-#if !MOTIF
 		setFillColor (kBlackCColor);
 		setFontColor (kWhiteCColor);
-#endif
 		setFont (kSystemFont);
 		setDrawMode (kCopyMode);
 	}
@@ -718,7 +640,6 @@ CDrawContext::~CDrawContext ()
 		if (pFrame)
 			pFrame->setDrawContext (0);
 	}
-#elif MOTIF
 #elif BEOS
 	if (pView)
 	{
@@ -784,25 +705,6 @@ void CDrawContext::setLineStyle (CLineStyle style)
 	}
 	#endif
 
-#elif MOTIF
-	long line_width;
-	long line_style;
-	if (frameWidth == 1)
-		line_width = 0;
-	else 
-		line_width = frameWidth;
-
-	switch (lineStyle)
-	{
-	case kLineOnOffDash:
-		line_style = LineOnOffDash;
-		break;
-	default:
-		line_style = LineSolid;
-		break;
-	}
-	
-	XSetLineAttributes (XGCPARAM, line_width, line_style, CapNotLast, JoinRound);
 #endif
 }
 
@@ -843,8 +745,6 @@ void CDrawContext::setLineWidth (CCoord width)
 		SetGWorld (OrigPort, OrigDevice);
 	}
 	#endif
-#elif MOTIF
-	setLineStyle (lineStyle);
 #endif
 }
 
@@ -904,21 +804,6 @@ void CDrawContext::setDrawMode (CDrawMode mode)
 	}
 	#endif
 
-#elif MOTIF
-	long iMode = 0;
-	switch (drawMode) 
-	{
-	case kXorMode :
-		iMode = GXinvert;
-		break;
-	case kOrMode :
-		iMode = GXor;
-		break;
-	default:
-		iMode = GXcopy;
-	}
-	((XGCValues*)pSystemContext)->function = iMode;
-	XChangeGC (XGCPARAM, GCFunction, (XGCValues*)pSystemContext);
 #endif
 }
 
@@ -969,14 +854,6 @@ void CDrawContext::setClipRect (const CRect &clip)
 	SelectClipRgn ((HDC)pSystemContext, hRgn);
 	DeleteObject (hRgn);
 
-#elif MOTIF
-	XRectangle r;
-	r.x = 0;
-	r.y = 0;
-	r.width  = clipRect.right - clipRect.left;
-	r.height = clipRect.bottom - clipRect.top;
-	XSetClipRectangles (XGCPARAM, clipRect.left, clipRect.top, &r, 1, Unsorted); 
-
 #elif BEOS
 	clipping_rect r = {clipRect.left, clipRect.top, clipRect.right - 1, clipRect.bottom - 1};	
 	BRegion region;
@@ -1011,7 +888,7 @@ void CDrawContext::resetClipRect ()
 		setDrawMode (drawMode);
 	}
 
-#elif MAC || WINDOWS || MOTIF
+#elif MAC || WINDOWS
 	setClipRect (newClip);
 
 #elif BEOS
@@ -1042,7 +919,7 @@ void CDrawContext::moveTo (const CPoint &_point)
 	#endif
   	penLoc = point;
   	
-#elif MOTIF || BEOS
+#elif BEOS
 	penLoc = point;
 #endif
 }
@@ -1119,38 +996,6 @@ void CDrawContext::lineTo (const CPoint& _point)
 	#endif
 	SetGWorld (OrigPort, OrigDevice);
 	#endif
-
-#elif MOTIF
-	CPoint start (penLoc);
-	CPoint end (point);
-	if (start.h == end.h)
-	{
-		if (start.v < -5)
-			start.v = -5;
-		else if (start.v > 10000)
-			start.v = 10000;
-		
-		if (end.v < -5)
-			end.v = -5;
-		else if (end.v > 10000)
-			end.v = 10000;
-	}
-	if (start.v == end.v)
-	{
-		if (start.h < -5)
-			start.h = -5;
-		else if (start.h > 10000)
-			start.h = 10000;
-		
-		if (end.h < -5)
-			end.h = -5;
-		else if (end.h > 10000)
-			end.h = 10000;
-	}
-	XDrawLine (XDRAWPARAM, start.h, start.v, end.h, end.v);
-	
-	// keep trace of the new position
-	penLoc = point;
 
 #elif BEOS
 	rgb_color c = { frameColor.red, frameColor.green, frameColor.blue, 255 };
@@ -1287,20 +1132,6 @@ void CDrawContext::polyLine (const CPoint *pPoints, long numberOfPoints)
 	SetGWorld (OrigPort, OrigDevice);
 	#endif
 
-#elif MOTIF
-	XPoint* pt = (XPoint*)malloc (numberOfPoints * sizeof (XPoint));
-	if (!pt)
-		return;
-	for (long i = 0; i < numberOfPoints; i++)
-	{
-		pt[i].x = (short)pPoints[i].h + offset.h;
-		pt[i].y = (short)pPoints[i].v + offset.v;
-	}
-	
-	XDrawLines (XDRAWPARAM, pt, numberOfPoints, CoordModeOrigin);
-
-	free (pt);
-
 #elif BEOS
 	rgb_color c = { frameColor.red, frameColor.green, frameColor.blue, 255 };
 	pView->SetHighColor (c);
@@ -1382,19 +1213,6 @@ void CDrawContext::fillPolygon (const CPoint *pPoints, long numberOfPoints)
 	SetGWorld (OrigPort, OrigDevice);
 	#endif
 	
-#elif MOTIF
-	// convert the points
-	XPoint* pt = (XPoint*)malloc (numberOfPoints * sizeof (XPoint));
-	for (long i = 0; i < numberOfPoints; i++)
-	{
-		pt[i].x = (short)pPoints[i].h + offset.h;
-		pt[i].y = (short)pPoints[i].v + offset.v;
-	}
-	
-	XFillPolygon (XDRAWPARAM, pt, numberOfPoints, Convex, CoordModeOrigin);
-
-	free (pt);
-
 #elif BEOS
 	BPoint bpoints[30];
 	BPoint* polyPoints;
@@ -1503,9 +1321,6 @@ void CDrawContext::drawRect (const CRect &_rect, const CDrawStyle drawStyle)
 	SetGWorld (OrigPort, OrigDevice);
 	#endif
 
-#elif MOTIF
-	XDrawRectangle (XDRAWPARAM, rect.left, rect.top, rect.width (), rect.height ());
-
 #elif BEOS
 	rgb_color c = { frameColor.red, frameColor.green, frameColor.blue, 255 };
 	pView->SetHighColor (c);
@@ -1554,9 +1369,6 @@ void CDrawContext::fillRect (const CRect &_rect)
 	FillRect (&rr, &fillPattern);
 	SetGWorld (OrigPort, OrigDevice);
 	#endif
-
-#elif MOTIF
-	XFillRectangle (XDRAWPARAM, rect.left + 1, rect.top + 1, rect.width () - 1, rect.height () - 1);
 
 #elif BEOS
 	rgb_color c = { fillColor.red, fillColor.green, fillColor.blue, 255 };
@@ -1671,12 +1483,6 @@ void CDrawContext::drawPoint (const CPoint &_point, CColor color)
 #if WINDOWS
 	point.offset (offset.h, offset.v);
 	SetPixel ((HDC)pSystemContext, point.h, point.v, RGB(color.red, color.green, color.blue));
-
-#elif MOTIF
-	CColor oldframecolor = frameColor;
-	setFrameColor (color);
-	XDrawPoint (XDRAWPARAM, point.h, point.v);
-	setFrameColor (oldframecolor);
 
 #elif MAC
 	CCoord oldframeWidth = frameWidth;
@@ -1851,11 +1657,6 @@ void CDrawContext::drawArc (const CRect &_rect, const float _startAngle, const f
 				 point1.h, point1.v, point2.h, point2.v);
 	}
 
-	#elif MOTIF
-
-	XDrawArc (XDRAWPARAM, rect.left, rect.top, rect.width (), rect.height (),
-						_startAngle * 64, _endAngle * 64);
-
 	#elif MAC
 
 	#if QUARTZ
@@ -1916,7 +1717,7 @@ void CDrawContext::drawArc (const CRect &_rect, const CPoint &_point1, const CPo
 	Arc ((HDC)pSystemContext, rect.left, rect.top, rect.right + 1, rect.bottom + 1, 
 			 point1.h, point1.v, point2.h, point2.v);
 
-#elif MAC || MOTIF || BEOS
+#elif MAC || BEOS
 	
 	int	angle1, angle2;
 	if ((point1.v == point2.v) && (point1.h == point2.h))
@@ -1961,10 +1762,6 @@ void CDrawContext::drawArc (const CRect &_rect, const CPoint &_point1, const CPo
 	SetGWorld (OrigPort, OrigDevice);
 	#endif
 	        
-#elif MOTIF
-	XDrawArc (XDRAWPARAM, rect.left, rect.top, rect.width (), rect.height (),
-						angle1, angle2);
-
 #elif BEOS
 	rgb_color c = { frameColor.red, frameColor.green, frameColor.blue, 255 };
 	pView->SetHighColor (c);
@@ -1995,7 +1792,7 @@ void CDrawContext::fillArc (const CRect &_rect, const CPoint &_point1, const CPo
 			 point1.h, point1.v, point2.h, point2.v);
 	SelectObject ((HDC)pSystemContext, oldPen);
 
-#elif MAC || MOTIF || BEOS
+#elif MAC || BEOS
 	
 	int	angle1, angle2;
 	if ((point1.v == point2.v) && (point1.h == point2.h))
@@ -2042,10 +1839,6 @@ void CDrawContext::fillArc (const CRect &_rect, const CPoint &_point1, const CPo
 	SetGWorld (OrigPort, OrigDevice);
 	#endif
         
-#elif MOTIF
-	XFillArc (XDRAWPARAM, rect.left, rect.top, rect.width (), rect.height (),
-				angle1, angle2);
-
 #elif BEOS
 	rgb_color c = { fillColor.red, fillColor.green, fillColor.blue, 255 };
 	pView->SetHighColor (c);
@@ -2083,9 +1876,6 @@ void CDrawContext::setFontColor (const CColor color)
 	}
 	#endif
         
-#elif MOTIF
-	setFrameColor (fontColor);
-
 #endif
 }
 
@@ -2125,8 +1915,6 @@ void CDrawContext::setFrameColor (const CColor color)
 	}
 	#endif
         
-#elif MOTIF
-	XSetForeground (XGCPARAM, getIndexColor (frameColor));
 #endif
 }
 
@@ -2170,12 +1958,6 @@ void CDrawContext::setFillColor (const CColor color)
 	}
 	#endif
         
-#elif MOTIF
-	// set the background for the text
-	XSetBackground (XGCPARAM, getIndexColor (fillColor));
-	
-	// set the foreground for the fill
-	setFrameColor (fillColor);
 #endif
 }
 
@@ -2275,12 +2057,6 @@ void CDrawContext::setFont (CFont fontID, const long size, long style)
 	}
 	#endif
         
-#elif MOTIF
-	XSetFont (XGCPARAM, gFontStructs[fontID]->fid);
-	
-	// keep trace of the current font
-	pFontInfoStruct = gFontStructs[fontID];
-
 #elif BEOS
 	font.SetFamilyAndStyle (gStandardFontName[fontID], gStandardFontStyle[fontID]);
 	font.SetSize (fontSize);
@@ -2321,9 +2097,6 @@ CCoord CDrawContext::getStringWidth (const char *pStr)
 	GetTextExtentPoint32 ((HDC)pSystemContext, pStr, (int)strlen (pStr), &size);
 	result = (long)size.cx;
 
-	#elif MOTIF
-	result = (long)XTextWidth (pFontInfoStruct, pStr, strlen (pStr));
-	
 	#elif BEOS
 	result = (long)(ceil (pView->StringWidth (pStr)));
 	#endif
@@ -2497,40 +2270,6 @@ void CDrawContext::drawString (const char *string, const CRect &_rect,
 	}
         #endif
         
-#elif MOTIF
-	int width;
-	int fontHeight = pFontInfoStruct->ascent + pFontInfoStruct->descent;
-	int xPos;
-	int yPos;
-	int rectHeight = rect.height ();
-
-	if (rectHeight >= fontHeight)
-		yPos = rect.bottom - (rectHeight - fontHeight) / 2;
-	else 
-		yPos = rect.bottom;
-	yPos -=	pFontInfoStruct->descent;
-
-	switch (hAlign)
-	{
-	case kCenterText:
-		width = XTextWidth (pFontInfoStruct, string, strlen (string));
-		xPos = (rect.right + rect.left - width) / 2;
-		break;
-		
-	case kRightText:
-		width = XTextWidth (pFontInfoStruct, string, strlen (string));
-		xPos = rect.right - width;
-		break;
-		
-	default: // left adjust
-		xPos = rect.left + 1;
-	}
-	
-	if (opaque)
-		XDrawImageString (XDRAWPARAM, xPos, yPos, string, strlen (string));
-	else
-		XDrawString (XDRAWPARAM, xPos, yPos, string, strlen (string));
-
 #elif BEOS
 	BRect r (rect.left, rect.top, rect.right - 1, rect.bottom - 1);
 	BRegion LocalRegion (r);
@@ -2632,26 +2371,6 @@ long CDrawContext::getMouseButtons ()
 		buttons |= kControl;
 	#endif
 
-#elif MOTIF
-	Window root, child;
-	long rootX, rootY, childX, childY;
-	unsigned int mask;
-	int result = XQueryPointer (XWINPARAM, &root, &child, &rootX, &rootY,
-								&childX, &childY, &mask);
-	if (mask & Button1Mask)
-		buttons |= kLButton;
-	if (mask & Button2Mask)
-		buttons |= kMButton;
-	if (mask & Button3Mask)
-		buttons |= kRButton;
-
-	if (mask & ShiftMask)
-		buttons |= kShift;
-	if (mask & ControlMask)
-		buttons |= kControl;
-	if (mask & Mod1Mask)
-		buttons |= kAlt;
-
 #elif BEOS
 	BPoint	where;
 	uint32	b;
@@ -2711,14 +2430,6 @@ void CDrawContext::getMouseLocation (CPoint &point)
 	GetMouse (&where);
 	point (where.h, where.v);
 	
-#elif MOTIF
-	Window root, child;
-	int rootX, rootY, childX, childY;
-	unsigned int mask;
-	int result = XQueryPointer (XWINPARAM, &root, &child, &rootX, &rootY, 
-								&childX, &childY, &mask);
-	point (childX, childY);
-
 #elif BEOS
 	BPoint	where;
 	uint32	b;
@@ -2810,22 +2521,6 @@ bool CDrawContext::waitDoubleClick ()
 			doubleClick = true;
 	}
 	#endif
-#elif MOTIF	
-	long currentTime = _getTicks ();
-	long clickTime = currentTime + XtGetMultiClickTime (pDisplay);
-	
-	XEvent e;
-	while (currentTime < clickTime)
-	{
-		if (XCheckTypedEvent (pDisplay, ButtonPress, &e))
-		{
-			doubleClick = true;
-			break;
-		}
-	
-		currentTime = _getTicks ();
-	}
-
 #elif BEOS
 	const bigtime_t snoozeTime = 5000;
 	bigtime_t	latest = system_time ();
@@ -2922,47 +2617,7 @@ void CDrawContext::forget ()
 }
 
 //-----------------------------------------------------------------------------
-#if MOTIF
-//-----------------------------------------------------------------------------
-long CDrawContext::getIndexColor (CColor color)
-{
-	// 24bit visual ?
-	if (pFrame->getDepth () == 24) 
-		return (unsigned int)color.blue << 16 | (unsigned int)color.green << 8 | (unsigned int)color.red;
-
-	// 8bit stuff
-	return getIndexColor8Bit (color, pDisplay, pFrame->getColormap ());
-}
-
-//-----------------------------------------------------------------------------
-Colormap CDrawContext::getColormap ()
-{
-	if (pFrame)
-		return pFrame->getColormap ();
-	else
-		return NULL;
-}
-
-//-----------------------------------------------------------------------------
-Visual* CDrawContext::getVisual ()
-{
-	if (pFrame)
-		return pFrame->getVisual ();
-	else
-		return NULL;
-}
-
-//-----------------------------------------------------------------------------
-unsigned int CDrawContext::getDepth ()
-{
-	if (pFrame)
-		return pFrame->getDepth ();
-	else
-		return NULL;
-}
-
-//-----------------------------------------------------------------------------
-#elif BEOS
+#if BEOS
 //-----------------------------------------------------------------------------
 void CDrawContext::lineFromTo (CPoint& cstart, CPoint& cend)
 {
@@ -3215,19 +2870,6 @@ COffscreenContext::COffscreenContext (CDrawContext *pContext, CBitmap *pBitmapBg
 	StuffHex (&fillPattern, "\pFFFFFFFFFFFFFFFF");
 	#endif
         
-#elif MOTIF
- 	// if no bitmap handle => create one
-	if (!pWindow)
-	{
-		Drawable dWindow = pContext->pFrame->getWindow ();
-		pWindow = (void*)XCreatePixmap (pDisplay, dWindow, width, height, pFrame->getDepth ());
-		bDestroyPixmap = true;
-	}
-
-	// set the current font
-	if (pSystemContext)
-		setFont (kNormalFont);
-
 #elif BEOS
 	bDestroyPixmap = true;
 	offscreenBitmap = new BBitmap (BRect (0, 0, width - 1, height - 1), B_RGB16, true, false);
@@ -3361,22 +3003,6 @@ COffscreenContext::COffscreenContext (CFrame *pFrame, long width, long height, c
 	drawRect (r);
 	#endif
         
-#elif MOTIF
-	Drawable dWindow = pFrame->getWindow ();
-
-	pWindow = (void*)XCreatePixmap (pDisplay, dWindow, width, height, pFrame->getDepth ());
-
-	// clear the pixmap
-	XGCValues values;
-	values.foreground = getIndexColor (backgroundColor);
-	GC gc = XCreateGC (pDisplay, (Drawable)pWindow, GCForeground, &values); 
-	XFillRectangle (pDisplay, (Drawable)pWindow, gc, 0, 0, width, height);
-	XFreeGC (pDisplay, gc);
-	
-	// set the current font
-	if (pSystemContext)
-		setFont (kNormalFont);
-
 #elif BEOS
 	BRect frame (0, 0, width - 1, height - 1);
 	offscreenBitmap = new BBitmap (frame, B_RGB16, true, false);
@@ -3435,10 +3061,6 @@ COffscreenContext::~COffscreenContext ()
 		DisposeGWorld ((GWorldPtr)pWindow);
 	#endif
         
-#elif MOTIF
-	if (bDestroyPixmap && pWindow)
-		XFreePixmap (pDisplay, (Pixmap)pWindow);
-
 #elif BEOS
 	delete offscreenBitmap;
 	pView = 0;	// deleted because attached to the offscreen
@@ -3581,12 +3203,6 @@ void COffscreenContext::copyFrom (CDrawContext *pContext, CRect destRect, CPoint
 	RGBForeColor (&savedForeColor);
 	RGBBackColor (&savedBackColor);
 	#endif
-
-#elif MOTIF
-	XCopyArea (pDisplay, (Drawable)pWindow, (Drawable)pContext->getWindow (),
-						 (GC)pSystemContext, srcOffset.h, srcOffset.v,
-						 destRect.width (), destRect.height (),
-						 destRect.left, destRect.top);
 
 #elif BEOS
 	pContext->pView->SetDrawingMode (B_OP_COPY);
@@ -4088,13 +3704,6 @@ CFrame::CFrame (const CRect &inSize, void *inSystemWindow, void *inEditor)
 	}
 	#endif	// DYNAMICALPHABLEND
     
-#elif MOTIF
-	gc = 0;
-	depth    = 0;
-	pDisplay = 0;
-	pVisual  = 0;
-	window   = 0;
-
 #elif BEOS
 	pPlugView = NULL;
 #endif
@@ -4116,8 +3725,6 @@ CFrame::CFrame (const CRect &inSize, void *inSystemWindow, void *inEditor)
 	pFrameContext->offset.v = size.top;
 	#endif
 	
-#elif MOTIF
-	pFrameContext = new CDrawContext (this, gc, (void*)window);
 #endif
 }
 
@@ -4172,13 +3779,6 @@ CFrame::CFrame (const CRect& inSize, const char* inTitle, void* inEditor, const 
 	}
 	#endif
     
-#elif MOTIF
-	gc = 0;
-	depth    = 0;
-	pDisplay = 0;
-	pVisual  = 0;
-	window   = 0;
-
 #elif BEOS
 	pPlugView = NULL;
 
@@ -4230,20 +3830,6 @@ CFrame::~CFrame ()
 		ExitWindowClass ();
 	}
 
-#elif MOTIF
- #if TEST_REGION
-	XDestroyRegion (region);
- #endif
-
-	// remove callbacks to avoid undesirable update
-	if (pSystemWindow)
-	{
-		XtRemoveCallback ((Widget)pSystemWindow, XmNexposeCallback,  _drawingAreaCallback, this);
-		XtRemoveCallback ((Widget)pSystemWindow, XmNinputCallback,   _drawingAreaCallback, this);
-		XtRemoveCallback ((Widget)pSystemWindow, XmNdestroyCallback, _destroyCallback, this);
-		
-		freeGc ();
-	}
 #endif
 	
 	if (bAddedWindow)
@@ -4279,13 +3865,6 @@ bool CFrame::open (CPoint *point)
 	{
 #if WINDOWS
 		BringWindowToTop (GetParent (GetParent ((HWND)getSystemWindow ())));
-
-#elif MOTIF
-		Widget widget = (Widget)getSystemWindow ();
-		while (widget && !XtIsTopLevelShell (widget))
-			widget = XtParent (widget);
-		if (widget)
-			XRaiseWindow (getDisplay (), XtWindow (widget));
 
 #elif BEOS
 		pPlugView->Window ()->Activate (true);
@@ -4394,42 +3973,6 @@ bool CFrame::initFrame (void *systemWin)
 	mouseableArea.offset (-size.left, -size.top);
 	#endif
 	
-#elif MOTIF
-	// attach the callbacks
-	XtAddCallback ((Widget)systemWin, XmNexposeCallback, _drawingAreaCallback, this);
-	XtAddCallback ((Widget)systemWin, XmNinputCallback,  _drawingAreaCallback, this);
-	XtAddCallback ((Widget)systemWin, XmNdestroyCallback, _destroyCallback, this);
-	XtAddEventHandler ((Widget)systemWin, LeaveWindowMask, true, _eventHandler, this);
-
-	// init a default gc
-	window  = XtWindow ((Widget)systemWin);
-	pDisplay = XtDisplay ((Widget)systemWin);
-	XGCValues values;
-	values.foreground = 1;
-	gc = XCreateGC (pDisplay, (Drawable)window, GCForeground, &values); 
-	
-#if TEST_REGION
-	region = XCreateRegion ();
-#endif
-
-	// get the std colormap
-	XWindowAttributes attr;
-	XGetWindowAttributes (pDisplay, window, &attr);
-	colormap = attr.colormap;
-	pVisual  = attr.visual;
-	depth    = attr.depth;
-
-	// init and load the fonts
-	if (!gFontInit)
-	{
-		for (long i = 0; i < kNumStandardFonts; i++) 
-		{
-			gFontStructs[i] = XLoadQueryFont (pDisplay, gFontTable[i].string);
-			assert (gFontStructs[i] != 0);
-		}
-		gFontInit = true;
-	}
-
 #elif BEOS
 	BView* parentView = (BView*) pSystemWindow;
 	BRect frame = parentView->Frame ();
@@ -4476,16 +4019,6 @@ bool CFrame::setDropActive (bool val)
 	return true;
 }
 
-#if MOTIF
-//-----------------------------------------------------------------------------
-void CFrame::freeGc ()
-{
-	if (gc)
-		XFreeGC (pDisplay, gc);
-	gc = 0;
-}
-#endif
-
 //-----------------------------------------------------------------------------
 CDrawContext* CFrame::createDrawContext ()
 {
@@ -4498,9 +4031,6 @@ CDrawContext* CFrame::createDrawContext ()
 	CDrawContext* pContext = 0;
 	#if WINDOWS || MAC
 	pContext = new CDrawContext (this, NULL, getSystemWindow ());
-
-	#elif MOTIF
-	pContext = new CDrawContext (this, gc, (void*)window);
 
 	#elif BEOS
 	pContext = new CDrawContext (this, pPlugView, 0);
@@ -4925,28 +4455,6 @@ bool CFrame::getPosition (CCoord &x, CCoord &y) const
 	y -= hiScrollOffset.y;
 	#endif
 
-#elif MOTIF
-	Position xWin, yWin;
-
-	// get the topLevelShell of the pSystemWindow
-	Widget parent = (Widget)getSystemWindow ();
-	Widget parentOld = parent;
-	while (parent != 0 && !XtIsTopLevelShell (parent))
-	{
-		parentOld = parent;
-		parent = XtParent (parent);
-	}
-
-	if (parent == 0)
-		parent = parentOld;
-
-	if (parent)
-	{
-		XtVaGetValues (parent, XtNx, &xWin, XtNy, &yWin, NULL);
-		x = xWin - 8;
-		y = yWin - 30;
-	}
-
 #elif BEOS
 	BRect frame = pPlugView->Window ()->Frame ();
 	x = (long) frame.left;
@@ -5088,29 +4596,6 @@ bool CFrame::setSize (CCoord width, CCoord height)
 	}
 	#endif
 	
-#elif MOTIF
-	Dimension heightWin, widthWin;
-
-	// get the topLevelShell of the pSystemWindow
-	Widget parent = (Widget)getSystemWindow ();
-	Widget parentOld = parent;
-	while (parent != 0 && !XtIsTopLevelShell (parent))
-	{
-		parentOld = parent;
-		parent = XtParent (parent);
-	}
-
-	if (parent == 0)
-		parent = parentOld;
-	if (parent)
-	{
-		XtVaGetValues (parent, XtNwidth, &widthWin, XtNheight, &heightWin, NULL);	
-		long diffWidth  = widthWin - oldWidth;
-		long diffHeight = heightWin - oldHeight;
-		XtVaSetValues (parent, XmNwidth, width + diffWidth, 
-									 XmNheight, height + diffHeight, NULL);
-	}
-
 #elif BEOS
 	BView* parent = pPlugView->Parent ();
 	parent->SetResizingMode (B_FOLLOW_ALL_SIDES);
@@ -5173,27 +4658,6 @@ bool CFrame::getSize (CRect *pRect) const
 	pRect->right  = bounds.right;
 	pRect->bottom = bounds.bottom;
 	
-#elif MOTIF
-	Dimension height, width;
-	XtVaGetValues ((Widget)getSystemWindow (),
-								 XtNwidth, &width, XtNheight, &height, NULL);
-
-	Position x, y;
-	Position xTotal = 0, yTotal = 0;
-	Widget parent = (Widget)getSystemWindow ();
-	while (parent != 0 && !XtIsTopLevelShell (parent) && !XmIsDialogShell (parent))
-	{
-		XtVaGetValues (parent, XtNx, &x, XtNy, &y, NULL);	
-		xTotal += x;
-		yTotal += y;
-		parent = XtParent (parent);
-	}
-
-	pRect->left   = xTotal;
-	pRect->top    = yTotal;
-	pRect->right  = width + pRect->left;
-	pRect->bottom = height + pRect->top;
-
 #elif BEOS
 	BRect v = pPlugView->Frame ();
 	(*pRect) (v.left, v.top, v.right + 1, v.bottom + 1);
@@ -6683,34 +6147,6 @@ CBitmap::CBitmap (long resourceID)
 
 	loadFromResource (resourceID);
 
-#elif MOTIF
-	bool found = false;
-	long  i = 0;
-	long  ncolors, cpp;
-
-	pHandle = 0;
-	pMask  = 0;
-
-	// find the good pixmap resource
-	while (xpmResources[i].id != 0)
-	{
-		if (xpmResources[i].id == resourceID) 
-		{
-			if (xpmResources[i].xpm != NULL) 
-			{
-				found = true;
-				ppDataXpm = xpmResources[i].xpm;
-				
-				xpmGetValues (ppDataXpm, &width, &height, &ncolors, &cpp);
-				break;
-			}
-		}
-		i++;
-	}
-
-	if (!found)
-		ppDataXpm = 0;
-
 #elif BEOS
 	bbitmap = 0;
 	transparencySet = false;
@@ -6786,13 +6222,6 @@ CBitmap::CBitmap (CFrame &frame, CCoord width, CCoord height)
 
 	#endif
 
-#elif MOTIF
-	pXdisplay = frame.getDisplay ();
-	Drawable pWindow = frame.getWindow ();
-
-	pMask = 0;
-	pHandle = (void*)XCreatePixmap (pXdisplay, (Drawable)pWindow, width, height, frame.getDepth ());
-
 #elif BEOS
 	bbitmap = 0;
 	transparencySet = false;
@@ -6818,10 +6247,6 @@ CBitmap::CBitmap ()
 	#if QUARTZ
 	cgImage = 0;
 	#endif
-	
-	#elif MOTIF
-	pMask = 0;
-	pHandle = 0;
 	
 	#elif BEOS
 	bbitmap = 0;
@@ -6867,15 +6292,6 @@ void CBitmap::dispose ()
 	pHandle = 0;
 	pMask = 0;
 	
-	#elif MOTIF
-	if (pHandle)
-		XFreePixmap (pXdisplay, (Pixmap)pHandle);
-	if (pMask) 
-		XFreePixmap (pXdisplay, (Pixmap)pMask);
-
-	pHandle = 0;
-	pMask = 0;
-	
 	#elif BEOS
 	if (bbitmap)
 		delete bbitmap;
@@ -6892,7 +6308,7 @@ void CBitmap::dispose ()
 //-----------------------------------------------------------------------------
 void *CBitmap::getHandle () const
  {
-	#if WINDOWS||MOTIF
+	#if WINDOWS
 	return pHandle; 
 
 	#elif MAC
@@ -7213,11 +6629,7 @@ bool CBitmap::loadFromPath (const void* platformPath)
 //-----------------------------------------------------------------------------
 bool CBitmap::isLoaded () const
 {
-	#if MOTIF
-	if (ppDataXpm)
-		return true;
-	
-	#elif QUARTZ
+	#if QUARTZ
 	if (cgImage || getHandle ())
 		return true;
 	#else
@@ -7395,33 +6807,6 @@ void CBitmap::draw (CDrawContext *pContext, CRect &rect, const CPoint &offset)
 	pContext->releaseBitmap ();
 	#endif
 
-#elif MOTIF
-	if (!pHandle)
-	{
-		// the first time try to decode the pixmap
-		pHandle = createPixmapFromXpm (pContext);
-		if (!pHandle)
-			return;
-		
-		// keep a trace of the display for deletion
-		pXdisplay = pContext->pDisplay;
-	}
-	
-#if DEVELOPMENT
-	if (!(offset.h >= 0 && offset.v >= 0 &&
-				rect.width () <= (getWidth () - offset.h) &&
-				rect.height () <= (getHeight () - offset.v)))
-	{
-		fprintf (stderr, "%s(%d) -> Assert failed: try to display outside from the bitmap\n", __FILE__, __LINE__);
-		return;
-	}
-#endif
-
-	XCopyArea (pContext->pDisplay, (Drawable)pHandle, 
-						 (Drawable)pContext->pWindow, 
-						 (GC)pContext->pSystemContext, offset.h, offset.v,
-						 rect.width (), rect.height (), rect.left, rect.top);
-
 #elif BEOS
 	BRect	brect (rect.left, rect.top, rect.right - 1, rect.bottom - 1);
 	BRect	drect = brect;
@@ -7532,118 +6917,6 @@ void CBitmap::drawTransparent (CDrawContext *pContext, CRect &rect, const CPoint
 	pContext->releaseBitmap ();
 	#endif
         
-#elif MOTIF
-	if (!pHandle) 
-	{
-		// the first time try to decode the pixmap
-		pHandle = createPixmapFromXpm (pContext);
-		if (!pHandle)
-			return;
-		
-		// keep a trace of the display for deletion
-		pXdisplay = pContext->pDisplay;
-	}
-	
-	if (pMask == 0)
-	{
-		// get image from the pixmap
-		XImage* image = XGetImage (pContext->pDisplay, (Drawable)pHandle, 
-                0, 0, width, height, AllPlanes, ZPixmap);
-		assert (image);
-		
-		// create the bitmap mask
-		pMask = (void*)XCreatePixmap (pContext->pDisplay, (Drawable)pContext->pWindow, 
-                width, height, 1);
-		assert (pMask);
-		
-		// create a associated GC
-		XGCValues values;
-		values.foreground = 1;
-		GC gc = XCreateGC (pContext->pDisplay, (Drawable)pMask, GCForeground, &values); 
-		
-		// clear the mask
-		XFillRectangle (pContext->pDisplay, (Drawable)pMask, gc, 0, 0, width, height);
-   
-		// get the transparent color index
-		int color = pContext->getIndexColor (transparentCColor);
-		
-		// inverse the color
-		values.foreground = 0;
-		XChangeGC (pContext->pDisplay, gc, GCForeground, &values);
-     
-		// compute the mask
-		XPoint *points = new XPoint [height * width];
-		int x, y, nbPoints = 0;
-		switch (image->depth) 
-		{
-		case 8:
-			for (y = 0; y < height; y++) 
-			{
-				char* src = image->data + (y * image->bytes_per_line);
-				
-				for (x = 0; x < width; x++) 
-				{
-					if (src[x] == color) 
-					{
-						points[nbPoints].x = x;
-						points[nbPoints].y = y;
-						nbPoints++;
-					}
-				}
-			}
-			break;
-
-		case 24: {
-			int bytesPerPixel = image->bits_per_pixel >> 3;
-			char *lp = image->data;
-			for (y = 0; y < height; y++)
-			{
-				char* cp = lp;
-				for (x = 0; x < width; x++)
-				{
-					if (*(int*)cp == color)
-					{
-						points[nbPoints].x = x;
-						points[nbPoints].y = y;
-						nbPoints++;
-					}
-					cp += bytesPerPixel;
-				}
-				lp += image->bytes_per_line;
-			}
-		} break;
-
-		default :
-			break;
-		}
-
-		XDrawPoints (pContext->pDisplay, (Drawable)pMask, gc,
-								 points, nbPoints, CoordModeOrigin);
-     
-		// free 
-		XFreeGC (pContext->pDisplay, gc);
-		delete []points;
-
-		// delete 
-		XDestroyImage (image);
-	}
-	
-	// set the new clipmask
-	XGCValues value;
-	value.clip_mask = (Pixmap)pMask;
-	value.clip_x_origin = rect.left - offset.h;
-	value.clip_y_origin = rect.top - offset.v;
-	XChangeGC (pContext->pDisplay, (GC)pContext->pSystemContext,
-						 GCClipMask|GCClipXOrigin|GCClipYOrigin, &value);
-
-	XCopyArea (pContext->pDisplay, (Drawable)pHandle, (Drawable)pContext->pWindow, 
-						 (GC)pContext->pSystemContext, offset.h, offset.v,
-						 rect.width (), rect.height (), rect.left, rect.top);
-	
-	// unset the clipmask
-	XSetClipMask (pContext->pDisplay, (GC)pContext->pSystemContext, None);
-	
-
 #elif BEOS
 	if (!transparencySet)
 	{
@@ -7957,61 +7230,6 @@ void CBitmap::setTransparencyMask (CDrawContext* pContext, const CPoint& offset)
 	// todo: implement me!
 #endif
 }
-
-//-----------------------------------------------------------------------------
-//----------------------------------------------------------------------------
-#if MOTIF
-//-----------------------------------------------------------------------------
-void* CBitmap::createPixmapFromXpm (CDrawContext *pContext)
-{
-	if (!ppDataXpm)
-		return NULL;
-  
-	Pixmap pixmap = 0;
-	XpmAttributes attributes;
-	
-	attributes.valuemask = XpmCloseness|XpmColormap|XpmVisual|XpmDepth; 
-	attributes.closeness = 100000;
-	attributes.visual = pContext->getVisual ();
-	attributes.depth  = pContext->getDepth ();
-
-	// use the pContext colormap instead of the DefaultColormapOfScreen
-	attributes.colormap = pContext->getColormap ();
-
-	int status;
-	if (attributes.depth == 8 || attributes.depth == 24)
-	{
-#if USE_XPM
-		status = XpmCreatePixmapFromData (pContext->pDisplay,
-							(Drawable)pContext->pWindow, ppDataXpm, &pixmap, NULL, &attributes);
-		if (status != XpmSuccess)
-		{
-			fprintf (stderr, "createPixmapFromXpm-> XpmError: %s\n", XpmGetErrorString(status));
-			return NULL;
-		}
-#else
-		status = createPixmapFromData (pContext->pDisplay,
-         (Drawable)pContext->pWindow, ppDataXpm, &pixmap, &attributes);
-		if (!status)
-		{
-			fprintf (stderr, "createPixmapFromXpm-> Error\n");
-			return NULL;
-		}
-#endif
-	}
-	else
-	{
-		fprintf (stderr, "createPixmapFromXpm-> Depth %d not supported\n", attributes.depth);
-		return NULL;
-	}
-
-#if DEVELOPMENT
-	fprintf (stderr, "createPixmapFromXpm-> There are %d requested colors\n", attributes.ncolors);
-#endif
-
-	return (void*)pixmap;
-}
-#endif
 
 //----------------------------------------------------------------------------
 //----------------------------------------------------------------------------
@@ -8616,7 +7834,7 @@ void DrawTransparent (CDrawContext* pContext, CRect& rect, const CPoint& offset,
 #endif
 
 //-----------------------------------------------------------------------------
-#if MAC || MOTIF || BEOS
+#if MAC || BEOS
 BEGIN_NAMESPACE_VSTGUI
 // return a degre value between [0, 360 * 64[
 long convertPoint2Angle (CPoint &pm, CPoint &pt)
@@ -8660,195 +7878,7 @@ END_NAMESPACE_VSTGUI
 #endif
 
 
-//-----------------------------------------------------------------------------
-#if MOTIF
-XRectangle rect;
-static bool first = true;
-
-//-----------------------------------------------------------------------------
-void _destroyCallback (Widget widget, XtPointer clientData, XtPointer callData)
-{
-	CFrame* pFrame = (CFrame*)clientData;
-	if (pFrame)
-	{
-		pFrame->freeGc ();
-		pFrame->setOpenFlag (false);
-		pFrame->pSystemWindow = 0;
-	}
-}
-
-//-----------------------------------------------------------------------------
-void _drawingAreaCallback (Widget widget, XtPointer clientData, XtPointer callData)
-{
-	CFrame* pFrame = (CFrame*)clientData;
-	XmDrawingAreaCallbackStruct *cbs = (XmDrawingAreaCallbackStruct *)callData;
-	XEvent *event = cbs->event;
-
-	//-------------------------------------
-	if (cbs->reason == XmCR_INPUT)
-	{
-		if (event->xbutton.type == ButtonRelease)
-			return;
-
-		if (event->xbutton.type != ButtonPress &&
-				event->xbutton.type != KeyPress)
-			return;
-
-		Window pWindow = pFrame->getWindow ();
-		CDrawContext context (pFrame, pFrame->getGC (), (void*)pWindow);
-
-		CPoint where (event->xbutton.x, event->xbutton.y);
-		pFrame->mouse (&context, where);
-	}
-	//------------------------------------
-	else if (cbs->reason == XmCR_EXPOSE)
-	{
-		XExposeEvent *expose = (XExposeEvent*)event;
-#if TEST_REGION
-		rect.x      = expose->x;
-		rect.y      = expose->y;
-		rect.width  = expose->width;
-		rect.height = expose->height;
-		if (first)
-		{
-			pFrame->region = XCreateRegion ();
-			first = false;
-		}
-
-		XUnionRectWithRegion (&rect, pFrame->region, pFrame->region);
-#endif
-		if (expose->count == 0)
-		{
-#if TEST_REGION
-			XSetRegion (expose->pDisplay, pFrame->getGC (), pFrame->region);
-
-			// add processus of static first to set the region to max after a total draw and destroy it the first time...
-#endif
-			pFrame->draw ();
-
-#if TEST_REGION
-			rect.x      = 0;
-			rect.y      = 0;
-			rect.width  = pFrame->getWidth ();
-			rect.height = pFrame->getHeight ();
-			XUnionRectWithRegion (&rect, pFrame->region, pFrame->region);
-			XSetRegion (expose->pDisplay, pFrame->getGC (), pFrame->region);
-			XDestroyRegion (pFrame->region);
-			first = true;
-#endif
-		}
-	}
-}
-
-//-----------------------------------------------------------------------------
-void _eventHandler (Widget w, XtPointer clientData, XEvent *event, char *p)
-{
-	switch (event->type)
-	{
-	case EnterNotify:
-		break;
-
-	case LeaveNotify:
-		XCrossingEvent *xevent = (XCrossingEvent*)event;
-		
-		CFrame* pFrame = (CFrame*)clientData;
-		if (pFrame && pFrame->getFocusView ())
-		{
-			if (xevent->x < 0 || xevent->x >= pFrame->getWidth () ||
-					xevent->y < 0 || xevent->y >= pFrame->getHeight ())
-			{
-				// if button pressed => don't defocus
-				if (xevent->state & (Button1Mask|Button2Mask|Button3Mask))
-					break;
-				pFrame->getFocusView ()->looseFocus ();
-				pFrame->setFocusView (0);
-			}
-		}
-		break;
-	}
-}
-
-//-----------------------------------------------------------------------------
-long getIndexColor8Bit (CColor color, Display *pDisplay, Colormap colormap)
-{
-	long i;
-
-	// search in pre-loaded color
-	for (i = 0; i < CDrawContext::nbNewColor; i++)
-	{
-		if ((paletteNewColor[i].red   == color.red)   &&
-				(paletteNewColor[i].green == color.green) &&
-				(paletteNewColor[i].blue  == color.blue))
-			return paletteNewColor[i].alpha;
-	}
-	
-	// Allocate new color cell
-	XColor xcolor;
-	int red   = color.red   << 8;
-	int green = color.green << 8;
-	int blue  = color.blue  << 8;
-	xcolor.red   = red;
-	xcolor.green = green;
-	xcolor.blue  = blue;	
-	if (XAllocColor (pDisplay, colormap, &xcolor))
-	{
-		// store this new color
-		if (CDrawContext::nbNewColor < 255) 
-		{
-			paletteNewColor[CDrawContext::nbNewColor].red    = color.red;
-			paletteNewColor[CDrawContext::nbNewColor].green  = color.green;
-			paletteNewColor[CDrawContext::nbNewColor].blue   = color.blue;
-			paletteNewColor[CDrawContext::nbNewColor].alpha = xcolor.pixel;
-			CDrawContext::nbNewColor++;
-		}
-		return xcolor.pixel;
-	}
-		
-	// take the nearest color
-	int diff;
-	int min = 3 * 65536;
-	int index = 0;
-
-	XColor xcolors[256];
-	for (i = 0; i < 256; i++)
-		xcolors[i].pixel = i;
-
-	XQueryColors (pDisplay, colormap, xcolors, 256);
-
-	for (i = 0; i < 256; i++)
-	{
-		diff = fabs (xcolors[i].red - red) + fabs (xcolors[i].green - green) + fabs (xcolors[i].blue - blue);
-		if (diff < min)
-		{
-			min = diff;
-			index = i;
-		}
-	}
-
-	// store this new color
-	if (CDrawContext::nbNewColor < 255)
-	{
-		paletteNewColor[CDrawContext::nbNewColor].red    = color.red;
-		paletteNewColor[CDrawContext::nbNewColor].green  = color.green;
-		paletteNewColor[CDrawContext::nbNewColor].blue   = color.blue;
-		paletteNewColor[CDrawContext::nbNewColor].alpha = index;
-		CDrawContext::nbNewColor++;
-	}
-	return (index);
-}
-
-//-----------------------------------------------------------------------------
-bool xpmGetValues (char **ppDataXpm, long *pWidth, long *pHeight, long *pNcolor, long *pCpp)
-{
-	// get the size of the pixmap
-	sscanf (ppDataXpm[0], "%d %d %d %d", pWidth, pHeight, pNcolor, pCpp);
-	
-	return true;
-}
-
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
-#elif BEOS
+#if BEOS
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 PlugView::PlugView (BRect frame, CFrame* cframe)

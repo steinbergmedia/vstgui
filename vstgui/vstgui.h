@@ -2,7 +2,7 @@
 // VST Plug-Ins SDK
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 //
-// Version 3.0       $Date: 2005-08-12 12:45:00 $
+// Version 3.0       $Date: 2005-08-22 18:16:43 $
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
@@ -38,8 +38,6 @@
 // define global defines
 #if WIN32
 	#define WINDOWS 1
-#elif SGI | SUN
-	#define MOTIF 1
 #elif __MWERKS__ || __APPLE_CC__
 	#define MAC 1
 	#if __MACH__
@@ -99,31 +97,6 @@ END_NAMESPACE_VSTGUI
 //----------------------------------------------------
 #if WINDOWS
 	#include <windows.h>
-
-//----------------------------------------------------
-#elif MOTIF
-	#include <X11/Xlib.h>
-	#include <X11/Intrinsic.h>
-	#ifdef NOBOOL
-		#ifndef bool
-			typedef short bool;
-		#endif
-		#ifndef false
-			static const bool false = 0; 
-		#endif
-		#ifndef true
-			static const bool true = 1;
-		#endif
-	#endif
-
-	// definition of struct for XPixmap resources
-	struct CResTableEntry {
-		int id;
-  		char **xpm;
-	};
-
-	typedef CResTableEntry CResTable[];
-	extern CResTable xpmResources;
 
 //----------------------------------------------------
 #elif MAC
@@ -338,7 +311,7 @@ extern CColor kMagentaCColor;
 //-----------------------------------------------------------------------------
 // Definitions of special characters in a platform independent way
 
-#if WINDOWS || MOTIF
+#if WINDOWS
 #define kDegreeSymbol      "\xB0"
 #define kInfiniteSymbol    "oo"
 #define kCopyrightSymbol   "\xA9"
@@ -579,15 +552,6 @@ public:
 	bool waitDoubleClick ();	///< check if another mouse click occurs in the near future
 	bool waitDrag ();			///< check if the mouse will be dragged
 
-#if MOTIF
-	long getIndexColor (CColor color);
-	Colormap getColormap ();
-	Visual   *getVisual ();
-	unsigned int getDepth ();
-
-	static long nbNewColor;
-#endif
-
 	void *getWindow () { return pWindow; }
 	void setWindow (void *ptr)  { pWindow = ptr; }
 	void getLoc (CPoint &where) const { where = penLoc; }
@@ -655,11 +619,6 @@ protected:
 	virtual void releaseBitmap ();
 	virtual CGrafPtr getPort ();
 	
-#elif MOTIF
-	Display *pDisplay;
-
-	XFontStruct *pFontInfoStruct;
-
 #elif BEOS
 	BView*	pView;
 	BFont	font;
@@ -699,9 +658,6 @@ protected:
 
 #if WINDOWS
 	void* oldBitmap;
-
-#elif MOTIF
-	Display *pXdisplay;
 
 #elif BEOS
 	BBitmap *offscreenBitmap;
@@ -772,14 +728,6 @@ protected:
 	bool noAlpha;
 
 #if WINDOWS
-	void *pHandle;
-	void *pMask;
-
-#elif MOTIF
-	void *createPixmapFromXpm (CDrawContext *pContext);
-
-	char    **ppDataXpm;
-	Display *pXdisplay;
 	void *pHandle;
 	void *pMask;
 
@@ -1093,20 +1041,6 @@ public:
 
 	virtual void *getEditor () const { return pEditor; }
 
-#if MOTIF
-	Colormap getColormap ()   const { return colormap; }
-	Visual  *getVisual ()     const { return pVisual; }
-	unsigned int getDepth ()  const { return depth; }
-	Display *getDisplay ()    const { return pDisplay; }
-	Window   getWindow ()     const { return window; }
-	void     freeGc ();
-
-	Region   region;
-
-	GC       gc;
-	GC       getGC ()         const { return gc; }
-#endif
-
 	#if DEBUG
 	virtual void dumpHierarchy ();
 	#endif
@@ -1133,15 +1067,6 @@ protected:
 	HINSTANCE hInstMsimg32dll;
 	void*     dropTarget;
 	COffscreenContext* backBuffer;
-
-#elif MOTIF
-	Colormap  colormap;
-	Display  *pDisplay;
-	Visual   *pVisual;
-	Window    window;
-	unsigned int depth;
-
-	friend void _destroyCallback (Widget, XtPointer, XtPointer);
 
 #elif BEOS
 	PlugView *pPlugView;
