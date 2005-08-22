@@ -1,0 +1,180 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+	<head>
+		<base target="vstdoc">
+		<title>CVerticalSwitch</title>
+		<link rel="stylesheet" href="../sdkdoc.css" type="text/css">
+	</head>
+	<body>
+		<div>
+			<h2>CVerticalSwitch</h2>
+			<p><code>#include &lt;vstcontrols.h&gt;</code></p>
+			<p><code>class CVerticalSwitch : public CControl;</code></p>
+			<p>Define a switch with a given number of positions, the current position is 
+				defined by the position of the last click on this object (the object is divided 
+				in its height by the number of position).</p>
+			<p>Each position has its subpixmap, each subpixmap is stacked in the given handle 
+				pixmap.</p>
+			<p>By clicking Alt+Left Mouse the default value is used.</p>
+			<hr noshade="noshade" size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="COptionMenu">COptionMenu</a></h4>
+						</td>
+						<td align="right">
+							<h4>1.0</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">CVerticalSwitch ( <a href="CRect.html">CRect</a> &amp;size, <a href="CControlListener.html">CControlListener</a> *listener, long tag, long subpixmaps, long heightOfOneImage, long iMaxPositions, <a href="CBitmap.html">CBitmap</a> *handle, <a href="CPoint.html">CPoint</a> &amp;offset);</div></p>
+			<p>Creates a vertical switch with a given number of positions.</p>
+			<table width="100%" cellpadding="0" cellspacing="0" border="1" bordercolor="#000000">
+				<tbody>
+					<tr>
+						<th align="right" valign="top">
+							<code>size</code></th>
+						<th>
+							<br>
+						</th>
+						<td>The coordinates of the enclosing rectangle, relative to the parent frame.</td>
+					</tr>
+					<tr>
+						<th align="right" valign="top">
+							<code>listener</code></th>
+						<th>
+							<br>
+						</th>
+						<td>The object responsible for handling events in this control.</td>
+					</tr>
+					<tr>
+						<th align="right" valign="top">
+							<code>tag</code></th>
+						<th>
+							<br>
+						</th>
+						<td>The index of the control.</td>
+					</tr>
+					<tr>
+						<th align="right" valign="top">
+							<code>subpixmaps</code></th>
+						<th>
+							<br>
+						</th>
+						<td>The number of subpixmaps.</td>
+					</tr>
+					<tr>
+						<th align="right" valign="top">
+							<code>heightOfOneImage</code></th>
+						<th>
+							<br>
+						</th>
+						<td>The height of one subpixmap in pixel.</td>
+					</tr>
+					<tr>
+						<th align="right" valign="top">
+							<code>iMaxPositions</code></th>
+						<th>
+							<br>
+						</th>
+						<td><br>
+						</td>
+					</tr>
+					<tr>
+						<th align="right" valign="top">
+							<code>handle</code></th>
+						<th>
+							<br>
+						</th>
+						<td>The pixmap containing all the images.</td>
+					</tr>
+					<tr>
+						<th align="right" valign="top">
+							<code>offset</code></th>
+						<th>
+							<br>
+						</th>
+						<td>-</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><img src="images/CSwitch.jpg" alt="[CVerticalSwitch]" width="174" height="160">
+			</p>
+			<p><img src="images/source.jpg" alt="[source]" width="16" height="16"> <a href="sources/sCVerticalSwitch.html" target="sources">
+					source</a></p>
+			<h4>Example :</h4>
+			<code>
+				<pre>myPixmap = new CPixmap (kMyPixmapID);<br>CRect size (<br>    kMySwitch_left,<br>    kMySwitch_top,<br>    kMySwitch_left + myPixmap-&gt;getWidth (),<br>    kMySwitch_top + myPixmap-&gt;getHeight ()<br>        / kNumSubPixmaps<br>);<br>CPoint offset (0,0);<br>mySwitch = new CVerticalSwitch (<br>    size,<br>    this,<br>    kMyParameter,<br>    kNumSubPixmaps,<br>    myPixmap-&gt;getHeight () / kNumSubPixmaps,<br>    kNumSubPixmaps,<br>    myPixmap,<br>    offset<br>);<br>frame-&gt;addView (mySwitch);</pre>
+			</code>
+			<hr noshade="noshade" size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="dCVerticalSwitch">~CVerticalSwitch</a></h4>
+						</td>
+						<td align="right">
+							<h4>1.0</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">~CVerticalSwitch ();</div></p>
+			<p>Destroy a verticalSwitch object. The pixmap is destroyed if there is no more 
+				reference on it.</p>
+			<p><img src="images/source.jpg" alt="[source]" width="16" height="16"> <a href="sources/sCVerticalSwitch.html" target="sources">
+					source</a></p>
+			<hr noshade="noshade" size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="draw">draw</a></h4>
+						</td>
+						<td align="right">
+							<h4>1.0</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">void draw (<a href="CDrawContext.html">CDrawContext</a>*);</div></p>
+			<p>Called when this control object needs to be drawn.</p>
+			<p><img src="images/source.jpg" alt="[source]" width="16" height="16"> <a href="sources/sCVerticalSwitch.html" target="sources">
+					source</a></p>
+			<hr noshade="noshade" size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="mouse">mouse</a></h4>
+						</td>
+						<td align="right">
+							<h4>1.0</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">void mouse (<a href="CDrawContext.html">CDrawContext</a> *context, <a href="CPoint.html">CPoint</a> &amp;where);</div></p>
+			<p>Called when there is a mouse-click inside this control object.</p>
+			<p><img src="images/source.jpg" alt="[source]" width="16" height="16"> <a href="sources/sCVerticalSwitch.html" target="sources">
+					source</a></p>
+			<h4>See also :</h4>
+			<ul>
+				<li>
+					The <code>CControlListener</code>'s <code><a href="CControlListener.html#valueChanged">valueChanged</a></code>
+					method which is called when the value has changed.</li>
+			</ul>
+			<hr noshade="noshade" size="4">
+			<div align="center">Copyright &copy;2003 <a href="http://www.steinberg.net" target="_blank">
+					<u>Steinberg Media Technologies GmbH</u></a>.
+			</div>
+			<DIV align=center><FONT size=1>Last Modified:
+			<SCRIPT language=Javascript %>document.writeln(document.lastModified);</SCRIPT>
+			</FONT></DIV>
+			<br>
+		</div>
+		<br>
+	</body>
+</html>

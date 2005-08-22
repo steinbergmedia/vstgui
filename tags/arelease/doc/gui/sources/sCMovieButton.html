@@ -1,0 +1,108 @@
+<html>
+<head>
+	<base target="vstdoc">
+	<title>CMovieButton</title>
+	
+<link rel="stylesheet" href="../../formate.txt" type="text/css">
+</head>
+<body>
+
+
+<code><pre>
+//------------------------------------------------------------------------
+// CMovieButton
+//------------------------------------------------------------------------
+// simulating a real windows-button
+CMovieButton::CMovieButton (const CRect &size,
+                            CControlListener *listener, 
+                            long tag,              // identifier tag (ID)
+                            long heightOfOneImage, // height of one image in pixel
+                            CBitmap *background,
+                            CPoint  &offset)
+	:	CControl (size, listener, tag, background), offset (offset),
+		heightOfOneImage (heightOfOneImage), buttonState (value)
+{}
+
+//------------------------------------------------------------------------
+CMovieButton::~CMovieButton ()
+{}
+
+//------------------------------------------------------------------------
+void CMovieButton::draw (CDrawContext *pContext)
+{
+	CPoint where;
+
+	where.h = 0;
+
+	bounceValue ();
+
+	if (value)
+		where.v = heightOfOneImage;
+	else
+		where.v = 0;
+
+	if (pBackground)
+	{
+		if (bTransparencyEnabled)
+			pBackground->drawTransparent (pContext, size, where);
+		else
+			pBackground->draw (pContext, size, where);
+	}
+	buttonState = value;
+
+	setDirty (false);
+}
+
+//------------------------------------------------------------------------
+void CMovieButton::mouse (CDrawContext *pContext, CPoint &where)
+{
+	if (!bMouseEnabled)
+		return;
+
+	long button = pContext->getMouseButtons ();
+	if (!(button & kLButton))
+		return;
+
+	// this simulates a real windows button
+	float fEntryState = value;
+
+	if (pContext->getMouseButtons ())
+	{
+		// begin of edit parameter
+		getParent ()->beginEdit (tag);
+		do
+		{
+			if (where.h >= size.left &&
+					where.v >= size.top  &&
+					where.h <= size.right &&
+					where.v <= size.bottom)
+				value = !fEntryState;
+			else
+				value = fEntryState;
+	    
+			if (isDirty () && listener)
+				listener->valueChanged (pContext, this);
+	    
+			pContext->getMouseLocation (where); 
+
+			doIdleStuff ();
+		}
+		while (pContext->getMouseButtons () == button);
+	
+		// end of edit parameter
+		getParent ()->endEdit (tag);
+	}
+	else
+	{
+		value = !value;
+		if (listener)
+			listener->valueChanged (pContext, this);
+	}
+
+	buttonState = value;
+}
+</pre></code>
+
+
+</body>
+</html>

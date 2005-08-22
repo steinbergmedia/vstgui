@@ -1,0 +1,20 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+                 <base target="vstdoc">
+  <title>CAnimKnob</title>
+                                                      	                 
+                   
+  <link rel="stylesheet" href="../../../../sdkdoc.css" type="text/css">
+</head>
+  <body>
+                           
+<div>                
+<h2>Example of CAbout Control</h2>
+               <code>            
+<pre>//-----------------------------------------------------------------------------<br>// CAbout Declaration<br>//-----------------------------------------------------------------------------<br>class CAbout : public CSplashScreen<br>{<br>public:<br>        CAbout (CRect &amp;size, CControlListener *listener, int tag, CBitmap *handle,<br>                CRect &amp;toDisplay, CPoint &amp;offset, CPoint &amp;textOffset);<br>        void draw (CDrawContext *pContext);<br>private:<br>        CPoint textOffset;<br>};<br>//-----------------------------------------------------------------------------<br>// CAbout implementation<br>//-----------------------------------------------------------------------------<br>CAbout::CAbout (CRect &amp;size, CControlListener *listener, int tag, CBitmap *handle,<br>                                CRect &amp;toDisplay, CPoint &amp;offset, CPoint &amp;textOffset)<br>                                : CSplashScreen (size, listener, tag, handle, toDisplay, offset),<br>                                textOffset (textOffset)<br>{}<br>//-----------------------------------------------------------------------------<br>void CAbout::draw (CDrawContext *pContext)<br>{<br>        if (getValue ())<br>        {<br>                CSplashScreen::draw (pContext);<br>                CRect rect (0, 0, getWidth (), 15);<br>                rect.offset (toDisplay.left + textOffset.h, toDisplay.top + textOffset.v);<br>                char text[128];<br>                sprintf (text, "Version %s", VERSION);<br>                pContext-&gt;setFont (kNormalFontSmall);<br>                pContext-&gt;setFontColor (kTextColor);<br>                pContext-&gt;drawString (text, rect, 0, kCenterText);<br>        }<br>}<br>use of it :<br>//-----------------------------------------------------------------------------<br>long MyEditor::open (void *ptr)<br>{<br>        AEffGUIEditor::open (ptr);<br>        ....<br>        //---About Splash<br>        CBitmap *pAboutBitmap = new CBitmap (kAboutBitmap);<br>        CPoint point (0, 0);<br>        CRect toDisplay (0, 0, pAboutBitmap-&gt;getWidth (), pAboutBitmap-&gt;getHeight ());<br>        size (0, 0, kAboutW, kAboutH);<br>        size.offset (kAboutX, kAboutY);<br>        CPoint textOffset (kAboutTextOffsetX, kAboutTextOffsetY);<br>        CAbout *pAbout = new CAbout (size, this, kAbout, pAboutBitmap, toDisplay, point, textOffset);<br>        frame-&gt;addView (pAbout);<br>  pAboutBitmap-&gt;forget ();<br>.....</pre>
+            </code>  <br>
+            </div>
+                       
+</body>
+</html>

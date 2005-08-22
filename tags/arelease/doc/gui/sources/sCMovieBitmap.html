@@ -1,0 +1,49 @@
+<html>
+<head>
+	<base target="vstdoc">
+	<title>CMovieBitmap</title>
+	
+<link rel="stylesheet" href="../../formate.txt" type="text/css">
+</head>
+<body>
+
+
+<code><pre>
+//------------------------------------------------------------------------
+// CMovieBitmap
+//------------------------------------------------------------------------
+CMovieBitmap::CMovieBitmap (const CRect &size, CControlListener *listener, long tag,
+                            long subPixmaps,        // number of subPixmaps
+                            long heightOfOneImage,  // height of one image in pixel
+                            CBitmap *background, CPoint &offset)
+  :	CControl (size, listener, tag, background), offset (offset),
+		subPixmaps (subPixmaps), heightOfOneImage (heightOfOneImage)
+{}
+
+//------------------------------------------------------------------------
+CMovieBitmap::~CMovieBitmap ()
+{}
+
+//------------------------------------------------------------------------
+void CMovieBitmap::draw (CDrawContext *pContext)
+{
+	CPoint where (offset.h, offset.v);
+
+	if (value > 1.0f)
+		value = 1.0f;
+
+ 	if (value > 0.0f)
+		where.v += heightOfOneImage * (int)(value * (subPixmaps - 1) + 0.5);
+
+	if (pBackground)
+	{
+		if (bTransparencyEnabled)
+			pBackground->drawTransparent (pContext, size, where);
+		else
+			pBackground->draw (pContext, size, where);
+	}
+	setDirty (false);
+}
+</pre></code>
+</body>
+</html>

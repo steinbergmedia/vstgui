@@ -1,0 +1,595 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+	<head>
+		<title>COptionMenu</title>
+		<base target="vstdoc">
+		<link rel="stylesheet" href="../sdkdoc.css" type="text/css">
+	</head>
+	<body>
+		<div>
+			<h2>COptionMenu</h2>
+			<p><code>#include &lt;vstcontrols.h&gt;</code></p>
+			<p><code> class COptionMenu : public <a href="CParamDisplay.html">CParamDisplay</a>;</code></p>
+			<p>Define a rectangle view where a text-value can be displayed with a given font 
+				and color. The text-value is centered in the given rect. A pixmap can be used 
+				as background, a second pixmap can be used when the option menu is popuped. 
+				There are 2 styles with or without a shadowed text. When a mouse click occurs, 
+				a popup menu is displayed.</p>
+			<hr noshade size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="COptionMenu">COptionMenu</a></h4>
+						</td>
+						<td align="right">
+							<h4>1.0</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table
+>
+			<p><div class="cpp">COptionMenu (<a href="CRect.html">CRect</a> &amp;size, <a href="CControlListener.html">CControlListener</a> *listener, int tag, <a href="CBitmap.html">CBitmap</a> *background = 0, <a href="CBitmap.html">CBitmap</a> *bgWhenClick = 0, int style = 0);</div>
+<P></P>
+			<p>Creates an option popup-menu.</p>
+			<table width="100%" cellpadding="0" cellspacing="0" border="1" bordercolor="#000000">
+				<tbody>
+					<tr>
+						<th align="right" valign="top">
+							<code>size</code></th>
+						<th>
+							<br>
+						</th>
+						<td>The coordinates of the enclosing rectangle, relative to the parent frame.</td>
+					</tr>
+					<tr>
+						<th align="right" valign="top">
+							<code>listener</code></th>
+						<th>
+							<br>
+						</th>
+						<td>The object responsible for handling events in this control.</td>
+					</tr>
+					<tr>
+						<th align="right" valign="top">
+							<code>tag</code></th>
+						<th>
+							<br>
+						</th>
+						<td>The index of the control.</td>
+					</tr>
+					<tr>
+						<th align="right" valign="top">
+							<code>background</code></th>
+						<th>
+							<br>
+						</th>
+						<td>A background pixmap.</td>
+					</tr>
+					<tr>
+						<th align="right" valign="top">
+							<code>bgWhenClick</code></th>
+						<th>
+							<br>
+						</th>
+						<td>A background pixmap displayed when a mouse click occurs.</td>
+					</tr>
+					<tr>
+						<th align="right" valign="top">
+							<code>style</code></th>
+						<th>
+							<br>
+						</th>
+						<td>A constant from <code><a href="CControlEnum.html">CControlEnum</a></code>.</td>
+					</tr>
+				</tbody>
+			</table>
+			<h4>Example :</h4>
+			<code>
+				<pre>CRect size (<br>    kMyMenu_left,<br>    kMyMenu_top,<br>    kMyMenu_right,<br>    kMyMenu_bottom<br>);<br>myBackground = new CBitmap (kMyBackgroundID);<br>myBackgroundOnClick = new CBitmap (<br>    kMyBackgroundOnClickID<br>);<br>myMenu = new COptionMenu (<br>    size,<br>    this,<br>    kMyParameter,<br>    myBackground,<br>    myBackgroundOnClick,<br>    0<br>);<br>myMenu-&gt;addEntry ("first item", -1);<br>...<br>myMenu-&gt;addEntry ("last item", -1);<br>myMenu-&gt;setFontColor (kBlackCColor);<br>myMenu-&gt;setBackColor (kWhiteCColor);<br>frame-&gt;addView (myMenu);</pre>
+			</code>
+			<hr noshade size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="dCOptionMenu">~COptionMenu</a></h4>
+						</td>
+						<td align="right">
+							<h4>1.0</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">~COptionMenu ();</div>
+<P></P>
+			<p>Destroys an option menu object.</p>
+			<hr noshade size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="setValue">setValue</a></h4>
+						</td>
+						<td align="right">
+							<h4>2.2</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">virtual void setValue (float val);</div>
+<P></P>
+			<p>Used to set the actual value for the menu.<br>
+			</p>
+			<hr noshade size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="addEntry">addEntry</a></h4>
+						</td>
+						<td align="right">
+							<h4>1.0</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">bool addEntry (char *txt, int index = -1);</div>
+<P></P>
+			<p>Inserts <code>&lt;txt&gt;</code> at position <code>&lt;index&gt;</code> in the 
+				menu.</p>
+			<table width="100%" cellpadding="0" cellspacing="0" border="1" bordercolor="#000000">
+				<tbody>
+					<tr>
+						<th align="right" valign="top">
+							<code>txt</code></th>
+						<td>The text to appear in the menu. A value of "-" inserts a separator line.</td>
+					</tr>
+					<tr>
+						<th align="right" valign="top">
+							<code>index</code></th>
+						<td>
+							<table cellpadding="0" cellspacing="0" border="1" bordercolor="#cccccc">
+								<tbody>
+									<tr>
+										<td align="right" valign="top"><code>-1</code> :</td>
+										<td>Appends the text to the end of the menu.</td>
+									</tr>
+									<tr>
+										<td align="right" valign="top"><code>0...127</code> :</td>
+										<td>Inserts the text at this position.</td>
+									</tr>
+								</tbody>
+							</table>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<hr noshade size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="addEntry2">addEntry</a></h4>
+						</td>
+						<td align="right">
+							<h4>2.2</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">virtual bool addEntry (char *txt, long index);</div>
+<P></P>
+			<p>Adds an entry to the menu.<br>
+			</p>
+			<hr noshade size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="getCurrent">getCurrent</a></h4>
+						</td>
+						<td align="right">
+							<h4>1.0</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">int getCurrent (char *txt = 0);</div>
+<P></P>
+			<p>Returns the current selected item.</p>
+			<table width="100%" cellpadding="0" cellspacing="0" border="1" bordercolor="#000000">
+				<tbody>
+					<tr>
+						<th align="right" valign="top">
+							<code>txt</code></th>
+						<td>If an optional string is provided, it will be stuffed with the selected item's 
+							text.</td>
+					</tr>
+					<tr>
+						<th align="right" valign="top" height="21">
+							<code>return</code></th>
+						<td height="21">The index to the selected item, starting with 0.</td>
+					</tr>
+				</tbody>
+			</table>
+			<h4>Example :</h4>
+			<code>
+				<pre>char itemText[10];<br><br>myMenu-&gt;getCurrent (itemText);<br><br>if (strcmp (itemText, kMyString) == 0)<br>    ...</pre>
+			</code>or <code>
+				<pre>int myItem = myMenu-&gt;getCurrent (NULL);<br><br>switch (myItem) {<br>    case kMyItem :<br>         ...<br>        break;<br>    default :<br>        break;<br>}</pre>
+			</code>
+			<hr noshade size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="setCurrent">setCurrent</a></h4>
+						</td>
+						<td align="right">
+							<h4>1.0</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">bool setCurrent (int index);</div>
+<P></P>
+			<p>Sets the current selected item.</p>
+			<hr noshade size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="getEntry">getEntry</a></h4>
+						</td>
+						<td align="right">
+							<h4>1.0</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">bool getEntry (int index, char *txt);</div>
+<P></P>
+			<p>Returns the entry at a given index.</p>
+			<hr noshade size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="setEntry">setEntry</a></h4>
+						</td>
+						<td align="right">
+							<h4>2.1</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">bool setEntry (int index, char *txt);</div>
+<P></P>
+			<p>Sets a given text to the entry at a given index.</p>
+			<hr noshade size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="removeEntry">removeEntry</a></h4>
+						</td>
+						<td align="right">
+							<h4>1.0</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">bool removeEntry (int index);</div>
+<P></P>
+			<p>Removes an entry at a given index.</p>
+			<hr noshade size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="removeAllEntry">removeAllEntry</a></h4>
+						</td>
+						<td align="right">
+							<h4>1.0</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">bool removeAllEntry ();</div>
+<P></P>
+			<p>Removes all entries.</p>
+			<hr noshade size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="getNbEntries">getNbEntries</a></h4>
+						</td>
+						<td align="right">
+							<h4>1.0</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">int getNbEntries ();</div>
+<P></P>
+			<p>Returns the number of entries.</p>
+			<hr noshade size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="getIndex">getIndex</a></h4>
+						</td>
+						<td align="right">
+							<h4>2.1</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">int getIndex (char *txt);</div>
+<P></P>
+			<p>Returns the index of a specified name in the menu.</p>
+			<hr noshade size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="checkEntry">checkEntry</a></h4>
+						</td>
+						<td align="right">
+							<h4>2.1</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">bool checkEntry (int index, bool state);</div>
+<P></P>
+			<p>Checks the menu's item given by its index (Available when <code>kMultipleCheckStyle</code>
+				is used as style).</p>
+			<hr noshade size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="checkEntryAlone">checkEntryAlone</a></h4>
+						</td>
+						<td align="right">
+							<h4>2.1</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">bool checkEntryAlone (int index);</div>
+<P></P>
+			<p>Checks only the given item's index.</p>
+			<hr noshade size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="isCheckEntry">isCheckEntry</a></h4>
+						</td>
+						<td align="right">
+							<h4>2.1</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">bool isCheckEntry (int index);</div>
+<P></P>
+			<p>Returns <code>true</code> if the menu's entry is checked.</p>
+			<hr noshade size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="draw">draw</a></h4>
+						</td>
+						<td align="right">
+							<h4>1.0</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">void draw (<a href="CDrawContext.html">CDrawContext</a>*);</div>
+<P></P>
+			<p>Called when this control object needs to be drawed.</p>
+			<hr noshade size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="mouse">mouse</a></h4>
+						</td>
+						<td align="right">
+							<h4>1.0</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table
+> 
+			<p><div class="cpp">void mouse (<a href="CDrawContext.html">CDrawContext</a> *context, <a href="CPoint.html">CPoint</a> &amp;where);</div>
+<P></P>
+			<p>Called when there is a mouse-click inside this control object. The popup menu is 
+				displayed.</p>
+			<table width="100%" cellpadding="0" cellspacing="0" border="1" bordercolor="#000000">
+				<tbody>
+					<tr>
+						<th align="right" valign="top">
+							<code>context</code></th>
+						<td><br>
+						</td>
+					</tr>
+					<tr>
+						<th align="right" valign="top">
+							<code>where</code></th>
+						<td>The coordinates of the mouse, in pixel and relative to the parent frame.</td>
+					</tr>
+				</tbody>
+			</table>
+			<h4>See also :</h4>
+			<ul>
+				<li>
+					The <code>CControlListener</code>'s <code><a href="CControlListener.html#valueChanged">valueChanged</a></code>
+					method which is called when the value has changed.</li>
+			</ul>
+			<hr noshade size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="takeFocus">takeFocus</a></h4>
+						</td>
+						<td align="right">
+							<h4>1.0</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">void takeFocus ();</div>
+<P></P>
+			<p>The menu has the focus.<br>
+			</p>
+			<hr noshade size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="looseFocus">looseFocus</a></h4>
+						</td>
+						<td align="right">
+							<h4>1.0</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">void looseFocus ();</div>
+<P></P>
+			<p>The menu doesn't have the focus anymore.<br>
+			</p>
+			<hr noshade size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="setNbItemsPerColumn">setNbItemsPerColumn</a></h4>
+						</td>
+						<td align="right">
+							<h4>2.1</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">void setNbItemsPerColumn (long val);</div>
+<P></P>
+			<p>Sets the number of items per column.</p>
+			<hr noshade size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="getNbItemsPerColumn">getNbItemsPerColumn</a></h4>
+						</td>
+						<td align="right">
+							<h4>2.1</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">long getNbItemsPerColumn ();</div>
+<P></P>
+			<p>Returns the number of items per column.</p>
+			<hr width="100%" size="2">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="getLastResult">getLastResult</a></h4>
+						</td>
+						<td align="right">
+							<h4>2.2</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">long getLastResult ();</div>
+<P></P>
+			<p>Returns the last choice.</p>
+			<hr width="100%" size="2">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="getLastItemMenu">getLastItemMenu</a></h4>
+						</td>
+						<td align="right">
+							<h4>2.2</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">COptionMenu *getLastItemMenu (long &amp;idxInMenu);</div>
+<P></P>
+			<hr width="100%" size="2">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="setScheme">setScheme</a></h4>
+						</td>
+						<td align="right">
+							<h4>2.2</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">void setScheme (<a href="COptionMenuScheme.html">COptionMenuScheme</a>*s);</div>
+<P></P>
+			<p>Sets the menu's scheme.</p>
+			<hr width="100%" size="2">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="getScheme">getScheme</a></h4>
+						</td>
+						<td align="right">
+							<h4>2.2</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp"><a href="COptionMenuScheme.html">COptionMenuScheme</a>* getScheme ();</div>
+<P></P>
+			<p>Returns the menu's scheme.</p>
+			<hr width="100%" size="2">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="setPrefixNumbers">setPrefixNumbers</a></h4>
+						</td>
+						<td align="right">
+							<h4>2.2</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">void setPrefixNumbers (long preCount);</div>
+<P></P>
+			<p><code></code></p>
+			For an enumerated menu, sets the number of digits for the entry's index.
+			<hr noshade size="4">
+			<div align="center">Copyright &copy;2003 <a href="http://www.steinberg.net" target="_blank">
+					<u>Steinberg Media Technologies GmbH</u></a>.
+			</div>
+			<DIV align=center><FONT size=1>Last Modified:
+			<SCRIPT language=Javascript %>document.writeln(document.lastModified);</SCRIPT>
+			</FONT></DIV>
+			<br>
+		</div>
+		<br>
+	</body>
+</html>

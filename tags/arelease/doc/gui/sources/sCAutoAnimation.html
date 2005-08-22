@@ -1,0 +1,109 @@
+<html>
+<head>
+	<base target="vstdoc">
+	<title>CAutoAnimation</title>
+	
+<link rel="stylesheet" href="../../formate.txt" type="text/css">
+</head>
+<body>
+
+<code><pre>
+//------------------------------------------------------------------------
+// CAutoAnimation
+//------------------------------------------------------------------------
+// displays bitmaps within a (child-) window
+CAutoAnimation::CAutoAnimation (const CRect &size,
+                                CControlListener *listener, 
+                                long tag,         // identifier tag (ID)
+                                long subPixmaps,	 // number of subPixmaps...
+                                long heightOfOneImage, // height of one image in pixel
+                                CBitmap *background,
+                                CPoint  &offset)
+	:	CControl (size, listener, tag, background), offset (offset),
+		subPixmaps (subPixmaps), heightOfOneImage (heightOfOneImage),
+		windowOpened (false)
+{
+	totalHeightOfBitmap = heightOfOneImage * subPixmaps;
+}
+
+//------------------------------------------------------------------------
+CAutoAnimation::~CAutoAnimation ()
+{}
+
+//------------------------------------------------------------------------
+void CAutoAnimation::draw (CDrawContext *pContext)
+{
+	if (isWindowOpened ())
+	{	
+		CPoint where;
+		where.v = (long)value + offset.v;
+		where.h = offset.h;
+		
+		if (pBackground)
+		{
+			if (bTransparencyEnabled)
+				pBackground->drawTransparent (pContext, size, where);
+			else
+				pBackground->draw (pContext, size, where);
+		}
+		setDirty (false);
+	}
+}
+
+//------------------------------------------------------------------------
+void CAutoAnimation::mouse (CDrawContext *pContext, CPoint &where)
+{
+	if (!bMouseEnabled)
+		return;
+	
+	long button = pContext->getMouseButtons ();
+	if (!(button & kLButton))
+		return;
+
+	if (!isWindowOpened ())
+	{	
+		value = 0;
+		openWindow ();
+		setDirty (); // force to redraw
+		if (listener)
+			listener->valueChanged (pContext, this);
+	}
+	else
+	{                                                                       
+		// stop info animation
+		value = 0; // draw first pic of bitmap
+		draw (pContext);
+		closeWindow ();
+	}
+}
+
+//------------------------------------------------------------------------
+void CAutoAnimation::openWindow ()
+{
+	windowOpened = true;
+}
+
+//------------------------------------------------------------------------
+void CAutoAnimation::closeWindow ()
+{
+	windowOpened = false;
+}
+
+//------------------------------------------------------------------------
+void CAutoAnimation::nextPixmap ()
+{
+	value += heightOfOneImage;
+	if (value >= (totalHeightOfBitmap - heightOfOneImage))
+		value = 0;
+}
+
+//------------------------------------------------------------------------
+void CAutoAnimation::previousPixmap ()
+{
+	value -= heightOfOneImage;
+	if (value < 0.f)
+		value = (float)(totalHeightOfBitmap - heightOfOneImage - 1);
+}
+</pre></code>
+</body>
+</html>

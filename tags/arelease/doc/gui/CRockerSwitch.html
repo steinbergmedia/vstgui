@@ -1,0 +1,117 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+	<head>
+		<base target="vstdoc">
+		<title>CRockerSwitch</title>
+		<link rel="stylesheet" href="../sdkdoc.css" type="text/css">
+	</head>
+	<body>
+		<div>
+			<h2>CRockerSwitch</h2>
+			<p><code>#include &lt;vstcontrols.h&gt;</code></p>
+			<p><code>class CRockerSwitch : public CControl;</code></p>
+			<p>Define a rocker switch with 3 states using 3 subpixmaps. One click on its 
+				leftside, then the first subpixmap is displayed. One click on its rightside, 
+				then the third subpixmap is displayed. When the mouse button is relaxed, the 
+				second subpixmap is framed.</p>
+			<hr noshade="noshade" size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="cCRockerSwitch">CRockerSwitch</a></h4>
+						</td>
+						<td align="right">
+							<h4>1.0</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">CRockerSwitch (<a href="CRect.html">CRect</a> &amp;size, <a href="CControlListener.html">CControlListener</a> *listener, long tag, long heightOfOneImage, <a href="CBitmap.html">CBitmap</a> *handle, <a href="CPoint.html">CPoint</a> &amp;offset, long style = kHorizontal);</div></p>
+			<p>Creates a rocker switch object.</p>
+			<p><img src="images/source.jpg" alt="[source]" width="16" height="16"> <a href="sources/sCRockerSwitch.html" target="sources">
+					source</a></p>
+			<hr noshade="noshade" size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="dCRockerSwitch">~CRockerSwitch</a></h4>
+						</td>
+						<td align="right">
+							<h4>1.0</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">~CRockerSwitch ();</div></p>
+			<p>Destroys a rockerSwitch object. The pixmap is destroyed if there is no more 
+				reference on it.</p>
+			<p><img src="images/source.jpg" alt="[source]" width="16" height="16"> <a href="sources/sCRockerSwitch.html" target="sources">
+					source</a></p>
+			<hr noshade="noshade" size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="draw">draw</a></h4>
+						</td>
+						<td align="right">
+							<h4>1.0</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">void draw (<a href="CDrawContext.html">CDrawContext</a>*);</div>
+			</p>
+			<p>Called when this control object needs to be drawed.</p>
+			<p><img src="images/source.jpg" alt="[source]" width="16" height="16"> <a href="sources/sCRockerSwitch.html" target="sources">
+					source</a></p>
+			<hr noshade="noshade" size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="mouse">mouse</a></h4>
+						</td>
+						<td align="right">
+							<h4>1.0</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">void mouse (<a href="CDrawContext.html">CDrawContext</a> *context, <a href="CPoint.html">CPoint</a> &amp;where);</div>
+			</p>
+			<p>Called when there is a mouse-click inside this control object.</p>
+			<p><img src="images/source.jpg" alt="[source]" width="16" height="16"> <a href="sources/sCRockerSwitch.html" target="sources">
+					source</a></p>
+			<hr width="100%" size="2">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="mouse">onWheel</a></h4>
+						</td>
+						<td align="right">
+							<h4>2.1</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">void onWheel (<a href="CDrawContext.html">CDrawContext</a>*context, <a href="CPoint.html">CPoint</a> &amp;where, float distance);</div>
+			</p>
+			<p><img src="images/source.jpg" alt="[source]" width="16" height="16">
+				<a href="sources/sCRockerSwitch.html" target="sources">
+					source</a></p>
+			<hr noshade="noshade" size="4">
+			<div align="center">Copyright &copy;2003 <a href="http://www.steinberg.net" target="_blank">
+					<u>Steinberg Media Technologies GmbH</u></a>. 
+			</div>
+			<DIV align=center><FONT size=1>Last Modified:
+			<SCRIPT language=Javascript %>document.writeln(document.lastModified);</SCRIPT>
+			</FONT></DIV>
+			<br>
+		</div>
+		<br>
+	</body>
+</html>

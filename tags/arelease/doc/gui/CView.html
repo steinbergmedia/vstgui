@@ -1,0 +1,809 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+	<head>
+		<title>CView</title>
+		<base target="vstdoc">
+		<link rel="stylesheet" href="../sdkdoc.css" type="text/css">
+	</head>
+	<body>
+		<div>
+			<h2>CView</h2>
+			<p><code>#include &lt;vstgui.h&gt;</code></p>
+			<p><code>class CView;</code></p>
+			<p>Parent class of the <code><a href="CFrame.html">CFrame</a> </code>class and the 
+				different <code><a href="CControl.html">CControl</a> </code>class.</p>
+			<p><img src="images/diagvstgui.gif" width="466" height="287" alt="[vst gui diagram]">
+			</p>
+			<hr noshade size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="cCView">CView</a>
+							</h4>
+						</td>
+						<td align="right">
+							<h4>1.0</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">CView (<a href="CRect.html">CRect</a> &amp;size);</div>
+<P></P>
+			<p>Creates a view object.</p>
+			<hr noshade size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="dCView">~CView</a>
+							</h4>
+						</td>
+						<td align="right">
+							<h4>1.0</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">virtual ~CView ();</div>
+<P></P>
+			<p>Destroys a view object.</p>
+			<hr noshade size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="redraw">redraw</a>
+							</h4>
+						</td>
+						<td align="right">
+							<h4>1.0</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">void redraw ();</div>
+<P></P>
+			<p>To redraw the view attached to a frame.</p>
+			<hr noshade size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="draw">draw</a>
+							</h4>
+						</td>
+						<td align="right">
+							<h4>1.0</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">virtual void draw (<a href="CDrawContext.html">CDrawContext</a> *context);</div>
+<P></P>
+			<hr noshade size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="drawRect">drawRect</a>
+							</h4>
+						</td>
+						<td align="right">
+							<h4>2.2<br>
+							</h4>
+							<br>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">virtual void drawRect (<a href="CDrawContext.html">CDrawContext</a>&nbsp;*pContext, <a href="CRect.html">CRect</a>&amp; updateRect);</div>
+<P></P>
+			<p>To draw a specific rect inside the view.<br>
+			</p>
+			<hr width="100%" size="2">
+			<p><code></code></p>
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="checkUpdate">checkUpdate</a>
+							</h4>
+						</td>
+						<td align="right">
+							<h4>2.2<br>
+							</h4>
+							<br>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">virtual bool checkUpdate (<a href="CRect.html">CRect</a>&amp; updateRect);</div><br>
+<P></P>
+			<p>To check if in this rect the view needs an update.<br>
+			</p>
+			<hr width="100%" size="2">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="mouse">mouse</a>
+							</h4>
+						</td>
+						<td align="right">
+							<h4>1.0</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">virtual void mouse (<a href="CDrawContext.html">CDrawContext</a> * context, <a href="CPoint.html">CPoint</a> &amp;where);</div>
+<P></P>
+			<table width="100%" cellpadding="0" cellspacing="0" border="1" bordercolor="#000000">
+				<tbody>
+					<tr>
+						<th align="right" valign="top">
+							<code>context</code></th>
+						<td><br>
+						</td>
+					</tr>
+					<tr>
+						<th align="right" valign="top">
+							<code>where</code></th>
+						<td>Where the mouse click occured. Coordonates are in pixel relative to the 
+							parent's frame.</td>
+					</tr>
+				</tbody>
+			</table>
+			<h4>AEffGUIEditor :</h4>
+			<p>Calls <code><a href="CFrame.html">frame</a> -&gt;<a href="CFrame.html#mouse">mouse</a>
+					(x, y)</code>.</p>
+			<h4>See also :</h4>
+			<ul>
+				<li>
+					The <code>CControlListener</code>'s <code><a href="CControlListener.html#valueChanged">valueChanged</a>
+					</code>method which is called when the value has changed.</li>
+			</ul>
+			<hr noshade size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="update">update</a>
+							</h4>
+						</td>
+						<td align="right">
+							<h4>1.0</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">virtual void update (<a href="CDrawContext.html">CDrawContext</a> *context);</div>
+<P></P>
+			<hr width="100%" size="2">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="update">notify</a>
+							</h4>
+						</td>
+						<td align="right">
+							<h4>2.2</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">virtual long notify (<a href="CView.html">CView</a>* sender, const char* message);</div>
+<P></P>
+			<p>Used to pass a message from one view to one other.<br>
+			</p>
+			<hr width="100%" size="2">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="update">onKeyDown</a>
+							</h4>
+						</td>
+						<td align="right">
+							<h4>2.2</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">virtual long onKeyDown (<a href="VstKeyCode.html">VstKeyCode</a>&amp; keyCode);</div>
+<P></P>
+			<p>Called when the user hits a key.<br>
+			</p>
+			<hr width="100%" size="2">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="update">onKeyUp</a>
+							</h4>
+						</td>
+						<td align="right">
+							<h4>2.2</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">virtual long onKeyUp (<a href="VstKeyCode.html">VstKeyCode</a>&amp; keyCode);</div>
+<P></P>
+			<p>Called when the user releases a key.<code><br>
+				</code>
+			</p>
+			<hr width="100%" size="2">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="onDrop">onDrop</a>
+							</h4>
+						</td>
+						<td align="right">
+							<h4>2.1</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">virtual bool onDrop (void **ptrItems, long nbItems, long type, <a href="CPoint.html">CPoint</a> &amp;where);</div>
+<P></P>
+			<p>Called when during a drop the mouse is released.</p>
+			<table width="100%" cellpadding="0" cellspacing="0" border="1" bordercolor="#000000">
+				<tbody>
+					<tr>
+						<th align="right" valign="top">
+							<code>ptrItems</code></th>
+						<td>The list of items droped, depending on <code>type</code> :
+							<table>
+								<tbody>
+									<tr>
+										<th align="right" valign="top">
+											<code>kDropFiles</code> :</th>
+										<td>The path string (for MAC the FSSpec).</td>
+									</tr>
+									<tr>
+										<th align="right" valign="top">
+											<code>kDropText</code> :</th>
+										<td>A text string.</td>
+									</tr>
+								</tbody>
+							</table>
+						</td>
+					</tr>
+					<tr>
+						<th align="right" valign="top">
+							<code>nbItems</code></th>
+						<td>The number of items droped.</td>
+					</tr>
+					<tr>
+						<th align="right" valign="top">
+							<code>type</code></th>
+						<td>A constant from <a href="file:///C:/Dokumente%20und%20Einstellungen/pcamillieri/Eigene%20Dateien/Data/VST%20SDK/vstsdk-doc/html/plug/gui/CDropType.html">
+								CDropType</a>
+						</td>
+					</tr>
+					<tr>
+						<th align="right" valign="top">
+							<code>where</code></th>
+						<td>The mouse location.</td>
+					</tr>
+					<tr>
+						<th align="right" valign="top">
+							<code>return</code></th>
+						<td>
+							<table>
+								<tbody>
+									<tr>
+										<th>
+											<code>true</code> :</th>
+										<td>The drop is used.</td>
+									</tr>
+								</tbody>
+							</table>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<hr width="100%" size="2">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="onWheel">onWheel</a>
+							</h4>
+						</td>
+						<td align="right">
+							<h4>2.1</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">virtual bool onWheel (<a href="CDrawContext.html">CDrawContext</a> *pContext, const <a href="CPoint.html">CPoint</a> &amp;where, float distance);</div>
+<P></P>
+			<p><code></code></p>
+			<p><code></code></p>
+			<hr noshade size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="looseFocus">looseFocus</a>
+							</h4>
+						</td>
+						<td align="right">
+							<h4>1.0</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">virtual void looseFocus ();</div>
+<P></P>
+			<p>The view has no more the focus...<code><br>
+				</code>
+			</p>
+			<hr noshade size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="takeFocus">takeFocus</a>
+							</h4>
+						</td>
+						<td align="right">
+							<h4>1.0</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">virtual void takeFocus ();</div>
+<P></P>
+			The view has now the focus on...<br>
+			<br>
+			<hr noshade size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="isDirty">isDirty</a>
+							</h4>
+						</td>
+						<td align="right">
+							<h4>2.1</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">virtual bool isDirty ();</div>
+<P></P>
+			<p>Returns <code>true</code> if the view is dirty.</p>
+			<hr noshade size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="setDirty">setDirty</a>
+							</h4>
+						</td>
+						<td align="right">
+							<h4>2.1</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">virtual void setDirty (const bool val = true);</div>
+<P></P>
+			<p>Sets the <code>dirty</code> value of the view.</p>
+			<hr noshade size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="setMouseEnabled">setMouseEnabled</a>
+							</h4>
+						</td>
+						<td align="right">
+							<h4>2.0</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">virtual void setMouseEnabled (const bool bEnable = true);</div>
+<P></P>
+			<p>Enable or disable the action of the mouse.</p>
+			<hr noshade size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="getMouseEnabled">getMouseEnabled</a>
+							</h4>
+						</td>
+						<td align="right">
+							<h4>2.0</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">virtual bool getMouseEnabled ();</div>
+<P></P>
+			<p>Gets the status of the mouse for this view.</p>
+			<hr noshade size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="setMouseableArea">setMouseableArea</a>
+							</h4>
+						</td>
+						<td align="right">
+							<h4>2.0</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">virtual void setMouseableArea (const <a href="CRect.html">CRect</a> &amp;rect)</div>
+<P></P>
+			<p>Sets the mouseable area of this view.</p>
+			<hr noshade size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="getMouseableArea">getMouseableArea</a>
+							</h4>
+						</td>
+						<td align="right">
+							<h4>2.0</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">virtual <a href="CRect.html">CRect</a> &amp;getMouseableArea (<a href="CRect.html">CRect</a>&amp; rect);</div>
+<P></P>
+			<p>Returns the mouseable area of this view.</p>
+			<hr width="100%" size="2">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="getMouseableArea">hitTest</a>
+							</h4>
+						</td>
+						<td align="right">
+							<h4>2.2</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">virtual bool hitTest (const <a href="CPoint.html">CPoint</a>&amp; where, const long buttons);</div>
+<P></P>
+			<p>Check whether the mouse click occured inside the view.<br>
+			</p>
+			<hr noshade size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="setTransparency">setTransparency</a>
+							</h4>
+						</td>
+						<td align="right">
+							<h4>2.0</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">virtual void setTransparency (bool val);</div>
+<P></P>
+			<p>Sets the transparency status of drawing mode for the pixmap.</p>
+			<hr noshade size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="getTransparency">getTransparency</a>
+							</h4>
+						</td>
+						<td align="right">
+							<h4>2.0</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">virtual bool getTransparency () ;</div>
+<P></P>
+			<p>Returns the transparency status of drawing mode for the pixmap.</p>
+			<p><code></code></p>
+			<hr noshade size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="getHeight">getHeight</a>
+							</h4>
+						</td>
+						<td align="right">
+							<h4>1.0</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">long getHeight ();</div>
+<P></P>
+			<p>Returns the height of this view.</p>
+			<hr noshade size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="getWidth">getWidth</a>
+							</h4>
+						</td>
+						<td align="right">
+							<h4>1.0</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">long getWidth ();</div>
+<P></P>
+			<p>Returns the width of this view.</p>
+			<hr width="100%" size="2">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="setViewSize">setViewSize </a>
+							</h4>
+						</td>
+						<td align="right">
+							<h4>2.1</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">virtual void setViewSize (<a href="CRect.html">CRect</a> &amp;rect);</div>
+<P></P>
+			<p>Sets the enclosing rectangle of the View (size).</p>
+			<hr width="100%" size="2">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="getViewSize">getViewSize</a>
+							</h4>
+						</td>
+						<td align="right">
+							<h4>2.1</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">virtual <a href="CRect.html">CRect</a> &amp;getViewSize (<a href="CRect.html">CRect</a>&amp;rect);</div>
+<P></P>
+			<p>Returns the enclosing rectangle of the View (size).</p>
+			<hr noshade size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="getParent">getParent</a>
+							</h4>
+						</td>
+						<td align="right">
+							<h4>1.0</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp"><a href="CFrame.html">CFrame</a> *getParent ();</div>
+<P></P>
+			<p>Returns the parent frame.</p>
+			<hr noshade size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="setParent">setParent</a>
+							</h4>
+						</td>
+						<td align="right">
+							<h4>2.0</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">virtual void setParent (<a href="CFrame.html">CFrame</a> *pParent);</div>
+<P></P>
+			<p>Sets the parent frame.</p>
+			<hr width="100%" size="2">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="setParentView">setParentView</a>
+							</h4>
+						</td>
+						<td align="right">
+							<h4>2.2</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">virtual void setParentView (<a href="CView.html">CView</a> *pParentView);</div>
+<P></P>
+			<p>Sets the parent view.</p>
+			<hr width="100%" size="2">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="setParent">getEditor</a>
+							</h4>
+						</td>
+						<td align="right">
+							<h4>2.0</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">virtual void *getEditor ();</div>
+<P></P>
+			<p>Returns the AEffGUIEditor of the view.<br>
+			</p>
+			<hr noshade size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="removed">removed</a>
+							</h4>
+						</td>
+						<td align="right">
+							<h4>2.1</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">virtual bool removed (CView *parent);</div>
+<P></P>
+			<p>Called when this view is removed from its parent.</p>
+			<hr noshade size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="attached">attached</a>
+							</h4>
+						</td>
+						<td align="right">
+							<h4>2.1</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">virtual bool attached (CView *view);</div>
+<P></P>
+			<p>It has been attached to a view.</p>
+			<hr noshade size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="getParentView">getParentView</a>
+							</h4>
+						</td>
+						<td align="right">
+							<h4>2.0</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">CView *getParentView ();</div>
+<P></P>
+			<p>Returns the parent view of the actual one.<br>
+			</p>
+			<hr noshade size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="removed">removed</a>
+							</h4>
+						</td>
+						<td align="right">
+							<h4>2.1</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">virtual bool removed (CView *parent);</div>
+<P></P>
+			<p>It has have been removed from parent view.</p>
+			<hr noshade size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="attached">attached</a>
+							</h4>
+						</td>
+						<td align="right">
+							<h4>2.1</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">virtual bool attached (CView *view);</div>
+<P></P>
+			<p>It has been attached to a view.</p>
+			<hr noshade size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="forget">forget</a>
+							</h4>
+						</td>
+						<td align="right">
+							<h4>2.1</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">virtual void forget ();</div>
+<P></P>
+			<p>Someone who was referencing this view doesn't do it anymore. When the view isn't 
+				referenced by anyone, it is destructed.<br>
+			</p>
+			<hr noshade size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="remember">remember</a>
+							</h4>
+						</td>
+						<td align="right">
+							<h4>2.1</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">virtual void remember ();</div>
+<P></P>
+			<p>Someone is referencing this view.<br>
+			</p>
+			<hr noshade size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="getNbReference">getNbReference</a>
+							</h4>
+						</td>
+						<td align="right">
+							<h4>2.1</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">virtual long getNbReference ();</div>
+<P></P>
+			<p>Returns the number of objects which have a reference to this view.<br>
+			</p>
+			<hr noshade size="4">
+			<div align="center">Copyright &copy;2003 <a href="http://www.steinberg.net" target="_blank">
+					<u>Steinberg Media Technologies GmbH</u></a>.
+			</div>
+			<DIV align=center><FONT size=1>Last Modified:
+			<SCRIPT language=Javascript %>document.writeln(document.lastModified);</SCRIPT>
+			</FONT></DIV>
+			<br>
+		</div>
+		<br></CODE>
+	</body>
+</html>

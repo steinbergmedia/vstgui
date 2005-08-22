@@ -1,0 +1,62 @@
+<html>
+<head>
+	<base target="vstdoc">
+	<title>CAnimKnob</title>
+	
+<link rel="stylesheet" href="../../formate.txt" type="text/css">
+</head>
+<body>
+
+<code><pre>
+//------------------------------------------------------------------------
+// CAnimKnob
+//------------------------------------------------------------------------
+CAnimKnob::CAnimKnob (const CRect &size, CControlListener *listener, long tag,
+                      long subPixmaps,         // number of subPixmaps
+                      long heightOfOneImage,   // height of one image in pixel
+                      CBitmap *background, CPoint &offset)
+: CKnob (size, listener, tag, background, 0, offset), 
+   subPixmaps (subPixmaps), heightOfOneImage (heightOfOneImage), bInverseBitmap (false)
+{
+	inset = 0;
+}
+
+//------------------------------------------------------------------------
+CAnimKnob::~CAnimKnob ()
+{}
+
+//------------------------------------------------------------------------
+void CAnimKnob::draw (CDrawContext *pContext)
+{
+	CPoint where (0, 0);
+	if (value >= 0.f) 
+	{
+		long tmp = heightOfOneImage * (subPixmaps - 1);
+		if (bInverseBitmap)
+			where.v = (long)((1 - value) * (float)tmp);
+		else
+			where.v = (long)(value * (float)tmp);
+		for (long realY = 0; realY <= tmp; realY += heightOfOneImage) 
+		{
+			if (where.v < realY) 
+			{
+				where.v = realY - heightOfOneImage;
+				if (where.v < 0)
+					where.v = 0;
+				break;
+			}
+		}
+	}
+
+	if (pBackground)
+	{
+		if (bTransparencyEnabled)
+			pBackground->drawTransparent (pContext, size, where);
+		else
+			pBackground->draw (pContext, size, where);
+	}
+	setDirty (false);
+}
+</pre></code>
+</body>
+</html>

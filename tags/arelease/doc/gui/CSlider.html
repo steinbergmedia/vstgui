@@ -1,0 +1,459 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+	<head>
+		<base target="vstdoc">
+		<title>CSlider</title>
+		<link rel="stylesheet" href="../sdkdoc.css" type="text/css">
+	</head>
+	<body>
+		<div>
+			<h2>CSlider</h2>
+			<p><code>#include &lt;vstcontrols.h&gt;</code></p>
+			<p><code>class CSlider : public <a href="CControl.html">CControl</a>;</code></p>
+			<p>Define a slider with a given background and handle. The range of variation of 
+				the handle should be defined. By default the handler is drawn with transparency 
+				(white color). By clicking Alt+Left Mouse the default value is used.</p>
+			<h4>See also :</h4>
+			<ul>
+				<li>
+					<code><a href="CHorizontalSlider.html">CHorizontalSlider</a></code></li>
+				<li>
+					<code><a href="CVerticalSlider.html">CVerticalSlider</a></code></li>
+			</ul>
+			<p><img src="images/source.jpg" alt="[source]"> <a href="sources/sCSlider.html" target="sources">
+					source</a></p>
+			<hr noshade="noshade" size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="CSlider"></a>CSlider<br>
+							</h4>
+						</td>
+						<td align="right">
+							<h4>2.2</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">CSlider (<a href="CRect.html">CRect</a> &amp;size, <a href="CControlListener.html">	CControlListener</a> *listener, long tag, int iMinPos, int iMaxPos, <a href="CBitmap.html">CBitmap</a> *handle, <a href="CBitmap.html">CBitmap</a> *bk, <a href="CPoint.html">CPoint</a> &amp;offset, long style);</div>
+			</p>
+			<p>Creates a slider object.</p>
+			<table width="100%" cellpadding="0" cellspacing="0" border="1" bordercolor="#000000">
+				<tbody>
+					<tr>
+						<th align="right" valign="top">
+							<code>size</code></th>
+						<td>The coordinates of the enclosing rectangle, relative to the parent frame.</td>
+					</tr>
+					<tr>
+						<th align="right" valign="top">
+							<code>listener</code></th>
+						<td>The object responsible for handling events in this control. for this control.</td>
+					</tr>
+					<tr>
+						<th align="right" valign="top">
+							<code>tag</code></th>
+						<td>The index of the control.</td>
+					</tr>
+					<tr>
+						<th align="right" valign="top">
+							<code>iMinPos</code></th>
+						<td>The minimal position of the slider, in pixel relative to the parent frame.</td>
+					</tr>
+					<tr>
+						<th align="right" valign="top">
+							<code>iMaxPos</code></th>
+						<td>The maximal position of the slider, in pixel relative to the parent frame.</td>
+					</tr>
+					<tr>
+						<th align="right" valign="top">
+							<code>handle</code></th>
+						<td>The pixmap of the slider</td>
+					</tr>
+					<tr>
+						<th align="right" valign="top">
+							<code>bk</code></th>
+						<td>The pixmap of the background.</td>
+					</tr>
+					<tr>
+						<th align="right" valign="top">
+							<code>offset</code></th>
+						<td>The top-left point of the displayed area of the background, relative to the 
+							control.</td>
+					</tr>
+					<tr>
+						<th align="right" valign="top">
+							<code>style</code></th>
+						<td>Used to define the orientation and the zero position of the slider. For example <code>
+								kLeft|kHorizontal </code>defines an horizontal slider, with the 0 on the 
+							left. See <code><a href="CControlEnum.html">CControlEnum</a>.</code></td>
+					</tr>
+				</tbody>
+			</table>
+			<h4>Example of a vertical slider :<a href="sources/sCVerticalSlider.html" target="sources"><br>
+				</a>
+			</h4>
+			<p>
+				<img src="images/CVerticalSlider.jpg" alt="CVerticalSlider">
+			</p>
+			<h4>Code example :</h4>
+			<code>
+				<pre>myFaderBodyPixmap<br>    = new CBitmap (kFaderBodyPixmapID);<br>myFaderHandlePixmap<br>    = new CBitmap (kFaderHandlePixmapID);<br>size (<br>    kMyFader_left,<br>    kMyFader_top,<br>    kMyFader_left + myFaderBodyPixmap-&gt;getWidth (),<br>    kMyFader_top +  myFaderBodyPixmap-&gt;getHeight ()<br>);<br>int minPos = kMyFader_top;<br>int maxPos = kMyFader_top<br>    + myFaderBodyPixmap-&gt;getHeight ()<br>    - myFaderHandlePixmap-&gt;getHeight () - 1;<br>CPoint offset (0, 0);<br>myFader = new CSlider (<br>    size,<br>    this,<br>    kMyParameter,<br>    minPos,<br>    maxPos,<br>    myFaderHandlePixmap,<br>    myFaderBodyPixmap,<br>    offset,<br>    kVertical | kBottom<br>);<br>myFader-&gt;setOffsetHandle (offset);<br>myFader-&gt;setValue (effect-&gt;getParameter (kMyParameter));<br>frame-&gt;addView (myFader);</pre>
+			</code>
+			<hr noshade="noshade" size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="CSlider2"></a>CSlider<br>
+							</h4>
+						</td>
+						<td align="right">
+							<h4>2.2</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">CSlider (<a href="CRect.html">CRect</a>&amp;size, <a href="CControlListener.html">CControlListener</a> *listener, long tag, CPoint &amp;offsetHandle, long rangeHandle, <a href="CBitmap.html">CBitmap</a> *handle, <a href="CBitmap.html">CBitmap</a> *bk, <a href="CPoint.html">CPoint</a> &amp;offset, long style);</div>
+			</p>
+			<p>Creates a slider object.<br>
+			</p>
+			<table width="100%" cellpadding="0" cellspacing="0" border="1" bordercolor="#000000">
+				<tbody>
+					<tr>
+						<th align="right" valign="top">
+							<code>size</code></th>
+						<td>The coordinates of the enclosing rectangle, relative to the parent frame.</td>
+					</tr>
+					<tr>
+						<th align="right" valign="top">
+							<code>listener</code></th>
+						<td>The object responsible for handling events in this control. for this control.</td>
+					</tr>
+					<tr>
+						<th align="right" valign="top">
+							<code>tag</code></th>
+						<td>The index of the control.</td>
+					</tr>
+					<tr>
+						<th align="right" valign="top">
+							<code>offsetHandle</code></th>
+						<td>The offset of the handle.</td>
+					</tr>
+					<tr>
+						<th align="right" valign="top">
+							<code>rangeHandle</code></th>
+						<td>The size of the handle range.<br>
+						</td>
+					</tr>
+					<tr>
+						<th align="right" valign="top">
+							<code>handle</code></th>
+						<td>The pixmap of the slider</td>
+					</tr>
+					<tr>
+						<th align="right" valign="top">
+							<code>bk</code></th>
+						<td>The pixmap of the background.</td>
+					</tr>
+					<tr>
+						<th align="right" valign="top">
+							<code>offset</code></th>
+						<td>The top-left point of the displayed area of the background, relative to the 
+							control.</td>
+					</tr>
+					<tr>
+						<th align="right" valign="top">
+							<code>style</code></th>
+						<td>Used to define the orientation and the zero position of the slider. For example <code>
+								kLeft|kHorizontal </code>defines an horizontal slider, with the 0 on the 
+							left. See <code><a href="file:///C:/Dokumente%20und%20Einstellungen/pcamillieri/Eigene%20Dateien/Data/VST%20SDK/vstsdk-doc/html/plug/gui/CControlEnum.html">
+									CControlEnum</a>.</code></td>
+					</tr>
+				</tbody>
+			</table>
+			<br>
+			<br>
+			<hr width="100%" size="2">
+			<table width="100%">
+			</table>
+			<h4>
+			</h4>
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="_CSlider"></a>~CSlider</h4>
+						</td>
+						<td align="right">
+							<h4>2.2</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">~CSlider ();</div>
+			</p>
+			<p>
+			</p>
+			<p>Destroys a Slider object. The bitmaps are destroyed if there is no more 
+				reference on it.</p>
+			<hr width="100%" size="2">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="attached">attached</a></h4>
+						</td>
+						<td align="right">
+							<h4>2.2</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">virtual bool attached (<a href="CView.html">CView</a> *parent);</div>
+			</p>
+			<p>Creates a COffscreenContext for the slider.<br>
+			</p>
+			<hr width="100%" size="2">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="removed">removed</a></h4>
+						</td>
+						<td align="right">
+							<h4>2.2</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">virtual bool removed (<a href="CView.html">CView</a>*parent);</div>
+			</p>
+			<p><code>Removes the COffscreenContext created for the slider.<br>
+				</code>
+			</p>
+			<p><code></code></p>
+			<hr noshade="noshade" size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="" draw="">draw</a></h4>
+						</td>
+						<td align="right">
+							<h4>2.2</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">void draw (<a href="CDrawContext.html">CDrawContext</a> *drawContext);</div>
+			</p>
+			<p>
+			</p>
+			<p>Called when this control object needs to be drawn.</p>
+			<p><img src="images/source.jpg" alt="[source]"> <a href="sources/sCSlider.html" target="sources">
+					source</a></p>
+			<hr noshade="noshade" size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="" mouse="">mouse</a></h4>
+						</td>
+						<td align="right">
+							<h4>2.2</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">void mouse (<a href="CDrawContext.html">CDrawContext</a> *context, <a href="CPoint.html">CPoint</a> &amp;where);</div>
+			</p>
+			<p>
+			</p>
+			<p>Called when there is a mouse-click inside this control object.</p>
+			<h4>See also :</h4>
+			<ul>
+				<li>
+					The <code>CControlListener</code>'s <code><a href="CControlListener.html#valueChanged">valueChanged</a></code>
+					method which is called when the value has changed.</li>
+			</ul>
+			<p><img src="images/source.jpg" alt="[source]"> <a href="sources/sCSlider.html" target="sources">
+					source</a></p>
+			<hr noshade="noshade" size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="onWheel">onWheel</a></h4>
+						</td>
+						<td align="right">
+							<h4>2.2</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">virtual bool onWheel (<a href="CDrawContext.html">CDrawContext</a> *pContext, const <a href="CPoint.html">CPoint</a> &amp;where, float distance);</div>
+			</p>
+			<p><img src="images/source.jpg" alt="[source]"> <a href="sources/sCSlider.html" target="sources">
+					source</a></p>
+			<hr width="100%" size="2">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="onKeyDown">onKeyDown</a></h4>
+						</td>
+						<td align="right">
+							<h4>2.2</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">virtual bool onKeyDown (VstKeyCode&amp; keyCode);</div>
+			</p>
+			<hr noshade="noshade" size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="" setdrawtransparenthandle="">setDrawTransparentHandle</a></h4>
+						</td>
+						<td align="right">
+							<h4>2.2</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">void setDrawTransparentHandle (bool val);</div>
+			</p>
+			<p>
+			</p>
+			<p>Allows to specify if the handle must be drawn with or without transparency.</p>
+			<hr noshade="noshade" size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="" setfreeclick="">setFreeClick</a></h4>
+						</td>
+						<td align="right">
+							<h4>2.2</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">void setFreeClick (bool val);</div>
+			</p>
+			<p>With <code>true</code> the current position is set at click position (default 
+				behaviour), else you have to drag the handle.</p>
+			<hr noshade="noshade" size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="" getfreeclick="">getFreeClick</a></h4>
+						</td>
+						<td align="right">
+							<h4>2.2</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">bool getFreeClick () ;</div>
+			</p>
+			<p>Returns the current status of the handle mode.</p>
+			<hr noshade="noshade" size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="" setoffsethandle="">setOffsetHandle</a></h4>
+						</td>
+						<td align="right">
+							<h4>2.2</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">void setOffsetHandle (<a href="CPoint.html">CPoint</a> val);</div>
+			</p>
+			<p>Allows to specify the offset of the handle in the slider background.</p>
+			<hr noshade="noshade" size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="" sethandle="">setHandle</a></h4>
+						</td>
+						<td align="right">
+							<h4>2.2</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">void setHandle (<a href="CBitmap.html">CBitmap</a> handle);</div>
+			</p>
+			<p>Sets the handle pixmap.</p>
+			<p><img src="images/source.jpg" alt="[source]"> <a href="sources/sCSlider.html" target="sources">
+					source</a></p>
+			<hr noshade="noshade" size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="" gethandle="">getHandle</a></h4>
+						</td>
+						<td align="right">
+							<h4>2.2</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp"><a href="CBitmap.html">CBitmap</a> *getHandle ();</div>
+			</p>
+			<p>Returns the handle pixmap.</p>
+			<hr noshade="noshade" size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="" setzoomfactor="">setZoomFactor</a></h4>
+						</td>
+						<td align="right">
+							<h4>2.2</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">void setZoomFactor (float val);</div>
+			</p>
+			<p>Sets the zoom factor for the shift mode (slower move).</p>
+			<hr noshade="noshade" size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="" getzoomfactor="">getZoomFactor</a></h4>
+						</td>
+						<td align="right">
+							<h4>2.2</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">float getZoomFactor ();</div>
+			</p>
+			<p>Returns the zoom factor.</p>
+			<hr noshade="noshade" size="4">
+			<div align="center">Copyright &copy;2003 <a href="http://www.steinberg.net" target="_blank">
+					<u>Steinberg Media Technologies GmbH</u></a>.
+			</div>
+			<DIV align=center><FONT size=1>Last Modified:
+			<SCRIPT language=Javascript %>document.writeln(document.lastModified);</SCRIPT>
+			</FONT></DIV>
+			<br>
+		</div>
+		<br>
+	</body>
+</html>

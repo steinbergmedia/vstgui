@@ -1,0 +1,118 @@
+<html>
+	<head>
+		<title>CFont</title>
+		<base target="vstdoc">
+		<link rel="stylesheet" href="../sdkdoc.css" type="text/css">
+	</head>
+	<body>
+	<div>
+		<h2>CFont</h2>
+		<p><code>#include &lt;vstgui.h&gt;</code></p>
+		<p><code>enum CFont;</code></p>
+		<p><code>CFont</code> is an enum with specific values for each font's type :</p>
+		<table width="100%" cellpadding="0" cellspacing="0" border="1" bordercolor="#000000">
+			<tr>
+				<th>
+					value</th>
+				<th>
+					size in pixel</th>
+				<th>
+					version</th>
+			</tr>
+			<tr>
+				<td><code>kSystemFont</code></td>
+				<td>12</td>
+				<td>1.0</td>
+			</tr>
+			<tr>
+				<td><code>kNormalFontVeryBig</code></td>
+				<td>18</td>
+				<td>1.0</td>
+			</tr>
+			<tr>
+				<td><code>kNormalFontBig</code></td>
+				<td>14</td>
+				<td>1.0</td>
+			</tr>
+			<tr>
+				<td><code>kNormalFont</code></td>
+				<td>12</td>
+				<td>1.0</td>
+			</tr>
+			<tr>
+				<td><code>kNormalFontSmall</code></td>
+				<td><table>
+						<tr>
+							<td>10</td>
+							<td>MOTIF, MAC</td>
+						</tr>
+						<tr>
+							<td>11</td>
+							<td>WINDOWS</td>
+						</tr>
+					</table>
+				</td>
+				<td>1.0</td>
+			</tr>
+			<tr>
+				<td><code>kNormalFontSmaller</code></td>
+				<td><table>
+						<tr>
+							<td>9</td>
+							<td>MOTIF, MAC</td>
+						</tr>
+						<tr>
+							<td>10</td>
+							<td>WINDOWS</td>
+						</tr>
+					</table>
+				</td>
+				<td>2.0</td>
+			</tr>
+			<tr>
+				<td><code>kNormalFontVerySmall</code></td>
+				<td><table>
+						<tr>
+							<td>8</td>
+							<td>MOTIF, MAC</td>
+						</tr>
+						<tr>
+							<td>9</td>
+							<td>WINDOWS</td>
+						</tr>
+					</table>
+				</td>
+				<td>1.0</td>
+			</tr>
+			<tr>
+				<td><code>kSymbolFont</code></td>
+				<td><table>
+						<tr>
+							<td>12</td>
+							<td>MOTIF, MAC</td>
+						</tr>
+						<tr>
+							<td>13</td>
+							<td>WINDOWS</td>
+						</tr>
+					</table>
+				</td>
+				<td>1.0</td>
+			</tr>
+		</table>
+		<h4>Example :</h4>
+		<code>
+			<pre>CParamDisplay *myParamDisplay
+    = new CParamDisplay (...);
+myParamDisplay-&gt;setFont (kSystemFont);</pre>
+		</code>
+		<hr noShade SIZE="4">
+		<div align="center">Copyright &copy;2003 <a href="http://www.steinberg.net" target="_blank"><u>Steinberg 
+					Media Technologies GmbH</u></a>.
+		</div>
+		<DIV align=center><FONT size=1>Last Modified:
+		<SCRIPT language=Javascript %>document.writeln(document.lastModified);</SCRIPT>
+		</FONT></DIV>
+		</div>
+	</body>
+</html>

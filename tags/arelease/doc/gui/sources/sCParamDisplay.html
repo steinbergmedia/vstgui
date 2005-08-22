@@ -1,0 +1,233 @@
+<html>
+<head>
+	<base target="vstdoc">
+	<title>CParamDisplay</title>
+	
+<link rel="stylesheet" href="../../formate.txt" type="text/css">
+</head>
+<body>
+
+
+<code><pre>//------------------------------------------------------------------------
+// CParamDisplay
+//------------------------------------------------------------------------
+CParamDisplay::CParamDisplay (const CRect &size, CBitmap *background, const long style)
+:	CControl (size, 0, 0, background), horiTxtAlign (kCenterText), style (style),
+ stringConvert (0), stringConvert2 (0), string2FloatConvert (0), bTextTransparencyEnabled (true)
+{
+	offset (0, 0);
+
+	fontID      = kNormalFont;
+	txtFace     = kNormalFace;
+	fontColor   = kWhiteCColor;
+	backColor   = kBlackCColor;
+	frameColor  = kBlackCColor;
+	shadowColor = kRedCColor;
+	userData    = 0;
+	if (style & kNoDrawStyle)
+		setDirty (false);
+}
+
+//------------------------------------------------------------------------
+CParamDisplay::~CParamDisplay ()
+{}
+
+//------------------------------------------------------------------------
+void CParamDisplay::setStyle (long val)
+{
+	if (style != val)
+	{
+		style = val;
+		setDirty ();
+	}
+}
+
+//------------------------------------------------------------------------
+void CParamDisplay::draw (CDrawContext *pContext)
+{
+	char string[256];
+
+	if (stringConvert2)
+	{
+		string[0] = 0;
+		stringConvert2 (value, string, userData);
+	}
+	else if (stringConvert)
+	{
+		string[0] = 0;
+		stringConvert (value, string);
+	}
+	else
+		sprintf (string, "%2.2f", value);
+
+	drawText (pContext, string);
+}
+
+//------------------------------------------------------------------------
+void CParamDisplay::drawText (CDrawContext *pContext, char *string, CBitmap *newBack)
+{
+	setDirty (false);
+
+	if (style & kNoDrawStyle)
+		return;
+
+	// draw the background
+	if (newBack)
+	{
+		if (bTransparencyEnabled)
+			newBack->drawTransparent (pContext, size, offset);
+		else
+			newBack->draw (pContext, size, offset);
+	}
+	else if (pBackground)
+	{
+		if (bTransparencyEnabled)
+			pBackground->drawTransparent (pContext, size, offset);
+		else
+			pBackground->draw (pContext, size, offset);
+	}
+	else
+	{
+		if (!bTransparencyEnabled)
+		{
+			pContext->setFillColor (backColor);
+			pContext->fillRect (size);
+	
+			if (!(style & (k3DIn|k3DOut))) 
+			{
+				pContext->setFrameColor (frameColor);
+				pContext->drawRect (size);
+			}
+		}
+	}
+	// draw the frame for the 3D effect
+	if (style & (k3DIn|k3DOut)) 
+	{
+		if (style & k3DIn)
+			pContext->setFrameColor (backColor);
+		else
+			pContext->setFrameColor (frameColor);
+		CPoint p;
+		pContext->moveTo (p (size.left, size.bottom));
+		pContext->lineTo (p (size.left, size.top));
+		pContext->lineTo (p (size.right + 1, size.top));
+
+		if (style & k3DIn)
+			pContext->setFrameColor (frameColor);
+		else
+			pContext->setFrameColor (backColor);
+		pContext->moveTo (p (size.right, size.top + 1));
+		pContext->lineTo (p (size.right, size.bottom));
+		pContext->lineTo (p (size.left, size.bottom));
+	}
+
+	if (!(style & kNoTextStyle))
+	{
+		pContext->setFont (fontID, 0, txtFace);
+	
+		// draw darker text (as shadow)
+		if (style & kShadowText) 
+		{
+			CRect newSize (size);
+			newSize.offset (1, 1);
+			pContext->setFontColor (shadowColor);
+			pContext->drawString (string, newSize, !bTextTransparencyEnabled, horiTxtAlign);
+		}
+		pContext->setFontColor (fontColor);
+		pContext->drawString (string, size, !bTextTransparencyEnabled, horiTxtAlign);
+	}
+}
+
+//------------------------------------------------------------------------
+void CParamDisplay::setFont (CFont fontID)
+{
+	// to force the redraw
+	if (this->fontID != fontID)
+		setDirty ();
+	this->fontID = fontID;
+}
+
+//------------------------------------------------------------------------
+void CParamDisplay::setTxtFace (CTxtFace txtFace)
+{
+	// to force the redraw
+	if (this->txtFace != txtFace)
+		setDirty ();
+	this->txtFace = txtFace;
+}
+
+//------------------------------------------------------------------------
+void CParamDisplay::setFontColor (CColor color)
+{
+	// to force the redraw
+	if (fontColor != color)
+		setDirty ();
+	fontColor = color;
+}
+
+//------------------------------------------------------------------------
+void CParamDisplay::setBackColor (CColor color)
+{
+	// to force the redraw
+	if (backColor != color)
+		setDirty ();
+	backColor = color;
+}
+
+//------------------------------------------------------------------------
+void CParamDisplay::setFrameColor (CColor color)
+{
+	// to force the redraw
+	if (frameColor != color)
+		setDirty ();
+	frameColor = color;
+}
+
+//------------------------------------------------------------------------
+void CParamDisplay::setShadowColor (CColor color)
+{
+	// to force the redraw
+	if (shadowColor != color)
+		setDirty ();
+	shadowColor = color;
+}
+
+//------------------------------------------------------------------------
+void CParamDisplay::setHoriAlign (CHoriTxtAlign hAlign)
+{
+	// to force the redraw
+	if (horiTxtAlign != hAlign)
+		setDirty ();
+	horiTxtAlign = hAlign;
+}
+
+//------------------------------------------------------------------------
+void CParamDisplay::setBackOffset (CPoint &offset)
+{
+	this->offset = offset;
+}
+
+//------------------------------------------------------------------------
+void CParamDisplay::setStringConvert (void (*convert) (float value, char *string))
+{
+	stringConvert = convert;
+}
+
+//------------------------------------------------------------------------
+void CParamDisplay::setStringConvert (void (*convert) (float value, char *string,
+									  void *userDta), void *userData)
+{
+	stringConvert2 = convert;
+	this->userData = userData;
+}
+
+//------------------------------------------------------------------------
+void CParamDisplay::setString2FloatConvert (void (*convert) (char *string, float &output))
+{
+	string2FloatConvert = convert;
+}
+</pre></code>
+
+
+</body>
+</html>
