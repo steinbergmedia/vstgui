@@ -49,6 +49,7 @@ A:hover { text-decoration: underline; }
 #title
 {
 	margin-top: 10pt;
+	margin-bottom: 10pt;
 	font-size: 15pt;
 	background-color: #DDDDDD;
 	border: solid 1px #CCCCCC;
@@ -58,6 +59,7 @@ A:hover { text-decoration: underline; }
 #sflogo
 {
 	margin-top: 10px;
+	margin-right: 5px;
 	float: right;
 }
 
