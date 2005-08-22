@@ -72,3 +72,9 @@ A:hover { text-decoration: underline; }
 {
 	margin-left: 15pt;
 }
+
+#nightly
+{
+	margin-top: 5pt;
+	margin-left: 5pt;
+}
