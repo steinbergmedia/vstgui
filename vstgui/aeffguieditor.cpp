@@ -2,7 +2,7 @@
 // VST Plug-Ins SDK
 // VSTGUI: Graphical User Interface Framework for VST plugins
 //
-// Version 3.0       Date : 30/06/04
+// Version 3.5       Date : 30/06/04
 //
 //-----------------------------------------------------------------------------
 //
@@ -48,10 +48,6 @@
 
 #if WINDOWS
 static struct tagMSG windowsMessage;
-#endif
-
-#if MOTIF
-unsigned long _getTicks ();
 #endif
 
 //-----------------------------------------------------------------------------
@@ -230,9 +226,6 @@ unsigned long AEffGUIEditor::getTicks ()
 	#elif WINDOWS
 	return (unsigned long)GetTickCount ();
 	
-	#elif MOTIF
-	return _getTicks ();
-
 	#elif BEOS
 	return (system_time () / 1000);
 	#endif
@@ -297,28 +290,6 @@ long AEffGUIEditor::getRect (ERect **ppErect)
 	return true;
 }
 
-#if MOTIF
-//-----------------------------------------------------------------------------
-unsigned long _getTicks ()
-{
-	#if SGI
-	long long time;
-	syssgi (SGI_GET_UST, &time, 0);
-	return time / 1000000;
-	
-	#elif SUN
-	hrtime_t nanosecs = gethrtime ();
-	return (unsigned long long)nanosecs / 1000000UL;
-	
-	#elif LINUX
-	// gettimeofday is not what we need here, checkout API for hw time
-	struct timeval tv;
-	struct timezone tz;
-	gettimeofday (&tv, &tz);
-	return tv.tv_sec * 1000 + tv.tv_usec / 1000;
-	#endif
-}
-#endif
 #if MACX
 // -----------------------------------------------------------------------------
 // -----------------------------------------------------------------------------
