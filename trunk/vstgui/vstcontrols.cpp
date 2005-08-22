@@ -3,7 +3,7 @@
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 // Standard Control Objects
 //
-// Version 3.0       $Date: 2005-08-22 18:16:43 $
+// Version 3.5       $Date: 2005-08-22 18:40:55 $
 //
 // Added new objects        : Michael Schmidt          08.97
 // Added new objects        : Yvan Grabit              01.98

@@ -2,6 +2,8 @@
 
 	* branched for 3.0 (vstgui_300)
 	* removed all MOTIF code
+	* some code cleanup
+	* set version to 3.5
 
 2005-08-12 arne
 
