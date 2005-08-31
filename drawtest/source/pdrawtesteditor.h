@@ -32,7 +32,7 @@ public:
 
 	void setTabView (CFrame* frame, const CRect& r, long position);
 
-	virtual void valueChanged (CDrawContext *pContext, CControl *pControl);
+	virtual void valueChanged (CControl *pControl);
 
 protected:
 	virtual long open (void *ptr);

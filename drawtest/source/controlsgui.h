@@ -12,7 +12,7 @@ class ControlsGUI : public CViewContainer, CControlListener
 public:
 	ControlsGUI (const CRect &size, CFrame *pParent, CBitmap *pBackground = 0);
 
-	virtual void valueChanged (CDrawContext *pContext, CControl *pControl);
+	virtual void valueChanged (CControl *pControl);
 
 protected:
 
