@@ -37,9 +37,9 @@ public:
 	: CTabView (size, parent, tabBitmap, background, tabPosition)
 	, editor (editor) {}
 
-	virtual void mouse (CDrawContext *pContext, CPoint &where, long button = -1)
+	virtual CMouseEventResult onMouseDown (CPoint &where, const long &buttons)
 	{
-		if (button == kRButton)
+		if (buttons == kRButton)
 		{
 			CView* view = getViewAt (where);
 			if (!view || view->isTypeOf ("CTabButton"))
@@ -73,10 +73,10 @@ public:
 						alignTabs (kAlignCenter + res - 5);
 					}
 				}
-				return;
+				return kMouseDownEventHandledButDontNeedMovedOrUpEvents;
 			}
 		}
-		CTabView::mouse (pContext, where, button);
+		return CTabView::onMouseDown (where, buttons);
 	}
 
 	virtual bool selectTab (long index)
@@ -127,7 +127,7 @@ DrawTestEditor::~DrawTestEditor ()
 	backgroundBitmap->forget ();
 }
 
-void DrawTestEditor::valueChanged (CDrawContext *pContext, CControl *pControl)
+void DrawTestEditor::valueChanged (CControl *pControl)
 {
 }
 

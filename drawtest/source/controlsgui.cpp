@@ -50,10 +50,10 @@ public:
 	void draw (CDrawContext *pContext);
 
 	void setLabel (char *text);
-	virtual bool onDrop (CDrawContext* context, CDragContainer* drag, const CPoint& where);
-	virtual void onDragEnter (CDrawContext* context, CDragContainer* drag, const CPoint& where);
-	virtual void onDragLeave (CDrawContext* context, CDragContainer* drag, const CPoint& where);
-	virtual void onDragMove (CDrawContext* context, CDragContainer* drag, const CPoint& where);
+	virtual bool onDrop (CDragContainer* drag, const CPoint& where);
+	virtual void onDragEnter (CDragContainer* drag, const CPoint& where);
+	virtual void onDragLeave (CDragContainer* drag, const CPoint& where);
+	virtual void onDragMove (CDragContainer* drag, const CPoint& where);
 
 protected:
 	char label[256];
@@ -79,7 +79,7 @@ void CLabel::setLabel (char *text)
 	setDirty ();
 }
 
-bool CLabel::onDrop (CDrawContext* context, CDragContainer* drag, const CPoint& where)
+bool CLabel::onDrop (CDragContainer* drag, const CPoint& where)
 {
 	long size, type;
 	void* ptr = drag->first (size, type);
@@ -90,21 +90,21 @@ bool CLabel::onDrop (CDrawContext* context, CDragContainer* drag, const CPoint& 
 	return true;
 }
 
-void CLabel::onDragEnter (CDrawContext* context, CDragContainer* drag, const CPoint& where)
+void CLabel::onDragEnter (CDragContainer* drag, const CPoint& where)
 {
 	getFrame ()->setCursor (kCursorCopy);
 	focus = true;
 	setDirty ();
 }
 
-void CLabel::onDragLeave (CDrawContext* context, CDragContainer* drag, const CPoint& where)
+void CLabel::onDragLeave (CDragContainer* drag, const CPoint& where)
 {
 	getFrame ()->setCursor (kCursorNotAllowed);
 	focus = false;
 	setDirty ();
 }
 
-void CLabel::onDragMove (CDrawContext* context, CDragContainer* drag, const CPoint& where)
+void CLabel::onDragMove (CDragContainer* drag, const CPoint& where)
 {
 }
 
@@ -112,10 +112,9 @@ void CLabel::onDragMove (CDrawContext* context, CDragContainer* drag, const CPoi
 void CLabel::draw (CDrawContext *pContext)
 {
 	pContext->setFillColor (backColor);
-	pContext->fillRect (size);
 	pContext->setLineWidth (focus ? 2 : 1);
 	pContext->setFrameColor (fontColor);
-	pContext->drawRect (size);
+	pContext->drawRect (size, kDrawFilledAndStroked);
 
 	pContext->setFont (fontID);
 	pContext->setFontColor (fontColor);
@@ -468,7 +467,7 @@ ControlsGUI::ControlsGUI (const CRect &inSize, CFrame *frame, CBitmap *pBackgrou
 	outsideLabel->setDirty (true);
 }
 
-void ControlsGUI::valueChanged (CDrawContext *pContext, CControl *pControl)
+void ControlsGUI::valueChanged (CControl *pControl)
 {
 	// this is only to provide the same behaviour as the original controlsgui editor class in the vst sdk 2.3
 	// do not take this as an example on how to code !!!
