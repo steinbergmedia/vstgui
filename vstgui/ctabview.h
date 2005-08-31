@@ -79,7 +79,7 @@ public:
 		kAlignBottom = kAlignRight
 	};
 
-	virtual void valueChanged (CDrawContext *pContext, CControl *pControl);
+	virtual void valueChanged (CControl *pControl);
 //-----------------------------------------------------------------------------
 	CLASS_METHODS (CTabView, CViewContainer)
 protected:

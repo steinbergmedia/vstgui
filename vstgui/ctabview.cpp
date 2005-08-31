@@ -77,7 +77,7 @@ public:
 		}
 	}
 
-	void mouse (CDrawContext *pContext, CPoint &where, long button)
+/*	void mouse (CDrawContext *pContext, CPoint &where, long button)
 	{
 		if (!bMouseEnabled)
 			return;
@@ -90,15 +90,15 @@ public:
 		
 		if (listener)
 			listener->valueChanged (pContext, this);
-	}
+	}*/
 
-	virtual void onDragEnter (CDrawContext* context, CDragContainer* drag, const CPoint& where)
+	virtual void onDragEnter (CDragContainer* drag, const CPoint& where)
 	{
 		if (value == 0.f)
 		{
 			value = 1.f;
 			if (listener)
-				listener->valueChanged (context, this);
+				listener->valueChanged (this);
 		}
 	}
 
@@ -180,6 +180,7 @@ CTabView::CTabView (const CRect& size, CFrame* parent, const CRect& tabSize, CBi
 //-----------------------------------------------------------------------------
 CTabView::~CTabView ()
 {
+	pParentView = 0;
 	pParentFrame = 0;
 	removeAllTabs ();
 	if (tabBitmap)
@@ -315,11 +316,15 @@ void CTabView::setCurrentChild (CTabChildView* childView)
 		if (currentChild->button)
 			currentChild->button->setValue (1.f);
 	}
+	#if VSTGUI_USE_SYSTEM_EVENTS_FOR_DRAWING
+	invalid ();
+	#else
 	setDirty ();
+	#endif
 }
 
 //-----------------------------------------------------------------------------
-void CTabView::valueChanged (CDrawContext *pContext, CControl *pControl)
+void CTabView::valueChanged (CControl *pControl)
 {
 	if (pControl->isTypeOf ("CTabButton"))
 		selectTab (pControl->getTag () - kTabButtonTagStart);

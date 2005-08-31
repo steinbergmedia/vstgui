@@ -3,7 +3,7 @@
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 // Standard Control Objects
 //
-// Version 3.5       $Date: 2005-08-22 18:40:55 $
+// Version 3.5       $Date: 2005-08-31 15:46:57 $
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
@@ -108,11 +108,15 @@ class CControlListener
 {
 public:
 	#if USE_NAMESPACE
-	virtual void valueChanged (VSTGUI::CDrawContext *pContext, VSTGUI::CControl *pControl) = 0;
-	virtual long controlModifierClicked (VSTGUI::CDrawContext *pContext, VSTGUI::CControl *pControl, long button) { return 0; }	// return 1 if you want the control to not handle it, otherwise 0
+	virtual void valueChanged (VSTGUI::CControl *pControl) = 0;
+	virtual long controlModifierClicked (VSTGUI::CControl *pControl, long button) { return 0; }	// return 1 if you want the control to not handle it, otherwise 0
+	virtual void controlBeginEdit (VSTGUI::CControl *pControl) {}
+	virtual void controlEndEdit (VSTGUI::CControl *pControl) {}
 	#else
-	virtual void valueChanged (CDrawContext *pContext, CControl *pControl) = 0;
-	virtual long controlModifierClicked (CDrawContext *pContext, CControl *pControl, long button) { return 0; }	// return 1 if you want the control to not handle it, otherwise 0
+	virtual void valueChanged (CControl *pControl) = 0;
+	virtual long controlModifierClicked (CControl *pControl, long button) { return 0; }	// return 1 if you want the control to not handle it, otherwise 0
+	virtual void controlBeginEdit (CControl *pControl) {}
+	virtual void controlEndEdit (CControl *pControl) {}
 	#endif
 };
 
@@ -165,7 +169,7 @@ public:
 	virtual float getWheelInc () const { return wheelInc; }
 
 	virtual void bounceValue ();
-	virtual bool checkDefaultValue (CDrawContext *pContext, long button);
+	virtual bool checkDefaultValue (long button);
 
 	CControlListener* getListener () const { return listener; }
 	void setListener (CControlListener* l) { listener = l; }
@@ -203,6 +207,7 @@ public:
 
 	virtual void draw (CDrawContext*);
 	virtual void mouse (CDrawContext *pContext, CPoint &where, long button = -1);
+	virtual CMouseEventResult onMouseDown (CPoint &where, const long& buttons);
 
 	virtual long getStyle () const { return style; }
 	virtual void setStyle (long newStyle) { style = newStyle; }
@@ -322,13 +327,14 @@ public:
 
 	virtual	void draw (CDrawContext *pContext);
 	virtual	void mouse (CDrawContext *pContext, CPoint &where, long button = -1);
+	virtual CMouseEventResult onMouseDown (CPoint &where, const long& buttons);
 
 	virtual void setTextEditConvert (void (*editConvert) (char *input, char *string));
 	virtual void setTextEditConvert (void (*editConvert2) (char *input, char *string,
 										void *userDta), void *userData);
 
-	virtual	void takeFocus (CDrawContext *pContext = 0);
-	virtual	void looseFocus (CDrawContext *pContext = 0);
+	virtual	void takeFocus ();
+	virtual	void looseFocus ();
 
 	void *platformFontColor;
 	void *platformControl;
@@ -428,9 +434,10 @@ public:
 
 	virtual	void draw (CDrawContext *pContext);
 	virtual	void mouse (CDrawContext *pContext, CPoint &where, long button = -1);
+	virtual CMouseEventResult onMouseDown (CPoint &where, const long& buttons);
 
-	virtual	void takeFocus (CDrawContext *pContext = 0);
-	virtual	void looseFocus (CDrawContext *pContext = 0);
+	virtual	void takeFocus ();
+	virtual	void looseFocus ();
 
 	virtual void setNbItemsPerColumn (long val) { nbItemsPerColumn = val; }
 	virtual long getNbItemsPerColumn () const { return nbItemsPerColumn; }
@@ -497,8 +504,12 @@ public:
 
 	virtual void draw (CDrawContext *pContext);
 	virtual	void mouse (CDrawContext *pContext, CPoint &where, long button = -1);
-	virtual bool onWheel (CDrawContext *pContext, const CPoint &where, float distance);
+	virtual bool onWheel (const CPoint &where, const float &distance, const long &buttons);
 	virtual long onKeyDown (VstKeyCode& keyCode);
+
+	virtual CMouseEventResult onMouseDown (CPoint &where, const long& buttons);
+	virtual CMouseEventResult onMouseUp (CPoint &where, const long& buttons);
+	virtual CMouseEventResult onMouseMoved (CPoint &where, const long& buttons);
 
 	virtual void drawHandle (CDrawContext *pContext);
 
@@ -526,7 +537,8 @@ public:
 protected:
 	void compute ();
 
-	CPoint   offset;
+	CPoint offset;
+	
 	CColor   colorHandle, colorShadowHandle;
 
 	CBitmap *pHandle;
@@ -535,6 +547,17 @@ protected:
 	float    aCoef, bCoef;
 	float    radius;
 	float    zoomFactor;
+
+private:
+	CPoint firstPoint;
+	CPoint lastPoint;
+	float  startValue;
+	float  fEntryState;
+	float  range;
+	float  coef;
+	long   oldButton;
+	bool   modeLinear;
+	
 };
 
 //-----------------------------------------------------------------------------
@@ -586,6 +609,10 @@ public:
 	virtual void draw (CDrawContext*);
 	virtual void mouse (CDrawContext *pContext, CPoint &where, long button = -1);
 
+	virtual CMouseEventResult onMouseDown (CPoint &where, const long& buttons);
+	virtual CMouseEventResult onMouseUp (CPoint &where, const long& buttons);
+	virtual CMouseEventResult onMouseMoved (CPoint &where, const long& buttons);
+
 	CLASS_METHODS(CVerticalSwitch, CControl)
 
 protected:
@@ -593,6 +620,9 @@ protected:
 	long	subPixmaps;            // number of subPixmaps
 	CCoord	heightOfOneImage;
 	long	iMaxPositions;
+
+private:
+	double coef;
 };
 
 
@@ -615,6 +645,10 @@ public:
 	virtual void draw (CDrawContext*);
 	virtual void mouse (CDrawContext *pContext, CPoint &where, long button = -1);
 
+	virtual CMouseEventResult onMouseDown (CPoint &where, const long& buttons);
+	virtual CMouseEventResult onMouseUp (CPoint &where, const long& buttons);
+	virtual CMouseEventResult onMouseMoved (CPoint &where, const long& buttons);
+
 	CLASS_METHODS(CHorizontalSwitch, CControl)
 
 protected:
@@ -622,6 +656,9 @@ protected:
 	long	subPixmaps;        // number of subPixmaps
 	long	iMaxPositions;
 	CCoord	heightOfOneImage;
+
+private:
+	double coef;
 };
 
 
@@ -641,7 +678,11 @@ public:
 
 	virtual void draw (CDrawContext*);
 	virtual void mouse (CDrawContext *pContext, CPoint &where, long button = -1);
-	virtual bool onWheel (CDrawContext *pContext, const CPoint &where, float distance);
+	virtual bool onWheel (const CPoint &where, const float &distance, const long &buttons);
+
+	virtual CMouseEventResult onMouseDown (CPoint &where, const long& buttons);
+	virtual CMouseEventResult onMouseUp (CPoint &where, const long& buttons);
+	virtual CMouseEventResult onMouseMoved (CPoint &where, const long& buttons);
 
 	CLASS_METHODS(CRockerSwitch, CControl)
 
@@ -649,6 +690,9 @@ protected:
 	CPoint	offset;
 	CCoord	heightOfOneImage;
 	long	style;
+
+private:
+	float fEntryState;
 };
 
 
@@ -695,12 +739,19 @@ public:
 	virtual void draw (CDrawContext*);
 	virtual void mouse (CDrawContext *pContext, CPoint &where, long button = -1);
 
+	virtual CMouseEventResult onMouseDown (CPoint &where, const long& buttons);
+	virtual CMouseEventResult onMouseUp (CPoint &where, const long& buttons);
+	virtual CMouseEventResult onMouseMoved (CPoint &where, const long& buttons);
+
 	CLASS_METHODS(CMovieButton, CControl)
 
 protected:
 	CPoint   offset;
 	CCoord   heightOfOneImage;
 	float    buttonState;
+
+private:
+	float    fEntryState;
 };
 
 
@@ -721,6 +772,7 @@ public:
 
 	virtual void draw (CDrawContext*);
 	virtual void mouse (CDrawContext *pContext, CPoint &where, long button = -1);
+	virtual CMouseEventResult onMouseDown (CPoint &where, const long& buttons);
 
 	virtual void openWindow (void);
 	virtual void closeWindow (void);
@@ -772,7 +824,12 @@ public:
 	virtual bool removed (CView *parent);
 	virtual void draw (CDrawContext*);
 	virtual void mouse (CDrawContext *pContext, CPoint &where, long button = -1);
-	virtual bool onWheel (CDrawContext *pContext, const CPoint &where, float distance);
+
+	virtual CMouseEventResult onMouseDown (CPoint &where, const long& buttons);
+	virtual CMouseEventResult onMouseUp (CPoint &where, const long& buttons);
+	virtual CMouseEventResult onMouseMoved (CPoint &where, const long& buttons);
+
+	virtual bool onWheel (const CPoint &where, const float &distance, const long &buttons);
 	virtual long onKeyDown (VstKeyCode& keyCode);
 
 	virtual void setDrawTransparentHandle (bool val) { bDrawTransparentEnabled = val; }
@@ -809,6 +866,11 @@ protected:
 
 	bool     bDrawTransparentEnabled;
 	bool     bFreeClick;
+
+private:
+	CCoord   delta;
+	float    oldVal;
+	long     oldButton; 
 };
 
 //-----------------------------------------------------------------------------
@@ -909,11 +971,18 @@ public:
 	virtual void draw (CDrawContext*);
 	virtual void mouse (CDrawContext *pContext, CPoint &where, long button = -1);
 
+	virtual CMouseEventResult onMouseDown (CPoint &where, const long& buttons);
+	virtual CMouseEventResult onMouseUp (CPoint &where, const long& buttons);
+	virtual CMouseEventResult onMouseMoved (CPoint &where, const long& buttons);
+
 	CLASS_METHODS(CKickButton, CControl)
 
 protected:
 	CPoint	offset;
 	CCoord	heightOfOneImage;
+
+private:
+	float   fEntryState;
 };
 
 
@@ -934,6 +1003,8 @@ public:
 	virtual bool hitTest (const CPoint& where, const long buttons = -1);
 	virtual void mouse (CDrawContext *pContext, CPoint &where, long button = -1);
 	virtual void unSplash ();
+
+	virtual CMouseEventResult onMouseDown (CPoint &where, const long& buttons);
 
 	void setBitmapTransparency (unsigned char transparency);
 

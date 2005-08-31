@@ -2,7 +2,7 @@
 // VST Plug-Ins SDK
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 //
-// Version 3.5       $Date: 2005-08-22 18:40:55 $
+// Version 3.5       $Date: 2005-08-31 15:46:57 $
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
@@ -93,6 +93,8 @@ END_NAMESPACE_VSTGUI
 	#include "aeffguieditor.h"
 	#endif
 #endif
+
+#define VSTGUI_USE_SYSTEM_EVENTS_FOR_DRAWING	QUARTZ
 
 //----------------------------------------------------
 #if WINDOWS
@@ -461,10 +463,25 @@ enum CDrawStyle
 	kDrawFilledAndStroked
 };
 
+//----------------------------
+// Mouse Wheel Axis
+//----------------------------
 enum CMouseWheelAxis
 {
 	kMouseWheelAxisX = 0,
 	kMouseWheelAxisY
+};
+
+//----------------------------
+// Mouse Event Results
+//----------------------------
+enum CMouseEventResult
+{
+	kMouseEventNotImplemented = 0,
+	kMouseEventHandled,
+	kMouseEventNotHandled,
+	
+	kMouseDownEventHandledButDontNeedMovedOrUpEvents
 };
 
 //-----------------------------------------------------------------------------
@@ -761,7 +778,14 @@ public:
 	virtual void draw (CDrawContext *pContext);	///< called if the view should draw itself
 	virtual void drawRect (CDrawContext *pContext, const CRect& updateRect) { draw (pContext); }	///< called if the view should draw itself
 	virtual bool checkUpdate (CRect& updateRect) const { return updateRect.rectOverlap (size); }
-	virtual void mouse (CDrawContext *pContext, CPoint &where, long buttons = -1);	///< called if a mouse click event occurs
+	virtual void mouse (CDrawContext *pContext, CPoint &where, long buttons = -1);	///< called if a mouse click event occurs \deprecated
+
+	virtual CMouseEventResult onMouseDown (CPoint &where, const long& buttons) {return kMouseEventNotImplemented;}		///< called when a mouse down event occurs
+	virtual CMouseEventResult onMouseUp (CPoint &where, const long& buttons) {return kMouseEventNotImplemented;}		///< called when a mouse up event occurs
+	virtual CMouseEventResult onMouseMoved (CPoint &where, const long& buttons) {return kMouseEventNotImplemented;}		///< called when a mouse move event occurs
+
+	virtual CMouseEventResult onMouseEntered (CPoint &where, const long& buttons) {return kMouseEventNotImplemented;}	///< called when the mouse enters this view
+	virtual CMouseEventResult onMouseExited (CPoint &where, const long& buttons) {return kMouseEventNotImplemented;}	///< called when the mouse leaves this view
 	
 	virtual void setBackground (CBitmap *background);				///< set the background image of this view
 	virtual CBitmap *getBackground () const { return pBackground; }	///< get the background image of this view
@@ -769,19 +793,24 @@ public:
 	virtual long onKeyDown (VstKeyCode& keyCode);	///< called if a key down event occurs and this view has focus
 	virtual long onKeyUp (VstKeyCode& keyCode);		///< called if a key up event occurs and this view has focus
 
-	virtual bool onWheel (CDrawContext *pContext, const CPoint &where, float distance);	///< called if a mouse wheel event is happening over this view
-	virtual bool onWheel (CDrawContext *pContext, const CPoint &where, const CMouseWheelAxis axis, float distance);	///< called if a mouse wheel event is happening over this view
+	virtual bool onWheel (const CPoint &where, const float &distance, const long &buttons);	///< called if a mouse wheel event is happening over this view
+	virtual bool onWheel (const CPoint &where, const CMouseWheelAxis &axis, const float &distance, const long &buttons);	///< called if a mouse wheel event is happening over this view
 
-	virtual bool onDrop (CDrawContext* context, CDragContainer* drag, const CPoint& where) { return false; }	///< called if a drag is dropped onto this view
-	virtual void onDragEnter (CDrawContext* context, CDragContainer* drag, const CPoint& where) {}				///< called if a drag is entering this view
-	virtual void onDragLeave (CDrawContext* context, CDragContainer* drag, const CPoint& where) {}				///< called if a drag is leaving this view
-	virtual void onDragMove (CDrawContext* context, CDragContainer* drag, const CPoint& where) {}				///< called if a drag is current moved over this view
+	virtual bool onDrop (CDragContainer* drag, const CPoint& where) { return false; }	///< called if a drag is dropped onto this view
+	virtual void onDragEnter (CDragContainer* drag, const CPoint& where) {}				///< called if a drag is entering this view
+	virtual void onDragLeave (CDragContainer* drag, const CPoint& where) {}				///< called if a drag is leaving this view
+	virtual void onDragMove (CDragContainer* drag, const CPoint& where) {}				///< called if a drag is current moved over this view
 
-	virtual void looseFocus (CDrawContext *pContext = 0);										///< called if view should loose focus
-	virtual void takeFocus (CDrawContext *pContext = 0);										///< called if view should take focus
+	virtual void looseFocus ();															///< called if view should loose focus
+	virtual void takeFocus ();															///< called if view should take focus
 
 	virtual bool isDirty () const { return bDirty; }											///< check if view is dirty
 	virtual void setDirty (const bool val = true) { bDirty = val; }								///< set the view to dirty so that it is redrawn in the next idle. Thread Safe !
+
+	#if VSTGUI_USE_SYSTEM_EVENTS_FOR_DRAWING
+	virtual void invalidRect (const CRect rect);
+	virtual void invalid () { invalidRect (size); bDirty = false; }
+	#endif
 	
 	virtual void setMouseEnabled (const bool bEnable = true) { bMouseEnabled = bEnable; }		///< turn on/off mouse usage for this view
 	virtual bool getMouseEnabled () const { return bMouseEnabled; }								///< get the state of wheather this view uses the mouse or not
@@ -817,8 +846,10 @@ public:
 	virtual void *getEditor () const;
 
 	virtual long notify (CView* sender, const char* message);
+	#if !VSTGUI_USE_SYSTEM_EVENTS_FOR_DRAWING
 	void redraw ();
 	virtual void redrawRect (CDrawContext* context, const CRect& rect);
+	#endif
 
 	virtual bool wantsFocus () const { return bWantsFocus; }			///< check if view supports focus
 	virtual void setWantsFocus (bool state) { bWantsFocus = state; }	///< set focus support on/off
@@ -856,8 +887,9 @@ protected:
 	
 	CBitmap* pBackground;
 	CAttributeListEntry* pAttributeList;
-
+#if !VSTGUI_USE_SYSTEM_EVENTS_FOR_DRAWING
 	virtual void update (CDrawContext *pContext); // don't call this !!!
+#endif
 };
 
 // Message to check if View is a CViewContainer
@@ -908,25 +940,37 @@ public:
 	virtual void draw (CDrawContext *pContext);
 	virtual void drawRect (CDrawContext *pContext, const CRect& updateRect);
 	virtual void mouse (CDrawContext *pContext, CPoint &where, long buttons = -1);
-	virtual bool onWheel (CDrawContext *pContext, const CPoint &where, float distance);
-	virtual bool onWheel (CDrawContext *pContext, const CPoint &where, const CMouseWheelAxis axis, float distance);
+	virtual CMouseEventResult onMouseDown (CPoint &where, const long& buttons);
+	virtual CMouseEventResult onMouseUp (CPoint &where, const long& buttons);
+	virtual CMouseEventResult onMouseMoved (CPoint &where, const long& buttons);
+	virtual bool onWheel (const CPoint &where, const float &distance, const long &buttons);
+	virtual bool onWheel (const CPoint &where, const CMouseWheelAxis &axis, const float &distance, const long &buttons);
+	#if !VSTGUI_USE_SYSTEM_EVENTS_FOR_DRAWING
 	virtual void update (CDrawContext *pContext);
+	virtual void redrawRect (CDrawContext* context, const CRect& rect);
+	#endif
 	virtual bool hitTest (const CPoint& where, const long buttons = -1);
 	virtual long onKeyDown (VstKeyCode& keyCode);
 	virtual long onKeyUp (VstKeyCode& keyCode);
 	virtual long notify (CView* sender, const char* message);
 
-	virtual bool onDrop (CDrawContext* context, CDragContainer* drag, const CPoint& where);
-	virtual void onDragEnter (CDrawContext* context, CDragContainer* drag, const CPoint& where);
-	virtual void onDragLeave (CDrawContext* context, CDragContainer* drag, const CPoint& where);
-	virtual void onDragMove (CDrawContext* context, CDragContainer* drag, const CPoint& where);
+	virtual bool onDrop (CDragContainer* drag, const CPoint& where);
+	virtual void onDragEnter (CDragContainer* drag, const CPoint& where);
+	virtual void onDragLeave (CDragContainer* drag, const CPoint& where);
+	virtual void onDragMove (CDragContainer* drag, const CPoint& where);
 
-	virtual void looseFocus (CDrawContext *pContext = 0);
-	virtual void takeFocus (CDrawContext *pContext = 0);
+	virtual void looseFocus ();
+	virtual void takeFocus ();
 	virtual bool advanceNextFocusView (CView* oldFocus, bool reverse = false);
 
 	virtual bool isDirty () const;
 
+	#if VSTGUI_USE_SYSTEM_EVENTS_FOR_DRAWING
+	virtual void invalid ();
+	virtual void invalidRect (const CRect rect);
+	virtual bool invalidateDirtyViews ();
+	#endif
+	
 	virtual void setViewSize (CRect &rect);
 
 	virtual bool removed (CView* parent);
@@ -934,8 +978,6 @@ public:
 		
 	virtual CPoint& frameToLocal (CPoint& point) const;
 	virtual CPoint& localToFrame (CPoint& point) const;
-
-	virtual void redrawRect (CDrawContext* context, const CRect& rect);
 
 	CLASS_METHODS(CViewContainer, CView)
 
@@ -957,6 +999,8 @@ protected:
 	bool bDrawInOffscreen;
 
 	CView* currentDragView;
+	CView* mouseDownView;
+	CView* mouseOverView;
 };
 
 //-----------------------------------------------------------------------------
@@ -1009,6 +1053,10 @@ public:
 	virtual void setOpenFlag (bool val) { bOpenFlag = val;};
 	virtual bool getOpenFlag () const { return bOpenFlag; };
 
+	#if VSTGUI_USE_SYSTEM_EVENTS_FOR_DRAWING
+	virtual void invalid () { invalidRect (size); bDirty = false; }
+	virtual void invalidRect (const CRect rect);
+	#endif
 	virtual void invalidate (const CRect &rect);
 
 	virtual bool updatesDisabled () const { return bUpdatesDisabled; }
@@ -1031,11 +1079,16 @@ public:
 	virtual void drawRect (CDrawContext *pContext, const CRect& updateRect);
 	virtual void draw (CView *pView = 0);
 	virtual void mouse (CDrawContext *pContext, CPoint &where, long buttons = -1);
-	virtual bool onWheel (CDrawContext *pContext, const CPoint &where, float distance);
-	virtual bool onWheel (CDrawContext *pContext, const CPoint &where, const CMouseWheelAxis axis, float distance);
+	virtual CMouseEventResult onMouseDown (CPoint &where, const long& buttons);
+	virtual CMouseEventResult onMouseUp (CPoint &where, const long& buttons);
+	virtual CMouseEventResult onMouseMoved (CPoint &where, const long& buttons);
+	virtual bool onWheel (const CPoint &where, const float &distance, const long &buttons);
+	virtual bool onWheel (const CPoint &where, const CMouseWheelAxis &axis, const float &distance, const long &buttons);
 	virtual long onKeyDown (VstKeyCode& keyCode);
 	virtual long onKeyUp (VstKeyCode& keyCode);
+#if !VSTGUI_USE_SYSTEM_EVENTS_FOR_DRAWING
 	virtual void update (CDrawContext *pContext);
+#endif
 	virtual void setViewSize (CRect& inRect);
 	virtual CView *getCurrentView () const;
 
@@ -1075,6 +1128,7 @@ protected:
 	void setDrawContext (CDrawContext* context) { pFrameContext = context; }
 	friend class CDrawContext;
 
+	static pascal OSStatus carbonMouseEventHandler (EventHandlerCallRef inHandlerCallRef, EventRef inEvent, void *inUserData);
 	static pascal OSStatus carbonEventHandler (EventHandlerCallRef inHandlerCallRef, EventRef inEvent, void *inUserData);
 	bool registerWithToolbox ();
 	
@@ -1082,6 +1136,7 @@ protected:
 	ControlRef controlRef;
 	bool hasFocus;
 	EventHandlerRef dragEventHandler;
+	EventHandlerRef mouseEventHandler;
 	public:
 	void* getPlatformControl () const { return controlRef; }
 	CPoint hiScrollOffset;
