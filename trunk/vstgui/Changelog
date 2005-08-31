@@ -1,9 +1,32 @@
+2005-08-31 arne
+
+	* new mouse handling (onMouseDown, onMouseUp, onMouseMoved, onMouseEntered, onMouseExited)
+	  but the old mouse method is still working, if the new methods are not implemented by the super class
+	* drawing is now triggered by system events, so drawing outside of the draw method is deprecated
+
+		This means :
+	  	- all class methods which took a CDrawContext pointer will be changed except the draw methods.
+	  	- you call view->invalid () instead of view->setDirty (true) from the User Interface thread.
+	  	- value changes from other threads will be checked on idle and the views are marked invalid.
+
+		Benefits :
+		- less hacks
+		- less code
+		- cleaner differentiation of drawing and user action.
+		- works better with hosts which don't follow the VST spec.
+
+	* added controlBeginEdit and controlEndEdit to CControlListener
+
 2005-08-22 arne
 
 	* branched for 3.0 (vstgui_300)
 	* removed all MOTIF code
 	* some code cleanup
 	* set version to 3.5
+
+**********************************************************************************************************************
+VSTGUI 3.0 branch
+**********************************************************************************************************************
 
 2005-08-12 arne
 

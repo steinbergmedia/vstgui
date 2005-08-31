@@ -3,7 +3,7 @@
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 // Standard Control Objects
 //
-// Version 3.5       $Date: 2005-08-22 18:40:55 $
+// Version 3.5       $Date: 2005-08-31 15:46:57 $
 //
 // Added new objects        : Michael Schmidt          08.97
 // Added new objects        : Yvan Grabit              01.98
@@ -109,6 +109,8 @@ CControl::~CControl ()
 void CControl::beginEdit ()
 {
 	// begin of edit parameter
+	if (listener)
+		listener->controlBeginEdit (this);
 	getFrame ()->setFocusView(this);
 	getFrame ()->beginEdit (tag);
 }
@@ -118,6 +120,8 @@ void CControl::endEdit ()
 {
 	// end of edit parameter
 	getFrame ()->endEdit (tag);
+	if (listener)
+		listener->controlEndEdit (this);
 }
 
 //------------------------------------------------------------------------
@@ -165,7 +169,7 @@ void CControl::bounceValue ()
 }
 
 //-----------------------------------------------------------------------------
-bool CControl::checkDefaultValue (CDrawContext *pContext, long button)
+bool CControl::checkDefaultValue (long button)
 {
 	if (button == (kControl|kLButton))
 	{
@@ -174,7 +178,7 @@ bool CControl::checkDefaultValue (CDrawContext *pContext, long button)
 	
 		value = getDefaultValue ();
 		if (isDirty () && listener)
-			listener->valueChanged (pContext, this);
+			listener->valueChanged (this);
 
 		// end of edit parameter
 		endEdit ();
@@ -253,17 +257,20 @@ void COnOffButton::mouse (CDrawContext *pContext, CPoint &where, long button)
 
 	if (listener && button & (kAlt | kShift | kControl | kApple))
 	{
-		if (listener->controlModifierClicked (pContext, this, button) != 0)
+		if (listener->controlModifierClicked (this, button) != 0)
 			return;
 	}
 	value = ((long)value) ? 0.f : 1.f;
 	
+	#if VSTGUI_USE_SYSTEM_EVENTS_FOR_DRAWING
+	invalid ();
+	#endif
 	if (listener && style == kPostListenerUpdate)
 	{
 		// begin of edit parameter
 		beginEdit ();
 	
-		listener->valueChanged (pContext, this);
+		listener->valueChanged (this);
 	
 		// end of edit parameter
 		endEdit ();
@@ -276,13 +283,30 @@ void COnOffButton::mouse (CDrawContext *pContext, CPoint &where, long button)
 		// begin of edit parameter
 		beginEdit ();
 	
-		listener->valueChanged (pContext, this);
+		listener->valueChanged (this);
 	
 		// end of edit parameter
 		endEdit ();
 	}
 }
 
+//------------------------------------------------------------------------
+CMouseEventResult COnOffButton::onMouseDown (CPoint &where, const long& buttons)
+{
+	if (!(buttons & kLButton))
+		return kMouseEventNotHandled;
+
+	value = ((long)value) ? 0.f : 1.f;
+
+	#if VSTGUI_USE_SYSTEM_EVENTS_FOR_DRAWING
+	invalid ();
+	#endif
+
+	if (listener)
+		listener->valueChanged (this);
+
+	return kMouseDownEventHandledButDontNeedMovedOrUpEvents;
+}
 
 //------------------------------------------------------------------------
 // CKnob
@@ -384,12 +408,12 @@ void CKnob::mouse (CDrawContext *pContext, CPoint &where, long button)
 
 	if (listener && button & (kAlt | kShift | kControl | kApple))
 	{
-		if (listener->controlModifierClicked (pContext, this, button) != 0)
+		if (listener->controlModifierClicked (this, button) != 0)
 			return;
 	}
 
 	// check if default value wanted
-	if (checkDefaultValue (pContext, button))
+	if (checkDefaultValue (button))
 		return;
 
 	float old = oldValue;
@@ -465,7 +489,11 @@ void CKnob::mouse (CDrawContext *pContext, CPoint &where, long button)
 					old = value;
 			}
 			if (isDirty () && listener)
-				listener->valueChanged (pContext, this);
+				listener->valueChanged (this);
+			#if VSTGUI_USE_SYSTEM_EVENTS_FOR_DRAWING
+			if (isDirty ())
+				invalid ();
+			#endif
 		}
 		getMouseLocation (pContext, where);
 		doIdleStuff ();
@@ -477,12 +505,116 @@ void CKnob::mouse (CDrawContext *pContext, CPoint &where, long button)
 }
 
 //------------------------------------------------------------------------
-bool CKnob::onWheel (CDrawContext *pContext, const CPoint &where, float distance)
+CMouseEventResult CKnob::onMouseDown (CPoint &where, const long& buttons)
+{
+	beginEdit ();
+
+	if (checkDefaultValue (buttons))
+	{
+		endEdit ();
+		return kMouseDownEventHandledButDontNeedMovedOrUpEvents;
+	}
+
+	firstPoint = where;
+	lastPoint (-1, -1);
+	startValue = oldValue;
+
+	modeLinear = false;
+	fEntryState = value;
+	range = 200.f;
+	coef = (vmax - vmin) / range;
+	oldButton = buttons;
+
+	long mode    = kCircularMode;
+	long newMode = getFrame ()->getKnobMode ();
+	if (kLinearMode == newMode)
+	{
+		if (!(buttons & kAlt))
+			mode = newMode;
+	}
+	else if (buttons & kAlt) 
+		mode = kLinearMode;
+
+	if (mode == kLinearMode && (buttons & kLButton))
+	{
+		if (buttons & kShift)
+			range *= zoomFactor;
+		lastPoint = where;
+		modeLinear = true;
+		coef = (vmax - vmin) / range;
+	}
+	else
+	{
+		CPoint where2 (where);
+		where2.offset (-size.left, -size.top);
+		startValue = valueFromPoint (where2);
+	}
+
+	return onMouseMoved (where, buttons);
+}
+
+//------------------------------------------------------------------------
+CMouseEventResult CKnob::onMouseUp (CPoint &where, const long& buttons)
+{
+	endEdit ();
+	return kMouseEventHandled;
+}
+
+//------------------------------------------------------------------------
+CMouseEventResult CKnob::onMouseMoved (CPoint &where, const long& buttons)
+{
+	if (buttons & kLButton)
+	{
+		float middle = (vmax - vmin) * 0.5f;
+
+		if (where != lastPoint)
+		{
+			lastPoint = where;
+			if (modeLinear)
+			{
+				CCoord diff = (firstPoint.v - where.v) + (where.h - firstPoint.h);
+				if (buttons != oldButton)
+				{
+					range = 200.f;
+					if (buttons & kShift)
+						range *= zoomFactor;
+
+					float coef2 = (vmax - vmin) / range;
+					fEntryState += diff * (coef - coef2);
+					coef = coef2;
+					oldButton = buttons;
+				}
+				value = fEntryState + diff * coef;
+				bounceValue ();
+			}
+			else
+			{
+				where.offset (-size.left, -size.top);
+				value = valueFromPoint (where);
+				if (startValue - value > middle)
+					value = vmax;
+				else if (value - startValue > middle)
+					value = vmin;
+				else
+					startValue = value;
+			}
+			if (isDirty () && listener)
+				listener->valueChanged (this);
+			#if VSTGUI_USE_SYSTEM_EVENTS_FOR_DRAWING
+			if (isDirty ())
+				invalid ();
+			#endif
+		}
+	}
+	return kMouseEventHandled;
+}
+
+//------------------------------------------------------------------------
+bool CKnob::onWheel (const CPoint &where, const float &distance, const long &buttons)
 {
 	if (!bMouseEnabled)
 		return false;
 
-	long buttons = pContext->getMouseButtons ();
 	if (buttons & kShift)
 		value += 0.1f * distance * wheelInc;
 	else
@@ -494,7 +626,7 @@ bool CKnob::onWheel (CDrawContext *pContext, const CPoint &where, float distance
 		// begin of edit parameter
 		beginEdit ();
 	
-		listener->valueChanged (pContext, this);
+		listener->valueChanged (this);
 	
 		// end of edit parameter
 		endEdit ();
@@ -527,7 +659,7 @@ long CKnob::onKeyDown (VstKeyCode& keyCode)
 				// begin of edit parameter
 				beginEdit ();
 				
-				listener->valueChanged (0, this);
+				listener->valueChanged (this);
 			
 				// end of edit parameter
 				endEdit ();
@@ -1050,7 +1182,7 @@ void CTextEdit::mouse (CDrawContext *pContext, CPoint &where, long button)
 
 	if (listener && button & (kAlt | kShift | kControl | kApple))
 	{
-		if (listener->controlModifierClicked (pContext, this, button) != 0)
+		if (listener->controlModifierClicked (this, button) != 0)
 			return;
 	}
 
@@ -1063,9 +1195,28 @@ void CTextEdit::mouse (CDrawContext *pContext, CPoint &where, long button)
 					return;
 		
 			beginEdit();
-			takeFocus (pContext);
+			takeFocus ();
 		}
 	}
+}
+
+//------------------------------------------------------------------------
+CMouseEventResult CTextEdit::onMouseDown (CPoint &where, const long& buttons)
+{
+	if (buttons & kLButton)
+	{
+		if (getFrame ()->getFocusView () != this)
+		{
+			if (style & kDoubleClickStyle)
+				if (!isDoubleClick ())
+					return kMouseEventNotHandled;
+		
+			beginEdit();
+			takeFocus ();
+			return kMouseDownEventHandledButDontNeedMovedOrUpEvents;
+		}
+	}
+	return kMouseEventNotHandled;
 }
 
 //------------------------------------------------------------------------
@@ -1360,7 +1511,7 @@ pascal OSStatus CarbonEventsTextControlProc (EventHandlerCallRef inHandlerCallRe
 #endif
 
 //------------------------------------------------------------------------
-void CTextEdit::takeFocus (CDrawContext *pContext)
+void CTextEdit::takeFocus ()
 {
 	bWasReturnPressed = false;
 
@@ -1378,8 +1529,12 @@ void CTextEdit::takeFocus (CDrawContext *pContext)
 		}
 		parent = parent->getParentView ();
 	}
-	if (pContext)
+	if (getFrame ())
+	{
+		CDrawContext* pContext = getFrame ()->createDrawContext ();
 		rect.offset (pContext->offset.h, pContext->offset.v);
+		pContext->forget ();
+	}
 #endif
 
 #if WINDOWS
@@ -1430,65 +1585,57 @@ void CTextEdit::takeFocus (CDrawContext *pContext)
 #if MACX
 	WindowRef window = (WindowRef)getFrame ()->getSystemWindow ();
 	#if QUARTZ
-	WindowAttributes winAttributes;
-	GetWindowAttributes (window, &winAttributes);
-	if (winAttributes & kWindowCompositingAttribute)
+	Rect r;
+	r.left   = (short)rect.left;// + 2;
+	r.right  = (short)rect.right;// - 4;
+	r.top    = (short)rect.top;// + 2;
+	r.bottom = (short)rect.bottom;// - 4;
+	if (rect.getHeight () > gStandardFontSize [fontID])
 	{
-		Rect r;
-		r.left   = (short)rect.left;// + 2;
-		r.right  = (short)rect.right;// - 4;
-		r.top    = (short)rect.top;// + 2;
-		r.bottom = (short)rect.bottom;// - 4;
-		if (rect.getHeight () > gStandardFontSize [fontID])
-		{
-			r.top = (short)(rect.top + rect.getHeight () / 2 - gStandardFontSize [fontID] / 2 + 1);
-			r.bottom = (short)(r.top + gStandardFontSize [fontID]);
-		}
-		if (CreateEditUnicodeTextControl (NULL, &r, NULL, false, NULL, &textControl) == noErr)
-		{
-			HIViewAddSubview ((HIViewRef)getFrame ()->getPlatformControl (), textControl);
-			HIViewSetFirstSubViewFocus ((HIViewRef)getFrame ()->getPlatformControl (), textControl);
-			HIViewAdvanceFocus ((HIViewRef)getFrame ()->getPlatformControl (), 0);
-			EventTypeSpec eventTypes[] = { { kEventClassWindow, kEventWindowDeactivated }, { kEventClassKeyboard, kEventRawKeyDown }, { kEventClassKeyboard, kEventRawKeyRepeat } };
-			InstallControlEventHandler (textControl, CarbonEventsTextControlProc, GetEventTypeCount (eventTypes), eventTypes, this, &gTextEditEventHandler);
-			platformControl = textControl;
-			if (strlen (text) > 0)
-			{
-				CFStringRef textString = CFStringCreateWithCString (NULL, text, kCFStringEncodingUTF8);
-				if (textString)
-				{
-					SetControlData (textControl, kControlEditTextPart, kControlEditTextCFStringTag, sizeof (CFStringRef), &textString);
-					CFRelease (textString);
-				}
-				ControlEditTextSelectionRec selection;
-				selection.selStart = 0;
-				selection.selEnd = strlen (text);
-				SetControlData (textControl, kControlEditTextPart, kControlEditTextSelectionTag, sizeof (ControlEditTextSelectionRec), &selection);
-			}
-			Boolean singleLineStyle = true;
-			SetControlData (textControl, kControlEditTextPart, kControlEditTextSingleLineTag, sizeof (Boolean), &singleLineStyle);
-			ControlFontStyleRec fontStyle;
-			memset (&fontStyle, 0, sizeof (fontStyle));
-			fontStyle.flags = kControlUseJustMask | kControlUseSizeMask | kControlUseFontMask;
-			switch (horiTxtAlign)
-			{
-				case kLeftText: fontStyle.just = teFlushLeft; break;
-				case kRightText: fontStyle.just = teFlushRight; break;
-				default: fontStyle.just = teCenter; break;
-			}
-			fontStyle.size = gStandardFontSize [fontID];
-			extern const char* gMacXfontNames[];
-			Str255 fontName;
-			CopyCStringToPascal ((const char*)gMacXfontNames[fontID], fontName); 
-			GetFNum (fontName, &fontStyle.font);
-			SetControlData (textControl, kControlEditTextPart, kControlFontStyleTag, sizeof (fontStyle), &fontStyle);
-			HIViewSetVisible (textControl, true);
-		}
-		return;
+		r.top = (short)(rect.top + rect.getHeight () / 2 - gStandardFontSize [fontID] / 2 + 1);
+		r.bottom = (short)(r.top + gStandardFontSize [fontID]);
 	}
-	if (pContext)
-		rect.offset (pContext->offsetScreen.h, pContext->offsetScreen.v);
-	#endif
+	if (CreateEditUnicodeTextControl (NULL, &r, NULL, false, NULL, &textControl) == noErr)
+	{
+		HIViewAddSubview ((HIViewRef)getFrame ()->getPlatformControl (), textControl);
+		HIViewSetFirstSubViewFocus ((HIViewRef)getFrame ()->getPlatformControl (), textControl);
+		SetKeyboardFocus ((WindowRef)getFrame ()->getSystemWindow (), textControl, kControlEditTextPart);
+		EventTypeSpec eventTypes[] = { { kEventClassWindow, kEventWindowDeactivated }, { kEventClassKeyboard, kEventRawKeyDown }, { kEventClassKeyboard, kEventRawKeyRepeat } };
+		InstallControlEventHandler (textControl, CarbonEventsTextControlProc, GetEventTypeCount (eventTypes), eventTypes, this, &gTextEditEventHandler);
+		platformControl = textControl;
+		if (strlen (text) > 0)
+		{
+			CFStringRef textString = CFStringCreateWithCString (NULL, text, kCFStringEncodingUTF8);
+			if (textString)
+			{
+				SetControlData (textControl, kControlEditTextPart, kControlEditTextCFStringTag, sizeof (CFStringRef), &textString);
+				CFRelease (textString);
+			}
+			ControlEditTextSelectionRec selection;
+			selection.selStart = 0;
+			selection.selEnd = strlen (text);
+			SetControlData (textControl, kControlEditTextPart, kControlEditTextSelectionTag, sizeof (ControlEditTextSelectionRec), &selection);
+		}
+		Boolean singleLineStyle = true;
+		SetControlData (textControl, kControlEditTextPart, kControlEditTextSingleLineTag, sizeof (Boolean), &singleLineStyle);
+		ControlFontStyleRec fontStyle;
+		memset (&fontStyle, 0, sizeof (fontStyle));
+		fontStyle.flags = kControlUseJustMask | kControlUseSizeMask | kControlUseFontMask;
+		switch (horiTxtAlign)
+		{
+			case kLeftText: fontStyle.just = teFlushLeft; break;
+			case kRightText: fontStyle.just = teFlushRight; break;
+			default: fontStyle.just = teCenter; break;
+		}
+		fontStyle.size = gStandardFontSize [fontID];
+		extern const char* gMacXfontNames[];
+		Str255 fontName;
+		CopyCStringToPascal ((const char*)gMacXfontNames[fontID], fontName); 
+		GetFNum (fontName, &fontStyle.font);
+		SetControlData (textControl, kControlEditTextPart, kControlFontStyleTag, sizeof (fontStyle), &fontStyle);
+		HIViewSetVisible (textControl, true);
+	}
+	#else
 	static bool gTXNInititalized = false;
 	if (!gTXNInititalized)
 	{
@@ -1587,6 +1734,7 @@ void CTextEdit::takeFocus (CDrawContext *pContext)
 		TXNSelectAll ((TXNObject)platformControl);
 
 	}
+	#endif //QUARTZ
 
 #else
 	bool ende = false;
@@ -1798,7 +1946,7 @@ void CTextEdit::takeFocus (CDrawContext *pContext)
 }
 
 //------------------------------------------------------------------------
-void CTextEdit::looseFocus (CDrawContext *pContext)
+void CTextEdit::looseFocus ()
 {
 	// Call this yet to avoid recursive call
 	endEdit();
@@ -1875,19 +2023,6 @@ void CTextEdit::looseFocus (CDrawContext *pContext)
 	platformControl = 0;
 
 	setDirty (true);
-
-	#if 0//QUARTZ
-	CRect fr (size);
-	CPoint offset;
-	localToFrame (offset);
-	fr.offset (offset.x, offset.y);
-	
-	RgnHandle rgn = NewRgn ();
-	MacSetRectRgn (rgn, fr.left, fr.top, fr.right, fr.bottom);
-	HIViewSetNeedsDisplayInRegion ((HIViewRef)getFrame ()->getPlatformControl () , rgn, true);
-	DisposeRgn (rgn);
-	#endif
-//	doIdleStuff ();
 	
 	#else
 
@@ -1906,29 +2041,6 @@ void CTextEdit::looseFocus (CDrawContext *pContext)
 	delete textView;
 
 #endif
-	CPoint origOffset;
-	bool resetContextOffset = false;
-	if (!pContext)
-	{
-		// create a local context
-		pContext = getFrame ()->createDrawContext ();
-		if (getParentView ())
-		{
-			resetContextOffset = true;
-			origOffset.x = pContext->offset.x;
-			origOffset.y = pContext->offset.y;
-			CView *view= getParentView ();
-			CRect rect2;
-			view->getViewSize (rect2);
-			CPoint offset;
-			view->localToFrame (offset);
-			rect2.offset (offset.x, offset.y);
-			pContext->offset.h = rect2.left;
-			pContext->offset.v = rect2.top;
-		}
-	}
-	else
-		pContext->remember ();
 
 	// update dependency
 	bool change = false;
@@ -1936,16 +2048,10 @@ void CTextEdit::looseFocus (CDrawContext *pContext)
 	{
 		change = true;
 		if (listener)
-			listener->valueChanged (pContext, this);
+			listener->valueChanged (this);
 	}
 
 	platformControl = 0;
-	if (resetContextOffset)
-	{
-		pContext->offset.x = origOffset.x;
-		pContext->offset.y = origOffset.y;
-	}
-	pContext->forget ();
 
 	if (change)
 		doIdleStuff ();
@@ -2886,9 +2992,9 @@ bool COptionMenu::isCheckEntry (long index) const
 void COptionMenu::draw (CDrawContext *pContext)
 {
 	if (currentIndex >= 0 && nbEntries) 
-		drawText (pContext, entry[currentIndex] + prefixNumbers);
+		drawText (pContext, entry[currentIndex] + prefixNumbers, getFrame ()->getFocusView () == this ? bgWhenClick : 0);
 	else
-		drawText (pContext, NULL);
+		drawText (pContext, NULL, getFrame ()->getFocusView () == this ? bgWhenClick : 0);
 }
 
 //------------------------------------------------------------------------
@@ -2901,7 +3007,7 @@ void COptionMenu::mouse (CDrawContext *pContext, CPoint &where, long button)
 
 	if (listener && button & (kAlt | kShift | kControl | kApple))
 	{
-		if (listener->controlModifierClicked (pContext, this, button) != 0)
+		if (listener->controlModifierClicked (this, button) != 0)
 			return;
 	}
 
@@ -2919,8 +3025,23 @@ void COptionMenu::mouse (CDrawContext *pContext, CPoint &where, long button)
 		}
 
 		beginEdit();
-		takeFocus (pContext);
+		takeFocus ();
 	}
+}
+
+//------------------------------------------------------------------------
+CMouseEventResult COptionMenu::onMouseDown (CPoint &where, const long& buttons)
+{
+	lastButton = buttons;
+	if (lastButton & (kLButton|kRButton|kApple))
+	{
+		beginEdit ();
+		if (bgWhenClick)
+			invalid ();
+		takeFocus ();
+		return kMouseDownEventHandledButDontNeedMovedOrUpEvents;
+	}
+	return kMouseEventNotHandled;
 }
 
 //------------------------------------------------------------------------
@@ -3294,7 +3415,7 @@ void COptionMenu::setValue (float val)
 }
 
 //------------------------------------------------------------------------
-void COptionMenu::takeFocus (CDrawContext *pContext)
+void COptionMenu::takeFocus ()
 {
 	if (!getFrame ())
 		return;
@@ -3311,12 +3432,12 @@ void COptionMenu::takeFocus (CDrawContext *pContext)
 	#endif
 
 	CRect rect;
-	if (pContext)
+/*	if (pContext)
 	{
 		rect.left = pContext->offsetScreen.h;
 		rect.top  = pContext->offsetScreen.v;
 	}
-	else
+	else*/
 	{
 		#if WINDOWS
 		RECT rctWinParent;
@@ -3396,14 +3517,12 @@ void COptionMenu::takeFocus (CDrawContext *pContext)
 	{
 		CDrawContext *pContextTemp = 0;
 		HDC hdc;
-		if (!pContext && result != -1)
+		if (result != -1)
 		{
 	 		// create a local context
 			hdc = GetDC (hwnd);
 			pContextTemp = new CDrawContext (getFrame (), hdc, hwnd);
 		}
-		else
-			pContextTemp = pContext;
 	
 		// to force the redraw
 		if (bgWhenClick)
@@ -3421,7 +3540,7 @@ void COptionMenu::takeFocus (CDrawContext *pContext)
 			
 				// update dependency
 				if (listener)
-					listener->valueChanged (pContextTemp, menu);
+					listener->valueChanged (menu);
 			}
 		}
 
@@ -3430,7 +3549,7 @@ void COptionMenu::takeFocus (CDrawContext *pContext)
 		//doIdleStuff ();
 		//setDirty (false);
 
-		if (!pContext && pContextTemp)
+		if (pContextTemp)
 		{
 			delete pContextTemp;
 			ReleaseDC (hwnd, hdc);
@@ -3517,13 +3636,6 @@ void COptionMenu::takeFocus (CDrawContext *pContext)
 		if (bgWhenClick)
 			setDirty ();
 
-		if (!pContext && menuIDResult != 0)
-		{
-			pContext = getFrame ()->createDrawContext ();
-		}
-		else if (pContext)
-			pContext->remember ();
-
 		if (menuIDResult != 0)
 		{
 			long idx = 0;
@@ -3534,12 +3646,9 @@ void COptionMenu::takeFocus (CDrawContext *pContext)
 				lastMenu = menu;
 				menu->setValue (result);
 				if (listener)
-					listener->valueChanged (pContext, menu);
+					listener->valueChanged (menu);
 			}
 		}
-
-		if (pContext)
-			pContext->forget ();
 	}
 
 #elif BEOS
@@ -3593,7 +3702,7 @@ void COptionMenu::takeFocus (CDrawContext *pContext)
 			setValue (message->what);
 			
 			if (listener)
-				listener->valueChanged (pContextTemp, this);
+				listener->valueChanged (this);
 	
 			// redraw the display
 			draw (pContextTemp);
@@ -3610,14 +3719,10 @@ void COptionMenu::takeFocus (CDrawContext *pContext)
 }
 
 //------------------------------------------------------------------------
-void COptionMenu::looseFocus (CDrawContext *pContext)
+void COptionMenu::looseFocus ()
 {	
 	if (platformControl == 0) 
 		return;
-
-#if WINDOWS
-#elif MAC
-#endif
 
 	platformControl = 0;
 }
@@ -3765,12 +3870,12 @@ void CVerticalSwitch::mouse (CDrawContext *pContext, CPoint &where, long button)
 
 	if (listener && button & (kAlt | kShift | kControl | kApple))
 	{
-		if (listener->controlModifierClicked (pContext, this, button) != 0)
+		if (listener->controlModifierClicked (this, button) != 0)
 			return;
 	}
 
 	// check if default value wanted
-	if (checkDefaultValue (pContext, button))
+	if (checkDefaultValue (button))
 		return;
 
 	double coef = (double)heightOfOneImage / (double)iMaxPositions;
@@ -3786,7 +3891,11 @@ void CVerticalSwitch::mouse (CDrawContext *pContext, CPoint &where, long button)
 			value = 0.f;
 
 		if (isDirty () && listener)
-			listener->valueChanged (pContext, this);
+			listener->valueChanged (this);
+		#if VSTGUI_USE_SYSTEM_EVENTS_FOR_DRAWING
+		if (isDirty ())
+			invalid ();
+		#endif
 		
 		getMouseLocation (pContext, where);
 		
@@ -3798,6 +3907,52 @@ void CVerticalSwitch::mouse (CDrawContext *pContext, CPoint &where, long button)
 	endEdit ();
 }
 
+//------------------------------------------------------------------------
+CMouseEventResult CVerticalSwitch::onMouseDown (CPoint &where, const long& buttons)
+{
+	if (!(buttons & kLButton))
+		return kMouseEventNotHandled;
+
+	coef = (double)heightOfOneImage / (double)iMaxPositions;
+
+	beginEdit ();
+
+	if (checkDefaultValue (buttons))
+	{
+		endEdit ();
+		return kMouseDownEventHandledButDontNeedMovedOrUpEvents;
+	}
+
+	return onMouseMoved (where, buttons);
+}
+
+//------------------------------------------------------------------------
+CMouseEventResult CVerticalSwitch::onMouseUp (CPoint &where, const long& buttons)
+{
+	endEdit ();
+	return kMouseEventHandled;
+}
+
+//------------------------------------------------------------------------
+CMouseEventResult CVerticalSwitch::onMouseMoved (CPoint &where, const long& buttons)
+{
+	if (buttons & kLButton)
+	{
+		value = (long)((where.v - size.top) / coef) / (float)(iMaxPositions - 1);
+		if (value > 1.f)
+			value = 1.f;
+		else if (value < 0.f)
+			value = 0.f;
+
+		if (isDirty () && listener)
+			listener->valueChanged (this);
+		#if VSTGUI_USE_SYSTEM_EVENTS_FOR_DRAWING
+		if (isDirty ())
+			invalid ();
+		#endif
+	}
+	return kMouseEventHandled;
+}
 
 //------------------------------------------------------------------------
 // CHorizontalSwitch
@@ -3859,7 +4014,7 @@ void CHorizontalSwitch::mouse (CDrawContext *pContext, CPoint &where, long butto
 
 	if (listener && button & (kAlt | kShift | kControl | kApple))
 	{
-		if (listener->controlModifierClicked (pContext, this, button) != 0)
+		if (listener->controlModifierClicked (this, button) != 0)
 			return;
 	}
 
@@ -3867,7 +4022,7 @@ void CHorizontalSwitch::mouse (CDrawContext *pContext, CPoint &where, long butto
 		return;
 	
 	// check if default value wanted
-	if (checkDefaultValue (pContext, button))
+	if (checkDefaultValue (button))
 		return;
 
 	double coef = (double)pBackground->getWidth () / (double)iMaxPositions;
@@ -3883,7 +4038,11 @@ void CHorizontalSwitch::mouse (CDrawContext *pContext, CPoint &where, long butto
 			value = 0.f;
 
 		if (isDirty () && listener)
-			listener->valueChanged (pContext, this);
+			listener->valueChanged (this);
+		#if VSTGUI_USE_SYSTEM_EVENTS_FOR_DRAWING
+		if (isDirty ())
+			invalid ();
+		#endif
 		
 		getMouseLocation (pContext, where);
 		
@@ -3895,6 +4054,52 @@ void CHorizontalSwitch::mouse (CDrawContext *pContext, CPoint &where, long butto
 	endEdit ();
 }
 
+//------------------------------------------------------------------------
+CMouseEventResult CHorizontalSwitch::onMouseDown (CPoint &where, const long& buttons)
+{
+	if (!(buttons & kLButton))
+		return kMouseEventNotHandled;
+
+	coef = (double)pBackground->getWidth () / (double)iMaxPositions;
+
+	beginEdit ();
+
+	if (checkDefaultValue (buttons))
+	{
+		endEdit ();
+		return kMouseDownEventHandledButDontNeedMovedOrUpEvents;
+	}
+
+	return onMouseMoved (where, buttons);
+}
+
+//------------------------------------------------------------------------
+CMouseEventResult CHorizontalSwitch::onMouseUp (CPoint &where, const long& buttons)
+{
+	endEdit ();
+	return kMouseEventHandled;
+}
+
+//------------------------------------------------------------------------
+CMouseEventResult CHorizontalSwitch::onMouseMoved (CPoint &where, const long& buttons)
+{
+	if (buttons & kLButton)
+	{
+		value = (long)((where.h - size.left) / coef) / (float)(iMaxPositions - 1);
+		if (value > 1.f)
+			value = 1.f;
+		else if (value < 0.f)
+			value = 0.f;
+
+		if (isDirty () && listener)
+			listener->valueChanged (this);
+		#if VSTGUI_USE_SYSTEM_EVENTS_FOR_DRAWING
+		if (isDirty ())
+			invalid ();
+		#endif
+	}
+	return kMouseEventHandled;
+}
 
 //------------------------------------------------------------------------
 // CRockerSwitch
@@ -3954,7 +4159,7 @@ void CRockerSwitch::mouse (CDrawContext *pContext, CPoint &where, long button)
 
 	if (listener && button & (kAlt | kShift | kControl | kApple))
 	{
-		if (listener->controlModifierClicked (pContext, this, button) != 0)
+		if (listener->controlModifierClicked (this, button) != 0)
 			return;
 	}
 
@@ -3997,7 +4202,11 @@ void CRockerSwitch::mouse (CDrawContext *pContext, CPoint &where, long button)
 			}
 
 			if (isDirty () && listener)
-				listener->valueChanged (pContext, this);
+				listener->valueChanged (this);
+			#if VSTGUI_USE_SYSTEM_EVENTS_FOR_DRAWING
+			if (isDirty ())
+				invalid ();
+			#endif
 
 			getMouseLocation (pContext, where);
 
@@ -4015,19 +4224,90 @@ void CRockerSwitch::mouse (CDrawContext *pContext, CPoint &where, long button)
 			value = 1.0f;
 
 		if (listener)
-			listener->valueChanged (pContext, this);
+			listener->valueChanged (this);
+		#if VSTGUI_USE_SYSTEM_EVENTS_FOR_DRAWING
+		if (isDirty ())
+			invalid ();
+		#endif
 	}
 
 	value = 0.f;  // set button to UNSELECTED state
 	if (listener)
-		listener->valueChanged (pContext, this);
+		listener->valueChanged (this);
+	#if VSTGUI_USE_SYSTEM_EVENTS_FOR_DRAWING
+	if (isDirty ())
+		invalid ();
+	#endif
 
 	// end of edit parameter
 	endEdit ();
 }
 
 //------------------------------------------------------------------------
-bool CRockerSwitch::onWheel (CDrawContext *pContext, const CPoint &where, float distance)
+CMouseEventResult CRockerSwitch::onMouseDown (CPoint &where, const long& buttons)
+{
+	if (!(buttons & kLButton))
+		return kMouseEventNotHandled;
+	fEntryState = value;
+	beginEdit ();
+	return onMouseMoved (where, buttons);
+}
+
+//------------------------------------------------------------------------
+CMouseEventResult CRockerSwitch::onMouseUp (CPoint &where, const long& buttons)
+{
+	value = 0.f;
+	#if VSTGUI_USE_SYSTEM_EVENTS_FOR_DRAWING
+	if (isDirty ())
+		invalid ();
+	#endif
+	endEdit ();
+	return kMouseEventHandled;
+}
+
+//------------------------------------------------------------------------
+CMouseEventResult CRockerSwitch::onMouseMoved (CPoint &where, const long& buttons)
+{
+	if (buttons & kLButton)
+	{
+		CCoord  width_2  = size.width () / 2;
+		CCoord  height_2 = size.height () / 2;
+
+		if (style & kHorizontal) 
+		{
+			if (where.h >= size.left && where.v >= size.top  &&
+				where.h <= (size.left + width_2) && where.v <= size.bottom)
+				value = -1.0f;
+			else if (where.h >= (size.left + width_2) && where.v >= size.top  &&
+				where.h <= size.right && where.v <= size.bottom)
+				value = 1.0f;
+			else
+				value = fEntryState;
+		}
+		else
+		{
+			if (where.h >= size.left && where.v >= size.top  &&
+				where.h <= size.right && where.v <= (size.top + height_2))
+				value = -1.0f;
+			else if (where.h >= size.left && where.v >= (size.top + height_2) &&
+				where.h <= size.right && where.v <= size.bottom)
+				value = 1.0f;
+			else
+				value = fEntryState;
+		}
+
+		if (isDirty () && listener)
+			listener->valueChanged (this);
+		#if VSTGUI_USE_SYSTEM_EVENTS_FOR_DRAWING
+		if (isDirty ())
+			invalid ();
+		#endif
+	}
+	return kMouseEventHandled;
+}
+
+//------------------------------------------------------------------------
+bool CRockerSwitch::onWheel (const CPoint &where, const float &distance, const long &buttons)
 {
 	if (!bMouseEnabled)
 		return false;
@@ -4041,11 +4321,11 @@ bool CRockerSwitch::onWheel (CDrawContext *pContext, const CPoint &where, float 
 	beginEdit ();
 
 	if (isDirty () && listener)
-		listener->valueChanged (pContext, this);
+		listener->valueChanged (this);
 
 	value = 0.0f;  // set button to UNSELECTED state
 	if (listener)
-		listener->valueChanged (pContext, this);
+		listener->valueChanged (this);
 	
 	// end of edit parameter
 	endEdit ();
@@ -4165,7 +4445,7 @@ void CMovieButton::mouse (CDrawContext *pContext, CPoint &where, long button)
 
 	if (listener && button & (kAlt | kShift | kControl | kApple))
 	{
-		if (listener->controlModifierClicked (pContext, this, button) != 0)
+		if (listener->controlModifierClicked (this, button) != 0)
 			return;
 	}
 
@@ -4191,7 +4471,11 @@ void CMovieButton::mouse (CDrawContext *pContext, CPoint &where, long button)
 				value = fEntryState;
 	    
 			if (isDirty () && listener)
-				listener->valueChanged (pContext, this);
+				listener->valueChanged (this);
+			#if VSTGUI_USE_SYSTEM_EVENTS_FOR_DRAWING
+			if (isDirty ())
+				invalid ();
+			#endif
 	    
 			getMouseLocation (pContext, where);
 
@@ -4203,7 +4487,11 @@ void CMovieButton::mouse (CDrawContext *pContext, CPoint &where, long button)
 	{
 		value = !value;
 		if (listener)
-			listener->valueChanged (pContext, this);
+			listener->valueChanged (this);
+		#if VSTGUI_USE_SYSTEM_EVENTS_FOR_DRAWING
+		if (isDirty ())
+			invalid ();
+		#endif
 	}
 
 	// end of edit parameter
@@ -4212,6 +4500,45 @@ void CMovieButton::mouse (CDrawContext *pContext, CPoint &where, long button)
 	buttonState = value;
 }
 
+//------------------------------------------------------------------------
+CMouseEventResult CMovieButton::onMouseDown (CPoint &where, const long& buttons)
+{
+	if (!(buttons & kLButton))
+		return kMouseEventNotHandled;
+	fEntryState = value;
+	beginEdit ();
+	return onMouseMoved (where, buttons);
+}
+
+//------------------------------------------------------------------------
+CMouseEventResult CMovieButton::onMouseUp (CPoint &where, const long& buttons)
+{
+	endEdit ();
+	return kMouseEventHandled;
+}
+
+//------------------------------------------------------------------------
+CMouseEventResult CMovieButton::onMouseMoved (CPoint &where, const long& buttons)
+{
+	if (buttons & kLButton)
+	{
+		if (where.h >= size.left &&
+				where.v >= size.top  &&
+				where.h <= size.right &&
+				where.v <= size.bottom)
+			value = !fEntryState;
+		else
+			value = fEntryState;
+	
+		if (isDirty () && listener)
+			listener->valueChanged (this);
+		#if VSTGUI_USE_SYSTEM_EVENTS_FOR_DRAWING
+		if (isDirty ())
+			invalid ();
+		#endif
+	}
+	return kMouseEventHandled;
+}
 
 //------------------------------------------------------------------------
 // CAutoAnimation
@@ -4277,7 +4604,7 @@ void CAutoAnimation::mouse (CDrawContext *pContext, CPoint &where, long button)
 
 	if (listener && button & (kAlt | kShift | kControl | kApple))
 	{
-		if (listener->controlModifierClicked (pContext, this, button) != 0)
+		if (listener->controlModifierClicked (this, button) != 0)
 			return;
 	}
 
@@ -4288,17 +4615,58 @@ void CAutoAnimation::mouse (CDrawContext *pContext, CPoint &where, long button)
 	{	
 		value = 0;
 		openWindow ();
+		#if VSTGUI_USE_SYSTEM_EVENTS_FOR_DRAWING
+		invalid ();
+		#else
 		setDirty (); // force to redraw
+		#endif
 		if (listener)
-			listener->valueChanged (pContext, this);
+			listener->valueChanged (this);
 	}
 	else
 	{                                                                       
 		// stop info animation
 		value = 0; // draw first pic of bitmap
+		#if VSTGUI_USE_SYSTEM_EVENTS_FOR_DRAWING
+		invalid ();
+		#else
 		setDirty ();
+		#endif
 		closeWindow ();
 	}
+}
+
+//------------------------------------------------------------------------
+CMouseEventResult CAutoAnimation::onMouseDown (CPoint &where, const long& buttons)
+{
+	if (buttons & kLButton)
+	{
+		if (!isWindowOpened ())
+		{	
+			value = 0;
+			openWindow ();
+			#if VSTGUI_USE_SYSTEM_EVENTS_FOR_DRAWING
+			invalid ();
+			#else
+			setDirty (); // force to redraw
+			#endif
+			if (listener)
+				listener->valueChanged (this);
+		}
+		else
+		{                                                                       
+			// stop info animation
+			value = 0; // draw first pic of bitmap
+			#if VSTGUI_USE_SYSTEM_EVENTS_FOR_DRAWING
+			invalid ();
+			#else
+			setDirty ();
+			#endif
+			closeWindow ();
+		}
+		return kMouseDownEventHandledButDontNeedMovedOrUpEvents;
+	}
+	return kMouseEventNotHandled;
 }
 
 //------------------------------------------------------------------------
@@ -4550,12 +4918,12 @@ void CSlider::mouse (CDrawContext *pContext, CPoint &where, long button)
 
 	if (listener && button & (kAlt | kShift | kControl | kApple))
 	{
-		if (listener->controlModifierClicked (pContext, this, button) != 0)
+		if (listener->controlModifierClicked (this, button) != 0)
 			return;
 	}
 
 	// check if default value wanted
-	if (checkDefaultValue (pContext, button))
+	if (checkDefaultValue (button))
 		return;
 	
 	// allow left mousebutton only
@@ -4647,7 +5015,11 @@ void CSlider::mouse (CDrawContext *pContext, CPoint &where, long button)
 		bounceValue ();
     	    
 		if (isDirty () && listener)
-			listener->valueChanged (pContext, this);
+			listener->valueChanged (this);
+		#if VSTGUI_USE_SYSTEM_EVENTS_FOR_DRAWING
+		if (isDirty ())
+			invalid ();
+		#endif
 
 		getMouseLocation (pContext, where);
 
@@ -4659,12 +5031,122 @@ void CSlider::mouse (CDrawContext *pContext, CPoint &where, long button)
 }
 
 //------------------------------------------------------------------------
-bool CSlider::onWheel (CDrawContext *pContext, const CPoint &where, float distance)
+CMouseEventResult CSlider::onMouseDown (CPoint &where, const long& buttons)
+{
+	if (!(buttons & kLButton))
+		return kMouseEventNotHandled;
+
+	if (style & kHorizontal)
+		delta = size.left + offsetHandle.h;
+	else
+		delta = size.top + offsetHandle.v;
+	if (!bFreeClick)
+	{
+		float fValue;
+		if (style & kLeft || style & kTop)
+			fValue = value;
+		else 
+			fValue = 1.f - value;
+		CCoord actualPos;
+		CRect rect;
+
+		if (style & kHorizontal)
+		{
+			actualPos = offsetHandle.h + (int)(fValue * rangeHandle) + size.left;
+
+			rect.left   = actualPos;
+			rect.top    = size.top  + offsetHandle.v;
+			rect.right  = rect.left + widthOfSlider;
+			rect.bottom = rect.top  + heightOfSlider;
+
+			if (!where.isInside (rect))
+				return kMouseEventNotHandled;
+			else
+				delta += where.h - actualPos;
+		}
+		else
+		{
+			actualPos = offsetHandle.v + (int)(fValue * rangeHandle) + size.top;
+		
+			rect.left   = size.left  + offsetHandle.h;
+			rect.top    = actualPos;
+			rect.right  = rect.left + widthOfSlider;
+			rect.bottom = rect.top  + heightOfSlider;
+
+			if (!where.isInside (rect))
+				return kMouseEventNotHandled;
+			else
+				delta += where.v - actualPos;
+		}
+	} 
+	else
+	{
+		if (style & kHorizontal)
+			delta += widthOfSlider / 2 - 1;
+		else
+			delta += heightOfSlider / 2 - 1;
+	}
+	
+	oldVal    = value;
+	oldButton = buttons;
+
+	beginEdit ();
+	if (checkDefaultValue (buttons))
+	{
+		endEdit ();
+		return kMouseDownEventHandledButDontNeedMovedOrUpEvents;
+	}
+	return onMouseMoved (where, buttons);
+}
+
+//------------------------------------------------------------------------
+CMouseEventResult CSlider::onMouseUp (CPoint &where, const long& buttons)
+{
+	endEdit ();
+	return kMouseEventHandled;
+}
+
+//------------------------------------------------------------------------
+CMouseEventResult CSlider::onMouseMoved (CPoint &where, const long& buttons)
+{
+	if (buttons & kLButton)
+	{
+		if ((oldButton != buttons) && (buttons & kShift))
+		{
+			oldVal    = value;
+			oldButton = buttons;
+		}
+		else if (!(buttons & kShift))
+			oldVal = value;
+
+		if (style & kHorizontal)
+			value = (float)(where.h - delta) / (float)rangeHandle;
+		else
+			value = (float)(where.v - delta) / (float)rangeHandle;
+			
+		if (style & kRight || style & kBottom)
+			value = 1.f - value;
+
+		if (buttons & kShift)
+			value = oldVal + ((value - oldVal) / zoomFactor);
+		bounceValue ();
+    	    
+		if (isDirty () && listener)
+			listener->valueChanged (this);
+		#if VSTGUI_USE_SYSTEM_EVENTS_FOR_DRAWING
+		if (isDirty ())
+			invalid ();
+		#endif
+	}
+	return kMouseEventHandled;
+}
+
+//------------------------------------------------------------------------
+bool CSlider::onWheel (const CPoint &where, const float &distance, const long &buttons)
 {
 	if (!bMouseEnabled)
 		return false;
 
-	long buttons = pContext->getMouseButtons ();
 	if (buttons & kShift)
 		value += 0.1f * distance * wheelInc;
 	else
@@ -4676,7 +5158,7 @@ bool CSlider::onWheel (CDrawContext *pContext, const CPoint &where, float distan
 		// begin of edit parameter
 		beginEdit ();
 	
-		listener->valueChanged (pContext, this);
+		listener->valueChanged (this);
 	
 		// end of edit parameter
 		endEdit ();
@@ -4710,7 +5192,7 @@ long CSlider::onKeyDown (VstKeyCode& keyCode)
 				// begin of edit parameter
 				beginEdit ();
 			
-				listener->valueChanged (0, this);
+				listener->valueChanged (this);
 			
 				// end of edit parameter
 				endEdit ();
@@ -4966,7 +5448,7 @@ void CKickButton::mouse (CDrawContext *pContext, CPoint &where, long button)
 
 	if (listener && button & (kAlt | kShift | kControl | kApple))
 	{
-		if (listener->controlModifierClicked (pContext, this, button) != 0)
+		if (listener->controlModifierClicked (this, button) != 0)
 			return;
 	}
 
@@ -4990,7 +5472,11 @@ void CKickButton::mouse (CDrawContext *pContext, CPoint &where, long button)
 				value = fEntryState;
 			
 			if (isDirty () && listener)
-				listener->valueChanged (pContext, this);
+				listener->valueChanged (this);
+			#if VSTGUI_USE_SYSTEM_EVENTS_FOR_DRAWING
+			if (isDirty ())
+				invalid ();
+			#endif
 			
 			getMouseLocation (pContext, where);
 			
@@ -5002,17 +5488,68 @@ void CKickButton::mouse (CDrawContext *pContext, CPoint &where, long button)
 	{
 		value = !value;
 		if (listener)
-			listener->valueChanged (pContext, this);
+			listener->valueChanged (this);
+		#if VSTGUI_USE_SYSTEM_EVENTS_FOR_DRAWING
+		invalid ();
+		#endif
 	}
 
 	value = 0.0f;  // set button to UNSELECTED state
 	if (listener)
-		listener->valueChanged (pContext, this);
+		listener->valueChanged (this);
+	#if VSTGUI_USE_SYSTEM_EVENTS_FOR_DRAWING
+	if (isDirty ())
+		invalid ();
+	#endif
 
 	// end of edit parameter
 	endEdit ();
 }
 
+//------------------------------------------------------------------------
+CMouseEventResult CKickButton::onMouseDown (CPoint &where, const long& buttons)
+{
+	if (!(buttons & kLButton))
+		return kMouseEventNotHandled;
+	fEntryState = value;
+	beginEdit ();
+	return onMouseMoved (where, buttons);
+}
+
+//------------------------------------------------------------------------
+CMouseEventResult CKickButton::onMouseUp (CPoint &where, const long& buttons)
+{
+	if (value && listener)
+		listener->valueChanged (this);
+	value = 0.0f;  // set button to UNSELECTED state
+	if (listener)
+		listener->valueChanged (this);
+	#if VSTGUI_USE_SYSTEM_EVENTS_FOR_DRAWING
+	if (isDirty ())
+		invalid ();
+	#endif
+	endEdit ();
+	return kMouseEventHandled;
+}
+
+//------------------------------------------------------------------------
+CMouseEventResult CKickButton::onMouseMoved (CPoint &where, const long& buttons)
+{
+	if (buttons & kLButton)
+	{
+		if (where.h >= size.left && where.v >= size.top  &&
+			where.h <= size.right && where.v <= size.bottom)
+			value = !fEntryState;
+		else
+			value = fEntryState;
+		
+		#if VSTGUI_USE_SYSTEM_EVENTS_FOR_DRAWING
+		if (isDirty ())
+			invalid ();
+		#endif
+	}
+	return kMouseEventHandled;
+}
 
 //------------------------------------------------------------------------
 // CSplashScreen
@@ -5079,7 +5616,7 @@ void CSplashScreen::mouse (CDrawContext *pContext, CPoint &where, long button)
 
 	if (listener && button & (kAlt | kShift | kControl | kApple))
 	{
-		if (listener->controlModifierClicked (pContext, this, button) != 0)
+		if (listener->controlModifierClicked (this, button) != 0)
 			return;
 	}
 
@@ -5096,22 +5633,70 @@ void CSplashScreen::mouse (CDrawContext *pContext, CPoint &where, long button)
 			mouseableArea = size;
 //			draw (pContext);
 			if (listener)
-				listener->valueChanged (pContext, this);
+				listener->valueChanged (this);
 		}
+		#if VSTGUI_USE_SYSTEM_EVENTS_FOR_DRAWING
+		invalid ();
+		#else
 		setDirty ();
+		#endif
 	}
 	else
 	{
 		size = keepSize;
 		mouseableArea = size;
 		if (listener)
-			listener->valueChanged (pContext, this);
+			listener->valueChanged (this);
 		if (getFrame ())
 		{
 			getFrame ()->setDirty (true);
 			getFrame ()->setModalView (NULL);
 		}
 	}
+}
+
+//------------------------------------------------------------------------
+CMouseEventResult CSplashScreen::onMouseDown (CPoint &where, const long& buttons)
+{
+	if (buttons & kLButton)
+	{
+		value = !value;
+		if (value)
+		{
+			if (getFrame () && getFrame ()->setModalView (this))
+			{
+				keepSize = size;
+				size = toDisplay;
+				mouseableArea = size;
+				if (listener)
+					listener->valueChanged (this);
+			}
+			#if VSTGUI_USE_SYSTEM_EVENTS_FOR_DRAWING
+			invalid ();
+			#else
+			setDirty ();
+			#endif
+		}
+		else
+		{
+			#if VSTGUI_USE_SYSTEM_EVENTS_FOR_DRAWING
+			invalid ();
+			#endif
+			size = keepSize;
+			mouseableArea = size;
+			if (listener)
+				listener->valueChanged (this);
+			if (getFrame ())
+			{
+				#if !VSTGUI_USE_SYSTEM_EVENTS_FOR_DRAWING
+				getFrame ()->setDirty (true);
+				#endif
+				getFrame ()->setModalView (NULL);
+			}
+		}
+		return kMouseDownEventHandledButDontNeedMovedOrUpEvents;
+	}
+	return kMouseEventNotHandled;
 }
 
 //------------------------------------------------------------------------
@@ -5126,7 +5711,11 @@ void CSplashScreen::unSplash ()
 		if (getFrame ()->getModalView () == this)
 		{
 			getFrame ()->setModalView (NULL);
+			#if VSTGUI_USE_SYSTEM_EVENTS_FOR_DRAWING
+			getFrame ()->invalid ();
+			#else
 			getFrame ()->redraw ();
+			#endif
 		}
 	}
 }
