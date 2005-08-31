@@ -86,6 +86,7 @@
 		8BA05B070720754400365D66 /* CAAUParameter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8BA05B050720754400365D66 /* CAAUParameter.cpp */; };
 		8BA05B080720754400365D66 /* CAAUParameter.h in Headers */ = {isa = PBXBuildFile; fileRef = 8BA05B060720754400365D66 /* CAAUParameter.h */; };
 		8D01CCCE0486CAD60068D4B7 /* Carbon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 08EA7FFBFE8413EDC02AAC07 /* Carbon.framework */; };
+		F467335808BF64B000CBCAD2 /* CAVectorUnit.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F467335708BF64B000CBCAD2 /* CAVectorUnit.cpp */; };
 		F485AC4B086C15E700298D72 /* AudioUnit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F485AC4A086C15E700298D72 /* AudioUnit.framework */; };
 		F485AC51086C160100298D72 /* CoreAudio.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8B5C7F83076FB26000A15F61 /* CoreAudio.framework */; };
 		F4C9F1D607B232A100010DAD /* cscrollview.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0C01252807AC359F009EC388 /* cscrollview.cpp */; };
@@ -238,6 +239,7 @@
 		8BA05B050720754400365D66 /* CAAUParameter.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = CAAUParameter.cpp; path = /Developer/Examples/CoreAudio/PublicUtility/CAAUParameter.cpp; sourceTree = "<absolute>"; };
 		8BA05B060720754400365D66 /* CAAUParameter.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = CAAUParameter.h; path = /Developer/Examples/CoreAudio/PublicUtility/CAAUParameter.h; sourceTree = "<absolute>"; };
 		8D01CCD20486CAD60068D4B7 /* drawtest.component */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = drawtest.component; sourceTree = BUILT_PRODUCTS_DIR; };
+		F467335708BF64B000CBCAD2 /* CAVectorUnit.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = CAVectorUnit.cpp; path = /Developer/Examples/CoreAudio/PublicUtility/CAVectorUnit.cpp; sourceTree = "<absolute>"; };
 		F485AC4A086C15E700298D72 /* AudioUnit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioUnit.framework; path = /System/Library/Frameworks/AudioUnit.framework; sourceTree = "<absolute>"; };
 		F4C9F1D407B2320800010DAD /* drawtest.vst */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = drawtest.vst; sourceTree = BUILT_PRODUCTS_DIR; };
 		F4C9F1E307B232D600010DAD /* AudioEffect.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = AudioEffect.cpp; path = ../vstsdk2.3/AudioEffect.cpp; sourceTree = SOURCE_ROOT; };
@@ -472,6 +474,7 @@
 				8BA05AE20720742100365D66 /* CAMutex.h */,
 				8BA05AE30720742100365D66 /* CAStreamBasicDescription.cpp */,
 				8BA05AE40720742100365D66 /* CAStreamBasicDescription.h */,
+				F467335708BF64B000CBCAD2 /* CAVectorUnit.cpp */,
 			);
 			name = "Public Utility";
 			sourceTree = "<group>";
@@ -785,6 +788,7 @@
 				0CF355CC07B173A3002BFE50 /* pprimitivesviews.cpp in Sources */,
 				0CF355FD07B17600002BFE50 /* controlsgui.cpp in Sources */,
 				F4FD4C7008865DB400F20B72 /* cfileselector.cpp in Sources */,
+				F467335808BF64B000CBCAD2 /* CAVectorUnit.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
