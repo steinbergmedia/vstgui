@@ -93,21 +93,14 @@ void CScrollContainer::setScrollOffset (CPoint newOffset, bool redraw)
 	}
 	offset = newOffset;
 
-	if (0) //redraw)
-	{
-		CDrawContext* pContext = getFrame ()->createDrawContext ();
-		CPoint contextOffset = pContext->offset;
-		pContext->offset.offset (-contextOffset.x, -contextOffset.y);
-		pContext->offsetScreen.offset (-contextOffset.x, -contextOffset.y);
-		redrawRect (pContext, size);
-		pContext->offset.offset (contextOffset.x, contextOffset.y);
-		pContext->offsetScreen.offset (contextOffset.x, contextOffset.y);
-		pContext->forget ();
-	}
-	else
-		setDirty (true);
+	#if VSTGUI_USE_SYSTEM_EVENTS_FOR_DRAWING
+	invalid ();
+	#else
+	setDirty (true);
+	#endif
 }
 
+#if !VSTGUI_USE_SYSTEM_EVENTS_FOR_DRAWING
 //-----------------------------------------------------------------------------
 void CScrollContainer::redrawRect (CDrawContext* context, const CRect& rect)
 {
@@ -125,6 +118,7 @@ void CScrollContainer::redrawRect (CDrawContext* context, const CRect& rect)
 	else
 		drawRect (context, _rect);
 }
+#endif
 
 //-----------------------------------------------------------------------------
 bool CScrollContainer::isDirty () const
@@ -208,12 +202,12 @@ void CScrollView::setContainerSize (const CRect& cs)
 	if (vsb)
 	{
 		vsb->setScrollSize (cs);
-		valueChanged (NULL, vsb);
+		valueChanged (vsb);
 	}
 	if (hsb)
 	{
 		hsb->setScrollSize (cs);
-		valueChanged (NULL, hsb);
+		valueChanged (hsb);
 	}
 }
 
@@ -224,7 +218,7 @@ void CScrollView::addView (CView *pView)
 }
 
 //-----------------------------------------------------------------------------
-void CScrollView::valueChanged (CDrawContext *pContext, CControl *pControl)
+void CScrollView::valueChanged (CControl *pControl)
 {
 	if (sc)
 	{
@@ -265,15 +259,15 @@ void CScrollView::drawBackgroundRect (CDrawContext *pContext, CRect& _updateRect
 }
 
 //-----------------------------------------------------------------------------
-bool CScrollView::onWheel (CDrawContext *pContext, const CPoint &where, const CMouseWheelAxis axis, float distance)
+bool CScrollView::onWheel (const CPoint &where, const CMouseWheelAxis &axis, const float &distance, const long &buttons)
 {
-	bool result = CViewContainer::onWheel (pContext, where, axis, distance);
+	bool result = CViewContainer::onWheel (where, axis, distance, buttons);
 	if (!result)
 	{
 		if (vsb && axis == kMouseWheelAxisY)
-			result = vsb->onWheel (pContext, where, distance);
+			result = vsb->onWheel (where, distance, buttons);
 		else if (hsb && axis == kMouseWheelAxisX)
-			result = hsb->onWheel (pContext, where, distance);
+			result = hsb->onWheel (where, distance, buttons);
 	}
 	return result;
 }
@@ -385,7 +379,8 @@ void CScrollbar::mouse (CDrawContext* pContext, CPoint& where, long buttons)
 			{
 				value = newValue;
 				if (listener)
-					listener->valueChanged (pContext, this);
+					listener->valueChanged (this);
+//				invalid ();
 			}
 			doIdleStuff ();
 		}
@@ -420,7 +415,8 @@ void CScrollbar::mouse (CDrawContext* pContext, CPoint& where, long buttons)
 				{
 					value = newValue;
 					if (listener)
-						listener->valueChanged (pContext, this);
+						listener->valueChanged (this);
+//					invalid ();
 				}
 				scrollerRect = getScrollerRect ();
 				if (where.isInside (scrollerRect))
@@ -433,15 +429,15 @@ void CScrollbar::mouse (CDrawContext* pContext, CPoint& where, long buttons)
 }
 
 //------------------------------------------------------------------------
-bool CScrollbar::onWheel (CDrawContext *pContext, const CPoint &where, float distance)
+bool CScrollbar::onWheel (const CPoint &where, const float &_distance, const long &buttons)
 {
 	if (!bMouseEnabled)
 		return false;
 
+	float distance = _distance;
 	if (style == kHorizontal)
 		distance *= -1;
 
-	long buttons = pContext->getMouseButtons ();
 	if (buttons & kShift)
 		value -= 0.1f * distance * wheelInc;
 	else
@@ -449,7 +445,9 @@ bool CScrollbar::onWheel (CDrawContext *pContext, const CPoint &where, float dis
 	bounceValue ();
 
 	if (isDirty () && listener)
-		listener->valueChanged (pContext, this);
+		listener->valueChanged (this);
+
+//	invalid ();
 	return true;
 }
 

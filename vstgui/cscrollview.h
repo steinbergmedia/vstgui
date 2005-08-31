@@ -62,8 +62,8 @@ public:
 	virtual void setContainerSize (const CRect& cs); ///< set the virtual size of this container
 	virtual void addView (CView *pView);
 	virtual void drawBackgroundRect (CDrawContext *pContext, CRect& _updateRect);
-	virtual bool onWheel (CDrawContext *pContext, const CPoint &where, const CMouseWheelAxis axis, float distance);
-	virtual void valueChanged (CDrawContext *pContext, CControl *pControl);
+	virtual bool onWheel (const CPoint &where, const CMouseWheelAxis &axis, const float &distance, const long &buttons);
+	virtual void valueChanged (CControl *pControl);
 
 	virtual CScrollbar* getVerticalScrollbar () const { return vsb; }
 	virtual CScrollbar* getHorizontalScrollbar () const { return hsb; }
@@ -99,7 +99,9 @@ public:
 	CRect getContainerSize () const { return containerSize; }
 	void setContainerSize (const CRect& cs);
 	
+	#if !VSTGUI_USE_SYSTEM_EVENTS_FOR_DRAWING
 	virtual void redrawRect (CDrawContext* context, const CRect& rect);
+	#endif
 	virtual bool isDirty () const;
 
 	CLASS_METHODS(CScrollContainer, CViewContainer)
@@ -149,7 +151,7 @@ public:
 
 	virtual void draw (CDrawContext* pContext);
 	virtual void mouse (CDrawContext* pContext, CPoint& where, long buttons = -1);
-	virtual bool onWheel (CDrawContext *pContext, const CPoint &where, float distance);
+	virtual bool onWheel (const CPoint &where, const float &distance, const long &buttons);
 
 	CLASS_METHODS(CScrollbar, CControl)
 //-----------------------------------------------------------------------------

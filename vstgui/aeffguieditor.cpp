@@ -192,7 +192,8 @@ bool AEffGUIEditor::onWheel (float distance)
 		CDrawContext context (frame, NULL, systemWindow);
 		CPoint where;
 		context.getMouseLocation (where);
-		return frame->onWheel (&context, where, distance);
+		long buttons = context.getMouseButtons ();
+		return frame->onWheel (where, distance, buttons);
 	}
 	
 	return false;
