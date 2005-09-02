@@ -2,7 +2,7 @@
 // VST Plug-Ins SDK
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 //
-// Version 3.5       $Date: 2005-08-31 15:46:57 $
+// Version 3.5       $Date: 2005-09-02 09:02:50 $
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
@@ -84,15 +84,26 @@ class CBitmap;
 
 END_NAMESPACE_VSTGUI
 
-#if PLUGGUI
-	#ifndef __plugguieditor__
-	#include "plugguieditor.h"
-	#endif
+//----------------------------------------------------
+class VSTGUIEditorInterface
+{
+public:
+	virtual void doIdleStuff () {}
+	virtual long getKnobMode () const { return 0; }
+	
+	virtual void beginEdit (long index) {}
+	virtual void endEdit (long index) {}
+
+protected:
+	VSTGUIEditorInterface () : frame (0) {}
+	
+#if USE_NAMESPACE
+	VSTGUI::CFrame* frame;
 #else
-	#ifndef __aeffguieditor__
-	#include "aeffguieditor.h"
-	#endif
+	CFrame* frame;
 #endif
+};
+//----------------------------------------------------
 
 #define VSTGUI_USE_SYSTEM_EVENTS_FOR_DRAWING	QUARTZ
 
@@ -843,7 +854,7 @@ public:
 
 	CView  *getParentView () const { return pParentView; }
 	CFrame *getFrame () const { return pParentFrame; }
-	virtual void *getEditor () const;
+	virtual VSTGUIEditorInterface *getEditor () const;
 
 	virtual long notify (CView* sender, const char* message);
 	#if !VSTGUI_USE_SYSTEM_EVENTS_FOR_DRAWING
@@ -1010,8 +1021,8 @@ protected:
 class CFrame : public CViewContainer
 {
 public:
-	CFrame (const CRect &size, void *pSystemWindow, void *pEditor);
-	CFrame (const CRect &size, const char *pTitle, void *pEditor, const long style = 0);
+	CFrame (const CRect &size, void *pSystemWindow, VSTGUIEditorInterface *pEditor);
+	CFrame (const CRect &size, const char *pTitle, VSTGUIEditorInterface *pEditor, const long style = 0);
 	
 	virtual ~CFrame ();
 
@@ -1092,7 +1103,7 @@ public:
 	virtual void setViewSize (CRect& inRect);
 	virtual CView *getCurrentView () const;
 
-	virtual void *getEditor () const { return pEditor; }
+	virtual VSTGUIEditorInterface *getEditor () const { return pEditor; }
 
 	#if DEBUG
 	virtual void dumpHierarchy ();
@@ -1104,7 +1115,7 @@ public:
 protected:
 	bool   initFrame (void *pSystemWin);
 
-	void   *pEditor;
+	VSTGUIEditorInterface   *pEditor;
 	
 	void    *pSystemWindow;
 	CView   *pModalView;
