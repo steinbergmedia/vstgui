@@ -2,7 +2,7 @@
 // VST Plug-Ins SDK
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 //
-// Version 3.5       $Date: 2005-08-31 15:46:57 $ 
+// Version 3.5       $Date: 2005-09-02 09:02:50 $ 
 //
 // Added Motif/Windows vers.: Yvan Grabit              01.98
 // Added Mac version        : Charlie Steinberg        02.98
@@ -42,12 +42,6 @@
 
 #ifndef __vstgui__
 #include "vstgui.h"
-#endif
-
-#if !PLUGGUI
-#ifndef __audioeffectx__
-#include "audioeffectx.h"
-#endif
 #endif
 
 #include "vstkeycode.h"
@@ -169,13 +163,8 @@ typedef	BOOL (WINAPI *PFNTRANSPARENTBLT)(
 PFNTRANSPARENTBLT	pfnTransparentBlt = NULL;
 #endif
 
-#if PLUGGUI
-	extern HINSTANCE ghInst;
-	inline HINSTANCE GetInstance () { return ghInst; }
-#else
-	extern void* hInstance;
-	inline HINSTANCE GetInstance () { return (HINSTANCE)hInstance; }
-#endif
+extern void* hInstance;
+inline HINSTANCE GetInstance () { return (HINSTANCE)hInstance; }
 
 static long   gUseCount = 0;
 static char   gClassName[20];
@@ -3497,7 +3486,7 @@ void CView::setViewSize (CRect &rect)
 }
 
 //-----------------------------------------------------------------------------
-void *CView::getEditor () const
+VSTGUIEditorInterface *CView::getEditor () const
 { 
 	return pParentFrame ? pParentFrame->getEditor () : 0; 
 }
@@ -3646,7 +3635,7 @@ On classic Mac OS it just draws into the provided window.
 On Mac OS X it is a ControlRef. 
 On Windows it's a WS_CHILD Window.
 */
-CFrame::CFrame (const CRect &inSize, void *inSystemWindow, void *inEditor)
+CFrame::CFrame (const CRect &inSize, void *inSystemWindow, VSTGUIEditorInterface *inEditor)
 : CViewContainer (inSize, 0, 0)
 , pEditor (inEditor)
 , pSystemWindow (inSystemWindow)
@@ -3717,7 +3706,7 @@ CFrame::CFrame (const CRect &inSize, void *inSystemWindow, void *inEditor)
 }
 
 //-----------------------------------------------------------------------------
-CFrame::CFrame (const CRect& inSize, const char* inTitle, void* inEditor, const long inStyle)
+CFrame::CFrame (const CRect& inSize, const char* inTitle, VSTGUIEditorInterface* inEditor, const long inStyle)
 : CViewContainer (inSize, 0, 0)
 , pEditor (inEditor)
 , pSystemWindow (0)
@@ -3772,7 +3761,7 @@ CFrame::CFrame (const CRect& inSize, const char* inTitle, void* inEditor, const 
 
 #endif
 
-	#if !PLUGGUI
+	#if ENABLE_VST_EXTENSION_IN_VSTGUI
 	pVstWindow = (VstWindow*)malloc (sizeof (VstWindow));
 	strcpy (((VstWindow*)pVstWindow)->title, inTitle);
 	((VstWindow*)pVstWindow)->xPos   = (short)size.left;
@@ -3846,19 +3835,17 @@ CFrame::~CFrame ()
 //-----------------------------------------------------------------------------
 bool CFrame::open (CPoint *point)
 {
-#if PLUGGUI
-	return false;
-#else
+#if ENABLE_VST_EXTENSION_IN_VSTGUI
 	if (!bAddedWindow)
 		return false;
 	if (getOpenFlag ())
 	{
-#if WINDOWS
+		#if WINDOWS
 		BringWindowToTop (GetParent (GetParent ((HWND)getSystemWindow ())));
 
-#elif BEOS
+		#elif BEOS
 		pPlugView->Window ()->Activate (true);
-#endif
+		#endif
 		return false;
 	}
 
@@ -3880,15 +3867,15 @@ bool CFrame::open (CPoint *point)
 	}
 
 	return getOpenFlag ();
+#else
+	return false;
 #endif
 }
 
 //-----------------------------------------------------------------------------
 bool CFrame::close ()
 {
-#if PLUGGUI
-	return false;
-#else
+#if ENABLE_VST_EXTENSION_IN_VSTGUI
 	if (!bAddedWindow || !getOpenFlag () || !pSystemWindow)
 		return false;
 
@@ -3898,6 +3885,8 @@ bool CFrame::close ()
 	pSystemWindow = 0;
 
 	return true;
+#else
+	return false;
 #endif
 }
 
@@ -4340,13 +4329,8 @@ void CFrame::idle ()
 //-----------------------------------------------------------------------------
 void CFrame::doIdleStuff ()
 {
-#if PLUGGUI
 	if (pEditor)
-		((PluginGUIEditor*)pEditor)->doIdleStuff ();
-#else
-	if (pEditor)
-		((AEffGUIEditor*)pEditor)->doIdleStuff ();
-#endif
+		pEditor->doIdleStuff ();
 #if (MAC && QUARTZ)
 	if (pFrameContext)
 		pFrameContext->synchronizeCGContext ();
@@ -4356,24 +4340,23 @@ void CFrame::doIdleStuff ()
 //-----------------------------------------------------------------------------
 unsigned long CFrame::getTicks () const
 {
-#if PLUGGUI
-	if (pEditor)
-		return ((PluginGUIEditor*)pEditor)->getTicks ();
-#else
-	if (pEditor)
-		return ((AEffGUIEditor*)pEditor)->getTicks ();
-#endif
+	#if MAC
+	return (TickCount () * 1000) / 60;
+	
+	#elif WINDOWS
+	return (unsigned long)GetTickCount ();
+	
+	#elif BEOS
+	return (system_time () / 1000);
+	#endif
+
 	return 0;
 }
 
 //-----------------------------------------------------------------------------
 long CFrame::getKnobMode () const
 {
-#if PLUGGUI
-	return PluginGUIEditor::getKnobMode ();
-#else
-	return AEffGUIEditor::getKnobMode ();
-#endif
+	return pEditor->getKnobMode ();
 }
 
 //-----------------------------------------------------------------------------
@@ -4539,7 +4522,7 @@ bool CFrame::setSize (CCoord width, CCoord height)
 		backBuffer->forget ();
 	backBuffer = 0;
 #endif
-#if !PLUGGUI
+#if ENABLE_VST_EXTENSION_IN_VSTGUI
 	if (pEditor)
 	{
 		AudioEffectX* effect = (AudioEffectX*)((AEffGUIEditor*)pEditor)->getEffect ();
@@ -4747,29 +4730,15 @@ long CFrame::setModalView (CView *pView)
 //-----------------------------------------------------------------------------
 void CFrame::beginEdit (long index)
 {
-#if PLUGGUI
-	#if AU
 	if (pEditor)
-		((PluginGUIEditor*)pEditor)->beginEdit (index);
-	#endif
-#else
-	if (pEditor)
-		((AEffGUIEditor*)pEditor)->beginEdit (index);
-#endif
+		pEditor->beginEdit (index);
 }
 
 //-----------------------------------------------------------------------------
 void CFrame::endEdit (long index)
 {
-#if PLUGGUI
-	#if AU
 	if (pEditor)
-		((PluginGUIEditor*)pEditor)->endEdit (index);
-	#endif
-#else
-	if (pEditor)
-		((AEffGUIEditor*)pEditor)->endEdit (index);
-#endif
+		pEditor->endEdit (index);
 }
 
 //-----------------------------------------------------------------------------

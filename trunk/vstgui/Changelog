@@ -1,3 +1,10 @@
+2005-09-02 arne
+
+	* added new interface class for communicating stuff between CFrame and Editor : VSTGUIEditorInterface.
+	* because of this the makro PLUGGUI is obsolete and removed.
+	* specific VST stuff is now enclosed by ENABLE_VST_EXTENSION_IN_VSTGUI like the CFileSelector stuff, where the host is asked about showing a File Chooser. If you need it, define it and set it to 1.
+	* AEffGUIEditor is now subclassed from AEffEditor and VSTGUIEditorInterface (the most common compiler error now is, that you need to include "aeffguieditor.h" in your editor class header)
+
 2005-08-31 arne
 
 	* new mouse handling (onMouseDown, onMouseUp, onMouseMoved, onMouseEntered, onMouseExited)

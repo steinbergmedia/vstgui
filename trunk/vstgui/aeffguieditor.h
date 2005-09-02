@@ -52,7 +52,7 @@
 //-----------------------------------------------------------------------------
 // AEffGUIEditor Declaration
 //-----------------------------------------------------------------------------
-class AEffGUIEditor : public AEffEditor
+class AEffGUIEditor : public AEffEditor, public VSTGUIEditorInterface
 {
 public :
 
@@ -92,7 +92,7 @@ public :
 
 	// set/get the knob mode
 	virtual long setKnobMode (int val);
-	static  long getKnobMode () { return knobMode; }
+	virtual long getKnobMode () const { return knobMode; }
 
 	virtual bool onWheel (float distance);
 

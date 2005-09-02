@@ -3,7 +3,7 @@
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 // Standard Control Objects
 //
-// Version 3.5       $Date: 2005-08-31 15:46:57 $
+// Version 3.5       $Date: 2005-09-02 09:02:50 $
 //
 // Added new objects        : Michael Schmidt          08.97
 // Added new objects        : Yvan Grabit              01.98
@@ -1226,13 +1226,8 @@ CMouseEventResult CTextEdit::onMouseDown (CPoint &where, const long& buttons)
 
 END_NAMESPACE_VSTGUI
 
-#if PLUGGUI
-	extern HINSTANCE ghInst;
-	inline HINSTANCE GetInstance () { return ghInst; }
-#else
-	extern void* hInstance;
-	inline HINSTANCE GetInstance () { return (HINSTANCE)hInstance; }
-#endif
+extern void* hInstance;
+inline HINSTANCE GetInstance () { return (HINSTANCE)hInstance; }
 
 BEGIN_NAMESPACE_VSTGUI
 
