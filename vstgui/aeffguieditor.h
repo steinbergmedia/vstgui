@@ -110,12 +110,6 @@ public :
 protected:
 	ERect   rect;
 
-	#if USE_NAMESPACE
-	VSTGUI::CFrame *frame;
-	#else
-	CFrame *frame;
-	#endif
-
 private:
 	unsigned long lLastTicks;
 	bool inIdleStuff;

@@ -54,7 +54,7 @@ static struct tagMSG windowsMessage;
 // AEffGUIEditor Implementation
 //-----------------------------------------------------------------------------
 AEffGUIEditor::AEffGUIEditor (void *pEffect) 
-	: AEffEditor ((AudioEffect*)pEffect), frame (0), inIdleStuff (false)
+	: AEffEditor ((AudioEffect*)pEffect), inIdleStuff (false)
 {
 	((AudioEffect*)pEffect)->setEditor (this);
 	systemWindow = 0;

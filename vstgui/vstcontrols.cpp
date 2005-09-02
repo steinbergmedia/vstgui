@@ -3,7 +3,7 @@
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 // Standard Control Objects
 //
-// Version 3.5       $Date: 2005-09-02 09:02:50 $
+// Version 3.5       $Date: 2005-09-02 09:55:06 $
 //
 // Added new objects        : Michael Schmidt          08.97
 // Added new objects        : Yvan Grabit              01.98
@@ -3032,7 +3032,11 @@ CMouseEventResult COptionMenu::onMouseDown (CPoint &where, const long& buttons)
 	{
 		beginEdit ();
 		if (bgWhenClick)
+		#if VSTGUI_USE_SYSTEM_EVENTS_FOR_DRAWING
 			invalid ();
+		#else
+			setDirty ();
+		#endif
 		takeFocus ();
 		return kMouseDownEventHandledButDontNeedMovedOrUpEvents;
 	}
