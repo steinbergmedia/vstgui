@@ -2,7 +2,7 @@
 // VST Plug-Ins SDK
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 //
-// Version 3.0       $Date: 2005-07-14 10:34:34 $ 
+// Version 3.0       $Date: 2005-09-02 09:02:50 $ 
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
@@ -32,7 +32,7 @@
 // OF THE POSSIBILITY OF SUCH DAMAGE.
 //-----------------------------------------------------------------------------
 
-#if !PLUGGUI
+#if ENABLE_VST_EXTENSION_IN_VSTGUI
 #include "AudioEffectX.h"
 #endif
 
@@ -60,13 +60,9 @@ static UINT APIENTRY WinSaveHook (HWND hdlg, UINT msg, WPARAM wParam, LPARAM lPa
 static bool bFolderSelected;
 static bool bDidCancel;
 static char selDirPath[kPathMax];
-#if PLUGGUI
-	extern HINSTANCE ghInst;
-	inline HINSTANCE GetInstance () { return ghInst; }
-#else
-	extern void* hInstance;
-	inline HINSTANCE GetInstance () { return (HINSTANCE)hInstance; }
-#endif
+
+extern void* hInstance;
+inline HINSTANCE GetInstance () { return (HINSTANCE)hInstance; }
 #endif
 
 BEGIN_NAMESPACE_VSTGUI
@@ -82,7 +78,7 @@ CFileSelector::~CFileSelector ()
 {
 	if (vstFileSelect)
 	{
-		#if VST
+		#if ENABLE_VST_EXTENSION_IN_VSTGUI
 		if (ptr && ((AudioEffectX*)ptr)->canHostDo ("closeFileSelector"))
 			((AudioEffectX*)ptr)->closeFileSelector (vstFileSelect);
 		else
@@ -116,7 +112,7 @@ long CFileSelector::run (VstFileSelect *vstFileSelect)
 	if (vstFileSelect->returnPath)
 		vstFileSelect->returnPath[0] = 0;
 
-	#if !PLUGGUI
+	#if ENABLE_VST_EXTENSION_IN_VSTGUI
 	if (ptr
 	#if MACX 
 		&& vstFileSelect->command != kVstFileSave 
@@ -246,7 +242,7 @@ long CFileSelector::run (VstFileSelect *vstFileSelect)
 			OPENFILENAME ofn = {0};
 			ofn.lStructSize  = sizeof (OPENFILENAME);
 			HWND owner = 0;
-			#if !PLUGGUI
+			#if ENABLE_VST_EXTENSION_IN_VSTGUI
 			if (ptr && ((AudioEffectX*)ptr)->getEditor () && ((AEffGUIEditor*)((AudioEffectX*)ptr)->getEditor ())->getFrame ())
 				owner = (HWND)((AEffGUIEditor*)((AudioEffectX*)ptr)->getEditor ())->getFrame ()->getSystemWindow ();
 			#endif
@@ -391,7 +387,7 @@ long CFileSelector::run (VstFileSelect *vstFileSelect)
 			OPENFILENAME ofn = {0};
 			ofn.lStructSize  = sizeof (OPENFILENAME);
 			HWND owner = 0;
-			#if !PLUGGUI
+			#if ENABLE_VST_EXTENSION_IN_VSTGUI
 			if (((AudioEffectX*)ptr)->getEditor () && ((AEffGUIEditor*)((AudioEffectX*)ptr)->getEditor ())->getFrame ())
 				owner = (HWND)((AEffGUIEditor*)((AudioEffectX*)ptr)->getEditor ())->getFrame ()->getSystemWindow ();
 			#endif
@@ -927,7 +923,7 @@ pascal void CFileSelector::navEventProc (const NavEventCallbackMessage callBackS
 	{
 		case kNavCBEvent:
 		{
-			#if !PLUGGUI
+			#if ENABLE_VST_EXTENSION_IN_VSTGUI
 			AudioEffectX* effect = (AudioEffectX*)fs->ptr;
 			if (effect && callBackParms->eventData.eventDataParms.event->what == nullEvent)
 				effect->masterIdle ();
