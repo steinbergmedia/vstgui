@@ -2,7 +2,7 @@
 // VST Plug-Ins SDK
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 //
-// Version 3.5       $Date: 2005-09-02 09:02:50 $ 
+// Version 3.5       $Date: 2005-09-02 09:55:06 $ 
 //
 // Added Motif/Windows vers.: Yvan Grabit              01.98
 // Added Mac version        : Charlie Steinberg        02.98
@@ -4988,6 +4988,8 @@ void CFrame::invalidRect (CRect rect)
 	}
 	
 	#elif WINDOWS
+	RECT r = {rect.left, rect.top, rect.right, rect.bottom};
+	InvalidateRect ((HWND)pHwnd, &r, true);
 	#else
 	// not supported yet
 	#endif
@@ -7626,7 +7628,7 @@ bool InitWindowClass ()
 		windowClass.hIcon = 0; 
 
 		windowClass.hCursor = LoadCursor (NULL, IDC_ARROW);
-		windowClass.hbrBackground = GetSysColorBrush (COLOR_BTNFACE); 
+		windowClass.hbrBackground = 0; //GetSysColorBrush (COLOR_BTNFACE); 
 		windowClass.lpszMenuName  = 0; 
 		windowClass.lpszClassName = gClassName; 
 		RegisterClass (&windowClass);

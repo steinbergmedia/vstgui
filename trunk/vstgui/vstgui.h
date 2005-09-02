@@ -2,7 +2,7 @@
 // VST Plug-Ins SDK
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 //
-// Version 3.5       $Date: 2005-09-02 09:02:50 $
+// Version 3.5       $Date: 2005-09-02 09:55:06 $
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
@@ -96,7 +96,8 @@ public:
 
 protected:
 	VSTGUIEditorInterface () : frame (0) {}
-	
+	virtual ~VSTGUIEditorInterface () {}
+
 #if USE_NAMESPACE
 	VSTGUI::CFrame* frame;
 #else
@@ -105,7 +106,7 @@ protected:
 };
 //----------------------------------------------------
 
-#define VSTGUI_USE_SYSTEM_EVENTS_FOR_DRAWING	QUARTZ
+#define VSTGUI_USE_SYSTEM_EVENTS_FOR_DRAWING	1 //QUARTZ
 
 //----------------------------------------------------
 #if WINDOWS
