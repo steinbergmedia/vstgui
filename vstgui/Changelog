@@ -1,3 +1,9 @@
+2005-09-08 arne
+
+	* added some kind of tooltip support
+		- if the mouse comes over a view which has a kCViewTooltipAttribute, the tooltip view, which can be set on the frame, is changed to the string in the attribute
+	* fix some stuff with the new mouse handling
+	
 2005-09-02 arne
 
 	* added new interface class for communicating stuff between CFrame and Editor : VSTGUIEditorInterface.

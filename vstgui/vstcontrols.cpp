@@ -3,7 +3,7 @@
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 // Standard Control Objects
 //
-// Version 3.5       $Date: 2005-09-02 09:55:06 $
+// Version 3.5       $Date: 2005-09-09 08:18:01 $
 //
 // Added new objects        : Michael Schmidt          08.97
 // Added new objects        : Yvan Grabit              01.98
@@ -78,9 +78,16 @@ you have to rewrite the draw function in order to redraw the background and then
 */
 CControl::CControl (const CRect &size, CControlListener *listener, long tag,
 					CBitmap *pBackground)
-:	CView (size), 
-	listener (listener), tag (tag), oldValue (1), defaultValue (0.5f),
-	value (0), vmin (0), vmax (1.f), wheelInc (0.1f), lastTicks (-1)
+: CView (size)
+, listener (listener)
+, tag (tag)
+, oldValue (1)
+, defaultValue (0.5f)
+, value (0)
+, vmin (0)
+, vmax (1.f)
+, wheelInc (0.1f)
+, lastTicks (-1)
 {
 	#if WINDOWS
 		delta = GetDoubleClickTime ();
@@ -302,8 +309,29 @@ CMouseEventResult COnOffButton::onMouseDown (CPoint &where, const long& buttons)
 	invalid ();
 	#endif
 
-	if (listener)
+	if (listener && style == kPostListenerUpdate)
+	{
+		// begin of edit parameter
+		beginEdit ();
+	
 		listener->valueChanged (this);
+	
+		// end of edit parameter
+		endEdit ();
+	}
+	
+	doIdleStuff ();
+	
+	if (listener && style == kPreListenerUpdate)
+	{
+		// begin of edit parameter
+		beginEdit ();
+	
+		listener->valueChanged (this);
+	
+		// end of edit parameter
+		endEdit ();
+	}
 
 	return kMouseDownEventHandledButDontNeedMovedOrUpEvents;
 }
@@ -1034,12 +1062,15 @@ void CTextLabel::freeText ()
 //------------------------------------------------------------------------
 void CTextLabel::setText (const char* txt)
 {
+	if (!text && !txt || (text && txt && strcmp (text, txt) == 0))
+		return;
 	freeText ();
 	if (txt)
 	{
 		text = (char*)malloc (strlen (txt)+1);
 		strcpy (text, txt);
 	}
+	setDirty (true);
 }
 
 //------------------------------------------------------------------------
@@ -5705,6 +5736,7 @@ void CSplashScreen::unSplash ()
 	value = 0.f;
 
 	size = keepSize;
+	mouseableArea = size;
 	if (getFrame ())
 	{
 		if (getFrame ()->getModalView () == this)

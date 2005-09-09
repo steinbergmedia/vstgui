@@ -2,7 +2,7 @@
 // VST Plug-Ins SDK
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 //
-// Version 3.5       $Date: 2005-09-02 09:55:06 $ 
+// Version 3.5       $Date: 2005-09-09 08:18:01 $ 
 //
 // Added Motif/Windows vers.: Yvan Grabit              01.98
 // Added Mac version        : Charlie Steinberg        02.98
@@ -3504,6 +3504,7 @@ void CView::setBackground (CBitmap *background)
 
 //-----------------------------------------------------------------------------
 const CViewAttributeID kCViewAttributeReferencePointer = 'cvrp';
+const CViewAttributeID kCViewTooltipAttribute = 'cvtt';
 
 //-----------------------------------------------------------------------------
 /**
@@ -3565,7 +3566,7 @@ bool CView::getAttribute (const CViewAttributeID id, const long inSize, void* ou
  * @param inSize the size of the outData pointer
  * @param inData a pointer to the data
  */
-bool CView::setAttribute (const CViewAttributeID id, const long inSize, void* inData)
+bool CView::setAttribute (const CViewAttributeID id, const long inSize, const void* inData)
 {
 	CAttributeListEntry* lastEntry = 0;
 	if (pAttributeList)
@@ -3641,6 +3642,7 @@ CFrame::CFrame (const CRect &inSize, void *inSystemWindow, VSTGUIEditorInterface
 , pSystemWindow (inSystemWindow)
 , pModalView (0)
 , pFocusView (0)
+, tooltipView (0)
 , bFirstDraw (true)
 , bDropActive (false)
 , bUpdatesDisabled (false)
@@ -3712,6 +3714,7 @@ CFrame::CFrame (const CRect& inSize, const char* inTitle, VSTGUIEditorInterface*
 , pSystemWindow (0)
 , pModalView (0)
 , pFocusView (0)
+, tooltipView (0)
 , bFirstDraw (true)
 , bDropActive (false)
 , bUpdatesDisabled (false)
@@ -5009,8 +5012,10 @@ void CFrame::dumpHierarchy ()
 //-----------------------------------------------------------------------------
 // CCView Implementation
 //-----------------------------------------------------------------------------
-CCView::CCView (CView *pView)
- :  pView (pView), pNext (0), pPrevious (0)
+CCView::CCView (CView* pView)
+: pView (pView)
+, pNext (0)
+, pPrevious (0)
 {
 	if (pView)
 		pView->remember ();
@@ -5681,7 +5686,7 @@ CMouseEventResult CViewContainer::onMouseMoved (CPoint &where, const long& butto
 		CView* v = getViewAt (where, true);
 		if (v != mouseOverView)
 		{
-			#if 1
+			#if 0
 			if (v)
 			{
 				CPoint vr (v->size.left, v->size.top);
@@ -5694,8 +5699,27 @@ CMouseEventResult CViewContainer::onMouseMoved (CPoint &where, const long& butto
 			mouseOverView = 0;
 			if (v)
 			{
-				if (v->onMouseEntered (where, buttons) == kMouseEventHandled)
-					mouseOverView = v;
+				v->onMouseEntered (where, buttons);
+				mouseOverView = v;
+				// check for tooltip
+				if (getFrame ()->getTooltipView ())
+				{
+					long tooltipSize = 0;
+					if (v->getAttributeSize (kCViewTooltipAttribute, tooltipSize))
+					{
+						char* text = (char*)malloc (tooltipSize + 1);
+						if (v->getAttribute (kCViewTooltipAttribute, tooltipSize, text, tooltipSize))
+							getFrame ()->getTooltipView ()->setText (text);
+						free (text);
+					}
+					else
+						getFrame ()->getTooltipView ()->setText (0);
+				}
+			}
+			else if (getFrame ()->getTooltipView ())
+			{
+				// remove tooltip
+				getFrame ()->getTooltipView ()->setText (0);
 			}
 			return kMouseEventHandled;
 		}
@@ -6217,7 +6241,10 @@ The Bitmaps are .bmp files and must be included in the plug (usually using a .rc
 It's also possible to use png as of version 3.0 if you define the macro USE_LIBPNG and include the libpng and zlib libraries/sources to your project.
 */
 CBitmap::CBitmap (long resourceID)
-	: resourceID (resourceID), width (0), height (0), noAlpha (true)
+: resourceID (resourceID)
+, width (0)
+, height (0)
+, noAlpha (true)
 {
 	#if DEBUG
 	gNbCBitmap++;
@@ -6277,8 +6304,10 @@ CBitmap::CBitmap (long resourceID)
 }
 
 //-----------------------------------------------------------------------------
-CBitmap::CBitmap (CFrame &frame, CCoord width, CCoord height)
-	: width (width), height (height), noAlpha (true)
+CBitmap::CBitmap (CFrame& frame, CCoord width, CCoord height)
+: width (width)
+, height (height)
+, noAlpha (true)
 {
 	#if DEBUG
 	gNbCBitmap++;
@@ -7672,10 +7701,16 @@ LONG_PTR WINAPI WindowProc (HWND hwnd, UINT message, WPARAM wParam, LPARAM lPara
 	{
 		if (pFrame)
 		{
-//			VSTGUI_CDrawContext context (pFrame, 0, hwnd);
+			long buttons = 0;
+			if (GetKeyState (VK_SHIFT)   < 0)
+				buttons |= kShift;
+			if (GetKeyState (VK_CONTROL) < 0)
+				buttons |= kControl;
+			if (GetKeyState (VK_MENU)    < 0)
+				buttons |= kAlt;
 			VSTGUI_CPoint where (LOWORD (lParam), HIWORD (lParam));
 			short zDelta = (short) HIWORD(wParam);
-			pFrame->onWheel (where, (float)zDelta / WHEEL_DELTA, 0); // todo, check modifier
+			pFrame->onWheel (where, (float)zDelta / WHEEL_DELTA, buttons); // todo, check modifier
 		}
 		break;
 	}
@@ -7779,6 +7814,68 @@ LONG_PTR WINAPI WindowProc (HWND hwnd, UINT message, WPARAM wParam, LPARAM lPara
 	}
 	break;
 	
+#if NEW_MOUSE_METHODS_FOR_WINDOWS
+	case WM_RBUTTONDOWN:
+	case WM_MBUTTONDOWN:
+	case WM_LBUTTONDOWN:
+		if (pFrame)
+		{
+			long buttons = 0;
+			if (wParam & MK_LBUTTON)
+				buttons |= kLButton;
+			if (wParam & MK_RBUTTON)
+				buttons |= kRButton;
+			if (wParam & MK_MBUTTON)
+				buttons |= kMButton;
+			if (wParam & MK_CONTROL)
+				buttons |= kControl;
+			if (wParam & MK_SHIFT)
+				buttons |= kShift;
+			VSTGUI_CPoint where (LOWORD (lParam), HIWORD (lParam));
+			if (pFrame->onMouseDown (where, buttons) == kMouseEventHandled)
+				SetCapture ((HWND)pFrame->getSystemWindow ());
+		}
+		break;
+	case WM_MOUSEMOVE:
+		if (pFrame)
+		{
+			long buttons = 0;
+			if (wParam & MK_LBUTTON)
+				buttons |= kLButton;
+			if (wParam & MK_RBUTTON)
+				buttons |= kRButton;
+			if (wParam & MK_MBUTTON)
+				buttons |= kMButton;
+			if (wParam & MK_CONTROL)
+				buttons |= kControl;
+			if (wParam & MK_SHIFT)
+				buttons |= kShift;
+			VSTGUI_CPoint where (LOWORD (lParam), HIWORD (lParam));
+			pFrame->onMouseMove (where, buttons);
+		}
+		break;
+	case WM_LBUTTONUP:
+	case WM_RBUTTONUP:
+	case WM_MBUTTONUP:
+		if (pFrame)
+		{
+			long buttons = 0;
+			if (wParam & MK_LBUTTON)
+				buttons |= kLButton;
+			if (wParam & MK_RBUTTON)
+				buttons |= kRButton;
+			if (wParam & MK_MBUTTON)
+				buttons |= kMButton;
+			if (wParam & MK_CONTROL)
+				buttons |= kControl;
+			if (wParam & MK_SHIFT)
+				buttons |= kShift;
+			VSTGUI_CPoint where (LOWORD (lParam), HIWORD (lParam));
+			pFrame->onMouseUp (where, buttons);
+			ReleaseCapture ();
+		}
+		break;
+#else
 	case WM_RBUTTONDOWN:
 	case WM_MBUTTONDOWN:
 	case WM_LBUTTONDOWN:
@@ -7796,6 +7893,7 @@ LONG_PTR WINAPI WindowProc (HWND hwnd, UINT message, WPARAM wParam, LPARAM lPara
 			return 0;
 		}
 		break;
+#endif
 		
 	case WM_DESTROY:
 		if (pFrame)
@@ -8798,12 +8896,21 @@ pascal OSStatus CFrame::carbonEventHandler (EventHandlerCallRef inHandlerCallRef
 					GetEventParameter (inEvent, kEventParamMouseWheelDelta, typeLongInteger, NULL, sizeof (SInt32), NULL, &wheelDelta);
 					GetEventParameter (inEvent, kEventParamWindowMouseLocation, typeHIPoint, NULL, sizeof (HIPoint), NULL, &windowHIPoint);
 					GetEventParameter (inEvent, kEventParamKeyModifiers, typeUInt32, NULL, sizeof (UInt32), NULL, &modifiers);
+					long buttons = 0;
+					if (modifiers & cmdKey)
+						buttons |= kControl;
+					if (modifiers & shiftKey)
+						buttons |= kShift;
+					if (modifiers & optionKey)
+						buttons |= kAlt;
+					if (modifiers & controlKey)
+						buttons |= kApple;
 					HIViewConvertPoint (&windowHIPoint, HIViewGetRoot (windowRef), frame->controlRef);
 					CPoint p (windowHIPoint.x, windowHIPoint.y);
 					CMouseWheelAxis axis = kMouseWheelAxisX;
 					if (wheelAxis == kEventMouseWheelAxisY && !(modifiers & cmdKey))
 						axis = kMouseWheelAxisY;
-					frame->onWheel (p, axis, wheelDelta, 0); // todo check modifier
+					frame->onWheel (p, axis, wheelDelta, buttons); // todo check modifier
 					result = noErr;
 					break;
 				}
