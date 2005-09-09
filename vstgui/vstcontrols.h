@@ -3,7 +3,7 @@
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 // Standard Control Objects
 //
-// Version 3.5       $Date: 2005-08-31 15:46:57 $
+// Version 3.5       $Date: 2005-09-09 08:18:01 $
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
@@ -1003,6 +1003,9 @@ public:
 	virtual bool hitTest (const CPoint& where, const long buttons = -1);
 	virtual void mouse (CDrawContext *pContext, CPoint &where, long button = -1);
 	virtual void unSplash ();
+
+	virtual void setDisplayArea (const CRect& rect)  { toDisplay = rect; }				///< set the area in which the splash will be displayed
+	virtual CRect& getDisplayArea (CRect& rect) const { rect = toDisplay; return rect; }	///< get the area in which the splash will be displayed
 
 	virtual CMouseEventResult onMouseDown (CPoint &where, const long& buttons);
 

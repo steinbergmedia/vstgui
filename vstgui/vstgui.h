@@ -2,7 +2,7 @@
 // VST Plug-Ins SDK
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 //
-// Version 3.5       $Date: 2005-09-02 09:55:06 $
+// Version 3.5       $Date: 2005-09-09 08:18:01 $
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
@@ -356,6 +356,7 @@ extern CColor kMagentaCColor;
 class CDragContainer;
 class CCView;
 class CAttributeListEntry;
+class CTextLabel;
 
 //-----------------------------------------------------------------------------
 typedef unsigned long CViewAttributeID;
@@ -364,6 +365,7 @@ typedef unsigned long CViewAttributeID;
 //		all attributes where the first letter is lowercase are reserved for the vstgui lib
 
 extern const CViewAttributeID kCViewAttributeReferencePointer;	// 'cvrp'
+extern const CViewAttributeID kCViewTooltipAttribute;			// 'cvtt'
 
 //-----------------------------------------------------------------------------
 //-----------
@@ -851,7 +853,7 @@ public:
 
 	bool getAttributeSize (const CViewAttributeID id, long& outSize) const;									///< get the size of an attribute
 	bool getAttribute (const CViewAttributeID id, const long inSize, void* outData, long& outSize) const;	///< get an attribute
-	bool setAttribute (const CViewAttributeID id, const long inSize, void* inData);							///< set an attribute
+	bool setAttribute (const CViewAttributeID id, const long inSize, const void* inData);					///< set an attribute
 
 	CView  *getParentView () const { return pParentView; }
 	CFrame *getFrame () const { return pParentFrame; }
@@ -1047,6 +1049,9 @@ public:
 	virtual long   setModalView (CView *pView);
 	virtual CView *getModalView () const { return pModalView; }
 
+	virtual void setTooltipView (CTextLabel* view) { tooltipView = view; }
+	virtual CTextLabel* getTooltipView () const { return tooltipView; }
+	
 	virtual void  beginEdit (long index);
 	virtual void  endEdit (long index);
 
@@ -1121,6 +1126,7 @@ protected:
 	void    *pSystemWindow;
 	CView   *pModalView;
 	CView   *pFocusView;
+	CTextLabel* tooltipView;
 
 	bool    bFirstDraw;
 	bool    bOpenFlag;
