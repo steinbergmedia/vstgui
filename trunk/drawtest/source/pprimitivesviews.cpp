@@ -44,6 +44,7 @@ static inline void offsetPoints (CPoint* points, long numPoints, CPoint offset)
 
 void PMiscView::draw (CDrawContext* pContext)
 {
+	pContext->setLineWidth (1);
 	drawGrid (pContext);
 	CPoint polyPoints[10];
 	polyPoints[0] = CPoint (50,0);
@@ -193,6 +194,7 @@ PRectsView::PRectsView (const CRect& size)
 
 void PRectsView::draw (CDrawContext *context)
 {
+	context->setLineWidth (1);
 	char text[512];
 	text[0] = 0;
 	context->setFont (kNormalFontSmall);
