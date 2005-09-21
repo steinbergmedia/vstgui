@@ -3,6 +3,8 @@
 	* mac: make it compatible again with Mac OS X < 10.4
 	* mac: complete new mouse handling
 	* adding CVSTGUITimer class, currently needed in CScrollView
+	* win: added new mouse handling
+	* win: first GDI+ stuff (oh it's slow, slow, slow ... needs much work I guess)
 
 2005-09-08 arne
 
