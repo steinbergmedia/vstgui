@@ -2,7 +2,7 @@
 // VST Plug-Ins SDK
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 //
-// Version 3.5       $Date: 2005-09-09 08:18:01 $ 
+// Version 3.5       $Date: 2005-09-21 12:24:11 $ 
 //
 // Added Motif/Windows vers.: Yvan Grabit              01.98
 // Added Mac version        : Charlie Steinberg        02.98
@@ -3202,7 +3202,7 @@ void COffscreenContext::copyFrom (CDrawContext *pContext, CRect destRect, CPoint
 //-----------------------------------------------------------------------------
 CGImageRef COffscreenContext::getCGImage () const
 {
-	#ifdef MAC_OS_X_VERSION_10_4
+	#if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_4
 	if (CGBitmapContextCreateImage && gCGContext)
 	{
 		return CGBitmapContextCreateImage (gCGContext);
@@ -4332,12 +4332,12 @@ void CFrame::idle ()
 //-----------------------------------------------------------------------------
 void CFrame::doIdleStuff ()
 {
-	if (pEditor)
-		pEditor->doIdleStuff ();
 #if (MAC && QUARTZ)
 	if (pFrameContext)
 		pFrameContext->synchronizeCGContext ();
 #endif
+	if (pEditor)
+		pEditor->doIdleStuff ();
 }
 
 //-----------------------------------------------------------------------------
@@ -4966,21 +4966,24 @@ void CFrame::invalidate (const CRect &rect)
 void CFrame::invalidRect (CRect rect)
 {
 	#if QUARTZ
-	if (HIViewIsCompositingEnabled (controlRef))
+	WindowAttributes attributes;
+	GetWindowAttributes ((WindowRef)pSystemWindow, &attributes);
+	if (attributes & kWindowCompositingAttribute)
 	{
+		#if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_4
 		if (HIViewSetNeedsDisplayInRect)
 		{
 			HIRect r = { {rect.left, rect.top}, {rect.getWidth (), rect.getHeight ()} };
 			HIViewSetNeedsDisplayInRect (controlRef, &r, true);
 		}
-		#if MAC_OS_X_VERSION_MIN_REQUIRED < 1040
 		else
+		#endif
 		{
 			RgnHandle region = NewRgn ();
 			SetRectRgn (region, rect.left, rect.top, rect.right, rect.bottom);
 			HIViewSetNeedsDisplayInRegion (controlRef, region, true);
+			DisposeRgn(region);
 		}
-		#endif
 	}
 	else
 	{
@@ -5186,6 +5189,8 @@ void CViewContainer::removeAll (const bool &withForget)
  */
 void CViewContainer::removeView (CView *pView, const bool &withForget)
 {
+	if (mouseOverView = pView)
+		mouseOverView = 0;
 	if (pParentFrame && pParentFrame->getFocusView () == pView)
 		pParentFrame->setFocusView (0);
 	CCView *pV = pFirstView;
@@ -8457,7 +8462,7 @@ bool CFrame::registerWithToolbox ()
 
 	EventTypeSpec eventTypes[] = {	{kEventClassControl, kEventControlDraw},
 									{kEventClassControl, kEventControlHitTest},
-									//{kEventClassControl, kEventControlClick},
+									{kEventClassControl, kEventControlClick},
 									//{kEventClassControl, kEventControlTrack},
 									//{kEventClassControl, kEventControlContextualMenuClick},
 									{kEventClassKeyboard, kEventRawKeyDown},
@@ -8692,6 +8697,7 @@ pascal OSStatus CFrame::carbonEventHandler (EventHandlerCallRef inHandlerCallRef
 				}
 				case kEventControlClick:
 				{
+					return noErr;
 					EventMouseButton buttonState;
 					GetEventParameter (inEvent, kEventParamMouseButton, typeMouseButton, NULL, sizeof (EventMouseButton), NULL, &buttonState);
 					if (buttonState == kEventMouseButtonPrimary)
@@ -8907,10 +8913,13 @@ pascal OSStatus CFrame::carbonEventHandler (EventHandlerCallRef inHandlerCallRef
 						buttons |= kApple;
 					HIViewConvertPoint (&windowHIPoint, HIViewGetRoot (windowRef), frame->controlRef);
 					CPoint p (windowHIPoint.x, windowHIPoint.y);
+					float distance = wheelDelta;
 					CMouseWheelAxis axis = kMouseWheelAxisX;
 					if (wheelAxis == kEventMouseWheelAxisY && !(modifiers & cmdKey))
 						axis = kMouseWheelAxisY;
-					frame->onWheel (p, axis, wheelDelta, buttons); // todo check modifier
+					else
+						distance *= -1;
+					frame->onWheel (p, axis, distance, buttons); // todo check modifier
 					result = noErr;
 					break;
 				}
@@ -9027,7 +9036,7 @@ pascal OSStatus CFrame::carbonMouseEventHandler (EventHandlerCallRef inHandlerCa
 	HIViewRef view;
 	if (HIViewGetViewForMouseEvent (HIViewGetRoot (window), inEvent, &view) == noErr)
 	{
-		if (view != hiView && !(eventKind == kEventMouseDragged && frame->mouseDownView != 0))
+		if (view != hiView && !((eventKind == kEventMouseDragged || eventKind == kEventMouseUp) && frame->mouseDownView != 0))
 			return result;
 	}
 	switch (eventClass)
@@ -9041,9 +9050,11 @@ pascal OSStatus CFrame::carbonMouseEventHandler (EventHandlerCallRef inHandlerCa
 			if (GetEventParameter (inEvent, kEventParamWindowMouseLocation, typeHIPoint, NULL, sizeof (HIPoint), NULL, &location) == noErr)
 			{
 				LOG_HIPOINT("window :",location)
+				#if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_4
 				if (HIPointConvert)
 					HIPointConvert (&location, kHICoordSpaceWindow, window, kHICoordSpaceView, hiView);
 				else
+				#endif
 					HIViewConvertPoint (&location, HIViewGetRoot (window), hiView);
 				LOG_HIPOINT("view   :",location)
 			}
@@ -9068,18 +9079,8 @@ pascal OSStatus CFrame::carbonMouseEventHandler (EventHandlerCallRef inHandlerCa
 			{
 				case kEventMouseDown:
 				{
-					if (!IsWindowActive (window))
-					{
-						ProcessSerialNumber psn = { 0, kCurrentProcess };
-						ProcessSerialNumber front;
-						Boolean result;
-						GetFrontProcess (&front);
-						SameProcess (&front, &psn, &result);
-						if (!result)
-							SetFrontProcessWithOptions (&psn, kSetFrontProcessFrontWindowOnly);
-						SelectWindow (window);
-					}
 					LOG("Mouse Down")
+					result = CallNextEventHandler (inHandlerCallRef, inEvent); // calls default handler, which activates the window if not already active, or sets the process to front
 					if (frame->onMouseDown (point, buttons))
 						result = noErr;
 					break;
@@ -9092,11 +9093,17 @@ pascal OSStatus CFrame::carbonMouseEventHandler (EventHandlerCallRef inHandlerCa
 					break;
 				}
 				case kEventMouseDragged:
+				{
+					LOG("Mouse Dragged")
+					if (frame->onMouseMoved (point, buttons))
+						result = noErr;
+					break;
+				}
 				case kEventMouseMoved:
 				{
+					LOG("Mouse Moved")
 					if (IsWindowActive (window))
 					{
-						LOG("Mouse Moved")
 						if (frame->onMouseMoved (point, buttons))
 							result = noErr;
 					}

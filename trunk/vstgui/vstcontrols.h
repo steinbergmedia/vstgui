@@ -3,7 +3,7 @@
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 // Standard Control Objects
 //
-// Version 3.5       $Date: 2005-09-09 08:18:01 $
+// Version 3.5       $Date: 2005-09-21 12:24:11 $
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
@@ -119,8 +119,6 @@ public:
 	virtual void controlEndEdit (CControl *pControl) {}
 	#endif
 };
-
-class AudioEffectX;
 
 //-----------------------------------------------------------------------------
 BEGIN_NAMESPACE_VSTGUI

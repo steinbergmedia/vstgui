@@ -1,3 +1,9 @@
+2005-09-21 arne
+
+	* mac: make it compatible again with Mac OS X < 10.4
+	* mac: complete new mouse handling
+	* adding CVSTGUITimer class, currently needed in CScrollView
+
 2005-09-08 arne
 
 	* added some kind of tooltip support

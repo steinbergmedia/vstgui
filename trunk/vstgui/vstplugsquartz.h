@@ -5,7 +5,7 @@
 #define MOTIF 0
 #define BEBOX 0
 
-#define USE_NAMESPACE 0
+#define USE_NAMESPACE 1
 
 #define TARGET_API_MAC_CARBON 1
 #define USENAVSERVICES 1
@@ -19,6 +19,6 @@
 #define QUARTZ 1
 
 #define MAC_OS_X_VERSION_MIN_REQUIRED   1020
-#define MAC_OS_X_VERSION_MAX_ALLOWED	1030
+#define MAC_OS_X_VERSION_MAX_ALLOWED	1040
 
 #include <AvailabilityMacros.h>

@@ -36,6 +36,8 @@
 #include "cscrollview.h"
 #endif
 
+#include "cvstguitimer.h"
+
 #define FOREACHSUBVIEW for (CCView *pSv = pFirstView; pSv; pSv = pSv->pNext) {CView *pV = pSv->pView;
 #define ENDFOR }
 
@@ -92,7 +94,6 @@ void CScrollContainer::setScrollOffset (CPoint newOffset, bool redraw)
 		pV = pV->pNext;
 	}
 	offset = newOffset;
-
 	#if VSTGUI_USE_SYSTEM_EVENTS_FOR_DRAWING
 	invalid ();
 	#else
@@ -154,7 +155,6 @@ CScrollView::CScrollView (const CRect &size, const CRect &containerSize, CFrame*
 
 	CRect scsize (size);
 	scsize.offset (-scsize.left, -scsize.top);
-//	CScrollbar* sb = 0;	
 	if (style & kHorizontalScrollbar)
 	{
 		CRect sbr (size);
@@ -281,6 +281,7 @@ CScrollbar::CScrollbar (const CRect& size, CControlListener* listener, long tag,
 , stepValue (0.1f)
 , scrollerLength (0)
 , drawer (0)
+, timer (0)
 {
 	setWheelInc (0.05f);
 	scrollerArea.inset (2, 2);
@@ -348,6 +349,116 @@ CRect CScrollbar::getScrollerRect ()
 }
 
 //-----------------------------------------------------------------------------
+void CScrollbar::doStepping (bool direction)
+{
+	float newValue = value;
+	if (style == kHorizontal)
+	{
+		if (direction)
+			newValue = value - (float)scrollerLength / (float)scrollerArea.width ();
+		else
+			newValue = value + (float)scrollerLength / (float)scrollerArea.width ();
+	}
+	else
+	{
+		if (direction)
+			newValue = value - (float)scrollerLength / (float)scrollerArea.height ();
+		else
+			newValue = value + (float)scrollerLength / (float)scrollerArea.height ();
+	}
+	if (newValue < 0.f) newValue = 0.f;
+	if (newValue > 1.f) newValue = 1.f;
+	if (newValue != value)
+	{
+		value = newValue;
+		if (listener)
+			listener->valueChanged (this);
+		#if VSTGUI_USE_SYSTEM_EVENTS_FOR_DRAWING
+		invalid ();
+		#endif
+	}
+}
+
+//-----------------------------------------------------------------------------
+long CScrollbar::notify (CView* sender, const char* message)
+{
+	if (message == CVSTGUITimer::kMsgTimer)
+	{
+		doStepping (stepDirection);
+		return kMessageNotified;
+	}
+	return kMessageUnknown;
+}
+
+//-----------------------------------------------------------------------------
+CMouseEventResult CScrollbar::onMouseDown (CPoint &where, const long& buttons)
+{
+	if (buttons != kLButton || scrollerLength == 0) 
+		return kMouseDownEventHandledButDontNeedMovedOrUpEvents;
+
+	startPoint = where;
+	scrollerRect = getScrollerRect ();
+	scrolling = where.isInside (scrollerRect);
+	if (scrolling)
+	{
+		scrollerRect = getScrollerRect ();
+		return kMouseEventHandled;
+	}
+	else if (where.isInside (scrollerArea))
+	{
+		stepDirection = (style == kHorizontal && where.x < scrollerRect.left) || (style == kVertical && where.y < scrollerRect.top);
+		doStepping (stepDirection);
+		timer = new CVSTGUITimer (this, 200);
+		timer->start ();
+		return kMouseEventHandled;
+	}
+	return kMouseDownEventHandledButDontNeedMovedOrUpEvents;
+}
+
+//-----------------------------------------------------------------------------
+CMouseEventResult CScrollbar::onMouseUp (CPoint &where, const long& buttons)
+{
+	if (timer)
+	{
+		delete timer;
+		timer = 0;
+	}
+	return kMouseEventHandled;
+}
+
+//-----------------------------------------------------------------------------
+CMouseEventResult CScrollbar::onMouseMoved (CPoint &where, const long& buttons)
+{
+	if (scrolling)
+	{
+		float newValue = 0.f;
+		CPoint newPoint (where);
+		newPoint.x -= startPoint.x - scrollerRect.left;
+		newPoint.y -= startPoint.y - scrollerRect.top;
+		if (style == kHorizontal)
+		{
+			newValue = (float)(newPoint.x - scrollerArea.left) / ((float)scrollerArea.width () - scrollerRect.width ());
+		}
+		else
+		{
+			newValue = (float)(newPoint.y - scrollerArea.top) / ((float)scrollerArea.height () - scrollerRect.height ());
+		}
+		if (newValue < 0.f) newValue = 0.f;
+		if (newValue > 1.f) newValue = 1.f;
+		if (newValue != value)
+		{
+			value = newValue;
+			if (listener)
+				listener->valueChanged (this);
+			#if VSTGUI_USE_SYSTEM_EVENTS_FOR_DRAWING
+			invalid ();
+			#endif
+		}
+	}
+	return kMouseEventHandled;
+}
+
+//-----------------------------------------------------------------------------
 void CScrollbar::mouse (CDrawContext* pContext, CPoint& where, long buttons)
 {
 	if (buttons == -1) buttons = pContext->getMouseButtons ();
@@ -380,7 +491,6 @@ void CScrollbar::mouse (CDrawContext* pContext, CPoint& where, long buttons)
 				value = newValue;
 				if (listener)
 					listener->valueChanged (this);
-//				invalid ();
 			}
 			doIdleStuff ();
 		}
@@ -416,7 +526,6 @@ void CScrollbar::mouse (CDrawContext* pContext, CPoint& where, long buttons)
 					value = newValue;
 					if (listener)
 						listener->valueChanged (this);
-//					invalid ();
 				}
 				scrollerRect = getScrollerRect ();
 				if (where.isInside (scrollerRect))
@@ -446,8 +555,9 @@ bool CScrollbar::onWheel (const CPoint &where, const float &_distance, const lon
 
 	if (isDirty () && listener)
 		listener->valueChanged (this);
-
-//	invalid ();
+	#if VSTGUI_USE_SYSTEM_EVENTS_FOR_DRAWING
+	invalid ();
+	#endif
 	return true;
 }
 
