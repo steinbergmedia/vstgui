@@ -499,6 +499,7 @@ bool ControlsGUI::removed (CView* parent)
 {
 	if (getFrame ())
 		getFrame ()->setTooltipView (0);
+	return CViewContainer::removed (parent);
 }
 
 void ControlsGUI::valueChanged (CControl *pControl)
