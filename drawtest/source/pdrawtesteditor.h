@@ -24,8 +24,12 @@
 #include "vstcontrols.h"
 #endif
 
+#ifdef AU
+#include "plugguieditor.h"
+#else
 #ifndef __aeffguieditor__
 #include "aeffguieditor.h"
+#endif
 #endif
 
 class DrawTestEditor : public AEffGUIEditor, CControlListener

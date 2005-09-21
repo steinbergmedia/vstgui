@@ -13,6 +13,7 @@ public:
 	ControlsGUI (const CRect &size, CFrame *pParent, CBitmap *pBackground = 0);
 
 	virtual void valueChanged (CControl *pControl);
+	virtual bool removed (CView* parent);
 
 protected:
 
@@ -42,6 +43,8 @@ protected:
 
 	// others
 	CLabel            *cLabel;
+	
+	CTextLabel        *tooltipView;
 
 	long              oldTicks;
 };

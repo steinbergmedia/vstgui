@@ -175,6 +175,7 @@ ControlsGUI::ControlsGUI (const CRect &inSize, CFrame *frame, CBitmap *pBackgrou
 	size.offset (20, 20);
 	cOnOffButton = new COnOffButton (size, this, kOnOffTag, onOffButton);
 	addView (cOnOffButton);
+	cOnOffButton->setAttribute (kCViewTooltipAttribute,strlen ("COnOffButton")+1,"COnOffButton");
 
 
 	//--CKickButton-----------------------------------------------
@@ -182,6 +183,7 @@ ControlsGUI::ControlsGUI (const CRect &inSize, CFrame *frame, CBitmap *pBackgrou
 	point (0, 0);
 	cKickButton = new CKickButton (size, this, kKickTag, onOffButton->getHeight() / 2, onOffButton, point);
 	addView (cKickButton);
+	cKickButton->setAttribute (kCViewTooltipAttribute,strlen ("CKickButton")+1,"CKickButton");
 
 
 	//--CKnob--------------------------------------
@@ -196,6 +198,7 @@ ControlsGUI::ControlsGUI (const CRect &inSize, CFrame *frame, CBitmap *pBackgrou
 	addView (cKnob);
 	knob->forget ();
 	bgKnob->forget ();
+	cKnob->setAttribute (kCViewTooltipAttribute,strlen ("CKnob")+1,"CKnob");
 
 
 	//--CMovieButton--------------------------------------
@@ -204,6 +207,7 @@ ControlsGUI::ControlsGUI (const CRect &inSize, CFrame *frame, CBitmap *pBackgrou
 	point (0, 0);
 	cMovieButton = new CMovieButton (size, this, kMovieButtonTag, onOffButton->getHeight () / 2, onOffButton, point);
 	addView (cMovieButton);
+	cMovieButton->setAttribute (kCViewTooltipAttribute,strlen ("CMovieButton")+1,"CMovieButton");
 
 	onOffButton->forget ();
 
@@ -216,6 +220,7 @@ ControlsGUI::ControlsGUI (const CRect &inSize, CFrame *frame, CBitmap *pBackgrou
 	point (0, 0);
 	cAnimKnob = new CAnimKnob (size, this, kAnimKnobTag, 7, movieKnobBitmap->getHeight () / 7, movieKnobBitmap, point);
 	addView (cAnimKnob);
+	cAnimKnob->setAttribute (kCViewTooltipAttribute,strlen ("CAnimKnob")+1,"CAnimKnob");
 	
 	movieKnobBitmap->forget ();
 
@@ -249,6 +254,7 @@ ControlsGUI::ControlsGUI (const CRect &inSize, CFrame *frame, CBitmap *pBackgrou
 		}
 
 		addView (cOptionMenu);
+		cOptionMenu->setAttribute (kCViewTooltipAttribute,strlen ("COptionMenu")+1,"COptionMenu");
 	}
 
 
@@ -260,6 +266,7 @@ ControlsGUI::ControlsGUI (const CRect &inSize, CFrame *frame, CBitmap *pBackgrou
 	cRockerSwitch = new CRockerSwitch (size, this, kRockerSwitchTag, rocker->getHeight () / 3, rocker, point);
 	addView (cRockerSwitch);
 	rocker->forget ();
+	cRockerSwitch->setAttribute (kCViewTooltipAttribute,strlen ("CRockerSwitch")+1,"CRockerSwitch");
 
 
 	//--CHorizontalSwitch--------------------------------------
@@ -270,6 +277,7 @@ ControlsGUI::ControlsGUI (const CRect &inSize, CFrame *frame, CBitmap *pBackgrou
 	cHorizontalSwitch = new CHorizontalSwitch (size, this, kSwitchHTag, 4, switchHBitmap->getHeight () / 4, 4, switchHBitmap, point);
 	addView (cHorizontalSwitch);
 	switchHBitmap->forget ();
+	cHorizontalSwitch->setAttribute (kCViewTooltipAttribute,strlen ("CHoriontalSwitch")+1,"CHorizontalSwitch");
 
 
 	//--CVerticalSwitch--------------------------------------
@@ -280,6 +288,7 @@ ControlsGUI::ControlsGUI (const CRect &inSize, CFrame *frame, CBitmap *pBackgrou
 	cVerticalSwitch = new CVerticalSwitch (size, this, kSwitchVTag, 4, switchVBitmap->getHeight () / 4, 4, switchVBitmap, point);
 	addView (cVerticalSwitch);
 	switchVBitmap->forget ();
+	cVerticalSwitch->setAttribute (kCViewTooltipAttribute,strlen ("CVerticalSwitch")+1,"CVerticalSwitch");
 
 
 	//--CHorizontalSlider--------------------------------------
@@ -300,6 +309,7 @@ ControlsGUI::ControlsGUI (const CRect &inSize, CFrame *frame, CBitmap *pBackgrou
 #endif
 	cHorizontalSlider->setFreeClick (false);
 	size.offset (0, -30 + 10);
+	cHorizontalSlider->setAttribute (kCViewTooltipAttribute,strlen ("CHorizontalSlider")+1,"CHorizontalSlider");
 
 	style =  k3DIn | kCheckStyle;
 	COptionMenu *cOptionMenu2 = new COptionMenu (size, this, kOptionMenuTag, bgKnob, 0, style);
@@ -317,6 +327,7 @@ ControlsGUI::ControlsGUI (const CRect &inSize, CFrame *frame, CBitmap *pBackgrou
 			sprintf (txt, "Entry %d", i);
 			cOptionMenu2->addEntry (txt);
 		}
+		cOptionMenu2->setAttribute (kCViewTooltipAttribute,strlen ("COptionMenu")+1,"COptionMenu");
 	}
 
 	// add this 2 control in a CViewContainer
@@ -348,6 +359,7 @@ ControlsGUI::ControlsGUI (const CRect &inSize, CFrame *frame, CBitmap *pBackgrou
 #endif
 	cVerticalSlider->setFreeClick (false);
 	addView (cVerticalSlider);
+	cVerticalSlider->setAttribute (kCViewTooltipAttribute,strlen ("CVerticalSlider")+1,"CVerticalSlider");
 
 	sliderVBgBitmap->forget ();
 	sliderHandleBitmap->forget ();
@@ -365,6 +377,7 @@ ControlsGUI::ControlsGUI (const CRect &inSize, CFrame *frame, CBitmap *pBackgrou
 		cTextEdit->setFrameColor (kWhiteCColor);
 		cTextEdit->setHoriAlign (kCenterText);
 		addView (cTextEdit);
+		cTextEdit->setAttribute (kCViewTooltipAttribute,strlen ("CTextEdit")+1,"CTextEdit");
 	}
 
 	//--CSplashScreen--------------------------------------
@@ -379,6 +392,7 @@ ControlsGUI::ControlsGUI (const CRect &inSize, CFrame *frame, CBitmap *pBackgrou
 	cSplashScreen = new CSplashScreen (size, this, kAbout, splashBitmap, toDisplay, point);
 	addView (cSplashScreen);
 	splashBitmap->forget ();
+	cSplashScreen->setAttribute (kCViewTooltipAttribute,strlen ("CSplashScreen")+1,"CSplashScreen");
 
 
 	//--CMovieBitmap--------------------------------------
@@ -389,6 +403,7 @@ ControlsGUI::ControlsGUI (const CRect &inSize, CFrame *frame, CBitmap *pBackgrou
 	point (0, 0);	
 	cMovieBitmap = new CMovieBitmap (size, this, kMovieBitmapTag, 10, movieBitmap->getHeight () / 10, movieBitmap, point);
 	addView (cMovieBitmap);
+	cMovieBitmap->setAttribute (kCViewTooltipAttribute,strlen ("CMovieBitmap")+1,"CMovieBitmap");
 
 
 	//--CAutoAnimation--------------------------------------
@@ -398,6 +413,7 @@ ControlsGUI::ControlsGUI (const CRect &inSize, CFrame *frame, CBitmap *pBackgrou
 	cAutoAnimation = new CAutoAnimation (size, this, kAutoAnimationTag, 10, movieBitmap->getHeight () / 10, movieBitmap, point);
 	addView (cAutoAnimation);
 	movieBitmap->forget ();
+	cAutoAnimation->setAttribute (kCViewTooltipAttribute,strlen ("CAutoAnimation")+1,"CAutoAnimation");
 
 
 	//--CSpecialDigit--------------------------------------
@@ -409,6 +425,7 @@ ControlsGUI::ControlsGUI (const CRect &inSize, CFrame *frame, CBitmap *pBackgrou
 	cSpecialDigit = new CSpecialDigit (size, this, kDigitTag, 0, 7, 0, 0, specialDigitBitmap->getWidth (), specialDigitBitmap->getHeight () / 10 , specialDigitBitmap);
 	addView (cSpecialDigit);
 	specialDigitBitmap->forget ();
+	cSpecialDigit->setAttribute (kCViewTooltipAttribute,strlen ("CSpecialDigit")+1,"CSpecialDigit");
 
 
 	//--CParamDisplay--------------------------------------
@@ -421,6 +438,7 @@ ControlsGUI::ControlsGUI (const CRect &inSize, CFrame *frame, CBitmap *pBackgrou
 		cParamDisplay->setFontColor (kWhiteCColor);
 		cParamDisplay->setBackColor (kBlackCColor);
 		addView (cParamDisplay);
+		cParamDisplay->setAttribute (kCViewTooltipAttribute,strlen ("CParamDisplay")+1,"CParamDisplay");
 	}
 
 
@@ -435,6 +453,7 @@ ControlsGUI::ControlsGUI (const CRect &inSize, CFrame *frame, CBitmap *pBackgrou
 	addView (cVuMeter);
 	vuOnBitmap->forget ();
 	vuOffBitmap->forget ();
+	cVuMeter->setAttribute (kCViewTooltipAttribute,strlen ("CVuMeter")+1,"CVuMeter");
 
 	//--My controls---------------------------------
 	//--CLabel--------------------------------------
@@ -447,6 +466,7 @@ ControlsGUI::ControlsGUI (const CRect &inSize, CFrame *frame, CBitmap *pBackgrou
 		cLabel->setFontColor (kWhiteCColor);
 		cLabel->setBackColor (kGreyCColor);
 		addView (cLabel);
+		cLabel->setAttribute (kCViewTooltipAttribute,strlen ("CLabel")+1,"CLabel");
 	}
 
 	//--CLabel--------------------------------------
@@ -459,12 +479,26 @@ ControlsGUI::ControlsGUI (const CRect &inSize, CFrame *frame, CBitmap *pBackgrou
 		cLabel2->setFontColor (kWhiteCColor);
 		cLabel2->setBackColor (kGreyCColor);
 		addView (cLabel2);
+		cLabel2->setAttribute (kCViewTooltipAttribute,strlen ("CLabel")+1,"CLabel");
 	}
 	
 	size (inSize.right, inSize.bottom, inSize.right + 100, inSize.bottom + 100);
 	CLabel* outsideLabel = new CLabel (size, "This label is outside its superview");
 	addView (outsideLabel);
 	outsideLabel->setDirty (true);
+	outsideLabel->setAttribute (kCViewTooltipAttribute,strlen ("outsideLabel")+1,"outsideLabel");
+
+	size (inSize.left, inSize.bottom - 20, inSize.right, inSize.bottom);
+	tooltipView = new CTextLabel (size);
+	addView (tooltipView);
+	if (frame)
+		frame->setTooltipView (tooltipView);
+}
+
+bool ControlsGUI::removed (CView* parent)
+{
+	if (getFrame ())
+		getFrame ()->setTooltipView (0);
 }
 
 void ControlsGUI::valueChanged (CControl *pControl)
@@ -490,7 +524,6 @@ void ControlsGUI::valueChanged (CControl *pControl)
 			cMovieBitmap->setValue (value);
 			break;
 		}
-
 		case kOnOffTag:
 		{
 			if (value > 0.5f)
