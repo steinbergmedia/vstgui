@@ -124,6 +124,8 @@
 		F4C9F47107B2378B00010DAD /* pdrawtestview.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0CF355C207B173A3002BFE50 /* pdrawtestview.cpp */; };
 		F4C9F47207B2378D00010DAD /* pprimitivesviews.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0CF355C407B173A3002BFE50 /* pprimitivesviews.cpp */; };
 		F4C9F47407B2379F00010DAD /* pdrawtestmain.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4C9F47307B2379F00010DAD /* pdrawtestmain.cpp */; };
+		F4F0FCBF08D181460014E7D7 /* cvstguitimer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4F0FCBD08D181460014E7D7 /* cvstguitimer.cpp */; };
+		F4F0FCC008D181460014E7D7 /* cvstguitimer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4F0FCBD08D181460014E7D7 /* cvstguitimer.cpp */; };
 		F4FD4C6F08865DB400F20B72 /* cfileselector.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4FD4C6E08865DB400F20B72 /* cfileselector.cpp */; };
 		F4FD4C7008865DB400F20B72 /* cfileselector.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4FD4C6E08865DB400F20B72 /* cfileselector.cpp */; };
 /* End PBXBuildFile section */
@@ -246,6 +248,7 @@
 		F4C9F1E407B232D600010DAD /* audioeffectx.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = audioeffectx.cpp; path = ../vstsdk2.3/audioeffectx.cpp; sourceTree = SOURCE_ROOT; };
 		F4C9F20407B2335F00010DAD /* aeffguieditor.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = aeffguieditor.cpp; path = ../../vstgui/aeffguieditor.cpp; sourceTree = SOURCE_ROOT; };
 		F4C9F47307B2379F00010DAD /* pdrawtestmain.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = pdrawtestmain.cpp; path = ../source/pdrawtestmain.cpp; sourceTree = SOURCE_ROOT; };
+		F4F0FCBD08D181460014E7D7 /* cvstguitimer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = cvstguitimer.cpp; path = ../../vstgui/cvstguitimer.cpp; sourceTree = SOURCE_ROOT; };
 		F4FD4C6E08865DB400F20B72 /* cfileselector.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = cfileselector.cpp; path = ../../vstgui/cfileselector.cpp; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
@@ -352,6 +355,7 @@
 				0C01252C07AC359F009EC388 /* plugguieditor.cpp */,
 				0C01252E07AC359F009EC388 /* vstcontrols.cpp */,
 				0C01253007AC359F009EC388 /* vstgui.cpp */,
+				F4F0FCBD08D181460014E7D7 /* cvstguitimer.cpp */,
 			);
 			name = VSTGUI;
 			sourceTree = "<group>";
@@ -789,6 +793,7 @@
 				0CF355FD07B17600002BFE50 /* controlsgui.cpp in Sources */,
 				F4FD4C7008865DB400F20B72 /* cfileselector.cpp in Sources */,
 				F467335808BF64B000CBCAD2 /* CAVectorUnit.cpp in Sources */,
+				F4F0FCBF08D181460014E7D7 /* cvstguitimer.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -810,6 +815,7 @@
 				F4C9F47207B2378D00010DAD /* pprimitivesviews.cpp in Sources */,
 				F4C9F47407B2379F00010DAD /* pdrawtestmain.cpp in Sources */,
 				F4FD4C6F08865DB400F20B72 /* cfileselector.cpp in Sources */,
+				F4F0FCC008D181460014E7D7 /* cvstguitimer.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -969,6 +975,7 @@
 			buildSettings = {
 				COPY_PHASE_STRIP = NO;
 				DEBUGGING_SYMBOLS = YES;
+				GCC_DEBUGGING_SYMBOLS = full;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_ENABLE_FIX_AND_CONTINUE = YES;
 				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
@@ -997,7 +1004,7 @@
 					"-Wno-unknown-pragmas",
 				);
 				WRAPPER_EXTENSION = vst;
-				ZERO_LINK = NO;
+				ZERO_LINK = YES;
 			};
 			name = Development;
 		};

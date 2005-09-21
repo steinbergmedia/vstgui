@@ -144,13 +144,20 @@ void DrawTestEditor::setTabView (CFrame* frame, const CRect& r, long position)
 	CView* testView;
 	CBitmap* testBitmap = new CBitmap (kTestBitmap);
 	CRect containerSize;
-	containerSize.right = testBitmap->getWidth ();
-	containerSize.bottom = testBitmap->getHeight ();
+	containerSize.right = testBitmap->getWidth () + 1000;
+	containerSize.bottom = testBitmap->getHeight () + 1000;
 	// the first tab is a scroll view with a movie bitmap
 	CScrollView* scrollview = new CScrollView (tabSize, containerSize, frame, CScrollView::kHorizontalScrollbar|CScrollView::kVerticalScrollbar);
 	CPoint p (0,0);
-	testView = new CMovieBitmap (containerSize, NULL, 0, 1, testBitmap->getHeight (), testBitmap, p);
+	CRect mbSize (containerSize);
+	mbSize.setWidth (testBitmap->getWidth ());
+	mbSize.setHeight (testBitmap->getHeight ());
+	testView = new CMovieBitmap (mbSize, NULL, 0, 1, testBitmap->getHeight (), testBitmap, p);
 	testBitmap->forget ();
+	scrollview->addView (testView);
+	CRect controlsGUISize2 (0, 0, 420, 210);
+	controlsGUISize2.offset (mbSize.right, 5);
+	testView = new ControlsGUI (controlsGUISize2, frame);
 	scrollview->addView (testView);
 	tabView->addTab (scrollview, "Scroll View");
 
