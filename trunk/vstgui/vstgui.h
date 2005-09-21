@@ -2,7 +2,7 @@
 // VST Plug-Ins SDK
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 //
-// Version 3.5       $Date: 2005-09-09 08:18:01 $
+// Version 3.5       $Date: 2005-09-21 14:35:39 $
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
@@ -55,7 +55,10 @@
 #endif
 
 #if WINDOWS
- #define USE_NAMESPACE 1
+ #define USE_NAMESPACE	1
+ #ifndef GDIPLUS
+ #define GDIPLUS		0
+ #endif
 #endif
 
 #if USE_NAMESPACE
@@ -111,6 +114,10 @@ protected:
 //----------------------------------------------------
 #if WINDOWS
 	#include <windows.h>
+
+	#if GDIPLUS
+	#include <gdiplus.h>
+	#endif
 
 //----------------------------------------------------
 #elif MAC
@@ -619,6 +626,14 @@ protected:
 	CRect  clipRect;
 
 #if WINDOWS
+	#if GDIPLUS
+	Gdiplus::Graphics	*pGraphics;
+	Gdiplus::Pen		*pPen;
+	Gdiplus::SolidBrush	*pBrush;
+	public:
+		Gdiplus::Graphics* getGraphics () const { return pGraphics; }
+	protected:
+	#else
 	void *pBrush;
 	void *pPen;
 	void *pFont;
@@ -627,6 +642,7 @@ protected:
 	void *pOldFont;
 	long iPenStyle;
 	HDC  pHDC;
+	#endif
 
 #elif MAC
 	#if QUARTZ
@@ -742,7 +758,9 @@ public:
 	virtual CGImageRef createCGImage (bool transparent = false);
 	#endif
 #endif
-
+#if GDIPLUS
+	Gdiplus::Bitmap* getBitmap ();
+#endif
 	//-------------------------------------------
 protected:
 	CBitmap ();
@@ -759,6 +777,10 @@ protected:
 	bool noAlpha;
 
 #if WINDOWS
+	#if GDIPLUS
+	Gdiplus::Bitmap	*pBitmap;
+	void* bits;
+	#endif
 	void *pHandle;
 	void *pMask;
 
@@ -1138,6 +1160,10 @@ protected:
 	HINSTANCE hInstMsimg32dll;
 	void*     dropTarget;
 	COffscreenContext* backBuffer;
+
+	#if GDIPLUS
+	ULONG_PTR gdiplusToken;
+	#endif
 
 #elif BEOS
 	PlugView *pPlugView;

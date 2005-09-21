@@ -3,7 +3,7 @@
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 // Standard Control Objects
 //
-// Version 3.5       $Date: 2005-09-21 12:24:11 $
+// Version 3.5       $Date: 2005-09-21 14:35:39 $
 //
 // Added new objects        : Michael Schmidt          08.97
 // Added new objects        : Yvan Grabit              01.98
@@ -51,7 +51,7 @@
 
 BEGIN_NAMESPACE_VSTGUI
 
-#ifdef __MACH__ && __MWERKS__
+#if defined(__MACH__) && defined (__MWERKS__)
  #ifndef cosf
  #define cosf (float)cos
  #endif
@@ -4854,7 +4854,7 @@ bool CSlider::attached (CView *parent)
 {
 	if (pOScreen)
 		delete pOScreen;
-	#if !MACX
+	#if !MACX && !VSTGUI_USE_SYSTEM_EVENTS_FOR_DRAWING
 	pOScreen = new COffscreenContext (getFrame (), widthControl, heightControl, kBlackCColor);
 	#endif		
 	return CControl::attached (parent);
@@ -5760,7 +5760,7 @@ CVuMeter::CVuMeter (const CRect &size, CBitmap *onBitmap, CBitmap *offBitmap,
                     long nbLed, const long style)
 	: CControl (size, 0, 0),
 	  onBitmap (onBitmap), offBitmap (offBitmap), pOScreen (0),
-	  nbLed (nbLed), style (style)
+	  nbLed (nbLed), style (style), bUseOffscreen (false)
 {
 	setDecreaseStepValue (0.1f);
 

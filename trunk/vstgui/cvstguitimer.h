@@ -2,7 +2,7 @@
 // VST Plug-Ins SDK
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 //
-// Version 3.5       $Date: 2005-09-21 12:24:11 $
+// Version 3.5       $Date: 2005-09-21 14:35:39 $
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
@@ -35,9 +35,9 @@
 #ifndef __cvstguitimer__
 #define __cvstguitimer__
 
-BEGIN_NAMESPACE_VSTGUI
+#include "vstgui.h"
 
-class CView;
+BEGIN_NAMESPACE_VSTGUI
 
 //-----------------------------------------------------------------------------
 // CVSTGUITimer Declaration
