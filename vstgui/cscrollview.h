@@ -43,6 +43,7 @@ BEGIN_NAMESPACE_VSTGUI
 
 class CScrollbar;
 class CScrollContainer;
+class CVSTGUITimer;
 
 //-----------------------------------------------------------------------------
 class CScrollView : public CViewContainer, CControlListener
@@ -153,6 +154,12 @@ public:
 	virtual void mouse (CDrawContext* pContext, CPoint& where, long buttons = -1);
 	virtual bool onWheel (const CPoint &where, const float &distance, const long &buttons);
 
+	virtual CMouseEventResult onMouseDown (CPoint &where, const long& buttons);
+	virtual CMouseEventResult onMouseUp (CPoint &where, const long& buttons);
+	virtual CMouseEventResult onMouseMoved (CPoint &where, const long& buttons);
+
+	virtual long notify (CView* sender, const char* message);
+
 	CLASS_METHODS(CScrollbar, CControl)
 //-----------------------------------------------------------------------------
 protected:
@@ -161,6 +168,7 @@ protected:
 
 	void calculateScrollerLength ();
 	CRect getScrollerRect ();
+	void doStepping (bool direction);
 
 	long style;
 	CRect scrollSize;
@@ -174,6 +182,13 @@ protected:
 	CColor backgroundColor;
 	
 	IScrollbarDrawer* drawer;
+private:
+	CVSTGUITimer* timer;
+	CPoint startPoint;
+	CRect scrollerRect;
+	bool scrolling;
+	bool stepDirection;
+	float startValue;
 };
 
 END_NAMESPACE_VSTGUI

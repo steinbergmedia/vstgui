@@ -77,20 +77,15 @@ public:
 		}
 	}
 
-/*	void mouse (CDrawContext *pContext, CPoint &where, long button)
+	CMouseEventResult onMouseDown (CPoint &where, const long& button)
 	{
-		if (!bMouseEnabled)
-			return;
-
-	 	if (button == -1) button = pContext->getMouseButtons ();
-		if (!(button & kLButton))
-			return;
-
 		value = ((long)value) ? 0.f : 1.f;
 		
 		if (listener)
-			listener->valueChanged (pContext, this);
-	}*/
+			listener->valueChanged (this);
+
+		return kMouseDownEventHandledButDontNeedMovedOrUpEvents;
+	}
 
 	virtual void onDragEnter (CDragContainer* drag, const CPoint& where)
 	{

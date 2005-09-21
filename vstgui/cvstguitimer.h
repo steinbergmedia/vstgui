@@ -1,10 +1,8 @@
 //-----------------------------------------------------------------------------
 // VST Plug-Ins SDK
-// VSTGUI: Graphical User Interface Framework for VST plugins
+// VSTGUI: Graphical User Interface Framework for VST plugins : 
 //
-// Version 3.5       Date : 30/06/04
-//
-//-----------------------------------------------------------------------------
+// Version 3.5       $Date: 2005-09-21 12:24:11 $
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
@@ -34,89 +32,42 @@
 // OF THE POSSIBILITY OF SUCH DAMAGE.
 //-----------------------------------------------------------------------------
 
-#ifndef __plugguieditor__
-#define __plugguieditor__
+#ifndef __cvstguitimer__
+#define __cvstguitimer__
 
-#ifndef __vstgui__
-#include "vstgui.h"
-#endif
+BEGIN_NAMESPACE_VSTGUI
 
-//----------------------------------------------------------------------
-struct ERect
-{
-	short top;
-	short left;
-	short bottom;
-	short right;
-};
+class CView;
 
 //-----------------------------------------------------------------------------
-// AEffGUIEditor Declaration
+// CVSTGUITimer Declaration
+//! A timer class, which posts timer messages to CViews.
 //-----------------------------------------------------------------------------
-class PluginGUIEditor : public VSTGUIEditorInterface
+class CVSTGUITimer
 {
-public :
+public:
+	CVSTGUITimer (CView* timerView, int fireTime = 100);
+	virtual ~CVSTGUITimer ();
+	
+	virtual void start ();							///< starts the timer
+	virtual bool stop ();							///< stops the timer, returns wheater timer was running or not
 
-	PluginGUIEditor (void *pEffect);
+	virtual bool setFireTime (int newFireTime);		///< in milliseconds
 
-	virtual ~PluginGUIEditor ();
-
-	virtual void setParameter (long index, float value) {} 
-	virtual long getRect (ERect **ppRect);
-	virtual long open (void *ptr);
-	virtual void close () { systemWindow = 0; }
-	virtual void idle ();
-	virtual void draw (ERect *pRect);
-
-	// wait (in ms)
-	void wait (unsigned long ms);
-
-	// get the current time (in ms)
-	unsigned long getTicks ();
-
-	// feedback to appli.
-	virtual void doIdleStuff ();
-
-	// get the effect attached to this editor
-	void *getEffect () { return effect; }
-
-	// get version of this VSTGUI
-	long getVstGuiVersion () { return (VSTGUI_VERSION_MAJOR << 16) + VSTGUI_VERSION_MINOR; }
-
-	// set/get the knob mode
-	virtual long setKnobMode (int val);
-	virtual long getKnobMode () const { return knobMode; }
-
-	virtual bool onWheel (float distance);
-
-	// get the CFrame object
-	#if USE_NAMESPACE
-	VSTGUI::CFrame *getFrame () { return frame; }
-	#else
-	CFrame *getFrame () { return frame; }
-	#endif
-
-	virtual void beginEdit (long index) {}
-	virtual void endEdit (long index) {}
-
-//---------------------------------------
+//-----------------------------------------------------------------------------
+	static const char* kMsgTimer;					///< message string posted to CView's notify method
+//-----------------------------------------------------------------------------
 protected:
-	ERect   rect;
+	int fireTime;
+	CView* timerView;
 
-	#if USE_NAMESPACE
-	VSTGUI::CFrame *frame;
-	#else
-	CFrame *frame;
+	#if MAC
+	EventLoopTimerRef timerRef;
+	static pascal void timerProc (EventLoopTimerRef inTimer, void *inUserData);
+	#elif WINDOWS
 	#endif
-
-	void* effect;
-	void* systemWindow;
-
-private:
-	unsigned long lLastTicks;
-	bool inIdleStuff;
-
-	static long knobMode;
 };
+
+END_NAMESPACE_VSTGUI
 
 #endif
