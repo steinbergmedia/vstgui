@@ -2,7 +2,7 @@
 // VST Plug-Ins SDK
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 //
-// Version 3.5       $Date: 2005-09-21 12:24:11 $ 
+// Version 3.5       $Date: 2005-09-21 14:35:39 $ 
 //
 // Added Motif/Windows vers.: Yvan Grabit              01.98
 // Added Mac version        : Charlie Steinberg        02.98
@@ -120,7 +120,7 @@ static bool bSwapped_mouse_buttons = false;
 OSVERSIONINFOEX	gSystemVersion;
 
 // Alpha blending for Windows using library : msimg32.dll
-#define DYNAMICALPHABLEND   1
+#define DYNAMICALPHABLEND   !GDIPLUS
 
 #define WIN32_LEAN_AND_MEAN 1
 #include <windows.h>
@@ -437,8 +437,11 @@ CDrawContext::CDrawContext (CFrame *inFrame, void *inSystemContext, void *inWind
 , lineStyle (kLineOnOffDash)
 , drawMode (kAntialias)
 #if WINDOWS
-, pBrush (0), pFont (0), pPen (0)
-, pOldBrush (0), pOldFont (0), pOldPen (0)
+	#if GDIPLUS
+	#else
+	, pBrush (0), pFont (0), pPen (0)
+	, pOldBrush (0), pOldFont (0), pOldPen (0)
+	#endif
 #elif MAC && !QUARTZ
 , bInitialized (false)
 #endif
@@ -463,6 +466,16 @@ CDrawContext::CDrawContext (CFrame *inFrame, void *inSystemContext, void *inWind
 	offsetScreen (0, 0);
 
 #if WINDOWS
+	#if GDIPLUS
+	pGraphics = 0;
+	if (inSystemContext || pWindow)
+	{
+		HDC hdc = inSystemContext ? (HDC)inSystemContext : GetDC ((HWND)pWindow);
+		pGraphics = new Gdiplus::Graphics (hdc);
+	}
+	pPen = new Gdiplus::Pen (Gdiplus::Color (0, 0, 0), 1);
+	pBrush = new Gdiplus::SolidBrush (Gdiplus::Color (0, 0, 0));
+	#else
 	pHDC = 0;
 	if (!pSystemContext && pWindow)
 		pSystemContext = pHDC = GetDC ((HWND)pWindow);
@@ -475,6 +488,7 @@ CDrawContext::CDrawContext (CFrame *inFrame, void *inSystemContext, void *inWind
 		SetBkMode ((HDC)pSystemContext, TRANSPARENT);
 	}
 	iPenStyle = PS_SOLID;
+	#endif
 
 	// get position 
 	if (pWindow)
@@ -589,6 +603,14 @@ CDrawContext::~CDrawContext ()
 	#endif
 
 #if WINDOWS
+	#if GDIPLUS
+	if (pBrush)
+		delete pBrush;
+	if (pPen)
+		delete pPen;
+	if (pGraphics)
+		delete pGraphics;
+	#else
 	if (pOldBrush)
 		SelectObject ((HDC)pSystemContext, pOldBrush);
 	if (pOldPen)
@@ -610,7 +632,7 @@ CDrawContext::~CDrawContext ()
 		gNbDC--;
 		#endif
 	}
-
+	#endif
 #elif (MAC && QUARTZ)
 	if (gCGContext)
 	{
@@ -640,6 +662,20 @@ void CDrawContext::setLineStyle (CLineStyle style)
 	lineStyle = style;
 
 #if WINDOWS
+	#if GDIPLUS
+	if (pPen)
+	{
+		switch (lineStyle) 
+		{
+		case kLineOnOffDash: 
+			pPen->SetDashStyle (Gdiplus::DashStyleDot);
+			break;
+		default:
+			pPen->SetDashStyle (Gdiplus::DashStyleSolid);
+			break;
+		}
+	}
+	#else
 	switch (lineStyle) 
 	{
 	case kLineOnOffDash: 
@@ -658,6 +694,7 @@ void CDrawContext::setLineStyle (CLineStyle style)
 	if (pPen)
 		DeleteObject (pPen);
 	pPen = newPen;
+	#endif
 
 #elif MAC
 	#if QUARTZ
@@ -699,6 +736,10 @@ void CDrawContext::setLineWidth (CCoord width)
 	frameWidth = width;
 	
 #if WINDOWS
+	#if GDIPLUS
+	if (pPen)
+		pPen->SetWidth (width);
+	#else
 	LOGPEN logPen = {iPenStyle, {frameWidth, frameWidth},
 					 RGB (frameColor.red, frameColor.green, frameColor.blue)};
 	
@@ -707,7 +748,8 @@ void CDrawContext::setLineWidth (CCoord width)
 	if (pPen)
 		DeleteObject (pPen);
 	pPen = newPen;
-	
+	#endif
+
 #elif MAC
 	#if QUARTZ
 	if (gCGContext)
@@ -739,6 +781,15 @@ void CDrawContext::setDrawMode (CDrawMode mode)
 	drawMode = mode;
 
 #if WINDOWS
+	#if GDIPLUS
+	if (pGraphics)
+	{
+		if (drawMode == kAntialias)
+			pGraphics->SetSmoothingMode (Gdiplus::SmoothingModeAntiAlias);
+		else
+			pGraphics->SetSmoothingMode (Gdiplus::SmoothingModeNone);
+	}
+	#else
 	long iMode = 0;
 	switch (drawMode) 
 	{
@@ -753,6 +804,7 @@ void CDrawContext::setDrawMode (CDrawMode mode)
 		break;
 	}
 	SetROP2 ((HDC)pSystemContext, iMode);
+	#endif
 
 #elif MAC
 	#if QUARTZ
@@ -831,10 +883,15 @@ void CDrawContext::setClipRect (const CRect &clip)
 	#endif
 
 #elif WINDOWS
+	#if GDIPLUS
+	if (pGraphics)
+		pGraphics->SetClip (Gdiplus::Rect (clipRect.left, clipRect.top, clipRect.getWidth (), clipRect.getHeight ()), Gdiplus::CombineModeReplace);
+	#else
 	RECT r = {clipRect.left, clipRect.top, clipRect.right, clipRect.bottom};
 	HRGN hRgn  = CreateRectRgn (r.left, r.top, r.right, r.bottom);
 	SelectClipRgn ((HDC)pSystemContext, hRgn);
 	DeleteObject (hRgn);
+	#endif
 
 #elif BEOS
 	clipping_rect r = {clipRect.left, clipRect.top, clipRect.right - 1, clipRect.bottom - 1};	
@@ -887,8 +944,12 @@ void CDrawContext::moveTo (const CPoint &_point)
 	point.offset (offset.h, offset.v);
 
 #if WINDOWS
+	#if GDIPLUS
+	penLoc = point;
+	#else
 	MoveToEx ((HDC)pSystemContext, point.h, point.v, NULL);
-  
+	#endif  
+
 #elif MAC
 	#if QUARTZ
 	#else
@@ -913,7 +974,13 @@ void CDrawContext::lineTo (const CPoint& _point)
 	point.offset (offset.h, offset.v);
 
 #if WINDOWS
+	#if GDIPLUS
+	if (pGraphics && pPen)
+		pGraphics->DrawLine (pPen, penLoc.h, penLoc.v, point.h, point.v);
+	penLoc = point;
+	#else
 	LineTo ((HDC)pSystemContext, point.h, point.v);
+	#endif
 	
 #elif MAC
 	#if QUARTZ
@@ -1071,6 +1138,8 @@ void CDrawContext::drawPolygon (const CPoint *pPoints, long numberOfPoints, cons
 void CDrawContext::polyLine (const CPoint *pPoints, long numberOfPoints)
 {
 #if WINDOWS
+	#if GDIPLUS
+	#else
 	POINT points[30];
 	POINT *polyPoints;
 	bool allocated = false;
@@ -1095,6 +1164,7 @@ void CDrawContext::polyLine (const CPoint *pPoints, long numberOfPoints)
 
 	if (allocated)
 		delete[] polyPoints;
+	#endif
 
 #elif MAC
 	#if QUARTZ
@@ -1138,6 +1208,8 @@ void CDrawContext::fillPolygon (const CPoint *pPoints, long numberOfPoints)
 {
 	// Don't draw boundary
 #if WINDOWS
+	#if GDIPLUS
+	#else
 	POINT points[30];
 	POINT *polyPoints;
 	bool allocated = false;
@@ -1165,6 +1237,7 @@ void CDrawContext::fillPolygon (const CPoint *pPoints, long numberOfPoints)
 
 	if (allocated)
 		delete[] polyPoints;
+	#endif
 
 #elif MAC
 	#if QUARTZ
@@ -1230,6 +1303,19 @@ void CDrawContext::drawRect (const CRect &_rect, const CDrawStyle drawStyle)
 	rect.offset (offset.h, offset.v);
 
 #if WINDOWS
+	#if GDIPLUS
+	if (pGraphics && pBrush && pPen)
+	{
+		if (drawStyle == kDrawFilled || drawStyle == kDrawFilledAndStroked)
+		{
+			pGraphics->FillRectangle (pBrush, rect.left, rect.top, rect.getWidth (), rect.getHeight ());
+		}
+		if (drawStyle == kDrawStroked || drawStyle == kDrawFilledAndStroked)
+		{
+			pGraphics->DrawRectangle (pPen, rect.left, rect.top, rect.getWidth ()-1, rect.getHeight ()-1);
+		}
+	}
+	#else
 	if (drawStyle == kDrawFilled || drawStyle == kDrawFilledAndStroked)
 	{
 		RECT wr = {rect.left, rect.top, rect.right, rect.bottom};
@@ -1246,7 +1332,8 @@ void CDrawContext::drawRect (const CRect &_rect, const CDrawStyle drawStyle)
 		LineTo ((HDC)pSystemContext, rect.left, rect.bottom-1);
 		LineTo ((HDC)pSystemContext, rect.left, rect.top);
 	}
-	
+	#endif
+
 #elif MAC
 	#if QUARTZ
 	CGContextRef context = beginCGContext (true);
@@ -1322,11 +1409,16 @@ void CDrawContext::fillRect (const CRect &_rect)
 
 	// Don't draw boundary
 #if WINDOWS
+	#if GDIPLUS
+	if (pGraphics && pBrush)
+		pGraphics->FillRectangle (pBrush, rect.left, rect.top, rect.getWidth (), rect.getHeight ());
+	#else
 	RECT wr = {rect.left + 1, rect.top + 1, rect.right, rect.bottom};
 	HANDLE nullPen = GetStockObject (NULL_PEN);
 	HANDLE oldPen  = SelectObject ((HDC)pSystemContext, nullPen);
 	FillRect ((HDC)pSystemContext, &wr, (HBRUSH)pBrush);
 	SelectObject ((HDC)pSystemContext, oldPen);
+	#endif
 
 #elif MAC
 	#if QUARTZ
@@ -1424,10 +1516,13 @@ void CDrawContext::fillEllipse (const CRect &_rect)
 
 	// Don't draw boundary
 #if WINDOWS
+	#if GDIPLUS
+	#else
 	HANDLE nullPen = GetStockObject (NULL_PEN);
 	HANDLE oldPen  = SelectObject ((HDC)pSystemContext, nullPen);
 	Ellipse ((HDC)pSystemContext, rect.left + 1, rect.top + 1, rect.right + 1, rect.bottom + 1);
 	SelectObject ((HDC)pSystemContext, oldPen);
+	#endif
 
 #elif QUARTZ
 	CGContextRef context = beginCGContext (true);
@@ -1463,8 +1558,11 @@ void CDrawContext::drawPoint (const CPoint &_point, CColor color)
 	CPoint point (_point);
 
 #if WINDOWS
+	#if GDIPLUS
+	#else
 	point.offset (offset.h, offset.v);
 	SetPixel ((HDC)pSystemContext, point.h, point.v, RGB(color.red, color.green, color.blue));
+	#endif
 
 #elif MAC
 	CCoord oldframeWidth = frameWidth;
@@ -1500,10 +1598,13 @@ CColor CDrawContext::getPoint (const CPoint& _point)
 	CColor color = kBlackCColor;
 
 	#if WINDOWS
+	#if GDIPLUS
+	#else
 	COLORREF c  = GetPixel ((HDC)pSystemContext, point.h, point.v);
 	color.red   = GetRValue (c);
 	color.green = GetGValue (c);
 	color.blue  = GetBValue (c);
+	#endif
 
 	#elif MAC
 	#if QUARTZ
@@ -1531,8 +1632,11 @@ void CDrawContext::floodFill (const CPoint& _start)
 	start.offset (offset.h, offset.v);
 
 	#if WINDOWS
+	#if GDIPLUS
+	#else
 	COLORREF c = GetPixel ((HDC)pSystemContext, start.h, start.v);
 	ExtFloodFill ((HDC)pSystemContext, start.h, start.v, c, FLOODFILLSURFACE);
+	#endif
 	
 	#elif MAC
 	#if QUARTZ
@@ -1611,6 +1715,8 @@ void CDrawContext::drawArc (const CRect &_rect, const float _startAngle, const f
 	rect.offset (offset.h, offset.v);
 
 	#if WINDOWS
+	#if GDIPLUS
+	#else
 	float startRad = (float)(k2PI * _startAngle / 360.f);
 	float endRad   = (float)(k2PI * _endAngle / 360.f);
 	
@@ -1638,6 +1744,7 @@ void CDrawContext::drawArc (const CRect &_rect, const float _startAngle, const f
 		Arc ((HDC)pSystemContext, rect.left, rect.top, rect.right + 1, rect.bottom + 1, 
 				 point1.h, point1.v, point2.h, point2.v);
 	}
+	#endif
 
 	#elif MAC
 
@@ -1696,8 +1803,11 @@ void CDrawContext::drawArc (const CRect &_rect, const CPoint &_point1, const CPo
 
 	// draws from point1 to point2 counterclockwise
 #if WINDOWS
+	#if GDIPLUS
+	#else
 	Arc ((HDC)pSystemContext, rect.left, rect.top, rect.right + 1, rect.bottom + 1, 
 			 point1.h, point1.v, point2.h, point2.v);
+	#endif
 
 #elif MAC || BEOS
 	
@@ -1768,11 +1878,14 @@ void CDrawContext::fillArc (const CRect &_rect, const CPoint &_point1, const CPo
 
 	// Don't draw boundary
 #if WINDOWS
+	#if GDIPLUS
+	#else
 	HANDLE nullPen = GetStockObject (NULL_PEN);
 	HANDLE oldPen  = SelectObject ((HDC)pSystemContext, nullPen);
 	Pie ((HDC)pSystemContext, offset.h + rect.left + 1, offset.v + rect.top + 1, offset.h + rect.right, offset.v + rect.bottom, 
 			 point1.h, point1.v, point2.h, point2.v);
 	SelectObject ((HDC)pSystemContext, oldPen);
+	#endif
 
 #elif MAC || BEOS
 	
@@ -1838,8 +1951,11 @@ void CDrawContext::setFontColor (const CColor color)
 	fontColor = color;
 	
 #if WINDOWS
+	#if GDIPLUS
+	#else
 	SetTextColor ((HDC)pSystemContext, RGB (fontColor.red, fontColor.green, fontColor.blue));
-	
+	#endif
+
 #elif MAC
 	#if QUARTZ
 	// on quartz the fill color is the font color
@@ -1870,6 +1986,10 @@ void CDrawContext::setFrameColor (const CColor color)
 	frameColor = color;
 
 #if WINDOWS
+	#if GDIPLUS
+	if (pPen)
+		pPen->SetColor (Gdiplus::Color (color.alpha, color.red, color.green, color.blue));
+	#else
 	LOGPEN logPen = {iPenStyle, {frameWidth, frameWidth}, 
 					 RGB (frameColor.red, frameColor.green, frameColor.blue)};
 	
@@ -1878,6 +1998,7 @@ void CDrawContext::setFrameColor (const CColor color)
 	if (pPen)
 		DeleteObject (pPen);
 	pPen = newPen;
+	#endif
 
 #elif MAC
 	#if QUARTZ
@@ -1909,6 +2030,10 @@ void CDrawContext::setFillColor (const CColor color)
 	fillColor = color;
 
 #if WINDOWS
+	#if GDIPLUS
+	if (pBrush)
+		pBrush->SetColor (Gdiplus::Color (color.alpha, color.red, color.green, color.blue));
+	#else
  	SetBkColor ((HDC)pSystemContext, RGB (color.red, color.green, color.blue));
 	LOGBRUSH logBrush = {BS_SOLID, RGB (color.red, color.green, color.blue), 0 };
 	HANDLE newBrush = CreateBrushIndirect (&logBrush);
@@ -1921,6 +2046,7 @@ void CDrawContext::setFillColor (const CColor color)
 	if (pBrush)
 		DeleteObject (pBrush);
 	pBrush = newBrush;
+	#endif
 	
 #elif MAC
 	#if QUARTZ
@@ -1960,6 +2086,8 @@ void CDrawContext::setFont (CFont fontID, const long size, long style)
 		fontSize = gStandardFontSize[fontID];
 
 #if WINDOWS
+	#if GDIPLUS
+	#else
 	LOGFONT logfont = {0};
 
 	if (style & kBoldFace)
@@ -1990,7 +2118,8 @@ void CDrawContext::setFont (CFont fontID, const long size, long style)
 	if (pFont)
 		DeleteObject (pFont);
 	pFont = newFont;
-  
+	#endif
+
 #elif MAC
 	#if QUARTZ
 	char myMacXFontName[255];
@@ -2075,9 +2204,12 @@ CCoord CDrawContext::getStringWidth (const char *pStr)
 	#endif
         
 	#elif WINDOWS
+	#if GDIPLUS
+	#else
 	SIZE size;
 	GetTextExtentPoint32 ((HDC)pSystemContext, pStr, (int)strlen (pStr), &size);
 	result = (long)size.cx;
+	#endif
 
 	#elif BEOS
 	result = (long)(ceil (pView->StringWidth (pStr)));
@@ -2097,6 +2229,8 @@ void CDrawContext::drawString (const char *string, const CRect &_rect,
 	rect.offset (offset.h, offset.v);
 
 #if WINDOWS
+	#if GDIPLUS
+	#else
 	// set the visibility mask
 	SetBkMode ((HDC)pSystemContext, opaque ? OPAQUE : TRANSPARENT);
 
@@ -2119,6 +2253,7 @@ void CDrawContext::drawString (const char *string, const CRect &_rect,
 	}
 
 	SetBkMode ((HDC)pSystemContext, TRANSPARENT);
+	#endif
 
 #elif MAC
 	#if QUARTZ
@@ -2788,6 +2923,8 @@ COffscreenContext::COffscreenContext (CDrawContext *pContext, CBitmap *pBitmapBg
 	bDestroyPixmap = false;
 	
 #if WINDOWS
+	#if GDIPLUS
+	#else
 	if (pOldBrush)
 		SelectObject ((HDC)getSystemContext (), pOldBrush);
 	if (pOldPen)
@@ -2806,6 +2943,7 @@ COffscreenContext::COffscreenContext (CDrawContext *pContext, CBitmap *pBitmapBg
 		pWindow = CreateCompatibleBitmap ((HDC)pContext->getSystemContext (), width, height);
 	}
 	oldBitmap = SelectObject ((HDC)pSystemContext, pWindow);
+	#endif
 
 #elif MAC
 	#if QUARTZ
@@ -2894,6 +3032,10 @@ COffscreenContext::COffscreenContext (CFrame *pFrame, long width, long height, c
 	bDestroyPixmap = true;
 
 #if WINDOWS
+	#if GDIPLUS
+	pBitmap = new CBitmap (*pFrame, width, height);
+	pGraphics = new Gdiplus::Graphics (pBitmap->getBitmap ());
+	#else
 	void *SystemWindow = pFrame->getSystemWindow ();
 	void *SystemContext = GetDC ((HWND)SystemWindow);
 	
@@ -2911,6 +3053,7 @@ COffscreenContext::COffscreenContext (CFrame *pFrame, long width, long height, c
 	setFrameColor (backgroundColor);
 	fillRect (r);
 	drawRect (r);
+	#endif
 
 #elif MAC
 	#if QUARTZ
@@ -3012,6 +3155,8 @@ COffscreenContext::~COffscreenContext ()
 		pBitmap->forget ();
 
 #if WINDOWS
+	#if GDIPLUS
+	#else
 	if (pSystemContext)
 	{
 		DeleteDC ((HDC)pSystemContext);
@@ -3022,6 +3167,7 @@ COffscreenContext::~COffscreenContext ()
 	}
 	if (bDestroyPixmap && pWindow)
 		DeleteObject (pWindow);
+	#endif
 
 #elif MAC
 	#if QUARTZ
@@ -3053,6 +3199,8 @@ COffscreenContext::~COffscreenContext ()
 void COffscreenContext::copyTo (CDrawContext* pContext, CRect& srcRect, CPoint destOffset)
 {
 #if WINDOWS
+	#if GDIPLUS
+	#else
 	BitBlt ((HDC)pSystemContext,
 			destOffset.h,
 			destOffset.v,
@@ -3062,7 +3210,8 @@ void COffscreenContext::copyTo (CDrawContext* pContext, CRect& srcRect, CPoint d
 			srcRect.left + pContext->offset.h,
 			srcRect.top + pContext->offset.v,
 			SRCCOPY);
-			
+	#endif
+	
 #elif MAC
 	#if QUARTZ
 	if (!pBitmapBg)
@@ -3103,6 +3252,12 @@ void COffscreenContext::copyTo (CDrawContext* pContext, CRect& srcRect, CPoint d
 void COffscreenContext::copyFrom (CDrawContext *pContext, CRect destRect, CPoint srcOffset)
 {
 #if WINDOWS
+	#if GDIPLUS
+	if (pBitmap)
+	{
+		pBitmap->draw (pContext, destRect, srcOffset);
+	}
+	#else
 	BitBlt ((HDC)pContext->getSystemContext (),  // hdcDest
 					destRect.left + pContext->offset.h, // xDest
 					destRect.top + pContext->offset.v,  // yDest
@@ -3113,6 +3268,7 @@ void COffscreenContext::copyFrom (CDrawContext *pContext, CRect destRect, CPoint
 					srcOffset.h,                        // xSrc
 					srcOffset.v,                        // ySrc
 					SRCCOPY);                           // dwROP
+	#endif
 
 #elif MAC
 	#if QUARTZ
@@ -3801,7 +3957,11 @@ CFrame::~CFrame ()
 	if (hInstMsimg32dll)
 		FreeLibrary (hInstMsimg32dll);
 	#endif
-		
+
+	#if GDIPLUS
+	Gdiplus::GdiplusShutdown(gdiplusToken);
+	#endif
+
 	if (pHwnd)
 	{
 		SetWindowLong ((HWND)pHwnd, GWL_USERDATA, (long)NULL);
@@ -3908,6 +4068,13 @@ bool CFrame::initFrame (void *systemWin)
 			 (HWND)pSystemWindow, NULL, GetInstance (), NULL);
 
 	SetWindowLongPtr ((HWND)pHwnd, GWLP_USERDATA, (LONG_PTR)this);
+
+#if GDIPLUS
+
+	Gdiplus::GdiplusStartupInput gdiplusStartupInput;
+	Gdiplus::GdiplusStartup(&gdiplusToken, &gdiplusStartupInput, NULL);
+
+#endif
 
 #elif MAC
 
@@ -5051,7 +5218,7 @@ CViewContainer::CViewContainer (const CRect &rect, CFrame *pParent, CBitmap *pBa
 , mouseDownView (0)
 , mouseOverView (0)
 {
-	#if MACX || USE_ALPHA_BLEND
+	#if MACX || USE_ALPHA_BLEND || VSTGUI_USE_SYSTEM_EVENTS_FOR_DRAWING
 	bDrawInOffscreen = false;
 	#endif
 	backgroundOffset (0, 0);
@@ -5648,8 +5815,7 @@ CMouseEventResult CViewContainer::onMouseDown (CPoint &where, const long& button
 			}
 			else if (result == kMouseEventHandled)
 				mouseDownView = pV;
-			return kMouseEventHandled;
-			break;
+			return result;
 		}
 		pSv = pSv->pPrevious;
 	}
@@ -6255,6 +6421,11 @@ CBitmap::CBitmap (long resourceID)
 	gNbCBitmap++;
 	#endif
 
+#if GDIPLUS
+	pBitmap = 0;
+	bits = 0;
+#endif
+
 #if WINDOWS || MAC
 	pMask = 0;
 	pHandle = 0;
@@ -6319,6 +6490,10 @@ CBitmap::CBitmap (CFrame& frame, CCoord width, CCoord height)
 	#endif
 
 #if WINDOWS
+	#if GDIPLUS
+	pBitmap = 0;
+	bits = 0;
+	#endif
 	HDC hScreen = GetDC (0);
 	pHandle = CreateCompatibleBitmap (hScreen, width, height);
 	ReleaseDC (0, hScreen);	
@@ -6357,6 +6532,11 @@ CBitmap::CBitmap ()
 , noAlpha (true)
 {
 	#if WINDOWS
+	#if GDIPLUS
+	pBitmap = 0;
+	bits = 0;
+	#endif
+
 	pHandle = 0;
 	pMask = 0;
 	
@@ -6388,6 +6568,12 @@ void CBitmap::dispose ()
 	#endif
 
 	#if WINDOWS
+	#if GDIPLUS
+	if (pBitmap)
+		delete pBitmap;
+	pBitmap = 0;
+	bits = 0;
+	#endif
 	if (pHandle)
 		DeleteObject (pHandle);
 	if (pMask)
@@ -6481,7 +6667,9 @@ bool CBitmap::loadFromResource (long resourceID)
 					header->biBitCount = 32;
 					header->biCompression = BI_RGB;
 					header->biClrUsed = 0;
+					#if !GDIPLUS
 					void* bits;
+					#endif
 					HDC dstDC = 0; //CreateCompatibleDC (0);
 					pHandle = CreateDIBSection (dstDC, bmInfo, DIB_RGB_COLORS, &bits, NULL, 0);
 					delete bmInfo;
@@ -6507,17 +6695,26 @@ bool CBitmap::loadFromResource (long resourceID)
 						png_read_update_info (png_ptr, info_ptr);
 
 						unsigned char** rows = new unsigned char*[1];
+						#if GDIPLUS
+						rows[0] = (unsigned char*)bits;
+						for (long i = 0; i < height; i++)
+						{
+							png_read_rows (png_ptr, rows, NULL, 1);
+							rows[0] += bytesPerRow;
+						}
+						#else
 						rows[0] = (unsigned char*)bits + (height-1) * bytesPerRow;
 						for (long i = 0; i < height; i++)
 						{
 							png_read_rows (png_ptr, rows, NULL, 1);
 							rows[0] -= bytesPerRow;
 						}
+						#endif
 						delete [] rows;
 						png_read_end (png_ptr, 0);
 						// premultiply alpha
 						unsigned long* pixelPtr = (unsigned long*)bits;
-						for (int y = 0; y <height; y++)
+						for (int y = 0; y < height; y++)
 						{
 							for (int x = 0; x < width; x++)
 							{
@@ -6576,17 +6773,20 @@ bool CBitmap::loadFromResource (long resourceID)
 			png_destroy_read_struct (&png_ptr, &info_ptr, NULL);
 		}
 		noAlpha = false;
-		return true;
+		result = true;
 	}
 	#endif
-	pHandle = LoadBitmap (GetInstance (), MAKEINTRESOURCE (resourceID));
-	BITMAP bm;
-	if (pHandle && GetObject (pHandle, sizeof (bm), &bm))
+	if (!result)
 	{
-		width  = bm.bmWidth; 
-		height = bm.bmHeight;
-		noAlpha = true;
-		return true;
+		pHandle = LoadBitmap (GetInstance (), MAKEINTRESOURCE (resourceID));
+		BITMAP bm;
+		if (pHandle && GetObject (pHandle, sizeof (bm), &bm))
+		{
+			width  = bm.bmWidth; 
+			height = bm.bmHeight;
+			noAlpha = true;
+			result = true;
+		}
 	}
 	
 	//---------------------------------------------------------------------------------------------
@@ -6855,11 +7055,32 @@ CGImageRef CBitmap::createCGImage (bool transparent)
 	return image;
 }
 #endif
+#if GDIPLUS
+//-----------------------------------------------------------------------------
+Gdiplus::Bitmap* CBitmap::getBitmap ()
+{
+	if (pBitmap == 0 && pHandle)
+	{
+		if (bits) // it´s a png image
+		{
+			pBitmap = new Gdiplus::Bitmap (width, height, 4*width, PixelFormat32bppPARGB, (unsigned char*)bits);
+		}
+		else
+			pBitmap = new Gdiplus::Bitmap ((HBITMAP)pHandle, 0);
+	}
+
+	return pBitmap;
+}
+
+#endif
 
 //-----------------------------------------------------------------------------
 void CBitmap::draw (CDrawContext *pContext, CRect &rect, const CPoint &offset)
 {
 #if WINDOWS
+	#if GDIPLUS
+	drawAlphaBlend (pContext, rect, offset, 255);
+	#else
 	#if USE_ALPHA_BLEND
 	if (!noAlpha)
 	{
@@ -6879,6 +7100,7 @@ void CBitmap::draw (CDrawContext *pContext, CRect &rect, const CPoint &offset)
 		SelectObject (hdcMemory, hOldObj);
 		DeleteDC (hdcMemory);
 	}
+	#endif
 
 #elif MAC
 
@@ -6940,6 +7162,9 @@ void CBitmap::draw (CDrawContext *pContext, CRect &rect, const CPoint &offset)
 void CBitmap::drawTransparent (CDrawContext *pContext, CRect &rect, const CPoint &offset)
 {
 #if WINDOWS
+	#if GDIPLUS
+	drawAlphaBlend (pContext, rect, offset, 255);
+	#else
 	#if USE_ALPHA_BLEND
 	if (!noAlpha)
 	{
@@ -6963,6 +7188,7 @@ void CBitmap::drawTransparent (CDrawContext *pContext, CRect &rect, const CPoint
 	DrawTransparent (pContext, rect, offset, hdcBitmap, ptSize, (HBITMAP)pMask, RGB(transparentCColor.red, transparentCColor.green, transparentCColor.blue));
 
 	DeleteDC (hdcBitmap);
+	#endif
 
 #elif MAC
 
@@ -7064,6 +7290,17 @@ void CBitmap::drawTransparent (CDrawContext *pContext, CRect &rect, const CPoint
 void CBitmap::drawAlphaBlend (CDrawContext *pContext, CRect &rect, const CPoint &offset, unsigned char alpha)
 {
 #if WINDOWS
+	#if GDIPLUS
+	Gdiplus::Bitmap* bitmap = getBitmap ();
+	if (bitmap)
+	{
+		Gdiplus::Graphics* graphics = pContext->getGraphics ();
+		if (graphics)
+		{
+			graphics->DrawImage (bitmap, rect.left + pContext->offset.h, rect.top + pContext->offset.v, offset.x, offset.y, rect.getWidth (), rect.getHeight (), Gdiplus::UnitPixel);
+		}
+	}
+	#else
 	if (pHandle)
 	{
 		HGDIOBJ hOldObj;
@@ -7134,6 +7371,7 @@ void CBitmap::drawAlphaBlend (CDrawContext *pContext, CRect &rect, const CPoint 
 		SelectObject (hdcMemory, hOldObj);
 		DeleteDC (hdcMemory);
 	}
+	#endif
 
 #elif MAC
 
@@ -7284,12 +7522,15 @@ void CBitmap::setTransparentColor (const CColor color)
 void CBitmap::setTransparencyMask (CDrawContext* pContext, const CPoint& offset)
 {
 #if WINDOWS
+	#if GDIPLUS
+	#else
 	if (pMask)
 		DeleteObject (pMask);
 
 	CRect r (0, 0, width, height);
 	r.offset (offset.h, offset.v);
 	pMask = CreateMaskBitmap (pContext, r, transparentCColor);
+	#endif
 
 #elif MAC
 	#if QUARTZ
@@ -7662,7 +7903,7 @@ bool InitWindowClass ()
 		windowClass.hIcon = 0; 
 
 		windowClass.hCursor = LoadCursor (NULL, IDC_ARROW);
-		windowClass.hbrBackground = 0; //GetSysColorBrush (COLOR_BTNFACE); 
+		windowClass.hbrBackground = 0; //GetSysColorBrush (COLOR_BTNFACE); // must be NULL, really, only for debugging is this something else 
 		windowClass.lpszMenuName  = 0; 
 		windowClass.lpszClassName = gClassName; 
 		RegisterClass (&windowClass);
@@ -7743,9 +7984,15 @@ LONG_PTR WINAPI WindowProc (HWND hwnd, UINT message, WPARAM wParam, LPARAM lPara
 
 	case WM_PAINT:
 	{
-		RECT r;
-		if (pFrame && GetUpdateRect (hwnd, &r, false))
+		if (pFrame)// && GetUpdateRect (hwnd, &r, false))
 		{
+			HRGN rgn = CreateRectRgn (0, 0, 0, 0);
+			if (GetUpdateRgn (hwnd, rgn, false) == NULLREGION)
+			{
+				DeleteObject (rgn);
+				return 0;
+			}
+
 			PAINTSTRUCT ps;
 			HDC hdc = BeginPaint (hwnd, &ps);
 
@@ -7754,7 +8001,30 @@ LONG_PTR WINAPI WindowProc (HWND hwnd, UINT message, WPARAM wParam, LPARAM lPara
 				context = new VSTGUI_CDrawContext (pFrame, hdc, hwnd);
 			
 			CRect updateRect (ps.rcPaint.left, ps.rcPaint.top, ps.rcPaint.right, ps.rcPaint.bottom);
-			pFrame->drawRect (context, updateRect);
+
+			#if 1
+			int len = GetRegionData (rgn, 0, NULL);
+			if (len)
+			{
+				RGNDATA *rlist = (RGNDATA *)new char[len];
+				GetRegionData (rgn, len, rlist);
+				if (rlist->rdh.nCount > 0)
+				{
+					RECT* rp = (RECT*)rlist->Buffer;
+					for (unsigned int i = 0; i < rlist->rdh.nCount; i++)
+					{
+						CRect ur (rp->left, rp->top, rp->right, rp->bottom);
+						pFrame->drawRect (context, ur);
+						rp++;
+					}
+				}
+				else
+					pFrame->drawRect (context, updateRect);
+				delete [] (char*)rlist;
+			}
+			else
+			#endif
+				pFrame->drawRect (context, updateRect);
 
 			if (pFrame->getBackBuffer ())
 			{
@@ -7764,7 +8034,9 @@ LONG_PTR WINAPI WindowProc (HWND hwnd, UINT message, WPARAM wParam, LPARAM lPara
 			else
 				context->forget ();
 
+
 			EndPaint (hwnd, &ps);
+			DeleteObject (rgn);
 			return 0;
 		}
 	}
@@ -7819,7 +8091,7 @@ LONG_PTR WINAPI WindowProc (HWND hwnd, UINT message, WPARAM wParam, LPARAM lPara
 	}
 	break;
 	
-#if NEW_MOUSE_METHODS_FOR_WINDOWS
+#if 1
 	case WM_RBUTTONDOWN:
 	case WM_MBUTTONDOWN:
 	case WM_LBUTTONDOWN:
@@ -7839,6 +8111,7 @@ LONG_PTR WINAPI WindowProc (HWND hwnd, UINT message, WPARAM wParam, LPARAM lPara
 			VSTGUI_CPoint where (LOWORD (lParam), HIWORD (lParam));
 			if (pFrame->onMouseDown (where, buttons) == kMouseEventHandled)
 				SetCapture ((HWND)pFrame->getSystemWindow ());
+			return 0;
 		}
 		break;
 	case WM_MOUSEMOVE:
@@ -7856,7 +8129,8 @@ LONG_PTR WINAPI WindowProc (HWND hwnd, UINT message, WPARAM wParam, LPARAM lPara
 			if (wParam & MK_SHIFT)
 				buttons |= kShift;
 			VSTGUI_CPoint where (LOWORD (lParam), HIWORD (lParam));
-			pFrame->onMouseMove (where, buttons);
+			pFrame->onMouseMoved (where, buttons);
+			return 0;
 		}
 		break;
 	case WM_LBUTTONUP:
@@ -7878,6 +8152,7 @@ LONG_PTR WINAPI WindowProc (HWND hwnd, UINT message, WPARAM wParam, LPARAM lPara
 			VSTGUI_CPoint where (LOWORD (lParam), HIWORD (lParam));
 			pFrame->onMouseUp (where, buttons);
 			ReleaseCapture ();
+			return 0;
 		}
 		break;
 #else
@@ -7911,6 +8186,7 @@ LONG_PTR WINAPI WindowProc (HWND hwnd, UINT message, WPARAM wParam, LPARAM lPara
 	return DefWindowProc (hwnd, message, wParam, lParam);
 }
 
+#if !GDIPLUS
 //-----------------------------------------------------------------------------
 HANDLE CreateMaskBitmap (CDrawContext* pContext, CRect& rect, CColor transparentColor)
 {
@@ -8019,6 +8295,7 @@ void DrawTransparent (CDrawContext* pContext, CRect& rect, const CPoint& offset,
 		DeleteDC(hdcMask);
 	}
 }
+#endif
 #endif
 
 //-----------------------------------------------------------------------------
