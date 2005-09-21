@@ -1,14 +1,12 @@
 //-----------------------------------------------------------------------------
 // VST Plug-Ins SDK
-// VSTGUI: Graphical User Interface Framework for VST plugins
+// VSTGUI: Graphical User Interface Framework not only for VST plugins : 
 //
-// Version 3.5       Date : 30/06/04
-//
-//-----------------------------------------------------------------------------
+// CVSTGUITimer written 2005 by Arne Scheffler
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
-// © 2004, Steinberg Media Technologies, All Rights Reserved
+// Â© 2004, Steinberg Media Technologies, All Rights Reserved
 //-----------------------------------------------------------------------------
 // Redistribution and use in source and binary forms, with or without modification,
 // are permitted provided that the following conditions are met:
@@ -34,89 +32,78 @@
 // OF THE POSSIBILITY OF SUCH DAMAGE.
 //-----------------------------------------------------------------------------
 
-#ifndef __plugguieditor__
-#define __plugguieditor__
-
-#ifndef __vstgui__
+#include "cvstguitimer.h"
 #include "vstgui.h"
-#endif
-
-//----------------------------------------------------------------------
-struct ERect
-{
-	short top;
-	short left;
-	short bottom;
-	short right;
-};
 
 //-----------------------------------------------------------------------------
-// AEffGUIEditor Declaration
+const char* CVSTGUITimer::kMsgTimer = "timer fired";
+
 //-----------------------------------------------------------------------------
-class PluginGUIEditor : public VSTGUIEditorInterface
+CVSTGUITimer::CVSTGUITimer (CView* timerView, int fireTime)
+: fireTime (fireTime)
+, timerView (timerView)
 {
-public :
-
-	PluginGUIEditor (void *pEffect);
-
-	virtual ~PluginGUIEditor ();
-
-	virtual void setParameter (long index, float value) {} 
-	virtual long getRect (ERect **ppRect);
-	virtual long open (void *ptr);
-	virtual void close () { systemWindow = 0; }
-	virtual void idle ();
-	virtual void draw (ERect *pRect);
-
-	// wait (in ms)
-	void wait (unsigned long ms);
-
-	// get the current time (in ms)
-	unsigned long getTicks ();
-
-	// feedback to appli.
-	virtual void doIdleStuff ();
-
-	// get the effect attached to this editor
-	void *getEffect () { return effect; }
-
-	// get version of this VSTGUI
-	long getVstGuiVersion () { return (VSTGUI_VERSION_MAJOR << 16) + VSTGUI_VERSION_MINOR; }
-
-	// set/get the knob mode
-	virtual long setKnobMode (int val);
-	virtual long getKnobMode () const { return knobMode; }
-
-	virtual bool onWheel (float distance);
-
-	// get the CFrame object
-	#if USE_NAMESPACE
-	VSTGUI::CFrame *getFrame () { return frame; }
-	#else
-	CFrame *getFrame () { return frame; }
+	#if MAC
+	timerRef = 0;
+	#elif WINDOWS
+	// todo
 	#endif
+}
 
-	virtual void beginEdit (long index) {}
-	virtual void endEdit (long index) {}
+//-----------------------------------------------------------------------------
+CVSTGUITimer::~CVSTGUITimer ()
+{
+	stop ();
+}
 
-//---------------------------------------
-protected:
-	ERect   rect;
-
-	#if USE_NAMESPACE
-	VSTGUI::CFrame *frame;
-	#else
-	CFrame *frame;
+//-----------------------------------------------------------------------------
+void CVSTGUITimer::start ()
+{
+	#if MAC
+	if (!timerRef)
+		InstallEventLoopTimer (GetMainEventLoop (), kEventDurationMillisecond * fireTime, kEventDurationMillisecond * fireTime, timerProc, this, &timerRef);
+	#elif WINDOWS
+	// todo
 	#endif
+}
 
-	void* effect;
-	void* systemWindow;
+//-----------------------------------------------------------------------------
+bool CVSTGUITimer::stop ()
+{
+	#if MAC
+	if (timerRef)
+	{
+		RemoveEventLoopTimer (timerRef);
+		timerRef = 0;
+		return true;
+	}
+	#elif WINDOWS
+	// todo
+	#endif
+	return false;
+}
 
-private:
-	unsigned long lLastTicks;
-	bool inIdleStuff;
+//-----------------------------------------------------------------------------
+bool CVSTGUITimer::setFireTime (int newFireTime)
+{
+	if (fireTime != newFireTime)
+	{
+		bool wasRunning = stop ();
+		fireTime = newFireTime;
+		if (wasRunning)
+			start ();
+	}
+	return true;
+}
 
-	static long knobMode;
-};
+#if MAC
+//-----------------------------------------------------------------------------
+pascal void CVSTGUITimer::timerProc (EventLoopTimerRef inTimer, void *inUserData)
+{
+	CVSTGUITimer* timer = (CVSTGUITimer*)inUserData;
+	if (timer->timerView)
+		timer->timerView->notify (NULL, kMsgTimer);
+}
 
 #endif
+

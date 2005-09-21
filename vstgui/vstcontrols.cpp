@@ -3,7 +3,7 @@
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 // Standard Control Objects
 //
-// Version 3.5       $Date: 2005-09-09 08:18:01 $
+// Version 3.5       $Date: 2005-09-21 12:24:11 $
 //
 // Added new objects        : Michael Schmidt          08.97
 // Added new objects        : Yvan Grabit              01.98
@@ -4593,9 +4593,11 @@ CAutoAnimation::CAutoAnimation (const CRect &size, CControlListener *listener, l
                                 long subPixmaps,	 // number of subPixmaps...
                                 CCoord heightOfOneImage, // height of one image in pixel
                                 CBitmap *background, CPoint &offset)
-	:	CControl (size, listener, tag, background), offset (offset),
-		subPixmaps (subPixmaps), heightOfOneImage (heightOfOneImage),
-		bWindowOpened (false)
+: CControl (size, listener, tag, background)
+, offset (offset)
+, subPixmaps (subPixmaps)
+, heightOfOneImage (heightOfOneImage)
+, bWindowOpened (false)
 {
 	totalHeightOfBitmap = heightOfOneImage * subPixmaps;
 }
