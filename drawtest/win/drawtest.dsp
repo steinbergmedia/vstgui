@@ -4,7 +4,7 @@
 
 # TARGTYPE "Win32 (x86) Dynamic-Link Library" 0x0102
 
-CFG=drawtest - Win32 Debug
+CFG=drawtest - Win32 Debug GDIplus
 !MESSAGE This is not a valid makefile. To build this project using NMAKE,
 !MESSAGE use the Export Makefile command and run
 !MESSAGE 
@@ -13,12 +13,13 @@ CFG=drawtest - Win32 Debug
 !MESSAGE You can specify a configuration when running NMAKE
 !MESSAGE by defining the macro CFG on the command line. For example:
 !MESSAGE 
-!MESSAGE NMAKE /f "drawtest.mak" CFG="drawtest - Win32 Debug"
+!MESSAGE NMAKE /f "drawtest.mak" CFG="drawtest - Win32 Debug GDIplus"
 !MESSAGE 
 !MESSAGE Possible choices for configuration are:
 !MESSAGE 
 !MESSAGE "drawtest - Win32 Release" (based on "Win32 (x86) Dynamic-Link Library")
 !MESSAGE "drawtest - Win32 Debug" (based on "Win32 (x86) Dynamic-Link Library")
+!MESSAGE "drawtest - Win32 Debug GDIplus" (based on "Win32 (x86) Dynamic-Link Library")
 !MESSAGE 
 
 # Begin Project
@@ -81,12 +82,40 @@ LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /dll /debug /machine:I386 /pdbtype:sept
 # ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib GdiPlus.lib /nologo /dll /debug /machine:I386 /out:"C:\Program Files\Steinberg\VstPlugins\drawtest.dll" /pdbtype:sept
 
+!ELSEIF  "$(CFG)" == "drawtest - Win32 Debug GDIplus"
+
+# PROP BASE Use_MFC 0
+# PROP BASE Use_Debug_Libraries 1
+# PROP BASE Output_Dir "drawtest___Win32_Debug_GDIplus"
+# PROP BASE Intermediate_Dir "drawtest___Win32_Debug_GDIplus"
+# PROP BASE Ignore_Export_Lib 0
+# PROP BASE Target_Dir ""
+# PROP Use_MFC 0
+# PROP Use_Debug_Libraries 1
+# PROP Output_Dir "drawtest___Win32_Debug_GDIplus"
+# PROP Intermediate_Dir "drawtest___Win32_Debug_GDIplus"
+# PROP Ignore_Export_Lib 0
+# PROP Target_Dir ""
+# ADD BASE CPP /nologo /MTd /W3 /Gm /GX /ZI /Od /I "..\vstsdk2.3\\" /I "..\..\vstgui\\" /I "..\..\..\sdk\libpng" /I "..\..\..\sdk\zlib" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "DRAWTEST_EXPORTS" /D USE_LIBPNG=1 /D DEBUG=1 /FR /YX /FD /GZ /c
+# ADD CPP /nologo /MTd /W3 /Gm /GX /ZI /Od /I "..\vstsdk2.3\\" /I "..\..\vstgui\\" /I "..\..\..\sdk\libpng" /I "..\..\..\sdk\zlib" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "DRAWTEST_EXPORTS" /D USE_LIBPNG=1 /D DEBUG=1 /D GDIPLUS=1 /FR /YX /FD /GZ /c
+# ADD BASE MTL /nologo /D "_DEBUG" /mktyplib203 /win32
+# ADD MTL /nologo /D "_DEBUG" /mktyplib203 /win32
+# ADD BASE RSC /l 0x809 /d "_DEBUG"
+# ADD RSC /l 0x809 /d "_DEBUG"
+BSC32=bscmake.exe
+# ADD BASE BSC32 /nologo
+# ADD BSC32 /nologo
+LINK32=link.exe
+# ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib GdiPlus.lib /nologo /dll /debug /machine:I386 /out:"C:\Program Files\Steinberg\VstPlugins\drawtest.dll" /pdbtype:sept
+# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib GdiPlus.lib /nologo /dll /debug /machine:I386 /out:"C:\Program Files\Steinberg\VstPlugins\drawtest_gdiplus.dll" /pdbtype:sept
+
 !ENDIF 
 
 # Begin Target
 
 # Name "drawtest - Win32 Release"
 # Name "drawtest - Win32 Debug"
+# Name "drawtest - Win32 Debug GDIplus"
 # Begin Group "Source Files"
 
 # PROP Default_Filter "cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
@@ -111,11 +140,24 @@ SOURCE=..\..\vstgui\ctabview.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=..\..\vstgui\cvstguitimer.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\vstgui\vstcontrols.cpp
 # End Source File
 # Begin Source File
 
 SOURCE=..\..\vstgui\vstgui.cpp
+
+!IF  "$(CFG)" == "drawtest - Win32 Release"
+
+!ELSEIF  "$(CFG)" == "drawtest - Win32 Debug"
+
+!ELSEIF  "$(CFG)" == "drawtest - Win32 Debug GDIplus"
+
+!ENDIF 
+
 # End Source File
 # End Group
 # Begin Group "vstsdk"
@@ -363,6 +405,11 @@ SOURCE=.\drawtest.rc
 !ELSEIF  "$(CFG)" == "drawtest - Win32 Debug"
 
 # ADD BASE RSC /l 0x809
+# ADD RSC /l 0x809 /i "..\resources"
+
+!ELSEIF  "$(CFG)" == "drawtest - Win32 Debug GDIplus"
+
+# ADD BASE RSC /l 0x809 /i "..\resources"
 # ADD RSC /l 0x809 /i "..\resources"
 
 !ENDIF 
