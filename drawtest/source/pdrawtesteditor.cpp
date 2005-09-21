@@ -120,6 +120,10 @@ DrawTestEditor::DrawTestEditor (void* effect)
 	rect.top    = 0;
 	rect.right  = backgroundBitmap->getWidth ();
 	rect.bottom = backgroundBitmap->getHeight ();
+	if (rect.right == 0)
+		rect.right = 400;
+	if (rect.bottom == 0)
+		rect.bottom = 300;
 }
 
 DrawTestEditor::~DrawTestEditor ()
@@ -239,6 +243,10 @@ long DrawTestEditor::open (void *ptr)
 	size.inset (8, 8);
 	size.top++; // the background bitmap is not correct
 	size.left++; // the background bitmap is not correct
+
+//	CView* testView = new PLinesView (size);
+//	frame->addView (testView);
+
 	setTabView (frame, size, CTabView::kPositionBottom);
 	// last but not least set the class variable frame to our newly created frame
 	this->frame = frame;
