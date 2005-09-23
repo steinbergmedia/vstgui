@@ -2,7 +2,7 @@
 // VST Plug-Ins SDK
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 //
-// Version 3.5       $Date: 2005-09-21 14:35:39 $ 
+// Version 3.5       $Date: 2005-09-23 17:37:02 $ 
 //
 // Added Motif/Windows vers.: Yvan Grabit              01.98
 // Added Mac version        : Charlie Steinberg        02.98
@@ -218,6 +218,7 @@ const char* gMacXfontNames[] = {
 #define	M_PI		3.14159265358979323846	/* pi */
 #endif
 
+bool isWindowComposited (WindowRef window);
 static inline void QuartzSetLineDash (CGContextRef context, CLineStyle style, CCoord lineWidth);
 static inline void QuartzSetupClip (CGContextRef context, const CRect clipRect);
 static inline double radians (double degrees) { return degrees * M_PI / 180; }
@@ -507,9 +508,7 @@ CDrawContext::CDrawContext (CFrame *inFrame, void *inSystemContext, void *inWind
 		HIViewGetFrame ((HIViewRef)pFrame->getPlatformControl (), &bounds);
 		if (pWindow || !pSystemContext)
 		{
-			WindowAttributes attr;
-			GetWindowAttributes ((WindowRef)pWindow, &attr);
-			if (attr & kWindowCompositingAttribute)
+			if (isWindowComposited ((WindowRef)pWindow))
 			{
 				HIViewRef contentView;
 				HIViewFindByID (HIViewGetRoot ((WindowRef)pWindow), kHIViewWindowContentID, &contentView);
@@ -3461,6 +3460,7 @@ CView::CView (const CRect& size)
 , bMouseEnabled (true)
 , bTransparencyEnabled (false)
 , bWantsFocus (false)
+, bIsAttached (false)
 , pBackground (0)
 , pAttributeList (0)
 {
@@ -3557,10 +3557,13 @@ void CView::redrawRect (CDrawContext* context, const CRect& rect)
 //-----------------------------------------------------------------------------
 void CView::invalidRect (CRect rect)
 {
-	if (pParentView)
-		pParentView->invalidRect (rect);
-	else if (pParentFrame)
-		pParentFrame->invalidRect (rect);
+	if (bIsAttached)
+	{
+		if (pParentView)
+			pParentView->invalidRect (rect);
+		else if (pParentFrame)
+			pParentFrame->invalidRect (rect);
+	}
 }
 #endif
 
@@ -3808,6 +3811,7 @@ CFrame::CFrame (const CRect &inSize, void *inSystemWindow, VSTGUIEditorInterface
 , defaultCursor (0)
 {
 	setOpenFlag (true);
+	bIsAttached = true;
 	
 	pParentFrame = this;
 
@@ -3881,6 +3885,7 @@ CFrame::CFrame (const CRect& inSize, const char* inTitle, VSTGUIEditorInterface*
 	bAddedWindow  = true;
 	setOpenFlag (false);
 	pParentFrame = this;
+	bIsAttached = true;
 
 #if WINDOWS
 	pHwnd = 0;
@@ -3993,6 +3998,7 @@ CFrame::~CFrame ()
 			fprintf (stderr, "UnregisterToolboxObjectClass failed : %d\n", (int)status);
 	}
 #endif
+	pParentFrame = 0;
 }
 
 //-----------------------------------------------------------------------------
@@ -4106,9 +4112,7 @@ bool CFrame::initFrame (void *systemWin)
 	SetControlDragTrackingEnabled (controlRef, true);
 	SetAutomaticControlDragTrackingEnabledForWindow ((WindowRef)systemWin, true);
 	#if !AU // for AudioUnits define AU and embed the controlRef at your AUCarbonViewBase
-	WindowAttributes attributes;
-	GetWindowAttributes ((WindowRef)systemWin, &attributes);
-	if (attributes & kWindowCompositingAttribute) 
+	if (isWindowComposited ((WindowRef)systemWin)) 
 	{
 		HIViewRef contentView;
 		HIViewRef rootView = HIViewGetRoot ((WindowRef)systemWin);
@@ -4164,9 +4168,7 @@ bool CFrame::setDropActive (bool val)
 
 #elif MAC
 #if MAC_OLD_DRAG
-	WindowAttributes attributes;
-	GetWindowAttributes ((WindowRef)pSystemWindow, &attributes);
-	if (!(attributes & kWindowCompositingAttribute))
+	if (!isWindowComposited ((WindowRef)pSystemWindow))
 	{
 		if (val)
 			install_drop (this);
@@ -4641,17 +4643,15 @@ bool CFrame::getPosition (CCoord &x, CCoord &y) const
 	y   = bounds.top;
 
 	#if QUARTZ
-	WindowAttributes attr;
-	GetWindowAttributes ((WindowRef)pSystemWindow, &attr);
-	if (attr & kWindowCompositingAttribute)
+	if (isWindowComposited ((WindowRef)pSystemWindow))
 	{
-/*		HIPoint hip = { 0.f, 0.f };
+		HIPoint hip = { 0.f, 0.f };
 		HIViewRef contentView;
 		HIViewFindByID (HIViewGetRoot ((WindowRef)pSystemWindow), kHIViewWindowContentID, &contentView);
 		if (HIViewGetSuperview ((HIViewRef)controlRef) != contentView)
 			HIViewConvertPoint (&hip, controlRef, contentView);
-		x += hip.x;
-		y += hip.y;*/
+		x += (CCoord)hip.x;
+		y += (CCoord)hip.y;
 	}
 	else
 	{
@@ -4769,9 +4769,7 @@ bool CFrame::setSize (CCoord width, CCoord height)
 	#if QUARTZ
 	if (getSystemWindow ())
 	{
-		WindowAttributes windowAttributes;
-		GetWindowAttributes ((WindowRef)getSystemWindow (), &windowAttributes);
-		if (!(windowAttributes & kWindowCompositingAttribute))
+		if (!isWindowComposited ((WindowRef)getSystemWindow ()))
 		{
 			Rect bounds;
 			GetPortBounds (GetWindowPort ((WindowRef)getSystemWindow ()), &bounds);
@@ -5133,9 +5131,7 @@ void CFrame::invalidate (const CRect &rect)
 void CFrame::invalidRect (CRect rect)
 {
 	#if QUARTZ
-	WindowAttributes attributes;
-	GetWindowAttributes ((WindowRef)pSystemWindow, &attributes);
-	if (attributes & kWindowCompositingAttribute)
+	if (isWindowComposited ((WindowRef)pSystemWindow))
 	{
 		#if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_4
 		if (HIViewSetNeedsDisplayInRect)
@@ -5154,9 +5150,12 @@ void CFrame::invalidRect (CRect rect)
 	}
 	else
 	{
+		HIRect hiRect;
+		HIViewGetFrame (controlRef, &hiRect);
 		CRect _rect (rect);
 		_rect.offset (size.left, size.top);
-		Rect r = {rect.top, rect.left, rect.bottom, rect.right};
+		_rect.offset ((CCoord)hiRect.origin.x, (CCoord)hiRect.origin.y);
+		Rect r = {_rect.top, _rect.left, _rect.bottom, _rect.right};
 		InvalWindowRect ((WindowRef)pSystemWindow, &r);
 	}
 	
@@ -5303,8 +5302,11 @@ void CViewContainer::addView (CView *pView)
 		pSv->pPrevious = pV;
 		pLastView = pSv;
 	}
-	pView->attached (this);
-	pView->setDirty ();
+	if (isAttached ())
+	{
+		pView->attached (this);
+		pView->setDirty ();
+	}
 }
 
 //-----------------------------------------------------------------------------
@@ -5336,7 +5338,8 @@ void CViewContainer::removeAll (const bool &withForget)
 		CCView *pNext = pV->pNext;
 		if (pV->pView)
 		{
-			pV->pView->removed (this);
+			if (isAttached ())
+				pV->pView->removed (this);
 			if (withForget)
 				pV->pView->forget ();
 		}
@@ -5369,7 +5372,8 @@ void CViewContainer::removeView (CView *pView, const bool &withForget)
 			CCView *pPrevious = pV->pPrevious;
 			if (pV->pView)
 			{
-				pV->pView->removed (this);
+				if (isAttached ())
+					pV->pView->removed (this);
 				if (withForget)
 					pV->pView->forget ();
 			}
@@ -6261,7 +6265,14 @@ bool CViewContainer::removed (CView* parent)
 	pOffscreenContext = 0;
 	#endif
 
-	return true;
+	pParentFrame = 0;
+
+	FOREACHSUBVIEW
+		pV->pParentFrame = 0;
+		pV->removed (this);
+	ENDFOR
+	
+	return CView::removed (parent);
 }
 
 //-----------------------------------------------------------------------------
@@ -6273,7 +6284,14 @@ bool CViewContainer::attached (CView* view)
 		pOffscreenContext = new COffscreenContext (pParentFrame, (long)size.width (), (long)size.height (), kBlackCColor);
 	#endif
 
-	return true;
+	pParentFrame = view->getFrame ();
+
+	FOREACHSUBVIEW
+		pV->attached (this);
+		pV->pParentFrame = pParentFrame;
+	ENDFOR
+
+	return CView::attached (view);
 }
 
 //-----------------------------------------------------------------------------
@@ -8832,10 +8850,11 @@ static short keyTable[] = {
 class VSTGUIDrawRectsHelper
 {
 public:
-	VSTGUIDrawRectsHelper (CFrame* inFrame, CDrawContext* inContext) : frame (inFrame), context (inContext) {}
+	VSTGUIDrawRectsHelper (CFrame* inFrame, CDrawContext* inContext, bool inIsComposited) : frame (inFrame), context (inContext), isComposited (inIsComposited) {}
 	
 	CFrame* frame;
 	CDrawContext* context;
+	bool isComposited;
 };
 
 static OSStatus VSTGUIDrawRectsProc (UInt16 message, RgnHandle rgn, const Rect *rect, void *refCon)
@@ -8845,6 +8864,8 @@ static OSStatus VSTGUIDrawRectsProc (UInt16 message, RgnHandle rgn, const Rect *
 		VSTGUIDrawRectsHelper* h = (VSTGUIDrawRectsHelper*)refCon;
 		CRect r;
 		Rect2CRect ((Rect&)*rect, r);
+		if (!h->isComposited)
+			r.offset (-h->context->offsetScreen.x, -h->context->offsetScreen.y);
 		h->frame->drawRect (h->context, r);
 	}
 	return noErr;
@@ -8910,7 +8931,7 @@ pascal OSStatus CFrame::carbonEventHandler (EventHandlerCallRef inHandlerCallRef
 			{
 				case kEventControlInitialize:
 				{
-					UInt32 controlFeatures = kControlSupportsDragAndDrop | kControlSupportsFocus | kControlHandlesTracking | kControlSupportsEmbedding | kHIViewFeatureGetsFocusOnClick;
+					UInt32 controlFeatures = kControlSupportsDragAndDrop | kControlSupportsFocus | kControlHandlesTracking | kControlSupportsEmbedding | kHIViewFeatureGetsFocusOnClick | kHIViewIsOpaque;
 					SetEventParameter (inEvent, kEventParamControlFeatures, typeUInt32, sizeof (UInt32), &controlFeatures);
 					result = noErr;
 					break;
@@ -8933,7 +8954,7 @@ pascal OSStatus CFrame::carbonEventHandler (EventHandlerCallRef inHandlerCallRef
 					if (GetEventParameter (inEvent, kEventParamRgnHandle, typeQDRgnHandle, NULL, sizeof (RgnHandle), NULL, &dirtyRegion) == noErr)
 					{
 						#if VSTGUI_USE_SYSTEM_EVENTS_FOR_DRAWING
-						VSTGUIDrawRectsHelper helper (frame, context);
+						VSTGUIDrawRectsHelper helper (frame, context, isWindowComposited (window));
 						RegionToRectsUPP upp = NewRegionToRectsUPP (VSTGUIDrawRectsProc);
 						QDRegionToRects (dirtyRegion, kQDParseRegionFromTopLeft, upp, &helper);
 						DisposeRegionToRectsUPP (upp);
@@ -8943,9 +8964,7 @@ pascal OSStatus CFrame::carbonEventHandler (EventHandlerCallRef inHandlerCallRef
 						GetRegionBounds (dirtyRegion, &bounds);
 						CRect updateRect;
 						Rect2CRect (bounds, updateRect);
-						WindowAttributes windowAttributes;
-						GetWindowAttributes (window, &windowAttributes);
-						if (!(windowAttributes & kWindowCompositingAttribute))
+						if (!isWindowComposited (window))
 							updateRect.offset (-context->offsetScreen.x, -context->offsetScreen.y);
 						frame->drawRect (context, updateRect);
 						if (frameWasDirty && updateRect != frame->size)
@@ -9028,14 +9047,13 @@ pascal OSStatus CFrame::carbonEventHandler (EventHandlerCallRef inHandlerCallRef
 					//SetUserFocusWindow (window);
 					//AdvanceKeyboardFocus (window);
 					//SetKeyboardFocus (window, frame->controlRef, kControlFocusNextPart);
-					WindowAttributes windowAttributes;
-					GetWindowAttributes (window, &windowAttributes);
+					bool windowIsComposited = isWindowComposited (window);
 					Point point = {(short)hipoint.y, (short)hipoint.x};
-					if (eventKind == kEventControlClick && !(windowAttributes & kWindowCompositingAttribute))
+					if (eventKind == kEventControlClick && !windowIsComposited)
 						QDGlobalToLocalPoint (GetWindowPort (window), &point);
 					CDrawContext* context = frame->createDrawContext ();
 					CPoint p (point.h, point.v);
-					if (!(windowAttributes & kWindowCompositingAttribute))
+					if (!windowIsComposited)
 						p.offset (-context->offsetScreen.x, -context->offsetScreen.y);
 					frame->mouse (context, p, buttons);
 					context->forget ();
@@ -9188,8 +9206,24 @@ pascal OSStatus CFrame::carbonEventHandler (EventHandlerCallRef inHandlerCallRef
 						buttons |= kAlt;
 					if (modifiers & controlKey)
 						buttons |= kApple;
+					
+					#if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_4
+					if (HIPointConvert)
+						HIPointConvert (&windowHIPoint, kHICoordSpaceWindow, windowRef, kHICoordSpaceView, frame->controlRef);
+					else
+					#endif
 					HIViewConvertPoint (&windowHIPoint, HIViewGetRoot (windowRef), frame->controlRef);
-					CPoint p (windowHIPoint.x, windowHIPoint.y);
+					
+					// non-compositing window controls need to handle offset themselves
+					if (!isWindowComposited (windowRef))
+					{
+						HIRect viewRect;
+						HIViewGetFrame(frame->controlRef, &viewRect);
+						windowHIPoint.x -= viewRect.origin.x;
+						windowHIPoint.y -= viewRect.origin.y;
+					}
+					
+					CPoint p ((CCoord)windowHIPoint.x, (CCoord)windowHIPoint.y);
 					float distance = wheelDelta;
 					CMouseWheelAxis axis = kMouseWheelAxisX;
 					if (wheelAxis == kEventMouseWheelAxisY && !(modifiers & cmdKey))
@@ -9217,7 +9251,7 @@ pascal OSStatus CFrame::carbonEventHandler (EventHandlerCallRef inHandlerCallRef
 					{
 						UInt32 keyCode = 0;
 						GetEventParameter (rawKeyEvent, kEventParamKeyCode, typeUInt32, NULL, sizeof (UInt32), NULL, &keyCode);
-						if (keyCode == keyTable[VKEY_TAB+1])
+						if (keyCode == (UInt32)keyTable[VKEY_TAB+1])
 							return result;
 					}
 					result = eventPassToNextTargetErr;
@@ -9335,6 +9369,13 @@ pascal OSStatus CFrame::carbonMouseEventHandler (EventHandlerCallRef inHandlerCa
 					HIViewConvertPoint (&location, HIViewGetRoot (window), hiView);
 				LOG_HIPOINT("view   :",location)
 			}
+			if (!isWindowComposited ((WindowRef)window))
+			{
+				HIRect viewRect;
+				HIViewGetFrame(hiView, &viewRect);
+				location.x -= viewRect.origin.x;
+				location.y -= viewRect.origin.y;
+			}
 			GetEventParameter (inEvent, kEventParamKeyModifiers, typeUInt32, NULL, sizeof (UInt32), NULL, &modifiers);
 			GetEventParameter (inEvent, kEventParamMouseButton, typeMouseButton, NULL, sizeof (EventMouseButton), NULL, &buttonState);
 			if (buttonState == kEventMouseButtonPrimary)
@@ -9351,7 +9392,7 @@ pascal OSStatus CFrame::carbonMouseEventHandler (EventHandlerCallRef inHandlerCa
 				buttons |= kAlt;
 			if (modifiers & controlKey)
 				buttons |= kApple;
-			CPoint point (location.x, location.y);
+			CPoint point ((CCoord)location.x, (CCoord)location.y);
 			switch (eventKind)
 			{
 				case kEventMouseDown:
@@ -9391,6 +9432,16 @@ pascal OSStatus CFrame::carbonMouseEventHandler (EventHandlerCallRef inHandlerCa
 		}
 	}
 	return result;
+}
+
+//-----------------------------------------------------------------------------
+bool isWindowComposited (WindowRef window)
+{
+	WindowAttributes attr;
+	GetWindowAttributes (window, &attr);
+	if (attr & kWindowCompositingAttribute)
+		return true;
+	return false;
 }
 
 // code from CarbonSketch Example Code
