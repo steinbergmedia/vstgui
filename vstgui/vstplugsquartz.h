@@ -8,17 +8,17 @@
 #define USE_NAMESPACE 1
 
 #define TARGET_API_MAC_CARBON 1
+#define CARBON 1
 #define USENAVSERVICES 1
 
 #define __CF_USE_FRAMEWORK_INCLUDES__
 
 #if __MWERKS__
 #define __NOEXTENSIONS__
+#define MAC_OS_X_VERSION_MIN_REQUIRED   1020
+#define MAC_OS_X_VERSION_MAX_ALLOWED	1040
 #endif
 
 #define QUARTZ 1
-
-#define MAC_OS_X_VERSION_MIN_REQUIRED   1020
-#define MAC_OS_X_VERSION_MAX_ALLOWED	1040
 
 #include <AvailabilityMacros.h>

@@ -3,7 +3,7 @@
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 // Standard Control Objects
 //
-// Version 3.5       $Date: 2005-09-21 14:35:39 $
+// Version 3.5       $Date: 2005-09-23 17:37:02 $
 //
 // Added new objects        : Michael Schmidt          08.97
 // Added new objects        : Yvan Grabit              01.98
@@ -1611,6 +1611,13 @@ void CTextEdit::takeFocus ()
 #if MACX
 	WindowRef window = (WindowRef)getFrame ()->getSystemWindow ();
 	#if QUARTZ
+	extern bool isWindowComposited (WindowRef window);
+	if (!isWindowComposited (window))
+	{
+		HIRect hiRect;
+		HIViewGetFrame ((HIViewRef)getFrame ()->getPlatformControl (), &hiRect);
+		rect.offset ((CCoord)hiRect.origin.x, (CCoord)hiRect.origin.y);
+	}
 	Rect r;
 	r.left   = (short)rect.left;// + 2;
 	r.right  = (short)rect.right;// - 4;
@@ -3474,7 +3481,7 @@ void COptionMenu::takeFocus ()
 		GetWindowRect (hwnd, &rctWinParent);
 		rect.left = rctWinParent.left;
 		rect.top  = rctWinParent.top;
-		#elif QUARTZ
+		#elif 0//QUARTZ
 		HIRect bounds;
 		HIViewRef control = (HIViewRef)getFrame ()->getPlatformControl ();
 		HIViewGetFrame (control, &bounds);
@@ -4695,6 +4702,8 @@ CMouseEventResult CAutoAnimation::onMouseDown (CPoint &where, const long& button
 			setDirty ();
 			#endif
 			closeWindow ();
+			if (listener)
+				listener->valueChanged (this);
 		}
 		return kMouseDownEventHandledButDontNeedMovedOrUpEvents;
 	}

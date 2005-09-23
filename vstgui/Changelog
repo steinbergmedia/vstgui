@@ -1,3 +1,9 @@
+2005-09-23 arne
+
+	* proper handling of attached and removed calls of CView (if you overwrite them, always call its parents implementation)
+	* mac: working again with non composited windows
+	* CScrollView uses proper stepping algo (at least if the mac implementation is considered as proper ;-)
+
 2005-09-21 arne
 
 	* mac: make it compatible again with Mac OS X < 10.4

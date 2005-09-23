@@ -349,8 +349,15 @@ CRect CScrollbar::getScrollerRect ()
 }
 
 //-----------------------------------------------------------------------------
-void CScrollbar::doStepping (bool direction)
+void CScrollbar::doStepping ()
 {
+	CRect scrollerRect = getScrollerRect ();
+	if (timer)
+	{
+		if (!startPoint.isInside (size) || startPoint.isInside (scrollerRect))
+			return;
+	}
+	bool direction = (style == kHorizontal && startPoint.x < scrollerRect.left) || (style == kVertical && startPoint.y < scrollerRect.top);
 	float newValue = value;
 	if (style == kHorizontal)
 	{
@@ -384,7 +391,8 @@ long CScrollbar::notify (CView* sender, const char* message)
 {
 	if (message == CVSTGUITimer::kMsgTimer)
 	{
-		doStepping (stepDirection);
+		doStepping ();
+		timer->setFireTime (80);
 		return kMessageNotified;
 	}
 	return kMessageUnknown;
@@ -406,9 +414,8 @@ CMouseEventResult CScrollbar::onMouseDown (CPoint &where, const long& buttons)
 	}
 	else if (where.isInside (scrollerArea))
 	{
-		stepDirection = (style == kHorizontal && where.x < scrollerRect.left) || (style == kVertical && where.y < scrollerRect.top);
-		doStepping (stepDirection);
-		timer = new CVSTGUITimer (this, 200);
+		doStepping ();
+		timer = new CVSTGUITimer (this, 250);
 		timer->start ();
 		return kMouseEventHandled;
 	}
@@ -429,30 +436,41 @@ CMouseEventResult CScrollbar::onMouseUp (CPoint &where, const long& buttons)
 //-----------------------------------------------------------------------------
 CMouseEventResult CScrollbar::onMouseMoved (CPoint &where, const long& buttons)
 {
-	if (scrolling)
+	if (buttons & kLButton)
 	{
-		float newValue = 0.f;
-		CPoint newPoint (where);
-		newPoint.x -= startPoint.x - scrollerRect.left;
-		newPoint.y -= startPoint.y - scrollerRect.top;
-		if (style == kHorizontal)
+		if (scrolling)
 		{
-			newValue = (float)(newPoint.x - scrollerArea.left) / ((float)scrollerArea.width () - scrollerRect.width ());
+			float newValue = 0.f;
+			CPoint newPoint (where);
+			newPoint.x -= startPoint.x - scrollerRect.left;
+			newPoint.y -= startPoint.y - scrollerRect.top;
+			if (style == kHorizontal)
+			{
+				newValue = (float)(newPoint.x - scrollerArea.left) / ((float)scrollerArea.width () - scrollerRect.width ());
+			}
+			else
+			{
+				newValue = (float)(newPoint.y - scrollerArea.top) / ((float)scrollerArea.height () - scrollerRect.height ());
+			}
+			if (newValue < 0.f) newValue = 0.f;
+			if (newValue > 1.f) newValue = 1.f;
+			if (newValue != value)
+			{
+				value = newValue;
+				if (listener)
+					listener->valueChanged (this);
+				#if VSTGUI_USE_SYSTEM_EVENTS_FOR_DRAWING
+				invalid ();
+				#endif
+			}
 		}
 		else
 		{
-			newValue = (float)(newPoint.y - scrollerArea.top) / ((float)scrollerArea.height () - scrollerRect.height ());
-		}
-		if (newValue < 0.f) newValue = 0.f;
-		if (newValue > 1.f) newValue = 1.f;
-		if (newValue != value)
-		{
-			value = newValue;
-			if (listener)
-				listener->valueChanged (this);
-			#if VSTGUI_USE_SYSTEM_EVENTS_FOR_DRAWING
-			invalid ();
-			#endif
+			CPoint old (startPoint);
+			startPoint = where;
+			CRect scollerRect = getScrollerRect ();
+			if (where.isInside (size) && old.isInside (scollerRect) && !startPoint.isInside (scrollerRect))
+				doStepping ();
 		}
 	}
 	return kMouseEventHandled;

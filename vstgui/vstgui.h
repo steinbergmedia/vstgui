@@ -2,7 +2,7 @@
 // VST Plug-Ins SDK
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 //
-// Version 3.5       $Date: 2005-09-21 14:35:39 $
+// Version 3.5       $Date: 2005-09-23 17:37:02 $
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
@@ -859,16 +859,18 @@ public:
 	virtual void setTransparency (bool val) { bTransparencyEnabled = val; }			///< set views transparent state
 	virtual bool getTransparency () const { return bTransparencyEnabled; }			///< is view transparent ?
 
-	CCoord getHeight () const { return size.height (); }								///< get the height of the view
+	CCoord getHeight () const { return size.height (); }							///< get the height of the view
 	CCoord getWidth ()  const { return size.width (); }								///< get the width of the view
 
 	virtual void setViewSize (CRect &rect);											///< set views size
 	virtual CRect &getViewSize (CRect &rect) const { rect = size; return rect; }	///< returns the current view size
 
-	virtual bool removed (CView* parent) { return true; }   ///< view is removed from parent view
-	virtual bool attached (CView* view) { return true; }    ///< view is attached to a parent view
+	virtual bool removed (CView* parent) { bIsAttached = false; return true; }		///< view is removed from parent view
+	virtual bool attached (CView* view) { bIsAttached = true; return true; }		///< view is attached to a parent view
 
-	virtual void getMouseLocation (CDrawContext* context, CPoint &point);	///< get current mouse location in local view coordinates
+	bool isAttached () const { return bIsAttached; }								///< is View attached to a parentView
+
+	virtual void getMouseLocation (CDrawContext* context, CPoint &point);			///< get current mouse location in local view coordinates
 
 	virtual CPoint& frameToLocal (CPoint& point) const;		///< conversion from frame coordinates to local view coordinates
 	virtual CPoint& localToFrame (CPoint& point) const;		///< conversion from local view coordinates to frame coordinates
@@ -920,6 +922,7 @@ protected:
 	bool  bMouseEnabled;
 	bool  bTransparencyEnabled;
 	bool  bWantsFocus;
+	bool  bIsAttached;
 	
 	CBitmap* pBackground;
 	CAttributeListEntry* pAttributeList;
