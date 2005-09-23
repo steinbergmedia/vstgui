@@ -168,7 +168,7 @@ protected:
 
 	void calculateScrollerLength ();
 	CRect getScrollerRect ();
-	void doStepping (bool direction);
+	void doStepping ();
 
 	long style;
 	CRect scrollSize;
@@ -187,7 +187,6 @@ private:
 	CPoint startPoint;
 	CRect scrollerRect;
 	bool scrolling;
-	bool stepDirection;
 	float startValue;
 };
 
