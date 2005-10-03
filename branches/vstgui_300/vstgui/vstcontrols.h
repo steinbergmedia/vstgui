@@ -3,7 +3,7 @@
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 // Standard Control Objects
 //
-// Version 3.0       $Date: 2005-07-14 10:07:17 $
+// Version 3.0       $Date: 2005-10-03 11:43:19 $
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
@@ -150,7 +150,7 @@ public:
 	virtual	float getDefaultValue (void) const { return defaultValue; }
 
 	virtual void  setTag (long val) { tag = val; }
-	inline  long  getTag () const { return tag; }
+	virtual long  getTag () const { return tag; }
 
 	virtual bool  isDirty () const;
 	virtual void  setDirty (const bool val = true);

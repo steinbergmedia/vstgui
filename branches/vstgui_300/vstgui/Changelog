@@ -1,3 +1,8 @@
+2005-10-03 arne
+
+	* bugfix: CTabView does not release its subviews
+	* CControl::getTag() is virtual now.
+
 2005-08-12 arne
 
 	* initial support for X/Y mouse wheel (currently only macosx, don't know how ms windows handles this)

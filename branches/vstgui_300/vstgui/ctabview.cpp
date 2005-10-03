@@ -127,7 +127,6 @@ public:
 	, next (0)
 	, button (0)
 	{
-		view->remember ();
 	}
 
 	virtual ~CTabChildView ()
@@ -243,7 +242,7 @@ bool CTabView::removeTab (CView* view)
 				v->next->previous = v->previous;
 			if (v == currentChild)
 				setCurrentChild (v->previous ? v->previous : v->next);
-			removeView (v->button);
+			removeView (v->button, true);
 			v->forget ();
 			numberOfChilds--;
 			return true;
@@ -257,12 +256,11 @@ bool CTabView::removeTab (CView* view)
 bool CTabView::removeAllTabs ()
 {
 	setCurrentChild (0);
-	CTabChildView* v = firstChild;
+	CTabChildView* v = lastChild;
 	while (v)
 	{
-		CTabChildView* next = v->next;
-		removeView (v->button);
-		v->forget ();
+		CTabChildView* next = v->previous;
+		removeTab (v->view);
 		v = next;
 	}
 	firstChild = 0;
