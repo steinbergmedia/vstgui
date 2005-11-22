@@ -116,12 +116,13 @@ void AEffGUIEditor::draw (ERect *ppErect)
 //-----------------------------------------------------------------------------
 long AEffGUIEditor::mouse (long x, long y)
 {
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
 	CDrawContext context (frame, NULL, systemWindow);
 	CPoint where (x, y);
 
 	if (frame)
 		frame->mouse (&context, where);
-
+#endif
 	return 1;
 }
 #endif
@@ -187,6 +188,7 @@ long AEffGUIEditor::setKnobMode (int val)
 //-----------------------------------------------------------------------------
 bool AEffGUIEditor::onWheel (float distance)
 {
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
 	if (frame)
 	{
 		CDrawContext context (frame, NULL, systemWindow);
@@ -195,7 +197,7 @@ bool AEffGUIEditor::onWheel (float distance)
 		long buttons = context.getMouseButtons ();
 		return frame->onWheel (where, distance, buttons);
 	}
-	
+#endif	
 	return false;
 }
 

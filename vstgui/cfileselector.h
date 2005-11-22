@@ -2,7 +2,7 @@
 // VST Plug-Ins SDK
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 //
-// Version 3.0       $Date: 2005-07-14 10:20:26 $ 
+// Version 3.0       $Date: 2005-11-22 17:24:44 $ 
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
@@ -37,11 +37,11 @@
 
 #include "vstgui.h"
 
-BEGIN_NAMESPACE_VSTGUI
-
 #ifndef __aeffectx__
 struct VstFileSelect;
 #endif
+
+BEGIN_NAMESPACE_VSTGUI
 
 //-----------------------------------------------------------------------------
 // CFileSelector Declaration
@@ -64,6 +64,8 @@ protected:
 	static pascal Boolean navObjectFilterProc (AEDesc *theItem, void *info, void *callBackUD, NavFilterModes filterMode);
 	#endif
 };
+
+END_NAMESPACE_VSTGUI
 
 #ifndef __aeffectx__
 struct VstFileType
@@ -127,7 +129,5 @@ enum {
 	kVstFileType = 0
 };
 #endif
-
-END_NAMESPACE_VSTGUI
 
 #endif

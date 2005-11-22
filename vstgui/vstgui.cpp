@@ -2,7 +2,7 @@
 // VST Plug-Ins SDK
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 //
-// Version 3.5       $Date: 2005-09-23 17:37:02 $ 
+// Version 3.5       $Date: 2005-11-22 17:24:44 $ 
 //
 // Added Motif/Windows vers.: Yvan Grabit              01.98
 // Added Mac version        : Charlie Steinberg        02.98
@@ -42,6 +42,11 @@
 
 #ifndef __vstgui__
 #include "vstgui.h"
+#endif
+
+#if ENABLE_VST_EXTENSION_IN_VSTGUI
+#include "audioeffectx.h"
+#include "aeffguieditor.h"
 #endif
 
 #include "vstkeycode.h"
@@ -201,10 +206,11 @@ long pSystemVersion;
 #if MACX
 //-----------------------------------------------------------------------------
 #include <QuickTime/QuickTime.h>
+#include <CoreServices/CoreServices.h>
 
 #if QUARTZ
 const char* gMacXfontNames[] = {
-	"Helvetica",
+	"Lucida Grande",
 	"Helvetica",
 	"Helvetica",
 	"Helvetica",
@@ -221,6 +227,8 @@ const char* gMacXfontNames[] = {
 bool isWindowComposited (WindowRef window);
 static inline void QuartzSetLineDash (CGContextRef context, CLineStyle style, CCoord lineWidth);
 static inline void QuartzSetupClip (CGContextRef context, const CRect clipRect);
+static inline ATSUStyle CreateATSUStyle (const CColor &fontColor, CFont fontID, const long size, long style, const char* name = 0);
+
 static inline double radians (double degrees) { return degrees * M_PI / 180; }
 CGColorSpaceRef GetGenericRGBColorSpace ();
 
@@ -257,7 +265,7 @@ const unsigned char* gMacXfontNames[] = {
 #include <PictUtils.h>
 #endif
 
-long gStandardFontSize[] = { 12, 18, 14, 12, 10, 9, 9, 12 };
+long gStandardFontSize[] = { 12, 18, 14, 12, 11,10, 9, 12 };
 
 long convertPoint2Angle (CPoint &pm, CPoint &pt);
 void RectNormalize (Rect& rect);
@@ -502,6 +510,7 @@ CDrawContext::CDrawContext (CFrame *inFrame, void *inSystemContext, void *inWind
 
 #elif MAC
 	#if QUARTZ
+	atsuStyle = 0;
 	if (pFrame && (pSystemContext || pWindow))
 	{
 		HIRect bounds;
@@ -642,6 +651,11 @@ CDrawContext::~CDrawContext ()
 			QDEndCGContext (GetWindowPort ((WindowRef)pWindow), &gCGContext);
 		if (pFrame)
 			pFrame->setDrawContext (0);
+	}
+	if (atsuStyle)
+	{
+		ATSUDisposeStyle (atsuStyle);
+		atsuStyle = 0;
 	}
 #elif BEOS
 	if (pView)
@@ -1589,6 +1603,7 @@ void CDrawContext::drawPoint (const CPoint &_point, CColor color)
 #endif
 }
 
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
 //-----------------------------------------------------------------------------
 CColor CDrawContext::getPoint (const CPoint& _point)
 {
@@ -1691,6 +1706,7 @@ void CDrawContext::floodFill (const CPoint& _start)
 	#endif
 	#endif
 }
+#endif // VSTGUI_ENABLE_DEPRECATED_METHODS
 
 #if QUARTZ
 void addOvalToPath(CGContextRef c, CPoint center, float a, float b, float start_angle, float end_angle)
@@ -1959,6 +1975,12 @@ void CDrawContext::setFontColor (const CColor color)
 	#if QUARTZ
 	// on quartz the fill color is the font color
 
+	if (atsuStyle)
+	{
+		ATSUDisposeStyle (atsuStyle);
+		atsuStyle = 0;
+	}
+
 	#else
 	RGBColor col;
 	CGrafPtr OrigPort;
@@ -2132,6 +2154,13 @@ void CDrawContext::setFont (CFont fontID, const long size, long style)
 	
 	if (gCGContext)
 		CGContextSelectFont (gCGContext, (const char*)myMacXFontName, fontSize, kCGEncodingMacRoman);
+
+	if (atsuStyle)
+	{
+		ATSUDisposeStyle (atsuStyle);
+		atsuStyle = 0;
+	}
+		
 	#else
 	CGrafPtr OrigPort;
 	GDHandle OrigDevice;
@@ -2425,6 +2454,121 @@ void CDrawContext::drawString (const char *string, const CRect &_rect,
 }
 
 //-----------------------------------------------------------------------------
+CCoord CDrawContext::getStringWidthUTF8 (const char* string)
+{
+	CCoord result = 0;
+	#if QUARTZ
+	if (atsuStyle == 0)
+		atsuStyle = CreateATSUStyle (fontColor, fontId, fontSize, fontStyle);
+	CFStringRef utf8Str = CFStringCreateWithCString (NULL, string, kCFStringEncodingUTF8);
+	if (utf8Str)
+	{
+		CGContextRef context = beginCGContext (false);
+		if (context)
+		{
+			OSStatus status;
+			CFIndex stringLength = CFStringGetLength (utf8Str);
+			UniChar* textBuffer = (UniChar*)malloc (stringLength*sizeof (UniChar));
+			CFStringGetCharacters (utf8Str, CFRangeMake (0, stringLength), textBuffer);
+
+			ATSUTextLayout textLayout;
+			status = ATSUCreateTextLayout (&textLayout);
+			status = ATSUSetTextPointerLocation (textLayout, textBuffer, kATSUFromTextBeginning, kATSUToTextEnd, stringLength);
+			status = ATSUSetRunStyle (textLayout, atsuStyle, kATSUFromTextBeginning, kATSUToTextEnd);
+			status = ATSUSetTransientFontMatching (textLayout, true);
+			
+			ATSUAttributeTag		theTags[]	= { kATSUCGContextTag };
+			ByteCount				theSizes[]	= { sizeof (CGContextRef) };
+			ATSUAttributeValuePtr	theValues[]	= { &context };
+			status = ATSUSetLayoutControls (textLayout, 1, theTags, theSizes, theValues);
+
+			ATSUTextMeasurement iBefore, iAfter, ascent, descent; 
+			status = ATSUGetUnjustifiedBounds (textLayout, 0, kATSUToTextEnd, &iBefore, &iAfter, &ascent, &descent);
+			result = FixRound (iAfter);
+			
+			ATSUDisposeTextLayout (textLayout);
+			free (textBuffer);
+			
+			releaseCGContext (context);
+		}
+		CFRelease (utf8Str);
+	}
+	#endif
+	return result;
+}
+
+//-----------------------------------------------------------------------------
+void CDrawContext::drawStringUTF8 (const char* string, const CPoint& _point, bool antialias)
+{
+	if (!string)
+		return;
+
+	CPoint point (_point);
+	point.offset (offset.h, offset.v);
+
+	#if QUARTZ
+	if (atsuStyle == 0)
+		atsuStyle = CreateATSUStyle (fontColor, fontId, fontSize, fontStyle);
+
+	CFStringRef utf8Str = CFStringCreateWithCString (NULL, string, kCFStringEncodingUTF8);
+	if (utf8Str)
+	{
+		CGContextRef context = beginCGContext (false);
+		if (context)
+		{
+			CGContextSetShouldAntialias (context, antialias);
+
+			OSStatus status;
+			CFIndex stringLength = CFStringGetLength (utf8Str);
+			UniChar* textBuffer = (UniChar*)malloc (stringLength*sizeof (UniChar));
+			CFStringGetCharacters (utf8Str, CFRangeMake (0, stringLength), textBuffer);
+
+			ATSUTextLayout textLayout;
+			status = ATSUCreateTextLayout (&textLayout);
+			status = ATSUSetTextPointerLocation (textLayout, textBuffer, kATSUFromTextBeginning, kATSUToTextEnd, stringLength);
+			status = ATSUSetRunStyle (textLayout, atsuStyle, kATSUFromTextBeginning, kATSUToTextEnd);
+			status = ATSUSetTransientFontMatching (textLayout, true);
+			
+			ATSUAttributeTag		theTags[]	= { kATSUCGContextTag };
+			ByteCount				theSizes[]	= { sizeof (CGContextRef) };
+			ATSUAttributeValuePtr	theValues[]	= { &context };
+			status = ATSUSetLayoutControls (textLayout, 1, theTags, theSizes, theValues);
+
+			status = ATSUDrawText (textLayout, kATSUFromTextBeginning, kATSUToTextEnd, X2Fix(point.h), X2Fix(point.v*-1));
+			
+			ATSUDisposeTextLayout (textLayout);
+			free (textBuffer);
+			
+			releaseCGContext (context);
+		}
+		CFRelease (utf8Str);
+	}
+	#endif
+}
+
+//-----------------------------------------------------------------------------
+void CDrawContext::drawStringUTF8 (const char* string, const CRect& _rect, const CHoriTxtAlign hAlign, bool antialias)
+{
+	if (!string)
+		return;
+	
+	CRect rect (_rect);
+
+	rect.bottom -= rect.height ()/2 - fontSize / 2 + 1;
+	if (hAlign != kLeftText)
+	{
+		CCoord stringWidth = getStringWidthUTF8 (string);
+		if (hAlign == kRightText)
+			rect.left = rect.right - stringWidth;
+		else
+			rect.left = rect.left + (rect.getWidth () / 2) - (stringWidth / 2);
+	}
+
+	drawStringUTF8 (string, CPoint (rect.left, rect.bottom), antialias);
+}
+
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
+//-----------------------------------------------------------------------------
 long CDrawContext::getMouseButtons ()
 {
 	long buttons = 0;
@@ -2510,7 +2654,9 @@ long CDrawContext::getMouseButtons ()
 	
 	return buttons;
 }
+#endif
 
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
 //-----------------------------------------------------------------------------
 void CDrawContext::getMouseLocation (CPoint &point)
 {
@@ -2555,7 +2701,9 @@ void CDrawContext::getMouseLocation (CPoint &point)
 
 	point.offset (-offsetScreen.h, -offsetScreen.v);
 }
+#endif
 
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
 //-----------------------------------------------------------------------------
 bool CDrawContext::waitDoubleClick ()
 {
@@ -2670,7 +2818,9 @@ bool CDrawContext::waitDoubleClick ()
 
 	return doubleClick;
 }
+#endif
 
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
 //-----------------------------------------------------------------------------
 bool CDrawContext::waitDrag ()
 {
@@ -2722,6 +2872,7 @@ bool CDrawContext::waitDrag ()
 	return false;
 	#endif
 }
+#endif
 
 //-----------------------------------------------------------------------------
 void CDrawContext::forget ()
@@ -2839,6 +2990,40 @@ void QuartzSetLineDash (CGContextRef context, CLineStyle style, CCoord lineWidth
 		CGContextSetLineDash (context, offset, dotf, 2);
 	}
 }
+
+//-----------------------------------------------------------------------------
+// This can be optimized with a cache. See Technical Q&A QA1027 on Apple's website
+ATSUStyle CreateATSUStyle (const CColor &fontColor, CFont fontID, const long size, long style, const char* name)
+{
+	char myMacXFontName[255];
+	if (name == 0)
+	{
+		strcpy (myMacXFontName, gMacXfontNames[fontID]);
+		if (style & kBoldFace)
+			strcat(myMacXFontName, " Bold");
+	}
+	else
+		strcpy (myMacXFontName, name);
+
+	ATSUStyle atsuStyle;
+	OSStatus status = ATSUCreateStyle (&atsuStyle);
+
+	ATSUFontID atsuFontID;
+	status = ATSUFindFontFromName (myMacXFontName, strlen(myMacXFontName), kFontFullName, kFontNoPlatformCode, kFontNoScriptCode, kFontNoLanguageCode, &atsuFontID);
+	if (status != noErr)
+		status = ATSUFindFontFromName (gMacXfontNames[fontID], strlen(gMacXfontNames[fontID]), kFontFullName, kFontNoPlatformCode, kFontNoScriptCode, kFontNoLanguageCode, &atsuFontID);
+	Fixed atsuSize = FloatToFixed ((float)size);
+	ATSURGBAlphaColor color = {fontColor.red/255.f, fontColor.green/255.f, fontColor.blue/255.f, fontColor.alpha/255.f};
+	Boolean italic = style & kItalicFace;
+	Boolean underline = style & kUnderlineFace;
+	ATSUAttributeTag  theTags[] =  { kATSUFontTag, kATSUSizeTag, kATSURGBAlphaColorTag, kATSUQDItalicTag, kATSUQDUnderlineTag};
+	ByteCount        theSizes[] = { sizeof(ATSUFontID), sizeof(Fixed), sizeof(ATSURGBAlphaColor), sizeof (Boolean), sizeof (Boolean) };
+	ATSUAttributeValuePtr theValues[] = {&atsuFontID, &atsuSize, &color, &italic, &underline};
+	status = ATSUSetAttributes (atsuStyle, 5, theTags, theSizes, theValues);
+
+	return atsuStyle;
+}
+
 #endif
 
 //-----------------------------------------------------------------------------
@@ -3490,6 +3675,7 @@ CView::~CView ()
 	#endif
 }
 
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
 //-----------------------------------------------------------------------------
 void CView::getMouseLocation (CDrawContext* context, CPoint &point)
 {
@@ -3506,8 +3692,9 @@ void CView::getMouseLocation (CDrawContext* context, CPoint &point)
 			context->getMouseLocation (point);
 	}
 }
+#endif
 
-#if ENABLE_DEPRECATED_METHODS
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
 //-----------------------------------------------------------------------------
 void CView::getFrameTopLeftPos (CPoint& topLeft) const
 {
@@ -3580,9 +3767,11 @@ void CView::draw (CDrawContext *pContext)
 	setDirty (false);
 }
 
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
 //-----------------------------------------------------------------------------
 void CView::mouse (CDrawContext *pContext, CPoint &where, long buttons)
 {}
+#endif
 
 //-----------------------------------------------------------------------------
 bool CView::onWheel (const CPoint &where, const float &distance, const long &buttons)
@@ -3593,6 +3782,8 @@ bool CView::onWheel (const CPoint &where, const float &distance, const long &but
 //------------------------------------------------------------------------
 bool CView::onWheel (const CPoint &where, const CMouseWheelAxis &axis, const float &distance, const long &buttons)
 {
+	if (axis == kMouseWheelAxisX)
+		return onWheel (where, distance*-1, buttons);
 	return onWheel (where, distance, buttons);
 }
 
@@ -3642,6 +3833,16 @@ void CView::setViewSize (CRect &rect)
 {
 	size = rect;
 	setDirty ();
+}
+
+//------------------------------------------------------------------------------
+CRect CView::getVisibleSize () const
+{
+	if (pParentView && pParentView->isTypeOf("CViewContainer"))
+		return ((CViewContainer*)pParentView)->getVisibleSize (size);
+	else if (pParentFrame)
+		return pParentFrame->getVisibleSize (size);
+	return CRect (0, 0, 0, 0);
 }
 
 //-----------------------------------------------------------------------------
@@ -4265,6 +4466,7 @@ void CFrame::draw (CView *pView)
 	}
 }
 
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
 //-----------------------------------------------------------------------------
 void CFrame::mouse (CDrawContext *pContext, CPoint &where, long buttons)
 {
@@ -4314,6 +4516,7 @@ void CFrame::mouse (CDrawContext *pContext, CPoint &where, long buttons)
 	}
 #endif
 }
+#endif
 
 //-----------------------------------------------------------------------------
 CMouseEventResult CFrame::onMouseDown (CPoint &where, const long& buttons)
@@ -4331,6 +4534,7 @@ CMouseEventResult CFrame::onMouseDown (CPoint &where, const long& buttons)
 				mouseDownView = pModalView;
 				return kMouseEventHandled;
 			}
+			#if VSTGUI_ENABLE_DEPRECATED_METHODS
 			else if (result == kMouseEventNotImplemented)
 			{
 				CDrawContext* context = createDrawContext ();
@@ -4338,6 +4542,7 @@ CMouseEventResult CFrame::onMouseDown (CPoint &where, const long& buttons)
 				context->forget ();
 				return kMouseEventHandled;
 			}
+			#endif
 		}
 	}
 	else
@@ -4910,18 +5115,9 @@ void CFrame::endEdit (long index)
 }
 
 //-----------------------------------------------------------------------------
-CView *CFrame::getCurrentView () const
+bool CFrame::getCurrentMouseLocation (CPoint &where)
 {
-	if (pModalView)
-		return pModalView;
-	
-	return CViewContainer::getCurrentView ();
-}
-
-//-----------------------------------------------------------------------------
-bool CFrame::getCurrentLocation (CPoint &where)
-{
-#if WINDOWS
+	#if WINDOWS
 	HWND hwnd = (HWND)this->getSystemWindow ();
 	POINT _where;
 	GetCursorPos (&_where);
@@ -4933,8 +5129,33 @@ bool CFrame::getCurrentLocation (CPoint &where)
 		where.offset (-rctTempWnd.left, -rctTempWnd.top);
 	}
 	return true;
-#endif
+	#elif MAC
+	// no up-to-date API call available for this, so use QuickDraw
+	Point p;
+	CGrafPtr savedPort;
+	Boolean portChanged = QDSwapPort (GetWindowPort ((WindowRef)getSystemWindow ()), &savedPort);
+	GetMouse (&p);
+	if (portChanged)
+		QDSwapPort (savedPort, NULL);
+	where (p.h, p.v);
+	#if QUARTZ
+	HIPoint location;
+	HIViewRef fromView = NULL;
+	HIViewFindByID (HIViewGetRoot ((WindowRef)getSystemWindow ()), kHIViewWindowContentID, &fromView);
+	location = CGPointMake (where.x, where.y);
+	#if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_4
+	if (HIPointConvert)
+		HIPointConvert (&location, kHICoordSpaceView, fromView, kHICoordSpaceView, controlRef);
+	else
+	#endif
+		HIViewConvertPoint (&location, fromView, controlRef);
+	where.x = (CCoord)location.x;
+	where.y = (CCoord)location.y;
+	#endif // QUARTZ
+	return true;
+	#endif // MAC
 
+	#if VSTGUI_ENABLE_DEPRECATED_METHODS
 	// create a local context
 	CDrawContext *pContext = createDrawContext ();
 	if (pContext)
@@ -4944,7 +5165,29 @@ bool CFrame::getCurrentLocation (CPoint &where)
 		pContext->forget ();
 	}
 	return true;
+	#endif
+
+	return false;
 }
+
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
+//-----------------------------------------------------------------------------
+CView *CFrame::getCurrentView () const
+{
+	if (pModalView)
+		return pModalView;
+	
+	return CViewContainer::getCurrentView ();
+}
+#endif
+
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
+//-----------------------------------------------------------------------------
+bool CFrame::getCurrentLocation (CPoint &where)
+{
+	return getCurrentMouseLocation (where);
+}
+#endif
 
 #if MACX
 #define kThemeResizeUpDownCursor	21
@@ -5073,7 +5316,18 @@ void CFrame::setFocusView (CView *pView)
 bool CFrame::advanceNextFocusView (CView* oldFocus, bool reverse)
 {
 	if (pModalView)
+	{
+		if (pModalView->isTypeOf("CViewContainer"))
+		{
+			return ((CViewContainer*)pModalView)->advanceNextFocusView (oldFocus, reverse);
+		}
+		else if (oldFocus != pModalView)
+		{
+			setFocusView (pModalView);
+			return true;
+		}
 		return false; // currently not supported, but should be done sometime
+	}
 	if (oldFocus == 0)
 	{
 		if (pFocusView == 0)
@@ -5113,6 +5367,23 @@ bool CFrame::advanceNextFocusView (CView* oldFocus, bool reverse)
 }
 
 //-----------------------------------------------------------------------------
+void CFrame::removeView (CView *pView, const bool &withForget)
+{
+	if (pModalView == pView)
+		pModalView = 0;
+	CViewContainer::removeView (pView, withForget);
+}
+
+//-----------------------------------------------------------------------------
+void CFrame::removeAll (const bool &withForget)
+{
+	pModalView = 0;
+	pFocusView = 0;
+	tooltipView = 0;
+	CViewContainer::removeAll (withForget);
+}
+
+//-----------------------------------------------------------------------------
 void CFrame::invalidate (const CRect &rect)
 {
 	CRect rectView;
@@ -5143,7 +5414,7 @@ void CFrame::invalidRect (CRect rect)
 		#endif
 		{
 			RgnHandle region = NewRgn ();
-			SetRectRgn (region, rect.left, rect.top, rect.right, rect.bottom);
+			SetRectRgn (region, (short)rect.left, (short)rect.top, (short)rect.right, (short)rect.bottom);
 			HIViewSetNeedsDisplayInRegion (controlRef, region, true);
 			DisposeRgn(region);
 		}
@@ -5155,7 +5426,7 @@ void CFrame::invalidRect (CRect rect)
 		CRect _rect (rect);
 		_rect.offset (size.left, size.top);
 		_rect.offset ((CCoord)hiRect.origin.x, (CCoord)hiRect.origin.y);
-		Rect r = {_rect.top, _rect.left, _rect.bottom, _rect.right};
+		Rect r = {(short)_rect.top, (short)_rect.left, (short)_rect.bottom, (short)_rect.right};
 		InvalWindowRect ((WindowRef)pSystemWindow, &r);
 	}
 	
@@ -5241,12 +5512,22 @@ CViewContainer::~CViewContainer ()
 }
 
 //-----------------------------------------------------------------------------
+void CViewContainer::parentSizeChanged ()
+{
+	FOREACHSUBVIEW
+		pV->parentSizeChanged ();	// notify children that the size of the parent or this container has changed
+	ENDFOR
+}
+
+//-----------------------------------------------------------------------------
 /**
  * @param rect the new size of the container
  */
 void CViewContainer::setViewSize (CRect &rect)
 {
 	CView::setViewSize (rect);
+
+	parentSizeChanged ();
 
 	#if !BEOS
 	if (pOffscreenContext && bDrawInOffscreen)
@@ -5255,6 +5536,25 @@ void CViewContainer::setViewSize (CRect &rect)
 		pOffscreenContext = new COffscreenContext (pParentFrame, (long)size.width (), (long)size.height (), kBlackCColor);
 	}
 	#endif
+}
+
+//-----------------------------------------------------------------------------
+/**
+ * @param rect the size you want to check 
+ */
+CRect CViewContainer::getVisibleSize (const CRect rect) const
+{
+	CRect result (rect);
+	result.offset (size.left, size.top);
+	result.bound (size);
+	if (pParentFrame == this)
+	{}
+	else if (pParentView && pParentView->isTypeOf("CViewContainer"))
+		result = ((CViewContainer*)pParentView)->getVisibleSize (result);
+	else if (pParentFrame)
+		result = pParentFrame->getVisibleSize (result);
+	result.offset (-size.left, -size.top);
+	return result;
 }
 
 //-----------------------------------------------------------------------------
@@ -5332,6 +5632,7 @@ void CViewContainer::addView (CView *pView, CRect &mouseableArea, bool mouseEnab
  */
 void CViewContainer::removeAll (const bool &withForget)
 {
+	mouseOverView = 0;
 	CCView *pV = pFirstView;
 	while (pV)
 	{
@@ -5810,6 +6111,7 @@ CMouseEventResult CViewContainer::onMouseDown (CPoint &where, const long& button
 					return kMouseEventHandled;
 			}
 			CMouseEventResult result = pV->onMouseDown (where2, buttons);
+			#if VSTGUI_ENABLE_DEPRECATED_METHODS
 			if (result == kMouseEventNotImplemented)
 			{
 				// compatibilty for old CViews without mouse down/up/moved handling
@@ -5817,7 +6119,9 @@ CMouseEventResult CViewContainer::onMouseDown (CPoint &where, const long& button
 				pV->mouse (context, where2, buttons);
 				context->forget ();
 			}
-			else if (result == kMouseEventHandled)
+			else 
+			#endif
+			if (result == kMouseEventHandled)
 				mouseDownView = pV;
 			return result;
 		}
@@ -5902,6 +6206,7 @@ CMouseEventResult CViewContainer::onMouseMoved (CPoint &where, const long& butto
 	return kMouseEventNotHandled;
 }
 
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
 //-----------------------------------------------------------------------------
 void CViewContainer::mouse (CDrawContext *pContext, CPoint &where, long buttons)
 {
@@ -5924,6 +6229,7 @@ void CViewContainer::mouse (CDrawContext *pContext, CPoint &where, long buttons)
 		pSv = pSv->pPrevious;
 	}
 }
+#endif
 
 //-----------------------------------------------------------------------------
 long CViewContainer::onKeyDown (VstKeyCode& keyCode)
@@ -6184,6 +6490,7 @@ bool CViewContainer::isDirty () const
 	return false;
 }
 
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
 //-----------------------------------------------------------------------------
 CView *CViewContainer::getCurrentView () const
 {
@@ -6207,6 +6514,7 @@ CView *CViewContainer::getCurrentView () const
 
 	return 0;
 }
+#endif
 
 //-----------------------------------------------------------------------------
 CView *CViewContainer::getViewAt (const CPoint& p, bool deep) const
@@ -6927,7 +7235,7 @@ bool CBitmap::loadFromPath (const void* platformPath)
 					return false;
 			if (*gi)
 			{
-				#ifdef MAC_OS_X_VERSION_10_3
+				#if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_3
 				if (!noAlpha && GraphicsImportCreateCGImage)
 				{
 					if (GraphicsImportCreateCGImage (*gi, (CGImageRef*)&cgImage, 0) == noErr)
@@ -7394,47 +7702,6 @@ void CBitmap::drawAlphaBlend (CDrawContext *pContext, CRect &rect, const CPoint 
 #elif MAC
 
     #if QUARTZ
-    if (_CGImageCreateWithImageInRect)	// this is much faster on Mac OS X 10.4 and above
-    {
-        if (pHandle || cgImage)
-        {
-            CGContextRef context = pContext->beginCGContext ();
-            if (context)
-            {
-                if (alpha != 255)
-                    CGContextSetAlpha (context, (float)alpha / 255.f);
-        
-                CGImageRef image = createCGImage ();
-
-                if (image)
-                {
-                    CRect ccr;
-                    pContext->getClipRect (ccr);
-                     CGRect clipRect = CGRectMake (ccr.left - rect.left + offset.h, ccr.top - rect.top + offset.v, ccr.width (), ccr.height ());
-                    CGRect subRect = CGRectMake (offset.h, offset.v, rect.getWidth (), rect.getHeight ());
-                    subRect = CGRectIntersection (clipRect, subRect);
-                    if (subRect.size.width && subRect.size.height)
-                    {
-                        CGImageRef subImage = _CGImageCreateWithImageInRect (image, subRect);
-                        if (subImage)
-                        {
-                            CGRect dest;
-                            dest.origin.x = subRect.origin.x + pContext->offset.h - offset.h + rect.left;
-                            dest.origin.y = subRect.origin.y + pContext->offset.v - offset.v + rect.top;
-                            dest.size.width = subRect.size.width;
-                            dest.size.height = subRect.size.height;
-                            CGContextScaleCTM (context, 1, -1);
-                            HIViewDrawCGImage (context, &dest, subImage);
-                            CGImageRelease (subImage);
-                        }
-                    }
-                    CGImageRelease (image);
-                }
-                pContext->releaseCGContext (context);
-            }
-        }
-        return;
-    }
 	if (pHandle || cgImage)
 	{
 		CGContextRef context = pContext->beginCGContext ();
@@ -7536,6 +7803,7 @@ void CBitmap::setTransparentColor (const CColor color)
 #endif
 }
 
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
 //-----------------------------------------------------------------------------
 void CBitmap::setTransparencyMask (CDrawContext* pContext, const CPoint& offset)
 {
@@ -7608,6 +7876,7 @@ void CBitmap::setTransparencyMask (CDrawContext* pContext, const CPoint& offset)
 	// todo: implement me!
 #endif
 }
+#endif // VSTGUI_ENABLE_DEPRECATED_METHODS
 
 //----------------------------------------------------------------------------
 //----------------------------------------------------------------------------
@@ -7974,7 +8243,10 @@ LONG_PTR WINAPI WindowProc (HWND hwnd, UINT message, WPARAM wParam, LPARAM lPara
 				buttons |= kAlt;
 			VSTGUI_CPoint where (LOWORD (lParam), HIWORD (lParam));
 			short zDelta = (short) HIWORD(wParam);
-			pFrame->onWheel (where, (float)zDelta / WHEEL_DELTA, buttons); // todo, check modifier
+			RECT rctWnd;
+			GetWindowRect (hwnd, &rctWnd);
+			where.offset (-rctWnd.left, -rctWnd.top);
+			pFrame->onWheel (where, (float)(zDelta / WHEEL_DELTA), buttons); // todo, check modifier
 		}
 		break;
 	}
@@ -8617,16 +8889,47 @@ bool checkResolveLink (const char* nativePath, char* resolved)
 }
 
 #elif MAC
+#if !MACX
+#include "Drag.h"
+#endif
+
 BEGIN_NAMESPACE_VSTGUI
+
+//-----------------------------------------------------------------------------
+static CPoint GetMacDragMouse (CFrame* frame)
+{
+	WindowRef window = (WindowRef)frame->getSystemWindow ();
+	HIViewRef view = (HIViewRef)frame->getPlatformControl ();
+	CPoint where;
+	Point r;
+	if (GetDragMouse ((DragRef)gDragContainer->getPlatformDrag (), NULL, &r) == noErr)
+	{
+		HIPoint location;
+		#if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_4
+		if (HIPointConvert)
+		{
+			location = CGPointMake (r.h, r.v);
+			HIPointConvert (&location, kHICoordSpaceScreenPixel, NULL, kHICoordSpaceView, view);
+		}
+		else
+		#endif
+		{
+			QDGlobalToLocalPoint (GetWindowPort (window), &r);
+			location = CGPointMake (r.h, r.v);
+			HIViewRef fromView = NULL;
+			HIViewFindByID (HIViewGetRoot (window), kHIViewWindowContentID, &fromView);
+			HIViewConvertPoint (&location, fromView, view);
+		}
+		where.x = (CCoord)location.x;
+		where.y = (CCoord)location.y;
+	}
+	return where;
+}
 
 #if MAC_OLD_DRAG
 //-----------------------------------------------------------------------------
 // Drop Implementation
 //-----------------------------------------------------------------------------
-#if !MACX
-#include "Drag.h"
-#endif
-
 pascal static short drag_receiver (WindowPtr w, void* ref, DragReference drag);
 pascal static OSErr drag_tracker (DragTrackingMessage message, WindowRef theWindow, void *handlerRefCon, DragRef theDrag);
 
@@ -8680,33 +8983,24 @@ pascal OSErr drag_tracker (DragTrackingMessage message, WindowRef theWindow, voi
 				gDragContainer->forget ();
 			gDragContainer = new CDragContainer (dragRef);
 
-			CDrawContext* context = frame->createDrawContext ();
-			VSTGUI_CPoint where;
+			VSTGUI_CPoint where = GetMacDragMouse (frame);
 			frame->setCursor (kCursorNotAllowed);
-			frame->getMouseLocation (context, where);
 			frame->onDragEnter (gDragContainer, where);
-			context->forget ();
 			break;
 		}
 		case kDragTrackingLeaveWindow:
 		{
-			CDrawContext* context = frame->createDrawContext ();
-			VSTGUI_CPoint where;
-			frame->getMouseLocation (context, where);
+			VSTGUI_CPoint where = GetMacDragMouse (frame);
 			frame->onDragLeave (gDragContainer, where);
 			frame->setCursor (kCursorDefault);
-			context->forget ();
 			gDragContainer->forget ();
 			gDragContainer = NULL;
 			break;
 		}
 		case kDragTrackingInWindow:
 		{
-			CDrawContext* context = frame->createDrawContext ();
-			VSTGUI_CPoint where;
-			frame->getMouseLocation (context, where);
+			VSTGUI_CPoint where = GetMacDragMouse (frame);
 			frame->onDragMove (gDragContainer, where);
-			context->forget ();
 
 			break;
 		}
@@ -8732,12 +9026,9 @@ pascal short drag_receiver (WindowPtr w, void* ref, DragReference drag)
 	
 	CFrame* frame = (CFrame*) ref;
 	
-	CDrawContext* context = frame->createDrawContext ();
-	VSTGUI_CPoint where;
-	frame->getMouseLocation (context, where);
+	VSTGUI_CPoint where = GetMacDragMouse (frame);
 	frame->onDrop (gDragContainer, where);
 	frame->setCursor (kCursorDefault);
-	context->forget ();
 
 	gDragContainer->forget ();
 	gDragContainer = NULL;
@@ -9005,6 +9296,7 @@ pascal OSStatus CFrame::carbonEventHandler (EventHandlerCallRef inHandlerCallRef
 				case kEventControlTrack:
 				case kEventControlContextualMenuClick:
 				{
+					#if VSTGUI_ENABLE_DEPRECATED_METHODS
 					long buttons = 0;
 					EventMouseButton buttonState;
 					HIPoint hipoint;
@@ -9058,6 +9350,7 @@ pascal OSStatus CFrame::carbonEventHandler (EventHandlerCallRef inHandlerCallRef
 					frame->mouse (context, p, buttons);
 					context->forget ();
 					result = noErr;
+					#endif
 					break;
 				}
 				case kEventControlGetOptimalBounds:
@@ -9122,12 +9415,9 @@ pascal OSStatus CFrame::carbonEventHandler (EventHandlerCallRef inHandlerCallRef
 					{
 						gDragContainer = new CDragContainer (dragRef);
 						
-						CDrawContext* context = frame->createDrawContext ();
-						VSTGUI_CPoint where;
+						VSTGUI_CPoint where = GetMacDragMouse (frame);
 						frame->setCursor (kCursorNotAllowed);
-						frame->getMouseLocation (context, where);
 						frame->onDragEnter (gDragContainer, where);
-						context->forget ();
 
 						Boolean acceptDrop = true;
 						SetEventParameter (inEvent, kEventParamControlWouldAcceptDrop, typeBoolean, sizeof (Boolean), &acceptDrop);
@@ -9139,11 +9429,8 @@ pascal OSStatus CFrame::carbonEventHandler (EventHandlerCallRef inHandlerCallRef
 				{
 					if (gDragContainer)
 					{
-						CDrawContext* context = frame->createDrawContext ();
-						VSTGUI_CPoint where;
-						frame->getMouseLocation (context, where);
+						VSTGUI_CPoint where = GetMacDragMouse (frame);
 						frame->onDragMove (gDragContainer, where);
-						context->forget ();
 					}
 					result = noErr;
 					break;
@@ -9152,12 +9439,9 @@ pascal OSStatus CFrame::carbonEventHandler (EventHandlerCallRef inHandlerCallRef
 				{
 					if (gDragContainer)
 					{
-						CDrawContext* context = frame->createDrawContext ();
-						VSTGUI_CPoint where;
-						frame->getMouseLocation (context, where);
+						VSTGUI_CPoint where = GetMacDragMouse (frame);
 						frame->onDragLeave (gDragContainer, where);
 						frame->setCursor (kCursorDefault);
-						context->forget ();
 					}
 					result = noErr;
 					break;
@@ -9166,12 +9450,9 @@ pascal OSStatus CFrame::carbonEventHandler (EventHandlerCallRef inHandlerCallRef
 				{
 					if (gDragContainer)
 					{
-						CDrawContext* context = frame->createDrawContext ();
-						VSTGUI_CPoint where;
-						frame->getMouseLocation (context, where);
+						VSTGUI_CPoint where = GetMacDragMouse (frame);
 						frame->onDrop (gDragContainer, where);
 						frame->setCursor (kCursorDefault);
-						context->forget ();
 						gDragContainer->forget ();
 						gDragContainer = 0;
 					}
@@ -9225,11 +9506,9 @@ pascal OSStatus CFrame::carbonEventHandler (EventHandlerCallRef inHandlerCallRef
 					
 					CPoint p ((CCoord)windowHIPoint.x, (CCoord)windowHIPoint.y);
 					float distance = wheelDelta;
-					CMouseWheelAxis axis = kMouseWheelAxisX;
-					if (wheelAxis == kEventMouseWheelAxisY && !(modifiers & cmdKey))
-						axis = kMouseWheelAxisY;
-					else
-						distance *= -1;
+					CMouseWheelAxis axis = kMouseWheelAxisY;
+					if (wheelAxis == kEventMouseWheelAxisX)
+						axis = kMouseWheelAxisX;
 					frame->onWheel (p, axis, distance, buttons); // todo check modifier
 					result = noErr;
 					break;
@@ -9384,6 +9663,10 @@ pascal OSStatus CFrame::carbonMouseEventHandler (EventHandlerCallRef inHandlerCa
 				buttons |= kRButton;
 			if (buttonState == kEventMouseButtonTertiary)
 				buttons |= kMButton;
+			if (buttonState == 4)
+				buttons |= kButton4;
+			if (buttonState == 5)
+				buttons |= kButton5;
 			if (modifiers & cmdKey)
 				buttons |= kControl;
 			if (modifiers & shiftKey)

@@ -3,7 +3,7 @@
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 // Standard Control Objects
 //
-// Version 3.5       $Date: 2005-09-21 12:24:11 $
+// Version 3.5       $Date: 2005-11-22 17:24:44 $
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
@@ -204,7 +204,7 @@ public:
 	virtual ~COnOffButton ();
 
 	virtual void draw (CDrawContext*);
-	virtual void mouse (CDrawContext *pContext, CPoint &where, long button = -1);
+	VSTGUI_DEPRECATED(virtual void mouse (CDrawContext *pContext, CPoint &where, long button = -1);)
 	virtual CMouseEventResult onMouseDown (CPoint &where, const long& buttons);
 
 	virtual long getStyle () const { return style; }
@@ -246,6 +246,9 @@ public:
 	virtual void setShadowColor (CColor color);
 	CColor getShadowColor () const { return shadowColor; }
 
+	virtual void setAntialias (bool state) { bAntialias = state; }
+	bool getAntialias () const { return bAntialias; }
+
 	virtual void setHoriAlign (CHoriTxtAlign hAlign);
 
 	virtual void setStringConvert (void (*convert) (float value, char *string));
@@ -284,6 +287,7 @@ protected:
 	CColor  frameColor;
 	CColor  shadowColor;
 	bool    bTextTransparencyEnabled;
+	bool	bAntialias;
 };
 
 
@@ -324,7 +328,7 @@ public:
 	virtual void getText (char *txt) const;
 
 	virtual	void draw (CDrawContext *pContext);
-	virtual	void mouse (CDrawContext *pContext, CPoint &where, long button = -1);
+	VSTGUI_DEPRECATED(virtual void mouse (CDrawContext *pContext, CPoint &where, long button = -1);)
 	virtual CMouseEventResult onMouseDown (CPoint &where, const long& buttons);
 
 	virtual void setTextEditConvert (void (*editConvert) (char *input, char *string));
@@ -333,6 +337,9 @@ public:
 
 	virtual	void takeFocus ();
 	virtual	void looseFocus ();
+
+	virtual void setViewSize (CRect& newSize);
+	virtual void parentSizeChanged ();
 
 	void *platformFontColor;
 	void *platformControl;
@@ -431,7 +438,7 @@ public:
 	virtual bool isCheckEntry (long index) const;
 
 	virtual	void draw (CDrawContext *pContext);
-	virtual	void mouse (CDrawContext *pContext, CPoint &where, long button = -1);
+	VSTGUI_DEPRECATED (virtual void mouse (CDrawContext *pContext, CPoint &where, long button = -1);)
 	virtual CMouseEventResult onMouseDown (CPoint &where, const long& buttons);
 
 	virtual	void takeFocus ();
@@ -501,7 +508,7 @@ public:
 	virtual ~CKnob ();
 
 	virtual void draw (CDrawContext *pContext);
-	virtual	void mouse (CDrawContext *pContext, CPoint &where, long button = -1);
+	VSTGUI_DEPRECATED(virtual void mouse (CDrawContext *pContext, CPoint &where, long button = -1);)
 	virtual bool onWheel (const CPoint &where, const float &distance, const long &buttons);
 	virtual long onKeyDown (VstKeyCode& keyCode);
 
@@ -605,7 +612,7 @@ public:
 	virtual ~CVerticalSwitch ();
 
 	virtual void draw (CDrawContext*);
-	virtual void mouse (CDrawContext *pContext, CPoint &where, long button = -1);
+	VSTGUI_DEPRECATED(virtual void mouse (CDrawContext *pContext, CPoint &where, long button = -1);)
 
 	virtual CMouseEventResult onMouseDown (CPoint &where, const long& buttons);
 	virtual CMouseEventResult onMouseUp (CPoint &where, const long& buttons);
@@ -641,7 +648,7 @@ public:
 	virtual	~CHorizontalSwitch ();
 
 	virtual void draw (CDrawContext*);
-	virtual void mouse (CDrawContext *pContext, CPoint &where, long button = -1);
+	VSTGUI_DEPRECATED(virtual void mouse (CDrawContext *pContext, CPoint &where, long button = -1);)
 
 	virtual CMouseEventResult onMouseDown (CPoint &where, const long& buttons);
 	virtual CMouseEventResult onMouseUp (CPoint &where, const long& buttons);
@@ -675,7 +682,7 @@ public:
 	virtual ~CRockerSwitch ();
 
 	virtual void draw (CDrawContext*);
-	virtual void mouse (CDrawContext *pContext, CPoint &where, long button = -1);
+	VSTGUI_DEPRECATED(virtual void mouse (CDrawContext *pContext, CPoint &where, long button = -1);)
 	virtual bool onWheel (const CPoint &where, const float &distance, const long &buttons);
 
 	virtual CMouseEventResult onMouseDown (CPoint &where, const long& buttons);
@@ -735,7 +742,7 @@ public:
 	virtual ~CMovieButton ();	
 
 	virtual void draw (CDrawContext*);
-	virtual void mouse (CDrawContext *pContext, CPoint &where, long button = -1);
+	VSTGUI_DEPRECATED(virtual void mouse (CDrawContext *pContext, CPoint &where, long button = -1);)
 
 	virtual CMouseEventResult onMouseDown (CPoint &where, const long& buttons);
 	virtual CMouseEventResult onMouseUp (CPoint &where, const long& buttons);
@@ -769,7 +776,7 @@ public:
 	virtual ~CAutoAnimation ();
 
 	virtual void draw (CDrawContext*);
-	virtual void mouse (CDrawContext *pContext, CPoint &where, long button = -1);
+	VSTGUI_DEPRECATED(virtual void mouse (CDrawContext *pContext, CPoint &where, long button = -1);)
 	virtual CMouseEventResult onMouseDown (CPoint &where, const long& buttons);
 
 	virtual void openWindow (void);
@@ -821,7 +828,7 @@ public:
 	virtual bool attached (CView *parent);
 	virtual bool removed (CView *parent);
 	virtual void draw (CDrawContext*);
-	virtual void mouse (CDrawContext *pContext, CPoint &where, long button = -1);
+	VSTGUI_DEPRECATED(virtual void mouse (CDrawContext *pContext, CPoint &where, long button = -1);)
 
 	virtual CMouseEventResult onMouseDown (CPoint &where, const long& buttons);
 	virtual CMouseEventResult onMouseUp (CPoint &where, const long& buttons);
@@ -967,7 +974,7 @@ public:
 	virtual ~CKickButton ();	
 
 	virtual void draw (CDrawContext*);
-	virtual void mouse (CDrawContext *pContext, CPoint &where, long button = -1);
+	VSTGUI_DEPRECATED(virtual void mouse (CDrawContext *pContext, CPoint &where, long button = -1);)
 
 	virtual CMouseEventResult onMouseDown (CPoint &where, const long& buttons);
 	virtual CMouseEventResult onMouseUp (CPoint &where, const long& buttons);
@@ -999,7 +1006,7 @@ public:
   
 	virtual void draw (CDrawContext*);
 	virtual bool hitTest (const CPoint& where, const long buttons = -1);
-	virtual void mouse (CDrawContext *pContext, CPoint &where, long button = -1);
+	VSTGUI_DEPRECATED(virtual void mouse (CDrawContext *pContext, CPoint &where, long button = -1);)
 	virtual void unSplash ();
 
 	virtual void setDisplayArea (const CRect& rect)  { toDisplay = rect; }				///< set the area in which the splash will be displayed
