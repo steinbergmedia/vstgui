@@ -5,6 +5,8 @@
 #include "vstcontrols.h"
 #endif
 
+#include "cvstguitimer.h"
+
 class CLabel;
 
 class ControlsGUI : public CViewContainer, CControlListener
@@ -12,8 +14,11 @@ class ControlsGUI : public CViewContainer, CControlListener
 public:
 	ControlsGUI (const CRect &size, CFrame *pParent, CBitmap *pBackground = 0);
 
-	virtual void valueChanged (CControl *pControl);
-	virtual bool removed (CView* parent);
+	// overwrites from CView
+	void valueChanged (CControl *pControl);
+	bool attached (CView* view);
+	bool removed (CView* parent);
+	long notify (CView* sender, const char* message);
 
 protected:
 
@@ -45,6 +50,9 @@ protected:
 	CLabel            *cLabel;
 	
 	CTextLabel        *tooltipView;
+	
+	// animation timer
+	CVSTGUITimer	  *animTimer;
 
 	long              oldTicks;
 };

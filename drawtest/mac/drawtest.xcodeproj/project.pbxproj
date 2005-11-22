@@ -822,7 +822,7 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin XCBuildConfiguration section */
-		F485AB70086C0BE900298D72 /* Development */ = {
+		F485AB70086C0BE900298D72 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				COPY_PHASE_STRIP = NO;
@@ -830,7 +830,9 @@
 				DEPLOYMENT_LOCATION = NO;
 				EXPORTED_SYMBOLS_FILE = audiounit.exp;
 				FRAMEWORK_SEARCH_PATHS = "";
+				GCC_DEBUGGING_SYMBOLS = full;
 				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_ENABLE_CPP_RTTI = YES;
 				GCC_ENABLE_FIX_AND_CONTINUE = YES;
 				GCC_ENABLE_TRIGRAPHS = NO;
 				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
@@ -871,9 +873,9 @@
 				WRAPPER_EXTENSION = component;
 				ZERO_LINK = NO;
 			};
-			name = Development;
+			name = Debug;
 		};
-		F485AB71086C0BE900298D72 /* Deployment */ = {
+		F485AB71086C0BE900298D72 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				COPY_PHASE_STRIP = YES;
@@ -925,52 +927,9 @@
 				WRAPPER_EXTENSION = component;
 				ZERO_LINK = NO;
 			};
-			name = Deployment;
+			name = Release;
 		};
-		F485AB72086C0BE900298D72 /* Default */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				DEPLOYMENT_LOCATION = NO;
-				EXPORTED_SYMBOLS_FILE = audiounit.exp;
-				FRAMEWORK_SEARCH_PATHS = "";
-				GCC_ENABLE_TRIGRAPHS = NO;
-				GCC_GENERATE_DEBUGGING_SYMBOLS = NO;
-				GCC_PRECOMPILE_PREFIX_HEADER = YES;
-				GCC_PREFIX_HEADER = "${SRCROOT}/xcode_au_prefix.h";
-				GCC_PREPROCESSOR_DEFINITIONS = "";
-				GCC_WARN_ABOUT_MISSING_PROTOTYPES = NO;
-				GCC_WARN_FOUR_CHARACTER_CONSTANTS = NO;
-				GCC_WARN_UNKNOWN_PRAGMAS = NO;
-				GENERATE_PKGINFO_FILE = YES;
-				HEADER_SEARCH_PATHS = (
-					"${SRCROOT}/resources",
-					"${SRCROOT}/mac",
-					"${SRCROOT}/source",
-					"${SRCROOT}/../../vstgui",
-				);
-				INFOPLIST_FILE = Info.plist;
-				INSTALL_PATH = "$(HOME)/Library/Audio/Plug-Ins/Components/";
-				LIBRARY_SEARCH_PATHS = "";
-				LIBRARY_STYLE = Bundle;
-				OTHER_CFLAGS = "";
-				OTHER_LDFLAGS = "-bundle";
-				OTHER_REZFLAGS = "-I /System/Library/Frameworks/CoreServices.framework/Frameworks/CarbonCore.framework/Versions/A/Headers -I /Developer/Examples/CoreAudio/AudioUnits/AUPublic/AUBase -D  TARGET_REZ_MAC_PPC=1";
-				PRODUCT_NAME = drawtest;
-				REZ_SEARCH_PATHS = (
-					/System/Library/Frameworks/CoreServices.framework/Frameworks/CarbonCore.framework/Versions/A/Headers,
-					/Developer/Examples/CoreAudio/AudioUnits/AUPublic/AUBase,
-				);
-				SECTORDER_FLAGS = "";
-				WARNING_CFLAGS = (
-					"-Wmost",
-					"-Wno-four-char-constants",
-					"-Wno-unknown-pragmas",
-				);
-				WRAPPER_EXTENSION = component;
-			};
-			name = Default;
-		};
-		F485AB74086C0BE900298D72 /* Development */ = {
+		F485AB74086C0BE900298D72 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				COPY_PHASE_STRIP = NO;
@@ -982,6 +941,11 @@
 				GCC_OPTIMIZATION_LEVEL = 0;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = xcode_vst_prefix.h;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"VSTGUI_USES_UTF8=1",
+					"DEBUG=1",
+					"ENABLE_VST_EXTENSION_IN_VSTGUI=1",
+				);
 				GENERATE_PKGINFO_FILE = YES;
 				HEADER_SEARCH_PATHS = ../vstsdk2.3;
 				INFOPLIST_FILE = Info.plist;
@@ -1006,9 +970,9 @@
 				WRAPPER_EXTENSION = vst;
 				ZERO_LINK = YES;
 			};
-			name = Development;
+			name = Debug;
 		};
-		F485AB75086C0BE900298D72 /* Deployment */ = {
+		F485AB75086C0BE900298D72 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				COPY_PHASE_STRIP = YES;
@@ -1045,53 +1009,20 @@
 				WRAPPER_EXTENSION = vst;
 				ZERO_LINK = NO;
 			};
-			name = Deployment;
+			name = Release;
 		};
-		F485AB76086C0BE900298D72 /* Default */ = {
+		F485AB78086C0BE900298D72 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				GCC_PRECOMPILE_PREFIX_HEADER = YES;
-				GCC_PREFIX_HEADER = xcode_vst_prefix.h;
-				GENERATE_PKGINFO_FILE = YES;
-				HEADER_SEARCH_PATHS = ../vstsdk2.3;
-				INFOPLIST_FILE = Info.plist;
-				INSTALL_PATH = "$(USER_LIBRARY_DIR)/Audio/Plug-Ins/VST";
-				LIBRARY_STYLE = BUNDLE;
-				OTHER_CFLAGS = "";
-				OTHER_LDFLAGS = (
-					"-framework",
-					Carbon,
-				);
-				OTHER_REZFLAGS = "";
-				PRODUCT_NAME = drawtest;
-				SECTORDER_FLAGS = "";
-				SKIP_INSTALL = NO;
-				WARNING_CFLAGS = (
-					"-Wmost",
-					"-Wno-four-char-constants",
-					"-Wno-unknown-pragmas",
-				);
-				WRAPPER_EXTENSION = vst;
+				MACOSX_DEPLOYMENT_TARGET = 10.2;
 			};
-			name = Default;
+			name = Debug;
 		};
-		F485AB78086C0BE900298D72 /* Development */ = {
+		F485AB79086C0BE900298D72 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 			};
-			name = Development;
-		};
-		F485AB79086C0BE900298D72 /* Deployment */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-			};
-			name = Deployment;
-		};
-		F485AB7A086C0BE900298D72 /* Default */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-			};
-			name = Default;
+			name = Release;
 		};
 /* End XCBuildConfiguration section */
 
@@ -1099,32 +1030,29 @@
 		F485AB6F086C0BE900298D72 /* Build configuration list for PBXNativeTarget "AudioUnit" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				F485AB70086C0BE900298D72 /* Development */,
-				F485AB71086C0BE900298D72 /* Deployment */,
-				F485AB72086C0BE900298D72 /* Default */,
+				F485AB70086C0BE900298D72 /* Debug */,
+				F485AB71086C0BE900298D72 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Default;
+			defaultConfigurationName = Debug;
 		};
 		F485AB73086C0BE900298D72 /* Build configuration list for PBXNativeTarget "VST" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				F485AB74086C0BE900298D72 /* Development */,
-				F485AB75086C0BE900298D72 /* Deployment */,
-				F485AB76086C0BE900298D72 /* Default */,
+				F485AB74086C0BE900298D72 /* Debug */,
+				F485AB75086C0BE900298D72 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Default;
+			defaultConfigurationName = Debug;
 		};
 		F485AB77086C0BE900298D72 /* Build configuration list for PBXProject "drawtest" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				F485AB78086C0BE900298D72 /* Development */,
-				F485AB79086C0BE900298D72 /* Deployment */,
-				F485AB7A086C0BE900298D72 /* Default */,
+				F485AB78086C0BE900298D72 /* Debug */,
+				F485AB79086C0BE900298D72 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Default;
+			defaultConfigurationName = Debug;
 		};
 /* End XCConfigurationList section */
 	};
