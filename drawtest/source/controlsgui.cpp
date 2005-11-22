@@ -150,7 +150,7 @@ enum
 };
 
 ControlsGUI::ControlsGUI (const CRect &inSize, CFrame *frame, CBitmap *pBackground)
-: CViewContainer (inSize, frame, pBackground)
+: CViewContainer (inSize, frame, pBackground), animTimer (0)
 {
 	setMode (kOnlyDirtyUpdate);
 
@@ -495,11 +495,33 @@ ControlsGUI::ControlsGUI (const CRect &inSize, CFrame *frame, CBitmap *pBackgrou
 		frame->setTooltipView (tooltipView);
 }
 
+bool ControlsGUI::attached (CView* view)
+{
+	if (animTimer)
+		animTimer->start ();
+	return CViewContainer::attached (view);
+}
+
 bool ControlsGUI::removed (CView* parent)
 {
 	if (getFrame ())
 		getFrame ()->setTooltipView (0);
+	if (animTimer)
+	{
+		animTimer->stop();
+	}
 	return CViewContainer::removed (parent);
+}
+
+long ControlsGUI::notify (CView* sender, const char* message)
+{
+	if (message == CVSTGUITimer::kMsgTimer)
+	{
+		cAutoAnimation->nextPixmap ();
+		cAutoAnimation->invalid ();
+		return kMessageNotified;
+	}
+	return CViewContainer::notify (sender, message);
 }
 
 void ControlsGUI::valueChanged (CControl *pControl)
@@ -523,6 +545,20 @@ void ControlsGUI::valueChanged (CControl *pControl)
 			cParamDisplay->setValue (value);
 			cVuMeter->setValue (value);
 			cMovieBitmap->setValue (value);
+			break;
+		}
+		case kAutoAnimationTag:
+		{
+			if (animTimer)
+			{
+				delete animTimer;
+				animTimer = 0;
+			}
+			else
+			{
+				animTimer = new CVSTGUITimer (this, 10);
+				animTimer->start ();
+			}
 			break;
 		}
 		case kOnOffTag:

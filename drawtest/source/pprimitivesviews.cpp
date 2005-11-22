@@ -46,6 +46,61 @@ void PMiscView::draw (CDrawContext* pContext)
 {
 	pContext->setLineWidth (1);
 	drawGrid (pContext);
+
+	#if VSTGUI_USES_UTF8
+	CRect stringRect (size.left + 5, size.top + 5, 200, 12);
+	pContext->setFontColor (kBlackCColor);
+	pContext->setFont (kNormalFont, 0, kNormalFace);
+	pContext->drawStringUTF8("kNormalFont, 0, kNormalFace, antialised", stringRect, kLeftText);
+	stringRect.offset (0, 12);
+	pContext->setFont (kNormalFont, 0, kBoldFace);
+	pContext->drawStringUTF8("kNormalFont, 0, kBoldFace, antialised", stringRect, kLeftText);
+	stringRect.offset (0, 12);
+	pContext->setFont (kNormalFont, 0, kItalicFace);
+	pContext->drawStringUTF8("kNormalFont, 0, kItalicFace, antialised", stringRect, kLeftText);
+	stringRect.offset (0, 12);
+	pContext->setFont (kNormalFont, 0, kUnderlineFace);
+	pContext->drawStringUTF8("kNormalFont, 0, kUnderlineFace, antialised", stringRect, kLeftText);
+
+	stringRect.offset (0, 18);
+	pContext->setFont (kNormalFont, 0, kNormalFace);
+	pContext->drawStringUTF8("kNormalFont, 0, kNormalFace, not antialised", stringRect, kLeftText, false);
+	stringRect.offset (0, 12);
+	pContext->setFont (kNormalFont, 0, kBoldFace);
+	pContext->drawStringUTF8("kNormalFont, 0, kBoldFace, not antialised", stringRect, kLeftText, false);
+	stringRect.offset (0, 12);
+	pContext->setFont (kNormalFont, 0, kItalicFace);
+	pContext->drawStringUTF8("kNormalFont, 0, kItalicFace, not antialised", stringRect, kLeftText, false);
+	stringRect.offset (0, 12);
+	pContext->setFont (kNormalFont, 0, kUnderlineFace);
+	pContext->drawStringUTF8("kNormalFont, 0, kUnderlineFace, not antialised", stringRect, kLeftText, false);
+
+	stringRect.offset (0, 18);
+	pContext->setFont (kSystemFont, 0, kNormalFace);
+	pContext->drawStringUTF8("kSystemFont, 0, kNormalFace, antialised", stringRect, kLeftText);
+	stringRect.offset (0, 18);
+	pContext->setFont (kNormalFontVeryBig, 0, kNormalFace);
+	pContext->drawStringUTF8("kNormalFontVeryBig, 0, kNormalFace, antialised", stringRect, kLeftText);
+	stringRect.offset (0, 18);
+	pContext->setFont (kNormalFontBig, 0, kNormalFace);
+	pContext->drawStringUTF8("kNormalFontBig, 0, kNormalFace, antialised", stringRect, kLeftText);
+	stringRect.offset (0, 18);
+	pContext->setFont (kNormalFont, 0, kNormalFace);
+	pContext->drawStringUTF8("kNormalFont, 0, kNormalFace, antialised", stringRect, kLeftText);
+	stringRect.offset (0, 18);
+	pContext->setFont (kNormalFontSmall, 0, kNormalFace);
+	pContext->drawStringUTF8("kNormalFontSmall, 0, kNormalFace, antialised", stringRect, kLeftText);
+	stringRect.offset (0, 18);
+	pContext->setFont (kNormalFontSmaller, 0, kNormalFace);
+	pContext->drawStringUTF8("kNormalFontSmaller, 0, kNormalFace, antialised", stringRect, kLeftText);
+	stringRect.offset (0, 18);
+	pContext->setFont (kNormalFontVerySmall, 0, kNormalFace);
+	pContext->drawStringUTF8("kNormalFontVerySmall, 0, kNormalFace, antialised", stringRect, kLeftText);
+	stringRect.offset (0, 18);
+	pContext->setFont (kSymbolFont, 0, kNormalFace);
+	pContext->drawStringUTF8("kSymbolFont, 0, kNormalFace, antialised", stringRect, kLeftText);
+	#endif
+	
 	CPoint polyPoints[10];
 	polyPoints[0] = CPoint (50,0);
 	polyPoints[1] = CPoint (100,50);
