@@ -121,21 +121,6 @@ long PluginGUIEditor::setKnobMode (int val)
 }
 
 //-----------------------------------------------------------------------------
-bool PluginGUIEditor::onWheel (float distance)
-{
-	if (frame)
-	{
-		CDrawContext context (frame, NULL, systemWindow);
-		CPoint where;
-		context.getMouseLocation (where);
-		long buttons = context.getMouseButtons ();
-		return frame->onWheel (where, distance, buttons);
-	}
-	
-	return false;
-}
-
-//-----------------------------------------------------------------------------
 void PluginGUIEditor::wait (unsigned long ms)
 {
 	#if MAC

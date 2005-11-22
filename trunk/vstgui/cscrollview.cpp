@@ -233,13 +233,13 @@ void CScrollView::valueChanged (CControl *pControl)
 		{
 			case kHSBTag:
 			{
-				offset.x = csize.left - (csize.width () - vsize.width ()) * value;
+				offset.x = (CCoord) (csize.left - (csize.width () - vsize.width ()) * value);
 				sc->setScrollOffset (offset, false);
 				break;
 			}
 			case kVSBTag:
 			{
-				offset.y = csize.top + (csize.height () - vsize.height ()) * value;
+				offset.y = (CCoord) (csize.top + (csize.height () - vsize.height ()) * value);
 				sc->setScrollOffset (offset, false);
 				break;
 			}
@@ -265,9 +265,9 @@ bool CScrollView::onWheel (const CPoint &where, const CMouseWheelAxis &axis, con
 	if (!result)
 	{
 		if (vsb && axis == kMouseWheelAxisY)
-			result = vsb->onWheel (where, distance, buttons);
+			result = vsb->onWheel (where, axis, distance, buttons);
 		else if (hsb && axis == kMouseWheelAxisX)
-			result = hsb->onWheel (where, distance, buttons);
+			result = hsb->onWheel (where, axis, distance, buttons);
 	}
 	return result;
 }
@@ -313,14 +313,14 @@ void CScrollbar::calculateScrollerLength ()
 		float factor = (float)size.width () / (float)scrollSize.width ();
 		if (factor >= 1.f)
 			factor = 0;
-		newScrollerLength = size.width () * factor;
+		newScrollerLength = (CCoord) (size.width () * factor);
 	}
 	else
 	{
 		float factor = (float)size.height () / (float)scrollSize.height ();
 		if (factor >= 1.f)
 			factor = 0;
-		newScrollerLength = size.height () * factor;
+		newScrollerLength = (CCoord) (size.height () * factor);
 	}
 	if (newScrollerLength != scrollerLength)
 	{
@@ -334,7 +334,7 @@ CRect CScrollbar::getScrollerRect ()
 {
 	CRect scrollerRect (scrollerArea);
 	CCoord l = (style == kHorizontal) ? scrollerArea.width () : scrollerArea.height ();
-	CCoord scrollerOffset = value * (l - scrollerLength);
+	CCoord scrollerOffset = (CCoord) (value * (l - scrollerLength));
 	if (style == kHorizontal)
 	{
 		scrollerRect.setWidth (scrollerLength);
@@ -476,6 +476,7 @@ CMouseEventResult CScrollbar::onMouseMoved (CPoint &where, const long& buttons)
 	return kMouseEventHandled;
 }
 
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
 //-----------------------------------------------------------------------------
 void CScrollbar::mouse (CDrawContext* pContext, CPoint& where, long buttons)
 {
@@ -554,15 +555,16 @@ void CScrollbar::mouse (CDrawContext* pContext, CPoint& where, long buttons)
 		} while (pContext->getMouseButtons () == kLButton);
 	}
 }
+#endif
 
 //------------------------------------------------------------------------
-bool CScrollbar::onWheel (const CPoint &where, const float &_distance, const long &buttons)
+bool CScrollbar::onWheel (const CPoint &where, const CMouseWheelAxis &axis, const float &_distance, const long &buttons)
 {
 	if (!bMouseEnabled)
 		return false;
 
 	float distance = _distance;
-	if (style == kHorizontal)
+	if (style == kHorizontal && axis == kMouseWheelAxisY)
 		distance *= -1;
 
 	if (buttons & kShift)

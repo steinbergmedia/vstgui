@@ -151,8 +151,8 @@ public:
 	CColor getBackgroundColor () const { return backgroundColor; }
 
 	virtual void draw (CDrawContext* pContext);
-	virtual void mouse (CDrawContext* pContext, CPoint& where, long buttons = -1);
-	virtual bool onWheel (const CPoint &where, const float &distance, const long &buttons);
+	VSTGUI_DEPRECATED(virtual void mouse (CDrawContext* pContext, CPoint& where, long buttons = -1);)
+	virtual bool onWheel (const CPoint &where, const CMouseWheelAxis &axis, const float &distance, const long &buttons);
 
 	virtual CMouseEventResult onMouseDown (CPoint &where, const long& buttons);
 	virtual CMouseEventResult onMouseUp (CPoint &where, const long& buttons);

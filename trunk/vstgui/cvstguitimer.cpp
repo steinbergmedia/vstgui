@@ -35,6 +35,10 @@
 #include "cvstguitimer.h"
 #include "vstgui.h"
 
+#if WINDOWS
+#include <windows.h>
+#endif
+
 //-----------------------------------------------------------------------------
 const char* CVSTGUITimer::kMsgTimer = "timer fired";
 
@@ -42,12 +46,8 @@ const char* CVSTGUITimer::kMsgTimer = "timer fired";
 CVSTGUITimer::CVSTGUITimer (CView* timerView, int fireTime)
 : fireTime (fireTime)
 , timerView (timerView)
+, platformTimer (0)
 {
-	#if MAC
-	timerRef = 0;
-	#elif WINDOWS
-	// todo
-	#endif
 }
 
 //-----------------------------------------------------------------------------
@@ -59,27 +59,29 @@ CVSTGUITimer::~CVSTGUITimer ()
 //-----------------------------------------------------------------------------
 void CVSTGUITimer::start ()
 {
-	#if MAC
-	if (!timerRef)
-		InstallEventLoopTimer (GetMainEventLoop (), kEventDurationMillisecond * fireTime, kEventDurationMillisecond * fireTime, timerProc, this, &timerRef);
-	#elif WINDOWS
-	// todo
-	#endif
+	if (platformTimer == 0)
+	{
+		#if MAC
+		InstallEventLoopTimer (GetMainEventLoop (), kEventDurationMillisecond * fireTime, kEventDurationMillisecond * fireTime, timerProc, this, (EventLoopTimerRef*)&platformTimer);
+		#elif WINDOWS
+		platformTimer = (void*)SetTimer ((HWND)NULL, (UINT_PTR)this, fireTime, TimerProc);
+		#endif
+	}
 }
 
 //-----------------------------------------------------------------------------
 bool CVSTGUITimer::stop ()
 {
-	#if MAC
-	if (timerRef)
+	if (platformTimer)
 	{
-		RemoveEventLoopTimer (timerRef);
-		timerRef = 0;
+		#if MAC
+		RemoveEventLoopTimer ((EventLoopTimerRef)platformTimer);
+		#elif WINDOWS
+		KillTimer ((HWND)NULL, (UINT_PTR)platformTimer);
+		#endif
+		platformTimer = 0;
 		return true;
 	}
-	#elif WINDOWS
-	// todo
-	#endif
 	return false;
 }
 
@@ -105,5 +107,11 @@ pascal void CVSTGUITimer::timerProc (EventLoopTimerRef inTimer, void *inUserData
 		timer->timerView->notify (NULL, kMsgTimer);
 }
 
+#elif WINDOWS
+//------------------------------------------------------------------------
+VOID CALLBACK TimerProc (HWND hwnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTime)
+{
+	// todo, we need to maintain a list of timers on windows
+}
 #endif
 
