@@ -219,6 +219,7 @@ bool CTabView::addTab (CView* view, const char* name, CBitmap* tabBitmap)
 		setCurrentChild (v);
 	}
 	numberOfChilds++;
+	view->forget (); // the CTabChildView holds a reference
 	return true;
 }
 
@@ -268,7 +269,7 @@ bool CTabView::removeAllTabs ()
 }
 
 //-----------------------------------------------------------------------------
-bool CTabView::selectTab (long index)
+bool CTabView::selectTab (unsigned long index)
 {
 	if (index > numberOfChilds)
 		return false;

@@ -1,3 +1,13 @@
+2005-11-22 arne
+
+	* new handling of deprecated methods (on mac osx with gcc you get a warning now when using these methods)
+	* declared more methods as deprecated
+	* per default deprecated methods are compiled in, you can change this with the macro VSTGUI_ENABLE_DEPRECATED_METHODS=0
+	* initial support for Unicode (using UTF8 at the moment)
+	* added CView::parentSizeChanged() and CView::getVisibleSize()
+	* fix some mouse wheel coordinate errors
+	* fix problems with ENABLE_VST_EXTENSION_IN_VSTGUI
+	
 2005-09-23 arne
 
 	* proper handling of attached and removed calls of CView (if you overwrite them, always call its parents implementation)
@@ -21,7 +31,7 @@
 2005-09-02 arne
 
 	* added new interface class for communicating stuff between CFrame and Editor : VSTGUIEditorInterface.
-	* because of this the makro PLUGGUI is obsolete and removed.
+	* because of this the macro PLUGGUI is obsolete and removed.
 	* specific VST stuff is now enclosed by ENABLE_VST_EXTENSION_IN_VSTGUI like the CFileSelector stuff, where the host is asked about showing a File Chooser. If you need it, define it and set it to 1.
 	* AEffGUIEditor is now subclassed from AEffEditor and VSTGUIEditorInterface (the most common compiler error now is, that you need to include "aeffguieditor.h" in your editor class header)
 
@@ -290,7 +300,7 @@ VSTGUI 3.0 branch
 2004-04-17 arne
 
 	* windows: support for alpha blended images like it is on Mac OS X with quartz
-		   note: this implementation uses libpng (makro is USE_LIBPNG)
+		   note: this implementation uses libpng (macro is USE_LIBPNG)
 	* CDrawContext::setClipRect uses the offset now
 	* COptionMenu::getSubMenu added
 	* mac: fixed some quartz drawing stuff

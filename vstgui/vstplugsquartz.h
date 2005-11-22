@@ -17,8 +17,7 @@
 #define __NOEXTENSIONS__
 #define MAC_OS_X_VERSION_MIN_REQUIRED   1020
 #define MAC_OS_X_VERSION_MAX_ALLOWED	1040
+#include <AvailabilityMacros.h>
 #endif
 
 #define QUARTZ 1
-
-#include <AvailabilityMacros.h>

@@ -56,7 +56,7 @@ public:
 	virtual bool addTab (CView* view, const char* name = 0, CBitmap* tabBitmap = 0);
 	virtual bool removeTab (CView* view);
 	virtual bool removeAllTabs ();
-	virtual bool selectTab (long index);
+	virtual bool selectTab (unsigned long index);
 
 	virtual CRect& getTabViewSize (CRect& rect) const;
 

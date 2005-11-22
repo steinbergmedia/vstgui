@@ -87,8 +87,6 @@ public :
 	virtual long setKnobMode (int val);
 	virtual long getKnobMode () const { return knobMode; }
 
-	virtual bool onWheel (float distance);
-
 	// get the CFrame object
 	#if USE_NAMESPACE
 	VSTGUI::CFrame *getFrame () { return frame; }
