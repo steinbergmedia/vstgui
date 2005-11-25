@@ -37,6 +37,10 @@
 
 #if WINDOWS
 #include <windows.h>
+#include <list>
+BEGIN_NAMESPACE_VSTGUI
+static std::list<CVSTGUITimer*> gTimerList;
+END_NAMESPACE_VSTGUI
 #endif
 
 //-----------------------------------------------------------------------------
@@ -57,7 +61,7 @@ CVSTGUITimer::~CVSTGUITimer ()
 }
 
 //-----------------------------------------------------------------------------
-void CVSTGUITimer::start ()
+bool CVSTGUITimer::start ()
 {
 	if (platformTimer == 0)
 	{
@@ -65,8 +69,11 @@ void CVSTGUITimer::start ()
 		InstallEventLoopTimer (GetMainEventLoop (), kEventDurationMillisecond * fireTime, kEventDurationMillisecond * fireTime, timerProc, this, (EventLoopTimerRef*)&platformTimer);
 		#elif WINDOWS
 		platformTimer = (void*)SetTimer ((HWND)NULL, (UINT_PTR)this, fireTime, TimerProc);
+		if (platformTimer)
+			gTimerList.push_back (this);
 		#endif
 	}
+	return (platformTimer != 0);
 }
 
 //-----------------------------------------------------------------------------
@@ -78,6 +85,16 @@ bool CVSTGUITimer::stop ()
 		RemoveEventLoopTimer ((EventLoopTimerRef)platformTimer);
 		#elif WINDOWS
 		KillTimer ((HWND)NULL, (UINT_PTR)platformTimer);
+		std::list<CVSTGUITimer*>::iterator it = gTimerList.begin ();
+		while (it != gTimerList.end ())
+		{
+			if ((*it) == this)
+			{
+				gTimerList.remove (*it);
+				break;
+			}
+			it++;
+		}
 		#endif
 		platformTimer = 0;
 		return true;
@@ -93,9 +110,10 @@ bool CVSTGUITimer::setFireTime (int newFireTime)
 		bool wasRunning = stop ();
 		fireTime = newFireTime;
 		if (wasRunning)
-			start ();
+			return start ();
+		return true;
 	}
-	return true;
+	return false;
 }
 
 #if MAC
@@ -111,7 +129,16 @@ pascal void CVSTGUITimer::timerProc (EventLoopTimerRef inTimer, void *inUserData
 //------------------------------------------------------------------------
 VOID CALLBACK CVSTGUITimer::TimerProc (HWND hwnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTime)
 {
-	// todo, we need to maintain a list of timers on windows
+	std::list<CVSTGUITimer*>::iterator it = gTimerList.begin ();
+	while (it != gTimerList.end ())
+	{
+		if ((UINT_PTR)((*it)->platformTimer) == idEvent)
+		{
+			(*it)->timerView->notify (NULL, kMsgTimer);
+			break;
+		}
+		it++;
+	}
 }
 #endif
 
