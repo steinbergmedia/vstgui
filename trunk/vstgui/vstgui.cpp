@@ -2,7 +2,7 @@
 // VST Plug-Ins SDK
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 //
-// Version 3.5       $Date: 2005-11-22 17:24:44 $ 
+// Version 3.5       $Date: 2005-11-25 16:40:52 $ 
 //
 // Added Motif/Windows vers.: Yvan Grabit              01.98
 // Added Mac version        : Charlie Steinberg        02.98
@@ -481,9 +481,12 @@ CDrawContext::CDrawContext (CFrame *inFrame, void *inSystemContext, void *inWind
 	{
 		HDC hdc = inSystemContext ? (HDC)inSystemContext : GetDC ((HWND)pWindow);
 		pGraphics = new Gdiplus::Graphics (hdc);
+		pGraphics->SetInterpolationMode(Gdiplus::InterpolationModeLowQuality);
 	}
 	pPen = new Gdiplus::Pen (Gdiplus::Color (0, 0, 0), 1);
 	pBrush = new Gdiplus::SolidBrush (Gdiplus::Color (0, 0, 0));
+	pFontBrush = new Gdiplus::SolidBrush (Gdiplus::Color (0, 0, 0));
+	pFont = 0;
 	#else
 	pHDC = 0;
 	if (!pSystemContext && pWindow)
@@ -612,6 +615,8 @@ CDrawContext::~CDrawContext ()
 
 #if WINDOWS
 	#if GDIPLUS
+	if (pFontBrush)
+		delete pFontBrush;
 	if (pBrush)
 		delete pBrush;
 	if (pPen)
@@ -751,7 +756,7 @@ void CDrawContext::setLineWidth (CCoord width)
 #if WINDOWS
 	#if GDIPLUS
 	if (pPen)
-		pPen->SetWidth (width);
+		pPen->SetWidth ((float)width);
 	#else
 	LOGPEN logPen = {iPenStyle, {frameWidth, frameWidth},
 					 RGB (frameColor.red, frameColor.green, frameColor.blue)};
@@ -1319,9 +1324,10 @@ void CDrawContext::drawRect (const CRect &_rect, const CDrawStyle drawStyle)
 	#if GDIPLUS
 	if (pGraphics && pBrush && pPen)
 	{
+		rect.normalize ();
 		if (drawStyle == kDrawFilled || drawStyle == kDrawFilledAndStroked)
 		{
-			pGraphics->FillRectangle (pBrush, rect.left, rect.top, rect.getWidth (), rect.getHeight ());
+			pGraphics->FillRectangle (pBrush, rect.left, rect.top, rect.getWidth ()-1, rect.getHeight ()-1);
 		}
 		if (drawStyle == kDrawStroked || drawStyle == kDrawFilledAndStroked)
 		{
@@ -1424,7 +1430,10 @@ void CDrawContext::fillRect (const CRect &_rect)
 #if WINDOWS
 	#if GDIPLUS
 	if (pGraphics && pBrush)
+	{
+		rect.normalize ();
 		pGraphics->FillRectangle (pBrush, rect.left, rect.top, rect.getWidth (), rect.getHeight ());
+	}
 	#else
 	RECT wr = {rect.left + 1, rect.top + 1, rect.right, rect.bottom};
 	HANDLE nullPen = GetStockObject (NULL_PEN);
@@ -1967,6 +1976,8 @@ void CDrawContext::setFontColor (const CColor color)
 	
 #if WINDOWS
 	#if GDIPLUS
+	if (pFontBrush)
+		pFontBrush->SetColor (Gdiplus::Color (color.alpha, color.red, color.green, color.blue));
 	#else
 	SetTextColor ((HDC)pSystemContext, RGB (fontColor.red, fontColor.green, fontColor.blue));
 	#endif
@@ -2108,6 +2119,22 @@ void CDrawContext::setFont (CFont fontID, const long size, long style)
 
 #if WINDOWS
 	#if GDIPLUS
+
+	if (pFont)
+		delete pFont;
+
+	int gdiStyle = Gdiplus::FontStyleRegular;
+	if (style & kBoldFace)
+		gdiStyle = Gdiplus::FontStyleBold;
+	if (style & kItalicFace)
+		gdiStyle = Gdiplus::FontStyleItalic;
+	if (style & kUnderlineFace)
+		gdiStyle = Gdiplus::FontStyleUnderline;
+
+	WCHAR tempName[200];
+	mbstowcs(tempName,gStandardFontName[fontID],200);
+	pFont=new Gdiplus::Font (tempName,(Gdiplus::REAL)fontSize, gdiStyle, Gdiplus::UnitPixel);
+
 	#else
 	LOGFONT logfont = {0};
 
@@ -2258,6 +2285,37 @@ void CDrawContext::drawString (const char *string, const CRect &_rect,
 
 #if WINDOWS
 	#if GDIPLUS
+	WCHAR buffer[1024];
+	Gdiplus::StringFormat z(Gdiplus::StringFormatFlagsNoWrap,LANG_NEUTRAL);;
+	Gdiplus::RectF layoutRect((Gdiplus::REAL)rect.left, (Gdiplus::REAL)rect.top, (Gdiplus::REAL)rect.width(), (Gdiplus::REAL)rect.height());
+
+	mbstowcs(buffer,string,1024);
+	switch (hAlign)
+	{
+	case kCenterText:
+		// without DT_SINGLELINE no vertical center alignment here
+		z.SetAlignment(Gdiplus::StringAlignmentCenter);
+		//DrawText ((HDC)pSystemContext, string, (int)strlen (string), &Rect, flag + DT_CENTER);
+		break;
+		
+	case kRightText:
+		//DrawText ((HDC)pSystemContext, string, (int)strlen (string), &Rect, flag + DT_RIGHT);
+		z.SetAlignment(Gdiplus::StringAlignmentFar);
+		break;
+		
+	default : // left adjust
+		layoutRect.X++;
+		z.SetAlignment(Gdiplus::StringAlignmentNear);
+	}
+
+	Gdiplus::SolidBrush bgBrush(Gdiplus::Color(255, fillColor.red, fillColor.green, fillColor.blue));
+	
+	if (opaque) {
+		pGraphics->FillRectangle(&bgBrush,layoutRect);
+	}
+	
+	pGraphics->DrawString(buffer,-1,pFont,layoutRect,&z,pFontBrush);
+
 	#else
 	// set the visibility mask
 	SetBkMode ((HDC)pSystemContext, opaque ? OPAQUE : TRANSPARENT);
@@ -3219,6 +3277,7 @@ COffscreenContext::COffscreenContext (CFrame *pFrame, long width, long height, c
 	#if GDIPLUS
 	pBitmap = new CBitmap (*pFrame, width, height);
 	pGraphics = new Gdiplus::Graphics (pBitmap->getBitmap ());
+	pGraphics->SetInterpolationMode (Gdiplus::InterpolationModeLowQuality);
 	#else
 	void *SystemWindow = pFrame->getSystemWindow ();
 	void *SystemContext = GetDC ((HWND)SystemWindow);
@@ -6816,12 +6875,16 @@ CBitmap::CBitmap (CFrame& frame, CCoord width, CCoord height)
 	#endif
 
 #if WINDOWS
-	#if GDIPLUS
+	HDC hScreen = GetDC (0);
+#if GDIPLUS
 	pBitmap = 0;
 	bits = 0;
-	#endif
-	HDC hScreen = GetDC (0);
+	Gdiplus::Graphics *hScreenGraphics = new Gdiplus::Graphics(hScreen);
+	pBitmap = new Gdiplus::Bitmap(width,height,hScreenGraphics);	// format?
+	delete hScreenGraphics;
+#else
 	pHandle = CreateCompatibleBitmap (hScreen, width, height);
+#endif
 	ReleaseDC (0, hScreen);	
 	pMask = 0;
 
@@ -7038,6 +7101,7 @@ bool CBitmap::loadFromResource (long resourceID)
 						#endif
 						delete [] rows;
 						png_read_end (png_ptr, 0);
+						#if 1 //!GDIPLUS
 						// premultiply alpha
 						unsigned long* pixelPtr = (unsigned long*)bits;
 						for (int y = 0; y < height; y++)
@@ -7056,6 +7120,7 @@ bool CBitmap::loadFromResource (long resourceID)
 								pixelPtr++;
 							}
 						}
+						#endif
 						if (dstDC)
 							DeleteDC (dstDC);
 #if 0
@@ -7104,6 +7169,12 @@ bool CBitmap::loadFromResource (long resourceID)
 	#endif
 	if (!result)
 	{
+#if GDIPLUS
+		pBitmap = Gdiplus::Bitmap::FromResource(GetInstance (),(WCHAR*)MAKEINTRESOURCE(resourceID));
+		result = true;
+		width = pBitmap->GetWidth ();
+		height = pBitmap->GetHeight ();
+#else
 		pHandle = LoadBitmap (GetInstance (), MAKEINTRESOURCE (resourceID));
 		BITMAP bm;
 		if (pHandle && GetObject (pHandle, sizeof (bm), &bm))
@@ -7113,6 +7184,7 @@ bool CBitmap::loadFromResource (long resourceID)
 			noAlpha = true;
 			result = true;
 		}
+#endif
 	}
 	
 	//---------------------------------------------------------------------------------------------
@@ -8292,7 +8364,7 @@ LONG_PTR WINAPI WindowProc (HWND hwnd, UINT message, WPARAM wParam, LPARAM lPara
 			
 			CRect updateRect (ps.rcPaint.left, ps.rcPaint.top, ps.rcPaint.right, ps.rcPaint.bottom);
 
-			#if 1
+			#if 0
 			int len = GetRegionData (rgn, 0, NULL);
 			if (len)
 			{

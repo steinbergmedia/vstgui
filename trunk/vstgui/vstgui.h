@@ -2,7 +2,7 @@
 // VST Plug-Ins SDK
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 //
-// Version 3.5       $Date: 2005-11-22 17:24:44 $
+// Version 3.5       $Date: 2005-11-25 16:40:52 $
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
@@ -247,6 +247,22 @@ struct CRect
 	}
 
 	void bound (const CRect& rect);
+
+	void normalize ()
+	{
+		if (left > right)
+		{
+			CCoord tmp = left;
+			left = right;
+			right = tmp;
+		}
+		if (top > bottom)
+		{
+			CCoord tmp = top;
+			top = bottom;
+			bottom = tmp;
+		}
+	}
 
 	union
 	{ CCoord left; CCoord x;};
@@ -656,6 +672,8 @@ protected:
 	Gdiplus::Graphics	*pGraphics;
 	Gdiplus::Pen		*pPen;
 	Gdiplus::SolidBrush	*pBrush;
+	Gdiplus::SolidBrush	*pFontBrush;
+	Gdiplus::Font		*pFont;
 	public:
 		Gdiplus::Graphics* getGraphics () const { return pGraphics; }
 	protected:
