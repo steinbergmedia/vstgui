@@ -109,7 +109,7 @@ pascal void CVSTGUITimer::timerProc (EventLoopTimerRef inTimer, void *inUserData
 
 #elif WINDOWS
 //------------------------------------------------------------------------
-VOID CALLBACK TimerProc (HWND hwnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTime)
+VOID CALLBACK CVSTGUITimer::TimerProc (HWND hwnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTime)
 {
 	// todo, we need to maintain a list of timers on windows
 }
