@@ -3,7 +3,7 @@
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 // Standard Control Objects
 //
-// Version 3.5       $Date: 2005-11-22 17:24:44 $
+// Version 3.5       $Date: 2005-11-25 16:38:21 $
 //
 // Added new objects        : Michael Schmidt          08.97
 // Added new objects        : Yvan Grabit              01.98
@@ -3633,15 +3633,6 @@ void COptionMenu::takeFocus ()
 	//---Update the dependencies
 	if (result != -1 || bgWhenClick)
 	{
-		CDrawContext *pContextTemp = 0;
-		HDC hdc;
-		if (result != -1)
-		{
-	 		// create a local context
-			hdc = GetDC (hwnd);
-			pContextTemp = new CDrawContext (getFrame (), hdc, hwnd);
-		}
-	
 		// to force the redraw
 		if (bgWhenClick)
 			setDirty ();
@@ -3660,17 +3651,6 @@ void COptionMenu::takeFocus ()
 				if (listener)
 					listener->valueChanged (menu);
 			}
-		}
-
-		// redraw the display
-		// AAAAARRRRGHHHHHHHHHHHHH!!
-		//doIdleStuff ();
-		//setDirty (false);
-
-		if (pContextTemp)
-		{
-			delete pContextTemp;
-			ReleaseDC (hwnd, hdc);
 		}
 	}
 
