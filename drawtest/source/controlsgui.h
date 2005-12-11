@@ -18,7 +18,7 @@ public:
 	void valueChanged (CControl *pControl);
 	bool attached (CView* view);
 	bool removed (CView* parent);
-	long notify (CView* sender, const char* message);
+	CMessageResult notify (CBaseObject* sender, const char* message);
 
 protected:
 
