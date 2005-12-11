@@ -2,11 +2,11 @@
 // VST Plug-Ins SDK
 // VSTGUI: Graphical User Interface Framework not only for VST plugins : 
 //
-// CTabView written 2004 by Arne Scheffler
+// CTooltipSupport written 2005 by Arne Scheffler
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
-// © 2004, Steinberg Media Technologies, All Rights Reserved
+// Â© 2004, Steinberg Media Technologies, All Rights Reserved
 //-----------------------------------------------------------------------------
 // Redistribution and use in source and binary forms, with or without modification,
 // are permitted provided that the following conditions are met:
@@ -32,70 +32,41 @@
 // OF THE POSSIBILITY OF SUCH DAMAGE.
 //-----------------------------------------------------------------------------
 
-#ifndef __ctabview__
-#define __ctabview__
+#ifndef __ctooltipsupport__
+#define __ctooltipsupport__
 
-#ifndef __vstcontrols__
-#include "vstcontrols.h"
-#endif
+#include "vstgui.h"
 
 BEGIN_NAMESPACE_VSTGUI
 
-class CTabChildView;
+class CVSTGUITimer;
 
 //-----------------------------------------------------------------------------
-class CTabView : public CViewContainer, public CControlListener
-//! \brief a tab view
-/// \nosubgrouping
+// CTooltipSupport Declaration
+//! Generic Tooltip Support class
 //-----------------------------------------------------------------------------
+class CTooltipSupport : public CBaseObject, public IMouseObserver
 {
 public:
-	CTabView (const CRect& size, CFrame* parent, CBitmap* tabBitmap, CBitmap* background = 0, long tabPosition = kPositionTop, long style = 0);
-	CTabView (const CRect& size, CFrame* parent, const CRect& tabSize, CBitmap* background = 0, long tabPosition = kPositionTop, long style = 0);
-	virtual ~CTabView ();
-	
-	virtual bool addTab (CView* view, const char* name = 0, CBitmap* tabBitmap = 0);
-	virtual bool removeTab (CView* view);
-	virtual bool removeAllTabs ();
-	virtual bool selectTab (unsigned long index);
+	CTooltipSupport (int delay = 1000);
+	~CTooltipSupport ();
 
-	virtual CRect& getTabViewSize (CRect& rect) const;
-
-	virtual void setTabFontStyle (const CFont& font, long fontSize = 12, CColor selectedColor = kBlackCColor, CColor deselectedColor = kWhiteCColor); ///< call this after the tabs are added. Tabs added after this call will have the default font style.
-
-	virtual void alignTabs (long alignment = kAlignCenter); ///< call this after you have added all tabs
-
-	enum {
-		kPositionLeft = 0,
-		kPositionRight,
-		kPositionTop,
-		kPositionBottom,
-	};
-
-	enum {
-		kAlignCenter = 0,
-		kAlignLeft,
-		kAlignRight,
-		kAlignTop = kAlignLeft,
-		kAlignBottom = kAlignRight
-	};
-
-	virtual void valueChanged (CControl *pControl);
-//-----------------------------------------------------------------------------
-	CLASS_METHODS (CTabView, CViewContainer)
 protected:
-	void setCurrentChild (CTabChildView* childView);
+	void showTooltip ();
+	void hideTooltip ();
 
-	unsigned long numberOfChilds;
-	long tabPosition;
-	long style;
-	CRect tabSize;
-	CBitmap* tabBitmap;
-	CTabChildView* firstChild;
-	CTabChildView* lastChild;
-	CTabChildView* currentChild;
+	// CBaseObject
+	CMessageResult notify (CBaseObject* sender, const char* msg);
+
+	// IMouseObserver
+	void onMouseEntered (CView* view, CFrame* frame);
+	void onMouseExited (CView* view, CFrame* frame);
+
+	CVSTGUITimer* timer;
+	CView* currentView;
 };
 
 END_NAMESPACE_VSTGUI
 
 #endif
+

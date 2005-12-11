@@ -47,9 +47,9 @@ END_NAMESPACE_VSTGUI
 const char* CVSTGUITimer::kMsgTimer = "timer fired";
 
 //-----------------------------------------------------------------------------
-CVSTGUITimer::CVSTGUITimer (CView* timerView, int fireTime)
+CVSTGUITimer::CVSTGUITimer (CBaseObject* timerObject, int fireTime)
 : fireTime (fireTime)
-, timerView (timerView)
+, timerObject (timerObject)
 , platformTimer (0)
 {
 }
@@ -121,8 +121,8 @@ bool CVSTGUITimer::setFireTime (int newFireTime)
 pascal void CVSTGUITimer::timerProc (EventLoopTimerRef inTimer, void *inUserData)
 {
 	CVSTGUITimer* timer = (CVSTGUITimer*)inUserData;
-	if (timer->timerView)
-		timer->timerView->notify (NULL, kMsgTimer);
+	if (timer->timerObject)
+		timer->timerObject->notify (timer, kMsgTimer);
 }
 
 #elif WINDOWS
@@ -134,7 +134,7 @@ VOID CALLBACK CVSTGUITimer::TimerProc (HWND hwnd, UINT uMsg, UINT_PTR idEvent, D
 	{
 		if ((UINT_PTR)((*it)->platformTimer) == idEvent)
 		{
-			(*it)->timerView->notify (NULL, kMsgTimer);
+			(*it)->timerObject->notify ((*it), kMsgTimer);
 			break;
 		}
 		it++;

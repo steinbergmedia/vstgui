@@ -38,8 +38,41 @@
 
 #include "cvstguitimer.h"
 
+/// \cond ignore
+
 #define FOREACHSUBVIEW for (CCView *pSv = pFirstView; pSv; pSv = pSv->pNext) {CView *pV = pSv->pView;
 #define ENDFOR }
+
+BEGIN_NAMESPACE_VSTGUI
+
+// CScrollContainer is private
+//-----------------------------------------------------------------------------
+class CScrollContainer : public CViewContainer
+//-----------------------------------------------------------------------------
+{
+public:
+	CScrollContainer (const CRect &size, const CRect &containerSize, CFrame *pParent, CBitmap *pBackground = 0);
+	virtual ~CScrollContainer ();
+
+	void setScrollOffset (CPoint offset, bool withRedraw = false);
+	void getScrollOffset (CPoint& off) const { off = offset; } 
+
+	CRect getContainerSize () const { return containerSize; }
+	void setContainerSize (const CRect& cs);
+	
+	#if !VSTGUI_USE_SYSTEM_EVENTS_FOR_DRAWING
+	virtual void redrawRect (CDrawContext* context, const CRect& rect);
+	#endif
+	virtual bool isDirty () const;
+
+	CLASS_METHODS(CScrollContainer, CViewContainer)
+//-----------------------------------------------------------------------------
+protected:
+	CRect containerSize;
+	CPoint offset;
+};
+
+END_NAMESPACE_VSTGUI
 
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
@@ -50,7 +83,9 @@ CScrollContainer::CScrollContainer (const CRect &size, const CRect &containerSiz
 , offset (CPoint (0, 0))
 {
 	setTransparency (true);
+	#if !VSTGUI_USE_SYSTEM_EVENTS_FOR_DRAWING
 	setMode (kOnlyDirtyUpdate);
+	#endif
 }
 
 //-----------------------------------------------------------------------------
@@ -138,6 +173,7 @@ bool CScrollContainer::isDirty () const
 	ENDFOR
 	return false;
 }
+/// \endcond
 
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
@@ -151,7 +187,9 @@ CScrollView::CScrollView (const CRect &size, const CRect &containerSize, CFrame*
 , style (style)
 {
 	setTransparency (true);
+	#if !VSTGUI_USE_SYSTEM_EVENTS_FOR_DRAWING
 	setMode (kOnlyDirtyUpdate);
+	#endif
 
 	CRect scsize (size);
 	scsize.offset (-scsize.left, -scsize.top);
@@ -215,6 +253,42 @@ void CScrollView::setContainerSize (const CRect& cs)
 void CScrollView::addView (CView *pView)
 {
 	sc->addView (pView);
+}
+
+//-----------------------------------------------------------------------------
+void CScrollView::addView (CView *pView, CRect &mouseableArea, bool mouseEnabled)
+{
+	sc->addView (pView, mouseableArea, mouseEnabled);
+}
+
+//-----------------------------------------------------------------------------
+void CScrollView::removeView (CView *pView, const bool &withForget)
+{
+	sc->removeView (pView, withForget);
+}
+
+//-----------------------------------------------------------------------------
+void CScrollView::removeAll (const bool &withForget)
+{
+	sc->removeAll ();
+}
+
+//-----------------------------------------------------------------------------
+bool CScrollView::isChild (CView *pView) const
+{
+	return sc->isChild (pView);
+}
+
+//-----------------------------------------------------------------------------
+long CScrollView::getNbViews () const
+{
+	return sc->getNbViews ();
+}
+
+//-----------------------------------------------------------------------------
+CView* CScrollView::getView (long index) const
+{
+	return sc->getView (index);
 }
 
 //-----------------------------------------------------------------------------
@@ -387,7 +461,7 @@ void CScrollbar::doStepping ()
 }
 
 //-----------------------------------------------------------------------------
-long CScrollbar::notify (CView* sender, const char* message)
+CMessageResult CScrollbar::notify (CBaseObject* sender, const char* message)
 {
 	if (message == CVSTGUITimer::kMsgTimer)
 	{

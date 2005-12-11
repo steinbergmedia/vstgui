@@ -3,7 +3,7 @@
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 // Standard Control Objects
 //
-// Version 3.5       $Date: 2005-11-22 17:24:44 $
+// Version 3.5       $Date: 2005-12-11 22:41:48 $
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
@@ -109,12 +109,12 @@ class CControlListener
 public:
 	#if USE_NAMESPACE
 	virtual void valueChanged (VSTGUI::CControl *pControl) = 0;
-	virtual long controlModifierClicked (VSTGUI::CControl *pControl, long button) { return 0; }	// return 1 if you want the control to not handle it, otherwise 0
+	virtual long controlModifierClicked (VSTGUI::CControl *pControl, long button) { return 0; }	///< return 1 if you want the control to not handle it, otherwise 0
 	virtual void controlBeginEdit (VSTGUI::CControl *pControl) {}
 	virtual void controlEndEdit (VSTGUI::CControl *pControl) {}
 	#else
 	virtual void valueChanged (CControl *pControl) = 0;
-	virtual long controlModifierClicked (CControl *pControl, long button) { return 0; }	// return 1 if you want the control to not handle it, otherwise 0
+	virtual long controlModifierClicked (CControl *pControl, long button) { return 0; }	///< return 1 if you want the control to not handle it, otherwise 0
 	virtual void controlBeginEdit (CControl *pControl) {}
 	virtual void controlEndEdit (CControl *pControl) {}
 	#endif
@@ -126,7 +126,8 @@ BEGIN_NAMESPACE_VSTGUI
 
 //-----------------------------------------------------------------------------
 // CControl Declaration
-//! base class of all VSTGUI controls
+//! \brief base class of all VSTGUI controls
+/// \nosubgrouping
 //-----------------------------------------------------------------------------
 class CControl : public CView
 {
@@ -194,7 +195,8 @@ protected:
 
 //-----------------------------------------------------------------------------
 // COnOffButton Declaration
-//! a button control with 2 states
+//! \brief a button control with 2 states
+/// \nosubgrouping
 //-----------------------------------------------------------------------------
 class COnOffButton : public CControl
 {
@@ -223,7 +225,8 @@ protected:
 
 //-----------------------------------------------------------------------------
 // CParamDisplay Declaration
-//! a parameter display control
+//! \brief a parameter display control
+/// \nosubgrouping
 //-----------------------------------------------------------------------------
 class CParamDisplay : public CControl
 {
@@ -293,7 +296,8 @@ protected:
 
 //-----------------------------------------------------------------------------
 // CLabel Declaration
-//! a text label
+//! \brief a text label
+/// \nosubgrouping
 //-----------------------------------------------------------------------------
 class CTextLabel : public CParamDisplay
 {
@@ -315,7 +319,8 @@ protected:
 
 //-----------------------------------------------------------------------------
 // CTextEdit Declaration
-//! a text edit control
+//! \brief a text edit control
+/// \nosubgrouping
 //-----------------------------------------------------------------------------
 class CTextEdit : public CParamDisplay
 {
@@ -369,8 +374,9 @@ protected:
 
 //-----------------------------------------------------------------------------
 // COptionMenuScheme Declaration
+/// \nosubgrouping
 //-----------------------------------------------------------------------------
-class COptionMenuScheme : public CReferenceCounter
+class COptionMenuScheme : public CBaseObject
 {
 public:
 	COptionMenuScheme ();
@@ -409,7 +415,8 @@ extern COptionMenuScheme* gOptionMenuScheme;
 
 //-----------------------------------------------------------------------------
 // COptionMenu Declaration
-//! a popup menu control
+//! \brief a popup menu control
+/// \nosubgrouping
 //-----------------------------------------------------------------------------
 class COptionMenu : public CParamDisplay
 {
@@ -498,7 +505,8 @@ protected:
 
 //-----------------------------------------------------------------------------
 // CKnob Declaration
-//! a knob control
+//! \brief a knob control
+/// \nosubgrouping
 //-----------------------------------------------------------------------------
 class CKnob : public CControl
 {
@@ -567,7 +575,8 @@ private:
 
 //-----------------------------------------------------------------------------
 // CAnimKnob Declaration
-//! a bitmap knob control
+//! \brief a bitmap knob control
+/// \nosubgrouping
 //-----------------------------------------------------------------------------
 class CAnimKnob : public CKnob
 {
@@ -597,7 +606,8 @@ protected:
 
 //-----------------------------------------------------------------------------
 // CVerticalSwitch Declaration
-//! a vertical switch control
+//! \brief a vertical switch control
+/// \nosubgrouping
 //-----------------------------------------------------------------------------
 class CVerticalSwitch : public CControl
 {
@@ -633,7 +643,8 @@ private:
 
 //-----------------------------------------------------------------------------
 // CHorizontalSwitch Declaration
-//! a horizontal switch control
+//! \brief a horizontal switch control
+/// \nosubgrouping
 //-----------------------------------------------------------------------------
 class CHorizontalSwitch : public CControl
 {
@@ -669,7 +680,8 @@ private:
 
 //-----------------------------------------------------------------------------
 // CRockerSwitch Declaration
-//! a switch control with 3 sub bitmaps
+//! \brief a switch control with 3 sub bitmaps
+/// \nosubgrouping
 //-----------------------------------------------------------------------------
 class CRockerSwitch : public CControl
 {
@@ -703,7 +715,8 @@ private:
 
 //-----------------------------------------------------------------------------
 // CMovieBitmap Declaration
-//! a bitmap control that displays different bitmaps according to its current value
+//! \brief a bitmap control that displays different bitmaps according to its current value
+/// \nosubgrouping
 //-----------------------------------------------------------------------------
 class CMovieBitmap : public CControl
 {
@@ -729,7 +742,8 @@ protected:
 
 //-----------------------------------------------------------------------------
 // CMovieButton Declaration
-//! a bi-states button with 2 subbitmaps
+//! \brief a bi-states button with 2 subbitmaps
+/// \nosubgrouping
 //-----------------------------------------------------------------------------
 class CMovieButton : public CControl
 {
@@ -763,6 +777,7 @@ private:
 //-----------------------------------------------------------------------------
 // CAutoAnimation Declaration
 //!
+/// \nosubgrouping
 //-----------------------------------------------------------------------------
 class CAutoAnimation : public CControl
 {
@@ -802,7 +817,8 @@ protected:
 
 //-----------------------------------------------------------------------------
 // CSlider Declaration
-//! a slider control
+//! \brief a slider control
+/// \nosubgrouping
 //-----------------------------------------------------------------------------
 class CSlider : public CControl
 {
@@ -880,7 +896,8 @@ private:
 
 //-----------------------------------------------------------------------------
 // CVerticalSlider Declaration
-//! a vertical slider control
+//! \brief a vertical slider control
+/// \nosubgrouping
 //-----------------------------------------------------------------------------
 class CVerticalSlider : public CSlider
 {
@@ -904,7 +921,8 @@ public:
 
 //-----------------------------------------------------------------------------
 // CHorizontalSlider Declaration
-//! a horizontal slider control
+//! \brief a horizontal slider control
+/// \nosubgrouping
 //-----------------------------------------------------------------------------
 class CHorizontalSlider : public CSlider
 {
@@ -929,7 +947,8 @@ public:
 
 //-----------------------------------------------------------------------------
 // CSpecialDigit Declaration
-//! special display with custom numbers (0...9)
+//! \brief special display with custom numbers (0...9)
+/// \nosubgrouping
 //-----------------------------------------------------------------------------
 class CSpecialDigit : public CControl
 {
@@ -962,6 +981,7 @@ protected:
 //-----------------------------------------------------------------------------
 // CKickButton Declaration
 //!
+/// \nosubgrouping
 //-----------------------------------------------------------------------------
 class CKickButton : public CControl
 {
@@ -994,6 +1014,7 @@ private:
 //-----------------------------------------------------------------------------
 // CSplashScreen Declaration
 //!
+/// \nosubgrouping
 //-----------------------------------------------------------------------------
 class CSplashScreen : public CControl
 {
@@ -1029,6 +1050,7 @@ protected:
 //-----------------------------------------------------------------------------
 // CVuMeter Declaration
 //!
+/// \nosubgrouping
 //-----------------------------------------------------------------------------
 class CVuMeter : public CControl
 {

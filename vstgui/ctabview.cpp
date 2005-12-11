@@ -40,6 +40,7 @@ BEGIN_NAMESPACE_VSTGUI
 
 #define  kTabButtonTagStart	20000
 
+/// \cond ignore
 //-----------------------------------------------------------------------------
 class CTabButton : public COnOffButton
 //-----------------------------------------------------------------------------
@@ -112,7 +113,7 @@ protected:
 };
 
 //-----------------------------------------------------------------------------
-class CTabChildView : public CReferenceCounter
+class CTabChildView : public CBaseObject
 //-----------------------------------------------------------------------------
 {
 public:
@@ -122,7 +123,6 @@ public:
 	, next (0)
 	, button (0)
 	{
-		view->remember ();
 	}
 
 	virtual ~CTabChildView ()
@@ -135,6 +135,7 @@ public:
 	CTabChildView* next;
 	CTabButton* button;
 };
+/// \endcond
 
 //-----------------------------------------------------------------------------
 CTabView::CTabView (const CRect& size, CFrame* parent, CBitmap* tabBitmap, CBitmap* background, long tabPosition, long style)
@@ -154,7 +155,9 @@ CTabView::CTabView (const CRect& size, CFrame* parent, CBitmap* tabBitmap, CBitm
 		tabSize.right = tabBitmap->getWidth ();
 		tabSize.bottom = tabBitmap->getHeight ();
 	}
+	#if !VSTGUI_USE_SYSTEM_EVENTS_FOR_DRAWING
 	setMode (kOnlyDirtyUpdate);
+	#endif
 }
 
 //-----------------------------------------------------------------------------
@@ -169,7 +172,9 @@ CTabView::CTabView (const CRect& size, CFrame* parent, const CRect& tabSize, CBi
 , lastChild (0)
 , currentChild (0)
 {
+	#if !VSTGUI_USE_SYSTEM_EVENTS_FOR_DRAWING
 	setMode (kOnlyDirtyUpdate);
+	#endif
 }
 
 //-----------------------------------------------------------------------------
@@ -219,7 +224,6 @@ bool CTabView::addTab (CView* view, const char* name, CBitmap* tabBitmap)
 		setCurrentChild (v);
 	}
 	numberOfChilds++;
-	view->forget (); // the CTabChildView holds a reference
 	return true;
 }
 
@@ -240,7 +244,7 @@ bool CTabView::removeTab (CView* view)
 				v->next->previous = v->previous;
 			if (v == currentChild)
 				setCurrentChild (v->previous ? v->previous : v->next);
-			removeView (v->button);
+			removeView (v->button, true);
 			v->forget ();
 			numberOfChilds--;
 			return true;
@@ -254,12 +258,11 @@ bool CTabView::removeTab (CView* view)
 bool CTabView::removeAllTabs ()
 {
 	setCurrentChild (0);
-	CTabChildView* v = firstChild;
+	CTabChildView* v = lastChild;
 	while (v)
 	{
-		CTabChildView* next = v->next;
-		removeView (v->button);
-		v->forget ();
+		CTabChildView* next = v->previous;
+		removeTab (v->view);
 		v = next;
 	}
 	firstChild = 0;

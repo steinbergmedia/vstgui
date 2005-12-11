@@ -2,7 +2,7 @@
 // VST Plug-Ins SDK
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 //
-// Version 3.5       $Date: 2005-11-25 16:40:52 $
+// Version 3.5       $Date: 2005-12-11 22:41:48 $
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
@@ -173,9 +173,16 @@ BEGIN_NAMESPACE_VSTGUI
 
 struct CPoint;
 
+#if DEBUG
 #define CLASS_METHODS(name, parent)             \
 	virtual bool isTypeOf (const char* s) const \
 		{ return (!strcmp (s, (#name))) ? true : parent::isTypeOf (s); }\
+	virtual const char* getClassName () const { return (#name); }
+#else
+#define CLASS_METHODS(name, parent)             \
+	virtual bool isTypeOf (const char* s) const \
+		{ return (!strcmp (s, (#name))) ? true : parent::isTypeOf (s); }
+#endif
 
 #ifdef VSTGUI_FLOAT_COORDINATES
 typedef float CCoord;
@@ -184,7 +191,7 @@ typedef long CCoord;
 #endif
 
 //-----------------------------------------------------------------------------
-// Structure CRect
+//! \brief Rect structure
 //-----------------------------------------------------------------------------
 struct CRect
 {
@@ -278,7 +285,7 @@ struct CRect
 };
 
 //-----------------------------------------------------------------------------
-// Structure CPoint
+//! \brief Point structure
 //-----------------------------------------------------------------------------
 struct CPoint
 {
@@ -286,7 +293,7 @@ struct CPoint
 	CPoint& operator () (CCoord h, CCoord v)
 	{ this->h = h; this->v = v; return *this; }
 
-	bool isInside (CRect& r) const
+	bool isInside (const CRect& r) const
 	{ return h >= r.left && h <= r.right && v >= r.top && v <= r.bottom; } 
 
 	bool operator != (const CPoint &other) const
@@ -295,7 +302,7 @@ struct CPoint
 	bool operator == (const CPoint &other) const
 	{ return (h == other.h && v == other.v); }
 
-	CPoint &offset (CCoord h, CCoord v)
+	CPoint &offset (const CCoord h, const CCoord v)
 	{ this->h += h; this->v += v; return *this; }
 
 	union
@@ -306,7 +313,7 @@ struct CPoint
 };
 
 //-----------------------------------------------------------------------------
-// Structure CColor
+//! \brief Color structure
 //-----------------------------------------------------------------------------
 struct CColor
 {
@@ -400,7 +407,7 @@ extern CColor kMagentaCColor;
 class CDragContainer;
 class CCView;
 class CAttributeListEntry;
-class CTextLabel;
+class IMouseObserver;
 
 //-----------------------------------------------------------------------------
 typedef unsigned long CViewAttributeID;
@@ -413,7 +420,7 @@ extern const CViewAttributeID kCViewTooltipAttribute;			// 'cvtt'
 
 //-----------------------------------------------------------------------------
 //-----------
-// Font Type
+// \brief Font Type
 //-----------
 enum CFont
 {
@@ -430,7 +437,7 @@ enum CFont
 };
 
 //-----------
-// Text Face
+// \brief Text Face
 //-----------
 enum CTxtFace
 {
@@ -441,7 +448,7 @@ enum CTxtFace
 };
 
 //-----------
-// Line Style
+// \brief Line Style
 //-----------
 enum CLineStyle
 {
@@ -450,7 +457,7 @@ enum CLineStyle
 };
 
 //-----------
-// Draw Mode
+// \brief Draw Mode
 //-----------
 enum CDrawMode
 {
@@ -461,7 +468,7 @@ enum CDrawMode
 };
 
 //----------------------------
-// Text Alignment (Horizontal)
+// \brief Text Alignment (Horizontal)
 //----------------------------
 enum CHoriTxtAlign
 {
@@ -471,23 +478,24 @@ enum CHoriTxtAlign
 };
 
 //----------------------------
-// Buttons Type (+modifiers)
+// \brief Buttons Type (+modifiers)
 //----------------------------
 enum CButton
 {
-	kLButton =  1,
-	kMButton =  2,
-	kRButton =  4,
-	kShift   =  8,
-	kControl = 16,
-	kAlt     = 32,
-	kApple   = 64,
-	kButton4 = 128,
-	kButton5 = 256
+	kLButton		= 1 << 1,
+	kMButton		= 1 << 2,
+	kRButton		= 1 << 3,
+	kShift			= 1 << 4,
+	kControl		= 1 << 5,
+	kAlt			= 1 << 6,
+	kApple			= 1 << 7,
+	kButton4		= 1 << 8,
+	kButton5		= 1 << 9,
+	kDoubleClick	= 1 << 10
 };
 
 //----------------------------
-// Cursor Type
+// \brief Cursor Type
 //----------------------------
 enum CCursorType
 {
@@ -504,7 +512,7 @@ enum CCursorType
 };
 
 //----------------------------
-// Knob Mode
+// \brief Knob Mode
 //----------------------------
 enum CKnobMode
 {
@@ -514,7 +522,7 @@ enum CKnobMode
 };
 
 //----------------------------
-// Draw Style
+// \brief Draw Style
 //----------------------------
 enum CDrawStyle
 {
@@ -524,7 +532,7 @@ enum CDrawStyle
 };
 
 //----------------------------
-// Mouse Wheel Axis
+// \brief Mouse Wheel Axis
 //----------------------------
 enum CMouseWheelAxis
 {
@@ -533,7 +541,7 @@ enum CMouseWheelAxis
 };
 
 //----------------------------
-// Mouse Event Results
+// \brief Mouse Event Results
 //----------------------------
 enum CMouseEventResult
 {
@@ -543,18 +551,41 @@ enum CMouseEventResult
 	kMouseDownEventHandledButDontNeedMovedOrUpEvents
 };
 
+//----------------------------
+// \brief Message Results
+//----------------------------
+enum CMessageResult 
+{
+	kMessageUnknown = 0,
+	kMessageNotified = 1
+};
+
 //-----------------------------------------------------------------------------
-// CReferenceCounter Declaration (Reference Counting)
+// CBaseObject Declaration
+//! \brief Base Object
+/// \nosubgrouping
 //-----------------------------------------------------------------------------
-class CReferenceCounter
+class CBaseObject
 {
 public:
-	CReferenceCounter () : nbReference (1) {}
-	virtual ~CReferenceCounter () {}
+	CBaseObject () : nbReference (1) {}
+	virtual ~CBaseObject () {}
+
+	//-----------------------------------------------------------------------------
+	/// \name Reference Counting Functions
+	//-----------------------------------------------------------------------------
+	//@{
+	virtual void forget () { nbReference--; if (nbReference == 0) delete this; }	///< decrease refcount and delete object if refcount == 0
+	virtual void remember () { nbReference++; }										///< increase refcount
+	long getNbReference () const { return nbReference; }							///< get refcount
+	//@}
 	
-	virtual void forget () { nbReference--; if (nbReference == 0) delete this; }
-	virtual void remember () { nbReference++; }
-	long getNbReference () const { return nbReference; }
+	//-----------------------------------------------------------------------------
+	/// \name Message Functions
+	//-----------------------------------------------------------------------------
+	//@{
+	virtual CMessageResult notify (CBaseObject* sender, const char* message) { return kMessageUnknown; }
+	//@}
 
 private:
 	long nbReference;
@@ -562,14 +593,19 @@ private:
 
 //-----------------------------------------------------------------------------
 // CDrawContext Declaration
-//! A drawing context encapsulates the drawing context of the underlying OS. It implements the drawing functions.
+//! \brief A drawing context encapsulates the drawing context of the underlying OS
+/// \nosubgrouping
 //-----------------------------------------------------------------------------
-class CDrawContext : public CReferenceCounter
+class CDrawContext : public CBaseObject
 {
 public:
 	CDrawContext (CFrame *pFrame, void *pSystemContext, void *pWindow = 0);
 	virtual ~CDrawContext ();	
 
+	//-----------------------------------------------------------------------------
+	/// \name Draw primitives
+	//-----------------------------------------------------------------------------
+	//@{
 	void moveTo (const CPoint &point);	///< move line position to point
 	void lineTo (const CPoint &point);	///< draw a line from current position to point
 	void drawLines (const CPoint* points, const long& numberOfLines);	///< draw multiple lines at once
@@ -589,49 +625,68 @@ public:
 	void fillEllipse (const CRect &rect);	///< draw a filled ellipse
 	
 	void drawPoint (const CPoint &point, CColor color);	///< draw a point
-	VSTGUI_DEPRECATED(CColor getPoint (const CPoint& point);) ///< \deprecated
-
-	VSTGUI_DEPRECATED(void floodFill (const CPoint& start);) ///< \deprecated
+	//@}
 	
+	//-----------------------------------------------------------------------------
+	/// \name Line
+	//-----------------------------------------------------------------------------
+	//@{
 	void       setLineStyle (CLineStyle style);				///< set the current line style
 	CLineStyle getLineStyle () const { return lineStyle; }	///< get the current line style
 
 	void   setLineWidth (CCoord width);						///< set the current line width
 	CCoord getLineWidth () const { return frameWidth; }		///< get the current line width
+	//@}
 
+	//-----------------------------------------------------------------------------
+	/// \name Draw Mode
+	//-----------------------------------------------------------------------------
+	//@{
 	void      setDrawMode (CDrawMode mode);					///< set the current draw mode, see CDrawMode
 	CDrawMode getDrawMode () const { return drawMode; }		///< get the current draw mode, see CDrawMode
+	//@}
 
-	void   setClipRect (const CRect &clip);					///< set the current clip
+	//-----------------------------------------------------------------------------
+	/// \name Clip
+	//-----------------------------------------------------------------------------
+	//@{
+	void   setClipRect (const CRect &clip);																			///< set the current clip
 	CRect &getClipRect (CRect &clip) const { clip = clipRect; clip.offset (-offset.h, -offset.v); return clip; }	///< get the current clip
-	void   resetClipRect ();	///< reset the clip to the default state
+	void   resetClipRect ();																						///< reset the clip to the default state
+	//@}
 
-	void   setFillColor  (const CColor color);			///< set current fill color
-	CColor getFillColor () const { return fillColor; }	///< get current fill color
-
+	//-----------------------------------------------------------------------------
+	/// \name Color
+	//-----------------------------------------------------------------------------
+	//@{
+	void   setFillColor  (const CColor color);				///< set current fill color
+	CColor getFillColor () const { return fillColor; }		///< get current fill color
 	void   setFrameColor (const CColor color);				///< set current stroke color
 	CColor getFrameColor () const { return frameColor; }	///< get current stroke color
+	//@}
 
-	void   setFontColor (const CColor color);			///< set current font color
-	CColor getFontColor () const { return fontColor; }	///< get current font color
-	void   setFont (CFont fontID, const long size = 0, long style = 0);	///< set current font
-	CFont  getFont () const { return fontId; }							///< get current font
-	long   getFontSize () const { return fontSize; }	///< get current font size
-
-	// ASCII String drawing
+	//-----------------------------------------------------------------------------
+	/// \name Font
+	//-----------------------------------------------------------------------------
+	//@{
+	void   setFontColor (const CColor color);								///< set current font color
+	CColor getFontColor () const { return fontColor; }						///< get current font color
+	void   setFont (CFont fontID, const long size = 0, long style = 0);		///< set current font
+	CFont  getFont () const { return fontId; }								///< get current font
+	long   getFontSize () const { return fontSize; }						///< get current font size
+	//@}
+	
+	//-----------------------------------------------------------------------------
+	/// \name Text
+	//-----------------------------------------------------------------------------
+	//@{
 	CCoord getStringWidth (const char* pStr);																						///< get the width of an ASCII encoded string
 	void drawString (const char *pString, const CRect &rect, const short opaque = false, const CHoriTxtAlign hAlign = kCenterText);	///< draw an ASCII encoded string
-
-	// UTF-8 String drawing
 	CCoord getStringWidthUTF8 (const char* pStr);																					///< get the width of an UTF-8 encoded string
 	void drawStringUTF8 (const char* pString, const CRect& rect, const CHoriTxtAlign hAlign = kCenterText, bool antialias = true);	///< draw an UTF-8 encoded string
 	void drawStringUTF8 (const char* string, const CPoint& _point, bool antialias = true);											///< draw an UTF-8 encoded string
-
-	VSTGUI_DEPRECATED(long getMouseButtons ();)	///< get current mouse buttons
-	VSTGUI_DEPRECATED(void getMouseLocation (CPoint &point);)	///< get current mouse location. should not be used, see CView::getMouseLocation
-	VSTGUI_DEPRECATED(bool waitDoubleClick ();)	///< check if another mouse click occurs in the near future
-	VSTGUI_DEPRECATED(bool waitDrag ();)			///< check if the mouse will be dragged
-
+	//@}
+	
 	void *getWindow () { return pWindow; }
 	void setWindow (void *ptr)  { pWindow = ptr; }
 	void getLoc (CPoint &where) const { where = penLoc; }
@@ -642,7 +697,14 @@ public:
 
 	void   *getSystemContext () const { return pSystemContext; }
 
-	virtual void forget ();
+	void forget ();
+
+	VSTGUI_DEPRECATED(CColor getPoint (const CPoint& point);)
+	VSTGUI_DEPRECATED(void floodFill (const CPoint& start);)
+	VSTGUI_DEPRECATED(long getMouseButtons ();)
+	VSTGUI_DEPRECATED(void getMouseLocation (CPoint &point);)
+	VSTGUI_DEPRECATED(bool waitDoubleClick ();)
+	VSTGUI_DEPRECATED(bool waitDrag ();)
 
 	//-------------------------------------------
 protected:
@@ -722,7 +784,8 @@ protected:
 
 //-----------------------------------------------------------------------------
 // COffscreenContext Declaration
-//! A drawing device which uses a pixmap as its drawing surface.
+//! \brief A drawing device which uses a pixmap as its drawing surface
+/// \nosubgrouping
 //-----------------------------------------------------------------------------
 class COffscreenContext : public CDrawContext
 {
@@ -769,9 +832,10 @@ protected:
 
 //-----------------------------------------------------------------------------
 // CBitmap Declaration
-//! Encapsulates various platform depended kinds of bitmaps.
+//! \brief Encapsulates various platform depended kinds of bitmaps
+/// \nosubgrouping
 //-----------------------------------------------------------------------------
-class CBitmap : public CReferenceCounter
+class CBitmap : public CBaseObject
 {
 public:
 	CBitmap (long resourceID);	///< Create a pixmap from a resource identifier
@@ -790,7 +854,6 @@ public:
 	
 	void setTransparentColor (const CColor color);
 	CColor getTransparentColor () const { return transparentCColor; }
-	VSTGUI_DEPRECATED(void setTransparencyMask (CDrawContext* pContext, const CPoint& offset = CPoint (0, 0));)
 
 	void setNoAlpha (bool state) { noAlpha = state; }
 	bool getNoAlpha () const { return noAlpha; }
@@ -806,6 +869,9 @@ public:
 #if GDIPLUS
 	Gdiplus::Bitmap* getBitmap ();
 #endif
+
+	VSTGUI_DEPRECATED(void setTransparencyMask (CDrawContext* pContext, const CPoint& offset = CPoint (0, 0));)
+
 	//-------------------------------------------
 protected:
 	CBitmap ();
@@ -842,25 +908,43 @@ protected:
 #endif
 };
 
-enum {
-	kMessageUnknown = 0,
-	kMessageNotified = 1
-};
-
 //-----------------------------------------------------------------------------
 // CView Declaration
+//! \brief Base Class of all view objects
+/// \nosubgrouping
 //-----------------------------------------------------------------------------
-class CView : public CReferenceCounter
+class CView : public CBaseObject
 {
 public:
+	//-----------------------------------------------------------------------------
+	/// \name Constructor
+	//-----------------------------------------------------------------------------
+	//@{
 	CView (const CRect &size);
+	//@}
 	virtual ~CView ();
 
-	virtual void draw (CDrawContext *pContext);	///< called if the view should draw itself
-	virtual void drawRect (CDrawContext *pContext, const CRect& updateRect) { draw (pContext); }	///< called if the view should draw itself
+	//-----------------------------------------------------------------------------
+	/// \name Draw and Update Functions
+	//-----------------------------------------------------------------------------
+	//@{
+	virtual void draw (CDrawContext *pContext);															///< called if the view should draw itself
+	virtual void drawRect (CDrawContext *pContext, const CRect& updateRect) { draw (pContext); }		///< called if the view should draw itself
 	virtual bool checkUpdate (CRect& updateRect) const { return updateRect.rectOverlap (size); }
-	VSTGUI_DEPRECATED(virtual void mouse (CDrawContext *pContext, CPoint &where, long buttons = -1);)	///< called if a mouse click event occurs \deprecated
 
+	virtual bool isDirty () const { return bDirty; }													///< check if view is dirty
+	virtual void setDirty (const bool val = true) { bDirty = val; }										///< set the view to dirty so that it is redrawn in the next idle. Thread Safe !
+
+	#if VSTGUI_USE_SYSTEM_EVENTS_FOR_DRAWING
+	virtual void invalidRect (const CRect rect);														///< mark rect as invalid
+	virtual void invalid () { invalidRect (size); setDirty (false); }									///< mark whole view as invalid
+	#endif
+	//@}
+
+	//-----------------------------------------------------------------------------
+	/// \name Mouse Functions
+	//-----------------------------------------------------------------------------
+	//@{
 	virtual CMouseEventResult onMouseDown (CPoint &where, const long& buttons) {return kMouseEventNotImplemented;}		///< called when a mouse down event occurs
 	virtual CMouseEventResult onMouseUp (CPoint &where, const long& buttons) {return kMouseEventNotImplemented;}		///< called when a mouse up event occurs
 	virtual CMouseEventResult onMouseMoved (CPoint &where, const long& buttons) {return kMouseEventNotImplemented;}		///< called when a mouse move event occurs
@@ -868,78 +952,89 @@ public:
 	virtual CMouseEventResult onMouseEntered (CPoint &where, const long& buttons) {return kMouseEventNotImplemented;}	///< called when the mouse enters this view
 	virtual CMouseEventResult onMouseExited (CPoint &where, const long& buttons) {return kMouseEventNotImplemented;}	///< called when the mouse leaves this view
 	
-	virtual void setBackground (CBitmap *background);				///< set the background image of this view
-	virtual CBitmap *getBackground () const { return pBackground; }	///< get the background image of this view
+	virtual bool hitTest (const CPoint& where, const long buttons = -1) { return where.isInside (mouseableArea); }		///< check if where hits this view
 
-	virtual long onKeyDown (VstKeyCode& keyCode);	///< called if a key down event occurs and this view has focus
-	virtual long onKeyUp (VstKeyCode& keyCode);		///< called if a key up event occurs and this view has focus
-
-	virtual bool onWheel (const CPoint &where, const float &distance, const long &buttons);	///< called if a mouse wheel event is happening over this view
+	virtual bool onWheel (const CPoint &where, const float &distance, const long &buttons);									///< called if a mouse wheel event is happening over this view
 	virtual bool onWheel (const CPoint &where, const CMouseWheelAxis &axis, const float &distance, const long &buttons);	///< called if a mouse wheel event is happening over this view
 
-	virtual bool onDrop (CDragContainer* drag, const CPoint& where) { return false; }	///< called if a drag is dropped onto this view
-	virtual void onDragEnter (CDragContainer* drag, const CPoint& where) {}				///< called if a drag is entering this view
-	virtual void onDragLeave (CDragContainer* drag, const CPoint& where) {}				///< called if a drag is leaving this view
-	virtual void onDragMove (CDragContainer* drag, const CPoint& where) {}				///< called if a drag is current moved over this view
+	virtual bool onDrop (CDragContainer* drag, const CPoint& where) { return false; }			///< called if a drag is dropped onto this view
+	virtual void onDragEnter (CDragContainer* drag, const CPoint& where) {}						///< called if a drag is entering this view
+	virtual void onDragLeave (CDragContainer* drag, const CPoint& where) {}						///< called if a drag is leaving this view
+	virtual void onDragMove (CDragContainer* drag, const CPoint& where) {}						///< called if a drag is current moved over this view
 
-	virtual void looseFocus ();															///< called if view should loose focus
-	virtual void takeFocus ();															///< called if view should take focus
-
-	virtual bool isDirty () const { return bDirty; }											///< check if view is dirty
-	virtual void setDirty (const bool val = true) { bDirty = val; }								///< set the view to dirty so that it is redrawn in the next idle. Thread Safe !
-
-	#if VSTGUI_USE_SYSTEM_EVENTS_FOR_DRAWING
-	virtual void invalidRect (const CRect rect);
-	virtual void invalid () { invalidRect (size); setDirty (false); }
-	#endif
-	
 	virtual void setMouseEnabled (const bool bEnable = true) { bMouseEnabled = bEnable; }		///< turn on/off mouse usage for this view
 	virtual bool getMouseEnabled () const { return bMouseEnabled; }								///< get the state of wheather this view uses the mouse or not
 
 	virtual void setMouseableArea (const CRect &rect)  { mouseableArea = rect; }				///< set the area in which the view reacts to the mouse
 	virtual CRect &getMouseableArea (CRect &rect) const { rect = mouseableArea; return rect;}	///< get the area in which the view reacts to the mouse
+	virtual const CRect& getMouseableArea () const { return mouseableArea; }					///< read only access to the mouseable area
+	//@}
 
-	virtual bool hitTest (const CPoint& where, const long buttons = -1) { return where.isInside (mouseableArea); }	///< check if where hits this view
+	//-----------------------------------------------------------------------------
+	/// \name Keyboard Functions
+	//-----------------------------------------------------------------------------
+	//@{
+	virtual long onKeyDown (VstKeyCode& keyCode);														///< called if a key down event occurs and this view has focus
+	virtual long onKeyUp (VstKeyCode& keyCode);															///< called if a key up event occurs and this view has focus
+	//@}
 
-	virtual void setTransparency (bool val) { bTransparencyEnabled = val; }			///< set views transparent state
-	virtual bool getTransparency () const { return bTransparencyEnabled; }			///< is view transparent ?
+	//-----------------------------------------------------------------------------
+	/// \name View Size Functions
+	//-----------------------------------------------------------------------------
+	//@{
+	CCoord getHeight () const { return size.height (); }										///< get the height of the view
+	CCoord getWidth ()  const { return size.width (); }											///< get the width of the view
+	virtual void setViewSize (CRect &rect);														///< set views size
+	virtual CRect &getViewSize (CRect &rect) const { rect = size; return rect; }				///< returns the current view size
+	virtual const CRect& getViewSize () const { return size; }									///< read only access to view size
+	virtual CRect getVisibleSize () const;														///< returns the visible size of the view
+	virtual void parentSizeChanged () {}														///< notification that one of the views parent has changed its size
+	virtual CPoint& frameToLocal (CPoint& point) const;											///< conversion from frame coordinates to local view coordinates
+	virtual CPoint& localToFrame (CPoint& point) const;											///< conversion from local view coordinates to frame coordinates
+	//@}
 
-	CCoord getHeight () const { return size.height (); }							///< get the height of the view
-	CCoord getWidth ()  const { return size.width (); }								///< get the width of the view
+	//-----------------------------------------------------------------------------
+	/// \name Focus Functions
+	//-----------------------------------------------------------------------------
+	//@{
+	virtual void looseFocus ();																	///< called if view should loose focus
+	virtual void takeFocus ();																	///< called if view should take focus
+	virtual bool wantsFocus () const { return bWantsFocus; }									///< check if view supports focus
+	virtual void setWantsFocus (bool state) { bWantsFocus = state; }							///< set focus support on/off
+	//@}
 
-	virtual void setViewSize (CRect &rect);											///< set views size
-	virtual CRect &getViewSize (CRect &rect) const { rect = size; return rect; }	///< returns the current view size
-
-	virtual CRect getVisibleSize () const;											///< returns the visible size of the view
-
-	virtual void parentSizeChanged () {}											///< notification that one of the views parent has changed its size
-
-	virtual bool removed (CView* parent) { bIsAttached = false; return true; }		///< view is removed from parent view
-	virtual bool attached (CView* view) { bIsAttached = true; return true; }		///< view is attached to a parent view
-
-	bool isAttached () const { return bIsAttached; }								///< is View attached to a parentView
-
-	VSTGUI_DEPRECATED(virtual void getMouseLocation (CDrawContext* context, CPoint &point);)			///< get current mouse location in local view coordinates
-
-	virtual CPoint& frameToLocal (CPoint& point) const;		///< conversion from frame coordinates to local view coordinates
-	virtual CPoint& localToFrame (CPoint& point) const;		///< conversion from local view coordinates to frame coordinates
-
+	//-----------------------------------------------------------------------------
+	/// \name Attribute Functions
+	//-----------------------------------------------------------------------------
+	//@{
 	bool getAttributeSize (const CViewAttributeID id, long& outSize) const;									///< get the size of an attribute
 	bool getAttribute (const CViewAttributeID id, const long inSize, void* outData, long& outSize) const;	///< get an attribute
 	bool setAttribute (const CViewAttributeID id, const long inSize, const void* inData);					///< set an attribute
+	//@}
 
-	CView  *getParentView () const { return pParentView; }
-	CFrame *getFrame () const { return pParentFrame; }
-	virtual VSTGUIEditorInterface *getEditor () const;
+	virtual void setBackground (CBitmap *background);											///< set the background image of this view
+	virtual CBitmap *getBackground () const { return pBackground; }								///< get the background image of this view
 
-	virtual long notify (CView* sender, const char* message);
+	virtual void setTransparency (bool val) { bTransparencyEnabled = val; }						///< set views transparent state
+	virtual bool getTransparency () const { return bTransparencyEnabled; }						///< get views transparent state
+
+	virtual bool removed (CView* parent);														///< view is removed from parent view
+	virtual bool attached (CView* parent);														///< view is attached to a parent view
+	bool isAttached () const { return bIsAttached; }											///< is view attached to a parentView
+
+	//-----------------------------------------------------------------------------
+	/// \name Parent Functions
+	//-----------------------------------------------------------------------------
+	//@{
+	CView  *getParentView () const { return pParentView; }										///< get parent view
+	CFrame *getFrame () const { return pParentFrame; }											///< get frame
+	virtual VSTGUIEditorInterface *getEditor () const;											///< get editor
+	//@}
+	
 	#if !VSTGUI_USE_SYSTEM_EVENTS_FOR_DRAWING
 	void redraw ();
 	virtual void redrawRect (CDrawContext* context, const CRect& rect);
 	#endif
-
-	virtual bool wantsFocus () const { return bWantsFocus; }			///< check if view supports focus
-	virtual void setWantsFocus (bool state) { bWantsFocus = state; }	///< set focus support on/off
 
 	#if DEBUG
 	virtual void dumpInfo ();
@@ -948,16 +1043,23 @@ public:
 	virtual bool isTypeOf (const char* s) const
 		{ return (!strcmp (s, "CView")); }
 
-	VSTGUI_DEPRECATED(virtual void setParentView (CView *pParentView) { this->pParentView = pParentView; })  ///< \deprecated
-	VSTGUI_DEPRECATED(virtual void setFrame (CFrame *pParent) { this->pParentFrame = pParent; })  ///< \deprecated
-	VSTGUI_DEPRECATED(virtual void getFrameTopLeftPos (CPoint& topLeft) const;) ///< \deprecated
+	#if DEBUG
+	virtual const char* getClassName () const { return "CView"; }
+	#endif
+	
+	// overwrites
+	CMessageResult notify (CBaseObject* sender, const char* message);
+
+	//-------------------------------------------
+
+	VSTGUI_DEPRECATED(virtual void mouse (CDrawContext *pContext, CPoint &where, long buttons = -1);)
+	VSTGUI_DEPRECATED(virtual void getMouseLocation (CDrawContext* context, CPoint &point);)
+	VSTGUI_DEPRECATED(virtual void setParentView (CView *pParentView) { this->pParentView = pParentView; })
+	VSTGUI_DEPRECATED(virtual void setFrame (CFrame *pParent) { this->pParentFrame = pParent; })
+	VSTGUI_DEPRECATED(virtual void getFrameTopLeftPos (CPoint& topLeft) const;)
 
 	//-------------------------------------------
 protected:
-	friend class CControl;
-	friend class CFrame;
-	friend class CViewContainer;
-
 	CRect  size;
 	CRect  mouseableArea;
 
@@ -982,14 +1084,24 @@ extern char* kMsgCheckIfViewContainer;
 
 //-----------------------------------------------------------------------------
 // CViewContainer Declaration
-//! Container Class of CView objects.
+//! \brief Container Class of CView objects
+/// \nosubgrouping
 //-----------------------------------------------------------------------------
 class CViewContainer : public CView
 {
 public:
+	//-----------------------------------------------------------------------------
+	/// \name Constructor
+	//-----------------------------------------------------------------------------
+	//@{
 	CViewContainer (const CRect &size, CFrame *pParent, CBitmap *pBackground = 0);
+	//@}
 	virtual ~CViewContainer ();
 
+	//-----------------------------------------------------------------------------
+	/// \name Sub View Functions
+	//-----------------------------------------------------------------------------
+	//@{
 	virtual void addView (CView *pView);	///< add a child view
 	virtual void addView (CView *pView, CRect &mouseableArea, bool mouseEnabled = true);	///< add a child view
 	virtual void removeView (CView *pView, const bool &withForget = true);	///< remove a child view
@@ -997,14 +1109,21 @@ public:
 	virtual bool isChild (CView *pView) const;	///< check if pView is a child view of this container
 	virtual long getNbViews () const;			///< get the number of child views
 	virtual CView *getView (long index) const;	///< get the child view at index
+	virtual CView *getViewAt (const CPoint& where, bool deep = false) const;	///< get the view at point where
+	//@}
 
+	//-----------------------------------------------------------------------------
+	/// \name Background Functions
+	//-----------------------------------------------------------------------------
+	//@{
 	virtual void setBackgroundColor (const CColor color);	///< set the background color (will only be drawn if this container is not set to transparent and does not have a background bitmap)
 	virtual CColor getBackgroundColor () const { return backgroundColor; }	///< get the background color
 	virtual void setBackgroundOffset (const CPoint &p) { backgroundOffset = p; }	///< set the offset of the background bitmap
 	virtual const CPoint& getBackgroundOffset () const { return backgroundOffset; }	///< get the offset of the background bitmap
-
 	virtual void drawBackgroundRect (CDrawContext *pContext, CRect& _updateRect);	///< draw the background
+	//@}
 
+	#if !VSTGUI_USE_SYSTEM_EVENTS_FOR_DRAWING
 	enum {
 		kNormalUpdate = 0,		///< this mode redraws the whole container if something is dirty
 		kOnlyDirtyUpdate		///< this mode only redraws the views which are dirty
@@ -1012,57 +1131,54 @@ public:
 
 	virtual void setMode (long val) { mode = val; }	///< set the update mode
 	virtual long getMode () const { return mode; }	///< get the update mode
-
+	#endif
+	
 	virtual void useOffscreen (bool b);	///< turn on/off using an offscreen
-
-	VSTGUI_DEPRECATED(virtual CView *getCurrentView () const;)	///< get the current view under the mouse
-	virtual CView *getViewAt (const CPoint& where, bool deep = false) const;	///< get the view at point where
-
-	CRect getVisibleSize (const CRect rect) const;	///< get the visible size of rect
 
 	void modifyDrawContext (CCoord save[4], CDrawContext* pContext);
 	void restoreDrawContext (CDrawContext* pContext, CCoord save[4]);
 
-	// CView
-	virtual void draw (CDrawContext *pContext);
-	virtual void drawRect (CDrawContext *pContext, const CRect& updateRect);
-	VSTGUI_DEPRECATED(virtual void mouse (CDrawContext *pContext, CPoint &where, long buttons = -1);)
-	virtual CMouseEventResult onMouseDown (CPoint &where, const long& buttons);
-	virtual CMouseEventResult onMouseUp (CPoint &where, const long& buttons);
-	virtual CMouseEventResult onMouseMoved (CPoint &where, const long& buttons);
-	virtual bool onWheel (const CPoint &where, const float &distance, const long &buttons);
-	virtual bool onWheel (const CPoint &where, const CMouseWheelAxis &axis, const float &distance, const long &buttons);
-	#if !VSTGUI_USE_SYSTEM_EVENTS_FOR_DRAWING
-	virtual void update (CDrawContext *pContext);
-	virtual void redrawRect (CDrawContext* context, const CRect& rect);
-	#endif
-	virtual bool hitTest (const CPoint& where, const long buttons = -1);
-	virtual long onKeyDown (VstKeyCode& keyCode);
-	virtual long onKeyUp (VstKeyCode& keyCode);
-	virtual long notify (CView* sender, const char* message);
-
-	virtual bool onDrop (CDragContainer* drag, const CPoint& where);
-	virtual void onDragEnter (CDragContainer* drag, const CPoint& where);
-	virtual void onDragLeave (CDragContainer* drag, const CPoint& where);
-	virtual void onDragMove (CDragContainer* drag, const CPoint& where);
-
-	virtual void looseFocus ();
-	virtual void takeFocus ();
 	virtual bool advanceNextFocusView (CView* oldFocus, bool reverse = false);
 
-	virtual bool isDirty () const;
+	// CView
+	void draw (CDrawContext *pContext);
+	void drawRect (CDrawContext *pContext, const CRect& updateRect);
+	CMouseEventResult onMouseDown (CPoint &where, const long& buttons);
+	CMouseEventResult onMouseUp (CPoint &where, const long& buttons);
+	CMouseEventResult onMouseMoved (CPoint &where, const long& buttons);
+	bool onWheel (const CPoint &where, const float &distance, const long &buttons);
+	bool onWheel (const CPoint &where, const CMouseWheelAxis &axis, const float &distance, const long &buttons);
+	#if !VSTGUI_USE_SYSTEM_EVENTS_FOR_DRAWING
+	void update (CDrawContext *pContext);
+	void redrawRect (CDrawContext* context, const CRect& rect);
+	#endif
+	bool hitTest (const CPoint& where, const long buttons = -1);
+	long onKeyDown (VstKeyCode& keyCode);
+	long onKeyUp (VstKeyCode& keyCode);
+	CMessageResult notify (CBaseObject* sender, const char* message);
+
+	bool onDrop (CDragContainer* drag, const CPoint& where);
+	void onDragEnter (CDragContainer* drag, const CPoint& where);
+	void onDragLeave (CDragContainer* drag, const CPoint& where);
+	void onDragMove (CDragContainer* drag, const CPoint& where);
+
+	void looseFocus ();
+	void takeFocus ();
+
+	bool isDirty () const;
 
 	#if VSTGUI_USE_SYSTEM_EVENTS_FOR_DRAWING
-	virtual void invalid ();
-	virtual void invalidRect (const CRect rect);
+	void invalid ();
+	void invalidRect (const CRect rect);
 	virtual bool invalidateDirtyViews ();
 	#endif
 	
-	virtual void setViewSize (CRect &rect);
+	void setViewSize (CRect &rect);
 	virtual void parentSizeChanged ();
+	CRect getVisibleSize (const CRect rect) const;
 
 	virtual bool removed (CView* parent);
-	virtual bool attached (CView* view);
+	virtual bool attached (CView* parent);
 		
 	virtual CPoint& frameToLocal (CPoint& point) const;
 	virtual CPoint& localToFrame (CPoint& point) const;
@@ -1074,13 +1190,18 @@ public:
 	virtual void dumpHierarchy ();
 	#endif
 
+	VSTGUI_DEPRECATED(virtual void mouse (CDrawContext *pContext, CPoint &where, long buttons = -1);)
+	VSTGUI_DEPRECATED(virtual CView *getCurrentView () const;)	///< get the current view under the mouse
+
 	//-------------------------------------------
 protected:
 	bool hitTestSubViews (const CPoint& where, const long buttons = -1);
 
 	CCView  *pFirstView;
 	CCView  *pLastView;
+	#if !VSTGUI_USE_SYSTEM_EVENTS_FOR_DRAWING
 	long mode;
+	#endif
 	COffscreenContext *pOffscreenContext;
 	CColor backgroundColor;
 	CPoint backgroundOffset;
@@ -1093,14 +1214,19 @@ protected:
 
 //-----------------------------------------------------------------------------
 // CFrame Declaration
-//! The CFrame is the parent container of all views.
+//! \brief The CFrame is the parent container of all views
+/// \nosubgrouping
 //-----------------------------------------------------------------------------
 class CFrame : public CViewContainer
 {
 public:
+	//-----------------------------------------------------------------------------
+	/// \name Constructor
+	//-----------------------------------------------------------------------------
+	//@{
 	CFrame (const CRect &size, void *pSystemWindow, VSTGUIEditorInterface *pEditor);
 	CFrame (const CRect &size, const char *pTitle, VSTGUIEditorInterface *pEditor, const long style = 0);
-	
+	//@}
 	virtual ~CFrame ();
 
 	virtual bool open (CPoint *pPoint = 0);
@@ -1123,15 +1249,12 @@ public:
 	virtual long   setModalView (CView *pView);
 	virtual CView *getModalView () const { return pModalView; }
 
-	virtual void setTooltipView (CTextLabel* view) { tooltipView = view; }
-	virtual CTextLabel* getTooltipView () const { return tooltipView; }
-	
 	virtual void  beginEdit (long index);
 	virtual void  endEdit (long index);
 
-	VSTGUI_DEPRECATED(virtual bool  getCurrentLocation (CPoint &where);)
-	virtual bool getCurrentMouseLocation (CPoint &where);
-	virtual void setCursor (CCursorType type);
+	virtual bool getCurrentMouseLocation (CPoint &where) const;				///< get current mouse location
+	virtual long getCurrentMouseButtons () const;							///< get current mouse buttons and key modifiers
+	virtual void setCursor (CCursorType type);								///< set mouse cursor
 
 	virtual void   setFocusView (CView *pView);
 	virtual CView *getFocusView () const { return pFocusView; }
@@ -1145,14 +1268,12 @@ public:
 	virtual void setOpenFlag (bool val) { bOpenFlag = val;};
 	virtual bool getOpenFlag () const { return bOpenFlag; };
 
-	#if VSTGUI_USE_SYSTEM_EVENTS_FOR_DRAWING
-	virtual void invalid () { invalidRect (size); bDirty = false; }
-	virtual void invalidRect (const CRect rect);
-	#endif
 	virtual void invalidate (const CRect &rect);
 
-	virtual bool updatesDisabled () const { return bUpdatesDisabled; }
-	virtual bool updatesDisabled (bool state) { bool before = bUpdatesDisabled; bUpdatesDisabled = state; return before; }
+	#if VSTGUI_USE_SYSTEM_EVENTS_FOR_DRAWING
+	void invalid () { invalidRect (size); bDirty = false; }
+	void invalidRect (const CRect rect);
+	#endif
 
 	#if WINDOWS
 	HWND getOuterWindow () const;
@@ -1166,28 +1287,27 @@ public:
 	void *getParentSystemWindow () const { return pSystemWindow; }
 	void setParentSystemWindow (void *val) { pSystemWindow = val; }
 
-	virtual void removeView (CView *pView, const bool &withForget = true);
-	virtual void removeAll (const bool &withForget = true);
+	void removeView (CView *pView, const bool &withForget = true);
+	void removeAll (const bool &withForget = true);
 
 	// CView
-	virtual void draw (CDrawContext *pContext);
-	virtual void drawRect (CDrawContext *pContext, const CRect& updateRect);
-	virtual void draw (CView *pView = 0);
-	VSTGUI_DEPRECATED(virtual void mouse (CDrawContext *pContext, CPoint &where, long buttons = -1);)
-	virtual CMouseEventResult onMouseDown (CPoint &where, const long& buttons);
-	virtual CMouseEventResult onMouseUp (CPoint &where, const long& buttons);
-	virtual CMouseEventResult onMouseMoved (CPoint &where, const long& buttons);
-	virtual bool onWheel (const CPoint &where, const float &distance, const long &buttons);
-	virtual bool onWheel (const CPoint &where, const CMouseWheelAxis &axis, const float &distance, const long &buttons);
-	virtual long onKeyDown (VstKeyCode& keyCode);
-	virtual long onKeyUp (VstKeyCode& keyCode);
+	void draw (CDrawContext *pContext);
+	void drawRect (CDrawContext *pContext, const CRect& updateRect);
+	CMouseEventResult onMouseDown (CPoint &where, const long& buttons);
+	CMouseEventResult onMouseUp (CPoint &where, const long& buttons);
+	CMouseEventResult onMouseMoved (CPoint &where, const long& buttons);
+	bool onWheel (const CPoint &where, const float &distance, const long &buttons);
+	bool onWheel (const CPoint &where, const CMouseWheelAxis &axis, const float &distance, const long &buttons);
+	long onKeyDown (VstKeyCode& keyCode);
+	long onKeyUp (VstKeyCode& keyCode);
 #if !VSTGUI_USE_SYSTEM_EVENTS_FOR_DRAWING
-	virtual void update (CDrawContext *pContext);
+	void update (CDrawContext *pContext);
 #endif
-	virtual void setViewSize (CRect& inRect);
-	VSTGUI_DEPRECATED(virtual CView *getCurrentView () const;)
+	void setViewSize (CRect& rect);
 
 	virtual VSTGUIEditorInterface *getEditor () const { return pEditor; }
+	virtual IMouseObserver *getMouseObserver () const { return pMouseObserver; }
+	virtual void setMouseObserver (IMouseObserver* observer) { pMouseObserver = observer; }
 
 	#if DEBUG
 	virtual void dumpHierarchy ();
@@ -1195,21 +1315,25 @@ public:
 
 	CLASS_METHODS(CFrame, CViewContainer)
 
+	VSTGUI_DEPRECATED(virtual bool getCurrentLocation (CPoint &where);)
+	VSTGUI_DEPRECATED(virtual void mouse (CDrawContext *pContext, CPoint &where, long buttons = -1);)
+	VSTGUI_DEPRECATED(virtual CView *getCurrentView () const;)
+	VSTGUI_DEPRECATED(void draw (CView *pView = 0);)
+
 	//-------------------------------------------
 protected:
 	bool   initFrame (void *pSystemWin);
 
 	VSTGUIEditorInterface   *pEditor;
+	IMouseObserver			*pMouseObserver;
 	
 	void    *pSystemWindow;
 	CView   *pModalView;
 	CView   *pFocusView;
-	CTextLabel* tooltipView;
 
 	bool    bFirstDraw;
 	bool    bOpenFlag;
 	bool    bDropActive;
-	bool	bUpdatesDisabled;
 
 #if WINDOWS
 	void      *pHwnd;
@@ -1251,9 +1375,19 @@ private:
 };
 
 //-----------------------------------------------------------------------------
+// IMouseObserver Declaration
+//-----------------------------------------------------------------------------
+class IMouseObserver
+{
+public:
+	virtual void onMouseEntered (CView* view, CFrame* frame) = 0;
+	virtual void onMouseExited (CView* view, CFrame* frame) = 0;
+};
+
+//-----------------------------------------------------------------------------
 // CDragContainer Declaration
 //-----------------------------------------------------------------------------
-class CDragContainer : public CReferenceCounter
+class CDragContainer : public CBaseObject
 {
 public:
 	CDragContainer (void* platformDrag);
@@ -1282,6 +1416,7 @@ protected:
 	void* lastItem;
 };
 
+/// \cond ignore
 //-----------------------------------------------------------------------------
 // CCView Declaration
 //-----------------------------------------------------------------------------
@@ -1295,6 +1430,7 @@ public:
 	CCView   *pNext;
 	CCView   *pPrevious;
 };
+/// \endcond
 
 END_NAMESPACE_VSTGUI
 

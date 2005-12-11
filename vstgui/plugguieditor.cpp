@@ -54,7 +54,7 @@ This is the same as the AEffGUIEditor class except that this one allows
 the VSTGUI lib to build without VST dependencies.
 */
 PluginGUIEditor::PluginGUIEditor (void *pEffect) 
-	: effect (pEffect), frame (0), inIdleStuff (false)
+	: effect (pEffect), inIdleStuff (false)
 {
 	systemWindow = 0;
 	lLastTicks   = getTicks ();

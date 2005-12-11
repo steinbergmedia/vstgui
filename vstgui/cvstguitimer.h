@@ -2,7 +2,7 @@
 // VST Plug-Ins SDK
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 //
-// Version 3.5       $Date: 2005-11-25 17:22:30 $
+// Version 3.5       $Date: 2005-12-11 22:41:48 $
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
@@ -41,12 +41,12 @@ BEGIN_NAMESPACE_VSTGUI
 
 //-----------------------------------------------------------------------------
 // CVSTGUITimer Declaration
-//! A timer class, which posts timer messages to CViews.
+//! A timer class, which posts timer messages to CBaseObjects.
 //-----------------------------------------------------------------------------
-class CVSTGUITimer : public CReferenceCounter
+class CVSTGUITimer : public CBaseObject
 {
 public:
-	CVSTGUITimer (CView* timerView, int fireTime = 100);
+	CVSTGUITimer (CBaseObject* timerObject, int fireTime = 100);
 	virtual ~CVSTGUITimer ();
 	
 	virtual bool start ();							///< starts the timer
@@ -55,11 +55,11 @@ public:
 	virtual bool setFireTime (int newFireTime);		///< in milliseconds
 
 //-----------------------------------------------------------------------------
-	static const char* kMsgTimer;					///< message string posted to CView's notify method
+	static const char* kMsgTimer;					///< message string posted to CBasObject's notify method
 //-----------------------------------------------------------------------------
 protected:
 	int fireTime;
-	CView* timerView;
+	CBaseObject* timerObject;
 
 	void* platformTimer;
 	#if MAC
