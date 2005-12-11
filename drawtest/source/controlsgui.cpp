@@ -152,7 +152,9 @@ enum
 ControlsGUI::ControlsGUI (const CRect &inSize, CFrame *frame, CBitmap *pBackground)
 : CViewContainer (inSize, frame, pBackground), animTimer (0)
 {
+	#if !VSTGUI_USE_SYSTEM_EVENTS_FOR_DRAWING
 	setMode (kOnlyDirtyUpdate);
+	#endif
 
 	// get version
 	int version = (VSTGUI_VERSION_MAJOR << 16) + VSTGUI_VERSION_MINOR;
@@ -368,7 +370,7 @@ ControlsGUI::ControlsGUI (const CRect &inSize, CFrame *frame, CBitmap *pBackgrou
 	//--CTextEdit--------------------------------------
 	size (0, 0, 50, 12);
 	size.offset (350 + 10, 70 + 30);
-	cTextEdit = new CTextEdit (size, this, kTextEditTag, 0, 0, k3DIn);
+	cTextEdit = new CTextEdit (size, this, kTextEditTag, 0, 0, k3DIn|kDoubleClickStyle);
 	if (cTextEdit)
 	{
 		cTextEdit->setFont (kNormalFontVerySmall);
@@ -487,12 +489,6 @@ ControlsGUI::ControlsGUI (const CRect &inSize, CFrame *frame, CBitmap *pBackgrou
 	addView (outsideLabel);
 	outsideLabel->setDirty (true);
 	outsideLabel->setAttribute (kCViewTooltipAttribute,strlen ("outsideLabel")+1,"outsideLabel");
-
-	size (inSize.left, inSize.bottom - 20, inSize.right, inSize.bottom);
-	tooltipView = new CTextLabel (size);
-	addView (tooltipView);
-	if (frame)
-		frame->setTooltipView (tooltipView);
 }
 
 bool ControlsGUI::attached (CView* view)
@@ -504,8 +500,6 @@ bool ControlsGUI::attached (CView* view)
 
 bool ControlsGUI::removed (CView* parent)
 {
-	if (getFrame ())
-		getFrame ()->setTooltipView (0);
 	if (animTimer)
 	{
 		animTimer->stop();
@@ -513,7 +507,7 @@ bool ControlsGUI::removed (CView* parent)
 	return CViewContainer::removed (parent);
 }
 
-long ControlsGUI::notify (CView* sender, const char* message)
+CMessageResult ControlsGUI::notify (CBaseObject* sender, const char* message)
 {
 	if (message == CVSTGUITimer::kMsgTimer)
 	{
