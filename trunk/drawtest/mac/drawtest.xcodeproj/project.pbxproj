@@ -126,6 +126,9 @@
 		F4C9F47407B2379F00010DAD /* pdrawtestmain.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4C9F47307B2379F00010DAD /* pdrawtestmain.cpp */; };
 		F4F0FCBF08D181460014E7D7 /* cvstguitimer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4F0FCBD08D181460014E7D7 /* cvstguitimer.cpp */; };
 		F4F0FCC008D181460014E7D7 /* cvstguitimer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4F0FCBD08D181460014E7D7 /* cvstguitimer.cpp */; };
+		F4F98FCB09499C4B00E01A9F /* ctooltipsupport.h in Headers */ = {isa = PBXBuildFile; fileRef = F4F98FC909499C4B00E01A9F /* ctooltipsupport.h */; };
+		F4F98FCC09499C4B00E01A9F /* ctooltipsupport.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4F98FCA09499C4B00E01A9F /* ctooltipsupport.cpp */; };
+		F4F98FCD09499C4B00E01A9F /* ctooltipsupport.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4F98FCA09499C4B00E01A9F /* ctooltipsupport.cpp */; };
 		F4FD4C6F08865DB400F20B72 /* cfileselector.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4FD4C6E08865DB400F20B72 /* cfileselector.cpp */; };
 		F4FD4C7008865DB400F20B72 /* cfileselector.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4FD4C6E08865DB400F20B72 /* cfileselector.cpp */; };
 /* End PBXBuildFile section */
@@ -249,6 +252,8 @@
 		F4C9F20407B2335F00010DAD /* aeffguieditor.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = aeffguieditor.cpp; path = ../../vstgui/aeffguieditor.cpp; sourceTree = SOURCE_ROOT; };
 		F4C9F47307B2379F00010DAD /* pdrawtestmain.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = pdrawtestmain.cpp; path = ../source/pdrawtestmain.cpp; sourceTree = SOURCE_ROOT; };
 		F4F0FCBD08D181460014E7D7 /* cvstguitimer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = cvstguitimer.cpp; path = ../../vstgui/cvstguitimer.cpp; sourceTree = SOURCE_ROOT; };
+		F4F98FC909499C4B00E01A9F /* ctooltipsupport.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ctooltipsupport.h; path = ../../vstgui/ctooltipsupport.h; sourceTree = SOURCE_ROOT; };
+		F4F98FCA09499C4B00E01A9F /* ctooltipsupport.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = ctooltipsupport.cpp; path = ../../vstgui/ctooltipsupport.cpp; sourceTree = SOURCE_ROOT; };
 		F4FD4C6E08865DB400F20B72 /* cfileselector.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = cfileselector.cpp; path = ../../vstgui/cfileselector.cpp; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
@@ -349,6 +354,8 @@
 			isa = PBXGroup;
 			children = (
 				F4C9F20407B2335F00010DAD /* aeffguieditor.cpp */,
+				F4F98FC909499C4B00E01A9F /* ctooltipsupport.h */,
+				F4F98FCA09499C4B00E01A9F /* ctooltipsupport.cpp */,
 				F4FD4C6E08865DB400F20B72 /* cfileselector.cpp */,
 				0C01252807AC359F009EC388 /* cscrollview.cpp */,
 				0C01252A07AC359F009EC388 /* ctabview.cpp */,
@@ -525,6 +532,7 @@
 				0CF355CB07B173A3002BFE50 /* pdrawtestview.h in Headers */,
 				0CF355CD07B173A3002BFE50 /* pprimitivesviews.h in Headers */,
 				0CF355FE07B17600002BFE50 /* controlsgui.h in Headers */,
+				F4F98FCB09499C4B00E01A9F /* ctooltipsupport.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -794,6 +802,7 @@
 				F4FD4C7008865DB400F20B72 /* cfileselector.cpp in Sources */,
 				F467335808BF64B000CBCAD2 /* CAVectorUnit.cpp in Sources */,
 				F4F0FCBF08D181460014E7D7 /* cvstguitimer.cpp in Sources */,
+				F4F98FCC09499C4B00E01A9F /* ctooltipsupport.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -816,6 +825,7 @@
 				F4C9F47407B2379F00010DAD /* pdrawtestmain.cpp in Sources */,
 				F4FD4C6F08865DB400F20B72 /* cfileselector.cpp in Sources */,
 				F4F0FCC008D181460014E7D7 /* cvstguitimer.cpp in Sources */,
+				F4F98FCD09499C4B00E01A9F /* ctooltipsupport.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

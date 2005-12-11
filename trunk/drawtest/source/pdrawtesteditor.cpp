@@ -113,6 +113,7 @@ protected:
 
 DrawTestEditor::DrawTestEditor (void* effect)
 : AEffGUIEditor (effect)
+, tooltipSupport (0)
 {
 	backgroundBitmap = new CBitmap (kBackgroundBitmap);
 	// setup size of editor
@@ -248,6 +249,8 @@ long DrawTestEditor::open (void *ptr)
 //	frame->addView (testView);
 
 	setTabView (frame, size, CTabView::kPositionBottom);
+	tooltipSupport = new CTooltipSupport;
+	frame->setMouseObserver (tooltipSupport);
 	// last but not least set the class variable frame to our newly created frame
 	this->frame = frame;
 	return true;
@@ -256,8 +259,11 @@ long DrawTestEditor::open (void *ptr)
 void DrawTestEditor::close ()
 {
 	// don't forget to remove the frame !!
+	if (tooltipSupport)
+		tooltipSupport->forget ();
+	tooltipSupport = 0;
 	if (frame)
-		delete frame;
+		frame->forget ();
 	frame = 0;
 }
 

@@ -32,6 +32,10 @@
 #endif
 #endif
 
+#ifndef __ctooltipsupport__
+#include "ctooltipsupport.h"
+#endif
+
 class DrawTestEditor : public AEffGUIEditor, CControlListener
 {
 public:
@@ -47,6 +51,7 @@ protected:
 	virtual void close ();
 
 	CBitmap* backgroundBitmap;
+	CTooltipSupport* tooltipSupport;
 };
 
 #endif

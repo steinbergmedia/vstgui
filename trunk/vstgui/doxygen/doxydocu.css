@@ -170,7 +170,15 @@ TD.mdname {font-weight: normal; color: #303030; width: 400px; }
 	background-color: #f0f0f0;
 	padding: 1px 0px 1px 8px;
 	margin: 4px;
-	border-top-width: 2px;
+
+	border-style: solid;
+	border-top-width: 1px;
+	border-bottom-width: 0px;
+	border-top-color: #E0E0E0;
+	border-right-color: #E0E0E0;
+	border-bottom-color: #E0E0E0;
+	
+/*	border-top-width: 2px;
 	border-right-width: 1px;
 	border-bottom-width: 1px;
 	border-left-width: 1px;
@@ -181,7 +189,7 @@ TD.mdname {font-weight: normal; color: #303030; width: 400px; }
 	border-left-color: #E0E0E0;
 	border-right-style: none;
 	border-bottom-style: none;
-	border-left-style: none;
+	border-left-style: none;*/
 }
 .memItemRight {
 	font-size: 8pt;
@@ -190,7 +198,15 @@ TD.mdname {font-weight: normal; color: #303030; width: 400px; }
 	background-color: #f0f0f0;
 	padding: 1px 0px 1px 8px;
 	margin: 4px;
-	border-top-width: 2px;
+
+	border-style: solid;
+	border-top-width: 1px;
+	border-bottom-width: 0px;
+	border-top-color: #E0E0E0;
+	border-right-color: #E0E0E0;
+	border-bottom-color: #E0E0E0;
+	
+/*	border-top-width: 2px;
 	border-right-width: 1px;
 	border-bottom-width: 1px;
 	border-left-width: 1px;
@@ -201,7 +217,7 @@ TD.mdname {font-weight: normal; color: #303030; width: 400px; }
 	border-left-color: #E0E0E0;
 	border-right-style: none;
 	border-bottom-style: none;
-	border-left-style: none;
+	border-left-style: none; */
 }
 /* class member descriptions*/
 .mdescLeft {
@@ -217,19 +233,19 @@ TD.mdname {font-weight: normal; color: #303030; width: 400px; }
 }
 .mdescRight 
 {
-	color:#0044cc;
+	color:#666;
 	font-size: 8pt;
 	font-family: Verdana, Arial, Helvetica, sans-serif;
 	font-weight:normal;
 	background-color: #f0f0f0;
-	padding-left: 4px;
 	border-top: 1px none #E0E0E0;
 	border-right: 1px none #E0E0E0;
 	border-bottom: 1px none #E0E0E0;
 	border-left: 1px none #E0E0E0;
 	margin: 0px;
-	padding-bottom: 0px;
-	padding-left: 8px;
+	padding-top: 1px;
+	padding-bottom: 1px;
+	padding-left: 18px;
 }
 
 
