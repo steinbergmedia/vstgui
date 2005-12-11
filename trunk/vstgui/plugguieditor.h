@@ -101,12 +101,6 @@ public :
 protected:
 	ERect   rect;
 
-	#if USE_NAMESPACE
-	VSTGUI::CFrame *frame;
-	#else
-	CFrame *frame;
-	#endif
-
 	void* effect;
 	void* systemWindow;
 

@@ -47,28 +47,37 @@ class CVSTGUITimer;
 
 //-----------------------------------------------------------------------------
 class CScrollView : public CViewContainer, CControlListener
-//! a scrollable view
+//! \brief a scrollable container view with scrollbars
+/// \nosubgrouping
 //-----------------------------------------------------------------------------
 {
 public:
 	CScrollView (const CRect &size, const CRect &containerSize, CFrame* pParent, long style, long scrollbarWidth = 16, CBitmap* pBackground = 0);
 	virtual ~CScrollView ();
 
-	// style
-	enum {
+	enum CScrollViewStyle 
+	{
 		kHorizontalScrollbar	= 1 << 1,	///< add a horizontal scrollbar
 		kVerticalScrollbar 		= 1 << 2	///< add a vertical scrollbar
 	};
 
 	virtual void setContainerSize (const CRect& cs); ///< set the virtual size of this container
-	virtual void addView (CView *pView);
-	virtual void drawBackgroundRect (CDrawContext *pContext, CRect& _updateRect);
-	virtual bool onWheel (const CPoint &where, const CMouseWheelAxis &axis, const float &distance, const long &buttons);
-	virtual void valueChanged (CControl *pControl);
-
-	virtual CScrollbar* getVerticalScrollbar () const { return vsb; }
-	virtual CScrollbar* getHorizontalScrollbar () const { return hsb; }
 	
+	CScrollbar* getVerticalScrollbar () const { return vsb; }
+	CScrollbar* getHorizontalScrollbar () const { return hsb; }
+	
+	// overwrite
+	void addView (CView *pView);
+	void addView (CView *pView, CRect &mouseableArea, bool mouseEnabled = true);
+	void removeView (CView *pView, const bool &withForget = true);
+	void removeAll (const bool &withForget = true);
+	bool isChild (CView *pView) const;
+	long getNbViews () const;
+	CView *getView (long index) const;
+	void drawBackgroundRect (CDrawContext *pContext, CRect& _updateRect);
+	bool onWheel (const CPoint &where, const CMouseWheelAxis &axis, const float &distance, const long &buttons);
+	void valueChanged (CControl *pControl);
+
 	CLASS_METHODS(CScrollView, CViewContainer)
 //-----------------------------------------------------------------------------
 protected:
@@ -87,32 +96,6 @@ private:
 };
 
 //-----------------------------------------------------------------------------
-class CScrollContainer : public CViewContainer
-//-----------------------------------------------------------------------------
-{
-public:
-	CScrollContainer (const CRect &size, const CRect &containerSize, CFrame *pParent, CBitmap *pBackground = 0);
-	virtual ~CScrollContainer ();
-
-	void setScrollOffset (CPoint offset, bool withRedraw = false);
-	void getScrollOffset (CPoint& off) const { off = offset; } 
-
-	CRect getContainerSize () const { return containerSize; }
-	void setContainerSize (const CRect& cs);
-	
-	#if !VSTGUI_USE_SYSTEM_EVENTS_FOR_DRAWING
-	virtual void redrawRect (CDrawContext* context, const CRect& rect);
-	#endif
-	virtual bool isDirty () const;
-
-	CLASS_METHODS(CScrollContainer, CViewContainer)
-//-----------------------------------------------------------------------------
-protected:
-	CRect containerSize;
-	CPoint offset;
-};
-
-//-----------------------------------------------------------------------------
 class IScrollbarDrawer
 //-----------------------------------------------------------------------------
 {
@@ -123,7 +106,8 @@ public:
 
 //-----------------------------------------------------------------------------
 class CScrollbar : public CControl
-//! a scrollbar control
+//! \brief a scrollbar control
+/// \nosubgrouping
 //-----------------------------------------------------------------------------
 {
 public:
@@ -150,17 +134,17 @@ public:
 	CColor getScrollerColor () const { return scrollerColor; }
 	CColor getBackgroundColor () const { return backgroundColor; }
 
-	virtual void draw (CDrawContext* pContext);
-	VSTGUI_DEPRECATED(virtual void mouse (CDrawContext* pContext, CPoint& where, long buttons = -1);)
-	virtual bool onWheel (const CPoint &where, const CMouseWheelAxis &axis, const float &distance, const long &buttons);
-
-	virtual CMouseEventResult onMouseDown (CPoint &where, const long& buttons);
-	virtual CMouseEventResult onMouseUp (CPoint &where, const long& buttons);
-	virtual CMouseEventResult onMouseMoved (CPoint &where, const long& buttons);
-
-	virtual long notify (CView* sender, const char* message);
+	// overwrite
+	void draw (CDrawContext* pContext);
+	bool onWheel (const CPoint &where, const CMouseWheelAxis &axis, const float &distance, const long &buttons);
+	CMouseEventResult onMouseDown (CPoint &where, const long& buttons);
+	CMouseEventResult onMouseUp (CPoint &where, const long& buttons);
+	CMouseEventResult onMouseMoved (CPoint &where, const long& buttons);
+	CMessageResult notify (CBaseObject* sender, const char* message);
 
 	CLASS_METHODS(CScrollbar, CControl)
+
+	VSTGUI_DEPRECATED(virtual void mouse (CDrawContext* pContext, CPoint& where, long buttons = -1);)
 //-----------------------------------------------------------------------------
 protected:
 	void drawBackground (CDrawContext* pContext);

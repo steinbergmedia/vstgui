@@ -2,7 +2,7 @@
 // VST Plug-Ins SDK
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 //
-// Version 3.5       $Date: 2005-11-25 16:40:52 $ 
+// Version 3.5       $Date: 2005-12-11 22:41:48 $ 
 //
 // Added Motif/Windows vers.: Yvan Grabit              01.98
 // Added Mac version        : Charlie Steinberg        02.98
@@ -88,6 +88,11 @@ static VSTGUI_CDragContainer* gDragContainer = 0;
 
 //---For Debugging------------------------
 #if DEBUG
+
+#include <list>
+#include <typeinfo>
+
+std::list<CView*>gViewList;
 
 long gNbCBitmap = 0;
 long gNbCView = 0;
@@ -2938,7 +2943,7 @@ void CDrawContext::forget ()
 	#if QUARTZ
 	synchronizeCGContext ();
 	#endif
-	CReferenceCounter::forget ();
+	CBaseObject::forget ();
 }
 
 //-----------------------------------------------------------------------------
@@ -3650,6 +3655,7 @@ CGrafPtr COffscreenContext::getPort ()
 #endif // QUARTZ
 #endif // MAC
 
+/// \cond ignore
 //-----------------------------------------------------------------------------
 class CAttributeListEntry
 {
@@ -3684,16 +3690,13 @@ protected:
 	long sizeOfPointer;
 	CViewAttributeID id;
 };
+/// \endcond
 
 //-----------------------------------------------------------------------------
 char* kMsgCheckIfViewContainer	= "kMsgCheckIfViewContainer";
 
 //-----------------------------------------------------------------------------
 // CView
-//-----------------------------------------------------------------------------
-/*! @class CView
-base class of all view objects
-*/
 //-----------------------------------------------------------------------------
 CView::CView (const CRect& size)
 : size (size)
@@ -3710,6 +3713,7 @@ CView::CView (const CRect& size)
 {
 	#if DEBUG
 	gNbCView++;
+	gViewList.push_back (this);
 	#endif
 }
 
@@ -3731,7 +3735,30 @@ CView::~CView ()
 	}
 	#if DEBUG
 	gNbCView--;
+	gViewList.remove (this);
 	#endif
+}
+
+//-----------------------------------------------------------------------------
+bool CView::attached (CView* view)
+{
+	if (isAttached ())
+		return false;
+	pParentView = view;
+	pParentFrame = view->getFrame ();
+	bIsAttached = true;
+	return true;
+}
+
+//-----------------------------------------------------------------------------
+bool CView::removed (CView* parent)
+{
+	if (!isAttached ())
+		return false;
+	pParentView = 0;
+	pParentFrame = 0;
+	bIsAttached = false;
+	return true;
 }
 
 #if VSTGUI_ENABLE_DEPRECATED_METHODS
@@ -3842,7 +3869,12 @@ bool CView::onWheel (const CPoint &where, const float &distance, const long &but
 bool CView::onWheel (const CPoint &where, const CMouseWheelAxis &axis, const float &distance, const long &buttons)
 {
 	if (axis == kMouseWheelAxisX)
+	{
+		#if QUARTZ	// mac os x 10.4.x swaps the axis if the shift modifier is down
+		if (!(buttons & kShift))
+		#endif
 		return onWheel (where, distance*-1, buttons);
+	}
 	return onWheel (where, distance, buttons);
 }
 
@@ -3874,7 +3906,7 @@ long CView::onKeyUp (VstKeyCode& keyCode)
 }
 
 //------------------------------------------------------------------------------
-long CView::notify (CView* sender, const char* message)
+CMessageResult CView::notify (CBaseObject* sender, const char* message)
 {
 	return kMessageUnknown;
 }
@@ -4058,13 +4090,12 @@ On Windows it's a WS_CHILD Window.
 CFrame::CFrame (const CRect &inSize, void *inSystemWindow, VSTGUIEditorInterface *inEditor)
 : CViewContainer (inSize, 0, 0)
 , pEditor (inEditor)
+, pMouseObserver (0)
 , pSystemWindow (inSystemWindow)
 , pModalView (0)
 , pFocusView (0)
-, tooltipView (0)
 , bFirstDraw (true)
 , bDropActive (false)
-, bUpdatesDisabled (false)
 , pFrameContext (0)
 , bAddedWindow (false)
 , pVstWindow (0)
@@ -4131,13 +4162,12 @@ CFrame::CFrame (const CRect &inSize, void *inSystemWindow, VSTGUIEditorInterface
 CFrame::CFrame (const CRect& inSize, const char* inTitle, VSTGUIEditorInterface* inEditor, const long inStyle)
 : CViewContainer (inSize, 0, 0)
 , pEditor (inEditor)
+, pMouseObserver (0)
 , pSystemWindow (0)
 , pModalView (0)
 , pFocusView (0)
-, tooltipView (0)
 , bFirstDraw (true)
 , bDropActive (false)
-, bUpdatesDisabled (false)
 , pFrameContext (0)
 , pVstWindow (0) 
 , defaultCursor (0)
@@ -4259,6 +4289,19 @@ CFrame::~CFrame ()
 	}
 #endif
 	pParentFrame = 0;
+	#if DEBUG
+	removeAll ();
+	if (gNbCView > 1)
+	{
+		DebugPrint ("Warning: After destroying CFrame, there are %d unreleased CView objects.\n", gNbCView);
+		std::list<CView*>::iterator it = gViewList.begin ();
+		while (it != gViewList.end ())
+		{
+			DebugPrint ("%s\n", (*it)->getClassName ());
+			it++;
+		}
+	}
+	#endif
 }
 
 //-----------------------------------------------------------------------------
@@ -4618,7 +4661,10 @@ CMouseEventResult CFrame::onMouseUp (CPoint &where, const long& buttons)
 //-----------------------------------------------------------------------------
 CMouseEventResult CFrame::onMouseMoved (CPoint &where, const long& buttons)
 {
-	return CViewContainer::onMouseMoved (where, buttons);
+	if (pModalView)
+		return pModalView->onMouseMoved (where, buttons);
+	else
+		return CViewContainer::onMouseMoved (where, buttons);
 }
 
 //-----------------------------------------------------------------------------
@@ -4678,7 +4724,7 @@ bool CFrame::onWheel (const CPoint &where, const float &distance, const long &bu
 //-----------------------------------------------------------------------------
 void CFrame::update (CDrawContext *pContext)
 {
-	if (!getOpenFlag () || updatesDisabled ())
+	if (!getOpenFlag ())
 		return;
 
 	#if WINDOWS && USE_ALPHA_BLEND
@@ -4937,9 +4983,9 @@ bool CFrame::getPosition (CCoord &x, CCoord &y) const
 }
 
 //-----------------------------------------------------------------------------
-void CFrame::setViewSize (CRect& inRect)
+void CFrame::setViewSize (CRect& rect)
 {
-	setSize (inRect.width (), inRect.height ());
+	setSize (rect.width (), rect.height ());
 }
 
 //-----------------------------------------------------------------------------
@@ -5147,7 +5193,7 @@ long CFrame::setModalView (CView *pView)
 {
 	// There's already a modal view so we get out
 	if (pView && pModalView)
-			return 0;
+		return 0;
 
 	if (pModalView)
 		removeView (pModalView, false);
@@ -5174,7 +5220,7 @@ void CFrame::endEdit (long index)
 }
 
 //-----------------------------------------------------------------------------
-bool CFrame::getCurrentMouseLocation (CPoint &where)
+bool CFrame::getCurrentMouseLocation (CPoint &where) const
 {
 	#if WINDOWS
 	HWND hwnd = (HWND)this->getSystemWindow ();
@@ -5189,7 +5235,7 @@ bool CFrame::getCurrentMouseLocation (CPoint &where)
 	}
 	return true;
 	#elif MAC
-	// no up-to-date API call available for this, so use QuickDraw
+	// no up-to-date API call available for this, so use old QuickDraw
 	Point p;
 	CGrafPtr savedPort;
 	Boolean portChanged = QDSwapPort (GetWindowPort ((WindowRef)getSystemWindow ()), &savedPort);
@@ -5214,19 +5260,61 @@ bool CFrame::getCurrentMouseLocation (CPoint &where)
 	return true;
 	#endif // MAC
 
-	#if VSTGUI_ENABLE_DEPRECATED_METHODS
-	// create a local context
-	CDrawContext *pContext = createDrawContext ();
-	if (pContext)
-	{
-	// get the current position
-		pContext->getMouseLocation (where);
-		pContext->forget ();
-	}
-	return true;
-	#endif
-
 	return false;
+}
+
+//-----------------------------------------------------------------------------
+long CFrame::getCurrentMouseButtons () const
+{
+	long buttons = 0;
+	
+#if WINDOWS
+	if (GetAsyncKeyState (VK_LBUTTON) < 0)
+		buttons |= (bSwapped_mouse_buttons ? kRButton : kLButton);
+	if (GetAsyncKeyState (VK_MBUTTON) < 0)
+		buttons |= kMButton;
+	if (GetAsyncKeyState (VK_RBUTTON) < 0)
+		buttons |= (bSwapped_mouse_buttons ? kLButton : kRButton);
+	
+	if (GetAsyncKeyState (VK_SHIFT)   < 0)
+		buttons |= kShift;
+	if (GetAsyncKeyState (VK_CONTROL) < 0)
+		buttons |= kControl;
+	if (GetAsyncKeyState (VK_MENU)    < 0)
+		buttons |= kAlt;
+
+#elif MAC
+	UInt32 state = GetCurrentButtonState ();
+	if (state == kEventMouseButtonPrimary)
+		buttons |= kLButton;
+	if (state == kEventMouseButtonSecondary)
+		buttons |= kRButton;
+	if (state == kEventMouseButtonTertiary)
+		buttons |= kMButton;
+	if (state == 4)
+		buttons |= kButton4;
+	if (state == 5)
+		buttons |= kButton5;
+
+	state = GetCurrentKeyModifiers ();
+	if (state & cmdKey)
+		buttons |= kControl;
+	if (state & shiftKey)
+		buttons |= kShift;
+	if (state & optionKey)
+		buttons |= kAlt;
+	if (state & controlKey)
+		buttons |= kApple;
+	// for the one buttons
+	if (buttons & kApple && buttons & kLButton)
+	{
+		buttons &= ~(kApple | kLButton);
+		buttons |= kRButton;
+	}
+
+#endif
+	
+	return buttons;
 }
 
 #if VSTGUI_ENABLE_DEPRECATED_METHODS
@@ -5438,7 +5526,6 @@ void CFrame::removeAll (const bool &withForget)
 {
 	pModalView = 0;
 	pFocusView = 0;
-	tooltipView = 0;
 	CViewContainer::removeAll (withForget);
 }
 
@@ -5510,6 +5597,7 @@ void CFrame::dumpHierarchy ()
 
 //-----------------------------------------------------------------------------
 // CCView Implementation
+/// \cond ignore
 //-----------------------------------------------------------------------------
 CCView::CCView (CView* pView)
 : pView (pView)
@@ -5526,6 +5614,7 @@ CCView::~CCView ()
 	if (pView)
 		pView->forget (); 
 }
+/// \endcond
 
 //-----------------------------------------------------------------------------
 // CViewContainer Implementation
@@ -5540,7 +5629,9 @@ CViewContainer::CViewContainer (const CRect &rect, CFrame *pParent, CBitmap *pBa
 : CView (rect)
 , pFirstView (0)
 , pLastView (0)
+#if !VSTGUI_USE_SYSTEM_EVENTS_FOR_DRAWING
 , mode (kOnlyDirtyUpdate)
+#endif
 , pOffscreenContext (0)
 , bDrawInOffscreen (true)
 , currentDragView (0)
@@ -5553,8 +5644,10 @@ CViewContainer::CViewContainer (const CRect &rect, CFrame *pParent, CBitmap *pBa
 	backgroundOffset (0, 0);
 	this->pParentFrame = pParent;
 	setBackground (pBackground);
-	backgroundColor = kBlackCColor;	
+	backgroundColor = kBlackCColor;
+	#if !VSTGUI_USE_SYSTEM_EVENTS_FOR_DRAWING
 	mode = kOnlyDirtyUpdate;
+	#endif
 }
 
 //-----------------------------------------------------------------------------
@@ -5627,7 +5720,7 @@ void CViewContainer::setBackgroundColor (CColor color)
 }
 
 //------------------------------------------------------------------------------
-long CViewContainer::notify (CView* sender, const char* message)
+CMessageResult CViewContainer::notify (CBaseObject* sender, const char* message)
 {
 	if (message == kMsgCheckIfViewContainer)
 		return kMessageNotified;
@@ -5643,11 +5736,11 @@ void CViewContainer::addView (CView *pView)
 	if (!pView)
 		return;
 
+	if (pView->isAttached ())
+		return;
+
 	CCView *pSv = new CCView (pView);
 	
-	pView->pParentFrame = pParentFrame;
-	pView->pParentView = this;
-
 	CCView *pV = pFirstView;
 	if (!pV)
 	{
@@ -5923,7 +6016,7 @@ void CViewContainer::draw (CDrawContext *pContext)
 	
 	// draw each view
 	FOREACHSUBVIEW
-		CRect vSize (pV->size);
+		CRect vSize = pV->getViewSize (vSize);
 		vSize.bound (oldClip);
 		pC->setClipRect (vSize);
 		pV->draw (pC);
@@ -5975,9 +6068,9 @@ void CViewContainer::drawBackgroundRect (CDrawContext *pContext, CRect& _updateR
 //-----------------------------------------------------------------------------
 /**
  * @param pContext the context which to use to draw
- * @param _updateRect the area which to draw
+ * @param updateRect the area which to draw
  */
-void CViewContainer::drawRect (CDrawContext *pContext, const CRect& _updateRect)
+void CViewContainer::drawRect (CDrawContext *pContext, const CRect& updateRect)
 {
 	CDrawContext *pC;
 	CCoord save[4];
@@ -6005,10 +6098,10 @@ void CViewContainer::drawRect (CDrawContext *pContext, const CRect& _updateRect)
 		modifyDrawContext (save, pContext);
 	}
 
-	CRect updateRect (_updateRect);
-	updateRect.bound (size);
+	CRect _updateRect (updateRect);
+	_updateRect.bound (size);
 
-	CRect clientRect (updateRect);
+	CRect clientRect (_updateRect);
 	clientRect.offset (-size.left, -size.top);
 
 	CRect oldClip;
@@ -6029,7 +6122,7 @@ void CViewContainer::drawRect (CDrawContext *pContext, const CRect& _updateRect)
 	FOREACHSUBVIEW
 		if (pV->checkUpdate (clientRect))
 		{
-			CRect viewSize (pV->size);
+			CRect viewSize = pV->getViewSize (viewSize);
 			viewSize.bound (newClip);
 			if (viewSize.getWidth () == 0 || viewSize.getHeight () == 0)
 				continue;
@@ -6046,10 +6139,6 @@ void CViewContainer::drawRect (CDrawContext *pContext, const CRect& _updateRect)
 				pC->drawRect (pV->size);
 			}
 			#endif
-			if (wasDirty && pV->size != viewSize && !isTypeOf ("CScrollContainer"))
-			{
-//				pV->setDirty (true);
-			}
 		}
 	ENDFOR
 
@@ -6057,7 +6146,7 @@ void CViewContainer::drawRect (CDrawContext *pContext, const CRect& _updateRect)
 
 	// transfer offscreen
 	if (bDrawInOffscreen)
-		((COffscreenContext*)pC)->copyFrom (pContext, updateRect, CPoint (clientRect.left, clientRect.top));
+		((COffscreenContext*)pC)->copyFrom (pContext, _updateRect, CPoint (clientRect.left, clientRect.top));
 	else
 		restoreDrawContext (pContext, save);
 
@@ -6154,6 +6243,15 @@ bool CViewContainer::hitTest (const CPoint& where, const long buttons)
 //-----------------------------------------------------------------------------
 CMouseEventResult CViewContainer::onMouseDown (CPoint &where, const long& buttons)
 {
+	// reset mouse over view
+	if (mouseOverView)
+	{
+		mouseOverView->onMouseExited (where, buttons);
+		if (getFrame ()->getMouseObserver ())
+			getFrame ()->getMouseObserver ()->onMouseExited (mouseOverView, getFrame ());
+		mouseOverView = 0;
+	}
+
 	// convert to relativ pos
 	CPoint where2 (where);
 	where2.offset (-size.left, -size.top);
@@ -6199,6 +6297,7 @@ CMouseEventResult CViewContainer::onMouseUp (CPoint &where, const long& buttons)
 		where2.offset (-size.left, -size.top);
 		mouseDownView->onMouseUp (where2, buttons);
 		mouseDownView = 0;
+		onMouseMoved (where, buttons);
 		return kMouseEventHandled;
 	}
 	return kMouseEventNotHandled;
@@ -6224,40 +6323,19 @@ CMouseEventResult CViewContainer::onMouseMoved (CPoint &where, const long& butto
 		CView* v = getViewAt (where, true);
 		if (v != mouseOverView)
 		{
-			#if 0
-			if (v)
-			{
-				CPoint vr (v->size.left, v->size.top);
-				v->localToFrame (vr);
-				fprintf (stdout, "New Mouse Over View : x=%d, y=%d, width=%d, height=%d\n", (long)vr.x, (long)vr.y, (long)v->size.getWidth (), (long)v->size.getHeight ());
-			}
-			#endif
 			if (mouseOverView)
+			{
 				mouseOverView->onMouseExited (where, buttons);
+				if (getFrame ()->getMouseObserver ())
+					getFrame ()->getMouseObserver ()->onMouseExited (mouseOverView, getFrame ());
+			}
 			mouseOverView = 0;
 			if (v)
 			{
 				v->onMouseEntered (where, buttons);
 				mouseOverView = v;
-				// check for tooltip
-				if (getFrame ()->getTooltipView ())
-				{
-					long tooltipSize = 0;
-					if (v->getAttributeSize (kCViewTooltipAttribute, tooltipSize))
-					{
-						char* text = (char*)malloc (tooltipSize + 1);
-						if (v->getAttribute (kCViewTooltipAttribute, tooltipSize, text, tooltipSize))
-							getFrame ()->getTooltipView ()->setText (text);
-						free (text);
-					}
-					else
-						getFrame ()->getTooltipView ()->setText (0);
-				}
-			}
-			else if (getFrame ()->getTooltipView ())
-			{
-				// remove tooltip
-				getFrame ()->getTooltipView ()->setText (0);
+				if (getFrame ()->getMouseObserver ())
+					getFrame ()->getMouseObserver ()->onMouseEntered (mouseOverView, getFrame ());
 			}
 			return kMouseEventHandled;
 		}
@@ -6540,7 +6618,7 @@ bool CViewContainer::isDirty () const
 	FOREACHSUBVIEW
 		if (pV->isDirty ())
 		{
-			CRect r (pV->size);
+			CRect r = pV->getViewSize (r);
 			r.bound (viewSize);
 			if (r.getWidth () > 0 && r.getHeight () > 0)
 				return true;
@@ -6566,7 +6644,7 @@ CView *CViewContainer::getCurrentView () const
 	while (pSv)
 	{
 		CView *pV = pSv->pView;
-		if (pV && where.isInside (pV->mouseableArea))
+		if (pV && where.isInside (pV->getMouseableArea ()))
 			return pV;
 		pSv = pSv->pPrevious;
 	}
@@ -6590,7 +6668,7 @@ CView *CViewContainer::getViewAt (const CPoint& p, bool deep) const
 	while (pSv)
 	{
 		CView *pV = pSv->pView;
-		if (pV && where.isInside (pV->mouseableArea))
+		if (pV && where.isInside (pV->getMouseableArea ()))
 		{
 			if (deep)
 			{
@@ -6635,7 +6713,6 @@ bool CViewContainer::removed (CView* parent)
 	pParentFrame = 0;
 
 	FOREACHSUBVIEW
-		pV->pParentFrame = 0;
 		pV->removed (this);
 	ENDFOR
 	
@@ -6655,7 +6732,6 @@ bool CViewContainer::attached (CView* view)
 
 	FOREACHSUBVIEW
 		pV->attached (this);
-		pV->pParentFrame = pParentFrame;
 	ENDFOR
 
 	return CView::attached (view);
@@ -6705,8 +6781,12 @@ static long _debugDumpLevel = 0;
 //-----------------------------------------------------------------------------
 void CViewContainer::dumpInfo ()
 {
+	#if VSTGUI_USE_SYSTEM_EVENTS_FOR_DRAWING
+	DebugPrint ("CViewContainer: Offscreen:%s ", bDrawInOffscreen ? "Yes" : "No");
+	#else
 	static const char* modeString[] = { "Normal Update Mode", "Only Dirty Update Mode"};
 	DebugPrint ("CViewContainer: Mode: %s, Offscreen:%s ", modeString[mode], bDrawInOffscreen ? "Yes" : "No");
+	#endif
 	CView::dumpInfo ();
 }
 
@@ -7276,6 +7356,32 @@ bool CBitmap::loadFromPath (const void* platformPath)
 	#if QUARTZ
 	CFURLRef url = (CFURLRef)platformPath;
 
+	#if 0
+	// use Image I/O
+	CGImageSourceRef imageSource = CGImageSourceCreateWithURL (url, NULL);
+	if (imageSource)
+	{
+		void* keys[] = {&kCGImageSourceShouldCache};
+		void* values[] = {&kCFBooleanFalse};
+		CFDictionaryRef options = CFDictionaryCreate(NULL, keys,values,1,NULL,NULL);
+		cgImage = CGImageSourceCreateImageAtIndex (imageSource, 0, options);
+		CFRelease (options);
+		if (cgImage)
+		{
+			width = CGImageGetWidth ((CGImageRef)cgImage);
+			height = CGImageGetHeight ((CGImageRef)cgImage);
+			CFStringRef ext = CFURLCopyPathExtension (url);
+			if (ext && CFStringCompare (ext, CFSTR("png"), 0) == kCFCompareEqualTo)
+				noAlpha = false;
+			result = true;
+			if (ext)
+				CFRelease (ext);
+		}
+		CFRelease (imageSource);
+	}
+	
+	#else
+
 	FSRef fsRef;
 	if (CFURLGetFSRef (url, &fsRef))
 	{
@@ -7335,6 +7441,7 @@ bool CBitmap::loadFromPath (const void* platformPath)
 			}
 		}
 	}
+	#endif
 	#elif WINDOWS
 	// todo
 	
@@ -9677,6 +9784,8 @@ pascal OSStatus CFrame::carbonEventHandler (EventHandlerCallRef inHandlerCallRef
 	return result;
 }
 
+#define ENABLE_LOGGING 0
+
 #if ENABLE_LOGGING
 #define LOG_HIPOINT(text,point) fprintf (stdout, "%s%d, %d\n", text, (long)point.x, (long)point.y);
 #define LOG(text) fprintf (stdout, "%s\n", text);
@@ -9711,14 +9820,14 @@ pascal OSStatus CFrame::carbonMouseEventHandler (EventHandlerCallRef inHandlerCa
 			HIPoint location = { 0.f, 0.f };
 			if (GetEventParameter (inEvent, kEventParamWindowMouseLocation, typeHIPoint, NULL, sizeof (HIPoint), NULL, &location) == noErr)
 			{
-				LOG_HIPOINT("window :",location)
+				//LOG_HIPOINT("window :",location)
 				#if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_4
 				if (HIPointConvert)
 					HIPointConvert (&location, kHICoordSpaceWindow, window, kHICoordSpaceView, hiView);
 				else
 				#endif
 					HIViewConvertPoint (&location, HIViewGetRoot (window), hiView);
-				LOG_HIPOINT("view   :",location)
+				//LOG_HIPOINT("view   :",location)
 			}
 			if (!isWindowComposited ((WindowRef)window))
 			{
@@ -9753,6 +9862,10 @@ pascal OSStatus CFrame::carbonMouseEventHandler (EventHandlerCallRef inHandlerCa
 				case kEventMouseDown:
 				{
 					LOG("Mouse Down")
+					UInt32 clickCount = 0;
+					GetEventParameter (inEvent, kEventParamClickCount, typeUInt32, NULL, sizeof (UInt32), NULL, &clickCount);
+					if (clickCount > 1)
+						buttons |= kDoubleClick;
 					result = CallNextEventHandler (inHandlerCallRef, inEvent); // calls default handler, which activates the window if not already active, or sets the process to front
 					if (frame->onMouseDown (point, buttons))
 						result = noErr;
@@ -9767,14 +9880,14 @@ pascal OSStatus CFrame::carbonMouseEventHandler (EventHandlerCallRef inHandlerCa
 				}
 				case kEventMouseDragged:
 				{
-					LOG("Mouse Dragged")
+					//LOG("Mouse Dragged")
 					if (frame->onMouseMoved (point, buttons))
 						result = noErr;
 					break;
 				}
 				case kEventMouseMoved:
 				{
-					LOG("Mouse Moved")
+					//LOG("Mouse Moved")
 					if (IsWindowActive (window))
 					{
 						if (frame->onMouseMoved (point, buttons))
@@ -9788,6 +9901,8 @@ pascal OSStatus CFrame::carbonMouseEventHandler (EventHandlerCallRef inHandlerCa
 	}
 	return result;
 }
+
+/// \cond ignore
 
 //-----------------------------------------------------------------------------
 bool isWindowComposited (WindowRef window)
@@ -9881,6 +9996,8 @@ inline CGColorSpaceRef GetGenericRGBColorSpace ()
 {
 	return _gQuartzStatics.getGenericRGBColorSpace ();
 }
+
+/// \endcond
 
 END_NAMESPACE_VSTGUI
 #endif
