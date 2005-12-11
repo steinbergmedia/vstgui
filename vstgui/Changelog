@@ -1,3 +1,16 @@
+2005-12-11 arne
+
+	* moved mouse methods from CDrawContext to CFrame where it makes sense
+	* added kDoubleClick to button state, so that you don't need the old way to call waitDoubleClick
+	* more GDI+ stuff (it's much faster now)
+	* removed tooltip handling
+	* added mouse observer interface to CFrame (tooltips could be handled this way in a more generic fashion, see the CTooltipSupport class)
+	* renamed CReferenceCounter to CBaseObject and moved the notify method to it
+	* reorganized doxygen documentation
+	* changed implementation of CView::attached and CView::removed. If you overwrite them, always call the super class implementation also. 
+		And because of this and the way modal views are handled CSplashScreen needs to be rewritten (not done yet).
+	* added check for unreleased CViews when DEBUG is set
+
 2005-11-22 arne
 
 	* new handling of deprecated methods (on mac osx with gcc you get a warning now when using these methods)

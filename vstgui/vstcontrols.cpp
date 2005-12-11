@@ -3,7 +3,7 @@
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 // Standard Control Objects
 //
-// Version 3.5       $Date: 2005-11-25 16:38:21 $
+// Version 3.5       $Date: 2005-12-11 22:41:48 $
 //
 // Added new objects        : Michael Schmidt          08.97
 // Added new objects        : Yvan Grabit              01.98
@@ -1246,8 +1246,10 @@ CMouseEventResult CTextEdit::onMouseDown (CPoint &where, const long& buttons)
 		if (getFrame ()->getFocusView () != this)
 		{
 			if (style & kDoubleClickStyle)
-				if (!isDoubleClick ())
+			{
+				if (!(buttons & kDoubleClick))
 					return kMouseEventNotHandled;
+			}
 		
 			beginEdit();
 			takeFocus ();
@@ -2321,15 +2323,17 @@ void COptionMenuScheme::drawItem (const char* text, long itemId, long state, CDr
 	}
 
 	// this needs to be done right, without changing the text pointer in anyway ;-)
-	char *ptr = (char*)strstr (text, "\t");
+	const char *ptr = strstr (text, "\t");
 	if (ptr)
 	{
+		char* tmpText = (char*)malloc ((text - ptr) + 1);
+		strncpy (tmpText, text, (text - ptr));
+		pContext->drawString (tmpText, r, false, kLeftText);
+		free (tmpText);
+
 		char modifier[32];
 		strcpy (modifier, ptr + 1);
-		*ptr = 0;
-		pContext->drawString (text, r, false, kLeftText);
 
-		*ptr = '\t';
 		r.left = r.right - 50;
 		pContext->drawString (modifier, r, false, kLeftText);
 	}
