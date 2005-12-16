@@ -3,7 +3,7 @@
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 // Standard Control Objects
 //
-// Version 3.5       $Date: 2005-12-16 11:26:36 $
+// Version 3.5       $Date: 2005-12-16 14:26:20 $
 //
 // Added new objects        : Michael Schmidt          08.97
 // Added new objects        : Yvan Grabit              01.98
@@ -898,6 +898,7 @@ void CParamDisplay::drawText (CDrawContext *pContext, char *string, CBitmap *new
 	
 			if (!(style & (k3DIn|k3DOut|kNoFrame))) 
 			{
+				pContext->setLineWidth (1);
 				pContext->setFrameColor (frameColor);
 				pContext->drawRect (size);
 			}
@@ -906,6 +907,7 @@ void CParamDisplay::drawText (CDrawContext *pContext, char *string, CBitmap *new
 	// draw the frame for the 3D effect
 	if (style & (k3DIn|k3DOut)) 
 	{
+		pContext->setLineWidth (1);
 		if (style & k3DIn)
 			pContext->setFrameColor (backColor);
 		else

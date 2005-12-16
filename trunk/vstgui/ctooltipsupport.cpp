@@ -72,7 +72,7 @@ CTooltipSupport::~CTooltipSupport ()
 void CTooltipSupport::onMouseEntered (CView* view, CFrame* frame)
 {
 	#if DEBUG
-	printf ("IMouseObserver::onMouseEntered (%s)\n", typeid(*view).name ());
+	DebugPrint ("IMouseObserver::onMouseEntered (%s)\n", view->getClassName ());
 	#endif
 	currentView = view;
 	timer->start ();
@@ -82,7 +82,7 @@ void CTooltipSupport::onMouseEntered (CView* view, CFrame* frame)
 void CTooltipSupport::onMouseExited (CView* view, CFrame* frame)
 {
 	#if DEBUG
-	printf ("IMouseObserver::onMouseExited (%s)\n", typeid(*view).name ());
+	DebugPrint ("IMouseObserver::onMouseExited (%s)\n", view->getClassName ());
 	#endif
 	timer->stop ();
 	currentView = 0;

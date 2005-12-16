@@ -2,7 +2,7 @@
 // VST Plug-Ins SDK
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 //
-// Version 3.5       $Date: 2005-12-16 11:26:37 $ 
+// Version 3.5       $Date: 2005-12-16 14:26:20 $ 
 //
 // Added Motif/Windows vers.: Yvan Grabit              01.98
 // Added Mac version        : Charlie Steinberg        02.98
@@ -92,6 +92,8 @@ static VSTGUI_CDragContainer* gDragContainer = 0;
 #include <list>
 #include <typeinfo>
 
+BEGIN_NAMESPACE_VSTGUI
+
 std::list<CView*>gViewList;
 
 long gNbCBitmap = 0;
@@ -126,6 +128,7 @@ void DebugPrint (char *format, ...)
 	#endif	// #if __MWERKS__
 	#endif
 }
+END_NAMESPACE_VSTGUI
 #endif
 //---End For Debugging------------------------
 
@@ -4149,6 +4152,10 @@ CFrame::CFrame (const CRect &inSize, void *inSystemWindow, VSTGUIEditorInterface
 	backBuffer = 0;
 	OleInitialize (0);
 
+	#if GDIPLUS
+	GDIPlusGlobals::enter ();
+	#endif
+
 	#if DYNAMICALPHABLEND
 	pfnAlphaBlend = 0;
 	pfnTransparentBlt = 0;
@@ -4279,6 +4286,22 @@ CFrame::~CFrame ()
 	if (pFrameContext)
 		pFrameContext->forget ();
 
+	pParentFrame = 0;
+	removeAll ();
+
+	#if DEBUG
+	if (gNbCView > 1)
+	{
+		DebugPrint ("Warning: After destroying CFrame, there are %d unreleased CView objects.\n", gNbCView);
+		std::list<CView*>::iterator it = gViewList.begin ();
+		while (it != gViewList.end ())
+		{
+			DebugPrint ("%s\n", (*it)->getClassName ());
+			it++;
+		}
+	}
+	#endif
+
 #if WINDOWS
 	OleUninitialize ();
 
@@ -4290,10 +4313,6 @@ CFrame::~CFrame ()
 		FreeLibrary (hInstMsimg32dll);
 	#endif
 
-	#if GDIPLUS
-	Gdiplus::GdiplusShutdown(gdiplusToken);
-	#endif
-
 	if (pHwnd)
 	{
 		SetWindowLong ((HWND)pHwnd, GWL_USERDATA, (long)NULL);
@@ -4301,7 +4320,7 @@ CFrame::~CFrame ()
 
 		ExitWindowClass ();
 	}
-
+	GDIPlusGlobals::exit ();
 #endif
 	
 	if (bAddedWindow)
@@ -4325,20 +4344,6 @@ CFrame::~CFrame ()
 			fprintf (stderr, "UnregisterToolboxObjectClass failed : %d\n", (int)status);
 	}
 #endif
-	pParentFrame = 0;
-	#if DEBUG
-	removeAll ();
-	if (gNbCView > 1)
-	{
-		DebugPrint ("Warning: After destroying CFrame, there are %d unreleased CView objects.\n", gNbCView);
-		std::list<CView*>::iterator it = gViewList.begin ();
-		while (it != gViewList.end ())
-		{
-			DebugPrint ("%s\n", (*it)->getClassName ());
-			it++;
-		}
-	}
-	#endif
 }
 
 //-----------------------------------------------------------------------------
@@ -4414,13 +4419,6 @@ bool CFrame::initFrame (void *systemWin)
 			 (HWND)pSystemWindow, NULL, GetInstance (), NULL);
 
 	SetWindowLongPtr ((HWND)pHwnd, GWLP_USERDATA, (LONG_PTR)this);
-
-#if GDIPLUS
-
-	Gdiplus::GdiplusStartupInput gdiplusStartupInput;
-	Gdiplus::GdiplusStartup(&gdiplusToken, &gdiplusStartupInput, NULL);
-
-#endif
 
 #elif MAC
 
@@ -8406,7 +8404,7 @@ bool InitWindowClass ()
 		sprintf (gClassName, "Plugin%x", GetInstance ());
 		
 		WNDCLASS windowClass;
-		windowClass.style = CS_GLOBALCLASS;//|CS_OWNDC; // add Private-DC constant 
+		windowClass.style = CS_GLOBALCLASS | CS_DBLCLKS;//|CS_OWNDC; // add Private-DC constant 
 
 		windowClass.lpfnWndProc = WindowProc; 
 		windowClass.cbClsExtra  = 0; 
@@ -8452,6 +8450,8 @@ LONG_PTR WINAPI WindowProc (HWND hwnd, UINT message, WPARAM wParam, LPARAM lPara
 {
 	USING_NAMESPACE_VSTGUI
 	CFrame* pFrame = (CFrame*)GetWindowLongPtr (hwnd, GWLP_USERDATA);
+
+	bool doubleClick = false;
 
 	switch (message)
 	{
@@ -8607,6 +8607,10 @@ LONG_PTR WINAPI WindowProc (HWND hwnd, UINT message, WPARAM wParam, LPARAM lPara
 	break;
 	
 #if 1
+	case WM_RBUTTONDBLCLK:
+	case WM_MBUTTONDBLCLK:
+	case WM_LBUTTONDBLCLK:
+		doubleClick = true;
 	case WM_RBUTTONDOWN:
 	case WM_MBUTTONDOWN:
 	case WM_LBUTTONDOWN:
@@ -8623,7 +8627,9 @@ LONG_PTR WINAPI WindowProc (HWND hwnd, UINT message, WPARAM wParam, LPARAM lPara
 				buttons |= kControl;
 			if (wParam & MK_SHIFT)
 				buttons |= kShift;
-			VSTGUI_CPoint where (LOWORD (lParam), HIWORD (lParam));
+			if (doubleClick)
+				buttons |= kDoubleClick;
+			VSTGUI_CPoint where (((int)(short)LOWORD(lParam)), ((int)(short)HIWORD(lParam)));
 			if (pFrame->onMouseDown (where, buttons) == kMouseEventHandled)
 				SetCapture ((HWND)pFrame->getSystemWindow ());
 			return 0;
@@ -8643,7 +8649,7 @@ LONG_PTR WINAPI WindowProc (HWND hwnd, UINT message, WPARAM wParam, LPARAM lPara
 				buttons |= kControl;
 			if (wParam & MK_SHIFT)
 				buttons |= kShift;
-			VSTGUI_CPoint where (LOWORD (lParam), HIWORD (lParam));
+			VSTGUI_CPoint where (((int)(short)LOWORD(lParam)), ((int)(short)HIWORD(lParam)));
 			pFrame->onMouseMoved (where, buttons);
 			return 0;
 		}
@@ -8664,7 +8670,7 @@ LONG_PTR WINAPI WindowProc (HWND hwnd, UINT message, WPARAM wParam, LPARAM lPara
 				buttons |= kControl;
 			if (wParam & MK_SHIFT)
 				buttons |= kShift;
-			VSTGUI_CPoint where (LOWORD (lParam), HIWORD (lParam));
+			VSTGUI_CPoint where (((int)(short)LOWORD(lParam)), ((int)(short)HIWORD(lParam)));
 			pFrame->onMouseUp (where, buttons);
 			ReleaseCapture ();
 			return 0;
@@ -8701,7 +8707,44 @@ LONG_PTR WINAPI WindowProc (HWND hwnd, UINT message, WPARAM wParam, LPARAM lPara
 	return DefWindowProc (hwnd, message, wParam, lParam);
 }
 
-#if !GDIPLUS
+#if GDIPLUS
+GDIPlusGlobals* GDIPlusGlobals::gInstance = 0;
+
+//-----------------------------------------------------------------------------
+GDIPlusGlobals::GDIPlusGlobals ()
+{
+	Gdiplus::GdiplusStartupInput gdiplusStartupInput;
+	Gdiplus::GdiplusStartup (&gdiplusToken, &gdiplusStartupInput, NULL);
+}
+
+//-----------------------------------------------------------------------------
+GDIPlusGlobals::~GDIPlusGlobals ()
+{
+	Gdiplus::GdiplusShutdown (gdiplusToken);
+}
+
+//-----------------------------------------------------------------------------
+void GDIPlusGlobals::enter ()
+{
+	if (gInstance)
+		gInstance->remember ();
+	else
+		gInstance = new GDIPlusGlobals;
+}
+
+//-----------------------------------------------------------------------------
+void GDIPlusGlobals::exit ()
+{
+	if (gInstance)
+	{
+		bool destroyed = (gInstance->getNbReference () == 1);
+		gInstance->forget ();
+		if (destroyed)
+			gInstance = 0;
+	}
+}
+
+#else
 //-----------------------------------------------------------------------------
 HANDLE CreateMaskBitmap (CDrawContext* pContext, CRect& rect, CColor transparentColor)
 {
