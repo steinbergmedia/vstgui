@@ -2,7 +2,7 @@
 // VST Plug-Ins SDK
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 //
-// Version 3.5       $Date: 2005-12-16 11:26:37 $
+// Version 3.5       $Date: 2005-12-16 14:26:20 $
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
@@ -174,6 +174,7 @@ BEGIN_NAMESPACE_VSTGUI
 struct CPoint;
 
 #if DEBUG
+extern void DebugPrint (char* format, ...);
 #define CLASS_METHODS(name, parent)             \
 	virtual bool isTypeOf (const char* s) const \
 		{ return (!strcmp (s, (#name))) ? true : parent::isTypeOf (s); }\
@@ -1346,10 +1347,6 @@ protected:
 	void*     dropTarget;
 	COffscreenContext* backBuffer;
 
-	#if GDIPLUS
-	ULONG_PTR gdiplusToken;
-	#endif
-
 #elif BEOS
 	PlugView *pPlugView;
 #endif
@@ -1436,6 +1433,22 @@ public:
 	CCView   *pPrevious;
 };
 /// \endcond
+
+#if GDIPLUS
+class GDIPlusGlobals : public CBaseObject
+{
+public:
+	static void enter ();	///< call this once before using VSTGUI
+	static void exit ();	///< call this after releasing all VSTGUI objects
+protected:
+	GDIPlusGlobals ();
+	~GDIPlusGlobals ();
+
+	static GDIPlusGlobals* gInstance;
+	ULONG_PTR gdiplusToken;
+};
+#endif
+
 
 END_NAMESPACE_VSTGUI
 

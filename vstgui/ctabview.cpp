@@ -405,6 +405,7 @@ void CTabView::alignTabs (long alignment)
 		v = v->next;
 	}
 	setDirty (true);
+	invalid ();
 }
 
 END_NAMESPACE_VSTGUI
