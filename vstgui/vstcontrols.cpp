@@ -3,7 +3,7 @@
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 // Standard Control Objects
 //
-// Version 3.5       $Date: 2005-12-11 22:41:48 $
+// Version 3.5       $Date: 2005-12-16 11:26:36 $
 //
 // Added new objects        : Michael Schmidt          08.97
 // Added new objects        : Yvan Grabit              01.98
@@ -3799,8 +3799,10 @@ void COptionMenu::takeFocus ()
 			CDrawContext *pContextTemp = pContext;
 			// create a local context
 			if (!pContextTemp)
-				pContextTemp = new CDrawContext (getFrame (), plugView, NULL);
-
+			{
+				if (getFrame ())
+					pContextTemp = getFrame ()->createDrawContext ();
+			}
 			setValue (message->what);
 			
 			if (listener)
@@ -3810,7 +3812,7 @@ void COptionMenu::takeFocus ()
 			draw (pContextTemp);
 
 			if (!pContext && pContextTemp)
-				delete pContextTemp;
+				pContextTemp->forget ();
 		}
 	}
 	delete popup;

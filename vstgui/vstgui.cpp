@@ -2,7 +2,7 @@
 // VST Plug-Ins SDK
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 //
-// Version 3.5       $Date: 2005-12-11 22:41:48 $ 
+// Version 3.5       $Date: 2005-12-16 11:26:37 $ 
 //
 // Added Motif/Windows vers.: Yvan Grabit              01.98
 // Added Mac version        : Charlie Steinberg        02.98
@@ -119,7 +119,11 @@ void DebugPrint (char *format, ...)
 	c2pstrcpy (pStr, string);
 	DebugStr (pStr);
 	#else
-	fprintf (stderr, string);
+	#if __MWERKS__
+		printf (string);
+	#else
+		fprintf (stderr, string);
+	#endif	// #if __MWERKS__
 	#endif
 }
 #endif
@@ -3761,6 +3765,39 @@ bool CView::removed (CView* parent)
 	return true;
 }
 
+//-----------------------------------------------------------------------------
+/**
+ * @param where mouse location of mouse down
+ * @param buttons button and modifier state
+ * @return event result \sa CMouseEventResult
+ */
+CMouseEventResult CView::onMouseDown (CPoint &where, const long& buttons)
+{
+	return kMouseEventNotHandled;
+}
+
+//-----------------------------------------------------------------------------
+/**
+ * @param where mouse location of mouse up
+ * @param buttons button and modifier state
+ * @return event result \sa CMouseEventResult
+ */
+CMouseEventResult CView::onMouseUp (CPoint &where, const long& buttons)
+{
+	return kMouseEventNotHandled;
+}
+
+//-----------------------------------------------------------------------------
+/**
+ * @param where mouse location of mouse move
+ * @param buttons button and modifier state
+ * @return event result \sa CMouseEventResult
+ */
+CMouseEventResult CView::onMouseMoved (CPoint &where, const long& buttons)
+{
+	return kMouseEventNotHandled;
+}
+
 #if VSTGUI_ENABLE_DEPRECATED_METHODS
 //-----------------------------------------------------------------------------
 void CView::getMouseLocation (CDrawContext* context, CPoint &point)
@@ -5189,11 +5226,15 @@ bool CFrame::getSize (CRect& outSize) const
 }
 
 //-----------------------------------------------------------------------------
-long CFrame::setModalView (CView *pView)
+/**
+ * @param pView the view which should be set to modal.
+ * @return true if view could be set as the modal view. false if there is a already a modal view or the view to be set as modal is already attached.
+ */
+bool CFrame::setModalView (CView *pView)
 {
-	// There's already a modal view so we get out
-	if (pView && pModalView)
-		return 0;
+	// If there is a modal view or the view 
+	if ((pView && pModalView) || (pView && pView->isAttached ()))
+		return false;
 
 	if (pModalView)
 		removeView (pModalView, false);
@@ -5202,7 +5243,7 @@ long CFrame::setModalView (CView *pView)
 	if (pModalView)
 		addView (pModalView);
 
-	return 1;
+	return true;
 }
 
 //-----------------------------------------------------------------------------
@@ -5692,7 +5733,8 @@ void CViewContainer::setViewSize (CRect &rect)
 
 //-----------------------------------------------------------------------------
 /**
- * @param rect the size you want to check 
+ * @param rect the size you want to check
+ * @return visible size of rect
  */
 CRect CViewContainer::getVisibleSize (const CRect rect) const
 {
@@ -5812,7 +5854,7 @@ void CViewContainer::removeAll (const bool &withForget)
  */
 void CViewContainer::removeView (CView *pView, const bool &withForget)
 {
-	if (mouseOverView = pView)
+	if (mouseOverView == pView)
 		mouseOverView = 0;
 	if (pParentFrame && pParentFrame->getFocusView () == pView)
 		pParentFrame->setFocusView (0);
@@ -5876,6 +5918,9 @@ bool CViewContainer::isChild (CView *pView) const
 }
 
 //-----------------------------------------------------------------------------
+/**
+ * @return number of subviews
+ */
 long CViewContainer::getNbViews () const
 {
 	long nb = 0;
@@ -5891,6 +5936,7 @@ long CViewContainer::getNbViews () const
 //-----------------------------------------------------------------------------
 /**
  * @param index the index of the view to return
+ * @return view at index. NULL if view at index does not exist.
  */
 CView *CViewContainer::getView (long index) const
 {

@@ -104,8 +104,9 @@ void AEffGUIEditor::draw (ERect *ppErect)
 		if (ppErect)
 		{
 			CRect r (ppErect->left, ppErect->top, ppErect->right, ppErect->bottom);
-			CDrawContext context (frame, NULL, systemWindow);
-			frame->drawRect (&context, r);
+			CDrawContext* context = frame->createDrawContext();
+			frame->drawRect (context, r);
+			context->forget();
 		}
 		else
 			frame->draw ();
@@ -116,13 +117,19 @@ void AEffGUIEditor::draw (ERect *ppErect)
 //-----------------------------------------------------------------------------
 long AEffGUIEditor::mouse (long x, long y)
 {
+
 #if VSTGUI_ENABLE_DEPRECATED_METHODS
-	CDrawContext context (frame, NULL, systemWindow);
-	CPoint where (x, y);
 
 	if (frame)
-		frame->mouse (&context, where);
-#endif
+	{
+		CDrawContext* context = frame->createDrawContext();
+		CPoint where(x, y);
+		frame->mouse(context, where);
+		context->forget ();
+	}
+
+#endif	// #if VSTGUI_ENABLE_DEPRECATED_METHODS
+
 	return 1;
 }
 #endif
@@ -188,16 +195,18 @@ long AEffGUIEditor::setKnobMode (int val)
 //-----------------------------------------------------------------------------
 bool AEffGUIEditor::onWheel (float distance)
 {
-#if VSTGUI_ENABLE_DEPRECATED_METHODS
+	#if VSTGUI_ENABLE_DEPRECATED_METHODS
 	if (frame)
 	{
-		CDrawContext context (frame, NULL, systemWindow);
+		CDrawContext* context = frame->createDrawContext ();
 		CPoint where;
-		context.getMouseLocation (where);
-		long buttons = context.getMouseButtons ();
-		return frame->onWheel (where, distance, buttons);
+		context->getMouseLocation (where);
+		long buttons = context->getMouseButtons ();
+		bool result = frame->onWheel (where, distance, buttons);
+		context->forget ();
+		return result;
 	}
-#endif	
+	#endif	
 	return false;
 }
 
