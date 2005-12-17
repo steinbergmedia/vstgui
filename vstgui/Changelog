@@ -1,3 +1,10 @@
+2005-12-16 arne
+
+	* CControl::getTag() is virtual now
+	* fixed some stuff with CDrawContext inside the DEPRECATED functions
+	* added some more documentation
+	* reorganized GDI+ initialization
+
 2005-12-11 arne
 
 	* moved mouse methods from CDrawContext to CFrame where it makes sense
