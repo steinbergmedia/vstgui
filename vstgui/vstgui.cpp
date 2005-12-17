@@ -2,7 +2,7 @@
 // VST Plug-Ins SDK
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 //
-// Version 3.5       $Date: 2005-12-17 12:11:43 $ 
+// Version 3.5       $Date: 2005-12-17 16:05:58 $ 
 //
 // Added Motif/Windows vers.: Yvan Grabit              01.98
 // Added Mac version        : Charlie Steinberg        02.98
@@ -8620,12 +8620,16 @@ LONG_PTR WINAPI WindowProc (HWND hwnd, UINT message, WPARAM wParam, LPARAM lPara
 	case WM_RBUTTONDBLCLK:
 	case WM_MBUTTONDBLCLK:
 	case WM_LBUTTONDBLCLK:
+	#if (_WIN32_WINNT >= 0x0500)
 	case WM_XBUTTONDBLCLK:
+	#endif
 		doubleClick = true;
 	case WM_RBUTTONDOWN:
 	case WM_MBUTTONDOWN:
 	case WM_LBUTTONDOWN:
+	#if (_WIN32_WINNT >= 0x0500)
 	case WM_XBUTTONDOWN:
+	#endif
 		if (pFrame)
 		{
 			long buttons = 0;
@@ -8635,10 +8639,12 @@ LONG_PTR WINAPI WindowProc (HWND hwnd, UINT message, WPARAM wParam, LPARAM lPara
 				buttons |= kRButton;
 			if (wParam & MK_MBUTTON)
 				buttons |= kMButton;
+			#if (_WIN32_WINNT >= 0x0500)
 			if (wParam & MK_XBUTTON1)
 				buttons |= kButton4;
 			if (wParam & MK_XBUTTON2)
 				buttons |= kButton5;
+			#endif
 			if (wParam & MK_CONTROL)
 				buttons |= kControl;
 			if (wParam & MK_SHIFT)
@@ -8661,10 +8667,12 @@ LONG_PTR WINAPI WindowProc (HWND hwnd, UINT message, WPARAM wParam, LPARAM lPara
 				buttons |= kRButton;
 			if (wParam & MK_MBUTTON)
 				buttons |= kMButton;
+			#if (_WIN32_WINNT >= 0x0500)
 			if (wParam & MK_XBUTTON1)
 				buttons |= kButton4;
 			if (wParam & MK_XBUTTON2)
 				buttons |= kButton5;
+			#endif
 			if (wParam & MK_CONTROL)
 				buttons |= kControl;
 			if (wParam & MK_SHIFT)
@@ -8677,7 +8685,9 @@ LONG_PTR WINAPI WindowProc (HWND hwnd, UINT message, WPARAM wParam, LPARAM lPara
 	case WM_LBUTTONUP:
 	case WM_RBUTTONUP:
 	case WM_MBUTTONUP:
+	#if (_WIN32_WINNT >= 0x0500)
 	case WM_XBUTTONUP:
+	#endif
 		if (pFrame)
 		{
 			long buttons = 0;
@@ -8687,10 +8697,12 @@ LONG_PTR WINAPI WindowProc (HWND hwnd, UINT message, WPARAM wParam, LPARAM lPara
 				buttons |= kRButton;
 			if (wParam & MK_MBUTTON)
 				buttons |= kMButton;
+			#if (_WIN32_WINNT >= 0x0500)
 			if (wParam & MK_XBUTTON1)
 				buttons |= kButton4;
 			if (wParam & MK_XBUTTON2)
 				buttons |= kButton5;
+			#endif
 			if (wParam & MK_CONTROL)
 				buttons |= kControl;
 			if (wParam & MK_SHIFT)
