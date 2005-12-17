@@ -2,7 +2,7 @@
 // VST Plug-Ins SDK
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 //
-// Version 3.5       $Date: 2005-12-16 14:26:20 $ 
+// Version 3.5       $Date: 2005-12-17 12:11:43 $ 
 //
 // Added Motif/Windows vers.: Yvan Grabit              01.98
 // Added Mac version        : Charlie Steinberg        02.98
@@ -1169,6 +1169,7 @@ void CDrawContext::polyLine (const CPoint *pPoints, long numberOfPoints)
 {
 #if WINDOWS
 	#if GDIPLUS
+	// GDIPLUS todo
 	#else
 	POINT points[30];
 	POINT *polyPoints;
@@ -1239,6 +1240,7 @@ void CDrawContext::fillPolygon (const CPoint *pPoints, long numberOfPoints)
 	// Don't draw boundary
 #if WINDOWS
 	#if GDIPLUS
+	// GDIPLUS todo
 	#else
 	POINT points[30];
 	POINT *polyPoints;
@@ -1551,6 +1553,7 @@ void CDrawContext::fillEllipse (const CRect &_rect)
 	// Don't draw boundary
 #if WINDOWS
 	#if GDIPLUS
+	// GDIPLUS todo
 	#else
 	HANDLE nullPen = GetStockObject (NULL_PEN);
 	HANDLE oldPen  = SelectObject ((HDC)pSystemContext, nullPen);
@@ -1593,6 +1596,7 @@ void CDrawContext::drawPoint (const CPoint &_point, CColor color)
 
 #if WINDOWS
 	#if GDIPLUS
+	// GDIPLUS todo
 	#else
 	point.offset (offset.h, offset.v);
 	SetPixel ((HDC)pSystemContext, point.h, point.v, RGB(color.red, color.green, color.blue));
@@ -1752,6 +1756,7 @@ void CDrawContext::drawArc (const CRect &_rect, const float _startAngle, const f
 
 	#if WINDOWS
 	#if GDIPLUS
+	// GDIPLUS todo
 	#else
 	float startRad = (float)(k2PI * _startAngle / 360.f);
 	float endRad   = (float)(k2PI * _endAngle / 360.f);
@@ -1840,6 +1845,7 @@ void CDrawContext::drawArc (const CRect &_rect, const CPoint &_point1, const CPo
 	// draws from point1 to point2 counterclockwise
 #if WINDOWS
 	#if GDIPLUS
+	// GDIPLUS todo
 	#else
 	Arc ((HDC)pSystemContext, rect.left, rect.top, rect.right + 1, rect.bottom + 1, 
 			 point1.h, point1.v, point2.h, point2.v);
@@ -1915,6 +1921,7 @@ void CDrawContext::fillArc (const CRect &_rect, const CPoint &_point1, const CPo
 	// Don't draw boundary
 #if WINDOWS
 	#if GDIPLUS
+	// GDIPLUS todo
 	#else
 	HANDLE nullPen = GetStockObject (NULL_PEN);
 	HANDLE oldPen  = SelectObject ((HDC)pSystemContext, nullPen);
@@ -2272,6 +2279,7 @@ CCoord CDrawContext::getStringWidth (const char *pStr)
         
 	#elif WINDOWS
 	#if GDIPLUS
+	// GDIPLUS todo
 	#else
 	SIZE size;
 	GetTextExtentPoint32 ((HDC)pSystemContext, pStr, (int)strlen (pStr), &size);
@@ -3178,6 +3186,7 @@ COffscreenContext::COffscreenContext (CDrawContext *pContext, CBitmap *pBitmapBg
 	
 #if WINDOWS
 	#if GDIPLUS
+	// GDIPLUS todo
 	#else
 	if (pOldBrush)
 		SelectObject ((HDC)getSystemContext (), pOldBrush);
@@ -3455,6 +3464,7 @@ void COffscreenContext::copyTo (CDrawContext* pContext, CRect& srcRect, CPoint d
 {
 #if WINDOWS
 	#if GDIPLUS
+	// GDIPLUS todo
 	#else
 	BitBlt ((HDC)pSystemContext,
 			destOffset.h,
@@ -8610,10 +8620,12 @@ LONG_PTR WINAPI WindowProc (HWND hwnd, UINT message, WPARAM wParam, LPARAM lPara
 	case WM_RBUTTONDBLCLK:
 	case WM_MBUTTONDBLCLK:
 	case WM_LBUTTONDBLCLK:
+	case WM_XBUTTONDBLCLK:
 		doubleClick = true;
 	case WM_RBUTTONDOWN:
 	case WM_MBUTTONDOWN:
 	case WM_LBUTTONDOWN:
+	case WM_XBUTTONDOWN:
 		if (pFrame)
 		{
 			long buttons = 0;
@@ -8623,6 +8635,10 @@ LONG_PTR WINAPI WindowProc (HWND hwnd, UINT message, WPARAM wParam, LPARAM lPara
 				buttons |= kRButton;
 			if (wParam & MK_MBUTTON)
 				buttons |= kMButton;
+			if (wParam & MK_XBUTTON1)
+				buttons |= kButton4;
+			if (wParam & MK_XBUTTON2)
+				buttons |= kButton5;
 			if (wParam & MK_CONTROL)
 				buttons |= kControl;
 			if (wParam & MK_SHIFT)
@@ -8645,6 +8661,10 @@ LONG_PTR WINAPI WindowProc (HWND hwnd, UINT message, WPARAM wParam, LPARAM lPara
 				buttons |= kRButton;
 			if (wParam & MK_MBUTTON)
 				buttons |= kMButton;
+			if (wParam & MK_XBUTTON1)
+				buttons |= kButton4;
+			if (wParam & MK_XBUTTON2)
+				buttons |= kButton5;
 			if (wParam & MK_CONTROL)
 				buttons |= kControl;
 			if (wParam & MK_SHIFT)
@@ -8657,6 +8677,7 @@ LONG_PTR WINAPI WindowProc (HWND hwnd, UINT message, WPARAM wParam, LPARAM lPara
 	case WM_LBUTTONUP:
 	case WM_RBUTTONUP:
 	case WM_MBUTTONUP:
+	case WM_XBUTTONUP:
 		if (pFrame)
 		{
 			long buttons = 0;
@@ -8666,6 +8687,10 @@ LONG_PTR WINAPI WindowProc (HWND hwnd, UINT message, WPARAM wParam, LPARAM lPara
 				buttons |= kRButton;
 			if (wParam & MK_MBUTTON)
 				buttons |= kMButton;
+			if (wParam & MK_XBUTTON1)
+				buttons |= kButton4;
+			if (wParam & MK_XBUTTON2)
+				buttons |= kButton5;
 			if (wParam & MK_CONTROL)
 				buttons |= kControl;
 			if (wParam & MK_SHIFT)
@@ -8708,6 +8733,7 @@ LONG_PTR WINAPI WindowProc (HWND hwnd, UINT message, WPARAM wParam, LPARAM lPara
 }
 
 #if GDIPLUS
+//-----------------------------------------------------------------------------
 GDIPlusGlobals* GDIPlusGlobals::gInstance = 0;
 
 //-----------------------------------------------------------------------------
@@ -9176,14 +9202,14 @@ static CPoint GetMacDragMouse (CFrame* frame)
 		#if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_4
 		if (HIPointConvert)
 		{
-			location = CGPointMake (r.h, r.v);
+			location = CGPointMake ((float)r.h, (float)r.v);
 			HIPointConvert (&location, kHICoordSpaceScreenPixel, NULL, kHICoordSpaceView, view);
 		}
 		else
 		#endif
 		{
 			QDGlobalToLocalPoint (GetWindowPort (window), &r);
-			location = CGPointMake (r.h, r.v);
+			location = CGPointMake ((float)r.h, (float)r.v);
 			HIViewRef fromView = NULL;
 			HIViewFindByID (HIViewGetRoot (window), kHIViewWindowContentID, &fromView);
 			HIViewConvertPoint (&location, fromView, view);
@@ -9406,6 +9432,7 @@ static short keyTable[] = {
 };
 
 #if VSTGUI_USE_SYSTEM_EVENTS_FOR_DRAWING
+/// \cond ignore
 class VSTGUIDrawRectsHelper
 {
 public:
@@ -9429,6 +9456,7 @@ static OSStatus VSTGUIDrawRectsProc (UInt16 message, RgnHandle rgn, const Rect *
 	}
 	return noErr;
 }
+/// \endcond
 #endif
 
 #ifndef kHIViewFeatureGetsFocusOnClick
