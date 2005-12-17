@@ -2,7 +2,7 @@
 // VST Plug-Ins SDK
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 //
-// Version 3.5       $Date: 2005-12-16 14:26:20 $
+// Version 3.5       $Date: 2005-12-17 12:11:43 $
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
@@ -126,7 +126,7 @@ protected:
 };
 //----------------------------------------------------
 
-#define VSTGUI_USE_SYSTEM_EVENTS_FOR_DRAWING	1 //QUARTZ
+#define VSTGUI_USE_SYSTEM_EVENTS_FOR_DRAWING	1
 
 #ifndef VSTGUI_USES_UTF8
 #define VSTGUI_USES_UTF8 0
@@ -483,16 +483,16 @@ enum CHoriTxtAlign
 //----------------------------
 enum CButton
 {
-	kLButton		= 1 << 1,
-	kMButton		= 1 << 2,
-	kRButton		= 1 << 3,
-	kShift			= 1 << 4,
-	kControl		= 1 << 5,
-	kAlt			= 1 << 6,
-	kApple			= 1 << 7,
-	kButton4		= 1 << 8,
-	kButton5		= 1 << 9,
-	kDoubleClick	= 1 << 10
+	kLButton		= 1 << 1,		///< left mouse button
+	kMButton		= 1 << 2,		///< middle mouse button
+	kRButton		= 1 << 3,		///< right mouse button
+	kShift			= 1 << 4,		///< shift modifier
+	kControl		= 1 << 5,		///< control modifier
+	kAlt			= 1 << 6,		///< alt modifier
+	kApple			= 1 << 7,		///< apple modifier
+	kButton4		= 1 << 8,		///< 4th mouse button
+	kButton5		= 1 << 9,		///< 5th mouse button
+	kDoubleClick	= 1 << 10		///< mouse button is double click
 };
 
 //----------------------------
@@ -1438,8 +1438,8 @@ public:
 class GDIPlusGlobals : public CBaseObject
 {
 public:
-	static void enter ();	///< call this once before using VSTGUI
-	static void exit ();	///< call this after releasing all VSTGUI objects
+	static void enter ();	///< call this once before using VSTGUI. Can be nested.
+	static void exit ();	///< call this after releasing all VSTGUI objects especially CBitmaps
 protected:
 	GDIPlusGlobals ();
 	~GDIPlusGlobals ();
