@@ -3,7 +3,7 @@
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 // Standard Control Objects
 //
-// Version 3.5       $Date: 2005-12-16 14:26:20 $
+// Version 3.5       $Date: 2005-12-19 15:34:10 $
 //
 // Added new objects        : Michael Schmidt          08.97
 // Added new objects        : Yvan Grabit              01.98
@@ -894,7 +894,7 @@ void CParamDisplay::drawText (CDrawContext *pContext, char *string, CBitmap *new
 		if (!bTransparencyEnabled)
 		{
 			pContext->setFillColor (backColor);
-			pContext->fillRect (size);
+			pContext->drawRect (size, kDrawFilled);
 	
 			if (!(style & (k3DIn|k3DOut|kNoFrame))) 
 			{
@@ -2273,7 +2273,7 @@ void COptionMenuScheme::drawItemBack (CDrawContext* pContext, const CRect& rect,
 		pContext->setFillColor (selectionColor);
 	else
 		pContext->setFillColor (backgroundColor);
-	pContext->fillRect (rect);
+	pContext->drawRect (rect, kDrawFilled);
 }
 
 //------------------------------------------------------------------------
@@ -2308,7 +2308,7 @@ void COptionMenuScheme::drawItem (const char* text, long itemId, long state, CDr
 			pContext->setFillColor (hiliteTextColor);
 		else
 			pContext->setFillColor (textColor);
-		pContext->fillEllipse (r);
+		pContext->drawEllipse (r, kDrawFilled);
 	}
 
 	r = rect;
@@ -4081,9 +4081,11 @@ CHorizontalSwitch::CHorizontalSwitch (const CRect &size, CControlListener *liste
                                   CCoord heightOfOneImage, // height of one image in pixel
                                   long iMaxPositions,
                                   CBitmap *background, CPoint &offset)
-: CControl (size, listener, tag, background), offset (offset),
-	subPixmaps (subPixmaps), heightOfOneImage (heightOfOneImage),
-	iMaxPositions (iMaxPositions)
+: CControl (size, listener, tag, background)
+, offset (offset)
+, subPixmaps (subPixmaps)
+, iMaxPositions (iMaxPositions)
+, heightOfOneImage (heightOfOneImage)
 {
 	setDefaultValue (0.f);
 }

@@ -2,7 +2,7 @@
 // VST Plug-Ins SDK
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 //
-// Version 3.5       $Date: 2005-12-17 12:11:43 $
+// Version 3.5       $Date: 2005-12-19 15:34:10 $
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
@@ -61,6 +61,10 @@
  #endif
 #endif
 
+#ifndef USE_NAMESPACE
+#define USE_NAMESPACE 1
+#endif
+
 #if USE_NAMESPACE
  #define BEGIN_NAMESPACE_VSTGUI  namespace VSTGUI {
  #define END_NAMESPACE_VSTGUI    }
@@ -102,8 +106,6 @@ class COffscreenContext;
 class CControl;
 class CBitmap;
 
-END_NAMESPACE_VSTGUI
-
 //----------------------------------------------------
 class VSTGUIEditorInterface
 {
@@ -118,12 +120,10 @@ protected:
 	VSTGUIEditorInterface () : frame (0) {}
 	virtual ~VSTGUIEditorInterface () {}
 
-#if USE_NAMESPACE
-	VSTGUI::CFrame* frame;
-#else
 	CFrame* frame;
-#endif
 };
+END_NAMESPACE_VSTGUI
+
 //----------------------------------------------------
 
 #define VSTGUI_USE_SYSTEM_EVENTS_FOR_DRAWING	1
@@ -139,9 +139,10 @@ protected:
 	#if GDIPLUS
 	#include <gdiplus.h>
 	#endif
+#endif // WINDOWS
 
 //----------------------------------------------------
-#elif MAC
+#if MAC
 	#if MACX
 	#include <Carbon/Carbon.h>
 	//macho VST's set gBundleRef which is a CFBundleRef
@@ -157,15 +158,17 @@ protected:
 	#include <ToolUtils.h>
 	#include <Resources.h>
 	#include <Dialogs.h>
-	#endif
+	#endif // MACX
+#endif // MAC
+
 //----------------------------------------------------
-#elif BEOS
+#if BEOS
 	#include <Font.h>
 	class BView;
 	class PlugView;
 	class BBitmap;
 	class BResources;
-#endif
+#endif // BEOS
 
 struct VstKeyCode;
 
@@ -362,20 +365,29 @@ struct CColor
 };
 
 // define some basic colors
-extern CColor kTransparentCColor;
-extern CColor kBlackCColor;
-extern CColor kWhiteCColor;
-extern CColor kGreyCColor;
-extern CColor kRedCColor;
-extern CColor kGreenCColor;
-extern CColor kBlueCColor;
-extern CColor kYellowCColor;
-extern CColor kCyanCColor;
-extern CColor kMagentaCColor;
-
+extern const CColor kTransparentCColor;
+extern const CColor kBlackCColor;
+extern const CColor kWhiteCColor;
+extern const CColor kGreyCColor;
+extern const CColor kRedCColor;
+extern const CColor kGreenCColor;
+extern const CColor kBlueCColor;
+extern const CColor kYellowCColor;
+extern const CColor kCyanCColor;
+extern const CColor kMagentaCColor;
 
 //-----------------------------------------------------------------------------
 // Definitions of special characters in a platform independent way
+
+#if VSTGUI_USES_UTF8 || BEOS
+extern const char* kDegreeSymbol;			///< degree sign
+extern const char* kInfiniteSymbol;			///< infinity
+extern const char* kCopyrightSymbol;		///< copyright sign
+extern const char* kTrademarkSymbol;		///< trade mark sign
+extern const char* kRegisteredSymbol;		///< registered sign
+extern const char* kMicroSymbol;			///< micro sign
+extern const char* kPerthousandSymbol;		///< per mille sign
+#else
 
 #if WINDOWS
 #define kDegreeSymbol      "\xB0"
@@ -385,17 +397,9 @@ extern CColor kMagentaCColor;
 #define kRegisteredSymbol  "\xAE"
 #define kMicroSymbol       "\x85"
 #define kPerthousandSymbol "\x89"
+#endif // WINDOWS
 
-#elif BEOS
-#define kDegreeSymbol      "\xC2\xB0"
-#define kInfiniteSymbol    "\xE2\x88\x9E"
-#define kCopyrightSymbol   "\xC2\xA9"
-#define kTrademarkSymbol   "\xE2\x84\xA2"
-#define kRegisteredSymbol	"\xC2\xAE"
-#define kMicroSymbol       "\xC2\xB5"
-#define kPerthousandSymbol "\xE2\x80\xB0"
-
-#elif MAC
+#if MAC
 #define kDegreeSymbol      "\xA1"
 #define kInfiniteSymbol    "oo"
 #define kCopyrightSymbol   "\xA9"
@@ -403,7 +407,9 @@ extern CColor kMagentaCColor;
 #define kRegisteredSymbol  "\xA8"
 #define kMicroSymbol       "\xB5"
 #define kPerthousandSymbol "\xE4"
-#endif
+#endif // MAC
+
+#endif // VSTGUI_USES_UTF8
 
 class CDragContainer;
 class CCView;
@@ -610,26 +616,15 @@ public:
 	void moveTo (const CPoint &point);	///< move line position to point
 	void lineTo (const CPoint &point);	///< draw a line from current position to point
 	void drawLines (const CPoint* points, const long& numberOfLines);	///< draw multiple lines at once
-
 	void drawPolygon (const CPoint *pPoints, long numberOfPoints, const CDrawStyle drawStyle = kDrawStroked); ///< draw a polygon
-	void polyLine (const CPoint *pPoint, long numberOfPoints);	///< draw a stroked polygon
-	void fillPolygon (const CPoint *pPoint, long numberOfPoints);	///< draw a filled polygon
-
-	void drawRect (const CRect &rect, const CDrawStyle drawStyle = kDrawStroked);	///< draw a stroked rect
-	void fillRect (const CRect &rect);	///< draw a filled rect
-
-	void drawArc (const CRect &rect, const float startAngle1, const float endAngle2, const CDrawStyle drawStyle = kDrawStroked);	///< draw a stroked arc, where the angles are in degree
-	void drawArc (const CRect &rect, const CPoint &point1, const CPoint &point2);		///< draw a stroked arc between point1 and point2
-	void fillArc (const CRect &rect, const CPoint &point1, const CPoint &point2);		///< draw a filled arc between point1 and point2
-
+	void drawRect (const CRect &rect, const CDrawStyle drawStyle = kDrawStroked);	///< draw a rect
+	void drawArc (const CRect &rect, const float startAngle1, const float endAngle2, const CDrawStyle drawStyle = kDrawStroked);	///< draw an arc, angles are in degree
 	void drawEllipse (const CRect &rect, const CDrawStyle drawStyle = kDrawStroked);	///< draw an ellipse
-	void fillEllipse (const CRect &rect);	///< draw a filled ellipse
-	
 	void drawPoint (const CPoint &point, CColor color);	///< draw a point
 	//@}
 	
 	//-----------------------------------------------------------------------------
-	/// \name Line
+	/// \name Line Mode
 	//-----------------------------------------------------------------------------
 	//@{
 	void       setLineStyle (CLineStyle style);				///< set the current line style
@@ -648,7 +643,7 @@ public:
 	//@}
 
 	//-----------------------------------------------------------------------------
-	/// \name Clip
+	/// \name Clipping
 	//-----------------------------------------------------------------------------
 	//@{
 	void   setClipRect (const CRect &clip);																			///< set the current clip
@@ -702,6 +697,12 @@ public:
 
 	VSTGUI_DEPRECATED(CColor getPoint (const CPoint& point);)
 	VSTGUI_DEPRECATED(void floodFill (const CPoint& start);)
+	VSTGUI_DEPRECATED(void drawArc (const CRect &rect, const CPoint &point1, const CPoint &point2);)
+	VSTGUI_DEPRECATED(void fillArc (const CRect &rect, const CPoint &point1, const CPoint &point2);)
+	VSTGUI_DEPRECATED(void polyLine (const CPoint *pPoint, long numberOfPoints);)
+	VSTGUI_DEPRECATED(void fillPolygon (const CPoint *pPoint, long numberOfPoints);)
+	VSTGUI_DEPRECATED(void fillRect (const CRect &rect);)
+	VSTGUI_DEPRECATED(void fillEllipse (const CRect &rect);)
 	VSTGUI_DEPRECATED(long getMouseButtons ();)
 	VSTGUI_DEPRECATED(void getMouseLocation (CPoint &point);)
 	VSTGUI_DEPRECATED(bool waitDoubleClick ();)
@@ -749,9 +750,10 @@ protected:
 	void *pOldFont;
 	long iPenStyle;
 	HDC  pHDC;
-	#endif
+	#endif // GDIPLUS
+#endif // WINDOWS
 
-#elif MAC
+#if MAC
 	#if QUARTZ
 	ATSUStyle atsuStyle;
 	CGContextRef gCGContext;
@@ -769,17 +771,18 @@ protected:
 	FontInfo fontInfoStruct;
 	Pattern fillPattern;
 	bool bInitialized;
-	#endif
+	#endif // QUARTZ
 	virtual BitMapPtr getBitmap ();
 	virtual void releaseBitmap ();
 	virtual CGrafPtr getPort ();
-	
-#elif BEOS
+#endif // MAC
+
+#if BEOS
 	BView*	pView;
 	BFont	font;
 	void lineFromTo (CPoint& cstart, CPoint& cend);
 
-#endif
+#endif // BEOS
 };
 
 
@@ -814,20 +817,22 @@ protected:
 
 #if WINDOWS
 	void* oldBitmap;
+#endif // WINDOWS
 
-#elif BEOS
+#if BEOS
 	BBitmap *offscreenBitmap;
+#endif // BEOS
 
-#elif MAC
+#if MAC
 	#if QUARTZ
 	void* offscreenBitmap;
 	virtual CGImageRef getCGImage () const;
 	#else
 	CGrafPtr getPort ();
-	#endif
+	#endif // QUARTZ
 	BitMapPtr getBitmap ();
 	void releaseBitmap ();
-#endif
+#endif // MAC
 };
 
 
@@ -861,15 +866,15 @@ public:
 
 #if BEOS
 	static void closeResource ();
-#endif
-#if MACX
-	#if QUARTZ
+#endif // BEOS
+
+#if QUARTZ
 	virtual CGImageRef createCGImage (bool transparent = false);
-	#endif
-#endif
+#endif // QUARTZ
+
 #if GDIPLUS
 	Gdiplus::Bitmap* getBitmap ();
-#endif
+#endif // GDIPLUS
 
 	VSTGUI_DEPRECATED(void setTransparencyMask (CDrawContext* pContext, const CPoint& offset = CPoint (0, 0));)
 
@@ -892,21 +897,24 @@ protected:
 	#if GDIPLUS
 	Gdiplus::Bitmap	*pBitmap;
 	void* bits;
-	#endif
+	#endif // GDIPLUS
 	void *pHandle;
 	void *pMask;
+#endif // WINDOWS
 
-#elif MAC
+#if MAC
 	void* pHandle;
 	void* pMask;
 	#if QUARTZ
 	void* cgImage;
-	#endif
-#elif BEOS
+	#endif // QUARTZ
+#endif // MAC
+
+#if BEOS
 	static BResources *resourceFile;
 	BBitmap    *bbitmap;
 	bool		transparencySet;
-#endif
+#endif // BEOS
 };
 
 //-----------------------------------------------------------------------------
@@ -1283,16 +1291,13 @@ public:
 
 	#if WINDOWS
 	HWND getOuterWindow () const;
-	void *getSystemWindow () const { return pHwnd; }
-	COffscreenContext* getBackBuffer ();
-	#elif BEOS
-	void *getSystemWindow () const { return pPlugView; }
-	#else
-	void *getSystemWindow () const { return pSystemWindow; }
-	#endif
 	void *getParentSystemWindow () const { return pSystemWindow; }
 	void setParentSystemWindow (void *val) { pSystemWindow = val; }
-
+	COffscreenContext* getBackBuffer ();
+	#endif // WINDOWS
+	
+	void *getSystemWindow () const;	///< get platform window
+	
 	void removeView (CView *pView, const bool &withForget = true);
 	void removeAll (const bool &withForget = true);
 
@@ -1346,10 +1351,12 @@ protected:
 	HINSTANCE hInstMsimg32dll;
 	void*     dropTarget;
 	COffscreenContext* backBuffer;
+#endif // WINDOWS
 
-#elif BEOS
+#if BEOS
 	PlugView *pPlugView;
-#endif
+#endif // BEOS
+
 #if QUARTZ
 	void setDrawContext (CDrawContext* context) { pFrameContext = context; }
 	friend class CDrawContext;
@@ -1367,7 +1374,7 @@ protected:
 	void* getPlatformControl () const { return controlRef; }
 	CPoint hiScrollOffset;
 	protected:
-#endif
+#endif // QUARTZ
 	//-------------------------------------------
 private:
 	CDrawContext *pFrameContext;
@@ -1402,8 +1409,9 @@ public:
 	long getCount () const { return nbItems; }
 
 	enum {
-		kFile = 0,
-		kText,
+		kFile = 0,								///< File (MacOSX = UTF8 String)
+		kText,									///< ASCII Text
+		kUnicodeText,							///< UTF8 Text
 
 		kUnknown = -1
 	};
