@@ -16,6 +16,7 @@ PMiscView::PMiscView (const CRect& size)
 	setTransparency (true);
 }
 
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
 void PMiscView::mouse (CDrawContext* pContext, CPoint &where, long buttons)
 {
 	if (pContext->waitDrag ())
@@ -35,6 +36,7 @@ void PMiscView::mouse (CDrawContext* pContext, CPoint &where, long buttons)
 		}
 	}
 }
+#endif
 
 static inline void offsetPoints (CPoint* points, long numPoints, CPoint offset)
 {
@@ -127,6 +129,28 @@ void PMiscView::draw (CDrawContext* pContext)
 	ellipseRect.offset (50, 0);
 	pContext->setFillColor (kRedAlphaCColor);
 	pContext->drawEllipse (ellipseRect, kDrawFilledAndStroked);
+
+	CRect arcRect (0, 150, 100, 250);
+	arcRect.offset (size.left + xOffset, size.top + yOffset);
+	pContext->setFrameColor (kBlackCColor);
+	pContext->drawArc (arcRect, 0.f, 280.f, kDrawStroked);
+	arcRect.offset (75, 0);
+	pContext->setFillColor (kBlueAlphaCColor);
+	pContext->drawArc (arcRect, 0.f, 280.f, kDrawFilled);
+	arcRect.offset (75, 0);
+	pContext->setFillColor (kRedAlphaCColor);
+	pContext->drawArc (arcRect, 0.f, 280.f, kDrawFilledAndStroked);
+
+	arcRect (200, 150, 300, 250);
+	arcRect.offset (size.left + xOffset, size.top + yOffset);
+	pContext->setFrameColor (kBlackCColor);
+	pContext->drawArc (arcRect, 280.f, 0.f, kDrawStroked);
+	arcRect.offset (75, 0);
+	pContext->setFillColor (kBlueAlphaCColor);
+	pContext->drawArc (arcRect, 280.f, 0.f, kDrawFilled);
+	arcRect.offset (75, 0);
+	pContext->setFillColor (kRedAlphaCColor);
+	pContext->drawArc (arcRect, 280.f, 0.f, kDrawFilledAndStroked);
 
 	setDirty (false);
 }
@@ -292,10 +316,10 @@ void PRectsView::draw (CDrawContext *context)
 	r2.inset (r2.getWidth () / 4, r2.getHeight () / 4);
 	CColor alphaColor = {0, 0, 0, 130};
 	context->setFillColor (alphaColor);
-	context->fillRect (r2);
+	context->drawRect (r2, kDrawFilled);
 	r2.inset (r2.getWidth () / 4, r2.getHeight () / 4);
 	CColor alpha2Color = {255, 255, 255, 130};
 	context->setFillColor (alpha2Color);
-	context->fillRect (r2);
+	context->drawRect (r2, kDrawFilled);
 	setDirty (false);
 }

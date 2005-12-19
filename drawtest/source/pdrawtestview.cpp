@@ -57,7 +57,7 @@ static inline void testFillRect (CDrawContext *pContext, CRect r)
 		else
 			pContext->setFillColor (kCyanCColor);
 		r.inset (1,1);
-		pContext->fillRect (r);
+		pContext->drawRect (r, kDrawFilled);
 	}
 }
 
@@ -102,10 +102,9 @@ static inline void drawVerticalLines (CDrawContext *pContext, CRect r, int _offs
 static inline void clearRect (CDrawContext* pContext, const CRect& r)
 {
 	pContext->setFillColor (kWhiteCColor);
-	pContext->fillRect (r);
 	pContext->setLineWidth (1);
 	pContext->setFrameColor (kBlackCColor);
-	pContext->drawRect (r);
+	pContext->drawRect (r, kDrawFilledAndStroked);
 }
 
 static inline void drawLines (CDrawContext* pContext, CRect r, int offset = 2)
@@ -136,7 +135,6 @@ static inline void drawArcs (CDrawContext* pContext, CRect r, int offset = 2)
 {
 	r.inset (diffX, diffY);
 	int i = 0;
-	long n = r.height () > r.width () ? r.width () : r.height ();
 	while (r.width () > 1 && r.height () > 1)
 	{
 		pContext->setFrameColor (arcColors[i++]); if (i > numArcColors) i = 0;
@@ -155,7 +153,6 @@ static inline void drawEllipses (CDrawContext* pContext, CRect r, int offset = 2
 {
 	r.inset (diffX, diffY);
 	int i = 0;
-	long n = r.height () > r.width () ? r.width () : r.height ();
 	while (r.width () > 1 && r.height () > 1)
 	{
 		pContext->setFrameColor (arcColors[i++]); if (i > numArcColors) i = 0;
@@ -260,6 +257,7 @@ void CDrawTestView::draw (CDrawContext *pContext)
 	setDirty (false);
 }
 
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
 void CDrawTestView::mouse (CDrawContext* pContext, CPoint& where, long buttons)
 {
 	if (buttons & kLButton)
@@ -296,4 +294,4 @@ void CDrawTestView::mouse (CDrawContext* pContext, CPoint& where, long buttons)
 	}
 	setDirty (true);
 }
-
+#endif

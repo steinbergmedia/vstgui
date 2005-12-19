@@ -18,7 +18,6 @@
 //-------------------------------------------------------------------------------------------------------
 
 #include "pdrawtesteditor.h"
-#include "pdrawtestview.h"
 #include "cscrollview.h"
 #include "ctabview.h"
 #include "controlsgui.h"
@@ -166,9 +165,6 @@ void DrawTestEditor::setTabView (CFrame* frame, const CRect& r, long position)
 	scrollview->addView (testView);
 	tabView->addTab (scrollview, "Scroll View");
 
-	// the second tab is a draw primitives view
-//	testView = new CDrawTestView (tabSize);
-//	tabView->addTab (testView, "Primitives");
 	testView = new PLinesView (tabSize);
 	tabView->addTab (testView, "Lines");
 
