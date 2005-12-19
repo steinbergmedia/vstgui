@@ -2,7 +2,7 @@
 // VST Plug-Ins SDK
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 //
-// Version 3.5       $Date: 2005-12-17 16:05:58 $ 
+// Version 3.5       $Date: 2005-12-19 15:34:10 $ 
 //
 // Added Motif/Windows vers.: Yvan Grabit              01.98
 // Added Mac version        : Charlie Steinberg        02.98
@@ -183,6 +183,7 @@ PFNTRANSPARENTBLT	pfnTransparentBlt = NULL;
 extern void* hInstance;
 inline HINSTANCE GetInstance () { return (HINSTANCE)hInstance; }
 
+BEGIN_NAMESPACE_VSTGUI
 static long   gUseCount = 0;
 static char   gClassName[20];
 static bool   InitWindowClass ();
@@ -194,7 +195,6 @@ static void   DrawTransparent (CDrawContext* pContext, CRect& rect, const CPoint
 static bool   checkResolveLink (const char* nativePath, char* resolved);
 static void   *createDropTarget (VSTGUI_CFrame* pFrame);
 
-BEGIN_NAMESPACE_VSTGUI
 long        gStandardFontSize[] = { 12, 18, 14, 12, 11, 10, 9, 13 };
 const char* gStandardFontName[] = {
 	"Arial", "Arial", "Arial", 
@@ -425,16 +425,26 @@ void CRect::bound (const CRect& rect)
 
 BEGIN_NAMESPACE_VSTGUI
 
-CColor kTransparentCColor = {255, 255, 255, 0};
-CColor kBlackCColor  = {0,     0,   0, 255};
-CColor kWhiteCColor  = {255, 255, 255, 255};
-CColor kGreyCColor   = {127, 127, 127, 255};
-CColor kRedCColor    = {255,   0,   0, 255};
-CColor kGreenCColor  = {0  , 255,   0, 255};
-CColor kBlueCColor   = {0  ,   0, 255, 255};
-CColor kYellowCColor = {255, 255,   0, 255};
-CColor kMagentaCColor= {255,   0, 255, 255};
-CColor kCyanCColor   = {0  , 255, 255, 255};
+const CColor kTransparentCColor	= {255, 255, 255,   0};
+const CColor kBlackCColor		= {  0,   0,   0, 255};
+const CColor kWhiteCColor		= {255, 255, 255, 255};
+const CColor kGreyCColor		= {127, 127, 127, 255};
+const CColor kRedCColor			= {255,   0,   0, 255};
+const CColor kGreenCColor		= {  0, 255,   0, 255};
+const CColor kBlueCColor		= {  0,   0, 255, 255};
+const CColor kYellowCColor		= {255, 255,   0, 255};
+const CColor kMagentaCColor		= {255,   0, 255, 255};
+const CColor kCyanCColor		= {  0, 255, 255, 255};
+
+#if VSTGUI_USES_UTF8 || BEOS
+const char* kDegreeSymbol		= "\xC2\xB0";
+const char* kInfiniteSymbol		= "\xE2\x88\x9E";
+const char* kCopyrightSymbol	= "\xC2\xA9";
+const char* kTrademarkSymbol	= "\xE2\x84\xA2";
+const char* kRegisteredSymbol	= "\xC2\xAE";
+const char* kMicroSymbol		= "\xC2\xB5";
+const char* kPerthousandSymbol	= "\xE2\x80\xB0";
+#endif
 
 #define kDragDelay 0
 
@@ -1095,8 +1105,8 @@ void CDrawContext::drawLines (const CPoint* points, const long& numLines)
 	{
 		QuartzSetLineDash (context, lineStyle, frameWidth);
 
-		#ifdef MAC_OS_X_VERSION_10_4
-		if (_CGContextStrokeLineSegments)
+		#if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_4
+		if (CGContextStrokeLineSegments)
 		{
 			CGPoint* cgPoints = new CGPoint[numLines*2];
 			for (long i = 0; i < numLines * 2; i += 2)
@@ -1106,7 +1116,7 @@ void CDrawContext::drawLines (const CPoint* points, const long& numLines)
 				cgPoints[i].y = points[i].y + offset.y;
 				cgPoints[i+1].y = points[i+1].y + offset.y;
 			}
-			_CGContextStrokeLineSegments (context, cgPoints, numLines*2);
+			CGContextStrokeLineSegments (context, cgPoints, numLines*2);
 			delete [] cgPoints;
 		}
 		else
@@ -1136,7 +1146,8 @@ void CDrawContext::drawLines (const CPoint* points, const long& numLines)
 //-----------------------------------------------------------------------------
 void CDrawContext::drawPolygon (const CPoint *pPoints, long numberOfPoints, const CDrawStyle drawStyle)
 {
-#if MAC && QUARTZ
+#if MAC
+	#if QUARTZ
 	CGContextRef context = beginCGContext (true);
 	{
 		CGPathDrawingMode m;
@@ -1156,11 +1167,507 @@ void CDrawContext::drawPolygon (const CPoint *pPoints, long numberOfPoints, cons
 		CGContextDrawPath (context, m);
 		releaseCGContext (context);
 	}
-#else
+	#else
+	// todo
+	#endif
+
+#elif WINDOWS
+	#if GDIPLUS
+	// GDIPLUS todo
+	#else
+	POINT points[30];
+	POINT *polyPoints;
+	bool allocated = false;
+
+	if (numberOfPoints > 30)
+	{
+		polyPoints = (POINT*)new char [numberOfPoints * sizeof (POINT)];
+		if (!polyPoints)
+			return;
+		allocated = true;
+	}
+	else
+		polyPoints = points;
+
+	for (long i = 0; i < numberOfPoints; i++)
+	{
+		polyPoints[i].x = pPoints[i].h + offset.h;
+		polyPoints[i].y = pPoints[i].v + offset.v;
+	}
+
 	if (drawStyle == kDrawFilled || drawStyle == kDrawFilledAndStroked)
-		fillPolygon (pPoints, numberOfPoints);
+	{
+		HANDLE nullPen = GetStockObject (NULL_PEN);
+		HANDLE oldPen  = SelectObject ((HDC)pSystemContext, nullPen);
+		Polygon ((HDC)pSystemContext, polyPoints, numberOfPoints);
+		SelectObject ((HDC)pSystemContext, oldPen);
+	}
+	if (drawStyle == kDrawFilledAndStroked || drawStyle == kDrawStroked)
+		Polyline ((HDC)pSystemContext, polyPoints, numberOfPoints);
+	
+	if (allocated)
+		delete[] polyPoints;
+	#endif
+
+
+#elif BEOS
+	// todo
+#endif
+}
+
+//-----------------------------------------------------------------------------
+void CDrawContext::drawRect (const CRect &_rect, const CDrawStyle drawStyle)
+{
+	CRect rect (_rect);
+	rect.offset (offset.h, offset.v);
+
+#if WINDOWS
+	#if GDIPLUS
+	if (pGraphics && pBrush && pPen)
+	{
+		rect.normalize ();
+		if (drawStyle == kDrawFilled || drawStyle == kDrawFilledAndStroked)
+		{
+			pGraphics->FillRectangle (pBrush, rect.left, rect.top, rect.getWidth ()-1, rect.getHeight ()-1);
+		}
+		if (drawStyle == kDrawStroked || drawStyle == kDrawFilledAndStroked)
+		{
+			pGraphics->DrawRectangle (pPen, rect.left, rect.top, rect.getWidth ()-1, rect.getHeight ()-1);
+		}
+	}
+	#else
+	if (drawStyle == kDrawFilled || drawStyle == kDrawFilledAndStroked)
+	{
+		RECT wr = {rect.left, rect.top, rect.right, rect.bottom};
+		HANDLE nullPen = GetStockObject (NULL_PEN);
+		HANDLE oldPen  = SelectObject ((HDC)pSystemContext, nullPen);
+		FillRect ((HDC)pSystemContext, &wr, (HBRUSH)pBrush);
+		SelectObject ((HDC)pSystemContext, oldPen);
+	}
 	if (drawStyle == kDrawStroked || drawStyle == kDrawFilledAndStroked)
-		polyLine (pPoints, numberOfPoints);
+	{
+		MoveToEx ((HDC)pSystemContext, rect.left, rect.top, NULL);
+		LineTo ((HDC)pSystemContext, rect.right-1, rect.top);
+		LineTo ((HDC)pSystemContext, rect.right-1, rect.bottom-1);
+		LineTo ((HDC)pSystemContext, rect.left, rect.bottom-1);
+		LineTo ((HDC)pSystemContext, rect.left, rect.top);
+	}
+	#endif
+
+#elif MAC
+	#if QUARTZ
+	CGContextRef context = beginCGContext (true);
+	{
+		CGPathDrawingMode m;
+		switch (drawStyle)
+		{
+			case kDrawFilled : m = kCGPathFill; break;
+			case kDrawFilledAndStroked : m = kCGPathFillStroke; break;
+			default : m = kCGPathStroke; break;
+		}
+
+		CGRect r = CGRectMake (rect.left, rect.top+1, rect.width () - 1, rect.height () - 1);
+
+		QuartzSetLineDash (context, lineStyle, frameWidth);
+
+		CGContextBeginPath (context);
+		CGContextMoveToPoint (context, r.origin.x, r.origin.y);
+		CGContextAddLineToPoint (context, r.origin.x + r.size.width, r.origin.y);
+		CGContextAddLineToPoint (context, r.origin.x + r.size.width, r.origin.y + r.size.height);
+		CGContextAddLineToPoint (context, r.origin.x, r.origin.y + r.size.height);
+		CGContextClosePath (context);
+
+		CGContextDrawPath (context, m);
+
+		releaseCGContext (context);
+	}
+	#else
+	CGrafPtr OrigPort;
+	GDHandle OrigDevice;
+	GetGWorld (&OrigPort, &OrigDevice);	// get current GrafPort
+	SetGWorld (getPort (), NULL);       // activate our GWorld
+	
+	if (drawStyle == kDrawFilled || drawStyle == kDrawFilledAndStroked)
+	{
+		Rect rr;
+		RGBColor col;
+		CColor2RGBColor (fillColor, col);
+		RGBForeColor (&col);
+		CRect2Rect (rect, rr);
+		FillRect (&rr, &fillPattern);
+	}
+	if (drawStyle == kDrawStroked || drawStyle == kDrawFilledAndStroked)
+	{
+		RGBColor col;
+		CColor2RGBColor (frameColor, col);
+		RGBForeColor (&col);
+		MoveTo (rect.left, rect.top);
+		LineTo (rect.right-1, rect.top);
+		LineTo (rect.right-1, rect.bottom-1);
+		LineTo (rect.left, rect.bottom-1);
+		LineTo (rect.left, rect.top);
+	}
+	SetGWorld (OrigPort, OrigDevice);
+	#endif
+
+#elif BEOS
+	rgb_color c = { frameColor.red, frameColor.green, frameColor.blue, 255 };
+	pView->SetHighColor (c);
+	pView->SetDrawingMode (modeToPlatform [drawMode]);
+	BRect r (rect.left, rect.top, rect.right, rect.bottom);
+	pView->SetPenSize (frameWidth);
+	pView->StrokeRect (r);
+
+#endif
+}
+
+//-----------------------------------------------------------------------------
+void CDrawContext::drawEllipse (const CRect &_rect, const CDrawStyle drawStyle)
+{
+	#if QUARTZ
+	CRect rect (_rect);
+	rect.offset (offset.h, offset.v);
+
+	CGContextRef context = beginCGContext (true);
+	{
+		CGPathDrawingMode m;
+		switch (drawStyle)
+		{
+			case kDrawFilled : m = kCGPathFill; break;
+			case kDrawFilledAndStroked : m = kCGPathFillStroke; break;
+			default : m = kCGPathStroke; break;
+		}
+		if (rect.width () != rect.height ())
+		{
+			CGContextSaveGState (context);
+
+			QuartzSetLineDash (context, lineStyle, frameWidth);
+
+			CGContextBeginPath (context);
+
+			CGRect cgRect = CGRectMake (rect.left, rect.top, rect.width (), rect.height ());
+			CGPoint center = CGPointMake (CGRectGetMidX (cgRect), CGRectGetMidY (cgRect));
+			float a = CGRectGetWidth (cgRect) / 2;
+			float b = CGRectGetHeight (cgRect) / 2;
+
+		    CGContextTranslateCTM (context, center.x, center.y);
+		    CGContextScaleCTM (context, a, b);
+		    CGContextMoveToPoint (context, 1, 0);
+		    CGContextAddArc (context, 0, 0, 1, radians (0), radians (360), 0);
+
+			CGContextClosePath (context);
+			CGContextRestoreGState (context);
+			CGContextDrawPath (context, m);
+		}
+		else
+		{
+			float radius = rect.width () * 0.5f;
+			CGContextBeginPath (context);
+			CGContextAddArc (context, rect.left + radius, rect.top + radius, radius, radians (0), radians (360), 0);
+			CGContextClosePath (context);
+			CGContextDrawPath (context, m);
+		}
+		releaseCGContext (context);
+	}
+
+	#else
+	CPoint point (_rect.left + (_rect.right - _rect.left) / 2, _rect.top);
+	drawArc (_rect, point, point);
+	#endif
+}
+
+//-----------------------------------------------------------------------------
+void CDrawContext::drawPoint (const CPoint &_point, CColor color)
+{
+	CPoint point (_point);
+
+#if WINDOWS
+	#if GDIPLUS
+	// GDIPLUS todo
+	#else
+	point.offset (offset.h, offset.v);
+	SetPixel ((HDC)pSystemContext, point.h, point.v, RGB(color.red, color.green, color.blue));
+	#endif
+
+#elif MAC
+	CCoord oldframeWidth = frameWidth;
+	CColor oldframecolor = frameColor;
+	setLineWidth (1);
+	setFrameColor (color);
+	CPoint point2 (point);
+	point2.h++;
+	moveTo (point);
+	lineTo (point2);
+	
+	setFrameColor (oldframecolor);
+	setLineWidth (oldframeWidth);
+
+#else
+	int oldframeWidth = frameWidth;
+	CColor oldframecolor = frameColor;
+	setLineWidth (1);
+	setFrameColor (color);
+	moveTo (point);
+	lineTo (point);
+	
+	setFrameColor (oldframecolor);
+	setLineWidth (oldframeWidth);
+#endif
+}
+
+#if QUARTZ
+static void addOvalToPath(CGContextRef c, CPoint center, float a, float b, float start_angle, float end_angle)
+{
+	CGContextSaveGState (c);
+	CGContextTranslateCTM (c, center.x, center.y);
+	CGContextScaleCTM (c, a, b);
+
+	CGContextMoveToPoint (c, cos (radians (start_angle)), sin (radians (start_angle)));
+
+	CGContextAddArc(c, 0, 0, 1, radians (start_angle), radians (end_angle), 1);
+
+	CGContextRestoreGState(c);
+}
+#endif
+
+//-----------------------------------------------------------------------------
+void CDrawContext::drawArc (const CRect &_rect, const float _startAngle, const float _endAngle, const CDrawStyle drawStyle) // in degree
+{
+	CRect rect (_rect);
+	rect.offset (offset.h, offset.v);
+
+	#if WINDOWS
+	#if GDIPLUS
+	// GDIPLUS todo
+	#else
+	float startRad = (float)(k2PI * _startAngle / 360.f);
+	float endRad   = (float)(k2PI * _endAngle / 360.f);
+	
+	CPoint point1, point2;
+	long midX = _rect.width () / 2;
+	long midY = _rect.height () / 2;
+
+	point1.x = (long)(midX + midX * cosf (startRad));
+	point1.y = (long)(midY - midY * sinf (startRad));
+	point2.x = (long)(midX + midX * cosf (endRad));
+	point2.y = (long)(midY - midY * sinf (endRad));
+	point1.offset (offset.h, offset.v);
+	point2.offset (offset.h, offset.v);
+
+	if (drawStyle == kDrawFilled || drawStyle == kDrawFilledAndStroked)
+	{
+		HANDLE nullPen = GetStockObject (NULL_PEN);
+		HANDLE oldPen  = SelectObject ((HDC)pSystemContext, nullPen);
+		Pie ((HDC)pSystemContext, rect.left, rect.top, rect.right + 1, rect.bottom + 1, 
+				 point1.h, point1.v, point2.h, point2.v);
+		SelectObject ((HDC)pSystemContext, oldPen);
+	}
+	if (drawStyle == kDrawStroked || drawStyle == kDrawFilledAndStroked)
+	{
+		Arc ((HDC)pSystemContext, rect.left, rect.top, rect.right + 1, rect.bottom + 1, 
+				 point1.h, point1.v, point2.h, point2.v);
+	}
+	#endif
+
+	#elif MAC
+
+	#if QUARTZ
+	CGContextRef context = beginCGContext (true);
+	{
+		CGPathDrawingMode m;
+		switch (drawStyle)
+		{
+			case kDrawFilled : m = kCGPathFill; break;
+			case kDrawFilledAndStroked : m = kCGPathFillStroke; break;
+			default : m = kCGPathStroke; break;
+		}
+		QuartzSetLineDash (context, lineStyle, frameWidth);
+
+		CGContextBeginPath (context);
+		addOvalToPath (context, CPoint (rect.left + rect.width () / 2, rect.top + rect.height () / 2), rect.width () / 2, rect.height () / 2, -_startAngle, -_endAngle);
+
+		CGContextDrawPath (context, m);
+		releaseCGContext (context);
+	}
+	#else
+	Rect     rr;
+	CGrafPtr OrigPort;
+	GDHandle OrigDevice;
+	GetGWorld (&OrigPort, &OrigDevice);
+	SetGWorld (getPort (), NULL);
+	RGBColor col;
+	CColor2RGBColor (frameColor, col);
+	RGBForeColor (&col);
+	CRect2Rect (rect, rr);
+	FrameArc (&rr, 90 - _startAngle, -_endAngle);
+	SetGWorld (OrigPort, OrigDevice);
+	#endif
+
+	#elif BEOS
+	rgb_color c = { frameColor.red, frameColor.green, frameColor.blue, 255 };
+	pView->SetHighColor (c);
+	pView->SetDrawingMode (modeToPlatform [drawMode]);
+	BRect r (rect.left, rect.top, rect.right, rect.bottom);
+	pView->SetPenSize (frameWidth);
+	pView->StrokeArc (r, _startAngle, _endAngle);
+
+	#endif
+}
+
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
+//-----------------------------------------------------------------------------
+void CDrawContext::drawArc (const CRect &_rect, const CPoint &_point1, const CPoint &_point2)
+{
+	CRect rect (_rect);
+	rect.offset (offset.h, offset.v);
+	CPoint point1 (_point1);
+	point1.offset (offset.h, offset.v);
+	CPoint point2 (_point2);
+	point2.offset (offset.h, offset.v);
+
+	// draws from point1 to point2 counterclockwise
+#if WINDOWS
+	#if GDIPLUS
+	// GDIPLUS todo
+	#else
+	Arc ((HDC)pSystemContext, rect.left, rect.top, rect.right + 1, rect.bottom + 1, 
+			 point1.h, point1.v, point2.h, point2.v);
+	#endif
+
+#elif MAC || BEOS
+	
+	int	angle1, angle2;
+	if ((point1.v == point2.v) && (point1.h == point2.h))
+	{
+		angle1 = 0;
+		angle2 = 23040; // 360 * 64
+	}
+	else
+	{
+		CPoint pm ((rect.left + rect.right) / 2, (rect.top + rect.bottom) / 2);
+		angle1 = convertPoint2Angle (pm, point1);
+		angle2 = convertPoint2Angle (pm, point2) - angle1;
+		if (angle2 < 0)
+			angle2 += 23040; // 360 * 64
+	}
+
+#if MAC
+
+	#if QUARTZ
+	angle1 /= 64;
+	angle2 /= 64;
+	CGContextRef context = beginCGContext (true);
+	{
+		QuartzSetLineDash (context, lineStyle, frameWidth);
+
+		CGContextBeginPath (context);
+		addOvalToPath (context, CPoint (rect.left + rect.width () / 2, rect.top + rect.height () / 2), rect.width () / 2, rect.height () / 2, 90-angle1, (90-angle1)-angle2);
+		CGContextDrawPath (context, kCGPathStroke);
+		releaseCGContext (context);
+	}
+	#else
+	Rect     rr;
+	CGrafPtr OrigPort;
+	GDHandle OrigDevice;
+	GetGWorld (&OrigPort, &OrigDevice);
+	SetGWorld (getPort (), NULL);
+	RGBColor col;
+	CColor2RGBColor (frameColor, col);
+	RGBForeColor (&col);
+	CRect2Rect (rect, rr);
+	FrameArc (&rr, 90 - (angle1 / 64), -angle2 / 64);
+	SetGWorld (OrigPort, OrigDevice);
+	#endif
+	        
+#elif BEOS
+	rgb_color c = { frameColor.red, frameColor.green, frameColor.blue, 255 };
+	pView->SetHighColor (c);
+	pView->SetDrawingMode (modeToPlatform [drawMode]);
+	BRect r (rect.left, rect.top, rect.right, rect.bottom);
+	pView->SetPenSize (frameWidth);
+	pView->StrokeArc (r, angle1 / 64, angle2 / 64);
+#endif	
+
+#endif
+}
+
+//-----------------------------------------------------------------------------
+void CDrawContext::fillArc (const CRect &_rect, const CPoint &_point1, const CPoint &_point2)
+{
+	CRect rect (_rect);
+	rect.offset (offset.h, offset.v);
+	CPoint point1 (_point1);
+	point1.offset (offset.h, offset.v);
+	CPoint point2 (_point2);
+	point2.offset (offset.h, offset.v);
+
+	// Don't draw boundary
+#if WINDOWS
+	#if GDIPLUS
+	// GDIPLUS todo
+	#else
+	HANDLE nullPen = GetStockObject (NULL_PEN);
+	HANDLE oldPen  = SelectObject ((HDC)pSystemContext, nullPen);
+	Pie ((HDC)pSystemContext, offset.h + rect.left + 1, offset.v + rect.top + 1, offset.h + rect.right, offset.v + rect.bottom, 
+			 point1.h, point1.v, point2.h, point2.v);
+	SelectObject ((HDC)pSystemContext, oldPen);
+	#endif
+
+#elif MAC || BEOS
+	
+	int	angle1, angle2;
+	if ((point1.v == point2.v) && (point1.h == point2.h))
+	{
+		angle1 = 0;
+		angle2 = 23040; // 360 * 64
+	}
+	else
+	{
+		CPoint pm ((rect.left + rect.right) / 2, (rect.top + rect.bottom) / 2);
+		angle1 = convertPoint2Angle (pm, point1);
+		angle2 = convertPoint2Angle (pm, point2);
+	}
+
+#if MAC
+	#if QUARTZ
+	angle1 /= 64;
+	angle2 /= 64;
+	CGContextRef context = beginCGContext (true);
+	{
+		CGContextBeginPath (context);
+		addOvalToPath (context, CPoint (rect.left + rect.width () / 2, rect.top + rect.height () / 2), rect.width () / 2, rect.height () / 2, -angle1, -angle2);
+		CGContextClosePath (context);
+		CGContextDrawPath (context, kCGPathFill);
+		releaseCGContext (context);
+	}
+	
+	#else
+	Rect     rr;
+	CGrafPtr OrigPort;
+	GDHandle OrigDevice;
+	GetGWorld (&OrigPort, &OrigDevice);
+	SetGWorld (getPort (), NULL);
+	RGBColor col;
+	CColor2RGBColor (fillColor, col);
+	RGBForeColor (&col);
+	CRect2Rect (rect, rr);
+	
+	angle2 = angle2 - angle1;
+	if (angle2 < 0)
+		angle2 = -angle2;
+	FillArc (&rr, 90 - (angle1 / 64), -angle2 / 64, &fillPattern);
+
+	SetGWorld (OrigPort, OrigDevice);
+	#endif
+        
+#elif BEOS
+	rgb_color c = { fillColor.red, fillColor.green, fillColor.blue, 255 };
+	pView->SetHighColor (c);
+	pView->SetDrawingMode (modeToPlatform [drawMode]);
+	BRect r (rect.left + 1, rect.top + 1, rect.right - 1, rect.bottom - 1);
+	pView->FillArc (r, angle1 / 64, angle2 / 64);
+
+#endif
 #endif
 }
 
@@ -1329,112 +1836,6 @@ void CDrawContext::fillPolygon (const CPoint *pPoints, long numberOfPoints)
 }
 
 //-----------------------------------------------------------------------------
-void CDrawContext::drawRect (const CRect &_rect, const CDrawStyle drawStyle)
-{
-	CRect rect (_rect);
-	rect.offset (offset.h, offset.v);
-
-#if WINDOWS
-	#if GDIPLUS
-	if (pGraphics && pBrush && pPen)
-	{
-		rect.normalize ();
-		if (drawStyle == kDrawFilled || drawStyle == kDrawFilledAndStroked)
-		{
-			pGraphics->FillRectangle (pBrush, rect.left, rect.top, rect.getWidth ()-1, rect.getHeight ()-1);
-		}
-		if (drawStyle == kDrawStroked || drawStyle == kDrawFilledAndStroked)
-		{
-			pGraphics->DrawRectangle (pPen, rect.left, rect.top, rect.getWidth ()-1, rect.getHeight ()-1);
-		}
-	}
-	#else
-	if (drawStyle == kDrawFilled || drawStyle == kDrawFilledAndStroked)
-	{
-		RECT wr = {rect.left, rect.top, rect.right, rect.bottom};
-		HANDLE nullPen = GetStockObject (NULL_PEN);
-		HANDLE oldPen  = SelectObject ((HDC)pSystemContext, nullPen);
-		FillRect ((HDC)pSystemContext, &wr, (HBRUSH)pBrush);
-		SelectObject ((HDC)pSystemContext, oldPen);
-	}
-	if (drawStyle == kDrawStroked || drawStyle == kDrawFilledAndStroked)
-	{
-		MoveToEx ((HDC)pSystemContext, rect.left, rect.top, NULL);
-		LineTo ((HDC)pSystemContext, rect.right-1, rect.top);
-		LineTo ((HDC)pSystemContext, rect.right-1, rect.bottom-1);
-		LineTo ((HDC)pSystemContext, rect.left, rect.bottom-1);
-		LineTo ((HDC)pSystemContext, rect.left, rect.top);
-	}
-	#endif
-
-#elif MAC
-	#if QUARTZ
-	CGContextRef context = beginCGContext (true);
-	{
-		CGPathDrawingMode m;
-		switch (drawStyle)
-		{
-			case kDrawFilled : m = kCGPathFill; break;
-			case kDrawFilledAndStroked : m = kCGPathFillStroke; break;
-			default : m = kCGPathStroke; break;
-		}
-
-		CGRect r = CGRectMake (rect.left, rect.top+1, rect.width () - 1, rect.height () - 1);
-
-		QuartzSetLineDash (context, lineStyle, frameWidth);
-
-		CGContextBeginPath (context);
-		CGContextMoveToPoint (context, r.origin.x, r.origin.y);
-		CGContextAddLineToPoint (context, r.origin.x + r.size.width, r.origin.y);
-		CGContextAddLineToPoint (context, r.origin.x + r.size.width, r.origin.y + r.size.height);
-		CGContextAddLineToPoint (context, r.origin.x, r.origin.y + r.size.height);
-		CGContextClosePath (context);
-
-		CGContextDrawPath (context, m);
-
-		releaseCGContext (context);
-	}
-	#else
-	CGrafPtr OrigPort;
-	GDHandle OrigDevice;
-	GetGWorld (&OrigPort, &OrigDevice);	// get current GrafPort
-	SetGWorld (getPort (), NULL);       // activate our GWorld
-	
-	if (drawStyle == kDrawFilled || drawStyle == kDrawFilledAndStroked)
-	{
-		Rect rr;
-		RGBColor col;
-		CColor2RGBColor (fillColor, col);
-		RGBForeColor (&col);
-		CRect2Rect (rect, rr);
-		FillRect (&rr, &fillPattern);
-	}
-	if (drawStyle == kDrawStroked || drawStyle == kDrawFilledAndStroked)
-	{
-		RGBColor col;
-		CColor2RGBColor (frameColor, col);
-		RGBForeColor (&col);
-		MoveTo (rect.left, rect.top);
-		LineTo (rect.right-1, rect.top);
-		LineTo (rect.right-1, rect.bottom-1);
-		LineTo (rect.left, rect.bottom-1);
-		LineTo (rect.left, rect.top);
-	}
-	SetGWorld (OrigPort, OrigDevice);
-	#endif
-
-#elif BEOS
-	rgb_color c = { frameColor.red, frameColor.green, frameColor.blue, 255 };
-	pView->SetHighColor (c);
-	pView->SetDrawingMode (modeToPlatform [drawMode]);
-	BRect r (rect.left, rect.top, rect.right, rect.bottom);
-	pView->SetPenSize (frameWidth);
-	pView->StrokeRect (r);
-
-#endif
-}
-
-//-----------------------------------------------------------------------------
 void CDrawContext::fillRect (const CRect &_rect)
 {
 	CRect rect (_rect);
@@ -1490,61 +1891,6 @@ void CDrawContext::fillRect (const CRect &_rect)
 }
 
 //-----------------------------------------------------------------------------
-void CDrawContext::drawEllipse (const CRect &_rect, const CDrawStyle drawStyle)
-{
-	#if QUARTZ
-	CRect rect (_rect);
-	rect.offset (offset.h, offset.v);
-
-	CGContextRef context = beginCGContext (true);
-	{
-		CGPathDrawingMode m;
-		switch (drawStyle)
-		{
-			case kDrawFilled : m = kCGPathFill; break;
-			case kDrawFilledAndStroked : m = kCGPathFillStroke; break;
-			default : m = kCGPathStroke; break;
-		}
-		if (rect.width () != rect.height ())
-		{
-			CGContextSaveGState (context);
-
-			QuartzSetLineDash (context, lineStyle, frameWidth);
-
-			CGContextBeginPath (context);
-
-			CGRect cgRect = CGRectMake (rect.left, rect.top, rect.width (), rect.height ());
-			CGPoint center = CGPointMake (CGRectGetMidX (cgRect), CGRectGetMidY (cgRect));
-			float a = CGRectGetWidth (cgRect) / 2;
-			float b = CGRectGetHeight (cgRect) / 2;
-
-		    CGContextTranslateCTM (context, center.x, center.y);
-		    CGContextScaleCTM (context, a, b);
-		    CGContextMoveToPoint (context, 1, 0);
-		    CGContextAddArc (context, 0, 0, 1, radians (0), radians (360), 0);
-
-			CGContextClosePath (context);
-			CGContextRestoreGState (context);
-			CGContextDrawPath (context, m);
-		}
-		else
-		{
-			float radius = rect.width () * 0.5f;
-			CGContextBeginPath (context);
-			CGContextAddArc (context, rect.left + radius, rect.top + radius, radius, radians (0), radians (360), 0);
-			CGContextClosePath (context);
-			CGContextDrawPath (context, m);
-		}
-		releaseCGContext (context);
-	}
-
-	#else
-	CPoint point (_rect.left + (_rect.right - _rect.left) / 2, _rect.top);
-	drawArc (_rect, point, point);
-	#endif
-}
-
-//-----------------------------------------------------------------------------
 void CDrawContext::fillEllipse (const CRect &_rect)
 {
 	CRect rect (_rect);
@@ -1589,46 +1935,6 @@ void CDrawContext::fillEllipse (const CRect &_rect)
 #endif
 }
 
-//-----------------------------------------------------------------------------
-void CDrawContext::drawPoint (const CPoint &_point, CColor color)
-{
-	CPoint point (_point);
-
-#if WINDOWS
-	#if GDIPLUS
-	// GDIPLUS todo
-	#else
-	point.offset (offset.h, offset.v);
-	SetPixel ((HDC)pSystemContext, point.h, point.v, RGB(color.red, color.green, color.blue));
-	#endif
-
-#elif MAC
-	CCoord oldframeWidth = frameWidth;
-	CColor oldframecolor = frameColor;
-	setLineWidth (1);
-	setFrameColor (color);
-	CPoint point2 (point);
-	point2.h++;
-	moveTo (point);
-	lineTo (point2);
-	
-	setFrameColor (oldframecolor);
-	setLineWidth (oldframeWidth);
-
-#else
-	int oldframeWidth = frameWidth;
-	CColor oldframecolor = frameColor;
-	setLineWidth (1);
-	setFrameColor (color);
-	moveTo (point);
-	lineTo (point);
-	
-	setFrameColor (oldframecolor);
-	setLineWidth (oldframeWidth);
-#endif
-}
-
-#if VSTGUI_ENABLE_DEPRECATED_METHODS
 //-----------------------------------------------------------------------------
 CColor CDrawContext::getPoint (const CPoint& _point)
 {
@@ -1732,261 +2038,6 @@ void CDrawContext::floodFill (const CPoint& _start)
 	#endif
 }
 #endif // VSTGUI_ENABLE_DEPRECATED_METHODS
-
-#if QUARTZ
-void addOvalToPath(CGContextRef c, CPoint center, float a, float b, float start_angle, float end_angle)
-{
-	CGContextSaveGState (c);
-	CGContextTranslateCTM (c, center.x, center.y);
-	CGContextScaleCTM (c, a, b);
-
-	CGContextMoveToPoint (c, cos (radians (start_angle)), sin (radians (start_angle)));
-
-	CGContextAddArc(c, 0, 0, 1, radians (start_angle), radians (end_angle), 1);
-
-	CGContextRestoreGState(c);
-}
-#endif
-
-//-----------------------------------------------------------------------------
-void CDrawContext::drawArc (const CRect &_rect, const float _startAngle, const float _endAngle, const CDrawStyle drawStyle) // in degree
-{
-	CRect rect (_rect);
-	rect.offset (offset.h, offset.v);
-
-	#if WINDOWS
-	#if GDIPLUS
-	// GDIPLUS todo
-	#else
-	float startRad = (float)(k2PI * _startAngle / 360.f);
-	float endRad   = (float)(k2PI * _endAngle / 360.f);
-	
-	CPoint point1, point2;
-	long midX = _rect.width () / 2;
-	long midY = _rect.height () / 2;
-
-	point1.x = (long)(midX + midX * cosf (startRad));
-	point1.y = (long)(midY - midY * sinf (startRad));
-	point2.x = (long)(midX + midX * cosf (endRad));
-	point2.y = (long)(midY - midY * sinf (endRad));
-	point1.offset (offset.h, offset.v);
-	point2.offset (offset.h, offset.v);
-
-	if (drawStyle == kDrawFilled || drawStyle == kDrawFilledAndStroked)
-	{
-		HANDLE nullPen = GetStockObject (NULL_PEN);
-		HANDLE oldPen  = SelectObject ((HDC)pSystemContext, nullPen);
-		Pie ((HDC)pSystemContext, rect.left, rect.top, rect.right + 1, rect.bottom + 1, 
-				 point1.h, point1.v, point2.h, point2.v);
-		SelectObject ((HDC)pSystemContext, oldPen);
-	}
-	if (drawStyle == kDrawStroked || drawStyle == kDrawFilledAndStroked)
-	{
-		Arc ((HDC)pSystemContext, rect.left, rect.top, rect.right + 1, rect.bottom + 1, 
-				 point1.h, point1.v, point2.h, point2.v);
-	}
-	#endif
-
-	#elif MAC
-
-	#if QUARTZ
-	CGContextRef context = beginCGContext (true);
-	{
-		CGPathDrawingMode m;
-		switch (drawStyle)
-		{
-			case kDrawFilled : m = kCGPathFill; break;
-			case kDrawFilledAndStroked : m = kCGPathFillStroke; break;
-			default : m = kCGPathStroke; break;
-		}
-		QuartzSetLineDash (context, lineStyle, frameWidth);
-
-		CGContextBeginPath (context);
-		addOvalToPath (context, CPoint (rect.left + rect.width () / 2, rect.top + rect.height () / 2), rect.width () / 2, rect.height () / 2, -_startAngle, -_endAngle);
-
-		CGContextDrawPath (context, m);
-		releaseCGContext (context);
-	}
-	#else
-	Rect     rr;
-	CGrafPtr OrigPort;
-	GDHandle OrigDevice;
-	GetGWorld (&OrigPort, &OrigDevice);
-	SetGWorld (getPort (), NULL);
-	RGBColor col;
-	CColor2RGBColor (frameColor, col);
-	RGBForeColor (&col);
-	CRect2Rect (rect, rr);
-	FrameArc (&rr, 90 - _startAngle, -_endAngle);
-	SetGWorld (OrigPort, OrigDevice);
-	#endif
-
-	#elif BEOS
-	rgb_color c = { frameColor.red, frameColor.green, frameColor.blue, 255 };
-	pView->SetHighColor (c);
-	pView->SetDrawingMode (modeToPlatform [drawMode]);
-	BRect r (rect.left, rect.top, rect.right, rect.bottom);
-	pView->SetPenSize (frameWidth);
-	pView->StrokeArc (r, _startAngle, _endAngle);
-
-	#endif
-}
-
-//-----------------------------------------------------------------------------
-void CDrawContext::drawArc (const CRect &_rect, const CPoint &_point1, const CPoint &_point2)
-{
-	CRect rect (_rect);
-	rect.offset (offset.h, offset.v);
-	CPoint point1 (_point1);
-	point1.offset (offset.h, offset.v);
-	CPoint point2 (_point2);
-	point2.offset (offset.h, offset.v);
-
-	// draws from point1 to point2 counterclockwise
-#if WINDOWS
-	#if GDIPLUS
-	// GDIPLUS todo
-	#else
-	Arc ((HDC)pSystemContext, rect.left, rect.top, rect.right + 1, rect.bottom + 1, 
-			 point1.h, point1.v, point2.h, point2.v);
-	#endif
-
-#elif MAC || BEOS
-	
-	int	angle1, angle2;
-	if ((point1.v == point2.v) && (point1.h == point2.h))
-	{
-		angle1 = 0;
-		angle2 = 23040; // 360 * 64
-	}
-	else
-	{
-		CPoint pm ((rect.left + rect.right) / 2, (rect.top + rect.bottom) / 2);
-		angle1 = convertPoint2Angle (pm, point1);
-		angle2 = convertPoint2Angle (pm, point2) - angle1;
-		if (angle2 < 0)
-			angle2 += 23040; // 360 * 64
-	}
-
-#if MAC
-
-	#if QUARTZ
-	angle1 /= 64;
-	angle2 /= 64;
-	CGContextRef context = beginCGContext (true);
-	{
-		QuartzSetLineDash (context, lineStyle, frameWidth);
-
-		CGContextBeginPath (context);
-		addOvalToPath (context, CPoint (rect.left + rect.width () / 2, rect.top + rect.height () / 2), rect.width () / 2, rect.height () / 2, 90-angle1, (90-angle1)-angle2);
-		CGContextDrawPath (context, kCGPathStroke);
-		releaseCGContext (context);
-	}
-	#else
-	Rect     rr;
-	CGrafPtr OrigPort;
-	GDHandle OrigDevice;
-	GetGWorld (&OrigPort, &OrigDevice);
-	SetGWorld (getPort (), NULL);
-	RGBColor col;
-	CColor2RGBColor (frameColor, col);
-	RGBForeColor (&col);
-	CRect2Rect (rect, rr);
-	FrameArc (&rr, 90 - (angle1 / 64), -angle2 / 64);
-	SetGWorld (OrigPort, OrigDevice);
-	#endif
-	        
-#elif BEOS
-	rgb_color c = { frameColor.red, frameColor.green, frameColor.blue, 255 };
-	pView->SetHighColor (c);
-	pView->SetDrawingMode (modeToPlatform [drawMode]);
-	BRect r (rect.left, rect.top, rect.right, rect.bottom);
-	pView->SetPenSize (frameWidth);
-	pView->StrokeArc (r, angle1 / 64, angle2 / 64);
-#endif	
-
-#endif
-}
-
-//-----------------------------------------------------------------------------
-void CDrawContext::fillArc (const CRect &_rect, const CPoint &_point1, const CPoint &_point2)
-{
-	CRect rect (_rect);
-	rect.offset (offset.h, offset.v);
-	CPoint point1 (_point1);
-	point1.offset (offset.h, offset.v);
-	CPoint point2 (_point2);
-	point2.offset (offset.h, offset.v);
-
-	// Don't draw boundary
-#if WINDOWS
-	#if GDIPLUS
-	// GDIPLUS todo
-	#else
-	HANDLE nullPen = GetStockObject (NULL_PEN);
-	HANDLE oldPen  = SelectObject ((HDC)pSystemContext, nullPen);
-	Pie ((HDC)pSystemContext, offset.h + rect.left + 1, offset.v + rect.top + 1, offset.h + rect.right, offset.v + rect.bottom, 
-			 point1.h, point1.v, point2.h, point2.v);
-	SelectObject ((HDC)pSystemContext, oldPen);
-	#endif
-
-#elif MAC || BEOS
-	
-	int	angle1, angle2;
-	if ((point1.v == point2.v) && (point1.h == point2.h))
-	{
-		angle1 = 0;
-		angle2 = 23040; // 360 * 64
-	}
-	else
-	{
-		CPoint pm ((rect.left + rect.right) / 2, (rect.top + rect.bottom) / 2);
-		angle1 = convertPoint2Angle (pm, point1);
-		angle2 = convertPoint2Angle (pm, point2);
-	}
-
-#if MAC
-	#if QUARTZ
-	angle1 /= 64;
-	angle2 /= 64;
-	CGContextRef context = beginCGContext (true);
-	{
-		CGContextBeginPath (context);
-		addOvalToPath (context, CPoint (rect.left + rect.width () / 2, rect.top + rect.height () / 2), rect.width () / 2, rect.height () / 2, -angle1, -angle2);
-		CGContextClosePath (context);
-		CGContextDrawPath (context, kCGPathFill);
-		releaseCGContext (context);
-	}
-	
-	#else
-	Rect     rr;
-	CGrafPtr OrigPort;
-	GDHandle OrigDevice;
-	GetGWorld (&OrigPort, &OrigDevice);
-	SetGWorld (getPort (), NULL);
-	RGBColor col;
-	CColor2RGBColor (fillColor, col);
-	RGBForeColor (&col);
-	CRect2Rect (rect, rr);
-	
-	angle2 = angle2 - angle1;
-	if (angle2 < 0)
-		angle2 = -angle2;
-	FillArc (&rr, 90 - (angle1 / 64), -angle2 / 64, &fillPattern);
-
-	SetGWorld (OrigPort, OrigDevice);
-	#endif
-        
-#elif BEOS
-	rgb_color c = { fillColor.red, fillColor.green, fillColor.blue, 255 };
-	pView->SetHighColor (c);
-	pView->SetDrawingMode (modeToPlatform [drawMode]);
-	BRect r (rect.left + 1, rect.top + 1, rect.right - 1, rect.bottom - 1);
-	pView->FillArc (r, angle1 / 64, angle2 / 64);
-
-#endif
-#endif
-}
 
 //-----------------------------------------------------------------------------
 void CDrawContext::setFontColor (const CColor color)
@@ -3271,7 +3322,7 @@ COffscreenContext::COffscreenContext (CDrawContext *pContext, CBitmap *pBitmapBg
 		else
 		{
 			setFillColor (kBlackCColor);
-			fillRect (r);
+			drawRect (r, kDrawFilled);
 		}
 	}
 }
@@ -3315,8 +3366,7 @@ COffscreenContext::COffscreenContext (CFrame *pFrame, long width, long height, c
 	CRect r (0, 0, width, height);
 	setFillColor (backgroundColor);
 	setFrameColor (backgroundColor);
-	fillRect (r);
-	drawRect (r);
+	drawRect (r, kDrawFilledAndStroked);
 	#endif
 
 #elif MAC
@@ -3368,8 +3418,7 @@ COffscreenContext::COffscreenContext (CFrame *pFrame, long width, long height, c
 	CRect r (0, 0, width, height);
 	setFillColor (backgroundColor);
 	setFrameColor (backgroundColor);
-	fillRect (r);
-	drawRect (r);
+	drawRect (r, kDrawFilledAndStroked);
 
 
 	#else
@@ -4495,6 +4544,21 @@ bool CFrame::initFrame (void *systemWin)
 }
 
 //-----------------------------------------------------------------------------
+void* CFrame::getSystemWindow () const
+{
+	#if WINDOWS
+	return pHwnd;
+
+	#elif BEOS
+	return pPlugView;
+
+	#else
+	return pSystemWindow;
+
+	#endif
+}
+
+//-----------------------------------------------------------------------------
 bool CFrame::setDropActive (bool val)
 {	
 	if (!bDropActive && !val)
@@ -4592,6 +4656,7 @@ void CFrame::drawRect (CDrawContext *pContext, const CRect& updateRect)
 	pContext->forget ();
 }
 
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
 //-----------------------------------------------------------------------------
 void CFrame::draw (CView *pView)
 {
@@ -4613,7 +4678,6 @@ void CFrame::draw (CView *pView)
 	}
 }
 
-#if VSTGUI_ENABLE_DEPRECATED_METHODS
 //-----------------------------------------------------------------------------
 void CFrame::mouse (CDrawContext *pContext, CPoint &where, long buttons)
 {
@@ -6064,7 +6128,7 @@ void CViewContainer::draw (CDrawContext *pContext)
 	else if (!bTransparencyEnabled)
 	{
 		pC->setFillColor (backgroundColor);
-		pC->fillRect (r);
+		pC->drawRect (r, kDrawFilled);
 	}
 	#endif
 	
@@ -6115,7 +6179,7 @@ void CViewContainer::drawBackgroundRect (CDrawContext *pContext, CRect& _updateR
 	else if (!bTransparencyEnabled)
 	{
 		pContext->setFillColor (backgroundColor);
-		pContext->fillRect (_updateRect);
+		pContext->drawRect (_updateRect, kDrawFilled);
 	}
 }
 
@@ -6182,7 +6246,6 @@ void CViewContainer::drawRect (CDrawContext *pContext, const CRect& updateRect)
 				continue;
 			pC->setClipRect (viewSize);
 
-			bool wasDirty = pV->isDirty ();
 			pV->drawRect (pC, clientRect);
 			
 			#if DEBUG_FOCUS_DRAWING
@@ -8196,6 +8259,8 @@ long CDragContainer::getType (long idx) const
 				return kFile;
 			else if (type == 'TEXT' || type == 'XML ')
 				return kText;
+			else if (type == 'utxt')
+				return kUnicodeText;
 		}
 	}
 	#elif WINDOWS
@@ -8296,6 +8361,8 @@ void* CDragContainer::next (long& size, long& type)
 						size = flavorSize;
 						if (flavorType == 'TEXT' || flavorType == 'XML ')
 							type = kText;
+						else if (flavorType == 'utf8')
+							type = kUnicodeText;
 						return lastItem;
 					}
 				}
@@ -8384,6 +8451,7 @@ END_NAMESPACE_VSTGUI
 
 
 #if WINDOWS
+BEGIN_NAMESPACE_VSTGUI
 
 #if USE_MOUSE_HOOK
 HHOOK MouseHook = 0L;
@@ -8743,6 +8811,7 @@ LONG_PTR WINAPI WindowProc (HWND hwnd, UINT message, WPARAM wParam, LPARAM lPara
 	}
 	return DefWindowProc (hwnd, message, wParam, lParam);
 }
+END_NAMESPACE_VSTGUI
 
 #if GDIPLUS
 //-----------------------------------------------------------------------------
@@ -8783,6 +8852,7 @@ void GDIPlusGlobals::exit ()
 }
 
 #else
+BEGIN_NAMESPACE_VSTGUI
 //-----------------------------------------------------------------------------
 HANDLE CreateMaskBitmap (CDrawContext* pContext, CRect& rect, CColor transparentColor)
 {
@@ -8891,6 +8961,7 @@ void DrawTransparent (CDrawContext* pContext, CRect& rect, const CPoint& offset,
 		DeleteDC(hdcMask);
 	}
 }
+END_NAMESPACE_VSTGUI
 #endif
 #endif
 
@@ -9009,6 +9080,7 @@ void PlugView::MessageReceived (BMessage *msg)
 
 //-----------------------------------------------------------------------------
 #if WINDOWS
+BEGIN_NAMESPACE_VSTGUI
 //-----------------------------------------------------------------------------
 // Drop Implementation
 //-----------------------------------------------------------------------------
@@ -9041,6 +9113,7 @@ void* createDropTarget (VSTGUI_CFrame* pFrame)
 {
 	return new CDropTarget (pFrame);
 }
+END_NAMESPACE_VSTGUI
 
 //-----------------------------------------------------------------------------
 CDropTarget::CDropTarget (VSTGUI_CFrame* pFrame)
