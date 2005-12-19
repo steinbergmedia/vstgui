@@ -42,21 +42,18 @@ enum
 //-----------------------------------------------------------------------------
 // CLabel declaration
 //-----------------------------------------------------------------------------
-class CLabel : public CParamDisplay
+class CLabel : public CTextLabel
 {
 public:
 	CLabel (CRect &size, char *text);
 
 	void draw (CDrawContext *pContext);
-
-	void setLabel (char *text);
 	virtual bool onDrop (CDragContainer* drag, const CPoint& where);
 	virtual void onDragEnter (CDragContainer* drag, const CPoint& where);
 	virtual void onDragLeave (CDragContainer* drag, const CPoint& where);
 	virtual void onDragMove (CDragContainer* drag, const CPoint& where);
 
 protected:
-	char label[256];
 	bool focus;
 };
 
@@ -64,19 +61,11 @@ protected:
 // CLabel implementation
 //-----------------------------------------------------------------------------
 CLabel::CLabel (CRect &size, char *text)
-: CParamDisplay (size)
+: CTextLabel (size)
 , focus (false)
 {
-	strcpy (label, "");
-	setLabel (text);
-}
-
-//------------------------------------------------------------------------
-void CLabel::setLabel (char *text)
-{
-	if (text)
-		strcpy (label, text);
-	setDirty ();
+	setText (text);
+	setTransparency (true);
 }
 
 bool CLabel::onDrop (CDragContainer* drag, const CPoint& where)
@@ -85,7 +74,16 @@ bool CLabel::onDrop (CDragContainer* drag, const CPoint& where)
 	void* ptr = drag->first (size, type);
 	if (ptr)
 	{
-		setLabel ((char*)ptr);
+		if (type == CDragContainer::kText || type == CDragContainer::kFile || type == CDragContainer::kUnicodeText)
+			setText ((char*)ptr);
+		if (type == CDragContainer::kUnicodeText)
+		{
+			for (long i = 0; i < size; i++)
+			{
+				DebugPrint ("%x", ((char*)ptr)[i]);
+			}
+			DebugPrint ("\n");
+		}
 	}
 	return true;
 }
@@ -111,15 +109,15 @@ void CLabel::onDragMove (CDragContainer* drag, const CPoint& where)
 //------------------------------------------------------------------------
 void CLabel::draw (CDrawContext *pContext)
 {
-	pContext->setFillColor (backColor);
-	pContext->setLineWidth (focus ? 2 : 1);
-	pContext->setFrameColor (fontColor);
-	pContext->drawRect (size, kDrawFilledAndStroked);
-
-	pContext->setFont (fontID);
-	pContext->setFontColor (fontColor);
-	pContext->drawString (label, size, false, kCenterText);
-	setDirty (false);
+	pContext->setFrameColor (kBlackCColor);
+	if (focus)
+	{
+		pContext->setFillColor (kRedCColor);
+		pContext->drawRect (size, kDrawFilledAndStroked);
+	}
+	else
+		pContext->drawRect (size, kDrawStroked);
+	CTextLabel::draw (pContext);
 }
 
 enum
@@ -580,12 +578,12 @@ void ControlsGUI::valueChanged (CControl *pControl)
 				if (selector.run (&vstFileSelect))
 				{
 					if (cLabel)
-						cLabel->setLabel (vstFileSelect.returnPath);
+						cLabel->setText (vstFileSelect.returnPath);
 				}
 				else
 				{
 					if (cLabel)
-						cLabel->setLabel ("OpenFileSelector: canceled!!!!");
+						cLabel->setText ("OpenFileSelector: canceled!!!!");
 				}
 				delete []vstFileSelect.returnPath;
 				if (vstFileSelect.initialPath)
