@@ -2,7 +2,7 @@
 // VST Plug-Ins SDK
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 //
-// Version 3.5       $Date: 2005-12-19 15:34:10 $ 
+// Version 3.5       $Date: 2005-12-19 16:52:01 $ 
 //
 // Added Motif/Windows vers.: Yvan Grabit              01.98
 // Added Mac version        : Charlie Steinberg        02.98
@@ -1174,6 +1174,32 @@ void CDrawContext::drawPolygon (const CPoint *pPoints, long numberOfPoints, cons
 #elif WINDOWS
 	#if GDIPLUS
 	// GDIPLUS todo
+	Gdiplus::Point points[30];
+	Gdiplus::Point *polyPoints;
+	bool allocated = false;
+	if (numberOfPoints > 30)
+	{
+		polyPoints = new Gdiplus::Point[numberOfPoints];
+		allocated = true;
+	}
+	else
+		polyPoints = points;
+	
+	for (long i = 0; i < numberOfPoints; i++)
+	{
+		polyPoints[i].X = pPoints[i].h + offset.h;
+		polyPoints[i].Y = pPoints[i].v + offset.v;
+	}
+
+	if (drawStyle == kDrawFilled || drawStyle == kDrawFilledAndStroked)
+		pGraphics->FillPolygon (pBrush, polyPoints, numberOfPoints);
+	if (drawStyle == kDrawFilledAndStroked || drawStyle == kDrawStroked)
+		pGraphics->DrawPolygon (pPen, polyPoints, numberOfPoints);
+
+
+	if (allocated)
+		delete[] polyPoints;
+
 	#else
 	POINT points[30];
 	POINT *polyPoints;
@@ -1223,17 +1249,13 @@ void CDrawContext::drawRect (const CRect &_rect, const CDrawStyle drawStyle)
 
 #if WINDOWS
 	#if GDIPLUS
-	if (pGraphics && pBrush && pPen)
+	if (pGraphics)
 	{
 		rect.normalize ();
-		if (drawStyle == kDrawFilled || drawStyle == kDrawFilledAndStroked)
-		{
+		if (pBrush && (drawStyle == kDrawFilled || drawStyle == kDrawFilledAndStroked))
 			pGraphics->FillRectangle (pBrush, rect.left, rect.top, rect.getWidth ()-1, rect.getHeight ()-1);
-		}
-		if (drawStyle == kDrawStroked || drawStyle == kDrawFilledAndStroked)
-		{
+		if (pPen && (drawStyle == kDrawStroked || drawStyle == kDrawFilledAndStroked))
 			pGraphics->DrawRectangle (pPen, rect.left, rect.top, rect.getWidth ()-1, rect.getHeight ()-1);
-		}
 	}
 	#else
 	if (drawStyle == kDrawFilled || drawStyle == kDrawFilledAndStroked)
@@ -1324,10 +1346,10 @@ void CDrawContext::drawRect (const CRect &_rect, const CDrawStyle drawStyle)
 //-----------------------------------------------------------------------------
 void CDrawContext::drawEllipse (const CRect &_rect, const CDrawStyle drawStyle)
 {
-	#if QUARTZ
 	CRect rect (_rect);
 	rect.offset (offset.h, offset.v);
 
+	#if QUARTZ
 	CGContextRef context = beginCGContext (true);
 	{
 		CGPathDrawingMode m;
@@ -1369,10 +1391,25 @@ void CDrawContext::drawEllipse (const CRect &_rect, const CDrawStyle drawStyle)
 		}
 		releaseCGContext (context);
 	}
+	#elif GDIPLUS
+
+	if (pGraphics)
+	{
+		rect.normalize ();
+		if (pBrush && (drawStyle == kDrawFilled || drawStyle == kDrawFilledAndStroked))
+		{
+			pGraphics->FillEllipse (pBrush, rect.left, rect.top, rect.getWidth ()-1, rect.getHeight ()-1);
+		}
+		if (pPen && (drawStyle == kDrawStroked || drawStyle == kDrawFilledAndStroked))
+		{
+			pGraphics->DrawEllipse (pPen, rect.left, rect.top, rect.getWidth ()-1, rect.getHeight ()-1);
+		}
+	}
 
 	#else
 	CPoint point (_rect.left + (_rect.right - _rect.left) / 2, _rect.top);
 	drawArc (_rect, point, point);
+
 	#endif
 }
 
@@ -1438,7 +1475,14 @@ void CDrawContext::drawArc (const CRect &_rect, const float _startAngle, const f
 
 	#if WINDOWS
 	#if GDIPLUS
-	// GDIPLUS todo
+	if (pGraphics)
+	{
+		Gdiplus::Rect r (rect.left, rect.top, rect.getWidth (), rect.getHeight ());
+//		if (drawStyle == kDrawFilled || drawStyle == kDrawFilledAndStroked)
+//			pGraphics->FillArc (r, startAngle, endAngle);
+		if (drawStyle == kDrawStroked || drawStyle == kDrawFilledAndStroked)
+			pGraphics->DrawArc (pPen, r, _startAngle, _endAngle);
+	}
 	#else
 	float startRad = (float)(k2PI * _startAngle / 360.f);
 	float endRad   = (float)(k2PI * _endAngle / 360.f);
@@ -2356,37 +2400,37 @@ void CDrawContext::drawString (const char *string, const CRect &_rect,
 
 #if WINDOWS
 	#if GDIPLUS
-	WCHAR buffer[1024];
-	Gdiplus::StringFormat z(Gdiplus::StringFormatFlagsNoWrap,LANG_NEUTRAL);;
-	Gdiplus::RectF layoutRect((Gdiplus::REAL)rect.left, (Gdiplus::REAL)rect.top, (Gdiplus::REAL)rect.width(), (Gdiplus::REAL)rect.height());
-
-	mbstowcs(buffer,string,1024);
-	switch (hAlign)
+	if (pGraphics && pFont && pFontBrush)
 	{
-	case kCenterText:
-		// without DT_SINGLELINE no vertical center alignment here
-		z.SetAlignment(Gdiplus::StringAlignmentCenter);
-		//DrawText ((HDC)pSystemContext, string, (int)strlen (string), &Rect, flag + DT_CENTER);
-		break;
-		
-	case kRightText:
-		//DrawText ((HDC)pSystemContext, string, (int)strlen (string), &Rect, flag + DT_RIGHT);
-		z.SetAlignment(Gdiplus::StringAlignmentFar);
-		break;
-		
-	default : // left adjust
-		layoutRect.X++;
-		z.SetAlignment(Gdiplus::StringAlignmentNear);
-	}
+		WCHAR buffer[1024];
+		Gdiplus::StringFormat stringFormat (Gdiplus::StringFormatFlagsNoWrap, LANG_NEUTRAL);;
+		stringFormat.SetLineAlignment (Gdiplus::StringAlignmentCenter);
+		Gdiplus::RectF layoutRect ((Gdiplus::REAL)rect.left, (Gdiplus::REAL)rect.top, (Gdiplus::REAL)rect.width(), (Gdiplus::REAL)rect.height());
 
-	Gdiplus::SolidBrush bgBrush(Gdiplus::Color(255, fillColor.red, fillColor.green, fillColor.blue));
-	
-	if (opaque) {
-		pGraphics->FillRectangle(&bgBrush,layoutRect);
-	}
-	
-	pGraphics->DrawString(buffer,-1,pFont,layoutRect,&z,pFontBrush);
+		mbstowcs (buffer,string,1024);
+		switch (hAlign)
+		{
+		case kCenterText:
+			stringFormat.SetAlignment (Gdiplus::StringAlignmentCenter);
+			break;
+			
+		case kRightText:
+			stringFormat.SetAlignment (Gdiplus::StringAlignmentFar);
+			break;
+			
+		default : // left adjust
+			layoutRect.X++;
+			stringFormat.SetAlignment (Gdiplus::StringAlignmentNear);
+		}
 
+		if (opaque)
+		{
+			Gdiplus::SolidBrush bgBrush (Gdiplus::Color (255, fillColor.red, fillColor.green, fillColor.blue));
+			pGraphics->FillRectangle (&bgBrush, layoutRect);
+		}
+		
+		pGraphics->DrawString (buffer, -1, pFont, layoutRect, &stringFormat, pFontBrush);
+	}
 	#else
 	// set the visibility mask
 	SetBkMode ((HDC)pSystemContext, opaque ? OPAQUE : TRANSPARENT);
@@ -4379,7 +4423,9 @@ CFrame::~CFrame ()
 
 		ExitWindowClass ();
 	}
+	#if GDIPLUS
 	GDIPlusGlobals::exit ();
+	#endif
 #endif
 	
 	if (bAddedWindow)
@@ -9082,6 +9128,51 @@ void PlugView::MessageReceived (BMessage *msg)
 #if WINDOWS
 BEGIN_NAMESPACE_VSTGUI
 //-----------------------------------------------------------------------------
+bool checkResolveLink (const char* nativePath, char* resolved)
+{
+	char* ext = strrchr (nativePath, '.');
+	if (ext && stricmp (ext, ".lnk") == NULL)
+	{
+		IShellLink* psl;
+		IPersistFile* ppf;
+		WIN32_FIND_DATA wfd;
+		HRESULT hres;
+		WORD wsz[2048];
+		
+		// Get a pointer to the IShellLink interface.
+		hres = CoCreateInstance (CLSID_ShellLink, NULL, CLSCTX_INPROC_SERVER,
+			IID_IShellLink, (void**)&psl);
+		if (SUCCEEDED (hres))
+		{
+			// Get a pointer to the IPersistFile interface.
+			hres = psl->QueryInterface (IID_IPersistFile, (void**)&ppf);
+			if (SUCCEEDED (hres))
+			{
+				// Ensure string is Unicode.
+				MultiByteToWideChar (CP_ACP, 0, nativePath, -1, (LPWSTR)wsz, 2048);
+				// Load the shell link.
+				hres = ppf->Load ((LPWSTR)wsz, STGM_READ);
+				if (SUCCEEDED (hres))
+				{					
+					hres = psl->Resolve (0, MAKELONG (SLR_ANY_MATCH | SLR_NO_UI, 500));
+					if (SUCCEEDED (hres))
+					{
+						// Get the path to the link target.
+						hres = psl->GetPath (resolved, 2048, &wfd, SLGP_SHORTPATH);
+					}
+				}
+				// Release pointer to IPersistFile interface.
+				ppf->Release ();
+			}
+			// Release pointer to IShellLink interface.
+			psl->Release ();
+		}
+		return SUCCEEDED(hres);
+	}
+	return false;	
+}
+
+//-----------------------------------------------------------------------------
 // Drop Implementation
 //-----------------------------------------------------------------------------
 class CDropTarget : public IDropTarget
@@ -9220,51 +9311,6 @@ STDMETHODIMP CDropTarget::Drop (IDataObject *dataObject, DWORD keyState, POINTL 
 		gDragContainer = 0;
 	}
 	return S_OK;
-}
-
-//-----------------------------------------------------------------------------
-bool checkResolveLink (const char* nativePath, char* resolved)
-{
-	char* ext = strrchr (nativePath, '.');
-	if (ext && stricmp (ext, ".lnk") == NULL)
-	{
-		IShellLink* psl;
-		IPersistFile* ppf;
-		WIN32_FIND_DATA wfd;
-		HRESULT hres;
-		WORD wsz[2048];
-		
-		// Get a pointer to the IShellLink interface.
-		hres = CoCreateInstance (CLSID_ShellLink, NULL, CLSCTX_INPROC_SERVER,
-			IID_IShellLink, (void**)&psl);
-		if (SUCCEEDED (hres))
-		{
-			// Get a pointer to the IPersistFile interface.
-			hres = psl->QueryInterface (IID_IPersistFile, (void**)&ppf);
-			if (SUCCEEDED (hres))
-			{
-				// Ensure string is Unicode.
-				MultiByteToWideChar (CP_ACP, 0, nativePath, -1, (LPWSTR)wsz, 2048);
-				// Load the shell link.
-				hres = ppf->Load ((LPWSTR)wsz, STGM_READ);
-				if (SUCCEEDED (hres))
-				{					
-					hres = psl->Resolve (0, MAKELONG (SLR_ANY_MATCH | SLR_NO_UI, 500));
-					if (SUCCEEDED (hres))
-					{
-						// Get the path to the link target.
-						hres = psl->GetPath (resolved, 2048, &wfd, SLGP_SHORTPATH);
-					}
-				}
-				// Release pointer to IPersistFile interface.
-				ppf->Release ();
-			}
-			// Release pointer to IShellLink interface.
-			psl->Release ();
-		}
-		return SUCCEEDED(hres);
-	}
-	return false;	
 }
 
 #elif MAC
