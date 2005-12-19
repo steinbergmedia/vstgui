@@ -33,7 +33,9 @@ public:
 	
 	virtual void draw (CDrawContext *pContext);
 
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
 	virtual void mouse (CDrawContext* pContext, CPoint& where, long buttons);
+#endif
 
 protected:
 	int value;
