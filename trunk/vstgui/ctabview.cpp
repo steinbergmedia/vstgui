@@ -277,7 +277,7 @@ bool CTabView::selectTab (unsigned long index)
 	if (index > numberOfChilds)
 		return false;
 	CTabChildView* v = firstChild;
-	long i = 0;
+	unsigned long i = 0;
 	while (v)
 	{
 		if (index == i)

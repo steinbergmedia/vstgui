@@ -101,15 +101,14 @@ void AEffGUIEditor::draw (ERect *ppErect)
 {
 	if (frame)
 	{
+		CRect r;
 		if (ppErect)
-		{
-			CRect r (ppErect->left, ppErect->top, ppErect->right, ppErect->bottom);
-			CDrawContext* context = frame->createDrawContext();
-			frame->drawRect (context, r);
-			context->forget();
-		}
+			r (ppErect->left, ppErect->top, ppErect->right, ppErect->bottom);
 		else
-			frame->draw ();
+			r = frame->getViewSize ();
+		CDrawContext* context = frame->createDrawContext();
+		frame->drawRect (context, r);
+		context->forget();
 	}
 }
 
@@ -123,14 +122,15 @@ long AEffGUIEditor::mouse (long x, long y)
 	if (frame)
 	{
 		CDrawContext* context = frame->createDrawContext();
-		CPoint where(x, y);
-		frame->mouse(context, where);
+		CPoint where (x, y);
+		frame->mouse (context, where);
 		context->forget ();
+		return 1;
 	}
 
 #endif	// #if VSTGUI_ENABLE_DEPRECATED_METHODS
 
-	return 1;
+	return 0;
 }
 #endif
 

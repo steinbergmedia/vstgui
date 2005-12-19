@@ -1,3 +1,9 @@
+2005-12-19 arne
+
+	* per default USE_NAMESPACE is 1 now if you don't define it
+	* some more deprecated functions in CDrawContext
+	* moved VSTGUIEditorInterface and CDropTarget into VSTGUI namespace
+
 2005-12-16 arne
 
 	* CControl::getTag() is virtual now

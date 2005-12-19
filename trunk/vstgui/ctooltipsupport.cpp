@@ -40,7 +40,7 @@
 #endif
 
 //------------------------------------------------------------------------
-/*! @class CTooltipSupport
+/*! @class VSTGUI::CTooltipSupport
 A generic way to add tooltip support to VSTGUI.
 @section ctooltipsupport_example Example
 Adding a tooltip to a view
