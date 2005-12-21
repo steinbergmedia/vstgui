@@ -82,7 +82,6 @@ CScrollContainer::CScrollContainer (const CRect &size, const CRect &containerSiz
 , containerSize (containerSize)
 , offset (CPoint (0, 0))
 {
-	setTransparency (true);
 	#if !VSTGUI_USE_SYSTEM_EVENTS_FOR_DRAWING
 	setMode (kOnlyDirtyUpdate);
 	#endif
@@ -112,7 +111,7 @@ void CScrollContainer::setScrollOffset (CPoint newOffset, bool redraw)
 		newOffset.y = containerSize.top;
 	if (newOffset.y > containerSize.bottom)
 		newOffset.y = containerSize.bottom;
-	CPoint diff (newOffset.x - offset.x, offset.y - newOffset.y);
+	CPoint diff ((long)(newOffset.x - offset.x), (long)(offset.y - newOffset.y));
 	if (diff.x == 0 && diff.y == 0)
 		return;
 	CCView *pV = pFirstView;
@@ -121,7 +120,7 @@ void CScrollContainer::setScrollOffset (CPoint newOffset, bool redraw)
 		CRect r;
 		pV->pView->getViewSize (r);
 		r.offset (diff.x , diff.y);
-		pV->pView->setViewSize (r);
+		pV->pView->setViewSize (r, false);
 		pV->pView->getMouseableArea (r);
 		r.offset (diff.x , diff.y);
 		pV->pView->setMouseableArea (r);
@@ -129,10 +128,26 @@ void CScrollContainer::setScrollOffset (CPoint newOffset, bool redraw)
 		pV = pV->pNext;
 	}
 	offset = newOffset;
-	#if VSTGUI_USE_SYSTEM_EVENTS_FOR_DRAWING
-	invalid ();
+	#if 1
+	if (getTransparency ())
+	{
+		#if VSTGUI_USE_SYSTEM_EVENTS_FOR_DRAWING
+		invalid ();
+		#else
+		setDirty (true);
+		#endif
+	}
+	else
+	{
+		CDrawContext* context = getFrame ()->createDrawContext ();
+		CRect scrollRect (0, 0, size.getWidth (), size.getHeight ());
+		CPoint p;
+		localToFrame (p);
+		scrollRect.offset (p.x, p.y);
+		context->scrollRect (scrollRect, diff);
+		context->forget ();
+	}
 	#else
-	setDirty (true);
 	#endif
 }
 
@@ -186,13 +201,16 @@ CScrollView::CScrollView (const CRect &size, const CRect &containerSize, CFrame*
 , containerSize (containerSize)
 , style (style)
 {
-	setTransparency (true);
 	#if !VSTGUI_USE_SYSTEM_EVENTS_FOR_DRAWING
 	setMode (kOnlyDirtyUpdate);
 	#endif
 
-	CRect scsize (size);
-	scsize.offset (-scsize.left, -scsize.top);
+	CRect scsize (0, 0, size.getWidth (), size.getHeight ());
+	if (!(style & kDontDrawFrame))
+	{
+		scsize.left++; scsize.top++;
+		scsize.right-=1; scsize.bottom--;
+	}
 	if (style & kHorizontalScrollbar)
 	{
 		CRect sbr (size);
@@ -292,6 +310,20 @@ CView* CScrollView::getView (long index) const
 }
 
 //-----------------------------------------------------------------------------
+void CScrollView::setTransparency (bool val)
+{
+	CViewContainer::setTransparency (val);
+	sc->setTransparency (val);
+}
+
+//-----------------------------------------------------------------------------
+void CScrollView::setBackgroundColor (CColor color)
+{
+	CViewContainer::setBackgroundColor (color);
+	sc->setBackgroundColor (color);
+}
+
+//-----------------------------------------------------------------------------
 void CScrollView::valueChanged (CControl *pControl)
 {
 	if (sc)
@@ -307,13 +339,13 @@ void CScrollView::valueChanged (CControl *pControl)
 		{
 			case kHSBTag:
 			{
-				offset.x = (CCoord) (csize.left - (csize.width () - vsize.width ()) * value);
+				offset.x = (long) (csize.left - (csize.width () - vsize.width ()) * value);
 				sc->setScrollOffset (offset, false);
 				break;
 			}
 			case kVSBTag:
 			{
-				offset.y = (CCoord) (csize.top + (csize.height () - vsize.height ()) * value);
+				offset.y = (long) (csize.top + (csize.height () - vsize.height ()) * value);
 				sc->setScrollOffset (offset, false);
 				break;
 			}
@@ -324,12 +356,15 @@ void CScrollView::valueChanged (CControl *pControl)
 //-----------------------------------------------------------------------------
 void CScrollView::drawBackgroundRect (CDrawContext *pContext, CRect& _updateRect)
 {
-	CRect r (size);
-	r.offset (-r.left, -r.top);
-	pContext->setFrameColor (kBlackCColor);
-	pContext->setLineWidth (1);
-	pContext->drawRect (r);
 	CViewContainer::drawBackgroundRect (pContext, _updateRect);
+	if (!(style & kDontDrawFrame))
+	{
+		CRect r (size);
+		r.offset (-r.left, -r.top);
+		pContext->setFrameColor (kBlackCColor);
+		pContext->setLineWidth (1);
+		pContext->drawRect (r);
+	}
 }
 
 //-----------------------------------------------------------------------------

@@ -2,7 +2,7 @@
 // VST Plug-Ins SDK
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 //
-// Version 3.5       $Date: 2005-12-19 15:34:10 $
+// Version 3.5       $Date: 2005-12-21 13:36:11 $
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
@@ -622,7 +622,9 @@ public:
 	void drawEllipse (const CRect &rect, const CDrawStyle drawStyle = kDrawStroked);	///< draw an ellipse
 	void drawPoint (const CPoint &point, CColor color);	///< draw a point
 	//@}
-	
+
+	void scrollRect (const CRect& src, const CPoint& distance);		///< scroll rect
+
 	//-----------------------------------------------------------------------------
 	/// \name Line Mode
 	//-----------------------------------------------------------------------------
@@ -998,7 +1000,7 @@ public:
 	//@{
 	CCoord getHeight () const { return size.height (); }										///< get the height of the view
 	CCoord getWidth ()  const { return size.width (); }											///< get the width of the view
-	virtual void setViewSize (CRect &rect);														///< set views size
+	virtual void setViewSize (CRect &rect, bool invalid = true);								///< set views size
 	virtual CRect &getViewSize (CRect &rect) const { rect = size; return rect; }				///< returns the current view size
 	virtual const CRect& getViewSize () const { return size; }									///< read only access to view size
 	virtual CRect getVisibleSize () const;														///< returns the visible size of the view
@@ -1187,7 +1189,7 @@ public:
 	virtual bool invalidateDirtyViews ();
 	#endif
 	
-	void setViewSize (CRect &rect);
+	void setViewSize (CRect &rect, bool invalid = true);
 	virtual void parentSizeChanged ();
 	CRect getVisibleSize (const CRect rect) const;
 
@@ -1314,7 +1316,7 @@ public:
 #if !VSTGUI_USE_SYSTEM_EVENTS_FOR_DRAWING
 	void update (CDrawContext *pContext);
 #endif
-	void setViewSize (CRect& rect);
+	void setViewSize (CRect& rect, bool invalid = true);
 
 	virtual VSTGUIEditorInterface *getEditor () const { return pEditor; }
 	virtual IMouseObserver *getMouseObserver () const { return pMouseObserver; }

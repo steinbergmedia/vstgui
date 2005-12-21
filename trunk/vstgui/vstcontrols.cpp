@@ -3,7 +3,7 @@
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 // Standard Control Objects
 //
-// Version 3.5       $Date: 2005-12-19 15:34:10 $
+// Version 3.5       $Date: 2005-12-21 13:36:11 $
 //
 // Added new objects        : Michael Schmidt          08.97
 // Added new objects        : Yvan Grabit              01.98
@@ -907,26 +907,28 @@ void CParamDisplay::drawText (CDrawContext *pContext, char *string, CBitmap *new
 	// draw the frame for the 3D effect
 	if (style & (k3DIn|k3DOut)) 
 	{
+		CRect r (size);
+		r.right--; r.top++;
 		pContext->setLineWidth (1);
 		if (style & k3DIn)
 			pContext->setFrameColor (backColor);
 		else
 			pContext->setFrameColor (frameColor);
 		CPoint p;
-		pContext->moveTo (p (size.left, size.bottom));
-		pContext->lineTo (p (size.left, size.top));
-		pContext->lineTo (p (size.right + 1, size.top));
+		pContext->moveTo (p (r.left, r.bottom));
+		pContext->lineTo (p (r.left, r.top));
+		pContext->lineTo (p (r.right, r.top));
 
 		if (style & k3DIn)
 			pContext->setFrameColor (frameColor);
 		else
 			pContext->setFrameColor (backColor);
-		pContext->moveTo (p (size.right, size.top + 1));
-		pContext->lineTo (p (size.right, size.bottom));
-		pContext->lineTo (p (size.left, size.bottom));
+		pContext->moveTo (p (r.right, r.top));
+		pContext->lineTo (p (r.right, r.bottom));
+		pContext->lineTo (p (r.left, r.bottom));
 	}
 
-	if (!(style & kNoTextStyle) && string)
+	if (!(style & kNoTextStyle) && string && strlen (string))
 	{
 		CRect oldClip;
 		pContext->getClipRect (oldClip);
@@ -1600,7 +1602,7 @@ void CTextEdit::parentSizeChanged ()
 }
 
 //------------------------------------------------------------------------
-void CTextEdit::setViewSize (CRect& newSize)
+void CTextEdit::setViewSize (CRect& newSize, bool invalid)
 {
 	#if QUARTZ
 	if (textControl)
@@ -1616,7 +1618,7 @@ void CTextEdit::setViewSize (CRect& newSize)
 		}
 	}
 	#endif
-	CView::setViewSize (newSize);
+	CView::setViewSize (newSize, invalid);
 }
 
 //------------------------------------------------------------------------

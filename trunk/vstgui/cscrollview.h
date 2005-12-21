@@ -58,7 +58,8 @@ public:
 	enum CScrollViewStyle 
 	{
 		kHorizontalScrollbar	= 1 << 1,	///< add a horizontal scrollbar
-		kVerticalScrollbar 		= 1 << 2	///< add a vertical scrollbar
+		kVerticalScrollbar 		= 1 << 2,	///< add a vertical scrollbar
+		kDontDrawFrame			= 1 << 3,	///< don't draw frame
 	};
 
 	virtual void setContainerSize (const CRect& cs); ///< set the virtual size of this container
@@ -77,6 +78,8 @@ public:
 	void drawBackgroundRect (CDrawContext *pContext, CRect& _updateRect);
 	bool onWheel (const CPoint &where, const CMouseWheelAxis &axis, const float &distance, const long &buttons);
 	void valueChanged (CControl *pControl);
+	void setTransparency (bool val);
+	void setBackgroundColor (CColor color);
 
 	CLASS_METHODS(CScrollView, CViewContainer)
 //-----------------------------------------------------------------------------
