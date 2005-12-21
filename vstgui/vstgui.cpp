@@ -2,7 +2,7 @@
 // VST Plug-Ins SDK
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 //
-// Version 3.5       $Date: 2005-12-19 16:52:01 $ 
+// Version 3.5       $Date: 2005-12-21 13:36:11 $ 
 //
 // Added Motif/Windows vers.: Yvan Grabit              01.98
 // Added Mac version        : Charlie Steinberg        02.98
@@ -243,11 +243,6 @@ static inline ATSUStyle CreateATSUStyle (const CColor &fontColor, CFont fontID, 
 
 static inline double radians (double degrees) { return degrees * M_PI / 180; }
 CGColorSpaceRef GetGenericRGBColorSpace ();
-
-typedef void (*CGContextStrokeLineSegmentsProc) (CGContextRef c, const CGPoint points[], size_t count);
-typedef CGImageRef (*CGImageCreateWithImageInRectProc) (CGImageRef image, CGRect rect);
-static CGImageCreateWithImageInRectProc _CGImageCreateWithImageInRect = NULL;
-static CGContextStrokeLineSegmentsProc _CGContextStrokeLineSegments = NULL;
 
 // cache graphics importer
 static ComponentInstance bmpGI = 0;
@@ -2740,6 +2735,23 @@ void CDrawContext::drawStringUTF8 (const char* string, const CRect& _rect, const
 	drawStringUTF8 (string, CPoint (rect.left, rect.bottom), antialias);
 }
 
+//-----------------------------------------------------------------------------
+void CDrawContext::scrollRect (const CRect& src, const CPoint& distance)
+{
+	CRect rect (src);
+	rect.offset (offset.h, offset.v);
+
+	#if QUARTZ
+	CGRect cgRect = CGRectMake ((float)rect.left, (float)rect.top, (float)rect.getWidth (), (float)rect.getHeight ());
+	if (HIViewScrollRect ((HIViewRef)pFrame->getPlatformControl(), &cgRect, (float)distance.x, (float)distance.y) != noErr)
+		getFrame ()->invalidRect (src);
+
+	#else
+	getFrame ()->invalidRect (src);
+
+	#endif
+}
+
 #if VSTGUI_ENABLE_DEPRECATED_METHODS
 //-----------------------------------------------------------------------------
 long CDrawContext::getMouseButtons ()
@@ -4063,10 +4075,11 @@ void CView::takeFocus ()
 {}
 
 //------------------------------------------------------------------------------
-void CView::setViewSize (CRect &rect)
+void CView::setViewSize (CRect &rect, bool invalid)
 {
 	size = rect;
-	setDirty ();
+	if (invalid)
+		setDirty ();
 }
 
 //------------------------------------------------------------------------------
@@ -5138,7 +5151,7 @@ bool CFrame::getPosition (CCoord &x, CCoord &y) const
 }
 
 //-----------------------------------------------------------------------------
-void CFrame::setViewSize (CRect& rect)
+void CFrame::setViewSize (CRect& rect, bool invalid)
 {
 	setSize (rect.width (), rect.height ());
 }
@@ -5834,9 +5847,9 @@ void CViewContainer::parentSizeChanged ()
 /**
  * @param rect the new size of the container
  */
-void CViewContainer::setViewSize (CRect &rect)
+void CViewContainer::setViewSize (CRect &rect, bool invalid)
 {
-	CView::setViewSize (rect);
+	CView::setViewSize (rect, invalid);
 
 	parentSizeChanged ();
 
@@ -6225,7 +6238,8 @@ void CViewContainer::drawBackgroundRect (CDrawContext *pContext, CRect& _updateR
 	else if (!bTransparencyEnabled)
 	{
 		pContext->setFillColor (backgroundColor);
-		pContext->drawRect (_updateRect, kDrawFilled);
+		pContext->setFrameColor (backgroundColor);
+		pContext->drawRect (_updateRect, kDrawFilledAndStroked);
 	}
 }
 
@@ -8305,7 +8319,7 @@ long CDragContainer::getType (long idx) const
 				return kFile;
 			else if (type == 'TEXT' || type == 'XML ')
 				return kText;
-			else if (type == 'utxt')
+			else if (type == 'utf8')
 				return kUnicodeText;
 		}
 	}
@@ -10173,12 +10187,6 @@ public:
 	: genericRGBColorSpace (0)
 	{
 		CreateGenericRGBColorSpace ();
-        CFBundleRef coregraphicsBundle = CFBundleGetBundleWithIdentifier (CFSTR("com.apple.CoreGraphics"));
-        if (coregraphicsBundle)
-        {
-            _CGImageCreateWithImageInRect = (CGImageCreateWithImageInRectProc)CFBundleGetFunctionPointerForName (coregraphicsBundle, CFSTR("CGImageCreateWithImageInRect"));
-            _CGContextStrokeLineSegments = (CGContextStrokeLineSegmentsProc)CFBundleGetFunctionPointerForName (coregraphicsBundle, CFSTR("CGContextStrokeLineSegments"));
-        }
 	}
 
 	//-----------------------------------------------------------------------------
