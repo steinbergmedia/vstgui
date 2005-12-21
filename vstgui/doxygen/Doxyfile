@@ -228,7 +228,8 @@ SEARCH_INCLUDES        = YES
 INCLUDE_PATH           = 
 INCLUDE_FILE_PATTERNS  = 
 PREDEFINED             = VSTGUI_ENABLE_DEPRECATED_METHODS=0 \
-                         DEBUG=0
+                         DEBUG=0 \
+                         USE_NAMESPACE=1
 EXPAND_AS_DEFINED      = 
 SKIP_FUNCTION_MACROS   = YES
 #---------------------------------------------------------------------------
