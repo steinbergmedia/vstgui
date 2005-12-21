@@ -1,3 +1,9 @@
+2005-12-21 arne
+
+	* new function CDrawContext::scrollRect
+	* minor fixes to CScrollView
+	* fixed 3D drawing in CParamDisplay (was drawing outside its bounds)
+
 2005-12-19 arne
 
 	* per default USE_NAMESPACE is 1 now if you don't define it

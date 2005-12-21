@@ -3,7 +3,7 @@
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 // Standard Control Objects
 //
-// Version 3.5       $Date: 2005-12-16 11:26:37 $
+// Version 3.5       $Date: 2005-12-21 13:36:11 $
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
@@ -343,7 +343,7 @@ public:
 	virtual	void takeFocus ();
 	virtual	void looseFocus ();
 
-	virtual void setViewSize (CRect& newSize);
+	virtual void setViewSize (CRect& newSize, bool invalid = true);
 	virtual void parentSizeChanged ();
 
 	void *platformFontColor;
