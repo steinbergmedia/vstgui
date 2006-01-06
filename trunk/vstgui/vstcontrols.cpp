@@ -3,7 +3,7 @@
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 // Standard Control Objects
 //
-// Version 3.5       $Date: 2005-12-21 13:36:11 $
+// Version 3.5       $Date: 2006-01-06 20:28:53 $
 //
 // Added new objects        : Michael Schmidt          08.97
 // Added new objects        : Yvan Grabit              01.98
@@ -304,9 +304,7 @@ CMouseEventResult COnOffButton::onMouseDown (CPoint &where, const long& buttons)
 
 	value = ((long)value) ? 0.f : 1.f;
 
-	#if VSTGUI_USE_SYSTEM_EVENTS_FOR_DRAWING
 	invalid ();
-	#endif
 
 	if (listener && style == kPostListenerUpdate)
 	{
@@ -625,10 +623,8 @@ CMouseEventResult CKnob::onMouseMoved (CPoint &where, const long& buttons)
 			}
 			if (isDirty () && listener)
 				listener->valueChanged (this);
-			#if VSTGUI_USE_SYSTEM_EVENTS_FOR_DRAWING
 			if (isDirty ())
 				invalid ();
-			#endif
 		}
 	}
 	return kMouseEventHandled;
@@ -3159,11 +3155,7 @@ CMouseEventResult COptionMenu::onMouseDown (CPoint &where, const long& buttons)
 	{
 		beginEdit ();
 		if (bgWhenClick)
-		#if VSTGUI_USE_SYSTEM_EVENTS_FOR_DRAWING
 			invalid ();
-		#else
-			setDirty ();
-		#endif
 		takeFocus ();
 		return kMouseDownEventHandledButDontNeedMovedOrUpEvents;
 	}
@@ -4052,10 +4044,8 @@ CMouseEventResult CVerticalSwitch::onMouseMoved (CPoint &where, const long& butt
 
 		if (isDirty () && listener)
 			listener->valueChanged (this);
-		#if VSTGUI_USE_SYSTEM_EVENTS_FOR_DRAWING
 		if (isDirty ())
 			invalid ();
-		#endif
 	}
 	return kMouseEventHandled;
 }
@@ -4199,10 +4189,8 @@ CMouseEventResult CHorizontalSwitch::onMouseMoved (CPoint &where, const long& bu
 
 		if (isDirty () && listener)
 			listener->valueChanged (this);
-		#if VSTGUI_USE_SYSTEM_EVENTS_FOR_DRAWING
 		if (isDirty ())
 			invalid ();
-		#endif
 	}
 	return kMouseEventHandled;
 }
@@ -4353,10 +4341,8 @@ CMouseEventResult CRockerSwitch::onMouseDown (CPoint &where, const long& buttons
 CMouseEventResult CRockerSwitch::onMouseUp (CPoint &where, const long& buttons)
 {
 	value = 0.f;
-	#if VSTGUI_USE_SYSTEM_EVENTS_FOR_DRAWING
 	if (isDirty ())
 		invalid ();
-	#endif
 	endEdit ();
 	return kMouseEventHandled;
 }
@@ -4394,10 +4380,8 @@ CMouseEventResult CRockerSwitch::onMouseMoved (CPoint &where, const long& button
 
 		if (isDirty () && listener)
 			listener->valueChanged (this);
-		#if VSTGUI_USE_SYSTEM_EVENTS_FOR_DRAWING
 		if (isDirty ())
 			invalid ();
-		#endif
 	}
 	return kMouseEventHandled;
 }
@@ -4622,10 +4606,8 @@ CMouseEventResult CMovieButton::onMouseMoved (CPoint &where, const long& buttons
 	
 		if (isDirty () && listener)
 			listener->valueChanged (this);
-		#if VSTGUI_USE_SYSTEM_EVENTS_FOR_DRAWING
 		if (isDirty ())
 			invalid ();
-		#endif
 	}
 	return kMouseEventHandled;
 }
@@ -4731,11 +4713,7 @@ CMouseEventResult CAutoAnimation::onMouseDown (CPoint &where, const long& button
 		{	
 			value = 0;
 			openWindow ();
-			#if VSTGUI_USE_SYSTEM_EVENTS_FOR_DRAWING
 			invalid ();
-			#else
-			setDirty (); // force to redraw
-			#endif
 			if (listener)
 				listener->valueChanged (this);
 		}
@@ -4743,11 +4721,7 @@ CMouseEventResult CAutoAnimation::onMouseDown (CPoint &where, const long& button
 		{                                                                       
 			// stop info animation
 			value = 0; // draw first pic of bitmap
-			#if VSTGUI_USE_SYSTEM_EVENTS_FOR_DRAWING
 			invalid ();
-			#else
-			setDirty ();
-			#endif
 			closeWindow ();
 			if (listener)
 				listener->valueChanged (this);
@@ -4802,8 +4776,11 @@ CSlider::CSlider (const CRect &rect, CControlListener *listener, long tag,
                   CBitmap  *background, // bitmap of background
                   CPoint   &offset,  // offset in the background
                   const long style)  // style (kBottom,kRight,kTop,kLeft,kHorizontal,kVertical)
-  :	CControl (rect, listener, tag, background),	offset (offset), pHandle (handle),
-	pOScreen (0), style (style), bFreeClick (true)
+: CControl (rect, listener, tag, background)
+, offset (offset)
+, pHandle (handle)
+, style (style)
+, bFreeClick (true)
 {
 	setDrawTransparentHandle (true);
 
@@ -4850,8 +4827,12 @@ CSlider::CSlider (const CRect &rect, CControlListener *listener, long tag,
                   CBitmap  *background, // bitmap of background
                   CPoint   &offset,     // offset in the background
                   const long style)     // style (kBottom,kRight,kTop,kLeft,kHorizontal,kVertical)
-:	CControl (rect, listener, tag, background), offset (offset), pHandle (handle),
-	pOScreen (0), style (style), minPos (0), bFreeClick (true)
+: CControl (rect, listener, tag, background)
+, offset (offset)
+, pHandle (handle) 
+, style (style)
+, minPos (0)
+, bFreeClick (true)
 {
 	setDrawTransparentHandle (true);
 
@@ -4905,37 +4886,11 @@ void CSlider::setOffsetHandle (CPoint &val)
 	}
 }
 
-//-----------------------------------------------------------------------------
-bool CSlider::attached (CView *parent)
-{
-	if (pOScreen)
-		delete pOScreen;
-	#if !MACX && !VSTGUI_USE_SYSTEM_EVENTS_FOR_DRAWING
-	pOScreen = new COffscreenContext (getFrame (), widthControl, heightControl, kBlackCColor);
-	#endif		
-	return CControl::attached (parent);
-}
-
-//-----------------------------------------------------------------------------
-bool CSlider::removed (CView *parent)
-{
-	if (pOScreen)
-	{
-		delete pOScreen;
-		pOScreen = 0;
-	}
-	return CControl::removed (parent);
-}
-
 //------------------------------------------------------------------------
 void CSlider::draw (CDrawContext *pContext)
 {
-	CDrawContext* drawContext = pOScreen ? pOScreen : pContext;
+	CDrawContext* drawContext = pContext;
 
-	#if 1
-	if (pOScreen && bTransparencyEnabled)
-		pOScreen->copyTo (pContext, size);
-	#endif
 	float fValue;
 	if (style & kLeft || style & kTop)
 		fValue = value;
@@ -4944,8 +4899,7 @@ void CSlider::draw (CDrawContext *pContext)
 	
 	// (re)draw background
 	CRect rect (0, 0, widthControl, heightControl);
-	if (!pOScreen)
-		rect.offset (size.left, size.top);
+	rect.offset (size.left, size.top);
 	if (pBackground)
 	{
 		if (bTransparencyEnabled)
@@ -4978,8 +4932,7 @@ void CSlider::draw (CDrawContext *pContext)
 		rectNew.bottom = rectNew.top + heightOfSlider;
 		rectNew.bottom = (rectNew.bottom > maxTmp) ? maxTmp : rectNew.bottom;
 	}
-	if (!pOScreen)
-		rectNew.offset (size.left, size.top);
+	rectNew.offset (size.left, size.top);
 
 	// draw slider at new position
 	if (pHandle)
@@ -4990,9 +4943,6 @@ void CSlider::draw (CDrawContext *pContext)
 			pHandle->draw (drawContext, rectNew);
 	}
 
-	if (pOScreen)
-		pOScreen->copyFrom (pContext, size);
-	
 	setDirty (false);
 }
 
@@ -5219,10 +5169,8 @@ CMouseEventResult CSlider::onMouseMoved (CPoint &where, const long& buttons)
     	    
 		if (isDirty () && listener)
 			listener->valueChanged (this);
-		#if VSTGUI_USE_SYSTEM_EVENTS_FOR_DRAWING
 		if (isDirty ())
 			invalid ();
-		#endif
 	}
 	return kMouseEventHandled;
 }
@@ -5406,7 +5354,7 @@ CSpecialDigit::CSpecialDigit (const CRect &size,
 		}
 	}
 
-	setMax ((float)pow (10, iNumbers) - 1.0f);
+	setMax ((float)pow (10.f, (float)iNumbers) - 1.0f);
 	setMin (0.0f);
 }
 
@@ -5601,10 +5549,8 @@ CMouseEventResult CKickButton::onMouseUp (CPoint &where, const long& buttons)
 	value = 0.0f;  // set button to UNSELECTED state
 	if (listener)
 		listener->valueChanged (this);
-	#if VSTGUI_USE_SYSTEM_EVENTS_FOR_DRAWING
 	if (isDirty ())
 		invalid ();
-	#endif
 	endEdit ();
 	return kMouseEventHandled;
 }
@@ -5620,10 +5566,8 @@ CMouseEventResult CKickButton::onMouseMoved (CPoint &where, const long& buttons)
 		else
 			value = fEntryState;
 		
-		#if VSTGUI_USE_SYSTEM_EVENTS_FOR_DRAWING
 		if (isDirty ())
 			invalid ();
-		#endif
 	}
 	return kMouseEventHandled;
 }
@@ -5746,26 +5690,17 @@ CMouseEventResult CSplashScreen::onMouseDown (CPoint &where, const long& buttons
 				if (listener)
 					listener->valueChanged (this);
 			}
-			#if VSTGUI_USE_SYSTEM_EVENTS_FOR_DRAWING
 			invalid ();
-			#else
-			setDirty ();
-			#endif
 		}
 		else
 		{
-			#if VSTGUI_USE_SYSTEM_EVENTS_FOR_DRAWING
 			invalid ();
-			#endif
 			size = keepSize;
 			mouseableArea = size;
 			if (listener)
 				listener->valueChanged (this);
 			if (getFrame ())
 			{
-				#if !VSTGUI_USE_SYSTEM_EVENTS_FOR_DRAWING
-				getFrame ()->setDirty (true);
-				#endif
 				getFrame ()->setModalView (NULL);
 			}
 		}
@@ -5787,11 +5722,7 @@ void CSplashScreen::unSplash ()
 		if (getFrame ()->getModalView () == this)
 		{
 			getFrame ()->setModalView (NULL);
-			#if VSTGUI_USE_SYSTEM_EVENTS_FOR_DRAWING
 			getFrame ()->invalid ();
-			#else
-			getFrame ()->redraw ();
-			#endif
 		}
 	}
 }

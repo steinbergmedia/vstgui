@@ -2,7 +2,7 @@
 // VST Plug-Ins SDK
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 //
-// Version 3.5       $Date: 2005-12-21 13:36:11 $
+// Version 3.5       $Date: 2006-01-06 20:28:53 $
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
@@ -126,8 +126,6 @@ END_NAMESPACE_VSTGUI
 
 //----------------------------------------------------
 
-#define VSTGUI_USE_SYSTEM_EVENTS_FOR_DRAWING	1
-
 #ifndef VSTGUI_USES_UTF8
 #define VSTGUI_USES_UTF8 0
 #endif
@@ -137,6 +135,7 @@ END_NAMESPACE_VSTGUI
 	#include <windows.h>
 
 	#if GDIPLUS
+	#include <objidl.h>
 	#include <gdiplus.h>
 	#endif
 #endif // WINDOWS
@@ -946,10 +945,8 @@ public:
 	virtual bool isDirty () const { return bDirty; }													///< check if view is dirty
 	virtual void setDirty (const bool val = true) { bDirty = val; }										///< set the view to dirty so that it is redrawn in the next idle. Thread Safe !
 
-	#if VSTGUI_USE_SYSTEM_EVENTS_FOR_DRAWING
 	virtual void invalidRect (const CRect rect);														///< mark rect as invalid
 	virtual void invalid () { invalidRect (size); setDirty (false); }									///< mark whole view as invalid
-	#endif
 	//@}
 
 	//-----------------------------------------------------------------------------
@@ -1047,11 +1044,6 @@ public:
 	virtual VSTGUIEditorInterface *getEditor () const;											///< get editor
 	//@}
 	
-	#if !VSTGUI_USE_SYSTEM_EVENTS_FOR_DRAWING
-	void redraw ();
-	virtual void redrawRect (CDrawContext* context, const CRect& rect);
-	#endif
-
 	#if DEBUG
 	virtual void dumpInfo ();
 	#endif
@@ -1090,9 +1082,6 @@ protected:
 	
 	CBitmap* pBackground;
 	CAttributeListEntry* pAttributeList;
-#if !VSTGUI_USE_SYSTEM_EVENTS_FOR_DRAWING
-	virtual void update (CDrawContext *pContext); // don't call this !!!
-#endif
 };
 
 // Message to check if View is a CViewContainer
@@ -1118,10 +1107,10 @@ public:
 	/// \name Sub View Functions
 	//-----------------------------------------------------------------------------
 	//@{
-	virtual void addView (CView *pView);	///< add a child view
-	virtual void addView (CView *pView, CRect &mouseableArea, bool mouseEnabled = true);	///< add a child view
-	virtual void removeView (CView *pView, const bool &withForget = true);	///< remove a child view
-	virtual void removeAll (const bool &withForget = true);	///< remove all child views
+	virtual bool addView (CView *pView);	///< add a child view
+	virtual bool addView (CView *pView, CRect &mouseableArea, bool mouseEnabled = true);	///< add a child view
+	virtual bool removeView (CView *pView, const bool &withForget = true);	///< remove a child view
+	virtual bool removeAll (const bool &withForget = true);	///< remove all child views
 	virtual bool isChild (CView *pView) const;	///< check if pView is a child view of this container
 	virtual long getNbViews () const;			///< get the number of child views
 	virtual CView *getView (long index) const;	///< get the child view at index
@@ -1139,16 +1128,6 @@ public:
 	virtual void drawBackgroundRect (CDrawContext *pContext, CRect& _updateRect);	///< draw the background
 	//@}
 
-	#if !VSTGUI_USE_SYSTEM_EVENTS_FOR_DRAWING
-	enum {
-		kNormalUpdate = 0,		///< this mode redraws the whole container if something is dirty
-		kOnlyDirtyUpdate		///< this mode only redraws the views which are dirty
-	};
-
-	virtual void setMode (long val) { mode = val; }	///< set the update mode
-	virtual long getMode () const { return mode; }	///< get the update mode
-	#endif
-	
 	virtual void useOffscreen (bool b);	///< turn on/off using an offscreen
 
 	void modifyDrawContext (CCoord save[4], CDrawContext* pContext);
@@ -1164,10 +1143,6 @@ public:
 	CMouseEventResult onMouseMoved (CPoint &where, const long& buttons);
 	bool onWheel (const CPoint &where, const float &distance, const long &buttons);
 	bool onWheel (const CPoint &where, const CMouseWheelAxis &axis, const float &distance, const long &buttons);
-	#if !VSTGUI_USE_SYSTEM_EVENTS_FOR_DRAWING
-	void update (CDrawContext *pContext);
-	void redrawRect (CDrawContext* context, const CRect& rect);
-	#endif
 	bool hitTest (const CPoint& where, const long buttons = -1);
 	long onKeyDown (VstKeyCode& keyCode);
 	long onKeyUp (VstKeyCode& keyCode);
@@ -1183,11 +1158,9 @@ public:
 
 	bool isDirty () const;
 
-	#if VSTGUI_USE_SYSTEM_EVENTS_FOR_DRAWING
 	void invalid ();
 	void invalidRect (const CRect rect);
 	virtual bool invalidateDirtyViews ();
-	#endif
 	
 	void setViewSize (CRect &rect, bool invalid = true);
 	virtual void parentSizeChanged ();
@@ -1212,12 +1185,10 @@ public:
 	//-------------------------------------------
 protected:
 	bool hitTestSubViews (const CPoint& where, const long buttons = -1);
+	void drawBackToFront (CDrawContext* context, const CRect& rect);
 
 	CCView  *pFirstView;
 	CCView  *pLastView;
-	#if !VSTGUI_USE_SYSTEM_EVENTS_FOR_DRAWING
-	long mode;
-	#endif
 	COffscreenContext *pOffscreenContext;
 	CColor backgroundColor;
 	CPoint backgroundOffset;
@@ -1286,10 +1257,8 @@ public:
 
 	virtual void invalidate (const CRect &rect);
 
-	#if VSTGUI_USE_SYSTEM_EVENTS_FOR_DRAWING
 	void invalid () { invalidRect (size); bDirty = false; }
 	void invalidRect (const CRect rect);
-	#endif
 
 	#if WINDOWS
 	HWND getOuterWindow () const;
@@ -1300,8 +1269,8 @@ public:
 	
 	void *getSystemWindow () const;	///< get platform window
 	
-	void removeView (CView *pView, const bool &withForget = true);
-	void removeAll (const bool &withForget = true);
+	bool removeView (CView *pView, const bool &withForget = true);
+	bool removeAll (const bool &withForget = true);
 
 	// CView
 	void draw (CDrawContext *pContext);
@@ -1313,9 +1282,6 @@ public:
 	bool onWheel (const CPoint &where, const CMouseWheelAxis &axis, const float &distance, const long &buttons);
 	long onKeyDown (VstKeyCode& keyCode);
 	long onKeyUp (VstKeyCode& keyCode);
-#if !VSTGUI_USE_SYSTEM_EVENTS_FOR_DRAWING
-	void update (CDrawContext *pContext);
-#endif
 	void setViewSize (CRect& rect, bool invalid = true);
 
 	virtual VSTGUIEditorInterface *getEditor () const { return pEditor; }

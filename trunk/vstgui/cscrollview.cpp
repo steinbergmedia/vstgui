@@ -60,9 +60,6 @@ public:
 	CRect getContainerSize () const { return containerSize; }
 	void setContainerSize (const CRect& cs);
 	
-	#if !VSTGUI_USE_SYSTEM_EVENTS_FOR_DRAWING
-	virtual void redrawRect (CDrawContext* context, const CRect& rect);
-	#endif
 	virtual bool isDirty () const;
 
 	CLASS_METHODS(CScrollContainer, CViewContainer)
@@ -82,9 +79,6 @@ CScrollContainer::CScrollContainer (const CRect &size, const CRect &containerSiz
 , containerSize (containerSize)
 , offset (CPoint (0, 0))
 {
-	#if !VSTGUI_USE_SYSTEM_EVENTS_FOR_DRAWING
-	setMode (kOnlyDirtyUpdate);
-	#endif
 }
 
 //-----------------------------------------------------------------------------
@@ -128,14 +122,9 @@ void CScrollContainer::setScrollOffset (CPoint newOffset, bool redraw)
 		pV = pV->pNext;
 	}
 	offset = newOffset;
-	#if 1
 	if (getTransparency ())
 	{
-		#if VSTGUI_USE_SYSTEM_EVENTS_FOR_DRAWING
 		invalid ();
-		#else
-		setDirty (true);
-		#endif
 	}
 	else
 	{
@@ -147,29 +136,7 @@ void CScrollContainer::setScrollOffset (CPoint newOffset, bool redraw)
 		context->scrollRect (scrollRect, diff);
 		context->forget ();
 	}
-	#else
-	#endif
 }
-
-#if !VSTGUI_USE_SYSTEM_EVENTS_FOR_DRAWING
-//-----------------------------------------------------------------------------
-void CScrollContainer::redrawRect (CDrawContext* context, const CRect& rect)
-{
-	CRect _rect (rect);
-	_rect.offset (size.left, size.top);
-	_rect.bound (size);
-	if (bTransparencyEnabled)
-	{
-		// as this is transparent, we call the parentview to redraw this area.
-		if (pParentView)
-			pParentView->redrawRect (context, _rect);
-		else if (pParentFrame)
-			pParentFrame->drawRect (context, _rect);
-	}
-	else
-		drawRect (context, _rect);
-}
-#endif
 
 //-----------------------------------------------------------------------------
 bool CScrollContainer::isDirty () const
@@ -201,10 +168,6 @@ CScrollView::CScrollView (const CRect &size, const CRect &containerSize, CFrame*
 , containerSize (containerSize)
 , style (style)
 {
-	#if !VSTGUI_USE_SYSTEM_EVENTS_FOR_DRAWING
-	setMode (kOnlyDirtyUpdate);
-	#endif
-
 	CRect scsize (0, 0, size.getWidth (), size.getHeight ());
 	if (!(style & kDontDrawFrame))
 	{
@@ -268,27 +231,27 @@ void CScrollView::setContainerSize (const CRect& cs)
 }
 
 //-----------------------------------------------------------------------------
-void CScrollView::addView (CView *pView)
+bool CScrollView::addView (CView *pView)
 {
-	sc->addView (pView);
+	return sc->addView (pView);
 }
 
 //-----------------------------------------------------------------------------
-void CScrollView::addView (CView *pView, CRect &mouseableArea, bool mouseEnabled)
+bool CScrollView::addView (CView *pView, CRect &mouseableArea, bool mouseEnabled)
 {
-	sc->addView (pView, mouseableArea, mouseEnabled);
+	return sc->addView (pView, mouseableArea, mouseEnabled);
 }
 
 //-----------------------------------------------------------------------------
-void CScrollView::removeView (CView *pView, const bool &withForget)
+bool CScrollView::removeView (CView *pView, const bool &withForget)
 {
-	sc->removeView (pView, withForget);
+	return sc->removeView (pView, withForget);
 }
 
 //-----------------------------------------------------------------------------
-void CScrollView::removeAll (const bool &withForget)
+bool CScrollView::removeAll (const bool &withForget)
 {
-	sc->removeAll ();
+	return sc->removeAll ();
 }
 
 //-----------------------------------------------------------------------------
@@ -489,9 +452,7 @@ void CScrollbar::doStepping ()
 		value = newValue;
 		if (listener)
 			listener->valueChanged (this);
-		#if VSTGUI_USE_SYSTEM_EVENTS_FOR_DRAWING
 		invalid ();
-		#endif
 	}
 }
 
@@ -568,9 +529,7 @@ CMouseEventResult CScrollbar::onMouseMoved (CPoint &where, const long& buttons)
 				value = newValue;
 				if (listener)
 					listener->valueChanged (this);
-				#if VSTGUI_USE_SYSTEM_EVENTS_FOR_DRAWING
 				invalid ();
-				#endif
 			}
 		}
 		else
@@ -684,9 +643,7 @@ bool CScrollbar::onWheel (const CPoint &where, const CMouseWheelAxis &axis, cons
 
 	if (isDirty () && listener)
 		listener->valueChanged (this);
-	#if VSTGUI_USE_SYSTEM_EVENTS_FOR_DRAWING
 	invalid ();
-	#endif
 	return true;
 }
 

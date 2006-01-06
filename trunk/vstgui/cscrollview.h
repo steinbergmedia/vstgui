@@ -68,10 +68,10 @@ public:
 	CScrollbar* getHorizontalScrollbar () const { return hsb; }
 	
 	// overwrite
-	void addView (CView *pView);
-	void addView (CView *pView, CRect &mouseableArea, bool mouseEnabled = true);
-	void removeView (CView *pView, const bool &withForget = true);
-	void removeAll (const bool &withForget = true);
+	bool addView (CView *pView);
+	bool addView (CView *pView, CRect &mouseableArea, bool mouseEnabled = true);
+	bool removeView (CView *pView, const bool &withForget = true);
+	bool removeAll (const bool &withForget = true);
 	bool isChild (CView *pView) const;
 	long getNbViews () const;
 	CView *getView (long index) const;
