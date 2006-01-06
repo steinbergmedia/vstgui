@@ -38,8 +38,6 @@
 		0CF355C707B173A3002BFE50 /* pdrawtesteditor.h in Headers */ = {isa = PBXBuildFile; fileRef = 0CF355BF07B173A3002BFE50 /* pdrawtesteditor.h */; };
 		0CF355C807B173A3002BFE50 /* pdrawtesteffect.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0CF355C007B173A3002BFE50 /* pdrawtesteffect.cpp */; };
 		0CF355C907B173A3002BFE50 /* pdrawtesteffect.h in Headers */ = {isa = PBXBuildFile; fileRef = 0CF355C107B173A3002BFE50 /* pdrawtesteffect.h */; };
-		0CF355CA07B173A3002BFE50 /* pdrawtestview.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0CF355C207B173A3002BFE50 /* pdrawtestview.cpp */; };
-		0CF355CB07B173A3002BFE50 /* pdrawtestview.h in Headers */ = {isa = PBXBuildFile; fileRef = 0CF355C307B173A3002BFE50 /* pdrawtestview.h */; };
 		0CF355CC07B173A3002BFE50 /* pprimitivesviews.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0CF355C407B173A3002BFE50 /* pprimitivesviews.cpp */; };
 		0CF355CD07B173A3002BFE50 /* pprimitivesviews.h in Headers */ = {isa = PBXBuildFile; fileRef = 0CF355C507B173A3002BFE50 /* pprimitivesviews.h */; };
 		0CF355FD07B17600002BFE50 /* controlsgui.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0CF355FB07B17600002BFE50 /* controlsgui.cpp */; };
@@ -121,7 +119,6 @@
 		F4C9F46E07B2378600010DAD /* controlsgui.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0CF355FB07B17600002BFE50 /* controlsgui.cpp */; };
 		F4C9F46F07B2378800010DAD /* pdrawtesteditor.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0CF355BE07B173A3002BFE50 /* pdrawtesteditor.cpp */; };
 		F4C9F47007B2378900010DAD /* pdrawtesteffect.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0CF355C007B173A3002BFE50 /* pdrawtesteffect.cpp */; };
-		F4C9F47107B2378B00010DAD /* pdrawtestview.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0CF355C207B173A3002BFE50 /* pdrawtestview.cpp */; };
 		F4C9F47207B2378D00010DAD /* pprimitivesviews.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0CF355C407B173A3002BFE50 /* pprimitivesviews.cpp */; };
 		F4C9F47407B2379F00010DAD /* pdrawtestmain.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4C9F47307B2379F00010DAD /* pdrawtestmain.cpp */; };
 		F4F0FCBF08D181460014E7D7 /* cvstguitimer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4F0FCBD08D181460014E7D7 /* cvstguitimer.cpp */; };
@@ -194,8 +191,6 @@
 		0CF355BF07B173A3002BFE50 /* pdrawtesteditor.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = pdrawtesteditor.h; path = ../source/pdrawtesteditor.h; sourceTree = SOURCE_ROOT; };
 		0CF355C007B173A3002BFE50 /* pdrawtesteffect.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = pdrawtesteffect.cpp; path = ../source/pdrawtesteffect.cpp; sourceTree = SOURCE_ROOT; };
 		0CF355C107B173A3002BFE50 /* pdrawtesteffect.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = pdrawtesteffect.h; path = ../source/pdrawtesteffect.h; sourceTree = SOURCE_ROOT; };
-		0CF355C207B173A3002BFE50 /* pdrawtestview.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = pdrawtestview.cpp; path = ../source/pdrawtestview.cpp; sourceTree = SOURCE_ROOT; };
-		0CF355C307B173A3002BFE50 /* pdrawtestview.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = pdrawtestview.h; path = ../source/pdrawtestview.h; sourceTree = SOURCE_ROOT; };
 		0CF355C407B173A3002BFE50 /* pprimitivesviews.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = pprimitivesviews.cpp; path = ../source/pprimitivesviews.cpp; sourceTree = SOURCE_ROOT; };
 		0CF355C507B173A3002BFE50 /* pprimitivesviews.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = pprimitivesviews.h; path = ../source/pprimitivesviews.h; sourceTree = SOURCE_ROOT; };
 		0CF355FB07B17600002BFE50 /* controlsgui.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = controlsgui.cpp; path = ../source/controlsgui.cpp; sourceTree = SOURCE_ROOT; };
@@ -386,8 +381,6 @@
 				0CF355BF07B173A3002BFE50 /* pdrawtesteditor.h */,
 				0CF355C007B173A3002BFE50 /* pdrawtesteffect.cpp */,
 				0CF355C107B173A3002BFE50 /* pdrawtesteffect.h */,
-				0CF355C207B173A3002BFE50 /* pdrawtestview.cpp */,
-				0CF355C307B173A3002BFE50 /* pdrawtestview.h */,
 				0CF355C407B173A3002BFE50 /* pprimitivesviews.cpp */,
 				0CF355C507B173A3002BFE50 /* pprimitivesviews.h */,
 			);
@@ -529,7 +522,6 @@
 				8BA05B080720754400365D66 /* CAAUParameter.h in Headers */,
 				0CF355C707B173A3002BFE50 /* pdrawtesteditor.h in Headers */,
 				0CF355C907B173A3002BFE50 /* pdrawtesteffect.h in Headers */,
-				0CF355CB07B173A3002BFE50 /* pdrawtestview.h in Headers */,
 				0CF355CD07B173A3002BFE50 /* pprimitivesviews.h in Headers */,
 				0CF355FE07B17600002BFE50 /* controlsgui.h in Headers */,
 				F4F98FCB09499C4B00E01A9F /* ctooltipsupport.h in Headers */,
@@ -796,7 +788,6 @@
 				0C01254007AC359F009EC388 /* vstgui.cpp in Sources */,
 				0CF355C607B173A3002BFE50 /* pdrawtesteditor.cpp in Sources */,
 				0CF355C807B173A3002BFE50 /* pdrawtesteffect.cpp in Sources */,
-				0CF355CA07B173A3002BFE50 /* pdrawtestview.cpp in Sources */,
 				0CF355CC07B173A3002BFE50 /* pprimitivesviews.cpp in Sources */,
 				0CF355FD07B17600002BFE50 /* controlsgui.cpp in Sources */,
 				F4FD4C7008865DB400F20B72 /* cfileselector.cpp in Sources */,
@@ -820,7 +811,6 @@
 				F4C9F46E07B2378600010DAD /* controlsgui.cpp in Sources */,
 				F4C9F46F07B2378800010DAD /* pdrawtesteditor.cpp in Sources */,
 				F4C9F47007B2378900010DAD /* pdrawtesteffect.cpp in Sources */,
-				F4C9F47107B2378B00010DAD /* pdrawtestview.cpp in Sources */,
 				F4C9F47207B2378D00010DAD /* pprimitivesviews.cpp in Sources */,
 				F4C9F47407B2379F00010DAD /* pdrawtestmain.cpp in Sources */,
 				F4FD4C6F08865DB400F20B72 /* cfileselector.cpp in Sources */,
@@ -955,6 +945,7 @@
 					"VSTGUI_USES_UTF8=1",
 					"DEBUG=1",
 					"ENABLE_VST_EXTENSION_IN_VSTGUI=1",
+					"VSTGUI_ENABLE_DEPRECATED_METHODS=0",
 				);
 				GENERATE_PKGINFO_FILE = YES;
 				HEADER_SEARCH_PATHS = ../vstsdk2.3;
@@ -993,6 +984,11 @@
 				GCC_OPTIMIZATION_LEVEL = 3;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = xcode_vst_prefix.h;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"VSTGUI_USES_UTF8=1",
+					"ENABLE_VST_EXTENSION_IN_VSTGUI=1",
+					"VSTGUI_ENABLE_DEPRECATED_METHODS=0",
+				);
 				GCC_UNROLL_LOOPS = YES;
 				GCC_USE_GCC3_PFE_SUPPORT = YES;
 				GENERATE_PKGINFO_FILE = YES;
