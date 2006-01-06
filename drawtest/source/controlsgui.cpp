@@ -150,10 +150,6 @@ enum
 ControlsGUI::ControlsGUI (const CRect &inSize, CFrame *frame, CBitmap *pBackground)
 : CViewContainer (inSize, frame, pBackground), animTimer (0)
 {
-	#if !VSTGUI_USE_SYSTEM_EVENTS_FOR_DRAWING
-	setMode (kOnlyDirtyUpdate);
-	#endif
-
 	// get version
 	int version = (VSTGUI_VERSION_MAJOR << 16) + VSTGUI_VERSION_MINOR;
 	int verMaj = (version & 0xFF00) >> 16;

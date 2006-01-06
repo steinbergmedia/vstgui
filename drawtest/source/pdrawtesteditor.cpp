@@ -151,7 +151,9 @@ void DrawTestEditor::setTabView (CFrame* frame, const CRect& r, long position)
 	containerSize.right = testBitmap->getWidth () + 1000;
 	containerSize.bottom = testBitmap->getHeight () + 1000;
 	// the first tab is a scroll view with a movie bitmap
-	CScrollView* scrollview = new CScrollView (tabSize, containerSize, frame, CScrollView::kHorizontalScrollbar|CScrollView::kVerticalScrollbar);
+	CScrollView* scrollview = new CScrollView (tabSize, containerSize, frame, CScrollView::kHorizontalScrollbar|CScrollView::kVerticalScrollbar/*|CScrollView::kDontDrawFrame*/);
+	scrollview->setBackgroundColor (kWhiteCColor);
+//	scrollview->setTransparency (true);
 	CPoint p (0,0);
 	CRect mbSize (containerSize);
 	mbSize.setWidth (testBitmap->getWidth ());
