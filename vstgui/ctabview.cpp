@@ -155,9 +155,6 @@ CTabView::CTabView (const CRect& size, CFrame* parent, CBitmap* tabBitmap, CBitm
 		tabSize.right = tabBitmap->getWidth ();
 		tabSize.bottom = tabBitmap->getHeight ();
 	}
-	#if !VSTGUI_USE_SYSTEM_EVENTS_FOR_DRAWING
-	setMode (kOnlyDirtyUpdate);
-	#endif
 }
 
 //-----------------------------------------------------------------------------
@@ -172,9 +169,6 @@ CTabView::CTabView (const CRect& size, CFrame* parent, const CRect& tabSize, CBi
 , lastChild (0)
 , currentChild (0)
 {
-	#if !VSTGUI_USE_SYSTEM_EVENTS_FOR_DRAWING
-	setMode (kOnlyDirtyUpdate);
-	#endif
 }
 
 //-----------------------------------------------------------------------------
@@ -315,11 +309,7 @@ void CTabView::setCurrentChild (CTabChildView* childView)
 		if (currentChild->button)
 			currentChild->button->setValue (1.f);
 	}
-	#if VSTGUI_USE_SYSTEM_EVENTS_FOR_DRAWING
 	invalid ();
-	#else
-	setDirty ();
-	#endif
 }
 
 //-----------------------------------------------------------------------------

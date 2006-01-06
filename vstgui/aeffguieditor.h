@@ -56,7 +56,7 @@ class AEffGUIEditor : public AEffEditor, public VSTGUIEditorInterface
 {
 public :
 
-	AEffGUIEditor (void *pEffect);
+	AEffGUIEditor (void* pEffect);
 
 	virtual ~AEffGUIEditor ();
 
@@ -64,7 +64,7 @@ public :
 	virtual long getRect (ERect **ppRect);
 	virtual long open (void *ptr);
 	virtual void idle ();
-	virtual void draw (ERect *pRect);
+	virtual void draw (ERect* pRect);
 
 	#if VST_2_1_EXTENSIONS
 	virtual long onKeyDown (VstKeyCode &keyCode);
@@ -85,7 +85,7 @@ public :
 	virtual void doIdleStuff ();
 
 	// get the effect attached to this editor
-	AudioEffect *getEffect () { return effect; }
+	AudioEffect* getEffect () { return effect; }
 
 	// get version of this VSTGUI
 	long getVstGuiVersion () { return (VSTGUI_VERSION_MAJOR << 16) + VSTGUI_VERSION_MINOR; }
@@ -98,13 +98,15 @@ public :
 
 	// get the CFrame object
 	#if USE_NAMESPACE
-	VSTGUI::CFrame *getFrame () { return frame; }
+	VSTGUI::CFrame* getFrame () { return frame; }
 	#else
-	CFrame *getFrame () { return frame; }
+	CFrame* getFrame () { return frame; }
 	#endif
 
+#if VST_2_1_EXTENSIONS
 	virtual void beginEdit (long index) { ((AudioEffectX*)effect)->beginEdit (index); }
-	virtual void endEdit (long index) { ((AudioEffectX*)effect)->endEdit (index); }
+	virtual void endEdit (long index)   { ((AudioEffectX*)effect)->endEdit (index); }
+#endif
 
 //---------------------------------------
 protected:

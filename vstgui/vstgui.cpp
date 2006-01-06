@@ -2,7 +2,7 @@
 // VST Plug-Ins SDK
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 //
-// Version 3.5       $Date: 2005-12-21 13:36:11 $ 
+// Version 3.5       $Date: 2006-01-06 20:28:53 $ 
 //
 // Added Motif/Windows vers.: Yvan Grabit              01.98
 // Added Mac version        : Charlie Steinberg        02.98
@@ -185,7 +185,7 @@ inline HINSTANCE GetInstance () { return (HINSTANCE)hInstance; }
 
 BEGIN_NAMESPACE_VSTGUI
 static long   gUseCount = 0;
-static char   gClassName[20];
+static char   gClassName[100];
 static bool   InitWindowClass ();
 static void   ExitWindowClass ();
 LONG_PTR WINAPI WindowProc (HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam);
@@ -3891,7 +3891,7 @@ bool CView::removed (CView* parent)
  */
 CMouseEventResult CView::onMouseDown (CPoint &where, const long& buttons)
 {
-	return kMouseEventNotHandled;
+	return kMouseEventNotImplemented;
 }
 
 //-----------------------------------------------------------------------------
@@ -3902,7 +3902,7 @@ CMouseEventResult CView::onMouseDown (CPoint &where, const long& buttons)
  */
 CMouseEventResult CView::onMouseUp (CPoint &where, const long& buttons)
 {
-	return kMouseEventNotHandled;
+	return kMouseEventNotImplemented;
 }
 
 //-----------------------------------------------------------------------------
@@ -3913,7 +3913,7 @@ CMouseEventResult CView::onMouseUp (CPoint &where, const long& buttons)
  */
 CMouseEventResult CView::onMouseMoved (CPoint &where, const long& buttons)
 {
-	return kMouseEventNotHandled;
+	return kMouseEventNotImplemented;
 }
 
 #if VSTGUI_ENABLE_DEPRECATED_METHODS
@@ -3962,26 +3962,6 @@ CPoint& CView::localToFrame (CPoint& point) const
 	return point;
 }
 
-#if !VSTGUI_USE_SYSTEM_EVENTS_FOR_DRAWING
-//-----------------------------------------------------------------------------
-void CView::redraw ()
-{
-	if (pParentFrame)
-		pParentFrame->draw (this);
-}
-
-//-----------------------------------------------------------------------------
-void CView::redrawRect (CDrawContext* context, const CRect& rect)
-{
-	// we always pass it on to the parent view as it knows what else must be drawn (needed for nested view containers)
-	if (pParentView)
-		pParentView->redrawRect (context, rect);
-	else if (pParentFrame)
-		pParentFrame->drawRect (context, rect);
-}
-#endif
-
-#if VSTGUI_USE_SYSTEM_EVENTS_FOR_DRAWING
 //-----------------------------------------------------------------------------
 void CView::invalidRect (CRect rect)
 {
@@ -3993,7 +3973,6 @@ void CView::invalidRect (CRect rect)
 			pParentFrame->invalidRect (rect);
 	}
 }
-#endif
 
 //-----------------------------------------------------------------------------
 void CView::draw (CDrawContext *pContext)
@@ -4032,21 +4011,6 @@ bool CView::onWheel (const CPoint &where, const CMouseWheelAxis &axis, const flo
 	}
 	return onWheel (where, distance, buttons);
 }
-
-#if !VSTGUI_USE_SYSTEM_EVENTS_FOR_DRAWING
-//------------------------------------------------------------------------
-void CView::update (CDrawContext *pContext)
-{
-	if (isDirty ())
-	{
-		if (pContext)
-			redrawRect (pContext, size);
-		else
-			redraw ();
-		setDirty (false);
-	}
-}
-#endif
 
 //------------------------------------------------------------------------------
 long CView::onKeyDown (VstKeyCode& keyCode)
@@ -4888,92 +4852,13 @@ bool CFrame::onWheel (const CPoint &where, const float &distance, const long &bu
 	return onWheel (where, kMouseWheelAxisY, distance, buttons);
 }
 
-#if !VSTGUI_USE_SYSTEM_EVENTS_FOR_DRAWING
-//-----------------------------------------------------------------------------
-void CFrame::update (CDrawContext *pContext)
-{
-	if (!getOpenFlag ())
-		return;
-
-	#if WINDOWS && USE_ALPHA_BLEND
-	CDrawContext* oldFrameContext = pFrameContext;
-	CDrawContext* dc = pFrameContext = getBackBuffer ();
-	#else
-	CDrawContext* dc = pContext;
-	#endif
-
-	if (bDirty)
-	{
-		draw (dc);
-		setDirty (false);
-	}
-	else
-	{
-		CRect oldClipRect;
-		dc->getClipRect (oldClipRect);
-		if (pModalView && pModalView->isDirty ())
-			pModalView->update (dc);
-		FOREACHSUBVIEW
-			CRect viewSize (pV->size);
-			viewSize.bound (oldClipRect);
-			dc->setClipRect (viewSize);
-			pV->update (dc);
-		ENDFOR
-		dc->setClipRect (oldClipRect);
-	}
-
-	#if MACX && !QUARTZ
-	if (QDIsPortBufferDirty (GetWindowPort ((WindowRef)pSystemWindow)))
-	{
-		QDFlushPortBuffer (GetWindowPort ((WindowRef)pSystemWindow), NULL);
-	}
-	#endif
-	#if WINDOWS && USE_ALPHA_BLEND
-	backBuffer->copyFrom (pContext, size);
-	pFrameContext = oldFrameContext;
-	#endif
-}
-#endif
-
 //-----------------------------------------------------------------------------
 void CFrame::idle ()
 {
 	if (!getOpenFlag ())
 		return;
 
-	#if MAC
-	// if the window is collapsed, we don't need to draw anything
-	if (pSystemWindow && IsWindowCollapsed ((WindowRef)pSystemWindow))
-		return;
-	#endif
-	
-	// don't do an idle before a draw
-	if (bFirstDraw)
-		return;
-
-	if (!isDirty ())
-		return;
-
-	#if VSTGUI_USE_SYSTEM_EVENTS_FOR_DRAWING
 	invalidateDirtyViews ();
-
-	#else
-
-	#if BEOS
-	if (pPlugView->LockLooperWithTimeout (0) != B_OK)
-		return;
-	#endif
-
-	CDrawContext *pContext = createDrawContext ();
-	
-	update (pContext);
-
-	pContext->forget ();
-
-	#if BEOS
-	pPlugView->UnlockLooper ();
-	#endif
-	#endif
 }
 
 //-----------------------------------------------------------------------------
@@ -5013,7 +4898,7 @@ long CFrame::getKnobMode () const
 #if WINDOWS
 COffscreenContext* CFrame::getBackBuffer ()
 {
-	#if WINDOWS && USE_ALPHA_BLEND
+	#if WINDOWS && (USE_ALPHA_BLEND || GDIPLUS)
 	if (!backBuffer)
 		backBuffer = new COffscreenContext (this, size.width (), size.height ());
 	#endif
@@ -5372,7 +5257,7 @@ bool CFrame::setModalView (CView *pView)
 	
 	pModalView = pView;
 	if (pModalView)
-		addView (pModalView);
+		return addView (pModalView);
 
 	return true;
 }
@@ -5686,19 +5571,19 @@ bool CFrame::advanceNextFocusView (CView* oldFocus, bool reverse)
 }
 
 //-----------------------------------------------------------------------------
-void CFrame::removeView (CView *pView, const bool &withForget)
+bool CFrame::removeView (CView *pView, const bool &withForget)
 {
 	if (pModalView == pView)
 		pModalView = 0;
-	CViewContainer::removeView (pView, withForget);
+	return CViewContainer::removeView (pView, withForget);
 }
 
 //-----------------------------------------------------------------------------
-void CFrame::removeAll (const bool &withForget)
+bool CFrame::removeAll (const bool &withForget)
 {
 	pModalView = 0;
 	pFocusView = 0;
-	CViewContainer::removeAll (withForget);
+	return CViewContainer::removeAll (withForget);
 }
 
 //-----------------------------------------------------------------------------
@@ -5715,7 +5600,6 @@ void CFrame::invalidate (const CRect &rect)
 	ENDFOR
 }
 
-#if VSTGUI_USE_SYSTEM_EVENTS_FOR_DRAWING
 //-----------------------------------------------------------------------------
 void CFrame::invalidRect (CRect rect)
 {
@@ -5755,7 +5639,6 @@ void CFrame::invalidRect (CRect rect)
 	// not supported yet
 	#endif
 }
-#endif
 
 #if DEBUG
 //-----------------------------------------------------------------------------
@@ -5801,25 +5684,16 @@ CViewContainer::CViewContainer (const CRect &rect, CFrame *pParent, CBitmap *pBa
 : CView (rect)
 , pFirstView (0)
 , pLastView (0)
-#if !VSTGUI_USE_SYSTEM_EVENTS_FOR_DRAWING
-, mode (kOnlyDirtyUpdate)
-#endif
 , pOffscreenContext (0)
-, bDrawInOffscreen (true)
+, bDrawInOffscreen (false)
 , currentDragView (0)
 , mouseDownView (0)
 , mouseOverView (0)
 {
-	#if MACX || USE_ALPHA_BLEND || VSTGUI_USE_SYSTEM_EVENTS_FOR_DRAWING
-	bDrawInOffscreen = false;
-	#endif
 	backgroundOffset (0, 0);
 	this->pParentFrame = pParent;
 	setBackground (pBackground);
 	backgroundColor = kBlackCColor;
-	#if !VSTGUI_USE_SYSTEM_EVENTS_FOR_DRAWING
-	mode = kOnlyDirtyUpdate;
-	#endif
 }
 
 //-----------------------------------------------------------------------------
@@ -5904,13 +5778,13 @@ CMessageResult CViewContainer::notify (CBaseObject* sender, const char* message)
 /**
  * @param pView the view object to add to this container
  */
-void CViewContainer::addView (CView *pView)
+bool CViewContainer::addView (CView *pView)
 {
 	if (!pView)
-		return;
+		return false;
 
 	if (pView->isAttached ())
-		return;
+		return false;
 
 	CCView *pSv = new CCView (pView);
 	
@@ -5932,6 +5806,7 @@ void CViewContainer::addView (CView *pView)
 		pView->attached (this);
 		pView->setDirty ();
 	}
+	return true;
 }
 
 //-----------------------------------------------------------------------------
@@ -5940,22 +5815,25 @@ void CViewContainer::addView (CView *pView)
  * @param mouseableArea the view area in where the view will get mouse events
  * @param mouseEnabled bool to set if view will get mouse events
  */
-void CViewContainer::addView (CView *pView, CRect &mouseableArea, bool mouseEnabled)
+bool CViewContainer::addView (CView *pView, CRect &mouseableArea, bool mouseEnabled)
 {
 	if (!pView)
-		return;
+		return false;
 
-	pView->setMouseEnabled (mouseEnabled);
-	pView->setMouseableArea (mouseableArea);
-
-	addView (pView);
+	if (addView (pView))
+	{
+		pView->setMouseEnabled (mouseEnabled);
+		pView->setMouseableArea (mouseableArea);
+		return true;
+	}
+	return false;
 }
 
 //-----------------------------------------------------------------------------
 /**
  * @param withForget bool to indicate if the view's reference counter should be decreased after removed from the container
  */
-void CViewContainer::removeAll (const bool &withForget)
+bool CViewContainer::removeAll (const bool &withForget)
 {
 	mouseOverView = 0;
 	CCView *pV = pFirstView;
@@ -5976,6 +5854,7 @@ void CViewContainer::removeAll (const bool &withForget)
 	}
 	pFirstView = 0;
 	pLastView = 0;
+	return true;
 }
 
 //-----------------------------------------------------------------------------
@@ -5983,7 +5862,7 @@ void CViewContainer::removeAll (const bool &withForget)
  * @param pView the view which should be removed from the container
  * @param withForget bool to indicate if the view's reference counter should be decreased after removed from the container
  */
-void CViewContainer::removeView (CView *pView, const bool &withForget)
+bool CViewContainer::removeView (CView *pView, const bool &withForget)
 {
 	if (mouseOverView == pView)
 		mouseOverView = 0;
@@ -6020,11 +5899,12 @@ void CViewContainer::removeView (CView *pView, const bool &withForget)
 				else
 					pLastView = 0;	
 			}
-			break;
+			return true;
 		}
 		else
 			pV = pV->pNext;
 	}
+	return false;
 }
 
 //-----------------------------------------------------------------------------
@@ -6083,7 +5963,6 @@ CView *CViewContainer::getView (long index) const
 	return 0;
 }
 
-#if VSTGUI_USE_SYSTEM_EVENTS_FOR_DRAWING
 //-----------------------------------------------------------------------------
 bool CViewContainer::invalidateDirtyViews ()
 {
@@ -6130,7 +6009,6 @@ void CViewContainer::invalidRect (CRect rect)
 	else if (pParentFrame)
 		pParentFrame->invalidRect (_rect);
 }
-#endif
 
 //-----------------------------------------------------------------------------
 /**
@@ -6244,6 +6122,49 @@ void CViewContainer::drawBackgroundRect (CDrawContext *pContext, CRect& _updateR
 }
 
 //-----------------------------------------------------------------------------
+void CViewContainer::drawBackToFront (CDrawContext *pContext, const CRect& updateRect)
+{
+	CCoord save[4];
+	modifyDrawContext (save, pContext);
+
+	CRect _updateRect (updateRect);
+	_updateRect.bound (size);
+
+	CRect clientRect (_updateRect);
+	clientRect.offset (-size.left, -size.top);
+
+	CRect oldClip;
+	pContext->getClipRect (oldClip);
+	CRect oldClip2 (oldClip);
+	if (bDrawInOffscreen && getFrame () != this)
+		oldClip.offset (-oldClip.left, -oldClip.top);
+	
+	CRect newClip (clientRect);
+	newClip.bound (oldClip);
+	pContext->setClipRect (newClip);
+	
+	// draw the background
+	drawBackgroundRect (pContext, clientRect);
+	
+	// draw each view
+	FOREACHSUBVIEW
+		if (pV->checkUpdate (clientRect))
+		{
+			CRect viewSize = pV->getViewSize (viewSize);
+			viewSize.bound (newClip);
+			if (viewSize.getWidth () == 0 || viewSize.getHeight () == 0)
+				continue;
+			pContext->setClipRect (viewSize);
+
+			pV->drawRect (pContext, clientRect);
+		}
+	ENDFOR
+
+	pContext->setClipRect (oldClip2);
+	restoreDrawContext (pContext, save);
+}
+
+//-----------------------------------------------------------------------------
 /**
  * @param pContext the context which to use to draw
  * @param updateRect the area which to draw
@@ -6331,67 +6252,8 @@ void CViewContainer::drawRect (CDrawContext *pContext, const CRect& updateRect)
 	delete pC;
 	#endif
 
-	#if VSTGUI_USE_SYSTEM_EVENTS_FOR_DRAWING
 	setDirty (false);
-	#else
-	newClip.offset (size.left, size.top);
-	if (bDirty && newClip == size)
-		setDirty (false);
-	else if (bDirty)
-		fprintf (stderr, "Not expected!\n");
-	#endif
 }
-
-#if !VSTGUI_USE_SYSTEM_EVENTS_FOR_DRAWING
-//-----------------------------------------------------------------------------
-/**
- * @param context the context which to use to redraw this container
- * @param rect the area which to redraw
- */
-void CViewContainer::redrawRect (CDrawContext* context, const CRect& rect)
-{
-	CRect _rect (rect);
-	_rect.offset (size.left, size.top);
-	if (bTransparencyEnabled)
-	{
-		// as this is transparent, we call the parentview to redraw this area.
-		if (pParentView)
-			pParentView->redrawRect (context, _rect);
-		else if (pParentFrame)
-			pParentFrame->drawRect (context, _rect);
-	}
-	else
-	{
-		CCoord save[4];
-		if (pParentView)
-		{
-			CPoint off;
-			pParentView->localToFrame (off);
-			// store
-			save[0] = context->offsetScreen.h;
-			save[1] = context->offsetScreen.v;
-			save[2] = context->offset.h;
-			save[3] = context->offset.v;
-
-			context->offsetScreen.h += off.x;
-			context->offsetScreen.v += off.y;
-			context->offset.h += off.x;
-			context->offset.v += off.y;
-		}
-
-		drawRect (context, _rect);
-
-		if (pParentView)
-		{
-			// restore
-			context->offsetScreen.h = save[0];
-			context->offsetScreen.v = save[1];
-			context->offset.h = save[2];
-			context->offset.v = save[3];
-		}
-	}
-}
-#endif
 
 //-----------------------------------------------------------------------------
 bool CViewContainer::hitTestSubViews (const CPoint& where, const long buttons)
@@ -6688,55 +6550,6 @@ void CViewContainer::onDragMove (CDragContainer* drag, const CPoint& where)
 		currentDragView->onDragMove (drag, where2);
 }
 
-#if !VSTGUI_USE_SYSTEM_EVENTS_FOR_DRAWING
-//-----------------------------------------------------------------------------
-void CViewContainer::update (CDrawContext *pContext)
-{
-	switch (mode)
-	{
-		//---Normal : redraw all...
-		case kNormalUpdate:
-			if (isDirty ())
-			{
-				CRect ur (0, 0, size.width (), size.height ());
-				redrawRect (pContext, ur);
-				setDirty (false);
-			}
-		break;
-	
-		//---Redraw only dirty controls-----
-		case kOnlyDirtyUpdate:
-		{
-			if (bDirty)
-			{
-				CRect ur (0, 0, size.width (), size.height ());
-				redrawRect (pContext, ur);
-			}
-			else
-			{
-				CRect updateRect (size);
-				updateRect.offset (-size.left, -size.top);
-				FOREACHSUBVIEW
-					if (pV->isDirty () && pV->checkUpdate (updateRect))
-					{
-						if (pV->notify (this, kMsgCheckIfViewContainer))
-							pV->update (pContext);
-						else
-						{
-							CRect drawSize (pV->size);
-							drawSize.bound (updateRect);
-							pV->redrawRect (pContext, drawSize);
-						}
-					}
-				ENDFOR
-			}
-			setDirty (false);
-		break;
-		}
-	}
-}
-#endif
-
 //-----------------------------------------------------------------------------
 void CViewContainer::looseFocus ()
 {
@@ -6958,12 +6771,7 @@ static long _debugDumpLevel = 0;
 //-----------------------------------------------------------------------------
 void CViewContainer::dumpInfo ()
 {
-	#if VSTGUI_USE_SYSTEM_EVENTS_FOR_DRAWING
 	DebugPrint ("CViewContainer: Offscreen:%s ", bDrawInOffscreen ? "Yes" : "No");
-	#else
-	static const char* modeString[] = { "Normal Update Mode", "Only Dirty Update Mode"};
-	DebugPrint ("CViewContainer: Mode: %s, Offscreen:%s ", modeString[mode], bDrawInOffscreen ? "Yes" : "No");
-	#endif
 	CView::dumpInfo ();
 }
 
@@ -8539,7 +8347,7 @@ bool InitWindowClass ()
 	gUseCount++;
 	if (gUseCount == 1)
 	{
-		sprintf (gClassName, "Plugin%x", GetInstance ());
+		sprintf (gClassName, "Plugin%p", GetInstance ());
 		
 		WNDCLASS windowClass;
 		windowClass.style = CS_GLOBALCLASS | CS_DBLCLKS;//|CS_OWNDC; // add Private-DC constant 
@@ -9144,7 +8952,7 @@ BEGIN_NAMESPACE_VSTGUI
 //-----------------------------------------------------------------------------
 bool checkResolveLink (const char* nativePath, char* resolved)
 {
-	char* ext = strrchr (nativePath, '.');
+	const char* ext = strrchr (nativePath, '.');
 	if (ext && stricmp (ext, ".lnk") == NULL)
 	{
 		IShellLink* psl;
@@ -9576,7 +9384,6 @@ static short keyTable[] = {
 	VKEY_EQUALS,	0x51
 };
 
-#if VSTGUI_USE_SYSTEM_EVENTS_FOR_DRAWING
 /// \cond ignore
 class VSTGUIDrawRectsHelper
 {
@@ -9602,7 +9409,6 @@ static OSStatus VSTGUIDrawRectsProc (UInt16 message, RgnHandle rgn, const Rect *
 	return noErr;
 }
 /// \endcond
-#endif
 
 #ifndef kHIViewFeatureGetsFocusOnClick
 #define   kHIViewFeatureGetsFocusOnClick (1 << 8)
@@ -9685,23 +9491,10 @@ pascal OSStatus CFrame::carbonEventHandler (EventHandlerCallRef inHandlerCallRef
 					RgnHandle dirtyRegion;
 					if (GetEventParameter (inEvent, kEventParamRgnHandle, typeQDRgnHandle, NULL, sizeof (RgnHandle), NULL, &dirtyRegion) == noErr)
 					{
-						#if VSTGUI_USE_SYSTEM_EVENTS_FOR_DRAWING
 						VSTGUIDrawRectsHelper helper (frame, context, isWindowComposited (window));
 						RegionToRectsUPP upp = NewRegionToRectsUPP (VSTGUIDrawRectsProc);
 						QDRegionToRects (dirtyRegion, kQDParseRegionFromTopLeft, upp, &helper);
 						DisposeRegionToRectsUPP (upp);
-						#else
-						bool frameWasDirty = frame->bDirty;
-						Rect bounds;
-						GetRegionBounds (dirtyRegion, &bounds);
-						CRect updateRect;
-						Rect2CRect (bounds, updateRect);
-						if (!isWindowComposited (window))
-							updateRect.offset (-context->offsetScreen.x, -context->offsetScreen.y);
-						frame->drawRect (context, updateRect);
-						if (frameWasDirty && updateRect != frame->size)
-							frame->setDirty (true);
-						#endif
 					}
 					else
 						frame->draw (context);
