@@ -53,8 +53,9 @@ static struct tagMSG windowsMessage;
 //-----------------------------------------------------------------------------
 // AEffGUIEditor Implementation
 //-----------------------------------------------------------------------------
-AEffGUIEditor::AEffGUIEditor (void *pEffect) 
-	: AEffEditor ((AudioEffect*)pEffect), inIdleStuff (false)
+AEffGUIEditor::AEffGUIEditor (void* pEffect) 
+: AEffEditor ((AudioEffect*)pEffect)
+, inIdleStuff (false)
 {
 	((AudioEffect*)pEffect)->setEditor (this);
 	systemWindow = 0;
@@ -97,7 +98,7 @@ long AEffGUIEditor::onKeyUp (VstKeyCode &keyCode)
 #endif
 
 //-----------------------------------------------------------------------------
-void AEffGUIEditor::draw (ERect *ppErect)
+void AEffGUIEditor::draw (ERect* ppErect)
 {
 	if (frame)
 	{
@@ -252,7 +253,6 @@ void AEffGUIEditor::doIdleStuff ()
 	// get the current time
 	unsigned long currentTicks = getTicks ();
 
-	// YG TEST idle ();
 	if (currentTicks < lLastTicks)
 	{
 		#if (MAC && TARGET_API_MAC_CARBON)

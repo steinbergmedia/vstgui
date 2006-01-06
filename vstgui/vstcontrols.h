@@ -3,7 +3,7 @@
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 // Standard Control Objects
 //
-// Version 3.5       $Date: 2005-12-21 13:36:11 $
+// Version 3.5       $Date: 2006-01-06 20:28:53 $
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
@@ -841,8 +841,6 @@ public:
 
 	virtual ~CSlider ();
   
-	virtual bool attached (CView *parent);
-	virtual bool removed (CView *parent);
 	virtual void draw (CDrawContext*);
 	VSTGUI_DEPRECATED(virtual void mouse (CDrawContext *pContext, CPoint &where, long button = -1);)
 
@@ -871,7 +869,6 @@ protected:
 	CPoint   offsetHandle;
 
 	CBitmap *pHandle;
-	COffscreenContext *pOScreen;
 
 	long	style;
 
