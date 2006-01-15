@@ -57,12 +57,13 @@ public:
 		}
 		activeTextColor = kBlackCColor;
 		inactiveTextColor (90, 90, 90, 255);
-		textFont = kSystemFont;
-		fontSize = 12;
+		textFont = kSystemFont; textFont->remember ();
 	}
 
 	virtual ~CTabButton ()
 	{
+		if (textFont)
+			textFont->forget ();
 		if (name)
 			free (name);
 	}	
@@ -72,7 +73,7 @@ public:
 		COnOffButton::draw (pContext);
 		if (name)
 		{
-			pContext->setFont (textFont, fontSize);
+			pContext->setFont (textFont);
 			pContext->setFontColor (value ? activeTextColor : inactiveTextColor);
 			pContext->drawString (name, size, false);
 		}
@@ -98,18 +99,16 @@ public:
 		}
 	}
 
-	void setTextFont (const CFont& font) { textFont = font; }
+	void setTextFont (CFontRef font) { if (textFont) textFont->forget (); textFont = font; textFont->remember ();}
 	void setActiveTextColor (const CColor& color) { activeTextColor = color; }
 	void setInactiveTextColor (const CColor& color) { inactiveTextColor = color; }
-	void setTextSize (const long& textSize) { fontSize = textSize; }
 
 	CLASS_METHODS (CTabButton, COnOffButton)
 protected:
 	char* name;
-	CFont textFont;
+	CFontRef textFont;
 	CColor activeTextColor;
 	CColor inactiveTextColor;
-	long fontSize;
 };
 
 //-----------------------------------------------------------------------------
@@ -339,17 +338,19 @@ CRect& CTabView::getTabViewSize (CRect& rect) const
 }
 
 //-----------------------------------------------------------------------------
-void CTabView::setTabFontStyle (const CFont& font, long fontSize, CColor selectedColor, CColor deselectedColor)
+void CTabView::setTabFontStyle (const CFontRef font, long fontSize, CColor selectedColor, CColor deselectedColor)
 {
+	CFontRef tabFont = new CFontDesc (*font);
+	tabFont->setSize (fontSize);
 	CTabChildView* v = firstChild;
 	while (v)
 	{
-		v->button->setTextFont (font);
-		v->button->setTextSize (fontSize);
+		v->button->setTextFont (tabFont);
 		v->button->setActiveTextColor (selectedColor);
 		v->button->setInactiveTextColor (deselectedColor);
 		v = v->next;
 	}
+	tabFont->forget ();
 }
 
 //-----------------------------------------------------------------------------
