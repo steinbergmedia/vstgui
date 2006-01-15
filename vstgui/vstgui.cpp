@@ -2,7 +2,7 @@
 // VST Plug-Ins SDK
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 //
-// Version 3.5       $Date: 2006-01-06 20:28:53 $ 
+// Version 3.5       $Date: 2006-01-15 12:45:48 $ 
 //
 // Added Motif/Windows vers.: Yvan Grabit              01.98
 // Added Mac version        : Charlie Steinberg        02.98
@@ -195,11 +195,15 @@ static void   DrawTransparent (CDrawContext* pContext, CRect& rect, const CPoint
 static bool   checkResolveLink (const char* nativePath, char* resolved);
 static void   *createDropTarget (VSTGUI_CFrame* pFrame);
 
-long        gStandardFontSize[] = { 12, 18, 14, 12, 11, 10, 9, 13 };
-const char* gStandardFontName[] = {
-	"Arial", "Arial", "Arial", 
-	"Arial", "Arial", "Arial", 
-	"Arial", "Symbol" };
+static CFontDesc gSystemFont ("Arial", 12);
+static CFontDesc gNormalFontVeryBig ("Arial", 18);
+static CFontDesc gNormalFontBig ("Arial", 14);
+static CFontDesc gNormalFont ("Arial", 12);
+static CFontDesc gNormalFontSmall ("Arial", 11);
+static CFontDesc gNormalFontSmaller ("Arial", 10);
+static CFontDesc gNormalFontVerySmall ("Arial", 9);
+static CFontDesc gSymbolFont ("Symbol", 13);
+
 END_NAMESPACE_VSTGUI
 
 #if USE_LIBPNG
@@ -221,16 +225,14 @@ long pSystemVersion;
 #include <CoreServices/CoreServices.h>
 
 #if QUARTZ
-const char* gMacXfontNames[] = {
-	"Lucida Grande",
-	"Helvetica",
-	"Helvetica",
-	"Helvetica",
-	"Helvetica",
-	"Helvetica",
-	"Helvetica",
-	"Symbol"
-};
+static CFontDesc gSystemFont ("Lucida Grande", 12);
+static CFontDesc gNormalFontVeryBig ("Helvetica", 18);
+static CFontDesc gNormalFontBig ("Helvetica", 14);
+static CFontDesc gNormalFont ("Helvetica", 12);
+static CFontDesc gNormalFontSmall ("Helvetica", 11);
+static CFontDesc gNormalFontSmaller ("Helvetica", 10);
+static CFontDesc gNormalFontVerySmall ("Helvetica", 9);
+static CFontDesc gSymbolFont ("Helvetica", 12);
 
 #ifndef M_PI
 #define	M_PI		3.14159265358979323846	/* pi */
@@ -239,7 +241,7 @@ const char* gMacXfontNames[] = {
 bool isWindowComposited (WindowRef window);
 static inline void QuartzSetLineDash (CGContextRef context, CLineStyle style, CCoord lineWidth);
 static inline void QuartzSetupClip (CGContextRef context, const CRect clipRect);
-static inline ATSUStyle CreateATSUStyle (const CColor &fontColor, CFont fontID, const long size, long style, const char* name = 0);
+static inline ATSUStyle CreateATSUStyle (const CColor &fontColor, CFontRef fontID, const long size, long style, const char* name = 0);
 
 static inline double radians (double degrees) { return degrees * M_PI / 180; }
 CGColorSpaceRef GetGenericRGBColorSpace ();
@@ -252,16 +254,15 @@ static ComponentInstance pictGI = 0;
 
 
 #else
-const unsigned char* gMacXfontNames[] = {
-	"\pArial",
-	"\pArial",
-	"\pArial",
-	"\pArial",
-	"\pArial",
-	"\pArial",
-	"\pArial",
-	"\pSymbol"
-};
+static CFontDesc gSystemFont ("Arial", 12);
+static CFontDesc gNormalFontVeryBig ("Arial", 18);
+static CFontDesc gNormalFontBig ("Arial", 14);
+static CFontDesc gNormalFont ("Arial", 12);
+static CFontDesc gNormalFontSmall ("Arial", 11);
+static CFontDesc gNormalFontSmaller ("Arial", 10);
+static CFontDesc gNormalFontVerySmall ("Arial", 9);
+static CFontDesc gSymbolFont ("Symbol", 12);
+
 #endif
 
 //-----------------------------------------------------------------------------
@@ -272,10 +273,7 @@ const unsigned char* gMacXfontNames[] = {
 #include <PictUtils.h>
 #endif
 
-long gStandardFontSize[] = { 12, 18, 14, 12, 11,10, 9, 12 };
-
 long convertPoint2Angle (CPoint &pm, CPoint &pt);
-void RectNormalize (Rect& rect);
 void CRect2Rect (const CRect &cr, Rect &rr);
 void Rect2CRect (Rect &rr, CRect &cr);
 void CColor2RGBColor (const CColor &cc, RGBColor &rgb);
@@ -287,30 +285,14 @@ static void remove_drop (CFrame *frame);
 #endif
 
 //-----------------------------------------------------------------------------
-void RectNormalize (Rect& rect)
+void CRect2Rect (const CRect &_cr, Rect &rr)
 {
-	if (rect.left > rect.right)
-	{
-		long temp = rect.right;
-		rect.right = rect.left;
-		rect.left = temp;
-	}
-	if (rect.top > rect.bottom)
-	{
-		long temp = rect.bottom;
-		rect.bottom = rect.top;
-		rect.top = temp;
-	}
-}
-
-//-----------------------------------------------------------------------------
-void CRect2Rect (const CRect &cr, Rect &rr)
-{
+	CRect cr (_cr);
+	cr.normalize ();
 	rr.left   = (short)cr.left;
 	rr.right  = (short)cr.right;
 	rr.top    = (short)cr.top;
 	rr.bottom = (short)cr.bottom;
-	RectNormalize (rr);
 }
 
 //-----------------------------------------------------------------------------
@@ -443,6 +425,206 @@ const char* kPerthousandSymbol	= "\xE2\x80\xB0";
 
 #define kDragDelay 0
 
+const CFontRef kSystemFont				= &gSystemFont;
+const CFontRef kNormalFontVeryBig		= &gNormalFontVeryBig;
+const CFontRef kNormalFontBig			= &gNormalFontBig;
+const CFontRef kNormalFont				= &gNormalFont;
+const CFontRef kNormalFontSmall			= &gNormalFontSmall;
+const CFontRef kNormalFontSmaller		= &gNormalFontSmaller;
+const CFontRef kNormalFontVerySmall		= &gNormalFontVerySmall;
+const CFontRef kSymbolFont				= &gSymbolFont;
+
+//-----------------------------------------------------------------------------
+// CFontDesc Implementation
+/*! @class CFontDesc
+The CFontDesc class replaces the old font handling. You have now the possibilty to use whatever font you like
+as long as it is available on the system. You should cache your own CFontDesc as this speeds up drawing on some systems.
+*/
+//-----------------------------------------------------------------------------
+CFontDesc::CFontDesc (const char* inName, const CCoord& inSize, const long inStyle)
+: name (0)
+, size (inSize)
+, style (inStyle)
+, platformFont (0)
+{
+	setName (inName);
+}
+
+//-----------------------------------------------------------------------------
+CFontDesc::CFontDesc (const CFontDesc& font)
+: name (0)
+, size (0)
+, style (0)
+, platformFont (0)
+{
+	*this = font;
+}
+
+//-----------------------------------------------------------------------------
+CFontDesc::~CFontDesc ()
+{
+	freePlatformFont ();
+	setName (0);
+}
+
+//-----------------------------------------------------------------------------
+void CFontDesc::freePlatformFont ()
+{
+	if (platformFont)
+	{
+		#if QUARTZ
+		ATSUDisposeStyle ((ATSUStyle)platformFont);
+
+		#elif GDIPLUS
+		delete (Gdiplus::Font*)platformFont;
+
+		#elif WINDOWS
+		DeleteObject ((HANDLE)platformFont);
+
+		#endif
+		platformFont = 0;
+	}
+}
+
+//-----------------------------------------------------------------------------
+void CFontDesc::setName (const char* newName)
+{
+	if (newName && name && !strcmp (newName, name))
+		return;
+
+	if (name)
+		free (name);
+	name = 0;
+	if (newName)
+	{
+		name = (char*)malloc (strlen (newName) + 1);
+		strcpy (name, newName);
+	}
+	freePlatformFont ();
+}
+
+//-----------------------------------------------------------------------------
+void CFontDesc::setSize (CCoord newSize)
+{
+	size = newSize;
+	freePlatformFont ();
+}
+
+//-----------------------------------------------------------------------------
+void CFontDesc::setStyle (long newStyle)
+{
+	style = newStyle;
+	freePlatformFont ();
+}
+
+//-----------------------------------------------------------------------------
+CFontDesc& CFontDesc::operator = (const CFontDesc& f)
+{
+	setName (f.getName ());
+	setSize (f.getSize ());
+	setStyle (f.getStyle ());
+	return *this;
+}
+
+//-----------------------------------------------------------------------------
+bool CFontDesc::operator == (const CFontDesc& f) const
+{
+	if (strcmp (name, f.getName ()))
+		return false;
+	if (size != f.getSize ())
+		return false;
+	if (style != f.getStyle ())
+		return false;
+	return true;
+}
+
+//-----------------------------------------------------------------------------
+void* CFontDesc::getPlatformFont ()
+{
+	if (platformFont)
+		return platformFont;
+
+	#if QUARTZ
+	ATSUStyle atsuStyle;
+	OSStatus status = ATSUCreateStyle (&atsuStyle);
+	if (status != noErr)
+		return 0;
+
+	ATSUFontID atsuFontID;
+	status = ATSUFindFontFromName (name, strlen (name), kFontFullName, kFontNoPlatformCode, kFontNoScriptCode, kFontNoLanguageCode, &atsuFontID);
+	if (status != noErr)
+		status = ATSUFindFontFromName (name, strlen (name), kFontFamilyName, kFontNoPlatformCode, kFontNoScriptCode, kFontNoLanguageCode, &atsuFontID);
+	if (status == noErr)
+	{
+		Fixed atsuSize = FloatToFixed ((float)size);
+		Boolean italic = style & kItalicFace;
+		Boolean underline = style & kUnderlineFace;
+		Boolean bold = style & kBoldFace;
+		ATSUAttributeTag  theTags[] =  { kATSUFontTag, kATSUSizeTag, kATSUQDItalicTag, kATSUQDUnderlineTag, kATSUQDBoldfaceTag};
+		ByteCount        theSizes[] = { sizeof(ATSUFontID), sizeof(Fixed), sizeof (Boolean), sizeof (Boolean), sizeof (Boolean) };
+		ATSUAttributeValuePtr theValues[] = {&atsuFontID, &atsuSize, &italic, &underline, &bold};
+		status = ATSUSetAttributes (atsuStyle, 5, theTags, theSizes, theValues);
+		platformFont = (void*)atsuStyle;
+	}
+
+	#elif GDIPLUS
+	int gdiStyle = Gdiplus::FontStyleRegular;
+	if (style & kBoldFace)
+		gdiStyle = Gdiplus::FontStyleBold;
+	if (style & kItalicFace)
+		gdiStyle = Gdiplus::FontStyleItalic;
+	if (style & kUnderlineFace)
+		gdiStyle = Gdiplus::FontStyleUnderline;
+
+	WCHAR tempName [200];
+	mbstowcs (tempName, name, 200);
+	platformFont = (void*)new Gdiplus::Font (tempName, (Gdiplus::REAL)size, gdiStyle, Gdiplus::UnitPixel);
+
+	#elif WINDOWS
+	LOGFONT logfont = {0};
+	if (style & kBoldFace)
+		logfont.lfWeight = FW_BOLD;
+	else
+		logfont.lfWeight = FW_NORMAL;
+	if (style & kItalicFace)
+		logfont.lfItalic = true;
+	if (style & kUnderlineFace)
+		logfont.lfUnderline = true;
+	
+	logfont.lfHeight         = -size;
+	logfont.lfPitchAndFamily = VARIABLE_PITCH | FF_SWISS;
+	strcpy (logfont.lfFaceName, name);
+
+	if (!strcmp (name, kSymbolFont->getName ())
+		logfont.lfPitchAndFamily = DEFAULT_PITCH | FF_DECORATIVE;
+	else if (!strcmp (name, kSystemFont->getName ())
+		logfont.lfWeight     = FW_BOLD;
+  
+	logfont.lfClipPrecision = CLIP_STROKE_PRECIS;
+	logfont.lfOutPrecision  = OUT_STRING_PRECIS;
+	logfont.lfQuality 	    = DEFAULT_QUALITY;
+	logfont.lfCharSet       = ANSI_CHARSET;
+
+	platformFont = (void*)CreateFontIndirect (&logfont);
+
+	#endif
+
+	return platformFont;
+}
+
+//-----------------------------------------------------------------------------
+void CFontDesc::cleanup ()
+{
+	gSystemFont.freePlatformFont ();
+	gNormalFontVeryBig.freePlatformFont ();
+	gNormalFontBig.freePlatformFont ();
+	gNormalFont.freePlatformFont ();
+	gNormalFontSmall.freePlatformFont ();
+	gNormalFontSmaller.freePlatformFont ();
+	gNormalFontVerySmall.freePlatformFont ();
+	gSymbolFont.freePlatformFont ();
+}
+
 //-----------------------------------------------------------------------------
 // CDrawContext Implementation
 //-----------------------------------------------------------------------------
@@ -456,9 +638,7 @@ CDrawContext::CDrawContext (CFrame *inFrame, void *inSystemContext, void *inWind
 : pSystemContext (inSystemContext)
 , pWindow (inWindow)
 , pFrame (inFrame)
-, fontSize (-1)
-, fontStyle (0)
-, fontId (kNumStandardFonts)
+, font (0)
 , frameWidth (0)
 , lineStyle (kLineOnOffDash)
 , drawMode (kAntialias)
@@ -503,7 +683,6 @@ CDrawContext::CDrawContext (CFrame *inFrame, void *inSystemContext, void *inWind
 	pPen = new Gdiplus::Pen (Gdiplus::Color (0, 0, 0), 1);
 	pBrush = new Gdiplus::SolidBrush (Gdiplus::Color (0, 0, 0));
 	pFontBrush = new Gdiplus::SolidBrush (Gdiplus::Color (0, 0, 0));
-	pFont = 0;
 	#else
 	pHDC = 0;
 	if (!pSystemContext && pWindow)
@@ -530,7 +709,6 @@ CDrawContext::CDrawContext (CFrame *inFrame, void *inSystemContext, void *inWind
 
 #elif MAC
 	#if QUARTZ
-	atsuStyle = 0;
 	if (pFrame && (pSystemContext || pWindow))
 	{
 		HIRect bounds;
@@ -630,6 +808,8 @@ CDrawContext::~CDrawContext ()
 	gNbCDrawContext--;
 	#endif
 
+	if (font)
+		font->forget ();
 #if WINDOWS
 	#if GDIPLUS
 	if (pFontBrush)
@@ -652,8 +832,6 @@ CDrawContext::~CDrawContext ()
 		DeleteObject (pBrush);
 	if (pPen)
 		DeleteObject (pPen);
-	if (pFont)
-		DeleteObject (pFont);
   
 	if (pHDC)
 	{
@@ -673,11 +851,6 @@ CDrawContext::~CDrawContext ()
 			QDEndCGContext (GetWindowPort ((WindowRef)pWindow), &gCGContext);
 		if (pFrame)
 			pFrame->setDrawContext (0);
-	}
-	if (atsuStyle)
-	{
-		ATSUDisposeStyle (atsuStyle);
-		atsuStyle = 0;
 	}
 #elif BEOS
 	if (pView)
@@ -901,7 +1074,6 @@ void CDrawContext::setClipRect (const CRect &clip)
 		setLineStyle (lineStyle);
 		setFrameColor (frameColor);
 		setFillColor (fillColor);
-		setFont (fontId, fontSize);
 		setDrawMode (drawMode);
 	}
 	
@@ -958,7 +1130,6 @@ void CDrawContext::resetClipRect ()
 		setLineStyle (lineStyle);
 		setFrameColor (frameColor);
 		setFillColor (fillColor);
-		setFont (fontId, fontSize);
 		setDrawMode (drawMode);
 	}
 
@@ -2095,12 +2266,6 @@ void CDrawContext::setFontColor (const CColor color)
 	#if QUARTZ
 	// on quartz the fill color is the font color
 
-	if (atsuStyle)
-	{
-		ATSUDisposeStyle (atsuStyle);
-		atsuStyle = 0;
-	}
-
 	#else
 	RGBColor col;
 	CGrafPtr OrigPort;
@@ -2211,40 +2376,25 @@ void CDrawContext::setFillColor (const CColor color)
 }
 
 //-----------------------------------------------------------------------------
-void CDrawContext::setFont (CFont fontID, const long size, long style)
+void CDrawContext::setFont (const CFontRef newFont, const long& size, const long& style)
 {
-	if (fontID < 0 || fontID >= kNumStandardFonts)
-		fontID = kSystemFont;
-
-	if (fontId == fontID && fontSize == (size != 0 ? size : gStandardFontSize[fontID]) && fontStyle == style)
+	if (newFont == 0)
 		return;
-
-	fontStyle = style;
-	fontId = fontID;
-	if (size != 0)
-		fontSize = size;
+	if (font)
+		font->forget ();
+	if ((size > 0 && newFont->getSize () != size) || (style != -1 && newFont->getStyle () != style))
+	{
+		font = new CFontDesc (newFont->getName (), (size > 0) ? size : newFont->getSize (), (style != -1) ? style : newFont->getStyle ());
+	}
 	else
-		fontSize = gStandardFontSize[fontID];
+	{
+		font = newFont;
+		font->remember ();
+	}
+
+#if 0
 
 #if WINDOWS
-	#if GDIPLUS
-
-	if (pFont)
-		delete pFont;
-
-	int gdiStyle = Gdiplus::FontStyleRegular;
-	if (style & kBoldFace)
-		gdiStyle = Gdiplus::FontStyleBold;
-	if (style & kItalicFace)
-		gdiStyle = Gdiplus::FontStyleItalic;
-	if (style & kUnderlineFace)
-		gdiStyle = Gdiplus::FontStyleUnderline;
-
-	WCHAR tempName[200];
-	mbstowcs(tempName,gStandardFontName[fontID],200);
-	pFont=new Gdiplus::Font (tempName,(Gdiplus::REAL)fontSize, gdiStyle, Gdiplus::UnitPixel);
-
-	#else
 	LOGFONT logfont = {0};
 
 	if (style & kBoldFace)
@@ -2275,7 +2425,6 @@ void CDrawContext::setFont (CFont fontID, const long size, long style)
 	if (pFont)
 		DeleteObject (pFont);
 	pFont = newFont;
-	#endif
 
 #elif MAC
 	#if QUARTZ
@@ -2337,12 +2486,19 @@ void CDrawContext::setFont (CFont fontID, const long size, long style)
 	font.SetSize (fontSize);
 	pView->SetFont (&font, B_FONT_FAMILY_AND_STYLE | B_FONT_SIZE);
 #endif
+
+#endif
+
 }
 
 //------------------------------------------------------------------------------
 CCoord CDrawContext::getStringWidth (const char *pStr)
 {
 	CCoord result = 0;
+
+	#if QUARTZ || GDIPLUS
+	return getStringWidthUTF8 (pStr);
+	#else
 
 	#if MAC
 	#if QUARTZ
@@ -2381,6 +2537,7 @@ CCoord CDrawContext::getStringWidth (const char *pStr)
 	#endif
 
 	return result;
+	#endif
 }
 
 //-----------------------------------------------------------------------------
@@ -2390,97 +2547,48 @@ void CDrawContext::drawString (const char *string, const CRect &_rect,
 	if (!string)
 		return;
 	
+	#if QUARTZ || GDIPLUS
+	drawStringUTF8 (string, _rect, hAlign);
+	#else
+
 	CRect rect (_rect);
 	rect.offset (offset.h, offset.v);
-
+	
 #if WINDOWS
 	#if GDIPLUS
-	if (pGraphics && pFont && pFontBrush)
+	#else
+	HANDLE newFont = (HANDLE)font.getPlatformFont ();
+	if (newFont)
 	{
-		WCHAR buffer[1024];
-		Gdiplus::StringFormat stringFormat (Gdiplus::StringFormatFlagsNoWrap, LANG_NEUTRAL);;
-		stringFormat.SetLineAlignment (Gdiplus::StringAlignmentCenter);
-		Gdiplus::RectF layoutRect ((Gdiplus::REAL)rect.left, (Gdiplus::REAL)rect.top, (Gdiplus::REAL)rect.width(), (Gdiplus::REAL)rect.height());
+		SelectObject ((HDC)pSystemContext, newFont);
 
-		mbstowcs (buffer,string,1024);
+		// set the visibility mask
+		SetBkMode ((HDC)pSystemContext, opaque ? OPAQUE : TRANSPARENT);
+
+		RECT Rect = {rect.left, rect.top, rect.right, rect.bottom};
+		UINT flag = DT_VCENTER + DT_SINGLELINE + DT_NOPREFIX;
 		switch (hAlign)
 		{
 		case kCenterText:
-			stringFormat.SetAlignment (Gdiplus::StringAlignmentCenter);
+			// without DT_SINGLELINE no vertical center alignment here
+			DrawText ((HDC)pSystemContext, string, (int)strlen (string), &Rect, flag + DT_CENTER);
 			break;
 			
 		case kRightText:
-			stringFormat.SetAlignment (Gdiplus::StringAlignmentFar);
+			DrawText ((HDC)pSystemContext, string, (int)strlen (string), &Rect, flag + DT_RIGHT);
 			break;
 			
 		default : // left adjust
-			layoutRect.X++;
-			stringFormat.SetAlignment (Gdiplus::StringAlignmentNear);
+			Rect.left++;
+			DrawText ((HDC)pSystemContext, string, (int)strlen (string), &Rect, flag + DT_LEFT);
 		}
 
-		if (opaque)
-		{
-			Gdiplus::SolidBrush bgBrush (Gdiplus::Color (255, fillColor.red, fillColor.green, fillColor.blue));
-			pGraphics->FillRectangle (&bgBrush, layoutRect);
-		}
-		
-		pGraphics->DrawString (buffer, -1, pFont, layoutRect, &stringFormat, pFontBrush);
+		SetBkMode ((HDC)pSystemContext, TRANSPARENT);
 	}
-	#else
-	// set the visibility mask
-	SetBkMode ((HDC)pSystemContext, opaque ? OPAQUE : TRANSPARENT);
-
-	RECT Rect = {rect.left, rect.top, rect.right, rect.bottom};
-	UINT flag = DT_VCENTER + DT_SINGLELINE + DT_NOPREFIX;
-	switch (hAlign)
-	{
-	case kCenterText:
-		// without DT_SINGLELINE no vertical center alignment here
-		DrawText ((HDC)pSystemContext, string, (int)strlen (string), &Rect, flag + DT_CENTER);
-		break;
-		
-	case kRightText:
-		DrawText ((HDC)pSystemContext, string, (int)strlen (string), &Rect, flag + DT_RIGHT);
-		break;
-		
-	default : // left adjust
-		Rect.left++;
-		DrawText ((HDC)pSystemContext, string, (int)strlen (string), &Rect, flag + DT_LEFT);
-	}
-
-	SetBkMode ((HDC)pSystemContext, TRANSPARENT);
 	#endif
 
 #elif MAC
-	#if QUARTZ
-	CGContextRef context = beginCGContext (true);
-	if (context)
-	{
-		CCoord strWidth = getStringWidth (string);
-		rect.bottom -= rect.height ()/2 - fontSize / 2 + 1;
-		switch (hAlign)
-		{
-			case kCenterText:
-			{
-				rect.left += rect.width () / 2 - strWidth/2;
-				break;
-			}
-			case kRightText:
-				rect.left = rect.right - strWidth;
-				break;
-			default : // left adjust
-				rect.left++;
-		}
-
-		CGContextSetShouldAntialias (context, true);
-		CGContextSetTextDrawingMode (context, kCGTextFill);
-		CGContextSetRGBFillColor (context, fontColor.red/255.f, fontColor.green/255.f, fontColor.blue/255.f, fontColor.alpha/255.f);
-		CGContextSetTextPosition (context, rect.left, rect.bottom);
-		CGContextShowText (context, string, strlen (string));
-		releaseCGContext (context);
-	}
-
-	#else
+	#if !QUARTZ
 	CGrafPtr OrigPort;
 	GDHandle OrigDevice;
 	int width;
@@ -2581,7 +2689,7 @@ void CDrawContext::drawString (const char *string, const CRect &_rect,
 		TextMode (srcOr);
 		SetGWorld (OrigPort, OrigDevice);
 	}
-        #endif
+	#endif
         
 #elif BEOS
 	BRect r (rect.left, rect.top, rect.right - 1, rect.bottom - 1);
@@ -2619,15 +2727,21 @@ void CDrawContext::drawString (const char *string, const CRect &_rect,
 	pView->DrawString (string, p);
 	pView->ConstrainClippingRegion (NULL);
 #endif
+
+	#endif
 }
 
 //-----------------------------------------------------------------------------
 CCoord CDrawContext::getStringWidthUTF8 (const char* string)
 {
-	CCoord result = 0;
+	CCoord result = -1;
+	if (font == 0 || string == 0)
+		return result;
+
 	#if QUARTZ
+	ATSUStyle atsuStyle = (ATSUStyle)font->getPlatformFont ();
 	if (atsuStyle == 0)
-		atsuStyle = CreateATSUStyle (fontColor, fontId, fontSize, fontStyle);
+		return result;
 	CFStringRef utf8Str = CFStringCreateWithCString (NULL, string, kCFStringEncodingUTF8);
 	if (utf8Str)
 	{
@@ -2652,7 +2766,7 @@ CCoord CDrawContext::getStringWidthUTF8 (const char* string)
 
 			ATSUTextMeasurement iBefore, iAfter, ascent, descent; 
 			status = ATSUGetUnjustifiedBounds (textLayout, 0, kATSUToTextEnd, &iBefore, &iAfter, &ascent, &descent);
-			result = FixRound (iAfter);
+			result = Fix2X (iAfter);
 			
 			ATSUDisposeTextLayout (textLayout);
 			free (textBuffer);
@@ -2661,6 +2775,20 @@ CCoord CDrawContext::getStringWidthUTF8 (const char* string)
 		}
 		CFRelease (utf8Str);
 	}
+	
+	#elif GDIPLUS
+	Gdiplus::Font* pFont = (Gdiplus::Font*)font.getPlatformFont ();
+	if (pGraphics && pFont)
+	{
+		WCHAR buffer[1024];
+		if (MultiByteToWideChar (CP_UTF8, 0, string, strlen (string), buffer, 1024) > 0)
+		{
+			Gdiplus::PointF gdiPoint (0., 0.);
+			Gdiplus::RectF resultRect;
+			pGrphics->MeasureString (buffer, -1, pFont, gdiPoint, &resultRect);
+			result = (CCoord)resultRect.Width;
+		}
+	}
 	#endif
 	return result;
 }
@@ -2668,15 +2796,16 @@ CCoord CDrawContext::getStringWidthUTF8 (const char* string)
 //-----------------------------------------------------------------------------
 void CDrawContext::drawStringUTF8 (const char* string, const CPoint& _point, bool antialias)
 {
-	if (!string)
+	if (string == 0 || font == 0)
 		return;
 
 	CPoint point (_point);
 	point.offset (offset.h, offset.v);
 
 	#if QUARTZ
+	ATSUStyle atsuStyle = (ATSUStyle)font->getPlatformFont ();
 	if (atsuStyle == 0)
-		atsuStyle = CreateATSUStyle (fontColor, fontId, fontSize, fontStyle);
+		return;
 
 	CFStringRef utf8Str = CFStringCreateWithCString (NULL, string, kCFStringEncodingUTF8);
 	if (utf8Str)
@@ -2684,9 +2813,15 @@ void CDrawContext::drawStringUTF8 (const char* string, const CPoint& _point, boo
 		CGContextRef context = beginCGContext (false);
 		if (context)
 		{
+			OSStatus status;
+			ATSURGBAlphaColor color = {fontColor.red/255.f, fontColor.green/255.f, fontColor.blue/255.f, fontColor.alpha/255.f};
+			ATSUAttributeTag  colorTag[] =  { kATSURGBAlphaColorTag };
+			ByteCount        colorSize[] = { sizeof(ATSURGBAlphaColor) };
+			ATSUAttributeValuePtr colorValue [] = { &color };
+			status = ATSUSetAttributes (atsuStyle, 1, colorTag, colorSize, colorValue);
+
 			CGContextSetShouldAntialias (context, antialias);
 
-			OSStatus status;
 			CFIndex stringLength = CFStringGetLength (utf8Str);
 			UniChar* textBuffer = (UniChar*)malloc (stringLength*sizeof (UniChar));
 			CFStringGetCharacters (utf8Str, CFRangeMake (0, stringLength), textBuffer);
@@ -2702,7 +2837,7 @@ void CDrawContext::drawStringUTF8 (const char* string, const CPoint& _point, boo
 			ATSUAttributeValuePtr	theValues[]	= { &context };
 			status = ATSUSetLayoutControls (textLayout, 1, theTags, theSizes, theValues);
 
-			status = ATSUDrawText (textLayout, kATSUFromTextBeginning, kATSUToTextEnd, X2Fix(point.h), X2Fix(point.v*-1));
+			status = ATSUDrawText (textLayout, kATSUFromTextBeginning, kATSUToTextEnd, X2Fix(point.h), X2Fix(point.v*-1.f));
 			
 			ATSUDisposeTextLayout (textLayout);
 			free (textBuffer);
@@ -2710,6 +2845,18 @@ void CDrawContext::drawStringUTF8 (const char* string, const CPoint& _point, boo
 			releaseCGContext (context);
 		}
 		CFRelease (utf8Str);
+	}
+
+	#elif GDIPLUS
+	Gdiplus::Font* pFont = (Gdiplus::Font*)font.getPlatformFont ();
+	if (pGraphics && pFont && pFontBrush)
+	{
+		WCHAR buffer[1024];
+		if (MultiByteToWideChar (CP_UTF8, 0, string, strlen (string), buffer, 1024) > 0)
+		{
+			Gdiplus::PointF gdiPoint ((REAL)point.x, (REAL)point.y);
+			pGraphics->DrawString (buffer, -1, pFont, gdiPoint, pFontBrush);
+		}
 	}
 	#endif
 }
@@ -2722,14 +2869,14 @@ void CDrawContext::drawStringUTF8 (const char* string, const CRect& _rect, const
 	
 	CRect rect (_rect);
 
-	rect.bottom -= rect.height ()/2 - fontSize / 2 + 1;
+	rect.bottom -= rect.height ()/2 - font->getSize () / 2 + 1;
 	if (hAlign != kLeftText)
 	{
 		CCoord stringWidth = getStringWidthUTF8 (string);
 		if (hAlign == kRightText)
 			rect.left = rect.right - stringWidth;
 		else
-			rect.left = rect.left + (rect.getWidth () / 2) - (stringWidth / 2);
+			rect.left = rect.left + (rect.getWidth () / 2.f) - (stringWidth / 2.f);
 	}
 
 	drawStringUTF8 (string, CPoint (rect.left, rect.bottom), antialias);
@@ -2743,7 +2890,7 @@ void CDrawContext::scrollRect (const CRect& src, const CPoint& distance)
 
 	#if QUARTZ
 	CGRect cgRect = CGRectMake ((float)rect.left, (float)rect.top, (float)rect.getWidth (), (float)rect.getHeight ());
-	if (HIViewScrollRect ((HIViewRef)pFrame->getPlatformControl(), &cgRect, (float)distance.x, (float)distance.y) != noErr)
+	if (!(isWindowComposited ((WindowRef)pWindow) && HIViewScrollRect ((HIViewRef)pFrame->getPlatformControl(), &cgRect, (float)distance.x, (float)distance.y) != noErr))
 		getFrame ()->invalidRect (src);
 
 	#else
@@ -3178,36 +3325,36 @@ void QuartzSetLineDash (CGContextRef context, CLineStyle style, CCoord lineWidth
 
 //-----------------------------------------------------------------------------
 // This can be optimized with a cache. See Technical Q&A QA1027 on Apple's website
-ATSUStyle CreateATSUStyle (const CColor &fontColor, CFont fontID, const long size, long style, const char* name)
-{
-	char myMacXFontName[255];
-	if (name == 0)
-	{
-		strcpy (myMacXFontName, gMacXfontNames[fontID]);
-		if (style & kBoldFace)
-			strcat(myMacXFontName, " Bold");
-	}
-	else
-		strcpy (myMacXFontName, name);
-
-	ATSUStyle atsuStyle;
-	OSStatus status = ATSUCreateStyle (&atsuStyle);
-
-	ATSUFontID atsuFontID;
-	status = ATSUFindFontFromName (myMacXFontName, strlen(myMacXFontName), kFontFullName, kFontNoPlatformCode, kFontNoScriptCode, kFontNoLanguageCode, &atsuFontID);
-	if (status != noErr)
-		status = ATSUFindFontFromName (gMacXfontNames[fontID], strlen(gMacXfontNames[fontID]), kFontFullName, kFontNoPlatformCode, kFontNoScriptCode, kFontNoLanguageCode, &atsuFontID);
-	Fixed atsuSize = FloatToFixed ((float)size);
-	ATSURGBAlphaColor color = {fontColor.red/255.f, fontColor.green/255.f, fontColor.blue/255.f, fontColor.alpha/255.f};
-	Boolean italic = style & kItalicFace;
-	Boolean underline = style & kUnderlineFace;
-	ATSUAttributeTag  theTags[] =  { kATSUFontTag, kATSUSizeTag, kATSURGBAlphaColorTag, kATSUQDItalicTag, kATSUQDUnderlineTag};
-	ByteCount        theSizes[] = { sizeof(ATSUFontID), sizeof(Fixed), sizeof(ATSURGBAlphaColor), sizeof (Boolean), sizeof (Boolean) };
-	ATSUAttributeValuePtr theValues[] = {&atsuFontID, &atsuSize, &color, &italic, &underline};
-	status = ATSUSetAttributes (atsuStyle, 5, theTags, theSizes, theValues);
-
-	return atsuStyle;
-}
+//ATSUStyle CreateATSUStyle (const CColor &fontColor, CFont fontID, const long size, long style, const char* name)
+//{
+//	char myMacXFontName[255];
+//	if (name == 0)
+//	{
+//		strcpy (myMacXFontName, gMacXfontNames[fontID]);
+//		if (style & kBoldFace)
+//			strcat(myMacXFontName, " Bold");
+//	}
+//	else
+//		strcpy (myMacXFontName, name);
+//
+//	ATSUStyle atsuStyle;
+//	OSStatus status = ATSUCreateStyle (&atsuStyle);
+//
+//	ATSUFontID atsuFontID;
+//	status = ATSUFindFontFromName (myMacXFontName, strlen(myMacXFontName), kFontFullName, kFontNoPlatformCode, kFontNoScriptCode, kFontNoLanguageCode, &atsuFontID);
+//	if (status != noErr)
+//		status = ATSUFindFontFromName (gMacXfontNames[fontID], strlen(gMacXfontNames[fontID]), kFontFullName, kFontNoPlatformCode, kFontNoScriptCode, kFontNoLanguageCode, &atsuFontID);
+//	Fixed atsuSize = FloatToFixed ((float)size);
+//	ATSURGBAlphaColor color = {fontColor.red/255.f, fontColor.green/255.f, fontColor.blue/255.f, fontColor.alpha/255.f};
+//	Boolean italic = style & kItalicFace;
+//	Boolean underline = style & kUnderlineFace;
+//	ATSUAttributeTag  theTags[] =  { kATSUFontTag, kATSUSizeTag, kATSURGBAlphaColorTag, kATSUQDItalicTag, kATSUQDUnderlineTag};
+//	ByteCount        theSizes[] = { sizeof(ATSUFontID), sizeof(Fixed), sizeof(ATSURGBAlphaColor), sizeof (Boolean), sizeof (Boolean) };
+//	ATSUAttributeValuePtr theValues[] = {&atsuFontID, &atsuSize, &color, &italic, &underline};
+//	status = ATSUSetAttributes (atsuStyle, 5, theTags, theSizes, theValues);
+//
+//	return atsuStyle;
+//}
 
 #endif
 
@@ -4603,13 +4750,17 @@ bool CFrame::setDropActive (bool val)
 
 #elif MAC
 #if MAC_OLD_DRAG
+	#if QUARTZ
 	if (!isWindowComposited ((WindowRef)pSystemWindow))
 	{
+	#endif
 		if (val)
 			install_drop (this);
 		else
 			remove_drop (this);
+	#if QUARTZ
 	}
+	#endif
 #endif
 #endif
 
@@ -5603,6 +5754,7 @@ void CFrame::invalidate (const CRect &rect)
 //-----------------------------------------------------------------------------
 void CFrame::invalidRect (CRect rect)
 {
+	#if MACX
 	#if QUARTZ
 	if (isWindowComposited ((WindowRef)pSystemWindow))
 	{
@@ -5631,7 +5783,11 @@ void CFrame::invalidRect (CRect rect)
 		Rect r = {(short)_rect.top, (short)_rect.left, (short)_rect.bottom, (short)_rect.right};
 		InvalWindowRect ((WindowRef)pSystemWindow, &r);
 	}
-	
+	#else
+	Rect r = {(short)rect.top, (short)rect.left, (short)rect.bottom, (short)rect.right};
+	InvalWindowRect ((WindowRef)pSystemWindow, &r);
+	#endif // QUARTZ	
+
 	#elif WINDOWS
 	RECT r = {rect.left, rect.top, rect.right, rect.bottom};
 	InvalidateRect ((HWND)pHwnd, &r, true);
@@ -8695,6 +8851,7 @@ GDIPlusGlobals::GDIPlusGlobals ()
 //-----------------------------------------------------------------------------
 GDIPlusGlobals::~GDIPlusGlobals ()
 {
+	CFontDesc::cleanup ();
 	Gdiplus::GdiplusShutdown (gdiplusToken);
 }
 
@@ -9146,11 +9303,14 @@ BEGIN_NAMESPACE_VSTGUI
 static CPoint GetMacDragMouse (CFrame* frame)
 {
 	WindowRef window = (WindowRef)frame->getSystemWindow ();
+	#if QUARTZ
 	HIViewRef view = (HIViewRef)frame->getPlatformControl ();
+	#endif
 	CPoint where;
 	Point r;
 	if (GetDragMouse ((DragRef)gDragContainer->getPlatformDrag (), NULL, &r) == noErr)
 	{
+		#if QUARTZ
 		HIPoint location;
 		#if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_4
 		if (HIPointConvert)
@@ -9169,6 +9329,11 @@ static CPoint GetMacDragMouse (CFrame* frame)
 		}
 		where.x = (CCoord)location.x;
 		where.y = (CCoord)location.y;
+		#else
+		QDGlobalToLocalPoint (GetWindowPort (window), &r);
+		where.x = (CCoord)r.h;
+		where.y = (CCoord)r.v;
+		#endif
 	}
 	return where;
 }

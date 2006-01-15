@@ -3,7 +3,7 @@
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 // Standard Control Objects
 //
-// Version 3.5       $Date: 2006-01-06 20:28:53 $
+// Version 3.5       $Date: 2006-01-15 12:45:47 $
 //
 // Added new objects        : Michael Schmidt          08.97
 // Added new objects        : Yvan Grabit              01.98
@@ -821,7 +821,7 @@ CParamDisplay::CParamDisplay (const CRect &size, CBitmap *background, const long
 {
 	backOffset (0, 0);
 
-	fontID      = kNormalFont;
+	fontID      = kNormalFont; fontID->remember ();
 	txtFace     = kNormalFace;
 	fontColor   = kWhiteCColor;
 	backColor   = kBlackCColor;
@@ -834,7 +834,10 @@ CParamDisplay::CParamDisplay (const CRect &size, CBitmap *background, const long
 
 //------------------------------------------------------------------------
 CParamDisplay::~CParamDisplay ()
-{}
+{
+	if (fontID)
+		fontID->forget ();
+}
 
 //------------------------------------------------------------------------
 void CParamDisplay::setStyle (long val)
@@ -956,12 +959,13 @@ void CParamDisplay::drawText (CDrawContext *pContext, char *string, CBitmap *new
 }
 
 //------------------------------------------------------------------------
-void CParamDisplay::setFont (CFont fontID)
+void CParamDisplay::setFont (CFontRef fontID)
 {
-	// to force the redraw
-	if (this->fontID != fontID)
-		setDirty ();
+	setDirty ();
+	if (this->fontID)
+		this->fontID->forget ();
 	this->fontID = fontID;
+	fontID->remember ();
 }
 
 //------------------------------------------------------------------------
@@ -1497,6 +1501,7 @@ pascal OSStatus CarbonEventsTextControlProc (EventHandlerCallRef inHandlerCallRe
 			}
 			break;
 		}
+		#if QUARTZ
 		case kEventClassControl:
 		{
 			switch (eventKind)
@@ -1526,6 +1531,7 @@ pascal OSStatus CarbonEventsTextControlProc (EventHandlerCallRef inHandlerCallRe
 			}
 			break;
 		}
+		#endif
 		case kEventClassWindow:
 		{
 			WindowRef window;
@@ -1581,10 +1587,10 @@ void CTextEdit::parentSizeChanged ()
 	if (textControl)
 	{
 		CRect rect (size);
-		if (rect.getHeight () > gStandardFontSize [fontID])
+		if (rect.getHeight () > fontID->getSize ())
 		{
-			rect.top = (short)(rect.top + rect.getHeight () / 2 - gStandardFontSize [fontID] / 2 + 1);
-			rect.bottom = (short)(rect.top + gStandardFontSize [fontID]);
+			rect.top = (short)(rect.top + rect.getHeight () / 2 - fontID->getSize () / 2 + 1);
+			rect.bottom = (short)(rect.top + fontID->getSize ());
 		}
 		CPoint p (rect.left, rect.top);
 		localToFrame (p);
@@ -1662,7 +1668,7 @@ void CTextEdit::takeFocus ()
 	// get/set the current font
 	LOGFONT logfont = {0};
 
-	long fontH = gStandardFontSize [fontID];
+	long fontH = fontID->getSize ();
 	if (fontH > rect.height () - 2)
 		fontH = rect.height () - 2;
 
@@ -1704,10 +1710,10 @@ void CTextEdit::takeFocus ()
 	r.right  = (short)rect.right;// - 4;
 	r.top    = (short)rect.top;// + 2;
 	r.bottom = (short)rect.bottom;// - 4;
-	if (rect.getHeight () > gStandardFontSize [fontID])
+	if (rect.getHeight () > fontID->getSize ())
 	{
-		r.top = (short)(rect.top + rect.getHeight () / 2 - gStandardFontSize [fontID] / 2 + 1);
-		r.bottom = (short)(r.top + gStandardFontSize [fontID]);
+		r.top = (short)(rect.top + rect.getHeight () / 2 - fontID->getSize () / 2 + 1);
+		r.bottom = (short)(r.top + fontID->getSize ());
 	}
 	if (CreateEditUnicodeTextControl (NULL, &r, NULL, false, NULL, &textControl) == noErr)
 	{
@@ -1741,10 +1747,10 @@ void CTextEdit::takeFocus ()
 			case kRightText: fontStyle.just = teFlushRight; break;
 			default: fontStyle.just = teCenter; break;
 		}
-		fontStyle.size = gStandardFontSize [fontID];
+		fontStyle.size = fontID->getSize ();
 		extern const char* gMacXfontNames[];
 		Str255 fontName;
-		CopyCStringToPascal ((const char*)gMacXfontNames[fontID], fontName); 
+		CopyCStringToPascal (fontID->getName (), fontName); 
 		GetFNum (fontName, &fontStyle.font);
 		SetControlData (textControl, kControlEditTextPart, kControlFontStyleTag, sizeof (fontStyle), &fontStyle);
 		HIViewSetVisible (textControl, true);
@@ -1812,12 +1818,12 @@ void CTextEdit::takeFocus ()
 		extern const unsigned char* gMacXfontNames[];
 		
 		short familyID;
-		#if QUARTZ
 		Str255 fontName;
+		#if QUARTZ
 		CopyCStringToPascal ((const char*)gMacXfontNames[fontID], fontName); 
 		GetFNum (fontName, &familyID);
 		#else
-		GetFNum (gMacXfontNames[fontID], &familyID);
+		GetFNum (fontName, &familyID);
 		#endif
 
 		ATSUFontID fontNameID;
@@ -1828,7 +1834,7 @@ void CTextEdit::takeFocus ()
 		attributes[0].size = sizeof(ATSUFontID);
 		attributes[0].data.dataPtr = &fontNameID;
 		// size
-		long fontSize = gStandardFontSize [fontID] << 16; // needs to be in Fixed format
+		long fontSize = fontID->getSize () << 16; // needs to be in Fixed format
 		attributes[1].tag = kTXNQDFontSizeAttribute;
 		attributes[1].size = kTXNFontSizeAttributeSize;
 		attributes[1].data.dataValue = fontSize;
@@ -1895,7 +1901,7 @@ void CTextEdit::takeFocus ()
 	#endif
 	
 	TextFont (kFontIDHelvetica);
-	TextSize (gStandardFontSize [fontID]);
+	TextSize (fontID->getSize ());
 
 	text_edit = TENew (&rect, &vrect);
 	
@@ -2223,7 +2229,7 @@ COptionMenuScheme::COptionMenuScheme ()
 	hiliteTextColor = kWhiteCColor;
 	disableTextColor = kWhiteCColor;
 #endif
-	font = kNormalFontSmall;
+	font = kNormalFontSmall; font->remember ();
 	#if MAC_ENABLE_MENU_SCHEME
 	registerWithToolbox ();
 	#endif
@@ -2232,6 +2238,8 @@ COptionMenuScheme::COptionMenuScheme ()
 //------------------------------------------------------------------------
 COptionMenuScheme::~COptionMenuScheme ()
 {
+	if (font)
+		font->forget ();
 	#if MAC_ENABLE_MENU_SCHEME
 	unregisterWithToolbox ();
 	#endif

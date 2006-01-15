@@ -4,7 +4,7 @@
 # Project related configuration options
 #---------------------------------------------------------------------------
 PROJECT_NAME           = vstgui
-PROJECT_NUMBER         = 3.0
+PROJECT_NUMBER         = 3.5
 OUTPUT_DIRECTORY       = ../Documentation
 CREATE_SUBDIRS         = NO
 OUTPUT_LANGUAGE        = English
@@ -82,7 +82,8 @@ WARN_LOGFILE           =
 #---------------------------------------------------------------------------
 # configuration options related to the input files
 #---------------------------------------------------------------------------
-INPUT                  = ../
+INPUT                  = ../ \
+                         ./doc.h
 FILE_PATTERNS          = *.c \
                          *.cc \
                          *.cxx \
@@ -125,7 +126,7 @@ RECURSIVE              = NO
 EXCLUDE                = 
 EXCLUDE_SYMLINKS       = NO
 EXCLUDE_PATTERNS       = 
-EXAMPLE_PATH           = 
+EXAMPLE_PATH           = ../
 EXAMPLE_PATTERNS       = *
 EXAMPLE_RECURSIVE      = NO
 IMAGE_PATH             = 
