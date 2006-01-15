@@ -1,3 +1,9 @@
+2006-01-15 arne
+
+	* Font changes: CFont removed. New CFontDesc class for custom fonts. You need to change all references of CFont to CFontRef.
+	* add UTF-8 text drawing with GDI+
+	* more doxygen docu
+
 2006-01-06 arne
 
 	* remove old drawing code. VSTGUI draws only when the system calls it to do so.

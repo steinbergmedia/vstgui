@@ -2,7 +2,7 @@
 // VST Plug-Ins SDK
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 //
-// Version 3.5       $Date: 2006-01-06 20:28:53 $
+// Version 3.5       $Date: 2006-01-15 12:45:50 $
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
@@ -426,23 +426,6 @@ extern const CViewAttributeID kCViewTooltipAttribute;			// 'cvtt'
 
 //-----------------------------------------------------------------------------
 //-----------
-// \brief Font Type
-//-----------
-enum CFont
-{
-	kSystemFont = 0,
-	kNormalFontVeryBig,
-	kNormalFontBig,
-	kNormalFont,
-	kNormalFontSmall,
-	kNormalFontSmaller,
-	kNormalFontVerySmall,
-	kSymbolFont,
-
-	kNumStandardFonts
-};
-
-//-----------
 // \brief Text Face
 //-----------
 enum CTxtFace
@@ -566,6 +549,7 @@ enum CMessageResult
 	kMessageNotified = 1
 };
 
+
 //-----------------------------------------------------------------------------
 // CBaseObject Declaration
 //! \brief Base Object
@@ -598,6 +582,51 @@ private:
 };
 
 //-----------------------------------------------------------------------------
+// CFontDesc Declaration
+//! \brief font class
+/// \nosubgrouping
+//-----------------------------------------------------------------------------
+class CFontDesc : public CBaseObject
+{
+public:
+	CFontDesc (const char* name = 0, const CCoord& size = 0, const long style = 0);
+	CFontDesc (const CFontDesc& font);
+	~CFontDesc ();
+
+	const char* getName () const { return name; }		///< get the name of the font
+	const CCoord& getSize () const { return size; }	///< get the height of the font
+	const long& getStyle () const { return style; }		///< get the style of the font
+
+	void setName (const char* newName);					///< set the name of the font
+	void setSize (CCoord newSize);						///< set the height of the font
+	void setStyle (long newStyle);						///< set the style of the font
+
+	CFontDesc& operator = (const CFontDesc&);
+	bool operator == (const CFontDesc&) const;
+
+	void* getPlatformFont ();							///< get platform font object
+	
+	static void cleanup ();								///< does some cleanup, needed for GDIPLUS
+protected:
+	void freePlatformFont ();
+	char* name;
+	CCoord size;
+	long style;
+	void* platformFont;
+};
+
+typedef CFontDesc*	CFontRef;
+
+extern const CFontRef kSystemFont;
+extern const CFontRef kNormalFontVeryBig;
+extern const CFontRef kNormalFontBig;
+extern const CFontRef kNormalFont;
+extern const CFontRef kNormalFontSmall;
+extern const CFontRef kNormalFontSmaller;
+extern const CFontRef kNormalFontVerySmall;
+extern const CFontRef kSymbolFont;
+
+//-----------------------------------------------------------------------------
 // CDrawContext Declaration
 //! \brief A drawing context encapsulates the drawing context of the underlying OS
 /// \nosubgrouping
@@ -606,7 +635,7 @@ class CDrawContext : public CBaseObject
 {
 public:
 	CDrawContext (CFrame *pFrame, void *pSystemContext, void *pWindow = 0);
-	virtual ~CDrawContext ();	
+	~CDrawContext ();	
 
 	//-----------------------------------------------------------------------------
 	/// \name Draw primitives
@@ -666,11 +695,11 @@ public:
 	/// \name Font
 	//-----------------------------------------------------------------------------
 	//@{
-	void   setFontColor (const CColor color);								///< set current font color
-	CColor getFontColor () const { return fontColor; }						///< get current font color
-	void   setFont (CFont fontID, const long size = 0, long style = 0);		///< set current font
-	CFont  getFont () const { return fontId; }								///< get current font
-	long   getFontSize () const { return fontSize; }						///< get current font size
+	void   setFontColor (const CColor color);											///< set current font color
+	CColor getFontColor () const { return fontColor; }									///< get current font color
+	void   setFont (const CFontRef font, const long& size = 0, const long& style = -1);	///< set current font
+	const CFontRef&  getFont () const { return font; }										///< get current font
+	long   getFontSize () const { return font->getSize (); }							///< get current font size
 	//@}
 	
 	//-----------------------------------------------------------------------------
@@ -719,9 +748,7 @@ protected:
 	void   *pWindow;
 	CFrame *pFrame;
 
-	long   fontSize;
-	long   fontStyle;
-	CFont  fontId;
+	CFontRef  font;
 	CColor fontColor;
 	CPoint penLoc;
 
@@ -738,14 +765,12 @@ protected:
 	Gdiplus::Pen		*pPen;
 	Gdiplus::SolidBrush	*pBrush;
 	Gdiplus::SolidBrush	*pFontBrush;
-	Gdiplus::Font		*pFont;
 	public:
 		Gdiplus::Graphics* getGraphics () const { return pGraphics; }
 	protected:
 	#else
 	void *pBrush;
 	void *pPen;
-	void *pFont;
 	void *pOldBrush;
 	void *pOldPen;
 	void *pOldFont;

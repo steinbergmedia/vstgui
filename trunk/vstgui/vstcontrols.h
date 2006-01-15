@@ -3,7 +3,7 @@
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 // Standard Control Objects
 //
-// Version 3.5       $Date: 2006-01-06 20:28:53 $
+// Version 3.5       $Date: 2006-01-15 12:45:47 $
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
@@ -234,8 +234,8 @@ public:
 	CParamDisplay (const CRect &size, CBitmap *background = 0, const long style = 0);
 	virtual ~CParamDisplay ();
 	
-	virtual void setFont (CFont fontID);
-	CFont getFont () const { return fontID; }
+	virtual void setFont (CFontRef fontID);
+	const CFontRef getFont () const { return fontID; }
 
 	virtual void setFontColor (CColor color);
 	CColor getFontColor () const { return fontColor; }
@@ -283,7 +283,7 @@ protected:
 	CHoriTxtAlign horiTxtAlign;
 	long    style;
 
-	CFont   fontID;
+	CFontRef   fontID;
 	CTxtFace txtFace;
 	CColor  fontColor;
 	CColor  backColor;
@@ -391,7 +391,7 @@ public:
 	{ backgroundColor = back; selectionColor = select; textColor = text;
 	hiliteTextColor = htext; disableTextColor = dtext;}
 	
-	void setFont (CFont f) { font = f; }
+	void setFont (CFontRef f) { if (font) font->forget (); font = f; if (font) font->remember ();}
 protected:
 
 	CColor backgroundColor;
@@ -399,7 +399,7 @@ protected:
 	CColor textColor;
 	CColor hiliteTextColor;
 	CColor disableTextColor;
-	CFont font;
+	CFontRef font;
 
 	virtual void drawItemBack (CDrawContext* pContext, const CRect& rect, bool hilite);
 
