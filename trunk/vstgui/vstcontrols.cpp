@@ -3,7 +3,7 @@
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 // Standard Control Objects
 //
-// Version 3.5       $Date: 2006-01-15 12:45:47 $
+// Version 3.5       $Date: 2006-01-15 14:03:31 $
 //
 // Added new objects        : Michael Schmidt          08.97
 // Added new objects        : Yvan Grabit              01.98
@@ -1675,7 +1675,7 @@ void CTextEdit::takeFocus ()
 	logfont.lfWeight = FW_NORMAL;
 	logfont.lfHeight = -fontH;
 	logfont.lfPitchAndFamily = VARIABLE_PITCH | FF_SWISS;
-	strcpy (logfont.lfFaceName, gStandardFontName[fontID]);
+	strcpy (logfont.lfFaceName, fontID->getName ());
 
 	logfont.lfClipPrecision	 = CLIP_STROKE_PRECIS;
 	logfont.lfOutPrecision	 = OUT_STRING_PRECIS;
