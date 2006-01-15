@@ -2,7 +2,7 @@
 // VST Plug-Ins SDK
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 //
-// Version 3.5       $Date: 2006-01-15 12:45:48 $ 
+// Version 3.5       $Date: 2006-01-15 14:03:31 $ 
 //
 // Added Motif/Windows vers.: Yvan Grabit              01.98
 // Added Mac version        : Charlie Steinberg        02.98
@@ -595,10 +595,10 @@ void* CFontDesc::getPlatformFont ()
 	logfont.lfPitchAndFamily = VARIABLE_PITCH | FF_SWISS;
 	strcpy (logfont.lfFaceName, name);
 
-	if (!strcmp (name, kSymbolFont->getName ())
+	if (!strcmp (name, kSymbolFont->getName ()))
 		logfont.lfPitchAndFamily = DEFAULT_PITCH | FF_DECORATIVE;
-	else if (!strcmp (name, kSystemFont->getName ())
-		logfont.lfWeight     = FW_BOLD;
+//	else if (!strcmp (name, kSystemFont->getName ()))
+//		logfont.lfWeight     = FW_BOLD;
   
 	logfont.lfClipPrecision = CLIP_STROKE_PRECIS;
 	logfont.lfOutPrecision  = OUT_STRING_PRECIS;
@@ -645,7 +645,7 @@ CDrawContext::CDrawContext (CFrame *inFrame, void *inSystemContext, void *inWind
 #if WINDOWS
 	#if GDIPLUS
 	#else
-	, pBrush (0), pFont (0), pPen (0)
+	, pBrush (0), pPen (0)
 	, pOldBrush (0), pOldFont (0), pOldPen (0)
 	#endif
 #elif MAC && !QUARTZ
@@ -2557,7 +2557,7 @@ void CDrawContext::drawString (const char *string, const CRect &_rect,
 #if WINDOWS
 	#if GDIPLUS
 	#else
-	HANDLE newFont = (HANDLE)font.getPlatformFont ();
+	HANDLE newFont = (HANDLE)font->getPlatformFont ();
 	if (newFont)
 	{
 		SelectObject ((HDC)pSystemContext, newFont);
@@ -2777,15 +2777,15 @@ CCoord CDrawContext::getStringWidthUTF8 (const char* string)
 	}
 	
 	#elif GDIPLUS
-	Gdiplus::Font* pFont = (Gdiplus::Font*)font.getPlatformFont ();
+	Gdiplus::Font* pFont = (Gdiplus::Font*)font->getPlatformFont ();
 	if (pGraphics && pFont)
 	{
-		WCHAR buffer[1024];
+		WCHAR buffer[1024] = {0};
 		if (MultiByteToWideChar (CP_UTF8, 0, string, strlen (string), buffer, 1024) > 0)
 		{
 			Gdiplus::PointF gdiPoint (0., 0.);
 			Gdiplus::RectF resultRect;
-			pGrphics->MeasureString (buffer, -1, pFont, gdiPoint, &resultRect);
+			pGraphics->MeasureString (buffer, -1, pFont, gdiPoint, &resultRect);
 			result = (CCoord)resultRect.Width;
 		}
 	}
@@ -2848,13 +2848,14 @@ void CDrawContext::drawStringUTF8 (const char* string, const CPoint& _point, boo
 	}
 
 	#elif GDIPLUS
-	Gdiplus::Font* pFont = (Gdiplus::Font*)font.getPlatformFont ();
+	Gdiplus::Font* pFont = (Gdiplus::Font*)font->getPlatformFont ();
 	if (pGraphics && pFont && pFontBrush)
 	{
-		WCHAR buffer[1024];
+		WCHAR buffer[1024] = {0};
 		if (MultiByteToWideChar (CP_UTF8, 0, string, strlen (string), buffer, 1024) > 0)
 		{
-			Gdiplus::PointF gdiPoint ((REAL)point.x, (REAL)point.y);
+			pGraphics->SetTextRenderingHint (antialias ? Gdiplus::TextRenderingHintClearTypeGridFit : Gdiplus::TextRenderingHintSystemDefault);
+			Gdiplus::PointF gdiPoint ((Gdiplus::REAL)point.x, (Gdiplus::REAL)point.y + 1. - pFont->GetHeight (pGraphics->GetDpiY ()));
 			pGraphics->DrawString (buffer, -1, pFont, gdiPoint, pFontBrush);
 		}
 	}
