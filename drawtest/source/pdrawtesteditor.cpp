@@ -233,7 +233,7 @@ void DrawTestEditor::setTabView (CFrame* frame, const CRect& r, long position)
 	frame->setDirty ();
 }
 
-long DrawTestEditor::open (void *ptr)
+bool DrawTestEditor::open (void *ptr)
 {
 	AEffGUIEditor::open (ptr);
 	CRect size (rect.left , rect.top, rect.right, rect.bottom);

@@ -47,7 +47,7 @@ public:
 	virtual void valueChanged (CControl *pControl);
 
 protected:
-	virtual long open (void *ptr);
+	virtual bool open (void *ptr);
 	virtual void close ();
 
 	CBitmap* backgroundBitmap;

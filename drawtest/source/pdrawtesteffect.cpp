@@ -163,18 +163,12 @@ DrawTestEffect::~DrawTestEffect ()
 {
 }
 
-void DrawTestEffect::process (float **inputs, float **outputs, long sampleFrames)
+void DrawTestEffect::processReplacing (float **inputs, float **outputs, VstInt32 sampleFrames)
 {
 }
 
-void DrawTestEffect::processReplacing (float **inputs, float **outputs, long sampleFrames)
+VstInt32 DrawTestEffect::canDo (char* text)
 {
-}
-
-long DrawTestEffect::canDo (char* text)
-{
-	if (!strcmp (text, "wantsUTF8Paths"))
-		return 1;
 	return 0;
 }
 

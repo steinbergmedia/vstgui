@@ -78,11 +78,13 @@ bool CLabel::onDrop (CDragContainer* drag, const CPoint& where)
 			setText ((char*)ptr);
 		if (type == CDragContainer::kUnicodeText)
 		{
+			#if DEVELOPMENT
 			for (long i = 0; i < size; i++)
 			{
 				DebugPrint ("%x", ((char*)ptr)[i]);
 			}
 			DebugPrint ("\n");
+			#endif
 		}
 	}
 	return true;

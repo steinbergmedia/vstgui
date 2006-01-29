@@ -30,10 +30,9 @@ public:
 	DrawTestEffect (audioMasterCallback audioMaster);
 	~DrawTestEffect ();
 
-	virtual void process (float **inputs, float **outputs, long sampleFrames);
-	virtual void processReplacing (float **inputs, float **outputs, long sampleFrames);
+	virtual void processReplacing (float **inputs, float **outputs, VstInt32 sampleFrames);
 
-	long canDo (char* text);
+	VstInt32 canDo (char* text);
 };
 
 #endif

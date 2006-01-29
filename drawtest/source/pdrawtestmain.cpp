@@ -19,6 +19,15 @@
 
 #include "pdrawtesteffect.h"
 
+#if VST_2_4_EXTENSIONS
+
+AudioEffect* createEffectInstance (audioMasterCallback audioMaster)
+{
+	return new DrawTestEffect (audioMaster);
+}
+
+#else
+
 bool oome = false;
 
 #if MAC
@@ -75,3 +84,5 @@ BOOL WINAPI DllMain (HINSTANCE hInst, DWORD dwReason, LPVOID lpvReserved)
 	return 1;
 }
 #endif
+
+#endif // VST_2_4_EXTENSIONS
