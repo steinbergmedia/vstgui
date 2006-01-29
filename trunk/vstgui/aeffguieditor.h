@@ -37,8 +37,8 @@
 #ifndef __aeffguieditor__
 #define __aeffguieditor__
 
-#ifndef __AEffEditor__
-#include "AEffEditor.hpp"
+#ifndef __aeffeditor__
+#include "aeffeditor.h"
 #endif
 
 #ifndef __audioeffectx__
@@ -60,15 +60,15 @@ public :
 
 	virtual ~AEffGUIEditor ();
 
-	virtual void setParameter (long index, float value) { postUpdate (); } 
-	virtual long getRect (ERect **ppRect);
-	virtual long open (void *ptr);
+	virtual void setParameter (long index, float value) {} 
+	virtual bool getRect (ERect **ppRect);
+	virtual bool open (void *ptr);
 	virtual void idle ();
 	virtual void draw (ERect* pRect);
 
 	#if VST_2_1_EXTENSIONS
-	virtual long onKeyDown (VstKeyCode &keyCode);
-	virtual long onKeyUp (VstKeyCode &keyCode);
+	virtual bool onKeyDown (VstKeyCode &keyCode);
+	virtual bool onKeyUp (VstKeyCode &keyCode);
 	#endif
 
 	#if MAC
@@ -91,7 +91,7 @@ public :
 	long getVstGuiVersion () { return (VSTGUI_VERSION_MAJOR << 16) + VSTGUI_VERSION_MINOR; }
 
 	// set/get the knob mode
-	virtual long setKnobMode (int val);
+	virtual bool setKnobMode (int val);
 	virtual long getKnobMode () const { return knobMode; }
 
 	virtual bool onWheel (float distance);
