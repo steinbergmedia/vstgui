@@ -2,7 +2,7 @@
 // VST Plug-Ins SDK
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 //
-// Version 3.5       $Date: 2006-01-15 14:03:31 $ 
+// Version 3.5       $Date: 2006-01-29 13:49:26 $ 
 //
 // Added Motif/Windows vers.: Yvan Grabit              01.98
 // Added Mac version        : Charlie Steinberg        02.98
@@ -4487,7 +4487,7 @@ CFrame::CFrame (const CRect& inSize, const char* inTitle, VSTGUIEditorInterface*
 
 #endif
 
-	#if ENABLE_VST_EXTENSION_IN_VSTGUI
+	#if (ENABLE_VST_EXTENSION_IN_VSTGUI && !VST_FORCE_DEPRECATED)
 	pVstWindow = (VstWindow*)malloc (sizeof (VstWindow));
 	strcpy (((VstWindow*)pVstWindow)->title, inTitle);
 	((VstWindow*)pVstWindow)->xPos   = (short)size.left;
@@ -4579,7 +4579,7 @@ CFrame::~CFrame ()
 //-----------------------------------------------------------------------------
 bool CFrame::open (CPoint *point)
 {
-#if ENABLE_VST_EXTENSION_IN_VSTGUI
+#if (ENABLE_VST_EXTENSION_IN_VSTGUI && !VST_FORCE_DEPRECATED)
 	if (!bAddedWindow)
 		return false;
 	if (getOpenFlag ())
@@ -4619,7 +4619,7 @@ bool CFrame::open (CPoint *point)
 //-----------------------------------------------------------------------------
 bool CFrame::close ()
 {
-#if ENABLE_VST_EXTENSION_IN_VSTGUI
+#if (ENABLE_VST_EXTENSION_IN_VSTGUI && !VST_FORCE_DEPRECATED)
 	if (!bAddedWindow || !getOpenFlag () || !pSystemWindow)
 		return false;
 
