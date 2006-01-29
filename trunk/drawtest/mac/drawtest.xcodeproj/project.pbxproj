@@ -91,8 +91,6 @@
 		F4C9F1D807B232A300010DAD /* ctabview.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0C01252A07AC359F009EC388 /* ctabview.cpp */; };
 		F4C9F1DC07B232A500010DAD /* vstcontrols.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0C01252E07AC359F009EC388 /* vstcontrols.cpp */; };
 		F4C9F1DE07B232A600010DAD /* vstgui.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0C01253007AC359F009EC388 /* vstgui.cpp */; };
-		F4C9F1E607B232D600010DAD /* AudioEffect.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4C9F1E307B232D600010DAD /* AudioEffect.cpp */; };
-		F4C9F1E707B232D600010DAD /* audioeffectx.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4C9F1E407B232D600010DAD /* audioeffectx.cpp */; };
 		F4C9F1EE07B2332100010DAD /* bmp00001.png in Resources */ = {isa = PBXBuildFile; fileRef = 0CF3554207B17126002BFE50 /* bmp00001.png */; };
 		F4C9F1EF07B2332200010DAD /* bmp00100.png in Resources */ = {isa = PBXBuildFile; fileRef = 0CF3554307B17126002BFE50 /* bmp00100.png */; };
 		F4C9F1F007B2332200010DAD /* bmp01000.png in Resources */ = {isa = PBXBuildFile; fileRef = 0CF3554407B17126002BFE50 /* bmp01000.png */; };
@@ -121,6 +119,9 @@
 		F4C9F47007B2378900010DAD /* pdrawtesteffect.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0CF355C007B173A3002BFE50 /* pdrawtesteffect.cpp */; };
 		F4C9F47207B2378D00010DAD /* pprimitivesviews.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0CF355C407B173A3002BFE50 /* pprimitivesviews.cpp */; };
 		F4C9F47407B2379F00010DAD /* pdrawtestmain.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4C9F47307B2379F00010DAD /* pdrawtestmain.cpp */; };
+		F4CB6FB1098CFA0C004A1647 /* audioeffect.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4CB6FAC098CFA0C004A1647 /* audioeffect.cpp */; };
+		F4CB6FB2098CFA0C004A1647 /* audioeffectx.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4CB6FAE098CFA0C004A1647 /* audioeffectx.cpp */; };
+		F4CB6FB3098CFA0C004A1647 /* vstplugmain.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4CB6FB0098CFA0C004A1647 /* vstplugmain.cpp */; };
 		F4F0FCBF08D181460014E7D7 /* cvstguitimer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4F0FCBD08D181460014E7D7 /* cvstguitimer.cpp */; };
 		F4F0FCC008D181460014E7D7 /* cvstguitimer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4F0FCBD08D181460014E7D7 /* cvstguitimer.cpp */; };
 		F4F98FCB09499C4B00E01A9F /* ctooltipsupport.h in Headers */ = {isa = PBXBuildFile; fileRef = F4F98FC909499C4B00E01A9F /* ctooltipsupport.h */; };
@@ -242,10 +243,17 @@
 		F467335708BF64B000CBCAD2 /* CAVectorUnit.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = CAVectorUnit.cpp; path = /Developer/Examples/CoreAudio/PublicUtility/CAVectorUnit.cpp; sourceTree = "<absolute>"; };
 		F485AC4A086C15E700298D72 /* AudioUnit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioUnit.framework; path = /System/Library/Frameworks/AudioUnit.framework; sourceTree = "<absolute>"; };
 		F4C9F1D407B2320800010DAD /* drawtest.vst */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = drawtest.vst; sourceTree = BUILT_PRODUCTS_DIR; };
-		F4C9F1E307B232D600010DAD /* AudioEffect.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = AudioEffect.cpp; path = ../vstsdk2.3/AudioEffect.cpp; sourceTree = SOURCE_ROOT; };
-		F4C9F1E407B232D600010DAD /* audioeffectx.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = audioeffectx.cpp; path = ../vstsdk2.3/audioeffectx.cpp; sourceTree = SOURCE_ROOT; };
 		F4C9F20407B2335F00010DAD /* aeffguieditor.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = aeffguieditor.cpp; path = ../../vstgui/aeffguieditor.cpp; sourceTree = SOURCE_ROOT; };
 		F4C9F47307B2379F00010DAD /* pdrawtestmain.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = pdrawtestmain.cpp; path = ../source/pdrawtestmain.cpp; sourceTree = SOURCE_ROOT; };
+		F4CB6FA8098CFA02004A1647 /* aeffect.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = aeffect.h; path = ../../../vstsdk2.4/pluginterfaces/vst2.x/aeffect.h; sourceTree = SOURCE_ROOT; };
+		F4CB6FA9098CFA02004A1647 /* aeffectx.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = aeffectx.h; path = ../../../vstsdk2.4/pluginterfaces/vst2.x/aeffectx.h; sourceTree = SOURCE_ROOT; };
+		F4CB6FAA098CFA02004A1647 /* vstfxstore.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = vstfxstore.h; path = ../../../vstsdk2.4/pluginterfaces/vst2.x/vstfxstore.h; sourceTree = SOURCE_ROOT; };
+		F4CB6FAB098CFA0C004A1647 /* aeffeditor.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = aeffeditor.h; path = ../../../vstsdk2.4/public.sdk/source/vst2.x/aeffeditor.h; sourceTree = SOURCE_ROOT; };
+		F4CB6FAC098CFA0C004A1647 /* audioeffect.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = audioeffect.cpp; path = ../../../vstsdk2.4/public.sdk/source/vst2.x/audioeffect.cpp; sourceTree = SOURCE_ROOT; };
+		F4CB6FAD098CFA0C004A1647 /* audioeffect.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = audioeffect.h; path = ../../../vstsdk2.4/public.sdk/source/vst2.x/audioeffect.h; sourceTree = SOURCE_ROOT; };
+		F4CB6FAE098CFA0C004A1647 /* audioeffectx.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = audioeffectx.cpp; path = ../../../vstsdk2.4/public.sdk/source/vst2.x/audioeffectx.cpp; sourceTree = SOURCE_ROOT; };
+		F4CB6FAF098CFA0C004A1647 /* audioeffectx.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = audioeffectx.h; path = ../../../vstsdk2.4/public.sdk/source/vst2.x/audioeffectx.h; sourceTree = SOURCE_ROOT; };
+		F4CB6FB0098CFA0C004A1647 /* vstplugmain.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = vstplugmain.cpp; path = ../../../vstsdk2.4/public.sdk/source/vst2.x/vstplugmain.cpp; sourceTree = SOURCE_ROOT; };
 		F4F0FCBD08D181460014E7D7 /* cvstguitimer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = cvstguitimer.cpp; path = ../../vstgui/cvstguitimer.cpp; sourceTree = SOURCE_ROOT; };
 		F4F98FC909499C4B00E01A9F /* ctooltipsupport.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ctooltipsupport.h; path = ../../vstgui/ctooltipsupport.h; sourceTree = SOURCE_ROOT; };
 		F4F98FCA09499C4B00E01A9F /* ctooltipsupport.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = ctooltipsupport.cpp; path = ../../vstgui/ctooltipsupport.cpp; sourceTree = SOURCE_ROOT; };
@@ -336,7 +344,7 @@
 		08FB77ADFE841716C02AAC07 /* Source */ = {
 			isa = PBXGroup;
 			children = (
-				F4C9F1E107B232B900010DAD /* VST SDK 2.3 */,
+				F4CB6F9E098CF9EA004A1647 /* VST SDK 2.4 */,
 				0C1C269E07AB5DE8007128C4 /* VSTGUI */,
 				8BA05AEB0720742700365D66 /* Public Utility */,
 				8BA05A7D072073D200365D66 /* AUPublic */,
@@ -483,13 +491,20 @@
 			name = "Public Utility";
 			sourceTree = "<group>";
 		};
-		F4C9F1E107B232B900010DAD /* VST SDK 2.3 */ = {
+		F4CB6F9E098CF9EA004A1647 /* VST SDK 2.4 */ = {
 			isa = PBXGroup;
 			children = (
-				F4C9F1E307B232D600010DAD /* AudioEffect.cpp */,
-				F4C9F1E407B232D600010DAD /* audioeffectx.cpp */,
+				F4CB6FA8098CFA02004A1647 /* aeffect.h */,
+				F4CB6FA9098CFA02004A1647 /* aeffectx.h */,
+				F4CB6FAA098CFA02004A1647 /* vstfxstore.h */,
+				F4CB6FAB098CFA0C004A1647 /* aeffeditor.h */,
+				F4CB6FAC098CFA0C004A1647 /* audioeffect.cpp */,
+				F4CB6FAD098CFA0C004A1647 /* audioeffect.h */,
+				F4CB6FAE098CFA0C004A1647 /* audioeffectx.cpp */,
+				F4CB6FAF098CFA0C004A1647 /* audioeffectx.h */,
+				F4CB6FB0098CFA0C004A1647 /* vstplugmain.cpp */,
 			);
-			name = "VST SDK 2.3";
+			name = "VST SDK 2.4";
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -805,8 +820,6 @@
 				F4C9F1D807B232A300010DAD /* ctabview.cpp in Sources */,
 				F4C9F1DC07B232A500010DAD /* vstcontrols.cpp in Sources */,
 				F4C9F1DE07B232A600010DAD /* vstgui.cpp in Sources */,
-				F4C9F1E607B232D600010DAD /* AudioEffect.cpp in Sources */,
-				F4C9F1E707B232D600010DAD /* audioeffectx.cpp in Sources */,
 				F4C9F20607B2335F00010DAD /* aeffguieditor.cpp in Sources */,
 				F4C9F46E07B2378600010DAD /* controlsgui.cpp in Sources */,
 				F4C9F46F07B2378800010DAD /* pdrawtesteditor.cpp in Sources */,
@@ -816,6 +829,9 @@
 				F4FD4C6F08865DB400F20B72 /* cfileselector.cpp in Sources */,
 				F4F0FCC008D181460014E7D7 /* cvstguitimer.cpp in Sources */,
 				F4F98FCD09499C4B00E01A9F /* ctooltipsupport.cpp in Sources */,
+				F4CB6FB1098CFA0C004A1647 /* audioeffect.cpp in Sources */,
+				F4CB6FB2098CFA0C004A1647 /* audioeffectx.cpp in Sources */,
+				F4CB6FB3098CFA0C004A1647 /* vstplugmain.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -948,7 +964,7 @@
 					"VSTGUI_ENABLE_DEPRECATED_METHODS=0",
 				);
 				GENERATE_PKGINFO_FILE = YES;
-				HEADER_SEARCH_PATHS = ../vstsdk2.3;
+				HEADER_SEARCH_PATHS = ../vstsdk2.4;
 				INFOPLIST_FILE = Info.plist;
 				INSTALL_PATH = "$(USER_LIBRARY_DIR)/Audio/Plug-Ins/VST";
 				LIBRARY_STYLE = BUNDLE;
@@ -992,7 +1008,7 @@
 				GCC_UNROLL_LOOPS = YES;
 				GCC_USE_GCC3_PFE_SUPPORT = YES;
 				GENERATE_PKGINFO_FILE = YES;
-				HEADER_SEARCH_PATHS = ../vstsdk2.3;
+				HEADER_SEARCH_PATHS = ../vstsdk2.4;
 				INFOPLIST_FILE = Info.plist;
 				INSTALL_PATH = "$(USER_LIBRARY_DIR)/Audio/Plug-Ins/VST";
 				LIBRARY_STYLE = BUNDLE;
@@ -1021,12 +1037,18 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				MACOSX_DEPLOYMENT_TARGET = 10.2;
+				SDKROOT = /Developer/SDKs/MacOSX10.4u.sdk;
 			};
 			name = Debug;
 		};
 		F485AB79086C0BE900298D72 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ARCHS = (
+					ppc,
+					i386,
+				);
+				SDKROOT = /Developer/SDKs/MacOSX10.4u.sdk;
 			};
 			name = Release;
 		};
