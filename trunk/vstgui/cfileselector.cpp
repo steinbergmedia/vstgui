@@ -2,7 +2,7 @@
 // VST Plug-Ins SDK
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 //
-// Version 3.0       $Date: 2005-09-02 09:02:50 $ 
+// Version 3.0       $Date: 2006-01-29 13:49:26 $ 
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
@@ -477,7 +477,7 @@ long CFileSelector::run (VstFileSelect *vstFileSelect)
 				*defaultSpec->name = 0;
 			}
 			NavDialogRef dialogRef;
-			if (NavCreatePutFileDialog (&dialogOptions, NULL, kNavGenericSignature, eventUPP, this, &dialogRef) == noErr) 
+			if (NavCreatePutFileDialog (&dialogOptions, 0, kNavGenericSignature, eventUPP, this, &dialogRef) == noErr) 
 			{
 			    AEDesc defaultLocation;   
 			    AEDesc* defLocPtr = 0;   
@@ -774,7 +774,9 @@ long CFileSelector::run (VstFileSelect *vstFileSelect)
 					}
 					else
 					{
-						AECountItems (&navReply.selection, &vstFileSelect->nbReturnPath);
+						long count;
+						AECountItems (&navReply.selection, &count);
+						vstFileSelect->nbReturnPath = count;
 						vstFileSelect->returnMultiplePaths = new char* [vstFileSelect->nbReturnPath];
 						int index = 1;
 					    while (AEGetNthPtr(&navReply.selection, index++, typeFSRef,

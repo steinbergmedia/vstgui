@@ -97,10 +97,10 @@ void PluginGUIEditor::draw (ERect *ppErect)
 }
 
 //-----------------------------------------------------------------------------
-long PluginGUIEditor::open (void *ptr)
+bool PluginGUIEditor::open (void *ptr)
 {
 	systemWindow = ptr;
-	return 0;
+	return true;
 }
 
 //-----------------------------------------------------------------------------

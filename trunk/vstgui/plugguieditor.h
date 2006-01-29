@@ -63,7 +63,7 @@ public :
 
 	virtual void setParameter (long index, float value) {} 
 	virtual long getRect (ERect **ppRect);
-	virtual long open (void *ptr);
+	virtual bool open (void *ptr);
 	virtual void close () { systemWindow = 0; }
 	virtual void idle ();
 	virtual void draw (ERect *pRect);
