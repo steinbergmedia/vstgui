@@ -239,13 +239,13 @@ void CScrollView::valueChanged (CDrawContext *pContext, CControl *pControl)
 		{
 			case kHSBTag:
 			{
-				offset.x = csize.left - (csize.width () - vsize.width ()) * value;
+				offset.x = csize.left - (CCoord)((csize.width () - vsize.width ()) * value);
 				sc->setScrollOffset (offset, false);
 				break;
 			}
 			case kVSBTag:
 			{
-				offset.y = csize.top + (csize.height () - vsize.height ()) * value;
+				offset.y = csize.top + (CCoord)((csize.height () - vsize.height ()) * value);
 				sc->setScrollOffset (offset, false);
 				break;
 			}
@@ -318,14 +318,14 @@ void CScrollbar::calculateScrollerLength ()
 		float factor = (float)size.width () / (float)scrollSize.width ();
 		if (factor >= 1.f)
 			factor = 0;
-		newScrollerLength = size.width () * factor;
+		newScrollerLength = (CCoord)(size.width () * factor);
 	}
 	else
 	{
 		float factor = (float)size.height () / (float)scrollSize.height ();
 		if (factor >= 1.f)
 			factor = 0;
-		newScrollerLength = size.height () * factor;
+		newScrollerLength = (CCoord)(size.height () * factor);
 	}
 	if (newScrollerLength != scrollerLength)
 	{
@@ -339,7 +339,7 @@ CRect CScrollbar::getScrollerRect ()
 {
 	CRect scrollerRect (scrollerArea);
 	CCoord l = (style == kHorizontal) ? scrollerArea.width () : scrollerArea.height ();
-	CCoord scrollerOffset = value * (l - scrollerLength);
+	CCoord scrollerOffset = (CCoord)(value * (l - scrollerLength));
 	if (style == kHorizontal)
 	{
 		scrollerRect.setWidth (scrollerLength);

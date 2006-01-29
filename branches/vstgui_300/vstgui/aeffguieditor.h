@@ -37,12 +37,8 @@
 #ifndef __aeffguieditor__
 #define __aeffguieditor__
 
-#ifndef __AEffEditor__
-#include "AEffEditor.hpp"
-#endif
-
-#ifndef __audioeffectx__
-#include "audioeffectx.h"
+#ifndef __aeffeditor__
+#include "aeffeditor.h"
 #endif
 
 #ifndef __vstgui__
@@ -54,73 +50,64 @@
 //-----------------------------------------------------------------------------
 class AEffGUIEditor : public AEffEditor
 {
-public :
-
-	AEffGUIEditor (void *pEffect);
-
-	virtual ~AEffGUIEditor ();
-
-	virtual void setParameter (long index, float value) { postUpdate (); } 
-	virtual long getRect (ERect **ppRect);
-	virtual long open (void *ptr);
-	virtual void idle ();
-	virtual void draw (ERect *pRect);
-
-	#if VST_2_1_EXTENSIONS
-	virtual long onKeyDown (VstKeyCode &keyCode);
-	virtual long onKeyUp (VstKeyCode &keyCode);
-	#endif
-
-	#if MAC
-	virtual long mouse (long x, long y);
-	#endif
-
-	// wait (in ms)
-	void wait (unsigned long ms);
-
-	// get the current time (in ms)
-	unsigned long getTicks ();
-
-	// feedback to appli.
-	virtual void doIdleStuff ();
-
-	// get the effect attached to this editor
-	AudioEffect *getEffect () { return effect; }
-
-	// get version of this VSTGUI
-	long getVstGuiVersion () { return (VSTGUI_VERSION_MAJOR << 16) + VSTGUI_VERSION_MINOR; }
-
-	// set/get the knob mode
-	virtual long setKnobMode (int val);
-	static  long getKnobMode () { return knobMode; }
-
-	virtual bool onWheel (float distance);
+public:
+//-----------------------------------------------------------------------------
+	AEffGUIEditor (AudioEffect* effect);
+	~AEffGUIEditor ();
 
 	// get the CFrame object
 	#if USE_NAMESPACE
-	VSTGUI::CFrame *getFrame () { return frame; }
+	VSTGUI::CFrame* getFrame () { return frame; }
 	#else
-	CFrame *getFrame () { return frame; }
+	CFrame* getFrame () { return frame; }
 	#endif
 
-	virtual void beginEdit (long index) { ((AudioEffectX*)effect)->beginEdit (index); }
-	virtual void endEdit (long index) { ((AudioEffectX*)effect)->endEdit (index); }
+	virtual void setParameter (VstInt32 index, float value);
+	virtual void beginEdit (VstInt32 index);
+	virtual void endEdit (VstInt32 index);
 
-//---------------------------------------
+	// feedback to application
+	virtual void doIdleStuff ();
+
+	// wait (in ms)
+	void wait (unsigned int ms);
+
+	// get the current time (in ms)
+	unsigned int getTicks ();
+
+	// get version of this VSTGUI
+	static int getVstGuiVersion () { return (VSTGUI_VERSION_MAJOR << 16) + VSTGUI_VERSION_MINOR; }
+
+	// get the knob mode
+	static VstInt32 getKnobMode () { return knobMode; }
+//-----------------------------------------------------------------------------
+// AEffEditor overrides:
+//-----------------------------------------------------------------------------
+	bool getRect (ERect** rect);
+	void idle ();
+	
+	#if MAC
+	void DECLARE_VST_DEPRECATED (draw) (ERect* rect);
+	VstInt32 DECLARE_VST_DEPRECATED (mouse) (VstInt32 x, VstInt32 y);
+	#endif
+
+	#if VST_2_1_EXTENSIONS
+	bool onKeyDown (VstKeyCode& keyCode);
+	bool onKeyUp (VstKeyCode& keyCode);
+	bool onWheel (float distance);
+	bool setKnobMode (VstInt32 val);
+	#endif
+//-----------------------------------------------------------------------------
 protected:
-	ERect   rect;
-
-	#if USE_NAMESPACE
-	VSTGUI::CFrame *frame;
-	#else
-	CFrame *frame;
-	#endif
-
-private:
-	unsigned long lLastTicks;
+	ERect rect;
+	unsigned int lLastTicks;
 	bool inIdleStuff;
-
-	static long knobMode;
+	static VstInt32 knobMode;
+	#if USE_NAMESPACE
+	VSTGUI::CFrame* frame;
+	#else
+	CFrame* frame;
+	#endif
 };
 
 #endif

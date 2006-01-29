@@ -38,35 +38,36 @@
 #include "aeffguieditor.h"
 #endif
 
-#ifndef __audioeffectx__
-#include "audioeffectx.h"
-#endif
-
+//-----------------------------------------------------------------------------
 #define kIdleRate    100 // host idle rate in ms
 #define kIdleRate2    50
 #define kIdleRateMin   4 // minimum time between 2 idles in ms
 
-#if WINDOWS
-static struct tagMSG windowsMessage;
+#if MOTIF
+static unsigned int _getTicks ();
 #endif
 
-#if MOTIF
-unsigned long _getTicks ();
-#endif
+//-----------------------------------------------------------------------------
+VstInt32 AEffGUIEditor::knobMode = kCircularMode;
 
 //-----------------------------------------------------------------------------
 // AEffGUIEditor Implementation
 //-----------------------------------------------------------------------------
-AEffGUIEditor::AEffGUIEditor (void *pEffect) 
-	: AEffEditor ((AudioEffect*)pEffect), frame (0), inIdleStuff (false)
+AEffGUIEditor::AEffGUIEditor (AudioEffect* effect) 
+: AEffEditor (effect), 
+  lLastTicks (0),
+  inIdleStuff (false),
+  frame (0)
 {
-	((AudioEffect*)pEffect)->setEditor (this);
-	systemWindow = 0;
-	lLastTicks   = getTicks ();
+	rect.left = rect.top = rect.right = rect.bottom = 0;
+	lLastTicks = getTicks ();
+
+	effect->setEditor (this);
 
 	#if WINDOWS
 	OleInitialize (0);
 	#endif
+
 	#if MACX
 	void InitMachOLibrary ();
 	InitMachOLibrary ();
@@ -79,6 +80,7 @@ AEffGUIEditor::~AEffGUIEditor ()
 	#if WINDOWS
 	OleUninitialize ();
 	#endif
+
 	#if MACX
 	void ExitMachOLibrary ();
 	ExitMachOLibrary ();
@@ -86,28 +88,64 @@ AEffGUIEditor::~AEffGUIEditor ()
 }
 
 //-----------------------------------------------------------------------------
-#if VST_2_1_EXTENSIONS
-long AEffGUIEditor::onKeyDown (VstKeyCode &keyCode)
-{
-	
-	return frame ? frame->onKeyDown (keyCode) : -1;
+void AEffGUIEditor::setParameter (VstInt32 index, float value) 
+{}
+
+//-----------------------------------------------------------------------------
+void AEffGUIEditor::beginEdit (VstInt32 index)
+{ 
+	((AudioEffectX*)effect)->beginEdit (index); 
 }
 
 //-----------------------------------------------------------------------------
-long AEffGUIEditor::onKeyUp (VstKeyCode &keyCode)
+void AEffGUIEditor::endEdit (VstInt32 index)
+{ 
+	((AudioEffectX*)effect)->endEdit (index); 
+}
+
+//-----------------------------------------------------------------------------
+#if VST_2_1_EXTENSIONS
+bool AEffGUIEditor::onKeyDown (VstKeyCode& keyCode)
 {
-	return frame ? frame->onKeyUp (keyCode) : -1;
+	return frame && frame->onKeyDown (keyCode) == 1 ? true : false;
+}
+
+//-----------------------------------------------------------------------------
+bool AEffGUIEditor::onKeyUp (VstKeyCode& keyCode)
+{
+	return frame && frame->onKeyUp (keyCode) == 1 ? true : false;
+}
+
+//-----------------------------------------------------------------------------
+bool AEffGUIEditor::setKnobMode (VstInt32 val) 
+{
+	knobMode = val;
+	return true;
+}
+
+//-----------------------------------------------------------------------------
+bool AEffGUIEditor::onWheel (float distance)
+{
+	if (frame)
+	{
+		CDrawContext context (frame, NULL, systemWindow);
+		CPoint where;
+		context.getMouseLocation (where);
+		return frame->onWheel (&context, where, distance);
+	}
+	return false;
 }
 #endif
 
 //-----------------------------------------------------------------------------
-void AEffGUIEditor::draw (ERect *ppErect)
+#if MAC
+void AEffGUIEditor::DECLARE_VST_DEPRECATED (draw) (ERect* rect)
 {
 	if (frame)
 	{
-		if (ppErect)
+		if (rect)
 		{
-			CRect r (ppErect->left, ppErect->top, ppErect->right, ppErect->bottom);
+			CRect r (rect->left, rect->top, rect->right, rect->bottom);
 			CDrawContext context (frame, NULL, systemWindow);
 			frame->drawRect (&context, r);
 		}
@@ -116,9 +154,8 @@ void AEffGUIEditor::draw (ERect *ppErect)
 	}
 }
 
-#if MAC
 //-----------------------------------------------------------------------------
-long AEffGUIEditor::mouse (long x, long y)
+VstInt32 AEffGUIEditor::DECLARE_VST_DEPRECATED (mouse) (VstInt32 x, VstInt32 y)
 {
 	CDrawContext context (frame, NULL, systemWindow);
 	CPoint where (x, y);
@@ -131,12 +168,10 @@ long AEffGUIEditor::mouse (long x, long y)
 #endif
 
 //-----------------------------------------------------------------------------
-long AEffGUIEditor::open (void *ptr)
+bool AEffGUIEditor::getRect (ERect **ppErect)
 {
-	// add this to update the value the first time
-	postUpdate ();
-
-	return AEffEditor::open (ptr);
+	*ppErect = &rect;
+	return true;
 }
 
 //-----------------------------------------------------------------------------
@@ -179,31 +214,7 @@ void AEffGUIEditor::idle ()
 }
 
 //-----------------------------------------------------------------------------
-long AEffGUIEditor::knobMode = kCircularMode;
-
-//-----------------------------------------------------------------------------
-long AEffGUIEditor::setKnobMode (int val) 
-{
-	AEffGUIEditor::knobMode = val;
-	return 1;
-}
-
-//-----------------------------------------------------------------------------
-bool AEffGUIEditor::onWheel (float distance)
-{
-	if (frame)
-	{
-		CDrawContext context (frame, NULL, systemWindow);
-		CPoint where;
-		context.getMouseLocation (where);
-		return frame->onWheel (&context, where, distance);
-	}
-	
-	return false;
-}
-
-//-----------------------------------------------------------------------------
-void AEffGUIEditor::wait (unsigned long ms)
+void AEffGUIEditor::wait (unsigned int ms)
 {
 	#if MAC
 	unsigned long ticks;
@@ -222,13 +233,13 @@ void AEffGUIEditor::wait (unsigned long ms)
 }
 
 //-----------------------------------------------------------------------------
-unsigned long AEffGUIEditor::getTicks ()
+unsigned int AEffGUIEditor::getTicks ()
 {
 	#if MAC
 	return (TickCount () * 1000) / 60;
 	
 	#elif WINDOWS
-	return (unsigned long)GetTickCount ();
+	return (unsigned int)GetTickCount ();
 	
 	#elif MOTIF
 	return _getTicks ();
@@ -245,7 +256,7 @@ void AEffGUIEditor::doIdleStuff ()
 {
 	#if !(MAC && !TARGET_API_MAC_CARBON)
 	// get the current time
-	unsigned long currentTicks = getTicks ();
+	unsigned int currentTicks = getTicks ();
 
 	// YG TEST idle ();
 	if (currentTicks < lLastTicks)
@@ -263,6 +274,7 @@ void AEffGUIEditor::doIdleStuff ()
 	idle ();
 
 	#if WINDOWS
+	MSG windowsMessage;
 	if (PeekMessage (&windowsMessage, NULL, WM_PAINT, WM_PAINT, PM_REMOVE))
 		DispatchMessage (&windowsMessage);
 
@@ -290,16 +302,10 @@ void AEffGUIEditor::doIdleStuff ()
 	inIdleStuff = false;
 }
 
-//-----------------------------------------------------------------------------
-long AEffGUIEditor::getRect (ERect **ppErect)
-{
-	*ppErect = &rect;
-	return true;
-}
 
 #if MOTIF
 //-----------------------------------------------------------------------------
-unsigned long _getTicks ()
+unsigned int _getTicks ()
 {
 	#if SGI
 	long long time;

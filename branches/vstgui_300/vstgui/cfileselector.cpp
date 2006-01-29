@@ -2,7 +2,7 @@
 // VST Plug-Ins SDK
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 //
-// Version 3.0       $Date: 2005-07-14 10:34:34 $ 
+// Version 3.0       $Date: 2006-01-29 13:23:26 $ 
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
@@ -53,10 +53,10 @@
 #if WINDOWS
 #include <stdio.h>
 
-static UINT APIENTRY SelectDirectoryHook (HWND hdlg, UINT message, WPARAM wParam, LPARAM lParam);
+static UINT_PTR APIENTRY SelectDirectoryHook (HWND hdlg, UINT message, WPARAM wParam, LPARAM lParam);
 static LRESULT CALLBACK SelectDirectoryButtonProc (HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam);
 WNDPROC fpOldSelectDirectoryButtonProc;
-static UINT APIENTRY WinSaveHook (HWND hdlg, UINT msg, WPARAM wParam, LPARAM lParam);
+static UINT_PTR APIENTRY WinSaveHook (HWND hdlg, UINT msg, WPARAM wParam, LPARAM lParam);
 static bool bFolderSelected;
 static bool bDidCancel;
 static char selDirPath[kPathMax];
@@ -990,7 +990,7 @@ END_NAMESPACE_VSTGUI
 #if WINDOWS
 #include <dlgs.h>
 //-----------------------------------------------------------------------------
-UINT APIENTRY SelectDirectoryHook (HWND hdlg, UINT message, WPARAM wParam, LPARAM lParam)
+UINT_PTR APIENTRY SelectDirectoryHook (HWND hdlg, UINT message, WPARAM wParam, LPARAM lParam)
 {
 	switch (message)
 	{
@@ -1027,7 +1027,7 @@ UINT APIENTRY SelectDirectoryHook (HWND hdlg, UINT message, WPARAM wParam, LPARA
 		break;
 		
 	case WM_DESTROY:
-		SetWindowLong (GetDlgItem (GetParent (hdlg), IDOK), 
+		SetWindowLongPtr (GetDlgItem (GetParent (hdlg), IDOK), 
 				GWLP_WNDPROC, (LONG_PTR)fpOldSelectDirectoryButtonProc);
 	}
 	return false;
@@ -1129,7 +1129,7 @@ static void showPathInWindowTitle (HWND hParent, LPOFNOTIFY lpon)
 }
 
 //------------------------------------------------------------------------
-UINT APIENTRY WinSaveHook (HWND hdlg, UINT msg, WPARAM wParam, LPARAM lParam)
+UINT_PTR APIENTRY WinSaveHook (HWND hdlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	switch (msg)
 	{

@@ -1,3 +1,7 @@
+2006-01-29 arne
+
+	* merge VST SDK 2.4 changes
+
 2005-10-03 arne
 
 	* bugfix: CTabView does not release its subviews

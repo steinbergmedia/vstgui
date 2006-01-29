@@ -272,7 +272,7 @@ bool CTabView::removeAllTabs ()
 //-----------------------------------------------------------------------------
 bool CTabView::selectTab (long index)
 {
-	if (index > numberOfChilds)
+	if (index > (long)numberOfChilds)
 		return false;
 	CTabChildView* v = firstChild;
 	long i = 0;

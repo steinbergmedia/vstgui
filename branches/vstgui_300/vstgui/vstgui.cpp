@@ -2,7 +2,7 @@
 // VST Plug-Ins SDK
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 //
-// Version 3.0       $Date: 2005-08-12 12:45:00 $ 
+// Version 3.0       $Date: 2006-01-29 13:23:26 $ 
 //
 // Added Motif/Windows vers.: Yvan Grabit              01.98
 // Added Mac version        : Charlie Steinberg        02.98
@@ -62,6 +62,7 @@
 #define USE_CLIPPING_DRAWRECT	1
 #define MAC_OLD_DRAG			1
 #define NEW_UPDATE_MECHANISM	1
+#define USE_VST_WINDOW			(!PLUGGUI && !VST_FORCE_DEPRECATED)
 
 #if !WINDOWS
 // For OS which allows a lot of Drawing contexts
@@ -185,7 +186,7 @@ PFNTRANSPARENTBLT	pfnTransparentBlt = NULL;
 #endif
 
 static long   gUseCount = 0;
-static char   gClassName[20];
+static char   gClassName[100] = {0};
 static bool   InitWindowClass ();
 static void   ExitWindowClass ();
 LONG_PTR WINAPI WindowProc (HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam);
@@ -4184,7 +4185,7 @@ CFrame::CFrame (const CRect& inSize, const char* inTitle, void* inEditor, const 
 
 #endif
 
-	#if !PLUGGUI
+	#if USE_VST_WINDOW
 	pVstWindow = (VstWindow*)malloc (sizeof (VstWindow));
 	strcpy (((VstWindow*)pVstWindow)->title, inTitle);
 	((VstWindow*)pVstWindow)->xPos   = (short)size.left;
@@ -4224,7 +4225,7 @@ CFrame::~CFrame ()
 		
 	if (pHwnd)
 	{
-		SetWindowLong ((HWND)pHwnd, GWL_USERDATA, (long)NULL);
+		SetWindowLongPtr ((HWND)pHwnd, GWLP_USERDATA, (long)NULL);
 		DestroyWindow ((HWND)pHwnd);
 
 		ExitWindowClass ();
@@ -4293,6 +4294,7 @@ bool CFrame::open (CPoint *point)
 		return false;
 	}
 
+#if USE_VST_WINDOW
 	if (pVstWindow)
 	{
 		if (point)
@@ -4303,6 +4305,7 @@ bool CFrame::open (CPoint *point)
 		AudioEffectX *pAudioEffectX = (AudioEffectX*)(((AEffGUIEditor*)pEditor)->getEffect ());
 		pSystemWindow = pAudioEffectX->openWindow ((VstWindow*)pVstWindow);
 	}
+#endif
 
 	if (pSystemWindow)
 	{
@@ -4323,8 +4326,10 @@ bool CFrame::close ()
 	if (!bAddedWindow || !getOpenFlag () || !pSystemWindow)
 		return false;
 
+#if USE_VST_WINDOW
 	AudioEffectX *pAudioEffectX = (AudioEffectX*)(((AEffGUIEditor*)pEditor)->getEffect ());
 	pAudioEffectX->closeWindow ((VstWindow*)pVstWindow);
+#endif
 
 	pSystemWindow = 0;
 
@@ -6634,7 +6639,7 @@ public:
 			if (streamPos + size <= resSize)
 			{
 				memcpy (ptr, ((unsigned char*)resData+streamPos), size);
-				streamPos += size;
+				streamPos += (unsigned long)size;
 			}
 		}
 
@@ -8313,7 +8318,7 @@ bool InitWindowClass ()
 	gUseCount++;
 	if (gUseCount == 1)
 	{
-		sprintf (gClassName, "Plugin%x", GetInstance ());
+		sprintf (gClassName, "Plugin%p", GetInstance ());
 		
 		WNDCLASS windowClass;
 		windowClass.style = CS_GLOBALCLASS;//|CS_OWNDC; // add Private-DC constant 
@@ -9061,8 +9066,8 @@ STDMETHODIMP CDropTarget::Drop (IDataObject *dataObject, DWORD keyState, POINTL 
 //-----------------------------------------------------------------------------
 bool checkResolveLink (const char* nativePath, char* resolved)
 {
-	char* ext = strrchr (nativePath, '.');
-	if (ext && stricmp (ext, ".lnk") == NULL)
+	const char* ext = strrchr (nativePath, '.');
+	if (ext && _stricmp (ext, ".lnk") == NULL)
 	{
 		IShellLink* psl;
 		IPersistFile* ppf;
@@ -9654,7 +9659,7 @@ pascal OSStatus CFrame::carbonEventHandler (EventHandlerCallRef inHandlerCallRef
 					GetEventParameter (inEvent, kEventParamWindowMouseLocation, typeHIPoint, NULL, sizeof (HIPoint), NULL, &windowHIPoint);
 					GetEventParameter (inEvent, kEventParamKeyModifiers, typeUInt32, NULL, sizeof (UInt32), NULL, &modifiers);
 					HIViewConvertPoint (&windowHIPoint, HIViewGetRoot (windowRef), frame->controlRef);
-					CPoint p (windowHIPoint.x, windowHIPoint.y);
+					CPoint p ((CCoord)windowHIPoint.x, (CCoord)windowHIPoint.y);
 					CDrawContext* context = frame->createDrawContext ();
 					CMouseWheelAxis axis = kMouseWheelAxisX;
 					if (wheelAxis == kEventMouseWheelAxisY && !(modifiers & cmdKey))

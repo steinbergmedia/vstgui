@@ -3,7 +3,7 @@
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 // Standard Control Objects
 //
-// Version 3.0       $Date: 2005-08-12 12:45:00 $
+// Version 3.0       $Date: 2006-01-29 13:23:26 $
 //
 // Added new objects        : Michael Schmidt          08.97
 // Added new objects        : Yvan Grabit              01.98
@@ -49,9 +49,7 @@
 
 #include "vstkeycode.h"
 
-BEGIN_NAMESPACE_VSTGUI
-
-#ifdef __MACH__ && __MWERKS__
+#if (__MACH__ && __MWERKS__)
  #ifndef cosf
  #define cosf (float)cos
  #endif
@@ -60,6 +58,8 @@ BEGIN_NAMESPACE_VSTGUI
  #define sinf (float)sin
  #endif
 #endif
+
+BEGIN_NAMESPACE_VSTGUI
 
 // some external variables (vstgui.cpp)
 extern long gStandardFontSize [];
@@ -5022,7 +5022,7 @@ CSpecialDigit::CSpecialDigit (const CRect &size,
 		}
 	}
 
-	setMax ((float)pow (10, iNumbers) - 1.0f);
+	setMax ((float)pow (10., (double)iNumbers) - 1.0f);
 	setMin (0.0f);
 }
 
