@@ -101,6 +101,10 @@ void PMiscView::draw (CDrawContext* pContext)
 	stringRect.offset (0, 18);
 	pContext->setFont (kSymbolFont, 0, kNormalFace);
 	pContext->drawStringUTF8("kSymbolFont, 0, kNormalFace, antialised", stringRect, kLeftText);
+	stringRect.offset (0, 18);
+	static CFontDesc customFont ("Comic Sans MS", 16, kNormalFace);
+	pContext->setFont (&customFont);
+	pContext->drawStringUTF8("Comic Sans MS, 16, kNormalFace, antialised", stringRect, kLeftText);
 	#endif
 	
 	CPoint polyPoints[10];
