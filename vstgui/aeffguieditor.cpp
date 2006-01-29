@@ -84,14 +84,14 @@ AEffGUIEditor::~AEffGUIEditor ()
 
 //-----------------------------------------------------------------------------
 #if VST_2_1_EXTENSIONS
-long AEffGUIEditor::onKeyDown (VstKeyCode &keyCode)
+bool AEffGUIEditor::onKeyDown (VstKeyCode &keyCode)
 {
 	
 	return frame ? frame->onKeyDown (keyCode) : -1;
 }
 
 //-----------------------------------------------------------------------------
-long AEffGUIEditor::onKeyUp (VstKeyCode &keyCode)
+bool AEffGUIEditor::onKeyUp (VstKeyCode &keyCode)
 {
 	return frame ? frame->onKeyUp (keyCode) : -1;
 }
@@ -136,11 +136,8 @@ long AEffGUIEditor::mouse (long x, long y)
 #endif
 
 //-----------------------------------------------------------------------------
-long AEffGUIEditor::open (void *ptr)
+bool AEffGUIEditor::open (void *ptr)
 {
-	// add this to update the value the first time
-	postUpdate ();
-
 	return AEffEditor::open (ptr);
 }
 
@@ -187,10 +184,10 @@ void AEffGUIEditor::idle ()
 long AEffGUIEditor::knobMode = kCircularMode;
 
 //-----------------------------------------------------------------------------
-long AEffGUIEditor::setKnobMode (int val) 
+bool AEffGUIEditor::setKnobMode (int val) 
 {
 	AEffGUIEditor::knobMode = val;
-	return 1;
+	return true;
 }
 
 //-----------------------------------------------------------------------------
@@ -296,7 +293,7 @@ void AEffGUIEditor::doIdleStuff ()
 }
 
 //-----------------------------------------------------------------------------
-long AEffGUIEditor::getRect (ERect **ppErect)
+bool AEffGUIEditor::getRect (ERect **ppErect)
 {
 	*ppErect = &rect;
 	return true;
