@@ -2,7 +2,7 @@
 // VST Plug-Ins SDK
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 //
-// Version 3.0       $Date: 2006-01-29 13:23:26 $ 
+// Version 3.0       $Date: 2006-02-04 09:42:09 $ 
 //
 // Added Motif/Windows vers.: Yvan Grabit              01.98
 // Added Mac version        : Charlie Steinberg        02.98
@@ -9342,7 +9342,7 @@ static short keyTable[] = {
 #define   kHIViewFeatureGetsFocusOnClick (1 << 8)
 #endif
 
-bool hiToolboxAllowFocusChange = true;
+bool hiToolboxAllowFocusChange = false;
 
 //---------------------------------------------------------------------------------------
 pascal OSStatus CFrame::carbonEventHandler (EventHandlerCallRef inHandlerCallRef, EventRef inEvent, void *inUserData)

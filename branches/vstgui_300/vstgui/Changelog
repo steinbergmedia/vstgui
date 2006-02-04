@@ -1,3 +1,8 @@
+2006-02-04 arne
+
+	* fixed compile errors in cfileselector.cpp on mac with new vst sdk
+	* fixed text edit problems on mac
+
 2006-01-29 arne
 
 	* merge VST SDK 2.4 changes
