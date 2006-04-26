@@ -62,7 +62,8 @@ public:
 		kDontDrawFrame			= 1 << 3,	///< don't draw frame
 	};
 
-	virtual void setContainerSize (const CRect& cs); ///< set the virtual size of this container
+	virtual void setContainerSize (const CRect& cs);	///< set the virtual size of this container
+	const CPoint& getScrollOffset () const;				///< get scroll offset
 	
 	CScrollbar* getVerticalScrollbar () const { return vsb; }
 	CScrollbar* getHorizontalScrollbar () const { return hsb; }
@@ -144,6 +145,7 @@ public:
 	CMouseEventResult onMouseUp (CPoint &where, const long& buttons);
 	CMouseEventResult onMouseMoved (CPoint &where, const long& buttons);
 	CMessageResult notify (CBaseObject* sender, const char* message);
+	void setViewSize (CRect &rect, bool invalid);
 
 	CLASS_METHODS(CScrollbar, CControl)
 

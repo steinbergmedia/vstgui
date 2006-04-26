@@ -55,7 +55,8 @@ public:
 	virtual ~CScrollContainer ();
 
 	void setScrollOffset (CPoint offset, bool withRedraw = false);
-	void getScrollOffset (CPoint& off) const { off = offset; } 
+	void getScrollOffset (CPoint& off) const { off = offset; }
+	const CPoint& getScrollOffset () const { return offset; }
 
 	CRect getContainerSize () const { return containerSize; }
 	void setContainerSize (const CRect& cs);
@@ -231,6 +232,12 @@ void CScrollView::setContainerSize (const CRect& cs)
 }
 
 //-----------------------------------------------------------------------------
+const CPoint& CScrollView::getScrollOffset () const
+{
+	return sc->getScrollOffset ();
+}
+
+//-----------------------------------------------------------------------------
 bool CScrollView::addView (CView *pView)
 {
 	return sc->addView (pView);
@@ -366,6 +373,14 @@ CScrollbar::CScrollbar (const CRect& size, CControlListener* listener, long tag,
 //-----------------------------------------------------------------------------
 CScrollbar::~CScrollbar ()
 {
+}
+
+//-----------------------------------------------------------------------------
+void CScrollbar::setViewSize (CRect &rect, bool invalid)
+{
+	scrollerArea = rect;
+	scrollerArea.inset (2, 2);
+	CControl::setViewSize (rect, invalid);
 }
 
 //-----------------------------------------------------------------------------
