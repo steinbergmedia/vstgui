@@ -3,7 +3,7 @@
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 // Standard Control Objects
 //
-// Version 3.5       $Date: 2006-01-15 14:03:31 $
+// Version 3.5       $Date: 2006-04-26 08:10:37 $
 //
 // Added new objects        : Michael Schmidt          08.97
 // Added new objects        : Yvan Grabit              01.98
@@ -2142,7 +2142,7 @@ void CTextEdit::looseFocus ()
 	
 	platformControl = 0;
 
-	setDirty (true);
+	invalid ();
 	
 	#else
 
@@ -2173,12 +2173,17 @@ void CTextEdit::looseFocus ()
 
 	platformControl = 0;
 
-	if (change)
-		doIdleStuff ();
+//	doIdleStuff should not any more necessary
+//	if (change)
+//		doIdleStuff ();
 
 	CView* receiver = pParentView ? pParentView : pParentFrame;
-	if (receiver)
-		receiver->notify (this, "LooseFocus");
+	while (receiver)
+	{
+		if (receiver->notify (this, kMsgLooseFocus) == kMessageNotified)
+			break;
+		receiver = receiver->getParentView ();
+	}
 }
 
 //------------------------------------------------------------------------
@@ -3833,6 +3838,14 @@ void COptionMenu::looseFocus ()
 		return;
 
 	platformControl = 0;
+
+	CView* receiver = pParentView ? pParentView : pParentFrame;
+	while (receiver)
+	{
+		if (receiver->notify (this, kMsgLooseFocus) == kMessageNotified)
+			break;
+		receiver = receiver->getParentView ();
+	}
 }
 
 //------------------------------------------------------------------------

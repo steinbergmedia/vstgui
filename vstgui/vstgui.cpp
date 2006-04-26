@@ -2,7 +2,7 @@
 // VST Plug-Ins SDK
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 //
-// Version 3.5       $Date: 2006-01-29 13:49:26 $ 
+// Version 3.5       $Date: 2006-04-26 08:10:37 $ 
 //
 // Added Motif/Windows vers.: Yvan Grabit              01.98
 // Added Mac version        : Charlie Steinberg        02.98
@@ -89,6 +89,8 @@ static VSTGUI_CDragContainer* gDragContainer = 0;
 //---For Debugging------------------------
 #if DEBUG
 
+#include "vstguidebug.h"
+
 #include <list>
 #include <typeinfo>
 
@@ -103,32 +105,8 @@ long gNbCOffscreenContext = 0;
 long gBitmapAllocation = 0;
 long gNbDC = 0;
 
-#include <stdarg.h>
-
-void DebugPrint (char *format, ...);
-void DebugPrint (char *format, ...)
-{
-	char string[300];
-	va_list marker;
-	va_start (marker, format);
-	vsprintf (string, format, marker);
-	if (!string)
-		strcpy (string, "Empty string\n");
-	#if WINDOWS
-	OutputDebugString (string);
-	#elif MAC && !MACX
-	Str255 pStr;
-	c2pstrcpy (pStr, string);
-	DebugStr (pStr);
-	#else
-	#if __MWERKS__
-		printf (string);
-	#else
-		fprintf (stderr, string);
-	#endif	// #if __MWERKS__
-	#endif
-}
 END_NAMESPACE_VSTGUI
+
 #endif
 //---End For Debugging------------------------
 
@@ -1194,6 +1172,8 @@ void CDrawContext::lineTo (const CPoint& _point)
 	{
 		QuartzSetLineDash (context, lineStyle, frameWidth);
 
+		CGContextTranslateCTM (gCGContext, 0.5f, -0.5f);
+
 		CGContextBeginPath (context);
 		CGContextMoveToPoint (context, penLoc.h, penLoc.v);
 		CGContextAddLineToPoint (context, point.h, point.v);
@@ -1270,6 +1250,8 @@ void CDrawContext::drawLines (const CPoint* points, const long& numLines)
 	if (context) 
 	{
 		QuartzSetLineDash (context, lineStyle, frameWidth);
+
+		CGContextTranslateCTM (gCGContext, 0.5f, -0.5f);
 
 		#if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_4
 		if (CGContextStrokeLineSegments)
@@ -1457,6 +1439,8 @@ void CDrawContext::drawRect (const CRect &_rect, const CDrawStyle drawStyle)
 		CGRect r = CGRectMake (rect.left, rect.top+1, rect.width () - 1, rect.height () - 1);
 
 		QuartzSetLineDash (context, lineStyle, frameWidth);
+
+		CGContextTranslateCTM (gCGContext, 0.5f, -0.5f);
 
 		CGContextBeginPath (context);
 		CGContextMoveToPoint (context, r.origin.x, r.origin.y);
@@ -3964,7 +3948,7 @@ protected:
 
 //-----------------------------------------------------------------------------
 char* kMsgCheckIfViewContainer	= "kMsgCheckIfViewContainer";
-
+char* kMsgLooseFocus = "LooseFocus";
 //-----------------------------------------------------------------------------
 // CView
 //-----------------------------------------------------------------------------
@@ -4362,6 +4346,7 @@ CFrame::CFrame (const CRect &inSize, void *inSystemWindow, VSTGUIEditorInterface
 , pSystemWindow (inSystemWindow)
 , pModalView (0)
 , pFocusView (0)
+, pMouseOverView (0)
 , bFirstDraw (true)
 , bDropActive (false)
 , pFrameContext (0)
@@ -4438,6 +4423,7 @@ CFrame::CFrame (const CRect& inSize, const char* inTitle, VSTGUIEditorInterface*
 , pSystemWindow (0)
 , pModalView (0)
 , pFocusView (0)
+, pMouseOverView (0)
 , bFirstDraw (true)
 , bDropActive (false)
 , pFrameContext (0)
@@ -4907,9 +4893,18 @@ void CFrame::mouse (CDrawContext *pContext, CPoint &where, long buttons)
 //-----------------------------------------------------------------------------
 CMouseEventResult CFrame::onMouseDown (CPoint &where, const long& buttons)
 {
+	// reset views
 	mouseDownView = 0;
 	if (pFocusView)
 		setFocusView (NULL);
+	if (pMouseOverView)
+	{
+		pMouseOverView->onMouseExited (where, buttons);
+		if (getMouseObserver ())
+			getMouseObserver ()->onMouseExited (pMouseOverView, this);
+		pMouseOverView = 0;
+	}
+
 	if (pModalView)
 	{
 		if (pModalView->hitTest (where, buttons))
@@ -4948,7 +4943,36 @@ CMouseEventResult CFrame::onMouseMoved (CPoint &where, const long& buttons)
 	if (pModalView)
 		return pModalView->onMouseMoved (where, buttons);
 	else
-		return CViewContainer::onMouseMoved (where, buttons);
+	{
+		CMouseEventResult result = CViewContainer::onMouseMoved (where, buttons);
+		if (result == kMouseEventNotHandled)
+		{
+			CView* v = getViewAt (where, true);
+			if (v != pMouseOverView)
+			{
+				if (pMouseOverView)
+				{
+					CPoint lr (where);
+					pMouseOverView->frameToLocal (lr);
+					pMouseOverView->onMouseExited (lr, buttons);
+					if (getMouseObserver ())
+						getMouseObserver ()->onMouseExited (pMouseOverView, this);
+				}
+				pMouseOverView = 0;
+				if (v)
+				{
+					CPoint lr (where);
+					v->frameToLocal (lr);
+					v->onMouseEntered (lr, buttons);
+					pMouseOverView = v;
+					if (getMouseObserver ())
+						getMouseObserver ()->onMouseEntered (pMouseOverView, this);
+				}
+				return kMouseEventHandled;
+			}
+		}
+		return result;
+	}
 }
 
 //-----------------------------------------------------------------------------
@@ -5227,6 +5251,7 @@ bool CFrame::setSize (CCoord width, CCoord height)
 				SetControlBounds (controlRef, &bounds);
 				#endif
 				
+				CViewContainer::setViewSize (size);
 				return true;
 			}
 		}
@@ -5326,8 +5351,7 @@ bool CFrame::setSize (CCoord width, CCoord height)
 	parent->SetResizingMode (B_FOLLOW_NONE);
 #endif
 
-	CRect myViewSize (0, 0, size.width (), size.height ());
-	CViewContainer::setViewSize (myViewSize);
+	CViewContainer::setViewSize (size);
 
 	return true;
 }
@@ -5653,6 +5677,15 @@ void CFrame::setCursor (CCursorType type)
 }
 
 //-----------------------------------------------------------------------------
+void CFrame::onViewRemoved (CView* pView)
+{
+	if (pMouseOverView == pView)
+		pMouseOverView = 0;
+	if (pFocusView == pView)
+		pFocusView = 0;
+}
+
+//-----------------------------------------------------------------------------
 void CFrame::setFocusView (CView *pView)
 {
 	CView *pOldFocusView = pFocusView;
@@ -5662,9 +5695,9 @@ void CFrame::setFocusView (CView *pView)
 
 	if (pOldFocusView)
 	{
-		pOldFocusView->looseFocus ();
 		if (pOldFocusView->wantsFocus ())
 			pOldFocusView->setDirty ();
+		pOldFocusView->looseFocus ();
 	}
 }
 
@@ -5845,7 +5878,6 @@ CViewContainer::CViewContainer (const CRect &rect, CFrame *pParent, CBitmap *pBa
 , bDrawInOffscreen (false)
 , currentDragView (0)
 , mouseDownView (0)
-, mouseOverView (0)
 {
 	backgroundOffset (0, 0);
 	this->pParentFrame = pParent;
@@ -5992,13 +6024,14 @@ bool CViewContainer::addView (CView *pView, CRect &mouseableArea, bool mouseEnab
  */
 bool CViewContainer::removeAll (const bool &withForget)
 {
-	mouseOverView = 0;
 	CCView *pV = pFirstView;
 	while (pV)
 	{
 		CCView *pNext = pV->pNext;
 		if (pV->pView)
 		{
+			if (pParentFrame)
+				pParentFrame->onViewRemoved (pV->pView);
 			if (isAttached ())
 				pV->pView->removed (this);
 			if (withForget)
@@ -6021,10 +6054,6 @@ bool CViewContainer::removeAll (const bool &withForget)
  */
 bool CViewContainer::removeView (CView *pView, const bool &withForget)
 {
-	if (mouseOverView == pView)
-		mouseOverView = 0;
-	if (pParentFrame && pParentFrame->getFocusView () == pView)
-		pParentFrame->setFocusView (0);
 	CCView *pV = pFirstView;
 	while (pV)
 	{
@@ -6034,6 +6063,8 @@ bool CViewContainer::removeView (CView *pView, const bool &withForget)
 			CCView *pPrevious = pV->pPrevious;
 			if (pV->pView)
 			{
+				if (pParentFrame)
+					pParentFrame->onViewRemoved (pView);
 				if (isAttached ())
 					pV->pView->removed (this);
 				if (withForget)
@@ -6439,15 +6470,6 @@ bool CViewContainer::hitTest (const CPoint& where, const long buttons)
 //-----------------------------------------------------------------------------
 CMouseEventResult CViewContainer::onMouseDown (CPoint &where, const long& buttons)
 {
-	// reset mouse over view
-	if (mouseOverView)
-	{
-		mouseOverView->onMouseExited (where, buttons);
-		if (getFrame ()->getMouseObserver ())
-			getFrame ()->getMouseObserver ()->onMouseExited (mouseOverView, getFrame ());
-		mouseOverView = 0;
-	}
-
 	// convert to relativ pos
 	CPoint where2 (where);
 	where2.offset (-size.left, -size.top);
@@ -6513,28 +6535,6 @@ CMouseEventResult CViewContainer::onMouseMoved (CPoint &where, const long& butto
 			return kMouseEventNotHandled;
 		}
 		return kMouseEventHandled;
-	}
-	else
-	{
-		CView* v = getViewAt (where, true);
-		if (v != mouseOverView)
-		{
-			if (mouseOverView)
-			{
-				mouseOverView->onMouseExited (where, buttons);
-				if (getFrame ()->getMouseObserver ())
-					getFrame ()->getMouseObserver ()->onMouseExited (mouseOverView, getFrame ());
-			}
-			mouseOverView = 0;
-			if (v)
-			{
-				v->onMouseEntered (where, buttons);
-				mouseOverView = v;
-				if (getFrame ()->getMouseObserver ())
-					getFrame ()->getMouseObserver ()->onMouseEntered (mouseOverView, getFrame ());
-			}
-			return kMouseEventHandled;
-		}
 	}
 	return kMouseEventNotHandled;
 }
@@ -6964,9 +6964,9 @@ public:
 		{
 		}
 
-		bool open (long resourceID)
+		bool open (const CResourceDescription& resourceDesc)
 		{
-			HRSRC rsrc = FindResource (GetInstance (), MAKEINTRESOURCE (resourceID), "PNG");
+			HRSRC rsrc = FindResource (GetInstance (), resourceDesc.type == kIntegerType ? MAKEINTRESOURCE (resourceDesc.u.id) : resourceDesc.u.name, "PNG");
 			if (rsrc)
 			{
 				resSize = SizeofResource (GetInstance (), rsrc);
@@ -7018,8 +7018,8 @@ They must be named bmp00100.png (or bmp00100.jpg, etc). The number is the resour
 The Bitmaps are .bmp files and must be included in the plug (usually using a .rc file).
 It's also possible to use png as of version 3.0 if you define the macro USE_LIBPNG and include the libpng and zlib libraries/sources to your project.
 */
-CBitmap::CBitmap (long resourceID)
-: resourceID (resourceID)
+CBitmap::CBitmap (const CResourceDescription& desc)
+: resourceDesc (desc)
 , width (0)
 , height (0)
 , noAlpha (true)
@@ -7040,7 +7040,7 @@ CBitmap::CBitmap (long resourceID)
 	cgImage = 0;
 	#endif
 
-	loadFromResource (resourceID);
+	loadFromResource (resourceDesc);
 
 #elif BEOS
 	bbitmap = 0;
@@ -7063,7 +7063,7 @@ CBitmap::CBitmap (long resourceID)
 		resourceFile->PreloadResourceType ();
 	}
 	size_t	outSize;
-	const char* res = (const char*) resourceFile->LoadResource ('RAWT', resourceID, &outSize);
+	const char* res = (const char*) resourceFile->LoadResource ('RAWT', resourceDesc.u.id, &outSize);
 	if (res)
 	{
 		BMemoryIO	memoryIO (res, outSize);
@@ -7076,7 +7076,7 @@ CBitmap::CBitmap (long resourceID)
 		}
 	}
 	if (!bbitmap)
-		fprintf (stderr, "********* Resource %d could NOT be loaded!\n", (int)resourceID);
+		fprintf (stderr, "********* Resource %d could NOT be loaded!\n", (int)resourceDesc.u.id);
 #endif
 
 	setTransparentColor (kTransparentCColor);
@@ -7137,8 +7137,7 @@ CBitmap::CBitmap (CFrame& frame, CCoord width, CCoord height)
 
 //-----------------------------------------------------------------------------
 CBitmap::CBitmap ()
-: resourceID (0)
-, width (0)
+: width (0)
 , height (0)
 , noAlpha (true)
 {
@@ -7236,7 +7235,7 @@ void *CBitmap::getHandle () const
 }
 
 //-----------------------------------------------------------------------------
-bool CBitmap::loadFromResource (long resourceID)
+bool CBitmap::loadFromResource (const CResourceDescription& resourceDesc)
 {
 	bool result = false;
 
@@ -7247,7 +7246,7 @@ bool CBitmap::loadFromResource (long resourceID)
 	//---------------------------------------------------------------------------------------------
 	#if USE_LIBPNG
 	PNGResourceStream resStream;
-	if (resStream.open (resourceID))
+	if (resStream.open (resourceDesc))
 	{
 		// setup libpng
 		png_structp png_ptr;
@@ -7392,12 +7391,12 @@ bool CBitmap::loadFromResource (long resourceID)
 	if (!result)
 	{
 #if GDIPLUS
-		pBitmap = Gdiplus::Bitmap::FromResource(GetInstance (),(WCHAR*)MAKEINTRESOURCE(resourceID));
+		pBitmap = Gdiplus::Bitmap::FromResource(GetInstance (),(WCHAR*)MAKEINTRESOURCE(resourceDesc.u.id));
 		result = true;
 		width = pBitmap->GetWidth ();
 		height = pBitmap->GetHeight ();
 #else
-		pHandle = LoadBitmap (GetInstance (), MAKEINTRESOURCE (resourceID));
+		pHandle = LoadBitmap (GetInstance (), MAKEINTRESOURCE (resourceDesc.u.id));
 		BITMAP bm;
 		if (pHandle && GetObject (pHandle, sizeof (bm), &bm))
 		{
@@ -7422,7 +7421,10 @@ bool CBitmap::loadFromResource (long resourceID)
 	{
 		// find the bitmap in our Bundle. It must be in the form of bmp00123.png, where the resource id would be 123.
 		char filename [PATH_MAX];
-		sprintf (filename, "bmp%05d", (int)resourceID);
+		if (resourceDesc.type == CResourceDescription::kIntegerType)
+			sprintf (filename, "bmp%05d", (int)resourceDesc.u.id);
+		else
+			strcpy (filename, resourceDesc.u.name);
 		CFStringRef cfStr = CFStringCreateWithCString (NULL, filename, kCFStringEncodingASCII);
 		if (cfStr)
 		{
@@ -7431,7 +7433,7 @@ bool CBitmap::loadFromResource (long resourceID)
 			while (url == NULL)
 			{
 				static CFStringRef resTypes [] = { CFSTR("png"), CFSTR("bmp"), CFSTR("jpg"), CFSTR("pict"), NULL };
-				url = CFBundleCopyResourceURL ((CFBundleRef)gBundleRef, cfStr, resTypes[i], NULL);
+				url = CFBundleCopyResourceURL ((CFBundleRef)gBundleRef, cfStr, resourceDesc.type == CResourceDescription::kIntegerType ? resTypes[i] : 0, NULL);
 				if (resTypes[++i] == NULL)
 					break;
 			}
@@ -7443,8 +7445,8 @@ bool CBitmap::loadFromResource (long resourceID)
 			}
 			else
 			{
-				#if DEVELOPMENT
-				fprintf (stderr, "Bitmap Nr.:%d not found.\n", resourceID);
+				#if DEBUG
+				DebugPrint ("*** Bitmap Nr.:%d not found.\n", resourceDesc.u.id);
 				#endif
 			}
 		}
@@ -7453,7 +7455,7 @@ bool CBitmap::loadFromResource (long resourceID)
 	
 	if (!result && pHandle == 0)
 	{
-		Handle picHandle = GetResource ('PICT', resourceID);
+		Handle picHandle = GetResource ('PICT', resourceDesc.u.id);
 		if (picHandle)
 		{
 			HLock (picHandle);
@@ -7498,13 +7500,13 @@ bool CBitmap::loadFromPath (const void* platformPath)
 	#if QUARTZ
 	CFURLRef url = (CFURLRef)platformPath;
 
-	#if 0
+	#if MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_4
 	// use Image I/O
 	CGImageSourceRef imageSource = CGImageSourceCreateWithURL (url, NULL);
 	if (imageSource)
 	{
-		void* keys[] = {&kCGImageSourceShouldCache};
-		void* values[] = {&kCFBooleanFalse};
+		const void* keys[] = {&kCGImageSourceShouldCache};
+		const void* values[] = {&kCFBooleanTrue};
 		CFDictionaryRef options = CFDictionaryCreate(NULL, keys,values,1,NULL,NULL);
 		cgImage = CGImageSourceCreateImageAtIndex (imageSource, 0, options);
 		CFRelease (options);

@@ -2,7 +2,7 @@
 // VST Plug-Ins SDK
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 //
-// Version 3.5       $Date: 2006-01-15 12:45:50 $
+// Version 3.5       $Date: 2006-04-26 08:10:37 $
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
@@ -861,6 +861,28 @@ protected:
 #endif // MAC
 };
 
+//-----------------------------------------------------------------------------
+// CResourceDescription Declaration
+//! \brief Describes a resource by name or by ID
+/// \nosubgrouping
+//-----------------------------------------------------------------------------
+class CResourceDescription
+{
+public:
+	enum { kIntegerType, kStringType };
+
+	CResourceDescription (int id = -1) : type (kIntegerType) { u.id = id; }
+	CResourceDescription (const char* name) : type (kStringType) { u.name = name; }
+
+	CResourceDescription& operator= (int id) { u.id = id; type = kIntegerType; return *this; }
+	CResourceDescription& operator= (const CResourceDescription& desc) { type = desc.type; u.id = desc.u.id; u.name = desc.u.name; return *this; }
+
+	int type;
+	union {
+		int id;
+		const char* name;
+	} u;
+};
 
 //-----------------------------------------------------------------------------
 // CBitmap Declaration
@@ -870,7 +892,7 @@ protected:
 class CBitmap : public CBaseObject
 {
 public:
-	CBitmap (long resourceID);	///< Create a pixmap from a resource identifier
+	CBitmap (const CResourceDescription& desc);				///< Create a pixmap from a resource identifier
 	CBitmap (CFrame &frame, CCoord width, CCoord height);	///< Create a pixmap with a given size.
 	virtual ~CBitmap ();
 
@@ -909,10 +931,10 @@ protected:
 	CBitmap ();
 
 	virtual void dispose ();
-	virtual bool loadFromResource (long resourceID);
+	virtual bool loadFromResource (const CResourceDescription& resourceDesc);
 	virtual bool loadFromPath (const void* platformPath);	// load from a platform path. On Windows it's a C string and on Mac OS X its a CFURLRef.
 
-	long resourceID;
+	CResourceDescription resourceDesc;
 	CCoord width;
 	CCoord height;
 
@@ -1109,8 +1131,8 @@ protected:
 	CAttributeListEntry* pAttributeList;
 };
 
-// Message to check if View is a CViewContainer
-extern char* kMsgCheckIfViewContainer;
+extern char* kMsgCheckIfViewContainer;	///< Message to check if View is a CViewContainer
+extern char* kMsgLooseFocus;			///< Message of a view loosing focus (only CTextEdit and COptionMenu send this yet)
 
 //-----------------------------------------------------------------------------
 // CViewContainer Declaration
@@ -1221,7 +1243,6 @@ protected:
 
 	CView* currentDragView;
 	CView* mouseDownView;
-	CView* mouseOverView;
 };
 
 //-----------------------------------------------------------------------------
@@ -1271,6 +1292,8 @@ public:
 	virtual void   setFocusView (CView *pView);
 	virtual CView *getFocusView () const { return pFocusView; }
 	virtual bool advanceNextFocusView (CView* oldFocus, bool reverse = false);
+
+	virtual void onViewRemoved (CView* pView);
 
 	virtual bool setDropActive (bool val);
 	virtual bool isDropActive () const { return bDropActive; };
@@ -1334,6 +1357,7 @@ protected:
 	void    *pSystemWindow;
 	CView   *pModalView;
 	CView   *pFocusView;
+	CView   *pMouseOverView;
 
 	bool    bFirstDraw;
 	bool    bOpenFlag;
