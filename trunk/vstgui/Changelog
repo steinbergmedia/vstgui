@@ -1,3 +1,12 @@
+2006-04-13 arne
+
+	* new files vstguidebug.cpp/.h
+	* bitmaps can be loaded by id or by name now
+	* loose focus bugfix (the loose focus message is now propagated throw all parent views as long as the message is not processed)
+	* cleaned up mouseOverView code in CFrame/CViewContainer
+	* bugfix for CFrame::setSize
+	* some bugfixes for CScrollView and CScrollBar
+	
 2006-01-15 arne
 
 	* Font changes: CFont removed. New CFontDesc class for custom fonts. You need to change all references of CFont to CFontRef.
