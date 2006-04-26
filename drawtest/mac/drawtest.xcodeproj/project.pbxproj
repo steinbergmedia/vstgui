@@ -84,6 +84,9 @@
 		8BA05B070720754400365D66 /* CAAUParameter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8BA05B050720754400365D66 /* CAAUParameter.cpp */; };
 		8BA05B080720754400365D66 /* CAAUParameter.h in Headers */ = {isa = PBXBuildFile; fileRef = 8BA05B060720754400365D66 /* CAAUParameter.h */; };
 		8D01CCCE0486CAD60068D4B7 /* Carbon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 08EA7FFBFE8413EDC02AAC07 /* Carbon.framework */; };
+		F41417ED09EE85180064AA41 /* vstguidebug.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F41417EB09EE85180064AA41 /* vstguidebug.cpp */; };
+		F41417EE09EE85180064AA41 /* vstguidebug.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F41417EB09EE85180064AA41 /* vstguidebug.cpp */; };
+		F41417EF09EE85180064AA41 /* vstguidebug.h in Headers */ = {isa = PBXBuildFile; fileRef = F41417EC09EE85180064AA41 /* vstguidebug.h */; };
 		F467335808BF64B000CBCAD2 /* CAVectorUnit.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F467335708BF64B000CBCAD2 /* CAVectorUnit.cpp */; };
 		F485AC4B086C15E700298D72 /* AudioUnit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F485AC4A086C15E700298D72 /* AudioUnit.framework */; };
 		F485AC51086C160100298D72 /* CoreAudio.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8B5C7F83076FB26000A15F61 /* CoreAudio.framework */; };
@@ -240,6 +243,8 @@
 		8BA05B050720754400365D66 /* CAAUParameter.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = CAAUParameter.cpp; path = /Developer/Examples/CoreAudio/PublicUtility/CAAUParameter.cpp; sourceTree = "<absolute>"; };
 		8BA05B060720754400365D66 /* CAAUParameter.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = CAAUParameter.h; path = /Developer/Examples/CoreAudio/PublicUtility/CAAUParameter.h; sourceTree = "<absolute>"; };
 		8D01CCD20486CAD60068D4B7 /* drawtest.component */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = drawtest.component; sourceTree = BUILT_PRODUCTS_DIR; };
+		F41417EB09EE85180064AA41 /* vstguidebug.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = vstguidebug.cpp; path = ../../vstgui/vstguidebug.cpp; sourceTree = SOURCE_ROOT; };
+		F41417EC09EE85180064AA41 /* vstguidebug.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = vstguidebug.h; path = ../../vstgui/vstguidebug.h; sourceTree = SOURCE_ROOT; };
 		F467335708BF64B000CBCAD2 /* CAVectorUnit.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = CAVectorUnit.cpp; path = /Developer/Examples/CoreAudio/PublicUtility/CAVectorUnit.cpp; sourceTree = "<absolute>"; };
 		F485AC4A086C15E700298D72 /* AudioUnit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioUnit.framework; path = /System/Library/Frameworks/AudioUnit.framework; sourceTree = "<absolute>"; };
 		F4C9F1D407B2320800010DAD /* drawtest.vst */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = drawtest.vst; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -365,6 +370,8 @@
 				0C01252C07AC359F009EC388 /* plugguieditor.cpp */,
 				0C01252E07AC359F009EC388 /* vstcontrols.cpp */,
 				0C01253007AC359F009EC388 /* vstgui.cpp */,
+				F41417EB09EE85180064AA41 /* vstguidebug.cpp */,
+				F41417EC09EE85180064AA41 /* vstguidebug.h */,
 				F4F0FCBD08D181460014E7D7 /* cvstguitimer.cpp */,
 			);
 			name = VSTGUI;
@@ -540,6 +547,7 @@
 				0CF355CD07B173A3002BFE50 /* pprimitivesviews.h in Headers */,
 				0CF355FE07B17600002BFE50 /* controlsgui.h in Headers */,
 				F4F98FCB09499C4B00E01A9F /* ctooltipsupport.h in Headers */,
+				F41417EF09EE85180064AA41 /* vstguidebug.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -809,6 +817,7 @@
 				F467335808BF64B000CBCAD2 /* CAVectorUnit.cpp in Sources */,
 				F4F0FCBF08D181460014E7D7 /* cvstguitimer.cpp in Sources */,
 				F4F98FCC09499C4B00E01A9F /* ctooltipsupport.cpp in Sources */,
+				F41417EE09EE85180064AA41 /* vstguidebug.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -832,6 +841,7 @@
 				F4CB6FB1098CFA0C004A1647 /* audioeffect.cpp in Sources */,
 				F4CB6FB2098CFA0C004A1647 /* audioeffectx.cpp in Sources */,
 				F4CB6FB3098CFA0C004A1647 /* vstplugmain.cpp in Sources */,
+				F41417ED09EE85180064AA41 /* vstguidebug.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
