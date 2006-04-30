@@ -2,7 +2,7 @@
 // VST Plug-Ins SDK
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 //
-// Version 3.5       $Date: 2006-04-26 08:10:37 $ 
+// Version 3.5       $Date: 2006-04-30 15:33:51 $ 
 //
 // Added Motif/Windows vers.: Yvan Grabit              01.98
 // Added Mac version        : Charlie Steinberg        02.98
@@ -1172,7 +1172,8 @@ void CDrawContext::lineTo (const CPoint& _point)
 	{
 		QuartzSetLineDash (context, lineStyle, frameWidth);
 
-		CGContextTranslateCTM (gCGContext, 0.5f, -0.5f);
+		if ((((long)frameWidth) % 2))
+			CGContextTranslateCTM (gCGContext, 0.5f, -0.5f);
 
 		CGContextBeginPath (context);
 		CGContextMoveToPoint (context, penLoc.h, penLoc.v);
@@ -1251,7 +1252,8 @@ void CDrawContext::drawLines (const CPoint* points, const long& numLines)
 	{
 		QuartzSetLineDash (context, lineStyle, frameWidth);
 
-		CGContextTranslateCTM (gCGContext, 0.5f, -0.5f);
+		if ((((long)frameWidth) % 2))
+			CGContextTranslateCTM (gCGContext, 0.5f, -0.5f);
 
 		#if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_4
 		if (CGContextStrokeLineSegments)
@@ -1440,7 +1442,8 @@ void CDrawContext::drawRect (const CRect &_rect, const CDrawStyle drawStyle)
 
 		QuartzSetLineDash (context, lineStyle, frameWidth);
 
-		CGContextTranslateCTM (gCGContext, 0.5f, -0.5f);
+		if ((((long)frameWidth) % 2))
+			CGContextTranslateCTM (gCGContext, 0.5f, -0.5f);
 
 		CGContextBeginPath (context);
 		CGContextMoveToPoint (context, r.origin.x, r.origin.y);
@@ -2863,8 +2866,13 @@ void CDrawContext::drawStringUTF8 (const char* string, const CRect& _rect, const
 		else
 			rect.left = rect.left + (rect.getWidth () / 2.f) - (stringWidth / 2.f);
 	}
-
+	CRect oldClip;
+	getClipRect (oldClip);
+	CRect newClip (_rect);
+	newClip.bound (oldClip);
+	setClipRect (newClip);
 	drawStringUTF8 (string, CPoint (rect.left, rect.bottom), antialias);
+	setClipRect (oldClip);
 }
 
 //-----------------------------------------------------------------------------
@@ -4969,6 +4977,12 @@ CMouseEventResult CFrame::onMouseMoved (CPoint &where, const long& buttons)
 						getMouseObserver ()->onMouseEntered (pMouseOverView, this);
 				}
 				return kMouseEventHandled;
+			}
+			else if (pMouseOverView)
+			{
+				CPoint lr (where);
+				pMouseOverView->frameToLocal (lr);
+				return pMouseOverView->onMouseMoved (lr, buttons);
 			}
 		}
 		return result;

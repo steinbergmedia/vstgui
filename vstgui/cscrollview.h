@@ -92,7 +92,6 @@ protected:
 	CRect containerSize;
 	long style;
 
-private:
 	enum {
 		kHSBTag,
 		kVSBTag,

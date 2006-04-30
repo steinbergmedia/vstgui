@@ -1,3 +1,9 @@
+2006-04-28 arne
+
+	* more bugfixes for CScrollView
+	* quartz: some changes to line and rect drawing (offset the transformation matrix by 0.5,0.5 for better visibility)
+	* the mouse move message is now propageted to the underlying view even if no mouse button is pressed
+
 2006-04-13 arne
 
 	* new files vstguidebug.cpp/.h
