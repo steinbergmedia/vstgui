@@ -309,14 +309,20 @@ void CScrollView::valueChanged (CControl *pControl)
 		{
 			case kHSBTag:
 			{
-				offset.x = (long) (csize.left - (csize.width () - vsize.width ()) * value);
-				sc->setScrollOffset (offset, false);
+				if (csize.getWidth () > vsize.getWidth ())
+				{
+					offset.x = (long) (csize.left - (csize.width () - vsize.width ()) * value);
+					sc->setScrollOffset (offset, false);
+				}
 				break;
 			}
 			case kVSBTag:
 			{
-				offset.y = (long) (csize.top + (csize.height () - vsize.height ()) * value);
-				sc->setScrollOffset (offset, false);
+				if (csize.getHeight () > vsize.getHeight ())
+				{
+					offset.y = (long) (csize.top + (csize.height () - vsize.height ()) * value);
+					sc->setScrollOffset (offset, false);
+				}
 				break;
 			}
 		}
@@ -657,8 +663,10 @@ bool CScrollbar::onWheel (const CPoint &where, const CMouseWheelAxis &axis, cons
 	bounceValue ();
 
 	if (isDirty () && listener)
+	{
 		listener->valueChanged (this);
-	invalid ();
+		invalid ();
+	}
 	return true;
 }
 
