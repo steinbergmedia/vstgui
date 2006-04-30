@@ -36,7 +36,7 @@
 #include "cvstguitimer.h"
 
 #if DEBUG
-#include <typeinfo>
+#define DEBUGLOG 0
 #endif
 
 //------------------------------------------------------------------------
@@ -71,7 +71,7 @@ CTooltipSupport::~CTooltipSupport ()
 //------------------------------------------------------------------------
 void CTooltipSupport::onMouseEntered (CView* view, CFrame* frame)
 {
-	#if DEBUG
+	#if DEBUGLOG
 	DebugPrint ("IMouseObserver::onMouseEntered (%s)\n", view->getClassName ());
 	#endif
 	currentView = view;
@@ -81,7 +81,7 @@ void CTooltipSupport::onMouseEntered (CView* view, CFrame* frame)
 //------------------------------------------------------------------------
 void CTooltipSupport::onMouseExited (CView* view, CFrame* frame)
 {
-	#if DEBUG
+	#if DEBUGLOG
 	DebugPrint ("IMouseObserver::onMouseExited (%s)\n", view->getClassName ());
 	#endif
 	timer->stop ();
