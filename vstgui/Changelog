@@ -1,3 +1,11 @@
+2006-05-10 arne
+
+	* quartz: moved CBitmap completly to Image I/O in Mac OS X >= 10.4. The downside is, that you can only set the transparent color once.
+	* CBitmap::setTransparentColor needs to be called explicilty now. The default behaviour is now that there's no transparent color initially.
+	* removed BEOS code
+	* when changeing the size of the container in CScrollView another parameter controls if the visible area should stay the same.
+	* new working implementation of CSplashScreen
+
 2006-04-28 arne
 
 	* more bugfixes for CScrollView
@@ -8,7 +16,7 @@
 
 	* new files vstguidebug.cpp/.h
 	* bitmaps can be loaded by id or by name now
-	* loose focus bugfix (the loose focus message is now propagated throw all parent views as long as the message is not processed)
+	* loose focus bugfix (the loose focus message is now propagated threw all parent views as long as the message is not processed)
 	* cleaned up mouseOverView code in CFrame/CViewContainer
 	* bugfix for CFrame::setSize
 	* some bugfixes for CScrollView and CScrollBar

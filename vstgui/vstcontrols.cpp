@@ -3,7 +3,7 @@
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 // Standard Control Objects
 //
-// Version 3.5       $Date: 2006-04-26 08:10:37 $
+// Version 3.5       $Date: 2006-05-13 06:58:26 $
 //
 // Added new objects        : Michael Schmidt          08.97
 // Added new objects        : Yvan Grabit              01.98
@@ -76,7 +76,7 @@ Since version 2.1, when an object uses the transparency for its background and d
 or the transparency area changes during different draws (CMovieBitmap ,...), the background will be false (not updated),
 you have to rewrite the draw function in order to redraw the background and then call the draw of the object.
 */
-CControl::CControl (const CRect &size, CControlListener *listener, long tag,
+CControl::CControl (const CRect& size, CControlListener* listener, long tag,
 					CBitmap *pBackground)
 : CView (size)
 , listener (listener)
@@ -222,8 +222,8 @@ Define a button with 2 positions.
 The pixmap includes the 2 subpixmaps (i.e the rectangle used for the display of this button is half-height of the pixmap).
 When its value changes, the listener is called.
 */
-COnOffButton::COnOffButton (const CRect &size, CControlListener *listener, long tag,
-                            CBitmap *background, long style)
+COnOffButton::COnOffButton (const CRect& size, CControlListener* listener, long tag,
+                            CBitmap* background, long style)
 : CControl (size, listener, tag, background)
 , style (style)
 {}
@@ -254,7 +254,7 @@ void COnOffButton::draw (CDrawContext *pContext)
 
 #if VSTGUI_ENABLE_DEPRECATED_METHODS
 //------------------------------------------------------------------------
-void COnOffButton::mouse (CDrawContext *pContext, CPoint &where, long button)
+void COnOffButton::mouse (CDrawContext *pContext, CPoint& where, long button)
 {
 	if (!bMouseEnabled)
 		return;
@@ -297,7 +297,7 @@ void COnOffButton::mouse (CDrawContext *pContext, CPoint &where, long button)
 #endif
 
 //------------------------------------------------------------------------
-CMouseEventResult COnOffButton::onMouseDown (CPoint &where, const long& buttons)
+CMouseEventResult COnOffButton::onMouseDown (CPoint& where, const long& buttons)
 {
 	if (!(buttons & kLButton))
 		return kMouseEventNotHandled;
@@ -342,8 +342,8 @@ The handle describes a circle over the background (between -45deg and +225deg).
 By clicking Alt+Left Mouse the default value is used.
 By clicking Alt+Left Mouse the value changes with a vertical move (version 2.1)
 */
-CKnob::CKnob (const CRect &size, CControlListener *listener, long tag,
-              CBitmap *background, CBitmap *handle, const CPoint &offset)
+CKnob::CKnob (const CRect& size, CControlListener* listener, long tag,
+              CBitmap* background, CBitmap *handle, const CPoint &offset)
 :	CControl (size, listener, tag, background), offset (offset), pHandle (handle)
 {
 	if (pHandle)
@@ -423,7 +423,7 @@ void CKnob::drawHandle (CDrawContext *pContext)
 
 #if VSTGUI_ENABLE_DEPRECATED_METHODS
 //------------------------------------------------------------------------
-void CKnob::mouse (CDrawContext *pContext, CPoint &where, long button)
+void CKnob::mouse (CDrawContext *pContext, CPoint& where, long button)
 {
 	if (!bMouseEnabled)
 		return;
@@ -528,7 +528,7 @@ void CKnob::mouse (CDrawContext *pContext, CPoint &where, long button)
 #endif
 
 //------------------------------------------------------------------------
-CMouseEventResult CKnob::onMouseDown (CPoint &where, const long& buttons)
+CMouseEventResult CKnob::onMouseDown (CPoint& where, const long& buttons)
 {
 	beginEdit ();
 
@@ -577,14 +577,14 @@ CMouseEventResult CKnob::onMouseDown (CPoint &where, const long& buttons)
 }
 
 //------------------------------------------------------------------------
-CMouseEventResult CKnob::onMouseUp (CPoint &where, const long& buttons)
+CMouseEventResult CKnob::onMouseUp (CPoint& where, const long& buttons)
 {
 	endEdit ();
 	return kMouseEventHandled;
 }
 
 //------------------------------------------------------------------------
-CMouseEventResult CKnob::onMouseMoved (CPoint &where, const long& buttons)
+CMouseEventResult CKnob::onMouseMoved (CPoint& where, const long& buttons)
 {
 	if (buttons & kLButton)
 	{
@@ -631,7 +631,7 @@ CMouseEventResult CKnob::onMouseMoved (CPoint &where, const long& buttons)
 }
 
 //------------------------------------------------------------------------
-bool CKnob::onWheel (const CPoint &where, const float &distance, const long &buttons)
+bool CKnob::onWheel (const CPoint& where, const float &distance, const long &buttons)
 {
 	if (!bMouseEnabled)
 		return false;
@@ -790,7 +790,7 @@ void CKnob::setColorHandle (CColor color)
 }
 
 //------------------------------------------------------------------------
-void CKnob::setHandleBitmap (CBitmap *bitmap)
+void CKnob::setHandleBitmap (CBitmap* bitmap)
 {
 	if (pHandle)
 	{
@@ -815,7 +815,7 @@ Define a rectangle view where a text-value can be displayed with a given font an
 The user can specify its convert function (from float to char) by default the string format is "%2.2f".
 The text-value is centered in the given rect.
 */
-CParamDisplay::CParamDisplay (const CRect &size, CBitmap *background, const long style)
+CParamDisplay::CParamDisplay (const CRect& size, CBitmap* background, const long style)
 :	CControl (size, 0, 0, background), stringConvert (0), stringConvert2 (0), string2FloatConvert (0),
 	horiTxtAlign (kCenterText), style (style), bTextTransparencyEnabled (true), bAntialias (true)
 {
@@ -1023,14 +1023,14 @@ void CParamDisplay::setHoriAlign (CHoriTxtAlign hAlign)
 }
 
 //------------------------------------------------------------------------
-void CParamDisplay::setStringConvert (void (*convert) (float value, char *string))
+void CParamDisplay::setStringConvert (void (*convert) (float value, char* string))
 {
 	stringConvert = convert;
 }
 
 //------------------------------------------------------------------------
-void CParamDisplay::setStringConvert (void (*convert) (float value, char *string,
-									  void *userDta), void *userData)
+void CParamDisplay::setStringConvert (void (*convert) (float value, char* string,
+									  void* userDta), void* userData)
 {
 	stringConvert2 = convert;
 	this->userData = userData;
@@ -1104,8 +1104,8 @@ Define a rectangle view where a text-value can be displayed and edited with a gi
 The user can specify its convert function (from char to char). The text-value is centered in the given rect.
 A pixmap can be used as background.
 */
-CTextEdit::CTextEdit (const CRect &size, CControlListener *listener, long tag,
-	const char *txt, CBitmap *background, const long style)
+CTextEdit::CTextEdit (const CRect& size, CControlListener* listener, long tag,
+	const char *txt, CBitmap* background, const long style)
 :	CParamDisplay (size, background, style), platformFontColor (0), platformControl (0),
 	platformFont (0), editConvert (0), editConvert2 (0)
 {
@@ -1214,7 +1214,7 @@ void CTextEdit::draw (CDrawContext *pContext)
 
 #if VSTGUI_ENABLE_DEPRECATED_METHODS
 //------------------------------------------------------------------------
-void CTextEdit::mouse (CDrawContext *pContext, CPoint &where, long button)
+void CTextEdit::mouse (CDrawContext *pContext, CPoint& where, long button)
 {
 	if (!bMouseEnabled)
 		return;
@@ -1243,7 +1243,7 @@ void CTextEdit::mouse (CDrawContext *pContext, CPoint &where, long button)
 #endif
 
 //------------------------------------------------------------------------
-CMouseEventResult CTextEdit::onMouseDown (CPoint &where, const long& buttons)
+CMouseEventResult CTextEdit::onMouseDown (CPoint& where, const long& buttons)
 {
 	if (buttons & kLButton)
 	{
@@ -1321,42 +1321,6 @@ LONG_PTR WINAPI WindowProcEdit (HWND hwnd, UINT message, WPARAM wParam, LPARAM l
 }
 
 //------------------------------------------------------------------------
-#elif BEOS
-#include <TextView.h>
-#include <Window.h>
-
-class BeTextView : public BTextView
-{
-public:
-	BeTextView (CTextEdit* cTextEdit, BRect frame,
-				const char *name, BRect textRect);
-	void MakeFocus (bool focusState = true);
-	void KeyDown (const char *bytes, int32 numBytes);
-private:
-	CTextEdit *cTextEdit;
-};
-
-//------------------------------------------------------------------------
-BeTextView::BeTextView (CTextEdit* cTextEdit, BRect frame, const char *name, BRect textRect)
-: BTextView (frame, name, textRect, B_FOLLOW_NONE), cTextEdit (cTextEdit)
-{}
-
-//------------------------------------------------------------------------
-void BeTextView::MakeFocus (bool focusState)
-{
-	BTextView::MakeFocus (focusState);
-	if (!focusState && cTextEdit)
-		cTextEdit->looseFocus ();
-}
-
-//------------------------------------------------------------------------
-void BeTextView::KeyDown (const char *bytes, int32 numBytes)
-{
-	if (cTextEdit && (bytes[0] == B_RETURN || bytes[0] == B_TAB))
-		cTextEdit->looseFocus ();
-	else
-		BTextView::KeyDown (bytes, numBytes);
-}
 #endif
 
 #if MACX
@@ -1501,7 +1465,7 @@ pascal OSStatus CarbonEventsTextControlProc (EventHandlerCallRef inHandlerCallRe
 			}
 			break;
 		}
-		#if QUARTZ
+		#if QUARTZ && (MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_4)
 		case kEventClassControl:
 		{
 			switch (eventKind)
@@ -1511,19 +1475,28 @@ pascal OSStatus CarbonEventsTextControlProc (EventHandlerCallRef inHandlerCallRe
 					CGContextRef cgContext;
 					if (GetEventParameter (inEvent, kEventParamCGContextRef, typeCGContextRef, NULL, sizeof (cgContext), NULL, &cgContext) == noErr)
 					{
-						CRect viewSize = textEdit->getViewSize (viewSize);
-						viewSize.inset (-10, -10);
-						viewSize = ((CViewContainer*)textEdit->getParentView ())->getVisibleSize (viewSize);
-						CPoint cp (viewSize.left, viewSize.top);
-						textEdit/*->getParentView ()*/->localToFrame (cp);
-						viewSize.offset (-viewSize.left, -viewSize.top);
-						viewSize.offset (cp.x, cp.y);
-						CGRect cgViewSize = CGRectMake (viewSize.left, viewSize.top, viewSize.getWidth (), viewSize.getHeight ());
-						HIRectConvert (&cgViewSize, kHICoordSpaceView, (HIViewRef)textEdit->getFrame ()->getPlatformControl (), kHICoordSpaceView, textEdit->textControl);
-						CGRect clipRectVorher = CGContextGetClipBoundingBox (cgContext);
-						CGContextClipToRect (cgContext, cgViewSize);
-						CGRect clipRectNachher = CGContextGetClipBoundingBox (cgContext);
-						CGAffineTransform ctm = CGContextGetCTM (cgContext);
+						#if MAC_OS_X_VERSION_MIN_ALLOWED < MAC_OS_X_VERSION_10_4
+						if (HIRectConvert)
+						#endif
+						{
+							CRect viewSize = textEdit->getViewSize (viewSize);
+							viewSize.inset (-10, -10);
+							viewSize = ((CViewContainer*)textEdit->getParentView ())->getVisibleSize (viewSize);
+							CPoint cp (viewSize.left, viewSize.top);
+							textEdit/*->getParentView ()*/->localToFrame (cp);
+							viewSize.offset (-viewSize.left, -viewSize.top);
+							viewSize.offset (cp.x, cp.y);
+							CGRect cgViewSize = CGRectMake (viewSize.left, viewSize.top, viewSize.getWidth (), viewSize.getHeight ());
+							HIRectConvert (&cgViewSize, kHICoordSpaceView, (HIViewRef)textEdit->getFrame ()->getPlatformControl (), kHICoordSpaceView, textEdit->textControl);
+							#if DEBUG
+							CGRect clipRectVorher = CGContextGetClipBoundingBox (cgContext);
+							#endif
+							CGContextClipToRect (cgContext, cgViewSize);
+							#if DEBUG
+							CGRect clipRectNachher = CGContextGetClipBoundingBox (cgContext);
+							#endif
+							CGAffineTransform ctm = CGContextGetCTM (cgContext);
+						}
 						result = CallNextEventHandler (inHandlerCallRef, inEvent);
 					}
 					break;
@@ -2025,43 +1998,6 @@ void CTextEdit::takeFocus ()
 	looseFocus ();
 	
 #endif
-#elif BEOS
-	BView* plugView = (BView*) getFrame ()->getSystemWindow ();
-	CRect rect;
-	getFrame ()->getSize (&rect);
-	BRect r (rect.left + size.left, rect.top + size.top, rect.left + size.right, rect.top + size.bottom);
-	BRect tr = r;
-	tr.OffsetTo (B_ORIGIN);
-	tr.InsetBy (1, 1);
-	BeTextView* textView = new BeTextView (this, r, NULL, tr);
-	plugView->Window ()->Activate (true);
-	plugView->AddChild (textView);
-	BFont	font;
-	if (fontID < 0 || fontID >= kNumStandardFonts)
-		fontID = kSystemFont;
-	extern const char* gStandardFontStyle[];
-	font.SetFamilyAndStyle (gStandardFontName[fontID], gStandardFontStyle[fontID]);
-	font.SetSize (gStandardFontSize[fontID]);
-	rgb_color c = { fontColor.red, fontColor.green, fontColor.blue, 255 };
-	textView->SetFontAndColor (&font, B_FONT_FAMILY_AND_STYLE | B_FONT_SIZE, &c);
-	rgb_color cv = { backColor.red, backColor.green, backColor.blue, 255 };
-	textView->SetMaxBytes (255);
-	textView->SetViewColor (cv);
-	alignment a;
-	if (horiTxtAlign == kRightText)
-		a = B_ALIGN_RIGHT;
-	else if (horiTxtAlign == kLeftText)
-		a = B_ALIGN_LEFT;
-	else
-		a = B_ALIGN_CENTER;
-	textView->SetAlignment (a);
-	textView->SetText (text);
-	textView->DisallowChar ('\n');
-	textView->DisallowChar ('\t');
-	textView->MakeResizable (true);
-	textView->MakeFocus (true);
-	textView->SelectAll ();
-	platformControl = textView;
 #endif
 }
 
@@ -2149,17 +2085,6 @@ void CTextEdit::looseFocus ()
 	strcpy (text, (char*)platformControl);
 	delete[] platformControl;
 	#endif
-#elif BEOS
-	BTextView* textView = (BTextView*) platformControl;
-	strncpy (text, textView->Text (), 255);
-	if (textView->LockLooper ())
-	{
-		BWindow* w = textView->Window ();
-		textView->RemoveSelf ();
-		w->Unlock ();
-	}
-	delete textView;
-
 #endif
 
 	// update dependency
@@ -2715,8 +2640,8 @@ The text-value is centered in the given rect.
 A pixmap can be used as background, a second pixmap can be used when the option menu is popuped.
 There are 2 styles with or without a shadowed text. When a mouse click occurs, a popup menu is displayed.
 */
-COptionMenu::COptionMenu (const CRect &size, CControlListener *listener, long tag,
-                          CBitmap *background, CBitmap *bgWhenClick, const long style)
+COptionMenu::COptionMenu (const CRect& size, CControlListener* listener, long tag,
+                          CBitmap* background, CBitmap* bgWhenClick, const long style)
 :	CParamDisplay (size, background, style), bgWhenClick (bgWhenClick), nbItemsPerColumn (-1),
 	prefixNumbers (0), scheme (0)
 {
@@ -2822,7 +2747,7 @@ COptionMenu* COptionMenu::getSubMenu (long idx) const
 }
 
 //------------------------------------------------------------------------
-bool COptionMenu::addEntry (COptionMenu *subMenu, char *txt)
+bool COptionMenu::addEntry (COptionMenu *subMenu, const char *txt)
 {
 	if (nbEntries >= MAX_ENTRY || !subMenu || !txt)
 		return false;
@@ -2867,7 +2792,7 @@ bool COptionMenu::addEntry (COptionMenu *subMenu, char *txt)
 }
 
 //------------------------------------------------------------------------
-bool COptionMenu::addEntry (char *txt, long index)
+bool COptionMenu::addEntry (const char *txt, long index)
 {
 	if (nbEntries >= MAX_ENTRY)
 		return false;
@@ -3128,7 +3053,7 @@ void COptionMenu::draw (CDrawContext *pContext)
 
 #if VSTGUI_ENABLE_DEPRECATED_METHODS
 //------------------------------------------------------------------------
-void COptionMenu::mouse (CDrawContext *pContext, CPoint &where, long button)
+void COptionMenu::mouse (CDrawContext *pContext, CPoint& where, long button)
 {
 	if (!bMouseEnabled || !getFrame () || !pContext)
 		return;
@@ -3161,7 +3086,7 @@ void COptionMenu::mouse (CDrawContext *pContext, CPoint &where, long button)
 #endif
 
 //------------------------------------------------------------------------
-CMouseEventResult COptionMenu::onMouseDown (CPoint &where, const long& buttons)
+CMouseEventResult COptionMenu::onMouseDown (CPoint& where, const long& buttons)
 {
 	lastButton = buttons;
 	if (lastButton & (kLButton|kRButton|kApple))
@@ -3174,12 +3099,6 @@ CMouseEventResult COptionMenu::onMouseDown (CPoint &where, const long& buttons)
 	}
 	return kMouseEventNotHandled;
 }
-
-//------------------------------------------------------------------------
-#if BEOS
-#include <PopUpMenu.h>
-#include <MenuItem.h>
-#endif
 
 //------------------------------------------------------------------------
 COptionMenu *COptionMenu::getLastItemMenu (long &idxInMenu) const
@@ -3762,69 +3681,6 @@ void COptionMenu::takeFocus ()
 		}
 	}
 
-#elif BEOS
-	BPopUpMenu* popup = new BPopUpMenu ("popup", false, false);
-	BMessage*	message;
-	BMenuItem*	item;
-	for (long i = 0; i < nbEntries; i++)
-	{	
-		if (strcmp (entry[i], kMenuSeparator) == 0)
-			popup->AddSeparatorItem ();
-		else
-		{
-			message = new BMessage (i);
-			item = new BMenuItem (entry[i], message);
-			popup->AddItem (item);
-			if (multipleCheck)
-			{
-				if (check[i])
-					item->SetMarked (true);
-			}
-			else if ((style & kCheckStyle) && currentIndex == i)
-				item->SetMarked (true);
-		}
-	}
-	CRect rect;
-	getFrame ()->getSize (&rect);
-	if (pContext)
-	{
-		rect.left += pContext->offset.h;
-		rect.top  += pContext->offset.v;
-	}
-	long offset;
-	if (style & kPopupStyle)
-		offset = (int)(rect.top + size.top);
-	else
-		offset = (int)(rect.top + size.bottom);
-	BPoint where (rect.left + size.left, offset);
-	BView* plugView = (BView*) getFrame ()->getSystemWindow ();
-	plugView->ConvertToScreen (&where);
-	item = popup->Go (where);
-	if (item)
-	{
-		message = item->Message ();
-		if (message)
-		{
-			CDrawContext *pContextTemp = pContext;
-			// create a local context
-			if (!pContextTemp)
-			{
-				if (getFrame ())
-					pContextTemp = getFrame ()->createDrawContext ();
-			}
-			setValue (message->what);
-			
-			if (listener)
-				listener->valueChanged (this);
-	
-			// redraw the display
-			draw (pContextTemp);
-
-			if (!pContext && pContextTemp)
-				pContextTemp->forget ();
-		}
-	}
-	delete popup;
 #endif
 
 	getFrame ()->setFocusView (0);
@@ -3855,8 +3711,8 @@ void COptionMenu::looseFocus ()
 Such as a CKnob control object, but there is a unique pixmap which contains different views (subpixmaps) of this knob.
 According to the value, a specific subpixmap is displayed. The different subpixmaps are stacked in the pixmap object.
 */
-CAnimKnob::CAnimKnob (const CRect &size, CControlListener *listener, long tag,
-                      CBitmap *background, CPoint &offset)
+CAnimKnob::CAnimKnob (const CRect& size, CControlListener* listener, long tag,
+                      CBitmap* background, CPoint &offset)
 : CKnob (size, listener, tag, background, 0, offset), bInverseBitmap (false)
 {
 	heightOfOneImage = size.height ();
@@ -3865,10 +3721,10 @@ CAnimKnob::CAnimKnob (const CRect &size, CControlListener *listener, long tag,
 }
 
 //------------------------------------------------------------------------
-CAnimKnob::CAnimKnob (const CRect &size, CControlListener *listener, long tag,
+CAnimKnob::CAnimKnob (const CRect& size, CControlListener* listener, long tag,
                       long subPixmaps,         // number of subPixmaps
                       CCoord heightOfOneImage,   // height of one image in pixel
-                      CBitmap *background, CPoint &offset)
+                      CBitmap* background, CPoint &offset)
 : CKnob (size, listener, tag, background, 0, offset), 
    subPixmaps (subPixmaps), heightOfOneImage (heightOfOneImage), bInverseBitmap (false)
 {
@@ -3935,8 +3791,8 @@ of the last click on this object (the object is divided in its height by the num
 Each position has its subpixmap, each subpixmap is stacked in the given handle pixmap.
 By clicking Alt+Left Mouse the default value is used.
 */
-CVerticalSwitch::CVerticalSwitch (const CRect &size, CControlListener *listener, long tag,
-                                  CBitmap *background, CPoint &offset)
+CVerticalSwitch::CVerticalSwitch (const CRect& size, CControlListener* listener, long tag,
+                                  CBitmap* background, CPoint &offset)
 : CControl (size, listener, tag, background), offset (offset)
 {
 	heightOfOneImage = size.height ();
@@ -3947,11 +3803,11 @@ CVerticalSwitch::CVerticalSwitch (const CRect &size, CControlListener *listener,
 }
 
 //------------------------------------------------------------------------
-CVerticalSwitch::CVerticalSwitch (const CRect &size, CControlListener *listener, long tag,
+CVerticalSwitch::CVerticalSwitch (const CRect& size, CControlListener* listener, long tag,
                                   long subPixmaps,       // number of subPixmaps
                                   CCoord heightOfOneImage, // height of one image in pixel
                                   long iMaxPositions,
-                                  CBitmap *background, CPoint &offset)
+                                  CBitmap* background, CPoint &offset)
 : CControl (size, listener, tag, background), offset (offset),
 	subPixmaps (subPixmaps), heightOfOneImage (heightOfOneImage),
 	iMaxPositions (iMaxPositions)
@@ -3981,7 +3837,7 @@ void CVerticalSwitch::draw (CDrawContext *pContext)
 
 #if VSTGUI_ENABLE_DEPRECATED_METHODS
 //------------------------------------------------------------------------
-void CVerticalSwitch::mouse (CDrawContext *pContext, CPoint &where, long button)
+void CVerticalSwitch::mouse (CDrawContext *pContext, CPoint& where, long button)
 {
 	if (!bMouseEnabled)
 		return;
@@ -4027,7 +3883,7 @@ void CVerticalSwitch::mouse (CDrawContext *pContext, CPoint &where, long button)
 #endif
 
 //------------------------------------------------------------------------
-CMouseEventResult CVerticalSwitch::onMouseDown (CPoint &where, const long& buttons)
+CMouseEventResult CVerticalSwitch::onMouseDown (CPoint& where, const long& buttons)
 {
 	if (!(buttons & kLButton))
 		return kMouseEventNotHandled;
@@ -4046,14 +3902,14 @@ CMouseEventResult CVerticalSwitch::onMouseDown (CPoint &where, const long& butto
 }
 
 //------------------------------------------------------------------------
-CMouseEventResult CVerticalSwitch::onMouseUp (CPoint &where, const long& buttons)
+CMouseEventResult CVerticalSwitch::onMouseUp (CPoint& where, const long& buttons)
 {
 	endEdit ();
 	return kMouseEventHandled;
 }
 
 //------------------------------------------------------------------------
-CMouseEventResult CVerticalSwitch::onMouseMoved (CPoint &where, const long& buttons)
+CMouseEventResult CVerticalSwitch::onMouseMoved (CPoint& where, const long& buttons)
 {
 	if (buttons & kLButton)
 	{
@@ -4077,8 +3933,8 @@ CMouseEventResult CVerticalSwitch::onMouseMoved (CPoint &where, const long& butt
 /*! @class CHorizontalSwitch
 Same as the CVerticalSwitch but horizontal.
 */
-CHorizontalSwitch::CHorizontalSwitch (const CRect &size, CControlListener *listener, long tag,
-								  CBitmap *background, CPoint &offset)
+CHorizontalSwitch::CHorizontalSwitch (const CRect& size, CControlListener* listener, long tag,
+								  CBitmap* background, CPoint &offset)
 : CControl (size, listener, tag, background), offset (offset)
 {
 	heightOfOneImage = size.width ();
@@ -4089,11 +3945,11 @@ CHorizontalSwitch::CHorizontalSwitch (const CRect &size, CControlListener *liste
 }
 
 //------------------------------------------------------------------------
-CHorizontalSwitch::CHorizontalSwitch (const CRect &size, CControlListener *listener, long tag,
+CHorizontalSwitch::CHorizontalSwitch (const CRect& size, CControlListener* listener, long tag,
                                   long subPixmaps,   // number of subPixmaps
                                   CCoord heightOfOneImage, // height of one image in pixel
                                   long iMaxPositions,
-                                  CBitmap *background, CPoint &offset)
+                                  CBitmap* background, CPoint &offset)
 : CControl (size, listener, tag, background)
 , offset (offset)
 , subPixmaps (subPixmaps)
@@ -4125,7 +3981,7 @@ void CHorizontalSwitch::draw (CDrawContext *pContext)
 
 #if VSTGUI_ENABLE_DEPRECATED_METHODS
 //------------------------------------------------------------------------
-void CHorizontalSwitch::mouse (CDrawContext *pContext, CPoint &where, long button)
+void CHorizontalSwitch::mouse (CDrawContext *pContext, CPoint& where, long button)
 {
 	if (!bMouseEnabled)
 		return;
@@ -4172,7 +4028,7 @@ void CHorizontalSwitch::mouse (CDrawContext *pContext, CPoint &where, long butto
 #endif
 
 //------------------------------------------------------------------------
-CMouseEventResult CHorizontalSwitch::onMouseDown (CPoint &where, const long& buttons)
+CMouseEventResult CHorizontalSwitch::onMouseDown (CPoint& where, const long& buttons)
 {
 	if (!(buttons & kLButton))
 		return kMouseEventNotHandled;
@@ -4191,14 +4047,14 @@ CMouseEventResult CHorizontalSwitch::onMouseDown (CPoint &where, const long& but
 }
 
 //------------------------------------------------------------------------
-CMouseEventResult CHorizontalSwitch::onMouseUp (CPoint &where, const long& buttons)
+CMouseEventResult CHorizontalSwitch::onMouseUp (CPoint& where, const long& buttons)
 {
 	endEdit ();
 	return kMouseEventHandled;
 }
 
 //------------------------------------------------------------------------
-CMouseEventResult CHorizontalSwitch::onMouseMoved (CPoint &where, const long& buttons)
+CMouseEventResult CHorizontalSwitch::onMouseMoved (CPoint& where, const long& buttons)
 {
 	if (buttons & kLButton)
 	{
@@ -4225,17 +4081,17 @@ One click on its leftside, then the first subpixmap is displayed.
 One click on its rightside, then the third subpixmap is displayed.
 When the mouse button is relaxed, the second subpixmap is framed.
 */
-CRockerSwitch::CRockerSwitch (const CRect &size, CControlListener *listener, long tag,              // identifier tag (ID)
-                              CBitmap *background, CPoint &offset, const long style)
+CRockerSwitch::CRockerSwitch (const CRect& size, CControlListener* listener, long tag,              // identifier tag (ID)
+                              CBitmap* background, CPoint &offset, const long style)
 :	CControl (size, listener, tag, background), offset (offset), style (style)
 {
 	heightOfOneImage = size.width ();
 }
 
 //------------------------------------------------------------------------
-CRockerSwitch::CRockerSwitch (const CRect &size, CControlListener *listener, long tag,              // identifier tag (ID)
+CRockerSwitch::CRockerSwitch (const CRect& size, CControlListener* listener, long tag,              // identifier tag (ID)
                               CCoord heightOfOneImage, // height of one image in pixel
-                              CBitmap *background, CPoint &offset, const long style)
+                              CBitmap* background, CPoint &offset, const long style)
 :	CControl (size, listener, tag, background), offset (offset), 
 	heightOfOneImage (heightOfOneImage), style (style)
 {}
@@ -4266,7 +4122,7 @@ void CRockerSwitch::draw (CDrawContext *pContext)
 
 #if VSTGUI_ENABLE_DEPRECATED_METHODS
 //------------------------------------------------------------------------
-void CRockerSwitch::mouse (CDrawContext *pContext, CPoint &where, long button)
+void CRockerSwitch::mouse (CDrawContext *pContext, CPoint& where, long button)
 {
 	if (!bMouseEnabled)
 		return;
@@ -4349,7 +4205,7 @@ void CRockerSwitch::mouse (CDrawContext *pContext, CPoint &where, long button)
 #endif
 
 //------------------------------------------------------------------------
-CMouseEventResult CRockerSwitch::onMouseDown (CPoint &where, const long& buttons)
+CMouseEventResult CRockerSwitch::onMouseDown (CPoint& where, const long& buttons)
 {
 	if (!(buttons & kLButton))
 		return kMouseEventNotHandled;
@@ -4359,7 +4215,7 @@ CMouseEventResult CRockerSwitch::onMouseDown (CPoint &where, const long& buttons
 }
 
 //------------------------------------------------------------------------
-CMouseEventResult CRockerSwitch::onMouseUp (CPoint &where, const long& buttons)
+CMouseEventResult CRockerSwitch::onMouseUp (CPoint& where, const long& buttons)
 {
 	value = 0.f;
 	if (isDirty ())
@@ -4369,7 +4225,7 @@ CMouseEventResult CRockerSwitch::onMouseUp (CPoint &where, const long& buttons)
 }
 
 //------------------------------------------------------------------------
-CMouseEventResult CRockerSwitch::onMouseMoved (CPoint &where, const long& buttons)
+CMouseEventResult CRockerSwitch::onMouseMoved (CPoint& where, const long& buttons)
 {
 	if (buttons & kLButton)
 	{
@@ -4408,7 +4264,7 @@ CMouseEventResult CRockerSwitch::onMouseMoved (CPoint &where, const long& button
 }
 
 //------------------------------------------------------------------------
-bool CRockerSwitch::onWheel (const CPoint &where, const float &distance, const long &buttons)
+bool CRockerSwitch::onWheel (const CPoint& where, const float &distance, const long &buttons)
 {
 	if (!bMouseEnabled)
 		return false;
@@ -4441,8 +4297,8 @@ bool CRockerSwitch::onWheel (const CPoint &where, const float &distance, const l
 /*! @class CMovieBitmap
 A movie pixmap allows to display different subpixmaps according to its current value.
 */
-CMovieBitmap::CMovieBitmap (const CRect &size, CControlListener *listener, long tag,
-                            CBitmap *background, CPoint &offset)
+CMovieBitmap::CMovieBitmap (const CRect& size, CControlListener* listener, long tag,
+                            CBitmap* background, CPoint &offset)
   :	CControl (size, listener, tag, background), offset (offset),
 		subPixmaps (subPixmaps), heightOfOneImage (heightOfOneImage)
 {
@@ -4451,10 +4307,10 @@ CMovieBitmap::CMovieBitmap (const CRect &size, CControlListener *listener, long 
 }
 
 //------------------------------------------------------------------------
-CMovieBitmap::CMovieBitmap (const CRect &size, CControlListener *listener, long tag,
+CMovieBitmap::CMovieBitmap (const CRect& size, CControlListener* listener, long tag,
                             long subPixmaps,        // number of subPixmaps
                             CCoord heightOfOneImage,  // height of one image in pixel
-                            CBitmap *background, CPoint &offset)
+                            CBitmap* background, CPoint &offset)
   :	CControl (size, listener, tag, background), offset (offset),
 		subPixmaps (subPixmaps), heightOfOneImage (heightOfOneImage)
 {}
@@ -4491,17 +4347,17 @@ void CMovieBitmap::draw (CDrawContext *pContext)
 /*! @class CMovieButton
 A movie button is a bi-states button with 2 subpixmaps. These subpixmaps are stacked in the pixmap.
 */
-CMovieButton::CMovieButton (const CRect &size, CControlListener *listener, long tag,              // identifier tag (ID)
-                            CBitmap *background, CPoint &offset)
+CMovieButton::CMovieButton (const CRect& size, CControlListener* listener, long tag,              // identifier tag (ID)
+                            CBitmap* background, CPoint &offset)
 : CControl (size, listener, tag, background), offset (offset), buttonState (value)
 {
 	heightOfOneImage = size.height ();
 }
 
 //------------------------------------------------------------------------
-CMovieButton::CMovieButton (const CRect &size, CControlListener *listener, long tag,
+CMovieButton::CMovieButton (const CRect& size, CControlListener* listener, long tag,
                             CCoord heightOfOneImage, // height of one image in pixel
-                            CBitmap *background, CPoint &offset)
+                            CBitmap* background, CPoint &offset)
 	:	CControl (size, listener, tag, background), offset (offset),
 		heightOfOneImage (heightOfOneImage), buttonState (value)
 {}
@@ -4538,7 +4394,7 @@ void CMovieButton::draw (CDrawContext *pContext)
 
 #if VSTGUI_ENABLE_DEPRECATED_METHODS
 //------------------------------------------------------------------------
-void CMovieButton::mouse (CDrawContext *pContext, CPoint &where, long button)
+void CMovieButton::mouse (CDrawContext *pContext, CPoint& where, long button)
 {
 	if (!bMouseEnabled)
 		return;
@@ -4596,7 +4452,7 @@ void CMovieButton::mouse (CDrawContext *pContext, CPoint &where, long button)
 #endif
 
 //------------------------------------------------------------------------
-CMouseEventResult CMovieButton::onMouseDown (CPoint &where, const long& buttons)
+CMouseEventResult CMovieButton::onMouseDown (CPoint& where, const long& buttons)
 {
 	if (!(buttons & kLButton))
 		return kMouseEventNotHandled;
@@ -4606,14 +4462,14 @@ CMouseEventResult CMovieButton::onMouseDown (CPoint &where, const long& buttons)
 }
 
 //------------------------------------------------------------------------
-CMouseEventResult CMovieButton::onMouseUp (CPoint &where, const long& buttons)
+CMouseEventResult CMovieButton::onMouseUp (CPoint& where, const long& buttons)
 {
 	endEdit ();
 	return kMouseEventHandled;
 }
 
 //------------------------------------------------------------------------
-CMouseEventResult CMovieButton::onMouseMoved (CPoint &where, const long& buttons)
+CMouseEventResult CMovieButton::onMouseMoved (CPoint& where, const long& buttons)
 {
 	if (buttons & kLButton)
 	{
@@ -4641,8 +4497,8 @@ An auto-animation control contains a given number of subpixmap which can be disp
 Two functions allows to get the previous or the next subpixmap (these functions increase or decrease the current value of this control).
 */
 // displays bitmaps within a (child-) window
-CAutoAnimation::CAutoAnimation (const CRect &size, CControlListener *listener, long tag,
-                                CBitmap *background, CPoint &offset)
+CAutoAnimation::CAutoAnimation (const CRect& size, CControlListener* listener, long tag,
+                                CBitmap* background, CPoint &offset)
 : CControl (size, listener, tag, background), offset (offset), bWindowOpened (false)
 {
 	heightOfOneImage = size.height ();
@@ -4652,10 +4508,10 @@ CAutoAnimation::CAutoAnimation (const CRect &size, CControlListener *listener, l
 }
 
 //------------------------------------------------------------------------
-CAutoAnimation::CAutoAnimation (const CRect &size, CControlListener *listener, long tag,
+CAutoAnimation::CAutoAnimation (const CRect& size, CControlListener* listener, long tag,
                                 long subPixmaps,	 // number of subPixmaps...
                                 CCoord heightOfOneImage, // height of one image in pixel
-                                CBitmap *background, CPoint &offset)
+                                CBitmap* background, CPoint &offset)
 : CControl (size, listener, tag, background)
 , offset (offset)
 , subPixmaps (subPixmaps)
@@ -4691,7 +4547,7 @@ void CAutoAnimation::draw (CDrawContext *pContext)
 
 #if VSTGUI_ENABLE_DEPRECATED_METHODS
 //------------------------------------------------------------------------
-void CAutoAnimation::mouse (CDrawContext *pContext, CPoint &where, long button)
+void CAutoAnimation::mouse (CDrawContext *pContext, CPoint& where, long button)
 {
 	if (!bMouseEnabled)
 		return;
@@ -4726,7 +4582,7 @@ void CAutoAnimation::mouse (CDrawContext *pContext, CPoint &where, long button)
 #endif
 
 //------------------------------------------------------------------------
-CMouseEventResult CAutoAnimation::onMouseDown (CPoint &where, const long& buttons)
+CMouseEventResult CAutoAnimation::onMouseDown (CPoint& where, const long& buttons)
 {
 	if (buttons & kLButton)
 	{
@@ -4790,7 +4646,7 @@ The range of variation of the handle should be defined.
 By default the handler is drawn with transparency (white color).
 By clicking Alt+Left Mouse the default value is used.
 */
-CSlider::CSlider (const CRect &rect, CControlListener *listener, long tag,
+CSlider::CSlider (const CRect &rect, CControlListener* listener, long tag,
                   long      iMinPos, // min position in pixel
                   long      iMaxPos, // max position in pixel
                   CBitmap  *handle,  // bitmap of slider
@@ -4841,7 +4697,7 @@ CSlider::CSlider (const CRect &rect, CControlListener *listener, long tag,
 }
 
 //------------------------------------------------------------------------
-CSlider::CSlider (const CRect &rect, CControlListener *listener, long tag,
+CSlider::CSlider (const CRect &rect, CControlListener* listener, long tag,
                   CPoint   &offsetHandle,    // handle offset
                   long     _rangeHandle, // size of handle range
                   CBitmap  *handle,     // bitmap of slider
@@ -4969,7 +4825,7 @@ void CSlider::draw (CDrawContext *pContext)
 
 #if VSTGUI_ENABLE_DEPRECATED_METHODS
 //------------------------------------------------------------------------
-void CSlider::mouse (CDrawContext *pContext, CPoint &where, long button)
+void CSlider::mouse (CDrawContext *pContext, CPoint& where, long button)
 {
 	if (!bMouseEnabled)
 		return;
@@ -5088,7 +4944,7 @@ void CSlider::mouse (CDrawContext *pContext, CPoint &where, long button)
 #endif
 
 //------------------------------------------------------------------------
-CMouseEventResult CSlider::onMouseDown (CPoint &where, const long& buttons)
+CMouseEventResult CSlider::onMouseDown (CPoint& where, const long& buttons)
 {
 	if (!(buttons & kLButton))
 		return kMouseEventNotHandled;
@@ -5157,14 +5013,14 @@ CMouseEventResult CSlider::onMouseDown (CPoint &where, const long& buttons)
 }
 
 //------------------------------------------------------------------------
-CMouseEventResult CSlider::onMouseUp (CPoint &where, const long& buttons)
+CMouseEventResult CSlider::onMouseUp (CPoint& where, const long& buttons)
 {
 	endEdit ();
 	return kMouseEventHandled;
 }
 
 //------------------------------------------------------------------------
-CMouseEventResult CSlider::onMouseMoved (CPoint &where, const long& buttons)
+CMouseEventResult CSlider::onMouseMoved (CPoint& where, const long& buttons)
 {
 	if (buttons & kLButton)
 	{
@@ -5197,7 +5053,7 @@ CMouseEventResult CSlider::onMouseMoved (CPoint &where, const long& buttons)
 }
 
 //------------------------------------------------------------------------
-bool CSlider::onWheel (const CPoint &where, const float &distance, const long &buttons)
+bool CSlider::onWheel (const CPoint& where, const float &distance, const long &buttons)
 {
 	if (!bMouseEnabled)
 		return false;
@@ -5278,7 +5134,7 @@ void CSlider::setHandle (CBitmap *_pHandle)
 /*! @class CVerticalSlider
 This is the vertical slider. See CSlider.
 */
-CVerticalSlider::CVerticalSlider (const CRect &rect, CControlListener *listener, long tag,
+CVerticalSlider::CVerticalSlider (const CRect &rect, CControlListener* listener, long tag,
                                   long      iMinPos, // min position in pixel
                                   long      iMaxPos, // max position in pixel
                                   CBitmap  *handle,  // bitmap of slider
@@ -5289,7 +5145,7 @@ CVerticalSlider::CVerticalSlider (const CRect &rect, CControlListener *listener,
 {}
 
 //------------------------------------------------------------------------
-CVerticalSlider::CVerticalSlider (const CRect &rect, CControlListener *listener, long tag,
+CVerticalSlider::CVerticalSlider (const CRect &rect, CControlListener* listener, long tag,
                           CPoint   &offsetHandle,    // handle offset
                           long     rangeHandle, // size of handle range
                           CBitmap  *handle,     // bitmap of slider
@@ -5306,7 +5162,7 @@ CVerticalSlider::CVerticalSlider (const CRect &rect, CControlListener *listener,
 /*! @class CHorizontalSlider
 This is the horizontal slider. See CSlider.
 */
-CHorizontalSlider::CHorizontalSlider (const CRect &rect, CControlListener *listener, long tag,
+CHorizontalSlider::CHorizontalSlider (const CRect &rect, CControlListener* listener, long tag,
                                   long      iMinPos, // min Y position in pixel
                                   long      iMaxPos, // max Y position in pixel
                                   CBitmap  *handle,  // bitmap of slider
@@ -5317,7 +5173,7 @@ CHorizontalSlider::CHorizontalSlider (const CRect &rect, CControlListener *liste
 {}
 
 //------------------------------------------------------------------------
-CHorizontalSlider::CHorizontalSlider (const CRect &rect, CControlListener *listener, long tag,
+CHorizontalSlider::CHorizontalSlider (const CRect &rect, CControlListener* listener, long tag,
                           CPoint   &offsetHandle,    // handle offset
                           long     rangeHandle, // size of handle range
                           CBitmap  *handle,     // bitmap of slider
@@ -5335,8 +5191,8 @@ CHorizontalSlider::CHorizontalSlider (const CRect &rect, CControlListener *liste
 Can be used to display a counter with maximum 7 digits.
 All digit have the same size and are stacked in height in the pixmap.
 */
-CSpecialDigit::CSpecialDigit (const CRect &size,
-                              CControlListener *listener,
+CSpecialDigit::CSpecialDigit (const CRect& size,
+                              CControlListener* listener,
                               long      tag,        // tag identifier
                               long     dwPos,      // actual value
                               long      iNumbers,   // amount of numbers (max 7)
@@ -5454,17 +5310,17 @@ Define a button with 2 states using 2 subpixmaps.
 One click on it, then the second subpixmap is displayed.
 When the mouse button is relaxed, the first subpixmap is framed.
 */
-CKickButton::CKickButton (const CRect &size, CControlListener *listener, long tag,
-                          CBitmap *background, CPoint &offset)
+CKickButton::CKickButton (const CRect& size, CControlListener* listener, long tag,
+                          CBitmap* background, CPoint &offset)
 :	CControl (size, listener, tag, background), offset (offset)
 {
 	heightOfOneImage = size.height ();
 }
 
 //------------------------------------------------------------------------
-CKickButton::CKickButton (const CRect &size, CControlListener *listener, long tag,
+CKickButton::CKickButton (const CRect& size, CControlListener* listener, long tag,
                           CCoord heightOfOneImage, // height of one image in pixel
-                          CBitmap *background, CPoint &offset)
+                          CBitmap* background, CPoint &offset)
 :	CControl (size, listener, tag, background), offset (offset), 
 	heightOfOneImage (heightOfOneImage)
 {}
@@ -5495,7 +5351,7 @@ void CKickButton::draw (CDrawContext *pContext)
 
 #if VSTGUI_ENABLE_DEPRECATED_METHODS
 //------------------------------------------------------------------------
-void CKickButton::mouse (CDrawContext *pContext, CPoint &where, long button)
+void CKickButton::mouse (CDrawContext *pContext, CPoint& where, long button)
 {
 	if (!bMouseEnabled)
 		return;
@@ -5553,7 +5409,7 @@ void CKickButton::mouse (CDrawContext *pContext, CPoint &where, long button)
 #endif
 
 //------------------------------------------------------------------------
-CMouseEventResult CKickButton::onMouseDown (CPoint &where, const long& buttons)
+CMouseEventResult CKickButton::onMouseDown (CPoint& where, const long& buttons)
 {
 	if (!(buttons & kLButton))
 		return kMouseEventNotHandled;
@@ -5563,7 +5419,7 @@ CMouseEventResult CKickButton::onMouseDown (CPoint &where, const long& buttons)
 }
 
 //------------------------------------------------------------------------
-CMouseEventResult CKickButton::onMouseUp (CPoint &where, const long& buttons)
+CMouseEventResult CKickButton::onMouseUp (CPoint& where, const long& buttons)
 {
 	if (value && listener)
 		listener->valueChanged (this);
@@ -5577,7 +5433,7 @@ CMouseEventResult CKickButton::onMouseUp (CPoint &where, const long& buttons)
 }
 
 //------------------------------------------------------------------------
-CMouseEventResult CKickButton::onMouseMoved (CPoint &where, const long& buttons)
+CMouseEventResult CKickButton::onMouseMoved (CPoint& where, const long& buttons)
 {
 	if (buttons & kLButton)
 	{
@@ -5594,6 +5450,36 @@ CMouseEventResult CKickButton::onMouseMoved (CPoint &where, const long& buttons)
 }
 
 //------------------------------------------------------------------------
+class CDefaultSplashScreenView : public CControl
+{
+public:
+	CDefaultSplashScreenView (const CRect& size, CControlListener* listener, CBitmap* bitmap, const CPoint& offset) : CControl (size, listener), offset (offset) { setBackground (bitmap); }
+
+	void draw (CDrawContext *pContext)
+	{
+		if (bTransparencyEnabled)
+			pBackground->drawTransparent (pContext, size, offset);
+		else
+			pBackground->draw (pContext, size, offset);
+		setDirty (false);
+	}
+
+	CMouseEventResult onMouseDown (CPoint& where, const long& buttons)
+	{
+		if (buttons & kLButton)
+		{
+			if (listener)
+				listener->valueChanged (this);
+			return kMouseDownEventHandledButDontNeedMovedOrUpEvents;
+		}
+		return kMouseEventNotHandled;
+	}
+	
+protected:
+	CPoint offset;
+};
+
+//------------------------------------------------------------------------
 // CSplashScreen
 //------------------------------------------------------------------------
 /*! @class CSplashScreen
@@ -5602,40 +5488,35 @@ an another click on the displayed area reinstalls the normal frame.
 This can be used to display a help view over the other views.
 */
 // one click draw its pixmap, an another click redraw its parent
-CSplashScreen::CSplashScreen (const CRect &size, CControlListener *listener, long tag,
-                              CBitmap *background,
-                              CRect   &toDisplay,
-                              CPoint  &offset)
-:	CControl (size, listener, tag, background), 
-	toDisplay (toDisplay), offset (offset), bitmapTransparency (255)
-{}
+CSplashScreen::CSplashScreen (const CRect& size, CControlListener* listener, long tag,
+                              CBitmap* background,
+                              CRect&   toDisplay,
+                              CPoint&  offset)
+: CControl (size, listener, tag, background)
+, toDisplay (toDisplay)
+, offset (offset)
+, modalView (0)
+{
+	modalView = new CDefaultSplashScreenView (toDisplay, this, background, offset);
+}
+
+//------------------------------------------------------------------------
+CSplashScreen::CSplashScreen (const CRect& size, CControlListener* listener, long tag, CView* splashView)
+: CControl (size, listener, tag)
+, modalView (splashView)
+{
+}
 
 //------------------------------------------------------------------------
 CSplashScreen::~CSplashScreen ()
-{}
-
-//------------------------------------------------------------------------
-void CSplashScreen::setBitmapTransparency (unsigned char transparency)
 {
-	bitmapTransparency = transparency;
-	setTransparency (bitmapTransparency != 255);
+	if (modalView)
+		modalView->forget ();
 }
 
 //------------------------------------------------------------------------
 void CSplashScreen::draw (CDrawContext *pContext)
 {
-	if (value && pBackground)
-	{
-		if (bTransparencyEnabled)
-		{
-			if (bitmapTransparency)
-				pBackground->drawAlphaBlend (pContext, toDisplay, offset, bitmapTransparency);
-			else
-			pBackground->drawTransparent (pContext, toDisplay, offset);
-		}
-		else
-			pBackground->draw (pContext, toDisplay, offset);
-	}
 	setDirty (false);
 }
 
@@ -5650,7 +5531,7 @@ bool CSplashScreen::hitTest (const CPoint& where, const long buttons)
 
 #if VSTGUI_ENABLE_DEPRECATED_METHODS
 //------------------------------------------------------------------------
-void CSplashScreen::mouse (CDrawContext *pContext, CPoint &where, long button)
+void CSplashScreen::mouse (CDrawContext *pContext, CPoint& where, long button)
 {
 	if (!bMouseEnabled)
 		return;
@@ -5669,60 +5550,27 @@ void CSplashScreen::mouse (CDrawContext *pContext, CPoint &where, long button)
 	value = !value;
 	if (value)
 	{
-		if (getFrame () && getFrame ()->setModalView (this))
+		if (getFrame () && getFrame ()->setModalView (modalView))
 		{
-			keepSize = size;
-			size = toDisplay;
-			mouseableArea = size;
-//			draw (pContext);
 			if (listener)
 				listener->valueChanged (this);
 		}
-		setDirty ();
-	}
-	else
-	{
-		size = keepSize;
-		mouseableArea = size;
-		if (listener)
-			listener->valueChanged (this);
-		if (getFrame ())
-		{
-			getFrame ()->setDirty (true);
-			getFrame ()->setModalView (NULL);
 		}
 	}
-}
 #endif
 
 //------------------------------------------------------------------------
-CMouseEventResult CSplashScreen::onMouseDown (CPoint &where, const long& buttons)
+CMouseEventResult CSplashScreen::onMouseDown (CPoint& where, const long& buttons)
 {
 	if (buttons & kLButton)
 	{
 		value = !value;
 		if (value)
 		{
-			if (getFrame () && getFrame ()->setModalView (this))
+			if (modalView && getFrame () && getFrame ()->setModalView (modalView))
 			{
-				keepSize = size;
-				size = toDisplay;
-				mouseableArea = size;
 				if (listener)
 					listener->valueChanged (this);
-			}
-			invalid ();
-		}
-		else
-		{
-			invalid ();
-			size = keepSize;
-			mouseableArea = size;
-			if (listener)
-				listener->valueChanged (this);
-			if (getFrame ())
-			{
-				getFrame ()->setModalView (NULL);
 			}
 		}
 		return kMouseDownEventHandledButDontNeedMovedOrUpEvents;
@@ -5731,19 +5579,28 @@ CMouseEventResult CSplashScreen::onMouseDown (CPoint &where, const long& buttons
 }
 
 //------------------------------------------------------------------------
+void CSplashScreen::valueChanged (CControl *pControl)
+{
+	if (pControl == modalView)
+	{
+		unSplash ();
+		if (listener)
+			listener->valueChanged (this);
+	}
+}
+
+//------------------------------------------------------------------------
 void CSplashScreen::unSplash ()
 {
-	setDirty ();
 	value = 0.f;
 
-	size = keepSize;
-	mouseableArea = size;
 	if (getFrame ())
 	{
-		if (getFrame ()->getModalView () == this)
+		if (getFrame ()->getModalView () == modalView)
 		{
+			if (modalView)
+				modalView->invalid ();
 			getFrame ()->setModalView (NULL);
-			getFrame ()->invalid ();
 		}
 	}
 }
@@ -5751,7 +5608,7 @@ void CSplashScreen::unSplash ()
 //------------------------------------------------------------------------
 // CVuMeter
 //------------------------------------------------------------------------
-CVuMeter::CVuMeter (const CRect &size, CBitmap *onBitmap, CBitmap *offBitmap,
+CVuMeter::CVuMeter (const CRect& size, CBitmap* onBitmap, CBitmap* offBitmap,
                     long nbLed, const long style)
 	: CControl (size, 0, 0),
 	  onBitmap (onBitmap), offBitmap (offBitmap), pOScreen (0),

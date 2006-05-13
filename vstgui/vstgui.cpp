@@ -2,7 +2,7 @@
 // VST Plug-Ins SDK
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 //
-// Version 3.5       $Date: 2006-04-30 15:33:51 $ 
+// Version 3.5       $Date: 2006-05-13 06:58:26 $ 
 //
 // Added Motif/Windows vers.: Yvan Grabit              01.98
 // Added Mac version        : Charlie Steinberg        02.98
@@ -125,7 +125,7 @@ OSVERSIONINFOEX	gSystemVersion;
 #include <commdlg.h>
 
 #if DYNAMICALPHABLEND
-typedef  BOOL (WINAPI *PFNALPHABLEND)(
+typedef  BOOL (WINAPI* PFNALPHABLEND)(
   HDC hdcDest,                 // handle to destination DC
   int nXOriginDest,            // x-coord of upper-left corner
   int nYOriginDest,            // y-coord of upper-left corner
@@ -141,7 +141,7 @@ typedef  BOOL (WINAPI *PFNALPHABLEND)(
 
 PFNALPHABLEND pfnAlphaBlend = NULL;
 
-typedef	BOOL (WINAPI *PFNTRANSPARENTBLT)(
+typedef	BOOL (WINAPI* PFNTRANSPARENTBLT)(
   HDC hdcDest,        // handle to destination DC
   int nXOriginDest,   // x-coord of destination upper-left corner
   int nYOriginDest,   // y-coord of destination upper-left corner
@@ -258,8 +258,8 @@ void CColor2RGBColor (const CColor &cc, RGBColor &rgb);
 void RGBColor2CColor (const RGBColor &rgb, CColor &cc);
 
 #if MAC_OLD_DRAG
-static void install_drop (CFrame *frame);
-static void remove_drop (CFrame *frame);
+static void install_drop (CFrame* frame);
+static void remove_drop (CFrame* frame);
 #endif
 
 //-----------------------------------------------------------------------------
@@ -299,51 +299,9 @@ void RGBColor2CColor (const RGBColor &rgb, CColor &cc)
 }
 
 END_NAMESPACE_VSTGUI
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
-#elif BEOS
-
-#include <TranslationUtils.h>
-#include <Resources.h>
-#include <Bitmap.h>
-#include <Region.h>
-#include <View.h>
-#include <Window.h>
-#include <Message.h>
-#include <Entry.h>
-#include <Path.h>
-
-//--------------------------
-class PlugView: public BView
-{
-public:
-	PlugView (BRect frame, CFrame* cframe);
-	void Draw (BRect updateRect);
-	void MouseDown (BPoint where);
-	void MessageReceived (BMessage *msg);
-private:
-	CFrame*	cframe;
-};
-
-long convertPoint2Angle (CPoint &pm, CPoint &pt);
-
-drawing_mode modeToPlatform [] = {
-//  kCopyMode  kOrMode    kXorMode
-	B_OP_COPY, B_OP_OVER, B_OP_INVERT
-};
-
-long gStandardFontSize[] = { 12, 18, 14, 12, 11, 10, 9, 12 };
-const char*	standardFont  = "Swis721 BT";
-const char* standardFontS = "Roman";
-const char* systemFont    = "Swis721 BT";
-const char* systemFontS   = "Bold";
-const char* gStandardFontName[] = { systemFont,
-	standardFont, standardFont, standardFont, standardFont, standardFont,
-	standardFont };
-const char* gStandardFontStyle[] = { systemFontS,
-	standardFontS, standardFontS, standardFontS, standardFontS, standardFontS,
-	standardFontS };
 #endif
+//-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
 
 //-----------------------------------------------------------------------------
 bool CRect::pointInside (const CPoint& where) const
@@ -391,7 +349,7 @@ const CColor kYellowCColor		= {255, 255,   0, 255};
 const CColor kMagentaCColor		= {255,   0, 255, 255};
 const CColor kCyanCColor		= {  0, 255, 255, 255};
 
-#if VSTGUI_USES_UTF8 || BEOS
+#if VSTGUI_USES_UTF8
 const char* kDegreeSymbol		= "\xC2\xB0";
 const char* kInfiniteSymbol		= "\xE2\x88\x9E";
 const char* kCopyrightSymbol	= "\xC2\xA9";
@@ -612,7 +570,7 @@ void CFontDesc::cleanup ()
  * @param inSystemContext the platform system context, can be NULL
  * @param inWindow the platform window object
  */
-CDrawContext::CDrawContext (CFrame *inFrame, void *inSystemContext, void *inWindow)
+CDrawContext::CDrawContext (CFrame* inFrame, void* inSystemContext, void* inWindow)
 : pSystemContext (inSystemContext)
 , pWindow (inWindow)
 , pFrame (inFrame)
@@ -713,7 +671,7 @@ CDrawContext::CDrawContext (CFrame *inFrame, void *inSystemContext, void *inWind
 	{
 		gCGContext = (CGContextRef) pSystemContext;
 		CGContextSaveGState (gCGContext); // save the original state
-		CGContextScaleCTM (gCGContext, 1, -1);
+//		CGContextScaleCTM (gCGContext, 1, -1);
 		CGContextSetShouldAntialias (gCGContext, false);
 		CGContextSetFillColorSpace (gCGContext, GetGenericRGBColorSpace ());
 		CGContextSetStrokeColorSpace (gCGContext, GetGenericRGBColorSpace ()); 
@@ -759,11 +717,6 @@ CDrawContext::CDrawContext (CFrame *inFrame, void *inSystemContext, void *inWind
 
 	#endif
 	
-#elif BEOS
-	pView = (BView*) pSystemContext;
-	if (pView)
-		pView->LockLooper ();
-
 #endif
 
 	if (1 || pSystemContext)
@@ -829,12 +782,6 @@ CDrawContext::~CDrawContext ()
 			QDEndCGContext (GetWindowPort ((WindowRef)pWindow), &gCGContext);
 		if (pFrame)
 			pFrame->setDrawContext (0);
-	}
-#elif BEOS
-	if (pView)
-	{
-		pView->Flush ();
-		pView->UnlockLooper ();
 	}
 #endif
 }
@@ -1078,11 +1025,6 @@ void CDrawContext::setClipRect (const CRect &clip)
 	DeleteObject (hRgn);
 	#endif
 
-#elif BEOS
-	clipping_rect r = {clipRect.left, clipRect.top, clipRect.right - 1, clipRect.bottom - 1};	
-	BRegion region;
-	region.Set (r);
-	pView->ConstrainClippingRegion (&region);
 #endif
 }
 
@@ -1114,8 +1056,6 @@ void CDrawContext::resetClipRect ()
 #elif MAC || WINDOWS
 	setClipRect (newClip);
 
-#elif BEOS
-	pView->ConstrainClippingRegion (NULL);
 #endif
 
 	clipRect = newClip;
@@ -1146,8 +1086,6 @@ void CDrawContext::moveTo (const CPoint &_point)
 	#endif
   	penLoc = point;
   	
-#elif BEOS
-	penLoc = point;
 #endif
 }
 
@@ -1233,13 +1171,6 @@ void CDrawContext::lineTo (const CPoint& _point)
 	SetGWorld (OrigPort, OrigDevice);
 	#endif
 
-#elif BEOS
-	rgb_color c = { frameColor.red, frameColor.green, frameColor.blue, 255 };
-	pView->SetHighColor (c);
-	pView->SetDrawingMode (modeToPlatform [drawMode]);
-	pView->SetPenSize (frameWidth);
-	lineFromTo (penLoc, point);
-	penLoc = point;
 #endif
 }
 
@@ -1294,7 +1225,7 @@ void CDrawContext::drawLines (const CPoint* points, const long& numLines)
 }
 
 //-----------------------------------------------------------------------------
-void CDrawContext::drawPolygon (const CPoint *pPoints, long numberOfPoints, const CDrawStyle drawStyle)
+void CDrawContext::drawPolygon (const CPoint* pPoints, long numberOfPoints, const CDrawStyle drawStyle)
 {
 #if MAC
 	#if QUARTZ
@@ -1325,7 +1256,7 @@ void CDrawContext::drawPolygon (const CPoint *pPoints, long numberOfPoints, cons
 	#if GDIPLUS
 	// GDIPLUS todo
 	Gdiplus::Point points[30];
-	Gdiplus::Point *polyPoints;
+	Gdiplus::Point* polyPoints;
 	bool allocated = false;
 	if (numberOfPoints > 30)
 	{
@@ -1352,7 +1283,7 @@ void CDrawContext::drawPolygon (const CPoint *pPoints, long numberOfPoints, cons
 
 	#else
 	POINT points[30];
-	POINT *polyPoints;
+	POINT* polyPoints;
 	bool allocated = false;
 
 	if (numberOfPoints > 30)
@@ -1386,8 +1317,6 @@ void CDrawContext::drawPolygon (const CPoint *pPoints, long numberOfPoints, cons
 	#endif
 
 
-#elif BEOS
-	// todo
 #endif
 }
 
@@ -1484,14 +1413,6 @@ void CDrawContext::drawRect (const CRect &_rect, const CDrawStyle drawStyle)
 	}
 	SetGWorld (OrigPort, OrigDevice);
 	#endif
-
-#elif BEOS
-	rgb_color c = { frameColor.red, frameColor.green, frameColor.blue, 255 };
-	pView->SetHighColor (c);
-	pView->SetDrawingMode (modeToPlatform [drawMode]);
-	BRect r (rect.left, rect.top, rect.right, rect.bottom);
-	pView->SetPenSize (frameWidth);
-	pView->StrokeRect (r);
 
 #endif
 }
@@ -1700,14 +1621,6 @@ void CDrawContext::drawArc (const CRect &_rect, const float _startAngle, const f
 	SetGWorld (OrigPort, OrigDevice);
 	#endif
 
-	#elif BEOS
-	rgb_color c = { frameColor.red, frameColor.green, frameColor.blue, 255 };
-	pView->SetHighColor (c);
-	pView->SetDrawingMode (modeToPlatform [drawMode]);
-	BRect r (rect.left, rect.top, rect.right, rect.bottom);
-	pView->SetPenSize (frameWidth);
-	pView->StrokeArc (r, _startAngle, _endAngle);
-
 	#endif
 }
 
@@ -1731,7 +1644,7 @@ void CDrawContext::drawArc (const CRect &_rect, const CPoint &_point1, const CPo
 			 point1.h, point1.v, point2.h, point2.v);
 	#endif
 
-#elif MAC || BEOS
+#elif MAC
 	
 	int	angle1, angle2;
 	if ((point1.v == point2.v) && (point1.h == point2.h))
@@ -1776,13 +1689,6 @@ void CDrawContext::drawArc (const CRect &_rect, const CPoint &_point1, const CPo
 	SetGWorld (OrigPort, OrigDevice);
 	#endif
 	        
-#elif BEOS
-	rgb_color c = { frameColor.red, frameColor.green, frameColor.blue, 255 };
-	pView->SetHighColor (c);
-	pView->SetDrawingMode (modeToPlatform [drawMode]);
-	BRect r (rect.left, rect.top, rect.right, rect.bottom);
-	pView->SetPenSize (frameWidth);
-	pView->StrokeArc (r, angle1 / 64, angle2 / 64);
 #endif	
 
 #endif
@@ -1810,7 +1716,7 @@ void CDrawContext::fillArc (const CRect &_rect, const CPoint &_point1, const CPo
 	SelectObject ((HDC)pSystemContext, oldPen);
 	#endif
 
-#elif MAC || BEOS
+#elif MAC
 	
 	int	angle1, angle2;
 	if ((point1.v == point2.v) && (point1.h == point2.h))
@@ -1857,26 +1763,19 @@ void CDrawContext::fillArc (const CRect &_rect, const CPoint &_point1, const CPo
 	SetGWorld (OrigPort, OrigDevice);
 	#endif
         
-#elif BEOS
-	rgb_color c = { fillColor.red, fillColor.green, fillColor.blue, 255 };
-	pView->SetHighColor (c);
-	pView->SetDrawingMode (modeToPlatform [drawMode]);
-	BRect r (rect.left + 1, rect.top + 1, rect.right - 1, rect.bottom - 1);
-	pView->FillArc (r, angle1 / 64, angle2 / 64);
-
 #endif
 #endif
 }
 
 //-----------------------------------------------------------------------------
-void CDrawContext::polyLine (const CPoint *pPoints, long numberOfPoints)
+void CDrawContext::polyLine (const CPoint* pPoints, long numberOfPoints)
 {
 #if WINDOWS
 	#if GDIPLUS
 	// GDIPLUS todo
 	#else
 	POINT points[30];
-	POINT *polyPoints;
+	POINT* polyPoints;
 	bool allocated = false;
 
 	if (numberOfPoints > 30)
@@ -1919,27 +1818,11 @@ void CDrawContext::polyLine (const CPoint *pPoints, long numberOfPoints)
 	SetGWorld (OrigPort, OrigDevice);
 	#endif
 
-#elif BEOS
-	rgb_color c = { frameColor.red, frameColor.green, frameColor.blue, 255 };
-	pView->SetHighColor (c);
-	pView->SetDrawingMode (modeToPlatform [drawMode]);
-	pView->SetPenSize (frameWidth);
-
-	CPoint begin (pPoints[0]);
-	begin.offset (offset.h, offset.v);
-	CPoint end;
-	for (long i = 1; i < numberOfPoints; i++)
-	{
-		end = pPoints[i];
-		end.offset (offset.h, offset.v);
-		lineFromTo (begin, end);
-		begin = end;
-	}
 #endif
 }
 
 //-----------------------------------------------------------------------------
-void CDrawContext::fillPolygon (const CPoint *pPoints, long numberOfPoints)
+void CDrawContext::fillPolygon (const CPoint* pPoints, long numberOfPoints)
 {
 	// Don't draw boundary
 #if WINDOWS
@@ -1947,7 +1830,7 @@ void CDrawContext::fillPolygon (const CPoint *pPoints, long numberOfPoints)
 	// GDIPLUS todo
 	#else
 	POINT points[30];
-	POINT *polyPoints;
+	POINT* polyPoints;
 	bool allocated = false;
 
 	if (numberOfPoints > 30)
@@ -2004,31 +1887,6 @@ void CDrawContext::fillPolygon (const CPoint *pPoints, long numberOfPoints)
 	SetGWorld (OrigPort, OrigDevice);
 	#endif
 	
-#elif BEOS
-	BPoint bpoints[30];
-	BPoint* polyPoints;
-	bool allocated = false;
-	
-	if (numberOfPoints > 30)
-	{
-		polyPoints = new BPoint [numberOfPoints];
-		if (!polyPoints)
-			return;
-		allocated = true;
-	}	
-	else
-		polyPoints = bpoints;
-			
-	for (long i = 0; i < numberOfPoints; i++)
-		polyPoints[i].Set (pPoints[i].h + offset.h, pPoints[i].v + offset.v);
-
-	rgb_color c = { fillColor.red, fillColor.green, fillColor.blue, 255 };
-	pView->SetHighColor (c);
-	pView->SetDrawingMode (modeToPlatform [drawMode]);
-	pView->FillPolygon (polyPoints, numberOfPoints);
-
-	if (allocated)
-		delete[] polyPoints;
 #endif
 }
 
@@ -2078,12 +1936,6 @@ void CDrawContext::fillRect (const CRect &_rect)
 	SetGWorld (OrigPort, OrigDevice);
 	#endif
 
-#elif BEOS
-	rgb_color c = { fillColor.red, fillColor.green, fillColor.blue, 255 };
-	pView->SetHighColor (c);
-	pView->SetDrawingMode (modeToPlatform [drawMode]);
-	BRect r (rect.left + 1, rect.top + 1, rect.right - 1, rect.bottom - 1);
-	pView->FillRect (r);
 #endif
 }
 
@@ -2468,10 +2320,6 @@ void CDrawContext::setFont (const CFontRef newFont, const long& size, const long
 	}
 	#endif
         
-#elif BEOS
-	font.SetFamilyAndStyle (gStandardFontName[fontID], gStandardFontStyle[fontID]);
-	font.SetSize (fontSize);
-	pView->SetFont (&font, B_FONT_FAMILY_AND_STYLE | B_FONT_SIZE);
 #endif
 
 #endif
@@ -2479,13 +2327,13 @@ void CDrawContext::setFont (const CFontRef newFont, const long& size, const long
 }
 
 //------------------------------------------------------------------------------
-CCoord CDrawContext::getStringWidth (const char *pStr)
+CCoord CDrawContext::getStringWidth (const char* pStr)
 {
-	CCoord result = 0;
-
 	#if QUARTZ || GDIPLUS
 	return getStringWidthUTF8 (pStr);
 	#else
+
+	CCoord result = 0;
 
 	#if MAC
 	#if QUARTZ
@@ -2519,8 +2367,6 @@ CCoord CDrawContext::getStringWidth (const char *pStr)
 	result = (long)size.cx;
 	#endif
 
-	#elif BEOS
-	result = (long)(ceil (pView->StringWidth (pStr)));
 	#endif
 
 	return result;
@@ -2528,7 +2374,7 @@ CCoord CDrawContext::getStringWidth (const char *pStr)
 }
 
 //-----------------------------------------------------------------------------
-void CDrawContext::drawString (const char *string, const CRect &_rect,
+void CDrawContext::drawString (const char* string, const CRect &_rect,
 							 const short opaque, const CHoriTxtAlign hAlign)
 {
 	if (!string)
@@ -2678,41 +2524,6 @@ void CDrawContext::drawString (const char *string, const CRect &_rect,
 	}
 	#endif
         
-#elif BEOS
-	BRect r (rect.left, rect.top, rect.right - 1, rect.bottom - 1);
-	BRegion LocalRegion (r);
-	pView->ConstrainClippingRegion (&LocalRegion);
-	pView->SetFontSize (fontSize);
-	float width = -1;
-	if (opaque)
-	{
-		width = ceil (pView->StringWidth (string));
-		CRect cr (rect.left, rect.top, rect.left + width, rect.bottom);
-		fillRect (cr);
-	}
-	rgb_color c = { fontColor.red, fontColor.green, fontColor.blue, 255 };
-	pView->SetHighColor (c);
-	if (drawMode == kXorMode)
-		pView->SetDrawingMode (B_OP_INVERT);
-	else
-		pView->SetDrawingMode (B_OP_OVER);
-	BPoint		p;
-	font_height	height;
-	pView->GetFontHeight (&height);
-	p.y = r.bottom - (rect.height () - height.ascent) / 2;
-	if (hAlign == kCenterText || hAlign == kRightText)
-	{
-		if (width < 0)
-			width = ceil (pView->StringWidth (string));
-		if (hAlign == kCenterText)
-			p.x = rect.left + (rect.right - rect.left - width) / 2;
-		else
-			p.x = rect.right - width - 1;
-	}
-	else
-		p.x = rect.left + 1;
-	pView->DrawString (string, p);
-	pView->ConstrainClippingRegion (NULL);
 #endif
 
 	#endif
@@ -2943,7 +2754,7 @@ long CDrawContext::getMouseButtons ()
 		buttons |= kLButton;
 	
 	KeyMap	Keys;
-	unsigned char *BytePtr = (unsigned char*)Keys;
+	unsigned char* BytePtr = (unsigned char*)Keys;
 	GetKeys (Keys);
 	
 	if (BytePtr[7] & 1)		// Shift   		0x38 == 56 = (7 * 8) + 0
@@ -2956,25 +2767,6 @@ long CDrawContext::getMouseButtons ()
 		buttons |= kControl;
 	#endif
 
-#elif BEOS
-	BPoint	where;
-	uint32	b;
-	pView->GetMouse (&where, &b);
-	if (b & B_PRIMARY_MOUSE_BUTTON)
-		buttons |= kLButton;
-	if (b & B_SECONDARY_MOUSE_BUTTON)
-		buttons |= kRButton;
-	if (b & B_TERTIARY_MOUSE_BUTTON)
-		buttons |= kMButton;
-	int32 m = modifiers ();
-	if (m & B_SHIFT_KEY)
-		buttons |= kShift;
-	if (m & B_COMMAND_KEY)
-		buttons |= kControl;
-	if (m & B_OPTION_KEY)
-		buttons |= kApple;
-	if (m & B_CONTROL_KEY)
-		buttons |= kAlt;
 #endif
 	
 	return buttons;
@@ -3017,11 +2809,6 @@ void CDrawContext::getMouseLocation (CPoint &point)
 	GetMouse (&where);
 	point (where.h, where.v);
 	
-#elif BEOS
-	BPoint	where;
-	uint32	b;
-	pView->GetMouse (&where, &b);
-	point (where.x, where.y);
 #endif
 
 	point.offset (-offsetScreen.h, -offsetScreen.v);
@@ -3110,35 +2897,6 @@ bool CDrawContext::waitDoubleClick ()
 			doubleClick = true;
 	}
 	#endif
-#elif BEOS
-	const bigtime_t snoozeTime = 5000;
-	bigtime_t	latest = system_time ();
-	bigtime_t	doubleclicktime;
-	get_click_speed (&doubleclicktime);
-	latest += doubleclicktime;
-	BPoint	location;
-	uint32	buttons;
-	pView->GetMouse (&location, &buttons);
-	while (buttons)	// user should release the mouse button
-	{
-		if (system_time () > latest)
-			return false;
-
-		snooze (snoozeTime);
-		pView->GetMouse (&location, &buttons);
-	}
-	
-	while (!buttons)
-	{
-		if (system_time () > latest)
-			return false;
-
-		snooze (snoozeTime);
-		pView->GetMouse (&location, &buttons);
-	}
-	
-	doubleClick = true;
-
 #endif
 
 	return doubleClick;
@@ -3209,53 +2967,7 @@ void CDrawContext::forget ()
 }
 
 //-----------------------------------------------------------------------------
-#if BEOS
-//-----------------------------------------------------------------------------
-void CDrawContext::lineFromTo (CPoint& cstart, CPoint& cend)
-{
-	BPoint start (cstart.h, cstart.v);
-	BPoint end (cend.h, cend.v);
-	if (start.x == end.x)
-	{
-		if (start.y < end.y)
-			end.y--;
-		else if (end.y < start.y)
-			start.y--;
-	}
-	else if (start.y == end.y)
-	{
-		if (start.x < end.x)
-			end.x--;
-		else if (end.x < start.x)
-			start.x--;
-	}
-	else
-	{
-		if (start.x > end.x)
-		{
-			BPoint t = end;
-			end = start;
-			start = t;
-		}
-		end.x--;
-		if (end.y > start.y)
-			end.y--;
-		else
-			end.y++;
-	}
-	
-	pView->MovePenTo (start);
-	if (lineStyle == kLineSolid)
-		pView->StrokeLine (end);
-	else
-	{
-		pattern stripes = { {0xc3, 0xc3, 0xc3, 0xc3, 0xc3, 0xc3, 0xc3, 0xc3} };
-		pView->StrokeLine (end, stripes);
-	}
-}
-
-//-----------------------------------------------------------------------------
-#elif MAC
+#if MAC
 #if QUARTZ
 //-----------------------------------------------------------------------------
 CGContextRef CDrawContext::beginCGContext (bool swapYAxis)
@@ -3263,7 +2975,7 @@ CGContextRef CDrawContext::beginCGContext (bool swapYAxis)
 	if (gCGContext)
 	{
 		CGContextSaveGState (gCGContext);
-		CGContextScaleCTM (gCGContext, 1, -1);
+//		CGContextScaleCTM (gCGContext, 1, -1);
 		QuartzSetupClip (gCGContext, clipRect);
 		if (!swapYAxis)
 			CGContextScaleCTM (gCGContext, 1, -1);
@@ -3409,7 +3121,7 @@ CGrafPtr CDrawContext::getPort ()
 //-----------------------------------------------------------------------------
 // COffscreenContext Implementation
 //-----------------------------------------------------------------------------
-COffscreenContext::COffscreenContext (CDrawContext *pContext, CBitmap *pBitmapBg, bool drawInBitmap)
+COffscreenContext::COffscreenContext (CDrawContext* pContext, CBitmap* pBitmapBg, bool drawInBitmap)
 : CDrawContext (pContext->pFrame, NULL, NULL)
 , pBitmap (0)
 , pBitmapBg (pBitmapBg)
@@ -3500,13 +3212,6 @@ COffscreenContext::COffscreenContext (CDrawContext *pContext, CBitmap *pBitmapBg
 	StuffHex (&fillPattern, "\pFFFFFFFFFFFFFFFF");
 	#endif
         
-#elif BEOS
-	bDestroyPixmap = true;
-	offscreenBitmap = new BBitmap (BRect (0, 0, width - 1, height - 1), B_RGB16, true, false);
-	pView = new BView (BRect (0, 0, width - 1, height - 1), NULL, 0, 0);
-	offscreenBitmap->Lock ();
-	offscreenBitmap->AddChild (pView);
-
 #endif
 
 	if (!drawInBitmap)
@@ -3524,7 +3229,7 @@ COffscreenContext::COffscreenContext (CDrawContext *pContext, CBitmap *pBitmapBg
 }
 
 //-----------------------------------------------------------------------------
-COffscreenContext::COffscreenContext (CFrame *pFrame, long width, long height, const CColor backgroundColor)
+COffscreenContext::COffscreenContext (CFrame* pFrame, long width, long height, const CColor backgroundColor)
 : CDrawContext (pFrame, NULL, NULL)
 , pBitmap (0)
 , pBitmapBg (0)
@@ -3547,8 +3252,8 @@ COffscreenContext::COffscreenContext (CFrame *pFrame, long width, long height, c
 	pGraphics = new Gdiplus::Graphics (pBitmap->getBitmap ());
 	pGraphics->SetInterpolationMode (Gdiplus::InterpolationModeLowQuality);
 	#else
-	void *SystemWindow = pFrame->getSystemWindow ();
-	void *SystemContext = GetDC ((HWND)SystemWindow);
+	void* SystemWindow = pFrame ? pFrame->getSystemWindow () : 0;
+	void* SystemContext = GetDC ((HWND)SystemWindow);
 	
 	pSystemContext = CreateCompatibleDC ((HDC)SystemContext);
 	#if DEBUG
@@ -3637,18 +3342,6 @@ COffscreenContext::COffscreenContext (CFrame *pFrame, long width, long height, c
 	drawRect (r);
 	#endif
         
-#elif BEOS
-	BRect frame (0, 0, width - 1, height - 1);
-	offscreenBitmap = new BBitmap (frame, B_RGB16, true, false);
-	pView = new BView (BRect (0, 0, width - 1, height - 1), NULL, 0, 0);
-	offscreenBitmap->Lock ();
-	offscreenBitmap->AddChild (pView);
-	if (backgroundColor.red != 255 || backgroundColor.green != 255 || backgroundColor.blue != 255)
-	{
-		rgb_color c = { backgroundColor.red, backgroundColor.green, backgroundColor.blue, 255 };
-		pView->SetHighColor (c);
-		pView->FillRect (frame);
-	}
 #endif
 }
 
@@ -3698,9 +3391,6 @@ COffscreenContext::~COffscreenContext ()
 		DisposeGWorld ((GWorldPtr)pWindow);
 	#endif
         
-#elif BEOS
-	delete offscreenBitmap;
-	pView = 0;	// deleted because attached to the offscreen
 #endif
 }
 
@@ -3759,7 +3449,7 @@ void COffscreenContext::copyTo (CDrawContext* pContext, CRect& srcRect, CPoint d
 }
 
 //-----------------------------------------------------------------------------
-void COffscreenContext::copyFrom (CDrawContext *pContext, CRect destRect, CPoint srcOffset)
+void COffscreenContext::copyFrom (CDrawContext* pContext, CRect destRect, CPoint srcOffset)
 {
 #if WINDOWS
 	#if GDIPLUS
@@ -3852,13 +3542,6 @@ void COffscreenContext::copyFrom (CDrawContext *pContext, CRect destRect, CPoint
 	RGBBackColor (&savedBackColor);
 	#endif
 
-#elif BEOS
-	pContext->pView->SetDrawingMode (B_OP_COPY);
-	BRect destination (destRect.left, destRect.top, destRect.right - 1, destRect.bottom - 1);
-	BRect source = destination;
-	source.OffsetTo (srcOffset.h, srcOffset.v);
-	pView->Sync ();
-	pContext->pView->DrawBitmap (offscreenBitmap, source, destination);
 #endif
 }
 
@@ -4115,7 +3798,7 @@ void CView::invalidRect (CRect rect)
 }
 
 //-----------------------------------------------------------------------------
-void CView::draw (CDrawContext *pContext)
+void CView::draw (CDrawContext* pContext)
 {
 	if (pBackground)
 	{
@@ -4129,7 +3812,7 @@ void CView::draw (CDrawContext *pContext)
 
 #if VSTGUI_ENABLE_DEPRECATED_METHODS
 //-----------------------------------------------------------------------------
-void CView::mouse (CDrawContext *pContext, CPoint &where, long buttons)
+void CView::mouse (CDrawContext* pContext, CPoint &where, long buttons)
 {}
 #endif
 
@@ -4140,7 +3823,7 @@ bool CView::onWheel (const CPoint &where, const float &distance, const long &but
 }
 
 //------------------------------------------------------------------------
-bool CView::onWheel (const CPoint &where, const CMouseWheelAxis &axis, const float &distance, const long &buttons)
+bool CView::onWheel (const CPoint& where, const CMouseWheelAxis& axis, const float& distance, const long& buttons)
 {
 	if (axis == kMouseWheelAxisX)
 	{
@@ -4189,7 +3872,7 @@ void CView::setViewSize (CRect &rect, bool invalid)
 //------------------------------------------------------------------------------
 CRect CView::getVisibleSize () const
 {
-	if (pParentView && pParentView->isTypeOf("CViewContainer"))
+	if (pParentView && pParentView->isTypeOf ("CViewContainer"))
 		return ((CViewContainer*)pParentView)->getVisibleSize (size);
 	else if (pParentFrame)
 		return pParentFrame->getVisibleSize (size);
@@ -4197,13 +3880,13 @@ CRect CView::getVisibleSize () const
 }
 
 //-----------------------------------------------------------------------------
-VSTGUIEditorInterface *CView::getEditor () const
+VSTGUIEditorInterface* CView::getEditor () const
 { 
 	return pParentFrame ? pParentFrame->getEditor () : 0; 
 }
 
 //-----------------------------------------------------------------------------
-void CView::setBackground (CBitmap *background)
+void CView::setBackground (CBitmap* background)
 {
 	if (pBackground)
 		pBackground->forget ();
@@ -4334,8 +4017,8 @@ void CView::dumpInfo ()
 }
 #endif
 
-#define FOREACHSUBVIEW for (CCView *pSv = pFirstView; pSv; pSv = pSv->pNext) {CView *pV = pSv->pView;
-#define FOREACHSUBVIEW_REVERSE(reverse) for (CCView *pSv = reverse ? pLastView : pFirstView; pSv; pSv = reverse ? pSv->pPrevious : pSv->pNext) {CView *pV = pSv->pView;
+#define FOREACHSUBVIEW for (CCView* pSv = pFirstView; pSv; pSv = pSv->pNext) {CView* pV = pSv->pView;
+#define FOREACHSUBVIEW_REVERSE(reverse) for (CCView* pSv = reverse ? pLastView : pFirstView; pSv; pSv = reverse ? pSv->pPrevious : pSv->pNext) {CView* pV = pSv->pView;
 #define ENDFOR }
 
 //-----------------------------------------------------------------------------
@@ -4347,7 +4030,7 @@ On classic Mac OS it just draws into the provided window.
 On Mac OS X it is a ControlRef. 
 On Windows it's a WS_CHILD Window.
 */
-CFrame::CFrame (const CRect &inSize, void *inSystemWindow, VSTGUIEditorInterface *inEditor)
+CFrame::CFrame (const CRect &inSize, void* inSystemWindow, VSTGUIEditorInterface* inEditor)
 : CViewContainer (inSize, 0, 0)
 , pEditor (inEditor)
 , pMouseObserver (0)
@@ -4402,8 +4085,6 @@ CFrame::CFrame (const CRect &inSize, void *inSystemWindow, VSTGUIEditorInterface
 	}
 	#endif	// DYNAMICALPHABLEND
     
-#elif BEOS
-	pPlugView = NULL;
 #endif
 
 	initFrame (pSystemWindow);
@@ -4476,9 +4157,6 @@ CFrame::CFrame (const CRect& inSize, const char* inTitle, VSTGUIEditorInterface*
 	}
 	#endif
     
-#elif BEOS
-	pPlugView = NULL;
-
 #endif
 
 	#if (ENABLE_VST_EXTENSION_IN_VSTGUI && !VST_FORCE_DEPRECATED)
@@ -4537,7 +4215,7 @@ CFrame::~CFrame ()
 
 	if (pHwnd)
 	{
-		SetWindowLong ((HWND)pHwnd, GWL_USERDATA, (long)NULL);
+		SetWindowLongPtr ((HWND)pHwnd, GWLP_USERDATA, (LONG_PTR)NULL);
 		DestroyWindow ((HWND)pHwnd);
 
 		ExitWindowClass ();
@@ -4551,10 +4229,6 @@ CFrame::~CFrame ()
 		close ();
 	if (pVstWindow)
 		free (pVstWindow);
-
-#if BEOS
-	CBitmap::closeResource ();	// must be done only once at the end of the story.
-#endif
 
 #if MAC && QUARTZ
 	if (mouseEventHandler)
@@ -4571,7 +4245,7 @@ CFrame::~CFrame ()
 }
 
 //-----------------------------------------------------------------------------
-bool CFrame::open (CPoint *point)
+bool CFrame::open (CPoint* point)
 {
 #if (ENABLE_VST_EXTENSION_IN_VSTGUI && !VST_FORCE_DEPRECATED)
 	if (!bAddedWindow)
@@ -4581,8 +4255,6 @@ bool CFrame::open (CPoint *point)
 		#if WINDOWS
 		BringWindowToTop (GetParent (GetParent ((HWND)getSystemWindow ())));
 
-		#elif BEOS
-		pPlugView->Window ()->Activate (true);
 		#endif
 		return false;
 	}
@@ -4594,7 +4266,7 @@ bool CFrame::open (CPoint *point)
 			((VstWindow*)pVstWindow)->xPos = (short)point->h;
 			((VstWindow*)pVstWindow)->yPos = (short)point->v;
 		}
-		AudioEffectX *pAudioEffectX = (AudioEffectX*)(((AEffGUIEditor*)pEditor)->getEffect ());
+		AudioEffectX* pAudioEffectX = (AudioEffectX*)(((AEffGUIEditor*)pEditor)->getEffect ());
 		pSystemWindow = pAudioEffectX->openWindow ((VstWindow*)pVstWindow);
 	}
 
@@ -4617,7 +4289,7 @@ bool CFrame::close ()
 	if (!bAddedWindow || !getOpenFlag () || !pSystemWindow)
 		return false;
 
-	AudioEffectX *pAudioEffectX = (AudioEffectX*)(((AEffGUIEditor*)pEditor)->getEffect ());
+	AudioEffectX* pAudioEffectX = (AudioEffectX*)(((AEffGUIEditor*)pEditor)->getEffect ());
 	pAudioEffectX->closeWindow ((VstWindow*)pVstWindow);
 
 	pSystemWindow = 0;
@@ -4629,7 +4301,7 @@ bool CFrame::close ()
 }
 
 //-----------------------------------------------------------------------------
-bool CFrame::initFrame (void *systemWin)
+bool CFrame::initFrame (void* systemWin)
 {
 	if (!systemWin)
 		return false;
@@ -4695,12 +4367,6 @@ bool CFrame::initFrame (void *systemWin)
 	mouseableArea.offset (-size.left, -size.top);
 	#endif
 	
-#elif BEOS
-	BView* parentView = (BView*) pSystemWindow;
-	BRect frame = parentView->Frame ();
-	frame.OffsetTo (B_ORIGIN);
-	pPlugView = new PlugView (frame, this);
-	parentView->AddChild (pPlugView);
 #endif
 
 	setDropActive (true);
@@ -4713,9 +4379,6 @@ void* CFrame::getSystemWindow () const
 {
 	#if WINDOWS
 	return pHwnd;
-
-	#elif BEOS
-	return pPlugView;
 
 	#else
 	return pSystemWindow;
@@ -4776,15 +4439,13 @@ CDrawContext* CFrame::createDrawContext ()
 	#if WINDOWS || MAC
 	pContext = new CDrawContext (this, NULL, getSystemWindow ());
 
-	#elif BEOS
-	pContext = new CDrawContext (this, pPlugView, 0);
 	#endif
 	
 	return pContext;
 }
 
 //-----------------------------------------------------------------------------
-void CFrame::draw (CDrawContext *pContext)
+void CFrame::draw (CDrawContext* pContext)
 {
 	if (bFirstDraw)
 		bFirstDraw = false;
@@ -4797,7 +4458,7 @@ void CFrame::draw (CDrawContext *pContext)
 }
 
 //-----------------------------------------------------------------------------
-void CFrame::drawRect (CDrawContext *pContext, const CRect& updateRect)
+void CFrame::drawRect (CDrawContext* pContext, const CRect& updateRect)
 {
 	if (bFirstDraw)
 		bFirstDraw = false;
@@ -4827,15 +4488,15 @@ void CFrame::drawRect (CDrawContext *pContext, const CRect& updateRect)
 
 #if VSTGUI_ENABLE_DEPRECATED_METHODS
 //-----------------------------------------------------------------------------
-void CFrame::draw (CView *pView)
+void CFrame::draw (CView* pView)
 {
-	CView *pViewToDraw = 0;
+	CView* pViewToDraw = 0;
 
 		// Search it in the view list
 	if (pView && isChild(pView))
 		pViewToDraw = pView;
 
-	CDrawContext *pContext = createDrawContext ();
+	CDrawContext* pContext = createDrawContext ();
 	if (pContext)
 	{
 		if (pViewToDraw)
@@ -4848,7 +4509,7 @@ void CFrame::draw (CView *pView)
 }
 
 //-----------------------------------------------------------------------------
-void CFrame::mouse (CDrawContext *pContext, CPoint &where, long buttons)
+void CFrame::mouse (CDrawContext* pContext, CPoint &where, long buttons)
 {
 	if (!pContext)
 		pContext = pFrameContext;
@@ -5025,13 +4686,10 @@ bool CFrame::onWheel (const CPoint &where, const CMouseWheelAxis &axis, const fl
 {
 	bool result = false;
 
-	CView *view = pModalView ? pModalView : getViewAt (where);
+	CView* view = pModalView ? pModalView : getViewAt (where);
 	if (view)
 	{
 		result = view->onWheel (where, axis, distance, buttons);
-	#if BEOS
-		pPlugView->UnlockLooper ();
-	#endif
 	}
 	return result;
 }
@@ -5071,8 +4729,6 @@ unsigned long CFrame::getTicks () const
 	#elif WINDOWS
 	return (unsigned long)GetTickCount ();
 	
-	#elif BEOS
-	return (system_time () / 1000);
 	#endif
 
 	return 0;
@@ -5217,10 +4873,6 @@ bool CFrame::getPosition (CCoord &x, CCoord &y) const
 	y -= hiScrollOffset.y;
 	#endif
 
-#elif BEOS
-	BRect frame = pPlugView->Window ()->Frame ();
-	x = (long) frame.left;
-	y = (long) frame.top;
 #endif
 	return true;
 }
@@ -5357,12 +5009,6 @@ bool CFrame::setSize (CCoord width, CCoord height)
 	}
 	#endif
 	
-#elif BEOS
-	BView* parent = pPlugView->Parent ();
-	parent->SetResizingMode (B_FOLLOW_ALL_SIDES);
-	BRect frame = pPlugView->Frame ();
-	pPlugView->Window ()->ResizeBy (width - frame.Width () - 1, height - frame.Height () - 1);
-	parent->SetResizingMode (B_FOLLOW_NONE);
 #endif
 
 	CViewContainer::setViewSize (size);
@@ -5371,7 +5017,7 @@ bool CFrame::setSize (CCoord width, CCoord height)
 }
 
 //-----------------------------------------------------------------------------
-bool CFrame::getSize (CRect *pRect) const
+bool CFrame::getSize (CRect* pRect) const
 {
 	if (!getOpenFlag ())
 		return false;
@@ -5418,9 +5064,6 @@ bool CFrame::getSize (CRect *pRect) const
 	pRect->right  = bounds.right;
 	pRect->bottom = bounds.bottom;
 	
-#elif BEOS
-	BRect v = pPlugView->Frame ();
-	(*pRect) (v.left, v.top, v.right + 1, v.bottom + 1);
 #endif
 	return true;
 }
@@ -5436,7 +5079,7 @@ bool CFrame::getSize (CRect& outSize) const
  * @param pView the view which should be set to modal.
  * @return true if view could be set as the modal view. false if there is a already a modal view or the view to be set as modal is already attached.
  */
-bool CFrame::setModalView (CView *pView)
+bool CFrame::setModalView (CView* pView)
 {
 	// If there is a modal view or the view 
 	if ((pView && pModalView) || (pView && pView->isAttached ()))
@@ -5566,7 +5209,7 @@ long CFrame::getCurrentMouseButtons () const
 
 #if VSTGUI_ENABLE_DEPRECATED_METHODS
 //-----------------------------------------------------------------------------
-CView *CFrame::getCurrentView () const
+CView* CFrame::getCurrentView () const
 {
 	if (pModalView)
 		return pModalView;
@@ -5770,7 +5413,7 @@ bool CFrame::advanceNextFocusView (CView* oldFocus, bool reverse)
 }
 
 //-----------------------------------------------------------------------------
-bool CFrame::removeView (CView *pView, const bool &withForget)
+bool CFrame::removeView (CView* pView, const bool &withForget)
 {
 	if (pModalView == pView)
 		pModalView = 0;
@@ -5884,7 +5527,7 @@ CCView::~CCView ()
  * @param pParent the parent CFrame
  * @param pBackground the background bitmap, can be NULL
  */
-CViewContainer::CViewContainer (const CRect &rect, CFrame *pParent, CBitmap *pBackground)
+CViewContainer::CViewContainer (const CRect &rect, CFrame* pParent, CBitmap* pBackground)
 : CView (rect)
 , pFirstView (0)
 , pLastView (0)
@@ -5905,11 +5548,9 @@ CViewContainer::~CViewContainer ()
 	// remove all views
 	removeAll (true);
 
-	#if !BEOS
 	 if (pOffscreenContext)
 		pOffscreenContext->forget ();
 	pOffscreenContext = 0;
-	#endif
 }
 
 //-----------------------------------------------------------------------------
@@ -5930,13 +5571,11 @@ void CViewContainer::setViewSize (CRect &rect, bool invalid)
 
 	parentSizeChanged ();
 
-	#if !BEOS
 	if (pOffscreenContext && bDrawInOffscreen)
 	{
 		pOffscreenContext->forget ();
 		pOffscreenContext = new COffscreenContext (pParentFrame, (long)size.width (), (long)size.height (), kBlackCColor);
 	}
-	#endif
 }
 
 //-----------------------------------------------------------------------------
@@ -5981,7 +5620,7 @@ CMessageResult CViewContainer::notify (CBaseObject* sender, const char* message)
 /**
  * @param pView the view object to add to this container
  */
-bool CViewContainer::addView (CView *pView)
+bool CViewContainer::addView (CView* pView)
 {
 	if (!pView)
 		return false;
@@ -5989,9 +5628,9 @@ bool CViewContainer::addView (CView *pView)
 	if (pView->isAttached ())
 		return false;
 
-	CCView *pSv = new CCView (pView);
+	CCView* pSv = new CCView (pView);
 	
-	CCView *pV = pFirstView;
+	CCView* pV = pFirstView;
 	if (!pV)
 	{
 		pLastView = pFirstView = pSv;
@@ -6018,7 +5657,7 @@ bool CViewContainer::addView (CView *pView)
  * @param mouseableArea the view area in where the view will get mouse events
  * @param mouseEnabled bool to set if view will get mouse events
  */
-bool CViewContainer::addView (CView *pView, CRect &mouseableArea, bool mouseEnabled)
+bool CViewContainer::addView (CView* pView, CRect &mouseableArea, bool mouseEnabled)
 {
 	if (!pView)
 		return false;
@@ -6041,7 +5680,7 @@ bool CViewContainer::removeAll (const bool &withForget)
 	CCView *pV = pFirstView;
 	while (pV)
 	{
-		CCView *pNext = pV->pNext;
+		CCView* pNext = pV->pNext;
 		if (pV->pView)
 		{
 			if (pParentFrame)
@@ -6073,8 +5712,8 @@ bool CViewContainer::removeView (CView *pView, const bool &withForget)
 	{
 		if (pView == pV->pView)
 		{
-			CCView *pNext = pV->pNext;
-			CCView *pPrevious = pV->pPrevious;
+			CCView* pNext = pV->pNext;
+			CCView* pPrevious = pV->pPrevious;
 			if (pV->pView)
 			{
 				if (pParentFrame)
@@ -6113,11 +5752,11 @@ bool CViewContainer::removeView (CView *pView, const bool &withForget)
 /**
  * @param pView the view which should be checked if it is a child of this container
  */
-bool CViewContainer::isChild (CView *pView) const
+bool CViewContainer::isChild (CView* pView) const
 {
 	bool found = false;
 
-	CCView *pV = pFirstView;
+	CCView* pV = pFirstView;
 	while (pV)
 	{
 		if (pView == pV->pView)
@@ -6137,7 +5776,7 @@ bool CViewContainer::isChild (CView *pView) const
 long CViewContainer::getNbViews () const
 {
 	long nb = 0;
-	CCView *pV = pFirstView;
+	CCView* pV = pFirstView;
 	while (pV)
 	{
 		pV = pV->pNext;
@@ -6151,10 +5790,10 @@ long CViewContainer::getNbViews () const
  * @param index the index of the view to return
  * @return view at index. NULL if view at index does not exist.
  */
-CView *CViewContainer::getView (long index) const
+CView* CViewContainer::getView (long index) const
 {
 	long nb = 0;
-	CCView *pV = pFirstView;
+	CCView* pV = pFirstView;
 	while (pV)
 	{
 		if (nb == index)
@@ -6216,19 +5855,11 @@ void CViewContainer::invalidRect (CRect rect)
 /**
  * @param pContext the context which to use to draw this container and its subviews
  */
-void CViewContainer::draw (CDrawContext *pContext)
+void CViewContainer::draw (CDrawContext* pContext)
 {
-	CDrawContext *pC;
+	CDrawContext* pC;
 	CCoord save[4];
 
-	#if BEOS
-	// create offscreen
-	if (pBackground)
-		pC = new COffscreenContext (pContext, pBackground);
-	else
-		pC = new COffscreenContext (pParentFrame, size.width (), size.height (), backgroundColor);
-	
-	#else
 	if (!pOffscreenContext && bDrawInOffscreen)
 		pOffscreenContext = new COffscreenContext (pParentFrame, (long)size.width (), (long)size.height (), kBlackCColor);
 	#if USE_ALPHA_BLEND
@@ -6269,7 +5900,6 @@ void CViewContainer::draw (CDrawContext *pContext)
 		pC->setFillColor (backgroundColor);
 		pC->drawRect (r, kDrawFilled);
 	}
-	#endif
 	
 	// draw each view
 	FOREACHSUBVIEW
@@ -6287,10 +5917,6 @@ void CViewContainer::draw (CDrawContext *pContext)
 	else
 		restoreDrawContext (pContext, save);
 
-	#if BEOS
-	delete pC;
-	#endif
-
 	setDirty (false);
 }
 
@@ -6299,7 +5925,7 @@ void CViewContainer::draw (CDrawContext *pContext)
  * @param pContext the context which to use to draw the background
  * @param _updateRect the area which to draw
  */
-void CViewContainer::drawBackgroundRect (CDrawContext *pContext, CRect& _updateRect)
+void CViewContainer::drawBackgroundRect (CDrawContext* pContext, CRect& _updateRect)
 {
 	if (pBackground)
 	{
@@ -6324,7 +5950,7 @@ void CViewContainer::drawBackgroundRect (CDrawContext *pContext, CRect& _updateR
 }
 
 //-----------------------------------------------------------------------------
-void CViewContainer::drawBackToFront (CDrawContext *pContext, const CRect& updateRect)
+void CViewContainer::drawBackToFront (CDrawContext* pContext, const CRect& updateRect)
 {
 	CCoord save[4];
 	modifyDrawContext (save, pContext);
@@ -6371,19 +5997,11 @@ void CViewContainer::drawBackToFront (CDrawContext *pContext, const CRect& updat
  * @param pContext the context which to use to draw
  * @param updateRect the area which to draw
  */
-void CViewContainer::drawRect (CDrawContext *pContext, const CRect& updateRect)
+void CViewContainer::drawRect (CDrawContext* pContext, const CRect& updateRect)
 {
-	CDrawContext *pC;
+	CDrawContext* pC;
 	CCoord save[4];
 
-	#if BEOS
-	// create offscreen
-	if (pBackground)
-		pC = new COffscreenContext (pContext, pBackground);
-	else
-		pC = new COffscreenContext (pParentFrame, size.width (), size.height (), backgroundColor);
-	
-	#else
 	if (!pOffscreenContext && bDrawInOffscreen)
 		pOffscreenContext = new COffscreenContext (pParentFrame, (long)size.width (), (long)size.height (), kBlackCColor);
 	#if USE_ALPHA_BLEND
@@ -6417,7 +6035,6 @@ void CViewContainer::drawRect (CDrawContext *pContext, const CRect& updateRect)
 	
 	// draw the background
 	drawBackgroundRect (pC, clientRect);
-	#endif
 	
 	// draw each view
 	FOREACHSUBVIEW
@@ -6450,10 +6067,6 @@ void CViewContainer::drawRect (CDrawContext *pContext, const CRect& updateRect)
 	else
 		restoreDrawContext (pContext, save);
 
-	#if BEOS
-	delete pC;
-	#endif
-
 	setDirty (false);
 }
 
@@ -6463,10 +6076,10 @@ bool CViewContainer::hitTestSubViews (const CPoint& where, const long buttons)
 	CPoint where2 (where);
 	where2.offset (-size.left, -size.top);
 
-	CCView *pSv = pLastView;
+	CCView* pSv = pLastView;
 	while (pSv)
 	{
-		CView *pV = pSv->pView;
+		CView* pV = pSv->pView;
 		if (pV && pV->getMouseEnabled () && pV->hitTest (where2, buttons))
 			return true;
 		pSv = pSv->pPrevious;
@@ -6488,10 +6101,10 @@ CMouseEventResult CViewContainer::onMouseDown (CPoint &where, const long& button
 	CPoint where2 (where);
 	where2.offset (-size.left, -size.top);
 
-	CCView *pSv = pLastView;
+	CCView* pSv = pLastView;
 	while (pSv)
 	{
-		CView *pV = pSv->pView;
+		CView* pV = pSv->pView;
 		if (pV && pV->getMouseEnabled () && pV->hitTest (where2, buttons))
 		{
 			if (pV->isTypeOf("CControl") && ((CControl*)pV)->getListener () && buttons & (kAlt | kShift | kControl | kApple))
@@ -6555,7 +6168,7 @@ CMouseEventResult CViewContainer::onMouseMoved (CPoint &where, const long& butto
 
 #if VSTGUI_ENABLE_DEPRECATED_METHODS
 //-----------------------------------------------------------------------------
-void CViewContainer::mouse (CDrawContext *pContext, CPoint &where, long buttons)
+void CViewContainer::mouse (CDrawContext* pContext, CPoint &where, long buttons)
 {
 	// convert to relativ pos
 	CPoint where2 (where);
@@ -6564,10 +6177,10 @@ void CViewContainer::mouse (CDrawContext *pContext, CPoint &where, long buttons)
 	if (buttons == -1 && pContext)
 		buttons = pContext->getMouseButtons ();
 
-	CCView *pSv = pLastView;
+	CCView* pSv = pLastView;
 	while (pSv)
 	{
-		CView *pV = pSv->pView;
+		CView* pV = pSv->pView;
 		if (pV && pV->getMouseEnabled () && pV->hitTest (where2, buttons))
 		{
 			pV->mouse (pContext, where2, buttons);
@@ -6618,7 +6231,7 @@ long CViewContainer::onKeyUp (VstKeyCode& keyCode)
 bool CViewContainer::onWheel (const CPoint &where, const CMouseWheelAxis &axis, const float &distance, const long &buttons)
 {
 	bool result = false;
-	CView *view = getViewAt (where);
+	CView* view = getViewAt (where);
 	if (view)
 	{
 		// convert to relativ pos
@@ -6790,7 +6403,7 @@ bool CViewContainer::isDirty () const
 
 #if VSTGUI_ENABLE_DEPRECATED_METHODS
 //-----------------------------------------------------------------------------
-CView *CViewContainer::getCurrentView () const
+CView* CViewContainer::getCurrentView () const
 {
 	if (!pParentFrame)
 		return 0;
@@ -6801,10 +6414,10 @@ CView *CViewContainer::getCurrentView () const
 
 	frameToLocal (where);
 	
-	CCView *pSv = pLastView;
+	CCView* pSv = pLastView;
 	while (pSv)
 	{
-		CView *pV = pSv->pView;
+		CView* pV = pSv->pView;
 		if (pV && where.isInside (pV->getMouseableArea ()))
 			return pV;
 		pSv = pSv->pPrevious;
@@ -6815,7 +6428,7 @@ CView *CViewContainer::getCurrentView () const
 #endif
 
 //-----------------------------------------------------------------------------
-CView *CViewContainer::getViewAt (const CPoint& p, bool deep) const
+CView* CViewContainer::getViewAt (const CPoint& p, bool deep) const
 {
 	if (!pParentFrame)
 		return 0;
@@ -6825,10 +6438,10 @@ CView *CViewContainer::getViewAt (const CPoint& p, bool deep) const
 	// convert to relativ pos
 	where.offset (-size.left, -size.top);
 
-	CCView *pSv = pLastView;
+	CCView* pSv = pLastView;
 	while (pSv)
 	{
-		CView *pV = pSv->pView;
+		CView* pV = pSv->pView;
 		if (pV && where.isInside (pV->getMouseableArea ()))
 		{
 			if (deep)
@@ -6865,11 +6478,9 @@ CPoint& CViewContainer::localToFrame (CPoint& point) const
 //-----------------------------------------------------------------------------
 bool CViewContainer::removed (CView* parent)
 {
-	#if !BEOS
 	 if (pOffscreenContext)
 		pOffscreenContext->forget ();
 	pOffscreenContext = 0;
-	#endif
 
 	pParentFrame = 0;
 
@@ -6883,11 +6494,9 @@ bool CViewContainer::removed (CView* parent)
 //-----------------------------------------------------------------------------
 bool CViewContainer::attached (CView* view)
 {
-	#if !BEOS
 	// create offscreen bitmap
 	if (!pOffscreenContext && bDrawInOffscreen)
 		pOffscreenContext = new COffscreenContext (pParentFrame, (long)size.width (), (long)size.height (), kBlackCColor);
-	#endif
 
 	pParentFrame = view->getFrame ();
 
@@ -6903,13 +6512,11 @@ void CViewContainer::useOffscreen (bool b)
 {
 	bDrawInOffscreen = b;
 	
-	#if !BEOS
 	if (!bDrawInOffscreen && pOffscreenContext)
 	{
 		pOffscreenContext->forget ();
 		pOffscreenContext = 0;
 	}
-	#endif
 }
 
 //-----------------------------------------------------------------------------
@@ -7037,11 +6644,16 @@ CBitmap::CBitmap (const CResourceDescription& desc)
 , width (0)
 , height (0)
 , noAlpha (true)
+#if QUARTZ
+, cgImage (0)
+#endif
 {
 	#if DEBUG
 	gNbCBitmap++;
 	#endif
 
+	setTransparentColor (kTransparentCColor);
+	
 #if GDIPLUS
 	pBitmap = 0;
 	bits = 0;
@@ -7050,51 +6662,11 @@ CBitmap::CBitmap (const CResourceDescription& desc)
 #if WINDOWS || MAC
 	pMask = 0;
 	pHandle = 0;
-	#if QUARTZ
-	cgImage = 0;
-	#endif
 
 	loadFromResource (resourceDesc);
 
-#elif BEOS
-	bbitmap = 0;
-	transparencySet = false;
-	if (resourceFile == 0)
-	{
-		// this is a hack to find the plug-in on the disk to access resources.
-		const char* locate_me = "";
-		int32	cookie = 0;
-		image_info	iinfo;
-		uint32	here = uint32 (locate_me);
-		while (get_next_image_info (0, &cookie, &iinfo) == B_OK)
-		{
-			uint32	begin = uint32 (iinfo.text);
-			if (begin <= here && here <= begin + iinfo.text_size)
-				break;
-		}
-		BFile resource (iinfo.name, B_READ_ONLY);
-		resourceFile = new BResources (&resource);
-		resourceFile->PreloadResourceType ();
-	}
-	size_t	outSize;
-	const char* res = (const char*) resourceFile->LoadResource ('RAWT', resourceDesc.u.id, &outSize);
-	if (res)
-	{
-		BMemoryIO	memoryIO (res, outSize);
-		bbitmap = BTranslationUtils::GetBitmap (&memoryIO);
-		if (bbitmap)
-		{
-			BRect rect = bbitmap->Bounds ();
-			width = (long) rect.Width () + 1;
-			height = (long) rect.Height () + 1;
-		}
-	}
-	if (!bbitmap)
-		fprintf (stderr, "********* Resource %d could NOT be loaded!\n", (int)resourceDesc.u.id);
 #endif
 
-	setTransparentColor (kTransparentCColor);
-	
 	#if DEBUG
 	gBitmapAllocation += (long)height * (long)width;
 	#endif
@@ -7105,17 +6677,22 @@ CBitmap::CBitmap (CFrame& frame, CCoord width, CCoord height)
 : width (width)
 , height (height)
 , noAlpha (true)
+#if QUARTZ
+, cgImage (0)
+#endif
 {
 	#if DEBUG
 	gNbCBitmap++;
 	#endif
+
+	setTransparentColor (kTransparentCColor);
 
 #if WINDOWS
 	HDC hScreen = GetDC (0);
 #if GDIPLUS
 	pBitmap = 0;
 	bits = 0;
-	Gdiplus::Graphics *hScreenGraphics = new Gdiplus::Graphics(hScreen);
+	Gdiplus::Graphics* hScreenGraphics = new Gdiplus::Graphics(hScreen);
 	pBitmap = new Gdiplus::Bitmap(width,height,hScreenGraphics);	// format?
 	delete hScreenGraphics;
 #else
@@ -7135,18 +6712,12 @@ CBitmap::CBitmap (CFrame& frame, CCoord width, CCoord height)
 
     #if QUARTZ
 	NewGWorld ((GWorldPtr*)&pHandle, 32, &r, 0, 0, 0);
-	cgImage = 0;
     #else
 	NewGWorld ((GWorldPtr*)&pHandle, 0, &r, 0, 0, 0);
 
 	#endif
 
-#elif BEOS
-	bbitmap = 0;
-	transparencySet = false;
 #endif
-	
-	setTransparentColor (kTransparentCColor);
 }
 
 //-----------------------------------------------------------------------------
@@ -7154,6 +6725,9 @@ CBitmap::CBitmap ()
 : width (0)
 , height (0)
 , noAlpha (true)
+#if QUARTZ
+, cgImage (0)
+#endif
 {
 	#if WINDOWS
 	#if GDIPLUS
@@ -7167,13 +6741,7 @@ CBitmap::CBitmap ()
 	#elif MAC
 	pHandle = 0;
 	pMask = 0;
-	#if QUARTZ
-	cgImage = 0;
-	#endif
 	
-	#elif BEOS
-	bbitmap = 0;
-
 	#endif
 }
 
@@ -7221,12 +6789,6 @@ void CBitmap::dispose ()
 	pHandle = 0;
 	pMask = 0;
 	
-	#elif BEOS
-	if (bbitmap)
-		delete bbitmap;
-	
-	bbitmap = 0;
-
 	#endif
 
 	width = 0;
@@ -7235,7 +6797,7 @@ void CBitmap::dispose ()
 }
 
 //-----------------------------------------------------------------------------
-void *CBitmap::getHandle () const
+void* CBitmap::getHandle () const
  {
 	#if WINDOWS
 	return pHandle; 
@@ -7243,8 +6805,6 @@ void *CBitmap::getHandle () const
 	#elif MAC
 	return pHandle;
 
-	#elif BEOS
-	return bbitmap;
 	#endif
 }
 
@@ -7504,6 +7064,10 @@ bool CBitmap::loadFromResource (const CResourceDescription& resourceDesc)
 	return result;
 }
 
+#if QUARTZ
+const CFStringRef kCGImageSourceShouldPreferRGB32 = CFSTR("kCGImageSourceShouldPreferRGB32");
+#endif
+
 //-----------------------------------------------------------------------------
 bool CBitmap::loadFromPath (const void* platformPath)
 {
@@ -7514,92 +7078,102 @@ bool CBitmap::loadFromPath (const void* platformPath)
 	#if QUARTZ
 	CFURLRef url = (CFURLRef)platformPath;
 
-	#if MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_4
-	// use Image I/O
-	CGImageSourceRef imageSource = CGImageSourceCreateWithURL (url, NULL);
-	if (imageSource)
+	#if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_4
+	if (CGImageSourceCreateWithURL)
 	{
-		const void* keys[] = {&kCGImageSourceShouldCache};
-		const void* values[] = {&kCFBooleanTrue};
-		CFDictionaryRef options = CFDictionaryCreate(NULL, keys,values,1,NULL,NULL);
-		cgImage = CGImageSourceCreateImageAtIndex (imageSource, 0, options);
-		CFRelease (options);
-		if (cgImage)
+		// use Image I/O
+		CGImageSourceRef imageSource = CGImageSourceCreateWithURL (url, NULL);
+		if (imageSource)
 		{
-			width = CGImageGetWidth ((CGImageRef)cgImage);
-			height = CGImageGetHeight ((CGImageRef)cgImage);
-			CFStringRef ext = CFURLCopyPathExtension (url);
-			if (ext && CFStringCompare (ext, CFSTR("png"), 0) == kCFCompareEqualTo)
-				noAlpha = false;
-			result = true;
-			if (ext)
-				CFRelease (ext);
-		}
-		CFRelease (imageSource);
-	}
-	
-	#else
-
-	FSRef fsRef;
-	if (CFURLGetFSRef (url, &fsRef))
-	{
-		FSSpec fsSpec;
-		FSCatalogInfoBitmap infoBitmap = kFSCatInfoNone;
-		if (FSGetCatalogInfo (&fsRef, infoBitmap, NULL, NULL, &fsSpec, NULL) == noErr)
-		{
-			ComponentInstance* gi = 0;
-			CFStringRef ext = CFURLCopyPathExtension (url);
-			if (ext == 0)
-				return false;
-			if (CFStringCompare (ext, CFSTR("bmp"), 0) == kCFCompareEqualTo)
-				gi = &bmpGI;
-			else if (CFStringCompare (ext, CFSTR("png"), 0) == kCFCompareEqualTo)
+			const void* keys[] = {kCGImageSourceShouldCache, kCGImageSourceShouldPreferRGB32};
+			const void* values[] = {kCFBooleanTrue, kCFBooleanTrue};
+			CFDictionaryRef options = CFDictionaryCreate(NULL, keys, values, 2, NULL, NULL);
+			cgImage = CGImageSourceCreateImageAtIndex (imageSource, 0, options);
+			CFDictionaryRef dictRef = CGImageSourceCopyPropertiesAtIndex (imageSource, 0, options);
+			if (dictRef)
 			{
-				gi = &pngGI;
-				noAlpha = false;
+				const void* value = CFDictionaryGetValue (dictRef, kCGImagePropertyHasAlpha);
+				if (value == kCFBooleanTrue)
+					noAlpha = false;
+				CFRelease (dictRef);
 			}
-			else if (CFStringCompare (ext, CFSTR("jpg"), 0) == kCFCompareEqualTo)
-				gi = &jpgGI;
-			else if (CFStringCompare (ext, CFSTR("pict"), 0) == kCFCompareEqualTo)
-				gi = &pictGI;
-			CFRelease (ext);
-
-			if (*gi == 0)
-				GetGraphicsImporterForFile (&fsSpec, gi);
-			else
-				if (GraphicsImportSetDataFile (*gi, &fsSpec) != noErr)
-					return false;
-			if (*gi)
+			CFRelease (options);
+			if (cgImage)
 			{
-				#if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_3
-				if (!noAlpha && GraphicsImportCreateCGImage)
-				{
-					if (GraphicsImportCreateCGImage (*gi, (CGImageRef*)&cgImage, 0) == noErr)
-					{
-						width = CGImageGetWidth ((CGImageRef)cgImage);
-						height = CGImageGetHeight ((CGImageRef)cgImage);
-						result = true;
-					}
-				}
-				else
-				#endif
-				{
-					Rect r;
-					GraphicsImportGetSourceRect (*gi, &r);
-					OSErr err = NewGWorld ((GWorldPtr*)&pHandle, 32, &r, 0, 0, 0);
-					if (!err)
-					{
-						width = r.right;
-						height = r.bottom;
-						GraphicsImportSetGWorld (*gi, (GWorldPtr)pHandle, 0);
-						GraphicsImportDraw (*gi);
-						result = true;
-					}
-				}
+				width = CGImageGetWidth ((CGImageRef)cgImage);
+				height = CGImageGetHeight ((CGImageRef)cgImage);
+				result = true;
 			}
+			CFRelease (imageSource);
 		}
 	}
 	#endif
+
+	if (!result)
+	{
+		FSRef fsRef;
+		if (CFURLGetFSRef (url, &fsRef))
+		{
+			FSSpec fsSpec;
+			FSCatalogInfoBitmap infoBitmap = kFSCatInfoNone;
+			if (FSGetCatalogInfo (&fsRef, infoBitmap, NULL, NULL, &fsSpec, NULL) == noErr)
+			{
+				ComponentInstance* gi = 0;
+				CFStringRef ext = CFURLCopyPathExtension (url);
+				if (ext == 0)
+					return false;
+				if (CFStringCompare (ext, CFSTR("bmp"), 0) == kCFCompareEqualTo)
+					gi = &bmpGI;
+				else if (CFStringCompare (ext, CFSTR("png"), 0) == kCFCompareEqualTo)
+				{
+					gi = &pngGI;
+					noAlpha = false;
+				}
+				else if (CFStringCompare (ext, CFSTR("jpg"), 0) == kCFCompareEqualTo)
+					gi = &jpgGI;
+				else if (CFStringCompare (ext, CFSTR("pict"), 0) == kCFCompareEqualTo)
+					gi = &pictGI;
+				CFRelease (ext);
+
+				if (*gi == 0)
+					GetGraphicsImporterForFile (&fsSpec, gi);
+				else
+				{
+					if (GraphicsImportSetDataFile (*gi, &fsSpec) != noErr)
+						return false;
+				}
+				if (*gi)
+				{
+					#if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_3
+					if (!noAlpha && GraphicsImportCreateCGImage)
+					{
+						if (GraphicsImportCreateCGImage (*gi, (CGImageRef*)&cgImage, 0) == noErr)
+						{
+							width = CGImageGetWidth ((CGImageRef)cgImage);
+							height = CGImageGetHeight ((CGImageRef)cgImage);
+							result = true;
+						}
+					}
+					else
+					#endif
+					{
+						Rect r;
+						GraphicsImportGetSourceRect (*gi, &r);
+						OSErr err = NewGWorld ((GWorldPtr*)&pHandle, 32, &r, 0, 0, 0);
+						if (!err)
+						{
+							width = r.right;
+							height = r.bottom;
+							GraphicsImportSetGWorld (*gi, (GWorldPtr)pHandle, 0);
+							GraphicsImportDraw (*gi);
+							result = true;
+						}
+					}
+				}
+			}
+		}
+	}
+
 	#elif WINDOWS
 	// todo
 	
@@ -7634,7 +7208,7 @@ public:
 		color = bmp->getTransparentColor ();
 	}
 
-	static size_t getBytes (void *info, void *buffer, size_t count)
+	static size_t getBytes (void *info, void* buffer, size_t count)
 	{	// this could be optimized ;-)
 		CDataProvider* p = (CDataProvider*)info;
 		unsigned char* dst = (unsigned char*)buffer;
@@ -7656,19 +7230,19 @@ public:
 		return count;
 	}
 
-	static void skipBytes (void *info, size_t count)
+	static void skipBytes (void* info, size_t count)
 	{
 		CDataProvider* p = (CDataProvider*)info;
 		p->pos += count;
 	}
 
-	static void rewind (void *info)
+	static void rewind (void* info)
 	{
 		CDataProvider* p = (CDataProvider*)info;
 		p->pos = 0;
 	}
 
-	static void releaseProvider (void *info)
+	static void releaseProvider (void* info)
 	{
 		CDataProvider* p = (CDataProvider*)info;
 		delete p;
@@ -7718,6 +7292,7 @@ CGImageRef CBitmap::createCGImage (bool transparent)
 	return image;
 }
 #endif
+
 #if GDIPLUS
 //-----------------------------------------------------------------------------
 Gdiplus::Bitmap* CBitmap::getBitmap ()
@@ -7738,7 +7313,7 @@ Gdiplus::Bitmap* CBitmap::getBitmap ()
 #endif
 
 //-----------------------------------------------------------------------------
-void CBitmap::draw (CDrawContext *pContext, CRect &rect, const CPoint &offset)
+void CBitmap::draw (CDrawContext* pContext, CRect &rect, const CPoint &offset)
 {
 #if WINDOWS
 	#if GDIPLUS
@@ -7811,18 +7386,11 @@ void CBitmap::draw (CDrawContext *pContext, CRect &rect, const CPoint &offset)
 	pContext->releaseBitmap ();
 	#endif
 
-#elif BEOS
-	BRect	brect (rect.left, rect.top, rect.right - 1, rect.bottom - 1);
-	BRect	drect = brect;
-	brect.OffsetTo (offset.h, offset.v);
-	drect.OffsetBy (pContext->offset.h, pContext->offset.v);
-	pContext->pView->SetDrawingMode (B_OP_COPY);
-	pContext->pView->DrawBitmap (bbitmap, brect, drect);
 #endif
 }
 
 //-----------------------------------------------------------------------------
-void CBitmap::drawTransparent (CDrawContext *pContext, CRect &rect, const CPoint &offset)
+void CBitmap::drawTransparent (CDrawContext* pContext, CRect &rect, const CPoint &offset)
 {
 #if WINDOWS
 	#if GDIPLUS
@@ -7925,32 +7493,11 @@ void CBitmap::drawTransparent (CDrawContext *pContext, CRect &rect, const CPoint
 	pContext->releaseBitmap ();
 	#endif
         
-#elif BEOS
-	if (!transparencySet)
-	{
-		uint32 c32 = transparentCColor.red | (transparentCColor.green  << 8) | (transparentCColor.blue << 16);
-		uint32 *pix = (uint32*) bbitmap->Bits ();
-		uint32 ctr = B_TRANSPARENT_32_BIT.red | (B_TRANSPARENT_32_BIT.green << 8) | (B_TRANSPARENT_32_BIT.blue << 16) | (B_TRANSPARENT_32_BIT.alpha << 24);
-		
-		for (int32 z = 0, count = bbitmap->BitsLength () / 4; z < count; z++)
-		{
-			if ((pix[z] & 0xffffff) == c32) 
-				pix[z] = ctr;
-		}
-		transparencySet = true;
-	}
-	BRect	brect (rect.left, rect.top, rect.right - 1, rect.bottom - 1);
-	BRect	drect = brect;
-	brect.OffsetTo (offset.h, offset.v);
-	drect.OffsetBy (pContext->offset.h, pContext->offset.v);
-	pContext->pView->SetDrawingMode (B_OP_OVER);
-	pContext->pView->DrawBitmap (bbitmap, brect, drect);
-
 #endif
 }
 
 //-----------------------------------------------------------------------------
-void CBitmap::drawAlphaBlend (CDrawContext *pContext, CRect &rect, const CPoint &offset, unsigned char alpha)
+void CBitmap::drawAlphaBlend (CDrawContext* pContext, CRect &rect, const CPoint &offset, unsigned char alpha)
 {
 #if WINDOWS
 	#if GDIPLUS
@@ -8126,6 +7673,7 @@ void CBitmap::drawAlphaBlend (CDrawContext *pContext, CRect &rect, const CPoint 
         #endif
 #endif
 }
+
 //-----------------------------------------------------------------------------
 void CBitmap::setTransparentColor (const CColor color)
 {
@@ -8133,9 +7681,24 @@ void CBitmap::setTransparentColor (const CColor color)
 #if QUARTZ
 	if (noAlpha)
 	{
-		if (cgImage)
-			CGImageRelease ((CGImageRef)cgImage);
-		cgImage = 0;
+		if (pHandle)
+		{
+			if (cgImage)
+				CGImageRelease ((CGImageRef)cgImage);
+			cgImage = 0;
+		}
+		#if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_4
+		else if (cgImage && CGImageCreateWithMaskingColors)
+		{
+			float myMaskingColors[] = { 255 - color.red, 255 - color.red, 255 - color.green, 255 - color.green, 255 - color.blue, 255 - color.blue };
+			CGImageRef newImage = CGImageCreateWithMaskingColors ((CGImageRef)cgImage, myMaskingColors);
+			if (newImage)
+			{
+				CGImageRelease ((CGImageRef)cgImage);
+				cgImage = newImage;
+			}
+		}
+		#endif
 	}
 #endif
 }
@@ -8214,28 +7777,6 @@ void CBitmap::setTransparencyMask (CDrawContext* pContext, const CPoint& offset)
 #endif
 }
 #endif // VSTGUI_ENABLE_DEPRECATED_METHODS
-
-//----------------------------------------------------------------------------
-//----------------------------------------------------------------------------
-#if BEOS
-//----------------------------------------------------------------------------
-
-BResources* CBitmap::resourceFile = 0;
-
-//----------------------------------------------------------------------------
-
-void CBitmap::closeResource ()
-{
-	if (resourceFile)
-	{
-		delete resourceFile;
-		resourceFile = 0;
-	}
-}
-
-//----------------------------------------------------------------------------
-#endif
-
 
 //-----------------------------------------------------------------------------
 // CDragContainer Implementation
@@ -8598,7 +8139,7 @@ LONG_PTR WINAPI WindowProc (HWND hwnd, UINT message, WPARAM wParam, LPARAM lPara
 	{
 		if (pFrame)
 		{
-			VSTGUI_CTextEdit *textEdit = (VSTGUI_CTextEdit*)pFrame->getFocusView ();
+			VSTGUI_CTextEdit* textEdit = (VSTGUI_CTextEdit*)pFrame->getFocusView ();
 			if (textEdit)
 			{
 				VSTGUI_CColor fontColor = textEdit->getFontColor ();
@@ -8640,7 +8181,7 @@ LONG_PTR WINAPI WindowProc (HWND hwnd, UINT message, WPARAM wParam, LPARAM lPara
 			int len = GetRegionData (rgn, 0, NULL);
 			if (len)
 			{
-				RGNDATA *rlist = (RGNDATA *)new char[len];
+				RGNDATA* rlist = (RGNDATA* )new char[len];
 				GetRegionData (rgn, len, rlist);
 				if (rlist->rdh.nCount > 0)
 				{
@@ -9008,7 +8549,7 @@ END_NAMESPACE_VSTGUI
 #endif
 
 //-----------------------------------------------------------------------------
-#if MAC || BEOS
+#if MAC
 BEGIN_NAMESPACE_VSTGUI
 // return a degre value between [0, 360 * 64[
 long convertPoint2Angle (CPoint &pm, CPoint &pt)
@@ -9050,75 +8591,6 @@ long convertPoint2Angle (CPoint &pm, CPoint &pt)
 }
 END_NAMESPACE_VSTGUI
 #endif
-
-
-#if BEOS
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
-PlugView::PlugView (BRect frame, CFrame* cframe)
-	: BView (frame, NULL, B_FOLLOW_ALL, B_WILL_DRAW), cframe (cframe)
-{
-	SetViewColor (B_TRANSPARENT_COLOR);
-}
-
-//-----------------------------------------------------------------------------
-void PlugView::Draw (BRect updateRect)
-{
-	cframe->draw ();
-}
-
-//-----------------------------------------------------------------------------
-void PlugView::MouseDown (BPoint where)
-{
-	BMessage*	m = Window ()->CurrentMessage ();
-	int32 buttons;
-	m->FindInt32 ("buttons", &buttons);
-	
-	if (buttons & B_SECONDARY_MOUSE_BUTTON && !Window ()->IsFront () && !Window ()->IsFloating ())
-	{
-		Window ()->Activate (true);
-		return;
-	}
-
-	CDrawContext context (cframe, this, NULL);
-	CPoint here (where.x, where.y);
-	cframe->mouse (&context, here);
-}
-
-//-----------------------------------------------------------------------------
-void PlugView::MessageReceived (BMessage *msg)
-{
-	if (msg->what == B_SIMPLE_DATA)
-	{
-		int32		countMax = 0;	// max number of references. Possibly not all valid...
-		type_code	typeFound;
-		msg->GetInfo ("refs", &typeFound, &countMax);
-		if (countMax > 0)
-		{ 
-			entry_ref	item;
-			int			nbRealItems = 0;
-			char **		ptrItems = new char* [countMax];
-			for (int k = 0; k < countMax; k++)
-				if (msg->FindRef ("refs", k, &item) == B_OK)
-				{
-					BPath path (&item);
-					if (path.InitCheck () == B_OK)
-						ptrItems[nbRealItems++] = strdup (path.Path ());
-				}
-			BPoint bwhere = msg->DropPoint ();
-			ConvertFromScreen (&bwhere);
-			CPoint where (bwhere.x, bwhere.y);
-			cframe->onDrop ((void**)ptrItems, nbRealItems, kDropFiles, where);
-			for (long i = 0; i < nbRealItems; i++)
-				free (ptrItems[i]);
-			delete []ptrItems;
-		}
-	}
-	else BView::MessageReceived (msg);
-}
-
-#endif
-
 
 //-----------------------------------------------------------------------------
 #if WINDOWS
@@ -9183,10 +8655,10 @@ public:
 	STDMETHOD_ (ULONG, Release) (void);
    
 	// IDropTarget
-	STDMETHOD (DragEnter) (IDataObject *dataObject, DWORD keyState, POINTL pt, DWORD *effect);
-	STDMETHOD (DragOver) (DWORD keyState, POINTL pt, DWORD *effect);
+	STDMETHOD (DragEnter) (IDataObject* dataObject, DWORD keyState, POINTL pt, DWORD* effect);
+	STDMETHOD (DragOver) (DWORD keyState, POINTL pt, DWORD* effect);
 	STDMETHOD (DragLeave) (void);
-	STDMETHOD (Drop) (IDataObject *dataObject, DWORD keyState, POINTL pt, DWORD *effect);
+	STDMETHOD (Drop) (IDataObject* dataObject, DWORD keyState, POINTL pt, DWORD* effect);
 private:
 	long refCount;
 	bool accept;
@@ -9245,7 +8717,7 @@ STDMETHODIMP_(ULONG) CDropTarget::Release (void)
 }
 
 //-----------------------------------------------------------------------------
-STDMETHODIMP CDropTarget::DragEnter (IDataObject *dataObject, DWORD keyState, POINTL pt, DWORD *effect)
+STDMETHODIMP CDropTarget::DragEnter (IDataObject* dataObject, DWORD keyState, POINTL pt, DWORD* effect)
 {
 	if (dataObject && pFrame)
 	{
@@ -9263,7 +8735,7 @@ STDMETHODIMP CDropTarget::DragEnter (IDataObject *dataObject, DWORD keyState, PO
 }
 
 //-----------------------------------------------------------------------------
-STDMETHODIMP CDropTarget::DragOver (DWORD keyState, POINTL pt, DWORD *effect)
+STDMETHODIMP CDropTarget::DragOver (DWORD keyState, POINTL pt, DWORD* effect)
 {
 	if (gDragContainer && pFrame)
 	{
@@ -9294,7 +8766,7 @@ STDMETHODIMP CDropTarget::DragLeave (void)
 }
 
 //-----------------------------------------------------------------------------
-STDMETHODIMP CDropTarget::Drop (IDataObject *dataObject, DWORD keyState, POINTL pt, DWORD *effect)
+STDMETHODIMP CDropTarget::Drop (IDataObject* dataObject, DWORD keyState, POINTL pt, DWORD* effect)
 {
 	if (gDragContainer && pFrame)
 	{
@@ -9360,7 +8832,7 @@ static CPoint GetMacDragMouse (CFrame* frame)
 // Drop Implementation
 //-----------------------------------------------------------------------------
 pascal static short drag_receiver (WindowPtr w, void* ref, DragReference drag);
-pascal static OSErr drag_tracker (DragTrackingMessage message, WindowRef theWindow, void *handlerRefCon, DragRef theDrag);
+pascal static OSErr drag_tracker (DragTrackingMessage message, WindowRef theWindow, void* handlerRefCon, DragRef theDrag);
 
 static DragReceiveHandlerUPP drh;
 static DragTrackingHandlerUPP dth;
@@ -9368,7 +8840,7 @@ static DragTrackingHandlerUPP dth;
 static bool gEventDragWorks = false;
 
 //-------------------------------------------------------------------------------------------
-void install_drop (CFrame *frame)
+void install_drop (CFrame* frame)
 {
 	drh = NewDragReceiveHandlerUPP (drag_receiver);
 	dth = NewDragTrackingHandlerUPP (drag_tracker);
@@ -9382,7 +8854,7 @@ void install_drop (CFrame *frame)
 }
 
 //-------------------------------------------------------------------------------------------
-void remove_drop (CFrame *frame)
+void remove_drop (CFrame* frame)
 {
 #if TARGET_API_MAC_CARBON
 	RemoveReceiveHandler (drh, (WindowRef)(frame->getSystemWindow ()));
@@ -9396,7 +8868,7 @@ void remove_drop (CFrame *frame)
 }
 
 // drag tracking for visual feedback
-pascal OSErr drag_tracker (DragTrackingMessage message, WindowRef theWindow, void *handlerRefCon, DragRef dragRef)
+pascal OSErr drag_tracker (DragTrackingMessage message, WindowRef theWindow, void* handlerRefCon, DragRef dragRef)
 {
 	#if QUARTZ
 	if (gEventDragWorks)
@@ -9577,7 +9049,7 @@ public:
 	bool isComposited;
 };
 
-static OSStatus VSTGUIDrawRectsProc (UInt16 message, RgnHandle rgn, const Rect *rect, void *refCon)
+static OSStatus VSTGUIDrawRectsProc (UInt16 message, RgnHandle rgn, const Rect* rect, void* refCon)
 {
 	if (message == kQDRegionToRectsMsgParse)
 	{
@@ -9599,7 +9071,7 @@ static OSStatus VSTGUIDrawRectsProc (UInt16 message, RgnHandle rgn, const Rect *
 bool hiToolboxAllowFocusChange = true;
 
 //---------------------------------------------------------------------------------------
-pascal OSStatus CFrame::carbonEventHandler (EventHandlerCallRef inHandlerCallRef, EventRef inEvent, void *inUserData)
+pascal OSStatus CFrame::carbonEventHandler (EventHandlerCallRef inHandlerCallRef, EventRef inEvent, void* inUserData)
 {
 	OSStatus result = eventNotHandledErr;
 	CFrame* frame = (CFrame*)inUserData;
@@ -10032,7 +9504,7 @@ pascal OSStatus CFrame::carbonEventHandler (EventHandlerCallRef inHandlerCallRef
 #endif
 
 //---------------------------------------------------------------------------------------
-pascal OSStatus CFrame::carbonMouseEventHandler (EventHandlerCallRef inHandlerCallRef, EventRef inEvent, void *inUserData)
+pascal OSStatus CFrame::carbonMouseEventHandler (EventHandlerCallRef inHandlerCallRef, EventRef inEvent, void* inUserData)
 {
 	OSStatus result = eventNotHandledErr;
 	CFrame* frame = (CFrame*)inUserData;
