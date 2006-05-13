@@ -50,7 +50,7 @@ void PMiscView::draw (CDrawContext* pContext)
 	drawGrid (pContext);
 
 	#if VSTGUI_USES_UTF8
-	CRect stringRect (size.left + 5, size.top + 5, 200, 12);
+	CRect stringRect (size.left + 5, size.top + 5, size.left + 205, size.top + 17);
 	pContext->setFontColor (kBlackCColor);
 	pContext->setFont (kNormalFont, 0, kNormalFace);
 	pContext->drawStringUTF8("kNormalFont, 0, kNormalFace, antialised", stringRect, kLeftText);
