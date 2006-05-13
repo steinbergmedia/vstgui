@@ -212,8 +212,9 @@ CScrollView::~CScrollView ()
 }
 
 //-----------------------------------------------------------------------------
-void CScrollView::setContainerSize (const CRect& cs)
+void CScrollView::setContainerSize (const CRect& cs, bool keepVisibleArea)
 {
+	CRect oldSize (containerSize);
 	containerSize = cs;
 	if (sc)
 	{
@@ -221,12 +222,40 @@ void CScrollView::setContainerSize (const CRect& cs)
 	}
 	if (vsb)
 	{
+		CRect oldScrollSize = vsb->getScrollSize (oldScrollSize);
+		float oldValue = vsb->getValue ();
 		vsb->setScrollSize (cs);
+		if (cs.getHeight () < size.getHeight ())
+			vsb->setValue (0);
+		else if (keepVisibleArea && oldScrollSize.getHeight () != cs.getHeight ())
+		{
+			CRect vSize = sc->getViewSize (vSize);
+			float newValue = oldValue * ((float)(oldScrollSize.getHeight () - vSize.getHeight ()) / ((float)cs.getHeight () - vSize.getHeight ()));
+			if (newValue > 1.f)
+				newValue = 1.f;
+			else if (newValue < 0.f)
+				newValue = 0.f;
+			vsb->setValue (newValue);
+		}
 		valueChanged (vsb);
 	}
 	if (hsb)
 	{
+		CRect oldScrollSize = hsb->getScrollSize (oldScrollSize);
+		float oldValue = hsb->getValue ();
 		hsb->setScrollSize (cs);
+		if (cs.getWidth () < size.getWidth ())
+			hsb->setValue (0);
+		else if (keepVisibleArea && oldScrollSize.getWidth () != cs.getWidth ())
+		{
+			CRect vSize = sc->getViewSize (vSize);
+			float newValue = oldValue * ((float)(oldScrollSize.getWidth () - vSize.getWidth ()) / ((float)cs.getWidth () - vSize.getWidth ()));
+			if (newValue > 1.f)
+				newValue = 1.f;
+			else if (newValue < 0.f)
+				newValue = 0.f;
+			hsb->setValue (newValue);
+		}
 		valueChanged (hsb);
 	}
 }

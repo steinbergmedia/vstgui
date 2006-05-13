@@ -2,7 +2,7 @@
 // VST Plug-Ins SDK
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 //
-// Version 3.5       $Date: 2006-04-26 08:10:37 $
+// Version 3.5       $Date: 2006-05-13 06:58:26 $
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
@@ -50,8 +50,6 @@
 	#define __CF_USE_FRAMEWORK_INCLUDES__ 1
 	#endif
 	#endif
-#elif __BEOS__
-	#define BEOS 1
 #endif
 
 #if WINDOWS
@@ -161,14 +159,6 @@ END_NAMESPACE_VSTGUI
 #endif // MAC
 
 //----------------------------------------------------
-#if BEOS
-	#include <Font.h>
-	class BView;
-	class PlugView;
-	class BBitmap;
-	class BResources;
-#endif // BEOS
-
 struct VstKeyCode;
 
 BEGIN_NAMESPACE_VSTGUI
@@ -378,7 +368,7 @@ extern const CColor kMagentaCColor;
 //-----------------------------------------------------------------------------
 // Definitions of special characters in a platform independent way
 
-#if VSTGUI_USES_UTF8 || BEOS
+#if VSTGUI_USES_UTF8
 extern const char* kDegreeSymbol;			///< degree sign
 extern const char* kInfiniteSymbol;			///< infinity
 extern const char* kCopyrightSymbol;		///< copyright sign
@@ -803,12 +793,6 @@ protected:
 	virtual CGrafPtr getPort ();
 #endif // MAC
 
-#if BEOS
-	BView*	pView;
-	BFont	font;
-	void lineFromTo (CPoint& cstart, CPoint& cend);
-
-#endif // BEOS
 };
 
 
@@ -844,10 +828,6 @@ protected:
 #if WINDOWS
 	void* oldBitmap;
 #endif // WINDOWS
-
-#if BEOS
-	BBitmap *offscreenBitmap;
-#endif // BEOS
 
 #if MAC
 	#if QUARTZ
@@ -900,21 +880,17 @@ public:
 	virtual void drawTransparent (CDrawContext *pContext, CRect &rect, const CPoint &offset = CPoint (0, 0));
 	virtual void drawAlphaBlend  (CDrawContext *pContext, CRect &rect, const CPoint &offset = CPoint (0, 0), unsigned char alpha = 128);	///< Same as CBitmap::draw except that it uses the alpha value to draw the bitmap alpha blended.
 
-	inline CCoord getWidth () const { return width; }
-	inline CCoord getHeight () const { return height; }
+	inline CCoord getWidth () const { return width; }		///< get the width of the image
+	inline CCoord getHeight () const { return height; }		///< get the height of the image
 
-	bool isLoaded () const;
-	void *getHandle () const;
+	bool isLoaded () const;									///< check if image is loaded
+	void *getHandle () const;								///< get a platform image object. Normally you don't need this
 	
-	void setTransparentColor (const CColor color);
-	CColor getTransparentColor () const { return transparentCColor; }
+	void setTransparentColor (const CColor color);						///< set the color of the image which should not be drawn. Works only once on some implementations/platforms.
+	CColor getTransparentColor () const { return transparentCColor; }	///< get the current transparent color
 
 	void setNoAlpha (bool state) { noAlpha = state; }
 	bool getNoAlpha () const { return noAlpha; }
-
-#if BEOS
-	static void closeResource ();
-#endif // BEOS
 
 #if QUARTZ
 	virtual CGImageRef createCGImage (bool transparent = false);
@@ -958,11 +934,6 @@ protected:
 	#endif // QUARTZ
 #endif // MAC
 
-#if BEOS
-	static BResources *resourceFile;
-	BBitmap    *bbitmap;
-	bool		transparencySet;
-#endif // BEOS
 };
 
 //-----------------------------------------------------------------------------
@@ -1369,10 +1340,6 @@ protected:
 	void*     dropTarget;
 	COffscreenContext* backBuffer;
 #endif // WINDOWS
-
-#if BEOS
-	PlugView *pPlugView;
-#endif // BEOS
 
 #if QUARTZ
 	void setDrawContext (CDrawContext* context) { pFrameContext = context; }
