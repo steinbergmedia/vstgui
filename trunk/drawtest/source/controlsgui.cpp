@@ -186,6 +186,7 @@ ControlsGUI::ControlsGUI (const CRect &inSize, CFrame *frame, CBitmap *pBackgrou
 
 	//--CKnob--------------------------------------
 	CBitmap *knob   = new CBitmap (kKnobHandleBitmap);
+	knob->setTransparentColor (kWhiteCColor);
 	CBitmap *bgKnob = new CBitmap (kKnobBgBitmap);
 
  	size (0, 0, bgKnob->getWidth (), bgKnob->getHeight ());
