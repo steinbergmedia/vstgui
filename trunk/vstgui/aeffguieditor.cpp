@@ -84,16 +84,15 @@ AEffGUIEditor::~AEffGUIEditor ()
 
 //-----------------------------------------------------------------------------
 #if VST_2_1_EXTENSIONS
-bool AEffGUIEditor::onKeyDown (VstKeyCode &keyCode)
+bool AEffGUIEditor::onKeyDown (VstKeyCode& keyCode)
 {
-	
-	return frame ? frame->onKeyDown (keyCode) : -1;
+	return frame ? frame->onKeyDown (keyCode) > 0 : false;
 }
 
 //-----------------------------------------------------------------------------
-bool AEffGUIEditor::onKeyUp (VstKeyCode &keyCode)
+bool AEffGUIEditor::onKeyUp (VstKeyCode& keyCode)
 {
-	return frame ? frame->onKeyUp (keyCode) : -1;
+	return frame ? frame->onKeyUp (keyCode) > 0 : false;
 }
 #endif
 
@@ -136,7 +135,7 @@ long AEffGUIEditor::mouse (long x, long y)
 #endif
 
 //-----------------------------------------------------------------------------
-bool AEffGUIEditor::open (void *ptr)
+bool AEffGUIEditor::open (void* ptr)
 {
 	return AEffEditor::open (ptr);
 }
@@ -156,27 +155,13 @@ void AEffGUIEditor::idle ()
 	SetPort (savePort);
 #else
 
-	#if BEOS
-	PlugView *plugView = 0;
-	if (frame)
-	{
-		plugView = (PlugView *) frame->getSystemWindow ();
-		if (plugView->LockLooperWithTimeout (0) != B_OK)
-			return;
-	}
-	#else
 	if (inIdleStuff)
 		return;
-	#endif
 
 	AEffEditor::idle ();
 	if (frame)
 		frame->idle ();
 		
-	#if BEOS
-	if (frame)
-		plugView->UnlockLooper ();
-	#endif
 #endif
 }
 
@@ -222,8 +207,6 @@ void AEffGUIEditor::wait (unsigned long ms)
 	struct timespec sleeptime = {0, ms * 1000000};
 	nanosleep (&sleeptime, NULL);
 
-	#elif BEOS
-	snooze (ms * 1000);
 	#endif
 }
 
@@ -236,8 +219,6 @@ unsigned long AEffGUIEditor::getTicks ()
 	#elif WINDOWS
 	return (unsigned long)GetTickCount ();
 	
-	#elif BEOS
-	return (system_time () / 1000);
 	#endif
 
 	return 0;
@@ -284,10 +265,8 @@ void AEffGUIEditor::doIdleStuff ()
 
 	inIdleStuff = true;
 
-	#if !BEOS
 	if (effect)
 		effect->masterIdle ();
-	#endif
 
 	inIdleStuff = false;
 }

@@ -62,7 +62,7 @@ public:
 		kDontDrawFrame			= 1 << 3,	///< don't draw frame
 	};
 
-	virtual void setContainerSize (const CRect& cs);	///< set the virtual size of this container
+	virtual void setContainerSize (const CRect& cs, bool keepVisibleArea = false);	///< set the virtual size of this container
 	const CPoint& getScrollOffset () const;				///< get scroll offset
 	
 	CScrollbar* getVerticalScrollbar () const { return vsb; }

@@ -61,14 +61,14 @@ public :
 	virtual ~AEffGUIEditor ();
 
 	virtual void setParameter (long index, float value) {} 
-	virtual bool getRect (ERect **ppRect);
-	virtual bool open (void *ptr);
+	virtual bool getRect (ERect** ppRect);
+	virtual bool open (void* ptr);
 	virtual void idle ();
 	virtual void draw (ERect* pRect);
 
 	#if VST_2_1_EXTENSIONS
-	virtual bool onKeyDown (VstKeyCode &keyCode);
-	virtual bool onKeyUp (VstKeyCode &keyCode);
+	virtual bool onKeyDown (VstKeyCode& keyCode);
+	virtual bool onKeyUp (VstKeyCode& keyCode);
 	#endif
 
 	#if MAC
