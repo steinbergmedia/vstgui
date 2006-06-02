@@ -67,6 +67,8 @@ public:
 	
 	CScrollbar* getVerticalScrollbar () const { return vsb; }
 	CScrollbar* getHorizontalScrollbar () const { return hsb; }
+
+	virtual void makeRectVisible (const CRect& rect);	///< set scrollview to show rect
 	
 	// overwrite
 	bool addView (CView *pView);

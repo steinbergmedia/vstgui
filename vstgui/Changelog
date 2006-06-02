@@ -1,3 +1,7 @@
+2006-06-02 arne
+
+	* add method to CScrollView to show a specific rect
+
 2006-05-10 arne
 
 	* quartz: moved CBitmap completly to Image I/O in Mac OS X >= 10.4. The downside is, that you can only set the transparent color once.
