@@ -2,7 +2,7 @@
 // VST Plug-Ins SDK
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 //
-// Version 3.5       $Date: 2005-12-11 22:41:48 $
+// Version 3.5       $Date: 2006-06-02 08:21:32 $
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
@@ -50,12 +50,12 @@ public:
 	virtual ~CVSTGUITimer ();
 	
 	virtual bool start ();							///< starts the timer
-	virtual bool stop ();							///< stops the timer, returns wheater timer was running or not
+	virtual bool stop ();							///< stops the timer, returns wheather timer was running or not
 
 	virtual bool setFireTime (int newFireTime);		///< in milliseconds
 
 //-----------------------------------------------------------------------------
-	static const char* kMsgTimer;					///< message string posted to CBasObject's notify method
+	static const char* kMsgTimer;					///< message string posted to CBaseObject's notify method
 //-----------------------------------------------------------------------------
 protected:
 	int fireTime;

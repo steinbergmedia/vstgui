@@ -2,7 +2,7 @@
 // VST Plug-Ins SDK
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 //
-// Version 3.5       $Date: 2006-05-13 06:58:26 $ 
+// Version 3.5       $Date: 2006-06-02 08:21:32 $ 
 //
 // Added Motif/Windows vers.: Yvan Grabit              01.98
 // Added Mac version        : Charlie Steinberg        02.98
@@ -7087,11 +7087,14 @@ bool CBitmap::loadFromPath (const void* platformPath)
 		{
 			const void* keys[] = {kCGImageSourceShouldCache, kCGImageSourceShouldPreferRGB32};
 			const void* values[] = {kCFBooleanTrue, kCFBooleanTrue};
-			CFDictionaryRef options = CFDictionaryCreate(NULL, keys, values, 2, NULL, NULL);
+			CFDictionaryRef options = CFDictionaryCreate (NULL, keys, values, 2, NULL, NULL);
 			cgImage = CGImageSourceCreateImageAtIndex (imageSource, 0, options);
 			CFDictionaryRef dictRef = CGImageSourceCopyPropertiesAtIndex (imageSource, 0, options);
 			if (dictRef)
 			{
+				#if DEBUG
+				//CFShow (dictRef);
+				#endif
 				const void* value = CFDictionaryGetValue (dictRef, kCGImagePropertyHasAlpha);
 				if (value == kCFBooleanTrue)
 					noAlpha = false;
@@ -7173,7 +7176,13 @@ bool CBitmap::loadFromPath (const void* platformPath)
 			}
 		}
 	}
-
+	#if DEBUG
+	if (!result)
+	{
+		DebugPrint ("*** Bitmap not found :"); CFShow (url);
+	}
+	#endif
+	
 	#elif WINDOWS
 	// todo
 	
@@ -7690,13 +7699,23 @@ void CBitmap::setTransparentColor (const CColor color)
 		#if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_4
 		else if (cgImage && CGImageCreateWithMaskingColors)
 		{
-			float myMaskingColors[] = { 255 - color.red, 255 - color.red, 255 - color.green, 255 - color.green, 255 - color.blue, 255 - color.blue };
-			CGImageRef newImage = CGImageCreateWithMaskingColors ((CGImageRef)cgImage, myMaskingColors);
-			if (newImage)
+			if (CGImageGetBitsPerComponent((CGImageRef)cgImage) == 8)
 			{
-				CGImageRelease ((CGImageRef)cgImage);
-				cgImage = newImage;
+				float myMaskingColors[] = { color.red, color.red, color.green, color.green, color.blue, color.blue };
+				CGImageRef newImage = CGImageCreateWithMaskingColors ((CGImageRef)cgImage, myMaskingColors);
+				if (newImage)
+				{
+					CGImageRelease ((CGImageRef)cgImage);
+					cgImage = newImage;
+					noAlpha = false;
+				}
 			}
+			#if DEBUG
+			else
+			{
+				DebugPrint ("Setting a transparent color for an indexed bitmap does not work yet.\n");
+			}
+			#endif
 		}
 		#endif
 	}
