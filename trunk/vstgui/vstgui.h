@@ -2,7 +2,7 @@
 // VST Plug-Ins SDK
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 //
-// Version 3.5       $Date: 2006-05-13 06:58:26 $
+// Version 3.5       $Date: 2006-06-02 08:21:33 $
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
@@ -1181,14 +1181,14 @@ public:
 	virtual bool invalidateDirtyViews ();
 	
 	void setViewSize (CRect &rect, bool invalid = true);
-	virtual void parentSizeChanged ();
+	void parentSizeChanged ();
 	CRect getVisibleSize (const CRect rect) const;
 
-	virtual bool removed (CView* parent);
-	virtual bool attached (CView* parent);
+	bool removed (CView* parent);
+	bool attached (CView* parent);
 		
-	virtual CPoint& frameToLocal (CPoint& point) const;
-	virtual CPoint& localToFrame (CPoint& point) const;
+	CPoint& frameToLocal (CPoint& point) const;
+	CPoint& localToFrame (CPoint& point) const;
 
 	CLASS_METHODS(CViewContainer, CView)
 

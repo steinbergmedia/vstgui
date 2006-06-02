@@ -261,6 +261,56 @@ void CScrollView::setContainerSize (const CRect& cs, bool keepVisibleArea)
 }
 
 //-----------------------------------------------------------------------------
+void CScrollView::makeRectVisible (const CRect& rect)
+{
+	CRect r (rect);
+	const CPoint& scrollOffset = sc->getScrollOffset ();
+	CPoint newOffset (scrollOffset);
+	CRect vs;
+	sc->getViewSize (vs);
+	if (!(style & kDontDrawFrame))
+	{
+		vs.left--; //vs.top--;
+		vs.right++; //vs.bottom++;
+	}
+	CRect cs (containerSize);
+	cs.offset (-cs.left, -cs.top);
+	cs.setWidth (vs.getWidth ());
+	cs.setHeight (vs.getHeight ());
+	if (r.top >= cs.top && r.bottom <= cs.bottom && r.left >= cs.left && r.right <= cs.right)
+		return;
+	if (r.top < cs.top)
+	{
+		newOffset.y -= (cs.top - r.top);
+	}
+	else if (r.bottom > cs.bottom)
+	{
+		newOffset.y += (r.bottom - cs.bottom);
+	}
+	if (r.left < cs.left)
+	{
+		newOffset.x += (cs.left - r.left);
+	}
+	else if (r.right > cs.right && r.left != cs.left)
+	{
+		newOffset.x += (r.right - cs.right);
+	}
+	if (newOffset != scrollOffset)
+	{
+		if (vsb)
+		{
+			vsb->setValue ((float)(newOffset.y - vs.top) / (float)(containerSize.getHeight () - vs.getHeight ()));
+			valueChanged (vsb);
+		}
+		if (hsb)
+		{
+			hsb->setValue ((float)(newOffset.x - vs.left) / (float)(containerSize.getWidth () - vs.getWidth ()));
+			valueChanged (hsb);
+		}
+	}
+}
+
+//-----------------------------------------------------------------------------
 const CPoint& CScrollView::getScrollOffset () const
 {
 	return sc->getScrollOffset ();
@@ -343,6 +393,11 @@ void CScrollView::valueChanged (CControl *pControl)
 					offset.x = (long) (csize.left - (csize.width () - vsize.width ()) * value);
 					sc->setScrollOffset (offset, false);
 				}
+				else if (offset.x > 0)
+				{
+					offset.x = 0;
+					sc->setScrollOffset (offset, false);
+				}
 				break;
 			}
 			case kVSBTag:
@@ -350,6 +405,11 @@ void CScrollView::valueChanged (CControl *pControl)
 				if (csize.getHeight () > vsize.getHeight ())
 				{
 					offset.y = (long) (csize.top + (csize.height () - vsize.height ()) * value);
+					sc->setScrollOffset (offset, false);
+				}
+				else if (offset.y > 0)
+				{
+					offset.y = 0;
 					sc->setScrollOffset (offset, false);
 				}
 				break;
