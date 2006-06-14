@@ -2,7 +2,7 @@
 // VST Plug-Ins SDK
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 //
-// Version 3.5       $Date: 2006-04-26 08:10:37 $ 
+// Version 3.5       $Date: 2006-06-14 12:03:48 $ 
 //
 // Debug Utilities
 //
@@ -39,6 +39,7 @@
 #if DEBUG
 
 #include <stdarg.h>
+#include <stdio.h>
 
 BEGIN_NAMESPACE_VSTGUI
 
