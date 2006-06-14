@@ -2,7 +2,7 @@
 // VST Plug-Ins SDK
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 //
-// Version 3.5       $Date: 2006-06-02 08:21:32 $ 
+// Version 3.5       $Date: 2006-06-14 12:03:48 $ 
 //
 // Added Motif/Windows vers.: Yvan Grabit              01.98
 // Added Mac version        : Charlie Steinberg        02.98
@@ -6587,7 +6587,7 @@ public:
 
 		bool open (const CResourceDescription& resourceDesc)
 		{
-			HRSRC rsrc = FindResource (GetInstance (), resourceDesc.type == kIntegerType ? MAKEINTRESOURCE (resourceDesc.u.id) : resourceDesc.u.name, "PNG");
+			HRSRC rsrc = FindResource (GetInstance (), resourceDesc.type == CResourceDescription::kIntegerType ? MAKEINTRESOURCE (resourceDesc.u.id) : resourceDesc.u.name, "PNG");
 			if (rsrc)
 			{
 				resSize = SizeofResource (GetInstance (), rsrc);
