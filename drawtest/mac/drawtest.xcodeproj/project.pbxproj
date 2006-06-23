@@ -90,6 +90,20 @@
 		F467335808BF64B000CBCAD2 /* CAVectorUnit.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F467335708BF64B000CBCAD2 /* CAVectorUnit.cpp */; };
 		F485AC4B086C15E700298D72 /* AudioUnit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F485AC4A086C15E700298D72 /* AudioUnit.framework */; };
 		F485AC51086C160100298D72 /* CoreAudio.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8B5C7F83076FB26000A15F61 /* CoreAudio.framework */; };
+		F48A3FB709FF648300D9BDDE /* cdatabrowser.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F48A3FB509FF648300D9BDDE /* cdatabrowser.cpp */; };
+		F48A3FB809FF648300D9BDDE /* cdatabrowser.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F48A3FB509FF648300D9BDDE /* cdatabrowser.cpp */; };
+		F48A3FB909FF648300D9BDDE /* cdatabrowser.h in Headers */ = {isa = PBXBuildFile; fileRef = F48A3FB609FF648300D9BDDE /* cdatabrowser.h */; };
+		F48A3FBB09FF649100D9BDDE /* aeffguieditor.h in Headers */ = {isa = PBXBuildFile; fileRef = F48A3FBA09FF649100D9BDDE /* aeffguieditor.h */; };
+		F48A3FC309FF64B100D9BDDE /* cfileselector.h in Headers */ = {isa = PBXBuildFile; fileRef = F48A3FBC09FF64B100D9BDDE /* cfileselector.h */; };
+		F48A3FC409FF64B100D9BDDE /* cscrollview.h in Headers */ = {isa = PBXBuildFile; fileRef = F48A3FBD09FF64B100D9BDDE /* cscrollview.h */; };
+		F48A3FC509FF64B100D9BDDE /* ctabview.h in Headers */ = {isa = PBXBuildFile; fileRef = F48A3FBE09FF64B100D9BDDE /* ctabview.h */; };
+		F48A3FC609FF64B100D9BDDE /* cvstguitimer.h in Headers */ = {isa = PBXBuildFile; fileRef = F48A3FBF09FF64B100D9BDDE /* cvstguitimer.h */; };
+		F48A3FC709FF64B100D9BDDE /* plugguieditor.h in Headers */ = {isa = PBXBuildFile; fileRef = F48A3FC009FF64B100D9BDDE /* plugguieditor.h */; };
+		F48A3FC809FF64B100D9BDDE /* vstcontrols.h in Headers */ = {isa = PBXBuildFile; fileRef = F48A3FC109FF64B100D9BDDE /* vstcontrols.h */; };
+		F48A3FC909FF64B100D9BDDE /* vstgui.h in Headers */ = {isa = PBXBuildFile; fileRef = F48A3FC209FF64B100D9BDDE /* vstgui.h */; };
+		F48A3FF309FF673D00D9BDDE /* pdatabrowsertest.h in Headers */ = {isa = PBXBuildFile; fileRef = F48A3FF109FF673D00D9BDDE /* pdatabrowsertest.h */; };
+		F48A3FF409FF673D00D9BDDE /* pdatabrowsertest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F48A3FF209FF673D00D9BDDE /* pdatabrowsertest.cpp */; };
+		F48A3FF509FF673D00D9BDDE /* pdatabrowsertest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F48A3FF209FF673D00D9BDDE /* pdatabrowsertest.cpp */; };
 		F4C9F1D607B232A100010DAD /* cscrollview.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0C01252807AC359F009EC388 /* cscrollview.cpp */; };
 		F4C9F1D807B232A300010DAD /* ctabview.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0C01252A07AC359F009EC388 /* ctabview.cpp */; };
 		F4C9F1DC07B232A500010DAD /* vstcontrols.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0C01252E07AC359F009EC388 /* vstcontrols.cpp */; };
@@ -133,33 +147,6 @@
 		F4FD4C6F08865DB400F20B72 /* cfileselector.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4FD4C6E08865DB400F20B72 /* cfileselector.cpp */; };
 		F4FD4C7008865DB400F20B72 /* cfileselector.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4FD4C6E08865DB400F20B72 /* cfileselector.cpp */; };
 /* End PBXBuildFile section */
-
-/* Begin PBXBuildStyle section */
-		4F9091AC011F3BD104CA0E50 /* Development */ = {
-			isa = PBXBuildStyle;
-			buildSettings = {
-				COPY_PHASE_STRIP = NO;
-				DEBUGGING_SYMBOLS = YES;
-				GCC_DYNAMIC_NO_PIC = NO;
-				GCC_ENABLE_FIX_AND_CONTINUE = YES;
-				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
-				GCC_OPTIMIZATION_LEVEL = 0;
-				MACOSX_DEPLOYMENT_TARGET = 10.2;
-				OPTIMIZATION_CFLAGS = "-O0";
-				ZERO_LINK = YES;
-			};
-			name = Development;
-		};
-		4F9091AD011F3BD104CA0E50 /* Deployment */ = {
-			isa = PBXBuildStyle;
-			buildSettings = {
-				COPY_PHASE_STRIP = YES;
-				GCC_ENABLE_FIX_AND_CONTINUE = NO;
-				ZERO_LINK = NO;
-			};
-			name = Deployment;
-		};
-/* End PBXBuildStyle section */
 
 /* Begin PBXFileReference section */
 		08EA7FFBFE8413EDC02AAC07 /* Carbon.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Carbon.framework; path = /System/Library/Frameworks/Carbon.framework; sourceTree = "<absolute>"; };
@@ -247,6 +234,18 @@
 		F41417EC09EE85180064AA41 /* vstguidebug.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = vstguidebug.h; path = ../../vstgui/vstguidebug.h; sourceTree = SOURCE_ROOT; };
 		F467335708BF64B000CBCAD2 /* CAVectorUnit.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = CAVectorUnit.cpp; path = /Developer/Examples/CoreAudio/PublicUtility/CAVectorUnit.cpp; sourceTree = "<absolute>"; };
 		F485AC4A086C15E700298D72 /* AudioUnit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioUnit.framework; path = /System/Library/Frameworks/AudioUnit.framework; sourceTree = "<absolute>"; };
+		F48A3FB509FF648300D9BDDE /* cdatabrowser.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = cdatabrowser.cpp; path = ../../vstgui/cdatabrowser.cpp; sourceTree = SOURCE_ROOT; };
+		F48A3FB609FF648300D9BDDE /* cdatabrowser.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = cdatabrowser.h; path = ../../vstgui/cdatabrowser.h; sourceTree = SOURCE_ROOT; };
+		F48A3FBA09FF649100D9BDDE /* aeffguieditor.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = aeffguieditor.h; path = ../../vstgui/aeffguieditor.h; sourceTree = SOURCE_ROOT; };
+		F48A3FBC09FF64B100D9BDDE /* cfileselector.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = cfileselector.h; path = ../../vstgui/cfileselector.h; sourceTree = SOURCE_ROOT; };
+		F48A3FBD09FF64B100D9BDDE /* cscrollview.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = cscrollview.h; path = ../../vstgui/cscrollview.h; sourceTree = SOURCE_ROOT; };
+		F48A3FBE09FF64B100D9BDDE /* ctabview.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = ctabview.h; path = ../../vstgui/ctabview.h; sourceTree = SOURCE_ROOT; };
+		F48A3FBF09FF64B100D9BDDE /* cvstguitimer.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = cvstguitimer.h; path = ../../vstgui/cvstguitimer.h; sourceTree = SOURCE_ROOT; };
+		F48A3FC009FF64B100D9BDDE /* plugguieditor.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = plugguieditor.h; path = ../../vstgui/plugguieditor.h; sourceTree = SOURCE_ROOT; };
+		F48A3FC109FF64B100D9BDDE /* vstcontrols.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = vstcontrols.h; path = ../../vstgui/vstcontrols.h; sourceTree = SOURCE_ROOT; };
+		F48A3FC209FF64B100D9BDDE /* vstgui.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = vstgui.h; path = ../../vstgui/vstgui.h; sourceTree = SOURCE_ROOT; };
+		F48A3FF109FF673D00D9BDDE /* pdatabrowsertest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = pdatabrowsertest.h; sourceTree = "<group>"; };
+		F48A3FF209FF673D00D9BDDE /* pdatabrowsertest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = pdatabrowsertest.cpp; sourceTree = "<group>"; };
 		F4C9F1D407B2320800010DAD /* drawtest.vst */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = drawtest.vst; sourceTree = BUILT_PRODUCTS_DIR; };
 		F4C9F20407B2335F00010DAD /* aeffguieditor.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = aeffguieditor.cpp; path = ../../vstgui/aeffguieditor.cpp; sourceTree = SOURCE_ROOT; };
 		F4C9F47307B2379F00010DAD /* pdrawtestmain.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = pdrawtestmain.cpp; path = ../source/pdrawtestmain.cpp; sourceTree = SOURCE_ROOT; };
@@ -362,17 +361,27 @@
 			isa = PBXGroup;
 			children = (
 				F4C9F20407B2335F00010DAD /* aeffguieditor.cpp */,
-				F4F98FC909499C4B00E01A9F /* ctooltipsupport.h */,
-				F4F98FCA09499C4B00E01A9F /* ctooltipsupport.cpp */,
+				F48A3FBA09FF649100D9BDDE /* aeffguieditor.h */,
+				F48A3FB509FF648300D9BDDE /* cdatabrowser.cpp */,
+				F48A3FB609FF648300D9BDDE /* cdatabrowser.h */,
 				F4FD4C6E08865DB400F20B72 /* cfileselector.cpp */,
+				F48A3FBC09FF64B100D9BDDE /* cfileselector.h */,
 				0C01252807AC359F009EC388 /* cscrollview.cpp */,
+				F48A3FBD09FF64B100D9BDDE /* cscrollview.h */,
 				0C01252A07AC359F009EC388 /* ctabview.cpp */,
+				F48A3FBE09FF64B100D9BDDE /* ctabview.h */,
+				F4F98FCA09499C4B00E01A9F /* ctooltipsupport.cpp */,
+				F4F98FC909499C4B00E01A9F /* ctooltipsupport.h */,
+				F4F0FCBD08D181460014E7D7 /* cvstguitimer.cpp */,
+				F48A3FBF09FF64B100D9BDDE /* cvstguitimer.h */,
 				0C01252C07AC359F009EC388 /* plugguieditor.cpp */,
+				F48A3FC009FF64B100D9BDDE /* plugguieditor.h */,
 				0C01252E07AC359F009EC388 /* vstcontrols.cpp */,
+				F48A3FC109FF64B100D9BDDE /* vstcontrols.h */,
 				0C01253007AC359F009EC388 /* vstgui.cpp */,
+				F48A3FC209FF64B100D9BDDE /* vstgui.h */,
 				F41417EB09EE85180064AA41 /* vstguidebug.cpp */,
 				F41417EC09EE85180064AA41 /* vstguidebug.h */,
-				F4F0FCBD08D181460014E7D7 /* cvstguitimer.cpp */,
 			);
 			name = VSTGUI;
 			sourceTree = "<group>";
@@ -391,6 +400,8 @@
 			children = (
 				F4C9F47307B2379F00010DAD /* pdrawtestmain.cpp */,
 				0CF355FB07B17600002BFE50 /* controlsgui.cpp */,
+				F48A3FF109FF673D00D9BDDE /* pdatabrowsertest.h */,
+				F48A3FF209FF673D00D9BDDE /* pdatabrowsertest.cpp */,
 				0CF355FC07B17600002BFE50 /* controlsgui.h */,
 				0CF355BE07B173A3002BFE50 /* pdrawtesteditor.cpp */,
 				0CF355BF07B173A3002BFE50 /* pdrawtesteditor.h */,
@@ -548,6 +559,16 @@
 				0CF355FE07B17600002BFE50 /* controlsgui.h in Headers */,
 				F4F98FCB09499C4B00E01A9F /* ctooltipsupport.h in Headers */,
 				F41417EF09EE85180064AA41 /* vstguidebug.h in Headers */,
+				F48A3FB909FF648300D9BDDE /* cdatabrowser.h in Headers */,
+				F48A3FBB09FF649100D9BDDE /* aeffguieditor.h in Headers */,
+				F48A3FC309FF64B100D9BDDE /* cfileselector.h in Headers */,
+				F48A3FC409FF64B100D9BDDE /* cscrollview.h in Headers */,
+				F48A3FC509FF64B100D9BDDE /* ctabview.h in Headers */,
+				F48A3FC609FF64B100D9BDDE /* cvstguitimer.h in Headers */,
+				F48A3FC709FF64B100D9BDDE /* plugguieditor.h in Headers */,
+				F48A3FC809FF64B100D9BDDE /* vstcontrols.h in Headers */,
+				F48A3FC909FF64B100D9BDDE /* vstgui.h in Headers */,
+				F48A3FF309FF673D00D9BDDE /* pdatabrowsertest.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -567,45 +588,6 @@
 			);
 			buildRules = (
 			);
-			buildSettings = {
-				DEPLOYMENT_LOCATION = NO;
-				EXPORTED_SYMBOLS_FILE = audiounit.exp;
-				FRAMEWORK_SEARCH_PATHS = /Volumes/DATA/subversion/svn/vstgui/drawtest/mac;
-				GCC_ENABLE_TRIGRAPHS = NO;
-				GCC_GENERATE_DEBUGGING_SYMBOLS = NO;
-				GCC_PRECOMPILE_PREFIX_HEADER = YES;
-				GCC_PREFIX_HEADER = "${SRCROOT}/xcode_au_prefix.h";
-				GCC_PREPROCESSOR_DEFINITIONS = "";
-				GCC_WARN_ABOUT_MISSING_PROTOTYPES = NO;
-				GCC_WARN_FOUR_CHARACTER_CONSTANTS = NO;
-				GCC_WARN_UNKNOWN_PRAGMAS = NO;
-				GENERATE_PKGINFO_FILE = YES;
-				HEADER_SEARCH_PATHS = (
-					"${SRCROOT}/resources",
-					"${SRCROOT}/mac",
-					"${SRCROOT}/source",
-					"${SRCROOT}/../../vstgui",
-				);
-				INFOPLIST_FILE = Info.plist;
-				INSTALL_PATH = "$(HOME)/Library/Audio/Plug-Ins/Components/";
-				LIBRARY_SEARCH_PATHS = "";
-				LIBRARY_STYLE = Bundle;
-				OTHER_CFLAGS = "";
-				OTHER_LDFLAGS = "-bundle";
-				OTHER_REZFLAGS = "-I /System/Library/Frameworks/CoreServices.framework/Frameworks/CarbonCore.framework/Versions/A/Headers -I /Developer/Examples/CoreAudio/AudioUnits/AUPublic/AUBase";
-				PRODUCT_NAME = drawtest;
-				REZ_SEARCH_PATHS = (
-					/System/Library/Frameworks/CoreServices.framework/Frameworks/CarbonCore.framework/Versions/A/Headers,
-					/Developer/Examples/CoreAudio/AudioUnits/AUPublic/AUBase,
-				);
-				SECTORDER_FLAGS = "";
-				WARNING_CFLAGS = (
-					"-Wmost",
-					"-Wno-four-char-constants",
-					"-Wno-unknown-pragmas",
-				);
-				WRAPPER_EXTENSION = component;
-			};
 			dependencies = (
 			);
 			name = AudioUnit;
@@ -624,57 +606,11 @@
 			);
 			buildRules = (
 			);
-			buildSettings = {
-				GCC_PRECOMPILE_PREFIX_HEADER = YES;
-				GCC_PREFIX_HEADER = xcode_vst_prefix.h;
-				GENERATE_PKGINFO_FILE = YES;
-				INFOPLIST_FILE = Info.plist;
-				INSTALL_PATH = "$(USER_LIBRARY_DIR)/Audio/Plug-Ins/VST";
-				LIBRARY_STYLE = BUNDLE;
-				OTHER_CFLAGS = "";
-				OTHER_LDFLAGS = (
-					"-framework",
-					Carbon,
-				);
-				OTHER_REZFLAGS = "";
-				PRODUCT_NAME = drawtest;
-				SECTORDER_FLAGS = "";
-				SKIP_INSTALL = NO;
-				WARNING_CFLAGS = (
-					"-Wmost",
-					"-Wno-four-char-constants",
-					"-Wno-unknown-pragmas",
-				);
-				WRAPPER_EXTENSION = vst;
-			};
 			dependencies = (
 			);
 			name = VST;
 			productName = "drawtest VST";
 			productReference = F4C9F1D407B2320800010DAD /* drawtest.vst */;
-			productSettingsXML = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>
-<!DOCTYPE plist PUBLIC \"-//Apple Computer//DTD PLIST 1.0//EN\" \"http://www.apple.com/DTDs/PropertyList-1.0.dtd\">
-<plist version=\"1.0\">
-<dict>
-	<key>CFBundleDevelopmentRegion</key>
-	<string>English</string>
-	<key>CFBundleExecutable</key>
-	<string>drawtest VST</string>
-	<key>CFBundleIdentifier</key>
-	<string>com.yourcompany.drawtest_VST</string>
-	<key>CFBundleInfoDictionaryVersion</key>
-	<string>6.0</string>
-	<key>CFBundlePackageType</key>
-	<string>APPL</string>
-	<key>CFBundleSignature</key>
-	<string>????</string>
-	<key>CFBundleVersion</key>
-	<string>1.0</string>
-	<key>CSResourcesFileMapped</key>
-	<string>yes</string>
-</dict>
-</plist>
-";
 			productType = "com.apple.product-type.bundle";
 		};
 /* End PBXNativeTarget section */
@@ -683,12 +619,6 @@
 		089C1669FE841209C02AAC07 /* Project object */ = {
 			isa = PBXProject;
 			buildConfigurationList = F485AB77086C0BE900298D72 /* Build configuration list for PBXProject "drawtest" */;
-			buildSettings = {
-			};
-			buildStyles = (
-				4F9091AC011F3BD104CA0E50 /* Development */,
-				4F9091AD011F3BD104CA0E50 /* Deployment */,
-			);
 			hasScannedForEncodings = 1;
 			mainGroup = 089C166AFE841209C02AAC07 /* drawtest */;
 			projectDirPath = "";
@@ -818,6 +748,8 @@
 				F4F0FCBF08D181460014E7D7 /* cvstguitimer.cpp in Sources */,
 				F4F98FCC09499C4B00E01A9F /* ctooltipsupport.cpp in Sources */,
 				F41417EE09EE85180064AA41 /* vstguidebug.cpp in Sources */,
+				F48A3FB809FF648300D9BDDE /* cdatabrowser.cpp in Sources */,
+				F48A3FF409FF673D00D9BDDE /* pdatabrowsertest.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -842,6 +774,8 @@
 				F4CB6FB2098CFA0C004A1647 /* audioeffectx.cpp in Sources */,
 				F4CB6FB3098CFA0C004A1647 /* vstplugmain.cpp in Sources */,
 				F41417ED09EE85180064AA41 /* vstguidebug.cpp in Sources */,
+				F48A3FB709FF648300D9BDDE /* cdatabrowser.cpp in Sources */,
+				F48A3FF509FF673D00D9BDDE /* pdatabrowsertest.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -960,9 +894,11 @@
 			buildSettings = {
 				COPY_PHASE_STRIP = NO;
 				DEBUGGING_SYMBOLS = YES;
+				DEBUG_INFORMATION_FORMAT = dwarf;
 				GCC_DEBUGGING_SYMBOLS = full;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_ENABLE_FIX_AND_CONTINUE = YES;
+				GCC_ENABLE_SYMBOL_SEPARATION = NO;
 				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
 				GCC_OPTIMIZATION_LEVEL = 0;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
@@ -978,7 +914,7 @@
 				INFOPLIST_FILE = Info.plist;
 				INSTALL_PATH = "$(USER_LIBRARY_DIR)/Audio/Plug-Ins/VST";
 				LIBRARY_STYLE = BUNDLE;
-				MACOSX_DEPLOYMENT_TARGET = 10.2;
+				MACOSX_DEPLOYMENT_TARGET = 10.3;
 				OPTIMIZATION_CFLAGS = "-O0";
 				OTHER_CFLAGS = "";
 				OTHER_LDFLAGS = (
@@ -1004,9 +940,11 @@
 			buildSettings = {
 				COPY_PHASE_STRIP = YES;
 				DEAD_CODE_STRIPPING = YES;
+				DEBUG_INFORMATION_FORMAT = dwarf;
 				DEPLOYMENT_POSTPROCESSING = YES;
 				GCC_AUTO_VECTORIZATION = YES;
 				GCC_ENABLE_FIX_AND_CONTINUE = NO;
+				GCC_ENABLE_SYMBOL_SEPARATION = NO;
 				GCC_OPTIMIZATION_LEVEL = 3;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = xcode_vst_prefix.h;
@@ -1022,7 +960,7 @@
 				INFOPLIST_FILE = Info.plist;
 				INSTALL_PATH = "$(USER_LIBRARY_DIR)/Audio/Plug-Ins/VST";
 				LIBRARY_STYLE = BUNDLE;
-				MACOSX_DEPLOYMENT_TARGET = 10.2;
+				MACOSX_DEPLOYMENT_TARGET = 10.3;
 				OTHER_CFLAGS = "";
 				OTHER_LDFLAGS = (
 					"-framework",
@@ -1046,7 +984,7 @@
 		F485AB78086C0BE900298D72 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				MACOSX_DEPLOYMENT_TARGET = 10.2;
+				MACOSX_DEPLOYMENT_TARGET = 10.3;
 				SDKROOT = /Developer/SDKs/MacOSX10.4u.sdk;
 			};
 			name = Debug;
@@ -1058,6 +996,7 @@
 					ppc,
 					i386,
 				);
+				MACOSX_DEPLOYMENT_TARGET = 10.3;
 				SDKROOT = /Developer/SDKs/MacOSX10.4u.sdk;
 			};
 			name = Release;

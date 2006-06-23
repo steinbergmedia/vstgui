@@ -22,6 +22,7 @@
 #include "ctabview.h"
 #include "controlsgui.h"
 #include "pprimitivesviews.h"
+#include "pdatabrowsertest.h"
 
 enum {
 	kBackgroundBitmap	= 1,
@@ -187,6 +188,7 @@ void DrawTestEditor::setTabView (CFrame* frame, const CRect& r, long position)
 	
 	tabView->addTab (controlContainer, "Controls");
 
+	#if 0
 	CColor redColor = {255, 0, 0, 150};
 	CColor greenColor = {0, 255, 0, 150};
 	CColor blueColor = {0, 0, 255, 150};
@@ -227,6 +229,18 @@ void DrawTestEditor::setTabView (CFrame* frame, const CRect& r, long position)
 	clipView->addView (cv);
 	
 	tabView->addTab (clipView, "Clip Test");
+	tabView->addTab (clipView, "Clip Test");
+	#else
+	CRect dbRect (tabSize);
+	dbRect.inset (20, 20);
+	PDataBrowserTest* dbTest = new PDataBrowserTest;
+	CDataBrowser* db = new CDataBrowser (dbRect, frame, dbTest, /*CScrollView::kDontDrawFrame |*/ CScrollView::kHorizontalScrollbar | CScrollView::kVerticalScrollbar | CDataBrowser::kDrawColumnLines | CDataBrowser::kDrawRowLines | CDataBrowser::kDrawHeader);
+	db->setTransparency (false);
+	db->setBackgroundColor (kWhiteCColor);
+	tabView->addTab (db, "DataBrowser");
+	dbTest->forget ();
+	#endif
+	
 	tabView->alignTabs (CTabView::kAlignCenter);
 
 	tabButtonBitmap->forget ();
