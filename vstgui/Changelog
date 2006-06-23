@@ -1,3 +1,7 @@
+2006-06-23 arne
+
+	* add new view : CDataBrowser
+
 2006-06-02 arne
 
 	* add method to CScrollView to show a specific rect
