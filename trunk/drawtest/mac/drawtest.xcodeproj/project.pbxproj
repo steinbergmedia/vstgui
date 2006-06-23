@@ -244,8 +244,8 @@
 		F48A3FC009FF64B100D9BDDE /* plugguieditor.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = plugguieditor.h; path = ../../vstgui/plugguieditor.h; sourceTree = SOURCE_ROOT; };
 		F48A3FC109FF64B100D9BDDE /* vstcontrols.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = vstcontrols.h; path = ../../vstgui/vstcontrols.h; sourceTree = SOURCE_ROOT; };
 		F48A3FC209FF64B100D9BDDE /* vstgui.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = vstgui.h; path = ../../vstgui/vstgui.h; sourceTree = SOURCE_ROOT; };
-		F48A3FF109FF673D00D9BDDE /* pdatabrowsertest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = pdatabrowsertest.h; sourceTree = "<group>"; };
-		F48A3FF209FF673D00D9BDDE /* pdatabrowsertest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = pdatabrowsertest.cpp; sourceTree = "<group>"; };
+		F48A3FF109FF673D00D9BDDE /* pdatabrowsertest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = pdatabrowsertest.h; path = ../source/pdatabrowsertest.h; sourceTree = "<group>"; };
+		F48A3FF209FF673D00D9BDDE /* pdatabrowsertest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = pdatabrowsertest.cpp; path = ../source/pdatabrowsertest.cpp; sourceTree = "<group>"; };
 		F4C9F1D407B2320800010DAD /* drawtest.vst */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = drawtest.vst; sourceTree = BUILT_PRODUCTS_DIR; };
 		F4C9F20407B2335F00010DAD /* aeffguieditor.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = aeffguieditor.cpp; path = ../../vstgui/aeffguieditor.cpp; sourceTree = SOURCE_ROOT; };
 		F4C9F47307B2379F00010DAD /* pdrawtestmain.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = pdrawtestmain.cpp; path = ../source/pdrawtestmain.cpp; sourceTree = SOURCE_ROOT; };
