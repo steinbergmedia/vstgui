@@ -82,7 +82,7 @@ public:
 	bool onWheel (const CPoint &where, const CMouseWheelAxis &axis, const float &distance, const long &buttons);
 	void valueChanged (CControl *pControl);
 	void setTransparency (bool val);
-	void setBackgroundColor (CColor color);
+	void setBackgroundColor (const CColor& color);
 
 	CLASS_METHODS(CScrollView, CViewContainer)
 //-----------------------------------------------------------------------------
