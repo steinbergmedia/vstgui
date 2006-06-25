@@ -2,7 +2,7 @@
 // VST Plug-Ins SDK
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 //
-// Version 3.5       $Date: 2006-06-14 12:03:48 $ 
+// Version 3.5       $Date: 2006-06-25 13:23:33 $ 
 //
 // Added Motif/Windows vers.: Yvan Grabit              01.98
 // Added Mac version        : Charlie Steinberg        02.98
@@ -6966,9 +6966,12 @@ bool CBitmap::loadFromResource (const CResourceDescription& resourceDesc)
 	{
 #if GDIPLUS
 		pBitmap = Gdiplus::Bitmap::FromResource(GetInstance (),(WCHAR*)MAKEINTRESOURCE(resourceDesc.u.id));
-		result = true;
-		width = pBitmap->GetWidth ();
-		height = pBitmap->GetHeight ();
+		if (pBitmap)
+		{
+			result = true;
+			width = pBitmap->GetWidth ();
+			height = pBitmap->GetHeight ();
+		}
 #else
 		pHandle = LoadBitmap (GetInstance (), MAKEINTRESOURCE (resourceDesc.u.id));
 		BITMAP bm;

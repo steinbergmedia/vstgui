@@ -1,3 +1,7 @@
+2006-06-25 arne
+
+	* fix a crash bug in GDI+ bitmap loader, when the bitmap does not exist
+
 2006-06-23 arne
 
 	* add new view : CDataBrowser

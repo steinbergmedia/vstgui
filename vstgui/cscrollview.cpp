@@ -366,7 +366,7 @@ void CScrollView::setTransparency (bool val)
 }
 
 //-----------------------------------------------------------------------------
-void CScrollView::setBackgroundColor (CColor color)
+void CScrollView::setBackgroundColor (const CColor& color)
 {
 	CViewContainer::setBackgroundColor (color);
 	sc->setBackgroundColor (color);
