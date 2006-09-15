@@ -46,32 +46,26 @@ Welcome to VSTGUI 3.5
 - @ref changelog @n
 - @ref license @n
 
-@page intro Introduction
+@section intro Introduction
 
 \par VSTGUI 
-VSTGUI is a User Interface Toolkit mainly for Audio PlugIns (VST, AudioUnit, etc).
+VSTGUI is a User Interface Toolkit mainly for Audio Plug-Ins (VST, AudioUnit, etc).
 \par History
-First developed inhouse of Steinberg Media Technologies (around 1998) for their first VST PlugIns. 
+First developed inhouse of Steinberg Media Technologies (around 1998) for their first VST Plug-Ins. 
 Later added as binary libraries to the official VST SDK. 
 Since May 2003 VSTGUI is open source and hosted at sourceforge.
 \par Platforms
 Currently VSTGUI compiles on Microsoft Windows 2000/ME/XP/XP64 and Apple Mac OS X 10.2 - 10.4. 
 With some tweaking it can also run on Windows 98 and Mac OS 9.
-\note 
-The BeOS branch is currently not mentained and may be removed in the future.
 
 \sa
 <a href="http://vstgui.sf.net" target=_blank> VSTGUI @ Sourceforge </a>
 
-@page tutorial Tutorial
-
-This tutorial should give you a brief overview on how to get started using VSTGUI.
-
-@page changelog Change Log
+@section changelog Change Log
 
 @include Changelog
 
-@page license License
+@section license License
 \code
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
