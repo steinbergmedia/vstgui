@@ -60,7 +60,7 @@ public :
 
 	virtual ~AEffGUIEditor ();
 
-	virtual void setParameter (long index, float value) {} 
+	virtual void setParameter (VstInt32 index, float value) {} 
 	virtual bool getRect (ERect** ppRect);
 	virtual bool open (void* ptr);
 	virtual void idle ();

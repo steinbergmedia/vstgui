@@ -3,7 +3,7 @@
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 // Standard Control Objects
 //
-// Version 3.5       $Date: 2006-05-13 06:58:26 $
+// Version 3.5       $Date: 2006-09-15 13:34:37 $
 //
 // Added new objects        : Michael Schmidt          08.97
 // Added new objects        : Yvan Grabit              01.98
@@ -1109,9 +1109,6 @@ CTextEdit::CTextEdit (const CRect& size, CControlListener* listener, long tag,
 :	CParamDisplay (size, background, style), platformFontColor (0), platformControl (0),
 	platformFont (0), editConvert (0), editConvert2 (0)
 {
-#if (MAC && !MACX)
-	text_edit = 0;
-#endif
 	this->listener = listener;
 	this->tag = tag;
 
@@ -1119,13 +1116,6 @@ CTextEdit::CTextEdit (const CRect& size, CControlListener* listener, long tag,
 		strcpy (text, txt);
 	else
 		strcpy (text, "");
-#if MAC
-	// remember our VST plugin's resource map ID (it should be the current one at this moment)
-	pluginResID = CurResFile();
-#endif
-#if QUARTZ
-	textControl = 0;
-#endif
 	setWantsFocus (true);
 }
 
@@ -1170,15 +1160,8 @@ void CTextEdit::draw (CDrawContext *pContext)
 {
 	if (platformControl)
 	{
-		#if MACX
-		#if QUARTZ
-		if (textControl)
-		{
-			HIViewSetNeedsDisplay (textControl, true);
-		}
-		else
-		#endif
-		TXNDraw ((TXNObject)platformControl, NULL);
+		#if MAC
+		HIViewSetNeedsDisplay ((HIViewRef)platformControl, true);
 		#endif
 		setDirty (false);
 		return;
@@ -1323,7 +1306,7 @@ LONG_PTR WINAPI WindowProcEdit (HWND hwnd, UINT message, WPARAM wParam, LPARAM l
 //------------------------------------------------------------------------
 #endif
 
-#if MACX
+#if MAC
 static EventHandlerRef gTextEditEventHandler = 0;
 static bool gTextEditCanceled = false;
 pascal OSStatus CarbonEventsTextControlProc (EventHandlerCallRef inHandlerCallRef, EventRef inEvent, void *inUserData);
@@ -1356,76 +1339,8 @@ pascal OSStatus CarbonEventsTextControlProc (EventHandlerCallRef inHandlerCallRe
 						else
 							textEdit->bWasReturnPressed = true;
 
-						WindowRef window = (WindowRef) (textEdit->getFrame ()->getSystemWindow());
-						GrafPtr	savedPort;
-						bool portChanged = window ? QDSwapPort (GetWindowPort (window), &savedPort) : false;
-
-						// remember the current resource map ID
-						short currentResID = CurResFile();
-						short vstResFileID = textEdit->pluginResID;
-						// if it's different (and if it's valid), set the current resource map ID to our plugin's resource map
-						if ( (vstResFileID != currentResID) && (vstResFileID > 0) )
-							UseResFile(vstResFileID);
-
 						textEdit->looseFocus ();
 
-						// revert the window port, if we changed it
-						if (portChanged)
-							QDSwapPort (savedPort, NULL);
-						// revert the current resource map, if we changed it
-						if ( (currentResID > 0) && (vstResFileID != currentResID) && (vstResFileID > 0) )
-							UseResFile(currentResID);
-
-						result = noErr;
-					}
-					#if QUARTZ
-					else if (textEdit->textControl)
-						break;
-					#endif
-					else if (modifiers & cmdKey)
-					{
-						result = noErr;
-						TXNObject text_edit = (TXNObject) (textEdit->platformControl);
-						switch (toupper(macCharCode))
-						{
-							// copy
-							case 'C':
-								if (!TXNIsSelectionEmpty(text_edit))
-								{
-									OSStatus scrapErr = ClearCurrentScrap();
-									scrapErr = TXNCopy(text_edit);
-									result = noErr;
-								}
-								break;
-							// cut
-							case 'X':
-								if (!TXNIsSelectionEmpty(text_edit))
-								{
-									OSStatus scrapErr = ClearCurrentScrap();
-									scrapErr = TXNCut(text_edit);
-									result = noErr;
-								}
-								break;
-							// paste
-							case 'V':
-								TXNPaste(text_edit);
-								result = noErr;
-								break;
-
-							// select all
-							case 'A':
-								TXNSelectAll(text_edit);
-								break;
-
-							default:
-								break;
-						}
-					}
-					else
-					{
-						EventRecord eventRecord;
-						if (ConvertEventRefToEventRecord (inEvent, &eventRecord))
-							TXNKeyDown ((TXNObject)textEdit->platformControl, &eventRecord);
 						result = noErr;
 					}
 					break;
@@ -1433,39 +1348,7 @@ pascal OSStatus CarbonEventsTextControlProc (EventHandlerCallRef inHandlerCallRe
 			}
 			break;
 		}
-		case kEventClassMouse:
-		{
-			switch (eventKind)
-			{
-				case kEventMouseDown:
-				case kEventMouseUp:
-				{
-					WindowRef window;
-					GetEventParameter (inEvent, kEventParamWindowRef, typeWindowRef, NULL, sizeof (WindowRef), NULL, &window);
-					HIPoint p;
-					GetEventParameter (inEvent, kEventParamMouseLocation, typeHIPoint, NULL, sizeof (HIPoint), NULL, &p);
-					Point point = {(short)p.y, (short)p.x};
-					QDGlobalToLocalPoint (GetWindowPort (window), &point);
-					Rect rect;
-					TXNGetViewRect ((TXNObject)textEdit->platformControl, &rect);
-					if (PtInRect (point, &rect))
-					{
-						EventRecord eventRecord;
-						if (eventKind == kEventMouseDown && ConvertEventRefToEventRecord (inEvent, &eventRecord))
-							TXNClick ((TXNObject)textEdit->platformControl, &eventRecord);
-						result = noErr;
-					}
-					break;
-				}
-				case kEventMouseMoved:
-				{
-					TXNAdjustCursor ((TXNObject)textEdit->platformControl, NULL);
-					break;
-				}
-			}
-			break;
-		}
-		#if QUARTZ && (MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_4)
+		#if (MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_4)
 		case kEventClassControl:
 		{
 			switch (eventKind)
@@ -1487,14 +1370,8 @@ pascal OSStatus CarbonEventsTextControlProc (EventHandlerCallRef inHandlerCallRe
 							viewSize.offset (-viewSize.left, -viewSize.top);
 							viewSize.offset (cp.x, cp.y);
 							CGRect cgViewSize = CGRectMake (viewSize.left, viewSize.top, viewSize.getWidth (), viewSize.getHeight ());
-							HIRectConvert (&cgViewSize, kHICoordSpaceView, (HIViewRef)textEdit->getFrame ()->getPlatformControl (), kHICoordSpaceView, textEdit->textControl);
-							#if DEBUG
-							CGRect clipRectVorher = CGContextGetClipBoundingBox (cgContext);
-							#endif
+							HIRectConvert (&cgViewSize, kHICoordSpaceView, (HIViewRef)textEdit->getFrame ()->getPlatformControl (), kHICoordSpaceView, textEdit->platformControl);
 							CGContextClipToRect (cgContext, cgViewSize);
-							#if DEBUG
-							CGRect clipRectNachher = CGContextGetClipBoundingBox (cgContext);
-							#endif
 							CGAffineTransform ctm = CGContextGetCTM (cgContext);
 						}
 						result = CallNextEventHandler (inHandlerCallRef, inEvent);
@@ -1517,25 +1394,7 @@ pascal OSStatus CarbonEventsTextControlProc (EventHandlerCallRef inHandlerCallRe
 					result = CallNextEventHandler (inHandlerCallRef, inEvent);
 					ClearKeyboardFocus (window);
 
-					// set up the correct drawing port for the window
-					GrafPtr	savedPort;
-					bool portChanged = QDSwapPort (GetWindowPort (window), &savedPort);
-
-					// remember the current resource map ID
-					short currentResID = CurResFile();
-					short vstResFileID = textEdit->pluginResID;
-					// if it's different (and if it's valid), set the current resource map ID to our plugin's resource map
-					if ( (vstResFileID != currentResID) && (vstResFileID > 0) )
-						UseResFile(vstResFileID);
-
 					textEdit->looseFocus ();
-
-					// revert the window port, if we changed it
-					if (portChanged)
-						QDSwapPort (savedPort, NULL);
-					// revert the current resource map, if we changed it
-					if ( (currentResID > 0) && (vstResFileID != currentResID) && (vstResFileID > 0) )
-						UseResFile(currentResID);
 
 					break;
 				}
@@ -1547,17 +1406,11 @@ pascal OSStatus CarbonEventsTextControlProc (EventHandlerCallRef inHandlerCallRe
 }
 #endif
 
-#if MAC && CALL_NOT_IN_CARBON
-#include <Scrap.h>
-#include <ctype.h>
-#define ClearCurrentScrap	ZeroScrap
-#endif
-
 //------------------------------------------------------------------------
 void CTextEdit::parentSizeChanged ()
 {
-	#if QUARTZ
-	if (textControl)
+	#if MAC
+	if (platformControl)
 	{
 		CRect rect (size);
 		if (rect.getHeight () > fontID->getSize ())
@@ -1568,10 +1421,10 @@ void CTextEdit::parentSizeChanged ()
 		CPoint p (rect.left, rect.top);
 		localToFrame (p);
 		HIRect hiRect;
-		HIViewGetFrame (textControl, &hiRect);
+		HIViewGetFrame ((HIViewRef)platformControl, &hiRect);
 		hiRect.origin.x = p.x;
 		hiRect.origin.y = p.y;
-		HIViewSetFrame (textControl, &hiRect);
+		HIViewSetFrame ((HIViewRef)platformControl, &hiRect);
 	}
 	#endif
 }
@@ -1579,17 +1432,17 @@ void CTextEdit::parentSizeChanged ()
 //------------------------------------------------------------------------
 void CTextEdit::setViewSize (CRect& newSize, bool invalid)
 {
-	#if QUARTZ
-	if (textControl)
+	#if MAC
+	if (platformControl)
 	{
-		HIViewMoveBy (textControl, newSize.left - size.left, newSize.top - size.top);
+		HIViewMoveBy ((HIViewRef)platformControl, newSize.left - size.left, newSize.top - size.top);
 		if (newSize.getWidth () != size.getWidth () || newSize.getHeight () != size.getHeight ())
 		{
 			HIRect r;
-			HIViewGetFrame (textControl, &r);
+			HIViewGetFrame ((HIViewRef)platformControl, &r);
 			r.size.width = newSize.getWidth ();
 			r.size.height = newSize.getHeight ();
-			HIViewSetFrame (textControl, &r);
+			HIViewSetFrame ((HIViewRef)platformControl, &r);
 		}
 	}
 	#endif
@@ -1601,7 +1454,7 @@ void CTextEdit::takeFocus ()
 {
 	bWasReturnPressed = false;
 
-#if WINDOWS || MACX
+#if WINDOWS || MAC
 	// calculate offset for CViewContainers
 	CRect rect (size);
 	CView* parent = getParentView ();
@@ -1668,9 +1521,8 @@ void CTextEdit::takeFocus ()
 	oldWndProcEdit = (WINDOWSPROC)SetWindowLongPtr ((HWND)platformControl, GWLP_WNDPROC, (LONG_PTR)WindowProcEdit);
 
 #elif MAC
-#if MACX
 	WindowRef window = (WindowRef)getFrame ()->getSystemWindow ();
-	#if QUARTZ
+
 	extern bool isWindowComposited (WindowRef window);
 	if (!isWindowComposited (window))
 	{
@@ -1688,6 +1540,7 @@ void CTextEdit::takeFocus ()
 		r.top = (short)(rect.top + rect.getHeight () / 2 - fontID->getSize () / 2 + 1);
 		r.bottom = (short)(r.top + fontID->getSize ());
 	}
+	HIViewRef textControl = 0;
 	if (CreateEditUnicodeTextControl (NULL, &r, NULL, false, NULL, &textControl) == noErr)
 	{
 		HIViewAddSubview ((HIViewRef)getFrame ()->getPlatformControl (), textControl);
@@ -1721,283 +1574,13 @@ void CTextEdit::takeFocus ()
 			default: fontStyle.just = teCenter; break;
 		}
 		fontStyle.size = fontID->getSize ();
-		extern const char* gMacXfontNames[];
 		Str255 fontName;
 		CopyCStringToPascal (fontID->getName (), fontName); 
 		GetFNum (fontName, &fontStyle.font);
 		SetControlData (textControl, kControlEditTextPart, kControlFontStyleTag, sizeof (fontStyle), &fontStyle);
 		HIViewSetVisible (textControl, true);
 	}
-	#else
-	static bool gTXNInititalized = false;
-	if (!gTXNInititalized)
-	{
-		TXNMacOSPreferredFontDescription defaults;  // fontID, pointSize, encoding, and fontStyle
-		defaults.fontID = 0;
-		defaults.pointSize = kTXNDefaultFontSize;
-		defaults.encoding = CreateTextEncoding(kTextEncodingMacRoman, kTextEncodingDefaultVariant, kTextEncodingDefaultFormat);
-		defaults.fontStyle = kTXNDefaultFontStyle;
-		TXNInitOptions options = 0;
-		TXNInitTextension(&defaults, 1, options);
-		gTXNInititalized = true;
-	}
-	gTextEditCanceled = false;
-	TXNFrameOptions iFrameOptions = kTXNMonostyledTextMask | kTXNDisableDragAndDropMask | kTXNSingleLineOnlyMask; //kTXNNoKeyboardSyncMask | kTXNDisableDragAndDropMask | kTXNSingleLineOnlyMask | kTXNMonostyledTextMask;
-	TXNFrameID frameID = 0;
-	TXNObjectRefcon iRefCon = 0;
-	TXNObject object;
-	Rect r;
-	r.left   = (short)rect.left;
-	r.right  = (short)rect.right;
-	r.top    = (short)rect.top;
-	r.bottom = (short)rect.bottom;
-	OSStatus err;
-	err = TXNNewObject (NULL, window, &r, iFrameOptions, kTXNTextEditStyleFrameType, kTXNSingleStylePerTextDocumentResType, kTXNMacOSEncoding, &object, &frameID, iRefCon);
-	if (err == noErr)
-	{
-		platformControl = object;
-		TXNSetFrameBounds ((TXNObject)platformControl, r.top, r.left, r.bottom, r.right, frameID);
 
-		if (strlen (text) > 0)
-			TXNSetData ((TXNObject)platformControl, kTXNTextData, (void*)text, strlen (text), kTXNStartOffset, kTXNEndOffset);
-		// set background
-		extern void CColor2RGBColor (const CColor &cc, RGBColor &rgb);
-		RGBColor rgbBackColor = { 0, 0, 0};
-		CColor2RGBColor (kWhiteCColor /*backColor*/, rgbBackColor);
-		RGBColor rgbTextColor = { 32767, 32767, 32767 };
-		CColor2RGBColor (kBlackCColor /*fontColor*/, rgbTextColor);
-		RGBBackColor (&rgbBackColor);
-		RGBForeColor (&rgbTextColor);
-		TXNBackground txnBackground;
-		txnBackground.bgType = kTXNBackgroundTypeRGB;
-		txnBackground.bg.color = rgbBackColor;
-		TXNSetBackground ((TXNObject)platformControl, &txnBackground);
-		// set justification
-		TXNControlTag	controlTag[1];
-		TXNControlData	controlData[1];
-		SInt32			just;
-		switch (horiTxtAlign)
-		{
-			case kLeftText :	just = kTXNFlushLeft; break;
-			case kRightText :	just = kTXNFlushRight; break;
-			default :			just = kTXNCenter; break;
-		}
-		controlTag[0] = kTXNJustificationTag;
-		controlData[0].sValue = just;
-		TXNSetTXNObjectControls ((TXNObject)platformControl, false, 1, controlTag, controlData);
-		// set font
-		TXNTypeAttributes attributes[3];
-		// font name
-		extern const unsigned char* gMacXfontNames[];
-		
-		short familyID;
-		Str255 fontName;
-		#if QUARTZ
-		CopyCStringToPascal ((const char*)gMacXfontNames[fontID], fontName); 
-		GetFNum (fontName, &familyID);
-		#else
-		GetFNum (fontName, &familyID);
-		#endif
-
-		ATSUFontID fontNameID;
-
-		ATSUFONDtoFontID (familyID, 0, &fontNameID);
-		
-		attributes[0].tag = kATSUFontTag;
-		attributes[0].size = sizeof(ATSUFontID);
-		attributes[0].data.dataPtr = &fontNameID;
-		// size
-		long fontSize = fontID->getSize () << 16; // needs to be in Fixed format
-		attributes[1].tag = kTXNQDFontSizeAttribute;
-		attributes[1].size = kTXNFontSizeAttributeSize;
-		attributes[1].data.dataValue = fontSize;
-		// color
-		attributes[2].tag = kTXNQDFontColorAttribute;
-		attributes[2].size = kTXNQDFontColorAttributeSize;
-		attributes[2].data.dataPtr = &rgbTextColor;
-
-		TXNSetTypeAttributes ((TXNObject)platformControl, 3, attributes, kTXNStartOffset, kTXNEndOffset);
-
-		SetUserFocusWindow (window);
-		AdvanceKeyboardFocus (window);
-		TXNActivate ((TXNObject)platformControl, frameID, false);
-		TXNFocus ((TXNObject)platformControl, true);
-		EventTypeSpec eventTypes[] = { { kEventClassMouse, kEventMouseMoved }, { kEventClassMouse, kEventMouseDown }, { kEventClassMouse, kEventMouseUp }, { kEventClassWindow, kEventWindowDeactivated }, { kEventClassKeyboard, kEventRawKeyDown }, { kEventClassKeyboard, kEventRawKeyRepeat } };
-		InstallWindowEventHandler (window, CarbonEventsTextControlProc, GetEventTypeCount (eventTypes), eventTypes, this, &gTextEditEventHandler);
-		TXNSelectAll ((TXNObject)platformControl);
-
-	}
-	#endif //QUARTZ
-
-#else
-	bool ende = false;
-	char c;
-	EventRecord theEvent;
-	Rect rect, vrect;
-
-	platformControl = new char[256];
-	
-	rect.left   = size.left;
-	rect.right  = size.right;
-	rect.top    = size.top;
-	rect.bottom = size.bottom;
-	#if !TARGET_API_MAC_CARBON
-	rect.bottom++;
-	rect.right++;
-	#endif
-		
-	if (pContext)
-	{
-		rect.left   += pContext->offset.h;
-		rect.right  += pContext->offset.h;
-		rect.top    += pContext->offset.v;
-		rect.bottom += pContext->offset.v;
-	}
-	vrect = rect;
-	
-	vrect.top++;
-	vrect.left++;
-	vrect.right--;
-	#if TARGET_API_MAC_CARBON
-	vrect.bottom--;
-	#endif
-			
-	RGBColor blackrgb = {0, 0, 0};
-	RGBColor whitergb = {0xffff, 0xffff, 0xffff};
-	RGBForeColor (&blackrgb);
-	RGBBackColor (&whitergb);
-
-	EraseRect (&rect);
-	//FrameRect (&rect); // Dave
-	#if !TARGET_API_MAC_CARBON
-	InsetRect (&vrect, 0, -2);
-	#endif
-	
-	TextFont (kFontIDHelvetica);
-	TextSize (fontID->getSize ());
-
-	text_edit = TENew (&rect, &vrect);
-	
-	if (horiTxtAlign == kLeftText)
-		TESetAlignment (teJustLeft, (TEHandle)text_edit);
-	else if (horiTxtAlign == kRightText)
-		TESetAlignment (teJustRight, (TEHandle)text_edit);
-	else
-		TESetAlignment (teJustCenter, (TEHandle)text_edit);
-
-	char string[256];
-	strcpy (string, text);
-	TESetText (string, strlen (string), (TEHandle)text_edit);
-	TESetSelect (0, strlen (string), (TEHandle)text_edit);
-	TEUpdate (&(**(TEHandle)text_edit).viewRect, (TEHandle)text_edit);
-	TEActivate ((TEHandle)text_edit);
-	HLock ((Handle)text_edit);
-
-	(**(TEHandle)text_edit).crOnly = -1;
-
-	bLoosefocusWanted = false;
-
-	while (!ende && !bLoosefocusWanted)
-	{
-		GetNextEvent (everyEvent, &theEvent);
-		switch (theEvent.what)
-		{
-			case nullEvent:
-				doIdleStuff ();
-				break;
-			case autoKey :
-			case keyDown :
-				RGBForeColor (&blackrgb);
-				RGBBackColor (&whitergb);
-				
-				c = theEvent.message & charCodeMask;
-				if (c == 13 || c == 3 || c == 27)
-				{
-					if (c == 13)
-						bWasReturnPressed = true;
-					ende = true;
-				}
-				else if (((theEvent.message >> 8) & 0xFF) == 0x75)
-				{
-			 		if ((**(TEHandle)text_edit).selEnd < (**(TEHandle)text_edit).teLength) 
-					{
-				 		if (((**(TEHandle)text_edit).selEnd - (**(TEHandle)text_edit).selStart) > 1)
-				 			TEDelete ((TEHandle)text_edit);
-				 		else
-				 			TEKey (0x1D, (TEHandle)text_edit);
-						c = 8;
-					}
-					else
-						c = -1;
-				}
-				if (theEvent.modifiers & cmdKey)
-				{
-					switch (toupper(c))
-					{
-						// copy
-						case 'C':
-							if ((**(TEHandle)text_edit).selEnd > (**(TEHandle)text_edit).selStart)
-							{
-								OSStatus scrapErr = ClearCurrentScrap();
-								TECopy((TEHandle)text_edit);
-								if (scrapErr == noErr)
-									scrapErr = TEToScrap();
-							}
-							break;
-						// cut
-						case 'X':
-							if ((**(TEHandle)text_edit).selEnd > (**(TEHandle)text_edit).selStart)
-							{
-								OSStatus scrapErr = ClearCurrentScrap();
-								TECut((TEHandle)text_edit);
-								if (scrapErr == noErr)
-									scrapErr = TEToScrap();
-							}
-							break;
-						// paste
-						case 'V':
-							{
-								OSErr scrapErr = TEFromScrap();
-								TEPaste((TEHandle)text_edit);
-							}
-							break;
-						// select all
-						case 'A':
-							TESetSelect(0, (**(TEHandle)text_edit).teLength, (TEHandle)text_edit);
-							break;
-						default:
-							break;
-					}
-				}
-				else if (!ende)
-					TEKey (c, (TEHandle)text_edit);
-				break;
-			case mouseDown :
-				GlobalToLocal (&theEvent.where);
-				if (PtInRect (theEvent.where, &rect))
-				{
-					bool shiftdown = (theEvent.modifiers & shiftKey) != 0;
-					TEClick (theEvent.where, shiftdown, (TEHandle)text_edit);
-				}
-				else
-					ende = true;
-				break;
-		}
-	}
-	CharsHandle h = TEGetText ((TEHandle)text_edit);
-	short length = (**(TEHandle)text_edit).teLength;
-	if (length > 255)
-		length = 255;
-	strncpy ((char*)platformControl, (char*)*h, length);
-	((char*)platformControl)[length] = 0;
-
-	HUnlock ((Handle)text_edit);
-	TEDeactivate ((TEHandle)text_edit);
-	TEDispose ((TEHandle)text_edit);
-	text_edit = 0;
-	looseFocus ();
-	
-#endif
 #endif
 }
 
@@ -2034,57 +1617,26 @@ void CTextEdit::looseFocus ()
 
 #elif MAC
 
-	#if MACX
 	if (platformControl == 0)
 		return;
 
 	if (gTextEditEventHandler)
 		RemoveEventHandler (gTextEditEventHandler);
 	gTextEditEventHandler = 0;
-	#if QUARTZ
-	if (textControl)
+
+	if (platformControl)
 	{
 		CFStringRef cfstr;
-		if (!gTextEditCanceled && GetControlData (textControl, kControlEditTextPart, kControlEditTextCFStringTag, sizeof cfstr, (void*)&cfstr, NULL) == noErr)
+		if (!gTextEditCanceled && GetControlData ((HIViewRef)platformControl, kControlEditTextPart, kControlEditTextCFStringTag, sizeof cfstr, (void*)&cfstr, NULL) == noErr)
 		{
 			CFStringGetCString (cfstr, text, 255, kCFStringEncodingUTF8);
 			CFRelease (cfstr);
 		}
-		HIViewSetVisible (textControl, false);
-		HIViewRemoveFromSuperview (textControl);
-		textControl = 0;
+		HIViewSetVisible ((HIViewRef)platformControl, false);
+		HIViewRemoveFromSuperview ((HIViewRef)platformControl);
 		pParentFrame->setCursor (kCursorDefault);
 	}
-	else
-	#endif
-	{
-		if (!gTextEditCanceled)
-		{
-			CharsHandle dataHandle;
-			TXNGetDataEncoded ((TXNObject)platformControl, kTXNStartOffset, kTXNEndOffset, &dataHandle, kTXNTextData);
-			if (dataHandle != NULL && GetHandleSize (dataHandle) > 0)
-			{
-				long s = GetHandleSize (dataHandle);
-				strncpy (text, *dataHandle, (s > 255) ? 255 : s);
-				text [(s > 255) ? 255 : s] = 0;
-				DisposeHandle (dataHandle);
-			}
-			else
-				text[0] = 0;
-		}
-		TXNFocus ((TXNObject)platformControl, false);
-		TXNDeleteObject ((TXNObject)platformControl);
-	}
-	
-	platformControl = 0;
 
-	invalid ();
-	
-	#else
-
-	strcpy (text, (char*)platformControl);
-	delete[] platformControl;
-	#endif
 #endif
 
 	// update dependency
@@ -3282,6 +2834,7 @@ void *COptionMenu::appendItems (long &offsetIdx)
 		
 		strcpy (text2, entry[i]);
 		char *ptr = strstr (text2, "\t");
+		// this does not work correctly in all cases for UTF-8
 		if (ptr)
 		{
 			*ptr = '\0';
@@ -3328,7 +2881,6 @@ void *COptionMenu::appendItems (long &offsetIdx)
 				keyChar = (long)*ptr;	
 			}
 		}
-		#if TARGET_API_MAC_CARBON
 
 		if (!strcmp (entry[i], kMenuSeparator))
 		{
@@ -3378,52 +2930,6 @@ void *COptionMenu::appendItems (long &offsetIdx)
 			CFRelease (itemString);
 		}
 
-		#else
-		Str255 menuItem;
-		strcpy ((char*)menuItem, (const char*)"\p\0");
-		menuItem[0] = strlen ((const char*)text2);
-		AppendMenu (theMenu, "\pjunk");
-		
-		if (!strncmp (text2, kMenuTitle, 2) || !strncmp (text2, kMenuDisable, 2) || !strncmp (text2, kMenuSubMenu, 2))
-		{
-			menuItem[0] -= 2;
-			strcat ((char*)menuItem, text2 + 2);
-	
-			//---Disable item--------
-			if (!strncmp (text2, kMenuDisable, 2))
-			{
-				#if TARGET_API_MAC_CARBON
-				DisableMenuItem (theMenu, i + 1);
-				#else
-				DisableItem (theMenu, i + 1);
-				#endif
-			}
-			//---Submenu-------------
-			else if (!strncmp (text2, kMenuSubMenu, 2))
-			{
-				if (idxSubmenu < nbSubMenus)
-				{
-					void *submenu = submenuEntry[idxSubmenu]->appendItems (offsetIdx);
-					if (submenu)
-					{
-						SetMenuItemHierarchicalID (theMenu, i + 1, submenuEntry[idxSubmenu]->getMenuID ());
-						idxSubmenu++;
-					}
-					else
-						continue;
-				}
-				else
-					continue;
-			}
-		}
-		else
-		{
-			strcat ((char*)menuItem, text2);
-		}
-		SetMenuItemText (theMenu, i + 1, menuItem);
-
-		#endif // !TARGET_API_MAC_CARBON
-
 		//---Set the shortcut
 		if (keyChar != 0)
 		{
@@ -3470,7 +2976,6 @@ void COptionMenu::takeFocus ()
 	if (!getFrame ())
 		return;
 
-	bool multipleCheck = style & (kMultipleCheckStyle & ~kCheckStyle);
 	lastResult = -1;
 	lastMenu = 0;
 
@@ -3482,38 +2987,12 @@ void COptionMenu::takeFocus ()
 	#endif
 
 	CRect rect;
-/*	if (pContext)
-	{
-		rect.left = pContext->offsetScreen.h;
-		rect.top  = pContext->offsetScreen.v;
-	}
-	else*/
-	{
-		#if WINDOWS
-		RECT rctWinParent;
-		GetWindowRect (hwnd, &rctWinParent);
-		rect.left = rctWinParent.left;
-		rect.top  = rctWinParent.top;
-		#elif 0//QUARTZ
-		HIRect bounds;
-		HIViewRef control = (HIViewRef)getFrame ()->getPlatformControl ();
-		HIViewGetFrame (control, &bounds);
-		WindowRef window = (WindowRef)getFrame ()->getSystemWindow ();
-		WindowAttributes attr;
-		GetWindowAttributes (window, &attr);
-		if (attr & kWindowCompositingAttribute)
-		{
-			HIViewRef contentView;
-			HIViewFindByID (HIViewGetRoot (window), kHIViewWindowContentID, &contentView);
-			if (HIViewGetSuperview (control) != contentView)
-				HIViewConvertRect (&bounds, control, contentView);
-			bounds.origin.x += getFrame ()->hiScrollOffset.x;
-			bounds.origin.y += getFrame ()->hiScrollOffset.y;
-		}
-		rect.left = (CCoord)bounds.origin.x;
-		rect.top = (CCoord)bounds.origin.y;
-		#endif
-	}
+	#if WINDOWS
+	RECT rctWinParent;
+	GetWindowRect (hwnd, &rctWinParent);
+	rect.left = rctWinParent.left;
+	rect.top  = rctWinParent.top;
+	#endif
 	CView* parent = getParentView ();
 	while (parent)
 	{
@@ -3618,15 +3097,11 @@ void COptionMenu::takeFocus ()
 	
 	// Get a handle to the screen
 	RgnHandle rgn = GetGrayRgn ();
-	#if TARGET_API_MAC_CARBON
+
 	Rect bounds;
 	GetRegionBounds (rgn, &bounds);
 	int bottom      = bounds.bottom;
 	long menuHeight = GetMenuHeight (theMenu);
-	#else
-	int bottom      = (*rgn)->rgnBBox.bottom;
-	long menuHeight = (*theMenu)->menuHeight;
-	#endif
 
 	// Calculate the size of one menu item (round to the next int)
 	int menuItemSize = (menuHeight + nbEntries - 1) / nbEntries;

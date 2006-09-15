@@ -3,7 +3,7 @@
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 // Standard Control Objects
 //
-// Version 3.5       $Date: 2006-05-13 06:58:26 $
+// Version 3.5       $Date: 2006-09-15 13:34:37 $
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
@@ -349,23 +349,12 @@ public:
 	void* platformFontColor;
 	void* platformControl;
 	bool bWasReturnPressed;
-	#if MAC
-	short pluginResID;
-	#if QUARTZ
-	HIViewRef textControl;
-	#endif
-	#endif
 
 	CLASS_METHODS(CTextEdit, CParamDisplay)
 
 protected:
 	void* platformFont;
 	char text[256];
-
-#if (MAC && !MACX)
-	void* text_edit;
-	bool bLoosefocusWanted;
-#endif
 
 	void (*editConvert) (char* input, char* string);
 	void (*editConvert2) (char* input, char* string, void* userData);

@@ -160,6 +160,7 @@ CTabView::CTabView (const CRect& size, CFrame* parent, CBitmap* tabBitmap, CBitm
 CTabView::CTabView (const CRect& size, CFrame* parent, const CRect& tabSize, CBitmap* background, long tabPosition, long style)
 : CViewContainer (size, parent, background)
 , numberOfChilds (0)
+, currentTab (-1)
 , tabPosition (tabPosition)
 , style (style)
 , tabSize (tabSize)
@@ -236,7 +237,11 @@ bool CTabView::removeTab (CView* view)
 			if (v->next)
 				v->next->previous = v->previous;
 			if (v == currentChild)
+			{
 				setCurrentChild (v->previous ? v->previous : v->next);
+				if (v->previous == 0 && v->next == 0)
+					currentTab = -1;
+			}
 			removeView (v->button, true);
 			v->forget ();
 			numberOfChilds--;
@@ -261,16 +266,17 @@ bool CTabView::removeAllTabs ()
 	firstChild = 0;
 	lastChild = 0;
 	numberOfChilds = 0;
+	currentTab = -1;
 	return true;
 }
 
 //-----------------------------------------------------------------------------
-bool CTabView::selectTab (unsigned long index)
+bool CTabView::selectTab (long index)
 {
 	if (index > numberOfChilds)
 		return false;
 	CTabChildView* v = firstChild;
-	unsigned long i = 0;
+	long i = 0;
 	while (v)
 	{
 		if (index == i)
@@ -281,6 +287,7 @@ bool CTabView::selectTab (unsigned long index)
 	if (v)
 	{
 		setCurrentChild (v);
+		currentTab = i;
 		return true;
 	}
 	return false;

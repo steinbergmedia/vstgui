@@ -1,3 +1,11 @@
+2006-09-15 arne
+
+	* Removed Mac OS 9 code and Quickdraw code (also the QUARTZ & MACX macro definition, only MAC is left)
+	* add tab index variable to CTabView
+	* AEffGUIEditor updated for VST 2.4
+	* Windows 64bit CFileSelector changes
+	* fix: don't propagate mouse move message with button state to views other than the mouse down view if there is one
+
 2006-06-25 arne
 
 	* fix a crash bug in GDI+ bitmap loader, when the bitmap does not exist
