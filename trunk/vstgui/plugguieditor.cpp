@@ -62,7 +62,7 @@ PluginGUIEditor::PluginGUIEditor (void *pEffect)
 	#if WINDOWS
 	OleInitialize (0);
 	#endif
-	#if MACX
+	#if MAC
 	void InitMachOLibrary ();
 	InitMachOLibrary ();
 	#endif
@@ -74,7 +74,7 @@ PluginGUIEditor::~PluginGUIEditor ()
 	#if WINDOWS
 	OleUninitialize ();
 	#endif
-	#if MACX
+	#if MAC
 	void ExitMachOLibrary ();
 	ExitMachOLibrary ();
 	#endif
@@ -171,7 +171,7 @@ void PluginGUIEditor::doIdleStuff ()
 	if (PeekMessage (&windowsMessage, NULL, WM_PAINT, WM_PAINT, PM_REMOVE))
 		DispatchMessage (&windowsMessage);
 
-	#elif MACX
+	#elif MAC
 	EventRef event;
 	EventTypeSpec eventTypes[] = { {kEventClassWindow, kEventWindowUpdate}, {kEventClassWindow, kEventWindowDrawContent} };
 	if (ReceiveNextEvent (GetEventTypeCount (eventTypes), eventTypes, kEventDurationNoWait, true, &event) == noErr)
@@ -192,7 +192,7 @@ long PluginGUIEditor::getRect (ERect **ppErect)
 	return true;
 }
 
-#if MACX
+#if MAC
 // -----------------------------------------------------------------------------
 // -----------------------------------------------------------------------------
 extern "C" {

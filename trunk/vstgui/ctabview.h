@@ -57,7 +57,8 @@ public:
 	virtual bool addTab (CView* view, const char* name = 0, CBitmap* tabBitmap = 0);
 	virtual bool removeTab (CView* view);
 	virtual bool removeAllTabs ();
-	virtual bool selectTab (unsigned long index);
+	virtual bool selectTab (long index);
+	virtual long getCurrentSelectedTab () const { return currentTab; }
 
 	virtual CRect& getTabViewSize (CRect& rect) const;
 
@@ -86,7 +87,8 @@ public:
 protected:
 	void setCurrentChild (CTabChildView* childView);
 
-	unsigned long numberOfChilds;
+	long numberOfChilds;
+	long currentTab;
 	long tabPosition;
 	long style;
 	CRect tabSize;
