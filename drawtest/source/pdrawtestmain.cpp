@@ -41,7 +41,7 @@ bool oome = false;
 #define main main_plugin
 extern "C" __declspec(dllexport) AEffect *main_plugin (audioMasterCallback audioMaster);
 
-#elif MACX
+#elif MAC
 #define main main_macho
 extern "C" AEffect *main_macho (audioMasterCallback audioMaster);
 

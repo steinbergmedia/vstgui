@@ -10,7 +10,7 @@
 #include "pdatabrowsertest.h"
 
 #define kCellByteSize	256
-#define kLineWidth		1
+#define kLineWidth		4
 
 PDataBrowserTest::PDataBrowserTest ()
 {
@@ -74,13 +74,14 @@ CCoord PDataBrowserTest::dbGetRowHeight (CDataBrowser* browser)
 
 void PDataBrowserTest::dbDrawHeader (CDrawContext* context, const CRect& size, long column, long flags, CDataBrowser* browser)
 {
+	context->setLineWidth (1);
 	context->setFillColor (kGreyCColor);
 	context->setFrameColor (kGreyCColor);
 	context->drawRect (size, kDrawFilled);//AndStroked);
 	context->setFrameColor (kBlackCColor);
 	context->setLineWidth (kLineWidth);
-//	context->moveTo (CPoint (size.left - kLineWidth/2, size.top));
-//	context->lineTo (CPoint (size.left - kLineWidth/2, size.bottom));
+	context->moveTo (CPoint (size.right + kLineWidth/2, size.top));
+	context->lineTo (CPoint (size.right + kLineWidth/2, size.bottom));
 	char text[40];
 	sprintf (text, "Col %d", column);
 	context->setFont (kSystemFont);
@@ -92,6 +93,7 @@ void PDataBrowserTest::dbDrawCell (CDrawContext* context, const CRect& size, lon
 {
 	if (flags & IDataBrowser::kRowSelected)
 	{
+		context->setLineWidth (1);
 		context->setFillColor (kYellowCColor);
 		context->drawRect (size, kDrawFilled);
 	}
