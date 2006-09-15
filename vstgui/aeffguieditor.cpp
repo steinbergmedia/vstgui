@@ -64,7 +64,7 @@ AEffGUIEditor::AEffGUIEditor (void* pEffect)
 	#if WINDOWS
 	OleInitialize (0);
 	#endif
-	#if MACX
+	#if MAC
 	void InitMachOLibrary ();
 	InitMachOLibrary ();
 	#endif
@@ -76,7 +76,7 @@ AEffGUIEditor::~AEffGUIEditor ()
 	#if WINDOWS
 	OleUninitialize ();
 	#endif
-	#if MACX
+	#if MAC
 	void ExitMachOLibrary ();
 	ExitMachOLibrary ();
 	#endif
@@ -143,26 +143,12 @@ bool AEffGUIEditor::open (void* ptr)
 //-----------------------------------------------------------------------------
 void AEffGUIEditor::idle ()
 {
-#if MAC && !QUARTZ
-	GrafPtr	savePort;
-	GetPort (&savePort);
-	SetPort ((GrafPtr)GetWindowPort ((WindowRef)systemWindow));
-
-	AEffEditor::idle ();
-	if (frame)
-		frame->idle ();
-
-	SetPort (savePort);
-#else
-
 	if (inIdleStuff)
 		return;
 
 	AEffEditor::idle ();
 	if (frame)
 		frame->idle ();
-		
-#endif
 }
 
 //-----------------------------------------------------------------------------
@@ -249,7 +235,7 @@ void AEffGUIEditor::doIdleStuff ()
 	if (PeekMessage (&windowsMessage, NULL, WM_PAINT, WM_PAINT, PM_REMOVE))
 		DispatchMessage (&windowsMessage);
 
-	#elif MACX
+	#elif MAC
 	EventRef event;
 	EventTypeSpec eventTypes[] = { {kEventClassWindow, kEventWindowUpdate}, {kEventClassWindow, kEventWindowDrawContent} };
 	if (ReceiveNextEvent (GetEventTypeCount (eventTypes), eventTypes, kEventDurationNoWait, true, &event) == noErr)
@@ -278,7 +264,7 @@ bool AEffGUIEditor::getRect (ERect **ppErect)
 	return true;
 }
 
-#if MACX
+#if MAC
 // -----------------------------------------------------------------------------
 // -----------------------------------------------------------------------------
 extern "C" {

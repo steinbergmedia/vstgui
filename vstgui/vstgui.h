@@ -2,7 +2,7 @@
 // VST Plug-Ins SDK
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 //
-// Version 3.5       $Date: 2006-06-02 08:21:33 $
+// Version 3.5       $Date: 2006-09-15 13:34:38 $
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
@@ -40,15 +40,11 @@
 	#define WINDOWS 1
 #elif __MWERKS__ || __APPLE_CC__
 	#define MAC 1
-	#if __MACH__
-	#define MACX 1
-	#define QUARTZ 1
 	#ifndef TARGET_API_MAC_CARBON
-	#define TARGET_API_MAC_CARBON 1
+		#define TARGET_API_MAC_CARBON 1
 	#endif
 	#ifndef __CF_USE_FRAMEWORK_INCLUDES__
-	#define __CF_USE_FRAMEWORK_INCLUDES__ 1
-	#endif
+		#define __CF_USE_FRAMEWORK_INCLUDES__ 1
 	#endif
 #endif
 
@@ -140,22 +136,11 @@ END_NAMESPACE_VSTGUI
 
 //----------------------------------------------------
 #if MAC
-	#if MACX
 	#include <Carbon/Carbon.h>
 	//macho VST's set gBundleRef which is a CFBundleRef
 	BEGIN_NAMESPACE_VSTGUI
 	extern void* gBundleRef;
 	END_NAMESPACE_VSTGUI
-	#else
-	#include <Quickdraw.h>
-	#include <Menus.h>
-	#include <Windows.h>
-	#include <TextUtils.h>
-	#include <TextEdit.h>
-	#include <ToolUtils.h>
-	#include <Resources.h>
-	#include <Dialogs.h>
-	#endif // MACX
 #endif // MAC
 
 //----------------------------------------------------
@@ -770,7 +755,6 @@ protected:
 #endif // WINDOWS
 
 #if MAC
-	#if QUARTZ
 	ATSUStyle atsuStyle;
 	CGContextRef gCGContext;
 	bool needToSynchronizeCGContext;
@@ -782,12 +766,7 @@ protected:
 	
 	virtual CGImageRef getCGImage () const;
 	protected:
-	#else
 
-	FontInfo fontInfoStruct;
-	Pattern fillPattern;
-	bool bInitialized;
-	#endif // QUARTZ
 	virtual BitMapPtr getBitmap ();
 	virtual void releaseBitmap ();
 	virtual CGrafPtr getPort ();
@@ -830,12 +809,9 @@ protected:
 #endif // WINDOWS
 
 #if MAC
-	#if QUARTZ
 	void* offscreenBitmap;
 	virtual CGImageRef getCGImage () const;
-	#else
-	CGrafPtr getPort ();
-	#endif // QUARTZ
+
 	BitMapPtr getBitmap ();
 	void releaseBitmap ();
 #endif // MAC
@@ -892,9 +868,9 @@ public:
 	void setNoAlpha (bool state) { noAlpha = state; }
 	bool getNoAlpha () const { return noAlpha; }
 
-#if QUARTZ
+#if MAC
 	virtual CGImageRef createCGImage (bool transparent = false);
-#endif // QUARTZ
+#endif // MAC
 
 #if GDIPLUS
 	Gdiplus::Bitmap* getBitmap ();
@@ -929,9 +905,7 @@ protected:
 #if MAC
 	void* pHandle;
 	void* pMask;
-	#if QUARTZ
 	void* cgImage;
-	#endif // QUARTZ
 #endif // MAC
 
 };
@@ -1341,7 +1315,7 @@ protected:
 	COffscreenContext* backBuffer;
 #endif // WINDOWS
 
-#if QUARTZ
+#if MAC
 	void setDrawContext (CDrawContext* context) { pFrameContext = context; }
 	friend class CDrawContext;
 
@@ -1358,7 +1332,7 @@ protected:
 	void* getPlatformControl () const { return controlRef; }
 	CPoint hiScrollOffset;
 	protected:
-#endif // QUARTZ
+#endif // MAC
 	//-------------------------------------------
 private:
 	CDrawContext *pFrameContext;

@@ -2,7 +2,7 @@
 // VST Plug-Ins SDK
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 //
-// Version 3.0       $Date: 2006-01-29 13:49:26 $ 
+// Version 3.0       $Date: 2006-09-15 13:34:36 $ 
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
@@ -53,7 +53,7 @@
 #if WINDOWS
 #include <stdio.h>
 
-static UINT APIENTRY SelectDirectoryHook (HWND hdlg, UINT message, WPARAM wParam, LPARAM lParam);
+static UINT_PTR APIENTRY SelectDirectoryHook (HWND hdlg, UINT message, WPARAM wParam, LPARAM lParam);
 static LRESULT CALLBACK SelectDirectoryButtonProc (HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam);
 WNDPROC fpOldSelectDirectoryButtonProc;
 static UINT APIENTRY WinSaveHook (HWND hdlg, UINT msg, WPARAM wParam, LPARAM lParam);
@@ -114,7 +114,7 @@ long CFileSelector::run (VstFileSelect *vstFileSelect)
 
 	#if ENABLE_VST_EXTENSION_IN_VSTGUI
 	if (ptr
-	#if MACX 
+	#if MAC 
 		&& vstFileSelect->command != kVstFileSave 
 	#endif
 		&& ((AudioEffectX*)ptr)->canHostDo ("openFileSelector") && ((AudioEffectX*)ptr)->canHostDo ("closeFileSelector"))
@@ -433,12 +433,9 @@ long CFileSelector::run (VstFileSelect *vstFileSelect)
 		}
 
 #elif MAC
-#if TARGET_API_MAC_CARBON
-		#if MACX
 		// new approach for supporting long filenames on mac os x is to use unix path mode
 		// if vstFileSelect->future[0] is 1 on entry and 0 on exit the resulting paths are UTF8 encoded paths
 		bool unixPathMode = (vstFileSelect->future[0] == 1);
-		#endif
 		NavEventUPP	eventUPP = NewNavEventUPP (CFileSelector::navEventProc);
 		if (vstFileSelect->command == kVstFileSave)
 		{
@@ -446,7 +443,6 @@ long CFileSelector::run (VstFileSelect *vstFileSelect)
 			NavGetDefaultDialogCreationOptions (&dialogOptions);
 			dialogOptions.windowTitle = CFStringCreateWithCString (NULL, vstFileSelect->title[0] ? vstFileSelect->title : "Select a Destination", kCFStringEncodingUTF8);
 			CFStringRef defSaveName = 0;
-			#if MACX
 			if (unixPathMode && vstFileSelect->initialPath)
 			{
 				char* name = strrchr (vstFileSelect->initialPath, '/');
@@ -464,7 +460,6 @@ long CFileSelector::run (VstFileSelect *vstFileSelect)
 				}
 			}
 			else
-			#endif
 			if (vstFileSelect->initialPath && ((FSSpec*)vstFileSelect->initialPath)->name)
 			{
 				FSSpec* defaultSpec = (FSSpec*)vstFileSelect->initialPath;
@@ -483,7 +478,6 @@ long CFileSelector::run (VstFileSelect *vstFileSelect)
 			    AEDesc* defLocPtr = 0;   
 				if (vstFileSelect->initialPath)
 				{
-					#if MACX
 					if (unixPathMode)
 					{
 						FSRef fsRef;
@@ -494,7 +488,6 @@ long CFileSelector::run (VstFileSelect *vstFileSelect)
 						}
 					}
 					else
-					#endif
 					{
 						FSSpec* defaultSpec = (FSSpec*)vstFileSelect->initialPath;
 				        if (defaultSpec->parID && defaultSpec->vRefNum)
@@ -522,7 +515,6 @@ long CFileSelector::run (VstFileSelect *vstFileSelect)
 				    if (AEGetNthPtr(&navReply.selection, 1, typeFSRef,
 		        		&theAEKeyword, &typeCode, &parentFSRef, sizeof(FSRef), &actualSize) == noErr)
 					{
-						#if MACX
 						if (unixPathMode)
 						{
 							bool success = true;
@@ -553,7 +545,6 @@ long CFileSelector::run (VstFileSelect *vstFileSelect)
 							}
 						}
 						else
-						#endif
 						{
 							FSSpec spec;
 							FSCatalogInfoBitmap infoBitmap = kFSCatInfoNone;
@@ -602,7 +593,6 @@ long CFileSelector::run (VstFileSelect *vstFileSelect)
 			    AEDesc* defLocPtr = 0;   
 				if (vstFileSelect->initialPath)
 				{
-					#if MACX
 					if (unixPathMode)
 					{
 						FSRef fsRef;
@@ -613,7 +603,6 @@ long CFileSelector::run (VstFileSelect *vstFileSelect)
 						}
 					}
 					else
-					#endif
 					{
 						FSSpec* defaultSpec = (FSSpec*)vstFileSelect->initialPath;
 				        if (defaultSpec->parID && defaultSpec->vRefNum)       
@@ -636,7 +625,6 @@ long CFileSelector::run (VstFileSelect *vstFileSelect)
 				    if (AEGetNthPtr(&navReply.selection, 1, typeFSRef,
 		        		&theAEKeyword, &typeCode, &parentFSRef, sizeof(FSRef), &actualSize) == noErr)
 					{
-						#if MACX
 						if (unixPathMode)
 						{
 							vstFileSelect->nbReturnPath = 1;
@@ -655,7 +643,6 @@ long CFileSelector::run (VstFileSelect *vstFileSelect)
 								vstFileSelect->future[0] = 0;
 						}
 						else
-						#endif
 						{
 							FSSpec spec;
 							FSCatalogInfoBitmap infoBitmap = kFSCatInfoNone;
@@ -699,7 +686,6 @@ long CFileSelector::run (VstFileSelect *vstFileSelect)
 			    AEDesc* defLocPtr = 0;   
 				if (vstFileSelect->initialPath)
 				{
-					#if MACX
 					if (unixPathMode)
 					{
 						FSRef fsRef;
@@ -710,7 +696,6 @@ long CFileSelector::run (VstFileSelect *vstFileSelect)
 						}
 					}
 					else
-					#endif
 					{
 						FSSpec* defaultSpec = (FSSpec*)vstFileSelect->initialPath;
 				        if (defaultSpec->parID && defaultSpec->vRefNum)       
@@ -738,7 +723,6 @@ long CFileSelector::run (VstFileSelect *vstFileSelect)
 					    if (AEGetNthPtr(&navReply.selection, 1, typeFSRef,
 			        		&theAEKeyword, &typeCode, &parentFSRef, sizeof(FSRef), &actualSize) == noErr)
 						{
-							#if MACX
 							if (unixPathMode)
 							{
 								vstFileSelect->nbReturnPath = 1;
@@ -757,7 +741,6 @@ long CFileSelector::run (VstFileSelect *vstFileSelect)
 									vstFileSelect->future[0] = 0;
 							}
 							else
-							#endif
 							{
 								FSSpec spec;
 								FSCatalogInfoBitmap infoBitmap = kFSCatInfoNone;
@@ -782,7 +765,6 @@ long CFileSelector::run (VstFileSelect *vstFileSelect)
 					    while (AEGetNthPtr(&navReply.selection, index++, typeFSRef,
 			        		&theAEKeyword, &typeCode, &parentFSRef, sizeof(FSRef), &actualSize) == noErr)
 						{
-							#if MACX
 							if (unixPathMode)
 							{
 								vstFileSelect->returnMultiplePaths[index-2] = new char[PATH_MAX];
@@ -790,7 +772,6 @@ long CFileSelector::run (VstFileSelect *vstFileSelect)
 								vstFileSelect->future[0] = 0;
 							}
 							else
-							#endif
 							{
 								FSSpec spec;
 								FSCatalogInfoBitmap infoBitmap = kFSCatInfoNone;
@@ -810,113 +791,13 @@ long CFileSelector::run (VstFileSelect *vstFileSelect)
 		}
 		DisposeNavEventUPP (eventUPP);
 #else
-		StandardFileReply reply;
-		if (vstFileSelect->command == kVstFileSave)
-		{
-			unsigned char defName[64];
-			defName[0] = 0;
-			StandardPutFile ("\pSelect a Destination", defName, &reply);
-			if (reply.sfGood && reply.sfFile.name[0] != 0)
-			{
-				if (!vstFileSelect->returnPath)
-				{
-					vstFileSelect->reserved = 1;
-					vstFileSelect->returnPath = new char [301];
-				}
-				memcpy (vstFileSelect->returnPath, &reply.sfFile, 300);
-				vstFileSelect->nbReturnPath = 1;
-				return 1;
-			}
-		}
-
-		else if (vstFileSelect->command == kVstDirectorySelect) 
-		{
-		#if USENAVSERVICES
-			if (NavServicesAvailable ())
-			{
-				NavReplyRecord navReply;
-				NavDialogOptions dialogOptions;
-				short ret = false;
-				AEDesc defLoc;
-				defLoc.descriptorType = typeFSS;
-				defLoc.dataHandle = NewHandle (sizeof (FSSpec));
-				FSSpec	finalFSSpec;
-				finalFSSpec.parID   = 0;	// *dirID;
-				finalFSSpec.vRefNum = 0;	// *volume;
-				finalFSSpec.name[0] = 0;
-
-				NavGetDefaultDialogOptions (&dialogOptions);
-				dialogOptions.dialogOptionFlags &= ~kNavAllowMultipleFiles;
-				dialogOptions.dialogOptionFlags |= kNavSelectDefaultLocation;
-				strcpy ((char* )dialogOptions.message, "Select Directory");
-				c2pstr ((char* )dialogOptions.message);
-				NavChooseFolder (&defLoc, &navReply, &dialogOptions, 0 /* eventUPP */, 0, 0);
-				DisposeHandle (defLoc.dataHandle);
-				
-				AEDesc 	resultDesc;	
-				AEKeyword keyword;
-				resultDesc.dataHandle = 0L;
-
-				if (navReply.validRecord && AEGetNthDesc (&navReply.selection, 1, typeFSS, &keyword, &resultDesc) == noErr)
-				{
-					ret = true;
-					vstFileSelect->nbReturnPath = 1;
-					if (!vstFileSelect->returnPath)
-					{
-						vstFileSelect->reserved = 1;
-						vstFileSelect->returnPath = new char [sizeof (FSSpec)];
-					}
-					memcpy (vstFileSelect->returnPath, *resultDesc.dataHandle, sizeof (FSSpec));
-				}
-				NavDisposeReply (&navReply);
-				return vstFileSelect->nbReturnPath;
-			}
-			else
-		#endif
-			{
-				// Can't select a Folder; the Application does not support it, and Navigational Services are not available...
-				return 0;
-			}
-		}
-
-		else
-		{
-			SFTypeList typelist;
-			long numFileTypes = vstFileSelect->nbFileTypes;
-			//seem not to work... if (numFileTypes <= 0)
-			{
-				numFileTypes = -1;	// all files
-				typelist[0] = 'AIFF';
-			}
-			/*else
-			{
-				if (numFileTypes > 4)
-					numFileTypes = 4;
-				for (long i = 0; i < numFileTypes; i++)
-					memcpy (&typelist[i], vstFileSelect->fileTypes[i].macType, 4);
-			}*/
-			StandardGetFile (0L, numFileTypes, typelist, &reply);
-			if (reply.sfGood)
-			{
-				if (!vstFileSelect->returnPath)
-				{
-					vstFileSelect->reserved = 1;
-					vstFileSelect->returnPath = new char [301];
-				}
-				memcpy (vstFileSelect->returnPath, &reply.sfFile, 300);
-				vstFileSelect->nbReturnPath = 1;
-				return 1;
-			}
-		}
-#endif // TARGET_API_MAC_CARBON
-#else
 		//CAlert::alert ("The current Host application doesn't support FileSelector !", "Warning");
 #endif
 	}
 	return 0;
 }
 
-#if MAC && TARGET_API_MAC_CARBON
+#if MAC
 //-----------------------------------------------------------------------------
 pascal void CFileSelector::navEventProc (const NavEventCallbackMessage callBackSelector, NavCBRecPtr callBackParms, NavCallBackUserData callBackUD) 
 {
@@ -988,7 +869,7 @@ END_NAMESPACE_VSTGUI
 #if WINDOWS
 #include <dlgs.h>
 //-----------------------------------------------------------------------------
-UINT APIENTRY SelectDirectoryHook (HWND hdlg, UINT message, WPARAM wParam, LPARAM lParam)
+UINT_PTR APIENTRY SelectDirectoryHook (HWND hdlg, UINT message, WPARAM wParam, LPARAM lParam)
 {
 	switch (message)
 	{

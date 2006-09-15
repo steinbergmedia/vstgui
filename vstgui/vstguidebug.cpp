@@ -2,7 +2,7 @@
 // VST Plug-Ins SDK
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 //
-// Version 3.5       $Date: 2006-06-14 12:03:48 $ 
+// Version 3.5       $Date: 2006-09-15 13:34:38 $ 
 //
 // Debug Utilities
 //
@@ -92,10 +92,6 @@ void DebugPrint (char *format, ...)
 		strcpy (string, "Empty string\n");
 	#if WINDOWS
 	OutputDebugString (string);
-	#elif MAC && !MACX
-	Str255 pStr;
-	c2pstrcpy (pStr, string);
-	DebugStr (pStr);
 	#else
 	#if __MWERKS__
 		printf (string);
