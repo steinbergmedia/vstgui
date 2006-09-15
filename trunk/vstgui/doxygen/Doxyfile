@@ -1,4 +1,4 @@
-# Doxyfile 1.4.5
+# Doxyfile 1.4.6
 
 #---------------------------------------------------------------------------
 # Project related configuration options
@@ -83,7 +83,8 @@ WARN_LOGFILE           =
 # configuration options related to the input files
 #---------------------------------------------------------------------------
 INPUT                  = ../ \
-                         ./doc.h
+                         ./doc.h \
+                         ./tutorial.h
 FILE_PATTERNS          = *.c \
                          *.cc \
                          *.cxx \
