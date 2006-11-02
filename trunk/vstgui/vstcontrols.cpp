@@ -3,7 +3,7 @@
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 // Standard Control Objects
 //
-// Version 3.5       $Date: 2006-09-15 13:34:37 $
+// Version 3.5       $Date: 2006-11-02 13:07:01 $
 //
 // Added new objects        : Michael Schmidt          08.97
 // Added new objects        : Yvan Grabit              01.98
@@ -1452,6 +1452,9 @@ void CTextEdit::setViewSize (CRect& newSize, bool invalid)
 //------------------------------------------------------------------------
 void CTextEdit::takeFocus ()
 {
+	if (platformControl)
+		return;
+
 	bWasReturnPressed = false;
 
 #if WINDOWS || MAC
@@ -1639,20 +1642,7 @@ void CTextEdit::looseFocus ()
 
 #endif
 
-	// update dependency
-	bool change = false;
-	if (strcmp (oldText, text))
-	{
-		change = true;
-		if (listener)
-			listener->valueChanged (this);
-	}
-
 	platformControl = 0;
-
-//	doIdleStuff should not any more necessary
-//	if (change)
-//		doIdleStuff ();
 
 	CView* receiver = pParentView ? pParentView : pParentFrame;
 	while (receiver)
@@ -1660,6 +1650,15 @@ void CTextEdit::looseFocus ()
 		if (receiver->notify (this, kMsgLooseFocus) == kMessageNotified)
 			break;
 		receiver = receiver->getParentView ();
+	}
+
+	// update dependency
+	bool change = false;
+	if (strcmp (oldText, text))
+	{
+		change = true;
+		if (listener)
+			listener->valueChanged (this);
 	}
 }
 

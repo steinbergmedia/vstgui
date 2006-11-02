@@ -1,3 +1,9 @@
+2006-11-02 arne
+
+	* Implemented Offscreen stuff on Mac OS X without the need of quickdraw (and fix Offscreen drawing on mac with and without quickdraw)
+	* In CTextEdit::looseFocus changed order of loose focus message handling and valueChanged notification so that you can call takeFocus in valueChanged or destroy the textedit control in there.
+	* Fixed memory leak and possible crash in CTextEdit if someone tries to call takeFocus on the textedit while inside valueChanged of the listener.
+
 2006-09-15 arne
 
 	* Removed Mac OS 9 code and Quickdraw code (also the QUARTZ & MACX macro definition, only MAC is left)
