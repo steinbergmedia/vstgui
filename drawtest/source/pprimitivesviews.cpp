@@ -10,6 +10,51 @@ const CColor kYellowAlphaCColor = { 255, 255,   0, 200};
 const CColor kGreenAlphaCColor  = {   0, 255,   0, 200};
 const CColor kMagentaAlphaCColor= { 255,   0, 255, 200};
 
+POffscreenTestView::POffscreenTestView (const CRect& size)
+: CView (size)
+, bitmap (0)
+{
+}
+
+POffscreenTestView::~POffscreenTestView ()
+{
+	if (bitmap)
+		bitmap->forget ();
+}
+
+void POffscreenTestView::draw (CDrawContext* pContext)
+{
+	CRect r (size);
+	r.offset (-size.left, -size.top);
+	r.setWidth (r.getWidth () / 2);
+	COffscreenContext* oc = new COffscreenContext (getFrame (), r.getWidth (), r.getHeight ());
+	oc->setFrameColor (kRedCColor);
+	oc->setFillColor (kGreenAlphaCColor);
+	oc->drawRect (r, kDrawFilled);
+	oc->moveTo (CPoint (r.left, r.top));
+	oc->lineTo (CPoint (r.right, r.bottom));
+	oc->copyFrom (pContext, size);
+	oc->forget ();
+	if (bitmap == 0)
+	{
+		bitmap = new CBitmap (*getFrame (), r.getWidth (), r.getHeight ());
+		COffscreenContext context (pContext, bitmap, true);
+		context.setFrameColor (kGreenCColor);
+		context.setFillColor (kRedAlphaCColor);
+		context.drawRect (r, kDrawFilled);
+		context.moveTo (CPoint (r.left, r.top));
+		context.lineTo (CPoint (r.right, r.bottom));
+	}
+	if (bitmap)
+	{
+		r = size;
+		r.setWidth (r.getWidth () / 2);
+		r.offset (r.getWidth () / 2, 0);
+		bitmap->draw (pContext, r);
+	}
+	setDirty (false);
+}
+
 PMiscView::PMiscView (const CRect& size)
 : CView (size), xOffset (0), yOffset (0)
 {

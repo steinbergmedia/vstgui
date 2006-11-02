@@ -36,4 +36,15 @@ protected:
 	long yOffset;
 };
 
+class POffscreenTestView : public CView
+{
+public:
+	POffscreenTestView (const CRect& size);
+	~POffscreenTestView ();
+
+	virtual void draw (CDrawContext* pContext);
+	
+	CBitmap* bitmap;
+};
+
 #endif

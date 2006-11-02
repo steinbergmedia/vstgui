@@ -177,6 +177,9 @@ void DrawTestEditor::setTabView (CFrame* frame, const CRect& r, long position)
 	testView = new PMiscView (tabSize);
 	tabView->addTab (testView, "Misc");
 
+	testView = new POffscreenTestView (tabSize);
+	tabView->addTab (testView, "Offscreen Test");
+
 	// the third tab is the old controlsgui view embeded into a container view
 	CRect controlsGUISize (0, 0, 420, 210);
 	controlsGUISize.offset (5, 5);
