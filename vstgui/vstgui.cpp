@@ -2,7 +2,7 @@
 // VST Plug-Ins SDK
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 //
-// Version 3.5       $Date: 2006-09-15 13:34:37 $ 
+// Version 3.5       $Date: 2006-11-02 13:07:01 $ 
 //
 // Added Motif/Windows vers.: Yvan Grabit              01.98
 // Added Mac version        : Charlie Steinberg        02.98
@@ -58,7 +58,6 @@
 
 //---Some defines-------------------------------------
 #define USE_ALPHA_BLEND			MAC || USE_LIBPNG
-#define MAC_OLD_DRAG			1
 
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
@@ -196,6 +195,13 @@ END_NAMESPACE_VSTGUI
 BEGIN_NAMESPACE_VSTGUI
 
 long pSystemVersion;
+
+#define NO_QUICKDRAW	(MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_4)	// no quickdraw if we build only for 10.4 and above
+#define MAC_OLD_DRAG	__ppc__
+
+#ifndef EMBED_HIVIEW	// automaticly add the CFrame HIView to the content view of the window
+#define EMBED_HIVIEW	!AU
+#endif
 
 //-----------------------------------------------------------------------------
 #include <QuickTime/QuickTime.h>
@@ -2213,7 +2219,6 @@ CGContextRef CDrawContext::beginCGContext (bool swapYAxis)
 	if (gCGContext)
 	{
 		CGContextSaveGState (gCGContext);
-//		CGContextScaleCTM (gCGContext, 1, -1);
 		QuartzSetupClip (gCGContext, clipRect);
 		if (!swapYAxis)
 			CGContextScaleCTM (gCGContext, 1, -1);
@@ -2285,8 +2290,53 @@ CGrafPtr CDrawContext::getPort ()
 	return 0;
 }
 
-#endif
+//-----------------------------------------------------------------------------
+CGContextRef createOffscreenBitmap (long width, long height, void** bits)
+{
+	CGContextRef    context = NULL; 
+	int             bitmapByteCount; 
+	int             bitmapBytesPerRow; 
 
+	// each pixel is represented by four bytes 
+	// (8 bits each of alpha, R, G, B) 
+	bitmapBytesPerRow   = width * 4; 
+	bitmapByteCount     = bitmapBytesPerRow * height; 
+
+	// create the bitmap 
+	if (*bits == 0)
+		*bits = malloc (bitmapByteCount);
+	if (*bits != NULL)
+	{
+		memset (*bits, 0, bitmapByteCount);
+		// create the context 
+		context = CGBitmapContextCreate (*bits,
+		width, 
+		height, 
+		8,              // bits per component 
+		bitmapBytesPerRow, 
+		GetGenericRGBColorSpace (), 
+		kCGImageAlphaPremultipliedFirst);
+
+		if (context)
+		{
+			CGContextSaveGState (context);
+			CGContextSetShouldAntialias (context, false);
+			CGContextTranslateCTM (context, 0, (float)height);
+			CGContextSetFillColorSpace (context, GetGenericRGBColorSpace ());
+			CGContextSetStrokeColorSpace (context, GetGenericRGBColorSpace ()); 
+			CGAffineTransform cgCTM = CGAffineTransformMake (1.0, 0.0, 0.0, -1.0, 0.0, 0.0);
+			CGContextSetTextMatrix (context, cgCTM);
+			CGContextScaleCTM (context, 1, -1);
+			QuartzSetupClip (context, CRect (0, 0, width, height));
+			CGContextSaveGState (context);
+			CGRect r = CGRectMake (0, 0, width, height);
+			CGContextClearRect (context, r);
+		}
+	}
+	return context;
+}
+
+#endif // MAC
 
 //-----------------------------------------------------------------------------
 // COffscreenContext Implementation
@@ -2297,6 +2347,7 @@ COffscreenContext::COffscreenContext (CDrawContext* pContext, CBitmap* pBitmapBg
 , pBitmapBg (pBitmapBg)
 , height (20)
 , width (20)
+, bDrawInBitmap (drawInBitmap)
 {
 	if (pBitmapBg)
 	{
@@ -2339,6 +2390,14 @@ COffscreenContext::COffscreenContext (CDrawContext* pContext, CBitmap* pBitmapBg
 
 #elif MAC
 	offscreenBitmap = 0;
+	#if NO_QUICKDRAW
+	if (drawInBitmap)
+		offscreenBitmap = pBitmapBg->getHandle ();
+	if (offscreenBitmap == 0)
+		bDestroyPixmap = true;
+	gCGContext = createOffscreenBitmap (width, height, &offscreenBitmap);
+
+	#else
 	if (drawInBitmap)
 	{
 		if (pBitmapBg->getHandle ())
@@ -2350,11 +2409,14 @@ COffscreenContext::COffscreenContext (CDrawContext* pContext, CBitmap* pBitmapBg
 			gCGContext = CGBitmapContextCreate (GetPixBaseAddr (pixMap), (size_t)width, (size_t)height, pixDepth, rowBytes, GetGenericRGBColorSpace (), kCGImageAlphaPremultipliedFirst);
 			if (gCGContext)
 			{
+				CGContextSaveGState (gCGContext);
 				CGContextTranslateCTM (gCGContext, 0, (float)height);
 				CGContextSetFillColorSpace (gCGContext, GetGenericRGBColorSpace ());
 				CGContextSetStrokeColorSpace (gCGContext, GetGenericRGBColorSpace ());
 				CGAffineTransform cgCTM = CGAffineTransformMake (1.0, 0.0, 0.0, -1.0, 0.0, 0.0);
 				CGContextSetTextMatrix (gCGContext, cgCTM);
+				CGContextScaleCTM (gCGContext, 1, -1);
+				QuartzSetupClip (gCGContext, CRect (0, 0, width, height));
 				CGContextSaveGState (gCGContext);
 			}
 		}
@@ -2362,7 +2424,7 @@ COffscreenContext::COffscreenContext (CDrawContext* pContext, CBitmap* pBitmapBg
 	else
 	{ // todo !!!
 	}
-	
+	#endif
         
 #endif
 
@@ -2388,6 +2450,7 @@ COffscreenContext::COffscreenContext (CFrame* pFrame, long width, long height, c
 , height (height)
 , width (width)
 , backgroundColor (backgroundColor)
+, bDrawInBitmap (false)
 {
 	clipRect (0, 0, width, height);
 
@@ -2423,49 +2486,8 @@ COffscreenContext::COffscreenContext (CFrame* pFrame, long width, long height, c
 	#endif
 
 #elif MAC
-	CGContextRef    context = NULL; 
-	int             bitmapByteCount; 
-	int             bitmapBytesPerRow; 
-
-	// each pixel is represented by four bytes 
-	// (8 bits each of alpha, R, G, B) 
-	bitmapBytesPerRow   = width * 4; 
-	bitmapByteCount     = bitmapBytesPerRow * height; 
-
-	// create the bitmap 
-	offscreenBitmap = malloc (bitmapByteCount);
-	if (offscreenBitmap != NULL)
-	{
-		memset (offscreenBitmap, 0, bitmapByteCount);
-		// create the context 
-		context = CGBitmapContextCreate (offscreenBitmap,
-		width, 
-		height, 
-		8,              // bits per component 
-		bitmapBytesPerRow, 
-		GetGenericRGBColorSpace (), 
-		kCGImageAlphaPremultipliedFirst);
-
-		if (context == NULL)
-		{
-			// the context couldn't be created for some reason, 
-			// and we have no use for the bitmap without the context 
-			free (offscreenBitmap);
-			offscreenBitmap = 0;
-		}
-		else
-		{
-			CGContextTranslateCTM (context, 0, (float)height);
-			CGContextSetFillColorSpace (context, GetGenericRGBColorSpace ());
-			CGContextSetStrokeColorSpace (context, GetGenericRGBColorSpace ()); 
-			CGAffineTransform cgCTM = CGAffineTransformMake (1.0, 0.0, 0.0, -1.0, 0.0, 0.0);
-			CGContextSetTextMatrix (context, cgCTM);
-			CGContextSaveGState (context);
-			CGRect r = CGRectMake (0, 0, width, height);
-			CGContextClearRect (context, r);
-		}
-	}
-	gCGContext = context;
+	offscreenBitmap = 0;
+	gCGContext = createOffscreenBitmap (width, height, &offscreenBitmap);
 
 	CRect r (0, 0, width, height);
 	setFillColor (backgroundColor);
@@ -2508,13 +2530,15 @@ COffscreenContext::~COffscreenContext ()
 		CGContextRelease (gCGContext);
 	}
 	gCGContext = 0;
-	if (offscreenBitmap)
+	if (offscreenBitmap && bDestroyPixmap)
 		free (offscreenBitmap);
+	#if !NO_QUICKDRAW
 	else if (pBitmapBg && pBitmapBg->getHandle ())
 	{
 		PixMapHandle pixMap = GetGWorldPixMap ((GWorldPtr)pBitmapBg->getHandle ());
 		UnlockPixels (pixMap);
 	}
+	#endif
         
 #endif
 }
@@ -2538,13 +2562,9 @@ void COffscreenContext::copyTo (CDrawContext* pContext, CRect& srcRect, CPoint d
 	#endif
 	
 #elif MAC
-	#if MAC
+	#if !NO_QUICKDRAW
 	if (!pBitmapBg)
 		return;
-	#else
-	if (!pWindow)
-		return;
-	#endif
 	
 	Rect source, dest;
 	RGBColor savedForeColor, savedBackColor;
@@ -2570,6 +2590,7 @@ void COffscreenContext::copyTo (CDrawContext* pContext, CRect& srcRect, CPoint d
 
 	RGBForeColor (&savedForeColor);
 	RGBBackColor (&savedBackColor);
+	#endif // !NO_QUICKDRAW
 #endif
 }
 
@@ -2601,14 +2622,20 @@ void COffscreenContext::copyFrom (CDrawContext* pContext, CRect destRect, CPoint
 	CGContextRef context = pContext->beginCGContext ();
 	if (context)
 	{
-		size_t pixRowBytes = CGBitmapContextGetBytesPerRow (gCGContext);
-		short pixDepth = CGBitmapContextGetBitsPerPixel (gCGContext);
-		size_t size = pixRowBytes * CGBitmapContextGetHeight (gCGContext);
-
 		CGImageRef image = 0;
-		CGDataProviderRef provider = CGDataProviderCreateWithData (NULL, CGBitmapContextGetData (gCGContext), size, NULL);
-		CGImageAlphaInfo alphaInfo = CGBitmapContextGetAlphaInfo (gCGContext);
-		image = CGImageCreate (CGBitmapContextGetWidth (gCGContext), CGBitmapContextGetHeight (gCGContext), 8 , pixDepth, pixRowBytes, GetGenericRGBColorSpace (), alphaInfo, provider, NULL, 0, kCGRenderingIntentDefault);
+		#if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_4
+		image = getCGImage ();
+		#endif
+		if (image == 0)
+		{
+			size_t pixRowBytes = CGBitmapContextGetBytesPerRow (gCGContext);
+			short pixDepth = CGBitmapContextGetBitsPerPixel (gCGContext);
+			size_t size = pixRowBytes * CGBitmapContextGetHeight (gCGContext);
+			CGDataProviderRef provider = CGDataProviderCreateWithData (NULL, CGBitmapContextGetData (gCGContext), size, NULL);
+			CGImageAlphaInfo alphaInfo = CGBitmapContextGetAlphaInfo (gCGContext);
+			image = CGImageCreate (CGBitmapContextGetWidth (gCGContext), CGBitmapContextGetHeight (gCGContext), 8 , pixDepth, pixRowBytes, GetGenericRGBColorSpace (), alphaInfo, provider, NULL, 0, kCGRenderingIntentDefault);
+			CGDataProviderRelease (provider);
+		}
 		if (image)
 		{
 			CGRect dest;
@@ -2629,7 +2656,6 @@ void COffscreenContext::copyFrom (CDrawContext* pContext, CRect destRect, CPoint
 			
 			CGImageRelease (image);
 		}
-		CGDataProviderRelease (provider);
 		
 		pContext->releaseCGContext (context);
 	}
@@ -2654,12 +2680,24 @@ CGImageRef COffscreenContext::getCGImage () const
 //-----------------------------------------------------------------------------
 BitMapPtr COffscreenContext::getBitmap ()
 {
+#if NO_QUICKDRAW
+	return 0;
+#else
 	return pBitmapBg ? (BitMapPtr)GetPortBitMapForCopyBits ((GWorldPtr)pBitmapBg->getHandle ()) : 0;
+#endif
 }
 
 //-----------------------------------------------------------------------------
 void COffscreenContext::releaseBitmap ()
 {
+}
+
+//-----------------------------------------------------------------------------
+void COffscreenContext::releaseCGContext (CGContextRef context)
+{
+	if (bDrawInBitmap)
+		pBitmapBg->setBitsDirty ();
+	CDrawContext::releaseCGContext (context);
 }
 
 #endif // MAC
@@ -3402,7 +3440,7 @@ bool CFrame::initFrame (void* systemWin)
 	
 	SetControlDragTrackingEnabled (controlRef, true);
 	SetAutomaticControlDragTrackingEnabledForWindow ((WindowRef)systemWin, true);
-	#if !AU // for AudioUnits define AU and embed the controlRef at your AUCarbonViewBase
+	#if EMBED_HIVIEW
 	if (isWindowComposited ((WindowRef)systemWin)) 
 	{
 		HIViewRef contentView;
@@ -5685,7 +5723,7 @@ CBitmap::CBitmap (CFrame& frame, CCoord width, CCoord height)
 	pBitmap = 0;
 	bits = 0;
 	Gdiplus::Graphics* hScreenGraphics = new Gdiplus::Graphics(hScreen);
-	pBitmap = new Gdiplus::Bitmap(width,height,hScreenGraphics);	// format?
+	pBitmap = new Gdiplus::Bitmap (width, height, hScreenGraphics);	// format?
 	delete hScreenGraphics;
 #else
 	pHandle = CreateCompatibleBitmap (hScreen, width, height);
@@ -5697,13 +5735,17 @@ CBitmap::CBitmap (CFrame& frame, CCoord width, CCoord height)
 	pHandle = 0;
 	pMask = 0;
 	
+	#if NO_QUICKDRAW
+	pHandle = malloc (width * 4 * height);
+
+	#else
 	Rect r;
 	r.left = r.top = 0;
 	r.right = (short)width;
 	r.bottom = (short)height;
 
 	NewGWorld ((GWorldPtr*)&pHandle, 32, &r, 0, 0, 0);
-
+	#endif
 #endif
 }
 
@@ -5767,6 +5809,10 @@ void CBitmap::dispose ()
 		CGImageRelease ((CGImageRef)cgImage);
 	cgImage = 0;
 
+	#if NO_QUICKDRAW
+	if (pHandle)
+		free (pHandle);
+	#else
 	if (pHandle)
 		DisposeGWorld ((GWorldPtr)pHandle);
 	if (pMask)
@@ -5774,6 +5820,7 @@ void CBitmap::dispose ()
 
 	pHandle = 0;
 	pMask = 0;
+	#endif // NO_QUICKDRAW
 	
 	#endif
 
@@ -5951,7 +5998,7 @@ bool CBitmap::loadFromResource (const CResourceDescription& resourceDesc)
 	if (!result)
 	{
 #if GDIPLUS
-		pBitmap = Gdiplus::Bitmap::FromResource(GetInstance (),(WCHAR*)MAKEINTRESOURCE(resourceDesc.u.id));
+		pBitmap = Gdiplus::Bitmap::FromResource (GetInstance (), resourceDesc.type == CResourceDescription::kIntegerType ? (WCHAR*)MAKEINTRESOURCE(resourceDesc.u.id) : (WCHAR*)resourceDesc.u.name);
 		if (pBitmap)
 		{
 			result = true;
@@ -5959,7 +6006,7 @@ bool CBitmap::loadFromResource (const CResourceDescription& resourceDesc)
 			height = pBitmap->GetHeight ();
 		}
 #else
-		pHandle = LoadBitmap (GetInstance (), MAKEINTRESOURCE (resourceDesc.u.id));
+		pHandle = LoadBitmap (GetInstance (), resourceDesc.type == CResourceDescription::kIntegerType ? MAKEINTRESOURCE (resourceDesc.u.id) : resourceDesc.u.name);
 		BITMAP bm;
 		if (pHandle && GetObject (pHandle, sizeof (bm), &bm))
 		{
@@ -6012,6 +6059,7 @@ bool CBitmap::loadFromResource (const CResourceDescription& resourceDesc)
 		}
 	}
 	
+	#if !NO_QUICKDRAW
 	if (!result && pHandle == 0)
 	{
 		Handle picHandle = GetResource ('PICT', resourceDesc.u.id);
@@ -6042,6 +6090,7 @@ bool CBitmap::loadFromResource (const CResourceDescription& resourceDesc)
 			ReleaseResource (picHandle);
 		}
 	}
+	#endif // !NO_QUICKDRAW
 
 	#else
 	// other platforms go here
@@ -6097,7 +6146,7 @@ bool CBitmap::loadFromPath (const void* platformPath)
 	}
 	#endif
 
-	#if MAC_OS_X_VERSION_MIN_REQUIRED <= MAC_OS_X_VERSION_10_3
+	#if !NO_QUICKDRAW && MAC_OS_X_VERSION_MIN_REQUIRED <= MAC_OS_X_VERSION_10_3
 	if (!result)
 	{
 		FSRef fsRef;
@@ -6194,15 +6243,12 @@ bool CBitmap::isLoaded () const
 }
 
 #if MAC
+
 class CDataProvider 
 {
 public:
-	CDataProvider (CBitmap* bitmap) : bmp (bitmap) 
-	{ 
-		pos = 0; 
-		PixMapHandle pixMap = GetGWorldPixMap ((GWorldPtr)bmp->getHandle ());
-		ptr = (unsigned char*)GetPixBaseAddr (pixMap);
-		color = bmp->getTransparentColor ();
+	CDataProvider (void* bitmap, const CColor& color) : ptr ((unsigned char*)bitmap), color (color) 
+	{
 	}
 
 	static size_t getBytes (void *info, void* buffer, size_t count)
@@ -6246,7 +6292,7 @@ public:
 	}
 
 	unsigned long pos;
-	CBitmap* bmp;
+//	CBitmap* bmp;
 	unsigned char* ptr;
 	CColor color;
 };
@@ -6262,32 +6308,55 @@ CGImageRef CBitmap::createCGImage (bool transparent)
 	if (!pHandle)
 		return NULL;
 
-	PixMapHandle pixMap = GetGWorldPixMap ((GWorldPtr)pHandle);
+	void* pixels = 0;
+	size_t rowBytes = 0;
+	short bitDepth = 0;
+	size_t size = 0;
+
+	#if NO_QUICKDRAW
+	pixels = pHandle;
+	rowBytes = width * 4;
+	bitDepth = 32;
+	size = rowBytes * height;
 	
-	Rect bounds;
-	GetPixBounds (pixMap, &bounds);
-
-	size_t pixRowBytes = GetPixRowBytes (pixMap);
-	short pixDepth = GetPixDepth (pixMap);
-	size_t size = pixRowBytes * (bounds.bottom - bounds.top);
-
+	#else
+	PixMapHandle pixMap = GetGWorldPixMap ((GWorldPtr)pHandle);
+	pixels = GetPixBaseAddr (pixMap);
+	rowBytes = GetPixRowBytes (pixMap);
+	bitDepth = GetPixDepth (pixMap);
+	size = rowBytes * height;
+	#endif
+	
 	CGImageRef image = 0;
 	CGDataProviderRef provider = 0;
 	static CGDataProviderCallbacks callbacks = { CDataProvider::getBytes, CDataProvider::skipBytes, CDataProvider::rewind, CDataProvider::releaseProvider };
 	if (transparent)
-		provider = CGDataProviderCreate (new CDataProvider (this), &callbacks);
+		provider = CGDataProviderCreate (new CDataProvider (pixels, transparentCColor), &callbacks);
 	else
-		provider = CGDataProviderCreateWithData (NULL, GetPixBaseAddr (pixMap), size, NULL);
+		provider = CGDataProviderCreateWithData (NULL, pixels, size, NULL);
 	CGImageAlphaInfo alphaInfo = kCGImageAlphaFirst;
-	if (GetPixDepth (pixMap) != 32)
+	if (bitDepth != 32)
 		alphaInfo = kCGImageAlphaNone;
-	image = CGImageCreate (bounds.right - bounds.left, bounds.bottom - bounds.top, 8 , pixDepth, pixRowBytes, GetGenericRGBColorSpace (), alphaInfo, provider, NULL, false, kCGRenderingIntentDefault);
+	image = CGImageCreate (width, height, 8, bitDepth, rowBytes, GetGenericRGBColorSpace (), alphaInfo, provider, NULL, false, kCGRenderingIntentDefault);
 	CGDataProviderRelease (provider);
 
 	cgImage = image;
 	CGImageRetain (image);
 	return image;
 }
+
+//-----------------------------------------------------------------------------
+void CBitmap::setBitsDirty ()
+{
+	#if NO_QUICKDRAW
+	if (pHandle && cgImage)
+	{
+		CGImageRelease ((CGImageRef)cgImage);
+		cgImage = 0;
+	}
+	#endif
+}
+
 #endif
 
 #if GDIPLUS
