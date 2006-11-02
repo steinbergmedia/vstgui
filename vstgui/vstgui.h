@@ -2,7 +2,7 @@
 // VST Plug-Ins SDK
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 //
-// Version 3.5       $Date: 2006-09-15 13:34:38 $
+// Version 3.5       $Date: 2006-11-02 13:07:01 $
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
@@ -574,7 +574,7 @@ public:
 
 	void setName (const char* newName);					///< set the name of the font
 	void setSize (CCoord newSize);						///< set the height of the font
-	void setStyle (long newStyle);						///< set the style of the font
+	void setStyle (long newStyle);						///< set the style of the font \sa CTxtFace
 
 	CFontDesc& operator = (const CFontDesc&);
 	bool operator == (const CFontDesc&) const;
@@ -755,7 +755,6 @@ protected:
 #endif // WINDOWS
 
 #if MAC
-	ATSUStyle atsuStyle;
 	CGContextRef gCGContext;
 	bool needToSynchronizeCGContext;
 	public:
@@ -796,11 +795,12 @@ public:
 
 	//-------------------------------------------
 protected:
-	CBitmap *pBitmap;
-	CBitmap *pBitmapBg;
-	CCoord    height;
-	CCoord    width;
+	CBitmap	*pBitmap;
+	CBitmap	*pBitmapBg;
+	CCoord	height;
+	CCoord	width;
 	bool    bDestroyPixmap;
+	bool	bDrawInBitmap;
 
 	CColor  backgroundColor;
 
@@ -811,6 +811,7 @@ protected:
 #if MAC
 	void* offscreenBitmap;
 	virtual CGImageRef getCGImage () const;
+	void releaseCGContext (CGContextRef context);
 
 	BitMapPtr getBitmap ();
 	void releaseBitmap ();
@@ -870,6 +871,7 @@ public:
 
 #if MAC
 	virtual CGImageRef createCGImage (bool transparent = false);
+	virtual void setBitsDirty ();
 #endif // MAC
 
 #if GDIPLUS
