@@ -40,8 +40,8 @@ H3
 	font-family: Verdana, Geneva, Arial, Helvetica, sans-serif;
 	font-weight: bold;
 	font-size: 10pt;
-	background-color: #e5e5e5; 
-	border: solid 1 #e5e5e5;
+	background-color: #f0f0f0; 
+	border: solid 1 #f0f0f0;
 }
 H4 
 {
@@ -131,13 +131,13 @@ P.formulaDsp { text-align: center; }
 IMG.formulaDsp { }
 IMG.formulaInl { vertical-align: middle; }
 
-SPAN.keyword       { color: #000000 }
-SPAN.keywordtype   { color: #000000 }
-SPAN.keywordflow   { color: #000000 }
-SPAN.comment       { color: gray }
-SPAN.preprocessor  { color: #000000 }
-SPAN.stringliteral { color: #0000ff }
-SPAN.charliteral   { color: #0000ff }
+SPAN.keyword       { color: #006A00; }
+SPAN.keywordtype   { color: #3434B6; }
+SPAN.keywordflow   { color: #000000; }
+SPAN.comment       { color: gray; }
+SPAN.preprocessor  { color: #000000; }
+SPAN.stringliteral { color: #0000ff; }
+SPAN.charliteral   { color: #0000ff; }
 
 
 EM
