@@ -2,7 +2,7 @@
 // VST Plug-Ins SDK
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 //
-// Version 3.5       $Date: 2006-11-02 13:07:01 $
+// Version 3.5       $Date: 2006-11-10 17:32:41 $
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
@@ -700,18 +700,18 @@ public:
 
 	void forget ();
 
-	VSTGUI_DEPRECATED(CColor getPoint (const CPoint& point);)
-	VSTGUI_DEPRECATED(void floodFill (const CPoint& start);)
-	VSTGUI_DEPRECATED(void drawArc (const CRect &rect, const CPoint &point1, const CPoint &point2);)
-	VSTGUI_DEPRECATED(void fillArc (const CRect &rect, const CPoint &point1, const CPoint &point2);)
-	VSTGUI_DEPRECATED(void polyLine (const CPoint *pPoint, long numberOfPoints);)
-	VSTGUI_DEPRECATED(void fillPolygon (const CPoint *pPoint, long numberOfPoints);)
-	VSTGUI_DEPRECATED(void fillRect (const CRect &rect);)
-	VSTGUI_DEPRECATED(void fillEllipse (const CRect &rect);)
-	VSTGUI_DEPRECATED(long getMouseButtons ();)
-	VSTGUI_DEPRECATED(void getMouseLocation (CPoint &point);)
-	VSTGUI_DEPRECATED(bool waitDoubleClick ();)
-	VSTGUI_DEPRECATED(bool waitDrag ();)
+	VSTGUI_DEPRECATED(CColor getPoint (const CPoint& point);)	///<deprecated
+	VSTGUI_DEPRECATED(void floodFill (const CPoint& start);)	///<deprecated
+	VSTGUI_DEPRECATED(void drawArc (const CRect &rect, const CPoint &point1, const CPoint &point2);)	///<deprecated
+	VSTGUI_DEPRECATED(void fillArc (const CRect &rect, const CPoint &point1, const CPoint &point2);)	///<deprecated
+	VSTGUI_DEPRECATED(void polyLine (const CPoint *pPoint, long numberOfPoints);)	///<deprecated
+	VSTGUI_DEPRECATED(void fillPolygon (const CPoint *pPoint, long numberOfPoints);)	///<deprecated
+	VSTGUI_DEPRECATED(void fillRect (const CRect &rect);)	///<deprecated
+	VSTGUI_DEPRECATED(void fillEllipse (const CRect &rect);)	///<deprecated
+	VSTGUI_DEPRECATED(long getMouseButtons ();)	///<deprecated
+	VSTGUI_DEPRECATED(void getMouseLocation (CPoint &point);)	///<deprecated
+	VSTGUI_DEPRECATED(bool waitDoubleClick ();)	///<deprecated
+	VSTGUI_DEPRECATED(bool waitDrag ();)	///<deprecated
 
 	//-------------------------------------------
 protected:
@@ -878,7 +878,7 @@ public:
 	Gdiplus::Bitmap* getBitmap ();
 #endif // GDIPLUS
 
-	VSTGUI_DEPRECATED(void setTransparencyMask (CDrawContext* pContext, const CPoint& offset = CPoint (0, 0));)
+	VSTGUI_DEPRECATED(void setTransparencyMask (CDrawContext* pContext, const CPoint& offset = CPoint (0, 0));)	///<deprecated
 
 	//-------------------------------------------
 protected:
@@ -1054,11 +1054,11 @@ public:
 
 	//-------------------------------------------
 
-	VSTGUI_DEPRECATED(virtual void mouse (CDrawContext *pContext, CPoint &where, long buttons = -1);)
-	VSTGUI_DEPRECATED(virtual void getMouseLocation (CDrawContext* context, CPoint &point);)
-	VSTGUI_DEPRECATED(virtual void setParentView (CView *pParentView) { this->pParentView = pParentView; })
-	VSTGUI_DEPRECATED(virtual void setFrame (CFrame *pParent) { this->pParentFrame = pParent; })
-	VSTGUI_DEPRECATED(virtual void getFrameTopLeftPos (CPoint& topLeft) const;)
+	VSTGUI_DEPRECATED(virtual void mouse (CDrawContext *pContext, CPoint &where, long buttons = -1);)	///<deprecated
+	VSTGUI_DEPRECATED(virtual void getMouseLocation (CDrawContext* context, CPoint &point);)	///<deprecated
+	VSTGUI_DEPRECATED(virtual void setParentView (CView *pParentView) { this->pParentView = pParentView; })	///<deprecated
+	VSTGUI_DEPRECATED(virtual void setFrame (CFrame *pParent) { this->pParentFrame = pParent; })	///<deprecated
+	VSTGUI_DEPRECATED(virtual void getFrameTopLeftPos (CPoint& topLeft) const;)	///<deprecated
 
 	//-------------------------------------------
 protected:
@@ -1173,8 +1173,8 @@ public:
 	virtual void dumpHierarchy ();
 	#endif
 
-	VSTGUI_DEPRECATED(virtual void mouse (CDrawContext *pContext, CPoint &where, long buttons = -1);)
-	VSTGUI_DEPRECATED(virtual CView *getCurrentView () const;)	///< get the current view under the mouse
+	VSTGUI_DEPRECATED(virtual void mouse (CDrawContext *pContext, CPoint &where, long buttons = -1);)	///<deprecated
+	VSTGUI_DEPRECATED(virtual CView *getCurrentView () const;)	///<deprecated
 
 	//-------------------------------------------
 protected:
@@ -1289,10 +1289,10 @@ public:
 
 	CLASS_METHODS(CFrame, CViewContainer)
 
-	VSTGUI_DEPRECATED(virtual bool getCurrentLocation (CPoint &where);)
-	VSTGUI_DEPRECATED(virtual void mouse (CDrawContext *pContext, CPoint &where, long buttons = -1);)
-	VSTGUI_DEPRECATED(virtual CView *getCurrentView () const;)
-	VSTGUI_DEPRECATED(void draw (CView *pView = 0);)
+	VSTGUI_DEPRECATED(virtual bool getCurrentLocation (CPoint &where);)	///<deprecated
+	VSTGUI_DEPRECATED(virtual void mouse (CDrawContext *pContext, CPoint &where, long buttons = -1);)	///<deprecated
+	VSTGUI_DEPRECATED(virtual CView *getCurrentView () const;)	///<deprecated
+	VSTGUI_DEPRECATED(void draw (CView *pView = 0);)	///<deprecated
 
 	//-------------------------------------------
 protected:

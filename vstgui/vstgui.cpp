@@ -2,7 +2,7 @@
 // VST Plug-Ins SDK
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 //
-// Version 3.5       $Date: 2006-11-02 13:07:01 $ 
+// Version 3.5       $Date: 2006-11-10 17:32:41 $ 
 //
 // Added Motif/Windows vers.: Yvan Grabit              01.98
 // Added Mac version        : Charlie Steinberg        02.98
@@ -5660,14 +5660,26 @@ protected:
 @section cbitmap_alphablend Alpha Blend and Transparency
 With Version 3.0 of VSTGUI it is possible to use alpha blended bitmaps. This comes free on Mac OS X and with Windows you need to include libpng.
 Per default PNG images will be rendered alpha blended. If you want to use a transparency color with PNG Bitmaps, you need to call setNoAlpha(true) on the bitmap and set the transparency color.
-@section cbitmap_macos Classic Apple Mac OS
-The Bitmaps are PICTs and stored inside the resource fork.
 @section cbitmap_macosx Apple Mac OS X
-The Bitmaps can be of type PNG, JPEG, PICT, BMP and are stored in the Resources folder of the plugin bundle.
-They must be named bmp00100.png (or bmp00100.jpg, etc). The number is the resource id.
+The Bitmaps can be of type PNG, JPEG, PICT, BMP and are stored in the Resources folder of the plugin bundle. 
+With the latest version VSTGUI supports all image types supported by the Image I/O Framework.
 @section cbitmap_windows Microsoft Windows
 The Bitmaps are .bmp files and must be included in the plug (usually using a .rc file).
 It's also possible to use png as of version 3.0 if you define the macro USE_LIBPNG and include the libpng and zlib libraries/sources to your project.
+@section new New since 3.0
+There is a new way to name the bitmaps in the latest version. Instead of using a number identifier for the bitmaps you can now use real names for it.
+The CResourceDescription works with both names and numbers. If you use names, you need to use the real filename with extension. Then it gets automaticly
+loaded on Mac OS X out of the Resources folder of the vst bundle. On Windows you also specify the resource in the .rc file with the real filename.
+\code
+// Old way
+1001                    BITMAP  DISCARDABLE     "bmp01001.bmp"
+// New way
+RealFileName.bmp        BITMAP  DISCARDABLE     "RealFileName.bmp"
+\endcode
+\code
+CBitmap* bitmap1 = new CBitmap (1001);
+CBitmap* bitmap2 = new CBitmap ("RealFileName.bmp");
+\endcode
 */
 CBitmap::CBitmap (const CResourceDescription& desc)
 : resourceDesc (desc)
