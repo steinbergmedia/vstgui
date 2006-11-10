@@ -1,15 +1,10 @@
-//-----------------------------------------------------------------------------
-// VSTGUI: Graphical User Interface Framework not only for VST plugins
-//
-// Doxygen Documentation
-//
-// Version 3.5       Date : 30/06/04
-//
-//-----------------------------------------------------------------------------
-//
+/**
+@page license License
+
+\code
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
-// © 2004, Steinberg Media Technologies, All Rights Reserved
+// Â© 2004, Steinberg Media Technologies, All Rights Reserved
 //-----------------------------------------------------------------------------
 // Redistribution and use in source and binary forms, with or without modification,
 // are permitted provided that the following conditions are met:
@@ -34,31 +29,6 @@
 // OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE  OF THIS SOFTWARE, EVEN IF ADVISED
 // OF THE POSSIBILITY OF SUCH DAMAGE.
 //-----------------------------------------------------------------------------
-
-/**
-
-@mainpage
-
-Welcome to VSTGUI 3.5
-
-- @ref intro @n
-- @ref tutorial_getting_started @n
-- @ref changes_from_3_0 @n
-- @ref changelog @n
-- @ref license @n
-
-@section intro Introduction
-
-\par VSTGUI 
-VSTGUI is a User Interface Toolkit mainly for Audio Plug-Ins (VST, AudioUnit, etc).
-\par History
-First developed inhouse of Steinberg Media Technologies (around 1998) for their first VST Plug-Ins. 
-Later added as binary libraries to the official VST SDK. 
-Since May 2003 VSTGUI is open source and hosted at sourceforge.
-\par Platforms
-Currently VSTGUI compiles on Microsoft Windows 2000/ME/XP/XP64 and Apple Mac OS X 10.3 - 10.4. 
-
-\sa
-<a href="http://vstgui.sf.net" target=_blank> VSTGUI @ Sourceforge </a>
+\endcode
 
 */

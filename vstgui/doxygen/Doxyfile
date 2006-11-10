@@ -84,7 +84,10 @@ WARN_LOGFILE           =
 #---------------------------------------------------------------------------
 INPUT                  = ../ \
                          ./doc.h \
-                         ./tutorial.h
+                         ./page_tutorial.h \
+                         ./page_changes.h \
+                         ./page_changelog.h \
+                         ./page_license.h
 FILE_PATTERNS          = *.c \
                          *.cc \
                          *.cxx \
@@ -229,7 +232,7 @@ EXPAND_ONLY_PREDEF     = NO
 SEARCH_INCLUDES        = YES
 INCLUDE_PATH           = 
 INCLUDE_FILE_PATTERNS  = 
-PREDEFINED             = VSTGUI_ENABLE_DEPRECATED_METHODS=0 \
+PREDEFINED             = VSTGUI_ENABLE_DEPRECATED_METHODS=1 \
                          DEBUG=0 \
                          USE_NAMESPACE=1
 EXPAND_AS_DEFINED      = 
