@@ -137,7 +137,7 @@ public:
 /// \endcond
 
 //-----------------------------------------------------------------------------
-CTabView::CTabView (const CRect& size, CFrame* parent, CBitmap* tabBitmap, CBitmap* background, long tabPosition, long style)
+CTabView::CTabView (const CRect& size, CFrame* parent, CBitmap* tabBitmap, CBitmap* background, TabPosition tabPosition, long style)
 : CViewContainer (size, parent, background)
 , numberOfChilds (0)
 , tabPosition (tabPosition)
@@ -157,7 +157,7 @@ CTabView::CTabView (const CRect& size, CFrame* parent, CBitmap* tabBitmap, CBitm
 }
 
 //-----------------------------------------------------------------------------
-CTabView::CTabView (const CRect& size, CFrame* parent, const CRect& tabSize, CBitmap* background, long tabPosition, long style)
+CTabView::CTabView (const CRect& size, CFrame* parent, const CRect& tabSize, CBitmap* background, TabPosition tabPosition, long style)
 : CViewContainer (size, parent, background)
 , numberOfChilds (0)
 , currentTab (-1)
@@ -361,7 +361,7 @@ void CTabView::setTabFontStyle (const CFontRef font, long fontSize, CColor selec
 }
 
 //-----------------------------------------------------------------------------
-void CTabView::alignTabs (long alignment)
+void CTabView::alignTabs (TabAlignment alignment)
 {
 	CCoord allTabsWidth;
 	CCoord viewWidth;
