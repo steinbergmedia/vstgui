@@ -3,7 +3,7 @@
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 // Standard Control Objects
 //
-// Version 3.5       $Date: 2006-11-10 17:32:41 $
+// Version 3.5       $Date: 2006-11-19 11:46:22 $
 //
 // Added new objects        : Michael Schmidt          08.97
 // Added new objects        : Yvan Grabit              01.98
@@ -76,8 +76,7 @@ Since version 2.1, when an object uses the transparency for its background and d
 or the transparency area changes during different draws (CMovieBitmap ,...), the background will be false (not updated),
 you have to rewrite the draw function in order to redraw the background and then call the draw of the object.
 */
-CControl::CControl (const CRect& size, CControlListener* listener, long tag,
-					CBitmap *pBackground)
+CControl::CControl (const CRect& size, CControlListener* listener, long tag, CBitmap *pBackground)
 : CView (size)
 , listener (listener)
 , tag (tag)
@@ -194,6 +193,7 @@ bool CControl::checkDefaultValue (long button)
 	return false;
 }
 
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
 //-----------------------------------------------------------------------------
 bool CControl::isDoubleClick ()
 {
@@ -213,17 +213,27 @@ bool CControl::isDoubleClick ()
 	}
 	return true;
 }
+#endif
 
 //------------------------------------------------------------------------
 // COnOffButton
 //------------------------------------------------------------------------
 /*! @class COnOffButton
 Define a button with 2 positions.
-The pixmap includes the 2 subpixmaps (i.e the rectangle used for the display of this button is half-height of the pixmap).
+The bitmap includes the 2 subbitmaps (i.e the rectangle used for the display of this button is half-height of the bitmap).
 When its value changes, the listener is called.
 */
-COnOffButton::COnOffButton (const CRect& size, CControlListener* listener, long tag,
-                            CBitmap* background, long style)
+//------------------------------------------------------------------------
+/**
+ * COnOffButton constructor.
+ * @param size the size of this view
+ * @param listener the listener
+ * @param tag the control tag
+ * @param background bitmap of the on/off button
+ * @param style style (kPostListenerUpdate or kPreListenerUpdate)
+ */
+//------------------------------------------------------------------------
+COnOffButton::COnOffButton (const CRect& size, CControlListener* listener, long tag, CBitmap* background, long style)
 : CControl (size, listener, tag, background)
 , style (style)
 {}
@@ -339,12 +349,24 @@ CMouseEventResult COnOffButton::onMouseDown (CPoint& where, const long& buttons)
 /*! @class CKnob
 Define a knob with a given background and foreground handle.
 The handle describes a circle over the background (between -45deg and +225deg).
-By clicking Alt+Left Mouse the default value is used.
-By clicking Alt+Left Mouse the value changes with a vertical move (version 2.1)
+By clicking alt modifier and left mouse button the default value is used.
+By clicking alt modifier and left mouse button the value changes with a vertical move (version 2.1)
 */
-CKnob::CKnob (const CRect& size, CControlListener* listener, long tag,
-              CBitmap* background, CBitmap *handle, const CPoint &offset)
-:	CControl (size, listener, tag, background), offset (offset), pHandle (handle)
+//------------------------------------------------------------------------
+/**
+ * CKnob constructor.
+ * @param size the size of this view
+ * @param listener the listener
+ * @param tag the control tag
+ * @param background background bitmap
+ * @param handle handle bitmap
+ * @param offset offset of background bitmap
+ */
+//------------------------------------------------------------------------
+CKnob::CKnob (const CRect& size, CControlListener* listener, long tag, CBitmap* background, CBitmap* handle, const CPoint& offset)
+: CControl (size, listener, tag, background)
+, offset (offset)
+, pHandle (handle)
 {
 	if (pHandle)
 	{
@@ -816,8 +838,14 @@ The user can specify its convert function (from float to char) by default the st
 The text-value is centered in the given rect.
 */
 CParamDisplay::CParamDisplay (const CRect& size, CBitmap* background, const long style)
-:	CControl (size, 0, 0, background), stringConvert (0), stringConvert2 (0), string2FloatConvert (0),
-	horiTxtAlign (kCenterText), style (style), bTextTransparencyEnabled (true), bAntialias (true)
+: CControl (size, 0, 0, background)
+, stringConvert (0)
+, stringConvert2 (0)
+, string2FloatConvert (0)
+, horiTxtAlign (kCenterText)
+, style (style)
+, bTextTransparencyEnabled (true)
+, bAntialias (true)
 {
 	backOffset (0, 0);
 
@@ -1047,6 +1075,15 @@ void CParamDisplay::setString2FloatConvert (void (*convert) (char *string, float
 //------------------------------------------------------------------------
 /*! @class CTextLabel
 */
+//------------------------------------------------------------------------
+/**
+ * CTextLabel constructor.
+ * @param size the size of this view
+ * @param txt the initial text as c string (can be UTF-8 encoded if VSTGUI_USES_UTF8 is set)
+ * @param background the background bitmap
+ * @param style the display style (see CParamDisplay for styles)
+ */
+//------------------------------------------------------------------------
 CTextLabel::CTextLabel (const CRect& size, const char* txt, CBitmap* background, const long style)
 : CParamDisplay (size, background, style)
 , text (0)
@@ -1102,12 +1139,26 @@ void CTextLabel::draw (CDrawContext *pContext)
 /*! @class CTextEdit
 Define a rectangle view where a text-value can be displayed and edited with a given font and color.
 The user can specify its convert function (from char to char). The text-value is centered in the given rect.
-A pixmap can be used as background.
+A bitmap can be used as background.
 */
-CTextEdit::CTextEdit (const CRect& size, CControlListener* listener, long tag,
-	const char *txt, CBitmap* background, const long style)
-:	CParamDisplay (size, background, style), platformFontColor (0), platformControl (0),
-	platformFont (0), editConvert (0), editConvert2 (0)
+//------------------------------------------------------------------------
+/**
+ * CTextEdit constructor.
+ * @param size the size of this view
+ * @param listener the listener
+ * @param tag the control tag
+ * @param txt the initial text as c string (can be UTF-8 encoded if VSTGUI_USES_UTF8 is set)
+ * @param background the background bitmap
+ * @param style the display style (see CParamDisplay for styles)
+ */
+//------------------------------------------------------------------------
+CTextEdit::CTextEdit (const CRect& size, CControlListener* listener, long tag, const char *txt, CBitmap* background, const long style)
+: CParamDisplay (size, background, style)
+, platformFontColor (0)
+, platformControl (0)
+, platformFont (0)
+, editConvert (0)
+, editConvert2 (0)
 {
 	this->listener = listener;
 	this->tag = tag;
@@ -1840,6 +1891,7 @@ struct HIMenuScheme
 	COptionMenu* menu;
 	COffscreenContext* offscreenContext;
 	float maxWidth;
+	HIPoint origin;
 };
 
 const EventParamName kEventParamCOptionMenuScheme = 'COMS';
@@ -1872,6 +1924,7 @@ void COptionMenuScheme::registerWithToolbox ()
 			{ kEventClassMenu, kEventMenuCreateFrameView },
 
 			{ kEventClassScrollable, kEventScrollableGetInfo },
+			{ kEventClassScrollable, kEventScrollableScrollTo },
 		};
 
 		HIObjectRegisterSubclass (	gOptionMenuSchemeClassID,
@@ -1922,6 +1975,8 @@ pascal OSStatus COptionMenuScheme::eventHandler (EventHandlerCallRef inCallRef, 
 					GetEventParameter (inEvent, kEventParamHIObjectInstance, typeHIObjectRef, NULL, sizeof (HIObjectRef), NULL, &scheme->hiView);
 					SetEventParameter (inEvent, kEventParamHIObjectInstance, typeVoidPtr, sizeof (HIMenuScheme*), &scheme);
 					scheme->maxWidth = 100;
+					scheme->origin.x = 0;
+					scheme->origin.y = 0;
 					err = noErr;
 					break;
 				}
@@ -1965,15 +2020,15 @@ pascal OSStatus COptionMenuScheme::eventHandler (EventHandlerCallRef inCallRef, 
 				{
 					HIPoint mouseLoc;
 					GetEventParameter (inEvent, kEventParamMouseLocation, typeHIPoint, NULL, sizeof (mouseLoc), NULL, &mouseLoc);
-					ControlPartCode partHit = (ControlPartCode)mouseLoc.y / kItemHeight + 1;
+					ControlPartCode partHit = 0;//(ControlPartCode)mouseLoc.y / kItemHeight + 1;
 					char temp[1024];
 					CPoint size;
-					long yPos = 0;
+					CCoord yPos = -scheme->origin.y;
 					for (long i = 0; i < scheme->menu->getNbEntries (); i++)
 					{
 						scheme->menu->getEntry (i, temp);
 						scheme->scheme->getItemSize (temp, scheme->offscreenContext, size);
-						yPos += (long)size.y;
+						yPos += size.y;
 						if (yPos >= mouseLoc.y)
 						{
 							partHit = i + 1;
@@ -2008,13 +2063,14 @@ pascal OSStatus COptionMenuScheme::eventHandler (EventHandlerCallRef inCallRef, 
 				}
 				case kEventControlGetPartRegion:
 				{
-					HIRect r = { {0, 0}, { 0, 0 }};
+					HIRect r = { {-scheme->origin.x, -scheme->origin.y}, { 0, 0 }};
 					ControlPartCode whichItem;
 					RgnHandle outRegion = NULL;
 					GetEventParameter (inEvent, kEventParamControlPart, typeControlPartCode, NULL, sizeof (whichItem), NULL, &whichItem);
 					GetEventParameter (inEvent, kEventParamControlRegion, typeQDRgnHandle, NULL, sizeof(outRegion), NULL, &outRegion);
 					if (whichItem <= 0)
 					{
+						r.origin.x = r.origin.y = 0.f;
 						r.size.width = scheme->maxWidth;
 						char temp[1024];
 						CPoint size;
@@ -2067,7 +2123,8 @@ pascal OSStatus COptionMenuScheme::eventHandler (EventHandlerCallRef inCallRef, 
 					CDrawContext context (NULL, cgContext, window);
 					char entryText[1024];
 					CPoint size;
-					CRect rect (0, 0);
+					CRect drawingRect (r.origin.x, r.origin.y, r.origin.x + r.size.width, r.origin.y + r.size.height); 
+					CRect rect (-scheme->origin.x, -scheme->origin.y);
 					rect.setHeight (kItemHeight);
 					rect.setWidth (scheme->maxWidth);
 					for (int i = 0; i < scheme->menu->getNbEntries (); i++)
@@ -2095,33 +2152,54 @@ pascal OSStatus COptionMenuScheme::eventHandler (EventHandlerCallRef inCallRef, 
 								offset = 2;
 							}
 							rect.setHeight (size.y+1);
-							context.setClipRect (rect);
+							CRect clip (rect);
+							clip.bound (drawingRect);
+							context.setClipRect (clip);
 							scheme->scheme->drawItem (entryText+offset, i, state, &context, rect);
 							rect.offset (0, size.y);
 						}
 					}
+					err = noErr;
 					break;
 				}
 				case kEventControlGetFrameMetrics:
 				{
+					#if 1
+					HIViewRef contentView = 0;
+					HIViewFindByID (scheme->hiView, kHIViewWindowContentID, &contentView);
+					if (contentView)
+						err = SendEventToEventTargetWithOptions (inEvent, GetControlEventTarget (contentView), kEventTargetDontPropagate);
+					#else
 					err = CallNextEventHandler (inCallRef, inEvent);
 					HIViewFrameMetrics	metrics;
 					GetEventParameter (inEvent, kEventParamControlFrameMetrics, typeControlFrameMetrics, NULL, sizeof (metrics), NULL, &metrics);
-					metrics.top = metrics.bottom = 0;
+					metrics.top = metrics.bottom = metrics.left = metrics.right = 0;
 					SetEventParameter (inEvent, kEventParamControlFrameMetrics, typeControlFrameMetrics, sizeof (metrics), &metrics);
+					#endif
 					break;
 				}
 				case kEventControlOwningWindowChanged:
 				{
+					err = CallNextEventHandler (inCallRef, inEvent);
 					WindowRef newWindow = GetControlOwner (control);
 					HIWindowChangeFeatures (newWindow, 0, kWindowIsOpaque);
-					err = noErr;
 					HIViewRef root = HIViewGetRoot (newWindow);
 					if (root)
 					{
 						HIRect bounds, frame;
 						HIViewGetBounds (root, &bounds);
 						HIViewGetFrame (root, &frame);
+					}
+					break;
+				}
+				case kEventControlAddedSubControl:
+				{
+					HIViewRef subControl = 0;
+					GetEventParameter (inEvent, kEventParamControlSubControl, typeControlRef, NULL, sizeof (subControl), NULL, &subControl);
+					if (subControl && subControl != scheme->hiView)
+					{
+						HIViewRemoveFromSuperview (subControl);
+						CFRelease (subControl);
 					}
 					break;
 				}
@@ -2140,7 +2218,12 @@ pascal OSStatus COptionMenuScheme::eventHandler (EventHandlerCallRef inCallRef, 
 					HIViewFindByID (frameView, kHIViewWindowContentID, &frameView);
 					if (frameView)
 					{
-						EventTypeSpec events [] = { { kEventClassControl, kEventControlDraw }, { kEventClassControl, kEventControlOwningWindowChanged }, { kEventClassControl, kEventControlGetFrameMetrics } };
+						EventTypeSpec events [] = { 
+							{ kEventClassControl, kEventControlDraw }, 
+							{ kEventClassControl, kEventControlOwningWindowChanged }, 
+							{ kEventClassControl, kEventControlGetFrameMetrics },
+							{ kEventClassControl, kEventControlAddedSubControl }
+						};
 						InstallControlEventHandler (frameView, COptionMenuScheme::eventHandler, GetEventTypeCount (events), events, scheme, NULL);
 					}
 					break;
@@ -2152,23 +2235,48 @@ pascal OSStatus COptionMenuScheme::eventHandler (EventHandlerCallRef inCallRef, 
 		{
 			switch (eventKind)
 			{
+				case kEventScrollableScrollTo:
+				{
+					err = CallNextEventHandler (inCallRef, inEvent);
+					GetEventParameter (inEvent, kEventParamOrigin, typeHIPoint, NULL, sizeof (scheme->origin), NULL, &scheme->origin);
+					if (scheme->origin.x < 0.f)
+						scheme->origin.x = 0.f;
+					if (scheme->origin.y < 0.f)
+						scheme->origin.y = 0.f;
+					printf ("x:%d, y:%d\n", (int)scheme->origin.x, (int)scheme->origin.y);
+					break;
+				}
 				case kEventScrollableGetInfo:
 				{
-					HISize size;
+					err = CallNextEventHandler (inCallRef, inEvent);
+
 					HIPoint origin = { 0, 0 };
+					HIRect r = { {0, 0}, { 0, 0 }};
+					r.size.width = scheme->maxWidth;
+					char temp[1024];
+					CCoord maxHeight = 0;
+					CPoint size;
+					for (long i = 0; i < scheme->menu->getNbEntries (); i++)
+					{
+						scheme->menu->getEntry (i, temp);
+						scheme->scheme->getItemSize (temp, scheme->offscreenContext, size);
+						if (!strncmp (temp, kMenuSubMenu, 2))
+							size.x += 16;
+						r.size.height += size.y;
+						if (r.size.width < size.x)
+							r.size.width = size.x;
+						if (maxHeight < size.y)
+							maxHeight = size.y;
+					}
+					scheme->maxWidth = r.size.width;
 
-					size.width = 200;
-					size.height = kItemHeight * (scheme->menu->getNbEntries () + 1);;
+					SetEventParameter(inEvent, kEventParamImageSize, typeHISize, sizeof( size ), &r.size );
+					HIViewGetBounds (scheme->hiView, &r);
+					SetEventParameter(inEvent, kEventParamViewSize, typeHISize, sizeof( size ), &r.size );
+					SetEventParameter(inEvent, kEventParamOrigin, typeHIPoint, sizeof( origin ), &scheme->origin );
 
-					SetEventParameter(inEvent, kEventParamImageSize, typeHISize, sizeof( size ), &size );
-					SetEventParameter(inEvent, kEventParamViewSize, typeHISize, sizeof( size ), &size );
-					SetEventParameter(inEvent, kEventParamOrigin, typeHIPoint, sizeof( origin ), &origin );
-
-					// line size is 1/10th total size
-					size.width /= 10;
-					size.height /= 10;
-
-					SetEventParameter(inEvent, kEventParamLineSize, typeHISize, sizeof( size ), &size );
+					r.size.height = maxHeight;
+					SetEventParameter(inEvent, kEventParamLineSize, typeHISize, sizeof( size ), &r.size );
 
 					err = noErr;
 					break;
@@ -2188,13 +2296,26 @@ pascal OSStatus COptionMenuScheme::eventHandler (EventHandlerCallRef inCallRef, 
 /*! @class COptionMenu
 Define a rectangle view where a text-value can be displayed with a given font and color.
 The text-value is centered in the given rect.
-A pixmap can be used as background, a second pixmap can be used when the option menu is popuped.
+A bitmap can be used as background, a second bitmap can be used when the option menu is popuped.
 There are 2 styles with or without a shadowed text. When a mouse click occurs, a popup menu is displayed.
 */
-COptionMenu::COptionMenu (const CRect& size, CControlListener* listener, long tag,
-                          CBitmap* background, CBitmap* bgWhenClick, const long style)
-:	CParamDisplay (size, background, style), bgWhenClick (bgWhenClick), nbItemsPerColumn (-1),
-	prefixNumbers (0), scheme (0)
+//------------------------------------------------------------------------
+/**
+ * COptionMenu constructor.
+ * @param size the size of this view
+ * @param listener the listener
+ * @param tag the control tag
+ * @param background the background bitmap
+ * @param bgWhenClick the background bitmap if the option menu is displayed
+ * @param style the style of the display (see CParamDisplay for styles)
+ */
+//------------------------------------------------------------------------
+COptionMenu::COptionMenu (const CRect& size, CControlListener* listener, long tag, CBitmap* background, CBitmap* bgWhenClick, const long style)
+: CParamDisplay (size, background, style)
+, bgWhenClick (bgWhenClick)
+, nbItemsPerColumn (-1)
+, prefixNumbers (0)
+, scheme (0)
 {
 	this->listener = listener;
 	this->tag = tag;
@@ -3182,12 +3303,22 @@ void COptionMenu::looseFocus ()
 // CAnimKnob
 //------------------------------------------------------------------------
 /*! @class CAnimKnob
-Such as a CKnob control object, but there is a unique pixmap which contains different views (subpixmaps) of this knob.
-According to the value, a specific subpixmap is displayed. The different subpixmaps are stacked in the pixmap object.
+Such as a CKnob control object, but there is a unique bitmap which contains different views (subbitmaps) of this knob.
+According to the value, a specific subbitmap is displayed. The different subbitmaps are stacked in the bitmap object.
 */
-CAnimKnob::CAnimKnob (const CRect& size, CControlListener* listener, long tag,
-                      CBitmap* background, CPoint &offset)
-: CKnob (size, listener, tag, background, 0, offset), bInverseBitmap (false)
+//------------------------------------------------------------------------
+/**
+ * CAnimKnob constructor.
+ * @param size the size of this view
+ * @param listener the listener
+ * @param tag the control tag
+ * @param background the background bitmap
+ * @param offset unused
+ */
+//------------------------------------------------------------------------
+CAnimKnob::CAnimKnob (const CRect& size, CControlListener* listener, long tag, CBitmap* background, const CPoint &offset)
+: CKnob (size, listener, tag, background, 0, offset)
+, bInverseBitmap (false)
 {
 	heightOfOneImage = size.height ();
 	subPixmaps = (short)(background->getHeight () / heightOfOneImage);
@@ -3195,12 +3326,22 @@ CAnimKnob::CAnimKnob (const CRect& size, CControlListener* listener, long tag,
 }
 
 //------------------------------------------------------------------------
-CAnimKnob::CAnimKnob (const CRect& size, CControlListener* listener, long tag,
-                      long subPixmaps,         // number of subPixmaps
-                      CCoord heightOfOneImage,   // height of one image in pixel
-                      CBitmap* background, CPoint &offset)
-: CKnob (size, listener, tag, background, 0, offset), 
-   subPixmaps (subPixmaps), heightOfOneImage (heightOfOneImage), bInverseBitmap (false)
+/**
+ * CAnimKnob constructor.
+ * @param size the size of this view
+ * @param listener the listener
+ * @param tag the control tag
+ * @param subPixmaps number of sub bitmaps in background
+ * @param heightOfOneImage the height of one sub bitmap
+ * @param background the background bitmap
+ * @param offset unused
+ */
+//------------------------------------------------------------------------
+CAnimKnob::CAnimKnob (const CRect& size, CControlListener* listener, long tag, long subPixmaps, CCoord heightOfOneImage, CBitmap* background, const CPoint &offset)
+: CKnob (size, listener, tag, background, 0, offset)
+, subPixmaps (subPixmaps)
+, heightOfOneImage (heightOfOneImage)
+, bInverseBitmap (false)
 {
 	inset = 0;
 }
@@ -3262,12 +3403,22 @@ void CAnimKnob::draw (CDrawContext *pContext)
 /*! @class CVerticalSwitch
 Define a switch with a given number of positions, the current position is defined by the position
 of the last click on this object (the object is divided in its height by the number of position).
-Each position has its subpixmap, each subpixmap is stacked in the given handle pixmap.
+Each position has its subbitmap, each subbitmap is stacked in the given handle bitmap.
 By clicking Alt+Left Mouse the default value is used.
 */
-CVerticalSwitch::CVerticalSwitch (const CRect& size, CControlListener* listener, long tag,
-                                  CBitmap* background, CPoint &offset)
-: CControl (size, listener, tag, background), offset (offset)
+//------------------------------------------------------------------------
+/**
+ * CVerticalSwitch constructor.
+ * @param size the size of this view
+ * @param listener the listener
+ * @param tag the control tag
+ * @param background the switch bitmap
+ * @param offset unused 
+ */
+//------------------------------------------------------------------------
+CVerticalSwitch::CVerticalSwitch (const CRect& size, CControlListener* listener, long tag, CBitmap* background, const CPoint &offset)
+: CControl (size, listener, tag, background)
+, offset (offset)
 {
 	heightOfOneImage = size.height ();
 	subPixmaps = (long)(background->getHeight () / heightOfOneImage);
@@ -3277,14 +3428,24 @@ CVerticalSwitch::CVerticalSwitch (const CRect& size, CControlListener* listener,
 }
 
 //------------------------------------------------------------------------
-CVerticalSwitch::CVerticalSwitch (const CRect& size, CControlListener* listener, long tag,
-                                  long subPixmaps,       // number of subPixmaps
-                                  CCoord heightOfOneImage, // height of one image in pixel
-                                  long iMaxPositions,
-                                  CBitmap* background, CPoint &offset)
-: CControl (size, listener, tag, background), offset (offset),
-	subPixmaps (subPixmaps), heightOfOneImage (heightOfOneImage),
-	iMaxPositions (iMaxPositions)
+/**
+ * CVerticalSwitch constructor.
+ * @param size the size of this view
+ * @param listener the listener
+ * @param tag the control tag
+ * @param subPixmaps number of sub bitmaps in background
+ * @param heightOfOneImage height of one sub bitmap
+ * @param iMaxPositions TODO
+ * @param background the switch bitmap
+ * @param offset unused
+ */
+//------------------------------------------------------------------------
+CVerticalSwitch::CVerticalSwitch (const CRect& size, CControlListener* listener, long tag, long subPixmaps, CCoord heightOfOneImage, long iMaxPositions, CBitmap* background, const CPoint &offset)
+: CControl (size, listener, tag, background)
+, offset (offset)
+, subPixmaps (subPixmaps)
+, heightOfOneImage (heightOfOneImage)
+, iMaxPositions (iMaxPositions)
 {
 	setDefaultValue (0.f);
 }
@@ -3407,9 +3568,19 @@ CMouseEventResult CVerticalSwitch::onMouseMoved (CPoint& where, const long& butt
 /*! @class CHorizontalSwitch
 Same as the CVerticalSwitch but horizontal.
 */
-CHorizontalSwitch::CHorizontalSwitch (const CRect& size, CControlListener* listener, long tag,
-								  CBitmap* background, CPoint &offset)
-: CControl (size, listener, tag, background), offset (offset)
+//------------------------------------------------------------------------
+/**
+ * CHorizontalSwitch constructor.
+ * @param size the size of this view
+ * @param listener the listener
+ * @param tag the control tag
+ * @param background the bitmap of the switch
+ * @param offset unused
+ */
+//------------------------------------------------------------------------
+CHorizontalSwitch::CHorizontalSwitch (const CRect& size, CControlListener* listener, long tag, CBitmap* background, const CPoint &offset)
+: CControl (size, listener, tag, background)
+, offset (offset)
 {
 	heightOfOneImage = size.width ();
 	subPixmaps = (long)(background->getWidth () / heightOfOneImage);
@@ -3419,11 +3590,19 @@ CHorizontalSwitch::CHorizontalSwitch (const CRect& size, CControlListener* liste
 }
 
 //------------------------------------------------------------------------
-CHorizontalSwitch::CHorizontalSwitch (const CRect& size, CControlListener* listener, long tag,
-                                  long subPixmaps,   // number of subPixmaps
-                                  CCoord heightOfOneImage, // height of one image in pixel
-                                  long iMaxPositions,
-                                  CBitmap* background, CPoint &offset)
+/**
+ * CHorizontalSwitch constructor.
+ * @param size the size of this view
+ * @param listener the listener
+ * @param tag the control tag
+ * @param subPixmaps number of sub bitmaps in background
+ * @param heightOfOneImage height of one sub bitmap
+ * @param iMaxPositions TODO
+ * @param background the switch bitmap
+ * @param offset unused
+ */
+//------------------------------------------------------------------------
+CHorizontalSwitch::CHorizontalSwitch (const CRect& size, CControlListener* listener, long tag, long subPixmaps, CCoord heightOfOneImage, long iMaxPositions, CBitmap* background, const CPoint &offset)
 : CControl (size, listener, tag, background)
 , offset (offset)
 , subPixmaps (subPixmaps)
@@ -3550,24 +3729,46 @@ CMouseEventResult CHorizontalSwitch::onMouseMoved (CPoint& where, const long& bu
 // CRockerSwitch
 //------------------------------------------------------------------------
 /*! @class CRockerSwitch
-Define a rocker switch with 3 states using 3 subpixmaps.
-One click on its leftside, then the first subpixmap is displayed.
-One click on its rightside, then the third subpixmap is displayed.
-When the mouse button is relaxed, the second subpixmap is framed.
-*/
-CRockerSwitch::CRockerSwitch (const CRect& size, CControlListener* listener, long tag,              // identifier tag (ID)
-                              CBitmap* background, CPoint &offset, const long style)
-:	CControl (size, listener, tag, background), offset (offset), style (style)
+Define a rocker switch with 3 states using 3 subbitmaps.
+One click on its leftside, then the first subbitmap is displayed.
+One click on its rightside, then the third subbitmap is displayed.
+When the mouse button is relaxed, the second subbitmap is framed. */
+//------------------------------------------------------------------------
+/**
+ * CRockerSwitch constructor.
+ * @param size the size of this view
+ * @param listener the listener
+ * @param tag the control tag
+ * @param background bitmap with 3 stacked images of the rocker switch
+ * @param offset
+ * @param style
+ */
+//------------------------------------------------------------------------
+CRockerSwitch::CRockerSwitch (const CRect& size, CControlListener* listener, long tag, CBitmap* background, const CPoint &offset, const long style)
+: CControl (size, listener, tag, background)
+, offset (offset)
+, style (style)
 {
 	heightOfOneImage = size.width ();
 }
 
 //------------------------------------------------------------------------
-CRockerSwitch::CRockerSwitch (const CRect& size, CControlListener* listener, long tag,              // identifier tag (ID)
-                              CCoord heightOfOneImage, // height of one image in pixel
-                              CBitmap* background, CPoint &offset, const long style)
-:	CControl (size, listener, tag, background), offset (offset), 
-	heightOfOneImage (heightOfOneImage), style (style)
+/**
+ * CRockerSwitch constructor.
+ * @param size the size of this view
+ * @param listener the listener
+ * @param tag the control tag
+ * @param heightOfOneImage height of one image in pixel
+ * @param background bitmap with 3 stacked images of the rocker switch
+ * @param offset
+ * @param style
+ */
+//------------------------------------------------------------------------
+CRockerSwitch::CRockerSwitch (const CRect& size, CControlListener* listener, long tag, CCoord heightOfOneImage, CBitmap* background, const CPoint &offset, const long style)
+: CControl (size, listener, tag, background)
+, offset (offset)
+, heightOfOneImage (heightOfOneImage)
+, style (style)
 {}
 
 //------------------------------------------------------------------------
@@ -3768,25 +3969,42 @@ bool CRockerSwitch::onWheel (const CPoint& where, const float &distance, const l
 //------------------------------------------------------------------------
 // CMovieBitmap
 //------------------------------------------------------------------------
-/*! @class CMovieBitmap
-A movie pixmap allows to display different subpixmaps according to its current value.
-*/
-CMovieBitmap::CMovieBitmap (const CRect& size, CControlListener* listener, long tag,
-                            CBitmap* background, CPoint &offset)
-  :	CControl (size, listener, tag, background), offset (offset),
-		subPixmaps (subPixmaps), heightOfOneImage (heightOfOneImage)
+/**
+ * CMovieBitmap constructor.
+ * @param size the size of this view
+ * @param listener the listener
+ * @param tag the control tag
+ * @param background bitmap
+ * @param offset
+ */
+//------------------------------------------------------------------------
+CMovieBitmap::CMovieBitmap (const CRect& size, CControlListener* listener, long tag, CBitmap* background, const CPoint &offset)
+: CControl (size, listener, tag, background)
+, offset (offset)
+, subPixmaps (subPixmaps)
+, heightOfOneImage (heightOfOneImage)
 {
 	heightOfOneImage = size.height ();
 	subPixmaps = (long)(background->getHeight () / heightOfOneImage);
 }
 
 //------------------------------------------------------------------------
-CMovieBitmap::CMovieBitmap (const CRect& size, CControlListener* listener, long tag,
-                            long subPixmaps,        // number of subPixmaps
-                            CCoord heightOfOneImage,  // height of one image in pixel
-                            CBitmap* background, CPoint &offset)
-  :	CControl (size, listener, tag, background), offset (offset),
-		subPixmaps (subPixmaps), heightOfOneImage (heightOfOneImage)
+/**
+ * CMovieBitmap constructor.
+ * @param size the size of this view
+ * @param listener the listener
+ * @param tag the control tag
+ * @param subPixmaps number of subPixmaps
+ * @param heightOfOneImage height of one image in pixel
+ * @param background bitmap
+ * @param offset
+ */
+//------------------------------------------------------------------------
+CMovieBitmap::CMovieBitmap (const CRect& size, CControlListener* listener, long tag, long subPixmaps, CCoord heightOfOneImage, CBitmap* background, const CPoint &offset)
+: CControl (size, listener, tag, background)
+, offset (offset)
+, subPixmaps (subPixmaps)
+, heightOfOneImage (heightOfOneImage)
 {}
 
 //------------------------------------------------------------------------
@@ -3818,22 +4036,37 @@ void CMovieBitmap::draw (CDrawContext *pContext)
 //------------------------------------------------------------------------
 // CMovieButton
 //------------------------------------------------------------------------
-/*! @class CMovieButton
-A movie button is a bi-states button with 2 subpixmaps. These subpixmaps are stacked in the pixmap.
-*/
-CMovieButton::CMovieButton (const CRect& size, CControlListener* listener, long tag,              // identifier tag (ID)
-                            CBitmap* background, CPoint &offset)
+/**
+ * CMovieButton constructor.
+ * @param size the size of this view
+ * @param listener the listener
+ * @param tag the control tag
+ * @param background bitmap
+ * @param offset
+ */
+//------------------------------------------------------------------------
+CMovieButton::CMovieButton (const CRect& size, CControlListener* listener, long tag, CBitmap* background, const CPoint &offset)
 : CControl (size, listener, tag, background), offset (offset), buttonState (value)
 {
 	heightOfOneImage = size.height ();
 }
 
 //------------------------------------------------------------------------
-CMovieButton::CMovieButton (const CRect& size, CControlListener* listener, long tag,
-                            CCoord heightOfOneImage, // height of one image in pixel
-                            CBitmap* background, CPoint &offset)
-	:	CControl (size, listener, tag, background), offset (offset),
-		heightOfOneImage (heightOfOneImage), buttonState (value)
+/**
+ * CMovieButton constructor.
+ * @param size the size of this view
+ * @param listener the listener
+ * @param tag the control tag
+ * @param heightOfOneImage height of one image in pixel
+ * @param background bitmap
+ * @param offset
+ */
+//------------------------------------------------------------------------
+CMovieButton::CMovieButton (const CRect& size, CControlListener* listener, long tag, CCoord heightOfOneImage, CBitmap* background, const CPoint &offset)
+: CControl (size, listener, tag, background)
+, offset (offset)
+, heightOfOneImage (heightOfOneImage)
+, buttonState (value)
 {}
 
 //------------------------------------------------------------------------
@@ -3967,13 +4200,24 @@ CMouseEventResult CMovieButton::onMouseMoved (CPoint& where, const long& buttons
 // CAutoAnimation
 //------------------------------------------------------------------------
 /*! @class CAutoAnimation
-An auto-animation control contains a given number of subpixmap which can be displayed in loop.
-Two functions allows to get the previous or the next subpixmap (these functions increase or decrease the current value of this control).
+An auto-animation control contains a given number of subbitmap which can be displayed in loop.
+Two functions allows to get the previous or the next subbitmap (these functions increase or decrease the current value of this control).
 */
 // displays bitmaps within a (child-) window
-CAutoAnimation::CAutoAnimation (const CRect& size, CControlListener* listener, long tag,
-                                CBitmap* background, CPoint &offset)
-: CControl (size, listener, tag, background), offset (offset), bWindowOpened (false)
+//------------------------------------------------------------------------
+/**
+ * CAutoAnimation constructor.
+ * @param size the size of this view
+ * @param listener the listener
+ * @param tag the control tag
+ * @param background the bitmap
+ * @param offset unused
+ */
+//------------------------------------------------------------------------
+CAutoAnimation::CAutoAnimation (const CRect& size, CControlListener* listener, long tag, CBitmap* background, const CPoint& offset)
+: CControl (size, listener, tag, background)
+, offset (offset)
+, bWindowOpened (false)
 {
 	heightOfOneImage = size.height ();
 	subPixmaps = (long)(background->getHeight () / heightOfOneImage);
@@ -3982,10 +4226,18 @@ CAutoAnimation::CAutoAnimation (const CRect& size, CControlListener* listener, l
 }
 
 //------------------------------------------------------------------------
-CAutoAnimation::CAutoAnimation (const CRect& size, CControlListener* listener, long tag,
-                                long subPixmaps,	 // number of subPixmaps...
-                                CCoord heightOfOneImage, // height of one image in pixel
-                                CBitmap* background, CPoint &offset)
+/**
+ * CAutoAnimation constructor.
+ * @param size the size of this view
+ * @param listener the listener
+ * @param tag the control tag
+ * @param subPixmaps number of sub bitmaps in background
+ * @param heightOfOneImage height of one sub bitmap
+ * @param background the bitmap
+ * @param offset unused
+ */
+//------------------------------------------------------------------------
+CAutoAnimation::CAutoAnimation (const CRect& size, CControlListener* listener, long tag, long subPixmaps, CCoord heightOfOneImage, CBitmap* background, const CPoint& offset)
 : CControl (size, listener, tag, background)
 , offset (offset)
 , subPixmaps (subPixmaps)
@@ -4117,16 +4369,24 @@ void CAutoAnimation::previousPixmap ()
 /*! @class CSlider
 Define a slider with a given background and handle.
 The range of variation of the handle should be defined.
-By default the handler is drawn with transparency (white color).
+By default the handler is drawn with transparency.
 By clicking Alt+Left Mouse the default value is used.
 */
-CSlider::CSlider (const CRect &rect, CControlListener* listener, long tag,
-                  long      iMinPos, // min position in pixel
-                  long      iMaxPos, // max position in pixel
-                  CBitmap  *handle,  // bitmap of slider
-                  CBitmap  *background, // bitmap of background
-                  CPoint   &offset,  // offset in the background
-                  const long style)  // style (kBottom,kRight,kTop,kLeft,kHorizontal,kVertical)
+//------------------------------------------------------------------------
+/**
+ * CSlider constructor.
+ * @param rect the size of this view
+ * @param listener the listener
+ * @param tag the control tag
+ * @param iMinPos min position in pixel
+ * @param iMaxPos max position in pixel
+ * @param handle bitmap of the slider
+ * @param background bitmap of the background
+ * @param offset offset of the background
+ * @param style style (kBottom,kRight,kTop,kLeft,kHorizontal,kVertical)
+ */
+//------------------------------------------------------------------------
+CSlider::CSlider (const CRect &rect, CControlListener* listener, long tag, long iMinPos, long iMaxPos, CBitmap* handle, CBitmap* background, const CPoint& offset, const long style)
 : CControl (rect, listener, tag, background)
 , offset (offset)
 , pHandle (handle)
@@ -4171,13 +4431,20 @@ CSlider::CSlider (const CRect &rect, CControlListener* listener, long tag,
 }
 
 //------------------------------------------------------------------------
-CSlider::CSlider (const CRect &rect, CControlListener* listener, long tag,
-                  CPoint   &offsetHandle,    // handle offset
-                  long     _rangeHandle, // size of handle range
-                  CBitmap  *handle,     // bitmap of slider
-                  CBitmap  *background, // bitmap of background
-                  CPoint   &offset,     // offset in the background
-                  const long style)     // style (kBottom,kRight,kTop,kLeft,kHorizontal,kVertical)
+/**
+ * CSlider constructor.
+ * @param rect the size of this view
+ * @param listener the listener
+ * @param tag the control tag
+ * @param offsetHandle handle offset
+ * @param _rangeHandle size of handle range
+ * @param handle bitmap of the slider
+ * @param background bitmap of the background
+ * @param offset offset of the background
+ * @param style style (kBottom,kRight,kTop,kLeft,kHorizontal,kVertical)
+ */
+//------------------------------------------------------------------------
+CSlider::CSlider (const CRect &rect, CControlListener* listener, long tag, const CPoint& offsetHandle, long _rangeHandle, CBitmap* handle, CBitmap* background, const CPoint& offset, const long style)
 : CControl (rect, listener, tag, background)
 , offset (offset)
 , pHandle (handle) 
@@ -4221,7 +4488,7 @@ CSlider::~CSlider ()
 }
 
 //------------------------------------------------------------------------
-void CSlider::setOffsetHandle (CPoint &val)
+void CSlider::setOffsetHandle (const CPoint &val)
 {
 	offsetHandle = val;
 
@@ -4608,25 +4875,40 @@ void CSlider::setHandle (CBitmap *_pHandle)
 /*! @class CVerticalSlider
 This is the vertical slider. See CSlider.
 */
-CVerticalSlider::CVerticalSlider (const CRect &rect, CControlListener* listener, long tag,
-                                  long      iMinPos, // min position in pixel
-                                  long      iMaxPos, // max position in pixel
-                                  CBitmap  *handle,  // bitmap of slider
-                                  CBitmap  *background, // bitmap of background
-                                  CPoint   &offset,  // offset in the background
-                                  const long style)  // style (kLeft, kRight)
-  :	CSlider (rect, listener, tag, iMinPos, iMaxPos, handle, background, offset, style|kVertical)
+//------------------------------------------------------------------------
+/**
+ * CVerticalSlider constructor.
+ * @param rect the size of this view
+ * @param listener the listener
+ * @param tag the control tag
+ * @param iMinPos min position in pixel
+ * @param iMaxPos max position in pixel
+ * @param handle bitmap of the slider
+ * @param background bitmap of the background
+ * @param offset offset of the background
+ * @param style style (kLeft, kRight)
+ */
+//------------------------------------------------------------------------
+CVerticalSlider::CVerticalSlider (const CRect &rect, CControlListener* listener, long tag, long iMinPos, long iMaxPos, CBitmap* handle, CBitmap* background, const CPoint& offset, const long style)
+: CSlider (rect, listener, tag, iMinPos, iMaxPos, handle, background, offset, style|kVertical)
 {}
 
 //------------------------------------------------------------------------
-CVerticalSlider::CVerticalSlider (const CRect &rect, CControlListener* listener, long tag,
-                          CPoint   &offsetHandle,    // handle offset
-                          long     rangeHandle, // size of handle range
-                          CBitmap  *handle,     // bitmap of slider
-                          CBitmap  *background, // bitmap of background
-                          CPoint   &offset,     // offset in the background
-                          const long style)     // style (kLeft, kRight)
-:	CSlider (rect, listener, tag, offsetHandle, rangeHandle, handle, background, offset, style|kVertical)
+/**
+ * CVerticalSlider constructor.
+ * @param rect the size of this view
+ * @param listener the listener
+ * @param tag the control tag
+ * @param offsetHandle handle offset
+ * @param rangeHandle size of handle range
+ * @param handle bitmap of the slider
+ * @param background bitmap of the background
+ * @param offset offset of the background
+ * @param style style (kLeft, kRight)
+ */
+//------------------------------------------------------------------------
+CVerticalSlider::CVerticalSlider (const CRect &rect, CControlListener* listener, long tag, const CPoint& offsetHandle, long rangeHandle, CBitmap* handle, CBitmap* background, const CPoint& offset, const long style)
+: CSlider (rect, listener, tag, offsetHandle, rangeHandle, handle, background, offset, style|kVertical)
 {}
 
 
@@ -4636,25 +4918,40 @@ CVerticalSlider::CVerticalSlider (const CRect &rect, CControlListener* listener,
 /*! @class CHorizontalSlider
 This is the horizontal slider. See CSlider.
 */
-CHorizontalSlider::CHorizontalSlider (const CRect &rect, CControlListener* listener, long tag,
-                                  long      iMinPos, // min Y position in pixel
-                                  long      iMaxPos, // max Y position in pixel
-                                  CBitmap  *handle,  // bitmap of slider
-                                  CBitmap  *background, // bitmap of background
-                                  CPoint   &offset,  // offset in the background
-                                  const long style)  // style (kLeft, kRight)
-  :	CSlider (rect, listener, tag, iMinPos, iMaxPos, handle, background, offset, style|kHorizontal)
+//------------------------------------------------------------------------
+/**
+ * CHorizontalSlider constructor.
+ * @param rect the size of this view
+ * @param listener the listener
+ * @param tag the control tag
+ * @param iMinPos min position in pixel
+ * @param iMaxPos max position in pixel
+ * @param handle bitmap of the slider
+ * @param background bitmap of the background
+ * @param offset offset of the background
+ * @param style style (kLeft, kRight)
+ */
+//------------------------------------------------------------------------
+CHorizontalSlider::CHorizontalSlider (const CRect &rect, CControlListener* listener, long tag, long iMinPos, long iMaxPos, CBitmap* handle, CBitmap* background, const CPoint& offset, const long style)
+: CSlider (rect, listener, tag, iMinPos, iMaxPos, handle, background, offset, style|kHorizontal)
 {}
 
 //------------------------------------------------------------------------
-CHorizontalSlider::CHorizontalSlider (const CRect &rect, CControlListener* listener, long tag,
-                          CPoint   &offsetHandle,    // handle offset
-                          long     rangeHandle, // size of handle range
-                          CBitmap  *handle,     // bitmap of slider
-                          CBitmap  *background, // bitmap of background
-                          CPoint   &offset,     // offset in the background
-                          const long style)     // style (kLeft, kRight)
-:	CSlider (rect, listener, tag, offsetHandle, rangeHandle, handle, background, offset, style|kHorizontal)
+/**
+ * CHorizontalSlider constructor.
+ * @param rect the size of this view
+ * @param listener the listener
+ * @param tag the control tag
+ * @param offsetHandle handle offset
+ * @param rangeHandle size of handle range
+ * @param handle bitmap of the slider
+ * @param background bitmap of the background
+ * @param offset offset of the background
+ * @param style style (kLeft, kRight)
+ */
+//------------------------------------------------------------------------
+CHorizontalSlider::CHorizontalSlider (const CRect &rect, CControlListener* listener, long tag, const CPoint& offsetHandle, long rangeHandle, CBitmap* handle, CBitmap* background, const CPoint& offset, const long style)
+: CSlider (rect, listener, tag, offsetHandle, rangeHandle, handle, background, offset, style|kHorizontal)
 {}
 
 
@@ -4663,20 +4960,28 @@ CHorizontalSlider::CHorizontalSlider (const CRect &rect, CControlListener* liste
 //------------------------------------------------------------------------
 /*! @class CSpecialDigit
 Can be used to display a counter with maximum 7 digits.
-All digit have the same size and are stacked in height in the pixmap.
+All digit have the same size and are stacked in height in the bitmap.
 */
-CSpecialDigit::CSpecialDigit (const CRect& size,
-                              CControlListener* listener,
-                              long      tag,        // tag identifier
-                              long     dwPos,      // actual value
-                              long      iNumbers,   // amount of numbers (max 7)
-                              long      *xpos,      // array of all XPOS
-                              long      *ypos,      // array of all YPOS
-                              long      width,      // width of ONE number
-                              long      height,     // height of ONE number
-                              CBitmap  *background)    // bitmap numbers
-  :	CControl (size, listener, tag, background),
-		iNumbers (iNumbers), width (width), height (height)
+//------------------------------------------------------------------------
+/**
+ * CSpecialDigit constructor.
+ * @param size the size of this view
+ * @param listener the listener
+ * @param tag the control tag
+ * @param dwPos actual value
+ * @param iNumbers amount of numbers (max 7)
+ * @param xpos array of all X positions, can be NULL
+ * @param ypos array of all Y positions, can be NULL
+ * @param width width of one number in the bitmap
+ * @param height height of one number in the bitmap
+ * @param background bitmap
+ */
+//------------------------------------------------------------------------
+CSpecialDigit::CSpecialDigit (const CRect& size, CControlListener* listener, long tag, long dwPos, long iNumbers, long* xpos, long* ypos, long width, long height, CBitmap* background)
+: CControl (size, listener, tag, background)
+, iNumbers (iNumbers)
+, width (width)
+, height (height)
 {
 	setValue ((float)dwPos);          // actual value
 
@@ -4695,7 +5000,7 @@ CSpecialDigit::CSpecialDigit (const CRect& size,
 			x += numw;
 		}
 	} 
-	else 
+	else if (xpos && ypos)
 	{
 		// store coordinates of x/y pos of each digit
 		for (long i = 0; i < iNumbers; i++)
@@ -4780,23 +5085,42 @@ float CSpecialDigit::getNormValue () const
 // CKickButton
 //------------------------------------------------------------------------
 /*! @class CKickButton
-Define a button with 2 states using 2 subpixmaps.
-One click on it, then the second subpixmap is displayed.
-When the mouse button is relaxed, the first subpixmap is framed.
+Define a button with 2 states using 2 subbitmaps.
+One click on it, then the second subbitmap is displayed.
+When the mouse button is relaxed, the first subbitmap is framed.
 */
-CKickButton::CKickButton (const CRect& size, CControlListener* listener, long tag,
-                          CBitmap* background, CPoint &offset)
-:	CControl (size, listener, tag, background), offset (offset)
+//------------------------------------------------------------------------
+/**
+ * CKickButton constructor.
+ * @param size the size of this view
+ * @param listener the listener
+ * @param tag the control tag
+ * @param background the bitmap
+ * @param offset unused
+ */
+//------------------------------------------------------------------------
+CKickButton::CKickButton (const CRect& size, CControlListener* listener, long tag, CBitmap* background, const CPoint& offset)
+: CControl (size, listener, tag, background)
+, offset (offset)
 {
 	heightOfOneImage = size.height ();
 }
 
 //------------------------------------------------------------------------
-CKickButton::CKickButton (const CRect& size, CControlListener* listener, long tag,
-                          CCoord heightOfOneImage, // height of one image in pixel
-                          CBitmap* background, CPoint &offset)
-:	CControl (size, listener, tag, background), offset (offset), 
-	heightOfOneImage (heightOfOneImage)
+/**
+ * CKickButton constructor.
+ * @param size the size of this view
+ * @param listener the listener
+ * @param tag the control tag
+ * @param heightOfOneImage height of one sub bitmap in background
+ * @param background the bitmap
+ * @param offset unused
+ */
+//------------------------------------------------------------------------
+CKickButton::CKickButton (const CRect& size, CControlListener* listener, long tag, CCoord heightOfOneImage, CBitmap* background, const CPoint& offset)
+: CControl (size, listener, tag, background)
+, offset (offset)
+, heightOfOneImage (heightOfOneImage)
 {}
 
 //------------------------------------------------------------------------
@@ -4959,15 +5283,21 @@ protected:
 // CSplashScreen
 //------------------------------------------------------------------------
 /*! @class CSplashScreen
-One click on its activated region and its pixmap is displayed, in this state the other control can not be used,
-an another click on the displayed area reinstalls the normal frame.
-This can be used to display a help view over the other views.
+One click on its activated region and its bitmap or view is displayed, in this state the other controls can not be used,
+and another click on the displayed area will leave the modal mode.
 */
-// one click draw its pixmap, an another click redraw its parent
-CSplashScreen::CSplashScreen (const CRect& size, CControlListener* listener, long tag,
-                              CBitmap* background,
-                              CRect&   toDisplay,
-                              CPoint&  offset)
+//------------------------------------------------------------------------
+/**
+ * CSplashScreen constructor.
+ * @param size the size of this view
+ * @param listener the listener
+ * @param tag the control tag
+ * @param background the bitmap
+ * @param toDisplay the region where to display the bitmap
+ * @param offset offset of background bitmap
+ */
+//------------------------------------------------------------------------
+CSplashScreen::CSplashScreen (const CRect& size, CControlListener* listener, long tag, CBitmap* background, CRect& toDisplay, const CPoint& offset)
 : CControl (size, listener, tag, background)
 , toDisplay (toDisplay)
 , offset (offset)
@@ -4976,6 +5306,14 @@ CSplashScreen::CSplashScreen (const CRect& size, CControlListener* listener, lon
 	modalView = new CDefaultSplashScreenView (toDisplay, this, background, offset);
 }
 
+//------------------------------------------------------------------------
+/**
+ * CSplashScreen constructor.
+ * @param size the size of this view
+ * @param listener the listener
+ * @param tag the control tag
+ * @param splashView the view to show
+ */
 //------------------------------------------------------------------------
 CSplashScreen::CSplashScreen (const CRect& size, CControlListener* listener, long tag, CView* splashView)
 : CControl (size, listener, tag)
@@ -5084,15 +5422,27 @@ void CSplashScreen::unSplash ()
 //------------------------------------------------------------------------
 // CVuMeter
 //------------------------------------------------------------------------
-CVuMeter::CVuMeter (const CRect& size, CBitmap* onBitmap, CBitmap* offBitmap,
-                    long nbLed, const long style)
-	: CControl (size, 0, 0),
-	  onBitmap (onBitmap), offBitmap (offBitmap), pOScreen (0),
-	  nbLed (nbLed), style (style), bUseOffscreen (false)
+/**
+ * CVuMeter constructor.
+ * @param size the size of this view
+ * @param onBitmap TODO
+ * @param offBitmap TODO
+ * @param nbLed TODO
+ * @param style kHorizontal or kVertical
+ */
+//------------------------------------------------------------------------
+CVuMeter::CVuMeter (const CRect& size, CBitmap* onBitmap, CBitmap* offBitmap, long nbLed, const long style)
+: CControl (size, 0, 0)
+, onBitmap (onBitmap)
+, offBitmap (offBitmap)
+, pOScreen (0)
+, nbLed (nbLed)
+, style (style)
+, bUseOffscreen (false)
 {
 	setDecreaseStepValue (0.1f);
 
-#if WINDOWS && !USE_LIBPNG
+#if (WINDOWS && !USE_LIBPNG && !GDIPLUS)
 	setUseOffscreen (true);
 #endif
 	

@@ -50,36 +50,46 @@ class CTabView : public CViewContainer, public CControlListener
 //-----------------------------------------------------------------------------
 {
 public:
-	CTabView (const CRect& size, CFrame* parent, CBitmap* tabBitmap, CBitmap* background = 0, long tabPosition = kPositionTop, long style = 0);
-	CTabView (const CRect& size, CFrame* parent, const CRect& tabSize, CBitmap* background = 0, long tabPosition = kPositionTop, long style = 0);
-	virtual ~CTabView ();
-	
-	virtual bool addTab (CView* view, const char* name = 0, CBitmap* tabBitmap = 0);
-	virtual bool removeTab (CView* view);
-	virtual bool removeAllTabs ();
-	virtual bool selectTab (long index);
-	virtual long getCurrentSelectedTab () const { return currentTab; }
-
-	virtual CRect& getTabViewSize (CRect& rect) const;
-
-	virtual void setTabFontStyle (const CFontRef font, long fontSize = 12, CColor selectedColor = kBlackCColor, CColor deselectedColor = kWhiteCColor); ///< call this after the tabs are added. Tabs added after this call will have the default font style.
-
-	virtual void alignTabs (long alignment = kAlignCenter); ///< call this after you have added all tabs
-
-	enum {
+	enum TabPosition {
 		kPositionLeft = 0,
 		kPositionRight,
 		kPositionTop,
 		kPositionBottom,
 	};
 
-	enum {
+	enum TabAlignment {
 		kAlignCenter = 0,
 		kAlignLeft,
 		kAlignRight,
 		kAlignTop = kAlignLeft,
 		kAlignBottom = kAlignRight
 	};
+
+	//-----------------------------------------------------------------------------
+	/// \name Tab View Constructors
+	//-----------------------------------------------------------------------------
+	//@{
+	CTabView (const CRect& size, CFrame* parent, CBitmap* tabBitmap, CBitmap* background = 0, TabPosition tabPosition = kPositionTop, long style = 0);
+	CTabView (const CRect& size, CFrame* parent, const CRect& tabSize, CBitmap* background = 0, TabPosition tabPosition = kPositionTop, long style = 0);
+	//@}
+	virtual ~CTabView ();
+	
+	//-----------------------------------------------------------------------------
+	/// \name Tab View Functions
+	//-----------------------------------------------------------------------------
+	//@{
+	virtual bool addTab (CView* view, const char* name = 0, CBitmap* tabBitmap = 0);	///< add a tab
+	virtual bool removeTab (CView* view);	///< remove a tab
+	virtual bool removeAllTabs ();			///< remove all tabs
+	virtual bool selectTab (long index);	///< select tab at index
+	virtual long getCurrentSelectedTab () const { return currentTab; } ///< get current index of selected tab
+
+	virtual CRect& getTabViewSize (CRect& rect) const;	///< the the size of one tab
+
+	virtual void setTabFontStyle (const CFontRef font, long fontSize = 12, CColor selectedColor = kBlackCColor, CColor deselectedColor = kWhiteCColor); ///< call this after the tabs are added. Tabs added after this call will have the default font style.
+
+	virtual void alignTabs (TabAlignment alignment = kAlignCenter); ///< call this after you have added all tabs to align them according to alignment
+	//@}
 
 	virtual void valueChanged (CControl *pControl);
 //-----------------------------------------------------------------------------
@@ -89,7 +99,7 @@ protected:
 
 	long numberOfChilds;
 	long currentTab;
-	long tabPosition;
+	TabPosition tabPosition;
 	long style;
 	CRect tabSize;
 	CBitmap* tabBitmap;

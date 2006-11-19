@@ -23,7 +23,7 @@ In this version there are five new methods :
 For convenience the old method is still working, but should be replaced with the ones above.
 
 @subsection new_views New included views
-There are some new views included.
+
 - VSTGUI::CDataBrowser	(new in 3.5)
 - VSTGUI::CScrollView	(new in 3.0)
 - VSTGUI::CTabView		(new in 3.0)
@@ -39,16 +39,31 @@ There are some new views included.
 - Windows GDI+ support	(new in 3.5)
 - Mac OS X Composited Window support (new in 3.0)
 
-@section code_changes_for_3_0 Code Changes for existing VSTGUI 3.0 code
+@section code_changes_for_3_0 Code changes for existing VSTGUI 3.0 code
 
 - Per default CBitmaps don't get a transparent color on creation. You must call bitmap->setTransparency (color) explicitly. And this may only works once depending on the internal implementation.
 - CViewContainer addView and removeView returns a bool value now
 - Mouse methods moved from CDrawContext to CFrame
 - Custom views which override attached and removed must propagate the call to the parent
 - VST specific code is enclosed with the macro ENABLE_VST_EXTENSION_IN_VSTGUI, which per default is set to zero. If you need them you must enable it (best practice is to set it in the prefix header or the preprocessor panel in your compiler).
-- Removed all CDrawContext parameters from CView except for draw and drawRect. You need to change this in your custom views and controls.
+- Removed all CDrawContext parameters from CView methods except for draw and drawRect. You need to change this in your custom views and controls.
+- Every usage of CFont must be changed to CFontRef
+- When using GDI+ or libpng on Windows there is no need in using any offscreen context for flicker reduction as VSTGUI uses a backbuffer for drawing.
 
-@section code_changes_for_2_3 Code Changes for existing VSTGUI 2.3 code
+@subsection cviewchanges CView method changes
+
+For custom views you need to change the following methods because their parameters changed:
+
+- onWheel
+- onDrop
+- onDragEnter
+- onDragLeave
+- onDragMove
+- takeFocus
+- looseFocus
+- setViewSize
+
+@section code_changes_for_2_3 Code changes for existing VSTGUI 2.3 code
 
 please see the "Migrating from 2.3.rtf" file in the Documentation folder.
 

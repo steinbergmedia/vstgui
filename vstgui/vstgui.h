@@ -2,7 +2,7 @@
 // VST Plug-Ins SDK
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 //
-// Version 3.5       $Date: 2006-11-10 17:32:41 $
+// Version 3.5       $Date: 2006-11-19 11:46:23 $
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
@@ -121,7 +121,7 @@ END_NAMESPACE_VSTGUI
 //----------------------------------------------------
 
 #ifndef VSTGUI_USES_UTF8
-#define VSTGUI_USES_UTF8 0
+#define VSTGUI_USES_UTF8 MAC
 #endif
 
 //----------------------------------------------------
@@ -537,7 +537,7 @@ public:
 	virtual ~CBaseObject () {}
 
 	//-----------------------------------------------------------------------------
-	/// \name Reference Counting Functions
+	/// \name Reference Counting Methods
 	//-----------------------------------------------------------------------------
 	//@{
 	virtual void forget () { nbReference--; if (nbReference == 0) delete this; }	///< decrease refcount and delete object if refcount == 0
@@ -546,7 +546,7 @@ public:
 	//@}
 	
 	//-----------------------------------------------------------------------------
-	/// \name Message Functions
+	/// \name Message Methods
 	//-----------------------------------------------------------------------------
 	//@{
 	virtual CMessageResult notify (CBaseObject* sender, const char* message) { return kMessageUnknown; }
@@ -564,10 +564,19 @@ private:
 class CFontDesc : public CBaseObject
 {
 public:
+	//-----------------------------------------------------------------------------
+	/// \name Constructors
+	//-----------------------------------------------------------------------------
+	//@{
 	CFontDesc (const char* name = 0, const CCoord& size = 0, const long style = 0);
 	CFontDesc (const CFontDesc& font);
+	//@}
 	~CFontDesc ();
 
+	//-----------------------------------------------------------------------------
+	/// \name CFontDesc Methods
+	//-----------------------------------------------------------------------------
+	//@{
 	const char* getName () const { return name; }		///< get the name of the font
 	const CCoord& getSize () const { return size; }	///< get the height of the font
 	const long& getStyle () const { return style; }		///< get the style of the font
@@ -575,6 +584,7 @@ public:
 	void setName (const char* newName);					///< set the name of the font
 	void setSize (CCoord newSize);						///< set the height of the font
 	void setStyle (long newStyle);						///< set the style of the font \sa CTxtFace
+	//@}
 
 	CFontDesc& operator = (const CFontDesc&);
 	bool operator == (const CFontDesc&) const;
@@ -609,7 +619,12 @@ extern const CFontRef kSymbolFont;
 class CDrawContext : public CBaseObject
 {
 public:
+	//-----------------------------------------------------------------------------
+	/// \name Constructor
+	//-----------------------------------------------------------------------------
+	//@{
 	CDrawContext (CFrame *pFrame, void *pSystemContext, void *pWindow = 0);
+	//@}
 	~CDrawContext ();	
 
 	//-----------------------------------------------------------------------------
@@ -700,18 +715,18 @@ public:
 
 	void forget ();
 
-	VSTGUI_DEPRECATED(CColor getPoint (const CPoint& point);)	///<deprecated
-	VSTGUI_DEPRECATED(void floodFill (const CPoint& start);)	///<deprecated
-	VSTGUI_DEPRECATED(void drawArc (const CRect &rect, const CPoint &point1, const CPoint &point2);)	///<deprecated
-	VSTGUI_DEPRECATED(void fillArc (const CRect &rect, const CPoint &point1, const CPoint &point2);)	///<deprecated
-	VSTGUI_DEPRECATED(void polyLine (const CPoint *pPoint, long numberOfPoints);)	///<deprecated
-	VSTGUI_DEPRECATED(void fillPolygon (const CPoint *pPoint, long numberOfPoints);)	///<deprecated
-	VSTGUI_DEPRECATED(void fillRect (const CRect &rect);)	///<deprecated
-	VSTGUI_DEPRECATED(void fillEllipse (const CRect &rect);)	///<deprecated
-	VSTGUI_DEPRECATED(long getMouseButtons ();)	///<deprecated
-	VSTGUI_DEPRECATED(void getMouseLocation (CPoint &point);)	///<deprecated
-	VSTGUI_DEPRECATED(bool waitDoubleClick ();)	///<deprecated
-	VSTGUI_DEPRECATED(bool waitDrag ();)	///<deprecated
+	VSTGUI_DEPRECATED(CColor getPoint (const CPoint& point);)	///< \deprecated
+	VSTGUI_DEPRECATED(void floodFill (const CPoint& start);)	///< \deprecated
+	VSTGUI_DEPRECATED(void drawArc (const CRect &rect, const CPoint &point1, const CPoint &point2);)	///< \deprecated
+	VSTGUI_DEPRECATED(void fillArc (const CRect &rect, const CPoint &point1, const CPoint &point2);)	///< \deprecated
+	VSTGUI_DEPRECATED(void polyLine (const CPoint *pPoint, long numberOfPoints);)	///< \deprecated
+	VSTGUI_DEPRECATED(void fillPolygon (const CPoint *pPoint, long numberOfPoints);)	///< \deprecated
+	VSTGUI_DEPRECATED(void fillRect (const CRect &rect);)	///< \deprecated
+	VSTGUI_DEPRECATED(void fillEllipse (const CRect &rect);)	///< \deprecated
+	VSTGUI_DEPRECATED(long getMouseButtons ();)	///< \deprecated
+	VSTGUI_DEPRECATED(void getMouseLocation (CPoint &point);)	///< \deprecated
+	VSTGUI_DEPRECATED(bool waitDoubleClick ();)	///< \deprecated
+	VSTGUI_DEPRECATED(bool waitDrag ();)	///< \deprecated
 
 	//-------------------------------------------
 protected:
@@ -782,9 +797,13 @@ protected:
 class COffscreenContext : public CDrawContext
 {
 public:
+	//-----------------------------------------------------------------------------
+	/// \name Constructors
+	//-----------------------------------------------------------------------------
+	//@{
 	COffscreenContext (CDrawContext *pContext, CBitmap *pBitmap, bool drawInBitmap = false);
 	COffscreenContext (CFrame *pFrame, long width, long height, const CColor backgroundColor = kBlackCColor);
-
+	//@}
 	virtual ~COffscreenContext ();
 	
 	void copyFrom (CDrawContext *pContext, CRect destRect, CPoint srcOffset = CPoint (0, 0));	///< copy from offscreen to pContext
@@ -849,8 +868,13 @@ public:
 class CBitmap : public CBaseObject
 {
 public:
+	//-----------------------------------------------------------------------------
+	/// \name Constructors
+	//-----------------------------------------------------------------------------
+	//@{
 	CBitmap (const CResourceDescription& desc);				///< Create a pixmap from a resource identifier
 	CBitmap (CFrame &frame, CCoord width, CCoord height);	///< Create a pixmap with a given size.
+	//@}
 	virtual ~CBitmap ();
 
 	virtual void draw (CDrawContext *pContext, CRect &rect, const CPoint &offset = CPoint (0, 0));	///< Draw the pixmap using a given rect as output position and a given offset of its source pixmap.
@@ -878,7 +902,7 @@ public:
 	Gdiplus::Bitmap* getBitmap ();
 #endif // GDIPLUS
 
-	VSTGUI_DEPRECATED(void setTransparencyMask (CDrawContext* pContext, const CPoint& offset = CPoint (0, 0));)	///<deprecated
+	VSTGUI_DEPRECATED(void setTransparencyMask (CDrawContext* pContext, const CPoint& offset = CPoint (0, 0));)	///< \deprecated
 
 	//-------------------------------------------
 protected:
@@ -929,7 +953,7 @@ public:
 	virtual ~CView ();
 
 	//-----------------------------------------------------------------------------
-	/// \name Draw and Update Functions
+	/// \name Draw and Update Methods
 	//-----------------------------------------------------------------------------
 	//@{
 	virtual void draw (CDrawContext *pContext);															///< called if the view should draw itself
@@ -944,7 +968,7 @@ public:
 	//@}
 
 	//-----------------------------------------------------------------------------
-	/// \name Mouse Functions
+	/// \name Mouse Methods
 	//-----------------------------------------------------------------------------
 	//@{
 	virtual CMouseEventResult onMouseDown (CPoint &where, const long& buttons);											///< called when a mouse down event occurs
@@ -968,7 +992,7 @@ public:
 	//@}
 
 	//-----------------------------------------------------------------------------
-	/// \name Drag & Drop Functions
+	/// \name Drag & Drop Methods
 	//-----------------------------------------------------------------------------
 	//@{
 	virtual bool onDrop (CDragContainer* drag, const CPoint& where) { return false; }			///< called if a drag is dropped onto this view
@@ -978,7 +1002,7 @@ public:
 	//@}
 
 	//-----------------------------------------------------------------------------
-	/// \name Keyboard Functions
+	/// \name Keyboard Methods
 	//-----------------------------------------------------------------------------
 	//@{
 	virtual long onKeyDown (VstKeyCode& keyCode);														///< called if a key down event occurs and this view has focus
@@ -986,7 +1010,7 @@ public:
 	//@}
 
 	//-----------------------------------------------------------------------------
-	/// \name View Size Functions
+	/// \name View Size Methods
 	//-----------------------------------------------------------------------------
 	//@{
 	CCoord getHeight () const { return size.height (); }										///< get the height of the view
@@ -1001,7 +1025,7 @@ public:
 	//@}
 
 	//-----------------------------------------------------------------------------
-	/// \name Focus Functions
+	/// \name Focus Methods
 	//-----------------------------------------------------------------------------
 	//@{
 	virtual void looseFocus ();																	///< called if view should loose focus
@@ -1011,7 +1035,7 @@ public:
 	//@}
 
 	//-----------------------------------------------------------------------------
-	/// \name Attribute Functions
+	/// \name Attribute Methods
 	//-----------------------------------------------------------------------------
 	//@{
 	bool getAttributeSize (const CViewAttributeID id, long& outSize) const;									///< get the size of an attribute
@@ -1030,7 +1054,7 @@ public:
 	bool isAttached () const { return bIsAttached; }											///< is view attached to a parentView
 
 	//-----------------------------------------------------------------------------
-	/// \name Parent Functions
+	/// \name Parent Methods
 	//-----------------------------------------------------------------------------
 	//@{
 	CView  *getParentView () const { return pParentView; }										///< get parent view
@@ -1054,11 +1078,11 @@ public:
 
 	//-------------------------------------------
 
-	VSTGUI_DEPRECATED(virtual void mouse (CDrawContext *pContext, CPoint &where, long buttons = -1);)	///<deprecated
-	VSTGUI_DEPRECATED(virtual void getMouseLocation (CDrawContext* context, CPoint &point);)	///<deprecated
-	VSTGUI_DEPRECATED(virtual void setParentView (CView *pParentView) { this->pParentView = pParentView; })	///<deprecated
-	VSTGUI_DEPRECATED(virtual void setFrame (CFrame *pParent) { this->pParentFrame = pParent; })	///<deprecated
-	VSTGUI_DEPRECATED(virtual void getFrameTopLeftPos (CPoint& topLeft) const;)	///<deprecated
+	VSTGUI_DEPRECATED(virtual void mouse (CDrawContext *pContext, CPoint &where, long buttons = -1);)	///< \deprecated
+	VSTGUI_DEPRECATED(virtual void getMouseLocation (CDrawContext* context, CPoint &point);)	///< \deprecated
+	VSTGUI_DEPRECATED(virtual void setParentView (CView *pParentView) { this->pParentView = pParentView; })	///< \deprecated
+	VSTGUI_DEPRECATED(virtual void setFrame (CFrame *pParent) { this->pParentFrame = pParent; })	///< \deprecated
+	VSTGUI_DEPRECATED(virtual void getFrameTopLeftPos (CPoint& topLeft) const;)	///< \deprecated
 
 	//-------------------------------------------
 protected:
@@ -1098,7 +1122,7 @@ public:
 	virtual ~CViewContainer ();
 
 	//-----------------------------------------------------------------------------
-	/// \name Sub View Functions
+	/// \name Sub View Methods
 	//-----------------------------------------------------------------------------
 	//@{
 	virtual bool addView (CView *pView);	///< add a child view
@@ -1112,7 +1136,7 @@ public:
 	//@}
 
 	//-----------------------------------------------------------------------------
-	/// \name Background Functions
+	/// \name Background Methods
 	//-----------------------------------------------------------------------------
 	//@{
 	virtual void setBackgroundColor (const CColor color);	///< set the background color (will only be drawn if this container is not set to transparent and does not have a background bitmap)
@@ -1173,8 +1197,8 @@ public:
 	virtual void dumpHierarchy ();
 	#endif
 
-	VSTGUI_DEPRECATED(virtual void mouse (CDrawContext *pContext, CPoint &where, long buttons = -1);)	///<deprecated
-	VSTGUI_DEPRECATED(virtual CView *getCurrentView () const;)	///<deprecated
+	VSTGUI_DEPRECATED(virtual void mouse (CDrawContext *pContext, CPoint &where, long buttons = -1);)	///< \deprecated
+	VSTGUI_DEPRECATED(virtual CView *getCurrentView () const;)	///< \deprecated
 
 	//-------------------------------------------
 protected:
@@ -1289,10 +1313,10 @@ public:
 
 	CLASS_METHODS(CFrame, CViewContainer)
 
-	VSTGUI_DEPRECATED(virtual bool getCurrentLocation (CPoint &where);)	///<deprecated
-	VSTGUI_DEPRECATED(virtual void mouse (CDrawContext *pContext, CPoint &where, long buttons = -1);)	///<deprecated
-	VSTGUI_DEPRECATED(virtual CView *getCurrentView () const;)	///<deprecated
-	VSTGUI_DEPRECATED(void draw (CView *pView = 0);)	///<deprecated
+	VSTGUI_DEPRECATED(virtual bool getCurrentLocation (CPoint &where);)	///< \deprecated
+	VSTGUI_DEPRECATED(virtual void mouse (CDrawContext *pContext, CPoint &where, long buttons = -1);)	///< \deprecated
+	VSTGUI_DEPRECATED(virtual CView *getCurrentView () const;)	///< \deprecated
+	VSTGUI_DEPRECATED(void draw (CView *pView = 0);)	///< \deprecated
 
 	//-------------------------------------------
 protected:
@@ -1373,7 +1397,8 @@ public:
 		kText,									///< ASCII Text
 		kUnicodeText,							///< UTF8 Text
 
-		kUnknown = -1
+		kUnknown = -1,
+		kError = -2
 	};
 
 	void* getPlatformDrag () const { return platformDrag; }

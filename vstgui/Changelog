@@ -1,3 +1,10 @@
+2006-11-19 arne
+
+	* more doxygen documentation
+	* fixed a CDataBrowser draw issue
+	* changed most of the control constructors to use const CPoint instead of CPoint
+	* changed drag/drop implementation on Mac OS X to use the Pasteboard Manager (if building for 10.3 or above)
+
 2006-11-02 arne
 
 	* Implemented Offscreen stuff on Mac OS X without the need of quickdraw (and fix Offscreen drawing on mac with and without quickdraw)
