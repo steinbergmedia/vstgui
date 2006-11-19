@@ -2,7 +2,7 @@
 // VST Plug-Ins SDK
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 //
-// Version 3.5       $Date: 2006-06-23 07:55:47 $ 
+// Version 3.5       $Date: 2006-11-19 11:46:22 $ 
 //
 // CDataBrowser written 2006 by Arne Scheffler
 //
@@ -86,7 +86,13 @@ public:
 class CDataBrowser : public CScrollView
 {
 public:
+	//-----------------------------------------------------------------------------
+	/// \name Data Browser Constructor
+	//-----------------------------------------------------------------------------
+	//@{
 	CDataBrowser (const CRect& size, CFrame* pParent, IDataBrowser* db, long style = 0, long scrollbarWidth = 16, CBitmap* pBackground = 0);
+	//@}
+
 	~CDataBrowser ();
 
 	enum CDataBrowserStyle 
@@ -102,6 +108,10 @@ public:
 		kNoSelection	= -1
 	};
 
+	//-----------------------------------------------------------------------------
+	/// \name Data Browser Functions
+	//-----------------------------------------------------------------------------
+	//@{
 	virtual void recalculateLayout (bool rememberSelection = false);				///< trigger recalculation, call if numRows or numColumns changed
 	virtual void invalidate (long row, long column);								///< invalidates an individual cell
 	virtual void invalidateRow (long row);											///< invalidates a complete row
@@ -113,6 +123,8 @@ public:
 	virtual void setSelectedRow (long row, bool makeVisible = false);				///< set the exclusive selected row
 
 	virtual void beginTextEdit (long row, long column, const char* initialText);	///< starts a text edit for a cell
+	//@}
+
 protected:
 	void valueChanged (CControl *pControl);
 	CMessageResult notify (CBaseObject* sender, const char* message);

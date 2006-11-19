@@ -2,7 +2,7 @@
 // VST Plug-Ins SDK
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 //
-// Version 3.5       $Date: 2006-11-10 17:32:41 $ 
+// Version 3.5       $Date: 2006-11-19 11:46:23 $ 
 //
 // Added Motif/Windows vers.: Yvan Grabit              01.98
 // Added Mac version        : Charlie Steinberg        02.98
@@ -961,7 +961,7 @@ void CDrawContext::lineTo (const CPoint& _point)
 	{
 		QuartzSetLineDash (context, lineStyle, frameWidth);
 
-		if ((((long)frameWidth) % 2))
+		if ((((int)frameWidth) % 2))
 			CGContextTranslateCTM (gCGContext, 0.5f, -0.5f);
 
 		CGContextBeginPath (context);
@@ -984,7 +984,7 @@ void CDrawContext::drawLines (const CPoint* points, const long& numLines)
 	{
 		QuartzSetLineDash (context, lineStyle, frameWidth);
 
-		if ((((long)frameWidth) % 2))
+		if ((((int)frameWidth) % 2))
 			CGContextTranslateCTM (gCGContext, 0.5f, -0.5f);
 
 		#if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_4
@@ -1128,10 +1128,11 @@ void CDrawContext::drawRect (const CRect &_rect, const CDrawStyle drawStyle)
 	if (pGraphics)
 	{
 		rect.normalize ();
+		Gdiplus::Rect r (rect.left, rect.top, rect.getWidth ()-1, rect.getHeight ()-1);
 		if (pBrush && (drawStyle == kDrawFilled || drawStyle == kDrawFilledAndStroked))
-			pGraphics->FillRectangle (pBrush, rect.left, rect.top, rect.getWidth ()-1, rect.getHeight ()-1);
+			pGraphics->FillRectangle (pBrush, r);
 		if (pPen && (drawStyle == kDrawStroked || drawStyle == kDrawFilledAndStroked))
-			pGraphics->DrawRectangle (pPen, rect.left, rect.top, rect.getWidth ()-1, rect.getHeight ()-1);
+			pGraphics->DrawRectangle (pPen, r);
 	}
 	#else
 	if (drawStyle == kDrawFilled || drawStyle == kDrawFilledAndStroked)
@@ -1167,7 +1168,7 @@ void CDrawContext::drawRect (const CRect &_rect, const CDrawStyle drawStyle)
 
 		QuartzSetLineDash (context, lineStyle, frameWidth);
 
-		if ((((long)frameWidth) % 2))
+		if ((((int)frameWidth) % 2))
 			CGContextTranslateCTM (gCGContext, 0.5f, -0.5f);
 
 		CGContextBeginPath (context);
@@ -2449,8 +2450,8 @@ COffscreenContext::COffscreenContext (CFrame* pFrame, long width, long height, c
 , pBitmapBg (0)
 , height (height)
 , width (width)
-, backgroundColor (backgroundColor)
 , bDrawInBitmap (false)
+, backgroundColor (backgroundColor)
 {
 	clipRect (0, 0, width, height);
 
@@ -3128,7 +3129,7 @@ void CView::dumpInfo ()
 //-----------------------------------------------------------------------------
 /*! @class CFrame
 It creates a platform dependend view object. 
-On classic Mac OS it just draws into the provided window.
+
 On Mac OS X it is a ControlRef. 
 On Windows it's a WS_CHILD Window.
 */
@@ -4595,6 +4596,7 @@ void CViewContainer::parentSizeChanged ()
 //-----------------------------------------------------------------------------
 /**
  * @param rect the new size of the container
+ * @param invalid the views to dirty
  */
 void CViewContainer::setViewSize (CRect &rect, bool invalid)
 {
@@ -6674,10 +6676,20 @@ CDragContainer::CDragContainer (void* platformDrag)
 , lastItem (0)
 {
 	#if MAC
+	#if MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_3
+	PasteboardRef pasteboard;
+	if (GetDragPasteboard ((DragRef) platformDrag, &pasteboard) == noErr)
+	{
+		ItemCount numItems;
+		if (PasteboardGetItemCount (pasteboard, &numItems) == noErr)
+			nbItems = numItems;
+	}
+	#else
 	DragRef dragRef = (DragRef)platformDrag;
 	UInt16 numItems;
 	CountDragItems (dragRef, &numItems);
 	nbItems = numItems;
+	#endif
 	
 	#elif WINDOWS
 	
@@ -6685,6 +6697,8 @@ CDragContainer::CDragContainer (void* platformDrag)
 	STGMEDIUM medium;
 	FORMATETC formatTEXTDrop = {CF_TEXT,  0, DVASPECT_CONTENT, -1, TYMED_HGLOBAL};
 	FORMATETC formatHDrop    = {CF_HDROP, 0, DVASPECT_CONTENT, -1, TYMED_HGLOBAL};
+
+	// todo : Support CF_UNICODETEXT
 
 	long type = 0; // 0 = file, 1 = text
 
@@ -6716,7 +6730,47 @@ CDragContainer::~CDragContainer ()
 //-----------------------------------------------------------------------------
 long CDragContainer::getType (long idx) const
 {
+	if (platformDrag == 0)
+		return kError;
 	#if MAC
+	#if MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_3
+	PasteboardRef pasteboard;
+	if (GetDragPasteboard ((DragRef) platformDrag, &pasteboard) != noErr)
+		return kError;
+	PasteboardItemID itemID;
+	if (PasteboardGetItemIdentifier (pasteboard, idx+1, &itemID) == noErr)
+	{
+		CFArrayRef flavors = 0;
+		if (PasteboardCopyItemFlavors (pasteboard, itemID, &flavors) == noErr)
+		{
+			long result = kUnknown;
+			for (CFIndex i = 0; i < CFArrayGetCount (flavors); i++)
+			{
+				CFStringRef flavorType = (CFStringRef)CFArrayGetValueAtIndex (flavors, i);
+				if (flavorType == 0)
+					continue;
+				CFStringRef osTypeFlavorType = UTTypeCopyPreferredTagWithClass (flavorType, kUTTagClassOSType);
+				if (osTypeFlavorType == 0)
+					continue;
+				if (CFStringCompare (osTypeFlavorType, CFSTR("utxt"), 0) == kCFCompareEqualTo)
+					result = kUnicodeText;
+				else if (CFStringCompare (osTypeFlavorType, CFSTR("utf8"), 0) == kCFCompareEqualTo)
+					result = kUnicodeText;
+				else if (CFStringCompare (osTypeFlavorType, CFSTR("furl"), 0) == kCFCompareEqualTo)
+					result = kFile;
+				else if (CFStringCompare (osTypeFlavorType, CFSTR("TEXT"), 0) == kCFCompareEqualTo)
+					result = kText;
+				else if (CFStringCompare (osTypeFlavorType, CFSTR("XML "), 0) == kCFCompareEqualTo)
+					result = kText;
+				CFRelease (osTypeFlavorType);
+				if (result != kUnknown)
+					break;
+			}
+			CFRelease (flavors);
+			return result;
+		}
+	}
+	#else
 	DragItemRef itemRef;
 	if (GetDragItemReferenceNumber ((DragRef)platformDrag, idx+1, &itemRef) == noErr)
 	{
@@ -6731,6 +6785,8 @@ long CDragContainer::getType (long idx) const
 				return kUnicodeText;
 		}
 	}
+	#endif
+	
 	#elif WINDOWS
 	IDataObject* dataObject = (IDataObject*)platformDrag;
 	STGMEDIUM medium;
@@ -6765,6 +6821,11 @@ void* CDragContainer::first (long& size, long& type)
 //-----------------------------------------------------------------------------
 void* CDragContainer::next (long& size, long& type)
 {
+	if (platformDrag == 0)
+	{
+		type = kError;
+		return 0;
+	}
 	if (lastItem)
 	{
 		free (lastItem);
@@ -6773,6 +6834,104 @@ void* CDragContainer::next (long& size, long& type)
 	size = 0;
 	type = kUnknown;
 	#if MAC
+
+	#if MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_3
+	PasteboardRef pasteboard;
+	if (GetDragPasteboard ((DragRef) platformDrag, &pasteboard) != noErr)
+	{
+		type = kError;
+		return 0;
+	}
+	PasteboardItemID itemID;
+	if (PasteboardGetItemIdentifier (pasteboard, ++iterator, &itemID) == noErr)
+	{
+		CFArrayRef flavors = 0;
+		if (PasteboardCopyItemFlavors (pasteboard, itemID, &flavors) == noErr)
+		{
+			long result = kUnknown;
+			for (CFIndex i = 0; i < CFArrayGetCount (flavors); i++)
+			{
+				CFStringRef flavorType = (CFStringRef)CFArrayGetValueAtIndex (flavors, i);
+				if (flavorType == 0)
+					continue;
+				CFStringRef osTypeFlavorType = UTTypeCopyPreferredTagWithClass (flavorType, kUTTagClassOSType);
+				if (osTypeFlavorType == 0)
+					continue;
+				PasteboardFlavorFlags flavorFlags;
+				PasteboardGetItemFlavorFlags (pasteboard, itemID, flavorType, &flavorFlags);
+				CFDataRef flavorData = 0;
+				if (PasteboardCopyItemFlavorData (pasteboard, itemID, flavorType, &flavorData) == noErr)
+				{
+					CFIndex flavorDataSize = CFDataGetLength (flavorData);
+					const UInt8* data = CFDataGetBytePtr (flavorData);
+					if (data)
+					{
+						if (CFStringCompare (osTypeFlavorType, CFSTR("utxt"), 0) == kCFCompareEqualTo)
+						{
+							CFStringRef utf16String = CFStringCreateWithBytes(0, data, flavorDataSize, kCFStringEncodingUTF16, false);
+							if (utf16String)
+							{
+								CFIndex maxSize = CFStringGetMaximumSizeForEncoding (flavorDataSize/2, kCFStringEncodingUTF8);
+								lastItem = malloc (maxSize+1);
+								if (CFStringGetCString (utf16String, (char*)lastItem, maxSize, kCFStringEncodingUTF8))
+								{
+									type = kUnicodeText;
+									size = strlen ((const char*)lastItem);
+								}
+								else
+								{
+									free (lastItem);
+									lastItem = 0;
+								}
+								CFRelease (utf16String);
+							}
+						}
+						else if (CFStringCompare (osTypeFlavorType, CFSTR("furl"), 0) == kCFCompareEqualTo)
+						{
+							type = kFile;
+							CFURLRef url = CFURLCreateWithBytes (NULL, data, flavorDataSize, kCFStringEncodingUTF8, NULL);
+							lastItem = malloc (PATH_MAX);
+							CFURLGetFileSystemRepresentation (url, false, (UInt8*)lastItem, PATH_MAX);
+							CFRelease (url);
+							size = strlen ((const char*)lastItem);
+						}
+						else if (CFStringCompare (osTypeFlavorType, CFSTR("utf8"), 0) == kCFCompareEqualTo)
+						{
+							type = kUnicodeText;
+							size = flavorDataSize;
+							lastItem = malloc (flavorDataSize + 1);
+							((char*)lastItem)[flavorDataSize] = 0;
+							memcpy (lastItem, data, flavorDataSize);
+						}
+						else if (CFStringCompare (osTypeFlavorType, CFSTR("TEXT"), 0) == kCFCompareEqualTo)
+						{
+							type = kText;
+							size = flavorDataSize;
+							lastItem = malloc (flavorDataSize + 1);
+							((char*)lastItem)[flavorDataSize] = 0;
+							memcpy (lastItem, data, flavorDataSize);
+						}
+						else if (CFStringCompare (osTypeFlavorType, CFSTR("XML "), 0) == kCFCompareEqualTo)
+						{
+							type = kText;
+							size = flavorDataSize;
+							lastItem = malloc (flavorDataSize + 1);
+							((char*)lastItem)[flavorDataSize] = 0;
+							memcpy (lastItem, data, flavorDataSize);
+						}
+					}
+					CFRelease (flavorData);
+				}
+				CFRelease (osTypeFlavorType);
+				if (type != kUnknown)
+					break;
+			}
+			CFRelease (flavors);
+			return lastItem;
+		}
+	}
+	#else
+
 	long flavorSize;
 	DragItemRef itemRef;
 	if (GetDragItemReferenceNumber ((DragRef)platformDrag, ++iterator, &itemRef) == noErr)
@@ -6797,8 +6956,8 @@ void* CDragContainer::next (long& size, long& type)
 							type = kFile;
 							return lastItem;
 						}
-						}
 					}
+				}
 			}
 			else if (flavorType == typeFileURL)
 			{
@@ -6812,6 +6971,7 @@ void* CDragContainer::next (long& size, long& type)
 						CFURLGetFileSystemRepresentation (url, false, (unsigned char*)lastItem, PATH_MAX);
 						CFRelease (url);
 						type = kFile;
+						size = strlen ((const char*)lastItem);
 					}
 					free (bytes);
 					return lastItem;
@@ -6853,6 +7013,8 @@ void* CDragContainer::next (long& size, long& type)
 			}
 		}
 	}
+	#endif
+	
 	#elif WINDOWS
 	IDataObject* dataObject = (IDataObject*)platformDrag;
 	void* hDrop = 0;
@@ -7017,7 +7179,7 @@ LONG_PTR WINAPI WindowProc (HWND hwnd, UINT message, WPARAM wParam, LPARAM lPara
 			RECT rctWnd;
 			GetWindowRect (hwnd, &rctWnd);
 			where.offset (-rctWnd.left, -rctWnd.top);
-			pFrame->onWheel (where, (float)(zDelta / WHEEL_DELTA), buttons); // todo, check modifier
+			pFrame->onWheel (where, (float)(zDelta / WHEEL_DELTA), buttons);
 		}
 		break;
 	}
@@ -7998,10 +8160,14 @@ pascal OSStatus CFrame::carbonEventHandler (EventHandlerCallRef inHandlerCallRef
 				case kEventControlDraw:
 				{
 					CDrawContext* context = 0;
+					CRect dirtyRect = frame->getViewSize ();
 					if (frame->pFrameContext)
 					{
 						context = frame->pFrameContext;
 						context->remember ();
+						#if DEBUG
+						DebugPrint ("This should not happen anymore\n");
+						#endif
 					}
 					else
 					{
@@ -8018,7 +8184,7 @@ pascal OSStatus CFrame::carbonEventHandler (EventHandlerCallRef inHandlerCallRef
 						DisposeRegionToRectsUPP (upp);
 					}
 					else
-						frame->draw (context);
+						frame->drawRect (context, dirtyRect);
 					context->forget ();
 					result = noErr;
 					break;
@@ -8264,7 +8430,7 @@ pascal OSStatus CFrame::carbonEventHandler (EventHandlerCallRef inHandlerCallRef
 					CMouseWheelAxis axis = kMouseWheelAxisY;
 					if (wheelAxis == kEventMouseWheelAxisX)
 						axis = kMouseWheelAxisX;
-					frame->onWheel (p, axis, distance, buttons); // todo check modifier
+					frame->onWheel (p, axis, distance, buttons);
 					result = noErr;
 					break;
 				}

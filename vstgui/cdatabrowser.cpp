@@ -2,7 +2,7 @@
 // VST Plug-Ins SDK
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 //
-// Version 3.5       $Date: 2006-11-10 17:32:41 $ 
+// Version 3.5       $Date: 2006-11-19 11:46:22 $ 
 //
 // CDataBrowser written 2006 by Arne Scheffler
 //
@@ -47,6 +47,7 @@ class CDataBrowserView : public CView
 public:
 	CDataBrowserView (const CRect& size, IDataBrowser* db, CDataBrowser* browser, long style);
 
+	void draw (CDrawContext* context);
 	void drawRect (CDrawContext* context, const CRect& updateRect);
 	CMouseEventResult onMouseDown (CPoint &where, const long& buttons);
 	CMouseEventResult onMouseMoved (CPoint &where, const long& buttons);
@@ -72,6 +73,7 @@ class CDataBrowserHeader : public CView
 public:
 	CDataBrowserHeader (const CRect& size, IDataBrowser* db, CDataBrowser* browser, long style);
 
+	void draw (CDrawContext* context);
 	void drawRect (CDrawContext* context, const CRect& updateRect);
 	CMouseEventResult onMouseDown (CPoint &where, const long& buttons);
 	CMouseEventResult onMouseMoved (CPoint &where, const long& buttons);
@@ -329,6 +331,7 @@ CMessageResult CDataBrowser::notify (CBaseObject* sender, const char* message)
 	return CViewContainer::notify (sender, message);
 }
 
+/// \cond ignore
 //-----------------------------------------------------------------------------------------------
 //-----------------------------------------------------------------------------------------------
 //-----------------------------------------------------------------------------------------------
@@ -339,6 +342,12 @@ CDataBrowserHeader::CDataBrowserHeader (const CRect& size, IDataBrowser* db, CDa
 , style (style)
 {
 	setTransparency (true);
+}
+
+//-----------------------------------------------------------------------------------------------
+void CDataBrowserHeader::draw (CDrawContext* context)
+{
+	drawRect (context, size);
 }
 
 //-----------------------------------------------------------------------------------------------
@@ -519,6 +528,12 @@ void CDataBrowserView::invalidateRow (long row)
 }
 
 //-----------------------------------------------------------------------------------------------
+void CDataBrowserView::draw (CDrawContext* context)
+{
+	drawRect (context, size);
+}
+
+//-----------------------------------------------------------------------------------------------
 void CDataBrowserView::drawRect (CDrawContext* context, const CRect& updateRect)
 {
 	CCoord lineWidth = 0;
@@ -681,4 +696,5 @@ long CDataBrowserView::onKeyDown (VstKeyCode& keyCode)
 	}
 	return -1;
 }
+/// \endcond
 
