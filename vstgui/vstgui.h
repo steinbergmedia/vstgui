@@ -2,7 +2,7 @@
 // VST Plug-Ins SDK
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 //
-// Version 3.5       $Date: 2006-11-30 10:08:03 $
+// Version 3.5       $Date: 2006-11-30 12:30:46 $
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
@@ -338,7 +338,7 @@ struct CColor
 	unsigned char alpha;
 };
 
-inline CColor& MakeCColor (unsigned char red = 0, unsigned char green = 0, unsigned char blue = 0, unsigned char alpha = 255)
+inline CColor MakeCColor (unsigned char red = 0, unsigned char green = 0, unsigned char blue = 0, unsigned char alpha = 255)
 {
 	CColor c;
 	c.red = red;
@@ -966,7 +966,7 @@ public:
 	//@{
 	virtual void draw (CDrawContext *pContext);															///< called if the view should draw itself
 	virtual void drawRect (CDrawContext *pContext, const CRect& updateRect) { draw (pContext); }		///< called if the view should draw itself
-	virtual bool checkUpdate (CRect& updateRect) const { return updateRect.rectOverlap (size); }
+	virtual bool checkUpdate (const CRect& updateRect) const { return updateRect.rectOverlap (size); }
 
 	virtual bool isDirty () const { return bDirty; }													///< check if view is dirty
 	virtual void setDirty (const bool val = true) { bDirty = val; }										///< set the view to dirty so that it is redrawn in the next idle. Thread Safe !
@@ -1210,7 +1210,8 @@ public:
 
 	//-------------------------------------------
 protected:
-	bool hitTestSubViews (const CPoint& where, const long buttons = -1);
+	virtual bool checkUpdateRect (CView* view, const CRect& rect);
+	virtual bool hitTestSubViews (const CPoint& where, const long buttons = -1);
 	void drawBackToFront (CDrawContext* context, const CRect& rect);
 
 	CCView  *pFirstView;

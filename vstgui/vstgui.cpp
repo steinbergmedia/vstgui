@@ -2,7 +2,7 @@
 // VST Plug-Ins SDK
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 //
-// Version 3.5       $Date: 2006-11-30 10:08:03 $ 
+// Version 3.5       $Date: 2006-11-30 12:30:46 $ 
 //
 // Added Motif/Windows vers.: Yvan Grabit              01.98
 // Added Mac version        : Charlie Steinberg        02.98
@@ -5075,7 +5075,7 @@ void CViewContainer::drawRect (CDrawContext* pContext, const CRect& updateRect)
 	
 	// draw each view
 	FOREACHSUBVIEW
-		if (pV->checkUpdate (clientRect))
+		if (checkUpdateRect (pV, clientRect))
 		{
 			CRect viewSize = pV->getViewSize (viewSize);
 			viewSize.bound (newClip);
@@ -5105,6 +5105,12 @@ void CViewContainer::drawRect (CDrawContext* pContext, const CRect& updateRect)
 		restoreDrawContext (pContext, save);
 
 	setDirty (false);
+}
+
+//-----------------------------------------------------------------------------
+bool CViewContainer::checkUpdateRect (CView* view, const CRect& rect)
+{
+	return view->checkUpdate (rect);
 }
 
 //-----------------------------------------------------------------------------
