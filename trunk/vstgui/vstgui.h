@@ -2,7 +2,7 @@
 // VST Plug-Ins SDK
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 //
-// Version 3.5       $Date: 2006-11-19 11:46:23 $
+// Version 3.5       $Date: 2006-11-30 10:08:03 $
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
@@ -338,6 +338,16 @@ struct CColor
 	unsigned char alpha;
 };
 
+inline CColor& MakeCColor (unsigned char red = 0, unsigned char green = 0, unsigned char blue = 0, unsigned char alpha = 255)
+{
+	CColor c;
+	c.red = red;
+	c.green = green;
+	c.blue = blue;
+	c.alpha = alpha;
+	return c;
+}
+
 // define some basic colors
 extern const CColor kTransparentCColor;
 extern const CColor kBlackCColor;
@@ -640,8 +650,6 @@ public:
 	void drawEllipse (const CRect &rect, const CDrawStyle drawStyle = kDrawStroked);	///< draw an ellipse
 	void drawPoint (const CPoint &point, CColor color);	///< draw a point
 	//@}
-
-	void scrollRect (const CRect& src, const CPoint& distance);		///< scroll rect
 
 	//-----------------------------------------------------------------------------
 	/// \name Line Mode
@@ -1275,6 +1283,8 @@ public:
 	virtual bool getOpenFlag () const { return bOpenFlag; };
 
 	virtual void invalidate (const CRect &rect);
+
+	void scrollRect (const CRect& src, const CPoint& distance);		///< scroll rect
 
 	void invalid () { invalidRect (size); bDirty = false; }
 	void invalidRect (const CRect rect);
