@@ -116,9 +116,7 @@ void AEffGUIEditor::draw (ERect* ppErect)
 //-----------------------------------------------------------------------------
 long AEffGUIEditor::mouse (long x, long y)
 {
-
-#if VSTGUI_ENABLE_DEPRECATED_METHODS
-
+	#if VSTGUI_ENABLE_DEPRECATED_METHODS
 	if (frame)
 	{
 		CDrawContext* context = frame->createDrawContext();
@@ -127,9 +125,7 @@ long AEffGUIEditor::mouse (long x, long y)
 		context->forget ();
 		return 1;
 	}
-
-#endif	// #if VSTGUI_ENABLE_DEPRECATED_METHODS
-
+	#endif	// #if VSTGUI_ENABLE_DEPRECATED_METHODS
 	return 0;
 }
 #endif
@@ -183,15 +179,10 @@ bool AEffGUIEditor::onWheel (float distance)
 void AEffGUIEditor::wait (unsigned long ms)
 {
 	#if MAC
-	unsigned long ticks;
-	Delay (ms * 60 / 1000, &ticks);
+	RunCurrentEventLoop (kEventDurationMillisecond * ms);
 	
 	#elif WINDOWS
 	Sleep (ms);
-
-	#elif SGI
-	struct timespec sleeptime = {0, ms * 1000000};
-	nanosleep (&sleeptime, NULL);
 
 	#endif
 }
@@ -213,17 +204,12 @@ unsigned long AEffGUIEditor::getTicks ()
 //-----------------------------------------------------------------------------
 void AEffGUIEditor::doIdleStuff ()
 {
-	#if !(MAC && !TARGET_API_MAC_CARBON)
 	// get the current time
 	unsigned long currentTicks = getTicks ();
 
 	if (currentTicks < lLastTicks)
 	{
-		#if (MAC && TARGET_API_MAC_CARBON)
-		RunCurrentEventLoop (kEventDurationMillisecond * kIdleRateMin);
-		#else
 		wait (kIdleRateMin);
-		#endif
 		currentTicks += kIdleRateMin;
 		if (currentTicks < lLastTicks - kIdleRate2)
 			return;
@@ -235,19 +221,10 @@ void AEffGUIEditor::doIdleStuff ()
 	if (PeekMessage (&windowsMessage, NULL, WM_PAINT, WM_PAINT, PM_REMOVE))
 		DispatchMessage (&windowsMessage);
 
-	#elif MAC
-	EventRef event;
-	EventTypeSpec eventTypes[] = { {kEventClassWindow, kEventWindowUpdate}, {kEventClassWindow, kEventWindowDrawContent} };
-	if (ReceiveNextEvent (GetEventTypeCount (eventTypes), eventTypes, kEventDurationNoWait, true, &event) == noErr)
-	{
-		SendEventToEventTarget (event, GetEventDispatcherTarget ());
-		ReleaseEvent (event);
-	}
 	#endif
 
 	// save the next time
  	lLastTicks = currentTicks + kIdleRate;
-	#endif
 
 	inIdleStuff = true;
 

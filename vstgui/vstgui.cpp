@@ -2,7 +2,7 @@
 // VST Plug-Ins SDK
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 //
-// Version 3.5       $Date: 2006-11-19 11:46:23 $ 
+// Version 3.5       $Date: 2006-11-30 10:08:03 $ 
 //
 // Added Motif/Windows vers.: Yvan Grabit              01.98
 // Added Mac version        : Charlie Steinberg        02.98
@@ -1301,6 +1301,7 @@ static void addOvalToPath(CGContextRef c, CPoint center, float a, float b, float
 	CGContextSaveGState (c);
 	CGContextTranslateCTM (c, center.x, center.y);
 	CGContextScaleCTM (c, a, b);
+	CGContextRotateCTM (c, radians (-90.f));
 
 	CGContextMoveToPoint (c, cos (radians (start_angle)), sin (radians (start_angle)));
 
@@ -2009,23 +2010,6 @@ void CDrawContext::drawStringUTF8 (const char* string, const CRect& _rect, const
 	setClipRect (newClip);
 	drawStringUTF8 (string, CPoint (rect.left, rect.bottom), antialias);
 	setClipRect (oldClip);
-}
-
-//-----------------------------------------------------------------------------
-void CDrawContext::scrollRect (const CRect& src, const CPoint& distance)
-{
-	CRect rect (src);
-	rect.offset (offset.h, offset.v);
-
-	#if MAC
-	CGRect cgRect = CGRectMake ((float)rect.left, (float)rect.top, (float)rect.getWidth (), (float)rect.getHeight ());
-	if (!(isWindowComposited ((WindowRef)pWindow) && HIViewScrollRect ((HIViewRef)pFrame->getPlatformControl(), &cgRect, (float)distance.x, (float)distance.y) != noErr))
-		getFrame ()->invalidRect (src);
-
-	#else
-	getFrame ()->invalidRect (src);
-
-	#endif
 }
 
 #if VSTGUI_ENABLE_DEPRECATED_METHODS
@@ -3331,7 +3315,10 @@ CFrame::~CFrame ()
 	if (mouseEventHandler)
 		RemoveEventHandler (mouseEventHandler);
 	if (controlRef)
-		DisposeControl (controlRef);
+	{
+		if (HIViewRemoveFromSuperview (controlRef) == noErr)
+			CFRelease (controlRef);
+	}
 	if (controlSpec.u.classRef)
 	{
 		OSStatus status = UnregisterToolboxObjectClass ((ToolboxObjectClassRef)controlSpec.u.classRef);
@@ -4463,6 +4450,23 @@ bool CFrame::removeAll (const bool &withForget)
 	pModalView = 0;
 	pFocusView = 0;
 	return CViewContainer::removeAll (withForget);
+}
+
+//-----------------------------------------------------------------------------
+void CFrame::scrollRect (const CRect& src, const CPoint& distance)
+{
+	CRect rect (src);
+	rect.offset (size.left, size.top);
+
+	#if MAC
+	CGRect cgRect = CGRectMake ((float)rect.left, (float)rect.top, (float)rect.getWidth (), (float)rect.getHeight ());
+	if (!(isWindowComposited ((WindowRef)pWindow) && HIViewScrollRect ((HIViewRef)getPlatformControl(), &cgRect, (float)distance.x, (float)distance.y) != noErr))
+		invalidRect (src);
+
+	#else
+	invalidRect (src);
+
+	#endif
 }
 
 //-----------------------------------------------------------------------------

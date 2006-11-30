@@ -129,13 +129,11 @@ void CScrollContainer::setScrollOffset (CPoint newOffset, bool redraw)
 	}
 	else
 	{
-		CDrawContext* context = getFrame ()->createDrawContext ();
 		CRect scrollRect (0, 0, size.getWidth (), size.getHeight ());
 		CPoint p;
 		localToFrame (p);
 		scrollRect.offset (p.x, p.y);
-		context->scrollRect (scrollRect, diff);
-		context->forget ();
+		getFrame ()->scrollRect (scrollRect, diff);
 	}
 }
 
@@ -569,7 +567,7 @@ void CScrollbar::doStepping ()
 //-----------------------------------------------------------------------------
 CMessageResult CScrollbar::notify (CBaseObject* sender, const char* message)
 {
-	if (message == CVSTGUITimer::kMsgTimer)
+	if (message == CVSTGUITimer::kMsgTimer && timer)
 	{
 		doStepping ();
 		timer->setFireTime (80);
@@ -607,7 +605,7 @@ CMouseEventResult CScrollbar::onMouseUp (CPoint &where, const long& buttons)
 {
 	if (timer)
 	{
-		delete timer;
+		timer->forget ();
 		timer = 0;
 	}
 	return kMouseEventHandled;

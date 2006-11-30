@@ -1,3 +1,10 @@
+2006-11-30 arne
+
+	* moved CDrawContext::scollRect to CFrame class
+	* check for null pointer in CScrollView::notify
+	* fix CDrawContext::drawArc on Mac
+	* add inline function MakeCColor to vstgui.h
+
 2006-11-19 arne
 
 	* more doxygen documentation
