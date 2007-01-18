@@ -2,7 +2,7 @@
 // VST Plug-Ins SDK
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 //
-// Version 3.5       $Date: 2006-11-30 12:30:46 $ 
+// Version 3.5       $Date: 2007-01-18 08:13:22 $ 
 //
 // Added Motif/Windows vers.: Yvan Grabit              01.98
 // Added Mac version        : Charlie Steinberg        02.98
@@ -194,13 +194,21 @@ END_NAMESPACE_VSTGUI
 #elif MAC
 BEGIN_NAMESPACE_VSTGUI
 
+#if __LP64__
+SInt32 pSystemVersion;
+#else
 long pSystemVersion;
+#endif
 
 #define NO_QUICKDRAW	(MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_4)	// no quickdraw if we build only for 10.4 and above
-#define MAC_OLD_DRAG	__ppc__
+#define MAC_OLD_DRAG	__ppc__ && !__LP64__
 
 #ifndef EMBED_HIVIEW	// automaticly add the CFrame HIView to the content view of the window
 #define EMBED_HIVIEW	!AU
+#endif
+
+#ifndef CGFLOAT_DEFINED
+typedef float CGFloat;
 #endif
 
 //-----------------------------------------------------------------------------
@@ -318,6 +326,19 @@ void CRect::bound (const CRect& rect)
 		bottom = top;
 	if (right < left)
 		right = left;
+}
+
+//-----------------------------------------------------------------------------
+void CRect::unite (const CRect& rect)
+{
+	if (left > rect.left)
+		left = rect.left;
+	if (right < rect.right)
+		right = rect.right;
+	if (top > rect.top)
+		top = rect.top;
+	if (bottom < rect.bottom)
+		bottom = rect.bottom;
 }
 
 BEGIN_NAMESPACE_VSTGUI
@@ -663,6 +684,7 @@ CDrawContext::CDrawContext (CFrame* inFrame, void* inSystemContext, void* inWind
 	}
 	else if (pWindow)
 	{
+		#if !__LP64__
 		GrafPtr port = GetWindowPort ((WindowRef)pWindow);
 		OSStatus err = QDBeginCGContext (port, &gCGContext);
 		if (err == noErr)
@@ -685,6 +707,7 @@ CDrawContext::CDrawContext (CFrame* inFrame, void* inSystemContext, void* inWind
 			if (pFrame)
 				pFrame->setDrawContext (this);
 		}
+		#endif
 	}
 	if (gCGContext)
 	{
@@ -754,8 +777,10 @@ CDrawContext::~CDrawContext ()
 		CGContextRestoreGState (gCGContext); // restore the original state
 		CGContextRestoreGState (gCGContext); // we need to do it twice !!!
 		CGContextSynchronize (gCGContext);
+		#if !__LP64__
 		if (!pSystemContext && pWindow)
 			QDEndCGContext (GetWindowPort ((WindowRef)pWindow), &gCGContext);
+		#endif
 		if (pFrame)
 			pFrame->setDrawContext (0);
 	}
@@ -2250,8 +2275,8 @@ void QuartzSetLineDash (CGContextRef context, CLineStyle style, CCoord lineWidth
 {
 	if (style == kLineOnOffDash)
 	{
-		float offset = 0;
-		float dotf[2] = { lineWidth, lineWidth };
+		CGFloat offset = 0;
+		CGFloat dotf[2] = { lineWidth, lineWidth };
 		CGContextSetLineDash (context, offset, dotf, 2);
 	}
 }
@@ -2259,7 +2284,11 @@ void QuartzSetLineDash (CGContextRef context, CLineStyle style, CCoord lineWidth
 //-----------------------------------------------------------------------------
 BitMapPtr CDrawContext::getBitmap ()
 {
+	#if __LP64__
+	return 0;
+	#else
 	return (BitMapPtr)GetPortBitMapForCopyBits (GetWindowPort ((WindowRef)pWindow));
+	#endif
 }
 
 //-----------------------------------------------------------------------------
@@ -2714,6 +2743,17 @@ public:
 	
 	void setNext (CAttributeListEntry* entry) { nextEntry = entry; }
 
+	void resize (long newSize)
+	{
+		if (pointer)
+			free (pointer);
+		if (newSize > 0)
+			pointer = malloc (newSize);
+		else
+			pointer = 0;
+		sizeOfPointer = newSize;
+	}
+
 protected:
 	CAttributeListEntry () : nextEntry (0), pointer (0), sizeOfPointer (0), id (0) {}
 
@@ -2747,6 +2787,33 @@ CView::CView (const CRect& size)
 	gNbCView++;
 	gViewList.push_back (this);
 	#endif
+}
+
+//-----------------------------------------------------------------------------
+CView::CView (const CView& v)
+: size (v.size)
+, mouseableArea (v.mouseableArea)
+, pParentFrame (0)
+, pParentView (0)
+, bDirty (false)
+, bMouseEnabled (v.bMouseEnabled)
+, bTransparencyEnabled (v.bTransparencyEnabled)
+, bWantsFocus (v.bWantsFocus)
+, bIsAttached (false)
+, pBackground (v.pBackground)
+, pAttributeList (0)
+{
+	if (pBackground)
+		pBackground->remember ();
+	if (v.pAttributeList)
+	{
+		CAttributeListEntry* entry = v.pAttributeList;
+		while (entry)
+		{
+			setAttribute (entry->getID (), entry->getSize (), entry->getPointer ());
+			entry = entry->getNext ();
+		}
+	}
 }
 
 //-----------------------------------------------------------------------------
@@ -3033,7 +3100,8 @@ bool CView::getAttribute (const CViewAttributeID id, const long inSize, void* ou
 		if (entry && inSize >= entry->getSize ())
 		{
 			outSize = entry->getSize ();
-			memcpy (outData, entry->getPointer (), outSize);
+			if (outSize > 0)
+				memcpy (outData, entry->getPointer (), outSize);
 			return true;
 		}
 	}
@@ -3063,9 +3131,12 @@ bool CView::setAttribute (const CViewAttributeID id, const long inSize, const vo
 		}
 		if (entry)
 		{
+			if (entry->getSize () < inSize)
+				entry->resize (inSize);
 			if (entry->getSize () >= inSize)
 			{
-				memcpy (entry->getPointer (), inData, inSize);
+				if (inSize > 0)
+					memcpy (entry->getPointer (), inData, inSize);
 				return true;
 			}
 			else
@@ -3319,12 +3390,12 @@ CFrame::~CFrame ()
 		if (HIViewRemoveFromSuperview (controlRef) == noErr)
 			CFRelease (controlRef);
 	}
-	if (controlSpec.u.classRef)
-	{
-		OSStatus status = UnregisterToolboxObjectClass ((ToolboxObjectClassRef)controlSpec.u.classRef);
-		if (status != noErr)
-			fprintf (stderr, "UnregisterToolboxObjectClass failed : %d\n", (int)status);
-	}
+//	if (controlSpec.u.classRef)
+//	{
+//		OSStatus status = UnregisterToolboxObjectClass ((ToolboxObjectClassRef)controlSpec.u.classRef);
+//		if (status != noErr)
+//			fprintf (stderr, "UnregisterToolboxObjectClass failed : %d\n", (int)status);
+//	}
 #endif
 }
 
@@ -3403,22 +3474,44 @@ bool CFrame::initFrame (void* systemWin)
 #elif MAC
 
 	dragEventHandler = 0;
-	if (!registerWithToolbox ())
-		return false;
 
 	hasFocus = false;
 	Rect r = {(short)size.top, (short)size.left, (short)size.bottom, (short)size.right};
-	OSStatus status = CreateCustomControl (NULL, &r, &controlSpec, NULL, &controlRef);
+	UInt32 features = kControlSupportsDragAndDrop | kControlSupportsFocus | kControlHandlesTracking | kControlSupportsEmbedding | kHIViewIsOpaque | kHIViewFeatureDoesNotUseSpecialParts;
+	OSStatus status = CreateUserPaneControl (0, &r, features, &controlRef);
 	if (status != noErr)
 	{
 		fprintf (stderr, "Could not create Control : %d\n", (int)status);
 		return false;
 	}
-	EventTypeSpec keyWorkaroundEvents[] = {
+	const EventTypeSpec controlEventTypes[] = {	
+		{kEventClassControl, kEventControlDraw},
+		{kEventClassControl, kEventControlHitTest},
+		{kEventClassControl, kEventControlClick},
+		//{kEventClassControl, kEventControlTrack},
+		//{kEventClassControl, kEventControlContextualMenuClick},
+		{kEventClassKeyboard, kEventRawKeyDown},
+		{kEventClassKeyboard, kEventRawKeyRepeat},
+		{kEventClassMouse, kEventMouseWheelMoved},
+		{kEventClassControl, kEventControlDragEnter},
+		{kEventClassControl, kEventControlDragWithin},
+		{kEventClassControl, kEventControlDragLeave},
+		{kEventClassControl, kEventControlDragReceive},
+		{kEventClassControl, kEventControlInitialize},
+		{kEventClassControl, kEventControlGetClickActivation},
+		{kEventClassControl, kEventControlGetOptimalBounds},
+		{kEventClassScrollable, kEventScrollableGetInfo},
+		{kEventClassScrollable, kEventScrollableScrollTo},
+		{kEventClassControl, kEventControlSetFocusPart},
+		{kEventClassControl, kEventControlGetFocusPart},
+	};
+	InstallControlEventHandler (controlRef, carbonEventHandler, GetEventTypeCount (controlEventTypes), controlEventTypes, this, NULL);
+	
+	const EventTypeSpec keyWorkaroundEvents[] = {
 		{ kEventClassTextInput, kEventTextInputUnicodeForKeyEvent }
 	};
 	InstallWindowEventHandler ((WindowRef)systemWin, carbonEventHandler, GetEventTypeCount (keyWorkaroundEvents), keyWorkaroundEvents, this, NULL);
-	EventTypeSpec mouseEvents[] = {
+	const EventTypeSpec mouseEvents[] = {
 		{ kEventClassMouse, kEventMouseDown },
 		{ kEventClassMouse, kEventMouseUp },
 		{ kEventClassMouse, kEventMouseMoved },
@@ -4045,6 +4138,7 @@ bool CFrame::setSize (CCoord width, CCoord height)
 		SetWindowPos (hTempWnd, HWND_TOP, 0, 0, width + diffWidth, height + diffHeight, SWP_NOMOVE);
 
 #elif MAC
+	#if !__LP64__
 	if (getSystemWindow ())
 	{
 		if (!isWindowComposited ((WindowRef)getSystemWindow ()))
@@ -4055,6 +4149,7 @@ bool CFrame::setSize (CCoord width, CCoord height)
 									(short)((bounds.bottom - bounds.top) - oldHeight + height), true);
 		}
 	}
+	#endif
 	if (controlRef)
 	{
 		HIRect frameRect;
@@ -4108,7 +4203,7 @@ bool CFrame::getSize (CRect* pRect) const
 		pRect->setHeight ((CCoord)hiRect.size.height);
 		return true;
 	}
-
+	#if !__LP64__
 	Rect bounds;
 	GetPortBounds (GetWindowPort ((WindowRef)getSystemWindow ()), &bounds);
 
@@ -4116,7 +4211,7 @@ bool CFrame::getSize (CRect* pRect) const
 	pRect->top    = bounds.top;
 	pRect->right  = bounds.right;
 	pRect->bottom = bounds.bottom;
-	
+	#endif
 #endif
 	return true;
 }
@@ -4177,7 +4272,7 @@ bool CFrame::getCurrentMouseLocation (CPoint &where) const
 		where.offset (-rctTempWnd.left, -rctTempWnd.top);
 	}
 	return true;
-	#elif MAC
+	#elif MAC && !__LP64__
 	// no up-to-date API call available for this, so use old QuickDraw
 	Point p;
 	CGrafPtr savedPort;
@@ -4369,10 +4464,18 @@ void CFrame::onViewRemoved (CView* pView)
 //-----------------------------------------------------------------------------
 void CFrame::setFocusView (CView *pView)
 {
+	static bool recursion = false;
+	if (pView == pFocusView || recursion)
+		return;
+
+	recursion = true;
+
 	CView *pOldFocusView = pFocusView;
 	pFocusView = pView;
 	if (pFocusView && pFocusView->wantsFocus ())
+	{
 		pFocusView->setDirty ();
+	}
 
 	if (pOldFocusView)
 	{
@@ -4380,6 +4483,7 @@ void CFrame::setFocusView (CView *pView)
 			pOldFocusView->setDirty ();
 		pOldFocusView->looseFocus ();
 	}
+	recursion = false;
 }
 
 //-----------------------------------------------------------------------------
@@ -4449,6 +4553,7 @@ bool CFrame::removeAll (const bool &withForget)
 {
 	pModalView = 0;
 	pFocusView = 0;
+	pMouseOverView = 0;
 	return CViewContainer::removeAll (withForget);
 }
 
@@ -4504,6 +4609,7 @@ void CFrame::invalidRect (CRect rect)
 			DisposeRgn(region);
 		}
 	}
+	#if !__LP64__
 	else
 	{
 		HIRect hiRect;
@@ -4514,6 +4620,7 @@ void CFrame::invalidRect (CRect rect)
 		Rect r = {(short)_rect.top, (short)_rect.left, (short)_rect.bottom, (short)_rect.right};
 		InvalWindowRect ((WindowRef)pSystemWindow, &r);
 	}
+	#endif
 
 	#elif WINDOWS
 	RECT r = {rect.left, rect.top, rect.right, rect.bottom};
@@ -4576,6 +4683,24 @@ CViewContainer::CViewContainer (const CRect &rect, CFrame* pParent, CBitmap* pBa
 	this->pParentFrame = pParent;
 	setBackground (pBackground);
 	backgroundColor = kBlackCColor;
+}
+
+//-----------------------------------------------------------------------------
+CViewContainer::CViewContainer (const CViewContainer& v)
+: CView (v)
+, pFirstView (0)
+, pLastView (0)
+, pOffscreenContext (0)
+, backgroundColor (v.backgroundColor)
+, backgroundOffset (v.backgroundOffset)
+, bDrawInOffscreen (v.bDrawInOffscreen)
+, currentDragView (0)
+, mouseDownView (0)
+{
+	for (long i = 0; i < v.getNbViews (); i++)
+	{
+		addView (v.getView (i)->newCopy ());
+	}
 }
 
 //-----------------------------------------------------------------------------
@@ -4679,6 +4804,51 @@ bool CViewContainer::addView (CView* pView)
 		pV->pNext = pSv;
 		pSv->pPrevious = pV;
 		pLastView = pSv;
+	}
+	if (isAttached ())
+	{
+		pView->attached (this);
+		pView->setDirty ();
+	}
+	return true;
+}
+
+//-----------------------------------------------------------------------------
+/**
+ * @param pView the view object to add to this container
+ * @param pBefore the view object
+ */
+bool CViewContainer::addView (CView *pView, CView* pBefore)
+{
+	if (!pView)
+		return false;
+
+	if (pView->isAttached ())
+		return false;
+
+	CCView* pSv = new CCView (pView);
+
+	CCView* pV = pFirstView;
+	if (!pV)
+	{
+		pLastView = pFirstView = pSv;
+	}
+	else
+	{
+		while (pV->pNext && pV->pView != pBefore)
+		{
+			pV = pV->pNext;
+		}
+		pSv->pNext = pV;
+		if (pV)
+		{
+			pSv->pPrevious = pV->pPrevious;
+			pV->pPrevious = pSv;
+			if (pSv->pPrevious == 0)
+				pFirstView = pSv;
+		}
+		else
+			pLastView = pSv;
 	}
 	if (isAttached ())
 	{
@@ -5497,6 +5667,33 @@ CView* CViewContainer::getViewAt (const CPoint& p, bool deep) const
 	}
 
 	return 0;
+}
+
+//-----------------------------------------------------------------------------
+CViewContainer* CViewContainer::getContainerAt (const CPoint& p, bool deep) const
+{
+	if (!pParentFrame)
+		return 0;
+
+	CPoint where (p);
+
+	// convert to relativ pos
+	where.offset (-size.left, -size.top);
+
+	CCView* pSv = pLastView;
+	while (pSv)
+	{
+		CView* pV = pSv->pView;
+		if (pV && where.isInside (pV->getMouseableArea ()))
+		{
+			if (deep && pV->isTypeOf ("CViewContainer"))
+				return ((CViewContainer*)pV)->getContainerAt (where, deep);
+			break;
+		}
+		pSv = pSv->pPrevious;
+	}
+
+	return const_cast<CViewContainer*>(this);
 }
 
 //-----------------------------------------------------------------------------
@@ -6631,7 +6828,7 @@ void CBitmap::setTransparentColor (const CColor color)
 		{
 			if (CGImageGetBitsPerComponent((CGImageRef)cgImage) == 8)
 			{
-				float myMaskingColors[] = { color.red, color.red, color.green, color.green, color.blue, color.blue };
+				CGFloat myMaskingColors[] = { color.red, color.red, color.green, color.green, color.blue, color.blue };
 				CGImageRef newImage = CGImageCreateWithMaskingColors ((CGImageRef)cgImage, myMaskingColors);
 				if (newImage)
 				{
@@ -7859,6 +8056,7 @@ static CPoint GetMacDragMouse (CFrame* frame)
 			location = CGPointMake ((float)r.h, (float)r.v);
 			HIPointConvert (&location, kHICoordSpaceScreenPixel, NULL, kHICoordSpaceView, view);
 		}
+		#if !__LP64__
 		else
 		{
 			QDGlobalToLocalPoint (GetWindowPort (window), &r);
@@ -7867,6 +8065,7 @@ static CPoint GetMacDragMouse (CFrame* frame)
 			HIViewFindByID (HIViewGetRoot (window), kHIViewWindowContentID, &fromView);
 			HIViewConvertPoint (&location, fromView, view);
 		}
+		#endif
 		where.x = (CCoord)location.x;
 		where.y = (CCoord)location.y;
 		#else
@@ -7977,52 +8176,6 @@ pascal short drag_receiver (WindowPtr w, void* ref, DragReference drag)
 #endif // MAC_OLD_DRAG
 
 #if MAC
-#define defControlStringMask	CFSTR ("net.sourceforge.vstgui.%d")
-
-bool CFrame::registerWithToolbox ()
-{
-	CFStringRef defControlString = CFStringCreateWithFormat (NULL, NULL, defControlStringMask, this);
-
-	controlSpec.defType = kControlDefObjectClass;
-	controlSpec.u.classRef = NULL;
-
-	EventTypeSpec eventTypes[] = {	{kEventClassControl, kEventControlDraw},
-									{kEventClassControl, kEventControlHitTest},
-									{kEventClassControl, kEventControlClick},
-									//{kEventClassControl, kEventControlTrack},
-									//{kEventClassControl, kEventControlContextualMenuClick},
-									{kEventClassKeyboard, kEventRawKeyDown},
-									{kEventClassKeyboard, kEventRawKeyRepeat},
-									{kEventClassMouse, kEventMouseWheelMoved},
-									{kEventClassControl, kEventControlDragEnter},
-									{kEventClassControl, kEventControlDragWithin},
-									{kEventClassControl, kEventControlDragLeave},
-									{kEventClassControl, kEventControlDragReceive},
-									{kEventClassControl, kEventControlInitialize},
-									{kEventClassControl, kEventControlGetClickActivation},
-									{kEventClassControl, kEventControlGetOptimalBounds},
-									{kEventClassScrollable, kEventScrollableGetInfo},
-									{kEventClassScrollable, kEventScrollableScrollTo},
-									{kEventClassControl, kEventControlSetFocusPart},
-									{kEventClassControl, kEventControlGetFocusPart},
-								};
-
-	ToolboxObjectClassRef controlClass = NULL;
-
-	OSStatus status = RegisterToolboxObjectClass (	defControlString,
-													NULL,
-													GetEventTypeCount (eventTypes),
-													eventTypes,
-													CFrame::carbonEventHandler,
-													this,
-													&controlClass);
-	if (status == noErr)
-		controlSpec.u.classRef = controlClass;
-
-	CFRelease (defControlString);
-
-	return (controlSpec.u.classRef != NULL);
-}
 //------------------------------------------------------------------------------
 static short keyTable[] = {
 	VKEY_BACK,		0x33, 
@@ -8162,7 +8315,7 @@ pascal OSStatus CFrame::carbonEventHandler (EventHandlerCallRef inHandlerCallRef
 			{
 				case kEventControlInitialize:
 				{
-					UInt32 controlFeatures = kControlSupportsDragAndDrop | kControlSupportsFocus | kControlHandlesTracking | kControlSupportsEmbedding | kHIViewFeatureGetsFocusOnClick | kHIViewIsOpaque;
+					UInt32 controlFeatures = kControlSupportsDragAndDrop | kControlSupportsFocus | kControlHandlesTracking | kControlSupportsEmbedding | kHIViewFeatureGetsFocusOnClick | kHIViewIsOpaque | kHIViewGetsFocusOnClick;
 					SetEventParameter (inEvent, kEventParamControlFeatures, typeUInt32, sizeof (UInt32), &controlFeatures);
 					result = noErr;
 					break;
@@ -8310,7 +8463,7 @@ pascal OSStatus CFrame::carbonEventHandler (EventHandlerCallRef inHandlerCallRef
 						if (code == kControlFocusNoPart)
 						{
 							frame->hasFocus = false;
-							frame->setFocusView (NULL);
+							//frame->setFocusView (NULL);
 						}
 						else
 						{
@@ -8329,8 +8482,8 @@ pascal OSStatus CFrame::carbonEventHandler (EventHandlerCallRef inHandlerCallRef
 								frame->hasFocus = false;
 								code = kControlFocusNoPart;
 							}
+							SetEventParameter (inEvent, kEventParamControlPart, typeControlPartCode, sizeof (code), &code);
 						}
-						SetEventParameter (inEvent, kEventParamControlPart, typeControlPartCode, sizeof (code), &code);
 						result = noErr;
 					}
 					break;
@@ -8406,7 +8559,7 @@ pascal OSStatus CFrame::carbonEventHandler (EventHandlerCallRef inHandlerCallRef
 					WindowRef windowRef;
 					GetEventParameter (inEvent, kEventParamWindowRef, typeWindowRef, NULL, sizeof (WindowRef), NULL, &windowRef);
 					GetEventParameter (inEvent, kEventParamMouseWheelAxis, typeMouseWheelAxis, NULL, sizeof (EventMouseWheelAxis), NULL, &wheelAxis);
-					GetEventParameter (inEvent, kEventParamMouseWheelDelta, typeLongInteger, NULL, sizeof (SInt32), NULL, &wheelDelta);
+					GetEventParameter (inEvent, kEventParamMouseWheelDelta, typeSInt32, NULL, sizeof (SInt32), NULL, &wheelDelta);
 					GetEventParameter (inEvent, kEventParamWindowMouseLocation, typeHIPoint, NULL, sizeof (HIPoint), NULL, &windowHIPoint);
 					GetEventParameter (inEvent, kEventParamKeyModifiers, typeUInt32, NULL, sizeof (UInt32), NULL, &modifiers);
 					long buttons = 0;
@@ -8619,6 +8772,16 @@ pascal OSStatus CFrame::carbonMouseEventHandler (EventHandlerCallRef inHandlerCa
 					if (clickCount > 1)
 						buttons |= kDoubleClick;
 					result = CallNextEventHandler (inHandlerCallRef, inEvent); // calls default handler, which activates the window if not already active, or sets the process to front
+					#if 0
+					WindowClass windowClass;
+					if (GetWindowClass (window, &windowClass) == noErr)
+					{
+						if (windowClass == kDocumentWindowClass)
+						{
+							HIViewAdvanceFocus ((HIViewRef)frame->getPlatformControl (), 0);
+						}
+					}
+					#endif
 					if (frame->onMouseDown (point, buttons))
 						result = noErr;
 					break;

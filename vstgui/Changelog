@@ -1,3 +1,13 @@
+2006-12-15 arne
+
+	* added copy constructors for all CView classes
+	* changed back order of loose focus message in CTextEdit. Destroying of CTextEdit objects should be done in the parent view not in the controller.
+	* added method CViewContainer::getContainerAt (const CPoint& p, bool deep) which returns the view container at point p.
+	* added method CViewContainer::addView (CView *pView, CView* pBefore) to place a view before another view in the internal list.
+	* added method CRect::unite (const CRect& rect) to unite two rects.
+	* added resizing to view attributes
+	* initial mac 64 bit support
+
 2006-11-30 arne
 
 	* moved CDrawContext::scollRect to CFrame class

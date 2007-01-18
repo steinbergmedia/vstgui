@@ -3,7 +3,7 @@
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 // Standard Control Objects
 //
-// Version 3.5       $Date: 2006-11-19 11:46:22 $
+// Version 3.5       $Date: 2007-01-18 08:13:22 $
 //
 // Added new objects        : Michael Schmidt          08.97
 // Added new objects        : Yvan Grabit              01.98
@@ -48,6 +48,10 @@
 #endif
 
 #include "vstkeycode.h"
+
+#ifdef check
+#undef check
+#endif
 
 BEGIN_NAMESPACE_VSTGUI
 
@@ -107,6 +111,21 @@ CControl::CControl (const CRect& size, CControlListener* listener, long tag, CBi
 }
 
 //------------------------------------------------------------------------
+CControl::CControl (const CControl& c)
+: CView (c)
+, listener (c.listener)
+, tag (c.tag)
+, oldValue (c.oldValue)
+, defaultValue (c.defaultValue)
+, value (c.value)
+, vmin (c.vmin)
+, vmax (c.vmax)
+, wheelInc (c.wheelInc)
+, lastTicks (c.lastTicks)
+{
+}
+
+//------------------------------------------------------------------------
 CControl::~CControl ()
 {
 }
@@ -117,15 +136,19 @@ void CControl::beginEdit ()
 	// begin of edit parameter
 	if (listener)
 		listener->controlBeginEdit (this);
-	getFrame ()->setFocusView(this);
-	getFrame ()->beginEdit (tag);
+	if (getFrame ())
+	{
+		getFrame ()->setFocusView (this);
+		getFrame ()->beginEdit (tag);
+	}
 }
 
 //------------------------------------------------------------------------
 void CControl::endEdit ()
 {
 	// end of edit parameter
-	getFrame ()->endEdit (tag);
+	if (getFrame ())
+		getFrame ()->endEdit (tag);
 	if (listener)
 		listener->controlEndEdit (this);
 }
@@ -237,6 +260,13 @@ COnOffButton::COnOffButton (const CRect& size, CControlListener* listener, long 
 : CControl (size, listener, tag, background)
 , style (style)
 {}
+
+//------------------------------------------------------------------------
+COnOffButton::COnOffButton (const COnOffButton& v)
+: CControl (v)
+, style (v.style)
+{
+}
 
 //------------------------------------------------------------------------
 COnOffButton::~COnOffButton ()
@@ -386,6 +416,26 @@ CKnob::CKnob (const CRect& size, CControlListener* listener, long tag, CBitmap* 
 	zoomFactor = 1.5f;
 
 	setWantsFocus (true);
+}
+
+//------------------------------------------------------------------------
+CKnob::CKnob (const CKnob& v)
+: CControl (v)
+, offset (v.offset)
+, colorHandle (v.colorHandle)
+, colorShadowHandle (v.colorShadowHandle)
+, inset (v.inset)
+, startAngle (v.startAngle)
+, rangeAngle (v.rangeAngle)
+, halfAngle (v.halfAngle)
+, aCoef (v.aCoef)
+, bCoef (v.bCoef)
+, radius (v.radius)
+, zoomFactor (v.zoomFactor)
+, pHandle (v.pHandle)
+{
+	if (pHandle)
+		pHandle->remember ();
 }
 
 //------------------------------------------------------------------------
@@ -861,6 +911,27 @@ CParamDisplay::CParamDisplay (const CRect& size, CBitmap* background, const long
 }
 
 //------------------------------------------------------------------------
+CParamDisplay::CParamDisplay (const CParamDisplay& v)
+: CControl (v)
+, stringConvert (v.stringConvert)
+, stringConvert2 (v.stringConvert2)
+, string2FloatConvert (v.string2FloatConvert)
+, userData (v.userData)
+, horiTxtAlign (v.horiTxtAlign)
+, style (v.style)
+, fontID (v.fontID)
+, txtFace (v.txtFace)
+, fontColor (v.fontColor)
+, backColor (v.backColor)
+, frameColor (v.frameColor)
+, shadowColor (v.shadowColor)
+, bTextTransparencyEnabled (v.bTextTransparencyEnabled)
+, bAntialias (v.bAntialias)
+{
+	fontID->remember ();
+}
+
+//------------------------------------------------------------------------
 CParamDisplay::~CParamDisplay ()
 {
 	if (fontID)
@@ -1092,6 +1163,14 @@ CTextLabel::CTextLabel (const CRect& size, const char* txt, CBitmap* background,
 }
 
 //------------------------------------------------------------------------
+CTextLabel::CTextLabel (const CTextLabel& v)
+: CParamDisplay (v)
+, text (0)
+{
+	setText (v.getText ());
+}
+
+//------------------------------------------------------------------------
 CTextLabel::~CTextLabel ()
 {
 	freeText ();
@@ -1171,8 +1250,24 @@ CTextEdit::CTextEdit (const CRect& size, CControlListener* listener, long tag, c
 }
 
 //------------------------------------------------------------------------
+CTextEdit::CTextEdit (const CTextEdit& v)
+: CParamDisplay (v)
+, platformFontColor (0)
+, platformControl (0)
+, platformFont (0)
+, editConvert (v.editConvert)
+, editConvert2 (v.editConvert2)
+{
+	setText ((char*)v.text);
+}
+
+//------------------------------------------------------------------------
 CTextEdit::~CTextEdit ()
-{}
+{
+	listener = 0;
+	if (platformControl)
+		looseFocus ();
+}
 
 //------------------------------------------------------------------------
 void CTextEdit::setText (char *txt)
@@ -1442,8 +1537,8 @@ pascal OSStatus CarbonEventsTextControlProc (EventHandlerCallRef inHandlerCallRe
 			{
 				case kEventWindowDeactivated:
 				{
-					result = CallNextEventHandler (inHandlerCallRef, inEvent);
-					ClearKeyboardFocus (window);
+//					result = CallNextEventHandler (inHandlerCallRef, inEvent);
+//					ClearKeyboardFocus (window);
 
 					textEdit->looseFocus ();
 
@@ -1575,6 +1670,10 @@ void CTextEdit::takeFocus ()
 	oldWndProcEdit = (WINDOWSPROC)SetWindowLongPtr ((HWND)platformControl, GWLP_WNDPROC, (LONG_PTR)WindowProcEdit);
 
 #elif MAC
+	extern bool hiToolboxAllowFocusChange;
+	bool oldState = hiToolboxAllowFocusChange;
+	hiToolboxAllowFocusChange = false;
+	
 	WindowRef window = (WindowRef)getFrame ()->getSystemWindow ();
 
 	extern bool isWindowComposited (WindowRef window);
@@ -1598,8 +1697,6 @@ void CTextEdit::takeFocus ()
 	if (CreateEditUnicodeTextControl (NULL, &r, NULL, false, NULL, &textControl) == noErr)
 	{
 		HIViewAddSubview ((HIViewRef)getFrame ()->getPlatformControl (), textControl);
-		HIViewSetFirstSubViewFocus ((HIViewRef)getFrame ()->getPlatformControl (), textControl);
-		SetKeyboardFocus ((WindowRef)getFrame ()->getSystemWindow (), textControl, kControlEditTextPart);
 		EventTypeSpec eventTypes[] = { { kEventClassWindow, kEventWindowDeactivated }, { kEventClassKeyboard, kEventRawKeyDown }, { kEventClassKeyboard, kEventRawKeyRepeat }, { kEventClassControl, kEventControlDraw } };
 		InstallControlEventHandler (textControl, CarbonEventsTextControlProc, GetEventTypeCount (eventTypes), eventTypes, this, &gTextEditEventHandler);
 		platformControl = textControl;
@@ -1628,13 +1725,18 @@ void CTextEdit::takeFocus ()
 			default: fontStyle.just = teCenter; break;
 		}
 		fontStyle.size = fontID->getSize ();
+		#if !__LP64__
 		Str255 fontName;
 		CopyCStringToPascal (fontID->getName (), fontName); 
 		GetFNum (fontName, &fontStyle.font);
+		#endif
 		SetControlData (textControl, kControlEditTextPart, kControlFontStyleTag, sizeof (fontStyle), &fontStyle);
 		HIViewSetVisible (textControl, true);
+		HIViewAdvanceFocus (textControl, 0);
+		SetKeyboardFocus ((WindowRef)getFrame ()->getSystemWindow (), textControl, kControlEditTextPart);
+		SetUserFocusWindow ((WindowRef)getFrame ()->getSystemWindow ());
 	}
-
+	hiToolboxAllowFocusChange = oldState;
 #endif
 }
 
@@ -1642,12 +1744,13 @@ void CTextEdit::takeFocus ()
 void CTextEdit::looseFocus ()
 {
 	// Call this yet to avoid recursive call
-	endEdit();
-	if (getFrame ()->getFocusView () == this)
+	if (getFrame () && getFrame ()->getFocusView () == this)
 		getFrame ()->setFocusView (0);
 
 	if (platformControl == 0)
 		return;
+
+	endEdit();
 
 	char oldText[256];
 	strcpy (oldText, text);
@@ -1688,20 +1791,14 @@ void CTextEdit::looseFocus ()
 		}
 		HIViewSetVisible ((HIViewRef)platformControl, false);
 		HIViewRemoveFromSuperview ((HIViewRef)platformControl);
-		pParentFrame->setCursor (kCursorDefault);
+		if (pParentFrame)
+			pParentFrame->setCursor (kCursorDefault);
+		SetUserFocusWindow (kUserFocusAuto);
 	}
 
 #endif
 
 	platformControl = 0;
-
-	CView* receiver = pParentView ? pParentView : pParentFrame;
-	while (receiver)
-	{
-		if (receiver->notify (this, kMsgLooseFocus) == kMessageNotified)
-			break;
-		receiver = receiver->getParentView ();
-	}
 
 	// update dependency
 	bool change = false;
@@ -1710,6 +1807,15 @@ void CTextEdit::looseFocus ()
 		change = true;
 		if (listener)
 			listener->valueChanged (this);
+	}
+
+	// if you want to destroy the text edit do it with the loose focus message
+	CView* receiver = pParentView ? pParentView : pParentFrame;
+	while (receiver)
+	{
+		if (receiver->notify (this, kMsgLooseFocus) == kMessageNotified)
+			break;
+		receiver = receiver->getParentView ();
 	}
 }
 
@@ -2343,6 +2449,32 @@ COptionMenu::COptionMenu (const CRect& size, CControlListener* listener, long ta
 }
 
 //------------------------------------------------------------------------
+COptionMenu::COptionMenu (const COptionMenu& v)
+: CParamDisplay (v)
+, platformControl (0)
+, entry (0)
+, submenuEntry (0)
+, check (0)
+, nbEntries (0)
+, nbSubMenus (0)
+, currentIndex (-1)
+, bgWhenClick (v.bgWhenClick)
+, lastButton (kRButton)
+, nbItemsPerColumn (v.nbItemsPerColumn)
+, nbAllocated (0)
+, nbSubMenuAllocated (0)
+, lastResult (-1)
+, prefixNumbers (0)
+, lastMenu (0)
+, scheme (v.scheme)
+{
+	if (bgWhenClick)
+		bgWhenClick->remember ();
+
+	// todo copy items and submenues
+}
+
+//------------------------------------------------------------------------
 COptionMenu::~COptionMenu ()
 {
 	removeAllEntry ();
@@ -2938,8 +3070,9 @@ void *COptionMenu::appendItems (long &offsetIdx)
 	}
 	else
 	#endif
-		theMenu = NewMenu (menuID, "\pPopUp");
-
+		//theMenu = NewMenu (menuID, "\pPopUp");
+		CreateNewMenu (menuID, kMenuAttrCondenseSeparators, &theMenu);
+		
 	char text2[256];
 	long keyChar;
 	long idxSubmenu = 0;
@@ -3340,15 +3473,31 @@ CAnimKnob::CAnimKnob (const CRect& size, CControlListener* listener, long tag, C
 CAnimKnob::CAnimKnob (const CRect& size, CControlListener* listener, long tag, long subPixmaps, CCoord heightOfOneImage, CBitmap* background, const CPoint &offset)
 : CKnob (size, listener, tag, background, 0, offset)
 , subPixmaps (subPixmaps)
-, heightOfOneImage (heightOfOneImage)
 , bInverseBitmap (false)
 {
+	setHeightOfOneImage (heightOfOneImage);
 	inset = 0;
+}
+
+//------------------------------------------------------------------------
+CAnimKnob::CAnimKnob (const CAnimKnob& v)
+: CKnob (v)
+, subPixmaps (v.subPixmaps)
+, bInverseBitmap (v.bInverseBitmap)
+{
+	setHeightOfOneImage (v.heightOfOneImage);
 }
 
 //------------------------------------------------------------------------
 CAnimKnob::~CAnimKnob ()
 {}
+
+//-----------------------------------------------------------------------------------------------
+void CAnimKnob::setHeightOfOneImage (const CCoord& height)
+{
+	IMultiBitmapControl::setHeightOfOneImage (height);
+	subPixmaps = (short)(pBackground->getHeight () / heightOfOneImage);
+}
 
 //-----------------------------------------------------------------------------------------------
 bool CAnimKnob::isDirty () const
@@ -3444,10 +3593,20 @@ CVerticalSwitch::CVerticalSwitch (const CRect& size, CControlListener* listener,
 : CControl (size, listener, tag, background)
 , offset (offset)
 , subPixmaps (subPixmaps)
-, heightOfOneImage (heightOfOneImage)
 , iMaxPositions (iMaxPositions)
 {
+	setHeightOfOneImage (heightOfOneImage);
 	setDefaultValue (0.f);
+}
+
+//------------------------------------------------------------------------
+CVerticalSwitch::CVerticalSwitch (const CVerticalSwitch& v)
+: CControl (v)
+, offset (v.offset)
+, subPixmaps (v.subPixmaps)
+, iMaxPositions (v.iMaxPositions)
+{
+	setHeightOfOneImage (v.heightOfOneImage);
 }
 
 //------------------------------------------------------------------------
@@ -3607,9 +3766,19 @@ CHorizontalSwitch::CHorizontalSwitch (const CRect& size, CControlListener* liste
 , offset (offset)
 , subPixmaps (subPixmaps)
 , iMaxPositions (iMaxPositions)
-, heightOfOneImage (heightOfOneImage)
 {
+	setHeightOfOneImage (heightOfOneImage);
 	setDefaultValue (0.f);
+}
+
+//------------------------------------------------------------------------
+CHorizontalSwitch::CHorizontalSwitch (const CHorizontalSwitch& v)
+: CControl (v)
+, offset (v.offset)
+, subPixmaps (v.subPixmaps)
+, iMaxPositions (v.iMaxPositions)
+{
+	setHeightOfOneImage (v.heightOfOneImage);
 }
 
 //------------------------------------------------------------------------
@@ -3749,7 +3918,7 @@ CRockerSwitch::CRockerSwitch (const CRect& size, CControlListener* listener, lon
 , offset (offset)
 , style (style)
 {
-	heightOfOneImage = size.width ();
+	heightOfOneImage = size.height ();
 }
 
 //------------------------------------------------------------------------
@@ -3767,9 +3936,19 @@ CRockerSwitch::CRockerSwitch (const CRect& size, CControlListener* listener, lon
 CRockerSwitch::CRockerSwitch (const CRect& size, CControlListener* listener, long tag, CCoord heightOfOneImage, CBitmap* background, const CPoint &offset, const long style)
 : CControl (size, listener, tag, background)
 , offset (offset)
-, heightOfOneImage (heightOfOneImage)
 , style (style)
-{}
+{
+	setHeightOfOneImage (heightOfOneImage);
+}
+
+//------------------------------------------------------------------------
+CRockerSwitch::CRockerSwitch (const CRockerSwitch& v)
+: CControl (v)
+, offset (v.offset)
+, style (v.style)
+{
+	setHeightOfOneImage (v.heightOfOneImage);
+}
 
 //------------------------------------------------------------------------
 CRockerSwitch::~CRockerSwitch ()
@@ -3982,9 +4161,8 @@ CMovieBitmap::CMovieBitmap (const CRect& size, CControlListener* listener, long 
 : CControl (size, listener, tag, background)
 , offset (offset)
 , subPixmaps (subPixmaps)
-, heightOfOneImage (heightOfOneImage)
 {
-	heightOfOneImage = size.height ();
+	setHeightOfOneImage (size.getHeight ());
 	subPixmaps = (long)(background->getHeight () / heightOfOneImage);
 }
 
@@ -4004,8 +4182,18 @@ CMovieBitmap::CMovieBitmap (const CRect& size, CControlListener* listener, long 
 : CControl (size, listener, tag, background)
 , offset (offset)
 , subPixmaps (subPixmaps)
-, heightOfOneImage (heightOfOneImage)
-{}
+{
+	setHeightOfOneImage (heightOfOneImage);
+}
+
+//------------------------------------------------------------------------
+CMovieBitmap::CMovieBitmap (const CMovieBitmap& v)
+: CControl (v)
+, offset (v.offset)
+, subPixmaps (v.subPixmaps)
+{
+	setHeightOfOneImage (v.heightOfOneImage);
+}
 
 //------------------------------------------------------------------------
 CMovieBitmap::~CMovieBitmap ()
@@ -4065,9 +4253,19 @@ CMovieButton::CMovieButton (const CRect& size, CControlListener* listener, long 
 CMovieButton::CMovieButton (const CRect& size, CControlListener* listener, long tag, CCoord heightOfOneImage, CBitmap* background, const CPoint &offset)
 : CControl (size, listener, tag, background)
 , offset (offset)
-, heightOfOneImage (heightOfOneImage)
 , buttonState (value)
-{}
+{
+	setHeightOfOneImage (heightOfOneImage);
+}
+
+//------------------------------------------------------------------------
+CMovieButton::CMovieButton (const CMovieButton& v)
+: CControl (v)
+, offset (v.offset)
+, buttonState (v.buttonState)
+{
+	setHeightOfOneImage (v.heightOfOneImage);
+}
 
 //------------------------------------------------------------------------
 CMovieButton::~CMovieButton ()
@@ -4241,10 +4439,21 @@ CAutoAnimation::CAutoAnimation (const CRect& size, CControlListener* listener, l
 : CControl (size, listener, tag, background)
 , offset (offset)
 , subPixmaps (subPixmaps)
-, heightOfOneImage (heightOfOneImage)
 , bWindowOpened (false)
 {
+	setHeightOfOneImage (heightOfOneImage);
 	totalHeightOfBitmap = heightOfOneImage * subPixmaps;
+}
+
+//------------------------------------------------------------------------
+CAutoAnimation::CAutoAnimation (const CAutoAnimation& v)
+: CControl (v)
+, offset (v.offset)
+, subPixmaps (v.subPixmaps)
+, totalHeightOfBitmap (v.totalHeightOfBitmap)
+, bWindowOpened (v.bWindowOpened)
+{
+	setHeightOfOneImage (v.heightOfOneImage);
 }
 
 //------------------------------------------------------------------------
@@ -4478,6 +4687,29 @@ CSlider::CSlider (const CRect &rect, CControlListener* listener, long tag, const
 	zoomFactor = 10.f;
 
 	setWantsFocus (true);
+}
+
+//------------------------------------------------------------------------
+CSlider::CSlider (const CSlider& v)
+: CControl (v)
+, offset (v.offset)
+, offsetHandle (v.offsetHandle)
+, pHandle (v.pHandle)
+, style (v.style)
+, widthOfSlider (v.widthOfSlider)
+, heightOfSlider (v.heightOfSlider)
+, rangeHandle (v.rangeHandle)
+, minTmp (v.minTmp)
+, maxTmp (v.maxTmp)
+, minPos (v.minPos)
+, widthControl (v.widthControl)
+, heightControl (v.heightControl)
+, zoomFactor (v.zoomFactor)
+, bDrawTransparentEnabled (v.bDrawTransparentEnabled)
+, bFreeClick (v.bFreeClick)
+{
+	if (pHandle)
+		pHandle->remember ();
 }
 
 //------------------------------------------------------------------------
@@ -4911,6 +5143,10 @@ CVerticalSlider::CVerticalSlider (const CRect &rect, CControlListener* listener,
 : CSlider (rect, listener, tag, offsetHandle, rangeHandle, handle, background, offset, style|kVertical)
 {}
 
+//------------------------------------------------------------------------
+CVerticalSlider::CVerticalSlider (const CVerticalSlider& slider)
+: CSlider (slider)
+{}
 
 //------------------------------------------------------------------------
 // CHorizontalSlider
@@ -4952,6 +5188,11 @@ CHorizontalSlider::CHorizontalSlider (const CRect &rect, CControlListener* liste
 //------------------------------------------------------------------------
 CHorizontalSlider::CHorizontalSlider (const CRect &rect, CControlListener* listener, long tag, const CPoint& offsetHandle, long rangeHandle, CBitmap* handle, CBitmap* background, const CPoint& offset, const long style)
 : CSlider (rect, listener, tag, offsetHandle, rangeHandle, handle, background, offset, style|kHorizontal)
+{}
+
+//------------------------------------------------------------------------
+CHorizontalSlider::CHorizontalSlider (const CHorizontalSlider& slider)
+: CSlider (slider)
 {}
 
 
@@ -5012,6 +5253,20 @@ CSpecialDigit::CSpecialDigit (const CRect& size, CControlListener* listener, lon
 
 	setMax ((float)pow (10.f, (float)iNumbers) - 1.0f);
 	setMin (0.0f);
+}
+
+//------------------------------------------------------------------------
+CSpecialDigit::CSpecialDigit (const CSpecialDigit& v)
+: CControl (v)
+, iNumbers (v.iNumbers)
+, width (v.width)
+, height (v.height)
+{
+	for (int i = 0; i < 7; i++)
+	{
+		xpos[i] = v.xpos[i];
+		ypos[i] = v.ypos[i];
+	}
 }
 
 //------------------------------------------------------------------------
@@ -5114,14 +5369,23 @@ CKickButton::CKickButton (const CRect& size, CControlListener* listener, long ta
  * @param tag the control tag
  * @param heightOfOneImage height of one sub bitmap in background
  * @param background the bitmap
- * @param offset unused
+ * @param offset of background
  */
 //------------------------------------------------------------------------
 CKickButton::CKickButton (const CRect& size, CControlListener* listener, long tag, CCoord heightOfOneImage, CBitmap* background, const CPoint& offset)
 : CControl (size, listener, tag, background)
 , offset (offset)
-, heightOfOneImage (heightOfOneImage)
-{}
+{
+	setHeightOfOneImage (heightOfOneImage);
+}
+
+//------------------------------------------------------------------------
+CKickButton::CKickButton (const CKickButton& v)
+: CControl (v)
+, offset (v.offset)
+{
+	setHeightOfOneImage (v.heightOfOneImage);
+}
 
 //------------------------------------------------------------------------
 CKickButton::~CKickButton ()
@@ -5273,7 +5537,7 @@ public:
 		}
 		return kMouseEventNotHandled;
 	}
-	
+	CLASS_METHODS(CDefaultSplashScreenView, CControl)
 protected:
 	CPoint offset;
 };
@@ -5319,6 +5583,16 @@ CSplashScreen::CSplashScreen (const CRect& size, CControlListener* listener, lon
 : CControl (size, listener, tag)
 , modalView (splashView)
 {
+}
+
+//------------------------------------------------------------------------
+CSplashScreen::CSplashScreen (const CSplashScreen& v)
+: CControl (v)
+, toDisplay (v.toDisplay)
+, keepSize (v.keepSize)
+, offset (v.offset)
+{
+	modalView = v.modalView->newCopy ();
 }
 
 //------------------------------------------------------------------------
@@ -5456,6 +5730,25 @@ CVuMeter::CVuMeter (const CRect& size, CBitmap* onBitmap, CBitmap* offBitmap, lo
 }
 
 //------------------------------------------------------------------------
+CVuMeter::CVuMeter (const CVuMeter& v)
+: CControl (v)
+, onBitmap (v.onBitmap)
+, offBitmap (v.offBitmap)
+, pOScreen (0)
+, nbLed (v.nbLed)
+, style (v.style)
+, decreaseValue (v.decreaseValue)
+, bUseOffscreen (v.bUseOffscreen)
+, rectOn (v.rectOn)
+, rectOff (v.rectOff)
+{
+	if (onBitmap)
+		onBitmap->remember ();
+	if (offBitmap)
+		offBitmap->remember ();
+}
+
+//------------------------------------------------------------------------
 CVuMeter::~CVuMeter ()
 {
 	if (onBitmap)
@@ -5573,6 +5866,17 @@ void CVuMeter::draw (CDrawContext *_pContext)
 	if (pOScreen)
 		pOScreen->copyFrom (_pContext, size);
 	setDirty (false);
+}
+
+//------------------------------------------------------------------------
+void IMultiBitmapControl::autoComputeHeightOfOneImage ()
+{
+	CView* view = dynamic_cast<CView*>(this);
+	if (view)
+	{
+		CRect viewSize = view->getViewSize (viewSize);
+		heightOfOneImage = viewSize.height ();
+	}
 }
 
 END_NAMESPACE_VSTGUI
