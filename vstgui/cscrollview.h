@@ -46,14 +46,22 @@ class CScrollContainer;
 class CVSTGUITimer;
 
 //-----------------------------------------------------------------------------
-class CScrollView : public CViewContainer, CControlListener
+// CScrollView Declaration
 //! \brief a scrollable container view with scrollbars
 /// \nosubgrouping
 //-----------------------------------------------------------------------------
+class CScrollView : public CViewContainer, CControlListener
 {
 public:
-	CScrollView (const CRect &size, const CRect &containerSize, CFrame* pParent, long style, long scrollbarWidth = 16, CBitmap* pBackground = 0);
-	virtual ~CScrollView ();
+	//-----------------------------------------------------------------------------
+	/// \name CScrollView Constructor
+	//-----------------------------------------------------------------------------
+	//@{
+	CScrollView (const CRect &size, const CRect &containerSize, CFrame* pParent, long style, CCoord scrollbarWidth = 16, CBitmap* pBackground = 0);
+	CScrollView (const CScrollView& scrollView);
+	//@}
+
+	~CScrollView ();
 
 	enum CScrollViewStyle 
 	{
@@ -62,13 +70,18 @@ public:
 		kDontDrawFrame			= 1 << 3,	///< don't draw frame
 	};
 
+	//-----------------------------------------------------------------------------
+	/// \name CScrollView Functions
+	//-----------------------------------------------------------------------------
+	//@{
 	virtual void setContainerSize (const CRect& cs, bool keepVisibleArea = false);	///< set the virtual size of this container
 	const CPoint& getScrollOffset () const;				///< get scroll offset
 	
-	CScrollbar* getVerticalScrollbar () const { return vsb; }
-	CScrollbar* getHorizontalScrollbar () const { return hsb; }
+	CScrollbar* getVerticalScrollbar () const { return vsb; }	///< get the vertical scrollbar
+	CScrollbar* getHorizontalScrollbar () const { return hsb; }	///< get the horizontal scrollbar
 
 	virtual void makeRectVisible (const CRect& rect);	///< set scrollview to show rect
+	//@}
 	
 	// overwrite
 	bool addView (CView *pView);
@@ -100,30 +113,35 @@ protected:
 	};
 };
 
-//-----------------------------------------------------------------------------
-class IScrollbarDrawer
-//-----------------------------------------------------------------------------
-{
-public:
-	virtual void drawScrollbarBackground (CDrawContext* pContext, const CRect& size, long style, CScrollbar* bar) = 0;
-	virtual void drawScrollbarScroller (CDrawContext* pContext, const CRect& size, long style, CScrollbar* bar) = 0;
-};
+class IScrollbarDrawer;
 
 //-----------------------------------------------------------------------------
-class CScrollbar : public CControl
+// CScrollbar Declaration
 //! \brief a scrollbar control
 /// \nosubgrouping
 //-----------------------------------------------------------------------------
+class CScrollbar : public CControl
 {
 public:
-	CScrollbar (const CRect& size, CControlListener* listener, long tag, long style, const CRect& scrollSize);
-	virtual ~CScrollbar ();
-	
-	enum {
+	enum ScrollbarDirection {
 		kHorizontal,
 		kVertical,
 	};
 
+	//-----------------------------------------------------------------------------
+	/// \name CScrollbar Constructor
+	//-----------------------------------------------------------------------------
+	//@{
+	CScrollbar (const CRect& size, CControlListener* listener, long tag, ScrollbarDirection style, const CRect& scrollSize);
+	CScrollbar (const CScrollbar& scrollbar);
+	//@}
+
+	~CScrollbar ();
+	
+	//-----------------------------------------------------------------------------
+	/// \name CScrollbar Functions
+	//-----------------------------------------------------------------------------
+	//@{
 	virtual void setDrawer (IScrollbarDrawer* d) { drawer = d; }
 	virtual void setScrollSize (const CRect& ssize);
 	virtual void setStep (float newStep) { stepValue = newStep; }
@@ -138,6 +156,7 @@ public:
 	CColor getFrameColor () const { return frameColor; }
 	CColor getScrollerColor () const { return scrollerColor; }
 	CColor getBackgroundColor () const { return backgroundColor; }
+	//@}
 
 	// overwrite
 	void draw (CDrawContext* pContext);
@@ -160,7 +179,7 @@ protected:
 	CRect getScrollerRect ();
 	void doStepping ();
 
-	long style;
+	ScrollbarDirection direction;
 	CRect scrollSize;
 	CRect scrollerArea;
 
@@ -178,6 +197,15 @@ private:
 	CRect scrollerRect;
 	bool scrolling;
 	float startValue;
+};
+
+//-----------------------------------------------------------------------------
+class IScrollbarDrawer
+//-----------------------------------------------------------------------------
+{
+public:
+	virtual void drawScrollbarBackground (CDrawContext* pContext, const CRect& size, CScrollbar::ScrollbarDirection direction, CScrollbar* bar) = 0;
+	virtual void drawScrollbarScroller (CDrawContext* pContext, const CRect& size, CScrollbar::ScrollbarDirection direction, CScrollbar* bar) = 0;
 };
 
 END_NAMESPACE_VSTGUI

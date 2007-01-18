@@ -2,7 +2,7 @@
 // VST Plug-Ins SDK
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 //
-// Version 3.5       $Date: 2006-11-30 12:30:46 $
+// Version 3.5       $Date: 2007-01-18 08:13:22 $
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
@@ -155,12 +155,18 @@ extern void DebugPrint (char* format, ...);
 #define CLASS_METHODS(name, parent)             \
 	virtual bool isTypeOf (const char* s) const \
 		{ return (!strcmp (s, (#name))) ? true : parent::isTypeOf (s); }\
-	virtual const char* getClassName () const { return (#name); }
+	virtual const char* getClassName () const { return (#name); } \
+	virtual CView* newCopy () const { return new name (*this); }
 #else
 #define CLASS_METHODS(name, parent)             \
 	virtual bool isTypeOf (const char* s) const \
-		{ return (!strcmp (s, (#name))) ? true : parent::isTypeOf (s); }
+		{ return (!strcmp (s, (#name))) ? true : parent::isTypeOf (s); } \
+	virtual CView* newCopy () const { return (CView*)new name (*this); }
 #endif
+#define CLASS_METHODS_VIRTUAL(name, parent)             \
+	virtual bool isTypeOf (const char* s) const \
+		{ return (!strcmp (s, (#name))) ? true : parent::isTypeOf (s); } \
+	virtual CView* newCopy () const = 0;
 
 #ifdef VSTGUI_FLOAT_COORDINATES
 typedef float CCoord;
@@ -232,6 +238,7 @@ struct CRect
 	}
 
 	void bound (const CRect& rect);
+	void unite (const CRect& rect);
 
 	void normalize ()
 	{
@@ -901,6 +908,8 @@ public:
 	void setNoAlpha (bool state) { noAlpha = state; }
 	bool getNoAlpha () const { return noAlpha; }
 
+	const CResourceDescription& getResourceDescription () const { return resourceDesc; }
+
 #if MAC
 	virtual CGImageRef createCGImage (bool transparent = false);
 	virtual void setBitsDirty ();
@@ -957,6 +966,7 @@ public:
 	//-----------------------------------------------------------------------------
 	//@{
 	CView (const CRect &size);
+	CView (const CView& view);
 	//@}
 	virtual ~CView ();
 
@@ -1077,6 +1087,8 @@ public:
 	virtual bool isTypeOf (const char* s) const
 		{ return (!strcmp (s, "CView")); }
 
+	virtual CView* newCopy () const { return new CView (*this); }
+
 	#if DEBUG
 	virtual const char* getClassName () const { return "CView"; }
 	#endif
@@ -1126,6 +1138,7 @@ public:
 	//-----------------------------------------------------------------------------
 	//@{
 	CViewContainer (const CRect &size, CFrame *pParent, CBitmap *pBackground = 0);
+	CViewContainer (const CViewContainer& viewContainer);
 	//@}
 	virtual ~CViewContainer ();
 
@@ -1135,12 +1148,14 @@ public:
 	//@{
 	virtual bool addView (CView *pView);	///< add a child view
 	virtual bool addView (CView *pView, CRect &mouseableArea, bool mouseEnabled = true);	///< add a child view
+	virtual bool addView (CView *pView, CView* pBefore);	///< add a child view before another view
 	virtual bool removeView (CView *pView, const bool &withForget = true);	///< remove a child view
 	virtual bool removeAll (const bool &withForget = true);	///< remove all child views
 	virtual bool isChild (CView *pView) const;	///< check if pView is a child view of this container
 	virtual long getNbViews () const;			///< get the number of child views
-	virtual CView *getView (long index) const;	///< get the child view at index
-	virtual CView *getViewAt (const CPoint& where, bool deep = false) const;	///< get the view at point where
+	virtual CView* getView (long index) const;	///< get the child view at index
+	virtual CView* getViewAt (const CPoint& where, bool deep = false) const;	///< get the view at point where
+	virtual CViewContainer* getContainerAt (const CPoint& where, bool deep = true) const;		///< get the container at point where
 	//@}
 
 	//-----------------------------------------------------------------------------
@@ -1358,10 +1373,8 @@ protected:
 
 	static pascal OSStatus carbonMouseEventHandler (EventHandlerCallRef inHandlerCallRef, EventRef inEvent, void *inUserData);
 	static pascal OSStatus carbonEventHandler (EventHandlerCallRef inHandlerCallRef, EventRef inEvent, void *inUserData);
-	bool registerWithToolbox ();
 	
-	ControlDefSpec controlSpec;
-	ControlRef controlRef;
+	HIViewRef controlRef;
 	bool hasFocus;
 	EventHandlerRef dragEventHandler;
 	EventHandlerRef mouseEventHandler;

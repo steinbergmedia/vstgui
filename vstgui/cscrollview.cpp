@@ -52,7 +52,8 @@ class CScrollContainer : public CViewContainer
 {
 public:
 	CScrollContainer (const CRect &size, const CRect &containerSize, CFrame *pParent, CBitmap *pBackground = 0);
-	virtual ~CScrollContainer ();
+	CScrollContainer (const CScrollContainer& v);
+	~CScrollContainer ();
 
 	void setScrollOffset (CPoint offset, bool withRedraw = false);
 	void getScrollOffset (CPoint& off) const { off = offset; }
@@ -79,6 +80,14 @@ CScrollContainer::CScrollContainer (const CRect &size, const CRect &containerSiz
 : CViewContainer (size, pParent, pBackground)
 , containerSize (containerSize)
 , offset (CPoint (0, 0))
+{
+}
+
+//-----------------------------------------------------------------------------
+CScrollContainer::CScrollContainer (const CScrollContainer& v)
+: CViewContainer (v)
+, containerSize (v.containerSize)
+, offset (v.offset)
 {
 }
 
@@ -159,7 +168,7 @@ bool CScrollContainer::isDirty () const
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
-CScrollView::CScrollView (const CRect &size, const CRect &containerSize, CFrame* pParent, long style, long scrollbarWidth, CBitmap* pBackground)
+CScrollView::CScrollView (const CRect &size, const CRect &containerSize, CFrame* pParent, long style, CCoord scrollbarWidth, CBitmap* pBackground)
 : CViewContainer (size, pParent, pBackground)
 , sc (0)
 , vsb (0)
@@ -201,6 +210,29 @@ CScrollView::CScrollView (const CRect &size, const CRect &containerSize, CFrame*
 	}
 
 	sc = new CScrollContainer (scsize, this->containerSize, pParent);
+	CViewContainer::addView (sc);
+}
+
+//-----------------------------------------------------------------------------
+CScrollView::CScrollView (const CScrollView& v)
+: CViewContainer (v)
+, containerSize (v.containerSize)
+, style (v.style)
+{
+	CViewContainer::removeAll ();
+	if (style & kHorizontalScrollbar && v.hsb)
+	{
+		hsb = (CScrollbar*)v.hsb->newCopy ();
+		hsb->setListener (this);
+		CViewContainer::addView (hsb);
+	}
+	if (style & kVerticalScrollbar && v.vsb)
+	{
+		vsb = (CScrollbar*)v.vsb->newCopy ();
+		vsb->setListener (this);
+		CViewContainer::addView (vsb);
+	}
+	sc = (CScrollContainer*)v.sc->newCopy ();
 	CViewContainer::addView (sc);
 }
 
@@ -445,9 +477,9 @@ bool CScrollView::onWheel (const CPoint &where, const CMouseWheelAxis &axis, con
 }
 
 //-----------------------------------------------------------------------------
-CScrollbar::CScrollbar (const CRect& size, CControlListener* listener, long tag, long style, const CRect& scrollSize)
+CScrollbar::CScrollbar (const CRect& size, CControlListener* listener, long tag, ScrollbarDirection direction, const CRect& scrollSize)
 : CControl (size, listener, tag, 0)
-, style (style)
+, direction (direction)
 , scrollSize (scrollSize)
 , scrollerArea (size)
 , stepValue (0.1f)
@@ -461,6 +493,23 @@ CScrollbar::CScrollbar (const CRect& size, CControlListener* listener, long tag,
 	frameColor (0, 0, 0, 255);
 	scrollerColor (0, 0, 255, 255);
 	backgroundColor (255, 255, 255, 200);
+}
+
+//-----------------------------------------------------------------------------
+CScrollbar::CScrollbar (const CScrollbar& v)
+: CControl (v)
+, direction (v.direction)
+, scrollSize (v.scrollSize)
+, scrollerArea (v.scrollerArea)
+, stepValue (v.stepValue)
+, scrollerLength (v.scrollerLength)
+, frameColor (v.frameColor)
+, scrollerColor (v.scrollerColor)
+, backgroundColor (v.backgroundColor)
+, drawer (v.drawer)
+, timer (0)
+{
+	calculateScrollerLength ();
 }
 
 //-----------------------------------------------------------------------------
@@ -488,7 +537,7 @@ void CScrollbar::setScrollSize (const CRect& ssize)
 void CScrollbar::calculateScrollerLength ()
 {
 	CCoord newScrollerLength = scrollerLength;
-	if (style == kHorizontal)
+	if (direction == kHorizontal)
 	{
 		float factor = (float)size.width () / (float)scrollSize.width ();
 		if (factor >= 1.f)
@@ -513,9 +562,9 @@ void CScrollbar::calculateScrollerLength ()
 CRect CScrollbar::getScrollerRect ()
 {
 	CRect scrollerRect (scrollerArea);
-	CCoord l = (style == kHorizontal) ? scrollerArea.width () : scrollerArea.height ();
+	CCoord l = (direction == kHorizontal) ? scrollerArea.width () : scrollerArea.height ();
 	CCoord scrollerOffset = (CCoord) (value * (l - scrollerLength));
-	if (style == kHorizontal)
+	if (direction == kHorizontal)
 	{
 		scrollerRect.setWidth (scrollerLength);
 		scrollerRect.offset (scrollerOffset, 0);
@@ -537,18 +586,18 @@ void CScrollbar::doStepping ()
 		if (!startPoint.isInside (size) || startPoint.isInside (scrollerRect))
 			return;
 	}
-	bool direction = (style == kHorizontal && startPoint.x < scrollerRect.left) || (style == kVertical && startPoint.y < scrollerRect.top);
+	bool dir = (direction == kHorizontal && startPoint.x < scrollerRect.left) || (direction == kVertical && startPoint.y < scrollerRect.top);
 	float newValue = value;
-	if (style == kHorizontal)
+	if (direction == kHorizontal)
 	{
-		if (direction)
+		if (dir)
 			newValue = value - (float)scrollerLength / (float)scrollerArea.width ();
 		else
 			newValue = value + (float)scrollerLength / (float)scrollerArea.width ();
 	}
 	else
 	{
-		if (direction)
+		if (dir)
 			newValue = value - (float)scrollerLength / (float)scrollerArea.height ();
 		else
 			newValue = value + (float)scrollerLength / (float)scrollerArea.height ();
@@ -622,7 +671,7 @@ CMouseEventResult CScrollbar::onMouseMoved (CPoint &where, const long& buttons)
 			CPoint newPoint (where);
 			newPoint.x -= startPoint.x - scrollerRect.left;
 			newPoint.y -= startPoint.y - scrollerRect.top;
-			if (style == kHorizontal)
+			if (direction == kHorizontal)
 			{
 				newValue = (float)(newPoint.x - scrollerArea.left) / ((float)scrollerArea.width () - scrollerRect.width ());
 			}
@@ -671,7 +720,7 @@ void CScrollbar::mouse (CDrawContext* pContext, CPoint& where, long buttons)
 			getMouseLocation (pContext, newPoint);
 			newPoint.x -= where.x - scrollerRect.left;
 			newPoint.y -= where.y - scrollerRect.top;
-			if (style == kHorizontal)
+			if (direction == kHorizontal)
 			{
 				newValue = (float)(newPoint.x - scrollerArea.left) / ((float)scrollerArea.width () - scrollerRect.width ());
 			}
@@ -700,7 +749,7 @@ void CScrollbar::mouse (CDrawContext* pContext, CPoint& where, long buttons)
 			long ticks = getFrame ()->getTicks ();
 			if (nextUpdateTime - ticks < 0)
 			{
-				if (style == kHorizontal)
+				if (direction == kHorizontal)
 				{
 					if (where.x < scrollerRect.left)
 						newValue = value - (float)scrollerLength / (float)scrollerArea.width ();
@@ -740,7 +789,7 @@ bool CScrollbar::onWheel (const CPoint &where, const CMouseWheelAxis &axis, cons
 		return false;
 
 	float distance = _distance;
-	if (style == kHorizontal && axis == kMouseWheelAxisY)
+	if (direction == kHorizontal && axis == kMouseWheelAxisY)
 		distance *= -1;
 
 	if (buttons & kShift)
@@ -762,7 +811,7 @@ void CScrollbar::drawBackground (CDrawContext* pContext)
 {
 	CRect r (size);
 	if (drawer)
-		drawer->drawScrollbarBackground (pContext, r, style, this);
+		drawer->drawScrollbarBackground (pContext, r, direction, this);
 	else
 	{
 		pContext->setLineWidth (1);
@@ -777,7 +826,7 @@ void CScrollbar::drawScroller (CDrawContext* pContext, const CRect& size)
 {
 	CRect r (size);
 	if (drawer)
-		drawer->drawScrollbarScroller (pContext, r, style, this);
+		drawer->drawScrollbarScroller (pContext, r, direction, this);
 	else
 	{
 		pContext->setLineWidth (1);
