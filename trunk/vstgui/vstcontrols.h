@@ -3,7 +3,7 @@
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 // Standard Control Objects
 //
-// Version 3.5       $Date: 2006-11-19 11:46:23 $
+// Version 3.5       $Date: 2007-01-18 08:13:22 $
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
@@ -137,6 +137,7 @@ public:
 	//-----------------------------------------------------------------------------
 	//@{
 	CControl (const CRect& size, CControlListener* listener = 0, long tag = 0, CBitmap* pBackground = 0);
+	CControl (const CControl& c);
 	//@}
 
 	virtual ~CControl ();
@@ -174,8 +175,8 @@ public:
 	virtual void beginEdit ();
 	virtual void endEdit ();
 
-	CControlListener* getListener () const { return listener; }
-	void setListener (CControlListener* l) { listener = l; }
+	virtual CControlListener* getListener () const { return listener; }
+	virtual void setListener (CControlListener* l) { listener = l; }
 	//@}
 
 	virtual void setBackOffset (CPoint& offset);
@@ -190,7 +191,7 @@ public:
 
 	VSTGUI_DEPRECATED(bool isDoubleClick ();) ///< \deprecated
 
-	CLASS_METHODS(CControl, CView)
+	CLASS_METHODS_VIRTUAL(CControl, CView)
 
 protected:
 	CControlListener* listener;
@@ -208,6 +209,21 @@ protected:
 	CPoint	backOffset;
 };
 
+//-----------------------------------------------------------------------------
+// IMultiBitmap Declaration
+//! \brief interface for controls with sub images
+/// \nosubgrouping
+//-----------------------------------------------------------------------------
+class IMultiBitmapControl
+{
+public:
+	virtual void setHeightOfOneImage (const CCoord& height) { heightOfOneImage = height; }
+	virtual CCoord getHeightOfOneImage () const { return heightOfOneImage; }
+
+	virtual void autoComputeHeightOfOneImage ();
+protected:
+	CCoord heightOfOneImage;
+};
 
 //-----------------------------------------------------------------------------
 // COnOffButton Declaration
@@ -222,6 +238,7 @@ public:
 	//-----------------------------------------------------------------------------
 	//@{
 	COnOffButton (const CRect& size, CControlListener* listener, long tag, CBitmap* background, long style = kPreListenerUpdate);
+	COnOffButton (const COnOffButton& onOffButton);
 	//@}
 	
 	virtual ~COnOffButton ();
@@ -257,6 +274,7 @@ public:
 	//-----------------------------------------------------------------------------
 	//@{
 	CParamDisplay (const CRect& size, CBitmap* background = 0, const long style = 0);
+	CParamDisplay (const CParamDisplay& paramDisplay);
 	//@}
 
 	virtual ~CParamDisplay ();
@@ -280,6 +298,7 @@ public:
 	bool getAntialias () const { return bAntialias; }
 
 	virtual void setHoriAlign (CHoriTxtAlign hAlign);
+	CHoriTxtAlign getHoriAlign () const { return horiTxtAlign; }
 
 	virtual void setStringConvert (void (*convert) (float value, char* string));
 	virtual void setStringConvert (void (*convert) (float value, char* string, void* userDta),
@@ -334,6 +353,7 @@ public:
 	//-----------------------------------------------------------------------------
 	//@{
 	CTextLabel (const CRect& size, const char* txt = 0, CBitmap* background = 0, const long style = 0);
+	CTextLabel (const CTextLabel& textLabel);
 	//@}
 	
 	~CTextLabel ();
@@ -363,12 +383,14 @@ public:
 	//-----------------------------------------------------------------------------
 	//@{
 	CTextEdit (const CRect& size, CControlListener* listener, long tag, const char* txt = 0, CBitmap* background = 0, const long style = 0);
+	CTextEdit (const CTextEdit& textEdit);
 	//@}
 
 	virtual ~CTextEdit ();
 
 	virtual void setText (char* txt);
 	virtual void getText (char* txt) const;
+	virtual const char* getText () const { return text; }
 
 	virtual	void draw (CDrawContext* pContext);
 	VSTGUI_DEPRECATED(virtual void mouse (CDrawContext* pContext, CPoint& where, long button = -1);)
@@ -459,6 +481,7 @@ public:
 	//-----------------------------------------------------------------------------
 	//@{
 	COptionMenu (const CRect& size, CControlListener* listener, long tag, CBitmap* background = 0, CBitmap* bgWhenClick = 0, const long style = 0);
+	COptionMenu (const COptionMenu& menu);
 	//@}
 
 	virtual ~COptionMenu ();
@@ -553,6 +576,7 @@ public:
 	//-----------------------------------------------------------------------------
 	//@{
 	CKnob (const CRect& size, CControlListener* listener, long tag, CBitmap* background, CBitmap* handle, const CPoint& offset = CPoint (0, 0));
+	CKnob (const CKnob& knob);
 	//@}
 
 	virtual ~CKnob ();
@@ -620,7 +644,7 @@ private:
 //! \brief a bitmap knob control
 /// \nosubgrouping
 //-----------------------------------------------------------------------------
-class CAnimKnob : public CKnob
+class CAnimKnob : public CKnob, public IMultiBitmapControl
 {
 public:
 	//-----------------------------------------------------------------------------
@@ -629,6 +653,7 @@ public:
 	//@{
 	CAnimKnob (const CRect& size, CControlListener* listener, long tag, CBitmap* background, const CPoint& offset = CPoint (0, 0));
 	CAnimKnob (const CRect& size, CControlListener* listener, long tag, long subPixmaps, CCoord heightOfOneImage, CBitmap* background, const CPoint& offset = CPoint (0, 0));
+	CAnimKnob (const CAnimKnob& knob);
 	//@}
 	
 	virtual ~CAnimKnob ();
@@ -639,11 +664,12 @@ public:
 
 	void setInverseBitmap (bool val) { bInverseBitmap = val; }
 
+	void setHeightOfOneImage (const CCoord& height);
+
 	CLASS_METHODS(CAnimKnob, CKnob)
 
 protected:
 	long	subPixmaps;
-	CCoord	heightOfOneImage;
 	bool	bInverseBitmap;
 	CPoint	lastDrawnPoint;
 };
@@ -653,7 +679,7 @@ protected:
 //! \brief a vertical switch control
 /// \nosubgrouping
 //-----------------------------------------------------------------------------
-class CVerticalSwitch : public CControl
+class CVerticalSwitch : public CControl, public IMultiBitmapControl
 {
 public:
 	//-----------------------------------------------------------------------------
@@ -662,6 +688,7 @@ public:
 	//@{
 	CVerticalSwitch (const CRect& size, CControlListener* listener, long tag, CBitmap* background, const CPoint& offset = CPoint (0, 0));
 	CVerticalSwitch (const CRect& size, CControlListener* listener, long tag, long subPixmaps, CCoord heightOfOneImage, long iMaxPositions, CBitmap* background, const CPoint& offset = CPoint (0, 0));
+	CVerticalSwitch (const CVerticalSwitch& vswitch);
 	//@}
 
 	virtual ~CVerticalSwitch ();
@@ -678,7 +705,6 @@ public:
 protected:
 	CPoint	offset;
 	long	subPixmaps;
-	CCoord	heightOfOneImage;
 	long	iMaxPositions;
 
 private:
@@ -691,7 +717,7 @@ private:
 //! \brief a horizontal switch control
 /// \nosubgrouping
 //-----------------------------------------------------------------------------
-class CHorizontalSwitch : public CControl
+class CHorizontalSwitch : public CControl, public IMultiBitmapControl
 {
 public:
 	//-----------------------------------------------------------------------------
@@ -700,6 +726,7 @@ public:
 	//@{
 	CHorizontalSwitch (const CRect& size, CControlListener* listener, long tag, CBitmap* background, const CPoint& offset = CPoint (0, 0));
 	CHorizontalSwitch (const CRect& size, CControlListener* listener, long tag, long subPixmaps, CCoord heightOfOneImage, long iMaxPositions, CBitmap* background, const CPoint& offset = CPoint (0, 0));
+	CHorizontalSwitch (const CHorizontalSwitch& hswitch);
 	//@}
 	
 	virtual	~CHorizontalSwitch ();
@@ -717,7 +744,6 @@ protected:
 	CPoint	offset;
 	long	subPixmaps;
 	long	iMaxPositions;
-	CCoord	heightOfOneImage;
 
 private:
 	double coef;
@@ -729,7 +755,7 @@ private:
 //! \brief a switch control with 3 sub bitmaps
 /// \nosubgrouping
 //-----------------------------------------------------------------------------
-class CRockerSwitch : public CControl
+class CRockerSwitch : public CControl, public IMultiBitmapControl
 {
 public:
 	//-----------------------------------------------------------------------------
@@ -738,6 +764,7 @@ public:
 	//@{
 	CRockerSwitch (const CRect& size, CControlListener* listener, long tag, CBitmap* background, const CPoint& offset = CPoint (0, 0), const long style = kHorizontal);
 	CRockerSwitch (const CRect& size, CControlListener* listener, long tag, CCoord heightOfOneImage, CBitmap* background, const CPoint& offset = CPoint (0, 0), const long style = kHorizontal);
+	CRockerSwitch (const CRockerSwitch& rswitch);
 	//@}
 
 	virtual ~CRockerSwitch ();
@@ -754,7 +781,6 @@ public:
 
 protected:
 	CPoint	offset;
-	CCoord	heightOfOneImage;
 	long	style;
 
 private:
@@ -767,7 +793,7 @@ private:
 //! \brief a bitmap control that displays different bitmaps according to its current value
 /// \nosubgrouping
 //-----------------------------------------------------------------------------
-class CMovieBitmap : public CControl
+class CMovieBitmap : public CControl, public IMultiBitmapControl
 {
 public:
 	//-----------------------------------------------------------------------------
@@ -776,6 +802,7 @@ public:
 	//@{
 	CMovieBitmap (const CRect& size, CControlListener* listener, long tag, CBitmap* background, const CPoint& offset = CPoint (0, 0));
 	CMovieBitmap (const CRect& size, CControlListener* listener, long tag, long subPixmaps, CCoord heightOfOneImage, CBitmap* background, const CPoint& offset = CPoint (0, 0));
+	CMovieBitmap (const CMovieBitmap& movieBitmap);
 	//@}
 
 	virtual	~CMovieBitmap ();
@@ -787,7 +814,6 @@ public:
 protected:
 	CPoint	offset;
 	long	subPixmaps;
-	CCoord	heightOfOneImage;
 };
 
 
@@ -796,7 +822,7 @@ protected:
 //! \brief a bi-states button with 2 subbitmaps
 /// \nosubgrouping
 //-----------------------------------------------------------------------------
-class CMovieButton : public CControl
+class CMovieButton : public CControl, public IMultiBitmapControl
 {
 public:
 	//-----------------------------------------------------------------------------
@@ -805,6 +831,7 @@ public:
 	//@{
 	CMovieButton (const CRect& size, CControlListener* listener, long tag, CBitmap* background, const CPoint& offset = CPoint (0, 0));
 	CMovieButton (const CRect& size, CControlListener* listener, long tag, CCoord heightOfOneImage, CBitmap* background, const CPoint& offset = CPoint (0, 0));
+	CMovieButton (const CMovieButton& movieButton);
 	//@}
 
 	virtual ~CMovieButton ();	
@@ -820,7 +847,6 @@ public:
 
 protected:
 	CPoint   offset;
-	CCoord   heightOfOneImage;
 	float    buttonState;
 
 private:
@@ -833,7 +859,7 @@ private:
 //!
 /// \nosubgrouping
 //-----------------------------------------------------------------------------
-class CAutoAnimation : public CControl
+class CAutoAnimation : public CControl, public IMultiBitmapControl
 {
 public:
 	//-----------------------------------------------------------------------------
@@ -842,6 +868,7 @@ public:
 	//@{
 	CAutoAnimation (const CRect& size, CControlListener* listener, long tag, CBitmap* background, const CPoint& offset = CPoint (0, 0));
 	CAutoAnimation (const CRect& size, CControlListener* listener, long tag, long subPixmaps, CCoord heightOfOneImage, CBitmap* background, const CPoint& offset = CPoint (0, 0));
+	CAutoAnimation (const CAutoAnimation& autoAnimation);
 	//@}
 
 	virtual ~CAutoAnimation ();
@@ -864,7 +891,6 @@ protected:
 	CPoint	offset;
 
 	long	subPixmaps;
-	CCoord	heightOfOneImage;
 	CCoord	totalHeightOfBitmap;
 
 	bool	bWindowOpened;
@@ -885,6 +911,7 @@ public:
 	//@{
 	CSlider (const CRect& size, CControlListener* listener, long tag, long iMinPos, long iMaxPos, CBitmap* handle, CBitmap* background, const CPoint& offset = CPoint (0, 0), const long style = kLeft|kHorizontal);
 	CSlider (const CRect& rect, CControlListener* listener, long tag, const CPoint& offsetHandle, long rangeHandle, CBitmap* handle, CBitmap* background, const CPoint& offset = CPoint (0, 0), const long style = kLeft|kHorizontal);
+	CSlider (const CSlider& slider);
 	//@}
 
 	virtual ~CSlider ();
@@ -903,6 +930,11 @@ public:
 	virtual void setFreeClick (bool val) { bFreeClick = val; }
 	virtual bool getFreeClick () const { return bFreeClick; }
 	virtual void setOffsetHandle (const CPoint& val);
+	virtual CPoint getOffsetHandle () const { return offsetHandle; }
+	virtual void setOffset (const CPoint& val) { offset = val; }
+	virtual CPoint getOffset () const { return offset; }
+
+	virtual long getStyle () const { return style; }
 
 	virtual void     setHandle (CBitmap* pHandle);
 	virtual CBitmap* getHandle () const { return pHandle; }
@@ -953,6 +985,7 @@ public:
 	//@{
 	CVerticalSlider (const CRect& size, CControlListener* listener, long tag, long iMinPos, long iMaxPos, CBitmap* handle, CBitmap* background, const CPoint& offset = CPoint (0, 0), const long style = kBottom);
 	CVerticalSlider (const CRect& rect, CControlListener* listener, long tag, const CPoint& offsetHandle, long rangeHandle, CBitmap* handle, CBitmap* background, const CPoint& offset = CPoint (0, 0), const long style = kBottom);
+	CVerticalSlider (const CVerticalSlider& slider);
 	//@}
 };
 
@@ -970,6 +1003,7 @@ public:
 	//@{
 	CHorizontalSlider (const CRect& size, CControlListener* listener, long tag, long iMinPos, long iMaxPos, CBitmap* handle, CBitmap* background, const CPoint& offset = CPoint (0, 0), const long style = kRight);
 	CHorizontalSlider (const CRect& rect, CControlListener* listener, long tag, const CPoint& offsetHandle, long rangeHandle, CBitmap* handle, CBitmap* background, const CPoint& offset = CPoint (0, 0), const long style = kRight);
+	CHorizontalSlider (const CHorizontalSlider& slider);
 	//@}
 };
 
@@ -987,6 +1021,7 @@ public:
 	//-----------------------------------------------------------------------------
 	//@{
 	CSpecialDigit (const CRect& size, CControlListener* listener, long tag, long dwPos, long iNumbers, long* xpos, long* ypos, long width, long height, CBitmap* background);
+	CSpecialDigit (const CSpecialDigit& digit);
 	//@}
 
 	virtual ~CSpecialDigit ();
@@ -1011,7 +1046,7 @@ protected:
 //!
 /// \nosubgrouping
 //-----------------------------------------------------------------------------
-class CKickButton : public CControl
+class CKickButton : public CControl, public IMultiBitmapControl
 {
 public:
 	//-----------------------------------------------------------------------------
@@ -1020,6 +1055,7 @@ public:
 	//@{
 	CKickButton (const CRect& size, CControlListener* listener, long tag, CBitmap* background, const CPoint& offset = CPoint (0, 0));
 	CKickButton (const CRect& size, CControlListener* listener, long tag, CCoord heightOfOneImage, CBitmap* background, const CPoint& offset = CPoint (0, 0));
+	CKickButton (const CKickButton& kickButton);
 	//@}
 
 	virtual ~CKickButton ();	
@@ -1035,7 +1071,6 @@ public:
 
 protected:
 	CPoint	offset;
-	CCoord	heightOfOneImage;
 
 private:
 	float   fEntryState;
@@ -1056,6 +1091,7 @@ public:
 	//@{
 	CSplashScreen (const CRect& size, CControlListener* listener, long tag, CBitmap* background, CRect& toDisplay, const CPoint& offset = CPoint (0, 0));
 	CSplashScreen (const CRect& size, CControlListener* listener, long tag, CView* splashView);
+	CSplashScreen (const CSplashScreen& splashScreen);
 	//@}
 	virtual ~CSplashScreen ();	
   
@@ -1094,6 +1130,7 @@ public:
 	//-----------------------------------------------------------------------------
 	//@{
 	CVuMeter (const CRect& size, CBitmap* onBitmap, CBitmap* offBitmap, long nbLed, const long style = kVertical);
+	CVuMeter (const CVuMeter& vuMeter);
 	//@}
 
 	virtual ~CVuMeter ();	
