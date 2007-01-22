@@ -2,7 +2,7 @@
 // VST Plug-Ins SDK
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 //
-// Version 3.5       $Date: 2007-01-18 08:13:22 $
+// Version 3.5       $Date: 2007-01-22 15:07:59 $
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
@@ -595,7 +595,7 @@ public:
 	//-----------------------------------------------------------------------------
 	//@{
 	const char* getName () const { return name; }		///< get the name of the font
-	const CCoord& getSize () const { return size; }	///< get the height of the font
+	const CCoord& getSize () const { return size; }		///< get the height of the font
 	const long& getStyle () const { return style; }		///< get the style of the font
 
 	void setName (const char* newName);					///< set the name of the font
