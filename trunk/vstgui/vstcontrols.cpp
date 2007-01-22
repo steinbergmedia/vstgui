@@ -3,7 +3,7 @@
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 // Standard Control Objects
 //
-// Version 3.5       $Date: 2007-01-18 08:13:22 $
+// Version 3.5       $Date: 2007-01-22 15:07:59 $
 //
 // Added new objects        : Michael Schmidt          08.97
 // Added new objects        : Yvan Grabit              01.98
@@ -1510,9 +1510,18 @@ pascal OSStatus CarbonEventsTextControlProc (EventHandlerCallRef inHandlerCallRe
 						{
 							CRect viewSize = textEdit->getViewSize (viewSize);
 							viewSize.inset (-10, -10);
-							viewSize = ((CViewContainer*)textEdit->getParentView ())->getVisibleSize (viewSize);
+							CViewContainer* container = (CViewContainer*)textEdit->getParentView ();
+							while (!container->isTypeOf ("CScrollContainer"))
+							{
+								CRect containerSize = container->getViewSize (containerSize);
+								viewSize.offset (containerSize.left, containerSize.top);
+								if (container == container->getParentView () || container->getParentView () == 0)
+									break;
+								container = ((CViewContainer*)container->getParentView ());
+							}
+							viewSize = container->getVisibleSize (viewSize);
 							CPoint cp (viewSize.left, viewSize.top);
-							textEdit/*->getParentView ()*/->localToFrame (cp);
+							container->localToFrame (cp);
 							viewSize.offset (-viewSize.left, -viewSize.top);
 							viewSize.offset (cp.x, cp.y);
 							CGRect cgViewSize = CGRectMake (viewSize.left, viewSize.top, viewSize.getWidth (), viewSize.getHeight ());
