@@ -2,7 +2,7 @@
 // VST Plug-Ins SDK
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 //
-// Version 3.5       $Date: 2007-01-18 08:13:22 $ 
+// Version 3.5       $Date: 2007-01-22 15:07:59 $ 
 //
 // Added Motif/Windows vers.: Yvan Grabit              01.98
 // Added Mac version        : Charlie Steinberg        02.98
@@ -672,8 +672,7 @@ CDrawContext::CDrawContext (CFrame* inFrame, void* inSystemContext, void* inWind
 	if (pSystemContext)
 	{
 		gCGContext = (CGContextRef) pSystemContext;
-		CGContextSaveGState (gCGContext); // save the original state
-//		CGContextScaleCTM (gCGContext, 1, -1);
+		CGContextSaveGState (gCGContext);
 		CGContextSetShouldAntialias (gCGContext, false);
 		CGContextSetFillColorSpace (gCGContext, GetGenericRGBColorSpace ());
 		CGContextSetStrokeColorSpace (gCGContext, GetGenericRGBColorSpace ()); 
@@ -689,7 +688,7 @@ CDrawContext::CDrawContext (CFrame* inFrame, void* inSystemContext, void* inWind
 		OSStatus err = QDBeginCGContext (port, &gCGContext);
 		if (err == noErr)
 		{
-			CGContextSaveGState (gCGContext); // save the original state
+			CGContextSaveGState (gCGContext);
 			SyncCGContextOriginWithPort (gCGContext, port);
 			Rect rect;
 			GetPortBounds (port, &rect);
@@ -701,7 +700,6 @@ CDrawContext::CDrawContext (CFrame* inFrame, void* inSystemContext, void* inWind
 			CGContextSetStrokeColorSpace (gCGContext, GetGenericRGBColorSpace ());
 			CGContextScaleCTM (gCGContext, 1, -1);
 			QuartzSetupClip (gCGContext, clipRect);
-			CGContextScaleCTM (gCGContext, 1, -1);
 			CGContextSaveGState (gCGContext);
 			setClipRect (clipRect);
 			if (pFrame)
