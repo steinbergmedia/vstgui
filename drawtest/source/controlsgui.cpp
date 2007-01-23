@@ -55,6 +55,7 @@ public:
 
 protected:
 	bool focus;
+	char* originalText;
 };
 
 //-----------------------------------------------------------------------------
@@ -63,6 +64,7 @@ protected:
 CLabel::CLabel (CRect &size, char *text)
 : CTextLabel (size)
 , focus (false)
+, originalText (0)
 {
 	setText (text);
 	setTransparency (true);
@@ -87,21 +89,40 @@ bool CLabel::onDrop (CDragContainer* drag, const CPoint& where)
 			#endif
 		}
 	}
+	if (originalText)
+	{
+		free (originalText);
+		originalText = 0;
+	}
 	return true;
 }
 
 void CLabel::onDragEnter (CDragContainer* drag, const CPoint& where)
 {
 	getFrame ()->setCursor (kCursorCopy);
+	originalText = (char*)malloc (strlen (text) + 1);
+	strcpy (originalText, text);
+	switch (drag->getType (0))
+	{
+		case CDragContainer::kFile: setText ("Drag Item 0 is a file"); break;
+		case CDragContainer::kUnicodeText: setText ("Drag Item 0 is unicode text"); break;
+		case CDragContainer::kText: setText ("Drag Item 0 is ASCII text"); break;
+	}
 	focus = true;
-	setDirty ();
+	invalid ();
 }
 
 void CLabel::onDragLeave (CDragContainer* drag, const CPoint& where)
 {
 	getFrame ()->setCursor (kCursorNotAllowed);
+	if (originalText)
+	{
+		setText (originalText);
+		free (originalText);
+		originalText = 0;
+	}
 	focus = false;
-	setDirty ();
+	invalid ();
 }
 
 void CLabel::onDragMove (CDragContainer* drag, const CPoint& where)

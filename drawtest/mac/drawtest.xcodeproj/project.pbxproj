@@ -87,6 +87,8 @@
 		F41417ED09EE85180064AA41 /* vstguidebug.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F41417EB09EE85180064AA41 /* vstguidebug.cpp */; };
 		F41417EE09EE85180064AA41 /* vstguidebug.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F41417EB09EE85180064AA41 /* vstguidebug.cpp */; };
 		F41417EF09EE85180064AA41 /* vstguidebug.h in Headers */ = {isa = PBXBuildFile; fileRef = F41417EC09EE85180064AA41 /* vstguidebug.h */; };
+		F457A91A0B05DCCD0045B44A /* macaccessibility.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F457A9190B05DCCD0045B44A /* macaccessibility.cpp */; };
+		F457A91B0B05DCCD0045B44A /* macaccessibility.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F457A9190B05DCCD0045B44A /* macaccessibility.cpp */; };
 		F467335808BF64B000CBCAD2 /* CAVectorUnit.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F467335708BF64B000CBCAD2 /* CAVectorUnit.cpp */; };
 		F485AC4B086C15E700298D72 /* AudioUnit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F485AC4A086C15E700298D72 /* AudioUnit.framework */; };
 		F485AC51086C160100298D72 /* CoreAudio.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8B5C7F83076FB26000A15F61 /* CoreAudio.framework */; };
@@ -230,8 +232,12 @@
 		8BA05B050720754400365D66 /* CAAUParameter.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = CAAUParameter.cpp; path = /Developer/Examples/CoreAudio/PublicUtility/CAAUParameter.cpp; sourceTree = "<absolute>"; };
 		8BA05B060720754400365D66 /* CAAUParameter.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = CAAUParameter.h; path = /Developer/Examples/CoreAudio/PublicUtility/CAAUParameter.h; sourceTree = "<absolute>"; };
 		8D01CCD20486CAD60068D4B7 /* drawtest.component */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = drawtest.component; sourceTree = BUILT_PRODUCTS_DIR; };
+		F405CD7A0B04666D008E3886 /* doc.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = doc.h; path = ../../vstgui/doxygen/doc.h; sourceTree = SOURCE_ROOT; };
+		F405CD7B0B04666D008E3886 /* doxydocu.css */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text; name = doxydocu.css; path = ../../vstgui/doxygen/doxydocu.css; sourceTree = SOURCE_ROOT; };
+		F405CD7C0B04666D008E3886 /* tutorial.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = tutorial.h; path = ../../vstgui/doxygen/tutorial.h; sourceTree = SOURCE_ROOT; };
 		F41417EB09EE85180064AA41 /* vstguidebug.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = vstguidebug.cpp; path = ../../vstgui/vstguidebug.cpp; sourceTree = SOURCE_ROOT; };
 		F41417EC09EE85180064AA41 /* vstguidebug.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = vstguidebug.h; path = ../../vstgui/vstguidebug.h; sourceTree = SOURCE_ROOT; };
+		F457A9190B05DCCD0045B44A /* macaccessibility.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = macaccessibility.cpp; path = ../../vstgui/macaccessibility.cpp; sourceTree = SOURCE_ROOT; };
 		F467335708BF64B000CBCAD2 /* CAVectorUnit.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = CAVectorUnit.cpp; path = /Developer/Examples/CoreAudio/PublicUtility/CAVectorUnit.cpp; sourceTree = "<absolute>"; };
 		F485AC4A086C15E700298D72 /* AudioUnit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioUnit.framework; path = /System/Library/Frameworks/AudioUnit.framework; sourceTree = "<absolute>"; };
 		F48A3FB509FF648300D9BDDE /* cdatabrowser.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = cdatabrowser.cpp; path = ../../vstgui/cdatabrowser.cpp; sourceTree = SOURCE_ROOT; };
@@ -360,6 +366,7 @@
 		0C1C269E07AB5DE8007128C4 /* VSTGUI */ = {
 			isa = PBXGroup;
 			children = (
+				F405CD750B046656008E3886 /* doc */,
 				F4C9F20407B2335F00010DAD /* aeffguieditor.cpp */,
 				F48A3FBA09FF649100D9BDDE /* aeffguieditor.h */,
 				F48A3FB509FF648300D9BDDE /* cdatabrowser.cpp */,
@@ -382,6 +389,7 @@
 				F48A3FC209FF64B100D9BDDE /* vstgui.h */,
 				F41417EB09EE85180064AA41 /* vstguidebug.cpp */,
 				F41417EC09EE85180064AA41 /* vstguidebug.h */,
+				F457A9190B05DCCD0045B44A /* macaccessibility.cpp */,
 			);
 			name = VSTGUI;
 			sourceTree = "<group>";
@@ -507,6 +515,16 @@
 				F467335708BF64B000CBCAD2 /* CAVectorUnit.cpp */,
 			);
 			name = "Public Utility";
+			sourceTree = "<group>";
+		};
+		F405CD750B046656008E3886 /* doc */ = {
+			isa = PBXGroup;
+			children = (
+				F405CD7A0B04666D008E3886 /* doc.h */,
+				F405CD7B0B04666D008E3886 /* doxydocu.css */,
+				F405CD7C0B04666D008E3886 /* tutorial.h */,
+			);
+			name = doc;
 			sourceTree = "<group>";
 		};
 		F4CB6F9E098CF9EA004A1647 /* VST SDK 2.4 */ = {
@@ -750,6 +768,7 @@
 				F41417EE09EE85180064AA41 /* vstguidebug.cpp in Sources */,
 				F48A3FB809FF648300D9BDDE /* cdatabrowser.cpp in Sources */,
 				F48A3FF409FF673D00D9BDDE /* pdatabrowsertest.cpp in Sources */,
+				F457A91B0B05DCCD0045B44A /* macaccessibility.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -776,6 +795,7 @@
 				F41417ED09EE85180064AA41 /* vstguidebug.cpp in Sources */,
 				F48A3FB709FF648300D9BDDE /* cdatabrowser.cpp in Sources */,
 				F48A3FF509FF673D00D9BDDE /* pdatabrowsertest.cpp in Sources */,
+				F457A91A0B05DCCD0045B44A /* macaccessibility.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -874,7 +894,7 @@
 				MACOSX_DEPLOYMENT_TARGET = 10.2;
 				OTHER_CFLAGS = "";
 				OTHER_LDFLAGS = "-bundle";
-				OTHER_REZFLAGS = "-I /System/Library/Frameworks/CoreServices.framework/Frameworks/CarbonCore.framework/Versions/A/Headers -I /Developer/Examples/CoreAudio/AudioUnits/AUPublic/AUBase -D  TARGET_REZ_MAC_PPC=1";
+				OTHER_REZFLAGS = "-d ppc_$ppc -d i386_$i386 -I /System/Library/Frameworks/CoreServices.framework/Frameworks/CarbonCore.framework/Versions/A/Headers -I /Developer/Examples/CoreAudio/AudioUnits/AUPublic/AUBase";
 				PRESERVE_DEAD_CODE_INITS_AND_TERMS = YES;
 				PRODUCT_NAME = drawtest;
 				REZ_PREPROCESSOR_DEFINITIONS = "VSTGUI_ENABLE_DEPRECATED_METHODS=0 VSTGUI_USES_UTF8=1";
@@ -912,6 +932,8 @@
 					"DEBUG=1",
 					"ENABLE_VST_EXTENSION_IN_VSTGUI=1",
 					"VSTGUI_ENABLE_DEPRECATED_METHODS=0",
+					"MAC_ENABLE_MENU_SCHEME=1",
+					VSTGUI_FLOAT_COORDINATES,
 				);
 				GENERATE_PKGINFO_FILE = YES;
 				HEADER_SEARCH_PATHS = ../vstsdk2.4;
@@ -956,6 +978,7 @@
 					"VSTGUI_USES_UTF8=1",
 					"ENABLE_VST_EXTENSION_IN_VSTGUI=1",
 					"VSTGUI_ENABLE_DEPRECATED_METHODS=0",
+					"MAC_ENABLE_MENU_SCHEME=1",
 				);
 				GCC_UNROLL_LOOPS = YES;
 				GCC_USE_GCC3_PFE_SUPPORT = YES;
