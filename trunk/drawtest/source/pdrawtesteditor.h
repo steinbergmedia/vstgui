@@ -36,13 +36,21 @@
 #include "ctooltipsupport.h"
 #endif
 
+#ifndef __ctabview__
+#include "ctabview.h"
+#endif
+
+#ifndef __cscrollview__
+#include "cscrollview.h"
+#endif
+
 class DrawTestEditor : public AEffGUIEditor, CControlListener
 {
 public:
 	DrawTestEditor (void* effect);
 	virtual ~DrawTestEditor ();
 
-	void setTabView (CFrame* frame, const CRect& r, long position);
+	void setTabView (CFrame* frame, const CRect& r, CTabView::TabPosition position);
 
 	virtual void valueChanged (CControl *pControl);
 
@@ -52,6 +60,8 @@ protected:
 
 	CBitmap* backgroundBitmap;
 	CTooltipSupport* tooltipSupport;
+	CScrollView* scrollview;
+	void* accessibilityObject;
 };
 
 #endif

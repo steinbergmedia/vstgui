@@ -94,7 +94,7 @@ void PMiscView::draw (CDrawContext* pContext)
 	pContext->setLineWidth (1);
 	drawGrid (pContext);
 
-	#if VSTGUI_USES_UTF8
+	#if 0 //VSTGUI_USES_UTF8
 	CRect stringRect (size.left + 5, size.top + 5, size.left + 205, size.top + 17);
 	pContext->setFontColor (kBlackCColor);
 	pContext->setFont (kNormalFont, 0, kNormalFace);
@@ -181,8 +181,10 @@ void PMiscView::draw (CDrawContext* pContext)
 
 	CRect arcRect (0, 150, 100, 250);
 	arcRect.offset (size.left + xOffset, size.top + yOffset);
+	pContext->setFrameColor (MakeCColor (0, 0, 0, 100));
+	pContext->drawRect (arcRect, kDrawStroked);
 	pContext->setFrameColor (kBlackCColor);
-	pContext->drawArc (arcRect, 0.f, 280.f, kDrawStroked);
+	pContext->drawArc (arcRect, 30.f, 180.f, kDrawStroked);
 	arcRect.offset (75, 0);
 	pContext->setFillColor (kBlueAlphaCColor);
 	pContext->drawArc (arcRect, 0.f, 280.f, kDrawFilled);

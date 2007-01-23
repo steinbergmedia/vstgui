@@ -3,7 +3,7 @@
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 // Standard Control Objects
 //
-// Version 3.5       $Date: 2007-01-22 15:07:59 $
+// Version 3.5       $Date: 2007-01-23 09:11:08 $
 //
 // Added new objects        : Michael Schmidt          08.97
 // Added new objects        : Yvan Grabit              01.98
@@ -3505,7 +3505,8 @@ CAnimKnob::~CAnimKnob ()
 void CAnimKnob::setHeightOfOneImage (const CCoord& height)
 {
 	IMultiBitmapControl::setHeightOfOneImage (height);
-	subPixmaps = (short)(pBackground->getHeight () / heightOfOneImage);
+	if (pBackground && heightOfOneImage)
+		subPixmaps = (short)(pBackground->getHeight () / heightOfOneImage);
 }
 
 //-----------------------------------------------------------------------------------------------
