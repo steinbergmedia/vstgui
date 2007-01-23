@@ -33,7 +33,7 @@ enum {
 class MyTabView : public CTabView
 {
 public:
-	MyTabView (const CRect& size, CFrame* parent, CBitmap* tabBitmap, CBitmap* background = 0, long tabPosition = kPositionTop, DrawTestEditor* editor = 0)
+	MyTabView (const CRect& size, CFrame* parent, CBitmap* tabBitmap, CBitmap* background = 0, TabPosition tabPosition = kPositionTop, DrawTestEditor* editor = 0)
 	: CTabView (size, parent, tabBitmap, background, tabPosition)
 	, editor (editor) {}
 
@@ -66,11 +66,11 @@ public:
 					if (res < 4)
 					{
 						r = size;
-						editor->setTabView (getFrame (), r, res);
+						editor->setTabView (getFrame (), r, (CTabView::TabPosition)res);
 					}
 					else
 					{
-						alignTabs (kAlignCenter + res - 5);
+						alignTabs ((CTabView::TabAlignment)(kAlignCenter + res - 5));
 					}
 				}
 				return kMouseDownEventHandledButDontNeedMovedOrUpEvents;
@@ -125,10 +125,13 @@ DrawTestEditor::DrawTestEditor (void* effect)
 		rect.right = 400;
 	if (rect.bottom == 0)
 		rect.bottom = 300;
+	
+	gOptionMenuScheme = new COptionMenuScheme;
 }
 
 DrawTestEditor::~DrawTestEditor ()
 {
+	gOptionMenuScheme->forget ();
 	backgroundBitmap->forget ();
 }
 
@@ -136,7 +139,7 @@ void DrawTestEditor::valueChanged (CControl *pControl)
 {
 }
 
-void DrawTestEditor::setTabView (CFrame* frame, const CRect& r, long position)
+void DrawTestEditor::setTabView (CFrame* frame, const CRect& r, CTabView::TabPosition position)
 {
 	frame->removeAll ();
 	CBitmap* tabButtonBitmap = new CBitmap (kTabButtonBitmap);
@@ -144,7 +147,6 @@ void DrawTestEditor::setTabView (CFrame* frame, const CRect& r, long position)
 	tabView->setTransparency (true);
 	frame->addView (tabView);
 	CRect tabSize = tabView->getTabViewSize (tabSize);
-//	tabSize.inset (1, 1);
 	// add tabs
 	CView* testView;
 	CBitmap* testBitmap = new CBitmap (kTestBitmap);
@@ -152,9 +154,8 @@ void DrawTestEditor::setTabView (CFrame* frame, const CRect& r, long position)
 	containerSize.right = testBitmap->getWidth () + 1000;
 	containerSize.bottom = testBitmap->getHeight () + 1000;
 	// the first tab is a scroll view with a movie bitmap
-	CScrollView* scrollview = new CScrollView (tabSize, containerSize, frame, CScrollView::kHorizontalScrollbar|CScrollView::kVerticalScrollbar/*|CScrollView::kDontDrawFrame*/);
+	scrollview = new CScrollView (tabSize, containerSize, frame, CScrollView::kHorizontalScrollbar|CScrollView::kVerticalScrollbar/*|CScrollView::kDontDrawFrame*/);
 	scrollview->setBackgroundColor (kWhiteCColor);
-//	scrollview->setTransparency (true);
 	CPoint p (0,0);
 	CRect mbSize (containerSize);
 	mbSize.setWidth (testBitmap->getWidth ());
@@ -166,6 +167,7 @@ void DrawTestEditor::setTabView (CFrame* frame, const CRect& r, long position)
 	controlsGUISize2.offset (mbSize.right, 5);
 	testView = new ControlsGUI (controlsGUISize2, frame);
 	scrollview->addView (testView);
+	
 	tabView->addTab (scrollview, "Scroll View");
 
 	testView = new PLinesView (tabSize);
@@ -268,6 +270,9 @@ bool DrawTestEditor::open (void *ptr)
 	frame->setMouseObserver (tooltipSupport);
 	// last but not least set the class variable frame to our newly created frame
 	this->frame = frame;
+	
+	extern void* CreateMacAccessibility (CFrame* frame);
+	accessibilityObject = CreateMacAccessibility (frame);
 	return true;
 }
 
@@ -277,6 +282,11 @@ void DrawTestEditor::close ()
 	if (tooltipSupport)
 		tooltipSupport->forget ();
 	tooltipSupport = 0;
+	if (accessibilityObject)
+	{
+		extern void DestroyMacAccessibility (void* object);
+		DestroyMacAccessibility (accessibilityObject);
+	}
 	if (frame)
 		frame->forget ();
 	frame = 0;
