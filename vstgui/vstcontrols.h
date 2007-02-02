@@ -3,7 +3,7 @@
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 // Standard Control Objects
 //
-// Version 3.5       $Date: 2007-01-18 08:13:22 $
+// Version 3.5       $Date: 2007-02-02 15:35:16 $
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
@@ -601,11 +601,16 @@ public:
 	virtual void  valueToPoint (CPoint& point) const;
 	virtual float valueFromPoint (CPoint& point) const;
 
+	virtual long getInsetValue () const { return inset; }
 	virtual void setInsetValue (long val) { inset = val; }
 
+	virtual CColor getColorShadowHandle () const { return colorShadowHandle; }
 	virtual void setColorShadowHandle (CColor color);
+
+	virtual CColor getColorHandle () const { return colorHandle; }
 	virtual void setColorHandle (CColor color);
 
+	virtual CBitmap* getHandleBitmap () const { return pHandle; }
 	virtual void setHandleBitmap (CBitmap* bitmap);
 
 	virtual void  setZoomFactor (float val) { zoomFactor = val; }

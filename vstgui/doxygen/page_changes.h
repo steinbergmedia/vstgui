@@ -42,13 +42,15 @@ For convenience the old method is still working, but should be replaced with the
 @section code_changes_for_3_0 Code changes for existing VSTGUI 3.0 code
 
 - Per default CBitmaps don't get a transparent color on creation. You must call bitmap->setTransparency (color) explicitly. And this may only works once depending on the internal implementation.
-- CViewContainer addView and removeView returns a bool value now
-- Mouse methods moved from CDrawContext to CFrame
-- Custom views which override attached and removed must propagate the call to the parent
+- CViewContainer addView and removeView returns a bool value now.
+- Mouse methods moved from CDrawContext to CFrame.
+- Custom views which override attached and removed must propagate the call to the parent.
 - VST specific code is enclosed with the macro ENABLE_VST_EXTENSION_IN_VSTGUI, which per default is set to zero. If you need them you must enable it (best practice is to set it in the prefix header or the preprocessor panel in your compiler).
 - Removed all CDrawContext parameters from CView methods except for draw and drawRect. You need to change this in your custom views and controls.
-- Every usage of CFont must be changed to CFontRef
+- Every usage of CFont must be changed to CFontRef.
 - When using GDI+ or libpng on Windows there is no need in using any offscreen context for flicker reduction as VSTGUI uses a backbuffer for drawing.
+- Custom controls must implement the CLASS_METHODS macro if it directly inherits from CControl. Otherwise you will get a compile error.
+- Custom controls which don't implement the new mouse methods must override onMouseDown and return kMouseEventNotHandled so that the old mouse method is called.
 
 @subsection cviewchanges CView method changes
 
