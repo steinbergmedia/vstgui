@@ -1,3 +1,8 @@
+2007-01-23 arne
+
+	* merged stuff from timo and wolfram (mainly GDI+ stuff)
+	* added some CRect methods
+
 2006-12-15 arne
 
 	* added copy constructors for all CView classes
