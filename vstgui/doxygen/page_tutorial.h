@@ -185,5 +185,6 @@ void MyEditor::valueChanged (CControl* pControl)
 }
 @endcode
 
-To be continued ...
+For a complete example have a look at the tutorial project included with VSTGUI.
+
 */

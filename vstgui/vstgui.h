@@ -2,7 +2,7 @@
 // VST Plug-Ins SDK
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 //
-// Version 3.5       $Date: 2007-01-22 15:07:59 $
+// Version 3.5       $Date: 2007-02-02 15:35:17 $
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
@@ -180,9 +180,13 @@ typedef long CCoord;
 struct CRect
 {
 	CRect (CCoord left = 0, CCoord top = 0, CCoord right = 0, CCoord bottom = 0)
-	:	left (left), top (top), right (right), bottom (bottom) {}
+	: left (left), top (top), right (right), bottom (bottom) {}
+
 	CRect (const CRect& r)
-	:	left (r.left), top (r.top), right (r.right), bottom (r.bottom) {}
+	: left (r.left), top (r.top), right (r.right), bottom (r.bottom) {}
+
+	CRect (const CPoint& origin, const CPoint& size) { setTopLeft (origin); setSize (size); }
+
 	CRect& operator () (CCoord left, CCoord top, CCoord right, CCoord bottom)
 	{
 		if (left < right)
@@ -197,15 +201,15 @@ struct CRect
 	}
 
 	bool operator != (const CRect& other) const
-	{ return (left != other.left || right != other.right ||
-				top != other.top || bottom != other.bottom); }
+		{ return (left != other.left || right != other.right ||
+					top != other.top || bottom != other.bottom); }
 
 	bool operator == (const CRect& other) const
-	{ return (left == other.left && right == other.right &&
-				top == other.top && bottom == other.bottom); }
+		{ return (left == other.left && right == other.right &&
+					top == other.top && bottom == other.bottom); }
 	
-	inline CCoord width () const  { return right - left; }
-	inline CCoord height () const { return bottom - top; }
+	inline CCoord width () const  { return getWidth (); }
+	inline CCoord height () const { return getHeight (); }
 
 	inline CCoord getWidth () const  { return right - left; }
 	inline CCoord getHeight () const { return bottom - top; }
@@ -213,19 +217,32 @@ struct CRect
 	inline void setWidth (CCoord width) { right = left + width; }
 	inline void setHeight (CCoord height) { bottom = top + height; }
 
-	CRect &offset (CCoord x, CCoord y)
-	{ left += x; right += x; top += y; bottom += y; return *this; }
+	CPoint getTopLeft () const;
+	CPoint getTopRight () const;
+	CPoint getBottomLeft () const;
+	CPoint getBottomRight () const;
+	void setTopLeft (const CPoint& inPoint);
+	void setTopRight (const CPoint& inPoint);
+	void setBottomLeft (const CPoint& inPoint);
+	void setBottomRight (const CPoint& inPoint);
 
-	CRect &inset (CCoord deltaX, CCoord deltaY)
-	{ left += deltaX; right -= deltaX; top += deltaY; bottom -= deltaY;
-    return *this; }
+	CPoint getSize () const;
+	void setSize (const CPoint& size);
 
-	CRect &moveTo (CCoord x, CCoord y)
-	{ CCoord vDiff = y - top; CCoord hDiff = x - left; 
-	top += vDiff; bottom += vDiff; left += hDiff; right += hDiff;
-	return *this; }
+	CRect& offset (CCoord x, CCoord y)
+		{ left += x; right += x; top += y; bottom += y; return *this; }
 
-	bool pointInside (const CPoint& where) const;	// Checks if point is inside this rect
+	CRect& inset (CCoord deltaX, CCoord deltaY)
+		{ left += deltaX; right -= deltaX; top += deltaY; bottom -= deltaY;
+    	return *this; }
+
+	CRect& moveTo (CCoord x, CCoord y)
+		{ CCoord vDiff = y - top; CCoord hDiff = x - left; 
+		top += vDiff; bottom += vDiff; left += hDiff; right += hDiff;
+		return *this; }
+
+	bool pointInside (const CPoint& where) const;	///< Checks if point is inside this rect
+
 	bool isEmpty () const;
 
 	bool rectOverlap (const CRect& rect) const
@@ -735,13 +752,13 @@ public:
 	VSTGUI_DEPRECATED(void drawArc (const CRect &rect, const CPoint &point1, const CPoint &point2);)	///< \deprecated
 	VSTGUI_DEPRECATED(void fillArc (const CRect &rect, const CPoint &point1, const CPoint &point2);)	///< \deprecated
 	VSTGUI_DEPRECATED(void polyLine (const CPoint *pPoint, long numberOfPoints);)	///< \deprecated
-	VSTGUI_DEPRECATED(void fillPolygon (const CPoint *pPoint, long numberOfPoints);)	///< \deprecated
-	VSTGUI_DEPRECATED(void fillRect (const CRect &rect);)	///< \deprecated
-	VSTGUI_DEPRECATED(void fillEllipse (const CRect &rect);)	///< \deprecated
-	VSTGUI_DEPRECATED(long getMouseButtons ();)	///< \deprecated
-	VSTGUI_DEPRECATED(void getMouseLocation (CPoint &point);)	///< \deprecated
-	VSTGUI_DEPRECATED(bool waitDoubleClick ();)	///< \deprecated
-	VSTGUI_DEPRECATED(bool waitDrag ();)	///< \deprecated
+	VSTGUI_DEPRECATED(void fillPolygon (const CPoint *pPoint, long numberOfPoints);)	///< \deprecated use VSTGUI::CDrawContext::drawPolygon with kDrawFilled as draw style
+	VSTGUI_DEPRECATED(void fillRect (const CRect &rect);)	///< \deprecated use VSTGUI::CDrawContext::drawRect with kDrawFilled as draw style
+	VSTGUI_DEPRECATED(void fillEllipse (const CRect &rect);)	///< \deprecated use VSTGUI::CDrawContext::drawEllipse with kDrawFilled as draw style
+	VSTGUI_DEPRECATED(long getMouseButtons ();)	///< \deprecated if you really need this call VSTGUI::CFrame::getCurrentMouseButtons
+	VSTGUI_DEPRECATED(void getMouseLocation (CPoint &point);)	///< \deprecated if you really need this call VSTGUI::CFrame::getCurrentMouseLocation
+	VSTGUI_DEPRECATED(bool waitDoubleClick ();)	///< \deprecated use kDoubleClick in the buttons parameter of the mouse methods instead
+	VSTGUI_DEPRECATED(bool waitDrag ();)	///< \deprecated use the new mouse methods instead
 
 	//-------------------------------------------
 protected:
@@ -860,9 +877,10 @@ protected:
 class CResourceDescription
 {
 public:
-	enum { kIntegerType, kStringType };
+	enum { kIntegerType, kStringType, kUnknownType };
 
-	CResourceDescription (int id = -1) : type (kIntegerType) { u.id = id; }
+	CResourceDescription () : type (kUnknownType) { u.name = 0; }
+	CResourceDescription (int id) : type (kIntegerType) { u.id = id; }
 	CResourceDescription (const char* name) : type (kStringType) { u.name = name; }
 
 	CResourceDescription& operator= (int id) { u.id = id; type = kIntegerType; return *this; }
@@ -1098,11 +1116,11 @@ public:
 
 	//-------------------------------------------
 
-	VSTGUI_DEPRECATED(virtual void mouse (CDrawContext *pContext, CPoint &where, long buttons = -1);)	///< \deprecated
-	VSTGUI_DEPRECATED(virtual void getMouseLocation (CDrawContext* context, CPoint &point);)	///< \deprecated
+	VSTGUI_DEPRECATED(virtual void mouse (CDrawContext *pContext, CPoint &where, long buttons = -1);)	///< \deprecated use the new mouse methods instead
+	VSTGUI_DEPRECATED(virtual void getMouseLocation (CDrawContext* context, CPoint &point);)	///< \deprecated use VSTGUI::CFrame::getCurrentMouseLocation and process the point with VSTGUI::CView::frameToLocal
 	VSTGUI_DEPRECATED(virtual void setParentView (CView *pParentView) { this->pParentView = pParentView; })	///< \deprecated
 	VSTGUI_DEPRECATED(virtual void setFrame (CFrame *pParent) { this->pParentFrame = pParent; })	///< \deprecated
-	VSTGUI_DEPRECATED(virtual void getFrameTopLeftPos (CPoint& topLeft) const;)	///< \deprecated
+	VSTGUI_DEPRECATED(virtual void getFrameTopLeftPos (CPoint& topLeft) const;)	///< \deprecated use VSTGUI::CView::localToFrame
 
 	//-------------------------------------------
 protected:
@@ -1220,7 +1238,7 @@ public:
 	virtual void dumpHierarchy ();
 	#endif
 
-	VSTGUI_DEPRECATED(virtual void mouse (CDrawContext *pContext, CPoint &where, long buttons = -1);)	///< \deprecated
+	VSTGUI_DEPRECATED(virtual void mouse (CDrawContext *pContext, CPoint &where, long buttons = -1);)	///< \deprecated use the new mouse methods instead
 	VSTGUI_DEPRECATED(virtual CView *getCurrentView () const;)	///< \deprecated
 
 	//-------------------------------------------
@@ -1339,10 +1357,10 @@ public:
 
 	CLASS_METHODS(CFrame, CViewContainer)
 
-	VSTGUI_DEPRECATED(virtual bool getCurrentLocation (CPoint &where);)	///< \deprecated
-	VSTGUI_DEPRECATED(virtual void mouse (CDrawContext *pContext, CPoint &where, long buttons = -1);)	///< \deprecated
+	VSTGUI_DEPRECATED(virtual bool getCurrentLocation (CPoint &where);)	///< \deprecated use VSTGUI::CFrame::getCurrentMouseLocation instead
+	VSTGUI_DEPRECATED(virtual void mouse (CDrawContext *pContext, CPoint &where, long buttons = -1);)	///< \deprecated use the new mouse methods
 	VSTGUI_DEPRECATED(virtual CView *getCurrentView () const;)	///< \deprecated
-	VSTGUI_DEPRECATED(void draw (CView *pView = 0);)	///< \deprecated
+	VSTGUI_DEPRECATED(void draw (CView *pView = 0);)	///< \deprecated use pView->invalid () instead
 
 	//-------------------------------------------
 protected:
