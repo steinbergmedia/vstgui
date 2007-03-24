@@ -8,6 +8,7 @@
  */
 
 #include "pdatabrowsertest.h"
+#include <stdio.h>
 
 #define kCellByteSize	256
 #define kLineWidth		4
