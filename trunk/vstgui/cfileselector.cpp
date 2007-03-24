@@ -2,7 +2,7 @@
 // VST Plug-Ins SDK
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 //
-// Version 3.0       $Date: 2007-01-18 08:13:21 $ 
+// Version 3.0       $Date: 2007-03-24 12:30:21 $ 
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
@@ -56,7 +56,7 @@
 static UINT_PTR APIENTRY SelectDirectoryHook (HWND hdlg, UINT message, WPARAM wParam, LPARAM lParam);
 static LRESULT CALLBACK SelectDirectoryButtonProc (HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam);
 WNDPROC fpOldSelectDirectoryButtonProc;
-static UINT APIENTRY WinSaveHook (HWND hdlg, UINT msg, WPARAM wParam, LPARAM lParam);
+static UINT_PTR APIENTRY WinSaveHook (HWND hdlg, UINT msg, WPARAM wParam, LPARAM lParam);
 static bool bFolderSelected;
 static bool bDidCancel;
 static char selDirPath[kPathMax];
@@ -1024,7 +1024,7 @@ static void showPathInWindowTitle (HWND hParent, LPOFNOTIFY lpon)
 }
 
 //------------------------------------------------------------------------
-UINT APIENTRY WinSaveHook (HWND hdlg, UINT msg, WPARAM wParam, LPARAM lParam)
+UINT_PTR APIENTRY WinSaveHook (HWND hdlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	switch (msg)
 	{

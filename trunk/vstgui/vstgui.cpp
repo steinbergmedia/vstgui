@@ -2,7 +2,7 @@
 // VST Plug-Ins SDK
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 //
-// Version 3.5       $Date: 2007-02-02 15:35:16 $ 
+// Version 3.5       $Date: 2007-03-24 12:30:21 $ 
 //
 // Added Motif/Windows vers.: Yvan Grabit              01.98
 // Added Mac version        : Charlie Steinberg        02.98
@@ -6043,6 +6043,27 @@ CBitmap::CBitmap ()
 	pHandle = 0;
 	pMask = 0;
 	
+	#endif
+}
+
+//-----------------------------------------------------------------------------
+CBitmap::CBitmap (void* platformBitmap)
+: width (0)
+, height (0)
+, noAlpha (true)
+{
+	pHandle = 0;
+	pMask = 0;
+	#if WINDOWS && GDIPLUS
+	pBitmap = ((Gdiplus::Bitmap*)platformBitmap)->Clone (0, 0, ((Gdiplus::Bitmap*)platformBitmap)->GetWidth (), ((Gdiplus::Bitmap*)platformBitmap)->GetHeight (), PixelFormat32bppARGB);
+	width = pBitmap->GetWidth ();
+	height = pBitmap->GetHeight ();
+	bits = 0;
+	#elif MAC
+	cgImage = platformBitmap;
+	CGImageRetain ((CGImageRef)cgImage);
+	width = CGImageGetWidth ((CGImageRef)cgImage);
+	height = CGImageGetHeight ((CGImageRef)cgImage);
 	#endif
 }
 
