@@ -119,8 +119,8 @@ DrawTestEditor::DrawTestEditor (void* effect)
 	// setup size of editor
 	rect.left   = 0;
 	rect.top    = 0;
-	rect.right  = backgroundBitmap->getWidth ();
-	rect.bottom = backgroundBitmap->getHeight ();
+	rect.right  = (VstInt16)backgroundBitmap->getWidth ();
+	rect.bottom = (VstInt16)backgroundBitmap->getHeight ();
 	if (rect.right == 0)
 		rect.right = 400;
 	if (rect.bottom == 0)
@@ -271,8 +271,6 @@ bool DrawTestEditor::open (void *ptr)
 	// last but not least set the class variable frame to our newly created frame
 	this->frame = frame;
 	
-	extern void* CreateMacAccessibility (CFrame* frame);
-	accessibilityObject = CreateMacAccessibility (frame);
 	return true;
 }
 
@@ -282,11 +280,6 @@ void DrawTestEditor::close ()
 	if (tooltipSupport)
 		tooltipSupport->forget ();
 	tooltipSupport = 0;
-	if (accessibilityObject)
-	{
-		extern void DestroyMacAccessibility (void* object);
-		DestroyMacAccessibility (accessibilityObject);
-	}
 	if (frame)
 		frame->forget ();
 	frame = 0;
