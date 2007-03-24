@@ -21,7 +21,7 @@
 #define __pdrawtesteffect__
 
 #ifndef __audioeffectx__
-#include "audioeffectx.h"
+#include "public.sdk/source/vst2.x/audioeffectx.h"
 #endif
 
 class DrawTestEffect : public AudioEffectX
