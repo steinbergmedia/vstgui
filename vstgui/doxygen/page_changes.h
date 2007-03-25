@@ -65,6 +65,10 @@ For custom views you need to change the following methods because their paramete
 - looseFocus
 - setViewSize
 
+@subsection aeffguieditorchanges AEffGUIEditor method changes
+
+- valueChanged
+
 @section code_changes_for_2_3 Code changes for existing VSTGUI 2.3 code
 
 please see the "Migrating from 2.3.rtf" file in the Documentation folder.
