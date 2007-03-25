@@ -3,7 +3,7 @@
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 // Standard Control Objects
 //
-// Version 3.5       $Date: 2007-03-25 12:25:13 $
+// Version 3.5       $Date: 2007-03-25 14:42:38 $
 //
 // Added new objects        : Michael Schmidt          08.97
 // Added new objects        : Yvan Grabit              01.98
@@ -5840,6 +5840,8 @@ void CVuMeter::draw (CDrawContext *_pContext)
 			rectOff (0, 0, size.width (), size.height ());
 		}
 		pContext = pOScreen;
+		if (bTransparencyEnabled)
+			pOScreen->copyTo (_pContext, size);
 	}
 
 	if (style & kHorizontal) 
