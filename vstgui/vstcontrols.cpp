@@ -3,7 +3,7 @@
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 // Standard Control Objects
 //
-// Version 3.5       $Date: 2007-01-23 09:11:08 $
+// Version 3.5       $Date: 2007-03-25 12:25:13 $
 //
 // Added new objects        : Michael Schmidt          08.97
 // Added new objects        : Yvan Grabit              01.98
@@ -1433,7 +1433,8 @@ LONG_PTR WINAPI WindowProcEdit (HWND hwnd, UINT message, WPARAM wParam, LPARAM l
 				if (textEdit)
 				{
 					textEdit->bWasReturnPressed = true;
-					textEdit->looseFocus ();
+					if (textEdit->getFrame ())
+						textEdit->getFrame ()->setFocusView (0);
 				}
 			}
 		} break;
@@ -1769,7 +1770,9 @@ void CTextEdit::looseFocus ()
 	GetWindowText ((HWND)platformControl, newText, 255);
 	strcpy (text, newText);
 
-	DestroyWindow ((HWND)platformControl);
+	HWND _control = (HWND)platformControl;
+	platformControl = 0;	// DestroyWindow will also trigger a looseFocus call, so make sure we didn't get here again.
+	DestroyWindow (_control);
 	if (platformFont)
 	{
 		DeleteObject ((HGDIOBJ)platformFont);

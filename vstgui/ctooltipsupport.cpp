@@ -35,6 +35,14 @@
 #include "ctooltipsupport.h"
 #include "cvstguitimer.h"
 
+#if WINDOWS
+#define _WIN32_WINNT 0x0501	// Works only on Windows XP and above because of TTM_POPUP
+#include <commctrl.h>
+extern void* hInstance;
+inline HINSTANCE GetInstance () { return (HINSTANCE)hInstance; }
+static void* InitTooltip (CFrame* frame);
+#endif
+
 #if DEBUG
 #define DEBUGLOG 0
 #endif
@@ -50,22 +58,41 @@ view->setAttribute (kCViewTooltipAttribute, strlen (tooltipText)+1, tooltipText)
 \endcode
 Adding CTooltipSupport
 \code
-CTooltipSupport* tooltipSupport = new CTooltipSupport;
-frame->setMouseObserver (tooltipSupport);
+CTooltipSupport* tooltipSupport = new CTooltipSupport (frame);
 \endcode
 ------------------------------------------------------------------------*/
 /**
+ * @param frame CFrame object
  * @param delay tooltip delay time in milliseconds
  */
-CTooltipSupport::CTooltipSupport (int delay)
+CTooltipSupport::CTooltipSupport (CFrame* frame, int delay)
+: timer (0)
+, frame (frame)
+, currentView (0)
+, platformObject (0)
 {
 	timer = new CVSTGUITimer (this, delay);
+	frame->setMouseObserver (this);
+	frame->remember ();
+
+	#if WINDOWS
+	platformObject = InitTooltip (frame);
+
+	#endif
 }
 
 //------------------------------------------------------------------------
 CTooltipSupport::~CTooltipSupport ()
 {
 	timer->forget ();
+	frame->setMouseObserver (0);
+	frame->forget ();
+
+	#if WINDOWS
+	if (platformObject)
+		DestroyWindow ((HWND)platformObject);
+
+	#endif
 }
 
 //------------------------------------------------------------------------
@@ -94,6 +121,11 @@ void CTooltipSupport::hideTooltip ()
 {
 	#if MAC
 	HMHideTag ();
+
+	#elif WINDOWS
+	if (platformObject)
+		SendMessage ((HWND)platformObject, TTM_POP, 0, 0);
+
 	#endif
 }
 
@@ -105,9 +137,6 @@ void CTooltipSupport::showTooltip ()
 		CRect r (currentView->getVisibleSize ());
 		CPoint p;
 		currentView->localToFrame (p);
-		CCoord x, y;
-		currentView->getFrame ()->getPosition (x,y);
-		p.offset (x, y);
 		r.offset (p.x, p.y);
 
 		// get the tooltip from the view
@@ -116,6 +145,7 @@ void CTooltipSupport::showTooltip ()
 		if (currentView->getAttributeSize (kCViewTooltipAttribute, tooltipSize))
 		{
 			tooltip = (char*)malloc (tooltipSize + 1);
+			memset (tooltip, 0, tooltipSize+1);
 			if (!currentView->getAttribute (kCViewTooltipAttribute, tooltipSize, tooltip, tooltipSize))
 			{
 				free (tooltip);
@@ -125,6 +155,10 @@ void CTooltipSupport::showTooltip ()
 		if (tooltip)
 		{
 			#if MAC
+			CCoord x, y;
+			currentView->getFrame ()->getPosition (x,y);
+			p.offset (x, y);
+
 			HMHelpContentRec helpContent = {0};
 			helpContent.version = 0;
 			helpContent.absHotRect.left = r.left;
@@ -136,6 +170,26 @@ void CTooltipSupport::showTooltip ()
 			helpContent.content[0].u.tagCFString = CFStringCreateWithCString (0, tooltip, kCFStringEncodingUTF8);
 			HMDisplayTag(&helpContent);
 			CFRelease (helpContent.content[0].u.tagCFString);
+
+			#elif WINDOWS
+			if (platformObject)
+			{
+				RECT rc;
+				rc.left = r.left;
+				rc.top = r.top;
+				rc.right = r.right;
+				rc.bottom = r.bottom;
+				TOOLINFO ti = {0};
+			    ti.cbSize = sizeof(TOOLINFO);
+				ti.hwnd = (HWND)frame->getSystemWindow ();
+				ti.uId = 0;
+				ti.rect = rc;
+				ti.lpszText  = tooltip;
+				SendMessage ((HWND)platformObject, TTM_NEWTOOLRECT, 0, (LPARAM)&ti);
+				SendMessage ((HWND)platformObject, TTM_UPDATETIPTEXT, 0, (LPARAM)&ti);
+ 				SendMessage ((HWND)platformObject, TTM_POPUP, 0, 0);
+			}
+
 			#endif
 			free (tooltip);
 		}
@@ -153,3 +207,35 @@ CMessageResult CTooltipSupport::notify (CBaseObject* sender, const char* msg)
 	}
 	return kMessageUnknown;
 }
+
+#if WINDOWS
+void* InitTooltip (CFrame* frame)
+{
+    TOOLINFO    ti;
+	// Create the ToolTip control.
+    HWND hwndTT = CreateWindow (TOOLTIPS_CLASS, TEXT(""),
+                          WS_POPUP,
+                          CW_USEDEFAULT, CW_USEDEFAULT,
+                          CW_USEDEFAULT, CW_USEDEFAULT,
+                          NULL, (HMENU)NULL, GetInstance (),
+                          NULL);
+
+    // Prepare TOOLINFO structure for use as tracking ToolTip.
+    ti.cbSize = sizeof(TOOLINFO);
+    ti.uFlags = TTF_SUBCLASS;
+    ti.hwnd   = (HWND)frame->getSystemWindow ();
+    ti.uId    = (UINT)0;
+    ti.hinst  = GetInstance ();
+    ti.lpszText  = "This is a tooltip";
+	ti.rect.left = ti.rect.top = ti.rect.bottom = ti.rect.right = 0;
+
+	// Add the tool to the control
+    if (!SendMessage (hwndTT, TTM_ADDTOOL, 0, (LPARAM)&ti))
+	{
+		DestroyWindow (hwndTT);
+		return 0;
+    }
+
+	return hwndTT;
+}
+#endif

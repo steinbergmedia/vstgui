@@ -2,7 +2,7 @@
 // VST Plug-Ins SDK
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 //
-// Version 3.5       $Date: 2007-03-24 12:30:21 $ 
+// Version 3.5       $Date: 2007-03-25 12:25:13 $ 
 //
 // Added Motif/Windows vers.: Yvan Grabit              01.98
 // Added Mac version        : Charlie Steinberg        02.98
@@ -57,7 +57,8 @@
 #include <string.h>
 
 //---Some defines-------------------------------------
-#define USE_ALPHA_BLEND			MAC || USE_LIBPNG
+#define USE_ALPHA_BLEND			MAC || USE_LIBPNG || GDIPLUS
+#define DEBUG_DRAWING			0	// set to 1 if you want to debug drawing on Windows
 
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
@@ -1115,15 +1116,16 @@ void CDrawContext::drawLines (const CPoint* points, const long& numLines)
 		releaseCGContext (context);
 	}
 
-	#elif (WINDOWS && GDIPLUS)
+	#elif 0 //(WINDOWS && GDIPLUS)
+	// Graphics::DrawLines does other things than the quartz one, so we can not use it
 	if (pGraphics)
 	{
-#if VSTGUI_FLOAT_COORDINATES
+		#if VSTGUI_FLOAT_COORDINATES
 		Gdiplus::PointF* myPoints = new Gdiplus::PointF[numLines];
-#else
+		#else
 		Gdiplus::Point* myPoints = new Gdiplus::Point[numLines];
-#endif
-		for (size_t i = 0; i < numLines; i++)
+		#endif
+		for (long i = 0; i < numLines; i++)
 		{
 			myPoints[i].X = points[i].x + offset.x;
 			myPoints[i].Y = points[i].y + offset.y;
@@ -1166,7 +1168,6 @@ void CDrawContext::drawPolygon (const CPoint* pPoints, long numberOfPoints, cons
 
 #elif WINDOWS
 	#if GDIPLUS
-	// GDIPLUS todo
 	Gdiplus::Point points[30];
 	Gdiplus::Point* polyPoints;
 	bool allocated = false;
@@ -1422,11 +1423,17 @@ void CDrawContext::drawArc (const CRect &_rect, const float _startAngle, const f
 	#if GDIPLUS
 	if (pGraphics)
 	{
+		float endAngle = _endAngle;
+		if (endAngle < _startAngle)
+			endAngle += 360.f;
+		endAngle = fabs (endAngle - _startAngle);
 		Gdiplus::Rect r (rect.left, rect.top, rect.getWidth (), rect.getHeight ());
-//		if (drawStyle == kDrawFilled || drawStyle == kDrawFilledAndStroked)
-//			pGraphics->FillArc (r, startAngle, endAngle);
+		Gdiplus::GraphicsPath path;
+		path.AddArc (r, _startAngle, endAngle);
+		if (drawStyle == kDrawFilled || drawStyle == kDrawFilledAndStroked)
+			pGraphics->FillPath (pBrush, &path);
 		if (drawStyle == kDrawStroked || drawStyle == kDrawFilledAndStroked)
-			pGraphics->DrawArc (pPen, r, _startAngle, _endAngle);
+			pGraphics->DrawPath (pPen, &path);
 	}
 	#else
 	float startRad = (float)(k2PI * _startAngle / 360.f);
@@ -1495,7 +1502,7 @@ void CDrawContext::drawArc (const CRect &_rect, const CPoint &_point1, const CPo
 	// draws from point1 to point2 counterclockwise
 #if WINDOWS
 	#if GDIPLUS
-	// GDIPLUS todo
+	// use the other drawArc method
 	#else
 	Arc ((HDC)pSystemContext, rect.left, rect.top, rect.right + 1, rect.bottom + 1, 
 			 point1.h, point1.v, point2.h, point2.v);
@@ -1545,7 +1552,7 @@ void CDrawContext::fillArc (const CRect &_rect, const CPoint &_point1, const CPo
 	// Don't draw boundary
 #if WINDOWS
 	#if GDIPLUS
-	// GDIPLUS todo
+	// use the other drawArc method
 	#else
 	HANDLE nullPen = GetStockObject (NULL_PEN);
 	HANDLE oldPen  = SelectObject ((HDC)pSystemContext, nullPen);
@@ -1709,8 +1716,9 @@ void CDrawContext::fillEllipse (const CRect &_rect)
 	// Don't draw boundary
 #if WINDOWS
 	#if GDIPLUS
-	// GDIPLUS todo
-	#else
+	drawEllipse (_rect, kDrawFilled);
+
+#else
 	HANDLE nullPen = GetStockObject (NULL_PEN);
 	HANDLE oldPen  = SelectObject ((HDC)pSystemContext, nullPen);
 	Ellipse ((HDC)pSystemContext, rect.left + 1, rect.top + 1, rect.right + 1, rect.bottom + 1);
@@ -2081,7 +2089,7 @@ void CDrawContext::drawStringUTF8 (const char* string, const CPoint& _point, boo
 		if (MultiByteToWideChar (CP_UTF8, 0, string, strlen (string), buffer, 1024) > 0)
 		{
 			pGraphics->SetTextRenderingHint (antialias ? Gdiplus::TextRenderingHintClearTypeGridFit : Gdiplus::TextRenderingHintSystemDefault);
-			Gdiplus::PointF gdiPoint ((Gdiplus::REAL)point.x, (Gdiplus::REAL)point.y + 1. - pFont->GetHeight (pGraphics->GetDpiY ()));
+			Gdiplus::PointF gdiPoint ((Gdiplus::REAL)point.x, (Gdiplus::REAL)point.y + 1.f - pFont->GetHeight (pGraphics->GetDpiY ()));
 			pGraphics->DrawString (buffer, -1, pFont, gdiPoint, pFontBrush);
 		}
 	}
@@ -2103,7 +2111,7 @@ void CDrawContext::drawStringUTF8 (const char* string, const CRect& _rect, const
 		if (hAlign == kRightText)
 			rect.left = rect.right - stringWidth;
 		else
-			rect.left = rect.left + (rect.getWidth () / 2.f) - (stringWidth / 2.f);
+			rect.left = (CCoord)(rect.left + (rect.getWidth () / 2.f) - (stringWidth / 2.f));
 	}
 	CRect oldClip;
 	getClipRect (oldClip);
@@ -2463,47 +2471,27 @@ COffscreenContext::COffscreenContext (CDrawContext* pContext, CBitmap* pBitmapBg
 	if (drawInBitmap)
 	{
 		// get GDI+ Bitmap from the CBitmap
-		pGraphics = new Gdiplus::Graphics(pBitmapBg->getBitmap());  // our Context to draw on the bitmap
+		pGraphics = new Gdiplus::Graphics (pBitmapBg->getBitmap());  // our Context to draw on the bitmap
 
-		// CHECK_GDIPLUS_STATUS("OffScreenContext: new ::Graphics",pGraphics);
-		pWindow = pGraphics->GetHDC();
-		// CHECK_GDIPLUS_STATUS("OffScreenContext: GetHDC",pGraphics);
 	}
 	else // create bitmap if no bitmap handle exists
 	{
 		bDestroyPixmap = false;	// was true, but since we attach it to a CBitmap from VSTGUI that destroys it.
 		pWindow = CreateCompatibleBitmap ((HDC)pContext->getSystemContext (), width, height);
-		Gdiplus::Bitmap* myOffscreenBitmap = Gdiplus::Bitmap::FromHBITMAP((HBITMAP)pWindow,NULL);
-		pGraphics = new Gdiplus::Graphics(myOffscreenBitmap);  // our Context to draw on the bitmap
+		Gdiplus::Bitmap* myOffscreenBitmap = Gdiplus::Bitmap::FromHBITMAP ((HBITMAP)pWindow, NULL);
+		pGraphics = new Gdiplus::Graphics (myOffscreenBitmap);  // our Context to draw on the bitmap
 		// CHECK_GDIPLUS_STATUS("OffScreenContext: from OffscreenBitmap",pGraphics);
-		pBitmap = new CBitmap(myOffscreenBitmap);	// the VSTGUI Bitmap Object
+		pBitmap = new CBitmap (myOffscreenBitmap);	// the VSTGUI Bitmap Object
 	}
 	
 	if (pGraphics)
 	{
 		//pGraphics->SetInterpolationMode(Gdiplus::InterpolationModeLowQuality);
-		pGraphics->SetPageUnit(Gdiplus::UnitPixel);
+		pGraphics->SetPageUnit (Gdiplus::UnitPixel);
 		//debug("graphics resolution x=%3.0f y=%3.0f\n",pGraphics->GetDpiX(),pGraphics->GetDpiY());
 
 	}
 	
-	oldBitmap = SelectObject ((HDC)pSystemContext, pWindow);
-	
-#if 0
-	if (!pPen)	// This will never happen because the base class creates all of them
-	{
-		//debug("  creating pens etc.\n");
-		pPen=new Gdiplus::Pen(Gdiplus::Color(0,255,255,255));
-		pBrush=new Gdiplus::SolidBrush(Gdiplus::Color(0,0,0,0));
-		pFontBrush=(Gdiplus::SolidBrush*)pBrush->Clone();
-		WCHAR tempName[200];
-		mbstowcs(tempName,gStandardFontName[kNormalFont],200);
-		pFont=new Gdiplus::Font(tempName,(Gdiplus::REAL)gStandardFontSize[kNormalFont],
-			Gdiplus::UnitPixel);
-		//SetBkMode((HDC)pSystemContext, TRANSPARENT);
-	}
-#endif	// #if 0
-
 	#else
 	if (pOldBrush)
 		SelectObject ((HDC)getSystemContext (), pOldBrush);
@@ -3582,7 +3570,11 @@ bool CFrame::initFrame (void* systemWin)
 #if WINDOWS
 
 	InitWindowClass ();
-	pHwnd = CreateWindowEx (0, gClassName, "Window",
+	DWORD style = 0;
+	#if !DEBUG_DRAWING & GDIPLUS
+	style |= 0x02000000; // composited
+	#endif
+	pHwnd = CreateWindowEx (style, gClassName, "Window",
 			 WS_CHILD | WS_VISIBLE | WS_CLIPCHILDREN | WS_CLIPSIBLINGS, 
 			 0, 0, size.width (), size.height (), 
 			 (HWND)pSystemWindow, NULL, GetInstance (), NULL);
@@ -4027,7 +4019,7 @@ long CFrame::getKnobMode () const
 #if WINDOWS
 COffscreenContext* CFrame::getBackBuffer ()
 {
-	#if WINDOWS && (USE_ALPHA_BLEND || GDIPLUS)
+	#if USE_ALPHA_BLEND & !DEBUG_DRAWING & !GDIPLUS
 	if (!backBuffer)
 		backBuffer = new COffscreenContext (this, size.width (), size.height ());
 	#endif
@@ -5912,6 +5904,143 @@ protected:
 	unsigned long resSize;
 };
 #endif
+#if WINDOWS && GDIPLUS
+class ResourceStream : public IStream
+{
+public:
+	ResourceStream ()
+	: streamPos (0)
+	, resData (0)
+	, resSize (0)
+	, _refcount (1)
+	{
+	}
+
+	bool open (const CResourceDescription& resourceDesc)
+	{
+		HRSRC rsrc = FindResource (GetInstance (), resourceDesc.type == CResourceDescription::kIntegerType ? MAKEINTRESOURCE (resourceDesc.u.id) : resourceDesc.u.name, "PNG");
+		if (rsrc)
+		{
+			resSize = SizeofResource (GetInstance (), rsrc);
+			HGLOBAL resDataLoad = LoadResource (GetInstance (), rsrc);
+			if (resDataLoad)
+			{
+				resData = LockResource (resDataLoad);
+				return true;
+			}
+		}
+		return false;
+	}
+
+	virtual HRESULT STDMETHODCALLTYPE Read (void *pv, ULONG cb, ULONG *pcbRead)
+	{
+		if (streamPos + cb <= resSize)
+		{
+			memcpy (pv, ((unsigned char*)resData+streamPos), cb);
+			streamPos += cb;
+			if (pcbRead)
+				*pcbRead = cb;
+			return S_OK;
+		}
+		return S_FALSE;
+	}
+    
+    virtual HRESULT STDMETHODCALLTYPE Write (const void *pv, ULONG cb, ULONG *pcbWritten) { return E_NOTIMPL; }
+
+    virtual HRESULT STDMETHODCALLTYPE Seek (LARGE_INTEGER dlibMove, DWORD dwOrigin, ULARGE_INTEGER *plibNewPosition)
+	{
+		switch(dwOrigin)
+		{
+			case STREAM_SEEK_SET:
+			{
+				if (dlibMove.QuadPart < resSize)
+				{
+					streamPos = (unsigned long)dlibMove.QuadPart;
+					if (plibNewPosition)
+						plibNewPosition->QuadPart = streamPos;
+					return S_OK;
+				}
+				break;
+			}
+			case STREAM_SEEK_CUR:
+			{
+				if (streamPos + dlibMove.QuadPart < resSize && streamPos + dlibMove.QuadPart >= 0)
+				{
+					streamPos += (long)dlibMove.QuadPart;
+					if (plibNewPosition)
+						plibNewPosition->QuadPart = streamPos;
+					return S_OK;
+				}
+				break;
+			}
+			case STREAM_SEEK_END:
+			{
+				break;
+			}
+			default:   
+				return STG_E_INVALIDFUNCTION;
+			break;
+		}
+		return S_FALSE;
+	}
+    
+    virtual HRESULT STDMETHODCALLTYPE SetSize (ULARGE_INTEGER libNewSize) { return E_NOTIMPL; }
+    
+    virtual HRESULT STDMETHODCALLTYPE CopyTo (IStream *pstm, ULARGE_INTEGER cb, ULARGE_INTEGER *pcbRead, ULARGE_INTEGER *pcbWritten) { return E_NOTIMPL; }
+    
+    virtual HRESULT STDMETHODCALLTYPE Commit (DWORD grfCommitFlags) { return E_NOTIMPL; }
+    
+    virtual HRESULT STDMETHODCALLTYPE Revert (void) 
+	{ 
+		streamPos = 0;
+		return S_OK; 
+	}
+    
+    virtual HRESULT STDMETHODCALLTYPE LockRegion (ULARGE_INTEGER libOffset, ULARGE_INTEGER cb, DWORD dwLockType) { return E_NOTIMPL; }
+    
+    virtual HRESULT STDMETHODCALLTYPE UnlockRegion (ULARGE_INTEGER libOffset, ULARGE_INTEGER cb, DWORD dwLockType) { return E_NOTIMPL; }
+    
+    virtual HRESULT STDMETHODCALLTYPE Stat (STATSTG *pstatstg, DWORD grfStatFlag)
+	{
+		pstatstg->cbSize.QuadPart = resSize;
+		return S_OK;
+	}
+    
+    virtual HRESULT STDMETHODCALLTYPE Clone (IStream **ppstm) { return E_NOTIMPL; }
+
+	virtual HRESULT STDMETHODCALLTYPE QueryInterface(REFIID iid, void ** ppvObject)
+    { 
+        if (iid == __uuidof(IUnknown)
+            || iid == __uuidof(IStream)
+            || iid == __uuidof(ISequentialStream))
+        {
+            *ppvObject = static_cast<IStream*>(this);
+            AddRef();
+            return S_OK;
+        } else
+            return E_NOINTERFACE; 
+    }
+
+    virtual ULONG STDMETHODCALLTYPE AddRef(void) 
+    { 
+        return (ULONG)InterlockedIncrement(&_refcount); 
+    }
+
+    virtual ULONG STDMETHODCALLTYPE Release(void) 
+    {
+        ULONG res = (ULONG) InterlockedDecrement(&_refcount);
+        if (res == 0) 
+            delete this;
+        return res;
+    }
+
+protected:
+	HGLOBAL resData;
+	unsigned long streamPos;
+	unsigned long resSize;
+	long _refcount;
+};
+#endif
 
 //-----------------------------------------------------------------------------
 // CBitmap Implementation
@@ -5990,17 +6119,16 @@ CBitmap::CBitmap (CFrame& frame, CCoord width, CCoord height)
 	setTransparentColor (kTransparentCColor);
 
 #if WINDOWS
-	HDC hScreen = GetDC (0);
 #if GDIPLUS
 	pBitmap = 0;
+	pHandle = 0;
 	bits = 0;
-	Gdiplus::Graphics* hScreenGraphics = new Gdiplus::Graphics(hScreen);
-	pBitmap = new Gdiplus::Bitmap(width,height,PixelFormat32bppPARGB /*hScreenGraphics*/);	// format?
-	delete hScreenGraphics;
+	pBitmap = new Gdiplus::Bitmap (width, height, PixelFormat32bppARGB);
 #else
+	HDC hScreen = GetDC (0);
 	pHandle = CreateCompatibleBitmap (hScreen, width, height);
-#endif
 	ReleaseDC (0, hScreen);	
+#endif
 	pMask = 0;
 
 #elif MAC
@@ -6295,7 +6423,12 @@ bool CBitmap::loadFromResource (const CResourceDescription& resourceDesc)
 	if (!result)
 	{
 #if GDIPLUS
-		pBitmap = Gdiplus::Bitmap::FromResource (GetInstance (), resourceDesc.type == CResourceDescription::kIntegerType ? (WCHAR*)MAKEINTRESOURCE(resourceDesc.u.id) : (WCHAR*)resourceDesc.u.name);
+		ResourceStream* resourceStream = new ResourceStream;
+		if (resourceStream->open (resourceDesc))
+			pBitmap = Gdiplus::Bitmap::FromStream (resourceStream, TRUE);
+		resourceStream->Release ();
+		if (!pBitmap)
+			pBitmap = Gdiplus::Bitmap::FromResource (GetInstance (), resourceDesc.type == CResourceDescription::kIntegerType ? (WCHAR*)MAKEINTRESOURCE(resourceDesc.u.id) : (WCHAR*)resourceDesc.u.name);
 		if (pBitmap)
 		{
 			result = true;
@@ -6769,8 +6902,6 @@ void CBitmap::drawAlphaBlend (CDrawContext* pContext, CRect &rect, const CPoint 
 		if (graphics)
 		{
 			Gdiplus::ImageAttributes imageAtt;
-
-#if TIMO_CHANGES
 			if (alpha != 255)
 			{
 				// introducing the alpha blend matrix
@@ -6841,16 +6972,6 @@ void CBitmap::drawAlphaBlend (CDrawContext* pContext, CRect &rect, const CPoint 
 					Gdiplus::UnitPixel,
 					0);
 			}
-#else // old version without alpha blending
-			graphics->DrawImage (pBitmap,
-				rect.left + pContext->offset.h,
-				rect.top + pContext->offset.v,
-				offset.x,
-				offset.y,
-				rect.getWidth (),
-				rect.getHeight (),
-				Gdiplus::UnitPixel);
-#endif
 		}
 	}
 	#else
@@ -7486,7 +7607,11 @@ bool InitWindowClass ()
 		windowClass.hIcon = 0; 
 
 		windowClass.hCursor = LoadCursor (NULL, IDC_ARROW);
-		windowClass.hbrBackground = 0; //GetSysColorBrush (COLOR_BTNFACE); // must be NULL, really, only for debugging is this something else 
+		#if DEBUG_DRAWING
+		windowClass.hbrBackground = GetSysColorBrush (COLOR_BTNFACE);
+		#else
+		windowClass.hbrBackground = 0;
+		#endif
 		windowClass.lpszMenuName  = 0; 
 		windowClass.lpszClassName = gClassName; 
 		RegisterClass (&windowClass);

@@ -266,8 +266,7 @@ bool DrawTestEditor::open (void *ptr)
 //	frame->addView (testView);
 
 	setTabView (frame, size, CTabView::kPositionBottom);
-	tooltipSupport = new CTooltipSupport;
-	frame->setMouseObserver (tooltipSupport);
+	tooltipSupport = new CTooltipSupport (frame);
 	// last but not least set the class variable frame to our newly created frame
 	this->frame = frame;
 	
