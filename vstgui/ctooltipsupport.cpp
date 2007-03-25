@@ -157,7 +157,7 @@ void CTooltipSupport::showTooltip ()
 			#if MAC
 			CCoord x, y;
 			currentView->getFrame ()->getPosition (x,y);
-			p.offset (x, y);
+			r.offset (x, y);
 
 			HMHelpContentRec helpContent = {0};
 			helpContent.version = 0;
