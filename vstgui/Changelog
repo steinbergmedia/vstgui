@@ -1,3 +1,10 @@
+2007-03-25 arne
+
+	* fix a TextEdit issue on Windows
+	* fix a CVuMeter issue when using an Offscreen and no background bitmap (thanks to Boris)
+	* CTooltipSupport for Windows (only XP or above)
+	* many GDI+ fixes and enhancements (no need for libpng with GDI+ anymore)
+
 2007-01-23 arne
 
 	* merged stuff from timo and wolfram (mainly GDI+ stuff)
