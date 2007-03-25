@@ -48,7 +48,7 @@ class CVSTGUITimer;
 class CTooltipSupport : public CBaseObject, public IMouseObserver
 {
 public:
-	CTooltipSupport (int delay = 1000);
+	CTooltipSupport (CFrame* frame, int delay = 1000);
 	~CTooltipSupport ();
 
 protected:
@@ -63,7 +63,9 @@ protected:
 	void onMouseExited (CView* view, CFrame* frame);
 
 	CVSTGUITimer* timer;
+	CFrame* frame;
 	CView* currentView;
+	void* platformObject;
 };
 
 END_NAMESPACE_VSTGUI
