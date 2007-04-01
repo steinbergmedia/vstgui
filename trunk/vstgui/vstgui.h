@@ -2,7 +2,7 @@
 // VST Plug-Ins SDK
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 //
-// Version 3.5       $Date: 2007-03-24 12:30:21 $
+// Version 3.5       $Date: 2007-04-01 11:20:45 $
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
@@ -425,7 +425,7 @@ class CAttributeListEntry;
 class IMouseObserver;
 
 //-----------------------------------------------------------------------------
-typedef unsigned long CViewAttributeID;
+typedef unsigned int CViewAttributeID;
 //-----------------------------------------------------------------------------
 // Attributes
 //		all attributes where the first letter is lowercase are reserved for the vstgui lib
@@ -459,10 +459,10 @@ enum CLineStyle
 //-----------
 enum CDrawMode
 {
-	kCopyMode = 0,
-	kOrMode,
-	kXorMode,
-	kAntialias
+	kCopyMode = 0,					///< non antialiased drawing
+	kOrMode,						///< not implementated on Mac OS X and GDI+ \deprecated
+	kXorMode,						///< not implementated on Mac OS X and GDI+ \deprecated
+	kAntialias						///< antialised drawing
 };
 
 //----------------------------
@@ -497,16 +497,16 @@ enum CButton
 //----------------------------
 enum CCursorType
 {
-	kCursorDefault = 0,
-	kCursorWait,
-	kCursorHSize,
-	kCursorVSize,
-	kCursorSizeAll,
-	kCursorNESWSize,
-	kCursorNWSESize,
-	kCursorCopy,
-	kCursorNotAllowed,
-	kCursorHand
+	kCursorDefault = 0,				///< arrow cursor
+	kCursorWait,					///< wait cursor
+	kCursorHSize,					///< horizontal size cursor
+	kCursorVSize,					///< vertical size cursor
+	kCursorSizeAll,					///< size all cursor
+	kCursorNESWSize,				///< northeast and southwest size cursor
+	kCursorNWSESize,				///< northwest and southeast size cursor
+	kCursorCopy,					///< copy cursor (mainly for drag&drop operations)
+	kCursorNotAllowed,				///< not allowed cursor (mainly for drag&drop operations)
+	kCursorHand						///< hand cursor
 };
 
 //----------------------------
@@ -561,7 +561,7 @@ enum CMessageResult
 
 //-----------------------------------------------------------------------------
 // CBaseObject Declaration
-//! \brief Base Object
+//! \brief Base Object with reference counter
 /// \nosubgrouping
 //-----------------------------------------------------------------------------
 class CBaseObject
@@ -838,11 +838,16 @@ public:
 	//@}
 	virtual ~COffscreenContext ();
 	
+	//-----------------------------------------------------------------------------
+	/// \name COffscreenContext Methods
+	//-----------------------------------------------------------------------------
+	//@{
 	void copyFrom (CDrawContext *pContext, CRect destRect, CPoint srcOffset = CPoint (0, 0));	///< copy from offscreen to pContext
 	void copyTo (CDrawContext* pContext, CRect& srcRect, CPoint destOffset = CPoint (0, 0));	///< copy to offscreen from pContext
 
 	inline CCoord getWidth () const { return width; }
 	inline CCoord getHeight () const { return height; }
+	//@}
 
 	//-------------------------------------------
 protected:
@@ -911,6 +916,10 @@ public:
 	//@}
 	virtual ~CBitmap ();
 
+	//-----------------------------------------------------------------------------
+	/// \name CBitmap Methods
+	//-----------------------------------------------------------------------------
+	//@{
 	virtual void draw (CDrawContext *pContext, CRect &rect, const CPoint &offset = CPoint (0, 0));	///< Draw the pixmap using a given rect as output position and a given offset of its source pixmap.
 	virtual void drawTransparent (CDrawContext *pContext, CRect &rect, const CPoint &offset = CPoint (0, 0));
 	virtual void drawAlphaBlend  (CDrawContext *pContext, CRect &rect, const CPoint &offset = CPoint (0, 0), unsigned char alpha = 128);	///< Same as CBitmap::draw except that it uses the alpha value to draw the bitmap alpha blended.
@@ -928,6 +937,7 @@ public:
 	bool getNoAlpha () const { return noAlpha; }
 
 	const CResourceDescription& getResourceDescription () const { return resourceDesc; }
+	//@}
 
 #if MAC
 	virtual CGImageRef createCGImage (bool transparent = false);
@@ -976,6 +986,7 @@ protected:
 // CView Declaration
 //! \brief Base Class of all view objects
 /// \nosubgrouping
+/// \ingroup views
 //-----------------------------------------------------------------------------
 class CView : public CBaseObject
 {
@@ -1148,6 +1159,7 @@ extern char* kMsgLooseFocus;			///< Message of a view loosing focus (only CTextE
 // CViewContainer Declaration
 //! \brief Container Class of CView objects
 /// \nosubgrouping
+/// \ingroup containerviews
 //-----------------------------------------------------------------------------
 class CViewContainer : public CView
 {
@@ -1196,41 +1208,41 @@ public:
 	virtual bool advanceNextFocusView (CView* oldFocus, bool reverse = false);
 
 	// CView
-	void draw (CDrawContext *pContext);
-	void drawRect (CDrawContext *pContext, const CRect& updateRect);
-	CMouseEventResult onMouseDown (CPoint &where, const long& buttons);
-	CMouseEventResult onMouseUp (CPoint &where, const long& buttons);
-	CMouseEventResult onMouseMoved (CPoint &where, const long& buttons);
-	bool onWheel (const CPoint &where, const float &distance, const long &buttons);
-	bool onWheel (const CPoint &where, const CMouseWheelAxis &axis, const float &distance, const long &buttons);
-	bool hitTest (const CPoint& where, const long buttons = -1);
-	long onKeyDown (VstKeyCode& keyCode);
-	long onKeyUp (VstKeyCode& keyCode);
-	CMessageResult notify (CBaseObject* sender, const char* message);
+	virtual void draw (CDrawContext *pContext);
+	virtual void drawRect (CDrawContext *pContext, const CRect& updateRect);
+	virtual CMouseEventResult onMouseDown (CPoint &where, const long& buttons);
+	virtual CMouseEventResult onMouseUp (CPoint &where, const long& buttons);
+	virtual CMouseEventResult onMouseMoved (CPoint &where, const long& buttons);
+	virtual bool onWheel (const CPoint &where, const float &distance, const long &buttons);
+	virtual bool onWheel (const CPoint &where, const CMouseWheelAxis &axis, const float &distance, const long &buttons);
+	virtual bool hitTest (const CPoint& where, const long buttons = -1);
+	virtual long onKeyDown (VstKeyCode& keyCode);
+	virtual long onKeyUp (VstKeyCode& keyCode);
+	virtual CMessageResult notify (CBaseObject* sender, const char* message);
 
-	bool onDrop (CDragContainer* drag, const CPoint& where);
-	void onDragEnter (CDragContainer* drag, const CPoint& where);
-	void onDragLeave (CDragContainer* drag, const CPoint& where);
-	void onDragMove (CDragContainer* drag, const CPoint& where);
+	virtual bool onDrop (CDragContainer* drag, const CPoint& where);
+	virtual void onDragEnter (CDragContainer* drag, const CPoint& where);
+	virtual void onDragLeave (CDragContainer* drag, const CPoint& where);
+	virtual void onDragMove (CDragContainer* drag, const CPoint& where);
 
-	void looseFocus ();
-	void takeFocus ();
+	virtual void looseFocus ();
+	virtual void takeFocus ();
 
-	bool isDirty () const;
+	virtual bool isDirty () const;
 
-	void invalid ();
-	void invalidRect (const CRect rect);
+	virtual void invalid ();
+	virtual void invalidRect (const CRect rect);
 	virtual bool invalidateDirtyViews ();
 	
-	void setViewSize (CRect &rect, bool invalid = true);
-	void parentSizeChanged ();
-	CRect getVisibleSize (const CRect rect) const;
+	virtual void setViewSize (CRect &rect, bool invalid = true);
+	virtual void parentSizeChanged ();
+	virtual CRect getVisibleSize (const CRect rect) const;
 
-	bool removed (CView* parent);
-	bool attached (CView* parent);
+	virtual bool removed (CView* parent);
+	virtual bool attached (CView* parent);
 		
-	CPoint& frameToLocal (CPoint& point) const;
-	CPoint& localToFrame (CPoint& point) const;
+	virtual CPoint& frameToLocal (CPoint& point) const;
+	virtual CPoint& localToFrame (CPoint& point) const;
 
 	CLASS_METHODS(CViewContainer, CView)
 
@@ -1263,6 +1275,7 @@ protected:
 // CFrame Declaration
 //! \brief The CFrame is the parent container of all views
 /// \nosubgrouping
+/// \ingroup containerviews
 //-----------------------------------------------------------------------------
 class CFrame : public CViewContainer
 {
@@ -1276,6 +1289,10 @@ public:
 	//@}
 	virtual ~CFrame ();
 
+	//-----------------------------------------------------------------------------
+	/// \name CFrame Methods
+	//-----------------------------------------------------------------------------
+	//@{
 	virtual bool open (CPoint *pPoint = 0);
 	virtual bool close ();
 	virtual bool isOpen () const { return bOpenFlag; }
@@ -1320,6 +1337,7 @@ public:
 	virtual void invalidate (const CRect &rect);
 
 	void scrollRect (const CRect& src, const CPoint& distance);		///< scroll rect
+	//@}
 
 	void invalid () { invalidRect (size); bDirty = false; }
 	void invalidRect (const CRect rect);
@@ -1412,6 +1430,8 @@ private:
 
 //-----------------------------------------------------------------------------
 // IMouseObserver Declaration
+//! \brief generic mouse observer interface
+/// \nosubgrouping
 //-----------------------------------------------------------------------------
 class IMouseObserver
 {
@@ -1422,6 +1442,8 @@ public:
 
 //-----------------------------------------------------------------------------
 // CDragContainer Declaration
+//! \brief drag container
+/// \nosubgrouping
 //-----------------------------------------------------------------------------
 class CDragContainer : public CBaseObject
 {
@@ -1435,7 +1457,7 @@ public:
 	long getType (long idx) const;
 	long getCount () const { return nbItems; }
 
-	enum {
+	enum CDragType {
 		kFile = 0,								///< File (MacOSX = UTF8 String)
 		kText,									///< ASCII Text
 		kUnicodeText,							///< UTF8 Text
@@ -1488,10 +1510,12 @@ protected:
 
 END_NAMESPACE_VSTGUI
 
+/// \cond ignore
 // include the control objects
 #ifndef __vstcontrols__
 #include "vstcontrols.h"
 #endif
+/// \endcond
 
 USING_NAMESPACE_VSTGUI
 

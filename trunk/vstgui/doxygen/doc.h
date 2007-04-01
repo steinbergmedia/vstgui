@@ -56,7 +56,7 @@ First developed inhouse of Steinberg Media Technologies (around 1998) for their 
 Later added as binary libraries to the official VST SDK. 
 Since May 2003 VSTGUI is open source and hosted at sourceforge.
 \par Platforms
-Currently VSTGUI compiles on Microsoft Windows 2000/ME/XP/XP64 and Apple Mac OS X 10.3 - 10.4. 
+Currently VSTGUI compiles on Microsoft Windows 2000/ME/XP/XP64/Vista/Vista64 and Apple Mac OS X 10.3 - 10.4. 
 
 \sa
 <a href="http://vstgui.sf.net" target=_blank> VSTGUI @ Sourceforge </a>

@@ -7,10 +7,6 @@
 
 @section new_stuff New Stuff
 
-- @ref mouse @n
-- @ref new_views @n
-- @ref and_more_new @n
-
 @subsection mouse New mouse handling
 In earlier versions there were only one method in CView for handling mouse events (VSTGUI::CView::mouse). 
 In this version there are five new methods :

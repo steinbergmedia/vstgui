@@ -2,7 +2,7 @@
 // VST Plug-Ins SDK
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 //
-// Version 3.5       $Date: 2006-11-19 11:46:22 $ 
+// Version 3.5       $Date: 2007-04-01 11:20:44 $ 
 //
 // CDataBrowser written 2006 by Arne Scheffler
 //
@@ -82,12 +82,13 @@ public:
 // CDataBrowser Declaration
 //! \brief DataBrowser view
 /// \nosubgrouping
+/// \ingroup controls
 //-----------------------------------------------------------------------------------------------
 class CDataBrowser : public CScrollView
 {
 public:
 	//-----------------------------------------------------------------------------
-	/// \name Data Browser Constructor
+	/// \name Constructor
 	//-----------------------------------------------------------------------------
 	//@{
 	CDataBrowser (const CRect& size, CFrame* pParent, IDataBrowser* db, long style = 0, long scrollbarWidth = 16, CBitmap* pBackground = 0);
@@ -109,7 +110,7 @@ public:
 	};
 
 	//-----------------------------------------------------------------------------
-	/// \name Data Browser Functions
+	/// \name CDataBrowser Methods
 	//-----------------------------------------------------------------------------
 	//@{
 	virtual void recalculateLayout (bool rememberSelection = false);				///< trigger recalculation, call if numRows or numColumns changed

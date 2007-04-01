@@ -3,7 +3,7 @@
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 // Standard Control Objects
 //
-// Version 3.5       $Date: 2007-03-25 14:42:38 $
+// Version 3.5       $Date: 2007-04-01 11:20:45 $
 //
 // Added new objects        : Michael Schmidt          08.97
 // Added new objects        : Yvan Grabit              01.98
@@ -68,6 +68,21 @@ BEGIN_NAMESPACE_VSTGUI
 // some external variables (vstgui.cpp)
 extern long gStandardFontSize [];
 extern const char *gStandardFontName [];
+
+//------------------------------------------------------------------------
+/*! @defgroup views Views
+ *	@ingroup viewsandcontrols
+ */
+//------------------------------------------------------------------------
+/*! @defgroup controls Controls
+ *	@ingroup views
+ *	@brief Controls are views the user can interact with
+ */
+//------------------------------------------------------------------------
+/*! @defgroup containerviews Container Views
+ *	@ingroup views
+ */
+//------------------------------------------------------------------------
 
 //------------------------------------------------------------------------
 // CControl
@@ -693,7 +708,7 @@ CMouseEventResult CKnob::onMouseMoved (CPoint& where, const long& buttons)
 				else
 					startValue = value;
 			}
-			if (isDirty () && listener)
+			if (value != oldValue && listener)
 				listener->valueChanged (this);
 			if (isDirty ())
 				invalid ();
@@ -1270,13 +1285,14 @@ CTextEdit::~CTextEdit ()
 }
 
 //------------------------------------------------------------------------
-void CTextEdit::setText (char *txt)
+void CTextEdit::setText (const char *txt)
 {
 	if (txt)
 	{
 		if (strcmp (text, txt))
 		{
-			strcpy (text, txt);
+			strncpy (text, txt, 255);
+			text[255] = 0;	// make sure we end with a 0 byte
 
 			// to force the redraw
 			setDirty ();
