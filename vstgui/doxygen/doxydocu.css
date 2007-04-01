@@ -5,7 +5,7 @@ BODY {
 	margin-left: 20px;
 	margin-top: 0px;	
 	font-family: Verdana, Arial, Helvetica, sans-serif;
-	font-size: 9pt;
+	font-size: 8pt;
 }
 TABLE {
 	font-size:8pt;	
@@ -143,6 +143,7 @@ SPAN.charliteral   { color: #0000ff; }
 EM
 {
 	font-style:normal;
+	color:#a71;
 }
 
 /* frame and items of member-functions in detail section */
@@ -151,11 +152,11 @@ TD.mdname1 {font-weight: normal; color: #303030;  font-size: 9pt; }
 TD.mdname {font-weight: normal; color: #303030; width: 400px; }
 .mdTable 
 {
-/*	border: 1px solid #b6b6b6; */
-	
+	width: 100%;
 	background-color: #efefef;
-	border-top: 3px solid #bbbbbb;
-	border-left: 3px solid #cfcfcf;
+	border-top: 1px solid #bbbbbb;
+	border-left: 1px solid #cfcfcf;
+	border-right: 1px solid #cfcfcf;
 }
 .mdRow {
 	padding: 4px 10px;
@@ -192,6 +193,7 @@ TD.mdname {font-weight: normal; color: #303030; width: 400px; }
 	border-left-style: none;*/
 }
 .memItemRight {
+	width: 100%;
 	font-size: 8pt;
 	font-family: Verdana, Geneva, Arial, Helvetica, sans-serif;
 	font-weight:bold;

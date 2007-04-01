@@ -49,12 +49,13 @@ class CVSTGUITimer;
 // CScrollView Declaration
 //! \brief a scrollable container view with scrollbars
 /// \nosubgrouping
+/// \ingroup containerviews
 //-----------------------------------------------------------------------------
 class CScrollView : public CViewContainer, CControlListener
 {
 public:
 	//-----------------------------------------------------------------------------
-	/// \name CScrollView Constructor
+	/// \name Constructor
 	//-----------------------------------------------------------------------------
 	//@{
 	CScrollView (const CRect &size, const CRect &containerSize, CFrame* pParent, long style, CCoord scrollbarWidth = 16, CBitmap* pBackground = 0);
@@ -71,7 +72,7 @@ public:
 	};
 
 	//-----------------------------------------------------------------------------
-	/// \name CScrollView Functions
+	/// \name CScrollView Methods
 	//-----------------------------------------------------------------------------
 	//@{
 	virtual void setContainerSize (const CRect& cs, bool keepVisibleArea = false);	///< set the virtual size of this container
@@ -119,6 +120,7 @@ class IScrollbarDrawer;
 // CScrollbar Declaration
 //! \brief a scrollbar control
 /// \nosubgrouping
+/// \ingroup controls
 //-----------------------------------------------------------------------------
 class CScrollbar : public CControl
 {
@@ -129,7 +131,7 @@ public:
 	};
 
 	//-----------------------------------------------------------------------------
-	/// \name CScrollbar Constructor
+	/// \name Constructor
 	//-----------------------------------------------------------------------------
 	//@{
 	CScrollbar (const CRect& size, CControlListener* listener, long tag, ScrollbarDirection style, const CRect& scrollSize);
@@ -139,7 +141,7 @@ public:
 	~CScrollbar ();
 	
 	//-----------------------------------------------------------------------------
-	/// \name CScrollbar Functions
+	/// \name CScrollbar Methods
 	//-----------------------------------------------------------------------------
 	//@{
 	virtual void setDrawer (IScrollbarDrawer* d) { drawer = d; }
@@ -165,7 +167,7 @@ public:
 	CMouseEventResult onMouseUp (CPoint &where, const long& buttons);
 	CMouseEventResult onMouseMoved (CPoint &where, const long& buttons);
 	CMessageResult notify (CBaseObject* sender, const char* message);
-	void setViewSize (CRect &rect, bool invalid);
+	void setViewSize (CRect &newSize, bool invalid);
 
 	CLASS_METHODS(CScrollbar, CControl)
 

@@ -1,3 +1,9 @@
+2007-03-31 arne
+
+	* more on doxygen documentation
+	* changed CTextEdit::setText (char* txt) to CTextEdit::setText (const char* txt)
+	* changed typedef of CViewAttributeID to unsigned int from unsigned long
+	
 2007-03-25 arne
 
 	* fix a TextEdit issue on Windows
