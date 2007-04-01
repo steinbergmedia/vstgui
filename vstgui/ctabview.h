@@ -47,6 +47,7 @@ class CTabChildView;
 class CTabView : public CViewContainer, public CControlListener
 //! \brief a tab view
 /// \nosubgrouping
+/// \ingroup containerviews
 //-----------------------------------------------------------------------------
 {
 public:

@@ -3,7 +3,7 @@
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 // Standard Control Objects
 //
-// Version 3.5       $Date: 2007-02-02 15:35:16 $
+// Version 3.5       $Date: 2007-04-01 11:20:45 $
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
@@ -229,6 +229,7 @@ protected:
 // COnOffButton Declaration
 //! \brief a button control with 2 states
 /// \nosubgrouping
+/// \ingroup controls
 //-----------------------------------------------------------------------------
 class COnOffButton : public CControl
 {
@@ -243,17 +244,23 @@ public:
 	
 	virtual ~COnOffButton ();
 
-	virtual void draw (CDrawContext*);
-	VSTGUI_DEPRECATED(virtual void mouse (CDrawContext* pContext, CPoint& where, long button = -1);)
-	virtual CMouseEventResult onMouseDown (CPoint& where, const long& buttons);
-
-	virtual long getStyle () const { return style; }
-	virtual void setStyle (long newStyle) { style = newStyle; }
-
-	enum {
+	enum COnOffButtonStyle {
 		kPreListenerUpdate,			///< listener will be called after doIdleStuff was called
 		kPostListenerUpdate,		///< listener will be called before doIdleStuff is called
 	};
+
+	//-----------------------------------------------------------------------------
+	/// \name COnOffButton Methods
+	//-----------------------------------------------------------------------------
+	//@{
+	virtual long getStyle () const { return style; }
+	virtual void setStyle (long newStyle) { style = newStyle; }
+	//@}
+
+	// overrides
+	virtual void draw (CDrawContext*);
+	VSTGUI_DEPRECATED(virtual void mouse (CDrawContext* pContext, CPoint& where, long button = -1);)
+	virtual CMouseEventResult onMouseDown (CPoint& where, const long& buttons);
 
 	CLASS_METHODS(COnOffButton, CControl)
 protected:
@@ -263,8 +270,9 @@ protected:
 
 //-----------------------------------------------------------------------------
 // CParamDisplay Declaration
-//! \brief a parameter display control
+//! \brief a parameter display
 /// \nosubgrouping
+/// \ingroup views
 //-----------------------------------------------------------------------------
 class CParamDisplay : public CControl
 {
@@ -279,6 +287,10 @@ public:
 
 	virtual ~CParamDisplay ();
 	
+	//-----------------------------------------------------------------------------
+	/// \name CParamDisplay Methods
+	//-----------------------------------------------------------------------------
+	//@{
 	virtual void setFont (CFontRef fontID);
 	const CFontRef getFont () const { return fontID; }
 
@@ -311,10 +323,11 @@ public:
 	virtual void setTxtFace (CTxtFace val);
 	CTxtFace getTxtFace () const { return txtFace; }
 
-	virtual void draw (CDrawContext* pContext);
-
 	virtual void setTextTransparency (bool val) { bTextTransparencyEnabled = val; }
 	bool getTextTransparency () const { return bTextTransparencyEnabled; }
+	//@}
+
+	virtual void draw (CDrawContext* pContext);
 
 	CLASS_METHODS(CParamDisplay, CControl)
 
@@ -344,6 +357,7 @@ protected:
 // CLabel Declaration
 //! \brief a text label
 /// \nosubgrouping
+/// \ingroup views
 //-----------------------------------------------------------------------------
 class CTextLabel : public CParamDisplay
 {
@@ -358,8 +372,13 @@ public:
 	
 	~CTextLabel ();
 	
-	virtual void setText (const char* txt);
-	virtual const char* getText () const;
+	//-----------------------------------------------------------------------------
+	/// \name CTextLabel Methods
+	//-----------------------------------------------------------------------------
+	//@{
+	virtual void setText (const char* txt);	///< set text
+	virtual const char* getText () const;	///< read only access to text
+	//@}
 	
 	virtual	void draw (CDrawContext* pContext);
 
@@ -374,6 +393,7 @@ protected:
 // CTextEdit Declaration
 //! \brief a text edit control
 /// \nosubgrouping
+/// \ingroup controls
 //-----------------------------------------------------------------------------
 class CTextEdit : public CParamDisplay
 {
@@ -388,17 +408,23 @@ public:
 
 	virtual ~CTextEdit ();
 
-	virtual void setText (char* txt);
-	virtual void getText (char* txt) const;
-	virtual const char* getText () const { return text; }
-
-	virtual	void draw (CDrawContext* pContext);
-	VSTGUI_DEPRECATED(virtual void mouse (CDrawContext* pContext, CPoint& where, long button = -1);)
-	virtual CMouseEventResult onMouseDown (CPoint& where, const long& buttons);
+	//-----------------------------------------------------------------------------
+	/// \name CTextEdit Methods
+	//-----------------------------------------------------------------------------
+	//@{
+	virtual void setText (const char* txt);					///< set the text (only 256 bytes are allowed)
+	virtual void getText (char* txt) const;					///< copies text to txt (make sure txt is at least 256 bytes big)
+	virtual const char* getText () const { return text; }	///< read only access to text
 
 	virtual void setTextEditConvert (void (*editConvert) (char* input, char* string));
 	virtual void setTextEditConvert (void (*editConvert2) (char* input, char* string,
 										void* userDta), void* userData);
+	//@}
+
+	// overrides
+	virtual	void draw (CDrawContext* pContext);
+	VSTGUI_DEPRECATED(virtual void mouse (CDrawContext* pContext, CPoint& where, long button = -1);)
+	virtual CMouseEventResult onMouseDown (CPoint& where, const long& buttons);
 
 	virtual	void takeFocus ();
 	virtual	void looseFocus ();
@@ -439,14 +465,19 @@ public:
 
 	enum { kChecked = 0x01, kDisabled = 0x02, kSelected = 0x04, kSubMenu = 0x08, kTitle = 0x10 };
 
+	//-----------------------------------------------------------------------------
+	/// \name COptionMenuScheme Methods
+	//-----------------------------------------------------------------------------
+	//@{
 	virtual void getItemSize (const char* text, CDrawContext* pContext, CPoint& size);
 	virtual void drawItem (const char* text, long itemId, long state, CDrawContext* pContext, const CRect& rect);	
 
-	void setColors (CColor back, CColor select, CColor text, CColor htext, CColor dtext)
+	void setColors (const CColor& back, const CColor& select, const CColor& text, const CColor& htext, const CColor& dtext)
 	{ backgroundColor = back; selectionColor = select; textColor = text;
 	hiliteTextColor = htext; disableTextColor = dtext; }
 	
 	void setFont (CFontRef f) { if (font) font->forget (); font = f; if (font) font->remember (); }
+	//@}
 protected:
 
 	CColor backgroundColor;
@@ -472,6 +503,7 @@ extern COptionMenuScheme* gOptionMenuScheme;
 // COptionMenu Declaration
 //! \brief a popup menu control
 /// \nosubgrouping
+/// \ingroup controls
 //-----------------------------------------------------------------------------
 class COptionMenu : public CParamDisplay
 {
@@ -488,7 +520,10 @@ public:
 
 	enum { MAX_ENTRY = 1024 };
 
-	virtual void setValue (float val);
+	//-----------------------------------------------------------------------------
+	/// \name COptionMenu Methods
+	//-----------------------------------------------------------------------------
+	//@{
 	virtual bool addEntry (COptionMenu *subMenu, const char *txt);
 	virtual	bool addEntry (const char *txt, long index = -1);
 	virtual	long getCurrent (char *txt = 0, bool countSeparator = true) const;
@@ -503,20 +538,8 @@ public:
 	virtual bool checkEntry (long index, bool state);
 	virtual bool checkEntryAlone (long index);
 	virtual bool isCheckEntry (long index) const;
-
-	virtual	void draw (CDrawContext* pContext);
-	VSTGUI_DEPRECATED (virtual void mouse (CDrawContext* pContext, CPoint& where, long button = -1);)
-	virtual CMouseEventResult onMouseDown (CPoint& where, const long& buttons);
-
-	virtual	void takeFocus ();
-	virtual	void looseFocus ();
-
 	virtual void setNbItemsPerColumn (long val) { nbItemsPerColumn = val; }
 	virtual long getNbItemsPerColumn () const { return nbItemsPerColumn; }
-
-#if MAC
-	short   getMenuID () const { return menuID; }
-#endif
 
 	long getLastResult () const { return lastResult; }
 	COptionMenu* getLastItemMenu (long& idxInMenu) const;
@@ -527,6 +550,21 @@ public:
 	virtual void setPrefixNumbers (long preCount);
 
 	COptionMenu* getSubMenu (long idx) const;
+
+#if MAC
+	short   getMenuID () const { return menuID; }
+#endif
+
+	//@}
+
+	// overrides
+	virtual void setValue (float val);
+	virtual	void draw (CDrawContext* pContext);
+	VSTGUI_DEPRECATED (virtual void mouse (CDrawContext* pContext, CPoint& where, long button = -1);)
+	virtual CMouseEventResult onMouseDown (CPoint& where, const long& buttons);
+
+	virtual	void takeFocus ();
+	virtual	void looseFocus ();
 
 	CLASS_METHODS(COptionMenu, CParamDisplay)
 
@@ -567,6 +605,7 @@ protected:
 // CKnob Declaration
 //! \brief a knob control
 /// \nosubgrouping
+/// \ingroup controls
 //-----------------------------------------------------------------------------
 class CKnob : public CControl
 {
@@ -581,17 +620,10 @@ public:
 
 	virtual ~CKnob ();
 
-	virtual void draw (CDrawContext* pContext);
-	VSTGUI_DEPRECATED(virtual void mouse (CDrawContext* pContext, CPoint& where, long button = -1);)
-	virtual bool onWheel (const CPoint& where, const float& distance, const long& buttons);
-	virtual long onKeyDown (VstKeyCode& keyCode);
-
-	virtual CMouseEventResult onMouseDown (CPoint& where, const long& buttons);
-	virtual CMouseEventResult onMouseUp (CPoint& where, const long& buttons);
-	virtual CMouseEventResult onMouseMoved (CPoint& where, const long& buttons);
-
-	virtual void drawHandle (CDrawContext* pContext);
-
+	//-----------------------------------------------------------------------------
+	/// \name CKnob Methods
+	//-----------------------------------------------------------------------------
+	//@{
 	virtual void  setStartAngle (float val);
 	virtual float getStartAngle () const { return startAngle; }
 
@@ -615,10 +647,22 @@ public:
 
 	virtual void  setZoomFactor (float val) { zoomFactor = val; }
 	virtual float getZoomFactor () const { return zoomFactor; }
+	//@}
+
+	// overrides
+	virtual void draw (CDrawContext* pContext);
+	VSTGUI_DEPRECATED(virtual void mouse (CDrawContext* pContext, CPoint& where, long button = -1);)
+	virtual bool onWheel (const CPoint& where, const float& distance, const long& buttons);
+	virtual long onKeyDown (VstKeyCode& keyCode);
+
+	virtual CMouseEventResult onMouseDown (CPoint& where, const long& buttons);
+	virtual CMouseEventResult onMouseUp (CPoint& where, const long& buttons);
+	virtual CMouseEventResult onMouseMoved (CPoint& where, const long& buttons);
 
 	CLASS_METHODS(CKnob, CControl)
 
 protected:
+	virtual void drawHandle (CDrawContext* pContext);
 	void compute ();
 
 	CPoint offset;
@@ -648,6 +692,7 @@ private:
 // CAnimKnob Declaration
 //! \brief a bitmap knob control
 /// \nosubgrouping
+/// \ingroup controls
 //-----------------------------------------------------------------------------
 class CAnimKnob : public CKnob, public IMultiBitmapControl
 {
@@ -663,12 +708,16 @@ public:
 	
 	virtual ~CAnimKnob ();
 
-	virtual bool isDirty () const;
-
-	virtual void draw (CDrawContext* pContext);
-
+	//-----------------------------------------------------------------------------
+	/// \name CAnimKnob Methods
+	//-----------------------------------------------------------------------------
+	//@{
 	void setInverseBitmap (bool val) { bInverseBitmap = val; }
+	//@}
 
+	// overrides
+	virtual bool isDirty () const;
+	virtual void draw (CDrawContext* pContext);
 	void setHeightOfOneImage (const CCoord& height);
 
 	CLASS_METHODS(CAnimKnob, CKnob)
@@ -683,6 +732,7 @@ protected:
 // CVerticalSwitch Declaration
 //! \brief a vertical switch control
 /// \nosubgrouping
+/// \ingroup controls
 //-----------------------------------------------------------------------------
 class CVerticalSwitch : public CControl, public IMultiBitmapControl
 {
@@ -721,6 +771,7 @@ private:
 // CHorizontalSwitch Declaration
 //! \brief a horizontal switch control
 /// \nosubgrouping
+/// \ingroup controls
 //-----------------------------------------------------------------------------
 class CHorizontalSwitch : public CControl, public IMultiBitmapControl
 {
@@ -759,6 +810,7 @@ private:
 // CRockerSwitch Declaration
 //! \brief a switch control with 3 sub bitmaps
 /// \nosubgrouping
+/// \ingroup controls
 //-----------------------------------------------------------------------------
 class CRockerSwitch : public CControl, public IMultiBitmapControl
 {
@@ -795,8 +847,9 @@ private:
 
 //-----------------------------------------------------------------------------
 // CMovieBitmap Declaration
-//! \brief a bitmap control that displays different bitmaps according to its current value
+//! \brief a bitmap view that displays different bitmaps according to its current value
 /// \nosubgrouping
+/// \ingroup views
 //-----------------------------------------------------------------------------
 class CMovieBitmap : public CControl, public IMultiBitmapControl
 {
@@ -826,6 +879,7 @@ protected:
 // CMovieButton Declaration
 //! \brief a bi-states button with 2 subbitmaps
 /// \nosubgrouping
+/// \ingroup controls
 //-----------------------------------------------------------------------------
 class CMovieButton : public CControl, public IMultiBitmapControl
 {
@@ -863,6 +917,7 @@ private:
 // CAutoAnimation Declaration
 //!
 /// \nosubgrouping
+/// \ingroup controls
 //-----------------------------------------------------------------------------
 class CAutoAnimation : public CControl, public IMultiBitmapControl
 {
@@ -882,13 +937,18 @@ public:
 	VSTGUI_DEPRECATED(virtual void mouse (CDrawContext* pContext, CPoint& where, long button = -1);)
 	virtual CMouseEventResult onMouseDown (CPoint& where, const long& buttons);
 
-	virtual void openWindow (void);
-	virtual void closeWindow (void);
+	//-----------------------------------------------------------------------------
+	/// \name CAutoAnimation Methods
+	//-----------------------------------------------------------------------------
+	//@{
+	virtual void openWindow (void);			///< enabled drawing
+	virtual void closeWindow (void);		///< disable drawing
 
-	virtual void nextPixmap (void);
-	virtual void previousPixmap (void);
+	virtual void nextPixmap (void);			///< the next sub bitmap should be displayed
+	virtual void previousPixmap (void);		///< the previous sub bitmap should be displayed
 
 	bool    isWindowOpened () const { return bWindowOpened; }
+	//@}
 
 	CLASS_METHODS(CAutoAnimation, CControl)
 
@@ -906,6 +966,7 @@ protected:
 // CSlider Declaration
 //! \brief a slider control
 /// \nosubgrouping
+/// \ingroup controls
 //-----------------------------------------------------------------------------
 class CSlider : public CControl
 {
@@ -921,16 +982,11 @@ public:
 
 	virtual ~CSlider ();
   
-	virtual void draw (CDrawContext*);
-	VSTGUI_DEPRECATED(virtual void mouse (CDrawContext* pContext, CPoint& where, long button = -1);)
-
-	virtual CMouseEventResult onMouseDown (CPoint& where, const long& buttons);
-	virtual CMouseEventResult onMouseUp (CPoint& where, const long& buttons);
-	virtual CMouseEventResult onMouseMoved (CPoint& where, const long& buttons);
-
-	virtual bool onWheel (const CPoint& where, const float& distance, const long& buttons);
-	virtual long onKeyDown (VstKeyCode& keyCode);
-
+	
+	//-----------------------------------------------------------------------------
+	/// \name CSlider Methods
+	//-----------------------------------------------------------------------------
+	//@{
 	virtual void setDrawTransparentHandle (bool val) { bDrawTransparentEnabled = val; }
 	virtual void setFreeClick (bool val) { bFreeClick = val; }
 	virtual bool getFreeClick () const { return bFreeClick; }
@@ -946,6 +1002,18 @@ public:
 
 	virtual void  setZoomFactor (float val) { zoomFactor = val; }
 	virtual float getZoomFactor () const { return zoomFactor; }
+	//@}
+
+	// overrides
+	virtual void draw (CDrawContext*);
+	VSTGUI_DEPRECATED(virtual void mouse (CDrawContext* pContext, CPoint& where, long button = -1);)
+
+	virtual CMouseEventResult onMouseDown (CPoint& where, const long& buttons);
+	virtual CMouseEventResult onMouseUp (CPoint& where, const long& buttons);
+	virtual CMouseEventResult onMouseMoved (CPoint& where, const long& buttons);
+
+	virtual bool onWheel (const CPoint& where, const float& distance, const long& buttons);
+	virtual long onKeyDown (VstKeyCode& keyCode);
 
 	CLASS_METHODS(CSlider, CControl)
 
@@ -980,6 +1048,7 @@ private:
 // CVerticalSlider Declaration
 //! \brief a vertical slider control
 /// \nosubgrouping
+/// \ingroup controls
 //-----------------------------------------------------------------------------
 class CVerticalSlider : public CSlider
 {
@@ -998,6 +1067,7 @@ public:
 // CHorizontalSlider Declaration
 //! \brief a horizontal slider control
 /// \nosubgrouping
+/// \ingroup controls
 //-----------------------------------------------------------------------------
 class CHorizontalSlider : public CSlider
 {
@@ -1017,6 +1087,7 @@ public:
 // CSpecialDigit Declaration
 //! \brief special display with custom numbers (0...9)
 /// \nosubgrouping
+/// \ingroup views
 //-----------------------------------------------------------------------------
 class CSpecialDigit : public CControl
 {
@@ -1033,7 +1104,12 @@ public:
 	
 	virtual void  draw (CDrawContext*);
 
+	//-----------------------------------------------------------------------------
+	/// \name CSpecialDigit Methods
+	//-----------------------------------------------------------------------------
+	//@{
 	virtual float getNormValue (void) const;
+	//@}
 
 	CLASS_METHODS(CSpecialDigit, CControl)
 
@@ -1050,6 +1126,7 @@ protected:
 // CKickButton Declaration
 //!
 /// \nosubgrouping
+/// \ingroup controls
 //-----------------------------------------------------------------------------
 class CKickButton : public CControl, public IMultiBitmapControl
 {
@@ -1086,6 +1163,7 @@ private:
 // CSplashScreen Declaration
 //!
 /// \nosubgrouping
+/// \ingroup views
 //-----------------------------------------------------------------------------
 class CSplashScreen : public CControl, public CControlListener
 {
@@ -1103,10 +1181,16 @@ public:
 	virtual void draw (CDrawContext*);
 	virtual bool hitTest (const CPoint& where, const long buttons = -1);
 	VSTGUI_DEPRECATED(virtual void mouse (CDrawContext* pContext, CPoint& where, long button = -1);)
+
+	//-----------------------------------------------------------------------------
+	/// \name CSplashScreen Methods
+	//-----------------------------------------------------------------------------
+	//@{
 	virtual void unSplash ();
 
 	virtual void setDisplayArea (const CRect& rect)  { toDisplay = rect; }				///< set the area in which the splash will be displayed
 	virtual CRect& getDisplayArea (CRect& rect) const { rect = toDisplay; return rect; }	///< get the area in which the splash will be displayed
+	//@}
 
 	virtual CMouseEventResult onMouseDown (CPoint& where, const long& buttons);
 
@@ -1126,6 +1210,7 @@ protected:
 // CVuMeter Declaration
 //!
 /// \nosubgrouping
+/// \ingroup views
 //-----------------------------------------------------------------------------
 class CVuMeter : public CControl
 {
@@ -1140,16 +1225,21 @@ public:
 
 	virtual ~CVuMeter ();	
   
+	//-----------------------------------------------------------------------------
+	/// \name CVuMeter Methods
+	//-----------------------------------------------------------------------------
+	//@{
 	virtual void setDecreaseStepValue (float value) { decreaseValue = value; }
+	void setUseOffscreen (bool val = true);
+	bool getUseOffscreen () const { return bUseOffscreen; }
+	//@}
+
 
 	virtual bool attached (CView* parent);
 	virtual bool removed (CView* parent);
 	virtual void draw (CDrawContext* pContext);
 	virtual void setDirty (const bool val = true);
 	
-	void setUseOffscreen (bool val = true);
-	bool getUseOffscreen () const { return bUseOffscreen; }
-
 	CLASS_METHODS(CVuMeter, CControl)
 
 protected:

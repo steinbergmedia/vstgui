@@ -2,7 +2,7 @@
 // VST Plug-Ins SDK
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 //
-// Version 3.5       $Date: 2007-03-25 12:25:13 $ 
+// Version 3.5       $Date: 2007-04-01 11:20:45 $ 
 //
 // Added Motif/Windows vers.: Yvan Grabit              01.98
 // Added Mac version        : Charlie Steinberg        02.98
@@ -2951,7 +2951,11 @@ CView::~CView ()
 }
 
 //-----------------------------------------------------------------------------
-bool CView::attached (CView* view)
+/**
+ * @param parent parent view
+ * @return true if view successfully attached to parent
+ */
+bool CView::attached (CView* parent)
 {
 	if (isAttached ())
 		return false;
@@ -2962,6 +2966,10 @@ bool CView::attached (CView* view)
 }
 
 //-----------------------------------------------------------------------------
+/**
+ * @param parent parent view
+ * @return true if view successfully removed from parent
+ */
 bool CView::removed (CView* parent)
 {
 	if (!isAttached ())
@@ -2976,7 +2984,7 @@ bool CView::removed (CView* parent)
 /**
  * @param where mouse location of mouse down
  * @param buttons button and modifier state
- * @return event result \sa CMouseEventResult
+ * @return event result. see #CMouseEventResult
  */
 CMouseEventResult CView::onMouseDown (CPoint &where, const long& buttons)
 {
@@ -2987,7 +2995,7 @@ CMouseEventResult CView::onMouseDown (CPoint &where, const long& buttons)
 /**
  * @param where mouse location of mouse up
  * @param buttons button and modifier state
- * @return event result \sa CMouseEventResult
+ * @return event result. see #CMouseEventResult
  */
 CMouseEventResult CView::onMouseUp (CPoint &where, const long& buttons)
 {
@@ -2998,7 +3006,7 @@ CMouseEventResult CView::onMouseUp (CPoint &where, const long& buttons)
 /**
  * @param where mouse location of mouse move
  * @param buttons button and modifier state
- * @return event result \sa CMouseEventResult
+ * @return event result. see #CMouseEventResult
  */
 CMouseEventResult CView::onMouseMoved (CPoint &where, const long& buttons)
 {
@@ -3036,6 +3044,10 @@ void CView::getFrameTopLeftPos (CPoint& topLeft) const
 #endif
 
 //-----------------------------------------------------------------------------
+/**
+ * @param point location
+ * @return converted point
+ */
 CPoint& CView::frameToLocal (CPoint& point) const
 {
 	if (pParentView && pParentView->isTypeOf ("CViewContainer"))
@@ -3044,6 +3056,10 @@ CPoint& CView::frameToLocal (CPoint& point) const
 }
 
 //-----------------------------------------------------------------------------
+/**
+ * @param point location
+ * @return converted point
+ */
 CPoint& CView::localToFrame (CPoint& point) const
 {
 	if (pParentView && pParentView->isTypeOf ("CViewContainer"))
@@ -3052,6 +3068,9 @@ CPoint& CView::localToFrame (CPoint& point) const
 }
 
 //-----------------------------------------------------------------------------
+/**
+ * @param rect rect to invalidate
+ */
 void CView::invalidRect (CRect rect)
 {
 	if (bIsAttached)
@@ -3064,6 +3083,9 @@ void CView::invalidRect (CRect rect)
 }
 
 //-----------------------------------------------------------------------------
+/**
+ * @param pContext draw context in which to draw
+ */
 void CView::draw (CDrawContext* pContext)
 {
 	if (pBackground)
@@ -3083,12 +3105,25 @@ void CView::mouse (CDrawContext* pContext, CPoint &where, long buttons)
 #endif
 
 //-----------------------------------------------------------------------------
+/**
+ * @param where location
+ * @param distance wheel distance
+ * @param buttons button and modifier state
+ * @return true if handled
+ */
 bool CView::onWheel (const CPoint &where, const float &distance, const long &buttons)
 {
 	return false;
 }
 
 //------------------------------------------------------------------------
+/**
+ * @param where location
+ * @param axis mouse wheel axis
+ * @param distance wheel distance
+ * @param buttons button and modifier state
+ * @return true if handled
+ */
 bool CView::onWheel (const CPoint& where, const CMouseWheelAxis& axis, const float& distance, const long& buttons)
 {
 	if (axis == kMouseWheelAxisX)
@@ -3102,18 +3137,31 @@ bool CView::onWheel (const CPoint& where, const CMouseWheelAxis& axis, const flo
 }
 
 //------------------------------------------------------------------------------
+/**
+ * @param keyCode key code of pressed key
+ * @return -1 if not handled and 1 if handled
+ */
 long CView::onKeyDown (VstKeyCode& keyCode)
 {
 	return -1;
 }
 
 //------------------------------------------------------------------------------
+/**
+ * @param keyCode key code of pressed key
+ * @return -1 if not handled and 1 if handled
+ */
 long CView::onKeyUp (VstKeyCode& keyCode)
 {
 	return -1;
 }
 
 //------------------------------------------------------------------------------
+/**
+ * @param sender message sender
+ * @param message message text
+ * @return message handled or not. See #CMessageResult
+ */
 CMessageResult CView::notify (CBaseObject* sender, const char* message)
 {
 	return kMessageUnknown;
@@ -3128,14 +3176,21 @@ void CView::takeFocus ()
 {}
 
 //------------------------------------------------------------------------------
-void CView::setViewSize (CRect &rect, bool invalid)
+/**
+ * @param newSize rect of new size of view
+ * @param invalid if true set view dirty
+ */
+void CView::setViewSize (CRect &newSize, bool invalid)
 {
-	size = rect;
+	size = newSize;
 	if (invalid)
 		setDirty ();
 }
 
 //------------------------------------------------------------------------------
+/**
+ * @return visible size of view
+ */
 CRect CView::getVisibleSize () const
 {
 	if (pParentView && pParentView->isTypeOf ("CViewContainer"))
@@ -3152,6 +3207,9 @@ VSTGUIEditorInterface* CView::getEditor () const
 }
 
 //-----------------------------------------------------------------------------
+/**
+ * @param background new background bitmap
+ */
 void CView::setBackground (CBitmap* background)
 {
 	if (pBackground)
@@ -3170,6 +3228,7 @@ const CViewAttributeID kCViewTooltipAttribute = 'cvtt';
 /**
  * @param id the ID of the Attribute
  * @param outSize on return the size of the attribute
+ * @return true if attribute exists. outSize is valid then.
  */
 bool CView::getAttributeSize (const CViewAttributeID id, long& outSize) const
 {
@@ -3197,6 +3256,7 @@ bool CView::getAttributeSize (const CViewAttributeID id, long& outSize) const
  * @param inSize the size of the outData pointer
  * @param outData a pointer where to copy the attribute data
  * @param outSize the size in bytes which was copied into outData
+ * @return true if attribute exists and outData was big enough. outSize and outData is valid then.
  */
 bool CView::getAttribute (const CViewAttributeID id, const long inSize, void* outData, long& outSize) const
 {
@@ -3226,6 +3286,7 @@ bool CView::getAttribute (const CViewAttributeID id, const long inSize, void* ou
  * @param id the ID of the Attribute
  * @param inSize the size of the outData pointer
  * @param inData a pointer to the data
+ * @return true if attribute was set
  */
 bool CView::setAttribute (const CViewAttributeID id, const long inSize, const void* inData)
 {
@@ -3297,9 +3358,16 @@ void CView::dumpInfo ()
 /*! @class CFrame
 It creates a platform dependend view object. 
 
-On Mac OS X it is a ControlRef. 
+On Mac OS X it is a HIView.\n 
 On Windows it's a WS_CHILD Window.
+
 */
+//-----------------------------------------------------------------------------
+/**
+ * @param inSize size of frame
+ * @param inSystemWindow parent platform window
+ * @param inEditor editor
+ */
 CFrame::CFrame (const CRect &inSize, void* inSystemWindow, VSTGUIEditorInterface* inEditor)
 : CViewContainer (inSize, 0, 0)
 , pEditor (inEditor)
@@ -3369,6 +3437,14 @@ CFrame::CFrame (const CRect &inSize, void* inSystemWindow, VSTGUIEditorInterface
 }
 
 //-----------------------------------------------------------------------------
+/**
+ * creates a custom window if VST host supports it (only possible if ENABLE_VST_EXTENSION_IN_VSTGUI)
+ * \note this is deprecated with VST 2.4
+ * @param inSize size of frame
+ * @param inTitle window title
+ * @param inEditor editor
+ * @param inStyle window style
+ */
 CFrame::CFrame (const CRect& inSize, const char* inTitle, VSTGUIEditorInterface* inEditor, const long inStyle)
 : CViewContainer (inSize, 0, 0)
 , pEditor (inEditor)
@@ -3506,6 +3582,12 @@ CFrame::~CFrame ()
 }
 
 //-----------------------------------------------------------------------------
+/**
+ * open custom window
+ * \note deprecated with VST 2.4
+ * @param point location of left top position where to open the window
+ * @return true on success
+ */
 bool CFrame::open (CPoint* point)
 {
 #if (ENABLE_VST_EXTENSION_IN_VSTGUI && !VST_FORCE_DEPRECATED)
@@ -3544,6 +3626,11 @@ bool CFrame::open (CPoint* point)
 }
 
 //-----------------------------------------------------------------------------
+/**
+ * close custom window
+ * \note deprecated with VST 2.4
+ * @return true on success
+ */
 bool CFrame::close ()
 {
 #if (ENABLE_VST_EXTENSION_IN_VSTGUI && !VST_FORCE_DEPRECATED)
@@ -3996,6 +4083,9 @@ void CFrame::doIdleStuff ()
 }
 
 //-----------------------------------------------------------------------------
+/**
+ * @return tick count in milliseconds
+ */
 unsigned long CFrame::getTicks () const
 {
 	#if MAC
@@ -4068,6 +4158,12 @@ HWND CFrame::getOuterWindow () const
 #endif
 
 //-----------------------------------------------------------------------------
+/**
+ * repositions the frame
+ * @param x x coordinate
+ * @param y y coordinate
+ * @return true on success
+ */
 bool CFrame::setPosition (CCoord x, CCoord y)
 {
 	if (!getOpenFlag ())
@@ -4083,7 +4179,7 @@ bool CFrame::setPosition (CCoord x, CCoord y)
 		return true;
 	}
 #elif WINDOWS
-	// not implemented yet
+	// TODO: not implemented yet
 
 #else
 	// not implemented yet
@@ -4093,6 +4189,12 @@ bool CFrame::setPosition (CCoord x, CCoord y)
 }
 
 //-----------------------------------------------------------------------------
+/**
+ * get global position of frame
+ * @param x x coordinate
+ * @param y y coordinate
+ * @return true on success
+ */
 bool CFrame::getPosition (CCoord &x, CCoord &y) const
 {
 	if (!getOpenFlag ())
@@ -4153,6 +4255,12 @@ void CFrame::setViewSize (CRect& rect, bool invalid)
 }
 
 //-----------------------------------------------------------------------------
+/**
+ * set size of frame (and the platform representation)
+ * @param width new width
+ * @param height new height
+ * @return true on success
+ */
 bool CFrame::setSize (CCoord width, CCoord height)
 {
 	if (!getOpenFlag ())
@@ -4270,6 +4378,11 @@ bool CFrame::setSize (CCoord width, CCoord height)
 }
 
 //-----------------------------------------------------------------------------
+/**
+ * get size relative to parent
+ * @param pRect size
+ * @return true on success
+ */
 bool CFrame::getSize (CRect* pRect) const
 {
 	if (!getOpenFlag ())
@@ -4361,6 +4474,10 @@ void CFrame::endEdit (long index)
 }
 
 //-----------------------------------------------------------------------------
+/**
+ * @param where location of mouse
+ * @return true on success
+ */
 bool CFrame::getCurrentMouseLocation (CPoint &where) const
 {
 	#if WINDOWS
@@ -4405,6 +4522,9 @@ bool CFrame::getCurrentMouseLocation (CPoint &where) const
 }
 
 //-----------------------------------------------------------------------------
+/**
+ * @return mouse and modifier state
+ */
 long CFrame::getCurrentMouseButtons () const
 {
 	long buttons = 0;
@@ -4483,6 +4603,9 @@ bool CFrame::getCurrentLocation (CPoint &where)
 #endif
 
 //-----------------------------------------------------------------------------
+/**
+ * @param type cursor type see #CCursorType
+ */
 void CFrame::setCursor (CCursorType type)
 {
 	#if WINDOWS
@@ -4556,6 +4679,9 @@ void CFrame::setCursor (CCursorType type)
 }
 
 //-----------------------------------------------------------------------------
+/**
+ * @param pView view which was removed
+ */
 void CFrame::onViewRemoved (CView* pView)
 {
 	if (pMouseOverView == pView)
@@ -4565,6 +4691,9 @@ void CFrame::onViewRemoved (CView* pView)
 }
 
 //-----------------------------------------------------------------------------
+/**
+ * @param pView new focus view
+ */
 void CFrame::setFocusView (CView *pView)
 {
 	static bool recursion = false;
@@ -4661,6 +4790,10 @@ bool CFrame::removeAll (const bool &withForget)
 }
 
 //-----------------------------------------------------------------------------
+/**
+ * @param src rect which to scroll
+ * @param distance point of distance
+ */
 void CFrame::scrollRect (const CRect& src, const CPoint& distance)
 {
 	CRect rect (src);
@@ -4845,7 +4978,7 @@ void CViewContainer::setViewSize (CRect &rect, bool invalid)
 
 //-----------------------------------------------------------------------------
 /**
- * @param rect the size you want to check
+ * @param rect size to get visible size of
  * @return visible size of rect
  */
 CRect CViewContainer::getVisibleSize (const CRect rect) const
@@ -4884,6 +5017,7 @@ CMessageResult CViewContainer::notify (CBaseObject* sender, const char* message)
 //-----------------------------------------------------------------------------
 /**
  * @param pView the view object to add to this container
+ * @return true on success. false if view was already attached
  */
 bool CViewContainer::addView (CView* pView)
 {
@@ -4920,6 +5054,7 @@ bool CViewContainer::addView (CView* pView)
 /**
  * @param pView the view object to add to this container
  * @param pBefore the view object
+ * @return true on success. false if view was already attached
  */
 bool CViewContainer::addView (CView *pView, CView* pBefore)
 {
@@ -4966,6 +5101,7 @@ bool CViewContainer::addView (CView *pView, CView* pBefore)
  * @param pView the view object to add to this container
  * @param mouseableArea the view area in where the view will get mouse events
  * @param mouseEnabled bool to set if view will get mouse events
+ * @return true on success. false if view was already attached
  */
 bool CViewContainer::addView (CView* pView, CRect &mouseableArea, bool mouseEnabled)
 {
@@ -4984,6 +5120,7 @@ bool CViewContainer::addView (CView* pView, CRect &mouseableArea, bool mouseEnab
 //-----------------------------------------------------------------------------
 /**
  * @param withForget bool to indicate if the view's reference counter should be decreased after removed from the container
+ * @return true on success
  */
 bool CViewContainer::removeAll (const bool &withForget)
 {
@@ -5014,6 +5151,7 @@ bool CViewContainer::removeAll (const bool &withForget)
 /**
  * @param pView the view which should be removed from the container
  * @param withForget bool to indicate if the view's reference counter should be decreased after removed from the container
+ * @return true on success
  */
 bool CViewContainer::removeView (CView *pView, const bool &withForget)
 {
@@ -5061,6 +5199,7 @@ bool CViewContainer::removeView (CView *pView, const bool &withForget)
 //-----------------------------------------------------------------------------
 /**
  * @param pView the view which should be checked if it is a child of this container
+ * @return true on success
  */
 bool CViewContainer::isChild (CView* pView) const
 {
@@ -5321,12 +5460,23 @@ void CViewContainer::drawRect (CDrawContext* pContext, const CRect& updateRect)
 }
 
 //-----------------------------------------------------------------------------
+/**
+ * check if view needs to be updated for rect
+ * @param view view to check
+ * @param rect update rect
+ * @return true if view needs update
+ */
 bool CViewContainer::checkUpdateRect (CView* view, const CRect& rect)
 {
 	return view->checkUpdate (rect);
 }
 
 //-----------------------------------------------------------------------------
+/**
+ * @param where point
+ * @param buttons mouse button and modifier state
+ * @return true if any sub view accepts the hit
+ */
 bool CViewContainer::hitTestSubViews (const CPoint& where, const long buttons)
 {
 	CPoint where2 (where);
@@ -5344,6 +5494,11 @@ bool CViewContainer::hitTestSubViews (const CPoint& where, const long buttons)
 }
 
 //-----------------------------------------------------------------------------
+/**
+ * @param where point
+ * @param buttons mouse button and modifier state
+ * @return true if container accepts the hit
+ */
 bool CViewContainer::hitTest (const CPoint& where, const long buttons)
 {
 	//return hitTestSubViews (where); would change default behavior
@@ -5606,6 +5761,11 @@ void CViewContainer::takeFocus ()
 }
 
 //-----------------------------------------------------------------------------
+/**
+ * @param oldFocus old focus view
+ * @param reverse search order
+ * @return true on success
+ */
 bool CViewContainer::advanceNextFocusView (CView* oldFocus, bool reverse)
 {
 	bool foundOld = false;
@@ -5683,6 +5843,11 @@ CView* CViewContainer::getCurrentView () const
 #endif
 
 //-----------------------------------------------------------------------------
+/**
+ * @param p location
+ * @param deep search deep
+ * @return view at position p
+ */
 CView* CViewContainer::getViewAt (const CPoint& p, bool deep) const
 {
 	if (!pParentFrame)
@@ -5713,6 +5878,11 @@ CView* CViewContainer::getViewAt (const CPoint& p, bool deep) const
 }
 
 //-----------------------------------------------------------------------------
+/**
+ * @param p location
+ * @param deep search deep
+ * @return view container at position p
+ */
 CViewContainer* CViewContainer::getContainerAt (const CPoint& p, bool deep) const
 {
 	if (!pParentFrame)
@@ -5774,7 +5944,7 @@ bool CViewContainer::removed (CView* parent)
 }
 
 //-----------------------------------------------------------------------------
-bool CViewContainer::attached (CView* view)
+bool CViewContainer::attached (CView* parent)
 {
 	// create offscreen bitmap
 	if (!pOffscreenContext && bDrawInOffscreen)
