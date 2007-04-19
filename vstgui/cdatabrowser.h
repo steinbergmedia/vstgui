@@ -2,7 +2,7 @@
 // VST Plug-Ins SDK
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 //
-// Version 3.5       $Date: 2007-04-01 11:20:44 $ 
+// Version 3.5       $Date: 2007-04-19 18:34:35 $ 
 //
 // CDataBrowser written 2006 by Arne Scheffler
 //
@@ -65,8 +65,8 @@ public:
 	virtual void dbDrawCell (CDrawContext* context, const CRect& size, long row, long column, long flags, CDataBrowser* browser) = 0;	///< draw a db cell
 
 	virtual CMouseEventResult dbOnMouseDown (const CPoint& where, const long& buttons, long row, long column, CDataBrowser* browser) { return kMouseDownEventHandledButDontNeedMovedOrUpEvents; } ///< mouse button was pressed on a cell
-	virtual CMouseEventResult dbOnMouseMoved (const CPoint& where, const long& buttons, long row, long column, CDataBrowser* browser) { return kMouseDownEventHandledButDontNeedMovedOrUpEvents; } ///< mouse was moved over a cell
-	virtual CMouseEventResult dbOnMouseUp (const CPoint& where, const long& buttons, long row, long column, CDataBrowser* browser) { return kMouseDownEventHandledButDontNeedMovedOrUpEvents; } ///< mouse button was released on a cell
+	virtual CMouseEventResult dbOnMouseMoved (const CPoint& where, const long& buttons, long row, long column, CDataBrowser* browser) { return kMouseEventNotHandled; } ///< mouse was moved over a cell
+	virtual CMouseEventResult dbOnMouseUp (const CPoint& where, const long& buttons, long row, long column, CDataBrowser* browser) { return kMouseEventNotHandled; } ///< mouse button was released on a cell
 
 	virtual void dbSelectionChanged (CDataBrowser* browser) {}	///< the selection of the db changed
 

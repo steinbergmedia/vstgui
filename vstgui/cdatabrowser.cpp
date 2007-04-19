@@ -2,7 +2,7 @@
 // VST Plug-Ins SDK
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 //
-// Version 3.5       $Date: 2006-11-19 11:46:22 $ 
+// Version 3.5       $Date: 2007-04-19 18:34:35 $ 
 //
 // CDataBrowser written 2006 by Arne Scheffler
 //
@@ -99,6 +99,14 @@ END_NAMESPACE_VSTGUI
 #define ENDFOR }
 
 //-----------------------------------------------------------------------------------------------
+/**
+ * @param size size of data browser
+ * @param pParent frame
+ * @param db data browser interface. If db is inheritated from CBaseObject it will be remembered and released if data browser is destroyed
+ * @param style data browser and scroll view style see #CDataBrowserStyle and #CScrollViewStyle
+ * @param scrollbarWidth width of scrollbars
+ * @param pBackground background bitmap
+ */
 CDataBrowser::CDataBrowser (const CRect& size, CFrame* pParent, IDataBrowser* db, long style, long scrollbarWidth, CBitmap* pBackground)
 : CScrollView (size, CRect (0, 0, 0, 0), pParent, style, scrollbarWidth, pBackground)
 , db (db)
@@ -159,6 +167,9 @@ void CDataBrowser::valueChanged (CControl *pControl)
 }
 
 //-----------------------------------------------------------------------------------------------
+/**
+ * @param rememberSelection if true selection will be remembered
+ */
 void CDataBrowser::recalculateLayout (bool rememberSelection)
 {
 	CCoord lineWidth = 0;
@@ -229,17 +240,30 @@ void CDataBrowser::recalculateLayout (bool rememberSelection)
 }
 
 //-----------------------------------------------------------------------------------------------
+/**
+ * currently this will invalidate the whole row
+ * @param row row to invalidate
+ * @param column column to invalidate
+ */
 void CDataBrowser::invalidate (long row, long column)
 {
+	// TODO
+	dbView->invalidateRow (row);
 }
 
 //-----------------------------------------------------------------------------------------------
+/**
+ * @param row row to invalidate
+ */
 void CDataBrowser::invalidateRow (long row)
 {
 	dbView->invalidateRow (row);
 }
 
 //-----------------------------------------------------------------------------------------------
+/**
+ * @param row row to make visible
+ */
 void CDataBrowser::makeRowVisible (long row)
 {
 	CRect r = dbView->getRowBounds (row);
@@ -247,6 +271,10 @@ void CDataBrowser::makeRowVisible (long row)
 }
 
 //-----------------------------------------------------------------------------------------------
+/**
+ * @param index row to select
+ * @param makeVisible if true makes row visible
+ */
 void CDataBrowser::setSelectedRow (long index, bool makeVisible)
 {
 	long numRows = db->dbGetNumRows (this);
@@ -262,6 +290,11 @@ void CDataBrowser::setSelectedRow (long index, bool makeVisible)
 }
 
 //-----------------------------------------------------------------------------------------------
+/**
+ * @param row row number
+ * @param column column number
+ * @return bounds of cell
+ */
 CRect CDataBrowser::getCellBounds (long row, long column)
 {
 	CCoord lineWidth = 0;
@@ -291,6 +324,11 @@ CRect CDataBrowser::getCellBounds (long row, long column)
 }
 
 //-----------------------------------------------------------------------------------------------
+/**
+ * @param row row number
+ * @param column column number
+ * @param initialText UTF-8 string the text edit field will be initialized with
+ */
 void CDataBrowser::beginTextEdit (long row, long column, const char* initialText)
 {
 	CRect r = getCellBounds (row, column);

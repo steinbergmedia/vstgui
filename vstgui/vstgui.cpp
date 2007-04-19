@@ -2,7 +2,7 @@
 // VST Plug-Ins SDK
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 //
-// Version 3.5       $Date: 2007-04-01 11:20:45 $ 
+// Version 3.5       $Date: 2007-04-19 18:34:36 $ 
 //
 // Added Motif/Windows vers.: Yvan Grabit              01.98
 // Added Mac version        : Charlie Steinberg        02.98
@@ -2959,8 +2959,8 @@ bool CView::attached (CView* parent)
 {
 	if (isAttached ())
 		return false;
-	pParentView = view;
-	pParentFrame = view->getFrame ();
+	pParentView = parent;
+	pParentFrame = parent->getFrame ();
 	bIsAttached = true;
 	return true;
 }
@@ -5950,13 +5950,13 @@ bool CViewContainer::attached (CView* parent)
 	if (!pOffscreenContext && bDrawInOffscreen)
 		pOffscreenContext = new COffscreenContext (pParentFrame, (long)size.width (), (long)size.height (), kBlackCColor);
 
-	pParentFrame = view->getFrame ();
+	pParentFrame = parent->getFrame ();
 
 	FOREACHSUBVIEW
 		pV->attached (this);
 	ENDFOR
 
-	return CView::attached (view);
+	return CView::attached (parent);
 }
 
 //-----------------------------------------------------------------------------
