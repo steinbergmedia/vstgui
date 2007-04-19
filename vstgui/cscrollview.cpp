@@ -520,7 +520,7 @@ CScrollbar::~CScrollbar ()
 //-----------------------------------------------------------------------------
 void CScrollbar::setViewSize (CRect &newSize, bool invalid)
 {
-	scrollerArea = rect;
+	scrollerArea = newSize;
 	scrollerArea.inset (2, 2);
 	CControl::setViewSize (newSize, invalid);
 }
