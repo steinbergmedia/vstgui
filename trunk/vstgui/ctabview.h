@@ -80,6 +80,7 @@ public:
 	//-----------------------------------------------------------------------------
 	//@{
 	virtual bool addTab (CView* view, const char* name = 0, CBitmap* tabBitmap = 0);	///< add a tab
+	virtual bool addTab (CView* view, CControl* button);	///< add a tab
 	virtual bool removeTab (CView* view);	///< remove a tab
 	virtual bool removeAllTabs ();			///< remove all tabs
 	virtual bool selectTab (long index);	///< select tab at index

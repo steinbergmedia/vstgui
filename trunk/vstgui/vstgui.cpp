@@ -2,7 +2,7 @@
 // VST Plug-Ins SDK
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 //
-// Version 3.5       $Date: 2007-04-19 18:34:36 $ 
+// Version 3.5       $Date: 2007-07-28 12:59:57 $ 
 //
 // Added Motif/Windows vers.: Yvan Grabit              01.98
 // Added Mac version        : Charlie Steinberg        02.98
@@ -3398,7 +3398,15 @@ CFrame::CFrame (const CRect &inSize, void* inSystemWindow, VSTGUIEditorInterface
 	GDIPlusGlobals::enter ();
 	#endif
 
-	#if DYNAMICALPHABLEND
+	// get OS version
+	memset (&gSystemVersion, 0, sizeof (gSystemVersion));
+	gSystemVersion.dwOSVersionInfoSize = sizeof (gSystemVersion);
+
+	if (GetVersionEx ((OSVERSIONINFO *)&gSystemVersion))
+	{
+	}
+
+#if DYNAMICALPHABLEND
 	pfnAlphaBlend = 0;
 	pfnTransparentBlt = 0;
 
@@ -3407,18 +3415,11 @@ CFrame::CFrame (const CRect &inSize, void* inSystemWindow, VSTGUIEditorInterface
 	{
 		pfnAlphaBlend = (PFNALPHABLEND)GetProcAddress (hInstMsimg32dll, "AlphaBlend");
 
-		// get OS version
-		memset (&gSystemVersion, 0, sizeof (gSystemVersion));
-		gSystemVersion.dwOSVersionInfoSize = sizeof (gSystemVersion);
-
-		if (GetVersionEx ((OSVERSIONINFO *)&gSystemVersion))
+		// Is this win NT or better?
+		if (gSystemVersion.dwPlatformId >= VER_PLATFORM_WIN32_NT)
 		{
-			// Is this win NT or better?
-			if (gSystemVersion.dwPlatformId >= VER_PLATFORM_WIN32_NT)
-			{
-				// Yes, then TransparentBlt doesn't have the memory-leak and can be safely used
-				pfnTransparentBlt = (PFNTRANSPARENTBLT)GetProcAddress (hInstMsimg32dll, "TransparentBlt");
-			}
+			// Yes, then TransparentBlt doesn't have the memory-leak and can be safely used
+			pfnTransparentBlt = (PFNTRANSPARENTBLT)GetProcAddress (hInstMsimg32dll, "TransparentBlt");
 		}
 	}
 	#endif	// DYNAMICALPHABLEND
@@ -3513,6 +3514,21 @@ CFrame::CFrame (const CRect& inSize, const char* inTitle, VSTGUIEditorInterface*
 	#endif
 }
 
+#if DEBUG
+#include <typeinfo>
+//-----------------------------------------------------------------------------
+void dumpAllocatedViews ()
+{
+	std::list<CView*>::iterator it = gViewList.begin ();
+	while (it != gViewList.end ())
+	{
+		CView* view = (*it);
+		DebugPrint ("%s\n", typeid(view).name ());
+		it++;
+	}
+}
+#endif
+
 //-----------------------------------------------------------------------------
 CFrame::~CFrame ()
 {
@@ -3533,12 +3549,7 @@ CFrame::~CFrame ()
 	if (gNbCView > 1)
 	{
 		DebugPrint ("Warning: After destroying CFrame, there are %d unreleased CView objects.\n", gNbCView);
-		std::list<CView*>::iterator it = gViewList.begin ();
-		while (it != gViewList.end ())
-		{
-			DebugPrint ("%s\n", (*it)->getClassName ());
-			it++;
-		}
+		dumpAllocatedViews ();
 	}
 	#endif
 
@@ -3575,7 +3586,7 @@ CFrame::~CFrame ()
 		RemoveEventHandler (mouseEventHandler);
 	if (controlRef)
 	{
-		if (HIViewRemoveFromSuperview (controlRef) == noErr)
+		if (HIViewRemoveFromSuperview (controlRef) == noErr && isWindowComposited ((WindowRef)pSystemWindow))
 			CFRelease (controlRef);
 	}
 #endif
@@ -3658,8 +3669,9 @@ bool CFrame::initFrame (void* systemWin)
 
 	InitWindowClass ();
 	DWORD style = 0;
-	#if !DEBUG_DRAWING & GDIPLUS
-	style |= 0x02000000; // composited
+	#if !DEBUG_DRAWING
+	if (gSystemVersion.dwMajorVersion >= 6) // Vista and above
+		style |= WS_EX_COMPOSITED;
 	#endif
 	pHwnd = CreateWindowEx (style, gClassName, "Window",
 			 WS_CHILD | WS_VISIBLE | WS_CLIPCHILDREN | WS_CLIPSIBLINGS, 
@@ -3838,7 +3850,9 @@ void CFrame::drawRect (CDrawContext* pContext, const CRect& updateRect)
 	
 	// draw the background and the children
 	if (updateRect.getWidth () > 0 && updateRect.getHeight () > 0)
+	{
 		CViewContainer::drawRect (pContext, updateRect);
+	}
 
 	pContext->setClipRect (oldClip);
 
@@ -4109,9 +4123,12 @@ long CFrame::getKnobMode () const
 #if WINDOWS
 COffscreenContext* CFrame::getBackBuffer ()
 {
-	#if USE_ALPHA_BLEND & !DEBUG_DRAWING & !GDIPLUS
-	if (!backBuffer)
-		backBuffer = new COffscreenContext (this, size.width (), size.height ());
+	#if USE_ALPHA_BLEND && !DEBUG_DRAWING
+	if (gSystemVersion.dwMajorVersion < 6) // pre-Vista
+	{
+		if (!backBuffer)
+			backBuffer = new COffscreenContext (this, size.width (), size.height ());
+	}
 	#endif
 
 	return backBuffer;
@@ -5609,7 +5626,7 @@ long CViewContainer::onKeyDown (VstKeyCode& keyCode)
 	CCView* pSv = pLastView;
 	while (pSv)
 	{
-		long result = pSv->pView->onKeyDown (keyCode);
+		result = pSv->pView->onKeyDown (keyCode);
 		if (result != -1)
 			break;
 
@@ -5627,7 +5644,7 @@ long CViewContainer::onKeyUp (VstKeyCode& keyCode)
 	CCView* pSv = pLastView;
 	while (pSv)
 	{
-		long result = pSv->pView->onKeyUp (keyCode);
+		result = pSv->pView->onKeyUp (keyCode);
 		if (result != -1)
 			break;
 
@@ -6256,6 +6273,7 @@ CBitmap::CBitmap (const CResourceDescription& desc)
 	setTransparentColor (kTransparentCColor);
 	
 #if GDIPLUS
+	GDIPlusGlobals::enter ();
 	pBitmap = 0;
 	bits = 0;
 #endif
@@ -6290,6 +6308,7 @@ CBitmap::CBitmap (CFrame& frame, CCoord width, CCoord height)
 
 #if WINDOWS
 #if GDIPLUS
+	GDIPlusGlobals::enter ();
 	pBitmap = 0;
 	pHandle = 0;
 	bits = 0;
@@ -6330,6 +6349,7 @@ CBitmap::CBitmap ()
 {
 	#if WINDOWS
 	#if GDIPLUS
+	GDIPlusGlobals::enter ();
 	pBitmap = 0;
 	bits = 0;
 	#endif
@@ -6353,6 +6373,7 @@ CBitmap::CBitmap (void* platformBitmap)
 	pHandle = 0;
 	pMask = 0;
 	#if WINDOWS && GDIPLUS
+	GDIPlusGlobals::enter ();
 	pBitmap = ((Gdiplus::Bitmap*)platformBitmap)->Clone (0, 0, ((Gdiplus::Bitmap*)platformBitmap)->GetWidth (), ((Gdiplus::Bitmap*)platformBitmap)->GetHeight (), PixelFormat32bppARGB);
 	width = pBitmap->GetWidth ();
 	height = pBitmap->GetHeight ();
@@ -6368,6 +6389,9 @@ CBitmap::CBitmap (void* platformBitmap)
 //-----------------------------------------------------------------------------
 CBitmap::~CBitmap ()
 {
+	#if GDIPLUS
+	GDIPlusGlobals::enter ();
+	#endif
 	dispose ();
 }
 
@@ -8449,7 +8473,18 @@ STDMETHODIMP CDropTarget::DragEnter (IDataObject* dataObject, DWORD keyState, PO
 		pFrame->getMouseLocation (context, where);
 		pFrame->onDragEnter (gDragContainer, where);
 		context->forget ();
-		*effect = DROPEFFECT_MOVE;
+		if ((*effect) & DROPEFFECT_COPY) 
+
+			*effect = DROPEFFECT_COPY;
+
+		else if ((*effect) & DROPEFFECT_MOVE) 
+
+			*effect = DROPEFFECT_MOVE;
+
+		else if ((*effect) & DROPEFFECT_LINK) 
+
+			*effect = DROPEFFECT_LINK;
+
 	}
 	else
 	*effect = DROPEFFECT_NONE;
@@ -8466,7 +8501,18 @@ STDMETHODIMP CDropTarget::DragOver (DWORD keyState, POINTL pt, DWORD* effect)
 		pFrame->getMouseLocation (context, where);
 		pFrame->onDragMove (gDragContainer, where);
 		context->forget ();
-		*effect = DROPEFFECT_MOVE;
+		if ((*effect) & DROPEFFECT_COPY) 
+
+			*effect = DROPEFFECT_COPY;
+
+		else if ((*effect) & DROPEFFECT_MOVE) 
+
+			*effect = DROPEFFECT_MOVE;
+
+		else if ((*effect) & DROPEFFECT_LINK) 
+
+			*effect = DROPEFFECT_LINK;
+
 	}
 	return S_OK;
 }
