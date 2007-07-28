@@ -132,7 +132,7 @@ public:
 	CView* view;
 	CTabChildView* previous;
 	CTabChildView* next;
-	CTabButton* button;
+	CControl* button;
 };
 /// \endcond
 
@@ -189,7 +189,19 @@ bool CTabView::addTab (CView* view, const char* name, CBitmap* tabBitmap)
 	if (tabBitmap == 0)
 		tabBitmap = this->tabBitmap;
 
-	CRect ts (0, 0, tabSize.getWidth (), tabSize.getHeight () / 2);
+	CTabButton* b = new CTabButton (CRect (0, 0, 0, 0), 0, 0, tabBitmap, name);
+	b->setTransparency (true);
+
+	return addTab (view, b);
+}
+
+//-----------------------------------------------------------------------------
+bool CTabView::addTab (CView* view, CControl* button)
+{
+	if (!view || !button)
+		return false;
+
+	CRect ts (tabSize.left, tabSize.top, tabSize.getWidth (), tabSize.getHeight () / 2);
 	switch (tabPosition)
 	{
 		case kPositionTop:
@@ -201,11 +213,14 @@ bool CTabView::addTab (CView* view, const char* name, CBitmap* tabBitmap)
 		case kPositionRight:
 			ts.offset (size.getWidth () - tabSize.getWidth (), tabSize.getHeight () / 2 * numberOfChilds); break;
 	}
-	CTabButton* b = new CTabButton (ts, this, numberOfChilds + kTabButtonTagStart, tabBitmap, name);
-	b->setTransparency (true);
-	addView (b);
+	button->setViewSize (ts, false);
+	button->setMouseableArea (ts);
+	button->setListener (this);
+	button->setTag (numberOfChilds + kTabButtonTagStart);
+	addView (button);
+
 	CTabChildView* v = new CTabChildView (view);
-	v->button = b;
+	v->button = button;
 	if (lastChild)
 	{
 		lastChild->next = v;
@@ -321,8 +336,7 @@ void CTabView::setCurrentChild (CTabChildView* childView)
 //-----------------------------------------------------------------------------
 void CTabView::valueChanged (CControl *pControl)
 {
-	if (pControl->isTypeOf ("CTabButton"))
-		selectTab (pControl->getTag () - kTabButtonTagStart);
+	selectTab (pControl->getTag () - kTabButtonTagStart);
 }
 
 //-----------------------------------------------------------------------------
@@ -352,9 +366,13 @@ void CTabView::setTabFontStyle (const CFontRef font, long fontSize, CColor selec
 	CTabChildView* v = firstChild;
 	while (v)
 	{
-		v->button->setTextFont (tabFont);
-		v->button->setActiveTextColor (selectedColor);
-		v->button->setInactiveTextColor (deselectedColor);
+		CTabButton* button = dynamic_cast<CTabButton*>(v->button);
+		if (button)
+		{
+			button->setTextFont (tabFont);
+			button->setActiveTextColor (selectedColor);
+			button->setInactiveTextColor (deselectedColor);
+		}
 		v = v->next;
 	}
 	tabFont->forget ();
@@ -366,7 +384,7 @@ void CTabView::alignTabs (TabAlignment alignment)
 	CCoord allTabsWidth;
 	CCoord viewWidth;
 	CCoord offset = 0;
-	CRect ts (0, 0, tabSize.getWidth (), tabSize.getHeight () / 2);
+	CRect ts (tabSize.left, tabSize.top, tabSize.getWidth (), tabSize.getHeight () / 2);
 	if (tabPosition == kPositionTop || tabPosition == kPositionBottom)
 	{
 		allTabsWidth = tabSize.getWidth () * numberOfChilds;
