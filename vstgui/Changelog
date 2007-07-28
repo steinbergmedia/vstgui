@@ -1,3 +1,19 @@
+2007-07-28 arne
+
+	* use compositing window on windows only if running under vista
+	* fix a typo in CFrame::getBackBuffer() which leads to screen flicker under Windows XP
+	* use frame window for CFileselector if ENABLE_VST_EXTENSION_IN_VSTGUI is zero
+	* add fix from Julien for Drag&Drop from Internet Explorer 7
+	* fix Logic 7 white rectangle drawing on editor close
+	
+2007-07-01 arne
+
+	* added new method to CTabView to use custom control as tab switch button
+	
+2007-05-20 arne
+
+	* fixed a bug in CViewContainer::onKeyDown/onKeyUp, method result was always -1
+	
 2007-03-31 arne
 
 	* more on doxygen documentation

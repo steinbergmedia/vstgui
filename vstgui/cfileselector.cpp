@@ -2,7 +2,7 @@
 // VST Plug-Ins SDK
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 //
-// Version 3.0       $Date: 2007-03-24 12:30:21 $ 
+// Version 3.0       $Date: 2007-07-28 12:59:57 $ 
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
@@ -68,6 +68,10 @@ inline HINSTANCE GetInstance () { return (HINSTANCE)hInstance; }
 BEGIN_NAMESPACE_VSTGUI
 
 //-----------------------------------------------------------------------------
+/**
+ * CFileSelector constructor.
+ * @param ptr if ENABLE_VST_EXTENSION_IN_VSTGUI is active this is a ptr to the AudioEffectX class. If it is not active this must be the system window.
+ */
 CFileSelector::CFileSelector (void* ptr)
 : ptr (ptr)
 , vstFileSelect (0)
@@ -135,6 +139,11 @@ long CFileSelector::run (VstFileSelect *vstFileSelect)
 		filter[0] = 0;
 		filePath[0] = 0;
 		fileName[0] = 0;
+		#if ENABLE_VST_EXTENSION_IN_VSTGUI
+		HWND owner = (HWND)((AEffGUIEditor*)((AudioEffectX*)ptr)->getEditor ())->getFrame ()->getSystemWindow ();
+		#else
+		HWND owner = (HWND)ptr;
+		#endif
 
 		//-----------------------------------------
 		if (vstFileSelect->command == kVstFileLoad ||
@@ -241,11 +250,6 @@ long CFileSelector::run (VstFileSelect *vstFileSelect)
 
 			OPENFILENAME ofn = {0};
 			ofn.lStructSize  = sizeof (OPENFILENAME);
-			HWND owner = 0;
-			#if ENABLE_VST_EXTENSION_IN_VSTGUI
-			if (ptr && ((AudioEffectX*)ptr)->getEditor () && ((AEffGUIEditor*)((AudioEffectX*)ptr)->getEditor ())->getFrame ())
-				owner = (HWND)((AEffGUIEditor*)((AudioEffectX*)ptr)->getEditor ())->getFrame ()->getSystemWindow ();
-			#endif
 			ofn.hwndOwner    = owner;
 	
 			if (vstFileSelect->command == kVstDirectorySelect) 
