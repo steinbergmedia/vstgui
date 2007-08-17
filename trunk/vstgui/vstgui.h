@@ -2,7 +2,7 @@
 // VST Plug-Ins SDK
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 //
-// Version 3.5       $Date: 2007-07-28 12:59:57 $
+// Version 3.5       $Date: 2007-08-17 12:52:40 $
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
@@ -127,6 +127,24 @@ END_NAMESPACE_VSTGUI
 
 //----------------------------------------------------
 #if WINDOWS
+	#if VSTGUI_USES_UTF8
+		#define UNICODE 1
+		#define VSTGUI_STRCMP	wcscmp
+		#define VSTGUI_STRCPY	wcscpy
+		#define VSTGUI_SPRINTF	wsprintf
+		#define VSTGUI_STRRCHR	wcschr
+		#define VSTGUI_STRICMP	_wcsicmp
+		#define VSTGUI_STRLEN	wcslen
+		#define VSTGUI_STRCAT	wcscat
+	#else
+		#define VSTGUI_STRCMP	strcmp
+		#define VSTGUI_STRCPY	strcpy
+		#define VSTGUI_SPRINTF	sprintf
+		#define VSTGUI_STRRCHR	strrchr
+		#define VSTGUI_STRICMP	_stricmp
+		#define VSTGUI_STRLEN	strlen
+		#define VSTGUI_STRCAT	strcat
+	#endif
 	#include <windows.h>
 
 	#if GDIPLUS
@@ -722,7 +740,7 @@ public:
 	CColor getFontColor () const { return fontColor; }									///< get current font color
 	void   setFont (const CFontRef font, const long& size = 0, const long& style = -1);	///< set current font
 	const CFontRef&  getFont () const { return font; }										///< get current font
-	long   getFontSize () const { return font->getSize (); }							///< get current font size
+	long   getFontSize () const { return (long)font->getSize (); }							///< get current font size
 	//@}
 	
 	//-----------------------------------------------------------------------------
@@ -1505,6 +1523,67 @@ protected:
 
 	static GDIPlusGlobals* gInstance;
 	ULONG_PTR gdiplusToken;
+};
+#endif
+
+#if WINDOWS
+class UTF8StringHelper
+{
+public:
+	UTF8StringHelper (const char* utf8Str) : utf8Str (utf8Str), allocWideStr (0), allocStrIsWide (true) {}
+	UTF8StringHelper (const WCHAR* wideStr) : wideStr (wideStr), allocUTF8Str (0), allocStrIsWide (false) {}
+	UTF8StringHelper () { if (allocUTF8Str) free (allocUTF8Str); }
+
+	operator const char* () { return getUTF8String (); }
+	operator const WCHAR*() { return getWideString (); }
+
+	const WCHAR* getWideString ()
+	{
+		if (!allocStrIsWide)
+			return wideStr;
+		else
+		{
+			if (!allocWideStr && utf8Str)
+			{
+				allocWideStr = (WCHAR*)malloc ((strlen (utf8Str)+1) * 3 * sizeof (WCHAR));
+				memset (allocWideStr, 0, (strlen (utf8Str)+1) * 3 * sizeof (WCHAR));
+				if (MultiByteToWideChar (CP_UTF8, 0, utf8Str, strlen (utf8Str), allocWideStr, (strlen (utf8Str)+1) * 3) == 0)
+				{
+					/* Error, TODO */
+				}
+			}
+			return allocWideStr;
+		}
+	}
+	const char* getUTF8String ()
+	{
+		if (allocStrIsWide)
+			return utf8Str;
+		else
+		{
+			if (!allocUTF8Str && wideStr)
+			{
+				allocUTF8Str = (char*)malloc ((wcslen (wideStr)+1) * 2);
+				memset (allocUTF8Str, 0, (wcslen (wideStr)+1) * 2);
+				if (WideCharToMultiByte (CP_UTF8, 0, wideStr, wcslen (wideStr) * 2, allocUTF8Str, (wcslen (wideStr)+1) * 2, 0, 0) == 0)
+				{
+					/* Error, TODO */
+				}
+			}
+			return allocUTF8Str;
+		}
+	}
+protected:
+	union {
+		const char* utf8Str;
+		const WCHAR* wideStr;
+	};
+	union {
+		WCHAR* allocWideStr;
+		char* allocUTF8Str;
+	};
+
+	bool allocStrIsWide;
 };
 #endif
 

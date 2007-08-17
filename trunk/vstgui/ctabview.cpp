@@ -359,7 +359,7 @@ CRect& CTabView::getTabViewSize (CRect& rect) const
 }
 
 //-----------------------------------------------------------------------------
-void CTabView::setTabFontStyle (const CFontRef font, long fontSize, CColor selectedColor, CColor deselectedColor)
+void CTabView::setTabFontStyle (const CFontRef font, CCoord fontSize, CColor selectedColor, CColor deselectedColor)
 {
 	CFontRef tabFont = new CFontDesc (*font);
 	tabFont->setSize (fontSize);

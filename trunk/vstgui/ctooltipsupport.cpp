@@ -172,19 +172,20 @@ void CTooltipSupport::showTooltip ()
 			CFRelease (helpContent.content[0].u.tagCFString);
 
 			#elif WINDOWS
+			UTF8StringHelper tooltipText (tooltip);
 			if (platformObject)
 			{
 				RECT rc;
-				rc.left = r.left;
-				rc.top = r.top;
-				rc.right = r.right;
-				rc.bottom = r.bottom;
+				rc.left = (LONG)r.left;
+				rc.top = (LONG)r.top;
+				rc.right = (LONG)r.right;
+				rc.bottom = (LONG)r.bottom;
 				TOOLINFO ti = {0};
 			    ti.cbSize = sizeof(TOOLINFO);
 				ti.hwnd = (HWND)frame->getSystemWindow ();
 				ti.uId = 0;
 				ti.rect = rc;
-				ti.lpszText  = tooltip;
+				ti.lpszText = (TCHAR*)(const TCHAR*)tooltipText;
 				SendMessage ((HWND)platformObject, TTM_NEWTOOLRECT, 0, (LPARAM)&ti);
 				SendMessage ((HWND)platformObject, TTM_UPDATETIPTEXT, 0, (LPARAM)&ti);
  				SendMessage ((HWND)platformObject, TTM_POPUP, 0, 0);
@@ -226,7 +227,7 @@ void* InitTooltip (CFrame* frame)
     ti.hwnd   = (HWND)frame->getSystemWindow ();
     ti.uId    = (UINT)0;
     ti.hinst  = GetInstance ();
-    ti.lpszText  = "This is a tooltip";
+    ti.lpszText  = TEXT("This is a tooltip");
 	ti.rect.left = ti.rect.top = ti.rect.bottom = ti.rect.right = 0;
 
 	// Add the tool to the control

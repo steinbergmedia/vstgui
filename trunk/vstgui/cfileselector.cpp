@@ -2,7 +2,7 @@
 // VST Plug-Ins SDK
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 //
-// Version 3.0       $Date: 2007-07-28 12:59:57 $ 
+// Version 3.0       $Date: 2007-08-17 12:52:39 $ 
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
@@ -59,7 +59,7 @@ WNDPROC fpOldSelectDirectoryButtonProc;
 static UINT_PTR APIENTRY WinSaveHook (HWND hdlg, UINT msg, WPARAM wParam, LPARAM lParam);
 static bool bFolderSelected;
 static bool bDidCancel;
-static char selDirPath[kPathMax];
+static TCHAR selDirPath[kPathMax];
 
 extern void* hInstance;
 inline HINSTANCE GetInstance () { return (HINSTANCE)hInstance; }
@@ -144,6 +144,12 @@ long CFileSelector::run (VstFileSelect *vstFileSelect)
 		#else
 		HWND owner = (HWND)ptr;
 		#endif
+
+		UTF8StringHelper filterText (filter);
+		UTF8StringHelper fileNameText (fileName);
+		UTF8StringHelper filePathText (filePath);
+		UTF8StringHelper initialPathText (vstFileSelect->initialPath);
+		UTF8StringHelper titleText (vstFileSelect->title);
 
 		//-----------------------------------------
 		if (vstFileSelect->command == kVstFileLoad ||
@@ -253,21 +259,21 @@ long CFileSelector::run (VstFileSelect *vstFileSelect)
 			ofn.hwndOwner    = owner;
 	
 			if (vstFileSelect->command == kVstDirectorySelect) 
-				ofn.lpstrFilter = "HideFileFilter\0*.___\0\0"; // to hide files
+				ofn.lpstrFilter = TEXT("HideFileFilter\0*.___\0\0"); // to hide files
 			else
-				ofn.lpstrFilter  = filter[0] ? filter : 0;
+				ofn.lpstrFilter  = (filter[0] ? filterText : (TCHAR*)0);
 			ofn.nFilterIndex = 1;
 			ofn.lpstrCustomFilter = NULL;
-			ofn.lpstrFile    = filePath;
+			ofn.lpstrFile    = (TCHAR*)(const TCHAR*)filePathText;
 			if (vstFileSelect->command == kVstMultipleFilesLoad)
 				ofn.nMaxFile    = 100 * kPathMax - 1;
 			else
 				ofn.nMaxFile    = sizeof (filePathBuffer) - 1;
 
-			ofn.lpstrFileTitle  = fileName;
+			ofn.lpstrFileTitle  = (TCHAR*)(const TCHAR*)fileNameText;
 			ofn.nMaxFileTitle   = 64;
-			ofn.lpstrInitialDir = vstFileSelect->initialPath;
-			ofn.lpstrTitle      = vstFileSelect->title;
+			ofn.lpstrInitialDir = initialPathText;
+			ofn.lpstrTitle      = titleText;
 			ofn.Flags = OFN_FILEMUSTEXIST | OFN_PATHMUSTEXIST | OFN_HIDEREADONLY | OFN_EXPLORER | OFN_ENABLESIZING | OFN_ENABLEHOOK;
 			if (vstFileSelect->command == kVstDirectorySelect)
 			{
@@ -282,8 +288,9 @@ long CFileSelector::run (VstFileSelect *vstFileSelect)
 			bDidCancel = true;
 
 			if (GetOpenFileName (&ofn) || 
-				((vstFileSelect->command == kVstDirectorySelect) && !bDidCancel && strlen (selDirPath) != 0))  
+				((vstFileSelect->command == kVstDirectorySelect) && !bDidCancel && VSTGUI_STRLEN (selDirPath) != 0))  
 			{
+				UTF8StringHelper resultString (ofn.lpstrFile);
 				switch (vstFileSelect->command)
 				{
 				case kVstFileLoad:
@@ -291,16 +298,16 @@ long CFileSelector::run (VstFileSelect *vstFileSelect)
 					if (!vstFileSelect->returnPath)
 					{
 						vstFileSelect->reserved = 1;
-						vstFileSelect->returnPath = new char[strlen (ofn.lpstrFile) + 1];
-						vstFileSelect->sizeReturnPath = (long)strlen (ofn.lpstrFile) + 1;			
+						vstFileSelect->returnPath = new char[strlen (resultString) + 1];
+						vstFileSelect->sizeReturnPath = (long)strlen (resultString) + 1;			
 					}
-					strcpy (vstFileSelect->returnPath, ofn.lpstrFile);
+					strcpy (vstFileSelect->returnPath, resultString);
 					break;
 				
 				case kVstMultipleFilesLoad:
 					{
 					char string[kPathMax], directory[kPathMax];
-					char *previous = ofn.lpstrFile;
+					char *previous = (char*)(const char*)resultString;
 					size_t len;
 					bool dirFound = false;
 					bool first = true;
@@ -345,15 +352,16 @@ long CFileSelector::run (VstFileSelect *vstFileSelect)
 					vstFileSelect->nbReturnPath = i;					
 					} break;
 
-				case kVstDirectorySelect: 
+				case kVstDirectorySelect:
+					UTF8StringHelper selDirPathText (selDirPath);
 					vstFileSelect->nbReturnPath = 1;
 					if (!vstFileSelect->returnPath)
 					{
 						vstFileSelect->reserved = 1;
-						vstFileSelect->returnPath = new char[strlen (selDirPath) + 1];
-						vstFileSelect->sizeReturnPath = (long)strlen (selDirPath) + 1;			
+						vstFileSelect->returnPath = new char[strlen (selDirPathText) + 1];
+						vstFileSelect->sizeReturnPath = (long)strlen (selDirPathText) + 1;			
 					}
-					strcpy (vstFileSelect->returnPath, selDirPath);
+					strcpy (vstFileSelect->returnPath, selDirPathText);
 				}
 				if (multiBuffer)
 					delete []multiBuffer;
@@ -397,19 +405,22 @@ long CFileSelector::run (VstFileSelect *vstFileSelect)
 			#endif
 			ofn.hwndOwner    = owner;
 			ofn.hInstance    = GetInstance ();
-			ofn.lpstrFilter = filter[0] ? filter : 0;
+			ofn.lpstrFilter = (filter[0] ? filterText : (TCHAR*)0);
 			ofn.nFilterIndex = 1;
-			ofn.lpstrFile = filePath;
+			ofn.lpstrFile = (TCHAR*)(const TCHAR*)filePathText;
 			ofn.lpstrCustomFilter = NULL;
 			ofn.nMaxFile = sizeof (filePathBuffer) - 1;
-			ofn.lpstrFileTitle = fileName;
+			ofn.lpstrFileTitle = (TCHAR*)(const TCHAR*)fileNameText;
 			ofn.nMaxFileTitle = 64;
-			ofn.lpstrInitialDir = vstFileSelect->initialPath;
-			ofn.lpstrTitle = vstFileSelect->title;
+			ofn.lpstrInitialDir = initialPathText;
+			ofn.lpstrTitle = titleText;
 			ofn.Flags = OFN_EXPLORER | OFN_ENABLESIZING | OFN_HIDEREADONLY | OFN_ENABLEHOOK;
 			
 			if (vstFileSelect->nbFileTypes >= 1)
-				ofn.lpstrDefExt = vstFileSelect->fileTypes[0].dosType;
+			{
+				UTF8StringHelper dosTypeText (vstFileSelect->fileTypes[0].dosType);
+				ofn.lpstrDefExt = dosTypeText;
+			}
 			
 			// add a template view
 			ofn.lCustData = (DWORD)0;
@@ -417,14 +428,15 @@ long CFileSelector::run (VstFileSelect *vstFileSelect)
 			
 			if (GetSaveFileName (&ofn))	
 			{
+				UTF8StringHelper resultText (ofn.lpstrFile);
 				vstFileSelect->nbReturnPath = 1;
 				if (!vstFileSelect->returnPath)
 				{
 					vstFileSelect->reserved = 1;
-					vstFileSelect->returnPath = new char[strlen (ofn.lpstrFile) + 1];
-					vstFileSelect->sizeReturnPath = (long)strlen (ofn.lpstrFile) + 1;			
+					vstFileSelect->returnPath = new char[strlen (resultText) + 1];
+					vstFileSelect->sizeReturnPath = (long)strlen (resultText) + 1;			
 				}
-				strcpy (vstFileSelect->returnPath, ofn.lpstrFile);
+				strcpy (vstFileSelect->returnPath, resultText);
 			
 				return vstFileSelect->nbReturnPath;
 			}
@@ -944,12 +956,12 @@ LRESULT CALLBACK SelectDirectoryButtonProc (HWND hwnd, UINT message, WPARAM wPar
 	
 	case WM_LBUTTONUP:
 	case WM_RBUTTONUP: {
-		char mode[256];
+		TCHAR mode[256];
 		GetWindowText (hwnd, mode, 256);
-		if (!strcmp (mode, stringSelect))
+		if (!VSTGUI_STRCMP (mode, TEXT(stringSelect)))
 		{
 			bFolderSelected = true;
-			char oldDirPath[kPathMax];
+			TCHAR oldDirPath[kPathMax];
 			CommDlg_OpenSave_GetFolderPath (GetParent (hwnd), oldDirPath, kPathMax);
 			// you need a lot of tricks to get name of currently selected folder:
 			// the following call of the original windows procedure causes the
@@ -960,7 +972,7 @@ LRESULT CALLBACK SelectDirectoryButtonProc (HWND hwnd, UINT message, WPARAM wPar
 
 			if (1) // consumers like it like this
 			{
-				if (strcmp (oldDirPath, selDirPath) == 0 || selDirPath [0] == 0)
+				if (VSTGUI_STRCMP (oldDirPath, selDirPath) == 0 || selDirPath [0] == 0)
 				{
 					// the same folder as the old one, means nothing selected: close
 					bFolderSelected = true;
@@ -977,7 +989,7 @@ LRESULT CALLBACK SelectDirectoryButtonProc (HWND hwnd, UINT message, WPARAM wPar
 			}
 			else // original code
 			{
-				if (strcmp (oldDirPath, selDirPath) == 0 || selDirPath [0] == 0)
+				if (VSTGUI_STRCMP (oldDirPath, selDirPath) == 0 || selDirPath [0] == 0)
 				{
 					// the same folder as the old one, means nothing selected: stay open
 					bFolderSelected = false;
@@ -1000,30 +1012,30 @@ static void showPathInWindowTitle (HWND hParent, LPOFNOTIFY lpon)
 {
 	#define WINDOWTEXTSIZE 260 + 64
 	OPENFILENAME *ofn = lpon->lpOFN;
-	char text[WINDOWTEXTSIZE];
-	char *p;
+	TCHAR text[WINDOWTEXTSIZE];
+	TCHAR *p;
 	size_t len;
 
 	// Put the path into the Window Title
 	if (lpon->lpOFN->lpstrTitle)
-		strcpy (text, lpon->lpOFN->lpstrTitle);
+		VSTGUI_STRCPY (text, lpon->lpOFN->lpstrTitle);
 	else
 	{
-		char *pp;
+		TCHAR *pp;
 
 		GetWindowText (hParent, text, WINDOWTEXTSIZE);
-		pp = strchr (text, '-');
+		pp = VSTGUI_STRRCHR (text, '-');
 		if (pp)
 			*--pp = 0;
 	}
 
-	p = strcat (text, " - [");
+	p = VSTGUI_STRCAT (text, TEXT(" - ["));
 	p = text;
-	len = strlen (text); 
+	len = VSTGUI_STRLEN (text); 
 	p += len;
 	len = WINDOWTEXTSIZE - len - 2;
 	CommDlg_OpenSave_GetFolderPath (hParent, p, len);
-	strcat (text, "]");
+	VSTGUI_STRCAT (text, TEXT("]"));
 	SetWindowText (hParent, text);
 }
 

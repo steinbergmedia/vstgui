@@ -88,7 +88,7 @@ public:
 
 	virtual CRect& getTabViewSize (CRect& rect) const;	///< the the size of one tab
 
-	virtual void setTabFontStyle (const CFontRef font, long fontSize = 12, CColor selectedColor = kBlackCColor, CColor deselectedColor = kWhiteCColor); ///< call this after the tabs are added. Tabs added after this call will have the default font style.
+	virtual void setTabFontStyle (const CFontRef font, CCoord fontSize = 12, CColor selectedColor = kBlackCColor, CColor deselectedColor = kWhiteCColor); ///< call this after the tabs are added. Tabs added after this call will have the default font style.
 
 	virtual void alignTabs (TabAlignment alignment = kAlignCenter); ///< call this after you have added all tabs to align them according to alignment
 	//@}

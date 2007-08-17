@@ -3,7 +3,7 @@
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 // Standard Control Objects
 //
-// Version 3.5       $Date: 2007-04-01 11:20:45 $
+// Version 3.5       $Date: 2007-08-17 12:52:39 $
 //
 // Added new objects        : Michael Schmidt          08.97
 // Added new objects        : Yvan Grabit              01.98
@@ -482,8 +482,8 @@ void CKnob::drawHandle (CDrawContext *pContext)
 
 	if (pHandle)
 	{
-		long width  = (long)pHandle->getWidth ();
-		long height = (long)pHandle->getHeight ();
+		CCoord width  = pHandle->getWidth ();
+		CCoord height = pHandle->getHeight ();
 		where.offset (size.left - width / 2, size.top - height / 2);
 
 		CRect handleSize (0, 0, width, height);
@@ -804,8 +804,8 @@ void CKnob::compute ()
 void CKnob::valueToPoint (CPoint &point) const
 {
 	float alpha = (value - bCoef) / aCoef;
-	point.h = (long)(radius + cosf (alpha) * (radius - inset) + 0.5f);
-	point.v = (long)(radius - sinf (alpha) * (radius - inset) + 0.5f);
+	point.h = (CCoord)(radius + cosf (alpha) * (radius - inset) + 0.5f);
+	point.v = (CCoord)(radius - sinf (alpha) * (radius - inset) + 0.5f);
 }
 
 //------------------------------------------------------------------------
@@ -1660,23 +1660,31 @@ void CTextEdit::takeFocus ()
 	else
 		wstyle |= ES_CENTER;
 
+	UTF8StringHelper stringHelper (text);
+
 	wstyle |= WS_CHILD | WS_VISIBLE | ES_AUTOHSCROLL;
-	platformControl = (void*)CreateWindow (
-		"EDIT", text, wstyle,
-		rect.left, rect.top, rect.width () + 1, rect.height () + 1,
+	platformControl = (void*)CreateWindowEx (0,
+		TEXT("EDIT"), stringHelper, wstyle,
+		(int)rect.left, (int)rect.top, (int)rect.width () + 1, (int)rect.height () + 1,
 		(HWND)getFrame ()->getSystemWindow (), NULL, GetInstance (), 0);
 
+	if (platformControl == 0)
+	{
+		DWORD lastError = GetLastError ();
+		DebugPrint ("%d\n", lastError);
+	}
 	// get/set the current font
 	LOGFONT logfont = {0};
 
-	long fontH = fontID->getSize ();
+	CCoord fontH = fontID->getSize ();
 	if (fontH > rect.height () - 2)
 		fontH = rect.height () - 2;
 
 	logfont.lfWeight = FW_NORMAL;
-	logfont.lfHeight = -fontH;
+	logfont.lfHeight = (LONG)-fontH;
 	logfont.lfPitchAndFamily = VARIABLE_PITCH | FF_SWISS;
-	strcpy (logfont.lfFaceName, fontID->getName ());
+	UTF8StringHelper fontNameHelper (fontID->getName ());
+	VSTGUI_STRCPY (logfont.lfFaceName, fontNameHelper);
 
 	logfont.lfClipPrecision	 = CLIP_STROKE_PRECIS;
 	logfont.lfOutPrecision	 = OUT_STRING_PRECIS;
@@ -1782,9 +1790,10 @@ void CTextEdit::looseFocus ()
 	strcpy (oldText, text);
 	
 #if WINDOWS
-	char newText[255];
+	TCHAR newText[255];
 	GetWindowText ((HWND)platformControl, newText, 255);
-	strcpy (text, newText);
+	UTF8StringHelper windowText (newText);
+	strcpy (text, windowText);
 
 	HWND _control = (HWND)platformControl;
 	platformControl = 0;	// DestroyWindow will also trigger a looseFocus call, so make sure we didn't get here again.
@@ -3009,13 +3018,14 @@ void *COptionMenu::appendItems (long &offsetIdx)
 	long inc = 0;
 	for (long i = 0; i < nbEntries; i++)
 	{
+		UTF8StringHelper entryText (entry[i]);
 		//---Separator-----
 		if (!strcmp (entry[i], kMenuSeparator))
 		{
 			if (ownerDraw)
-				AppendMenu ((HMENU)menu, MF_OWNERDRAW|MF_SEPARATOR, 0, entry[i]);
+				AppendMenu ((HMENU)menu, MF_OWNERDRAW|MF_SEPARATOR, 0, entryText);
 			else
-				AppendMenu ((HMENU)menu, MF_SEPARATOR, 0, entry[i]);
+				AppendMenu ((HMENU)menu, MF_SEPARATOR, 0, entryText);
 		}
 		else
 		{
@@ -3031,7 +3041,7 @@ void *COptionMenu::appendItems (long &offsetIdx)
 					if (submenu)
 					{
 						idxSubmenu++;
-						AppendMenu ((HMENU)menu, flags|MF_POPUP|MF_ENABLED, (UINT_PTR)submenu, entry[i] + 2);
+						AppendMenu ((HMENU)menu, flags|MF_POPUP|MF_ENABLED, (UINT_PTR)submenu, (const TCHAR*)entryText + 2);
 					}
 					else
 						continue;
@@ -3042,27 +3052,27 @@ void *COptionMenu::appendItems (long &offsetIdx)
 			//---Disable/Gray entry-----------
 			else if (!strncmp (entry[i], kMenuDisable, 2))
 			{
-				AppendMenu ((HMENU)menu, flags|MF_GRAYED, offset + inc, entry[i] + 2);
+				AppendMenu ((HMENU)menu, flags|MF_GRAYED, offset + inc, (const TCHAR*)entryText + 2);
 			}
 			//---Disable entry--------
 			else if (!strncmp (entry[i], kMenuTitle, 2))
 			{
-				AppendMenu ((HMENU)menu, flags|MF_DISABLED, offset + inc, entry[i] + 2);
+				AppendMenu ((HMENU)menu, flags|MF_DISABLED, offset + inc, (const TCHAR*)entryText + 2);
 			}
 			//---Multiple Checked entry---
 			else if (multipleCheck)
 			{
 				AppendMenu ((HMENU)menu, flags|MF_ENABLED | 
-					(check[i] ? MF_CHECKED : MF_UNCHECKED), offset + inc, entry[i]);
+					(check[i] ? MF_CHECKED : MF_UNCHECKED), offset + inc, entryText);
 			}
 			//---Checked Entry---------
 			else if (style & kCheckStyle)
 			{
 				AppendMenu ((HMENU)menu, flags|MF_ENABLED | 
-					((i == currentIndex) ? MF_CHECKED : MF_UNCHECKED), offset + inc, entry[i]);
+					((i == currentIndex) ? MF_CHECKED : MF_UNCHECKED), offset + inc, entryText);
 			}
 			else
-				AppendMenu ((HMENU)menu, flags|MF_ENABLED, offset + inc, entry[i]);
+				AppendMenu ((HMENU)menu, flags|MF_ENABLED, offset + inc, entryText);
 		}
 		inc++;
 	}
@@ -3271,8 +3281,8 @@ void COptionMenu::takeFocus ()
 	#if WINDOWS
 	RECT rctWinParent;
 	GetWindowRect (hwnd, &rctWinParent);
-	rect.left = rctWinParent.left;
-	rect.top  = rctWinParent.top;
+	rect.left = (CCoord)rctWinParent.left;
+	rect.top  = (CCoord)rctWinParent.top;
 	#endif
 	CView* parent = getParentView ();
 	while (parent)
@@ -3549,9 +3559,9 @@ void CAnimKnob::draw (CDrawContext *pContext)
 	{
 		CCoord tmp = heightOfOneImage * (subPixmaps - 1);
 		if (bInverseBitmap)
-			where.v = (long)((1 - value) * (float)tmp);
+			where.v = (CCoord)((1 - value) * (float)tmp);
 		else
-			where.v = (long)(value * (float)tmp);
+			where.v = (CCoord)(value * (float)tmp);
 		for (CCoord realY = 0; realY <= tmp; realY += heightOfOneImage) 
 		{
 			if (where.v < realY) 
@@ -4651,14 +4661,14 @@ CSlider::CSlider (const CRect &rect, CControlListener* listener, long tag, long 
 	if (style & kHorizontal)
 	{
 		minPos = iMinPos - size.left;
-		rangeHandle = iMaxPos - iMinPos;
+		rangeHandle = (CCoord)iMaxPos - iMinPos;
 		CPoint p (0, 0);
 		setOffsetHandle (p);
 	}
 	else
 	{
 		minPos = iMinPos - size.top;
-		rangeHandle = iMaxPos - iMinPos;
+		rangeHandle = (CCoord)iMaxPos - iMinPos;
 		CPoint p (0, 0);
 		setOffsetHandle (p);
 	}
@@ -5002,7 +5012,7 @@ CMouseEventResult CSlider::onMouseDown (CPoint& where, const long& buttons)
 			delta += heightOfSlider / 2 - 1;
 	}
 	
-	oldVal    = value;
+	oldVal    = vmin-1;
 	oldButton = buttons;
 
 	beginEdit ();
@@ -5011,6 +5021,8 @@ CMouseEventResult CSlider::onMouseDown (CPoint& where, const long& buttons)
 		endEdit ();
 		return kMouseDownEventHandledButDontNeedMovedOrUpEvents;
 	}
+	if (buttons & kShift)
+		return kMouseEventHandled;
 	return onMouseMoved (where, buttons);
 }
 
@@ -5026,24 +5038,31 @@ CMouseEventResult CSlider::onMouseMoved (CPoint& where, const long& buttons)
 {
 	if (buttons & kLButton)
 	{
+		if (oldVal == vmin - 1)
+			oldVal    = (value - vmin) / (vmax - vmin);
+			
 		if ((oldButton != buttons) && (buttons & kShift))
 		{
-			oldVal    = value;
+			oldVal    = (value - vmin) / (vmax - vmin);
 			oldButton = buttons;
 		}
 		else if (!(buttons & kShift))
-			oldVal = value;
+			oldVal = (value - vmin) / (vmax - vmin);
 
 		if (style & kHorizontal)
 			value = (float)(where.h - delta) / (float)rangeHandle;
 		else
 			value = (float)(where.v - delta) / (float)rangeHandle;
-			
+
 		if (style & kRight || style & kBottom)
 			value = 1.f - value;
 
 		if (buttons & kShift)
 			value = oldVal + ((value - oldVal) / zoomFactor);
+
+		if (vmax != 1.f || vmin != 1.f)
+			value = vmin + ((vmax - vmin) * value);
+			
 		bounceValue ();
     	    
 		if (isDirty () && listener)
@@ -5331,14 +5350,14 @@ void CSpecialDigit::draw (CDrawContext *pContext)
 		if (j > 9)
 			j = 9;
 		
-		rectDest.left   = xpos[i];
-		rectDest.top    = ypos[i];
+		rectDest.left   = (CCoord)xpos[i];
+		rectDest.top    = (CCoord)ypos[i];
 		
 		rectDest.right  = rectDest.left + width;
 		rectDest.bottom = rectDest.top  + height;		
 		
 		// where = src from bitmap
-		where.v = j * height;
+		where.v = (CCoord)j * height;
 		if (pBackground)
 		{
 			if (bTransparencyEnabled)
@@ -5862,7 +5881,7 @@ void CVuMeter::draw (CDrawContext *_pContext)
 
 	if (style & kHorizontal) 
 	{
-		CCoord tmp = (long)(((long)(nbLed * newValue + 0.5f) / (float)nbLed) * onBitmap->getWidth ());
+		CCoord tmp = (CCoord)(((long)(nbLed * newValue + 0.5f) / (float)nbLed) * onBitmap->getWidth ());
 		pointOff (tmp, 0);
 		if (!bUseOffscreen)
 		tmp += size.left;
@@ -5872,7 +5891,7 @@ void CVuMeter::draw (CDrawContext *_pContext)
 	}
 	else 
 	{
-		CCoord tmp = (long)(((long)(nbLed * (getMax () - newValue) + 0.5f) / (float)nbLed) * onBitmap->getHeight ());
+		CCoord tmp = (CCoord)(((long)(nbLed * (getMax () - newValue) + 0.5f) / (float)nbLed) * onBitmap->getHeight ());
 		pointOn (0, tmp);
 		if (!bUseOffscreen)
 		tmp += size.top;

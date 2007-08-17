@@ -2,7 +2,7 @@
 // VST Plug-Ins SDK
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 //
-// Version 3.5       $Date: 2007-04-19 18:34:35 $ 
+// Version 3.5       $Date: 2007-08-17 12:52:39 $ 
 //
 // CDataBrowser written 2006 by Arne Scheffler
 //
@@ -107,7 +107,7 @@ END_NAMESPACE_VSTGUI
  * @param scrollbarWidth width of scrollbars
  * @param pBackground background bitmap
  */
-CDataBrowser::CDataBrowser (const CRect& size, CFrame* pParent, IDataBrowser* db, long style, long scrollbarWidth, CBitmap* pBackground)
+CDataBrowser::CDataBrowser (const CRect& size, CFrame* pParent, IDataBrowser* db, long style, CCoord scrollbarWidth, CBitmap* pBackground)
 : CScrollView (size, CRect (0, 0, 0, 0), pParent, style, scrollbarWidth, pBackground)
 , db (db)
 , dbView (0)
@@ -652,7 +652,7 @@ bool CDataBrowserView::getCell (CPoint& where, long& row, long& column)
 	_where.offset (-size.left, -size.top);
 	if (style & CDataBrowser::kDrawRowLines)
 		rowHeight += lineWidth;
-	long rowNum = _where.y / rowHeight;
+	long rowNum = (long)(_where.y / rowHeight);
 	long colNum = 0;
 	CCoord cw = 0;
 	for (long i = 0; i < numColumns; i++)
