@@ -1,3 +1,13 @@
+2007-08-17 arne
+
+	* Unicode support for Windows (CFileSelector is not completely done yet)
+	* CDrawContext::drawRect should draw the same now with Quartz and GDI+
+	* initial fixes to support VSTGUI_FLOAT_COORDINATES for GDI+ (but there a many problems, so it's useless at the moment)
+	
+2007-08-05 arne
+
+	* CSlider should work with non normalized values if you set setMinValue and setMaxValue
+
 2007-07-28 arne
 
 	* use compositing window on windows only if running under vista

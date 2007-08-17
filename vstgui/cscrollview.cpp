@@ -115,7 +115,7 @@ void CScrollContainer::setScrollOffset (CPoint newOffset, bool redraw)
 		newOffset.y = containerSize.top;
 	if (newOffset.y > containerSize.bottom)
 		newOffset.y = containerSize.bottom;
-	CPoint diff ((long)(newOffset.x - offset.x), (long)(offset.y - newOffset.y));
+	CPoint diff ((CCoord)(newOffset.x - offset.x), (CCoord)(offset.y - newOffset.y));
 	if (diff.x == 0 && diff.y == 0)
 		return;
 	CCView *pV = pFirstView;
@@ -420,7 +420,7 @@ void CScrollView::valueChanged (CControl *pControl)
 			{
 				if (csize.getWidth () > vsize.getWidth ())
 				{
-					offset.x = (long) (csize.left - (csize.width () - vsize.width ()) * value);
+					offset.x = (CCoord) (csize.left - (csize.width () - vsize.width ()) * value);
 					sc->setScrollOffset (offset, false);
 				}
 				else if (offset.x > 0)
@@ -434,7 +434,7 @@ void CScrollView::valueChanged (CControl *pControl)
 			{
 				if (csize.getHeight () > vsize.getHeight ())
 				{
-					offset.y = (long) (csize.top + (csize.height () - vsize.height ()) * value);
+					offset.y = (CCoord) (csize.top + (csize.height () - vsize.height ()) * value);
 					sc->setScrollOffset (offset, false);
 				}
 				else if (offset.y > 0)
