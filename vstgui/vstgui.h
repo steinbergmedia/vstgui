@@ -2,7 +2,7 @@
 // VST Plug-Ins SDK
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 //
-// Version 3.5       $Date: 2007-08-17 12:52:40 $
+// Version 3.5       $Date: 2007-08-17 13:40:12 $
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
@@ -1527,6 +1527,7 @@ protected:
 #endif
 
 #if WINDOWS
+/// \cond ignore
 class UTF8StringHelper
 {
 public:
@@ -1547,7 +1548,7 @@ public:
 			{
 				allocWideStr = (WCHAR*)malloc ((strlen (utf8Str)+1) * 3 * sizeof (WCHAR));
 				memset (allocWideStr, 0, (strlen (utf8Str)+1) * 3 * sizeof (WCHAR));
-				if (MultiByteToWideChar (CP_UTF8, 0, utf8Str, strlen (utf8Str), allocWideStr, (strlen (utf8Str)+1) * 3) == 0)
+				if (MultiByteToWideChar (CP_UTF8, 0, utf8Str, (int)strlen (utf8Str), allocWideStr, (int)(strlen (utf8Str)+1) * 3) == 0)
 				{
 					/* Error, TODO */
 				}
@@ -1565,7 +1566,7 @@ public:
 			{
 				allocUTF8Str = (char*)malloc ((wcslen (wideStr)+1) * 2);
 				memset (allocUTF8Str, 0, (wcslen (wideStr)+1) * 2);
-				if (WideCharToMultiByte (CP_UTF8, 0, wideStr, wcslen (wideStr) * 2, allocUTF8Str, (wcslen (wideStr)+1) * 2, 0, 0) == 0)
+				if (WideCharToMultiByte (CP_UTF8, 0, wideStr, (int)wcslen (wideStr) * 2, allocUTF8Str, (int)(wcslen (wideStr)+1) * 2, 0, 0) == 0)
 				{
 					/* Error, TODO */
 				}
@@ -1585,6 +1586,7 @@ protected:
 
 	bool allocStrIsWide;
 };
+/// \endcond
 #endif
 
 

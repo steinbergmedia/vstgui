@@ -3,7 +3,7 @@
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 // Standard Control Objects
 //
-// Version 3.5       $Date: 2007-08-17 12:52:39 $
+// Version 3.5       $Date: 2007-08-17 13:40:12 $
 //
 // Added new objects        : Michael Schmidt          08.97
 // Added new objects        : Yvan Grabit              01.98
@@ -1668,11 +1668,6 @@ void CTextEdit::takeFocus ()
 		(int)rect.left, (int)rect.top, (int)rect.width () + 1, (int)rect.height () + 1,
 		(HWND)getFrame ()->getSystemWindow (), NULL, GetInstance (), 0);
 
-	if (platformControl == 0)
-	{
-		DWORD lastError = GetLastError ();
-		DebugPrint ("%d\n", lastError);
-	}
 	// get/set the current font
 	LOGFONT logfont = {0};
 
