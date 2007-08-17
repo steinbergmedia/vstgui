@@ -2,7 +2,7 @@
 // VST Plug-Ins SDK
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 //
-// Version 3.5       $Date: 2007-04-19 18:34:35 $ 
+// Version 3.5       $Date: 2007-08-17 12:52:39 $ 
 //
 // CDataBrowser written 2006 by Arne Scheffler
 //
@@ -91,7 +91,7 @@ public:
 	/// \name Constructor
 	//-----------------------------------------------------------------------------
 	//@{
-	CDataBrowser (const CRect& size, CFrame* pParent, IDataBrowser* db, long style = 0, long scrollbarWidth = 16, CBitmap* pBackground = 0);
+	CDataBrowser (const CRect& size, CFrame* pParent, IDataBrowser* db, long style = 0, CCoord scrollbarWidth = 16, CBitmap* pBackground = 0);
 	//@}
 
 	~CDataBrowser ();

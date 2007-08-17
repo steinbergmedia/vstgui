@@ -2,7 +2,7 @@
 // VST Plug-Ins SDK
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 //
-// Version 3.5       $Date: 2007-07-28 12:59:57 $ 
+// Version 3.5       $Date: 2007-08-17 12:52:39 $ 
 //
 // Added Motif/Windows vers.: Yvan Grabit              01.98
 // Added Mac version        : Charlie Steinberg        02.98
@@ -163,14 +163,14 @@ inline HINSTANCE GetInstance () { return (HINSTANCE)hInstance; }
 
 BEGIN_NAMESPACE_VSTGUI
 static long   gUseCount = 0;
-static char   gClassName[100];
+static TCHAR   gClassName[100];
 static bool   InitWindowClass ();
 static void   ExitWindowClass ();
 LONG_PTR WINAPI WindowProc (HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam);
 
 static HANDLE CreateMaskBitmap (CDrawContext* pContext, CRect& rect, CColor transparentColor);
 static void   DrawTransparent (CDrawContext* pContext, CRect& rect, const CPoint& offset, HDC hdcBitmap, POINT ptSize, HBITMAP pMask, COLORREF color);
-static bool   checkResolveLink (const char* nativePath, char* resolved);
+static bool   checkResolveLink (const TCHAR* nativePath, TCHAR* resolved);
 static void   *createDropTarget (VSTGUI_CFrame* pFrame);
 
 static CFontDesc gSystemFont ("Arial", 12);
@@ -696,6 +696,7 @@ CDrawContext::CDrawContext (CFrame* inFrame, void* inSystemContext, void* inWind
 		pGraphics = new Gdiplus::Graphics (hdc);
 		pGraphics->SetInterpolationMode(Gdiplus::InterpolationModeLowQuality); // in timo's code this was commented out, why ?
 		pGraphics->SetPageUnit(Gdiplus::UnitPixel);
+		pGraphics->SetPixelOffsetMode (Gdiplus::PixelOffsetModeNone);
 	}
 	pPen = new Gdiplus::Pen (Gdiplus::Color (0, 0, 0), 1);
 	pBrush = new Gdiplus::SolidBrush (Gdiplus::Color (0, 0, 0));
@@ -720,8 +721,8 @@ CDrawContext::CDrawContext (CFrame* inFrame, void* inSystemContext, void* inWind
 	{
 		RECT  rctTempWnd;
 		GetWindowRect ((HWND)pWindow, &rctTempWnd);
-		offsetScreen.h = rctTempWnd.left;
-		offsetScreen.v = rctTempWnd.top;
+		offsetScreen.h = (CCoord)rctTempWnd.left;
+		offsetScreen.v = (CCoord)rctTempWnd.top;
 	}
 
 #elif MAC
@@ -995,7 +996,7 @@ void CDrawContext::setClipRect (const CRect &clip)
 #if WINDOWS
 	#if GDIPLUS
 	if (pGraphics)
-		pGraphics->SetClip (Gdiplus::Rect (clipRect.left, clipRect.top, clipRect.getWidth (), clipRect.getHeight ()), Gdiplus::CombineModeReplace);
+		pGraphics->SetClip (Gdiplus::Rect ((INT)clipRect.left, (INT)clipRect.top, (INT)clipRect.getWidth (), (INT)clipRect.getHeight ()), Gdiplus::CombineModeReplace);
 	#else
 	RECT r = {clipRect.left, clipRect.top, clipRect.right, clipRect.bottom};
 	HRGN hRgn  = CreateRectRgn (r.left, r.top, r.right, r.bottom);
@@ -1168,12 +1169,12 @@ void CDrawContext::drawPolygon (const CPoint* pPoints, long numberOfPoints, cons
 
 #elif WINDOWS
 	#if GDIPLUS
-	Gdiplus::Point points[30];
-	Gdiplus::Point* polyPoints;
+	Gdiplus::PointF points[30];
+	Gdiplus::PointF* polyPoints;
 	bool allocated = false;
 	if (numberOfPoints > 30)
 	{
-		polyPoints = new Gdiplus::Point[numberOfPoints];
+		polyPoints = new Gdiplus::PointF[numberOfPoints];
 		allocated = true;
 	}
 	else
@@ -1181,8 +1182,8 @@ void CDrawContext::drawPolygon (const CPoint* pPoints, long numberOfPoints, cons
 	
 	for (long i = 0; i < numberOfPoints; i++)
 	{
-		polyPoints[i].X = pPoints[i].h + offset.h;
-		polyPoints[i].Y = pPoints[i].v + offset.v;
+		polyPoints[i].X = (float)pPoints[i].h + offset.h;
+		polyPoints[i].Y = (float)pPoints[i].v + offset.v;
 	}
 
 	if (drawStyle == kDrawFilled || drawStyle == kDrawFilledAndStroked)
@@ -1244,11 +1245,16 @@ void CDrawContext::drawRect (const CRect &_rect, const CDrawStyle drawStyle)
 	if (pGraphics)
 	{
 		rect.normalize ();
-		Gdiplus::Rect r (rect.left, rect.top, rect.getWidth ()-1, rect.getHeight ()-1);
 		if (pBrush && (drawStyle == kDrawFilled || drawStyle == kDrawFilledAndStroked))
+		{
+			Gdiplus::RectF r ((Gdiplus::REAL)rect.left, (Gdiplus::REAL)rect.top, (Gdiplus::REAL)rect.getWidth (), (Gdiplus::REAL)rect.getHeight ());
 			pGraphics->FillRectangle (pBrush, r);
+		}
 		if (pPen && (drawStyle == kDrawStroked || drawStyle == kDrawFilledAndStroked))
+		{
+			Gdiplus::RectF r ((Gdiplus::REAL)rect.left, (Gdiplus::REAL)rect.top, (Gdiplus::REAL)rect.getWidth ()-1, (Gdiplus::REAL)rect.getHeight ()-1);
 			pGraphics->DrawRectangle (pPen, r);
+		}
 	}
 	#else
 	if (drawStyle == kDrawFilled || drawStyle == kDrawFilledAndStroked)
@@ -1427,7 +1433,7 @@ void CDrawContext::drawArc (const CRect &_rect, const float _startAngle, const f
 		if (endAngle < _startAngle)
 			endAngle += 360.f;
 		endAngle = fabs (endAngle - _startAngle);
-		Gdiplus::Rect r (rect.left, rect.top, rect.getWidth (), rect.getHeight ());
+		Gdiplus::RectF r ((float)rect.left, (float)rect.top, (float)rect.getWidth (), (float)rect.getHeight ());
 		Gdiplus::GraphicsPath path;
 		path.AddArc (r, _startAngle, endAngle);
 		if (drawStyle == kDrawFilled || drawStyle == kDrawFilledAndStroked)
@@ -2014,14 +2020,11 @@ CCoord CDrawContext::getStringWidthUTF8 (const char* string)
 	Gdiplus::Font* pFont = (Gdiplus::Font*)font->getPlatformFont ();
 	if (pGraphics && pFont)
 	{
-		WCHAR buffer[1024] = {0};
-		if (MultiByteToWideChar (CP_UTF8, 0, string, strlen (string), buffer, 1024) > 0)
-		{
-			Gdiplus::PointF gdiPoint (0., 0.);
-			Gdiplus::RectF resultRect;
-			pGraphics->MeasureString (buffer, -1, pFont, gdiPoint, &resultRect);
-			result = (CCoord)resultRect.Width;
-		}
+		UTF8StringHelper stringText (string);
+		Gdiplus::PointF gdiPoint (0., 0.);
+		Gdiplus::RectF resultRect;
+		pGraphics->MeasureString (stringText, -1, pFont, gdiPoint, &resultRect);
+		result = (CCoord)resultRect.Width;
 	}
 	#endif
 	return result;
@@ -2085,13 +2088,10 @@ void CDrawContext::drawStringUTF8 (const char* string, const CPoint& _point, boo
 	Gdiplus::Font* pFont = (Gdiplus::Font*)font->getPlatformFont ();
 	if (pGraphics && pFont && pFontBrush)
 	{
-		WCHAR buffer[1024] = {0};
-		if (MultiByteToWideChar (CP_UTF8, 0, string, strlen (string), buffer, 1024) > 0)
-		{
-			pGraphics->SetTextRenderingHint (antialias ? Gdiplus::TextRenderingHintClearTypeGridFit : Gdiplus::TextRenderingHintSystemDefault);
-			Gdiplus::PointF gdiPoint ((Gdiplus::REAL)point.x, (Gdiplus::REAL)point.y + 1.f - pFont->GetHeight (pGraphics->GetDpiY ()));
-			pGraphics->DrawString (buffer, -1, pFont, gdiPoint, pFontBrush);
-		}
+		UTF8StringHelper stringText (string);
+		pGraphics->SetTextRenderingHint (antialias ? Gdiplus::TextRenderingHintClearTypeGridFit : Gdiplus::TextRenderingHintSystemDefault);
+		Gdiplus::PointF gdiPoint ((Gdiplus::REAL)point.x, (Gdiplus::REAL)point.y + 1.f - pFont->GetHeight (pGraphics->GetDpiY ()));
+		pGraphics->DrawString (stringText, -1, pFont, gdiPoint, pFontBrush);
 	}
 	#endif
 }
@@ -2180,7 +2180,7 @@ void CDrawContext::getMouseLocation (CPoint &point)
 #if WINDOWS
 	POINT where;
 	GetCursorPos (&where);
-	point (where.x, where.y);
+	point ((CCoord)where.x, (CCoord)where.y);
 
 #elif MAC
 	Point where;
@@ -2477,7 +2477,7 @@ COffscreenContext::COffscreenContext (CDrawContext* pContext, CBitmap* pBitmapBg
 	else // create bitmap if no bitmap handle exists
 	{
 		bDestroyPixmap = false;	// was true, but since we attach it to a CBitmap from VSTGUI that destroys it.
-		pWindow = CreateCompatibleBitmap ((HDC)pContext->getSystemContext (), width, height);
+		pWindow = CreateCompatibleBitmap ((HDC)pContext->getSystemContext (), (int)width, (int)height);
 		Gdiplus::Bitmap* myOffscreenBitmap = Gdiplus::Bitmap::FromHBITMAP ((HBITMAP)pWindow, NULL);
 		pGraphics = new Gdiplus::Graphics (myOffscreenBitmap);  // our Context to draw on the bitmap
 		// CHECK_GDIPLUS_STATUS("OffScreenContext: from OffscreenBitmap",pGraphics);
@@ -2572,12 +2572,12 @@ COffscreenContext::COffscreenContext (CFrame* pFrame, long width, long height, c
 : CDrawContext (pFrame, NULL, NULL)
 , pBitmap (0)
 , pBitmapBg (0)
-, height (height)
-, width (width)
+, height ((CCoord)height)
+, width ((CCoord)width)
 , bDrawInBitmap (false)
 , backgroundColor (backgroundColor)
 {
-	clipRect (0, 0, width, height);
+	clipRect (0, 0, (CCoord)width, (CCoord)height);
 
 	#if DEBUG
 	gNbCOffscreenContext++;
@@ -2588,7 +2588,7 @@ COffscreenContext::COffscreenContext (CFrame* pFrame, long width, long height, c
 
 #if WINDOWS
 	#if GDIPLUS
-	pBitmap = new CBitmap (*pFrame, width, height);
+	pBitmap = new CBitmap (*pFrame, (CCoord)width, (CCoord)height);
 	pGraphics = new Gdiplus::Graphics (pBitmap->getBitmap ());
 	pGraphics->SetInterpolationMode (Gdiplus::InterpolationModeLowQuality);	// not used in timo's code. Why ?
 	pGraphics->SetPageUnit(Gdiplus::UnitPixel);
@@ -3673,9 +3673,9 @@ bool CFrame::initFrame (void* systemWin)
 	if (gSystemVersion.dwMajorVersion >= 6) // Vista and above
 		style |= WS_EX_COMPOSITED;
 	#endif
-	pHwnd = CreateWindowEx (style, gClassName, "Window",
+	pHwnd = CreateWindowEx (style, gClassName, TEXT("Window"),
 			 WS_CHILD | WS_VISIBLE | WS_CLIPCHILDREN | WS_CLIPSIBLINGS, 
-			 0, 0, size.width (), size.height (), 
+			 0, 0, (int)size.width (), (int)size.height (), 
 			 (HWND)pSystemWindow, NULL, GetInstance (), NULL);
 
 	SetWindowLongPtr ((HWND)pHwnd, GWLP_USERDATA, (LONG_PTR)this);
@@ -4127,7 +4127,7 @@ COffscreenContext* CFrame::getBackBuffer ()
 	if (gSystemVersion.dwMajorVersion < 6) // pre-Vista
 	{
 		if (!backBuffer)
-			backBuffer = new COffscreenContext (this, size.width (), size.height ());
+			backBuffer = new COffscreenContext (this, (long)size.width (), (long)size.height ());
 	}
 	#endif
 
@@ -4231,8 +4231,8 @@ bool CFrame::getPosition (CCoord &x, CCoord &y) const
 
 	MapWindowPoints (HWND_DESKTOP, wndParent, &point, 1);
 	
-	x = point.x;
-	y = point.y;
+	x = (CCoord)point.x;
+	y = (CCoord)point.y;
 
 #elif MAC
 	Rect bounds;
@@ -4246,7 +4246,7 @@ bool CFrame::getPosition (CCoord &x, CCoord &y) const
 		HIPoint hip = { 0.f, 0.f };
 		HIViewRef contentView;
 		HIViewFindByID (HIViewGetRoot ((WindowRef)pSystemWindow), kHIViewWindowContentID, &contentView);
-		if (HIViewGetSuperview ((HIViewRef)controlRef) != contentView)
+		if (contentView)
 			HIViewConvertPoint (&hip, controlRef, contentView);
 		x += (CCoord)hip.x;
 		y += (CCoord)hip.y;
@@ -4339,14 +4339,14 @@ bool CFrame::setSize (CCoord width, CCoord height)
 	while ((diffWidth != iFrame) && (hTempWnd != NULL)) // look for FrameWindow
 	{
 		HWND hTempParentWnd = GetParent (hTempWnd);
-		char buffer[1024];
+		TCHAR buffer[1024];
 		GetClassName (hTempParentWnd, buffer, 1024);
-		if (!hTempParentWnd || !strcmp (buffer, "MDIClient"))
+		if (!hTempParentWnd || !VSTGUI_STRCMP (buffer, TEXT("MDIClient")))
 			break;
 		GetWindowRect (hTempWnd, &rctTempWnd);
 		GetWindowRect (hTempParentWnd, &rctParentWnd);
 		
-		SetWindowPos (hTempWnd, HWND_TOP, 0, 0, width + diffWidth, height + diffHeight, SWP_NOMOVE);
+		SetWindowPos (hTempWnd, HWND_TOP, 0, 0, (int)width + diffWidth, (int)height + diffHeight, SWP_NOMOVE);
 		
 		diffWidth  += (rctParentWnd.right - rctParentWnd.left) - (rctTempWnd.right - rctTempWnd.left);
 		diffHeight += (rctParentWnd.bottom - rctParentWnd.top) - (rctTempWnd.bottom - rctTempWnd.top);
@@ -4363,7 +4363,7 @@ bool CFrame::setSize (CCoord width, CCoord height)
 	}
 	
 	if (hTempWnd)
-		SetWindowPos (hTempWnd, HWND_TOP, 0, 0, width + diffWidth, height + diffHeight, SWP_NOMOVE);
+		SetWindowPos (hTempWnd, HWND_TOP, 0, 0, (int)width + diffWidth, (int)height + diffHeight, SWP_NOMOVE);
 
 #elif MAC
 	#if !__LP64__
@@ -4421,10 +4421,10 @@ bool CFrame::getSize (CRect* pRect) const
 
 	MapWindowPoints (HWND_DESKTOP, wndParentParent, &point, 1);
 	
-	pRect->left   = point.x;
-	pRect->top    = point.y;
-	pRect->right  = pRect->left + rctTempWnd.right - rctTempWnd.left;
-	pRect->bottom = pRect->top  + rctTempWnd.bottom - rctTempWnd.top;
+	pRect->left   = (CCoord)point.x;
+	pRect->top    = (CCoord)point.y;
+	pRect->right  = (CCoord)pRect->left + rctTempWnd.right - rctTempWnd.left;
+	pRect->bottom = (CCoord)pRect->top  + rctTempWnd.bottom - rctTempWnd.top;
 
 #elif MAC
 	HIRect hiRect;
@@ -4501,12 +4501,12 @@ bool CFrame::getCurrentMouseLocation (CPoint &where) const
 	HWND hwnd = (HWND)this->getSystemWindow ();
 	POINT _where;
 	GetCursorPos (&_where);
-	where (_where.x, _where.y);
+	where ((CCoord)_where.x, (CCoord)_where.y);
 	if (hwnd)
 	{
 		RECT rctTempWnd;
 		GetWindowRect (hwnd, &rctTempWnd);
-		where.offset (-rctTempWnd.left, -rctTempWnd.top);
+		where.offset ((CCoord)-rctTempWnd.left, (CCoord)-rctTempWnd.top);
 	}
 	return true;
 	#elif MAC && !__LP64__	// 64bit TODO
@@ -4876,7 +4876,7 @@ void CFrame::invalidRect (CRect rect)
 	#endif
 
 	#elif WINDOWS
-	RECT r = {rect.left, rect.top, rect.right, rect.bottom};
+	RECT r = {(LONG)rect.left, (LONG)rect.top, (LONG)rect.right, (LONG)rect.bottom};
 	InvalidateRect ((HWND)pHwnd, &r, true);
 	#else
 	// not supported yet
@@ -6105,7 +6105,11 @@ public:
 
 	bool open (const CResourceDescription& resourceDesc)
 	{
-		HRSRC rsrc = FindResource (GetInstance (), resourceDesc.type == CResourceDescription::kIntegerType ? MAKEINTRESOURCE (resourceDesc.u.id) : resourceDesc.u.name, "PNG");
+		HRSRC rsrc = 0;
+		if (resourceDesc.type == CResourceDescription::kIntegerType)
+			rsrc = FindResourceA (GetInstance (), MAKEINTRESOURCEA (resourceDesc.u.id), "PNG");
+		else
+			rsrc = FindResourceA (GetInstance (), resourceDesc.u.name, "PNG");
 		if (rsrc)
 		{
 			resSize = SizeofResource (GetInstance (), rsrc);
@@ -6312,7 +6316,7 @@ CBitmap::CBitmap (CFrame& frame, CCoord width, CCoord height)
 	pBitmap = 0;
 	pHandle = 0;
 	bits = 0;
-	pBitmap = new Gdiplus::Bitmap (width, height, PixelFormat32bppARGB);
+	pBitmap = new Gdiplus::Bitmap ((INT)width, (INT)height, PixelFormat32bppARGB);
 #else
 	HDC hScreen = GetDC (0);
 	pHandle = CreateCompatibleBitmap (hScreen, width, height);
@@ -6375,8 +6379,8 @@ CBitmap::CBitmap (void* platformBitmap)
 	#if WINDOWS && GDIPLUS
 	GDIPlusGlobals::enter ();
 	pBitmap = ((Gdiplus::Bitmap*)platformBitmap)->Clone (0, 0, ((Gdiplus::Bitmap*)platformBitmap)->GetWidth (), ((Gdiplus::Bitmap*)platformBitmap)->GetHeight (), PixelFormat32bppARGB);
-	width = pBitmap->GetWidth ();
-	height = pBitmap->GetHeight ();
+	width = (CCoord)pBitmap->GetWidth ();
+	height = (CCoord)pBitmap->GetHeight ();
 	bits = 0;
 	#elif MAC
 	cgImage = platformBitmap;
@@ -6626,8 +6630,8 @@ bool CBitmap::loadFromResource (const CResourceDescription& resourceDesc)
 		if (pBitmap)
 		{
 			result = true;
-			width = pBitmap->GetWidth ();
-			height = pBitmap->GetHeight ();
+			width = (CCoord)pBitmap->GetWidth ();
+			height = (CCoord)pBitmap->GetHeight ();
 		}
 #else
 		pHandle = LoadBitmap (GetInstance (), resourceDesc.type == CResourceDescription::kIntegerType ? MAKEINTRESOURCE (resourceDesc.u.id) : resourceDesc.u.name);
@@ -6991,7 +6995,7 @@ Gdiplus::Bitmap* CBitmap::getBitmap ()
 	{
 		if (bits) // it´s a png image
 		{
-			pBitmap = new Gdiplus::Bitmap (width, height, 4*width, PixelFormat32bppPARGB, (unsigned char*)bits);
+			pBitmap = new Gdiplus::Bitmap ((INT)width, (INT)height, 4*(INT)width, PixelFormat32bppPARGB, (unsigned char*)bits);
 		}
 		else
 			pBitmap = new Gdiplus::Bitmap ((HBITMAP)pHandle, 0);
@@ -7132,8 +7136,8 @@ void CBitmap::drawAlphaBlend (CDrawContext* pContext, CRect &rect, const CPoint 
 					0);
 				// now transfer the temporary to the real context at the advised location
 				Gdiplus::Rect	myDestRect(
-					(INT)rect.left + pContext->offset.h,
-					(INT)rect.top + pContext->offset.v,
+					(INT)rect.left + (INT)pContext->offset.h,
+					(INT)rect.top + (INT)pContext->offset.v,
 					(INT)rect.getWidth (),
 					(INT)rect.getHeight ());
 				// transfer from temporary bitmap to real context (with imageattr)
@@ -7152,8 +7156,8 @@ void CBitmap::drawAlphaBlend (CDrawContext* pContext, CRect &rect, const CPoint 
 			else
 			{
 				Gdiplus::Rect	myDestRect(
-					(INT)rect.left + pContext->offset.h,
-					(INT)rect.top + pContext->offset.v,
+					(INT)rect.left + (INT)pContext->offset.h,
+					(INT)rect.top + (INT)pContext->offset.v,
 					(INT)rect.getWidth (),
 					(INT)rect.getHeight ());
 				graphics->DrawImage (
@@ -7716,15 +7720,16 @@ void* CDragContainer::next (long& size, long& type)
 	{
 		if (wintype == 0)
 		{
-			char fileDropped[1024];
+			TCHAR fileDropped[1024];
 
 			long nbRealItems = 0;
 			if (DragQueryFile ((HDROP)hDrop, iterator++, fileDropped, sizeof (fileDropped))) 
 			{
 				// resolve link
 				checkResolveLink (fileDropped, fileDropped);
-				lastItem = malloc (strlen (fileDropped)+1);
-				strcpy ((char*)lastItem, fileDropped);
+				UTF8StringHelper path (fileDropped);
+				lastItem = malloc (strlen (path)+1);
+				strcpy ((char*)lastItem, path);
 				size = (long)strlen ((const char*)lastItem);
 				type = kFile;
 				return lastItem;
@@ -7789,7 +7794,7 @@ bool InitWindowClass ()
 	gUseCount++;
 	if (gUseCount == 1)
 	{
-		sprintf (gClassName, "Plugin%p", GetInstance ());
+		VSTGUI_SPRINTF (gClassName, TEXT("Plugin%p"), GetInstance ());
 		
 		WNDCLASS windowClass;
 		windowClass.style = CS_GLOBALCLASS | CS_DBLCLKS;//|CS_OWNDC; // add Private-DC constant 
@@ -7797,7 +7802,7 @@ bool InitWindowClass ()
 		windowClass.lpfnWndProc = WindowProc; 
 		windowClass.cbClsExtra  = 0; 
 		windowClass.cbWndExtra  = 0; 
-		windowClass.hInstance   = GetInstance (); 
+		windowClass.hInstance   = GetInstance ();
 		windowClass.hIcon = 0; 
 
 		windowClass.hCursor = LoadCursor (NULL, IDC_ARROW);
@@ -7862,7 +7867,7 @@ LONG_PTR WINAPI WindowProc (HWND hwnd, UINT message, WPARAM wParam, LPARAM lPara
 			short zDelta = (short) HIWORD(wParam);
 			RECT rctWnd;
 			GetWindowRect (hwnd, &rctWnd);
-			where.offset (-rctWnd.left, -rctWnd.top);
+			where.offset ((CCoord)-rctWnd.left, (CCoord)-rctWnd.top);
 			pFrame->onWheel (where, (float)(zDelta / WHEEL_DELTA), buttons);
 		}
 		break;
@@ -7907,7 +7912,7 @@ LONG_PTR WINAPI WindowProc (HWND hwnd, UINT message, WPARAM wParam, LPARAM lPara
 			if (!context)
 				context = new VSTGUI_CDrawContext (pFrame, hdc, hwnd);
 			
-			CRect updateRect (ps.rcPaint.left, ps.rcPaint.top, ps.rcPaint.right, ps.rcPaint.bottom);
+			CRect updateRect ((CCoord)ps.rcPaint.left, (CCoord)ps.rcPaint.top, (CCoord)ps.rcPaint.right, (CCoord)ps.rcPaint.bottom);
 
 			#if 0
 			int len = GetRegionData (rgn, 0, NULL);
@@ -7936,7 +7941,7 @@ LONG_PTR WINAPI WindowProc (HWND hwnd, UINT message, WPARAM wParam, LPARAM lPara
 			if (pFrame->getBackBuffer ())
 			{
 				VSTGUI_CDrawContext localContext (pFrame, hdc, hwnd);
-				pFrame->getBackBuffer ()->copyFrom (&localContext, updateRect, CPoint (ps.rcPaint.left, ps.rcPaint.top));
+				pFrame->getBackBuffer ()->copyFrom (&localContext, updateRect, CPoint ((CCoord)ps.rcPaint.left, (CCoord)ps.rcPaint.top));
 			}
 			else
 				context->forget ();
@@ -7962,8 +7967,8 @@ LONG_PTR WINAPI WindowProc (HWND hwnd, UINT message, WPARAM wParam, LPARAM lPara
 				VSTGUI_CDrawContext context (pFrame, 0, hwnd);
 				optMenu->getScheme ()->getItemSize ((const char*)ms->itemData, &context, size);
 
-				ms->itemWidth  = size.h;
-				ms->itemHeight = size.v;
+				ms->itemWidth  = (UINT)size.h;
+				ms->itemHeight = (UINT)size.v;
 				return TRUE;
 			}
 		}
@@ -7986,7 +7991,7 @@ LONG_PTR WINAPI WindowProc (HWND hwnd, UINT message, WPARAM wParam, LPARAM lPara
 				if (ds->itemState & ODS_SELECTED)
 					state |= VSTGUI_COptionMenuScheme::kSelected;
 					
-				CRect r (ds->rcItem.left, ds->rcItem.top, ds->rcItem.right, ds->rcItem.bottom);
+				CRect r ((CCoord)ds->rcItem.left, (CCoord)ds->rcItem.top, (CCoord)ds->rcItem.right, (CCoord)ds->rcItem.bottom);
 				r.bottom++;
 				
 				VSTGUI_CDrawContext* pContext = new VSTGUI_CDrawContext (pFrame, ds->hDC, 0);
@@ -8036,7 +8041,7 @@ LONG_PTR WINAPI WindowProc (HWND hwnd, UINT message, WPARAM wParam, LPARAM lPara
 				buttons |= kAlt;
 			if (doubleClick)
 				buttons |= kDoubleClick;
-			VSTGUI_CPoint where (((int)(short)LOWORD(lParam)), ((int)(short)HIWORD(lParam)));
+			VSTGUI_CPoint where ((CCoord)((int)(short)LOWORD(lParam)), (CCoord)((int)(short)HIWORD(lParam)));
 			if (pFrame->onMouseDown (where, buttons) == kMouseEventHandled)
 				SetCapture ((HWND)pFrame->getSystemWindow ());
 			return 0;
@@ -8065,7 +8070,7 @@ LONG_PTR WINAPI WindowProc (HWND hwnd, UINT message, WPARAM wParam, LPARAM lPara
 			// added to achieve information from the ALT button
 			if (GetKeyState (VK_MENU)    < 0)
 				buttons |= kAlt;
-			VSTGUI_CPoint where (((int)(short)LOWORD(lParam)), ((int)(short)HIWORD(lParam)));
+			VSTGUI_CPoint where ((CCoord)((int)(short)LOWORD(lParam)), (CCoord)((int)(short)HIWORD(lParam)));
 			pFrame->onMouseMoved (where, buttons);
 			return 0;
 		}
@@ -8098,7 +8103,7 @@ LONG_PTR WINAPI WindowProc (HWND hwnd, UINT message, WPARAM wParam, LPARAM lPara
 			// added to achieve information from the ALT button
 			if (GetKeyState (VK_MENU)    < 0)
 				buttons |= kAlt;
-			VSTGUI_CPoint where (((int)(short)LOWORD(lParam)), ((int)(short)HIWORD(lParam)));
+			VSTGUI_CPoint where ((CCoord)((int)(short)LOWORD(lParam)), (CCoord)((int)(short)HIWORD(lParam)));
 			pFrame->onMouseUp (where, buttons);
 			ReleaseCapture ();
 			return 0;
@@ -8342,10 +8347,10 @@ END_NAMESPACE_VSTGUI
 #if WINDOWS
 BEGIN_NAMESPACE_VSTGUI
 //-----------------------------------------------------------------------------
-bool checkResolveLink (const char* nativePath, char* resolved)
+bool checkResolveLink (const TCHAR* nativePath, TCHAR* resolved)
 {
-	const char* ext = strrchr (nativePath, '.');
-	if (ext && _stricmp (ext, ".lnk") == NULL)
+	const TCHAR* ext = VSTGUI_STRRCHR (nativePath, '.');
+	if (ext && VSTGUI_STRICMP (ext, TEXT(".lnk")) == NULL)
 	{
 		IShellLink* psl;
 		IPersistFile* ppf;
@@ -8362,8 +8367,10 @@ bool checkResolveLink (const char* nativePath, char* resolved)
 			hres = psl->QueryInterface (IID_IPersistFile, (void**)&ppf);
 			if (SUCCEEDED (hres))
 			{
+				#if !VSTGUI_USES_UTF8
 				// Ensure string is Unicode.
 				MultiByteToWideChar (CP_ACP, 0, nativePath, -1, (LPWSTR)wsz, 2048);
+				#endif
 				// Load the shell link.
 				hres = ppf->Load ((LPWSTR)wsz, STGM_READ);
 				if (SUCCEEDED (hres))
