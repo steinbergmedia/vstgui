@@ -1,3 +1,9 @@
+2007-10-03 arne
+
+	* add visible state for CView
+	* onMouseExited wasn't called on Mac OS X when mouse leaves the frame
+	* changed order for setDirty (false) and invalidRect (size) in CView::invalid () which should fix some issues with non drawing updates
+	
 2007-08-17 arne
 
 	* Unicode support for Windows (CFileSelector is not completely done yet)
