@@ -2,7 +2,7 @@
 // VST Plug-Ins SDK
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 //
-// Version 3.5       $Date: 2007-08-17 13:40:12 $
+// Version 3.5       $Date: 2007-10-03 12:24:26 $
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
@@ -1031,7 +1031,10 @@ public:
 	virtual void setDirty (const bool val = true) { bDirty = val; }										///< set the view to dirty so that it is redrawn in the next idle. Thread Safe !
 
 	virtual void invalidRect (const CRect rect);														///< mark rect as invalid
-	virtual void invalid () { invalidRect (size); setDirty (false); }									///< mark whole view as invalid
+	virtual void invalid () { setDirty (false); invalidRect (size); }									///< mark whole view as invalid
+
+	virtual void setVisible (bool state);																///< set visibility state
+	bool isVisible () const { return bVisible; }														///< get visibility state
 	//@}
 
 	//-----------------------------------------------------------------------------
@@ -1072,8 +1075,8 @@ public:
 	/// \name Keyboard Methods
 	//-----------------------------------------------------------------------------
 	//@{
-	virtual long onKeyDown (VstKeyCode& keyCode);														///< called if a key down event occurs and this view has focus
-	virtual long onKeyUp (VstKeyCode& keyCode);															///< called if a key up event occurs and this view has focus
+	virtual long onKeyDown (VstKeyCode& keyCode);												///< called if a key down event occurs and this view has focus
+	virtual long onKeyUp (VstKeyCode& keyCode);													///< called if a key up event occurs and this view has focus
 	//@}
 
 	//-----------------------------------------------------------------------------
@@ -1166,6 +1169,7 @@ protected:
 	bool  bTransparencyEnabled;
 	bool  bWantsFocus;
 	bool  bIsAttached;
+	bool  bVisible;
 	
 	CBitmap* pBackground;
 	CAttributeListEntry* pAttributeList;
@@ -1219,7 +1223,7 @@ public:
 	virtual void drawBackgroundRect (CDrawContext *pContext, CRect& _updateRect);	///< draw the background
 	//@}
 
-	virtual void useOffscreen (bool b);	///< turn on/off using an offscreen
+	virtual void useOffscreen (bool b);	///< turn on/off using an offscreen. Not necessary with GDI+ on Windows, or on Mac OS X.
 
 	void modifyDrawContext (CCoord save[4], CDrawContext* pContext);
 	void restoreDrawContext (CDrawContext* pContext, CCoord save[4]);

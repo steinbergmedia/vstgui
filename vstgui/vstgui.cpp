@@ -2,7 +2,7 @@
 // VST Plug-Ins SDK
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 //
-// Version 3.5       $Date: 2007-08-17 12:52:39 $ 
+// Version 3.5       $Date: 2007-10-03 12:24:26 $ 
 //
 // Added Motif/Windows vers.: Yvan Grabit              01.98
 // Added Mac version        : Charlie Steinberg        02.98
@@ -2892,6 +2892,7 @@ CView::CView (const CRect& size)
 , bTransparencyEnabled (false)
 , bWantsFocus (false)
 , bIsAttached (false)
+, bVisible (true)
 , pBackground (0)
 , pAttributeList (0)
 {
@@ -2912,6 +2913,7 @@ CView::CView (const CView& v)
 , bTransparencyEnabled (v.bTransparencyEnabled)
 , bWantsFocus (v.bWantsFocus)
 , bIsAttached (false)
+, bVisible (true)
 , pBackground (v.pBackground)
 , pAttributeList (0)
 {
@@ -3073,7 +3075,7 @@ CPoint& CView::localToFrame (CPoint& point) const
  */
 void CView::invalidRect (CRect rect)
 {
-	if (bIsAttached)
+	if (bIsAttached && bVisible)
 	{
 		if (pParentView)
 			pParentView->invalidRect (rect);
@@ -3198,6 +3200,16 @@ CRect CView::getVisibleSize () const
 	else if (pParentFrame)
 		return pParentFrame->getVisibleSize (size);
 	return CRect (0, 0, 0, 0);
+}
+
+//-----------------------------------------------------------------------------
+void CView::setVisible (bool state)
+{
+	if (state != bVisible)
+	{
+		bVisible = state;
+		setDirty ();
+	}
 }
 
 //-----------------------------------------------------------------------------
@@ -3713,6 +3725,9 @@ bool CFrame::initFrame (void* systemWin)
 		{kEventClassScrollable, kEventScrollableScrollTo},
 		{kEventClassControl, kEventControlSetFocusPart},
 		{kEventClassControl, kEventControlGetFocusPart},
+		#if MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_4
+		{kEventClassControl, kEventControlTrackingAreaExited},
+		#endif
 	};
 	InstallControlEventHandler (controlRef, carbonEventHandler, GetEventTypeCount (controlEventTypes), controlEventTypes, this, NULL);
 	
@@ -3748,6 +3763,12 @@ bool CFrame::initFrame (void* systemWin)
 		EmbedControl(controlRef, rootControl);	
 	}
 	#endif
+	
+	#if MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_4
+	HIViewTrackingAreaRef trackingAreaRef;	// will automatically removed if view is destroyed
+	HIViewNewTrackingArea (controlRef, 0, 0, &trackingAreaRef);
+	#endif
+	
 	size.offset (-size.left, -size.top);
 	mouseableArea.offset (-size.left, -size.top);
 	
@@ -4844,6 +4865,8 @@ void CFrame::invalidate (const CRect &rect)
 //-----------------------------------------------------------------------------
 void CFrame::invalidRect (CRect rect)
 {
+	if (!bVisible)
+		return;
 	#if MAC
 	if (isWindowComposited ((WindowRef)pSystemWindow))
 	{
@@ -5273,6 +5296,8 @@ CView* CViewContainer::getView (long index) const
 //-----------------------------------------------------------------------------
 bool CViewContainer::invalidateDirtyViews ()
 {
+	if (!bVisible)
+		return true;
 	if (bDirty)
 	{
 		if (pParentView)
@@ -5282,7 +5307,7 @@ bool CViewContainer::invalidateDirtyViews ()
 		return true;
 	}
 	FOREACHSUBVIEW
-		if (pV->isDirty ())
+		if (pV->isDirty () && pV->isVisible ())
 		{
 			if (pV->isTypeOf ("CViewContainer"))
 				((CViewContainer*)pV)->invalidateDirtyViews ();
@@ -5296,6 +5321,8 @@ bool CViewContainer::invalidateDirtyViews ()
 //-----------------------------------------------------------------------------
 void CViewContainer::invalid ()
 {
+	if (!bVisible)
+		return;
 	CRect _rect (size);
 	if (pParentView)
 		pParentView->invalidRect (_rect);
@@ -5306,6 +5333,8 @@ void CViewContainer::invalid ()
 //-----------------------------------------------------------------------------
 void CViewContainer::invalidRect (CRect rect)
 {
+	if (!bVisible)
+		return;
 	CRect _rect (rect);
 	_rect.offset (size.left, size.top);
 	_rect.bound (size);
@@ -5485,7 +5514,7 @@ void CViewContainer::drawRect (CDrawContext* pContext, const CRect& updateRect)
  */
 bool CViewContainer::checkUpdateRect (CView* view, const CRect& rect)
 {
-	return view->checkUpdate (rect);
+	return view->checkUpdate (rect) && view->isVisible ();
 }
 
 //-----------------------------------------------------------------------------
@@ -5533,7 +5562,7 @@ CMouseEventResult CViewContainer::onMouseDown (CPoint &where, const long& button
 	while (pSv)
 	{
 		CView* pV = pSv->pView;
-		if (pV && pV->getMouseEnabled () && pV->hitTest (where2, buttons))
+		if (pV && pV->isVisible () && pV->getMouseEnabled () && pV->hitTest (where2, buttons))
 		{
 			if (pV->isTypeOf("CControl") && ((CControl*)pV)->getListener () && buttons & (kAlt | kShift | kControl | kApple))
 			{
@@ -5867,7 +5896,7 @@ CView* CViewContainer::getCurrentView () const
  */
 CView* CViewContainer::getViewAt (const CPoint& p, bool deep) const
 {
-	if (!pParentFrame)
+	if (!pParentFrame || !bVisible)
 		return 0;
 
 	CPoint where (p);
@@ -5879,7 +5908,7 @@ CView* CViewContainer::getViewAt (const CPoint& p, bool deep) const
 	while (pSv)
 	{
 		CView* pV = pSv->pView;
-		if (pV && where.isInside (pV->getMouseableArea ()))
+		if (pV && pV->isVisible () && where.isInside (pV->getMouseableArea ()))
 		{
 			if (deep)
 			{
@@ -5914,7 +5943,7 @@ CViewContainer* CViewContainer::getContainerAt (const CPoint& p, bool deep) cons
 	while (pSv)
 	{
 		CView* pV = pSv->pView;
-		if (pV && where.isInside (pV->getMouseableArea ()))
+		if (pV && pV->isVisible () && where.isInside (pV->getMouseableArea ()))
 		{
 			if (deep && pV->isTypeOf ("CViewContainer"))
 				return ((CViewContainer*)pV)->getContainerAt (where, deep);
@@ -6394,7 +6423,7 @@ CBitmap::CBitmap (void* platformBitmap)
 CBitmap::~CBitmap ()
 {
 	#if GDIPLUS
-	GDIPlusGlobals::enter ();
+	GDIPlusGlobals::exit ();
 	#endif
 	dispose ();
 }
@@ -6660,7 +6689,7 @@ bool CBitmap::loadFromResource (const CResourceDescription& resourceDesc)
 			sprintf (filename, "bmp%05d", (int)resourceDesc.u.id);
 		else
 			strcpy (filename, resourceDesc.u.name);
-		CFStringRef cfStr = CFStringCreateWithCString (NULL, filename, kCFStringEncodingASCII);
+		CFStringRef cfStr = CFStringCreateWithCString (NULL, filename, kCFStringEncodingUTF8);
 		if (cfStr)
 		{
 			CFURLRef url = NULL;
@@ -9063,6 +9092,25 @@ pascal OSStatus CFrame::carbonEventHandler (EventHandlerCallRef inHandlerCallRef
 					result = noErr;
 					break;
 				}
+				#if MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_4
+				case kEventControlTrackingAreaExited:
+				{
+					HIPoint location = { 0.f, 0.f };
+					if (GetEventParameter (inEvent, kEventParamMouseLocation, typeHIPoint, NULL, sizeof (HIPoint), NULL, &location) == noErr)
+					{
+						if (!isWindowComposited ((WindowRef)window))
+						{
+							HIRect viewRect;
+							HIViewGetFrame (frame->controlRef, &viewRect);
+							location.x -= viewRect.origin.x;
+							location.y -= viewRect.origin.y;
+						}
+						CPoint point ((CCoord)location.x, (CCoord)location.y);
+						frame->onMouseMoved (point, 0);
+					}
+					break;
+				}
+				#endif
 			}
 			break;
 		}
