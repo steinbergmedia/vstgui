@@ -2,7 +2,7 @@
 // VST Plug-Ins SDK
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 //
-// Version 3.5       $Date: 2007-10-03 12:24:26 $
+// Version 3.5       $Date: 2007-10-08 10:50:42 $
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
@@ -1537,7 +1537,7 @@ class UTF8StringHelper
 public:
 	UTF8StringHelper (const char* utf8Str) : utf8Str (utf8Str), allocWideStr (0), allocStrIsWide (true) {}
 	UTF8StringHelper (const WCHAR* wideStr) : wideStr (wideStr), allocUTF8Str (0), allocStrIsWide (false) {}
-	UTF8StringHelper () { if (allocUTF8Str) free (allocUTF8Str); }
+	~UTF8StringHelper () { if (allocUTF8Str) free (allocUTF8Str); }
 
 	operator const char* () { return getUTF8String (); }
 	operator const WCHAR*() { return getWideString (); }
