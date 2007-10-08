@@ -30,7 +30,7 @@ For convenience the old method is still working, but should be replaced with the
 - VSTGUI::CTooltipSupport	(new in 3.5)
 - VSTGUI::CVSTGUITimer	(new in 3.5)
 - System event driven drawing	(new in 3.5)
-- UTF-8 string drawing	(new in 3.5)
+- Unicode support via UTF-8 (new in 3.5)
 - New font implementation	(new in 3.5)
 - Windows GDI+ support	(new in 3.5)
 - Mac OS X Composited Window support (new in 3.0)
