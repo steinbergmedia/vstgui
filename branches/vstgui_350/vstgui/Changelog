@@ -1,3 +1,7 @@
+2007-10-12 wolfram
+
+	* added virtual destructors for IMouseObserver, CControlListener and IMultiBitmapControl
+
 2007-10-03 arne
 
 	* add visible state for CView
