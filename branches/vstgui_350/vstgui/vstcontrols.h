@@ -3,7 +3,7 @@
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 // Standard Control Objects
 //
-// Version 3.5       $Date: 2007-04-01 11:20:45 $
+// Version 3.5       $Date: 2007-10-12 10:12:31 $
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
@@ -107,6 +107,8 @@ enum CControlEnum
 class CControlListener
 {
 public:
+	virtual ~CControlListener() {}
+	
 	#if USE_NAMESPACE
 	virtual void valueChanged (VSTGUI::CControl* pControl) = 0;
 	virtual long controlModifierClicked (VSTGUI::CControl* pControl, long button) { return 0; }	///< return 1 if you want the control to not handle it, otherwise 0
@@ -217,6 +219,8 @@ protected:
 class IMultiBitmapControl
 {
 public:
+	virtual ~IMultiBitmapControl() {}
+	
 	virtual void setHeightOfOneImage (const CCoord& height) { heightOfOneImage = height; }
 	virtual CCoord getHeightOfOneImage () const { return heightOfOneImage; }
 
