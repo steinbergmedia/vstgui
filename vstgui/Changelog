@@ -1,3 +1,11 @@
+2007-10-16 arne
+
+	* Cocoa support (except CTooltipSupport and CFileSelector)
+
+2007-10-08 arne
+
+	* created vstgui_350 branch
+
 2007-10-03 arne
 
 	* add visible state for CView

@@ -43,6 +43,10 @@ inline HINSTANCE GetInstance () { return (HINSTANCE)hInstance; }
 static void* InitTooltip (CFrame* frame);
 #endif
 
+#if MAC_COCOA
+#include "cocoasupport.h"
+#endif
+
 #if DEBUG
 #define DEBUGLOG 0
 #endif
@@ -96,6 +100,24 @@ CTooltipSupport::~CTooltipSupport ()
 }
 
 //------------------------------------------------------------------------
+static char* getTooltipFromView (CView* view)
+{
+	char* tooltip = 0;
+	long tooltipSize = 0;
+	if (view->getAttributeSize (kCViewTooltipAttribute, tooltipSize))
+	{
+		tooltip = (char*)malloc (tooltipSize + 1);
+		memset (tooltip, 0, tooltipSize+1);
+		if (!view->getAttribute (kCViewTooltipAttribute, tooltipSize, tooltip, tooltipSize))
+		{
+			free (tooltip);
+			tooltip = 0;
+		}
+	}
+	return tooltip;
+}
+
+//------------------------------------------------------------------------
 void CTooltipSupport::onMouseEntered (CView* view, CFrame* frame)
 {
 	#if DEBUGLOG
@@ -111,18 +133,27 @@ void CTooltipSupport::onMouseExited (CView* view, CFrame* frame)
 	#if DEBUGLOG
 	DebugPrint ("IMouseObserver::onMouseExited (%s)\n", view->getClassName ());
 	#endif
+	hideTooltip ();
 	timer->stop ();
 	currentView = 0;
-	hideTooltip ();
 }
 
 //------------------------------------------------------------------------
 void CTooltipSupport::hideTooltip ()
 {
+	#if MAC_COCOA
+	if (frame->getNSView ())
+	{
+		nsViewRemoveTooltip (currentView);
+		return;
+	}
+	#endif
+	
 	#if MAC
 	HMHideTag ();
+	#endif
 
-	#elif WINDOWS
+	#if WINDOWS
 	if (platformObject)
 		SendMessage ((HWND)platformObject, TTM_POP, 0, 0);
 
@@ -139,21 +170,19 @@ void CTooltipSupport::showTooltip ()
 		currentView->localToFrame (p);
 		r.offset (p.x, p.y);
 
-		// get the tooltip from the view
-		char* tooltip = 0;
-		long tooltipSize = 0;
-		if (currentView->getAttributeSize (kCViewTooltipAttribute, tooltipSize))
-		{
-			tooltip = (char*)malloc (tooltipSize + 1);
-			memset (tooltip, 0, tooltipSize+1);
-			if (!currentView->getAttribute (kCViewTooltipAttribute, tooltipSize, tooltip, tooltipSize))
-			{
-				free (tooltip);
-				tooltip = 0;
-			}
-		}
+		char* tooltip = getTooltipFromView (currentView);
+		
 		if (tooltip)
 		{
+			#if MAC_COCOA
+			if (frame->getNSView ())
+			{
+				nsViewSetTooltip (currentView, tooltip);
+				free (tooltip);
+				return;
+			}
+			#endif
+
 			#if MAC
 			CCoord x, y;
 			currentView->getFrame ()->getPosition (x,y);
@@ -170,8 +199,9 @@ void CTooltipSupport::showTooltip ()
 			helpContent.content[0].u.tagCFString = CFStringCreateWithCString (0, tooltip, kCFStringEncodingUTF8);
 			HMDisplayTag(&helpContent);
 			CFRelease (helpContent.content[0].u.tagCFString);
-
-			#elif WINDOWS
+			#endif // MAC
+			
+			#if WINDOWS
 			UTF8StringHelper tooltipText (tooltip);
 			if (platformObject)
 			{
@@ -190,8 +220,7 @@ void CTooltipSupport::showTooltip ()
 				SendMessage ((HWND)platformObject, TTM_UPDATETIPTEXT, 0, (LPARAM)&ti);
  				SendMessage ((HWND)platformObject, TTM_POPUP, 0, 0);
 			}
-
-			#endif
+			#endif // WINDOWS
 			free (tooltip);
 		}
 	}

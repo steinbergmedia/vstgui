@@ -2,7 +2,7 @@
 // VST Plug-Ins SDK
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 //
-// Version 3.5       $Date: 2007-10-03 12:24:26 $
+// Version 3.5       $Date: 2007-10-16 20:41:34 $
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
@@ -36,10 +36,19 @@
 #define __vstgui__
 
 // define global defines
+#if VSTGUI_BUILD_COCOA
+	#define MAC_COCOA 1
+	#define VSTGUI_USES_COREGRAPHICS 1
+	#define NO_QUICKDRAW	1
+#endif
+
 #if WIN32
 	#define WINDOWS 1
-#elif __MWERKS__ || __APPLE_CC__
+#elif (__MWERKS__ || __APPLE_CC__) && !__LP64__
 	#define MAC 1
+	#ifndef VSTGUI_USES_COREGRAPHICS
+		#define VSTGUI_USES_COREGRAPHICS 1
+	#endif
 	#ifndef TARGET_API_MAC_CARBON
 		#define TARGET_API_MAC_CARBON 1
 	#endif
@@ -78,7 +87,7 @@
 // Deprecation setting
 //----------------------------------------------------
 #ifndef VSTGUI_ENABLE_DEPRECATED_METHODS
-#define VSTGUI_ENABLE_DEPRECATED_METHODS 1
+#define VSTGUI_ENABLE_DEPRECATED_METHODS 0
 #endif
 
 #ifndef DEPRECATED_ATTRIBUTE
@@ -161,6 +170,14 @@ END_NAMESPACE_VSTGUI
 	extern void* gBundleRef;
 	END_NAMESPACE_VSTGUI
 #endif // MAC
+
+#if MAC_COCOA
+	#include <CoreFoundation/CoreFoundation.h>
+	#include <ApplicationServices/ApplicationServices.h>
+	BEGIN_NAMESPACE_VSTGUI
+	extern void* gBundleRef;
+	END_NAMESPACE_VSTGUI
+#endif
 
 //----------------------------------------------------
 struct VstKeyCode;
@@ -820,7 +837,7 @@ protected:
 	#endif // GDIPLUS
 #endif // WINDOWS
 
-#if MAC
+#if VSTGUI_USES_COREGRAPHICS
 	CGContextRef gCGContext;
 	bool needToSynchronizeCGContext;
 	public:
@@ -831,7 +848,9 @@ protected:
 	
 	virtual CGImageRef getCGImage () const;
 	protected:
+#endif
 
+#if MAC
 	virtual BitMapPtr getBitmap ();
 	virtual void releaseBitmap ();
 	virtual CGrafPtr getPort ();
@@ -883,11 +902,13 @@ protected:
 	void* oldBitmap;
 #endif // WINDOWS
 
-#if MAC
+#if VSTGUI_USES_COREGRAPHICS
 	void* offscreenBitmap;
 	virtual CGImageRef getCGImage () const;
 	void releaseCGContext (CGContextRef context);
+#endif // VSTGUI_USES_COREGRAPHICS
 
+#if MAC
 	BitMapPtr getBitmap ();
 	void releaseBitmap ();
 #endif // MAC
@@ -958,10 +979,10 @@ public:
 	const CResourceDescription& getResourceDescription () const { return resourceDesc; }
 	//@}
 
-#if MAC
+#if VSTGUI_USES_COREGRAPHICS
 	virtual CGImageRef createCGImage (bool transparent = false);
 	virtual void setBitsDirty ();
-#endif // MAC
+#endif // VSTGUI_USES_COREGRAPHICS
 
 #if GDIPLUS
 	Gdiplus::Bitmap* getBitmap ();
@@ -984,20 +1005,18 @@ protected:
 	CColor transparentCColor;
 	bool noAlpha;
 
+	void *pHandle;
+	void *pMask;
 #if WINDOWS
 	#if GDIPLUS
 	Gdiplus::Bitmap	*pBitmap;
 	void* bits;
 	#endif // GDIPLUS
-	void *pHandle;
-	void *pMask;
 #endif // WINDOWS
 
-#if MAC
-	void* pHandle;
-	void* pMask;
+#if VSTGUI_USES_COREGRAPHICS
 	void* cgImage;
-#endif // MAC
+#endif // VSTGUI_USES_COREGRAPHICS
 
 };
 
@@ -1443,6 +1462,14 @@ protected:
 	CPoint hiScrollOffset;
 	protected:
 #endif // MAC
+
+#if MAC_COCOA
+	void* nsView;
+	public:
+	void* getNSView () const { return nsView; }
+	protected:
+	
+#endif // MAC_COCOA
 	//-------------------------------------------
 private:
 	CDrawContext *pFrameContext;
@@ -1471,14 +1498,11 @@ public:
 class CDragContainer : public CBaseObject
 {
 public:
-	CDragContainer (void* platformDrag);
-	~CDragContainer ();
-
-	void* first (long& size, long& type);		///< returns pointer on a char array if type is known
-	void* next (long& size, long& type);		///< returns pointer on a char array if type is known
+	virtual void* first (long& size, long& type) = 0;		///< returns pointer on a char array if type is known
+	virtual void* next (long& size, long& type) = 0;		///< returns pointer on a char array if type is known
 	
-	long getType (long idx) const;
-	long getCount () const { return nbItems; }
+	virtual long getType (long idx) const = 0;
+	virtual long getCount () const = 0;
 
 	enum CDragType {
 		kFile = 0,								///< File (MacOSX = UTF8 String)
@@ -1488,15 +1512,6 @@ public:
 		kUnknown = -1,
 		kError = -2
 	};
-
-	void* getPlatformDrag () const { return platformDrag; }
-
-protected:
-	void* platformDrag;
-	long nbItems;
-	
-	long iterator;
-	void* lastItem;
 };
 
 /// \cond ignore

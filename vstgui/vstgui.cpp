@@ -2,7 +2,7 @@
 // VST Plug-Ins SDK
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 //
-// Version 3.5       $Date: 2007-10-03 12:24:26 $ 
+// Version 3.5       $Date: 2007-10-16 20:41:34 $ 
 //
 // Added Motif/Windows vers.: Yvan Grabit              01.98
 // Added Mac version        : Charlie Steinberg        02.98
@@ -83,8 +83,6 @@
 #define VSTGUI_COptionMenuScheme COptionMenuScheme
 #define VSTGUI_CDragContainer	CDragContainer
 #endif
-
-static VSTGUI_CDragContainer* gDragContainer = 0;
 
 //---For Debugging------------------------
 #if DEBUG
@@ -188,21 +186,54 @@ END_NAMESPACE_VSTGUI
 #include "png.h"
 #endif
 
+#endif // WINDOWS
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
-#elif MAC
-BEGIN_NAMESPACE_VSTGUI
+#if MAC_COCOA
+#include "cocoasupport.h"
 
-#if __LP64__
-SInt32 pSystemVersion;
-#else
-long pSystemVersion;
+BEGIN_NAMESPACE_VSTGUI
+static CFontDesc gSystemFont ("Lucida Grande", 12);
+static CFontDesc gNormalFontVeryBig ("Helvetica", 18);
+static CFontDesc gNormalFontBig ("Helvetica", 14);
+static CFontDesc gNormalFont ("Helvetica", 12);
+static CFontDesc gNormalFontSmall ("Helvetica", 11);
+static CFontDesc gNormalFontSmaller ("Helvetica", 10);
+static CFontDesc gNormalFontVerySmall ("Helvetica", 9);
+static CFontDesc gSymbolFont ("Helvetica", 12);
+
+static inline void QuartzSetLineDash (CGContextRef context, CLineStyle style, CCoord lineWidth);
+static inline void QuartzSetupClip (CGContextRef context, const CRect clipRect);
+static inline double radians (double degrees) { return degrees * M_PI / 180; }
+CGColorSpaceRef GetGenericRGBColorSpace ()
+{
+	return CGColorSpaceCreateWithName (kCGColorSpaceGenericRGB);
+}
+
+END_NAMESPACE_VSTGUI
+
+#ifndef CGFLOAT_DEFINED
+#define CGFLOAT_DEFINED
+typedef float CGFloat;
 #endif
 
+#endif // MAC_COCOA
+
+//-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
+#if MAC
+BEGIN_NAMESPACE_VSTGUI
+
+long pSystemVersion;
+
+#ifndef NO_QUICKDRAW
 #define NO_QUICKDRAW	(MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_4)	// no quickdraw if we build only for 10.4 and above
-#define MAC_OLD_DRAG	__ppc__ && !__LP64__
+#endif
+#define MAC_OLD_DRAG	__ppc__
 
 #ifndef EMBED_HIVIEW	// automaticly add the CFrame HIView to the content view of the window
 #define EMBED_HIVIEW	!AU
@@ -216,6 +247,7 @@ typedef float CGFloat;
 #include <QuickTime/QuickTime.h>
 #include <CoreServices/CoreServices.h>
 
+#if !MAC_COCOA
 static CFontDesc gSystemFont ("Lucida Grande", 12);
 static CFontDesc gNormalFontVeryBig ("Helvetica", 18);
 static CFontDesc gNormalFontBig ("Helvetica", 14);
@@ -224,6 +256,7 @@ static CFontDesc gNormalFontSmall ("Helvetica", 11);
 static CFontDesc gNormalFontSmaller ("Helvetica", 10);
 static CFontDesc gNormalFontVerySmall ("Helvetica", 9);
 static CFontDesc gSymbolFont ("Helvetica", 12);
+#endif
 
 #ifndef M_PI
 #define	M_PI		3.14159265358979323846	/* pi */
@@ -233,8 +266,10 @@ bool isWindowComposited (WindowRef window);
 static inline void QuartzSetLineDash (CGContextRef context, CLineStyle style, CCoord lineWidth);
 static inline void QuartzSetupClip (CGContextRef context, const CRect clipRect);
 
+#if !MAC_COCOA
 static inline double radians (double degrees) { return degrees * M_PI / 180; }
 CGColorSpaceRef GetGenericRGBColorSpace ();
+#endif
 
 // cache graphics importer
 static ComponentInstance bmpGI = 0;
@@ -484,7 +519,7 @@ void CFontDesc::freePlatformFont ()
 {
 	if (platformFont)
 	{
-		#if MAC
+		#if MAC || MAC_COCOA
 		ATSUDisposeStyle ((ATSUStyle)platformFont);
 
 		#elif GDIPLUS
@@ -556,7 +591,7 @@ void* CFontDesc::getPlatformFont ()
 	if (platformFont)
 		return platformFont;
 
-	#if MAC
+	#if MAC || MAC_COCOA
 	ATSUStyle atsuStyle;
 	OSStatus status = ATSUCreateStyle (&atsuStyle);
 	if (status != noErr)
@@ -724,31 +759,14 @@ CDrawContext::CDrawContext (CFrame* inFrame, void* inSystemContext, void* inWind
 		offsetScreen.h = (CCoord)rctTempWnd.left;
 		offsetScreen.v = (CCoord)rctTempWnd.top;
 	}
+#endif
 
-#elif MAC
-	if (pFrame && (pSystemContext || pWindow))
-	{
-		HIRect bounds;
-		HIViewGetFrame ((HIViewRef)pFrame->getPlatformControl (), &bounds);
-		if (pWindow || !pSystemContext)
-		{
-			if (isWindowComposited ((WindowRef)pWindow))
-			{
-				HIViewRef contentView;
-				HIViewFindByID (HIViewGetRoot ((WindowRef)pWindow), kHIViewWindowContentID, &contentView);
-				if (HIViewGetSuperview ((HIViewRef)pFrame->getPlatformControl ()) != contentView)
-					HIViewConvertRect (&bounds, (HIViewRef)pFrame->getPlatformControl (), contentView);
-				bounds.origin.x += pFrame->hiScrollOffset.x;
-				bounds.origin.y += pFrame->hiScrollOffset.y;
-			}
-		}
-		offsetScreen.x = (CCoord)bounds.origin.x;
-		offsetScreen.y = (CCoord)bounds.origin.y;
-		clipRect (0, 0, (CCoord)bounds.size.width, (CCoord)bounds.size.height);
-		clipRect.offset (pFrame->hiScrollOffset.x, pFrame->hiScrollOffset.y);
-	}
+#if VSTGUI_USES_COREGRAPHICS
 	gCGContext = 0;
-	if (pSystemContext)
+#endif
+
+#if MAC_COCOA
+	if (pFrame->getNSView () && pSystemContext)
 	{
 		gCGContext = (CGContextRef) pSystemContext;
 		CGContextSaveGState (gCGContext);
@@ -756,43 +774,80 @@ CDrawContext::CDrawContext (CFrame* inFrame, void* inSystemContext, void* inWind
 		CGContextSetFillColorSpace (gCGContext, GetGenericRGBColorSpace ());
 		CGContextSetStrokeColorSpace (gCGContext, GetGenericRGBColorSpace ()); 
 		CGContextSaveGState (gCGContext);
-		setClipRect (clipRect);
-		if (pFrame)
-			pFrame->setDrawContext (this);
+		CGAffineTransform cgCTM = CGAffineTransformMake (1.0, 0.0, 0.0, -1.0, 0.0, 0.0);
+		CGContextSetTextMatrix (gCGContext, cgCTM);
 	}
-	else if (pWindow)
+#endif
+
+#if MAC
+	if (pFrame->getPlatformControl ())
 	{
-		#if !__LP64__
-		GrafPtr port = GetWindowPort ((WindowRef)pWindow);
-		OSStatus err = QDBeginCGContext (port, &gCGContext);
-		if (err == noErr)
+		if (pFrame && (pSystemContext || pWindow))
 		{
+			HIRect bounds;
+			HIViewGetFrame ((HIViewRef)pFrame->getPlatformControl (), &bounds);
+			if (pWindow || !pSystemContext)
+			{
+				if (isWindowComposited ((WindowRef)pWindow))
+				{
+					HIViewRef contentView;
+					HIViewFindByID (HIViewGetRoot ((WindowRef)pWindow), kHIViewWindowContentID, &contentView);
+					if (HIViewGetSuperview ((HIViewRef)pFrame->getPlatformControl ()) != contentView)
+						HIViewConvertRect (&bounds, (HIViewRef)pFrame->getPlatformControl (), contentView);
+					bounds.origin.x += pFrame->hiScrollOffset.x;
+					bounds.origin.y += pFrame->hiScrollOffset.y;
+				}
+			}
+			offsetScreen.x = (CCoord)bounds.origin.x;
+			offsetScreen.y = (CCoord)bounds.origin.y;
+			clipRect (0, 0, (CCoord)bounds.size.width, (CCoord)bounds.size.height);
+			clipRect.offset (pFrame->hiScrollOffset.x, pFrame->hiScrollOffset.y);
+		}
+		gCGContext = 0;
+		if (pSystemContext)
+		{
+			gCGContext = (CGContextRef) pSystemContext;
 			CGContextSaveGState (gCGContext);
-			SyncCGContextOriginWithPort (gCGContext, port);
-			Rect rect;
-			GetPortBounds (port, &rect);
-			CGContextTranslateCTM (gCGContext, 0, rect.bottom - rect.top);
-			CGContextTranslateCTM (gCGContext, offsetScreen.x, -offsetScreen.y);
-			CGContextTranslateCTM (gCGContext, -pFrame->hiScrollOffset.x, pFrame->hiScrollOffset.y);
 			CGContextSetShouldAntialias (gCGContext, false);
 			CGContextSetFillColorSpace (gCGContext, GetGenericRGBColorSpace ());
-			CGContextSetStrokeColorSpace (gCGContext, GetGenericRGBColorSpace ());
-			CGContextScaleCTM (gCGContext, 1, -1);
-			QuartzSetupClip (gCGContext, clipRect);
+			CGContextSetStrokeColorSpace (gCGContext, GetGenericRGBColorSpace ()); 
 			CGContextSaveGState (gCGContext);
 			setClipRect (clipRect);
 			if (pFrame)
 				pFrame->setDrawContext (this);
 		}
-		#endif
+		else if (pWindow)
+		{
+			GrafPtr port = GetWindowPort ((WindowRef)pWindow);
+			OSStatus err = QDBeginCGContext (port, &gCGContext);
+			if (err == noErr)
+			{
+				CGContextSaveGState (gCGContext);
+				SyncCGContextOriginWithPort (gCGContext, port);
+				Rect rect;
+				GetPortBounds (port, &rect);
+				CGContextTranslateCTM (gCGContext, 0, rect.bottom - rect.top);
+				CGContextTranslateCTM (gCGContext, offsetScreen.x, -offsetScreen.y);
+				CGContextTranslateCTM (gCGContext, -pFrame->hiScrollOffset.x, pFrame->hiScrollOffset.y);
+				CGContextSetShouldAntialias (gCGContext, false);
+				CGContextSetFillColorSpace (gCGContext, GetGenericRGBColorSpace ());
+				CGContextSetStrokeColorSpace (gCGContext, GetGenericRGBColorSpace ());
+				CGContextScaleCTM (gCGContext, 1, -1);
+				QuartzSetupClip (gCGContext, clipRect);
+				CGContextSaveGState (gCGContext);
+				setClipRect (clipRect);
+				if (pFrame)
+					pFrame->setDrawContext (this);
+			}
+		}
+		if (gCGContext)
+		{
+			CGAffineTransform cgCTM = CGAffineTransformMake (1.0, 0.0, 0.0, -1.0, 0.0, 0.0);
+			CGContextSetTextMatrix (gCGContext, cgCTM);
+		}
+		needToSynchronizeCGContext = false;
 	}
-	if (gCGContext)
-	{
-		CGAffineTransform cgCTM = CGAffineTransformMake (1.0, 0.0, 0.0, -1.0, 0.0, 0.0);
-		CGContextSetTextMatrix (gCGContext, cgCTM);
-	}
-	needToSynchronizeCGContext = false;
-
+	
 #endif // MAC
 
 	if (1 || pSystemContext)
@@ -848,18 +903,18 @@ CDrawContext::~CDrawContext ()
 		#endif
 	}
 	#endif
-#elif MAC
+#elif VSTGUI_USES_COREGRAPHICS
 	if (gCGContext)
 	{
 		CGContextRestoreGState (gCGContext); // restore the original state
 		CGContextRestoreGState (gCGContext); // we need to do it twice !!!
 		CGContextSynchronize (gCGContext);
-		#if !__LP64__
+		#if MAC
 		if (!pSystemContext && pWindow)
 			QDEndCGContext (GetWindowPort ((WindowRef)pWindow), &gCGContext);
-		#endif
 		if (pFrame)
 			pFrame->setDrawContext (0);
+		#endif
 	}
 #endif
 }
@@ -907,7 +962,7 @@ void CDrawContext::setLineStyle (CLineStyle style)
 	pPen = newPen;
 	#endif
 
-#elif MAC
+#elif VSTGUI_USES_COREGRAPHICS
 	// nothing to do here
 #endif
 }
@@ -935,7 +990,7 @@ void CDrawContext::setLineWidth (CCoord width)
 	pPen = newPen;
 	#endif
 
-#elif MAC
+#elif VSTGUI_USES_COREGRAPHICS
 	if (gCGContext)
 		CGContextSetLineWidth (gCGContext, width);
 #endif
@@ -975,7 +1030,7 @@ void CDrawContext::setDrawMode (CDrawMode mode)
 	SetROP2 ((HDC)pSystemContext, iMode);
 	#endif
 
-#elif MAC
+#elif VSTGUI_USES_COREGRAPHICS
 	// quartz only support antialias
 	if (gCGContext)
 			CGContextSetShouldAntialias (gCGContext, drawMode == kAntialias ? true : false);
@@ -1037,7 +1092,7 @@ void CDrawContext::moveTo (const CPoint &_point)
 	MoveToEx ((HDC)pSystemContext, point.h, point.v, NULL);
 	#endif  
 
-#elif MAC
+#elif VSTGUI_USES_COREGRAPHICS
   	penLoc = point;
   	
 #endif
@@ -1058,7 +1113,7 @@ void CDrawContext::lineTo (const CPoint& _point)
 	LineTo ((HDC)pSystemContext, point.h, point.v);
 	#endif
 	
-#elif MAC
+#elif VSTGUI_USES_COREGRAPHICS
 	CGContextRef context = beginCGContext (true);
 	{
 		QuartzSetLineDash (context, lineStyle, frameWidth);
@@ -1080,7 +1135,7 @@ void CDrawContext::lineTo (const CPoint& _point)
 //-----------------------------------------------------------------------------
 void CDrawContext::drawLines (const CPoint* points, const long& numLines)
 {
-	#if MAC
+	#if VSTGUI_USES_COREGRAPHICS
 	CGContextRef context = beginCGContext (true);
 	if (context) 
 	{
@@ -1146,7 +1201,7 @@ void CDrawContext::drawLines (const CPoint* points, const long& numLines)
 //-----------------------------------------------------------------------------
 void CDrawContext::drawPolygon (const CPoint* pPoints, long numberOfPoints, const CDrawStyle drawStyle)
 {
-#if MAC
+#if VSTGUI_USES_COREGRAPHICS
 	CGContextRef context = beginCGContext (true);
 	{
 		CGPathDrawingMode m;
@@ -1275,7 +1330,7 @@ void CDrawContext::drawRect (const CRect &_rect, const CDrawStyle drawStyle)
 	}
 	#endif
 
-#elif MAC
+#elif VSTGUI_USES_COREGRAPHICS
 	CGContextRef context = beginCGContext (true);
 	{
 		CGPathDrawingMode m;
@@ -1314,7 +1369,7 @@ void CDrawContext::drawEllipse (const CRect &_rect, const CDrawStyle drawStyle)
 	CRect rect (_rect);
 	rect.offset (offset.h, offset.v);
 
-	#if MAC
+	#if VSTGUI_USES_COREGRAPHICS
 	CGContextRef context = beginCGContext (true);
 	{
 		CGPathDrawingMode m;
@@ -1403,7 +1458,7 @@ void CDrawContext::drawPoint (const CPoint &_point, CColor color)
 #endif
 }
 
-#if MAC
+#if VSTGUI_USES_COREGRAPHICS
 static void addOvalToPath(CGContextRef c, CPoint center, float a, float b, float start_angle, float end_angle)
 {
 	CGContextSaveGState (c);
@@ -1471,7 +1526,7 @@ void CDrawContext::drawArc (const CRect &_rect, const float _startAngle, const f
 	}
 	#endif
 
-#elif MAC
+#elif VSTGUI_USES_COREGRAPHICS
 
 	CGContextRef context = beginCGContext (true);
 	{
@@ -1845,7 +1900,7 @@ void CDrawContext::setFrameColor (const CColor color)
 	pPen = newPen;
 	#endif
 
-#elif MAC
+#elif VSTGUI_USES_COREGRAPHICS
 	if (gCGContext)
 		CGContextSetRGBStrokeColor (gCGContext, color.red/255.f, color.green/255.f, color.blue/255.f, color.alpha/255.f);
         
@@ -1879,7 +1934,7 @@ void CDrawContext::setFillColor (const CColor color)
 	pBrush = newBrush;
 	#endif
 	
-#elif MAC
+#elif VSTGUI_USES_COREGRAPHICS
 	if (gCGContext)
 		CGContextSetRGBFillColor (gCGContext, color.red/255.f, color.green/255.f, color.blue/255.f, color.alpha/255.f);
 
@@ -1907,7 +1962,7 @@ void CDrawContext::setFont (const CFontRef newFont, const long& size, const long
 //------------------------------------------------------------------------------
 CCoord CDrawContext::getStringWidth (const char* pStr)
 {
-#if MAC || GDIPLUS
+#if VSTGUI_USES_COREGRAPHICS || GDIPLUS
 	return getStringWidthUTF8 (pStr);
 #else
 
@@ -1931,7 +1986,7 @@ void CDrawContext::drawString (const char* string, const CRect &_rect,
 	if (!string)
 		return;
 	
-#if MAC || GDIPLUS
+#if VSTGUI_USES_COREGRAPHICS || GDIPLUS
 	drawStringUTF8 (string, _rect, hAlign);
 #else
 
@@ -1978,7 +2033,7 @@ CCoord CDrawContext::getStringWidthUTF8 (const char* string)
 	if (font == 0 || string == 0)
 		return result;
 
-	#if MAC
+	#if VSTGUI_USES_COREGRAPHICS
 	ATSUStyle atsuStyle = (ATSUStyle)font->getPlatformFont ();
 	if (atsuStyle == 0)
 		return result;
@@ -2039,7 +2094,7 @@ void CDrawContext::drawStringUTF8 (const char* string, const CPoint& _point, boo
 	CPoint point (_point);
 	point.offset (offset.h, offset.v);
 
-	#if MAC
+	#if VSTGUI_USES_COREGRAPHICS
 	ATSUStyle atsuStyle = (ATSUStyle)font->getPlatformFont ();
 	if (atsuStyle == 0)
 		return;
@@ -2301,14 +2356,14 @@ bool CDrawContext::waitDrag ()
 //-----------------------------------------------------------------------------
 void CDrawContext::forget ()
 {
-	#if MAC
+	#if VSTGUI_USES_COREGRAPHICS
 	synchronizeCGContext ();
 	#endif
 	CBaseObject::forget ();
 }
 
 //-----------------------------------------------------------------------------
-#if MAC
+#if VSTGUI_USES_COREGRAPHICS
 //-----------------------------------------------------------------------------
 CGContextRef CDrawContext::beginCGContext (bool swapYAxis)
 {
@@ -2367,14 +2422,11 @@ void QuartzSetLineDash (CGContextRef context, CLineStyle style, CCoord lineWidth
 	}
 }
 
+#if MAC
 //-----------------------------------------------------------------------------
 BitMapPtr CDrawContext::getBitmap ()
 {
-	#if __LP64__
-	return 0;
-	#else
 	return (BitMapPtr)GetPortBitMapForCopyBits (GetWindowPort ((WindowRef)pWindow));
-	#endif
 }
 
 //-----------------------------------------------------------------------------
@@ -2389,6 +2441,7 @@ CGrafPtr CDrawContext::getPort ()
 		return (CGrafPtr)GetWindowPort ((WindowRef)pWindow);
 	return 0;
 }
+#endif
 
 //-----------------------------------------------------------------------------
 CGContextRef createOffscreenBitmap (long width, long height, void** bits)
@@ -2513,7 +2566,7 @@ COffscreenContext::COffscreenContext (CDrawContext* pContext, CBitmap* pBitmapBg
 	oldBitmap = SelectObject ((HDC)pSystemContext, pWindow);
 	#endif
 
-#elif MAC
+#elif VSTGUI_USES_COREGRAPHICS
 	offscreenBitmap = 0;
 	#if NO_QUICKDRAW
 	if (drawInBitmap)
@@ -2611,7 +2664,7 @@ COffscreenContext::COffscreenContext (CFrame* pFrame, long width, long height, c
 	drawRect (r, kDrawFilledAndStroked);
 	#endif
 
-#elif MAC
+#elif VSTGUI_USES_COREGRAPHICS
 	offscreenBitmap = 0;
 	gCGContext = createOffscreenBitmap (width, height, &offscreenBitmap);
 
@@ -2649,7 +2702,7 @@ COffscreenContext::~COffscreenContext ()
 		DeleteObject (pWindow);
 	#endif
 
-#elif MAC
+#elif VSTGUI_USES_COREGRAPHICS
 	if (gCGContext)
 	{
 		CGContextRestoreGState (gCGContext);
@@ -2742,7 +2795,7 @@ void COffscreenContext::copyFrom (CDrawContext* pContext, CRect destRect, CPoint
 					SRCCOPY);                           // dwROP
 	#endif
 
-#elif MAC
+#elif VSTGUI_USES_COREGRAPHICS
 	if (!gCGContext)
 		return;
 	CGContextRef context = pContext->beginCGContext ();
@@ -2790,7 +2843,7 @@ void COffscreenContext::copyFrom (CDrawContext* pContext, CRect destRect, CPoint
 }
 
 //-----------------------------------------------------------------------------
-#if MAC
+#if VSTGUI_USES_COREGRAPHICS
 //-----------------------------------------------------------------------------
 CGImageRef COffscreenContext::getCGImage () const
 {
@@ -2804,6 +2857,16 @@ CGImageRef COffscreenContext::getCGImage () const
 }
 
 //-----------------------------------------------------------------------------
+void COffscreenContext::releaseCGContext (CGContextRef context)
+{
+	if (bDrawInBitmap)
+		pBitmapBg->setBitsDirty ();
+	CDrawContext::releaseCGContext (context);
+}
+#endif
+
+#if MAC
+//-----------------------------------------------------------------------------
 BitMapPtr COffscreenContext::getBitmap ()
 {
 #if NO_QUICKDRAW
@@ -2816,14 +2879,6 @@ BitMapPtr COffscreenContext::getBitmap ()
 //-----------------------------------------------------------------------------
 void COffscreenContext::releaseBitmap ()
 {
-}
-
-//-----------------------------------------------------------------------------
-void COffscreenContext::releaseCGContext (CGContextRef context)
-{
-	if (bDrawInBitmap)
-		pBitmapBg->setBitsDirty ();
-	CDrawContext::releaseCGContext (context);
 }
 
 #endif // MAC
@@ -3438,15 +3493,20 @@ CFrame::CFrame (const CRect &inSize, void* inSystemWindow, VSTGUIEditorInterface
     
 #endif
 
-	initFrame (pSystemWindow);
+#if MAC_COCOA
+	nsView = 0;
+#endif
 
-#if WINDOWS
-
-#elif MAC
+#if MAC
 	Gestalt (gestaltSystemVersion, &pSystemVersion);
 	pFrameContext = 0;
-	
+	controlRef = 0;
+	dragEventHandler = 0;
+	mouseEventHandler = 0;
 #endif
+
+	initFrame (pSystemWindow);
+
 }
 
 //-----------------------------------------------------------------------------
@@ -3593,6 +3653,11 @@ CFrame::~CFrame ()
 	if (pVstWindow)
 		free (pVstWindow);
 
+#if MAC_COCOA
+	if (nsView)
+		destroyNSView (nsView);
+#endif
+
 #if MAC
 	if (mouseEventHandler)
 		RemoveEventHandler (mouseEventHandler);
@@ -3691,8 +3756,22 @@ bool CFrame::initFrame (void* systemWin)
 			 (HWND)pSystemWindow, NULL, GetInstance (), NULL);
 
 	SetWindowLongPtr ((HWND)pHwnd, GWLP_USERDATA, (LONG_PTR)this);
+#endif
 
-#elif MAC
+#if MAC_COCOA
+	#if MAC
+	if (!HIObjectIsOfClass ((HIObjectRef)systemWin, CFSTR("com.apple.hitoolbox.window")))
+	{
+		nsView = createNSView (this, size);
+		return true;
+	}
+	#else
+	nsView = createNSView (this, size);
+	#endif
+
+#endif
+
+#if MAC
 
 	dragEventHandler = 0;
 
@@ -4123,7 +4202,7 @@ void CFrame::doIdleStuff ()
  */
 unsigned long CFrame::getTicks () const
 {
-	#if MAC
+	#if MAC || MAC_COCOA
 	return (TickCount () * 1000) / 60;
 	
 	#elif WINDOWS
@@ -4137,7 +4216,9 @@ unsigned long CFrame::getTicks () const
 //-----------------------------------------------------------------------------
 long CFrame::getKnobMode () const
 {
-	return pEditor->getKnobMode ();
+	if (pEditor)
+		return pEditor->getKnobMode ();
+	return kCircularMode;
 }
 
 //-----------------------------------------------------------------------------
@@ -4216,6 +4297,9 @@ bool CFrame::setPosition (CCoord x, CCoord y)
 			return false;
 		return true;
 	}
+#elif MAC_COCOA
+	// TODO COCOA
+
 #elif WINDOWS
 	// TODO: not implemented yet
 
@@ -4254,8 +4338,18 @@ bool CFrame::getPosition (CCoord &x, CCoord &y) const
 	
 	x = (CCoord)point.x;
 	y = (CCoord)point.y;
+#endif
 
-#elif MAC
+#if MAC_COCOA
+
+	// TODO COCOA
+	if (nsView)
+	{
+		return false;
+	}
+#endif
+	
+#if MAC
 	Rect bounds;
 	GetWindowBounds ((WindowRef)pSystemWindow, kWindowContentRgn, &bounds);
 	
@@ -4385,9 +4479,18 @@ bool CFrame::setSize (CCoord width, CCoord height)
 	
 	if (hTempWnd)
 		SetWindowPos (hTempWnd, HWND_TOP, 0, 0, (int)width + diffWidth, (int)height + diffHeight, SWP_NOMOVE);
+#endif
 
-#elif MAC
-	#if !__LP64__
+#if MAC_COCOA
+	if (nsView)
+	{
+		resizeNSView (nsView, size);
+		CViewContainer::setViewSize (size);
+		return true;
+	}
+#endif
+
+#if MAC
 	if (getSystemWindow ())
 	{
 		if (!isWindowComposited ((WindowRef)getSystemWindow ()))
@@ -4398,7 +4501,6 @@ bool CFrame::setSize (CCoord width, CCoord height)
 									(short)((bounds.bottom - bounds.top) - oldHeight + height), true);
 		}
 	}
-	#endif
 	if (controlRef)
 	{
 		HIRect frameRect;
@@ -4407,7 +4509,6 @@ bool CFrame::setSize (CCoord width, CCoord height)
 		frameRect.size.height = height;
 		HIViewSetFrame (controlRef, &frameRect);
 	}
-	
 #endif
 
 	CViewContainer::setViewSize (size);
@@ -4446,8 +4547,17 @@ bool CFrame::getSize (CRect* pRect) const
 	pRect->top    = (CCoord)point.y;
 	pRect->right  = (CCoord)pRect->left + rctTempWnd.right - rctTempWnd.left;
 	pRect->bottom = (CCoord)pRect->top  + rctTempWnd.bottom - rctTempWnd.top;
+#endif
 
-#elif MAC
+#if MAC_COCOA
+	if (nsView)
+	{
+		getSizeOfNSView (nsView, pRect);
+		return true;
+	}
+#endif
+	
+#if MAC
 	HIRect hiRect;
 	if (HIViewGetFrame (controlRef, &hiRect) == noErr)
 	{
@@ -4457,7 +4567,6 @@ bool CFrame::getSize (CRect* pRect) const
 		pRect->setHeight ((CCoord)hiRect.size.height);
 		return true;
 	}
-	#if !__LP64__
 	Rect bounds;
 	GetPortBounds (GetWindowPort ((WindowRef)getSystemWindow ()), &bounds);
 
@@ -4465,7 +4574,6 @@ bool CFrame::getSize (CRect* pRect) const
 	pRect->top    = bounds.top;
 	pRect->right  = bounds.right;
 	pRect->bottom = bounds.bottom;
-	#endif
 #endif
 	return true;
 }
@@ -4530,7 +4638,14 @@ bool CFrame::getCurrentMouseLocation (CPoint &where) const
 		where.offset ((CCoord)-rctTempWnd.left, (CCoord)-rctTempWnd.top);
 	}
 	return true;
-	#elif MAC && !__LP64__	// 64bit TODO
+	#endif
+	
+	#if MAC_COCOA
+	if (nsView)
+		return nsViewGetCurrentMouseLocation (nsView, where);
+	#endif
+	
+	#if MAC
 	// no up-to-date API call available for this, so use old QuickDraw
 	Point p;
 	CGrafPtr savedPort;
@@ -4539,7 +4654,7 @@ bool CFrame::getCurrentMouseLocation (CPoint &where) const
 	if (portChanged)
 		QDSwapPort (savedPort, NULL);
 	where (p.h, p.v);
-	#if MAC
+
 	HIPoint location;
 	HIViewRef fromView = NULL;
 	HIViewFindByID (HIViewGetRoot ((WindowRef)getSystemWindow ()), kHIViewWindowContentID, &fromView);
@@ -4552,8 +4667,9 @@ bool CFrame::getCurrentMouseLocation (CPoint &where) const
 		HIViewConvertPoint (&location, fromView, controlRef);
 	where.x = (CCoord)location.x;
 	where.y = (CCoord)location.y;
-	#endif // MAC
+
 	return true;
+
 	#endif // MAC
 
 	return false;
@@ -4581,8 +4697,18 @@ long CFrame::getCurrentMouseButtons () const
 		buttons |= kControl;
 	if (GetAsyncKeyState (VK_MENU)    < 0)
 		buttons |= kAlt;
+#endif
 
-#elif MAC
+#if MAC_COCOA
+	
+	// TODO COCOA
+	if (nsView)
+	{
+		return buttons;
+	}
+#endif
+	
+#if MAC
 	UInt32 state = GetCurrentButtonState ();
 	if (state == kEventMouseButtonPrimary)
 		buttons |= kLButton;
@@ -4679,7 +4805,17 @@ void CFrame::setCursor (CCursorType type)
 			SetCursor ((HCURSOR)defaultCursor);
 			break;
 	}
-	#elif MAC
+	#endif
+	
+	#if MAC_COCOA
+	if (nsView)
+	{
+		nsViewSetMouseCursor (type);
+		return;
+	}
+	#endif
+	
+	#if MAC
 	switch (type)
 	{
 		case kCursorWait:
@@ -4867,6 +5003,14 @@ void CFrame::invalidRect (CRect rect)
 {
 	if (!bVisible)
 		return;
+	#if MAC_COCOA
+	if (nsView)
+	{
+		invalidNSViewRect (nsView, rect);
+		return;
+	}
+	#endif
+	
 	#if MAC
 	if (isWindowComposited ((WindowRef)pSystemWindow))
 	{
@@ -4885,7 +5029,6 @@ void CFrame::invalidRect (CRect rect)
 			DisposeRgn(region);
 		}
 	}
-	#if !__LP64__
 	else
 	{
 		HIRect hiRect;
@@ -4896,13 +5039,12 @@ void CFrame::invalidRect (CRect rect)
 		Rect r = {(short)_rect.top, (short)_rect.left, (short)_rect.bottom, (short)_rect.right};
 		InvalWindowRect ((WindowRef)pSystemWindow, &r);
 	}
-	#endif
-
-	#elif WINDOWS
+	
+	#endif // MAC
+	
+	#if WINDOWS
 	RECT r = {(LONG)rect.left, (LONG)rect.top, (LONG)rect.right, (LONG)rect.bottom};
 	InvalidateRect ((HWND)pHwnd, &r, true);
-	#else
-	// not supported yet
 	#endif
 }
 
@@ -5376,11 +5518,13 @@ void CViewContainer::drawBackgroundRect (CDrawContext* pContext, CRect& _updateR
 			pBackground->draw (pContext, tr, backgroundOffset);
 		pContext->setClipRect (oldClip);
 	}
-	else if (!bTransparencyEnabled)
+	else if ((backgroundColor.alpha != 255 && bTransparencyEnabled) || !bTransparencyEnabled)
 	{
 		pContext->setFillColor (backgroundColor);
 		pContext->setFrameColor (backgroundColor);
-		pContext->drawRect (_updateRect, kDrawFilledAndStroked);
+		CRect r (size);
+		r.offset (-r.left, -r.top);
+		pContext->drawRect (r, kDrawFilledAndStroked);
 	}
 }
 
@@ -5829,6 +5973,7 @@ bool CViewContainer::advanceNextFocusView (CView* oldFocus, bool reverse)
 			if (pV->wantsFocus ())
 			{
 				getFrame ()->setFocusView (pV);
+				pV->takeFocus ();
 				return true;
 			}
 			else if (pV->isTypeOf ("CViewContainer"))
@@ -6295,7 +6440,7 @@ CBitmap::CBitmap (const CResourceDescription& desc)
 , width (0)
 , height (0)
 , noAlpha (true)
-#if MAC
+#if VSTGUI_USES_COREGRAPHICS
 , cgImage (0)
 #endif
 {
@@ -6311,13 +6456,10 @@ CBitmap::CBitmap (const CResourceDescription& desc)
 	bits = 0;
 #endif
 
-#if WINDOWS || MAC
 	pMask = 0;
 	pHandle = 0;
 
 	loadFromResource (resourceDesc);
-
-#endif
 
 	#if DEBUG
 	gBitmapAllocation += (long)height * (long)width;
@@ -6329,7 +6471,7 @@ CBitmap::CBitmap (CFrame& frame, CCoord width, CCoord height)
 : width (width)
 , height (height)
 , noAlpha (true)
-#if MAC
+#if VSTGUI_USES_COREGRAPHICS
 , cgImage (0)
 #endif
 {
@@ -6353,7 +6495,7 @@ CBitmap::CBitmap (CFrame& frame, CCoord width, CCoord height)
 #endif
 	pMask = 0;
 
-#elif MAC
+#elif VSTGUI_USES_COREGRAPHICS
 	pHandle = 0;
 	pMask = 0;
 	
@@ -6376,25 +6518,18 @@ CBitmap::CBitmap ()
 : width (0)
 , height (0)
 , noAlpha (true)
-#if MAC
+#if VSTGUI_USES_COREGRAPHICS
 , cgImage (0)
 #endif
 {
-	#if WINDOWS
 	#if GDIPLUS
 	GDIPlusGlobals::enter ();
 	pBitmap = 0;
 	bits = 0;
 	#endif
-
+	
 	pHandle = 0;
 	pMask = 0;
-	
-	#elif MAC
-	pHandle = 0;
-	pMask = 0;
-	
-	#endif
 }
 
 //-----------------------------------------------------------------------------
@@ -6411,7 +6546,7 @@ CBitmap::CBitmap (void* platformBitmap)
 	width = (CCoord)pBitmap->GetWidth ();
 	height = (CCoord)pBitmap->GetHeight ();
 	bits = 0;
-	#elif MAC
+	#elif VSTGUI_USES_COREGRAPHICS
 	cgImage = platformBitmap;
 	CGImageRetain ((CGImageRef)cgImage);
 	width = CGImageGetWidth ((CGImageRef)cgImage);
@@ -6448,11 +6583,9 @@ void CBitmap::dispose ()
 	if (pMask)
 		DeleteObject (pMask);
 
-	pHandle = 0;
-	pMask = 0;
 	noAlpha = false;
 		
-	#elif MAC
+	#elif VSTGUI_USES_COREGRAPHICS
 	if (cgImage)
 		CGImageRelease ((CGImageRef)cgImage);
 	cgImage = 0;
@@ -6465,12 +6598,12 @@ void CBitmap::dispose ()
 		DisposeGWorld ((GWorldPtr)pHandle);
 	if (pMask)
 		DisposeGWorld ((GWorldPtr)pMask);
+	#endif // NO_QUICKDRAW
+	
+	#endif // VSTGUI_USES_COREGRAPHICS
 
 	pHandle = 0;
 	pMask = 0;
-	#endif // NO_QUICKDRAW
-	
-	#endif
 
 	width = 0;
 	height = 0;
@@ -6480,13 +6613,7 @@ void CBitmap::dispose ()
 //-----------------------------------------------------------------------------
 void* CBitmap::getHandle () const
  {
-	#if WINDOWS
 	return pHandle; 
-
-	#elif MAC
-	return pHandle;
-
-	#endif
 }
 
 //-----------------------------------------------------------------------------
@@ -6676,7 +6803,7 @@ bool CBitmap::loadFromResource (const CResourceDescription& resourceDesc)
 	}
 	
 	//---------------------------------------------------------------------------------------------
-	#elif MAC
+	#elif VSTGUI_USES_COREGRAPHICS
 	//---------------------------------------------------------------------------------------------
 	pHandle = 0;
 	pMask = 0;
@@ -6755,7 +6882,7 @@ bool CBitmap::loadFromResource (const CResourceDescription& resourceDesc)
 	return result;
 }
 
-#if MAC
+#if VSTGUI_USES_COREGRAPHICS
 const CFStringRef kCGImageSourceShouldPreferRGB32 = CFSTR("kCGImageSourceShouldPreferRGB32");
 #endif
 
@@ -6766,7 +6893,7 @@ bool CBitmap::loadFromPath (const void* platformPath)
 
 	dispose ();
 
-	#if MAC
+	#if VSTGUI_USES_COREGRAPHICS
 	CFURLRef url = (CFURLRef)platformPath;
 
 	#if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_4
@@ -6888,7 +7015,7 @@ bool CBitmap::loadFromPath (const void* platformPath)
 //-----------------------------------------------------------------------------
 bool CBitmap::isLoaded () const
 {
-	#if MAC
+	#if VSTGUI_USES_COREGRAPHICS
 	if (cgImage || getHandle ())
 		return true;
 	#else
@@ -6899,7 +7026,7 @@ bool CBitmap::isLoaded () const
 	return false;
 }
 
-#if MAC
+#if VSTGUI_USES_COREGRAPHICS
 
 class CDataProvider 
 {
@@ -7063,7 +7190,7 @@ void CBitmap::draw (CDrawContext* pContext, CRect &rect, const CPoint &offset)
 	}
 	#endif
 
-#elif MAC
+#elif VSTGUI_USES_COREGRAPHICS
 	drawAlphaBlend (pContext, rect, offset, 255);
 
 #endif
@@ -7101,7 +7228,7 @@ void CBitmap::drawTransparent (CDrawContext* pContext, CRect &rect, const CPoint
 	DeleteDC (hdcBitmap);
 	#endif
 
-#elif MAC
+#elif VSTGUI_USES_COREGRAPHICS
 	if (noAlpha)
 	{
 		CGImageRef image = createCGImage (true);
@@ -7274,7 +7401,7 @@ void CBitmap::drawAlphaBlend (CDrawContext* pContext, CRect &rect, const CPoint 
 	}
 	#endif
 
-#elif MAC
+#elif VSTGUI_USES_COREGRAPHICS
 	if (pHandle || cgImage)
 	{
 		CGContextRef context = pContext->beginCGContext ();
@@ -7320,7 +7447,7 @@ void CBitmap::drawAlphaBlend (CDrawContext* pContext, CRect &rect, const CPoint 
 void CBitmap::setTransparentColor (const CColor color)
 {
 	transparentCColor = color;
-#if MAC
+#if VSTGUI_USES_COREGRAPHICS
 	if (noAlpha)
 	{
 		if (pHandle)
@@ -7379,59 +7506,55 @@ void CBitmap::setTransparencyMask (CDrawContext* pContext, const CPoint& offset)
 }
 #endif // VSTGUI_ENABLE_DEPRECATED_METHODS
 
+#if MAC
 //-----------------------------------------------------------------------------
-// CDragContainer Implementation
+// MacDragContainer Declaration
 //-----------------------------------------------------------------------------
-CDragContainer::CDragContainer (void* platformDrag)
-: platformDrag (platformDrag)
+class MacDragContainer : public CDragContainer
+{
+public:
+	MacDragContainer (DragRef platformDrag);
+	~MacDragContainer ();
+
+	virtual void* first (long& size, long& type);		///< returns pointer on a char array if type is known
+	virtual void* next (long& size, long& type);		///< returns pointer on a char array if type is known
+	
+	virtual long getType (long idx) const;
+	virtual long getCount () const { return nbItems; }
+
+	DragRef getPlatformDrag () const { return platformDrag; }
+
+protected:
+	DragRef platformDrag;
+	PasteboardRef pasteboard;
+	long nbItems;
+	
+	long iterator;
+	void* lastItem;
+};
+
+static MacDragContainer* gDragContainer = 0;
+
+//-----------------------------------------------------------------------------
+// MacDragContainer Implementation
+//-----------------------------------------------------------------------------
+MacDragContainer::MacDragContainer (DragRef inPlatformDrag)
+: platformDrag (inPlatformDrag)
+, pasteboard (0)
 , nbItems (0)
 , iterator (0)
 , lastItem (0)
 {
-	#if MAC
-	#if MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_3
-	PasteboardRef pasteboard;
-	if (GetDragPasteboard ((DragRef) platformDrag, &pasteboard) == noErr)
+	if (GetDragPasteboard (inPlatformDrag, &pasteboard) == noErr)
 	{
 		ItemCount numItems;
 		if (PasteboardGetItemCount (pasteboard, &numItems) == noErr)
 			nbItems = numItems;
 	}
-	#else
-	DragRef dragRef = (DragRef)platformDrag;
-	UInt16 numItems;
-	CountDragItems (dragRef, &numItems);
-	nbItems = numItems;
-	#endif
-	
-	#elif WINDOWS
-	
-	IDataObject* dataObject = (IDataObject*)platformDrag;
-	STGMEDIUM medium;
-	FORMATETC formatTEXTDrop = {CF_TEXT,  0, DVASPECT_CONTENT, -1, TYMED_HGLOBAL};
-	FORMATETC formatHDrop    = {CF_HDROP, 0, DVASPECT_CONTENT, -1, TYMED_HGLOBAL};
-
-	// todo : Support CF_UNICODETEXT
-
-	long type = 0; // 0 = file, 1 = text
-
-	HRESULT hr = dataObject->GetData (&formatTEXTDrop, &medium);
-	if (hr != S_OK)
-		hr = dataObject->GetData (&formatHDrop, &medium);
-	else
-		type = 1;
-	
-	if (type == 0)
-		nbItems = (long)DragQueryFile ((HDROP)medium.hGlobal, 0xFFFFFFFFL, 0, 0);
-	else
-		nbItems = 1;
-	
-	#else
-	#endif
 }
 
 //-----------------------------------------------------------------------------
-CDragContainer::~CDragContainer ()
+MacDragContainer::~MacDragContainer ()
 {
 	if (lastItem)
 	{
@@ -7441,22 +7564,18 @@ CDragContainer::~CDragContainer ()
 }
 
 //-----------------------------------------------------------------------------
-long CDragContainer::getType (long idx) const
+long MacDragContainer::getType (long idx) const
 {
 	if (platformDrag == 0)
-		return kError;
-	#if MAC
-	#if MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_3
-	PasteboardRef pasteboard;
-	if (GetDragPasteboard ((DragRef) platformDrag, &pasteboard) != noErr)
-		return kError;
+		return CDragContainer::kError;
+
 	PasteboardItemID itemID;
 	if (PasteboardGetItemIdentifier (pasteboard, idx+1, &itemID) == noErr)
 	{
 		CFArrayRef flavors = 0;
 		if (PasteboardCopyItemFlavors (pasteboard, itemID, &flavors) == noErr)
 		{
-			long result = kUnknown;
+			long result = CDragContainer::kUnknown;
 			for (CFIndex i = 0; i < CFArrayGetCount (flavors); i++)
 			{
 				CFStringRef flavorType = (CFStringRef)CFArrayGetValueAtIndex (flavors, i);
@@ -7466,77 +7585,39 @@ long CDragContainer::getType (long idx) const
 				if (osTypeFlavorType == 0)
 					continue;
 				if (CFStringCompare (osTypeFlavorType, CFSTR("utxt"), 0) == kCFCompareEqualTo)
-					result = kUnicodeText;
+					result = CDragContainer::kUnicodeText;
 				else if (CFStringCompare (osTypeFlavorType, CFSTR("utf8"), 0) == kCFCompareEqualTo)
-					result = kUnicodeText;
+					result = CDragContainer::kUnicodeText;
 				else if (CFStringCompare (osTypeFlavorType, CFSTR("furl"), 0) == kCFCompareEqualTo)
-					result = kFile;
+					result = CDragContainer::kFile;
 				else if (CFStringCompare (osTypeFlavorType, CFSTR("TEXT"), 0) == kCFCompareEqualTo)
-					result = kText;
+					result = CDragContainer::kText;
 				else if (CFStringCompare (osTypeFlavorType, CFSTR("XML "), 0) == kCFCompareEqualTo)
-					result = kText;
+					result = CDragContainer::kText;
 				CFRelease (osTypeFlavorType);
-				if (result != kUnknown)
+				if (result != CDragContainer::kUnknown)
 					break;
 			}
 			CFRelease (flavors);
 			return result;
 		}
 	}
-	#else
-	DragItemRef itemRef;
-	if (GetDragItemReferenceNumber ((DragRef)platformDrag, idx+1, &itemRef) == noErr)
-	{
-		FlavorType type;
-		if (GetFlavorType ((DragRef)platformDrag, itemRef, 1, &type) == noErr)
-		{
-			if (type == flavorTypeHFS || type == typeFileURL)
-				return kFile;
-			else if (type == 'TEXT' || type == 'XML ')
-				return kText;
-			else if (type == 'utf8')
-				return kUnicodeText;
-		}
-	}
-	#endif
-	
-	#elif WINDOWS
-	IDataObject* dataObject = (IDataObject*)platformDrag;
-	STGMEDIUM medium;
-	FORMATETC formatTEXTDrop = {CF_TEXT,  0, DVASPECT_CONTENT, -1, TYMED_HGLOBAL};
-	FORMATETC formatHDrop    = {CF_HDROP, 0, DVASPECT_CONTENT, -1, TYMED_HGLOBAL};
-
-	long type = 0; // 0 = file, 1 = text
-
-	HRESULT hr = dataObject->GetData (&formatTEXTDrop, &medium);
-	if (hr != S_OK)
-		hr = dataObject->GetData (&formatHDrop, &medium);
-	else
-		type = 1;
-	if (type == 0)
-		return kFile;
-	else
-		return kText;
-
-	#else
-	// not implemented
-	#endif
-	return kUnknown;
+	return CDragContainer::kUnknown;
 }
 
 //-----------------------------------------------------------------------------
-void* CDragContainer::first (long& size, long& type)
+void* MacDragContainer::first (long& size, long& type)
 {
 	iterator = 0;
 	return next (size, type);
 }
 
 //-----------------------------------------------------------------------------
-void* CDragContainer::next (long& size, long& type)
+void* MacDragContainer::next (long& size, long& type)
 {
 	if (platformDrag == 0)
 	{
-		type = kError;
+		type = CDragContainer::kError;
 		return 0;
 	}
 	if (lastItem)
@@ -7545,23 +7626,14 @@ void* CDragContainer::next (long& size, long& type)
 		lastItem = 0;
 	}
 	size = 0;
-	type = kUnknown;
-	#if MAC
+	type = CDragContainer::kUnknown;
 
-	#if MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_3
-	PasteboardRef pasteboard;
-	if (GetDragPasteboard ((DragRef) platformDrag, &pasteboard) != noErr)
-	{
-		type = kError;
-		return 0;
-	}
 	PasteboardItemID itemID;
 	if (PasteboardGetItemIdentifier (pasteboard, ++iterator, &itemID) == noErr)
 	{
 		CFArrayRef flavors = 0;
 		if (PasteboardCopyItemFlavors (pasteboard, itemID, &flavors) == noErr)
 		{
-			long result = kUnknown;
 			for (CFIndex i = 0; i < CFArrayGetCount (flavors); i++)
 			{
 				CFStringRef flavorType = (CFStringRef)CFArrayGetValueAtIndex (flavors, i);
@@ -7588,7 +7660,7 @@ void* CDragContainer::next (long& size, long& type)
 								lastItem = malloc (maxSize+1);
 								if (CFStringGetCString (utf16String, (char*)lastItem, maxSize, kCFStringEncodingUTF8))
 								{
-									type = kUnicodeText;
+									type = CDragContainer::kUnicodeText;
 									size = strlen ((const char*)lastItem);
 								}
 								else
@@ -7601,7 +7673,7 @@ void* CDragContainer::next (long& size, long& type)
 						}
 						else if (CFStringCompare (osTypeFlavorType, CFSTR("furl"), 0) == kCFCompareEqualTo)
 						{
-							type = kFile;
+							type = CDragContainer::kFile;
 							CFURLRef url = CFURLCreateWithBytes (NULL, data, flavorDataSize, kCFStringEncodingUTF8, NULL);
 							lastItem = malloc (PATH_MAX);
 							CFURLGetFileSystemRepresentation (url, false, (UInt8*)lastItem, PATH_MAX);
@@ -7610,7 +7682,7 @@ void* CDragContainer::next (long& size, long& type)
 						}
 						else if (CFStringCompare (osTypeFlavorType, CFSTR("utf8"), 0) == kCFCompareEqualTo)
 						{
-							type = kUnicodeText;
+							type = CDragContainer::kUnicodeText;
 							size = flavorDataSize;
 							lastItem = malloc (flavorDataSize + 1);
 							((char*)lastItem)[flavorDataSize] = 0;
@@ -7618,7 +7690,7 @@ void* CDragContainer::next (long& size, long& type)
 						}
 						else if (CFStringCompare (osTypeFlavorType, CFSTR("TEXT"), 0) == kCFCompareEqualTo)
 						{
-							type = kText;
+							type = CDragContainer::kText;
 							size = flavorDataSize;
 							lastItem = malloc (flavorDataSize + 1);
 							((char*)lastItem)[flavorDataSize] = 0;
@@ -7626,7 +7698,7 @@ void* CDragContainer::next (long& size, long& type)
 						}
 						else if (CFStringCompare (osTypeFlavorType, CFSTR("XML "), 0) == kCFCompareEqualTo)
 						{
-							type = kText;
+							type = CDragContainer::kText;
 							size = flavorDataSize;
 							lastItem = malloc (flavorDataSize + 1);
 							((char*)lastItem)[flavorDataSize] = 0;
@@ -7636,99 +7708,133 @@ void* CDragContainer::next (long& size, long& type)
 					CFRelease (flavorData);
 				}
 				CFRelease (osTypeFlavorType);
-				if (type != kUnknown)
+				if (type != CDragContainer::kUnknown)
 					break;
 			}
 			CFRelease (flavors);
 			return lastItem;
 		}
 	}
-	#else
+	return NULL;
+}
+#endif // MAC
 
-	long flavorSize;
-	DragItemRef itemRef;
-	if (GetDragItemReferenceNumber ((DragRef)platformDrag, ++iterator, &itemRef) == noErr)
-	{
-		FlavorType flavorType;
-		if (GetFlavorType ((DragRef)platformDrag, itemRef, 1, &flavorType) == noErr)
-		{
-			if (flavorType == flavorTypeHFS)
-			{
-				HFSFlavor     hfs;
-				if (GetFlavorDataSize ((DragRef)platformDrag, itemRef, flavorTypeHFS, &flavorSize) == noErr)
-				{ 
-					GetFlavorData ((DragRef)platformDrag, itemRef, flavorTypeHFS, &hfs, &flavorSize, 0L);
-					
-					FSRef fsRef;
-					if (FSpMakeFSRef (&hfs.fileSpec, &fsRef) == noErr)
-					{
-						lastItem = malloc (PATH_MAX);
-						if (FSRefMakePath (&fsRef, (unsigned char*)lastItem, PATH_MAX) == noErr)
-						{
-							size = strlen ((const char*)lastItem);
-							type = kFile;
-							return lastItem;
-						}
-					}
-				}
-			}
-			else if (flavorType == typeFileURL)
-			{
-				if (GetFlavorDataSize ((DragRef)platformDrag, itemRef, typeFileURL, &flavorSize) == noErr)
-				{
-					void* bytes = malloc (flavorSize);
-					if (GetFlavorData ((DragRef)platformDrag, itemRef, typeFileURL, bytes, &flavorSize, 0L) == noErr)
-					{
-						CFURLRef url = CFURLCreateWithBytes (NULL, (const unsigned char*)bytes, flavorSize, kCFStringEncodingUTF8, NULL);
-						lastItem = malloc (PATH_MAX);
-						CFURLGetFileSystemRepresentation (url, false, (unsigned char*)lastItem, PATH_MAX);
-						CFRelease (url);
-						type = kFile;
-						size = strlen ((const char*)lastItem);
-					}
-					free (bytes);
-					return lastItem;
-				}
-			}
-			else
-			{
-				if (GetFlavorDataSize ((DragRef)platformDrag, itemRef, flavorType, &flavorSize) == noErr)
-				{
-					lastItem = malloc (flavorSize + 1);
-					((char*)lastItem)[0] = 0;
-					if (GetFlavorData ((DragRef)platformDrag, itemRef, flavorType, lastItem, &flavorSize, 0) == noErr)
-					{
-						((char*)lastItem)[flavorSize] = 0;
-						size = flavorSize;
-						if (flavorType == 'TEXT' || flavorType == 'XML ')
-							type = kText;
-						else if (flavorType == 'utf8')
-							type = kUnicodeText;
-						return lastItem;
-					}
-				}
-				else
-				{
-					if (GetFlavorDataSize ((DragRef)platformDrag, itemRef, 'TEXT', &flavorSize) == noErr)
-					{
-						lastItem = malloc (flavorSize + 1);
-						((char*)lastItem)[0] = 0;
-						if (GetFlavorData ((DragRef)platformDrag, itemRef, 'TEXT', lastItem, &flavorSize, 0) == noErr)
-						{
-							((char*)lastItem)[flavorSize] = 0;
-							size = flavorSize;
-							type = kText;
-							return lastItem;
-						}
-					}
-				}
-				
-			}
-		}
-	}
-	#endif
+#if WINDOWS
+//-----------------------------------------------------------------------------
+// WinDragContainer Declaration
+//-----------------------------------------------------------------------------
+class WinDragContainer : public CDragContainer
+{
+public:
+	WinDragContainer (void* platformDrag);
+	~WinDragContainer ();
+
+	virtual void* first (long& size, long& type);		///< returns pointer on a char array if type is known
+	virtual void* next (long& size, long& type);		///< returns pointer on a char array if type is known
 	
-	#elif WINDOWS
+	virtual long getType (long idx) const;
+	virtual long getCount () const { return nbItems; }
+
+protected:
+	void* platformDrag;
+	long nbItems;
+	
+	long iterator;
+	void* lastItem;
+};
+
+//-----------------------------------------------------------------------------
+// WinDragContainer Implementation
+//-----------------------------------------------------------------------------
+WinDragContainer::WinDragContainer (void* platformDrag)
+: platformDrag (platformDrag)
+, nbItems (0)
+, iterator (0)
+, lastItem (0)
+{
+	if (!platformDrag)
+		return;
+
+	IDataObject* dataObject = (IDataObject*)platformDrag;
+	STGMEDIUM medium;
+	FORMATETC formatTEXTDrop = {CF_TEXT,  0, DVASPECT_CONTENT, -1, TYMED_HGLOBAL};
+	FORMATETC formatHDrop    = {CF_HDROP, 0, DVASPECT_CONTENT, -1, TYMED_HGLOBAL};
+
+	// todo : Support CF_UNICODETEXT
+
+	long type = 0; // 0 = file, 1 = text
+
+	HRESULT hr = dataObject->GetData (&formatTEXTDrop, &medium);
+	if (hr != S_OK)
+		hr = dataObject->GetData (&formatHDrop, &medium);
+	else
+		type = 1;
+	
+	if (type == 0)
+		nbItems = (long)DragQueryFile ((HDROP)medium.hGlobal, 0xFFFFFFFFL, 0, 0);
+	else
+		nbItems = 1;
+}
+
+//-----------------------------------------------------------------------------
+WinDragContainer::~WinDragContainer ()
+{
+	if (lastItem)
+	{
+		free (lastItem);
+		lastItem = 0;
+	}
+}
+
+//-----------------------------------------------------------------------------
+long WinDragContainer::getType (long idx) const
+{
+	if (platformDrag == 0)
+		return kError;
+
+	IDataObject* dataObject = (IDataObject*)platformDrag;
+	STGMEDIUM medium;
+	FORMATETC formatTEXTDrop = {CF_TEXT,  0, DVASPECT_CONTENT, -1, TYMED_HGLOBAL};
+	FORMATETC formatHDrop    = {CF_HDROP, 0, DVASPECT_CONTENT, -1, TYMED_HGLOBAL};
+
+	long type = 0; // 0 = file, 1 = text
+
+	HRESULT hr = dataObject->GetData (&formatTEXTDrop, &medium);
+	if (hr != S_OK)
+		hr = dataObject->GetData (&formatHDrop, &medium);
+	else
+		type = 1;
+	if (type == 0)
+		return kFile;
+	else
+		return kText;
+
+	return kUnknown;
+}
+
+//-----------------------------------------------------------------------------
+void* WinDragContainer::first (long& size, long& type)
+{
+	iterator = 0;
+	return next (size, type);
+}
+
+//-----------------------------------------------------------------------------
+void* WinDragContainer::next (long& size, long& type)
+{
+	if (platformDrag == 0)
+	{
+		type = kError;
+		return 0;
+	}
+	if (lastItem)
+	{
+		free (lastItem);
+		lastItem = 0;
+	}
+	size = 0;
+	type = kUnknown;
+
 	IDataObject* dataObject = (IDataObject*)platformDrag;
 	void* hDrop = 0;
 	STGMEDIUM medium;
@@ -7785,11 +7891,9 @@ void* CDragContainer::next (long& size, long& type)
 			return lastItem;
 		}
 	}
-	#else
-	// not implemented
-	#endif
 	return NULL;
 }
+#endif // WINDOWS
 
 END_NAMESPACE_VSTGUI
 
@@ -8503,7 +8607,7 @@ STDMETHODIMP CDropTarget::DragEnter (IDataObject* dataObject, DWORD keyState, PO
 {
 	if (dataObject && pFrame)
 	{
-		gDragContainer = new CDragContainer (dataObject);
+		gDragContainer = new WinDragContainer (dataObject);
 		CDrawContext* context = pFrame->createDrawContext ();
 		VSTGUI_CPoint where;
 		pFrame->getMouseLocation (context, where);
@@ -8605,7 +8709,6 @@ static CPoint GetMacDragMouse (CFrame* frame)
 			location = CGPointMake ((float)r.h, (float)r.v);
 			HIPointConvert (&location, kHICoordSpaceScreenPixel, NULL, kHICoordSpaceView, view);
 		}
-		#if !__LP64__
 		else
 		{
 			QDGlobalToLocalPoint (GetWindowPort (window), &r);
@@ -8614,7 +8717,6 @@ static CPoint GetMacDragMouse (CFrame* frame)
 			HIViewFindByID (HIViewGetRoot (window), kHIViewWindowContentID, &fromView);
 			HIViewConvertPoint (&location, fromView, view);
 		}
-		#endif
 		where.x = (CCoord)location.x;
 		where.y = (CCoord)location.y;
 		#else
@@ -8671,7 +8773,7 @@ pascal OSErr drag_tracker (DragTrackingMessage message, WindowRef theWindow, voi
 		{
 			if (gDragContainer)
 				gDragContainer->forget ();
-			gDragContainer = new CDragContainer (dragRef);
+			gDragContainer = new MacDragContainer (dragRef);
 
 			VSTGUI_CPoint where = GetMacDragMouse (frame);
 			frame->setCursor (kCursorNotAllowed);
@@ -9046,7 +9148,7 @@ pascal OSStatus CFrame::carbonEventHandler (EventHandlerCallRef inHandlerCallRef
 					DragRef dragRef;
 					if (GetEventParameter (inEvent, kEventParamDragRef, typeDragRef, NULL, sizeof (DragRef), NULL, &dragRef) == noErr)
 					{
-						gDragContainer = new CDragContainer (dragRef);
+						gDragContainer = new MacDragContainer (dragRef);
 						
 						VSTGUI_CPoint where = GetMacDragMouse (frame);
 						frame->setCursor (kCursorNotAllowed);
@@ -9397,6 +9499,7 @@ bool isWindowComposited (WindowRef window)
 	return false;
 }
 
+#if !MAC_COCOA
 // code from CarbonSketch Example Code
 #define	kGenericRGBProfilePathStr       "/System/Library/ColorSync/Profiles/Generic RGB Profile.icc"
 
@@ -9473,7 +9576,7 @@ inline CGColorSpaceRef GetGenericRGBColorSpace ()
 {
 	return _gQuartzStatics.getGenericRGBColorSpace ();
 }
-
+#endif // !MAC_COCOA
 /// \endcond
 
 END_NAMESPACE_VSTGUI
