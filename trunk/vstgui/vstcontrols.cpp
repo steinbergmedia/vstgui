@@ -3,7 +3,7 @@
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 // Standard Control Objects
 //
-// Version 3.5       $Date: 2007-08-17 13:40:12 $
+// Version 3.5       $Date: 2007-10-16 20:41:34 $
 //
 // Added new objects        : Michael Schmidt          08.97
 // Added new objects        : Yvan Grabit              01.98
@@ -51,6 +51,10 @@
 
 #ifdef check
 #undef check
+#endif
+
+#if VSTGUI_BUILD_COCOA
+#include "cocoasupport.h"
 #endif
 
 BEGIN_NAMESPACE_VSTGUI
@@ -1274,6 +1278,7 @@ CTextEdit::CTextEdit (const CTextEdit& v)
 , editConvert2 (v.editConvert2)
 {
 	setText ((char*)v.text);
+	setWantsFocus (true);
 }
 
 //------------------------------------------------------------------------
@@ -1581,6 +1586,14 @@ pascal OSStatus CarbonEventsTextControlProc (EventHandlerCallRef inHandlerCallRe
 //------------------------------------------------------------------------
 void CTextEdit::parentSizeChanged ()
 {
+	#if MAC_COCOA
+	if (getFrame ()->getNSView ())
+	{
+		moveNSTextField (platformControl, this);
+		return;
+	}
+	#endif
+	
 	#if MAC
 	if (platformControl)
 	{
@@ -1604,6 +1617,15 @@ void CTextEdit::parentSizeChanged ()
 //------------------------------------------------------------------------
 void CTextEdit::setViewSize (CRect& newSize, bool invalid)
 {
+	#if MAC_COCOA
+	if (getFrame ()->getNSView ())
+	{
+		CView::setViewSize (newSize, invalid);
+		moveNSTextField (platformControl, this);
+		return;
+	}
+	#endif
+	
 	#if MAC
 	if (platformControl)
 	{
@@ -1697,8 +1719,17 @@ void CTextEdit::takeFocus ()
 	SetFocus ((HWND)platformControl);
 
 	oldWndProcEdit = (WINDOWSPROC)SetWindowLongPtr ((HWND)platformControl, GWLP_WNDPROC, (LONG_PTR)WindowProcEdit);
+#endif // WINDOWS
 
-#elif MAC
+#if MAC_COCOA
+	if (getFrame ()->getNSView ())
+	{
+		platformControl = addNSTextField (getFrame (), this);
+		return;
+	}
+#endif // MAC_COCOA
+
+#if MAC
 	extern bool hiToolboxAllowFocusChange;
 	bool oldState = hiToolboxAllowFocusChange;
 	hiToolboxAllowFocusChange = false;
@@ -1754,11 +1785,9 @@ void CTextEdit::takeFocus ()
 			default: fontStyle.just = teCenter; break;
 		}
 		fontStyle.size = fontID->getSize ();
-		#if !__LP64__
 		Str255 fontName;
 		CopyCStringToPascal (fontID->getName (), fontName); 
 		GetFNum (fontName, &fontStyle.font);
-		#endif
 		SetControlData (textControl, kControlEditTextPart, kControlFontStyleTag, sizeof (fontStyle), &fontStyle);
 		HIViewSetVisible (textControl, true);
 		HIViewAdvanceFocus (textControl, 0);
@@ -1766,7 +1795,8 @@ void CTextEdit::takeFocus ()
 		SetUserFocusWindow ((WindowRef)getFrame ()->getSystemWindow ());
 	}
 	hiToolboxAllowFocusChange = oldState;
-#endif
+
+#endif // MAC
 }
 
 //------------------------------------------------------------------------
@@ -1803,8 +1833,21 @@ void CTextEdit::looseFocus ()
 		DeleteObject (platformFontColor);
 		platformFontColor = 0;
 	}
+#endif // WINDOWS
 
-#elif MAC
+#if MAC_COCOA
+	if (getFrame ()->getNSView ())
+	{
+		getNSTextFieldText(platformControl, text, 255);
+		removeNSTextField (platformControl);
+	}
+	#if MAC
+	else
+	{
+	#endif
+#endif
+
+#if MAC
 
 	if (platformControl == 0)
 		return;
@@ -1827,8 +1870,10 @@ void CTextEdit::looseFocus ()
 			pParentFrame->setCursor (kCursorDefault);
 		SetUserFocusWindow (kUserFocusAuto);
 	}
-
-#endif
+	#if MAC_COCOA
+	}
+	#endif
+#endif // MAC
 
 	platformControl = 0;
 
@@ -2757,6 +2802,14 @@ bool COptionMenu::getEntry (long index, char *txt) const
 }
 
 //------------------------------------------------------------------------
+const char* COptionMenu::getEntry (long index) const
+{
+	if (index < 0 || index >= nbEntries)
+		return 0;
+	return entry[index];
+}
+
+//------------------------------------------------------------------------
 bool COptionMenu::setEntry (long index, char *txt)
 {
 	if (index < 0 || index >= nbEntries)
@@ -3238,6 +3291,9 @@ void *COptionMenu::appendItems (long &offsetIdx)
 	
 	platformControl = (void*)theMenu;
 	return platformControl;
+#elif MAC_COCOA
+	return 0; // not used
+
 #endif
 }
 
@@ -3350,8 +3406,28 @@ void COptionMenu::takeFocus ()
 			}
 		}
 	}
+#endif // WINDOWS
 
-#elif MAC
+#if MAC_COCOA
+	if (getFrame ()->getNSView ())
+	{
+		COptionMenu* usedMenu = 0;
+		long index = showNSContextMenu (this, &usedMenu);
+		if (index >= 0 && usedMenu)
+		{
+			lastMenu = usedMenu;
+			lastResult = index;
+			usedMenu->setValue (index);
+			if (listener)
+				listener->valueChanged (usedMenu);
+		}
+		getFrame ()->setFocusView (0);
+		endEdit();
+		return;
+	}
+#endif // MAC_COCOA
+	
+#if MAC
 	// no entries, no menu
 	if (nbEntries == 0)
 	{
@@ -3395,7 +3471,7 @@ void COptionMenu::takeFocus ()
 	setDirty (false);	
 
 	//---Popup the Menu
-	long popUpItem = 1;
+	long popUpItem = style & kPopupStyle ? (value + 1) : 1;
 	long PopUpMenuItem = 0;
 
 	if (LToG.v + menuHeight >= bottom - menuItemSize / 2)

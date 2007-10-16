@@ -3,7 +3,7 @@
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 // Standard Control Objects
 //
-// Version 3.5       $Date: 2007-04-01 11:20:45 $
+// Version 3.5       $Date: 2007-10-16 20:41:34 $
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
@@ -529,6 +529,7 @@ public:
 	virtual	long getCurrent (char *txt = 0, bool countSeparator = true) const;
 	virtual	bool setCurrent (long index, bool countSeparator = true);
 	virtual	bool getEntry (long index, char* txt) const;
+	virtual const char* getEntry (long index) const;
 	virtual	bool setEntry (long index, char* txt);
 	virtual	bool removeEntry (long index);
 	virtual	bool removeAllEntry ();
