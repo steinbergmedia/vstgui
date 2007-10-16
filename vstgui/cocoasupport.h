@@ -1,12 +1,12 @@
 //-----------------------------------------------------------------------------
 // VST Plug-Ins SDK
-// VSTGUI: Graphical User Interface Framework for VST plugins : 
+// VSTGUI: Graphical User Interface Framework not only for VST plugins : 
 //
-// Version 3.5       $Date: 2007-10-16 20:41:34 $
+// Version 3.6       $Date: 2007-10-16 20:41:34 $
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
-// © 2004, Steinberg Media Technologies, All Rights Reserved
+// Â© 2004, Steinberg Media Technologies, All Rights Reserved
 //-----------------------------------------------------------------------------
 // Redistribution and use in source and binary forms, with or without modification,
 // are permitted provided that the following conditions are met:
@@ -32,44 +32,40 @@
 // OF THE POSSIBILITY OF SUCH DAMAGE.
 //-----------------------------------------------------------------------------
 
-#ifndef __cvstguitimer__
-#define __cvstguitimer__
+#ifndef __cocoasupport__
+#define __cocoasupport__
 
 #include "vstgui.h"
 
-BEGIN_NAMESPACE_VSTGUI
+// used by CFrame
+void* createNSView (CFrame* frame, const CRect& size);
+void destroyNSView (void* nsView);
+void invalidNSViewRect (void* nsView, const CRect& size);
+void resizeNSView (void* nsView, const CRect& newSize);
+void getSizeOfNSView (void* nsView, CRect* rect);
+bool nsViewGetCurrentMouseLocation (void* nsView, CPoint& where);
+void nsViewSetMouseCursor (CCursorType type);
 
-//-----------------------------------------------------------------------------
-// CVSTGUITimer Declaration
-//! A timer class, which posts timer messages to CBaseObjects.
-//-----------------------------------------------------------------------------
-class CVSTGUITimer : public CBaseObject
-{
-public:
-	CVSTGUITimer (CBaseObject* timerObject, int fireTime = 100);
-	virtual ~CVSTGUITimer ();
-	
-	virtual bool start ();							///< starts the timer
-	virtual bool stop ();							///< stops the timer, returns wheather timer was running or not
+// used by CTextEdit
+void* addNSTextField (CFrame* frame, CTextEdit* edit);
+void removeNSTextField (void* control);
+bool getNSTextFieldText (void* control, char* text, long maxSize);
+void moveNSTextField (void* control, CTextEdit* edit);
 
-	virtual bool setFireTime (int newFireTime);		///< in milliseconds
-	int getFireTime () const { return fireTime; }	///< in milliseconds
+// used by COptionMenu
+long showNSContextMenu (COptionMenu* menu, COptionMenu** usedMenu);
 
-//-----------------------------------------------------------------------------
-	static const char* kMsgTimer;					///< message string posted to CBaseObject's notify method
-//-----------------------------------------------------------------------------
-protected:
-	int fireTime;
-	CBaseObject* timerObject;
+// used by CVSTGUITimer
+void* startNSTimer (int ms, CBaseObject* timerObject);
+void stopNSTimer (void* platformTimer);
 
-	void* platformTimer;
-	#if MAC
-	static pascal void timerProc (EventLoopTimerRef inTimer, void *inUserData);
-	#elif WINDOWS
-	static VOID CALLBACK TimerProc (HWND hwnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTime);
-	#endif
-};
+// used by CTooltipSupport
+void nsViewSetTooltip (CView* view, const char* tooltip);
+void nsViewRemoveTooltip (CView* view);
 
-END_NAMESPACE_VSTGUI
+// helpers
+#ifdef __OBJC__
+CRect rectFromNSRect (const NSRect& rect);
+#endif
 
 #endif
