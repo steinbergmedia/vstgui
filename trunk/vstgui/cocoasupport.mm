@@ -2,7 +2,7 @@
 // VST Plug-Ins SDK
 // VSTGUI: Graphical User Interface Framework not only for VST plugins : 
 //
-// Version 3.6       $Date: 2007-11-08 10:51:54 $
+// Version 3.6       $Date: 2007-11-08 14:13:28 $
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
@@ -34,8 +34,11 @@
 
 /// \cond ignore
 
-#import <Cocoa/Cocoa.h>
 #import "cocoasupport.h"
+
+#if MAC_COCOA
+
+#import <Cocoa/Cocoa.h>
 #import "cvstguitimer.h"
 #import "vstkeycode.h"
 
@@ -1241,4 +1244,5 @@ long CocoaDragContainer::getType (long idx) const
 	return CDragContainer::kUnknown;
 }
 
+#endif
 /// \endcond
