@@ -3,7 +3,7 @@
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 // Standard Control Objects
 //
-// Version 3.5       $Date: 2007-10-16 20:41:34 $
+// Version 3.5       $Date: 2007-11-08 10:51:54 $
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
@@ -70,6 +70,8 @@
 #ifndef kSQRT2
 #define kSQRT2 1.41421356237309504880
 #endif
+
+#define MAC_ENABLE_MENU_SCHEME (MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_3 && !__LP64__ && VSTGUI_ENABLE_DEPRECATED_METHODS)
 
 //------------------
 // CControlEnum type
@@ -189,7 +191,7 @@ public:
 	bool  isDirty () const;
 	void  setDirty (const bool val = true);
 
-	VSTGUI_DEPRECATED(bool isDoubleClick ();) ///< \deprecated
+	VSTGUI_DEPRECATED(bool isDoubleClick ();) ///< \deprecated use kDoubleClick in onMouseDown
 
 	CLASS_METHODS_VIRTUAL(CControl, CView)
 
@@ -313,15 +315,11 @@ public:
 	CHoriTxtAlign getHoriAlign () const { return horiTxtAlign; }
 
 	virtual void setStringConvert (void (*convert) (float value, char* string));
-	virtual void setStringConvert (void (*convert) (float value, char* string, void* userDta),
-									void* userData);
+	virtual void setStringConvert (void (*convert) (float value, char* string, void* userDta), void* userData);
 	virtual void setString2FloatConvert (void (*convert) (char* string, float& output));
 
 	virtual void setStyle (long val);
 	long getStyle () const { return style; }
-
-	virtual void setTxtFace (CTxtFace val);
-	CTxtFace getTxtFace () const { return txtFace; }
 
 	virtual void setTextTransparency (bool val) { bTextTransparencyEnabled = val; }
 	bool getTextTransparency () const { return bTextTransparencyEnabled; }
@@ -332,7 +330,7 @@ public:
 	CLASS_METHODS(CParamDisplay, CControl)
 
 protected:
-	void drawText (CDrawContext* pContext, char* string, CBitmap* newBack = 0);
+	void drawText (CDrawContext* pContext, const char* string, CBitmap* newBack = 0);
 
 	void (*stringConvert) (float value, char* string);
 	void (*stringConvert2) (float value, char* string, void* userData);
@@ -340,16 +338,15 @@ protected:
 	void* userData;
 
 	CHoriTxtAlign horiTxtAlign;
-	long    style;
+	long		style;
 
-	CFontRef   fontID;
-	CTxtFace txtFace;
-	CColor  fontColor;
-	CColor  backColor;
-	CColor  frameColor;
-	CColor  shadowColor;
-	bool    bTextTransparencyEnabled;
-	bool	bAntialias;
+	CFontRef	fontID;
+	CColor		fontColor;
+	CColor		backColor;
+	CColor		frameColor;
+	CColor		shadowColor;
+	bool		bTextTransparencyEnabled;
+	bool		bAntialias;
 };
 
 
@@ -446,7 +443,68 @@ protected:
 	void (*editConvert2) (char* input, char* string, void* userData);
 };
 
+class COptionMenu;
+//-----------------------------------------------------------------------------
+// CMenuItem Declaration
+/// \nosubgrouping
+//-----------------------------------------------------------------------------
+class CMenuItem : public CBaseObject
+{
+public:
+	enum Flags {
+		kNoFlags	= 0,
+		kDisabled	= 1 << 0,	///< item is gray and not selectable
+		kTitle		= 1 << 1,	///< item indicates a title and is not selectable
+		kChecked	= 1 << 2,	///< item has a checkmark
+		kSeparator	= 1 << 3,	///< item is a separator
+	};
 
+	//-----------------------------------------------------------------------------
+	/// \name Constructor
+	//-----------------------------------------------------------------------------
+	//@{
+	CMenuItem (const char* title, long flags = kNoFlags, const char* keycode = 0, long keyModifiers = 0, CBitmap* icon = 0);
+	CMenuItem (const char* title, COptionMenu* submenu, CBitmap* icon = 0);
+	CMenuItem (const CMenuItem& item);
+	//@}
+	~CMenuItem ();
+
+	//-----------------------------------------------------------------------------
+	/// \name CMenuItem Methods
+	//-----------------------------------------------------------------------------
+	//@{
+	virtual void setTitle (const char* title);							///< set title of menu item
+	virtual void setSubmenu (COptionMenu* submenu);						///< set submenu of menu item
+	virtual void setKey (const char* keyCode, long keyModifiers = 0);	///< set keycode and key modifiers of menu item
+	virtual void setEnabled (bool state = true);						///< set menu item enabled state
+	virtual void setChecked (bool state = true);						///< set menu item checked state
+	virtual void setIsTitle (bool state = true);						///< set menu item title state
+	virtual void setIsSeparator (bool state = true);					///< set menu item separator state
+	virtual void setIcon (CBitmap* icon);								///< set menu item icon
+
+	bool isEnabled () const { return !(flags & kDisabled); }			///< returns whether the item is enabled or not
+	bool isChecked () const { return flags & kChecked; }				///< returns whether the item is checked or not
+	bool isTitle () const { return flags & kTitle; }					///< returns whether the item is a title item or not
+	bool isSeparator () const { return flags & kSeparator; }			///< returns whether the item is a separator or not
+
+	const char* getTitle () const { return title; }						///< returns the title of the item
+	long getKeyModifiers () const { return keyModifiers; }				///< returns the key modifiers of the item
+	const char* getKeycode () const { return keycode; }					///< returns the keycode of the item
+	COptionMenu* getSubmenu () const { return submenu; }				///< returns the submenu of the item
+	CBitmap* getIcon () const { return icon; }							///< returns the icon of the item
+	//@}
+
+//------------------------------------------------------------------------
+protected:
+	char* title;
+	char* keycode;
+	COptionMenu* submenu;
+	CBitmap* icon;
+	long flags;
+	long keyModifiers;
+};
+
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
 //-----------------------------------------------------------------------------
 // COptionMenuScheme Declaration
 /// \nosubgrouping
@@ -498,6 +556,9 @@ protected:
 
 //-----------------------------------------------------------------------------
 extern COptionMenuScheme* gOptionMenuScheme;
+#endif
+
+class CMenuItemList;
 
 //-----------------------------------------------------------------------------
 // COptionMenu Declaration
@@ -518,39 +579,37 @@ public:
 
 	virtual ~COptionMenu ();
 
-	enum { MAX_ENTRY = 1024 };
-
 	//-----------------------------------------------------------------------------
 	/// \name COptionMenu Methods
 	//-----------------------------------------------------------------------------
 	//@{
-	virtual bool addEntry (COptionMenu *subMenu, const char *txt);
-	virtual	bool addEntry (const char *txt, long index = -1);
-	virtual	long getCurrent (char *txt = 0, bool countSeparator = true) const;
-	virtual	bool setCurrent (long index, bool countSeparator = true);
-	virtual	bool getEntry (long index, char* txt) const;
-	virtual const char* getEntry (long index) const;
-	virtual	bool setEntry (long index, char* txt);
-	virtual	bool removeEntry (long index);
-	virtual	bool removeAllEntry ();
-	virtual long getNbEntries () const { return nbEntries; }
-	virtual long getIndex (char* txt) const;
+	virtual CMenuItem* addEntry (CMenuItem* item, long index = -1);											///< add a new entry
+	virtual CMenuItem* addEntry (COptionMenu* submenu, const char* title);									///< add a new submenu entry
+	virtual CMenuItem* addEntry (const char* title, long index = -1, long itemFlags = CMenuItem::kNoFlags);	///< add a new entry
+	virtual CMenuItem* addSeparator ();																		///< add a new separator entry
+	virtual CMenuItem* getCurrent () const;																	///< get current entry
+	virtual CMenuItem* getEntry (long index) const;															///< get entry at index position
+	virtual long getNbEntries () const;																		///< get number of entries
+	virtual	bool setCurrent (long index, bool countSeparator = true);										///< set current entry
+	virtual	bool removeEntry (long index);																	///< remove an entry
+	virtual	bool removeAllEntry ();																			///< remove all entries
 
-	virtual bool checkEntry (long index, bool state);
-	virtual bool checkEntryAlone (long index);
-	virtual bool isCheckEntry (long index) const;
-	virtual void setNbItemsPerColumn (long val) { nbItemsPerColumn = val; }
-	virtual long getNbItemsPerColumn () const { return nbItemsPerColumn; }
+	virtual bool checkEntry (long index, bool state);														///< change check state of entry at index
+	virtual bool checkEntryAlone (long index);																///< check entry at index and uncheck every other item
+	virtual bool isCheckEntry (long index) const;															///< get check state of entry at index
+	virtual void setNbItemsPerColumn (long val) { nbItemsPerColumn = val; }									///< Windows only
+	virtual long getNbItemsPerColumn () const { return nbItemsPerColumn; }									///< Windows only
 
-	long getLastResult () const { return lastResult; }
-	COptionMenu* getLastItemMenu (long& idxInMenu) const;
+	long getLastResult () const { return lastResult; }														///< get last index of choosen entry
+	COptionMenu* getLastItemMenu (long& idxInMenu) const;													///< get last menu and index of choosen entry
 
-	void setScheme (COptionMenuScheme* s) { scheme = s; }
-	virtual COptionMenuScheme* getScheme () const { return scheme; }
+	VSTGUI_DEPRECATED(void setScheme (COptionMenuScheme* s) { scheme = s; })								///< set menu scheme \deprecated
+	VSTGUI_DEPRECATED(virtual COptionMenuScheme* getScheme () const { return scheme; })						///< get menu scheme \deprecated
 
-	virtual void setPrefixNumbers (long preCount);
+	virtual void setPrefixNumbers (long preCount);															///< set prefix numbering
+	long getPrefixNumbers () const { return prefixNumbers; }												///< get prefix numbering
 
-	COptionMenu* getSubMenu (long idx) const;
+	COptionMenu* getSubMenu (long idx) const;																///< get a submenu
 
 #if MAC
 	short   getMenuID () const { return menuID; }
@@ -576,29 +635,22 @@ protected:
 
 	void* platformControl;
 
-	bool  allocateMenu (long nb);
-	bool  allocateSubMenu (long nb);
-
-	char** entry;
-	COptionMenu** submenuEntry;
-	bool* check;
+	CMenuItemList* menuItems;
 
 #if MAC
 	short   menuID;
 #endif
 
-	long     nbEntries;
-	long     nbSubMenus;
 	long     currentIndex;
 	CBitmap* bgWhenClick;
 	long     lastButton;
 	long     nbItemsPerColumn;
-	long     nbAllocated;
-	long     nbSubMenuAllocated;
 	long	 lastResult;
 	long	 prefixNumbers;
 	COptionMenu* lastMenu;
+	#if VSTGUI_ENABLE_DEPRECATED_METHODS
 	COptionMenuScheme* scheme;
+	#endif
 };
 
 

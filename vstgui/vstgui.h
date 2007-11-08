@@ -2,7 +2,7 @@
 // VST Plug-Ins SDK
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 //
-// Version 3.5       $Date: 2007-10-16 20:41:34 $
+// Version 3.5       $Date: 2007-11-08 10:51:54 $
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
@@ -36,33 +36,36 @@
 #define __vstgui__
 
 // define global defines
-#if VSTGUI_BUILD_COCOA
-	#define MAC_COCOA 1
-	#define VSTGUI_USES_COREGRAPHICS 1
-	#define NO_QUICKDRAW	1
-#endif
-
 #if WIN32
 	#define WINDOWS 1
-#elif (__MWERKS__ || __APPLE_CC__) && !__LP64__
-	#define MAC 1
-	#ifndef VSTGUI_USES_COREGRAPHICS
-		#define VSTGUI_USES_COREGRAPHICS 1
-	#endif
-	#ifndef TARGET_API_MAC_CARBON
-		#define TARGET_API_MAC_CARBON 1
-	#endif
-	#ifndef __CF_USE_FRAMEWORK_INCLUDES__
-		#define __CF_USE_FRAMEWORK_INCLUDES__ 1
+#elif (__MWERKS__ || __APPLE_CC__)
+	#define MAC_COCOA 1
+	#define VSTGUI_USES_COREGRAPHICS 1
+	#if !__LP64__
+		#define MAC 1
+		#ifndef TARGET_API_MAC_CARBON
+			#define TARGET_API_MAC_CARBON 1
+		#endif
+		#ifndef __CF_USE_FRAMEWORK_INCLUDES__
+			#define __CF_USE_FRAMEWORK_INCLUDES__ 1
+		#endif
+	#else
+		#ifndef NO_QUICKDRAW
+			#define NO_QUICKDRAW	1
+		#endif
 	#endif
 #endif
 
 #if WINDOWS
- #define USE_NAMESPACE	1
- #define _WIN32_WINNT 0x0501
- #ifndef GDIPLUS
- #define GDIPLUS		0
- #endif
+	#define USE_NAMESPACE	1
+	#define _WIN32_WINNT 0x0501
+	#ifndef GDIPLUS
+	#define GDIPLUS		1
+	#endif
+#endif
+
+#ifndef VSTGUI_USES_UTF8
+#define VSTGUI_USES_UTF8 1
 #endif
 
 #ifndef USE_NAMESPACE
@@ -129,12 +132,6 @@ protected:
 END_NAMESPACE_VSTGUI
 
 //----------------------------------------------------
-
-#ifndef VSTGUI_USES_UTF8
-#define VSTGUI_USES_UTF8 MAC
-#endif
-
-//----------------------------------------------------
 #if WINDOWS
 	#if VSTGUI_USES_UTF8
 		#define UNICODE 1
@@ -165,17 +162,16 @@ END_NAMESPACE_VSTGUI
 //----------------------------------------------------
 #if MAC
 	#include <Carbon/Carbon.h>
-	//macho VST's set gBundleRef which is a CFBundleRef
-	BEGIN_NAMESPACE_VSTGUI
-	extern void* gBundleRef;
-	END_NAMESPACE_VSTGUI
 #endif // MAC
 
 #if MAC_COCOA
 	#include <CoreFoundation/CoreFoundation.h>
 	#include <ApplicationServices/ApplicationServices.h>
+#endif
+
+#if MAC || MAC_COCOA
 	BEGIN_NAMESPACE_VSTGUI
-	extern void* gBundleRef;
+	extern void* gBundleRef;	///< must be set to the current CFBundleRef somewhere early in the code
 	END_NAMESPACE_VSTGUI
 #endif
 
@@ -594,6 +590,18 @@ enum CMessageResult
 	kMessageNotified = 1
 };
 
+//----------------------------
+// \brief View Autosizing
+//----------------------------
+enum CViewAutosizing
+{
+	kAutosizeNone		= 0,
+	kAutosizeLeft		= 1 << 0,
+	kAutosizeTop		= 1 << 1,
+	kAutosizeRight		= 1 << 2,
+	kAutosizeBottom		= 1 << 3,
+	kAutosizeAll		= kAutosizeLeft | kAutosizeTop | kAutosizeRight | kAutosizeBottom
+};
 
 //-----------------------------------------------------------------------------
 // CBaseObject Declaration
@@ -1111,6 +1119,8 @@ public:
 	virtual void parentSizeChanged () {}														///< notification that one of the views parent has changed its size
 	virtual CPoint& frameToLocal (CPoint& point) const;											///< conversion from frame coordinates to local view coordinates
 	virtual CPoint& localToFrame (CPoint& point) const;											///< conversion from local view coordinates to frame coordinates
+	virtual void setAutosizeFlags (long flags) { autosizeFlags = flags; }						///< set autosize flags
+	virtual long getAutosizeFlags () const { return autosizeFlags; }							///< get autosize flags
 	//@}
 
 	//-----------------------------------------------------------------------------
@@ -1189,6 +1199,8 @@ protected:
 	bool  bWantsFocus;
 	bool  bIsAttached;
 	bool  bVisible;
+	
+	long  autosizeFlags;
 	
 	CBitmap* pBackground;
 	CAttributeListEntry* pAttributeList;

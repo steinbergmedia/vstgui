@@ -39,7 +39,7 @@
 
 @mainpage
 
-Welcome to VSTGUI 3.5
+Welcome to VSTGUI
 
 - @ref intro @n
 - @ref tutorial_getting_started @n

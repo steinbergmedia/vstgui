@@ -2,7 +2,7 @@
 // VST Plug-Ins SDK
 // VSTGUI: Graphical User Interface Framework not only for VST plugins : 
 //
-// Version 3.6       $Date: 2007-10-16 20:41:34 $
+// Version 3.6       $Date: 2007-11-08 10:51:54 $
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
@@ -32,6 +32,8 @@
 // OF THE POSSIBILITY OF SUCH DAMAGE.
 //-----------------------------------------------------------------------------
 
+/// \cond ignore
+
 #import <Cocoa/Cocoa.h>
 #import "cocoasupport.h"
 #import "cvstguitimer.h"
@@ -57,6 +59,7 @@
 	CBaseObject* _timerObject;
 }
 - (id) initWithTimerObject: (CBaseObject*) obj fireTime: (int) ms;
+- (void) stop;
 @end
 
 //------------------------------------------------------------------------------------
@@ -140,6 +143,30 @@ NSColor* nsColorFromCColor (const CColor& color)
 }
 
 //------------------------------------------------------------------------------------
+static NSImage* imageFromCGImageRef (CGImageRef image)
+{
+    NSRect imageRect = NSMakeRect(0.0, 0.0, 0.0, 0.0);
+    CGContextRef imageContext = nil;
+    NSImage* newImage = nil;
+ 
+    // Get the image dimensions.
+    imageRect.size.height = CGImageGetHeight(image);
+    imageRect.size.width = CGImageGetWidth(image);
+ 
+    // Create a new image to receive the Quartz image data.
+    newImage = [[NSImage alloc] initWithSize:imageRect.size];
+    [newImage lockFocus];
+ 
+    // Get the Quartz context and draw.
+    imageContext = (CGContextRef)[[NSGraphicsContext currentContext]
+                                         graphicsPort];
+    CGContextDrawImage(imageContext, *(CGRect*)&imageRect, image);
+    [newImage unlockFocus];
+ 
+    return newImage;
+}
+
+//------------------------------------------------------------------------------------
 //------------------------------------------------------------------------------------
 //------------------------------------------------------------------------------------
 void* createNSView (CFrame* frame, const CRect& size)
@@ -161,14 +188,22 @@ void destroyNSView (void* ptr)
 void invalidNSViewRect (void* nsView, const CRect& size)
 {
 	VSTGUI_NSView* view = (VSTGUI_NSView*)nsView;
-	[view setNeedsDisplayInRect:nsRectFromCRect (size)];
+	NSRect r = nsRectFromCRect (size);
+	[view setNeedsDisplayInRect:r];
 }
 
 //------------------------------------------------------------------------------------
 void resizeNSView (void* nsView, const CRect& newSize)
 {
 	VSTGUI_NSView* view = (VSTGUI_NSView*)nsView;
-	[view setBounds:nsRectFromCRect (newSize)];
+	unsigned int oldResizeMask = [view autoresizingMask];
+	NSRect oldFrame = [view frame];
+	[view setAutoresizingMask: 0];
+	NSRect r = nsRectFromCRect (newSize);
+	r.origin.x += oldFrame.origin.x;
+	r.origin.y += oldFrame.origin.y;
+	[view setFrameSize: r.size];
+	[view setAutoresizingMask: oldResizeMask];
 }
 
 //------------------------------------------------------------------------------------
@@ -276,6 +311,7 @@ void* startNSTimer (int ms, CBaseObject* timerObject)
 void stopNSTimer (void* platformTimer)
 {
 	VSTGUI_NSTimer* timer = (VSTGUI_NSTimer*)platformTimer;
+	[timer stop];
 	[timer release];
 }
 
@@ -301,16 +337,21 @@ void nsViewRemoveTooltip (CView* view)
 //------------------------------------------------------------------------------------
 - (id) initWithFrame: (CFrame*) frame andSize: (const CRect&) size
 {
-	NSRect nsSize = { {0, 0}, {size.getWidth (), size.getHeight ()} };
+	NSRect nsSize = { {size.left, size.top}, {size.getWidth (), size.getHeight ()} };
 	[super initWithFrame: nsSize];
-
+	
 	_vstguiframe = frame;
 
 	NSView* parentView = (NSView*)frame->getSystemWindow ();
 	[parentView addSubview: self];
 
+	[self setAutoresizingMask:NSViewMinYMargin];
+	[self setAutoresizesSubviews:YES];
+
 	[self registerForDraggedTypes:[NSArray arrayWithObjects:
             NSStringPboardType, NSFilenamesPboardType, nil]];
+
+	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(frameDidChanged:) name:NSViewFrameDidChangeNotification object:self];
 
 	return self;
 }
@@ -318,6 +359,8 @@ void nsViewRemoveTooltip (CView* view)
 //------------------------------------------------------------------------------------
 - (void) dealloc
 {
+	[[NSNotificationCenter defaultCenter] removeObserver:self name:NSViewFrameDidChangeNotification object:self];
+
 	if (_vstguiframe)
 		_vstguiframe->forget ();
 	[super dealloc];
@@ -331,14 +374,29 @@ void nsViewRemoveTooltip (CView* view)
 
 //------------------------------------------------------------------------------------
 - (BOOL)isFlipped { return YES; }
-- (BOOL)isOpaque { return YES; }
 - (BOOL)acceptsFirstResponder { return YES; }
 - (BOOL)becomeFirstResponder { return YES; }
+- (BOOL)canBecomeKeyView { return YES; }
 
 //------------------------------------------------------------------------------------
-- (BOOL)canBecomeKeyView
+- (BOOL)isOpaque 
 {
-	return YES;
+	BOOL transparent = (_vstguiframe->getTransparency () 
+			   || (_vstguiframe->getBackground () && !_vstguiframe->getBackground ()->getNoAlpha ())
+			   || (!_vstguiframe->getBackground () && _vstguiframe->getBackgroundColor().alpha != 255)
+			      );
+	return !transparent;
+}
+
+//------------------------------------------------------------------------------------
+- (void) frameDidChanged: (NSNotification*) notification
+{
+	if (_vstguiframe)
+	{
+		CRect r = rectFromNSRect ([self frame]);
+		r.offset (-r.left, -r.top);
+		_vstguiframe->setViewSize (r);
+	}
 }
 
 //------------------------------------------------------------------------------------
@@ -783,18 +841,19 @@ void nsViewRemoveTooltip (CView* view)
 //------------------------------------------------------------------------------------
 - (id) initWithTimerObject: (CBaseObject*) obj fireTime: (int) ms
 {
+	[super init];
 	_timerObject = obj;
-	_timer = [NSTimer timerWithTimeInterval: ((double)ms)/1000. target:self selector:@selector(onTimer:) userInfo:nil repeats:YES];
+	_timer = [NSTimer timerWithTimeInterval: ((double)ms)* (1./1000.) target:self selector:@selector(onTimer:) userInfo:nil repeats:YES];
 	[[NSRunLoop currentRunLoop] addTimer:_timer forMode:NSDefaultRunLoopMode];
 	[[NSRunLoop currentRunLoop] addTimer:_timer forMode:NSEventTrackingRunLoopMode];
 	return self;
 }
 
 //------------------------------------------------------------------------------------
-- (void) dealloc
+- (void) stop
 {
 	[_timer invalidate];
-	[super dealloc];
+	_timer = 0;
 }
 
 //------------------------------------------------------------------------------------
@@ -818,62 +877,82 @@ void nsViewRemoveTooltip (CView* view)
 	_selectedItem = -1;
 	[super init];
 
-	long idxSubmenu = 0;
 	for (long i = 0; i < menu->getNbEntries (); i++)
 	{
-		const char* title = menu->getEntry (i);
-		if (strncmp (title, kMenuSubMenu, 2) == 0)
+		NSMenuItem* nsItem = 0;
+		CMenuItem* item = menu->getEntry (i);
+		NSMutableString* itemTitle = [[[NSMutableString alloc] initWithCString:item->getTitle () encoding:NSUTF8StringEncoding] autorelease];
+		if (menu->getPrefixNumbers ())
 		{
-			NSString* nsTitle = [[NSString stringWithCString:title+2 encoding:NSUTF8StringEncoding] autorelease];
-			NSMenuItem* item = [self addItemWithTitle:nsTitle action:nil keyEquivalent:@""];
-			VSTGUI_NSMenu* subMenu = [[VSTGUI_NSMenu alloc] initWithOptionMenu: menu->getSubMenu (idxSubmenu++)];
-			[self setSubmenu: subMenu forItem:item];
+			NSString* prefixString = 0;
+			switch (menu->getPrefixNumbers ())
+			{
+				case 2:	prefixString = [NSString stringWithFormat:@"%1d ", i+1]; break;
+				case 3: prefixString = [NSString stringWithFormat:@"%02d ", i+1]; break;
+				case 4: prefixString = [NSString stringWithFormat:@"%03d ", i+1]; break;
+			}
+			[itemTitle insertString:prefixString atIndex:0];
 		}
-		else if (strcmp (title, kMenuSeparator) == 0)
+		if (item->getSubmenu ())
+		{
+			nsItem = [self addItemWithTitle:itemTitle action:nil keyEquivalent:@""];
+			VSTGUI_NSMenu* subMenu = [[VSTGUI_NSMenu alloc] initWithOptionMenu: item->getSubmenu ()];
+			[self setSubmenu: subMenu forItem:nsItem];
+		}
+		else if (item->isSeparator ())
 		{
 			[self addItem:[NSMenuItem separatorItem]];
 		}
 		else
 		{
-			NSMenuItem* item = 0;
-			if (strncmp (title, kMenuDisable, 2) == 0)
-			{
-				item = [self addItemWithTitle:[NSString stringWithCString:title+2 encoding:NSUTF8StringEncoding] action:@selector(menuItemSelected:) keyEquivalent:@""];
-				[item setEnabled:NO];
-			}
-			else if (strncmp (title, kMenuTitle, 2) == 0)
-			{
-				item = [self addItemWithTitle:[NSString stringWithCString:title+2 encoding:NSUTF8StringEncoding] action:@selector(menuItemSelected:) keyEquivalent:@""];
-				[item setIndentationLevel:1];
-				[item setEnabled:NO];
-			}
+			nsItem = [self addItemWithTitle:itemTitle action:@selector(menuItemSelected:) keyEquivalent:@""];
+			if (item->isTitle ())
+				[nsItem setIndentationLevel:1];
+			[nsItem setTarget:self];
+			[nsItem setTag: i];
+			if (multipleCheck && item->isChecked ())
+				[nsItem setState:NSOnState];
 			else
+				[nsItem setState:NSOffState];
+			if (item->getKeycode ())
 			{
-				item = [self addItemWithTitle:[NSString stringWithCString:title encoding:NSUTF8StringEncoding] action:@selector(menuItemSelected:) keyEquivalent:@""];
+				[nsItem setKeyEquivalent:[NSString stringWithCString:item->getKeycode () encoding:NSUTF8StringEncoding]];
+				unsigned int keyModifiers = 0;
+				if (item->getKeyModifiers () & kControl)
+					keyModifiers |= NSCommandKeyMask;
+				if (item->getKeyModifiers () & kShift)
+					keyModifiers |= NSShiftKeyMask;
+				if (item->getKeyModifiers () & kAlt)
+					keyModifiers |= NSAlternateKeyMask;
+				if (item->getKeyModifiers () & kApple)
+					keyModifiers |= NSControlKeyMask;
+				[nsItem setKeyEquivalentModifierMask:keyModifiers];
 			}
-			[item setTarget:self];
-			[item setTag: i];
-			if (multipleCheck && menu->isCheckEntry (i))
-				[item setState:NSOnState];
-			else
-				[item setState:NSOffState];
+		}
+		if (nsItem && item->getIcon ())
+		{
+			CGImageRef cgImage = item->getIcon ()->createCGImage ();
+			if (cgImage)
+			{
+				NSImage* nsImage = imageFromCGImageRef (cgImage);
+				if (nsImage)
+				{
+					[nsItem setImage:nsImage];
+					[nsImage release];
+				}
+				CGImageRelease (cgImage);
+			}
 		}
 	}
 	return self;
 }
 
 //------------------------------------------------------------------------------------
-- (BOOL)validateMenuItem:(id <NSMenuItem>)item
+- (BOOL) validateMenuItem:(id)item
 {
-	const char* title = _optionMenu->getEntry ([item tag]);
-	if (strncmp (title, kMenuDisable, 2) == 0)
-	{
+	CMenuItem* menuItem = _optionMenu->getEntry ([item tag]);
+	if (!menuItem->isEnabled () || menuItem->isTitle ())
 		return NO;
-	}
-	else if (strncmp (title, kMenuTitle, 2) == 0)
-	{
-		return NO;
-	}
 	return YES;
 }
 
@@ -938,6 +1017,17 @@ void nsViewRemoveTooltip (CView* view)
 	editFrameRect.origin.x = 0;
 	editFrameRect.origin.y = 0;
 	[super initWithFrame:editFrameRect];
+
+	#if __LP64__
+	CTFontRef fontRef = (CTFontRef)_textEdit->getFont()->getPlatformFont ();
+	CTFontDescriptorRef fontDesc = CTFontCopyFontDescriptor (fontRef);
+	
+	[self setFont:[NSFont fontWithDescriptor:(NSFontDescriptor *)fontDesc size:_textEdit->getFont ()->getSize ()]];
+	CFRelease (fontDesc);
+	#else
+	
+	#endif
+
 	NSString* text = [NSString stringWithCString:_textEdit->getText () encoding:NSUTF8StringEncoding];
 
 	[self setBackgroundColor:nsColorFromCColor (_textEdit->getBackColor ())];
@@ -1151,3 +1241,4 @@ long CocoaDragContainer::getType (long idx) const
 	return CDragContainer::kUnknown;
 }
 
+/// \endcond
