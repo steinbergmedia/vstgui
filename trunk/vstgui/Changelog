@@ -1,3 +1,13 @@
+2007-11-08 arne
+
+	* COptionMenuScheme is deprecated
+	* removed CParamDisplay::setTxtFace and getTxtFace
+	* CoreText support for building 64 bit variant on Mac OS X.
+	* refactoring of COptionMenu, menu items have their own class (CMenuItem) with support for Icons. (Windows not completely done yet)
+		Source code changes may occur as item states are not encoded in the title anymore
+	* some cocoa fixes
+	* autosizing support for views
+	
 2007-10-16 arne
 
 	* Cocoa support (except CTooltipSupport and CFileSelector)

@@ -2,7 +2,7 @@
 // VST Plug-Ins SDK
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 //
-// Version 3.5       $Date: 2007-10-16 20:41:34 $ 
+// Version 3.5       $Date: 2007-11-08 10:51:54 $ 
 //
 // Added Motif/Windows vers.: Yvan Grabit              01.98
 // Added Mac version        : Charlie Steinberg        02.98
@@ -519,9 +519,12 @@ void CFontDesc::freePlatformFont ()
 {
 	if (platformFont)
 	{
-		#if MAC || MAC_COCOA
+		#if MAC || MAC_COCOA && !__LP64__
 		ATSUDisposeStyle ((ATSUStyle)platformFont);
 
+		#elif MAC_COCOA && __LP64__
+		CFRelease (platformFont);
+		
 		#elif GDIPLUS
 		delete (Gdiplus::Font*)platformFont;
 
@@ -591,7 +594,7 @@ void* CFontDesc::getPlatformFont ()
 	if (platformFont)
 		return platformFont;
 
-	#if MAC || MAC_COCOA
+	#if (MAC || MAC_COCOA) && !__LP64__
 	ATSUStyle atsuStyle;
 	OSStatus status = ATSUCreateStyle (&atsuStyle);
 	if (status != noErr)
@@ -613,7 +616,34 @@ void* CFontDesc::getPlatformFont ()
 		status = ATSUSetAttributes (atsuStyle, 5, theTags, theSizes, theValues);
 		platformFont = (void*)atsuStyle;
 	}
-
+	#elif MAC_COCOA && __LP64__
+	CFStringRef fontNameRef = CFStringCreateWithCString (0, name, kCFStringEncodingUTF8);
+	if (fontNameRef)
+	{
+		platformFont = (void*)CTFontCreateWithName (fontNameRef, size, 0);
+		if (platformFont && (style & kBoldFace || style & kItalicFace))
+		{
+			CTFontSymbolicTraits desiredTrait = 0;
+			CTFontSymbolicTraits traitMask = 0;
+			if (style & kBoldFace)
+			{
+				desiredTrait |= kCTFontBoldTrait;
+				traitMask |= kCTFontBoldTrait;
+			}
+			if (style & kItalicFace)
+			{
+				desiredTrait |= kCTFontItalicTrait;
+				traitMask |= kCTFontItalicTrait;
+			}
+			CTFontRef fontRef = CTFontCreateCopyWithSymbolicTraits ((CTFontRef)platformFont, 0.0, NULL, desiredTrait, traitMask);
+			if (fontRef)
+			{
+				CFRelease ((CTFontRef)platformFont);
+				platformFont = (void*)fontRef;
+			}
+		}
+		CFRelease (fontNameRef);
+	}
 	#elif GDIPLUS
 	int gdiStyle = Gdiplus::FontStyleRegular;
 	if (style & kBoldFace)
@@ -762,13 +792,9 @@ CDrawContext::CDrawContext (CFrame* inFrame, void* inSystemContext, void* inWind
 #endif
 
 #if VSTGUI_USES_COREGRAPHICS
-	gCGContext = 0;
-#endif
-
-#if MAC_COCOA
-	if (pFrame->getNSView () && pSystemContext)
+	gCGContext = (CGContextRef)pSystemContext;
+	if (pSystemContext)
 	{
-		gCGContext = (CGContextRef) pSystemContext;
 		CGContextSaveGState (gCGContext);
 		CGContextSetShouldAntialias (gCGContext, false);
 		CGContextSetFillColorSpace (gCGContext, GetGenericRGBColorSpace ());
@@ -780,7 +806,7 @@ CDrawContext::CDrawContext (CFrame* inFrame, void* inSystemContext, void* inWind
 #endif
 
 #if MAC
-	if (pFrame->getPlatformControl ())
+	if (pFrame && pFrame->getPlatformControl ())
 	{
 		if (pFrame && (pSystemContext || pWindow))
 		{
@@ -803,20 +829,7 @@ CDrawContext::CDrawContext (CFrame* inFrame, void* inSystemContext, void* inWind
 			clipRect (0, 0, (CCoord)bounds.size.width, (CCoord)bounds.size.height);
 			clipRect.offset (pFrame->hiScrollOffset.x, pFrame->hiScrollOffset.y);
 		}
-		gCGContext = 0;
-		if (pSystemContext)
-		{
-			gCGContext = (CGContextRef) pSystemContext;
-			CGContextSaveGState (gCGContext);
-			CGContextSetShouldAntialias (gCGContext, false);
-			CGContextSetFillColorSpace (gCGContext, GetGenericRGBColorSpace ());
-			CGContextSetStrokeColorSpace (gCGContext, GetGenericRGBColorSpace ()); 
-			CGContextSaveGState (gCGContext);
-			setClipRect (clipRect);
-			if (pFrame)
-				pFrame->setDrawContext (this);
-		}
-		else if (pWindow)
+		if (!pSystemContext && pWindow)
 		{
 			GrafPtr port = GetWindowPort ((WindowRef)pWindow);
 			OSStatus err = QDBeginCGContext (port, &gCGContext);
@@ -836,31 +849,25 @@ CDrawContext::CDrawContext (CFrame* inFrame, void* inSystemContext, void* inWind
 				QuartzSetupClip (gCGContext, clipRect);
 				CGContextSaveGState (gCGContext);
 				setClipRect (clipRect);
+				CGAffineTransform cgCTM = CGAffineTransformMake (1.0, 0.0, 0.0, -1.0, 0.0, 0.0);
+				CGContextSetTextMatrix (gCGContext, cgCTM);
 				if (pFrame)
 					pFrame->setDrawContext (this);
 			}
-		}
-		if (gCGContext)
-		{
-			CGAffineTransform cgCTM = CGAffineTransformMake (1.0, 0.0, 0.0, -1.0, 0.0, 0.0);
-			CGContextSetTextMatrix (gCGContext, cgCTM);
 		}
 		needToSynchronizeCGContext = false;
 	}
 	
 #endif // MAC
 
-	if (1 || pSystemContext)
-	{
-		// set the default values
-		setFrameColor (kWhiteCColor);
-		setLineStyle (kLineSolid);
-		setLineWidth (1);
-		setFillColor (kBlackCColor);
-		setFontColor (kWhiteCColor);
-		setFont (kSystemFont);
-		setDrawMode (kCopyMode);
-	}
+	// set the default values
+	setFrameColor (kWhiteCColor);
+	setLineStyle (kLineSolid);
+	setLineWidth (1);
+	setFillColor (kBlackCColor);
+	setFontColor (kWhiteCColor);
+	setFont (kSystemFont);
+	setDrawMode (kCopyMode);
 }
 
 //-----------------------------------------------------------------------------
@@ -2034,6 +2041,38 @@ CCoord CDrawContext::getStringWidthUTF8 (const char* string)
 		return result;
 
 	#if VSTGUI_USES_COREGRAPHICS
+	#if __LP64__
+	CTFontRef fontRef = (CTFontRef)font->getPlatformFont ();
+	if (fontRef == 0)
+		return result;
+	CFStringRef utf8Str = CFStringCreateWithCString (NULL, string, kCFStringEncodingUTF8);
+	if (utf8Str)
+	{
+		CFStringRef keys[] = { kCTFontAttributeName,  };
+		CFTypeRef values[] = { fontRef };
+		CFDictionaryRef attributes = CFDictionaryCreate(kCFAllocatorDefault, (const void**)&keys,(const void**)&values, sizeof(keys) / sizeof(keys[0]), &kCFTypeDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks);
+		CFAttributedStringRef attrStr = CFAttributedStringCreate (0, utf8Str, attributes);
+		CFRelease (attributes);
+		if (attrStr)
+		{
+			CTLineRef line = CTLineCreateWithAttributedString (attrStr);
+			if (line)
+			{
+				CGContextRef context = beginCGContext (false);
+				if (context)
+				{
+					CGRect imageBounds = CTLineGetImageBounds (line, context);
+					releaseCGContext (context);
+					result = imageBounds.size.width;
+				}
+				CFRelease (line);
+			}
+			CFRelease (attrStr);
+		}
+		CFRelease (utf8Str);
+	}
+	
+	#else
 	ATSUStyle atsuStyle = (ATSUStyle)font->getPlatformFont ();
 	if (atsuStyle == 0)
 		return result;
@@ -2070,6 +2109,7 @@ CCoord CDrawContext::getStringWidthUTF8 (const char* string)
 		}
 		CFRelease (utf8Str);
 	}
+	#endif
 	
 	#elif GDIPLUS
 	Gdiplus::Font* pFont = (Gdiplus::Font*)font->getPlatformFont ();
@@ -2095,6 +2135,44 @@ void CDrawContext::drawStringUTF8 (const char* string, const CPoint& _point, boo
 	point.offset (offset.h, offset.v);
 
 	#if VSTGUI_USES_COREGRAPHICS
+	#if __LP64__
+	CTFontRef fontRef = (CTFontRef)font->getPlatformFont ();
+	if (fontRef == 0)
+		return;
+	CFStringRef utf8Str = CFStringCreateWithCString (NULL, string, kCFStringEncodingUTF8);
+	if (utf8Str)
+	{
+		CGColorRef cgColor = CGColorCreateGenericRGB (fontColor.red/255.f, fontColor.green/255.f, fontColor.blue/255.f, fontColor.alpha/255.f);
+		CTUnderlineStyle underlineStyle = font->getStyle () & kUnderlineFace ? kCTUnderlineStyleSingle : kCTUnderlineStyleNone;
+		CFNumberRef fontUnderlineStyle = CFNumberCreate (0, kCFNumberIntType, &underlineStyle);
+		CFStringRef keys[] = { kCTFontAttributeName, kCTForegroundColorAttributeName, kCTUnderlineStyleAttributeName };
+		CFTypeRef values[] = { fontRef, cgColor, fontUnderlineStyle };
+		CFDictionaryRef attributes = CFDictionaryCreate(kCFAllocatorDefault, (const void**)&keys,(const void**)&values, sizeof(keys) / sizeof(keys[0]), &kCFTypeDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks);
+		CFAttributedStringRef attrStr = CFAttributedStringCreate (0, utf8Str, attributes);
+		CFRelease (attributes);
+		CFRelease (fontUnderlineStyle);
+		CFRelease (cgColor);
+		if (attrStr)
+		{
+			CTLineRef line = CTLineCreateWithAttributedString (attrStr);
+			if (line)
+			{
+				CGContextRef context = beginCGContext (true);
+				if (context)
+				{
+					CGContextSetShouldAntialias (context, antialias);
+					CGContextSetTextPosition (context, point.x, point.y);
+					CTLineDraw (line, context);
+					releaseCGContext (context);
+				}
+				CFRelease (line);
+			}
+			CFRelease (attrStr);
+		}
+		CFRelease (utf8Str);
+	}
+
+	#else
 	ATSUStyle atsuStyle = (ATSUStyle)font->getPlatformFont ();
 	if (atsuStyle == 0)
 		return;
@@ -2138,6 +2216,7 @@ void CDrawContext::drawStringUTF8 (const char* string, const CPoint& _point, boo
 		}
 		CFRelease (utf8Str);
 	}
+	#endif
 
 	#elif GDIPLUS
 	Gdiplus::Font* pFont = (Gdiplus::Font*)font->getPlatformFont ();
@@ -2950,6 +3029,7 @@ CView::CView (const CRect& size)
 , bVisible (true)
 , pBackground (0)
 , pAttributeList (0)
+, autosizeFlags (kAutosizeNone)
 {
 	#if DEBUG
 	gNbCView++;
@@ -2971,6 +3051,7 @@ CView::CView (const CView& v)
 , bVisible (true)
 , pBackground (v.pBackground)
 , pAttributeList (0)
+, autosizeFlags (v.autosizeFlags)
 {
 	if (pBackground)
 		pBackground->remember ();
@@ -3763,10 +3844,12 @@ bool CFrame::initFrame (void* systemWin)
 	if (!HIObjectIsOfClass ((HIObjectRef)systemWin, CFSTR("com.apple.hitoolbox.window")))
 	{
 		nsView = createNSView (this, size);
+		size.offset (-size.left, -size.top);
 		return true;
 	}
 	#else
 	nsView = createNSView (this, size);
+	size.offset (-size.left, -size.top);
 	#endif
 
 #endif
@@ -4383,7 +4466,7 @@ bool CFrame::getPosition (CCoord &x, CCoord &y) const
 //-----------------------------------------------------------------------------
 void CFrame::setViewSize (CRect& rect, bool invalid)
 {
-	setSize (rect.width (), rect.height ());
+	CViewContainer::setViewSize (rect, invalid);
 }
 
 //-----------------------------------------------------------------------------
@@ -4399,7 +4482,11 @@ bool CFrame::setSize (CCoord width, CCoord height)
 		return false;
 	
 	if ((width == size.width ()) && (height == size.height ()))
-	 return false;
+		return false;
+
+	CRect newSize (size);
+	newSize.setWidth (width);
+	newSize.setHeight (height);
 
 #if WINDOWS
 	if (backBuffer)
@@ -4414,19 +4501,16 @@ bool CFrame::setSize (CCoord width, CCoord height)
 		{
 			if (effect->sizeWindow ((long)width, (long)height))
 			{
-				size.right = size.left + width;
-				size.bottom = size.top + height;
-
 				#if WINDOWS
 				SetWindowPos ((HWND)pHwnd, HWND_TOP, 0, 0, width, height, SWP_NOMOVE);
 				
 				#elif MAC
 				Rect bounds;
-				CRect2Rect (size, bounds);
+				CRect2Rect (newSize, bounds);
 				SetControlBounds (controlRef, &bounds);
 				#endif
 				
-				CViewContainer::setViewSize (size);
+				CViewContainer::setViewSize (newSize);
 				return true;
 			}
 		}
@@ -4436,10 +4520,6 @@ bool CFrame::setSize (CCoord width, CCoord height)
 	// keep old values
 	CCoord oldWidth  = size.width ();
 	CCoord oldHeight = size.height ();
-
-	// set the new size
-	size.right  = size.left + width;
-	size.bottom = size.top  + height;
 
 #if WINDOWS
 	RECT  rctTempWnd, rctParentWnd;
@@ -4484,8 +4564,8 @@ bool CFrame::setSize (CCoord width, CCoord height)
 #if MAC_COCOA
 	if (nsView)
 	{
-		resizeNSView (nsView, size);
-		CViewContainer::setViewSize (size);
+		resizeNSView (nsView, newSize);
+		CViewContainer::setViewSize (newSize);
 		return true;
 	}
 #endif
@@ -4511,7 +4591,7 @@ bool CFrame::setSize (CCoord width, CCoord height)
 	}
 #endif
 
-	CViewContainer::setViewSize (size);
+	CViewContainer::setViewSize (newSize);
 
 	return true;
 }
@@ -5147,8 +5227,49 @@ void CViewContainer::parentSizeChanged ()
  */
 void CViewContainer::setViewSize (CRect &rect, bool invalid)
 {
+	if (rect == getViewSize ())
+		return;
+
+	CRect oldSize (getViewSize ());
 	CView::setViewSize (rect, invalid);
 
+	bool widthChanged = oldSize.getWidth () != rect.getWidth ();
+	bool heightChanged = oldSize.getHeight () != rect.getHeight ();
+
+	if (widthChanged || heightChanged)
+	{
+		FOREACHSUBVIEW
+			long autosize = pV->getAutosizeFlags ();
+			CRect viewSize (pV->getViewSize ());
+			CRect mouseSize (pV->getMouseableArea ());
+			if (widthChanged && autosize & kAutosizeRight)
+			{
+				viewSize.right += (rect.getWidth () - oldSize.getWidth ());
+				mouseSize.right += (rect.getWidth () - oldSize.getWidth ());
+				if (!(autosize & kAutosizeLeft))
+				{
+					viewSize.left += (rect.getWidth () - oldSize.getWidth ());
+					mouseSize.left += (rect.getWidth () - oldSize.getWidth ());
+				}
+			}
+			if (heightChanged && autosize & kAutosizeBottom)
+			{
+				viewSize.bottom += (rect.getHeight () - oldSize.getHeight ());
+				mouseSize.bottom += (rect.getHeight () - oldSize.getHeight ());
+				if (!(autosize & kAutosizeTop))
+				{
+					viewSize.top += (rect.getHeight () - oldSize.getHeight ());
+					mouseSize.top += (rect.getHeight () - oldSize.getHeight ());
+				}
+			}
+			if (viewSize != pV->getViewSize ())
+			{
+				pV->setViewSize (viewSize);
+				pV->setMouseableArea (mouseSize);
+			}
+		ENDFOR
+	}
+	
 	parentSizeChanged ();
 
 	if (pOffscreenContext && bDrawInOffscreen)

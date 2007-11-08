@@ -2,6 +2,8 @@
 @page changes_from_3_0 Changes from earlier versions of VSTGUI
 
 - @ref new_stuff @n
+- @ref about_deprecation @n
+- @ref code_changes_for_3_5 @n
 - @ref code_changes_for_3_0 @n
 - @ref code_changes_for_2_3 @n
 
@@ -26,6 +28,9 @@ For convenience the old method is still working, but should be replaced with the
 
 @subsection and_more_new and ...
 
+- Mac OS X 64 bit support via Cocoa. (new in 3.6)
+- VSTGUI::COptionMenu refactored. Supports icons for menu items. (new in 3.6)
+- View autoresizing support. (new in 3.6)
 - Bitmaps can be loaded either by number or by name (see VSTGUI::CBitmap)	(new in 3.5)
 - VSTGUI::CTooltipSupport	(new in 3.5)
 - VSTGUI::CVSTGUITimer	(new in 3.5)
@@ -34,6 +39,16 @@ For convenience the old method is still working, but should be replaced with the
 - New font implementation	(new in 3.5)
 - Windows GDI+ support	(new in 3.5)
 - Mac OS X Composited Window support (new in 3.0)
+
+@section about_deprecation About deprecation
+
+With VSTGUI 3.6 the VSTGUI_ENABLE_DEPRECATED_METHODS macro has changed to be zero per default. You should change your code so that
+it compiles without changing the macro. All methods marked this way will be unavailable in the next version.
+
+@section code_changes_for_3_5 Code changes for existing VSTGUI 3.5 code
+
+- COptionMenu was refactored and uses the CMenuItem class for menu items. Item flags are not encoded in the item title anymore.
+- CParamDisplay::setTxtFace () and CParamDisplay::getTxtFace () is gone. The text face is already in CFontRef.
 
 @section code_changes_for_3_0 Code changes for existing VSTGUI 3.0 code
 

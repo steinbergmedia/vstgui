@@ -192,6 +192,7 @@ CScrollView::CScrollView (const CRect &size, const CRect &containerSize, CFrame*
 			sbr.right -= (scrollbarWidth - 1);
 		}
 		hsb = new CScrollbar (sbr, this, kHSBTag, CScrollbar::kHorizontal, containerSize);
+		hsb->setAutosizeFlags (kAutosizeLeft | kAutosizeRight | kAutosizeBottom);
 		CViewContainer::addView (hsb);
 		scsize.bottom = sbr.top;
 	}
@@ -205,11 +206,13 @@ CScrollView::CScrollView (const CRect &size, const CRect &containerSize, CFrame*
 			sbr.bottom -= (scrollbarWidth - 1);
 		}
 		vsb = new CScrollbar (sbr, this, kVSBTag, CScrollbar::kVertical, containerSize);
+		vsb->setAutosizeFlags (kAutosizeTop | kAutosizeRight | kAutosizeBottom);
 		CViewContainer::addView (vsb);
 		scsize.right = sbr.left;
 	}
 
 	sc = new CScrollContainer (scsize, this->containerSize, pParent);
+	sc->setAutosizeFlags (kAutosizeAll);
 	CViewContainer::addView (sc);
 }
 
@@ -239,6 +242,13 @@ CScrollView::CScrollView (const CScrollView& v)
 //-----------------------------------------------------------------------------
 CScrollView::~CScrollView ()
 {
+}
+
+//-----------------------------------------------------------------------------
+void CScrollView::setViewSize (CRect &rect, bool invalid)
+{
+	CViewContainer::setViewSize (rect, invalid);
+	setContainerSize (containerSize, true);
 }
 
 //-----------------------------------------------------------------------------
