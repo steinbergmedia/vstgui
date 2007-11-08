@@ -3,7 +3,7 @@
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 // Standard Control Objects
 //
-// Version 3.5       $Date: 2007-11-08 10:51:54 $
+// Version 3.5       $Date: 2007-11-08 14:13:28 $
 //
 // Added new objects        : Michael Schmidt          08.97
 // Added new objects        : Yvan Grabit              01.98
@@ -55,7 +55,7 @@
 #undef check
 #endif
 
-#if VSTGUI_BUILD_COCOA
+#if MAC_COCOA
 #include "cocoasupport.h"
 #endif
 
@@ -2713,6 +2713,8 @@ COptionMenu::~COptionMenu ()
 
 	if (bgWhenClick)
 		bgWhenClick->forget ();
+
+	delete menuItems;
 }
 
 //------------------------------------------------------------------------
