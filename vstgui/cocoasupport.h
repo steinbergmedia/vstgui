@@ -2,7 +2,7 @@
 // VST Plug-Ins SDK
 // VSTGUI: Graphical User Interface Framework not only for VST plugins : 
 //
-// Version 3.6       $Date: 2007-10-16 20:41:34 $
+// Version 3.6       $Date: 2007-11-08 10:51:54 $
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
@@ -37,6 +37,8 @@
 
 #include "vstgui.h"
 
+/// \cond ignore
+
 // used by CFrame
 void* createNSView (CFrame* frame, const CRect& size);
 void destroyNSView (void* nsView);
@@ -67,5 +69,7 @@ void nsViewRemoveTooltip (CView* view);
 #ifdef __OBJC__
 CRect rectFromNSRect (const NSRect& rect);
 #endif
+
+/// \endcond
 
 #endif

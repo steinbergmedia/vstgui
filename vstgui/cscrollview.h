@@ -97,6 +97,7 @@ public:
 	void valueChanged (CControl *pControl);
 	void setTransparency (bool val);
 	void setBackgroundColor (const CColor& color);
+	void setViewSize (CRect &rect, bool invalid = true);
 
 	CLASS_METHODS(CScrollView, CViewContainer)
 //-----------------------------------------------------------------------------

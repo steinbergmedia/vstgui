@@ -3,7 +3,7 @@
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 // Standard Control Objects
 //
-// Version 3.5       $Date: 2007-10-16 20:41:34 $
+// Version 3.5       $Date: 2007-11-08 10:51:54 $
 //
 // Added new objects        : Michael Schmidt          08.97
 // Added new objects        : Yvan Grabit              01.98
@@ -48,6 +48,8 @@
 #endif
 
 #include "vstkeycode.h"
+
+#include <list>
 
 #ifdef check
 #undef check
@@ -919,7 +921,6 @@ CParamDisplay::CParamDisplay (const CRect& size, CBitmap* background, const long
 	backOffset (0, 0);
 
 	fontID      = kNormalFont; fontID->remember ();
-	txtFace     = kNormalFace;
 	fontColor   = kWhiteCColor;
 	backColor   = kBlackCColor;
 	frameColor  = kBlackCColor;
@@ -939,7 +940,6 @@ CParamDisplay::CParamDisplay (const CParamDisplay& v)
 , horiTxtAlign (v.horiTxtAlign)
 , style (v.style)
 , fontID (v.fontID)
-, txtFace (v.txtFace)
 , fontColor (v.fontColor)
 , backColor (v.backColor)
 , frameColor (v.frameColor)
@@ -984,7 +984,7 @@ void CParamDisplay::draw (CDrawContext *pContext)
 }
 
 //------------------------------------------------------------------------
-void CParamDisplay::drawText (CDrawContext *pContext, char *string, CBitmap *newBack)
+void CParamDisplay::drawText (CDrawContext *pContext, const char *string, CBitmap *newBack)
 {
 	setDirty (false);
 
@@ -1052,7 +1052,7 @@ void CParamDisplay::drawText (CDrawContext *pContext, char *string, CBitmap *new
 		CRect newClip (size);
 		newClip.bound (oldClip);
 		pContext->setClipRect (newClip);
-		pContext->setFont (fontID, 0, txtFace);
+		pContext->setFont (fontID);
 	
 		// draw darker text (as shadow)
 		if (style & kShadowText) 
@@ -1084,15 +1084,6 @@ void CParamDisplay::setFont (CFontRef fontID)
 		this->fontID->forget ();
 	this->fontID = fontID;
 	fontID->remember ();
-}
-
-//------------------------------------------------------------------------
-void CParamDisplay::setTxtFace (CTxtFace txtFace)
-{
-	// to force the redraw
-	if (this->txtFace != txtFace)
-		setDirty ();
-	this->txtFace = txtFace;
 }
 
 //------------------------------------------------------------------------
@@ -1836,7 +1827,7 @@ void CTextEdit::looseFocus ()
 #endif // WINDOWS
 
 #if MAC_COCOA
-	if (getFrame ()->getNSView ())
+	if (getFrame () && getFrame ()->getNSView ())
 	{
 		getNSTextFieldText(platformControl, text, 255);
 		removeNSTextField (platformControl);
@@ -1910,6 +1901,169 @@ void CTextEdit::setTextEditConvert (void (*convert) (char *input, char *string,
 	this->userData = userData;
 }
 
+//------------------------------------------------------------------------
+// CMenuItem
+//------------------------------------------------------------------------
+/*! @class CMenuItem
+Defines an item of a VSTGUI::COptionMenu
+*/
+//------------------------------------------------------------------------
+/**
+ * CMenuItem constructor.
+ * @param inTitle title of item
+ * @param inFlags CMenuItem::Flags of item
+ * @param inKeycode keycode of item
+ * @param inKeyModifiers keymodifiers of item
+ * @param inIcon icon of item
+ */
+//------------------------------------------------------------------------
+CMenuItem::CMenuItem (const char* inTitle, long inFlags, const char* inKeycode, long inKeyModifiers, CBitmap* inIcon)
+: title (0)
+, flags (inFlags)
+, keycode (0)
+, keyModifiers (0)
+, submenu (0)
+, icon (0)
+{
+	setTitle (inTitle);
+	setKey (inKeycode, inKeyModifiers);
+	setIcon (inIcon);
+}
+
+//------------------------------------------------------------------------
+/**
+ * CMenuItem constructor.
+ * @param inTitle title of item
+ * @param inSubmenu submenu of item
+ * @param inIcon icon of item
+ */
+//------------------------------------------------------------------------
+CMenuItem::CMenuItem (const char* inTitle, COptionMenu* inSubmenu, CBitmap* inIcon)
+: title (0)
+, flags (0)
+, keycode (0)
+, keyModifiers (0)
+, submenu (0)
+, icon (0)
+{
+	setTitle (inTitle);
+	setSubmenu (inSubmenu);
+	setIcon (inIcon);
+}
+
+//------------------------------------------------------------------------
+/**
+ * CMenuItem copy constructor.
+ * @param item item to copy
+ */
+//------------------------------------------------------------------------
+CMenuItem::CMenuItem (const CMenuItem& item)
+: title (0)
+, flags (item.flags)
+, keycode (0)
+, keyModifiers (0)
+, submenu (0)
+, icon (0)
+{
+	setTitle (item.getTitle ());
+	setIcon (item.getIcon ());
+	setKey (item.getKeycode (), item.getKeyModifiers ());
+	*submenu = *item.getSubmenu ();
+}
+
+//------------------------------------------------------------------------
+CMenuItem::~CMenuItem ()
+{
+	setIcon (0);
+	setSubmenu (0);
+	setTitle (0);
+	setKey (0);
+}
+
+//------------------------------------------------------------------------
+void CMenuItem::setTitle (const char* inTitle)
+{
+	if (title)
+		free (title);
+	title = 0;
+	if (inTitle)
+	{
+		title = (char*)malloc (strlen (inTitle));
+		strcpy (title, inTitle);
+	}
+}
+
+//------------------------------------------------------------------------
+void CMenuItem::setKey (const char* inKeycode, long inKeyModifiers)
+{
+	if (keycode)
+		free (keycode);
+	keycode = 0;
+	if (inKeycode)
+	{
+		keycode = (char*)malloc (strlen (inKeycode));
+		strcpy (keycode, inKeycode);
+	}
+	keyModifiers = inKeyModifiers;
+}
+
+//------------------------------------------------------------------------
+void CMenuItem::setSubmenu (COptionMenu* inSubmenu)
+{
+	if (submenu)
+		submenu->forget ();
+	submenu = inSubmenu;
+	if (submenu)
+		submenu->remember ();
+}
+
+//------------------------------------------------------------------------
+void CMenuItem::setIcon (CBitmap* inIcon)
+{
+	if (icon)
+		icon->forget ();
+	icon = inIcon;
+	if (icon)
+		icon->remember ();
+}
+
+//------------------------------------------------------------------------
+void CMenuItem::setEnabled (bool state)
+{
+	if (state)
+		flags &= ~kDisabled;
+	else
+		flags |= kDisabled;
+}
+
+//------------------------------------------------------------------------
+void CMenuItem::setChecked (bool state)
+{
+	if (state)
+		flags |= kChecked;
+	else
+		flags &= ~kChecked;
+}
+
+//------------------------------------------------------------------------
+void CMenuItem::setIsTitle (bool state)
+{
+	if (state)
+		flags |= kTitle;
+	else
+		flags &= ~kTitle;
+}
+
+//------------------------------------------------------------------------
+void CMenuItem::setIsSeparator (bool state)
+{
+	if (state)
+		flags |= kSeparator;
+	else
+		flags &= ~kSeparator;
+}
+
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
 //------------------------------------------------------------------------
 // COptionMenuScheme
 //------------------------------------------------------------------------
@@ -2204,13 +2358,13 @@ pascal OSStatus COptionMenuScheme::eventHandler (EventHandlerCallRef inCallRef, 
 					HIPoint mouseLoc;
 					GetEventParameter (inEvent, kEventParamMouseLocation, typeHIPoint, NULL, sizeof (mouseLoc), NULL, &mouseLoc);
 					ControlPartCode partHit = 0;//(ControlPartCode)mouseLoc.y / kItemHeight + 1;
-					char temp[1024];
+					CMenuItem* item = 0;
 					CPoint size;
 					CCoord yPos = -scheme->origin.y;
 					for (long i = 0; i < scheme->menu->getNbEntries (); i++)
 					{
-						scheme->menu->getEntry (i, temp);
-						scheme->scheme->getItemSize (temp, scheme->offscreenContext, size);
+						item = scheme->menu->getEntry (i);
+						scheme->scheme->getItemSize (item->getTitle (), scheme->offscreenContext, size);
 						yPos += size.y;
 						if (yPos >= mouseLoc.y)
 						{
@@ -2226,13 +2380,13 @@ pascal OSStatus COptionMenuScheme::eventHandler (EventHandlerCallRef inCallRef, 
 				{
 					HIRect r = { {0, 0}, { 0, 0 }};
 					r.size.width = scheme->maxWidth;
-					char temp[1024];
+					CMenuItem* item = 0;
 					CPoint size;
 					for (long i = 0; i < scheme->menu->getNbEntries (); i++)
 					{
-						scheme->menu->getEntry (i, temp);
-						scheme->scheme->getItemSize (temp, scheme->offscreenContext, size);
-						if (!strncmp (temp, kMenuSubMenu, 2))
+						item = scheme->menu->getEntry (i);
+						scheme->scheme->getItemSize (item->getTitle (), scheme->offscreenContext, size);
+						if (item->getSubmenu ())
 							size.x += 16;
 						r.size.height += size.y;
 						if (r.size.width < size.x)
@@ -2255,13 +2409,13 @@ pascal OSStatus COptionMenuScheme::eventHandler (EventHandlerCallRef inCallRef, 
 					{
 						r.origin.x = r.origin.y = 0.f;
 						r.size.width = scheme->maxWidth;
-						char temp[1024];
+						CMenuItem* item = 0;
 						CPoint size;
 						for (long i = 0; i < scheme->menu->getNbEntries (); i++)
 						{
-							scheme->menu->getEntry (i, temp);
-							scheme->scheme->getItemSize (temp, scheme->offscreenContext, size);
-							if (!strncmp (temp, kMenuSubMenu, 2))
+							item = scheme->menu->getEntry (i);
+							scheme->scheme->getItemSize (item->getTitle (), scheme->offscreenContext, size);
+							if (item->getSubmenu ())
 								size.x += 16;
 							r.size.height += size.y;
 							if (r.size.width < size.x)
@@ -2272,13 +2426,13 @@ pascal OSStatus COptionMenuScheme::eventHandler (EventHandlerCallRef inCallRef, 
 					}
 					else
 					{
-						char temp[1024];
+						CMenuItem* item = 0;
 						CPoint size;
 						for (long i = 0; i < whichItem; i++)
 						{
 							r.origin.y += size.y;
-							scheme->menu->getEntry (i, temp);
-							scheme->scheme->getItemSize (temp, scheme->offscreenContext, size);
+							item = scheme->menu->getEntry (i);
+							scheme->scheme->getItemSize (item->getTitle (), scheme->offscreenContext, size);
 							r.size.height += size.y;
 						}
 						r.size.width = scheme->maxWidth;
@@ -2304,7 +2458,6 @@ pascal OSStatus COptionMenuScheme::eventHandler (EventHandlerCallRef inCallRef, 
 					focusPart--;
 					WindowRef window = HIViewGetWindow (scheme->hiView);
 					CDrawContext context (NULL, cgContext, window);
-					char entryText[1024];
 					CPoint size;
 					CRect drawingRect (r.origin.x, r.origin.y, r.origin.x + r.size.width, r.origin.y + r.size.height); 
 					CRect rect (-scheme->origin.x, -scheme->origin.y);
@@ -2312,33 +2465,30 @@ pascal OSStatus COptionMenuScheme::eventHandler (EventHandlerCallRef inCallRef, 
 					rect.setWidth (scheme->maxWidth);
 					for (int i = 0; i < scheme->menu->getNbEntries (); i++)
 					{
-						if (scheme->menu->getEntry (i, entryText))
+						CMenuItem* item = 0;
+						if (item = scheme->menu->getEntry (i))
 						{
-							scheme->scheme->getItemSize (entryText, &context, size);
-							long state = scheme->menu->isCheckEntry (i) ? kChecked : 0;
+							scheme->scheme->getItemSize (item->getTitle (), &context, size);
+							long state = item->isChecked () ? kChecked : 0;
 							if (focusPart >= 0 && focusPart == i)
 								state |= kSelected;
-							long offset = 0;
-							if (!strncmp (entryText, kMenuSubMenu, 2))
+							if (item->getSubmenu ())
 							{
 								state |= kSubMenu;
-								offset = 2;
 							}
-							else if (!strncmp (entryText, kMenuTitle, 2))
+							else if (item->isTitle ())
 							{
 								state |= kTitle;
-								offset = 2;
 							}
-							else if (!strncmp (entryText, kMenuDisable, 2))
+							else if (!item->isEnabled ())
 							{
 								state |= kDisabled;
-								offset = 2;
 							}
 							rect.setHeight (size.y+1);
 							CRect clip (rect);
 							clip.bound (drawingRect);
 							context.setClipRect (clip);
-							scheme->scheme->drawItem (entryText+offset, i, state, &context, rect);
+							scheme->scheme->drawItem (item->getTitle (), i, state, &context, rect);
 							rect.offset (0, size.y);
 						}
 					}
@@ -2436,14 +2586,13 @@ pascal OSStatus COptionMenuScheme::eventHandler (EventHandlerCallRef inCallRef, 
 					HIPoint origin = { 0, 0 };
 					HIRect r = { {0, 0}, { 0, 0 }};
 					r.size.width = scheme->maxWidth;
-					char temp[1024];
 					CCoord maxHeight = 0;
 					CPoint size;
 					for (long i = 0; i < scheme->menu->getNbEntries (); i++)
 					{
-						scheme->menu->getEntry (i, temp);
-						scheme->scheme->getItemSize (temp, scheme->offscreenContext, size);
-						if (!strncmp (temp, kMenuSubMenu, 2))
+						CMenuItem* item = scheme->menu->getEntry (i);
+						scheme->scheme->getItemSize (item->getTitle (), scheme->offscreenContext, size);
+						if (item->getSubmenu ())
 							size.x += 16;
 						r.size.height += size.y;
 						if (r.size.width < size.x)
@@ -2472,6 +2621,15 @@ pascal OSStatus COptionMenuScheme::eventHandler (EventHandlerCallRef inCallRef, 
 	return err;
 }
 #endif
+#endif // VSTGUI_ENABLE_DEPRECATED_METHODS
+
+class CMenuItemList : public std::list<CMenuItem*>
+{
+public:
+	CMenuItemList () {}
+};
+
+typedef std::list<CMenuItem*>::iterator CMenuItemIterator;
 
 //------------------------------------------------------------------------
 // COptionMenu
@@ -2498,13 +2656,13 @@ COptionMenu::COptionMenu (const CRect& size, CControlListener* listener, long ta
 , bgWhenClick (bgWhenClick)
 , nbItemsPerColumn (-1)
 , prefixNumbers (0)
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
 , scheme (0)
+#endif
 {
 	this->listener = listener;
 	this->tag = tag;
 
-	nbEntries = 0;
-	nbSubMenus = 0;
 	currentIndex = -1;
 	lastButton = kRButton;
 	platformControl = 0;
@@ -2518,37 +2676,34 @@ COptionMenu::COptionMenu (const CRect& size, CControlListener* listener, long ta
 	if (bgWhenClick)
 		bgWhenClick->remember ();
 
-	nbSubMenuAllocated = nbAllocated = 0;
-	
-	check = 0;
-	entry = 0;
-	submenuEntry = 0;
+	menuItems = new CMenuItemList;
 }
 
 //------------------------------------------------------------------------
 COptionMenu::COptionMenu (const COptionMenu& v)
 : CParamDisplay (v)
 , platformControl (0)
-, entry (0)
-, submenuEntry (0)
-, check (0)
-, nbEntries (0)
-, nbSubMenus (0)
 , currentIndex (-1)
 , bgWhenClick (v.bgWhenClick)
-, lastButton (kRButton)
+, lastButton (0)
 , nbItemsPerColumn (v.nbItemsPerColumn)
-, nbAllocated (0)
-, nbSubMenuAllocated (0)
 , lastResult (-1)
 , prefixNumbers (0)
 , lastMenu (0)
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
 , scheme (v.scheme)
+#endif
+, menuItems (v.menuItems)
 {
 	if (bgWhenClick)
 		bgWhenClick->remember ();
 
-	// todo copy items and submenues
+	CMenuItemIterator it = menuItems->begin ();
+	while (it != menuItems->end ())
+	{
+		(*it)->remember ();
+		it++;
+	}
 }
 
 //------------------------------------------------------------------------
@@ -2566,224 +2721,101 @@ void COptionMenu::setPrefixNumbers (long preCount)
 	prefixNumbers = preCount;
 }
 
+/**
+ * @param item menu item to add. Takes ownership of item.
+ * @param index position of insertation. -1 appends the item
+ */
 //-----------------------------------------------------------------------------
-bool COptionMenu::allocateSubMenu (long nb)
+CMenuItem* COptionMenu::addEntry (CMenuItem* item, long index)
 {
-	long newAllocated = nbSubMenuAllocated + nb;
-
-	if (submenuEntry)
-		submenuEntry = (COptionMenu**)realloc (submenuEntry, newAllocated * sizeof (COptionMenu*));
+	if (index == -1)
+		menuItems->push_back (item);
 	else
-		submenuEntry = (COptionMenu**)malloc (newAllocated * sizeof (COptionMenu*));
-
-	long i;
-	for (i = nbSubMenuAllocated; i < newAllocated; i++)
-		submenuEntry[i] = 0;
-
-	nbSubMenuAllocated = newAllocated;
-
-	return true;
+	{
+		CMenuItemIterator it = menuItems->begin ();
+		for (int i = 0; i < index; i++, it++);
+		menuItems->insert (it, item);
+	}
+	return item;
 }
 
-//------------------------------------------------------------------------
-bool COptionMenu::allocateMenu (long nb)
+//-----------------------------------------------------------------------------
+CMenuItem* COptionMenu::addEntry (COptionMenu* submenu, const char* title)
 {
-	long newAllocated = nbAllocated + nb;
+	CMenuItem* item = new CMenuItem (title, submenu);
+	return addEntry (item);
+}
 
-	if (check)
-		check = (bool*)realloc (check, newAllocated * sizeof (bool));
-	else
-		check = (bool*)malloc (newAllocated * sizeof (bool));
-	if (!check)
-		return false;
+//-----------------------------------------------------------------------------
+CMenuItem* COptionMenu::addEntry (const char* title, long index, long itemFlags)
+{
+	CMenuItem* item = new CMenuItem (title, itemFlags);
+	return addEntry (item, index);
+}
 
-	if (entry)
-		entry = (char**)realloc (entry, newAllocated * sizeof (char*));
-	else
-		entry = (char**)malloc (newAllocated * sizeof (char*));
-	if (!entry)
-	{
-		free (check);
-		return false;
-	}
+//-----------------------------------------------------------------------------
+CMenuItem* COptionMenu::addSeparator ()
+{
+	CMenuItem* item = new CMenuItem ("", CMenuItem::kSeparator);
+	return addEntry (item);
+}
 
-	long i;
-	for (i = nbAllocated; i < newAllocated; i++)
-	{
-		check[i] = false;
-		entry[i] = 0;
-	}
+//-----------------------------------------------------------------------------
+CMenuItem* COptionMenu::getCurrent () const
+{
+	return getEntry (currentIndex);
+}
 
-	nbAllocated = newAllocated;
+//-----------------------------------------------------------------------------
+CMenuItem* COptionMenu::getEntry (long index) const
+{
+	CMenuItemIterator it = menuItems->begin ();
+	for (int i = 0; i < index; i++, it++);
+	return (*it);
+}
 
-	return true;
+//-----------------------------------------------------------------------------
+long COptionMenu::getNbEntries () const
+{
+	return menuItems->size ();
 }
 
 //------------------------------------------------------------------------
 COptionMenu* COptionMenu::getSubMenu (long idx) const
 {
-	if (submenuEntry && idx < nbSubMenus)
-		return submenuEntry[idx];
+	CMenuItem* item = getEntry (idx);
+	if (item)
+		return item->getSubmenu ();
 	return 0;
-}
-
-//------------------------------------------------------------------------
-bool COptionMenu::addEntry (COptionMenu *subMenu, const char *txt)
-{
-	if (nbEntries >= MAX_ENTRY || !subMenu || !txt)
-		return false;
-
-	if (nbEntries >= nbAllocated)
-		if (!allocateMenu (32))
-			return false;
-
-	entry[nbEntries] = (char*)malloc (256);
-	switch (prefixNumbers)
-	{
-		case 2:
-			sprintf (entry[nbEntries], "-M%1d %s", (int)(nbEntries + 1), txt);
-			break;
-
-		case 3:
-			sprintf (entry[nbEntries], "-M%02d %s", (int)(nbEntries + 1), txt);
-			break;
-
-		case 4:
-			sprintf (entry[nbEntries], "-M%03d %s", (int)(nbEntries + 1), txt);
-			break;
-
-		default:
-			sprintf (entry[nbEntries], "-M%s", txt);
-	}
-
-
-	if (nbSubMenus >= nbSubMenuAllocated)
-		if (!allocateSubMenu (10))
-			return false;
-
-	submenuEntry[nbSubMenus++] = subMenu;
-	subMenu->remember ();
-
-	nbEntries++;
-
-	if (currentIndex < 0)
-		currentIndex = 0;
-	
-	return true;
-}
-
-//------------------------------------------------------------------------
-bool COptionMenu::addEntry (const char *txt, long index)
-{
-	if (nbEntries >= MAX_ENTRY)
-		return false;
-	
-	if (nbEntries >= nbAllocated)
-		if (!allocateMenu (32))
-			return false;
-		
-	entry[nbEntries] = (char*)malloc (256);
-
-	long pos = nbEntries;
-
-	// switch the entries for the insert
-	if (index >= 0)
-	{
-		for (long i = nbEntries; i > index; i--)
-			strcpy (entry[i], entry[i - 1]);
-		if (index >= nbEntries)
-			pos = nbEntries;
-		else
-			pos = index;	
-		if (currentIndex >= index)
-			currentIndex++;	
-	}
-
-	*entry[pos] = 0;
-	if (txt)
-	{
-		switch (prefixNumbers)
-		{
-			case 2:
-				sprintf (entry[pos], "%1d %s", (int)(index + 1), txt);
-				break;
-
-			case 3:
-				sprintf (entry[pos], "%02d %s", (int)(index + 1), txt);
-				break;
-
-			case 4:
-				sprintf (entry[pos], "%03d %s", (int)(index + 1), txt);
-				break;
-
-			default:
-				strncpy (entry[pos], txt, 256);
-		}
-	}
-	
-	nbEntries++;
-	
-	if (currentIndex < 0)
-		currentIndex = 0;
-	
-	return true;
-}
-
-//------------------------------------------------------------------------
-long COptionMenu::getCurrent (char *txt, bool countSeparator) const
-{
-	if (currentIndex < 0)
-		return -1;
-
-	long result = 0;
-	
-	if (countSeparator)
-	{
-		if (txt)
-			strcpy (txt, entry[currentIndex]);
-		result = currentIndex;
-	}
-	else
-	{
-		for (long i = 0; i < currentIndex; i++)
-		{
-			if (strcmp (entry[i], kMenuSeparator) && strncmp (entry[i], kMenuTitle, 2))
-				result++;
-		}
-		if (txt)
-			strcpy (txt, entry[currentIndex]);
-	}
-	return result;
 }
 
 //------------------------------------------------------------------------
 bool COptionMenu::setCurrent (long index, bool countSeparator)
 {
-	if (index < 0 || index >= nbEntries)
-		return false;
-
+	CMenuItem* item = 0;
 	if (countSeparator)
 	{
-		if (!strcmp (entry[index], kMenuSeparator) && strncmp (entry[index], kMenuTitle, 2))
+		item = getEntry (index);
+		if (!item || item->isSeparator ())
 			return false;
-
 		currentIndex = index;
 	}
 	else
 	{
 		long newCurrent = 0;
-		long i = 0;
-		while (i <= index && newCurrent < nbEntries)
+		CMenuItemIterator it = menuItems->begin ();
+		while (it != menuItems->end ())
 		{
-			if (strcmp (entry[newCurrent], kMenuSeparator) && strncmp (entry[newCurrent], kMenuTitle, 2))
-				i++;
-			newCurrent++;
+			if ((*it)->isSeparator ())
+				newCurrent++;
+			it++;
 		}
-		currentIndex = newCurrent - 1;
+		currentIndex = newCurrent = 1;
+		item = getEntry (currentIndex);
 	}
-	if (style & (kMultipleCheckStyle & ~kCheckStyle))
-		check[currentIndex] = !check[currentIndex];
-
+	if (item && style & (kMultipleCheckStyle & ~kCheckStyle))
+		item->setChecked (!item->isChecked ());
+	
 	// to force the redraw
 	setDirty ();
 
@@ -2791,153 +2823,70 @@ bool COptionMenu::setCurrent (long index, bool countSeparator)
 }
 
 //------------------------------------------------------------------------
-bool COptionMenu::getEntry (long index, char *txt) const
-{
-	if (index < 0 || index >= nbEntries)
-		return false;
-
-	if (txt)
-		strcpy (txt, entry[index]);
-	return true;
-}
-
-//------------------------------------------------------------------------
-const char* COptionMenu::getEntry (long index) const
-{
-	if (index < 0 || index >= nbEntries)
-		return 0;
-	return entry[index];
-}
-
-//------------------------------------------------------------------------
-bool COptionMenu::setEntry (long index, char *txt)
-{
-	if (index < 0 || index >= nbEntries)
-		return false;
-
-	if (txt)
-		strcpy (entry[index], txt);
-	return true;
-}
-
-//------------------------------------------------------------------------
 bool COptionMenu::removeEntry (long index)
 {
-	if (index < 0 || index >= nbEntries)
-		return false;
-	
-	nbEntries--;
-
-	// switch the entries
-	for (long i = index; i < nbEntries; i++)
+	CMenuItem* item = getEntry (index);
+	if (item)
 	{
-		strcpy (entry[i], entry[i + 1]);
-		check[i] = check [i + 1];
+		menuItems->remove (item);
+		item->forget ();
+		return true;
 	}
-
-	if (currentIndex >= index)
-		currentIndex--;
-
-	// delete the last one
-	free (entry[nbEntries]);
-	entry[nbEntries] = 0;
-	check[nbEntries] = false;
-
-	if (nbEntries == 0)
-		currentIndex = -1;
-	return true;
+	return false;
 }
 
 //------------------------------------------------------------------------
 bool COptionMenu::removeAllEntry ()
 {
-	long i;
-	for (i = 0; i < nbEntries; i++)
+	CMenuItemIterator it = menuItems->end ();
+	while (--it != menuItems->begin ())
 	{
-		free (entry[i]);
-		entry[i] = 0;
-		check[i] = false;
+		(*it)->forget ();
 	}
-
-	nbEntries = 0;
-	currentIndex = -1;
-
-	for (i = 0; i < nbSubMenus; i++)
-	{
-		submenuEntry[i]->forget ();
-		submenuEntry[i] = 0;
-	}
-	nbSubMenus = 0;
-
-	if (check)
-		free (check);
-	check = 0;
-	if (entry)
-		free (entry);
-	entry = 0;
-	if (submenuEntry)
-		free (submenuEntry);
-	submenuEntry = 0;
-	nbAllocated = 0;
-	nbSubMenuAllocated = 0;
-
+	menuItems->clear ();
 	return true;
-}
-
-//------------------------------------------------------------------------
-long COptionMenu::getIndex (char *txt) const
-{
-	if (!txt)
-		return -1;
-
-	// search entries
-	for (long i = 0; i < nbEntries; i++)
-		if (!strcmp (entry[i], txt))
-			return i;
-
-	// not found
-	return -1;
 }
 
 //------------------------------------------------------------------------
 bool COptionMenu::checkEntry (long index, bool state)
 {
-	if (index < 0 || index >= nbEntries)
-		return false;
-
-	check[index] = state;
-
-	return true;
+	CMenuItem* item = getEntry (index);
+	if (item)
+	{
+		item->setChecked (state);
+		return true;
+	}
+	return false;
 }
 
 //------------------------------------------------------------------------
 bool COptionMenu::checkEntryAlone (long index)
 {
-	if (index < 0 || index >= nbEntries)
-		return false;
-	for (long i = 0; i < nbEntries; i++)
-		check[i] = false;
-	check[index] = true;
-
+	CMenuItemIterator it = menuItems->begin ();
+	long pos = 0;
+	while (it != menuItems->end ())
+	{
+		(*it)->setChecked (pos == index);
+		it++;
+		pos++;
+	}
 	return true;
 }
 
 //------------------------------------------------------------------------
 bool COptionMenu::isCheckEntry (long index) const
 {
-	if (index < 0 || index >= nbEntries)
-		return false;
-
-	return check[index];
+	CMenuItem* item = getEntry (index);
+	if (item && item->isChecked ())
+		return true;
+	return false;
 }
 
 //------------------------------------------------------------------------
 void COptionMenu::draw (CDrawContext *pContext)
 {
-	if (currentIndex >= 0 && nbEntries) 
-		drawText (pContext, entry[currentIndex] + prefixNumbers, getFrame ()->getFocusView () == this ? bgWhenClick : 0);
-	else
-		drawText (pContext, NULL, getFrame ()->getFocusView () == this ? bgWhenClick : 0);
+	CMenuItem* item = getEntry (currentIndex);
+	drawText (pContext, item ? item->getTitle () : NULL, getFrame ()->getFocusView () == this ? bgWhenClick : 0);
 }
 
 #if VSTGUI_ENABLE_DEPRECATED_METHODS
@@ -2961,7 +2910,7 @@ void COptionMenu::mouse (CDrawContext *pContext, CPoint& where, long button)
 		{
 			char string[256];
 			if (currentIndex >= 0)
-				sprintf (string, "%s", entry[currentIndex]);
+				sprintf (string, "%s", getEntry (currentIndex)->getTitle ());
 			else
 				string[0] = 0;
 		
@@ -3001,7 +2950,7 @@ COptionMenu *COptionMenu::getItemMenu (long idx, long &idxInMenu, long &offsetId
 {
 #if WINDOWS
 	long oldIDx = offsetIdx;
-	offsetIdx += nbEntries;
+	offsetIdx += getNbEntries ();
 
 	if (idx < offsetIdx)
 	{
@@ -3017,11 +2966,16 @@ COptionMenu *COptionMenu::getItemMenu (long idx, long &idxInMenu, long &offsetId
 	}
 #endif
 	COptionMenu *menu = 0;
-	for (long i = 0; i < nbSubMenus; i++)
+	CMenuItemIterator it = menuItems->begin ();
+	while (it != menuItems->end ())
 	{
-		menu = submenuEntry[i]->getItemMenu (idx, idxInMenu, offsetIdx);
-		if (menu)
-			break;
+		if ((*it)->getSubmenu ())
+		{
+			menu = (*it)->getSubmenu ()->getItemMenu (idx, idxInMenu, offsetIdx);
+			if (menu)
+				break;
+		}
+		it++;
 	}
 	return menu;
 }
@@ -3029,8 +2983,13 @@ COptionMenu *COptionMenu::getItemMenu (long idx, long &idxInMenu, long &offsetId
 //------------------------------------------------------------------------
 void COptionMenu::removeItems ()
 {
-	for (long i = 0; i < nbSubMenus; i++)
-		submenuEntry[i]->removeItems ();
+	CMenuItemIterator it = menuItems->begin ();
+	while (it != menuItems->end ())
+	{
+		if ((*it)->getSubmenu ())
+			(*it)->getSubmenu ()->removeItems ();
+		it++;
+	}
 	
 #if WINDOWS
 	// destroy the menu
@@ -3057,18 +3016,25 @@ void *COptionMenu::appendItems (long &offsetIdx)
 #if WINDOWS
 	void *menu = (void*)CreatePopupMenu ();
 	
+	#if VSTGUI_ENABLE_DEPRECATED_METHODS
 	bool ownerDraw = (scheme != 0) || (gOptionMenuScheme != 0);
+	#else
+	bool ownerDraw = false;
+	#endif
 
 	int flags = 0;
 	long idxSubmenu = 0;
 	long offset = offsetIdx;
+	long nbEntries = getNbEntries ();
 	offsetIdx += nbEntries;
 	long inc = 0;
-	for (long i = 0; i < nbEntries; i++)
+	CMenuItemIterator it = menuItems->begin ();
+	while (it != menuItems->end ())
 	{
-		UTF8StringHelper entryText (entry[i]);
-		//---Separator-----
-		if (!strcmp (entry[i], kMenuSeparator))
+		CMenuItem* item = (*it);
+		// TODO : prefix numbers and icons
+		UTF8StringHelper entryText (item->getTitle ());
+		if (item->isSeparator ())
 		{
 			if (ownerDraw)
 				AppendMenu ((HMENU)menu, MF_OWNERDRAW|MF_SEPARATOR, 0, entryText);
@@ -3081,52 +3047,37 @@ void *COptionMenu::appendItems (long &offsetIdx)
 			if (nbEntries < 160 && nbItemsPerColumn > 0 && inc && !(inc % nbItemsPerColumn))
 				flags |= MF_MENUBARBREAK;
 
-			if (!strncmp (entry[i], kMenuSubMenu, 2))
+			if (item->getSubMenu ())
 			{
-				if (idxSubmenu < nbSubMenus)
+				void *submenu = item->getSubmenu ()->appendItems (offsetIdx);
+				if (submenu)
 				{
-					void *submenu = submenuEntry[idxSubmenu]->appendItems (offsetIdx);
-					if (submenu)
-					{
-						idxSubmenu++;
-						AppendMenu ((HMENU)menu, flags|MF_POPUP|MF_ENABLED, (UINT_PTR)submenu, (const TCHAR*)entryText + 2);
-					}
-					else
-						continue;
+					AppendMenu ((HMENU)menu, flags|MF_POPUP|MF_ENABLED, (UINT_PTR)submenu, (const TCHAR*)entryText);
 				}
-				else
-					continue;
-			}
-			//---Disable/Gray entry-----------
-			else if (!strncmp (entry[i], kMenuDisable, 2))
-			{
-				AppendMenu ((HMENU)menu, flags|MF_GRAYED, offset + inc, (const TCHAR*)entryText + 2);
-			}
-			//---Disable entry--------
-			else if (!strncmp (entry[i], kMenuTitle, 2))
-			{
-				AppendMenu ((HMENU)menu, flags|MF_DISABLED, offset + inc, (const TCHAR*)entryText + 2);
-			}
-			//---Multiple Checked entry---
-			else if (multipleCheck)
-			{
-				AppendMenu ((HMENU)menu, flags|MF_ENABLED | 
-					(check[i] ? MF_CHECKED : MF_UNCHECKED), offset + inc, entryText);
-			}
-			//---Checked Entry---------
-			else if (style & kCheckStyle)
-			{
-				AppendMenu ((HMENU)menu, flags|MF_ENABLED | 
-					((i == currentIndex) ? MF_CHECKED : MF_UNCHECKED), offset + inc, entryText);
 			}
 			else
-				AppendMenu ((HMENU)menu, flags|MF_ENABLED, offset + inc, entryText);
+			{
+				if (item->isEnabled ())
+					flags |= MF_ENABLED;
+				else
+					flags |= MF_GRAYED;
+				if (item->isTitle ())
+					flags |= MF_DISABLED;
+				if (multipleCheck && item->isChecked ())
+					flags |= MF_CHECKED;
+				if (style & kCheckStyle && inc == currentIndex && item->isChecked ())
+					flags |= MF_CHECKED;
+				if (!(flags & MF_CHECKED)
+					flags |= MF_UNCHECKED;
+				AppendMenu ((HMENU)menu, flags, offset + inc, entryText);
+			}
 		}
 		inc++;
+		it++;
 	}
 	platformControl = menu;
 	return menu;
-
+	
 #elif MAC
 	//---Get an non-existing ID for the menu:
 	menuID = UniqueID ('MENU');
@@ -3156,133 +3107,85 @@ void *COptionMenu::appendItems (long &offsetIdx)
 	}
 	else
 	#endif
-		//theMenu = NewMenu (menuID, "\pPopUp");
 		CreateNewMenu (menuID, kMenuAttrCondenseSeparators, &theMenu);
 		
-	char text2[256];
-	long keyChar;
-	long idxSubmenu = 0;
-	offsetIdx += nbEntries;
-	short keyModifiers;
-	bool useGlyph;
-	for (long i = 0; i < nbEntries; i++)
+	CMenuItemIterator it = menuItems->begin ();
+	long i = 0;
+	while (it != menuItems->end ())
 	{
-		keyChar = 0;
-		keyModifiers = kMenuNoModifiers;
-		useGlyph = false;
-		
-		strcpy (text2, entry[i]);
-		char *ptr = strstr (text2, "\t");
-		// this does not work correctly in all cases for UTF-8
-		if (ptr)
-		{
-			*ptr = '\0';
-			ptr++;
-			if (strlen (ptr) > 0)
-			{
-				if (!strstr (ptr, "Ctrl"))
-				   	keyModifiers |= kMenuNoCommandModifier;
-				if (strstr (ptr, "Alt"))
-					keyModifiers |= kMenuOptionModifier;
-				if (strstr (ptr, "Shift"))
-					keyModifiers |= kMenuShiftModifier;
-				if (strstr (ptr, "Apple"))
-					keyModifiers |= kMenuControlModifier;
-				
-				if (!strncmp (ptr, "Del", 3))
-					keyChar = 0x17;
-				else if (!strncmp (ptr, "Left", 4))
-				{
-					keyChar = 0x64;
-					useGlyph = true;
-				}
-				else if (!strncmp (ptr, "Right", 5))
-				{
-					keyChar = 0x65;
-					useGlyph = true;
-				}
-				else if (!strncmp (ptr, "Up", 2))
-				{
-					keyChar = 0x68;
-					useGlyph = true;
-				}
-				else if (!strncmp (ptr, "Down", 4))
-				{
-					keyChar = 0x6a;
-					useGlyph = true;
-				}
-				else
-					keyChar = (long)ptr[strlen (ptr) - 1];
-			}
-			else 
-			{
-				keyModifiers = kMenuNoCommandModifier;
-				keyChar = (long)*ptr;	
-			}
-		}
-
-		if (!strcmp (entry[i], kMenuSeparator))
-		{
+		i++;
+		CMenuItem* item = (*it);
+		if (item->isSeparator ())
 			AppendMenuItemTextWithCFString (theMenu, CFSTR(""), kMenuItemAttrSeparator, 0, NULL);
-		}
 		else
 		{
-			CFStringRef itemString = 0;
-			MenuItemAttributes itemAttribs = kMenuItemAttrIgnoreMeta;
-			// Submenu
-			if (!strncmp (entry[i], kMenuSubMenu, 2))
+			CFStringRef itemString = CFStringCreateWithCString (NULL, item->getTitle (), kCFStringEncodingUTF8);
+			if (getPrefixNumbers ())
 			{
-				if (idxSubmenu < nbSubMenus)
+				CFStringRef prefixString = 0;
+				switch (getPrefixNumbers ())
 				{
-					itemString = CFStringCreateWithCString (NULL, entry[i] + 2, kCFStringEncodingUTF8);
-					InsertMenuItemTextWithCFString (theMenu, itemString, i+1, itemAttribs, 0);
-					CFRelease (itemString);
-					void *submenu = submenuEntry[idxSubmenu]->appendItems (offsetIdx);
-					if (submenu)
-					{
-						SetMenuItemHierarchicalID (theMenu, i + 1, submenuEntry[idxSubmenu]->getMenuID ());
-						idxSubmenu++;
-						continue;
-					}
-					else
-						continue;
+					case 2:
+						prefixString = CFStringCreateWithFormat (NULL, 0, CFSTR("%1d "),i); break;
+					case 3:
+						prefixString = CFStringCreateWithFormat (NULL, 0, CFSTR("%02d "),i); break;
+					case 4:
+						prefixString = CFStringCreateWithFormat (NULL, 0, CFSTR("%03d "),i); break;
 				}
-				else
-					continue;
+				CFMutableStringRef newItemString = CFStringCreateMutable (0, 0);
+				CFStringAppend (newItemString, prefixString);
+				CFStringAppend (newItemString, itemString);
+				CFRelease (itemString);
+				CFRelease (prefixString);
+				itemString = newItemString;
 			}
-			//---Disable/Gray entry-----------
-			else if (!strncmp (entry[i], kMenuDisable, 2))
-			{
-				itemString = CFStringCreateWithCString (NULL, entry[i] + 2, kCFStringEncodingUTF8);
+			if (itemString == 0)
+				continue;
+			MenuItemAttributes itemAttribs = kMenuItemAttrIgnoreMeta;
+			if (!item->isEnabled ())
 				itemAttribs |= kMenuItemAttrDisabled;
-			}
-			//---Disable entry--------
-			else if (!strncmp (entry[i], kMenuTitle, 2))
-			{
-				itemString = CFStringCreateWithCString (NULL, entry[i] + 2, kCFStringEncodingUTF8);
+			if (item->isTitle ())
 				itemAttribs |= kMenuItemAttrSectionHeader;
-			}
-			else
-				itemString = CFStringCreateWithCString (NULL, entry[i], kCFStringEncodingUTF8);
 
-			InsertMenuItemTextWithCFString (theMenu, itemString, i+1, itemAttribs, 0);
+			InsertMenuItemTextWithCFString (theMenu, itemString, i, itemAttribs, 0);
+
+			if (item->isChecked () && multipleCheck)
+				CheckMenuItem (theMenu, i, true);
+			if (item->getSubmenu ())
+			{
+				void *submenu = item->getSubmenu ()->appendItems (offsetIdx);
+				if (submenu)
+					SetMenuItemHierarchicalID (theMenu, i, item->getSubmenu ()->getMenuID ());
+			}
+			if (item->getIcon ())
+			{
+				CGImageRef image = item->getIcon ()->createCGImage ();
+				if (image)
+				{
+					SetMenuItemIconHandle (theMenu, i, kMenuCGImageRefType, (Handle)image);
+					CGImageRelease (image);
+				}
+			}
+			if (item->getKeycode ())
+			{
+				SetItemCmd (theMenu, i, item->getKeycode ()[0]);
+				UInt8 keyModifiers = 0;
+				long itemModifiers = item->getKeyModifiers ();
+				if (itemModifiers & kShift)
+					keyModifiers |= kMenuShiftModifier;
+				if (!(itemModifiers & kControl))
+					keyModifiers |= kMenuNoCommandModifier;
+				if (itemModifiers & kAlt)
+					keyModifiers |= kMenuOptionModifier;
+				if (itemModifiers & kApple)
+					keyModifiers |= kMenuControlModifier;
+				
+				SetMenuItemModifiers (theMenu, i, keyModifiers);
+			}
 			CFRelease (itemString);
 		}
-
-		//---Set the shortcut
-		if (keyChar != 0)
-		{
-			SetItemCmd (theMenu, i + 1, keyChar);
-			if (useGlyph)
-				SetMenuItemKeyGlyph (theMenu, i + 1, keyChar);
-			SetMenuItemModifiers (theMenu, i + 1, keyModifiers);
-		}
-		
-		if (multipleCheck && check[i])
-			CheckMenuItem (theMenu, i + 1, true);
-
+		it++;
 	}
-	
 	// set the check
 	if (style & kCheckStyle && !multipleCheck)
 		CheckMenuItem (theMenu, currentIndex + 1, true);
@@ -3291,21 +3194,24 @@ void *COptionMenu::appendItems (long &offsetIdx)
 	
 	platformControl = (void*)theMenu;
 	return platformControl;
-#elif MAC_COCOA
-	return 0; // not used
-
+	
 #endif
+	return 0;
 }
 
 //------------------------------------------------------------------------
 void COptionMenu::setValue (float val)
 {
-	if ((long)val < 0 || (long)val >= nbEntries)
+	if ((long)val < 0 || (long)val >= getNbEntries ())
 		return;
 	
 	currentIndex = (long)val;
 	if (style & (kMultipleCheckStyle & ~kCheckStyle))
-		check[currentIndex] = !check[currentIndex];
+	{
+		CMenuItem* item = getCurrent ();
+		if (item)
+			item->setChecked (!item->isChecked ());
+	}
 	CParamDisplay::setValue (val);
 	
 	// to force the redraw
@@ -3429,7 +3335,7 @@ void COptionMenu::takeFocus ()
 	
 #if MAC
 	// no entries, no menu
-	if (nbEntries == 0)
+	if (getNbEntries () == 0)
 	{
 		endEdit();
 		getFrame ()->setFocusView (0);
@@ -3454,41 +3360,11 @@ void COptionMenu::takeFocus ()
 	long offIdx = 0;
 	MenuHandle theMenu = (MenuHandle)appendItems (offIdx);
 
-	// Calculate the menu size (height and width)
-	CalcMenuSize (theMenu);
-	
-	// Get a handle to the screen
-	RgnHandle rgn = GetGrayRgn ();
-
-	Rect bounds;
-	GetRegionBounds (rgn, &bounds);
-	int bottom      = bounds.bottom;
-	long menuHeight = GetMenuHeight (theMenu);
-
-	// Calculate the size of one menu item (round to the next int)
-	int menuItemSize = (menuHeight + nbEntries - 1) / nbEntries;
-
 	setDirty (false);	
 
 	//---Popup the Menu
 	long popUpItem = style & kPopupStyle ? (value + 1) : 1;
-	long PopUpMenuItem = 0;
-
-	if (LToG.v + menuHeight >= bottom - menuItemSize / 2)
-	{
-		if (nbEntries * menuItemSize >= bottom)
-		{
-			popUpItem = currentIndex + 2;
-			if (popUpItem > nbEntries)
-				popUpItem = nbEntries;
-		}
-		if (nbEntries * menuItemSize >= bottom)
-			PopUpMenuItem = PopUpMenuSelect (theMenu, LToG.v, LToG.h, popUpItem);
-		else
-			PopUpMenuItem = PopUpMenuSelect (theMenu, bottom - menuHeight - menuItemSize, LToG.h, popUpItem);
-	}
-	else
-		PopUpMenuItem = PopUpMenuSelect (theMenu, LToG.v, LToG.h, popUpItem);
+	long PopUpMenuItem = PopUpMenuItem = PopUpMenuSelect (theMenu, LToG.v, LToG.h, popUpItem);
 
 	//---Destroy the menu----
 	removeItems ();

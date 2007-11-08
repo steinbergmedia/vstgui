@@ -2,7 +2,7 @@
 // VST Plug-Ins SDK
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 //
-// Version 3.0       $Date: 2007-08-17 12:52:39 $ 
+// Version 3.0       $Date: 2007-11-08 10:51:54 $ 
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
@@ -452,9 +452,6 @@ long CFileSelector::run (VstFileSelect *vstFileSelect)
 		// new approach for supporting long filenames on mac os x is to use unix path mode
 		// if vstFileSelect->future[0] is 1 on entry and 0 on exit the resulting paths are UTF8 encoded paths
 		bool unixPathMode = (vstFileSelect->future[0] == 1);
-		#if __LP64__
-		unixPathMode = 1;
-		#endif
 		NavEventUPP	eventUPP = NewNavEventUPP (CFileSelector::navEventProc);
 		if (vstFileSelect->command == kVstFileSave)
 		{
@@ -478,9 +475,7 @@ long CFileSelector::run (VstFileSelect *vstFileSelect)
 					vstFileSelect->initialPath = 0;
 				}
 			}
-			#if !__LP64__
-			else
-			if (vstFileSelect->initialPath && ((FSSpec*)vstFileSelect->initialPath)->name)
+			else if (vstFileSelect->initialPath && ((FSSpec*)vstFileSelect->initialPath)->name)
 			{
 				FSSpec* defaultSpec = (FSSpec*)vstFileSelect->initialPath;
 				defSaveName = CFStringCreateWithPascalString (NULL, defaultSpec->name, kCFStringEncodingASCII);
@@ -491,7 +486,6 @@ long CFileSelector::run (VstFileSelect *vstFileSelect)
 				}
 				*defaultSpec->name = 0;
 			}
-			#endif
 			NavDialogRef dialogRef;
 			if (NavCreatePutFileDialog (&dialogOptions, 0, kNavGenericSignature, eventUPP, this, &dialogRef) == noErr) 
 			{
@@ -510,14 +504,12 @@ long CFileSelector::run (VstFileSelect *vstFileSelect)
 					}
 					else
 					{
-						#if !__LP64__
 						FSSpec* defaultSpec = (FSSpec*)vstFileSelect->initialPath;
 				        if (defaultSpec->parID && defaultSpec->vRefNum)
 				        {
 				            if (AECreateDesc (typeFSS, defaultSpec, sizeof(FSSpec), &defaultLocation) == noErr)
 				                defLocPtr = &defaultLocation;
 						}
-						#endif
 					}
 				}
 		        if (defLocPtr)
@@ -569,7 +561,6 @@ long CFileSelector::run (VstFileSelect *vstFileSelect)
 						}
 						else
 						{
-							#if !__LP64__
 							FSSpec spec;
 							FSCatalogInfoBitmap infoBitmap = kFSCatInfoNone;
 							FSGetCatalogInfo (&parentFSRef, infoBitmap, NULL, NULL, &spec, NULL);
@@ -592,7 +583,6 @@ long CFileSelector::run (VstFileSelect *vstFileSelect)
 									memcpy (vstFileSelect->returnPath, &spec, sizeof (FSSpec));
 								}
 							}
-							#endif
 						}
 					}
 					NavDisposeReply (&navReply);
@@ -629,12 +619,10 @@ long CFileSelector::run (VstFileSelect *vstFileSelect)
 					}
 					else
 					{
-						#if !__LP64__
 						FSSpec* defaultSpec = (FSSpec*)vstFileSelect->initialPath;
 				        if (defaultSpec->parID && defaultSpec->vRefNum)       
 				            if (AECreateDesc (typeFSS, defaultSpec, sizeof(FSSpec), &defaultLocation) == noErr)
 				                defLocPtr = &defaultLocation;
-						#endif
 			        }
 				}
 		        if (defLocPtr)
@@ -724,12 +712,10 @@ long CFileSelector::run (VstFileSelect *vstFileSelect)
 					}
 					else
 					{
-						#if !__LP64__
 						FSSpec* defaultSpec = (FSSpec*)vstFileSelect->initialPath;
 				        if (defaultSpec->parID && defaultSpec->vRefNum)       
 				            if (AECreateDesc (typeFSS, defaultSpec, sizeof(FSSpec), &defaultLocation) == noErr)
 				                defLocPtr = &defaultLocation;
-						#endif
 			        }
 				}
 		        if (defLocPtr)
@@ -830,12 +816,12 @@ long CFileSelector::run (VstFileSelect *vstFileSelect)
 //-----------------------------------------------------------------------------
 pascal void CFileSelector::navEventProc (const NavEventCallbackMessage callBackSelector, NavCBRecPtr callBackParms, NavCallBackUserData callBackUD) 
 {
-	CFileSelector* fs = (CFileSelector*)callBackUD;
 	switch (callBackSelector)
 	{
 		case kNavCBEvent:
 		{
 			#if ENABLE_VST_EXTENSION_IN_VSTGUI
+			CFileSelector* fs = (CFileSelector*)callBackUD;
 			AudioEffectX* effect = (AudioEffectX*)fs->ptr;
 			if (effect && callBackParms->eventData.eventDataParms.event->what == nullEvent)
 				effect->masterIdle ();
@@ -870,15 +856,12 @@ pascal Boolean CFileSelector::navObjectFilterProc (AEDesc *theItem, void *info, 
 				for (long i = 0; i < fs->vstFileSelect->nbFileTypes; i++)
 				{
 					VstFileType* ft = &fs->vstFileSelect->fileTypes[i];
-					#if !__LP64__
 					if ((OSType)ft->macType == infoRecord.filetype)
 					{
 						result = true;
 						break;
 					}
-					else
-					#endif
-					if (infoRecord.extension)
+					else if (infoRecord.extension)
 					{
 						if (!strcasecmp (extension, ft->unixType) || !strcasecmp (extension, ft->dosType))
 						{
