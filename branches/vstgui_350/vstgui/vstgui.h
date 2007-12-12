@@ -2,7 +2,7 @@
 // VST Plug-Ins SDK
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 //
-// Version 3.5       $Date: 2007-10-12 10:12:40 $
+// Version 3.5       $Date: 2007-12-12 11:42:23 $
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
@@ -687,7 +687,7 @@ public:
 	void moveTo (const CPoint &point);	///< move line position to point
 	void lineTo (const CPoint &point);	///< draw a line from current position to point
 	void drawLines (const CPoint* points, const long& numberOfLines);	///< draw multiple lines at once
-	void drawPolygon (const CPoint *pPoints, long numberOfPoints, const CDrawStyle drawStyle = kDrawStroked); ///< draw a polygon
+	void drawPolygon (const CPoint *pPoints, long numberOfPoints, const CDrawStyle drawStyle = kDrawStroked, bool closePolygon = true); ///< draw a polygon
 	void drawRect (const CRect &rect, const CDrawStyle drawStyle = kDrawStroked);	///< draw a rect
 	void drawArc (const CRect &rect, const float startAngle1, const float endAngle2, const CDrawStyle drawStyle = kDrawStroked);	///< draw an arc, angles are in degree
 	void drawEllipse (const CRect &rect, const CDrawStyle drawStyle = kDrawStroked);	///< draw an ellipse
@@ -1551,10 +1551,12 @@ public:
 		{
 			if (!allocWideStr && utf8Str)
 			{
-				allocWideStr = (WCHAR*)malloc ((strlen (utf8Str)+1) * 3 * sizeof (WCHAR));
-				memset (allocWideStr, 0, (strlen (utf8Str)+1) * 3 * sizeof (WCHAR));
-				if (MultiByteToWideChar (CP_UTF8, 0, utf8Str, (int)strlen (utf8Str), allocWideStr, (int)(strlen (utf8Str)+1) * 3) == 0)
+				allocWideStr = (WCHAR*)malloc ((strlen (utf8Str)+1) * 3 * sizeof (WCHAR) + 1);
+				memset (allocWideStr, 0, (strlen (utf8Str)+1) * 3 * sizeof (WCHAR) + 1);
+				if (utf8Str[0] != 0 && MultiByteToWideChar (CP_UTF8, 0, utf8Str, (int)strlen (utf8Str), allocWideStr, (int)(strlen (utf8Str)+1) * 3) == 0)
 				{
+					DWORD error = GetLastError ();
+					error = error;
 					/* Error, TODO */
 				}
 			}
@@ -1569,10 +1571,12 @@ public:
 		{
 			if (!allocUTF8Str && wideStr)
 			{
-				allocUTF8Str = (char*)malloc ((wcslen (wideStr)+1) * 2);
-				memset (allocUTF8Str, 0, (wcslen (wideStr)+1) * 2);
-				if (WideCharToMultiByte (CP_UTF8, 0, wideStr, (int)wcslen (wideStr) * 2, allocUTF8Str, (int)(wcslen (wideStr)+1) * 2, 0, 0) == 0)
+				allocUTF8Str = (char*)malloc ((wcslen (wideStr)+1) * 2 + 1);
+				memset (allocUTF8Str, 0, (wcslen (wideStr)+1) * 2 + 1);
+				if (wideStr[0] != 0 && WideCharToMultiByte (CP_UTF8, 0, wideStr, (int)wcslen (wideStr) * 2, allocUTF8Str, (int)(wcslen (wideStr)+1) * 2, 0, 0) == 0)
 				{
+					DWORD error = GetLastError ();
+					error = error;
 					/* Error, TODO */
 				}
 			}

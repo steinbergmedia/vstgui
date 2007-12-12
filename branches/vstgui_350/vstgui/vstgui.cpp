@@ -2,7 +2,7 @@
 // VST Plug-Ins SDK
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 //
-// Version 3.5       $Date: 2007-10-03 12:24:26 $ 
+// Version 3.5       $Date: 2007-12-12 11:42:23 $ 
 //
 // Added Motif/Windows vers.: Yvan Grabit              01.98
 // Added Mac version        : Charlie Steinberg        02.98
@@ -1144,7 +1144,7 @@ void CDrawContext::drawLines (const CPoint* points, const long& numLines)
 }
 
 //-----------------------------------------------------------------------------
-void CDrawContext::drawPolygon (const CPoint* pPoints, long numberOfPoints, const CDrawStyle drawStyle)
+void CDrawContext::drawPolygon (const CPoint* pPoints, long numberOfPoints, const CDrawStyle drawStyle, bool closePolygon)
 {
 #if MAC
 	CGContextRef context = beginCGContext (true);
@@ -1163,6 +1163,8 @@ void CDrawContext::drawPolygon (const CPoint* pPoints, long numberOfPoints, cons
 		CGContextMoveToPoint (context, pPoints[0].h + offset.h, pPoints[0].v + offset.v);
 		for (long i = 1; i < numberOfPoints; i++)
 			CGContextAddLineToPoint (context, pPoints[i].h + offset.h, pPoints[i].v + offset.v);
+		if (closePolygon)
+			CGContextClosePath (context);
 		CGContextDrawPath (context, m);
 		releaseCGContext (context);
 	}
@@ -1189,7 +1191,12 @@ void CDrawContext::drawPolygon (const CPoint* pPoints, long numberOfPoints, cons
 	if (drawStyle == kDrawFilled || drawStyle == kDrawFilledAndStroked)
 		pGraphics->FillPolygon (pBrush, polyPoints, numberOfPoints);
 	if (drawStyle == kDrawFilledAndStroked || drawStyle == kDrawStroked)
-		pGraphics->DrawPolygon (pPen, polyPoints, numberOfPoints);
+	{
+		if (closePolygon)
+			pGraphics->DrawPolygon (pPen, polyPoints, numberOfPoints);
+		else
+			pGraphics->DrawLines (pPen, polyPoints, numberOfPoints);
+	}
 
 
 	if (allocated)
@@ -1199,6 +1206,9 @@ void CDrawContext::drawPolygon (const CPoint* pPoints, long numberOfPoints, cons
 	POINT points[30];
 	POINT* polyPoints;
 	bool allocated = false;
+
+	if (closePolygon)
+		numberOfPoints++;
 
 	if (numberOfPoints > 30)
 	{
@@ -1212,8 +1222,16 @@ void CDrawContext::drawPolygon (const CPoint* pPoints, long numberOfPoints, cons
 
 	for (long i = 0; i < numberOfPoints; i++)
 	{
-		polyPoints[i].x = pPoints[i].h + offset.h;
-		polyPoints[i].y = pPoints[i].v + offset.v;
+		if (closePolygon && i == numberOfPoints-1)
+		{
+			polyPoints[i].x = pPoints[0].h + offset.h;
+			polyPoints[i].y = pPoints[0].v + offset.v;
+		}
+		else
+		{
+			polyPoints[i].x = pPoints[i].h + offset.h;
+			polyPoints[i].y = pPoints[i].v + offset.v;
+		}
 	}
 
 	if (drawStyle == kDrawFilled || drawStyle == kDrawFilledAndStroked)
@@ -1370,10 +1388,26 @@ void CDrawContext::drawEllipse (const CRect &_rect, const CDrawStyle drawStyle)
 			pGraphics->DrawEllipse (pPen, rect.left, rect.top, rect.getWidth ()-1, rect.getHeight ()-1);
 		}
 	}
+	#elif WINDOWS
+	HANDLE nullBrush = GetStockObject (NULL_BRUSH);
+	HANDLE oldBrush  = SelectObject ((HDC)pSystemContext, nullBrush);
+	HANDLE nullPen = GetStockObject (NULL_PEN);
+	HANDLE oldPen  = SelectObject ((HDC)pSystemContext, nullPen);
+	if (drawStyle == kDrawFilled || drawStyle == kDrawFilledAndStroked)
+	{
+		SelectObject ((HDC)pSystemContext, (HBRUSH)pBrush);
+	}
+	if (drawStyle == kDrawStroked || drawStyle == kDrawFilledAndStroked)
+	{
+		SelectObject ((HDC)pSystemContext, (HPEN)pPen);
+	}
+	Ellipse ((HDC)pSystemContext, rect.left, rect.top, rect.right, rect.bottom);
+	SelectObject ((HDC)pSystemContext, oldBrush);
+	SelectObject ((HDC)pSystemContext, oldPen);
 
 	#else
 	CPoint point (_rect.left + (_rect.right - _rect.left) / 2, _rect.top);
-	drawArc (_rect, point, point);
+	drawArc (_rect, 0.f, 360.f, drawStyle);
 
 	#endif
 }
@@ -1442,19 +1476,19 @@ void CDrawContext::drawArc (const CRect &_rect, const float _startAngle, const f
 			pGraphics->DrawPath (pPen, &path);
 	}
 	#else
-	float startRad = (float)(k2PI * _startAngle / 360.f);
-	float endRad   = (float)(k2PI * _endAngle / 360.f);
+	float startRad = (float)(k2PI * (_startAngle+90.f) / 360.f);
+	float endRad   = (float)(k2PI * (_endAngle+90.f) / 360.f);
 	
 	CPoint point1, point2;
-	long midX = _rect.width () / 2;
-	long midY = _rect.height () / 2;
+	CCoord midX = rect.width () / 2;
+	CCoord midY = rect.height () / 2;
 
-	point1.x = (long)(midX + midX * cosf (startRad));
-	point1.y = (long)(midY - midY * sinf (startRad));
-	point2.x = (long)(midX + midX * cosf (endRad));
-	point2.y = (long)(midY - midY * sinf (endRad));
-	point1.offset (offset.h, offset.v);
-	point2.offset (offset.h, offset.v);
+	point1.x = (CCoord)(midX + midX * cosf (startRad));
+	point1.y = (CCoord)(midY - midY * sinf (startRad));
+	point2.x = (CCoord)(midX + midX * cosf (endRad));
+	point2.y = (CCoord)(midY - midY * sinf (endRad));
+	point1.offset (offset.h + rect.left, offset.v + rect.top);
+	point2.offset (offset.h + rect.left, offset.v + rect.top);
 
 	if (drawStyle == kDrawFilled || drawStyle == kDrawFilledAndStroked)
 	{
@@ -1914,9 +1948,14 @@ CCoord CDrawContext::getStringWidth (const char* pStr)
 	CCoord result = 0;
 
 	#if WINDOWS
-	SIZE size;
-	GetTextExtentPoint32 ((HDC)pSystemContext, pStr, (int)strlen (pStr), &size);
-	result = (long)size.cx;
+	HANDLE newFont = (HANDLE)font->getPlatformFont ();
+	if (newFont)
+	{
+		SelectObject ((HDC)pSystemContext, newFont);
+		SIZE size;
+		GetTextExtentPoint32 ((HDC)pSystemContext, pStr, (int)strlen (pStr), &size);
+		result = (long)size.cx;
+	}
 
 	#endif
 
@@ -6840,7 +6879,7 @@ bool CBitmap::loadFromPath (const void* platformPath)
 				if (*gi)
 				{
 					#if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_3
-					if (!noAlpha && GraphicsImportCreateCGImage)
+					if (!noAlpha)
 					{
 						if (GraphicsImportCreateCGImage (*gi, (CGImageRef*)&cgImage, 0) == noErr)
 						{
@@ -7561,7 +7600,6 @@ void* CDragContainer::next (long& size, long& type)
 		CFArrayRef flavors = 0;
 		if (PasteboardCopyItemFlavors (pasteboard, itemID, &flavors) == noErr)
 		{
-			long result = kUnknown;
 			for (CFIndex i = 0; i < CFArrayGetCount (flavors); i++)
 			{
 				CFStringRef flavorType = (CFStringRef)CFArrayGetValueAtIndex (flavors, i);

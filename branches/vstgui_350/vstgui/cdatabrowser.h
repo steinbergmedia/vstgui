@@ -2,7 +2,7 @@
 // VST Plug-Ins SDK
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 //
-// Version 3.5       $Date: 2007-08-17 12:52:39 $ 
+// Version 3.5       $Date: 2007-12-12 11:42:23 $ 
 //
 // CDataBrowser written 2006 by Arne Scheffler
 //
@@ -76,6 +76,8 @@ public:
 	enum {
 		kRowSelected = 1 << 1,
 	};
+
+	virtual ~IDataBrowser () {}
 };
 
 //-----------------------------------------------------------------------------

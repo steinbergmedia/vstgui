@@ -1,3 +1,12 @@
+2007-12-11 arne
+
+	* added closePolygon parameter to CDrawContext::drawPolygon. Now you can draw opened and closed polygons.
+	* fix some GDI bugs : 
+		- wrong drawing of CDrawContext::drawEllipse
+		- CDrawContext::getStringWidth does not always work
+	* CFileSelector should work now in Unicode mode on Windows
+	* added virtual destructors for IDataBrowser, IScrollbarDrawer
+	
 2007-10-12 wolfram
 
 	* added virtual destructors for IMouseObserver, CControlListener and IMultiBitmapControl

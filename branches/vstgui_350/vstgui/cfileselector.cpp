@@ -2,7 +2,7 @@
 // VST Plug-Ins SDK
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 //
-// Version 3.0       $Date: 2007-08-17 12:52:39 $ 
+// Version 3.0       $Date: 2007-12-12 11:42:23 $ 
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
@@ -130,14 +130,13 @@ long CFileSelector::run (VstFileSelect *vstFileSelect)
 	#endif
 	{
 #if WINDOWS
-		char filter[512];
-		char filePathBuffer[kPathMax];
-		strcpy (filePathBuffer, "");
-		char* filePath = filePathBuffer;
-		char fileName[kPathMax];
-		strcpy (fileName, "");
+		TCHAR filter[512];
+		TCHAR filePathBuffer[kPathMax];
+		filePathBuffer[0] = 0;
+		TCHAR* filePath = filePathBuffer;
+		TCHAR fileName[kPathMax];
 		filter[0] = 0;
-		filePath[0] = 0;
+		//filePath[0] = 0;
 		fileName[0] = 0;
 		#if ENABLE_VST_EXTENSION_IN_VSTGUI
 		HWND owner = (HWND)((AEffGUIEditor*)((AudioEffectX*)ptr)->getEditor ())->getFrame ()->getSystemWindow ();
@@ -145,9 +144,10 @@ long CFileSelector::run (VstFileSelect *vstFileSelect)
 		HWND owner = (HWND)ptr;
 		#endif
 
+		//----------------------------------------
+		// TODO:: filter does not work in UTF8 yet
+		//----------------------------------------
 		UTF8StringHelper filterText (filter);
-		UTF8StringHelper fileNameText (fileName);
-		UTF8StringHelper filePathText (filePath);
 		UTF8StringHelper initialPathText (vstFileSelect->initialPath);
 		UTF8StringHelper titleText (vstFileSelect->title);
 
@@ -156,65 +156,64 @@ long CFileSelector::run (VstFileSelect *vstFileSelect)
 			vstFileSelect->command == kVstMultipleFilesLoad ||
 			vstFileSelect->command == kVstDirectorySelect)
 		{
-			char* multiBuffer = 0;
+			TCHAR* multiBuffer = 0;
 			if (vstFileSelect->command == kVstMultipleFilesLoad)
 			{
-				multiBuffer = new char [kPathMax * 100];
-				strcpy (multiBuffer, "");
+				multiBuffer = new TCHAR [kPathMax * 100];
+				multiBuffer[0] = 0;
 				filePath = multiBuffer;
 			}
 
 			if (vstFileSelect->command != kVstDirectorySelect) 
 			{
-				char allBuffer [kPathMax] = {0};
-				char* p = filter;
-				char* p2 = allBuffer;
+				TCHAR allBuffer [kPathMax] = {0};
+				TCHAR* p = filter;
+				TCHAR* p2 = allBuffer;
 
-				const char* ext;
-				const char* extensions [100];
+				TCHAR extensions [100][24];
 				long i, j, extCount = 0;
-				char string[24];
+				TCHAR string[24];
 
 				for (long ty = 0; ty < vstFileSelect->nbFileTypes; ty++)
 				{
+					UTF8StringHelper ext (vstFileSelect->fileTypes[ty].dosType);
+					UTF8StringHelper name (vstFileSelect->fileTypes[ty].name);
 					for (i = 0; i < 2 ; i++)
 					{				
 						if (i == 0)
 						{
-							ext = vstFileSelect->fileTypes[ty].dosType;
-						
-							strcpy (p, vstFileSelect->fileTypes[ty].name);
-							strcat (p, " (.");
-							strcat (p, ext);
-							strcat (p, ")");
-							p += strlen (p) + 1;
+							VSTGUI_STRCPY (p, name);
+							VSTGUI_STRCAT (p, TEXT (" (."));
+							VSTGUI_STRCAT (p, ext);
+							VSTGUI_STRCAT (p, TEXT (")"));
+							p += VSTGUI_STRLEN (p) + 1;
 
-							strcpy (string, "*.");
-							strcat (string, ext);
-							strcpy (p, string);
-							p += strlen (p);	
+							VSTGUI_STRCPY (string, TEXT ("*."));
+							VSTGUI_STRCAT (string, ext);
+							VSTGUI_STRCPY (p, string);
+							p += VSTGUI_STRLEN (p);	
 						}
 						else
 						{
 							if (!strcmp (vstFileSelect->fileTypes[ty].dosType, vstFileSelect->fileTypes[ty].unixType) || !strcmp (vstFileSelect->fileTypes[ty].unixType, ""))
 								break; // for
-							ext = vstFileSelect->fileTypes[ty].unixType;
-							strcpy (string, ";*.");
-							strcat (string, ext);
-							strcpy (p, string);
-							p += strlen (p);	
+							UTF8StringHelper ext2 (vstFileSelect->fileTypes[ty].unixType);
+							VSTGUI_STRCPY (string, TEXT(";*."));
+							VSTGUI_STRCAT (string, ext2);
+							VSTGUI_STRCPY (p, string);
+							p += VSTGUI_STRLEN (p);	
 						}
 						bool found = false;
 						for (j = 0; j < extCount;j ++)
 						{
-							if (strcmp (ext, extensions [j]) == 0)
+							if (VSTGUI_STRCMP (ext, extensions [j]) == 0)
 							{
 								found = true;
 								break;
 							}
 						}
 						if (!found && extCount < 100)
-							extensions [extCount++] = ext;
+							VSTGUI_STRCPY (extensions [extCount++], ext);
 					}
 					p ++;
 				} // end for filetype
@@ -222,33 +221,34 @@ long CFileSelector::run (VstFileSelect *vstFileSelect)
 				if (extCount > 1)
 				{
 					for (i = 0; i < extCount ;i ++)
-					{					
-						ext = extensions [i];
-						strcpy (string, "*.");
-						strcat (string, ext);
+					{				
+						const TCHAR* ext2 = extensions [i];
+						VSTGUI_STRCPY (string, TEXT ("*."));
+						VSTGUI_STRCAT (string, ext2);
 
 						if (p2 != allBuffer)
 						{
-							strcpy (p2, ";");
+							VSTGUI_STRCPY (p2, TEXT (";"));
 							p2++;
 						}
-						strcpy (p2, string);
-						p2 += strlen (p2);
+						VSTGUI_STRCPY (p2, string);
+						p2 += VSTGUI_STRLEN (p2);
 					}
 
 					// add the : All types
-					strcpy (p, stringAllTypes);			
-					strcat (p, allBuffer);
-					strcat (p, ")");
-					p += strlen (p) + 1;
-					strcpy (p, allBuffer);
-					p += strlen (p) + 1;			
+					UTF8StringHelper allTypesStr (stringAllTypes);
+					VSTGUI_STRCPY (p, allTypesStr);			
+					VSTGUI_STRCAT (p, allBuffer);
+					VSTGUI_STRCAT (p, TEXT (")"));
+					p += VSTGUI_STRLEN (p) + 1;
+					VSTGUI_STRCPY (p, allBuffer);
+					p += VSTGUI_STRLEN (p) + 1;			
 				}
-
-				strcpy (p, stringAnyType);
-				p += strlen (p) + 1;
-				strcpy (p, "*.*");
-				p += strlen (p) + 1;
+				UTF8StringHelper anyTypeStr (stringAnyType);
+				VSTGUI_STRCPY (p, anyTypeStr);
+				p += VSTGUI_STRLEN (p) + 1;
+				VSTGUI_STRCPY (p, TEXT("*.*"));
+				p += VSTGUI_STRLEN (p) + 1;
 
 				*p++ = 0;
 				*p++ = 0;
@@ -264,13 +264,13 @@ long CFileSelector::run (VstFileSelect *vstFileSelect)
 				ofn.lpstrFilter  = (filter[0] ? filterText : (TCHAR*)0);
 			ofn.nFilterIndex = 1;
 			ofn.lpstrCustomFilter = NULL;
-			ofn.lpstrFile    = (TCHAR*)(const TCHAR*)filePathText;
+			ofn.lpstrFile    = filePath;
 			if (vstFileSelect->command == kVstMultipleFilesLoad)
 				ofn.nMaxFile    = 100 * kPathMax - 1;
 			else
 				ofn.nMaxFile    = sizeof (filePathBuffer) - 1;
 
-			ofn.lpstrFileTitle  = (TCHAR*)(const TCHAR*)fileNameText;
+			ofn.lpstrFileTitle  = fileName;
 			ofn.nMaxFileTitle   = 64;
 			ofn.lpstrInitialDir = initialPathText;
 			ofn.lpstrTitle      = titleText;
@@ -374,23 +374,25 @@ long CFileSelector::run (VstFileSelect *vstFileSelect)
 		//-----------------------------------------
 		else if (vstFileSelect->command == kVstFileSave)
 		{
-			char* p = filter;
+			TCHAR* p = filter;
 			for (long ty = 0; ty < vstFileSelect->nbFileTypes; ty++)
 			{
 				const char* ext = vstFileSelect->fileTypes[ty].dosType;
 				if (ext)
 				{
-					strcpy (p, vstFileSelect->fileTypes[ty].name);
-					strcat (p, " (.");
-					strcat (p, ext);
-					strcat (p, ")");
-					p += strlen (p) + 1;
+					UTF8StringHelper extStr (ext);
+					UTF8StringHelper extName (vstFileSelect->fileTypes[ty].name);
+					VSTGUI_STRCPY (p, extName);
+					VSTGUI_STRCAT (p, TEXT(" (."));
+					VSTGUI_STRCAT (p, extStr);
+					VSTGUI_STRCAT (p, TEXT(")"));
+					p += VSTGUI_STRLEN (p) + 1;
 	
-					char string[24];
-					strcpy (string, "*.");
-					strcat (string, ext);
-					strcpy (p, string);
-					p += strlen (p) + 1;
+					TCHAR string[24];
+					VSTGUI_STRCPY (string, TEXT("*."));
+					VSTGUI_STRCAT (string, extStr);
+					VSTGUI_STRCPY (p, string);
+					p += VSTGUI_STRLEN (p) + 1;
 				}
 			}
 			*p++ = 0;
@@ -402,25 +404,25 @@ long CFileSelector::run (VstFileSelect *vstFileSelect)
 			#if ENABLE_VST_EXTENSION_IN_VSTGUI
 			if (((AudioEffectX*)ptr)->getEditor () && ((AEffGUIEditor*)((AudioEffectX*)ptr)->getEditor ())->getFrame ())
 				owner = (HWND)((AEffGUIEditor*)((AudioEffectX*)ptr)->getEditor ())->getFrame ()->getSystemWindow ();
+			#else
+			owner = (HWND)ptr;
 			#endif
 			ofn.hwndOwner    = owner;
 			ofn.hInstance    = GetInstance ();
 			ofn.lpstrFilter = (filter[0] ? filterText : (TCHAR*)0);
 			ofn.nFilterIndex = 1;
-			ofn.lpstrFile = (TCHAR*)(const TCHAR*)filePathText;
+			ofn.lpstrFile = filePath;
 			ofn.lpstrCustomFilter = NULL;
 			ofn.nMaxFile = sizeof (filePathBuffer) - 1;
-			ofn.lpstrFileTitle = (TCHAR*)(const TCHAR*)fileNameText;
+			ofn.lpstrFileTitle = fileName;
 			ofn.nMaxFileTitle = 64;
 			ofn.lpstrInitialDir = initialPathText;
 			ofn.lpstrTitle = titleText;
 			ofn.Flags = OFN_EXPLORER | OFN_ENABLESIZING | OFN_HIDEREADONLY | OFN_ENABLEHOOK;
 			
+			UTF8StringHelper dosTypeText (vstFileSelect->fileTypes[0].dosType);
 			if (vstFileSelect->nbFileTypes >= 1)
-			{
-				UTF8StringHelper dosTypeText (vstFileSelect->fileTypes[0].dosType);
 				ofn.lpstrDefExt = dosTypeText;
-			}
 			
 			// add a template view
 			ofn.lCustData = (DWORD)0;
@@ -830,12 +832,12 @@ long CFileSelector::run (VstFileSelect *vstFileSelect)
 //-----------------------------------------------------------------------------
 pascal void CFileSelector::navEventProc (const NavEventCallbackMessage callBackSelector, NavCBRecPtr callBackParms, NavCallBackUserData callBackUD) 
 {
-	CFileSelector* fs = (CFileSelector*)callBackUD;
 	switch (callBackSelector)
 	{
 		case kNavCBEvent:
 		{
 			#if ENABLE_VST_EXTENSION_IN_VSTGUI
+			CFileSelector* fs = (CFileSelector*)callBackUD;
 			AudioEffectX* effect = (AudioEffectX*)fs->ptr;
 			if (effect && callBackParms->eventData.eventDataParms.event->what == nullEvent)
 				effect->masterIdle ();

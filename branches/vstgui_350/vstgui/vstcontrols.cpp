@@ -3,7 +3,7 @@
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 // Standard Control Objects
 //
-// Version 3.5       $Date: 2007-08-17 13:40:12 $
+// Version 3.5       $Date: 2007-12-12 11:42:23 $
 //
 // Added new objects        : Michael Schmidt          08.97
 // Added new objects        : Yvan Grabit              01.98
@@ -439,6 +439,7 @@ CKnob::CKnob (const CKnob& v)
 , offset (v.offset)
 , colorHandle (v.colorHandle)
 , colorShadowHandle (v.colorShadowHandle)
+, pHandle (v.pHandle)
 , inset (v.inset)
 , startAngle (v.startAngle)
 , rangeAngle (v.rangeAngle)
@@ -447,7 +448,6 @@ CKnob::CKnob (const CKnob& v)
 , bCoef (v.bCoef)
 , radius (v.radius)
 , zoomFactor (v.zoomFactor)
-, pHandle (v.pHandle)
 {
 	if (pHandle)
 		pHandle->remember ();
