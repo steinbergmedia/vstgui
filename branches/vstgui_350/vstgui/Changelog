@@ -1,3 +1,7 @@
+2008-01-10 yvan
+
+	* update copyright and some documentation
+	
 2007-12-11 arne
 
 	* added closePolygon parameter to CDrawContext::drawPolygon. Now you can draw opened and closed polygons.

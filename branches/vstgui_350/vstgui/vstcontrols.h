@@ -3,11 +3,11 @@
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 // Standard Control Objects
 //
-// Version 3.5       $Date: 2007-10-12 10:12:31 $
+// Version 3.5       $Date: 2008-01-10 14:50:36 $
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
-// © 2004, Steinberg Media Technologies, All Rights Reserved
+// © 2008, Steinberg Media Technologies, All Rights Reserved
 //-----------------------------------------------------------------------------
 // Redistribution and use in source and binary forms, with or without modification,
 // are permitted provided that the following conditions are met:
@@ -919,7 +919,7 @@ private:
 
 //-----------------------------------------------------------------------------
 // CAutoAnimation Declaration
-//!
+//! \brief simple auto-animation of bitmaps
 /// \nosubgrouping
 /// \ingroup controls
 //-----------------------------------------------------------------------------
@@ -1128,7 +1128,7 @@ protected:
 
 //-----------------------------------------------------------------------------
 // CKickButton Declaration
-//!
+//! \brief a button with 2 states with kick mode (enabled only when pressed)
 /// \nosubgrouping
 /// \ingroup controls
 //-----------------------------------------------------------------------------
@@ -1212,7 +1212,7 @@ protected:
 
 //-----------------------------------------------------------------------------
 // CVuMeter Declaration
-//!
+//! \brief VU-Meter using 2 bitmaps
 /// \nosubgrouping
 /// \ingroup views
 //-----------------------------------------------------------------------------
