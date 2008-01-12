@@ -2,7 +2,7 @@
 // VST Plug-Ins SDK
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 //
-// Version 3.5       $Date: 2008-01-10 14:50:36 $ 
+// Version 3.5       $Date: 2008-01-12 16:49:35 $ 
 //
 // Added Motif/Windows vers.: Yvan Grabit              01.98
 // Added Mac version        : Charlie Steinberg        02.98
@@ -14,7 +14,7 @@
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
-// © 2008, Steinberg Media Technologies, All Rights Reserved
+// © 2004, Steinberg Media Technologies, All Rights Reserved
 //-----------------------------------------------------------------------------
 // Redistribution and use in source and binary forms, with or without modification,
 // are permitted provided that the following conditions are met:
@@ -3015,6 +3015,8 @@ bool CView::removed (CView* parent)
 {
 	if (!isAttached ())
 		return false;
+	if (pParentFrame)
+		pParentFrame->onViewRemoved (this);
 	pParentView = 0;
 	pParentFrame = 0;
 	bIsAttached = false;
@@ -5209,8 +5211,6 @@ bool CViewContainer::removeAll (const bool &withForget)
 		CCView* pNext = pV->pNext;
 		if (pV->pView)
 		{
-			if (pParentFrame)
-				pParentFrame->onViewRemoved (pV->pView);
 			if (isAttached ())
 				pV->pView->removed (this);
 			if (withForget)
@@ -5243,8 +5243,6 @@ bool CViewContainer::removeView (CView *pView, const bool &withForget)
 			CCView* pPrevious = pV->pPrevious;
 			if (pV->pView)
 			{
-				if (pParentFrame)
-					pParentFrame->onViewRemoved (pView);
 				if (isAttached ())
 					pV->pView->removed (this);
 				if (withForget)
@@ -6018,8 +6016,6 @@ bool CViewContainer::removed (CView* parent)
 	 if (pOffscreenContext)
 		pOffscreenContext->forget ();
 	pOffscreenContext = 0;
-
-	pParentFrame = 0;
 
 	FOREACHSUBVIEW
 		pV->removed (this);

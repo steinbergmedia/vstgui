@@ -1,3 +1,7 @@
+2008-01-12 arne
+
+	* fix a flaw in removing views from containers
+
 2008-01-10 yvan
 
 	* update copyright and some documentation
