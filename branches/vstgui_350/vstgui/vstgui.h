@@ -2,7 +2,7 @@
 // VST Plug-Ins SDK
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 //
-// Version 3.5       $Date: 2008-01-10 14:50:36 $
+// Version 3.5       $Date: 2008-01-14 09:20:00 $
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
@@ -1532,6 +1532,8 @@ protected:
 #endif
 
 #if WINDOWS
+#include <malloc.h>
+
 /// \cond ignore
 class UTF8StringHelper
 {
