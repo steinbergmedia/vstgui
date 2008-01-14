@@ -3,6 +3,7 @@
 	* add include malloc for windows
 	* remove CBitmap (void* platformBitmap) constructor
 	* GDIPlus is by default enable
+	* add win project for tutorial
 	
 2008-01-12 arne
 
