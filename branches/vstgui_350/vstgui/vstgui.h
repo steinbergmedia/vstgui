@@ -2,7 +2,7 @@
 // VST Plug-Ins SDK
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 //
-// Version 3.5       $Date: 2008-01-14 09:20:00 $
+// Version 3.5       $Date: 2008-01-14 11:21:26 $
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
@@ -49,10 +49,9 @@
 #endif
 
 #if WINDOWS
- #define USE_NAMESPACE	1
  #define _WIN32_WINNT 0x0501
  #ifndef GDIPLUS
- #define GDIPLUS		0
+ #define GDIPLUS		1	// by default we use GDIPlus
  #endif
 #endif
 
@@ -931,7 +930,6 @@ public:
 	//@{
 	CBitmap (const CResourceDescription& desc);				///< Create a pixmap from a resource identifier.
 	CBitmap (CFrame &frame, CCoord width, CCoord height);	///< Create a pixmap with a given size.
-	CBitmap (void* platformBitmap);							///< Create a pixmap from a platform bitmap. 
 	//@}
 	virtual ~CBitmap ();
 

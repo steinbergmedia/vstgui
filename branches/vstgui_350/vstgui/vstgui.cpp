@@ -2,7 +2,7 @@
 // VST Plug-Ins SDK
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 //
-// Version 3.5       $Date: 2008-01-12 16:52:12 $ 
+// Version 3.5       $Date: 2008-01-14 11:21:25 $ 
 //
 // Added Motif/Windows vers.: Yvan Grabit              01.98
 // Added Mac version        : Charlie Steinberg        02.98
@@ -186,6 +186,10 @@ END_NAMESPACE_VSTGUI
 
 #if USE_LIBPNG
 #include "png.h"
+#endif
+
+#if GDIPLUS
+#pragma comment( lib, "gdiplus" )
 #endif
 
 //-----------------------------------------------------------------------------
@@ -2478,6 +2482,36 @@ CGContextRef createOffscreenBitmap (long width, long height, void** bits)
 #endif // MAC
 
 //-----------------------------------------------------------------------------
+// special local derivate class with special constructor (used by COffscreenContext)
+class CBitmapForOC : public CBitmap
+{
+public:
+	CBitmapForOC (void* platformBitmap);		///< Create a pixmap from a platform bitmap. 
+};
+
+//-----------------------------------------------------------------------------
+// CBitmapForOC Implementation
+//-----------------------------------------------------------------------------
+CBitmapForOC::CBitmapForOC (void* platformBitmap)
+: CBitmap ()
+{
+	pHandle = 0;
+	pMask = 0;
+#if WINDOWS && GDIPLUS
+	GDIPlusGlobals::enter ();
+	pBitmap = ((Gdiplus::Bitmap*)platformBitmap)->Clone (0, 0, ((Gdiplus::Bitmap*)platformBitmap)->GetWidth (), ((Gdiplus::Bitmap*)platformBitmap)->GetHeight (), PixelFormat32bppARGB);
+	width = (CCoord)pBitmap->GetWidth ();
+	height = (CCoord)pBitmap->GetHeight ();
+	bits = 0;
+#elif MAC
+	cgImage = platformBitmap;
+	CGImageRetain ((CGImageRef)cgImage);
+	width = CGImageGetWidth ((CGImageRef)cgImage);
+	height = CGImageGetHeight ((CGImageRef)cgImage);
+#endif
+}
+
+//-----------------------------------------------------------------------------
 // COffscreenContext Implementation
 //-----------------------------------------------------------------------------
 COffscreenContext::COffscreenContext (CDrawContext* pContext, CBitmap* pBitmapBg, bool drawInBitmap)
@@ -2520,7 +2554,7 @@ COffscreenContext::COffscreenContext (CDrawContext* pContext, CBitmap* pBitmapBg
 		Gdiplus::Bitmap* myOffscreenBitmap = Gdiplus::Bitmap::FromHBITMAP ((HBITMAP)pWindow, NULL);
 		pGraphics = new Gdiplus::Graphics (myOffscreenBitmap);  // our Context to draw on the bitmap
 		// CHECK_GDIPLUS_STATUS("OffScreenContext: from OffscreenBitmap",pGraphics);
-		pBitmap = new CBitmap (myOffscreenBitmap);	// the VSTGUI Bitmap Object
+		pBitmap = new CBitmapForOC (myOffscreenBitmap);	// the VSTGUI Bitmap Object
 	}
 	
 	if (pGraphics)
@@ -3015,8 +3049,6 @@ bool CView::removed (CView* parent)
 {
 	if (!isAttached ())
 		return false;
-	if (pParentFrame)
-		pParentFrame->onViewRemoved (this);
 	pParentView = 0;
 	pParentFrame = 0;
 	bIsAttached = false;
@@ -5211,6 +5243,8 @@ bool CViewContainer::removeAll (const bool &withForget)
 		CCView* pNext = pV->pNext;
 		if (pV->pView)
 		{
+			if (pParentFrame)
+				pParentFrame->onViewRemoved (pV->pView);
 			if (isAttached ())
 				pV->pView->removed (this);
 			if (withForget)
@@ -5243,6 +5277,8 @@ bool CViewContainer::removeView (CView *pView, const bool &withForget)
 			CCView* pPrevious = pV->pPrevious;
 			if (pV->pView)
 			{
+				if (pParentFrame)
+					pParentFrame->onViewRemoved (pView);
 				if (isAttached ())
 					pV->pView->removed (this);
 				if (withForget)
@@ -6017,6 +6053,8 @@ bool CViewContainer::removed (CView* parent)
 		pOffscreenContext->forget ();
 	pOffscreenContext = 0;
 
+	pParentFrame = 0;
+
 	FOREACHSUBVIEW
 		pV->removed (this);
 	ENDFOR
@@ -6171,9 +6209,9 @@ public:
 	{
 		HRSRC rsrc = 0;
 		if (resourceDesc.type == CResourceDescription::kIntegerType)
-			rsrc = FindResourceA (GetInstance (), MAKEINTRESOURCEA (resourceDesc.u.id), "PNG");
+			rsrc = FindResourceA (GetInstance (), MAKEINTRESOURCEA (resourceDesc.u.id), "DATA");
 		else
-			rsrc = FindResourceA (GetInstance (), resourceDesc.u.name, "PNG");
+			rsrc = FindResourceA (GetInstance (), resourceDesc.u.name, "DATA");
 		if (rsrc)
 		{
 			resSize = SizeofResource (GetInstance (), rsrc);
@@ -6317,7 +6355,9 @@ loaded on Mac OS X out of the Resources folder of the vst bundle. On Windows you
 \code
 // Old way
 1001                    BITMAP  DISCARDABLE     "bmp01001.bmp"
-// New way
+// New way with GDIPlus
+RealFileName.bmp        DATA     "RealFileName.bmp"
+// New way without GDIPlus
 RealFileName.bmp        BITMAP  DISCARDABLE     "RealFileName.bmp"
 \endcode
 \code
@@ -6433,28 +6473,6 @@ CBitmap::CBitmap ()
 }
 
 //-----------------------------------------------------------------------------
-CBitmap::CBitmap (void* platformBitmap)
-: width (0)
-, height (0)
-, noAlpha (true)
-{
-	pHandle = 0;
-	pMask = 0;
-	#if WINDOWS && GDIPLUS
-	GDIPlusGlobals::enter ();
-	pBitmap = ((Gdiplus::Bitmap*)platformBitmap)->Clone (0, 0, ((Gdiplus::Bitmap*)platformBitmap)->GetWidth (), ((Gdiplus::Bitmap*)platformBitmap)->GetHeight (), PixelFormat32bppARGB);
-	width = (CCoord)pBitmap->GetWidth ();
-	height = (CCoord)pBitmap->GetHeight ();
-	bits = 0;
-	#elif MAC
-	cgImage = platformBitmap;
-	CGImageRetain ((CGImageRef)cgImage);
-	width = CGImageGetWidth ((CGImageRef)cgImage);
-	height = CGImageGetHeight ((CGImageRef)cgImage);
-	#endif
-}
-
-//-----------------------------------------------------------------------------
 CBitmap::~CBitmap ()
 {
 	#if GDIPLUS
@@ -6509,7 +6527,6 @@ void CBitmap::dispose ()
 
 	width = 0;
 	height = 0;
-
 }
 
 //-----------------------------------------------------------------------------

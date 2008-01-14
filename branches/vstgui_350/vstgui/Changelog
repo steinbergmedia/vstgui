@@ -1,7 +1,9 @@
 2008-01-14 yvan
 
 	* add include malloc for windows
-
+	* remove CBitmap (void* platformBitmap) constructor
+	* GDIPlus is by default enable
+	
 2008-01-12 arne
 
 	* fix a flaw in removing views from containers
