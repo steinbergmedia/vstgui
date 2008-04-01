@@ -2,7 +2,7 @@
 // VST Plug-Ins SDK
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 //
-// Version 3.5       $Date: 2007-11-08 14:13:28 $
+// Version 3.5       $Date: 2008-04-01 11:04:05 $
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
@@ -1500,6 +1500,7 @@ private:
 class IMouseObserver
 {
 public:
+	virtual ~IMouseObserver() {}
 	virtual void onMouseEntered (CView* view, CFrame* frame) = 0;
 	virtual void onMouseExited (CView* view, CFrame* frame) = 0;
 };
