@@ -1,3 +1,10 @@
+2008-03-26 wolframfranke
+
+	* Fixed crash in COptionMenu when it is empty.
+	* Added virtual destructors for IMouseObserver, CControlListener and
+	  IMultiBitmapControl.
+	* Virtualized CParamDisplay::drawText to allow overriding in inherited classes.
+	
 2007-11-08 arne
 
 	* COptionMenuScheme is deprecated
