@@ -3,7 +3,7 @@
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 // Standard Control Objects
 //
-// Version 3.5       $Date: 2007-11-08 14:13:28 $
+// Version 3.5       $Date: 2008-04-01 11:03:31 $
 //
 // Added new objects        : Michael Schmidt          08.97
 // Added new objects        : Yvan Grabit              01.98
@@ -2771,6 +2771,9 @@ CMenuItem* COptionMenu::getCurrent () const
 //-----------------------------------------------------------------------------
 CMenuItem* COptionMenu::getEntry (long index) const
 {
+	if (menuItems->empty())
+		return 0;
+	
 	CMenuItemIterator it = menuItems->begin ();
 	for (int i = 0; i < index; i++, it++);
 	return (*it);
