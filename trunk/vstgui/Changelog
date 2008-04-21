@@ -1,3 +1,7 @@
+2008-04-21 wolframfranke
+
+	* Fixed memory leak of 1 menuItem in COptionMenu::removeAllEntry ().
+	
 2008-03-26 wolframfranke
 
 	* Fixed crash in COptionMenu when it is empty.
