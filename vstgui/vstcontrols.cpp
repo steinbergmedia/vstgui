@@ -3,7 +3,7 @@
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 // Standard Control Objects
 //
-// Version 3.5       $Date: 2008-04-01 11:03:31 $
+// Version 3.5       $Date: 2008-04-21 21:59:00 $
 //
 // Added new objects        : Michael Schmidt          08.97
 // Added new objects        : Yvan Grabit              01.98
@@ -2843,10 +2843,9 @@ bool COptionMenu::removeEntry (long index)
 //------------------------------------------------------------------------
 bool COptionMenu::removeAllEntry ()
 {
-	CMenuItemIterator it = menuItems->end ();
-	while (--it != menuItems->begin ())
+	for (CMenuItemIterator it = menuItems->begin(); it != menuItems->end(); ++it)
 	{
-		(*it)->forget ();
+		(*it)->forget();
 	}
 	menuItems->clear ();
 	return true;
