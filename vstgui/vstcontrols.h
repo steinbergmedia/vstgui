@@ -3,7 +3,7 @@
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 // Standard Control Objects
 //
-// Version 3.5       $Date: 2008-04-01 11:03:44 $
+// Version 3.5       $Date: 2008-04-27 14:42:35 $
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
@@ -613,7 +613,7 @@ public:
 
 	COptionMenu* getSubMenu (long idx) const;																///< get a submenu
 
-#if MAC
+#if MAC_CARBON
 	short   getMenuID () const { return menuID; }
 #endif
 
@@ -639,7 +639,7 @@ protected:
 
 	CMenuItemList* menuItems;
 
-#if MAC
+#if MAC_CARBON
 	short   menuID;
 #endif
 
@@ -1073,6 +1073,8 @@ public:
 	CLASS_METHODS(CSlider, CControl)
 
 protected:
+	void setViewSize (CRect& rect, bool invalid);
+	
 	CPoint   offset; 
 	CPoint   offsetHandle;
 

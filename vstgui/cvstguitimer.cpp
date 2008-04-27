@@ -42,9 +42,6 @@ BEGIN_NAMESPACE_VSTGUI
 static std::list<CVSTGUITimer*> gTimerList;
 END_NAMESPACE_VSTGUI
 
-#elif MAC_COCOA
-#include "cocoasupport.h"
-
 #endif
 
 //-----------------------------------------------------------------------------
@@ -70,11 +67,12 @@ bool CVSTGUITimer::start ()
 	if (platformTimer == 0)
 	{
 		#if MAC
-		InstallEventLoopTimer (GetMainEventLoop (), kEventDurationMillisecond * fireTime, kEventDurationMillisecond * fireTime, timerProc, this, (EventLoopTimerRef*)&platformTimer);
+		CFRunLoopTimerContext timerContext = {0};
+		timerContext.info = this;
+		platformTimer = CFRunLoopTimerCreate (kCFAllocatorDefault, CFAbsoluteTimeGetCurrent () + fireTime * 0.001f, fireTime * 0.001f, 0, 0, timerCallback, &timerContext);
+		if (platformTimer)
+			CFRunLoopAddTimer (CFRunLoopGetCurrent (), (CFRunLoopTimerRef)platformTimer, kCFRunLoopCommonModes);
 
-		#elif MAC_COCOA
-		platformTimer = startNSTimer (fireTime, timerObject);
-		
 		#elif WINDOWS
 		platformTimer = (void*)SetTimer ((HWND)NULL, (UINT_PTR)this, fireTime, TimerProc);
 		if (platformTimer)
@@ -90,11 +88,8 @@ bool CVSTGUITimer::stop ()
 	if (platformTimer)
 	{
 		#if MAC
-		RemoveEventLoopTimer ((EventLoopTimerRef)platformTimer);
+		CFRunLoopRemoveTimer (CFRunLoopGetCurrent (), (CFRunLoopTimerRef)platformTimer, kCFRunLoopCommonModes);
 
-		#elif MAC_COCOA
-		stopNSTimer (platformTimer);
-		
 		#elif WINDOWS
 		KillTimer ((HWND)NULL, (UINT_PTR)platformTimer);
 		std::list<CVSTGUITimer*>::iterator it = gTimerList.begin ();
@@ -130,9 +125,9 @@ bool CVSTGUITimer::setFireTime (int newFireTime)
 
 #if MAC
 //-----------------------------------------------------------------------------
-pascal void CVSTGUITimer::timerProc (EventLoopTimerRef inTimer, void *inUserData)
+void CVSTGUITimer::timerCallback (CFRunLoopTimerRef t, void *info)
 {
-	CVSTGUITimer* timer = (CVSTGUITimer*)inUserData;
+	CVSTGUITimer* timer = (CVSTGUITimer*)info;
 	if (timer->timerObject)
 		timer->timerObject->notify (timer, kMsgTimer);
 }

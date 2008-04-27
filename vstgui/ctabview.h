@@ -94,6 +94,7 @@ public:
 	//@}
 
 	virtual void valueChanged (CControl *pControl);
+	virtual void setViewSize (CRect &rect, bool invalid = true);
 //-----------------------------------------------------------------------------
 	CLASS_METHODS (CTabView, CViewContainer)
 protected:

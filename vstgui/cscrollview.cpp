@@ -62,7 +62,7 @@ public:
 	CRect getContainerSize () const { return containerSize; }
 	void setContainerSize (const CRect& cs);
 	
-	virtual bool isDirty () const;
+	bool isDirty () const;
 
 	CLASS_METHODS(CScrollContainer, CViewContainer)
 //-----------------------------------------------------------------------------
@@ -155,14 +155,16 @@ bool CScrollContainer::isDirty () const
 	FOREACHSUBVIEW
 		if (pV->isDirty ())
 		{
-			CRect vs = pV->getViewSize (vs);
-			vs.offset (size.left, size.top);
-			if (size.rectOverlap (vs))
+			CRect r = pV->getVisibleSize ();
+			if (r.getWidth () > 0 && r.getHeight () > 0)
 				return true;
+			else
+				pV->setDirty (false);
 		}
 	ENDFOR
 	return false;
 }
+
 /// \endcond
 
 //-----------------------------------------------------------------------------

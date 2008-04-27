@@ -2,11 +2,11 @@
 // VST Plug-Ins SDK
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 //
-// Version 3.0       $Date: 2005-11-22 17:24:44 $ 
+// Version 3.0       $Date: 2008-04-27 14:42:35 $ 
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
-// © 2004, Steinberg Media Technologies, All Rights Reserved
+// ï¿½ 2004, Steinberg Media Technologies, All Rights Reserved
 //-----------------------------------------------------------------------------
 // Redistribution and use in source and binary forms, with or without modification,
 // are permitted provided that the following conditions are met:
@@ -37,6 +37,105 @@
 
 #include "vstgui.h"
 
+#define VSTGUI_NEW_CFILESELECTOR MAC
+
+#if VSTGUI_NEW_CFILESELECTOR
+#include <list>
+#include <vector>
+
+BEGIN_NAMESPACE_VSTGUI
+
+//-----------------------------------------------------------------------------
+// CFileExtension Declaration
+//!
+//-----------------------------------------------------------------------------
+class CFileExtension : public CBaseObject
+{
+public:
+	CFileExtension (const char* description, const char* extension, const char* mimeType = 0, int macType = 0);
+	CFileExtension (const CFileExtension& ext);
+	~CFileExtension ();
+
+	const char* getDescription () const { return description; }
+	const char* getExtension () const { return extension; }
+	const char* getMimeType () const { return mimeType; }
+	int getMacType () const { return macType; }
+
+	bool operator== (const CFileExtension& ext) const;
+protected:
+	void init (const char* description, const char* extension, const char* mimeType);
+	
+	char* description;
+	char* extension;
+	char* mimeType;
+	int macType;
+};
+
+//-----------------------------------------------------------------------------
+// CFileSelector Declaration
+//!
+//-----------------------------------------------------------------------------
+class CNewFileSelector : public CBaseObject
+{
+public:
+	enum Style {
+		kSelectFile,				///< select file(s) selector style
+		kSelectSaveFile,			///< select save file selector style
+		kSelectDirectory			///< select directory style
+	};
+	
+	static CNewFileSelector* create (CFrame* parent = 0, Style style = kSelectFile);
+	
+	bool run (CBaseObject* delegate);	///< the delegate will get a kSelectEndMessage throu the notify method where the sender is this CFileSelector object
+	void cancel ();						///< cancel running the file selector
+	bool runModal ();					///< run as modal dialog
+
+	//-----------------------------------------------------------------------------
+	/// \name CFileSelector setup
+	//-----------------------------------------------------------------------------
+	//@{
+	void setTitle (const char* title);							///< set title of file selector
+	void setInitialDirectory (const char* path);				///< set initial directory (UTF8 string)
+	void setDefaultSaveName (const char* name);					///< set initial save name (UTF8 string)
+	void setDefaultExtension (const CFileExtension& extension);	///< set default file extension
+	void setAllowMultiFileSelection (bool state);				///< set allow multi file selection (only valid for kSelectFile selector style)
+	void addFileExtension (const CFileExtension& extension);	///< add a file extension
+	//@}
+
+	//-----------------------------------------------------------------------------
+	/// \name CFileSelector result
+	//-----------------------------------------------------------------------------
+	//@{
+	int getNumSelectedFiles () const;							///< get number of selected files
+	const char* getSelectedFile (int index) const;				///< get selected file. Result is only valid as long as the instance of CFileSelector is valid.
+	//@}
+
+	static const CFileExtension& getAllFilesExtension ();		///< get the all files extension
+
+	static const char* kSelectEndMessage;
+//-----------------------------------------------------------------------------
+protected:
+	CNewFileSelector (CFrame* frame = 0);
+	~CNewFileSelector ();
+
+	virtual bool runInternal (CBaseObject* delegate) = 0;
+	virtual void cancelInternal () = 0;
+	virtual bool runModalInternal () = 0;
+
+	CFrame* frame;
+	char* title;
+	char* initialPath;
+	char* defaultSaveName;
+	const CFileExtension* defaultExtension;
+	bool allowMultiFileSelection;
+
+	std::list<CFileExtension> extensions;
+	std::vector<char*> result;
+};
+
+END_NAMESPACE_VSTGUI
+
+#endif
 #ifndef __aeffectx__
 struct VstFileSelect;
 #endif
