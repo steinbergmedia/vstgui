@@ -149,7 +149,7 @@ void CTooltipSupport::hideTooltip ()
 	}
 	#endif
 	
-	#if MAC
+	#if MAC_CARBON
 	HMHideTag ();
 	#endif
 
@@ -183,7 +183,7 @@ void CTooltipSupport::showTooltip ()
 			}
 			#endif
 
-			#if MAC
+			#if MAC_CARBON
 			CCoord x, y;
 			currentView->getFrame ()->getPosition (x,y);
 			r.offset (x, y);
@@ -199,7 +199,7 @@ void CTooltipSupport::showTooltip ()
 			helpContent.content[0].u.tagCFString = CFStringCreateWithCString (0, tooltip, kCFStringEncodingUTF8);
 			HMDisplayTag(&helpContent);
 			CFRelease (helpContent.content[0].u.tagCFString);
-			#endif // MAC
+			#endif // MAC_CARBON
 			
 			#if WINDOWS
 			UTF8StringHelper tooltipText (tooltip);

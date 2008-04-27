@@ -201,6 +201,36 @@ bool CTabView::addTab (CView* view, CControl* button)
 	if (!view || !button)
 		return false;
 
+	CViewContainer* tabContainer = dynamic_cast<CViewContainer*>(getView (0));
+	if (tabContainer == 0)
+	{
+		long asf = kAutosizeAll | kAutosizeColumn;
+		CRect tsc (0, 0, size.getWidth (), tabSize.getHeight () / 2);
+		switch (tabPosition)
+		{
+			case kPositionBottom:
+				tsc.offset (0, size.getHeight () - tabSize.getHeight () / 2); break;
+			case kPositionLeft:
+			{
+				asf = kAutosizeAll | kAutosizeRow;
+				tsc.setWidth (tabSize.getWidth ());
+				tsc.setHeight (size.getHeight ());
+				break;
+			}
+			case kPositionRight:
+			{
+				asf = kAutosizeAll | kAutosizeRow;
+				tsc.setWidth (size.getWidth ());
+				tsc.left = tsc.right - tabSize.getWidth ();
+				tsc.setHeight (size.getHeight ());
+				break;
+			}
+		}
+		tabContainer = new CViewContainer (tsc, getFrame (), 0);
+		tabContainer->setTransparency (true);
+		tabContainer->setAutosizeFlags (asf);
+		addView (tabContainer);
+	}
 	CRect ts (tabSize.left, tabSize.top, tabSize.getWidth (), tabSize.getHeight () / 2);
 	switch (tabPosition)
 	{
@@ -217,7 +247,7 @@ bool CTabView::addTab (CView* view, CControl* button)
 	button->setMouseableArea (ts);
 	button->setListener (this);
 	button->setTag (numberOfChilds + kTabButtonTagStart);
-	addView (button);
+	tabContainer->addView (button);
 
 	CTabChildView* v = new CTabChildView (view);
 	v->button = button;
@@ -242,6 +272,9 @@ bool CTabView::removeTab (CView* view)
 	if (!view)
 		return false;
 	
+	CViewContainer* tabContainer = dynamic_cast<CViewContainer*>(getView (0));
+	if (!tabContainer)
+		return false;
 	CTabChildView* v = firstChild;
 	while (v)
 	{
@@ -257,7 +290,7 @@ bool CTabView::removeTab (CView* view)
 				if (v->previous == 0 && v->next == 0)
 					currentTab = -1;
 			}
-			removeView (v->button, true);
+			tabContainer->removeView (v->button, true);
 			v->forget ();
 			numberOfChilds--;
 			return true;
@@ -423,5 +456,89 @@ void CTabView::alignTabs (TabAlignment alignment)
 	setDirty (true);
 	invalid ();
 }
+
+//-----------------------------------------------------------------------------
+void CTabView::setViewSize (CRect &rect, bool invalid)
+{
+	if (rect == getViewSize ())
+		return;
+
+	if (rect == getViewSize ())
+		return;
+
+	CRect oldSize (getViewSize ());
+
+	CCoord widthDelta = rect.getWidth () - oldSize.getWidth ();
+	CCoord heightDelta = rect.getHeight () - oldSize.getHeight ();
+
+	if (widthDelta != 0 || heightDelta != 0)
+	{
+		long numSubviews = getNbViews();
+		long counter = 1;
+		bool treatAsColumn = (getAutosizeFlags () & kAutosizeColumn);
+		bool treatAsRow = (getAutosizeFlags () & kAutosizeRow);
+		CTabChildView* v = firstChild;
+		while (v)
+		{
+			if (v != currentChild)
+			{
+				CView* pV = v->view;
+				long autosize = pV->getAutosizeFlags ();
+				CRect viewSize (pV->getViewSize ());
+				CRect mouseSize (pV->getMouseableArea ());
+				if (treatAsColumn)
+				{
+					if (counter)
+					{
+						viewSize.offset (counter * (widthDelta / (numSubviews)), 0);
+						mouseSize.offset (counter * (widthDelta / (numSubviews)), 0);
+					}
+					viewSize.setWidth (viewSize.getWidth () + (widthDelta / (numSubviews)));
+					mouseSize.setWidth (mouseSize.getWidth () + (widthDelta / (numSubviews)));
+				}
+				else if (widthDelta != 0 && autosize & kAutosizeRight)
+				{
+					viewSize.right += widthDelta;
+					mouseSize.right += widthDelta;
+					if (!(autosize & kAutosizeLeft))
+					{
+						viewSize.left += widthDelta;
+						mouseSize.left += widthDelta;
+					}
+				}
+				if (treatAsRow)
+				{
+					if (counter)
+					{
+						viewSize.offset (0, counter * (heightDelta / (numSubviews)));
+						mouseSize.offset (0, counter * (heightDelta / (numSubviews)));
+					}
+					viewSize.setHeight (viewSize.getHeight () + (heightDelta / (numSubviews)));
+					mouseSize.setHeight (mouseSize.getHeight () + (heightDelta / (numSubviews)));
+				}
+				else if (heightDelta != 0 && autosize & kAutosizeBottom)
+				{
+					viewSize.bottom += heightDelta;
+					mouseSize.bottom += heightDelta;
+					if (!(autosize & kAutosizeTop))
+					{
+						viewSize.top += heightDelta;
+						mouseSize.top += heightDelta;
+					}
+				}
+				if (viewSize != pV->getViewSize ())
+				{
+					pV->setViewSize (viewSize);
+					pV->setMouseableArea (mouseSize);
+				}
+			}
+			v = v->next;
+//			counter++;
+		}
+	}
+	
+	CViewContainer::setViewSize (rect, invalid);
+}
+
 
 END_NAMESPACE_VSTGUI

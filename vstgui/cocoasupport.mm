@@ -2,11 +2,11 @@
 // VST Plug-Ins SDK
 // VSTGUI: Graphical User Interface Framework not only for VST plugins : 
 //
-// Version 3.6       $Date: 2007-11-08 14:13:28 $
+// Version 3.6       $Date: 2008-04-27 14:42:35 $
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
-// © 2004, Steinberg Media Technologies, All Rights Reserved
+// © 2008, Steinberg Media Technologies, All Rights Reserved
 //-----------------------------------------------------------------------------
 // Redistribution and use in source and binary forms, with or without modification,
 // are permitted provided that the following conditions are met:
@@ -39,50 +39,65 @@
 #if MAC_COCOA
 
 #import <Cocoa/Cocoa.h>
-#import "cvstguitimer.h"
 #import "vstkeycode.h"
+#import "cfileselector.h"
+#import <objc/runtime.h>
+#import <objc/message.h>
+
+#define HIDDEN __attribute__((__visibility__("hidden")))
+
+//------------------------------------------------------------------------------------
+static Class menuClass = 0;
+static Class fileSelectorDelegateClass = 0;
+static Class textFieldClass = 0;
+static Class viewClass = 0;
+//------------------------------------------------------------------------------------
+
+//------------------------------------------------------------------------------------
+class GenerateUniqueVSTGUIClasses
+{
+public:
+	GenerateUniqueVSTGUIClasses ();
+	~GenerateUniqueVSTGUIClasses ();
+};
+
+//------------------------------------------------------------------------------------
+inline HIDDEN id get_Objc_Value (id obj, const char* name)
+{
+	Ivar ivar = class_getInstanceVariable ([obj class], name);
+	if (ivar)
+	{
+		id value = object_getIvar (obj, ivar);
+		return value;
+	}
+	return nil;
+}
+
+//------------------------------------------------------------------------------------
+inline HIDDEN void set_Objc_Value (id obj, const char* name, id value)
+{
+	Ivar ivar = class_getInstanceVariable ([obj class], name);
+	if (ivar)
+	{
+		object_setIvar (obj, ivar, value);
+	}
+}
+
+#define OBJC_SUPER(x) objc_super __os; __os.receiver = x; __os.super_class = class_getSuperclass ([x class]);
+#define SUPER	&__os
+#define OBJC_GET_VALUE(x,y) get_Objc_Value (x, #y)
+#define OBJC_SET_VALUE(x,y,z) set_Objc_Value (x, #y, (id)z)
+
 
 //------------------------------------------------------------------------------------
 @interface VSTGUI_NSView : NSView {
 	CFrame* _vstguiframe;
-	NSTimer* _idleTimer;
-	BOOL _windowAcceptsMouseMoveEvents;
-	NSTrackingRectTag _trackingRectTag;
+	NSTrackingArea* _trackingArea;
 }
 
-- (id) initWithFrame: (CFrame*) frame andSize: (const CRect&) size;
-- (void) clearCFrame;
+- (id) initWithFrame: (CFrame*) frame andSize: (const CRect*) size;
 - (void) setTooltip: (const char*)tooltip forCView: (CView*)view;
 - (void) removeTooltip;
-@end
-
-//------------------------------------------------------------------------------------
-@interface VSTGUI_NSTimer : NSObject {
-	NSTimer* _timer;
-	CBaseObject* _timerObject;
-}
-- (id) initWithTimerObject: (CBaseObject*) obj fireTime: (int) ms;
-- (void) stop;
-@end
-
-//------------------------------------------------------------------------------------
-@interface VSTGUI_NSMenu : NSMenu {
-	COptionMenu* _optionMenu;
-	COptionMenu* _selectedMenu;
-	long _selectedItem;
-}
-- (id) initWithOptionMenu: (COptionMenu*) menu;
-- (COptionMenu*) optionMenu;
-- (COptionMenu*) selectedMenu;
-- (long) selectedItem;
-@end
-
-//------------------------------------------------------------------------------------
-@interface VSTGUI_NSTextField : NSTextField {
-	CTextEdit* _textEdit;
-}
-- (id) initWithTextEdit: (CTextEdit*) textEdit;
-- (void) syncSize;
 @end
 
 //------------------------------------------------------------------------------------
@@ -110,21 +125,25 @@ static CocoaDragContainer* gDragContainer = 0;
 //------------------------------------------------------------------------------------
 // Helpers
 //------------------------------------------------------------------------------------
-NSRect nsRectFromCRect (const CRect& rect)
+HIDDEN NSRect nsRectFromCRect (const CRect& rect)
 {
-	NSRect r = { {rect.left, rect.top}, {rect.getWidth (), rect.getHeight ()} };
+	NSRect r;
+	r.origin.x = rect.left;
+	r.origin.y = rect.top;
+	r.size.width = rect.getWidth ();
+	r.size.height = rect.getHeight ();
 	return r;
 }
 
 //------------------------------------------------------------------------------------
-NSPoint nsPointFromCPoint (const CPoint& point)
+HIDDEN NSPoint nsPointFromCPoint (const CPoint& point)
 {
 	NSPoint p = { point.x, point.y };
 	return p;
 }
 
 //------------------------------------------------------------------------------------
-CRect rectFromNSRect (const NSRect& rect)
+HIDDEN CRect rectFromNSRect (const NSRect& rect)
 {
 	CRect r (rect.origin.x, rect.origin.y, 0, 0);
 	r.setWidth (rect.size.width);
@@ -133,14 +152,14 @@ CRect rectFromNSRect (const NSRect& rect)
 }
 
 //------------------------------------------------------------------------------------
-CPoint pointFromNSPoint (const NSPoint& point)
+HIDDEN CPoint pointFromNSPoint (const NSPoint& point)
 {
 	CPoint p (point.x, point.y);
 	return p;
 }
 
 //------------------------------------------------------------------------------------
-NSColor* nsColorFromCColor (const CColor& color)
+HIDDEN NSColor* nsColorFromCColor (const CColor& color)
 {
 	return [NSColor colorWithDeviceRed:color.red/255. green:color.green/255. blue:color.blue/255. alpha:color.alpha/255.];
 }
@@ -148,78 +167,74 @@ NSColor* nsColorFromCColor (const CColor& color)
 //------------------------------------------------------------------------------------
 static NSImage* imageFromCGImageRef (CGImageRef image)
 {
-    NSRect imageRect = NSMakeRect(0.0, 0.0, 0.0, 0.0);
+    NSRect imageRect = NSMakeRect (0.0, 0.0, 0.0, 0.0);
     CGContextRef imageContext = nil;
     NSImage* newImage = nil;
  
     // Get the image dimensions.
-    imageRect.size.height = CGImageGetHeight(image);
-    imageRect.size.width = CGImageGetWidth(image);
+    imageRect.size.height = CGImageGetHeight (image);
+    imageRect.size.width = CGImageGetWidth (image);
  
     // Create a new image to receive the Quartz image data.
     newImage = [[NSImage alloc] initWithSize:imageRect.size];
     [newImage lockFocus];
  
     // Get the Quartz context and draw.
-    imageContext = (CGContextRef)[[NSGraphicsContext currentContext]
-                                         graphicsPort];
-    CGContextDrawImage(imageContext, *(CGRect*)&imageRect, image);
+    imageContext = (CGContextRef)[[NSGraphicsContext currentContext] graphicsPort];
+    CGContextDrawImage(imageContext, NSRectToCGRect (imageRect), image);
     [newImage unlockFocus];
  
     return newImage;
 }
 
 //------------------------------------------------------------------------------------
+//-- The following function are called from either vstgui.cpp or vstcontrols.cpp
 //------------------------------------------------------------------------------------
-//------------------------------------------------------------------------------------
-void* createNSView (CFrame* frame, const CRect& size)
+HIDDEN void* createNSView (CFrame* frame, const CRect& size)
 {
-	VSTGUI_NSView* view = [[VSTGUI_NSView alloc] initWithFrame: frame andSize: size];
+	VSTGUI_NSView* view = [[VSTGUI_NSView alloc] initWithFrame: frame andSize: &size];
 	return view;
 }
 
 //------------------------------------------------------------------------------------
-void destroyNSView (void* ptr)
+HIDDEN void destroyNSView (void* ptr)
 {
-	VSTGUI_NSView* view = (VSTGUI_NSView*)ptr;
-	[view clearCFrame];
+	NSView* view = (NSView*)ptr;
 	[view removeFromSuperview];
-	[view autorelease];
+	[view release];
 }
 
 //------------------------------------------------------------------------------------
-void invalidNSViewRect (void* nsView, const CRect& size)
+HIDDEN void invalidNSViewRect (void* nsView, const CRect& size)
 {
-	VSTGUI_NSView* view = (VSTGUI_NSView*)nsView;
+	NSView* view = (NSView*)nsView;
 	NSRect r = nsRectFromCRect (size);
 	[view setNeedsDisplayInRect:r];
 }
 
 //------------------------------------------------------------------------------------
-void resizeNSView (void* nsView, const CRect& newSize)
+HIDDEN void resizeNSView (void* nsView, const CRect& newSize)
 {
-	VSTGUI_NSView* view = (VSTGUI_NSView*)nsView;
+	NSView* view = (NSView*)nsView;
 	unsigned int oldResizeMask = [view autoresizingMask];
 	NSRect oldFrame = [view frame];
 	[view setAutoresizingMask: 0];
 	NSRect r = nsRectFromCRect (newSize);
-	r.origin.x += oldFrame.origin.x;
-	r.origin.y += oldFrame.origin.y;
-	[view setFrameSize: r.size];
+	[view setFrame: r];
 	[view setAutoresizingMask: oldResizeMask];
 }
 
 //------------------------------------------------------------------------------------
-void getSizeOfNSView (void* nsView, CRect* rect)
+HIDDEN void getSizeOfNSView (void* nsView, CRect* rect)
 {
-	VSTGUI_NSView* view = (VSTGUI_NSView*)nsView;
+	NSView* view = (NSView*)nsView;
 	*rect = rectFromNSRect ([view frame]);
 }
 
 //------------------------------------------------------------------------------------
-bool nsViewGetCurrentMouseLocation (void* nsView, CPoint& where)
+HIDDEN bool nsViewGetCurrentMouseLocation (void* nsView, CPoint& where)
 {
-	VSTGUI_NSView* view = (VSTGUI_NSView*)nsView;
+	NSView* view = (NSView*)nsView;
 	NSPoint p = [[view window] mouseLocationOutsideOfEventStream];
 	p = [view convertPoint:p fromView:nil];
 	where = pointFromNSPoint (p);
@@ -227,8 +242,9 @@ bool nsViewGetCurrentMouseLocation (void* nsView, CPoint& where)
 }
 
 //------------------------------------------------------------------------------------
-void nsViewSetMouseCursor (CCursorType type)
+HIDDEN void nsViewSetMouseCursor (CCursorType type)
 {
+	@try {
 	NSCursor* cur = 0;
 	switch (type)
 	{
@@ -238,50 +254,48 @@ void nsViewSetMouseCursor (CCursorType type)
 		case kCursorSizeAll: cur = [NSCursor crosshairCursor]; break;
 		case kCursorNESWSize: cur = [NSCursor arrowCursor]; break;
 		case kCursorNWSESize: cur = [NSCursor arrowCursor]; break;
-		case kCursorCopy: cur = [NSCursor _copyDragCursor]; break;
-		case kCursorNotAllowed: cur = [NSCursor operationNotAllowedCursor]; break;
+		case kCursorCopy: cur = [NSCursor performSelector:@selector(_copyDragCursor)]; break;
+		case kCursorNotAllowed: cur = [NSCursor performSelector:@selector(operationNotAllowedCursor)]; break;
 		case kCursorHand: cur = [NSCursor openHandCursor]; break;
 		default: cur = [NSCursor arrowCursor]; break;
 	}
 	if (cur)
 		[cur set];
+	} @catch(...) { [[NSCursor arrowCursor] set]; }
 }
 
 //------------------------------------------------------------------------------------
-void* addNSTextField (CFrame* frame, CTextEdit* edit)
+HIDDEN void* addNSTextField (CFrame* frame, CTextEdit* edit)
 {
-	return [[VSTGUI_NSTextField alloc] initWithTextEdit:edit];
+	return [[textFieldClass alloc] performSelector:@selector (initWithTextEdit:) withObject:(id)edit];
 }
 
 //------------------------------------------------------------------------------------
-void moveNSTextField (void* control, CTextEdit* edit)
+HIDDEN void moveNSTextField (void* control, CTextEdit* edit)
 {
-	VSTGUI_NSTextField* textField = (VSTGUI_NSTextField*)control;
-	[textField syncSize];
+	[(id)control performSelector:@selector(syncSize)];
 }
 
 //------------------------------------------------------------------------------------
-void removeNSTextField (void* control)
+HIDDEN void removeNSTextField (void* control)
 {
-	VSTGUI_NSTextField* textField = (VSTGUI_NSTextField*)control;
-	[textField removeFromSuperview];
-	[textField autorelease];
+	[(id)control performSelector:@selector(removeFromSuperview)];
+	[(id)control performSelector:@selector(autorelease)];
 }
 
 //------------------------------------------------------------------------------------
-bool getNSTextFieldText (void* control, char* text, long maxSize)
+HIDDEN bool getNSTextFieldText (void* control, char* text, long maxSize)
 {
-	NSTextField* textField = (NSTextField*)control;
-	[[textField stringValue] getCString:text maxLength:maxSize encoding:NSUTF8StringEncoding];
+	[[(id)control stringValue] getCString:text maxLength:maxSize encoding:NSUTF8StringEncoding];
 	return true;
 }
 
 //------------------------------------------------------------------------------------
-long showNSContextMenu (COptionMenu* menu, COptionMenu** usedMenu)
+HIDDEN long showNSContextMenu (COptionMenu* menu, COptionMenu** usedMenu)
 {
 	bool multipleCheck = menu->getStyle () & (kMultipleCheckStyle & ~kCheckStyle);
-	VSTGUI_NSView* view = (VSTGUI_NSView*)menu->getFrame ()->getNSView ();
-	VSTGUI_NSMenu* nsMenu = [[VSTGUI_NSMenu alloc] initWithOptionMenu: menu];
+	NSView* view = (NSView*)menu->getFrame ()->getNSView ();
+	NSMenu* nsMenu = [[menuClass alloc] performSelector:@selector(initWithOptionMenu:) withObject:(id)menu];
 	CPoint p (menu->getViewSize ().left, menu->getViewSize ().top);
 	menu->localToFrame (p);
 	NSRect cellFrameRect = {0};
@@ -300,363 +314,34 @@ long showNSContextMenu (COptionMenu* menu, COptionMenu** usedMenu)
 	if (menu->getStyle () & kPopupStyle)
 		[cell selectItemWithTag:menu->getValue ()];
 	[cell performClickWithFrame:cellFrameRect inView:view];
-	*usedMenu = [nsMenu selectedMenu];
-	return [nsMenu selectedItem];
+	*usedMenu = (COptionMenu*)[nsMenu performSelector:@selector(selectedMenu)];
+	return (long)[nsMenu performSelector:@selector(selectedItem)];
 }
 
 //------------------------------------------------------------------------------------
-void* startNSTimer (int ms, CBaseObject* timerObject)
+HIDDEN void nsViewSetTooltip (CView* view, const char* tooltip)
 {
-	return [[VSTGUI_NSTimer alloc] initWithTimerObject:timerObject fireTime:ms];
-}
-
-//------------------------------------------------------------------------------------
-void stopNSTimer (void* platformTimer)
-{
-	VSTGUI_NSTimer* timer = (VSTGUI_NSTimer*)platformTimer;
-	[timer stop];
-	[timer release];
-}
-
-//------------------------------------------------------------------------------------
-void nsViewSetTooltip (CView* view, const char* tooltip)
-{
-	VSTGUI_NSView* nsView = (VSTGUI_NSView*)view->getFrame ()->getNSView ();
-	[nsView setTooltip:tooltip forCView:view];
-}
-
-//------------------------------------------------------------------------------------
-void nsViewRemoveTooltip (CView* view)
-{
-	VSTGUI_NSView* nsView = (VSTGUI_NSView*)view->getFrame ()->getNSView ();
-	[nsView removeTooltip];
-}
-
-//------------------------------------------------------------------------------------
-//------------------------------------------------------------------------------------
-//------------------------------------------------------------------------------------
-@implementation VSTGUI_NSView
-
-//------------------------------------------------------------------------------------
-- (id) initWithFrame: (CFrame*) frame andSize: (const CRect&) size
-{
-	NSRect nsSize = { {size.left, size.top}, {size.getWidth (), size.getHeight ()} };
-	[super initWithFrame: nsSize];
-	
-	_vstguiframe = frame;
-
-	NSView* parentView = (NSView*)frame->getSystemWindow ();
-	[parentView addSubview: self];
-
-	[self setAutoresizingMask:NSViewMinYMargin];
-	[self setAutoresizesSubviews:YES];
-
-	[self registerForDraggedTypes:[NSArray arrayWithObjects:
-            NSStringPboardType, NSFilenamesPboardType, nil]];
-
-	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(frameDidChanged:) name:NSViewFrameDidChangeNotification object:self];
-
-	return self;
-}
-
-//------------------------------------------------------------------------------------
-- (void) dealloc
-{
-	[[NSNotificationCenter defaultCenter] removeObserver:self name:NSViewFrameDidChangeNotification object:self];
-
-	if (_vstguiframe)
-		_vstguiframe->forget ();
-	[super dealloc];
-}
-
-//------------------------------------------------------------------------------------
-- (void) clearCFrame
-{
-	_vstguiframe = 0;
-}
-
-//------------------------------------------------------------------------------------
-- (BOOL)isFlipped { return YES; }
-- (BOOL)acceptsFirstResponder { return YES; }
-- (BOOL)becomeFirstResponder { return YES; }
-- (BOOL)canBecomeKeyView { return YES; }
-
-//------------------------------------------------------------------------------------
-- (BOOL)isOpaque 
-{
-	BOOL transparent = (_vstguiframe->getTransparency () 
-			   || (_vstguiframe->getBackground () && !_vstguiframe->getBackground ()->getNoAlpha ())
-			   || (!_vstguiframe->getBackground () && _vstguiframe->getBackgroundColor().alpha != 255)
-			      );
-	return !transparent;
-}
-
-//------------------------------------------------------------------------------------
-- (void) frameDidChanged: (NSNotification*) notification
-{
-	if (_vstguiframe)
+	if (view->getFrame ())
 	{
-		CRect r = rectFromNSRect ([self frame]);
-		r.offset (-r.left, -r.top);
-		_vstguiframe->setViewSize (r);
+		VSTGUI_NSView* nsView = (VSTGUI_NSView*)view->getFrame ()->getNSView ();
+		[nsView setTooltip:tooltip forCView:view];
 	}
 }
 
 //------------------------------------------------------------------------------------
-- (void)viewDidMoveToWindow
+HIDDEN void nsViewRemoveTooltip (CView* view)
 {
-	if ([self window])
+	if (view->getFrame ())
 	{
-		_windowAcceptsMouseMoveEvents = [[self window] acceptsMouseMovedEvents];
-		_trackingRectTag = [self addTrackingRect:[self bounds] owner:self userData:nil assumeInside:NO];
-		_idleTimer = [NSTimer timerWithTimeInterval: 0.01 target:self selector:@selector(onTimer:) userInfo:nil repeats:YES];
-		[[NSRunLoop currentRunLoop] addTimer:_idleTimer forMode:NSDefaultRunLoopMode];
-		[[NSRunLoop currentRunLoop] addTimer:_idleTimer forMode:NSEventTrackingRunLoopMode];
-	}
-	else
-	{
-		[self removeTrackingRect:_trackingRectTag];
-		if (_idleTimer)
-			[_idleTimer invalidate];
+		VSTGUI_NSView* nsView = (VSTGUI_NSView*)view->getFrame ()->getNSView ();
+		[nsView removeTooltip];
 	}
 }
 
 //------------------------------------------------------------------------------------
--(void)resetCursorRects
-{
-	if ([self window])
-	{
-		[self removeTrackingRect:_trackingRectTag];
-		_trackingRectTag = [self addTrackingRect:[self bounds] owner:self userData:nil assumeInside:NO];
-	}
-}
-
 //------------------------------------------------------------------------------------
-- (void)onTimer:(NSTimer*)theTimer
-{
-	if (_vstguiframe)
-		_vstguiframe->idle ();
-}
-
 //------------------------------------------------------------------------------------
-- (void)drawRect:(NSRect)rect
-{
-	NSGraphicsContext* nsContext = [NSGraphicsContext currentContext];
-	
-	CDrawContext drawContext (_vstguiframe, [nsContext graphicsPort]);
-	_vstguiframe->drawRect (&drawContext, rectFromNSRect (rect));
-}
-
-//------------------------------------------------------------------------------------
-- (BOOL)onMouseDown: (NSEvent*)theEvent buttons: (long)buttons
-{
-	[[self window] makeFirstResponder:self];
-	unsigned int modifiers = [theEvent modifierFlags];
-	NSPoint nsPoint = [theEvent locationInWindow];
-	nsPoint = [self convertPoint:nsPoint fromView:nil];
-	if (modifiers & NSShiftKeyMask)
-		buttons |= kShift;
-	if (modifiers & NSCommandKeyMask)
-		buttons |= kControl;
-	if (modifiers & NSAlternateKeyMask)
-		buttons |= kAlt;
-	if (modifiers & NSControlKeyMask)
-		buttons |= kApple;
-	if ([theEvent clickCount] > 1)
-		buttons |= kDoubleClick;
-	CPoint p = pointFromNSPoint (nsPoint);
-	CMouseEventResult result = _vstguiframe->onMouseDown (p, buttons);
-	return (result == kMouseEventHandled) ? YES : NO;
-}
-
-//------------------------------------------------------------------------------------
-- (BOOL)onMouseUp: (NSEvent*)theEvent buttons: (long)buttons
-{
-	unsigned int modifiers = [theEvent modifierFlags];
-	NSPoint nsPoint = [theEvent locationInWindow];
-	nsPoint = [self convertPoint:nsPoint fromView:nil];
-	if (modifiers & NSShiftKeyMask)
-		buttons |= kShift;
-	if (modifiers & NSCommandKeyMask)
-		buttons |= kControl;
-	if (modifiers & NSAlternateKeyMask)
-		buttons |= kAlt;
-	if (modifiers & NSControlKeyMask)
-		buttons |= kApple;
-	CPoint p = pointFromNSPoint (nsPoint);
-	CMouseEventResult result = _vstguiframe->onMouseUp (p, buttons);
-	return (result == kMouseEventHandled) ? YES : NO;
-}
-
-//------------------------------------------------------------------------------------
-- (BOOL)onMouseMoved: (NSEvent*)theEvent buttons: (long)buttons
-{
-	unsigned int modifiers = [theEvent modifierFlags];
-	NSPoint nsPoint = [theEvent locationInWindow];
-	nsPoint = [self convertPoint:nsPoint fromView:nil];
-	if (modifiers & NSShiftKeyMask)
-		buttons |= kShift;
-	if (modifiers & NSCommandKeyMask)
-		buttons |= kControl;
-	if (modifiers & NSAlternateKeyMask)
-		buttons |= kAlt;
-	if (modifiers & NSControlKeyMask)
-		buttons |= kApple;
-	CPoint p = pointFromNSPoint (nsPoint);
-	CMouseEventResult result = _vstguiframe->onMouseMoved (p, buttons);
-	return (result == kMouseEventHandled) ? YES : NO;
-}
-
-//------------------------------------------------------------------------------------
-- (void)mouseDown:(NSEvent *)theEvent
-{
-	long buttons = kLButton;
-	if (![self onMouseDown: theEvent buttons: buttons])
-		[super mouseDown: theEvent];
-}
-
-//------------------------------------------------------------------------------------
-- (void)rightMouseDown:(NSEvent *)theEvent
-{
-	long buttons = kRButton;
-	if (![self onMouseDown: theEvent buttons: buttons])
-		[super mouseDown: theEvent];
-}
-
-//------------------------------------------------------------------------------------
-- (void)otherMouseDown:(NSEvent *)theEvent
-{
-	long buttons = 0;
-	switch ([theEvent buttonNumber])
-	{
-		case 3: buttons = kMButton; break;
-		case 4: buttons = kButton4; break;
-		case 5: buttons = kButton5; break;
-	}
-	if (![self onMouseDown: theEvent buttons: buttons])
-		[super mouseDown: theEvent];
-}
-
-//------------------------------------------------------------------------------------
-- (void)mouseUp:(NSEvent *)theEvent
-{
-	long buttons = kLButton;
-	if (![self onMouseUp: theEvent buttons: buttons])
-		[super mouseUp: theEvent];
-}
-
-//------------------------------------------------------------------------------------
-- (void)rightMouseUp:(NSEvent *)theEvent
-{
-	long buttons = kRButton;
-	if (![self onMouseUp: theEvent buttons: buttons])
-		[super mouseUp: theEvent];
-}
-
-//------------------------------------------------------------------------------------
-- (void)otherMouseUp:(NSEvent *)theEvent
-{
-	long buttons = 0;
-	switch ([theEvent buttonNumber])
-	{
-		case 3: buttons = kMButton; break;
-		case 4: buttons = kButton4; break;
-		case 5: buttons = kButton5; break;
-	}
-	if (![self onMouseUp: theEvent buttons: buttons])
-		[super mouseUp: theEvent];
-}
-
-//------------------------------------------------------------------------------------
-- (void)mouseMoved:(NSEvent *)theEvent
-{
-	long buttons = 0;
-	switch ([theEvent buttonNumber])
-	{
-		case 1: buttons = kLButton; break;
-		case 2: buttons = kRButton; break;
-		case 3: buttons = kMButton; break;
-		case 4: buttons = kButton4; break;
-		case 5: buttons = kButton5; break;
-	}
-	if (![self onMouseMoved: theEvent buttons: buttons])
-		[super mouseMoved: theEvent];
-}
-
-//------------------------------------------------------------------------------------
-- (void)mouseDragged:(NSEvent *)theEvent
-{
-	long buttons = kLButton;
-	if (![self onMouseMoved: theEvent buttons: buttons])
-		[super mouseDragged: theEvent];
-}
-
-//------------------------------------------------------------------------------------
-- (void)rightMouseDragged:(NSEvent *)theEvent
-{
-	long buttons = kRButton;
-	if (![self onMouseMoved: theEvent buttons: buttons])
-		[super mouseDragged: theEvent];
-}
-
-//------------------------------------------------------------------------------------
-- (void)otherMouseDragged:(NSEvent *)theEvent
-{
-	long buttons = 0;
-	switch ([theEvent buttonNumber])
-	{
-		case 3: buttons = kMButton; break;
-		case 4: buttons = kButton4; break;
-		case 5: buttons = kButton5; break;
-	}
-	if (![self onMouseMoved: theEvent buttons: buttons])
-		[super mouseDragged: theEvent];
-}
-
-//------------------------------------------------------------------------------------
-- (void)scrollWheel:(NSEvent *)theEvent
-{
-	long buttons = 0;
-	unsigned int modifiers = [theEvent modifierFlags];
-	NSPoint nsPoint = [theEvent locationInWindow];
-	nsPoint = [self convertPoint:nsPoint fromView:nil];
-	if (modifiers & NSShiftKeyMask)
-		buttons |= kShift;
-	if (modifiers & NSCommandKeyMask)
-		buttons |= kControl;
-	if (modifiers & NSAlternateKeyMask)
-		buttons |= kAlt;
-	if (modifiers & NSControlKeyMask)
-		buttons |= kApple;
-	CPoint p = pointFromNSPoint (nsPoint);
-	if ([theEvent deltaX])
-		_vstguiframe->onWheel (p, kMouseWheelAxisX, [theEvent deltaX], buttons);
-	if ([theEvent deltaY])
-		_vstguiframe->onWheel (p, kMouseWheelAxisY, [theEvent deltaY], buttons);
-}
-
-//------------------------------------------------------------------------------------
-- (void)mouseEntered:(NSEvent *)theEvent
-{
-	if (_windowAcceptsMouseMoveEvents == NO)
-	{
-		if ([self window])
-			[[self window] setAcceptsMouseMovedEvents: YES];
-	}
-}
-
-//------------------------------------------------------------------------------------
-- (void)mouseExited:(NSEvent *)theEvent
-{
-	if (_windowAcceptsMouseMoveEvents == NO)
-	{
-		if ([self window])
-			[[self window] setAcceptsMouseMovedEvents: NO];
-	}
-}
-
-//------------------------------------------------------------------------------------
-- (VstKeyCode)createVstKeyCode: (NSEvent*) theEvent
+static VstKeyCode CreateVstKeyCodeFromNSEvent (NSEvent* theEvent)
 {
 	VstKeyCode kc = {0};
     NSString *s = [theEvent charactersIgnoringModifiers];
@@ -745,9 +430,252 @@ void nsViewRemoveTooltip (CView* view)
 }
 
 //------------------------------------------------------------------------------------
+static long eventButton (NSEvent* theEvent)
+{
+	if ([theEvent type] == NSMouseMoved)
+		return 0;
+	long buttons = 0;
+	switch ([theEvent buttonNumber])
+	{
+		case 0: buttons = kLButton; break;
+		case 1: buttons = kRButton; break;
+		case 2: buttons = kMButton; break;
+		case 3: buttons = kButton4; break;
+		case 4: buttons = kButton5; break;
+	}
+	return buttons;
+}
+
+//------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------------
+@implementation VSTGUI_NSView
+
+//------------------------------------------------------------------------------------
+- (id) initWithFrame: (CFrame*) frame andSize: (const CRect*) size
+{
+	NSRect nsSize = nsRectFromCRect (*size);
+	self = [super initWithFrame: nsSize];
+	if (self)
+	{
+		_vstguiframe = frame;
+
+		NSView* parentView = (NSView*)_vstguiframe->getSystemWindow ();
+		if (parentView)
+			[parentView addSubview: self];
+
+		[self registerForDraggedTypes:[NSArray arrayWithObjects:NSStringPboardType, NSFilenamesPboardType, nil]];
+		
+		_trackingArea = [[NSTrackingArea alloc] initWithRect:[self frame] options:NSTrackingMouseEnteredAndExited|NSTrackingMouseMoved|NSTrackingActiveInActiveApp|NSTrackingInVisibleRect owner:self userInfo:nil];
+		[self addTrackingArea: _trackingArea];
+	}
+	return self;
+}
+
+//------------------------------------------------------------------------------------
+- (void) dealloc
+{
+	[self removeTrackingArea:_trackingArea];
+	[_trackingArea release];
+	[super dealloc];
+}
+
+//------------------------------------------------------------------------------------
+- (BOOL)isFlipped { return YES; }
+- (BOOL)acceptsFirstResponder { return YES; }
+- (BOOL)becomeFirstResponder { return YES; }
+- (BOOL)canBecomeKeyView { return YES; }
+
+//------------------------------------------------------------------------------------
+- (BOOL)isOpaque 
+{
+	BOOL transparent = (_vstguiframe->getTransparency () 
+			   || (_vstguiframe->getBackground () && !_vstguiframe->getBackground ()->getNoAlpha ())
+			   || (!_vstguiframe->getBackground () && _vstguiframe->getBackgroundColor().alpha != 255)
+			      );
+	return !transparent;
+}
+
+//------------------------------------------------------------------------------------
+- (void)drawRect:(NSRect)rect
+{
+	NSGraphicsContext* nsContext = [NSGraphicsContext currentContext];
+	
+	CDrawContext drawContext (_vstguiframe, [nsContext graphicsPort]);
+	_vstguiframe->drawRect (&drawContext, rectFromNSRect (rect));
+}
+
+//------------------------------------------------------------------------------------
+- (BOOL)onMouseDown: (NSEvent*)theEvent
+{
+	long buttons = eventButton (theEvent);
+	[[self window] makeFirstResponder:self];
+	unsigned int modifiers = [theEvent modifierFlags];
+	NSPoint nsPoint = [theEvent locationInWindow];
+	nsPoint = [self convertPoint:nsPoint fromView:nil];
+	if (modifiers & NSShiftKeyMask)
+		buttons |= kShift;
+	if (modifiers & NSCommandKeyMask)
+		buttons |= kControl;
+	if (modifiers & NSAlternateKeyMask)
+		buttons |= kAlt;
+	if (modifiers & NSControlKeyMask)
+		buttons |= kApple;
+	if ([theEvent clickCount] > 1)
+		buttons |= kDoubleClick;
+	CPoint p = pointFromNSPoint (nsPoint);
+	CMouseEventResult result = _vstguiframe->onMouseDown (p, buttons);
+	return (result == kMouseEventHandled) ? YES : NO;
+}
+
+//------------------------------------------------------------------------------------
+- (BOOL)onMouseUp: (NSEvent*)theEvent
+{
+	long buttons = eventButton (theEvent);
+	unsigned int modifiers = [theEvent modifierFlags];
+	NSPoint nsPoint = [theEvent locationInWindow];
+	nsPoint = [self convertPoint:nsPoint fromView:nil];
+	if (modifiers & NSShiftKeyMask)
+		buttons |= kShift;
+	if (modifiers & NSCommandKeyMask)
+		buttons |= kControl;
+	if (modifiers & NSAlternateKeyMask)
+		buttons |= kAlt;
+	if (modifiers & NSControlKeyMask)
+		buttons |= kApple;
+	CPoint p = pointFromNSPoint (nsPoint);
+	CMouseEventResult result = _vstguiframe->onMouseUp (p, buttons);
+	return (result == kMouseEventHandled) ? YES : NO;
+}
+
+//------------------------------------------------------------------------------------
+- (BOOL)onMouseMoved: (NSEvent*)theEvent
+{
+	long buttons = eventButton (theEvent);
+	unsigned int modifiers = [theEvent modifierFlags];
+	NSPoint nsPoint = [theEvent locationInWindow];
+	nsPoint = [self convertPoint:nsPoint fromView:nil];
+	if (modifiers & NSShiftKeyMask)
+		buttons |= kShift;
+	if (modifiers & NSCommandKeyMask)
+		buttons |= kControl;
+	if (modifiers & NSAlternateKeyMask)
+		buttons |= kAlt;
+	if (modifiers & NSControlKeyMask)
+		buttons |= kApple;
+	CPoint p = pointFromNSPoint (nsPoint);
+	CMouseEventResult result = _vstguiframe->onMouseMoved (p, buttons);
+	return (result == kMouseEventHandled) ? YES : NO;
+}
+
+//------------------------------------------------------------------------------------
+- (void)mouseDown:(NSEvent *)theEvent
+{
+	if (![self onMouseDown: theEvent])
+		[super mouseDown: theEvent];
+}
+
+//------------------------------------------------------------------------------------
+- (void)rightMouseDown:(NSEvent *)theEvent
+{
+	if (![self onMouseDown: theEvent])
+		[super mouseDown: theEvent];
+}
+
+//------------------------------------------------------------------------------------
+- (void)otherMouseDown:(NSEvent *)theEvent
+{
+	if (![self onMouseDown: theEvent])
+		[super mouseDown: theEvent];
+}
+
+//------------------------------------------------------------------------------------
+- (void)mouseUp:(NSEvent *)theEvent
+{
+	if (![self onMouseUp: theEvent])
+		[super mouseUp: theEvent];
+}
+
+//------------------------------------------------------------------------------------
+- (void)rightMouseUp:(NSEvent *)theEvent
+{
+	if (![self onMouseUp: theEvent])
+		[super mouseUp: theEvent];
+}
+
+//------------------------------------------------------------------------------------
+- (void)otherMouseUp:(NSEvent *)theEvent
+{
+	if (![self onMouseUp: theEvent])
+		[super mouseUp: theEvent];
+}
+
+//------------------------------------------------------------------------------------
+- (void)mouseMoved:(NSEvent *)theEvent
+{
+	if (![self onMouseMoved: theEvent])
+		[super mouseMoved: theEvent];
+}
+
+//------------------------------------------------------------------------------------
+- (void)mouseDragged:(NSEvent *)theEvent
+{
+	if (![self onMouseMoved: theEvent])
+		[super mouseDragged: theEvent];
+}
+
+//------------------------------------------------------------------------------------
+- (void)rightMouseDragged:(NSEvent *)theEvent
+{
+	if (![self onMouseMoved: theEvent])
+		[super mouseDragged: theEvent];
+}
+
+//------------------------------------------------------------------------------------
+- (void)otherMouseDragged:(NSEvent *)theEvent
+{
+	if (![self onMouseMoved: theEvent])
+		[super mouseDragged: theEvent];
+}
+
+//------------------------------------------------------------------------------------
+- (void)scrollWheel:(NSEvent *)theEvent
+{
+	long buttons = 0;
+	unsigned int modifiers = [theEvent modifierFlags];
+	NSPoint nsPoint = [theEvent locationInWindow];
+	nsPoint = [self convertPoint:nsPoint fromView:nil];
+	if (modifiers & NSShiftKeyMask)
+		buttons |= kShift;
+	if (modifiers & NSCommandKeyMask)
+		buttons |= kControl;
+	if (modifiers & NSAlternateKeyMask)
+		buttons |= kAlt;
+	if (modifiers & NSControlKeyMask)
+		buttons |= kApple;
+	CPoint p = pointFromNSPoint (nsPoint);
+	if ([theEvent deltaX])
+		_vstguiframe->onWheel (p, kMouseWheelAxisX, [theEvent deltaX], buttons);
+	if ([theEvent deltaY])
+		_vstguiframe->onWheel (p, kMouseWheelAxisY, [theEvent deltaY], buttons);
+}
+
+//------------------------------------------------------------------------------------
+- (void)mouseEntered:(NSEvent *)theEvent
+{
+	[self mouseMoved:theEvent];
+}
+
+//------------------------------------------------------------------------------------
+- (void)mouseExited:(NSEvent *)theEvent
+{
+	[self mouseMoved:theEvent];
+}
+
+//------------------------------------------------------------------------------------
 - (BOOL)performKeyEquivalent:(NSEvent *)theEvent
 {
-	VstKeyCode keyCode = [self createVstKeyCode: theEvent];
+	VstKeyCode keyCode = CreateVstKeyCodeFromNSEvent (theEvent);
 	if (_vstguiframe->onKeyDown (keyCode) == 1)
 		return YES;
 
@@ -757,7 +685,7 @@ void nsViewRemoveTooltip (CView* view)
 //------------------------------------------------------------------------------------
 - (void)keyDown:(NSEvent *)theEvent
 {
-	VstKeyCode keyCode = [self createVstKeyCode: theEvent];
+	VstKeyCode keyCode = CreateVstKeyCodeFromNSEvent (theEvent);
 	
 	if (_vstguiframe->onKeyDown (keyCode) != 1 && keyCode.virt == VKEY_TAB)
 	{
@@ -771,13 +699,13 @@ void nsViewRemoveTooltip (CView* view)
 //------------------------------------------------------------------------------------
 - (void)keyUp:(NSEvent *)theEvent
 {
-	VstKeyCode keyCode = [self createVstKeyCode: theEvent];
+	VstKeyCode keyCode = CreateVstKeyCodeFromNSEvent (theEvent);
 
 	_vstguiframe->onKeyUp (keyCode);
 }
 
 //------------------------------------------------------------------------------------
-- (NSDragOperation)draggingEntered:(id <NSDraggingInfo>)sender
+- (NSDragOperation)draggingEntered:(id)sender
 {
     NSPasteboard *pboard = [sender draggingPasteboard];
 
@@ -793,7 +721,7 @@ void nsViewRemoveTooltip (CView* view)
 }
 
 //------------------------------------------------------------------------------------
-- (NSDragOperation)draggingUpdated:(id <NSDraggingInfo>)sender
+- (NSDragOperation)draggingUpdated:(id)sender
 {
 	CPoint where;
 	nsViewGetCurrentMouseLocation (self, where);
@@ -803,7 +731,7 @@ void nsViewRemoveTooltip (CView* view)
 }
 
 //------------------------------------------------------------------------------------
-- (void)draggingExited:(id <NSDraggingInfo>)sender
+- (void)draggingExited:(id)sender
 {
 	CPoint where;
 	nsViewGetCurrentMouseLocation (self, where);
@@ -815,7 +743,7 @@ void nsViewRemoveTooltip (CView* view)
 }
 
 //------------------------------------------------------------------------------------
-- (BOOL)performDragOperation:(id <NSDraggingInfo>)sender
+- (BOOL)performDragOperation:(id)sender
 {
 	CPoint where;
 	nsViewGetCurrentMouseLocation (self, where);
@@ -839,231 +767,247 @@ void nsViewRemoveTooltip (CView* view)
 @end
 
 //------------------------------------------------------------------------------------
-@implementation VSTGUI_NSTimer
-
 //------------------------------------------------------------------------------------
-- (id) initWithTimerObject: (CBaseObject*) obj fireTime: (int) ms
+//------------------------------------------------------------------------------------
+struct VSTGUI_NSMenu_Var
 {
-	[super init];
-	_timerObject = obj;
-	_timer = [NSTimer timerWithTimeInterval: ((double)ms)* (1./1000.) target:self selector:@selector(onTimer:) userInfo:nil repeats:YES];
-	[[NSRunLoop currentRunLoop] addTimer:_timer forMode:NSDefaultRunLoopMode];
-	[[NSRunLoop currentRunLoop] addTimer:_timer forMode:NSEventTrackingRunLoopMode];
-	return self;
-}
+	COptionMenu* _optionMenu;
+	COptionMenu* _selectedMenu;
+	long _selectedItem;
+};
 
 //------------------------------------------------------------------------------------
-- (void) stop
+static id VSTGUI_NSMenu_Init (id self, SEL _cmd, void* _menu)
 {
-	[_timer invalidate];
-	_timer = 0;
-}
-
-//------------------------------------------------------------------------------------
-- (void) onTimer:(NSTimer*)theTimer
-{
-	if (_timerObject)
-		_timerObject->notify (0, CVSTGUITimer::kMsgTimer);
-}
-
-@end
-
-//------------------------------------------------------------------------------------
-@implementation VSTGUI_NSMenu
-
-//------------------------------------------------------------------------------------
-- (id) initWithOptionMenu: (COptionMenu*) menu
-{
-	bool multipleCheck = menu->getStyle () & (kMultipleCheckStyle & ~kCheckStyle);
-	_optionMenu = menu;
-	_selectedMenu = 0;
-	_selectedItem = -1;
-	[super init];
-
-	for (long i = 0; i < menu->getNbEntries (); i++)
+	OBJC_SUPER(self)
+	self = objc_msgSendSuper (SUPER, @selector(init)); // self = [super init];
+	if (self)
 	{
-		NSMenuItem* nsItem = 0;
-		CMenuItem* item = menu->getEntry (i);
-		NSMutableString* itemTitle = [[[NSMutableString alloc] initWithCString:item->getTitle () encoding:NSUTF8StringEncoding] autorelease];
-		if (menu->getPrefixNumbers ())
+		NSMenu* nsMenu = (NSMenu*)self;
+		COptionMenu* menu = (COptionMenu*)_menu;
+		VSTGUI_NSMenu_Var* var = new VSTGUI_NSMenu_Var;
+		var->_optionMenu = menu;
+		var->_selectedItem = 0;
+		var->_selectedMenu = 0;
+		OBJC_SET_VALUE(self, _private, var);
+
+		bool multipleCheck = menu->getStyle () & (kMultipleCheckStyle & ~kCheckStyle);
+		for (long i = 0; i < menu->getNbEntries (); i++)
 		{
-			NSString* prefixString = 0;
-			switch (menu->getPrefixNumbers ())
+			NSMenuItem* nsItem = 0;
+			CMenuItem* item = menu->getEntry (i);
+			NSMutableString* itemTitle = [[[NSMutableString alloc] initWithCString:item->getTitle () encoding:NSUTF8StringEncoding] autorelease];
+			if (menu->getPrefixNumbers ())
 			{
-				case 2:	prefixString = [NSString stringWithFormat:@"%1d ", i+1]; break;
-				case 3: prefixString = [NSString stringWithFormat:@"%02d ", i+1]; break;
-				case 4: prefixString = [NSString stringWithFormat:@"%03d ", i+1]; break;
-			}
-			[itemTitle insertString:prefixString atIndex:0];
-		}
-		if (item->getSubmenu ())
-		{
-			nsItem = [self addItemWithTitle:itemTitle action:nil keyEquivalent:@""];
-			VSTGUI_NSMenu* subMenu = [[VSTGUI_NSMenu alloc] initWithOptionMenu: item->getSubmenu ()];
-			[self setSubmenu: subMenu forItem:nsItem];
-		}
-		else if (item->isSeparator ())
-		{
-			[self addItem:[NSMenuItem separatorItem]];
-		}
-		else
-		{
-			nsItem = [self addItemWithTitle:itemTitle action:@selector(menuItemSelected:) keyEquivalent:@""];
-			if (item->isTitle ())
-				[nsItem setIndentationLevel:1];
-			[nsItem setTarget:self];
-			[nsItem setTag: i];
-			if (multipleCheck && item->isChecked ())
-				[nsItem setState:NSOnState];
-			else
-				[nsItem setState:NSOffState];
-			if (item->getKeycode ())
-			{
-				[nsItem setKeyEquivalent:[NSString stringWithCString:item->getKeycode () encoding:NSUTF8StringEncoding]];
-				unsigned int keyModifiers = 0;
-				if (item->getKeyModifiers () & kControl)
-					keyModifiers |= NSCommandKeyMask;
-				if (item->getKeyModifiers () & kShift)
-					keyModifiers |= NSShiftKeyMask;
-				if (item->getKeyModifiers () & kAlt)
-					keyModifiers |= NSAlternateKeyMask;
-				if (item->getKeyModifiers () & kApple)
-					keyModifiers |= NSControlKeyMask;
-				[nsItem setKeyEquivalentModifierMask:keyModifiers];
-			}
-		}
-		if (nsItem && item->getIcon ())
-		{
-			CGImageRef cgImage = item->getIcon ()->createCGImage ();
-			if (cgImage)
-			{
-				NSImage* nsImage = imageFromCGImageRef (cgImage);
-				if (nsImage)
+				NSString* prefixString = 0;
+				switch (menu->getPrefixNumbers ())
 				{
-					[nsItem setImage:nsImage];
-					[nsImage release];
+					case 2:	prefixString = [NSString stringWithFormat:@"%1d ", i+1]; break;
+					case 3: prefixString = [NSString stringWithFormat:@"%02d ", i+1]; break;
+					case 4: prefixString = [NSString stringWithFormat:@"%03d ", i+1]; break;
 				}
-				CGImageRelease (cgImage);
+				[itemTitle insertString:prefixString atIndex:0];
+			}
+			if (item->getSubmenu ())
+			{
+				nsItem = [nsMenu addItemWithTitle:itemTitle action:nil keyEquivalent:@""];
+				NSMenu* subMenu = [[menuClass alloc] performSelector:@selector(initWithOptionMenu:) withObject:(id)item->getSubmenu ()];
+				[nsMenu setSubmenu: subMenu forItem:nsItem];
+			}
+			else if (item->isSeparator ())
+			{
+				[nsMenu addItem:[NSMenuItem separatorItem]];
+			}
+			else
+			{
+				nsItem = [nsMenu addItemWithTitle:itemTitle action:@selector(menuItemSelected:) keyEquivalent:@""];
+				if (item->isTitle ())
+					[nsItem setIndentationLevel:1];
+				[nsItem setTarget:nsMenu];
+				[nsItem setTag: i];
+				if (multipleCheck && item->isChecked ())
+					[nsItem setState:NSOnState];
+				else
+					[nsItem setState:NSOffState];
+				if (item->getKeycode ())
+				{
+					[nsItem setKeyEquivalent:[NSString stringWithCString:item->getKeycode () encoding:NSUTF8StringEncoding]];
+					unsigned int keyModifiers = 0;
+					if (item->getKeyModifiers () & kControl)
+						keyModifiers |= NSCommandKeyMask;
+					if (item->getKeyModifiers () & kShift)
+						keyModifiers |= NSShiftKeyMask;
+					if (item->getKeyModifiers () & kAlt)
+						keyModifiers |= NSAlternateKeyMask;
+					if (item->getKeyModifiers () & kApple)
+						keyModifiers |= NSControlKeyMask;
+					[nsItem setKeyEquivalentModifierMask:keyModifiers];
+				}
+			}
+			if (nsItem && item->getIcon ())
+			{
+				CGImageRef cgImage = item->getIcon ()->createCGImage ();
+				if (cgImage)
+				{
+					NSImage* nsImage = imageFromCGImageRef (cgImage);
+					if (nsImage)
+					{
+						[nsItem setImage:nsImage];
+						[nsImage release];
+					}
+					CGImageRelease (cgImage);
+				}
 			}
 		}
 	}
 	return self;
 }
 
-//------------------------------------------------------------------------------------
-- (BOOL) validateMenuItem:(id)item
+//-----------------------------------------------------------------------------
+static void VSTGUI_NSMenu_Dealloc (id self, SEL _cmd)
 {
-	CMenuItem* menuItem = _optionMenu->getEntry ([item tag]);
-	if (!menuItem->isEnabled () || menuItem->isTitle ())
-		return NO;
+	VSTGUI_NSMenu_Var* var = (VSTGUI_NSMenu_Var*)OBJC_GET_VALUE(self, _private);
+	if (var)
+		delete var;
+	OBJC_SUPER(self)
+	objc_msgSendSuper (SUPER, @selector(dealloc)); // [super dealloc];
+}
+
+//------------------------------------------------------------------------------------
+static BOOL VSTGUI_NSMenu_ValidateMenuItem (id self, SEL _cmd, id item)
+{
+	VSTGUI_NSMenu_Var* var = (VSTGUI_NSMenu_Var*)OBJC_GET_VALUE(self, _private);
+	if (var && var->_optionMenu)
+	{
+		CMenuItem* menuItem = var->_optionMenu->getEntry ([item tag]);
+		if (!menuItem->isEnabled () || menuItem->isTitle ())
+			return NO;
+	}
 	return YES;
 }
 
 //------------------------------------------------------------------------------------
-- (COptionMenu*) optionMenu
+static void VSTGUI_NSMenu_MenuItemSelected (id self, SEL _cmd, id item)
 {
-	return _optionMenu;
+	VSTGUI_NSMenu_Var* var = (VSTGUI_NSMenu_Var*)OBJC_GET_VALUE(self, _private);
+	if (var)
+	{
+		id menu = self;
+		while ([menu supermenu]) menu = [menu supermenu];
+		[menu performSelector:@selector (setSelectedMenu:) withObject: (id)var->_optionMenu];
+		[menu performSelector:@selector (setSelectedItem:) withObject: (id)[item tag]];
+	}
 }
 
 //------------------------------------------------------------------------------------
-- (COptionMenu*) selectedMenu
+static void* VSTGUI_NSMenu_OptionMenu (id self, SEL _cmd)
 {
-	return _selectedMenu;
+	VSTGUI_NSMenu_Var* var = (VSTGUI_NSMenu_Var*)OBJC_GET_VALUE(self, _private);
+	return var ? var->_optionMenu : 0;
 }
 
 //------------------------------------------------------------------------------------
-- (void) setSelectedMenu: (COptionMenu*) menu
+static void* VSTGUI_NSMenu_SelectedMenu (id self, SEL _cmd)
 {
-	_selectedMenu = menu;
+	VSTGUI_NSMenu_Var* var = (VSTGUI_NSMenu_Var*)OBJC_GET_VALUE(self, _private);
+	return var ? var->_selectedMenu : 0;
 }
 
 //------------------------------------------------------------------------------------
-- (long) selectedItem
+static long VSTGUI_NSMenu_SelectedItem (id self, SEL _cmd)
 {
-	return _selectedItem;
+	VSTGUI_NSMenu_Var* var = (VSTGUI_NSMenu_Var*)OBJC_GET_VALUE(self, _private);
+	return var ? var->_selectedItem : 0;
 }
 
 //------------------------------------------------------------------------------------
-- (void) setSelectedItem: (long) item
+static void VSTGUI_NSMenu_SetSelectedMenu (id self, SEL _cmd, void* menu)
 {
-	_selectedItem = item;
+	VSTGUI_NSMenu_Var* var = (VSTGUI_NSMenu_Var*)OBJC_GET_VALUE(self, _private);
+	if (var)
+		var->_selectedMenu = (COptionMenu*)menu;
 }
 
 //------------------------------------------------------------------------------------
-- (IBAction) menuItemSelected: (id) item
+static void VSTGUI_NSMenu_SetSelectedItem (id self, SEL _cmd, long item)
 {
-	id menu = self;
-	while ([menu supermenu]) menu = [menu supermenu];
-	[menu setSelectedMenu: _optionMenu];
-	[menu setSelectedItem: [item tag]];
+	VSTGUI_NSMenu_Var* var = (VSTGUI_NSMenu_Var*)OBJC_GET_VALUE(self, _private);
+	if (var)
+		var->_selectedItem = item;
 }
 
-@end
-
-@implementation VSTGUI_NSTextField
-
 //------------------------------------------------------------------------------------
-- (id) initWithTextEdit: (CTextEdit*) textEdit
+//------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------------
+static id VSTGUI_NSTextField_Init (id self, SEL _cmd, void* textEdit)
 {
-	_textEdit = textEdit;
+	OBJC_SUPER(self)
+	if (self)
+	{
+		CTextEdit* te = (CTextEdit*)textEdit;
+		NSView* frameView = (NSView*)te->getFrame ()->getNSView ();
+		CPoint p (te->getViewSize ().left, te->getViewSize ().top);
+		te->localToFrame (p);
+		NSRect editFrameRect = {0};
+		editFrameRect.origin = nsPointFromCPoint (p);
+		editFrameRect.size.width = te->getViewSize ().getWidth ();
+		editFrameRect.size.height = te->getViewSize ().getHeight ();
+		NSView* containerView = [[NSView alloc] initWithFrame:editFrameRect];
+		[containerView setAutoresizesSubviews:YES];
 
-	NSView* frameView = (NSView*)_textEdit->getFrame ()->getNSView ();
-	CPoint p (_textEdit->getViewSize ().left, _textEdit->getViewSize ().top);
-	_textEdit->localToFrame (p);
-	NSRect editFrameRect = {0};
-	editFrameRect.origin = nsPointFromCPoint (p);
-	editFrameRect.size.width = _textEdit->getViewSize ().getWidth ();
-	editFrameRect.size.height = _textEdit->getViewSize ().getHeight ();
-	NSView* containerView = [[NSView alloc] initWithFrame:editFrameRect];
-	[containerView setAutoresizesSubviews:YES];
+		editFrameRect.origin.x = 0;
+		editFrameRect.origin.y = 0;
+		self = objc_msgSendSuper (SUPER, @selector(initWithFrame:), editFrameRect);
+		if (!self)
+		{
+			[containerView release];
+			return nil;
+		}
+		OBJC_SET_VALUE (self, _textEdit, textEdit);
 
-	editFrameRect.origin.x = 0;
-	editFrameRect.origin.y = 0;
-	[super initWithFrame:editFrameRect];
+		CTFontRef fontRef = (CTFontRef)te->getFont()->getPlatformFont ();
+		CTFontDescriptorRef fontDesc = CTFontCopyFontDescriptor (fontRef);
+		
+		[self setFont:[NSFont fontWithDescriptor:(NSFontDescriptor *)fontDesc size:te->getFont ()->getSize ()]];
+		CFRelease (fontDesc);
 
-	#if __LP64__
-	CTFontRef fontRef = (CTFontRef)_textEdit->getFont()->getPlatformFont ();
-	CTFontDescriptorRef fontDesc = CTFontCopyFontDescriptor (fontRef);
-	
-	[self setFont:[NSFont fontWithDescriptor:(NSFontDescriptor *)fontDesc size:_textEdit->getFont ()->getSize ()]];
-	CFRelease (fontDesc);
-	#else
-	
-	#endif
+		NSString* text = [NSString stringWithCString:te->getText () encoding:NSUTF8StringEncoding];
 
-	NSString* text = [NSString stringWithCString:_textEdit->getText () encoding:NSUTF8StringEncoding];
+		[self setBackgroundColor:nsColorFromCColor (te->getBackColor ())];
+		[self setTextColor:nsColorFromCColor (te->getFontColor ())];
+		[self setAllowsEditingTextAttributes:NO];
+		[self setImportsGraphics:NO];
+		[self setStringValue:text];
+		
+		[containerView addSubview:self];
+		[self performSelector:@selector(syncSize)];
+		[frameView addSubview:containerView];
 
-	[self setBackgroundColor:nsColorFromCColor (_textEdit->getBackColor ())];
-	[self setTextColor:nsColorFromCColor (_textEdit->getFontColor ())];
-	[self setAllowsEditingTextAttributes:NO];
-	[self setImportsGraphics:NO];
-	[self setStringValue:text];
-	
-	[containerView addSubview:self];
-	[self syncSize];
-	[frameView addSubview:containerView];
+		NSTextFieldCell* cell = [self cell];
+		[cell setLineBreakMode: NSLineBreakByClipping];
+		[cell setScrollable:YES];
+		if (te->getHoriAlign () == kCenterText)
+			[cell setAlignment:NSCenterTextAlignment];
+		else if (te->getHoriAlign () == kRightText)
+			[cell setAlignment:NSRightTextAlignment];
 
-	NSTextFieldCell* cell = [self cell];
-	[cell setLineBreakMode: NSLineBreakByClipping];
-	[cell setScrollable:YES];
-	if (_textEdit->getHoriAlign () == kCenterText)
-		[cell setAlignment:NSCenterTextAlignment];
-	else if (_textEdit->getHoriAlign () == kRightText)
-		[cell setAlignment:NSRightTextAlignment];
-
-	[self setDelegate:self];
-	[[self window] makeFirstResponder: self];
+		[self setDelegate:self];
+		[[self window] makeFirstResponder: self];
+	}
 	return self;
 }
 
 //------------------------------------------------------------------------------------
-- (void) syncSize
+static void VSTGUI_NSTextField_SyncSize (id self, SEL _cmd)
 {
+	CTextEdit* te = (CTextEdit*)OBJC_GET_VALUE(self, _textEdit);
+	if (!te)
+		return;
 	NSView* containerView = [self superview];
-	CRect rect (_textEdit->getVisibleSize ());
-	CRect viewSize = _textEdit->getViewSize ();
+	CRect rect (te->getVisibleSize ());
+	CRect viewSize = te->getViewSize ();
 	CPoint p (0, 0);
-	_textEdit->localToFrame (p);
+	te->localToFrame (p);
 	rect.offset (p.x, p.y);
 	viewSize.offset (p.x, p.y);
 
@@ -1082,49 +1026,54 @@ void nsViewRemoveTooltip (CView* view)
 }
 
 //------------------------------------------------------------------------------------
-- (void) removeFromSuperview
+static void VSTGUI_NSTextField_RemoveFromSuperview (id self, SEL _cmd)
 {
 	NSView* containerView = [self superview];
-	[containerView removeFromSuperview];
-	[super removeFromSuperview];
-	[containerView release];
+	if (containerView)
+	{
+		[containerView removeFromSuperview];
+		OBJC_SUPER(self)
+		objc_msgSendSuper (SUPER, @selector(removeFromSuperview)); // [super removeFromSuperview];
+		[containerView release];
+	}
 }
 
 //------------------------------------------------------------------------------------
-- (BOOL) control:(NSControl*)control textView:(NSTextView*)textView doCommandBySelector:(SEL)commandSelector
+static BOOL VSTGUI_NSTextField_DoCommandBySelector (id self, SEL _cmd, NSControl* control, NSTextView* textView, SEL commandSelector)
 {
+	CTextEdit* te = (CTextEdit*)OBJC_GET_VALUE(self, _textEdit);
+	if (!te)
+		return NO;
 	if (commandSelector == @selector (insertNewline:))
 	{
-		_textEdit->bWasReturnPressed = true;
-		_textEdit->looseFocus ();
+		te->bWasReturnPressed = true;
+		te->looseFocus ();
 	}
 	else if (commandSelector == @selector (insertTab:))
 	{
-		if (!_textEdit->getFrame ()->advanceNextFocusView (_textEdit, false))
+		if (!te->getFrame ()->advanceNextFocusView (te, false))
 		{
-			[[self window] makeFirstResponder:(NSView*)_textEdit->getFrame ()->getNSView ()];
-			[[self window] selectKeyViewFollowingView:(NSView*)_textEdit->getFrame ()->getNSView ()];
+			[[self window] makeFirstResponder:(NSView*)te->getFrame ()->getNSView ()];
+			[[self window] selectKeyViewFollowingView:(NSView*)te->getFrame ()->getNSView ()];
 		}
 		return YES;
 	}
 	else if (commandSelector == @selector (insertBacktab:))
 	{
-		if (!_textEdit->getFrame ()->advanceNextFocusView (_textEdit, true))
+		if (!te->getFrame ()->advanceNextFocusView (te, true))
 		{
-			[[self window] makeFirstResponder:(NSView*)_textEdit->getFrame ()->getNSView ()];
-			[[self window] selectKeyViewPrecedingView:(NSView*)_textEdit->getFrame ()->getNSView ()];
+			[[self window] makeFirstResponder:(NSView*)te->getFrame ()->getNSView ()];
+			[[self window] selectKeyViewPrecedingView:(NSView*)te->getFrame ()->getNSView ()];
 		}
 		return YES;
 	}
 	else if (commandSelector == @selector (cancelOperation:))
 	{
-		_textEdit->looseFocus ();
+		te->looseFocus ();
 		return YES; // return YES, otherwise it beeps !!!
 	}
 	return NO;
 }
-
-@end
 
 //------------------------------------------------------------------------------------
 //------------------------------------------------------------------------------------
@@ -1244,5 +1193,323 @@ long CocoaDragContainer::getType (long idx) const
 	return CDragContainer::kUnknown;
 }
 
+//------------------------------------------------------------------------------------
+static id VSTGUI_FileSelector_Delegate_Init (id self, SEL _cmd, void* fileSelector);
+static void VSTGUI_FileSelector_Delegate_Dealloc (id self, SEL _cmd);
+static void VSTGUI_FileSelector_Delegate_OpenPanelDidEnd (id self, SEL _cmd, NSOpenPanel* openPanel, int returnCode, void* contextInfo);
+//------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------------
+// Creating Objective-C classes at runtime, to prevent name clashes with different VSTGUI versions.
+//----------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------
+static Class generateUniqueClass (NSMutableString* className, Class baseClass)
+{
+	NSString* _className = [NSString stringWithString:className];
+	NSInteger iteration = 0;
+	id cl = nil;
+	while ((cl = objc_lookUpClass ([className UTF8String])) != nil)
+	{
+		iteration++;
+		[className setString:[NSString stringWithFormat:@"%@_%d", _className, iteration]];
+	}
+	Class resClass = objc_allocateClassPair (baseClass, [className UTF8String], 0);
+	return resClass;
+}
+
+//------------------------------------------------------------------------------------
+GenerateUniqueVSTGUIClasses _gGenerateUniqueVSTGUIClasses;
+GenerateUniqueVSTGUIClasses* gGenerateUniqueVSTGUIClasses = &_gGenerateUniqueVSTGUIClasses;
+
+//------------------------------------------------------------------------------------
+GenerateUniqueVSTGUIClasses::GenerateUniqueVSTGUIClasses ()
+{
+	BOOL res;
+	NSAutoreleasePool* pool = [[NSAutoreleasePool alloc] init];
+	
+	// generating VSTGUI_NSView
+	NSMutableString* viewClassName = [[[NSMutableString alloc] initWithString:@"VSTGUI_NSView"] autorelease];
+	viewClass = generateUniqueClass (viewClassName, [NSView class]);
+
+	// generating VSTGUI_NSMenu
+	NSMutableString* menuClassName = [[[NSMutableString alloc] initWithString:@"VSTGUI_NSMenu"] autorelease];
+	menuClass = generateUniqueClass (menuClassName, [NSMenu class]);
+	res = class_addMethod (menuClass, @selector(initWithOptionMenu:), IMP (VSTGUI_NSMenu_Init), "@@:@:^:");
+	res = class_addMethod (menuClass, @selector(dealloc), IMP (VSTGUI_NSMenu_Dealloc), "v@:@:");
+	res = class_addMethod (menuClass, @selector(validateMenuItem:), IMP (VSTGUI_NSMenu_ValidateMenuItem), "B@:@:@:");
+	res = class_addMethod (menuClass, @selector(menuItemSelected:), IMP (VSTGUI_NSMenu_MenuItemSelected), "v@:@:@:");
+	res = class_addMethod (menuClass, @selector(optionMenu), IMP (VSTGUI_NSMenu_OptionMenu), "^@:@:");
+	res = class_addMethod (menuClass, @selector(selectedMenu), IMP (VSTGUI_NSMenu_SelectedMenu), "^@:@:");
+	res = class_addMethod (menuClass, @selector(selectedItem), IMP (VSTGUI_NSMenu_SelectedItem), "l@:@:");
+	res = class_addMethod (menuClass, @selector(setSelectedMenu:), IMP (VSTGUI_NSMenu_SetSelectedMenu), "^@:@:^:");
+	res = class_addMethod (menuClass, @selector(setSelectedItem:), IMP (VSTGUI_NSMenu_SetSelectedItem), "^@:@:l:");
+	res = class_addIvar (menuClass, "_private", sizeof (VSTGUI_NSMenu_Var*), log2(sizeof(VSTGUI_NSMenu_Var*)), @encode(VSTGUI_NSMenu_Var*));
+	objc_registerClassPair (menuClass);
+
+	// generating VSTGUI_NSTextField
+	NSMutableString* textFieldClassName = [[[NSMutableString alloc] initWithString:@"VSTGUI_NSTextField"] autorelease];
+	textFieldClass = generateUniqueClass (textFieldClassName, [NSTextField class]);
+	res = class_addMethod (textFieldClass, @selector(initWithTextEdit:), IMP (VSTGUI_NSTextField_Init), "@@:@:^:");
+	res = class_addMethod (textFieldClass, @selector(syncSize), IMP (VSTGUI_NSTextField_SyncSize), "v@:@:");
+	res = class_addMethod (textFieldClass, @selector(removeFromSuperview), IMP (VSTGUI_NSTextField_RemoveFromSuperview), "v@:@:");
+	res = class_addMethod (textFieldClass, @selector(control:textView:doCommandBySelector:), IMP (VSTGUI_NSTextField_DoCommandBySelector), "B@:@:@:@::");
+	res = class_addIvar (textFieldClass, "_textEdit", sizeof (void*), log2(sizeof(void*)), @encode(void*));
+	objc_registerClassPair (textFieldClass);
+
+	// generating VSTGUI_FileSelector_Delegate
+	NSMutableString* fileSelectorDelegateClassName = [[[NSMutableString alloc] initWithString:@"VSTGUI_FileSelector_Delegate"] autorelease];
+	fileSelectorDelegateClass = generateUniqueClass (fileSelectorDelegateClassName, [NSObject class]);
+	res = class_addMethod (fileSelectorDelegateClass, @selector(initWithFileSelector:), IMP (VSTGUI_FileSelector_Delegate_Init), "@@:@:^:");
+	res = class_addMethod (fileSelectorDelegateClass, @selector(dealloc), IMP (VSTGUI_FileSelector_Delegate_Dealloc), "v@:@:");
+	res = class_addMethod (fileSelectorDelegateClass, @selector(openPanelDidEnd:returnCode:contextInfo:), IMP (VSTGUI_FileSelector_Delegate_OpenPanelDidEnd), "v@:@:@:I:@:");
+	res = class_addIvar (fileSelectorDelegateClass, "_fileSelector", sizeof (void*), log2(sizeof(void*)), @encode(void*));
+	objc_registerClassPair (fileSelectorDelegateClass);
+
+	[pool release];
+}
+
+//------------------------------------------------------------------------------------
+GenerateUniqueVSTGUIClasses::~GenerateUniqueVSTGUIClasses ()
+{
+	objc_disposeClassPair (menuClass);
+	objc_disposeClassPair (viewClass);
+	objc_disposeClassPair (textFieldClass);
+	objc_disposeClassPair (fileSelectorDelegateClass);
+}
+#endif // MAC_COCOA
+
+#if !MAC_COCOA
+// the cocoa fileselector is also used for carbon
+#import <Cocoa/Cocoa.h>
+#import "cfileselector.h"
+#endif
+//------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
+class CocoaFileSelector : public CNewFileSelector
+{
+public:
+	CocoaFileSelector (CFrame* frame, Style style);
+	~CocoaFileSelector ();
+
+	void openPanelDidEnd (NSOpenPanel* panel, int resultCode);
+protected:
+	bool runInternal (CBaseObject* delegate);
+	bool runModalInternal ();
+	void cancelInternal ();
+
+	Style style;
+	CBaseObject* delegate;
+	NSSavePanel* savePanel;
+};
+
+//-----------------------------------------------------------------------------
+CNewFileSelector* CNewFileSelector::create (CFrame* frame, Style style)
+{
+	return new CocoaFileSelector (frame, style);
+}
+
+//-----------------------------------------------------------------------------
+CocoaFileSelector::CocoaFileSelector (CFrame* frame, Style style)
+: CNewFileSelector (frame)
+, style (style)
+, delegate (0)
+{
+	savePanel = nil;
+}
+
+//-----------------------------------------------------------------------------
+CocoaFileSelector::~CocoaFileSelector ()
+{
+	if (delegate)
+		delegate->forget ();
+}
+
+//-----------------------------------------------------------------------------
+void CocoaFileSelector::openPanelDidEnd (NSOpenPanel* openPanel, int res)
+{
+	if (res == NSFileHandlingPanelOKButton)
+	{
+		if (style == kSelectSaveFile)
+		{
+			NSURL* url = [openPanel URL];
+			const char* utf8Path = url ? [[url path] UTF8String] : 0;
+			if (utf8Path)
+			{
+				char* path = (char*)malloc (strlen (utf8Path) + 1);
+				strcpy (path, utf8Path);
+				result.push_back (path);
+			}
+		}
+		else
+		{
+			NSArray* urls = [openPanel URLs];
+			for (int i = 0; i < [urls count]; i++)
+			{
+				NSURL* url = [urls objectAtIndex:i];
+				if (url == 0 || [url path] == 0)
+					continue;
+				const char* utf8Path = [[url path] UTF8String];
+				if (utf8Path)
+				{
+					char* path = (char*)malloc (strlen (utf8Path) + 1);
+					strcpy (path, utf8Path);
+					result.push_back (path);
+				}
+			}
+		}
+	}
+	if (delegate)
+		delegate->notify (this, CNewFileSelector::kSelectEndMessage);
+}
+
+//-----------------------------------------------------------------------------
+void CocoaFileSelector::cancelInternal ()
+{
+	if (savePanel)
+		[savePanel cancel:nil];
+}
+
+//-----------------------------------------------------------------------------
+bool CocoaFileSelector::runInternal (CBaseObject* _delegate)
+{
+	remember ();
+	NSWindow* parentWindow = nil;
+	if (_delegate)
+	{
+		#if MAC_COCOA
+		if (frame && frame->getSystemWindow () && frame->getNSView ())
+			parentWindow = [((NSView*)frame->getSystemWindow ()) window];
+		#endif
+		delegate = _delegate;
+		delegate->remember ();
+	}
+	NSOpenPanel* openPanel = nil;
+	NSMutableArray* typesArray = nil;
+	if (extensions.size () > 0)
+	{
+		typesArray = [[[NSMutableArray alloc] init] autorelease];
+		std::list<CFileExtension>::const_iterator it = extensions.begin ();
+		while (it != extensions.end ())
+		{
+			NSString* uti = 0;
+			if ((*it).getMimeType ())
+				uti = (NSString*)UTTypeCreatePreferredIdentifierForTag (kUTTagClassMIMEType, (CFStringRef)[NSString stringWithCString: (*it).getMimeType () encoding:NSUTF8StringEncoding], NULL);
+			if (uti == 0 && (*it).getMacType ())
+			{
+				NSString* osType = (NSString*)UTCreateStringForOSType ((*it).getMacType ());
+				if (osType)
+				{
+					uti = (NSString*)UTTypeCreatePreferredIdentifierForTag (kUTTagClassOSType, (CFStringRef)osType, NULL);
+					[osType release];
+				}
+			}
+			if (uti == 0 && (*it).getExtension ())
+				uti = (NSString*)UTTypeCreatePreferredIdentifierForTag (kUTTagClassFilenameExtension, (CFStringRef)[NSString stringWithCString: (*it).getExtension () encoding:NSUTF8StringEncoding], NULL);
+			if (uti)
+			{
+				[typesArray addObject:uti];
+				[uti release];
+			}
+			it++;
+		}
+	}
+	if (style == kSelectSaveFile)
+	{
+		savePanel = [NSSavePanel savePanel];
+		if (typesArray)
+			[savePanel setAllowedFileTypes:typesArray];
+	}
+	else
+	{
+		savePanel = openPanel = [NSOpenPanel openPanel];
+		if (style == kSelectFile)
+		{
+			[openPanel setAllowsMultipleSelection:allowMultiFileSelection ? YES : NO];
+		}
+		else
+		{
+			[openPanel setCanChooseDirectories:YES];
+		}
+	}
+	if (title && savePanel)
+		[savePanel setTitle:[NSString stringWithCString: title encoding:NSUTF8StringEncoding]];
+	if (openPanel)
+	{
+		#if MAC_COCOA
+		if (parentWindow)
+		{
+			id fsdelegate = [[fileSelectorDelegateClass alloc] performSelector:@selector(initWithFileSelector:) withObject: (id)this];
+			[openPanel beginSheetForDirectory:initialPath ? [NSString stringWithCString:initialPath encoding:NSUTF8StringEncoding] : nil file:nil types:typesArray modalForWindow:parentWindow modalDelegate:fsdelegate didEndSelector:@selector(openPanelDidEnd:returnCode:contextInfo:) contextInfo:nil];
+		}
+		else
+		#endif
+		{
+			int res = [openPanel runModalForDirectory:initialPath ? [NSString stringWithCString:initialPath encoding:NSUTF8StringEncoding] : nil file:nil types:typesArray];
+			openPanelDidEnd (openPanel, res);
+		}
+	}
+	else if (savePanel)
+	{
+		#if MAC_COCOA
+		if (parentWindow)
+		{
+			id fsdelegate = [[fileSelectorDelegateClass alloc] performSelector:@selector(initWithFileSelector:) withObject: (id)this];
+			[savePanel beginSheetForDirectory:initialPath ? [NSString stringWithCString:initialPath encoding:NSUTF8StringEncoding] : nil file:defaultSaveName ? [NSString stringWithCString:defaultSaveName encoding:NSUTF8StringEncoding] : nil modalForWindow:parentWindow modalDelegate:fsdelegate didEndSelector:@selector(openPanelDidEnd:returnCode:contextInfo:) contextInfo:nil];
+		}
+		else
+		#endif
+		{
+			int res = [savePanel runModalForDirectory:initialPath ? [NSString stringWithCString:initialPath encoding:NSUTF8StringEncoding]:nil file:defaultSaveName ? [NSString stringWithCString:defaultSaveName encoding:NSUTF8StringEncoding] : nil];
+			openPanelDidEnd (savePanel, res);
+		}
+	}
+	
+	forget ();
+	return true;
+}
+
+//-----------------------------------------------------------------------------
+bool CocoaFileSelector::runModalInternal ()
+{
+	return runInternal (0);
+}
+
+#if MAC_COCOA
+//-----------------------------------------------------------------------------
+id VSTGUI_FileSelector_Delegate_Init (id self, SEL _cmd, void* fileSelector)
+{
+	OBJC_SUPER(self)
+	self = objc_msgSendSuper (SUPER, @selector(init)); // self = [super init];
+	if (self)
+	{
+		((CocoaFileSelector*)fileSelector)->remember ();
+		OBJC_SET_VALUE (self, _fileSelector, (id)fileSelector);
+	}
+	return self;
+}
+
+//-----------------------------------------------------------------------------
+void VSTGUI_FileSelector_Delegate_Dealloc (id self, SEL _cmd)
+{
+	id fileSelector = OBJC_GET_VALUE(self, _fileSelector);
+	if (fileSelector)
+		((CocoaFileSelector*)fileSelector)->forget ();
+	OBJC_SUPER(self)
+	objc_msgSendSuper (SUPER, @selector(dealloc)); // [super dealloc];
+}
+
+//-----------------------------------------------------------------------------
+void VSTGUI_FileSelector_Delegate_OpenPanelDidEnd (id self, SEL _cmd, NSOpenPanel* openPanel, int returnCode, void* contextInfo)
+{
+	id fileSelector = OBJC_GET_VALUE(self, _fileSelector);
+	if (fileSelector)
+	{
+		((CocoaFileSelector*)fileSelector)->openPanelDidEnd (openPanel, returnCode);
+	}
+	[self autorelease];
+}
 #endif
 /// \endcond
+
