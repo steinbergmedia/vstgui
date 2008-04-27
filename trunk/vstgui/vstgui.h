@@ -2,7 +2,7 @@
 // VST Plug-Ins SDK
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 //
-// Version 3.5       $Date: 2008-04-01 11:04:05 $
+// Version 3.5       $Date: 2008-04-27 14:42:35 $
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
@@ -40,11 +40,14 @@
 	#define WINDOWS 1
 #elif (__MWERKS__ || __APPLE_CC__)
 	#ifndef MAC_COCOA
-		#define MAC_COCOA 1
+		#define MAC_COCOA (MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_5)
+	#endif
+	#ifndef MAC
+		#define MAC 1
 	#endif
 	#define VSTGUI_USES_COREGRAPHICS 1
 	#if !__LP64__
-		#define MAC 1
+		#define MAC_CARBON 1
 		#ifndef TARGET_API_MAC_CARBON
 			#define TARGET_API_MAC_CARBON 1
 		#endif
@@ -162,16 +165,16 @@ END_NAMESPACE_VSTGUI
 #endif // WINDOWS
 
 //----------------------------------------------------
-#if MAC
+#if MAC_CARBON
 	#include <Carbon/Carbon.h>
-#endif // MAC
+#endif // MAC_CARBON
 
 #if MAC_COCOA
 	#include <CoreFoundation/CoreFoundation.h>
 	#include <ApplicationServices/ApplicationServices.h>
 #endif
 
-#if MAC || MAC_COCOA
+#if MAC_CARBON || MAC_COCOA
 	BEGIN_NAMESPACE_VSTGUI
 	extern void* gBundleRef;	///< must be set to the current CFBundleRef somewhere early in the code
 	END_NAMESPACE_VSTGUI
@@ -203,7 +206,7 @@ extern void DebugPrint (char* format, ...);
 	virtual CView* newCopy () const = 0;
 
 #ifdef VSTGUI_FLOAT_COORDINATES
-typedef float CCoord;
+typedef double CCoord;
 #else
 typedef long CCoord;
 #endif
@@ -597,12 +600,14 @@ enum CMessageResult
 //----------------------------
 enum CViewAutosizing
 {
-	kAutosizeNone		= 0,
-	kAutosizeLeft		= 1 << 0,
-	kAutosizeTop		= 1 << 1,
-	kAutosizeRight		= 1 << 2,
-	kAutosizeBottom		= 1 << 3,
-	kAutosizeAll		= kAutosizeLeft | kAutosizeTop | kAutosizeRight | kAutosizeBottom
+	kAutosizeNone			= 0,
+	kAutosizeLeft			= 1 << 0,
+	kAutosizeTop			= 1 << 1,
+	kAutosizeRight			= 1 << 2,
+	kAutosizeBottom			= 1 << 3,
+	kAutosizeColumn			= 1 << 4,	///< view containers treat their children as columns
+	kAutosizeRow			= 1 << 5,	///< view containers treat their children as rows
+	kAutosizeAll			= kAutosizeLeft | kAutosizeTop | kAutosizeRight | kAutosizeBottom,
 };
 
 //-----------------------------------------------------------------------------
@@ -860,11 +865,11 @@ protected:
 	protected:
 #endif
 
-#if MAC
+#if MAC_CARBON
 	virtual BitMapPtr getBitmap ();
 	virtual void releaseBitmap ();
 	virtual CGrafPtr getPort ();
-#endif // MAC
+#endif // MAC_CARBON
 
 };
 
@@ -918,10 +923,10 @@ protected:
 	void releaseCGContext (CGContextRef context);
 #endif // VSTGUI_USES_COREGRAPHICS
 
-#if MAC
+#if MAC_CARBON
 	BitMapPtr getBitmap ();
 	void releaseBitmap ();
-#endif // MAC
+#endif // MAC_CARBON
 };
 
 //-----------------------------------------------------------------------------
@@ -1398,6 +1403,10 @@ public:
 	void invalid () { invalidRect (size); bDirty = false; }
 	void invalidRect (const CRect rect);
 
+	#if MAC_COCOA && MAC_CARBON
+	static void setCocoaMode (bool state);
+	#endif
+
 	#if WINDOWS
 	HWND getOuterWindow () const;
 	void *getParentSystemWindow () const { return pSystemWindow; }
@@ -1460,7 +1469,7 @@ protected:
 	COffscreenContext* backBuffer;
 #endif // WINDOWS
 
-#if MAC
+#if MAC_CARBON
 	void setDrawContext (CDrawContext* context) { pFrameContext = context; }
 	friend class CDrawContext;
 
@@ -1475,7 +1484,7 @@ protected:
 	void* getPlatformControl () const { return controlRef; }
 	CPoint hiScrollOffset;
 	protected:
-#endif // MAC
+#endif // MAC_CARBON
 
 #if MAC_COCOA
 	void* nsView;

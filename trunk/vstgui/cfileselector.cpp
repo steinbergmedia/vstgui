@@ -2,11 +2,11 @@
 // VST Plug-Ins SDK
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 //
-// Version 3.0       $Date: 2007-11-08 10:51:54 $ 
+// Version 3.0       $Date: 2008-04-27 14:42:35 $ 
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
-// © 2004, Steinberg Media Technologies, All Rights Reserved
+// ï¿½ 2004, Steinberg Media Technologies, All Rights Reserved
 //-----------------------------------------------------------------------------
 // Redistribution and use in source and binary forms, with or without modification,
 // are permitted provided that the following conditions are met:
@@ -33,8 +33,238 @@
 //-----------------------------------------------------------------------------
 
 #if ENABLE_VST_EXTENSION_IN_VSTGUI
-#include "AudioEffectX.h"
+#include "public.sdk/source/vst2.x/audioeffectx.h"
 #endif
+
+#include "cfileselector.h"
+
+#if VSTGUI_NEW_CFILESELECTOR
+
+//-----------------------------------------------------------------------------
+CFileExtension::CFileExtension (const char* inDescription, const char* inExtension, const char* inMimeType, int inMacType)
+: description (0)
+, extension (0)
+, mimeType (0)
+, macType (inMacType)
+{
+	init (inDescription, inExtension, inMimeType);
+}
+
+//-----------------------------------------------------------------------------
+CFileExtension::CFileExtension (const CFileExtension& ext)
+: description (0)
+, extension (0)
+, mimeType (0)
+, macType (ext.macType)
+{
+	init (ext.description, ext.extension, ext.mimeType);
+}
+
+//-----------------------------------------------------------------------------
+CFileExtension::~CFileExtension ()
+{
+	if (description)
+		free (description);
+	if (extension)
+		free (extension);
+	if (mimeType)
+		free (mimeType);
+}
+
+//-----------------------------------------------------------------------------
+void CFileExtension::init (const char* inDescription, const char* inExtension, const char* inMimeType)
+{
+	if (inDescription)
+	{
+		description = (char*)malloc (strlen (inDescription) + 1);
+		strcpy (description, inDescription);
+	}
+	if (inExtension)
+	{
+		extension = (char*)malloc (strlen (inExtension) + 1);
+		strcpy (extension, inExtension);
+	}
+	if (inMimeType)
+	{
+		mimeType = (char*)malloc (strlen (inMimeType) + 1);
+		strcpy (mimeType, inMimeType);
+	}
+	if (description == 0 && extension)
+	{
+		// TODO: query system for file type description
+		// Win32: AssocGetPerceivedType
+		// Mac: Uniform Type Identifier
+	}
+}
+
+//-----------------------------------------------------------------------------
+bool CFileExtension::operator== (const CFileExtension& ext) const
+{
+	bool result = false;
+	if (extension && ext.extension)
+		result = (strcmp (extension, ext.extension) == 0);
+	if (!result && mimeType && ext.mimeType)
+		result = (strcmp (mimeType, ext.mimeType) == 0);
+	if (!result && macType != 0 && ext.macType != 0)
+		result = (macType == ext.macType);
+	return result;
+}
+
+//-----------------------------------------------------------------------------
+const CFileExtension& CNewFileSelector::getAllFilesExtension ()
+{
+	static CFileExtension allFilesExtension ("All Files", "");
+	return allFilesExtension;
+}
+
+//-----------------------------------------------------------------------------
+const char* CNewFileSelector::kSelectEndMessage = "CNewFileSelector Select End Message";
+
+//-----------------------------------------------------------------------------
+CNewFileSelector::CNewFileSelector (CFrame* frame)
+: frame (frame)
+, defaultExtension (0)
+, title (0)
+, initialPath (0)
+, defaultSaveName (0)
+, allowMultiFileSelection (false)
+{
+}
+
+//-----------------------------------------------------------------------------
+CNewFileSelector::~CFileSelector ()
+{
+	setTitle (0);
+	setInitialDirectory (0);
+	setDefaultSaveName (0);
+	for (int i = 0; i < result.size (); i++)
+		free (result[i]);
+}
+
+//-----------------------------------------------------------------------------
+bool CNewFileSelector::run (CBaseObject* delegate)
+{
+	if (delegate == 0)
+	{
+		#if DEBUG
+		DebugPrint ("You need to specify a delegate in CFileSelector::run (CBaseObject* delegate, void* parentWindow)\n");
+		#endif
+		return false;
+	}
+	return runInternal (delegate);
+}
+
+//-----------------------------------------------------------------------------
+void CNewFileSelector::cancel ()
+{
+	cancelInternal ();
+}
+
+//-----------------------------------------------------------------------------
+bool CNewFileSelector::runModal ()
+{
+	return runModalInternal ();
+}
+
+//-----------------------------------------------------------------------------
+void CNewFileSelector::setTitle (const char* inTitle)
+{
+	if (title)
+		free (title);
+	title = 0;
+	if (inTitle)
+	{
+		title = (char*)malloc (strlen (inTitle) + 1);
+		strcpy (title, inTitle);
+	}
+}
+
+//-----------------------------------------------------------------------------
+void CNewFileSelector::setInitialDirectory (const char* path)
+{
+	if (initialPath)
+		free (initialPath);
+	initialPath = 0;
+	if (path)
+	{
+		initialPath = (char*)malloc (strlen (path) + 1);
+		strcpy (initialPath, path);
+	}
+}
+
+//-----------------------------------------------------------------------------
+void CNewFileSelector::setDefaultSaveName (const char* name)
+{
+	if (defaultSaveName)
+		free (defaultSaveName);
+	defaultSaveName = 0;
+	if (name)
+	{
+		defaultSaveName = (char*)malloc (strlen (name) + 1);
+		strcpy (defaultSaveName, name);
+	}
+}
+
+//-----------------------------------------------------------------------------
+void CNewFileSelector::setAllowMultiFileSelection (bool state)
+{
+	allowMultiFileSelection = state;
+}
+
+//-----------------------------------------------------------------------------
+void CNewFileSelector::setDefaultExtension (const CFileExtension& extension)
+{
+	if (defaultExtension)
+	{
+		#if DEBUG
+		DebugPrint ("VSTGUI Warning: It's not allowed to set a default extension twice on a CFileSelector instance\n");
+		#endif
+		return;
+	}
+
+	bool found = false;
+	std::list<CFileExtension>::const_iterator it = extensions.begin ();
+	while (it != extensions.end ())
+	{
+		if ((*it) == extension)
+		{
+			defaultExtension = &(*it);
+			found = true;
+			break;
+		}
+		it++;
+	}
+	if (!found)
+	{
+		addFileExtension (extension);
+		setDefaultExtension (extension);
+	}
+}
+
+//-----------------------------------------------------------------------------
+void CNewFileSelector::addFileExtension (const CFileExtension& extension)
+{
+	extensions.push_back (extension);
+}
+
+//-----------------------------------------------------------------------------
+int CNewFileSelector::getNumSelectedFiles () const
+{
+	return result.size ();
+}
+
+//-----------------------------------------------------------------------------
+const char* CNewFileSelector::getSelectedFile (int index) const
+{
+	if (index < result.size ())
+		return result[index];
+	return 0;
+}
+
+//-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
+#endif // VSTGUI_NEW_CFILESELECTOR
 
 #ifndef __cfileselector__
 #include "cfileselector.h"
@@ -448,7 +678,7 @@ long CFileSelector::run (VstFileSelect *vstFileSelect)
 			#endif
 		}
 
-#elif MAC
+#elif MAC && !__LP64__
 		// new approach for supporting long filenames on mac os x is to use unix path mode
 		// if vstFileSelect->future[0] is 1 on entry and 0 on exit the resulting paths are UTF8 encoded paths
 		bool unixPathMode = (vstFileSelect->future[0] == 1);
@@ -812,7 +1042,7 @@ long CFileSelector::run (VstFileSelect *vstFileSelect)
 	return 0;
 }
 
-#if MAC
+#if MAC && !__LP64__
 //-----------------------------------------------------------------------------
 pascal void CFileSelector::navEventProc (const NavEventCallbackMessage callBackSelector, NavCBRecPtr callBackParms, NavCallBackUserData callBackUD) 
 {
@@ -1045,4 +1275,3 @@ UINT_PTR APIENTRY WinSaveHook (HWND hdlg, UINT msg, WPARAM wParam, LPARAM lParam
 }
 #endif
 
-//-----------------------------------------------------------------------------

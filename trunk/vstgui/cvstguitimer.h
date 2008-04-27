@@ -2,7 +2,7 @@
 // VST Plug-Ins SDK
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 //
-// Version 3.5       $Date: 2007-10-16 20:41:34 $
+// Version 3.5       $Date: 2008-04-27 14:42:35 $
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
@@ -64,7 +64,7 @@ protected:
 
 	void* platformTimer;
 	#if MAC
-	static pascal void timerProc (EventLoopTimerRef inTimer, void *inUserData);
+	static void timerCallback (CFRunLoopTimerRef timer, void *info);
 	#elif WINDOWS
 	static VOID CALLBACK TimerProc (HWND hwnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTime);
 	#endif

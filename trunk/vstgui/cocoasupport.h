@@ -2,7 +2,7 @@
 // VST Plug-Ins SDK
 // VSTGUI: Graphical User Interface Framework not only for VST plugins : 
 //
-// Version 3.6       $Date: 2007-11-08 14:13:28 $
+// Version 3.6       $Date: 2008-04-27 14:42:35 $
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
@@ -59,16 +59,13 @@ void moveNSTextField (void* control, CTextEdit* edit);
 // used by COptionMenu
 long showNSContextMenu (COptionMenu* menu, COptionMenu** usedMenu);
 
-// used by CVSTGUITimer
-void* startNSTimer (int ms, CBaseObject* timerObject);
-void stopNSTimer (void* platformTimer);
-
 // used by CTooltipSupport
 void nsViewSetTooltip (CView* view, const char* tooltip);
 void nsViewRemoveTooltip (CView* view);
 
 // helpers
 #ifdef __OBJC__
+#import <Cocoa/Cocoa.h>
 CRect rectFromNSRect (const NSRect& rect);
 #endif
 

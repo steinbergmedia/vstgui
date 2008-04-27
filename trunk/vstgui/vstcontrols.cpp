@@ -3,7 +3,7 @@
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 // Standard Control Objects
 //
-// Version 3.5       $Date: 2008-04-21 21:59:00 $
+// Version 3.5       $Date: 2008-04-27 14:42:35 $
 //
 // Added new objects        : Michael Schmidt          08.97
 // Added new objects        : Yvan Grabit              01.98
@@ -115,7 +115,7 @@ CControl::CControl (const CRect& size, CControlListener* listener, long tag, CBi
 {
 	#if WINDOWS
 		delta = GetDoubleClickTime ();
-	#elif MAC
+	#elif MAC_CARBON
 		delta = GetDblTime ();
 	#else
 		delta = 500;
@@ -1318,7 +1318,7 @@ void CTextEdit::draw (CDrawContext *pContext)
 {
 	if (platformControl)
 	{
-		#if MAC
+		#if MAC_CARBON
 		HIViewSetNeedsDisplay ((HIViewRef)platformControl, true);
 		#endif
 		setDirty (false);
@@ -1465,7 +1465,7 @@ LONG_PTR WINAPI WindowProcEdit (HWND hwnd, UINT message, WPARAM wParam, LPARAM l
 //------------------------------------------------------------------------
 #endif
 
-#if MAC
+#if MAC_CARBON
 static EventHandlerRef gTextEditEventHandler = 0;
 static bool gTextEditCanceled = false;
 pascal OSStatus CarbonEventsTextControlProc (EventHandlerCallRef inHandlerCallRef, EventRef inEvent, void *inUserData);
@@ -1585,7 +1585,7 @@ void CTextEdit::parentSizeChanged ()
 	}
 	#endif
 	
-	#if MAC
+	#if MAC_CARBON
 	if (platformControl)
 	{
 		CRect rect (size);
@@ -1617,7 +1617,7 @@ void CTextEdit::setViewSize (CRect& newSize, bool invalid)
 	}
 	#endif
 	
-	#if MAC
+	#if MAC_CARBON
 	if (platformControl)
 	{
 		HIViewMoveBy ((HIViewRef)platformControl, newSize.left - size.left, newSize.top - size.top);
@@ -1720,7 +1720,7 @@ void CTextEdit::takeFocus ()
 	}
 #endif // MAC_COCOA
 
-#if MAC
+#if MAC_CARBON
 	extern bool hiToolboxAllowFocusChange;
 	bool oldState = hiToolboxAllowFocusChange;
 	hiToolboxAllowFocusChange = false;
@@ -1787,7 +1787,7 @@ void CTextEdit::takeFocus ()
 	}
 	hiToolboxAllowFocusChange = oldState;
 
-#endif // MAC
+#endif // MAC_CARBON
 }
 
 //------------------------------------------------------------------------
@@ -1832,13 +1832,13 @@ void CTextEdit::looseFocus ()
 		getNSTextFieldText(platformControl, text, 255);
 		removeNSTextField (platformControl);
 	}
-	#if MAC
+	#if MAC_CARBON
 	else
 	{
 	#endif
 #endif
 
-#if MAC
+#if MAC_CARBON
 
 	if (platformControl == 0)
 		return;
@@ -1864,7 +1864,7 @@ void CTextEdit::looseFocus ()
 	#if MAC_COCOA
 	}
 	#endif
-#endif // MAC
+#endif // MAC_CARBON
 
 	platformControl = 0;
 
@@ -2119,7 +2119,7 @@ void COptionMenuScheme::getItemSize (const char* text, CDrawContext* pContext, C
 {
 	if (!strcmp (text, kMenuSeparator)) // separator
 	{
-		#if MAC
+		#if MAC_CARBON
 		size.h = 6;
 		size.v = 9;
 		#else
@@ -2135,7 +2135,7 @@ void COptionMenuScheme::getItemSize (const char* text, CDrawContext* pContext, C
 		pContext->setFont (font);
 		size.h = pContext->getStringWidth (text) + 18;
 		size.v = 18;
-		#if MAC
+		#if MAC_CARBON
 		size.h += 18;
 		#endif
 	}
@@ -2669,7 +2669,7 @@ COptionMenu::COptionMenu (const CRect& size, CControlListener* listener, long ta
 	lastResult = -1;
 	lastMenu = 0;
 
-	#if MAC
+	#if MAC_CARBON
 	menuID = 0;
 	#endif
 	
@@ -2962,7 +2962,7 @@ COptionMenu *COptionMenu::getItemMenu (long idx, long &idxInMenu, long &offsetId
 		return this;
 	}
 	
-#elif MAC
+#elif MAC_CARBON
 	if (menuID == offsetIdx)
 	{
 		idxInMenu = idx;
@@ -3001,7 +3001,7 @@ void COptionMenu::removeItems ()
 		DestroyMenu ((HMENU)platformControl);
 	platformControl = 0;
 
-#elif MAC
+#elif MAC_CARBON
 	// destroy the menu
 	if (menuID)
 		DeleteMenu (menuID);
@@ -3051,7 +3051,7 @@ void *COptionMenu::appendItems (long &offsetIdx)
 			if (nbEntries < 160 && nbItemsPerColumn > 0 && inc && !(inc % nbItemsPerColumn))
 				flags |= MF_MENUBARBREAK;
 
-			if (item->getSubMenu ())
+			if (item->getSubmenu ())
 			{
 				void *submenu = item->getSubmenu ()->appendItems (offsetIdx);
 				if (submenu)
@@ -3071,7 +3071,7 @@ void *COptionMenu::appendItems (long &offsetIdx)
 					flags |= MF_CHECKED;
 				if (style & kCheckStyle && inc == currentIndex && item->isChecked ())
 					flags |= MF_CHECKED;
-				if (!(flags & MF_CHECKED)
+				if (!(flags & MF_CHECKED))
 					flags |= MF_UNCHECKED;
 				AppendMenu ((HMENU)menu, flags, offset + inc, entryText);
 			}
@@ -3082,7 +3082,7 @@ void *COptionMenu::appendItems (long &offsetIdx)
 	platformControl = menu;
 	return menu;
 	
-#elif MAC
+#elif MAC_CARBON
 	//---Get an non-existing ID for the menu:
 	menuID = UniqueID ('MENU');
 		
@@ -3337,7 +3337,7 @@ void COptionMenu::takeFocus ()
 	}
 #endif // MAC_COCOA
 	
-#if MAC
+#if MAC_CARBON
 	// no entries, no menu
 	if (getNbEntries () == 0)
 	{
@@ -4707,6 +4707,26 @@ CSlider::~CSlider ()
 {
 	if (pHandle)
 		pHandle->forget ();
+}
+
+//------------------------------------------------------------------------
+void CSlider::setViewSize (CRect& rect, bool invalid)
+{
+	if (style & kHorizontal)
+	{
+		minPos += rect.left - size.left;
+		rangeHandle += rect.getWidth () - size.getWidth ();
+	}
+	else
+	{
+		minPos += rect.top - size.top;
+		rangeHandle += rect.getHeight () - size.getHeight ();
+	}
+	
+	widthControl  = rect.width ();
+	heightControl = rect.height ();
+
+	CControl::setViewSize (rect, invalid);
 }
 
 //------------------------------------------------------------------------
