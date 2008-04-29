@@ -2,15 +2,7 @@
 // VST Plug-Ins SDK
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 //
-// Version 3.5       $Date: 2008-04-27 14:42:35 $ 
-//
-// Added Motif/Windows vers.: Yvan Grabit              01.98
-// Added Mac version        : Charlie Steinberg        02.98
-// Added BeOS version       : Georges-Edouard Berenger 05.99
-// Added new functions      : Matthias Juwan           12.01
-// Added MacOSX version     : Arne Scheffler           02.03
-// Added Quartz stuff		: Arne Scheffler           08.03
-// Added Win Alpha Blending : Arne Scheffler           04.04
+// Version 3.6
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
@@ -270,13 +262,13 @@ static inline void QuartzSetupClip (CGContextRef context, const CRect clipRect);
 #if !MAC_COCOA
 static inline double radians (double degrees) { return degrees * M_PI / 180; }
 CGColorSpaceRef GetGenericRGBColorSpace ();
-#endif
 
 // cache graphics importer
 static ComponentInstance bmpGI = 0;
 static ComponentInstance pngGI = 0;
 static ComponentInstance jpgGI = 0;
 static ComponentInstance pictGI = 0;
+#endif
 
 //-----------------------------------------------------------------------------
 
@@ -1153,7 +1145,11 @@ void CDrawContext::drawLines (const CPoint* points, const long& numLines)
 			CGContextTranslateCTM (gCGContext, 0.5f, -0.5f);
 
 		#if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_4
+		#if MAC_OS_X_VERSION_MIN_REQUIRED < MAC_OS_X_VERSION_10_4
 		if (CGContextStrokeLineSegments)
+		#else
+		if (true)
+		#endif
 		{
 			CGPoint* cgPoints = new CGPoint[numLines*2];
 			for (long i = 0; i < numLines * 2; i += 2)
@@ -2928,7 +2924,12 @@ void COffscreenContext::copyFrom (CDrawContext* pContext, CRect destRect, CPoint
 CGImageRef COffscreenContext::getCGImage () const
 {
 	#if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_4
-	if (CGBitmapContextCreateImage && gCGContext)
+	#if MAC_OS_X_VERSION_MIN_REQUIRED < MAC_OS_X_VERSION_10_4
+	if (CGBitmapContextCreateImage == 0)
+	{}
+	else
+	#endif
+	if (gCGContext)
 	{
 		return CGBitmapContextCreateImage (gCGContext);
 	}
@@ -4535,10 +4536,6 @@ bool CFrame::setSize (CCoord width, CCoord height)
 	}
 #endif
 
-	// keep old values
-	CCoord oldWidth  = size.width ();
-	CCoord oldHeight = size.height ();
-
 #if WINDOWS
 	RECT  rctTempWnd, rctParentWnd;
 	HWND  hTempWnd;
@@ -4589,6 +4586,10 @@ bool CFrame::setSize (CCoord width, CCoord height)
 #endif
 
 #if MAC_CARBON
+	// keep old values
+	CCoord oldWidth  = size.width ();
+	CCoord oldHeight = size.height ();
+
 	if (getSystemWindow ())
 	{
 		if (!isWindowComposited ((WindowRef)getSystemWindow ()))
@@ -4758,7 +4759,11 @@ bool CFrame::getCurrentMouseLocation (CPoint &where) const
 	HIViewFindByID (HIViewGetRoot ((WindowRef)getSystemWindow ()), kHIViewWindowContentID, &fromView);
 	location = CGPointMake (where.x, where.y);
 	#if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_4
+	#if MAC_OS_X_VERSION_MIN_REQUIRED < MAC_OS_X_VERSION_10_4
 	if (HIPointConvert)
+	#else
+	if (true)
+	#endif
 		HIPointConvert (&location, kHICoordSpaceView, fromView, kHICoordSpaceView, controlRef);
 	else
 	#endif
@@ -5113,7 +5118,11 @@ void CFrame::invalidRect (CRect rect)
 	if (isWindowComposited ((WindowRef)pSystemWindow))
 	{
 		#if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_4
+		#if MAC_OS_X_VERSION_MIN_REQUIRED < MAC_OS_X_VERSION_10_4
 		if (HIViewSetNeedsDisplayInRect)
+		#else
+		if (true)
+		#endif
 		{
 			HIRect r = { {rect.left, rect.top}, {rect.getWidth (), rect.getHeight ()} };
 			HIViewSetNeedsDisplayInRect (controlRef, &r, true);
@@ -7061,7 +7070,9 @@ bool CBitmap::loadFromPath (const void* platformPath)
 	CFURLRef url = (CFURLRef)platformPath;
 
 	#if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_4
+	#if MAC_OS_X_VERSION_MIN_REQUIRED < MAC_OS_X_VERSION_10_4
 	if (CGImageSourceCreateWithURL)
+	#endif
 	{
 		// use Image I/O
 		CGImageSourceRef imageSource = CGImageSourceCreateWithURL (url, NULL);
@@ -7621,7 +7632,14 @@ void CBitmap::setTransparentColor (const CColor color)
 			cgImage = 0;
 		}
 		#if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_4
-		else if (cgImage && CGImageCreateWithMaskingColors)
+		else 
+		#if MAC_OS_X_VERSION_MIN_REQUIRED < MAC_OS_X_VERSION_10_4
+		if (CGImageCreateWithMaskingColors == 0)
+		{}
+		else
+		#else
+		if (cgImage)
+		#endif
 		{
 			if (CGImageGetBitsPerComponent((CGImageRef)cgImage) == 8)
 			{
@@ -8862,7 +8880,6 @@ BEGIN_NAMESPACE_VSTGUI
 //-----------------------------------------------------------------------------
 static CPoint GetMacDragMouse (CFrame* frame)
 {
-	WindowRef window = (WindowRef)frame->getSystemWindow ();
 	HIViewRef view = (HIViewRef)frame->getPlatformControl ();
 	CPoint where;
 	Point r;
@@ -8870,18 +8887,21 @@ static CPoint GetMacDragMouse (CFrame* frame)
 	{
 		HIPoint location;
 		#if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_4
-		if (HIPointConvert)
+		#if MAC_OS_X_VERSION_MIN_REQUIRED < MAC_OS_X_VERSION_10_4
+		if (HIPointConvert == 0)
 		{
-			location = CGPointMake ((float)r.h, (float)r.v);
-			HIPointConvert (&location, kHICoordSpaceScreenPixel, NULL, kHICoordSpaceView, view);
-		}
-		else
-		{
+			WindowRef window = (WindowRef)frame->getSystemWindow ();
 			QDGlobalToLocalPoint (GetWindowPort (window), &r);
 			location = CGPointMake ((float)r.h, (float)r.v);
 			HIViewRef fromView = NULL;
 			HIViewFindByID (HIViewGetRoot (window), kHIViewWindowContentID, &fromView);
 			HIViewConvertPoint (&location, fromView, view);
+		}
+		else
+		#endif
+		{
+			location = CGPointMake ((float)r.h, (float)r.v);
+			HIPointConvert (&location, kHICoordSpaceScreenPixel, NULL, kHICoordSpaceView, view);
 		}
 		where.x = (CCoord)location.x;
 		where.y = (CCoord)location.y;
@@ -9409,8 +9429,14 @@ pascal OSStatus CFrame::carbonEventHandler (EventHandlerCallRef inHandlerCallRef
 						buttons |= kApple;
 					
 					#if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_4
+					#if MAC_OS_X_VERSION_MIN_REQUIRED < MAC_OS_X_VERSION_10_4
 					if (HIPointConvert)
+					#else
+					if (true)
+					#endif
+					{
 						HIPointConvert (&windowHIPoint, kHICoordSpaceWindow, windowRef, kHICoordSpaceView, frame->controlRef);
+					}
 					else
 					#endif
 					HIViewConvertPoint (&windowHIPoint, HIViewGetRoot (windowRef), frame->controlRef);
@@ -9563,8 +9589,14 @@ pascal OSStatus CFrame::carbonMouseEventHandler (EventHandlerCallRef inHandlerCa
 			{
 				//LOG_HIPOINT("window :",location)
 				#if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_4
+				#if MAC_OS_X_VERSION_MIN_REQUIRED < MAC_OS_X_VERSION_10_4
 				if (HIPointConvert)
+				#else
+				if (true)
+				#endif
+				{
 					HIPointConvert (&location, kHICoordSpaceWindow, window, kHICoordSpaceView, hiView);
+				}
 				else
 				#endif
 					HIViewConvertPoint (&location, HIViewGetRoot (window), hiView);

@@ -2,7 +2,7 @@
 // VST Plug-Ins SDK
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 //
-// Version 3.0       $Date: 2008-04-27 14:42:35 $ 
+// Version 3.6
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
@@ -86,7 +86,7 @@ public:
 	
 	static CNewFileSelector* create (CFrame* parent = 0, Style style = kSelectFile);
 	
-	bool run (CBaseObject* delegate);	///< the delegate will get a kSelectEndMessage throu the notify method where the sender is this CFileSelector object
+	bool run (CBaseObject* delegate);	///< the delegate will get a kSelectEndMessage throu the notify method where the sender is this CNewFileSelector object
 	void cancel ();						///< cancel running the file selector
 	bool runModal ();					///< run as modal dialog
 
@@ -107,7 +107,7 @@ public:
 	//-----------------------------------------------------------------------------
 	//@{
 	int getNumSelectedFiles () const;							///< get number of selected files
-	const char* getSelectedFile (int index) const;				///< get selected file. Result is only valid as long as the instance of CFileSelector is valid.
+	const char* getSelectedFile (int index) const;				///< get selected file. Result is only valid as long as the instance of CNewFileSelector is valid.
 	//@}
 
 	static const CFileExtension& getAllFilesExtension ();		///< get the all files extension
@@ -136,6 +136,9 @@ protected:
 END_NAMESPACE_VSTGUI
 
 #endif
+
+#if !__LP64__
+
 #ifndef __aeffectx__
 struct VstFileSelect;
 #endif
@@ -228,5 +231,6 @@ enum {
 	kVstFileType = 0
 };
 #endif
+#endif // !__LP64__
 
 #endif

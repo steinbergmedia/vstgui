@@ -345,7 +345,8 @@ ControlsGUI::ControlsGUI (const CRect &inSize, CFrame *frame, CBitmap *pBackgrou
 		{
 			char txt[256];
 			sprintf (txt, "Entry %d", i);
-			cOptionMenu2->addEntry (txt);
+			CMenuItem* item = cOptionMenu2->addEntry (txt);
+			item->setIcon (sliderHandleBitmap);
 		}
 		cOptionMenu2->setAttribute (kCViewTooltipAttribute,strlen ("COptionMenu")+1,"COptionMenu");
 	}

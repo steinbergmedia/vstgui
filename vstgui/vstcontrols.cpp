@@ -1,14 +1,8 @@
 //-----------------------------------------------------------------------------
 // VST Plug-Ins SDK
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
-// Standard Control Objects
 //
-// Version 3.5       $Date: 2008-04-27 14:42:35 $
-//
-// Added new objects        : Michael Schmidt          08.97
-// Added new objects        : Yvan Grabit              01.98
-// Added BeOS version       : Georges-Edouard Berenger 05.99
-// Added MacOSX version     : Arne Scheffler           02.03
+// Version 3.6
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
@@ -1517,7 +1511,7 @@ pascal OSStatus CarbonEventsTextControlProc (EventHandlerCallRef inHandlerCallRe
 					CGContextRef cgContext;
 					if (GetEventParameter (inEvent, kEventParamCGContextRef, typeCGContextRef, NULL, sizeof (cgContext), NULL, &cgContext) == noErr)
 					{
-						#if MAC_OS_X_VERSION_MIN_ALLOWED < MAC_OS_X_VERSION_10_4
+						#if MAC_OS_X_VERSION_MIN_REQUIRED < MAC_OS_X_VERSION_10_4
 						if (HIRectConvert)
 						#endif
 						{
