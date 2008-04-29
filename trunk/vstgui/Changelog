@@ -1,3 +1,16 @@
+2008-04-29 arne
+
+	* fix mac 64 bit build
+	* eleminate most warnings for mac build
+	
+2008-04-27 arne
+
+	* first part of a new file selector implementation (currently only mac is implemented)
+	* timer class on Mac uses 64 bit safe API now
+	* using double type instead of float for CCoord if VSTGUI_FLOAT_COORDINATES is defined
+	* first part for Cocoa to register objective-c classes on the fly
+	* Cocoa is only available if building for Mac OS X 10.5 or later
+
 2008-04-21 wolframfranke
 
 	* Fixed memory leak of 1 menuItem in COptionMenu::removeAllEntry ().
