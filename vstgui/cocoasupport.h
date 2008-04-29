@@ -2,7 +2,7 @@
 // VST Plug-Ins SDK
 // VSTGUI: Graphical User Interface Framework not only for VST plugins : 
 //
-// Version 3.6       $Date: 2008-04-27 14:42:35 $
+// Version 3.6
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE

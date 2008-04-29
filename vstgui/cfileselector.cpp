@@ -2,7 +2,7 @@
 // VST Plug-Ins SDK
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 //
-// Version 3.0       $Date: 2008-04-27 14:42:35 $ 
+// Version 3.6
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
@@ -132,7 +132,7 @@ CNewFileSelector::CNewFileSelector (CFrame* frame)
 }
 
 //-----------------------------------------------------------------------------
-CNewFileSelector::~CFileSelector ()
+CNewFileSelector::~CNewFileSelector ()
 {
 	setTitle (0);
 	setInitialDirectory (0);
@@ -147,7 +147,7 @@ bool CNewFileSelector::run (CBaseObject* delegate)
 	if (delegate == 0)
 	{
 		#if DEBUG
-		DebugPrint ("You need to specify a delegate in CFileSelector::run (CBaseObject* delegate, void* parentWindow)\n");
+		DebugPrint ("You need to specify a delegate in CNewFileSelector::run (CBaseObject* delegate, void* parentWindow)\n");
 		#endif
 		return false;
 	}
@@ -266,10 +266,7 @@ const char* CNewFileSelector::getSelectedFile (int index) const
 //-----------------------------------------------------------------------------
 #endif // VSTGUI_NEW_CFILESELECTOR
 
-#ifndef __cfileselector__
-#include "cfileselector.h"
-#endif
-
+#if !__LP64__
 //-----------------------------------------------------------------------------
 // CFileSelector Implementation
 //-----------------------------------------------------------------------------
@@ -1275,3 +1272,4 @@ UINT_PTR APIENTRY WinSaveHook (HWND hdlg, UINT msg, WPARAM wParam, LPARAM lParam
 }
 #endif
 
+#endif // !__LP64__
