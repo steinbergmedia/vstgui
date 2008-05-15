@@ -1146,7 +1146,7 @@ void CDrawContext::drawLines (const CPoint* points, const long& numLines)
 
 		#if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_4
 		#if MAC_OS_X_VERSION_MIN_REQUIRED < MAC_OS_X_VERSION_10_4
-		if (CGContextStrokeLineSegments)
+		if (CGContextStrokeLineSegments != NULL)
 		#else
 		if (true)
 		#endif
@@ -3879,7 +3879,16 @@ bool CFrame::initFrame (void* systemWin)
 
 	hasFocus = false;
 	Rect r = {(short)size.top, (short)size.left, (short)size.bottom, (short)size.right};
-	UInt32 features = kControlSupportsDragAndDrop | kControlSupportsFocus | kControlHandlesTracking | kControlSupportsEmbedding | kHIViewIsOpaque | kHIViewFeatureDoesNotUseSpecialParts;
+	UInt32 features =	kControlSupportsDragAndDrop
+						| kControlSupportsFocus
+						| kControlHandlesTracking
+						| kControlSupportsEmbedding
+						| kHIViewIsOpaque
+#if MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_4
+						| kHIViewFeatureDoesNotUseSpecialParts;
+#else
+						| kHIViewDoesNotUseSpecialParts;
+#endif
 	OSStatus status = CreateUserPaneControl (0, &r, features, &controlRef);
 	if (status != noErr)
 	{
@@ -4760,7 +4769,7 @@ bool CFrame::getCurrentMouseLocation (CPoint &where) const
 	location = CGPointMake (where.x, where.y);
 	#if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_4
 	#if MAC_OS_X_VERSION_MIN_REQUIRED < MAC_OS_X_VERSION_10_4
-	if (HIPointConvert)
+	if (HIPointConvert != NULL)
 	#else
 	if (true)
 	#endif
@@ -5119,7 +5128,7 @@ void CFrame::invalidRect (CRect rect)
 	{
 		#if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_4
 		#if MAC_OS_X_VERSION_MIN_REQUIRED < MAC_OS_X_VERSION_10_4
-		if (HIViewSetNeedsDisplayInRect)
+		if (HIViewSetNeedsDisplayInRect != NULL)
 		#else
 		if (true)
 		#endif
@@ -7071,7 +7080,7 @@ bool CBitmap::loadFromPath (const void* platformPath)
 
 	#if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_4
 	#if MAC_OS_X_VERSION_MIN_REQUIRED < MAC_OS_X_VERSION_10_4
-	if (CGImageSourceCreateWithURL)
+	if (CGImageSourceCreateWithURL != NULL)
 	#endif
 	{
 		// use Image I/O
@@ -7142,7 +7151,7 @@ bool CBitmap::loadFromPath (const void* platformPath)
 				if (*gi)
 				{
 					#if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_3
-					if (!noAlpha && GraphicsImportCreateCGImage)
+					if (!noAlpha && GraphicsImportCreateCGImage != NULL)
 					{
 						if (GraphicsImportCreateCGImage (*gi, (CGImageRef*)&cgImage, 0) == noErr)
 						{
@@ -7835,7 +7844,11 @@ void* MacDragContainer::next (long& size, long& type)
 					{
 						if (CFStringCompare (osTypeFlavorType, CFSTR("utxt"), 0) == kCFCompareEqualTo)
 						{
+#if MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_4
 							CFStringRef utf16String = CFStringCreateWithBytes(0, data, flavorDataSize, kCFStringEncodingUTF16, false);
+#else
+							CFStringRef utf16String = CFStringCreateWithBytes(0, data, flavorDataSize, kCFStringEncodingUnicode, false);
+#endif
 							if (utf16String)
 							{
 								CFIndex maxSize = CFStringGetMaximumSizeForEncoding (flavorDataSize/2, kCFStringEncodingUTF8);
@@ -9430,7 +9443,7 @@ pascal OSStatus CFrame::carbonEventHandler (EventHandlerCallRef inHandlerCallRef
 					
 					#if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_4
 					#if MAC_OS_X_VERSION_MIN_REQUIRED < MAC_OS_X_VERSION_10_4
-					if (HIPointConvert)
+					if (HIPointConvert != NULL)
 					#else
 					if (true)
 					#endif
@@ -9590,7 +9603,7 @@ pascal OSStatus CFrame::carbonMouseEventHandler (EventHandlerCallRef inHandlerCa
 				//LOG_HIPOINT("window :",location)
 				#if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_4
 				#if MAC_OS_X_VERSION_MIN_REQUIRED < MAC_OS_X_VERSION_10_4
-				if (HIPointConvert)
+				if (HIPointConvert != NULL)
 				#else
 				if (true)
 				#endif
