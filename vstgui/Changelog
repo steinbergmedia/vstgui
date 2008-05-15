@@ -1,3 +1,7 @@
+2008-05-15 wolframfranke
+
+	* Fixed compilation errors and warnings when compiling for 10.3.9 on the Mac.
+
 2008-04-29 arne
 
 	* fix mac 64 bit build
