@@ -1,3 +1,8 @@
+2008-07-16 arne
+
+	* complete cocoa implementation
+	* some documentation for the new fileselector class
+	
 2008-05-15 wolframfranke
 
 	* Fixed compilation errors and warnings when compiling for 10.3.9 on the Mac.

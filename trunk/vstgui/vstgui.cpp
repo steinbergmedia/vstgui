@@ -4811,15 +4811,6 @@ long CFrame::getCurrentMouseButtons () const
 		buttons |= kAlt;
 #endif
 
-#if MAC_COCOA
-	
-	// TODO COCOA
-	if (nsView)
-	{
-		return buttons;
-	}
-#endif
-	
 #if MAC
 	UInt32 state = GetCurrentButtonState ();
 	if (state == kEventMouseButtonPrimary)
