@@ -72,8 +72,9 @@ protected:
 };
 
 //-----------------------------------------------------------------------------
-// CFileSelector Declaration
-//!
+// CNewFileSelector Declaration
+//! \brief New file selector class
+/// \nosubgrouping
 //-----------------------------------------------------------------------------
 class CNewFileSelector : public CBaseObject
 {
@@ -84,11 +85,16 @@ public:
 		kSelectDirectory			///< select directory style
 	};
 	
-	static CNewFileSelector* create (CFrame* parent = 0, Style style = kSelectFile);
-	
+	//-----------------------------------------------------------------------------
+	/// \name CFileSelector running
+	//-----------------------------------------------------------------------------
+	//@{
+	static CNewFileSelector* create (CFrame* parent = 0, Style style = kSelectFile); ///< create a new instance
+
 	bool run (CBaseObject* delegate);	///< the delegate will get a kSelectEndMessage throu the notify method where the sender is this CNewFileSelector object
 	void cancel ();						///< cancel running the file selector
 	bool runModal ();					///< run as modal dialog
+	//@}
 
 	//-----------------------------------------------------------------------------
 	/// \name CFileSelector setup
