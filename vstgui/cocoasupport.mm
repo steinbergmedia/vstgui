@@ -90,14 +90,13 @@ inline HIDDEN void set_Objc_Value (id obj, const char* name, id value)
 
 
 //------------------------------------------------------------------------------------
-@interface VSTGUI_NSView : NSView {
-	CFrame* _vstguiframe;
-	NSTrackingArea* _trackingArea;
-}
-
+@interface NSObject (VSTGUI_NSView)
 - (id) initWithFrame: (CFrame*) frame andSize: (const CRect*) size;
-- (void) setTooltip: (const char*)tooltip forCView: (CView*)view;
-- (void) removeTooltip;
+- (BOOL) onMouseDown: (NSEvent*) event;
+- (BOOL) onMouseUp: (NSEvent*) event;
+- (BOOL) onMouseMoved: (NSEvent*) event;
+//- (void) setTooltip: (const char*)tooltip forCView: (CView*)view;
+//- (void) removeTooltip;
 @end
 
 //------------------------------------------------------------------------------------
@@ -192,8 +191,10 @@ static NSImage* imageFromCGImageRef (CGImageRef image)
 //------------------------------------------------------------------------------------
 HIDDEN void* createNSView (CFrame* frame, const CRect& size)
 {
-	VSTGUI_NSView* view = [[VSTGUI_NSView alloc] initWithFrame: frame andSize: &size];
-	return view;
+	return [[viewClass alloc] performSelector:@selector (initWithFrame:andSize:) withObject:(id)frame withObject:(id)&size];
+
+//	VSTGUI_NSView* view = [[VSTGUI_NSView alloc] initWithFrame: frame andSize: &size];
+//	return view;
 }
 
 //------------------------------------------------------------------------------------
@@ -323,8 +324,10 @@ HIDDEN void nsViewSetTooltip (CView* view, const char* tooltip)
 {
 	if (view->getFrame ())
 	{
-		VSTGUI_NSView* nsView = (VSTGUI_NSView*)view->getFrame ()->getNSView ();
+		#if 0
+		VSTGUI_NSView* nsView = (id)view->getFrame ()->getNSView ();
 		[nsView setTooltip:tooltip forCView:view];
+		#endif
 	}
 }
 
@@ -333,8 +336,10 @@ HIDDEN void nsViewRemoveTooltip (CView* view)
 {
 	if (view->getFrame ())
 	{
+		#if 0
 		VSTGUI_NSView* nsView = (VSTGUI_NSView*)view->getFrame ()->getNSView ();
 		[nsView removeTooltip];
+		#endif
 	}
 }
 
@@ -449,65 +454,74 @@ static long eventButton (NSEvent* theEvent)
 //------------------------------------------------------------------------------------
 //------------------------------------------------------------------------------------
 //------------------------------------------------------------------------------------
-@implementation VSTGUI_NSView
+// @implementation VSTGUI_NSView
 
 //------------------------------------------------------------------------------------
-- (id) initWithFrame: (CFrame*) frame andSize: (const CRect*) size
+static id VSTGUI_NSView_Init (id self, SEL _cmd, void* _frame, const void* _size)
 {
+	const CRect* size = (const CRect*)_size;
+	CFrame* frame = (CFrame*)_frame;
 	NSRect nsSize = nsRectFromCRect (*size);
-	self = [super initWithFrame: nsSize];
+
+	OBJC_SUPER(self)
+	self = objc_msgSendSuper (SUPER, @selector(initWithFrame:), nsSize); // self = [super initWithFrame: nsSize];
 	if (self)
 	{
-		_vstguiframe = frame;
+		OBJC_SET_VALUE(self, _vstguiframe, frame); //		_vstguiframe = frame;
 
-		NSView* parentView = (NSView*)_vstguiframe->getSystemWindow ();
+		NSView* parentView = (NSView*)frame->getSystemWindow ();
 		if (parentView)
 			[parentView addSubview: self];
 
 		[self registerForDraggedTypes:[NSArray arrayWithObjects:NSStringPboardType, NSFilenamesPboardType, nil]];
 		
-		_trackingArea = [[NSTrackingArea alloc] initWithRect:[self frame] options:NSTrackingMouseEnteredAndExited|NSTrackingMouseMoved|NSTrackingActiveInActiveApp|NSTrackingInVisibleRect owner:self userInfo:nil];
-		[self addTrackingArea: _trackingArea];
+		NSTrackingArea* trackingArea = [[[NSTrackingArea alloc] initWithRect:[self frame] options:NSTrackingMouseEnteredAndExited|NSTrackingMouseMoved|NSTrackingActiveInActiveApp|NSTrackingInVisibleRect owner:self userInfo:nil] autorelease];
+		[self addTrackingArea: trackingArea];
 	}
 	return self;
 }
 
 //------------------------------------------------------------------------------------
-- (void) dealloc
+static BOOL VSTGUI_NSView_isFlipped (id self, SEL _cmd) { return YES; }
+static BOOL VSTGUI_NSView_acceptsFirstResponder (id self, SEL _cmd) { return YES; }
+static BOOL VSTGUI_NSView_becomeFirstResponder (id self, SEL _cmd) { return YES; }
+static BOOL VSTGUI_NSView_canBecomeKeyView (id self, SEL _cmd) { return YES; }
+
+//------------------------------------------------------------------------------------
+static BOOL VSTGUI_NSView_isOpaque (id self, SEL _cmd)
 {
-	[self removeTrackingArea:_trackingArea];
-	[_trackingArea release];
-	[super dealloc];
+	CFrame* frame = (CFrame*)OBJC_GET_VALUE(self, _vstguiframe);
+	if (frame)
+	{
+		BOOL transparent = (frame->getTransparency () 
+				   || (frame->getBackground () && !frame->getBackground ()->getNoAlpha ())
+				   || (!frame->getBackground () && frame->getBackgroundColor().alpha != 255)
+					  );
+		return !transparent;
+	}
+	return YES;
 }
 
 //------------------------------------------------------------------------------------
-- (BOOL)isFlipped { return YES; }
-- (BOOL)acceptsFirstResponder { return YES; }
-- (BOOL)becomeFirstResponder { return YES; }
-- (BOOL)canBecomeKeyView { return YES; }
-
-//------------------------------------------------------------------------------------
-- (BOOL)isOpaque 
+static void VSTGUI_NSView_drawRect (id self, SEL _cmd, NSRect rect)
 {
-	BOOL transparent = (_vstguiframe->getTransparency () 
-			   || (_vstguiframe->getBackground () && !_vstguiframe->getBackground ()->getNoAlpha ())
-			   || (!_vstguiframe->getBackground () && _vstguiframe->getBackgroundColor().alpha != 255)
-			      );
-	return !transparent;
+	CFrame* _vstguiframe = (CFrame*)OBJC_GET_VALUE(self, _vstguiframe);
+	if (_vstguiframe)
+	{
+		NSGraphicsContext* nsContext = [NSGraphicsContext currentContext];
+		
+		CDrawContext drawContext (_vstguiframe, [nsContext graphicsPort]);
+		_vstguiframe->drawRect (&drawContext, rectFromNSRect (rect));
+	}
 }
 
 //------------------------------------------------------------------------------------
-- (void)drawRect:(NSRect)rect
+static BOOL VSTGUI_NSView_onMouseDown (id self, SEL _cmd, NSEvent* theEvent)
 {
-	NSGraphicsContext* nsContext = [NSGraphicsContext currentContext];
-	
-	CDrawContext drawContext (_vstguiframe, [nsContext graphicsPort]);
-	_vstguiframe->drawRect (&drawContext, rectFromNSRect (rect));
-}
+	CFrame* _vstguiframe = (CFrame*)OBJC_GET_VALUE(self, _vstguiframe);
+	if (!_vstguiframe)
+		return NO;
 
-//------------------------------------------------------------------------------------
-- (BOOL)onMouseDown: (NSEvent*)theEvent
-{
 	long buttons = eventButton (theEvent);
 	[[self window] makeFirstResponder:self];
 	unsigned int modifiers = [theEvent modifierFlags];
@@ -529,8 +543,12 @@ static long eventButton (NSEvent* theEvent)
 }
 
 //------------------------------------------------------------------------------------
-- (BOOL)onMouseUp: (NSEvent*)theEvent
+static BOOL VSTGUI_NSView_onMouseUp (id self, SEL _cmd, NSEvent* theEvent)
 {
+	CFrame* _vstguiframe = (CFrame*)OBJC_GET_VALUE(self, _vstguiframe);
+	if (!_vstguiframe)
+		return NO;
+
 	long buttons = eventButton (theEvent);
 	unsigned int modifiers = [theEvent modifierFlags];
 	NSPoint nsPoint = [theEvent locationInWindow];
@@ -549,8 +567,12 @@ static long eventButton (NSEvent* theEvent)
 }
 
 //------------------------------------------------------------------------------------
-- (BOOL)onMouseMoved: (NSEvent*)theEvent
+static BOOL VSTGUI_NSView_onMouseMoved (id self, SEL _cmd, NSEvent* theEvent)
 {
+	CFrame* _vstguiframe = (CFrame*)OBJC_GET_VALUE(self, _vstguiframe);
+	if (!_vstguiframe)
+		return NO;
+
 	long buttons = eventButton (theEvent);
 	unsigned int modifiers = [theEvent modifierFlags];
 	NSPoint nsPoint = [theEvent locationInWindow];
@@ -569,78 +591,92 @@ static long eventButton (NSEvent* theEvent)
 }
 
 //------------------------------------------------------------------------------------
-- (void)mouseDown:(NSEvent *)theEvent
+static void VSTGUI_NSView_mouseDown (id self, SEL _cmd, NSEvent* theEvent)
 {
+	OBJC_SUPER(self)
 	if (![self onMouseDown: theEvent])
-		[super mouseDown: theEvent];
+		objc_msgSendSuper (SUPER, @selector(mouseDown:), theEvent);
 }
 
 //------------------------------------------------------------------------------------
-- (void)rightMouseDown:(NSEvent *)theEvent
+static void VSTGUI_NSView_rightMouseDown (id self, SEL _cmd, NSEvent* theEvent)
 {
+	OBJC_SUPER(self)
 	if (![self onMouseDown: theEvent])
-		[super mouseDown: theEvent];
+		objc_msgSendSuper (SUPER, @selector(rightMouseDown:), theEvent);
 }
 
 //------------------------------------------------------------------------------------
-- (void)otherMouseDown:(NSEvent *)theEvent
+static void VSTGUI_NSView_otherMouseDown (id self, SEL _cmd, NSEvent* theEvent)
 {
+	OBJC_SUPER(self)
 	if (![self onMouseDown: theEvent])
-		[super mouseDown: theEvent];
+		objc_msgSendSuper (SUPER, @selector(otherMouseDown:), theEvent);
 }
 
 //------------------------------------------------------------------------------------
-- (void)mouseUp:(NSEvent *)theEvent
+static void VSTGUI_NSView_mouseUp (id self, SEL _cmd, NSEvent* theEvent)
 {
+	OBJC_SUPER(self)
 	if (![self onMouseUp: theEvent])
-		[super mouseUp: theEvent];
+		objc_msgSendSuper (SUPER, @selector(mouseUp:), theEvent);
 }
 
 //------------------------------------------------------------------------------------
-- (void)rightMouseUp:(NSEvent *)theEvent
+static void VSTGUI_NSView_rightMouseUp (id self, SEL _cmd, NSEvent* theEvent)
 {
+	OBJC_SUPER(self)
 	if (![self onMouseUp: theEvent])
-		[super mouseUp: theEvent];
+		objc_msgSendSuper (SUPER, @selector(rightMouseUp:), theEvent);
 }
 
 //------------------------------------------------------------------------------------
-- (void)otherMouseUp:(NSEvent *)theEvent
+static void VSTGUI_NSView_otherMouseUp (id self, SEL _cmd, NSEvent* theEvent)
 {
+	OBJC_SUPER(self)
 	if (![self onMouseUp: theEvent])
-		[super mouseUp: theEvent];
+		objc_msgSendSuper (SUPER, @selector(otherMouseUp:), theEvent);
 }
 
 //------------------------------------------------------------------------------------
-- (void)mouseMoved:(NSEvent *)theEvent
+static void VSTGUI_NSView_mouseMoved (id self, SEL _cmd, NSEvent* theEvent)
 {
+	OBJC_SUPER(self)
 	if (![self onMouseMoved: theEvent])
-		[super mouseMoved: theEvent];
+		objc_msgSendSuper (SUPER, @selector(mouseMoved:), theEvent);
 }
 
 //------------------------------------------------------------------------------------
-- (void)mouseDragged:(NSEvent *)theEvent
+static void VSTGUI_NSView_mouseDragged (id self, SEL _cmd, NSEvent* theEvent)
 {
+	OBJC_SUPER(self)
 	if (![self onMouseMoved: theEvent])
-		[super mouseDragged: theEvent];
+		objc_msgSendSuper (SUPER, @selector(mouseDragged:), theEvent);
 }
 
 //------------------------------------------------------------------------------------
-- (void)rightMouseDragged:(NSEvent *)theEvent
+static void VSTGUI_NSView_rightMouseDragged (id self, SEL _cmd, NSEvent* theEvent)
 {
+	OBJC_SUPER(self)
 	if (![self onMouseMoved: theEvent])
-		[super mouseDragged: theEvent];
+		objc_msgSendSuper (SUPER, @selector(rightMouseDragged:), theEvent);
 }
 
 //------------------------------------------------------------------------------------
-- (void)otherMouseDragged:(NSEvent *)theEvent
+static void VSTGUI_NSView_otherMouseDragged (id self, SEL _cmd, NSEvent* theEvent)
 {
+	OBJC_SUPER(self)
 	if (![self onMouseMoved: theEvent])
-		[super mouseDragged: theEvent];
+		objc_msgSendSuper (SUPER, @selector(otherMouseDragged:), theEvent);
 }
 
 //------------------------------------------------------------------------------------
-- (void)scrollWheel:(NSEvent *)theEvent
+static void VSTGUI_NSView_scrollWheel (id self, SEL _cmd, NSEvent* theEvent)
 {
+	CFrame* _vstguiframe = (CFrame*)OBJC_GET_VALUE(self, _vstguiframe);
+	if (!_vstguiframe)
+		return;
+
 	long buttons = 0;
 	unsigned int modifiers = [theEvent modifierFlags];
 	NSPoint nsPoint = [theEvent locationInWindow];
@@ -661,30 +697,37 @@ static long eventButton (NSEvent* theEvent)
 }
 
 //------------------------------------------------------------------------------------
-- (void)mouseEntered:(NSEvent *)theEvent
+static void VSTGUI_NSView_mouseEntered (id self, SEL _cmd, NSEvent* theEvent)
 {
 	[self mouseMoved:theEvent];
 }
 
 //------------------------------------------------------------------------------------
-- (void)mouseExited:(NSEvent *)theEvent
+static void VSTGUI_NSView_mouseExited (id self, SEL _cmd, NSEvent* theEvent)
 {
 	[self mouseMoved:theEvent];
 }
 
 //------------------------------------------------------------------------------------
-- (BOOL)performKeyEquivalent:(NSEvent *)theEvent
+static BOOL VSTGUI_NSView_performKeyEquivalent (id self, SEL _cmd, NSEvent* theEvent)
 {
-	VstKeyCode keyCode = CreateVstKeyCodeFromNSEvent (theEvent);
-	if (_vstguiframe->onKeyDown (keyCode) == 1)
-		return YES;
-
-	return [super performKeyEquivalent: theEvent];
+	CFrame* _vstguiframe = (CFrame*)OBJC_GET_VALUE(self, _vstguiframe);
+	if (_vstguiframe)
+	{
+		VstKeyCode keyCode = CreateVstKeyCodeFromNSEvent (theEvent);
+		if (_vstguiframe->onKeyDown (keyCode) == 1)
+			return YES;
+	}
+	return NO;
 }
 
 //------------------------------------------------------------------------------------
-- (void)keyDown:(NSEvent *)theEvent
+static void VSTGUI_NSView_keyDown (id self, SEL _cmd, NSEvent* theEvent)
 {
+	CFrame* _vstguiframe = (CFrame*)OBJC_GET_VALUE(self, _vstguiframe);
+	if (!_vstguiframe)
+		return;
+
 	VstKeyCode keyCode = CreateVstKeyCodeFromNSEvent (theEvent);
 	
 	if (_vstguiframe->onKeyDown (keyCode) != 1 && keyCode.virt == VKEY_TAB)
@@ -697,16 +740,24 @@ static long eventButton (NSEvent* theEvent)
 }
 
 //------------------------------------------------------------------------------------
-- (void)keyUp:(NSEvent *)theEvent
+static void VSTGUI_NSView_keyUp (id self, SEL _cmd, NSEvent* theEvent)
 {
+	CFrame* _vstguiframe = (CFrame*)OBJC_GET_VALUE(self, _vstguiframe);
+	if (!_vstguiframe)
+		return;
+
 	VstKeyCode keyCode = CreateVstKeyCodeFromNSEvent (theEvent);
 
 	_vstguiframe->onKeyUp (keyCode);
 }
 
 //------------------------------------------------------------------------------------
-- (NSDragOperation)draggingEntered:(id)sender
+static NSDragOperation VSTGUI_NSView_draggingEntered (id self, SEL _cmd, id sender)
 {
+	CFrame* _vstguiframe = (CFrame*)OBJC_GET_VALUE(self, _vstguiframe);
+	if (!_vstguiframe)
+		return NSDragOperationNone;
+
     NSPasteboard *pboard = [sender draggingPasteboard];
 
 	gDragContainer = new CocoaDragContainer (pboard);
@@ -721,8 +772,12 @@ static long eventButton (NSEvent* theEvent)
 }
 
 //------------------------------------------------------------------------------------
-- (NSDragOperation)draggingUpdated:(id)sender
+static NSDragOperation VSTGUI_NSView_draggingUpdated (id self, SEL _cmd, id sender)
 {
+	CFrame* _vstguiframe = (CFrame*)OBJC_GET_VALUE(self, _vstguiframe);
+	if (!_vstguiframe)
+		return NSDragOperationNone;
+
 	CPoint where;
 	nsViewGetCurrentMouseLocation (self, where);
 	_vstguiframe->onDragMove (gDragContainer, where);
@@ -731,8 +786,12 @@ static long eventButton (NSEvent* theEvent)
 }
 
 //------------------------------------------------------------------------------------
-- (void)draggingExited:(id)sender
+static void VSTGUI_NSView_draggingExited (id self, SEL _cmd, id sender)
 {
+	CFrame* _vstguiframe = (CFrame*)OBJC_GET_VALUE(self, _vstguiframe);
+	if (!_vstguiframe || !gDragContainer)
+		return;
+
 	CPoint where;
 	nsViewGetCurrentMouseLocation (self, where);
 	_vstguiframe->onDragLeave (gDragContainer, where);
@@ -743,8 +802,12 @@ static long eventButton (NSEvent* theEvent)
 }
 
 //------------------------------------------------------------------------------------
-- (BOOL)performDragOperation:(id)sender
+static BOOL VSTGUI_NSView_performDragOperation (id self, SEL _cmd, id sender)
 {
+	CFrame* _vstguiframe = (CFrame*)OBJC_GET_VALUE(self, _vstguiframe);
+	if (!_vstguiframe)
+		return NO;
+
 	CPoint where;
 	nsViewGetCurrentMouseLocation (self, where);
 	bool result = _vstguiframe->onDrop (gDragContainer, where);
@@ -754,6 +817,7 @@ static long eventButton (NSEvent* theEvent)
 	return result;
 }
 
+#if 0
 //------------------------------------------------------------------------------------
 - (void) setTooltip: (const char*)tooltip forCView: (CView*)view
 {
@@ -763,8 +827,8 @@ static long eventButton (NSEvent* theEvent)
 - (void) removeTooltip
 {
 }
-
-@end
+#endif
+//@end
 
 //------------------------------------------------------------------------------------
 //------------------------------------------------------------------------------------
@@ -1231,6 +1295,48 @@ GenerateUniqueVSTGUIClasses::GenerateUniqueVSTGUIClasses ()
 	// generating VSTGUI_NSView
 	NSMutableString* viewClassName = [[[NSMutableString alloc] initWithString:@"VSTGUI_NSView"] autorelease];
 	viewClass = generateUniqueClass (viewClassName, [NSView class]);
+	res = class_addMethod (viewClass, @selector(initWithFrame:andSize:), IMP (VSTGUI_NSView_Init), "@@:@:^:^:");
+	res = class_addMethod (viewClass, @selector(dealloc), IMP (VSTGUI_NSMenu_Dealloc), "v@:@:");
+	res = class_addMethod (viewClass, @selector(isFlipped), IMP (VSTGUI_NSView_isFlipped), "B@:@:");
+	res = class_addMethod (viewClass, @selector(acceptsFirstResponder), IMP (VSTGUI_NSView_acceptsFirstResponder), "B@:@:");
+	res = class_addMethod (viewClass, @selector(becomeFirstResponder), IMP (VSTGUI_NSView_becomeFirstResponder), "B@:@:");
+	res = class_addMethod (viewClass, @selector(canBecomeKeyView), IMP (VSTGUI_NSView_canBecomeKeyView), "B@:@:");
+	res = class_addMethod (viewClass, @selector(isOpaque), IMP (VSTGUI_NSView_isOpaque), "B@:@:");
+	const char* nsRectEncoded = @encode(NSRect);
+	char drawRectSig[100];
+	sprintf (drawRectSig, "v@:@:%s:", nsRectEncoded);
+	res = class_addMethod (viewClass, @selector(drawRect:), IMP (VSTGUI_NSView_drawRect), drawRectSig);
+	res = class_addMethod (viewClass, @selector(onMouseDown:), IMP (VSTGUI_NSView_onMouseDown), "B@:@:^:");
+	res = class_addMethod (viewClass, @selector(onMouseUp:), IMP (VSTGUI_NSView_onMouseUp), "B@:@:^:");
+	res = class_addMethod (viewClass, @selector(onMouseMoved:), IMP (VSTGUI_NSView_onMouseMoved), "B@:@:^:");
+	res = class_addMethod (viewClass, @selector(mouseDown:), IMP (VSTGUI_NSView_mouseDown), "v@:@:^:");
+	res = class_addMethod (viewClass, @selector(rightMouseDown:), IMP (VSTGUI_NSView_rightMouseDown), "v@:@:^:");
+	res = class_addMethod (viewClass, @selector(otherMouseDown:), IMP (VSTGUI_NSView_otherMouseDown), "v@:@:^:");
+	res = class_addMethod (viewClass, @selector(mouseUp:), IMP (VSTGUI_NSView_mouseUp), "v@:@:^:");
+	res = class_addMethod (viewClass, @selector(rightMouseUp:), IMP (VSTGUI_NSView_rightMouseUp), "v@:@:^:");
+	res = class_addMethod (viewClass, @selector(otherMouseUp:), IMP (VSTGUI_NSView_otherMouseUp), "v@:@:^:");
+	res = class_addMethod (viewClass, @selector(mouseMoved:), IMP (VSTGUI_NSView_mouseMoved), "v@:@:^:");
+	res = class_addMethod (viewClass, @selector(mouseDragged:), IMP (VSTGUI_NSView_mouseDragged), "v@:@:^:");
+	res = class_addMethod (viewClass, @selector(rightMouseDragged:), IMP (VSTGUI_NSView_rightMouseDragged), "v@:@:^:");
+	res = class_addMethod (viewClass, @selector(otherMouseDragged:), IMP (VSTGUI_NSView_otherMouseDragged), "v@:@:^:");
+	res = class_addMethod (viewClass, @selector(scrollWheel:), IMP (VSTGUI_NSView_scrollWheel), "v@:@:^:");
+	res = class_addMethod (viewClass, @selector(mouseEntered:), IMP (VSTGUI_NSView_mouseEntered), "v@:@:^:");
+	res = class_addMethod (viewClass, @selector(mouseExited:), IMP (VSTGUI_NSView_mouseExited), "v@:@:^:");
+	res = class_addMethod (viewClass, @selector(performKeyEquivalent:), IMP (VSTGUI_NSView_performKeyEquivalent), "B@:@:^:");
+	res = class_addMethod (viewClass, @selector(keyDown:), IMP (VSTGUI_NSView_keyDown), "v@:@:^:");
+	res = class_addMethod (viewClass, @selector(keyUp:), IMP (VSTGUI_NSView_keyUp), "v@:@:^:");
+	#if __LP64__
+	res = class_addMethod (viewClass, @selector(draggingEntered:), IMP (VSTGUI_NSView_draggingEntered), "L@:@:^:");
+	res = class_addMethod (viewClass, @selector(draggingUpdated:), IMP (VSTGUI_NSView_draggingUpdated), "L@:@:^:");
+	#else
+	res = class_addMethod (viewClass, @selector(draggingEntered:), IMP (VSTGUI_NSView_draggingEntered), "I@:@:^:");
+	res = class_addMethod (viewClass, @selector(draggingUpdated:), IMP (VSTGUI_NSView_draggingUpdated), "I@:@:^:");
+	#endif
+	res = class_addMethod (viewClass, @selector(draggingExited:), IMP (VSTGUI_NSView_draggingExited), "v@:@:^:");
+	res = class_addMethod (viewClass, @selector(performDragOperation:), IMP (VSTGUI_NSView_performDragOperation), "B@:@:^:");
+
+	res = class_addIvar (viewClass, "_vstguiframe", sizeof (void*), log2(sizeof(void*)), @encode(void*));
+	objc_registerClassPair (viewClass);
 
 	// generating VSTGUI_NSMenu
 	NSMutableString* menuClassName = [[[NSMutableString alloc] initWithString:@"VSTGUI_NSMenu"] autorelease];
