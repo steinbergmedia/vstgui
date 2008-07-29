@@ -1,3 +1,8 @@
+2008-07-29 arne
+
+	* fix bug with setCurrent in COptionMenu and added method getCurrentIndex
+	* fix some warnings on Windows
+
 2008-07-16 arne
 
 	* complete cocoa implementation
