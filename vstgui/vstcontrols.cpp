@@ -6,7 +6,7 @@
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
-// © 2004, Steinberg Media Technologies, All Rights Reserved
+// (c) 2008, Steinberg Media Technologies, All Rights Reserved
 //-----------------------------------------------------------------------------
 // Redistribution and use in source and binary forms, with or without modification,
 // are permitted provided that the following conditions are met:
@@ -1435,7 +1435,7 @@ LONG_PTR WINAPI WindowProcEdit (HWND hwnd, UINT message, WPARAM wParam, LPARAM l
 		{
 			if (wParam == VK_RETURN)
 			{
-				CTextEdit *textEdit = (CTextEdit*) GetWindowLongPtr (hwnd, GWLP_USERDATA);
+				CTextEdit *textEdit = (CTextEdit*)(LONG_PTR) GetWindowLongPtr (hwnd, GWLP_USERDATA);
 				if (textEdit)
 				{
 					textEdit->bWasReturnPressed = true;
@@ -1447,7 +1447,7 @@ LONG_PTR WINAPI WindowProcEdit (HWND hwnd, UINT message, WPARAM wParam, LPARAM l
 
 		case WM_KILLFOCUS:
 		{
-			CTextEdit *textEdit = (CTextEdit*) GetWindowLongPtr (hwnd, GWLP_USERDATA);
+			CTextEdit *textEdit = (CTextEdit*)(LONG_PTR) GetWindowLongPtr (hwnd, GWLP_USERDATA);
 			if (textEdit)
 				textEdit->looseFocus ();
 		} break;
@@ -1696,14 +1696,14 @@ void CTextEdit::takeFocus ()
 	platformFont = (HANDLE)CreateFontIndirect (&logfont);
 	platformFontColor = 0;
 
-	SetWindowLongPtr ((HWND)platformControl, GWLP_USERDATA, (LONG_PTR)this);
+	SetWindowLongPtr ((HWND)platformControl, GWLP_USERDATA, (__int3264)(LONG_PTR)this);
 	SendMessage ((HWND)platformControl, WM_SETFONT, (WPARAM)platformFont, true);
 	SendMessage ((HWND)platformControl, EM_SETMARGINS, EC_LEFTMARGIN|EC_RIGHTMARGIN, MAKELONG (0, 0));
 	SendMessage ((HWND)platformControl, EM_SETSEL, 0, -1);
 	SendMessage ((HWND)platformControl, EM_LIMITTEXT, 255, 0);
 	SetFocus ((HWND)platformControl);
 
-	oldWndProcEdit = (WINDOWSPROC)SetWindowLongPtr ((HWND)platformControl, GWLP_WNDPROC, (LONG_PTR)WindowProcEdit);
+	oldWndProcEdit = (WINDOWSPROC)(LONG_PTR)SetWindowLongPtr ((HWND)platformControl, GWLP_WNDPROC, (__int3264)(LONG_PTR)WindowProcEdit);
 #endif // WINDOWS
 
 #if MAC_COCOA
@@ -2745,6 +2745,8 @@ CMenuItem* COptionMenu::addEntry (COptionMenu* submenu, const char* title)
 //-----------------------------------------------------------------------------
 CMenuItem* COptionMenu::addEntry (const char* title, long index, long itemFlags)
 {
+	if (title && strcmp (title, "-") == 0)
+		return addSeparator ();
 	CMenuItem* item = new CMenuItem (title, itemFlags);
 	return addEntry (item, index);
 }
@@ -2789,27 +2791,50 @@ COptionMenu* COptionMenu::getSubMenu (long idx) const
 }
 
 //------------------------------------------------------------------------
+long COptionMenu::getCurrentIndex (bool countSeparator) const
+{
+	if (countSeparator)
+		return currentIndex;
+	long i = 0;
+	long numSeparators = 0;
+	CMenuItemIterator it = menuItems->begin ();
+	while (it != menuItems->end ())
+	{
+		if ((*it)->isSeparator ())
+			numSeparators++;
+		if (i == currentIndex)
+			break;
+		it++;
+		i++;
+	}
+	return currentIndex - numSeparators;
+}
+
+//------------------------------------------------------------------------
 bool COptionMenu::setCurrent (long index, bool countSeparator)
 {
 	CMenuItem* item = 0;
 	if (countSeparator)
 	{
 		item = getEntry (index);
-		if (!item || item->isSeparator ())
+		if (!item || (item && item->isSeparator ()))
 			return false;
 		currentIndex = index;
 	}
 	else
 	{
-		long newCurrent = 0;
+		long i = 0;
 		CMenuItemIterator it = menuItems->begin ();
 		while (it != menuItems->end ())
 		{
+			if (i > index)
+				break;
 			if ((*it)->isSeparator ())
-				newCurrent++;
+				index++;
 			it++;
+			i++;
 		}
-		currentIndex = newCurrent = 1;
+		currentIndex = index;
 		item = getEntry (currentIndex);
 	}
 	if (item && style & (kMultipleCheckStyle & ~kCheckStyle))

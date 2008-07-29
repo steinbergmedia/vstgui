@@ -6,7 +6,7 @@
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
-// © 2004, Steinberg Media Technologies, All Rights Reserved
+// (c) 2008, Steinberg Media Technologies, All Rights Reserved
 //-----------------------------------------------------------------------------
 // Redistribution and use in source and binary forms, with or without modification,
 // are permitted provided that the following conditions are met:
@@ -3855,7 +3855,8 @@ bool CFrame::initFrame (void* systemWin)
 			 0, 0, (int)size.width (), (int)size.height (), 
 			 (HWND)pSystemWindow, NULL, GetInstance (), NULL);
 
-	SetWindowLongPtr ((HWND)pHwnd, GWLP_USERDATA, (LONG_PTR)this);
+	SetWindowLongPtr ((HWND)pHwnd, GWLP_USERDATA, (__int3264)(LONG_PTR)this);
+
 #endif
 
 #if MAC_COCOA
@@ -8166,7 +8167,7 @@ void ExitWindowClass ()
 LONG_PTR WINAPI WindowProc (HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
 	USING_NAMESPACE_VSTGUI
-	CFrame* pFrame = (CFrame*)GetWindowLongPtr (hwnd, GWLP_USERDATA);
+	CFrame* pFrame = (CFrame*)(LONG_PTR)GetWindowLongPtr (hwnd, GWLP_USERDATA);
 
 	bool doubleClick = false;
 
