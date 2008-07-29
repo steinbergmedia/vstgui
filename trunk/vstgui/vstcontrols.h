@@ -6,7 +6,7 @@
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
-// © 2004, Steinberg Media Technologies, All Rights Reserved
+// (c) 2008, Steinberg Media Technologies, All Rights Reserved
 //-----------------------------------------------------------------------------
 // Redistribution and use in source and binary forms, with or without modification,
 // are permitted provided that the following conditions are met:
@@ -589,6 +589,7 @@ public:
 	virtual CMenuItem* addEntry (const char* title, long index = -1, long itemFlags = CMenuItem::kNoFlags);	///< add a new entry
 	virtual CMenuItem* addSeparator ();																		///< add a new separator entry
 	virtual CMenuItem* getCurrent () const;																	///< get current entry
+	virtual long getCurrentIndex (bool countSeparator = false) const;
 	virtual CMenuItem* getEntry (long index) const;															///< get entry at index position
 	virtual long getNbEntries () const;																		///< get number of entries
 	virtual	bool setCurrent (long index, bool countSeparator = true);										///< set current entry
