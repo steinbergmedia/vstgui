@@ -967,7 +967,6 @@ public:
 	//@{
 	CBitmap (const CResourceDescription& desc);				///< Create a pixmap from a resource identifier.
 	CBitmap (CFrame &frame, CCoord width, CCoord height);	///< Create a pixmap with a given size.
-	CBitmap (void* platformBitmap);							///< Create a pixmap from a platform bitmap. 
 	//@}
 	virtual ~CBitmap ();
 
@@ -995,11 +994,13 @@ public:
 	//@}
 
 #if VSTGUI_USES_COREGRAPHICS
+	CBitmap (CGImageRef cgImage);							///< Create a pixmap from a CGImage
 	virtual CGImageRef createCGImage (bool transparent = false);
 	virtual void setBitsDirty ();
 #endif // VSTGUI_USES_COREGRAPHICS
 
 #if GDIPLUS
+	CBitmap (Gdiplus::Bitmap* platformBitmap);							///< Create a pixmap from a Gdiplus Bitmap. 
 	Gdiplus::Bitmap* getBitmap ();
 #endif // GDIPLUS
 
