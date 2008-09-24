@@ -1,3 +1,9 @@
+2008-09-24 arne
+
+	* removed the CBitmap (void*) constructor
+	* added CBitmap (CGImageRef) constructor
+	* added CBitmap (GdiPlus::Bitmap*) constructor
+
 2008-07-29 arne
 
 	* fix bug with setCurrent in COptionMenu and added method getCurrentIndex

@@ -6706,27 +6706,38 @@ CBitmap::CBitmap ()
 	pMask = 0;
 }
 
+#if WINDOWS && GDIPLUS
 //-----------------------------------------------------------------------------
-CBitmap::CBitmap (void* platformBitmap)
+CBitmap::CBitmap (Gdiplus::Bitmap* platformBitmap)
 : width (0)
 , height (0)
 , noAlpha (true)
 {
 	pHandle = 0;
 	pMask = 0;
-	#if WINDOWS && GDIPLUS
 	GDIPlusGlobals::enter ();
-	pBitmap = ((Gdiplus::Bitmap*)platformBitmap)->Clone (0, 0, ((Gdiplus::Bitmap*)platformBitmap)->GetWidth (), ((Gdiplus::Bitmap*)platformBitmap)->GetHeight (), PixelFormat32bppARGB);
+	pBitmap = platformBitmap->Clone (0, 0, platformBitmap->GetWidth (), platformBitmap->GetHeight (), PixelFormat32bppARGB);
 	width = (CCoord)pBitmap->GetWidth ();
 	height = (CCoord)pBitmap->GetHeight ();
 	bits = 0;
-	#elif VSTGUI_USES_COREGRAPHICS
-	cgImage = platformBitmap;
-	CGImageRetain ((CGImageRef)cgImage);
-	width = CGImageGetWidth ((CGImageRef)cgImage);
-	height = CGImageGetHeight ((CGImageRef)cgImage);
-	#endif
 }
+#endif
+
+#if VSTGUI_USES_COREGRAPHICS
+//-----------------------------------------------------------------------------
+CBitmap::CBitmap (CGImageRef platformBitmap)
+: width (0)
+, height (0)
+, noAlpha (true)
+{
+	pHandle = 0;
+	pMask = 0;
+	cgImage = platformBitmap;
+	CGImageRetain (platformBitmap);
+	width = CGImageGetWidth (platformBitmap);
+	height = CGImageGetHeight (platformBitmap);
+}
+#endif
 
 //-----------------------------------------------------------------------------
 CBitmap::~CBitmap ()
