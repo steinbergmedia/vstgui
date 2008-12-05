@@ -101,6 +101,11 @@ END_NAMESPACE_VSTGUI
 //---End For Debugging------------------------
 
 #if WINDOWS
+
+#if GDIPLUS
+#pragma comment( lib, "Gdiplus" )
+#endif
+
 static bool bSwapped_mouse_buttons = false; 
 OSVERSIONINFOEX	gSystemVersion;
 
@@ -2058,9 +2063,8 @@ CCoord CDrawContext::getStringWidthUTF8 (const char* string)
 				CGContextRef context = beginCGContext (false);
 				if (context)
 				{
-					CGRect imageBounds = CTLineGetImageBounds (line, context);
+					result = floor (CTLineGetTypographicBounds (line, NULL, NULL, NULL) + 0.5);
 					releaseCGContext (context);
-					result = imageBounds.size.width;
 				}
 				CFRelease (line);
 			}
@@ -5268,8 +5272,8 @@ void CViewContainer::setViewSize (CRect &rect, bool invalid)
 	{
 		long numSubviews = getNbViews ();
 		long counter = 0;
-		bool treatAsColumn = (getAutosizeFlags () & kAutosizeColumn);
-		bool treatAsRow = (getAutosizeFlags () & kAutosizeRow);
+		bool treatAsColumn = (getAutosizeFlags () & kAutosizeColumn) != 0;
+		bool treatAsRow = (getAutosizeFlags () & kAutosizeRow) != 0;
 		FOREACHSUBVIEW
 			long autosize = pV->getAutosizeFlags ();
 			CRect viewSize (pV->getViewSize ());
@@ -5401,7 +5405,7 @@ bool CViewContainer::addView (CView* pView)
 	if (isAttached ())
 	{
 		pView->attached (this);
-		pView->setDirty ();
+		pView->invalid ();
 	}
 	return true;
 }
@@ -5447,7 +5451,7 @@ bool CViewContainer::addView (CView *pView, CView* pBefore)
 	if (isAttached ())
 	{
 		pView->attached (this);
-		pView->setDirty ();
+		pView->invalid ();
 	}
 	return true;
 }
@@ -5520,6 +5524,7 @@ bool CViewContainer::removeView (CView *pView, const bool &withForget)
 			CCView* pPrevious = pV->pPrevious;
 			if (pV->pView)
 			{
+				pV->pView->invalid ();
 				if (pParentFrame)
 					pParentFrame->onViewRemoved (pView);
 				if (isAttached ())
@@ -6404,7 +6409,7 @@ public:
 
 		bool open (const CResourceDescription& resourceDesc)
 		{
-			HRSRC rsrc = FindResource (GetInstance (), resourceDesc.type == CResourceDescription::kIntegerType ? MAKEINTRESOURCE (resourceDesc.u.id) : resourceDesc.u.name, "PNG");
+			HRSRC rsrc = FindResourceA (GetInstance (), resourceDesc.type == CResourceDescription::kIntegerType ? MAKEINTRESOURCEA (resourceDesc.u.id) : resourceDesc.u.name, "PNG");
 			if (rsrc)
 			{
 				resSize = SizeofResource (GetInstance (), rsrc);

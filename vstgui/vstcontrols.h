@@ -70,7 +70,7 @@
 #define kSQRT2 1.41421356237309504880
 #endif
 
-#define MAC_ENABLE_MENU_SCHEME (MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_3 && !__LP64__ && VSTGUI_ENABLE_DEPRECATED_METHODS)
+#define MAC_ENABLE_MENU_SCHEME (MAC && MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_3 && !__LP64__ && VSTGUI_ENABLE_DEPRECATED_METHODS)
 
 //------------------
 // CControlEnum type
@@ -484,9 +484,9 @@ public:
 	virtual void setIcon (CBitmap* icon);								///< set menu item icon
 
 	bool isEnabled () const { return !(flags & kDisabled); }			///< returns whether the item is enabled or not
-	bool isChecked () const { return flags & kChecked; }				///< returns whether the item is checked or not
-	bool isTitle () const { return flags & kTitle; }					///< returns whether the item is a title item or not
-	bool isSeparator () const { return flags & kSeparator; }			///< returns whether the item is a separator or not
+	bool isChecked () const { return (flags & kChecked) != 0; }				///< returns whether the item is checked or not
+	bool isTitle () const { return (flags & kTitle) != 0; }					///< returns whether the item is a title item or not
+	bool isSeparator () const { return (flags & kSeparator) != 0; }			///< returns whether the item is a separator or not
 
 	const char* getTitle () const { return title; }						///< returns the title of the item
 	long getKeyModifiers () const { return keyModifiers; }				///< returns the key modifiers of the item

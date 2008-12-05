@@ -48,7 +48,9 @@
 
 //------------------------------------------------------------------------------------
 static Class menuClass = 0;
+#if VSTGUI_NEW_CFILESELECTOR
 static Class fileSelectorDelegateClass = 0;
+#endif
 static Class textFieldClass = 0;
 static Class viewClass = 0;
 //------------------------------------------------------------------------------------
@@ -730,13 +732,16 @@ static void VSTGUI_NSView_keyDown (id self, SEL _cmd, NSEvent* theEvent)
 
 	VstKeyCode keyCode = CreateVstKeyCodeFromNSEvent (theEvent);
 	
-	if (_vstguiframe->onKeyDown (keyCode) != 1 && keyCode.virt == VKEY_TAB)
+	long res = _vstguiframe->onKeyDown (keyCode);
+	if (res != 1 && keyCode.virt == VKEY_TAB)
 	{
 		if (keyCode.modifier & MODIFIER_SHIFT)
 			[[self window] selectKeyViewPrecedingView:self];
 		else
 			[[self window] selectKeyViewFollowingView:self];
 	}
+	else if (res != 1)
+		[[self nextResponder] keyDown:theEvent];
 }
 
 //------------------------------------------------------------------------------------
@@ -748,7 +753,9 @@ static void VSTGUI_NSView_keyUp (id self, SEL _cmd, NSEvent* theEvent)
 
 	VstKeyCode keyCode = CreateVstKeyCodeFromNSEvent (theEvent);
 
-	_vstguiframe->onKeyUp (keyCode);
+	long res = _vstguiframe->onKeyUp (keyCode);
+	if (res != 1)
+		[[self nextResponder] keyUp:theEvent];
 }
 
 //------------------------------------------------------------------------------------
@@ -1257,10 +1264,12 @@ long CocoaDragContainer::getType (long idx) const
 	return CDragContainer::kUnknown;
 }
 
+#if VSTGUI_NEW_CFILESELECTOR
 //------------------------------------------------------------------------------------
 static id VSTGUI_FileSelector_Delegate_Init (id self, SEL _cmd, void* fileSelector);
 static void VSTGUI_FileSelector_Delegate_Dealloc (id self, SEL _cmd);
 static void VSTGUI_FileSelector_Delegate_OpenPanelDidEnd (id self, SEL _cmd, NSOpenPanel* openPanel, int returnCode, void* contextInfo);
+#endif
 //------------------------------------------------------------------------------------
 //------------------------------------------------------------------------------------
 //------------------------------------------------------------------------------------
@@ -1363,6 +1372,7 @@ GenerateUniqueVSTGUIClasses::GenerateUniqueVSTGUIClasses ()
 	res = class_addIvar (textFieldClass, "_textEdit", sizeof (void*), log2(sizeof(void*)), @encode(void*));
 	objc_registerClassPair (textFieldClass);
 
+	#if VSTGUI_NEW_CFILESELECTOR
 	// generating VSTGUI_FileSelector_Delegate
 	NSMutableString* fileSelectorDelegateClassName = [[[NSMutableString alloc] initWithString:@"VSTGUI_FileSelector_Delegate"] autorelease];
 	fileSelectorDelegateClass = generateUniqueClass (fileSelectorDelegateClassName, [NSObject class]);
@@ -1371,6 +1381,7 @@ GenerateUniqueVSTGUIClasses::GenerateUniqueVSTGUIClasses ()
 	res = class_addMethod (fileSelectorDelegateClass, @selector(openPanelDidEnd:returnCode:contextInfo:), IMP (VSTGUI_FileSelector_Delegate_OpenPanelDidEnd), "v@:@:@:I:@:");
 	res = class_addIvar (fileSelectorDelegateClass, "_fileSelector", sizeof (void*), log2(sizeof(void*)), @encode(void*));
 	objc_registerClassPair (fileSelectorDelegateClass);
+	#endif
 
 	[pool release];
 }
@@ -1381,10 +1392,13 @@ GenerateUniqueVSTGUIClasses::~GenerateUniqueVSTGUIClasses ()
 	objc_disposeClassPair (menuClass);
 	objc_disposeClassPair (viewClass);
 	objc_disposeClassPair (textFieldClass);
+	#if VSTGUI_NEW_CFILESELECTOR
 	objc_disposeClassPair (fileSelectorDelegateClass);
+	#endif
 }
 #endif // MAC_COCOA
 
+#if VSTGUI_NEW_CFILESELECTOR
 #if !MAC_COCOA
 // the cocoa fileselector is also used for carbon
 #import <Cocoa/Cocoa.h>
@@ -1616,6 +1630,8 @@ void VSTGUI_FileSelector_Delegate_OpenPanelDidEnd (id self, SEL _cmd, NSOpenPane
 	}
 	[self autorelease];
 }
-#endif
+#endif // MAC_COCOA
+#endif // VSTGUI_NEW_CFILESELECTOR
+
 /// \endcond
 

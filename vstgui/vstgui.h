@@ -139,6 +139,7 @@ END_NAMESPACE_VSTGUI
 //----------------------------------------------------
 #if WINDOWS
 	#if VSTGUI_USES_UTF8
+		#undef UNICODE
 		#define UNICODE 1
 		#define VSTGUI_STRCMP	wcscmp
 		#define VSTGUI_STRCPY	wcscpy
