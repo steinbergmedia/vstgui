@@ -1982,7 +1982,7 @@ void CMenuItem::setTitle (const char* inTitle)
 	title = 0;
 	if (inTitle)
 	{
-		title = (char*)malloc (strlen (inTitle));
+		title = (char*)malloc (strlen (inTitle) + 1);
 		strcpy (title, inTitle);
 	}
 }
@@ -1995,7 +1995,7 @@ void CMenuItem::setKey (const char* inKeycode, long inKeyModifiers)
 	keycode = 0;
 	if (inKeycode)
 	{
-		keycode = (char*)malloc (strlen (inKeycode));
+		keycode = (char*)malloc (strlen (inKeycode) + 1);
 		strcpy (keycode, inKeycode);
 	}
 	keyModifiers = inKeyModifiers;
@@ -2778,7 +2778,7 @@ CMenuItem* COptionMenu::getEntry (long index) const
 //-----------------------------------------------------------------------------
 long COptionMenu::getNbEntries () const
 {
-	return menuItems->size ();
+	return (long) menuItems->size ();
 }
 
 //------------------------------------------------------------------------

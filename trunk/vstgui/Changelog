@@ -1,8 +1,26 @@
+2008-10-23 arne
+
+	* fix crash in CMenuItem::setTitle and CMenuItem::setKey
+	* fix string width calculation with CoreText
+	* make mac compile again if the new fileselector is turned off
+
+2008-10-20 arne
+	* fix key steeling from host in cocoa code
+
+2008-09-09 yvan
+
+	* fix compilation when LIBPNG is used and win64
+
 2008-09-24 arne
 
 	* removed the CBitmap (void*) constructor
 	* added CBitmap (CGImageRef) constructor
 	* added CBitmap (GdiPlus::Bitmap*) constructor
+
+2008-07-30 arne
+
+	* calling invalid instead of setDirty when adding or removing a view from a view container
+	* added #pragma comment( lib, "Gdiplus" ) when GDIPLUS is enabled
 
 2008-07-29 arne
 
