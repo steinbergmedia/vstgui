@@ -1,3 +1,10 @@
+2008-12-06 arne
+
+	* cocoa tooltip implementation
+	* added onMouseMoved(..) to IMouseObserver
+	* small usability improvements to the tooltip implementation
+	* added CView::removeAttribute(..)
+
 2008-10-23 arne
 
 	* fix crash in CMenuItem::setTitle and CMenuItem::setKey
@@ -5,6 +12,7 @@
 	* make mac compile again if the new fileselector is turned off
 
 2008-10-20 arne
+
 	* fix key steeling from host in cocoa code
 
 2008-09-09 yvan

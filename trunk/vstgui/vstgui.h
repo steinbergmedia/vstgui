@@ -1149,6 +1149,7 @@ public:
 	bool getAttributeSize (const CViewAttributeID id, long& outSize) const;									///< get the size of an attribute
 	bool getAttribute (const CViewAttributeID id, const long inSize, void* outData, long& outSize) const;	///< get an attribute
 	bool setAttribute (const CViewAttributeID id, const long inSize, const void* inData);					///< set an attribute
+	bool removeAttribute (const CViewAttributeID id);														///< remove an attribute
 	//@}
 
 	virtual void setBackground (CBitmap *background);											///< set the background image of this view
@@ -1514,6 +1515,7 @@ public:
 	virtual ~IMouseObserver() {}
 	virtual void onMouseEntered (CView* view, CFrame* frame) = 0;
 	virtual void onMouseExited (CView* view, CFrame* frame) = 0;
+	virtual void onMouseMoved (CFrame* frame, const CPoint& where) {}
 };
 
 //-----------------------------------------------------------------------------

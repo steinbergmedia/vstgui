@@ -3486,6 +3486,33 @@ bool CView::setAttribute (const CViewAttributeID id, const long inSize, const vo
 	return true;
 }
 
+//-----------------------------------------------------------------------------
+bool CView::removeAttribute (const CViewAttributeID id)
+{
+	if (pAttributeList)
+	{
+		CAttributeListEntry* entry = pAttributeList;
+		CAttributeListEntry* prevEntry = 0;
+		while (entry)
+		{
+			if (entry->getID () == id)
+				break;
+			prevEntry = entry;
+			entry = entry->getNext ();
+		}
+		if (entry)
+		{
+			if (prevEntry)
+				prevEntry->setNext (entry->getNext ());
+			else if (entry == pAttributeList)
+				pAttributeList = entry->getNext ();
+			delete entry;
+			return true;
+		}
+	}
+	return false;
+}
+
 #if DEBUG
 //-----------------------------------------------------------------------------
 void CView::dumpInfo ()
@@ -4198,6 +4225,8 @@ CMouseEventResult CFrame::onMouseUp (CPoint &where, const long& buttons)
 //-----------------------------------------------------------------------------
 CMouseEventResult CFrame::onMouseMoved (CPoint &where, const long& buttons)
 {
+	if (getMouseObserver ())
+		getMouseObserver ()->onMouseMoved (this, where);
 	if (pModalView)
 		return pModalView->onMouseMoved (where, buttons);
 	else

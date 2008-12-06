@@ -61,11 +61,16 @@ protected:
 	// IMouseObserver
 	void onMouseEntered (CView* view, CFrame* frame);
 	void onMouseExited (CView* view, CFrame* frame);
+	void onMouseMoved (CFrame* frame, const CPoint& where);
 
 	CVSTGUITimer* timer;
 	CFrame* frame;
 	CView* currentView;
 	void* platformObject;
+
+	int delay;
+	int state;
+	CPoint lastMouseMove;
 };
 
 END_NAMESPACE_VSTGUI
