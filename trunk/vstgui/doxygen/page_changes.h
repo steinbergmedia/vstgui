@@ -6,6 +6,7 @@
 - @ref code_changes_for_3_5 @n
 - @ref code_changes_for_3_0 @n
 - @ref code_changes_for_2_3 @n
+- @ref cocoa_support @n
 
 @section new_stuff New Stuff
 
@@ -83,5 +84,12 @@ For custom views you need to change the following methods because their paramete
 @section code_changes_for_2_3 Code changes for existing VSTGUI 2.3 code
 
 please see the "Migrating from 2.3.rtf" file in the Documentation folder.
+
+@section cocoa_support Cocoa notes
+
+- To get cocoa support your minimum required Mac OS X version is 10.5.
+- In 32 bit Cocoa and Carbon are available. You can switch between them with CFrame::setCocoaMode(bool state). You must do this before creating the CFrame.
+- In 64 bit only Cocoa is available.
+- The pSystemWindow pointer in the CFrame constructor must be a NSView not a NSWindow.
 
 */
