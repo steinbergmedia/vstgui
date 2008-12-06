@@ -48,8 +48,15 @@ static void* InitTooltip (CFrame* frame);
 #endif
 
 #if DEBUG
-#define DEBUGLOG 0
+#define DEBUGLOG 1
 #endif
+
+enum {
+	kHidden,
+	kVisible,
+	kHiding,
+	kShowing
+};
 
 //------------------------------------------------------------------------
 /*! @class VSTGUI::CTooltipSupport
@@ -74,6 +81,8 @@ CTooltipSupport::CTooltipSupport (CFrame* frame, int delay)
 , frame (frame)
 , currentView (0)
 , platformObject (0)
+, delay (delay)
+, state (kHidden)
 {
 	timer = new CVSTGUITimer (this, delay);
 	frame->setMouseObserver (this);
@@ -89,6 +98,11 @@ CTooltipSupport::CTooltipSupport (CFrame* frame, int delay)
 CTooltipSupport::~CTooltipSupport ()
 {
 	timer->forget ();
+
+	#if MAC_COCOA
+	nsViewRemoveTooltip (frame, true);
+	#endif
+
 	frame->setMouseObserver (0);
 	frame->forget ();
 
@@ -118,33 +132,105 @@ static char* getTooltipFromView (CView* view)
 }
 
 //------------------------------------------------------------------------
+static bool viewHasTooltip (CView* view)
+{
+	long tooltipSize = 0;
+	if (view->getAttributeSize (kCViewTooltipAttribute, tooltipSize))
+	{
+		if (tooltipSize > 0)
+			return true;
+	}
+	return false;
+}
+
+//------------------------------------------------------------------------
 void CTooltipSupport::onMouseEntered (CView* view, CFrame* frame)
 {
-	#if DEBUGLOG
-	DebugPrint ("IMouseObserver::onMouseEntered (%s)\n", view->getClassName ());
-	#endif
-	currentView = view;
-	timer->start ();
+	if (viewHasTooltip (view))
+	{
+		currentView = view;
+		if (state == kHiding)
+		{
+			#if DEBUGLOG
+			DebugPrint ("CTooltipSupport::onMouseEntered (%s) - show tooltip\n", view->getClassName ());
+			#endif
+			state = kShowing;
+			timer->setFireTime (200);
+			timer->start ();
+		}
+		else
+		{
+			#if DEBUGLOG
+			DebugPrint ("CTooltipSupport::onMouseEntered (%s) - start timer\n", view->getClassName ());
+			#endif
+			timer->setFireTime (delay);
+			timer->start ();
+		}
+	}
 }
 
 //------------------------------------------------------------------------
 void CTooltipSupport::onMouseExited (CView* view, CFrame* frame)
 {
-	#if DEBUGLOG
-	DebugPrint ("IMouseObserver::onMouseExited (%s)\n", view->getClassName ());
-	#endif
-	hideTooltip ();
-	timer->stop ();
-	currentView = 0;
+	if (currentView)
+	{
+		if (state == kHidden)
+		{
+			timer->stop ();
+		}
+		else
+		{
+			state = kHiding;
+			timer->setFireTime (200);
+			timer->start ();
+		}
+		currentView = 0;
+		#if DEBUGLOG
+		DebugPrint ("CTooltipSupport::onMouseExited (%s)\n", view->getClassName ());
+		#endif
+	}
+}
+
+//------------------------------------------------------------------------
+void CTooltipSupport::onMouseMoved (CFrame* frame, const CPoint& where)
+{
+	if (currentView)
+	{
+		CRect r (lastMouseMove.x-2, lastMouseMove.y-2, lastMouseMove.x+2, lastMouseMove.y+2);
+		if (!r.pointInside (where))
+		{
+			if (state == kHidden)
+			{
+				if (timer->stop ())
+				{
+					#if DEBUGLOG
+					DebugPrint ("CTooltipSupport::onMouseMoved (%s) - Timer restarted\n", currentView->getClassName ());
+					#endif
+					timer->start ();
+				}
+			}
+			else if (state == kVisible)
+			{
+					#if DEBUGLOG
+					DebugPrint ("CTooltipSupport::onMouseMoved (%s) - will hide tooltip\n", currentView->getClassName ());
+					#endif
+					state = kHiding;
+					timer->setFireTime (200);
+					timer->start ();
+			}
+		}
+	}
+	lastMouseMove = where;
 }
 
 //------------------------------------------------------------------------
 void CTooltipSupport::hideTooltip ()
 {
+	state = kHidden;
 	#if MAC_COCOA
 	if (frame->getNSView ())
 	{
-		nsViewRemoveTooltip (currentView);
+		nsViewRemoveTooltip (frame, false);
 		return;
 	}
 	#endif
@@ -174,6 +260,7 @@ void CTooltipSupport::showTooltip ()
 		
 		if (tooltip)
 		{
+			state = kVisible;
 			#if MAC_COCOA
 			if (frame->getNSView ())
 			{
@@ -231,8 +318,21 @@ CMessageResult CTooltipSupport::notify (CBaseObject* sender, const char* msg)
 {
 	if (msg == CVSTGUITimer::kMsgTimer)
 	{
-		showTooltip ();
-		timer->stop ();
+		if (state == kHidden)
+		{
+			showTooltip ();
+			timer->stop ();
+		}
+		else if (state == kHiding)
+		{
+			hideTooltip ();
+			timer->stop ();
+		}
+		else if (state == kShowing)
+		{
+			showTooltip ();
+			timer->stop ();
+		}
 		return kMessageNotified;
 	}
 	return kMessageUnknown;

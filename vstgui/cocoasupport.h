@@ -61,7 +61,7 @@ long showNSContextMenu (COptionMenu* menu, COptionMenu** usedMenu);
 
 // used by CTooltipSupport
 void nsViewSetTooltip (CView* view, const char* tooltip);
-void nsViewRemoveTooltip (CView* view);
+void nsViewRemoveTooltip (CView* view, bool immediately);
 
 // helpers
 #ifdef __OBJC__
