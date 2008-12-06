@@ -3,13 +3,13 @@
 //
 // Doxygen Documentation
 //
-// Version 3.5       Date : 30/06/04
+// Version 3.6
 //
 //-----------------------------------------------------------------------------
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
-// © 2004, Steinberg Media Technologies, All Rights Reserved
+// (c) 2008, Steinberg Media Technologies, All Rights Reserved
 //-----------------------------------------------------------------------------
 // Redistribution and use in source and binary forms, with or without modification,
 // are permitted provided that the following conditions are met:
@@ -56,7 +56,7 @@ First developed inhouse of Steinberg Media Technologies (around 1998) for their 
 Later added as binary libraries to the official VST SDK. 
 Since May 2003 VSTGUI is open source and hosted at sourceforge.
 \par Platforms
-Currently VSTGUI compiles on Microsoft Windows 2000/ME/XP/XP64/Vista/Vista64 and Apple Mac OS X 10.3 - 10.4. 
+Currently VSTGUI compiles on Microsoft Windows 2000/ME/XP/XP64/Vista/Vista64 and Apple Mac OS X 10.3 - 10.5. 
 
 \sa
 <a href="http://vstgui.sf.net" target=_blank> VSTGUI @ Sourceforge </a>
