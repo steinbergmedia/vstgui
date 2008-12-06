@@ -41,6 +41,7 @@
 #import <Cocoa/Cocoa.h>
 #import "vstkeycode.h"
 #import "cfileselector.h"
+#import "cvstguitimer.h"
 #import <objc/runtime.h>
 #import <objc/message.h>
 
@@ -122,6 +123,27 @@ protected:
 	void* lastItem;
 };
 static CocoaDragContainer* gDragContainer = 0;
+
+//------------------------------------------------------------------------------------
+class CocoaTooltipWindow : public CBaseObject
+{
+public:
+	CocoaTooltipWindow ();
+	~CocoaTooltipWindow ();
+
+	void set (CView* view, const char* tooltip);
+	void hide ();
+
+	CMessageResult notify (CBaseObject* sender, const char* message);
+protected:
+	CVSTGUITimer* timer;
+	CFrame* frame;
+	NSWindow* window;
+	NSTextField* textfield;
+};
+
+//------------------------------------------------------------------------------------
+static const CViewAttributeID kCocoaTooltipAttributeID = 'cttw';
 
 //------------------------------------------------------------------------------------
 // Helpers
@@ -324,24 +346,35 @@ HIDDEN long showNSContextMenu (COptionMenu* menu, COptionMenu** usedMenu)
 //------------------------------------------------------------------------------------
 HIDDEN void nsViewSetTooltip (CView* view, const char* tooltip)
 {
-	if (view->getFrame ())
+	CFrame* frame = view->getFrame ();
+	if (frame)
 	{
-		#if 0
-		VSTGUI_NSView* nsView = (id)view->getFrame ()->getNSView ();
-		[nsView setTooltip:tooltip forCView:view];
-		#endif
+		CocoaTooltipWindow* cctw = 0;
+		long outSize = 0;
+		if (!frame->getAttribute (kCocoaTooltipAttributeID, sizeof (CocoaTooltipWindow*), &cctw, outSize))
+		{
+			cctw = new CocoaTooltipWindow;
+			frame->setAttribute (kCocoaTooltipAttributeID, sizeof (CocoaTooltipWindow*), &cctw);
+		}
+		cctw->set (view, tooltip);
 	}
 }
 
 //------------------------------------------------------------------------------------
-HIDDEN void nsViewRemoveTooltip (CView* view)
+HIDDEN void nsViewRemoveTooltip (CView* view, bool immediately)
 {
-	if (view->getFrame ())
+	CFrame* frame = view->getFrame ();
+	if (frame)
 	{
-		#if 0
-		VSTGUI_NSView* nsView = (VSTGUI_NSView*)view->getFrame ()->getNSView ();
-		[nsView removeTooltip];
-		#endif
+		CocoaTooltipWindow* cctw = 0;
+		long outSize = 0;
+		if (frame->getAttribute (kCocoaTooltipAttributeID, sizeof (CocoaTooltipWindow*), &cctw, outSize))
+		{
+			if (immediately)
+				cctw->forget ();
+			else
+				cctw->hide ();
+		}
 	}
 }
 
@@ -1144,6 +1177,108 @@ static BOOL VSTGUI_NSTextField_DoCommandBySelector (id self, SEL _cmd, NSControl
 		return YES; // return YES, otherwise it beeps !!!
 	}
 	return NO;
+}
+
+//------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------------
+CocoaTooltipWindow::CocoaTooltipWindow ()
+: timer (0)
+, frame (0)
+, window (0)
+, textfield (0)
+{
+}
+
+//------------------------------------------------------------------------------------
+CocoaTooltipWindow::~CocoaTooltipWindow ()
+{
+	if (timer)
+		timer->forget ();
+	if (frame)
+		frame->removeAttribute (kCocoaTooltipAttributeID);
+	if (window)
+	{
+		[window orderOut:nil];
+		[window release];
+	}
+}
+
+//------------------------------------------------------------------------------------
+void CocoaTooltipWindow::set (CView* view, const char* tooltip)
+{
+	if (timer)
+	{
+		timer->forget ();
+		timer = 0;
+	}
+	frame = view->getFrame ();
+	NSView* nsView = (NSView*)frame->getNSView ();
+	if (!window)
+	{
+		window = [[NSWindow alloc] initWithContentRect:NSMakeRect (0, 0, 10, 10) styleMask:NSBorderlessWindowMask backing:NSBackingStoreBuffered defer:NO];
+		[window setReleasedWhenClosed:NO];
+		[window setOpaque:NO];
+		[window setHasShadow:YES];
+		[window setLevel:NSStatusWindowLevel];
+		[window setHidesOnDeactivate:YES];
+		[window setIgnoresMouseEvents:YES];
+		[window setBackgroundColor: [NSColor colorWithDeviceRed:1.0 green:0.96 blue:0.76 alpha:1.0]];
+		textfield = [[[NSTextField alloc] initWithFrame:[[window contentView] frame]] autorelease];
+		[textfield setEditable:NO];
+		[textfield setSelectable:NO];
+		[textfield setBezeled:NO];
+		[textfield setBordered:NO];
+		[textfield setDrawsBackground:NO];
+		[textfield setAutoresizingMask:NSViewWidthSizable|NSViewHeightSizable];
+		[window setContentView:textfield];
+	}
+	NSString* string = [NSString stringWithCString:tooltip encoding:NSUTF8StringEncoding];
+	[textfield setStringValue: string];
+	NSSize textSize = [[textfield attributedStringValue] size];
+	textSize.width += 4;
+
+	NSPoint nsp = [NSEvent mouseLocation];
+	NSImage* cursorImage = [[NSCursor currentCursor] image];
+	nsp.y -= (textSize.height + [cursorImage size].height);
+
+	if (false)
+	{
+		CPoint p;
+		p.x = view->getViewSize ().left;
+		p.y = view->getViewSize ().top;
+		view->localToFrame (p);
+		nsp = nsPointFromCPoint (p);
+		nsp = [nsView convertPoint:nsp toView:nil];
+		nsp = [[nsView window] convertBaseToScreen:nsp];
+	}
+	
+	NSRect frameRect = { nsp, textSize };
+	[window setFrame:frameRect display:NO];
+	[window setAlphaValue:0.9];
+	[window orderFront:nil];
+}
+
+//------------------------------------------------------------------------------------
+void CocoaTooltipWindow::hide ()
+{
+	timer = new CVSTGUITimer (this, 10);
+	timer->start ();
+}
+
+//------------------------------------------------------------------------------------
+CMessageResult CocoaTooltipWindow::notify (CBaseObject* sender, const char* message)
+{
+	if (message == CVSTGUITimer::kMsgTimer)
+	{
+		CGFloat newAlpha = [window alphaValue] - 0.02;
+		if (newAlpha < 0)
+			forget ();
+		else
+			[window setAlphaValue:newAlpha];
+		return kMessageNotified;
+	}
+	return kMessageUnknown;
 }
 
 //------------------------------------------------------------------------------------
