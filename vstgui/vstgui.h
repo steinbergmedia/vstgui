@@ -184,12 +184,13 @@ END_NAMESPACE_VSTGUI
 //----------------------------------------------------
 struct VstKeyCode;
 
+#include "vstguidebug.h"
+
 BEGIN_NAMESPACE_VSTGUI
 
 struct CPoint;
 
 #if DEBUG
-extern void DebugPrint (char* format, ...);
 #define CLASS_METHODS(name, parent)             \
 	virtual bool isTypeOf (const char* s) const \
 		{ return (!strcmp (s, (#name))) ? true : parent::isTypeOf (s); }\
@@ -1216,8 +1217,8 @@ protected:
 	CAttributeListEntry* pAttributeList;
 };
 
-extern char* kMsgCheckIfViewContainer;	///< Message to check if View is a CViewContainer
-extern char* kMsgLooseFocus;			///< Message of a view loosing focus (only CTextEdit and COptionMenu send this yet)
+extern const char* kMsgCheckIfViewContainer;	///< Message to check if View is a CViewContainer
+extern const char* kMsgLooseFocus;				///< Message of a view loosing focus (only CTextEdit and COptionMenu send this yet)
 
 //-----------------------------------------------------------------------------
 // CViewContainer Declaration
@@ -1428,6 +1429,7 @@ public:
 	CMouseEventResult onMouseDown (CPoint &where, const long& buttons);
 	CMouseEventResult onMouseUp (CPoint &where, const long& buttons);
 	CMouseEventResult onMouseMoved (CPoint &where, const long& buttons);
+	CMouseEventResult onMouseExited (CPoint &where, const long& buttons);
 	bool onWheel (const CPoint &where, const float &distance, const long &buttons);
 	bool onWheel (const CPoint &where, const CMouseWheelAxis &axis, const float &distance, const long &buttons);
 	long onKeyDown (VstKeyCode& keyCode);
@@ -1516,6 +1518,7 @@ public:
 	virtual void onMouseEntered (CView* view, CFrame* frame) = 0;
 	virtual void onMouseExited (CView* view, CFrame* frame) = 0;
 	virtual void onMouseMoved (CFrame* frame, const CPoint& where) {}
+	virtual void onMouseDown (CFrame* frame, const CPoint& where) {}
 };
 
 //-----------------------------------------------------------------------------

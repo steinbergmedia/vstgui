@@ -734,13 +734,31 @@ static void VSTGUI_NSView_scrollWheel (id self, SEL _cmd, NSEvent* theEvent)
 //------------------------------------------------------------------------------------
 static void VSTGUI_NSView_mouseEntered (id self, SEL _cmd, NSEvent* theEvent)
 {
-	[self mouseMoved:theEvent];
 }
 
 //------------------------------------------------------------------------------------
 static void VSTGUI_NSView_mouseExited (id self, SEL _cmd, NSEvent* theEvent)
 {
-	[self mouseMoved:theEvent];
+	CFrame* _vstguiframe = (CFrame*)OBJC_GET_VALUE(self, _vstguiframe);
+	if (!_vstguiframe)
+		return;
+	long buttons = eventButton (theEvent);
+	unsigned int modifiers = [theEvent modifierFlags];
+	NSPoint nsPoint;
+	nsPoint = [NSEvent mouseLocation];
+	nsPoint = [[self window] convertScreenToBase:nsPoint];
+
+	nsPoint = [self convertPoint:nsPoint fromView:nil];
+	if (modifiers & NSShiftKeyMask)
+		buttons |= kShift;
+	if (modifiers & NSCommandKeyMask)
+		buttons |= kControl;
+	if (modifiers & NSAlternateKeyMask)
+		buttons |= kAlt;
+	if (modifiers & NSControlKeyMask)
+		buttons |= kApple;
+	CPoint p = pointFromNSPoint (nsPoint);
+	_vstguiframe->onMouseExited (p, buttons);
 }
 
 //------------------------------------------------------------------------------------
@@ -857,17 +875,6 @@ static BOOL VSTGUI_NSView_performDragOperation (id self, SEL _cmd, id sender)
 	return result;
 }
 
-#if 0
-//------------------------------------------------------------------------------------
-- (void) setTooltip: (const char*)tooltip forCView: (CView*)view
-{
-}
-
-//------------------------------------------------------------------------------------
-- (void) removeTooltip
-{
-}
-#endif
 //@end
 
 //------------------------------------------------------------------------------------
@@ -1230,40 +1237,37 @@ void CocoaTooltipWindow::set (CView* view, const char* tooltip)
 		[textfield setBezeled:NO];
 		[textfield setBordered:NO];
 		[textfield setDrawsBackground:NO];
-		[textfield setAutoresizingMask:NSViewWidthSizable|NSViewHeightSizable];
 		[window setContentView:textfield];
 	}
 	NSString* string = [NSString stringWithCString:tooltip encoding:NSUTF8StringEncoding];
 	[textfield setStringValue: string];
-	NSSize textSize = [[textfield attributedStringValue] size];
-	textSize.width += 4;
+	[textfield sizeToFit];
+	NSSize textSize = [textfield bounds].size;
 
-	NSPoint nsp = [NSEvent mouseLocation];
-	NSImage* cursorImage = [[NSCursor currentCursor] image];
-	nsp.y -= (textSize.height + [cursorImage size].height);
-
-	if (false)
-	{
-		CPoint p;
-		p.x = view->getViewSize ().left;
-		p.y = view->getViewSize ().top;
-		view->localToFrame (p);
-		nsp = nsPointFromCPoint (p);
-		nsp = [nsView convertPoint:nsp toView:nil];
-		nsp = [[nsView window] convertBaseToScreen:nsp];
-	}
+	CPoint p;
+	p.x = view->getViewSize ().left;
+	p.y = view->getViewSize ().bottom;
+	view->localToFrame (p);
+	NSPoint nsp = nsPointFromCPoint (p);
+	nsp = [nsView convertPoint:nsp toView:nil];
+	nsp = [[nsView window] convertBaseToScreen:nsp];
+	nsp.y -= (textSize.height + 4);
+	nsp.x += (view->getViewSize ().getWidth () - textSize.width) / 2;
 	
-	NSRect frameRect = { nsp, textSize };
+	NSRect frameRect = { nsp, [textfield bounds].size };
 	[window setFrame:frameRect display:NO];
-	[window setAlphaValue:0.9];
+	[window setAlphaValue:0.95];
 	[window orderFront:nil];
 }
 
 //------------------------------------------------------------------------------------
 void CocoaTooltipWindow::hide ()
 {
-	timer = new CVSTGUITimer (this, 10);
-	timer->start ();
+	if (timer == 0)
+	{
+		timer = new CVSTGUITimer (this, 10);
+		timer->start ();
+	}
 }
 
 //------------------------------------------------------------------------------------
@@ -1271,8 +1275,8 @@ CMessageResult CocoaTooltipWindow::notify (CBaseObject* sender, const char* mess
 {
 	if (message == CVSTGUITimer::kMsgTimer)
 	{
-		CGFloat newAlpha = [window alphaValue] - 0.02;
-		if (newAlpha < 0)
+		CGFloat newAlpha = [window alphaValue] - 0.05;
+		if (newAlpha <= 0)
 			forget ();
 		else
 			[window setAlphaValue:newAlpha];
