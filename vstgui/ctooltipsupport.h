@@ -62,6 +62,7 @@ protected:
 	void onMouseEntered (CView* view, CFrame* frame);
 	void onMouseExited (CView* view, CFrame* frame);
 	void onMouseMoved (CFrame* frame, const CPoint& where);
+	void onMouseDown (CFrame* frame, const CPoint& where);
 
 	CVSTGUITimer* timer;
 	CFrame* frame;

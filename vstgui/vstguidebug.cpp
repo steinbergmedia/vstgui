@@ -80,7 +80,7 @@ void TimeWatch::stop ()
 }
 
 //-----------------------------------------------------------------------------
-void DebugPrint (char *format, ...)
+void DebugPrint (const char *format, ...)
 {
 	char string[300];
 	va_list marker;

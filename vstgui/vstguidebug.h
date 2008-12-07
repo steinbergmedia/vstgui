@@ -35,6 +35,12 @@
 #ifndef __vstguidebug__
 #define __vstguidebug__
 
+#if DEVELOPMENT
+	#ifndef DEBUG
+	#define DEBUG	1
+	#endif
+#endif
+
 #if DEBUG
 
 #include "vstgui.h"
@@ -43,7 +49,7 @@
 BEGIN_NAMESPACE_VSTGUI
 
 //-----------------------------------------------------------------------------
-extern void DebugPrint (char *format, ...);
+extern void DebugPrint (const char *format, ...);
 
 //-----------------------------------------------------------------------------
 class TimeWatch
