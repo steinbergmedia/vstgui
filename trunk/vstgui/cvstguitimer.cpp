@@ -46,6 +46,10 @@ END_NAMESPACE_VSTGUI
 
 #endif
 
+#if DEBUG
+#define DEBUGLOG	0
+#endif
+
 //-----------------------------------------------------------------------------
 const char* CVSTGUITimer::kMsgTimer = "timer fired";
 
@@ -80,6 +84,10 @@ bool CVSTGUITimer::start ()
 		if (platformTimer)
 			gTimerList.push_back (this);
 		#endif
+		
+		#if DEBUGLOG
+		DebugPrint ("Timer started (0x%x)\n", timerObject);
+		#endif
 	}
 	return (platformTimer != 0);
 }
@@ -91,6 +99,7 @@ bool CVSTGUITimer::stop ()
 	{
 		#if MAC
 		CFRunLoopRemoveTimer (CFRunLoopGetCurrent (), (CFRunLoopTimerRef)platformTimer, kCFRunLoopCommonModes);
+		CFRunLoopTimerInvalidate ((CFRunLoopTimerRef)platformTimer);
 
 		#elif WINDOWS
 		KillTimer ((HWND)NULL, (UINT_PTR)platformTimer);
@@ -106,6 +115,9 @@ bool CVSTGUITimer::stop ()
 		}
 		#endif
 		platformTimer = 0;
+		#if DEBUGLOG
+		DebugPrint ("Timer stopped (0x%x)\n", timerObject);
+		#endif
 		return true;
 	}
 	return false;

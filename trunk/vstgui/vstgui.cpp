@@ -3017,8 +3017,8 @@ protected:
 /// \endcond
 
 //-----------------------------------------------------------------------------
-char* kMsgCheckIfViewContainer	= "kMsgCheckIfViewContainer";
-char* kMsgLooseFocus = "LooseFocus";
+const char* kMsgCheckIfViewContainer	= "kMsgCheckIfViewContainer";
+const char* kMsgLooseFocus = "LooseFocus";
 //-----------------------------------------------------------------------------
 // CView
 //-----------------------------------------------------------------------------
@@ -4190,6 +4190,9 @@ CMouseEventResult CFrame::onMouseDown (CPoint &where, const long& buttons)
 		pMouseOverView = 0;
 	}
 
+	if (getMouseObserver ())
+		getMouseObserver ()->onMouseDown (this, where);
+
 	if (pModalView)
 	{
 		if (pModalView->hitTest (where, buttons))
@@ -4266,6 +4269,22 @@ CMouseEventResult CFrame::onMouseMoved (CPoint &where, const long& buttons)
 		}
 		return result;
 	}
+}
+
+//-----------------------------------------------------------------------------
+CMouseEventResult CFrame::onMouseExited (CPoint &where, const long& buttons)
+{ // this should only get called from the platform implementation
+	if (pMouseOverView)
+	{
+		CPoint lr (where);
+		pMouseOverView->frameToLocal (lr);
+		pMouseOverView->onMouseExited (lr, buttons);
+		if (getMouseObserver ())
+			getMouseObserver ()->onMouseExited (pMouseOverView, this);
+	}
+	pMouseOverView = 0;
+
+	return kMouseEventHandled;
 }
 
 //-----------------------------------------------------------------------------
@@ -8414,6 +8433,11 @@ LONG_PTR WINAPI WindowProc (HWND hwnd, UINT message, WPARAM wParam, LPARAM lPara
 			return 0;
 		}
 		break;
+	case WM_MOUSELEAVE:
+		{
+			// TODO: call frame->onMouseExited ();
+		}
+		break;
 	case WM_MOUSEMOVE:
 		if (pFrame)
 		{
@@ -9444,7 +9468,7 @@ pascal OSStatus CFrame::carbonEventHandler (EventHandlerCallRef inHandlerCallRef
 							location.y -= viewRect.origin.y;
 						}
 						CPoint point ((CCoord)location.x, (CCoord)location.y);
-						frame->onMouseMoved (point, 0);
+						frame->onMouseExited (point, 0);
 					}
 					break;
 				}
