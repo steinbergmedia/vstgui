@@ -63,7 +63,9 @@
 
 #if WINDOWS
 	#define USE_NAMESPACE	1
-	#define _WIN32_WINNT 0x0501
+	#ifndef _WIN32_WINNT
+		#define _WIN32_WINNT 0x0501
+	#endif
 	#ifndef GDIPLUS
 	#define GDIPLUS		1
 	#endif
@@ -1472,6 +1474,7 @@ protected:
 	HINSTANCE hInstMsimg32dll;
 	void*     dropTarget;
 	COffscreenContext* backBuffer;
+	bool      bMouseInside;
 #endif // WINDOWS
 
 #if MAC_CARBON
@@ -1596,11 +1599,11 @@ public:
 		{
 			if (!allocWideStr && utf8Str)
 			{
-				allocWideStr = (WCHAR*)malloc ((strlen (utf8Str)+1) * 3 * sizeof (WCHAR));
-				memset (allocWideStr, 0, (strlen (utf8Str)+1) * 3 * sizeof (WCHAR));
-				if (MultiByteToWideChar (CP_UTF8, 0, utf8Str, (int)strlen (utf8Str), allocWideStr, (int)(strlen (utf8Str)+1) * 3) == 0)
+				int numChars = MultiByteToWideChar (CP_UTF8, 0, utf8Str, -1, 0, 0);
+				allocWideStr = (WCHAR*)malloc ((numChars+1)*2);
+				if (MultiByteToWideChar (CP_UTF8, 0, utf8Str, -1, allocWideStr, numChars) == 0)
 				{
-					/* Error, TODO */
+					allocWideStr[0] = 0;
 				}
 			}
 			return allocWideStr;
@@ -1614,11 +1617,11 @@ public:
 		{
 			if (!allocUTF8Str && wideStr)
 			{
-				allocUTF8Str = (char*)malloc ((wcslen (wideStr)+1) * 2);
-				memset (allocUTF8Str, 0, (wcslen (wideStr)+1) * 2);
-				if (WideCharToMultiByte (CP_UTF8, 0, wideStr, (int)wcslen (wideStr) * 2, allocUTF8Str, (int)(wcslen (wideStr)+1) * 2, 0, 0) == 0)
+				int allocSize = WideCharToMultiByte (CP_UTF8, 0, wideStr, -1, 0, 0, 0, 0);
+				allocUTF8Str = (char*)malloc (allocSize+1);
+				if (WideCharToMultiByte (CP_UTF8, 0, wideStr, -1, allocUTF8Str, allocSize, 0, 0) == 0)
 				{
-					/* Error, TODO */
+					allocUTF8Str[0] = 0;
 				}
 			}
 			return allocUTF8Str;

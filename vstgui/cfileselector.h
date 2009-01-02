@@ -37,7 +37,9 @@
 
 #include "vstgui.h"
 
+#ifndef VSTGUI_NEW_CFILESELECTOR
 #define VSTGUI_NEW_CFILESELECTOR MAC
+#endif
 
 #if VSTGUI_NEW_CFILESELECTOR
 #include <list>
@@ -47,7 +49,7 @@ BEGIN_NAMESPACE_VSTGUI
 
 //-----------------------------------------------------------------------------
 // CFileExtension Declaration
-//!
+//! \brief file extension description
 //-----------------------------------------------------------------------------
 class CFileExtension : public CBaseObject
 {
@@ -75,6 +77,40 @@ protected:
 // CNewFileSelector Declaration
 //! \brief New file selector class
 /// \nosubgrouping
+/*! @class CNewFileSelector
+@section usage Usage
+Running the file selector
+\code
+void MyClass::runFileSelector ()
+{
+	CNewFileSelector* selector = CNewFileSelector::create (getFrame (), CNewFileSelector::kSelectFile);
+	if (selector)
+	{
+		selector->addFileExtension (CFileExtension ("AIFF", "aif", "audio/aiff"));
+		selector->setDefaultExtension (CFileExtension ("WAVE", "wav"));
+		selector->setTitle("Choose An Audio File");
+		selector->run (this);
+		selector->forget ();
+	}
+}
+\endcode
+Getting results
+\code
+CMessageResult MyClass::notify (CBaseObject* sender, const char* message)
+{
+	if (message == CNewFileSelector::kSelectEndMessage)
+	{
+		CNewFileSelector* sel = dynamic_cast<CNewFileSelector*>(sender);
+		if (sel)
+		{
+			// do anything with the selected files here
+			return kMessageNotified;
+		}
+	}
+	return parent::notify (sender, message);
+}
+\endcode
+*/
 //-----------------------------------------------------------------------------
 class CNewFileSelector : public CBaseObject
 {
@@ -153,7 +189,8 @@ BEGIN_NAMESPACE_VSTGUI
 
 //-----------------------------------------------------------------------------
 // CFileSelector Declaration
-//!
+//! \brief deprecated file selector class
+//! \deprecated
 //-----------------------------------------------------------------------------
 class CFileSelector
 {

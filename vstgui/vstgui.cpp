@@ -192,21 +192,19 @@ END_NAMESPACE_VSTGUI
 #include "cocoasupport.h"
 
 BEGIN_NAMESPACE_VSTGUI
-static CFontDesc gSystemFont ("Lucida Grande", 12);
-static CFontDesc gNormalFontVeryBig ("Helvetica", 18);
-static CFontDesc gNormalFontBig ("Helvetica", 14);
-static CFontDesc gNormalFont ("Helvetica", 12);
-static CFontDesc gNormalFontSmall ("Helvetica", 11);
-static CFontDesc gNormalFontSmaller ("Helvetica", 10);
-static CFontDesc gNormalFontVerySmall ("Helvetica", 9);
-static CFontDesc gSymbolFont ("Helvetica", 12);
-
-static inline void QuartzSetLineDash (CGContextRef context, CLineStyle style, CCoord lineWidth);
-static inline void QuartzSetupClip (CGContextRef context, const CRect clipRect);
-static inline double radians (double degrees) { return degrees * M_PI / 180; }
-CGColorSpaceRef GetGenericRGBColorSpace ()
+class GenericMacColorSpace
 {
-	return CGColorSpaceCreateWithName (kCGColorSpaceGenericRGB);
+public:
+	GenericMacColorSpace () : colorspace (CGColorSpaceCreateWithName (kCGColorSpaceGenericRGB)) {}
+	~GenericMacColorSpace () { CGColorSpaceRelease (colorspace); }
+	
+	CGColorSpaceRef colorspace;
+};
+
+static CGColorSpaceRef GetGenericRGBColorSpace ()
+{
+	static GenericMacColorSpace gGenericMacColorSpace;
+	return gGenericMacColorSpace.colorspace;
 }
 
 END_NAMESPACE_VSTGUI
@@ -245,7 +243,6 @@ typedef float CGFloat;
 #include <QuickTime/QuickTime.h>
 #include <CoreServices/CoreServices.h>
 
-#if !MAC_COCOA
 static CFontDesc gSystemFont ("Lucida Grande", 12);
 static CFontDesc gNormalFontVeryBig ("Helvetica", 18);
 static CFontDesc gNormalFontBig ("Helvetica", 14);
@@ -254,7 +251,6 @@ static CFontDesc gNormalFontSmall ("Helvetica", 11);
 static CFontDesc gNormalFontSmaller ("Helvetica", 10);
 static CFontDesc gNormalFontVerySmall ("Helvetica", 9);
 static CFontDesc gSymbolFont ("Helvetica", 12);
-#endif
 
 #ifndef M_PI
 #define	M_PI		3.14159265358979323846	/* pi */
@@ -263,9 +259,9 @@ static CFontDesc gSymbolFont ("Helvetica", 12);
 bool isWindowComposited (WindowRef window);
 static inline void QuartzSetLineDash (CGContextRef context, CLineStyle style, CCoord lineWidth);
 static inline void QuartzSetupClip (CGContextRef context, const CRect clipRect);
+static inline double radians (double degrees) { return degrees * M_PI / 180; }
 
 #if !MAC_COCOA
-static inline double radians (double degrees) { return degrees * M_PI / 180; }
 CGColorSpaceRef GetGenericRGBColorSpace ();
 
 // cache graphics importer
@@ -278,10 +274,9 @@ static ComponentInstance pictGI = 0;
 //-----------------------------------------------------------------------------
 
 long convertPoint2Angle (CPoint &pm, CPoint &pt);
+#if MAC_CARBON
 void CRect2Rect (const CRect &cr, Rect &rr);
 void Rect2CRect (Rect &rr, CRect &cr);
-void CColor2RGBColor (const CColor &cc, RGBColor &rgb);
-void RGBColor2CColor (const RGBColor &rgb, CColor &cc);
 
 #if MAC_OLD_DRAG
 static void install_drop (CFrame* frame);
@@ -307,22 +302,7 @@ void Rect2CRect (Rect &rr, CRect &cr)
 	cr.top    = rr.top;
 	cr.bottom = rr.bottom;
 }
-
-//-----------------------------------------------------------------------------
-void CColor2RGBColor (const CColor &cc, RGBColor &rgb)
-{
-	rgb.red   = cc.red   * 257;
-	rgb.green = cc.green * 257;
-	rgb.blue  = cc.blue  * 257;
-}
-
-//-----------------------------------------------------------------------------
-void RGBColor2CColor (const RGBColor &rgb, CColor &cc)
-{
-	cc.red   = rgb.red   / 257;
-	cc.green = rgb.green / 257;
-	cc.blue  = rgb.blue  / 257;
-}
+#endif // MAC_CARBON
 
 END_NAMESPACE_VSTGUI
 #endif // MAC
@@ -3574,6 +3554,7 @@ CFrame::CFrame (const CRect &inSize, void* inSystemWindow, VSTGUIEditorInterface
 	dropTarget = 0;
 	backBuffer = 0;
 	OleInitialize (0);
+	bMouseInside = false;
 
 	#if GDIPLUS
 	GDIPlusGlobals::enter ();
@@ -3661,6 +3642,7 @@ CFrame::CFrame (const CRect& inSize, const char* inTitle, VSTGUIEditorInterface*
 	dropTarget = 0;
 	backBuffer = 0;
 	OleInitialize (0);
+	bMouseInside = false;
 
 	#if DYNAMICALPHABLEND
 	pfnAlphaBlend = 0;
@@ -4034,7 +4016,7 @@ bool CFrame::setDropActive (bool val)
 	}
 
 #elif MAC_CARBON && MAC_OLD_DRAG
-	if (!isWindowComposited ((WindowRef)pSystemWindow))
+	if (controlRef && !isWindowComposited ((WindowRef)pSystemWindow))
 	{
 		if (val)
 			install_drop (this);
@@ -4228,6 +4210,17 @@ CMouseEventResult CFrame::onMouseUp (CPoint &where, const long& buttons)
 //-----------------------------------------------------------------------------
 CMouseEventResult CFrame::onMouseMoved (CPoint &where, const long& buttons)
 {
+#if WINDOWS
+	if (!bMouseInside)
+	{
+		bMouseInside = true;
+		TRACKMOUSEEVENT tme = {0};
+		tme.cbSize = sizeof (tme);
+		tme.dwFlags = TME_LEAVE;
+		tme.hwndTrack = (HWND)pHwnd;
+		TrackMouseEvent (&tme);
+	}
+#endif
 	if (getMouseObserver ())
 		getMouseObserver ()->onMouseMoved (this, where);
 	if (pModalView)
@@ -4284,6 +4277,9 @@ CMouseEventResult CFrame::onMouseExited (CPoint &where, const long& buttons)
 	}
 	pMouseOverView = 0;
 
+#if WINDOWS
+	bMouseInside = false;
+#endif
 	return kMouseEventHandled;
 }
 
@@ -7258,6 +7254,9 @@ bool CBitmap::isLoaded () const
 	#if VSTGUI_USES_COREGRAPHICS
 	if (cgImage || getHandle ())
 		return true;
+	#elif GDIPLUS
+	if (pBitmap)
+		return true;
 	#else
 	if (getHandle ())
 		return true;
@@ -8009,7 +8008,18 @@ WinDragContainer::WinDragContainer (void* platformDrag)
 
 	IDataObject* dataObject = (IDataObject*)platformDrag;
 	STGMEDIUM medium;
-	FORMATETC formatTEXTDrop = {CF_TEXT,  0, DVASPECT_CONTENT, -1, TYMED_HGLOBAL};
+	FORMATETC formatTEXTDrop = {
+		#if VSTGUI_USES_UTF8
+		CF_UNICODETEXT,
+		#else
+		CF_TEXT,
+		#endif
+		0, 
+		DVASPECT_CONTENT, 
+		-1, 
+		TYMED_HGLOBAL
+	};
+	
 	FORMATETC formatHDrop    = {CF_HDROP, 0, DVASPECT_CONTENT, -1, TYMED_HGLOBAL};
 
 	// todo : Support CF_UNICODETEXT
@@ -8046,7 +8056,17 @@ long WinDragContainer::getType (long idx) const
 
 	IDataObject* dataObject = (IDataObject*)platformDrag;
 	STGMEDIUM medium;
-	FORMATETC formatTEXTDrop = {CF_TEXT,  0, DVASPECT_CONTENT, -1, TYMED_HGLOBAL};
+	FORMATETC formatTEXTDrop = {
+		#if VSTGUI_USES_UTF8
+		CF_UNICODETEXT,
+		#else
+		CF_TEXT,
+		#endif
+		0, 
+		DVASPECT_CONTENT, 
+		-1, 
+		TYMED_HGLOBAL
+	};
 	FORMATETC formatHDrop    = {CF_HDROP, 0, DVASPECT_CONTENT, -1, TYMED_HGLOBAL};
 
 	long type = 0; // 0 = file, 1 = text
@@ -8090,7 +8110,17 @@ void* WinDragContainer::next (long& size, long& type)
 	IDataObject* dataObject = (IDataObject*)platformDrag;
 	void* hDrop = 0;
 	STGMEDIUM medium;
-	FORMATETC formatTEXTDrop = {CF_TEXT,  0, DVASPECT_CONTENT, -1, TYMED_HGLOBAL};
+	FORMATETC formatTEXTDrop = {
+		#if VSTGUI_USES_UTF8
+		CF_UNICODETEXT,
+		#else
+		CF_TEXT,
+		#endif
+		0, 
+		DVASPECT_CONTENT, 
+		-1, 
+		TYMED_HGLOBAL
+	};
 	FORMATETC formatHDrop    = {CF_HDROP, 0, DVASPECT_CONTENT, -1, TYMED_HGLOBAL};
 
 	long wintype = 0; // 0 = file, 1 = text
@@ -8129,10 +8159,18 @@ void* WinDragContainer::next (long& size, long& type)
 			long dataSize = (long)GlobalSize (medium.hGlobal);
 			if (data && dataSize)
 			{
+				#if VSTGUI_USES_UTF8
+				UTF8StringHelper wideString ((const WCHAR*)data);
+				size = strlen (wideString.getUTF8String ());
+				lastItem = malloc (size+1);
+				strcpy ((char*)lastItem, wideString.getUTF8String ());
+				type = kUnicodeText;
+				#else
 				lastItem = malloc (dataSize+1);
 				memcpy (lastItem, data, dataSize);
 				size = dataSize;
 				type = kText;
+				#endif
 			}
 
 			GlobalUnlock (medium.hGlobal);
@@ -8435,7 +8473,10 @@ LONG_PTR WINAPI WindowProc (HWND hwnd, UINT message, WPARAM wParam, LPARAM lPara
 		break;
 	case WM_MOUSELEAVE:
 		{
-			// TODO: call frame->onMouseExited ();
+			CPoint where;
+			pFrame->getCurrentMouseLocation (where);
+			pFrame->onMouseExited (where, pFrame->getCurrentMouseButtons ());
+			return 0;
 		}
 		break;
 	case WM_MOUSEMOVE:

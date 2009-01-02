@@ -2714,7 +2714,8 @@ COptionMenu::~COptionMenu ()
 //------------------------------------------------------------------------
 void COptionMenu::setPrefixNumbers (long preCount)
 {
-	prefixNumbers = preCount;
+	if (preCount >= 0 && preCount <= 4)
+		prefixNumbers = preCount;
 }
 
 /**
@@ -3015,6 +3016,28 @@ void COptionMenu::removeItems ()
 	}
 	
 #if WINDOWS
+	#if GDIPLUS
+	// destroy item bitmaps
+	long idx = 0;
+	it = menuItems->begin ();
+	while (it != menuItems->end ())
+	{
+		if ((*it)->getIcon ())
+		{
+			MENUITEMINFO mInfo = {0};
+			mInfo.cbSize = sizeof (MENUITEMINFO);
+			mInfo.fMask = MIIM_BITMAP;
+			if (GetMenuItemInfo ((HMENU)platformControl, idx, TRUE, &mInfo))
+			{
+				if (mInfo.hbmpItem)
+					DeleteObject (mInfo.hbmpItem);
+			}
+		}
+		it++;
+		idx++;
+	}
+
+	#endif
 	// destroy the menu
 	if (platformControl)
 		DestroyMenu ((HMENU)platformControl);
@@ -3055,17 +3078,39 @@ void *COptionMenu::appendItems (long &offsetIdx)
 	while (it != menuItems->end ())
 	{
 		CMenuItem* item = (*it);
-		// TODO : prefix numbers and icons
-		UTF8StringHelper entryText (item->getTitle ());
 		if (item->isSeparator ())
 		{
 			if (ownerDraw)
-				AppendMenu ((HMENU)menu, MF_OWNERDRAW|MF_SEPARATOR, 0, entryText);
+				AppendMenu ((HMENU)menu, MF_OWNERDRAW|MF_SEPARATOR, 0, 0);
 			else
-				AppendMenu ((HMENU)menu, MF_SEPARATOR, 0, entryText);
+				AppendMenu ((HMENU)menu, MF_SEPARATOR, 0, 0);
 		}
 		else
 		{
+			char* titleWithPrefixNumbers = 0;
+			if (getPrefixNumbers ())
+			{
+				titleWithPrefixNumbers = (char*)malloc (strlen (item->getTitle ()) + 50);
+				switch (getPrefixNumbers ())
+				{
+					case 2:
+					{
+						sprintf (titleWithPrefixNumbers, "%1d %s", inc+1, item->getTitle ());
+						break;
+					}
+					case 3:
+					{
+						sprintf (titleWithPrefixNumbers, "%02d %s", inc+1, item->getTitle ());
+						break;
+					}
+					case 4:
+					{
+						sprintf (titleWithPrefixNumbers, "%03d %s", inc+1, item->getTitle ());
+						break;
+					}
+				}
+			}
+			UTF8StringHelper entryText (titleWithPrefixNumbers ? titleWithPrefixNumbers : item->getTitle ());
 			flags = ownerDraw ? MF_OWNERDRAW : MF_STRING;
 			if (nbEntries < 160 && nbItemsPerColumn > 0 && inc && !(inc % nbItemsPerColumn))
 				flags |= MF_MENUBARBREAK;
@@ -3093,7 +3138,24 @@ void *COptionMenu::appendItems (long &offsetIdx)
 				if (!(flags & MF_CHECKED))
 					flags |= MF_UNCHECKED;
 				AppendMenu ((HMENU)menu, flags, offset + inc, entryText);
+				if (item->getIcon ())
+				{
+					MENUITEMINFO mInfo = {0};
+					mInfo.cbSize = sizeof (MENUITEMINFO);
+					mInfo.fMask = MIIM_BITMAP;
+					#if GDIPLUS
+					Gdiplus::Bitmap* bitmap = item->getIcon ()->getBitmap ();
+					HBITMAP hBmp = NULL;
+					bitmap->GetHBITMAP (Gdiplus::Color (0, 0, 0, 0), &hBmp);
+					mInfo.hbmpItem = hBmp;
+					#else
+					mInfo.hbmpItem = item->getIcon ()->getHandle ();
+					#endif
+					SetMenuItemInfo ((HMENU)menu, offset + inc, TRUE, &mInfo);
+				}
 			}
+			if (titleWithPrefixNumbers)
+				free (titleWithPrefixNumbers);
 		}
 		inc++;
 		it++;
