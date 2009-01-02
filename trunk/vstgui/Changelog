@@ -1,3 +1,14 @@
+2009-01-02 arne
+
+	* fix a possible memory leak when compiling Cocoa support in
+	* removed some duplicated code
+	* removed some unused functions in vstgui.cpp (CColor2RGBColor, RGBColor2CColor)
+	* fix bugs in UTF8StringHelper
+	* Windows implementation calls frame->onMouseExited() now when the mouse leaves the window
+	* dropping text on Windows will use unicode text if VSTGUI_USES_UTF8 is enabled
+	* CNewFileSelector implementation for Windows Vista, older Windows versions still needs implementation
+	* implementation for missing COptionMenu features on Windows (Icons & prefix numbers)
+
 2008-12-07 arne
 
 	* fixes to cocoa tooltip implementation

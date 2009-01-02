@@ -4,7 +4,7 @@
 # Project related configuration options
 #---------------------------------------------------------------------------
 DOXYFILE_ENCODING      = UTF-8
-PROJECT_NAME           = vstgui
+PROJECT_NAME           = VSTGUI
 PROJECT_NUMBER         = 3.6
 OUTPUT_DIRECTORY       = ../Documentation
 CREATE_SUBDIRS         = NO
@@ -139,7 +139,9 @@ RECURSIVE              = NO
 EXCLUDE                = 
 EXCLUDE_SYMLINKS       = NO
 EXCLUDE_PATTERNS       = */aeffguieditor.* \
-                         */plugguieditor.*
+                         */plugguieditor.* \
+                         */cocoasupport.* \
+                         */winfileselector.*
 EXCLUDE_SYMBOLS        = 
 EXAMPLE_PATH           = ../
 EXAMPLE_PATTERNS       = *

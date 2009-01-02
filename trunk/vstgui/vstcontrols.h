@@ -508,6 +508,7 @@ protected:
 #if VSTGUI_ENABLE_DEPRECATED_METHODS
 //-----------------------------------------------------------------------------
 // COptionMenuScheme Declaration
+/// \deprecated
 /// \nosubgrouping
 //-----------------------------------------------------------------------------
 class COptionMenuScheme : public CBaseObject

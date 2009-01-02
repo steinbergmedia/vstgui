@@ -123,41 +123,6 @@ const char* CNewFileSelector::kSelectEndMessage = "CNewFileSelector Select End M
 //-----------------------------------------------------------------------------
 // CNewFileSelector Implementation
 //-----------------------------------------------------------------------------
-/*! @class CNewFileSelector
-@section usage Usage
-Running the file selector
-\code
-void MyClass::runFileSelector ()
-{
-	CNewFileSelector* selector = CNewFileSelector::create (getFrame (), CNewFileSelector::kSelectFile);
-	if (selector)
-	{
-		selector->addFileExtension (CFileExtension ("AIFF", "aif", "audio/aiff"));
-		selector->setDefaultExtension (CFileExtension ("WAVE", "wav"));
-		selector->setTitle("Choose An Audio File");
-		selector->run (this);
-		selector->forget ();
-	}
-}
-\endcode
-Getting results
-\code
-CMessageResult MyClass::notify (CBaseObject* sender, const char* message)
-{
-	if (message == CNewFileSelector::kSelectEndMessage)
-	{
-		CNewFileSelector* sel = dynamic_cast<CNewFileSelector*>(sender);
-		if (sel)
-		{
-			// do anything with the selected files here
-			return kMessageNotified;
-		}
-	}
-	return parent::notify (sender, message);
-}
-\endcode
-*/
-//-----------------------------------------------------------------------------
 CNewFileSelector::CNewFileSelector (CFrame* frame)
 : frame (frame)
 , defaultExtension (0)
