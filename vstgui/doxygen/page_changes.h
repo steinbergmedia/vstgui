@@ -30,6 +30,7 @@ For convenience the old method is still working, but should be replaced with the
 @subsection and_more_new and ...
 
 - Mac OS X 64 bit support via Cocoa. (new in 3.6)
+- New Fileselector class : VSTGUI::CNewFileSelector (new in 3.6)
 - VSTGUI::COptionMenu refactored. Supports icons for menu items. (new in 3.6)
 - View autoresizing support. (new in 3.6)
 - Bitmaps can be loaded either by number or by name (see VSTGUI::CBitmap)	(new in 3.5)
@@ -50,6 +51,7 @@ it compiles without changing the macro. All methods marked this way will be unav
 
 - COptionMenu was refactored and uses the CMenuItem class for menu items. Item flags are not encoded in the item title anymore.
 - CParamDisplay::setTxtFace () and CParamDisplay::getTxtFace () is gone. The text face is already in CFontRef.
+- You need to use the new CNewFileSelector class instead of CFileSelector if you want to use it on Mac 64 bit.
 
 @section code_changes_for_3_0 Code changes for existing VSTGUI 3.0 code
 
