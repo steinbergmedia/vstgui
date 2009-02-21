@@ -1,3 +1,8 @@
+2009-02-21 arne
+
+	* move methods only useable with VST in CFrame into the ENABLE_VST_EXTENSION_IN_VSTGUI macro
+	* can be compiled under Mac OS X 10.4 again
+
 2009-01-02 arne
 
 	* fix a possible memory leak when compiling Cocoa support in
