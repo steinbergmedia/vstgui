@@ -3540,8 +3540,10 @@ CFrame::CFrame (const CRect &inSize, void* inSystemWindow, VSTGUIEditorInterface
 , bFirstDraw (true)
 , bDropActive (false)
 , pFrameContext (0)
+#if ENABLE_VST_EXTENSION_IN_VSTGUI
 , bAddedWindow (false)
 , pVstWindow (0)
+#endif
 , defaultCursor (0)
 {
 	setOpenFlag (true);
@@ -3609,6 +3611,7 @@ CFrame::CFrame (const CRect &inSize, void* inSystemWindow, VSTGUIEditorInterface
 
 }
 
+#if ENABLE_VST_EXTENSION_IN_VSTGUI
 //-----------------------------------------------------------------------------
 /**
  * creates a custom window if VST host supports it (only possible if ENABLE_VST_EXTENSION_IN_VSTGUI)
@@ -3676,7 +3679,7 @@ CFrame::CFrame (const CRect& inSize, const char* inTitle, VSTGUIEditorInterface*
 	
 #endif
 
-	#if (ENABLE_VST_EXTENSION_IN_VSTGUI && !VST_FORCE_DEPRECATED)
+	#if !VST_FORCE_DEPRECATED
 	pVstWindow = (VstWindow*)malloc (sizeof (VstWindow));
 	strcpy (((VstWindow*)pVstWindow)->title, inTitle);
 	((VstWindow*)pVstWindow)->xPos   = (short)size.left;
@@ -3689,6 +3692,7 @@ CFrame::CFrame (const CRect& inSize, const char* inTitle, VSTGUIEditorInterface*
 	((VstWindow*)pVstWindow)->winHandle  = 0;
 	#endif
 }
+#endif
 
 #if DEBUG
 #include <typeinfo>
@@ -3751,11 +3755,14 @@ CFrame::~CFrame ()
 	GDIPlusGlobals::exit ();
 	#endif
 #endif
-	
+
+	#if ENABLE_VST_EXTENSION_IN_VSTGUI
 	if (bAddedWindow)
 		close ();
 	if (pVstWindow)
 		free (pVstWindow);
+	#endif
+	
 
 #if MAC_COCOA
 	if (nsView)
@@ -3782,6 +3789,7 @@ void CFrame::setCocoaMode (bool state)
 #endif
 
 
+#if ENABLE_VST_EXTENSION_IN_VSTGUI
 //-----------------------------------------------------------------------------
 /**
  * open custom window
@@ -3791,7 +3799,7 @@ void CFrame::setCocoaMode (bool state)
  */
 bool CFrame::open (CPoint* point)
 {
-#if (ENABLE_VST_EXTENSION_IN_VSTGUI && !VST_FORCE_DEPRECATED)
+#if (!VST_FORCE_DEPRECATED)
 	if (!bAddedWindow)
 		return false;
 	if (getOpenFlag ())
@@ -3834,7 +3842,7 @@ bool CFrame::open (CPoint* point)
  */
 bool CFrame::close ()
 {
-#if (ENABLE_VST_EXTENSION_IN_VSTGUI && !VST_FORCE_DEPRECATED)
+#if (!VST_FORCE_DEPRECATED)
 	if (!bAddedWindow || !getOpenFlag () || !pSystemWindow)
 		return false;
 
@@ -3848,6 +3856,7 @@ bool CFrame::close ()
 	return false;
 #endif
 }
+#endif // ENABLE_VST_EXTENSION_IN_VSTGUI
 
 //-----------------------------------------------------------------------------
 bool CFrame::initFrame (void* systemWin)
