@@ -39,6 +39,10 @@
 #if WIN32
 	#define WINDOWS 1
 #elif (__MWERKS__ || __APPLE_CC__)
+	#include <AvailabilityMacros.h>
+	#ifndef MAC_OS_X_VERSION_10_5
+		#define MAC_OS_X_VERSION_10_5 1050
+	#endif
 	#ifndef MAC_COCOA
 		#define MAC_COCOA (MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_5)
 	#endif
@@ -1352,7 +1356,9 @@ public:
 	//-----------------------------------------------------------------------------
 	//@{
 	CFrame (const CRect &size, void *pSystemWindow, VSTGUIEditorInterface *pEditor);
-	CFrame (const CRect &size, const char *pTitle, VSTGUIEditorInterface *pEditor, const long style = 0);
+	#if ENABLE_VST_EXTENSION_IN_VSTGUI
+	CFrame (const CRect &size, const char *pTitle, VSTGUIEditorInterface *pEditor, const long style = 0);	///< /deprecated
+	#endif
 	//@}
 	virtual ~CFrame ();
 
@@ -1360,8 +1366,10 @@ public:
 	/// \name CFrame Methods
 	//-----------------------------------------------------------------------------
 	//@{
-	virtual bool open (CPoint *pPoint = 0);
-	virtual bool close ();
+	#if ENABLE_VST_EXTENSION_IN_VSTGUI
+	virtual bool open (CPoint *pPoint = 0);	///< /deprecated
+	virtual bool close ();					///< /deprecated
+	#endif
 	virtual bool isOpen () const { return bOpenFlag; }
 
 	virtual void idle ();
@@ -1504,8 +1512,10 @@ protected:
 	//-------------------------------------------
 private:
 	CDrawContext *pFrameContext;
+	#if ENABLE_VST_EXTENSION_IN_VSTGUI
 	bool     bAddedWindow;
 	void     *pVstWindow;
+	#endif
 	void     *defaultCursor;
 };
 
