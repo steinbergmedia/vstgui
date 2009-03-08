@@ -55,7 +55,8 @@ enum {
 	kHidden,
 	kVisible,
 	kHiding,
-	kShowing
+	kShowing,
+	kForceVisible,
 };
 
 //------------------------------------------------------------------------
@@ -203,7 +204,7 @@ void CTooltipSupport::onMouseExited (CView* view, CFrame* frame)
 //------------------------------------------------------------------------
 void CTooltipSupport::onMouseMoved (CFrame* frame, const CPoint& where)
 {
-	if (currentView)
+	if (currentView && state != kForceVisible)
 	{
 		CRect r (lastMouseMove.x-2, lastMouseMove.y-2, lastMouseMove.x+2, lastMouseMove.y+2);
 		if (!r.pointInside (where))
@@ -227,6 +228,18 @@ void CTooltipSupport::onMouseMoved (CFrame* frame, const CPoint& where)
 				timer->setFireTime (200);
 				timer->start ();
 			}
+			else
+			{
+				#if DEBUGLOG
+				DebugPrint ("CTooltipSupport::onMouseMoved (%s) - state: %d\n", currentView->getClassName (), state);
+				#endif
+			}
+		}
+		else
+		{
+			#if DEBUGLOG
+			DebugPrint ("CTooltipSupport::onMouseMoved (%s) - small move\n", currentView->getClassName ());
+			#endif
 		}
 	}
 	lastMouseMove = where;
@@ -246,24 +259,39 @@ void CTooltipSupport::onMouseDown (CFrame* frame, const CPoint& where)
 //------------------------------------------------------------------------
 void CTooltipSupport::hideTooltip ()
 {
-	state = kHidden;
-	#if MAC_COCOA
-	if (frame->getNSView ())
+	if (state != kHidden)
 	{
-		nsViewRemoveTooltip (frame, false);
-		return;
+		state = kHidden;
+		#if MAC_COCOA
+		if (frame->getNSView ())
+		{
+			nsViewRemoveTooltip (frame, false);
+			return;
+		}
+		#endif
+		
+		#if MAC_CARBON
+		HMHideTag ();
+		#endif
+
+		#if WINDOWS
+		if (platformObject)
+		{
+			TOOLINFO ti = {0};
+		    ti.cbSize = sizeof(TOOLINFO);
+			ti.hwnd = (HWND)frame->getSystemWindow ();
+			ti.uId = 0;
+			ti.lpszText = 0;
+			SendMessage ((HWND)platformObject, TTM_UPDATETIPTEXT, 0, (LPARAM)&ti);
+			SendMessage ((HWND)platformObject, TTM_POP, 0, 0);
+		}
+
+		#endif
+
+		#if DEBUGLOG
+		DebugPrint ("CTooltipSupport::hideTooltip\n");
+		#endif
 	}
-	#endif
-	
-	#if MAC_CARBON
-	HMHideTag ();
-	#endif
-
-	#if WINDOWS
-	if (platformObject)
-		SendMessage ((HWND)platformObject, TTM_POP, 0, 0);
-
-	#endif
 }
 
 //------------------------------------------------------------------------
@@ -280,7 +308,7 @@ void CTooltipSupport::showTooltip ()
 		
 		if (tooltip)
 		{
-			state = kVisible;
+			state = kForceVisible;
 			#if MAC_COCOA
 			if (frame->getNSView ())
 			{
@@ -323,12 +351,15 @@ void CTooltipSupport::showTooltip ()
 				ti.uId = 0;
 				ti.rect = rc;
 				ti.lpszText = (TCHAR*)(const TCHAR*)tooltipText;
-				SendMessage ((HWND)platformObject, TTM_NEWTOOLRECT, 0, (LPARAM)&ti);
 				SendMessage ((HWND)platformObject, TTM_UPDATETIPTEXT, 0, (LPARAM)&ti);
+				SendMessage ((HWND)platformObject, TTM_NEWTOOLRECT, 0, (LPARAM)&ti);
  				SendMessage ((HWND)platformObject, TTM_POPUP, 0, 0);
 			}
 			#endif // WINDOWS
 			free (tooltip);
+			#if DEBUGLOG
+			DebugPrint ("CTooltipSupport::showTooltip (%s)\n", currentView->getClassName ());
+			#endif
 		}
 	}
 }
@@ -347,6 +378,11 @@ CMessageResult CTooltipSupport::notify (CBaseObject* sender, const char* msg)
 		else if (state == kShowing)
 		{
 			showTooltip ();
+			timer->setFireTime (100);
+		}
+		else if (state == kForceVisible)
+		{
+			state = kVisible;
 			timer->stop ();
 			timer->setFireTime (delay);
 		}
