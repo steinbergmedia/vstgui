@@ -1,3 +1,7 @@
+2009-03-08 arne
+
+	* fix nervous tooltips
+
 2009-02-21 arne
 
 	* move methods only useable with VST in CFrame into the ENABLE_VST_EXTENSION_IN_VSTGUI macro
