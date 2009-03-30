@@ -238,6 +238,36 @@ HIDDEN void invalidNSViewRect (void* nsView, const CRect& size)
 }
 
 //------------------------------------------------------------------------------------
+HIDDEN void nsViewScrollRect (void* nsView, const CRect& src, const CPoint& distance)
+{
+	NSView* view = (NSView*)nsView;
+	NSRect r = nsRectFromCRect (src);
+	NSSize d = NSMakeSize (distance.x, distance.y);
+	[view scrollRect:r by:d];
+	NSRect r2;
+	if (d.width > 0)
+	{
+		r2 = NSMakeRect (r.origin.x, r.origin.y, d.width, r.size.height);
+		[view setNeedsDisplayInRect:r2];
+	}
+	else if (d.width < 0)
+	{
+		r2 = NSMakeRect (r.origin.x + r.size.width + d.width, r.origin.y, -d.width, r.size.height);
+		[view setNeedsDisplayInRect:r2];
+	}
+	if (d.height > 0)
+	{
+		r2 = NSMakeRect (r.origin.x, r.origin.y, r.size.width, d.height);
+		[view setNeedsDisplayInRect:r2];
+	}
+	else if (d.height < 0)
+	{
+		r2 = NSMakeRect (r.origin.x, r.origin.y + r.size.height + d.height, r.size.width, -d.height);
+		[view setNeedsDisplayInRect:r2];
+	}
+}
+
+//------------------------------------------------------------------------------------
 HIDDEN void resizeNSView (void* nsView, const CRect& newSize)
 {
 	NSView* view = (NSView*)nsView;
