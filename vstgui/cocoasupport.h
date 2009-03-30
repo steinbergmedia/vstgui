@@ -49,6 +49,7 @@ void resizeNSView (void* nsView, const CRect& newSize);
 void getSizeOfNSView (void* nsView, CRect* rect);
 bool nsViewGetCurrentMouseLocation (void* nsView, CPoint& where);
 void nsViewSetMouseCursor (CCursorType type);
+void nsViewScrollRect (void* nsView, const CRect& src, const CPoint& distance);
 
 // used by CTextEdit
 void* addNSTextField (CFrame* frame, CTextEdit* edit);

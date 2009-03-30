@@ -209,11 +209,6 @@ static CGColorSpaceRef GetGenericRGBColorSpace ()
 
 END_NAMESPACE_VSTGUI
 
-#ifndef CGFLOAT_DEFINED
-#define CGFLOAT_DEFINED
-typedef float CGFloat;
-#endif
-
 #endif // MAC_COCOA
 
 //-----------------------------------------------------------------------------
@@ -236,6 +231,7 @@ long pSystemVersion;
 #endif
 
 #ifndef CGFLOAT_DEFINED
+#define CGFLOAT_DEFINED
 typedef float CGFloat;
 #endif
 
@@ -261,16 +257,6 @@ static inline void QuartzSetLineDash (CGContextRef context, CLineStyle style, CC
 static inline void QuartzSetupClip (CGContextRef context, const CRect clipRect);
 static inline double radians (double degrees) { return degrees * M_PI / 180; }
 
-#if !MAC_COCOA
-CGColorSpaceRef GetGenericRGBColorSpace ();
-
-// cache graphics importer
-static ComponentInstance bmpGI = 0;
-static ComponentInstance pngGI = 0;
-static ComponentInstance jpgGI = 0;
-static ComponentInstance pictGI = 0;
-#endif
-
 //-----------------------------------------------------------------------------
 
 long convertPoint2Angle (CPoint &pm, CPoint &pt);
@@ -281,6 +267,16 @@ void Rect2CRect (Rect &rr, CRect &cr);
 #if MAC_OLD_DRAG
 static void install_drop (CFrame* frame);
 static void remove_drop (CFrame* frame);
+#endif
+
+CGColorSpaceRef GetGenericRGBColorSpace ();
+
+#if !NO_QUICKDRAW && MAC_OS_X_VERSION_MIN_REQUIRED <= MAC_OS_X_VERSION_10_3
+// cache graphics importer
+static ComponentInstance bmpGI = 0;
+static ComponentInstance pngGI = 0;
+static ComponentInstance jpgGI = 0;
+static ComponentInstance pictGI = 0;
 #endif
 
 //-----------------------------------------------------------------------------
@@ -1378,8 +1374,8 @@ void CDrawContext::drawEllipse (const CRect &_rect, const CDrawStyle drawStyle)
 
 			CGRect cgRect = CGRectMake (rect.left, rect.top, rect.width (), rect.height ());
 			CGPoint center = CGPointMake (CGRectGetMidX (cgRect), CGRectGetMidY (cgRect));
-			float a = CGRectGetWidth (cgRect) / 2;
-			float b = CGRectGetHeight (cgRect) / 2;
+			CGFloat a = CGRectGetWidth (cgRect) / 2.;
+			CGFloat b = CGRectGetHeight (cgRect) / 2.;
 
 		    CGContextTranslateCTM (context, center.x, center.y);
 		    CGContextScaleCTM (context, a, b);
@@ -1392,7 +1388,7 @@ void CDrawContext::drawEllipse (const CRect &_rect, const CDrawStyle drawStyle)
 		}
 		else
 		{
-			float radius = rect.width () * 0.5f;
+			CGFloat radius = rect.width () * 0.5;
 			CGContextBeginPath (context);
 			CGContextAddArc (context, rect.left + radius, rect.top + radius, radius, radians (0), radians (360), 0);
 			CGContextClosePath (context);
@@ -1448,7 +1444,7 @@ void CDrawContext::drawPoint (const CPoint &_point, CColor color)
 }
 
 #if VSTGUI_USES_COREGRAPHICS
-static void addOvalToPath(CGContextRef c, CPoint center, float a, float b, float start_angle, float end_angle)
+static void addOvalToPath(CGContextRef c, CPoint center, CGFloat a, CGFloat b, CGFloat start_angle, CGFloat end_angle)
 {
 	CGContextSaveGState (c);
 	CGContextTranslateCTM (c, center.x, center.y);
@@ -1783,8 +1779,8 @@ void CDrawContext::fillEllipse (const CRect &_rect)
 
 		CGRect cgRect = CGRectMake (rect.left, rect.top, rect.width (), rect.height ());
 		CGPoint center = CGPointMake (CGRectGetMidX (cgRect), CGRectGetMidY (cgRect));
-		float a = CGRectGetWidth (cgRect) / 2;
-		float b = CGRectGetHeight (cgRect) / 2;
+		CGFloat a = CGRectGetWidth (cgRect) / 2.;
+		CGFloat b = CGRectGetHeight (cgRect) / 2.;
 
 	    CGContextTranslateCTM (context, center.x, center.y);
 	    CGContextScaleCTM (context, a, b);
@@ -2534,7 +2530,7 @@ CGContextRef createOffscreenBitmap (long width, long height, void** bits)
 		{
 			CGContextSaveGState (context);
 			CGContextSetShouldAntialias (context, false);
-			CGContextTranslateCTM (context, 0, (float)height);
+			CGContextTranslateCTM (context, 0, (CGFloat)height);
 			CGContextSetFillColorSpace (context, GetGenericRGBColorSpace ());
 			CGContextSetStrokeColorSpace (context, GetGenericRGBColorSpace ()); 
 			CGAffineTransform cgCTM = CGAffineTransformMake (1.0, 0.0, 0.0, -1.0, 0.0, 0.0);
@@ -2648,7 +2644,7 @@ COffscreenContext::COffscreenContext (CDrawContext* pContext, CBitmap* pBitmapBg
 			if (gCGContext)
 			{
 				CGContextSaveGState (gCGContext);
-				CGContextTranslateCTM (gCGContext, 0, (float)height);
+				CGContextTranslateCTM (gCGContext, 0, (CGFloat)height);
 				CGContextSetFillColorSpace (gCGContext, GetGenericRGBColorSpace ());
 				CGContextSetStrokeColorSpace (gCGContext, GetGenericRGBColorSpace ());
 				CGAffineTransform cgCTM = CGAffineTransformMake (1.0, 0.0, 0.0, -1.0, 0.0, 0.0);
@@ -5134,15 +5130,36 @@ void CFrame::scrollRect (const CRect& src, const CPoint& distance)
 	CRect rect (src);
 	rect.offset (size.left, size.top);
 
-	#if MAC_CARBON
-	CGRect cgRect = CGRectMake ((float)rect.left, (float)rect.top, (float)rect.getWidth (), (float)rect.getHeight ());
-	if (!(isWindowComposited ((WindowRef)pWindow) && HIViewScrollRect ((HIViewRef)getPlatformControl(), &cgRect, (float)distance.x, (float)distance.y) != noErr))
-		invalidRect (src);
-
-	#else
-	invalidRect (src);
-
+	#if MAC_COCOA
+	if (nsView)
+	{
+		nsViewScrollRect (nsView, src, distance);
+		return;
+	}
 	#endif
+	
+	#if MAC_CARBON
+	if (isWindowComposited ((WindowRef)pWindow))
+	{
+		if (distance.x > 0)
+			rect.right += distance.x;
+		else if (distance.x < 0)
+			rect.left += distance.x;
+		if (distance.y > 0)
+			rect.bottom += distance.y;
+		else if (distance.y < 0)
+			rect.top += distance.y;
+		CGRect cgRect = CGRectMake ((CGFloat)rect.left, (CGFloat)rect.top, (CGFloat)rect.getWidth (), (CGFloat)rect.getHeight ());
+		if (HIViewScrollRect ((HIViewRef)getPlatformControl(), &cgRect, (CGFloat)distance.x, (CGFloat)distance.y) == noErr)
+			return;
+	}
+	#endif
+
+	#if WINDOWS
+	// TODO: Windows native scrollRect implementation
+	#endif
+	
+	invalidRect (src);
 }
 
 //-----------------------------------------------------------------------------
@@ -7311,6 +7328,15 @@ public:
 		p->pos += count;
 	}
 
+	#if MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_5
+	static off_t skipForward (void *info, off_t count)
+	{
+		CDataProvider* p = (CDataProvider*)info;
+		p->pos += count;
+		return p->pos;
+	}
+	#endif
+
 	static void rewind (void* info)
 	{
 		CDataProvider* p = (CDataProvider*)info;
@@ -7324,7 +7350,6 @@ public:
 	}
 
 	unsigned long pos;
-//	CBitmap* bmp;
 	unsigned char* ptr;
 	CColor color;
 };
@@ -7361,9 +7386,15 @@ CGImageRef CBitmap::createCGImage (bool transparent)
 	
 	CGImageRef image = 0;
 	CGDataProviderRef provider = 0;
+	#if MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_5
+	static CGDataProviderSequentialCallbacks callbacks = { 0, CDataProvider::getBytes, CDataProvider::skipForward, CDataProvider::rewind, CDataProvider::releaseProvider };
+	if (transparent)
+		provider = CGDataProviderCreateSequential (new CDataProvider (pixels, transparentCColor), &callbacks);
+	#else
 	static CGDataProviderCallbacks callbacks = { CDataProvider::getBytes, CDataProvider::skipBytes, CDataProvider::rewind, CDataProvider::releaseProvider };
 	if (transparent)
 		provider = CGDataProviderCreate (new CDataProvider (pixels, transparentCColor), &callbacks);
+	#endif
 	else
 		provider = CGDataProviderCreateWithData (NULL, pixels, size, NULL);
 	CGImageAlphaInfo alphaInfo = kCGImageAlphaFirst;
@@ -7656,7 +7687,7 @@ void CBitmap::drawAlphaBlend (CDrawContext* pContext, CRect &rect, const CPoint 
 		if (context)
 		{
 			if (alpha != 255)
-				CGContextSetAlpha (context, (float)alpha / 255.f);
+				CGContextSetAlpha (context, (CGFloat)alpha / 255.);
 			
 			CGImageRef image = createCGImage ();
 
@@ -9016,7 +9047,7 @@ static CPoint GetMacDragMouse (CFrame* frame)
 		{
 			WindowRef window = (WindowRef)frame->getSystemWindow ();
 			QDGlobalToLocalPoint (GetWindowPort (window), &r);
-			location = CGPointMake ((float)r.h, (float)r.v);
+			location = CGPointMake ((CGFloat)r.h, (CGFloat)r.v);
 			HIViewRef fromView = NULL;
 			HIViewFindByID (HIViewGetRoot (window), kHIViewWindowContentID, &fromView);
 			HIViewConvertPoint (&location, fromView, view);
@@ -9024,7 +9055,7 @@ static CPoint GetMacDragMouse (CFrame* frame)
 		else
 		#endif
 		{
-			location = CGPointMake ((float)r.h, (float)r.v);
+			location = CGPointMake ((CGFloat)r.h, (CGFloat)r.v);
 			HIPointConvert (&location, kHICoordSpaceScreenPixel, NULL, kHICoordSpaceView, view);
 		}
 		where.x = (CCoord)location.x;

@@ -142,7 +142,20 @@ void CScrollContainer::setScrollOffset (CPoint newOffset, bool redraw)
 		CPoint p;
 		localToFrame (p);
 		scrollRect.offset (p.x, p.y);
-		getFrame ()->scrollRect (scrollRect, diff);
+		CRect visibleRect = getVisibleSize (CRect (0, 0, size.getWidth (), size.getHeight ()));
+		visibleRect.offset (p.x, p.y);
+		scrollRect.bound (visibleRect);
+
+		CPoint distance (diff.x, diff.y);
+		if (distance.x > 0)
+			scrollRect.right -= distance.x;
+		else if (distance.x < 0)
+			scrollRect.left -= distance.x;
+		if (distance.y > 0)
+			scrollRect.bottom -= distance.y;
+		else if (distance.y < 0)
+			scrollRect.top -= distance.y;
+		getFrame ()->scrollRect (scrollRect, distance);
 	}
 }
 
