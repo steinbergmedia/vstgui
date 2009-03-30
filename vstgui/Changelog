@@ -1,3 +1,9 @@
+2009-03-30 arne
+
+	* fix CFrame::scrollRect and CScrollView scrolling
+	* Cocoa implementation for CFrame::scrollRect
+	* fix some warnings when building for Mac OS X 10.5 or above
+
 2009-03-08 arne
 
 	* fix nervous tooltips

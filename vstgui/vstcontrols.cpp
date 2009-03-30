@@ -3057,7 +3057,9 @@ void COptionMenu::removeItems ()
 //------------------------------------------------------------------------
 void *COptionMenu::appendItems (long &offsetIdx)
 {
+#if WINDOWS || MAC_CARBON
 	bool multipleCheck = style & (kMultipleCheckStyle & ~kCheckStyle);
+#endif
 
 #if WINDOWS
 	void *menu = (void*)CreatePopupMenu ();

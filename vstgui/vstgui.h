@@ -1411,7 +1411,7 @@ public:
 
 	virtual void invalidate (const CRect &rect);
 
-	void scrollRect (const CRect& src, const CPoint& distance);		///< scroll rect
+	void scrollRect (const CRect& src, const CPoint& distance);		///< scroll src rect by distance
 	//@}
 
 	void invalid () { invalidRect (size); bDirty = false; }
