@@ -95,14 +95,6 @@ enum CControlEnum
 	kNoFrame			= 1 << 14
 };
 
-//---------------------------
-// Some defines for Menu item
-//---------------------------
-#define kMenuTitle     "-T"
-#define kMenuSeparator "-"
-#define kMenuDisable   "-G"
-#define kMenuSubMenu   "-M"
-
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 class CControlListener
