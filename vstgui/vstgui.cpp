@@ -216,6 +216,10 @@ END_NAMESPACE_VSTGUI
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 #if MAC
+//-----------------------------------------------------------------------------
+#include <QuickTime/QuickTime.h>
+#include <CoreServices/CoreServices.h>
+
 BEGIN_NAMESPACE_VSTGUI
 
 static bool createNSViewMode = false;
@@ -235,9 +239,9 @@ long pSystemVersion;
 typedef float CGFloat;
 #endif
 
-//-----------------------------------------------------------------------------
-#include <QuickTime/QuickTime.h>
-#include <CoreServices/CoreServices.h>
+#ifndef VSTGUI_NEW_BUNDLE_REF_DEFINITION	// You can define this in your preprocessor definitions and supply the following function somewhere in your code
+	CFBundleRef getBundleRef () { return (CFBundleRef)gBundleRef; }
+#endif
 
 static CFontDesc gSystemFont ("Lucida Grande", 12);
 static CFontDesc gNormalFontVeryBig ("Helvetica", 18);
@@ -7068,7 +7072,7 @@ bool CBitmap::loadFromResource (const CResourceDescription& resourceDesc)
 	pHandle = 0;
 	pMask = 0;
 	cgImage = 0;
-	if (gBundleRef)
+	if (getBundleRef ())
 	{
 		// find the bitmap in our Bundle. It must be in the form of bmp00123.png, where the resource id would be 123.
 		char filename [PATH_MAX];
@@ -7084,7 +7088,7 @@ bool CBitmap::loadFromResource (const CResourceDescription& resourceDesc)
 			while (url == NULL)
 			{
 				static CFStringRef resTypes [] = { CFSTR("png"), CFSTR("bmp"), CFSTR("jpg"), CFSTR("pict"), NULL };
-				url = CFBundleCopyResourceURL ((CFBundleRef)gBundleRef, cfStr, resourceDesc.type == CResourceDescription::kIntegerType ? resTypes[i] : 0, NULL);
+				url = CFBundleCopyResourceURL (getBundleRef (), cfStr, resourceDesc.type == CResourceDescription::kIntegerType ? resTypes[i] : 0, NULL);
 				if (resTypes[++i] == NULL)
 					break;
 			}
