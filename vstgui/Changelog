@@ -1,3 +1,9 @@
+2009-04-26 arne
+
+	* Cocoa drawing now draws all dirty rects seperatly instead of the union rect
+	* added another method to provide the BundleRef on Mac OS X (search for VSTGUI_NEW_BUNDLE_REF_DEFINITION)
+	* removed old unused menu item definitions from vstcontrols.h
+
 2009-03-30 arne
 
 	* fix CFrame::scrollRect and CScrollView scrolling

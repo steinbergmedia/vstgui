@@ -181,12 +181,14 @@ END_NAMESPACE_VSTGUI
 	#include <ApplicationServices/ApplicationServices.h>
 #endif
 
-#if MAC_CARBON || MAC_COCOA
+#if MAC
 	BEGIN_NAMESPACE_VSTGUI
-	extern void* gBundleRef;	///< must be set to the current CFBundleRef somewhere early in the code
+	extern CFBundleRef getBundleRef ();
+	#ifndef VSTGUI_NEW_BUNDLE_REF_DEFINITION	// You can define this in your preprocessor definitions and supply the above function somewhere in your code if you don't want to use the following gBundleRef variable.
+		extern void* gBundleRef;	///< must be set to the current CFBundleRef somewhere early in the code
+	#endif
 	END_NAMESPACE_VSTGUI
 #endif
-
 //----------------------------------------------------
 struct VstKeyCode;
 
