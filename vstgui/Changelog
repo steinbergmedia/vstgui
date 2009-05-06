@@ -1,3 +1,8 @@
+2009-05-06 arne
+
+	* fix: calling GDIPlusGlobals::exit () in the destructor of CBitmap after the platform gdiplus bitmap is destroyed not before
+	* notify all parent views when a view takes or looses focus
+	
 2009-04-26 arne
 
 	* Cocoa drawing now draws all dirty rects seperatly instead of the union rect
