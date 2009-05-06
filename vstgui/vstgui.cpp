@@ -2999,6 +2999,8 @@ protected:
 //-----------------------------------------------------------------------------
 const char* kMsgCheckIfViewContainer	= "kMsgCheckIfViewContainer";
 const char* kMsgLooseFocus = "LooseFocus";
+const char* kMsgNewFocusView = "kMsgNewFocusView";
+const char* kMsgOldFocusView = "kMsgOldFocusView";
 //-----------------------------------------------------------------------------
 // CView
 //-----------------------------------------------------------------------------
@@ -5042,12 +5044,28 @@ void CFrame::setFocusView (CView *pView)
 	if (pFocusView && pFocusView->wantsFocus ())
 	{
 		pFocusView->setDirty ();
+
+		CView* receiver = pFocusView->getParentView ();
+		while (receiver != this && receiver != 0)
+		{
+			receiver->notify (pFocusView, kMsgNewFocusView);
+			receiver = receiver->getParentView ();
+		}
 	}
 
 	if (pOldFocusView)
 	{
 		if (pOldFocusView->wantsFocus ())
+		{
 			pOldFocusView->setDirty ();
+
+			CView* receiver = pOldFocusView->getParentView ();
+			while (receiver != this && receiver != 0)
+			{
+				receiver->notify (pOldFocusView, kMsgOldFocusView);
+				receiver = receiver->getParentView ();
+			}
+		}
 		pOldFocusView->looseFocus ();
 	}
 	recursion = false;
@@ -6821,10 +6839,10 @@ CBitmap::CBitmap (CGImageRef platformBitmap)
 //-----------------------------------------------------------------------------
 CBitmap::~CBitmap ()
 {
+	dispose ();
 	#if GDIPLUS
 	GDIPlusGlobals::exit ();
 	#endif
-	dispose ();
 }
 
 //-----------------------------------------------------------------------------
