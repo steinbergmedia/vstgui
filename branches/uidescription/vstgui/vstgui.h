@@ -637,7 +637,7 @@ public:
 	//@{
 	virtual void forget () { nbReference--; if (nbReference == 0) delete this; }	///< decrease refcount and delete object if refcount == 0
 	virtual void remember () { nbReference++; }										///< increase refcount
-	long getNbReference () const { return nbReference; }							///< get refcount
+	virtual long getNbReference () const { return nbReference; }					///< get refcount
 	//@}
 	
 	//-----------------------------------------------------------------------------

@@ -702,6 +702,7 @@ public:
 	VSTGUI_DEPRECATED(virtual void mouse (CDrawContext* pContext, CPoint& where, long button = -1);)
 	virtual bool onWheel (const CPoint& where, const float& distance, const long& buttons);
 	virtual long onKeyDown (VstKeyCode& keyCode);
+	virtual void setViewSize (CRect &rect, bool invalid = true);
 
 	virtual CMouseEventResult onMouseDown (CPoint& where, const long& buttons);
 	virtual CMouseEventResult onMouseUp (CPoint& where, const long& buttons);
@@ -767,6 +768,7 @@ public:
 	virtual bool isDirty () const;
 	virtual void draw (CDrawContext* pContext);
 	void setHeightOfOneImage (const CCoord& height);
+	void setBackground (CBitmap *background);
 
 	CLASS_METHODS(CAnimKnob, CKnob)
 
@@ -1043,6 +1045,7 @@ public:
 	virtual void setOffset (const CPoint& val) { offset = val; }
 	virtual CPoint getOffset () const { return offset; }
 
+	virtual void setStyle (long style);
 	virtual long getStyle () const { return style; }
 
 	virtual void     setHandle (CBitmap* pHandle);

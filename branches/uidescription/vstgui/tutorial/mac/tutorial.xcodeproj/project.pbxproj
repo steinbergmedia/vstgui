@@ -63,7 +63,7 @@
 		F405CE460B048C59008E3886 /* KnobHandle.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = KnobHandle.png; path = ../resource/KnobHandle.png; sourceTree = SOURCE_ROOT; };
 		F405CF000B0490CF008E3886 /* TutorialParameters.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = TutorialParameters.h; path = ../source/TutorialParameters.h; sourceTree = SOURCE_ROOT; };
 		F405D04C0B04E47B008E3886 /* tutorial 2.vst */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "tutorial 2.vst"; sourceTree = BUILT_PRODUCTS_DIR; };
-		F405D04D0B04E47B008E3886 /* Info2.plist */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = Info2.plist; sourceTree = "<group>"; };
+		F405D04D0B04E47B008E3886 /* Info2.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info2.plist; sourceTree = "<group>"; };
 		F405D0710B04E59A008E3886 /* Tutorial2Editor.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = Tutorial2Editor.cpp; path = ../source/Tutorial2Editor.cpp; sourceTree = SOURCE_ROOT; };
 		F405D0820B04E7B3008E3886 /* KnobHandleHighlight.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = KnobHandleHighlight.png; path = ../resource/KnobHandleHighlight.png; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
@@ -219,6 +219,7 @@
 		089C1669FE841209C02AAC07 /* Project object */ = {
 			isa = PBXProject;
 			buildConfigurationList = 4FADC23708B4156C00ABE55E /* Build configuration list for PBXProject "tutorial" */;
+			compatibilityVersion = "Xcode 2.4";
 			hasScannedForEncodings = 1;
 			mainGroup = 089C166AFE841209C02AAC07 /* tutorial */;
 			projectDirPath = "";

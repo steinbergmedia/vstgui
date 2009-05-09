@@ -135,13 +135,15 @@ FILE_PATTERNS          = *.c \
                          *.PHP3 \
                          *.M \
                          *.MM
-RECURSIVE              = NO
+RECURSIVE              = YES
 EXCLUDE                = 
 EXCLUDE_SYMLINKS       = NO
 EXCLUDE_PATTERNS       = */aeffguieditor.* \
                          */plugguieditor.* \
                          */cocoasupport.* \
-                         */winfileselector.*
+                         */winfileselector.* \
+                         */expat/* \
+                         */tutorial/*
 EXCLUDE_SYMBOLS        = 
 EXAMPLE_PATH           = ../
 EXAMPLE_PATTERNS       = *

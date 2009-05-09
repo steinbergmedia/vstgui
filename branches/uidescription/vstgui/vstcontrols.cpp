@@ -461,6 +461,14 @@ CKnob::~CKnob ()
 }
 
 //------------------------------------------------------------------------
+void CKnob::setViewSize (CRect &rect, bool invalid)
+{
+	CControl::setViewSize (rect, invalid);
+	radius = (float)(size.right - size.left) / 2.f;
+	compute ();
+}
+
+//------------------------------------------------------------------------
 void CKnob::draw (CDrawContext *pContext)
 {
 	if (pBackground)
@@ -1603,7 +1611,7 @@ void CTextEdit::parentSizeChanged ()
 void CTextEdit::setViewSize (CRect& newSize, bool invalid)
 {
 	#if MAC_COCOA
-	if (getFrame ()->getNSView ())
+	if (getFrame () && getFrame ()->getNSView ())
 	{
 		CView::setViewSize (newSize, invalid);
 		moveNSTextField (platformControl, this);
@@ -3524,9 +3532,11 @@ According to the value, a specific subbitmap is displayed. The different subbitm
 CAnimKnob::CAnimKnob (const CRect& size, CControlListener* listener, long tag, CBitmap* background, const CPoint &offset)
 : CKnob (size, listener, tag, background, 0, offset)
 , bInverseBitmap (false)
+, subPixmaps (0)
 {
 	heightOfOneImage = size.height ();
-	subPixmaps = (short)(background->getHeight () / heightOfOneImage);
+	if (background)
+		subPixmaps = (short)(background->getHeight () / heightOfOneImage);
 	inset = 0;
 }
 
@@ -3570,6 +3580,16 @@ void CAnimKnob::setHeightOfOneImage (const CCoord& height)
 	IMultiBitmapControl::setHeightOfOneImage (height);
 	if (pBackground && heightOfOneImage)
 		subPixmaps = (short)(pBackground->getHeight () / heightOfOneImage);
+}
+
+//-----------------------------------------------------------------------------------------------
+void CAnimKnob::setBackground (CBitmap *background)
+{
+	CKnob::setBackground (background);
+	if (heightOfOneImage == 0)
+		heightOfOneImage = size.height ();
+	if (background && heightOfOneImage)
+		subPixmaps = (short)(background->getHeight () / heightOfOneImage);
 }
 
 //-----------------------------------------------------------------------------------------------
@@ -4673,6 +4693,7 @@ CSlider::CSlider (const CRect &rect, CControlListener* listener, long tag, long 
 , offset (offset)
 , pHandle (handle)
 , style (style)
+, minPos (iMinPos)
 , bFreeClick (true)
 {
 	setDrawTransparentHandle (true);
@@ -4696,16 +4717,15 @@ CSlider::CSlider (const CRect &rect, CControlListener* listener, long tag, long 
 	{
 		minPos = iMinPos - size.left;
 		rangeHandle = (CCoord)iMaxPos - iMinPos;
-		CPoint p (0, 0);
-		setOffsetHandle (p);
 	}
 	else
 	{
 		minPos = iMinPos - size.top;
 		rangeHandle = (CCoord)iMaxPos - iMinPos;
-		CPoint p (0, 0);
-		setOffsetHandle (p);
 	}
+
+	CPoint p (0, 0);
+	setOffsetHandle (p);
 
 	zoomFactor = 10.f;
 
@@ -4793,23 +4813,30 @@ CSlider::~CSlider ()
 }
 
 //------------------------------------------------------------------------
+void CSlider::setStyle (long _style)
+{
+	style =_style;
+}
+
+//------------------------------------------------------------------------
 void CSlider::setViewSize (CRect& rect, bool invalid)
 {
+	CControl::setViewSize (rect, invalid);
 	if (style & kHorizontal)
 	{
-		minPos += rect.left - size.left;
-		rangeHandle += rect.getWidth () - size.getWidth ();
+		minPos = rect.left - size.left;
+		rangeHandle = rect.getWidth () - (widthOfSlider + offsetHandle.h*2);
 	}
 	else
 	{
-		minPos += rect.top - size.top;
-		rangeHandle += rect.getHeight () - size.getHeight ();
+		minPos = rect.top - size.top;
+		rangeHandle = rect.getHeight () - (heightOfSlider + offsetHandle.v * 2);
 	}
 	
 	widthControl  = rect.width ();
 	heightControl = rect.height ();
 
-	CControl::setViewSize (rect, invalid);
+	setOffsetHandle (offsetHandle);
 }
 
 //------------------------------------------------------------------------
