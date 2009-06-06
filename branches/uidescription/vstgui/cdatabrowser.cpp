@@ -117,6 +117,7 @@ CDataBrowser::CDataBrowser (const CRect& size, CFrame* pParent, IDataBrowser* db
 {
 	setTransparency (true);
 	dbView = new CDataBrowserView (CRect (0, 0, 0, 0), db, this, style);
+	dbView->setAutosizeFlags (kAutosizeLeft|kAutosizeRight|kAutosizeBottom);
 	addView (dbView);
 	CBaseObject* obj = dynamic_cast<CBaseObject*>(db);
 	if (obj)
@@ -129,6 +130,19 @@ CDataBrowser::~CDataBrowser ()
 	CBaseObject* obj = dynamic_cast<CBaseObject*>(db);
 	if (obj)
 		obj->forget ();
+}
+
+//-----------------------------------------------------------------------------------------------
+void CDataBrowser::setAutosizeFlags (long flags)
+{
+	CScrollView::setAutosizeFlags (flags);
+}
+
+//-----------------------------------------------------------------------------------------------
+void CDataBrowser::setViewSize (CRect& size, bool invalid)
+{
+	CScrollView::setViewSize (size, invalid);
+	recalculateLayout (true);
 }
 
 //-----------------------------------------------------------------------------------------------
@@ -218,6 +232,7 @@ void CDataBrowser::recalculateLayout (bool rememberSelection)
 			dbHeaderContainer->setTransparency (true);
 			headerSize.offset (-headerSize.left, -headerSize.top);
 			dbHeader = new CDataBrowserHeader (headerSize, db, this, style);
+			dbHeader->setAutosizeFlags (kAutosizeLeft|kAutosizeRight|kAutosizeTop);
 			dbHeaderContainer->addView (dbHeader);
 			CViewContainer::addView (dbHeaderContainer);
 		}

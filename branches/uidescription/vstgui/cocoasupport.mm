@@ -188,7 +188,7 @@ HIDDEN NSColor* nsColorFromCColor (const CColor& color)
 }
 
 //------------------------------------------------------------------------------------
-static NSImage* imageFromCGImageRef (CGImageRef image)
+HIDDEN NSImage* imageFromCGImageRef (CGImageRef image)
 {
     NSRect imageRect = NSMakeRect (0.0, 0.0, 0.0, 0.0);
     CGContextRef imageContext = nil;
@@ -480,7 +480,14 @@ static VstKeyCode CreateVstKeyCodeFromNSEvent (NSEvent* theEvent)
 					case 75:				kc.virt = VKEY_DIVIDE; break;
 					case 76:				kc.virt = VKEY_ENTER; break;
 					default:
-						kc.character = c; break;
+					{
+						if ((c >= 'A') && (c <= 'Z'))
+							c += ('a' - 'A');
+						else
+							c = tolower (c);
+						kc.character = c;
+						break;
+					}
 				}
 			}
 		}
@@ -490,11 +497,11 @@ static VstKeyCode CreateVstKeyCodeFromNSEvent (NSEvent* theEvent)
 	if (modifiers & NSShiftKeyMask)
 		kc.modifier |= MODIFIER_SHIFT;
 	if (modifiers & NSCommandKeyMask)
-		kc.modifier |= MODIFIER_COMMAND;
+		kc.modifier |= MODIFIER_CONTROL;
 	if (modifiers & NSAlternateKeyMask)
 		kc.modifier |= MODIFIER_ALTERNATE;
 	if (modifiers & NSControlKeyMask)
-		kc.modifier |= MODIFIER_CONTROL;
+		kc.modifier |= MODIFIER_COMMAND;
 
 	return kc;
 }
@@ -542,6 +549,8 @@ static id VSTGUI_NSView_Init (id self, SEL _cmd, void* _frame, const void* _size
 		
 		NSTrackingArea* trackingArea = [[[NSTrackingArea alloc] initWithRect:[self frame] options:NSTrackingMouseEnteredAndExited|NSTrackingMouseMoved|NSTrackingActiveInActiveApp|NSTrackingInVisibleRect owner:self userInfo:nil] autorelease];
 		[self addTrackingArea: trackingArea];
+		
+		[self setFocusRingType:NSFocusRingTypeNone];
 	}
 	return self;
 }
@@ -610,7 +619,7 @@ static BOOL VSTGUI_NSView_onMouseDown (id self, SEL _cmd, NSEvent* theEvent)
 		buttons |= kDoubleClick;
 	CPoint p = pointFromNSPoint (nsPoint);
 	CMouseEventResult result = _vstguiframe->onMouseDown (p, buttons);
-	return (result == kMouseEventHandled) ? YES : NO;
+	return (result != kMouseEventNotHandled) ? YES : NO;
 }
 
 //------------------------------------------------------------------------------------
@@ -634,7 +643,7 @@ static BOOL VSTGUI_NSView_onMouseUp (id self, SEL _cmd, NSEvent* theEvent)
 		buttons |= kApple;
 	CPoint p = pointFromNSPoint (nsPoint);
 	CMouseEventResult result = _vstguiframe->onMouseUp (p, buttons);
-	return (result == kMouseEventHandled) ? YES : NO;
+	return (result != kMouseEventNotHandled) ? YES : NO;
 }
 
 //------------------------------------------------------------------------------------
@@ -658,7 +667,7 @@ static BOOL VSTGUI_NSView_onMouseMoved (id self, SEL _cmd, NSEvent* theEvent)
 		buttons |= kApple;
 	CPoint p = pointFromNSPoint (nsPoint);
 	CMouseEventResult result = _vstguiframe->onMouseMoved (p, buttons);
-	return (result == kMouseEventHandled) ? YES : NO;
+	return (result != kMouseEventNotHandled) ? YES : NO;
 }
 
 //------------------------------------------------------------------------------------
@@ -798,6 +807,12 @@ static void VSTGUI_NSView_mouseExited (id self, SEL _cmd, NSEvent* theEvent)
 }
 
 //------------------------------------------------------------------------------------
+static BOOL VSTGUI_NSView_acceptsFirstMouse (id self, SEL _cmd, NSEvent* event)
+{
+	return YES; // click through
+}
+
+//------------------------------------------------------------------------------------
 static BOOL VSTGUI_NSView_performKeyEquivalent (id self, SEL _cmd, NSEvent* theEvent)
 {
 	CFrame* _vstguiframe = (CFrame*)OBJC_GET_VALUE(self, _vstguiframe);
@@ -822,7 +837,7 @@ static void VSTGUI_NSView_keyDown (id self, SEL _cmd, NSEvent* theEvent)
 	long res = _vstguiframe->onKeyDown (keyCode);
 	if (res != 1 && keyCode.virt == VKEY_TAB)
 	{
-		if (keyCode.modifier & MODIFIER_SHIFT)
+		if (keyCode.modifier & kShift)
 			[[self window] selectKeyViewPrecedingView:self];
 		else
 			[[self window] selectKeyViewFollowingView:self];
@@ -1120,8 +1135,8 @@ static id VSTGUI_NSTextField_Init (id self, SEL _cmd, void* textEdit)
 
 		NSString* text = [NSString stringWithCString:te->getText () encoding:NSUTF8StringEncoding];
 
-		[self setBackgroundColor:nsColorFromCColor (te->getBackColor ())];
-		[self setTextColor:nsColorFromCColor (te->getFontColor ())];
+		[self setBackgroundColor:[nsColorFromCColor (te->getBackColor ()) colorWithAlphaComponent:1]];
+		[self setTextColor:[nsColorFromCColor (te->getFontColor ()) colorWithAlphaComponent:1]];
 		[self setAllowsEditingTextAttributes:NO];
 		[self setImportsGraphics:NO];
 		[self setStringValue:text];
@@ -1175,6 +1190,7 @@ static void VSTGUI_NSTextField_SyncSize (id self, SEL _cmd)
 //------------------------------------------------------------------------------------
 static void VSTGUI_NSTextField_RemoveFromSuperview (id self, SEL _cmd)
 {
+	OBJC_SET_VALUE (self, _textEdit, 0);
 	NSView* containerView = [self superview];
 	if (containerView)
 	{
@@ -1193,30 +1209,42 @@ static BOOL VSTGUI_NSTextField_DoCommandBySelector (id self, SEL _cmd, NSControl
 		return NO;
 	if (commandSelector == @selector (insertNewline:))
 	{
+		te->remember ();
 		te->bWasReturnPressed = true;
 		te->looseFocus ();
+		te->forget ();
 	}
 	else if (commandSelector == @selector (insertTab:))
 	{
-		if (!te->getFrame ()->advanceNextFocusView (te, false))
+		NSView* nsView = (NSView*)te->getFrame ()->getNSView ();
+		VstKeyCode keyCode = {0};
+		keyCode.virt = VKEY_TAB;
+		if (te->getFrame ()->onKeyDown (keyCode) == -1)
 		{
-			[[self window] makeFirstResponder:(NSView*)te->getFrame ()->getNSView ()];
-			[[self window] selectKeyViewFollowingView:(NSView*)te->getFrame ()->getNSView ()];
+			[[self window] makeFirstResponder:nsView];
+			[[self window] selectKeyViewFollowingView:nsView];
 		}
 		return YES;
 	}
 	else if (commandSelector == @selector (insertBacktab:))
 	{
-		if (!te->getFrame ()->advanceNextFocusView (te, true))
+		NSView* nsView = (NSView*)te->getFrame ()->getNSView ();
+		VstKeyCode keyCode = {0};
+		keyCode.virt = VKEY_TAB;
+		keyCode.modifier = MODIFIER_SHIFT;
+		if (te->getFrame ()->onKeyDown (keyCode) == -1)
 		{
-			[[self window] makeFirstResponder:(NSView*)te->getFrame ()->getNSView ()];
-			[[self window] selectKeyViewPrecedingView:(NSView*)te->getFrame ()->getNSView ()];
+			[[self window] makeFirstResponder:nsView];
+			[[self window] selectKeyViewPrecedingView:nsView];
 		}
 		return YES;
 	}
 	else if (commandSelector == @selector (cancelOperation:))
 	{
-		te->looseFocus ();
+		VstKeyCode keyCode = {0};
+		keyCode.virt = VKEY_ESCAPE;
+		if (te->getFrame ()->onKeyDown (keyCode) == -1)
+			te->looseFocus ();
 		return YES; // return YES, otherwise it beeps !!!
 	}
 	return NO;
@@ -1487,9 +1515,9 @@ GenerateUniqueVSTGUIClasses::GenerateUniqueVSTGUIClasses ()
 	res = class_addMethod (viewClass, @selector(canBecomeKeyView), IMP (VSTGUI_NSView_canBecomeKeyView), "B@:@:");
 	res = class_addMethod (viewClass, @selector(isOpaque), IMP (VSTGUI_NSView_isOpaque), "B@:@:");
 	const char* nsRectEncoded = @encode(NSRect);
-	char drawRectSig[100];
-	sprintf (drawRectSig, "v@:@:%s:", nsRectEncoded);
-	res = class_addMethod (viewClass, @selector(drawRect:), IMP (VSTGUI_NSView_drawRect), drawRectSig);
+	char funcSig[100];
+	sprintf (funcSig, "v@:@:%s:", nsRectEncoded);
+	res = class_addMethod (viewClass, @selector(drawRect:), IMP (VSTGUI_NSView_drawRect), funcSig);
 	res = class_addMethod (viewClass, @selector(onMouseDown:), IMP (VSTGUI_NSView_onMouseDown), "B@:@:^:");
 	res = class_addMethod (viewClass, @selector(onMouseUp:), IMP (VSTGUI_NSView_onMouseUp), "B@:@:^:");
 	res = class_addMethod (viewClass, @selector(onMouseMoved:), IMP (VSTGUI_NSView_onMouseMoved), "B@:@:^:");
@@ -1506,6 +1534,7 @@ GenerateUniqueVSTGUIClasses::GenerateUniqueVSTGUIClasses ()
 	res = class_addMethod (viewClass, @selector(scrollWheel:), IMP (VSTGUI_NSView_scrollWheel), "v@:@:^:");
 	res = class_addMethod (viewClass, @selector(mouseEntered:), IMP (VSTGUI_NSView_mouseEntered), "v@:@:^:");
 	res = class_addMethod (viewClass, @selector(mouseExited:), IMP (VSTGUI_NSView_mouseExited), "v@:@:^:");
+	res = class_addMethod (viewClass, @selector(acceptsFirstMouse:), IMP (VSTGUI_NSView_acceptsFirstMouse), "B@:@:^:");
 	res = class_addMethod (viewClass, @selector(performKeyEquivalent:), IMP (VSTGUI_NSView_performKeyEquivalent), "B@:@:^:");
 	res = class_addMethod (viewClass, @selector(keyDown:), IMP (VSTGUI_NSView_keyDown), "v@:@:^:");
 	res = class_addMethod (viewClass, @selector(keyUp:), IMP (VSTGUI_NSView_keyUp), "v@:@:^:");

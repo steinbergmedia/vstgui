@@ -154,6 +154,7 @@ CTabView::CTabView (const CRect& size, CFrame* parent, CBitmap* tabBitmap, CBitm
 		tabSize.right = tabBitmap->getWidth ();
 		tabSize.bottom = tabBitmap->getHeight ();
 	}
+	setTransparency (true);
 }
 
 //-----------------------------------------------------------------------------
@@ -169,6 +170,7 @@ CTabView::CTabView (const CRect& size, CFrame* parent, const CRect& tabSize, CBi
 , lastChild (0)
 , currentChild (0)
 {
+	setTransparency (true);
 }
 
 //-----------------------------------------------------------------------------
@@ -179,6 +181,12 @@ CTabView::~CTabView ()
 	removeAllTabs ();
 	if (tabBitmap)
 		tabBitmap->forget ();
+}
+
+//-----------------------------------------------------------------------------
+void CTabView::setAutosizeFlags (long flags)
+{
+	CViewContainer::setAutosizeFlags (flags);
 }
 
 //-----------------------------------------------------------------------------
@@ -204,22 +212,26 @@ bool CTabView::addTab (CView* view, CControl* button)
 	CViewContainer* tabContainer = dynamic_cast<CViewContainer*>(getView (0));
 	if (tabContainer == 0)
 	{
-		long asf = kAutosizeAll | kAutosizeColumn;
+		long asf = kAutosizeLeft | kAutosizeTop | kAutosizeRight | kAutosizeColumn;
 		CRect tsc (0, 0, size.getWidth (), tabSize.getHeight () / 2);
 		switch (tabPosition)
 		{
 			case kPositionBottom:
-				tsc.offset (0, size.getHeight () - tabSize.getHeight () / 2); break;
+			{
+				asf = kAutosizeLeft | kAutosizeBottom | kAutosizeRight | kAutosizeColumn;
+				tsc.offset (0, size.getHeight () - tabSize.getHeight () / 2);
+				break;
+			}
 			case kPositionLeft:
 			{
-				asf = kAutosizeAll | kAutosizeRow;
+				asf = kAutosizeLeft | kAutosizeTop | kAutosizeBottom | kAutosizeRow;
 				tsc.setWidth (tabSize.getWidth ());
 				tsc.setHeight (size.getHeight ());
 				break;
 			}
 			case kPositionRight:
 			{
-				asf = kAutosizeAll | kAutosizeRow;
+				asf = kAutosizeRight | kAutosizeTop | kAutosizeBottom | kAutosizeRow;
 				tsc.setWidth (size.getWidth ());
 				tsc.left = tsc.right - tabSize.getWidth ();
 				tsc.setHeight (size.getHeight ());
@@ -237,17 +249,22 @@ bool CTabView::addTab (CView* view, CControl* button)
 		case kPositionTop:
 			ts.offset (tabSize.getWidth () * numberOfChilds, 0); break;
 		case kPositionBottom:
-			ts.offset (tabSize.getWidth () * numberOfChilds, size.getHeight () - tabSize.getHeight () / 2); break;
+			ts.offset (tabSize.getWidth () * numberOfChilds, 0); break;
 		case kPositionLeft:
 			ts.offset (0, tabSize.getHeight () / 2 * numberOfChilds); break;
 		case kPositionRight:
-			ts.offset (size.getWidth () - tabSize.getWidth (), tabSize.getHeight () / 2 * numberOfChilds); break;
+			ts.offset (0, tabSize.getHeight () / 2 * numberOfChilds); break;
 	}
 	button->setViewSize (ts, false);
 	button->setMouseableArea (ts);
 	button->setListener (this);
 	button->setTag (numberOfChilds + kTabButtonTagStart);
 	tabContainer->addView (button);
+
+	CRect tabViewSize;
+	getTabViewSize (tabViewSize);
+	view->setViewSize (tabViewSize);
+	view->setMouseableArea (tabViewSize);
 
 	CTabChildView* v = new CTabChildView (view);
 	v->button = button;
@@ -367,9 +384,32 @@ void CTabView::setCurrentChild (CTabChildView* childView)
 }
 
 //-----------------------------------------------------------------------------
+void CTabView::drawBackgroundRect (CDrawContext *pContext, CRect& _updateRect)
+{
+	CRect oldClip = pContext->getClipRect (oldClip);
+	CRect updateRect (_updateRect);
+	CViewContainer* tabContainer = dynamic_cast<CViewContainer*>(getView (0));
+	if (tabContainer)
+	{
+		CRect tcRect = tabContainer->getViewSize ();
+		if (updateRect.top < tcRect.bottom)
+			updateRect.top = tcRect.bottom;
+	}
+	pContext->setClipRect (updateRect);
+	CViewContainer::drawBackgroundRect (pContext, updateRect);
+	pContext->setClipRect (oldClip);
+}
+
+//-----------------------------------------------------------------------------
 void CTabView::valueChanged (CControl *pControl)
 {
 	selectTab (pControl->getTag () - kTabButtonTagStart);
+}
+
+//-----------------------------------------------------------------------------
+void CTabView::setTabViewInsets (const CPoint& inset)
+{
+	tabViewInset = inset;
 }
 
 //-----------------------------------------------------------------------------
@@ -388,6 +428,7 @@ CRect& CTabView::getTabViewSize (CRect& rect) const
 		case kPositionRight:
 			rect.right -= tabSize.getWidth (); break;
 	}
+	rect.inset (tabViewInset.x, tabViewInset.y);
 	return rect;
 }
 
@@ -437,11 +478,11 @@ void CTabView::alignTabs (TabAlignment alignment)
 	if (tabPosition == kPositionTop)
 		ts.offset (offset, 0);
 	else if (tabPosition == kPositionBottom)
-		ts.offset (offset, size.getHeight () - tabSize.getHeight () / 2);
+		ts.offset (offset, 0);
 	else if (tabPosition == kPositionLeft)
 		ts.offset (0, offset);
 	else if (tabPosition == kPositionRight)
-		ts.offset (size.getWidth () - tabSize.getWidth (), offset);
+		ts.offset (0, offset);
 	CTabChildView* v = firstChild;
 	while (v)
 	{
@@ -460,9 +501,6 @@ void CTabView::alignTabs (TabAlignment alignment)
 //-----------------------------------------------------------------------------
 void CTabView::setViewSize (CRect &rect, bool invalid)
 {
-	if (rect == getViewSize ())
-		return;
-
 	if (rect == getViewSize ())
 		return;
 

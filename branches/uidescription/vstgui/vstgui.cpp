@@ -243,6 +243,8 @@ typedef float CGFloat;
 	CFBundleRef getBundleRef () { return (CFBundleRef)gBundleRef; }
 #endif
 
+#define VSTGUI_USES_CORE_TEXT	(MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_5)
+
 static CFontDesc gSystemFont ("Lucida Grande", 12);
 static CFontDesc gNormalFontVeryBig ("Helvetica", 18);
 static CFontDesc gNormalFontBig ("Helvetica", 14);
@@ -497,10 +499,10 @@ void CFontDesc::freePlatformFont ()
 {
 	if (platformFont)
 	{
-		#if (MAC && MAC_CARBON && MAC_OS_X_VERSION_MIN_REQUIRED < MAC_OS_X_VERSION_10_5)
+		#if (MAC && !VSTGUI_USES_CORE_TEXT)
 		ATSUDisposeStyle ((ATSUStyle)platformFont);
 
-		#elif (MAC && MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_5)
+		#elif (MAC && VSTGUI_USES_CORE_TEXT)
 		CFRelease (platformFont);
 		
 		#elif GDIPLUS
@@ -572,7 +574,7 @@ void* CFontDesc::getPlatformFont ()
 	if (platformFont)
 		return platformFont;
 
-	#if (MAC && MAC_CARBON && MAC_OS_X_VERSION_MIN_REQUIRED < MAC_OS_X_VERSION_10_5)
+	#if (MAC && !VSTGUI_USES_CORE_TEXT)
 	ATSUStyle atsuStyle;
 	OSStatus status = ATSUCreateStyle (&atsuStyle);
 	if (status != noErr)
@@ -594,7 +596,7 @@ void* CFontDesc::getPlatformFont ()
 		status = ATSUSetAttributes (atsuStyle, 5, theTags, theSizes, theValues);
 		platformFont = (void*)atsuStyle;
 	}
-	#elif (MAC && MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_5)
+	#elif (MAC && VSTGUI_USES_CORE_TEXT)
 	CFStringRef fontNameRef = CFStringCreateWithCString (0, name, kCFStringEncodingUTF8);
 	if (fontNameRef)
 	{
@@ -613,7 +615,7 @@ void* CFontDesc::getPlatformFont ()
 				desiredTrait |= kCTFontItalicTrait;
 				traitMask |= kCTFontItalicTrait;
 			}
-			CTFontRef fontRef = CTFontCreateCopyWithSymbolicTraits ((CTFontRef)platformFont, 0.0, NULL, desiredTrait, traitMask);
+			CTFontRef fontRef = CTFontCreateCopyWithSymbolicTraits ((CTFontRef)platformFont, size, NULL, desiredTrait, traitMask);
 			if (fontRef)
 			{
 				CFRelease ((CTFontRef)platformFont);
@@ -665,6 +667,42 @@ void* CFontDesc::getPlatformFont ()
 	#endif
 
 	return platformFont;
+}
+
+//-----------------------------------------------------------------------------
+double CFontDesc::getAscent ()
+{
+	#if VSTGUI_USES_CORE_TEXT
+	return CTFontGetAscent ((CTFontRef)getPlatformFont ());
+	#endif
+	return -1.;
+}
+
+//-----------------------------------------------------------------------------
+double CFontDesc::getDescent ()
+{
+	#if VSTGUI_USES_CORE_TEXT
+	return CTFontGetDescent ((CTFontRef)getPlatformFont ());
+	#endif
+	return -1.;
+}
+
+//-----------------------------------------------------------------------------
+double CFontDesc::getLeading ()
+{
+	#if VSTGUI_USES_CORE_TEXT
+	return CTFontGetLeading ((CTFontRef)getPlatformFont ());
+	#endif
+	return -1.;
+}
+
+//-----------------------------------------------------------------------------
+double CFontDesc::getCapHeight ()
+{
+	#if VSTGUI_USES_CORE_TEXT
+	return CTFontGetCapHeight ((CTFontRef)getPlatformFont ());
+	#endif
+	return -1.;
 }
 
 //-----------------------------------------------------------------------------
@@ -1530,7 +1568,8 @@ void CDrawContext::drawArc (const CRect &_rect, const float _startAngle, const f
 
 		CGContextBeginPath (context);
 		addOvalToPath (context, CPoint (rect.left + rect.width () / 2, rect.top + rect.height () / 2), rect.width () / 2, rect.height () / 2, -_startAngle, -_endAngle);
-
+		if (drawStyle == kDrawFilled || kDrawFilledAndStroked)
+			CGContextAddLineToPoint (context, rect.left + rect.width () / 2, rect.top + rect.height () / 2);
 		CGContextDrawPath (context, m);
 		releaseCGContext (context);
 	}
@@ -2023,7 +2062,7 @@ CCoord CDrawContext::getStringWidthUTF8 (const char* string)
 		return result;
 
 	#if VSTGUI_USES_COREGRAPHICS
-	#if (MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_5)
+	#if VSTGUI_USES_CORE_TEXT
 	CTFontRef fontRef = (CTFontRef)font->getPlatformFont ();
 	if (fontRef == 0)
 		return result;
@@ -2116,7 +2155,7 @@ void CDrawContext::drawStringUTF8 (const char* string, const CPoint& _point, boo
 	point.offset (offset.h, offset.v);
 
 	#if VSTGUI_USES_COREGRAPHICS
-	#if (MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_5)
+	#if VSTGUI_USES_CORE_TEXT
 	CTFontRef fontRef = (CTFontRef)font->getPlatformFont ();
 	if (fontRef == 0)
 		return;
@@ -2219,7 +2258,11 @@ void CDrawContext::drawStringUTF8 (const char* string, const CRect& _rect, const
 	
 	CRect rect (_rect);
 
-	rect.bottom -= rect.height ()/2 - font->getSize () / 2 + 1;
+	double capHeight = font->getCapHeight ();
+	if (capHeight > 0.)
+		rect.bottom -= (rect.height ()/2 - capHeight / 2);
+	else
+		rect.bottom -= (rect.height ()/2 - font->getSize () / 2) + 1;
 	if (hAlign != kLeftText)
 	{
 		CCoord stringWidth = getStringWidthUTF8 (string);
@@ -5024,7 +5067,15 @@ void CFrame::onViewRemoved (CView* pView)
 	if (pMouseOverView == pView)
 		pMouseOverView = 0;
 	if (pFocusView == pView)
-		pFocusView = 0;
+		setFocusView (0);
+	if (pView->isTypeOf ("CViewContainer"))
+	{
+		CViewContainer* container = (CViewContainer*)pView;
+		if (container->isChild (pMouseOverView, true))
+			pMouseOverView = 0;
+		if (container->isChild (pFocusView, true))
+			setFocusView (0);
+	}
 }
 
 //-----------------------------------------------------------------------------
@@ -5043,7 +5094,7 @@ void CFrame::setFocusView (CView *pView)
 	pFocusView = pView;
 	if (pFocusView && pFocusView->wantsFocus ())
 	{
-		pFocusView->setDirty ();
+		pFocusView->invalid ();
 
 		CView* receiver = pFocusView->getParentView ();
 		while (receiver != this && receiver != 0)
@@ -5057,7 +5108,7 @@ void CFrame::setFocusView (CView *pView)
 	{
 		if (pOldFocusView->wantsFocus ())
 		{
-			pOldFocusView->setDirty ();
+			pOldFocusView->invalid ();
 
 			CView* receiver = pOldFocusView->getParentView ();
 			while (receiver != this && receiver != 0)
@@ -5068,6 +5119,8 @@ void CFrame::setFocusView (CView *pView)
 		}
 		pOldFocusView->looseFocus ();
 	}
+	if (pFocusView && pFocusView->wantsFocus ())
+		pFocusView->takeFocus ();
 	recursion = false;
 }
 
@@ -5576,6 +5629,8 @@ bool CViewContainer::addView (CView* pView, CRect &mouseableArea, bool mouseEnab
  */
 bool CViewContainer::removeAll (const bool &withForget)
 {
+	mouseDownView = 0;
+	currentDragView = 0;
 	CCView *pV = pFirstView;
 	while (pV)
 	{
@@ -5607,6 +5662,10 @@ bool CViewContainer::removeAll (const bool &withForget)
  */
 bool CViewContainer::removeView (CView *pView, const bool &withForget)
 {
+	if (pView == mouseDownView)
+		mouseDownView = 0;
+	if (pView == currentDragView)
+		currentDragView = 0;
 	CCView *pV = pFirstView;
 	while (pV)
 	{
@@ -5656,16 +5715,24 @@ bool CViewContainer::removeView (CView *pView, const bool &withForget)
  */
 bool CViewContainer::isChild (CView* pView) const
 {
+	return isChild (pView, false);
+}
+
+//-----------------------------------------------------------------------------
+bool CViewContainer::isChild (CView *pView, bool deep) const
+{
 	bool found = false;
 
 	CCView* pV = pFirstView;
-	while (pV)
+	while (pV && !found)
 	{
 		if (pView == pV->pView)
 		{
 			found = true;
 			break;
 		}
+		if (deep && pV->pView->isTypeOf ("CViewContainer"))
+			found = ((CViewContainer*)pV->pView)->isChild (pView);
 		pV = pV->pNext;
 	}
 	return found;
@@ -5791,6 +5858,8 @@ void CViewContainer::drawBackgroundRect (CDrawContext* pContext, CRect& _updateR
 	}
 	else if ((backgroundColor.alpha != 255 && bTransparencyEnabled) || !bTransparencyEnabled)
 	{
+		pContext->setDrawMode (kCopyMode);
+		pContext->setLineWidth (1);
 		pContext->setFillColor (backgroundColor);
 		pContext->setFrameColor (backgroundColor);
 		CRect r (size);
@@ -6244,7 +6313,6 @@ bool CViewContainer::advanceNextFocusView (CView* oldFocus, bool reverse)
 			if (pV->wantsFocus ())
 			{
 				getFrame ()->setFocusView (pV);
-				pV->takeFocus ();
 				return true;
 			}
 			else if (pV->isTypeOf ("CViewContainer"))
@@ -6536,146 +6604,139 @@ protected:
 	unsigned long resSize;
 };
 #endif
-#if WINDOWS && GDIPLUS
-class ResourceStream : public IStream
+#if WINDOWS
+ResourceStream::ResourceStream ()
+: streamPos (0)
+, resData (0)
+, resSize (0)
+, _refcount (1)
 {
-public:
-	ResourceStream ()
-	: streamPos (0)
-	, resData (0)
-	, resSize (0)
-	, _refcount (1)
-	{
-	}
+}
 
-	bool open (const CResourceDescription& resourceDesc)
+bool ResourceStream::open (const CResourceDescription& resourceDesc, const char* type)
+{
+	HRSRC rsrc = 0;
+	if (resourceDesc.type == CResourceDescription::kIntegerType)
+		rsrc = FindResourceA (GetInstance (), MAKEINTRESOURCEA (resourceDesc.u.id), type);
+	else
+		rsrc = FindResourceA (GetInstance (), resourceDesc.u.name, type);
+	if (rsrc)
 	{
-		HRSRC rsrc = 0;
-		if (resourceDesc.type == CResourceDescription::kIntegerType)
-			rsrc = FindResourceA (GetInstance (), MAKEINTRESOURCEA (resourceDesc.u.id), "PNG");
-		else
-			rsrc = FindResourceA (GetInstance (), resourceDesc.u.name, "PNG");
-		if (rsrc)
+		resSize = SizeofResource (GetInstance (), rsrc);
+		HGLOBAL resDataLoad = LoadResource (GetInstance (), rsrc);
+		if (resDataLoad)
 		{
-			resSize = SizeofResource (GetInstance (), rsrc);
-			HGLOBAL resDataLoad = LoadResource (GetInstance (), rsrc);
-			if (resDataLoad)
-			{
-				resData = LockResource (resDataLoad);
-				return true;
-			}
+			resData = LockResource (resDataLoad);
+			return true;
 		}
-		return false;
 	}
+	return false;
+}
 
-	virtual HRESULT STDMETHODCALLTYPE Read (void *pv, ULONG cb, ULONG *pcbRead)
+HRESULT STDMETHODCALLTYPE ResourceStream::Read (void *pv, ULONG cb, ULONG *pcbRead)
+{
+	int readSize = min (resSize - streamPos, cb);
+	if (readSize > 0)
 	{
-		if (streamPos + cb <= resSize)
-		{
-			memcpy (pv, ((unsigned char*)resData+streamPos), cb);
-			streamPos += cb;
-			if (pcbRead)
-				*pcbRead = cb;
-			return S_OK;
-		}
-		return S_FALSE;
-	}
-    
-    virtual HRESULT STDMETHODCALLTYPE Write (const void *pv, ULONG cb, ULONG *pcbWritten) { return E_NOTIMPL; }
-
-    virtual HRESULT STDMETHODCALLTYPE Seek (LARGE_INTEGER dlibMove, DWORD dwOrigin, ULARGE_INTEGER *plibNewPosition)
-	{
-		switch(dwOrigin)
-		{
-			case STREAM_SEEK_SET:
-			{
-				if (dlibMove.QuadPart < resSize)
-				{
-					streamPos = (unsigned long)dlibMove.QuadPart;
-					if (plibNewPosition)
-						plibNewPosition->QuadPart = streamPos;
-					return S_OK;
-				}
-				break;
-			}
-			case STREAM_SEEK_CUR:
-			{
-				if (streamPos + dlibMove.QuadPart < resSize && streamPos + dlibMove.QuadPart >= 0)
-				{
-					streamPos += (long)dlibMove.QuadPart;
-					if (plibNewPosition)
-						plibNewPosition->QuadPart = streamPos;
-					return S_OK;
-				}
-				break;
-			}
-			case STREAM_SEEK_END:
-			{
-				break;
-			}
-			default:   
-				return STG_E_INVALIDFUNCTION;
-			break;
-		}
-		return S_FALSE;
-	}
-    
-    virtual HRESULT STDMETHODCALLTYPE SetSize (ULARGE_INTEGER libNewSize) { return E_NOTIMPL; }
-    
-    virtual HRESULT STDMETHODCALLTYPE CopyTo (IStream *pstm, ULARGE_INTEGER cb, ULARGE_INTEGER *pcbRead, ULARGE_INTEGER *pcbWritten) { return E_NOTIMPL; }
-    
-    virtual HRESULT STDMETHODCALLTYPE Commit (DWORD grfCommitFlags) { return E_NOTIMPL; }
-    
-    virtual HRESULT STDMETHODCALLTYPE Revert (void) 
-	{ 
-		streamPos = 0;
-		return S_OK; 
-	}
-    
-    virtual HRESULT STDMETHODCALLTYPE LockRegion (ULARGE_INTEGER libOffset, ULARGE_INTEGER cb, DWORD dwLockType) { return E_NOTIMPL; }
-    
-    virtual HRESULT STDMETHODCALLTYPE UnlockRegion (ULARGE_INTEGER libOffset, ULARGE_INTEGER cb, DWORD dwLockType) { return E_NOTIMPL; }
-    
-    virtual HRESULT STDMETHODCALLTYPE Stat (STATSTG *pstatstg, DWORD grfStatFlag)
-	{
-		pstatstg->cbSize.QuadPart = resSize;
+		memcpy (pv, ((unsigned char*)resData+streamPos), readSize);
+		streamPos += readSize;
+		if (pcbRead)
+			*pcbRead = readSize;
 		return S_OK;
 	}
-    
-    virtual HRESULT STDMETHODCALLTYPE Clone (IStream **ppstm) { return E_NOTIMPL; }
+	if (pcbRead)
+		*pcbRead = 0;
+	return S_FALSE;
+}
 
-	virtual HRESULT STDMETHODCALLTYPE QueryInterface(REFIID iid, void ** ppvObject)
-    { 
-        if (iid == __uuidof(IUnknown)
-            || iid == __uuidof(IStream)
-            || iid == __uuidof(ISequentialStream))
-        {
-            *ppvObject = static_cast<IStream*>(this);
-            AddRef();
-            return S_OK;
-        } else
-            return E_NOINTERFACE; 
-    }
+HRESULT STDMETHODCALLTYPE ResourceStream::Write (const void *pv, ULONG cb, ULONG *pcbWritten) { return E_NOTIMPL; }
 
-    virtual ULONG STDMETHODCALLTYPE AddRef(void) 
-    { 
-        return (ULONG)InterlockedIncrement(&_refcount); 
-    }
+HRESULT STDMETHODCALLTYPE ResourceStream::Seek (LARGE_INTEGER dlibMove, DWORD dwOrigin, ULARGE_INTEGER *plibNewPosition)
+{
+	switch(dwOrigin)
+	{
+		case STREAM_SEEK_SET:
+		{
+			if (dlibMove.QuadPart < resSize)
+			{
+				streamPos = (unsigned long)dlibMove.QuadPart;
+				if (plibNewPosition)
+					plibNewPosition->QuadPart = streamPos;
+				return S_OK;
+			}
+			break;
+		}
+		case STREAM_SEEK_CUR:
+		{
+			if (streamPos + dlibMove.QuadPart < resSize && streamPos + dlibMove.QuadPart >= 0)
+			{
+				streamPos += (long)dlibMove.QuadPart;
+				if (plibNewPosition)
+					plibNewPosition->QuadPart = streamPos;
+				return S_OK;
+			}
+			break;
+		}
+		case STREAM_SEEK_END:
+		{
+			break;
+		}
+		default:   
+			return STG_E_INVALIDFUNCTION;
+		break;
+	}
+	return S_FALSE;
+}
 
-    virtual ULONG STDMETHODCALLTYPE Release(void) 
+HRESULT STDMETHODCALLTYPE ResourceStream::SetSize (ULARGE_INTEGER libNewSize) { return E_NOTIMPL; }
+
+HRESULT STDMETHODCALLTYPE ResourceStream::CopyTo (IStream *pstm, ULARGE_INTEGER cb, ULARGE_INTEGER *pcbRead, ULARGE_INTEGER *pcbWritten) { return E_NOTIMPL; }
+
+HRESULT STDMETHODCALLTYPE ResourceStream::Commit (DWORD grfCommitFlags) { return E_NOTIMPL; }
+
+HRESULT STDMETHODCALLTYPE ResourceStream::Revert (void) 
+{ 
+	streamPos = 0;
+	return S_OK; 
+}
+
+HRESULT STDMETHODCALLTYPE ResourceStream::LockRegion (ULARGE_INTEGER libOffset, ULARGE_INTEGER cb, DWORD dwLockType) { return E_NOTIMPL; }
+
+HRESULT STDMETHODCALLTYPE ResourceStream::UnlockRegion (ULARGE_INTEGER libOffset, ULARGE_INTEGER cb, DWORD dwLockType) { return E_NOTIMPL; }
+
+HRESULT STDMETHODCALLTYPE ResourceStream::Stat (STATSTG *pstatstg, DWORD grfStatFlag)
+{
+	pstatstg->cbSize.QuadPart = resSize;
+	return S_OK;
+}
+
+HRESULT STDMETHODCALLTYPE ResourceStream::Clone (IStream **ppstm) { return E_NOTIMPL; }
+
+HRESULT STDMETHODCALLTYPE ResourceStream::QueryInterface(REFIID iid, void ** ppvObject)
+{ 
+    if (iid == __uuidof(IUnknown)
+        || iid == __uuidof(IStream)
+        || iid == __uuidof(ISequentialStream))
     {
-        ULONG res = (ULONG) InterlockedDecrement(&_refcount);
-        if (res == 0) 
-            delete this;
-        return res;
-    }
+        *ppvObject = static_cast<IStream*>(this);
+        AddRef();
+        return S_OK;
+    } else
+        return E_NOINTERFACE; 
+}
 
-protected:
-	HGLOBAL resData;
-	unsigned long streamPos;
-	unsigned long resSize;
-	long _refcount;
-};
+ULONG STDMETHODCALLTYPE ResourceStream::AddRef(void) 
+{ 
+    return (ULONG)InterlockedIncrement(&_refcount); 
+}
+
+ULONG STDMETHODCALLTYPE ResourceStream::Release(void) 
+{
+    ULONG res = (ULONG) InterlockedDecrement(&_refcount);
+    if (res == 0) 
+        delete this;
+    return res;
+}
 #endif
 
 //-----------------------------------------------------------------------------
@@ -7060,7 +7121,7 @@ bool CBitmap::loadFromResource (const CResourceDescription& resourceDesc)
 	{
 #if GDIPLUS
 		ResourceStream* resourceStream = new ResourceStream;
-		if (resourceStream->open (resourceDesc))
+		if (resourceStream->open (resourceDesc, "PNG"))
 			pBitmap = Gdiplus::Bitmap::FromStream (resourceStream, TRUE);
 		resourceStream->Release ();
 		if (!pBitmap)
@@ -9477,7 +9538,6 @@ pascal OSStatus CFrame::carbonEventHandler (EventHandlerCallRef inHandlerCallRef
 						if (code == kControlFocusNoPart)
 						{
 							frame->hasFocus = false;
-							//frame->setFocusView (NULL);
 						}
 						else
 						{

@@ -126,6 +126,8 @@ public:
 	virtual void beginTextEdit (long row, long column, const char* initialText);	///< starts a text edit for a cell
 	//@}
 
+	void setAutosizeFlags (long flags);
+	void setViewSize (CRect& size, bool invalid);
 protected:
 	void valueChanged (CControl *pControl);
 	CMessageResult notify (CBaseObject* sender, const char* message);

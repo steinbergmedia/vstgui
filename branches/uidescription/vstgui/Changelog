@@ -1,3 +1,29 @@
+2009-06-06 arne
+
+	* make CDataBrowser autosize aware
+	* CScrollView: when there is a new focus view in the scroll view, the scroll view automatically make this view visible now
+	* CScrollView: don't use CViewContainer drawBackgroundRect, instead it draws it itself
+	* CScroolView: fixes to scrolling when used with VSTGUI_FLOAT_COORDINATES
+	* CTabView: autosize fixes
+	* CTabView: tab views are now resized to the size of the tab view minus the size of the tab buttons
+	* CTabView: add a view inset point to add a gap between the tabview and it's children
+	* COnOffButton is now a focus view (if it has focus you can change the value of it with the return key)
+	* CParamDisplay: new CPoint member textInset which is used to inset the size for drawing the text
+	* add tag value to CMenuItem
+	* changed the constructors of CMenuItem
+	* changed CParamDisplay::setBackOffset() to take a const CPoint reference instead of a CPoint reference
+	* added CParamDisplay::getBackOffset()
+	* COptionMenu can now be used simpler for on the fly context menus. (Empty constructor + popup method)
+	* fix CViewContainer::drawBackgroundRect when no background bitmap but a color is drawn (sometimes the context draw state was not as expected)
+	* CFontDesc got some metric methods (only implemented yet for CoreText on Mac OS X)
+	* CDrawContext::drawArc() should now draw exactly the same on Windows and Mac OS X
+	* fixes to the focus handling in CFrame
+	* CViewContainer new method: isChild (CView* view, bool deep)
+	* ResourceStream class can now be used outside of vstgui.cpp
+	* Cocoa: fix for wrong key modifier. CONTROL and COMMAND were swapped
+	* Cocoa: make view click-through
+	* Cocoa: many more bug fixes
+	
 2009-05-06 arne
 
 	* fix: calling GDIPlusGlobals::exit () in the destructor of CBitmap after the platform gdiplus bitmap is destroyed not before

@@ -173,7 +173,8 @@ public:
 	virtual void setListener (CControlListener* l) { listener = l; }
 	//@}
 
-	virtual void setBackOffset (CPoint& offset);
+	virtual void setBackOffset (const CPoint& offset);
+	virtual const CPoint& getBackOffset () const { return backOffset; }
 	virtual void copyBackOffset ();
 
 	virtual void  setWheelInc (float val) { wheelInc = val; }
@@ -240,8 +241,8 @@ public:
 	virtual ~COnOffButton ();
 
 	enum COnOffButtonStyle {
-		kPreListenerUpdate,			///< listener will be called after doIdleStuff was called
-		kPostListenerUpdate,		///< listener will be called before doIdleStuff is called
+		kPreListenerUpdate,			///< listener will be called after doIdleStuff was called \deprecated does not do anything anymore
+		kPostListenerUpdate,		///< listener will be called before doIdleStuff is called \deprecated does not do anything anymore
 	};
 
 	//-----------------------------------------------------------------------------
@@ -256,6 +257,7 @@ public:
 	virtual void draw (CDrawContext*);
 	VSTGUI_DEPRECATED(virtual void mouse (CDrawContext* pContext, CPoint& where, long button = -1);)
 	virtual CMouseEventResult onMouseDown (CPoint& where, const long& buttons);
+	virtual long onKeyDown (VstKeyCode& keyCode);
 
 	CLASS_METHODS(COnOffButton, CControl)
 protected:
@@ -307,6 +309,9 @@ public:
 	virtual void setHoriAlign (CHoriTxtAlign hAlign);
 	CHoriTxtAlign getHoriAlign () const { return horiTxtAlign; }
 
+	virtual void setTextInset (const CPoint& p) { textInset = p; }
+	CPoint getTextInset () const { return textInset; }
+
 	virtual void setStringConvert (void (*convert) (float value, char* string));
 	virtual void setStringConvert (void (*convert) (float value, char* string, void* userDta), void* userData);
 	virtual void setString2FloatConvert (void (*convert) (char* string, float& output));
@@ -338,6 +343,7 @@ protected:
 	CColor		backColor;
 	CColor		frameColor;
 	CColor		shadowColor;
+	CPoint		textInset;
 	bool		bTextTransparencyEnabled;
 	bool		bAntialias;
 };
@@ -456,8 +462,9 @@ public:
 	/// \name Constructor
 	//-----------------------------------------------------------------------------
 	//@{
-	CMenuItem (const char* title, long flags = kNoFlags, const char* keycode = 0, long keyModifiers = 0, CBitmap* icon = 0);
+	CMenuItem (const char* title, const char* keycode = 0, long keyModifiers = 0, CBitmap* icon = 0, long flags = kNoFlags);
 	CMenuItem (const char* title, COptionMenu* submenu, CBitmap* icon = 0);
+	CMenuItem (const char* title, long tag);
 	CMenuItem (const CMenuItem& item);
 	//@}
 	~CMenuItem ();
@@ -474,6 +481,7 @@ public:
 	virtual void setIsTitle (bool state = true);						///< set menu item title state
 	virtual void setIsSeparator (bool state = true);					///< set menu item separator state
 	virtual void setIcon (CBitmap* icon);								///< set menu item icon
+	virtual void setTag (long tag);										///< set menu item tag
 
 	bool isEnabled () const { return !(flags & kDisabled); }			///< returns whether the item is enabled or not
 	bool isChecked () const { return (flags & kChecked) != 0; }				///< returns whether the item is checked or not
@@ -485,6 +493,7 @@ public:
 	const char* getKeycode () const { return keycode; }					///< returns the keycode of the item
 	COptionMenu* getSubmenu () const { return submenu; }				///< returns the submenu of the item
 	CBitmap* getIcon () const { return icon; }							///< returns the icon of the item
+	long getTag () const { return tag; }								///< returns the tag of the item
 	//@}
 
 //------------------------------------------------------------------------
@@ -495,6 +504,7 @@ protected:
 	CBitmap* icon;
 	long flags;
 	long keyModifiers;
+	long tag;
 };
 
 #if VSTGUI_ENABLE_DEPRECATED_METHODS
@@ -567,6 +577,7 @@ public:
 	/// \name Constructor
 	//-----------------------------------------------------------------------------
 	//@{
+	COptionMenu ();
 	COptionMenu (const CRect& size, CControlListener* listener, long tag, CBitmap* background = 0, CBitmap* bgWhenClick = 0, const long style = 0);
 	COptionMenu (const COptionMenu& menu);
 	//@}
@@ -606,6 +617,7 @@ public:
 
 	COptionMenu* getSubMenu (long idx) const;																///< get a submenu
 
+	bool popup (CFrame* frame, const CPoint& frameLocation);												///< pops up menu at frameLocation
 #if MAC_CARBON
 	short   getMenuID () const { return menuID; }
 #endif
@@ -1038,6 +1050,7 @@ public:
 	//-----------------------------------------------------------------------------
 	//@{
 	virtual void setDrawTransparentHandle (bool val) { bDrawTransparentEnabled = val; }
+	virtual bool getDrawTransparentHandle () const { return bDrawTransparentEnabled; }
 	virtual void setFreeClick (bool val) { bFreeClick = val; }
 	virtual bool getFreeClick () const { return bFreeClick; }
 	virtual void setOffsetHandle (const CPoint& val);

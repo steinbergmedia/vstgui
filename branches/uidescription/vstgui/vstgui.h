@@ -669,7 +669,7 @@ public:
 	~CFontDesc ();
 
 	//-----------------------------------------------------------------------------
-	/// \name CFontDesc Methods
+	/// \name Size, Name and Style Methods
 	//-----------------------------------------------------------------------------
 	//@{
 	const char* getName () const { return name; }		///< get the name of the font
@@ -679,6 +679,16 @@ public:
 	void setName (const char* newName);					///< set the name of the font
 	void setSize (CCoord newSize);						///< set the height of the font
 	void setStyle (long newStyle);						///< set the style of the font \sa CTxtFace
+	//@}
+
+	//-----------------------------------------------------------------------------
+	/// \name Font Metrics Methods
+	//-----------------------------------------------------------------------------
+	//@{
+	double getAscent ();								///< returns the ascent line offset of the baseline of this font. If not supported returns -1
+	double getDescent ();								///< returns the descent line offset of the baseline of this font. If not supported returns -1
+	double getLeading ();								///< returns the space between lines for this font. If not supported returns -1
+	double getCapHeight ();								///< returns the height of the highest capital letter for this font. If not supported returns -1
 	//@}
 
 	CFontDesc& operator = (const CFontDesc&);
@@ -1258,6 +1268,7 @@ public:
 	virtual bool removeView (CView *pView, const bool &withForget = true);	///< remove a child view
 	virtual bool removeAll (const bool &withForget = true);	///< remove all child views
 	virtual bool isChild (CView *pView) const;	///< check if pView is a child view of this container
+	virtual bool isChild (CView *pView, bool deep) const;	///< check if pView is a child view of this container
 	virtual long getNbViews () const;			///< get the number of child views
 	virtual CView* getView (long index) const;	///< get the child view at index
 	virtual CView* getViewAt (const CPoint& where, bool deep = false) const;	///< get the view at point where
@@ -1653,6 +1664,36 @@ protected:
 
 	bool allocStrIsWide;
 };
+
+class ResourceStream : public IStream
+{
+public:
+	ResourceStream ();
+
+	bool open (const CResourceDescription& resourceDesc, const char* type);
+
+	virtual HRESULT STDMETHODCALLTYPE Read (void *pv, ULONG cb, ULONG *pcbRead);
+    virtual HRESULT STDMETHODCALLTYPE Write (const void *pv, ULONG cb, ULONG *pcbWritten);
+    virtual HRESULT STDMETHODCALLTYPE Seek (LARGE_INTEGER dlibMove, DWORD dwOrigin, ULARGE_INTEGER *plibNewPosition);    
+    virtual HRESULT STDMETHODCALLTYPE SetSize (ULARGE_INTEGER libNewSize);
+    virtual HRESULT STDMETHODCALLTYPE CopyTo (IStream *pstm, ULARGE_INTEGER cb, ULARGE_INTEGER *pcbRead, ULARGE_INTEGER *pcbWritten);
+    virtual HRESULT STDMETHODCALLTYPE Commit (DWORD grfCommitFlags);
+    virtual HRESULT STDMETHODCALLTYPE Revert (void);
+    virtual HRESULT STDMETHODCALLTYPE LockRegion (ULARGE_INTEGER libOffset, ULARGE_INTEGER cb, DWORD dwLockType);
+    virtual HRESULT STDMETHODCALLTYPE UnlockRegion (ULARGE_INTEGER libOffset, ULARGE_INTEGER cb, DWORD dwLockType);
+    virtual HRESULT STDMETHODCALLTYPE Stat (STATSTG *pstatstg, DWORD grfStatFlag);
+    virtual HRESULT STDMETHODCALLTYPE Clone (IStream **ppstm);
+	virtual HRESULT STDMETHODCALLTYPE QueryInterface(REFIID iid, void ** ppvObject);
+    virtual ULONG STDMETHODCALLTYPE AddRef(void);
+    virtual ULONG STDMETHODCALLTYPE Release(void);
+
+protected:
+	HGLOBAL resData;
+	unsigned long streamPos;
+	unsigned long resSize;
+	long _refcount;
+};
+
 /// \endcond
 #endif
 

@@ -68,6 +68,7 @@ void nsViewRemoveTooltip (CView* view, bool immediately);
 #ifdef __OBJC__
 #import <Cocoa/Cocoa.h>
 CRect rectFromNSRect (const NSRect& rect);
+NSImage* imageFromCGImageRef (CGImageRef image);
 #endif
 
 #endif

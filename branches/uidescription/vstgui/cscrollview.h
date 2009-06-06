@@ -76,6 +76,7 @@ public:
 	//-----------------------------------------------------------------------------
 	//@{
 	virtual void setContainerSize (const CRect& cs, bool keepVisibleArea = false);	///< set the virtual size of this container
+	const CRect& getContainerSize () const { return containerSize; }
 	const CPoint& getScrollOffset () const;				///< get scroll offset
 	
 	CScrollbar* getVerticalScrollbar () const { return vsb; }	///< get the vertical scrollbar
@@ -98,6 +99,8 @@ public:
 	void setTransparency (bool val);
 	void setBackgroundColor (const CColor& color);
 	void setViewSize (CRect &rect, bool invalid = true);
+	void setAutosizeFlags (long flags);
+	CMessageResult notify (CBaseObject* sender, const char* message);
 
 	CLASS_METHODS(CScrollView, CViewContainer)
 //-----------------------------------------------------------------------------

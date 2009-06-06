@@ -81,6 +81,7 @@ CScrollContainer::CScrollContainer (const CRect &size, const CRect &containerSiz
 , containerSize (containerSize)
 , offset (CPoint (0, 0))
 {
+	setTransparency (true);
 }
 
 //-----------------------------------------------------------------------------
@@ -115,7 +116,7 @@ void CScrollContainer::setScrollOffset (CPoint newOffset, bool redraw)
 		newOffset.y = containerSize.top;
 	if (newOffset.y > containerSize.bottom)
 		newOffset.y = containerSize.bottom;
-	CPoint diff ((CCoord)(newOffset.x - offset.x), (CCoord)(offset.y - newOffset.y));
+	CPoint diff ((long)(newOffset.x - offset.x), (long)(offset.y - newOffset.y));
 	if (diff.x == 0 && diff.y == 0)
 		return;
 	CCView *pV = pFirstView;
@@ -132,6 +133,9 @@ void CScrollContainer::setScrollOffset (CPoint newOffset, bool redraw)
 		pV = pV->pNext;
 	}
 	offset = newOffset;
+	if (!isAttached ())
+		return;
+
 	if (getTransparency ())
 	{
 		invalid ();
@@ -267,6 +271,14 @@ void CScrollView::setViewSize (CRect &rect, bool invalid)
 }
 
 //-----------------------------------------------------------------------------
+void CScrollView::setAutosizeFlags (long flags)
+{
+	CViewContainer::setAutosizeFlags (flags);
+	if (sc)
+		sc->setAutosizeFlags (flags);
+}
+
+//-----------------------------------------------------------------------------
 void CScrollView::setContainerSize (const CRect& cs, bool keepVisibleArea)
 {
 	CRect oldSize (containerSize);
@@ -355,11 +367,13 @@ void CScrollView::makeRectVisible (const CRect& rect)
 		if (vsb)
 		{
 			vsb->setValue ((float)(newOffset.y - vs.top) / (float)(containerSize.getHeight () - vs.getHeight ()));
+			vsb->invalid ();
 			valueChanged (vsb);
 		}
 		if (hsb)
 		{
 			hsb->setValue ((float)(newOffset.x - vs.left) / (float)(containerSize.getWidth () - vs.getWidth ()));
+			hsb->invalid ();
 			valueChanged (hsb);
 		}
 	}
@@ -417,14 +431,12 @@ CView* CScrollView::getView (long index) const
 void CScrollView::setTransparency (bool val)
 {
 	CViewContainer::setTransparency (val);
-	sc->setTransparency (val);
 }
 
 //-----------------------------------------------------------------------------
 void CScrollView::setBackgroundColor (const CColor& color)
 {
 	CViewContainer::setBackgroundColor (color);
-	sc->setBackgroundColor (color);
 }
 
 //-----------------------------------------------------------------------------
@@ -445,7 +457,7 @@ void CScrollView::valueChanged (CControl *pControl)
 			{
 				if (csize.getWidth () > vsize.getWidth ())
 				{
-					offset.x = (CCoord) (csize.left - (csize.width () - vsize.width ()) * value);
+					offset.x = (long) (csize.left - (csize.width () - vsize.width ()) * value);
 					sc->setScrollOffset (offset, false);
 				}
 				else if (offset.x > 0)
@@ -459,7 +471,7 @@ void CScrollView::valueChanged (CControl *pControl)
 			{
 				if (csize.getHeight () > vsize.getHeight ())
 				{
-					offset.y = (CCoord) (csize.top + (csize.height () - vsize.height ()) * value);
+					offset.y = (long) (csize.top + (csize.height () - vsize.height ()) * value);
 					sc->setScrollOffset (offset, false);
 				}
 				else if (offset.y > 0)
@@ -476,11 +488,16 @@ void CScrollView::valueChanged (CControl *pControl)
 //-----------------------------------------------------------------------------
 void CScrollView::drawBackgroundRect (CDrawContext *pContext, CRect& _updateRect)
 {
-	CViewContainer::drawBackgroundRect (pContext, _updateRect);
+	CRect r (size);
+	r.offset (-r.left, -r.top);
+	if ((backgroundColor.alpha != 255 && bTransparencyEnabled) || !bTransparencyEnabled)
+	{
+		pContext->setDrawMode (kCopyMode);
+		pContext->setFillColor (backgroundColor);
+		pContext->drawRect (r, kDrawFilled);
+	}
 	if (!(style & kDontDrawFrame))
 	{
-		CRect r (size);
-		r.offset (-r.left, -r.top);
 		pContext->setFrameColor (kBlackCColor);
 		pContext->setLineWidth (1);
 		pContext->drawRect (r);
@@ -499,6 +516,25 @@ bool CScrollView::onWheel (const CPoint &where, const CMouseWheelAxis &axis, con
 			result = hsb->onWheel (where, axis, distance, buttons);
 	}
 	return result;
+}
+
+//-----------------------------------------------------------------------------
+CMessageResult CScrollView::notify (CBaseObject* sender, const char* message)
+{
+	if (message == kMsgNewFocusView)
+	{
+		CView* focusView = (CView*)sender;
+		if (sc->isChild (focusView, true))
+		{
+			CRect r = focusView->getViewSize ();
+			CPoint p (r.left, r.top);
+			focusView->localToFrame (p);
+			frameToLocal (p);
+			r.offset (p.x, p.y);
+			makeRectVisible (r);
+		}
+	}
+	return CViewContainer::notify (sender, message);
 }
 
 //-----------------------------------------------------------------------------

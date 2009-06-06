@@ -192,7 +192,7 @@ void CControl::setDirty (const bool val)
 }
 
 //------------------------------------------------------------------------
-void CControl::setBackOffset (CPoint &offset)
+void CControl::setBackOffset (const CPoint &offset)
 {
 	backOffset = offset;
 }
@@ -274,13 +274,16 @@ When its value changes, the listener is called.
 COnOffButton::COnOffButton (const CRect& size, CControlListener* listener, long tag, CBitmap* background, long style)
 : CControl (size, listener, tag, background)
 , style (style)
-{}
+{
+	setWantsFocus (true);
+}
 
 //------------------------------------------------------------------------
 COnOffButton::COnOffButton (const COnOffButton& v)
 : CControl (v)
 , style (v.style)
 {
+	setWantsFocus (true);
 }
 
 //------------------------------------------------------------------------
@@ -361,31 +364,30 @@ CMouseEventResult COnOffButton::onMouseDown (CPoint& where, const long& buttons)
 
 	invalid ();
 
-	if (listener && style == kPostListenerUpdate)
-	{
-		// begin of edit parameter
-		beginEdit ();
-	
+	beginEdit ();
+
+	if (listener)
 		listener->valueChanged (this);
-	
-		// end of edit parameter
-		endEdit ();
-	}
-	
-	doIdleStuff ();
-	
-	if (listener && style == kPreListenerUpdate)
-	{
-		// begin of edit parameter
-		beginEdit ();
-	
-		listener->valueChanged (this);
-	
-		// end of edit parameter
-		endEdit ();
-	}
+
+	endEdit ();
 
 	return kMouseDownEventHandledButDontNeedMovedOrUpEvents;
+}
+
+//------------------------------------------------------------------------
+long COnOffButton::onKeyDown (VstKeyCode& keyCode)
+{
+	if (keyCode.virt == VKEY_RETURN && keyCode.modifier == 0)
+	{
+		value = ((long)value) ? 0.f : 1.f;
+		invalid ();
+		beginEdit ();
+		if (listener)
+			listener->valueChanged (this);
+		endEdit ();
+		return 1;
+	}
+	return -1;
 }
 
 //------------------------------------------------------------------------
@@ -911,7 +913,7 @@ The user can specify its convert function (from float to char) by default the st
 The text-value is centered in the given rect.
 */
 CParamDisplay::CParamDisplay (const CRect& size, CBitmap* background, const long style)
-: CControl (size, 0, 0, background)
+: CControl (size, 0, -1, background)
 , stringConvert (0)
 , stringConvert2 (0)
 , string2FloatConvert (0)
@@ -946,6 +948,7 @@ CParamDisplay::CParamDisplay (const CParamDisplay& v)
 , backColor (v.backColor)
 , frameColor (v.frameColor)
 , shadowColor (v.shadowColor)
+, textInset (v.textInset)
 , bTextTransparencyEnabled (v.bTextTransparencyEnabled)
 , bAntialias (v.bAntialias)
 {
@@ -1049,9 +1052,11 @@ void CParamDisplay::drawText (CDrawContext *pContext, const char *string, CBitma
 
 	if (!(style & kNoTextStyle) && string && strlen (string))
 	{
+		CRect textRect (size);
+		textRect.inset (textInset.x, textInset.y);
 		CRect oldClip;
 		pContext->getClipRect (oldClip);
-		CRect newClip (size);
+		CRect newClip (textRect);
 		newClip.bound (oldClip);
 		pContext->setClipRect (newClip);
 		pContext->setFont (fontID);
@@ -1059,7 +1064,7 @@ void CParamDisplay::drawText (CDrawContext *pContext, const char *string, CBitma
 		// draw darker text (as shadow)
 		if (style & kShadowText) 
 		{
-			CRect newSize (size);
+			CRect newSize (textRect);
 			newSize.offset (1, 1);
 			pContext->setFontColor (shadowColor);
 			#if VSTGUI_USES_UTF8
@@ -1070,9 +1075,9 @@ void CParamDisplay::drawText (CDrawContext *pContext, const char *string, CBitma
 		}
 		pContext->setFontColor (fontColor);
 		#if VSTGUI_USES_UTF8
-		pContext->drawStringUTF8 (string, size, horiTxtAlign, bAntialias);
+		pContext->drawStringUTF8 (string, textRect, horiTxtAlign, bAntialias);
 		#else
-		pContext->drawString (string, size, !bTextTransparencyEnabled, horiTxtAlign);
+		pContext->drawString (string, textRect, !bTextTransparencyEnabled, horiTxtAlign);
 		#endif
 		pContext->setClipRect (oldClip);
 	}
@@ -1580,7 +1585,7 @@ pascal OSStatus CarbonEventsTextControlProc (EventHandlerCallRef inHandlerCallRe
 void CTextEdit::parentSizeChanged ()
 {
 	#if MAC_COCOA
-	if (getFrame ()->getNSView ())
+	if (getFrame () && getFrame ()->getNSView ())
 	{
 		moveNSTextField (platformControl, this);
 		return;
@@ -1919,13 +1924,14 @@ Defines an item of a VSTGUI::COptionMenu
  * @param inIcon icon of item
  */
 //------------------------------------------------------------------------
-CMenuItem::CMenuItem (const char* inTitle, long inFlags, const char* inKeycode, long inKeyModifiers, CBitmap* inIcon)
+CMenuItem::CMenuItem (const char* inTitle, const char* inKeycode, long inKeyModifiers, CBitmap* inIcon, long inFlags)
 : title (0)
 , flags (inFlags)
 , keycode (0)
 , keyModifiers (0)
 , submenu (0)
 , icon (0)
+, tag (-1)
 {
 	setTitle (inTitle);
 	setKey (inKeycode, inKeyModifiers);
@@ -1947,10 +1953,31 @@ CMenuItem::CMenuItem (const char* inTitle, COptionMenu* inSubmenu, CBitmap* inIc
 , keyModifiers (0)
 , submenu (0)
 , icon (0)
+, tag (-1)
 {
 	setTitle (inTitle);
 	setSubmenu (inSubmenu);
 	setIcon (inIcon);
+}
+
+//------------------------------------------------------------------------
+/**
+ * CMenuItem constructor.
+ * @param inTitle title of item
+ * @param inTag tag of item
+ */
+//------------------------------------------------------------------------
+CMenuItem::CMenuItem (const char* inTitle, long inTag)
+: title (0)
+, flags (0)
+, keycode (0)
+, keyModifiers (0)
+, submenu (0)
+, icon (0)
+, tag (-1)
+{
+	setTitle (inTitle);
+	setTag (inTag);
 }
 
 //------------------------------------------------------------------------
@@ -1970,6 +1997,7 @@ CMenuItem::CMenuItem (const CMenuItem& item)
 	setTitle (item.getTitle ());
 	setIcon (item.getIcon ());
 	setKey (item.getKeycode (), item.getKeyModifiers ());
+	setTag (item.getTag ());
 	*submenu = *item.getSubmenu ();
 }
 
@@ -2027,6 +2055,12 @@ void CMenuItem::setIcon (CBitmap* inIcon)
 	icon = inIcon;
 	if (icon)
 		icon->remember ();
+}
+
+//------------------------------------------------------------------------
+void CMenuItem::setTag (long t)
+{
+	tag = t;
 }
 
 //------------------------------------------------------------------------
@@ -2629,6 +2663,7 @@ class CMenuItemList : public std::list<CMenuItem*>
 {
 public:
 	CMenuItemList () {}
+	CMenuItemList (const CMenuItemList& inList) : std::list<CMenuItem*> (inList) {}
 };
 
 typedef std::list<CMenuItem*>::iterator CMenuItemIterator;
@@ -2682,6 +2717,24 @@ COptionMenu::COptionMenu (const CRect& size, CControlListener* listener, long ta
 }
 
 //------------------------------------------------------------------------
+COptionMenu::COptionMenu ()
+: CParamDisplay (CRect (0, 0, 0, 0))
+, platformControl (0)
+, currentIndex (-1)
+, bgWhenClick (0)
+, lastButton (0)
+, nbItemsPerColumn (-1)
+, lastResult (-1)
+, prefixNumbers (0)
+, lastMenu (0)
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
+, scheme (0)
+#endif
+{
+	menuItems = new CMenuItemList;
+}
+
+//------------------------------------------------------------------------
 COptionMenu::COptionMenu (const COptionMenu& v)
 : CParamDisplay (v)
 , platformControl (0)
@@ -2695,7 +2748,7 @@ COptionMenu::COptionMenu (const COptionMenu& v)
 #if VSTGUI_ENABLE_DEPRECATED_METHODS
 , scheme (v.scheme)
 #endif
-, menuItems (v.menuItems)
+, menuItems (new CMenuItemList (*v.menuItems))
 {
 	if (bgWhenClick)
 		bgWhenClick->remember ();
@@ -2717,6 +2770,24 @@ COptionMenu::~COptionMenu ()
 		bgWhenClick->forget ();
 
 	delete menuItems;
+}
+
+//------------------------------------------------------------------------
+bool COptionMenu::popup (CFrame* frame, const CPoint& frameLocation)
+{
+	if (frame == 0)
+		return false;
+	if (isAttached ())
+		return false;
+	CRect size (frameLocation, CPoint (0, 0));
+	setViewSize (size);
+	frame->addView (this);
+	takeFocus ();
+	frame->removeView (this, false);
+	long index;
+	if (getLastItemMenu (index))
+		return true;
+	return false;
 }
 
 //------------------------------------------------------------------------
@@ -2756,14 +2827,14 @@ CMenuItem* COptionMenu::addEntry (const char* title, long index, long itemFlags)
 {
 	if (title && strcmp (title, "-") == 0)
 		return addSeparator ();
-	CMenuItem* item = new CMenuItem (title, itemFlags);
+	CMenuItem* item = new CMenuItem (title, 0, 0, 0, itemFlags);
 	return addEntry (item, index);
 }
 
 //-----------------------------------------------------------------------------
 CMenuItem* COptionMenu::addSeparator ()
 {
-	CMenuItem* item = new CMenuItem ("", CMenuItem::kSeparator);
+	CMenuItem* item = new CMenuItem ("", 0, 0, 0, CMenuItem::kSeparator);
 	return addEntry (item);
 }
 
@@ -3532,11 +3603,9 @@ According to the value, a specific subbitmap is displayed. The different subbitm
 CAnimKnob::CAnimKnob (const CRect& size, CControlListener* listener, long tag, CBitmap* background, const CPoint &offset)
 : CKnob (size, listener, tag, background, 0, offset)
 , bInverseBitmap (false)
-, subPixmaps (0)
 {
 	heightOfOneImage = size.height ();
-	if (background)
-		subPixmaps = (short)(background->getHeight () / heightOfOneImage);
+	subPixmaps = background ? (short)(background->getHeight () / heightOfOneImage) : 0;
 	inset = 0;
 }
 
@@ -3616,7 +3685,7 @@ void CAnimKnob::draw (CDrawContext *pContext)
 			where.v = (CCoord)((1 - value) * (float)tmp);
 		else
 			where.v = (CCoord)(value * (float)tmp);
-		for (CCoord realY = 0; realY <= tmp; realY += heightOfOneImage) 
+		for (CCoord realY = 0; realY <= tmp, tmp > 0; realY += heightOfOneImage) 
 		{
 			if (where.v < realY) 
 			{
@@ -3663,7 +3732,7 @@ CVerticalSwitch::CVerticalSwitch (const CRect& size, CControlListener* listener,
 , offset (offset)
 {
 	heightOfOneImage = size.height ();
-	subPixmaps = (long)(background->getHeight () / heightOfOneImage);
+	subPixmaps = background ? (long)(background->getHeight () / heightOfOneImage) : 0;
 	iMaxPositions = subPixmaps;
 
 	setDefaultValue (0.f);
@@ -3835,7 +3904,7 @@ CHorizontalSwitch::CHorizontalSwitch (const CRect& size, CControlListener* liste
 , offset (offset)
 {
 	heightOfOneImage = size.width ();
-	subPixmaps = (long)(background->getWidth () / heightOfOneImage);
+	subPixmaps = background ? (long)(background->getWidth () / heightOfOneImage) : 0;
 	iMaxPositions = subPixmaps;
 
 	setDefaultValue (0.f);
@@ -4256,7 +4325,7 @@ CMovieBitmap::CMovieBitmap (const CRect& size, CControlListener* listener, long 
 , subPixmaps (subPixmaps)
 {
 	setHeightOfOneImage (size.getHeight ());
-	subPixmaps = (long)(background->getHeight () / heightOfOneImage);
+	subPixmaps = background ? (long)(background->getHeight () / heightOfOneImage) : 0;
 }
 
 //------------------------------------------------------------------------
@@ -4511,7 +4580,7 @@ CAutoAnimation::CAutoAnimation (const CRect& size, CControlListener* listener, l
 , bWindowOpened (false)
 {
 	heightOfOneImage = size.height ();
-	subPixmaps = (long)(background->getHeight () / heightOfOneImage);
+	subPixmaps = background ? (long)(background->getHeight () / heightOfOneImage) : 0;
 
 	totalHeightOfBitmap = heightOfOneImage * subPixmaps;
 }

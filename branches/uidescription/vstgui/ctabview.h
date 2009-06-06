@@ -86,15 +86,19 @@ public:
 	virtual bool selectTab (long index);	///< select tab at index
 	virtual long getCurrentSelectedTab () const { return currentTab; } ///< get current index of selected tab
 
-	virtual CRect& getTabViewSize (CRect& rect) const;	///< the the size of one tab
+	virtual CRect& getTabViewSize (CRect& rect) const;	///< the size of one tab
 
 	virtual void setTabFontStyle (const CFontRef font, CCoord fontSize = 12, CColor selectedColor = kBlackCColor, CColor deselectedColor = kWhiteCColor); ///< call this after the tabs are added. Tabs added after this call will have the default font style.
 
 	virtual void alignTabs (TabAlignment alignment = kAlignCenter); ///< call this after you have added all tabs to align them according to alignment
+
+	virtual void setTabViewInsets (const CPoint& inset);
 	//@}
 
+	virtual void drawBackgroundRect (CDrawContext *pContext, CRect& _updateRect);
 	virtual void valueChanged (CControl *pControl);
 	virtual void setViewSize (CRect &rect, bool invalid = true);
+	virtual void setAutosizeFlags (long flags);
 //-----------------------------------------------------------------------------
 	CLASS_METHODS (CTabView, CViewContainer)
 protected:
@@ -105,6 +109,7 @@ protected:
 	TabPosition tabPosition;
 	long style;
 	CRect tabSize;
+	CPoint tabViewInset;
 	CBitmap* tabBitmap;
 	CTabChildView* firstChild;
 	CTabChildView* lastChild;
