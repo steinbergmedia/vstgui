@@ -3,6 +3,7 @@
 #include "ceditframe.h"
 #include "base/source/updatehandler.h"
 #include "base/source/fstring.h"
+#include "namingdialog.h"
 #include <list>
 
 BEGIN_NAMESPACE_VSTGUI
@@ -207,6 +208,8 @@ void VST3Editor::init ()
 				{
 					rect.right = p.x;
 					rect.bottom = p.y;
+					minSize = p;
+					maxSize = p;
 				}
 			}
 			if (minSizeStr)
@@ -329,7 +332,7 @@ void VST3Editor::controlEndEdit (CControl* pControl)
 }
 
 //-----------------------------------------------------------------------------
-CView* VST3Editor::verifyView (CView* view, const UIAttributes& attributes, UIDescription* description)
+CView* VST3Editor::verifyView (CView* view, const UIAttributes& attributes, IUIDescription* description)
 {
 	CControl* control = dynamic_cast<CControl*> (view);
 	if (control && control->getTag () != -1 && control->getListener () == this)
@@ -370,6 +373,9 @@ void VST3Editor::reloadDescription ()
 	frame->removeAll (true);
 	description->forget ();
 	description = newDescription;
+	#if VSTGUI_LIVE_EDITING
+	dynamic_cast<CEditFrame*> (frame)->setUIDescription (description);
+	#endif
 	recreateView ();
 }
 
@@ -378,8 +384,6 @@ void VST3Editor::recreateView ()
 {
 	doCreateView = false;
 	frame->remember ();
-	if (tooltipSupport)
-		tooltipSupport->remember ();
 	close ();
 
 	CView* view = description->createView (viewName.c_str (), this);
@@ -396,7 +400,10 @@ void VST3Editor::recreateView ()
 			frame->setSize (view->getWidth (), view->getHeight ());
 		}
 		frame->addView (view);
+		if (tooltipsEnabled)
+			tooltipSupport = new CTooltipSupport (frame);
 	}
+	init ();
 	frame->invalid ();
 }
 
@@ -409,9 +416,11 @@ bool PLUGIN_API VST3Editor::open (void* parent)
 	CView* view = description->createView (viewName.c_str (), this);
 	if (view)
 	{
+		#if VSTGUI_LIVE_EDITING
 		if (debugMode)
-			frame = new CEditFrame (view->getViewSize (), parent, this, CEditFrame::kEditMode, 0);
+			frame = new CEditFrame (view->getViewSize (), parent, this, CEditFrame::kEditMode, 0, description, viewName.c_str ());
 		else
+		#endif
 			frame = new CFrame (view->getViewSize (), parent, this);
 		frame->setTransparency (true);
 		frame->addView (view);
@@ -436,13 +445,14 @@ void PLUGIN_API VST3Editor::close ()
 	paramChangeListeners.clear ();
 	if (tooltipSupport)
 	{
-		long rc = tooltipSupport->getNbReference ();
 		tooltipSupport->forget ();
-		if (rc == 1)
-			tooltipSupport = 0;
+		tooltipSupport = 0;
 	}
 	if (frame)
+	{
+		frame->removeAll (true);
 		frame->forget ();
+	}
 }
 
 //------------------------------------------------------------------------
@@ -488,7 +498,84 @@ CMessageResult VST3Editor::notify (CBaseObject* sender, const char* message)
 		if (doCreateView)
 			recreateView ();
  	}
- 
+	#if VSTGUI_LIVE_EDITING
+	else if (message == CEditFrame::kMsgShowOptionsMenu)
+	{
+		COptionMenu* menu = dynamic_cast<COptionMenu*> (sender);
+		if (menu)
+		{
+			std::list<const std::string*> templateNames;
+			description->collectTemplateViewNames (templateNames);
+			if (templateNames.size () > 0)
+			{
+				menu->addSeparator ();
+				COptionMenu* submenu = new COptionMenu ();
+				long menuTag = 1000;
+				std::list<const std::string*>::const_iterator it = templateNames.begin ();
+				while (it != templateNames.end ())
+				{
+					submenu->addEntry (new CMenuItem ((*it)->c_str (), menuTag++));
+					it++;
+				}
+				menu->addEntry (submenu, "Change Template");
+				submenu->forget ();
+
+				ViewFactory* viewFactory = dynamic_cast<ViewFactory*> (description->getViewFactory ());
+				if (viewFactory)
+				{
+					std::list<const std::string*> viewNames;
+					viewFactory->collectRegisteredViewNames (viewNames, "CViewContainer");
+					if (viewNames.size () > 0)
+					{
+						submenu = new COptionMenu ();
+						CMenuItem* item = submenu->addEntry ("Root View Type");
+						item->setIsTitle (true);
+						menuTag = 10000;
+						std::list<const std::string*>::const_iterator it = viewNames.begin ();
+						while (it != viewNames.end ())
+						{
+							submenu->addEntry (new CMenuItem ((*it)->c_str (), menuTag++));
+							it++;
+						}
+						menu->addEntry (submenu, "Add New Template");
+						submenu->forget ();
+					}
+				}
+			}
+		}
+		return kMessageNotified;
+	}
+	else if (message == CEditFrame::kMsgPerformOptionsMenuAction)
+	{
+		CMenuItem* item = dynamic_cast<CMenuItem*> (sender);
+		if (item)
+		{
+			long index = item->getTag ();
+			if (index >= 10000)
+			{
+				std::string templateTitle ("NewTemplate");
+				if (NamingDialog::askForName (templateTitle, "Choose a template name") && templateTitle.length () > 0)
+				{
+					UIAttributes* attr = new UIAttributes ();
+					attr->setAttribute ("class", item->getTitle ());
+					attr->setAttribute ("size", "300, 300");
+					description->addNewTemplate (templateTitle.c_str (), attr);
+					exchangeView (templateTitle.c_str ());
+				}
+			}
+			else
+			{
+				exchangeView (item->getTitle ());
+			}
+		}
+		return kMessageNotified;
+	}
+	else if (message == CEditFrame::kMsgEditEnding)
+	{
+		exchangeView (viewName.c_str ());
+		return kMessageNotified;
+	}
+	#endif
  	return VSTGUIEditor::notify (sender, message); 
 }
 

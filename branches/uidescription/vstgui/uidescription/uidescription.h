@@ -6,15 +6,16 @@
 #include "xmlparser.h"
 #include <map>
 #include <deque>
+#include <list>
 #include <string>
 
 BEGIN_NAMESPACE_VSTGUI
 
 class UIDescList;
 class UINode;
-class IViewFactory;
 class UIAttributes;
-class UIDescription;
+class IViewFactory;
+class IUIDescription;
 
 //-----------------------------------------------------------------------------
 class IController : public CControlListener
@@ -22,21 +23,42 @@ class IController : public CControlListener
 public:
 	virtual long getTagForName (const char* name) { return -1; };
 	virtual CControlListener* getControlListener (const char* name) { return this; }
-	virtual CView* createView (const UIAttributes& attributes, UIDescription* description) { return 0; }
-	virtual CView* verifyView (CView* view, const UIAttributes& attributes, UIDescription* description) { return view; }
+	virtual CView* createView (const UIAttributes& attributes, IUIDescription* description) { return 0; }
+	virtual CView* verifyView (CView* view, const UIAttributes& attributes, IUIDescription* description) { return view; }
 };
 
 //-----------------------------------------------------------------------------
-class UIDescription : public CBaseObject, public Xml::IHandler
+class IUIDescription
 {
 public:
-	UIDescription (const CResourceDescription& xmlFile);
-	UIDescription (Xml::IContentProvider* xmlContentProvider);
+	virtual ~IUIDescription () {}
+
+	virtual CBitmap* getBitmap (const char* name) = 0;
+	virtual CFontRef getFont (const char* name) = 0;
+	virtual bool getColor (const char* name, CColor& color) = 0;
+	virtual long getTagForName (const char* name) = 0;
+	virtual CControlListener* getControlListener (const char* name) = 0;
+	virtual IController* getController () const = 0;
+
+	virtual const char* lookupColorName (const CColor& color) const = 0;
+	virtual const char* lookupFontName (const CFontRef font) const = 0;
+	virtual const char* lookupBitmapName (const CBitmap* bitmap) const = 0;
+	virtual const char* lookupControlTagName (const long tag) const = 0;
+};
+
+//-----------------------------------------------------------------------------
+class UIDescription : public CBaseObject, public IUIDescription, public Xml::IHandler
+{
+public:
+	UIDescription (const CResourceDescription& xmlFile, IViewFactory* viewFactory = 0);
+	UIDescription (Xml::IContentProvider* xmlContentProvider, IViewFactory* viewFactory = 0);
 	~UIDescription ();
 
 	bool parse ();
+	bool save (const char* filename);
+	const char* getXmFileName () const { return xmlFile.u.name; }
 	
-	CView* createView (const char* name, IController* controller, IViewFactory* viewFactory = 0);
+	CView* createView (const char* name, IController* controller);
 	const UIAttributes* getViewAttributes (const char* name);
 
 	CBitmap* getBitmap (const char* name);
@@ -45,10 +67,45 @@ public:
 	long getTagForName (const char* name);
 	CControlListener* getControlListener (const char* name);
 	IController* getController () const { return controller; }
+	IViewFactory* getViewFactory () const { return viewFactory; }
+	
+	const char* lookupColorName (const CColor& color) const;
+	const char* lookupFontName (const CFontRef font) const;
+	const char* lookupBitmapName (const CBitmap* bitmap) const;
+	const char* lookupControlTagName (const long tag) const;
+	
+	void collectTemplateViewNames (std::list<const std::string*>& names) const;
+	void collectColorNames (std::list<const std::string*>& names) const;
+	void collectFontNames (std::list<const std::string*>& names) const;
+	void collectBitmapNames (std::list<const std::string*>& names) const;
+	void collectControlTagNames (std::list<const std::string*>& names) const;
+	
+	void changeColorName (const char* oldName, const char* newName);
+	void changeTagName (const char* oldName, const char* newName);
+	void changeFontName (const char* oldName, const char* newName);
+	void changeBitmapName (const char* oldName, const char* newName);
+
+	void changeColor (const char* name, const CColor& newColor);
+	void changeTag (const char* name, long tag);
+	void changeFont (const char* name, CFontRef newFont);
+	void changeBitmap (const char* name, const char* newName);
+	
+	void removeColor (const char* name);
+	void removeTag (const char* name);
+	void removeFont (const char* name);
+	void removeBitmap (const char* name);
+
+	void updateViewDescription (const char* name, CView* view);
+	bool getTemplateNameFromView (CView* view, std::string& templateName);
+	void addNewTemplate (const char* name, UIAttributes* attr); // owns attributes
+
+	static bool parseColor (const std::string& colorString, CColor& color);
+	static CViewAttributeID kTemplateNameAttributeID;
 protected:
-	CView* createViewFromNode (UINode* node, IViewFactory* viewFactory, IController* controller);
-	UINode* getBaseNode (const char* name);
-	UINode* findChildNodeByNameAttribute (UINode* node, const char* nameAttribute);
+	CView* createViewFromNode (UINode* node, IController* controller);
+	UINode* getBaseNode (const char* name) const;
+	UINode* findChildNodeByNameAttribute (UINode* node, const char* nameAttribute) const;
+	void updateAttributesForView (UINode* node, CView* view);
 
 	// Xml::IHandler
 	void startXmlElement (Xml::Parser* parser, const char* elementName, const char** elementAttributes);
@@ -59,6 +116,7 @@ protected:
 	CResourceDescription xmlFile;
 	UINode* nodes;
 	IController* controller;
+	IViewFactory* viewFactory;
 	Xml::IContentProvider* xmlContentProvider;
 
 	std::deque<UINode*> nodeStack;
@@ -66,16 +124,18 @@ protected:
 };
  
 //-----------------------------------------------------------------------------
-class UIAttributes : public CBaseObject, protected std::map<std::string,std::string>
+class UIAttributes : public CBaseObject, public std::map<std::string,std::string>
 {
 public:
-	UIAttributes (const char** attributes);
+	UIAttributes (const char** attributes = 0);
+	~UIAttributes ();
 
 	bool hasAttribute (const char* name) const;
 	const std::string* getAttributeValue (const char* name) const;
 	void setAttribute (const char* name, const char* value);
+	
+	void removeAll () { clear (); }
 protected:
-	~UIAttributes ();
 };
 
 //-----------------------------------------------------------------------------
@@ -84,7 +144,7 @@ class IViewFactory
 public:
 	virtual ~IViewFactory () {}
 	
-	virtual CView* createView (const UIAttributes& attributes, UIDescription* description) = 0;
+	virtual CView* createView (const UIAttributes& attributes, IUIDescription* description) = 0;
 };
 
 END_NAMESPACE_VSTGUI

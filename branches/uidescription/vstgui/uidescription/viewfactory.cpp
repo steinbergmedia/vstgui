@@ -1,6 +1,5 @@
 /*
  *  viewfactory.cpp
- *  VST3PlugIns
  *
  *  Created by Arne Scheffler on 4/28/09.
  *  Copyright 2009 Arne Scheffler. All rights reserved.
@@ -12,43 +11,9 @@
 BEGIN_NAMESPACE_VSTGUI
 
 //-----------------------------------------------------------------------------
-class ViewCreator
+class ViewCreatorRegistry : public std::map<std::string,const IViewCreator*>
 {
 public:
-	ViewCreator (const char* _name, const char* _baseClass, ViewCreateFunction _createFunction, ViewApplyAttributesFunction _applyFunction)
-	: name (_name)
-	, createFunction (_createFunction)
-	, applyFunction (_applyFunction)
-	{
-		if (_baseClass)
-			baseClass = _baseClass;
-	}
-	
-	const std::string& getName () const { return name; }
-	const std::string& getBaseClass () const { return baseClass; }
-	ViewCreateFunction getCreateFunction () const { return createFunction; }
-	ViewApplyAttributesFunction getApplyFunction () const { return applyFunction; }
-
-protected:
-	std::string name;
-	std::string baseClass;
-	ViewCreateFunction createFunction;
-	ViewApplyAttributesFunction applyFunction;
-};
-
-//-----------------------------------------------------------------------------
-class ViewCreatorRegistry : public std::map<std::string,ViewCreator*>
-{
-public:
-	~ViewCreatorRegistry ()
-	{
-		iterator iter = begin ();
-		while (iter != end ())
-		{
-			delete iter->second;
-			iter++;
-		}
-	}
 };
 
 //-----------------------------------------------------------------------------
@@ -69,18 +34,24 @@ ViewFactory::~ViewFactory ()
 }
 
 //-----------------------------------------------------------------------------
-CView* ViewFactory::createViewByName (const std::string* className, const UIAttributes& attributes, UIDescription* description)
+CView* ViewFactory::createViewByName (const std::string* className, const UIAttributes& attributes, IUIDescription* description)
 {
 	ViewCreatorRegistry& registry = getCreatorRegistry ();
 	ViewCreatorRegistry::const_iterator iter = registry.find (*className);
 	if (iter != registry.end ())
 	{
-		CView* view = (*iter).second->getCreateFunction () (attributes, this, description);
+		CView* view = (*iter).second->create (attributes, description);
 		if (view)
 		{
-			while (iter != registry.end () && (*iter).second->getApplyFunction () (view, attributes, this, description))
+			#if VSTGUI_LIVE_EDITING
+			const char* viewName = (*iter).second->getViewName ();
+			view->setAttribute ('cvcr', sizeof (const char*), &viewName);
+			#endif
+			while (iter != registry.end () && (*iter).second->apply (view, attributes, description))
 			{
-				iter = registry.find ((*iter).second->getBaseClass ());
+				if ((*iter).second->getBaseViewName () == 0)
+					break;
+				iter = registry.find ((*iter).second->getBaseViewName ());
 			}
 			return view;
 		}
@@ -95,7 +66,7 @@ CView* ViewFactory::createViewByName (const std::string* className, const UIAttr
 }
 
 //-----------------------------------------------------------------------------
-CView* ViewFactory::createView (const UIAttributes& attributes, UIDescription* description)
+CView* ViewFactory::createView (const UIAttributes& attributes, IUIDescription* description)
 {
 	const std::string* className = attributes.getAttributeValue ("class");
 	if (className)
@@ -108,27 +79,133 @@ CView* ViewFactory::createView (const UIAttributes& attributes, UIDescription* d
 	return 0;
 }
 
+#if VSTGUI_LIVE_EDITING
 //-----------------------------------------------------------------------------
-void ViewFactory::registerViewCreateFunction (const char* className, const char* baseClass, ViewCreateFunction createFunction, ViewApplyAttributesFunction applyFunction)
+bool ViewFactory::getAttributeNamesForView (CView* view, std::list<std::string>& attributeNames) const
 {
-	if (className == 0 || createFunction == 0 || applyFunction == 0)
-	{
-		#if DEBUG
-		DebugPrint ("ViewFactory::registerViewCreateFunction(..) needs className, createFunction and applyFunction\n");
-		#endif
-		return;
-	}
+	bool result = false;
 	ViewCreatorRegistry& registry = getCreatorRegistry ();
-	if (registry.find (className) != registry.end ())
+	ViewCreatorRegistry::const_iterator iter = registry.find (getViewName (view));
+	while (iter != registry.end () && (result = (*iter).second->getAttributeNames (attributeNames)) && (*iter).second->getBaseViewName ())
+	{
+		iter = registry.find ((*iter).second->getBaseViewName ());
+	}
+	return result;
+}
+
+//-----------------------------------------------------------------------------
+bool ViewFactory::getAttributeValue (CView* view, const std::string& attributeName, std::string& stringValue, IUIDescription* desc) const
+{
+	bool result = false;
+	ViewCreatorRegistry& registry = getCreatorRegistry ();
+	ViewCreatorRegistry::const_iterator iter = registry.find (getViewName (view));
+	while (iter != registry.end () && !(result = (*iter).second->getAttributeValue (view, attributeName, stringValue, desc)) && (*iter).second->getBaseViewName ())
+	{
+		iter = registry.find ((*iter).second->getBaseViewName ());
+	}
+	return result;
+}
+
+//-----------------------------------------------------------------------------
+bool ViewFactory::applyAttributeValues (CView* view, const UIAttributes& attributes, IUIDescription* desc) const
+{
+	bool result = false;
+	ViewCreatorRegistry& registry = getCreatorRegistry ();
+	ViewCreatorRegistry::const_iterator iter = registry.find (getViewName (view));
+	while (iter != registry.end () && (result = (*iter).second->apply (view, attributes, desc)) && (*iter).second->getBaseViewName ())
+	{
+		iter = registry.find ((*iter).second->getBaseViewName ());
+	}
+	return result;
+}
+
+//-----------------------------------------------------------------------------
+IViewCreator::AttrType ViewFactory::getAttributeType (CView* view, const std::string& attributeName) const
+{
+	ViewCreatorRegistry& registry = getCreatorRegistry ();
+	IViewCreator::AttrType type = IViewCreator::kUnknownType;
+	ViewCreatorRegistry::const_iterator iter = registry.find (getViewName (view));
+	while (iter != registry.end () && (type = (*iter).second->getAttributeType (attributeName)) == IViewCreator::kUnknownType && (*iter).second->getBaseViewName ())
+	{
+		iter = registry.find ((*iter).second->getBaseViewName ());
+	}
+	return type;
+}
+
+//-----------------------------------------------------------------------------
+bool ViewFactory::getAttributesForView (CView* view, IUIDescription* desc, UIAttributes& attr) const
+{
+	bool result = false;
+	std::list<std::string> attrNames;
+	if (getAttributeNamesForView (view, attrNames))
+	{
+		std::list<std::string>::const_iterator it = attrNames.begin ();
+		while (it != attrNames.end ())
+		{
+			std::string value;
+			if (getAttributeValue (view, (*it), value, desc))
+				attr.setAttribute ((*it).c_str (), value.c_str ());
+			it++;
+		}
+		attr.setAttribute ("class", getViewName (view));
+		result = true;
+	}
+	return result;
+}
+
+//-----------------------------------------------------------------------------
+void ViewFactory::collectRegisteredViewNames (std::list<const std::string*>& viewNames, const char* baseClassNameFilter) const
+{
+	ViewCreatorRegistry& registry = getCreatorRegistry ();
+	ViewCreatorRegistry::const_iterator iter = registry.begin ();
+	while (iter != registry.end ())
+	{
+		if (baseClassNameFilter)
+		{
+			bool found = false;
+			ViewCreatorRegistry::const_iterator iter2 (iter);
+			while (iter2 != registry.end () && (*iter2).second->getBaseViewName ())
+			{
+				if ((*iter2).first == baseClassNameFilter)
+				{
+					found = true;
+					break;
+				}
+				iter2 = registry.find ((*iter2).second->getBaseViewName ());
+			}
+			if (!found)
+			{
+				iter++;
+				continue;
+			}
+		}
+		viewNames.push_back (&(*iter).first);
+		iter++;
+	}
+}
+
+//-----------------------------------------------------------------------------
+const char* ViewFactory::getViewName (CView* view) const
+{
+	const char* viewName = 0;
+	long size = sizeof (const char*);
+	view->getAttribute ('cvcr', size, &viewName, size);
+	return viewName;
+}
+
+#endif
+
+//-----------------------------------------------------------------------------
+void ViewFactory::registerViewCreator (const IViewCreator& viewCreator)
+{
+	ViewCreatorRegistry& registry = getCreatorRegistry ();
+	if (registry.find (viewCreator.getViewName ()) != registry.end ())
 	{
 		#if DEBUG
-		DebugPrint ("ViewCreateFunction for '%s' already registered\n", className);
+		DebugPrint ("ViewCreateFunction for '%s' already registered\n", viewCreator.getViewName ());
 		#endif
 	}
-	else
-	{
-		registry.insert (std::make_pair (className, new ViewCreator (className, baseClass, createFunction, applyFunction)));
-	}
+	registry.insert (std::make_pair (viewCreator.getViewName (), &viewCreator));
 }
 
 END_NAMESPACE_VSTGUI

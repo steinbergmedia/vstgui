@@ -43,7 +43,7 @@ protected:
 	void beginEdit (long index);
 	void endEdit (long index);
 
-	CView* verifyView (CView* view, const UIAttributes& attributes, UIDescription* description);
+	CView* verifyView (CView* view, const UIAttributes& attributes, IUIDescription* description);
 	CMessageResult notify (CBaseObject* sender, const char* message);
 
 	Steinberg::tresult PLUGIN_API onSize (Steinberg::ViewRect* newSize);

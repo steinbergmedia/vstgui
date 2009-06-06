@@ -6,6 +6,8 @@
  *
  */
 
+#if VSTGUI_LIVE_EDITING
+
 #include "cselection.h"
 
 BEGIN_NAMESPACE_VSTGUI
@@ -22,9 +24,30 @@ CSelection::~CSelection ()
 	empty ();
 }
 
+const char* CSelection::kMsgSelectionChanged = "kMsgSelectionChanged";
+const char* CSelection::kMsgSelectionViewChanged = "kMsgSelectionViewChanged";
+
 //----------------------------------------------------------------------------------------------------
-void CSelection::changed ()
+void CSelection::addDependent (CBaseObject* obj)
 {
+	dependencies.push_back (obj);
+}
+
+//----------------------------------------------------------------------------------------------------
+void CSelection::removeDependent (CBaseObject* obj)
+{
+	dependencies.remove (obj);
+}
+
+//----------------------------------------------------------------------------------------------------
+void CSelection::changed (const char* what)
+{
+	std::list<CBaseObject*>::iterator it = dependencies.begin ();
+	while (it != dependencies.end ())
+	{
+		(*it)->notify (this, what);
+		it++;
+	}
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -39,7 +62,7 @@ void CSelection::add (CView* view)
 	if (style == kSingleSelectionStyle)
 		empty ();
 	views.push_back (view);
-	changed ();
+	changed (kMsgSelectionChanged);
 	view->remember ();
 }
 
@@ -49,7 +72,7 @@ void CSelection::remove (CView* view)
 	if (contains (view))
 	{
 		views.remove (view);
-		changed ();
+		changed (kMsgSelectionChanged);
 		view->forget ();
 	}
 }
@@ -59,7 +82,7 @@ void CSelection::setExclusive (CView* view)
 {
 	empty ();
 	add (view);
-	changed ();
+	changed (kMsgSelectionChanged);
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -72,7 +95,7 @@ void CSelection::empty ()
 		it++;
 	}
 	views.erase (views.begin (), views.end ());
-	changed ();
+	changed (kMsgSelectionChanged);
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -185,7 +208,9 @@ void CSelection::moveBy (const CPoint& p)
 		}
 		it++;
 	}
-	changed ();
+	changed (kMsgSelectionViewChanged);
 }
 
 END_NAMESPACE_VSTGUI
+
+#endif // VSTGUI_LIVE_EDITING

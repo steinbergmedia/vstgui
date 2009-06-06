@@ -9,6 +9,8 @@
 #ifndef __cselection__
 #define __cselection__
 
+#if VSTGUI_LIVE_EDITING
+
 #include "../vstgui.h"
 #include <list>
 
@@ -45,10 +47,16 @@ public:
 	static CRect getGlobalViewCoordinates (CView* view);
 
 	void moveBy (const CPoint& p);
+
+	void addDependent (CBaseObject* obj);
+	void removeDependent (CBaseObject* obj);
 	
-	void changed ();
+	static const char* kMsgSelectionChanged;
+	static const char* kMsgSelectionViewChanged;
+	void changed (const char* what);
 protected:
 
+	std::list<CBaseObject*> dependencies;
 	std::list<CView*> views;
 	int style;
 };
@@ -68,5 +76,7 @@ protected:
 } \
 
 END_NAMESPACE_VSTGUI
+
+#endif // VSTGUI_LIVE_EDITING
 
 #endif
