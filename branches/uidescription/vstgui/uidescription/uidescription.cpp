@@ -316,7 +316,12 @@ CView* UIDescription::createViewFromNode (UINode* node, IController* controller)
 {
 	const std::string* templateName = node->getAttributes ()->getAttributeValue ("template");
 	if (templateName)
-		return createView (templateName->c_str (), controller);
+	{
+		CView* view = createView (templateName->c_str (), controller);
+		if (view)
+			viewFactory->applyAttributeValues (view, *node->getAttributes (), this);
+		return view;
+	}
 
 	CView* result = 0;
 	if (controller)
@@ -937,7 +942,7 @@ void UIDescription::collectControlTagNames (std::list<const std::string*>& names
 }
 
 //-----------------------------------------------------------------------------
-void UIDescription::updateAttributesForView (UINode* node, CView* view)
+void UIDescription::updateAttributesForView (UINode* node, CView* view, bool deep)
 {
 #if VSTGUI_LIVE_EDITING
 	ViewFactory* factory = dynamic_cast<ViewFactory*> (viewFactory);
@@ -954,14 +959,34 @@ void UIDescription::updateAttributesForView (UINode* node, CView* view)
 		}
 		node->getAttributes ()->setAttribute ("class", factory->getViewName (view));
 		CViewContainer* container = dynamic_cast<CViewContainer*> (view);
-		if (container)
+		if (deep && container)
 		{
 			for (long i = 0; i < container->getNbViews (); i++)
 			{
 				CView* subView = container->getView (i);
-				UINode* subNode = new UINode ("view", 0);
-				updateAttributesForView (subNode, subView);
-				node->getChildren ().add (subNode);
+				std::string subTemplateName;
+				if (getTemplateNameFromView (subView, subTemplateName))
+				{
+					UIAttributes* attr = new UIAttributes;
+					attr->setAttribute ("template", subTemplateName.c_str ());
+					UINode* subNode = new UINode ("view", attr);
+					node->getChildren ().add (subNode);
+					updateAttributesForView (subNode, subView, false);
+					CRect r = subView->getViewSize ();
+					CRect r2 (r);
+					r.offset (-r.left, -r.top);
+					subView->setViewSize (r);
+					subView->setMouseableArea (r);
+					updateViewDescription (subTemplateName.c_str (), subView);
+					subView->setViewSize (r2);
+					subView->setMouseableArea (r2);
+				}
+				else
+				{
+					UINode* subNode = new UINode ("view", 0);
+					updateAttributesForView (subNode, subView);
+					node->getChildren ().add (subNode);
+				}
 			}
 		}
 	}

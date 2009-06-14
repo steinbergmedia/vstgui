@@ -47,18 +47,19 @@ public:
 
 	// IViewFactory
 	CView* createView (const UIAttributes& attributes, IUIDescription* description);
+	bool applyAttributeValues (CView* view, const UIAttributes& attributes, IUIDescription* desc) const;
 	
 	static void registerViewCreator (const IViewCreator& viewCreator);
 
 	#if VSTGUI_LIVE_EDITING
 	bool getAttributeNamesForView (CView* view, std::list<std::string>& attributeNames) const;
 	bool getAttributeValue (CView* view, const std::string& attributeName, std::string& stringValue, IUIDescription* desc) const;
-	bool applyAttributeValues (CView* view, const UIAttributes& attributes, IUIDescription* desc) const;
 	IViewCreator::AttrType getAttributeType (CView* view, const std::string& attributeName) const;
 	void collectRegisteredViewNames (std::list<const std::string*>& viewNames, const char* baseClassNameFilter = 0) const;
-	const char* getViewName (CView* view) const;
 	bool getAttributesForView (CView* view, IUIDescription* desc, UIAttributes& attr) const;
 	#endif
+
+	const char* getViewName (CView* view) const;
 
 protected:
 	CView* createViewByName (const std::string* className, const UIAttributes& attributes, IUIDescription* description);

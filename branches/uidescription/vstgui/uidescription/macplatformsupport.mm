@@ -228,6 +228,66 @@ void PlatformUtilities::colorChooser (const CColor* oldColor, IPlatformColorChan
 	}
 }
 
+#define VSTGUI_CFSTR(x) (CFStringRef)[NSString stringWithCString:x encoding:NSUTF8StringEncoding]
+//-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
+void PlatformDefaults::setRect (const char* appID, const char* name, const CRect& value)
+{
+	NSMutableDictionary* dict = [NSMutableDictionary dictionaryWithCapacity:4];
+	[dict setValue:[NSNumber numberWithDouble:value.left] forKey:@"left"];
+	[dict setValue:[NSNumber numberWithDouble:value.right] forKey:@"right"];
+	[dict setValue:[NSNumber numberWithDouble:value.top] forKey:@"top"];
+	[dict setValue:[NSNumber numberWithDouble:value.bottom] forKey:@"bottom"];
+	CFPreferencesSetAppValue (VSTGUI_CFSTR(name), dict, VSTGUI_CFSTR(appID));
+	CFPreferencesAppSynchronize (VSTGUI_CFSTR(appID));
+}
+
+//-----------------------------------------------------------------------------
+bool PlatformDefaults::getRect (const char* appID, const char* name, CRect& value)
+{
+	NSDictionary* dict = (NSDictionary*)CFPreferencesCopyAppValue (VSTGUI_CFSTR(name), VSTGUI_CFSTR(appID));
+	if (dict)
+	{
+		NSNumber* n = [dict objectForKey:@"left"];
+		if (n)
+			value.left = [n doubleValue];
+		n = [dict objectForKey:@"right"];
+		if (n)
+			value.right = [n doubleValue];
+		n = [dict objectForKey:@"top"];
+		if (n)
+			value.top = [n doubleValue];
+		n = [dict objectForKey:@"bottom"];
+		if (n)
+			value.bottom = [n doubleValue];
+		return true;
+	}
+	return false;
+}
+
+//-----------------------------------------------------------------------------
+void PlatformDefaults::setString (const char* appID, const char* name, const std::string& value)
+{
+}
+
+//-----------------------------------------------------------------------------
+bool PlatformDefaults::getString (const char* appID, const char* name, std::string& value)
+{
+	return false;
+}
+
+//-----------------------------------------------------------------------------
+void PlatformDefaults::setNumber (const char* appID, const char* name, long value)
+{
+}
+
+//-----------------------------------------------------------------------------
+bool PlatformDefaults::getNumber (const char* appID, const char* name, long& value)
+{
+	return false;
+}
+
 END_NAMESPACE_VSTGUI
 
 //-----------------------------------------------------------------------------

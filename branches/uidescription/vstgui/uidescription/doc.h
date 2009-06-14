@@ -8,9 +8,9 @@
 		- Inspector should indicate multiple values for attributes which have them when editing a multi selection
 		- Sizing views is currently limited to the right bottom corner, would be nice to have it on all corners and sides.
 		- Point attributes should be editable as points not as string
+		- A lasso selection would also be nice
 		
 	UIDescription todo:
-		- COptionMenu support
 		- CTabView support
 		- CScrollView support
 
@@ -32,6 +32,7 @@ It is now possible to create VSTGUI based interfaces via a XML description.
 - @ref deftags @n
 - @ref deftemplates @n
 - @subpage uidescription_attributes @n
+- @subpage uidescription_vst3_support @n
 
 @section creatingbycode Creating a view
 You need to write a XML text file like the one in the example shown later on.
@@ -152,9 +153,7 @@ Example:
   <!-- by the way, these colors have all the same rgba values -->
 </colors>
 @endverbatim
-Colors can also be declared within the \b view tag for any color tag with one of the two hex notations. The following colors are predefined:
-black, white, grey, red, green, blue, yellow, cyan, magenta.
-
+Colors can also be declared within the \b view tag for any color tag with one of the two hex notations.
 
 @section deftags Defining Tags
 VSTGUI controls are identified by tags. In the \b control-tags tag you map control tags to names. Recognized attributes in the \b control-tag tag are:
@@ -176,5 +175,10 @@ Templates are the main views in XML. You can have more than one.
 Per default the \b template tag will create a CViewContainer view, but you can use the \b class attribute to create any view class you want.
 (If the template should have subviews, the class must be an inherited class from CViewContainer like CScrollView)<br/>
 
-See @ref viewclasses
+@endpage
+
+@page uidescription_vst3_support Inline Editing support for VST3
+
+@endpage
+
 */

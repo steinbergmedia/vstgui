@@ -17,10 +17,12 @@
 BEGIN_NAMESPACE_VSTGUI
 
 //----------------------------------------------------------------------------------------------------
-class CSelection : public CBaseObject
+class CSelection : public CBaseObject, protected std::list<CView*>
 //----------------------------------------------------------------------------------------------------
 {
 public:
+	typedef std::list<CView*>::const_iterator const_iterator;
+	
 	enum {
 		kMultiSelectionStyle,
 		kSingleSelectionStyle
@@ -36,8 +38,11 @@ public:
 	void setExclusive (CView* view);
 	void empty ();
 
-	CView* getFirst () const;
-	CView* getNext (CView* previous) const;
+	const_iterator begin () const { return std::list<CView*>::begin (); }
+	const_iterator end () const { return std::list<CView*>::end (); }
+
+	CView* first () const;
+//	CView* getNext (CView* previous) const;
 
 	bool contains (CView* view) const;
 	bool containsParent (CView* view) const;
@@ -57,23 +62,20 @@ public:
 protected:
 
 	std::list<CBaseObject*> dependencies;
-	std::list<CView*> views;
 	int style;
 };
 
 //----------------------------------------------------------------------------------------------------
-#define FOREACH_IN_SELECTION(selection, view) \
-{ \
-	CView* _view = selection->getFirst (); \
-	while (_view) \
+#define FOREACH_IN_SELECTION(__selection, view) \
+	CSelection::const_iterator __it = __selection->begin (); \
+	while (__it != __selection->end ()) \
 	{ \
-		CView* view = _view;
+		CView* view = (*__it);
 
 //----------------------------------------------------------------------------------------------------
 #define FOREACH_IN_SELECTION_END \
-		_view = selection->getNext (_view); \
+		__it++; \
 	} \
-} \
 
 END_NAMESPACE_VSTGUI
 

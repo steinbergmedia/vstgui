@@ -393,10 +393,10 @@ public:
 		{
 			CBitmap* bitmap = view->getBackground ();
 			if (bitmap)
-			{
 				bitmapToString (bitmap, stringValue, desc);
-				return true;
-			}
+			else
+				stringValue = "";
+			return true;
 		}
 		else if (attributeName == "autosize")
 		{
@@ -965,6 +965,68 @@ public:
 
 };
 CParamDisplayCreator __gCParamDisplayCreator;
+
+//-----------------------------------------------------------------------------
+class COptionMenuCreator : public IViewCreator
+{
+public:
+	COptionMenuCreator () { ViewFactory::registerViewCreator (*this); }
+	const char* getViewName () const { return "COptionMenu"; }
+	const char* getBaseViewName () const { return "CParamDisplay"; }
+	CView* create (const UIAttributes& attributes, IUIDescription* description) const { return new COptionMenu (); }
+	bool apply (CView* view, const UIAttributes& attributes, IUIDescription* description) const
+	{
+		COptionMenu* menu = dynamic_cast<COptionMenu*> (view);
+		if (!menu)
+			return false;
+
+		const std::string* attr = attributes.getAttributeValue ("menu-popup-style");
+		if (attr)
+		{
+			if (*attr == "true")
+				menu->setStyle (menu->getStyle () | kPopupStyle);
+		}
+		attr = attributes.getAttributeValue ("menu-check-style");
+		if (attr)
+		{
+			if (*attr == "true")
+				menu->setStyle (menu->getStyle () | kCheckStyle);
+		}
+
+		return true;
+	}
+	bool getAttributeNames (std::list<std::string>& attributeNames) const
+	{
+		attributeNames.push_back ("menu-popup-style");
+		attributeNames.push_back ("menu-check-style");
+		return true;
+	}
+	AttrType getAttributeType (const std::string& attributeName) const
+	{
+		if (attributeName == "menu-popup-style") return kBooleanType;
+		if (attributeName == "menu-check-style") return kBooleanType;
+		return kUnknownType;
+	}
+	bool getAttributeValue (CView* view, const std::string& attributeName, std::string& stringValue, IUIDescription* desc) const
+	{
+		COptionMenu* menu = dynamic_cast<COptionMenu*> (view);
+		if (!menu)
+			return false;
+		if (attributeName == "menu-popup-style")
+		{
+			stringValue = menu->getStyle () & kPopupStyle ? "true" : "false";
+			return true;
+		}
+		if (attributeName == "menu-check-style")
+		{
+			stringValue = menu->getStyle () & kCheckStyle ? "true" : "false";
+			return true;
+		}
+		return false;
+	}
+
+};
+COptionMenuCreator __gCOptionMenuCreator;
 
 //-----------------------------------------------------------------------------
 class CTextLabelCreator : public IViewCreator

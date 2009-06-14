@@ -16,7 +16,7 @@
 BEGIN_NAMESPACE_VSTGUI
 
 //-----------------------------------------------------------------------------
-class NamingDialog : public CBaseObject, public CControlListener
+class NamingDialog : public CBaseObject, public CControlListener, public VSTGUIEditorInterface, public IKeyboardHook
 {
 public:
 	static bool askForName (std::string& result, const char* dialogTitle);
@@ -28,8 +28,10 @@ protected:
 	bool run (std::string& result);
 	void valueChanged (CControl* pControl);
 
+	long onKeyDown (const VstKeyCode& code, CFrame* frame);
+	long onKeyUp (const VstKeyCode& code, CFrame* frame);
+
 	PlatformWindow* platformWindow;
-	CFrame* frame;
 	CTextEdit* textEdit;
 	bool result;
 };

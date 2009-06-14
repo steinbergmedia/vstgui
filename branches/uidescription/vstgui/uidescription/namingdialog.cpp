@@ -86,7 +86,6 @@ enum {
 //-----------------------------------------------------------------------------
 NamingDialog::NamingDialog (const char* title)
 : platformWindow (0)
-, frame (0)
 , textEdit (0)
 , result (false)
 {
@@ -98,7 +97,8 @@ NamingDialog::NamingDialog (const char* title)
 	if (platformWindow)
 	{
 		size.offset (-100, -100);
-		frame = new CFrame (size, platformWindow->getPlatformHandle (), 0);
+		frame = new CFrame (size, platformWindow->getPlatformHandle (), this);
+		frame->setKeyboardHook (this);
 		frame->setBackgroundColor (MakeCColor (200, 200, 200, 255));
 		CRect r (kMargin, kMargin, size.getWidth () - kMargin, kControlHeight + kMargin);
 		textEdit = new CTextEdit (r, this, kTextEditTag);
@@ -145,6 +145,33 @@ bool NamingDialog::run (std::string& str)
 		}
 	}
 	return result;
+}
+
+//-----------------------------------------------------------------------------
+long NamingDialog::onKeyDown (const VstKeyCode& code, CFrame* frame)
+{
+	if (frame->getFocusView () == 0)
+	{
+		if (code.virt == VKEY_ESCAPE)
+		{
+			platformWindow->stopModal ();
+			result = false;
+			return 1;
+		}
+		else if (code.virt == VKEY_RETURN)
+		{
+			platformWindow->stopModal ();
+			result = true;
+			return 1;
+		}
+	}
+	return -1;
+}
+
+//-----------------------------------------------------------------------------
+long NamingDialog::onKeyUp (const VstKeyCode& code, CFrame* frame)
+{
+	return -1;
 }
 
 //-----------------------------------------------------------------------------

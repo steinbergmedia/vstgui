@@ -10,6 +10,7 @@
 
 #include "ceditframe.h"
 #include "cviewinspector.h"
+#include "viewhierarchybrowser.h"
 #include "viewfactory.h"
 #include "viewcreator.h"
 #include "../vstkeycode.h"
@@ -19,6 +20,13 @@
 
 BEGIN_NAMESPACE_VSTGUI
 
+//-----------------------------------------------------------------------------
+static bool stringCompare (const std::string* lhs, const std::string* rhs)
+{
+  return *lhs < *rhs;
+}
+
+//-----------------------------------------------------------------------------
 class UndoStackTop : public IActionOperation
 {
 public:
@@ -27,6 +35,7 @@ public:
 	void undo () {}
 };
 
+//-----------------------------------------------------------------------------
 class ViewCopyOperation : public IActionOperation, protected std::list<CView*>
 {
 public:
@@ -37,9 +46,7 @@ public:
 		parent->remember ();
 		selection->remember ();
 		CRect selectionBounds = selection->getBounds ();
-		CView* view = selection->getFirst ();
-		while (view)
-		{
+		FOREACH_IN_SELECTION(selection, view)
 			if (!selection->containsParent (view))
 			{
 				CView* viewCopy = duplicateView (view, viewFactory, desc);
@@ -56,8 +63,7 @@ public:
 				}
 			}
 			oldSelectedViews.push_back (view);
-			view = selection->getNext (view);
-		}
+		FOREACH_IN_SELECTION_END
 	}
 	
 	~ViewCopyOperation ()
@@ -143,6 +149,7 @@ protected:
 	std::list<CView*> oldSelectedViews;
 };
 
+//-----------------------------------------------------------------------------
 class ViewSizeChangeOperation : public IActionOperation, protected std::map<CView*, CRect>
 {
 public:
@@ -202,8 +209,15 @@ protected:
 	bool sizing;
 };
 
+struct ViewAndNext
+{
+	ViewAndNext (CView* view, CView* nextView) : view (view), nextView (nextView) {}
+	ViewAndNext (const ViewAndNext& copy) : view (copy.view), nextView (copy.nextView) {}
+	CView* view;
+	CView* nextView;
+};
 //----------------------------------------------------------------------------------------------------
-class DeleteOperation : public IActionOperation, protected std::multimap<CView*, CView*>
+class DeleteOperation : public IActionOperation, protected std::multimap<CViewContainer*, ViewAndNext*>
 {
 public:
 	DeleteOperation (CSelection* selection)
@@ -211,9 +225,21 @@ public:
 	{
 		selection->remember ();
 		FOREACH_IN_SELECTION(selection, view)
-			insert (std::make_pair (view->getParentView (), view));
-			view->getParentView ()->remember ();
+			CViewContainer* container = dynamic_cast<CViewContainer*> (view->getParentView ());
+			CView* nextView = 0;
+			for (long i = 0; i < container->getNbViews (); i++)
+			{
+				if (container->getView (i) == view)
+				{
+					nextView = container->getView (i+1);
+					break;
+				}
+			}
+			insert (std::make_pair (container, new ViewAndNext (view, nextView)));
+			container->remember ();
 			view->remember ();
+			if (nextView)
+				nextView->remember ();
 		FOREACH_IN_SELECTION_END
 	}
 
@@ -223,7 +249,10 @@ public:
 		while (it != end ())
 		{
 			(*it).first->forget ();
-			(*it).second->forget ();
+			(*it).second->view->forget ();
+			if ((*it).second->nextView)
+				(*it).second->nextView->forget ();
+			delete (*it).second;
 			it++;
 		}
 		selection->forget ();
@@ -241,7 +270,7 @@ public:
 		const_iterator it = begin ();
 		while (it != end ())
 		{
-			dynamic_cast<CViewContainer*> ((*it).first)->removeView ((*it).second);
+			(*it).first->removeView ((*it).second->view);
 			it++;
 		}
 		selection->empty ();
@@ -253,9 +282,12 @@ public:
 		const_iterator it = begin ();
 		while (it != end ())
 		{
-			dynamic_cast<CViewContainer*> ((*it).first)->addView ((*it).second);
-			(*it).second->remember ();
-			selection->add ((*it).second);
+			if ((*it).second->nextView)
+				(*it).first->addView ((*it).second->view, (*it).second->nextView);
+			else
+				(*it).first->addView ((*it).second->view);
+			(*it).second->view->remember ();
+			selection->add ((*it).second->view);
 			it++;
 		}
 	}
@@ -263,6 +295,7 @@ protected:
 	CSelection* selection;
 };
 
+//-----------------------------------------------------------------------------
 class InsertViewOperation : public IActionOperation
 {
 public:
@@ -439,6 +472,7 @@ CEditFrame::CEditFrame (const CRect& size, void* windowPtr, VSTGUIEditorInterfac
 , grid (0)
 , selection (_selection)
 , uiDescription (0)
+, hierarchyBrowser (0)
 , inspector (0)
 , moveSizeOperation (0)
 , highlightView (0)
@@ -478,6 +512,8 @@ CEditFrame::~CEditFrame ()
 	undoStack--;
 	delete (*undoStack);
 	setUIDescription (0);
+	if (hierarchyBrowser)
+		hierarchyBrowser->forget ();
 	if (inspector)
 		inspector->forget ();
 	if (selection)
@@ -547,6 +583,11 @@ void CEditFrame::setEditMode (EditMode mode)
 		{
 			uiDescription->updateViewDescription (templateName.c_str (), getView (0));
 		}
+		if (hierarchyBrowser)
+		{
+			hierarchyBrowser->forget ();
+			hierarchyBrowser = 0;
+		}
 		inspector->hide ();
 		selection->empty ();
 		CBaseObject* editorObj = dynamic_cast<CBaseObject*> (pEditor);
@@ -557,48 +598,33 @@ void CEditFrame::setEditMode (EditMode mode)
 }
 
 //----------------------------------------------------------------------------------------------------
-bool CEditFrame::addView (CView *pView)
-{
-	if (uiDescription)
-		uiDescription->getTemplateNameFromView (pView, templateName);
-	return CFrame::addView (pView);
-}
-
-//----------------------------------------------------------------------------------------------------
-bool CEditFrame::addView (CView *pView, CRect &mouseableArea, bool mouseEnabled)
-{
-	return CFrame::addView (pView, mouseableArea, mouseEnabled);
-}
-
-//----------------------------------------------------------------------------------------------------
-bool CEditFrame::addView (CView *pView, CView* pBefore)
-{
-	return CFrame::addView (pView, pBefore);
-}
-
-//----------------------------------------------------------------------------------------------------
-bool CEditFrame::removeView (CView *pView, const bool &withForget)
+void CEditFrame::onViewAdded (CView* pView)
 {
 	if (pView == getView (0))
-		onViewRemoved ();
-	return CFrame::removeView (pView, withForget);
+	{
+		if (uiDescription && uiDescription->getTemplateNameFromView (pView, templateName) && hierarchyBrowser)
+			hierarchyBrowser->changeBaseView (dynamic_cast<CViewContainer*> (pView));
+	}
+	else if (hierarchyBrowser)
+		hierarchyBrowser->notifyHierarchyChange (pView, false);
+
+	CFrame::onViewAdded (pView);
 }
 
 //----------------------------------------------------------------------------------------------------
-bool CEditFrame::removeAll (const bool &withForget)
+void CEditFrame::onViewRemoved (CView* pView)
 {
-	onViewRemoved ();
-	return CFrame::removeAll (withForget);
-}
-
-//----------------------------------------------------------------------------------------------------
-void CEditFrame::onViewRemoved ()
-{
-	if (editMode == kEditMode && uiDescription && templateName.size () > 0)
-		uiDescription->updateViewDescription (templateName.c_str (), getView (0));
-	if (selection)
-		selection->empty ();
-	emptyUndoStack ();
+	if (pView == getView (0))
+	{
+		if (editMode == kEditMode && uiDescription && templateName.size () > 0)
+			uiDescription->updateViewDescription (templateName.c_str (), getView (0));
+		if (selection)
+			selection->empty ();
+		emptyUndoStack ();
+	}
+	else if (hierarchyBrowser)
+		hierarchyBrowser->notifyHierarchyChange (pView, true);
+	CFrame::onViewRemoved (pView);
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -606,12 +632,14 @@ void CEditFrame::showOptionsMenu (const CPoint& where)
 {
 	enum {
 		kEnableEditing = 1,
+		kHierarchyBrowserTag,
 		kGridSize1,
 		kGridSize2,
 		kGridSize5,
 		kGridSize10,
 		kGridSize15,
 		kCreateNewViewTag,
+		kInsertTemplateTag,
 		kDeleteSelectionTag,
 		kUndoTag,
 		kRedoTag,
@@ -664,6 +692,22 @@ void CEditFrame::showOptionsMenu (const CPoint& where)
 					it++;
 				}
 				menu->addEntry (viewMenu, "Insert Subview");
+				std::list<const std::string*> templateNames;
+				uiDescription->collectTemplateViewNames (templateNames);
+				if (templateNames.size () > 1)
+				{
+					templateNames.sort (stringCompare);
+					COptionMenu* templateNameMenu = new COptionMenu ();
+					it = templateNames.begin ();
+					while (it != templateNames.end ())
+					{
+						if (*(*it) != templateName)
+							templateNameMenu->addEntry (new CMenuItem ((*it)->c_str (), kInsertTemplateTag));
+						it++;
+					}
+					menu->addEntry (templateNameMenu, "Insert Template");
+					templateNameMenu->forget ();
+				}
 				viewMenu->forget ();
 			}
 		}
@@ -693,6 +737,8 @@ void CEditFrame::showOptionsMenu (const CPoint& where)
 		menu->addSeparator ();
 		menu->addEntry (new CMenuItem ("Save...", kSaveTag));
 		menu->addSeparator ();
+		menu->addEntry (new CMenuItem (hierarchyBrowser ? "Hide Hierarchy Browser" : "Show Hierarchy Browser", kHierarchyBrowserTag));
+		menu->addSeparator ();
 	}
 	CMenuItem* item = menu->addEntry (new CMenuItem (editMode == kEditMode ? "Disable Editing" : "Enable Editing", kEnableEditing));
 	item->setKey ("e", kControl);
@@ -717,6 +763,7 @@ void CEditFrame::showOptionsMenu (const CPoint& where)
 				case kGridSize10: setGrid (10); break;
 				case kGridSize15: setGrid (15); break;
 				case kCreateNewViewTag: createNewSubview (where, item->getTitle ()); break;
+				case kInsertTemplateTag: insertTemplate (where, item->getTitle ()); break;
 				case kDeleteSelectionTag: deleteSelectedViews (); break;
 				case kUndoTag: performUndo (); break;
 				case kRedoTag: performRedo (); break;
@@ -735,6 +782,19 @@ void CEditFrame::showOptionsMenu (const CPoint& where)
 					fileSelector->forget ();
 					break;
 				}
+				case kHierarchyBrowserTag:
+				{
+					if (hierarchyBrowser)
+					{
+						hierarchyBrowser->forget ();
+						hierarchyBrowser = 0;
+					}
+					else
+					{
+						hierarchyBrowser = new ViewHierarchyBrowserWindow (dynamic_cast<CViewContainer*> (getView (0)), this, uiDescription);
+					}
+					break;
+				}
 				default:
 				{
 					if (editorObj)
@@ -750,9 +810,34 @@ void CEditFrame::showOptionsMenu (const CPoint& where)
 }
 
 //----------------------------------------------------------------------------------------------------
+void CEditFrame::insertTemplate (const CPoint& where, const char* templateName)
+{
+	CViewContainer* parent = dynamic_cast<CViewContainer*> (selection->first ());
+	if (parent == 0)
+		parent = getContainerAt (where);
+	if (parent == 0)
+		return;
+
+	CPoint origin (where);
+	grid->process (origin);
+	parent->frameToLocal (origin);
+	
+	IController* controller = pEditor ? dynamic_cast<IController*> (pEditor) : 0;
+	CView* view = uiDescription->createView (templateName, controller);
+	if (view)
+	{
+		CRect r = view->getViewSize ();
+		r.offset (origin.x, origin.y);
+		view->setViewSize (r);
+		view->setMouseableArea (r);
+		performAction (new InsertViewOperation (parent, view, selection));
+	}
+}
+
+//----------------------------------------------------------------------------------------------------
 void CEditFrame::createNewSubview (const CPoint& where, const char* viewName)
 {
-	CViewContainer* parent = dynamic_cast<CViewContainer*> (selection->getFirst ());
+	CViewContainer* parent = dynamic_cast<CViewContainer*> (selection->first ());
 	if (parent == 0)
 		parent = getContainerAt (where);
 	if (parent == 0)
@@ -791,6 +876,15 @@ CMessageResult CEditFrame::notify (CBaseObject* sender, const char* message)
 			}
 			editTimer->forget ();
 			editTimer = 0;
+		}
+		return kMessageNotified;
+	}
+	else if (message == ViewHierarchyBrowserWindow::kMsgWindowClosed)
+	{
+		if (hierarchyBrowser)
+		{
+			hierarchyBrowser->forget ();
+			hierarchyBrowser = 0;
 		}
 		return kMessageNotified;
 	}
@@ -850,9 +944,7 @@ void CEditFrame::drawRect (CDrawContext *pContext, const CRect& updateRect)
 			pContext->setLineStyle (kLineSolid);
 			pContext->setLineWidth (1);
 
-			CView* view = selection->getFirst ();
-			while (view)
-			{
+			FOREACH_IN_SELECTION(selection, view)
 				CRect vs = selection->getGlobalViewCoordinates (view);
 				CRect sizeRect (-kSizingRectSize, -kSizingRectSize, 0, 0);
 				sizeRect.offset (vs.right, vs.bottom);
@@ -860,8 +952,7 @@ void CEditFrame::drawRect (CDrawContext *pContext, const CRect& updateRect)
 				if (mouseEditMode == kNoEditing)
 					pContext->drawRect (sizeRect, kDrawFilled/*AndStroked*/);
 				pContext->drawRect (vs);
-				view = selection->getNext (view);
-			}
+			FOREACH_IN_SELECTION_END
 
 		}
 	}
@@ -888,7 +979,7 @@ CMouseEventResult CEditFrame::onMouseDown (CPoint &where, const long& buttons)
 				// first alter selection
 				if (selection->contains (view))
 				{
-					if (buttons & kShift)
+					if (buttons & kControl)
 					{
 						view->invalid ();
 						selection->remove (view);
@@ -897,7 +988,7 @@ CMouseEventResult CEditFrame::onMouseDown (CPoint &where, const long& buttons)
 				}
 				else
 				{
-					if (buttons & kShift)
+					if (buttons & kControl)
 					{
 						selection->add (view);
 					}
@@ -941,7 +1032,7 @@ CMouseEventResult CEditFrame::onMouseDown (CPoint &where, const long& buttons)
 					invalidRect (r);
 					if (editMode == kEditMode)
 					{
-						if (buttons & kControl)
+						if (buttons & kAlt)
 						{
 							mouseEditMode = kDragEditing;
 							invalidSelection ();
@@ -997,6 +1088,21 @@ CMouseEventResult CEditFrame::onMouseUp (CPoint &where, const long& buttons)
 		{
 			editTimer->forget ();
 			editTimer = 0;
+		}
+		if (mouseEditMode != kNoEditing && !moveSizeOperation && buttons == kLButton && !lines)
+		{
+			CView* view = getViewAt (where, true);
+			if (!view)
+			{
+				view = getContainerAt (where, true);
+				if (view == this)
+					view = 0;
+			}
+			if (view)
+			{
+				invalidSelection ();
+				selection->setExclusive (view);
+			}
 		}
 		if (lines)
 		{
@@ -1066,7 +1172,7 @@ CMouseEventResult CEditFrame::onMouseMoved (CPoint &where, const long& buttons)
 							grid->process (where);
 						}
 						mouseStartPoint = where;
-						CView* view = selection->getFirst ();
+						CView* view = selection->first ();
 						view->invalid ();
 						CRect globalRect = selection->getGlobalViewCoordinates (view);
 						globalRect.right = mouseStartPoint.x;
@@ -1121,17 +1227,14 @@ CBitmap* CEditFrame::createBitmapFromSelection (CSelection* selection)
 	#if MAC
 	CGRect* cgRects = new CGRect [selection->total ()];
 	int i = 0;
-	CView * view = selection->getFirst ();
-	while (view)
-	{
+	FOREACH_IN_SELECTION(selection, view)
 		CRect gvs = CSelection::getGlobalViewCoordinates (view);
 		cgRects[i].origin.x = gvs.left + context.offset.x;
 		cgRects[i].origin.y = gvs.top + context.offset.y;
 		cgRects[i].size.width = gvs.getWidth ();
 		cgRects[i].size.height = gvs.getHeight ();
 		i++;
-		view = selection->getNext (view);
-	}
+	FOREACH_IN_SELECTION_END
 	CGContextClipToRects (context.getCGContext (), cgRects, selection->total ());
 	delete [] cgRects;
 	CGContextSetAlpha (context.getCGContext (), 0.5);
@@ -1149,7 +1252,7 @@ void CEditFrame::startDrag (CPoint& where)
 {
 	CBitmap* bitmap = createBitmapFromSelection (selection);
 	// this is really bad, should be done with some kind of storing the CSelection object as string and later on recreating it from the string
-	char dragString[20] = {0};
+	char dragString[40] = {0};
 	sprintf (dragString, "CSelection: %d", selection);
 	PlatformUtilities::startDrag (this, where, dragString, bitmap);
 	if (bitmap)
@@ -1547,6 +1650,14 @@ void CEditFrame::performBitmapNameChange (const char* oldName, const char* newNa
 {
 	uiDescription->changeBitmapName (oldName, newName);
 	selection->changed (CSelection::kMsgSelectionViewChanged);
+}
+
+//----------------------------------------------------------------------------------------------------
+void CEditFrame::makeSelection (CView* view)
+{
+	invalidSelection ();
+	selection->setExclusive (view);
+	invalidSelection ();
 }
 
 //----------------------------------------------------------------------------------------------------

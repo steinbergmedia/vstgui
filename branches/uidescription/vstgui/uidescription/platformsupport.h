@@ -67,6 +67,18 @@ public:
 	static void colorChooser (const CColor* oldColor, IPlatformColorChangeCallback* callback);
 };
 
+//-----------------------------------------------------------------------------
+class PlatformDefaults
+{
+public:
+	static void setRect (const char* appID, const char* name, const CRect& value);
+	static bool getRect (const char* appID, const char* name, CRect& value);
+	static void setString (const char* appID, const char* name, const std::string& value);
+	static bool getString (const char* appID, const char* name, std::string& value);
+	static void setNumber (const char* appID, const char* name, long value);
+	static bool getNumber (const char* appID, const char* name, long& value);
+};
+
 END_NAMESPACE_VSTGUI
 
 #endif

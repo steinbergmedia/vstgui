@@ -61,7 +61,7 @@ void CSelection::add (CView* view)
 {
 	if (style == kSingleSelectionStyle)
 		empty ();
-	views.push_back (view);
+	push_back (view);
 	changed (kMsgSelectionChanged);
 	view->remember ();
 }
@@ -71,7 +71,7 @@ void CSelection::remove (CView* view)
 {
 	if (contains (view))
 	{
-		views.remove (view);
+		std::list<CView*>::remove (view);
 		changed (kMsgSelectionChanged);
 		view->forget ();
 	}
@@ -88,21 +88,21 @@ void CSelection::setExclusive (CView* view)
 //----------------------------------------------------------------------------------------------------
 void CSelection::empty ()
 {
-	std::list<CView*>::const_iterator it = views.begin ();
-	while (it != views.end ())
+	const_iterator it = begin ();
+	while (it != end ())
 	{
 		(*it)->forget ();
 		it++;
 	}
-	views.erase (views.begin (), views.end ());
+	erase (std::list<CView*>::begin (), std::list<CView*>::end ());
 	changed (kMsgSelectionChanged);
 }
 
 //----------------------------------------------------------------------------------------------------
 bool CSelection::contains (CView* view) const
 {
-	std::list<CView*>::const_iterator it = views.begin ();
-	while (it != views.end ())
+	const_iterator it = begin ();
+	while (it != end ())
 	{
 		if (*it == view)
 			return true;
@@ -117,8 +117,8 @@ bool CSelection::containsParent (CView* view) const
 	CView* parent = view->getParentView ();
 	if (parent)
 	{
-		std::list<CView*>::const_iterator it = views.begin ();
-		while (it != views.end ())
+		const_iterator it = begin ();
+		while (it != end ())
 		{
 			if (*it == parent)
 				return true;
@@ -132,25 +132,28 @@ bool CSelection::containsParent (CView* view) const
 //----------------------------------------------------------------------------------------------------
 int CSelection::total () const
 {
-	return views.size ();
+	return size ();
 }
 
 //----------------------------------------------------------------------------------------------------
-CView* CSelection::getFirst () const
+CView* CSelection::first () const
 {
-	return *views.begin ();
+	if (size () > 0)
+		return *begin ();
+	return 0;
 }
 
+/*
 //----------------------------------------------------------------------------------------------------
 CView* CSelection::getNext (CView* previous) const
 {
-	std::list<CView*>::const_iterator it = views.begin ();
-	while (it != views.end ())
+	const_iterator it = begin ();
+	while (it != end ())
 	{
 		if ((*it) == previous)
 		{
 			it++;
-			if (it != views.end ())
+			if (it != end ())
 				return *it;
 			else
 				return 0;
@@ -159,13 +162,14 @@ CView* CSelection::getNext (CView* previous) const
 	}
 	return 0;
 }
+*/
 
 //----------------------------------------------------------------------------------------------------
 CRect CSelection::getBounds () const
 {
 	CRect result (50000, 50000, 0, 0);
-	std::list<CView*>::const_iterator it = views.begin ();
-	while (it != views.end ())
+	const_iterator it = begin ();
+	while (it != end ())
 	{
 		CRect vs = getGlobalViewCoordinates (*it);
 		if (result.left > vs.left)
@@ -196,8 +200,8 @@ CRect CSelection::getGlobalViewCoordinates (CView* view)
 //----------------------------------------------------------------------------------------------------
 void CSelection::moveBy (const CPoint& p)
 {
-	std::list<CView*>::const_iterator it = views.begin ();
-	while (it != views.end ())
+	const_iterator it = begin ();
+	while (it != end ())
 	{
 		if (!containsParent ((*it)))
 		{

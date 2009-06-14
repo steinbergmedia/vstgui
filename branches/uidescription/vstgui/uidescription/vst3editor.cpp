@@ -58,12 +58,25 @@ public:
 		if (display)
 			display->setStringConvert (stringConvert, this);
 
+		COptionMenu* optMenu = dynamic_cast<COptionMenu*> (control);
+		if (optMenu && parameter && parameter->getInfo ().stepCount > 0)
+		{
+			for (Steinberg::int32 i = 0; i <= parameter->getInfo ().stepCount; i++)
+			{
+				Steinberg::Vst::String128 utf16Str;
+				parameter->toString ((Steinberg::Vst::ParamValue)i / (Steinberg::Vst::ParamValue)parameter->getInfo ().stepCount, utf16Str);
+				Steinberg::String utf8Str (utf16Str);
+				utf8Str.toMultiByte (Steinberg::kCP_Utf8);
+				optMenu->addEntry (utf8Str);
+			}
+		}
+
 		updateControlValue (value);
 	}
 	
 	void PLUGIN_API update (FUnknown* changedUnknown, Steinberg::int32 message)
 	{
-		if (message == IDependent::kChanged)
+		if (message == IDependent::kChanged && parameter)
 		{
 			updateControlValue (parameter->getNormalized ());
 		}
@@ -76,7 +89,7 @@ public:
 		CControl* control = controls.front ();
 		if (control)
 			return control->getTag ();
-		return -1;
+		return 0xFFFFFFFF;
 	}
 	
 	void beginEdit ()
@@ -103,14 +116,19 @@ public:
 			updateControlValue (value);
 		}
 	}
+	Steinberg::Vst::Parameter* getParameter () const { return parameter; }
+
 protected:
 	void convertValueToString (float value, char* string)
 	{
-		Steinberg::Vst::String128 utf16Str;
-		parameter->toString (value, utf16Str);
-		Steinberg::String utf8Str (utf16Str);
-		utf8Str.toMultiByte (Steinberg::kCP_Utf8);
-		utf8Str.copyTo8 (string, 0, 256);
+		if (parameter)
+		{
+			Steinberg::Vst::String128 utf16Str;
+			parameter->toString (value, utf16Str);
+			Steinberg::String utf8Str (utf16Str);
+			utf8Str.toMultiByte (Steinberg::kCP_Utf8);
+			utf8Str.copyTo8 (string, 0, 256);
+		}
 	}
 
 	static void stringConvert (float value, char* string, void* userDta)
@@ -124,7 +142,14 @@ protected:
 		std::list<CControl*>::iterator it = controls.begin ();
 		while (it != controls.end ())
 		{
-			(*it)->setValue (value);
+			COptionMenu* optMenu = dynamic_cast<COptionMenu*> (*it);
+			if (optMenu)
+			{
+				if (parameter)
+					optMenu->setValue (parameter->toPlain (value));
+			}
+			else
+				(*it)->setValue (value);
 			(*it)->invalid ();
 			it++;
 		}
@@ -206,8 +231,8 @@ void VST3Editor::init ()
 				CPoint p;
 				if (parseSize (*sizeStr, p))
 				{
-					rect.right = p.x;
-					rect.bottom = p.y;
+					rect.right = (Steinberg::int32)p.x;
+					rect.bottom = (Steinberg::int32)p.y;
 					minSize = p;
 					maxSize = p;
 				}
@@ -217,7 +242,29 @@ void VST3Editor::init ()
 			if (maxSizeStr)
 				parseSize (*maxSizeStr, maxSize);
 		}
+		#if DEBUG
+		else
+		{
+			UIAttributes* attr = new UIAttributes ();
+			attr->setAttribute ("class", "CViewContainer");
+			attr->setAttribute ("size", "300, 300");
+			description->addNewTemplate (viewName.c_str (), attr);
+			rect.right = 300;
+			rect.bottom = 300;
+		}
+		#endif
 	}
+	#if DEBUG
+	else
+	{
+		UIAttributes* attr = new UIAttributes ();
+		attr->setAttribute ("class", "CViewContainer");
+		attr->setAttribute ("size", "300, 300");
+		description->addNewTemplate (viewName.c_str (), attr);
+		rect.right = 300;
+		rect.bottom = 300;
+	}
+	#endif
 }
 
 //-----------------------------------------------------------------------------
@@ -280,7 +327,7 @@ void VST3Editor::valueChanged (CControl* pControl)
 	{
 		Steinberg::Vst::ParamValue value = pControl->getValue ();
 		CTextEdit* textEdit = dynamic_cast<CTextEdit*> (pControl);
-		if (textEdit)
+		if (textEdit && pcl->getParameter ())
 		{
 			Steinberg::String str (textEdit->getText ());
 			str.toWideString (Steinberg::kCP_Utf8);
@@ -289,6 +336,12 @@ void VST3Editor::valueChanged (CControl* pControl)
 				pcl->changed ();
 				return;
 			}
+		}
+		COptionMenu* optMenu = dynamic_cast<COptionMenu*> (pControl);
+		if (optMenu && pcl->getParameter ())
+		{
+			//need to convert to normalized from plain
+			value = pcl->getParameter ()->toNormalized (value);
 		}
 		pcl->performEdit (value);
 	}
@@ -391,8 +444,8 @@ void VST3Editor::recreateView ()
 	{
 		if (plugFrame)
 		{
-			rect.right = rect.left + view->getWidth ();
-			rect.bottom = rect.top + view->getHeight ();
+			rect.right = rect.left + (Steinberg::int32)view->getWidth ();
+			rect.bottom = rect.top + (Steinberg::int32)view->getHeight ();
 			plugFrame->resizeView (this, &rect);
 		}
 		else
@@ -410,8 +463,6 @@ void VST3Editor::recreateView ()
 //-----------------------------------------------------------------------------
 bool PLUGIN_API VST3Editor::open (void* parent)
 {
-	if (!verify ())
-		return false;
 	reloadDescriptionTag = description->getTagForName (kVST3EditorReloadDescriptionTagName);
 	CView* view = description->createView (viewName.c_str (), this);
 	if (view)
@@ -482,8 +533,8 @@ Steinberg::tresult PLUGIN_API VST3Editor::checkSizeConstraint (Steinberg::ViewRe
 		height = maxSize.y;
 	if (width != rect->right - rect->left || height != rect->bottom - rect->top)
 	{
-		rect->right = width + rect->left;
-		rect->bottom = height + rect->top;
+		rect->right = (Steinberg::int32)width + rect->left;
+		rect->bottom = (Steinberg::int32)height + rect->top;
 	}
 	return Steinberg::kResultTrue;
 }

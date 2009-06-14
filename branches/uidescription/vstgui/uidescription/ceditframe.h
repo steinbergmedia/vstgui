@@ -26,6 +26,7 @@ class CrossLines;
 class Grid;
 class CViewInspector;
 class IActionOperation;
+class ViewHierarchyBrowserWindow;
 
 //----------------------------------------------------------------------------------------------------
 class IActionOperator
@@ -43,6 +44,8 @@ public:
 	virtual void performTagNameChange (const char* oldName, const char* newName) = 0;
 	virtual void performFontNameChange (const char* oldName, const char* newName) = 0;
 	virtual void performBitmapNameChange (const char* oldName, const char* newName) = 0;
+	
+	virtual void makeSelection (CView* view) = 0;
 };
 
 //----------------------------------------------------------------------------------------------------
@@ -79,6 +82,8 @@ public:
 	void performFontNameChange (const char* oldName, const char* newName);
 	void performBitmapNameChange (const char* oldName, const char* newName);
 
+	void makeSelection (CView* view);
+
 	static const char* kMsgPerformOptionsMenuAction;
 	static const char* kMsgShowOptionsMenu;
 	static const char* kMsgEditEnding;
@@ -88,6 +93,7 @@ protected:
 	CMessageResult notify (CBaseObject* sender, const char* message);
 	void showOptionsMenu (const CPoint& where);
 	void createNewSubview (const CPoint& where, const char* viewName);
+	void insertTemplate (const CPoint& where, const char* templateName);
 	void invalidSelection ();
 	void deleteSelectedViews ();
 	void performUndo ();
@@ -100,8 +106,6 @@ protected:
 
 	void startDrag (CPoint& where);
 
-	void onViewRemoved ();
-	
 	// overwrites
 	void draw (CDrawContext *pContext);
 	void drawRect (CDrawContext *pContext, const CRect& updateRect);
@@ -122,12 +126,9 @@ protected:
 	long onKeyDown (VstKeyCode& keyCode);
 	long onKeyUp (VstKeyCode& keyCode);
 
-	bool addView (CView *pView);
-	bool addView (CView *pView, CRect &mouseableArea, bool mouseEnabled = true);
-	bool addView (CView *pView, CView* pBefore);
-	bool removeView (CView *pView, const bool &withForget = true);
-	bool removeAll (const bool &withForget = true);
-
+	void onViewAdded (CView* pView);
+	void onViewRemoved (CView* pView);
+	
 	enum MouseEditMode {
 		kNoEditing,
 		kDragEditing,
@@ -140,6 +141,7 @@ protected:
 	Grid* grid;
 	CSelection* selection;
 	UIDescription* uiDescription;
+	ViewHierarchyBrowserWindow* hierarchyBrowser;
 	CViewInspector* inspector;
 	IActionOperation* moveSizeOperation;
 	CView* highlightView;
@@ -149,7 +151,7 @@ protected:
 	
 	CPoint mouseStartPoint;
 	CPoint dragSelectionOffset;
-
+	
 	std::string templateName;
 
 	std::list<IActionOperation*> undoStackList;

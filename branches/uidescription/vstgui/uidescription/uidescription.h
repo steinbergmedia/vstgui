@@ -105,7 +105,7 @@ protected:
 	CView* createViewFromNode (UINode* node, IController* controller);
 	UINode* getBaseNode (const char* name) const;
 	UINode* findChildNodeByNameAttribute (UINode* node, const char* nameAttribute) const;
-	void updateAttributesForView (UINode* node, CView* view);
+	void updateAttributesForView (UINode* node, CView* view, bool deep = true);
 
 	// Xml::IHandler
 	void startXmlElement (Xml::Parser* parser, const char* elementName, const char** elementAttributes);
@@ -145,6 +145,7 @@ public:
 	virtual ~IViewFactory () {}
 	
 	virtual CView* createView (const UIAttributes& attributes, IUIDescription* description) = 0;
+	virtual bool applyAttributeValues (CView* view, const UIAttributes& attributes, IUIDescription* desc) const = 0;
 };
 
 END_NAMESPACE_VSTGUI

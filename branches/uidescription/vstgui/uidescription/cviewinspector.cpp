@@ -14,6 +14,7 @@
 #include "../cscrollview.h"
 #include "../ctabview.h"
 #include "../cdatabrowser.h"
+#include "../vstkeycode.h"
 #include <set>
 #include <vector>
 #include <algorithm>
@@ -83,7 +84,15 @@ public:
 		pContext->drawRect (r, kDrawFilled);
 		if (name)
 		{
-			pContext->setFont (textFont);
+			if (getFrame ()->getFocusView () == this)
+			{
+				CFontRef focusFont = new CFontDesc (*textFont);
+				focusFont->setStyle (textFont->getStyle () | kUnderlineFace);
+				pContext->setFont (focusFont);
+				focusFont->forget ();
+			}
+			else
+				pContext->setFont (textFont);
 			pContext->setFontColor (value ? activeTextColor : inactiveTextColor);
 			pContext->drawString (name, size, false);
 		}
@@ -98,11 +107,12 @@ public:
 
 	CMouseEventResult onMouseDown (CPoint &where, const long& button)
 	{
+		beginEdit ();
 		value = ((long)value) ? 0.f : 1.f;
 		
 		if (listener)
 			listener->valueChanged (this);
-
+		endEdit ();
 		return kMouseDownEventHandledButDontNeedMovedOrUpEvents;
 	}
 
@@ -197,6 +207,28 @@ protected:
 };
 
 //-----------------------------------------------------------------------------
+class FocusOptionMenu : public COptionMenu
+{
+public:
+	FocusOptionMenu (const CRect& size, CControlListener* listener, long tag, CBitmap* background = 0, CBitmap* bgWhenClick = 0, const long style = 0)
+	: COptionMenu (size, listener, tag, background, bgWhenClick, style) {}
+	
+	void takeFocus ()
+	{
+		origBackgroundColor = backColor;
+		backColor.alpha = 255;
+	}
+	
+	void looseFocus ()
+	{
+		backColor = origBackgroundColor;
+	}
+
+protected:
+	CColor origBackgroundColor;
+};
+
+//-----------------------------------------------------------------------------
 class SimpleBooleanButton : public CParamDisplay
 {
 public:
@@ -205,6 +237,7 @@ public:
 	{
 		setListener (listener);
 		setStringConvert (booleanStringConvert);
+		setWantsFocus (true);
 	}
 
 	static void booleanStringConvert (float value, char* string)
@@ -218,11 +251,40 @@ public:
 	CMouseEventResult onMouseDown (CPoint &where, const long& buttons)
 	{
 		value = value == 0 ? 1 : 0;
+		beginEdit ();
 		if (listener)
 			listener->valueChanged (this);
+		endEdit ();
 		invalid ();
 		return kMouseDownEventHandledButDontNeedMovedOrUpEvents;
 	}
+
+	void takeFocus ()
+	{
+		origBackgroundColor = backColor;
+		backColor.alpha = 255;
+	}
+	
+	void looseFocus ()
+	{
+		backColor = origBackgroundColor;
+	}
+	
+	long onKeyDown (VstKeyCode& keyCode)
+	{
+		if (keyCode.virt == VKEY_RETURN && keyCode.modifier == 0)
+		{
+			value = ((long)value) ? 0.f : 1.f;
+			invalid ();
+			beginEdit ();
+			if (listener)
+				listener->valueChanged (this);
+			endEdit ();
+			return 1;
+		}
+		return -1;
+	}
+	CColor origBackgroundColor;
 };
 
 //-----------------------------------------------------------------------------
@@ -289,8 +351,16 @@ public:
 	{
 	}
 
+	void drawBackgroundSelected (CDrawContext* context, const CRect& size)
+	{
+		context->setFillColor (MakeCColor (255, 255, 255, 10));
+		context->drawRect (size, kDrawFilled);
+	}
+
 	void dbDrawCell (CDrawContext* context, const CRect& size, long row, long column, long flags, CDataBrowser* browser)
 	{
+		if (flags & kRowSelected)
+			drawBackgroundSelected (context, size);
 		if (row >= dbGetNumRows (browser)-1)
 		{
 			if (column == 0)
@@ -368,6 +438,38 @@ public:
 		return kMouseDownEventHandledButDontNeedMovedOrUpEvents;
 	}
 
+	virtual bool startEditing (long row, CDataBrowser* browser)
+	{
+		if (row == dbGetNumRows (browser)-1)
+		{
+			browser->beginTextEdit (row, 0, "");
+			return true;
+		}
+		else if (row != -1)
+		{
+			std::string str;
+			if (getCellText (row, 1, str, browser))
+			{
+				browser->beginTextEdit (row, 1, str.c_str ());
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	long dbOnKeyDown (const VstKeyCode& key, CDataBrowser* browser)
+	{
+		if (key.virt == VKEY_RETURN)
+		{
+			long row = browser->getSelectedRow ();
+			if (startEditing (row, browser))
+				return 1;
+		}
+		
+		return -1;
+	}
+
+
 protected:
 	UIDescription* desc;
 	IActionOperator* actionOperator;
@@ -407,7 +509,7 @@ public:
 			{
 				actionOperator->performBitmapChange (names[row]->c_str (), 0, true);
 				updateNames ();
-				browser->recalculateLayout ();
+				browser->recalculateLayout (true);
 				return kMouseDownEventHandledButDontNeedMovedOrUpEvents;
 			}
 		}
@@ -426,14 +528,17 @@ public:
 			if (row == dbGetNumRows (browser)-1)
 			{
 				if (!desc->getBitmap (newText))
+				{
 					actionOperator->performBitmapChange (newText, "not yet defined");
+					browser->beginTextEdit (row, 1, "not yet defined");
+				}
 			}
 			else
 			{
 				actionOperator->performBitmapNameChange (names[row]->c_str (), newText);
 			}
 			updateNames ();
-			browser->recalculateLayout ();
+			browser->recalculateLayout (true);
 		}
 		else if (column == 1)
 		{
@@ -478,6 +583,22 @@ public:
 		return BrowserDelegateBase::getCellText (row, column, result, browser);
 	}
 
+	bool startEditing (long row, CDataBrowser* browser)
+	{
+		if (row < (dbGetNumRows (browser) - 1))
+		{
+			CColor color;
+			if (desc->getColor (names[row]->c_str (), color))
+			{
+				this->browser = browser;
+				lastChoosenRow = row;
+				PlatformUtilities::colorChooser (&color, this);
+			}
+			return true;
+		}
+		return BrowserDelegateBase::startEditing (row, browser);
+	}
+	
 	CMouseEventResult dbOnMouseDown (const CPoint& where, const long& buttons, long row, long column, CDataBrowser* browser)
 	{
 		if (row < (dbGetNumRows (browser) - 1))
@@ -497,7 +618,7 @@ public:
 			{
 				actionOperator->performColorChange (names[row]->c_str (), MakeCColor (0, 0, 0, 0), true);
 				updateNames ();
-				browser->recalculateLayout ();
+				browser->recalculateLayout (true);
 				return kMouseDownEventHandledButDontNeedMovedOrUpEvents;
 			}
 		}
@@ -539,7 +660,7 @@ public:
 				actionOperator->performColorNameChange (names[row]->c_str (), newText);
 			}
 			updateNames ();
-			browser->recalculateLayout ();
+			browser->recalculateLayout (true);
 		}
 		else if (column == 1)
 		{
@@ -556,6 +677,8 @@ public:
 	{
 		if (column == 1 && row < (dbGetNumRows (browser) - 1))
 		{
+			if (flags & kRowSelected)
+				drawBackgroundSelected (context, size);
 			CColor color;
 			if (desc->getColor (names[row]->c_str (), color))
 			{
@@ -614,7 +737,7 @@ public:
 			{
 				actionOperator->performTagChange (names[row]->c_str (), 0, true);
 				updateNames ();
-				browser->recalculateLayout ();
+				browser->recalculateLayout (true);
 				return kMouseDownEventHandledButDontNeedMovedOrUpEvents;
 			}
 		}
@@ -635,6 +758,7 @@ public:
 				if (desc->getTagForName (newText) == -1)
 				{
 					actionOperator->performTagChange (newText, -2);
+					browser->beginTextEdit (row, 1, "-2");
 				}
 			}
 			else
@@ -642,7 +766,7 @@ public:
 				actionOperator->performTagNameChange (names[row]->c_str (), newText);
 			}
 			updateNames ();
-			browser->recalculateLayout ();
+			browser->recalculateLayout (true);
 		}
 		else if (column == 1)
 		{
@@ -758,6 +882,27 @@ public:
 		return result;
 	}
 
+	bool startEditing (long row, CDataBrowser* browser)
+	{
+		if (row < (dbGetNumRows (browser) - 1))
+		{
+			CRect r = browser->getCellBounds (row, 1);
+			CPoint location (r.getTopLeft ());
+			browser->localToFrame (location);
+			CFontRef currentFont = desc->getFont (names[row]->c_str ());
+			CFontRef newFont = showFontMenu (browser->getFrame (), location, currentFont);
+			if (newFont)
+			{
+				actionOperator->performFontChange (names[row]->c_str (), newFont);
+				newFont->forget ();
+				updateNames ();
+				browser->recalculateLayout (true);
+			}
+			return true;
+		}
+		return BrowserDelegateBase::startEditing (row, browser);
+	}
+	
 	CMouseEventResult dbOnMouseDown (const CPoint& where, const long& buttons, long row, long column, CDataBrowser* browser)
 	{
 		if (row < (dbGetNumRows (browser) - 1))
@@ -766,7 +911,7 @@ public:
 			{
 				actionOperator->performFontChange (names[row]->c_str (), 0, true);
 				updateNames ();
-				browser->recalculateLayout ();
+				browser->recalculateLayout (true);
 				return kMouseDownEventHandledButDontNeedMovedOrUpEvents;
 			}
 			else if (column == 1)
@@ -780,7 +925,7 @@ public:
 					actionOperator->performFontChange (names[row]->c_str (), newFont);
 					newFont->forget ();
 					updateNames ();
-					browser->recalculateLayout ();
+					browser->recalculateLayout (true);
 				}
 				return kMouseDownEventHandledButDontNeedMovedOrUpEvents;
 			}
@@ -815,7 +960,7 @@ public:
 					actionOperator->performFontChange (names[row]->c_str (), newFont);
 					newFont->forget ();
 					updateNames ();
-					browser->recalculateLayout ();
+					browser->recalculateLayout (true);
 				}
 				return kMouseDownEventHandledButDontNeedMovedOrUpEvents;
 			}
@@ -846,7 +991,7 @@ public:
 				actionOperator->performFontNameChange (names[row]->c_str (), newText);
 			}
 			updateNames ();
-			browser->recalculateLayout ();
+			browser->recalculateLayout (true);
 		}
 		else if (column == 3)
 		{
@@ -859,7 +1004,7 @@ public:
 				actionOperator->performFontChange (names[row]->c_str (), newFont);
 				newFont->forget ();
 				updateNames ();
-				browser->recalculateLayout ();
+				browser->recalculateLayout (true);
 			}
 		}
 	}
@@ -923,7 +1068,7 @@ static void updateMenuFromList (COptionMenu* menu, std::list<const std::string*>
 //-----------------------------------------------------------------------------
 static COptionMenu* createMenuFromList (const CRect& size, CControlListener* listener, std::list<const std::string*>& names, const std::string& defaultValue, bool addNoneItem = false)
 {
-	COptionMenu* menu = new COptionMenu (size, listener, -1);
+	COptionMenu* menu = new FocusOptionMenu (size, listener, -1);
 	menu->setStyle (kCheckStyle|kPopupStyle);
 	updateMenuFromList (menu, names, defaultValue, addNoneItem);
 	return menu;
@@ -940,12 +1085,15 @@ CViewInspector::CViewInspector (CSelection* selection, IActionOperator* actionOp
 {
 	selection->remember ();
 	selection->addDependent (this);
+
+	PlatformDefaults::getRect ("net.sourceforge.vstgui.uidescription", "CViewInspector size", windowSize);
 }
 
 //-----------------------------------------------------------------------------
 CViewInspector::~CViewInspector ()
 {
 	hide ();
+	PlatformDefaults::setRect ("net.sourceforge.vstgui.uidescription", "CViewInspector size", windowSize);
 	setUIDescription (0);
 	selection->removeDependent (this);
 	selection->forget ();
@@ -996,9 +1144,9 @@ CView* CViewInspector::createViewForAttribute (const std::string& attrName, CCoo
 
 	CRect r (middle+10, 0, width-5, height);
 	CView* valueView = 0;
-	IViewCreator::AttrType attrType = viewFactory->getAttributeType (selection->getFirst (), attrName);
+	IViewCreator::AttrType attrType = viewFactory->getAttributeType (*selection->begin (), attrName);
 	std::string attrValue;
-	viewFactory->getAttributeValue (selection->getFirst (), attrName, attrValue, description);
+	viewFactory->getAttributeValue (*selection->begin (), attrName, attrValue, description);
 	switch (attrType)
 	{
 		case IViewCreator::kColorType:
@@ -1090,7 +1238,7 @@ void CViewInspector::updateAttributeViews ()
 		CView* view = (*it);
 		if (view && getViewAttributeName (view, attrName))
 		{
-			viewFactory->getAttributeValue (selection->getFirst (), attrName, attrValue, description);
+			viewFactory->getAttributeValue (*selection->begin (), attrName, attrValue, description);
 			CTextEdit* textEdit = dynamic_cast<CTextEdit*> (view);
 			COptionMenu* optMenu = dynamic_cast<COptionMenu*> (view);
 			SimpleBooleanButton* booleanButton = dynamic_cast<SimpleBooleanButton*> (view);
@@ -1102,7 +1250,7 @@ void CViewInspector::updateAttributeViews ()
 			}
 			else if (optMenu)
 			{
-				IViewCreator::AttrType type = viewFactory->getAttributeType (selection->getFirst (), attrName);
+				IViewCreator::AttrType type = viewFactory->getAttributeType (*selection->begin (), attrName);
 				bool addNoneItem = false;
 				std::list<const std::string*> names;
 				switch (type)
@@ -1298,7 +1446,7 @@ void CViewInspector::show ()
 		size.offset (-kMargin, 0);
 		size.right += kMargin*2;
 		size.bottom += kMargin;
-		platformWindow = PlatformWindow::create (size, "Inspector", PlatformWindow::kPanelType, PlatformWindow::kResizable, this);
+		platformWindow = PlatformWindow::create (size, "VSTGUI Inspector", PlatformWindow::kPanelType, PlatformWindow::kResizable, this);
 		if (platformWindow)
 		{
 			#if MAC && !__LP64__
