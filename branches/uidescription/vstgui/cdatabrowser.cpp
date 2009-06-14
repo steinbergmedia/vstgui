@@ -377,6 +377,7 @@ CMessageResult CDataBrowser::notify (CBaseObject* sender, const char* message)
 			te->getText (newText);
 			getFrame ()->setFocusView (0);
 			removeView (te);
+			getFrame ()->setFocusView (dbView);
 			db->dbCellTextChanged (row, col, newText, this);
 			return kMessageNotified;
 		}
@@ -689,6 +690,7 @@ bool CDataBrowserView::getCell (CPoint& where, long& row, long& column)
 //-----------------------------------------------------------------------------------------------
 CMouseEventResult CDataBrowserView::onMouseDown (CPoint &where, const long& buttons)
 {
+	getFrame ()->setFocusView (this);
 	long rowNum = -1;
 	long colNum = -1;
 	if (getCell (where, rowNum, colNum))
@@ -731,6 +733,9 @@ CMouseEventResult CDataBrowserView::onMouseUp (CPoint &where, const long& button
 //-----------------------------------------------------------------------------------------------
 long CDataBrowserView::onKeyDown (VstKeyCode& keyCode)
 {
+	long res = db->dbOnKeyDown (keyCode, browser);
+	if (res != -1)
+		return res;
 	if (keyCode.virt == VKEY_UP || keyCode.virt == VKEY_DOWN)
 	{
 		long numRows = db->dbGetNumRows (browser);

@@ -328,7 +328,8 @@ public:
 	CLASS_METHODS(CParamDisplay, CControl)
 
 protected:
-	virtual void drawText (CDrawContext* pContext, const char* string, CBitmap* newBack = 0);
+	virtual void drawBack (CDrawContext* pContext, CBitmap* newBack = 0);
+	virtual void drawText (CDrawContext* pContext, const char* string);
 
 	void (*stringConvert) (float value, char* string);
 	void (*stringConvert2) (float value, char* string, void* userData);
@@ -617,6 +618,7 @@ public:
 
 	COptionMenu* getSubMenu (long idx) const;																///< get a submenu
 
+	bool popup ();																							///< pops up menu
 	bool popup (CFrame* frame, const CPoint& frameLocation);												///< pops up menu at frameLocation
 #if MAC_CARBON
 	short   getMenuID () const { return menuID; }
@@ -629,6 +631,7 @@ public:
 	virtual	void draw (CDrawContext* pContext);
 	VSTGUI_DEPRECATED (virtual void mouse (CDrawContext* pContext, CPoint& where, long button = -1);)
 	virtual CMouseEventResult onMouseDown (CPoint& where, const long& buttons);
+	virtual long onKeyDown (VstKeyCode& keyCode);
 
 	virtual	void takeFocus ();
 	virtual	void looseFocus ();
@@ -648,12 +651,13 @@ protected:
 	short   menuID;
 #endif
 
+	bool     inPopup;
 	long     currentIndex;
-	CBitmap* bgWhenClick;
 	long     lastButton;
 	long     nbItemsPerColumn;
 	long	 lastResult;
 	long	 prefixNumbers;
+	CBitmap* bgWhenClick;
 	COptionMenu* lastMenu;
 	#if VSTGUI_ENABLE_DEPRECATED_METHODS
 	COptionMenuScheme* scheme;

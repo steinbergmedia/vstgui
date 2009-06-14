@@ -616,6 +616,18 @@ void* CFontDesc::getPlatformFont ()
 				traitMask |= kCTFontItalicTrait;
 			}
 			CTFontRef fontRef = CTFontCreateCopyWithSymbolicTraits ((CTFontRef)platformFont, size, NULL, desiredTrait, traitMask);
+			if (!fontRef)
+			{
+				if (style & kBoldFace && style & ~kItalicFace)
+				{
+					CFStringRef boldFontNameRef = CFStringCreateWithFormat (0, 0, CFSTR("%s Bold"), name);
+					if (boldFontNameRef)
+					{
+						fontRef = CTFontCreateWithName (boldFontNameRef, size, 0);
+						CFRelease (boldFontNameRef);
+					}
+				}
+			}
 			if (fontRef)
 			{
 				CFRelease ((CTFontRef)platformFont);
@@ -2163,15 +2175,11 @@ void CDrawContext::drawStringUTF8 (const char* string, const CPoint& _point, boo
 	if (utf8Str)
 	{
 		CGColorRef cgColor = CGColorCreateGenericRGB (fontColor.red/255.f, fontColor.green/255.f, fontColor.blue/255.f, fontColor.alpha/255.f);
-		CTUnderlineStyle underlineStyle = font->getStyle () & kUnderlineFace ? kCTUnderlineStyleSingle : kCTUnderlineStyleNone;
-		CFNumberRef fontUnderlineStyle = CFNumberCreate (0, kCFNumberIntType, &underlineStyle);
-		CFStringRef keys[] = { kCTFontAttributeName, kCTForegroundColorAttributeName, kCTUnderlineStyleAttributeName };
-		CFTypeRef values[] = { fontRef, cgColor, fontUnderlineStyle };
-		CFDictionaryRef attributes = CFDictionaryCreate(kCFAllocatorDefault, (const void**)&keys,(const void**)&values, sizeof(keys) / sizeof(keys[0]), &kCFTypeDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks);
+		CFStringRef keys[] = { kCTFontAttributeName, kCTForegroundColorAttributeName };
+		CFTypeRef values[] = { fontRef, cgColor };
+		CFDictionaryRef attributes = CFDictionaryCreate (kCFAllocatorDefault, (const void**)&keys,(const void**)&values, sizeof(keys) / sizeof(keys[0]), &kCFTypeDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks);
 		CFAttributedStringRef attrStr = CFAttributedStringCreate (0, utf8Str, attributes);
 		CFRelease (attributes);
-		CFRelease (fontUnderlineStyle);
-		CFRelease (cgColor);
 		if (attrStr)
 		{
 			CTLineRef line = CTLineCreateWithAttributedString (attrStr);
@@ -2183,12 +2191,25 @@ void CDrawContext::drawStringUTF8 (const char* string, const CPoint& _point, boo
 					CGContextSetShouldAntialias (context, antialias);
 					CGContextSetTextPosition (context, point.x, point.y);
 					CTLineDraw (line, context);
+					if (font->getStyle () & kUnderlineFace)
+					{
+						CGFloat underlineOffset = CTFontGetUnderlinePosition (fontRef);
+						CGFloat underlineThickness = CTFontGetUnderlineThickness (fontRef);
+						CGContextSetStrokeColorWithColor (context, cgColor);
+						CGContextSetLineWidth (context, underlineThickness);
+						CGPoint cgPoint = CGContextGetTextPosition (context);
+						CGContextBeginPath (context);
+						CGContextMoveToPoint (context, point.x, point.y - underlineOffset);
+						CGContextAddLineToPoint (context, cgPoint.x, point.y - underlineOffset);
+						CGContextDrawPath (context, kCGPathStroke);
+					}
 					releaseCGContext (context);
 				}
 				CFRelease (line);
 			}
 			CFRelease (attrStr);
 		}
+		CFRelease (cgColor);
 		CFRelease (utf8Str);
 	}
 
@@ -3578,6 +3599,7 @@ CFrame::CFrame (const CRect &inSize, void* inSystemWindow, VSTGUIEditorInterface
 : CViewContainer (inSize, 0, 0)
 , pEditor (inEditor)
 , pMouseObserver (0)
+, pKeyboardHook (0)
 , pSystemWindow (inSystemWindow)
 , pModalView (0)
 , pFocusView (0)
@@ -3670,6 +3692,7 @@ CFrame::CFrame (const CRect& inSize, const char* inTitle, VSTGUIEditorInterface*
 : CViewContainer (inSize, 0, 0)
 , pEditor (inEditor)
 , pMouseObserver (0)
+, pKeyboardHook (0)
 , pSystemWindow (0)
 , pModalView (0)
 , pFocusView (0)
@@ -4342,7 +4365,10 @@ long CFrame::onKeyDown (VstKeyCode& keyCode)
 {
 	long result = -1;
 
-	if (pFocusView)
+	if (getKeyboardHook ())
+		result = getKeyboardHook ()->onKeyDown (keyCode, this);
+
+	if (result == -1 && pFocusView)
 		result = pFocusView->onKeyDown (keyCode);
 
 	if (result == -1 && pModalView)
@@ -4359,7 +4385,10 @@ long CFrame::onKeyUp (VstKeyCode& keyCode)
 {
 	long result = -1;
 
-	if (pFocusView)
+	if (getKeyboardHook ())
+		result = getKeyboardHook ()->onKeyDown (keyCode, this);
+
+	if (result == -1 && pFocusView)
 		result = pFocusView->onKeyUp (keyCode);
 
 	if (result == -1 && pModalView)
@@ -5080,12 +5109,20 @@ void CFrame::onViewRemoved (CView* pView)
 
 //-----------------------------------------------------------------------------
 /**
+ * @param pView view which was added
+ */
+void CFrame::onViewAdded (CView* pView)
+{
+}
+
+//-----------------------------------------------------------------------------
+/**
  * @param pView new focus view
  */
 void CFrame::setFocusView (CView *pView)
 {
 	static bool recursion = false;
-	if (pView == pFocusView || recursion)
+	if (pView == pFocusView || (recursion && pFocusView != 0))
 		return;
 
 	recursion = true;
@@ -5505,7 +5542,7 @@ CRect CViewContainer::getVisibleSize (const CRect rect) const
 /**
  * @param color the new background color of the container
  */
-void CViewContainer::setBackgroundColor (CColor color)
+void CViewContainer::setBackgroundColor (const CColor& color)
 {
 	backgroundColor = color;
 	setDirty (true);
@@ -5551,6 +5588,8 @@ bool CViewContainer::addView (CView* pView)
 	{
 		pView->attached (this);
 		pView->invalid ();
+		if (getFrame ())
+			getFrame ()->onViewAdded (pView);
 	}
 	return true;
 }
@@ -5589,6 +5628,8 @@ bool CViewContainer::addView (CView *pView, CView* pBefore)
 			pV->pPrevious = pSv;
 			if (pSv->pPrevious == 0)
 				pFirstView = pSv;
+			else
+				pSv->pPrevious->pNext = pSv;
 		}
 		else
 			pLastView = pSv;
@@ -5597,6 +5638,8 @@ bool CViewContainer::addView (CView *pView, CView* pBefore)
 	{
 		pView->attached (this);
 		pView->invalid ();
+		if (getFrame ())
+			getFrame ()->onViewAdded (pView);
 	}
 	return true;
 }

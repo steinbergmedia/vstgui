@@ -149,7 +149,7 @@ public:
 	//-----------------------------------------------------------------------------
 	//@{
 	int getNumSelectedFiles () const;							///< get number of selected files
-	const char* getSelectedFile (int index) const;				///< get selected file. Result is only valid as long as the instance of CNewFileSelector is valid.
+	const char* getSelectedFile (unsigned int index) const;		///< get selected file. Result is only valid as long as the instance of CNewFileSelector is valid.
 	//@}
 
 	static const CFileExtension& getAllFilesExtension ();		///< get the all files extension

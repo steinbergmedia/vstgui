@@ -356,26 +356,25 @@ void CScrollView::makeRectVisible (const CRect& rect)
 	}
 	if (r.left < cs.left)
 	{
-		newOffset.x += (cs.left - r.left);
+		newOffset.x -= (cs.left + r.left);
 	}
 	else if (r.right > cs.right && r.left != cs.left)
 	{
-		newOffset.x += (r.right - cs.right);
+		newOffset.x += (cs.right - r.right);
 	}
-	if (newOffset != scrollOffset)
+	if (vsb && newOffset.y != scrollOffset.y)
 	{
-		if (vsb)
-		{
-			vsb->setValue ((float)(newOffset.y - vs.top) / (float)(containerSize.getHeight () - vs.getHeight ()));
-			vsb->invalid ();
-			valueChanged (vsb);
-		}
-		if (hsb)
-		{
-			hsb->setValue ((float)(newOffset.x - vs.left) / (float)(containerSize.getWidth () - vs.getWidth ()));
-			hsb->invalid ();
-			valueChanged (hsb);
-		}
+		vsb->setValue ((float)(newOffset.y - vs.top) / (float)(containerSize.getHeight () - vs.getHeight ()));
+		vsb->bounceValue ();
+		vsb->invalid ();
+		valueChanged (vsb);
+	}
+	if (hsb && newOffset.x != scrollOffset.x)
+	{
+		hsb->setValue (-(float)(newOffset.x - vs.left) / (float)(containerSize.getWidth () - vs.getWidth ()));
+		hsb->bounceValue ();
+		hsb->invalid ();
+		valueChanged (hsb);
 	}
 }
 
@@ -527,7 +526,7 @@ CMessageResult CScrollView::notify (CBaseObject* sender, const char* message)
 		if (sc->isChild (focusView, true))
 		{
 			CRect r = focusView->getViewSize ();
-			CPoint p (r.left, r.top);
+			CPoint p (0, 0);
 			focusView->localToFrame (p);
 			frameToLocal (p);
 			r.offset (p.x, p.y);

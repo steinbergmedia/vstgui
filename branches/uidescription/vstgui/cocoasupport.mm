@@ -360,14 +360,14 @@ HIDDEN long showNSContextMenu (COptionMenu* menu, COptionMenu** usedMenu)
 	if (!(menu->getStyle () & kPopupStyle))
 		[nsMenu insertItemWithTitle:@"" action:nil keyEquivalent:@"" atIndex:0];
 	if (!multipleCheck && menu->getStyle () & kCheckStyle)
-		[[nsMenu itemWithTag:menu->getValue ()] setState:NSOnState];
+		[[nsMenu itemWithTag:(NSInteger)menu->getValue ()] setState:NSOnState];
 
 	NSPopUpButtonCell* cell = [[NSPopUpButtonCell alloc] initTextCell:@"" pullsDown:menu->getStyle () & kPopupStyle ? NO : YES];
 	[cell setAltersStateOfSelectedItem: NO];
 	[cell setAutoenablesItems:NO];
 	[cell setMenu:nsMenu];
 	if (menu->getStyle () & kPopupStyle)
-		[cell selectItemWithTag:menu->getValue ()];
+		[cell selectItemWithTag:(NSInteger)menu->getValue ()];
 	[cell performClickWithFrame:cellFrameRect inView:view];
 	*usedMenu = (COptionMenu*)[nsMenu performSelector:@selector(selectedMenu)];
 	return (long)[nsMenu performSelector:@selector(selectedItem)];
@@ -1425,7 +1425,7 @@ void* CocoaDragContainer::next (long& size, long& type)
 	if (hasFilenames)
 	{
 		NSArray* fileNames = [pb propertyListForType:hasFilenames];
-		if (iterator-1 < [fileNames count])
+		if (iterator-1 < (long)[fileNames count])
 		{
 			NSString* filename = [fileNames objectAtIndex:iterator-1];
 			if (filename)
@@ -1460,7 +1460,7 @@ long CocoaDragContainer::getType (long idx) const
 	if (hasFilenames)
 	{
 		NSArray* fileNames = [pb propertyListForType:hasFilenames];
-		if ([fileNames count] > idx)
+		if ((long)[fileNames count] > idx)
 			return CDragContainer::kFile;
 	}
 
@@ -1548,7 +1548,7 @@ GenerateUniqueVSTGUIClasses::GenerateUniqueVSTGUIClasses ()
 	res = class_addMethod (viewClass, @selector(draggingExited:), IMP (VSTGUI_NSView_draggingExited), "v@:@:^:");
 	res = class_addMethod (viewClass, @selector(performDragOperation:), IMP (VSTGUI_NSView_performDragOperation), "B@:@:^:");
 
-	res = class_addIvar (viewClass, "_vstguiframe", sizeof (void*), log2(sizeof(void*)), @encode(void*));
+	res = class_addIvar (viewClass, "_vstguiframe", sizeof (void*), (uint8_t)log2(sizeof(void*)), @encode(void*));
 	objc_registerClassPair (viewClass);
 
 	// generating VSTGUI_NSMenu
@@ -1563,7 +1563,7 @@ GenerateUniqueVSTGUIClasses::GenerateUniqueVSTGUIClasses ()
 	res = class_addMethod (menuClass, @selector(selectedItem), IMP (VSTGUI_NSMenu_SelectedItem), "l@:@:");
 	res = class_addMethod (menuClass, @selector(setSelectedMenu:), IMP (VSTGUI_NSMenu_SetSelectedMenu), "^@:@:^:");
 	res = class_addMethod (menuClass, @selector(setSelectedItem:), IMP (VSTGUI_NSMenu_SetSelectedItem), "^@:@:l:");
-	res = class_addIvar (menuClass, "_private", sizeof (VSTGUI_NSMenu_Var*), log2(sizeof(VSTGUI_NSMenu_Var*)), @encode(VSTGUI_NSMenu_Var*));
+	res = class_addIvar (menuClass, "_private", sizeof (VSTGUI_NSMenu_Var*), (uint8_t)log2(sizeof(VSTGUI_NSMenu_Var*)), @encode(VSTGUI_NSMenu_Var*));
 	objc_registerClassPair (menuClass);
 
 	// generating VSTGUI_NSTextField
@@ -1573,7 +1573,7 @@ GenerateUniqueVSTGUIClasses::GenerateUniqueVSTGUIClasses ()
 	res = class_addMethod (textFieldClass, @selector(syncSize), IMP (VSTGUI_NSTextField_SyncSize), "v@:@:");
 	res = class_addMethod (textFieldClass, @selector(removeFromSuperview), IMP (VSTGUI_NSTextField_RemoveFromSuperview), "v@:@:");
 	res = class_addMethod (textFieldClass, @selector(control:textView:doCommandBySelector:), IMP (VSTGUI_NSTextField_DoCommandBySelector), "B@:@:@:@::");
-	res = class_addIvar (textFieldClass, "_textEdit", sizeof (void*), log2(sizeof(void*)), @encode(void*));
+	res = class_addIvar (textFieldClass, "_textEdit", sizeof (void*), (uint8_t)log2(sizeof(void*)), @encode(void*));
 	objc_registerClassPair (textFieldClass);
 
 	#if VSTGUI_NEW_CFILESELECTOR
@@ -1583,7 +1583,7 @@ GenerateUniqueVSTGUIClasses::GenerateUniqueVSTGUIClasses ()
 	res = class_addMethod (fileSelectorDelegateClass, @selector(initWithFileSelector:), IMP (VSTGUI_FileSelector_Delegate_Init), "@@:@:^:");
 	res = class_addMethod (fileSelectorDelegateClass, @selector(dealloc), IMP (VSTGUI_FileSelector_Delegate_Dealloc), "v@:@:");
 	res = class_addMethod (fileSelectorDelegateClass, @selector(openPanelDidEnd:returnCode:contextInfo:), IMP (VSTGUI_FileSelector_Delegate_OpenPanelDidEnd), "v@:@:@:I:@:");
-	res = class_addIvar (fileSelectorDelegateClass, "_fileSelector", sizeof (void*), log2(sizeof(void*)), @encode(void*));
+	res = class_addIvar (fileSelectorDelegateClass, "_fileSelector", sizeof (void*), (uint8_t)log2(sizeof(void*)), @encode(void*));
 	objc_registerClassPair (fileSelectorDelegateClass);
 	#endif
 
@@ -1669,7 +1669,7 @@ void CocoaFileSelector::openPanelDidEnd (NSOpenPanel* openPanel, int res)
 		else
 		{
 			NSArray* urls = [openPanel URLs];
-			for (int i = 0; i < [urls count]; i++)
+			for (NSUInteger i = 0; i < [urls count]; i++)
 			{
 				NSURL* url = [urls objectAtIndex:i];
 				if (url == 0 || [url path] == 0)

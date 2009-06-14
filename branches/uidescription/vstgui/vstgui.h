@@ -140,6 +140,7 @@ protected:
 
 	CFrame* frame;
 };
+
 END_NAMESPACE_VSTGUI
 
 //----------------------------------------------------
@@ -470,6 +471,7 @@ class CDragContainer;
 class CCView;
 class CAttributeListEntry;
 class IMouseObserver;
+class IKeyboardHook;
 
 //-----------------------------------------------------------------------------
 typedef unsigned int CViewAttributeID;
@@ -1279,7 +1281,7 @@ public:
 	/// \name Background Methods
 	//-----------------------------------------------------------------------------
 	//@{
-	virtual void setBackgroundColor (const CColor color);	///< set the background color (will only be drawn if this container is not set to transparent and does not have a background bitmap)
+	virtual void setBackgroundColor (const CColor& color);	///< set the background color (will only be drawn if this container is not set to transparent and does not have a background bitmap)
 	virtual CColor getBackgroundColor () const { return backgroundColor; }	///< get the background color
 	virtual void setBackgroundOffset (const CPoint &p) { backgroundOffset = p; }	///< set the offset of the background bitmap
 	virtual const CPoint& getBackgroundOffset () const { return backgroundOffset; }	///< get the offset of the background bitmap
@@ -1414,6 +1416,7 @@ public:
 	virtual CView *getFocusView () const { return pFocusView; }
 	virtual bool advanceNextFocusView (CView* oldFocus, bool reverse = false);
 
+	virtual void onViewAdded (CView* pView);
 	virtual void onViewRemoved (CView* pView);
 
 	virtual bool setDropActive (bool val);
@@ -1461,9 +1464,11 @@ public:
 	long onKeyUp (VstKeyCode& keyCode);
 	void setViewSize (CRect& rect, bool invalid = true);
 
-	virtual VSTGUIEditorInterface *getEditor () const { return pEditor; }
-	virtual IMouseObserver *getMouseObserver () const { return pMouseObserver; }
+	virtual VSTGUIEditorInterface* getEditor () const { return pEditor; }
+	virtual IMouseObserver* getMouseObserver () const { return pMouseObserver; }
 	virtual void setMouseObserver (IMouseObserver* observer) { pMouseObserver = observer; }
+	virtual IKeyboardHook* getKeyboardHook () const { return pKeyboardHook; }
+	virtual void setKeyboardHook (IKeyboardHook* hook) { pKeyboardHook = hook; }
 
 	#if DEBUG
 	virtual void dumpHierarchy ();
@@ -1482,6 +1487,7 @@ protected:
 
 	VSTGUIEditorInterface   *pEditor;
 	IMouseObserver			*pMouseObserver;
+	IKeyboardHook			*pKeyboardHook;
 	
 	void    *pSystemWindow;
 	CView   *pModalView;
@@ -1536,7 +1542,7 @@ private:
 
 //-----------------------------------------------------------------------------
 // IMouseObserver Declaration
-//! \brief generic mouse observer interface
+//! \brief generic mouse observer interface for CFrame
 /// \nosubgrouping
 //-----------------------------------------------------------------------------
 class IMouseObserver
@@ -1547,6 +1553,20 @@ public:
 	virtual void onMouseExited (CView* view, CFrame* frame) = 0;
 	virtual void onMouseMoved (CFrame* frame, const CPoint& where) {}
 	virtual void onMouseDown (CFrame* frame, const CPoint& where) {}
+};
+
+//-----------------------------------------------------------------------------
+// IKeyboardHook Declaration
+//! \brief generic keyboard hook interface for CFrame
+/// \nosubgrouping
+//-----------------------------------------------------------------------------
+class IKeyboardHook
+{
+public:
+	virtual ~IKeyboardHook () {}
+	
+	virtual long onKeyDown (const VstKeyCode& code, CFrame* frame) = 0;	///< should return 1 if no further key down processing should apply, otherwise -1
+	virtual long onKeyUp (const VstKeyCode& code, CFrame* frame) = 0;	///< should return 1 if no further key up processing should apply, otherwise -1
 };
 
 //-----------------------------------------------------------------------------

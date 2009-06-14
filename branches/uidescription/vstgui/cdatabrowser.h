@@ -73,6 +73,8 @@ public:
 	virtual void dbCellTextChanged (long row, long column, const char* newText, CDataBrowser* browser) {} ///< the text of the cell changed beginTextEdit was called for
 	virtual void dbCellSetupTextEdit (long row, long column, CTextEdit* textEditControl, CDataBrowser* browser) {} ///< beginTextEdit calls this, so you can setup the textedit control
 
+	virtual long dbOnKeyDown (const VstKeyCode& key, CDataBrowser* browser) { return -1; }
+
 	enum {
 		kRowSelected = 1 << 1,
 	};

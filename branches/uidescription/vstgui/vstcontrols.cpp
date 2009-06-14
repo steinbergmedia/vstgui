@@ -975,6 +975,9 @@ void CParamDisplay::setStyle (long val)
 //------------------------------------------------------------------------
 void CParamDisplay::draw (CDrawContext *pContext)
 {
+	if (style & kNoDrawStyle)
+		return;
+
 	char string[256];
 	string[0] = 0;
 
@@ -985,17 +988,14 @@ void CParamDisplay::draw (CDrawContext *pContext)
 	else
 		sprintf (string, "%2.2f", value);
 
+	drawBack (pContext);
 	drawText (pContext, string);
+	setDirty (false);
 }
 
 //------------------------------------------------------------------------
-void CParamDisplay::drawText (CDrawContext *pContext, const char *string, CBitmap *newBack)
+void CParamDisplay::drawBack (CDrawContext* pContext, CBitmap* newBack)
 {
-	setDirty (false);
-
-	if (style & kNoDrawStyle)
-		return;
-
 	// draw the background
 	if (newBack)
 	{
@@ -1049,7 +1049,11 @@ void CParamDisplay::drawText (CDrawContext *pContext, const char *string, CBitma
 		pContext->lineTo (p (r.right, r.bottom));
 		pContext->lineTo (p (r.left, r.bottom));
 	}
+}
 
+//------------------------------------------------------------------------
+void CParamDisplay::drawText (CDrawContext *pContext, const char *string)
+{
 	if (!(style & kNoTextStyle) && string && strlen (string))
 	{
 		CRect textRect (size);
@@ -1224,6 +1228,7 @@ const char* CTextLabel::getText () const
 //------------------------------------------------------------------------
 void CTextLabel::draw (CDrawContext *pContext)
 {
+	drawBack (pContext);
 	drawText (pContext, text);
 	setDirty (false);
 }
@@ -1356,6 +1361,7 @@ void CTextEdit::draw (CDrawContext *pContext)
 	else
 		sprintf (string, "%s", text);
 
+	drawBack (pContext);
 	drawText (pContext, string);
 	setDirty (false);
 }
@@ -2696,6 +2702,7 @@ COptionMenu::COptionMenu (const CRect& size, CControlListener* listener, long ta
 #if VSTGUI_ENABLE_DEPRECATED_METHODS
 , scheme (0)
 #endif
+, inPopup (false)
 {
 	this->listener = listener;
 	this->tag = tag;
@@ -2714,6 +2721,7 @@ COptionMenu::COptionMenu (const CRect& size, CControlListener* listener, long ta
 		bgWhenClick->remember ();
 
 	menuItems = new CMenuItemList;
+	setWantsFocus (true);
 }
 
 //------------------------------------------------------------------------
@@ -2730,8 +2738,10 @@ COptionMenu::COptionMenu ()
 #if VSTGUI_ENABLE_DEPRECATED_METHODS
 , scheme (0)
 #endif
+, inPopup (false)
 {
 	menuItems = new CMenuItemList;
+	setWantsFocus (true);
 }
 
 //------------------------------------------------------------------------
@@ -2749,6 +2759,7 @@ COptionMenu::COptionMenu (const COptionMenu& v)
 , scheme (v.scheme)
 #endif
 , menuItems (new CMenuItemList (*v.menuItems))
+, inPopup (false)
 {
 	if (bgWhenClick)
 		bgWhenClick->remember ();
@@ -2759,6 +2770,7 @@ COptionMenu::COptionMenu (const COptionMenu& v)
 		(*it)->remember ();
 		it++;
 	}
+	setWantsFocus (true);
 }
 
 //------------------------------------------------------------------------
@@ -2773,17 +2785,258 @@ COptionMenu::~COptionMenu ()
 }
 
 //------------------------------------------------------------------------
+long COptionMenu::onKeyDown (VstKeyCode& keyCode)
+{
+	if (keyCode.modifier == 0 && keyCode.character == 0)
+	{
+		if (keyCode.virt == VKEY_RETURN)
+		{
+			if (bgWhenClick)
+				invalid ();
+			popup ();
+			if (bgWhenClick)
+				invalid ();
+			return 1;
+		}
+		if (!(style & (kMultipleCheckStyle & ~kCheckStyle)))
+		{
+			if (keyCode.virt == VKEY_UP)
+			{
+				long value = (long)getValue ()-1;
+				if (value >= 0)
+				{
+					CMenuItem* entry = getEntry (value);
+					while (entry && (entry->isSeparator () || entry->isTitle () || !entry->isEnabled () || entry->getSubmenu ()))
+						entry = getEntry (--value);
+					if (entry)
+					{
+						beginEdit ();
+						setValue (value);
+						lastResult = getValue ();
+						if (listener)
+							listener->valueChanged (this);
+						endEdit ();
+						invalid ();
+					}
+				}
+				return 1;
+			}
+			if (keyCode.virt == VKEY_DOWN)
+			{
+				long value = (long)getValue ()+1;
+				if (value < getNbEntries ())
+				{
+					CMenuItem* entry = getEntry (value);
+					while (entry && (entry->isSeparator () || entry->isTitle () || !entry->isEnabled () || entry->getSubmenu ()))
+						entry = getEntry (++value);
+					if (entry)
+					{
+						beginEdit ();
+						setValue (value);
+						lastResult = getValue ();
+						if (listener)
+							listener->valueChanged (this);
+						endEdit ();
+						invalid ();
+					}
+				}
+				return 1;
+			}
+		}
+	}
+	return CParamDisplay::onKeyDown (keyCode);
+}
+
+//------------------------------------------------------------------------
+bool COptionMenu::popup ()
+{
+	bool popupResult = false;
+	if (!getFrame ())
+		return popupResult;
+
+	inPopup = true;
+
+	beginEdit ();
+
+	lastResult = -1;
+	lastMenu = 0;
+
+#if MAC || WINDOWS
+	// calculate Screen Position
+	#if WINDOWS
+	HWND hwnd = (HWND)getFrame ()->getSystemWindow ();
+
+	#endif
+
+	CRect rect;
+	#if WINDOWS
+	RECT rctWinParent;
+	GetWindowRect (hwnd, &rctWinParent);
+	rect.left = (CCoord)rctWinParent.left;
+	rect.top  = (CCoord)rctWinParent.top;
+	#endif
+	CView* parent = getParentView ();
+	while (parent)
+	{
+		if (parent->notify (this, kMsgCheckIfViewContainer) == kMessageNotified)
+		{
+			CRect vSize;
+			parent->getViewSize (vSize);
+			rect.offset (vSize.left, vSize.top);
+		}
+		parent = parent->getParentView ();
+	}
+#endif
+	
+#if WINDOWS
+	MSG msg;
+	long result = -1;
+
+	//---Create the popup menu---
+	long offIdx = 0;
+	appendItems (offIdx);
+	
+	//---Popup the menu---
+	long offset;
+	if (style & kPopupStyle)
+		offset = (long)(rect.top + size.top);
+	else
+		offset = (long)(rect.top + size.bottom);
+
+	int flags = TPM_LEFTALIGN;
+	if (lastButton & kRButton)
+		flags |= TPM_RIGHTBUTTON;
+
+	if (TrackPopupMenu ((HMENU)platformControl, flags, 
+			 (int)(rect.left + size.left), offset, 0, hwnd, 0))
+	{
+		if (PeekMessage (&msg, hwnd, WM_COMMAND, WM_COMMAND, PM_REMOVE))
+		{
+			if (HIWORD (msg.wParam) == 0)
+			{
+				result = LOWORD (msg.wParam);
+				lastResult = result;
+				popupResult = true;
+			}
+		}
+	}
+
+	//---Destroy the menu----
+	removeItems ();
+	
+	//---Update the dependencies
+	if (result != -1)
+	{
+		long idx = 0;
+		offIdx = 0;
+		COptionMenu *menu = getItemMenu (result, idx, offIdx);
+		if (menu)
+		{
+			lastMenu = menu;
+			menu->setValue ((float)idx);
+		
+			// update dependency
+			if (listener)
+				listener->valueChanged (menu);
+		}
+	}
+#endif // WINDOWS
+
+#if MAC_COCOA
+	if (getFrame ()->getNSView ())
+	{
+		COptionMenu* usedMenu = 0;
+		long index = showNSContextMenu (this, &usedMenu);
+		if (index >= 0 && usedMenu)
+		{
+			lastMenu = usedMenu;
+			lastResult = index;
+			usedMenu->setValue (index);
+			if (listener)
+				listener->valueChanged (usedMenu);
+			popupResult = true;
+		}
+		endEdit();
+		inPopup = false;
+		return popupResult;
+	}
+#endif // MAC_COCOA
+	
+#if MAC_CARBON
+	// no entries, no menu
+	if (getNbEntries () == 0)
+	{
+		endEdit();
+		inPopup = false;
+		return popupResult;
+	}
+		
+	//---Transform local coordinates to global coordinates
+	long offset;
+
+	if (style & kPopupStyle)
+		offset = (long)size.top;
+	else
+		offset = (long)size.bottom;
+
+	CCoord gx = 0, gy = 0;
+	Point LToG;
+	getFrame()->getPosition(gx, gy);
+	LToG.v = (short)(gy + rect.top + offset);
+	LToG.h = (short)(gx + rect.left + size.left);
+		
+	//---Create the popup menu---
+	long offIdx = 0;
+	MenuHandle theMenu = (MenuHandle)appendItems (offIdx);
+
+	setDirty (false);	
+
+	//---Popup the Menu
+	long popUpItem = style & kPopupStyle ? (value + 1) : 1;
+	long PopUpMenuItem = PopUpMenuItem = PopUpMenuSelect (theMenu, LToG.v, LToG.h, popUpItem);
+
+	//---Destroy the menu----
+	removeItems ();
+	
+	// HiWord indicates MenuID, LoWord indicates the item index
+	short result = LoWord (PopUpMenuItem) - 1;	
+	lastResult = result;
+	short menuIDResult = HiWord (PopUpMenuItem);
+	if (menuIDResult != 0) 
+	{
+		long idx = 0;
+		offIdx = menuIDResult;
+		COptionMenu *menu = getItemMenu (result, idx, offIdx);
+		if (menu)
+		{
+			lastMenu = menu;
+			menu->setValue (result);
+			if (listener)
+				listener->valueChanged (menu);
+			popupResult = true;
+		}
+	}
+
+#endif
+	endEdit ();
+	inPopup = false;
+	return popupResult;
+}
+
+//------------------------------------------------------------------------
 bool COptionMenu::popup (CFrame* frame, const CPoint& frameLocation)
 {
 	if (frame == 0)
 		return false;
 	if (isAttached ())
 		return false;
+	CView* oldFocusView = frame->getFocusView ();
 	CRect size (frameLocation, CPoint (0, 0));
 	setViewSize (size);
 	frame->addView (this);
-	takeFocus ();
+	popup ();
 	frame->removeView (this, false);
+	frame->setFocusView (oldFocusView);
 	long index;
 	if (getLastItemMenu (index))
 		return true;
@@ -2809,7 +3062,7 @@ CMenuItem* COptionMenu::addEntry (CMenuItem* item, long index)
 	else
 	{
 		CMenuItemIterator it = menuItems->begin ();
-		for (int i = 0; i < index; i++, it++);
+		for (int i = 0; i < index && it != menuItems->end (); i++, it++);
 		menuItems->insert (it, item);
 	}
 	return item;
@@ -2851,7 +3104,9 @@ CMenuItem* COptionMenu::getEntry (long index) const
 		return 0;
 	
 	CMenuItemIterator it = menuItems->begin ();
-	for (int i = 0; i < index; i++, it++);
+	for (int i = 0; i < index && it != menuItems->end (); i++, it++);
+	if (it == menuItems->end ())
+		return 0;
 	return (*it);
 }
 
@@ -2989,7 +3244,8 @@ bool COptionMenu::isCheckEntry (long index) const
 void COptionMenu::draw (CDrawContext *pContext)
 {
 	CMenuItem* item = getEntry (currentIndex);
-	drawText (pContext, item ? item->getTitle () : NULL, getFrame ()->getFocusView () == this ? bgWhenClick : 0);
+	drawBack (pContext, inPopup ? bgWhenClick : 0);
+	drawText (pContext, item ? item->getTitle () : 0);
 }
 
 #if VSTGUI_ENABLE_DEPRECATED_METHODS
@@ -3009,19 +3265,7 @@ void COptionMenu::mouse (CDrawContext *pContext, CPoint& where, long button)
 
 	if (lastButton & (kLButton|kRButton|kApple))
 	{
-		if (bgWhenClick)
-		{
-			char string[256];
-			if (currentIndex >= 0)
-				sprintf (string, "%s", getEntry (currentIndex)->getTitle ());
-			else
-				string[0] = 0;
-		
-			drawText (pContext, string, bgWhenClick);
-		}
-
-		beginEdit();
-		takeFocus ();
+		popup ();
 	}
 }
 #endif
@@ -3032,10 +3276,11 @@ CMouseEventResult COptionMenu::onMouseDown (CPoint& where, const long& buttons)
 	lastButton = buttons;
 	if (lastButton & (kLButton|kRButton|kApple))
 	{
-		beginEdit ();
 		if (bgWhenClick)
 			invalid ();
-		takeFocus ();
+		popup ();
+		if (bgWhenClick)
+			invalid ();
 		return kMouseDownEventHandledButDontNeedMovedOrUpEvents;
 	}
 	return kMouseEventNotHandled;
@@ -3387,183 +3632,7 @@ void COptionMenu::setValue (float val)
 //------------------------------------------------------------------------
 void COptionMenu::takeFocus ()
 {
-	if (!getFrame ())
-		return;
-
-	lastResult = -1;
-	lastMenu = 0;
-
-#if MAC || WINDOWS
-	// calculate Screen Position
-	#if WINDOWS
-	HWND hwnd = (HWND)getFrame ()->getSystemWindow ();
-
-	#endif
-
-	CRect rect;
-	#if WINDOWS
-	RECT rctWinParent;
-	GetWindowRect (hwnd, &rctWinParent);
-	rect.left = (CCoord)rctWinParent.left;
-	rect.top  = (CCoord)rctWinParent.top;
-	#endif
-	CView* parent = getParentView ();
-	while (parent)
-	{
-		if (parent->notify (this, kMsgCheckIfViewContainer) == kMessageNotified)
-		{
-			CRect vSize;
-			parent->getViewSize (vSize);
-			rect.offset (vSize.left, vSize.top);
-		}
-		parent = parent->getParentView ();
-	}
-#endif
-	
-#if WINDOWS
-	MSG msg;
-	long result = -1;
-
-	//---Create the popup menu---
-	long offIdx = 0;
-	appendItems (offIdx);
-	
-	//---Popup the menu---
-	long offset;
-	if (style & kPopupStyle)
-		offset = (long)(rect.top + size.top);
-	else
-		offset = (long)(rect.top + size.bottom);
-
-	int flags = TPM_LEFTALIGN;
-	if (lastButton & kRButton)
-		flags |= TPM_RIGHTBUTTON;
-
-	if (TrackPopupMenu ((HMENU)platformControl, flags, 
-			 (int)(rect.left + size.left), offset, 0, hwnd, 0))
-	{
-		if (PeekMessage (&msg, hwnd, WM_COMMAND, WM_COMMAND, PM_REMOVE))
-		{
-			if (HIWORD (msg.wParam) == 0)
-			{
-				result = LOWORD (msg.wParam);
-				lastResult = result;
-			}
-		}
-	}
-
-	//---Destroy the menu----
-	removeItems ();
-	
-	//---Update the dependencies
-	if (result != -1 || bgWhenClick)
-	{
-		// to force the redraw
-		if (bgWhenClick)
-			setDirty ();
-
-		if (result != -1)
-		{
-			long idx = 0;
-			offIdx = 0;
-			COptionMenu *menu = getItemMenu (result, idx, offIdx);
-			if (menu)
-			{
-				lastMenu = menu;
-				menu->setValue ((float)idx);
-			
-				// update dependency
-				if (listener)
-					listener->valueChanged (menu);
-			}
-		}
-	}
-#endif // WINDOWS
-
-#if MAC_COCOA
-	if (getFrame ()->getNSView ())
-	{
-		COptionMenu* usedMenu = 0;
-		long index = showNSContextMenu (this, &usedMenu);
-		if (index >= 0 && usedMenu)
-		{
-			lastMenu = usedMenu;
-			lastResult = index;
-			usedMenu->setValue (index);
-			if (listener)
-				listener->valueChanged (usedMenu);
-		}
-		getFrame ()->setFocusView (0);
-		endEdit();
-		return;
-	}
-#endif // MAC_COCOA
-	
-#if MAC_CARBON
-	// no entries, no menu
-	if (getNbEntries () == 0)
-	{
-		endEdit();
-		getFrame ()->setFocusView (0);
-		return;
-	}
-		
-	//---Transform local coordinates to global coordinates
-	long offset;
-
-	if (style & kPopupStyle)
-		offset = (long)size.top;
-	else
-		offset = (long)size.bottom;
-
-	CCoord gx = 0, gy = 0;
-	Point LToG;
-	getFrame()->getPosition(gx, gy);
-	LToG.v = (short)(gy + rect.top + offset);
-	LToG.h = (short)(gx + rect.left + size.left);
-		
-	//---Create the popup menu---
-	long offIdx = 0;
-	MenuHandle theMenu = (MenuHandle)appendItems (offIdx);
-
-	setDirty (false);	
-
-	//---Popup the Menu
-	long popUpItem = style & kPopupStyle ? (value + 1) : 1;
-	long PopUpMenuItem = PopUpMenuItem = PopUpMenuSelect (theMenu, LToG.v, LToG.h, popUpItem);
-
-	//---Destroy the menu----
-	removeItems ();
-	
-	// HiWord indicates MenuID, LoWord indicates the item index
-	short result = LoWord (PopUpMenuItem) - 1;	
-	lastResult = result;
-	short menuIDResult = HiWord (PopUpMenuItem);
-	if (menuIDResult != 0 || bgWhenClick) 
-	{
-		// to force the redraw
-		if (bgWhenClick)
-			setDirty ();
-
-		if (menuIDResult != 0)
-		{
-			long idx = 0;
-			offIdx = menuIDResult;
-			COptionMenu *menu = getItemMenu (result, idx, offIdx);
-			if (menu)
-			{
-				lastMenu = menu;
-				menu->setValue (result);
-				if (listener)
-					listener->valueChanged (menu);
-			}
-		}
-	}
-
-#endif
-
-	getFrame ()->setFocusView (0);
-	endEdit();
+	CParamDisplay::takeFocus ();
 }
 
 //------------------------------------------------------------------------

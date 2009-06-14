@@ -139,7 +139,7 @@ CNewFileSelector::~CNewFileSelector ()
 	setTitle (0);
 	setInitialDirectory (0);
 	setDefaultSaveName (0);
-	for (int i = 0; i < result.size (); i++)
+	for (size_t i = 0; i < result.size (); i++)
 		free (result[i]);
 }
 
@@ -256,7 +256,7 @@ int CNewFileSelector::getNumSelectedFiles () const
 }
 
 //-----------------------------------------------------------------------------
-const char* CNewFileSelector::getSelectedFile (int index) const
+const char* CNewFileSelector::getSelectedFile (unsigned int index) const
 {
 	if (index < result.size ())
 		return result[index];
