@@ -2,7 +2,7 @@
 // VST Plug-Ins SDK
 // VSTGUI: Graphical User Interface Framework not only for VST plugins : 
 //
-// CTabView written 2004 by Arne Scheffler
+// Version 3.6
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE

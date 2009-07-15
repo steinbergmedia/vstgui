@@ -963,7 +963,7 @@ private:
 
 //-----------------------------------------------------------------------------
 // CAutoAnimation Declaration
-//!
+//! \brief simple auto-animation of bitmaps
 /// \nosubgrouping
 /// \ingroup controls
 //-----------------------------------------------------------------------------
@@ -1174,7 +1174,7 @@ protected:
 
 //-----------------------------------------------------------------------------
 // CKickButton Declaration
-//!
+//! \brief a button with 2 states with kick mode (enabled only when pressed)
 /// \nosubgrouping
 /// \ingroup controls
 //-----------------------------------------------------------------------------
@@ -1258,7 +1258,7 @@ protected:
 
 //-----------------------------------------------------------------------------
 // CVuMeter Declaration
-//!
+//! \brief VU-Meter using 2 bitmaps
 /// \nosubgrouping
 /// \ingroup views
 //-----------------------------------------------------------------------------

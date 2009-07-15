@@ -4,8 +4,6 @@
 //
 // Version 3.6
 //
-// CVSTGUITimer written 2005 by Arne Scheffler
-//
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
 // (c) 2008, Steinberg Media Technologies, All Rights Reserved

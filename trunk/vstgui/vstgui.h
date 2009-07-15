@@ -66,17 +66,10 @@
 #endif
 
 #if WINDOWS
-	#define USE_NAMESPACE	1
-	#ifndef _WIN32_WINNT
-		#define _WIN32_WINNT 0x0501
-	#endif
-	#ifndef GDIPLUS
-	#define GDIPLUS		1
-	#endif
-#endif
-
-#ifndef VSTGUI_USES_UTF8
-#define VSTGUI_USES_UTF8 1
+ #define _WIN32_WINNT 0x0501
+ #ifndef GDIPLUS
+ #define GDIPLUS		1	// by default we use GDIPlus
+ #endif
 #endif
 
 #ifndef USE_NAMESPACE
@@ -729,7 +722,7 @@ public:
 	void moveTo (const CPoint &point);	///< move line position to point
 	void lineTo (const CPoint &point);	///< draw a line from current position to point
 	void drawLines (const CPoint* points, const long& numberOfLines);	///< draw multiple lines at once
-	void drawPolygon (const CPoint *pPoints, long numberOfPoints, const CDrawStyle drawStyle = kDrawStroked); ///< draw a polygon
+	void drawPolygon (const CPoint *pPoints, long numberOfPoints, const CDrawStyle drawStyle = kDrawStroked, bool closePolygon = true); ///< draw a polygon
 	void drawRect (const CRect &rect, const CDrawStyle drawStyle = kDrawStroked);	///< draw a rect
 	void drawArc (const CRect &rect, const float startAngle1, const float endAngle2, const CDrawStyle drawStyle = kDrawStroked);	///< draw an arc, angles are in degree
 	void drawEllipse (const CRect &rect, const CDrawStyle drawStyle = kDrawStroked);	///< draw an ellipse
@@ -1594,13 +1587,15 @@ protected:
 #endif
 
 #if WINDOWS
+#include <malloc.h>
+
 /// \cond ignore
 class UTF8StringHelper
 {
 public:
 	UTF8StringHelper (const char* utf8Str) : utf8Str (utf8Str), allocWideStr (0), allocStrIsWide (true) {}
 	UTF8StringHelper (const WCHAR* wideStr) : wideStr (wideStr), allocUTF8Str (0), allocStrIsWide (false) {}
-	UTF8StringHelper () { if (allocUTF8Str) free (allocUTF8Str); }
+	~UTF8StringHelper () { if (allocUTF8Str) free (allocUTF8Str); }
 
 	operator const char* () { return getUTF8String (); }
 	operator const WCHAR*() { return getWideString (); }
