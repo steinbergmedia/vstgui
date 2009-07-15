@@ -1,3 +1,39 @@
+2009-07-15 arne
+
+	* bump version info to 3.6 in all source/header files
+	* merge of vstgui_350
+
+		branch changes:
+
+		2008-01-14 yvan
+
+			* add include malloc for windows
+			* remove CBitmap (void* platformBitmap) constructor
+			* GDIPlus is by default enable
+			* add win project for tutorial
+	
+		2008-01-12 arne
+
+			* fix a flaw in removing views from containers
+
+		2008-01-10 yvan
+
+			* update copyright and some documentation
+	
+		2007-12-11 arne
+
+			* added closePolygon parameter to CDrawContext::drawPolygon. Now you can draw opened and closed polygons.
+			* fix some GDI bugs : 
+				- wrong drawing of CDrawContext::drawEllipse
+				- CDrawContext::getStringWidth does not always work
+			* CFileSelector should work now in Unicode mode on Windows
+			* added virtual destructors for IDataBrowser, IScrollbarDrawer
+	
+		2007-10-12 wolfram
+
+			* added virtual destructors for IMouseObserver, CControlListener and IMultiBitmapControl
+
+
 2009-05-06 arne
 
 	* fix: calling GDIPlusGlobals::exit () in the destructor of CBitmap after the platform gdiplus bitmap is destroyed not before

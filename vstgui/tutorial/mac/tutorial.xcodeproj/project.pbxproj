@@ -10,11 +10,8 @@
 		8D01CCCA0486CAD60068D4B7 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 089C167DFE841241C02AAC07 /* InfoPlist.strings */; };
 		8D01CCCE0486CAD60068D4B7 /* Carbon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 08EA7FFBFE8413EDC02AAC07 /* Carbon.framework */; };
 		F405CDB70B048647008E3886 /* TutorialEditor.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F405CDB60B048647008E3886 /* TutorialEditor.cpp */; };
-		F405CDC70B048736008E3886 /* aeffguieditor.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F405CDC10B048736008E3886 /* aeffguieditor.cpp */; };
 		F405CDC80B048736008E3886 /* vstcontrols.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F405CDC30B048736008E3886 /* vstcontrols.cpp */; };
 		F405CDC90B048736008E3886 /* vstgui.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F405CDC50B048736008E3886 /* vstgui.cpp */; };
-		F405CE000B048824008E3886 /* audioeffect.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F405CDFB0B048824008E3886 /* audioeffect.cpp */; };
-		F405CE010B048824008E3886 /* audioeffectx.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F405CDFD0B048824008E3886 /* audioeffectx.cpp */; };
 		F405CE020B048824008E3886 /* vstplugmain.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F405CDFF0B048824008E3886 /* vstplugmain.cpp */; };
 		F405CE0E0B048898008E3886 /* TutorialVST2Effect.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F405CE0D0B048898008E3886 /* TutorialVST2Effect.cpp */; };
 		F405CE470B048C59008E3886 /* KnobBackground.png in Resources */ = {isa = PBXBuildFile; fileRef = F405CE450B048C59008E3886 /* KnobBackground.png */; };
@@ -32,6 +29,9 @@
 		F405D0480B04E47B008E3886 /* Carbon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 08EA7FFBFE8413EDC02AAC07 /* Carbon.framework */; };
 		F405D0720B04E59A008E3886 /* Tutorial2Editor.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F405D0710B04E59A008E3886 /* Tutorial2Editor.cpp */; };
 		F405D0830B04E7B3008E3886 /* KnobHandleHighlight.png in Resources */ = {isa = PBXBuildFile; fileRef = F405D0820B04E7B3008E3886 /* KnobHandleHighlight.png */; };
+		F41582C7100E545500E208B6 /* audioeffectx.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F405CDFD0B048824008E3886 /* audioeffectx.cpp */; };
+		F41582C8100E545600E208B6 /* audioeffect.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F405CDFB0B048824008E3886 /* audioeffect.cpp */; };
+		F41582C9100E545700E208B6 /* aeffguieditor.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F405CDC10B048736008E3886 /* aeffguieditor.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -63,7 +63,7 @@
 		F405CE460B048C59008E3886 /* KnobHandle.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = KnobHandle.png; path = ../resource/KnobHandle.png; sourceTree = SOURCE_ROOT; };
 		F405CF000B0490CF008E3886 /* TutorialParameters.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = TutorialParameters.h; path = ../source/TutorialParameters.h; sourceTree = SOURCE_ROOT; };
 		F405D04C0B04E47B008E3886 /* tutorial 2.vst */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "tutorial 2.vst"; sourceTree = BUILT_PRODUCTS_DIR; };
-		F405D04D0B04E47B008E3886 /* Info2.plist */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = Info2.plist; sourceTree = "<group>"; };
+		F405D04D0B04E47B008E3886 /* Info2.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info2.plist; sourceTree = "<group>"; };
 		F405D0710B04E59A008E3886 /* Tutorial2Editor.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = Tutorial2Editor.cpp; path = ../source/Tutorial2Editor.cpp; sourceTree = SOURCE_ROOT; };
 		F405D0820B04E7B3008E3886 /* KnobHandleHighlight.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = KnobHandleHighlight.png; path = ../resource/KnobHandleHighlight.png; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
@@ -219,6 +219,7 @@
 		089C1669FE841209C02AAC07 /* Project object */ = {
 			isa = PBXProject;
 			buildConfigurationList = 4FADC23708B4156C00ABE55E /* Build configuration list for PBXProject "tutorial" */;
+			compatibilityVersion = "Xcode 2.4";
 			hasScannedForEncodings = 1;
 			mainGroup = 089C166AFE841209C02AAC07 /* tutorial */;
 			projectDirPath = "";
@@ -259,13 +260,13 @@
 			buildActionMask = 2147483647;
 			files = (
 				F405CDB70B048647008E3886 /* TutorialEditor.cpp in Sources */,
-				F405CDC70B048736008E3886 /* aeffguieditor.cpp in Sources */,
 				F405CDC80B048736008E3886 /* vstcontrols.cpp in Sources */,
 				F405CDC90B048736008E3886 /* vstgui.cpp in Sources */,
-				F405CE000B048824008E3886 /* audioeffect.cpp in Sources */,
-				F405CE010B048824008E3886 /* audioeffectx.cpp in Sources */,
 				F405CE020B048824008E3886 /* vstplugmain.cpp in Sources */,
 				F405CE0E0B048898008E3886 /* TutorialVST2Effect.cpp in Sources */,
+				F41582C7100E545500E208B6 /* audioeffectx.cpp in Sources */,
+				F41582C8100E545600E208B6 /* audioeffect.cpp in Sources */,
+				F41582C9100E545700E208B6 /* aeffguieditor.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
