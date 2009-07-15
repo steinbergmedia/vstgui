@@ -150,49 +150,44 @@ BODY {
 	color: black;
 	margin-right: 20px;
 	margin-left: 20px;
+	margin-top: 0px;	
+	font-family: Verdana, Arial, Helvetica, sans-serif;
+	font-size: 9pt;
 }
-TD.indexkey {
-	background-color: #e8eef2;
+TABLE {
+	font-size:8pt;	
+}
+CODE {
+	font-size:9pt;
+	color:Black;
+	font-weight:normal;	
+}
+H1 
+{
+	color:darkblue;
+	text-align: left;
+	font-family: Verdana, Arial, Helvetica, sans-serif;
+	font-size:13pt;
+	background-color: #d0d0d0; 
+	border: solid 2 #d0d0d0;
+}
+H2 
+{
+	color:darkblue;
+	font-family: Verdana, Geneva, Arial, Helvetica, sans-serif;
+	font-size: 11pt;
+	font-weight:bold;
+	background-color: #d0d0d0; 
+	border: solid 1 #d0d0d0;
+}
+H3 
+{
+	color:darkblue;
+	font-family: Verdana, Geneva, Arial, Helvetica, sans-serif;
 	font-weight: bold;
-	padding-right : 10px;
-	padding-top : 2px;
-	padding-left : 10px;
-	padding-bottom : 2px;
-	margin-left : 0px;
-	margin-right : 0px;
-	margin-top : 2px;
-	margin-bottom : 2px;
-	border: 1px solid #CCCCCC;
-}
-TD.indexvalue {
-	background-color: #e8eef2;
-	font-style: italic;
-	padding-right : 10px;
-	padding-top : 2px;
-	padding-left : 10px;
-	padding-bottom : 2px;
-	margin-left : 0px;
-	margin-right : 0px;
-	margin-top : 2px;
-	margin-bottom : 2px;
-	border: 1px solid #CCCCCC;
-}
-TR.memlist {
-	background-color: #f0f0f0;
-}
-P.formulaDsp {
-	text-align: center;
-}
-IMG.formulaDsp {
-}
-IMG.formulaInl {
-	vertical-align: middle;
-}
-SPAN.keyword {
-	color: #008000
-}
-SPAN.keywordtype {
-	color: #604020
+	font-size: 10pt;
+	background-color: #e5e5e5; 
+	border: solid 1 #e5e5e5;
 }
 SPAN.keywordflow {
 	color: #e08000
@@ -206,19 +201,52 @@ SPAN.preprocessor {
 SPAN.stringliteral {
 	color: #002080
 }
-SPAN.charliteral {
-	color: #008080
+
+
+P.formulaDsp { text-align: center; }
+IMG.formulaDsp { }
+IMG.formulaInl { vertical-align: middle; }
+
+SPAN.keyword       { color: #000000 }
+SPAN.keywordtype   { color: #000000 }
+SPAN.keywordflow   { color: #000000 }
+SPAN.comment       { color: gray }
+SPAN.preprocessor  { color: #000000 }
+SPAN.stringliteral { color: #0000ff }
+SPAN.charliteral   { color: #0000ff }
+
+
+EM
+{
+	font-style:normal;
 }
-.mdescLeft {
-	padding: 0px 8px 4px 8px;
-	font-size: 80%;
-	font-style: italic;
-	background-color: #FAFAFA;
-	border-top: 1px none #E0E0E0;
-	border-right: 1px none #E0E0E0;
-	border-bottom: 1px none #E0E0E0;
-	border-left: 1px none #E0E0E0;
-	margin: 0px;
+
+/* frame and items of member-functions in detail section for doxygen >= 1.47*/
+TD.memname {white-space: nowrap; font-weight: bold; color: darkblue; font-size: 8pt}
+TD.paramname {white-space: nowrap; font-weight: bold; color: #303030;  font-size: 8pt}
+TD.paramtype{white-space: nowrap; font-weight: bold; font-size: 8pt}
+TABLE.memname
+{
+	white-space: nowrap;
+	background-color: #efefef;
+	border-top: 3px solid #bbbbbb;
+	border-left: 3px solid #cfcfcf;
+	padding: 2px 7px;
+}
+.memdoc{
+	font-size: 8pt;
+	padding-left: 10px;
+}
+
+/* frame and items of member-functions in detail section for doxygen < 1.4.7 */
+TD.md {font-weight: bold; color: darkblue; font-size: 8pt}
+TD.mdname1 {font-weight: bold; color: #303030;  font-size: 8pt}
+TD.mdname {font-weight: bold; color: #303030; width: 400px}
+.mdTable 
+{
+	background-color: #efefef;
+	border-top: 3px solid #bbbbbb;
+	border-left: 3px solid #cfcfcf;
 }
 .mdescRight {
 	padding: 0px 8px 4px 8px;
@@ -231,28 +259,16 @@ SPAN.charliteral {
 	border-left: 1px none #E0E0E0;
 	margin: 0px;
 }
+
+/* class members */
 .memItemLeft {
-	padding: 1px 0px 0px 8px;
+	font-size: 8pt;
+	font-family: Verdana, Geneva, Arial, Helvetica, sans-serif;
+	font-weight:bold;
+	background-color: #f0f0f0;
+	padding: 1px 0px 1px 8px;
 	margin: 4px;
-	border-top-width: 1px;
-	border-right-width: 1px;
-	border-bottom-width: 1px;
-	border-left-width: 1px;
-	border-top-color: #E0E0E0;
-	border-right-color: #E0E0E0;
-	border-bottom-color: #E0E0E0;
-	border-left-color: #E0E0E0;
-	border-top-style: solid;
-	border-right-style: none;
-	border-bottom-style: none;
-	border-left-style: none;
-	background-color: #FAFAFA;
-	font-size: 80%;
-}
-.memItemRight {
-	padding: 1px 8px 0px 8px;
-	margin: 4px;
-	border-top-width: 1px;
+	border-top-width: 2px;
 	border-right-width: 1px;
 	border-bottom-width: 1px;
 	border-left-width: 1px;
@@ -282,31 +298,15 @@ SPAN.charliteral {
 	border-right-style: none;
 	border-bottom-style: none;
 	border-left-style: none;
-	background-color: #FAFAFA;
-	font-size: 80%;
 }
-.memTemplItemRight {
-	padding: 1px 8px 0px 8px;
+.memItemRight {
+	font-size: 8pt;
+	font-family: Verdana, Geneva, Arial, Helvetica, sans-serif;
+	font-weight:bold;
+	background-color: #f0f0f0;
+	padding: 1px 0px 1px 8px;
 	margin: 4px;
-	border-top-width: 1px;
-	border-right-width: 1px;
-	border-bottom-width: 1px;
-	border-left-width: 1px;
-	border-top-color: #E0E0E0;
-	border-right-color: #E0E0E0;
-	border-bottom-color: #E0E0E0;
-	border-left-color: #E0E0E0;
-	border-top-style: none;
-	border-right-style: none;
-	border-bottom-style: none;
-	border-left-style: none;
-	background-color: #FAFAFA;
-	font-size: 80%;
-}
-.memTemplParams {
-	padding: 1px 0px 0px 8px;
-	margin: 4px;
-	border-top-width: 1px;
+	border-top-width: 2px;
 	border-right-width: 1px;
 	border-bottom-width: 1px;
 	border-left-width: 1px;
@@ -318,37 +318,6 @@ SPAN.charliteral {
 	border-right-style: none;
 	border-bottom-style: none;
 	border-left-style: none;
-	color: #606060;
-	background-color: #FAFAFA;
-	font-size: 80%;
-}
-.search {
-	color: #003399;
-	font-weight: bold;
-}
-FORM.search {
-	margin-bottom: 0px;
-	margin-top: 0px;
-}
-INPUT.search {
-	font-size: 75%;
-	color: #000080;
-	font-weight: normal;
-	background-color: #e8eef2;
-}
-TD.tiny {
-	font-size: 75%;
-}
-a {
-	color: #1A41A8;
-}
-a:visited {
-	color: #2A3798;
-}
-.dirtab {
-	padding: 4px;
-	border-collapse: collapse;
-	border: 1px solid #84b0c7;
 }
 TH.dirtab {
 	background: #e8eef2;
@@ -419,10 +388,21 @@ HR {
 	font-size: 9pt;
 	font-weight: bold;
 }
-.directory h3 {
+.mdescRight 
+{
+	color:#0044cc;
+	font-size: 8pt;
+	font-family: Verdana, Arial, Helvetica, sans-serif;
+	font-weight:normal;
+	background-color: #f0f0f0;
+	padding-left: 4px;
+	border-top: 1px none #E0E0E0;
+	border-right: 1px none #E0E0E0;
+	border-bottom: 1px none #E0E0E0;
+	border-left: 1px none #E0E0E0;
 	margin: 0px;
-	margin-top: 1em;
-	font-size: 11pt;
+	padding-bottom: 0px;
+	padding-left: 8px;
 }
 .directory > h3 {
 	margin-top: 0;
@@ -438,3 +418,22 @@ HR {
 .directory img {
 	vertical-align: -30%;
 }
+
+/* colors for figures constructed in html */
+.area1         { border:none; background: lightgrey;   }
+.area2         { border:none; background: lightyellow; }
+.borderArea1   { border:1px solid darkgray; background: lightgrey;   }
+.borderArea2   { border:1px solid darkgray; background: lightyellow; }
+.border        { border:1px solid darkgray; }
+
+/* for the tree view */
+.ftvtree {
+	font-family: sans-serif;
+	margin:0.5em;
+}
+.directory { font-size: 9pt; font-weight: bold; }
+.directory h3 { margin: 0px; margin-top: 1em; font-size: 11pt; }
+.directory > h3 { margin-top: 0; }
+.directory p { margin: 0px; white-space: nowrap; }
+.directory div { display: none; margin: 0px; }
+.directory img { vertical-align: -30%; }

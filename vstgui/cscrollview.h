@@ -2,7 +2,7 @@
 // VST Plug-Ins SDK
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 //
-// CScrollView written 2004 by Arne Scheffler
+// Version 3.6
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
@@ -207,6 +207,7 @@ class IScrollbarDrawer
 //-----------------------------------------------------------------------------
 {
 public:
+	virtual ~IScrollbarDrawer () {}
 	virtual void drawScrollbarBackground (CDrawContext* pContext, const CRect& size, CScrollbar::ScrollbarDirection direction, CScrollbar* bar) = 0;
 	virtual void drawScrollbarScroller (CDrawContext* pContext, const CRect& size, CScrollbar::ScrollbarDirection direction, CScrollbar* bar) = 0;
 };
