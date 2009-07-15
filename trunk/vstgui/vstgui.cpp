@@ -9874,7 +9874,7 @@ bool isWindowComposited (WindowRef window)
 	return false;
 }
 
-#if !MAC_COCOA
+#if !NO_QUICKDRAW && MAC_OS_X_VERSION_MIN_REQUIRED <= MAC_OS_X_VERSION_10_3
 // code from CarbonSketch Example Code
 #define	kGenericRGBProfilePathStr       "/System/Library/ColorSync/Profiles/Generic RGB Profile.icc"
 
