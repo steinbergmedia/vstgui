@@ -83,14 +83,14 @@ void PluginGUIEditor::draw (ERect *ppErect)
 {
 	if (frame)
 	{
+		CDrawContext context (frame, NULL, systemWindow);
 		if (ppErect)
 		{
 			CRect r (ppErect->left, ppErect->top, ppErect->right, ppErect->bottom);
-			CDrawContext context (frame, NULL, systemWindow);
 			frame->drawRect (&context, r);
 		}
 		else
-			frame->draw ();
+			frame->draw (&context);
 	}
 }
 
