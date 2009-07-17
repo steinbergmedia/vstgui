@@ -9944,7 +9944,7 @@ bool isWindowComposited (WindowRef window)
 	return false;
 }
 
-#if !NO_QUICKDRAW && MAC_OS_X_VERSION_MIN_REQUIRED <= MAC_OS_X_VERSION_10_3
+#if !MAC_COCOA
 // code from CarbonSketch Example Code
 #define	kGenericRGBProfilePathStr       "/System/Library/ColorSync/Profiles/Generic RGB Profile.icc"
 
@@ -9964,6 +9964,7 @@ public:
 		// we don't want to leak ;-)
 		CGColorSpaceRelease (genericRGBColorSpace);
 
+		#if !NO_QUICKDRAW && MAC_OS_X_VERSION_MIN_REQUIRED <= MAC_OS_X_VERSION_10_3
 		if (bmpGI)
 			CloseComponent (bmpGI);
 		if (pngGI)
@@ -9976,6 +9977,7 @@ public:
 		pngGI = 0;
 		jpgGI = 0;
 		pictGI = 0;
+		#endif // !NO_QUICKDRAW && MAC_OS_X_VERSION_MIN_REQUIRED <= MAC_OS_X_VERSION_10_3
 	}
 	
 	inline CGColorSpaceRef getGenericRGBColorSpace () { return genericRGBColorSpace; }
