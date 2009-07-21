@@ -193,8 +193,12 @@ CScrollView::CScrollView (const CRect &size, const CRect &containerSize, CFrame*
 , vsb (0)
 , hsb (0)
 , containerSize (containerSize)
+, scrollbarWidth (scrollbarWidth)
 , style (style)
 {
+	#if 1
+	recalculateSubViews ();
+	#else
 	CRect scsize (0, 0, size.getWidth (), size.getHeight ());
 	if (!(style & kDontDrawFrame))
 	{
@@ -233,6 +237,7 @@ CScrollView::CScrollView (const CRect &size, const CRect &containerSize, CFrame*
 	sc = new CScrollContainer (scsize, this->containerSize, pParent);
 	sc->setAutosizeFlags (kAutosizeAll);
 	CViewContainer::addView (sc);
+	#endif
 }
 
 //-----------------------------------------------------------------------------
@@ -240,6 +245,7 @@ CScrollView::CScrollView (const CScrollView& v)
 : CViewContainer (v)
 , containerSize (v.containerSize)
 , style (v.style)
+, scrollbarWidth (v.scrollbarWidth)
 {
 	CViewContainer::removeAll ();
 	if (style & kHorizontalScrollbar && v.hsb)
@@ -264,6 +270,83 @@ CScrollView::~CScrollView ()
 }
 
 //-----------------------------------------------------------------------------
+void CScrollView::recalculateSubViews ()
+{
+	CRect scsize (0, 0, size.getWidth (), size.getHeight ());
+	if (!(style & kDontDrawFrame))
+	{
+		scsize.left++; scsize.top++;
+		scsize.right-=1; scsize.bottom--;
+	}
+	if (style & kHorizontalScrollbar)
+	{
+		CRect sbr (size);
+		sbr.offset (-size.left, -size.top);
+		sbr.top = sbr.bottom - scrollbarWidth;
+		if (style & kVerticalScrollbar)
+		{
+			sbr.right -= (scrollbarWidth - 1);
+		}
+		if (hsb)
+		{
+			hsb->setViewSize (sbr, true);
+			hsb->setMouseableArea (sbr);
+			hsb->setVisible (true);
+		}
+		else
+		{
+			hsb = new CScrollbar (sbr, this, kHSBTag, CScrollbar::kHorizontal, containerSize);
+			hsb->setAutosizeFlags (kAutosizeLeft | kAutosizeRight | kAutosizeBottom);
+			CViewContainer::addView (hsb);
+		}
+		scsize.bottom = sbr.top;
+	}
+	else if (hsb)
+	{
+		hsb->setVisible (false);
+	}
+	if (style & kVerticalScrollbar)
+	{
+		CRect sbr (size);
+		sbr.offset (-size.left, -size.top);
+		sbr.left = sbr.right - scrollbarWidth;
+		if (style & kHorizontalScrollbar)
+		{
+			sbr.bottom -= (scrollbarWidth - 1);
+		}
+		if (vsb)
+		{
+			vsb->setViewSize (sbr, true);
+			vsb->setMouseableArea (sbr);
+			vsb->setVisible (true);
+		}
+		else
+		{
+			vsb = new CScrollbar (sbr, this, kVSBTag, CScrollbar::kVertical, containerSize);
+			vsb->setAutosizeFlags (kAutosizeTop | kAutosizeRight | kAutosizeBottom);
+			CViewContainer::addView (vsb);
+		}
+		scsize.right = sbr.left;
+	}
+	else if (vsb)
+	{
+		vsb->setVisible (false);
+	}
+
+	if (!sc)
+	{
+		sc = new CScrollContainer (scsize, containerSize, getFrame ());
+		sc->setAutosizeFlags (kAutosizeAll);
+		CViewContainer::addView (sc);
+	}
+	else
+	{
+		sc->setViewSize (scsize, true);
+		sc->setMouseableArea (scsize);
+	}
+}
+
+//-----------------------------------------------------------------------------
 void CScrollView::setViewSize (CRect &rect, bool invalid)
 {
 	CViewContainer::setViewSize (rect, invalid);
@@ -276,6 +359,26 @@ void CScrollView::setAutosizeFlags (long flags)
 	CViewContainer::setAutosizeFlags (flags);
 	if (sc)
 		sc->setAutosizeFlags (flags);
+}
+
+//-----------------------------------------------------------------------------
+void CScrollView::setStyle (long newStyle)
+{
+	if (style != newStyle)
+	{
+		style = newStyle;
+		recalculateSubViews ();
+	}
+}
+
+//-----------------------------------------------------------------------------
+void CScrollView::setScrollbarWidth (CCoord width)
+{
+	if (scrollbarWidth != width)
+	{
+		scrollbarWidth = width;
+		recalculateSubViews ();
+	}
 }
 
 //-----------------------------------------------------------------------------

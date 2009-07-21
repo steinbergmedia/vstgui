@@ -60,6 +60,7 @@ public:
 	#endif
 
 	const char* getViewName (CView* view) const;
+	bool applyCustomViewAttributeValues (CView* customView, const char* baseViewName, const UIAttributes& attributes, IUIDescription* desc) const;
 
 protected:
 	CView* createViewByName (const std::string* className, const UIAttributes& attributes, IUIDescription* description);

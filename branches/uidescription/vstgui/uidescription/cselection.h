@@ -42,7 +42,6 @@ public:
 	const_iterator end () const { return std::list<CView*>::end (); }
 
 	CView* first () const;
-//	CView* getNext (CView* previous) const;
 
 	bool contains (CView* view) const;
 	bool containsParent (CView* view) const;

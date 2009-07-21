@@ -99,6 +99,9 @@ public:
 	bool getTemplateNameFromView (CView* view, std::string& templateName);
 	void addNewTemplate (const char* name, UIAttributes* attr); // owns attributes
 
+	bool setCustomAttributes (const char* name, UIAttributes* attr); //owns attributes
+	UIAttributes* getCustomAttributes (const char* name) const;
+
 	static bool parseColor (const std::string& colorString, CColor& color);
 	static CViewAttributeID kTemplateNameAttributeID;
 protected:

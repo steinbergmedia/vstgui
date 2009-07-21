@@ -50,6 +50,7 @@
 		#define MAC 1
 	#endif
 	#define VSTGUI_USES_COREGRAPHICS 1
+	#define VSTGUI_USES_CORE_TEXT	(MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_5)
 	#if !__LP64__
 		#define MAC_CARBON 1
 		#ifndef TARGET_API_MAC_CARBON
@@ -273,6 +274,8 @@ struct CRect
 	void setTopRight (const CPoint& inPoint);
 	void setBottomLeft (const CPoint& inPoint);
 	void setBottomRight (const CPoint& inPoint);
+
+	CPoint getCenter () const;
 
 	CPoint getSize () const;
 	void setSize (const CPoint& size);
@@ -862,6 +865,8 @@ protected:
 	Gdiplus::SolidBrush	*pFontBrush;
 	public:
 		Gdiplus::Graphics* getGraphics () const { return pGraphics; }
+		Gdiplus::Pen* getPen () const { return pPen; }
+		Gdiplus::SolidBrush* getBrush () const { return pBrush; }
 	protected:
 	#else
 	void *pBrush;

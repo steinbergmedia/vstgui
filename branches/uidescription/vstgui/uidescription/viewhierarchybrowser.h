@@ -10,6 +10,8 @@
 #ifndef __viewhierarchybrowser__
 #define __viewhierarchybrowser__
 
+#if VSTGUI_LIVE_EDITING
+
 #include "../vstgui.h"
 #include "uidescription.h"
 #include "platformsupport.h"
@@ -66,5 +68,7 @@ protected:
 
 
 END_NAMESPACE_VSTGUI
+
+#endif // VSTGUI_LIVE_EDITING
 
 #endif

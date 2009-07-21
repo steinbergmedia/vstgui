@@ -422,6 +422,7 @@ public:
 	virtual	void draw (CDrawContext* pContext);
 	VSTGUI_DEPRECATED(virtual void mouse (CDrawContext* pContext, CPoint& where, long button = -1);)
 	virtual CMouseEventResult onMouseDown (CPoint& where, const long& buttons);
+	virtual long onKeyDown (VstKeyCode& keyCode);
 
 	virtual	void takeFocus ();
 	virtual	void looseFocus ();

@@ -6,6 +6,8 @@
  *
  */
 
+#if VSTGUI_LIVE_EDITING
+
 #include "platformsupport.h"
 #include "../cocoasupport.h"
 #include <Cocoa/Cocoa.h>
@@ -112,6 +114,7 @@ CocoaWindow::~CocoaWindow ()
 		[window setDelegate:nil];
 		[cocoaDelegate release];
 	}
+	[window orderOut:nil];
 	[window release];
 }
 
@@ -261,6 +264,7 @@ bool PlatformDefaults::getRect (const char* appID, const char* name, CRect& valu
 		n = [dict objectForKey:@"bottom"];
 		if (n)
 			value.bottom = [n doubleValue];
+		[dict release];
 		return true;
 	}
 	return false;
@@ -395,3 +399,5 @@ END_NAMESPACE_VSTGUI
 	}
 }
 @end
+
+#endif // VSTGUI_LIVE_EDITING

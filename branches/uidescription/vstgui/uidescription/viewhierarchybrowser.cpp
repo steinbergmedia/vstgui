@@ -7,6 +7,8 @@
  *
  */
 
+#if VSTGUI_LIVE_EDITING
+
 #include "viewhierarchybrowser.h"
 #include "viewfactory.h"
 #include "ceditframe.h"
@@ -257,7 +259,8 @@ void ViewHierarchyData::doMoveOperation (long row, bool up, CDataBrowser* browse
 	{
 		if (!(row == 0 && up) && !(row == dbGetNumRows (browser)-1 && !up))
 		{
-			actionOperator->performAction (new HierarchyMoveViewOperation (parent->getCurrentView ()->getView (row), up));
+			if (actionOperator)
+				actionOperator->performAction (new HierarchyMoveViewOperation (parent->getCurrentView ()->getView (row), up));
 			browser->setSelectedRow (row + (up ? -1 : 1), true);
 		}
 	}
@@ -277,7 +280,7 @@ CMouseEventResult ViewHierarchyData::dbOnMouseDown (const CPoint& where, const l
 					parent->setCurrentView (view);
 			}
 		}
-		else if (actionOperator)
+		else
 		{
 			doMoveOperation (row, column == 1, browser);
 		}
@@ -316,7 +319,16 @@ long ViewHierarchyData::dbOnKeyDown (const VstKeyCode& key, CDataBrowser* browse
 			CViewContainer* view = dynamic_cast<CViewContainer*> (parent->getCurrentView ()->getParentView ());
 			if (view)
 			{
+				CView* currentView = parent->getCurrentView ();
 				parent->setCurrentView (view);
+				for (long i = 0; i < view->getNbViews (); i++)
+				{
+					if (view->getView (i) == currentView)
+					{
+						browser->setSelectedRow (i, true);
+						break;
+					}
+				}
 				return 1;
 			}
 		}
@@ -620,6 +632,9 @@ ViewHierarchyBrowserWindow::ViewHierarchyBrowserWindow (CViewContainer* baseView
 	platformWindow = PlatformWindow::create (size, "VSTGUI Hierarchy Browser", PlatformWindow::kPanelType, PlatformWindow::kClosable|PlatformWindow::kResizable, this);
 	if (platformWindow)
 	{
+		#if MAC && !__LP64__
+		CFrame::setCocoaMode (true);
+		#endif
 		frame = new CFrame (size, platformWindow->getPlatformHandle (), this);
 		#if MAC
 		frame->setBackgroundColor (kTransparentCColor);
@@ -693,3 +708,5 @@ void ViewHierarchyBrowserWindow::checkWindowSizeConstraints (CPoint& size, Platf
 }
 
 END_NAMESPACE_VSTGUI
+
+#endif // VSTGUI_LIVE_EDITING

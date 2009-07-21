@@ -230,4 +230,44 @@ bool PlatformUtilities::startDrag (CFrame* frame, const CPoint& location, const 
 	return false;
 }
 
+//-----------------------------------------------------------------------------
+void PlatformUtilities::colorChooser (const CColor* oldColor, IPlatformColorChangeCallback* callback)
+{
+}
+
+//-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
+void PlatformDefaults::setRect (const char* appID, const char* name, const CRect& value)
+{
+}
+
+//-----------------------------------------------------------------------------
+bool PlatformDefaults::getRect (const char* appID, const char* name, CRect& value)
+{
+	return false;
+}
+
+//-----------------------------------------------------------------------------
+void PlatformDefaults::setString (const char* appID, const char* name, const std::string& value)
+{
+}
+
+//-----------------------------------------------------------------------------
+bool PlatformDefaults::getString (const char* appID, const char* name, std::string& value)
+{
+	return false;
+}
+
+//-----------------------------------------------------------------------------
+void PlatformDefaults::setNumber (const char* appID, const char* name, long value)
+{
+}
+
+//-----------------------------------------------------------------------------
+bool PlatformDefaults::getNumber (const char* appID, const char* name, long& value)
+{
+	return false;
+}
+
 END_NAMESPACE_VSTGUI

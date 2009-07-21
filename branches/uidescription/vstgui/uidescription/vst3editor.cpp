@@ -1,10 +1,13 @@
 
 #include "vst3editor.h"
+#include "vstkeycode.h"
 #include "ceditframe.h"
 #include "base/source/updatehandler.h"
 #include "base/source/fstring.h"
-#include "namingdialog.h"
+#include "pluginterfaces/base/keycodes.h"
+#include "dialog.h"
 #include <list>
+#include <sstream>
 
 BEGIN_NAMESPACE_VSTGUI
 
@@ -64,7 +67,7 @@ public:
 			for (Steinberg::int32 i = 0; i <= parameter->getInfo ().stepCount; i++)
 			{
 				Steinberg::Vst::String128 utf16Str;
-				parameter->toString ((Steinberg::Vst::ParamValue)i / (Steinberg::Vst::ParamValue)parameter->getInfo ().stepCount, utf16Str);
+				editController->getParamStringByValue (getParameterID (), (Steinberg::Vst::ParamValue)i / (Steinberg::Vst::ParamValue)parameter->getInfo ().stepCount, utf16Str);
 				Steinberg::String utf8Str (utf16Str);
 				utf8Str.toMultiByte (Steinberg::kCP_Utf8);
 				optMenu->addEntry (utf8Str);
@@ -124,7 +127,7 @@ protected:
 		if (parameter)
 		{
 			Steinberg::Vst::String128 utf16Str;
-			parameter->toString (value, utf16Str);
+			editController->getParamStringByValue (getParameterID (), value, utf16Str);
 			Steinberg::String utf8Str (utf16Str);
 			utf8Str.toMultiByte (Steinberg::kCP_Utf8);
 			utf8Str.copyTo8 (string, 0, 256);
@@ -176,8 +179,6 @@ static bool parseSize (const std::string& str, CPoint& point)
 VST3Editor::VST3Editor (void* controller, const char* _viewName, const char* _xmlFile, bool debugMode)
 : VSTGUIEditor (controller)
 , debugMode (debugMode)
-, reloadDescriptionTag (-1)
-, doReloadDescription (false)
 , doCreateView (false)
 , tooltipSupport (0)
 , tooltipsEnabled (true)
@@ -193,8 +194,6 @@ VST3Editor::VST3Editor (void* controller, const char* _viewName, const char* _xm
 VST3Editor::VST3Editor (UIDescription* desc, void* controller, const char* _viewName, const char* _xmlFile, bool debugMode)
 : VSTGUIEditor (controller)
 , debugMode (debugMode)
-, reloadDescriptionTag (-1)
-, doReloadDescription (false)
 , doCreateView (false)
 , tooltipSupport (0)
 , tooltipsEnabled (true)
@@ -331,7 +330,7 @@ void VST3Editor::valueChanged (CControl* pControl)
 		{
 			Steinberg::String str (textEdit->getText ());
 			str.toWideString (Steinberg::kCP_Utf8);
-			if (getController ()->getParamValueByString (pcl->getParameterID (), (Steinberg::Vst::TChar*)str.text16 (), value) == Steinberg::kResultFalse)
+			if (getController ()->getParamValueByString (pcl->getParameterID (), (Steinberg::Vst::TChar*)str.text16 (), value) != Steinberg::kResultTrue)
 			{
 				pcl->changed ();
 				return;
@@ -341,13 +340,9 @@ void VST3Editor::valueChanged (CControl* pControl)
 		if (optMenu && pcl->getParameter ())
 		{
 			//need to convert to normalized from plain
-			value = pcl->getParameter ()->toNormalized (value);
+			value = getController ()->plainParamToNormalized (pcl->getParameterID (), value);
 		}
 		pcl->performEdit (value);
-	}
-	if (reloadDescriptionTag != -1 && pControl->getTag () == reloadDescriptionTag)
-	{
-		doReloadDescription = true;
 	}
 }
 
@@ -385,16 +380,24 @@ void VST3Editor::controlEndEdit (CControl* pControl)
 }
 
 //-----------------------------------------------------------------------------
+CView* VST3Editor::createView (const UIAttributes& attributes, IUIDescription* description)
+{
+	const std::string* customViewName = attributes.getAttributeValue ("custom-view-name");
+	if (customViewName)
+	{
+		IVST3CustomViewCreator* cvc = dynamic_cast<IVST3CustomViewCreator*> (getController ());
+		if (cvc)
+			return cvc->createCustomView (customViewName->c_str (), attributes, description);
+	}
+	return 0;
+}
+
+//-----------------------------------------------------------------------------
 CView* VST3Editor::verifyView (CView* view, const UIAttributes& attributes, IUIDescription* description)
 {
 	CControl* control = dynamic_cast<CControl*> (view);
 	if (control && control->getTag () != -1 && control->getListener () == this)
 	{
-		if (reloadDescriptionTag != -1 && !debugMode && control->getTag () == reloadDescriptionTag)
-		{
-			view->forget ();
-			return 0;
-		}
 		ParameterChangeListener* pcl = getParameterChangeListener (control->getTag ());
 		if (pcl)
 		{
@@ -411,25 +414,6 @@ CView* VST3Editor::verifyView (CView* view, const UIAttributes& attributes, IUID
 		}
 	}
 	return view;
-}
-
-//-----------------------------------------------------------------------------
-void VST3Editor::reloadDescription ()
-{
-	doReloadDescription = false;
-	UIDescription* newDescription = new UIDescription (xmlFile.c_str ());
-	if (!newDescription->parse ())
-	{
-		newDescription->forget ();
-		return;
-	}
-	frame->removeAll (true);
-	description->forget ();
-	description = newDescription;
-	#if VSTGUI_LIVE_EDITING
-	dynamic_cast<CEditFrame*> (frame)->setUIDescription (description);
-	#endif
-	recreateView ();
 }
 
 //-----------------------------------------------------------------------------
@@ -463,13 +447,14 @@ void VST3Editor::recreateView ()
 //-----------------------------------------------------------------------------
 bool PLUGIN_API VST3Editor::open (void* parent)
 {
-	reloadDescriptionTag = description->getTagForName (kVST3EditorReloadDescriptionTagName);
 	CView* view = description->createView (viewName.c_str (), this);
 	if (view)
 	{
 		#if VSTGUI_LIVE_EDITING
 		if (debugMode)
-			frame = new CEditFrame (view->getViewSize (), parent, this, CEditFrame::kEditMode, 0, description, viewName.c_str ());
+		{
+			frame = new CEditFrame (view->getViewSize (), parent, this, CEditFrame::kNoEditMode, 0, description, viewName.c_str ());
+		}
 		else
 		#endif
 			frame = new CFrame (view->getViewSize (), parent, this);
@@ -544,8 +529,6 @@ CMessageResult VST3Editor::notify (CBaseObject* sender, const char* message)
 {
 	if (message == CVSTGUITimer::kMsgTimer)
 	{
-		if (doReloadDescription)
-			reloadDescription ();
 		if (doCreateView)
 			recreateView ();
  	}
@@ -560,6 +543,7 @@ CMessageResult VST3Editor::notify (CBaseObject* sender, const char* message)
 			if (templateNames.size () > 0)
 			{
 				menu->addSeparator ();
+				menu->addEntry (new CMenuItem ("Template Settings..."));
 				COptionMenu* submenu = new COptionMenu ();
 				long menuTag = 1000;
 				std::list<const std::string*>::const_iterator it = templateNames.begin ();
@@ -601,22 +585,21 @@ CMessageResult VST3Editor::notify (CBaseObject* sender, const char* message)
 		CMenuItem* item = dynamic_cast<CMenuItem*> (sender);
 		if (item)
 		{
-			long index = item->getTag ();
-			if (index >= 10000)
+			if (item->getTitle () == std::string ("Template Settings..."))
 			{
-				std::string templateTitle ("NewTemplate");
-				if (NamingDialog::askForName (templateTitle, "Choose a template name") && templateTitle.length () > 0)
-				{
-					UIAttributes* attr = new UIAttributes ();
-					attr->setAttribute ("class", item->getTitle ());
-					attr->setAttribute ("size", "300, 300");
-					description->addNewTemplate (templateTitle.c_str (), attr);
-					exchangeView (templateTitle.c_str ());
-				}
+				runTemplateSettingsDialog ();
 			}
 			else
 			{
-				exchangeView (item->getTitle ());
+				long index = item->getTag ();
+				if (index >= 10000)
+				{
+					runNewTemplateDialog (item->getTitle ());
+				}
+				else
+				{
+					exchangeView (item->getTitle ());
+				}
 			}
 		}
 		return kMessageNotified;
@@ -630,5 +613,243 @@ CMessageResult VST3Editor::notify (CBaseObject* sender, const char* message)
  	return VSTGUIEditor::notify (sender, message); 
 }
 
+//------------------------------------------------------------------------
+Steinberg::tresult PLUGIN_API VST3Editor::onWheel (float distance)
+{
+	if (frame)
+	{
+		CPoint where;
+		frame->getCurrentMouseLocation (where);
+		if (frame->onWheel (where, distance, frame->getCurrentMouseButtons ()))
+			return Steinberg::kResultTrue;
+	}
+	return Steinberg::kResultFalse;
+}
+
+//------------------------------------------------------------------------
+static bool translateKeyMessage (VstKeyCode& keyCode, Steinberg::char16 key, Steinberg::int16 keyMsg, Steinberg::int16 modifiers)
+{
+	keyCode.character = 0;
+	keyCode.virt = keyMsg;
+	keyCode.modifier = 0;
+	if (key == 0)
+		key = Steinberg::VirtualKeyCodeToChar (keyMsg);
+	if (key)
+	{
+		Steinberg::String keyStr (STR(" "));
+		keyStr.setChar16 (0, key);
+		keyStr.toMultiByte (Steinberg::kCP_Utf8);
+		if (keyStr.length () == 1)
+			keyCode.character = keyStr.getChar8 (0);
+	}
+	if (modifiers)
+	{
+		if (modifiers & Steinberg::kShiftKey)
+			keyCode.modifier |= MODIFIER_SHIFT;
+		if (modifiers & Steinberg::kAlternateKey)
+			keyCode.modifier |= MODIFIER_ALTERNATE;
+		if (modifiers & Steinberg::kCommandKey)
+			keyCode.modifier |= MODIFIER_CONTROL;
+		if (modifiers & Steinberg::kControlKey)
+			keyCode.modifier |= MODIFIER_COMMAND;
+	}
+	return true;
+}
+
+//------------------------------------------------------------------------
+Steinberg::tresult PLUGIN_API VST3Editor::onKeyDown (Steinberg::char16 key, Steinberg::int16 keyMsg, Steinberg::int16 modifiers)
+{
+	if (frame)
+	{
+		VstKeyCode keyCode = {0};
+		if (translateKeyMessage (keyCode, key, keyMsg, modifiers))
+		{
+			long result = frame->onKeyDown (keyCode);
+			if (result == 1)
+				return Steinberg::kResultTrue;
+		}
+	}
+	return Steinberg::kResultFalse;
+}
+
+//------------------------------------------------------------------------
+Steinberg::tresult PLUGIN_API VST3Editor::onKeyUp (Steinberg::char16 key, Steinberg::int16 keyMsg, Steinberg::int16 modifiers)
+{
+	if (frame)
+	{
+		VstKeyCode keyCode = {0};
+		if (translateKeyMessage (keyCode, key, keyMsg, modifiers))
+		{
+			long result = frame->onKeyUp (keyCode);
+			if (result == 1)
+				return Steinberg::kResultTrue;
+		}
+	}
+	return Steinberg::kResultFalse;
+}
+
+#if VSTGUI_LIVE_EDITING
+static const CCoord kMargin = 10;
+static const CCoord kControlHeight = 22;
+//------------------------------------------------------------------------
+void VST3Editor::runNewTemplateDialog (const char* baseViewName)
+{
+	CRect size (0, 0, 300+kMargin, kControlHeight*3+kMargin*2);
+	CViewContainer* c = new CViewContainer (size, 0);
+	c->setTransparency (true);
+	size (0, 0, 80, kControlHeight);
+	CTextLabel* label = new CTextLabel (size, "Name:");
+	label->setStyle (kNoFrame);
+	label->setBackColor (kWhiteCColor);
+	label->setFontColor (kBlackCColor);
+	label->setTextInset (CPoint (5, 0));
+	label->setHoriAlign (kRightText);
+	c->addView (label);
+	size.offset (0, kMargin+kControlHeight);
+	label = new CTextLabel (*label);
+	label->setViewSize (size);
+	label->setText ("Width:");
+	c->addView (label);
+	size.offset (0, kMargin+kControlHeight);
+	label = new CTextLabel (*label);
+	label->setViewSize (size);
+	label->setText ("Height:");
+	c->addView (label);
+	size.top = 0;
+	size.bottom = kControlHeight;
+	size.offset (80+kMargin, 0);
+	size.setWidth (220);
+	CColor lightGrey = MakeCColor (200, 200, 200, 255);
+	CColor frameColor = MakeCColor (100, 100, 100, 100);
+	CTextEdit* nameTextEdit = new CTextEdit (size, 0, -1);
+	nameTextEdit->setBackColor (lightGrey);
+	nameTextEdit->setFrameColor (frameColor);
+	nameTextEdit->setFontColor (kBlackCColor);
+	nameTextEdit->setText ("TemplateName");
+	c->addView (nameTextEdit);
+	size.offset (0, kMargin+kControlHeight);
+	CTextEdit* widthTextEdit = new CTextEdit (size, 0, -1);
+	widthTextEdit->setBackColor (lightGrey);
+	widthTextEdit->setFrameColor (frameColor);
+	widthTextEdit->setFontColor (kBlackCColor);
+	widthTextEdit->setText ("300");
+	c->addView (widthTextEdit);
+	size.offset (0, kMargin+kControlHeight);
+	CTextEdit* heightTextEdit = new CTextEdit (size, 0, -1);
+	heightTextEdit->setBackColor (lightGrey);
+	heightTextEdit->setFrameColor (frameColor);
+	heightTextEdit->setFontColor (kBlackCColor);
+	heightTextEdit->setText ("300");
+	c->addView (heightTextEdit);
+	if (Dialog::runViewModal (CPoint (0, 0), c, Dialog::kOkCancelButtons, "Create new template"))
+	{
+		long width = strtol (widthTextEdit->getText (), 0, 10);
+		long height = strtol (heightTextEdit->getText (), 0, 10);
+		if (width < 20)
+			widthTextEdit->setText ("100");
+		if (height < 20)
+			heightTextEdit->setText ("50");
+		std::string sizeAttr (widthTextEdit->getText ());
+		sizeAttr += ", ";
+		sizeAttr += heightTextEdit->getText ();
+		UIAttributes* attr = new UIAttributes ();
+		attr->setAttribute ("class", baseViewName);
+		attr->setAttribute ("size", sizeAttr.c_str ());
+		description->addNewTemplate (nameTextEdit->getText (), attr);
+		exchangeView (nameTextEdit->getText ());
+	}
+	c->forget ();
+}
+
+//------------------------------------------------------------------------
+void VST3Editor::runTemplateSettingsDialog ()
+{
+	CRect size (0, 0, 300+kMargin, kControlHeight*4+kMargin*3);
+	CViewContainer* c = new CViewContainer (size, 0);
+	c->setTransparency (true);
+	size (0, 0, 80, kControlHeight);
+	CTextLabel* label = new CTextLabel (size, "Min Width:");
+	label->setStyle (kNoFrame);
+	label->setBackColor (kWhiteCColor);
+	label->setFontColor (kBlackCColor);
+	label->setTextInset (CPoint (5, 0));
+	label->setHoriAlign (kRightText);
+	c->addView (label);
+	size.offset (0, kMargin+kControlHeight);
+	label = new CTextLabel (*label);
+	label->setViewSize (size);
+	label->setText ("Min Height:");
+	c->addView (label);
+	size.offset (0, kMargin+kControlHeight);
+	label = new CTextLabel (*label);
+	label->setViewSize (size);
+	label->setText ("Max Width:");
+	c->addView (label);
+	size.offset (0, kMargin+kControlHeight);
+	label = new CTextLabel (*label);
+	label->setViewSize (size);
+	label->setText ("Max Height:");
+	c->addView (label);
+	size.top = 0;
+	size.bottom = kControlHeight;
+	size.offset (80+kMargin, 0);
+	size.setWidth (220);
+	CColor lightGrey = MakeCColor (200, 200, 200, 255);
+	CColor frameColor = MakeCColor (100, 100, 100, 100);
+	CTextEdit* minWidthTextEdit = new CTextEdit (size, 0, -1);
+	minWidthTextEdit->setBackColor (lightGrey);
+	minWidthTextEdit->setFrameColor (frameColor);
+	minWidthTextEdit->setFontColor (kBlackCColor);
+	std::stringstream str;
+	str << minSize.x;
+	minWidthTextEdit->setText (str.str ().c_str ());
+	c->addView (minWidthTextEdit);
+	size.offset (0, kMargin+kControlHeight);
+	CTextEdit* minHeightTextEdit = new CTextEdit (size, 0, -1);
+	minHeightTextEdit->setBackColor (lightGrey);
+	minHeightTextEdit->setFrameColor (frameColor);
+	minHeightTextEdit->setFontColor (kBlackCColor);
+	str.str ("");
+	str << minSize.y;
+	minHeightTextEdit->setText (str.str ().c_str ());
+	c->addView (minHeightTextEdit);
+	size.offset (0, kMargin+kControlHeight);
+	CTextEdit* maxWidthTextEdit = new CTextEdit (size, 0, -1);
+	maxWidthTextEdit->setBackColor (lightGrey);
+	maxWidthTextEdit->setFrameColor (frameColor);
+	maxWidthTextEdit->setFontColor (kBlackCColor);
+	str.str ("");
+	str << maxSize.x;
+	maxWidthTextEdit->setText (str.str ().c_str ());
+	c->addView (maxWidthTextEdit);
+	size.offset (0, kMargin+kControlHeight);
+	CTextEdit* maxHeightTextEdit = new CTextEdit (size, 0, -1);
+	maxHeightTextEdit->setBackColor (lightGrey);
+	maxHeightTextEdit->setFrameColor (frameColor);
+	maxHeightTextEdit->setFontColor (kBlackCColor);
+	str.str ("");
+	str << maxSize.y;
+	maxHeightTextEdit->setText (str.str ().c_str ());
+	c->addView (maxHeightTextEdit);
+	if (Dialog::runViewModal (CPoint (0, 0), c, Dialog::kOkCancelButtons, "Template Settings"))
+	{
+		UIAttributes* attr = const_cast<UIAttributes*> (description->getViewAttributes (viewName.c_str ()));
+		if (attr)
+		{
+			std::string temp (minWidthTextEdit->getText ());
+			temp += ", ";
+			temp += minHeightTextEdit->getText ();
+			attr->setAttribute ("minSize", temp.c_str ());
+			temp = maxWidthTextEdit->getText ();
+			temp += ", ";
+			temp += maxHeightTextEdit->getText ();
+			attr->setAttribute ("maxSize", temp.c_str ());
+			recreateView ();
+		}
+	}
+	c->forget ();
+}
+
+#endif // VSTGUI_LIVE_EDITING
 
 END_NAMESPACE_VSTGUI

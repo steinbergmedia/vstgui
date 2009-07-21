@@ -1,10 +1,11 @@
-2009-06-09 arne
+2009-06-14 arne
 
 	* changed focus and popup handling of COptionMenu. When the menu takes focus it doesn't popup anymore. This way you can build
 		full keyboard accessible plug-ins. Now if the menu has focus and the return key is pressed the menu will popup.
 		You may need to change some of your code, if you manually called menu->takeFocs() change it to menu->popup()
 
 	* added keyboard hook for CFrame (see IKeyboardHook)
+	* added keyboard handling to IDataBrowser
 	* moved background drawing in CParamDisplay in its own method drawBack() and changed drawText() method by removing the newBack parameter
 
 	* fix CScrollView::makeRectVisible()

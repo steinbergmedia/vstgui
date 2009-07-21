@@ -13,6 +13,8 @@
 #include "platformsupport.h"
 #include <string>
 
+/// \cond ignore
+
 BEGIN_NAMESPACE_VSTGUI
 
 //-----------------------------------------------------------------------------
@@ -37,5 +39,7 @@ protected:
 };
 
 END_NAMESPACE_VSTGUI
+
+/// \endcond ignore
 
 #endif

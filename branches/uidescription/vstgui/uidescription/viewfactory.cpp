@@ -14,6 +14,12 @@ BEGIN_NAMESPACE_VSTGUI
 class ViewCreatorRegistry : public std::map<std::string,const IViewCreator*>
 {
 public:
+	const_iterator find (const char* name)
+	{
+		if (name)
+			return std::map<std::string,const IViewCreator*>::find (name);
+		return end ();
+	}
 };
 
 //-----------------------------------------------------------------------------
@@ -37,7 +43,7 @@ ViewFactory::~ViewFactory ()
 CView* ViewFactory::createViewByName (const std::string* className, const UIAttributes& attributes, IUIDescription* description)
 {
 	ViewCreatorRegistry& registry = getCreatorRegistry ();
-	ViewCreatorRegistry::const_iterator iter = registry.find (*className);
+	ViewCreatorRegistry::const_iterator iter = registry.find (className->c_str ());
 	if (iter != registry.end ())
 	{
 		CView* view = (*iter).second->create (attributes, description);
@@ -84,6 +90,24 @@ bool ViewFactory::applyAttributeValues (CView* view, const UIAttributes& attribu
 	ViewCreatorRegistry& registry = getCreatorRegistry ();
 	ViewCreatorRegistry::const_iterator iter = registry.find (getViewName (view));
 	while (iter != registry.end () && (result = (*iter).second->apply (view, attributes, desc)) && (*iter).second->getBaseViewName ())
+	{
+		iter = registry.find ((*iter).second->getBaseViewName ());
+	}
+	return result;
+}
+
+//-----------------------------------------------------------------------------
+bool ViewFactory::applyCustomViewAttributeValues (CView* customView, const char* baseViewName, const UIAttributes& attributes, IUIDescription* desc) const
+{
+	bool result = false;
+	ViewCreatorRegistry& registry = getCreatorRegistry ();
+	ViewCreatorRegistry::const_iterator iter = registry.find (baseViewName);
+	if (iter != registry.end ())
+	{
+		const char* viewName = (*iter).second->getViewName ();
+		customView->setAttribute ('cvcr', sizeof (const char*), &viewName);
+	}
+	while (iter != registry.end () && (result = (*iter).second->apply (customView, attributes, desc)) && (*iter).second->getBaseViewName ())
 	{
 		iter = registry.find ((*iter).second->getBaseViewName ());
 	}

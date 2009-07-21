@@ -2,18 +2,18 @@
 
 /*
 	Inline editing todo:
-		- Cut, copy, paste of selection
-		- changing z-order of views
-		- saving should remember the folder
-		- Inspector should indicate multiple values for attributes which have them when editing a multi selection
-		- Sizing views is currently limited to the right bottom corner, would be nice to have it on all corners and sides.
+		- Cut, copy, paste of selection (no high priority as you can copy views by alt dragging)
+		- changing z-order of views (can be done with the hierarchy browser, but an inline solution would also be nice)
 		- Point attributes should be editable as points not as string
 		- A lasso selection would also be nice
+		- delete templates
+		- move views out of parents
 		
 	UIDescription todo:
 		- CTabView support
-		- CScrollView support
 
+	Platform support:
+		- complete Win32 support
 */
 
 
@@ -23,9 +23,9 @@
 @section vstguiandxml VSTGUI and XML
 It is now possible to create VSTGUI based interfaces via a XML description.
 
+- @ref examplexml @n
 - @ref creatingbycode @n
 - @ref customviews @n
-- @ref examplexml @n
 - @ref defbitmaps @n
 - @ref deffonts @n
 - @ref defcolors @n
@@ -33,27 +33,6 @@ It is now possible to create VSTGUI based interfaces via a XML description.
 - @ref deftemplates @n
 - @subpage uidescription_attributes @n
 - @subpage uidescription_vst3_support @n
-
-@section creatingbycode Creating a view
-You need to write a XML text file like the one in the example shown later on.
-On Mac OS X this xml file must be placed into the Resources folder of the bundle and on Windows it must be declared in the .rc file.
-To use the xml file to create views you have to write this code :
-@code
-UIDescription description ("myview.xml");
-if (description.parse ())
-{
-  CView* view = description.createView ("MyEditor", 0);
-}
-@endcode
-
-If view is non-null it was successfully created and you can add it to your CFrame object.
-
-@section customviews Creating custom views
-If you want to create your own custom views, you have two options:
--# Create view factory methods for your custom views (look into viewcreator.cpp how this is done for the built in views)
--# Inherit a class from VSTGUI::IController and provide the view in the VSTGUI::IController::createView method.
-An instance of this class must be passed as second argument to the createView method of VSTGUI::UIDescription.
-
 
 @section examplexml Example XML file
 
@@ -89,6 +68,26 @@ First let us see a simple example of XML text describing a VSTGUI view hierarchy
   </template>
 </vstgui-ui-description>
 @endverbatim
+
+@section creatingbycode Creating a view
+You need to write a XML text file like the one in the example shown above.
+On Mac OS X this xml file must be placed into the Resources folder of the bundle and on Windows it must be declared in the .rc file.
+To use the xml file to create views you have to write this code :
+@code
+UIDescription description ("myview.xml");
+if (description.parse ())
+{
+  CView* view = description.createView ("MyEditor", 0);
+}
+@endcode
+
+If view is non-null it was successfully created and you can add it to your CFrame object.
+
+@section customviews Creating custom views
+If you want to create your own custom views, you have two options:
+-# Create view factory methods for your custom views (look into viewcreator.cpp how this is done for the built in views)
+-# Inherit a class from VSTGUI::IController and provide the view in the VSTGUI::IController::createView method.
+An instance of this class must be passed as second argument to the createView method of VSTGUI::UIDescription.
 
 @section defbitmaps Defining Bitmaps
 Any bitmap you want to use with your views must be declared inside the \b bitmaps tag. Recognized attributes for the \b bitmap tag are:
@@ -179,6 +178,35 @@ Per default the \b template tag will create a CViewContainer view, but you can u
 
 @page uidescription_vst3_support Inline Editing support for VST3
 
+VSTGUI now supports easy and fast UI creation for VST3 plug-ins.
+
+@section vst3_setup Setup
+
+First you need to add all the files from the uidescription subfolder to your project and define a preprocessor definition for VSTGUI_LIVE_EDITING=1.
+Then you have to modify your edit controller class to create a VST3Editor instance when asked to create it's view :
+@code
+IPlugView* PLUGIN_API MyEditController::createView (const char* name)
+{
+	if (strcmp (name, ViewType::kEditor) == 0)
+	{
+		#if DEBUG
+		return new VST3Editor (this, "view", "myEditor.uidesc", true);
+		#else
+		return new VST3Editor (this, "view", "myEditor.uidesc", false);
+		#endif
+	}
+	return 0;
+}
+@endcode
+Next you have to create an empty myEditor.uidesc file.
+For Windows you add a line to your .rc file to include it :
+@verbatim
+myEditor.uidesc DATA "realtive/path/to/myEditor.uidesc"
+@endverbatim
+On Mac OS X you just add the uidesc file to your resources so that it is placed into the Resources subfolder of the vst3 bundle.
+
+Next you can build your plug-in and start your VST3 host and open an instance of your plug-in. If you open the editor you will see that
+an empty black editor was automatically constructed. You can now make a right click on your editor and enable inline editing.
 @endpage
 
 */

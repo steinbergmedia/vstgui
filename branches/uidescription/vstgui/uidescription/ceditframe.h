@@ -11,6 +11,10 @@
 
 #if VSTGUI_LIVE_EDITING
 
+#if WINDOWS && !GDIPLUS
+#error GDIPLUS must be defined
+#endif
+
 #include "../vstgui.h"
 #include "../cvstguitimer.h"
 #include "cselection.h"
@@ -55,8 +59,7 @@ class CEditFrame : public CFrame, public IActionOperator
 public:
 	enum EditMode {
 		kNoEditMode,
-		kEditMode,
-		kPaletteMode
+		kEditMode
 	};
 
 	CEditFrame (const CRect& size, void* windowPtr, VSTGUIEditorInterface* editor, EditMode editMode, CSelection* selection, UIDescription* description, const char* uiDescViewName);
@@ -94,6 +97,7 @@ protected:
 	void showOptionsMenu (const CPoint& where);
 	void createNewSubview (const CPoint& where, const char* viewName);
 	void insertTemplate (const CPoint& where, const char* templateName);
+	void embedSelectedViewsInto (const char* containerViewName);
 	void invalidSelection ();
 	void deleteSelectedViews ();
 	void performUndo ();
@@ -106,9 +110,18 @@ protected:
 
 	void startDrag (CPoint& where);
 
+	void drawSizingHandles (CDrawContext* context, const CRect& r);
+	long selectionHitTest (const CPoint& where, CView** resultView);
+
+	void storeAttributes ();
+	void restoreAttributes ();
+
 	// overwrites
 	void draw (CDrawContext *pContext);
 	void drawRect (CDrawContext *pContext, const CRect& updateRect);
+
+	CView* getViewAt (const CPoint& p, bool deep = false) const;
+	CViewContainer* getContainerAt (const CPoint& p, bool deep = true) const;
 	
 	CMouseEventResult onMouseDown (CPoint &where, const long& buttons);
 	CMouseEventResult onMouseUp (CPoint &where, const long& buttons);
@@ -147,12 +160,14 @@ protected:
 	CView* highlightView;
 	EditMode editMode;
 	MouseEditMode mouseEditMode;
+	long mouseSizeMode;
 	bool showLines;
 	
 	CPoint mouseStartPoint;
 	CPoint dragSelectionOffset;
 	
 	std::string templateName;
+	std::string savePath;
 
 	std::list<IActionOperation*> undoStackList;
 	std::list<IActionOperation*>::iterator undoStack;

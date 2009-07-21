@@ -1,24 +1,24 @@
 /*
- *  namingdialog.cpp
+ *  dialog.cpp
  *  VST3PlugIns
  *
- *  Created by Arne Scheffler on 6/3/09.
+ *  Created by Arne Scheffler on 7/16/09.
  *  Copyright 2009 Arne Scheffler. All rights reserved.
  *
  */
 
-#include "namingdialog.h"
-#include "../vstkeycode.h"
+#if VSTGUI_LIVE_EDITING
 
-/// \cond ignore
+#include "dialog.h"
+#include "../vstkeycode.h"
 
 BEGIN_NAMESPACE_VSTGUI
 
 //-----------------------------------------------------------------------------
-bool NamingDialog::askForName (std::string& result, const char* dialogTitle)
+bool Dialog::runViewModal (const CPoint& position, CView* view, long style, const char* title)
 {
-	NamingDialog dialog (dialogTitle);
-	return dialog.run (result);
+	Dialog dialog (position, view, style, title);
+	return dialog.run ();
 }
 
 //-----------------------------------------------------------------------------
@@ -74,7 +74,6 @@ protected:
 
 //-----------------------------------------------------------------------------
 enum {
-	kTextEditTag,
 	kOkTag,
 	kCancelTag
 };
@@ -86,43 +85,64 @@ enum {
 #endif
 
 //-----------------------------------------------------------------------------
-NamingDialog::NamingDialog (const char* title)
+Dialog::Dialog (const CPoint& position, CView* rootView, long style, const char* title)
 : platformWindow (0)
-, textEdit (0)
 , result (false)
 {
 	const CCoord kMargin = 10;
 	const CCoord kControlHeight = 22;
-	CRect size (0, 0, 250+2*kMargin, 2*kControlHeight+3*kMargin);
-	size.offset (100, 100);
+	CRect size (rootView->getViewSize ());
+	size.offset (-size.left, -size.top);
+	size.offset (kMargin, kMargin);
+	rootView->setViewSize (size);
+	rootView->setMouseableArea (size);
+	size.offset (-kMargin, -kMargin);
+	size.bottom += kMargin*3+kControlHeight;
+	size.right += kMargin*2;
+	size.offset (position.x, position.y);
 	platformWindow = PlatformWindow::create (size, title, PlatformWindow::kWindowType, 0, 0);
 	if (platformWindow)
 	{
-		size.offset (-100, -100);
+		size.offset (position.x, position.y);
+		#if MAC && !__LP64__
+		CFrame::setCocoaMode (true);
+		#endif
 		frame = new CFrame (size, platformWindow->getPlatformHandle (), this);
 		frame->setKeyboardHook (this);
-		frame->setBackgroundColor (MakeCColor (200, 200, 200, 255));
-		CRect r (kMargin, kMargin, size.getWidth () - kMargin, kControlHeight + kMargin);
-		textEdit = new CTextEdit (r, this, kTextEditTag);
-		textEdit->setBackColor (kWhiteCColor);
-		textEdit->setFontColor (kBlackCColor);
-		frame->addView (textEdit);
-		
-		r.offset (0, kControlHeight+kMargin);
+		CViewContainer* rootContainer = dynamic_cast<CViewContainer*> (rootView);
+		if (rootContainer)
+		{
+			frame->setTransparency (rootContainer->getTransparency ());
+			frame->setBackgroundColor (rootContainer->getBackgroundColor ());
+		}
+		else
+		{
+			frame->setTransparency (true);
+		}
+		frame->addView (rootView);
+		rootView->remember (); // caller is responsible to forget it
+
+		CRect r (rootView->getViewSize ());
+		r.top = r.bottom+kMargin;
+		r.bottom += kControlHeight+kMargin;
 		r.setWidth (80);
 		r.offset (size.right-(2*kMargin+r.getWidth ()), 0);
-		SimpleButton* button;
 
-		button = new SimpleButton (r, this, okIsRightMost ? kOkTag : kCancelTag, okIsRightMost ? "OK" : "Cancel");
+		bool okIsFirst = (okIsRightMost || style == kOkButton);
+		SimpleButton* button;
+		button = new SimpleButton (r, this, okIsFirst ? kOkTag : kCancelTag, okIsRightMost ? "OK" : "Cancel");
 		frame->addView (button);
-		r.offset (-(r.getWidth () + kMargin), 0);
-		button = new SimpleButton (r, this, okIsRightMost ? kCancelTag : kOkTag, okIsRightMost ? "Cancel" : "OK");
-		frame->addView (button);
+		if (style == kOkCancelButtons)
+		{
+			r.offset (-(r.getWidth () + kMargin), 0);
+			button = new SimpleButton (r, this, okIsRightMost ? kCancelTag : kOkTag, okIsRightMost ? "Cancel" : "OK");
+			frame->addView (button);
+		}
 	}
 }
 
 //-----------------------------------------------------------------------------
-NamingDialog::~NamingDialog ()
+Dialog::~Dialog ()
 {
 	if (frame)
 		frame->forget ();
@@ -131,28 +151,34 @@ NamingDialog::~NamingDialog ()
 }
 
 //-----------------------------------------------------------------------------
-bool NamingDialog::run (std::string& str)
+bool Dialog::run ()
 {
-	if (platformWindow && textEdit)
+	if (platformWindow)
 	{
-		textEdit->setText (str.c_str ());
-		platformWindow->center ();
+		if (platformWindow->getSize ().left == 0 && platformWindow->getSize ().top == 0)
+			platformWindow->center ();
 		platformWindow->show ();
-		textEdit->beginEdit ();
-		textEdit->takeFocus ();
+		frame->advanceNextFocusView (0, false);
 		platformWindow->runModal ();
-		if (result)
-		{
-			str = textEdit->getText ();
-		}
 	}
 	return result;
 }
 
 //-----------------------------------------------------------------------------
-long NamingDialog::onKeyDown (const VstKeyCode& code, CFrame* frame)
+long Dialog::onKeyDown (const VstKeyCode& code, CFrame* frame)
 {
-	if (frame->getFocusView () == 0)
+	static bool recursion = false;
+	if (recursion)
+		return -1;
+
+	recursion = true;
+
+	VstKeyCode keyCode = code;
+	long keyResult = frame->onKeyDown (keyCode);
+
+	recursion = false;
+
+	if (keyResult == -1)
 	{
 		if (code.virt == VKEY_ESCAPE)
 		{
@@ -167,29 +193,20 @@ long NamingDialog::onKeyDown (const VstKeyCode& code, CFrame* frame)
 			return 1;
 		}
 	}
-	return -1;
+	return keyResult;
 }
 
 //-----------------------------------------------------------------------------
-long NamingDialog::onKeyUp (const VstKeyCode& code, CFrame* frame)
+long Dialog::onKeyUp (const VstKeyCode& code, CFrame* frame)
 {
 	return -1;
 }
 
 //-----------------------------------------------------------------------------
-void NamingDialog::valueChanged (CControl* pControl)
+void Dialog::valueChanged (CControl* pControl)
 {
 	switch (pControl->getTag ())
 	{
-		case kTextEditTag:
-		{
-			if (textEdit->bWasReturnPressed)
-			{
-				platformWindow->stopModal ();
-				result = true;
-			}
-			break;
-		}
 		case kOkTag:
 		{
 			if (pControl->getValue () > 0.5)
@@ -213,4 +230,4 @@ void NamingDialog::valueChanged (CControl* pControl)
 
 END_NAMESPACE_VSTGUI
 
-/// \endcond ignore
+#endif // VSTGUI_LIVE_EDITING

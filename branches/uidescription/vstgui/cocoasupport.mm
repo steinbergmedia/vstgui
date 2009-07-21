@@ -307,9 +307,16 @@ HIDDEN void nsViewSetMouseCursor (CCursorType type)
 		case kCursorHSize: cur = [NSCursor resizeLeftRightCursor]; break;
 		case kCursorVSize: cur = [NSCursor resizeUpDownCursor]; break;
 		case kCursorSizeAll: cur = [NSCursor crosshairCursor]; break;
-		case kCursorNESWSize: cur = [NSCursor arrowCursor]; break;
-		case kCursorNWSESize: cur = [NSCursor arrowCursor]; break;
-		case kCursorCopy: cur = [NSCursor performSelector:@selector(_copyDragCursor)]; break;
+		case kCursorNESWSize: cur = [NSCursor crosshairCursor]; break;
+		case kCursorNWSESize: cur = [NSCursor crosshairCursor]; break;
+		case kCursorCopy:
+		{
+			if ([NSCursor respondsToSelector:@selector(dragCopyCursor)])
+				cur = [NSCursor performSelector:@selector(dragCopyCursor)];
+			else
+				cur = [NSCursor performSelector:@selector(_copyDragCursor)];
+			break;
+		}
 		case kCursorNotAllowed: cur = [NSCursor performSelector:@selector(operationNotAllowedCursor)]; break;
 		case kCursorHand: cur = [NSCursor openHandCursor]; break;
 		default: cur = [NSCursor arrowCursor]; break;
@@ -1117,8 +1124,12 @@ static id VSTGUI_NSTextField_Init (id self, SEL _cmd, void* textEdit)
 		NSView* containerView = [[NSView alloc] initWithFrame:editFrameRect];
 		[containerView setAutoresizesSubviews:YES];
 
-		editFrameRect.origin.x = 0;
-		editFrameRect.origin.y = 0;
+		CPoint textInset = te->getTextInset ();
+
+		editFrameRect.origin.x = textInset.x/2.;
+		editFrameRect.origin.y = textInset.y/2.;
+		editFrameRect.size.width -= textInset.x/2.;
+		editFrameRect.size.height -= textInset.y/2.;
 		self = objc_msgSendSuper (SUPER, @selector(initWithFrame:), editFrameRect);
 		if (!self)
 		{
@@ -1130,22 +1141,32 @@ static id VSTGUI_NSTextField_Init (id self, SEL _cmd, void* textEdit)
 		CTFontRef fontRef = (CTFontRef)te->getFont()->getPlatformFont ();
 		CTFontDescriptorRef fontDesc = CTFontCopyFontDescriptor (fontRef);
 		
-		[self setFont:[NSFont fontWithDescriptor:(NSFontDescriptor *)fontDesc size:te->getFont ()->getSize ()]];
+		[self setFont:[NSFont fontWithDescriptor:(NSFontDescriptor *)fontDesc size:0]];
 		CFRelease (fontDesc);
 
 		NSString* text = [NSString stringWithCString:te->getText () encoding:NSUTF8StringEncoding];
 
-		[self setBackgroundColor:[nsColorFromCColor (te->getBackColor ()) colorWithAlphaComponent:1]];
-		[self setTextColor:[nsColorFromCColor (te->getFontColor ()) colorWithAlphaComponent:1]];
+		[self setTextColor:nsColorFromCColor (te->getFontColor ())];
+		[self setBordered:NO];
 		[self setAllowsEditingTextAttributes:NO];
 		[self setImportsGraphics:NO];
 		[self setStringValue:text];
+		[self setFocusRingType:NSFocusRingTypeNone];
+		[self sizeToFit];
+		if ([self frame].size.height < editFrameRect.size.height)
+		{
+			CGFloat offset = editFrameRect.size.height - [self frame].size.height;
+			editFrameRect.origin.y = offset / 2.;
+			editFrameRect.size.height = [self frame].size.height;
+			[self setFrame:editFrameRect];
+		}
 		
 		[containerView addSubview:self];
 		[self performSelector:@selector(syncSize)];
 		[frameView addSubview:containerView];
 
 		NSTextFieldCell* cell = [self cell];
+		[cell setDrawsBackground:NO];
 		[cell setLineBreakMode: NSLineBreakByClipping];
 		[cell setScrollable:YES];
 		if (te->getHoriAlign () == kCenterText)
@@ -1174,14 +1195,6 @@ static void VSTGUI_NSTextField_SyncSize (id self, SEL _cmd)
 	viewSize.offset (p.x, p.y);
 
 	[containerView setFrame:nsRectFromCRect (rect)];
-
-	CRect rect2 (viewSize);
-	rect2.offset (-rect2.left, -rect2.top);
-	CPoint offset;
-	offset.x = viewSize.left - rect.left;
-	offset.y = rect.bottom - viewSize.bottom;
-	rect2.offset (offset.x, offset.y);
-	[self setFrame:nsRectFromCRect (rect2)];
 
 	rect.inset (-15, -15);
 	[[containerView superview] setNeedsDisplayInRect:nsRectFromCRect (rect)];
@@ -1772,6 +1785,7 @@ bool CocoaFileSelector::runInternal (CBaseObject* _delegate)
 		{
 			int res = [openPanel runModalForDirectory:initialPath ? [NSString stringWithCString:initialPath encoding:NSUTF8StringEncoding] : nil file:nil types:typesArray];
 			openPanelDidEnd (openPanel, res);
+			return res == NSFileHandlingPanelOKButton;
 		}
 	}
 	else if (savePanel)
@@ -1787,6 +1801,7 @@ bool CocoaFileSelector::runInternal (CBaseObject* _delegate)
 		{
 			int res = [savePanel runModalForDirectory:initialPath ? [NSString stringWithCString:initialPath encoding:NSUTF8StringEncoding]:nil file:defaultSaveName ? [NSString stringWithCString:defaultSaveName encoding:NSUTF8StringEncoding] : nil];
 			openPanelDidEnd (savePanel, res);
+			return res == NSFileHandlingPanelOKButton;
 		}
 	}
 	

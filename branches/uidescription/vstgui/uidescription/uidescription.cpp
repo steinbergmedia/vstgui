@@ -307,6 +307,7 @@ bool UIDescription::parse ()
 //-----------------------------------------------------------------------------
 bool UIDescription::save (const char* filename)
 {
+	nodes->getAttributes ()->setAttribute ("version", "1");
 	UIDescWriter writer;
 	return writer.write (filename, nodes);
 }
@@ -455,6 +456,9 @@ UINode* UIDescription::getBaseNode (const char* name) const
 			}
 			it++;
 		}
+		UINode* node = new UINode (name, new UIAttributes);
+		nodes->getChildren ().add (node);
+		return node;
 	}
 	return 0;
 }
@@ -1028,10 +1032,36 @@ void UIDescription::updateViewDescription (const char* name, CView* view)
 void UIDescription::addNewTemplate (const char* name, UIAttributes* attr)
 {
 #if VSTGUI_LIVE_EDITING
+	if (!nodes)
+	{
+		nodes = new UINode ("vstgui-ui-description", new UIAttributes);
+	}
 	UINode* newNode = new UINode ("template", attr);
 	attr->setAttribute ("name", name);
 	nodes->getChildren ().add (newNode);
 #endif
+}
+
+//-----------------------------------------------------------------------------
+bool UIDescription::setCustomAttributes (const char* name, UIAttributes* attr)
+{
+	UINode* customNode = findChildNodeByNameAttribute (getBaseNode ("custom"), name);
+	if (customNode)
+		return false;
+	attr->setAttribute ("name", name);
+	customNode = new UINode ("attributes", attr);
+	UINode* parent = getBaseNode ("Custom");
+	parent->getChildren ().add (customNode);
+	return true;
+}
+
+//-----------------------------------------------------------------------------
+UIAttributes* UIDescription::getCustomAttributes (const char* name) const
+{
+	UINode* customNode = findChildNodeByNameAttribute (getBaseNode ("custom"), name);
+	if (customNode)
+		return customNode->getAttributes ();
+	return 0;
 }
 
 //-----------------------------------------------------------------------------
@@ -1045,7 +1075,7 @@ void UIDescription::startXmlElement (Xml::Parser* parser, const char* elementNam
 		if (parent == nodes)
 		{
 			// only allowed second level elements
-			if (name == "bitmaps" || name == "fonts" || name == "colors" || name == "template" || name == "control-tags")
+			if (name == "bitmaps" || name == "fonts" || name == "colors" || name == "template" || name == "control-tags" || name == "custom")
 				newNode = new UINode (name, new UIAttributes (elementAttributes));
 			else
 				parser->stop ();

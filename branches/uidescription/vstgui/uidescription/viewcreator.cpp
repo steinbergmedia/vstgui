@@ -208,6 +208,7 @@ public:
 */
 
 #include "viewfactory.h"
+#include "../cscrollview.h"
 #include <sstream>
 
 #if WINDOWS
@@ -296,6 +297,7 @@ public:
 		const std::string* bitmapAttr = attributes.getAttributeValue ("bitmap");
 		const std::string* autosizeAttr = attributes.getAttributeValue ("autosize");
 		const std::string* tooltipAttr = attributes.getAttributeValue ("tooltip");
+		const std::string* customViewAttr = attributes.getAttributeValue ("custom-view-name");
 		
 		CPoint p;
 		CRect size;
@@ -349,6 +351,8 @@ public:
 		}
 		if (tooltipAttr)
 			view->setAttribute (kCViewTooltipAttribute, tooltipAttr->size ()+1, tooltipAttr->c_str ());
+		if (customViewAttr)
+			view->setAttribute ('uicv', customViewAttr->size ()+1, customViewAttr->c_str ());
 
 		return true;
 	}
@@ -360,6 +364,7 @@ public:
 		attributeNames.push_back ("bitmap");
 		attributeNames.push_back ("autosize");
 		attributeNames.push_back ("tooltip");
+		attributeNames.push_back ("custom-view-name");
 		return true;
 	}
 	AttrType getAttributeType (const std::string& attributeName) const
@@ -370,6 +375,7 @@ public:
 		else if (attributeName == "bitmap") return kBitmapType;
 		else if (attributeName == "autosize") return kStringType;
 		else if (attributeName == "tooltip") return kStringType;
+		else if (attributeName == "custom-view-name") return kStringType;
 		return kUnknownType;
 	}
 	bool getAttributeValue (CView* view, const std::string& attributeName, std::string& stringValue, IUIDescription* desc) const
@@ -433,6 +439,20 @@ public:
 				return true;
 			}
 		}
+		else if (attributeName == "custom-view-name")
+		{
+			char* customViewName = 0;
+			long customViewNameSize = 0;
+			if (view->getAttributeSize ('uicv', customViewNameSize))
+			{
+				customViewName = (char*)malloc (customViewNameSize + 1);
+				memset (customViewName, 0, customViewNameSize+1);
+				if (view->getAttribute ('uicv', customViewNameSize, customViewName, customViewNameSize))
+					stringValue = customViewName;
+				free (customViewName);
+				return true;
+			}
+		}
 		return false;
 	}
 };
@@ -486,7 +506,7 @@ public:
 	CViewContainerCreator () { ViewFactory::registerViewCreator (*this); }
 	const char* getViewName () const { return "CViewContainer"; }
 	const char* getBaseViewName () const { return "CView"; }
-	CView* create (const UIAttributes& attributes, IUIDescription* description) const { return new CViewContainer (CRect (0, 0, 0, 0), 0); }
+	CView* create (const UIAttributes& attributes, IUIDescription* description) const { return new CViewContainer (CRect (0, 0, 100, 100), 0); }
 	bool apply (CView* view, const UIAttributes& attributes, IUIDescription* description) const
 	{
 		CViewContainer* viewContainer = dynamic_cast<CViewContainer*> (view);
@@ -530,6 +550,183 @@ public:
 
 };
 CViewContainerCreator __CViewContainerCreator;
+
+//-----------------------------------------------------------------------------
+class CScrollViewCreator : public IViewCreator
+{
+public:
+	CScrollViewCreator () { ViewFactory::registerViewCreator (*this); }
+	const char* getViewName () const { return "CScrollView"; }
+	const char* getBaseViewName () const { return "CViewContainer"; }
+	CView* create (const UIAttributes& attributes, IUIDescription* description) const { return new CScrollView (CRect (0, 0, 100, 100), CRect (0, 0, 200, 200), 0, CScrollView::kHorizontalScrollbar|CScrollView::kVerticalScrollbar); }
+	bool apply (CView* view, const UIAttributes& attributes, IUIDescription* description) const
+	{
+		CScrollView* scrollView = dynamic_cast<CScrollView*> (view);
+		if (scrollView == 0)
+			return false;
+		const std::string* attr = attributes.getAttributeValue ("container-size");
+		if (attr)
+		{
+			CPoint p;
+			if (parseSize (*attr, p))
+			{
+				CRect r;
+				r.setSize (p);
+				scrollView->setContainerSize (r);
+			}
+		}
+		CColor color;
+		CScrollbar* vscrollbar = scrollView->getVerticalScrollbar ();
+		CScrollbar* hscrollbar = scrollView->getHorizontalScrollbar ();
+		attr = attributes.getAttributeValue ("scrollbar-background-color");
+		if (attr)
+		{
+			if (description->getColor (attr->c_str (), color))
+			{
+				rememberAttributeValueString (view, "scrollbar-background-color", *attr);
+				if (vscrollbar) vscrollbar->setBackgroundColor (color);
+				if (hscrollbar) hscrollbar->setBackgroundColor (color);
+			}
+		}
+		attr = attributes.getAttributeValue ("scrollbar-frame-color");
+		if (attr)
+		{
+			if (description->getColor (attr->c_str (), color))
+			{
+				rememberAttributeValueString (view, "scrollbar-frame-color", *attr);
+				if (vscrollbar) vscrollbar->setFrameColor (color);
+				if (hscrollbar) hscrollbar->setFrameColor (color);
+			}
+		}
+		attr = attributes.getAttributeValue ("scrollbar-scroller-color");
+		if (attr)
+		{
+			if (description->getColor (attr->c_str (), color))
+			{
+				rememberAttributeValueString (view, "scrollbar-scroller-color", *attr);
+				if (vscrollbar) vscrollbar->setScrollerColor (color);
+				if (hscrollbar) hscrollbar->setScrollerColor (color);
+			}
+		}
+		long style = scrollView->getStyle ();
+		attr = attributes.getAttributeValue ("horizontal-scrollbar");
+		if (attr)
+		{
+			if (*attr == "true")
+				style |= CScrollView::kHorizontalScrollbar;
+			else
+				style &= ~CScrollView::kHorizontalScrollbar;
+		}
+		attr = attributes.getAttributeValue ("vertical-scrollbar");
+		if (attr)
+		{
+			if (*attr == "true")
+				style |= CScrollView::kVerticalScrollbar;
+			else
+				style &= ~CScrollView::kVerticalScrollbar;
+		}
+		attr = attributes.getAttributeValue ("bordered");
+		if (attr)
+		{
+			if (*attr == "true")
+				style &= ~CScrollView::kDontDrawFrame;
+			else
+				style |= CScrollView::kDontDrawFrame;
+		}
+		scrollView->setStyle (style);
+		attr = attributes.getAttributeValue ("scrollbar-width");
+		if (attr)
+		{
+			CCoord width = strtof (attr->c_str (), 0);
+			scrollView->setScrollbarWidth (width);
+		}
+		return true;
+	}
+	bool getAttributeNames (std::list<std::string>& attributeNames) const
+	{
+		attributeNames.push_back ("container-size");
+		attributeNames.push_back ("scrollbar-background-color");
+		attributeNames.push_back ("scrollbar-frame-color");
+		attributeNames.push_back ("scrollbar-scroller-color");
+		attributeNames.push_back ("horizontal-scrollbar");
+		attributeNames.push_back ("vertical-scrollbar");
+		attributeNames.push_back ("scrollbar-width");
+		attributeNames.push_back ("bordered");
+		return true;
+	}
+	AttrType getAttributeType (const std::string& attributeName) const
+	{
+		if (attributeName == "container-size") return kPointType;
+		if (attributeName == "scrollbar-background-color") return kColorType;
+		if (attributeName == "scrollbar-frame-color") return kColorType;
+		if (attributeName == "scrollbar-scroller-color") return kColorType;
+		if (attributeName == "horizontal-scrollbar") return kBooleanType;
+		if (attributeName == "vertical-scrollbar") return kBooleanType;
+		if (attributeName == "bordered") return kBooleanType;
+		if (attributeName == "scrollbar-width") return kIntegerType;
+		return kUnknownType;
+	}
+	bool getAttributeValue (CView* view, const std::string& attributeName, std::string& stringValue, IUIDescription* desc) const
+	{
+		CScrollView* sc = dynamic_cast<CScrollView*> (view);
+		if (sc == 0)
+			return false;
+		if (attributeName == "container-size")
+		{
+			pointToString (sc->getContainerSize ().getSize (), stringValue);
+			return true;
+		}
+		if (attributeName == "scrollbar-width")
+		{
+			std::stringstream str;
+			str << sc->getScrollbarWidth ();
+			stringValue = str.str ();
+			return true;
+		}
+		CScrollbar* scrollbar = sc->getVerticalScrollbar ();
+		if (!scrollbar)
+			scrollbar = sc->getHorizontalScrollbar ();
+		if (scrollbar)
+		{
+			if (attributeName == "scrollbar-background-color")
+			{
+				if (!getRememberedAttributeValueString (view, "scrollbar-background-color", stringValue))
+					colorToString (scrollbar->getBackgroundColor (), stringValue, desc);
+				return true;
+			}
+			if (attributeName == "scrollbar-frame-color")
+			{
+				if (!getRememberedAttributeValueString (view, "scrollbar-frame-color", stringValue))
+					colorToString (scrollbar->getFrameColor (), stringValue, desc);
+				return true;
+			}
+			if (attributeName == "scrollbar-scroller-color")
+			{
+				if (!getRememberedAttributeValueString (view, "scrollbar-scroller-color", stringValue))
+					colorToString (scrollbar->getScrollerColor (), stringValue, desc);
+				return true;
+			}
+		}
+		if (attributeName == "horizontal-scrollbar")
+		{
+			stringValue = sc->getStyle () & CScrollView::kHorizontalScrollbar ? "true" : "false";
+			return true;
+		}
+		if (attributeName == "vertical-scrollbar")
+		{
+			stringValue = sc->getStyle () & CScrollView::kVerticalScrollbar ? "true" : "false";
+			return true;
+		}
+		if (attributeName == "bordered")
+		{
+			stringValue = sc->getStyle () & CScrollView::kDontDrawFrame ? "false" : "true";
+			return true;
+		}
+		return false;
+	}
+
+};
+CScrollViewCreator __CScrollViewCreator;
 
 //-----------------------------------------------------------------------------
 class CControlCreator : public IViewCreator
@@ -739,6 +936,7 @@ public:
 		const std::string* styleNoDrawAttr = attributes.getAttributeValue ("style-no-draw");
 		const std::string* styleShadowTextAttr = attributes.getAttributeValue ("style-shadow-text");
 		const std::string* textAlignmentAttr = attributes.getAttributeValue ("text-alignment");
+		const std::string* textInsetAttr = attributes.getAttributeValue ("text-inset");
 
 		CColor color;
 		if (fontAttr)
@@ -781,6 +979,12 @@ public:
 				rememberAttributeValueString (view, "shadow-color", *shadowColorAttr);
 				display->setShadowColor (color);
 			}
+		}
+		if (textInsetAttr)
+		{
+			CPoint p;
+			if (parseSize (*textInsetAttr, p))
+				display->setTextInset (p);
 		}
 		if (antialiasAttr)
 			display->setAntialias (*antialiasAttr == "true");
@@ -854,6 +1058,7 @@ public:
 		attributeNames.push_back ("style-no-draw");
 		attributeNames.push_back ("style-shadow-text");
 		attributeNames.push_back ("text-alignment");
+		attributeNames.push_back ("text-inset");
 		return true;
 	}
 	AttrType getAttributeType (const std::string& attributeName) const
@@ -871,6 +1076,7 @@ public:
 		else if (attributeName == "style-no-draw") return kBooleanType;
 		else if (attributeName == "style-shadow-text") return kBooleanType;
 		else if (attributeName == "text-alignment") return kStringType;
+		else if (attributeName == "text-inset") return kPointType;
 		return kUnknownType;
 	}
 	bool getAttributeValue (CView* view, const std::string& attributeName, std::string& stringValue, IUIDescription* desc) const
@@ -912,6 +1118,11 @@ public:
 		{
 			if (!getRememberedAttributeValueString (view, "shadow-color", stringValue))
 				colorToString (pd->getShadowColor (), stringValue, desc);
+			return true;
+		}
+		else if (attributeName == "text-inset")
+		{
+			pointToString (pd->getTextInset (), stringValue);
 			return true;
 		}
 		else if (attributeName == "font-antialias")
@@ -1574,7 +1785,7 @@ public:
 		{
 			long style = slider->getStyle ();
 			stringValue = "false";
-			if (((style & kVertical) && (style | kTop)) || ((style & kHorizontal) && (style & kRight)))
+			if (((style & kVertical) && (style & kTop)) || ((style & kHorizontal) && (style & kRight)))
 				stringValue = "true";
 			else
 				stringValue = "false";

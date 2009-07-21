@@ -75,6 +75,12 @@ public:
 	/// \name CScrollView Methods
 	//-----------------------------------------------------------------------------
 	//@{
+	long getStyle () const { return style; }
+	void setStyle (long newStyle);
+	
+	CCoord getScrollbarWidth () const { return scrollbarWidth; }
+	void setScrollbarWidth (CCoord width);
+	
 	virtual void setContainerSize (const CRect& cs, bool keepVisibleArea = false);	///< set the virtual size of this container
 	const CRect& getContainerSize () const { return containerSize; }
 	const CPoint& getScrollOffset () const;				///< get scroll offset
@@ -105,11 +111,14 @@ public:
 	CLASS_METHODS(CScrollView, CViewContainer)
 //-----------------------------------------------------------------------------
 protected:
+	void recalculateSubViews ();
+
 	CScrollContainer* sc;
 	CScrollbar* vsb;
 	CScrollbar* hsb;
 
 	CRect containerSize;
+	CCoord scrollbarWidth;
 	long style;
 
 	enum {

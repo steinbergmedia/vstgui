@@ -243,8 +243,6 @@ typedef float CGFloat;
 	CFBundleRef getBundleRef () { return (CFBundleRef)gBundleRef; }
 #endif
 
-#define VSTGUI_USES_CORE_TEXT	(MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_5)
-
 static CFontDesc gSystemFont ("Lucida Grande", 12);
 static CFontDesc gNormalFontVeryBig ("Helvetica", 18);
 static CFontDesc gNormalFontBig ("Helvetica", 14);
@@ -411,6 +409,13 @@ void CRect::setBottomRight (const CPoint& inPoint)
 {
 	right = inPoint.h;
 	bottom = inPoint.v;
+}
+
+//-----------------------------------------------------------------------------
+CPoint CRect::getCenter () const
+{
+	CPoint myPoint (left + getWidth () / 2, top + getHeight () / 2);
+	return myPoint;
 }
 
 //-----------------------------------------------------------------------------
@@ -4386,7 +4391,7 @@ long CFrame::onKeyUp (VstKeyCode& keyCode)
 	long result = -1;
 
 	if (getKeyboardHook ())
-		result = getKeyboardHook ()->onKeyDown (keyCode, this);
+		result = getKeyboardHook ()->onKeyUp (keyCode, this);
 
 	if (result == -1 && pFocusView)
 		result = pFocusView->onKeyUp (keyCode);

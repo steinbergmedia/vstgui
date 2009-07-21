@@ -36,6 +36,95 @@ public:
 };
 
 //-----------------------------------------------------------------------------
+class EmbedViewOperation : public IActionOperation, protected std::list<CView*>
+{
+public:
+	EmbedViewOperation (CSelection* selection, CViewContainer* newContainer)
+	: newContainer (newContainer)
+	{
+		parent = dynamic_cast<CViewContainer*> (selection->first ()->getParentView ());
+		FOREACH_IN_SELECTION(selection, view)
+			if (view->getParentView () == parent)
+			{
+				push_back (view);
+				view->remember ();
+			}
+		FOREACH_IN_SELECTION_END
+
+		CRect r = selection->first ()->getViewSize ();
+		const_iterator it = begin ();
+		while (it != end ())
+		{
+			CView* view = (*it);
+			CRect viewSize = view->getViewSize ();
+			if (viewSize.left < r.left)
+				r.left = viewSize.left;
+			if (viewSize.right > r.right)
+				r.right = viewSize.right;
+			if (viewSize.top < r.top)
+				r.top = viewSize.top;
+			if (viewSize.bottom > r.bottom)
+				r.bottom = viewSize.bottom;
+			it++;
+		}
+		r.inset (-10, -10);
+		newContainer->setViewSize (r);
+		newContainer->setMouseableArea (r);
+	}
+	~EmbedViewOperation ()
+	{
+		const_iterator it = begin ();
+		while (it != end ())
+		{
+			(*it)->forget ();
+			it++;
+		}
+		newContainer->forget ();
+	}
+	
+	const char* getName () { return 0; }
+	void perform ()
+	{
+		CRect parentRect = newContainer->getViewSize ();
+		const_iterator it = begin ();
+		while (it != end ())
+		{
+			CView* view = (*it);
+			parent->removeView (view, false);
+			CRect r = view->getViewSize ();
+			r.offset (-parentRect.left, -parentRect.top);
+			view->setViewSize (r);
+			view->setMouseableArea (r);
+			newContainer->addView (view);
+			it++;
+		}
+		parent->addView (newContainer);
+		newContainer->remember ();
+	}
+	void undo ()
+	{
+		CRect parentRect = newContainer->getViewSize ();
+		const_iterator it = begin ();
+		while (it != end ())
+		{
+			CView* view = (*it);
+			newContainer->removeView (view, false);
+			CRect r = view->getViewSize ();
+			r.offset (parentRect.left, parentRect.top);
+			view->setViewSize (r);
+			view->setMouseableArea (r);
+			parent->addView (view);
+			it++;
+		}
+		parent->removeView (newContainer);
+	}
+
+protected:
+	CViewContainer* newContainer;
+	CViewContainer* parent;
+};
+
+//-----------------------------------------------------------------------------
 class ViewCopyOperation : public IActionOperation, protected std::list<CView*>
 {
 public:
@@ -78,7 +167,12 @@ public:
 		selection->forget ();
 	}
 	
-	const char* getName () { return "Copy"; }
+	const char* getName () 
+	{
+		if (size () > 0)
+			return "copy views";
+		return "copy view";
+	}
 
 	void perform ()
 	{
@@ -176,8 +270,8 @@ public:
 	const char* getName ()
 	{
 		if (size () > 1)
-			return sizing ? "Resize Views" : "Move Views";
-		return sizing ? "Resize View" : "Move View";
+			return sizing ? "resize views" : "move views";
+		return sizing ? "resize view" : "move view";
 	}
 
 	void perform ()
@@ -261,8 +355,8 @@ public:
 	const char* getName ()
 	{
 		if (size () > 1)
-			return "Delete Views";
-		return "Delete View";
+			return "delete views";
+		return "delete view";
 	}
 
 	void perform ()
@@ -318,20 +412,21 @@ public:
 	
 	const char* getName ()
 	{
-		return "create new Subview";
+		return "create new subview";
 	}
 	
 	void perform ()
 	{
-		parent->addView (view);
-		selection->setExclusive (view);
+		if (parent->addView (view))
+			selection->setExclusive (view);
 	}
 	
 	void undo ()
 	{
 		selection->remove (view);
 		view->remember ();
-		parent->removeView (view);
+		if (!parent->removeView (view))
+			view->forget ();
 	}
 protected:
 	CViewContainer* parent;
@@ -339,6 +434,89 @@ protected:
 	CSelection* selection;
 };
 
+//-----------------------------------------------------------------------------
+class TransformViewTypeOperation : public IActionOperation
+{
+public:
+	TransformViewTypeOperation (CSelection* selection, const char* viewClassName, IUIDescription* desc, ViewFactory* factory)
+	: view (selection->first ())
+	, newView (0)
+	, beforeView (0)
+	, parent (dynamic_cast<CViewContainer*> (view->getParentView ()))
+	, selection (selection)
+	{
+		UIAttributes attr;
+		if (factory->getAttributesForView (view, desc, attr))
+		{
+			attr.setAttribute ("class", viewClassName);
+			newView = factory->createView (attr, desc);
+			for (long i = 0; i < parent->getNbViews (); i++)
+			{
+				if (parent->getView (i) == view)
+					beforeView = parent->getView (i+1);
+			}
+		}
+		view->remember ();
+	}
+	
+	~TransformViewTypeOperation ()
+	{
+		view->forget ();
+		if (newView)
+			newView->forget ();
+	}
+	
+	const char* getName () { return "transform view type"; }
+
+	void exchangeSubViews (CViewContainer* src, CViewContainer* dst)
+	{
+		if (src && dst)
+		{
+			for (long i = src->getNbViews ()-1; i >= 0; i--)
+			{
+				CView* view = src->getView (i);
+				src->removeView (view, false);
+				dst->addView (view, dst->getView (0));
+			}
+		}
+	}
+
+	void perform ()
+	{
+		if (newView)
+		{
+			newView->remember ();
+			parent->removeView (view);
+			if (beforeView)
+				parent->addView (newView, beforeView);
+			else
+				parent->addView (newView);
+			exchangeSubViews (dynamic_cast<CViewContainer*> (view), dynamic_cast<CViewContainer*> (newView));
+			selection->setExclusive (newView);
+		}
+	}
+	
+	void undo ()
+	{
+		if (newView)
+		{
+			view->remember ();
+			parent->removeView (newView);
+			if (beforeView)
+				parent->addView (view, beforeView);
+			else
+				parent->addView (view);
+			exchangeSubViews (dynamic_cast<CViewContainer*> (newView), dynamic_cast<CViewContainer*> (view));
+			selection->setExclusive (view);
+		}
+	}
+protected:
+	CView* view;
+	CView* newView;
+	CView* beforeView;
+	CViewContainer* parent;
+	CSelection* selection;
+};
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
@@ -361,6 +539,8 @@ public:
 		invalid ();
 	}
 	
+	int getStyle () const { return style; }
+
 	void update (CSelection* selection)
 	{
 		invalid ();
@@ -501,8 +681,7 @@ CEditFrame::CEditFrame (const CRect& size, void* windowPtr, VSTGUIEditorInterfac
 	undoStackList.push_back (new UndoStackTop);
 	undoStack = undoStackList.end ();
 	
-	if (editMode == kPaletteMode)
-		selection->setStyle (CSelection::kSingleSelectionStyle);
+	restoreAttributes ();
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -572,7 +751,7 @@ void CEditFrame::setEditMode (EditMode mode)
 	editMode = mode;
 	if (editMode == kEditMode)
 		inspector->show ();
-	else
+	else if (getView (0))
 	{
 		if (editTimer)
 		{
@@ -639,6 +818,8 @@ void CEditFrame::showOptionsMenu (const CPoint& where)
 		kGridSize10,
 		kGridSize15,
 		kCreateNewViewTag,
+		kEmbedViewTag,
+		kTransformViewTag,
 		kInsertTemplateTag,
 		kDeleteSelectionTag,
 		kUndoTag,
@@ -685,13 +866,25 @@ void CEditFrame::showOptionsMenu (const CPoint& where)
 				std::list<const std::string*> viewNames;
 				viewFactory->collectRegisteredViewNames (viewNames);
 				COptionMenu* viewMenu = new COptionMenu ();
+				COptionMenu* transformViewMenu = new COptionMenu ();
 				std::list<const std::string*>::const_iterator it = viewNames.begin ();
 				while (it != viewNames.end ())
 				{
 					viewMenu->addEntry (new CMenuItem ((*it)->c_str (), kCreateNewViewTag));
+					transformViewMenu->addEntry (new CMenuItem ((*it)->c_str (), kTransformViewTag));
 					it++;
 				}
 				menu->addEntry (viewMenu, "Insert Subview");
+				COptionMenu* embedViewMenu = new COptionMenu ();
+				viewNames.clear ();
+				viewFactory->collectRegisteredViewNames (viewNames, "CViewContainer");
+				it = viewNames.begin ();
+				while (it != viewNames.end ())
+				{
+					embedViewMenu->addEntry (new CMenuItem ((*it)->c_str (), kEmbedViewTag));
+					it++;
+				}
+
 				std::list<const std::string*> templateNames;
 				uiDescription->collectTemplateViewNames (templateNames);
 				if (templateNames.size () > 1)
@@ -708,7 +901,13 @@ void CEditFrame::showOptionsMenu (const CPoint& where)
 					menu->addEntry (templateNameMenu, "Insert Template");
 					templateNameMenu->forget ();
 				}
+				if (selection->total () > 0)
+					menu->addEntry (embedViewMenu, "Embed Into ...");
+				if (selection->total () == 1 && selection->first () != getView (0))
+					menu->addEntry (transformViewMenu, "Transform View Type");
 				viewMenu->forget ();
+				transformViewMenu->forget ();
+				embedViewMenu->forget ();
 			}
 		}
 
@@ -763,7 +962,9 @@ void CEditFrame::showOptionsMenu (const CPoint& where)
 				case kGridSize10: setGrid (10); break;
 				case kGridSize15: setGrid (15); break;
 				case kCreateNewViewTag: createNewSubview (where, item->getTitle ()); break;
+				case kTransformViewTag: performAction (new TransformViewTypeOperation (selection, item->getTitle (), uiDescription, dynamic_cast<ViewFactory*> (uiDescription->getViewFactory ()))); break;
 				case kInsertTemplateTag: insertTemplate (where, item->getTitle ()); break;
+				case kEmbedViewTag: embedSelectedViewsInto (item->getTitle ()); break;
 				case kDeleteSelectionTag: deleteSelectedViews (); break;
 				case kUndoTag: performUndo (); break;
 				case kRedoTag: performRedo (); break;
@@ -773,10 +974,14 @@ void CEditFrame::showOptionsMenu (const CPoint& where)
 					fileSelector->setTitle ("Save VSTGUI UI Description File");
 					fileSelector->setDefaultExtension (CFileExtension ("VSTGUI UI Description", "uidesc"));
 					fileSelector->setDefaultSaveName (uiDescription->getXmFileName ());
+					if (savePath.length () > 0)
+						fileSelector->setInitialDirectory (savePath.c_str ());
 					if (fileSelector->runModal ())
 					{
 						const char* filename = fileSelector->getSelectedFile (0);
+						savePath = filename;
 						uiDescription->updateViewDescription (templateName.c_str (), getView (0));
+						storeAttributes ();
 						uiDescription->save (filename);
 					}
 					fileSelector->forget ();
@@ -807,6 +1012,45 @@ void CEditFrame::showOptionsMenu (const CPoint& where)
 		}
 	}
 	menu->forget ();
+}
+
+//----------------------------------------------------------------------------------------------------
+void CEditFrame::storeAttributes ()
+{
+	UIAttributes* attr = uiDescription->getCustomAttributes ("CEditFrame");
+	if (!attr)
+		attr = new UIAttributes;
+	if (attr)
+	{
+		if (savePath.length () > 0)
+			attr->setAttribute ("uidescPath", savePath.c_str ());
+		if (grid)
+		{
+			std::stringstream stream;
+			stream << grid->getSize ();
+			attr->setAttribute ("gridsize", stream.str ().c_str ());
+		}
+
+		uiDescription->setCustomAttributes ("CEditFrame", attr);
+	}
+}
+
+//----------------------------------------------------------------------------------------------------
+void CEditFrame::restoreAttributes ()
+{
+	UIAttributes* attr = uiDescription->getCustomAttributes ("CEditFrame");
+	if (attr)
+	{
+		const std::string* value = attr->getAttributeValue ("uidescPath");
+		if (value)
+			savePath = *value;
+		value = attr->getAttributeValue ("gridsize");
+		if (value)
+		{
+			long gridSize = strtol (value->c_str (), 0, 10);
+			grid->setSize (gridSize);
+		}
+	}
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -852,10 +1096,33 @@ void CEditFrame::createNewSubview (const CPoint& where, const char* viewName)
 	CView* view = viewFactory->createView (viewAttr, uiDescription);
 	if (view)
 	{
-		CRect size (origin, CPoint (20, 20));
-		view->setViewSize (size);
-		view->setMouseableArea (size);
+		if (view->getViewSize ().isEmpty ())
+		{
+			CRect size (origin, CPoint (20, 20));
+			view->setViewSize (size);
+			view->setMouseableArea (size);
+		}
+		else
+		{
+			CRect size (view->getViewSize ());
+			size.offset (origin.x, origin.y);
+			view->setViewSize (size);
+			view->setMouseableArea (size);
+		}
 		performAction (new InsertViewOperation (parent, view, selection));
+	}
+}
+
+//----------------------------------------------------------------------------------------------------
+void CEditFrame::embedSelectedViewsInto (const char* containerViewName)
+{
+	ViewFactory* viewFactory = dynamic_cast<ViewFactory*> (uiDescription->getViewFactory ());
+	UIAttributes viewAttr;
+	viewAttr.setAttribute ("class", containerViewName);
+	CViewContainer* newContainer = dynamic_cast<CViewContainer*> (viewFactory->createView (viewAttr, uiDescription));
+	if (newContainer)
+	{
+		performAction (new EmbedViewOperation (selection, newContainer));
 	}
 }
 
@@ -891,17 +1158,21 @@ CMessageResult CEditFrame::notify (CBaseObject* sender, const char* message)
 	return CFrame::notify (sender, message);
 }
 
+#define kSizingRectSize 10
+
 //----------------------------------------------------------------------------------------------------
 void CEditFrame::invalidSelection ()
 {
-	invalidRect (selection->getBounds ());
+	CRect r (selection->getBounds ());
+	r.inset (-kSizingRectSize, -kSizingRectSize);
+	invalidRect (r);
 }
 
 //----------------------------------------------------------------------------------------------------
 void CEditFrame::invalidRect (const CRect rect)
 {
 	CRect r (rect);
-	r.inset (-2, -2);
+//	r.inset (-kSizingRectSize, -kSizingRectSize);
 	CFrame::invalidRect (r);
 }
 
@@ -911,7 +1182,128 @@ void CEditFrame::draw (CDrawContext *pContext)
 	drawRect (pContext, size);
 }
 
-#define kSizingRectSize 10
+//----------------------------------------------------------------------------------------------------
+enum {
+	kSizeModeNone = 0,
+	kSizeModeBottomRight,
+	kSizeModeBottomLeft,
+	kSizeModeTopRight,
+	kSizeModeTopLeft,
+	kSizeModeLeft,
+	kSizeModeRight,
+	kSizeModeTop,
+	kSizeModeBottom
+};
+
+//----------------------------------------------------------------------------------------------------
+long CEditFrame::selectionHitTest (const CPoint& where, CView** resultView)
+{
+	FOREACH_IN_SELECTION(selection, view)
+		CRect r = selection->getGlobalViewCoordinates (view);
+		if (r.pointInside (where))
+		{
+			if (resultView)
+				*resultView = view;
+			CRect r2 (-kSizingRectSize, -kSizingRectSize, 0, 0);
+			r2.offset (r.right, r.bottom);
+			if (r2.pointInside (where))
+				return kSizeModeBottomRight;
+			if (r.getWidth () < kSizingRectSize*3 || r.getHeight () < kSizingRectSize*3)
+				return kSizeModeNone;
+			r2 (-kSizingRectSize, 0, 0, kSizingRectSize);
+			r2.offset (r.right, r.top);
+			if (r2.pointInside (where))
+				return kSizeModeTopRight;
+			r2 (kSizingRectSize, -kSizingRectSize, 0, 0);
+			r2.offset (r.left, r.bottom);
+			if (r2.pointInside (where))
+				return kSizeModeBottomLeft;
+			r2 (0, 0, kSizingRectSize, kSizingRectSize);
+			r2.offset (r.left, r.top);
+			if (r2.pointInside (where))
+				return kSizeModeTopLeft;
+			r2 (0, 0, kSizingRectSize, kSizingRectSize*2./3.);
+			r2.offset (r.left+r.getWidth () / 2 - kSizingRectSize / 2, r.bottom - r2.bottom);
+			if (r2.pointInside (where))
+				return kSizeModeBottom;
+			r2 (0, 0, kSizingRectSize, kSizingRectSize*2./3.);
+			r2.offset (r.left+r.getWidth () / 2 - kSizingRectSize / 2, r.top);
+			if (r2.pointInside (where))
+				return kSizeModeTop;
+			r2 (0, 0, kSizingRectSize*2./3., kSizingRectSize);
+			r2.offset (r.left, r.top + r.getHeight () / 2 - kSizingRectSize / 2);
+			if (r2.pointInside (where))
+				return kSizeModeLeft;
+			r2 (0, 0, kSizingRectSize*2./3., kSizingRectSize);
+			r2.offset (r.right - r2.right, r.top + r.getHeight () / 2 - kSizingRectSize / 2);
+			if (r2.pointInside (where))
+				return kSizeModeRight;
+
+			return kSizeModeNone;
+		}
+	FOREACH_IN_SELECTION_END
+	if (resultView)
+		*resultView = 0;
+	return kSizeModeNone;
+}
+
+//----------------------------------------------------------------------------------------------------
+void CEditFrame::drawSizingHandles (CDrawContext* context, const CRect& r)
+{
+	if (r.getHeight () >= kSizingRectSize && r.getWidth () >= kSizingRectSize)
+	{
+		CPoint polygon[4];
+
+		polygon[0] = CPoint (r.right, r.bottom);
+		polygon[1] = CPoint (r.right-kSizingRectSize, r.bottom);
+		polygon[2] = CPoint (r.right, r.bottom-kSizingRectSize);
+		polygon[3] = polygon[0];
+		context->drawPolygon (polygon, 4, kDrawFilled);
+
+		if (r.getWidth () < kSizingRectSize*3 || r.getHeight () < kSizingRectSize*3)
+			return;
+
+		if (r.getWidth () >= kSizingRectSize * 3)
+		{
+			CRect r2 (0, 0, kSizingRectSize, kSizingRectSize*2./3.);
+			r2.offset (r.left+r.getWidth () / 2 - kSizingRectSize / 2, r.top);
+			context->drawRect (r2, kDrawFilled);
+
+			r2 (0, 0, kSizingRectSize, kSizingRectSize*2./3.);
+			r2.offset (r.left+r.getWidth () / 2 - kSizingRectSize / 2, r.bottom - r2.bottom);
+			context->drawRect (r2, kDrawFilled);
+		}
+
+		if (r.getHeight () >= kSizingRectSize * 3)
+		{
+			CRect r2 (0, 0, kSizingRectSize*2./3., kSizingRectSize);
+			r2.offset (r.left, r.top + r.getHeight () / 2 - kSizingRectSize / 2);
+			context->drawRect (r2, kDrawFilled);
+
+			r2 (0, 0, kSizingRectSize*2./3., kSizingRectSize);
+			r2.offset (r.right - r2.right, r.top + r.getHeight () / 2 - kSizingRectSize / 2);
+			context->drawRect (r2, kDrawFilled);
+		}
+
+		polygon[0] = CPoint (r.left, r.top);
+		polygon[1] = CPoint (r.left+kSizingRectSize, r.top);
+		polygon[2] = CPoint (r.left, r.top+kSizingRectSize);
+		polygon[3] = polygon[0];
+		context->drawPolygon (polygon, 4, kDrawFilled);
+
+		polygon[0] = CPoint (r.right, r.top);
+		polygon[1] = CPoint (r.right-kSizingRectSize, r.top);
+		polygon[2] = CPoint (r.right, r.top+kSizingRectSize);
+		polygon[3] = polygon[0];
+		context->drawPolygon (polygon, 4, kDrawFilled);
+
+		polygon[0] = CPoint (r.left, r.bottom);
+		polygon[1] = CPoint (r.left+kSizingRectSize, r.bottom);
+		polygon[2] = CPoint (r.left, r.bottom-kSizingRectSize);
+		polygon[3] = polygon[0];
+		context->drawPolygon (polygon, 4, kDrawFilled);
+	}
+}
 
 //----------------------------------------------------------------------------------------------------
 void CEditFrame::drawRect (CDrawContext *pContext, const CRect& updateRect)
@@ -946,18 +1338,51 @@ void CEditFrame::drawRect (CDrawContext *pContext, const CRect& updateRect)
 
 			FOREACH_IN_SELECTION(selection, view)
 				CRect vs = selection->getGlobalViewCoordinates (view);
-				CRect sizeRect (-kSizingRectSize, -kSizingRectSize, 0, 0);
-				sizeRect.offset (vs.right, vs.bottom);
-				sizeRect.bound (vs);
-				if (mouseEditMode == kNoEditing)
-					pContext->drawRect (sizeRect, kDrawFilled/*AndStroked*/);
 				pContext->drawRect (vs);
+				if (mouseEditMode == kNoEditing && view != getView (0))
+					drawSizingHandles (pContext, vs);
 			FOREACH_IN_SELECTION_END
 
 		}
 	}
 	pContext->setDrawMode (kCopyMode);
 	pContext->setClipRect (oldClip);
+}
+
+//----------------------------------------------------------------------------------------------------
+CView* CEditFrame::getViewAt (const CPoint& p, bool deep) const
+{
+	CView* view = CViewContainer::getViewAt (p, deep);
+	if (editMode != kNoEditMode)
+	{
+		ViewFactory* factory = dynamic_cast<ViewFactory*> (uiDescription->getViewFactory ());
+		if (factory)
+		{
+			while (view && factory->getViewName (view) == 0)
+			{
+				view = view->getParentView ();
+			}
+		}
+	}
+	return view;
+}
+
+//----------------------------------------------------------------------------------------------------
+CViewContainer* CEditFrame::getContainerAt (const CPoint& p, bool deep) const
+{
+	CViewContainer* view = CViewContainer::getContainerAt (p, deep);
+	if (editMode != kNoEditMode)
+	{
+		ViewFactory* factory = dynamic_cast<ViewFactory*> (uiDescription->getViewFactory ());
+		if (factory)
+		{
+			while (view && factory->getViewName (view) == 0)
+			{
+				view = dynamic_cast<CViewContainer*> (view->getParentView ());
+			}
+		}
+	}
+	return view;
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -976,61 +1401,44 @@ CMouseEventResult CEditFrame::onMouseDown (CPoint &where, const long& buttons)
 			}
 			if (view)
 			{
-				// first alter selection
-				if (selection->contains (view))
+				CView* mouseHitView = 0;
+				long sizeMode = selectionHitTest (where, &mouseHitView);
+				if (sizeMode == kSizeModeNone)
 				{
-					if (buttons & kControl)
+					// first alter selection
+					if (selection->contains (view))
 					{
-						view->invalid ();
-						selection->remove (view);
-						return kMouseEventHandled;
-					}
-				}
-				else
-				{
-					if (buttons & kControl)
-					{
-						selection->add (view);
-					}
-					else
-					{
-						if (selection->total () > 0)
+						if (buttons & kControl)
 						{
-							CRect r = selection->getBounds ();
-							invalidRect (r);
-						}
-						selection->setExclusive (view);
-					}
-				}
-				if (selection->total () > 0 && !selection->contains (getView (0)))
-				{
-					if (buttons == kLButton && editMode == kEditMode) // only if there is a simple left button click we allow sizing
-					{
-						CRect viewSize = selection->getGlobalViewCoordinates (view);
-						CRect sizeRect (-kSizingRectSize, -kSizingRectSize, 0, 0);
-						sizeRect.offset (viewSize.right, viewSize.bottom);
-						if (sizeRect.pointInside (where))
-						{
-							if (selection->total () > 0)
-							{
-								CRect r = selection->getBounds ();
-								invalidRect (r);
-							}
-							selection->setExclusive (view);
-							mouseEditMode = kSizeEditing;
-							mouseStartPoint = where;
-							if (showLines)
-							{
-								lines = new CrossLines (this, CrossLines::kDragStyle);
-								lines->update (CPoint (viewSize.right, viewSize.bottom));
-							}
-							setCursor (kCursorSizeAll);
+							invalidSelection ();
+							selection->remove (view);
 							return kMouseEventHandled;
 						}
 					}
-					CRect r = selection->getBounds ();
-					invalidRect (r);
-					if (editMode == kEditMode)
+					else
+					{
+						if (buttons & kControl || buttons & kShift)
+						{
+							selection->add (view);
+							invalidSelection ();
+						}
+						else
+						{
+							if (selection->total () > 0)
+								invalidSelection ();
+							selection->setExclusive (view);
+							invalidSelection ();
+						}
+					}
+					mouseHitView = view;
+				}
+				if (mouseHitView && selection->total () > 0 && !selection->contains (getView (0)))
+				{
+					if (!(buttons & kLButton) || editMode != kEditMode)
+						return kMouseEventHandled;
+					if (mouseHitView == 0)
+						return kMouseEventHandled;
+					if (sizeMode == kSizeModeNone)
 					{
 						if (buttons & kAlt)
 						{
@@ -1051,9 +1459,36 @@ CMouseEventResult CEditFrame::onMouseDown (CPoint &where, const long& buttons)
 							editTimer = new CVSTGUITimer (this, 500);
 							editTimer->start ();
 						}
+						return kMouseEventHandled;
 					}
-					else if (editMode == kPaletteMode)
-						mouseEditMode = kDragEditing;
+					else
+					{
+						invalidSelection ();
+						selection->setExclusive (mouseHitView);
+						mouseEditMode = kSizeEditing;
+						mouseStartPoint = where;
+						if (grid)
+							grid->process (mouseStartPoint);
+						mouseSizeMode = sizeMode;
+						if (showLines)
+						{
+							int crossLineMode = 0;
+							switch (sizeMode)
+							{
+								case kSizeModeLeft:
+								case kSizeModeRight:
+								case kSizeModeTop:
+								case kSizeModeBottom: crossLineMode = CrossLines::kSelectionStyle; break;
+								default : crossLineMode = CrossLines::kDragStyle; break;
+							}
+							lines = new CrossLines (this, crossLineMode);
+							if (crossLineMode == CrossLines::kSelectionStyle)
+								lines->update (selection);
+							else
+								lines->update (CPoint (mouseStartPoint.x, mouseStartPoint.y));
+						}
+						return kMouseEventHandled;
+					}
 				}
 			}
 			else
@@ -1173,22 +1608,37 @@ CMouseEventResult CEditFrame::onMouseMoved (CPoint &where, const long& buttons)
 						}
 						mouseStartPoint = where;
 						CView* view = selection->first ();
-						view->invalid ();
-						CRect globalRect = selection->getGlobalViewCoordinates (view);
-						globalRect.right = mouseStartPoint.x;
-						globalRect.bottom = mouseStartPoint.y;
-						if (globalRect.getWidth () < 0)
-							globalRect.setWidth (0);
-						if (globalRect.getHeight () < 0)
-							globalRect.setHeight (0);
-						CRect viewSize = view->getViewSize (viewSize);
-						viewSize.setWidth (globalRect.getWidth ());
-						viewSize.setHeight (globalRect.getHeight ());
-						view->setViewSize (viewSize);
-						view->setMouseableArea (viewSize);
-						view->invalid ();
+						CRect viewSize (view->getViewSize ());
+						view->getParentView ()->frameToLocal (where);
+						switch (mouseSizeMode)
+						{
+							case kSizeModeLeft: viewSize.left = where.x; break;
+							case kSizeModeRight: viewSize.right = where.x; break;
+							case kSizeModeTop: viewSize.top = where.y; break;
+							case kSizeModeBottom: viewSize.bottom = where.y; break;
+							case kSizeModeTopLeft: viewSize.left = where.x; viewSize.top = where.y; break;
+							case kSizeModeTopRight: viewSize.right = where.x; viewSize.top = where.y; break;
+							case kSizeModeBottomRight: viewSize.right = where.x; viewSize.bottom = where.y; break;
+							case kSizeModeBottomLeft: viewSize.left = where.x; viewSize.bottom = where.y; break;
+						}
+						if (viewSize.left > viewSize.right)
+							viewSize.right = viewSize.left;
+						if (viewSize.top > viewSize.bottom)
+							viewSize.bottom = viewSize.top;
+						if (viewSize != view->getViewSize ())
+						{
+							invalidSelection ();
+							view->setViewSize (viewSize);
+							view->setMouseableArea (viewSize);
+							invalidSelection ();
+						}
 						if (lines)
-							lines->update (mouseStartPoint);
+						{
+							if (lines->getStyle () == CrossLines::kSelectionStyle)
+								lines->update (selection);
+							else
+								lines->update (mouseStartPoint);
+						}
 						selection->changed (CSelection::kMsgSelectionViewChanged);
 					}
 				}
@@ -1197,7 +1647,26 @@ CMouseEventResult CEditFrame::onMouseMoved (CPoint &where, const long& buttons)
 					startDrag (where);
 				}
 			}
+			return kMouseEventHandled;
 		}
+		else if (buttons == 0)
+		{
+			long mode = selectionHitTest (where, 0);
+			switch (mode)
+			{
+				case kSizeModeRight:
+				case kSizeModeLeft: setCursor (kCursorHSize); break;
+				case kSizeModeTop:
+				case kSizeModeBottom: setCursor (kCursorVSize); break;
+				case kSizeModeTopLeft:
+				case kSizeModeBottomRight: setCursor (kCursorNWSESize); break;
+				case kSizeModeTopRight:
+				case kSizeModeBottomLeft: setCursor (kCursorNESWSize); break;
+				default: setCursor (kCursorDefault); break;
+			}
+		}
+		else
+			setCursor (kCursorDefault);
 		return kMouseEventHandled;
 	}
 	else
@@ -1251,6 +1720,9 @@ CBitmap* CEditFrame::createBitmapFromSelection (CSelection* selection)
 void CEditFrame::startDrag (CPoint& where)
 {
 	CBitmap* bitmap = createBitmapFromSelection (selection);
+	if (bitmap == 0)
+		return;
+
 	// this is really bad, should be done with some kind of storing the CSelection object as string and later on recreating it from the string
 	char dragString[40] = {0};
 	sprintf (dragString, "CSelection: %d", selection);
@@ -1272,6 +1744,7 @@ static CSelection* getSelectionOutOfDrag (CDragContainer* drag)
 			// as said above, really not a good practice
 			long ptr = strtol (dragData+12, 0, 10);
 			selection = (CSelection*)ptr;
+			selection->remember ();
 		}
 	}
 	return selection;
@@ -1313,40 +1786,8 @@ bool CEditFrame::onDrop (CDragContainer* drag, const CPoint& where)
 
 			ViewFactory* viewFactory = dynamic_cast<ViewFactory*> (uiDescription->getViewFactory ());
 			
-			#if 1
 			performAction (new ViewCopyOperation (dragSelection, viewContainer, where2, viewFactory, uiDescription));
-			#else
-			CView* view = dragSelection->getFirst ();
-			while (view)
-			{
-				if (!dragSelection->containsParent (view))
-				{
-					CView* viewCopy = duplicateView (view, viewFactory, uiDescription);
-					if (viewCopy)
-					{
-						CRect viewSize = CSelection::getGlobalViewCoordinates (view);
-						CRect newSize (0, 0, viewSize.getWidth (), viewSize.getHeight ());
-						newSize.offset (where2.x, where2.y);
-						newSize.offset (viewSize.left - selectionBounds.left, viewSize.top - selectionBounds.top);
-
-						viewCopy->setViewSize (newSize);
-						viewCopy->setMouseableArea (newSize);
-						viewContainer->addView (viewCopy);
-						viewCopy->invalid ();
-						newSelection.add (viewCopy);
-					}
-				}
-				view = dragSelection->getNext (view);
-			}
-			invalidSelection ();
-			selection->empty ();
-			view = newSelection.getFirst ();
-			while (view)
-			{
-				selection->add (view);
-				view = newSelection.getNext (view);
-			}
-			#endif
+			dragSelection->forget ();
 		}
 		return true;
 	}
@@ -1379,6 +1820,7 @@ void CEditFrame::onDragEnter (CDragContainer* drag, const CPoint& where)
 			if (highlightView)
 				highlightView->invalid ();
 			setCursor (kCursorCopy);
+			selection->forget ();
 		}
 	}
 	else
@@ -1428,10 +1870,13 @@ void CEditFrame::onDragMove (CDragContainer* drag, const CPoint& where)
 				CView* v = getContainerAt (where2, true);
 				if (v != highlightView)
 				{
-					highlightView->invalid ();
+					if (highlightView)
+						highlightView->invalid ();
 					highlightView = v;
-					highlightView->invalid ();
+					if (highlightView)
+						highlightView->invalid ();
 				}
+				selection->forget ();
 			}
 		}
 	}

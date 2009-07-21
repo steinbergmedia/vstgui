@@ -15,6 +15,7 @@
 #include "../ctabview.h"
 #include "../cdatabrowser.h"
 #include "../vstkeycode.h"
+#include "../cgraphicspath.h"
 #include <set>
 #include <vector>
 #include <algorithm>
@@ -378,9 +379,25 @@ public:
 		}
 		else if (column == dbGetNumColumns (browser)-1)
 		{
-			context->setFontColor (kRedCColor);
-			context->setFont (kNormalFont);
-			context->drawStringUTF8 ("x", size);
+			static CGraphicsPath path;
+			static bool once = true;
+			if (once)
+			{
+				path.addEllipse (CRect (0, 0, 1, 1));
+				path.addLine (CPoint (0.3, 0.3), CPoint (0.7, 0.7));
+				path.addLine (CPoint (0.3, 0.7), CPoint (0.7, 0.3));
+				once = false;
+			}
+			CRect r (size);
+			r.inset (4, 4);
+			CGraphicsTransformation trans;
+			trans.offset = r.getTopLeft ();
+			trans.scaleX = r.getWidth ();
+			trans.scaleY = r.getHeight ();
+			context->setFrameColor (kGreyCColor);
+			context->setLineWidth (1.5);
+			context->setDrawMode (kAntialias);
+			path.draw (context, CGraphicsPath::kStroked, &trans);
 		}
 		else
 		{
@@ -418,8 +435,13 @@ public:
 	void dbCellSetupTextEdit (long row, long column, CTextEdit* textEditControl, CDataBrowser* browser)
 	{
 		textEditControl->setBackColor (kWhiteCColor);
+		textEditControl->setFrameColor (kBlackCColor);
 		textEditControl->setFontColor (kBlackCColor);
 		textEditControl->setFont (kNormalFont);
+		CRect size = textEditControl->getViewSize (size);
+		size.inset (1, 1);
+		textEditControl->setViewSize (size, true);
+		textEditControl->setMouseableArea (size);
 	}
 
 	CMouseEventResult dbOnMouseDown (const CPoint& where, const long& buttons, long row, long column, CDataBrowser* browser)
@@ -1130,7 +1152,6 @@ CView* CViewInspector::createViewForAttribute (const std::string& attrName, CCoo
 
 	CViewContainer* container = new CViewContainer (CRect (0, 0, width, height), 0);
 	container->setAutosizeFlags (kAutosizeLeft|kAutosizeRight|kAutosizeColumn);
-//	container->setBackgroundColor (MakeCColor (0, 0, 0, 0));
 	container->setTransparency (true);
 
 	CCoord middle = width/2;
@@ -1142,11 +1163,20 @@ CView* CViewInspector::createViewForAttribute (const std::string& attrName, CCoo
 	label->setFont (kNormalFont);
 	container->addView (label);
 
+	bool hasDifferentValues = false;
 	CRect r (middle+10, 0, width-5, height);
 	CView* valueView = 0;
 	IViewCreator::AttrType attrType = viewFactory->getAttributeType (*selection->begin (), attrName);
 	std::string attrValue;
-	viewFactory->getAttributeValue (*selection->begin (), attrName, attrValue, description);
+	bool first = true;
+	FOREACH_IN_SELECTION(selection, view)
+		std::string temp;
+		viewFactory->getAttributeValue (view, attrName, temp, description);
+		if (temp != attrValue && !first)
+			hasDifferentValues = true;
+		attrValue = temp;
+		first = false;
+	FOREACH_IN_SELECTION_END
 	switch (attrType)
 	{
 		case IViewCreator::kColorType:
@@ -1207,7 +1237,7 @@ CView* CViewInspector::createViewForAttribute (const std::string& attrName, CCoo
 		if (paramDisplay)
 		{
 			paramDisplay->setHoriAlign (kLeftText);
-			paramDisplay->setBackColor (MakeCColor (255, 255, 255, 150));
+			paramDisplay->setBackColor (hasDifferentValues ? MakeCColor (100, 100, 255, 150) : MakeCColor (255, 255, 255, 150));
 			paramDisplay->setFrameColor (MakeCColor (0, 0, 0, 180));
 			paramDisplay->setFontColor (kBlackCColor);
 			paramDisplay->setFont (kNormalFont);

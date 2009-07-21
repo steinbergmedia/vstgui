@@ -143,27 +143,6 @@ CView* CSelection::first () const
 	return 0;
 }
 
-/*
-//----------------------------------------------------------------------------------------------------
-CView* CSelection::getNext (CView* previous) const
-{
-	const_iterator it = begin ();
-	while (it != end ())
-	{
-		if ((*it) == previous)
-		{
-			it++;
-			if (it != end ())
-				return *it;
-			else
-				return 0;
-		}
-		it++;
-	}
-	return 0;
-}
-*/
-
 //----------------------------------------------------------------------------------------------------
 CRect CSelection::getBounds () const
 {

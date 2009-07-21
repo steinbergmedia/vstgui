@@ -1333,6 +1333,9 @@ void CTextEdit::draw (CDrawContext *pContext)
 		#if MAC_CARBON
 		HIViewSetNeedsDisplay ((HIViewRef)platformControl, true);
 		#endif
+		#if MAC_COCOA
+		drawBack (pContext);
+		#endif
 		setDirty (false);
 		return;
 	}
@@ -1415,6 +1418,29 @@ CMouseEventResult CTextEdit::onMouseDown (CPoint& where, const long& buttons)
 		}
 	}
 	return kMouseEventNotHandled;
+}
+
+//------------------------------------------------------------------------
+long CTextEdit::onKeyDown (VstKeyCode& keyCode)
+{
+	if (platformControl)
+	{
+		if (keyCode.virt == VKEY_ESCAPE)
+		{
+			bWasReturnPressed = false;
+			endEdit ();
+			looseFocus ();
+			return 1;
+		}
+		else if (keyCode.virt == VKEY_RETURN)
+		{
+			bWasReturnPressed = true;
+			endEdit ();
+			looseFocus ();
+			return 1;
+		}
+	}
+	return -1;
 }
 
 //------------------------------------------------------------------------

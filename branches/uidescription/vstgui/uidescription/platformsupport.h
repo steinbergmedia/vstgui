@@ -13,6 +13,8 @@
 #include <string>
 #include <list>
 
+/// \cond ignore
+
 BEGIN_NAMESPACE_VSTGUI
 
 class PlatformWindow;
@@ -80,5 +82,7 @@ public:
 };
 
 END_NAMESPACE_VSTGUI
+
+/// \endcond ignore
 
 #endif
