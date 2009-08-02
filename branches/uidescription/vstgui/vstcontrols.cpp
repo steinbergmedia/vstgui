@@ -3700,7 +3700,7 @@ CAnimKnob::CAnimKnob (const CRect& size, CControlListener* listener, long tag, C
 , bInverseBitmap (false)
 {
 	heightOfOneImage = size.height ();
-	subPixmaps = background ? (short)(background->getHeight () / heightOfOneImage) : 0;
+	setNumSubPixmaps (background ? (short)(background->getHeight () / heightOfOneImage) : 0);
 	inset = 0;
 }
 
@@ -3718,9 +3718,9 @@ CAnimKnob::CAnimKnob (const CRect& size, CControlListener* listener, long tag, C
 //------------------------------------------------------------------------
 CAnimKnob::CAnimKnob (const CRect& size, CControlListener* listener, long tag, long subPixmaps, CCoord heightOfOneImage, CBitmap* background, const CPoint &offset)
 : CKnob (size, listener, tag, background, 0, offset)
-, subPixmaps (subPixmaps)
 , bInverseBitmap (false)
 {
+	setNumSubPixmaps (subPixmaps);
 	setHeightOfOneImage (heightOfOneImage);
 	inset = 0;
 }
@@ -3728,9 +3728,9 @@ CAnimKnob::CAnimKnob (const CRect& size, CControlListener* listener, long tag, l
 //------------------------------------------------------------------------
 CAnimKnob::CAnimKnob (const CAnimKnob& v)
 : CKnob (v)
-, subPixmaps (v.subPixmaps)
 , bInverseBitmap (v.bInverseBitmap)
 {
+	setNumSubPixmaps (v.subPixmaps);
 	setHeightOfOneImage (v.heightOfOneImage);
 }
 
@@ -3743,7 +3743,7 @@ void CAnimKnob::setHeightOfOneImage (const CCoord& height)
 {
 	IMultiBitmapControl::setHeightOfOneImage (height);
 	if (pBackground && heightOfOneImage)
-		subPixmaps = (short)(pBackground->getHeight () / heightOfOneImage);
+		setNumSubPixmaps ((long)(pBackground->getHeight () / heightOfOneImage));
 }
 
 //-----------------------------------------------------------------------------------------------
@@ -3753,7 +3753,7 @@ void CAnimKnob::setBackground (CBitmap *background)
 	if (heightOfOneImage == 0)
 		heightOfOneImage = size.height ();
 	if (background && heightOfOneImage)
-		subPixmaps = (short)(background->getHeight () / heightOfOneImage);
+		setNumSubPixmaps ((long)(background->getHeight () / heightOfOneImage));
 }
 
 //-----------------------------------------------------------------------------------------------
@@ -3775,7 +3775,7 @@ void CAnimKnob::draw (CDrawContext *pContext)
 	CPoint where (0, 0);
 	if (value >= 0.f) 
 	{
-		CCoord tmp = heightOfOneImage * (subPixmaps - 1);
+		CCoord tmp = heightOfOneImage * (getNumSubPixmaps () - 1);
 		if (bInverseBitmap)
 			where.v = (CCoord)((1 - value) * (float)tmp);
 		else
@@ -3827,8 +3827,7 @@ CVerticalSwitch::CVerticalSwitch (const CRect& size, CControlListener* listener,
 , offset (offset)
 {
 	heightOfOneImage = size.height ();
-	subPixmaps = background ? (long)(background->getHeight () / heightOfOneImage) : 0;
-	iMaxPositions = subPixmaps;
+	setNumSubPixmaps (background ? (long)(background->getHeight () / heightOfOneImage) : 0);
 
 	setDefaultValue (0.f);
 }
@@ -3849,9 +3848,8 @@ CVerticalSwitch::CVerticalSwitch (const CRect& size, CControlListener* listener,
 CVerticalSwitch::CVerticalSwitch (const CRect& size, CControlListener* listener, long tag, long subPixmaps, CCoord heightOfOneImage, long iMaxPositions, CBitmap* background, const CPoint &offset)
 : CControl (size, listener, tag, background)
 , offset (offset)
-, subPixmaps (subPixmaps)
-, iMaxPositions (iMaxPositions)
 {
+	setNumSubPixmaps (subPixmaps);
 	setHeightOfOneImage (heightOfOneImage);
 	setDefaultValue (0.f);
 }
@@ -3860,9 +3858,8 @@ CVerticalSwitch::CVerticalSwitch (const CRect& size, CControlListener* listener,
 CVerticalSwitch::CVerticalSwitch (const CVerticalSwitch& v)
 : CControl (v)
 , offset (v.offset)
-, subPixmaps (v.subPixmaps)
-, iMaxPositions (v.iMaxPositions)
 {
+	setNumSubPixmaps (v.subPixmaps);
 	setHeightOfOneImage (v.heightOfOneImage);
 }
 
@@ -3876,7 +3873,7 @@ void CVerticalSwitch::draw (CDrawContext *pContext)
 	if (pBackground)
 	{
 		// source position in bitmap
-		CPoint where (0, heightOfOneImage * ((long)(value * (iMaxPositions - 1) + 0.5f)));
+		CPoint where (0, heightOfOneImage * ((long)(value * (getNumSubPixmaps () - 1) + 0.5f)));
 
 		if (bTransparencyEnabled)
 			pBackground->drawTransparent (pContext, size, where);
@@ -3907,13 +3904,13 @@ void CVerticalSwitch::mouse (CDrawContext *pContext, CPoint& where, long button)
 	if (checkDefaultValue (button))
 		return;
 
-	double coef = (double)heightOfOneImage / (double)iMaxPositions;
+	double coef = (double)heightOfOneImage / (double)getNumSubPixmaps ();
 
 	// begin of edit parameter
 	beginEdit ();
 	do
 	{
-		value = (long)((where.v - size.top) / coef) / (float)(iMaxPositions - 1);
+		value = (long)((where.v - size.top) / coef) / (float)(getNumSubPixmaps () - 1);
 		if (value > 1.f)
 			value = 1.f;
 		else if (value < 0.f)
@@ -3939,7 +3936,7 @@ CMouseEventResult CVerticalSwitch::onMouseDown (CPoint& where, const long& butto
 	if (!(buttons & kLButton))
 		return kMouseEventNotHandled;
 
-	coef = (double)heightOfOneImage / (double)iMaxPositions;
+	coef = (double)heightOfOneImage / (double)getNumSubPixmaps ();
 
 	beginEdit ();
 
@@ -3964,7 +3961,7 @@ CMouseEventResult CVerticalSwitch::onMouseMoved (CPoint& where, const long& butt
 {
 	if (buttons & kLButton)
 	{
-		value = (long)((where.v - size.top) / coef) / (float)(iMaxPositions - 1);
+		value = (long)((where.v - size.top) / coef) / (float)(getNumSubPixmaps () - 1);
 		if (value > 1.f)
 			value = 1.f;
 		else if (value < 0.f)
@@ -3999,8 +3996,7 @@ CHorizontalSwitch::CHorizontalSwitch (const CRect& size, CControlListener* liste
 , offset (offset)
 {
 	heightOfOneImage = size.width ();
-	subPixmaps = background ? (long)(background->getWidth () / heightOfOneImage) : 0;
-	iMaxPositions = subPixmaps;
+	setNumSubPixmaps (background ? (long)(background->getWidth () / heightOfOneImage) : 0);
 
 	setDefaultValue (0.f);
 }
@@ -4013,7 +4009,7 @@ CHorizontalSwitch::CHorizontalSwitch (const CRect& size, CControlListener* liste
  * @param tag the control tag
  * @param subPixmaps number of sub bitmaps in background
  * @param heightOfOneImage height of one sub bitmap
- * @param iMaxPositions TODO
+ * @param iMaxPositions ignored
  * @param background the switch bitmap
  * @param offset unused
  */
@@ -4021,9 +4017,8 @@ CHorizontalSwitch::CHorizontalSwitch (const CRect& size, CControlListener* liste
 CHorizontalSwitch::CHorizontalSwitch (const CRect& size, CControlListener* listener, long tag, long subPixmaps, CCoord heightOfOneImage, long iMaxPositions, CBitmap* background, const CPoint &offset)
 : CControl (size, listener, tag, background)
 , offset (offset)
-, subPixmaps (subPixmaps)
-, iMaxPositions (iMaxPositions)
 {
+	setNumSubPixmaps (subPixmaps);
 	setHeightOfOneImage (heightOfOneImage);
 	setDefaultValue (0.f);
 }
@@ -4032,9 +4027,8 @@ CHorizontalSwitch::CHorizontalSwitch (const CRect& size, CControlListener* liste
 CHorizontalSwitch::CHorizontalSwitch (const CHorizontalSwitch& v)
 : CControl (v)
 , offset (v.offset)
-, subPixmaps (v.subPixmaps)
-, iMaxPositions (v.iMaxPositions)
 {
+	setNumSubPixmaps (v.subPixmaps);
 	setHeightOfOneImage (v.heightOfOneImage);
 }
 
@@ -4048,7 +4042,7 @@ void CHorizontalSwitch::draw (CDrawContext *pContext)
 	if (pBackground)
 	{
 		// source position in bitmap
-		CPoint where (0, heightOfOneImage * ((long)(value * (iMaxPositions - 1) + 0.5f)));
+		CPoint where (0, heightOfOneImage * ((long)(value * (getNumSubPixmaps () - 1) + 0.5f)));
 
 		if (bTransparencyEnabled)
 			pBackground->drawTransparent (pContext, size, where);
@@ -4080,13 +4074,13 @@ void CHorizontalSwitch::mouse (CDrawContext *pContext, CPoint& where, long butto
 	if (checkDefaultValue (button))
 		return;
 
-	double coef = (double)pBackground->getWidth () / (double)iMaxPositions;
+	double coef = (double)pBackground->getWidth () / (double)getNumSubPixmaps ();
 
 	// begin of edit parameter
 	beginEdit ();
 	do
 	{
-		value = (long)((where.h - size.left) / coef) / (float)(iMaxPositions - 1);
+		value = (long)((where.h - size.left) / coef) / (float)(getNumSubPixmaps () - 1);
 		if (value > 1.f)
 			value = 1.f;
 		else if (value < 0.f)
@@ -4112,7 +4106,7 @@ CMouseEventResult CHorizontalSwitch::onMouseDown (CPoint& where, const long& but
 	if (!(buttons & kLButton))
 		return kMouseEventNotHandled;
 
-	coef = (double)pBackground->getWidth () / (double)iMaxPositions;
+	coef = (double)pBackground->getWidth () / (double)getNumSubPixmaps ();
 
 	beginEdit ();
 
@@ -4137,7 +4131,7 @@ CMouseEventResult CHorizontalSwitch::onMouseMoved (CPoint& where, const long& bu
 {
 	if (buttons & kLButton)
 	{
-		value = (long)((where.h - size.left) / coef) / (float)(iMaxPositions - 1);
+		value = (long)((where.h - size.left) / coef) / (float)(getNumSubPixmaps () - 1);
 		if (value > 1.f)
 			value = 1.f;
 		else if (value < 0.f)
@@ -4175,7 +4169,8 @@ CRockerSwitch::CRockerSwitch (const CRect& size, CControlListener* listener, lon
 , offset (offset)
 , style (style)
 {
-	heightOfOneImage = size.height ();
+	setNumSubPixmaps (3);
+	setHeightOfOneImage (size.height ());
 }
 
 //------------------------------------------------------------------------
@@ -4195,6 +4190,7 @@ CRockerSwitch::CRockerSwitch (const CRect& size, CControlListener* listener, lon
 , offset (offset)
 , style (style)
 {
+	setNumSubPixmaps (3);
 	setHeightOfOneImage (heightOfOneImage);
 }
 
@@ -4417,10 +4413,9 @@ bool CRockerSwitch::onWheel (const CPoint& where, const float &distance, const l
 CMovieBitmap::CMovieBitmap (const CRect& size, CControlListener* listener, long tag, CBitmap* background, const CPoint &offset)
 : CControl (size, listener, tag, background)
 , offset (offset)
-, subPixmaps (subPixmaps)
 {
 	setHeightOfOneImage (size.getHeight ());
-	subPixmaps = background ? (long)(background->getHeight () / heightOfOneImage) : 0;
+	setNumSubPixmaps (background ? (long)(background->getHeight () / heightOfOneImage) : 0);
 }
 
 //------------------------------------------------------------------------
@@ -4438,8 +4433,8 @@ CMovieBitmap::CMovieBitmap (const CRect& size, CControlListener* listener, long 
 CMovieBitmap::CMovieBitmap (const CRect& size, CControlListener* listener, long tag, long subPixmaps, CCoord heightOfOneImage, CBitmap* background, const CPoint &offset)
 : CControl (size, listener, tag, background)
 , offset (offset)
-, subPixmaps (subPixmaps)
 {
+	setNumSubPixmaps (subPixmaps);
 	setHeightOfOneImage (heightOfOneImage);
 }
 
@@ -4447,8 +4442,8 @@ CMovieBitmap::CMovieBitmap (const CRect& size, CControlListener* listener, long 
 CMovieBitmap::CMovieBitmap (const CMovieBitmap& v)
 : CControl (v)
 , offset (v.offset)
-, subPixmaps (v.subPixmaps)
 {
+	setNumSubPixmaps (v.subPixmaps);
 	setHeightOfOneImage (v.heightOfOneImage);
 }
 
@@ -4465,7 +4460,7 @@ void CMovieBitmap::draw (CDrawContext *pContext)
 		value = 1.0f;
 
  	if (value > 0.0f)
-		where.v += heightOfOneImage * (int)(value * (subPixmaps - 1) + 0.5);
+		where.v += heightOfOneImage * (int)(value * (getNumSubPixmaps () - 1) + 0.5);
 
 	if (pBackground)
 	{
@@ -4675,9 +4670,9 @@ CAutoAnimation::CAutoAnimation (const CRect& size, CControlListener* listener, l
 , bWindowOpened (false)
 {
 	heightOfOneImage = size.height ();
-	subPixmaps = background ? (long)(background->getHeight () / heightOfOneImage) : 0;
+	setNumSubPixmaps (background ? (long)(background->getHeight () / heightOfOneImage) : 0);
 
-	totalHeightOfBitmap = heightOfOneImage * subPixmaps;
+	totalHeightOfBitmap = heightOfOneImage * getNumSubPixmaps ();
 }
 
 //------------------------------------------------------------------------
@@ -4695,21 +4690,21 @@ CAutoAnimation::CAutoAnimation (const CRect& size, CControlListener* listener, l
 CAutoAnimation::CAutoAnimation (const CRect& size, CControlListener* listener, long tag, long subPixmaps, CCoord heightOfOneImage, CBitmap* background, const CPoint& offset)
 : CControl (size, listener, tag, background)
 , offset (offset)
-, subPixmaps (subPixmaps)
 , bWindowOpened (false)
 {
+	setNumSubPixmaps (subPixmaps);
 	setHeightOfOneImage (heightOfOneImage);
-	totalHeightOfBitmap = heightOfOneImage * subPixmaps;
+	totalHeightOfBitmap = heightOfOneImage * getNumSubPixmaps ();
 }
 
 //------------------------------------------------------------------------
 CAutoAnimation::CAutoAnimation (const CAutoAnimation& v)
 : CControl (v)
 , offset (v.offset)
-, subPixmaps (v.subPixmaps)
 , totalHeightOfBitmap (v.totalHeightOfBitmap)
 , bWindowOpened (v.bWindowOpened)
 {
+	setNumSubPixmaps (v.subPixmaps);
 	setHeightOfOneImage (v.heightOfOneImage);
 }
 

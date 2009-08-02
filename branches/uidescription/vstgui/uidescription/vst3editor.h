@@ -3,6 +3,7 @@
 #define __vst3editor__
 
 #include "public.sdk/source/vst/vstguieditor.h"
+#include "pluginterfaces/vst/ivstplugview.h"
 #include "uidescription.h"
 #include "../ctooltipsupport.h"
 #include <string>
@@ -14,6 +15,7 @@
 
 BEGIN_NAMESPACE_VSTGUI
 class ParameterChangeListener;
+class VST3Editor;
 
 //-----------------------------------------------------------------------------
 class IVST3CustomViewCreator
@@ -22,10 +24,11 @@ public:
 	virtual ~IVST3CustomViewCreator () {}
 	
 	virtual CView* createCustomView (const char* name, const UIAttributes& attributes, IUIDescription* description) = 0;
+	virtual bool findParameter (const CPoint& pos, Steinberg::Vst::ParamID& paramID, VST3Editor* editor) { return false; }
 };
 
 //-----------------------------------------------------------------------------
-class VST3Editor : public Steinberg::Vst::VSTGUIEditor, public IController
+class VST3Editor : public Steinberg::Vst::VSTGUIEditor, public Steinberg::Vst::IParameterFinder, public IController
 {
 public:
 	VST3Editor (void* controller, const char* viewName, const char* xmlFile, bool debugMode = false);
@@ -35,6 +38,9 @@ public:
 	bool exchangeView (const char* newViewName);
 	void enableTooltips (bool state);
 
+//-----------------------------------------------------------------------------
+	DELEGATE_REFCOUNT(Steinberg::Vst::VSTGUIEditor)
+	Steinberg::tresult PLUGIN_API queryInterface (const ::Steinberg::TUID iid, void** obj);
 protected:
 	~VST3Editor ();
 	void init ();
@@ -63,6 +69,9 @@ protected:
 	Steinberg::tresult PLUGIN_API onWheel (float distance);
 	Steinberg::tresult PLUGIN_API onKeyDown (Steinberg::char16 key, Steinberg::int16 keyMsg, Steinberg::int16 modifiers);
 	Steinberg::tresult PLUGIN_API onKeyUp (Steinberg::char16 key, Steinberg::int16 keyMsg, Steinberg::int16 modifiers);
+
+	// IParameterFinder
+	Steinberg::tresult PLUGIN_API findParameter (Steinberg::int32 xPos, Steinberg::int32 yPos, Steinberg::Vst::ParamID& resultTag);
 
 	// CControlListener
 	virtual void valueChanged (CControl* pControl);

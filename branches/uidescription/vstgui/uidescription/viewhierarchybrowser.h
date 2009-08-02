@@ -64,6 +64,7 @@ protected:
 	CBaseObject* owner;
 	PlatformWindow* platformWindow;
 	ViewHierarchyBrowser* browser;
+	UIDescription* description;
 };
 
 

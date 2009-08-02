@@ -49,7 +49,7 @@ public:
 		Steinberg::Vst::ParamValue value = 0.;
 		if (parameter)
 		{
-			value = parameter->getNormalized ();
+			value = editController->getParamNormalized (getParameterID ());
 		}
 		else
 		{
@@ -81,7 +81,7 @@ public:
 	{
 		if (message == IDependent::kChanged && parameter)
 		{
-			updateControlValue (parameter->getNormalized ());
+			updateControlValue (editController->getParamNormalized (getParameterID ()));
 		}
 	}
 
@@ -149,7 +149,7 @@ protected:
 			if (optMenu)
 			{
 				if (parameter)
-					optMenu->setValue (parameter->toPlain (value));
+					optMenu->setValue (editController->normalizedParamToPlain (getParameterID (), value));
 			}
 			else
 				(*it)->setValue (value);
@@ -211,6 +211,13 @@ VST3Editor::VST3Editor (UIDescription* desc, void* controller, const char* _view
 VST3Editor::~VST3Editor ()
 {
 	description->forget ();
+}
+
+//-----------------------------------------------------------------------------
+Steinberg::tresult PLUGIN_API VST3Editor::queryInterface (const Steinberg::TUID iid, void** obj)
+{
+	QUERY_INTERFACE(iid, obj, Steinberg::Vst::IParameterFinder::iid, Steinberg::Vst::IParameterFinder)
+	return VSTGUIEditor::queryInterface (iid, obj);
 }
 
 //-----------------------------------------------------------------------------
@@ -380,6 +387,34 @@ void VST3Editor::controlEndEdit (CControl* pControl)
 }
 
 //-----------------------------------------------------------------------------
+Steinberg::tresult PLUGIN_API VST3Editor::findParameter (Steinberg::int32 xPos, Steinberg::int32 yPos, Steinberg::Vst::ParamID& resultTag)
+{
+	CView* view = frame->getViewAt (CPoint (xPos, yPos), true);
+	if (view)
+	{
+		CControl* control = dynamic_cast<CControl*> (view);
+		if (control && control->getTag () != -1)
+		{
+			ParameterChangeListener* pcl = getParameterChangeListener (control->getTag ());
+			if (pcl)
+			{
+				resultTag = pcl->getParameterID ();
+				return Steinberg::kResultTrue;
+			}
+		}
+		else
+		{
+			IVST3CustomViewCreator* cvc = dynamic_cast<IVST3CustomViewCreator*> (getController ());
+			if (cvc)
+			{
+				return (cvc->findParameter (CPoint (xPos, yPos), resultTag, this) ? Steinberg::kResultTrue : Steinberg::kResultFalse);
+			}
+		}
+	}
+	return Steinberg::kResultFalse;
+}
+
+//-----------------------------------------------------------------------------
 CView* VST3Editor::createView (const UIAttributes& attributes, IUIDescription* description)
 {
 	const std::string* customViewName = attributes.getAttributeValue ("custom-view-name");
@@ -408,7 +443,7 @@ CView* VST3Editor::verifyView (CView* view, const UIAttributes& attributes, IUID
 			Steinberg::Vst::EditController* editController = getController ();
 			if (editController)
 			{
-				Steinberg::Vst::Parameter* parameter = editController->getParameter (control->getTag ());
+				Steinberg::Vst::Parameter* parameter = editController->getParameterObject (control->getTag ());
 				paramChangeListeners.insert (std::make_pair (control->getTag (), new ParameterChangeListener (editController, parameter, control)));
 			}
 		}
@@ -609,6 +644,15 @@ CMessageResult VST3Editor::notify (CBaseObject* sender, const char* message)
 		exchangeView (viewName.c_str ());
 		return kMessageNotified;
 	}
+	else if (message == kMsgViewSizeChanged)
+	{
+		if (plugFrame)
+		{
+			rect.right = rect.left + (Steinberg::int32)frame->getWidth ();
+			rect.bottom = rect.top + (Steinberg::int32)frame->getHeight ();
+			plugFrame->resizeView (this, &rect);
+		}
+	}
 	#endif
  	return VSTGUIEditor::notify (sender, message); 
 }
@@ -741,7 +785,8 @@ void VST3Editor::runNewTemplateDialog (const char* baseViewName)
 	heightTextEdit->setFontColor (kBlackCColor);
 	heightTextEdit->setText ("300");
 	c->addView (heightTextEdit);
-	if (Dialog::runViewModal (CPoint (0, 0), c, Dialog::kOkCancelButtons, "Create new template"))
+	CPoint p (-1, -1);
+	if (Dialog::runViewModal (p, c, Dialog::kOkCancelButtons, "Create new template"))
 	{
 		long width = strtol (widthTextEdit->getText (), 0, 10);
 		long height = strtol (heightTextEdit->getText (), 0, 10);
@@ -831,7 +876,8 @@ void VST3Editor::runTemplateSettingsDialog ()
 	str << maxSize.y;
 	maxHeightTextEdit->setText (str.str ().c_str ());
 	c->addView (maxHeightTextEdit);
-	if (Dialog::runViewModal (CPoint (0, 0), c, Dialog::kOkCancelButtons, "Template Settings"))
+	CPoint p (-1, -1);
+	if (Dialog::runViewModal (p, c, Dialog::kOkCancelButtons, "Template Settings"))
 	{
 		UIAttributes* attr = const_cast<UIAttributes*> (description->getViewAttributes (viewName.c_str ()));
 		if (attr)

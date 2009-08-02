@@ -187,7 +187,6 @@ public:
 	VSTGUI_DEPRECATED(bool isDoubleClick ();) ///< \deprecated use kDoubleClick in onMouseDown
 
 	CLASS_METHODS_VIRTUAL(CControl, CView)
-
 protected:
 	CControlListener* listener;
 	long  tag;
@@ -216,9 +215,13 @@ public:
 	virtual void setHeightOfOneImage (const CCoord& height) { heightOfOneImage = height; }
 	virtual CCoord getHeightOfOneImage () const { return heightOfOneImage; }
 
+	virtual void setNumSubPixmaps (long numSubPixmaps) { subPixmaps = numSubPixmaps; }
+	virtual long getNumSubPixmaps () const { return subPixmaps; }
+
 	virtual void autoComputeHeightOfOneImage ();
 protected:
 	CCoord heightOfOneImage;
+	long subPixmaps;
 };
 
 //-----------------------------------------------------------------------------
@@ -326,7 +329,6 @@ public:
 	virtual void draw (CDrawContext* pContext);
 
 	CLASS_METHODS(CParamDisplay, CControl)
-
 protected:
 	virtual void drawBack (CDrawContext* pContext, CBitmap* newBack = 0);
 	virtual void drawText (CDrawContext* pContext, const char* string);
@@ -380,7 +382,6 @@ public:
 	virtual	void draw (CDrawContext* pContext);
 
 	CLASS_METHODS(CTextLabel, CParamDisplay)
-
 protected:
 	void freeText ();
 	char* text;
@@ -435,7 +436,6 @@ public:
 	bool bWasReturnPressed;
 
 	CLASS_METHODS(CTextEdit, CParamDisplay)
-
 protected:
 	void* platformFont;
 	char text[256];
@@ -638,7 +638,6 @@ public:
 	virtual	void looseFocus ();
 
 	CLASS_METHODS(COptionMenu, CParamDisplay)
-
 protected:
 	COptionMenu* getItemMenu (long idx, long& idxInMenu, long& offsetIdx);
 	void  removeItems ();
@@ -726,7 +725,6 @@ public:
 	virtual CMouseEventResult onMouseMoved (CPoint& where, const long& buttons);
 
 	CLASS_METHODS(CKnob, CControl)
-
 protected:
 	virtual void drawHandle (CDrawContext* pContext);
 	void compute ();
@@ -786,11 +784,10 @@ public:
 	virtual void draw (CDrawContext* pContext);
 	void setHeightOfOneImage (const CCoord& height);
 	void setBackground (CBitmap *background);
+	void setNumSubPixmaps (long numSubPixmaps) { IMultiBitmapControl::setNumSubPixmaps (numSubPixmaps); invalid (); }
 
 	CLASS_METHODS(CAnimKnob, CKnob)
-
 protected:
-	long	subPixmaps;
 	bool	bInverseBitmap;
 	CPoint	lastDrawnPoint;
 };
@@ -822,12 +819,11 @@ public:
 	virtual CMouseEventResult onMouseUp (CPoint& where, const long& buttons);
 	virtual CMouseEventResult onMouseMoved (CPoint& where, const long& buttons);
 
-	CLASS_METHODS(CVerticalSwitch, CControl)
+	void setNumSubPixmaps (long numSubPixmaps) { IMultiBitmapControl::setNumSubPixmaps (numSubPixmaps); invalid (); }
 
+	CLASS_METHODS(CVerticalSwitch, CControl)
 protected:
 	CPoint	offset;
-	long	subPixmaps;
-	long	iMaxPositions;
 
 private:
 	double coef;
@@ -861,12 +857,11 @@ public:
 	virtual CMouseEventResult onMouseUp (CPoint& where, const long& buttons);
 	virtual CMouseEventResult onMouseMoved (CPoint& where, const long& buttons);
 
-	CLASS_METHODS(CHorizontalSwitch, CControl)
+	void setNumSubPixmaps (long numSubPixmaps) { IMultiBitmapControl::setNumSubPixmaps (numSubPixmaps); invalid (); }
 
+	CLASS_METHODS(CHorizontalSwitch, CControl)
 protected:
 	CPoint	offset;
-	long	subPixmaps;
-	long	iMaxPositions;
 
 private:
 	double coef;
@@ -901,8 +896,9 @@ public:
 	virtual CMouseEventResult onMouseUp (CPoint& where, const long& buttons);
 	virtual CMouseEventResult onMouseMoved (CPoint& where, const long& buttons);
 
-	CLASS_METHODS(CRockerSwitch, CControl)
+	void setNumSubPixmaps (long numSubPixmaps) { IMultiBitmapControl::setNumSubPixmaps (numSubPixmaps); invalid (); }
 
+	CLASS_METHODS(CRockerSwitch, CControl)
 protected:
 	CPoint	offset;
 	long	style;
@@ -934,11 +930,11 @@ public:
 
 	virtual void draw (CDrawContext*);
 
-	CLASS_METHODS(CMovieBitmap, CControl)
+	void setNumSubPixmaps (long numSubPixmaps) { IMultiBitmapControl::setNumSubPixmaps (numSubPixmaps); invalid (); }
 
+	CLASS_METHODS(CMovieBitmap, CControl)
 protected:
 	CPoint	offset;
-	long	subPixmaps;
 };
 
 
@@ -969,8 +965,9 @@ public:
 	virtual CMouseEventResult onMouseUp (CPoint& where, const long& buttons);
 	virtual CMouseEventResult onMouseMoved (CPoint& where, const long& buttons);
 
-	CLASS_METHODS(CMovieButton, CControl)
+	void setNumSubPixmaps (long numSubPixmaps) { IMultiBitmapControl::setNumSubPixmaps (numSubPixmaps); invalid (); }
 
+	CLASS_METHODS(CMovieButton, CControl)
 protected:
 	CPoint   offset;
 	float    buttonState;
@@ -1017,12 +1014,12 @@ public:
 	bool    isWindowOpened () const { return bWindowOpened; }
 	//@}
 
-	CLASS_METHODS(CAutoAnimation, CControl)
+	void setNumSubPixmaps (long numSubPixmaps) { IMultiBitmapControl::setNumSubPixmaps (numSubPixmaps); invalid (); }
 
+	CLASS_METHODS(CAutoAnimation, CControl)
 protected:
 	CPoint	offset;
 
-	long	subPixmaps;
 	CCoord	totalHeightOfBitmap;
 
 	bool	bWindowOpened;
@@ -1085,7 +1082,6 @@ public:
 	virtual long onKeyDown (VstKeyCode& keyCode);
 
 	CLASS_METHODS(CSlider, CControl)
-
 protected:
 	void setViewSize (CRect& rect, bool invalid);
 	
@@ -1183,7 +1179,6 @@ public:
 	//@}
 
 	CLASS_METHODS(CSpecialDigit, CControl)
-
 protected:
 	long     iNumbers;
 	long     xpos[7];
@@ -1220,8 +1215,9 @@ public:
 	virtual CMouseEventResult onMouseUp (CPoint& where, const long& buttons);
 	virtual CMouseEventResult onMouseMoved (CPoint& where, const long& buttons);
 
-	CLASS_METHODS(CKickButton, CControl)
+	void setNumSubPixmaps (long numSubPixmaps) { IMultiBitmapControl::setNumSubPixmaps (numSubPixmaps); invalid (); }
 
+	CLASS_METHODS(CKickButton, CControl)
 protected:
 	CPoint	offset;
 
@@ -1266,7 +1262,6 @@ public:
 	virtual CMouseEventResult onMouseDown (CPoint& where, const long& buttons);
 
 	CLASS_METHODS(CSplashScreen, CControl)
-
 protected:
 	void valueChanged (CControl *pControl);
 
@@ -1312,7 +1307,6 @@ public:
 	virtual void setDirty (const bool val = true);
 	
 	CLASS_METHODS(CVuMeter, CControl)
-
 protected:
 	CBitmap* onBitmap;
 	CBitmap* offBitmap;

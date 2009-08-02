@@ -98,6 +98,7 @@ public:
 	void updateViewDescription (const char* name, CView* view);
 	bool getTemplateNameFromView (CView* view, std::string& templateName);
 	void addNewTemplate (const char* name, UIAttributes* attr); // owns attributes
+	bool removeTemplate (const char* name);
 
 	bool setCustomAttributes (const char* name, UIAttributes* attr); //owns attributes
 	UIAttributes* getCustomAttributes (const char* name) const;
@@ -136,6 +137,9 @@ public:
 	bool hasAttribute (const char* name) const;
 	const std::string* getAttributeValue (const char* name) const;
 	void setAttribute (const char* name, const char* value);
+	
+	void setRectAttribute (const char* name, const CRect& r);
+	bool getRectAttribute (const char* name, CRect& r) const;
 	
 	void removeAll () { clear (); }
 protected:

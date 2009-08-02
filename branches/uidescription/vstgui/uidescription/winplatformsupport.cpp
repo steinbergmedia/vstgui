@@ -134,6 +134,19 @@ void Win32Window::show ()
 //-----------------------------------------------------------------------------
 void Win32Window::center ()
 {
+	HMONITOR monitor = MonitorFromWindow (platformWindow, MONITOR_DEFAULTTOPRIMARY);
+	if (monitor)
+	{
+		MONITORINFO mi = {0};
+		mi.cbSize = sizeof (MONITORINFO);
+		if (GetMonitorInfo (monitor, &mi))
+		{
+			CRect r = getSize ();
+			r.offset (-r.left, -r.top);
+			r.offset (((mi.rcWork.right - mi.rcWork.left) / 2) - r.getWidth () / 2, ((mi.rcWork.bottom - mi.rcWork.top) / 2) - r.getHeight () / 2);
+			setSize (r);
+		}
+	}
 }
 
 //-----------------------------------------------------------------------------
@@ -221,6 +234,24 @@ LONG_PTR WINAPI Win32Window::windowProc (HWND hWnd, UINT message, WPARAM wParam,
 //-----------------------------------------------------------------------------
 bool PlatformUtilities::collectPlatformFontNames (std::list<std::string*>& fontNames)
 {
+	Gdiplus::InstalledFontCollection fonts;
+	if (fonts.GetFamilyCount () > 0)
+	{
+		Gdiplus::FontFamily* families = new Gdiplus::FontFamily[fonts.GetFamilyCount ()];
+		INT numFonts = fonts.GetFamilyCount ();
+		if (fonts.GetFamilies (fonts.GetFamilyCount (), families, &numFonts) == Gdiplus::Ok)
+		{
+			WCHAR familyName[LF_FACESIZE];
+			for (INT i = 0; i < numFonts; i++)
+			{
+				families[i].GetFamilyName (familyName);
+				UTF8StringHelper str (familyName);
+				fontNames.push_back (new std::string (str));
+			}
+		}
+		delete [] families;
+		return true;
+	}
 	return false;
 }
 
@@ -233,41 +264,6 @@ bool PlatformUtilities::startDrag (CFrame* frame, const CPoint& location, const 
 //-----------------------------------------------------------------------------
 void PlatformUtilities::colorChooser (const CColor* oldColor, IPlatformColorChangeCallback* callback)
 {
-}
-
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
-void PlatformDefaults::setRect (const char* appID, const char* name, const CRect& value)
-{
-}
-
-//-----------------------------------------------------------------------------
-bool PlatformDefaults::getRect (const char* appID, const char* name, CRect& value)
-{
-	return false;
-}
-
-//-----------------------------------------------------------------------------
-void PlatformDefaults::setString (const char* appID, const char* name, const std::string& value)
-{
-}
-
-//-----------------------------------------------------------------------------
-bool PlatformDefaults::getString (const char* appID, const char* name, std::string& value)
-{
-	return false;
-}
-
-//-----------------------------------------------------------------------------
-void PlatformDefaults::setNumber (const char* appID, const char* name, long value)
-{
-}
-
-//-----------------------------------------------------------------------------
-bool PlatformDefaults::getNumber (const char* appID, const char* name, long& value)
-{
-	return false;
 }
 
 END_NAMESPACE_VSTGUI

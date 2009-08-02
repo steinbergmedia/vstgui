@@ -5,6 +5,7 @@
 #include <list>
 #include <sstream>
 #include <fstream>
+#include <vector>
 
 BEGIN_NAMESPACE_VSTGUI
 
@@ -1043,6 +1044,20 @@ void UIDescription::addNewTemplate (const char* name, UIAttributes* attr)
 }
 
 //-----------------------------------------------------------------------------
+bool UIDescription::removeTemplate (const char* name)
+{
+#if VSTGUI_LIVE_EDITING
+	UINode* templateNode = findChildNodeByNameAttribute (nodes, name);
+	if (templateNode)
+	{
+		nodes->getChildren ().remove (templateNode);
+		return true;
+	}
+#endif
+	return false;
+}
+
+//-----------------------------------------------------------------------------
 bool UIDescription::setCustomAttributes (const char* name, UIAttributes* attr)
 {
 	UINode* customNode = findChildNodeByNameAttribute (getBaseNode ("custom"), name);
@@ -1050,7 +1065,7 @@ bool UIDescription::setCustomAttributes (const char* name, UIAttributes* attr)
 		return false;
 	attr->setAttribute ("name", name);
 	customNode = new UINode ("attributes", attr);
-	UINode* parent = getBaseNode ("Custom");
+	UINode* parent = getBaseNode ("custom");
 	parent->getChildren ().add (customNode);
 	return true;
 }
@@ -1396,6 +1411,54 @@ void UIAttributes::setAttribute (const char* name, const char* value)
 		erase (iter);
 	insert (std::make_pair (name, value));
 }
+
+//-----------------------------------------------------------------------------
+void UIAttributes::setRectAttribute (const char* name, const CRect& r)
+{
+	std::stringstream str;
+	str << r.left;
+	str << ", ";
+	str << r.top;
+	str << ", ";
+	str << r.right;
+	str << ", ";
+	str << r.bottom;
+	setAttribute (name, str.str ().c_str ());
+}
+
+//-----------------------------------------------------------------------------
+bool UIAttributes::getRectAttribute (const char* name, CRect& r) const
+{
+	const std::string* str = getAttributeValue (name);
+	if (str)
+	{
+		size_t start = 0;
+		size_t pos = str->find (",", start, 1);
+		if (pos != std::string::npos)
+		{
+			std::vector<std::string> subStrings;
+			while (pos != std::string::npos)
+			{
+				std::string name (*str, start, pos - start);
+				subStrings.push_back (name);
+				start = pos+1;
+				pos = str->find (",", start, 1);
+			}
+			std::string name (*str, start, std::string::npos);
+			subStrings.push_back (name);
+			if (subStrings.size () == 4)
+			{
+				r.left = strtod (subStrings[0].c_str (), 0);
+				r.top = strtod (subStrings[1].c_str (), 0);
+				r.right = strtod (subStrings[2].c_str (), 0);
+				r.bottom = strtod (subStrings[3].c_str (), 0);
+				return true;
+			}
+		}
+	}
+	return false;
+}
+
 
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------

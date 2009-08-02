@@ -7,10 +7,10 @@
 		- Point attributes should be editable as points not as string
 		- A lasso selection would also be nice
 		- delete templates
-		- move views out of parents
+		- move views out of parents action
 		
 	UIDescription todo:
-		- CTabView support
+		- CTabView support (skipped, CViewSwitchContainer is the replacement)
 
 	Platform support:
 		- complete Win32 support

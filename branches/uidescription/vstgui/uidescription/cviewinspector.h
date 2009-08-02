@@ -37,6 +37,7 @@ public:
 	void setUIDescription (UIDescription* desc);
 
 	void valueChanged (CControl* pControl);
+	void beforeSave ();
 	CMessageResult notify (CBaseObject* sender, const char* message);
 protected:
 	CView* createAttributesView (CCoord width);

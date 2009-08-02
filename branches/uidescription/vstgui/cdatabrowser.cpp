@@ -52,14 +52,15 @@ public:
 	CMouseEventResult onMouseDown (CPoint &where, const long& buttons);
 	CMouseEventResult onMouseMoved (CPoint &where, const long& buttons);
 	CMouseEventResult onMouseUp (CPoint &where, const long& buttons);
-
+	CMouseEventResult onMouseExited (CPoint &where, const long& buttons);
+	
 	long onKeyDown (VstKeyCode& keyCode);
 
 	CRect getRowBounds (long row);
 	void invalidateRow (long row);
 
-protected:
 	bool getCell (CPoint& where, long& row, long& column);
+protected:
 
 	IDataBrowser* db;
 	CDataBrowser* browser;
@@ -176,6 +177,16 @@ void CDataBrowser::valueChanged (CControl *pControl)
 				}
 				break;
 			}
+		}
+		CPoint where;
+		getFrame ()->getCurrentMouseLocation (where);
+		if (getFrame ()->getViewAt (where, true) == dbView)
+		{
+			long row = -1;
+			long column = -1;
+			dbView->frameToLocal (where);
+			dbView->getCell (where, row, column);
+			db->dbOnMouseMoved (where, getFrame ()->getCurrentMouseButtons (), row, column, this);
 		}
 	}
 }
@@ -728,6 +739,12 @@ CMouseEventResult CDataBrowserView::onMouseUp (CPoint &where, const long& button
 		return db->dbOnMouseUp (where, buttons, rowNum, colNum, browser);
 	}
 	return kMouseEventNotHandled;
+}
+
+//-----------------------------------------------------------------------------------------------
+CMouseEventResult CDataBrowserView::onMouseExited (CPoint &where, const long& buttons)
+{
+	return db->dbOnMouseMoved (where, buttons, -1, -1, browser);
 }
 
 //-----------------------------------------------------------------------------------------------

@@ -981,6 +981,8 @@ void CEditFrame::showOptionsMenu (const CPoint& where)
 						const char* filename = fileSelector->getSelectedFile (0);
 						savePath = filename;
 						uiDescription->updateViewDescription (templateName.c_str (), getView (0));
+						if (inspector)
+							inspector->beforeSave ();
 						storeAttributes ();
 						uiDescription->save (filename);
 					}
@@ -1154,6 +1156,20 @@ CMessageResult CEditFrame::notify (CBaseObject* sender, const char* message)
 			hierarchyBrowser = 0;
 		}
 		return kMessageNotified;
+	}
+	else if (message == kMsgViewSizeChanged)
+	{
+		if (sender == getView (0))
+		{
+			CView* view = getView (0);
+			CRect viewSize = view->getViewSize ();
+			setSize (viewSize.getWidth (), viewSize.getHeight ());
+			CBaseObject* editorObj = dynamic_cast<CBaseObject*> (pEditor);
+			if (editorObj)
+			{
+				editorObj->notify (this, kMsgViewSizeChanged);
+			}
+		}
 	}
 	return CFrame::notify (sender, message);
 }

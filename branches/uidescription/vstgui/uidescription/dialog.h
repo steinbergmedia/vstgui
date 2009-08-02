@@ -27,7 +27,7 @@ public:
 		kOkButton = 1
 	};
 
-	static bool runViewModal (const CPoint& position, CView* view, long style = kOkButton, const char* title = 0);
+	static bool runViewModal (CPoint& position, CView* view, long style = kOkButton, const char* title = 0);
 
 protected:
 	Dialog (const CPoint& position, CView* rootView, long style = kOkButton, const char* title = 0);

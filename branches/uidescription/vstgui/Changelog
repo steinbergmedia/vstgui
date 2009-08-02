@@ -1,3 +1,10 @@
+2009-07-02 arne
+
+	* added numSubPixmaps to IMultiBitmapControl and removed it from its subclasses.
+	* fixed an issue with CDataBrowser where the mouse moved method of the delegate was not called when the scroll view was scrolled via the mouse wheel
+	* added kMsgViewSizeChanged message which is send from a view to its parent when the size changed.
+	* added CFrame accessor method to VSTGUIEditorInterface
+	
 2009-06-14 arne
 
 	* changed focus and popup handling of COptionMenu. When the menu takes focus it doesn't popup anymore. This way you can build

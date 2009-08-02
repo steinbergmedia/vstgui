@@ -11,6 +11,7 @@
 
 #include "viewhierarchybrowser.h"
 #include "viewfactory.h"
+#include "viewcreator.h"
 #include "ceditframe.h"
 #include "../cdatabrowser.h"
 #include "../vstkeycode.h"
@@ -627,6 +628,7 @@ ViewHierarchyBrowserWindow::ViewHierarchyBrowserWindow (CViewContainer* baseView
 : owner (owner)
 , platformWindow (0)
 , browser (0)
+, description (description)
 {
 	CRect size (0, 0, 300, 500);
 	platformWindow = PlatformWindow::create (size, "VSTGUI Hierarchy Browser", PlatformWindow::kPanelType, PlatformWindow::kClosable|PlatformWindow::kResizable, this);
@@ -651,8 +653,13 @@ ViewHierarchyBrowserWindow::ViewHierarchyBrowserWindow (CViewContainer* baseView
 		frame->addView (browser);
 
 		platformWindow->center ();
-		if (PlatformDefaults::getRect ("net.sourceforge.vstgui.uidescription", "ViewHierarchyBrowserWindow size", size))
-			platformWindow->setSize (size);
+		UIAttributes* customAttributes = description->getCustomAttributes ("ViewHierarchyBrowser");
+		if (customAttributes)
+		{
+			CRect windowSize;
+			if (customAttributes->getRectAttribute ("windowSize", windowSize))
+				platformWindow->setSize (windowSize);
+		}
 		platformWindow->show ();
 	}
 }
@@ -690,7 +697,12 @@ void ViewHierarchyBrowserWindow::windowClosed (PlatformWindow* _platformWindow)
 {
 	if (_platformWindow == platformWindow)
 	{
-		PlatformDefaults::setRect ("net.sourceforge.vstgui.uidescription", "ViewHierarchyBrowserWindow size", platformWindow->getSize ());
+		UIAttributes* customAttributes = description->getCustomAttributes ("ViewHierarchyBrowser");
+		if (!customAttributes)
+			customAttributes = new UIAttributes;
+		CRect windowSize (platformWindow->getSize ());
+		customAttributes->setRectAttribute ("windowSize", windowSize);
+		description->setCustomAttributes ("ViewHierarchyBrowser", customAttributes);
 		platformWindow->forget ();
 		platformWindow = 0;
 	}

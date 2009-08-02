@@ -3070,6 +3070,7 @@ const char* kMsgCheckIfViewContainer	= "kMsgCheckIfViewContainer";
 const char* kMsgLooseFocus = "LooseFocus";
 const char* kMsgNewFocusView = "kMsgNewFocusView";
 const char* kMsgOldFocusView = "kMsgOldFocusView";
+const char* kMsgViewSizeChanged = "kMsgViewSizeChanged";
 //-----------------------------------------------------------------------------
 // CView
 //-----------------------------------------------------------------------------
@@ -3380,6 +3381,8 @@ void CView::setViewSize (CRect &newSize, bool invalid)
 	size = newSize;
 	if (invalid)
 		setDirty ();
+	if (getParentView ())
+		getParentView ()->notify (this, kMsgViewSizeChanged);
 }
 
 //------------------------------------------------------------------------------

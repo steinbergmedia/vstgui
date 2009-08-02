@@ -135,6 +135,7 @@ public:
 	virtual void beginEdit (long index) {}
 	virtual void endEdit (long index) {}
 
+	virtual CFrame* getFrame () const { return frame; }
 protected:
 	VSTGUIEditorInterface () : frame (0) {}
 	virtual ~VSTGUIEditorInterface () {}
@@ -1246,6 +1247,7 @@ extern const char* kMsgCheckIfViewContainer;	///< Message to check if View is a 
 extern const char* kMsgLooseFocus;				///< Message of a view loosing focus (only CTextEdit and COptionMenu send this yet)
 extern const char* kMsgNewFocusView;			///< Message send to all parents of the new focus view
 extern const char* kMsgOldFocusView;			///< Message send to all parents of the old focus view
+extern const char* kMsgViewSizeChanged;			///< Message send to parent that the size of the view has changed
 
 //-----------------------------------------------------------------------------
 // CViewContainer Declaration

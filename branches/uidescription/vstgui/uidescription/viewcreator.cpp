@@ -1504,16 +1504,24 @@ public:
 		{
 			multiBitmapControl->autoComputeHeightOfOneImage ();
 		}
+		const std::string* attr = attributes.getAttributeValue ("sub-pixmaps");
+		if (attr)
+		{
+			long value = strtol (attr->c_str (), 0, 10);
+			multiBitmapControl->setNumSubPixmaps (value);
+		}
 		return true;
 	}
 	bool getAttributeNames (std::list<std::string>& attributeNames) const
 	{
 		attributeNames.push_back ("height-of-one-image");
+		attributeNames.push_back ("sub-pixmaps");
 		return true;
 	}
 	AttrType getAttributeType (const std::string& attributeName) const
 	{
 		if (attributeName == "height-of-one-image") return kIntegerType;
+		if (attributeName == "sub-pixmaps") return kIntegerType;
 		return kUnknownType;
 	}
 	bool getAttributeValue (CView* view, const std::string& attributeName, std::string& stringValue, IUIDescription* desc) const
@@ -1526,6 +1534,13 @@ public:
 		{
 			std::stringstream stream;
 			stream << multiBitmapControl->getHeightOfOneImage ();
+			stringValue = stream.str ();
+			return true;
+		}
+		if (attributeName == "sub-pixmaps")
+		{
+			std::stringstream stream;
+			stream << multiBitmapControl->getNumSubPixmaps ();
 			stringValue = stream.str ();
 			return true;
 		}

@@ -298,7 +298,7 @@ static bool stringCompare (const std::string* lhs, const std::string* rhs)
 class BrowserDelegateBase : public CBaseObject, public IDataBrowser
 {
 public:
-	BrowserDelegateBase (UIDescription* desc, IActionOperator* actionOperator) : desc (desc), actionOperator (actionOperator) {}
+	BrowserDelegateBase (UIDescription* desc, IActionOperator* actionOperator) : desc (desc), actionOperator (actionOperator), mouseRow (-1) {}
 	
 	virtual void getNames (std::list<const std::string*>& _names) = 0;
 
@@ -394,7 +394,7 @@ public:
 			trans.offset = r.getTopLeft ();
 			trans.scaleX = r.getWidth ();
 			trans.scaleY = r.getHeight ();
-			context->setFrameColor (kGreyCColor);
+			context->setFrameColor (mouseRow == row ? kRedCColor : kGreyCColor);
 			context->setLineWidth (1.5);
 			context->setDrawMode (kAntialias);
 			path.draw (context, CGraphicsPath::kStroked, &trans);
@@ -457,7 +457,26 @@ public:
 			if (getCellText (row, column, str, browser))
 				browser->beginTextEdit (row, column, str.c_str ());
 		}
-		return kMouseDownEventHandledButDontNeedMovedOrUpEvents;
+		return kMouseEventHandled;
+	}
+
+	CMouseEventResult dbOnMouseMoved (const CPoint& where, const long& buttons, long row, long column, CDataBrowser* browser)
+	{
+		if (column == dbGetNumColumns (browser)-1)
+		{
+			if (mouseRow != row)
+			{
+				browser->invalidateRow (mouseRow);
+				mouseRow = row;
+				browser->invalidateRow (mouseRow);
+			}
+		}
+		else if (mouseRow != -1)
+		{
+			browser->invalidateRow (mouseRow);
+			mouseRow = -1;
+		}
+		return kMouseEventHandled;
 	}
 
 	virtual bool startEditing (long row, CDataBrowser* browser)
@@ -496,6 +515,7 @@ protected:
 	UIDescription* desc;
 	IActionOperator* actionOperator;
 	std::vector<const std::string*> names;
+	long mouseRow;
 };
 
 //-----------------------------------------------------------------------------
@@ -1108,14 +1128,14 @@ CViewInspector::CViewInspector (CSelection* selection, IActionOperator* actionOp
 	selection->remember ();
 	selection->addDependent (this);
 
-	PlatformDefaults::getRect ("net.sourceforge.vstgui.uidescription", "CViewInspector size", windowSize);
+//	PlatformDefaults::getRect ("net.sourceforge.vstgui.uidescription", "CViewInspector size", windowSize);
 }
 
 //-----------------------------------------------------------------------------
 CViewInspector::~CViewInspector ()
 {
 	hide ();
-	PlatformDefaults::setRect ("net.sourceforge.vstgui.uidescription", "CViewInspector size", windowSize);
+//	PlatformDefaults::setRect ("net.sourceforge.vstgui.uidescription", "CViewInspector size", windowSize);
 	setUIDescription (0);
 	selection->removeDependent (this);
 	selection->forget ();
@@ -1127,10 +1147,17 @@ void CViewInspector::setUIDescription (UIDescription* desc)
 	if (description != desc)
 	{
 		if (description)
+		{
 			description->forget ();
+		}
 		description = desc;
 		if (description)
+		{
+			UIAttributes* attr = description->getCustomAttributes ("CViewInspector");
+			if (attr)
+				attr->getRectAttribute ("windowSize", windowSize);
 			description->remember ();
+		}
 	}
 }
 
@@ -1504,15 +1531,30 @@ void CViewInspector::show ()
 }
 
 //-----------------------------------------------------------------------------
+void CViewInspector::beforeSave ()
+{
+	if (platformWindow)
+		windowSize = platformWindow->getSize ();
+	if (description)
+	{
+		UIAttributes* attr = description->getCustomAttributes ("CViewInspector");
+		if (!attr)
+			attr = new UIAttributes;
+		attr->setRectAttribute ("windowSize", windowSize);
+		description->setCustomAttributes ("CViewInspector", attr);
+	}
+}
+
+//-----------------------------------------------------------------------------
 void CViewInspector::hide ()
 {
 	if (platformWindow)
 	{
+		beforeSave ();
 		attributeViews.clear ();
 		frame->forget ();
 		frame = 0;
 		scrollView = 0;
-		windowSize = platformWindow->getSize ();
 		platformWindow->forget ();
 		platformWindow = 0;
 	}

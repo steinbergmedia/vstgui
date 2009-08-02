@@ -15,7 +15,7 @@
 BEGIN_NAMESPACE_VSTGUI
 
 //-----------------------------------------------------------------------------
-bool Dialog::runViewModal (const CPoint& position, CView* view, long style, const char* title)
+bool Dialog::runViewModal (CPoint& position, CView* view, long style, const char* title)
 {
 	Dialog dialog (position, view, style, title);
 	return dialog.run ();
@@ -103,6 +103,8 @@ Dialog::Dialog (const CPoint& position, CView* rootView, long style, const char*
 	platformWindow = PlatformWindow::create (size, title, PlatformWindow::kWindowType, 0, 0);
 	if (platformWindow)
 	{
+		if (position.x == -1 && position.y == -1)
+			platformWindow->center ();
 		size.offset (position.x, position.y);
 		#if MAC && !__LP64__
 		CFrame::setCocoaMode (true);
@@ -155,8 +157,6 @@ bool Dialog::run ()
 {
 	if (platformWindow)
 	{
-		if (platformWindow->getSize ().left == 0 && platformWindow->getSize ().top == 0)
-			platformWindow->center ();
 		platformWindow->show ();
 		frame->advanceNextFocusView (0, false);
 		platformWindow->runModal ();
