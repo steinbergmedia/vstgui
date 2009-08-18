@@ -1,4 +1,5 @@
 #include "platformsupport.h"
+#include <wingdi.h>
 
 static TCHAR   gClassName[100];
 extern void* hInstance;
@@ -84,7 +85,7 @@ void Win32Window::getWindowFlags (DWORD& wStyle, DWORD& exStyle)
 	wStyle = WS_CAPTION|WS_CLIPCHILDREN;
 	if (type == kPanelType)
 	{
-		exStyle |= WS_EX_PALETTEWINDOW;
+		exStyle |= WS_EX_TOOLWINDOW;//WS_EX_PALETTEWINDOW;
 		//wStyle |= WS_OVERLAPPED;
 	}
 	if (styleFlags & kClosable)
@@ -258,12 +259,29 @@ bool PlatformUtilities::collectPlatformFontNames (std::list<std::string*>& fontN
 //-----------------------------------------------------------------------------
 bool PlatformUtilities::startDrag (CFrame* frame, const CPoint& location, const char* string, CBitmap* dragBitmap, bool localOnly)
 {
+	// TODO: Windows start drag support
 	return false;
 }
 
 //-----------------------------------------------------------------------------
 void PlatformUtilities::colorChooser (const CColor* oldColor, IPlatformColorChangeCallback* callback)
 {
+	if (oldColor)
+	{
+		// TODO: Windows Colorchooser support (this implementation lacks alpha color support
+		static COLORREF acrCustClr[16];
+		CHOOSECOLOR cc = {0};
+		cc.lStructSize = sizeof (CHOOSECOLOR);
+		cc.Flags = CC_FULLOPEN|CC_ANYCOLOR|CC_RGBINIT;
+		cc.lpCustColors = (LPDWORD) acrCustClr;
+		cc.rgbResult = RGB(oldColor->red, oldColor->blue, oldColor->green);
+		if (ChooseColor (&cc))
+		{
+			CColor color = MakeCColor (GetRValue (cc.rgbResult), GetGValue (cc.rgbResult), GetBValue (cc.rgbResult));
+			callback->colorChanged (color);
+		}
+	}
+
 }
 
 END_NAMESPACE_VSTGUI

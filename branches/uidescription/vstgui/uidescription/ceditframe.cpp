@@ -875,14 +875,19 @@ void CEditFrame::showOptionsMenu (const CPoint& where)
 					it++;
 				}
 				menu->addEntry (viewMenu, "Insert Subview");
-				COptionMenu* embedViewMenu = new COptionMenu ();
-				viewNames.clear ();
-				viewFactory->collectRegisteredViewNames (viewNames, "CViewContainer");
-				it = viewNames.begin ();
-				while (it != viewNames.end ())
+				if (selection->total () > 0 && !selection->contains (getView (0)))
 				{
-					embedViewMenu->addEntry (new CMenuItem ((*it)->c_str (), kEmbedViewTag));
-					it++;
+					COptionMenu* embedViewMenu = new COptionMenu ();
+					viewNames.clear ();
+					viewFactory->collectRegisteredViewNames (viewNames, "CViewContainer");
+					it = viewNames.begin ();
+					while (it != viewNames.end ())
+					{
+						embedViewMenu->addEntry (new CMenuItem ((*it)->c_str (), kEmbedViewTag));
+						it++;
+					}
+					menu->addEntry (embedViewMenu, "Embed Into ...");
+					embedViewMenu->forget ();
 				}
 
 				std::list<const std::string*> templateNames;
@@ -901,13 +906,10 @@ void CEditFrame::showOptionsMenu (const CPoint& where)
 					menu->addEntry (templateNameMenu, "Insert Template");
 					templateNameMenu->forget ();
 				}
-				if (selection->total () > 0)
-					menu->addEntry (embedViewMenu, "Embed Into ...");
 				if (selection->total () == 1 && selection->first () != getView (0))
 					menu->addEntry (transformViewMenu, "Transform View Type");
 				viewMenu->forget ();
 				transformViewMenu->forget ();
-				embedViewMenu->forget ();
 			}
 		}
 
@@ -1159,8 +1161,10 @@ CMessageResult CEditFrame::notify (CBaseObject* sender, const char* message)
 	}
 	else if (message == kMsgViewSizeChanged)
 	{
-		if (sender == getView (0))
+		static bool recursiveGuard = false;
+		if (!recursiveGuard && sender == getView (0))
 		{
+			recursiveGuard = true;
 			CView* view = getView (0);
 			CRect viewSize = view->getViewSize ();
 			setSize (viewSize.getWidth (), viewSize.getHeight ());
@@ -1169,6 +1173,7 @@ CMessageResult CEditFrame::notify (CBaseObject* sender, const char* message)
 			{
 				editorObj->notify (this, kMsgViewSizeChanged);
 			}
+			recursiveGuard = false;
 		}
 	}
 	return CFrame::notify (sender, message);
@@ -1741,7 +1746,7 @@ void CEditFrame::startDrag (CPoint& where)
 
 	// this is really bad, should be done with some kind of storing the CSelection object as string and later on recreating it from the string
 	char dragString[40] = {0};
-	sprintf (dragString, "CSelection: %d", selection);
+	sprintf (dragString, "CSelection: %p", selection);
 	PlatformUtilities::startDrag (this, where, dragString, bitmap);
 	if (bitmap)
 		bitmap->forget ();
@@ -1758,7 +1763,7 @@ static CSelection* getSelectionOutOfDrag (CDragContainer* drag)
 		if (strncmp (dragData, "CSelection: ", 12) == 0)
 		{
 			// as said above, really not a good practice
-			long ptr = strtol (dragData+12, 0, 10);
+			long ptr = strtol (dragData+12, 0, 16);
 			selection = (CSelection*)ptr;
 			selection->remember ();
 		}
