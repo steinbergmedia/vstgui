@@ -285,43 +285,6 @@ void CGraphicsPath::fillLinearGradient (CDrawContext* context, const CGradient& 
 }
 
 //-----------------------------------------------------------------------------
-void CGraphicsPath::fillRadialGradient (CDrawContext* context, const CGradient& gradient, const CPoint& startCenter, double startRadius, const CPoint& endCenter, double endRadius, bool evenOdd, CGraphicsTransformation* transformation)
-{
-	#if VSTGUI_USES_COREGRAPHICS
-	const CGGradient* cgGradient = dynamic_cast<const CGGradient*> (&gradient);
-	if (cgGradient == 0)
-		return;
-
-	CGContextRef cgContext = context->beginCGContext (true);
-	CGContextTranslateCTM (cgContext, context->offset.x, context->offset.y);
-
-	if (transformation)
-	{
-		CGAffineTransform transform = createCGAfflineTransform (*transformation);
-		CGMutablePathRef path = CGPathCreateMutable ();
-		CGPathAddPath (path, &transform, *platformPath);
-		CGContextAddPath (cgContext, path);
-		CFRelease (path);
-	}
-	else
-		CGContextAddPath (cgContext, *platformPath);
-
-	if (evenOdd)
-		CGContextEOClip (cgContext);
-	else
-		CGContextClip (cgContext);
-
-	CGContextDrawRadialGradient (cgContext, *cgGradient, CGPointMake (startCenter.x, startCenter.y), startRadius, CGPointMake (endCenter.x, endCenter.y), endRadius, 0);
-	
-	context->releaseCGContext (cgContext);
-
-	#elif GDIPLUS
-	// TODO: implementation
-
-	#endif
-}
-
-//-----------------------------------------------------------------------------
 void CGraphicsPath::closeSubpath ()
 {
 	#if VSTGUI_USES_COREGRAPHICS
@@ -505,7 +468,21 @@ void CGraphicsPath::addString (const char* utf8String, CFontRef font, const CPoi
 		CFRelease (utf8Str);
 	}
 	#elif GDIPLUS
-	// TODO: implementation
+
+	Gdiplus::Font* gdiFont = (Gdiplus::Font*)font->getPlatformFont ();
+	Gdiplus::FontFamily family;
+	gdiFont->GetFamily (&family);
+	INT fontStyle = 0;
+	if (font->getStyle () & kBoldFace)
+		fontStyle |= Gdiplus::FontStyleBold;
+	if (font->getStyle () & kItalicFace)
+		fontStyle |= Gdiplus::FontStyleItalic;
+	// kUnderlineFace is not supported on Mac OS X, so we neither support it with GDIPlus
+	//if (font->getStyle () & kUnderlineFace)
+	//	fontStyle |= Gdiplus::FontStyleUnderline;
+
+	UTF8StringHelper str (utf8String);
+	(*platformPath)->AddString (str, -1, &family, fontStyle, (Gdiplus::REAL)font->getSize (), Gdiplus::PointF ((Gdiplus::REAL)position.x, (Gdiplus::REAL)position.y - (Gdiplus::REAL)font->getSize ()), 0);
 
 	#endif
 }
@@ -673,4 +650,4 @@ CView* createCGraphicsPathTestView ()
 
 END_NAMESPACE_VSTGUI
 
-#endif // (VSTGUI_USES_COREGRAPHICS || GDIPLUS) && defined (VSTGUI_FLOAT_COORDINATES)
+#endif // VSTGUI_CGRAPHICSPATH_AVAILABLE

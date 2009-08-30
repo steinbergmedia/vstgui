@@ -1,3 +1,37 @@
+//-----------------------------------------------------------------------------
+// VST Plug-Ins SDK
+// VSTGUI: Graphical User Interface Framework not only for VST plugins : 
+//
+// Version 3.6
+//
+//-----------------------------------------------------------------------------
+// VSTGUI LICENSE
+// (c) 2009, Steinberg Media Technologies, All Rights Reserved
+//-----------------------------------------------------------------------------
+// Redistribution and use in source and binary forms, with or without modification,
+// are permitted provided that the following conditions are met:
+// 
+//   * Redistributions of source code must retain the above copyright notice, 
+//     this list of conditions and the following disclaimer.
+//   * Redistributions in binary form must reproduce the above copyright notice,
+//     this list of conditions and the following disclaimer in the documentation 
+//     and/or other materials provided with the distribution.
+//   * Neither the name of the Steinberg Media Technologies nor the names of its
+//     contributors may be used to endorse or promote products derived from this 
+//     software without specific prior written permission.
+// 
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+// ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED 
+// WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A  PARTICULAR PURPOSE ARE DISCLAIMED. 
+// IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, 
+// INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, 
+// BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, 
+// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF 
+// LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE 
+// OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE  OF THIS SOFTWARE, EVEN IF ADVISED
+// OF THE POSSIBILITY OF SUCH DAMAGE.
+//-----------------------------------------------------------------------------
+
 // VSTGUI UI Description Documentation
 
 /*
@@ -182,7 +216,7 @@ VSTGUI now supports easy and fast UI creation for VST3 plug-ins.
 
 @section vst3_setup Setup
 
-First you need to add all the files from the uidescription subfolder to your project and define a preprocessor definition for VSTGUI_LIVE_EDITING=1.
+First you need to add all the files from the uidescription subfolder to your project and define a preprocessor definition for VSTGUI_LIVE_EDITING=1 and VSTGUI_FLOAT_COORDINATES=1.
 Then you have to modify your edit controller class to create a VST3Editor instance when asked to create it's view :
 @code
 IPlugView* PLUGIN_API MyEditController::createView (const char* name)
@@ -207,6 +241,20 @@ On Mac OS X you just add the uidesc file to your resources so that it is placed 
 
 Next you can build your plug-in and start your VST3 host and open an instance of your plug-in. If you open the editor you will see that
 an empty black editor was automatically constructed. You can now make a right click on your editor and enable inline editing.
+
+@section vst3_misc Misc
+
+If you have enabled editing, a new window will open, where you can define tags, colors, fonts, bitmaps and edit view attributes.
+
+To add new views just open the context menu (via right click) in your editor and choose the view type in the "Insert Subview" submenu.
+
+You have automatic VST3 parameter support if you use the Parameter class in your edit controller. This way you just have to
+define a tag in the "VSTGUI Inspector" window with the same value as the VST3 parameter ID. Now you can set any VSTGUI control's tag
+to this tag and it will automatically be synced with the VST3 parameter.
+
+If you need to create custom views, you can implement the IVST3CustomViewCreator interface in your edit controller class.
+The createCustomView method will be called if you set the 'custom-view-name' attribute in one of the views.
+
 @endpage
 
 */

@@ -85,7 +85,7 @@ public:
 	//@}
 
 	//-----------------------------------------------------------------------------
-	/// @name Constructing
+	/// @name Adding Elements
 	//-----------------------------------------------------------------------------
 	//@{
 	void addArc (const CRect& rect, double startAngle, double endAngle);
@@ -111,7 +111,6 @@ public:
 
 	void draw (CDrawContext* context, PathDrawMode mode = kFilled, CGraphicsTransformation* transformation = 0);
 	void fillLinearGradient (CDrawContext* context, const CGradient& gradient, const CPoint& color1StartPoint, const CPoint& color2StartPoint, bool evenOdd = false, CGraphicsTransformation* transformation = 0);
-	void fillRadialGradient (CDrawContext* context, const CGradient& gradient, const CPoint& startCenter, double startRadius, const CPoint& endCenter, double endRadius, bool evenOdd = false, CGraphicsTransformation* transformation = 0);
 	//@}
 	
 	//-----------------------------------------------------------------------------
@@ -178,6 +177,6 @@ extern CView* createCGraphicsPathTestView ();
 
 END_NAMESPACE_VSTGUI
 
-#endif // (VSTGUI_USES_COREGRAPHICS || GDIPLUS) && defined (VSTGUI_FLOAT_COORDINATES)
+#endif // VSTGUI_CGRAPHICSPATH_AVAILABLE
 
 #endif
