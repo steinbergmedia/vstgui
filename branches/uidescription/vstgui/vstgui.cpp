@@ -2,11 +2,11 @@
 // VST Plug-Ins SDK
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 //
-// Version 3.6
+// Version 4.0
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
-// (c) 2008, Steinberg Media Technologies, All Rights Reserved
+// (c) 2009, Steinberg Media Technologies, All Rights Reserved
 //-----------------------------------------------------------------------------
 // Redistribution and use in source and binary forms, with or without modification,
 // are permitted provided that the following conditions are met:
@@ -32,9 +32,8 @@
 // OF THE POSSIBILITY OF SUCH DAMAGE.
 //-----------------------------------------------------------------------------
 
-#ifndef __vstgui__
 #include "vstgui.h"
-#endif
+#include "cfont.h"
 
 #if ENABLE_VST_EXTENSION_IN_VSTGUI
 #include "audioeffectx.h"
@@ -168,15 +167,6 @@ static void   DrawTransparent (CDrawContext* pContext, CRect& rect, const CPoint
 static bool   checkResolveLink (const TCHAR* nativePath, TCHAR* resolved);
 static void   *createDropTarget (VSTGUI_CFrame* pFrame);
 
-static CFontDesc gSystemFont ("Arial", 12);
-static CFontDesc gNormalFontVeryBig ("Arial", 18);
-static CFontDesc gNormalFontBig ("Arial", 14);
-static CFontDesc gNormalFont ("Arial", 12);
-static CFontDesc gNormalFontSmall ("Arial", 11);
-static CFontDesc gNormalFontSmaller ("Arial", 10);
-static CFontDesc gNormalFontVerySmall ("Arial", 9);
-static CFontDesc gSymbolFont ("Symbol", 13);
-
 END_NAMESPACE_VSTGUI
 
 #if USE_LIBPNG
@@ -242,15 +232,6 @@ typedef float CGFloat;
 #ifndef VSTGUI_NEW_BUNDLE_REF_DEFINITION	// You can define this in your preprocessor definitions and supply the following function somewhere in your code
 	CFBundleRef getBundleRef () { return (CFBundleRef)gBundleRef; }
 #endif
-
-static CFontDesc gSystemFont ("Lucida Grande", 12);
-static CFontDesc gNormalFontVeryBig ("Helvetica", 18);
-static CFontDesc gNormalFontBig ("Helvetica", 14);
-static CFontDesc gNormalFont ("Helvetica", 12);
-static CFontDesc gNormalFontSmall ("Helvetica", 11);
-static CFontDesc gNormalFontSmaller ("Helvetica", 10);
-static CFontDesc gNormalFontVerySmall ("Helvetica", 9);
-static CFontDesc gSymbolFont ("Helvetica", 12);
 
 #ifndef M_PI
 #define	M_PI		3.14159265358979323846	/* pi */
@@ -457,284 +438,6 @@ const char* kPerthousandSymbol	= "\xE2\x80\xB0";
 
 #define kDragDelay 0
 
-const CFontRef kSystemFont				= &gSystemFont;
-const CFontRef kNormalFontVeryBig		= &gNormalFontVeryBig;
-const CFontRef kNormalFontBig			= &gNormalFontBig;
-const CFontRef kNormalFont				= &gNormalFont;
-const CFontRef kNormalFontSmall			= &gNormalFontSmall;
-const CFontRef kNormalFontSmaller		= &gNormalFontSmaller;
-const CFontRef kNormalFontVerySmall		= &gNormalFontVerySmall;
-const CFontRef kSymbolFont				= &gSymbolFont;
-
-//-----------------------------------------------------------------------------
-// CFontDesc Implementation
-/*! @class CFontDesc
-The CFontDesc class replaces the old font handling. You have now the possibilty to use whatever font you like
-as long as it is available on the system. You should cache your own CFontDesc as this speeds up drawing on some systems.
-*/
-//-----------------------------------------------------------------------------
-CFontDesc::CFontDesc (const char* inName, const CCoord& inSize, const long inStyle)
-: name (0)
-, size (inSize)
-, style (inStyle)
-, platformFont (0)
-{
-	setName (inName);
-}
-
-//-----------------------------------------------------------------------------
-CFontDesc::CFontDesc (const CFontDesc& font)
-: name (0)
-, size (0)
-, style (0)
-, platformFont (0)
-{
-	*this = font;
-}
-
-//-----------------------------------------------------------------------------
-CFontDesc::~CFontDesc ()
-{
-	freePlatformFont ();
-	setName (0);
-}
-
-//-----------------------------------------------------------------------------
-void CFontDesc::freePlatformFont ()
-{
-	if (platformFont)
-	{
-		#if (MAC && !VSTGUI_USES_CORE_TEXT)
-		ATSUDisposeStyle ((ATSUStyle)platformFont);
-
-		#elif (MAC && VSTGUI_USES_CORE_TEXT)
-		CFRelease (platformFont);
-		
-		#elif GDIPLUS
-		delete (Gdiplus::Font*)platformFont;
-
-		#elif WINDOWS
-		DeleteObject ((HANDLE)platformFont);
-
-		#endif
-		platformFont = 0;
-	}
-}
-
-//-----------------------------------------------------------------------------
-void CFontDesc::setName (const char* newName)
-{
-	if (newName && name && !strcmp (newName, name))
-		return;
-
-	if (name)
-		free (name);
-	name = 0;
-	if (newName)
-	{
-		name = (char*)malloc (strlen (newName) + 1);
-		strcpy (name, newName);
-	}
-	freePlatformFont ();
-}
-
-//-----------------------------------------------------------------------------
-void CFontDesc::setSize (CCoord newSize)
-{
-	size = newSize;
-	freePlatformFont ();
-}
-
-//-----------------------------------------------------------------------------
-void CFontDesc::setStyle (long newStyle)
-{
-	style = newStyle;
-	freePlatformFont ();
-}
-
-//-----------------------------------------------------------------------------
-CFontDesc& CFontDesc::operator = (const CFontDesc& f)
-{
-	setName (f.getName ());
-	setSize (f.getSize ());
-	setStyle (f.getStyle ());
-	return *this;
-}
-
-//-----------------------------------------------------------------------------
-bool CFontDesc::operator == (const CFontDesc& f) const
-{
-	if (strcmp (name, f.getName ()))
-		return false;
-	if (size != f.getSize ())
-		return false;
-	if (style != f.getStyle ())
-		return false;
-	return true;
-}
-
-//-----------------------------------------------------------------------------
-void* CFontDesc::getPlatformFont ()
-{
-	if (platformFont)
-		return platformFont;
-
-	#if (MAC && !VSTGUI_USES_CORE_TEXT)
-	ATSUStyle atsuStyle;
-	OSStatus status = ATSUCreateStyle (&atsuStyle);
-	if (status != noErr)
-		return 0;
-
-	ATSUFontID atsuFontID;
-	status = ATSUFindFontFromName (name, strlen (name), kFontFullName, kFontNoPlatformCode, kFontNoScriptCode, kFontNoLanguageCode, &atsuFontID);
-	if (status != noErr)
-		status = ATSUFindFontFromName (name, strlen (name), kFontFamilyName, kFontNoPlatformCode, kFontNoScriptCode, kFontNoLanguageCode, &atsuFontID);
-	if (status == noErr)
-	{
-		Fixed atsuSize = FloatToFixed ((float)size);
-		Boolean italic = style & kItalicFace;
-		Boolean underline = style & kUnderlineFace;
-		Boolean bold = style & kBoldFace;
-		ATSUAttributeTag  theTags[] =  { kATSUFontTag, kATSUSizeTag, kATSUQDItalicTag, kATSUQDUnderlineTag, kATSUQDBoldfaceTag};
-		ByteCount        theSizes[] = { sizeof(ATSUFontID), sizeof(Fixed), sizeof (Boolean), sizeof (Boolean), sizeof (Boolean) };
-		ATSUAttributeValuePtr theValues[] = {&atsuFontID, &atsuSize, &italic, &underline, &bold};
-		status = ATSUSetAttributes (atsuStyle, 5, theTags, theSizes, theValues);
-		platformFont = (void*)atsuStyle;
-	}
-	#elif (MAC && VSTGUI_USES_CORE_TEXT)
-	CFStringRef fontNameRef = CFStringCreateWithCString (0, name, kCFStringEncodingUTF8);
-	if (fontNameRef)
-	{
-		platformFont = (void*)CTFontCreateWithName (fontNameRef, size, 0);
-		if (platformFont && (style & kBoldFace || style & kItalicFace))
-		{
-			CTFontSymbolicTraits desiredTrait = 0;
-			CTFontSymbolicTraits traitMask = 0;
-			if (style & kBoldFace)
-			{
-				desiredTrait |= kCTFontBoldTrait;
-				traitMask |= kCTFontBoldTrait;
-			}
-			if (style & kItalicFace)
-			{
-				desiredTrait |= kCTFontItalicTrait;
-				traitMask |= kCTFontItalicTrait;
-			}
-			CTFontRef fontRef = CTFontCreateCopyWithSymbolicTraits ((CTFontRef)platformFont, size, NULL, desiredTrait, traitMask);
-			if (!fontRef)
-			{
-				if (style & kBoldFace && style & ~kItalicFace)
-				{
-					CFStringRef boldFontNameRef = CFStringCreateWithFormat (0, 0, CFSTR("%s Bold"), name);
-					if (boldFontNameRef)
-					{
-						fontRef = CTFontCreateWithName (boldFontNameRef, size, 0);
-						CFRelease (boldFontNameRef);
-					}
-				}
-			}
-			if (fontRef)
-			{
-				CFRelease ((CTFontRef)platformFont);
-				platformFont = (void*)fontRef;
-			}
-		}
-		CFRelease (fontNameRef);
-	}
-	#elif GDIPLUS
-	int gdiStyle = Gdiplus::FontStyleRegular;
-	if (style & kBoldFace)
-		gdiStyle = Gdiplus::FontStyleBold;
-	if (style & kItalicFace)
-		gdiStyle = Gdiplus::FontStyleItalic;
-	if (style & kUnderlineFace)
-		gdiStyle = Gdiplus::FontStyleUnderline;
-
-	WCHAR tempName [200];
-	mbstowcs (tempName, name, 200);
-	platformFont = (void*)new Gdiplus::Font (tempName, (Gdiplus::REAL)size, gdiStyle, Gdiplus::UnitPixel);
-
-	#elif WINDOWS
-	LOGFONT logfont = {0};
-	if (style & kBoldFace)
-		logfont.lfWeight = FW_BOLD;
-	else
-		logfont.lfWeight = FW_NORMAL;
-	if (style & kItalicFace)
-		logfont.lfItalic = true;
-	if (style & kUnderlineFace)
-		logfont.lfUnderline = true;
-	
-	logfont.lfHeight         = -size;
-	logfont.lfPitchAndFamily = VARIABLE_PITCH | FF_SWISS;
-	strcpy (logfont.lfFaceName, name);
-
-	if (!strcmp (name, kSymbolFont->getName ()))
-		logfont.lfPitchAndFamily = DEFAULT_PITCH | FF_DECORATIVE;
-//	else if (!strcmp (name, kSystemFont->getName ()))
-//		logfont.lfWeight     = FW_BOLD;
-  
-	logfont.lfClipPrecision = CLIP_STROKE_PRECIS;
-	logfont.lfOutPrecision  = OUT_STRING_PRECIS;
-	logfont.lfQuality 	    = DEFAULT_QUALITY;
-	logfont.lfCharSet       = ANSI_CHARSET;
-
-	platformFont = (void*)CreateFontIndirect (&logfont);
-
-	#endif
-
-	return platformFont;
-}
-
-//-----------------------------------------------------------------------------
-double CFontDesc::getAscent ()
-{
-	#if VSTGUI_USES_CORE_TEXT
-	return CTFontGetAscent ((CTFontRef)getPlatformFont ());
-	#endif
-	return -1.;
-}
-
-//-----------------------------------------------------------------------------
-double CFontDesc::getDescent ()
-{
-	#if VSTGUI_USES_CORE_TEXT
-	return CTFontGetDescent ((CTFontRef)getPlatformFont ());
-	#endif
-	return -1.;
-}
-
-//-----------------------------------------------------------------------------
-double CFontDesc::getLeading ()
-{
-	#if VSTGUI_USES_CORE_TEXT
-	return CTFontGetLeading ((CTFontRef)getPlatformFont ());
-	#endif
-	return -1.;
-}
-
-//-----------------------------------------------------------------------------
-double CFontDesc::getCapHeight ()
-{
-	#if VSTGUI_USES_CORE_TEXT
-	return CTFontGetCapHeight ((CTFontRef)getPlatformFont ());
-	#endif
-	return -1.;
-}
-
-//-----------------------------------------------------------------------------
-void CFontDesc::cleanup ()
-{
-	gSystemFont.freePlatformFont ();
-	gNormalFontVeryBig.freePlatformFont ();
-	gNormalFontBig.freePlatformFont ();
-	gNormalFont.freePlatformFont ();
-	gNormalFontSmall.freePlatformFont ();
-	gNormalFontSmaller.freePlatformFont ();
-	gNormalFontVerySmall.freePlatformFont ();
-	gSymbolFont.freePlatformFont ();
-}
-
 //-----------------------------------------------------------------------------
 // CDrawContext Implementation
 //-----------------------------------------------------------------------------
@@ -752,6 +455,7 @@ CDrawContext::CDrawContext (CFrame* inFrame, void* inSystemContext, void* inWind
 , frameWidth (0)
 , lineStyle (kLineOnOffDash)
 , drawMode (kAntialias)
+, globalAlpha (1.f)
 #if WINDOWS
 	#if GDIPLUS
 	, pGraphics (0)
@@ -957,6 +661,32 @@ CDrawContext::~CDrawContext ()
 		#endif
 	}
 #endif
+}
+
+//-----------------------------------------------------------------------------
+void CDrawContext::setGlobalAlpha (float newAlpha)
+{
+	if (newAlpha == globalAlpha)
+		return;
+
+#if WINDOWS && GDIPLUS
+	const CColor notInitalized = {0, 0, 0, 0};
+	CColor color (frameColor);
+	frameColor = notInitalized;
+	setFrameColor (color);
+	color = fillColor;
+	fillColor = notInitalized;
+	setFillColor (color);
+	color = fontColor;
+	fontColor = notInitalized;
+	setFontColor (fontColor);
+
+#elif VSTGUI_USES_COREGRAPHICS
+	if (gCGContext)
+		CGContextSetAlpha (gCGContext, newAlpha);
+
+#endif
+	globalAlpha = newAlpha;
 }
 
 //-----------------------------------------------------------------------------
@@ -1911,7 +1641,7 @@ void CDrawContext::setFontColor (const CColor color)
 #if WINDOWS
 	#if GDIPLUS
 	if (pFontBrush)
-		pFontBrush->SetColor (Gdiplus::Color (color.alpha, color.red, color.green, color.blue));
+		pFontBrush->SetColor (Gdiplus::Color ((float)color.alpha * globalAlpha, color.red, color.green, color.blue));
 	#else
 	SetTextColor ((HDC)pSystemContext, RGB (fontColor.red, fontColor.green, fontColor.blue));
 	#endif
@@ -1933,7 +1663,7 @@ void CDrawContext::setFrameColor (const CColor color)
 #if WINDOWS
 	#if GDIPLUS
 	if (pPen)
-		pPen->SetColor (Gdiplus::Color (color.alpha, color.red, color.green, color.blue));
+		pPen->SetColor (Gdiplus::Color ((float)color.alpha * globalAlpha, color.red, color.green, color.blue));
 	#else
 	LOGPEN logPen = {iPenStyle, {frameWidth, frameWidth}, 
 					 RGB (frameColor.red, frameColor.green, frameColor.blue)};
@@ -1963,7 +1693,7 @@ void CDrawContext::setFillColor (const CColor color)
 #if WINDOWS
 	#if GDIPLUS
 	if (pBrush)
-		pBrush->SetColor (Gdiplus::Color (color.alpha, color.red, color.green, color.blue));
+		pBrush->SetColor (Gdiplus::Color ((float)color.alpha * globalAlpha, color.red, color.green, color.blue));
 	#else
  	SetBkColor ((HDC)pSystemContext, RGB (color.red, color.green, color.blue));
 	LOGBRUSH logBrush = {BS_SOLID, RGB (color.red, color.green, color.blue), 0 };
@@ -1995,7 +1725,11 @@ void CDrawContext::setFont (const CFontRef newFont, const long& size, const long
 		font->forget ();
 	if ((size > 0 && newFont->getSize () != size) || (style != -1 && newFont->getStyle () != style))
 	{
-		font = new CFontDesc (newFont->getName (), (size > 0) ? size : newFont->getSize (), (style != -1) ? style : newFont->getStyle ());
+		font = (CFontRef)newFont->newCopy ();
+		if (size > 0)
+			font->setSize (size);
+		if (style != -1)
+			font->setStyle (style);
 	}
 	else
 	{
@@ -2007,21 +1741,7 @@ void CDrawContext::setFont (const CFontRef newFont, const long& size, const long
 //------------------------------------------------------------------------------
 CCoord CDrawContext::getStringWidth (const char* pStr)
 {
-#if VSTGUI_USES_COREGRAPHICS || GDIPLUS
 	return getStringWidthUTF8 (pStr);
-#else
-
-	CCoord result = 0;
-
-	#if WINDOWS
-	SIZE size;
-	GetTextExtentPoint32 ((HDC)pSystemContext, pStr, (int)strlen (pStr), &size);
-	result = (long)size.cx;
-
-	#endif
-
-	return result;
-#endif
 }
 
 //-----------------------------------------------------------------------------
@@ -2031,44 +1751,8 @@ void CDrawContext::drawString (const char* string, const CRect &_rect,
 	if (!string)
 		return;
 	
-#if VSTGUI_USES_COREGRAPHICS || GDIPLUS
 	drawStringUTF8 (string, _rect, hAlign);
-#else
 
-	CRect rect (_rect);
-	rect.offset (offset.h, offset.v);
-	
-	#if WINDOWS
-	HANDLE newFont = (HANDLE)font->getPlatformFont ();
-	if (newFont)
-	{
-		SelectObject ((HDC)pSystemContext, newFont);
-
-		// set the visibility mask
-		SetBkMode ((HDC)pSystemContext, opaque ? OPAQUE : TRANSPARENT);
-
-		RECT Rect = {rect.left, rect.top, rect.right, rect.bottom};
-		UINT flag = DT_VCENTER + DT_SINGLELINE + DT_NOPREFIX;
-		switch (hAlign)
-		{
-		case kCenterText:
-			// without DT_SINGLELINE no vertical center alignment here
-			DrawText ((HDC)pSystemContext, string, (int)strlen (string), &Rect, flag + DT_CENTER);
-			break;
-			
-		case kRightText:
-			DrawText ((HDC)pSystemContext, string, (int)strlen (string), &Rect, flag + DT_RIGHT);
-			break;
-			
-		default : // left adjust
-			Rect.left++;
-			DrawText ((HDC)pSystemContext, string, (int)strlen (string), &Rect, flag + DT_LEFT);
-		}
-
-		SetBkMode ((HDC)pSystemContext, TRANSPARENT);
-	}
-	#endif
-#endif
 }
 
 //-----------------------------------------------------------------------------
@@ -2078,87 +1762,10 @@ CCoord CDrawContext::getStringWidthUTF8 (const char* string)
 	if (font == 0 || string == 0)
 		return result;
 
-	#if VSTGUI_USES_COREGRAPHICS
-	#if VSTGUI_USES_CORE_TEXT
-	CTFontRef fontRef = (CTFontRef)font->getPlatformFont ();
-	if (fontRef == 0)
-		return result;
-	CFStringRef utf8Str = CFStringCreateWithCString (NULL, string, kCFStringEncodingUTF8);
-	if (utf8Str)
-	{
-		CFStringRef keys[] = { kCTFontAttributeName,  };
-		CFTypeRef values[] = { fontRef };
-		CFDictionaryRef attributes = CFDictionaryCreate(kCFAllocatorDefault, (const void**)&keys,(const void**)&values, sizeof(keys) / sizeof(keys[0]), &kCFTypeDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks);
-		CFAttributedStringRef attrStr = CFAttributedStringCreate (0, utf8Str, attributes);
-		CFRelease (attributes);
-		if (attrStr)
-		{
-			CTLineRef line = CTLineCreateWithAttributedString (attrStr);
-			if (line)
-			{
-				CGContextRef context = beginCGContext (false);
-				if (context)
-				{
-					result = floor (CTLineGetTypographicBounds (line, NULL, NULL, NULL) + 0.5);
-					releaseCGContext (context);
-				}
-				CFRelease (line);
-			}
-			CFRelease (attrStr);
-		}
-		CFRelease (utf8Str);
-	}
-	
-	#else
-	ATSUStyle atsuStyle = (ATSUStyle)font->getPlatformFont ();
-	if (atsuStyle == 0)
-		return result;
-	CFStringRef utf8Str = CFStringCreateWithCString (NULL, string, kCFStringEncodingUTF8);
-	if (utf8Str)
-	{
-		CGContextRef context = beginCGContext (false);
-		if (context)
-		{
-			OSStatus status;
-			CFIndex stringLength = CFStringGetLength (utf8Str);
-			UniChar* textBuffer = (UniChar*)malloc (stringLength*sizeof (UniChar));
-			CFStringGetCharacters (utf8Str, CFRangeMake (0, stringLength), textBuffer);
+	IFontPainter* painter = font->getFontPainter ();
+	if (painter)
+		result = painter->getStringWidth (this, string, true);
 
-			ATSUTextLayout textLayout;
-			status = ATSUCreateTextLayout (&textLayout);
-			status = ATSUSetTextPointerLocation (textLayout, textBuffer, kATSUFromTextBeginning, kATSUToTextEnd, stringLength);
-			status = ATSUSetRunStyle (textLayout, atsuStyle, kATSUFromTextBeginning, kATSUToTextEnd);
-			status = ATSUSetTransientFontMatching (textLayout, true);
-			
-			ATSUAttributeTag		theTags[]	= { kATSUCGContextTag };
-			ByteCount				theSizes[]	= { sizeof (CGContextRef) };
-			ATSUAttributeValuePtr	theValues[]	= { &context };
-			status = ATSUSetLayoutControls (textLayout, 1, theTags, theSizes, theValues);
-
-			ATSUTextMeasurement iBefore, iAfter, ascent, descent; 
-			status = ATSUGetUnjustifiedBounds (textLayout, 0, kATSUToTextEnd, &iBefore, &iAfter, &ascent, &descent);
-			result = Fix2X (iAfter);
-			
-			ATSUDisposeTextLayout (textLayout);
-			free (textBuffer);
-			
-			releaseCGContext (context);
-		}
-		CFRelease (utf8Str);
-	}
-	#endif
-	
-	#elif GDIPLUS
-	Gdiplus::Font* pFont = (Gdiplus::Font*)font->getPlatformFont ();
-	if (pGraphics && pFont)
-	{
-		UTF8StringHelper stringText (string);
-		Gdiplus::PointF gdiPoint (0., 0.);
-		Gdiplus::RectF resultRect;
-		pGraphics->MeasureString (stringText, -1, pFont, gdiPoint, &resultRect);
-		result = (CCoord)resultRect.Width;
-	}
-	#endif
 	return result;
 }
 
@@ -2171,109 +1778,10 @@ void CDrawContext::drawStringUTF8 (const char* string, const CPoint& _point, boo
 	CPoint point (_point);
 	point.offset (offset.h, offset.v);
 
-	#if VSTGUI_USES_COREGRAPHICS
-	#if VSTGUI_USES_CORE_TEXT
-	CTFontRef fontRef = (CTFontRef)font->getPlatformFont ();
-	if (fontRef == 0)
-		return;
-	CFStringRef utf8Str = CFStringCreateWithCString (NULL, string, kCFStringEncodingUTF8);
-	if (utf8Str)
-	{
-		CGColorRef cgColor = CGColorCreateGenericRGB (fontColor.red/255.f, fontColor.green/255.f, fontColor.blue/255.f, fontColor.alpha/255.f);
-		CFStringRef keys[] = { kCTFontAttributeName, kCTForegroundColorAttributeName };
-		CFTypeRef values[] = { fontRef, cgColor };
-		CFDictionaryRef attributes = CFDictionaryCreate (kCFAllocatorDefault, (const void**)&keys,(const void**)&values, sizeof(keys) / sizeof(keys[0]), &kCFTypeDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks);
-		CFAttributedStringRef attrStr = CFAttributedStringCreate (0, utf8Str, attributes);
-		CFRelease (attributes);
-		if (attrStr)
-		{
-			CTLineRef line = CTLineCreateWithAttributedString (attrStr);
-			if (line)
-			{
-				CGContextRef context = beginCGContext (true);
-				if (context)
-				{
-					CGContextSetShouldAntialias (context, antialias);
-					CGContextSetTextPosition (context, point.x, point.y);
-					CTLineDraw (line, context);
-					if (font->getStyle () & kUnderlineFace)
-					{
-						CGFloat underlineOffset = CTFontGetUnderlinePosition (fontRef);
-						CGFloat underlineThickness = CTFontGetUnderlineThickness (fontRef);
-						CGContextSetStrokeColorWithColor (context, cgColor);
-						CGContextSetLineWidth (context, underlineThickness);
-						CGPoint cgPoint = CGContextGetTextPosition (context);
-						CGContextBeginPath (context);
-						CGContextMoveToPoint (context, point.x, point.y - underlineOffset);
-						CGContextAddLineToPoint (context, cgPoint.x, point.y - underlineOffset);
-						CGContextDrawPath (context, kCGPathStroke);
-					}
-					releaseCGContext (context);
-				}
-				CFRelease (line);
-			}
-			CFRelease (attrStr);
-		}
-		CFRelease (cgColor);
-		CFRelease (utf8Str);
-	}
+	IFontPainter* painter = font->getFontPainter ();
+	if (painter)
+		painter->drawString (this, string, point, antialias);
 
-	#else
-	ATSUStyle atsuStyle = (ATSUStyle)font->getPlatformFont ();
-	if (atsuStyle == 0)
-		return;
-
-	CFStringRef utf8Str = CFStringCreateWithCString (NULL, string, kCFStringEncodingUTF8);
-	if (utf8Str)
-	{
-		CGContextRef context = beginCGContext (false);
-		if (context)
-		{
-			OSStatus status;
-			ATSURGBAlphaColor color = {fontColor.red/255.f, fontColor.green/255.f, fontColor.blue/255.f, fontColor.alpha/255.f};
-			ATSUAttributeTag  colorTag[] =  { kATSURGBAlphaColorTag };
-			ByteCount        colorSize[] = { sizeof(ATSURGBAlphaColor) };
-			ATSUAttributeValuePtr colorValue [] = { &color };
-			status = ATSUSetAttributes (atsuStyle, 1, colorTag, colorSize, colorValue);
-
-			CGContextSetShouldAntialias (context, antialias);
-
-			CFIndex stringLength = CFStringGetLength (utf8Str);
-			UniChar* textBuffer = (UniChar*)malloc (stringLength*sizeof (UniChar));
-			CFStringGetCharacters (utf8Str, CFRangeMake (0, stringLength), textBuffer);
-
-			ATSUTextLayout textLayout;
-			status = ATSUCreateTextLayout (&textLayout);
-			status = ATSUSetTextPointerLocation (textLayout, textBuffer, kATSUFromTextBeginning, kATSUToTextEnd, stringLength);
-			status = ATSUSetRunStyle (textLayout, atsuStyle, kATSUFromTextBeginning, kATSUToTextEnd);
-			status = ATSUSetTransientFontMatching (textLayout, true);
-			
-			ATSUAttributeTag		theTags[]	= { kATSUCGContextTag };
-			ByteCount				theSizes[]	= { sizeof (CGContextRef) };
-			ATSUAttributeValuePtr	theValues[]	= { &context };
-			status = ATSUSetLayoutControls (textLayout, 1, theTags, theSizes, theValues);
-
-			status = ATSUDrawText (textLayout, kATSUFromTextBeginning, kATSUToTextEnd, X2Fix(point.h), X2Fix(point.v*-1.f));
-			
-			ATSUDisposeTextLayout (textLayout);
-			free (textBuffer);
-			
-			releaseCGContext (context);
-		}
-		CFRelease (utf8Str);
-	}
-	#endif
-
-	#elif GDIPLUS
-	Gdiplus::Font* pFont = (Gdiplus::Font*)font->getPlatformFont ();
-	if (pGraphics && pFont && pFontBrush)
-	{
-		UTF8StringHelper stringText (string);
-		pGraphics->SetTextRenderingHint (antialias ? Gdiplus::TextRenderingHintClearTypeGridFit : Gdiplus::TextRenderingHintSystemDefault);
-		Gdiplus::PointF gdiPoint ((Gdiplus::REAL)point.x, (Gdiplus::REAL)point.y + 1.f - pFont->GetHeight (pGraphics->GetDpiY ()));
-		pGraphics->DrawString (stringText, -1, pFont, gdiPoint, pFontBrush);
-	}
-	#endif
 }
 
 //-----------------------------------------------------------------------------
@@ -2284,7 +1792,11 @@ void CDrawContext::drawStringUTF8 (const char* string, const CRect& _rect, const
 	
 	CRect rect (_rect);
 
-	double capHeight = font->getCapHeight ();
+	double capHeight = -1;
+	CPlatformFont* platformFont = font->getPlatformFont ();
+	if (platformFont)
+		capHeight = platformFont->getCapHeight ();
+	
 	if (capHeight > 0.)
 		rect.bottom -= (rect.height ()/2 - capHeight / 2);
 	else
@@ -5419,7 +4931,7 @@ CViewContainer::CViewContainer (const CViewContainer& v)
 {
 	for (long i = 0; i < v.getNbViews (); i++)
 	{
-		addView (v.getView (i)->newCopy ());
+		addView ((CView*)v.getView (i)->newCopy ());
 	}
 }
 
@@ -7580,7 +7092,7 @@ void CBitmap::draw (CDrawContext* pContext, CRect &rect, const CPoint &offset)
 {
 #if WINDOWS
 	#if GDIPLUS
-	drawAlphaBlend (pContext, rect, offset, 255);
+	drawAlphaBlend (pContext, rect, offset, 255.f * pContext->getGlobalAlpha ());
 	#else
 	#if USE_ALPHA_BLEND
 	if (!noAlpha)
@@ -7614,7 +7126,7 @@ void CBitmap::drawTransparent (CDrawContext* pContext, CRect &rect, const CPoint
 {
 #if WINDOWS
 	#if GDIPLUS
-	drawAlphaBlend (pContext, rect, offset, 255);
+	drawAlphaBlend (pContext, rect, offset, 255.f * pContext->getGlobalAlpha ());
 	#else
 	#if USE_ALPHA_BLEND
 	if (!noAlpha)

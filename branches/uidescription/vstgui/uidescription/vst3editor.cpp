@@ -2,7 +2,7 @@
 // VST Plug-Ins SDK
 // VSTGUI: Graphical User Interface Framework not only for VST plugins : 
 //
-// Version 3.6
+// Version 4.0
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
@@ -37,10 +37,32 @@
 #include "ceditframe.h"
 #include "base/source/updatehandler.h"
 #include "base/source/fstring.h"
+#include "base/source/timer.h"
 #include "pluginterfaces/base/keycodes.h"
 #include "dialog.h"
 #include <list>
 #include <sstream>
+
+namespace Steinberg {
+
+//-----------------------------------------------------------------------------
+class IdleUpdateHandler : public FObject, public ITimerCallback
+{
+public:
+	OBJ_METHODS (IdleUpdateHandler, FObject)
+	SINGLETON (IdleUpdateHandler)
+protected:
+	IdleUpdateHandler () { UpdateHandler::instance (); timer = Timer::create (this, 1000/30); } // 30 Hz timer
+	~IdleUpdateHandler () { timer->release (); }
+	void onTimer (Timer* timer)
+	{
+		UpdateHandler::instance ()->triggerDeferedUpdates ();
+	}
+
+	Steinberg::Timer* timer;
+};
+
+} // namespace Steinberg
 
 BEGIN_NAMESPACE_VSTGUI
 
@@ -216,7 +238,6 @@ VST3Editor::VST3Editor (void* controller, const char* _viewName, const char* _xm
 , tooltipSupport (0)
 , tooltipsEnabled (true)
 {
-	Steinberg::UpdateHandler::instance ();
 	description = new UIDescription (_xmlFile);
 	viewName = _viewName;
 	xmlFile = _xmlFile;
@@ -231,7 +252,6 @@ VST3Editor::VST3Editor (UIDescription* desc, void* controller, const char* _view
 , tooltipSupport (0)
 , tooltipsEnabled (true)
 {
-	Steinberg::UpdateHandler::instance ();
 	description = desc;
 	description->remember ();
 	viewName = _viewName;
@@ -256,6 +276,7 @@ Steinberg::tresult PLUGIN_API VST3Editor::queryInterface (const Steinberg::TUID 
 //-----------------------------------------------------------------------------
 void VST3Editor::init ()
 {
+	Steinberg::IdleUpdateHandler::instance ();
 	if (description->parse ())
 	{
 		// get sizes
@@ -290,6 +311,8 @@ void VST3Editor::init ()
 			description->addNewTemplate (viewName.c_str (), attr);
 			rect.right = 300;
 			rect.bottom = 300;
+			minSize (rect.right, rect.bottom);
+			maxSize (rect.right, rect.bottom);
 		}
 		#endif
 	}
@@ -302,6 +325,8 @@ void VST3Editor::init ()
 		description->addNewTemplate (viewName.c_str (), attr);
 		rect.right = 300;
 		rect.bottom = 300;
+		minSize (rect.right, rect.bottom);
+		maxSize (rect.right, rect.bottom);
 	}
 	#endif
 }
@@ -435,10 +460,10 @@ Steinberg::tresult PLUGIN_API VST3Editor::findParameter (Steinberg::int32 xPos, 
 				return Steinberg::kResultTrue;
 			}
 		}
-		IVST3CustomViewCreator* cvc = dynamic_cast<IVST3CustomViewCreator*> (getController ());
-		if (cvc)
+		VST3EditorDelegate* delegate = dynamic_cast<VST3EditorDelegate*> (getController ());
+		if (delegate)
 		{
-			return (cvc->findParameter (CPoint (xPos, yPos), resultTag, this) ? Steinberg::kResultTrue : Steinberg::kResultFalse);
+			return (delegate->findParameter (CPoint (xPos, yPos), resultTag, this) ? Steinberg::kResultTrue : Steinberg::kResultFalse);
 		}
 	}
 	return Steinberg::kResultFalse;
@@ -450,9 +475,9 @@ CView* VST3Editor::createView (const UIAttributes& attributes, IUIDescription* d
 	const std::string* customViewName = attributes.getAttributeValue ("custom-view-name");
 	if (customViewName)
 	{
-		IVST3CustomViewCreator* cvc = dynamic_cast<IVST3CustomViewCreator*> (getController ());
-		if (cvc)
-			return cvc->createCustomView (customViewName->c_str (), attributes, description);
+		VST3EditorDelegate* delegate = dynamic_cast<VST3EditorDelegate*> (getController ());
+		if (delegate)
+			return delegate->createCustomView (customViewName->c_str (), attributes, description);
 	}
 	return 0;
 }

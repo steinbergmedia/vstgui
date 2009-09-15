@@ -2,7 +2,7 @@
 // VST Plug-Ins SDK
 // VSTGUI: Graphical User Interface Framework not only for VST plugins : 
 //
-// Version 3.6
+// Version 4.0
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
@@ -35,6 +35,7 @@
 #include "uidescription.h"
 #include "viewfactory.h"
 #include "viewcreator.h"
+#include "../cfont.h"
 #include <list>
 #include <sstream>
 #include <fstream>

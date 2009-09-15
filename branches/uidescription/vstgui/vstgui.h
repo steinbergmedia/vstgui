@@ -2,11 +2,11 @@
 // VST Plug-Ins SDK
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 //
-// Version 3.6
+// Version 4.0
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
-// (c) 2008, Steinberg Media Technologies, All Rights Reserved
+// (c) 2009, Steinberg Media Technologies, All Rights Reserved
 //-----------------------------------------------------------------------------
 // Redistribution and use in source and binary forms, with or without modification,
 // are permitted provided that the following conditions are met:
@@ -35,85 +35,7 @@
 #ifndef __vstgui__
 #define __vstgui__
 
-// define global defines
-#if WIN32
-	#define WINDOWS 1
-#elif (__MWERKS__ || __APPLE_CC__)
-	#include <AvailabilityMacros.h>
-	#ifndef MAC_OS_X_VERSION_10_5
-		#define MAC_OS_X_VERSION_10_5 1050
-	#endif
-	#ifndef MAC_COCOA
-		#define MAC_COCOA (MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_5)
-	#endif
-	#ifndef MAC
-		#define MAC 1
-	#endif
-	#define VSTGUI_USES_COREGRAPHICS 1
-	#define VSTGUI_USES_CORE_TEXT	(MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_5)
-	#if !__LP64__
-		#define MAC_CARBON 1
-		#ifndef TARGET_API_MAC_CARBON
-			#define TARGET_API_MAC_CARBON 1
-		#endif
-		#ifndef __CF_USE_FRAMEWORK_INCLUDES__
-			#define __CF_USE_FRAMEWORK_INCLUDES__ 1
-		#endif
-	#else
-		#ifndef NO_QUICKDRAW
-			#define NO_QUICKDRAW	1
-		#endif
-	#endif
-#endif
-
-#if WINDOWS
-	#define USE_NAMESPACE	1
-	#ifndef _WIN32_WINNT
-		#define _WIN32_WINNT 0x0501
-	#endif
-	#ifndef GDIPLUS
-	#define GDIPLUS		1
-	#endif
-#endif
-
-#ifndef VSTGUI_USES_UTF8
-#define VSTGUI_USES_UTF8 1
-#endif
-
-#ifndef USE_NAMESPACE
-#define USE_NAMESPACE 1
-#endif
-
-#if USE_NAMESPACE
- #define BEGIN_NAMESPACE_VSTGUI  namespace VSTGUI {
- #define END_NAMESPACE_VSTGUI    }
- #define USING_NAMESPACE_VSTGUI using namespace VSTGUI;
-#else
- #define BEGIN_NAMESPACE_VSTGUI
- #define END_NAMESPACE_VSTGUI
- #define USING_NAMESPACE_VSTGUI
-#endif
-
-// VSTGUI Version
-#define VSTGUI_VERSION_MAJOR  3
-#define VSTGUI_VERSION_MINOR  5
-
-//----------------------------------------------------
-// Deprecation setting
-//----------------------------------------------------
-#ifndef VSTGUI_ENABLE_DEPRECATED_METHODS
-#define VSTGUI_ENABLE_DEPRECATED_METHODS 0
-#endif
-
-#ifndef DEPRECATED_ATTRIBUTE
-#define DEPRECATED_ATTRIBUTE
-#endif
-
-#if VSTGUI_ENABLE_DEPRECATED_METHODS
-#define VSTGUI_DEPRECATED(x)	DEPRECATED_ATTRIBUTE	x
-#else
-#define VSTGUI_DEPRECATED(x)
-#endif
+#include "vstguibase.h"
 
 //----------------------------------------------------
 //----------------------------------------------------
@@ -147,25 +69,6 @@ END_NAMESPACE_VSTGUI
 
 //----------------------------------------------------
 #if WINDOWS
-	#if VSTGUI_USES_UTF8
-		#undef UNICODE
-		#define UNICODE 1
-		#define VSTGUI_STRCMP	wcscmp
-		#define VSTGUI_STRCPY	wcscpy
-		#define VSTGUI_SPRINTF	wsprintf
-		#define VSTGUI_STRRCHR	wcschr
-		#define VSTGUI_STRICMP	_wcsicmp
-		#define VSTGUI_STRLEN	wcslen
-		#define VSTGUI_STRCAT	wcscat
-	#else
-		#define VSTGUI_STRCMP	strcmp
-		#define VSTGUI_STRCPY	strcpy
-		#define VSTGUI_SPRINTF	sprintf
-		#define VSTGUI_STRRCHR	strrchr
-		#define VSTGUI_STRICMP	_stricmp
-		#define VSTGUI_STRLEN	strlen
-		#define VSTGUI_STRCAT	strcat
-	#endif
 	#include <windows.h>
 
 	#if GDIPLUS
@@ -200,29 +103,9 @@ struct VstKeyCode;
 BEGIN_NAMESPACE_VSTGUI
 
 struct CPoint;
+class CFontDesc;
+typedef CFontDesc*	CFontRef;
 
-#if DEBUG
-#define CLASS_METHODS(name, parent)             \
-	virtual bool isTypeOf (const char* s) const \
-		{ return (!strcmp (s, (#name))) ? true : parent::isTypeOf (s); }\
-	virtual const char* getClassName () const { return (#name); } \
-	virtual CView* newCopy () const { return new name (*this); }
-#else
-#define CLASS_METHODS(name, parent)             \
-	virtual bool isTypeOf (const char* s) const \
-		{ return (!strcmp (s, (#name))) ? true : parent::isTypeOf (s); } \
-	virtual CView* newCopy () const { return (CView*)new name (*this); }
-#endif
-#define CLASS_METHODS_VIRTUAL(name, parent)             \
-	virtual bool isTypeOf (const char* s) const \
-		{ return (!strcmp (s, (#name))) ? true : parent::isTypeOf (s); } \
-	virtual CView* newCopy () const = 0;
-
-#ifdef VSTGUI_FLOAT_COORDINATES
-typedef double CCoord;
-#else
-typedef long CCoord;
-#endif
 
 //-----------------------------------------------------------------------------
 //! \brief Rect structure
@@ -476,6 +359,7 @@ class CCView;
 class CAttributeListEntry;
 class IMouseObserver;
 class IKeyboardHook;
+class CDrawContext;
 
 //-----------------------------------------------------------------------------
 typedef unsigned int CViewAttributeID;
@@ -487,17 +371,6 @@ extern const CViewAttributeID kCViewAttributeReferencePointer;	// 'cvrp'
 extern const CViewAttributeID kCViewTooltipAttribute;			// 'cvtt'
 
 //-----------------------------------------------------------------------------
-//-----------
-// \brief Text Face
-//-----------
-enum CTxtFace
-{
-	kNormalFace    = 0,
-	kBoldFace      = 1,
-	kItalicFace    = 2,
-	kUnderlineFace = 4
-};
-
 //-----------
 // \brief Line Style
 //-----------
@@ -603,15 +476,6 @@ enum CMouseEventResult
 };
 
 //----------------------------
-// \brief Message Results
-//----------------------------
-enum CMessageResult 
-{
-	kMessageUnknown = 0,
-	kMessageNotified = 1
-};
-
-//----------------------------
 // \brief View Autosizing
 //----------------------------
 enum CViewAutosizing
@@ -625,102 +489,6 @@ enum CViewAutosizing
 	kAutosizeRow			= 1 << 5,	///< view containers treat their children as rows
 	kAutosizeAll			= kAutosizeLeft | kAutosizeTop | kAutosizeRight | kAutosizeBottom,
 };
-
-//-----------------------------------------------------------------------------
-// CBaseObject Declaration
-//! \brief Base Object with reference counter
-/// \nosubgrouping
-//-----------------------------------------------------------------------------
-class CBaseObject
-{
-public:
-	CBaseObject () : nbReference (1) {}
-	virtual ~CBaseObject () {}
-
-	//-----------------------------------------------------------------------------
-	/// \name Reference Counting Methods
-	//-----------------------------------------------------------------------------
-	//@{
-	virtual void forget () { nbReference--; if (nbReference == 0) delete this; }	///< decrease refcount and delete object if refcount == 0
-	virtual void remember () { nbReference++; }										///< increase refcount
-	virtual long getNbReference () const { return nbReference; }					///< get refcount
-	//@}
-	
-	//-----------------------------------------------------------------------------
-	/// \name Message Methods
-	//-----------------------------------------------------------------------------
-	//@{
-	virtual CMessageResult notify (CBaseObject* sender, const char* message) { return kMessageUnknown; }
-	//@}
-
-private:
-	long nbReference;
-};
-
-//-----------------------------------------------------------------------------
-// CFontDesc Declaration
-//! \brief font class
-/// \nosubgrouping
-//-----------------------------------------------------------------------------
-class CFontDesc : public CBaseObject
-{
-public:
-	//-----------------------------------------------------------------------------
-	/// \name Constructors
-	//-----------------------------------------------------------------------------
-	//@{
-	CFontDesc (const char* name = 0, const CCoord& size = 0, const long style = 0);
-	CFontDesc (const CFontDesc& font);
-	//@}
-	~CFontDesc ();
-
-	//-----------------------------------------------------------------------------
-	/// \name Size, Name and Style Methods
-	//-----------------------------------------------------------------------------
-	//@{
-	const char* getName () const { return name; }		///< get the name of the font
-	const CCoord& getSize () const { return size; }		///< get the height of the font
-	const long& getStyle () const { return style; }		///< get the style of the font
-
-	void setName (const char* newName);					///< set the name of the font
-	void setSize (CCoord newSize);						///< set the height of the font
-	void setStyle (long newStyle);						///< set the style of the font \sa CTxtFace
-	//@}
-
-	//-----------------------------------------------------------------------------
-	/// \name Font Metrics Methods
-	//-----------------------------------------------------------------------------
-	//@{
-	double getAscent ();								///< returns the ascent line offset of the baseline of this font. If not supported returns -1
-	double getDescent ();								///< returns the descent line offset of the baseline of this font. If not supported returns -1
-	double getLeading ();								///< returns the space between lines for this font. If not supported returns -1
-	double getCapHeight ();								///< returns the height of the highest capital letter for this font. If not supported returns -1
-	//@}
-
-	CFontDesc& operator = (const CFontDesc&);
-	bool operator == (const CFontDesc&) const;
-
-	void* getPlatformFont ();							///< get platform font object
-	
-	static void cleanup ();								///< does some cleanup, needed for GDIPLUS
-protected:
-	void freePlatformFont ();
-	char* name;
-	CCoord size;
-	long style;
-	void* platformFont;
-};
-
-typedef CFontDesc*	CFontRef;
-
-extern const CFontRef kSystemFont;
-extern const CFontRef kNormalFontVeryBig;
-extern const CFontRef kNormalFontBig;
-extern const CFontRef kNormalFont;
-extern const CFontRef kNormalFontSmall;
-extern const CFontRef kNormalFontSmaller;
-extern const CFontRef kNormalFontVerySmall;
-extern const CFontRef kSymbolFont;
 
 //-----------------------------------------------------------------------------
 // CDrawContext Declaration
@@ -797,8 +565,7 @@ public:
 	void   setFontColor (const CColor color);											///< set current font color
 	CColor getFontColor () const { return fontColor; }									///< get current font color
 	void   setFont (const CFontRef font, const long& size = 0, const long& style = -1);	///< set current font
-	const CFontRef&  getFont () const { return font; }										///< get current font
-	long   getFontSize () const { return (long)font->getSize (); }							///< get current font size
+	const CFontRef&  getFont () const { return font; }									///< get current font
 	//@}
 	
 	//-----------------------------------------------------------------------------
@@ -811,6 +578,9 @@ public:
 	void drawStringUTF8 (const char* pString, const CRect& rect, const CHoriTxtAlign hAlign = kCenterText, bool antialias = true);	///< draw an UTF-8 encoded string
 	void drawStringUTF8 (const char* string, const CPoint& _point, bool antialias = true);											///< draw an UTF-8 encoded string
 	//@}
+	
+	void setGlobalAlpha (float newAlpha);
+	float getGlobalAlpha () const { return globalAlpha; }
 	
 	void *getWindow () { return pWindow; }
 	void setWindow (void *ptr)  { pWindow = ptr; }
@@ -858,6 +628,8 @@ protected:
 	CDrawMode  drawMode;
 	CRect  clipRect;
 
+	float globalAlpha;
+
 #if WINDOWS
 	#if GDIPLUS
 	Gdiplus::Graphics	*pGraphics;
@@ -868,6 +640,7 @@ protected:
 		Gdiplus::Graphics* getGraphics () const { return pGraphics; }
 		Gdiplus::Pen* getPen () const { return pPen; }
 		Gdiplus::SolidBrush* getBrush () const { return pBrush; }
+		Gdiplus::SolidBrush* getFontBrush () const { return pFontBrush; }
 	protected:
 	#else
 	void *pBrush;
@@ -1202,15 +975,6 @@ public:
 	virtual void dumpInfo ();
 	#endif
 
-	virtual bool isTypeOf (const char* s) const
-		{ return (!strcmp (s, "CView")); }
-
-	virtual CView* newCopy () const { return new CView (*this); }
-
-	#if DEBUG
-	virtual const char* getClassName () const { return "CView"; }
-	#endif
-	
 	// overwrites
 	CMessageResult notify (CBaseObject* sender, const char* message);
 
@@ -1223,6 +987,7 @@ public:
 	VSTGUI_DEPRECATED(virtual void getFrameTopLeftPos (CPoint& topLeft) const;)	///< \deprecated use VSTGUI::CView::localToFrame
 
 	//-------------------------------------------
+	CLASS_METHODS(CView, CBaseObject)
 protected:
 	CRect  size;
 	CRect  mouseableArea;

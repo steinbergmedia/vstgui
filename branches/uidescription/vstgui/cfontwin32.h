@@ -32,23 +32,73 @@
 // OF THE POSSIBILITY OF SUCH DAMAGE.
 //-----------------------------------------------------------------------------
 
-#ifndef __viewcreator__
-#define __viewcreator__
+#ifndef __cfontwin32__
+#define __cfontwin32__
 
-#include "../vstgui.h"
-#include <string>
+#include "cfont.h"
+
+#if WINDOWS
+
+#include <windows.h>
+#if GDIPLUS
+#include <objidl.h>
+#include <gdiplus.h>
+#endif
 
 BEGIN_NAMESPACE_VSTGUI
-class IUIDescription;
 
-extern bool parseSize (const std::string& str, CPoint& point);
-extern bool pointToString (const CPoint& p, std::string& string);
-extern bool bitmapToString (CBitmap* bitmap, std::string& string, IUIDescription* desc);
-extern bool colorToString (const CColor& color, std::string& string, IUIDescription* desc);
+#if GDIPLUS
+//-----------------------------------------------------------------------------
+class GdiPlusFont : public CPlatformFont, public IFontPainter
+{
+public:
+	GdiPlusFont (const char* name, const CCoord& size, const long& style);
 
-extern void rememberAttributeValueString (CView* view, const char* attrName, const std::string& value);
-extern bool getRememberedAttributeValueString (CView* view, const char* attrName, std::string& value);
+	Gdiplus::Font* getFont () const { return font; }
+
+protected:
+	~GdiPlusFont ();
+	
+	double getAscent () const;
+	double getDescent () const;
+	double getLeading () const;
+	double getCapHeight () const;
+
+	IFontPainter* getPainter () { return this; }
+
+	void drawString (CDrawContext* context, const char* utf8String, const CPoint& p, bool antialias = true);
+	CCoord getStringWidth (CDrawContext* context, const char* utf8String, bool antialias = true);
+
+	Gdiplus::Font* font;
+	INT gdiStyle;
+};
+#else // GDIPLUS
+//-----------------------------------------------------------------------------
+class GdiFont : public CPlatformFont, public IFontPainter
+{
+	GdiFont (const char* name, const CCoord& size, const long& style);
+
+	HANDLE getFont () const { return font; }
+protected:
+	~GdiFont ();
+	
+	double getAscent () const;
+	double getDescent () const;
+	double getLeading () const;
+	double getCapHeight () const;
+
+	IFontPainter* getPainter () { return this; }
+
+	void drawString (CDrawContext* context, const char* utf8String, const CPoint& p, bool antialias = true);
+	CCoord getStringWidth (CDrawContext* context, const char* utf8String, bool antialias = true);
+
+	HANDLE font;
+};
+
+#endif
 
 END_NAMESPACE_VSTGUI
+
+#endif // WINDOWS
 
 #endif

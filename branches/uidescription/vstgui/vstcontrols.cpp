@@ -2,11 +2,11 @@
 // VST Plug-Ins SDK
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 //
-// Version 3.6
+// Version 4.0
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
-// (c) 2008, Steinberg Media Technologies, All Rights Reserved
+// (c) 2009, Steinberg Media Technologies, All Rights Reserved
 //-----------------------------------------------------------------------------
 // Redistribution and use in source and binary forms, with or without modification,
 // are permitted provided that the following conditions are met:
@@ -36,14 +36,11 @@
 #include <stdlib.h>
 #include <math.h>
 #include <string.h>
-
-#ifndef __vstcontrols__
-#include "vstcontrols.h"
-#endif
-
-#include "vstkeycode.h"
-
 #include <list>
+
+#include "vstcontrols.h"
+#include "cfont.h"
+#include "vstkeycode.h"
 
 #ifdef check
 #undef check
@@ -5880,7 +5877,7 @@ CSplashScreen::CSplashScreen (const CSplashScreen& v)
 , keepSize (v.keepSize)
 , offset (v.offset)
 {
-	modalView = v.modalView->newCopy ();
+	modalView = (CView*)v.modalView->newCopy ();
 }
 
 //------------------------------------------------------------------------

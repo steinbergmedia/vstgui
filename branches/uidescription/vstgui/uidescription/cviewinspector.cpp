@@ -2,7 +2,7 @@
 // VST Plug-Ins SDK
 // VSTGUI: Graphical User Interface Framework not only for VST plugins : 
 //
-// Version 3.6
+// Version 4.0
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
@@ -42,6 +42,7 @@
 #include "../cdatabrowser.h"
 #include "../vstkeycode.h"
 #include "../cgraphicspath.h"
+#include "../cfont.h"
 #include <set>
 #include <vector>
 #include <algorithm>
@@ -113,7 +114,7 @@ public:
 		{
 			if (getFrame ()->getFocusView () == this)
 			{
-				CFontRef focusFont = new CFontDesc (*textFont);
+				CFontRef focusFont = (CFontRef)textFont->newCopy ();
 				focusFont->setStyle (textFont->getStyle () | kUnderlineFace);
 				pContext->setFont (focusFont);
 				focusFont->forget ();

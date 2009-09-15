@@ -2,7 +2,7 @@
 // VST Plug-Ins SDK
 // VSTGUI: Graphical User Interface Framework not only for VST plugins : 
 //
-// Version 3.6
+// Version 4.0
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
@@ -33,9 +33,16 @@
 //-----------------------------------------------------------------------------
 
 #include "cgraphicspath.h"
+#include "cfont.h"
 #include <cmath>
 
 #if VSTGUI_CGRAPHICSPATH_AVAILABLE
+
+#if MAC
+#include "cfontmac.h"
+#elif GDIPLUS
+#include "cfontwin32.h"
+#endif
 
 BEGIN_NAMESPACE_VSTGUI
 
@@ -419,7 +426,10 @@ void CGraphicsPath::addPath (const CGraphicsPath& path, CGraphicsTransformation*
 void CGraphicsPath::addString (const char* utf8String, CFontRef font, const CPoint& position)
 {
 	#if VSTGUI_USES_COREGRAPHICS && VSTGUI_USES_CORE_TEXT
-	CTFontRef fontRef = (CTFontRef)font->getPlatformFont ();
+	CoreTextFont* ctf = dynamic_cast<CoreTextFont*> (font->getPlatformFont ());
+	if (ctf == 0)
+		return;
+	CTFontRef fontRef = ctf->getFontRef ();
 	if (fontRef == 0)
 		return;
 	CFStringRef utf8Str = CFStringCreateWithCString (NULL, utf8String, kCFStringEncodingUTF8);
@@ -468,8 +478,14 @@ void CGraphicsPath::addString (const char* utf8String, CFontRef font, const CPoi
 		CFRelease (utf8Str);
 	}
 	#elif GDIPLUS
+	GdiPlusFont* gf = dynamic_cast<GdiPlusFont*> (font->getPlatformFont ());
+	if (gf == 0)
+		return;
 
-	Gdiplus::Font* gdiFont = (Gdiplus::Font*)font->getPlatformFont ();
+	Gdiplus::Font* gdiFont = gf->getFont ();
+	if (gdiFont == 0)
+		return;
+
 	Gdiplus::FontFamily family;
 	gdiFont->GetFamily (&family);
 	INT fontStyle = 0;

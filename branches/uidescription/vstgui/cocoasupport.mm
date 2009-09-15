@@ -2,11 +2,11 @@
 // VST Plug-Ins SDK
 // VSTGUI: Graphical User Interface Framework not only for VST plugins : 
 //
-// Version 3.6
+// Version 4.0
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
-// (c) 2008, Steinberg Media Technologies, All Rights Reserved
+// (c) 2009, Steinberg Media Technologies, All Rights Reserved
 //-----------------------------------------------------------------------------
 // Redistribution and use in source and binary forms, with or without modification,
 // are permitted provided that the following conditions are met:
@@ -40,6 +40,7 @@
 
 #import <Cocoa/Cocoa.h>
 #import "vstkeycode.h"
+#import "cfontmac.h"
 #import "cfileselector.h"
 #import "cvstguitimer.h"
 #import <objc/runtime.h>
@@ -1138,12 +1139,21 @@ static id VSTGUI_NSTextField_Init (id self, SEL _cmd, void* textEdit)
 		}
 		OBJC_SET_VALUE (self, _textEdit, textEdit);
 
-		CTFontRef fontRef = (CTFontRef)te->getFont()->getPlatformFont ();
-		CTFontDescriptorRef fontDesc = CTFontCopyFontDescriptor (fontRef);
+		#if VSTGUI_USES_CORE_TEXT
+		CoreTextFont* ctf = dynamic_cast<CoreTextFont*> (te->getFont ()->getPlatformFont ());
+		if (ctf)
+		{
+			CTFontRef fontRef = ctf->getFontRef ();
+			if (fontRef)
+			{
+				CTFontDescriptorRef fontDesc = CTFontCopyFontDescriptor (fontRef);
+				
+				[self setFont:[NSFont fontWithDescriptor:(NSFontDescriptor *)fontDesc size:0]];
+				CFRelease (fontDesc);
+			}
+		}
+		#endif
 		
-		[self setFont:[NSFont fontWithDescriptor:(NSFontDescriptor *)fontDesc size:0]];
-		CFRelease (fontDesc);
-
 		NSString* text = [NSString stringWithCString:te->getText () encoding:NSUTF8StringEncoding];
 
 		[self setTextColor:nsColorFromCColor (te->getFontColor ())];

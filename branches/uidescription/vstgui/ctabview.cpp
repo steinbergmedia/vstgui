@@ -2,11 +2,11 @@
 // VST Plug-Ins SDK
 // VSTGUI: Graphical User Interface Framework not only for VST plugins : 
 //
-// CTabView written 2004 by Arne Scheffler
+// Version 4.0
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
-// (c) 2008, Steinberg Media Technologies, All Rights Reserved
+// (c) 2009, Steinberg Media Technologies, All Rights Reserved
 //-----------------------------------------------------------------------------
 // Redistribution and use in source and binary forms, with or without modification,
 // are permitted provided that the following conditions are met:
@@ -32,9 +32,8 @@
 // OF THE POSSIBILITY OF SUCH DAMAGE.
 //-----------------------------------------------------------------------------
 
-#ifndef __ctabview__
 #include "ctabview.h"
-#endif
+#include "cfont.h"
 
 BEGIN_NAMESPACE_VSTGUI
 
@@ -435,7 +434,7 @@ CRect& CTabView::getTabViewSize (CRect& rect) const
 //-----------------------------------------------------------------------------
 void CTabView::setTabFontStyle (const CFontRef font, CCoord fontSize, CColor selectedColor, CColor deselectedColor)
 {
-	CFontRef tabFont = new CFontDesc (*font);
+	CFontRef tabFont = (CFontRef)font->newCopy ();
 	tabFont->setSize (fontSize);
 	CTabChildView* v = firstChild;
 	while (v)

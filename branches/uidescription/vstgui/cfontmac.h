@@ -32,23 +32,72 @@
 // OF THE POSSIBILITY OF SUCH DAMAGE.
 //-----------------------------------------------------------------------------
 
-#ifndef __viewcreator__
-#define __viewcreator__
+#ifndef __cfontmac__
+#define __cfontmac__
 
-#include "../vstgui.h"
-#include <string>
+#include "cfont.h"
+
+#if MAC
+
+#include <ApplicationServices/ApplicationServices.h>
 
 BEGIN_NAMESPACE_VSTGUI
-class IUIDescription;
 
-extern bool parseSize (const std::string& str, CPoint& point);
-extern bool pointToString (const CPoint& p, std::string& string);
-extern bool bitmapToString (CBitmap* bitmap, std::string& string, IUIDescription* desc);
-extern bool colorToString (const CColor& color, std::string& string, IUIDescription* desc);
+#if VSTGUI_USES_CORE_TEXT
+//-----------------------------------------------------------------------------
+class CoreTextFont : public CPlatformFont, public IFontPainter
+{
+public:
+	CoreTextFont (const char* name, const CCoord& size, const long& style);
 
-extern void rememberAttributeValueString (CView* view, const char* attrName, const std::string& value);
-extern bool getRememberedAttributeValueString (CView* view, const char* attrName, std::string& value);
+	CTFontRef getFontRef () const { return fontRef; }
+
+protected:
+	~CoreTextFont ();
+
+	void drawString (CDrawContext* context, const char* utf8String, const CPoint& p, bool antialias = true);
+	CCoord getStringWidth (CDrawContext* context, const char* utf8String, bool antialias = true);
+
+	double getAscent () const;
+	double getDescent () const;
+	double getLeading () const;
+	double getCapHeight () const;
+
+	IFontPainter* getPainter () { return this; }
+
+	CTFontRef fontRef;
+	bool underlineStyle;
+};
+
+#else // VSTGUI_USES_CORE_TEXT
+//-----------------------------------------------------------------------------
+class ATSUFont : public CPlatformFont, public IFontPainter
+{
+public:
+	ATSUFont (const char* name, const CCoord& size, const long& style);
+
+	ATSUStyle getATSUStyle () const { return atsuStyle; }
+
+protected:
+	~ATSUFont ();
+
+	void drawString (CDrawContext* context, const char* utf8String, const CPoint& p, bool antialias = true);
+	CCoord getStringWidth (CDrawContext* context, const char* utf8String, bool antialias = true);
+
+	double getAscent () const { return -1.; }
+	double getDescent () const { return -1.; }
+	double getLeading () const { return -1.; }
+	double getCapHeight () const { return -1.; }
+
+	IFontPainter* getPainter () { return this; }
+
+	ATSUStyle atsuStyle;
+};
+
+#endif
 
 END_NAMESPACE_VSTGUI
+
+#endif // MAC
 
 #endif

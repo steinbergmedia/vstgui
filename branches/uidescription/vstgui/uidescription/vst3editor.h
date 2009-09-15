@@ -2,7 +2,7 @@
 // VST Plug-Ins SDK
 // VSTGUI: Graphical User Interface Framework not only for VST plugins : 
 //
-// Version 3.6
+// Version 4.0
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
@@ -51,10 +51,11 @@ class ParameterChangeListener;
 class VST3Editor;
 
 //-----------------------------------------------------------------------------
-class IVST3CustomViewCreator
+// extension to VSTEditController for creating custom Views when using the VST3Editor class
+class VST3EditorDelegate
 {
 public:
-	virtual ~IVST3CustomViewCreator () {}
+	virtual ~VST3EditorDelegate () {}
 	
 	virtual CView* createCustomView (const char* name, const UIAttributes& attributes, IUIDescription* description) = 0;
 	virtual bool findParameter (const CPoint& pos, Steinberg::Vst::ParamID& paramID, VST3Editor* editor) { return false; }
