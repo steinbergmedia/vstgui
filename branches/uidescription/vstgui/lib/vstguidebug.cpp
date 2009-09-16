@@ -32,42 +32,79 @@
 // OF THE POSSIBILITY OF SUCH DAMAGE.
 //-----------------------------------------------------------------------------
 
-/*
-	You have the choice to include this file in your project
-	or the files listed below. Don't add this and the others, or you will get link errors.
-	
-	On Mac OS X you must compile this with the Objective-C++ compiler.
-*/
+#include "vstguidebug.h"
+#include "win32support.h"
 
-#include "lib/cbitmap.cpp"
-#include "lib/ccolor.cpp"
-#include "lib/cdatabrowser.cpp"
-#include "lib/cdrawcontext.cpp"
-#include "lib/cfileselector.cpp"
-#include "lib/cfont.cpp"
-#include "lib/cframe.cpp"
-#include "lib/cgraphicspath.cpp"
-#include "lib/coffscreencontext.cpp"
-#include "lib/cpoint.cpp"
-#include "lib/crect.cpp"
-#include "lib/cscrollview.cpp"
-#include "lib/ctabview.cpp"
-#include "lib/ctooltipsupport.cpp"
-#include "lib/cview.cpp"
-#include "lib/cviewcontainer.cpp"
-#include "lib/cvstguitimer.cpp"
-#include "lib/vstcontrols.cpp"
-#include "lib/vstguidebug.cpp"
+#if DEBUG
 
-#if MAC
-	#ifdef __OBJC__
-		#import "lib/cfontmac.mm"
-		#import "lib/cocoasupport.mm"
+#include <stdarg.h>
+#include <stdio.h>
+
+BEGIN_NAMESPACE_VSTGUI
+
+long gNbCOffscreenContext = 0;
+long gBitmapAllocation = 0;
+long gNbDC = 0;
+
+//-----------------------------------------------------------------------------
+TimeWatch::TimeWatch (const char* name, bool startNow)
+: startTime (0)
+{
+	if (name)
+	{
+		this->name = (char*) malloc (strlen (name) + 1);
+		strcpy (this->name, name);
+	}
+	if (startNow)
+		start ();
+}
+
+//-----------------------------------------------------------------------------
+TimeWatch::~TimeWatch ()
+{
+	stop ();
+	if (name)
+		free (name);
+}
+
+//-----------------------------------------------------------------------------
+void TimeWatch::start ()
+{
+	startTime = clock ();
+}
+
+//-----------------------------------------------------------------------------
+void TimeWatch::stop ()
+{
+	if (startTime > 0)
+	{
+		clock_t stopTime = clock ();
+		DebugPrint ("%s took %d\n", name, stopTime - startTime);
+		startTime = 0;
+	}
+}
+
+//-----------------------------------------------------------------------------
+void DebugPrint (const char *format, ...)
+{
+	char string[300];
+	va_list marker;
+	va_start (marker, format);
+	vsprintf (string, format, marker);
+	if (!string)
+		strcpy (string, "Empty string\n");
+	#if WINDOWS
+	UTF8StringHelper debugString (string);
+	OutputDebugString (debugString);
+	#else
+	#if __MWERKS__
+		printf (string);
+	#else
+		fprintf (stderr, "%s", string);
+	#endif	// #if __MWERKS__
 	#endif
-#endif
+}
 
-#if WINDOWS
-	#include "lib/cfontwin32.cpp"
-	#include "lib/win32support.cpp"
-	#include "lib/winfileselector.cpp"
-#endif
+END_NAMESPACE_VSTGUI
+
+#endif // DEBUG

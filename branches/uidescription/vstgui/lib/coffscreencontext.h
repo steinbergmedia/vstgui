@@ -32,30 +32,69 @@
 // OF THE POSSIBILITY OF SUCH DAMAGE.
 //-----------------------------------------------------------------------------
 
-#ifndef __vstgui__
-#define __vstgui__
+#ifndef __coffscreencontext__
+#define __coffscreencontext__
 
-#include "lib/vstguibase.h"
-#include "lib/cbitmap.h"
-#include "lib/ccolor.h"
-#include "lib/cdatabrowser.h"
-#include "lib/cdrawcontext.h"
-#include "lib/cfileselector.h"
-#include "lib/cfont.h"
-#include "lib/cframe.h"
-#include "lib/cgraphicspath.h"
-#include "lib/coffscreencontext.h"
-#include "lib/cpoint.h"
-#include "lib/crect.h"
-#include "lib/cscrollview.h"
-#include "lib/ctabview.h"
-#include "lib/ctooltipsupport.h"
-#include "lib/cview.h"
-#include "lib/cviewcontainer.h"
-#include "lib/cvstguitimer.h"
-#include "lib/vstcontrols.h"
-#include "lib/vstguidebug.h"
+#include "cdrawcontext.h"
 
-USING_NAMESPACE_VSTGUI
+BEGIN_NAMESPACE_VSTGUI
+class CBitmap;
+
+//-----------------------------------------------------------------------------
+// COffscreenContext Declaration
+//! \brief A drawing device which uses a pixmap as its drawing surface
+/// \nosubgrouping
+//-----------------------------------------------------------------------------
+class COffscreenContext : public CDrawContext
+{
+public:
+	//-----------------------------------------------------------------------------
+	/// \name Constructors
+	//-----------------------------------------------------------------------------
+	//@{
+	COffscreenContext (CDrawContext *pContext, CBitmap *pBitmap, bool drawInBitmap = false);
+	COffscreenContext (CFrame *pFrame, long width, long height, const CColor backgroundColor = kBlackCColor);
+	//@}
+	virtual ~COffscreenContext ();
+	
+	//-----------------------------------------------------------------------------
+	/// \name COffscreenContext Methods
+	//-----------------------------------------------------------------------------
+	//@{
+	void copyFrom (CDrawContext *pContext, CRect destRect, CPoint srcOffset = CPoint (0, 0));	///< copy from offscreen to pContext
+	void copyTo (CDrawContext* pContext, CRect& srcRect, CPoint destOffset = CPoint (0, 0));	///< copy to offscreen from pContext
+
+	inline CCoord getWidth () const { return width; }
+	inline CCoord getHeight () const { return height; }
+	//@}
+
+	//-------------------------------------------
+protected:
+	CBitmap	*pBitmap;
+	CBitmap	*pBitmapBg;
+	CCoord	height;
+	CCoord	width;
+	bool    bDestroyPixmap;
+	bool	bDrawInBitmap;
+
+	CColor  backgroundColor;
+
+#if WINDOWS
+	void* oldBitmap;
+#endif // WINDOWS
+
+#if VSTGUI_USES_COREGRAPHICS
+	void* offscreenBitmap;
+	virtual CGImageRef getCGImage () const;
+	void releaseCGContext (CGContextRef context);
+#endif // VSTGUI_USES_COREGRAPHICS
+
+#if MAC_CARBON
+	BitMapPtr getBitmap ();
+	void releaseBitmap ();
+#endif // MAC_CARBON
+};
+
+END_NAMESPACE_VSTGUI
 
 #endif

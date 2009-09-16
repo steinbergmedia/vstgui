@@ -1,6 +1,6 @@
 //-----------------------------------------------------------------------------
 // VST Plug-Ins SDK
-// VSTGUI: Graphical User Interface Framework for VST plugins : 
+// VSTGUI: Graphical User Interface Framework not only for VST plugins : 
 //
 // Version 4.0
 //
@@ -32,42 +32,54 @@
 // OF THE POSSIBILITY OF SUCH DAMAGE.
 //-----------------------------------------------------------------------------
 
-/*
-	You have the choice to include this file in your project
-	or the files listed below. Don't add this and the others, or you will get link errors.
-	
-	On Mac OS X you must compile this with the Objective-C++ compiler.
-*/
+#ifndef __cocoasupport__
+#define __cocoasupport__
 
-#include "lib/cbitmap.cpp"
-#include "lib/ccolor.cpp"
-#include "lib/cdatabrowser.cpp"
-#include "lib/cdrawcontext.cpp"
-#include "lib/cfileselector.cpp"
-#include "lib/cfont.cpp"
-#include "lib/cframe.cpp"
-#include "lib/cgraphicspath.cpp"
-#include "lib/coffscreencontext.cpp"
-#include "lib/cpoint.cpp"
-#include "lib/crect.cpp"
-#include "lib/cscrollview.cpp"
-#include "lib/ctabview.cpp"
-#include "lib/ctooltipsupport.cpp"
-#include "lib/cview.cpp"
-#include "lib/cviewcontainer.cpp"
-#include "lib/cvstguitimer.cpp"
-#include "lib/vstcontrols.cpp"
-#include "lib/vstguidebug.cpp"
+#include "vstguibase.h"
 
-#if MAC
-	#ifdef __OBJC__
-		#import "lib/cfontmac.mm"
-		#import "lib/cocoasupport.mm"
-	#endif
+#if MAC_COCOA
+
+#include "cframe.h"
+
+/// \cond ignore
+BEGIN_NAMESPACE_VSTGUI
+class CTextEdit;
+class COptionMenu;
+
+// used by CFrame
+void* createNSView (CFrame* frame, const CRect& size);
+void destroyNSView (void* nsView);
+void invalidNSViewRect (void* nsView, const CRect& size);
+void resizeNSView (void* nsView, const CRect& newSize);
+void getSizeOfNSView (void* nsView, CRect* rect);
+bool nsViewGetCurrentMouseLocation (void* nsView, CPoint& where);
+void nsViewSetMouseCursor (CCursorType type);
+void nsViewScrollRect (void* nsView, const CRect& src, const CPoint& distance);
+
+// used by CTextEdit
+void* addNSTextField (CFrame* frame, CTextEdit* edit);
+void removeNSTextField (void* control);
+bool getNSTextFieldText (void* control, char* text, long maxSize);
+void moveNSTextField (void* control, CTextEdit* edit);
+
+// used by COptionMenu
+long showNSContextMenu (COptionMenu* menu, COptionMenu** usedMenu);
+
+// used by CTooltipSupport
+void nsViewSetTooltip (CView* view, const char* tooltip);
+void nsViewRemoveTooltip (CView* view, bool immediately);
+
+// helpers
+#ifdef __OBJC__
+#import <Cocoa/Cocoa.h>
+CRect rectFromNSRect (const NSRect& rect);
+NSImage* imageFromCGImageRef (CGImageRef image);
 #endif
 
-#if WINDOWS
-	#include "lib/cfontwin32.cpp"
-	#include "lib/win32support.cpp"
-	#include "lib/winfileselector.cpp"
+END_NAMESPACE_VSTGUI
+
+#endif
+
+/// \endcond
+
 #endif

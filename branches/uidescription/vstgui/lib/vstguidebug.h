@@ -1,6 +1,6 @@
 //-----------------------------------------------------------------------------
 // VST Plug-Ins SDK
-// VSTGUI: Graphical User Interface Framework for VST plugins : 
+// VSTGUI: Graphical User Interface Framework not only for VST plugins : 
 //
 // Version 4.0
 //
@@ -32,42 +32,45 @@
 // OF THE POSSIBILITY OF SUCH DAMAGE.
 //-----------------------------------------------------------------------------
 
-/*
-	You have the choice to include this file in your project
-	or the files listed below. Don't add this and the others, or you will get link errors.
-	
-	On Mac OS X you must compile this with the Objective-C++ compiler.
-*/
+#ifndef __vstguidebug__
+#define __vstguidebug__
 
-#include "lib/cbitmap.cpp"
-#include "lib/ccolor.cpp"
-#include "lib/cdatabrowser.cpp"
-#include "lib/cdrawcontext.cpp"
-#include "lib/cfileselector.cpp"
-#include "lib/cfont.cpp"
-#include "lib/cframe.cpp"
-#include "lib/cgraphicspath.cpp"
-#include "lib/coffscreencontext.cpp"
-#include "lib/cpoint.cpp"
-#include "lib/crect.cpp"
-#include "lib/cscrollview.cpp"
-#include "lib/ctabview.cpp"
-#include "lib/ctooltipsupport.cpp"
-#include "lib/cview.cpp"
-#include "lib/cviewcontainer.cpp"
-#include "lib/cvstguitimer.cpp"
-#include "lib/vstcontrols.cpp"
-#include "lib/vstguidebug.cpp"
-
-#if MAC
-	#ifdef __OBJC__
-		#import "lib/cfontmac.mm"
-		#import "lib/cocoasupport.mm"
+#if DEVELOPMENT
+	#ifndef DEBUG
+	#define DEBUG	1
 	#endif
 #endif
 
-#if WINDOWS
-	#include "lib/cfontwin32.cpp"
-	#include "lib/win32support.cpp"
-	#include "lib/winfileselector.cpp"
+#if DEBUG
+
+#include "vstguibase.h"
+#include <time.h>
+
+BEGIN_NAMESPACE_VSTGUI
+extern long gNbCOffscreenContext;
+extern long gBitmapAllocation;
+extern long gNbDC;
+
+//-----------------------------------------------------------------------------
+extern void DebugPrint (const char *format, ...);
+
+//-----------------------------------------------------------------------------
+class TimeWatch
+{
+public:
+	TimeWatch (const char* name = 0, bool startNow = true);
+	~TimeWatch ();
+	
+	void start ();
+	void stop ();
+
+protected:
+	char* name;
+	clock_t startTime;
+};
+
+END_NAMESPACE_VSTGUI
+
+#endif // DEBUG
+
 #endif

@@ -35,7 +35,8 @@
 #include "uidescription.h"
 #include "viewfactory.h"
 #include "viewcreator.h"
-#include "../cfont.h"
+#include "../lib/cfont.h"
+#include "../lib/win32support.h"
 #include <list>
 #include <sstream>
 #include <fstream>

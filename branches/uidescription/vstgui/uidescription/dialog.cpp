@@ -35,8 +35,8 @@
 #if VSTGUI_LIVE_EDITING
 
 #include "dialog.h"
-#include "../vstkeycode.h"
-#include "../cfont.h"
+#include "../lib/vstkeycode.h"
+#include "../lib/cfont.h"
 
 BEGIN_NAMESPACE_VSTGUI
 
@@ -132,7 +132,7 @@ Dialog::Dialog (const CPoint& position, CView* rootView, long style, const char*
 		if (position.x == -1 && position.y == -1)
 			platformWindow->center ();
 		size.offset (position.x, position.y);
-		#if MAC && !__LP64__
+		#if MAC_CARBON
 		CFrame::setCocoaMode (true);
 		#endif
 		frame = new CFrame (size, platformWindow->getPlatformHandle (), this);

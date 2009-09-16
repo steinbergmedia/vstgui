@@ -37,12 +37,12 @@
 #include "cviewinspector.h"
 #include "cselection.h"
 #include "viewfactory.h"
-#include "../cscrollview.h"
-#include "../ctabview.h"
-#include "../cdatabrowser.h"
-#include "../vstkeycode.h"
-#include "../cgraphicspath.h"
-#include "../cfont.h"
+#include "../lib/cscrollview.h"
+#include "../lib/ctabview.h"
+#include "../lib/cdatabrowser.h"
+#include "../lib/vstkeycode.h"
+#include "../lib/cgraphicspath.h"
+#include "../lib/cfont.h"
 #include <set>
 #include <vector>
 #include <algorithm>
@@ -1533,7 +1533,7 @@ void CViewInspector::show ()
 		platformWindow = PlatformWindow::create (size, "VSTGUI Inspector", PlatformWindow::kPanelType, PlatformWindow::kResizable, this);
 		if (platformWindow)
 		{
-			#if MAC && !__LP64__
+			#if MAC_CARBON
 			CFrame::setCocoaMode (true);
 			#endif
 			frame = new CFrame (size, platformWindow->getPlatformHandle (), this);

@@ -52,7 +52,8 @@
 - @ref cslider @n
 
 @section cview CView
-Declaration: <view class="CView" />
+Declaration:
+@verbatim <view class="CView" /> @endverbatim
 
 Attributes:
 - \b origin [Point]
@@ -63,7 +64,8 @@ Attributes:
 - \b tooltip [tooltip text]
 
 @section cviewcontainer CViewContainer
-Declaration: <view class="CViewContainer" />
+Declaration:
+@verbatim <view class="CViewContainer" /> @endverbatim
 
 Inherites attributes from @ref cview @n
 
@@ -84,12 +86,14 @@ Attributes:
 - \b background-offset [Point]
 
 @section conoffbutton COnOffButton
-Declaration: <view class="COnOffButton" />
+Declaration:
+@verbatim <view class="COnOffButton" /> @endverbatim
 
 Inherites attributes from @ref ccontrol @n
 
 @section cparamdisplay CParamDisplay
-Declaration: <view class="CParamDisplay" />
+Declaration:
+@verbatim <view class="CParamDisplay" /> @endverbatim
 
 Inherites attributes from @ref ccontrol @n
 
@@ -109,7 +113,8 @@ Attributes:
 - \b text-alignment [left/center/right]
 
 @section ctextlabel CTextLabel
-Declaration: <view class="CTextLabel" />
+Declaration:
+@verbatim <view class="CTextLabel" /> @endverbatim
 
 Inherites attributes from @ref cparamdisplay @n
 
@@ -117,7 +122,8 @@ Attributes:
 - \b title [string]
 
 @section ctextedit CTextEdit
-Declaration: <view class="CTextEdit" />
+Declaration:
+@verbatim <view class="CTextEdit" /> @endverbatim
 
 Inherites attributes from @ref cparamdisplay @n
 
@@ -125,7 +131,8 @@ Attributes:
 - \b title [string]
 
 @section cknob CKnob
-Declaration: <view class="CKnob" />
+Declaration:
+@verbatim <view class="CKnob" /> @endverbatim
 
 Inherites attributes from @ref ccontrol @n
 
@@ -139,7 +146,8 @@ Attributes:
 - \b handle-bitmap [bitmap name]
 
 @section canimknob CAnimKnob
-Declaration: <view class="CAnimKnob" />
+Declaration:
+@verbatim <view class="CAnimKnob" /> @endverbatim
 
 Inherites attributes from @ref cknob @n
 
@@ -147,7 +155,8 @@ Attributes:
 - \b height-of-one-image [int]
 
 @section cverticalswitch CVerticalSwitch
-Declaration: <view class="CVerticalSwitch" />
+Declaration:
+@verbatim <view class="CVerticalSwitch" /> @endverbatim
 
 Inherites attributes from @ref ccontrol @n
 
@@ -155,7 +164,8 @@ Attributes:
 - \b height-of-one-image [int]
 
 @section chorizontalswitch CHorizontalSwitch
-Declaration: <view class="CHorizontalSwitch" />
+Declaration:
+@verbatim <view class="CHorizontalSwitch" /> @endverbatim
 
 Inherites attributes from @ref ccontrol @n
 
@@ -163,7 +173,8 @@ Attributes:
 - \b height-of-one-image [int]
 
 @section crockerswitch CRockerSwitch
-Declaration: <view class="CRockerSwitch" />
+Declaration:
+@verbatim <view class="CRockerSwitch" /> @endverbatim
 
 Inherites attributes from @ref ccontrol @n
 
@@ -171,7 +182,8 @@ Attributes:
 - \b height-of-one-image [int]
 
 @section cmoviebitmap CMovieBitmap
-Declaration: <view class="CMovieBitmap" />
+Declaration:
+@verbatim <view class="CMovieBitmap" /> @endverbatim
 
 Inherites attributes from @ref ccontrol @n
 
@@ -179,7 +191,8 @@ Attributes:
 - \b height-of-one-image [int]
 
 @section cmoviebutton CMovieButton
-Declaration: <view class="CMovieButton" />
+Declaration:
+@verbatim <view class="CMovieButton" /> @endverbatim
 
 Inherites attributes from @ref ccontrol @n
 
@@ -187,7 +200,8 @@ Attributes:
 - \b height-of-one-image [int]
 
 @section ckickbutton CKickButton
-Declaration: <view class="CKickButton" />
+Declaration:
+@verbatim <view class="CKickButton" /> @endverbatim
 
 Inherites attributes from @ref ccontrol @n
 
@@ -195,7 +209,8 @@ Attributes:
 - \b height-of-one-image [int]
 
 @section cslider CSlider
-Declaration: <view class="CSlider" />
+Declaration:
+@verbatim <view class="CSlider" /> @endverbatim
 
 Inherites attributes from @ref ccontrol @n
 
@@ -242,7 +257,7 @@ public:
 */
 
 #include "viewfactory.h"
-#include "../cscrollview.h"
+#include "../lib/cscrollview.h"
 #include <sstream>
 
 #if WINDOWS

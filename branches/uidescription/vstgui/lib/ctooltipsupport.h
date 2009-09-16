@@ -1,6 +1,6 @@
 //-----------------------------------------------------------------------------
 // VST Plug-Ins SDK
-// VSTGUI: Graphical User Interface Framework for VST plugins : 
+// VSTGUI: Graphical User Interface Framework not only for VST plugins : 
 //
 // Version 4.0
 //
@@ -32,42 +32,49 @@
 // OF THE POSSIBILITY OF SUCH DAMAGE.
 //-----------------------------------------------------------------------------
 
-/*
-	You have the choice to include this file in your project
-	or the files listed below. Don't add this and the others, or you will get link errors.
-	
-	On Mac OS X you must compile this with the Objective-C++ compiler.
-*/
+#ifndef __ctooltipsupport__
+#define __ctooltipsupport__
 
-#include "lib/cbitmap.cpp"
-#include "lib/ccolor.cpp"
-#include "lib/cdatabrowser.cpp"
-#include "lib/cdrawcontext.cpp"
-#include "lib/cfileselector.cpp"
-#include "lib/cfont.cpp"
-#include "lib/cframe.cpp"
-#include "lib/cgraphicspath.cpp"
-#include "lib/coffscreencontext.cpp"
-#include "lib/cpoint.cpp"
-#include "lib/crect.cpp"
-#include "lib/cscrollview.cpp"
-#include "lib/ctabview.cpp"
-#include "lib/ctooltipsupport.cpp"
-#include "lib/cview.cpp"
-#include "lib/cviewcontainer.cpp"
-#include "lib/cvstguitimer.cpp"
-#include "lib/vstcontrols.cpp"
-#include "lib/vstguidebug.cpp"
+#include "cframe.h"
 
-#if MAC
-	#ifdef __OBJC__
-		#import "lib/cfontmac.mm"
-		#import "lib/cocoasupport.mm"
-	#endif
+BEGIN_NAMESPACE_VSTGUI
+
+class CVSTGUITimer;
+
+//-----------------------------------------------------------------------------
+// CTooltipSupport Declaration
+//! Generic Tooltip Support class
+//-----------------------------------------------------------------------------
+class CTooltipSupport : public CBaseObject, public IMouseObserver
+{
+public:
+	CTooltipSupport (CFrame* frame, int delay = 1000);
+	~CTooltipSupport ();
+
+protected:
+	void showTooltip ();
+	void hideTooltip ();
+
+	// CBaseObject
+	CMessageResult notify (CBaseObject* sender, const char* msg);
+
+	// IMouseObserver
+	void onMouseEntered (CView* view, CFrame* frame);
+	void onMouseExited (CView* view, CFrame* frame);
+	void onMouseMoved (CFrame* frame, const CPoint& where);
+	void onMouseDown (CFrame* frame, const CPoint& where);
+
+	CVSTGUITimer* timer;
+	CFrame* frame;
+	CView* currentView;
+	void* platformObject;
+
+	int delay;
+	int state;
+	CPoint lastMouseMove;
+};
+
+END_NAMESPACE_VSTGUI
+
 #endif
 
-#if WINDOWS
-	#include "lib/cfontwin32.cpp"
-	#include "lib/win32support.cpp"
-	#include "lib/winfileselector.cpp"
-#endif

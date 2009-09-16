@@ -6,7 +6,7 @@
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
-// (c) 2009, Steinberg Media Technologies, All Rights Reserved
+// (c) 2008, Steinberg Media Technologies, All Rights Reserved
 //-----------------------------------------------------------------------------
 // Redistribution and use in source and binary forms, with or without modification,
 // are permitted provided that the following conditions are met:
@@ -32,42 +32,84 @@
 // OF THE POSSIBILITY OF SUCH DAMAGE.
 //-----------------------------------------------------------------------------
 
-/*
-	You have the choice to include this file in your project
-	or the files listed below. Don't add this and the others, or you will get link errors.
+#ifndef __ccolor__
+#define __ccolor__
+
+#include "vstguibase.h"
+
+BEGIN_NAMESPACE_VSTGUI
+
+//-----------------------------------------------------------------------------
+//! \brief Color structure
+//-----------------------------------------------------------------------------
+struct CColor
+{
+	CColor& operator () (unsigned char red,
+						unsigned char green,
+						unsigned char blue,
+						unsigned char alpha)
+	{
+		this->red   = red;
+		this->green = green;
+		this->blue  = blue;
+		this->alpha = alpha;
+		return *this; 
+	}
+
+	CColor& operator = (const CColor& newColor)
+	{
+		red   = newColor.red;
+		green = newColor.green;
+		blue  = newColor.blue;
+		alpha = newColor.alpha;
+		return *this; 
+	}
 	
-	On Mac OS X you must compile this with the Objective-C++ compiler.
-*/
+	CColor operator ~ ()
+	{
+		CColor c;
+		c.red   = ~red;
+		c.green = ~green;
+		c.blue  = ~blue;
+		c.alpha = ~alpha;
+		return c;
+	}
 
-#include "lib/cbitmap.cpp"
-#include "lib/ccolor.cpp"
-#include "lib/cdatabrowser.cpp"
-#include "lib/cdrawcontext.cpp"
-#include "lib/cfileselector.cpp"
-#include "lib/cfont.cpp"
-#include "lib/cframe.cpp"
-#include "lib/cgraphicspath.cpp"
-#include "lib/coffscreencontext.cpp"
-#include "lib/cpoint.cpp"
-#include "lib/crect.cpp"
-#include "lib/cscrollview.cpp"
-#include "lib/ctabview.cpp"
-#include "lib/ctooltipsupport.cpp"
-#include "lib/cview.cpp"
-#include "lib/cviewcontainer.cpp"
-#include "lib/cvstguitimer.cpp"
-#include "lib/vstcontrols.cpp"
-#include "lib/vstguidebug.cpp"
+	bool operator != (const CColor &other) const 
+	{ return (red != other.red || green != other.green || blue  != other.blue || alpha != other.alpha); }
 
-#if MAC
-	#ifdef __OBJC__
-		#import "lib/cfontmac.mm"
-		#import "lib/cocoasupport.mm"
-	#endif
-#endif
+	bool operator == (const CColor &other) const
+	{ return (red == other.red && green == other.green && blue  == other.blue && alpha == other.alpha); }
+	
+	unsigned char red;
+	unsigned char green;
+	unsigned char blue;
+	unsigned char alpha;
+};
 
-#if WINDOWS
-	#include "lib/cfontwin32.cpp"
-	#include "lib/win32support.cpp"
-	#include "lib/winfileselector.cpp"
+inline CColor MakeCColor (unsigned char red = 0, unsigned char green = 0, unsigned char blue = 0, unsigned char alpha = 255)
+{
+	CColor c;
+	c.red = red;
+	c.green = green;
+	c.blue = blue;
+	c.alpha = alpha;
+	return c;
+}
+
+// define some basic colors
+extern const CColor kTransparentCColor;
+extern const CColor kBlackCColor;
+extern const CColor kWhiteCColor;
+extern const CColor kGreyCColor;
+extern const CColor kRedCColor;
+extern const CColor kGreenCColor;
+extern const CColor kBlueCColor;
+extern const CColor kYellowCColor;
+extern const CColor kCyanCColor;
+extern const CColor kMagentaCColor;
+
+
+END_NAMESPACE_VSTGUI
+
 #endif

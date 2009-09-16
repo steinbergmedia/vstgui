@@ -32,42 +32,53 @@
 // OF THE POSSIBILITY OF SUCH DAMAGE.
 //-----------------------------------------------------------------------------
 
-/*
-	You have the choice to include this file in your project
-	or the files listed below. Don't add this and the others, or you will get link errors.
-	
-	On Mac OS X you must compile this with the Objective-C++ compiler.
-*/
+#ifndef __cvstguitimer__
+#define __cvstguitimer__
 
-#include "lib/cbitmap.cpp"
-#include "lib/ccolor.cpp"
-#include "lib/cdatabrowser.cpp"
-#include "lib/cdrawcontext.cpp"
-#include "lib/cfileselector.cpp"
-#include "lib/cfont.cpp"
-#include "lib/cframe.cpp"
-#include "lib/cgraphicspath.cpp"
-#include "lib/coffscreencontext.cpp"
-#include "lib/cpoint.cpp"
-#include "lib/crect.cpp"
-#include "lib/cscrollview.cpp"
-#include "lib/ctabview.cpp"
-#include "lib/ctooltipsupport.cpp"
-#include "lib/cview.cpp"
-#include "lib/cviewcontainer.cpp"
-#include "lib/cvstguitimer.cpp"
-#include "lib/vstcontrols.cpp"
-#include "lib/vstguidebug.cpp"
+#include "vstguibase.h"
 
 #if MAC
-	#ifdef __OBJC__
-		#import "lib/cfontmac.mm"
-		#import "lib/cocoasupport.mm"
-	#endif
+#include <CoreFoundation/CoreFoundation.h>
+
+#elif WINDOWS
+#include <windows.h>
+
 #endif
 
-#if WINDOWS
-	#include "lib/cfontwin32.cpp"
-	#include "lib/win32support.cpp"
-	#include "lib/winfileselector.cpp"
+BEGIN_NAMESPACE_VSTGUI
+
+//-----------------------------------------------------------------------------
+// CVSTGUITimer Declaration
+//! A timer class, which posts timer messages to CBaseObjects.
+//-----------------------------------------------------------------------------
+class CVSTGUITimer : public CBaseObject
+{
+public:
+	CVSTGUITimer (CBaseObject* timerObject, int fireTime = 100);
+	virtual ~CVSTGUITimer ();
+	
+	virtual bool start ();							///< starts the timer
+	virtual bool stop ();							///< stops the timer, returns wheather timer was running or not
+
+	virtual bool setFireTime (int newFireTime);		///< in milliseconds
+	int getFireTime () const { return fireTime; }	///< in milliseconds
+
+//-----------------------------------------------------------------------------
+	static const char* kMsgTimer;					///< message string posted to CBaseObject's notify method
+//-----------------------------------------------------------------------------
+protected:
+	int fireTime;
+	CBaseObject* timerObject;
+
+	void* platformTimer;
+
+	#if MAC
+	static void timerCallback (CFRunLoopTimerRef timer, void *info);
+	#elif WINDOWS
+	static VOID CALLBACK TimerProc (HWND hwnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTime);
+	#endif
+};
+
+END_NAMESPACE_VSTGUI
+
 #endif

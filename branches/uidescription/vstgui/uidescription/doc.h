@@ -208,8 +208,6 @@ Templates are the main views in XML. You can have more than one.
 Per default the \b template tag will create a CViewContainer view, but you can use the \b class attribute to create any view class you want.
 (If the template should have subviews, the class must be an inherited class from CViewContainer like CScrollView)<br/>
 
-@endpage
-
 @page uidescription_vst3_support Inline Editing support for VST3
 
 VSTGUI now supports easy and fast UI creation for VST3 plug-ins.
@@ -254,7 +252,5 @@ to this tag and it will automatically be synced with the VST3 parameter.
 
 If you need to create custom views, you can implement the IVST3CustomViewCreator interface in your edit controller class.
 The createCustomView method will be called if you set the 'custom-view-name' attribute in one of the views.
-
-@endpage
 
 */

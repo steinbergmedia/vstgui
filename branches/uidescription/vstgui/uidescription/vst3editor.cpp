@@ -33,7 +33,7 @@
 //-----------------------------------------------------------------------------
 
 #include "vst3editor.h"
-#include "vstkeycode.h"
+#include "../lib/vstkeycode.h"
 #include "ceditframe.h"
 #include "base/source/updatehandler.h"
 #include "base/source/fstring.h"

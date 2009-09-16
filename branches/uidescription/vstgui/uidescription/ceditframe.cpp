@@ -39,8 +39,9 @@
 #include "viewhierarchybrowser.h"
 #include "viewfactory.h"
 #include "viewcreator.h"
-#include "../vstkeycode.h"
-#include "../cfileselector.h"
+#include "../lib/coffscreencontext.h"
+#include "../lib/vstkeycode.h"
+#include "../lib/cfileselector.h"
 #include <map>
 #include <sstream>
 

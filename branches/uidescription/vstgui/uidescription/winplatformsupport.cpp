@@ -33,6 +33,7 @@
 //-----------------------------------------------------------------------------
 
 #include "platformsupport.h"
+#include "../lib/win32support.h"
 #include <wingdi.h>
 
 static TCHAR   gClassName[100];

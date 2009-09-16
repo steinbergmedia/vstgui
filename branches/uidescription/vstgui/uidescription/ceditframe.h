@@ -42,7 +42,6 @@
 #endif
 
 #include "../vstgui.h"
-#include "../cvstguitimer.h"
 #include "cselection.h"
 #include "uidescription.h"
 #include "viewfactory.h"

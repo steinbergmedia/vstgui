@@ -38,9 +38,9 @@
 #include "viewfactory.h"
 #include "viewcreator.h"
 #include "ceditframe.h"
-#include "../cdatabrowser.h"
-#include "../vstkeycode.h"
-#include "../cfont.h"
+#include "../lib/cdatabrowser.h"
+#include "../lib/vstkeycode.h"
+#include "../lib/cfont.h"
 #include <typeinfo>
 
 BEGIN_NAMESPACE_VSTGUI
@@ -660,7 +660,7 @@ ViewHierarchyBrowserWindow::ViewHierarchyBrowserWindow (CViewContainer* baseView
 	platformWindow = PlatformWindow::create (size, "VSTGUI Hierarchy Browser", PlatformWindow::kPanelType, PlatformWindow::kClosable|PlatformWindow::kResizable, this);
 	if (platformWindow)
 	{
-		#if MAC && !__LP64__
+		#if MAC_CARBON
 		CFrame::setCocoaMode (true);
 		#endif
 		frame = new CFrame (size, platformWindow->getPlatformHandle (), this);

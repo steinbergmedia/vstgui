@@ -35,7 +35,7 @@
 #if VSTGUI_LIVE_EDITING
 
 #include "platformsupport.h"
-#include "../cocoasupport.h"
+#include "../lib/cocoasupport.h"
 #include <Cocoa/Cocoa.h>
 
 //-----------------------------------------------------------------------------

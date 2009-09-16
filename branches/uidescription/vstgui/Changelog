@@ -1,3 +1,13 @@
+2009-09-16 arne
+
+	* major directory change
+		* all main VSTGUI source code went into the lib subdirectory
+		* splittet vstgui.cpp into different files (vstcontrols.cpp should follow)
+		* vstgui.cpp will still be alive but it will be the amalgamation file
+	* removed all deprecated methods and classes
+	* minimum supported system on Mac OS X will be 10.4 (needs check if it's possible to build on 10.4)
+	* minimum supported system on Windows will be Windows XP. (Windows 98 support will be dropped, but not done yet)
+
 2009-09-15 arne
 
 	* CFontDesc refactored, so that custom Font Renderer could be used
