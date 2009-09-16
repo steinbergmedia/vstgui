@@ -125,7 +125,7 @@ CBitmap::CBitmap (const CResourceDescription& desc)
 }
 
 //-----------------------------------------------------------------------------
-CBitmap::CBitmap (CFrame& frame, CCoord width, CCoord height)
+CBitmap::CBitmap (CCoord width, CCoord height)
 : width (width)
 , height (height)
 , noAlpha (true)
@@ -157,17 +157,8 @@ CBitmap::CBitmap (CFrame& frame, CCoord width, CCoord height)
 	pHandle = 0;
 	pMask = 0;
 	
-	#if NO_QUICKDRAW
 	pHandle = malloc (width * 4 * height);
 
-	#else
-	Rect r;
-	r.left = r.top = 0;
-	r.right = (short)width;
-	r.bottom = (short)height;
-
-	NewGWorld ((GWorldPtr*)&pHandle, 32, &r, 0, 0, 0);
-	#endif
 #endif
 }
 
@@ -259,15 +250,8 @@ void CBitmap::dispose ()
 		CGImageRelease ((CGImageRef)cgImage);
 	cgImage = 0;
 
-	#if NO_QUICKDRAW
 	if (pHandle)
 		free (pHandle);
-	#else
-	if (pHandle)
-		DisposeGWorld ((GWorldPtr)pHandle);
-	if (pMask)
-		DisposeGWorld ((GWorldPtr)pMask);
-	#endif // NO_QUICKDRAW
 	
 	#endif // VSTGUI_USES_COREGRAPHICS
 
@@ -479,7 +463,9 @@ bool CBitmap::loadFromResource (const CResourceDescription& resourceDesc)
 	cgImage = 0;
 	if (getBundleRef ())
 	{
-		// find the bitmap in our Bundle. It must be in the form of bmp00123.png, where the resource id would be 123.
+		// find the bitmap in our Bundle.
+		// If the resource description is of type integer, it must be in the form of bmp00123.png, where the resource id would be 123.
+		// else it just uses the name
 		char filename [PATH_MAX];
 		if (resourceDesc.type == CResourceDescription::kIntegerType)
 			sprintf (filename, "bmp%05d", (int)resourceDesc.u.id);
@@ -512,41 +498,6 @@ bool CBitmap::loadFromResource (const CResourceDescription& resourceDesc)
 		}
 	}
 	
-	#if !NO_QUICKDRAW
-	if (!result && pHandle == 0)
-	{
-		Handle picHandle = GetResource ('PICT', resourceDesc.u.id);
-		if (picHandle)
-		{
-			HLock (picHandle);
-			
-			PictInfo info;
-			GetPictInfo ((PicHandle)picHandle, &info, recordComments, 0, systemMethod, 0);
-			width  = info.sourceRect.right;
-			height = info.sourceRect.bottom;
-			
-			OSErr err = NewGWorld ((GWorldPtr*)&pHandle, 32, &info.sourceRect, 0, 0, 0);
-			if (!err)
-			{
-				GWorldPtr oldPort;
-				GDHandle oldDevice;
-				GetGWorld (&oldPort, &oldDevice);
-				SetGWorld ((GWorldPtr)pHandle, 0);
-				
-				DrawPicture ((PicHandle)picHandle, &info.sourceRect);
-				
-				SetGWorld (oldPort, oldDevice);
-				result = true;
-			}
-
-			HUnlock (picHandle);
-			ReleaseResource (picHandle);
-		}
-	}
-	#endif // !NO_QUICKDRAW
-
-	#else
-	// other platforms go here
 	#endif
 	return result;
 }
@@ -705,19 +656,10 @@ CGImageRef CBitmap::createCGImage (bool transparent)
 	short bitDepth = 0;
 	size_t size = 0;
 
-	#if NO_QUICKDRAW
 	pixels = pHandle;
 	rowBytes = width * 4;
 	bitDepth = 32;
 	size = rowBytes * height;
-	
-	#else
-	PixMapHandle pixMap = GetGWorldPixMap ((GWorldPtr)pHandle);
-	pixels = GetPixBaseAddr (pixMap);
-	rowBytes = GetPixRowBytes (pixMap);
-	bitDepth = GetPixDepth (pixMap);
-	size = rowBytes * height;
-	#endif
 	
 	CGImageRef image = 0;
 	CGDataProviderRef provider = 0;
@@ -746,13 +688,11 @@ CGImageRef CBitmap::createCGImage (bool transparent)
 //-----------------------------------------------------------------------------
 void CBitmap::setBitsDirty ()
 {
-	#if NO_QUICKDRAW
 	if (pHandle && cgImage)
 	{
 		CGImageRelease ((CGImageRef)cgImage);
 		cgImage = 0;
 	}
-	#endif
 }
 
 #endif
@@ -1070,15 +1010,7 @@ void CBitmap::setTransparentColor (const CColor color)
 				CGImageRelease ((CGImageRef)cgImage);
 			cgImage = 0;
 		}
-		#if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_4
-		else 
-		#if MAC_OS_X_VERSION_MIN_REQUIRED < MAC_OS_X_VERSION_10_4
-		if (CGImageCreateWithMaskingColors == 0)
-		{}
-		else
-		#else
-		if (cgImage)
-		#endif
+		else if (cgImage)
 		{
 			if (CGImageGetBitsPerComponent((CGImageRef)cgImage) == 8)
 			{
@@ -1098,7 +1030,6 @@ void CBitmap::setTransparentColor (const CColor color)
 			}
 			#endif
 		}
-		#endif
 	}
 #endif
 }

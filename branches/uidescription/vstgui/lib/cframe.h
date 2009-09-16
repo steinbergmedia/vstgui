@@ -100,9 +100,6 @@ public:
 	//-----------------------------------------------------------------------------
 	//@{
 	CFrame (const CRect &size, void *pSystemWindow, VSTGUIEditorInterface *pEditor);
-	#if ENABLE_VST_EXTENSION_IN_VSTGUI
-	CFrame (const CRect &size, const char *pTitle, VSTGUIEditorInterface *pEditor, const long style = 0);	///< /deprecated
-	#endif
 	//@}
 	virtual ~CFrame ();
 
@@ -110,12 +107,6 @@ public:
 	/// \name CFrame Methods
 	//-----------------------------------------------------------------------------
 	//@{
-	#if ENABLE_VST_EXTENSION_IN_VSTGUI
-	virtual bool open (CPoint *pPoint = 0);	///< /deprecated
-	virtual bool close ();					///< /deprecated
-	#endif
-	virtual bool isOpen () const { return bOpenFlag; }
-
 	virtual void idle ();
 	virtual void doIdleStuff ();
 
@@ -150,9 +141,6 @@ public:
 	virtual bool isDropActive () const { return bDropActive; };
 
 	CDrawContext* createDrawContext ();
-
-	virtual void setOpenFlag (bool val) { bOpenFlag = val;};
-	virtual bool getOpenFlag () const { return bOpenFlag; };
 
 	virtual void invalidate (const CRect &rect);
 
@@ -217,7 +205,6 @@ protected:
 	CView   *pMouseOverView;
 
 	bool    bFirstDraw;
-	bool    bOpenFlag;
 	bool    bDropActive;
 
 #if WINDOWS
@@ -229,9 +216,6 @@ protected:
 #endif // WINDOWS
 
 #if MAC_CARBON
-	void setDrawContext (CDrawContext* context) { pFrameContext = context; }
-	friend class CDrawContext;
-
 	static pascal OSStatus carbonMouseEventHandler (EventHandlerCallRef inHandlerCallRef, EventRef inEvent, void *inUserData);
 	static pascal OSStatus carbonEventHandler (EventHandlerCallRef inHandlerCallRef, EventRef inEvent, void *inUserData);
 	
@@ -254,11 +238,6 @@ protected:
 #endif // MAC_COCOA
 	//-------------------------------------------
 private:
-	CDrawContext *pFrameContext;
-	#if ENABLE_VST_EXTENSION_IN_VSTGUI
-	bool     bAddedWindow;
-	void     *pVstWindow;
-	#endif
 	void     *defaultCursor;
 };
 

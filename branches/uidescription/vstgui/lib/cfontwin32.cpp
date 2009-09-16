@@ -197,13 +197,8 @@ void GdiFont::drawString (CDrawContext* context, const char* utf8String, const C
 	HDC pSystemContext = (HDC)context->getSystemContext ();
 	SelectObject (pSystemContext, font);
 
-	// set the visibility mask
-	SetBkMode (pSystemContext, opaque ? OPAQUE : TRANSPARENT);
-
 	RECT Rect = {p.x, p.y, p.x, p.y};
 	DrawText (pSystemContext, utf8String, (int)strlen (utf8String), &Rect, DT_NOCLIP);
-
-	SetBkMode (pSystemContext, TRANSPARENT);
 }
 
 //-----------------------------------------------------------------------------

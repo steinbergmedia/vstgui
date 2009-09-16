@@ -124,41 +124,12 @@ COffscreenContext::COffscreenContext (CDrawContext* pContext, CBitmap* pBitmapBg
 
 #elif VSTGUI_USES_COREGRAPHICS
 	offscreenBitmap = 0;
-	#if NO_QUICKDRAW
 	if (drawInBitmap)
 		offscreenBitmap = pBitmapBg->getHandle ();
 	if (offscreenBitmap == 0)
 		bDestroyPixmap = true;
 	gCGContext = createOffscreenBitmap (width, height, &offscreenBitmap);
 
-	#else
-	if (drawInBitmap)
-	{
-		if (pBitmapBg->getHandle ())
-		{
-			PixMapHandle pixMap = GetGWorldPixMap ((GWorldPtr)pBitmapBg->getHandle ());
-			LockPixels (pixMap);
-			size_t pixDepth = GetPixDepth (pixMap) / 4;
-			size_t rowBytes = GetPixRowBytes (pixMap);
-			gCGContext = CGBitmapContextCreate (GetPixBaseAddr (pixMap), (size_t)width, (size_t)height, pixDepth, rowBytes, GetGenericRGBColorSpace (), kCGImageAlphaPremultipliedFirst);
-			if (gCGContext)
-			{
-				CGContextSaveGState (gCGContext);
-				CGContextTranslateCTM (gCGContext, 0, (CGFloat)height);
-				CGContextSetFillColorSpace (gCGContext, GetGenericRGBColorSpace ());
-				CGContextSetStrokeColorSpace (gCGContext, GetGenericRGBColorSpace ());
-				CGAffineTransform cgCTM = CGAffineTransformMake (1.0, 0.0, 0.0, -1.0, 0.0, 0.0);
-				CGContextSetTextMatrix (gCGContext, cgCTM);
-				CGContextScaleCTM (gCGContext, 1, -1);
-				CGContextClipToRect (gCGContext, CGRectMake (0, 0, width, height));
-				CGContextSaveGState (gCGContext);
-			}
-		}
-	}
-	else
-	{ // todo !!!
-	}
-	#endif
         
 #endif
 
@@ -267,13 +238,6 @@ COffscreenContext::~COffscreenContext ()
 	gCGContext = 0;
 	if (offscreenBitmap && bDestroyPixmap)
 		free (offscreenBitmap);
-	#if !NO_QUICKDRAW
-	else if (pBitmapBg && pBitmapBg->getHandle ())
-	{
-		PixMapHandle pixMap = GetGWorldPixMap ((GWorldPtr)pBitmapBg->getHandle ());
-		UnlockPixels (pixMap);
-	}
-	#endif
         
 #endif
 }
@@ -297,35 +261,7 @@ void COffscreenContext::copyTo (CDrawContext* pContext, CRect& srcRect, CPoint d
 	#endif
 	
 #elif MAC
-	#if !NO_QUICKDRAW
-	if (!pBitmapBg)
-		return;
-	
-	Rect source, dest;
-	RGBColor savedForeColor, savedBackColor;
-	
-	source.left   = (short)(srcRect.left + pContext->offset.h + pContext->offsetScreen.h);
-	source.top    = (short)(srcRect.top + pContext->offset.v + pContext->offsetScreen.v);
-	source.right  = (short)(source.left + srcRect.right - srcRect.left);
-	source.bottom = (short)(source.top + srcRect.bottom - srcRect.top);
-	
-	dest.left   = (short)destOffset.h;
-	dest.top    = (short)destOffset.v;
-	dest.right  = (short)(dest.left + srcRect.right - srcRect.left);
-	dest.bottom = (short)(dest.top + srcRect.bottom - srcRect.top);
-
-	GetForeColor (&savedForeColor);
-	GetBackColor (&savedBackColor);
-	::BackColor (whiteColor);
-	::ForeColor (blackColor);
-
-	CopyBits (pContext->getBitmap (), getBitmap (), &source, &dest, srcCopy, 0L);
-	releaseBitmap ();
-	pContext->releaseBitmap ();
-
-	RGBForeColor (&savedForeColor);
-	RGBBackColor (&savedBackColor);
-	#endif // !NO_QUICKDRAW
+	// not supported
 #endif
 }
 
@@ -403,17 +339,8 @@ void COffscreenContext::copyFrom (CDrawContext* pContext, CRect destRect, CPoint
 //-----------------------------------------------------------------------------
 CGImageRef COffscreenContext::getCGImage () const
 {
-	#if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_4
-	#if MAC_OS_X_VERSION_MIN_REQUIRED < MAC_OS_X_VERSION_10_4
-	if (CGBitmapContextCreateImage == 0)
-	{}
-	else
-	#endif
 	if (gCGContext)
-	{
 		return CGBitmapContextCreateImage (gCGContext);
-	}
-	#endif
 	return 0;
 }
 
@@ -471,24 +398,5 @@ CGContextRef createOffscreenBitmap (long width, long height, void** bits)
 	return context;
 }
 #endif // VSTGUI_USES_COREGRAPHICS
-
-#if MAC_CARBON
-//-----------------------------------------------------------------------------
-BitMapPtr COffscreenContext::getBitmap ()
-{
-#if NO_QUICKDRAW
-	return 0;
-#else
-	return pBitmapBg ? (BitMapPtr)GetPortBitMapForCopyBits ((GWorldPtr)pBitmapBg->getHandle ()) : 0;
-#endif
-}
-
-//-----------------------------------------------------------------------------
-void COffscreenContext::releaseBitmap ()
-{
-}
-
-#endif // MAC_CARBON
-
 
 END_NAMESPACE_VSTGUI

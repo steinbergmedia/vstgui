@@ -89,10 +89,6 @@ protected:
 	void releaseCGContext (CGContextRef context);
 #endif // VSTGUI_USES_COREGRAPHICS
 
-#if MAC_CARBON
-	BitMapPtr getBitmap ();
-	void releaseBitmap ();
-#endif // MAC_CARBON
 };
 
 END_NAMESPACE_VSTGUI

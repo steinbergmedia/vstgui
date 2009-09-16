@@ -284,6 +284,10 @@ END_NAMESPACE_VSTGUI
 #define stringLookIn   "Look in"
 #define kPathMax        1024
 
+#if MAC_CARBON
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations" // we know that we use deprecated functions from Carbon, so we don't want to be warned
+#endif
+
 #if WINDOWS
 #include <stdio.h>
 

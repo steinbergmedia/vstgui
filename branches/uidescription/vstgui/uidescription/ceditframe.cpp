@@ -1733,7 +1733,7 @@ bool CEditFrame::onWheel (const CPoint &where, const CMouseWheelAxis &axis, cons
 CBitmap* CEditFrame::createBitmapFromSelection (CSelection* selection)
 {
 	CRect viewSize = selection->getBounds ();
-	CBitmap* bitmap = new CBitmap (*this, viewSize.getWidth (), viewSize.getHeight ());
+	CBitmap* bitmap = new CBitmap (viewSize.getWidth (), viewSize.getHeight ());
 	CDrawContext* drawContext = createDrawContext ();
 	COffscreenContext context (drawContext, bitmap, true);
 	context.offset.x = -viewSize.left;

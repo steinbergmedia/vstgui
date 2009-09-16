@@ -6,7 +6,10 @@
 		* vstgui.cpp will still be alive but it will be the amalgamation file
 	* removed all deprecated methods and classes
 	* minimum supported system on Mac OS X will be 10.4 (needs check if it's possible to build on 10.4)
-	* minimum supported system on Windows will be Windows XP. (Windows 98 support will be dropped, but not done yet)
+	* minimum supported system on Windows will be Windows XP. (Windows 98 support will be dropped, but not completely done yet)
+	* removed all Quickdraw stuff (was only needed for Mac OS X 10.3)
+	* changed CBitmap (CFrame& frame, CCoord width, CCoord height) to CBitmap (CCoord width, CCoord height)
+	* removed Mac Metrowerks compiler support
 
 2009-09-15 arne
 

@@ -52,18 +52,11 @@
 #if MAC_COCOA
 #include "cocoasupport.h"
 #endif
+#if MAC_CARBON
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations" // we know that we use deprecated functions from Carbon, so we don't want to be warned
+#endif
 
 BEGIN_NAMESPACE_VSTGUI
-
-#if defined(__MACH__) && defined (__MWERKS__)
- #ifndef cosf
- #define cosf (float)cos
- #endif
-
- #ifndef sinf
- #define sinf (float)sin
- #endif
-#endif
 
 // some external variables (vstgui.cpp)
 extern long gStandardFontSize [];

@@ -72,8 +72,6 @@ enum CLineStyle
 enum CDrawMode
 {
 	kCopyMode = 0,					///< non antialiased drawing
-	kOrMode,						///< not implementated on Mac OS X and GDI+ \deprecated
-	kXorMode,						///< not implementated on Mac OS X and GDI+ \deprecated
 	kAntialias						///< antialised drawing
 };
 
@@ -199,8 +197,6 @@ public:
 
 	void   *getSystemContext () const { return pSystemContext; }
 
-	void forget ();
-
 	//-------------------------------------------
 protected:
 
@@ -249,22 +245,14 @@ protected:
 
 #if VSTGUI_USES_COREGRAPHICS
 	CGContextRef gCGContext;
-	bool needToSynchronizeCGContext;
 	public:
 	CGContextRef getCGContext () const { return gCGContext; }
 	CGContextRef beginCGContext (bool swapYAxis = false);
 	void releaseCGContext (CGContextRef context);
-	void synchronizeCGContext ();
 	
 	virtual CGImageRef getCGImage () const;
 	protected:
 #endif
-
-#if MAC_CARBON
-	virtual BitMapPtr getBitmap ();
-	virtual void releaseBitmap ();
-	virtual CGrafPtr getPort ();
-#endif // MAC_CARBON
 
 };
 

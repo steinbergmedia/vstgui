@@ -50,7 +50,7 @@
 //-----------------------------------------------------------------------------
 #if WIN32
 	#define WINDOWS 1
-#elif (__MWERKS__ || __APPLE_CC__)
+#elif __APPLE_CC__
 	#include <AvailabilityMacros.h>
 	#ifndef MAC_OS_X_VERSION_10_5
 		#define MAC_OS_X_VERSION_10_5 1050
@@ -71,13 +71,6 @@
 		#ifndef __CF_USE_FRAMEWORK_INCLUDES__
 			#define __CF_USE_FRAMEWORK_INCLUDES__ 1
 		#endif
-	#else
-		#ifndef NO_QUICKDRAW
-			#define NO_QUICKDRAW	1
-		#endif
-	#endif
-	#ifndef NO_QUICKDRAW
-		#define NO_QUICKDRAW	(MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_4)	// no quickdraw if we build only for 10.4 and above
 	#endif
 #endif
 

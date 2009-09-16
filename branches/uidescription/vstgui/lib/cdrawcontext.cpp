@@ -54,6 +54,7 @@ BEGIN_NAMESPACE_VSTGUI
 	static void addOvalToPath (CGContextRef c, CPoint center, CGFloat a, CGFloat b, CGFloat start_angle, CGFloat end_angle);
 
 	#if MAC_CARBON
+	#pragma GCC diagnostic ignored "-Wdeprecated-declarations" // we know that we use deprecated functions from Carbon, so we don't want to be warned
 	extern bool isWindowComposited (WindowRef window);
 	#endif // MAC_CARBON
 	#ifndef CGFLOAT_DEFINED
@@ -213,11 +214,8 @@ CDrawContext::CDrawContext (CFrame* inFrame, void* inSystemContext, void* inWind
 				setClipRect (clipRect);
 				CGAffineTransform cgCTM = CGAffineTransformMake (1.0, 0.0, 0.0, -1.0, 0.0, 0.0);
 				CGContextSetTextMatrix (gCGContext, cgCTM);
-				if (pFrame)
-					pFrame->setDrawContext (this);
 			}
 		}
-		needToSynchronizeCGContext = false;
 	}
 	
 #endif // MAC_CARBON
@@ -281,8 +279,6 @@ CDrawContext::~CDrawContext ()
 		#if MAC_CARBON
 		if (!pSystemContext && pWindow)
 			QDEndCGContext (GetWindowPort ((WindowRef)pWindow), &gCGContext);
-		if (pFrame)
-			pFrame->setDrawContext (0);
 		#endif
 	}
 #endif
@@ -409,19 +405,7 @@ void CDrawContext::setDrawMode (CDrawMode mode)
 			pGraphics->SetSmoothingMode (Gdiplus::SmoothingModeNone);
 	}
 	#else
-	long iMode = 0;
-	switch (drawMode) 
-	{
-	case kXorMode :
-		iMode = R2_NOTXORPEN; // Pixel is the inverse of the R2_XORPEN color (final pixel = ~ (pen ^ screen pixel)).
-		break;
-	case kOrMode :
-		iMode = R2_MERGEPEN; // Pixel is a combination of the pen color and the screen color (final pixel = pen | screen pixel).
-		break;
-	default:
-		iMode = R2_COPYPEN;
-		break;
-	}
+	long iMode = R2_COPYPEN;
 	SetROP2 ((HDC)pSystemContext, iMode);
 	#endif
 
@@ -480,16 +464,14 @@ void CDrawContext::moveTo (const CPoint &_point)
 	CPoint point (_point);
 	point.offset (offset.h, offset.v);
 
+	penLoc = point;
+
 #if WINDOWS
 	#if GDIPLUS
-	penLoc = point;
 	#else
 	MoveToEx ((HDC)pSystemContext, point.h, point.v, NULL);
 	#endif  
 
-#elif VSTGUI_USES_COREGRAPHICS
-  	penLoc = point;
-  	
 #endif
 }
 
@@ -510,6 +492,7 @@ void CDrawContext::lineTo (const CPoint& _point)
 	
 #elif VSTGUI_USES_COREGRAPHICS
 	CGContextRef context = beginCGContext (true);
+	if (context)
 	{
 		QuartzSetLineDash (context, lineStyle, frameWidth);
 
@@ -539,35 +522,17 @@ void CDrawContext::drawLines (const CPoint* points, const long& numLines)
 		if ((((int)frameWidth) % 2))
 			CGContextTranslateCTM (gCGContext, 0.5f, -0.5f);
 
-		#if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_4
-		#if MAC_OS_X_VERSION_MIN_REQUIRED < MAC_OS_X_VERSION_10_4
-		if (CGContextStrokeLineSegments != NULL)
-		#else
-		if (true)
-		#endif
+		CGPoint* cgPoints = new CGPoint[numLines*2];
+		for (long i = 0; i < numLines * 2; i += 2)
 		{
-			CGPoint* cgPoints = new CGPoint[numLines*2];
-			for (long i = 0; i < numLines * 2; i += 2)
-			{
-				cgPoints[i].x = points[i].x + offset.x;
-				cgPoints[i+1].x = points[i+1].x + offset.x;
-				cgPoints[i].y = points[i].y + offset.y;
-				cgPoints[i+1].y = points[i+1].y + offset.y;
-			}
-			CGContextStrokeLineSegments (context, cgPoints, numLines*2);
-			delete [] cgPoints;
+			cgPoints[i].x = points[i].x + offset.x;
+			cgPoints[i+1].x = points[i+1].x + offset.x;
+			cgPoints[i].y = points[i].y + offset.y;
+			cgPoints[i+1].y = points[i+1].y + offset.y;
 		}
-		else
-		#endif
-		{
-			CGContextBeginPath (context);
-			for (long i = 0; i < numLines * 2; i += 2)
-			{
-				CGContextMoveToPoint (context, points[i].x + offset.x, points[i].y + offset.y);
-				CGContextAddLineToPoint (context, points[i+1].x + offset.x, points[i+1].y + offset.y);
-			}
-			CGContextDrawPath (context, kCGPathStroke);
-		}
+		CGContextStrokeLineSegments (context, cgPoints, numLines*2);
+		delete [] cgPoints;
+
 		releaseCGContext (context);
 	}
 
@@ -1119,15 +1084,6 @@ void CDrawContext::drawStringUTF8 (const char* string, const CRect& _rect, const
 }
 
 //-----------------------------------------------------------------------------
-void CDrawContext::forget ()
-{
-	#if VSTGUI_USES_COREGRAPHICS
-	synchronizeCGContext ();
-	#endif
-	CBaseObject::forget ();
-}
-
-//-----------------------------------------------------------------------------
 #if VSTGUI_USES_COREGRAPHICS
 //-----------------------------------------------------------------------------
 CGContextRef CDrawContext::beginCGContext (bool swapYAxis)
@@ -1149,23 +1105,13 @@ void CDrawContext::releaseCGContext (CGContextRef context)
 	if (context)
 	{
 		CGContextRestoreGState (context);
-		needToSynchronizeCGContext = true;
-	}
-}
-
-//-----------------------------------------------------------------------------
-void CDrawContext::synchronizeCGContext ()
-{
-	if (needToSynchronizeCGContext && gCGContext)
-	{
-		CGContextSynchronize (gCGContext);
-		needToSynchronizeCGContext = false;
 	}
 }
 
 //-----------------------------------------------------------------------------
 CGImageRef CDrawContext::getCGImage () const
 {
+	// only for subclasses
 	return 0;
 }
 
@@ -1201,28 +1147,6 @@ static void addOvalToPath (CGContextRef c, CPoint center, CGFloat a, CGFloat b, 
 
 	CGContextRestoreGState(c);
 }
-
-
-#if MAC_CARBON
-//-----------------------------------------------------------------------------
-BitMapPtr CDrawContext::getBitmap ()
-{
-	return (BitMapPtr)GetPortBitMapForCopyBits (GetWindowPort ((WindowRef)pWindow));
-}
-
-//-----------------------------------------------------------------------------
-void CDrawContext::releaseBitmap ()
-{
-}
-
-//-----------------------------------------------------------------------------
-CGrafPtr CDrawContext::getPort ()
-{
-	if (pWindow)
-		return (CGrafPtr)GetWindowPort ((WindowRef)pWindow);
-	return 0;
-}
-#endif
 
 //-----------------------------------------------------------------------------
 class GenericMacColorSpace

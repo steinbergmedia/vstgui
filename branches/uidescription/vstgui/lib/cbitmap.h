@@ -54,7 +54,6 @@
 #endif // WINDOWS
 
 BEGIN_NAMESPACE_VSTGUI
-class CFrame;
 class CDrawContext;
 
 //-----------------------------------------------------------------------------
@@ -94,7 +93,7 @@ public:
 	//-----------------------------------------------------------------------------
 	//@{
 	CBitmap (const CResourceDescription& desc);				///< Create a pixmap from a resource identifier.
-	CBitmap (CFrame &frame, CCoord width, CCoord height);	///< Create a pixmap with a given size.
+	CBitmap (CCoord width, CCoord height);					///< Create a pixmap with a given size.
 	//@}
 	virtual ~CBitmap ();
 

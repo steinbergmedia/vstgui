@@ -126,6 +126,8 @@ BEGIN_NAMESPACE_VSTGUI
 	#endif
 
 	#if MAC_CARBON
+		#pragma GCC diagnostic ignored "-Wdeprecated-declarations" // we know that we use deprecated functions from Carbon, so we don't want to be warned
+
 		bool isWindowComposited (WindowRef window);
 		void CRect2Rect (const CRect &cr, Rect &rr);
 		void Rect2CRect (Rect &rr, CRect &cr);
@@ -175,7 +177,7 @@ const char* kMsgOldFocusView = "kMsgOldFocusView";
 /*! @class CFrame
 It creates a platform dependend view object. 
 
-On Mac OS X it is a HIView.\n 
+On Mac OS X it is a HIView or NSView.\n 
 On Windows it's a WS_CHILD Window.
 
 */
@@ -196,14 +198,8 @@ CFrame::CFrame (const CRect &inSize, void* inSystemWindow, VSTGUIEditorInterface
 , pMouseOverView (0)
 , bFirstDraw (true)
 , bDropActive (false)
-, pFrameContext (0)
-#if ENABLE_VST_EXTENSION_IN_VSTGUI
-, bAddedWindow (false)
-, pVstWindow (0)
-#endif // ENABLE_VST_EXTENSION_IN_VSTGUI
 , defaultCursor (0)
 {
-	setOpenFlag (true);
 	bIsAttached = true;
 	
 	pParentFrame = this;
@@ -258,7 +254,6 @@ CFrame::CFrame (const CRect &inSize, void* inSystemWindow, VSTGUIEditorInterface
 
 #if MAC_CARBON
 	Gestalt (gestaltSystemVersion, &pSystemVersion);
-	pFrameContext = 0;
 	controlRef = 0;
 	dragEventHandler = 0;
 	mouseEventHandler = 0;
@@ -267,90 +262,6 @@ CFrame::CFrame (const CRect &inSize, void* inSystemWindow, VSTGUIEditorInterface
 	initFrame (inSystemWindow);
 
 }
-
-#if ENABLE_VST_EXTENSION_IN_VSTGUI
-//-----------------------------------------------------------------------------
-/**
- * creates a custom window if VST host supports it (only possible if ENABLE_VST_EXTENSION_IN_VSTGUI)
- * \note this is deprecated with VST 2.4
- * @param inSize size of frame
- * @param inTitle window title
- * @param inEditor editor
- * @param inStyle window style
- */
-CFrame::CFrame (const CRect& inSize, const char* inTitle, VSTGUIEditorInterface* inEditor, const long inStyle)
-: CViewContainer (inSize, 0, 0)
-, pEditor (inEditor)
-, pMouseObserver (0)
-, pKeyboardHook (0)
-, pSystemWindow (0)
-, pModalView (0)
-, pFocusView (0)
-, pMouseOverView (0)
-, bFirstDraw (true)
-, bDropActive (false)
-, pFrameContext (0)
-, pVstWindow (0) 
-, defaultCursor (0)
-{
-	bAddedWindow  = true;
-	setOpenFlag (false);
-	pParentFrame = this;
-	bIsAttached = true;
-
-#if WINDOWS
-	pHwnd = 0;
-	dropTarget = 0;
-	backBuffer = 0;
-	OleInitialize (0);
-	bMouseInside = false;
-
-	#if DYNAMICALPHABLEND
-	pfnAlphaBlend = 0;
-	pfnTransparentBlt = 0;
-
-	hInstMsimg32dll = LoadLibrary ("msimg32.dll");
-	if (hInstMsimg32dll)
-	{
-		pfnAlphaBlend = (PFNALPHABLEND)GetProcAddress (hInstMsimg32dll, "AlphaBlend");
-
-		// get OS version
-		OSVERSIONINFOEX	osvi;
-
-		memset (&osvi, 0, sizeof (osvi));
-		osvi.dwOSVersionInfoSize = sizeof (osvi);
-
-		if (GetVersionEx ((OSVERSIONINFO *)&osvi))
-		{
-			// Is this win NT or better?
-			if (osvi.dwPlatformId >= VER_PLATFORM_WIN32_NT)
-			{
-				// Yes, then TransparentBlt doesn't have the memory-leak and can be safely used
-				pfnTransparentBlt = (PFNTRANSPARENTBLT)GetProcAddress (hInstMsimg32dll, "TransparentBlt");
-			}
-		}
-	}
-	#endif
-
-#elif MAC_COCOA && !MAC_CARBON
-	createNSViewMode = true;
-	
-#endif
-
-	#if !VST_FORCE_DEPRECATED
-	pVstWindow = (VstWindow*)malloc (sizeof (VstWindow));
-	strcpy (((VstWindow*)pVstWindow)->title, inTitle);
-	((VstWindow*)pVstWindow)->xPos   = (short)size.left;
-	((VstWindow*)pVstWindow)->yPos   = (short)size.top;
-	((VstWindow*)pVstWindow)->width  = (short)size.width ();
-	((VstWindow*)pVstWindow)->height = (short)size.height ();
-	((VstWindow*)pVstWindow)->style  = inStyle;
-	((VstWindow*)pVstWindow)->parent     = 0;
-	((VstWindow*)pVstWindow)->userHandle = 0;
-	((VstWindow*)pVstWindow)->winHandle  = 0;
-	#endif
-}
-#endif
 
 //-----------------------------------------------------------------------------
 CFrame::~CFrame ()
@@ -361,9 +272,6 @@ CFrame::~CFrame ()
 	setCursor (kCursorDefault);
 
 	setDropActive (false);
-
-	if (pFrameContext)
-		pFrameContext->forget ();
 
 	pParentFrame = 0;
 	removeAll ();
@@ -391,14 +299,6 @@ CFrame::~CFrame ()
 	#endif
 #endif
 
-	#if ENABLE_VST_EXTENSION_IN_VSTGUI
-	if (bAddedWindow)
-		close ();
-	if (pVstWindow)
-		free (pVstWindow);
-	#endif
-	
-
 #if MAC_COCOA
 	if (nsView)
 		destroyNSView (nsView);
@@ -420,78 +320,7 @@ void CFrame::setCocoaMode (bool state)
 {
 	createNSViewMode = state;
 }
-
 #endif
-
-
-#if ENABLE_VST_EXTENSION_IN_VSTGUI
-//-----------------------------------------------------------------------------
-/**
- * open custom window
- * \note deprecated with VST 2.4
- * @param point location of left top position where to open the window
- * @return true on success
- */
-bool CFrame::open (CPoint* point)
-{
-#if (!VST_FORCE_DEPRECATED)
-	if (!bAddedWindow)
-		return false;
-	if (getOpenFlag ())
-	{
-		#if WINDOWS
-		BringWindowToTop (GetParent (GetParent ((HWND)getSystemWindow ())));
-
-		#endif
-		return false;
-	}
-
-	if (pVstWindow)
-	{
-		if (point)
-		{
-			((VstWindow*)pVstWindow)->xPos = (short)point->h;
-			((VstWindow*)pVstWindow)->yPos = (short)point->v;
-		}
-		AudioEffectX* pAudioEffectX = (AudioEffectX*)(((AEffGUIEditor*)pEditor)->getEffect ());
-		pSystemWindow = pAudioEffectX->openWindow ((VstWindow*)pVstWindow);
-	}
-
-	if (pSystemWindow)
-	{
-		if (initFrame (pSystemWindow))
-			setOpenFlag (true);
-	}
-
-	return getOpenFlag ();
-#else
-	return false;
-#endif
-}
-
-//-----------------------------------------------------------------------------
-/**
- * close custom window
- * \note deprecated with VST 2.4
- * @return true on success
- */
-bool CFrame::close ()
-{
-#if (!VST_FORCE_DEPRECATED)
-	if (!bAddedWindow || !getOpenFlag () || !pSystemWindow)
-		return false;
-
-	AudioEffectX* pAudioEffectX = (AudioEffectX*)(((AEffGUIEditor*)pEditor)->getEffect ());
-	pAudioEffectX->closeWindow ((VstWindow*)pVstWindow);
-
-	pSystemWindow = 0;
-
-	return true;
-#else
-	return false;
-#endif
-}
-#endif // ENABLE_VST_EXTENSION_IN_VSTGUI
 
 //-----------------------------------------------------------------------------
 bool CFrame::initFrame (void* systemWin)
@@ -676,12 +505,6 @@ bool CFrame::setDropActive (bool val)
 //-----------------------------------------------------------------------------
 CDrawContext* CFrame::createDrawContext ()
 {
-	if (pFrameContext)
-	{
-		pFrameContext->remember ();
-		return pFrameContext;
-	}
-
 	CDrawContext* pContext = 0;
 	#if WINDOWS || MAC
 	pContext = new CDrawContext (this, NULL, getSystemWindow ());
@@ -702,9 +525,6 @@ void CFrame::drawRect (CDrawContext* pContext, const CRect& updateRect)
 {
 	if (bFirstDraw)
 		bFirstDraw = false;
-
-	if (!pContext)
-		pContext = pFrameContext;
 
 	if (pContext)
 		pContext->remember ();
@@ -907,19 +727,12 @@ bool CFrame::onWheel (const CPoint &where, const float &distance, const long &bu
 //-----------------------------------------------------------------------------
 void CFrame::idle ()
 {
-	if (!getOpenFlag ())
-		return;
-
 	invalidateDirtyViews ();
 }
 
 //-----------------------------------------------------------------------------
 void CFrame::doIdleStuff ()
 {
-#if MAC
-	if (pFrameContext)
-		pFrameContext->synchronizeCGContext ();
-#endif
 	if (pEditor)
 		pEditor->doIdleStuff ();
 }
@@ -1013,8 +826,6 @@ HWND CFrame::getOuterWindow () const
  */
 bool CFrame::setPosition (CCoord x, CCoord y)
 {
-	if (!getOpenFlag ())
-		return false;
 #if MAC_CARBON
 	if (controlRef)
 	{
@@ -1047,9 +858,6 @@ bool CFrame::setPosition (CCoord x, CCoord y)
  */
 bool CFrame::getPosition (CCoord &x, CCoord &y) const
 {
-	if (!getOpenFlag ())
-		return false;
-	
 	// get the position of the Window including this frame in the main pWindow
 #if WINDOWS
 	HWND wnd = (HWND)getOuterWindow ();
@@ -1123,9 +931,6 @@ void CFrame::setViewSize (CRect& rect, bool invalid)
  */
 bool CFrame::setSize (CCoord width, CCoord height)
 {
-	if (!getOpenFlag ())
-		return false;
-	
 	if ((width == size.width ()) && (height == size.height ()))
 		return false;
 
@@ -1249,9 +1054,6 @@ bool CFrame::setSize (CCoord width, CCoord height)
  */
 bool CFrame::getSize (CRect* pRect) const
 {
-	if (!getOpenFlag ())
-		return false;
-
 #if WINDOWS
 	// return the size relative to the client rect of this window
 	// get the main window
@@ -2334,7 +2136,6 @@ void ExitWindowClass ()
 //-----------------------------------------------------------------------------
 LONG_PTR WINAPI WindowProc (HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
-	USING_NAMESPACE_VSTGUI
 	CFrame* pFrame = (CFrame*)(LONG_PTR)GetWindowLongPtr (hwnd, GWLP_USERDATA);
 
 	bool doubleClick = false;
@@ -2442,71 +2243,16 @@ LONG_PTR WINAPI WindowProc (HWND hwnd, UINT message, WPARAM wParam, LPARAM lPara
 		}
 	}
 	break;
-#if 0 // currently disabled because of COptionMenu rewrite
-	case WM_MEASUREITEM :
-	{
-		MEASUREITEMSTRUCT* ms = (MEASUREITEMSTRUCT*)lParam;
-		if (pFrame && ms && ms->CtlType == ODT_MENU && ms->itemData)
-		{
-			COptionMenu* optMenu = (COptionMenu*)pFrame->getFocusView ();
-			if (optMenu && optMenu->getScheme ())
-			{
-				CPoint size;
 
-				CDrawContext context (pFrame, 0, hwnd);
-				optMenu->getScheme ()->getItemSize ((const char*)ms->itemData, &context, size);
-
-				ms->itemWidth  = (UINT)size.h;
-				ms->itemHeight = (UINT)size.v;
-				return TRUE;
-			}
-		}
-	}
-	break;
-
-	case WM_DRAWITEM :
-	{
-		DRAWITEMSTRUCT* ds = (DRAWITEMSTRUCT*)lParam;
-		if (pFrame && ds && ds->CtlType == ODT_MENU && ds->itemData)
-		{
-			COptionMenu* optMenu = (COptionMenu*)pFrame->getFocusView ();
-			if (optMenu && optMenu->getScheme ())
-			{
-				long state = 0;
-				if (ds->itemState & ODS_CHECKED)
-					state |= COptionMenuScheme::kChecked;
-				if (ds->itemState & ODS_DISABLED) // ODS_GRAYED?
-					state |= COptionMenuScheme::kDisabled;
-				if (ds->itemState & ODS_SELECTED)
-					state |= COptionMenuScheme::kSelected;
-					
-				CRect r ((CCoord)ds->rcItem.left, (CCoord)ds->rcItem.top, (CCoord)ds->rcItem.right, (CCoord)ds->rcItem.bottom);
-				r.bottom++;
-				
-				CDrawContext* pContext = new CDrawContext (pFrame, ds->hDC, 0);
-				optMenu->getScheme ()->drawItem ((const char*)ds->itemData, ds->itemID, state, pContext, r);
-				delete pContext;
-				return TRUE;
-			}
-		}
-	}
-	break;
-#endif
-
-#if 1
 	case WM_RBUTTONDBLCLK:
 	case WM_MBUTTONDBLCLK:
 	case WM_LBUTTONDBLCLK:
-	#if (_WIN32_WINNT >= 0x0500)
 	case WM_XBUTTONDBLCLK:
-	#endif
 		doubleClick = true;
 	case WM_RBUTTONDOWN:
 	case WM_MBUTTONDOWN:
 	case WM_LBUTTONDOWN:
-	#if (_WIN32_WINNT >= 0x0500)
 	case WM_XBUTTONDOWN:
-	#endif
 		if (pFrame)
 		{
 			long buttons = 0;
@@ -2516,12 +2262,10 @@ LONG_PTR WINAPI WindowProc (HWND hwnd, UINT message, WPARAM wParam, LPARAM lPara
 				buttons |= kRButton;
 			if (wParam & MK_MBUTTON)
 				buttons |= kMButton;
-			#if (_WIN32_WINNT >= 0x0500)
 			if (wParam & MK_XBUTTON1)
 				buttons |= kButton4;
 			if (wParam & MK_XBUTTON2)
 				buttons |= kButton5;
-			#endif
 			if (wParam & MK_CONTROL)
 				buttons |= kControl;
 			if (wParam & MK_SHIFT)
@@ -2555,12 +2299,10 @@ LONG_PTR WINAPI WindowProc (HWND hwnd, UINT message, WPARAM wParam, LPARAM lPara
 				buttons |= kRButton;
 			if (wParam & MK_MBUTTON)
 				buttons |= kMButton;
-			#if (_WIN32_WINNT >= 0x0500)
 			if (wParam & MK_XBUTTON1)
 				buttons |= kButton4;
 			if (wParam & MK_XBUTTON2)
 				buttons |= kButton5;
-			#endif
 			if (wParam & MK_CONTROL)
 				buttons |= kControl;
 			if (wParam & MK_SHIFT)
@@ -2576,9 +2318,7 @@ LONG_PTR WINAPI WindowProc (HWND hwnd, UINT message, WPARAM wParam, LPARAM lPara
 	case WM_LBUTTONUP:
 	case WM_RBUTTONUP:
 	case WM_MBUTTONUP:
-	#if (_WIN32_WINNT >= 0x0500)
 	case WM_XBUTTONUP:
-	#endif
 		if (pFrame)
 		{
 			long buttons = 0;
@@ -2588,12 +2328,10 @@ LONG_PTR WINAPI WindowProc (HWND hwnd, UINT message, WPARAM wParam, LPARAM lPara
 				buttons |= kRButton;
 			if (wParam & MK_MBUTTON)
 				buttons |= kMButton;
-			#if (_WIN32_WINNT >= 0x0500)
 			if (wParam & MK_XBUTTON1)
 				buttons |= kButton4;
 			if (wParam & MK_XBUTTON2)
 				buttons |= kButton5;
-			#endif
 			if (wParam & MK_CONTROL)
 				buttons |= kControl;
 			if (wParam & MK_SHIFT)
@@ -2607,30 +2345,10 @@ LONG_PTR WINAPI WindowProc (HWND hwnd, UINT message, WPARAM wParam, LPARAM lPara
 			return 0;
 		}
 		break;
-#else
-	case WM_RBUTTONDOWN:
-	case WM_MBUTTONDOWN:
-	case WM_LBUTTONDOWN:
-		if (pFrame)
-		{
-		#if 1
-			CDrawContext context (pFrame, 0, hwnd);
-			CPoint where (LOWORD (lParam), HIWORD (lParam));
-			pFrame->mouse (&context, where);
-		#else
-			CPoint where (LOWORD (lParam), HIWORD (lParam));
-			pFrame->mouse ((CDrawContext*)0, where);
-		#endif
-
-			return 0;
-		}
-		break;
-#endif
 		
 	case WM_DESTROY:
 		if (pFrame)
 		{
-			pFrame->setOpenFlag (false);
 			pFrame->setParentSystemWindow (0);
 		}
 		break;
@@ -3303,20 +3021,10 @@ pascal OSStatus CFrame::carbonEventHandler (EventHandlerCallRef inHandlerCallRef
 				{
 					CDrawContext* context = 0;
 					CRect dirtyRect = frame->getViewSize ();
-					if (frame->pFrameContext)
-					{
-						context = frame->pFrameContext;
-						context->remember ();
-						#if DEBUG
-						DebugPrint ("This should not happen anymore\n");
-						#endif
-					}
-					else
-					{
-						CGContextRef cgcontext = 0;
-						OSStatus res = GetEventParameter (inEvent, kEventParamCGContextRef, typeCGContextRef, NULL, sizeof (cgcontext), NULL, &cgcontext);
-						context = new CDrawContext (frame, (res == noErr) ? cgcontext : NULL, window);
-					}
+					CGContextRef cgcontext = 0;
+					OSStatus res = GetEventParameter (inEvent, kEventParamCGContextRef, typeCGContextRef, NULL, sizeof (cgcontext), NULL, &cgcontext);
+					context = new CDrawContext (frame, (res == noErr) ? cgcontext : NULL, window);
+
 					RgnHandle dirtyRegion;
 					if (GetEventParameter (inEvent, kEventParamRgnHandle, typeQDRgnHandle, NULL, sizeof (RgnHandle), NULL, &dirtyRegion) == noErr)
 					{

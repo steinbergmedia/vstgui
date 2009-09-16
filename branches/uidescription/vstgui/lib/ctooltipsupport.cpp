@@ -36,7 +36,6 @@
 #include "cvstguitimer.h"
 
 #if WINDOWS
-#define _WIN32_WINNT 0x0501	// Works only on Windows XP and above because of TTM_POPUP
 #include <commctrl.h>
 #include "win32support.h"
 #endif

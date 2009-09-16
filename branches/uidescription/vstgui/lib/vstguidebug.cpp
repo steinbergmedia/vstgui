@@ -97,11 +97,7 @@ void DebugPrint (const char *format, ...)
 	UTF8StringHelper debugString (string);
 	OutputDebugString (debugString);
 	#else
-	#if __MWERKS__
-		printf (string);
-	#else
-		fprintf (stderr, "%s", string);
-	#endif	// #if __MWERKS__
+	fprintf (stderr, "%s", string);
 	#endif
 }
 
