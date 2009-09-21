@@ -32,45 +32,79 @@
 // OF THE POSSIBILITY OF SUCH DAMAGE.
 //-----------------------------------------------------------------------------
 
-#ifndef __vstgui__
-#define __vstgui__
+#include "ctextlabel.h"
 
-#include "lib/vstguibase.h"
-#include "lib/cbitmap.h"
-#include "lib/ccolor.h"
-#include "lib/cdatabrowser.h"
-#include "lib/cdrawcontext.h"
-#include "lib/cfileselector.h"
-#include "lib/cfont.h"
-#include "lib/cframe.h"
-#include "lib/cgraphicspath.h"
-#include "lib/coffscreencontext.h"
-#include "lib/cpoint.h"
-#include "lib/crect.h"
-#include "lib/cscrollview.h"
-#include "lib/ctabview.h"
-#include "lib/ctooltipsupport.h"
-#include "lib/cview.h"
-#include "lib/cviewcontainer.h"
-#include "lib/cvstguitimer.h"
-#include "lib/vstguidebug.h"
+BEGIN_NAMESPACE_VSTGUI
 
-#include "lib/controls/ccontrol.h"
-#include "lib/controls/cbuttons.h"
-#include "lib/controls/cparamdisplay.h"
-#include "lib/controls/ctextlabel.h"
-#include "lib/controls/ctextedit.h"
-#include "lib/controls/coptionmenu.h"
-#include "lib/controls/cknob.h"
-#include "lib/controls/cswitch.h"
-#include "lib/controls/cslider.h"
-#include "lib/controls/cmoviebitmap.h"
-#include "lib/controls/cmoviebutton.h"
-#include "lib/controls/cautoanimation.h"
-#include "lib/controls/cspecialdigit.h"
-#include "lib/controls/csplashscreen.h"
-#include "lib/controls/cvumeter.h"
+//------------------------------------------------------------------------
+// CTextLabel
+//------------------------------------------------------------------------
+/*! @class CTextLabel
+*/
+//------------------------------------------------------------------------
+/**
+ * CTextLabel constructor.
+ * @param size the size of this view
+ * @param txt the initial text as c string (can be UTF-8 encoded if VSTGUI_USES_UTF8 is set)
+ * @param background the background bitmap
+ * @param style the display style (see CParamDisplay for styles)
+ */
+//------------------------------------------------------------------------
+CTextLabel::CTextLabel (const CRect& size, const char* txt, CBitmap* background, const long style)
+: CParamDisplay (size, background, style)
+, text (0)
+{
+	setText (txt);
+}
 
-USING_NAMESPACE_VSTGUI
+//------------------------------------------------------------------------
+CTextLabel::CTextLabel (const CTextLabel& v)
+: CParamDisplay (v)
+, text (0)
+{
+	setText (v.getText ());
+}
 
-#endif
+//------------------------------------------------------------------------
+CTextLabel::~CTextLabel ()
+{
+	freeText ();
+}
+
+//------------------------------------------------------------------------
+void CTextLabel::freeText ()
+{
+	if (text)
+		free (text);
+	text = 0;
+}
+
+//------------------------------------------------------------------------
+void CTextLabel::setText (const char* txt)
+{
+	if (!text && !txt || (text && txt && strcmp (text, txt) == 0))
+		return;
+	freeText ();
+	if (txt)
+	{
+		text = (char*)malloc (strlen (txt)+1);
+		strcpy (text, txt);
+	}
+	setDirty (true);
+}
+
+//------------------------------------------------------------------------
+const char* CTextLabel::getText () const
+{
+	return text;
+}
+
+//------------------------------------------------------------------------
+void CTextLabel::draw (CDrawContext *pContext)
+{
+	drawBack (pContext);
+	drawText (pContext, text);
+	setDirty (false);
+}
+
+END_NAMESPACE_VSTGUI

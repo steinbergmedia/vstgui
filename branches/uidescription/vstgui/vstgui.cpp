@@ -56,13 +56,30 @@
 #include "lib/cview.cpp"
 #include "lib/cviewcontainer.cpp"
 #include "lib/cvstguitimer.cpp"
-#include "lib/vstcontrols.cpp"
 #include "lib/vstguidebug.cpp"
+
+#include "lib/controls/ccontrol.cpp"
+#include "lib/controls/cbuttons.cpp"
+#include "lib/controls/cparamdisplay.cpp"
+#include "lib/controls/ctextlabel.cpp"
+#include "lib/controls/ctextedit.cpp"
+#include "lib/controls/coptionmenu.cpp"
+#include "lib/controls/cknob.cpp"
+#include "lib/controls/cswitch.cpp"
+#include "lib/controls/cslider.cpp"
+#include "lib/controls/cmoviebitmap.cpp"
+#include "lib/controls/cmoviebutton.cpp"
+#include "lib/controls/cautoanimation.cpp"
+#include "lib/controls/cspecialdigit.cpp"
+#include "lib/controls/csplashscreen.cpp"
+#include "lib/controls/cvumeter.cpp"
 
 #if MAC
 	#ifdef __OBJC__
 		#import "lib/cfontmac.mm"
 		#import "lib/cocoasupport.mm"
+	#else
+		#error You need to use the Objective-C++ compiler for this file
 	#endif
 #endif
 

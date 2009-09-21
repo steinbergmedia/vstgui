@@ -46,7 +46,7 @@
 #endif // MAC_COCOA
 
 #if WINDOWS
-	#include "vstcontrols.h"
+	#include "controls/ctextedit.h"
 	#include "win32support.h"
 	static bool bSwapped_mouse_buttons = false; 
 	OSVERSIONINFOEX	gSystemVersion;
@@ -1553,7 +1553,7 @@ void CFrame::invalidate (const CRect &rect)
 		if (rect.rectOverlap (rectView))
 			pV->setDirty (true);
 	}
-	ENDFOR
+	ENDFOREACHSUBVIEW
 }
 
 //-----------------------------------------------------------------------------

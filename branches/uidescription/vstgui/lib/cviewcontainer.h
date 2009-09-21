@@ -180,8 +180,8 @@ public:
 #ifndef FOREACHSUBVIEW_REVERSE
 	#define FOREACHSUBVIEW_REVERSE(reverse) for (CCView* pSv = reverse ? pLastView : pFirstView; pSv; pSv = reverse ? pSv->pPrevious : pSv->pNext) {CView* pV = pSv->pView;
 #endif
-#ifndef ENDFOR
-	#define ENDFOR }
+#ifndef ENDFOREACHSUBVIEW
+	#define ENDFOREACHSUBVIEW }
 #endif
 
 /// \endcond

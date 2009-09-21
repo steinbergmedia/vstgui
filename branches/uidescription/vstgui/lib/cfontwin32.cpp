@@ -100,7 +100,13 @@ void GdiPlusFont::drawString (CDrawContext* context, const char* utf8String, con
 CCoord GdiPlusFont::getStringWidth (CDrawContext* context, const char* utf8String, bool antialias)
 {
 	CCoord result = 0;
-	Gdiplus::Graphics* pGraphics = context->getGraphics ();
+	Gdiplus::Graphics* pGraphics = context ? context->getGraphics () : 0;
+	HDC hdc = 0;
+	if (context == 0)
+	{
+		hdc = CreateCompatibleDC (0);
+		pGraphics = new Gdiplus::Graphics (hdc);
+	}
 	if (pGraphics && font)
 	{
 		UTF8StringHelper stringText (utf8String);
@@ -108,6 +114,11 @@ CCoord GdiPlusFont::getStringWidth (CDrawContext* context, const char* utf8Strin
 		Gdiplus::RectF resultRect;
 		pGraphics->MeasureString (stringText, -1, font, gdiPoint, &resultRect);
 		result = (CCoord)resultRect.Width;
+	}
+	if (hdc)
+	{
+		delete pGraphics;
+		DeleteDC (hdc);
 	}
 	return result;
 }

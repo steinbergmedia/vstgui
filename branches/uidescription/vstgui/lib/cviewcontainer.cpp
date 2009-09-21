@@ -36,7 +36,7 @@
 #include "coffscreencontext.h"
 #include "cbitmap.h"
 #include "cframe.h"
-#include "vstcontrols.h"
+#include "controls/ccontrol.h"
 
 BEGIN_NAMESPACE_VSTGUI
 
@@ -122,7 +122,7 @@ void CViewContainer::parentSizeChanged ()
 {
 	FOREACHSUBVIEW
 		pV->parentSizeChanged ();	// notify children that the size of the parent or this container has changed
-	ENDFOR
+	ENDFOREACHSUBVIEW
 }
 
 //-----------------------------------------------------------------------------
@@ -197,7 +197,7 @@ void CViewContainer::setViewSize (CRect &rect, bool invalid)
 				pV->setMouseableArea (mouseSize);
 			}
 			counter++;
-		ENDFOR
+		ENDFOREACHSUBVIEW
 	}
 	
 	parentSizeChanged ();
@@ -479,12 +479,9 @@ bool CViewContainer::isChild (CView *pView, bool deep) const
 long CViewContainer::getNbViews () const
 {
 	long nb = 0;
-	CCView* pV = pFirstView;
-	while (pV)
-	{
-		pV = pV->pNext;
+	FOREACHSUBVIEW
 		nb++;
-	}
+	ENDFOREACHSUBVIEW
 	return nb;
 }
 
@@ -496,14 +493,11 @@ long CViewContainer::getNbViews () const
 CView* CViewContainer::getView (long index) const
 {
 	long nb = 0;
-	CCView* pV = pFirstView;
-	while (pV)
-	{
+	FOREACHSUBVIEW
 		if (nb == index)
-			return pV->pView;
-		pV = pV->pNext;
+			return pV;
 		nb++;
-	}
+	ENDFOREACHSUBVIEW
 	return 0;
 }
 
@@ -528,7 +522,7 @@ bool CViewContainer::invalidateDirtyViews ()
 			else
 				pV->invalid ();
 		}
-	ENDFOR
+	ENDFOREACHSUBVIEW
 	return true;
 }
 
@@ -639,7 +633,7 @@ void CViewContainer::drawBackToFront (CDrawContext* pContext, const CRect& updat
 
 			pV->drawRect (pContext, clientRect);
 		}
-	ENDFOR
+	ENDFOREACHSUBVIEW
 
 	pContext->setClipRect (oldClip2);
 	restoreDrawContext (pContext, save);
@@ -710,7 +704,7 @@ void CViewContainer::drawRect (CDrawContext* pContext, const CRect& updateRect)
 			}
 			#endif
 		}
-	ENDFOR
+	ENDFOREACHSUBVIEW
 
 	pC->setClipRect (oldClip2);
 
@@ -746,14 +740,10 @@ bool CViewContainer::hitTestSubViews (const CPoint& where, const long buttons)
 	CPoint where2 (where);
 	where2.offset (-size.left, -size.top);
 
-	CCView* pSv = pLastView;
-	while (pSv)
-	{
-		CView* pV = pSv->pView;
+	FOREACHSUBVIEW_REVERSE(true)
 		if (pV && pV->getMouseEnabled () && pV->hitTest (where2, buttons))
 			return true;
-		pSv = pSv->pPrevious;
-	}
+	ENDFOREACHSUBVIEW
 	return false;
 }
 
@@ -776,10 +766,7 @@ CMouseEventResult CViewContainer::onMouseDown (CPoint &where, const long& button
 	CPoint where2 (where);
 	where2.offset (-size.left, -size.top);
 
-	CCView* pSv = pLastView;
-	while (pSv)
-	{
-		CView* pV = pSv->pView;
+	FOREACHSUBVIEW_REVERSE(true)
 		if (pV && pV->isVisible () && pV->getMouseEnabled () && pV->hitTest (where2, buttons))
 		{
 			if (pV->isTypeOf("CControl") && ((CControl*)pV)->getListener () && buttons & (kAlt | kShift | kControl | kApple))
@@ -792,8 +779,7 @@ CMouseEventResult CViewContainer::onMouseDown (CPoint &where, const long& button
 				mouseDownView = pV;
 			return result;
 		}
-		pSv = pSv->pPrevious;
-	}
+	ENDFOREACHSUBVIEW
 	return kMouseEventNotHandled;
 }
 
@@ -835,15 +821,11 @@ long CViewContainer::onKeyDown (VstKeyCode& keyCode)
 {
 	long result = -1;
 
-	CCView* pSv = pLastView;
-	while (pSv)
-	{
-		result = pSv->pView->onKeyDown (keyCode);
+	FOREACHSUBVIEW_REVERSE(true)
+		result = pV->onKeyDown (keyCode);
 		if (result != -1)
 			break;
-
-		pSv = pSv->pPrevious;
-	}
+	ENDFOREACHSUBVIEW
 
 	return result;
 }
@@ -853,16 +835,12 @@ long CViewContainer::onKeyUp (VstKeyCode& keyCode)
 {
 	long result = -1;
 
-	CCView* pSv = pLastView;
-	while (pSv)
-	{
-		result = pSv->pView->onKeyUp (keyCode);
+	FOREACHSUBVIEW_REVERSE(true)
+		result = pV->onKeyUp (keyCode);
 		if (result != -1)
 			break;
-
-		pSv = pSv->pPrevious;
-	}
-
+	ENDFOREACHSUBVIEW
+	
 	return result;
 }
 
@@ -978,7 +956,7 @@ void CViewContainer::looseFocus ()
 {
 	FOREACHSUBVIEW
 		pV->looseFocus ();
-	ENDFOR
+	ENDFOREACHSUBVIEW
 }
 
 //-----------------------------------------------------------------------------
@@ -986,7 +964,7 @@ void CViewContainer::takeFocus ()
 {
 	FOREACHSUBVIEW
 		pV->takeFocus ();
-	ENDFOR
+	ENDFOREACHSUBVIEW
 }
 
 //-----------------------------------------------------------------------------
@@ -1020,7 +998,7 @@ bool CViewContainer::advanceNextFocusView (CView* oldFocus, bool reverse)
 					return true;
 			}
 		}
-	ENDFOR
+	ENDFOREACHSUBVIEW
 	return false;
 }
 
@@ -1041,7 +1019,7 @@ bool CViewContainer::isDirty () const
 			if (r.getWidth () > 0 && r.getHeight () > 0)
 				return true;
 		}
-	ENDFOR
+	ENDFOREACHSUBVIEW
 	return false;
 }
 
@@ -1061,10 +1039,7 @@ CView* CViewContainer::getViewAt (const CPoint& p, bool deep) const
 	// convert to relativ pos
 	where.offset (-size.left, -size.top);
 
-	CCView* pSv = pLastView;
-	while (pSv)
-	{
-		CView* pV = pSv->pView;
+	FOREACHSUBVIEW_REVERSE(true)
 		if (pV && pV->isVisible () && where.isInside (pV->getMouseableArea ()))
 		{
 			if (deep)
@@ -1074,8 +1049,7 @@ CView* CViewContainer::getViewAt (const CPoint& p, bool deep) const
 			}
 			return pV;
 		}
-		pSv = pSv->pPrevious;
-	}
+	ENDFOREACHSUBVIEW
 
 	return 0;
 }
@@ -1096,18 +1070,14 @@ CViewContainer* CViewContainer::getContainerAt (const CPoint& p, bool deep) cons
 	// convert to relativ pos
 	where.offset (-size.left, -size.top);
 
-	CCView* pSv = pLastView;
-	while (pSv)
-	{
-		CView* pV = pSv->pView;
+	FOREACHSUBVIEW_REVERSE(true)
 		if (pV && pV->isVisible () && where.isInside (pV->getMouseableArea ()))
 		{
 			if (deep && pV->isTypeOf ("CViewContainer"))
 				return ((CViewContainer*)pV)->getContainerAt (where, deep);
 			break;
 		}
-		pSv = pSv->pPrevious;
-	}
+	ENDFOREACHSUBVIEW
 
 	return const_cast<CViewContainer*>(this);
 }
@@ -1141,7 +1111,7 @@ bool CViewContainer::removed (CView* parent)
 
 	FOREACHSUBVIEW
 		pV->removed (this);
-	ENDFOR
+	ENDFOREACHSUBVIEW
 	
 	return CView::removed (parent);
 }
@@ -1157,7 +1127,7 @@ bool CViewContainer::attached (CView* parent)
 
 	FOREACHSUBVIEW
 		pV->attached (this);
-	ENDFOR
+	ENDFOREACHSUBVIEW
 
 	return CView::attached (parent);
 }
@@ -1219,7 +1189,7 @@ void CViewContainer::dumpHierarchy ()
 		DebugPrint ("\n");
 		if (pV->isTypeOf ("CViewContainer"))
 			((CViewContainer*)pV)->dumpHierarchy ();
-	ENDFOR
+	ENDFOREACHSUBVIEW
 	_debugDumpLevel--;
 }
 

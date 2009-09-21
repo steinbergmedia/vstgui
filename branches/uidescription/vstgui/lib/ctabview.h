@@ -35,9 +35,9 @@
 #ifndef __ctabview__
 #define __ctabview__
 
-#ifndef __vstcontrols__
-#include "vstcontrols.h"
-#endif
+#include "cviewcontainer.h"
+#include "cfont.h"
+#include "controls/ccontrol.h"
 
 BEGIN_NAMESPACE_VSTGUI
 

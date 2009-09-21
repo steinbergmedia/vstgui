@@ -32,45 +32,60 @@
 // OF THE POSSIBILITY OF SUCH DAMAGE.
 //-----------------------------------------------------------------------------
 
-#ifndef __vstgui__
-#define __vstgui__
+#ifndef __cautoanimation__
+#define __cautoanimation__
 
-#include "lib/vstguibase.h"
-#include "lib/cbitmap.h"
-#include "lib/ccolor.h"
-#include "lib/cdatabrowser.h"
-#include "lib/cdrawcontext.h"
-#include "lib/cfileselector.h"
-#include "lib/cfont.h"
-#include "lib/cframe.h"
-#include "lib/cgraphicspath.h"
-#include "lib/coffscreencontext.h"
-#include "lib/cpoint.h"
-#include "lib/crect.h"
-#include "lib/cscrollview.h"
-#include "lib/ctabview.h"
-#include "lib/ctooltipsupport.h"
-#include "lib/cview.h"
-#include "lib/cviewcontainer.h"
-#include "lib/cvstguitimer.h"
-#include "lib/vstguidebug.h"
+#include "ccontrol.h"
 
-#include "lib/controls/ccontrol.h"
-#include "lib/controls/cbuttons.h"
-#include "lib/controls/cparamdisplay.h"
-#include "lib/controls/ctextlabel.h"
-#include "lib/controls/ctextedit.h"
-#include "lib/controls/coptionmenu.h"
-#include "lib/controls/cknob.h"
-#include "lib/controls/cswitch.h"
-#include "lib/controls/cslider.h"
-#include "lib/controls/cmoviebitmap.h"
-#include "lib/controls/cmoviebutton.h"
-#include "lib/controls/cautoanimation.h"
-#include "lib/controls/cspecialdigit.h"
-#include "lib/controls/csplashscreen.h"
-#include "lib/controls/cvumeter.h"
+BEGIN_NAMESPACE_VSTGUI
 
-USING_NAMESPACE_VSTGUI
+//-----------------------------------------------------------------------------
+// CAutoAnimation Declaration
+//!
+/// \nosubgrouping
+/// \ingroup controls
+//-----------------------------------------------------------------------------
+class CAutoAnimation : public CControl, public IMultiBitmapControl
+{
+public:
+	//-----------------------------------------------------------------------------
+	/// \name Constructor
+	//-----------------------------------------------------------------------------
+	//@{
+	CAutoAnimation (const CRect& size, CControlListener* listener, long tag, CBitmap* background, const CPoint& offset = CPoint (0, 0));
+	CAutoAnimation (const CRect& size, CControlListener* listener, long tag, long subPixmaps, CCoord heightOfOneImage, CBitmap* background, const CPoint& offset = CPoint (0, 0));
+	CAutoAnimation (const CAutoAnimation& autoAnimation);
+	//@}
+
+	virtual ~CAutoAnimation ();
+
+	virtual void draw (CDrawContext*);
+	virtual CMouseEventResult onMouseDown (CPoint& where, const long& buttons);
+
+	//-----------------------------------------------------------------------------
+	/// \name CAutoAnimation Methods
+	//-----------------------------------------------------------------------------
+	//@{
+	virtual void openWindow (void);			///< enabled drawing
+	virtual void closeWindow (void);		///< disable drawing
+
+	virtual void nextPixmap (void);			///< the next sub bitmap should be displayed
+	virtual void previousPixmap (void);		///< the previous sub bitmap should be displayed
+
+	bool    isWindowOpened () const { return bWindowOpened; }
+	//@}
+
+	void setNumSubPixmaps (long numSubPixmaps) { IMultiBitmapControl::setNumSubPixmaps (numSubPixmaps); invalid (); }
+
+	CLASS_METHODS(CAutoAnimation, CControl)
+protected:
+	CPoint	offset;
+
+	CCoord	totalHeightOfBitmap;
+
+	bool	bWindowOpened;
+};
+
+END_NAMESPACE_VSTGUI
 
 #endif

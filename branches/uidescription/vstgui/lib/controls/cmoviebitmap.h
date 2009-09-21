@@ -32,45 +32,42 @@
 // OF THE POSSIBILITY OF SUCH DAMAGE.
 //-----------------------------------------------------------------------------
 
-#ifndef __vstgui__
-#define __vstgui__
+#ifndef __cmoviebitmap__
+#define __cmoviebitmap__
 
-#include "lib/vstguibase.h"
-#include "lib/cbitmap.h"
-#include "lib/ccolor.h"
-#include "lib/cdatabrowser.h"
-#include "lib/cdrawcontext.h"
-#include "lib/cfileselector.h"
-#include "lib/cfont.h"
-#include "lib/cframe.h"
-#include "lib/cgraphicspath.h"
-#include "lib/coffscreencontext.h"
-#include "lib/cpoint.h"
-#include "lib/crect.h"
-#include "lib/cscrollview.h"
-#include "lib/ctabview.h"
-#include "lib/ctooltipsupport.h"
-#include "lib/cview.h"
-#include "lib/cviewcontainer.h"
-#include "lib/cvstguitimer.h"
-#include "lib/vstguidebug.h"
+#include "ccontrol.h"
 
-#include "lib/controls/ccontrol.h"
-#include "lib/controls/cbuttons.h"
-#include "lib/controls/cparamdisplay.h"
-#include "lib/controls/ctextlabel.h"
-#include "lib/controls/ctextedit.h"
-#include "lib/controls/coptionmenu.h"
-#include "lib/controls/cknob.h"
-#include "lib/controls/cswitch.h"
-#include "lib/controls/cslider.h"
-#include "lib/controls/cmoviebitmap.h"
-#include "lib/controls/cmoviebutton.h"
-#include "lib/controls/cautoanimation.h"
-#include "lib/controls/cspecialdigit.h"
-#include "lib/controls/csplashscreen.h"
-#include "lib/controls/cvumeter.h"
+BEGIN_NAMESPACE_VSTGUI
 
-USING_NAMESPACE_VSTGUI
+//-----------------------------------------------------------------------------
+// CMovieBitmap Declaration
+//! \brief a bitmap view that displays different bitmaps according to its current value
+/// \nosubgrouping
+/// \ingroup views
+//-----------------------------------------------------------------------------
+class CMovieBitmap : public CControl, public IMultiBitmapControl
+{
+public:
+	//-----------------------------------------------------------------------------
+	/// \name Constructor
+	//-----------------------------------------------------------------------------
+	//@{
+	CMovieBitmap (const CRect& size, CControlListener* listener, long tag, CBitmap* background, const CPoint& offset = CPoint (0, 0));
+	CMovieBitmap (const CRect& size, CControlListener* listener, long tag, long subPixmaps, CCoord heightOfOneImage, CBitmap* background, const CPoint& offset = CPoint (0, 0));
+	CMovieBitmap (const CMovieBitmap& movieBitmap);
+	//@}
+
+	virtual	~CMovieBitmap ();
+
+	virtual void draw (CDrawContext*);
+
+	void setNumSubPixmaps (long numSubPixmaps) { IMultiBitmapControl::setNumSubPixmaps (numSubPixmaps); invalid (); }
+
+	CLASS_METHODS(CMovieBitmap, CControl)
+protected:
+	CPoint	offset;
+};
+
+END_NAMESPACE_VSTGUI
 
 #endif

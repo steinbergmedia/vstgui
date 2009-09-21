@@ -1,3 +1,8 @@
+2009-09-19 arne
+
+	* splittet vstcontrols.cpp into different files
+	* added CCheckBox control
+
 2009-09-16 arne
 
 	* major directory change

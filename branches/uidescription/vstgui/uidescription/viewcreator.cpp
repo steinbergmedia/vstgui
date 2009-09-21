@@ -959,6 +959,151 @@ public:
 COnOffButtonCreator __gCOnOffButtonCreator;
 
 //-----------------------------------------------------------------------------
+class CCheckBoxCreator : public IViewCreator
+{
+public:
+	CCheckBoxCreator () { ViewFactory::registerViewCreator (*this); }
+	const char* getViewName () const { return "CCheckBox"; }
+	const char* getBaseViewName () const { return "CControl"; }
+	CView* create (const UIAttributes& attributes, IUIDescription* description) const { return new CCheckBox (CRect (0, 0, 100, 20), 0, -1, "Title"); }
+	bool apply (CView* view, const UIAttributes& attributes, IUIDescription* description) const
+	{
+		CCheckBox* checkbox = dynamic_cast<CCheckBox*> (view);
+		if (!checkbox)
+			return false;
+		
+		const std::string* attr = attributes.getAttributeValue ("title");
+		if (attr)
+			checkbox->setTitle (attr->c_str ());
+
+		attr = attributes.getAttributeValue ("font");
+		if (attr)
+		{
+			CFontRef font = description->getFont (attr->c_str ());
+			if (font)
+			{
+				rememberAttributeValueString (view, "font", *attr);
+				checkbox->setFont (font);
+			}
+		}
+
+		CColor color;
+		attr = attributes.getAttributeValue ("font-color");
+		if (attr)
+		{
+			if (description->getColor (attr->c_str (), color))
+			{
+				rememberAttributeValueString (view, "font-color", *attr);
+				checkbox->setFontColor (color);
+			}
+		}
+
+		attr = attributes.getAttributeValue ("boxframe-color");
+		if (attr)
+		{
+			if (description->getColor (attr->c_str (), color))
+			{
+				rememberAttributeValueString (view, "boxframe-color", *attr);
+				checkbox->setBoxFrameColor (color);
+			}
+		}
+
+		attr = attributes.getAttributeValue ("boxfill-color");
+		if (attr)
+		{
+			if (description->getColor (attr->c_str (), color))
+			{
+				rememberAttributeValueString (view, "boxfill-color", *attr);
+				checkbox->setBoxFillColor (color);
+			}
+		}
+
+		attr = attributes.getAttributeValue ("checkmark-color");
+		if (attr)
+		{
+			if (description->getColor (attr->c_str (), color))
+			{
+				rememberAttributeValueString (view, "checkmark-color", *attr);
+				checkbox->setCheckMarkColor (color);
+			}
+		}
+		return true;
+	}
+
+	bool getAttributeNames (std::list<std::string>& attributeNames) const
+	{
+		attributeNames.push_back ("title");
+		attributeNames.push_back ("font");
+		attributeNames.push_back ("font-color");
+		attributeNames.push_back ("boxframe-color");
+		attributeNames.push_back ("boxfill-color");
+		attributeNames.push_back ("checkmark-color");
+		return true;
+	}
+	AttrType getAttributeType (const std::string& attributeName) const
+	{
+		if (attributeName == "title") return kStringType;
+		else if (attributeName == "font") return kFontType;
+		else if (attributeName == "font-color") return kColorType;
+		else if (attributeName == "boxframe-color") return kColorType;
+		else if (attributeName == "boxfill-color") return kColorType;
+		else if (attributeName == "checkmark-color") return kColorType;
+		return kUnknownType;
+	}
+	bool getAttributeValue (CView* view, const std::string& attributeName, std::string& stringValue, IUIDescription* desc) const
+	{
+		CCheckBox* checkbox = dynamic_cast<CCheckBox*> (view);
+		if (!checkbox)
+			return false;
+		
+		if (attributeName == "title")
+		{
+			stringValue = checkbox->getTitle () ? checkbox->getTitle () : "";
+			return true;
+		}
+		else if (attributeName == "font")
+		{
+			if (getRememberedAttributeValueString (view, "font", stringValue))
+				return true;
+			const char* fontName = desc->lookupFontName (checkbox->getFont ());
+			if (fontName)
+			{
+				stringValue = fontName;
+				return true;
+			}
+			return false;
+		}
+		else if (attributeName == "font-color")
+		{
+			if (!getRememberedAttributeValueString (view, "font-color", stringValue))
+				colorToString (checkbox->getFontColor (), stringValue, desc);
+			return true;
+		}
+		else if (attributeName == "boxframe-color")
+		{
+			if (!getRememberedAttributeValueString (view, "boxframe-color", stringValue))
+				colorToString (checkbox->getBoxFrameColor (), stringValue, desc);
+			return true;
+		}
+		else if (attributeName == "boxfill-color")
+		{
+			if (!getRememberedAttributeValueString (view, "boxfill-color", stringValue))
+				colorToString (checkbox->getBoxFillColor (), stringValue, desc);
+			return true;
+		}
+		else if (attributeName == "checkmark-color")
+		{
+			if (!getRememberedAttributeValueString (view, "checkmark-color", stringValue))
+				colorToString (checkbox->getCheckMarkColor (), stringValue, desc);
+			return true;
+		}
+		return false;
+	}
+
+};
+CCheckBoxCreator __gCCheckBoxCreator;
+
+//-----------------------------------------------------------------------------
 class CParamDisplayCreator : public IViewCreator
 {
 public:

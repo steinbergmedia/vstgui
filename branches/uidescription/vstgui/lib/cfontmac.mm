@@ -305,9 +305,6 @@ CCoord ATSUFont::getStringWidth (CDrawContext* context, const char* utf8String, 
 		CFStringRef utf8Str = CFStringCreateWithCString (NULL, utf8String, kCFStringEncodingUTF8);
 		if (utf8Str)
 		{
-			CGContextRef cgContext = context->beginCGContext (false);
-			if (cgContext)
-			{
 				OSStatus status;
 				CFIndex stringLength = CFStringGetLength (utf8Str);
 				UniChar* textBuffer = (UniChar*)malloc (stringLength*sizeof (UniChar));
@@ -319,10 +316,14 @@ CCoord ATSUFont::getStringWidth (CDrawContext* context, const char* utf8String, 
 				status = ATSUSetRunStyle (textLayout, atsuStyle, kATSUFromTextBeginning, kATSUToTextEnd);
 				status = ATSUSetTransientFontMatching (textLayout, true);
 				
-				ATSUAttributeTag		theTags[]	= { kATSUCGContextTag };
-				ByteCount				theSizes[]	= { sizeof (CGContextRef) };
-				ATSUAttributeValuePtr	theValues[]	= { &cgContext };
-				status = ATSUSetLayoutControls (textLayout, 1, theTags, theSizes, theValues);
+				CGContextRef cgContext = context ? context->beginCGContext (false) : 0;
+				if (cgContext)
+				{
+					ATSUAttributeTag		theTags[]	= { kATSUCGContextTag };
+					ByteCount				theSizes[]	= { sizeof (CGContextRef) };
+					ATSUAttributeValuePtr	theValues[]	= { &cgContext };
+					status = ATSUSetLayoutControls (textLayout, 1, theTags, theSizes, theValues);
+				}
 
 				ATSUTextMeasurement iBefore, iAfter, ascent, descent; 
 				status = ATSUGetUnjustifiedBounds (textLayout, 0, kATSUToTextEnd, &iBefore, &iAfter, &ascent, &descent);
@@ -330,8 +331,9 @@ CCoord ATSUFont::getStringWidth (CDrawContext* context, const char* utf8String, 
 				
 				ATSUDisposeTextLayout (textLayout);
 				free (textBuffer);
-				
-				context->releaseCGContext (cgContext);
+
+				if (context)
+					context->releaseCGContext (cgContext);
 			}
 			CFRelease (utf8Str);
 		}

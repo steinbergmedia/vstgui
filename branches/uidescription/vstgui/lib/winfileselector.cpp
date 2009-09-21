@@ -32,7 +32,6 @@
 // OF THE POSSIBILITY OF SUCH DAMAGE.
 //-----------------------------------------------------------------------------
 
-#define _WIN32_WINNT 0x0600
 #include "cfileselector.h"
 #include "win32support.h"
 

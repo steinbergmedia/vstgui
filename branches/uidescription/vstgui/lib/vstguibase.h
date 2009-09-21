@@ -76,7 +76,7 @@
 
 #if WINDOWS
 	#ifndef _WIN32_WINNT
-		#define _WIN32_WINNT 0x0501
+		#define _WIN32_WINNT 0x0600
 	#endif
 	#ifndef GDIPLUS
 	#define GDIPLUS		1
@@ -182,6 +182,8 @@ private:
 	long nbReference;
 };
 
+END_NAMESPACE_VSTGUI
+
 #if WINDOWS
 	#if VSTGUI_USES_UTF8
 		#undef UNICODE
@@ -203,8 +205,6 @@ private:
 		#define VSTGUI_STRCAT	strcat
 	#endif
 #endif
-
-END_NAMESPACE_VSTGUI
 
 #include "vstguidebug.h"
 

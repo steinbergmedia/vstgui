@@ -168,9 +168,9 @@ COffscreenContext::COffscreenContext (CFrame* pFrame, long width, long height, c
 
 #if WINDOWS
 	#if GDIPLUS
-	pBitmap = new CBitmap (*pFrame, (CCoord)width, (CCoord)height);
+	pBitmap = new CBitmap ((CCoord)width, (CCoord)height);
 	pGraphics = new Gdiplus::Graphics (pBitmap->getBitmap ());
-	pGraphics->SetInterpolationMode (Gdiplus::InterpolationModeLowQuality);	// not used in timo's code. Why ?
+	pGraphics->SetInterpolationMode (Gdiplus::InterpolationModeLowQuality);
 	pGraphics->SetPageUnit(Gdiplus::UnitPixel);
 	#else
 	void* SystemWindow = pFrame ? pFrame->getSystemWindow () : 0;

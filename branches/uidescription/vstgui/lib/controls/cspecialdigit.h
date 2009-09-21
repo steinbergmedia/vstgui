@@ -32,45 +32,50 @@
 // OF THE POSSIBILITY OF SUCH DAMAGE.
 //-----------------------------------------------------------------------------
 
-#ifndef __vstgui__
-#define __vstgui__
+#ifndef __cspecialdigit__
+#define __cspecialdigit__
 
-#include "lib/vstguibase.h"
-#include "lib/cbitmap.h"
-#include "lib/ccolor.h"
-#include "lib/cdatabrowser.h"
-#include "lib/cdrawcontext.h"
-#include "lib/cfileselector.h"
-#include "lib/cfont.h"
-#include "lib/cframe.h"
-#include "lib/cgraphicspath.h"
-#include "lib/coffscreencontext.h"
-#include "lib/cpoint.h"
-#include "lib/crect.h"
-#include "lib/cscrollview.h"
-#include "lib/ctabview.h"
-#include "lib/ctooltipsupport.h"
-#include "lib/cview.h"
-#include "lib/cviewcontainer.h"
-#include "lib/cvstguitimer.h"
-#include "lib/vstguidebug.h"
+#include "ccontrol.h"
 
-#include "lib/controls/ccontrol.h"
-#include "lib/controls/cbuttons.h"
-#include "lib/controls/cparamdisplay.h"
-#include "lib/controls/ctextlabel.h"
-#include "lib/controls/ctextedit.h"
-#include "lib/controls/coptionmenu.h"
-#include "lib/controls/cknob.h"
-#include "lib/controls/cswitch.h"
-#include "lib/controls/cslider.h"
-#include "lib/controls/cmoviebitmap.h"
-#include "lib/controls/cmoviebutton.h"
-#include "lib/controls/cautoanimation.h"
-#include "lib/controls/cspecialdigit.h"
-#include "lib/controls/csplashscreen.h"
-#include "lib/controls/cvumeter.h"
+BEGIN_NAMESPACE_VSTGUI
 
-USING_NAMESPACE_VSTGUI
+//-----------------------------------------------------------------------------
+// CSpecialDigit Declaration
+//! \brief special display with custom numbers (0...9)
+/// \nosubgrouping
+/// \ingroup views
+//-----------------------------------------------------------------------------
+class CSpecialDigit : public CControl
+{
+public:
+	//-----------------------------------------------------------------------------
+	/// \name Constructor
+	//-----------------------------------------------------------------------------
+	//@{
+	CSpecialDigit (const CRect& size, CControlListener* listener, long tag, long dwPos, long iNumbers, long* xpos, long* ypos, long width, long height, CBitmap* background);
+	CSpecialDigit (const CSpecialDigit& digit);
+	//@}
+
+	virtual ~CSpecialDigit ();
+	
+	virtual void  draw (CDrawContext*);
+
+	//-----------------------------------------------------------------------------
+	/// \name CSpecialDigit Methods
+	//-----------------------------------------------------------------------------
+	//@{
+	virtual float getNormValue (void) const;
+	//@}
+
+	CLASS_METHODS(CSpecialDigit, CControl)
+protected:
+	long     iNumbers;
+	long     xpos[7];
+	long     ypos[7];
+	long     width;
+	long     height;
+};
+
+END_NAMESPACE_VSTGUI
 
 #endif

@@ -43,7 +43,8 @@
 #import "cfontmac.h"
 #import "cfileselector.h"
 #import "cvstguitimer.h"
-#import "vstcontrols.h"
+#import "controls/ctextedit.h"
+#import "controls/coptionmenu.h"
 #import "cbitmap.h"
 #import <objc/runtime.h>
 #import <objc/message.h>

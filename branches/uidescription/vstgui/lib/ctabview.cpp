@@ -35,6 +35,8 @@
 #include "ctabview.h"
 #include "cfont.h"
 #include "cbitmap.h"
+#include "cdrawcontext.h"
+#include "controls/cbuttons.h"
 
 BEGIN_NAMESPACE_VSTGUI
 
@@ -513,8 +515,8 @@ void CTabView::setViewSize (CRect &rect, bool invalid)
 	{
 		long numSubviews = getNbViews();
 		long counter = 1;
-		bool treatAsColumn = (getAutosizeFlags () & kAutosizeColumn);
-		bool treatAsRow = (getAutosizeFlags () & kAutosizeRow);
+		bool treatAsColumn = (getAutosizeFlags () & kAutosizeColumn) ? true : false;
+		bool treatAsRow = (getAutosizeFlags () & kAutosizeRow) ? true : false;
 		CTabChildView* v = firstChild;
 		while (v)
 		{

@@ -36,6 +36,8 @@
 
 #include "cdatabrowser.h"
 #include "vstkeycode.h"
+#include "cframe.h"
+#include "controls/ctextedit.h"
 
 BEGIN_NAMESPACE_VSTGUI
 
@@ -217,7 +219,7 @@ void CDataBrowser::recalculateLayout (bool rememberSelection)
 				pV->setViewSize (viewSize);
 				pV->setMouseableArea (viewSize);
 			}
-		ENDFOR
+		ENDFOREACHSUBVIEW
 	}
 
 	CRect newContainerSize (0, 0, allColumnsWidth, allRowsHeight);

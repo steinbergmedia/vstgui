@@ -240,6 +240,7 @@ public:
 	virtual CPoint& localToFrame (CPoint& point) const;											///< conversion from local view coordinates to frame coordinates
 	virtual void setAutosizeFlags (long flags) { autosizeFlags = flags; }						///< set autosize flags
 	virtual long getAutosizeFlags () const { return autosizeFlags; }							///< get autosize flags
+	virtual bool sizeToFit () { return false; }													///< resize view to optimal size
 	//@}
 
 	//-----------------------------------------------------------------------------

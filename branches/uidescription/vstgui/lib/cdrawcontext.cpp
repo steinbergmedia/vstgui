@@ -601,8 +601,8 @@ void CDrawContext::drawPolygon (const CPoint* pPoints, long numberOfPoints, cons
 	
 	for (long i = 0; i < numberOfPoints; i++)
 	{
-		polyPoints[i].X = (float)pPoints[i].h + offset.h;
-		polyPoints[i].Y = (float)pPoints[i].v + offset.v;
+		polyPoints[i].X = (Gdiplus::REAL)(pPoints[i].h + offset.h);
+		polyPoints[i].Y = (Gdiplus::REAL)(pPoints[i].v + offset.v);
 	}
 
 	if (drawStyle == kDrawFilled || drawStyle == kDrawFilledAndStroked)
@@ -906,7 +906,7 @@ void CDrawContext::setFontColor (const CColor color)
 #if WINDOWS
 	#if GDIPLUS
 	if (pFontBrush)
-		pFontBrush->SetColor (Gdiplus::Color ((float)color.alpha * globalAlpha, color.red, color.green, color.blue));
+		pFontBrush->SetColor (Gdiplus::Color ((BYTE)((float)color.alpha * globalAlpha), color.red, color.green, color.blue));
 	#else
 	SetTextColor ((HDC)pSystemContext, RGB (fontColor.red, fontColor.green, fontColor.blue));
 	#endif
@@ -928,7 +928,7 @@ void CDrawContext::setFrameColor (const CColor color)
 #if WINDOWS
 	#if GDIPLUS
 	if (pPen)
-		pPen->SetColor (Gdiplus::Color ((float)color.alpha * globalAlpha, color.red, color.green, color.blue));
+		pPen->SetColor (Gdiplus::Color ((BYTE)((float)color.alpha * globalAlpha), color.red, color.green, color.blue));
 	#else
 	LOGPEN logPen = {iPenStyle, {frameWidth, frameWidth}, 
 					 RGB (frameColor.red, frameColor.green, frameColor.blue)};
@@ -958,7 +958,7 @@ void CDrawContext::setFillColor (const CColor color)
 #if WINDOWS
 	#if GDIPLUS
 	if (pBrush)
-		pBrush->SetColor (Gdiplus::Color ((float)color.alpha * globalAlpha, color.red, color.green, color.blue));
+		pBrush->SetColor (Gdiplus::Color ((BYTE)((float)color.alpha * globalAlpha), color.red, color.green, color.blue));
 	#else
  	SetBkColor ((HDC)pSystemContext, RGB (color.red, color.green, color.blue));
 	LOGBRUSH logBrush = {BS_SOLID, RGB (color.red, color.green, color.blue), 0 };

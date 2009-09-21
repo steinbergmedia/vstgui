@@ -41,6 +41,7 @@
 
 BEGIN_NAMESPACE_VSTGUI
 
+class CTextEdit;
 class CDataBrowser;
 class CDataBrowserView;
 class CDataBrowserHeader;

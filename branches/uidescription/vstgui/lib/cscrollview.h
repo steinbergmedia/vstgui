@@ -35,7 +35,8 @@
 #ifndef __cscrollview__
 #define __cscrollview__
 
-#include "vstcontrols.h"
+#include "cviewcontainer.h"
+#include "controls/ccontrol.h"
 
 BEGIN_NAMESPACE_VSTGUI
 

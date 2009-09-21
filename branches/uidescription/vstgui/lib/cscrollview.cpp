@@ -34,6 +34,8 @@
 
 #include "cscrollview.h"
 #include "cvstguitimer.h"
+#include "cdrawcontext.h"
+#include "cframe.h"
 
 /// \cond ignore
 BEGIN_NAMESPACE_VSTGUI
@@ -110,19 +112,15 @@ void CScrollContainer::setScrollOffset (CPoint newOffset, bool redraw)
 	CPoint diff ((long)(newOffset.x - offset.x), (long)(offset.y - newOffset.y));
 	if (diff.x == 0 && diff.y == 0)
 		return;
-	CCView *pV = pFirstView;
-	while (pV)
-	{
+	FOREACHSUBVIEW
 		CRect r;
-		pV->pView->getViewSize (r);
+		pV->getViewSize (r);
 		r.offset (diff.x , diff.y);
-		pV->pView->setViewSize (r, false);
-		pV->pView->getMouseableArea (r);
+		pV->setViewSize (r, false);
+		pV->getMouseableArea (r);
 		r.offset (diff.x , diff.y);
-		pV->pView->setMouseableArea (r);
-
-		pV = pV->pNext;
-	}
+		pV->setMouseableArea (r);
+	ENDFOREACHSUBVIEW
 	offset = newOffset;
 	if (!isAttached ())
 		return;
@@ -169,7 +167,7 @@ bool CScrollContainer::isDirty () const
 			else
 				pV->setDirty (false);
 		}
-	ENDFOR
+	ENDFOREACHSUBVIEW
 	return false;
 }
 
@@ -391,7 +389,7 @@ void CScrollView::setContainerSize (const CRect& cs, bool keepVisibleArea)
 		else if (keepVisibleArea && oldScrollSize.getHeight () != cs.getHeight ())
 		{
 			CRect vSize = sc->getViewSize (vSize);
-			float newValue = oldValue * ((float)(oldScrollSize.getHeight () - vSize.getHeight ()) / ((float)cs.getHeight () - vSize.getHeight ()));
+			float newValue = (float)(oldValue * ((float)(oldScrollSize.getHeight () - vSize.getHeight ()) / ((float)cs.getHeight () - vSize.getHeight ())));
 			if (newValue > 1.f)
 				newValue = 1.f;
 			else if (newValue < 0.f)
@@ -410,7 +408,7 @@ void CScrollView::setContainerSize (const CRect& cs, bool keepVisibleArea)
 		else if (keepVisibleArea && oldScrollSize.getWidth () != cs.getWidth ())
 		{
 			CRect vSize = sc->getViewSize (vSize);
-			float newValue = oldValue * ((float)(oldScrollSize.getWidth () - vSize.getWidth ()) / ((float)cs.getWidth () - vSize.getWidth ()));
+			float newValue = (float)(oldValue * ((float)(oldScrollSize.getWidth () - vSize.getWidth ()) / ((float)cs.getWidth () - vSize.getWidth ())));
 			if (newValue > 1.f)
 				newValue = 1.f;
 			else if (newValue < 0.f)
@@ -827,11 +825,11 @@ CMouseEventResult CScrollbar::onMouseMoved (CPoint &where, const long& buttons)
 			newPoint.y -= startPoint.y - scrollerRect.top;
 			if (direction == kHorizontal)
 			{
-				newValue = (float)(newPoint.x - scrollerArea.left) / ((float)scrollerArea.width () - scrollerRect.width ());
+				newValue = (float)((float)(newPoint.x - scrollerArea.left) / ((float)scrollerArea.width () - scrollerRect.width ()));
 			}
 			else
 			{
-				newValue = (float)(newPoint.y - scrollerArea.top) / ((float)scrollerArea.height () - scrollerRect.height ());
+				newValue = (float)((float)(newPoint.y - scrollerArea.top) / ((float)scrollerArea.height () - scrollerRect.height ()));
 			}
 			if (newValue < 0.f) newValue = 0.f;
 			if (newValue > 1.f) newValue = 1.f;

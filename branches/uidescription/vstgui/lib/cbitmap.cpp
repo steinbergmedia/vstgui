@@ -721,7 +721,7 @@ void CBitmap::draw (CDrawContext* pContext, CRect &rect, const CPoint &offset)
 {
 #if WINDOWS
 	#if GDIPLUS
-	drawAlphaBlend (pContext, rect, offset, 255.f * pContext->getGlobalAlpha ());
+	drawAlphaBlend (pContext, rect, offset, (unsigned char)(255.f * pContext->getGlobalAlpha ()));
 	#else
 	#if USE_ALPHA_BLEND
 	if (!noAlpha)
@@ -755,7 +755,7 @@ void CBitmap::drawTransparent (CDrawContext* pContext, CRect &rect, const CPoint
 {
 #if WINDOWS
 	#if GDIPLUS
-	drawAlphaBlend (pContext, rect, offset, 255.f * pContext->getGlobalAlpha ());
+	drawAlphaBlend (pContext, rect, offset, (unsigned char)(255.f * pContext->getGlobalAlpha ()));
 	#else
 	#if USE_ALPHA_BLEND
 	if (!noAlpha)
