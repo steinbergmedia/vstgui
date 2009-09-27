@@ -45,8 +45,6 @@
 
 BEGIN_NAMESPACE_VSTGUI
 
-static CColor kDefaultScrollerColor = MakeCColor (255, 255, 255, 140);
-
 //-----------------------------------------------------------------------------
 class ViewHierarchyData : public IDataBrowser
 {
@@ -597,7 +595,7 @@ ViewHierarchyBrowser::ViewHierarchyBrowser (const CRect& rect, CViewContainer* b
 	browser->setTransparency (true);
 	browser->setAutosizeFlags (kAutosizeAll);
 	CScrollbar* bar = browser->getVerticalScrollbar ();
-	bar->setScrollerColor (kDefaultScrollerColor);
+	bar->setScrollerColor (kDefaultUIDescriptionScrollerColor);
 	bar->setBackgroundColor (kTransparentCColor);
 	bar->setFrameColor (kTransparentCColor);
 	addView (browser);
@@ -665,7 +663,7 @@ ViewHierarchyBrowserWindow::ViewHierarchyBrowserWindow (CViewContainer* baseView
 		#endif
 		frame = new CFrame (size, platformWindow->getPlatformHandle (), this);
 		#if MAC
-		frame->setBackgroundColor (kTransparentCColor);
+		frame->setBackgroundColor (kDefaultUIDescriptionBackgroundColor);
 		#elif WINDOWS
 		frame->setBackgroundColor (kBlackCColor);
 		#endif

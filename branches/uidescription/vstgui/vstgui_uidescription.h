@@ -1,11 +1,8 @@
 //-----------------------------------------------------------------------------
-// VSTGUI: Graphical User Interface Framework not only for VST plugins
-//
-// Doxygen Documentation
+// VST Plug-Ins SDK
+// VSTGUI: Graphical User Interface Framework for VST plugins : 
 //
 // Version 4.0
-//
-//-----------------------------------------------------------------------------
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
@@ -35,38 +32,12 @@
 // OF THE POSSIBILITY OF SUCH DAMAGE.
 //-----------------------------------------------------------------------------
 
-/**
+#ifndef __vstgui_uidescription__
+#define __vstgui_uidescription__
 
-@mainpage
+#include "lib/vstguibase.h"
+#include "uidescription/uidescription.h"
+#include "uidescription/viewcreator.h"
+#include "uidescription/viewfactory.h"
 
-Welcome to VSTGUI
-
-- @ref intro @n
-- @ref tutorial_getting_started @n
-- @ref changes_from_3_0 @n
-- @ref changelog @n
-- @ref license @n
-
-@section intro Introduction
-
-\par VSTGUI 
-VSTGUI is a User Interface Toolkit mainly for Audio Plug-Ins (VST, AudioUnit, etc).
-\par History
-First developed inhouse of Steinberg Media Technologies (around 1998) for their first VST Plug-Ins. 
-Later added as binary libraries to the official VST SDK. 
-Since May 2003 VSTGUI is open source and hosted at sourceforge.
-
-Currently VSTGUI compiles on
-\par Microsoft Windows (with Visual Studio)
-- XP (32 and 64 bit)
-- Vista (32 and 64 bit)
-- 7 (32 and 64 bit)
-\par Apple Mac OS X (with gcc 4.0 or gcc 4.2)
-- 10.4 (32 bit)
-- 10.5 (32 and 64 bit)
-- 10.6 (32 and 64 bit)
-
-\sa
-<a href="http://vstgui.sf.net" target=_blank> VSTGUI @ Sourceforge </a>
-
-*/
+#endif

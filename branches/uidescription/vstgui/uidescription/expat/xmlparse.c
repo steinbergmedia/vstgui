@@ -237,7 +237,7 @@ typedef struct attribute_id {
 } ATTRIBUTE_ID;
 
 typedef struct {
-  const ATTRIBUTE_ID *id;
+  const ATTRIBUTE_ID *attr_id;
   XML_Bool isCdata;
   const XML_Char *value;
 } DEFAULT_ATTRIBUTE;
@@ -2685,7 +2685,7 @@ storeAtts(XML_Parser parser, const ENCODING *enc,
       if (attId->maybeTokenized) {
         int j;
         for (j = 0; j < nDefaultAtts; j++) {
-          if (attId == elementType->defaultAtts[j].id) {
+          if (attId == elementType->defaultAtts[j].attr_id) {
             isCdata = elementType->defaultAtts[j].isCdata;
             break;
           }
@@ -2745,24 +2745,24 @@ storeAtts(XML_Parser parser, const ENCODING *enc,
   /* do attribute defaulting */
   for (i = 0; i < nDefaultAtts; i++) {
     const DEFAULT_ATTRIBUTE *da = elementType->defaultAtts + i;
-    if (!(da->id->name)[-1] && da->value) {
-      if (da->id->prefix) {
-        if (da->id->xmlns) {
-          enum XML_Error result = addBinding(parser, da->id->prefix, da->id,
+    if (!(da->attr_id->name)[-1] && da->value) {
+      if (da->attr_id->prefix) {
+        if (da->attr_id->xmlns) {
+          enum XML_Error result = addBinding(parser, da->attr_id->prefix, da->attr_id,
                                              da->value, bindingsPtr);
           if (result)
             return result;
         }
         else {
-          (da->id->name)[-1] = 2;
+          (da->attr_id->name)[-1] = 2;
           nPrefixes++;
-          appAtts[attIndex++] = da->id->name;
+          appAtts[attIndex++] = da->attr_id->name;
           appAtts[attIndex++] = da->value;
         }
       }
       else {
-        (da->id->name)[-1] = 1;
-        appAtts[attIndex++] = da->id->name;
+        (da->attr_id->name)[-1] = 1;
+        appAtts[attIndex++] = da->attr_id->name;
         appAtts[attIndex++] = da->value;
       }
     }
@@ -2802,12 +2802,12 @@ storeAtts(XML_Parser parser, const ENCODING *enc,
     for (; i < attIndex; i += 2) {
       const XML_Char *s = appAtts[i];
       if (s[-1] == 2) {  /* prefixed */
-        ATTRIBUTE_ID *id;
+        ATTRIBUTE_ID *attr_id;
         const BINDING *b;
         unsigned long uriHash = 0;
         ((XML_Char *)s)[-1] = 0;  /* clear flag */
-        id = (ATTRIBUTE_ID *)lookup(&dtd->attributeIds, s, 0);
-        b = id->prefix->binding;
+        attr_id = (ATTRIBUTE_ID *)lookup(&dtd->attributeIds, s, 0);
+        b = attr_id->prefix->binding;
         if (!b)
           return XML_ERROR_UNBOUND_PREFIX;
 
@@ -5250,7 +5250,7 @@ defineAttribute(ELEMENT_TYPE *type, ATTRIBUTE_ID *attId, XML_Bool isCdata,
        a default which duplicates a non-default. */
     int i;
     for (i = 0; i < type->nDefaultAtts; i++)
-      if (attId == type->defaultAtts[i].id)
+      if (attId == type->defaultAtts[i].attr_id)
         return 1;
     if (isId && !type->idAtt && !attId->xmlns)
       type->idAtt = attId;
@@ -5275,7 +5275,7 @@ defineAttribute(ELEMENT_TYPE *type, ATTRIBUTE_ID *attId, XML_Bool isCdata,
     }
   }
   att = type->defaultAtts + type->nDefaultAtts;
-  att->id = attId;
+  att->attr_id = attId;
   att->value = value;
   att->isCdata = isCdata;
   if (!isCdata)
@@ -5319,7 +5319,7 @@ getAttributeId(XML_Parser parser, const ENCODING *enc,
                const char *start, const char *end)
 {
   DTD * const dtd = _dtd;  /* save one level of indirection */
-  ATTRIBUTE_ID *id;
+  ATTRIBUTE_ID *attr_id;
   const XML_Char *name;
   if (!poolAppendChar(&dtd->pool, XML_T('\0')))
     return NULL;
@@ -5328,10 +5328,10 @@ getAttributeId(XML_Parser parser, const ENCODING *enc,
     return NULL;
   /* skip quotation mark - its storage will be re-used (like in name[-1]) */
   ++name;
-  id = (ATTRIBUTE_ID *)lookup(&dtd->attributeIds, name, sizeof(ATTRIBUTE_ID));
-  if (!id)
+  attr_id = (ATTRIBUTE_ID *)lookup(&dtd->attributeIds, name, sizeof(ATTRIBUTE_ID));
+  if (!attr_id)
     return NULL;
-  if (id->name != name)
+  if (attr_id->name != name)
     poolDiscard(&dtd->pool);
   else {
     poolFinish(&dtd->pool);
@@ -5344,10 +5344,10 @@ getAttributeId(XML_Parser parser, const ENCODING *enc,
         && name[4] == XML_T(ASCII_s)
         && (name[5] == XML_T('\0') || name[5] == XML_T(ASCII_COLON))) {
       if (name[5] == XML_T('\0'))
-        id->prefix = &dtd->defaultPrefix;
+        attr_id->prefix = &dtd->defaultPrefix;
       else
-        id->prefix = (PREFIX *)lookup(&dtd->prefixes, name + 6, sizeof(PREFIX));
-      id->xmlns = XML_TRUE;
+        attr_id->prefix = (PREFIX *)lookup(&dtd->prefixes, name + 6, sizeof(PREFIX));
+      attr_id->xmlns = XML_TRUE;
     }
     else {
       int i;
@@ -5361,9 +5361,9 @@ getAttributeId(XML_Parser parser, const ENCODING *enc,
           }
           if (!poolAppendChar(&dtd->pool, XML_T('\0')))
             return NULL;
-          id->prefix = (PREFIX *)lookup(&dtd->prefixes, poolStart(&dtd->pool),
+          attr_id->prefix = (PREFIX *)lookup(&dtd->prefixes, poolStart(&dtd->pool),
                                         sizeof(PREFIX));
-          if (id->prefix->name == poolStart(&dtd->pool))
+          if (attr_id->prefix->name == poolStart(&dtd->pool))
             poolFinish(&dtd->pool);
           else
             poolDiscard(&dtd->pool);
@@ -5372,7 +5372,7 @@ getAttributeId(XML_Parser parser, const ENCODING *enc,
       }
     }
   }
-  return id;
+  return attr_id;
 }
 
 #define CONTEXT_SEP XML_T(ASCII_FF)
@@ -5722,8 +5722,8 @@ dtdCopy(DTD *newDtd, const DTD *oldDtd, const XML_Memory_Handling_Suite *ms)
       newE->prefix = (PREFIX *)lookup(&(newDtd->prefixes),
                                       oldE->prefix->name, 0);
     for (i = 0; i < newE->nDefaultAtts; i++) {
-      newE->defaultAtts[i].id = (ATTRIBUTE_ID *)
-          lookup(&(newDtd->attributeIds), oldE->defaultAtts[i].id->name, 0);
+      newE->defaultAtts[i].attr_id = (ATTRIBUTE_ID *)
+          lookup(&(newDtd->attributeIds), oldE->defaultAtts[i].attr_id->name, 0);
       newE->defaultAtts[i].isCdata = oldE->defaultAtts[i].isCdata;
       if (oldE->defaultAtts[i].value) {
         newE->defaultAtts[i].value

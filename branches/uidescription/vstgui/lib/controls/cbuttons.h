@@ -83,7 +83,7 @@ public:
 	CCheckBox (const CCheckBox& checkbox);
 
 	enum Styles {
-		kAutoSizeToFit = 0 << 1, ///< automatically adjusts the width so that the label is completely visible
+		kAutoSizeToFit = 1 << 0, ///< automatically adjusts the width so that the label is completely visible
 		kDrawCrossBox  = 1 << 1, ///< draws a crossbox instead of a checkmark if no bitmap is provided
 	};
 

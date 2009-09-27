@@ -78,7 +78,7 @@ public:
 };
 
 //----------------------------------------------------------------------------------------------------
-class CEditFrame : public CFrame, public IActionOperator
+class CEditFrame : public CFrame, public IActionOperator, public IKeyboardHook
 //----------------------------------------------------------------------------------------------------
 {
 public:
@@ -164,6 +164,9 @@ protected:
 	long onKeyDown (VstKeyCode& keyCode);
 	long onKeyUp (VstKeyCode& keyCode);
 
+	long onKeyDown (const VstKeyCode& code, CFrame* frame);
+	long onKeyUp (const VstKeyCode& code, CFrame* frame);
+
 	void onViewAdded (CView* pView);
 	void onViewRemoved (CView* pView);
 	
@@ -225,6 +228,9 @@ protected:
 	void setPath (const char* path);
 	char* path;
 };
+
+static const CColor kDefaultUIDescriptionScrollerColor = MakeCColor (255, 255, 255, 140);
+static const CColor kDefaultUIDescriptionBackgroundColor = MakeCColor (0, 0, 0, 0);
 
 END_NAMESPACE_VSTGUI
 

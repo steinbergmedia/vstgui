@@ -383,6 +383,8 @@ static CCoord kCheckBoxTitleMargin = 5;
 //------------------------------------------------------------------------
 bool CCheckBox::sizeToFit ()
 {
+	if (title == 0)
+		return false;
 	IFontPainter* painter = font ? font->getFontPainter () : 0;
 	if (painter)
 	{

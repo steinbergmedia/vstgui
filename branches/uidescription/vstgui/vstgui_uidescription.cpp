@@ -1,15 +1,12 @@
 //-----------------------------------------------------------------------------
-// VSTGUI: Graphical User Interface Framework not only for VST plugins
-//
-// Doxygen Documentation
+// VST Plug-Ins SDK
+// VSTGUI: Graphical User Interface Framework for VST plugins : 
 //
 // Version 4.0
 //
 //-----------------------------------------------------------------------------
-//
-//-----------------------------------------------------------------------------
 // VSTGUI LICENSE
-// (c) 2008, Steinberg Media Technologies, All Rights Reserved
+// (c) 2009, Steinberg Media Technologies, All Rights Reserved
 //-----------------------------------------------------------------------------
 // Redistribution and use in source and binary forms, with or without modification,
 // are permitted provided that the following conditions are met:
@@ -35,38 +32,35 @@
 // OF THE POSSIBILITY OF SUCH DAMAGE.
 //-----------------------------------------------------------------------------
 
-/**
-
-@mainpage
-
-Welcome to VSTGUI
-
-- @ref intro @n
-- @ref tutorial_getting_started @n
-- @ref changes_from_3_0 @n
-- @ref changelog @n
-- @ref license @n
-
-@section intro Introduction
-
-\par VSTGUI 
-VSTGUI is a User Interface Toolkit mainly for Audio Plug-Ins (VST, AudioUnit, etc).
-\par History
-First developed inhouse of Steinberg Media Technologies (around 1998) for their first VST Plug-Ins. 
-Later added as binary libraries to the official VST SDK. 
-Since May 2003 VSTGUI is open source and hosted at sourceforge.
-
-Currently VSTGUI compiles on
-\par Microsoft Windows (with Visual Studio)
-- XP (32 and 64 bit)
-- Vista (32 and 64 bit)
-- 7 (32 and 64 bit)
-\par Apple Mac OS X (with gcc 4.0 or gcc 4.2)
-- 10.4 (32 bit)
-- 10.5 (32 and 64 bit)
-- 10.6 (32 and 64 bit)
-
-\sa
-<a href="http://vstgui.sf.net" target=_blank> VSTGUI @ Sourceforge </a>
-
+/*
+	You have the choice to include this file in your project
+	or the files listed below. Don't add this and the others, or you will get link errors.
+	
+	On Mac OS X you must compile this with the Objective-C++ compiler.
 */
+
+#include "vstgui_uidescription.h"
+
+#if MAC
+	#ifdef __OBJC__
+		#import "uidescription/macplatformsupport.mm"
+	#else
+		#error You need to use the Objective-C++ compiler for this file
+	#endif
+#endif
+
+#if WINDOWS
+	#include "uidescription/winplatformsupport.cpp"
+#endif
+
+#include "uidescription/ceditframe.cpp"
+#include "uidescription/cselection.cpp"
+#include "uidescription/cviewinspector.cpp"
+#include "uidescription/cviewswitchcontainer.cpp"
+#include "uidescription/dialog.cpp"
+#include "uidescription/uidescription.cpp"
+#include "uidescription/viewcreator.cpp"
+#include "uidescription/viewfactory.cpp"
+#include "uidescription/viewhierarchybrowser.cpp"
+
+#include "uidescription/xmlparser.cpp" // needs to be last

@@ -48,12 +48,6 @@
 BEGIN_NAMESPACE_VSTGUI
 
 //-----------------------------------------------------------------------------
-static bool stringCompare (const std::string* lhs, const std::string* rhs)
-{
-  return *lhs < *rhs;
-}
-
-//-----------------------------------------------------------------------------
 class UndoStackTop : public IActionOperation
 {
 public:
@@ -777,7 +771,10 @@ void CEditFrame::setEditMode (EditMode mode)
 {
 	editMode = mode;
 	if (editMode == kEditMode)
+	{
 		inspector->show ();
+		inspector->getFrame ()->setKeyboardHook (this);
+	}
 	else if (getView (0))
 	{
 		if (editTimer)
@@ -921,7 +918,7 @@ void CEditFrame::showOptionsMenu (const CPoint& where)
 				uiDescription->collectTemplateViewNames (templateNames);
 				if (templateNames.size () > 1)
 				{
-					templateNames.sort (stringCompare);
+					templateNames.sort (std__stringCompare);
 					COptionMenu* templateNameMenu = new COptionMenu ();
 					it = templateNames.begin ();
 					while (it != templateNames.end ())
@@ -2245,6 +2242,21 @@ void CEditFrame::performRedo ()
 void CEditFrame::deleteSelectedViews ()
 {
 	performAction (new DeleteOperation (selection));
+}
+
+//----------------------------------------------------------------------------------------------------
+long CEditFrame::onKeyDown (const VstKeyCode& code, CFrame* frame)
+{
+	VstKeyCode vc (code);
+	if (onKeyDown (vc) == 1)
+		return 1;
+	return -1;
+}
+
+//----------------------------------------------------------------------------------------------------
+long CEditFrame::onKeyUp (const VstKeyCode& code, CFrame* frame)
+{
+	return -1;
 }
 
 //----------------------------------------------------------------------------------------------------

@@ -32,9 +32,8 @@
 // OF THE POSSIBILITY OF SUCH DAMAGE.
 //-----------------------------------------------------------------------------
 
-#include "xmlparser.h"
+#include <stdlib.h>
 
-extern "C" {
 #define XML_STATIC 1
 #define XML_NS 1
 #define XML_DTD 1
@@ -45,10 +44,14 @@ extern "C" {
 	#define BYTEORDER 1234
 #endif
 #define HAVE_MEMMOVE	1
-#include "expat/expat.h"
-}
+namespace VSTGUI {
+namespace Xml {
+	#include "expat/expat.h"
+}} // namespaces
 
-#define PARSER ((XML_ParserStruct*)parser)
+#include "xmlparser.h"
+
+#define PARSER static_cast<XML_ParserStruct*>(parser)
 
 namespace VSTGUI {
 namespace Xml {
@@ -167,11 +170,9 @@ bool Parser::stop ()
 	return true;
 }
 
-}} // namespaces
-
-extern "C" {
 //------------------------------------------------------------------------
 #include "./expat/xmltok.c"
 #include "./expat/xmlrole.c"
 #include "./expat/xmlparse.c"
-}
+
+}} // namespaces

@@ -2,6 +2,8 @@
 @page changes_from_3_0 Changes from earlier versions of VSTGUI
 
 - @ref new_stuff @n
+- @ref code_changes_for_3_6 @n
+- @ref old_new_stuff @n
 - @ref about_deprecation @n
 - @ref code_changes_for_3_5 @n
 - @ref code_changes_for_3_0 @n
@@ -10,7 +12,19 @@
 
 @section new_stuff New Stuff
 
-@subsection mouse New mouse handling
+- UIDescription : Building user interfaces via XML description files
+- VST3 Support : Complete inline VST3 Editor support
+- Amalgamation : Easy integration in your projects via one or two source files
+- Cleaned Code : Removed all deprecated methods and classes, splittet individual classes into different files
+- New notable classes : CCheckBox, CGraphicsPath, CNinePartTiledBitmap
+
+@section code_changes_for_3_6 Code changes for existing VSTGUI 3.6 code
+
+- your custom views need to use the new mouse methods
+- COptionMenuScheme is not available anymore
+
+@section old_new_stuff Stuff that was new in VSTGUI 3.0 - VSTGUI 3.6
+
 In earlier versions there were only one method in CView for handling mouse events (VSTGUI::CView::mouse). 
 In this version there are five new methods :
 - VSTGUI::CView::onMouseDown	(new in 3.5)
@@ -21,13 +35,9 @@ In this version there are five new methods :
 
 For convenience the old method is still working, but should be replaced with the ones above.
 
-@subsection new_views New included views
-
 - VSTGUI::CDataBrowser	(new in 3.5)
 - VSTGUI::CScrollView	(new in 3.0)
 - VSTGUI::CTabView		(new in 3.0)
-
-@subsection and_more_new and ...
 
 - Mac OS X 64 bit support via Cocoa. (new in 3.6)
 - New Fileselector class : VSTGUI::CNewFileSelector (new in 3.6)
@@ -42,7 +52,7 @@ For convenience the old method is still working, but should be replaced with the
 - Windows GDI+ support	(new in 3.5)
 - Mac OS X Composited Window support (new in 3.0)
 
-@section about_deprecation About deprecation
+@section about_deprecation About deprecation in version 3.6
 
 With VSTGUI 3.6 the VSTGUI_ENABLE_DEPRECATED_METHODS macro has changed to be zero per default. You should change your code so that
 it compiles without changing the macro. All methods marked this way will be unavailable in the next version.

@@ -78,7 +78,7 @@ protected:
 	CSelection* selection;
 	IActionOperator* actionOperator;
 	UIDescription* description;
-	CFrame* frame;
+//	CFrame* frame;
 	CScrollView* scrollView;
 	PlatformWindow* platformWindow;
 	CRect windowSize;

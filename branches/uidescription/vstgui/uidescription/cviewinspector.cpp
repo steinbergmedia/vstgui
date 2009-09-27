@@ -50,9 +50,6 @@
 
 BEGIN_NAMESPACE_VSTGUI
 
-static CColor kDefaultBackgroundColor = MakeCColor (0, 0, 0, 0);
-static CColor kDefaultScrollerColor = MakeCColor (255, 255, 255, 140);
-
 //-----------------------------------------------------------------------------
 class InspectorTabButton : public COnOffButton
 //-----------------------------------------------------------------------------
@@ -68,7 +65,7 @@ public:
 			name = (char*)malloc (strlen (inName) + 1);
 			strcpy (name, inName);
 		}
-		backgroundColor = kDefaultBackgroundColor;
+		backgroundColor = kDefaultUIDescriptionBackgroundColor;
 		activeTextColor = kWhiteCColor;
 		inactiveTextColor = kGreyCColor;
 		textFont = kSystemFont; textFont->remember ();
@@ -314,12 +311,6 @@ public:
 	}
 	CColor origBackgroundColor;
 };
-
-//-----------------------------------------------------------------------------
-static bool stringCompare (const std::string* lhs, const std::string* rhs)
-{
-  return *lhs < *rhs;
-}
 
 //-----------------------------------------------------------------------------
 class BrowserDelegateBase : public CBaseObject, public IDataBrowser
@@ -922,7 +913,7 @@ public:
 		std::list<std::string*> fontNames;
 		if (PlatformUtilities::collectPlatformFontNames (fontNames))
 		{
-			fontNames.sort (stringCompare);
+			fontNames.sort (std__stringCompare);
 			std::list<std::string*>::const_iterator it = fontNames.begin ();
 			while (it != fontNames.end ())
 			{
@@ -1109,7 +1100,7 @@ static bool getViewAttributeName (CView* view, std::string& name)
 static void updateMenuFromList (COptionMenu* menu, std::list<const std::string*>& names, const std::string& defaultValue, bool addNoneItem = false)
 {
 	menu->removeAllEntry ();
-	names.sort (stringCompare);
+	names.sort (std__stringCompare);
 	long current = -1;
 	std::list<const std::string*>::const_iterator it = names.begin ();
 	while (it != names.end ())
@@ -1148,21 +1139,17 @@ CViewInspector::CViewInspector (CSelection* selection, IActionOperator* actionOp
 : selection (selection)
 , actionOperator (actionOperator)
 , description (0)
-, frame (0)
 , scrollView (0)
 , platformWindow (0)
 {
 	selection->remember ();
 	selection->addDependent (this);
-
-//	PlatformDefaults::getRect ("net.sourceforge.vstgui.uidescription", "CViewInspector size", windowSize);
 }
 
 //-----------------------------------------------------------------------------
 CViewInspector::~CViewInspector ()
 {
 	hide ();
-//	PlatformDefaults::setRect ("net.sourceforge.vstgui.uidescription", "CViewInspector size", windowSize);
 	setUIDescription (0);
 	selection->removeDependent (this);
 	selection->forget ();
@@ -1393,7 +1380,7 @@ CView* CViewInspector::createAttributesView (CCoord width)
 		scrollView->setBackgroundColor (kTransparentCColor);
 		scrollView->setAutosizeFlags (kAutosizeAll);
 		CScrollbar* bar = scrollView->getVerticalScrollbar ();
-		bar->setScrollerColor (kDefaultScrollerColor);
+		bar->setScrollerColor (kDefaultUIDescriptionScrollerColor);
 		bar->setBackgroundColor (kTransparentCColor);
 		bar->setFrameColor (kTransparentCColor);
 	}
@@ -1478,7 +1465,7 @@ void CViewInspector::show ()
 		colorBrowser->setAutosizeFlags (kAutosizeAll);
 		colorDelegate->forget ();
 		CScrollbar* bar = colorBrowser->getVerticalScrollbar ();
-		bar->setScrollerColor (kDefaultScrollerColor);
+		bar->setScrollerColor (kDefaultUIDescriptionScrollerColor);
 		bar->setBackgroundColor (kTransparentCColor);
 		bar->setFrameColor (kTransparentCColor);
 
@@ -1488,7 +1475,7 @@ void CViewInspector::show ()
 		bitmapBrowser->setAutosizeFlags (kAutosizeAll);
 		bmpDelegate->forget ();
 		bar = bitmapBrowser->getVerticalScrollbar ();
-		bar->setScrollerColor (kDefaultScrollerColor);
+		bar->setScrollerColor (kDefaultUIDescriptionScrollerColor);
 		bar->setBackgroundColor (kTransparentCColor);
 		bar->setFrameColor (kTransparentCColor);
 
@@ -1498,7 +1485,7 @@ void CViewInspector::show ()
 		fontBrowser->setAutosizeFlags (kAutosizeAll);
 		fontDelegate->forget ();
 		bar = fontBrowser->getVerticalScrollbar ();
-		bar->setScrollerColor (kDefaultScrollerColor);
+		bar->setScrollerColor (kDefaultUIDescriptionScrollerColor);
 		bar->setBackgroundColor (kTransparentCColor);
 		bar->setFrameColor (kTransparentCColor);
 
@@ -1508,7 +1495,7 @@ void CViewInspector::show ()
 		controlTagBrowser->setAutosizeFlags (kAutosizeAll);
 		tagDelegate->forget ();
 		bar = controlTagBrowser->getVerticalScrollbar ();
-		bar->setScrollerColor (kDefaultScrollerColor);
+		bar->setScrollerColor (kDefaultUIDescriptionScrollerColor);
 		bar->setBackgroundColor (kTransparentCColor);
 		bar->setFrameColor (kTransparentCColor);
 
@@ -1525,7 +1512,7 @@ void CViewInspector::show ()
 		tabView->addTab (controlTagBrowser, new InspectorTabButton (tabButtonSize, "Tags", 1));
 		tabView->alignTabs ();
 		tabView->setAutosizeFlags (kAutosizeAll);
-		tabView->setBackgroundColor (kDefaultBackgroundColor);
+		tabView->setBackgroundColor (kDefaultUIDescriptionBackgroundColor);
 
 		size.offset (-kMargin, 0);
 		size.right += kMargin*2;
@@ -1540,7 +1527,7 @@ void CViewInspector::show ()
 #if WINDOWS
 			frame->setBackgroundColor (MakeCColor (0, 0, 0, 255));
 #else
-			frame->setBackgroundColor (MakeCColor (0, 0, 0, 0));
+			frame->setBackgroundColor (kDefaultUIDescriptionBackgroundColor);
 #endif
 			frame->addView (tabView);
 			platformWindow->center ();
