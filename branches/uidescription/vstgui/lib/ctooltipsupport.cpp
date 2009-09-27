@@ -67,14 +67,14 @@ enum {
 A generic way to add tooltip support to VSTGUI.
 @section ctooltipsupport_example Example
 Adding a tooltip to a view
-\code
+@code
 const char* tooltipText = "This is a tooltip";
 view->setAttribute (kCViewTooltipAttribute, strlen (tooltipText)+1, tooltipText);
-\endcode
+@endcode
 Adding CTooltipSupport
-\code
+@code
 CTooltipSupport* tooltipSupport = new CTooltipSupport (frame);
-\endcode
+@endcode
 ------------------------------------------------------------------------*/
 /**
  * @param frame CFrame object

@@ -214,7 +214,7 @@ VSTGUI now supports easy and fast UI creation for VST3 plug-ins.
 
 @section vst3_setup Setup
 
-First you need to add all the files from the uidescription subfolder to your project and define a preprocessor definition for VSTGUI_LIVE_EDITING=1 and VSTGUI_FLOAT_COORDINATES=1.
+First you need to add all the files from the uidescription subfolder to your project and define a preprocessor definition for VSTGUI_LIVE_EDITING=1 and VSTGUI_FLOAT_COORDINATES=1 (on Windows you have to add GDIPLUS=1 too).
 Then you have to modify your edit controller class to create a VST3Editor instance when asked to create it's view :
 @code
 IPlugView* PLUGIN_API MyEditController::createView (const char* name)

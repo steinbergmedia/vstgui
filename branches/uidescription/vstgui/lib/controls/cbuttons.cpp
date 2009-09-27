@@ -285,6 +285,8 @@ CCheckBox::CCheckBox (const CRect& size, CControlListener* listener, long tag, c
 	setCheckMarkColor (kRedCColor);
 	font->remember ();
 	setWantsFocus (true);
+	if (style & kAutoSizeToFit)
+		sizeToFit ();
 }
 
 //------------------------------------------------------------------------
@@ -323,6 +325,8 @@ void CCheckBox::setTitle (const char* newTitle)
 		title = new char [strlen (newTitle) + 1];
 		strcpy (title, newTitle);
 	}
+	if (style & kAutoSizeToFit)
+		sizeToFit ();
 }
 
 //------------------------------------------------------------------------
@@ -333,6 +337,28 @@ void CCheckBox::setFont (CFontRef newFont)
 	font = newFont;
 	if (font)
 		font->remember ();
+	if (style & kAutoSizeToFit)
+		sizeToFit ();
+}
+
+//------------------------------------------------------------------------
+void CCheckBox::setBackground (CBitmap *background)
+{
+	CView::setBackground (background);
+	if (style & kAutoSizeToFit)
+		sizeToFit ();
+}
+
+//------------------------------------------------------------------------
+void CCheckBox::setStyle (long newStyle)
+{
+	if (style != newStyle)
+	{
+		style = newStyle;
+		if (style & kAutoSizeToFit)
+			sizeToFit ();
+		invalid ();
+	}
 }
 
 //------------------------------------------------------------------------
@@ -429,17 +455,35 @@ void CCheckBox::draw (CDrawContext* context)
 		context->setFrameColor (checkMarkColor);
 		context->setLineWidth (2);
 
-		CCoord cbInset = 2;
+		const CCoord cbInset = 2;
 		
-		context->moveTo (CPoint (checkBoxSize.left + cbInset, checkBoxSize.top + checkBoxSize.getHeight () / 2));
-		if (value == 0.5f)
+		if (style & kDrawCrossBox)
 		{
-			context->lineTo (CPoint (checkBoxSize.right - cbInset, checkBoxSize.top + checkBoxSize.getHeight () / 2));
+			if (value == 0.5f)
+			{
+				context->moveTo (CPoint (checkBoxSize.left + cbInset, checkBoxSize.top + checkBoxSize.getHeight () / 2));
+				context->lineTo (CPoint (checkBoxSize.right - cbInset, checkBoxSize.top + checkBoxSize.getHeight () / 2));
+			}
+			else if (value > 0.5f)
+			{
+				context->moveTo (CPoint (checkBoxSize.left + cbInset, checkBoxSize.top + cbInset));
+				context->lineTo (CPoint (checkBoxSize.right - cbInset, checkBoxSize.bottom - cbInset));
+				context->moveTo (CPoint (checkBoxSize.left + cbInset, checkBoxSize.bottom - cbInset));
+				context->lineTo (CPoint (checkBoxSize.right - cbInset, checkBoxSize.top + cbInset));
+			}
 		}
-		else if (value > 0.5f)
+		else
 		{
-			context->lineTo (CPoint (checkBoxSize.left + checkBoxSize.getWidth () / 2, checkBoxSize.bottom - cbInset));
-			context->lineTo (CPoint (checkBoxSize.right + 1, checkBoxSize.top - 1));
+			context->moveTo (CPoint (checkBoxSize.left + cbInset, checkBoxSize.top + checkBoxSize.getHeight () / 2));
+			if (value == 0.5f)
+			{
+				context->lineTo (CPoint (checkBoxSize.right - cbInset, checkBoxSize.top + checkBoxSize.getHeight () / 2));
+			}
+			else if (value > 0.5f)
+			{
+				context->lineTo (CPoint (checkBoxSize.left + checkBoxSize.getWidth () / 2, checkBoxSize.bottom - cbInset));
+				context->lineTo (CPoint (checkBoxSize.right + 1, checkBoxSize.top - 1));
+			}
 		}
 	}
 	

@@ -49,9 +49,11 @@ class CTooltipSupport : public CBaseObject, public IMouseObserver
 {
 public:
 	CTooltipSupport (CFrame* frame, int delay = 1000);
-	~CTooltipSupport ();
 
+	//-------------------------------------------
+	CLASS_METHODS_NOCOPY(CTooltipSupport, CBaseObject)
 protected:
+	~CTooltipSupport ();
 	void showTooltip ();
 	void hideTooltip ();
 

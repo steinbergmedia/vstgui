@@ -2927,7 +2927,7 @@ static short keyTable[] = {
 	VKEY_EQUALS,	0x51
 };
 
-/// \cond ignore
+/// @cond ignore
 class VSTGUIDrawRectsHelper
 {
 public:
@@ -2951,7 +2951,7 @@ static OSStatus VSTGUIDrawRectsProc (UInt16 message, RgnHandle rgn, const Rect* 
 	}
 	return noErr;
 }
-/// \endcond
+/// @endcond
 
 #ifndef kHIViewFeatureGetsFocusOnClick
 #define   kHIViewFeatureGetsFocusOnClick (1 << 8)
@@ -3479,7 +3479,7 @@ pascal OSStatus CFrame::carbonMouseEventHandler (EventHandlerCallRef inHandlerCa
 	return result;
 }
 
-/// \cond ignore
+/// @cond ignore
 
 //-----------------------------------------------------------------------------
 bool isWindowComposited (WindowRef window)
@@ -3491,7 +3491,7 @@ bool isWindowComposited (WindowRef window)
 	return false;
 }
 
-/// \endcond
+/// @endcond
 END_NAMESPACE_VSTGUI
 
 #endif // MAC_CARBON

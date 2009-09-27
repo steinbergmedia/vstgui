@@ -43,7 +43,7 @@
 
 BEGIN_NAMESPACE_VSTGUI
 
-/// \cond ignore
+/// @cond ignore
 #if DEBUG
 	std::list<CView*>gViewList;
 	long gNbCView = 0;
@@ -116,7 +116,7 @@ protected:
 	long sizeOfPointer;
 	CViewAttributeID id;
 };
-/// \endcond
+/// @endcond
 
 #if VSTGUI_USES_UTF8
 const char* kDegreeSymbol		= "\xC2\xB0";

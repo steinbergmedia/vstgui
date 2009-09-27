@@ -111,26 +111,16 @@ enum CControlEnum
 
 //-----------------------------------------------------------------------------
 // CControl Declaration
-//! \brief base class of all VSTGUI controls
-/// \nosubgrouping
+//! @brief base class of all VSTGUI controls
 //-----------------------------------------------------------------------------
 class CControl : public CView
 {
 public:
-	//-----------------------------------------------------------------------------
-	/// \name Constructor
-	//-----------------------------------------------------------------------------
-	//@{
 	CControl (const CRect& size, CControlListener* listener = 0, long tag = 0, CBitmap* pBackground = 0);
 	CControl (const CControl& c);
-	//@}
-
-	virtual ~CControl ();
-
-	virtual void doIdleStuff ();
 
 	//-----------------------------------------------------------------------------
-	/// \name Value Methods
+	/// @name Value Methods
 	//-----------------------------------------------------------------------------
 	//@{
 	virtual void setValue (float val) { value = val; }
@@ -151,7 +141,7 @@ public:
 	//@}
 
 	//-----------------------------------------------------------------------------
-	/// \name Editing Methods
+	/// @name Editing Methods
 	//-----------------------------------------------------------------------------
 	//@{
 	virtual void setTag (long val) { tag = val; }
@@ -164,6 +154,10 @@ public:
 	virtual void setListener (CControlListener* l) { listener = l; }
 	//@}
 
+	//-----------------------------------------------------------------------------
+	/// @name Misc
+	//-----------------------------------------------------------------------------
+	//@{
 	virtual void setBackOffset (const CPoint& offset);
 	virtual const CPoint& getBackOffset () const { return backOffset; }
 	virtual void copyBackOffset ();
@@ -171,12 +165,18 @@ public:
 	virtual void setWheelInc (float val) { wheelInc = val; }
 	virtual float getWheelInc () const { return wheelInc; }
 
+	virtual void doIdleStuff ();
+	//@}
+
+	// overrides
 	void draw (CDrawContext* pContext) = 0;
 	bool isDirty () const;
 	void setDirty (const bool val = true);
 
 	CLASS_METHODS_VIRTUAL(CControl, CView)
 protected:
+	~CControl ();
+
 	CControlListener* listener;
 	long  tag;
 	float oldValue;
@@ -194,8 +194,7 @@ protected:
 
 //-----------------------------------------------------------------------------
 // IMultiBitmapControl Declaration
-//! \brief interface for controls with sub images
-/// \nosubgrouping
+//! @brief interface for controls with sub images
 //-----------------------------------------------------------------------------
 class IMultiBitmapControl
 {

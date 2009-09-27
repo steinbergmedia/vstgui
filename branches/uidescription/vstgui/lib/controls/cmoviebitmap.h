@@ -41,23 +41,15 @@ BEGIN_NAMESPACE_VSTGUI
 
 //-----------------------------------------------------------------------------
 // CMovieBitmap Declaration
-//! \brief a bitmap view that displays different bitmaps according to its current value
-/// \nosubgrouping
-/// \ingroup views
+//! @brief a bitmap view that displays different bitmaps according to its current value
+/// @ingroup views
 //-----------------------------------------------------------------------------
 class CMovieBitmap : public CControl, public IMultiBitmapControl
 {
 public:
-	//-----------------------------------------------------------------------------
-	/// \name Constructor
-	//-----------------------------------------------------------------------------
-	//@{
 	CMovieBitmap (const CRect& size, CControlListener* listener, long tag, CBitmap* background, const CPoint& offset = CPoint (0, 0));
 	CMovieBitmap (const CRect& size, CControlListener* listener, long tag, long subPixmaps, CCoord heightOfOneImage, CBitmap* background, const CPoint& offset = CPoint (0, 0));
 	CMovieBitmap (const CMovieBitmap& movieBitmap);
-	//@}
-
-	virtual	~CMovieBitmap ();
 
 	virtual void draw (CDrawContext*);
 
@@ -65,6 +57,7 @@ public:
 
 	CLASS_METHODS(CMovieBitmap, CControl)
 protected:
+	~CMovieBitmap ();
 	CPoint	offset;
 };
 

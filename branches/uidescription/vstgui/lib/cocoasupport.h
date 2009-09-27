@@ -41,7 +41,7 @@
 
 #include "cframe.h"
 
-/// \cond ignore
+/// @cond ignore
 BEGIN_NAMESPACE_VSTGUI
 class CTextEdit;
 class COptionMenu;
@@ -80,6 +80,6 @@ END_NAMESPACE_VSTGUI
 
 #endif
 
-/// \endcond
+/// @endcond
 
 #endif

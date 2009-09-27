@@ -45,9 +45,8 @@ class CTabChildView;
 
 //-----------------------------------------------------------------------------
 class CTabView : public CViewContainer, public CControlListener
-//! \brief a tab view
-/// \nosubgrouping
-/// \ingroup containerviews
+//! @brief a tab view
+/// @ingroup containerviews
 //-----------------------------------------------------------------------------
 {
 public:
@@ -66,17 +65,11 @@ public:
 		kAlignBottom = kAlignRight
 	};
 
-	//-----------------------------------------------------------------------------
-	/// \name Tab View Constructors
-	//-----------------------------------------------------------------------------
-	//@{
 	CTabView (const CRect& size, CFrame* parent, CBitmap* tabBitmap, CBitmap* background = 0, TabPosition tabPosition = kPositionTop, long style = 0);
 	CTabView (const CRect& size, CFrame* parent, const CRect& tabSize, CBitmap* background = 0, TabPosition tabPosition = kPositionTop, long style = 0);
-	//@}
-	virtual ~CTabView ();
 	
 	//-----------------------------------------------------------------------------
-	/// \name Tab View Functions
+	/// @name Tab View Functions
 	//-----------------------------------------------------------------------------
 	//@{
 	virtual bool addTab (CView* view, const char* name = 0, CBitmap* tabBitmap = 0);	///< add a tab
@@ -102,6 +95,7 @@ public:
 //-----------------------------------------------------------------------------
 	CLASS_METHODS (CTabView, CViewContainer)
 protected:
+	~CTabView ();
 	void setCurrentChild (CTabChildView* childView);
 
 	long numberOfChilds;

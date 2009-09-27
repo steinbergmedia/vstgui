@@ -39,7 +39,7 @@
 
 BEGIN_NAMESPACE_VSTGUI
 
-/// \cond ignore
+/// @cond ignore
 //------------------------------------------------------------------------
 class CDefaultSplashScreenView : public CControl
 {
@@ -69,7 +69,7 @@ public:
 protected:
 	CPoint offset;
 };
-/// \endcond
+/// @endcond
 
 //------------------------------------------------------------------------
 // CSplashScreen

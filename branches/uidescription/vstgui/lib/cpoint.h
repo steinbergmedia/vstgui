@@ -41,31 +41,27 @@
 BEGIN_NAMESPACE_VSTGUI
 
 //-----------------------------------------------------------------------------
-//! \brief Point structure
+//! @brief Point structure
 //-----------------------------------------------------------------------------
 struct CPoint
 {
 	CPoint (CCoord h = 0, CCoord v = 0) : h (h), v (v) {}
-	CPoint& operator () (CCoord h, CCoord v)
-	{ this->h = h; this->v = v; return *this; }
+	CPoint& operator () (CCoord h, CCoord v) { this->h = h; this->v = v; return *this; }
 
-	bool isInside (const CRect& r) const
-	{ return h >= r.left && h <= r.right && v >= r.top && v <= r.bottom; } 
+	bool isInside (const CRect& r) const { return h >= r.left && h <= r.right && v >= r.top && v <= r.bottom; } 
 
-	bool operator != (const CPoint &other) const
-	{ return (h != other.h || v != other.v); }
+	bool operator != (const CPoint &other) const { return (h != other.h || v != other.v); }
+	bool operator == (const CPoint &other) const { return (h == other.h && v == other.v); }
 
-	bool operator == (const CPoint &other) const
-	{ return (h == other.h && v == other.v); }
+	CPoint& operator += (const CPoint& other) { x += other.x; y += other.y; return *this; }
+	CPoint& operator -= (const CPoint& other) { x -= other.x; y -= other.y; return *this; }
+	CPoint operator + (const CPoint& other) const { return CPoint (x + other.x, y + other.y); }
+	CPoint operator - (const CPoint& other) const { return CPoint (x - other.x, y - other.y); }
 
-	CPoint &offset (const CCoord h, const CCoord v)
-	{ this->h += h; this->v += v; return *this; }
+	CPoint& offset (const CCoord h, const CCoord v) { *this += CPoint (h, v); return *this; }
 
-	union
-	{ CCoord h; CCoord x;};
-
-	union
-	{ CCoord v; CCoord y;};
+	union { CCoord h; CCoord x;};
+	union { CCoord v; CCoord y;};
 };
 
 END_NAMESPACE_VSTGUI

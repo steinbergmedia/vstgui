@@ -47,24 +47,17 @@ extern const char* kMsgLooseFocus;				///< Message of a view loosing focus (only
 
 //-----------------------------------------------------------------------------
 // CViewContainer Declaration
-//! \brief Container Class of CView objects
-/// \nosubgrouping
-/// \ingroup containerviews
+//! @brief Container Class of CView objects
+/// @ingroup containerviews
 //-----------------------------------------------------------------------------
 class CViewContainer : public CView
 {
 public:
-	//-----------------------------------------------------------------------------
-	/// \name Constructor
-	//-----------------------------------------------------------------------------
-	//@{
 	CViewContainer (const CRect &size, CFrame *pParent, CBitmap *pBackground = 0);
 	CViewContainer (const CViewContainer& viewContainer);
-	//@}
-	virtual ~CViewContainer ();
 
 	//-----------------------------------------------------------------------------
-	/// \name Sub View Methods
+	/// @name Sub View Methods
 	//-----------------------------------------------------------------------------
 	//@{
 	virtual bool addView (CView *pView);	///< add a child view
@@ -81,7 +74,7 @@ public:
 	//@}
 
 	//-----------------------------------------------------------------------------
-	/// \name Background Methods
+	/// @name Background Methods
 	//-----------------------------------------------------------------------------
 	//@{
 	virtual void setBackgroundColor (const CColor& color);	///< set the background color (will only be drawn if this container is not set to transparent and does not have a background bitmap)
@@ -144,6 +137,7 @@ public:
 
 	//-------------------------------------------
 protected:
+	~CViewContainer ();
 	virtual bool checkUpdateRect (CView* view, const CRect& rect);
 	virtual bool hitTestSubViews (const CPoint& where, const long buttons = -1);
 	void drawBackToFront (CDrawContext* context, const CRect& rect);
@@ -159,7 +153,7 @@ protected:
 	CView* mouseDownView;
 };
 
-/// \cond ignore
+/// @cond ignore
 //-----------------------------------------------------------------------------
 // CCView Declaration
 //-----------------------------------------------------------------------------
@@ -184,7 +178,7 @@ public:
 	#define ENDFOREACHSUBVIEW }
 #endif
 
-/// \endcond
+/// @endcond
 
 END_NAMESPACE_VSTGUI
 

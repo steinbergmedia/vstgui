@@ -1027,6 +1027,25 @@ public:
 				checkbox->setCheckMarkColor (color);
 			}
 		}
+		long style = checkbox->getStyle ();
+		attr = attributes.getAttributeValue ("draw-crossbox");
+		if (attr)
+		{
+			if (*attr == "true")
+				style |= CCheckBox::kDrawCrossBox;
+			else
+				style &= ~CCheckBox::kDrawCrossBox;
+		}
+		attr = attributes.getAttributeValue ("autosize-to-fit");
+		if (attr)
+		{
+			if (*attr == "true")
+				style |= CCheckBox::kAutoSizeToFit;
+			else
+				style &= ~CCheckBox::kAutoSizeToFit;
+		}
+		checkbox->setStyle (style);
+		
 		return true;
 	}
 
@@ -1038,6 +1057,8 @@ public:
 		attributeNames.push_back ("boxframe-color");
 		attributeNames.push_back ("boxfill-color");
 		attributeNames.push_back ("checkmark-color");
+		attributeNames.push_back ("autosize-to-fit");
+		attributeNames.push_back ("draw-crossbox");
 		return true;
 	}
 	AttrType getAttributeType (const std::string& attributeName) const
@@ -1048,6 +1069,8 @@ public:
 		else if (attributeName == "boxframe-color") return kColorType;
 		else if (attributeName == "boxfill-color") return kColorType;
 		else if (attributeName == "checkmark-color") return kColorType;
+		else if (attributeName == "autosize-to-fit") return kBooleanType;
+		else if (attributeName == "draw-crossbox") return kBooleanType;
 		return kUnknownType;
 	}
 	bool getAttributeValue (CView* view, const std::string& attributeName, std::string& stringValue, IUIDescription* desc) const
@@ -1095,6 +1118,22 @@ public:
 		{
 			if (!getRememberedAttributeValueString (view, "checkmark-color", stringValue))
 				colorToString (checkbox->getCheckMarkColor (), stringValue, desc);
+			return true;
+		}
+		else if (attributeName == "autosize-to-fit")
+		{
+			if (checkbox->getStyle () & CCheckBox::kAutoSizeToFit)
+				stringValue = "true";
+			else
+				stringValue = "false";
+			return true;
+		}
+		else if (attributeName == "draw-crossbox")
+		{
+			if (checkbox->getStyle () & CCheckBox::kDrawCrossBox)
+				stringValue = "true";
+			else
+				stringValue = "false";
 			return true;
 		}
 		return false;

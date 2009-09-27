@@ -49,7 +49,7 @@ class CFrame;
 class CAttributeListEntry;
 
 //----------------------------
-// \brief Buttons Type (+modifiers)
+// @brief Buttons Type (+modifiers)
 //----------------------------
 enum CButton
 {
@@ -66,7 +66,7 @@ enum CButton
 };
 
 //----------------------------
-// \brief Mouse Wheel Axis
+// @brief Mouse Wheel Axis
 //----------------------------
 enum CMouseWheelAxis
 {
@@ -75,7 +75,7 @@ enum CMouseWheelAxis
 };
 
 //----------------------------
-// \brief Mouse Event Results
+// @brief Mouse Event Results
 //----------------------------
 enum CMouseEventResult
 {
@@ -86,7 +86,7 @@ enum CMouseEventResult
 };
 
 //----------------------------
-// \brief View Autosizing
+// @brief View Autosizing
 //----------------------------
 enum CViewAutosizing
 {
@@ -149,24 +149,17 @@ extern const CViewAttributeID kCViewTooltipAttribute;			// 'cvtt'
 
 //-----------------------------------------------------------------------------
 // CView Declaration
-//! \brief Base Class of all view objects
-/// \nosubgrouping
-/// \ingroup views
+//! @brief Base Class of all view objects
+/// @ingroup views
 //-----------------------------------------------------------------------------
 class CView : public CBaseObject
 {
 public:
-	//-----------------------------------------------------------------------------
-	/// \name Constructor
-	//-----------------------------------------------------------------------------
-	//@{
 	CView (const CRect &size);
 	CView (const CView& view);
-	//@}
-	virtual ~CView ();
 
 	//-----------------------------------------------------------------------------
-	/// \name Draw and Update Methods
+	/// @name Draw and Update Methods
 	//-----------------------------------------------------------------------------
 	//@{
 	virtual void draw (CDrawContext *pContext);															///< called if the view should draw itself
@@ -184,7 +177,7 @@ public:
 	//@}
 
 	//-----------------------------------------------------------------------------
-	/// \name Mouse Methods
+	/// @name Mouse Methods
 	//-----------------------------------------------------------------------------
 	//@{
 	virtual CMouseEventResult onMouseDown (CPoint &where, const long& buttons);											///< called when a mouse down event occurs
@@ -208,7 +201,7 @@ public:
 	//@}
 
 	//-----------------------------------------------------------------------------
-	/// \name Drag & Drop Methods
+	/// @name Drag & Drop Methods
 	//-----------------------------------------------------------------------------
 	//@{
 	virtual bool onDrop (CDragContainer* drag, const CPoint& where) { return false; }			///< called if a drag is dropped onto this view
@@ -218,7 +211,7 @@ public:
 	//@}
 
 	//-----------------------------------------------------------------------------
-	/// \name Keyboard Methods
+	/// @name Keyboard Methods
 	//-----------------------------------------------------------------------------
 	//@{
 	virtual long onKeyDown (VstKeyCode& keyCode);												///< called if a key down event occurs and this view has focus
@@ -226,7 +219,7 @@ public:
 	//@}
 
 	//-----------------------------------------------------------------------------
-	/// \name View Size Methods
+	/// @name View Size Methods
 	//-----------------------------------------------------------------------------
 	//@{
 	CCoord getHeight () const { return size.height (); }										///< get the height of the view
@@ -244,7 +237,7 @@ public:
 	//@}
 
 	//-----------------------------------------------------------------------------
-	/// \name Focus Methods
+	/// @name Focus Methods
 	//-----------------------------------------------------------------------------
 	//@{
 	virtual void looseFocus ();																	///< called if view should loose focus
@@ -254,7 +247,7 @@ public:
 	//@}
 
 	//-----------------------------------------------------------------------------
-	/// \name Attribute Methods
+	/// @name Attribute Methods
 	//-----------------------------------------------------------------------------
 	//@{
 	bool getAttributeSize (const CViewAttributeID id, long& outSize) const;									///< get the size of an attribute
@@ -263,18 +256,33 @@ public:
 	bool removeAttribute (const CViewAttributeID id);														///< remove an attribute
 	//@}
 
+	//-----------------------------------------------------------------------------
+	/// @name Background Methods
+	//-----------------------------------------------------------------------------
+	//@{
 	virtual void setBackground (CBitmap *background);											///< set the background image of this view
 	virtual CBitmap *getBackground () const { return pBackground; }								///< get the background image of this view
+	//@}
 
+	//-----------------------------------------------------------------------------
+	/// @name Transparency Methods
+	//-----------------------------------------------------------------------------
+	//@{
 	virtual void setTransparency (bool val) { bTransparencyEnabled = val; }						///< set views transparent state
 	virtual bool getTransparency () const { return bTransparencyEnabled; }						///< get views transparent state
+	//@}
 
+	//-----------------------------------------------------------------------------
+	/// @name Attaching Methods
+	//-----------------------------------------------------------------------------
+	//@{
 	virtual bool removed (CView* parent);														///< view is removed from parent view
 	virtual bool attached (CView* parent);														///< view is attached to a parent view
 	bool isAttached () const { return bIsAttached; }											///< is view attached to a parentView
+	//@}
 
 	//-----------------------------------------------------------------------------
-	/// \name Parent Methods
+	/// @name Parent Methods
 	//-----------------------------------------------------------------------------
 	//@{
 	CView  *getParentView () const { return pParentView; }										///< get parent view
@@ -292,6 +300,7 @@ public:
 	//-------------------------------------------
 	CLASS_METHODS(CView, CBaseObject)
 protected:
+	~CView ();
 	CRect  size;
 	CRect  mouseableArea;
 
@@ -313,8 +322,7 @@ protected:
 
 //-----------------------------------------------------------------------------
 // CDragContainer Declaration
-//! \brief drag container
-/// \nosubgrouping
+//! @brief drag container
 //-----------------------------------------------------------------------------
 class CDragContainer : public CBaseObject
 {
@@ -333,6 +341,8 @@ public:
 		kUnknown = -1,
 		kError = -2
 	};
+	//-------------------------------------------
+	CLASS_METHODS_NOCOPY(CDragContainer, CBaseObject)
 };
 
 END_NAMESPACE_VSTGUI

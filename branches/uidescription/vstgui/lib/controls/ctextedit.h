@@ -41,25 +41,17 @@ BEGIN_NAMESPACE_VSTGUI
 
 //-----------------------------------------------------------------------------
 // CTextEdit Declaration
-//! \brief a text edit control
-/// \nosubgrouping
-/// \ingroup controls
+//! @brief a text edit control
+/// @ingroup controls
 //-----------------------------------------------------------------------------
 class CTextEdit : public CParamDisplay
 {
 public:
-	//-----------------------------------------------------------------------------
-	/// \name Constructor
-	//-----------------------------------------------------------------------------
-	//@{
 	CTextEdit (const CRect& size, CControlListener* listener, long tag, const char* txt = 0, CBitmap* background = 0, const long style = 0);
 	CTextEdit (const CTextEdit& textEdit);
-	//@}
-
-	virtual ~CTextEdit ();
 
 	//-----------------------------------------------------------------------------
-	/// \name CTextEdit Methods
+	/// @name CTextEdit Methods
 	//-----------------------------------------------------------------------------
 	//@{
 	virtual void setText (const char* txt);					///< set the text (only 256 bytes are allowed)
@@ -88,6 +80,7 @@ public:
 
 	CLASS_METHODS(CTextEdit, CParamDisplay)
 protected:
+	~CTextEdit ();
 	void* platformFont;
 	char text[256];
 

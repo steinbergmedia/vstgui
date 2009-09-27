@@ -44,25 +44,17 @@ BEGIN_NAMESPACE_VSTGUI
 
 //-----------------------------------------------------------------------------
 // CParamDisplay Declaration
-//! \brief a parameter display
-/// \nosubgrouping
-/// \ingroup views
+//! @brief a parameter display
+/// @ingroup views
 //-----------------------------------------------------------------------------
 class CParamDisplay : public CControl
 {
 public:
-	//-----------------------------------------------------------------------------
-	/// \name Constructor
-	//-----------------------------------------------------------------------------
-	//@{
 	CParamDisplay (const CRect& size, CBitmap* background = 0, const long style = 0);
 	CParamDisplay (const CParamDisplay& paramDisplay);
-	//@}
-
-	virtual ~CParamDisplay ();
 	
 	//-----------------------------------------------------------------------------
-	/// \name CParamDisplay Methods
+	/// @name CParamDisplay Methods
 	//-----------------------------------------------------------------------------
 	//@{
 	virtual void setFont (CFontRef fontID);
@@ -104,6 +96,7 @@ public:
 
 	CLASS_METHODS(CParamDisplay, CControl)
 protected:
+	~CParamDisplay ();
 	virtual void drawBack (CDrawContext* pContext, CBitmap* newBack = 0);
 	virtual void drawText (CDrawContext* pContext, const char* string);
 

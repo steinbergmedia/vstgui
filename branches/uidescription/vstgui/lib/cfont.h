@@ -45,7 +45,7 @@ class IFontPainter;
 struct CPoint;
 
 //-----------
-// \brief Text Face
+// @brief Text Face
 //-----------
 enum CTxtFace
 {
@@ -57,23 +57,17 @@ enum CTxtFace
 
 //-----------------------------------------------------------------------------
 // CFontDesc Declaration
-//! \brief font class
-/// \nosubgrouping
+//! @brief font class
 //-----------------------------------------------------------------------------
 class CFontDesc : public CBaseObject
 {
 public:
-	//-----------------------------------------------------------------------------
-	/// \name Constructors
-	//-----------------------------------------------------------------------------
-	//@{
 	CFontDesc (const char* name = 0, const CCoord& size = 0, const long style = 0);
 	CFontDesc (const CFontDesc& font);
-	//@}
 	~CFontDesc ();
 
 	//-----------------------------------------------------------------------------
-	/// \name Size, Name and Style Methods
+	/// @name Size, Name and Style Methods
 	//-----------------------------------------------------------------------------
 	//@{
 	const char* getName () const { return name; }		///< get the name of the font
@@ -82,7 +76,7 @@ public:
 
 	virtual void setName (const char* newName);			///< set the name of the font
 	virtual void setSize (CCoord newSize);				///< set the height of the font
-	virtual void setStyle (long newStyle);				///< set the style of the font \sa CTxtFace
+	virtual void setStyle (long newStyle);				///< set the style of the font @sa CTxtFace
 	//@}
 
 	virtual CPlatformFont* getPlatformFont ();
@@ -119,8 +113,7 @@ extern const CFontRef kSymbolFont;
 
 //-----------------------------------------------------------------------------
 // IFontPainter Declaration
-//! \brief font paint interface
-/// \nosubgrouping
+//! @brief font paint interface
 //-----------------------------------------------------------------------------
 class IFontPainter
 {
@@ -133,8 +126,7 @@ public:
 
 //-----------------------------------------------------------------------------
 // CPlatformFont declaration
-//! \brief platform font class
-/// \nosubgrouping
+//! @brief platform font class
 ///
 /// Encapsulation of a platform font. You should never need to call CPlatformFont::create(..), instead use CFontDesc::getPlatformFont().
 //-----------------------------------------------------------------------------

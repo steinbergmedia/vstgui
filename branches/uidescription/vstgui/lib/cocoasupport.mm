@@ -32,7 +32,7 @@
 // OF THE POSSIBILITY OF SUCH DAMAGE.
 //-----------------------------------------------------------------------------
 
-/// \cond ignore
+/// @cond ignore
 
 #import "cocoasupport.h"
 
@@ -1870,5 +1870,5 @@ void VSTGUI_FileSelector_Delegate_OpenPanelDidEnd (id self, SEL _cmd, NSOpenPane
 #endif // MAC_COCOA
 #endif // VSTGUI_NEW_CFILESELECTOR
 
-/// \endcond
+/// @endcond
 

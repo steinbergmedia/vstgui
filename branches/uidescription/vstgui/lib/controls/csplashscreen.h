@@ -42,27 +42,20 @@ BEGIN_NAMESPACE_VSTGUI
 //-----------------------------------------------------------------------------
 // CSplashScreen Declaration
 //!
-/// \nosubgrouping
-/// \ingroup views
+/// @ingroup views
 //-----------------------------------------------------------------------------
 class CSplashScreen : public CControl, public CControlListener
 {
 public:
-	//-----------------------------------------------------------------------------
-	/// \name Constructor
-	//-----------------------------------------------------------------------------
-	//@{
 	CSplashScreen (const CRect& size, CControlListener* listener, long tag, CBitmap* background, CRect& toDisplay, const CPoint& offset = CPoint (0, 0));
 	CSplashScreen (const CRect& size, CControlListener* listener, long tag, CView* splashView);
 	CSplashScreen (const CSplashScreen& splashScreen);
-	//@}
-	virtual ~CSplashScreen ();	
   
 	virtual void draw (CDrawContext*);
 	virtual bool hitTest (const CPoint& where, const long buttons = -1);
 
 	//-----------------------------------------------------------------------------
-	/// \name CSplashScreen Methods
+	/// @name CSplashScreen Methods
 	//-----------------------------------------------------------------------------
 	//@{
 	virtual void unSplash ();
@@ -75,6 +68,7 @@ public:
 
 	CLASS_METHODS(CSplashScreen, CControl)
 protected:
+	~CSplashScreen ();	
 	void valueChanged (CControl *pControl);
 
 	CRect	toDisplay;

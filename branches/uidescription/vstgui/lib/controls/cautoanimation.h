@@ -42,28 +42,20 @@ BEGIN_NAMESPACE_VSTGUI
 //-----------------------------------------------------------------------------
 // CAutoAnimation Declaration
 //!
-/// \nosubgrouping
-/// \ingroup controls
+/// @ingroup controls
 //-----------------------------------------------------------------------------
 class CAutoAnimation : public CControl, public IMultiBitmapControl
 {
 public:
-	//-----------------------------------------------------------------------------
-	/// \name Constructor
-	//-----------------------------------------------------------------------------
-	//@{
 	CAutoAnimation (const CRect& size, CControlListener* listener, long tag, CBitmap* background, const CPoint& offset = CPoint (0, 0));
 	CAutoAnimation (const CRect& size, CControlListener* listener, long tag, long subPixmaps, CCoord heightOfOneImage, CBitmap* background, const CPoint& offset = CPoint (0, 0));
 	CAutoAnimation (const CAutoAnimation& autoAnimation);
-	//@}
-
-	virtual ~CAutoAnimation ();
 
 	virtual void draw (CDrawContext*);
 	virtual CMouseEventResult onMouseDown (CPoint& where, const long& buttons);
 
 	//-----------------------------------------------------------------------------
-	/// \name CAutoAnimation Methods
+	/// @name CAutoAnimation Methods
 	//-----------------------------------------------------------------------------
 	//@{
 	virtual void openWindow (void);			///< enabled drawing
@@ -79,6 +71,8 @@ public:
 
 	CLASS_METHODS(CAutoAnimation, CControl)
 protected:
+	~CAutoAnimation ();
+
 	CPoint	offset;
 
 	CCoord	totalHeightOfBitmap;

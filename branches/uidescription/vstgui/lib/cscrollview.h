@@ -46,22 +46,14 @@ class CVSTGUITimer;
 
 //-----------------------------------------------------------------------------
 // CScrollView Declaration
-//! \brief a scrollable container view with scrollbars
-/// \nosubgrouping
-/// \ingroup containerviews
+//! @brief a scrollable container view with scrollbars
+/// @ingroup containerviews
 //-----------------------------------------------------------------------------
 class CScrollView : public CViewContainer, CControlListener
 {
 public:
-	//-----------------------------------------------------------------------------
-	/// \name Constructor
-	//-----------------------------------------------------------------------------
-	//@{
 	CScrollView (const CRect &size, const CRect &containerSize, CFrame* pParent, long style, CCoord scrollbarWidth = 16, CBitmap* pBackground = 0);
 	CScrollView (const CScrollView& scrollView);
-	//@}
-
-	~CScrollView ();
 
 	enum CScrollViewStyle 
 	{
@@ -71,7 +63,7 @@ public:
 	};
 
 	//-----------------------------------------------------------------------------
-	/// \name CScrollView Methods
+	/// @name CScrollView Methods
 	//-----------------------------------------------------------------------------
 	//@{
 	long getStyle () const { return style; }
@@ -110,6 +102,7 @@ public:
 	CLASS_METHODS(CScrollView, CViewContainer)
 //-----------------------------------------------------------------------------
 protected:
+	~CScrollView ();
 	void recalculateSubViews ();
 
 	CScrollContainer* sc;
@@ -130,9 +123,8 @@ class IScrollbarDrawer;
 
 //-----------------------------------------------------------------------------
 // CScrollbar Declaration
-//! \brief a scrollbar control
-/// \nosubgrouping
-/// \ingroup controls
+//! @brief a scrollbar control
+/// @ingroup controls
 //-----------------------------------------------------------------------------
 class CScrollbar : public CControl
 {
@@ -142,18 +134,11 @@ public:
 		kVertical,
 	};
 
-	//-----------------------------------------------------------------------------
-	/// \name Constructor
-	//-----------------------------------------------------------------------------
-	//@{
 	CScrollbar (const CRect& size, CControlListener* listener, long tag, ScrollbarDirection style, const CRect& scrollSize);
 	CScrollbar (const CScrollbar& scrollbar);
-	//@}
 
-	~CScrollbar ();
-	
 	//-----------------------------------------------------------------------------
-	/// \name CScrollbar Methods
+	/// @name CScrollbar Methods
 	//-----------------------------------------------------------------------------
 	//@{
 	virtual void setDrawer (IScrollbarDrawer* d) { drawer = d; }
@@ -206,6 +191,7 @@ protected:
 	
 	IScrollbarDrawer* drawer;
 private:
+	~CScrollbar ();
 	CVSTGUITimer* timer;
 	CPoint startPoint;
 	CRect scrollerRect;

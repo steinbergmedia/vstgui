@@ -48,8 +48,7 @@ class CDataBrowserHeader;
 
 //-----------------------------------------------------------------------------
 // IDataBrowser Declaration
-//! \brief DataBrowser Interface
-/// \nosubgrouping
+//! @brief DataBrowser Interface
 //-----------------------------------------------------------------------------------------------
 class IDataBrowser
 {
@@ -83,21 +82,13 @@ public:
 
 //-----------------------------------------------------------------------------
 // CDataBrowser Declaration
-//! \brief DataBrowser view
-/// \nosubgrouping
-/// \ingroup controls
+//! @brief DataBrowser view
+/// @ingroup controls
 //-----------------------------------------------------------------------------------------------
 class CDataBrowser : public CScrollView
 {
 public:
-	//-----------------------------------------------------------------------------
-	/// \name Constructor
-	//-----------------------------------------------------------------------------
-	//@{
 	CDataBrowser (const CRect& size, CFrame* pParent, IDataBrowser* db, long style = 0, CCoord scrollbarWidth = 16, CBitmap* pBackground = 0);
-	//@}
-
-	~CDataBrowser ();
 
 	enum CDataBrowserStyle 
 	{
@@ -113,7 +104,7 @@ public:
 	};
 
 	//-----------------------------------------------------------------------------
-	/// \name CDataBrowser Methods
+	/// @name CDataBrowser Methods
 	//-----------------------------------------------------------------------------
 	//@{
 	virtual void recalculateLayout (bool rememberSelection = false);				///< trigger recalculation, call if numRows or numColumns changed
@@ -132,6 +123,7 @@ public:
 	void setAutosizeFlags (long flags);
 	void setViewSize (CRect& size, bool invalid);
 protected:
+	~CDataBrowser ();
 	void valueChanged (CControl *pControl);
 	CMessageResult notify (CBaseObject* sender, const char* message);
 	bool attached (CView *parent);

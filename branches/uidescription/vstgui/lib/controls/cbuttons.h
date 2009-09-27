@@ -43,25 +43,17 @@ BEGIN_NAMESPACE_VSTGUI
 
 //-----------------------------------------------------------------------------
 // COnOffButton Declaration
-//! \brief a button control with 2 states
-/// \nosubgrouping
-/// \ingroup controls
+//! @brief a button control with 2 states
+/// @ingroup controls
 //-----------------------------------------------------------------------------
 class COnOffButton : public CControl
 {
 public:
-	//-----------------------------------------------------------------------------
-	/// \name Constructor
-	//-----------------------------------------------------------------------------
-	//@{
 	COnOffButton (const CRect& size, CControlListener* listener, long tag, CBitmap* background, long style = 0);
 	COnOffButton (const COnOffButton& onOffButton);
-	//@}
-	
-	virtual ~COnOffButton ();
 
 	//-----------------------------------------------------------------------------
-	/// \name COnOffButton Methods
+	/// @name COnOffButton Methods
 	//-----------------------------------------------------------------------------
 	//@{
 	virtual long getStyle () const { return style; }
@@ -75,24 +67,28 @@ public:
 
 	CLASS_METHODS(COnOffButton, CControl)
 protected:
+	~COnOffButton ();
 	long style;
 };
 
 //-----------------------------------------------------------------------------
 // CCheckBox Declaration
-//! \brief a check box control with a title 3 states
-/// \nosubgrouping
-/// \ingroup controls
+//! @brief a check box control with a title and 3 states [new since 4.0]
+/// @ingroup controls
 //-----------------------------------------------------------------------------
 class CCheckBox : public CControl
 {
 public:
 	CCheckBox (const CRect& size, CControlListener* listener, long tag, const char* title, CBitmap* bitmap = 0, long style = 0);
 	CCheckBox (const CCheckBox& checkbox);
-	~CCheckBox ();
+
+	enum Styles {
+		kAutoSizeToFit = 0 << 1, ///< automatically adjusts the width so that the label is completely visible
+		kDrawCrossBox  = 1 << 1, ///< draws a crossbox instead of a checkmark if no bitmap is provided
+	};
 
 	//-----------------------------------------------------------------------------
-	/// \name CCheckBox Methods
+	/// @name CCheckBox Methods
 	//-----------------------------------------------------------------------------
 	//@{
 	virtual void setTitle (const char* newTitle);
@@ -112,7 +108,7 @@ public:
 	const CColor& getCheckMarkColor () const { return checkMarkColor; }
 
 	virtual long getStyle () const { return style; }
-	virtual void setStyle (long newStyle) { style = newStyle; invalid (); }
+	virtual void setStyle (long newStyle);
 	//@}
 
 	// overrides
@@ -122,9 +118,11 @@ public:
 	virtual CMouseEventResult onMouseUp (CPoint& where, const long& buttons);
 	virtual long onKeyDown (VstKeyCode& keyCode);
 	virtual bool sizeToFit ();
+	virtual void setBackground (CBitmap *background);
 
 	CLASS_METHODS(CCheckBox, CControl)
 protected:
+	~CCheckBox ();
 	char* title;
 	long style;
 	CColor fontColor;
@@ -141,22 +139,14 @@ private:
 //-----------------------------------------------------------------------------
 // CKickButton Declaration
 //!
-/// \nosubgrouping
-/// \ingroup controls
+/// @ingroup controls
 //-----------------------------------------------------------------------------
 class CKickButton : public CControl, public IMultiBitmapControl
 {
 public:
-	//-----------------------------------------------------------------------------
-	/// \name Constructor
-	//-----------------------------------------------------------------------------
-	//@{
 	CKickButton (const CRect& size, CControlListener* listener, long tag, CBitmap* background, const CPoint& offset = CPoint (0, 0));
 	CKickButton (const CRect& size, CControlListener* listener, long tag, CCoord heightOfOneImage, CBitmap* background, const CPoint& offset = CPoint (0, 0));
 	CKickButton (const CKickButton& kickButton);
-	//@}
-
-	virtual ~CKickButton ();	
 
 	virtual void draw (CDrawContext*);
 
@@ -168,6 +158,7 @@ public:
 
 	CLASS_METHODS(CKickButton, CControl)
 protected:
+	~CKickButton ();	
 	CPoint	offset;
 
 private:

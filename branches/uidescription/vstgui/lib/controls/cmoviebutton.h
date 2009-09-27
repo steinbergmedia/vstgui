@@ -41,23 +41,15 @@ BEGIN_NAMESPACE_VSTGUI
 
 //-----------------------------------------------------------------------------
 // CMovieButton Declaration
-//! \brief a bi-states button with 2 subbitmaps
-/// \nosubgrouping
-/// \ingroup controls
+//! @brief a bi-states button with 2 subbitmaps
+/// @ingroup controls
 //-----------------------------------------------------------------------------
 class CMovieButton : public CControl, public IMultiBitmapControl
 {
 public:
-	//-----------------------------------------------------------------------------
-	/// \name Constructor
-	//-----------------------------------------------------------------------------
-	//@{
 	CMovieButton (const CRect& size, CControlListener* listener, long tag, CBitmap* background, const CPoint& offset = CPoint (0, 0));
 	CMovieButton (const CRect& size, CControlListener* listener, long tag, CCoord heightOfOneImage, CBitmap* background, const CPoint& offset = CPoint (0, 0));
 	CMovieButton (const CMovieButton& movieButton);
-	//@}
-
-	virtual ~CMovieButton ();	
 
 	virtual void draw (CDrawContext*);
 
@@ -69,6 +61,7 @@ public:
 
 	CLASS_METHODS(CMovieButton, CControl)
 protected:
+	~CMovieButton ();	
 	CPoint   offset;
 	float    buttonState;
 

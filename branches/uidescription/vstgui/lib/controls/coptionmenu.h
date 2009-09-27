@@ -42,7 +42,6 @@ BEGIN_NAMESPACE_VSTGUI
 class COptionMenu;
 //-----------------------------------------------------------------------------
 // CMenuItem Declaration
-/// \nosubgrouping
 //-----------------------------------------------------------------------------
 class CMenuItem : public CBaseObject
 {
@@ -55,19 +54,13 @@ public:
 		kSeparator	= 1 << 3,	///< item is a separator
 	};
 
-	//-----------------------------------------------------------------------------
-	/// \name Constructor
-	//-----------------------------------------------------------------------------
-	//@{
 	CMenuItem (const char* title, const char* keycode = 0, long keyModifiers = 0, CBitmap* icon = 0, long flags = kNoFlags);
 	CMenuItem (const char* title, COptionMenu* submenu, CBitmap* icon = 0);
 	CMenuItem (const char* title, long tag);
 	CMenuItem (const CMenuItem& item);
-	//@}
-	~CMenuItem ();
 
 	//-----------------------------------------------------------------------------
-	/// \name CMenuItem Methods
+	/// @name CMenuItem Methods
 	//-----------------------------------------------------------------------------
 	//@{
 	virtual void setTitle (const char* title);							///< set title of menu item
@@ -95,6 +88,8 @@ public:
 
 //------------------------------------------------------------------------
 protected:
+	~CMenuItem ();
+
 	char* title;
 	char* keycode;
 	COptionMenu* submenu;
@@ -108,26 +103,18 @@ class CMenuItemList;
 
 //-----------------------------------------------------------------------------
 // COptionMenu Declaration
-//! \brief a popup menu control
-/// \nosubgrouping
-/// \ingroup controls
+//! @brief a popup menu control
+/// @ingroup controls
 //-----------------------------------------------------------------------------
 class COptionMenu : public CParamDisplay
 {
 public:
-	//-----------------------------------------------------------------------------
-	/// \name Constructor
-	//-----------------------------------------------------------------------------
-	//@{
 	COptionMenu ();
 	COptionMenu (const CRect& size, CControlListener* listener, long tag, CBitmap* background = 0, CBitmap* bgWhenClick = 0, const long style = 0);
 	COptionMenu (const COptionMenu& menu);
-	//@}
-
-	virtual ~COptionMenu ();
 
 	//-----------------------------------------------------------------------------
-	/// \name COptionMenu Methods
+	/// @name COptionMenu Methods
 	//-----------------------------------------------------------------------------
 	//@{
 	virtual CMenuItem* addEntry (CMenuItem* item, long index = -1);											///< add a new entry
@@ -175,6 +162,7 @@ public:
 
 	CLASS_METHODS(COptionMenu, CParamDisplay)
 protected:
+	~COptionMenu ();
 	COptionMenu* getItemMenu (long idx, long& idxInMenu, long& offsetIdx);
 	void  removeItems ();
 	void* appendItems (long& offsetIdx);

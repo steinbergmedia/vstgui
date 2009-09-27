@@ -42,23 +42,17 @@ class CBitmap;
 
 //-----------------------------------------------------------------------------
 // COffscreenContext Declaration
-//! \brief A drawing device which uses a pixmap as its drawing surface
-/// \nosubgrouping
+//! @brief A drawing device which uses a pixmap as its drawing surface
 //-----------------------------------------------------------------------------
 class COffscreenContext : public CDrawContext
 {
 public:
-	//-----------------------------------------------------------------------------
-	/// \name Constructors
-	//-----------------------------------------------------------------------------
-	//@{
 	COffscreenContext (CDrawContext *pContext, CBitmap *pBitmap, bool drawInBitmap = false);
 	COffscreenContext (CFrame *pFrame, long width, long height, const CColor backgroundColor = kBlackCColor);
-	//@}
-	virtual ~COffscreenContext ();
+	~COffscreenContext ();
 	
 	//-----------------------------------------------------------------------------
-	/// \name COffscreenContext Methods
+	/// @name COffscreenContext Methods
 	//-----------------------------------------------------------------------------
 	//@{
 	void copyFrom (CDrawContext *pContext, CRect destRect, CPoint srcOffset = CPoint (0, 0));	///< copy from offscreen to pContext
@@ -69,6 +63,7 @@ public:
 	//@}
 
 	//-------------------------------------------
+	CLASS_METHODS_NOCOPY(COffscreenContext, CDrawContext)
 protected:
 	CBitmap	*pBitmap;
 	CBitmap	*pBitmapBg;

@@ -42,7 +42,7 @@ BEGIN_NAMESPACE_VSTGUI
 
 //-----------------------------------------------------------------------------
 // CCView Implementation
-/// \cond ignore
+/// @cond ignore
 //-----------------------------------------------------------------------------
 CCView::CCView (CView* pView)
 : pView (pView)
@@ -59,7 +59,7 @@ CCView::~CCView ()
 	if (pView)
 		pView->forget (); 
 }
-/// \endcond
+/// @endcond
 
 const char* kMsgCheckIfViewContainer	= "kMsgCheckIfViewContainer";
 const char* kMsgLooseFocus = "LooseFocus";

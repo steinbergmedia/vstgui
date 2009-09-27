@@ -1,3 +1,8 @@
+2009-09-27 arne
+
+	* added CNinePartTiledBitmap (original from Wolfram)
+	* moved all destructors into protected for classes which are not allowed to create on the stack
+
 2009-09-19 arne
 
 	* splittet vstcontrols.cpp into different files

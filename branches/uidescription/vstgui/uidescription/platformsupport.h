@@ -40,7 +40,7 @@
 #include <string>
 #include <list>
 
-/// \cond ignore
+/// @cond ignore
 
 BEGIN_NAMESPACE_VSTGUI
 
@@ -98,6 +98,6 @@ public:
 
 END_NAMESPACE_VSTGUI
 
-/// \endcond ignore
+/// @endcond ignore
 
 #endif

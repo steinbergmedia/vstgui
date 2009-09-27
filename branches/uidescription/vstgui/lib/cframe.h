@@ -57,7 +57,7 @@ class IMouseObserver;
 class IKeyboardHook;
 
 //----------------------------
-// \brief Cursor Type
+// @brief Cursor Type
 //----------------------------
 enum CCursorType
 {
@@ -74,7 +74,7 @@ enum CCursorType
 };
 
 //----------------------------
-// \brief Knob Mode
+// @brief Knob Mode
 //----------------------------
 enum CKnobMode
 {
@@ -88,23 +88,16 @@ extern const char* kMsgOldFocusView;			///< Message send to all parents of the o
 
 //-----------------------------------------------------------------------------
 // CFrame Declaration
-//! \brief The CFrame is the parent container of all views
-/// \nosubgrouping
-/// \ingroup containerviews
+//! @brief The CFrame is the parent container of all views
+/// @ingroup containerviews
 //-----------------------------------------------------------------------------
 class CFrame : public CViewContainer
 {
 public:
-	//-----------------------------------------------------------------------------
-	/// \name Constructor
-	//-----------------------------------------------------------------------------
-	//@{
 	CFrame (const CRect &size, void *pSystemWindow, VSTGUIEditorInterface *pEditor);
-	//@}
-	virtual ~CFrame ();
 
 	//-----------------------------------------------------------------------------
-	/// \name CFrame Methods
+	/// @name CFrame Methods
 	//-----------------------------------------------------------------------------
 	//@{
 	virtual void idle ();
@@ -193,6 +186,7 @@ public:
 
 	//-------------------------------------------
 protected:
+	~CFrame ();
 	bool   initFrame (void *pSystemWin);
 
 	VSTGUIEditorInterface   *pEditor;
@@ -261,8 +255,7 @@ protected:
 
 //-----------------------------------------------------------------------------
 // IMouseObserver Declaration
-//! \brief generic mouse observer interface for CFrame
-/// \nosubgrouping
+//! @brief generic mouse observer interface for CFrame
 //-----------------------------------------------------------------------------
 class IMouseObserver
 {
@@ -276,8 +269,7 @@ public:
 
 //-----------------------------------------------------------------------------
 // IKeyboardHook Declaration
-//! \brief generic keyboard hook interface for CFrame
-/// \nosubgrouping
+//! @brief generic keyboard hook interface for CFrame [new since 4.0]
 //-----------------------------------------------------------------------------
 class IKeyboardHook
 {

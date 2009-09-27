@@ -55,7 +55,6 @@ class CVSTGUITimer : public CBaseObject
 {
 public:
 	CVSTGUITimer (CBaseObject* timerObject, int fireTime = 100);
-	virtual ~CVSTGUITimer ();
 	
 	virtual bool start ();							///< starts the timer
 	virtual bool stop ();							///< stops the timer, returns wheather timer was running or not
@@ -66,7 +65,9 @@ public:
 //-----------------------------------------------------------------------------
 	static const char* kMsgTimer;					///< message string posted to CBaseObject's notify method
 //-----------------------------------------------------------------------------
+	CLASS_METHODS_NOCOPY(CVSTGUITimer, CBaseObject)
 protected:
+	~CVSTGUITimer ();
 	int fireTime;
 	CBaseObject* timerObject;
 

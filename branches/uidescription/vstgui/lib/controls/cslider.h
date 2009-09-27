@@ -41,26 +41,18 @@ BEGIN_NAMESPACE_VSTGUI
 
 //-----------------------------------------------------------------------------
 // CSlider Declaration
-//! \brief a slider control
-/// \nosubgrouping
-/// \ingroup controls
+//! @brief a slider control
+/// @ingroup controls
 //-----------------------------------------------------------------------------
 class CSlider : public CControl
 {
 public:
-	//-----------------------------------------------------------------------------
-	/// \name Constructor
-	//-----------------------------------------------------------------------------
-	//@{
 	CSlider (const CRect& size, CControlListener* listener, long tag, long iMinPos, long iMaxPos, CBitmap* handle, CBitmap* background, const CPoint& offset = CPoint (0, 0), const long style = kLeft|kHorizontal);
 	CSlider (const CRect& rect, CControlListener* listener, long tag, const CPoint& offsetHandle, long rangeHandle, CBitmap* handle, CBitmap* background, const CPoint& offset = CPoint (0, 0), const long style = kLeft|kHorizontal);
 	CSlider (const CSlider& slider);
-	//@}
-
-	virtual ~CSlider ();
   
 	//-----------------------------------------------------------------------------
-	/// \name CSlider Methods
+	/// @name CSlider Methods
 	//-----------------------------------------------------------------------------
 	//@{
 	virtual void setDrawTransparentHandle (bool val) { bDrawTransparentEnabled = val; }
@@ -94,6 +86,7 @@ public:
 
 	CLASS_METHODS(CSlider, CControl)
 protected:
+	~CSlider ();
 	void setViewSize (CRect& rect, bool invalid);
 	
 	CPoint   offset; 
@@ -124,40 +117,28 @@ private:
 
 //-----------------------------------------------------------------------------
 // CVerticalSlider Declaration
-//! \brief a vertical slider control
-/// \nosubgrouping
-/// \ingroup controls
+//! @brief a vertical slider control
+/// @ingroup controls
 //-----------------------------------------------------------------------------
 class CVerticalSlider : public CSlider
 {
 public:
-	//-----------------------------------------------------------------------------
-	/// \name Constructor
-	//-----------------------------------------------------------------------------
-	//@{
 	CVerticalSlider (const CRect& size, CControlListener* listener, long tag, long iMinPos, long iMaxPos, CBitmap* handle, CBitmap* background, const CPoint& offset = CPoint (0, 0), const long style = kBottom);
 	CVerticalSlider (const CRect& rect, CControlListener* listener, long tag, const CPoint& offsetHandle, long rangeHandle, CBitmap* handle, CBitmap* background, const CPoint& offset = CPoint (0, 0), const long style = kBottom);
 	CVerticalSlider (const CVerticalSlider& slider);
-	//@}
 };
 
 //-----------------------------------------------------------------------------
 // CHorizontalSlider Declaration
-//! \brief a horizontal slider control
-/// \nosubgrouping
-/// \ingroup controls
+//! @brief a horizontal slider control
+/// @ingroup controls
 //-----------------------------------------------------------------------------
 class CHorizontalSlider : public CSlider
 {
 public:
-	//-----------------------------------------------------------------------------
-	/// \name Constructor
-	//-----------------------------------------------------------------------------
-	//@{
 	CHorizontalSlider (const CRect& size, CControlListener* listener, long tag, long iMinPos, long iMaxPos, CBitmap* handle, CBitmap* background, const CPoint& offset = CPoint (0, 0), const long style = kRight);
 	CHorizontalSlider (const CRect& rect, CControlListener* listener, long tag, const CPoint& offsetHandle, long rangeHandle, CBitmap* handle, CBitmap* background, const CPoint& offset = CPoint (0, 0), const long style = kRight);
 	CHorizontalSlider (const CHorizontalSlider& slider);
-	//@}
 };
 
 END_NAMESPACE_VSTGUI

@@ -41,27 +41,19 @@ BEGIN_NAMESPACE_VSTGUI
 
 //-----------------------------------------------------------------------------
 // CSpecialDigit Declaration
-//! \brief special display with custom numbers (0...9)
-/// \nosubgrouping
-/// \ingroup views
+//! @brief special display with custom numbers (0...9)
+/// @ingroup views
 //-----------------------------------------------------------------------------
 class CSpecialDigit : public CControl
 {
 public:
-	//-----------------------------------------------------------------------------
-	/// \name Constructor
-	//-----------------------------------------------------------------------------
-	//@{
 	CSpecialDigit (const CRect& size, CControlListener* listener, long tag, long dwPos, long iNumbers, long* xpos, long* ypos, long width, long height, CBitmap* background);
 	CSpecialDigit (const CSpecialDigit& digit);
-	//@}
-
-	virtual ~CSpecialDigit ();
 	
 	virtual void  draw (CDrawContext*);
 
 	//-----------------------------------------------------------------------------
-	/// \name CSpecialDigit Methods
+	/// @name CSpecialDigit Methods
 	//-----------------------------------------------------------------------------
 	//@{
 	virtual float getNormValue (void) const;
@@ -69,6 +61,7 @@ public:
 
 	CLASS_METHODS(CSpecialDigit, CControl)
 protected:
+	~CSpecialDigit ();
 	long     iNumbers;
 	long     xpos[7];
 	long     ypos[7];

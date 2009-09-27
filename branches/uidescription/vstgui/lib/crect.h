@@ -42,7 +42,7 @@ BEGIN_NAMESPACE_VSTGUI
 struct CPoint;
 
 //-----------------------------------------------------------------------------
-//! \brief Rect structure
+//! @brief Rect structure
 //-----------------------------------------------------------------------------
 struct CRect
 {
@@ -142,17 +142,10 @@ struct CRect
 		}
 	}
 
-	union
-	{ CCoord left; CCoord x;};
-
-	union
-	{ CCoord top; CCoord y;};
-
-	union
-	{ CCoord right; CCoord x2;};
-
-	union
-	{ CCoord bottom; CCoord y2;};
+	CCoord left;
+	CCoord top;
+	CCoord right;
+	CCoord bottom;
 };
 
 END_NAMESPACE_VSTGUI

@@ -41,25 +41,17 @@ BEGIN_NAMESPACE_VSTGUI
 
 //-----------------------------------------------------------------------------
 // CLabel Declaration
-//! \brief a text label
-/// \nosubgrouping
-/// \ingroup views
+//! @brief a text label
+/// @ingroup views
 //-----------------------------------------------------------------------------
 class CTextLabel : public CParamDisplay
 {
 public:
-	//-----------------------------------------------------------------------------
-	/// \name Constructor
-	//-----------------------------------------------------------------------------
-	//@{
 	CTextLabel (const CRect& size, const char* txt = 0, CBitmap* background = 0, const long style = 0);
 	CTextLabel (const CTextLabel& textLabel);
-	//@}
-	
-	~CTextLabel ();
 	
 	//-----------------------------------------------------------------------------
-	/// \name CTextLabel Methods
+	/// @name CTextLabel Methods
 	//-----------------------------------------------------------------------------
 	//@{
 	virtual void setText (const char* txt);	///< set text
@@ -70,6 +62,7 @@ public:
 
 	CLASS_METHODS(CTextLabel, CParamDisplay)
 protected:
+	~CTextLabel ();
 	void freeText ();
 	char* text;
 };

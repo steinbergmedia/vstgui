@@ -46,7 +46,7 @@ class PlatformGraphicsPath;
 class CGradient;
 
 //-----------------------------------------------------------------------------
-/// @brief Graphics Path Transformation
+/// @brief Graphics Path Transformation [new since 4.0]
 //-----------------------------------------------------------------------------
 struct CGraphicsTransformation
 {
@@ -65,8 +65,7 @@ struct CGraphicsTransformation
 
 //-----------------------------------------------------------------------------
 /*! @class CGraphicsPath
-	@nosubgrouping
-	@brief Graphics Path Object
+	@brief Graphics Path Object [new since 4.0]
 
 	Only available when VSTGUI_FLOAT_COORDINATES is defined.
 	On Windows GDIPLUS must be defined.
@@ -76,13 +75,8 @@ struct CGraphicsTransformation
 class CGraphicsPath : public CBaseObject
 {
 public:
-	//-----------------------------------------------------------------------------
-	/// @name Constructor
-	//-----------------------------------------------------------------------------
-	//@{
 	CGraphicsPath ();
 	~CGraphicsPath ();
-	//@}
 
 	//-----------------------------------------------------------------------------
 	/// @name Adding Elements
@@ -121,14 +115,15 @@ public:
 	CRect getBoundingBox () const;
 	//@}
 	
+//-----------------------------------------------------------------------------
+	CLASS_METHODS_NOCOPY(CGraphicsPath, CBaseObject)
 protected:
 	PlatformGraphicsPath* platformPath;
 };
 
 //-----------------------------------------------------------------------------
 /*! @class CGradient
-	@nosubgrouping
-	@brief Gradient Object
+	@brief Gradient Object [new since 4.0]
 
 	Only available when VSTGUI_FLOAT_COORDINATES is defined.
 	On Windows GDIPLUS must be defined.

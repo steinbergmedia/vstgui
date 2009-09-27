@@ -41,23 +41,15 @@ BEGIN_NAMESPACE_VSTGUI
 
 //-----------------------------------------------------------------------------
 // CVerticalSwitch Declaration
-//! \brief a vertical switch control
-/// \nosubgrouping
-/// \ingroup controls
+//! @brief a vertical switch control
+/// @ingroup controls
 //-----------------------------------------------------------------------------
 class CVerticalSwitch : public CControl, public IMultiBitmapControl
 {
 public:
-	//-----------------------------------------------------------------------------
-	/// \name Constructor
-	//-----------------------------------------------------------------------------
-	//@{
 	CVerticalSwitch (const CRect& size, CControlListener* listener, long tag, CBitmap* background, const CPoint& offset = CPoint (0, 0));
 	CVerticalSwitch (const CRect& size, CControlListener* listener, long tag, long subPixmaps, CCoord heightOfOneImage, long iMaxPositions, CBitmap* background, const CPoint& offset = CPoint (0, 0));
 	CVerticalSwitch (const CVerticalSwitch& vswitch);
-	//@}
-
-	virtual ~CVerticalSwitch ();
 
 	virtual void draw (CDrawContext*);
 
@@ -69,6 +61,7 @@ public:
 
 	CLASS_METHODS(CVerticalSwitch, CControl)
 protected:
+	~CVerticalSwitch ();
 	CPoint	offset;
 
 private:
@@ -78,23 +71,15 @@ private:
 
 //-----------------------------------------------------------------------------
 // CHorizontalSwitch Declaration
-//! \brief a horizontal switch control
-/// \nosubgrouping
-/// \ingroup controls
+//! @brief a horizontal switch control
+/// @ingroup controls
 //-----------------------------------------------------------------------------
 class CHorizontalSwitch : public CControl, public IMultiBitmapControl
 {
 public:
-	//-----------------------------------------------------------------------------
-	/// \name Constructor
-	//-----------------------------------------------------------------------------
-	//@{
 	CHorizontalSwitch (const CRect& size, CControlListener* listener, long tag, CBitmap* background, const CPoint& offset = CPoint (0, 0));
 	CHorizontalSwitch (const CRect& size, CControlListener* listener, long tag, long subPixmaps, CCoord heightOfOneImage, long iMaxPositions, CBitmap* background, const CPoint& offset = CPoint (0, 0));
 	CHorizontalSwitch (const CHorizontalSwitch& hswitch);
-	//@}
-	
-	virtual	~CHorizontalSwitch ();
 
 	virtual void draw (CDrawContext*);
 
@@ -106,6 +91,7 @@ public:
 
 	CLASS_METHODS(CHorizontalSwitch, CControl)
 protected:
+	~CHorizontalSwitch ();
 	CPoint	offset;
 
 private:
@@ -115,23 +101,15 @@ private:
 
 //-----------------------------------------------------------------------------
 // CRockerSwitch Declaration
-//! \brief a switch control with 3 sub bitmaps
-/// \nosubgrouping
-/// \ingroup controls
+//! @brief a switch control with 3 sub bitmaps
+/// @ingroup controls
 //-----------------------------------------------------------------------------
 class CRockerSwitch : public CControl, public IMultiBitmapControl
 {
 public:
-	//-----------------------------------------------------------------------------
-	/// \name Constructor
-	//-----------------------------------------------------------------------------
-	//@{
 	CRockerSwitch (const CRect& size, CControlListener* listener, long tag, CBitmap* background, const CPoint& offset = CPoint (0, 0), const long style = kHorizontal);
 	CRockerSwitch (const CRect& size, CControlListener* listener, long tag, CCoord heightOfOneImage, CBitmap* background, const CPoint& offset = CPoint (0, 0), const long style = kHorizontal);
 	CRockerSwitch (const CRockerSwitch& rswitch);
-	//@}
-
-	virtual ~CRockerSwitch ();
 
 	virtual void draw (CDrawContext*);
 	virtual bool onWheel (const CPoint& where, const float& distance, const long& buttons);
@@ -144,6 +122,7 @@ public:
 
 	CLASS_METHODS(CRockerSwitch, CControl)
 protected:
+	~CRockerSwitch ();
 	CPoint	offset;
 	long	style;
 

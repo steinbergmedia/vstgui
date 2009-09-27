@@ -49,7 +49,7 @@ BEGIN_NAMESPACE_VSTGUI
 
 //-----------------------------------------------------------------------------
 // CFileExtension Declaration
-//! \brief file extension description
+//! @brief file extension description
 //-----------------------------------------------------------------------------
 class CFileExtension : public CBaseObject
 {
@@ -64,6 +64,8 @@ public:
 	int getMacType () const { return macType; }
 
 	bool operator== (const CFileExtension& ext) const;
+//-----------------------------------------------------------------------------
+	CLASS_METHODS(CFileExtension, CBaseObject)
 protected:
 	void init (const char* description, const char* extension, const char* mimeType);
 	
@@ -75,12 +77,11 @@ protected:
 
 //-----------------------------------------------------------------------------
 // CNewFileSelector Declaration
-//! \brief New file selector class
-/// \nosubgrouping
+//! @brief New file selector class
 /*! @class CNewFileSelector
 @section usage Usage
 Running the file selector
-\code
+@code
 void MyClass::runFileSelector ()
 {
 	CNewFileSelector* selector = CNewFileSelector::create (getFrame (), CNewFileSelector::kSelectFile);
@@ -93,9 +94,9 @@ void MyClass::runFileSelector ()
 		selector->forget ();
 	}
 }
-\endcode
+@endcode
 Getting results
-\code
+@code
 CMessageResult MyClass::notify (CBaseObject* sender, const char* message)
 {
 	if (message == CNewFileSelector::kSelectEndMessage)
@@ -109,7 +110,7 @@ CMessageResult MyClass::notify (CBaseObject* sender, const char* message)
 	}
 	return parent::notify (sender, message);
 }
-\endcode
+@endcode
 */
 //-----------------------------------------------------------------------------
 class CNewFileSelector : public CBaseObject
@@ -122,7 +123,7 @@ public:
 	};
 	
 	//-----------------------------------------------------------------------------
-	/// \name CFileSelector running
+	/// @name CFileSelector running
 	//-----------------------------------------------------------------------------
 	//@{
 	static CNewFileSelector* create (CFrame* parent = 0, Style style = kSelectFile); ///< create a new instance
@@ -133,7 +134,7 @@ public:
 	//@}
 
 	//-----------------------------------------------------------------------------
-	/// \name CFileSelector setup
+	/// @name CFileSelector setup
 	//-----------------------------------------------------------------------------
 	//@{
 	void setTitle (const char* title);							///< set title of file selector
@@ -145,7 +146,7 @@ public:
 	//@}
 
 	//-----------------------------------------------------------------------------
-	/// \name CFileSelector result
+	/// @name CFileSelector result
 	//-----------------------------------------------------------------------------
 	//@{
 	int getNumSelectedFiles () const;							///< get number of selected files
@@ -156,6 +157,7 @@ public:
 
 	static const char* kSelectEndMessage;
 //-----------------------------------------------------------------------------
+	CLASS_METHODS_NOCOPY(CNewFileSelector, CBaseObject)
 protected:
 	CNewFileSelector (CFrame* frame = 0);
 	~CNewFileSelector ();
@@ -189,8 +191,8 @@ BEGIN_NAMESPACE_VSTGUI
 
 //-----------------------------------------------------------------------------
 // CFileSelector Declaration
-//! \brief deprecated file selector class
-//! \deprecated
+//! @brief deprecated file selector class
+//! @deprecated
 //-----------------------------------------------------------------------------
 class CFileSelector
 {

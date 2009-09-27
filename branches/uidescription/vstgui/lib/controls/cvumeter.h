@@ -43,24 +43,16 @@ class COffscreenContext;
 //-----------------------------------------------------------------------------
 // CVuMeter Declaration
 //!
-/// \nosubgrouping
-/// \ingroup views
+/// @ingroup views
 //-----------------------------------------------------------------------------
 class CVuMeter : public CControl
 {
 public:
-	//-----------------------------------------------------------------------------
-	/// \name Constructor
-	//-----------------------------------------------------------------------------
-	//@{
 	CVuMeter (const CRect& size, CBitmap* onBitmap, CBitmap* offBitmap, long nbLed, const long style = kVertical);
 	CVuMeter (const CVuMeter& vuMeter);
-	//@}
-
-	virtual ~CVuMeter ();	
   
 	//-----------------------------------------------------------------------------
-	/// \name CVuMeter Methods
+	/// @name CVuMeter Methods
 	//-----------------------------------------------------------------------------
 	//@{
 	virtual void setDecreaseStepValue (float value) { decreaseValue = value; }
@@ -76,6 +68,7 @@ public:
 	
 	CLASS_METHODS(CVuMeter, CControl)
 protected:
+	~CVuMeter ();	
 	CBitmap* onBitmap;
 	CBitmap* offBitmap;
 	COffscreenContext* pOScreen;

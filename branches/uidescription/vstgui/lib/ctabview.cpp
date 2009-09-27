@@ -42,7 +42,7 @@ BEGIN_NAMESPACE_VSTGUI
 
 #define  kTabButtonTagStart	20000
 
-/// \cond ignore
+/// @cond ignore
 //-----------------------------------------------------------------------------
 class CTabButton : public COnOffButton
 //-----------------------------------------------------------------------------
@@ -136,7 +136,7 @@ public:
 	CTabChildView* next;
 	CControl* button;
 };
-/// \endcond
+/// @endcond
 
 //-----------------------------------------------------------------------------
 CTabView::CTabView (const CRect& size, CFrame* parent, CBitmap* tabBitmap, CBitmap* background, TabPosition tabPosition, long style)

@@ -58,7 +58,7 @@ BEGIN_NAMESPACE_VSTGUI
 class CFrame;
 
 //-----------
-// \brief Line Style
+// @brief Line Style
 //-----------
 enum CLineStyle
 {
@@ -67,7 +67,7 @@ enum CLineStyle
 };
 
 //-----------
-// \brief Draw Mode
+// @brief Draw Mode
 //-----------
 enum CDrawMode
 {
@@ -76,7 +76,7 @@ enum CDrawMode
 };
 
 //----------------------------
-// \brief Text Alignment (Horizontal)
+// @brief Text Alignment (Horizontal)
 //----------------------------
 enum CHoriTxtAlign
 {
@@ -86,7 +86,7 @@ enum CHoriTxtAlign
 };
 
 //----------------------------
-// \brief Draw Style
+// @brief Draw Style
 //----------------------------
 enum CDrawStyle
 {
@@ -97,22 +97,16 @@ enum CDrawStyle
 
 //-----------------------------------------------------------------------------
 // CDrawContext Declaration
-//! \brief A drawing context encapsulates the drawing context of the underlying OS
-/// \nosubgrouping
+//! @brief A drawing context encapsulates the drawing context of the underlying OS
 //-----------------------------------------------------------------------------
 class CDrawContext : public CBaseObject
 {
 public:
-	//-----------------------------------------------------------------------------
-	/// \name Constructor
-	//-----------------------------------------------------------------------------
-	//@{
 	CDrawContext (CFrame *pFrame, void *pSystemContext, void *pWindow = 0);
-	//@}
 	~CDrawContext ();	
 
 	//-----------------------------------------------------------------------------
-	/// \name Draw primitives
+	/// @name Draw primitives
 	//-----------------------------------------------------------------------------
 	//@{
 	void moveTo (const CPoint &point);	///< move line position to point
@@ -126,7 +120,7 @@ public:
 	//@}
 
 	//-----------------------------------------------------------------------------
-	/// \name Line Mode
+	/// @name Line Mode
 	//-----------------------------------------------------------------------------
 	//@{
 	void       setLineStyle (CLineStyle style);				///< set the current line style
@@ -137,7 +131,7 @@ public:
 	//@}
 
 	//-----------------------------------------------------------------------------
-	/// \name Draw Mode
+	/// @name Draw Mode
 	//-----------------------------------------------------------------------------
 	//@{
 	void      setDrawMode (CDrawMode mode);					///< set the current draw mode, see CDrawMode
@@ -145,7 +139,7 @@ public:
 	//@}
 
 	//-----------------------------------------------------------------------------
-	/// \name Clipping
+	/// @name Clipping
 	//-----------------------------------------------------------------------------
 	//@{
 	void   setClipRect (const CRect &clip);																			///< set the current clip
@@ -154,7 +148,7 @@ public:
 	//@}
 
 	//-----------------------------------------------------------------------------
-	/// \name Color
+	/// @name Color
 	//-----------------------------------------------------------------------------
 	//@{
 	void   setFillColor  (const CColor color);				///< set current fill color
@@ -164,7 +158,7 @@ public:
 	//@}
 
 	//-----------------------------------------------------------------------------
-	/// \name Font
+	/// @name Font
 	//-----------------------------------------------------------------------------
 	//@{
 	void   setFontColor (const CColor color);											///< set current font color
@@ -174,7 +168,7 @@ public:
 	//@}
 	
 	//-----------------------------------------------------------------------------
-	/// \name Text
+	/// @name Text
 	//-----------------------------------------------------------------------------
 	//@{
 	CCoord getStringWidth (const char* pStr);																						///< get the width of an ASCII encoded string
@@ -184,20 +178,30 @@ public:
 	void drawStringUTF8 (const char* string, const CPoint& _point, bool antialias = true);											///< draw an UTF-8 encoded string
 	//@}
 	
-	void setGlobalAlpha (float newAlpha);
-	float getGlobalAlpha () const { return globalAlpha; }
+	//-----------------------------------------------------------------------------
+	/// @name Global Alpha State
+	//-----------------------------------------------------------------------------
+	//@{
+	void setGlobalAlpha (float newAlpha);												///< sets the global alpha value[0..1]
+	float getGlobalAlpha () const { return globalAlpha; }								///< get current global alpha value
+	//@}
 	
+	//-----------------------------------------------------------------------------
+	/// @name Misc
+	//-----------------------------------------------------------------------------
+	//@{
 	void *getWindow () { return pWindow; }
 	void setWindow (void *ptr)  { pWindow = ptr; }
 	void getLoc (CPoint &where) const { where = penLoc; }
 	CFrame* getFrame () const { return pFrame; }
+	void   *getSystemContext () const { return pSystemContext; }
+	//@}
 
 	CPoint offsetScreen;
 	CPoint offset;
 
-	void   *getSystemContext () const { return pSystemContext; }
-
 	//-------------------------------------------
+	CLASS_METHODS_NOCOPY(CDrawContext, CBaseObject)
 protected:
 
 	friend class CBitmap;

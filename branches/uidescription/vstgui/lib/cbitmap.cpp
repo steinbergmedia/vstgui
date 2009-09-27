@@ -82,16 +82,16 @@ It's also possible to use png as of version 3.0 if you define the macro USE_LIBP
 There is a new way to name the bitmaps in the latest version. Instead of using a number identifier for the bitmaps you can now use real names for it.
 The CResourceDescription works with both names and numbers. If you use names, you need to use the real filename with extension. Then it gets automaticly
 loaded on Mac OS X out of the Resources folder of the vst bundle. On Windows you also specify the resource in the .rc file with the real filename.
-\code
+@code
 // Old way
 1001                    BITMAP  DISCARDABLE     "bmp01001.bmp"
 // New way
 RealFileName.bmp        BITMAP  DISCARDABLE     "RealFileName.bmp"
-\endcode
-\code
+@endcode
+@code
 CBitmap* bitmap1 = new CBitmap (1001);
 CBitmap* bitmap2 = new CBitmap ("RealFileName.bmp");
-\endcode
+@endcode
 */
 CBitmap::CBitmap (const CResourceDescription& desc)
 : resourceDesc (desc)
@@ -1034,6 +1034,152 @@ void CBitmap::setTransparentColor (const CColor color)
 #endif
 }
 
+//-----------------------------------------------------------------------------
+// CNinePartTiledBitmap Implementation
+//-----------------------------------------------------------------------------
+/*! @class CNinePartTiledBitmap
+A nine-part tiled bitmap is tiled in nine parts which are drawing according to its part offsets:
+- top left corner
+- top right corner
+- bottom left corner
+- bottom right corner
+- top edge, repeated as often as necessary and clipped appropriately
+- left edge, dto.
+- right edge, dto.
+- bottom edge, dto.
+- center, repeated horizontally and vertically as often as necessary
+
+@verbatim
+|------------------------------------------------------------------------------------------------|
+| Top-Left Corner    |         <----        Top Edge        ---->          |    Top-Right Corner |
+|--------------------|-----------------------------------------------------|---------------------|
+|         ^          |                         ^                           |          ^          |
+|         |          |                         |                           |          |          |
+|     Left Edge      |         <----         Center         ---->          |      Right Edge     |
+|         |          |                         |                           |          |          |
+|         v          |                         v                           |          v          |
+|--------------------|-----------------------------------------------------|---------------------|
+| Bottom-Left Corner |         <----       Bottom Edge      ---->          | Bottom-Right Corner |
+|------------------------------------------------------------------------------------------------|
+@endverbatim
+
+*/
+//-----------------------------------------------------------------------------
+CNinePartTiledBitmap::CNinePartTiledBitmap (const CResourceDescription& desc, const PartOffsets& offsets)
+: CBitmap (desc)
+, offsets (offsets)
+{
+}
+
+#if VSTGUI_USES_COREGRAPHICS
+//-----------------------------------------------------------------------------
+CNinePartTiledBitmap::CNinePartTiledBitmap (CGImageRef cgImage, const PartOffsets& offsets)
+: CBitmap (cgImage)
+, offsets (offsets)
+{
+}
+
+#endif // VSTGUI_USES_COREGRAPHICS
+
+#if GDIPLUS
+//-----------------------------------------------------------------------------
+CNinePartTiledBitmap::CNinePartTiledBitmap (Gdiplus::Bitmap* platformBitmap, const PartOffsets& offsets)
+: CBitmap (platformBitmap)
+, offsets (offsets)
+{
+}
+
+#endif // GDIPLUS
+
+//-----------------------------------------------------------------------------
+CNinePartTiledBitmap::~CNinePartTiledBitmap ()
+{
+}
+
+//-----------------------------------------------------------------------------
+void CNinePartTiledBitmap::drawAlphaBlend (CDrawContext* inContext, CRect& inDestRect, const CPoint& offset, unsigned char inAlpha)
+{
+	drawParts (inContext, inDestRect, inAlpha);
+}
+
+//-----------------------------------------------------------------------------
+void CNinePartTiledBitmap::drawParts (CDrawContext* inContext, const CRect& inDestRect, unsigned char inAlpha)
+{
+	CRect	myBitmapBounds (0, 0, width, height);
+	CRect	mySourceRect [kPartCount];
+	CRect	myDestRect [kPartCount];
+	
+	calcPartRects (myBitmapBounds, offsets, mySourceRect);
+	calcPartRects (inDestRect, offsets, myDestRect);
+	
+	for (size_t i = 0; i < kPartCount; i++)
+		drawPart (inContext, mySourceRect[i], myDestRect[i], inAlpha);
+}
+
+//-----------------------------------------------------------------------------
+void CNinePartTiledBitmap::calcPartRects(const CRect& inBitmapRect, const PartOffsets& inPartOffset, CRect* outRect)
+{
+	// Center
+	CRect myCenter = outRect[kPartCenter]	(inBitmapRect.left		+ inPartOffset.left,
+											 inBitmapRect.top		+ inPartOffset.top,
+											 inBitmapRect.right		- inPartOffset.right,
+											 inBitmapRect.bottom	- inPartOffset.bottom);
+	
+	// Edges
+	outRect[kPartTop]			(myCenter.left,		inBitmapRect.top,	myCenter.right,		myCenter.top);
+	outRect[kPartLeft]			(inBitmapRect.left,	myCenter.top,		myCenter.left,		myCenter.bottom);
+	outRect[kPartRight]			(myCenter.right,	myCenter.top,		inBitmapRect.right,	myCenter.bottom);
+	outRect[kPartBottom]		(myCenter.left,		myCenter.bottom,	myCenter.right,		inBitmapRect.bottom);
+	
+	// Corners
+	outRect[kPartTopLeft]		(inBitmapRect.left,	inBitmapRect.top,	myCenter.left,		myCenter.top);
+	outRect[kPartTopRight]		(myCenter.right,	inBitmapRect.top,	inBitmapRect.right,	myCenter.top);
+	outRect[kPartBottomLeft]	(inBitmapRect.left,	myCenter.bottom,	myCenter.left,		inBitmapRect.bottom);
+	outRect[kPartBottomRight]	(myCenter.right,	myCenter.bottom,	inBitmapRect.right,	inBitmapRect.bottom);
+}
+
+//-----------------------------------------------------------------------------
+void CNinePartTiledBitmap::drawPart (CDrawContext* inContext, const CRect& inSourceRect, const CRect& inDestRect, unsigned char inAlpha)
+{
+	if (	(inSourceRect.width()	<= 0)
+		||	(inSourceRect.height()	<= 0)
+		||	(inDestRect.width()		<= 0)
+		||	(inDestRect.height()	<= 0))
+		return;
+	
+	CCoord	myLeft;
+	CCoord	myTop;
+	CPoint	mySourceOffset (inSourceRect.left, inSourceRect.top);
+	CRect	myPartRect;
+	
+	for (myTop = inDestRect.top; myTop < inDestRect.bottom; myTop += inSourceRect.height())
+	{
+		myPartRect.top		= myTop;
+		myPartRect.bottom	= myTop + inSourceRect.height();
+		if (myPartRect.bottom > inDestRect.bottom)
+			myPartRect.bottom = inDestRect.bottom;
+		// The following if should never be true, I guess
+		if (myPartRect.height() > inSourceRect.height())
+			myPartRect.setHeight(inSourceRect.height());
+		
+		for (myLeft = inDestRect.left; myLeft < inDestRect.right; myLeft += inSourceRect.width())
+		{
+			myPartRect.left		= myLeft;
+			myPartRect.right	= myLeft + inSourceRect.width();
+			if (myPartRect.right > inDestRect.right)
+				myPartRect.right = inDestRect.right;
+			// The following if should never be true, I guess
+			if (myPartRect.width() > inSourceRect.width())
+				myPartRect.setWidth(inSourceRect.width());
+			
+			CBitmap::drawAlphaBlend (inContext, myPartRect, mySourceOffset, inAlpha);
+		}
+	}
+}
+
+//-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
 #if WINDOWS && USE_LIBPNG
 PNGResourceStream::PNGResourceStream ()
 : streamPos (0)

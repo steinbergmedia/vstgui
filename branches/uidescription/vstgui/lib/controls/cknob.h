@@ -42,25 +42,17 @@ BEGIN_NAMESPACE_VSTGUI
 
 //-----------------------------------------------------------------------------
 // CKnob Declaration
-//! \brief a knob control
-/// \nosubgrouping
-/// \ingroup controls
+//! @brief a knob control
+/// @ingroup controls
 //-----------------------------------------------------------------------------
 class CKnob : public CControl
 {
 public:
-	//-----------------------------------------------------------------------------
-	/// \name Constructor
-	//-----------------------------------------------------------------------------
-	//@{
 	CKnob (const CRect& size, CControlListener* listener, long tag, CBitmap* background, CBitmap* handle, const CPoint& offset = CPoint (0, 0));
 	CKnob (const CKnob& knob);
-	//@}
-
-	virtual ~CKnob ();
 
 	//-----------------------------------------------------------------------------
-	/// \name CKnob Methods
+	/// @name CKnob Methods
 	//-----------------------------------------------------------------------------
 	//@{
 	virtual void  setStartAngle (float val);
@@ -100,6 +92,7 @@ public:
 
 	CLASS_METHODS(CKnob, CControl)
 protected:
+	~CKnob ();
 	virtual void drawHandle (CDrawContext* pContext);
 	void compute ();
 
@@ -128,26 +121,18 @@ private:
 
 //-----------------------------------------------------------------------------
 // CAnimKnob Declaration
-//! \brief a bitmap knob control
-/// \nosubgrouping
-/// \ingroup controls
+//! @brief a bitmap knob control
+/// @ingroup controls
 //-----------------------------------------------------------------------------
 class CAnimKnob : public CKnob, public IMultiBitmapControl
 {
 public:
-	//-----------------------------------------------------------------------------
-	/// \name Constructor
-	//-----------------------------------------------------------------------------
-	//@{
 	CAnimKnob (const CRect& size, CControlListener* listener, long tag, CBitmap* background, const CPoint& offset = CPoint (0, 0));
 	CAnimKnob (const CRect& size, CControlListener* listener, long tag, long subPixmaps, CCoord heightOfOneImage, CBitmap* background, const CPoint& offset = CPoint (0, 0));
 	CAnimKnob (const CAnimKnob& knob);
-	//@}
-	
-	virtual ~CAnimKnob ();
 
 	//-----------------------------------------------------------------------------
-	/// \name CAnimKnob Methods
+	/// @name CAnimKnob Methods
 	//-----------------------------------------------------------------------------
 	//@{
 	void setInverseBitmap (bool val) { bInverseBitmap = val; }
@@ -162,6 +147,7 @@ public:
 
 	CLASS_METHODS(CAnimKnob, CKnob)
 protected:
+	~CAnimKnob ();
 	bool	bInverseBitmap;
 	CPoint	lastDrawnPoint;
 };

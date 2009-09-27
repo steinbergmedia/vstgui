@@ -116,11 +116,20 @@ BEGIN_NAMESPACE_VSTGUI
 		{ return (!strcmp (s, (#name))) ? true : parent::isTypeOf (s); }\
 	virtual const char* getClassName () const { return (#name); } \
 	virtual CBaseObject* newCopy () const { return new name (*this); }
+#define CLASS_METHODS_NOCOPY(name, parent)             \
+	virtual bool isTypeOf (const char* s) const \
+		{ return (!strcmp (s, (#name))) ? true : parent::isTypeOf (s); }\
+	virtual const char* getClassName () const { return (#name); } \
+	virtual CBaseObject* newCopy () const { return 0; }
 #else
 #define CLASS_METHODS(name, parent)             \
 	virtual bool isTypeOf (const char* s) const \
 		{ return (!strcmp (s, (#name))) ? true : parent::isTypeOf (s); } \
 	virtual CBaseObject* newCopy () const { return (CBaseObject*)new name (*this); }
+#define CLASS_METHODS_NOCOPY(name, parent)             \
+	virtual bool isTypeOf (const char* s) const \
+		{ return (!strcmp (s, (#name))) ? true : parent::isTypeOf (s); } \
+	virtual CBaseObject* newCopy () const { return 0; }
 #endif
 #define CLASS_METHODS_VIRTUAL(name, parent)             \
 	virtual bool isTypeOf (const char* s) const \
@@ -136,7 +145,7 @@ typedef long CCoord;
 #define USE_ALPHA_BLEND			MAC || USE_LIBPNG || GDIPLUS
 
 //-----------------------------------------------------------------------------
-// \brief Message Results
+// @brief Message Results
 //-----------------------------------------------------------------------------
 enum CMessageResult 
 {
@@ -146,8 +155,7 @@ enum CMessageResult
 
 //-----------------------------------------------------------------------------
 // CBaseObject Declaration
-//! \brief Base Object with reference counter
-/// \nosubgrouping
+//! @brief Base Object with reference counter
 //-----------------------------------------------------------------------------
 class CBaseObject
 {
@@ -156,7 +164,7 @@ public:
 	virtual ~CBaseObject () {}
 
 	//-----------------------------------------------------------------------------
-	/// \name Reference Counting Methods
+	/// @name Reference Counting Methods
 	//-----------------------------------------------------------------------------
 	//@{
 	virtual void forget () { nbReference--; if (nbReference == 0) delete this; }	///< decrease refcount and delete object if refcount == 0
@@ -165,7 +173,7 @@ public:
 	//@}
 	
 	//-----------------------------------------------------------------------------
-	/// \name Message Methods
+	/// @name Message Methods
 	//-----------------------------------------------------------------------------
 	//@{
 	virtual CMessageResult notify (CBaseObject* sender, const char* message) { return kMessageUnknown; }

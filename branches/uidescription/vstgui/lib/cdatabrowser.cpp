@@ -41,7 +41,7 @@
 
 BEGIN_NAMESPACE_VSTGUI
 
-/// \cond ignore
+/// @cond ignore
 //-----------------------------------------------------------------------------------------------
 class CDataBrowserView : public CView
 //-----------------------------------------------------------------------------------------------
@@ -94,7 +94,7 @@ protected:
 	long mouseColumn;
 	CCoord startWidth;
 };
-/// \endcond
+/// @endcond
 
 //-----------------------------------------------------------------------------------------------
 /**
@@ -393,7 +393,7 @@ CMessageResult CDataBrowser::notify (CBaseObject* sender, const char* message)
 	return CViewContainer::notify (sender, message);
 }
 
-/// \cond ignore
+/// @cond ignore
 //-----------------------------------------------------------------------------------------------
 //-----------------------------------------------------------------------------------------------
 //-----------------------------------------------------------------------------------------------
@@ -768,7 +768,7 @@ long CDataBrowserView::onKeyDown (VstKeyCode& keyCode)
 	}
 	return -1;
 }
-/// \endcond
+/// @endcond
 
 END_NAMESPACE_VSTGUI
 

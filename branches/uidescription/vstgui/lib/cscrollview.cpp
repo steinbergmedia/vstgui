@@ -37,7 +37,7 @@
 #include "cdrawcontext.h"
 #include "cframe.h"
 
-/// \cond ignore
+/// @cond ignore
 BEGIN_NAMESPACE_VSTGUI
 
 // CScrollContainer is private
@@ -171,7 +171,7 @@ bool CScrollContainer::isDirty () const
 	return false;
 }
 
-/// \endcond
+/// @endcond
 
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
@@ -185,48 +185,7 @@ CScrollView::CScrollView (const CRect &size, const CRect &containerSize, CFrame*
 , scrollbarWidth (scrollbarWidth)
 , style (style)
 {
-	#if 1
 	recalculateSubViews ();
-	#else
-	CRect scsize (0, 0, size.getWidth (), size.getHeight ());
-	if (!(style & kDontDrawFrame))
-	{
-		scsize.left++; scsize.top++;
-		scsize.right-=1; scsize.bottom--;
-	}
-	if (style & kHorizontalScrollbar)
-	{
-		CRect sbr (size);
-		sbr.offset (-size.left, -size.top);
-		sbr.top = sbr.bottom - scrollbarWidth;
-		if (style & kVerticalScrollbar)
-		{
-			sbr.right -= (scrollbarWidth - 1);
-		}
-		hsb = new CScrollbar (sbr, this, kHSBTag, CScrollbar::kHorizontal, containerSize);
-		hsb->setAutosizeFlags (kAutosizeLeft | kAutosizeRight | kAutosizeBottom);
-		CViewContainer::addView (hsb);
-		scsize.bottom = sbr.top;
-	}
-	if (style & kVerticalScrollbar)
-	{
-		CRect sbr (size);
-		sbr.offset (-size.left, -size.top);
-		sbr.left = sbr.right - scrollbarWidth;
-		if (style & kHorizontalScrollbar)
-		{
-			sbr.bottom -= (scrollbarWidth - 1);
-		}
-		vsb = new CScrollbar (sbr, this, kVSBTag, CScrollbar::kVertical, containerSize);
-		vsb->setAutosizeFlags (kAutosizeTop | kAutosizeRight | kAutosizeBottom);
-		CViewContainer::addView (vsb);
-		scsize.right = sbr.left;
-	}
-
-	sc = new CScrollContainer (scsize, this->containerSize, pParent);
-	sc->setAutosizeFlags (kAutosizeAll);
-	CViewContainer::addView (sc);
-	#endif
 }
 
 //-----------------------------------------------------------------------------

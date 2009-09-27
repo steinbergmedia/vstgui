@@ -58,8 +58,7 @@ class CDrawContext;
 
 //-----------------------------------------------------------------------------
 // CResourceDescription Declaration
-//! \brief Describes a resource by name or by ID
-/// \nosubgrouping
+//! @brief Describes a resource by name or by ID
 //-----------------------------------------------------------------------------
 class CResourceDescription
 {
@@ -82,23 +81,17 @@ public:
 
 //-----------------------------------------------------------------------------
 // CBitmap Declaration
-//! \brief Encapsulates various platform depended kinds of bitmaps
-/// \nosubgrouping
+//! @brief Encapsulates various platform depended kinds of bitmaps
 //-----------------------------------------------------------------------------
 class CBitmap : public CBaseObject
 {
 public:
-	//-----------------------------------------------------------------------------
-	/// \name Constructors
-	//-----------------------------------------------------------------------------
-	//@{
 	CBitmap (const CResourceDescription& desc);				///< Create a pixmap from a resource identifier.
 	CBitmap (CCoord width, CCoord height);					///< Create a pixmap with a given size.
-	//@}
-	virtual ~CBitmap ();
+	~CBitmap ();
 
 	//-----------------------------------------------------------------------------
-	/// \name CBitmap Methods
+	/// @name CBitmap Methods
 	//-----------------------------------------------------------------------------
 	//@{
 	virtual void draw (CDrawContext *pContext, CRect &rect, const CPoint &offset = CPoint (0, 0));	///< Draw the pixmap using a given rect as output position and a given offset of its source pixmap.
@@ -131,7 +124,8 @@ public:
 	Gdiplus::Bitmap* getBitmap ();
 #endif // GDIPLUS
 
-	//-------------------------------------------
+//-----------------------------------------------------------------------------
+	CLASS_METHODS_NOCOPY(CBitmap, CBaseObject)
 protected:
 	CBitmap ();
 
@@ -159,6 +153,70 @@ protected:
 	void* cgImage;
 #endif // VSTGUI_USES_COREGRAPHICS
 
+};
+
+//-----------------------------------------------------------------------------
+// CNinePartTiledBitmap Declaration
+//! @brief a nine-part tiled bitmap [new since 4.0]
+//-----------------------------------------------------------------------------
+class CNinePartTiledBitmap : public CBitmap
+{
+public:
+	struct PartOffsets
+	{
+		CCoord left;
+		CCoord top;
+		CCoord right;
+		CCoord bottom;
+		
+		PartOffsets (CCoord left = 0, CCoord top = 0, CCoord right = 0, CCoord bottom = 0)
+		: left (left), top (top), right (right), bottom (bottom) {}
+	};
+
+	CNinePartTiledBitmap (const CResourceDescription& desc, const PartOffsets& offsets = PartOffsets ());
+	~CNinePartTiledBitmap ();
+	
+	//-----------------------------------------------------------------------------
+	/// @name Part Offsets
+	//-----------------------------------------------------------------------------
+	//@{
+	void setPartOffsets (const PartOffsets& partOffsets) { offsets = partOffsets; }
+	const PartOffsets& getPartOffsets () const { return offsets; }
+	//@}
+
+	virtual void drawAlphaBlend (CDrawContext* pContext, CRect& rect, const CPoint& offset = CPoint (0, 0), unsigned char alpha = 128);
+
+	//-----------------------------------------------------------------------------
+#if VSTGUI_USES_COREGRAPHICS
+	CNinePartTiledBitmap (CGImageRef cgImage, const PartOffsets& offsets = PartOffsets ());
+#endif // VSTGUI_USES_COREGRAPHICS
+
+#if GDIPLUS
+	CNinePartTiledBitmap (Gdiplus::Bitmap* platformBitmap, const PartOffsets& offsets = PartOffsets ());
+#endif // GDIPLUS
+
+//-----------------------------------------------------------------------------
+	CLASS_METHODS_NOCOPY(CNinePartTiledBitmap, CBitmap)
+protected:
+	virtual void drawParts (CDrawContext* pContext, const CRect& rect, unsigned char alpha = 128);
+	virtual void calcPartRects(const CRect& inBitmapRect, const PartOffsets& inPartOffset, CRect* outRect);
+	virtual void drawPart (CDrawContext* inContext, const CRect& inSourceRect, const CRect& inDestRect, unsigned char inAlpha = 255);
+
+	enum
+	{
+		kPartTopLeft,
+		kPartTop,
+		kPartTopRight,
+		kPartLeft,
+		kPartCenter,
+		kPartRight,
+		kPartBottomLeft,
+		kPartBottom,
+		kPartBottomRight,
+		kPartCount
+	};
+
+	PartOffsets offsets;
 };
 
 END_NAMESPACE_VSTGUI
