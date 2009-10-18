@@ -257,7 +257,7 @@ public:
 */
 
 #include "viewfactory.h"
-#include "../lib/cscrollview.h"
+#include "../vstgui.h"
 #include <sstream>
 
 #if WINDOWS
@@ -2045,6 +2045,103 @@ public:
 
 };
 CSliderCreator __gCSliderCreator;
+
+//-----------------------------------------------------------------------------
+class CVuMeterCreator : public IViewCreator
+{
+public:
+	CVuMeterCreator () { ViewFactory::registerViewCreator (*this); }
+	const char* getViewName () const { return "CVuMeter"; }
+	const char* getBaseViewName () const { return "CControl"; }
+	CView* create (const UIAttributes& attributes, IUIDescription* description) const { return new CVuMeter (CRect (0, 0, 0, 0), 0, 0, 100); }
+	bool apply (CView* view, const UIAttributes& attributes, IUIDescription* description) const
+	{
+		CVuMeter* vuMeter = dynamic_cast<CVuMeter*> (view);
+		if (!vuMeter)
+			return false;
+
+		const std::string* attr = attributes.getAttributeValue ("off-bitmap");
+		if (attr)
+		{
+			CBitmap* bitmap = description->getBitmap (attr->c_str ());
+			vuMeter->setOffBitmap (bitmap);
+		}
+		attr = attributes.getAttributeValue ("orientation");
+		if (attr)
+		{
+			vuMeter->setStyle (*attr == "vertical" ? kVertical : kHorizontal);
+		}
+		attr = attributes.getAttributeValue ("num-led");
+		if (attr)
+		{
+			long numLed = strtol (attr->c_str (), 0, 10);
+			vuMeter->setNbLed (numLed);
+		}
+		attr = attributes.getAttributeValue ("decrease-step-value");
+		if (attr)
+		{
+			float value = strtof (attr->c_str (), 0);
+			vuMeter->setDecreaseStepValue (value);
+		}
+		return true;
+	}
+	bool getAttributeNames (std::list<std::string>& attributeNames) const
+	{
+		attributeNames.push_back ("off-bitmap");
+		attributeNames.push_back ("num-led");
+		attributeNames.push_back ("orientation");
+		attributeNames.push_back ("decrease-step-value");
+		return true;
+	}
+	AttrType getAttributeType (const std::string& attributeName) const
+	{
+		if (attributeName == "off-bitmap") return kBitmapType;
+		if (attributeName == "num-led") return kIntegerType;
+		if (attributeName == "orientation") return kStringType;
+		if (attributeName == "decrease-step-value") return kFloatType;
+		return kUnknownType;
+	}
+	bool getAttributeValue (CView* view, const std::string& attributeName, std::string& stringValue, IUIDescription* desc) const
+	{
+		CVuMeter* vuMeter = dynamic_cast<CVuMeter*> (view);
+		if (!vuMeter)
+			return false;
+		if (attributeName == "off-bitmap")
+		{
+			CBitmap* bitmap = vuMeter->getOffBitmap ();
+			if (bitmap)
+			{
+				bitmapToString (bitmap, stringValue, desc);
+			}
+			return true;
+		}
+		else if (attributeName == "orientation")
+		{
+			if (vuMeter->getStyle () & kVertical)
+				stringValue = "vertical";
+			else
+				stringValue = "horizontal";
+			return true;
+		}
+		else if (attributeName == "num-led")
+		{
+			std::stringstream stream;
+			stream << vuMeter->getNbLed ();
+			stringValue = stream.str ();
+			return true;
+		}
+		else if (attributeName == "decrease-step-value")
+		{
+			std::stringstream stream;
+			stream << vuMeter->getDecreaseStepValue ();
+			stringValue = stream.str ();
+			return true;
+		}
+		return false;
+	}
+
+};
+CVuMeterCreator __gCVuMeterCreator;
 
 END_NAMESPACE_VSTGUI
 

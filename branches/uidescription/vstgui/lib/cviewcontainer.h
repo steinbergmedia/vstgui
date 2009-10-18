@@ -53,7 +53,7 @@ extern const char* kMsgLooseFocus;				///< Message of a view loosing focus (only
 class CViewContainer : public CView
 {
 public:
-	CViewContainer (const CRect &size, CFrame *pParent, CBitmap *pBackground = 0);
+	CViewContainer (const CRect &size, CFrame *pParent = 0, CBitmap *pBackground = 0);
 	CViewContainer (const CViewContainer& viewContainer);
 
 	//-----------------------------------------------------------------------------
@@ -140,13 +140,14 @@ protected:
 	~CViewContainer ();
 	virtual bool checkUpdateRect (CView* view, const CRect& rect);
 	virtual bool hitTestSubViews (const CPoint& where, const long buttons = -1);
-	void drawBackToFront (CDrawContext* context, const CRect& rect);
+	VSTGUI_DEPRECATED(void drawBackToFront (CDrawContext* context, const CRect& rect);)
 
 	CCView  *pFirstView;
 	CCView  *pLastView;
 	COffscreenContext *pOffscreenContext;
 	CColor backgroundColor;
 	CPoint backgroundOffset;
+	CRect lastDrawnFocus;
 	bool bDrawInOffscreen;
 
 	CView* currentDragView;

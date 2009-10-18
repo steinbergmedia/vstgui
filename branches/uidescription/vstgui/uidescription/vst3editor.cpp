@@ -40,8 +40,18 @@
 #include "base/source/timer.h"
 #include "pluginterfaces/base/keycodes.h"
 #include "dialog.h"
+#include "cviewinspector.h"
 #include <list>
 #include <sstream>
+
+#if MAC && VSTGUI_NEW_BUNDLE_REF_DEFINITION
+extern CFBundleRef ghInst;
+//------------------------------------------------------------------------
+CFBundleRef VSTGUI::getBundleRef ()
+{
+	return ghInst;
+}
+#endif
 
 namespace Steinberg {
 
@@ -332,12 +342,6 @@ void VST3Editor::init ()
 }
 
 //-----------------------------------------------------------------------------
-bool VST3Editor::verify ()
-{
-	return description->parse ();
-}
-
-//-----------------------------------------------------------------------------
 bool VST3Editor::exchangeView (const char* newViewName)
 {
 	const UIAttributes* attr = description->getViewAttributes (newViewName);
@@ -534,6 +538,10 @@ void VST3Editor::recreateView ()
 	frame->invalid ();
 }
 
+#define kFrameEnableFocusDrawingAttr	"frame-enable-focus-drawing"
+#define kFrameFocusColorAttr			"frame-focus-color"
+#define kFrameFocusWidthAttr			"frame-focus-width"
+
 //-----------------------------------------------------------------------------
 bool PLUGIN_API VST3Editor::open (void* parent)
 {
@@ -554,6 +562,30 @@ bool PLUGIN_API VST3Editor::open (void* parent)
 		frame->setSize (size.getWidth (), size.getHeight ());
 		if (tooltipsEnabled)
 			tooltipSupport = new CTooltipSupport (frame);
+			
+		// focus drawing support
+		const UIAttributes* attributes = description->getCustomAttributes ("VST3Editor");
+		if (attributes)
+		{
+			const std::string* attr = attributes->getAttributeValue (kFrameEnableFocusDrawingAttr);
+			if (attr && *attr == "true")
+			{
+				frame->setFocusDrawingEnabled (true);
+				attr = attributes->getAttributeValue (kFrameFocusColorAttr);
+				if (attr)
+				{
+					CColor focusColor;
+					if (description->getColor (attr->c_str (), focusColor))
+						frame->setFocusColor (focusColor);
+				}
+				attr = attributes->getAttributeValue (kFrameFocusWidthAttr);
+				if (attr)
+				{
+					float focusWidth = strtod (attr->c_str (), 0);
+					frame->setFocusWidth (focusWidth);
+				}
+			}
+		}
 		return true;
 	}
 	return false;
@@ -628,12 +660,13 @@ CMessageResult VST3Editor::notify (CBaseObject* sender, const char* message)
 		COptionMenu* menu = dynamic_cast<COptionMenu*> (sender);
 		if (menu)
 		{
+			menu->addSeparator ();
+			menu->addEntry (new CMenuItem ("Focus Drawing Settings..."));
+			menu->addEntry (new CMenuItem ("Template Settings..."));
 			std::list<const std::string*> templateNames;
 			description->collectTemplateViewNames (templateNames);
 			if (templateNames.size () > 0)
 			{
-				menu->addSeparator ();
-				menu->addEntry (new CMenuItem ("Template Settings..."));
 				COptionMenu* submenu = new COptionMenu ();
 				long menuTag = 1000;
 				std::list<const std::string*>::const_iterator it = templateNames.begin ();
@@ -678,6 +711,10 @@ CMessageResult VST3Editor::notify (CBaseObject* sender, const char* message)
 			if (item->getTitle () == std::string ("Template Settings..."))
 			{
 				runTemplateSettingsDialog ();
+			}
+			else if (item->getTitle () == std::string ("Focus Drawing Settings..."))
+			{
+				runFocusSettingsDialog ();
 			}
 			else
 			{
@@ -793,10 +830,11 @@ static const CCoord kControlHeight = 22;
 //------------------------------------------------------------------------
 void VST3Editor::runNewTemplateDialog (const char* baseViewName)
 {
-	CRect size (0, 0, 300+kMargin, kControlHeight*3+kMargin*2);
-	CViewContainer* c = new CViewContainer (size, 0);
+	CRect size (0, 0, 300+kMargin*3, kControlHeight*3+kMargin*5);
+	CViewContainer* c = new CViewContainer (size);
 	c->setTransparency (true);
 	size (0, 0, 80, kControlHeight);
+	size.offset (kMargin, kMargin);
 	CTextLabel* label = new CTextLabel (size, "Name:");
 	label->setStyle (kNoFrame);
 	label->setBackColor (kWhiteCColor);
@@ -814,8 +852,8 @@ void VST3Editor::runNewTemplateDialog (const char* baseViewName)
 	label->setViewSize (size);
 	label->setText ("Height:");
 	c->addView (label);
-	size.top = 0;
-	size.bottom = kControlHeight;
+	size.top = kMargin;
+	size.bottom = kControlHeight + kMargin;
 	size.offset (80+kMargin, 0);
 	size.setWidth (220);
 	CColor lightGrey = MakeCColor (200, 200, 200, 255);
@@ -864,10 +902,11 @@ void VST3Editor::runNewTemplateDialog (const char* baseViewName)
 //------------------------------------------------------------------------
 void VST3Editor::runTemplateSettingsDialog ()
 {
-	CRect size (0, 0, 300+kMargin, kControlHeight*4+kMargin*3);
-	CViewContainer* c = new CViewContainer (size, 0);
+	CRect size (0, 0, 300+kMargin*3, kControlHeight*4+kMargin*5);
+	CViewContainer* c = new CViewContainer (size);
 	c->setTransparency (true);
 	size (0, 0, 80, kControlHeight);
+	size.offset (kMargin, kMargin);
 	CTextLabel* label = new CTextLabel (size, "Min Width:");
 	label->setStyle (kNoFrame);
 	label->setBackColor (kWhiteCColor);
@@ -890,8 +929,8 @@ void VST3Editor::runTemplateSettingsDialog ()
 	label->setViewSize (size);
 	label->setText ("Max Height:");
 	c->addView (label);
-	size.top = 0;
-	size.bottom = kControlHeight;
+	size.top = kMargin;
+	size.bottom = kControlHeight + kMargin;
 	size.offset (80+kMargin, 0);
 	size.setWidth (220);
 	CColor lightGrey = MakeCColor (200, 200, 200, 255);
@@ -947,6 +986,108 @@ void VST3Editor::runTemplateSettingsDialog ()
 			attr->setAttribute ("maxSize", temp.c_str ());
 			recreateView ();
 		}
+	}
+	c->forget ();
+}
+
+//------------------------------------------------------------------------
+void VST3Editor::runFocusSettingsDialog ()
+{
+	CColor lightGrey = MakeCColor (200, 200, 200, 255);
+	CColor frameColor = MakeCColor (100, 100, 100, 100);
+// TODO: complete focus drawing settings dialog
+	bool focusDrawingEnabled = false;
+	CColor focusColor = kBlueCColor;
+	CCoord focusWidth = 2;
+	std::string currentColorName;
+	UIAttributes* attributes = description->getCustomAttributes ("VST3Editor");
+	if (attributes)
+	{
+		const std::string* attr = attributes->getAttributeValue (kFrameEnableFocusDrawingAttr);
+		if (attr && *attr == "true")
+		{
+			focusDrawingEnabled = true;
+		}
+		attr = attributes->getAttributeValue (kFrameFocusColorAttr);
+		if (attr)
+		{
+			if (description->getColor (attr->c_str (), focusColor))
+				currentColorName = *attr;
+		}
+		attr = attributes->getAttributeValue (kFrameFocusWidthAttr);
+		if (attr)
+		{
+			focusWidth = strtod (attr->c_str (), 0);
+		}
+	}
+	CRect size (0, 0, 300+kMargin, kControlHeight*4+kMargin*3);
+	CViewContainer* c = new CViewContainer (size);
+	c->setTransparency (true);
+	size (0, 0, 80, kControlHeight);
+	size.offset (kMargin, kMargin);
+	CCheckBox* enableFocusDrawing = new CCheckBox (size, 0, -1, "Enable Focus Drawing", 0, CCheckBox::kAutoSizeToFit);
+	enableFocusDrawing->setFontColor (kBlackCColor);
+	enableFocusDrawing->setValue (focusDrawingEnabled ? 1 : 0);
+	c->addView (enableFocusDrawing);
+	size.offset (0, kMargin+kControlHeight);
+	CTextLabel* label = new CTextLabel (size, "Color:");
+	label->setStyle (kNoFrame);
+	label->setBackColor (kWhiteCColor);
+	label->setFontColor (kBlackCColor);
+	label->setTextInset (CPoint (5, 0));
+	label->setHoriAlign (kRightText);
+	c->addView (label);
+	size.offset (size.getWidth () + kMargin, 0);
+	size.setWidth (180);
+	std::list<const std::string*> colorNames;
+	description->collectColorNames (colorNames);
+	COptionMenu* colorMenu = CViewInspector::createMenuFromList (size, 0, colorNames, currentColorName);
+	colorMenu->setHoriAlign (kLeftText);
+	colorMenu->setBackColor (lightGrey);
+	colorMenu->setFrameColor (frameColor);
+	colorMenu->setFontColor (kBlackCColor);
+	colorMenu->setFont (kNormalFont);
+	colorMenu->setTextInset (CPoint (4,0));
+	c->addView (colorMenu);
+	size (0, 0, 80, kControlHeight);
+	size.offset (kMargin, kMargin);
+	size.offset (0, kMargin+kControlHeight);
+	size.offset (0, kMargin+kControlHeight);
+	label = new CTextLabel (size, "Width:");
+	label->setStyle (kNoFrame);
+	label->setBackColor (kWhiteCColor);
+	label->setFontColor (kBlackCColor);
+	label->setTextInset (CPoint (5, 0));
+	label->setHoriAlign (kRightText);
+	c->addView (label);
+	size.offset (size.getWidth () + kMargin, 0);
+	size.setWidth (180);
+	CTextEdit* focusWidthTextEdit = new CTextEdit (size, 0, -1);
+	focusWidthTextEdit->setBackColor (lightGrey);
+	focusWidthTextEdit->setFrameColor (frameColor);
+	focusWidthTextEdit->setFontColor (kBlackCColor);
+	std::stringstream str;
+	str << focusWidth;
+	focusWidthTextEdit->setText (str.str ().c_str ());
+	c->addView (focusWidthTextEdit);
+
+	CPoint p (-1, -1);
+	if (Dialog::runViewModal (p, c, Dialog::kOkCancelButtons, "Focus Drawing Settings"))
+	{
+		currentColorName = colorMenu->getEntry (colorMenu->getValue ())->getTitle ();
+		focusWidth = strtod (focusWidthTextEdit->getText (), 0);
+		if (attributes == 0)
+			attributes = new UIAttributes ();
+		attributes->setAttribute (kFrameEnableFocusDrawingAttr, enableFocusDrawing->getValue () == 1 ? "true" : "false");
+		attributes->setAttribute (kFrameFocusColorAttr, currentColorName.c_str ());
+		attributes->setAttribute (kFrameFocusWidthAttr, focusWidthTextEdit->getText ());
+		
+		description->setCustomAttributes ("VST3Editor", attributes);
+		
+		frame->setFocusDrawingEnabled (enableFocusDrawing->getValue () == 1 ? true : false);
+		if (description->getColor (currentColorName.c_str (), focusColor))
+			frame->setFocusColor (focusColor);
+		frame->setFocusWidth (focusWidth);
 	}
 	c->forget ();
 }

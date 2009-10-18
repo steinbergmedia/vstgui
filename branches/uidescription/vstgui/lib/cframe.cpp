@@ -195,9 +195,10 @@ CFrame::CFrame (const CRect &inSize, void* inSystemWindow, VSTGUIEditorInterface
 , pSystemWindow (inSystemWindow)
 , pModalView (0)
 , pFocusView (0)
+, pActiveFocusView (0)
 , pMouseOverView (0)
-, bFirstDraw (true)
 , bDropActive (false)
+, bActive (false)
 , defaultCursor (0)
 {
 	bIsAttached = true;
@@ -502,6 +503,7 @@ bool CFrame::setDropActive (bool val)
 	return true;
 }
 
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
 //-----------------------------------------------------------------------------
 CDrawContext* CFrame::createDrawContext ()
 {
@@ -513,6 +515,7 @@ CDrawContext* CFrame::createDrawContext ()
 	
 	return pContext;
 }
+#endif
 
 //-----------------------------------------------------------------------------
 void CFrame::draw (CDrawContext* pContext)
@@ -523,25 +526,26 @@ void CFrame::draw (CDrawContext* pContext)
 //-----------------------------------------------------------------------------
 void CFrame::drawRect (CDrawContext* pContext, const CRect& updateRect)
 {
-	if (bFirstDraw)
-		bFirstDraw = false;
+	if (updateRect.getWidth () <= 0 || updateRect.getHeight () <= 0)
+		return;
 
 	if (pContext)
 		pContext->remember ();
 	else
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
 		pContext = createDrawContext ();
+#else
+		return; // no context, no drawing ;-)
+#endif
 
 	CRect oldClip;
 	pContext->getClipRect (oldClip);
 	CRect newClip (updateRect);
 	newClip.bound (oldClip);
 	pContext->setClipRect (newClip);
-	
+
 	// draw the background and the children
-	if (updateRect.getWidth () > 0 && updateRect.getHeight () > 0)
-	{
-		CViewContainer::drawRect (pContext, updateRect);
-	}
+	CViewContainer::drawRect (pContext, updateRect);
 
 	pContext->setClipRect (oldClip);
 
@@ -1365,6 +1369,8 @@ void CFrame::onViewRemoved (CView* pView)
 		pMouseOverView = 0;
 	if (pFocusView == pView)
 		setFocusView (0);
+	if (pActiveFocusView == pView)
+		pActiveFocusView = 0;
 	if (pView->isTypeOf ("CViewContainer"))
 	{
 		CViewContainer* container = (CViewContainer*)pView;
@@ -1407,6 +1413,7 @@ void CFrame::setFocusView (CView *pView)
 			receiver->notify (pFocusView, kMsgNewFocusView);
 			receiver = receiver->getParentView ();
 		}
+		notify (pFocusView, kMsgNewFocusView);
 	}
 
 	if (pOldFocusView)
@@ -1421,6 +1428,7 @@ void CFrame::setFocusView (CView *pView)
 				receiver->notify (pOldFocusView, kMsgOldFocusView);
 				receiver = receiver->getParentView ();
 			}
+			notify (pOldFocusView, kMsgOldFocusView);
 		}
 		pOldFocusView->looseFocus ();
 	}
@@ -1496,8 +1504,77 @@ bool CFrame::removeAll (const bool &withForget)
 {
 	pModalView = 0;
 	pFocusView = 0;
+	pActiveFocusView = 0;
 	pMouseOverView = 0;
 	return CViewContainer::removeAll (withForget);
+}
+
+//-----------------------------------------------------------------------------
+void CFrame::onActivate (bool state)
+{
+	if (bActive != state)
+	{
+		if (state)
+		{
+			if (pActiveFocusView)
+				setFocusView (pActiveFocusView);
+			pActiveFocusView = 0;
+		}
+		else
+		{
+			pActiveFocusView = getFocusView ();
+			setFocusView (0);
+		}
+		bActive = state;
+	}
+}
+
+//-----------------------------------------------------------------------------
+bool CFrame::focusDrawingEnabled () const
+{
+	long attrSize;
+	if (getAttributeSize ('vfde', attrSize))
+		return true;
+	return false;
+}
+
+//-----------------------------------------------------------------------------
+CColor CFrame::getFocusColor () const
+{
+	CColor focusColor (kRedCColor);
+	long outSize;
+	getAttribute ('vfco', sizeof (CColor), &focusColor, outSize);
+	return focusColor;
+}
+
+//-----------------------------------------------------------------------------
+CCoord CFrame::getFocusWidth () const
+{
+	CCoord focusWidth = 2;
+	long outSize;
+	getAttribute ('vfwi', sizeof (CCoord), &focusWidth, outSize);
+	return focusWidth;
+}
+
+//-----------------------------------------------------------------------------
+void CFrame::setFocusDrawingEnabled (bool state)
+{
+	if (state)
+		setAttribute ('vfde', sizeof(bool), &state);
+	else
+		removeAttribute ('vfde');
+}
+
+//-----------------------------------------------------------------------------
+void CFrame::setFocusColor (const CColor& color)
+{
+	setAttribute ('vfco', sizeof (CColor), &color);
+}
+
+//-----------------------------------------------------------------------------
+void CFrame::setFocusWidth (CCoord width)
+{
+	setAttribute ('vfwi', sizeof (CCoord), &width);
 }
 
 //-----------------------------------------------------------------------------
@@ -1889,8 +1966,6 @@ WinDragContainer::WinDragContainer (void* platformDrag)
 	};
 	
 	FORMATETC formatHDrop    = {CF_HDROP, 0, DVASPECT_CONTENT, -1, TYMED_HGLOBAL};
-
-	// todo : Support CF_UNICODETEXT
 
 	long type = 0; // 0 = file, 1 = text
 
@@ -2652,11 +2727,11 @@ STDMETHODIMP CDropTarget::DragEnter (IDataObject* dataObject, DWORD keyState, PO
 	if (dataObject && pFrame)
 	{
 		gDragContainer = new WinDragContainer (dataObject);
-		CDrawContext* context = pFrame->createDrawContext ();
+//		CDrawContext* context = pFrame->createDrawContext ();
 		CPoint where;
 		pFrame->getCurrentMouseLocation (where);
 		pFrame->onDragEnter (gDragContainer, where);
-		context->forget ();
+//		context->forget ();
 		if ((*effect) & DROPEFFECT_COPY) 
 
 			*effect = DROPEFFECT_COPY;
@@ -2680,11 +2755,11 @@ STDMETHODIMP CDropTarget::DragOver (DWORD keyState, POINTL pt, DWORD* effect)
 {
 	if (gDragContainer && pFrame)
 	{
-		CDrawContext* context = pFrame->createDrawContext ();
+//		CDrawContext* context = pFrame->createDrawContext ();
 		CPoint where;
 		pFrame->getCurrentMouseLocation (where);
 		pFrame->onDragMove (gDragContainer, where);
-		context->forget ();
+//		context->forget ();
 		if ((*effect) & DROPEFFECT_COPY) 
 
 			*effect = DROPEFFECT_COPY;
@@ -2706,11 +2781,11 @@ STDMETHODIMP CDropTarget::DragLeave (void)
 {
 	if (gDragContainer && pFrame)
 	{
-		CDrawContext* context = pFrame->createDrawContext ();
+//		CDrawContext* context = pFrame->createDrawContext ();
 		CPoint where;
 		pFrame->getCurrentMouseLocation (where);
 		pFrame->onDragLeave (gDragContainer, where);
-		context->forget ();
+//		context->forget ();
 		gDragContainer->forget ();
 		gDragContainer = 0;
 	}
@@ -2722,11 +2797,11 @@ STDMETHODIMP CDropTarget::Drop (IDataObject* dataObject, DWORD keyState, POINTL 
 {
 	if (gDragContainer && pFrame)
 	{
-		CDrawContext* context = pFrame->createDrawContext ();
+//		CDrawContext* context = pFrame->createDrawContext ();
 		CPoint where;
 		pFrame->getCurrentMouseLocation (where);
 		pFrame->onDrop (gDragContainer, where);
-		context->forget ();
+//		context->forget ();
 		gDragContainer->forget ();
 		gDragContainer = 0;
 	}

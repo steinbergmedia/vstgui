@@ -94,9 +94,9 @@ public:
 	/// @name CBitmap Methods
 	//-----------------------------------------------------------------------------
 	//@{
-	virtual void draw (CDrawContext *pContext, CRect &rect, const CPoint &offset = CPoint (0, 0));	///< Draw the pixmap using a given rect as output position and a given offset of its source pixmap.
-	virtual void drawTransparent (CDrawContext *pContext, CRect &rect, const CPoint &offset = CPoint (0, 0));
-	virtual void drawAlphaBlend  (CDrawContext *pContext, CRect &rect, const CPoint &offset = CPoint (0, 0), unsigned char alpha = 128);	///< Same as CBitmap::draw except that it uses the alpha value to draw the bitmap alpha blended.
+	virtual void draw (CDrawContext *pContext, const CRect &rect, const CPoint &offset = CPoint (0, 0));	///< Draw the pixmap using a given rect as output position and a given offset of its source pixmap.
+	virtual void drawTransparent (CDrawContext *pContext, const CRect &rect, const CPoint &offset = CPoint (0, 0));
+	virtual void drawAlphaBlend  (CDrawContext *pContext, const CRect &rect, const CPoint &offset = CPoint (0, 0), unsigned char alpha = 128);	///< Same as CBitmap::draw except that it uses the alpha value to draw the bitmap alpha blended.
 
 	inline CCoord getWidth () const { return width; }		///< get the width of the image
 	inline CCoord getHeight () const { return height; }		///< get the height of the image
@@ -184,7 +184,7 @@ public:
 	const PartOffsets& getPartOffsets () const { return offsets; }
 	//@}
 
-	virtual void drawAlphaBlend (CDrawContext* pContext, CRect& rect, const CPoint& offset = CPoint (0, 0), unsigned char alpha = 128);
+	virtual void drawAlphaBlend (CDrawContext* pContext, const CRect& rect, const CPoint& offset = CPoint (0, 0), unsigned char alpha = 128);
 
 	//-----------------------------------------------------------------------------
 #if VSTGUI_USES_COREGRAPHICS

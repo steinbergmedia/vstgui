@@ -1,3 +1,11 @@
+2009-10-18 arne
+
+	* added focus drawing support, see IFocusDrawing and CFrame::setFocusDrawingEnabled()
+	* set CFrame::createDrawContext() deprecated
+	* added CFrame::onActivate(bool state) which will be called from the platform view/window when the view/window is activated or deactived.
+			Currently this remembers the focus view on deactivate and set the focus view to zero and resets the focus view when activated.
+	* changed CBitmap::draw() rect argument to be const (dito for drawTransparent and drawAlpha)
+
 2009-09-27 arne
 
 	* added CNinePartTiledBitmap (original from Wolfram)

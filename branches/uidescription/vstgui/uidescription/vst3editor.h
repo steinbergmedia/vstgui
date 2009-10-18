@@ -42,16 +42,12 @@
 #include <string>
 #include <map>
 
-#ifdef verify
-#undef verify
-#endif
-
 BEGIN_NAMESPACE_VSTGUI
 class ParameterChangeListener;
 class VST3Editor;
 
 //-----------------------------------------------------------------------------
-// extension to VSTEditController for creating custom Views when using the VST3Editor class
+// extension to VSTEditController
 class VST3EditorDelegate
 {
 public:
@@ -68,7 +64,6 @@ public:
 	VST3Editor (void* controller, const char* viewName, const char* xmlFile, bool debugMode = false);
 	VST3Editor (UIDescription* desc, void* controller, const char* viewName, const char* xmlFile = 0, bool debugMode = false);
 
-	bool verify ();
 	bool exchangeView (const char* newViewName);
 	void enableTooltips (bool state);
 
@@ -84,6 +79,7 @@ protected:
 	#if VSTGUI_LIVE_EDITING
 	void runNewTemplateDialog (const char* baseViewName);
 	void runTemplateSettingsDialog ();
+	void runFocusSettingsDialog ();
 	#endif // VSTGUI_LIVE_EDITING
 	
 	bool PLUGIN_API open (void* parent);

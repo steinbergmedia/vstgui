@@ -130,14 +130,32 @@ public:
 	virtual void onViewAdded (CView* pView);
 	virtual void onViewRemoved (CView* pView);
 
+	virtual void onActivate (bool state);									///< called when the platform view/window is activated/deactivated
+
 	virtual bool setDropActive (bool val);
 	virtual bool isDropActive () const { return bDropActive; };
 
-	CDrawContext* createDrawContext ();
+	VSTGUI_DEPRECATED(CDrawContext* createDrawContext ();)
 
 	virtual void invalidate (const CRect &rect);
 
 	void scrollRect (const CRect& src, const CPoint& distance);		///< scroll src rect by distance
+	//@}
+
+	//-----------------------------------------------------------------------------
+	/// @name Focus Drawing Methods [new in 4.0]
+	//! If focus drawing is enabled, the focus view will get a focus ring around it defined with the focus width and the focus color.
+	//! Views can define their own shape with the IFocusDrawing interface. Works only if CGraphicsPath is supported.
+	//-----------------------------------------------------------------------------
+	//@{
+	virtual void setFocusDrawingEnabled (bool state);				///< enable focus drawing
+	virtual bool focusDrawingEnabled () const;						///< is focus drawing enabled
+
+	virtual void setFocusColor (const CColor& color);				///< set focus draw color
+	virtual CColor getFocusColor () const;							///< get focus draw color
+
+	virtual void setFocusWidth (CCoord width);						///< set focus draw width
+	virtual CCoord getFocusWidth () const;							///< get focus draw width
 	//@}
 
 	void invalid () { invalidRect (size); bDirty = false; }
@@ -196,10 +214,11 @@ protected:
 	void    *pSystemWindow;
 	CView   *pModalView;
 	CView   *pFocusView;
+	CView   *pActiveFocusView;
 	CView   *pMouseOverView;
 
-	bool    bFirstDraw;
 	bool    bDropActive;
+	bool	bActive;
 
 #if WINDOWS
 	void      *pHwnd;

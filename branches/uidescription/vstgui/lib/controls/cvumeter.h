@@ -43,19 +43,32 @@ class COffscreenContext;
 //-----------------------------------------------------------------------------
 // CVuMeter Declaration
 //!
-/// @ingroup views
+/// @ingroup controls
 //-----------------------------------------------------------------------------
 class CVuMeter : public CControl
 {
 public:
-	CVuMeter (const CRect& size, CBitmap* onBitmap, CBitmap* offBitmap, long nbLed, const long style = kVertical);
+	CVuMeter (const CRect& size, CBitmap* onBitmap, CBitmap* offBitmap, long nbLed, long style = kVertical);
 	CVuMeter (const CVuMeter& vuMeter);
   
 	//-----------------------------------------------------------------------------
 	/// @name CVuMeter Methods
 	//-----------------------------------------------------------------------------
 	//@{
+	float getDecreaseStepValue () const { return decreaseValue; }
 	virtual void setDecreaseStepValue (float value) { decreaseValue = value; }
+
+	CBitmap* getOnBitmap () const { return getBackground (); }
+	CBitmap* getOffBitmap () const { return offBitmap; }
+	void setOnBitmap (CBitmap* bitmap) { setBackground (bitmap); }
+	void setOffBitmap (CBitmap* bitmap);
+	
+	long getNbLed () const { return nbLed; }
+	void setNbLed (long nb) { nbLed = nb; invalid (); }
+	
+	void setStyle (long newStyle) { style = newStyle; invalid (); }
+	long getStyle () const { return style; }
+
 	void setUseOffscreen (bool val = true);
 	bool getUseOffscreen () const { return bUseOffscreen; }
 	//@}

@@ -35,7 +35,7 @@
 #ifndef __viewfactory__
 #define __viewfactory__
 
-#include "../vstgui.h"
+#include "../lib/cview.h"
 #include "uidescription.h"
 #include <string>
 #include <list>

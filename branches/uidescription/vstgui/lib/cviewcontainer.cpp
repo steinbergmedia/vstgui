@@ -36,6 +36,7 @@
 #include "coffscreencontext.h"
 #include "cbitmap.h"
 #include "cframe.h"
+#include "ifocusdrawing.h"
 #include "controls/ccontrol.h"
 
 BEGIN_NAMESPACE_VSTGUI
@@ -244,6 +245,35 @@ CMessageResult CViewContainer::notify (CBaseObject* sender, const char* message)
 {
 	if (message == kMsgCheckIfViewContainer)
 		return kMessageNotified;
+#if VSTGUI_CGRAPHICSPATH_AVAILABLE
+	else if (message == kMsgNewFocusView)
+	{
+		CView* view = dynamic_cast<CView*> (sender);
+		if (view)
+		{
+			IFocusDrawing* focusDrawing = dynamic_cast<IFocusDrawing*> (view);
+			if (focusDrawing)
+			{
+				CGraphicsPath focusPath;
+				focusDrawing->getFocusPath (focusPath);
+				CRect r = focusPath.getBoundingBox ();
+				invalidRect (r);
+				
+			}
+			else
+			{
+				CCoord width = getFrame ()->getFocusWidth ();
+				CRect viewSize (view->getViewSize ());
+				viewSize.inset (-width, -width);
+				invalidRect (viewSize);
+			}
+		}
+	}
+	else if (message == kMsgOldFocusView)
+	{
+		invalidRect (lastDrawnFocus);
+	}
+#endif
 	return kMessageUnknown;
 }
 
@@ -596,6 +626,7 @@ void CViewContainer::drawBackgroundRect (CDrawContext* pContext, CRect& _updateR
 	}
 }
 
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
 //-----------------------------------------------------------------------------
 void CViewContainer::drawBackToFront (CDrawContext* pContext, const CRect& updateRect)
 {
@@ -638,6 +669,7 @@ void CViewContainer::drawBackToFront (CDrawContext* pContext, const CRect& updat
 	pContext->setClipRect (oldClip2);
 	restoreDrawContext (pContext, save);
 }
+#endif
 
 //-----------------------------------------------------------------------------
 /**
@@ -683,8 +715,39 @@ void CViewContainer::drawRect (CDrawContext* pContext, const CRect& updateRect)
 	// draw the background
 	drawBackgroundRect (pC, clientRect);
 	
+#if VSTGUI_CGRAPHICSPATH_AVAILABLE
+	CView* _focusView = 0;
+	IFocusDrawing* _focusDrawing = 0;
+	if (getFrame ()->focusDrawingEnabled () && isChild (getFrame ()->getFocusView (), false))
+	{
+		_focusView = getFrame ()->getFocusView ();
+		_focusDrawing = dynamic_cast<IFocusDrawing*> (_focusView);
+	}
+#endif
+
 	// draw each view
 	FOREACHSUBVIEW
+		
+		#if VSTGUI_CGRAPHICSPATH_AVAILABLE
+		if (_focusDrawing && _focusView == pV && !_focusDrawing->drawFocusOnTop ())
+		{
+			CGraphicsPath focusPath;
+			if (_focusDrawing->getFocusPath (focusPath))
+			{
+				lastDrawnFocus = focusPath.getBoundingBox ();
+				if (!lastDrawnFocus.isEmpty ())
+				{
+					pC->setClipRect (oldClip2);
+					pC->setDrawMode (kAntialias);
+					pC->setFillColor (getFrame ()->getFocusColor ());
+					focusPath.draw (pC, CGraphicsPath::kFilledEvenOdd);
+				}
+				_focusDrawing = 0;
+				_focusView = 0;
+			}
+		}
+		#endif
+
 		if (checkUpdateRect (pV, clientRect))
 		{
 			CRect viewSize = pV->getViewSize (viewSize);
@@ -708,6 +771,33 @@ void CViewContainer::drawRect (CDrawContext* pContext, const CRect& updateRect)
 
 	pC->setClipRect (oldClip2);
 
+#if VSTGUI_CGRAPHICSPATH_AVAILABLE
+	if (_focusView)
+	{
+		CGraphicsPath focusPath;
+		if (_focusDrawing)
+			_focusDrawing->getFocusPath (focusPath);
+		else
+		{
+			CCoord focusWidth = getFrame ()->getFocusWidth ();
+			CRect r (_focusView->getVisibleSize ());
+			if (!r.isEmpty ())
+			{
+				focusPath.addRect (r);
+				r.inset (-focusWidth, -focusWidth);
+				focusPath.addRect (r);
+			}
+		}
+		lastDrawnFocus = focusPath.getBoundingBox ();
+		if (!lastDrawnFocus.isEmpty ())
+		{
+			pC->setDrawMode (kAntialias);
+			pC->setFillColor (getFrame ()->getFocusColor ());
+			focusPath.draw (pC, CGraphicsPath::kFilledEvenOdd);
+		}
+	}
+#endif
+	
 	// transfer offscreen
 	if (bDrawInOffscreen)
 		((COffscreenContext*)pC)->copyFrom (pContext, _updateRect, CPoint (clientRect.left, clientRect.top));

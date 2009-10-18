@@ -35,6 +35,7 @@
 #if VSTGUI_LIVE_EDITING
 
 #include "cselection.h"
+#include "../lib/cviewcontainer.h"
 
 BEGIN_NAMESPACE_VSTGUI
 

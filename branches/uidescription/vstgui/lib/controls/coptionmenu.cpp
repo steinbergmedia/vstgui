@@ -502,6 +502,7 @@ bool COptionMenu::popup ()
 		{
 			lastMenu = menu;
 			menu->setValue ((float)idx);
+			invalid ();
 		
 			// update dependency
 			if (listener)
@@ -520,11 +521,12 @@ bool COptionMenu::popup ()
 			lastMenu = usedMenu;
 			lastResult = index;
 			usedMenu->setValue (index);
+			invalid ();
 			if (listener)
 				listener->valueChanged (usedMenu);
 			popupResult = true;
 		}
-		endEdit();
+		endEdit ();
 		inPopup = false;
 		return popupResult;
 	}
@@ -534,7 +536,7 @@ bool COptionMenu::popup ()
 	// no entries, no menu
 	if (getNbEntries () == 0)
 	{
-		endEdit();
+		endEdit ();
 		inPopup = false;
 		return popupResult;
 	}
@@ -579,6 +581,7 @@ bool COptionMenu::popup ()
 		{
 			lastMenu = menu;
 			menu->setValue (result);
+			invalid ();
 			if (listener)
 				listener->valueChanged (menu);
 			popupResult = true;

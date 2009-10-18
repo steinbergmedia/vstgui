@@ -717,7 +717,7 @@ Gdiplus::Bitmap* CBitmap::getBitmap ()
 #endif
 
 //-----------------------------------------------------------------------------
-void CBitmap::draw (CDrawContext* pContext, CRect &rect, const CPoint &offset)
+void CBitmap::draw (CDrawContext* pContext, const CRect &rect, const CPoint &offset)
 {
 #if WINDOWS
 	#if GDIPLUS
@@ -751,7 +751,7 @@ void CBitmap::draw (CDrawContext* pContext, CRect &rect, const CPoint &offset)
 }
 
 //-----------------------------------------------------------------------------
-void CBitmap::drawTransparent (CDrawContext* pContext, CRect &rect, const CPoint &offset)
+void CBitmap::drawTransparent (CDrawContext* pContext, const CRect &rect, const CPoint &offset)
 {
 #if WINDOWS
 	#if GDIPLUS
@@ -799,7 +799,7 @@ void CBitmap::drawTransparent (CDrawContext* pContext, CRect &rect, const CPoint
 }
 
 //-----------------------------------------------------------------------------
-void CBitmap::drawAlphaBlend (CDrawContext* pContext, CRect &rect, const CPoint &offset, unsigned char alpha)
+void CBitmap::drawAlphaBlend (CDrawContext* pContext, const CRect &rect, const CPoint &offset, unsigned char alpha)
 {
 #if WINDOWS
 	#if GDIPLUS
@@ -1097,7 +1097,7 @@ CNinePartTiledBitmap::~CNinePartTiledBitmap ()
 }
 
 //-----------------------------------------------------------------------------
-void CNinePartTiledBitmap::drawAlphaBlend (CDrawContext* inContext, CRect& inDestRect, const CPoint& offset, unsigned char inAlpha)
+void CNinePartTiledBitmap::drawAlphaBlend (CDrawContext* inContext, const CRect& inDestRect, const CPoint& offset, unsigned char inAlpha)
 {
 	drawParts (inContext, inDestRect, inAlpha);
 }

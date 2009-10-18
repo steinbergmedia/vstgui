@@ -41,7 +41,7 @@
 #error GDIPLUS must be defined
 #endif
 
-#include "../vstgui.h"
+#include "../lib/cframe.h"
 #include "cselection.h"
 #include "uidescription.h"
 #include "viewfactory.h"
@@ -56,6 +56,7 @@ class Grid;
 class CViewInspector;
 class IActionOperation;
 class ViewHierarchyBrowserWindow;
+class CVSTGUITimer;
 
 //----------------------------------------------------------------------------------------------------
 class IActionOperator

@@ -89,7 +89,7 @@ and another click on the displayed area will leave the modal mode.
  * @param offset offset of background bitmap
  */
 //------------------------------------------------------------------------
-CSplashScreen::CSplashScreen (const CRect& size, CControlListener* listener, long tag, CBitmap* background, CRect& toDisplay, const CPoint& offset)
+CSplashScreen::CSplashScreen (const CRect& size, CControlListener* listener, long tag, CBitmap* background, const CRect& toDisplay, const CPoint& offset)
 : CControl (size, listener, tag, background)
 , toDisplay (toDisplay)
 , offset (offset)

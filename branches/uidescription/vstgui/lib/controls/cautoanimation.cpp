@@ -42,7 +42,7 @@ BEGIN_NAMESPACE_VSTGUI
 // CAutoAnimation
 //------------------------------------------------------------------------
 /*! @class CAutoAnimation
-An auto-animation control contains a given number of subbitmap which can be displayed in loop.
+An auto-animation control contains a given number of subbitmaps which can be displayed in loop.
 Two functions allows to get the previous or the next subbitmap (these functions increase or decrease the current value of this control).
 */
 // displays bitmaps within a (child-) window

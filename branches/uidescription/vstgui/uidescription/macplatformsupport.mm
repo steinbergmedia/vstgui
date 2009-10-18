@@ -38,6 +38,8 @@
 #include "../lib/cocoasupport.h"
 #include <Cocoa/Cocoa.h>
 
+using namespace VSTGUI;
+
 //-----------------------------------------------------------------------------
 @interface VSTGUI_CocoaWindowDelegate : NSObject 
 #if MAC_OS_X_VERSION_MAX_ALLOWED > MAC_OS_X_VERSION_10_5

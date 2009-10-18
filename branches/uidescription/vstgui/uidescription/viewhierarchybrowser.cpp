@@ -41,6 +41,7 @@
 #include "../lib/cdatabrowser.h"
 #include "../lib/vstkeycode.h"
 #include "../lib/cfont.h"
+#include "../lib/cdrawcontext.h"
 #include <typeinfo>
 
 BEGIN_NAMESPACE_VSTGUI

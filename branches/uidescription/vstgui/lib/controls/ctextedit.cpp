@@ -466,6 +466,12 @@ void CTextEdit::takeFocus ()
 #if WINDOWS || MAC
 	// calculate offset for CViewContainers
 	CRect rect (size);
+	#if WINDOWS
+	RECT rctWinParent;
+	GetWindowRect (hwnd, &rctWinParent);
+	rect.left = (CCoord)rctWinParent.left;
+	rect.top  = (CCoord)rctWinParent.top;
+	#endif
 	CView* parent = getParentView ();
 	CRect vSize;
 	while (parent)
@@ -476,12 +482,6 @@ void CTextEdit::takeFocus ()
 			rect.offset (vSize.left, vSize.top);
 		}
 		parent = parent->getParentView ();
-	}
-	if (getFrame ())
-	{
-		CDrawContext* pContext = getFrame ()->createDrawContext ();
-		rect.offset (pContext->offset.h, pContext->offset.v);
-		pContext->forget ();
 	}
 #endif
 

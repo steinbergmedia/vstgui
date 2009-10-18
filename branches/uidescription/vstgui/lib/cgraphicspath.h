@@ -104,7 +104,7 @@ public:
 	};
 
 	void draw (CDrawContext* context, PathDrawMode mode = kFilled, CGraphicsTransformation* transformation = 0);
-	void fillLinearGradient (CDrawContext* context, const CGradient& gradient, const CPoint& color1StartPoint, const CPoint& color2StartPoint, bool evenOdd = false, CGraphicsTransformation* transformation = 0);
+	void fillLinearGradient (CDrawContext* context, const CGradient& gradient, const CPoint& startPoint, const CPoint& endPoint, bool evenOdd = false, CGraphicsTransformation* transformation = 0);
 	//@}
 	
 	//-----------------------------------------------------------------------------

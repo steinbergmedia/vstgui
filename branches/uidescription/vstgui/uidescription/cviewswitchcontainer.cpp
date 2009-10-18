@@ -34,6 +34,7 @@
 
 #include "cviewswitchcontainer.h"
 #include "viewcreator.h"
+#include "../lib/cframe.h"
 
 BEGIN_NAMESPACE_VSTGUI
 

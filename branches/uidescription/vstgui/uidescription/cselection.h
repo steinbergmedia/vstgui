@@ -37,7 +37,7 @@
 
 #if VSTGUI_LIVE_EDITING
 
-#include "../vstgui.h"
+#include "../lib/cview.h"
 #include <list>
 
 BEGIN_NAMESPACE_VSTGUI

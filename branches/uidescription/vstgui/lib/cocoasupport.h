@@ -39,6 +39,16 @@
 
 #if MAC_COCOA
 
+// helpers
+#ifdef __OBJC__
+#import <Cocoa/Cocoa.h>
+#import "crect.h"
+BEGIN_NAMESPACE_VSTGUI
+extern CRect rectFromNSRect (const NSRect& rect);
+extern NSImage* imageFromCGImageRef (CGImageRef image);
+END_NAMESPACE_VSTGUI
+#endif
+
 #include "cframe.h"
 
 /// @cond ignore
@@ -68,13 +78,6 @@ long showNSContextMenu (COptionMenu* menu, COptionMenu** usedMenu);
 // used by CTooltipSupport
 void nsViewSetTooltip (CView* view, const char* tooltip);
 void nsViewRemoveTooltip (CView* view, bool immediately);
-
-// helpers
-#ifdef __OBJC__
-#import <Cocoa/Cocoa.h>
-CRect rectFromNSRect (const NSRect& rect);
-NSImage* imageFromCGImageRef (CGImageRef image);
-#endif
 
 END_NAMESPACE_VSTGUI
 

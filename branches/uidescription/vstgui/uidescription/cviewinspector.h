@@ -65,6 +65,8 @@ public:
 	void valueChanged (CControl* pControl);
 	void beforeSave ();
 	CMessageResult notify (CBaseObject* sender, const char* message);
+
+	static COptionMenu* createMenuFromList (const CRect& size, CControlListener* listener, std::list<const std::string*>& names, const std::string& defaultValue, bool addNoneItem = false);
 protected:
 	CView* createAttributesView (CCoord width);
 	void updateAttributeViews ();

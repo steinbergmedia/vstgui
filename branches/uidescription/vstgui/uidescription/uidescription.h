@@ -35,7 +35,10 @@
 #ifndef __uidescription__
 #define __uidescription__
 
-#include "../vstgui.h"
+#include "../lib/controls/ccontrol.h"
+#include "../lib/ccolor.h"
+#include "../lib/cfont.h"
+#include "../lib/cbitmap.h"
 #include "xmlparser.h"
 #include <map>
 #include <deque>

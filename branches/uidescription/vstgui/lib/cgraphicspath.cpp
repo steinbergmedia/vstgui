@@ -235,7 +235,7 @@ void CGraphicsPath::draw (CDrawContext* context, PathDrawMode mode, CGraphicsTra
 }
 
 //-----------------------------------------------------------------------------
-void CGraphicsPath::fillLinearGradient (CDrawContext* context, const CGradient& gradient, const CPoint& color1StartPoint, const CPoint& color2StartPoint, bool evenOdd, CGraphicsTransformation* transformation)
+void CGraphicsPath::fillLinearGradient (CDrawContext* context, const CGradient& gradient, const CPoint& startPoint, const CPoint& endPoint, bool evenOdd, CGraphicsTransformation* transformation)
 {
 	#if VSTGUI_USES_COREGRAPHICS
 	const CGGradient* cgGradient = dynamic_cast<const CGGradient*> (&gradient);
@@ -261,7 +261,7 @@ void CGraphicsPath::fillLinearGradient (CDrawContext* context, const CGradient& 
 	else
 		CGContextClip (cgContext);
 
-	CGContextDrawLinearGradient (cgContext, *cgGradient, CGPointMake (color1StartPoint.x, color1StartPoint.y), CGPointMake (color2StartPoint.x, color2StartPoint.y), 0);
+	CGContextDrawLinearGradient (cgContext, *cgGradient, CGPointMake (startPoint.x, startPoint.y), CGPointMake (endPoint.x, endPoint.y), 0);
 	
 	context->releaseCGContext (cgContext);
 
@@ -282,8 +282,8 @@ void CGraphicsPath::fillLinearGradient (CDrawContext* context, const CGradient& 
 		path->Transform (&matrix);
 	}
 
-	Gdiplus::PointF c1p ((Gdiplus::REAL)(color1StartPoint.x-context->offset.x), (Gdiplus::REAL)(color1StartPoint.y-context->offset.y));
-	Gdiplus::PointF c2p ((Gdiplus::REAL)(color2StartPoint.x-context->offset.x), (Gdiplus::REAL)(color2StartPoint.y-context->offset.y));
+	Gdiplus::PointF c1p ((Gdiplus::REAL)(startPoint.x-context->offset.x), (Gdiplus::REAL)(startPoint.y-context->offset.y));
+	Gdiplus::PointF c2p ((Gdiplus::REAL)(endPoint.x-context->offset.x), (Gdiplus::REAL)(endPoint.y-context->offset.y));
 	Gdiplus::LinearGradientBrush brush (c1p, c2p, createGdiPlusColor (gradient.getColor1 ()), createGdiPlusColor (gradient.getColor2 ()));
 	Gdiplus::REAL blendFactors[] = { 0.f, 0.f, 1.f, 1.f };
 	Gdiplus::REAL blendPositions [] = { 0.f, (Gdiplus::REAL)gradient.getColor1Start (), (Gdiplus::REAL)gradient.getColor2Start (), 1.f };
@@ -335,7 +335,8 @@ void CGraphicsPath::addArc (const CRect& rect, double startAngle, double endAngl
 void CGraphicsPath::addCurve (const CPoint& start, const CPoint& control1, const CPoint& control2, const CPoint& end)
 {
 	#if VSTGUI_USES_COREGRAPHICS
-	CGPathMoveToPoint (*platformPath, 0, start.x, start.y);
+	if (CGPathIsEmpty (*platformPath) || getCurrentPosition () != start)
+		CGPathMoveToPoint (*platformPath, 0, start.x, start.y);
 	CGPathAddCurveToPoint (*platformPath, 0, control1.x, control1.y, control2.x, control2.y, end.x, end.y);
 	
 	#elif GDIPLUS
@@ -360,7 +361,8 @@ void CGraphicsPath::addEllipse (const CRect& rect)
 void CGraphicsPath::addLine (const CPoint& start, const CPoint& end)
 {
 	#if VSTGUI_USES_COREGRAPHICS
-	CGPathMoveToPoint (*platformPath, 0, start.x, start.y);
+	if (CGPathIsEmpty (*platformPath) || getCurrentPosition () != start)
+		CGPathMoveToPoint (*platformPath, 0, start.x, start.y);
 	CGPathAddLineToPoint (*platformPath, 0, end.x, end.y);
 	
 	#elif GDIPLUS
@@ -512,12 +514,15 @@ void CGraphicsPath::addString (const char* utf8String, CFontRef font, const CPoi
 //-----------------------------------------------------------------------------
 CPoint CGraphicsPath::getCurrentPosition () const
 {
-	CPoint p;
+	CPoint p (0, 0);
 
 	#if VSTGUI_USES_COREGRAPHICS
-	CGPoint cgPoint = CGPathGetCurrentPoint (*platformPath);
-	p.x = cgPoint.x;
-	p.y = cgPoint.y;
+	if (!CGPathIsEmpty (*platformPath))
+	{
+		CGPoint cgPoint = CGPathGetCurrentPoint (*platformPath);
+		p.x = cgPoint.x;
+		p.y = cgPoint.y;
+	}
 
 	#elif GDIPLUS
 	Gdiplus::PointF gdiPoint;

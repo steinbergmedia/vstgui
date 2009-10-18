@@ -35,7 +35,8 @@
 #ifndef __viewcreator__
 #define __viewcreator__
 
-#include "../vstgui.h"
+#include "../lib/cbitmap.h"
+#include "../lib/cview.h"
 #include <string>
 
 BEGIN_NAMESPACE_VSTGUI

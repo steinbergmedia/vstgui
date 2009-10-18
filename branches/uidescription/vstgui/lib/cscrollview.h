@@ -167,8 +167,6 @@ public:
 	void setViewSize (CRect &newSize, bool invalid);
 
 	CLASS_METHODS(CScrollbar, CControl)
-
-	VSTGUI_DEPRECATED(virtual void mouse (CDrawContext* pContext, CPoint& where, long buttons = -1);)
 //-----------------------------------------------------------------------------
 protected:
 	void drawBackground (CDrawContext* pContext);

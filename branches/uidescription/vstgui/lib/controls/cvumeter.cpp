@@ -50,10 +50,9 @@ BEGIN_NAMESPACE_VSTGUI
  * @param style kHorizontal or kVertical
  */
 //------------------------------------------------------------------------
-CVuMeter::CVuMeter (const CRect& size, CBitmap* onBitmap, CBitmap* offBitmap, long nbLed, const long style)
+CVuMeter::CVuMeter (const CRect& size, CBitmap* onBitmap, CBitmap* offBitmap, long nbLed, long style)
 : CControl (size, 0, 0)
-, onBitmap (onBitmap)
-, offBitmap (offBitmap)
+, offBitmap (0)
 , pOScreen (0)
 , nbLed (nbLed)
 , style (style)
@@ -64,11 +63,9 @@ CVuMeter::CVuMeter (const CRect& size, CBitmap* onBitmap, CBitmap* offBitmap, lo
 #if (WINDOWS && !USE_LIBPNG && !GDIPLUS)
 	setUseOffscreen (true);
 #endif
-	
-	if (onBitmap)
-		onBitmap->remember ();
-	if (offBitmap)
-		offBitmap->remember ();
+
+	setOnBitmap (onBitmap);
+	setOffBitmap (offBitmap);
 
 	rectOn  (size.left, size.top, size.right, size.bottom);
 	rectOff (size.left, size.top, size.right, size.bottom);
@@ -77,8 +74,7 @@ CVuMeter::CVuMeter (const CRect& size, CBitmap* onBitmap, CBitmap* offBitmap, lo
 //------------------------------------------------------------------------
 CVuMeter::CVuMeter (const CVuMeter& v)
 : CControl (v)
-, onBitmap (v.onBitmap)
-, offBitmap (v.offBitmap)
+, offBitmap (0)
 , pOScreen (0)
 , nbLed (v.nbLed)
 , style (v.style)
@@ -87,19 +83,14 @@ CVuMeter::CVuMeter (const CVuMeter& v)
 , rectOn (v.rectOn)
 , rectOff (v.rectOff)
 {
-	if (onBitmap)
-		onBitmap->remember ();
-	if (offBitmap)
-		offBitmap->remember ();
+	setOffBitmap (v.offBitmap);
 }
 
 //------------------------------------------------------------------------
 CVuMeter::~CVuMeter ()
 {
-	if (onBitmap)
-		onBitmap->forget ();
-	if (offBitmap)
-		offBitmap->forget ();
+	setOnBitmap (0);
+	setOffBitmap (0);
 }
 
 //------------------------------------------------------------------------
@@ -136,6 +127,16 @@ void CVuMeter::setUseOffscreen (bool val)
 }
 
 //-----------------------------------------------------------------------------
+void CVuMeter::setOffBitmap (CBitmap* bitmap)
+{
+	if (offBitmap)
+		offBitmap->forget ();
+	offBitmap = bitmap;
+	if (offBitmap)
+		offBitmap->remember ();
+}
+
+//-----------------------------------------------------------------------------
 bool CVuMeter::removed (CView *parent)
 {
 	if (pOScreen)
@@ -149,7 +150,7 @@ bool CVuMeter::removed (CView *parent)
 //------------------------------------------------------------------------
 void CVuMeter::draw (CDrawContext *_pContext)
 {
-	if (!onBitmap) 
+	if (!getOnBitmap ())
 		return;
 
 	CPoint pointOn;
@@ -178,7 +179,7 @@ void CVuMeter::draw (CDrawContext *_pContext)
 
 	if (style & kHorizontal) 
 	{
-		CCoord tmp = (CCoord)(((long)(nbLed * newValue + 0.5f) / (float)nbLed) * onBitmap->getWidth ());
+		CCoord tmp = (CCoord)(((long)(nbLed * newValue + 0.5f) / (float)nbLed) * getOnBitmap ()->getWidth ());
 		pointOff (tmp, 0);
 		if (!bUseOffscreen)
 		tmp += size.left;
@@ -188,7 +189,7 @@ void CVuMeter::draw (CDrawContext *_pContext)
 	}
 	else 
 	{
-		CCoord tmp = (CCoord)(((long)(nbLed * (getMax () - newValue) + 0.5f) / (float)nbLed) * onBitmap->getHeight ());
+		CCoord tmp = (CCoord)(((long)(nbLed * (getMax () - newValue) + 0.5f) / (float)nbLed) * getOnBitmap ()->getHeight ());
 		pointOn (0, tmp);
 		if (!bUseOffscreen)
 		tmp += size.top;
@@ -197,18 +198,18 @@ void CVuMeter::draw (CDrawContext *_pContext)
 		rectOn.top     = tmp;
 	}
 
-	if (offBitmap)
+	if (getOffBitmap ())
 	{
 		if (bTransparencyEnabled)
-			offBitmap->drawTransparent (pContext, rectOff, pointOff);
+			getOffBitmap ()->drawTransparent (pContext, rectOff, pointOff);
 		else
-			offBitmap->draw (pContext, rectOff, pointOff);
+			getOffBitmap ()->draw (pContext, rectOff, pointOff);
 	}
 
 	if (bTransparencyEnabled)
-		onBitmap->drawTransparent (pContext, rectOn, pointOn);
+		getOnBitmap ()->drawTransparent (pContext, rectOn, pointOn);
 	else
-		onBitmap->draw (pContext, rectOn, pointOn);
+		getOnBitmap ()->draw (pContext, rectOn, pointOn);
 
 	if (pOScreen)
 		pOScreen->copyFrom (_pContext, size);

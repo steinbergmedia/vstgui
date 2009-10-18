@@ -574,8 +574,54 @@ static id VSTGUI_NSView_Init (id self, SEL _cmd, void* _frame, const void* _size
 //------------------------------------------------------------------------------------
 static BOOL VSTGUI_NSView_isFlipped (id self, SEL _cmd) { return YES; }
 static BOOL VSTGUI_NSView_acceptsFirstResponder (id self, SEL _cmd) { return YES; }
-static BOOL VSTGUI_NSView_becomeFirstResponder (id self, SEL _cmd) { return YES; }
 static BOOL VSTGUI_NSView_canBecomeKeyView (id self, SEL _cmd) { return YES; }
+
+//------------------------------------------------------------------------------------
+static BOOL VSTGUI_NSView_becomeFirstResponder (id self, SEL _cmd)
+{
+#if 0
+	CFrame* frame = (CFrame*)OBJC_GET_VALUE(self, _vstguiframe);
+	if (frame && [[self window] isKeyWindow])
+		frame->onActivate (true);
+#endif
+	return YES;
+}
+
+//------------------------------------------------------------------------------------
+static BOOL VSTGUI_NSView_resignFirstResponder (id self, SEL _cmd)
+{
+#if 0
+	CFrame* frame = (CFrame*)OBJC_GET_VALUE(self, _vstguiframe);
+	if (frame)
+		frame->onActivate (false);
+#endif
+	return YES;
+}
+
+//------------------------------------------------------------------------------------
+static void VSTGUI_NSView_viewDidMoveToWindow (id self, SEL _cmd)
+{
+	[[NSNotificationCenter defaultCenter] removeObserver:self];
+	NSWindow* window = [self window];
+	if (window)
+	{
+		[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(windowKeyStateChanged:) name:NSWindowDidBecomeKeyNotification object:window];
+		[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(windowKeyStateChanged:) name:NSWindowDidResignKeyNotification object:window];
+	}
+}
+
+//------------------------------------------------------------------------------------
+static void VSTGUI_NSView_windowKeyStateChanged (id self, SEL _cmd, NSNotification* notification)
+{
+	CFrame* frame = (CFrame*)OBJC_GET_VALUE(self, _vstguiframe);
+	NSView* firstResponder = (NSView*)[[self window] firstResponder];
+	if (![firstResponder isKindOfClass:[NSView class]])
+		firstResponder = nil;
+	if (frame && firstResponder && [firstResponder isDescendantOf:self])
+	{
+		frame->onActivate ([[self window] isKeyWindow] ? true : false);
+	}
+}
 
 //------------------------------------------------------------------------------------
 static BOOL VSTGUI_NSView_isOpaque (id self, SEL _cmd)
@@ -1225,6 +1271,7 @@ static void VSTGUI_NSTextField_RemoveFromSuperview (id self, SEL _cmd)
 	NSView* containerView = [self superview];
 	if (containerView)
 	{
+		[[containerView window] makeFirstResponder:[containerView superview]];
 		[containerView removeFromSuperview];
 		__OBJC_SUPER(self)
 		objc_msgSendSuper (SUPER, @selector(removeFromSuperview)); // [super removeFromSuperview];
@@ -1539,10 +1586,13 @@ GenerateUniqueVSTGUIClasses::GenerateUniqueVSTGUIClasses ()
 	NSMutableString* viewClassName = [[[NSMutableString alloc] initWithString:@"VSTGUI_NSView"] autorelease];
 	viewClass = generateUniqueClass (viewClassName, [NSView class]);
 	res = class_addMethod (viewClass, @selector(initWithFrame:andSize:), IMP (VSTGUI_NSView_Init), "@@:@:^:^:");
-	res = class_addMethod (viewClass, @selector(dealloc), IMP (VSTGUI_NSMenu_Dealloc), "v@:@:");
+//	res = class_addMethod (viewClass, @selector(dealloc), IMP (VSTGUI_NSView_Dealloc), "v@:@:");
+	res = class_addMethod (viewClass, @selector(viewDidMoveToWindow), IMP (VSTGUI_NSView_viewDidMoveToWindow), "v@:@:");
+	res = class_addMethod (viewClass, @selector(windowKeyStateChanged:), IMP (VSTGUI_NSView_windowKeyStateChanged), "v@:@:^:");
 	res = class_addMethod (viewClass, @selector(isFlipped), IMP (VSTGUI_NSView_isFlipped), "B@:@:");
 	res = class_addMethod (viewClass, @selector(acceptsFirstResponder), IMP (VSTGUI_NSView_acceptsFirstResponder), "B@:@:");
 	res = class_addMethod (viewClass, @selector(becomeFirstResponder), IMP (VSTGUI_NSView_becomeFirstResponder), "B@:@:");
+	res = class_addMethod (viewClass, @selector(resignFirstResponder), IMP (VSTGUI_NSView_resignFirstResponder), "B@:@:");
 	res = class_addMethod (viewClass, @selector(canBecomeKeyView), IMP (VSTGUI_NSView_canBecomeKeyView), "B@:@:");
 	res = class_addMethod (viewClass, @selector(isOpaque), IMP (VSTGUI_NSView_isOpaque), "B@:@:");
 	const char* nsRectEncoded = @encode(NSRect);

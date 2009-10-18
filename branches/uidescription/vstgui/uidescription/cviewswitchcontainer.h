@@ -35,7 +35,7 @@
 #ifndef __cviewswitchcontainer__
 #define __cviewswitchcontainer__
 
-#include "../vstgui.h"
+#include "../lib/cviewcontainer.h"
 #include "viewfactory.h"
 #include <vector>
 

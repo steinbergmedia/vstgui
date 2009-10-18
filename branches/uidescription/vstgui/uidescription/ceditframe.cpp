@@ -42,6 +42,7 @@
 #include "../lib/coffscreencontext.h"
 #include "../lib/vstkeycode.h"
 #include "../lib/cfileselector.h"
+#include "../lib/cvstguitimer.h"
 #include <map>
 #include <sstream>
 

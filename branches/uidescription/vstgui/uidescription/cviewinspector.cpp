@@ -43,6 +43,7 @@
 #include "../lib/vstkeycode.h"
 #include "../lib/cgraphicspath.h"
 #include "../lib/cfont.h"
+#include "../lib/ifocusdrawing.h"
 #include <set>
 #include <vector>
 #include <algorithm>
@@ -51,7 +52,7 @@
 BEGIN_NAMESPACE_VSTGUI
 
 //-----------------------------------------------------------------------------
-class InspectorTabButton : public COnOffButton
+class InspectorTabButton : public COnOffButton, public IFocusDrawing
 //-----------------------------------------------------------------------------
 {
 public:
@@ -79,6 +80,21 @@ public:
 			free (name);
 	}	
 
+	bool drawFocusOnTop ()
+	{
+		return false;
+	}
+	
+	bool getFocusPath (CGraphicsPath& outPath)
+	{
+		CRect r = getViewSize ();
+		r.inset (2, 5);
+		outPath.addRect (r);
+//		r.inset (0.8, 0.8);
+//		outPath.addRect (r);
+		return true;
+	}
+	
 	virtual void draw (CDrawContext *pContext)
 	{
 		pContext->setDrawMode (kCopyMode);
@@ -109,6 +125,7 @@ public:
 		pContext->drawRect (r, kDrawFilled);
 		if (name)
 		{
+			#if 0
 			if (getFrame ()->getFocusView () == this)
 			{
 				CFontRef focusFont = (CFontRef)textFont->newCopy ();
@@ -117,6 +134,7 @@ public:
 				focusFont->forget ();
 			}
 			else
+			#endif
 				pContext->setFont (textFont);
 			pContext->setFontColor (value ? activeTextColor : inactiveTextColor);
 			pContext->drawString (name, size, false);
@@ -1126,7 +1144,7 @@ static void updateMenuFromList (COptionMenu* menu, std::list<const std::string*>
 }
 
 //-----------------------------------------------------------------------------
-static COptionMenu* createMenuFromList (const CRect& size, CControlListener* listener, std::list<const std::string*>& names, const std::string& defaultValue, bool addNoneItem = false)
+COptionMenu* CViewInspector::createMenuFromList (const CRect& size, CControlListener* listener, std::list<const std::string*>& names, const std::string& defaultValue, bool addNoneItem)
 {
 	COptionMenu* menu = new FocusOptionMenu (size, listener, -1);
 	menu->setStyle (kCheckStyle|kPopupStyle);
@@ -1191,13 +1209,13 @@ CView* CViewInspector::createViewForAttribute (const std::string& attrName, CCoo
 
 	const CCoord height = 20;
 
-	CViewContainer* container = new CViewContainer (CRect (0, 0, width, height), 0);
+	CViewContainer* container = new CViewContainer (CRect (0, 0, width, height+2), 0);
 	container->setAutosizeFlags (kAutosizeLeft|kAutosizeRight|kAutosizeColumn);
 	container->setTransparency (true);
 
 	CCoord middle = width/2;
 
-	CTextLabel* label = new CTextLabel (CRect (5, 0, middle - 10, height), attrName.c_str ());
+	CTextLabel* label = new CTextLabel (CRect (5, 1, middle - 10, height+1), attrName.c_str ());
 	label->setTransparency (true);
 	label->setHoriAlign (kRightText);
 	label->setFontColor (kWhiteCColor);
@@ -1205,7 +1223,7 @@ CView* CViewInspector::createViewForAttribute (const std::string& attrName, CCoo
 	container->addView (label);
 
 	bool hasDifferentValues = false;
-	CRect r (middle+10, 0, width-5, height);
+	CRect r (middle+10, 1, width-5, height+1);
 	CView* valueView = 0;
 	IViewCreator::AttrType attrType = viewFactory->getAttributeType (*selection->begin (), attrName);
 	std::string attrValue;
@@ -1530,6 +1548,9 @@ void CViewInspector::show ()
 			frame->setBackgroundColor (kDefaultUIDescriptionBackgroundColor);
 #endif
 			frame->addView (tabView);
+			frame->setFocusDrawingEnabled (true);
+			frame->setFocusColor (MakeCColor (100, 100, 255, 200));
+			frame->setFocusWidth (1.2);
 			platformWindow->center ();
 			if (windowSize.getWidth () > 0)
 				platformWindow->setSize (windowSize);

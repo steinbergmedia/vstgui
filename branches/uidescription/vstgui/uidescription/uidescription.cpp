@@ -36,6 +36,8 @@
 #include "viewfactory.h"
 #include "viewcreator.h"
 #include "../lib/cfont.h"
+#include "../lib/cframe.h"
+#include "../lib/cdrawcontext.h"
 #include "../lib/win32support.h"
 #include <list>
 #include <sstream>
@@ -91,6 +93,7 @@ public:
 	UIBitmapNode (const std::string& name, UIAttributes* attributes);
 	CBitmap* getBitmap ();
 	void setBitmap (const char* bitmapName);
+	void setNinePartTiledOffset (const CRect& offsets);
 protected:
 	~UIBitmapNode ();
 	CBitmap* bitmap;
@@ -1280,7 +1283,13 @@ CBitmap* UIBitmapNode::getBitmap ()
 		const std::string* path = attributes->getAttributeValue ("path");
 		if (path)
 		{
-			bitmap = new CBitmap (path->c_str ());
+			CRect offsets;
+			if (attributes->getRectAttribute ("nineparttiled-offsets", offsets))
+			{
+				bitmap = new CNinePartTiledBitmap (path->c_str (), CNinePartTiledBitmap::PartOffsets (offsets.left, offsets.top, offsets.right, offsets.bottom));
+			}
+			else
+				bitmap = new CBitmap (path->c_str ());
 		}
 	}
 	return bitmap;
@@ -1293,6 +1302,25 @@ void UIBitmapNode::setBitmap (const char* bitmapName)
 		bitmap->forget ();
 	bitmap = 0;
 	attributes->setAttribute ("path", bitmapName);
+}
+
+//-----------------------------------------------------------------------------
+void UIBitmapNode::setNinePartTiledOffset (const CRect& offsets)
+{
+	if (bitmap)
+	{
+		CNinePartTiledBitmap* tiledBitmap = dynamic_cast<CNinePartTiledBitmap*> (bitmap);
+		if (tiledBitmap)
+		{
+			tiledBitmap->setPartOffsets (CNinePartTiledBitmap::PartOffsets (offsets.left, offsets.top, offsets.right, offsets.bottom));
+		}
+		else
+		{
+			bitmap->forget ();
+			bitmap = 0;
+		}
+	}
+	attributes->setRectAttribute ("nineparttiled-offsets", offsets);
 }
 
 //-----------------------------------------------------------------------------

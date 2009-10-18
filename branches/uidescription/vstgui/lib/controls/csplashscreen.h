@@ -47,7 +47,7 @@ BEGIN_NAMESPACE_VSTGUI
 class CSplashScreen : public CControl, public CControlListener
 {
 public:
-	CSplashScreen (const CRect& size, CControlListener* listener, long tag, CBitmap* background, CRect& toDisplay, const CPoint& offset = CPoint (0, 0));
+	CSplashScreen (const CRect& size, CControlListener* listener, long tag, CBitmap* background, const CRect& toDisplay, const CPoint& offset = CPoint (0, 0));
 	CSplashScreen (const CRect& size, CControlListener* listener, long tag, CView* splashView);
 	CSplashScreen (const CSplashScreen& splashScreen);
   

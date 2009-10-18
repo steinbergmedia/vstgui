@@ -95,7 +95,7 @@
 // Deprecation setting
 //----------------------------------------------------
 #ifndef VSTGUI_ENABLE_DEPRECATED_METHODS
-#define VSTGUI_ENABLE_DEPRECATED_METHODS 0
+#define VSTGUI_ENABLE_DEPRECATED_METHODS 1
 #endif
 
 #ifndef DEPRECATED_ATTRIBUTE

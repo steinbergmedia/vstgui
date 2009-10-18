@@ -35,7 +35,7 @@
 #ifndef __platformsupport__
 #define __platformsupport__
 
-#include "../vstgui.h"
+#include "../lib/crect.h"
 #include "uidescription.h"
 #include <string>
 #include <list>
@@ -43,7 +43,8 @@
 /// @cond ignore
 
 BEGIN_NAMESPACE_VSTGUI
-
+class CBitmap;
+class CFrame;
 class PlatformWindow;
 
 //-----------------------------------------------------------------------------

@@ -396,12 +396,12 @@ bool CCheckBox::sizeToFit ()
 		}
 		else
 		{
-			fitSize.setHeight (getFontCapHeight (font) + 2);
 			fitSize.setWidth (fitSize.getHeight ());
 		}
 		fitSize.right += kCheckBoxTitleMargin;
 		fitSize.right += painter->getStringWidth (0, title, true);
 		setViewSize (fitSize);
+		setMouseableArea (fitSize);
 		return true;
 	}
 	return false;

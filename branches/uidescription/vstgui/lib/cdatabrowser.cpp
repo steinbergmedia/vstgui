@@ -38,12 +38,16 @@
 #include "vstkeycode.h"
 #include "cframe.h"
 #include "controls/ctextedit.h"
+#include "ifocusdrawing.h"
 
 BEGIN_NAMESPACE_VSTGUI
 
 /// @cond ignore
 //-----------------------------------------------------------------------------------------------
 class CDataBrowserView : public CView
+#if VSTGUI_CGRAPHICSPATH_AVAILABLE
+						,public IFocusDrawing
+#endif
 //-----------------------------------------------------------------------------------------------
 {
 public:
@@ -62,6 +66,11 @@ public:
 	void invalidateRow (long row);
 
 	bool getCell (CPoint& where, long& row, long& column);
+
+#if VSTGUI_CGRAPHICSPATH_AVAILABLE
+	bool drawFocusOnTop ();
+	bool getFocusPath (CGraphicsPath& outPath);
+#endif
 protected:
 
 	IDataBrowser* db;
@@ -768,6 +777,29 @@ long CDataBrowserView::onKeyDown (VstKeyCode& keyCode)
 	}
 	return -1;
 }
+
+#if VSTGUI_CGRAPHICSPATH_AVAILABLE
+//-----------------------------------------------------------------------------------------------
+bool CDataBrowserView::drawFocusOnTop ()
+{
+	return true;
+}
+
+//-----------------------------------------------------------------------------------------------
+bool CDataBrowserView::getFocusPath (CGraphicsPath& outPath)
+{
+	if (browser->getSelectedRow () >= 0)
+	{
+		CRect r = getRowBounds (browser->getSelectedRow ());
+		outPath.addRect (r);
+		r.inset (0.6, 0.6);
+		outPath.addRect (r);
+	}
+	return true;
+}
+
+#endif
+
 /// @endcond
 
 END_NAMESPACE_VSTGUI

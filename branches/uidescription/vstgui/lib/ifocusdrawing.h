@@ -1,12 +1,12 @@
 //-----------------------------------------------------------------------------
 // VST Plug-Ins SDK
-// VSTGUI: Graphical User Interface Framework for VST plugins : 
+// VSTGUI: Graphical User Interface Framework not only for VST plugins : 
 //
 // Version 4.0
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
-// (c) 2008, Steinberg Media Technologies, All Rights Reserved
+// (c) 2009, Steinberg Media Technologies, All Rights Reserved
 //-----------------------------------------------------------------------------
 // Redistribution and use in source and binary forms, with or without modification,
 // are permitted provided that the following conditions are met:
@@ -32,41 +32,34 @@
 // OF THE POSSIBILITY OF SUCH DAMAGE.
 //-----------------------------------------------------------------------------
 
-#ifndef __ctextlabel__
-#define __ctextlabel__
+#ifndef __ifocusdrawing__
+#define __ifocusdrawing__
 
-#include "cparamdisplay.h"
+#include "cgraphicspath.h"
+
+#if VSTGUI_CGRAPHICSPATH_AVAILABLE
 
 BEGIN_NAMESPACE_VSTGUI
 
 //-----------------------------------------------------------------------------
-// CLabel Declaration
-//! @brief a text label
-/// @ingroup controls
+// IFocusDrawing Declaration
+//! @brief Custom focus drawing interface [new since 4.0]
+//!
+//! If focus drawing is enabled custom views can implement this interface to set a custom shape to be drawn if the view is the focus view.
+//! @sa CFrame
+//! @sa CControl
 //-----------------------------------------------------------------------------
-class CTextLabel : public CParamDisplay
+class IFocusDrawing
 {
 public:
-	CTextLabel (const CRect& size, const char* txt = 0, CBitmap* background = 0, const long style = 0);
-	CTextLabel (const CTextLabel& textLabel);
-	
-	//-----------------------------------------------------------------------------
-	/// @name CTextLabel Methods
-	//-----------------------------------------------------------------------------
-	//@{
-	virtual void setText (const char* txt);	///< set text
-	virtual const char* getText () const;	///< read only access to text
-	//@}
-	
-	virtual	void draw (CDrawContext* pContext);
-
-	CLASS_METHODS(CTextLabel, CParamDisplay)
-protected:
-	~CTextLabel ();
-	void freeText ();
-	char* text;
+	/** draw focus before view will be drawn or afterwards */
+	virtual bool drawFocusOnTop () = 0;
+	/** the graphics path will be drawn filled with the evenodd method and the color set in CFrame::setFocusColor() */
+	virtual bool getFocusPath (CGraphicsPath& outPath) = 0;
 };
 
 END_NAMESPACE_VSTGUI
+
+#endif // VSTGUI_CGRAPHICSPATH_AVAILABLE
 
 #endif

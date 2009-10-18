@@ -37,7 +37,7 @@
 
 #if VSTGUI_LIVE_EDITING
 
-#include "../vstgui.h"
+#include "../lib/cframe.h"
 #include "platformsupport.h"
 #include <string>
 

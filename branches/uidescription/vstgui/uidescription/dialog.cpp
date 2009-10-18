@@ -37,6 +37,8 @@
 #include "dialog.h"
 #include "../lib/vstkeycode.h"
 #include "../lib/cfont.h"
+#include "../lib/cdrawcontext.h"
+#include "../lib/controls/cbuttons.h"
 
 BEGIN_NAMESPACE_VSTGUI
 
@@ -67,13 +69,6 @@ public:
 		context->setFillColor (value > 0.5 ? kGreyCColor : kWhiteCColor);
 		context->setFrameColor (kBlackCColor);
 		context->drawRect (size, kDrawFilledAndStroked);
-		if (getFrame ()->getFocusView () == this)
-		{
-			CRect r (size);
-			r.inset (1, 1);
-			context->setFrameColor (MakeCColor (255, 100, 100, 255));
-			context->drawRect (r, kDrawStroked);
-		}
 		context->setFont (kSystemFont);
 		context->setFontColor (kBlackCColor);
 		context->drawStringUTF8 (title.c_str (), size);
@@ -119,10 +114,8 @@ Dialog::Dialog (const CPoint& position, CView* rootView, long style, const char*
 	const CCoord kControlHeight = 22;
 	CRect size (rootView->getViewSize ());
 	size.offset (-size.left, -size.top);
-	size.offset (kMargin, kMargin);
 	rootView->setViewSize (size);
 	rootView->setMouseableArea (size);
-	size.offset (-kMargin, -kMargin);
 	size.bottom += kMargin*3+kControlHeight;
 	size.right += kMargin*2;
 	size.offset (position.x, position.y);
@@ -137,6 +130,9 @@ Dialog::Dialog (const CPoint& position, CView* rootView, long style, const char*
 		#endif
 		frame = new CFrame (size, platformWindow->getPlatformHandle (), this);
 		frame->setKeyboardHook (this);
+		frame->setFocusDrawingEnabled (true);
+		frame->setFocusColor (MakeCColor (100, 100, 255, 200));
+		frame->setFocusWidth (1.2);
 		CViewContainer* rootContainer = dynamic_cast<CViewContainer*> (rootView);
 		if (rootContainer)
 		{
