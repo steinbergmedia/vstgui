@@ -1,7 +1,7 @@
 //-----------------------------------------------------------------------------
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 //
-// Version 3.5       $Date: 2006-11-19 11:50:27 $
+// Version 3.5       $Date: 2009-10-21 18:05:43 $
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
@@ -32,7 +32,7 @@
 //-----------------------------------------------------------------------------
 
 #include "TutorialVST2Effect.h"
-#include "../../aeffguieditor.h"
+#include "../../lib/aeffguieditor.h"
 
 //------------------------------------------------------------------------------------
 AudioEffect* createEffectInstance (audioMasterCallback audioMaster)

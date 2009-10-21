@@ -1,7 +1,7 @@
 //-----------------------------------------------------------------------------
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 //
-// Version 3.5       $Date: 2006-11-19 11:50:26 $
+// Version 3.5       $Date: 2009-10-21 18:05:43 $
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
@@ -34,7 +34,7 @@
 #ifndef __TutorialEditor__
 #define __TutorialEditor__
 
-#include "../../aeffguieditor.h"
+#include "../../lib/aeffguieditor.h"
 #include "TutorialParameters.h"
 
 class TutorialEditor : public AEffGUIEditor, public CControlListener

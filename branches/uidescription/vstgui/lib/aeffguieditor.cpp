@@ -116,16 +116,6 @@ void AEffGUIEditor::draw (ERect* ppErect)
 //-----------------------------------------------------------------------------
 long AEffGUIEditor::mouse (long x, long y)
 {
-	#if VSTGUI_ENABLE_DEPRECATED_METHODS
-	if (frame)
-	{
-		CDrawContext* context = frame->createDrawContext();
-		CPoint where (x, y);
-		frame->mouse (context, where);
-		context->forget ();
-		return 1;
-	}
-	#endif	// #if VSTGUI_ENABLE_DEPRECATED_METHODS
 	return 0;
 }
 #endif
@@ -163,12 +153,10 @@ bool AEffGUIEditor::onWheel (float distance)
 	#if VSTGUI_ENABLE_DEPRECATED_METHODS
 	if (frame)
 	{
-		CDrawContext* context = frame->createDrawContext ();
 		CPoint where;
-		context->getMouseLocation (where);
-		long buttons = context->getMouseButtons ();
+		frame->getCurrentMouseLocation (where);
+		long buttons = frame->getCurrentMouseButtons ();
 		bool result = frame->onWheel (where, distance, buttons);
-		context->forget ();
 		return result;
 	}
 	#endif	

@@ -1,3 +1,7 @@
+2009-10-21 arne
+
+	* fix tutorial project (mac only for now) to work with vstgui 4.0
+	
 2009-10-18 arne
 
 	* added focus drawing support, see IFocusDrawing and CFrame::setFocusDrawingEnabled()

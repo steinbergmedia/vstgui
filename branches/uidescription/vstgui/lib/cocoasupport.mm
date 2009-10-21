@@ -1689,6 +1689,12 @@ GenerateUniqueVSTGUIClasses::~GenerateUniqueVSTGUIClasses ()
 #import <Cocoa/Cocoa.h>
 #import "cfileselector.h"
 #endif
+
+#if MAC_OS_X_VERSION_MAX_ALLOWED <= MAC_OS_X_VERSION_10_4
+#define NSUInteger unsigned
+#endif
+
+BEGIN_NAMESPACE_VSTGUI
 //------------------------------------------------------------------------------------
 //------------------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
@@ -1882,6 +1888,8 @@ bool CocoaFileSelector::runModalInternal ()
 {
 	return runInternal (0);
 }
+
+END_NAMESPACE_VSTGUI
 
 #if MAC_COCOA
 //-----------------------------------------------------------------------------

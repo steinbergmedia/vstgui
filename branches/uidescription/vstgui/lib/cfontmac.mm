@@ -305,36 +305,35 @@ CCoord ATSUFont::getStringWidth (CDrawContext* context, const char* utf8String, 
 		CFStringRef utf8Str = CFStringCreateWithCString (NULL, utf8String, kCFStringEncodingUTF8);
 		if (utf8Str)
 		{
-				OSStatus status;
-				CFIndex stringLength = CFStringGetLength (utf8Str);
-				UniChar* textBuffer = (UniChar*)malloc (stringLength*sizeof (UniChar));
-				CFStringGetCharacters (utf8Str, CFRangeMake (0, stringLength), textBuffer);
+			OSStatus status;
+			CFIndex stringLength = CFStringGetLength (utf8Str);
+			UniChar* textBuffer = (UniChar*)malloc (stringLength*sizeof (UniChar));
+			CFStringGetCharacters (utf8Str, CFRangeMake (0, stringLength), textBuffer);
 
-				ATSUTextLayout textLayout;
-				status = ATSUCreateTextLayout (&textLayout);
-				status = ATSUSetTextPointerLocation (textLayout, textBuffer, kATSUFromTextBeginning, kATSUToTextEnd, stringLength);
-				status = ATSUSetRunStyle (textLayout, atsuStyle, kATSUFromTextBeginning, kATSUToTextEnd);
-				status = ATSUSetTransientFontMatching (textLayout, true);
-				
-				CGContextRef cgContext = context ? context->beginCGContext (false) : 0;
-				if (cgContext)
-				{
-					ATSUAttributeTag		theTags[]	= { kATSUCGContextTag };
-					ByteCount				theSizes[]	= { sizeof (CGContextRef) };
-					ATSUAttributeValuePtr	theValues[]	= { &cgContext };
-					status = ATSUSetLayoutControls (textLayout, 1, theTags, theSizes, theValues);
-				}
-
-				ATSUTextMeasurement iBefore, iAfter, ascent, descent; 
-				status = ATSUGetUnjustifiedBounds (textLayout, 0, kATSUToTextEnd, &iBefore, &iAfter, &ascent, &descent);
-				result = Fix2X (iAfter);
-				
-				ATSUDisposeTextLayout (textLayout);
-				free (textBuffer);
-
-				if (context)
-					context->releaseCGContext (cgContext);
+			ATSUTextLayout textLayout;
+			status = ATSUCreateTextLayout (&textLayout);
+			status = ATSUSetTextPointerLocation (textLayout, textBuffer, kATSUFromTextBeginning, kATSUToTextEnd, stringLength);
+			status = ATSUSetRunStyle (textLayout, atsuStyle, kATSUFromTextBeginning, kATSUToTextEnd);
+			status = ATSUSetTransientFontMatching (textLayout, true);
+			
+			CGContextRef cgContext = context ? context->beginCGContext (false) : 0;
+			if (cgContext)
+			{
+				ATSUAttributeTag		theTags[]	= { kATSUCGContextTag };
+				ByteCount				theSizes[]	= { sizeof (CGContextRef) };
+				ATSUAttributeValuePtr	theValues[]	= { &cgContext };
+				status = ATSUSetLayoutControls (textLayout, 1, theTags, theSizes, theValues);
 			}
+
+			ATSUTextMeasurement iBefore, iAfter, ascent, descent; 
+			status = ATSUGetUnjustifiedBounds (textLayout, 0, kATSUToTextEnd, &iBefore, &iAfter, &ascent, &descent);
+			result = Fix2X (iAfter);
+			
+			ATSUDisposeTextLayout (textLayout);
+			free (textBuffer);
+
+			if (context)
+				context->releaseCGContext (cgContext);
 			CFRelease (utf8Str);
 		}
 	}
