@@ -1732,8 +1732,7 @@ CBitmap* CEditFrame::createBitmapFromSelection (CSelection* selection)
 {
 	CRect viewSize = selection->getBounds ();
 	CBitmap* bitmap = new CBitmap (viewSize.getWidth (), viewSize.getHeight ());
-	CDrawContext* drawContext = createDrawContext ();
-	COffscreenContext context (drawContext, bitmap, true);
+	COffscreenContext context (bitmap);
 	context.offset.x = -viewSize.left;
 	context.offset.y = -viewSize.top;
 
@@ -1757,8 +1756,6 @@ CBitmap* CEditFrame::createBitmapFromSelection (CSelection* selection)
 
 	CFrame::drawRect (&context, viewSize);
 
-	drawContext->forget ();
-	
 	return bitmap;
 }
 

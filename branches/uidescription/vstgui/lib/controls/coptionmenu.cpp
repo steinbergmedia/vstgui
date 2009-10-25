@@ -429,34 +429,19 @@ bool COptionMenu::popup ()
 	lastResult = -1;
 	lastMenu = 0;
 
-#if MAC || WINDOWS
-	// calculate Screen Position
-	#if WINDOWS
-	HWND hwnd = (HWND)getFrame ()->getSystemWindow ();
-
-	#endif
-
-	CRect rect;
-	#if WINDOWS
-	RECT rctWinParent;
-	GetWindowRect (hwnd, &rctWinParent);
-	rect.left = (CCoord)rctWinParent.left;
-	rect.top  = (CCoord)rctWinParent.top;
-	#endif
-	CView* parent = getParentView ();
-	while (parent)
-	{
-		if (parent->notify (this, kMsgCheckIfViewContainer) == kMessageNotified)
-		{
-			CRect vSize;
-			parent->getViewSize (vSize);
-			rect.offset (vSize.left, vSize.top);
-		}
-		parent = parent->getParentView ();
-	}
-#endif
+	// calculate offset for CViewContainers
+	CRect rect (size);
+	CPoint p (0, 0);
+	localToFrame (p);
+	rect.offset (p.x, p.y);
 	
 #if WINDOWS
+	HWND hwnd = (HWND)getFrame ()->getSystemWindow ();
+	RECT rctWinParent;
+	GetWindowRect (hwnd, &rctWinParent);
+	rect.left += (CCoord)rctWinParent.left;
+	rect.top  += (CCoord)rctWinParent.top;
+
 	MSG msg;
 	long result = -1;
 

@@ -309,8 +309,6 @@ bool CViewContainer::addView (CView* pView)
 	{
 		pView->attached (this);
 		pView->invalid ();
-		if (getFrame ())
-			getFrame ()->onViewAdded (pView);
 	}
 	return true;
 }
@@ -359,8 +357,6 @@ bool CViewContainer::addView (CView *pView, CView* pBefore)
 	{
 		pView->attached (this);
 		pView->invalid ();
-		if (getFrame ())
-			getFrame ()->onViewAdded (pView);
 	}
 	return true;
 }
@@ -401,8 +397,6 @@ bool CViewContainer::removeAll (const bool &withForget)
 		CCView* pNext = pV->pNext;
 		if (pV->pView)
 		{
-			if (pParentFrame)
-				pParentFrame->onViewRemoved (pV->pView);
 			if (isAttached ())
 				pV->pView->removed (this);
 			if (withForget)
@@ -440,8 +434,6 @@ bool CViewContainer::removeView (CView *pView, const bool &withForget)
 			if (pV->pView)
 			{
 				pV->pView->invalid ();
-				if (pParentFrame)
-					pParentFrame->onViewRemoved (pView);
 				if (isAttached ())
 					pV->pView->removed (this);
 				if (withForget)

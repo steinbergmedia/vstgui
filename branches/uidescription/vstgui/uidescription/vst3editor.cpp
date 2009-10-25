@@ -44,15 +44,6 @@
 #include <list>
 #include <sstream>
 
-#if MAC && VSTGUI_NEW_BUNDLE_REF_DEFINITION
-extern CFBundleRef ghInst;
-//------------------------------------------------------------------------
-CFBundleRef VSTGUI::getBundleRef ()
-{
-	return ghInst;
-}
-#endif
-
 namespace Steinberg {
 
 //-----------------------------------------------------------------------------

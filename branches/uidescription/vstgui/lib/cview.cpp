@@ -218,6 +218,8 @@ bool CView::attached (CView* parent)
 	pParentView = parent;
 	pParentFrame = parent->getFrame ();
 	bIsAttached = true;
+	if (pParentFrame)
+		pParentFrame->onViewAdded (this);
 	return true;
 }
 
@@ -230,6 +232,8 @@ bool CView::removed (CView* parent)
 {
 	if (!isAttached ())
 		return false;
+	if (pParentFrame)
+		pParentFrame->onViewRemoved (this);
 	pParentView = 0;
 	pParentFrame = 0;
 	bIsAttached = false;

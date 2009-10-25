@@ -148,6 +148,44 @@ COffscreenContext::COffscreenContext (CDrawContext* pContext, CBitmap* pBitmapBg
 }
 
 //-----------------------------------------------------------------------------
+COffscreenContext::COffscreenContext (CBitmap* inBitmap)
+: CDrawContext (0, 0, 0)
+, pBitmap (0)
+, pBitmapBg (inBitmap)
+, width (inBitmap->getWidth ())
+, height (inBitmap->getHeight ())
+, bDrawInBitmap (true)
+, bDestroyPixmap (false)
+, backgroundColor (kTransparentCColor)
+{
+	clipRect (0, 0, (CCoord)width, (CCoord)height);
+	
+#if VSTGUI_USES_COREGRAPHICS
+	offscreenBitmap = pBitmapBg->getHandle ();
+	if (offscreenBitmap != 0)
+	{
+		gCGContext = createOffscreenBitmap (width, height, &offscreenBitmap);
+	}
+	else
+	{
+		#if DEBUG
+		DebugPrint ("Drawing into a loaded Bitmap not supported. Please use the CBitmap (widht, height) constructor if you want to draw into it.\n");
+		#endif
+	}
+
+#else
+	#if GDIPLUS
+	pGraphics = new Gdiplus::Graphics (pBitmapBg->getBitmap ());
+	pGraphics->SetInterpolationMode (Gdiplus::InterpolationModeLowQuality);
+	pGraphics->SetPageUnit(Gdiplus::UnitPixel);
+	#else
+	// TODO: Windows GDI implementation
+	#endif
+#endif
+
+}
+
+//-----------------------------------------------------------------------------
 COffscreenContext::COffscreenContext (CFrame* pFrame, long width, long height, const CColor backgroundColor)
 : CDrawContext (pFrame, NULL, NULL)
 , pBitmap (0)
@@ -240,6 +278,12 @@ COffscreenContext::~COffscreenContext ()
 		free (offscreenBitmap);
         
 #endif
+}
+
+//-----------------------------------------------------------------------------
+void COffscreenContext::resetClipRect ()
+{
+	setClipRect (CRect (0, 0, width, height));
 }
 
 //-----------------------------------------------------------------------------
@@ -347,7 +391,7 @@ CGImageRef COffscreenContext::getCGImage () const
 //-----------------------------------------------------------------------------
 void COffscreenContext::releaseCGContext (CGContextRef context)
 {
-	if (bDrawInBitmap)
+	if (bDrawInBitmap && pBitmapBg)
 		pBitmapBg->setBitsDirty ();
 	CDrawContext::releaseCGContext (context);
 }

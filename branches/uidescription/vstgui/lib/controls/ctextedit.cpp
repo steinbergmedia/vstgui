@@ -37,6 +37,7 @@
 
 #if WINDOWS
 	#include "../win32support.h"
+	#include "../coffscreencontext.h"
 #endif
 
 #if MAC_COCOA
@@ -148,9 +149,7 @@ void CTextEdit::draw (CDrawContext *pContext)
 		#if MAC_CARBON
 		HIViewSetNeedsDisplay ((HIViewRef)platformControl, true);
 		#endif
-		#if MAC_COCOA
 		drawBack (pContext);
-		#endif
 		setDirty (false);
 		return;
 	}
@@ -268,6 +267,15 @@ LONG_PTR WINAPI WindowProcEdit (HWND hwnd, UINT message, WPARAM wParam, LPARAM l
 					textEdit->bWasReturnPressed = true;
 					if (textEdit->getFrame ())
 						textEdit->getFrame ()->setFocusView (0);
+				}
+			}
+			else if (wParam == VK_TAB)
+			{
+				CTextEdit *textEdit = (CTextEdit*)(LONG_PTR) GetWindowLongPtr (hwnd, GWLP_USERDATA);
+				if (textEdit)
+				{
+					if (textEdit->getFrame ())
+						textEdit->getFrame ()->advanceNextFocusView (textEdit, GetKeyState (VK_SHIFT) < 0 ? true : false);
 				}
 			}
 		} break;
@@ -463,27 +471,11 @@ void CTextEdit::takeFocus ()
 
 	bWasReturnPressed = false;
 
-#if WINDOWS || MAC
 	// calculate offset for CViewContainers
 	CRect rect (size);
-	#if WINDOWS
-	RECT rctWinParent;
-	GetWindowRect (hwnd, &rctWinParent);
-	rect.left = (CCoord)rctWinParent.left;
-	rect.top  = (CCoord)rctWinParent.top;
-	#endif
-	CView* parent = getParentView ();
-	CRect vSize;
-	while (parent)
-	{
-		if (parent->notify (this, kMsgCheckIfViewContainer) == kMessageNotified)
-		{
-			parent->getViewSize (vSize);
-			rect.offset (vSize.left, vSize.top);
-		}
-		parent = parent->getParentView ();
-	}
-#endif
+	CPoint p (0, 0);
+	localToFrame (p);
+	rect.offset (p.x, p.y);
 
 #if WINDOWS
 	int wstyle = 0;
@@ -494,20 +486,30 @@ void CTextEdit::takeFocus ()
 	else
 		wstyle |= ES_CENTER;
 
-	UTF8StringHelper stringHelper (text);
-
-	wstyle |= WS_CHILD | WS_VISIBLE | ES_AUTOHSCROLL;
-	platformControl = (void*)CreateWindowEx (0,
-		TEXT("EDIT"), stringHelper, wstyle,
-		(int)rect.left, (int)rect.top, (int)rect.width () + 1, (int)rect.height () + 1,
-		(HWND)getFrame ()->getSystemWindow (), NULL, GetInstance (), 0);
+	CPoint textInset = getTextInset ();
+	rect.offset (textInset.x, textInset.y);
+	rect.right -= textInset.x*2;
+	rect.bottom -= textInset.y*2;
 
 	// get/set the current font
 	LOGFONT logfont = {0};
 
 	CCoord fontH = fontID->getSize ();
-	if (fontH > rect.height () - 2)
-		fontH = rect.height () - 2;
+	if (fontH > rect.height ())
+		fontH = rect.height () - 3;
+	if (fontH < rect.height ())
+	{
+		CCoord adjust = (rect.height () - (fontH + 3)) / (CCoord)2;
+		rect.top += adjust;
+		rect.bottom -= adjust;
+	}
+	UTF8StringHelper stringHelper (text);
+
+	wstyle |= WS_CHILD | WS_VISIBLE | ES_AUTOHSCROLL;
+	platformControl = (void*)CreateWindowEx (WS_EX_TRANSPARENT,
+		TEXT("EDIT"), stringHelper, wstyle,
+		(int)rect.left, (int)rect.top, (int)rect.width (), (int)rect.height (),
+		(HWND)getFrame ()->getSystemWindow (), NULL, GetInstance (), 0);
 
 	logfont.lfWeight = FW_NORMAL;
 	logfont.lfHeight = (LONG)-fontH;

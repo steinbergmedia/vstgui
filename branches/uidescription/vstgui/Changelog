@@ -1,3 +1,10 @@
+2009-10-25 arne
+
+	* make text edit transparent on windows
+	* add focus navigation to windows text edit control
+	* fix cocoa option menu opening at wrong position sometimes
+	* add new COffscreenContext constructor which doesn't need a CDrawContext for drawing into a bitmap
+	
 2009-10-21 arne
 
 	* fix tutorial project (mac only for now) to work with vstgui 4.0

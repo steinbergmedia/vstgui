@@ -1367,10 +1367,10 @@ void CFrame::onViewRemoved (CView* pView)
 {
 	if (pMouseOverView == pView)
 		pMouseOverView = 0;
-	if (pFocusView == pView)
-		setFocusView (0);
 	if (pActiveFocusView == pView)
 		pActiveFocusView = 0;
+	if (pFocusView == pView)
+		setFocusView (0);
 	if (pView->isTypeOf ("CViewContainer"))
 	{
 		CViewContainer* container = (CViewContainer*)pView;
@@ -2246,14 +2246,8 @@ LONG_PTR WINAPI WindowProc (HWND hwnd, UINT message, WPARAM wParam, LPARAM lPara
 			{
 				CColor fontColor = textEdit->getFontColor ();
 				SetTextColor ((HDC) wParam, RGB (fontColor.red, fontColor.green, fontColor.blue));
-
-				CColor backColor = textEdit->getBackColor ();
-				SetBkColor ((HDC) wParam, RGB (backColor.red, backColor.green, backColor.blue));
-
-				if (textEdit->platformFontColor)
-					DeleteObject (textEdit->platformFontColor);
-				textEdit->platformFontColor = CreateSolidBrush (RGB (backColor.red, backColor.green, backColor.blue));
-				return (LRESULT)(textEdit->platformFontColor);
+				SetBkMode ((HDC)wParam, TRANSPARENT);
+				return (LRESULT) ::GetStockObject (NULL_BRUSH);
 			}
 		}
 	}

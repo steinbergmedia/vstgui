@@ -377,13 +377,20 @@ HIDDEN long showNSContextMenu (COptionMenu* menu, COptionMenu** usedMenu)
 	if (!multipleCheck && menu->getStyle () & kCheckStyle)
 		[[nsMenu itemWithTag:(NSInteger)menu->getValue ()] setState:NSOnState];
 
+	NSView* cellContainer = [[NSView alloc] initWithFrame:cellFrameRect];
+	[view addSubview:cellContainer];
+	cellFrameRect.origin.x = 0;
+	cellFrameRect.origin.y = 0;
+
 	NSPopUpButtonCell* cell = [[NSPopUpButtonCell alloc] initTextCell:@"" pullsDown:menu->getStyle () & kPopupStyle ? NO : YES];
 	[cell setAltersStateOfSelectedItem: NO];
 	[cell setAutoenablesItems:NO];
 	[cell setMenu:nsMenu];
 	if (menu->getStyle () & kPopupStyle)
 		[cell selectItemWithTag:(NSInteger)menu->getValue ()];
-	[cell performClickWithFrame:cellFrameRect inView:view];
+	[cell performClickWithFrame:cellFrameRect inView:cellContainer];
+	[cellContainer removeFromSuperviewWithoutNeedingDisplay];
+	[cellContainer release];
 	*usedMenu = (COptionMenu*)[nsMenu performSelector:@selector(selectedMenu)];
 	return (long)[nsMenu performSelector:@selector(selectedItem)];
 }

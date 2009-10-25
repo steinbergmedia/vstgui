@@ -144,7 +144,7 @@ public:
 	//@{
 	void   setClipRect (const CRect &clip);																			///< set the current clip
 	CRect &getClipRect (CRect &clip) const { clip = clipRect; clip.offset (-offset.h, -offset.v); return clip; }	///< get the current clip
-	void   resetClipRect ();																						///< reset the clip to the default state
+	virtual void resetClipRect ();																					///< reset the clip to the default state
 	//@}
 
 	//-----------------------------------------------------------------------------

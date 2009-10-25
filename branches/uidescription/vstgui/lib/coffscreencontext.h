@@ -47,6 +47,7 @@ class CBitmap;
 class COffscreenContext : public CDrawContext
 {
 public:
+	COffscreenContext (CBitmap* pBitmap);
 	COffscreenContext (CDrawContext *pContext, CBitmap *pBitmap, bool drawInBitmap = false);
 	COffscreenContext (CFrame *pFrame, long width, long height, const CColor backgroundColor = kBlackCColor);
 	~COffscreenContext ();
@@ -62,6 +63,8 @@ public:
 	inline CCoord getHeight () const { return height; }
 	//@}
 
+	void resetClipRect ();
+	
 	//-------------------------------------------
 	CLASS_METHODS_NOCOPY(COffscreenContext, CDrawContext)
 protected:
