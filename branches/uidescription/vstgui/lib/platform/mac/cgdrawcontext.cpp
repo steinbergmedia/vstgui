@@ -5,6 +5,13 @@
 #include "macglobals.h"
 #include "cgbitmap.h"
 
+#if VSTGUI_USES_COREGRAPHICS
+	#ifndef CGFLOAT_DEFINED
+		#define CGFLOAT_DEFINED
+		typedef float CGFloat;
+	#endif // CGFLOAT_DEFINED
+#endif // VSTGUI_USES_COREGRAPHICS
+
 BEGIN_NAMESPACE_VSTGUI
 
 static inline double radians (double degrees) { return degrees * M_PI / 180; }
@@ -330,17 +337,17 @@ void CGDrawContext::drawBitmap (CBitmap* bitmap, const CRect& rect, const CPoint
 
 			CGRect dest;
 			dest.origin.x = rect.left - offset.h;
-			dest.origin.y = (rect.top) * -1 - (surfaceRect.getHeight () - offset.v);
+			dest.origin.y = (-rect.top) - (bitmap->getHeight () - offset.v);
 			dest.size.width = cgBitmap->getSize ().x;
 			dest.size.height = cgBitmap->getSize ().y;
 			
 			CRect ccr (currentState.clipRect);
-			CGRect cgClipRect = CGRectMake (ccr.left, (ccr.top) * -1 - ccr.height (), ccr.width (), ccr.height ());
+			CGRect cgClipRect = CGRectMake (ccr.left, (-ccr.top) - ccr.height (), ccr.width (), ccr.height ());
 			CGContextClipToRect (context, cgClipRect);
 
 			CGRect clipRect2;
 			clipRect2.origin.x = rect.left;
-			clipRect2.origin.y = (rect.top) * -1  - rect.height ();
+			clipRect2.origin.y = (-rect.top) - rect.height ();
 			clipRect2.size.width = rect.width (); 
 			clipRect2.size.height = rect.height ();
 		

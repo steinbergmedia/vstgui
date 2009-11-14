@@ -50,6 +50,10 @@
 static struct tagMSG windowsMessage;
 #endif
 
+#if MAC
+#include <Carbon/Carbon.h>
+#endif
+
 //-----------------------------------------------------------------------------
 // AEffGUIEditor Implementation
 //-----------------------------------------------------------------------------

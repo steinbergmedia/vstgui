@@ -1,10 +1,17 @@
 
 #include "hiviewoptionmenu.h"
+
+#if MAC_CARBON && VSTGUI_PLATFORM_ABSTRACTION
+
 #include "../../../controls/coptionmenu.h"
 #include "../../../cframe.h"
 #include "../cgbitmap.h"
 
 namespace VSTGUI {
+
+#if MAC_OS_X_VERSION_MAX_ALLOWED <= MAC_OS_X_VERSION_10_4
+typedef UInt32 URefCon;
+#endif
 
 //-----------------------------------------------------------------------------
 PlatformOptionMenuResult HIViewOptionMenu::popup (COptionMenu* optionMenu)
@@ -159,3 +166,5 @@ MenuRef HIViewOptionMenu::createMenu (COptionMenu* menu)
 }
 
 } // namespace
+
+#endif // MAC_CARBON && VSTGUI_PLATFORM_ABSTRACTION

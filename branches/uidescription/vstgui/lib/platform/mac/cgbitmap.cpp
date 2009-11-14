@@ -78,7 +78,7 @@ static CFStringRef kCGImageSourceShouldPreferRGB32 = CFSTR("kCGImageSourceShould
 //-----------------------------------------------------------------------------
 bool CGBitmap::loadFromUrl (CFURLRef url)
 {
-	CGImageSourceRef imageSource = CGImageSourceCreateWithURL (url, NULL);
+	imageSource = CGImageSourceCreateWithURL (url, NULL);
 	if (imageSource)
 	{
 		CFDictionaryRef properties = CGImageSourceCopyPropertiesAtIndex (imageSource, 0, 0);
@@ -87,15 +87,15 @@ bool CGBitmap::loadFromUrl (CFURLRef url)
 		CFNumberRef value = (CFNumberRef)CFDictionaryGetValue (properties, kCGImagePropertyPixelHeight);
 		if (value)
 		{
-			CGFloat fValue = 0;
-			if (CFNumberGetValue (value, kCFNumberCGFloatType, &fValue))
+			double fValue = 0;
+			if (CFNumberGetValue (value, kCFNumberDoubleType, &fValue))
 				size.y = fValue;
 		}
 		value = (CFNumberRef)CFDictionaryGetValue (properties, kCGImagePropertyPixelWidth);
 		if (value)
 		{
-			CGFloat fValue = 0;
-			if (CFNumberGetValue (value, kCFNumberCGFloatType, &fValue))
+			double fValue = 0;
+			if (CFNumberGetValue (value, kCFNumberDoubleType, &fValue))
 				size.x = fValue;
 		}
 		CFRelease (properties);
