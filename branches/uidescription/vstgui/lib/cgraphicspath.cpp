@@ -84,7 +84,7 @@ static void releaseCGContext (CDrawContext* drawContext, CGContextRef cgContext)
 }
 
 //-----------------------------------------------------------------------------
-#define radians(degrees) (degrees * M_PI / 180.)
+#define ___radians(degrees) (degrees * M_PI / 180.)
 
 //-----------------------------------------------------------------------------
 class CGGradient : public CGradient
@@ -129,7 +129,7 @@ static CGAffineTransform createCGAfflineTransform (const CGraphicsTransformation
 {
 	CGAffineTransform transform = CGAffineTransformMakeTranslation (transformation.offset.x, transformation.offset.y);
 	transform = CGAffineTransformScale (transform, transformation.scaleX, transformation.scaleY);
-	transform = CGAffineTransformRotate (transform, radians (transformation.rotation));
+	transform = CGAffineTransformRotate (transform, ___radians (transformation.rotation));
 	return transform;
 }
 
@@ -346,9 +346,9 @@ void CGraphicsPath::addArc (const CRect& rect, double startAngle, double endAngl
 	CGAffineTransform transform = CGAffineTransformMakeTranslation (centerX, centerY);
 	transform = CGAffineTransformScale (transform, rect.getWidth () / 2, rect.getHeight () / 2);
 	
-	CGPathMoveToPoint (*platformPath, &transform, cos (radians (startAngle)), sin (radians (startAngle)));
+	CGPathMoveToPoint (*platformPath, &transform, cos (___radians (startAngle)), sin (___radians (startAngle)));
 
-	CGPathAddArc (*platformPath, &transform, 0, 0, 1, radians (startAngle), radians (endAngle), false);
+	CGPathAddArc (*platformPath, &transform, 0, 0, 1, ___radians (startAngle), ___radians (endAngle), false);
 
 	#elif GDIPLUS
 	if (endAngle < startAngle)

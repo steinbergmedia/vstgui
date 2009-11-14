@@ -5,7 +5,7 @@
 
 #import "cocoahelpers.h"
 #import "autoreleasepool.h"
-#import "../../../cfontmac.h"
+#import "../cfontmac.h"
 #import "../../../vstkeycode.h"
 
 USING_NAMESPACE_VSTGUI
