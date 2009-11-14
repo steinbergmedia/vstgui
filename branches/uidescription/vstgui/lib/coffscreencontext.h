@@ -37,6 +37,50 @@
 
 #include "cdrawcontext.h"
 
+#if VSTGUI_PLATFORM_ABSTRACTION
+
+#include "cbitmap.h"
+
+BEGIN_NAMESPACE_VSTGUI
+class CFrame;
+
+//-----------------------------------------------------------------------------
+// COffscreenContext Declaration
+//! @brief A drawing device which uses a pixmap as its drawing surface
+//-----------------------------------------------------------------------------
+class COffscreenContext : public CDrawContext
+{
+public:
+	static COffscreenContext* create (CFrame* frame, CCoord width, CCoord height);
+
+	//-----------------------------------------------------------------------------
+	/// @name COffscreenContext Methods
+	//-----------------------------------------------------------------------------
+	//@{
+	void copyFrom (CDrawContext *pContext, CRect destRect, CPoint srcOffset = CPoint (0, 0));	///< copy from offscreen to pContext
+
+	inline CCoord getWidth () const { return bitmap ? bitmap->getWidth () : 0; }
+	inline CCoord getHeight () const { return bitmap ? bitmap->getHeight () : 0; }
+	//@}
+
+	CBitmap* getBitmap () const { return bitmap; }
+
+protected:
+	COffscreenContext (CBitmap* bitmap);
+	COffscreenContext (const CRect& surfaceRect);
+	~COffscreenContext ();
+
+	CBitmap* bitmap;
+};
+
+END_NAMESPACE_VSTGUI
+
+#else // VSTGUI_PLATFORM_ABSTRACTION
+
+#if VSTGUI_USES_COREGRAPHICS
+#include <ApplicationServices/ApplicationServices.h>
+#endif
+
 BEGIN_NAMESPACE_VSTGUI
 class CBitmap;
 
@@ -91,4 +135,6 @@ protected:
 
 END_NAMESPACE_VSTGUI
 
-#endif
+#endif // VSTGUI_PLATFORM_ABSTRACTION
+
+#endif // __coffscreencontext__

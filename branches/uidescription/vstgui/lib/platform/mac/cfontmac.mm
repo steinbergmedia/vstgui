@@ -37,7 +37,9 @@
 
 #if MAC
 
-BEGIN_NAMESPACE_VSTGUI
+#include "cgdrawcontext.h"
+
+namespace VSTGUI {
 
 //-----------------------------------------------------------------------------
 CPlatformFont* CPlatformFont::create (const char* name, const CCoord& size, const long& style)
@@ -153,7 +155,12 @@ void CoreTextFont::drawString (CDrawContext* context, const char* utf8String, co
 			CTLineRef line = CTLineCreateWithAttributedString (attrStr);
 			if (line)
 			{
+				#if VSTGUI_PLATFORM_ABSTRACTION
+				CGDrawContext* cgDrawContext = dynamic_cast<CGDrawContext*> (context);
+				CGContextRef cgContext = cgDrawContext ? cgDrawContext->beginCGContext (true) : 0;
+				#else
 				CGContextRef cgContext = context->beginCGContext (true);
+				#endif
 				if (cgContext)
 				{
 					CGContextSetShouldAntialias (cgContext, antialias);
@@ -171,7 +178,11 @@ void CoreTextFont::drawString (CDrawContext* context, const char* utf8String, co
 						CGContextAddLineToPoint (cgContext, cgPoint.x, point.y - underlineOffset);
 						CGContextDrawPath (cgContext, kCGPathStroke);
 					}
+					#if VSTGUI_PLATFORM_ABSTRACTION
+					cgDrawContext->releaseCGContext (cgContext);
+					#else
 					context->releaseCGContext (cgContext);
+					#endif
 				}
 				CFRelease (line);
 			}
@@ -342,6 +353,6 @@ CCoord ATSUFont::getStringWidth (CDrawContext* context, const char* utf8String, 
 
 #endif
 
-END_NAMESPACE_VSTGUI
+} // namespace
 
 #endif // MAC

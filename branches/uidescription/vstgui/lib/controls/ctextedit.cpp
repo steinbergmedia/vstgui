@@ -35,6 +35,9 @@
 #include "ctextedit.h"
 #include "../cframe.h"
 
+#if VSTGUI_PLATFORM_ABSTRACTION
+#else
+
 #if WINDOWS
 	#include "../win32support.h"
 	#include "../coffscreencontext.h"
@@ -47,6 +50,7 @@
 #if MAC_CARBON
 	#pragma GCC diagnostic ignored "-Wdeprecated-declarations" // we know that we use deprecated functions from Carbon, so we don't want to be warned
 #endif
+#endif // VSTGUI_PLATFORM_ABSTRACTION
 
 BEGIN_NAMESPACE_VSTGUI
 
@@ -71,9 +75,11 @@ A bitmap can be used as background.
 //------------------------------------------------------------------------
 CTextEdit::CTextEdit (const CRect& size, CControlListener* listener, long tag, const char *txt, CBitmap* background, const long style)
 : CParamDisplay (size, background, style)
-, platformFontColor (0)
 , platformControl (0)
+#if !VSTGUI_PLATFORM_ABSTRACTION
 , platformFont (0)
+, platformFontColor (0)
+#endif
 , editConvert (0)
 , editConvert2 (0)
 {
@@ -90,9 +96,11 @@ CTextEdit::CTextEdit (const CRect& size, CControlListener* listener, long tag, c
 //------------------------------------------------------------------------
 CTextEdit::CTextEdit (const CTextEdit& v)
 : CParamDisplay (v)
-, platformFontColor (0)
 , platformControl (0)
+#if !VSTGUI_PLATFORM_ABSTRACTION
 , platformFont (0)
+, platformFontColor (0)
+#endif
 , editConvert (v.editConvert)
 , editConvert2 (v.editConvert2)
 {
@@ -106,6 +114,37 @@ CTextEdit::~CTextEdit ()
 	listener = 0;
 	if (platformControl)
 		looseFocus ();
+}
+
+//------------------------------------------------------------------------
+void CTextEdit::setValue (float val)
+{
+	CParamDisplay::setValue (val);
+#if VSTGUI_PLATFORM_ABSTRACTION
+	if (platformControl)
+	{
+		char string[256];
+		string[0] = 0;
+
+		if (editConvert2)
+			editConvert2 (text, string, userData);
+		else if (editConvert)
+			editConvert (text, string);
+		else if (stringConvert2)
+		{
+			string[0] = 0;
+			stringConvert2 (value, string, userData);
+		}
+		else if (stringConvert)
+		{
+			string[0] = 0;
+			stringConvert (value, string);
+		}
+		else
+			sprintf (string, "%s", text);
+		platformControl->setText (string);
+	}
+#endif // VSTGUI_PLATFORM_ABSTRACTION
 }
 
 //------------------------------------------------------------------------
@@ -132,6 +171,10 @@ void CTextEdit::setText (const char *txt)
 			setDirty ();
 		}
 	}
+	#if VSTGUI_PLATFORM_ABSTRACTION
+	if (platformControl)
+		platformControl->setText (text);
+	#endif
 }
 
 //------------------------------------------------------------------------
@@ -146,7 +189,7 @@ void CTextEdit::draw (CDrawContext *pContext)
 {
 	if (platformControl)
 	{
-		#if MAC_CARBON
+		#if MAC_CARBON && !VSTGUI_PLATFORM_ABSTRACTION
 		HIViewSetNeedsDisplay ((HIViewRef)platformControl, true);
 		#endif
 		drawBack (pContext);
@@ -196,7 +239,6 @@ CMouseEventResult CTextEdit::onMouseDown (CPoint& where, const long& buttons)
 					return kMouseEventNotHandled;
 			}
 		
-			beginEdit();
 			takeFocus ();
 			return kMouseDownEventHandledButDontNeedMovedOrUpEvents;
 		}
@@ -212,6 +254,9 @@ long CTextEdit::onKeyDown (VstKeyCode& keyCode)
 		if (keyCode.virt == VKEY_ESCAPE)
 		{
 			bWasReturnPressed = false;
+		#if VSTGUI_PLATFORM_ABSTRACTION
+			platformControl->setText (text);
+		#endif
 			endEdit ();
 			looseFocus ();
 			return 1;
@@ -227,6 +272,42 @@ long CTextEdit::onKeyDown (VstKeyCode& keyCode)
 	return -1;
 }
 
+#if VSTGUI_PLATFORM_ABSTRACTION
+//------------------------------------------------------------------------
+CRect CTextEdit::platformGetSize () const
+{
+	CRect rect = getViewSize ();
+	CPoint p (0, 0);
+	localToFrame (p);
+	rect.offset (p.x, p.y);
+	return rect;
+}
+
+//------------------------------------------------------------------------
+CRect CTextEdit::platformGetVisibleSize () const
+{
+	CRect rect = getVisibleSize ();
+	CPoint p (0, 0);
+	localToFrame (p);
+	rect.offset (p.x, p.y);
+	return rect;
+}
+
+//------------------------------------------------------------------------
+void CTextEdit::platformLooseFocus (bool returnPressed)
+{
+	bWasReturnPressed = returnPressed;
+	endEdit ();
+	looseFocus ();
+}
+
+//------------------------------------------------------------------------
+bool CTextEdit::platformOnKeyDown (const VstKeyCode& key)
+{
+	return getFrame ()->onKeyDown (const_cast<VstKeyCode&> (key)) == 1;
+}
+
+#else
 //------------------------------------------------------------------------
 #if WINDOWS
 #define WIN32_LEAN_AND_MEAN 1
@@ -402,10 +483,14 @@ pascal OSStatus CarbonEventsTextControlProc (EventHandlerCallRef inHandlerCallRe
 	return result;
 }
 #endif
+#endif // !VSTGUI_PLATFORM_ABSTRACTION
 
 //------------------------------------------------------------------------
 void CTextEdit::parentSizeChanged ()
 {
+#if VSTGUI_PLATFORM_ABSTRACTION
+// TODO: platform abstraction
+#else
 	#if MAC_COCOA
 	if (getFrame () && getFrame ()->getNSView ())
 	{
@@ -432,11 +517,18 @@ void CTextEdit::parentSizeChanged ()
 		HIViewSetFrame ((HIViewRef)platformControl, &hiRect);
 	}
 	#endif
+#endif // VSTGUI_PLATFORM_ABSTRACTION
 }
 
 //------------------------------------------------------------------------
 void CTextEdit::setViewSize (CRect& newSize, bool invalid)
 {
+#if VSTGUI_PLATFORM_ABSTRACTION
+	CView::setViewSize (newSize, invalid);
+	if (platformControl)
+		platformControl->updateSize ();
+
+#else
 	#if MAC_COCOA
 	if (getFrame () && getFrame ()->getNSView ())
 	{
@@ -461,6 +553,7 @@ void CTextEdit::setViewSize (CRect& newSize, bool invalid)
 	}
 	#endif
 	CView::setViewSize (newSize, invalid);
+#endif // VSTGUI_PLATFORM_ABSTRACTION
 }
 
 //------------------------------------------------------------------------
@@ -476,6 +569,16 @@ void CTextEdit::takeFocus ()
 	CPoint p (0, 0);
 	localToFrame (p);
 	rect.offset (p.x, p.y);
+
+#if VSTGUI_PLATFORM_ABSTRACTION
+
+	platformControl = getFrame ()->getPlatformFrame ()->createPlatformTextEdit (this);
+	if (platformControl)
+		beginEdit ();
+	
+#else
+
+	beginEdit();
 
 #if WINDOWS
 	int wstyle = 0;
@@ -611,6 +714,8 @@ void CTextEdit::takeFocus ()
 	hiToolboxAllowFocusChange = oldState;
 
 #endif // MAC_CARBON
+
+#endif // VSTGUI_PLATFORM_ABSTRACTION
 }
 
 //------------------------------------------------------------------------
@@ -627,7 +732,13 @@ void CTextEdit::looseFocus ()
 
 	char oldText[256];
 	strcpy (oldText, text);
-	
+
+#if VSTGUI_PLATFORM_ABSTRACTION
+	platformControl->getText (text, 255);
+	platformControl->forget ();
+	platformControl = 0;
+#else
+
 #if WINDOWS
 	TCHAR newText[255];
 	GetWindowText ((HWND)platformControl, newText, 255);
@@ -690,6 +801,8 @@ void CTextEdit::looseFocus ()
 #endif // MAC_CARBON
 
 	platformControl = 0;
+
+#endif // VSTGUI_PLATFORM_ABSTRACTION
 
 	// update dependency
 	bool change = false;

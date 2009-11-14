@@ -36,6 +36,11 @@
 #define __coptionmenu__
 
 #include "cparamdisplay.h"
+#include <list>
+
+#if VSTGUI_PLATFORM_ABSTRACTION
+#include "../platform/iplatformoptionmenu.h"
+#endif
 
 BEGIN_NAMESPACE_VSTGUI
 
@@ -99,7 +104,17 @@ protected:
 	long tag;
 };
 
-class CMenuItemList;
+//-----------------------------------------------------------------------------
+class CMenuItemList : public std::list<CMenuItem*>
+{
+public:
+	CMenuItemList () {}
+	CMenuItemList (const CMenuItemList& inList) : std::list<CMenuItem*> (inList) {}
+};
+
+typedef std::list<CMenuItem*>::iterator CMenuItemIterator;
+typedef std::list<CMenuItem*>::const_iterator CConstMenuItemIterator;
+
 
 //-----------------------------------------------------------------------------
 // COptionMenu Declaration
@@ -145,10 +160,11 @@ public:
 
 	bool popup ();																							///< pops up menu
 	bool popup (CFrame* frame, const CPoint& frameLocation);												///< pops up menu at frameLocation
-#if MAC_CARBON
+#if MAC_CARBON && !VSTGUI_PLATFORM_ABSTRACTION
 	short   getMenuID () const { return menuID; }
-#endif
+#endif // MAC_CARBON
 
+	CMenuItemList* getItems () const { return menuItems; }
 	//@}
 
 	// overrides
@@ -167,13 +183,7 @@ protected:
 	void  removeItems ();
 	void* appendItems (long& offsetIdx);
 
-	void* platformControl;
-
 	CMenuItemList* menuItems;
-
-#if MAC_CARBON
-	short   menuID;
-#endif
 
 	bool     inPopup;
 	long     currentIndex;
@@ -183,6 +193,17 @@ protected:
 	long	 prefixNumbers;
 	CBitmap* bgWhenClick;
 	COptionMenu* lastMenu;
+
+#if VSTGUI_PLATFORM_ABSTRACTION
+
+#else
+
+	void* platformControl;
+#if MAC_CARBON
+	short   menuID;
+#endif // MAC_CARBON
+#endif // VSTGUI_PLATFORM_ABSTRACTION
+
 };
 
 END_NAMESPACE_VSTGUI

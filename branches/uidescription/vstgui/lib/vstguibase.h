@@ -108,6 +108,12 @@
 #define VSTGUI_DEPRECATED(x)
 #endif
 
+#if DEVELOPMENT
+	#ifndef DEBUG
+	#define DEBUG	1
+	#endif
+#endif
+
 BEGIN_NAMESPACE_VSTGUI
 
 #if DEBUG
@@ -214,6 +220,14 @@ END_NAMESPACE_VSTGUI
 	#endif
 #endif
 
+//-----------------------------------------------------------------------------
+// Development switches
+//-----------------------------------------------------------------------------
+#ifndef VSTGUI_PLATFORM_ABSTRACTION
+#define VSTGUI_PLATFORM_ABSTRACTION	0
+#endif
+
+//-----------------------------------------------------------------------------
 #include "vstguidebug.h"
 
 #endif

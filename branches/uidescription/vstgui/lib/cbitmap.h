@@ -40,6 +40,10 @@
 #include "crect.h"
 #include "ccolor.h"
 
+#if VSTGUI_PLATFORM_ABSTRACTION
+#include "platform/iplatformbitmap.h"
+
+#else
 #if VSTGUI_USES_COREGRAPHICS
 #include <ApplicationServices/ApplicationServices.h>
 #endif
@@ -52,6 +56,8 @@
 	#include <gdiplus.h>
 	#endif
 #endif // WINDOWS
+
+#endif // VSTGUI_PLATFORM_ABSTRACTION
 
 BEGIN_NAMESPACE_VSTGUI
 class CDrawContext;
@@ -79,6 +85,10 @@ public:
 	} u;
 };
 
+#if VSTGUI_PLATFORM_ABSTRACTION
+class IPlatformBitmap;
+#endif
+
 //-----------------------------------------------------------------------------
 // CBitmap Declaration
 //! @brief Encapsulates various platform depended kinds of bitmaps
@@ -89,6 +99,28 @@ public:
 	CBitmap (const CResourceDescription& desc);				///< Create a pixmap from a resource identifier.
 	CBitmap (CCoord width, CCoord height);					///< Create a pixmap with a given size.
 	~CBitmap ();
+
+#if VSTGUI_PLATFORM_ABSTRACTION
+	CBitmap (IPlatformBitmap* platformBitmap);// takes ownership
+
+	//-----------------------------------------------------------------------------
+	/// @name CBitmap Methods
+	//-----------------------------------------------------------------------------
+	//@{
+	virtual void draw (CDrawContext* context, const CRect& rect, const CPoint& offset = CPoint (0, 0), float alpha = 1.f);
+	void drawTransparent (CDrawContext* context, const CRect& rect, const CPoint& offset = CPoint (0, 0), float alpha = 1.f) { draw (context, rect, offset, alpha); }
+
+	CCoord getWidth () const;		///< get the width of the image
+	CCoord getHeight () const;		///< get the height of the image
+
+	bool isLoaded () const { return getPlatformBitmap () ? true : false; }	///< check if image is loaded
+
+	const CResourceDescription& getResourceDescription () const { return resourceDesc; }
+
+	IPlatformBitmap* getPlatformBitmap () const { return platformBitmap; }
+	//@}
+
+#else
 
 	//-----------------------------------------------------------------------------
 	/// @name CBitmap Methods
@@ -123,12 +155,18 @@ public:
 	CBitmap (Gdiplus::Bitmap* platformBitmap);							///< Create a pixmap from a Gdiplus Bitmap. 
 	Gdiplus::Bitmap* getBitmap ();
 #endif // GDIPLUS
+#endif // VSTGUI_PLATFORM_ABSTRACTION
 
 //-----------------------------------------------------------------------------
 	CLASS_METHODS_NOCOPY(CBitmap, CBaseObject)
 protected:
 	CBitmap ();
 
+#if VSTGUI_PLATFORM_ABSTRACTION
+	CResourceDescription resourceDesc;
+	IPlatformBitmap* platformBitmap;
+
+#else
 	virtual void dispose ();
 	virtual bool loadFromResource (const CResourceDescription& resourceDesc);
 	virtual bool loadFromPath (const void* platformPath);	// load from a platform path. On Windows it's a C string and on Mac OS X its a CFURLRef.
@@ -152,6 +190,8 @@ protected:
 #if VSTGUI_USES_COREGRAPHICS
 	void* cgImage;
 #endif // VSTGUI_USES_COREGRAPHICS
+
+#endif // VSTGUI_PLATFORM_ABSTRACTION
 
 };
 
@@ -184,6 +224,7 @@ public:
 	const PartOffsets& getPartOffsets () const { return offsets; }
 	//@}
 
+#if !VSTGUI_PLATFORM_ABSTRACTION
 	virtual void drawAlphaBlend (CDrawContext* pContext, const CRect& rect, const CPoint& offset = CPoint (0, 0), unsigned char alpha = 128);
 
 	//-----------------------------------------------------------------------------
@@ -194,6 +235,7 @@ public:
 #if GDIPLUS
 	CNinePartTiledBitmap (Gdiplus::Bitmap* platformBitmap, const PartOffsets& offsets = PartOffsets ());
 #endif // GDIPLUS
+#endif // VSTGUI_PLATFORM_ABSTRACTION
 
 //-----------------------------------------------------------------------------
 	CLASS_METHODS_NOCOPY(CNinePartTiledBitmap, CBitmap)

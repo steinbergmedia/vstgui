@@ -41,21 +41,7 @@
 #include "cfont.h"
 #include "ccolor.h"
 
-#if VSTGUI_USES_COREGRAPHICS
-#include <ApplicationServices/ApplicationServices.h>
-#endif
-
-#if WINDOWS
-	#include <windows.h>
-
-	#if GDIPLUS
-	#include <objidl.h>
-	#include <gdiplus.h>
-	#endif
-#endif // WINDOWS
-
 BEGIN_NAMESPACE_VSTGUI
-class CFrame;
 
 //-----------
 // @brief Line Style
@@ -94,6 +80,169 @@ enum CDrawStyle
 	kDrawFilled,
 	kDrawFilledAndStroked
 };
+
+END_NAMESPACE_VSTGUI
+
+#if VSTGUI_PLATFORM_ABSTRACTION
+
+#include <stack>
+
+BEGIN_NAMESPACE_VSTGUI
+class CBitmap;
+
+//-----------------------------------------------------------------------------
+// CDrawContext Declaration
+//! @brief A drawing context encapsulates the drawing context of the underlying OS
+//-----------------------------------------------------------------------------
+class CDrawContext : public CBaseObject
+{
+public:
+	//-----------------------------------------------------------------------------
+	/// @name Draw primitives
+	//-----------------------------------------------------------------------------
+	//@{
+	virtual void moveTo (const CPoint &point);	///< move line position to point
+	virtual void lineTo (const CPoint &point) = 0;	///< draw a line from current position to point
+	void getLoc (CPoint &where) const { where = currentState.penLoc; }
+	virtual void drawLines (const CPoint* points, const long& numberOfLines) = 0;	///< draw multiple lines at once
+	virtual void drawPolygon (const CPoint *pPoints, long numberOfPoints, const CDrawStyle drawStyle = kDrawStroked) = 0; ///< draw a polygon
+	virtual void drawRect (const CRect &rect, const CDrawStyle drawStyle = kDrawStroked) = 0;	///< draw a rect
+	virtual void drawArc (const CRect &rect, const float startAngle1, const float endAngle2, const CDrawStyle drawStyle = kDrawStroked) = 0;	///< draw an arc, angles are in degree
+	virtual void drawEllipse (const CRect &rect, const CDrawStyle drawStyle = kDrawStroked) = 0;	///< draw an ellipse
+	virtual void drawPoint (const CPoint &point, CColor color) = 0;	///< draw a point
+	virtual void drawBitmap (CBitmap* bitmap, const CRect& dest, const CPoint& offset = CPoint (0, 0), float alpha = 1.f) = 0; ///< draw a bitmap
+	//@}
+
+	//-----------------------------------------------------------------------------
+	/// @name Line Mode
+	//-----------------------------------------------------------------------------
+	//@{
+	virtual void setLineStyle (CLineStyle style);	///< set the current line style
+	CLineStyle getLineStyle () const { return currentState.lineStyle; }	///< get the current line style
+
+	virtual void setLineWidth (CCoord width);	///< set the current line width
+	CCoord getLineWidth () const { return currentState.frameWidth; }	///< get the current line width
+	//@}
+
+	//-----------------------------------------------------------------------------
+	/// @name Draw Mode
+	//-----------------------------------------------------------------------------
+	//@{
+	virtual void setDrawMode (CDrawMode mode);	///< set the current draw mode, see CDrawMode
+	CDrawMode getDrawMode () const { return currentState.drawMode; }	///< get the current draw mode, see CDrawMode
+	//@}
+
+	//-----------------------------------------------------------------------------
+	/// @name Clipping
+	//-----------------------------------------------------------------------------
+	//@{
+	virtual void setClipRect (const CRect &clip);	///< set the current clip
+	CRect& getClipRect (CRect &clip) const;///< get the current clip
+	virtual void resetClipRect ();	///< reset the clip to the default state
+	//@}
+
+	//-----------------------------------------------------------------------------
+	/// @name Color
+	//-----------------------------------------------------------------------------
+	//@{
+	virtual void setFillColor  (const CColor color);	///< set current fill color
+	CColor getFillColor () const { return currentState.fillColor; }	///< get current fill color
+	virtual void setFrameColor (const CColor color);	///< set current stroke color
+	CColor getFrameColor () const { return currentState.frameColor; }///< get current stroke color
+	//@}
+
+	//-----------------------------------------------------------------------------
+	/// @name Font
+	//-----------------------------------------------------------------------------
+	//@{
+	virtual void setFontColor (const CColor color);	///< set current font color
+	CColor getFontColor () const { return currentState.fontColor; }	///< get current font color
+	virtual void setFont (const CFontRef font, const long& size = 0, const long& style = -1); ///< set current font
+	const CFontRef&  getFont () const { return currentState.font; }	///< get current font
+	//@}
+	
+	//-----------------------------------------------------------------------------
+	/// @name Text
+	//-----------------------------------------------------------------------------
+	//@{
+	CCoord getStringWidth (const char* pStr);	///< get the width of an ASCII encoded string
+	void drawString (const char *pString, const CRect &rect, const short opaque = false, const CHoriTxtAlign hAlign = kCenterText);	///< draw an ASCII encoded string
+	CCoord getStringWidthUTF8 (const char* pStr);	///< get the width of an UTF-8 encoded string
+	void drawStringUTF8 (const char* pString, const CRect& rect, const CHoriTxtAlign hAlign = kCenterText, bool antialias = true);	///< draw an UTF-8 encoded string
+	void drawStringUTF8 (const char* string, const CPoint& _point, bool antialias = true);	///< draw an UTF-8 encoded string
+	//@}
+	
+	//-----------------------------------------------------------------------------
+	/// @name Global Alpha State
+	//-----------------------------------------------------------------------------
+	//@{
+	virtual void setGlobalAlpha (float newAlpha);	///< sets the global alpha value[0..1]
+	float getGlobalAlpha () const { return currentState.globalAlpha; }	///< get current global alpha value
+	//@}
+	
+	//-----------------------------------------------------------------------------
+	/// @name Global State Stack
+	//-----------------------------------------------------------------------------
+	//@{
+	virtual void saveGlobalState ();
+	virtual void restoreGlobalState ();
+	//@}
+
+	//-----------------------------------------------------------------------------
+	/// @name Transformation State
+	//-----------------------------------------------------------------------------
+	//@{
+	virtual void setOffset (const CPoint& offset);
+	const CPoint& getOffset () const { return currentState.offset; }
+	//@}
+
+	CLASS_METHODS_NOCOPY(CDrawContext, CBaseObject)
+protected:
+	CDrawContext (const CRect& surfaceRect);
+	~CDrawContext ();
+
+	virtual void init ();
+
+	struct CDrawContextState
+	{
+		CFontRef font;
+		CColor frameColor;
+		CColor fillColor;
+		CColor fontColor;
+		CCoord frameWidth;
+		CPoint offset;
+		CPoint penLoc;
+		CRect clipRect;
+		CLineStyle lineStyle;
+		CDrawMode drawMode;
+		float globalAlpha;
+	};
+
+	CRect surfaceRect;
+
+	CDrawContextState currentState;
+	std::stack<CDrawContextState*> globalStatesStack;
+};
+
+END_NAMESPACE_VSTGUI
+
+#else // VSTGUI_PLATFORM_ABSTRACTION
+#if VSTGUI_USES_COREGRAPHICS
+#include <ApplicationServices/ApplicationServices.h>
+#endif
+
+#if WINDOWS
+	#include <windows.h>
+
+	#if GDIPLUS
+	#include <objidl.h>
+	#include <gdiplus.h>
+	#endif
+#endif // WINDOWS
+
+BEGIN_NAMESPACE_VSTGUI
+
+class CFrame;
 
 //-----------------------------------------------------------------------------
 // CDrawContext Declaration
@@ -270,5 +419,7 @@ protected:
 #endif // VSTGUI_USES_COREGRAPHICS
 
 END_NAMESPACE_VSTGUI
+
+#endif // VSTGUI_PLATFORM_ABSTRACTION
 
 #endif

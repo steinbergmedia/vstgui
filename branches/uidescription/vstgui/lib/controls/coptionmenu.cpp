@@ -35,7 +35,10 @@
 #include "coptionmenu.h"
 #include "../cbitmap.h"
 #include "../cframe.h"
-#include <list>
+
+#if VSTGUI_PLATFORM_ABSTRACTION
+#include "../platform/iplatformoptionmenu.h"
+#else
 
 #if WINDOWS
 	#include "../win32support.h"
@@ -48,6 +51,7 @@
 #if MAC_CARBON
 	#pragma GCC diagnostic ignored "-Wdeprecated-declarations" // we know that we use deprecated functions from Carbon, so we don't want to be warned
 #endif
+#endif // VSTGUI_PLATFORM_ABSTRACTION
 
 BEGIN_NAMESPACE_VSTGUI
 
@@ -242,15 +246,6 @@ void CMenuItem::setIsSeparator (bool state)
 		flags &= ~kSeparator;
 }
 
-class CMenuItemList : public std::list<CMenuItem*>
-{
-public:
-	CMenuItemList () {}
-	CMenuItemList (const CMenuItemList& inList) : std::list<CMenuItem*> (inList) {}
-};
-
-typedef std::list<CMenuItem*>::iterator CMenuItemIterator;
-
 //------------------------------------------------------------------------
 // COptionMenu
 //------------------------------------------------------------------------
@@ -283,13 +278,15 @@ COptionMenu::COptionMenu (const CRect& size, CControlListener* listener, long ta
 
 	currentIndex = -1;
 	lastButton = kRButton;
+#if !VSTGUI_PLATFORM_ABSTRACTION
 	platformControl = 0;
+#endif
 	lastResult = -1;
 	lastMenu = 0;
 
-	#if MAC_CARBON
+	#if MAC_CARBON && !VSTGUI_PLATFORM_ABSTRACTION
 	menuID = 0;
-	#endif
+	#endif // MAC_CARBON && !VSTGUI_PLATFORM_ABSTRACTION
 	
 	if (bgWhenClick)
 		bgWhenClick->remember ();
@@ -301,7 +298,9 @@ COptionMenu::COptionMenu (const CRect& size, CControlListener* listener, long ta
 //------------------------------------------------------------------------
 COptionMenu::COptionMenu ()
 : CParamDisplay (CRect (0, 0, 0, 0))
+#if !VSTGUI_PLATFORM_ABSTRACTION
 , platformControl (0)
+#endif
 , currentIndex (-1)
 , bgWhenClick (0)
 , lastButton (0)
@@ -318,7 +317,9 @@ COptionMenu::COptionMenu ()
 //------------------------------------------------------------------------
 COptionMenu::COptionMenu (const COptionMenu& v)
 : CParamDisplay (v)
+#if !VSTGUI_PLATFORM_ABSTRACTION
 , platformControl (0)
+#endif
 , currentIndex (-1)
 , bgWhenClick (v.bgWhenClick)
 , lastButton (0)
@@ -429,12 +430,31 @@ bool COptionMenu::popup ()
 	lastResult = -1;
 	lastMenu = 0;
 
+#if VSTGUI_PLATFORM_ABSTRACTION
+	IPlatformOptionMenu* platformMenu = getFrame ()->getPlatformFrame ()->createPlatformOptionMenu ();
+	if (platformMenu)
+	{
+		PlatformOptionMenuResult platformPopupResult = platformMenu->popup (this);
+		if (platformPopupResult.menu != 0)
+		{
+			lastMenu = platformPopupResult.menu;
+			lastResult = platformPopupResult.index;
+			lastMenu->setValue (lastResult);
+			invalid ();
+			if (listener)
+				listener->valueChanged (lastMenu);
+			popupResult = true;
+		}
+		platformMenu->forget ();
+	}
+#else
+
 	// calculate offset for CViewContainers
 	CRect rect (size);
 	CPoint p (0, 0);
 	localToFrame (p);
 	rect.offset (p.x, p.y);
-	
+
 #if WINDOWS
 	HWND hwnd = (HWND)getFrame ()->getSystemWindow ();
 	RECT rctWinParent;
@@ -574,6 +594,8 @@ bool COptionMenu::popup ()
 	}
 
 #endif
+#endif // VSTGUI_PLATFORM_ABSTRACTION
+
 	endEdit ();
 	inPopup = false;
 	return popupResult;
@@ -830,6 +852,10 @@ COptionMenu *COptionMenu::getLastItemMenu (long &idxInMenu) const
 //------------------------------------------------------------------------
 COptionMenu *COptionMenu::getItemMenu (long idx, long &idxInMenu, long &offsetIdx)
 {
+#if VSTGUI_PLATFORM_ABSTRACTION
+// TODO: platform abstraction
+#else
+
 #if WINDOWS
 	long oldIDx = offsetIdx;
 	offsetIdx += getNbEntries ();
@@ -847,6 +873,8 @@ COptionMenu *COptionMenu::getItemMenu (long idx, long &idxInMenu, long &offsetId
 		return this;
 	}
 #endif
+#endif // VSTGUI_PLATFORM_ABSTRACTION
+
 	COptionMenu *menu = 0;
 	CMenuItemIterator it = menuItems->begin ();
 	while (it != menuItems->end ())
@@ -872,6 +900,10 @@ void COptionMenu::removeItems ()
 			(*it)->getSubmenu ()->removeItems ();
 		it++;
 	}
+
+#if VSTGUI_PLATFORM_ABSTRACTION
+// TODO: platform abstraction
+#else
 	
 #if WINDOWS
 	#if GDIPLUS
@@ -910,11 +942,16 @@ void COptionMenu::removeItems ()
 	platformControl = 0;
 
 #endif
+#endif // VSTGUI_PLATFORM_ABSTRACTION
 }
 
 //------------------------------------------------------------------------
 void *COptionMenu::appendItems (long &offsetIdx)
 {
+#if VSTGUI_PLATFORM_ABSTRACTION
+// TODO: platform abstraction
+#else
+
 #if WINDOWS || MAC_CARBON
 	bool multipleCheck = style & (kMultipleCheckStyle & ~kCheckStyle);
 #endif
@@ -1137,6 +1174,7 @@ void *COptionMenu::appendItems (long &offsetIdx)
 	return platformControl;
 	
 #endif
+#endif // VSTGUI_PLATFORM_ABSTRACTION
 	return 0;
 }
 
@@ -1168,10 +1206,12 @@ void COptionMenu::takeFocus ()
 //------------------------------------------------------------------------
 void COptionMenu::looseFocus ()
 {	
+#if !VSTGUI_PLATFORM_ABSTRACTION
 	if (platformControl == 0) 
 		return;
 
 	platformControl = 0;
+#endif
 
 	CView* receiver = pParentView ? pParentView : pParentFrame;
 	while (receiver)

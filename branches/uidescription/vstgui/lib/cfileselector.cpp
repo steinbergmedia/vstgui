@@ -273,7 +273,7 @@ END_NAMESPACE_VSTGUI
 //-----------------------------------------------------------------------------
 #endif // VSTGUI_NEW_CFILESELECTOR
 
-#if !__LP64__ && (MAC_CARBON || WINDOWS)
+#if !__LP64__ && (MAC_CARBON || WINDOWS) && !VSTGUI_PLATFORM_ABSTRACTION
 //-----------------------------------------------------------------------------
 // CFileSelector Implementation
 //-----------------------------------------------------------------------------

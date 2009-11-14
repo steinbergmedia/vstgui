@@ -35,15 +35,10 @@
 #ifndef __vstguidebug__
 #define __vstguidebug__
 
-#if DEVELOPMENT
-	#ifndef DEBUG
-	#define DEBUG	1
-	#endif
-#endif
+#include "vstguibase.h"
 
 #if DEBUG
 
-#include "vstguibase.h"
 #include <time.h>
 
 BEGIN_NAMESPACE_VSTGUI

@@ -45,6 +45,8 @@
 
 #if MAC
 #include "cfontmac.h"
+#include "platform/mac/cgdrawcontext.h"
+
 #elif GDIPLUS
 #include "cfontwin32.h"
 #include "win32support.h"
@@ -53,6 +55,34 @@
 BEGIN_NAMESPACE_VSTGUI
 
 #if VSTGUI_USES_COREGRAPHICS
+
+//-----------------------------------------------------------------------------
+static CGContextRef beginCGContext (CDrawContext* drawContext)
+{
+#if VSTGUI_PLATFORM_ABSTRACTION
+	CGDrawContext* cgDrawContext = dynamic_cast<CGDrawContext*> (drawContext);
+	if (cgDrawContext)
+		return cgDrawContext->beginCGContext (true);
+	return 0;
+#else
+	CGContextRef cgContext = drawContext->beginCGContext (true);
+	CGContextTranslateCTM (cgContext, drawContext->offset.x, drawContext->offset.y);
+	return cgContext;
+#endif
+}
+
+//-----------------------------------------------------------------------------
+static void releaseCGContext (CDrawContext* drawContext, CGContextRef cgContext)
+{
+#if VSTGUI_PLATFORM_ABSTRACTION
+	CGDrawContext* cgDrawContext = dynamic_cast<CGDrawContext*> (drawContext);
+	if (cgDrawContext)
+		cgDrawContext->releaseCGContext (cgContext);
+#else
+	drawContext->releaseCGContext (cgContext);
+#endif
+}
+
 //-----------------------------------------------------------------------------
 #define radians(degrees) (degrees * M_PI / 180.)
 
@@ -177,8 +207,7 @@ CGraphicsPath::~CGraphicsPath ()
 void CGraphicsPath::draw (CDrawContext* context, PathDrawMode mode, CGraphicsTransformation* transformation)
 {
 	#if VSTGUI_USES_COREGRAPHICS
-	CGContextRef cgContext = context->beginCGContext (true);
-	CGContextTranslateCTM (cgContext, context->offset.x, context->offset.y);
+	CGContextRef cgContext = beginCGContext (context);
 
 	if (transformation)
 	{
@@ -200,7 +229,7 @@ void CGraphicsPath::draw (CDrawContext* context, PathDrawMode mode, CGraphicsTra
 
 	CGContextDrawPath (cgContext, cgMode);
 	
-	context->releaseCGContext (cgContext);
+	releaseCGContext (context, cgContext);
 
 	#elif GDIPLUS
 	Gdiplus::Graphics* graphics = context->getGraphics ();
@@ -242,8 +271,7 @@ void CGraphicsPath::fillLinearGradient (CDrawContext* context, const CGradient& 
 	if (cgGradient == 0)
 		return;
 
-	CGContextRef cgContext = context->beginCGContext (true);
-	CGContextTranslateCTM (cgContext, context->offset.x, context->offset.y);
+	CGContextRef cgContext = beginCGContext (context);
 
 	if (transformation)
 	{
@@ -263,7 +291,7 @@ void CGraphicsPath::fillLinearGradient (CDrawContext* context, const CGradient& 
 
 	CGContextDrawLinearGradient (cgContext, *cgGradient, CGPointMake (startPoint.x, startPoint.y), CGPointMake (endPoint.x, endPoint.y), 0);
 	
-	context->releaseCGContext (cgContext);
+	releaseCGContext (context, cgContext);
 
 	#elif GDIPLUS
 	Gdiplus::Graphics* graphics = context->getGraphics ();

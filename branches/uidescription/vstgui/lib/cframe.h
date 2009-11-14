@@ -37,6 +37,11 @@
 
 #include "cviewcontainer.h"
 
+#if VSTGUI_PLATFORM_ABSTRACTION
+
+#include "platform/iplatformframe.h"
+
+#else
 #if MAC_CARBON
 	#include <Carbon/Carbon.h>
 #endif // MAC_CARBON
@@ -50,28 +55,12 @@
 	#endif
 #endif // WINDOWS
 
+#endif // VSTGUI_PLATFORM_ABSTRACTION
 
 BEGIN_NAMESPACE_VSTGUI
 class VSTGUIEditorInterface;
 class IMouseObserver;
 class IKeyboardHook;
-
-//----------------------------
-// @brief Cursor Type
-//----------------------------
-enum CCursorType
-{
-	kCursorDefault = 0,				///< arrow cursor
-	kCursorWait,					///< wait cursor
-	kCursorHSize,					///< horizontal size cursor
-	kCursorVSize,					///< vertical size cursor
-	kCursorSizeAll,					///< size all cursor
-	kCursorNESWSize,				///< northeast and southwest size cursor
-	kCursorNWSESize,				///< northwest and southeast size cursor
-	kCursorCopy,					///< copy cursor (mainly for drag&drop operations)
-	kCursorNotAllowed,				///< not allowed cursor (mainly for drag&drop operations)
-	kCursorHand						///< hand cursor
-};
 
 //----------------------------
 // @brief Knob Mode
@@ -92,6 +81,9 @@ extern const char* kMsgOldFocusView;			///< Message send to all parents of the o
 /// @ingroup containerviews
 //-----------------------------------------------------------------------------
 class CFrame : public CViewContainer
+#if VSTGUI_PLATFORM_ABSTRACTION
+, public IPlatformFrameCallback 
+#endif
 {
 public:
 	CFrame (const CRect &size, void *pSystemWindow, VSTGUIEditorInterface *pEditor);
@@ -163,8 +155,13 @@ public:
 
 	#if MAC_COCOA && MAC_CARBON
 	static void setCocoaMode (bool state);
+	static bool getCocoaMode ();
 	#endif
 
+#if VSTGUI_PLATFORM_ABSTRACTION
+	IPlatformFrame* getPlatformFrame () const { return platformFrame; }
+
+#else
 	#if WINDOWS
 	HWND getOuterWindow () const;
 	void *getParentSystemWindow () const { return pSystemWindow; }
@@ -173,6 +170,7 @@ public:
 	#endif // WINDOWS
 	
 	void *getSystemWindow () const;	///< get platform window
+#endif
 	
 	bool removeView (CView *pView, const bool &withForget = true);
 	bool removeAll (const bool &withForget = true);
@@ -211,7 +209,6 @@ protected:
 	IMouseObserver			*pMouseObserver;
 	IKeyboardHook			*pKeyboardHook;
 	
-	void    *pSystemWindow;
 	CView   *pModalView;
 	CView   *pFocusView;
 	CView   *pActiveFocusView;
@@ -219,6 +216,27 @@ protected:
 
 	bool    bDropActive;
 	bool	bActive;
+
+#if VSTGUI_PLATFORM_ABSTRACTION
+	IPlatformFrame* platformFrame;
+
+	// IPlatformFrameCallback
+	bool platformDrawRect (CDrawContext* context, const CRect& rect);
+	CMouseEventResult platformOnMouseDown (CPoint& where, const long& buttons);
+	CMouseEventResult platformOnMouseMoved (CPoint& where, const long& buttons);
+	CMouseEventResult platformOnMouseUp (CPoint& where, const long& buttons);
+	CMouseEventResult platformOnMouseExited (CPoint& where, const long& buttons);
+	bool platformOnMouseWheel (const CPoint &where, const CMouseWheelAxis &axis, const float &distance, const long &buttons);
+	bool platformOnDrop (CDragContainer* drag, const CPoint& where);
+	void platformOnDragEnter (CDragContainer* drag, const CPoint& where);
+	void platformOnDragLeave (CDragContainer* drag, const CPoint& where);
+	void platformOnDragMove (CDragContainer* drag, const CPoint& where);
+	bool platformOnKeyDown (VstKeyCode& keyCode);
+	bool platformOnKeyUp (VstKeyCode& keyCode);
+	void platformOnActivate (bool state);
+
+#else
+	void    *pSystemWindow;
 
 #if WINDOWS
 	void      *pHwnd;
@@ -252,6 +270,7 @@ protected:
 	//-------------------------------------------
 private:
 	void     *defaultCursor;
+#endif // VSTGUI_PLATFORM_ABSTRACTION
 };
 
 //----------------------------------------------------

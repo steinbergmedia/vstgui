@@ -35,7 +35,13 @@
 #if VSTGUI_LIVE_EDITING
 
 #include "platformsupport.h"
+#if VSTGUI_PLATFORM_ABSTRACTION
+#include "../lib/platform/mac/cocoa/nsviewframe.h"
+#include "../lib/platform/mac/cocoa/cocoahelpers.h"
+#include "../lib/platform/mac/cgbitmap.h"
+#else
 #include "../lib/cocoasupport.h"
+#endif
 #include <Cocoa/Cocoa.h>
 
 using namespace VSTGUI;
@@ -211,22 +217,32 @@ bool PlatformUtilities::collectPlatformFontNames (std::list<std::string*>& fontN
 //-----------------------------------------------------------------------------
 bool PlatformUtilities::startDrag (CFrame* frame, const CPoint& location, const char* string, CBitmap* dragBitmap, bool localOnly)
 {
+	CGImageRef cgImage = 0;
+#if VSTGUI_PLATFORM_ABSTRACTION
+	if (!frame->getPlatformFrame ())
+		return false;
+
+	NSViewFrame* nsViewFrame = dynamic_cast<NSViewFrame*> (frame->getPlatformFrame ());
+	NSView* nsView = nsViewFrame ? nsViewFrame->getPlatformControl () : 0;
+	CGBitmap* cgBitmap = dragBitmap ? dynamic_cast<CGBitmap*> (dragBitmap->getPlatformBitmap ()) : 0;
+	cgImage = cgBitmap ? cgBitmap->getCGImage () : 0;
+#else
 	NSView* nsView = (NSView*)frame->getNSView ();
+	CGImageRef cgImage = dragBitmap ? dragBitmap->createCGImage (false) : 0;
+#endif
 	if (nsView)
 	{
 		NSPoint bitmapOffset = { location.x, location.y };
 		NSPasteboard* nsPasteboard = [NSPasteboard pasteboardWithName:NSDragPboard];
 		NSImage* nsImage = nil;
-		if (dragBitmap)
+		if (cgImage)
 		{
-			CGImageRef cgImage = dragBitmap->createCGImage (false);
-			if (cgImage)
-			{
-				nsImage = [imageFromCGImageRef (cgImage) autorelease];
-				bitmapOffset.x -= [nsImage size].width/2;
-				bitmapOffset.y += [nsImage size].height/2;
-				CFRelease (cgImage);
-			}
+			nsImage = [imageFromCGImageRef (cgImage) autorelease];
+			bitmapOffset.x -= [nsImage size].width/2;
+			bitmapOffset.y += [nsImage size].height/2;
+#if !VSTGUI_PLATFORM_ABSTRACTION
+			CFRelease (cgImage);
+#endif
 		}
 		else
 		{

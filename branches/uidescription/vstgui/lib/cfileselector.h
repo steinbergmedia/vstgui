@@ -181,7 +181,7 @@ END_NAMESPACE_VSTGUI
 
 #endif
 
-#if !__LP64__ && (MAC_CARBON || WINDOWS)
+#if !__LP64__ && (MAC_CARBON || WINDOWS) && !VSTGUI_PLATFORM_ABSTRACTION
 
 #ifndef __aeffectx__
 struct VstFileSelect;

@@ -103,11 +103,15 @@ void CVuMeter::setDirty (const bool val)
 bool CVuMeter::attached (CView *parent)
 {
 	if (pOScreen)
-		delete pOScreen;
+		pOScreen->forget ();
 
 	if (bUseOffscreen)
 	{
+		#if VSTGUI_PLATFORM_ABSTRACTION
+		pOScreen = COffscreenContext::create (getFrame (), size.width (), size.height ());
+		#else
 		pOScreen = new COffscreenContext (getFrame (), (long)size.width (), (long)size.height (), kBlackCColor);
+		#endif
 		rectOn  (0, 0, size.width (), size.height ());
 		rectOff (0, 0, size.width (), size.height ());
 	}
@@ -141,7 +145,7 @@ bool CVuMeter::removed (CView *parent)
 {
 	if (pOScreen)
 	{
-		delete pOScreen;
+		pOScreen->forget ();
 		pOScreen = 0;
 	}
 	return CControl::removed (parent);
@@ -168,13 +172,30 @@ void CVuMeter::draw (CDrawContext *_pContext)
 	{
 		if (!pOScreen)
 		{
+			#if VSTGUI_PLATFORM_ABSTRACTION
+			pOScreen = COffscreenContext::create (getFrame (), size.width (), size.height ());
+			#else
 			pOScreen = new COffscreenContext (getFrame (), (long)size.width (), (long)size.height (), kBlackCColor);
+			#endif
 			rectOn  (0, 0, size.width (), size.height ());
 			rectOff (0, 0, size.width (), size.height ());
 		}
-		pContext = pOScreen;
-		if (bTransparencyEnabled)
-			pOScreen->copyTo (_pContext, size);
+		if (pOScreen)
+		{
+			pContext = pOScreen;
+		#if !VSTGUI_PLATFORM_ABSTRACTION // copyTo not supported
+			if (bTransparencyEnabled)
+				pOScreen->copyTo (_pContext, size);
+		#endif
+		}
+		else
+		{
+			#if DEBUG
+			DebugPrint ("Could not create Offscreen for VUMeter\n");
+			#endif
+			setDirty (false);
+			return;
+		}
 	}
 
 	if (style & kHorizontal) 

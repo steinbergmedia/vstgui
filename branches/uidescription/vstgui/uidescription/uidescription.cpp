@@ -39,6 +39,7 @@
 #include "../lib/cframe.h"
 #include "../lib/cdrawcontext.h"
 #include "../lib/win32support.h"
+#include "../lib/platform/mac/macglobals.h"
 #include <list>
 #include <sstream>
 #include <fstream>

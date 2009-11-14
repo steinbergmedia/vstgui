@@ -1,3 +1,8 @@
+2009-11-14 arne
+
+	* platform abstraction
+	* mac carbon and cocoa done, windows to be done
+	
 2009-10-25 arne
 
 	* make text edit transparent on windows

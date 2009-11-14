@@ -86,6 +86,23 @@ enum CMouseEventResult
 };
 
 //----------------------------
+// @brief Cursor Type
+//----------------------------
+enum CCursorType
+{
+	kCursorDefault = 0,				///< arrow cursor
+	kCursorWait,					///< wait cursor
+	kCursorHSize,					///< horizontal size cursor
+	kCursorVSize,					///< vertical size cursor
+	kCursorSizeAll,					///< size all cursor
+	kCursorNESWSize,				///< northeast and southwest size cursor
+	kCursorNWSESize,				///< northwest and southeast size cursor
+	kCursorCopy,					///< copy cursor (mainly for drag&drop operations)
+	kCursorNotAllowed,				///< not allowed cursor (mainly for drag&drop operations)
+	kCursorHand						///< hand cursor
+};
+
+//----------------------------
 // @brief View Autosizing
 //----------------------------
 enum CViewAutosizing

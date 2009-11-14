@@ -125,7 +125,7 @@ Dialog::Dialog (const CPoint& position, CView* rootView, long style, const char*
 		if (position.x == -1 && position.y == -1)
 			platformWindow->center ();
 		size.offset (position.x, position.y);
-		#if MAC_CARBON
+		#if MAC_CARBON && MAC_COCOA
 		CFrame::setCocoaMode (true);
 		#endif
 		frame = new CFrame (size, platformWindow->getPlatformHandle (), this);

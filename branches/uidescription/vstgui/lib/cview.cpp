@@ -44,7 +44,8 @@
 BEGIN_NAMESPACE_VSTGUI
 
 /// @cond ignore
-#if DEBUG
+#define VSTGUI_CHECK_VIEW_RELEASING	DEBUG
+#if VSTGUI_CHECK_VIEW_RELEASING
 	std::list<CView*>gViewList;
 	long gNbCView = 0;
 
@@ -62,7 +63,7 @@ BEGIN_NAMESPACE_VSTGUI
 				while (it != gViewList.end ())
 				{
 					CView* view = (*it);
-					DebugPrint ("%s\n", typeid(view).name ());
+					DebugPrint ("%s\n", view->getClassName ());
 					it++;
 				}
 			}
@@ -148,7 +149,7 @@ CView::CView (const CRect& size)
 , pAttributeList (0)
 , autosizeFlags (kAutosizeNone)
 {
-	#if DEBUG
+	#if VSTGUI_CHECK_VIEW_RELEASING
 	static AllocatedViews allocatedViews;
 	gNbCView++;
 	gViewList.push_back (this);
@@ -200,7 +201,7 @@ CView::~CView ()
 			entry = nextEntry;
 		}
 	}
-	#if DEBUG
+	#if VSTGUI_CHECK_VIEW_RELEASING
 	gNbCView--;
 	gViewList.remove (this);
 	#endif

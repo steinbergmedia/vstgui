@@ -40,6 +40,9 @@
 	#include "aeffguieditor.h"
 #endif // ENABLE_VST_EXTENSION_IN_VSTGUI
 
+#if VSTGUI_PLATFORM_ABSTRACTION
+#else
+
 #if MAC_COCOA
 	#include "cocoasupport.h"
 	#include <Carbon/Carbon.h>
@@ -114,11 +117,16 @@
 	#endif	// USE_LIBPNG
 
 #endif // WINDOWS
+#endif // VSTGUI_PLATFORM_ABSTRACTION
 
 BEGIN_NAMESPACE_VSTGUI
 
-#if MAC
+#if MAC_CARBON && MAC_COCOA
 	static bool createNSViewMode = false;
+#endif
+
+#if !VSTGUI_PLATFORM_ABSTRACTION
+#if MAC
 	long pSystemVersion;
 
 	#ifndef VSTGUI_NEW_BUNDLE_REF_DEFINITION	// You can define this in your preprocessor definitions and supply the following function somewhere in your code
@@ -165,6 +173,7 @@ BEGIN_NAMESPACE_VSTGUI
 
 	#endif // MAC_CARBON
 #endif // MAC
+#endif // !VSTGUI_PLATFORM_ABSTRACTION
 
 const char* kMsgNewFocusView = "kMsgNewFocusView";
 const char* kMsgOldFocusView = "kMsgOldFocusView";
@@ -192,18 +201,23 @@ CFrame::CFrame (const CRect &inSize, void* inSystemWindow, VSTGUIEditorInterface
 , pEditor (inEditor)
 , pMouseObserver (0)
 , pKeyboardHook (0)
-, pSystemWindow (inSystemWindow)
 , pModalView (0)
 , pFocusView (0)
 , pActiveFocusView (0)
 , pMouseOverView (0)
 , bDropActive (false)
 , bActive (false)
+#if !VSTGUI_PLATFORM_ABSTRACTION
+, pSystemWindow (inSystemWindow)
 , defaultCursor (0)
+#endif
 {
 	bIsAttached = true;
 	
 	pParentFrame = this;
+
+#if VSTGUI_PLATFORM_ABSTRACTION
+#else
 
 #if WINDOWS
 	pHwnd = 0;
@@ -260,6 +274,8 @@ CFrame::CFrame (const CRect &inSize, void* inSystemWindow, VSTGUIEditorInterface
 	mouseEventHandler = 0;
 #endif // MAC_CARBON
 
+#endif // VSTGUI_PLATFORM_ABSTRACTION
+
 	initFrame (inSystemWindow);
 
 }
@@ -277,6 +293,11 @@ CFrame::~CFrame ()
 	pParentFrame = 0;
 	removeAll ();
 
+#if VSTGUI_PLATFORM_ABSTRACTION
+	if (platformFrame)
+		platformFrame->forget ();
+
+#else
 #if WINDOWS
 	OleUninitialize ();
 
@@ -314,12 +335,18 @@ CFrame::~CFrame ()
 			CFRelease (controlRef);
 	}
 #endif
+
+#endif // VSTGUI_PLATFORM_ABSTRACTION
 }
 
 #if MAC_COCOA && MAC_CARBON
 void CFrame::setCocoaMode (bool state)
 {
 	createNSViewMode = state;
+}
+bool CFrame::getCocoaMode ()
+{
+	return createNSViewMode;
 }
 #endif
 
@@ -328,7 +355,12 @@ bool CFrame::initFrame (void* systemWin)
 {
 	if (!systemWin)
 		return false;
-	
+#if VSTGUI_PLATFORM_ABSTRACTION
+	platformFrame = IPlatformFrame::createPlatformFrame (this, size, systemWin);
+	if (!platformFrame)
+		return false;
+
+#else
 #if WINDOWS
 
 	InitWindowClass ();
@@ -452,11 +484,14 @@ bool CFrame::initFrame (void* systemWin)
 	
 #endif
 
+#endif // VSTGUI_PLATFORM_ABSTRACTION
+
 	setDropActive (true);
 
 	return true;
 }
 
+#if !VSTGUI_PLATFORM_ABSTRACTION
 //-----------------------------------------------------------------------------
 void* CFrame::getSystemWindow () const
 {
@@ -468,6 +503,7 @@ void* CFrame::getSystemWindow () const
 
 	#endif
 }
+#endif
 
 //-----------------------------------------------------------------------------
 bool CFrame::setDropActive (bool val)
@@ -475,6 +511,10 @@ bool CFrame::setDropActive (bool val)
 	if (!bDropActive && !val)
 		return true;
 
+#if VSTGUI_PLATFORM_ABSTRACTION
+	// TODO: Do we still need this, or do we always enable drop active ?
+
+#else
 #if WINDOWS
 	if (!pHwnd)
 		return false;
@@ -498,6 +538,7 @@ bool CFrame::setDropActive (bool val)
 			remove_drop (this);
 	}
 #endif
+#endif // VSTGUI_PLATFORM_ABSTRACTION
 
 	bDropActive = val;
 	return true;
@@ -508,10 +549,13 @@ bool CFrame::setDropActive (bool val)
 CDrawContext* CFrame::createDrawContext ()
 {
 	CDrawContext* pContext = 0;
+#if VSTGUI_PLATFORM_ABSTRACTION
+#else
 	#if WINDOWS || MAC
 	pContext = new CDrawContext (this, NULL, getSystemWindow ());
 
 	#endif
+#endif // VSTGUI_PLATFORM_ABSTRACTION
 	
 	return pContext;
 }
@@ -526,17 +570,11 @@ void CFrame::draw (CDrawContext* pContext)
 //-----------------------------------------------------------------------------
 void CFrame::drawRect (CDrawContext* pContext, const CRect& updateRect)
 {
-	if (updateRect.getWidth () <= 0 || updateRect.getHeight () <= 0)
+	if (updateRect.getWidth () <= 0 || updateRect.getHeight () <= 0 || pContext == 0)
 		return;
 
 	if (pContext)
 		pContext->remember ();
-	else
-#if VSTGUI_ENABLE_DEPRECATED_METHODS
-		pContext = createDrawContext ();
-#else
-		return; // no context, no drawing ;-)
-#endif
 
 	CRect oldClip;
 	pContext->getClipRect (oldClip);
@@ -596,6 +634,8 @@ CMouseEventResult CFrame::onMouseUp (CPoint &where, const long& buttons)
 //-----------------------------------------------------------------------------
 CMouseEventResult CFrame::onMouseMoved (CPoint &where, const long& buttons)
 {
+#if VSTGUI_PLATFORM_ABSTRACTION
+#else // TODO: checkout what this is for
 #if WINDOWS
 	if (!bMouseInside)
 	{
@@ -607,6 +647,8 @@ CMouseEventResult CFrame::onMouseMoved (CPoint &where, const long& buttons)
 		TrackMouseEvent (&tme);
 	}
 #endif
+#endif // VSTGUI_PLATFORM_ABSTRACTION
+
 	if (getMouseObserver ())
 		getMouseObserver ()->onMouseMoved (this, where);
 	if (pModalView)
@@ -663,9 +705,12 @@ CMouseEventResult CFrame::onMouseExited (CPoint &where, const long& buttons)
 	}
 	pMouseOverView = 0;
 
+#if !VSTGUI_PLATFORM_ABSTRACTION
 #if WINDOWS
 	bMouseInside = false;
 #endif
+#endif // !VSTGUI_PLATFORM_ABSTRACTION
+
 	return kMouseEventHandled;
 }
 
@@ -747,6 +792,11 @@ void CFrame::doIdleStuff ()
  */
 unsigned long CFrame::getTicks () const
 {
+#if VSTGUI_PLATFORM_ABSTRACTION
+	if (platformFrame)
+		return platformFrame->getTicks ();
+#else
+
 	#if MAC_CARBON || MAC_COCOA
 	return (TickCount () * 1000) / 60;
 	
@@ -754,7 +804,7 @@ unsigned long CFrame::getTicks () const
 	return (unsigned long)GetTickCount ();
 	
 	#endif
-
+#endif // VSTGUI_PLATFORM_ABSTRACTION
 	return 0;
 }
 
@@ -766,6 +816,7 @@ long CFrame::getKnobMode () const
 	return kCircularMode;
 }
 
+#if !VSTGUI_PLATFORM_ABSTRACTION
 //-----------------------------------------------------------------------------
 #if WINDOWS
 COffscreenContext* CFrame::getBackBuffer ()
@@ -819,7 +870,8 @@ HWND CFrame::getOuterWindow () const
 
 	return NULL;
 }
-#endif
+#endif // WINDOWS
+#endif // VSTGUI_PLATFORM_ABSTRACTION
 
 //-----------------------------------------------------------------------------
 /**
@@ -830,6 +882,14 @@ HWND CFrame::getOuterWindow () const
  */
 bool CFrame::setPosition (CCoord x, CCoord y)
 {
+#if VSTGUI_PLATFORM_ABSTRACTION
+	if (platformFrame)
+	{
+		CRect rect (size);
+		size.offset (x - size.left, y - size.top);
+		return platformFrame->setSize (rect);
+	}
+#else
 #if MAC_CARBON
 	if (controlRef)
 	{
@@ -850,6 +910,8 @@ bool CFrame::setPosition (CCoord x, CCoord y)
 	// not implemented yet
 
 #endif
+#endif // VSTGUI_PLATFORM_ABSTRACTION
+
 	return false;
 }
 
@@ -862,6 +924,20 @@ bool CFrame::setPosition (CCoord x, CCoord y)
  */
 bool CFrame::getPosition (CCoord &x, CCoord &y) const
 {
+#if VSTGUI_PLATFORM_ABSTRACTION
+	if (platformFrame)
+	{
+		CPoint p;
+		if (platformFrame->getGlobalPosition (p))
+		{
+			x = p.x;
+			y = p.y;
+			return true;
+		}
+	}
+	return false;
+
+#else
 	// get the position of the Window including this frame in the main pWindow
 #if WINDOWS
 	HWND wnd = (HWND)getOuterWindow ();
@@ -917,6 +993,8 @@ bool CFrame::getPosition (CCoord &x, CCoord &y) const
 	y -= hiScrollOffset.y;
 
 #endif
+#endif // VSTGUI_PLATFORM_ABSTRACTION
+
 	return true;
 }
 
@@ -941,6 +1019,19 @@ bool CFrame::setSize (CCoord width, CCoord height)
 	CRect newSize (size);
 	newSize.setWidth (width);
 	newSize.setHeight (height);
+
+#if VSTGUI_PLATFORM_ABSTRACTION
+	if (platformFrame)
+	{
+		if (platformFrame->setSize (newSize))
+		{
+			CViewContainer::setViewSize (newSize);
+			return true;
+		}
+	}
+	return false;
+
+#else
 
 #if WINDOWS
 	if (backBuffer)
@@ -1045,6 +1136,8 @@ bool CFrame::setSize (CCoord width, CCoord height)
 	}
 #endif
 
+#endif // VSTGUI_PLATFORM_ABSTRACTION
+
 	CViewContainer::setViewSize (newSize);
 
 	return true;
@@ -1058,6 +1151,12 @@ bool CFrame::setSize (CCoord width, CCoord height)
  */
 bool CFrame::getSize (CRect* pRect) const
 {
+#if VSTGUI_PLATFORM_ABSTRACTION
+	if (platformFrame && pRect)
+		return platformFrame->getSize (*pRect);
+	return false;
+
+#else
 #if WINDOWS
 	// return the size relative to the client rect of this window
 	// get the main window
@@ -1106,6 +1205,8 @@ bool CFrame::getSize (CRect* pRect) const
 	pRect->right  = bounds.right;
 	pRect->bottom = bounds.bottom;
 #endif
+#endif // VSTGUI_PLATFORM_ABSTRACTION
+
 	return true;
 }
 
@@ -1157,6 +1258,12 @@ void CFrame::endEdit (long index)
  */
 bool CFrame::getCurrentMouseLocation (CPoint &where) const
 {
+#if VSTGUI_PLATFORM_ABSTRACTION
+	if (platformFrame)
+		return platformFrame->getCurrentMousePosition (where);
+	return false;
+
+#else
 	#if WINDOWS
 	HWND hwnd = (HWND)this->getSystemWindow ();
 	POINT _where;
@@ -1207,6 +1314,8 @@ bool CFrame::getCurrentMouseLocation (CPoint &where) const
 
 	#endif // MAC_CARBON
 
+#endif // VSTGUI_PLATFORM_ABSTRACTION
+
 	return false;
 }
 
@@ -1217,6 +1326,12 @@ bool CFrame::getCurrentMouseLocation (CPoint &where) const
 long CFrame::getCurrentMouseButtons () const
 {
 	long buttons = 0;
+
+#if VSTGUI_PLATFORM_ABSTRACTION
+	if (platformFrame)
+		platformFrame->getCurrentMouseButtons (buttons);
+
+#else
 	
 #if WINDOWS
 	if (GetAsyncKeyState (VK_LBUTTON) < 0)
@@ -1264,13 +1379,16 @@ long CFrame::getCurrentMouseButtons () const
 	}
 
 #endif
-	
+#endif // VSTGUI_PLATFORM_ABSTRACTION
+
 	return buttons;
 }
 
+#if !VSTGUI_PLATFORM_ABSTRACTION
 #if MAC_CARBON
 #define kThemeResizeUpDownCursor	21
 #define kThemeNotAllowedCursor		18
+#endif
 #endif
 
 //-----------------------------------------------------------------------------
@@ -1279,6 +1397,11 @@ long CFrame::getCurrentMouseButtons () const
  */
 void CFrame::setCursor (CCursorType type)
 {
+#if VSTGUI_PLATFORM_ABSTRACTION
+	if (platformFrame)
+		platformFrame->setMouseCursor (type);
+
+#else
 	#if WINDOWS
 	if (!defaultCursor)
 		defaultCursor = GetCursor ();
@@ -1357,6 +1480,7 @@ void CFrame::setCursor (CCursorType type)
 			break;
 	}
 	#endif
+#endif // VSTGUI_PLATFORM_ABSTRACTION
 }
 
 //-----------------------------------------------------------------------------
@@ -1587,6 +1711,15 @@ void CFrame::scrollRect (const CRect& src, const CPoint& distance)
 	CRect rect (src);
 	rect.offset (size.left, size.top);
 
+#if VSTGUI_PLATFORM_ABSTRACTION
+	if (platformFrame)
+	{
+		if (platformFrame->scrollRect (src, distance))
+			return;
+	}
+	invalidRect (src);
+	
+#else
 	#if MAC_COCOA
 	if (nsView)
 	{
@@ -1617,6 +1750,7 @@ void CFrame::scrollRect (const CRect& src, const CPoint& distance)
 	#endif
 	
 	invalidRect (src);
+#endif // VSTGUI_PLATFORM_ABSTRACTION
 }
 
 //-----------------------------------------------------------------------------
@@ -1638,6 +1772,11 @@ void CFrame::invalidRect (CRect rect)
 {
 	if (!bVisible)
 		return;
+#if VSTGUI_PLATFORM_ABSTRACTION
+	if (platformFrame)
+		platformFrame->invalidRect (rect);
+
+#else
 	#if MAC_COCOA
 	if (nsView)
 	{
@@ -1685,6 +1824,7 @@ void CFrame::invalidRect (CRect rect)
 	RECT r = {(LONG)rect.left, (LONG)rect.top, (LONG)rect.right, (LONG)rect.bottom};
 	InvalidateRect ((HWND)pHwnd, &r, true);
 	#endif
+#endif // VSTGUI_PLATFORM_ABSTRACTION
 }
 
 #if DEBUG
@@ -1696,6 +1836,89 @@ void CFrame::dumpHierarchy ()
 	CViewContainer::dumpHierarchy ();
 }
 #endif
+
+#if VSTGUI_PLATFORM_ABSTRACTION
+//-----------------------------------------------------------------------------
+bool CFrame::platformDrawRect (CDrawContext* context, const CRect& rect)
+{
+	drawRect (context, rect);
+}
+
+//-----------------------------------------------------------------------------
+CMouseEventResult CFrame::platformOnMouseDown (CPoint& where, const long& buttons)
+{
+	return onMouseDown (where, buttons);
+}
+
+//-----------------------------------------------------------------------------
+CMouseEventResult CFrame::platformOnMouseMoved (CPoint& where, const long& buttons)
+{
+	return onMouseMoved (where, buttons);
+}
+
+//-----------------------------------------------------------------------------
+CMouseEventResult CFrame::platformOnMouseUp (CPoint& where, const long& buttons)
+{
+	return onMouseUp (where, buttons);
+}
+
+//-----------------------------------------------------------------------------
+CMouseEventResult CFrame::platformOnMouseExited (CPoint& where, const long& buttons)
+{
+	return onMouseExited (where, buttons);
+}
+
+//-----------------------------------------------------------------------------
+bool CFrame::platformOnMouseWheel (const CPoint &where, const CMouseWheelAxis &axis, const float &distance, const long &buttons)
+{
+	return onWheel (where, axis, distance, buttons);
+}
+
+//-----------------------------------------------------------------------------
+bool CFrame::platformOnDrop (CDragContainer* drag, const CPoint& where)
+{
+	return onDrop (drag, where);
+}
+
+//-----------------------------------------------------------------------------
+void CFrame::platformOnDragEnter (CDragContainer* drag, const CPoint& where)
+{
+	return onDragEnter (drag, where);
+}
+
+//-----------------------------------------------------------------------------
+void CFrame::platformOnDragLeave (CDragContainer* drag, const CPoint& where)
+{
+	return onDragLeave (drag, where);
+}
+
+//-----------------------------------------------------------------------------
+void CFrame::platformOnDragMove (CDragContainer* drag, const CPoint& where)
+{
+	return onDragMove (drag, where);
+}
+
+//-----------------------------------------------------------------------------
+bool CFrame::platformOnKeyDown (VstKeyCode& keyCode)
+{
+	return onKeyDown (keyCode) == 1;
+}
+
+//-----------------------------------------------------------------------------
+bool CFrame::platformOnKeyUp (VstKeyCode& keyCode)
+{
+	return onKeyUp (keyCode) == 1;
+}
+
+//-----------------------------------------------------------------------------
+void CFrame::platformOnActivate (bool state)
+{
+	onActivate (state);
+}
+
+END_NAMESPACE_VSTGUI
+
+#else
 
 #if MAC_CARBON
 //-----------------------------------------------------------------------------
@@ -3564,6 +3787,9 @@ bool isWindowComposited (WindowRef window)
 END_NAMESPACE_VSTGUI
 
 #endif // MAC_CARBON
+
+#endif // VSTGUI_PLATFORM_ABSTRACTION
+
 
 
 

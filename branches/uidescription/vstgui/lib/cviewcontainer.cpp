@@ -206,7 +206,16 @@ void CViewContainer::setViewSize (CRect &rect, bool invalid)
 	if (pOffscreenContext && bDrawInOffscreen)
 	{
 		pOffscreenContext->forget ();
+	#if VSTGUI_PLATFORM_ABSTRACTION
+		pOffscreenContext = COffscreenContext::create (getFrame (), size.getWidth (), size.getHeight ());
+		if (pOffscreenContext)
+		{
+			pOffscreenContext->setFillColor (kBlackCColor);
+			pOffscreenContext->drawRect (CRect (0, 0, size.getWidth (), size.getHeight ()), kDrawFilled);
+		}
+	#else
 		pOffscreenContext = new COffscreenContext (pParentFrame, (long)size.width (), (long)size.height (), kBlackCColor);
+	#endif
 	}
 }
 
@@ -629,7 +638,9 @@ void CViewContainer::drawBackToFront (CDrawContext* pContext, const CRect& updat
 	_updateRect.bound (size);
 
 	CRect clientRect (_updateRect);
+	#if !VSTGUI_PLATFORM_ABSTRACTION
 	clientRect.offset (-size.left, -size.top);
+	#endif
 
 	CRect oldClip;
 	pContext->getClipRect (oldClip);
@@ -674,10 +685,23 @@ void CViewContainer::drawRect (CDrawContext* pContext, const CRect& updateRect)
 	CCoord save[4];
 
 	if (!pOffscreenContext && bDrawInOffscreen)
+	{
+	#if VSTGUI_PLATFORM_ABSTRACTION
+		pOffscreenContext = COffscreenContext::create (getFrame (), size.getWidth (), size.getHeight ());
+		if (pOffscreenContext)
+		{
+			pOffscreenContext->setFillColor (kBlackCColor);
+			pOffscreenContext->drawRect (CRect (0, 0, size.getWidth (), size.getHeight ()), kDrawFilled);
+		}
+	#else
 		pOffscreenContext = new COffscreenContext (pParentFrame, (long)size.width (), (long)size.height (), kBlackCColor);
+	#endif
+	}
+	#if !VSTGUI_PLATFORM_ABSTRACTION
 	#if USE_ALPHA_BLEND
 	if (pOffscreenContext && bTransparencyEnabled)
 		pOffscreenContext->copyTo (pContext, size);
+	#endif
 	#endif
 
 	if (bDrawInOffscreen)
@@ -749,15 +773,6 @@ void CViewContainer::drawRect (CDrawContext* pContext, const CRect& updateRect)
 			pC->setClipRect (viewSize);
 
 			pV->drawRect (pC, clientRect);
-			
-			#if DEBUG_FOCUS_DRAWING
-			if (getFrame ()->getFocusView() == pV && pV->wantsFocus ())
-			{
-				pC->setDrawMode (kCopyMode);
-				pC->setFrameColor (kRedCColor);
-				pC->drawRect (pV->size);
-			}
-			#endif
 		}
 	ENDFOREACHSUBVIEW
 
@@ -1201,11 +1216,22 @@ bool CViewContainer::removed (CView* parent)
 //-----------------------------------------------------------------------------
 bool CViewContainer::attached (CView* parent)
 {
+	pParentFrame = parent->getFrame ();
+
 	// create offscreen bitmap
 	if (!pOffscreenContext && bDrawInOffscreen)
+	{
+	#if VSTGUI_PLATFORM_ABSTRACTION
+		pOffscreenContext = COffscreenContext::create (getFrame (), size.getWidth (), size.getHeight ());
+		if (pOffscreenContext)
+		{
+			pOffscreenContext->setFillColor (kBlackCColor);
+			pOffscreenContext->drawRect (CRect (0, 0, size.getWidth (), size.getHeight ()), kDrawFilled);
+		}
+	#else
 		pOffscreenContext = new COffscreenContext (pParentFrame, (long)size.width (), (long)size.height (), kBlackCColor);
-
-	pParentFrame = parent->getFrame ();
+	#endif
+	}
 
 	FOREACHSUBVIEW
 		pV->attached (this);
@@ -1230,6 +1256,14 @@ void CViewContainer::useOffscreen (bool b)
 void CViewContainer::modifyDrawContext (CCoord save[4], CDrawContext* pContext)
 {
 	// store
+#if VSTGUI_PLATFORM_ABSTRACTION
+	CPoint offset = pContext->getOffset ();
+	save[0] = offset.x;
+	save[1] = offset.y;
+	offset.x += size.left;
+	offset.y += size.top;
+	pContext->setOffset (offset);
+#else
 	save[0] = pContext->offsetScreen.h;
 	save[1] = pContext->offsetScreen.v;
 	save[2] = pContext->offset.h;
@@ -1239,16 +1273,22 @@ void CViewContainer::modifyDrawContext (CCoord save[4], CDrawContext* pContext)
 	pContext->offsetScreen.v += size.top;
 	pContext->offset.h += size.left;
 	pContext->offset.v += size.top;
+#endif
 }
 
 //-----------------------------------------------------------------------------
 void CViewContainer::restoreDrawContext (CDrawContext* pContext, CCoord save[4])
 {
 	// restore
+#if VSTGUI_PLATFORM_ABSTRACTION
+	CPoint offset (save[0], save[1]);
+	pContext->setOffset (offset);
+#else
 	pContext->offsetScreen.h = save[0];
 	pContext->offsetScreen.v = save[1];
 	pContext->offset.h = save[2];
 	pContext->offset.v = save[3];
+#endif
 }
 
 #if DEBUG

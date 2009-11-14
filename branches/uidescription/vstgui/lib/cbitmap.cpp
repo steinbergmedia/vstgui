@@ -36,6 +36,77 @@
 #include "cdrawcontext.h"
 #include "win32support.h"
 
+#if VSTGUI_PLATFORM_ABSTRACTION
+#include "platform/mac/macglobals.h"
+#include "platform/mac/cgdrawcontext.h"
+
+BEGIN_NAMESPACE_VSTGUI
+//-----------------------------------------------------------------------------
+CBitmap::CBitmap ()
+: platformBitmap (0)
+{
+}
+
+//-----------------------------------------------------------------------------
+CBitmap::CBitmap (const CResourceDescription& desc)
+: platformBitmap (0)
+, resourceDesc (desc)
+{
+	platformBitmap = IPlatformBitmap::create ();
+	if (!platformBitmap->load (desc))
+	{
+		platformBitmap->forget ();
+		platformBitmap = 0;
+	}
+}
+
+//-----------------------------------------------------------------------------
+CBitmap::CBitmap (CCoord width, CCoord height)
+: platformBitmap (0)
+{
+	CPoint p (width, height);
+	platformBitmap = IPlatformBitmap::create (&p);
+}
+
+//-----------------------------------------------------------------------------
+CBitmap::CBitmap (IPlatformBitmap* platformBitmap)
+: platformBitmap (platformBitmap)
+{
+	if (platformBitmap)
+		platformBitmap->remember ();
+}
+
+//-----------------------------------------------------------------------------
+CBitmap::~CBitmap ()
+{
+	if (platformBitmap)
+		platformBitmap->forget ();
+}
+
+//-----------------------------------------------------------------------------
+void CBitmap::draw (CDrawContext* context, const CRect& rect, const CPoint& offset, float alpha)
+{
+	context->drawBitmap (this, rect, offset, alpha);
+}
+
+//-----------------------------------------------------------------------------
+CCoord CBitmap::getWidth () const
+{
+	if (platformBitmap)
+		return platformBitmap->getSize ().x;
+	return 0;
+}
+
+//-----------------------------------------------------------------------------
+CCoord CBitmap::getHeight () const
+{
+	if (platformBitmap)
+		return platformBitmap->getSize ().y;
+	return 0;
+}
+
+#else
+
 BEGIN_NAMESPACE_VSTGUI
 
 #if DEBUG
@@ -958,7 +1029,12 @@ void CBitmap::drawAlphaBlend (CDrawContext* pContext, const CRect &rect, const C
 #elif VSTGUI_USES_COREGRAPHICS
 	if (pHandle || cgImage)
 	{
+		#if VSTGUI_PLATFORM_ABSTRACTION
+		CGDrawContext* cgDrawContext = dynamic_cast<CGDrawContext*> (pContext);
+		CGContextRef context = cgDrawContext ? cgDrawContext->beginCGContext () : 0;
+		#else
 		CGContextRef context = pContext->beginCGContext ();
+		#endif
 		if (context)
 		{
 			if (alpha != 255)
@@ -968,6 +1044,24 @@ void CBitmap::drawAlphaBlend (CDrawContext* pContext, const CRect &rect, const C
 
 			if (image)
 			{
+			#if VSTGUI_PLATFORM_ABSTRACTION
+				CGRect dest;
+				dest.origin.x = rect.left - offset.h;
+				dest.origin.y = (rect.top) * -1 - (getHeight () - offset.v);
+				dest.size.width = getWidth ();
+				dest.size.height = getHeight ();
+				
+				CRect ccr;
+				pContext->getClipRect (ccr);
+				CGRect cgClipRect = CGRectMake (ccr.left, (ccr.top) * -1 - ccr.height (), ccr.width (), ccr.height ());
+				CGContextClipToRect (context, cgClipRect);
+
+				CGRect clipRect;
+				clipRect.origin.x = rect.left;
+			    clipRect.origin.y = (rect.top) * -1  - rect.height ();
+			    clipRect.size.width = rect.width (); 
+			    clipRect.size.height = rect.height ();
+			#else
 				CGRect dest;
 				dest.origin.x = rect.left - offset.h + pContext->offset.h;
 				dest.origin.y = (rect.top + pContext->offset.v) * -1 - (getHeight () - offset.v);
@@ -984,13 +1078,18 @@ void CBitmap::drawAlphaBlend (CDrawContext* pContext, const CRect &rect, const C
 			    clipRect.origin.y = (rect.top + pContext->offset.v) * -1  - rect.height ();
 			    clipRect.size.width = rect.width (); 
 			    clipRect.size.height = rect.height ();
-				
+			#endif
+			
 				CGContextClipToRect (context, clipRect);
 
 				CGContextDrawImage (context, dest, image);
 				CGImageRelease (image);
 			}
+			#if VSTGUI_PLATFORM_ABSTRACTION
+			cgDrawContext->releaseCGContext (context);
+			#else
 			pContext->releaseCGContext (context);
+			#endif
 		}
 	}
 	
@@ -1034,6 +1133,8 @@ void CBitmap::setTransparentColor (const CColor color)
 #endif
 }
 
+#endif // VSTGUI_PLATFORM_ABSTRACTION
+
 //-----------------------------------------------------------------------------
 // CNinePartTiledBitmap Implementation
 //-----------------------------------------------------------------------------
@@ -1071,7 +1172,7 @@ CNinePartTiledBitmap::CNinePartTiledBitmap (const CResourceDescription& desc, co
 {
 }
 
-#if VSTGUI_USES_COREGRAPHICS
+#if VSTGUI_USES_COREGRAPHICS && !VSTGUI_PLATFORM_ABSTRACTION
 //-----------------------------------------------------------------------------
 CNinePartTiledBitmap::CNinePartTiledBitmap (CGImageRef cgImage, const PartOffsets& offsets)
 : CBitmap (cgImage)
@@ -1081,7 +1182,7 @@ CNinePartTiledBitmap::CNinePartTiledBitmap (CGImageRef cgImage, const PartOffset
 
 #endif // VSTGUI_USES_COREGRAPHICS
 
-#if GDIPLUS
+#if GDIPLUS && !VSTGUI_PLATFORM_ABSTRACTION
 //-----------------------------------------------------------------------------
 CNinePartTiledBitmap::CNinePartTiledBitmap (Gdiplus::Bitmap* platformBitmap, const PartOffsets& offsets)
 : CBitmap (platformBitmap)
@@ -1097,15 +1198,17 @@ CNinePartTiledBitmap::~CNinePartTiledBitmap ()
 }
 
 //-----------------------------------------------------------------------------
+#if !VSTGUI_PLATFORM_ABSTRACTION
 void CNinePartTiledBitmap::drawAlphaBlend (CDrawContext* inContext, const CRect& inDestRect, const CPoint& offset, unsigned char inAlpha)
 {
 	drawParts (inContext, inDestRect, inAlpha);
 }
+#endif
 
 //-----------------------------------------------------------------------------
 void CNinePartTiledBitmap::drawParts (CDrawContext* inContext, const CRect& inDestRect, unsigned char inAlpha)
 {
-	CRect	myBitmapBounds (0, 0, width, height);
+	CRect	myBitmapBounds (0, 0, getWidth (), getHeight ());
 	CRect	mySourceRect [kPartCount];
 	CRect	myDestRect [kPartCount];
 	
@@ -1172,7 +1275,11 @@ void CNinePartTiledBitmap::drawPart (CDrawContext* inContext, const CRect& inSou
 			if (myPartRect.width() > inSourceRect.width())
 				myPartRect.setWidth(inSourceRect.width());
 			
+		#if VSTGUI_PLATFORM_ABSTRACTION
+			CBitmap::draw (inContext, myPartRect, mySourceOffset, inAlpha);
+		#else
 			CBitmap::drawAlphaBlend (inContext, myPartRect, mySourceOffset, inAlpha);
+		#endif
 		}
 	}
 }
@@ -1180,7 +1287,7 @@ void CNinePartTiledBitmap::drawPart (CDrawContext* inContext, const CRect& inSou
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
-#if WINDOWS && USE_LIBPNG
+#if WINDOWS && USE_LIBPNG && !VSTGUI_PLATFORM_ABSTRACTION
 PNGResourceStream::PNGResourceStream ()
 : streamPos (0)
 , resData (0)
@@ -1226,3 +1333,4 @@ static void PNGResourceStream::readCallback (png_struct* pngPtr, unsigned char* 
 #endif // WINDOWS && USE_LIBPNG
 
 END_NAMESPACE_VSTGUI
+

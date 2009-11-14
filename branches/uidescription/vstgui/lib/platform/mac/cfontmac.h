@@ -35,13 +35,13 @@
 #ifndef __cfontmac__
 #define __cfontmac__
 
-#include "cfont.h"
+#include "../../cfont.h"
 
 #if MAC
 
 #include <ApplicationServices/ApplicationServices.h>
 
-BEGIN_NAMESPACE_VSTGUI
+namespace VSTGUI {
 
 #if VSTGUI_USES_CORE_TEXT
 //-----------------------------------------------------------------------------
@@ -96,7 +96,7 @@ protected:
 
 #endif
 
-END_NAMESPACE_VSTGUI
+} // namespace
 
 #endif // MAC
 

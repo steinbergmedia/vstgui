@@ -35,6 +35,8 @@
 #include "ctooltipsupport.h"
 #include "cvstguitimer.h"
 
+#if !VSTGUI_PLATFORM_ABSTRACTION
+
 #if WINDOWS
 #include <commctrl.h>
 #include "win32support.h"
@@ -43,6 +45,7 @@
 #if MAC_COCOA
 #include "cocoasupport.h"
 #endif
+#endif // !VSTGUI_PLATFORM_ABSTRACTION
 
 #if DEBUG
 #define DEBUGLOG 0
@@ -50,7 +53,7 @@
 
 BEGIN_NAMESPACE_VSTGUI
 
-#if WINDOWS
+#if WINDOWS && !VSTGUI_PLATFORM_ABSTRACTION
 static void* InitTooltip (CFrame* frame);
 #endif
 
@@ -84,7 +87,9 @@ CTooltipSupport::CTooltipSupport (CFrame* frame, int delay)
 : timer (0)
 , frame (frame)
 , currentView (0)
+#if !VSTGUI_PLATFORM_ABSTRACTION
 , platformObject (0)
+#endif
 , delay (delay)
 , state (kHidden)
 {
@@ -92,7 +97,7 @@ CTooltipSupport::CTooltipSupport (CFrame* frame, int delay)
 	frame->setMouseObserver (this);
 	frame->remember ();
 
-	#if WINDOWS
+	#if WINDOWS && !VSTGUI_PLATFORM_ABSTRACTION
 	platformObject = InitTooltip (frame);
 
 	#endif
@@ -103,18 +108,26 @@ CTooltipSupport::~CTooltipSupport ()
 {
 	timer->forget ();
 
+#if VSTGUI_PLATFORM_ABSTRACTION
+	IPlatformFrame* platformFrame = frame->getPlatformFrame ();
+	if (platformFrame)
+		platformFrame->hideTooltip ();
+
+#else
 	#if MAC_COCOA
 	nsViewRemoveTooltip (frame, true);
 	#endif
-
-	frame->setMouseObserver (0);
-	frame->forget ();
 
 	#if WINDOWS
 	if (platformObject)
 		DestroyWindow ((HWND)platformObject);
 
 	#endif
+#endif // VSTGUI_PLATFORM_ABSTRACTION
+
+	frame->setMouseObserver (0);
+	frame->forget ();
+
 }
 
 //------------------------------------------------------------------------
@@ -265,6 +278,12 @@ void CTooltipSupport::hideTooltip ()
 	if (state != kHidden)
 	{
 		state = kHidden;
+		#if VSTGUI_PLATFORM_ABSTRACTION
+		IPlatformFrame* platformFrame = frame->getPlatformFrame ();
+		if (platformFrame)
+			platformFrame->hideTooltip ();
+
+		#else
 		#if MAC_COCOA
 		if (frame->getNSView ())
 		{
@@ -290,6 +309,7 @@ void CTooltipSupport::hideTooltip ()
 		}
 
 		#endif
+		#endif // VSTGUI_PLATFORM_ABSTRACTION
 
 		#if DEBUGLOG
 		DebugPrint ("CTooltipSupport::hideTooltip\n");
@@ -312,6 +332,14 @@ void CTooltipSupport::showTooltip ()
 		if (tooltip)
 		{
 			state = kForceVisible;
+		#if VSTGUI_PLATFORM_ABSTRACTION
+			
+			IPlatformFrame* platformFrame = frame->getPlatformFrame ();
+			if (platformFrame)
+				platformFrame->showTooltip (r, tooltip);
+
+		#else
+
 			#if MAC_COCOA
 			if (frame->getNSView ())
 			{
@@ -359,7 +387,10 @@ void CTooltipSupport::showTooltip ()
  				SendMessage ((HWND)platformObject, TTM_POPUP, 0, 0);
 			}
 			#endif // WINDOWS
+		#endif // VSTGUI_PLATFORM_ABSTRACTION
+
 			free (tooltip);
+
 			#if DEBUGLOG
 			DebugPrint ("CTooltipSupport::showTooltip (%s)\n", currentView->getClassName ());
 			#endif
@@ -394,6 +425,8 @@ CMessageResult CTooltipSupport::notify (CBaseObject* sender, const char* msg)
 	return kMessageUnknown;
 }
 
+#if !VSTGUI_PLATFORM_ABSTRACTION
+
 #if WINDOWS
 void* InitTooltip (CFrame* frame)
 {
@@ -425,5 +458,6 @@ void* InitTooltip (CFrame* frame)
 	return hwndTT;
 }
 #endif // WINDOWS
+#endif // !VSTGUI_PLATFORM_ABSTRACTION
 
 END_NAMESPACE_VSTGUI

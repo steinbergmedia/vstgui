@@ -1538,7 +1538,7 @@ void CViewInspector::show ()
 		platformWindow = PlatformWindow::create (size, "VSTGUI Inspector", PlatformWindow::kPanelType, PlatformWindow::kResizable, this);
 		if (platformWindow)
 		{
-			#if MAC_CARBON
+			#if MAC_CARBON && MAC_COCOA
 			CFrame::setCocoaMode (true);
 			#endif
 			frame = new CFrame (size, platformWindow->getPlatformHandle (), this);

@@ -46,6 +46,14 @@
 #include <map>
 #include <sstream>
 
+#if MAC
+#if VSTGUI_PLATFORM_ABSTRACTION
+#include "../lib/platform/mac/cgdrawcontext.h"
+#else
+#include <ApplicationServices/ApplicationServices.h>
+#endif
+#endif
+
 BEGIN_NAMESPACE_VSTGUI
 
 //-----------------------------------------------------------------------------
@@ -1731,6 +1739,28 @@ bool CEditFrame::onWheel (const CPoint &where, const CMouseWheelAxis &axis, cons
 CBitmap* CEditFrame::createBitmapFromSelection (CSelection* selection)
 {
 	CRect viewSize = selection->getBounds ();
+	
+	#if VSTGUI_PLATFORM_ABSTRACTION
+	COffscreenContext* context = COffscreenContext::create (this, viewSize.getWidth (), viewSize.getHeight ());
+	context->setGlobalAlpha (0.8);
+
+	FOREACH_IN_SELECTION(selection, view)
+		if (!selection->containsParent (view))
+		{
+			CPoint p;
+			view->getParentView ()->localToFrame (p);
+			context->setOffset (CPoint (-viewSize.left + p.x, -viewSize.top + p.y));
+			view->draw (context);
+		}
+
+	FOREACH_IN_SELECTION_END
+
+	CBitmap* bitmap = context->getBitmap ();
+	bitmap->remember ();
+	context->forget ();
+	return bitmap;
+	
+	#else
 	CBitmap* bitmap = new CBitmap (viewSize.getWidth (), viewSize.getHeight ());
 	COffscreenContext context (bitmap);
 	context.offset.x = -viewSize.left;
@@ -1739,24 +1769,29 @@ CBitmap* CEditFrame::createBitmapFromSelection (CSelection* selection)
 	// platform dependent code
 	// clip to selected views
 	#if MAC
+	CGContextRef cgContext = context.getCGContext ();
+	#if 1
 	CGRect* cgRects = new CGRect [selection->total ()];
 	int i = 0;
 	FOREACH_IN_SELECTION(selection, view)
 		CRect gvs = CSelection::getGlobalViewCoordinates (view);
-		cgRects[i].origin.x = gvs.left + context.offset.x;
-		cgRects[i].origin.y = gvs.top + context.offset.y;
+		cgRects[i].origin.x = gvs.left -viewSize.left;
+		cgRects[i].origin.y = gvs.top -viewSize.top;
 		cgRects[i].size.width = gvs.getWidth ();
 		cgRects[i].size.height = gvs.getHeight ();
 		i++;
 	FOREACH_IN_SELECTION_END
-	CGContextClipToRects (context.getCGContext (), cgRects, selection->total ());
+	CGContextClipToRects (cgContext, cgRects, selection->total ());
 	delete [] cgRects;
-	CGContextSetAlpha (context.getCGContext (), 0.5);
+	CGContextSetAlpha (cgContext, 0.5);
+	#endif
+	
 	#endif
 
 	CFrame::drawRect (&context, viewSize);
 
 	return bitmap;
+	#endif
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -1822,14 +1857,17 @@ bool CEditFrame::onDrop (CDragContainer* drag, const CPoint& where)
 				grid->process (where2);
 			}
 			CViewContainer* viewContainer = getContainerAt (where2, true);
-			CRect containerSize = viewContainer->getViewSize (containerSize);
-			CPoint containerOffset;
-			viewContainer->localToFrame (containerOffset);
-			where2.offset (-containerOffset.x, -containerOffset.y);
+			if (viewContainer)
+			{
+				CRect containerSize = viewContainer->getViewSize (containerSize);
+				CPoint containerOffset;
+				viewContainer->localToFrame (containerOffset);
+				where2.offset (-containerOffset.x, -containerOffset.y);
 
-			ViewFactory* viewFactory = dynamic_cast<ViewFactory*> (uiDescription->getViewFactory ());
+				ViewFactory* viewFactory = dynamic_cast<ViewFactory*> (uiDescription->getViewFactory ());
 			
-			performAction (new ViewCopyOperation (dragSelection, viewContainer, where2, viewFactory, uiDescription));
+				performAction (new ViewCopyOperation (dragSelection, viewContainer, where2, viewFactory, uiDescription));
+			}
 			dragSelection->forget ();
 		}
 		return true;
@@ -2308,6 +2346,7 @@ long CEditFrame::onKeyUp (VstKeyCode& keyCode)
 		return CFrame::onKeyUp (keyCode);
 }
 
+#if 0
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
@@ -2358,6 +2397,7 @@ bool CFileBitmap::load (const char* _path)
 		setPath (_path);
 	return result;
 }
+#endif
 
 END_NAMESPACE_VSTGUI
 

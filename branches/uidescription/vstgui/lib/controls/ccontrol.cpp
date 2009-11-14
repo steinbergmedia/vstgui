@@ -75,9 +75,9 @@ CControl::CControl (const CRect& size, CControlListener* listener, long tag, CBi
 , wheelInc (0.1f)
 , lastTicks (-1)
 {
-	#if WINDOWS
+	#if WINDOWS && !VSTGUI_PLATFORM_ABSTRACTION
 		delta = GetDoubleClickTime ();
-	#elif MAC_CARBON
+	#elif MAC_CARBON && !VSTGUI_PLATFORM_ABSTRACTION
 		delta = GetDblTime ();
 	#else
 		delta = 500;

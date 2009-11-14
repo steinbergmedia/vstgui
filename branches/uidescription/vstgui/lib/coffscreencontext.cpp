@@ -34,6 +34,53 @@
 
 #include "coffscreencontext.h"
 #include "cframe.h"
+
+#if VSTGUI_PLATFORM_ABSTRACTION
+
+BEGIN_NAMESPACE_VSTGUI
+
+//-----------------------------------------------------------------------------
+COffscreenContext::COffscreenContext (CBitmap* bitmap)
+: CDrawContext (CRect (0, 0, bitmap->getWidth (), bitmap->getHeight ()))
+, bitmap (bitmap)
+{
+	bitmap->remember ();
+}
+
+//-----------------------------------------------------------------------------
+COffscreenContext::COffscreenContext (const CRect& surfaceRect)
+: CDrawContext (surfaceRect)
+, bitmap (0)
+{
+}
+
+//-----------------------------------------------------------------------------
+COffscreenContext::~COffscreenContext ()
+{
+	if (bitmap)
+		bitmap->forget ();
+}
+
+//-----------------------------------------------------------------------------
+void COffscreenContext::copyFrom (CDrawContext *pContext, CRect destRect, CPoint srcOffset)
+{
+	if (bitmap)
+		bitmap->draw (pContext, destRect, srcOffset);
+}
+
+//-----------------------------------------------------------------------------
+COffscreenContext* COffscreenContext::create (CFrame* frame, CCoord width, CCoord height)
+{
+	IPlatformFrame* pf = frame->getPlatformFrame ();
+	if (pf)
+		return pf->createOffscreenContext (width, height);
+	return 0;
+}
+
+END_NAMESPACE_VSTGUI
+
+#else // VSTGUI_PLATFORM_ABSTRACTION
+
 #include "cbitmap.h"
 #include "win32support.h"
 
@@ -444,3 +491,5 @@ CGContextRef createOffscreenBitmap (long width, long height, void** bits)
 #endif // VSTGUI_USES_COREGRAPHICS
 
 END_NAMESPACE_VSTGUI
+
+#endif // VSTGUI_PLATFORM_ABSTRACTION

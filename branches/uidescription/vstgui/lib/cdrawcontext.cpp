@@ -33,9 +33,269 @@
 //-----------------------------------------------------------------------------
 
 #include "cdrawcontext.h"
+
+#if VSTGUI_PLATFORM_ABSTRACTION
+BEGIN_NAMESPACE_VSTGUI
+
+static const CColor notInitalized = {0, 0, 0, 0};
+//-----------------------------------------------------------------------------
+CDrawContext::CDrawContext (const CRect& surfaceRect)
+: surfaceRect (surfaceRect)
+{
+	currentState.font = 0;
+	currentState.fontColor = notInitalized;
+	currentState.frameWidth = 0;
+	currentState.frameColor = notInitalized;
+	currentState.fillColor = notInitalized;
+	currentState.lineStyle = kLineOnOffDash;
+	currentState.drawMode = kAntialias;
+	currentState.globalAlpha = 1;
+}
+
+//-----------------------------------------------------------------------------
+CDrawContext::~CDrawContext ()
+{
+	#if DEBUG
+	if (!globalStatesStack.empty ())
+		DebugPrint ("Global state stack not empty. Save and restore global state must be called in sequence !\n");
+	#endif
+	while (!globalStatesStack.empty ())
+	{
+		CDrawContextState* state = globalStatesStack.top ();
+		globalStatesStack.pop ();
+		if (state->font)
+			state->font->forget ();
+		delete state;
+	}
+}
+
+//-----------------------------------------------------------------------------
+void CDrawContext::init ()
+{
+	// set the default values
+	setFrameColor (kWhiteCColor);
+	setLineStyle (kLineSolid);
+	setLineWidth (1);
+	setFillColor (kBlackCColor);
+	setFontColor (kWhiteCColor);
+	setFont (kSystemFont);
+	setDrawMode (kCopyMode);
+	setClipRect (surfaceRect);
+}
+
+//-----------------------------------------------------------------------------
+void CDrawContext::saveGlobalState ()
+{
+	CDrawContextState* state = new CDrawContextState ();
+	*state = currentState;
+	globalStatesStack.push (state);
+	if (state->font)
+		state->font->remember ();
+}
+
+//-----------------------------------------------------------------------------
+void CDrawContext::restoreGlobalState ()
+{
+	if (!globalStatesStack.empty ())
+	{
+		if (currentState.font)
+			currentState.font->forget ();
+		CDrawContextState* state = globalStatesStack.top ();
+		currentState = *state;
+		globalStatesStack.pop ();
+		delete state;
+	}
+	else
+	{
+		#if DEBUG
+		DebugPrint ("No saved global state in draw context !!!\n");
+		#endif
+	}
+}
+
+//-----------------------------------------------------------------------------
+void CDrawContext::moveTo (const CPoint& point)
+{
+	currentState.penLoc = point;
+}
+
+//-----------------------------------------------------------------------------
+void CDrawContext::setLineStyle (CLineStyle style)
+{
+	currentState.lineStyle = style;
+}
+
+//-----------------------------------------------------------------------------
+void CDrawContext::setLineWidth (CCoord width)
+{
+	currentState.frameWidth = width;
+}
+
+//-----------------------------------------------------------------------------
+void CDrawContext::setDrawMode (CDrawMode mode)
+{
+	currentState.drawMode = mode;
+}
+
+//-----------------------------------------------------------------------------
+CRect& CDrawContext::getClipRect (CRect &clip) const
+{
+	clip = currentState.clipRect;
+	clip.offset (-currentState.offset.x, -currentState.offset.y);
+	return clip;
+}
+
+//-----------------------------------------------------------------------------
+void CDrawContext::setClipRect (const CRect &clip)
+{
+	currentState.clipRect = clip;
+	currentState.clipRect.offset (currentState.offset.x, currentState.offset.y);
+}
+
+//-----------------------------------------------------------------------------
+void CDrawContext::resetClipRect ()
+{
+	currentState.clipRect = surfaceRect;
+}
+
+//-----------------------------------------------------------------------------
+void CDrawContext::setFillColor (const CColor color)
+{
+	currentState.fillColor = color;
+}
+
+//-----------------------------------------------------------------------------
+void CDrawContext::setFrameColor (const CColor color)
+{
+	currentState.frameColor = color;
+}
+
+//-----------------------------------------------------------------------------
+void CDrawContext::setFontColor (const CColor color)
+{
+	currentState.fontColor = color;
+}
+
+//-----------------------------------------------------------------------------
+void CDrawContext::setFont (const CFontRef newFont, const long& size, const long& style)
+{
+	if (newFont == 0)
+		return;
+	if (currentState.font)
+		currentState.font->forget ();
+	if ((size > 0 && newFont->getSize () != size) || (style != -1 && newFont->getStyle () != style))
+	{
+		currentState.font = (CFontRef)newFont->newCopy ();
+		if (size > 0)
+			currentState.font->setSize (size);
+		if (style != -1)
+			currentState.font->setStyle (style);
+	}
+	else
+	{
+		currentState.font = newFont;
+		currentState.font->remember ();
+	}
+}
+
+//-----------------------------------------------------------------------------
+void CDrawContext::setGlobalAlpha (float newAlpha)
+{
+	currentState.globalAlpha = newAlpha;
+}
+
+//-----------------------------------------------------------------------------
+void CDrawContext::setOffset (const CPoint& offset)
+{
+	currentState.offset = offset;
+}
+
+//-----------------------------------------------------------------------------
+CCoord CDrawContext::getStringWidth (const char* pStr)
+{
+	return getStringWidthUTF8 (pStr);
+}
+
+//-----------------------------------------------------------------------------
+void CDrawContext::drawString (const char *string, const CRect &rect, const short opaque, const CHoriTxtAlign hAlign)
+{
+	if (!string)
+		return;
+	
+	drawStringUTF8 (string, rect, hAlign);
+}
+
+//-----------------------------------------------------------------------------
+CCoord CDrawContext::getStringWidthUTF8 (const char* string)
+{
+	CCoord result = -1;
+	if (currentState.font == 0 || string == 0)
+		return result;
+
+	IFontPainter* painter = currentState.font->getFontPainter ();
+	if (painter)
+		result = painter->getStringWidth (this, string, true);
+
+	return result;
+}
+
+//-----------------------------------------------------------------------------
+void CDrawContext::drawStringUTF8 (const char* string, const CPoint& point, bool antialias)
+{
+	if (string == 0 || currentState.font == 0)
+		return;
+
+	IFontPainter* painter = currentState.font->getFontPainter ();
+	if (painter)
+		painter->drawString (this, string, point, antialias);
+}
+
+//-----------------------------------------------------------------------------
+void CDrawContext::drawStringUTF8 (const char* string, const CRect& _rect, const CHoriTxtAlign hAlign, bool antialias)
+{
+	if (!string || currentState.font == 0)
+		return;
+	
+	CRect rect (_rect);
+
+	double capHeight = -1;
+	CPlatformFont* platformFont = currentState.font->getPlatformFont ();
+	if (platformFont)
+		capHeight = platformFont->getCapHeight ();
+	
+	if (capHeight > 0.)
+		rect.bottom -= (rect.height ()/2 - capHeight / 2);
+	else
+		rect.bottom -= (rect.height ()/2 - currentState.font->getSize () / 2) + 1;
+	if (hAlign != kLeftText)
+	{
+		CCoord stringWidth = getStringWidthUTF8 (string);
+		if (hAlign == kRightText)
+			rect.left = rect.right - stringWidth;
+		else
+			rect.left = (CCoord)(rect.left + (rect.getWidth () / 2.f) - (stringWidth / 2.f));
+	}
+	CRect oldClip;
+	getClipRect (oldClip);
+	CRect newClip (_rect);
+	newClip.bound (oldClip);
+	setClipRect (newClip);
+	drawStringUTF8 (string, CPoint (rect.left, rect.bottom), antialias);
+	setClipRect (oldClip);
+}
+
+END_NAMESPACE_VSTGUI
+#else
+
 #include "cframe.h"
 #include "win32support.h"
 #include <cmath>
+
+#if VSTGUI_PLATFORM_ABSTRACTION
+	#if MAC_CARBON
+		#include "platform/mac/carbon/hiviewframe.h"
+	#endif
+#endif
 
 #if GDIPLUS
 	#pragma comment( lib, "Gdiplus" )
@@ -169,28 +429,44 @@ CDrawContext::CDrawContext (CFrame* inFrame, void* inSystemContext, void* inWind
 #endif // VSTGUI_USES_COREGRAPHICS
 
 #if MAC_CARBON
-	if (pFrame && pFrame->getPlatformControl ())
+	CPoint scrollOffset;
+	HIViewRef platformControl = 0;
+	#if VSTGUI_PLATFORM_ABSTRACTION
+	HIViewFrame* hiViewFrame = pFrame ? dynamic_cast<HIViewFrame*> (pFrame->getPlatformFrame ()) : 0;
+	if (hiViewFrame)
 	{
-		if (pFrame && (pSystemContext || pWindow))
+		platformControl = hiViewFrame->getPlatformControl ();
+		scrollOffset = hiViewFrame->getScrollOffset ();
+	}
+	#else
+	if (pFrame)
+	{
+		platformControl = (HIViewRef)pFrame->getPlatformControl ();
+		scrollOffset = pFrame->hiScrollOffset;
+	}
+	#endif
+	if (platformControl)
+	{
+		if (pSystemContext || pWindow)
 		{
 			HIRect bounds;
-			HIViewGetFrame ((HIViewRef)pFrame->getPlatformControl (), &bounds);
+			HIViewGetFrame (platformControl, &bounds);
 			if (pWindow || !pSystemContext)
 			{
 				if (isWindowComposited ((WindowRef)pWindow))
 				{
 					HIViewRef contentView;
 					HIViewFindByID (HIViewGetRoot ((WindowRef)pWindow), kHIViewWindowContentID, &contentView);
-					if (HIViewGetSuperview ((HIViewRef)pFrame->getPlatformControl ()) != contentView)
-						HIViewConvertRect (&bounds, (HIViewRef)pFrame->getPlatformControl (), contentView);
-					bounds.origin.x += pFrame->hiScrollOffset.x;
-					bounds.origin.y += pFrame->hiScrollOffset.y;
+					if (HIViewGetSuperview (platformControl) != contentView)
+						HIViewConvertRect (&bounds, platformControl, contentView);
+					bounds.origin.x += scrollOffset.x;
+					bounds.origin.y += scrollOffset.y;
 				}
 			}
 			offsetScreen.x = (CCoord)bounds.origin.x;
 			offsetScreen.y = (CCoord)bounds.origin.y;
 			clipRect (0, 0, (CCoord)bounds.size.width, (CCoord)bounds.size.height);
-			clipRect.offset (pFrame->hiScrollOffset.x, pFrame->hiScrollOffset.y);
+			clipRect.offset (scrollOffset.x, scrollOffset.y);
 		}
 		if (!pSystemContext && pWindow)
 		{
@@ -204,7 +480,7 @@ CDrawContext::CDrawContext (CFrame* inFrame, void* inSystemContext, void* inWind
 				GetPortBounds (port, &rect);
 				CGContextTranslateCTM (gCGContext, 0, rect.bottom - rect.top);
 				CGContextTranslateCTM (gCGContext, offsetScreen.x, -offsetScreen.y);
-				CGContextTranslateCTM (gCGContext, -pFrame->hiScrollOffset.x, pFrame->hiScrollOffset.y);
+				CGContextTranslateCTM (gCGContext, -scrollOffset.x, scrollOffset.y);
 				CGContextSetShouldAntialias (gCGContext, false);
 				CGContextSetFillColorSpace (gCGContext, GetGenericRGBColorSpace ());
 				CGContextSetStrokeColorSpace (gCGContext, GetGenericRGBColorSpace ());
@@ -1211,3 +1487,5 @@ CGColorSpaceRef GetGenericRGBColorSpace ()
 #endif // VSTGUI_USES_COREGRAPHICS
 
 END_NAMESPACE_VSTGUI
+
+#endif // VSTGUI_PLATFORM_ABSTRACTION
