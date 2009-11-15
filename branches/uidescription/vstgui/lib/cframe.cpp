@@ -1842,6 +1842,7 @@ void CFrame::dumpHierarchy ()
 bool CFrame::platformDrawRect (CDrawContext* context, const CRect& rect)
 {
 	drawRect (context, rect);
+	return true;
 }
 
 //-----------------------------------------------------------------------------

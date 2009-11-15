@@ -1,28 +1,32 @@
 
-#ifndef __cgdrawcontext__
-#define __cgdrawcontext__
+#ifndef __gdiplusdrawcontext__
+#define __gdiplusdrawcontext__
 
 #include "../../coffscreencontext.h"
 
-#if MAC && VSTGUI_PLATFORM_ABSTRACTION
+#if WINDOWS && VSTGUI_PLATFORM_ABSTRACTION
 
-#include <ApplicationServices/ApplicationServices.h>
+#include <windows.h>
+#include <objidl.h>
+#include <gdiplus.h>
 
-#if MAC_CARBON
-#include <Carbon/Carbon.h>
-#endif
-
-BEGIN_NAMESPACE_VSTGUI
-class CGOffscreenBitmap;
+namespace VSTGUI {
+class GdiplusBitmap;
 
 //-----------------------------------------------------------------------------
-class CGDrawContext : public COffscreenContext
+class GdiplusDrawContext : public COffscreenContext
 {
 public:
-	CGDrawContext (CGContextRef cgContext, const CRect& rect);
-	CGDrawContext (CGOffscreenBitmap* bitmap);
-	~CGDrawContext ();
-	
+	GdiplusDrawContext (HDC deviceContext, const CRect& drawSurface);
+	GdiplusDrawContext (GdiplusBitmap* bitmap);
+	~GdiplusDrawContext ();
+
+	Gdiplus::Graphics* getGraphics () const { return pGraphics; }
+	Gdiplus::Pen* getPen () const { return pPen; }
+	Gdiplus::SolidBrush* getBrush () const { return pBrush; }
+	Gdiplus::SolidBrush* getFontBrush () const { return pFontBrush; }
+
+	// CDrawContext
 	void lineTo (const CPoint &point);
 	void drawLines (const CPoint* points, const long& numberOfLines);
 	void drawPolygon (const CPoint *pPoints, long numberOfPoints, const CDrawStyle drawStyle = kDrawStroked);
@@ -43,21 +47,16 @@ public:
 	void saveGlobalState ();
 	void restoreGlobalState ();
 
-	CGContextRef beginCGContext (bool swapYAxis = false);
-	void releaseCGContext (CGContextRef context);
-
-	CGContextRef getCGContext () const { return cgContext; }
-
+//-----------------------------------------------------------------------------
 protected:
-	void init ();
-	void applyLineDash ();
-
-	CGContextRef cgContext;
+	Gdiplus::Graphics	*pGraphics;
+	Gdiplus::Pen		*pPen;
+	Gdiplus::SolidBrush	*pBrush;
+	Gdiplus::SolidBrush	*pFontBrush;
 };
 
-END_NAMESPACE_VSTGUI
+} // namespace
 
-#endif // MAC && VSTGUI_PLATFORM_ABSTRACTION
+#endif // WINDOWS && VSTGUI_PLATFORM_ABSTRACTION
 
-#endif // __cgdrawcontext__
-
+#endif // __gdiplusdrawcontext__

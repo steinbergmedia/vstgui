@@ -10,8 +10,6 @@ namespace VSTGUI {
 class IPlatformTextEdit;
 class IPlatformTextEditCallback;
 class IPlatformOptionMenu;
-class IPlatformOptionMenuCallback;
-class CDragContainer;
 
 //-----------------------------------------------------------------------------
 // Callback interface from IPlatformFrame implementations

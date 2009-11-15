@@ -693,6 +693,8 @@ ViewHierarchyBrowserWindow::ViewHierarchyBrowserWindow (CViewContainer* baseView
 ViewHierarchyBrowserWindow::~ViewHierarchyBrowserWindow ()
 {
 	owner = 0;
+	if (frame)
+		frame->forget ();
 	if (platformWindow)
 		windowClosed (platformWindow);
 }

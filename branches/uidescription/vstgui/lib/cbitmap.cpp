@@ -37,8 +37,10 @@
 #include "win32support.h"
 
 #if VSTGUI_PLATFORM_ABSTRACTION
-#include "platform/mac/macglobals.h"
-#include "platform/mac/cgdrawcontext.h"
+#if MAC
+	#include "platform/mac/macglobals.h"
+	#include "platform/mac/cgdrawcontext.h"
+#endif
 
 BEGIN_NAMESPACE_VSTGUI
 //-----------------------------------------------------------------------------

@@ -571,12 +571,12 @@ void NSViewFrame::initClass ()
 }
 
 //-----------------------------------------------------------------------------
-NSViewFrame::NSViewFrame (IPlatformFrameCallback* frame, const CRect& size, void* parent)
+NSViewFrame::NSViewFrame (IPlatformFrameCallback* frame, const CRect& size, NSView* parent)
 : nsView (0)
 , tooltipWindow (0)
 {
 	initClass ();
-	nsView = [[viewClass alloc] initWithFrame: frame parent: (NSView*)parent andSize: &size];
+	nsView = [[viewClass alloc] initWithFrame: frame parent: parent andSize: &size];
 }
 
 //-----------------------------------------------------------------------------
@@ -781,9 +781,9 @@ IPlatformFrame* IPlatformFrame::createPlatformFrame (IPlatformFrameCallback* fra
 {
 	#if MAC_CARBON
 	if (CFrame::getCocoaMode () == false)
-		return new HIViewFrame (frame, size, parent);
+		return new HIViewFrame (frame, size, (WindowRef)parent);
 	#endif
-	return new NSViewFrame (frame, size, parent);
+	return new NSViewFrame (frame, size, (NSView*)parent);
 }
 
 //------------------------------------------------------------------------------------

@@ -23,7 +23,7 @@ namespace VSTGUI {
 //-----------------------------------------------------------------------------
 IPlatformFrame* IPlatformFrame::createPlatformFrame (IPlatformFrameCallback* frame, const CRect& size, void* parent)
 {
-	return new HIViewFrame (frame, size, parent);
+	return new HIViewFrame (frame, size, (WindowRef)parent);
 }
 
 #endif
@@ -289,9 +289,9 @@ void* MacDragContainer::next (long& size, long& type)
 }
 
 //-----------------------------------------------------------------------------
-HIViewFrame::HIViewFrame (IPlatformFrameCallback* frame, const CRect& size, void* parent)
+HIViewFrame::HIViewFrame (IPlatformFrameCallback* frame, const CRect& size, WindowRef parent)
 : IPlatformFrame (frame)
-, window ((WindowRef)parent)
+, window (parent)
 , controlRef (0)
 , hasFocus (false)
 , isInMouseTracking (false)

@@ -111,8 +111,11 @@ void AEffGUIEditor::draw (ERect* ppErect)
 		else
 			r = frame->getViewSize ();
 		CDrawContext* context = frame->createDrawContext();
-		frame->drawRect (context, r);
-		context->forget();
+		if (context)
+		{
+			frame->drawRect (context, r);
+			context->forget();
+		}
 	}
 }
 

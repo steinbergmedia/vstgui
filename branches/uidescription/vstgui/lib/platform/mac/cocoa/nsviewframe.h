@@ -19,7 +19,7 @@ class CocoaTooltipWindow;
 class NSViewFrame : public IPlatformFrame
 {
 public:
-	NSViewFrame (IPlatformFrameCallback* frame, const CRect& size, void* parent);
+	NSViewFrame (IPlatformFrameCallback* frame, const CRect& size, NSView* parent);
 	~NSViewFrame ();
 
 	NSView* getPlatformControl () const { return nsView; }

@@ -1,25 +1,27 @@
 
-#ifndef __hiviewframe__
-#define __hiviewframe__
+#ifndef __win32frame__
+#define __win32frame__
 
-#include "../../../cframe.h"
+#include "../../cframe.h"
 
-#if MAC_CARBON && VSTGUI_PLATFORM_ABSTRACTION
+#if WINDOWS && VSTGUI_PLATFORM_ABSTRACTION
 
-#include <Carbon/Carbon.h>
+#include <windows.h>
 
 namespace VSTGUI {
 
 //-----------------------------------------------------------------------------
-class HIViewFrame : public IPlatformFrame
+class Win32Frame : public IPlatformFrame
 {
 public:
-	HIViewFrame (IPlatformFrameCallback* frame, const CRect& size, WindowRef parent);
-	~HIViewFrame ();
+	Win32Frame (IPlatformFrameCallback* frame, const CRect& size, HWND parent);
+	~Win32Frame ();
 
-	HIViewRef getPlatformControl () const { return controlRef; }
-	const CPoint& getScrollOffset () const { return hiScrollOffset; }
-
+	HWND getPlatformWindow () const { return windowHandle; }
+	HWND getParentPlatformWindow () const { return parentWindow; }
+	HWND getOuterWindow () const;
+	IPlatformFrameCallback* getFrame () const { return frame; }
+	
 	// IPlatformFrame
 	bool getGlobalPosition (CPoint& pos) const;
 	bool setSize (const CRect& newSize);
@@ -32,25 +34,23 @@ public:
 	unsigned long getTicks () const;
 	bool showTooltip (const CRect& rect, const char* utf8Text);
 	bool hideTooltip ();
-	void* getPlatformRepresentation () const { return controlRef; }
+	void* getPlatformRepresentation () const { return windowHandle; }
 	IPlatformTextEdit* createPlatformTextEdit (IPlatformTextEditCallback* textEdit);
 	IPlatformOptionMenu* createPlatformOptionMenu ();
 	COffscreenContext* createOffscreenContext (CCoord width, CCoord height);
-
+	
 //-----------------------------------------------------------------------------
 protected:
-	static pascal OSStatus carbonMouseEventHandler (EventHandlerCallRef inHandlerCallRef, EventRef inEvent, void *inUserData);
-	static pascal OSStatus carbonEventHandler (EventHandlerCallRef inHandlerCallRef, EventRef inEvent, void *inUserData);
-	
-	WindowRef window;
-	HIViewRef controlRef;
-	bool hasFocus;
-	bool isInMouseTracking;
-	EventHandlerRef mouseEventHandler;
-	CPoint hiScrollOffset;
+	static void initWindowClass ();
+	static void destroyWindowClass ();
+	static long gUseCount;
+
+	HWND parentWindow;
+	HWND windowHandle;
 };
 
 } // namespace
 
-#endif // MAC_CARBON
-#endif // __hiviewframe__
+#endif // WINDOWS && VSTGUI_PLATFORM_ABSTRACTION
+
+#endif // __win32frame__

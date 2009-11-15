@@ -44,12 +44,13 @@
 #if VSTGUI_CGRAPHICSPATH_AVAILABLE
 
 #if MAC
-#include "cfontmac.h"
+#include "platform/mac/cfontmac.h"
 #include "platform/mac/cgdrawcontext.h"
 
 #elif GDIPLUS
 #include "cfontwin32.h"
 #include "win32support.h"
+#include "platform/win32/gdiplusdrawcontext.h"
 #endif
 
 BEGIN_NAMESPACE_VSTGUI
@@ -138,6 +139,33 @@ static CGAffineTransform createCGAfflineTransform (const CGraphicsTransformation
 static Gdiplus::Color createGdiPlusColor (const CColor& color)
 {
 	return Gdiplus::Color (color.alpha, color.red, color.green, color.blue);
+}
+static Gdiplus::Graphics* getGraphics (CDrawContext* context)
+{
+#if VSTGUI_PLATFORM_ABSTRACTION
+	GdiplusDrawContext* gpdc = dynamic_cast<GdiplusDrawContext*> (context);
+	return gpdc ? gpdc->getGraphics () : 0;
+#else
+	return context->getGraphics ();
+#endif
+}
+static Gdiplus::Pen* getPen (CDrawContext* context)
+{
+#if VSTGUI_PLATFORM_ABSTRACTION
+	GdiplusDrawContext* gpdc = dynamic_cast<GdiplusDrawContext*> (context);
+	return gpdc ? gpdc->getPen () : 0;
+#else
+	return context->getPen ();
+#endif
+}
+static Gdiplus::Brush* getBrush (CDrawContext* context)
+{
+#if VSTGUI_PLATFORM_ABSTRACTION
+	GdiplusDrawContext* gpdc = dynamic_cast<GdiplusDrawContext*> (context);
+	return gpdc ? gpdc->getBrush () : 0;
+#else
+	return context->getBrush ();
+#endif
 }
 #endif
 
@@ -232,9 +260,9 @@ void CGraphicsPath::draw (CDrawContext* context, PathDrawMode mode, CGraphicsTra
 	releaseCGContext (context, cgContext);
 
 	#elif GDIPLUS
-	Gdiplus::Graphics* graphics = context->getGraphics ();
+	Gdiplus::Graphics* graphics = getGraphics (context);
 	Gdiplus::GraphicsState state = graphics->Save ();
-	graphics->TranslateTransform ((Gdiplus::REAL)context->offset.x, (Gdiplus::REAL)context->offset.y);
+	graphics->TranslateTransform ((Gdiplus::REAL)context->getOffset ().x, (Gdiplus::REAL)context->getOffset ().y);
 
 	Gdiplus::GraphicsPath* path = *platformPath;
 
@@ -250,12 +278,12 @@ void CGraphicsPath::draw (CDrawContext* context, PathDrawMode mode, CGraphicsTra
 
 	if (mode == kStroked)
 	{
-		graphics->DrawPath (context->getPen (), path);
+		graphics->DrawPath (getPen (context), path);
 	}
 	else
 	{
 		path->SetFillMode (mode == kFilledEvenOdd ? Gdiplus::FillModeAlternate : Gdiplus::FillModeWinding);
-		graphics->FillPath (context->getBrush (), path);
+		graphics->FillPath (getBrush (context), path);
 	}
 	graphics->Restore (state);
 	if (path != *platformPath)
@@ -294,9 +322,9 @@ void CGraphicsPath::fillLinearGradient (CDrawContext* context, const CGradient& 
 	releaseCGContext (context, cgContext);
 
 	#elif GDIPLUS
-	Gdiplus::Graphics* graphics = context->getGraphics ();
+	Gdiplus::Graphics* graphics = getGraphics (context);
 	Gdiplus::GraphicsState state = graphics->Save ();
-	graphics->TranslateTransform ((Gdiplus::REAL)context->offset.x, (Gdiplus::REAL)context->offset.y);
+	graphics->TranslateTransform ((Gdiplus::REAL)context->getOffset ().x, (Gdiplus::REAL)context->getOffset ().y);
 
 	Gdiplus::GraphicsPath* path = *platformPath;
 
@@ -310,8 +338,8 @@ void CGraphicsPath::fillLinearGradient (CDrawContext* context, const CGradient& 
 		path->Transform (&matrix);
 	}
 
-	Gdiplus::PointF c1p ((Gdiplus::REAL)(startPoint.x-context->offset.x), (Gdiplus::REAL)(startPoint.y-context->offset.y));
-	Gdiplus::PointF c2p ((Gdiplus::REAL)(endPoint.x-context->offset.x), (Gdiplus::REAL)(endPoint.y-context->offset.y));
+	Gdiplus::PointF c1p ((Gdiplus::REAL)(startPoint.x-context->getOffset ().x), (Gdiplus::REAL)(startPoint.y-context->getOffset ().y));
+	Gdiplus::PointF c2p ((Gdiplus::REAL)(endPoint.x-context->getOffset ().x), (Gdiplus::REAL)(endPoint.y-context->getOffset ().y));
 	Gdiplus::LinearGradientBrush brush (c1p, c2p, createGdiPlusColor (gradient.getColor1 ()), createGdiPlusColor (gradient.getColor2 ()));
 	Gdiplus::REAL blendFactors[] = { 0.f, 0.f, 1.f, 1.f };
 	Gdiplus::REAL blendPositions [] = { 0.f, (Gdiplus::REAL)gradient.getColor1Start (), (Gdiplus::REAL)gradient.getColor2Start (), 1.f };

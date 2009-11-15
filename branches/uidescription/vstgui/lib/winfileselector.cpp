@@ -37,6 +37,9 @@
 
 #if VSTGUI_NEW_CFILESELECTOR
 
+#if VSTGUI_PLATFORM_ABSTRACTION
+#include "platform/win32/win32frame.h"
+#endif
 #include <shobjidl.h>
 
 #define IID_PPV_ARG(IType, ppType) IID_##IType, (void**)ppType
@@ -137,7 +140,7 @@ CNewFileSelector* CNewFileSelector::create (CFrame* parent, Style style)
 		#endif
 		return 0;
 	}
-	if (gSystemVersion.dwMajorVersion >= 6) // Vista
+//	if (gSystemVersion.dwMajorVersion >= 6) // Vista
 		return new VistaFileSelector (parent, style);
 	return 0; // TODO: Support for older Windows versions
 }
@@ -247,7 +250,12 @@ bool VistaFileSelector::runModalInternal ()
 			shellItem->Release ();
 		}
 	}
+#if VSTGUI_PLATFORM_ABSTRACTION
+	Win32Frame* win32Frame = frame->getPlatformFrame () ? dynamic_cast<Win32Frame*> (frame->getPlatformFrame ()) : 0;
+	hr = fileDialog->Show (win32Frame ? win32Frame->getPlatformWindow () : 0);
+#else
 	hr = fileDialog->Show ((HWND)frame->getSystemWindow ());
+#endif
 	if (SUCCEEDED (hr))
 	{
 		if (allowMultiFileSelection)

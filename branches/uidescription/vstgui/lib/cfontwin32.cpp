@@ -38,6 +38,8 @@
 
 #if WINDOWS
 
+#include "platform/win32/gdiplusdrawcontext.h"
+
 BEGIN_NAMESPACE_VSTGUI
 
 //-----------------------------------------------------------------------------
@@ -58,6 +60,25 @@ CPlatformFont* CPlatformFont::create (const char* name, const CCoord& size, cons
 }
 
 #if GDIPLUS
+static Gdiplus::Graphics* getGraphics (CDrawContext* context)
+{
+#if VSTGUI_PLATFORM_ABSTRACTION
+	GdiplusDrawContext* gpdc = dynamic_cast<GdiplusDrawContext*> (context);
+	return gpdc ? gpdc->getGraphics () : 0;
+#else
+	return context->getGraphics ();
+#endif
+}
+static Gdiplus::Brush* getFontBrush (CDrawContext* context)
+{
+#if VSTGUI_PLATFORM_ABSTRACTION
+	GdiplusDrawContext* gpdc = dynamic_cast<GdiplusDrawContext*> (context);
+	return gpdc ? gpdc->getFontBrush () : 0;
+#else
+	return context->getFontBrush ();
+#endif
+}
+
 //-----------------------------------------------------------------------------
 GdiPlusFont::GdiPlusFont (const char* name, const CCoord& size, const long& style)
 : font (0)
@@ -83,10 +104,12 @@ GdiPlusFont::~GdiPlusFont ()
 }
 
 //-----------------------------------------------------------------------------
-void GdiPlusFont::drawString (CDrawContext* context, const char* utf8String, const CPoint& point, bool antialias)
+void GdiPlusFont::drawString (CDrawContext* context, const char* utf8String, const CPoint& _point, bool antialias)
 {
-	Gdiplus::Graphics* pGraphics = context->getGraphics ();
-	Gdiplus::SolidBrush* pFontBrush = context->getFontBrush ();
+	CPoint point (_point);
+	point.offset (context->getOffset ().x, context->getOffset ().y);
+	Gdiplus::Graphics* pGraphics = getGraphics (context);
+	Gdiplus::Brush* pFontBrush = getFontBrush (context);
 	if (pGraphics && font && pFontBrush)
 	{
 		UTF8StringHelper stringText (utf8String);
@@ -100,7 +123,7 @@ void GdiPlusFont::drawString (CDrawContext* context, const char* utf8String, con
 CCoord GdiPlusFont::getStringWidth (CDrawContext* context, const char* utf8String, bool antialias)
 {
 	CCoord result = 0;
-	Gdiplus::Graphics* pGraphics = context ? context->getGraphics () : 0;
+	Gdiplus::Graphics* pGraphics = context ? getGraphics (context) : 0;
 	HDC hdc = 0;
 	if (context == 0)
 	{
