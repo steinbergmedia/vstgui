@@ -35,7 +35,7 @@
 #ifndef __cfontwin32__
 #define __cfontwin32__
 
-#include "cfont.h"
+#include "../../cfont.h"
 
 #if WINDOWS
 

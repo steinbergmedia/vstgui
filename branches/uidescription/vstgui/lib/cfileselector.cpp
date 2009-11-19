@@ -37,7 +37,7 @@
 #endif
 
 #include "cfileselector.h"
-#include "win32support.h"
+//#include "win32support.h"
 
 #if VSTGUI_NEW_CFILESELECTOR
 

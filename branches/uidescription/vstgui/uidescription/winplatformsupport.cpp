@@ -33,7 +33,7 @@
 //-----------------------------------------------------------------------------
 
 #include "platformsupport.h"
-#include "../lib/win32support.h"
+#include "../lib/platform/win32/win32support.h"
 #include <wingdi.h>
 
 static TCHAR   gClassName[100];
@@ -110,6 +110,7 @@ Win32Window::Win32Window (const CRect& size, const char* title, WindowType type,
 //-----------------------------------------------------------------------------
 Win32Window::~Win32Window ()
 {
+	delegate = 0;
 	if (platformWindow)
 		DestroyWindow (platformWindow);
 }
@@ -249,9 +250,16 @@ LONG_PTR WINAPI Win32Window::windowProc (HWND hWnd, UINT message, WPARAM wParam,
 	{
 		switch (message)
 		{
+			case WM_DESTROY:
+			{
+				if (window->delegate)
+					window->delegate->windowClosed (window);
+				break;
+			}
+
 			case WM_SIZE:
 			{
-				if (!window->recursiveGuard)
+				if (window->delegate && !window->recursiveGuard)
 				{
 					window->recursiveGuard = true;
 					CRect r = window->getSize ();

@@ -296,9 +296,11 @@ CRect CTextEdit::platformGetVisibleSize () const
 //------------------------------------------------------------------------
 void CTextEdit::platformLooseFocus (bool returnPressed)
 {
+	remember ();
 	bWasReturnPressed = returnPressed;
 	endEdit ();
 	looseFocus ();
+	forget ();
 }
 
 //------------------------------------------------------------------------

@@ -35,11 +35,11 @@
 #ifndef __win32support__
 #define __win32support__
 
-#include "vstguibase.h"
+#include "../../vstguibase.h"
 
 #if WINDOWS
 
-#include "cbitmap.h"
+#include "../../cbitmap.h"
 
 #include <windows.h>
 

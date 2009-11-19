@@ -3,11 +3,12 @@
 
 #if WINDOWS && VSTGUI_PLATFORM_ABSTRACTION
 
+#include <commctrl.h>
 #include "gdiplusdrawcontext.h"
 #include "gdiplusbitmap.h"
 #include "win32textedit.h"
 #include "win32optionmenu.h"
-#include "../../win32support.h"
+#include "win32support.h"
 
 namespace VSTGUI {
 
@@ -32,6 +33,7 @@ Win32Frame::Win32Frame (IPlatformFrameCallback* frame, const CRect& size, HWND p
 : IPlatformFrame (frame)
 , windowHandle (0)
 , parentWindow (parent)
+, tooltipWindow (0)
 , backBuffer (0)
 {
 	initWindowClass ();
@@ -55,6 +57,8 @@ Win32Frame::Win32Frame (IPlatformFrameCallback* frame, const CRect& size, HWND p
 //-----------------------------------------------------------------------------
 Win32Frame::~Win32Frame ()
 {
+	if (tooltipWindow)
+		DestroyWindow (tooltipWindow);
 	if (windowHandle)
 	{
 		SetWindowLongPtr (windowHandle, GWLP_USERDATA, (LONG_PTR)NULL);
@@ -118,6 +122,40 @@ void Win32Frame::destroyWindowClass ()
 
 		UnregisterClass (gClassName, GetInstance ());
 		OleUninitialize ();
+	}
+}
+
+//-----------------------------------------------------------------------------
+void Win32Frame::initTooltip ()
+{
+	if (tooltipWindow == 0 && windowHandle)
+	{
+		TOOLINFO    ti;
+		// Create the ToolTip control.
+		HWND hwndTT = CreateWindow (TOOLTIPS_CLASS, TEXT(""),
+							  WS_POPUP,
+							  CW_USEDEFAULT, CW_USEDEFAULT,
+							  CW_USEDEFAULT, CW_USEDEFAULT,
+							  NULL, (HMENU)NULL, GetInstance (),
+							  NULL);
+
+		// Prepare TOOLINFO structure for use as tracking ToolTip.
+		ti.cbSize = sizeof(TOOLINFO);
+		ti.uFlags = TTF_SUBCLASS;
+		ti.hwnd   = (HWND)windowHandle;
+		ti.uId    = (UINT)0;
+		ti.hinst  = GetInstance ();
+		ti.lpszText  = TEXT("This is a tooltip");
+		ti.rect.left = ti.rect.top = ti.rect.bottom = ti.rect.right = 0;
+
+		// Add the tool to the control
+		if (!SendMessage (hwndTT, TTM_ADDTOOL, 0, (LPARAM)&ti))
+		{
+			DestroyWindow (hwndTT);
+			return;
+		}
+
+		tooltipWindow = hwndTT;
 	}
 }
 
@@ -337,12 +375,42 @@ unsigned long Win32Frame::getTicks () const
 //-----------------------------------------------------------------------------
 bool Win32Frame::showTooltip (const CRect& rect, const char* utf8Text)
 {
+	initTooltip ();
+	if (tooltipWindow)
+	{
+		UTF8StringHelper tooltipText (utf8Text);
+		RECT rc;
+		rc.left = (LONG)rect.left;
+		rc.top = (LONG)rect.top;
+		rc.right = (LONG)rect.right;
+		rc.bottom = (LONG)rect.bottom;
+		TOOLINFO ti = {0};
+		ti.cbSize = sizeof(TOOLINFO);
+		ti.hwnd = windowHandle;
+		ti.uId = 0;
+		ti.rect = rc;
+		ti.lpszText = (TCHAR*)(const TCHAR*)tooltipText;
+		SendMessage (tooltipWindow, TTM_UPDATETIPTEXT, 0, (LPARAM)&ti);
+		SendMessage (tooltipWindow, TTM_NEWTOOLRECT, 0, (LPARAM)&ti);
+		SendMessage (tooltipWindow, TTM_POPUP, 0, 0);
+		return true;
+	}
 	return false;
 }
 
 //-----------------------------------------------------------------------------
 bool Win32Frame::hideTooltip ()
 {
+	if (tooltipWindow)
+	{
+		TOOLINFO ti = {0};
+		ti.cbSize = sizeof(TOOLINFO);
+		ti.hwnd = windowHandle;
+		ti.uId = 0;
+		ti.lpszText = 0;
+		SendMessage (tooltipWindow, TTM_UPDATETIPTEXT, 0, (LPARAM)&ti);
+		SendMessage (tooltipWindow, TTM_POP, 0, 0);
+	}
 	return false;
 }
 
@@ -522,6 +590,7 @@ LONG_PTR WINAPI Win32Frame::WindowProc (HWND hwnd, UINT message, WPARAM wParam, 
 					buttons |= kAlt;
 				if (doubleClick)
 					buttons |= kDoubleClick;
+				SetFocus (win32Frame->getPlatformWindow ());
 				CPoint where ((CCoord)((int)(short)LOWORD(lParam)), (CCoord)((int)(short)HIWORD(lParam)));
 				if (pFrame->platformOnMouseDown (where, buttons) == kMouseEventHandled)
 					SetCapture (win32Frame->getPlatformWindow ());

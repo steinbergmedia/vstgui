@@ -11,7 +11,7 @@
 
 #if WINDOWS && VSTGUI_PLATFORM_ABSTRACTION
 
-#include "../../win32support.h"
+#include "win32support.h"
 #include "../../vstkeycode.h"
 
 namespace VSTGUI {

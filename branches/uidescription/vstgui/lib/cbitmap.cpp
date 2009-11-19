@@ -34,7 +34,6 @@
 
 #include "cbitmap.h"
 #include "cdrawcontext.h"
-#include "win32support.h"
 
 #if VSTGUI_PLATFORM_ABSTRACTION
 #if MAC
@@ -108,6 +107,8 @@ CCoord CBitmap::getHeight () const
 }
 
 #else
+
+#include "win32support.h"
 
 BEGIN_NAMESPACE_VSTGUI
 

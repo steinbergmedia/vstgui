@@ -32,13 +32,13 @@
 // OF THE POSSIBILITY OF SUCH DAMAGE.
 //-----------------------------------------------------------------------------
 
-#include "cfileselector.h"
+#include "../../cfileselector.h"
 #include "win32support.h"
 
 #if VSTGUI_NEW_CFILESELECTOR
 
 #if VSTGUI_PLATFORM_ABSTRACTION
-#include "platform/win32/win32frame.h"
+#include "win32frame.h"
 #endif
 #include <shobjidl.h>
 

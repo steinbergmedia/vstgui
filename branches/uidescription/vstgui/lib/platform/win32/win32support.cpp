@@ -36,7 +36,7 @@
 
 #if WINDOWS
 
-#include "cfont.h"
+#include "../../cfont.h"
 
 extern void* hInstance;
 

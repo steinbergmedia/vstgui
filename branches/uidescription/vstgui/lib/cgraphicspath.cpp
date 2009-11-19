@@ -48,8 +48,8 @@
 #include "platform/mac/cgdrawcontext.h"
 
 #elif GDIPLUS
-#include "cfontwin32.h"
-#include "win32support.h"
+#include "platform/win32/cfontwin32.h"
+#include "platform/win32/win32support.h"
 #include "platform/win32/gdiplusdrawcontext.h"
 #endif
 

@@ -33,7 +33,9 @@
 //-----------------------------------------------------------------------------
 
 #include "vstguidebug.h"
-#include "win32support.h"
+#if WINDOWS
+	#include "platform/win32/win32support.h"
+#endif
 
 #if DEBUG
 

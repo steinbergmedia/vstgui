@@ -41,6 +41,8 @@ public:
 	
 //-----------------------------------------------------------------------------
 protected:
+	void initTooltip ();
+
 	static void initWindowClass ();
 	static void destroyWindowClass ();
 	static LONG_PTR WINAPI WindowProc (HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam);
@@ -48,6 +50,7 @@ protected:
 
 	HWND parentWindow;
 	HWND windowHandle;
+	HWND tooltipWindow;
 
 	COffscreenContext* backBuffer;
 };

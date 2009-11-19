@@ -33,12 +33,12 @@
 //-----------------------------------------------------------------------------
 
 #include "cfontwin32.h"
-#include "cdrawcontext.h"
+#include "../../cdrawcontext.h"
 #include "win32support.h"
 
 #if WINDOWS
 
-#include "platform/win32/gdiplusdrawcontext.h"
+#include "gdiplusdrawcontext.h"
 
 BEGIN_NAMESPACE_VSTGUI
 
