@@ -5,7 +5,10 @@
 
 #include "gdiplusdrawcontext.h"
 #include "gdiplusbitmap.h"
+#include "win32textedit.h"
+#include "win32optionmenu.h"
 #include "../../win32support.h"
+
 namespace VSTGUI {
 
 #define DEBUG_DRAWING	0
@@ -27,14 +30,18 @@ IPlatformFrame* IPlatformFrame::createPlatformFrame (IPlatformFrameCallback* fra
 //-----------------------------------------------------------------------------
 Win32Frame::Win32Frame (IPlatformFrameCallback* frame, const CRect& size, HWND parent)
 : IPlatformFrame (frame)
+, windowHandle (0)
 , parentWindow (parent)
+, backBuffer (0)
 {
 	initWindowClass ();
 
-	DWORD style = 0;
+	DWORD style = WS_EX_TRANSPARENT;
 	#if !DEBUG_DRAWING
 	if (gSystemVersion.dwMajorVersion >= 6) // Vista and above
 		style |= WS_EX_COMPOSITED;
+	else
+		backBuffer = createOffscreenContext (size.getWidth (), size.getHeight ());
 	#endif
 	windowHandle = CreateWindowEx (style, gClassName, TEXT("Window"),
 									WS_CHILD | WS_VISIBLE | WS_CLIPCHILDREN | WS_CLIPSIBLINGS, 
@@ -53,6 +60,8 @@ Win32Frame::~Win32Frame ()
 		SetWindowLongPtr (windowHandle, GWLP_USERDATA, (LONG_PTR)NULL);
 		DestroyWindow (windowHandle);
 	}
+	if (backBuffer)
+		backBuffer->forget ();
 	destroyWindowClass ();
 }
 
@@ -156,6 +165,11 @@ HWND Win32Frame::getOuterWindow () const
 //-----------------------------------------------------------------------------
 bool Win32Frame::getGlobalPosition (CPoint& pos) const
 {
+	RECT r;
+	GetWindowRect (windowHandle, &r);
+	pos.x = r.left;
+	pos.y = r.top;
+	return true;
 	HWND wnd = getOuterWindow ();
 	HWND wndParent = GetParent (wnd);
 
@@ -176,52 +190,33 @@ bool Win32Frame::getGlobalPosition (CPoint& pos) const
 //-----------------------------------------------------------------------------
 bool Win32Frame::setSize (const CRect& newSize)
 {
-	RECT  rctTempWnd, rctParentWnd;
-	HWND  hTempWnd;
-	long   iFrame = (2 * GetSystemMetrics (SM_CYFIXEDFRAME));
-	
-	long diffWidth  = 0;
-	long diffHeight = 0;
-	
-	hTempWnd = windowHandle;
-	
-	while ((diffWidth != iFrame) && (hTempWnd != NULL)) // look for FrameWindow
+	if (backBuffer)
 	{
-		HWND hTempParentWnd = GetParent (hTempWnd);
-		TCHAR buffer[1024];
-		GetClassName (hTempParentWnd, buffer, 1024);
-		if (!hTempParentWnd || !VSTGUI_STRCMP (buffer, TEXT("MDIClient")))
-			break;
-		GetWindowRect (hTempWnd, &rctTempWnd);
-		GetWindowRect (hTempParentWnd, &rctParentWnd);
-		
-		SetWindowPos (hTempWnd, HWND_TOP, 0, 0, (int)newSize.getWidth () + diffWidth, (int)newSize.getHeight () + diffHeight, SWP_NOMOVE);
-		
-		diffWidth  += (rctParentWnd.right - rctParentWnd.left) - (rctTempWnd.right - rctTempWnd.left);
-		diffHeight += (rctParentWnd.bottom - rctParentWnd.top) - (rctTempWnd.bottom - rctTempWnd.top);
-		
-		if ((diffWidth > 80) || (diffHeight > 80)) // parent belongs to host
-			return true;
-
-		if (diffWidth < 0)
-			diffWidth = 0;
-        if (diffHeight < 0)
-			diffHeight = 0;
-		
-		hTempWnd = hTempParentWnd;
+		backBuffer->forget ();
+		backBuffer = createOffscreenContext (newSize.getWidth (), newSize.getHeight ());
 	}
-	
-	if (hTempWnd)
-	{
-		SetWindowPos (hTempWnd, HWND_TOP, 0, 0, (int)newSize.getWidth () + diffWidth, (int)newSize.getHeight () + diffHeight, SWP_NOMOVE);
-		return true;
-	}
-	return false;
+	// TODO for VST2: we only set the size of the window we own. In VST2 this was not the case, we also resized the parent window. This must be done upstream now.
+	SetWindowPos (windowHandle, HWND_TOP, (int)newSize.left, (int)newSize.top, (int)newSize.getWidth (), (int)newSize.getHeight (), SWP_NOMOVE|SWP_NOCOPYBITS|SWP_NOREDRAW|SWP_DEFERERASE);
+	invalidRect (newSize);
+	return true;
 }
 
 //-----------------------------------------------------------------------------
 bool Win32Frame::getSize (CRect& size) const
 {
+	RECT r;
+	GetWindowRect (windowHandle, &r);
+	POINT p;
+	p.x = r.left;
+	p.y = r.top;
+	MapWindowPoints (HWND_DESKTOP, windowHandle, &p, 1);
+	size.left = p.x;
+	size.top = p.y;
+	size.right = p.x + (r.right - r.left);
+	size.bottom = p.y + (r.bottom - r.top);
+	return true;
+
+#if 0 // old code, returned other values, why ?
 	// return the size relative to the client rect of this window
 	// get the main window
 	HWND wnd = GetParent (windowHandle);
@@ -242,6 +237,7 @@ bool Win32Frame::getSize (CRect& size) const
 	size.right  = (CCoord)size.left + rctTempWnd.right - rctTempWnd.left;
 	size.bottom = (CCoord)size.top  + rctTempWnd.bottom - rctTempWnd.top;
 	return true;
+#endif
 }
 
 //-----------------------------------------------------------------------------
@@ -353,13 +349,13 @@ bool Win32Frame::hideTooltip ()
 //-----------------------------------------------------------------------------
 IPlatformTextEdit* Win32Frame::createPlatformTextEdit (IPlatformTextEditCallback* textEdit)
 {
-	return 0;
+	return new Win32TextEdit (windowHandle, textEdit);
 }
 
 //-----------------------------------------------------------------------------
 IPlatformOptionMenu* Win32Frame::createPlatformOptionMenu ()
 {
-	return 0;
+	return new Win32OptionMenu (windowHandle);
 }
 
 //-----------------------------------------------------------------------------
@@ -372,7 +368,7 @@ COffscreenContext* Win32Frame::createOffscreenContext (CCoord width, CCoord heig
 }
 
 //-----------------------------------------------------------------------------
-LONG_PTR WINAPI WindowProc (HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
+LONG_PTR WINAPI Win32Frame::WindowProc (HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
 	Win32Frame* win32Frame = (Win32Frame*)(LONG_PTR)GetWindowLongPtr (hwnd, GWLP_USERDATA);
 	if (win32Frame)
@@ -401,16 +397,22 @@ LONG_PTR WINAPI WindowProc (HWND hwnd, UINT message, WPARAM wParam, LPARAM lPara
 			}
 			case WM_CTLCOLOREDIT:
 			{
-				#if 0 // TODO: ...
-				CTextEdit* textEdit = (CTextEdit*)pFrame->getFocusView ();
-				if (textEdit)
+				Win32TextEdit* win32TextEdit = (Win32TextEdit*)(LONG_PTR) GetWindowLongPtr ((HWND)lParam, GWLP_USERDATA);
+				if (win32TextEdit)
 				{
-					CColor fontColor = textEdit->getFontColor ();
+					CColor fontColor = win32TextEdit->getTextEdit ()->platformGetFontColor ();
 					SetTextColor ((HDC) wParam, RGB (fontColor.red, fontColor.green, fontColor.blue));
+					#if 1 // TODO: I don't know why the transparent part does not work anymore. Needs more investigation.
+					CColor backColor = win32TextEdit->getTextEdit ()->platformGetBackColor ();
+					SetBkColor ((HDC) wParam, RGB (backColor.red, backColor.green, backColor.blue));
+					return (LRESULT)(win32TextEdit->getPlatformBackColor ());
+
+					#else
 					SetBkMode ((HDC)wParam, TRANSPARENT);
-					return (LRESULT) ::GetStockObject (NULL_BRUSH);
+					return (LRESULT) ::GetStockObject (HOLLOW_BRUSH);
+
+					#endif
 				}
-				#endif
 				break;
 			}
 
@@ -434,7 +436,13 @@ LONG_PTR WINAPI WindowProc (HWND hwnd, UINT message, WPARAM wParam, LPARAM lPara
 					frameSize.offset (-frameSize.left, -frameSize.top);
 					GdiplusDrawContext context (hdc, frameSize);
 					CRect updateRect ((CCoord)ps.rcPaint.left, (CCoord)ps.rcPaint.top, (CCoord)ps.rcPaint.right, (CCoord)ps.rcPaint.bottom);
-					pFrame->platformDrawRect (&context, updateRect);
+					if (win32Frame->backBuffer)
+					{
+						pFrame->platformDrawRect (win32Frame->backBuffer, updateRect);
+						win32Frame->backBuffer->copyFrom (&context, updateRect, CPoint (updateRect.left, updateRect.top));
+					}
+					else
+						pFrame->platformDrawRect (&context, updateRect);
 				}
 
 				#else

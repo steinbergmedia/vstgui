@@ -53,7 +53,7 @@ class CScrollView;
 class CViewInspector : public VSTGUIEditorInterface, public CControlListener, public CBaseObject, public IPlatformWindowDelegate
 {
 public:
-	CViewInspector (CSelection* selection, IActionOperator* actionOperator);
+	CViewInspector (CSelection* selection, IActionOperator* actionOperator, void* parentPlatformWindow = 0);
 	~CViewInspector ();
 
 	void show ();
@@ -83,6 +83,7 @@ protected:
 //	CFrame* frame;
 	CScrollView* scrollView;
 	PlatformWindow* platformWindow;
+	void* parentPlatformWindow;
 	CRect windowSize;
 	std::list<CView*> attributeViews;
 };

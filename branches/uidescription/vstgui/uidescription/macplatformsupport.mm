@@ -105,7 +105,7 @@ protected:
 };
 
 //-----------------------------------------------------------------------------
-PlatformWindow* PlatformWindow::create (const CRect& size, const char* title, WindowType type, long styleFlags, IPlatformWindowDelegate* delegate)
+PlatformWindow* PlatformWindow::create (const CRect& size, const char* title, WindowType type, long styleFlags, IPlatformWindowDelegate* delegate, void* parentWindow)
 {
 	return new CocoaWindow (size, title, type, styleFlags, delegate);
 }

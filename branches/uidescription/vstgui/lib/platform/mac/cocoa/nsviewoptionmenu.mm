@@ -37,20 +37,24 @@ static id VSTGUI_NSMenu_Init (id self, SEL _cmd, void* _menu)
 		var->_selectedMenu = 0;
 		OBJC_SET_VALUE(self, _private, var);
 
+		long index = -1;
 		bool multipleCheck = menu->getStyle () & (kMultipleCheckStyle & ~kCheckStyle);
-		for (long i = 0; i < menu->getNbEntries (); i++)
+		CConstMenuItemIterator it = menu->getItems ()->begin ();
+		while (it != menu->getItems ()->end ())
 		{
+			CMenuItem* item = (*it);
+			it++;
+			index++;
 			NSMenuItem* nsItem = 0;
-			CMenuItem* item = menu->getEntry (i);
 			NSMutableString* itemTitle = [[[NSMutableString alloc] initWithCString:item->getTitle () encoding:NSUTF8StringEncoding] autorelease];
 			if (menu->getPrefixNumbers ())
 			{
 				NSString* prefixString = 0;
 				switch (menu->getPrefixNumbers ())
 				{
-					case 2:	prefixString = [NSString stringWithFormat:@"%1d ", i+1]; break;
-					case 3: prefixString = [NSString stringWithFormat:@"%02d ", i+1]; break;
-					case 4: prefixString = [NSString stringWithFormat:@"%03d ", i+1]; break;
+					case 2:	prefixString = [NSString stringWithFormat:@"%1d ", index+1]; break;
+					case 3: prefixString = [NSString stringWithFormat:@"%02d ", index+1]; break;
+					case 4: prefixString = [NSString stringWithFormat:@"%03d ", index+1]; break;
 				}
 				[itemTitle insertString:prefixString atIndex:0];
 			}
@@ -70,7 +74,7 @@ static id VSTGUI_NSMenu_Init (id self, SEL _cmd, void* _menu)
 				if (item->isTitle ())
 					[nsItem setIndentationLevel:1];
 				[nsItem setTarget:nsMenu];
-				[nsItem setTag: i];
+				[nsItem setTag: index];
 				if (multipleCheck && item->isChecked ())
 					[nsItem setState:NSOnState];
 				else

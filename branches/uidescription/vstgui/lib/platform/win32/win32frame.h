@@ -43,10 +43,13 @@ public:
 protected:
 	static void initWindowClass ();
 	static void destroyWindowClass ();
+	static LONG_PTR WINAPI WindowProc (HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam);
 	static long gUseCount;
 
 	HWND parentWindow;
 	HWND windowHandle;
+
+	COffscreenContext* backBuffer;
 };
 
 } // namespace

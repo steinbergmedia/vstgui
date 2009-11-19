@@ -46,7 +46,7 @@ BEGIN_NAMESPACE_VSTGUI
 class Win32Window : public PlatformWindow
 {
 public:
-	Win32Window (const CRect& size, const char* title, WindowType type, long styleFlags, IPlatformWindowDelegate* delegate);
+	Win32Window (const CRect& size, const char* title, WindowType type, long styleFlags, IPlatformWindowDelegate* delegate, void* parentWindow);
 	~Win32Window ();
 
 	void* getPlatformHandle () const;
@@ -71,13 +71,13 @@ protected:
 };
 
 //-----------------------------------------------------------------------------
-PlatformWindow* PlatformWindow::create (const CRect& size, const char* title, WindowType type, long styleFlags, IPlatformWindowDelegate* delegate)
+PlatformWindow* PlatformWindow::create (const CRect& size, const char* title, WindowType type, long styleFlags, IPlatformWindowDelegate* delegate, void* parentWindow)
 {
-	return new Win32Window (size, title, type, styleFlags, delegate);
+	return new Win32Window (size, title, type, styleFlags, delegate, parentWindow);
 }
 
 //-----------------------------------------------------------------------------
-Win32Window::Win32Window (const CRect& size, const char* title, WindowType type, long styleFlags, IPlatformWindowDelegate* delegate)
+Win32Window::Win32Window (const CRect& size, const char* title, WindowType type, long styleFlags, IPlatformWindowDelegate* delegate, void* parentWindow)
 : platformWindow (0)
 , delegate (delegate)
 , type (type)
@@ -92,7 +92,7 @@ Win32Window::Win32Window (const CRect& size, const char* title, WindowType type,
 	DWORD wStyle = 0;
 	getWindowFlags (wStyle, exStyle);
 	AdjustWindowRectEx (&r, wStyle, FALSE, exStyle);
-	HWND baseWindow = GetTopWindow (0);
+	HWND baseWindow = parentWindow ? (HWND)parentWindow : GetForegroundWindow ();
 #if 0
 	while (baseWindow)
 	{
@@ -100,6 +100,7 @@ Win32Window::Win32Window (const CRect& size, const char* title, WindowType type,
 		if (temp == 0)
 			break;
 		baseWindow = temp;
+		break;
 	}
 #endif
 	platformWindow = CreateWindowEx (exStyle, gClassName, titleStr, wStyle, r.left, r.top, r.right - r.left, r.bottom - r.top, baseWindow, 0, GetInstance (), 0);
@@ -116,12 +117,11 @@ Win32Window::~Win32Window ()
 //-----------------------------------------------------------------------------
 void Win32Window::getWindowFlags (DWORD& wStyle, DWORD& exStyle)
 {
-	exStyle = WS_EX_COMPOSITED;
+	exStyle = WS_EX_COMPOSITED|WS_EX_LAYERED;
 	wStyle = WS_CAPTION|WS_CLIPCHILDREN;
 	if (type == kPanelType)
 	{
-		exStyle |= WS_EX_TOOLWINDOW;//WS_EX_PALETTEWINDOW;
-		//wStyle |= WS_OVERLAPPED;
+		wStyle |= WS_POPUP;
 	}
 	if (styleFlags & kClosable)
 		wStyle |= WS_SYSMENU;

@@ -74,7 +74,7 @@ protected:
 class ViewHierarchyBrowserWindow : public CBaseObject, public VSTGUIEditorInterface, public IPlatformWindowDelegate
 {
 public:
-	ViewHierarchyBrowserWindow (CViewContainer* baseView, CBaseObject* owner, UIDescription* description);
+	ViewHierarchyBrowserWindow (CViewContainer* baseView, CBaseObject* owner, UIDescription* description, void* parentPlatformWindow = 0);
 	~ViewHierarchyBrowserWindow ();
 
 	void changeBaseView (CViewContainer* newBaseView);

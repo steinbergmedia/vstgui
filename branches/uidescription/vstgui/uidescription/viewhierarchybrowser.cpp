@@ -649,14 +649,14 @@ void ViewHierarchyBrowser::notifyHierarchyChange (CView* view, bool wasRemoved)
 const char* ViewHierarchyBrowserWindow::kMsgWindowClosed = "ViewHierarchyBrowserWindow closed";
 
 //-----------------------------------------------------------------------------
-ViewHierarchyBrowserWindow::ViewHierarchyBrowserWindow (CViewContainer* baseView, CBaseObject* owner, UIDescription* description)
+ViewHierarchyBrowserWindow::ViewHierarchyBrowserWindow (CViewContainer* baseView, CBaseObject* owner, UIDescription* description, void* parentPlatformWindow)
 : owner (owner)
 , platformWindow (0)
 , browser (0)
 , description (description)
 {
 	CRect size (0, 0, 300, 500);
-	platformWindow = PlatformWindow::create (size, "VSTGUI Hierarchy Browser", PlatformWindow::kPanelType, PlatformWindow::kClosable|PlatformWindow::kResizable, this);
+	platformWindow = PlatformWindow::create (size, "VSTGUI Hierarchy Browser", PlatformWindow::kPanelType, PlatformWindow::kClosable|PlatformWindow::kResizable, this, parentPlatformWindow);
 	if (platformWindow)
 	{
 		#if MAC_CARBON && MAC_COCOA

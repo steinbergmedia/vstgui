@@ -1153,12 +1153,13 @@ COptionMenu* CViewInspector::createMenuFromList (const CRect& size, CControlList
 }
 
 //-----------------------------------------------------------------------------
-CViewInspector::CViewInspector (CSelection* selection, IActionOperator* actionOperator)
+CViewInspector::CViewInspector (CSelection* selection, IActionOperator* actionOperator, void* parentPlatformWindow)
 : selection (selection)
 , actionOperator (actionOperator)
 , description (0)
 , scrollView (0)
 , platformWindow (0)
+, parentPlatformWindow (parentPlatformWindow)
 {
 	selection->remember ();
 	selection->addDependent (this);
@@ -1535,7 +1536,7 @@ void CViewInspector::show ()
 		size.offset (-kMargin, 0);
 		size.right += kMargin*2;
 		size.bottom += kMargin;
-		platformWindow = PlatformWindow::create (size, "VSTGUI Inspector", PlatformWindow::kPanelType, PlatformWindow::kResizable, this);
+		platformWindow = PlatformWindow::create (size, "VSTGUI Inspector", PlatformWindow::kPanelType, PlatformWindow::kResizable, this, parentPlatformWindow);
 		if (platformWindow)
 		{
 			#if MAC_CARBON && MAC_COCOA

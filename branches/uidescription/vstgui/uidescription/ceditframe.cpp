@@ -705,7 +705,7 @@ CEditFrame::CEditFrame (const CRect& size, void* windowPtr, VSTGUIEditorInterfac
 	if (uiDescViewName)
 		templateName = uiDescViewName;
 
-	inspector = new CViewInspector (selection, this);
+	inspector = new CViewInspector (selection, this, windowPtr);
 	setUIDescription (description);
 	setEditMode (_editMode);
 	undoStackList.push_back (new UndoStackTop);
@@ -1033,7 +1033,8 @@ void CEditFrame::showOptionsMenu (const CPoint& where)
 					}
 					else
 					{
-						hierarchyBrowser = new ViewHierarchyBrowserWindow (dynamic_cast<CViewContainer*> (getView (0)), this, uiDescription);
+						void* parentPlatformWindow = getPlatformFrame ()->getPlatformRepresentation ();
+						hierarchyBrowser = new ViewHierarchyBrowserWindow (dynamic_cast<CViewContainer*> (getView (0)), this, uiDescription, parentPlatformWindow);
 					}
 					break;
 				}
