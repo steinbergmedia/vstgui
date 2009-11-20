@@ -204,18 +204,10 @@ void CParamDisplay::drawText (CDrawContext *pContext, const char *string)
 			CRect newSize (textRect);
 			newSize.offset (1, 1);
 			pContext->setFontColor (shadowColor);
-			#if VSTGUI_USES_UTF8
 			pContext->drawStringUTF8 (string, newSize, horiTxtAlign, bAntialias);
-			#else
-			pContext->drawString (string, newSize, !bTextTransparencyEnabled, horiTxtAlign);
-			#endif
 		}
 		pContext->setFontColor (fontColor);
-		#if VSTGUI_USES_UTF8
 		pContext->drawStringUTF8 (string, textRect, horiTxtAlign, bAntialias);
-		#else
-		pContext->drawString (string, textRect, !bTextTransparencyEnabled, horiTxtAlign);
-		#endif
 		pContext->setClipRect (oldClip);
 	}
 }

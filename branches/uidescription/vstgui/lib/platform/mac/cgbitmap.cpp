@@ -1,7 +1,7 @@
 
 #include "cgbitmap.h"
 
-#if VSTGUI_PLATFORM_ABSTRACTION
+#if MAC
 #include "macglobals.h"
 
 BEGIN_NAMESPACE_VSTGUI
@@ -273,4 +273,4 @@ int CGOffscreenBitmap::getBytesPerRow () const
 
 END_NAMESPACE_VSTGUI
 
-#endif // VSTGUI_PLATFORM_ABSTRACTION
+#endif // MAC

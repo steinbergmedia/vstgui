@@ -5,7 +5,7 @@
 #import "../../../cpoint.h"
 #import "../../../ccolor.h"
 
-#if MAC_COCOA && VSTGUI_PLATFORM_ABSTRACTION
+#if MAC_COCOA
 
 #import <objc/runtime.h>
 #import <objc/message.h>
@@ -110,5 +110,5 @@ HIDDEN inline NSImage* imageFromCGImageRef (CGImageRef image)
     return newImage;
 }
 
-#endif // MAC_COCOA && VSTGUI_PLATFORM_ABSTRACTION
+#endif // MAC_COCOA
 #endif // __cocoahelpers__

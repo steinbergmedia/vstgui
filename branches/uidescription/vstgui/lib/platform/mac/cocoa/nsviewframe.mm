@@ -1,7 +1,7 @@
 
 #import "nsviewframe.h"
 
-#if MAC_COCOA && VSTGUI_PLATFORM_ABSTRACTION
+#if MAC_COCOA
 
 #import "cocoahelpers.h"
 #import "cocoadragcontainer.h"
@@ -10,6 +10,7 @@
 #import "autoreleasepool.h"
 #import "../cgdrawcontext.h"
 #import "../cgbitmap.h"
+#import "../quartzgraphicspath.h"
 #import "../../../cvstguitimer.h"
 
 #if MAC_CARBON
@@ -777,6 +778,12 @@ COffscreenContext* NSViewFrame::createOffscreenContext (CCoord width, CCoord hei
 }
 
 //-----------------------------------------------------------------------------
+CGraphicsPath* NSViewFrame::createGraphicsPath ()
+{
+	return new QuartzGraphicsPath;
+}
+
+//-----------------------------------------------------------------------------
 IPlatformFrame* IPlatformFrame::createPlatformFrame (IPlatformFrameCallback* frame, const CRect& size, void* parent)
 {
 	#if MAC_CARBON
@@ -885,4 +892,4 @@ CMessageResult CocoaTooltipWindow::notify (CBaseObject* sender, const char* mess
 }
 END_NAMESPACE_VSTGUI
 
-#endif // MAC_COCOA && VSTGUI_PLATFORM_ABSTRACTION
+#endif // MAC_COCOA

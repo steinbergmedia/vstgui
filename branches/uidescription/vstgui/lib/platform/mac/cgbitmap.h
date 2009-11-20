@@ -3,7 +3,7 @@
 
 #include "../iplatformbitmap.h"
 
-#if VSTGUI_PLATFORM_ABSTRACTION
+#if MAC
 
 #include <ApplicationServices/ApplicationServices.h>
 
@@ -55,5 +55,5 @@ protected:
 
 END_NAMESPACE_VSTGUI
 
-#endif // VSTGUI_PLATFORM_ABSTRACTION
+#endif // MAC
 #endif // __cgbitmap__

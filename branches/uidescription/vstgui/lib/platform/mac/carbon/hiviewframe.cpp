@@ -1,7 +1,7 @@
 
 #include "hiviewframe.h"
 
-#if MAC_CARBON && VSTGUI_PLATFORM_ABSTRACTION
+#if MAC_CARBON
 
 #include "../../iplatformtextedit.h"
 #include "../../../cdrawcontext.h"
@@ -10,6 +10,7 @@
 #include "../cgdrawcontext.h"
 #include "../cgbitmap.h"
 #include "../macglobals.h"
+#include "../quartzgraphicspath.h"
 
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations" // we know that we use deprecated functions from Carbon, so we don't want to be warned
 
@@ -578,6 +579,7 @@ bool HIViewFrame::setMouseCursor (CCursorType type)
 			SetThemeCursor (kThemeArrowCursor);
 			break;
 	}
+	return true;
 }
 
 //-----------------------------------------------------------------------------
@@ -619,6 +621,7 @@ bool HIViewFrame::scrollRect (const CRect& _src, const CPoint& distance)
 		if (HIViewScrollRect (controlRef, &cgRect, (CGFloat)distance.x, (CGFloat)distance.y) == noErr)
 			return true;
 	}
+	return false;
 }
 
 //-----------------------------------------------------------------------------
@@ -680,6 +683,12 @@ COffscreenContext* HIViewFrame::createOffscreenContext (CCoord width, CCoord hei
 	CGDrawContext* context = new CGDrawContext (bitmap);
 	bitmap->forget ();
 	return context;
+}
+
+//-----------------------------------------------------------------------------
+CGraphicsPath* HIViewFrame::createGraphicsPath ()
+{
+	return new QuartzGraphicsPath;
 }
 
 #define ENABLE_LOGGING 0
@@ -957,6 +966,8 @@ pascal OSStatus HIViewFrame::carbonEventHandler (EventHandlerCallRef inHandlerCa
 					dirtyRect.setHeight (controlBounds.size.height);
 					CGContextRef cgcontext = 0;
 					OSStatus res = GetEventParameter (inEvent, kEventParamCGContextRef, typeCGContextRef, NULL, sizeof (cgcontext), NULL, &cgcontext);
+					if (res != noErr)
+						break;
 					CFrame* cframe = dynamic_cast<CFrame*> (frame);
 					context = new CGDrawContext (cgcontext, dirtyRect);
 
@@ -1292,5 +1303,7 @@ pascal OSStatus HIViewFrame::carbonEventHandler (EventHandlerCallRef inHandlerCa
 
 
 } // namespace
+
+#pragma GCC diagnostic warning "-Wdeprecated-declarations" // we know that we use deprecated functions from Carbon, so we don't want to be warned
 
 #endif // MAC_CARBON

@@ -38,9 +38,7 @@
 #include "cparamdisplay.h"
 #include <list>
 
-#if VSTGUI_PLATFORM_ABSTRACTION
 #include "../platform/iplatformoptionmenu.h"
-#endif
 
 BEGIN_NAMESPACE_VSTGUI
 
@@ -160,9 +158,6 @@ public:
 
 	bool popup ();																							///< pops up menu
 	bool popup (CFrame* frame, const CPoint& frameLocation);												///< pops up menu at frameLocation
-#if MAC_CARBON && !VSTGUI_PLATFORM_ABSTRACTION
-	short   getMenuID () const { return menuID; }
-#endif // MAC_CARBON
 
 	CMenuItemList* getItems () const { return menuItems; }
 	//@}
@@ -179,9 +174,6 @@ public:
 	CLASS_METHODS(COptionMenu, CParamDisplay)
 protected:
 	~COptionMenu ();
-	COptionMenu* getItemMenu (long idx, long& idxInMenu, long& offsetIdx);
-	void  removeItems ();
-	void* appendItems (long& offsetIdx);
 
 	CMenuItemList* menuItems;
 
@@ -193,17 +185,6 @@ protected:
 	long	 prefixNumbers;
 	CBitmap* bgWhenClick;
 	COptionMenu* lastMenu;
-
-#if VSTGUI_PLATFORM_ABSTRACTION
-
-#else
-
-	void* platformControl;
-#if MAC_CARBON
-	short   menuID;
-#endif // MAC_CARBON
-#endif // VSTGUI_PLATFORM_ABSTRACTION
-
 };
 
 END_NAMESPACE_VSTGUI

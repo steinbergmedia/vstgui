@@ -3,8 +3,6 @@
 
 #include "../cbitmap.h"
 
-#if VSTGUI_PLATFORM_ABSTRACTION
-
 BEGIN_NAMESPACE_VSTGUI
 class CResourceDescription;
 
@@ -20,5 +18,4 @@ public:
 
 END_NAMESPACE_VSTGUI
 
-#endif // VSTGUI_PLATFORM_ABSTRACTION
 #endif // __iplatformbitmap__

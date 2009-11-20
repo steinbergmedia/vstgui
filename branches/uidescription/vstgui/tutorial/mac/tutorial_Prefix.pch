@@ -2,4 +2,3 @@
 // Prefix header for all source files of the 'tutorial' target in the 'tutorial' project.
 //
 
-#define VSTGUI_PLATFORM_ABSTRACTION 1

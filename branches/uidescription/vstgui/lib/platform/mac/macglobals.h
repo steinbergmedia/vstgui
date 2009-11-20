@@ -6,8 +6,6 @@
 
 #if MAC
 
-#if VSTGUI_PLATFORM_ABSTRACTION
-
 #include <ApplicationServices/ApplicationServices.h>
 
 BEGIN_NAMESPACE_VSTGUI
@@ -19,6 +17,5 @@ extern CGColorSpaceRef GetGenericRGBColorSpace ();
 
 END_NAMESPACE_VSTGUI
 
-#endif // VSTGUI_PLATFORM_ABSTRACTION
 #endif // MAC
 #endif // __macglobals__

@@ -4,7 +4,7 @@
 
 #include "../../iplatformoptionmenu.h"
 
-#if MAC_COCOA && VSTGUI_PLATFORM_ABSTRACTION
+#if MAC_COCOA
 
 namespace VSTGUI {
 
@@ -22,6 +22,6 @@ protected:
 
 } // namespace
 
-#endif // MAC_CARBON && VSTGUI_PLATFORM_ABSTRACTION
+#endif // MAC_COCOA
 
 #endif // __nsviewoptionmenu__

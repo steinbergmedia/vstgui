@@ -4,7 +4,7 @@
 
 #include "../../../cframe.h"
 
-#if MAC_CARBON && VSTGUI_PLATFORM_ABSTRACTION
+#if MAC_CARBON
 
 #include <Carbon/Carbon.h>
 
@@ -36,6 +36,7 @@ public:
 	IPlatformTextEdit* createPlatformTextEdit (IPlatformTextEditCallback* textEdit);
 	IPlatformOptionMenu* createPlatformOptionMenu ();
 	COffscreenContext* createOffscreenContext (CCoord width, CCoord height);
+	CGraphicsPath* createGraphicsPath ();
 
 //-----------------------------------------------------------------------------
 protected:

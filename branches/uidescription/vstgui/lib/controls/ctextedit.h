@@ -36,10 +36,7 @@
 #define __ctextedit__
 
 #include "ctextlabel.h"
-
-#if VSTGUI_PLATFORM_ABSTRACTION
-	#include "../platform/iplatformtextedit.h"
-#endif
+#include "../platform/iplatformtextedit.h"
 
 BEGIN_NAMESPACE_VSTGUI
 
@@ -48,10 +45,7 @@ BEGIN_NAMESPACE_VSTGUI
 //! @brief a text edit control
 /// @ingroup controls
 //-----------------------------------------------------------------------------
-class CTextEdit : public CParamDisplay
-#if VSTGUI_PLATFORM_ABSTRACTION
-, public IPlatformTextEditCallback
-#endif
+class CTextEdit : public CParamDisplay, public IPlatformTextEditCallback
 {
 public:
 	CTextEdit (const CRect& size, CControlListener* listener, long tag, const char* txt = 0, CBitmap* background = 0, const long style = 0);
@@ -83,16 +77,12 @@ public:
 	virtual void setViewSize (CRect& newSize, bool invalid = true);
 	virtual void parentSizeChanged ();
 
-#if !VSTGUI_PLATFORM_ABSTRACTION
-	void* platformFontColor;
-	void* platformControl;
-#endif
 	bool bWasReturnPressed;
 
 	CLASS_METHODS(CTextEdit, CParamDisplay)
 protected:
 	~CTextEdit ();
-#if VSTGUI_PLATFORM_ABSTRACTION
+
 	CColor platformGetBackColor () const { return getBackColor (); }
 	CColor platformGetFontColor () const { return getFontColor (); }
 	CFontRef platformGetFont () const { return getFont (); }
@@ -105,9 +95,7 @@ protected:
 	bool platformOnKeyDown (const VstKeyCode& key);
 
 	IPlatformTextEdit* platformControl;
-#else
-	void* platformFont;
-#endif
+
 	char text[256];
 
 	void (*editConvert) (char* input, char* string);

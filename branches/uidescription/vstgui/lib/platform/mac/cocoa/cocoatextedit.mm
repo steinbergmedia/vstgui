@@ -1,7 +1,7 @@
 
 #include "cocoatextedit.h"
 
-#if MAC_COCOA && VSTGUI_PLATFORM_ABSTRACTION
+#if MAC_COCOA
 
 #import "cocoahelpers.h"
 #import "autoreleasepool.h"
@@ -214,6 +214,7 @@ bool CocoaTextEdit::getText (char* text, long maxSize)
 bool CocoaTextEdit::updateSize ()
 {
 	[platformControl performSelector:@selector(syncSize)];
+	return true;
 }
 
 //-----------------------------------------------------------------------------
@@ -226,4 +227,4 @@ bool CocoaTextEdit::setText (const char* text)
 
 } // namespace
 
-#endif
+#endif // MAC_COCOA

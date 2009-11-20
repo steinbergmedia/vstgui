@@ -1,7 +1,7 @@
 
 #import "nsviewoptionmenu.h"
 
-#if MAC_COCOA && VSTGUI_PLATFORM_ABSTRACTION
+#if MAC_COCOA
 
 #import "cocoahelpers.h"
 #import "nsviewframe.h"
@@ -268,4 +268,4 @@ PlatformOptionMenuResult NSViewOptionMenu::popup (COptionMenu* optionMenu)
 
 } // namespace
 
-#endif // MAC_COCOA && VSTGUI_PLATFORM_ABSTRACTION
+#endif // MAC_COCOA

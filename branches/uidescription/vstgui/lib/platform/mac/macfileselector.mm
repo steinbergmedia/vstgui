@@ -1,6 +1,5 @@
 #import "../../cfileselector.h"
 
-#if VSTGUI_NEW_CFILESELECTOR
 // the cocoa fileselector is also used for carbon
 #import <Cocoa/Cocoa.h>
 #import "cocoa/cocoahelpers.h"
@@ -282,5 +281,3 @@ void VSTGUI_FileSelector_Delegate_OpenPanelDidEnd (id self, SEL _cmd, NSOpenPane
 	[self autorelease];
 }
 #endif // MAC_COCOA
-
-#endif // VSTGUI_NEW_CFILESELECTOR

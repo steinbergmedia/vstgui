@@ -119,38 +119,13 @@ enum CViewAutosizing
 
 //-----------------------------------------------------------------------------
 // Definitions of special characters in a platform independent way
-#if VSTGUI_USES_UTF8
-	extern const char* kDegreeSymbol;			///< degree sign
-	extern const char* kInfiniteSymbol;			///< infinity
-	extern const char* kCopyrightSymbol;		///< copyright sign
-	extern const char* kTrademarkSymbol;		///< trade mark sign
-	extern const char* kRegisteredSymbol;		///< registered sign
-	extern const char* kMicroSymbol;			///< micro sign
-	extern const char* kPerthousandSymbol;		///< per mille sign
-
-#else
-
-#if WINDOWS
-	#define kDegreeSymbol      "\xB0"
-	#define kInfiniteSymbol    "oo"
-	#define kCopyrightSymbol   "\xA9"
-	#define kTrademarkSymbol   "\x99"
-	#define kRegisteredSymbol  "\xAE"
-	#define kMicroSymbol       "\x85"
-	#define kPerthousandSymbol "\x89"
-#endif // WINDOWS
-
-#if MAC
-	#define kDegreeSymbol      "\xA1"
-	#define kInfiniteSymbol    "oo"
-	#define kCopyrightSymbol   "\xA9"
-	#define kTrademarkSymbol   "\xAA"
-	#define kRegisteredSymbol  "\xA8"
-	#define kMicroSymbol       "\xB5"
-	#define kPerthousandSymbol "\xE4"
-#endif // MAC
-
-#endif // VSTGUI_USES_UTF8
+extern const char* kDegreeSymbol;			///< degree sign
+extern const char* kInfiniteSymbol;			///< infinity
+extern const char* kCopyrightSymbol;		///< copyright sign
+extern const char* kTrademarkSymbol;		///< trade mark sign
+extern const char* kRegisteredSymbol;		///< registered sign
+extern const char* kMicroSymbol;			///< micro sign
+extern const char* kPerthousandSymbol;		///< per mille sign
 
 //-----------------------------------------------------------------------------
 extern const char* kMsgViewSizeChanged;			///< Message send to parent that the size of the view has changed

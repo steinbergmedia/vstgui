@@ -70,10 +70,6 @@ protected:
 	CFrame* frame;
 	CView* currentView;
 
-	#if !VSTGUI_PLATFORM_ABSTRACTION
-	void* platformObject;
-	#endif
-
 	int delay;
 	int state;
 	CPoint lastMouseMove;

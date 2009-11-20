@@ -9,7 +9,7 @@
 
 #include "macglobals.h"
 
-#if VSTGUI_PLATFORM_ABSTRACTION
+#if MAC
 
 BEGIN_NAMESPACE_VSTGUI
 
@@ -75,4 +75,4 @@ CGColorSpaceRef GetGenericRGBColorSpace ()
 
 END_NAMESPACE_VSTGUI
 
-#endif // VSTGUI_PLATFORM_ABSTRACTION
+#endif // MAC

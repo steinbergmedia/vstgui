@@ -6,7 +6,7 @@
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
-// (c) 2008, Steinberg Media Technologies, All Rights Reserved
+// (c) 2009, Steinberg Media Technologies, All Rights Reserved
 //-----------------------------------------------------------------------------
 // Redistribution and use in source and binary forms, with or without modification,
 // are permitted provided that the following conditions are met:
@@ -32,79 +32,12 @@
 // OF THE POSSIBILITY OF SUCH DAMAGE.
 //-----------------------------------------------------------------------------
 
-#include "ctextlabel.h"
+#include "vstgui.cpp"
 
-BEGIN_NAMESPACE_VSTGUI
-
-//------------------------------------------------------------------------
-// CTextLabel
-//------------------------------------------------------------------------
-/*! @class CTextLabel
-*/
-//------------------------------------------------------------------------
-/**
- * CTextLabel constructor.
- * @param size the size of this view
- * @param txt the initial text as c string (UTF-8 encoded)
- * @param background the background bitmap
- * @param style the display style (see CParamDisplay for styles)
- */
-//------------------------------------------------------------------------
-CTextLabel::CTextLabel (const CRect& size, const char* txt, CBitmap* background, const long style)
-: CParamDisplay (size, background, style)
-, text (0)
-{
-	setText (txt);
-}
-
-//------------------------------------------------------------------------
-CTextLabel::CTextLabel (const CTextLabel& v)
-: CParamDisplay (v)
-, text (0)
-{
-	setText (v.getText ());
-}
-
-//------------------------------------------------------------------------
-CTextLabel::~CTextLabel ()
-{
-	freeText ();
-}
-
-//------------------------------------------------------------------------
-void CTextLabel::freeText ()
-{
-	if (text)
-		free (text);
-	text = 0;
-}
-
-//------------------------------------------------------------------------
-void CTextLabel::setText (const char* txt)
-{
-	if (!text && !txt || (text && txt && strcmp (text, txt) == 0))
-		return;
-	freeText ();
-	if (txt)
-	{
-		text = (char*)malloc (strlen (txt)+1);
-		strcpy (text, txt);
-	}
-	setDirty (true);
-}
-
-//------------------------------------------------------------------------
-const char* CTextLabel::getText () const
-{
-	return text;
-}
-
-//------------------------------------------------------------------------
-void CTextLabel::draw (CDrawContext *pContext)
-{
-	drawBack (pContext);
-	drawText (pContext, text);
-	setDirty (false);
-}
-
-END_NAMESPACE_VSTGUI
+#include "lib/platform/win32/gdiplusbitmap.cpp"
+#include "lib/platform/win32/gdiplusdrawcontext.cpp"
+#include "lib/platform/win32/gdiplusgraphicspath.cpp"
+#include "lib/platform/win32/win32dragcontainer.cpp"
+#include "lib/platform/win32/win32frame.cpp"
+#include "lib/platform/win32/win32optionmenu.cpp"
+#include "lib/platform/win32/win32textedit.cpp"

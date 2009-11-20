@@ -155,12 +155,8 @@ void CoreTextFont::drawString (CDrawContext* context, const char* utf8String, co
 			CTLineRef line = CTLineCreateWithAttributedString (attrStr);
 			if (line)
 			{
-				#if VSTGUI_PLATFORM_ABSTRACTION
 				CGDrawContext* cgDrawContext = dynamic_cast<CGDrawContext*> (context);
 				CGContextRef cgContext = cgDrawContext ? cgDrawContext->beginCGContext (true) : 0;
-				#else
-				CGContextRef cgContext = context->beginCGContext (true);
-				#endif
 				if (cgContext)
 				{
 					CGContextSetShouldAntialias (cgContext, antialias);
@@ -178,11 +174,7 @@ void CoreTextFont::drawString (CDrawContext* context, const char* utf8String, co
 						CGContextAddLineToPoint (cgContext, cgPoint.x, point.y - underlineOffset);
 						CGContextDrawPath (cgContext, kCGPathStroke);
 					}
-					#if VSTGUI_PLATFORM_ABSTRACTION
 					cgDrawContext->releaseCGContext (cgContext);
-					#else
-					context->releaseCGContext (cgContext);
-					#endif
 				}
 				CFRelease (line);
 			}
@@ -269,12 +261,8 @@ void ATSUFont::drawString (CDrawContext* context, const char* utf8String, const 
 	CFStringRef utf8Str = CFStringCreateWithCString (NULL, utf8String, kCFStringEncodingUTF8);
 	if (utf8Str)
 	{
-		#if VSTGUI_PLATFORM_ABSTRACTION
 		CGDrawContext* cgDrawContext = dynamic_cast<CGDrawContext*> (context);
 		CGContextRef cgContext = cgDrawContext ? cgDrawContext->beginCGContext (true) : 0;
-		#else
-		CGContextRef cgContext = context->beginCGContext (false);
-		#endif
 		if (cgContext)
 		{
 			OSStatus status;
@@ -306,11 +294,7 @@ void ATSUFont::drawString (CDrawContext* context, const char* utf8String, const 
 			ATSUDisposeTextLayout (textLayout);
 			free (textBuffer);
 			
-			#if VSTGUI_PLATFORM_ABSTRACTION
 			cgDrawContext->releaseCGContext (cgContext);
-			#else
-			context->releaseCGContext (cgContext);
-			#endif
 		}
 		CFRelease (utf8Str);
 	}
@@ -336,12 +320,8 @@ CCoord ATSUFont::getStringWidth (CDrawContext* context, const char* utf8String, 
 			status = ATSUSetRunStyle (textLayout, atsuStyle, kATSUFromTextBeginning, kATSUToTextEnd);
 			status = ATSUSetTransientFontMatching (textLayout, true);
 			
-			#if VSTGUI_PLATFORM_ABSTRACTION
 			CGDrawContext* cgDrawContext = context ? dynamic_cast<CGDrawContext*> (context) : 0;
 			CGContextRef cgContext = cgDrawContext ? cgDrawContext->beginCGContext (true) : 0;
-			#else
-			CGContextRef cgContext = context ? context->beginCGContext (false) : 0;
-			#endif
 			if (cgContext)
 			{
 				ATSUAttributeTag		theTags[]	= { kATSUCGContextTag };
@@ -359,11 +339,7 @@ CCoord ATSUFont::getStringWidth (CDrawContext* context, const char* utf8String, 
 
 			if (context)
 			{
-				#if VSTGUI_PLATFORM_ABSTRACTION
 				cgDrawContext->releaseCGContext (cgContext);
-				#else
-				context->releaseCGContext (cgContext);
-				#endif
 			}
 			CFRelease (utf8Str);
 		}

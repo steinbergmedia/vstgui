@@ -74,13 +74,16 @@ CControl::CControl (const CRect& size, CControlListener* listener, long tag, CBi
 , vmax (1.f)
 , wheelInc (0.1f)
 , lastTicks (-1)
+, delta (0)
 {
-	#if WINDOWS && !VSTGUI_PLATFORM_ABSTRACTION
+	#if 0 // TODO: Platform Abstraction
+	#if WINDOWS
 		delta = GetDoubleClickTime ();
-	#elif MAC_CARBON && !VSTGUI_PLATFORM_ABSTRACTION
+	#elif MAC_CARBON
 		delta = GetDblTime ();
 	#else
 		delta = 500;
+	#endif
 	#endif
 
 	if (delta < 250)

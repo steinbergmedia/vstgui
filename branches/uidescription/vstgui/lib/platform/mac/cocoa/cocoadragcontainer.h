@@ -3,7 +3,7 @@
 
 #include "../../../cframe.h"
 
-#if MAC_COCOA && VSTGUI_PLATFORM_ABSTRACTION
+#if MAC_COCOA
 
 #ifdef __OBJC__
 @class NSPasteboard;
@@ -36,6 +36,6 @@ protected:
 
 END_NAMESPACE_VSTGUI
 
-#endif
+#endif // COCOA
 
-#endif
+#endif // __cocoadragcontainer__

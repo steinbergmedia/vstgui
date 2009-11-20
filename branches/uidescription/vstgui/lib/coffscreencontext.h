@@ -37,8 +37,6 @@
 
 #include "cdrawcontext.h"
 
-#if VSTGUI_PLATFORM_ABSTRACTION
-
 #include "cbitmap.h"
 
 BEGIN_NAMESPACE_VSTGUI
@@ -74,67 +72,5 @@ protected:
 };
 
 END_NAMESPACE_VSTGUI
-
-#else // VSTGUI_PLATFORM_ABSTRACTION
-
-#if VSTGUI_USES_COREGRAPHICS
-#include <ApplicationServices/ApplicationServices.h>
-#endif
-
-BEGIN_NAMESPACE_VSTGUI
-class CBitmap;
-
-//-----------------------------------------------------------------------------
-// COffscreenContext Declaration
-//! @brief A drawing device which uses a pixmap as its drawing surface
-//-----------------------------------------------------------------------------
-class COffscreenContext : public CDrawContext
-{
-public:
-	COffscreenContext (CBitmap* pBitmap);
-	COffscreenContext (CDrawContext *pContext, CBitmap *pBitmap, bool drawInBitmap = false);
-	COffscreenContext (CFrame *pFrame, long width, long height, const CColor backgroundColor = kBlackCColor);
-	~COffscreenContext ();
-	
-	//-----------------------------------------------------------------------------
-	/// @name COffscreenContext Methods
-	//-----------------------------------------------------------------------------
-	//@{
-	void copyFrom (CDrawContext *pContext, CRect destRect, CPoint srcOffset = CPoint (0, 0));	///< copy from offscreen to pContext
-	void copyTo (CDrawContext* pContext, CRect& srcRect, CPoint destOffset = CPoint (0, 0));	///< copy to offscreen from pContext
-
-	inline CCoord getWidth () const { return width; }
-	inline CCoord getHeight () const { return height; }
-	//@}
-
-	void resetClipRect ();
-	
-	//-------------------------------------------
-	CLASS_METHODS_NOCOPY(COffscreenContext, CDrawContext)
-protected:
-	CBitmap	*pBitmap;
-	CBitmap	*pBitmapBg;
-	CCoord	height;
-	CCoord	width;
-	bool    bDestroyPixmap;
-	bool	bDrawInBitmap;
-
-	CColor  backgroundColor;
-
-#if WINDOWS
-	void* oldBitmap;
-#endif // WINDOWS
-
-#if VSTGUI_USES_COREGRAPHICS
-	void* offscreenBitmap;
-	virtual CGImageRef getCGImage () const;
-	void releaseCGContext (CGContextRef context);
-#endif // VSTGUI_USES_COREGRAPHICS
-
-};
-
-END_NAMESPACE_VSTGUI
-
-#endif // VSTGUI_PLATFORM_ABSTRACTION
 
 #endif // __coffscreencontext__

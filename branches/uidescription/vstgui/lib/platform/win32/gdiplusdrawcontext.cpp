@@ -1,7 +1,7 @@
 
 #include "gdiplusdrawcontext.h"
 
-#if WINDOWS && VSTGUI_PLATFORM_ABSTRACTION
+#if WINDOWS
 
 #include <cmath>
 #include "gdiplusbitmap.h"
@@ -17,31 +17,19 @@ GdiplusDrawContext::GdiplusDrawContext (HDC deviceContext, const CRect& drawSurf
 , pFontBrush (0)
 {
 	pGraphics = new Gdiplus::Graphics (deviceContext);
-	pGraphics->SetInterpolationMode (Gdiplus::InterpolationModeLowQuality);
-	pGraphics->SetPageUnit (Gdiplus::UnitPixel);
-	pGraphics->SetPixelOffsetMode (Gdiplus::PixelOffsetModeNone);
-	pPen = new Gdiplus::Pen (Gdiplus::Color (0, 0, 0), 1);
-	pBrush = new Gdiplus::SolidBrush (Gdiplus::Color (0, 0, 0));
-	pFontBrush = new Gdiplus::SolidBrush (Gdiplus::Color (0, 0, 0));
 
 	init ();
 }
 
 //-----------------------------------------------------------------------------
-GdiplusDrawContext::GdiplusDrawContext (GdiplusBitmap* bitmap)
-: COffscreenContext (new CBitmap (bitmap))
+GdiplusDrawContext::GdiplusDrawContext (GdiplusBitmap* inBitmap)
+: COffscreenContext (new CBitmap (inBitmap))
 , pGraphics (0)
 , pPen (0)
 , pBrush (0)
 , pFontBrush (0)
 {
-	pGraphics = new Gdiplus::Graphics (bitmap->getBitmap ());
-	pGraphics->SetInterpolationMode (Gdiplus::InterpolationModeLowQuality);
-	pGraphics->SetPageUnit (Gdiplus::UnitPixel);
-	pGraphics->SetPixelOffsetMode (Gdiplus::PixelOffsetModeNone);
-	pPen = new Gdiplus::Pen (Gdiplus::Color (0, 0, 0), 1);
-	pBrush = new Gdiplus::SolidBrush (Gdiplus::Color (0, 0, 0));
-	pFontBrush = new Gdiplus::SolidBrush (Gdiplus::Color (0, 0, 0));
+	pGraphics = new Gdiplus::Graphics (inBitmap->getBitmap ());
 
 	init ();
 }
@@ -60,6 +48,27 @@ GdiplusDrawContext::~GdiplusDrawContext ()
 }
 
 // CDrawContext
+//-----------------------------------------------------------------------------
+void GdiplusDrawContext::init ()
+{
+	pGraphics->SetInterpolationMode (Gdiplus::InterpolationModeLowQuality);
+	pGraphics->SetPageUnit (Gdiplus::UnitPixel);
+	pGraphics->SetPixelOffsetMode (Gdiplus::PixelOffsetModeNone);
+	pPen = new Gdiplus::Pen (Gdiplus::Color (0, 0, 0), 1);
+	pBrush = new Gdiplus::SolidBrush (Gdiplus::Color (0, 0, 0));
+	pFontBrush = new Gdiplus::SolidBrush (Gdiplus::Color (0, 0, 0));
+
+	COffscreenContext::init ();
+}
+
+//-----------------------------------------------------------------------------
+void GdiplusDrawContext::moveTo (const CPoint &point)
+{
+	CPoint p (point);
+	p.offset (currentState.offset.x, currentState.offset.y);
+	COffscreenContext::moveTo (p);
+}
+
 //-----------------------------------------------------------------------------
 void GdiplusDrawContext::lineTo (const CPoint &point)
 {
@@ -389,4 +398,4 @@ void GdiplusDrawContext::restoreGlobalState ()
 
 } // namespace
 
-#endif // WINDOWS && VSTGUI_PLATFORM_ABSTRACTION
+#endif // WINDOWS

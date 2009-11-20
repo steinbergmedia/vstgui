@@ -50,6 +50,24 @@
 
 BEGIN_NAMESPACE_VSTGUI
 
+#if VSTGUI_USES_UTF8
+	#define VSTGUI_STRCMP	wcscmp
+	#define VSTGUI_STRCPY	wcscpy
+	#define VSTGUI_SPRINTF	wsprintf
+	#define VSTGUI_STRRCHR	wcschr
+	#define VSTGUI_STRICMP	_wcsicmp
+	#define VSTGUI_STRLEN	wcslen
+	#define VSTGUI_STRCAT	wcscat
+#else
+	#define VSTGUI_STRCMP	strcmp
+	#define VSTGUI_STRCPY	strcpy
+	#define VSTGUI_SPRINTF	sprintf
+	#define VSTGUI_STRRCHR	strrchr
+	#define VSTGUI_STRICMP	_stricmp
+	#define VSTGUI_STRLEN	strlen
+	#define VSTGUI_STRCAT	strcat
+#endif
+
 extern HINSTANCE GetInstance ();
 
 /// \cond ignore

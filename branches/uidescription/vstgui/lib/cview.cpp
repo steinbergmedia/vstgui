@@ -119,7 +119,6 @@ protected:
 };
 /// @endcond
 
-#if VSTGUI_USES_UTF8
 const char* kDegreeSymbol		= "\xC2\xB0";
 const char* kInfiniteSymbol		= "\xE2\x88\x9E";
 const char* kCopyrightSymbol	= "\xC2\xA9";
@@ -127,7 +126,6 @@ const char* kTrademarkSymbol	= "\xE2\x84\xA2";
 const char* kRegisteredSymbol	= "\xC2\xAE";
 const char* kMicroSymbol		= "\xC2\xB5";
 const char* kPerthousandSymbol	= "\xE2\x80\xB0";
-#endif
 
 //-----------------------------------------------------------------------------
 const char* kMsgViewSizeChanged = "kMsgViewSizeChanged";

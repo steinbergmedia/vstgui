@@ -4,7 +4,7 @@
 
 #include "../iplatformoptionmenu.h"
 
-#if WINDOWS && VSTGUI_PLATFORM_ABSTRACTION
+#if WINDOWS
 
 #include <windows.h>
 
@@ -26,5 +26,5 @@ protected:
 
 } // namespace
 
-#endif // MAC_CARBON && VSTGUI_PLATFORM_ABSTRACTION
+#endif // WINDOWS
 #endif // __win32optionmenu__

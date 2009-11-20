@@ -37,13 +37,9 @@
 
 #include "cdrawcontext.h"
 
-#define VSTGUI_CGRAPHICSPATH_AVAILABLE	((defined (VSTGUI_FLOAT_COORDINATES) && (GDIPLUS || (VSTGUI_USES_COREGRAPHICS && MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_5))) || VSTGUI_BUILD_DOXYGEN)
-
-#if VSTGUI_CGRAPHICSPATH_AVAILABLE
-
 BEGIN_NAMESPACE_VSTGUI
-class PlatformGraphicsPath;
 class CGradient;
+class CFrame;
 
 //-----------------------------------------------------------------------------
 /// @brief Graphics Path Transformation [new since 4.0]
@@ -65,31 +61,41 @@ struct CGraphicsTransformation
 
 //-----------------------------------------------------------------------------
 /*! @class CGraphicsPath
-	@brief Graphics Path Object [new since 4.0]
-
-	Only available when VSTGUI_FLOAT_COORDINATES is defined.
-	On Windows GDIPLUS must be defined.
-	On Mac OS X only available when building for Mac OS X 10.5 or newer.
+	@brief Graphics Path Object [new in 4.0]
 */
 //-----------------------------------------------------------------------------
 class CGraphicsPath : public CBaseObject
 {
 public:
-	CGraphicsPath ();
-	~CGraphicsPath ();
+	static CGraphicsPath* create (CFrame* frame);
+
+	//-----------------------------------------------------------------------------
+	/// @name Creating gradients
+	//-----------------------------------------------------------------------------
+	//@{
+	/**
+	 * @brief creates a new gradient object, you must release it with forget() when you're done with it
+	 * @param color1Start value between zero and one which defines the normalized start offset for color1
+	 * @param color2Start value between zero and one which defines the normalized start offset for color2
+	 * @param color1 the first color of the gradient
+	 * @param color2 the second color of the gradient
+	 * @return a new gradient object
+	*/
+	virtual CGradient* createGradient (double color1Start, double color2Start, const CColor& color1, const CColor& color2) = 0;
+	//@}
 
 	//-----------------------------------------------------------------------------
 	/// @name Adding Elements
 	//-----------------------------------------------------------------------------
 	//@{
-	void addArc (const CRect& rect, double startAngle, double endAngle);
-	void addCurve (const CPoint& start, const CPoint& control1, const CPoint& control2, const CPoint& end);
-	void addEllipse (const CRect& rect);
-	void addLine (const CPoint& start, const CPoint& end);
-	void addRect (const CRect& rect);
-	void addPath (const CGraphicsPath& path, CGraphicsTransformation* transformation = 0);
-	void addString (const char* utf8String, CFontRef font, const CPoint& position);
-	void closeSubpath ();
+	virtual void addArc (const CRect& rect, double startAngle, double endAngle) = 0;
+	virtual void addCurve (const CPoint& start, const CPoint& control1, const CPoint& control2, const CPoint& end) = 0;
+	virtual void addEllipse (const CRect& rect) = 0;
+	virtual void addLine (const CPoint& start, const CPoint& end) = 0;
+	virtual void addRect (const CRect& rect) = 0;
+	virtual void addPath (const CGraphicsPath& path, CGraphicsTransformation* transformation = 0) = 0;
+	virtual void addString (const char* utf8String, CFontRef font, const CPoint& position) = 0;
+	virtual void closeSubpath () = 0;
 	//@}
 
 	//-----------------------------------------------------------------------------
@@ -103,52 +109,31 @@ public:
 		kStroked,
 	};
 
-	void draw (CDrawContext* context, PathDrawMode mode = kFilled, CGraphicsTransformation* transformation = 0);
-	void fillLinearGradient (CDrawContext* context, const CGradient& gradient, const CPoint& startPoint, const CPoint& endPoint, bool evenOdd = false, CGraphicsTransformation* transformation = 0);
+	virtual void draw (CDrawContext* context, PathDrawMode mode = kFilled, CGraphicsTransformation* transformation = 0) = 0;
+	virtual void fillLinearGradient (CDrawContext* context, const CGradient& gradient, const CPoint& startPoint, const CPoint& endPoint, bool evenOdd = false, CGraphicsTransformation* transformation = 0) = 0;
 	//@}
 	
 	//-----------------------------------------------------------------------------
 	/// @name States
 	//-----------------------------------------------------------------------------
 	//@{
-	CPoint getCurrentPosition () const;
-	CRect getBoundingBox () const;
+	virtual CPoint getCurrentPosition () const = 0;
+	virtual CRect getBoundingBox () const = 0;
 	//@}
 	
 //-----------------------------------------------------------------------------
 	CLASS_METHODS_NOCOPY(CGraphicsPath, CBaseObject)
-protected:
-	PlatformGraphicsPath* platformPath;
 };
 
 //-----------------------------------------------------------------------------
 /*! @class CGradient
-	@brief Gradient Object [new since 4.0]
-
-	Only available when VSTGUI_FLOAT_COORDINATES is defined.
-	On Windows GDIPLUS must be defined.
-	On Mac OS X only available when building for Mac OS X 10.5 or newer.
+	@brief Gradient Object [new in 4.0]
 */
 class CGradient : public CBaseObject
 {
 public:
 	//-----------------------------------------------------------------------------
-	/// @name Creating a Gradient Object
-	//-----------------------------------------------------------------------------
-	//@{
-	/**
-	 * @brief creates a new gradient object, you must release it with forget() when you're done with it
-	 * @param color1Start value between zero and one which defines the normalized start offset for color1
-	 * @param color2Start value between zero and one which defines the normalized start offset for color2
-	 * @param color1 the first color of the gradient
-	 * @param color2 the second color of the gradient
-	 * @return a new gradient object
-	*/
-	static CGradient* create (double color1Start, double color2Start, const CColor& color1, const CColor& color2);
-	//@}
-
-	//-----------------------------------------------------------------------------
-	/// @name Property Access
+	/// @name Member Access
 	//-----------------------------------------------------------------------------
 	//@{
 	double getColor1Start () const { return color1Start; }
@@ -166,13 +151,6 @@ protected:
 	CColor color2;
 };
 
-#if DEBUG
-class CView;
-extern CView* createCGraphicsPathTestView ();
-#endif
-
 END_NAMESPACE_VSTGUI
-
-#endif // VSTGUI_CGRAPHICSPATH_AVAILABLE
 
 #endif

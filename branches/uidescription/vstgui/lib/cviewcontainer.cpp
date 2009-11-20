@@ -206,16 +206,12 @@ void CViewContainer::setViewSize (CRect &rect, bool invalid)
 	if (pOffscreenContext && bDrawInOffscreen)
 	{
 		pOffscreenContext->forget ();
-	#if VSTGUI_PLATFORM_ABSTRACTION
 		pOffscreenContext = COffscreenContext::create (getFrame (), size.getWidth (), size.getHeight ());
 		if (pOffscreenContext)
 		{
 			pOffscreenContext->setFillColor (kBlackCColor);
 			pOffscreenContext->drawRect (CRect (0, 0, size.getWidth (), size.getHeight ()), kDrawFilled);
 		}
-	#else
-		pOffscreenContext = new COffscreenContext (pParentFrame, (long)size.width (), (long)size.height (), kBlackCColor);
-	#endif
 	}
 }
 
@@ -254,7 +250,6 @@ CMessageResult CViewContainer::notify (CBaseObject* sender, const char* message)
 {
 	if (message == kMsgCheckIfViewContainer)
 		return kMessageNotified;
-#if VSTGUI_CGRAPHICSPATH_AVAILABLE
 	else if (message == kMsgNewFocusView)
 	{
 		CView* view = dynamic_cast<CView*> (sender);
@@ -263,10 +258,14 @@ CMessageResult CViewContainer::notify (CBaseObject* sender, const char* message)
 			IFocusDrawing* focusDrawing = dynamic_cast<IFocusDrawing*> (view);
 			if (focusDrawing)
 			{
-				CGraphicsPath focusPath;
-				focusDrawing->getFocusPath (focusPath);
-				CRect r = focusPath.getBoundingBox ();
-				invalidRect (r);
+				CGraphicsPath* focusPath = CGraphicsPath::create (getFrame ());
+				if (focusPath)
+				{
+					focusDrawing->getFocusPath (*focusPath);
+					CRect r = focusPath->getBoundingBox ();
+					invalidRect (r);
+					focusPath->forget ();
+				}
 				
 			}
 			else
@@ -282,7 +281,6 @@ CMessageResult CViewContainer::notify (CBaseObject* sender, const char* message)
 	{
 		invalidRect (lastDrawnFocus);
 	}
-#endif
 	return kMessageUnknown;
 }
 
@@ -638,9 +636,6 @@ void CViewContainer::drawBackToFront (CDrawContext* pContext, const CRect& updat
 	_updateRect.bound (size);
 
 	CRect clientRect (_updateRect);
-	#if !VSTGUI_PLATFORM_ABSTRACTION
-	clientRect.offset (-size.left, -size.top);
-	#endif
 
 	CRect oldClip;
 	pContext->getClipRect (oldClip);
@@ -686,23 +681,13 @@ void CViewContainer::drawRect (CDrawContext* pContext, const CRect& updateRect)
 
 	if (!pOffscreenContext && bDrawInOffscreen)
 	{
-	#if VSTGUI_PLATFORM_ABSTRACTION
 		pOffscreenContext = COffscreenContext::create (getFrame (), size.getWidth (), size.getHeight ());
 		if (pOffscreenContext)
 		{
 			pOffscreenContext->setFillColor (kBlackCColor);
 			pOffscreenContext->drawRect (CRect (0, 0, size.getWidth (), size.getHeight ()), kDrawFilled);
 		}
-	#else
-		pOffscreenContext = new COffscreenContext (pParentFrame, (long)size.width (), (long)size.height (), kBlackCColor);
-	#endif
 	}
-	#if !VSTGUI_PLATFORM_ABSTRACTION
-	#if USE_ALPHA_BLEND
-	if (pOffscreenContext && bTransparencyEnabled)
-		pOffscreenContext->copyTo (pContext, size);
-	#endif
-	#endif
 
 	if (bDrawInOffscreen)
 		pC = pOffscreenContext;
@@ -731,7 +716,6 @@ void CViewContainer::drawRect (CDrawContext* pContext, const CRect& updateRect)
 	// draw the background
 	drawBackgroundRect (pC, clientRect);
 	
-#if VSTGUI_CGRAPHICSPATH_AVAILABLE
 	CView* _focusView = 0;
 	IFocusDrawing* _focusDrawing = 0;
 	if (getFrame ()->focusDrawingEnabled () && isChild (getFrame ()->getFocusView (), false))
@@ -739,30 +723,31 @@ void CViewContainer::drawRect (CDrawContext* pContext, const CRect& updateRect)
 		_focusView = getFrame ()->getFocusView ();
 		_focusDrawing = dynamic_cast<IFocusDrawing*> (_focusView);
 	}
-#endif
 
 	// draw each view
 	FOREACHSUBVIEW
 		
-		#if VSTGUI_CGRAPHICSPATH_AVAILABLE
 		if (_focusDrawing && _focusView == pV && !_focusDrawing->drawFocusOnTop ())
 		{
-			CGraphicsPath focusPath;
-			if (_focusDrawing->getFocusPath (focusPath))
+			CGraphicsPath* focusPath = CGraphicsPath::create (getFrame ());
+			if (focusPath)
 			{
-				lastDrawnFocus = focusPath.getBoundingBox ();
-				if (!lastDrawnFocus.isEmpty ())
+				if (_focusDrawing->getFocusPath (*focusPath))
 				{
-					pC->setClipRect (oldClip2);
-					pC->setDrawMode (kAntialias);
-					pC->setFillColor (getFrame ()->getFocusColor ());
-					focusPath.draw (pC, CGraphicsPath::kFilledEvenOdd);
+					lastDrawnFocus = focusPath->getBoundingBox ();
+					if (!lastDrawnFocus.isEmpty ())
+					{
+						pC->setClipRect (oldClip2);
+						pC->setDrawMode (kAntialias);
+						pC->setFillColor (getFrame ()->getFocusColor ());
+						focusPath->draw (pC, CGraphicsPath::kFilledEvenOdd);
+					}
+					_focusDrawing = 0;
+					_focusView = 0;
 				}
-				_focusDrawing = 0;
-				_focusView = 0;
+				focusPath->forget ();
 			}
 		}
-		#endif
 
 		if (checkUpdateRect (pV, clientRect))
 		{
@@ -778,32 +763,34 @@ void CViewContainer::drawRect (CDrawContext* pContext, const CRect& updateRect)
 
 	pC->setClipRect (oldClip2);
 
-#if VSTGUI_CGRAPHICSPATH_AVAILABLE
 	if (_focusView)
 	{
-		CGraphicsPath focusPath;
-		if (_focusDrawing)
-			_focusDrawing->getFocusPath (focusPath);
-		else
+		CGraphicsPath* focusPath = CGraphicsPath::create (getFrame ());
+		if (focusPath)
 		{
-			CCoord focusWidth = getFrame ()->getFocusWidth ();
-			CRect r (_focusView->getVisibleSize ());
-			if (!r.isEmpty ())
+			if (_focusDrawing)
+				_focusDrawing->getFocusPath (*focusPath);
+			else
 			{
-				focusPath.addRect (r);
-				r.inset (-focusWidth, -focusWidth);
-				focusPath.addRect (r);
+				CCoord focusWidth = getFrame ()->getFocusWidth ();
+				CRect r (_focusView->getVisibleSize ());
+				if (!r.isEmpty ())
+				{
+					focusPath->addRect (r);
+					r.inset (-focusWidth, -focusWidth);
+					focusPath->addRect (r);
+				}
 			}
-		}
-		lastDrawnFocus = focusPath.getBoundingBox ();
-		if (!lastDrawnFocus.isEmpty ())
-		{
-			pC->setDrawMode (kAntialias);
-			pC->setFillColor (getFrame ()->getFocusColor ());
-			focusPath.draw (pC, CGraphicsPath::kFilledEvenOdd);
+			lastDrawnFocus = focusPath->getBoundingBox ();
+			if (!lastDrawnFocus.isEmpty ())
+			{
+				pC->setDrawMode (kAntialias);
+				pC->setFillColor (getFrame ()->getFocusColor ());
+				focusPath->draw (pC, CGraphicsPath::kFilledEvenOdd);
+			}
+			focusPath->forget ();
 		}
 	}
-#endif
 	
 	// transfer offscreen
 	if (bDrawInOffscreen)
@@ -1221,16 +1208,12 @@ bool CViewContainer::attached (CView* parent)
 	// create offscreen bitmap
 	if (!pOffscreenContext && bDrawInOffscreen)
 	{
-	#if VSTGUI_PLATFORM_ABSTRACTION
 		pOffscreenContext = COffscreenContext::create (getFrame (), size.getWidth (), size.getHeight ());
 		if (pOffscreenContext)
 		{
 			pOffscreenContext->setFillColor (kBlackCColor);
 			pOffscreenContext->drawRect (CRect (0, 0, size.getWidth (), size.getHeight ()), kDrawFilled);
 		}
-	#else
-		pOffscreenContext = new COffscreenContext (pParentFrame, (long)size.width (), (long)size.height (), kBlackCColor);
-	#endif
 	}
 
 	FOREACHSUBVIEW
@@ -1256,39 +1239,20 @@ void CViewContainer::useOffscreen (bool b)
 void CViewContainer::modifyDrawContext (CCoord save[4], CDrawContext* pContext)
 {
 	// store
-#if VSTGUI_PLATFORM_ABSTRACTION
 	CPoint offset = pContext->getOffset ();
 	save[0] = offset.x;
 	save[1] = offset.y;
 	offset.x += size.left;
 	offset.y += size.top;
 	pContext->setOffset (offset);
-#else
-	save[0] = pContext->offsetScreen.h;
-	save[1] = pContext->offsetScreen.v;
-	save[2] = pContext->offset.h;
-	save[3] = pContext->offset.v;
-
-	pContext->offsetScreen.h += size.left;
-	pContext->offsetScreen.v += size.top;
-	pContext->offset.h += size.left;
-	pContext->offset.v += size.top;
-#endif
 }
 
 //-----------------------------------------------------------------------------
 void CViewContainer::restoreDrawContext (CDrawContext* pContext, CCoord save[4])
 {
 	// restore
-#if VSTGUI_PLATFORM_ABSTRACTION
 	CPoint offset (save[0], save[1]);
 	pContext->setOffset (offset);
-#else
-	pContext->offsetScreen.h = save[0];
-	pContext->offsetScreen.v = save[1];
-	pContext->offset.h = save[2];
-	pContext->offset.v = save[3];
-#endif
 }
 
 #if DEBUG

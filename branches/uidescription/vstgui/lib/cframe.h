@@ -36,26 +36,7 @@
 #define __cframe__
 
 #include "cviewcontainer.h"
-
-#if VSTGUI_PLATFORM_ABSTRACTION
-
 #include "platform/iplatformframe.h"
-
-#else
-#if MAC_CARBON
-	#include <Carbon/Carbon.h>
-#endif // MAC_CARBON
-
-#if WINDOWS
-	#include <windows.h>
-
-	#if GDIPLUS
-	#include <objidl.h>
-	#include <gdiplus.h>
-	#endif
-#endif // WINDOWS
-
-#endif // VSTGUI_PLATFORM_ABSTRACTION
 
 BEGIN_NAMESPACE_VSTGUI
 class VSTGUIEditorInterface;
@@ -80,10 +61,7 @@ extern const char* kMsgOldFocusView;			///< Message send to all parents of the o
 //! @brief The CFrame is the parent container of all views
 /// @ingroup containerviews
 //-----------------------------------------------------------------------------
-class CFrame : public CViewContainer
-#if VSTGUI_PLATFORM_ABSTRACTION
-, public IPlatformFrameCallback 
-#endif
+class CFrame : public CViewContainer, public IPlatformFrameCallback 
 {
 public:
 	CFrame (const CRect &size, void *pSystemWindow, VSTGUIEditorInterface *pEditor);
@@ -158,20 +136,8 @@ public:
 	static bool getCocoaMode ();
 	#endif
 
-#if VSTGUI_PLATFORM_ABSTRACTION
 	IPlatformFrame* getPlatformFrame () const { return platformFrame; }
 
-#else
-	#if WINDOWS
-	HWND getOuterWindow () const;
-	void *getParentSystemWindow () const { return pSystemWindow; }
-	void setParentSystemWindow (void *val) { pSystemWindow = val; }
-	COffscreenContext* getBackBuffer ();
-	#endif // WINDOWS
-	
-	void *getSystemWindow () const;	///< get platform window
-#endif
-	
 	bool removeView (CView *pView, const bool &withForget = true);
 	bool removeAll (const bool &withForget = true);
 
@@ -217,7 +183,6 @@ protected:
 	bool    bDropActive;
 	bool	bActive;
 
-#if VSTGUI_PLATFORM_ABSTRACTION
 	IPlatformFrame* platformFrame;
 
 	// IPlatformFrameCallback
@@ -234,43 +199,6 @@ protected:
 	bool platformOnKeyDown (VstKeyCode& keyCode);
 	bool platformOnKeyUp (VstKeyCode& keyCode);
 	void platformOnActivate (bool state);
-
-#else
-	void    *pSystemWindow;
-
-#if WINDOWS
-	void      *pHwnd;
-	HINSTANCE hInstMsimg32dll;
-	void*     dropTarget;
-	COffscreenContext* backBuffer;
-	bool      bMouseInside;
-#endif // WINDOWS
-
-#if MAC_CARBON
-	static pascal OSStatus carbonMouseEventHandler (EventHandlerCallRef inHandlerCallRef, EventRef inEvent, void *inUserData);
-	static pascal OSStatus carbonEventHandler (EventHandlerCallRef inHandlerCallRef, EventRef inEvent, void *inUserData);
-	
-	HIViewRef controlRef;
-	bool hasFocus;
-	EventHandlerRef dragEventHandler;
-	EventHandlerRef mouseEventHandler;
-	public:
-	void* getPlatformControl () const { return controlRef; }
-	CPoint hiScrollOffset;
-	protected:
-#endif // MAC_CARBON
-
-#if MAC_COCOA
-	void* nsView;
-	public:
-	void* getNSView () const { return nsView; }
-	protected:
-	
-#endif // MAC_COCOA
-	//-------------------------------------------
-private:
-	void     *defaultCursor;
-#endif // VSTGUI_PLATFORM_ABSTRACTION
 };
 
 //----------------------------------------------------
@@ -282,6 +210,8 @@ public:
 	
 	virtual void beginEdit (long index) {}
 	virtual void endEdit (long index) {}
+
+	virtual bool beforeSizeChange (const CRect& newSize, const CRect& oldSize) { return true; } ///< frame will change size, if this returns false the upstream implementation does not allow it and thus the size of the frame will not change
 
 	virtual CFrame* getFrame () const { return frame; }
 protected:
@@ -307,7 +237,7 @@ public:
 
 //-----------------------------------------------------------------------------
 // IKeyboardHook Declaration
-//! @brief generic keyboard hook interface for CFrame [new since 4.0]
+//! @brief generic keyboard hook interface for CFrame [new in 4.0]
 //-----------------------------------------------------------------------------
 class IKeyboardHook
 {

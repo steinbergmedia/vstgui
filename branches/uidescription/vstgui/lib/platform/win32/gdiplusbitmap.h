@@ -4,7 +4,7 @@
 
 #include "../iplatformbitmap.h"
 
-#if WINDOWS && VSTGUI_PLATFORM_ABSTRACTION
+#if WINDOWS
 
 #include <windows.h>
 #include <objidl.h>
@@ -33,7 +33,7 @@ protected:
 
 } // namespace
 
-#endif // WINDOWS && VSTGUI_PLATFORM_ABSTRACTION
+#endif // WINDOWS
 
 #endif // __gdiplusbitmap__
 

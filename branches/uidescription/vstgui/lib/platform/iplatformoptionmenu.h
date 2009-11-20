@@ -4,8 +4,6 @@
 
 #include "../vstguibase.h"
 
-#if VSTGUI_PLATFORM_ABSTRACTION
-
 namespace VSTGUI {
 class COptionMenu;
 class CMenuItem;
@@ -28,5 +26,4 @@ protected:
 
 } // namespace
 
-#endif // VSTGUI_PLATFORM_ABSTRACTION
 #endif // __iplatformtextedit__

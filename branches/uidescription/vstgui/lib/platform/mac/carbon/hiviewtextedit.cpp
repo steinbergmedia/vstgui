@@ -1,7 +1,7 @@
 
 #include "hiviewtextedit.h"
 
-#if MAC_CARBON && VSTGUI_PLATFORM_ABSTRACTION
+#if MAC_CARBON
 
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations" // we know that we use deprecated functions from Carbon, so we don't want to be warned
 
@@ -254,5 +254,7 @@ pascal OSStatus HIViewTextEdit::CarbonEventsTextControlProc (EventHandlerCallRef
 }
 
 } // namespace
+
+#pragma GCC diagnostic warning "-Wdeprecated-declarations" // we know that we use deprecated functions from Carbon, so we don't want to be warned
 
 #endif

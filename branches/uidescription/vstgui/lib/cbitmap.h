@@ -40,24 +40,7 @@
 #include "crect.h"
 #include "ccolor.h"
 
-#if VSTGUI_PLATFORM_ABSTRACTION
 #include "platform/iplatformbitmap.h"
-
-#else
-#if VSTGUI_USES_COREGRAPHICS
-#include <ApplicationServices/ApplicationServices.h>
-#endif
-
-#if WINDOWS
-	#include <windows.h>
-
-	#if GDIPLUS
-	#include <objidl.h>
-	#include <gdiplus.h>
-	#endif
-#endif // WINDOWS
-
-#endif // VSTGUI_PLATFORM_ABSTRACTION
 
 BEGIN_NAMESPACE_VSTGUI
 class CDrawContext;
@@ -85,9 +68,7 @@ public:
 	} u;
 };
 
-#if VSTGUI_PLATFORM_ABSTRACTION
 class IPlatformBitmap;
-#endif
 
 //-----------------------------------------------------------------------------
 // CBitmap Declaration
@@ -98,10 +79,8 @@ class CBitmap : public CBaseObject
 public:
 	CBitmap (const CResourceDescription& desc);				///< Create a pixmap from a resource identifier.
 	CBitmap (CCoord width, CCoord height);					///< Create a pixmap with a given size.
+	CBitmap (IPlatformBitmap* platformBitmap);
 	~CBitmap ();
-
-#if VSTGUI_PLATFORM_ABSTRACTION
-	CBitmap (IPlatformBitmap* platformBitmap);// takes ownership
 
 	//-----------------------------------------------------------------------------
 	/// @name CBitmap Methods
@@ -120,79 +99,14 @@ public:
 	IPlatformBitmap* getPlatformBitmap () const { return platformBitmap; }
 	//@}
 
-#else
-
-	//-----------------------------------------------------------------------------
-	/// @name CBitmap Methods
-	//-----------------------------------------------------------------------------
-	//@{
-	virtual void draw (CDrawContext *pContext, const CRect &rect, const CPoint &offset = CPoint (0, 0));	///< Draw the pixmap using a given rect as output position and a given offset of its source pixmap.
-	virtual void drawTransparent (CDrawContext *pContext, const CRect &rect, const CPoint &offset = CPoint (0, 0));
-	virtual void drawAlphaBlend  (CDrawContext *pContext, const CRect &rect, const CPoint &offset = CPoint (0, 0), unsigned char alpha = 128);	///< Same as CBitmap::draw except that it uses the alpha value to draw the bitmap alpha blended.
-
-	inline CCoord getWidth () const { return width; }		///< get the width of the image
-	inline CCoord getHeight () const { return height; }		///< get the height of the image
-
-	bool isLoaded () const;									///< check if image is loaded
-	void *getHandle () const;								///< get a platform image object. Normally you don't need this
-	
-	void setTransparentColor (const CColor color);						///< set the color of the image which should not be drawn. Works only once on some implementations/platforms.
-	CColor getTransparentColor () const { return transparentCColor; }	///< get the current transparent color
-
-	void setNoAlpha (bool state) { noAlpha = state; }
-	bool getNoAlpha () const { return noAlpha; }
-
-	const CResourceDescription& getResourceDescription () const { return resourceDesc; }
-	//@}
-
-#if VSTGUI_USES_COREGRAPHICS
-	CBitmap (CGImageRef cgImage);							///< Create a pixmap from a CGImage
-	virtual CGImageRef createCGImage (bool transparent = false);
-	virtual void setBitsDirty ();
-#endif // VSTGUI_USES_COREGRAPHICS
-
-#if GDIPLUS
-	CBitmap (Gdiplus::Bitmap* platformBitmap);							///< Create a pixmap from a Gdiplus Bitmap. 
-	Gdiplus::Bitmap* getBitmap ();
-#endif // GDIPLUS
-#endif // VSTGUI_PLATFORM_ABSTRACTION
 
 //-----------------------------------------------------------------------------
 	CLASS_METHODS_NOCOPY(CBitmap, CBaseObject)
 protected:
 	CBitmap ();
 
-#if VSTGUI_PLATFORM_ABSTRACTION
 	CResourceDescription resourceDesc;
 	IPlatformBitmap* platformBitmap;
-
-#else
-	virtual void dispose ();
-	virtual bool loadFromResource (const CResourceDescription& resourceDesc);
-	virtual bool loadFromPath (const void* platformPath);	// load from a platform path. On Windows it's a C string and on Mac OS X its a CFURLRef.
-
-	CResourceDescription resourceDesc;
-	CCoord width;
-	CCoord height;
-
-	CColor transparentCColor;
-	bool noAlpha;
-
-	void *pHandle;
-	void *pMask;
-#if WINDOWS
-	#if GDIPLUS
-	Gdiplus::Bitmap	*pBitmap;
-	void* bits;
-	#endif // GDIPLUS
-#endif // WINDOWS
-
-#if VSTGUI_USES_COREGRAPHICS
-	void* cgImage;
-#endif // VSTGUI_USES_COREGRAPHICS
-
-#endif // VSTGUI_PLATFORM_ABSTRACTION
-
 };
 
 //-----------------------------------------------------------------------------
@@ -223,19 +137,6 @@ public:
 	void setPartOffsets (const PartOffsets& partOffsets) { offsets = partOffsets; }
 	const PartOffsets& getPartOffsets () const { return offsets; }
 	//@}
-
-#if !VSTGUI_PLATFORM_ABSTRACTION
-	virtual void drawAlphaBlend (CDrawContext* pContext, const CRect& rect, const CPoint& offset = CPoint (0, 0), unsigned char alpha = 128);
-
-	//-----------------------------------------------------------------------------
-#if VSTGUI_USES_COREGRAPHICS
-	CNinePartTiledBitmap (CGImageRef cgImage, const PartOffsets& offsets = PartOffsets ());
-#endif // VSTGUI_USES_COREGRAPHICS
-
-#if GDIPLUS
-	CNinePartTiledBitmap (Gdiplus::Bitmap* platformBitmap, const PartOffsets& offsets = PartOffsets ());
-#endif // GDIPLUS
-#endif // VSTGUI_PLATFORM_ABSTRACTION
 
 //-----------------------------------------------------------------------------
 	CLASS_METHODS_NOCOPY(CNinePartTiledBitmap, CBitmap)

@@ -4,7 +4,7 @@
 
 #include "../../../cframe.h"
 
-#if MAC_COCOA && VSTGUI_PLATFORM_ABSTRACTION
+#if MAC_COCOA
 
 #ifdef __OBJC__
 @class NSView;
@@ -40,6 +40,7 @@ public:
 	IPlatformTextEdit* createPlatformTextEdit (IPlatformTextEditCallback* textEdit);
 	IPlatformOptionMenu* createPlatformOptionMenu ();
 	COffscreenContext* createOffscreenContext (CCoord width, CCoord height);
+	CGraphicsPath* createGraphicsPath ();
 //-----------------------------------------------------------------------------
 protected:
 	static void initClass ();
@@ -50,5 +51,5 @@ protected:
 
 END_NAMESPACE_VSTGUI
 
-#endif // MAC_COCOA && VSTGUI_PLATFORM_ABSTRACTION
+#endif // MAC_COCOA
 #endif // __nsviewframe__

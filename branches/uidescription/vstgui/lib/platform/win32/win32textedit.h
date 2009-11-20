@@ -4,7 +4,7 @@
 
 #include "../iplatformtextedit.h"
 
-#if WINDOWS && VSTGUI_PLATFORM_ABSTRACTION
+#if WINDOWS
 
 #include <windows.h>
 
@@ -43,6 +43,6 @@ protected:
 
 } // namespace
 
-#endif // WINDOWS && VSTGUI_PLATFORM_ABSTRACTION
+#endif // WINDOWS
 
 #endif // __win32textedit__

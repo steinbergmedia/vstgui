@@ -61,7 +61,6 @@
 	#ifndef MAC
 		#define MAC 1
 	#endif
-	#define VSTGUI_USES_COREGRAPHICS 1
 	#define VSTGUI_USES_CORE_TEXT	(MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_5)
 	#if !__LP64__ && !defined (MAC_CARBON)
 		#define MAC_CARBON 1
@@ -78,14 +77,12 @@
 	#ifndef _WIN32_WINNT
 		#define _WIN32_WINNT 0x0600
 	#endif
-	#ifndef GDIPLUS
-	#define GDIPLUS		1
-	#endif
 #endif
 
-#ifndef VSTGUI_USES_UTF8
-#define VSTGUI_USES_UTF8 1
+#ifdef UNICODE
+	#undef UNICODE
 #endif
+#define UNICODE 1
 
 #define BEGIN_NAMESPACE_VSTGUI  namespace VSTGUI {
 #define END_NAMESPACE_VSTGUI    }
@@ -142,13 +139,7 @@ BEGIN_NAMESPACE_VSTGUI
 		{ return (!strcmp (s, (#name))) ? true : parent::isTypeOf (s); } \
 	virtual CBaseObject* newCopy () const = 0;
 
-#ifdef VSTGUI_FLOAT_COORDINATES
-typedef double CCoord;
-#else
-typedef long CCoord;
-#endif
-
-#define USE_ALPHA_BLEND			MAC || USE_LIBPNG || GDIPLUS
+typedef double CCoord;	///< coordinate type
 
 //-----------------------------------------------------------------------------
 // @brief Message Results
@@ -197,35 +188,6 @@ private:
 };
 
 END_NAMESPACE_VSTGUI
-
-#if WINDOWS
-	#if VSTGUI_USES_UTF8
-		#undef UNICODE
-		#define UNICODE 1
-		#define VSTGUI_STRCMP	wcscmp
-		#define VSTGUI_STRCPY	wcscpy
-		#define VSTGUI_SPRINTF	wsprintf
-		#define VSTGUI_STRRCHR	wcschr
-		#define VSTGUI_STRICMP	_wcsicmp
-		#define VSTGUI_STRLEN	wcslen
-		#define VSTGUI_STRCAT	wcscat
-	#else
-		#define VSTGUI_STRCMP	strcmp
-		#define VSTGUI_STRCPY	strcpy
-		#define VSTGUI_SPRINTF	sprintf
-		#define VSTGUI_STRRCHR	strrchr
-		#define VSTGUI_STRICMP	_stricmp
-		#define VSTGUI_STRLEN	strlen
-		#define VSTGUI_STRCAT	strcat
-	#endif
-#endif
-
-//-----------------------------------------------------------------------------
-// Development switches
-//-----------------------------------------------------------------------------
-#ifndef VSTGUI_PLATFORM_ABSTRACTION
-#define VSTGUI_PLATFORM_ABSTRACTION	0
-#endif
 
 //-----------------------------------------------------------------------------
 #include "vstguidebug.h"

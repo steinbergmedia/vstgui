@@ -37,13 +37,11 @@
 
 #include "cgraphicspath.h"
 
-#if VSTGUI_CGRAPHICSPATH_AVAILABLE
-
 BEGIN_NAMESPACE_VSTGUI
 
 //-----------------------------------------------------------------------------
 // IFocusDrawing Declaration
-//! @brief Custom focus drawing interface [new since 4.0]
+//! @brief Custom focus drawing interface [new in 4.0]
 //!
 //! If focus drawing is enabled custom views can implement this interface to set a custom shape to be drawn if the view is the focus view.
 //! @sa CFrame
@@ -59,7 +57,5 @@ public:
 };
 
 END_NAMESPACE_VSTGUI
-
-#endif // VSTGUI_CGRAPHICSPATH_AVAILABLE
 
 #endif

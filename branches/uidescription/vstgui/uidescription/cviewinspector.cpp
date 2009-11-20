@@ -293,7 +293,7 @@ public:
 	
 	CMouseEventResult onMouseDown (CPoint &where, const long& buttons)
 	{
-		value = value == 0 ? 1 : 0;
+		value = value == 0.f ? 1.f : 0.f;
 		beginEdit ();
 		if (listener)
 			listener->valueChanged (this);
@@ -334,7 +334,13 @@ public:
 class BrowserDelegateBase : public CBaseObject, public IDataBrowser
 {
 public:
-	BrowserDelegateBase (UIDescription* desc, IActionOperator* actionOperator) : desc (desc), actionOperator (actionOperator), mouseRow (-1) {}
+	BrowserDelegateBase (UIDescription* desc, IActionOperator* actionOperator)
+	: desc (desc), actionOperator (actionOperator), mouseRow (-1), path (0) {}
+	~BrowserDelegateBase ()
+	{
+		if (path)
+			path->forget ();
+	}
 	
 	virtual void getNames (std::list<const std::string*>& _names) = 0;
 
@@ -415,14 +421,15 @@ public:
 		}
 		else if (column == dbGetNumColumns (browser)-1)
 		{
-			static CGraphicsPath path;
-			static bool once = true;
-			if (once)
+			if (path == 0)
 			{
-				path.addEllipse (CRect (0, 0, 1, 1));
-				path.addLine (CPoint (0.3, 0.3), CPoint (0.7, 0.7));
-				path.addLine (CPoint (0.3, 0.7), CPoint (0.7, 0.3));
-				once = false;
+				path = CGraphicsPath::create (browser->getFrame ());
+				if (path)
+				{
+					path->addEllipse (CRect (0, 0, 1, 1));
+					path->addLine (CPoint (0.3, 0.3), CPoint (0.7, 0.7));
+					path->addLine (CPoint (0.3, 0.7), CPoint (0.7, 0.3));
+				}
 			}
 			CRect r (size);
 			r.inset (4, 4);
@@ -433,7 +440,7 @@ public:
 			context->setFrameColor (mouseRow == row ? kRedCColor : kGreyCColor);
 			context->setLineWidth (1.5);
 			context->setDrawMode (kAntialias);
-			path.draw (context, CGraphicsPath::kStroked, &trans);
+			path->draw (context, CGraphicsPath::kStroked, &trans);
 		}
 		else
 		{
@@ -552,6 +559,7 @@ protected:
 	IActionOperator* actionOperator;
 	std::vector<const std::string*> names;
 	long mouseRow;
+	CGraphicsPath* path;
 };
 
 //-----------------------------------------------------------------------------
@@ -705,7 +713,7 @@ public:
 
 	void colorChanged (const CColor& color)
 	{
-		if (lastChoosenRow != -1 && names.size () > lastChoosenRow)
+		if (lastChoosenRow != -1 && names.size () > (size_t)lastChoosenRow)
 		{
 			long temp = lastChoosenRow;
 			actionOperator->performColorChange (names[lastChoosenRow]->c_str (), color);
@@ -939,7 +947,7 @@ public:
 				if (*(*it) == oldFont->getName ())
 				{
 					item->setChecked (true);
-					fontMenu->setValue (fontMenu->getNbEntries ()-1);
+					fontMenu->setValue (fontMenu->getNbEntries ()-1.f);
 				}
 				delete (*it);
 				it++;
@@ -1128,18 +1136,18 @@ static void updateMenuFromList (COptionMenu* menu, std::list<const std::string*>
 			current = menu->getNbEntries () - 1;
 		it++;
 	}
-	menu->setValue (current);
+	menu->setValue ((float)current);
 	if (addNoneItem)
 	{
 		menu->addSeparator ();
 		menu->addEntry (new CMenuItem ("None", -1000));
 		if (current == -1)
-			menu->setValue (menu->getNbEntries () - 1);
+			menu->setValue (menu->getNbEntries () - 1.f);
 	}
 	else if (current == -1)
 	{
 		menu->addEntry (new CMenuItem (defaultValue.c_str ()));
-		menu->setValue (menu->getNbEntries () - 1);
+		menu->setValue (menu->getNbEntries () - 1.f);
 	}
 }
 
@@ -1247,7 +1255,7 @@ CView* CViewInspector::createViewForAttribute (const std::string& attrName, CCoo
 			if (menu->getValue () == -1)
 			{
 				menu->addEntry (new CMenuItem (attrValue.c_str ()));
-				menu->setValue (menu->getNbEntries ());
+				menu->setValue ((float)menu->getNbEntries ());
 			}
 			valueView = menu;
 			break;
@@ -1633,7 +1641,7 @@ void CViewInspector::valueChanged (CControl* pControl)
 				else
 					attrValue = item->getTitle ();
 			}
-			optMenu->setValue (index);
+			optMenu->setValue ((float)index);
 			optMenu->invalid ();
 		}
 		else if (booleanButton)

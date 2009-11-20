@@ -1,7 +1,7 @@
 
 #include "win32optionmenu.h"
 
-#if WINDOWS && VSTGUI_PLATFORM_ABSTRACTION
+#if WINDOWS
 
 #include "win32support.h"
 #include "../../controls/coptionmenu.h"
@@ -206,4 +206,4 @@ HMENU Win32OptionMenu::createMenu (COptionMenu* _menu, long& offsetIdx)
 
 } // namespace
 
-#endif // WINDOWS && VSTGUI_PLATFORM_ABSTRACTION
+#endif // WINDOWS

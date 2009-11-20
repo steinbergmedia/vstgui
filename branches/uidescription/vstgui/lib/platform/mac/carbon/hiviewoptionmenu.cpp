@@ -1,7 +1,7 @@
 
 #include "hiviewoptionmenu.h"
 
-#if MAC_CARBON && VSTGUI_PLATFORM_ABSTRACTION
+#if MAC_CARBON
 
 #include "../../../controls/coptionmenu.h"
 #include "../../../cframe.h"
@@ -167,4 +167,4 @@ MenuRef HIViewOptionMenu::createMenu (COptionMenu* menu)
 
 } // namespace
 
-#endif // MAC_CARBON && VSTGUI_PLATFORM_ABSTRACTION
+#endif // MAC_CARBON

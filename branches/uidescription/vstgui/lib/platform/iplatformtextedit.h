@@ -7,7 +7,6 @@
 #include "../crect.h"
 #include "../cdrawcontext.h"
 
-#if VSTGUI_PLATFORM_ABSTRACTION
 struct VstKeyCode;
 
 namespace VSTGUI {
@@ -44,5 +43,4 @@ protected:
 
 } // namespace
 
-#endif // VSTGUI_PLATFORM_ABSTRACTION
 #endif // __iplatformtextedit__

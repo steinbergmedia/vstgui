@@ -4,7 +4,7 @@
 
 #include "../../cframe.h"
 
-#if WINDOWS && VSTGUI_PLATFORM_ABSTRACTION
+#if WINDOWS
 
 #include <windows.h>
 
@@ -38,6 +38,7 @@ public:
 	IPlatformTextEdit* createPlatformTextEdit (IPlatformTextEditCallback* textEdit);
 	IPlatformOptionMenu* createPlatformOptionMenu ();
 	COffscreenContext* createOffscreenContext (CCoord width, CCoord height);
+	CGraphicsPath* createGraphicsPath ();
 	
 //-----------------------------------------------------------------------------
 protected:
@@ -53,10 +54,12 @@ protected:
 	HWND tooltipWindow;
 
 	COffscreenContext* backBuffer;
+
+	bool mouseInside;
 };
 
 } // namespace
 
-#endif // WINDOWS && VSTGUI_PLATFORM_ABSTRACTION
+#endif // WINDOWS
 
 #endif // __win32frame__

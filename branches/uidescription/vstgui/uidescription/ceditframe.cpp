@@ -47,11 +47,7 @@
 #include <sstream>
 
 #if MAC
-#if VSTGUI_PLATFORM_ABSTRACTION
 #include "../lib/platform/mac/cgdrawcontext.h"
-#else
-#include <ApplicationServices/ApplicationServices.h>
-#endif
 #endif
 
 BEGIN_NAMESPACE_VSTGUI
@@ -655,9 +651,9 @@ public:
 	
 	void process (CPoint& p)
 	{
-		int x = p.x / size;
+		int x = (int) (p.x / size);
 		p.x = x * size;
-		int y = p.y / size;
+		int y = (int) (p.y / size);
 		p.y = y * size;
 	}
 
@@ -1741,9 +1737,8 @@ CBitmap* CEditFrame::createBitmapFromSelection (CSelection* selection)
 {
 	CRect viewSize = selection->getBounds ();
 	
-	#if VSTGUI_PLATFORM_ABSTRACTION
 	COffscreenContext* context = COffscreenContext::create (this, viewSize.getWidth (), viewSize.getHeight ());
-	context->setGlobalAlpha (0.8);
+	context->setGlobalAlpha (0.8f);
 
 	FOREACH_IN_SELECTION(selection, view)
 		if (!selection->containsParent (view))
@@ -1760,39 +1755,6 @@ CBitmap* CEditFrame::createBitmapFromSelection (CSelection* selection)
 	bitmap->remember ();
 	context->forget ();
 	return bitmap;
-	
-	#else
-	CBitmap* bitmap = new CBitmap (viewSize.getWidth (), viewSize.getHeight ());
-	COffscreenContext context (bitmap);
-	context.offset.x = -viewSize.left;
-	context.offset.y = -viewSize.top;
-
-	// platform dependent code
-	// clip to selected views
-	#if MAC
-	CGContextRef cgContext = context.getCGContext ();
-	#if 1
-	CGRect* cgRects = new CGRect [selection->total ()];
-	int i = 0;
-	FOREACH_IN_SELECTION(selection, view)
-		CRect gvs = CSelection::getGlobalViewCoordinates (view);
-		cgRects[i].origin.x = gvs.left -viewSize.left;
-		cgRects[i].origin.y = gvs.top -viewSize.top;
-		cgRects[i].size.width = gvs.getWidth ();
-		cgRects[i].size.height = gvs.getHeight ();
-		i++;
-	FOREACH_IN_SELECTION_END
-	CGContextClipToRects (cgContext, cgRects, selection->total ());
-	delete [] cgRects;
-	CGContextSetAlpha (cgContext, 0.5);
-	#endif
-	
-	#endif
-
-	CFrame::drawRect (&context, viewSize);
-
-	return bitmap;
-	#endif
 }
 
 //----------------------------------------------------------------------------------------------------

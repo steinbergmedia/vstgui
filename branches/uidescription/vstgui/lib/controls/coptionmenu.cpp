@@ -36,22 +36,7 @@
 #include "../cbitmap.h"
 #include "../cframe.h"
 
-#if VSTGUI_PLATFORM_ABSTRACTION
 #include "../platform/iplatformoptionmenu.h"
-#else
-
-#if WINDOWS
-	#include "../win32support.h"
-#endif
-
-#if MAC_COCOA
-	#include "../cocoasupport.h"
-#endif
-
-#if MAC_CARBON
-	#pragma GCC diagnostic ignored "-Wdeprecated-declarations" // we know that we use deprecated functions from Carbon, so we don't want to be warned
-#endif
-#endif // VSTGUI_PLATFORM_ABSTRACTION
 
 BEGIN_NAMESPACE_VSTGUI
 
@@ -278,15 +263,8 @@ COptionMenu::COptionMenu (const CRect& size, CControlListener* listener, long ta
 
 	currentIndex = -1;
 	lastButton = kRButton;
-#if !VSTGUI_PLATFORM_ABSTRACTION
-	platformControl = 0;
-#endif
 	lastResult = -1;
 	lastMenu = 0;
-
-	#if MAC_CARBON && !VSTGUI_PLATFORM_ABSTRACTION
-	menuID = 0;
-	#endif // MAC_CARBON && !VSTGUI_PLATFORM_ABSTRACTION
 	
 	if (bgWhenClick)
 		bgWhenClick->remember ();
@@ -298,9 +276,6 @@ COptionMenu::COptionMenu (const CRect& size, CControlListener* listener, long ta
 //------------------------------------------------------------------------
 COptionMenu::COptionMenu ()
 : CParamDisplay (CRect (0, 0, 0, 0))
-#if !VSTGUI_PLATFORM_ABSTRACTION
-, platformControl (0)
-#endif
 , currentIndex (-1)
 , bgWhenClick (0)
 , lastButton (0)
@@ -317,9 +292,6 @@ COptionMenu::COptionMenu ()
 //------------------------------------------------------------------------
 COptionMenu::COptionMenu (const COptionMenu& v)
 : CParamDisplay (v)
-#if !VSTGUI_PLATFORM_ABSTRACTION
-, platformControl (0)
-#endif
 , currentIndex (-1)
 , bgWhenClick (v.bgWhenClick)
 , lastButton (0)
@@ -430,7 +402,6 @@ bool COptionMenu::popup ()
 	lastResult = -1;
 	lastMenu = 0;
 
-#if VSTGUI_PLATFORM_ABSTRACTION
 	IPlatformOptionMenu* platformMenu = getFrame ()->getPlatformFrame ()->createPlatformOptionMenu ();
 	if (platformMenu)
 	{
@@ -439,7 +410,7 @@ bool COptionMenu::popup ()
 		{
 			lastMenu = platformPopupResult.menu;
 			lastResult = platformPopupResult.index;
-			lastMenu->setValue (lastResult);
+			lastMenu->setValue ((float)lastResult);
 			invalid ();
 			if (listener)
 				listener->valueChanged (lastMenu);
@@ -447,154 +418,6 @@ bool COptionMenu::popup ()
 		}
 		platformMenu->forget ();
 	}
-#else
-
-	// calculate offset for CViewContainers
-	CRect rect (size);
-	CPoint p (0, 0);
-	localToFrame (p);
-	rect.offset (p.x, p.y);
-
-#if WINDOWS
-	HWND hwnd = (HWND)getFrame ()->getSystemWindow ();
-	RECT rctWinParent;
-	GetWindowRect (hwnd, &rctWinParent);
-	rect.left += (CCoord)rctWinParent.left;
-	rect.top  += (CCoord)rctWinParent.top;
-
-	MSG msg;
-	long result = -1;
-
-	//---Create the popup menu---
-	long offIdx = 0;
-	appendItems (offIdx);
-	
-	//---Popup the menu---
-	long offset;
-	if (style & kPopupStyle)
-		offset = (long)(rect.top + size.top);
-	else
-		offset = (long)(rect.top + size.bottom);
-
-	int flags = TPM_LEFTALIGN;
-	if (lastButton & kRButton)
-		flags |= TPM_RIGHTBUTTON;
-
-	if (TrackPopupMenu ((HMENU)platformControl, flags, 
-			 (int)(rect.left + size.left), offset, 0, hwnd, 0))
-	{
-		if (PeekMessage (&msg, hwnd, WM_COMMAND, WM_COMMAND, PM_REMOVE))
-		{
-			if (HIWORD (msg.wParam) == 0)
-			{
-				result = LOWORD (msg.wParam);
-				lastResult = result;
-				popupResult = true;
-			}
-		}
-	}
-
-	//---Destroy the menu----
-	removeItems ();
-	
-	//---Update the dependencies
-	if (result != -1)
-	{
-		long idx = 0;
-		offIdx = 0;
-		COptionMenu *menu = getItemMenu (result, idx, offIdx);
-		if (menu)
-		{
-			lastMenu = menu;
-			menu->setValue ((float)idx);
-			invalid ();
-		
-			// update dependency
-			if (listener)
-				listener->valueChanged (menu);
-		}
-	}
-#endif // WINDOWS
-
-#if MAC_COCOA
-	if (getFrame ()->getNSView ())
-	{
-		COptionMenu* usedMenu = 0;
-		long index = showNSContextMenu (this, &usedMenu);
-		if (index >= 0 && usedMenu)
-		{
-			lastMenu = usedMenu;
-			lastResult = index;
-			usedMenu->setValue (index);
-			invalid ();
-			if (listener)
-				listener->valueChanged (usedMenu);
-			popupResult = true;
-		}
-		endEdit ();
-		inPopup = false;
-		return popupResult;
-	}
-#endif // MAC_COCOA
-	
-#if MAC_CARBON
-	// no entries, no menu
-	if (getNbEntries () == 0)
-	{
-		endEdit ();
-		inPopup = false;
-		return popupResult;
-	}
-		
-	//---Transform local coordinates to global coordinates
-	long offset;
-
-	if (style & kPopupStyle)
-		offset = (long)size.top;
-	else
-		offset = (long)size.bottom;
-
-	CCoord gx = 0, gy = 0;
-	Point LToG;
-	getFrame()->getPosition(gx, gy);
-	LToG.v = (short)(gy + rect.top + offset);
-	LToG.h = (short)(gx + rect.left + size.left);
-		
-	//---Create the popup menu---
-	long offIdx = 0;
-	MenuHandle theMenu = (MenuHandle)appendItems (offIdx);
-
-	setDirty (false);	
-
-	//---Popup the Menu
-	long popUpItem = style & kPopupStyle ? (value + 1) : 1;
-	long PopUpMenuItem = PopUpMenuItem = PopUpMenuSelect (theMenu, LToG.v, LToG.h, popUpItem);
-
-	//---Destroy the menu----
-	removeItems ();
-	
-	// HiWord indicates MenuID, LoWord indicates the item index
-	short result = LoWord (PopUpMenuItem) - 1;	
-	lastResult = result;
-	short menuIDResult = HiWord (PopUpMenuItem);
-	if (menuIDResult != 0) 
-	{
-		long idx = 0;
-		offIdx = menuIDResult;
-		COptionMenu *menu = getItemMenu (result, idx, offIdx);
-		if (menu)
-		{
-			lastMenu = menu;
-			menu->setValue (result);
-			invalid ();
-			if (listener)
-				listener->valueChanged (menu);
-			popupResult = true;
-		}
-	}
-
-#endif
-#endif // VSTGUI_PLATFORM_ABSTRACTION
 
 	endEdit ();
 	inPopup = false;
@@ -850,335 +673,6 @@ COptionMenu *COptionMenu::getLastItemMenu (long &idxInMenu) const
 }
 
 //------------------------------------------------------------------------
-COptionMenu *COptionMenu::getItemMenu (long idx, long &idxInMenu, long &offsetIdx)
-{
-#if VSTGUI_PLATFORM_ABSTRACTION
-// TODO: platform abstraction
-#else
-
-#if WINDOWS
-	long oldIDx = offsetIdx;
-	offsetIdx += getNbEntries ();
-
-	if (idx < offsetIdx)
-	{
-		idxInMenu = idx - oldIDx;
-		return this;
-	}
-	
-#elif MAC_CARBON
-	if (menuID == offsetIdx)
-	{
-		idxInMenu = idx;
-		return this;
-	}
-#endif
-#endif // VSTGUI_PLATFORM_ABSTRACTION
-
-	COptionMenu *menu = 0;
-	CMenuItemIterator it = menuItems->begin ();
-	while (it != menuItems->end ())
-	{
-		if ((*it)->getSubmenu ())
-		{
-			menu = (*it)->getSubmenu ()->getItemMenu (idx, idxInMenu, offsetIdx);
-			if (menu)
-				break;
-		}
-		it++;
-	}
-	return menu;
-}
-
-//------------------------------------------------------------------------
-void COptionMenu::removeItems ()
-{
-	CMenuItemIterator it = menuItems->begin ();
-	while (it != menuItems->end ())
-	{
-		if ((*it)->getSubmenu ())
-			(*it)->getSubmenu ()->removeItems ();
-		it++;
-	}
-
-#if VSTGUI_PLATFORM_ABSTRACTION
-// TODO: platform abstraction
-#else
-	
-#if WINDOWS
-	#if GDIPLUS
-	// destroy item bitmaps
-	long idx = 0;
-	it = menuItems->begin ();
-	while (it != menuItems->end ())
-	{
-		if ((*it)->getIcon ())
-		{
-			MENUITEMINFO mInfo = {0};
-			mInfo.cbSize = sizeof (MENUITEMINFO);
-			mInfo.fMask = MIIM_BITMAP;
-			if (GetMenuItemInfo ((HMENU)platformControl, idx, TRUE, &mInfo))
-			{
-				if (mInfo.hbmpItem)
-					DeleteObject (mInfo.hbmpItem);
-			}
-		}
-		it++;
-		idx++;
-	}
-
-	#endif
-	// destroy the menu
-	if (platformControl)
-		DestroyMenu ((HMENU)platformControl);
-	platformControl = 0;
-
-#elif MAC_CARBON
-	// destroy the menu
-	if (menuID)
-		DeleteMenu (menuID);
-	if (platformControl)
-		DisposeMenu ((MenuHandle)platformControl);
-	platformControl = 0;
-
-#endif
-#endif // VSTGUI_PLATFORM_ABSTRACTION
-}
-
-//------------------------------------------------------------------------
-void *COptionMenu::appendItems (long &offsetIdx)
-{
-#if VSTGUI_PLATFORM_ABSTRACTION
-// TODO: platform abstraction
-#else
-
-#if WINDOWS || MAC_CARBON
-	bool multipleCheck = style & (kMultipleCheckStyle & ~kCheckStyle);
-#endif
-
-#if WINDOWS
-	void *menu = (void*)CreatePopupMenu ();
-	
-	bool ownerDraw = false;
-
-	int flags = 0;
-	long idxSubmenu = 0;
-	long offset = offsetIdx;
-	long nbEntries = getNbEntries ();
-	offsetIdx += nbEntries;
-	long inc = 0;
-	CMenuItemIterator it = menuItems->begin ();
-	while (it != menuItems->end ())
-	{
-		CMenuItem* item = (*it);
-		if (item->isSeparator ())
-		{
-			if (ownerDraw)
-				AppendMenu ((HMENU)menu, MF_OWNERDRAW|MF_SEPARATOR, 0, 0);
-			else
-				AppendMenu ((HMENU)menu, MF_SEPARATOR, 0, 0);
-		}
-		else
-		{
-			char* titleWithPrefixNumbers = 0;
-			if (getPrefixNumbers ())
-			{
-				titleWithPrefixNumbers = (char*)malloc (strlen (item->getTitle ()) + 50);
-				switch (getPrefixNumbers ())
-				{
-					case 2:
-					{
-						sprintf (titleWithPrefixNumbers, "%1d %s", inc+1, item->getTitle ());
-						break;
-					}
-					case 3:
-					{
-						sprintf (titleWithPrefixNumbers, "%02d %s", inc+1, item->getTitle ());
-						break;
-					}
-					case 4:
-					{
-						sprintf (titleWithPrefixNumbers, "%03d %s", inc+1, item->getTitle ());
-						break;
-					}
-				}
-			}
-			UTF8StringHelper entryText (titleWithPrefixNumbers ? titleWithPrefixNumbers : item->getTitle ());
-			flags = ownerDraw ? MF_OWNERDRAW : MF_STRING;
-			if (nbEntries < 160 && nbItemsPerColumn > 0 && inc && !(inc % nbItemsPerColumn))
-				flags |= MF_MENUBARBREAK;
-
-			if (item->getSubmenu ())
-			{
-				void *submenu = item->getSubmenu ()->appendItems (offsetIdx);
-				if (submenu)
-				{
-					AppendMenu ((HMENU)menu, flags|MF_POPUP|MF_ENABLED, (UINT_PTR)submenu, (const TCHAR*)entryText);
-				}
-			}
-			else
-			{
-				if (item->isEnabled ())
-					flags |= MF_ENABLED;
-				else
-					flags |= MF_GRAYED;
-				if (item->isTitle ())
-					flags |= MF_DISABLED;
-				if (multipleCheck && item->isChecked ())
-					flags |= MF_CHECKED;
-				if (style & kCheckStyle && inc == currentIndex && item->isChecked ())
-					flags |= MF_CHECKED;
-				if (!(flags & MF_CHECKED))
-					flags |= MF_UNCHECKED;
-				AppendMenu ((HMENU)menu, flags, offset + inc, entryText);
-				if (item->getIcon ())
-				{
-					MENUITEMINFO mInfo = {0};
-					mInfo.cbSize = sizeof (MENUITEMINFO);
-					mInfo.fMask = MIIM_BITMAP;
-					#if GDIPLUS
-					Gdiplus::Bitmap* bitmap = item->getIcon ()->getBitmap ();
-					HBITMAP hBmp = NULL;
-					bitmap->GetHBITMAP (Gdiplus::Color (0, 0, 0, 0), &hBmp);
-					mInfo.hbmpItem = hBmp;
-					#else
-					mInfo.hbmpItem = item->getIcon ()->getHandle ();
-					#endif
-					SetMenuItemInfo ((HMENU)menu, offset + inc, TRUE, &mInfo);
-				}
-			}
-			if (titleWithPrefixNumbers)
-				free (titleWithPrefixNumbers);
-		}
-		inc++;
-		it++;
-	}
-	platformControl = menu;
-	return menu;
-	
-#elif MAC_CARBON
-	//---Get an non-existing ID for the menu:
-	menuID = UniqueID ('MENU');
-		
-	MenuHandle theMenu = 0;
-	//---Create the menu
-	#if MAC_ENABLE_MENU_SCHEME
-	extern long pSystemVersion;
-	if ((scheme || gOptionMenuScheme) && pSystemVersion >= 0x1030)
-	{
-		COptionMenuScheme* s = gOptionMenuScheme ? gOptionMenuScheme : scheme;
-		EventRef initEvent = NULL;
-		if (CreateEvent (NULL, kEventClassHIObject, kEventHIObjectInitialize, 0, 0, &initEvent) == noErr)
-		{
-			MenuDefSpec customMenuDef;
-			COptionMenu* optMenu = this;
-			SetEventParameter (initEvent, kEventParamCOptionMenu, typeVoidPtr, sizeof(COptionMenu*), &optMenu);
-			customMenuDef.defType = kMenuDefClassID;
-			customMenuDef.u.view.classID = gOptionMenuSchemeClassID;
-			customMenuDef.u.view.initEvent = initEvent;
-			SetEventParameter (initEvent, kEventParamCOptionMenuScheme, typeVoidPtr, sizeof(COptionMenuScheme*), &s);
-			CreateCustomMenu (&customMenuDef, menuID, 0, &theMenu);
-			ReleaseEvent (initEvent);
-			if (theMenu == NULL)
-				return NULL;
-		}
-	}
-	else
-	#endif
-		CreateNewMenu (menuID, kMenuAttrCondenseSeparators, &theMenu);
-		
-	CMenuItemIterator it = menuItems->begin ();
-	long i = 0;
-	while (it != menuItems->end ())
-	{
-		i++;
-		CMenuItem* item = (*it);
-		if (item->isSeparator ())
-			AppendMenuItemTextWithCFString (theMenu, CFSTR(""), kMenuItemAttrSeparator, 0, NULL);
-		else
-		{
-			CFStringRef itemString = CFStringCreateWithCString (NULL, item->getTitle (), kCFStringEncodingUTF8);
-			if (getPrefixNumbers ())
-			{
-				CFStringRef prefixString = 0;
-				switch (getPrefixNumbers ())
-				{
-					case 2:
-						prefixString = CFStringCreateWithFormat (NULL, 0, CFSTR("%1d "),i); break;
-					case 3:
-						prefixString = CFStringCreateWithFormat (NULL, 0, CFSTR("%02d "),i); break;
-					case 4:
-						prefixString = CFStringCreateWithFormat (NULL, 0, CFSTR("%03d "),i); break;
-				}
-				CFMutableStringRef newItemString = CFStringCreateMutable (0, 0);
-				CFStringAppend (newItemString, prefixString);
-				CFStringAppend (newItemString, itemString);
-				CFRelease (itemString);
-				CFRelease (prefixString);
-				itemString = newItemString;
-			}
-			if (itemString == 0)
-				continue;
-			MenuItemAttributes itemAttribs = kMenuItemAttrIgnoreMeta;
-			if (!item->isEnabled ())
-				itemAttribs |= kMenuItemAttrDisabled;
-			if (item->isTitle ())
-				itemAttribs |= kMenuItemAttrSectionHeader;
-
-			InsertMenuItemTextWithCFString (theMenu, itemString, i, itemAttribs, 0);
-
-			if (item->isChecked () && multipleCheck)
-				CheckMenuItem (theMenu, i, true);
-			if (item->getSubmenu ())
-			{
-				void *submenu = item->getSubmenu ()->appendItems (offsetIdx);
-				if (submenu)
-					SetMenuItemHierarchicalID (theMenu, i, item->getSubmenu ()->getMenuID ());
-			}
-			if (item->getIcon ())
-			{
-				CGImageRef image = item->getIcon ()->createCGImage ();
-				if (image)
-				{
-					SetMenuItemIconHandle (theMenu, i, kMenuCGImageRefType, (Handle)image);
-					CGImageRelease (image);
-				}
-			}
-			if (item->getKeycode ())
-			{
-				SetItemCmd (theMenu, i, item->getKeycode ()[0]);
-				UInt8 keyModifiers = 0;
-				long itemModifiers = item->getKeyModifiers ();
-				if (itemModifiers & kShift)
-					keyModifiers |= kMenuShiftModifier;
-				if (!(itemModifiers & kControl))
-					keyModifiers |= kMenuNoCommandModifier;
-				if (itemModifiers & kAlt)
-					keyModifiers |= kMenuOptionModifier;
-				if (itemModifiers & kApple)
-					keyModifiers |= kMenuControlModifier;
-				
-				SetMenuItemModifiers (theMenu, i, keyModifiers);
-			}
-			CFRelease (itemString);
-		}
-		it++;
-	}
-	// set the check
-	if (style & kCheckStyle && !multipleCheck)
-		CheckMenuItem (theMenu, currentIndex + 1, true);
-
-	InsertMenu ((MenuHandle)theMenu, -1);
-	
-	platformControl = (void*)theMenu;
-	return platformControl;
-	
-#endif
-#endif // VSTGUI_PLATFORM_ABSTRACTION
-	return 0;
-}
-
-//------------------------------------------------------------------------
 void COptionMenu::setValue (float val)
 {
 	if ((long)val < 0 || (long)val >= getNbEntries ())
@@ -1206,13 +700,6 @@ void COptionMenu::takeFocus ()
 //------------------------------------------------------------------------
 void COptionMenu::looseFocus ()
 {	
-#if !VSTGUI_PLATFORM_ABSTRACTION
-	if (platformControl == 0) 
-		return;
-
-	platformControl = 0;
-#endif
-
 	CView* receiver = pParentView ? pParentView : pParentFrame;
 	while (receiver)
 	{

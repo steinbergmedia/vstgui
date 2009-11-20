@@ -37,10 +37,6 @@
 
 #if VSTGUI_LIVE_EDITING
 
-#if WINDOWS && !GDIPLUS
-#error GDIPLUS must be defined
-#endif
-
 #include "../lib/cframe.h"
 #include "cselection.h"
 #include "uidescription.h"

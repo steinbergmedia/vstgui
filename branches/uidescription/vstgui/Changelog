@@ -1,3 +1,21 @@
+2009-11-20 arne
+
+	* completed platform abstraction (except the CVSTGUITimer class)
+	* eliminated the following macros : VSTGUI_USES_COREGRAPHICS, GDIPLUS, VSTGUI_USES_UTF8 and VSTGUI_FLOAT_COORDINATES
+		this means:
+		- On Windows VSTGUI now only uses GDI+ as the drawing API
+		- CCoord is of type double
+		- The text drawing methods expects the strings to be in UTF-8 not ASCII
+
+	* because of the changes above, many classes have some changes, here are the most prominent
+		- CBitmap only has one draw method which actually calls thru to CDrawContext.
+		- CBitmap transparency is gone. Use PNG Bitmaps with an alpha channel to get the same result.
+		- COffscreenContext must be created via the static create method.
+
+	* the concept behind the platform abstraction is that the platform frame implementation 
+	  is responsible to create nearly all the necessary platform objects except bitmaps and fonts for now (this may be the next step).
+	  this way it should be easier to maintain the source and much easier to add more platform implementations.
+
 2009-11-19 arne
 
 	* more windows platform abstraction

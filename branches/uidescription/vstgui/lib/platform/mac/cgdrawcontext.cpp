@@ -1,16 +1,14 @@
 #include "cgdrawcontext.h"
 
-#if VSTGUI_PLATFORM_ABSTRACTION
+#if MAC
 
 #include "macglobals.h"
 #include "cgbitmap.h"
 
-#if VSTGUI_USES_COREGRAPHICS
-	#ifndef CGFLOAT_DEFINED
-		#define CGFLOAT_DEFINED
-		typedef float CGFloat;
-	#endif // CGFLOAT_DEFINED
-#endif // VSTGUI_USES_COREGRAPHICS
+#ifndef CGFLOAT_DEFINED
+	#define CGFLOAT_DEFINED
+	typedef float CGFloat;
+#endif // CGFLOAT_DEFINED
 
 BEGIN_NAMESPACE_VSTGUI
 
@@ -453,5 +451,5 @@ static void addOvalToPath (CGContextRef c, CPoint center, CGFloat a, CGFloat b, 
 
 END_NAMESPACE_VSTGUI
 
-#endif // VSTGUI_PLATFORM_ABSTRACTION
+#endif // MAC
 

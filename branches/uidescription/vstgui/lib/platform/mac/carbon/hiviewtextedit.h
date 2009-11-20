@@ -4,7 +4,7 @@
 
 #include "../../iplatformtextedit.h"
 
-#if MAC_CARBON && VSTGUI_PLATFORM_ABSTRACTION
+#if MAC_CARBON
 
 #include <Carbon/Carbon.h>
 
@@ -32,6 +32,6 @@ protected:
 
 } // namespace
 
-#endif // MAC_CARBON && VSTGUI_PLATFORM_ABSTRACTION
+#endif // MAC_CARBON
 
 #endif // __hiviewtextedit__

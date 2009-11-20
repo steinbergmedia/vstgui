@@ -1,7 +1,7 @@
 
 #include "gdiplusbitmap.h"
 
-#if WINDOWS && VSTGUI_PLATFORM_ABSTRACTION
+#if WINDOWS
 
 #include "win32support.h"
 
@@ -62,4 +62,4 @@ bool GdiplusBitmap::load (const CResourceDescription& desc)
 
 } // namespace
 
-#endif // WINDOWS && VSTGUI_PLATFORM_ABSTRACTION
+#endif // WINDOWS

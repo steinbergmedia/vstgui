@@ -60,10 +60,6 @@ CVuMeter::CVuMeter (const CRect& size, CBitmap* onBitmap, CBitmap* offBitmap, lo
 {
 	setDecreaseStepValue (0.1f);
 
-#if (WINDOWS && !USE_LIBPNG && !GDIPLUS)
-	setUseOffscreen (true);
-#endif
-
 	setOnBitmap (onBitmap);
 	setOffBitmap (offBitmap);
 
@@ -107,11 +103,7 @@ bool CVuMeter::attached (CView *parent)
 
 	if (bUseOffscreen)
 	{
-		#if VSTGUI_PLATFORM_ABSTRACTION
 		pOScreen = COffscreenContext::create (getFrame (), size.width (), size.height ());
-		#else
-		pOScreen = new COffscreenContext (getFrame (), (long)size.width (), (long)size.height (), kBlackCColor);
-		#endif
 		rectOn  (0, 0, size.width (), size.height ());
 		rectOff (0, 0, size.width (), size.height ());
 	}
@@ -172,21 +164,13 @@ void CVuMeter::draw (CDrawContext *_pContext)
 	{
 		if (!pOScreen)
 		{
-			#if VSTGUI_PLATFORM_ABSTRACTION
 			pOScreen = COffscreenContext::create (getFrame (), size.width (), size.height ());
-			#else
-			pOScreen = new COffscreenContext (getFrame (), (long)size.width (), (long)size.height (), kBlackCColor);
-			#endif
 			rectOn  (0, 0, size.width (), size.height ());
 			rectOff (0, 0, size.width (), size.height ());
 		}
 		if (pOScreen)
 		{
 			pContext = pOScreen;
-		#if !VSTGUI_PLATFORM_ABSTRACTION // copyTo not supported
-			if (bTransparencyEnabled)
-				pOScreen->copyTo (_pContext, size);
-		#endif
 		}
 		else
 		{

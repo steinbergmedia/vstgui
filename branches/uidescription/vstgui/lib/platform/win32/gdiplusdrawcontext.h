@@ -4,7 +4,7 @@
 
 #include "../../coffscreencontext.h"
 
-#if WINDOWS && VSTGUI_PLATFORM_ABSTRACTION
+#if WINDOWS
 
 #include <windows.h>
 #include <objidl.h>
@@ -27,6 +27,7 @@ public:
 	Gdiplus::SolidBrush* getFontBrush () const { return pFontBrush; }
 
 	// CDrawContext
+	void moveTo (const CPoint &point);
 	void lineTo (const CPoint &point);
 	void drawLines (const CPoint* points, const long& numberOfLines);
 	void drawPolygon (const CPoint *pPoints, long numberOfPoints, const CDrawStyle drawStyle = kDrawStroked);
@@ -49,6 +50,8 @@ public:
 
 //-----------------------------------------------------------------------------
 protected:
+	void init ();
+
 	Gdiplus::Graphics	*pGraphics;
 	Gdiplus::Pen		*pPen;
 	Gdiplus::SolidBrush	*pBrush;
@@ -57,6 +60,6 @@ protected:
 
 } // namespace
 
-#endif // WINDOWS && VSTGUI_PLATFORM_ABSTRACTION
+#endif // WINDOWS
 
 #endif // __gdiplusdrawcontext__

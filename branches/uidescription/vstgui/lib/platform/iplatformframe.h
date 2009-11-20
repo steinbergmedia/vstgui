@@ -4,12 +4,11 @@
 
 #include "../cframe.h"
 
-#if VSTGUI_PLATFORM_ABSTRACTION
-
 namespace VSTGUI {
 class IPlatformTextEdit;
 class IPlatformTextEditCallback;
 class IPlatformOptionMenu;
+class CGraphicsPath;
 
 //-----------------------------------------------------------------------------
 // Callback interface from IPlatformFrame implementations
@@ -64,6 +63,7 @@ public:
 	virtual IPlatformOptionMenu* createPlatformOptionMenu () = 0; ///< create a native popup menu
 	
 	virtual COffscreenContext* createOffscreenContext (CCoord width, CCoord height) = 0; ///< create an offscreen draw device
+	virtual CGraphicsPath* createGraphicsPath () = 0; ///< create a platform graphics path
 //-----------------------------------------------------------------------------
 protected:
 	IPlatformFrame (IPlatformFrameCallback* frame = 0) : frame (frame) {}
@@ -72,5 +72,4 @@ protected:
 
 } // namespace
 
-#endif // VSTGUI_PLATFORM_ABSTRACTION
 #endif // __iplatformframe__

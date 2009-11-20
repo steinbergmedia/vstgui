@@ -66,9 +66,3 @@
 #include "lib/controls/cspecialdigit.cpp"
 #include "lib/controls/csplashscreen.cpp"
 #include "lib/controls/cvumeter.cpp"
-
-#if WINDOWS && !VSTGUI_PLATFORM_ABSTRACTION
-	#include "lib/cfontwin32.cpp"
-	#include "lib/win32support.cpp"
-	#include "lib/winfileselector.cpp"
-#endif

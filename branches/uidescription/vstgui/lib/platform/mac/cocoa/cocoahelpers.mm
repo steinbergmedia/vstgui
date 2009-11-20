@@ -1,7 +1,7 @@
 
 #include "cocoahelpers.h"
 
-#if MAC_COCOA && VSTGUI_PLATFORM_ABSTRACTION
+#if MAC_COCOA
 
 #include "../../../vstkeycode.h"
 #include "../../../cview.h"
@@ -138,4 +138,4 @@ HIDDEN long eventButton (NSEvent* theEvent)
 	return buttons;
 }
 
-#endif // MAC_COCOA && VSTGUI_PLATFORM_ABSTRACTION
+#endif // MAC_COCOA

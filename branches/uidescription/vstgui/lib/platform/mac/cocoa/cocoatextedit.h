@@ -4,7 +4,7 @@
 
 #include "../../iplatformtextedit.h"
 
-#if MAC_COCOA && VSTGUI_PLATFORM_ABSTRACTION
+#if MAC_COCOA
 
 #ifdef __OBJC__
 @class NSView;
@@ -40,6 +40,6 @@ protected:
 
 } // namespace
 
-#endif // MAC_COCOA && VSTGUI_PLATFORM_ABSTRACTION
+#endif // MAC_COCOA
 
 #endif // __cocoatextedit__

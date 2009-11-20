@@ -35,27 +35,11 @@
 #include "ctooltipsupport.h"
 #include "cvstguitimer.h"
 
-#if !VSTGUI_PLATFORM_ABSTRACTION
-
-#if WINDOWS
-#include <commctrl.h>
-#include "win32support.h"
-#endif
-
-#if MAC_COCOA
-#include "cocoasupport.h"
-#endif
-#endif // !VSTGUI_PLATFORM_ABSTRACTION
-
 #if DEBUG
 #define DEBUGLOG 0
 #endif
 
 BEGIN_NAMESPACE_VSTGUI
-
-#if WINDOWS && !VSTGUI_PLATFORM_ABSTRACTION
-static void* InitTooltip (CFrame* frame);
-#endif
 
 enum {
 	kHidden,
@@ -87,20 +71,12 @@ CTooltipSupport::CTooltipSupport (CFrame* frame, int delay)
 : timer (0)
 , frame (frame)
 , currentView (0)
-#if !VSTGUI_PLATFORM_ABSTRACTION
-, platformObject (0)
-#endif
 , delay (delay)
 , state (kHidden)
 {
 	timer = new CVSTGUITimer (this, delay);
 	frame->setMouseObserver (this);
 	frame->remember ();
-
-	#if WINDOWS && !VSTGUI_PLATFORM_ABSTRACTION
-	platformObject = InitTooltip (frame);
-
-	#endif
 }
 
 //------------------------------------------------------------------------
@@ -108,22 +84,9 @@ CTooltipSupport::~CTooltipSupport ()
 {
 	timer->forget ();
 
-#if VSTGUI_PLATFORM_ABSTRACTION
 	IPlatformFrame* platformFrame = frame->getPlatformFrame ();
 	if (platformFrame)
 		platformFrame->hideTooltip ();
-
-#else
-	#if MAC_COCOA
-	nsViewRemoveTooltip (frame, true);
-	#endif
-
-	#if WINDOWS
-	if (platformObject)
-		DestroyWindow ((HWND)platformObject);
-
-	#endif
-#endif // VSTGUI_PLATFORM_ABSTRACTION
 
 	frame->setMouseObserver (0);
 	frame->forget ();
@@ -278,38 +241,9 @@ void CTooltipSupport::hideTooltip ()
 	if (state != kHidden)
 	{
 		state = kHidden;
-		#if VSTGUI_PLATFORM_ABSTRACTION
 		IPlatformFrame* platformFrame = frame->getPlatformFrame ();
 		if (platformFrame)
 			platformFrame->hideTooltip ();
-
-		#else
-		#if MAC_COCOA
-		if (frame->getNSView ())
-		{
-			nsViewRemoveTooltip (frame, false);
-			return;
-		}
-		#endif
-		
-		#if MAC_CARBON
-		HMHideTag ();
-		#endif
-
-		#if WINDOWS
-		if (platformObject)
-		{
-			TOOLINFO ti = {0};
-		    ti.cbSize = sizeof(TOOLINFO);
-			ti.hwnd = (HWND)frame->getSystemWindow ();
-			ti.uId = 0;
-			ti.lpszText = 0;
-			SendMessage ((HWND)platformObject, TTM_UPDATETIPTEXT, 0, (LPARAM)&ti);
-			SendMessage ((HWND)platformObject, TTM_POP, 0, 0);
-		}
-
-		#endif
-		#endif // VSTGUI_PLATFORM_ABSTRACTION
 
 		#if DEBUGLOG
 		DebugPrint ("CTooltipSupport::hideTooltip\n");
@@ -332,62 +266,10 @@ void CTooltipSupport::showTooltip ()
 		if (tooltip)
 		{
 			state = kForceVisible;
-		#if VSTGUI_PLATFORM_ABSTRACTION
 			
 			IPlatformFrame* platformFrame = frame->getPlatformFrame ();
 			if (platformFrame)
 				platformFrame->showTooltip (r, tooltip);
-
-		#else
-
-			#if MAC_COCOA
-			if (frame->getNSView ())
-			{
-				nsViewSetTooltip (currentView, tooltip);
-				free (tooltip);
-				return;
-			}
-			#endif
-
-			#if MAC_CARBON
-			CCoord x, y;
-			currentView->getFrame ()->getPosition (x,y);
-			r.offset (x, y);
-
-			HMHelpContentRec helpContent = {0};
-			helpContent.version = 0;
-			helpContent.absHotRect.left = r.left;
-			helpContent.absHotRect.right = r.right;
-			helpContent.absHotRect.top = r.top;
-			helpContent.absHotRect.bottom = r.bottom;
-			helpContent.tagSide = kHMDefaultSide;
-			helpContent.content[0].contentType = kHMCFStringContent;
-			helpContent.content[0].u.tagCFString = CFStringCreateWithCString (0, tooltip, kCFStringEncodingUTF8);
-			HMDisplayTag(&helpContent);
-			CFRelease (helpContent.content[0].u.tagCFString);
-			#endif // MAC_CARBON
-			
-			#if WINDOWS
-			UTF8StringHelper tooltipText (tooltip);
-			if (platformObject)
-			{
-				RECT rc;
-				rc.left = (LONG)r.left;
-				rc.top = (LONG)r.top;
-				rc.right = (LONG)r.right;
-				rc.bottom = (LONG)r.bottom;
-				TOOLINFO ti = {0};
-			    ti.cbSize = sizeof(TOOLINFO);
-				ti.hwnd = (HWND)frame->getSystemWindow ();
-				ti.uId = 0;
-				ti.rect = rc;
-				ti.lpszText = (TCHAR*)(const TCHAR*)tooltipText;
-				SendMessage ((HWND)platformObject, TTM_UPDATETIPTEXT, 0, (LPARAM)&ti);
-				SendMessage ((HWND)platformObject, TTM_NEWTOOLRECT, 0, (LPARAM)&ti);
- 				SendMessage ((HWND)platformObject, TTM_POPUP, 0, 0);
-			}
-			#endif // WINDOWS
-		#endif // VSTGUI_PLATFORM_ABSTRACTION
 
 			free (tooltip);
 
@@ -424,40 +306,5 @@ CMessageResult CTooltipSupport::notify (CBaseObject* sender, const char* msg)
 	}
 	return kMessageUnknown;
 }
-
-#if !VSTGUI_PLATFORM_ABSTRACTION
-
-#if WINDOWS
-void* InitTooltip (CFrame* frame)
-{
-    TOOLINFO    ti;
-	// Create the ToolTip control.
-    HWND hwndTT = CreateWindow (TOOLTIPS_CLASS, TEXT(""),
-                          WS_POPUP,
-                          CW_USEDEFAULT, CW_USEDEFAULT,
-                          CW_USEDEFAULT, CW_USEDEFAULT,
-                          NULL, (HMENU)NULL, GetInstance (),
-                          NULL);
-
-    // Prepare TOOLINFO structure for use as tracking ToolTip.
-    ti.cbSize = sizeof(TOOLINFO);
-    ti.uFlags = TTF_SUBCLASS;
-    ti.hwnd   = (HWND)frame->getSystemWindow ();
-    ti.uId    = (UINT)0;
-    ti.hinst  = GetInstance ();
-    ti.lpszText  = TEXT("This is a tooltip");
-	ti.rect.left = ti.rect.top = ti.rect.bottom = ti.rect.right = 0;
-
-	// Add the tool to the control
-    if (!SendMessage (hwndTT, TTM_ADDTOOL, 0, (LPARAM)&ti))
-	{
-		DestroyWindow (hwndTT);
-		return 0;
-    }
-
-	return hwndTT;
-}
-#endif // WINDOWS
-#endif // !VSTGUI_PLATFORM_ABSTRACTION
 
 END_NAMESPACE_VSTGUI

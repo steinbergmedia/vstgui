@@ -85,7 +85,7 @@ public:
 	virtual CFontDesc& operator = (const CFontDesc&);
 	virtual bool operator == (const CFontDesc&) const;
 	
-	static void cleanup ();								///< does some cleanup, needed for GDIPLUS
+	static void cleanup ();
 
 	CLASS_METHODS(CFontDesc, CBaseObject)
 protected:

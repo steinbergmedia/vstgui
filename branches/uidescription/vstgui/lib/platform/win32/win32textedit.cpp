@@ -9,7 +9,7 @@
 
 #include "win32textedit.h"
 
-#if WINDOWS && VSTGUI_PLATFORM_ABSTRACTION
+#if WINDOWS
 
 #include "win32support.h"
 #include "../../vstkeycode.h"
@@ -189,4 +189,4 @@ LONG_PTR WINAPI Win32TextEdit::procEdit (HWND hwnd, UINT message, WPARAM wParam,
 
 } // namespace
 
-#endif // WINDOWS && VSTGUI_PLATFORM_ABSTRACTION
+#endif // WINDOWS
