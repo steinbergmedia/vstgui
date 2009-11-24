@@ -42,7 +42,7 @@
 namespace VSTGUI {
 
 //-----------------------------------------------------------------------------
-CPlatformFont* CPlatformFont::create (const char* name, const CCoord& size, const long& style)
+IPlatformFont* IPlatformFont::create (const char* name, const CCoord& size, const long& style)
 {
 	#if VSTGUI_USES_CORE_TEXT
 	CoreTextFont* font = new CoreTextFont (name, size, style);

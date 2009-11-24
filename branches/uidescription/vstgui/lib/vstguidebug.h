@@ -41,10 +41,7 @@
 
 #include <time.h>
 
-BEGIN_NAMESPACE_VSTGUI
-extern long gNbCOffscreenContext;
-extern long gBitmapAllocation;
-extern long gNbDC;
+namespace VSTGUI {
 
 //-----------------------------------------------------------------------------
 extern void DebugPrint (const char *format, ...);
@@ -64,7 +61,7 @@ protected:
 	clock_t startTime;
 };
 
-END_NAMESPACE_VSTGUI
+} // namespace
 
 #endif // DEBUG
 

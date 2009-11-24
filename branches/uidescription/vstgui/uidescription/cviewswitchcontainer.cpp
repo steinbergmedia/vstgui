@@ -36,7 +36,7 @@
 #include "viewcreator.h"
 #include "../lib/cframe.h"
 
-BEGIN_NAMESPACE_VSTGUI
+namespace VSTGUI {
 
 //-----------------------------------------------------------------------------
 CViewSwitchContainer::CViewSwitchContainer (const CRect& size)
@@ -290,4 +290,4 @@ public:
 CViewSwitchContainerCreator __gCViewSwitchContainerCreator;
 
 
-END_NAMESPACE_VSTGUI
+} // namespace

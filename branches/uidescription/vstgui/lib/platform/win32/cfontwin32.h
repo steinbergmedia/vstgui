@@ -45,11 +45,11 @@
 #include <gdiplus.h>
 #endif
 
-BEGIN_NAMESPACE_VSTGUI
+namespace VSTGUI {
 
 #if GDIPLUS
 //-----------------------------------------------------------------------------
-class GdiPlusFont : public CPlatformFont, public IFontPainter
+class GdiPlusFont : public IPlatformFont, public IFontPainter
 {
 public:
 	GdiPlusFont (const char* name, const CCoord& size, const long& style);
@@ -74,7 +74,7 @@ protected:
 };
 #else // GDIPLUS
 //-----------------------------------------------------------------------------
-class GdiFont : public CPlatformFont, public IFontPainter
+class GdiFont : public IPlatformFont, public IFontPainter
 {
 	GdiFont (const char* name, const CCoord& size, const long& style);
 
@@ -97,7 +97,7 @@ protected:
 
 #endif
 
-END_NAMESPACE_VSTGUI
+} // namespace
 
 #endif // WINDOWS
 

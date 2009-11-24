@@ -6,7 +6,7 @@
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
-// (c) 2008, Steinberg Media Technologies, All Rights Reserved
+// (c) 2009, Steinberg Media Technologies, All Rights Reserved
 //-----------------------------------------------------------------------------
 // Redistribution and use in source and binary forms, with or without modification,
 // are permitted provided that the following conditions are met:
@@ -35,7 +35,7 @@
 #include "ctextedit.h"
 #include "../cframe.h"
 
-BEGIN_NAMESPACE_VSTGUI
+namespace VSTGUI {
 
 //------------------------------------------------------------------------
 // CTextEdit
@@ -277,7 +277,8 @@ bool CTextEdit::platformOnKeyDown (const VstKeyCode& key)
 //------------------------------------------------------------------------
 void CTextEdit::parentSizeChanged ()
 {
-// TODO: platform abstraction
+	if (platformControl)
+		platformControl->updateSize ();
 }
 
 //------------------------------------------------------------------------
@@ -331,6 +332,8 @@ void CTextEdit::looseFocus ()
 	if (strcmp (oldText, text))
 	{
 		change = true;
+		if (string2FloatConvert)
+			string2FloatConvert (text, value);
 		if (listener)
 			listener->valueChanged (this);
 	}
@@ -359,5 +362,5 @@ void CTextEdit::setTextEditConvert (void (*convert) (char *input, char *string,
 	this->userData = userData;
 }
 
-END_NAMESPACE_VSTGUI
+} // namespace
 

@@ -1,3 +1,9 @@
+2009-11-24 arne
+
+	* fixed some bugs introduced with the platform abstraction
+	* added color chooser view (and panel for uidescription)
+	* replaced NAMESPACES makros with namespace VSTGUI
+
 2009-11-20 arne
 
 	* completed platform abstraction (except the CVSTGUITimer class)

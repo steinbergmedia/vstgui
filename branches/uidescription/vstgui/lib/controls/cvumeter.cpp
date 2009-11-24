@@ -6,7 +6,7 @@
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
-// (c) 2008, Steinberg Media Technologies, All Rights Reserved
+// (c) 2009, Steinberg Media Technologies, All Rights Reserved
 //-----------------------------------------------------------------------------
 // Redistribution and use in source and binary forms, with or without modification,
 // are permitted provided that the following conditions are met:
@@ -36,7 +36,7 @@
 #include "../coffscreencontext.h"
 #include "../cbitmap.h"
 
-BEGIN_NAMESPACE_VSTGUI
+namespace VSTGUI {
 
 //------------------------------------------------------------------------
 // CVuMeter
@@ -205,20 +205,14 @@ void CVuMeter::draw (CDrawContext *_pContext)
 
 	if (getOffBitmap ())
 	{
-		if (bTransparencyEnabled)
-			getOffBitmap ()->drawTransparent (pContext, rectOff, pointOff);
-		else
-			getOffBitmap ()->draw (pContext, rectOff, pointOff);
+		getOffBitmap ()->draw (pContext, rectOff, pointOff);
 	}
 
-	if (bTransparencyEnabled)
-		getOnBitmap ()->drawTransparent (pContext, rectOn, pointOn);
-	else
-		getOnBitmap ()->draw (pContext, rectOn, pointOn);
+	getOnBitmap ()->draw (pContext, rectOn, pointOn);
 
 	if (pOScreen)
 		pOScreen->copyFrom (_pContext, size);
 	setDirty (false);
 }
 
-END_NAMESPACE_VSTGUI
+} // namespace

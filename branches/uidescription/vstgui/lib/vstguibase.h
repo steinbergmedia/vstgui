@@ -84,10 +84,6 @@
 #endif
 #define UNICODE 1
 
-#define BEGIN_NAMESPACE_VSTGUI  namespace VSTGUI {
-#define END_NAMESPACE_VSTGUI    }
-#define USING_NAMESPACE_VSTGUI using namespace VSTGUI;
-
 //----------------------------------------------------
 // Deprecation setting
 //----------------------------------------------------
@@ -111,7 +107,7 @@
 	#endif
 #endif
 
-BEGIN_NAMESPACE_VSTGUI
+namespace VSTGUI {
 
 #if DEBUG
 #define CLASS_METHODS(name, parent)             \
@@ -176,8 +172,10 @@ public:
 	virtual CMessageResult notify (CBaseObject* sender, const char* message) { return kMessageUnknown; }
 	//@}
 
+	/// @cond ignore
 	virtual bool isTypeOf (const char* s) const { return (!strcmp (s, "CBaseObject")); }
 	virtual CBaseObject* newCopy () const { return 0; }
+	/// @endcond
 
 	#if DEBUG
 	virtual const char* getClassName () const { return "CBaseObject"; }
@@ -187,7 +185,7 @@ private:
 	long nbReference;
 };
 
-END_NAMESPACE_VSTGUI
+} // namespace
 
 //-----------------------------------------------------------------------------
 #include "vstguidebug.h"

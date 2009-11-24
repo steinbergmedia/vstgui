@@ -49,7 +49,7 @@
 #include <algorithm>
 #include <sstream>
 
-BEGIN_NAMESPACE_VSTGUI
+namespace VSTGUI {
 
 //-----------------------------------------------------------------------------
 class InspectorTabButton : public COnOffButton, public IFocusDrawing
@@ -137,7 +137,7 @@ public:
 			#endif
 				pContext->setFont (textFont);
 			pContext->setFontColor (value ? activeTextColor : inactiveTextColor);
-			pContext->drawString (name, size, false);
+			pContext->drawString (name, size);
 		}
 		CColor lineColor (backgroundColor);
 		lineColor.alpha += 50;
@@ -410,14 +410,14 @@ public:
 			{
 				context->setFontColor (kRedCColor);
 				context->setFont (kNormalFont);
-				context->drawStringUTF8 ("<< Insert New >>", size);
+				context->drawString ("<< Insert New >>", size);
 			}
 		}
 		else if (column == 0)
 		{
 			context->setFontColor (kWhiteCColor);
 			context->setFont (kNormalFont);
-			context->drawStringUTF8 (names[row]->c_str (), size);
+			context->drawString (names[row]->c_str (), size);
 		}
 		else if (column == dbGetNumColumns (browser)-1)
 		{
@@ -448,7 +448,7 @@ public:
 			getCellText (row, column, text, browser);
 			context->setFontColor (kWhiteCColor);
 			context->setFont (kNormalFont);
-			context->drawStringUTF8 (text.c_str (), size);
+			context->drawString (text.c_str (), size);
 		}
 	}
 
@@ -782,7 +782,7 @@ public:
 				sprintf (strBuffer, "#%02x%02x%02x%02x", red, green, blue, alpha);
 				context->setFontColor (kWhiteCColor);
 				context->setFont (kNormalFont);
-				context->drawStringUTF8 (strBuffer, size);
+				context->drawString (strBuffer, size);
 			}
 			return;
 		}
@@ -1694,6 +1694,6 @@ void CViewInspector::windowClosed (PlatformWindow* platformWindow)
 {
 }
 
-END_NAMESPACE_VSTGUI
+} // namespace
 
 #endif // VSTGUI_LIVE_EDITING

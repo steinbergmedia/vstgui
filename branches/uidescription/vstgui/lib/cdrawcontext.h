@@ -6,7 +6,7 @@
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
-// (c) 2008, Steinberg Media Technologies, All Rights Reserved
+// (c) 2009, Steinberg Media Technologies, All Rights Reserved
 //-----------------------------------------------------------------------------
 // Redistribution and use in source and binary forms, with or without modification,
 // are permitted provided that the following conditions are met:
@@ -41,7 +41,7 @@
 #include "cfont.h"
 #include "ccolor.h"
 
-BEGIN_NAMESPACE_VSTGUI
+namespace VSTGUI {
 
 //-----------
 // @brief Line Style
@@ -81,11 +81,11 @@ enum CDrawStyle
 	kDrawFilledAndStroked
 };
 
-END_NAMESPACE_VSTGUI
+} // namespace
 
 #include <stack>
 
-BEGIN_NAMESPACE_VSTGUI
+namespace VSTGUI {
 class CBitmap;
 
 //-----------------------------------------------------------------------------
@@ -163,11 +163,9 @@ public:
 	/// @name Text
 	//-----------------------------------------------------------------------------
 	//@{
-	CCoord getStringWidth (const char* pStr);	///< get the width of an ASCII encoded string
-	void drawString (const char *pString, const CRect &rect, const short opaque = false, const CHoriTxtAlign hAlign = kCenterText);	///< draw an ASCII encoded string
-	CCoord getStringWidthUTF8 (const char* pStr);	///< get the width of an UTF-8 encoded string
-	void drawStringUTF8 (const char* pString, const CRect& rect, const CHoriTxtAlign hAlign = kCenterText, bool antialias = true);	///< draw an UTF-8 encoded string
-	void drawStringUTF8 (const char* string, const CPoint& _point, bool antialias = true);	///< draw an UTF-8 encoded string
+	CCoord getStringWidth (const char* pStr);	///< get the width of an UTF-8 encoded string
+	void drawString (const char* string, const CRect& _rect, const CHoriTxtAlign hAlign = kCenterText, bool antialias = true);	///< draw an UTF-8 encoded string
+	void drawString (const char* string, const CPoint& _point, bool antialias = true);	///< draw an UTF-8 encoded string
 	//@}
 	
 	//-----------------------------------------------------------------------------
@@ -187,7 +185,7 @@ public:
 	//@}
 
 	//-----------------------------------------------------------------------------
-	/// @name Transformation State
+	/// @name Offset Transformation
 	//-----------------------------------------------------------------------------
 	//@{
 	virtual void setOffset (const CPoint& offset);
@@ -201,6 +199,7 @@ protected:
 
 	virtual void init ();
 
+	/// @cond ignore
 	struct CDrawContextState
 	{
 		CFontRef font;
@@ -215,6 +214,7 @@ protected:
 		CDrawMode drawMode;
 		float globalAlpha;
 	};
+	/// @endcond
 
 	CRect surfaceRect;
 
@@ -222,6 +222,6 @@ protected:
 	std::stack<CDrawContextState*> globalStatesStack;
 };
 
-END_NAMESPACE_VSTGUI
+} // namespace
 
 #endif

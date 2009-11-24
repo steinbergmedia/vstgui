@@ -6,7 +6,7 @@
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
-// (c) 2008, Steinberg Media Technologies, All Rights Reserved
+// (c) 2009, Steinberg Media Technologies, All Rights Reserved
 //-----------------------------------------------------------------------------
 // Redistribution and use in source and binary forms, with or without modification,
 // are permitted provided that the following conditions are met:
@@ -40,7 +40,7 @@
 #include "../ccolor.h"
 #include "../cdrawcontext.h"
 
-BEGIN_NAMESPACE_VSTGUI
+namespace VSTGUI {
 
 //-----------------------------------------------------------------------------
 // CParamDisplay Declaration
@@ -118,6 +118,6 @@ protected:
 	bool		bAntialias;
 };
 
-END_NAMESPACE_VSTGUI
+} // namespace
 
 #endif

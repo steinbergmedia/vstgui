@@ -6,7 +6,7 @@
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
-// (c) 2008, Steinberg Media Technologies, All Rights Reserved
+// (c) 2009, Steinberg Media Technologies, All Rights Reserved
 //-----------------------------------------------------------------------------
 // Redistribution and use in source and binary forms, with or without modification,
 // are permitted provided that the following conditions are met:
@@ -39,7 +39,7 @@
 #include "../cfont.h"
 #include "../ccolor.h"
 
-BEGIN_NAMESPACE_VSTGUI
+namespace VSTGUI {
 
 //-----------------------------------------------------------------------------
 // COnOffButton Declaration
@@ -73,7 +73,7 @@ protected:
 
 //-----------------------------------------------------------------------------
 // CCheckBox Declaration
-//! @brief a check box control with a title and 3 states [new since 4.0]
+//! @brief a check box control with a title and 3 states [new in 4.0]
 /// @ingroup controls
 //-----------------------------------------------------------------------------
 class CCheckBox : public CControl
@@ -165,6 +165,6 @@ private:
 	float   fEntryState;
 };
 
-END_NAMESPACE_VSTGUI
+} // namespace
 
 #endif

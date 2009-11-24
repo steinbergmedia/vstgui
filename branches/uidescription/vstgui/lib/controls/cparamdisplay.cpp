@@ -6,7 +6,7 @@
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
-// (c) 2008, Steinberg Media Technologies, All Rights Reserved
+// (c) 2009, Steinberg Media Technologies, All Rights Reserved
 //-----------------------------------------------------------------------------
 // Redistribution and use in source and binary forms, with or without modification,
 // are permitted provided that the following conditions are met:
@@ -35,7 +35,7 @@
 #include "cparamdisplay.h"
 #include "../cbitmap.h"
 
-BEGIN_NAMESPACE_VSTGUI
+namespace VSTGUI {
 
 //------------------------------------------------------------------------
 // CParamDisplay
@@ -132,17 +132,11 @@ void CParamDisplay::drawBack (CDrawContext* pContext, CBitmap* newBack)
 	// draw the background
 	if (newBack)
 	{
-		if (bTransparencyEnabled)
-			newBack->drawTransparent (pContext, size, backOffset);
-		else
-			newBack->draw (pContext, size, backOffset);
+		newBack->draw (pContext, size, backOffset);
 	}
 	else if (pBackground)
 	{
-		if (bTransparencyEnabled)
-			pBackground->drawTransparent (pContext, size, backOffset);
-		else
-			pBackground->draw (pContext, size, backOffset);
+		pBackground->draw (pContext, size, backOffset);
 	}
 	else
 	{
@@ -204,10 +198,10 @@ void CParamDisplay::drawText (CDrawContext *pContext, const char *string)
 			CRect newSize (textRect);
 			newSize.offset (1, 1);
 			pContext->setFontColor (shadowColor);
-			pContext->drawStringUTF8 (string, newSize, horiTxtAlign, bAntialias);
+			pContext->drawString (string, newSize, horiTxtAlign, bAntialias);
 		}
 		pContext->setFontColor (fontColor);
-		pContext->drawStringUTF8 (string, textRect, horiTxtAlign, bAntialias);
+		pContext->drawString (string, textRect, horiTxtAlign, bAntialias);
 		pContext->setClipRect (oldClip);
 	}
 }
@@ -287,4 +281,4 @@ void CParamDisplay::setString2FloatConvert (void (*convert) (char *string, float
 	string2FloatConvert = convert;
 }
 
-END_NAMESPACE_VSTGUI
+} // namespace

@@ -45,13 +45,14 @@ namespace VSTGUI {
 
 #if VSTGUI_USES_CORE_TEXT
 //-----------------------------------------------------------------------------
-class CoreTextFont : public CPlatformFont, public IFontPainter
+class CoreTextFont : public IPlatformFont, public IFontPainter
 {
 public:
 	CoreTextFont (const char* name, const CCoord& size, const long& style);
 
 	CTFontRef getFontRef () const { return fontRef; }
 
+//------------------------------------------------------------------------------------
 protected:
 	~CoreTextFont ();
 
@@ -71,7 +72,7 @@ protected:
 
 #else // VSTGUI_USES_CORE_TEXT
 //-----------------------------------------------------------------------------
-class ATSUFont : public CPlatformFont, public IFontPainter
+class ATSUFont : public IPlatformFont, public IFontPainter
 {
 public:
 	ATSUFont (const char* name, const CCoord& size, const long& style);

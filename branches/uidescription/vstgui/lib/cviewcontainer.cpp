@@ -6,7 +6,7 @@
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
-// (c) 2008, Steinberg Media Technologies, All Rights Reserved
+// (c) 2009, Steinberg Media Technologies, All Rights Reserved
 //-----------------------------------------------------------------------------
 // Redistribution and use in source and binary forms, with or without modification,
 // are permitted provided that the following conditions are met:
@@ -39,7 +39,7 @@
 #include "ifocusdrawing.h"
 #include "controls/ccontrol.h"
 
-BEGIN_NAMESPACE_VSTGUI
+namespace VSTGUI {
 
 //-----------------------------------------------------------------------------
 // CCView Implementation
@@ -607,10 +607,7 @@ void CViewContainer::drawBackgroundRect (CDrawContext* pContext, CRect& _updateR
 		newClip.bound (oldClip);
 		pContext->setClipRect (newClip);
 		CRect tr (0, 0, pBackground->getWidth (), pBackground->getHeight ());
-		if (bTransparencyEnabled)
-			pBackground->drawTransparent (pContext, tr, backgroundOffset);
-		else
-			pBackground->draw (pContext, tr, backgroundOffset);
+		pBackground->draw (pContext, tr, backgroundOffset);
 		pContext->setClipRect (oldClip);
 	}
 	else if ((backgroundColor.alpha != 255 && bTransparencyEnabled) || !bTransparencyEnabled)
@@ -1281,4 +1278,4 @@ void CViewContainer::dumpHierarchy ()
 
 #endif
 
-END_NAMESPACE_VSTGUI
+} // namespace

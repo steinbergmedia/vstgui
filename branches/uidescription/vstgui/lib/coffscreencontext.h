@@ -6,7 +6,7 @@
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
-// (c) 2008, Steinberg Media Technologies, All Rights Reserved
+// (c) 2009, Steinberg Media Technologies, All Rights Reserved
 //-----------------------------------------------------------------------------
 // Redistribution and use in source and binary forms, with or without modification,
 // are permitted provided that the following conditions are met:
@@ -39,7 +39,7 @@
 
 #include "cbitmap.h"
 
-BEGIN_NAMESPACE_VSTGUI
+namespace VSTGUI {
 class CFrame;
 
 //-----------------------------------------------------------------------------
@@ -71,6 +71,6 @@ protected:
 	CBitmap* bitmap;
 };
 
-END_NAMESPACE_VSTGUI
+} // namespace
 
 #endif // __coffscreencontext__

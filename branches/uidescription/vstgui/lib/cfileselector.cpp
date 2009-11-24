@@ -6,7 +6,7 @@
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
-// (c) 2008, Steinberg Media Technologies, All Rights Reserved
+// (c) 2009, Steinberg Media Technologies, All Rights Reserved
 //-----------------------------------------------------------------------------
 // Redistribution and use in source and binary forms, with or without modification,
 // are permitted provided that the following conditions are met:
@@ -34,7 +34,7 @@
 
 #include "cfileselector.h"
 
-BEGIN_NAMESPACE_VSTGUI
+namespace VSTGUI {
 
 //-----------------------------------------------------------------------------
 CFileExtension::CFileExtension (const char* inDescription, const char* inExtension, const char* inMimeType, int inMacType)
@@ -259,5 +259,5 @@ const char* CNewFileSelector::getSelectedFile (unsigned int index) const
 	return 0;
 }
 
-END_NAMESPACE_VSTGUI
+} // namespace
 

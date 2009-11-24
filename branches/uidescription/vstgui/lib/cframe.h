@@ -6,7 +6,7 @@
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
-// (c) 2008, Steinberg Media Technologies, All Rights Reserved
+// (c) 2009, Steinberg Media Technologies, All Rights Reserved
 //-----------------------------------------------------------------------------
 // Redistribution and use in source and binary forms, with or without modification,
 // are permitted provided that the following conditions are met:
@@ -38,7 +38,7 @@
 #include "cviewcontainer.h"
 #include "platform/iplatformframe.h"
 
-BEGIN_NAMESPACE_VSTGUI
+namespace VSTGUI {
 class VSTGUIEditorInterface;
 class IMouseObserver;
 class IKeyboardHook;
@@ -101,9 +101,6 @@ public:
 	virtual void onViewRemoved (CView* pView);
 
 	virtual void onActivate (bool state);									///< called when the platform view/window is activated/deactivated
-
-	virtual bool setDropActive (bool val);
-	virtual bool isDropActive () const { return bDropActive; };
 
 	VSTGUI_DEPRECATED(CDrawContext* createDrawContext ();)
 
@@ -180,7 +177,6 @@ protected:
 	CView   *pActiveFocusView;
 	CView   *pMouseOverView;
 
-	bool    bDropActive;
 	bool	bActive;
 
 	IPlatformFrame* platformFrame;
@@ -248,6 +244,6 @@ public:
 	virtual long onKeyUp (const VstKeyCode& code, CFrame* frame) = 0;	///< should return 1 if no further key up processing should apply, otherwise -1
 };
 
-END_NAMESPACE_VSTGUI
+} // namespace
 
 #endif

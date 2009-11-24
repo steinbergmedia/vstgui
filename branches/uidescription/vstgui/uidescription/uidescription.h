@@ -45,7 +45,7 @@
 #include <list>
 #include <string>
 
-BEGIN_NAMESPACE_VSTGUI
+namespace VSTGUI {
 
 class UIDescList;
 class UINode;
@@ -197,6 +197,6 @@ static bool std__stringCompare (const std::string* lhs, const std::string* rhs)
   return *lhs < *rhs;
 }
 
-END_NAMESPACE_VSTGUI
+} // namespace
 
 #endif

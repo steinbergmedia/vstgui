@@ -6,7 +6,7 @@
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
-// (c) 2008, Steinberg Media Technologies, All Rights Reserved
+// (c) 2009, Steinberg Media Technologies, All Rights Reserved
 //-----------------------------------------------------------------------------
 // Redistribution and use in source and binary forms, with or without modification,
 // are permitted provided that the following conditions are met:
@@ -36,7 +36,7 @@
 #include "../cdrawcontext.h"
 #include "../cbitmap.h"
 
-BEGIN_NAMESPACE_VSTGUI
+namespace VSTGUI {
 
 //------------------------------------------------------------------------
 // CVerticalSwitch
@@ -110,10 +110,7 @@ void CVerticalSwitch::draw (CDrawContext *pContext)
 		// source position in bitmap
 		CPoint where (0, heightOfOneImage * ((long)(value * (getNumSubPixmaps () - 1) + 0.5f)));
 
-		if (bTransparencyEnabled)
-			pBackground->drawTransparent (pContext, size, where);
-		else
-			pBackground->draw (pContext, size, where);
+		pBackground->draw (pContext, size, where);
 	}
 	setDirty (false);
 }
@@ -232,10 +229,7 @@ void CHorizontalSwitch::draw (CDrawContext *pContext)
 		// source position in bitmap
 		CPoint where (0, heightOfOneImage * ((long)(value * (getNumSubPixmaps () - 1) + 0.5f)));
 
-		if (bTransparencyEnabled)
-			pBackground->drawTransparent (pContext, size, where);
-		else
-			pBackground->draw (pContext, size, where);
+		pBackground->draw (pContext, size, where);
 	}
 	setDirty (false);
 }
@@ -359,10 +353,7 @@ void CRockerSwitch::draw (CDrawContext *pContext)
 
 	if (pBackground)
 	{
-		if (bTransparencyEnabled)
-			pBackground->drawTransparent (pContext, size, where);
-		else
-			pBackground->draw (pContext, size, where);
+		pBackground->draw (pContext, size, where);
 	}
 	setDirty (false);
 }
@@ -453,4 +444,4 @@ bool CRockerSwitch::onWheel (const CPoint& where, const float &distance, const l
 	return true;
 }
 
-END_NAMESPACE_VSTGUI
+} // namespace

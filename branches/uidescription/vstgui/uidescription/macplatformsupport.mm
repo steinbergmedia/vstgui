@@ -35,6 +35,10 @@
 #if VSTGUI_LIVE_EDITING
 
 #include "platformsupport.h"
+
+#if MAC
+
+#include "ccolorchooserpanel.h"
 #include "../lib/platform/mac/cocoa/nsviewframe.h"
 #include "../lib/platform/mac/cocoa/cocoahelpers.h"
 #include "../lib/platform/mac/cgbitmap.h"
@@ -76,7 +80,7 @@ static __attribute__((__destructor__)) void colorChangeCallbackDestructor ()
 		[gColorChangeCallback release];
 }
 
-BEGIN_NAMESPACE_VSTGUI
+namespace VSTGUI {
 
 //-----------------------------------------------------------------------------
 class CocoaWindow : public PlatformWindow
@@ -188,6 +192,7 @@ void CocoaWindow::setSize (const CRect& size)
 //-----------------------------------------------------------------------------
 void CocoaWindow::runModal ()
 {
+	[window selectNextKeyView:nil];
 	[NSApp runModalForWindow:window];
 }
 
@@ -248,9 +253,53 @@ bool PlatformUtilities::startDrag (CFrame* frame, const CPoint& location, const 
 	return false;
 }
 
+#if !NATIVE_COLOR_CHOOSER
+class ColorChooserWindowOwner : public CBaseObject
+{
+public:
+	static ColorChooserWindowOwner* instance () { return &ccwo; }
+
+	CColorChooserPanel* getPanel (bool create = true)
+	{
+		if (panel == 0 && create)
+		{
+			panel = new CColorChooserPanel (this);
+		}
+		return panel;
+	}
+	
+	void closePanel ()
+	{
+		if (panel)
+			panel->forget ();
+		panel = 0;
+	}
+	
+protected:
+	static ColorChooserWindowOwner ccwo; 
+
+	ColorChooserWindowOwner () : panel (0) {}
+	~ColorChooserWindowOwner ()
+	{
+		closePanel ();
+	}
+	
+	CMessageResult notify (CBaseObject* sender, const char* message)
+	{
+		if (message == CColorChooserPanel::kMsgWindowClosed)
+			panel = 0;
+		return kMessageNotified;
+	}
+	
+	CColorChooserPanel* panel;
+};
+ColorChooserWindowOwner ColorChooserWindowOwner::ccwo; 
+#endif
+
 //-----------------------------------------------------------------------------
 void PlatformUtilities::colorChooser (const CColor* oldColor, IPlatformColorChangeCallback* callback)
 {
+	#if NATIVE_COLOR_CHOOSER
 	if (gColorChangeCallback == 0)
 		gColorChangeCallback = [[VSTGUI_ColorChangeCallback alloc] init];
 	[gColorChangeCallback setCallback:callback];
@@ -265,9 +314,28 @@ void PlatformUtilities::colorChooser (const CColor* oldColor, IPlatformColorChan
 		[colorPanel setAction:@selector(colorChanged:)];
 		[colorPanel makeKeyAndOrderFront:nil];
 	}
+	#else
+	if (oldColor)
+	{
+		ColorChooserWindowOwner* owner = ColorChooserWindowOwner::instance ();
+		CColorChooserPanel* panel = owner->getPanel ();
+		panel->setColor (*oldColor);
+		panel->setColorChangeCallback (callback);
+	}
+	else
+	{
+		ColorChooserWindowOwner* owner = ColorChooserWindowOwner::instance ();
+		CColorChooserPanel* panel = owner->getPanel (false);
+		if (panel)
+		{
+			panel->setColorChangeCallback (0);
+			owner->closePanel ();
+		}
+	}
+	#endif
 }
 
-END_NAMESPACE_VSTGUI
+} // namespace
 
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
@@ -374,5 +442,7 @@ END_NAMESPACE_VSTGUI
 	}
 }
 @end
+
+#endif // MAC
 
 #endif // VSTGUI_LIVE_EDITING

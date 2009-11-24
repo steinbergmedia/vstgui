@@ -6,7 +6,7 @@
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
-// (c) 2008, Steinberg Media Technologies, All Rights Reserved
+// (c) 2009, Steinberg Media Technologies, All Rights Reserved
 //-----------------------------------------------------------------------------
 // Redistribution and use in source and binary forms, with or without modification,
 // are permitted provided that the following conditions are met:
@@ -37,7 +37,7 @@
 #include "../cbitmap.h"
 #include "../cframe.h"
 
-BEGIN_NAMESPACE_VSTGUI
+namespace VSTGUI {
 
 /// @cond ignore
 //------------------------------------------------------------------------
@@ -48,10 +48,7 @@ public:
 
 	void draw (CDrawContext *pContext)
 	{
-		if (bTransparencyEnabled)
-			pBackground->drawTransparent (pContext, size, offset);
-		else
-			pBackground->draw (pContext, size, offset);
+		pBackground->draw (pContext, size, offset);
 		setDirty (false);
 	}
 
@@ -191,4 +188,4 @@ void CSplashScreen::unSplash ()
 	}
 }
 
-END_NAMESPACE_VSTGUI
+} // namespace

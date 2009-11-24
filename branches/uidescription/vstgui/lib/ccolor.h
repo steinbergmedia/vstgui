@@ -6,7 +6,7 @@
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
-// (c) 2008, Steinberg Media Technologies, All Rights Reserved
+// (c) 2009, Steinberg Media Technologies, All Rights Reserved
 //-----------------------------------------------------------------------------
 // Redistribution and use in source and binary forms, with or without modification,
 // are permitted provided that the following conditions are met:
@@ -37,17 +37,26 @@
 
 #include "vstguibase.h"
 
-BEGIN_NAMESPACE_VSTGUI
+namespace VSTGUI {
 
 //-----------------------------------------------------------------------------
-//! @brief Color structure
+//! @brief RGBA Color structure
 //-----------------------------------------------------------------------------
 struct CColor
 {
-	CColor& operator () (unsigned char red,
-						unsigned char green,
-						unsigned char blue,
-						unsigned char alpha)
+	CColor (unsigned char red = 255, unsigned char green = 255, unsigned char blue = 255, unsigned char alpha = 255)
+	: red (red), green (green), blue (blue), alpha (alpha)
+	{}
+
+	CColor (const CColor& inColor)
+	: red (inColor.red), green (inColor.green), blue (inColor.blue), alpha (inColor.alpha)
+	{}
+
+	//-----------------------------------------------------------------------------
+	/// @name Operator Methods
+	//-----------------------------------------------------------------------------
+	//@{
+	CColor& operator () (unsigned char red, unsigned char green, unsigned char blue, unsigned char alpha)
 	{
 		this->red   = red;
 		this->green = green;
@@ -80,21 +89,37 @@ struct CColor
 
 	bool operator == (const CColor &other) const
 	{ return (red == other.red && green == other.green && blue  == other.blue && alpha == other.alpha); }
+	//@}
+
+	//-----------------------------------------------------------------------------
+	/// @name Convert Methods
+	//-----------------------------------------------------------------------------
+	//@{
+	/**
+	 * @brief convert to hue, saturation and value
+	 * @param hue in degree [0..360]
+	 * @param saturation normalized [0..1]
+	 * @param value normalized [0..1]
+	 */
+	void toHSV (double& hue, double& saturation, double& value);
+	/**
+	 * @brief convert from hue, saturation and value
+	 * @param hue in degree [0..360]
+	 * @param saturation normalized [0..1]
+	 * @param value normalized [0..1]
+	 */
+	void fromHSV (double hue, double saturation, double value);
+	//@}
 	
-	unsigned char red;
-	unsigned char green;
-	unsigned char blue;
-	unsigned char alpha;
+	unsigned char red;		///< red component [0..255]
+	unsigned char green;	///< green component [0..255]
+	unsigned char blue;		///< blue component [0..255]
+	unsigned char alpha;	///< alpha component [0..255]
 };
 
 inline CColor MakeCColor (unsigned char red = 0, unsigned char green = 0, unsigned char blue = 0, unsigned char alpha = 255)
 {
-	CColor c;
-	c.red = red;
-	c.green = green;
-	c.blue = blue;
-	c.alpha = alpha;
-	return c;
+	return CColor (red, green, blue, alpha);
 }
 
 // define some basic colors
@@ -110,6 +135,6 @@ extern const CColor kCyanCColor;
 extern const CColor kMagentaCColor;
 
 
-END_NAMESPACE_VSTGUI
+} // namespace
 
 #endif

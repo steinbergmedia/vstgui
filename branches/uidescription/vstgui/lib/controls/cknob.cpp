@@ -6,7 +6,7 @@
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
-// (c) 2008, Steinberg Media Technologies, All Rights Reserved
+// (c) 2009, Steinberg Media Technologies, All Rights Reserved
 //-----------------------------------------------------------------------------
 // Redistribution and use in source and binary forms, with or without modification,
 // are permitted provided that the following conditions are met:
@@ -38,7 +38,7 @@
 #include "../cframe.h"
 #include <cmath>
 
-BEGIN_NAMESPACE_VSTGUI
+namespace VSTGUI {
 
 //------------------------------------------------------------------------
 // CKnob
@@ -125,10 +125,7 @@ void CKnob::draw (CDrawContext *pContext)
 {
 	if (pBackground)
 	{
-		if (bTransparencyEnabled)
-			pBackground->drawTransparent (pContext, size, offset);
-		else
-			pBackground->draw (pContext, size, offset);
+		pBackground->draw (pContext, size, offset);
 	}
 	drawHandle (pContext);
 	setDirty (false);
@@ -148,7 +145,7 @@ void CKnob::drawHandle (CDrawContext *pContext)
 
 		CRect handleSize (0, 0, width, height);
 		handleSize.offset (where.h, where.v);
-		pHandle->drawTransparent (pContext, handleSize);
+		pHandle->draw (pContext, handleSize);
 	}
 	else
 	{
@@ -565,13 +562,10 @@ void CAnimKnob::draw (CDrawContext *pContext)
 
 	if (pBackground)
 	{
-		if (bTransparencyEnabled)
-			pBackground->drawTransparent (pContext, size, where);
-		else
-			pBackground->draw (pContext, size, where);
+		pBackground->draw (pContext, size, where);
 	}
 	valueToPoint (lastDrawnPoint);
 	setDirty (false);
 }
 
-END_NAMESPACE_VSTGUI
+} // namespace

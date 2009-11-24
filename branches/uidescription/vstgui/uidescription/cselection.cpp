@@ -37,7 +37,7 @@
 #include "cselection.h"
 #include "../lib/cviewcontainer.h"
 
-BEGIN_NAMESPACE_VSTGUI
+namespace VSTGUI {
 
 //----------------------------------------------------------------------------------------------------
 CSelection::CSelection (int style)
@@ -221,6 +221,6 @@ void CSelection::moveBy (const CPoint& p)
 	changed (kMsgSelectionViewChanged);
 }
 
-END_NAMESPACE_VSTGUI
+} // namespace
 
 #endif // VSTGUI_LIVE_EDITING

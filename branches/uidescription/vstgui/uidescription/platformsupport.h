@@ -42,7 +42,7 @@
 
 /// @cond ignore
 
-BEGIN_NAMESPACE_VSTGUI
+namespace VSTGUI {
 class CBitmap;
 class CFrame;
 class PlatformWindow;
@@ -97,7 +97,7 @@ public:
 	static void colorChooser (const CColor* oldColor, IPlatformColorChangeCallback* callback);
 };
 
-END_NAMESPACE_VSTGUI
+} // namespace
 
 /// @endcond ignore
 

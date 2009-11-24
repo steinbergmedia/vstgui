@@ -6,7 +6,7 @@
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
-// (c) 2008, Steinberg Media Technologies, All Rights Reserved
+// (c) 2009, Steinberg Media Technologies, All Rights Reserved
 //-----------------------------------------------------------------------------
 // Redistribution and use in source and binary forms, with or without modification,
 // are permitted provided that the following conditions are met:
@@ -34,18 +34,17 @@
 
 #include "cdrawcontext.h"
 
-BEGIN_NAMESPACE_VSTGUI
+namespace VSTGUI {
 
-static const CColor notInitalized = {0, 0, 0, 0};
 //-----------------------------------------------------------------------------
 CDrawContext::CDrawContext (const CRect& surfaceRect)
 : surfaceRect (surfaceRect)
 {
 	currentState.font = 0;
-	currentState.fontColor = notInitalized;
+	currentState.fontColor = kTransparentCColor;
 	currentState.frameWidth = 0;
-	currentState.frameColor = notInitalized;
-	currentState.fillColor = notInitalized;
+	currentState.frameColor = kTransparentCColor;
+	currentState.fillColor = kTransparentCColor;
 	currentState.lineStyle = kLineOnOffDash;
 	currentState.drawMode = kAntialias;
 	currentState.globalAlpha = 1;
@@ -210,22 +209,7 @@ void CDrawContext::setOffset (const CPoint& offset)
 }
 
 //-----------------------------------------------------------------------------
-CCoord CDrawContext::getStringWidth (const char* pStr)
-{
-	return getStringWidthUTF8 (pStr);
-}
-
-//-----------------------------------------------------------------------------
-void CDrawContext::drawString (const char *string, const CRect &rect, const short opaque, const CHoriTxtAlign hAlign)
-{
-	if (!string)
-		return;
-	
-	drawStringUTF8 (string, rect, hAlign);
-}
-
-//-----------------------------------------------------------------------------
-CCoord CDrawContext::getStringWidthUTF8 (const char* string)
+CCoord CDrawContext::getStringWidth (const char* string)
 {
 	CCoord result = -1;
 	if (currentState.font == 0 || string == 0)
@@ -239,7 +223,7 @@ CCoord CDrawContext::getStringWidthUTF8 (const char* string)
 }
 
 //-----------------------------------------------------------------------------
-void CDrawContext::drawStringUTF8 (const char* string, const CPoint& point, bool antialias)
+void CDrawContext::drawString (const char* string, const CPoint& point, bool antialias)
 {
 	if (string == 0 || currentState.font == 0)
 		return;
@@ -250,7 +234,7 @@ void CDrawContext::drawStringUTF8 (const char* string, const CPoint& point, bool
 }
 
 //-----------------------------------------------------------------------------
-void CDrawContext::drawStringUTF8 (const char* string, const CRect& _rect, const CHoriTxtAlign hAlign, bool antialias)
+void CDrawContext::drawString (const char* string, const CRect& _rect, const CHoriTxtAlign hAlign, bool antialias)
 {
 	if (!string || currentState.font == 0)
 		return;
@@ -258,7 +242,7 @@ void CDrawContext::drawStringUTF8 (const char* string, const CRect& _rect, const
 	CRect rect (_rect);
 
 	double capHeight = -1;
-	CPlatformFont* platformFont = currentState.font->getPlatformFont ();
+	IPlatformFont* platformFont = currentState.font->getPlatformFont ();
 	if (platformFont)
 		capHeight = platformFont->getCapHeight ();
 	
@@ -268,7 +252,7 @@ void CDrawContext::drawStringUTF8 (const char* string, const CRect& _rect, const
 		rect.bottom -= (rect.height ()/2 - currentState.font->getSize () / 2) + 1;
 	if (hAlign != kLeftText)
 	{
-		CCoord stringWidth = getStringWidthUTF8 (string);
+		CCoord stringWidth = getStringWidth (string);
 		if (hAlign == kRightText)
 			rect.left = rect.right - stringWidth;
 		else
@@ -279,8 +263,8 @@ void CDrawContext::drawStringUTF8 (const char* string, const CRect& _rect, const
 	CRect newClip (_rect);
 	newClip.bound (oldClip);
 	setClipRect (newClip);
-	drawStringUTF8 (string, CPoint (rect.left, rect.bottom), antialias);
+	drawString (string, CPoint (rect.left, rect.bottom), antialias);
 	setClipRect (oldClip);
 }
 
-END_NAMESPACE_VSTGUI
+} // namespace

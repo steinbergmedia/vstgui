@@ -42,7 +42,7 @@
 #include <string>
 #include <map>
 
-BEGIN_NAMESPACE_VSTGUI
+namespace VSTGUI {
 class ParameterChangeListener;
 class VST3Editor;
 
@@ -121,6 +121,6 @@ protected:
 	CPoint maxSize;
 };
 
-END_NAMESPACE_VSTGUI
+} // namespace
 
 #endif

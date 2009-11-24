@@ -6,7 +6,7 @@
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
-// (c) 2008, Steinberg Media Technologies, All Rights Reserved
+// (c) 2009, Steinberg Media Technologies, All Rights Reserved
 //-----------------------------------------------------------------------------
 // Redistribution and use in source and binary forms, with or without modification,
 // are permitted provided that the following conditions are met:
@@ -68,9 +68,9 @@
 #define kSQRT2 1.41421356237309504880
 #endif
 
-BEGIN_NAMESPACE_VSTGUI
+namespace VSTGUI {
 class CControl;
-END_NAMESPACE_VSTGUI
+} // namespace
 
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
@@ -84,7 +84,7 @@ public:
 	virtual void controlEndEdit (VSTGUI::CControl* pControl) {}
 };
 
-BEGIN_NAMESPACE_VSTGUI
+namespace VSTGUI {
 
 //------------------
 // CControlEnum type
@@ -212,6 +212,6 @@ protected:
 	long subPixmaps;
 };
 
-END_NAMESPACE_VSTGUI
+} // namespace
 
 #endif

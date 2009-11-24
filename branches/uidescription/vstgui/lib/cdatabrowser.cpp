@@ -40,14 +40,11 @@
 #include "controls/ctextedit.h"
 #include "ifocusdrawing.h"
 
-BEGIN_NAMESPACE_VSTGUI
+namespace VSTGUI {
 
 /// @cond ignore
 //-----------------------------------------------------------------------------------------------
-class CDataBrowserView : public CView
-#if VSTGUI_CGRAPHICSPATH_AVAILABLE
-						,public IFocusDrawing
-#endif
+class CDataBrowserView : public CView, public IFocusDrawing
 //-----------------------------------------------------------------------------------------------
 {
 public:
@@ -67,10 +64,8 @@ public:
 
 	bool getCell (CPoint& where, long& row, long& column);
 
-#if VSTGUI_CGRAPHICSPATH_AVAILABLE
 	bool drawFocusOnTop ();
 	bool getFocusPath (CGraphicsPath& outPath);
-#endif
 protected:
 
 	IDataBrowser* db;
@@ -184,15 +179,18 @@ void CDataBrowser::valueChanged (CControl *pControl)
 				break;
 			}
 		}
-		CPoint where;
-		getFrame ()->getCurrentMouseLocation (where);
-		if (getFrame ()->getViewAt (where, true) == dbView)
+		if (mouseDownView == dbView || mouseDownView == 0)
 		{
-			long row = -1;
-			long column = -1;
-			dbView->frameToLocal (where);
-			dbView->getCell (where, row, column);
-			db->dbOnMouseMoved (where, getFrame ()->getCurrentMouseButtons (), row, column, this);
+			CPoint where;
+			getFrame ()->getCurrentMouseLocation (where);
+			if (getFrame ()->getViewAt (where, true) == dbView)
+			{
+				long row = -1;
+				long column = -1;
+				dbView->frameToLocal (where);
+				dbView->getCell (where, row, column);
+				db->dbOnMouseMoved (where, getFrame ()->getCurrentMouseButtons (), row, column, this);
+			}
 		}
 	}
 }
@@ -778,7 +776,6 @@ long CDataBrowserView::onKeyDown (VstKeyCode& keyCode)
 	return -1;
 }
 
-#if VSTGUI_CGRAPHICSPATH_AVAILABLE
 //-----------------------------------------------------------------------------------------------
 bool CDataBrowserView::drawFocusOnTop ()
 {
@@ -788,9 +785,16 @@ bool CDataBrowserView::drawFocusOnTop ()
 //-----------------------------------------------------------------------------------------------
 bool CDataBrowserView::getFocusPath (CGraphicsPath& outPath)
 {
-	if (browser->getSelectedRow () >= 0)
+	if (false) // browser->getSelectedRow () >= 0)
 	{
 		CRect r = getRowBounds (browser->getSelectedRow ());
+		outPath.addRect (r);
+		r.inset (0.6, 0.6);
+		outPath.addRect (r);
+	}
+	else
+	{
+		CRect r = getVisibleSize ();
 		outPath.addRect (r);
 		r.inset (0.6, 0.6);
 		outPath.addRect (r);
@@ -798,9 +802,7 @@ bool CDataBrowserView::getFocusPath (CGraphicsPath& outPath)
 	return true;
 }
 
-#endif
-
 /// @endcond
 
-END_NAMESPACE_VSTGUI
+} // namespace
 

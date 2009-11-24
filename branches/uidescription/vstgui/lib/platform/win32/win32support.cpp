@@ -40,7 +40,7 @@
 
 extern void* hInstance;
 
-BEGIN_NAMESPACE_VSTGUI
+namespace VSTGUI {
 
 HINSTANCE GetInstance () { return (HINSTANCE)hInstance; }
 
@@ -238,6 +238,6 @@ ULONG STDMETHODCALLTYPE ResourceStream::Release(void)
 
 /// \endcond ignore
 
-END_NAMESPACE_VSTGUI
+} // namespace
 
 #endif // WINDOWS

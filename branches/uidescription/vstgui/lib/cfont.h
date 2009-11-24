@@ -37,10 +37,10 @@
 
 #include "vstguibase.h"
 
-BEGIN_NAMESPACE_VSTGUI
+namespace VSTGUI {
 
 class CDrawContext;
-class CPlatformFont;
+class IPlatformFont;
 class IFontPainter;
 struct CPoint;
 
@@ -79,7 +79,7 @@ public:
 	virtual void setStyle (long newStyle);				///< set the style of the font @sa CTxtFace
 	//@}
 
-	virtual CPlatformFont* getPlatformFont ();
+	virtual IPlatformFont* getPlatformFont ();
 	virtual IFontPainter* getFontPainter ();
 
 	virtual CFontDesc& operator = (const CFontDesc&);
@@ -89,7 +89,7 @@ public:
 
 	CLASS_METHODS(CFontDesc, CBaseObject)
 protected:
-	CPlatformFont* platformFont;
+	IPlatformFont* platformFont;
 	
 	virtual void freePlatformFont ();
 	char* name;
@@ -125,15 +125,15 @@ public:
 };
 
 //-----------------------------------------------------------------------------
-// CPlatformFont declaration
+// IPlatformFont declaration
 //! @brief platform font class
 ///
-/// Encapsulation of a platform font. You should never need to call CPlatformFont::create(..), instead use CFontDesc::getPlatformFont().
+/// Encapsulation of a platform font. You should never need to call IPlatformFont::create(..), instead use CFontDesc::getPlatformFont().
 //-----------------------------------------------------------------------------
-class CPlatformFont : public CBaseObject
+class IPlatformFont : public CBaseObject
 {
 public:
-	static CPlatformFont* create (const char* name, const CCoord& size, const long& style);
+	static IPlatformFont* create (const char* name, const CCoord& size, const long& style);
 	
 	virtual double getAscent () const = 0;		///< returns the ascent line offset of the baseline of this font. If not supported returns -1
 	virtual double getDescent () const = 0;		///< returns the descent line offset of the baseline of this font. If not supported returns -1
@@ -143,6 +143,6 @@ public:
 	virtual IFontPainter* getPainter () = 0;
 };
 
-END_NAMESPACE_VSTGUI
+} // namespace
 
 #endif

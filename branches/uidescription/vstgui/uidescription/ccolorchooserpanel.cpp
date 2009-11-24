@@ -32,135 +32,108 @@
 // OF THE POSSIBILITY OF SUCH DAMAGE.
 //-----------------------------------------------------------------------------
 
-#include "cvstguitimer.h"
-
-#if WINDOWS
-#include <windows.h>
-#include <list>
-namespace VSTGUI {
-static std::list<CVSTGUITimer*> gTimerList;
-} // namespace
-
-#endif
-
-#if DEBUG
-#define DEBUGLOG	0
-#endif
+#include "ccolorchooserpanel.h"
 
 namespace VSTGUI {
 
-//-----------------------------------------------------------------------------
-const char* CVSTGUITimer::kMsgTimer = "timer fired";
+const char* CColorChooserPanel::kMsgWindowClosed = "kMsgWindowClosed";
+CRect CColorChooserPanel::lastSize;
 
 //-----------------------------------------------------------------------------
-CVSTGUITimer::CVSTGUITimer (CBaseObject* timerObject, int fireTime)
-: fireTime (fireTime)
-, timerObject (timerObject)
-, platformTimer (0)
+CColorChooserPanel::CColorChooserPanel (CBaseObject* owner, IPlatformColorChangeCallback* callback, void* parentPlatformWindow)
+: platformWindow (0)
+, owner (owner)
+, callback (callback)
 {
-}
-
-//-----------------------------------------------------------------------------
-CVSTGUITimer::~CVSTGUITimer ()
-{
-	stop ();
-}
-
-//-----------------------------------------------------------------------------
-bool CVSTGUITimer::start ()
-{
-	if (platformTimer == 0)
+	CRect size (0, 0, 300, 500);
+	platformWindow = PlatformWindow::create (size, "VSTGUI Color Chooser", PlatformWindow::kPanelType, PlatformWindow::kClosable, this, parentPlatformWindow);
+	if (platformWindow)
 	{
+		#if MAC_CARBON && MAC_COCOA
+		CFrame::setCocoaMode (true);
+		#endif
+		frame = new CFrame (size, platformWindow->getPlatformHandle (), this);
 		#if MAC
-		CFRunLoopTimerContext timerContext = {0};
-		timerContext.info = this;
-		platformTimer = CFRunLoopTimerCreate (kCFAllocatorDefault, CFAbsoluteTimeGetCurrent () + fireTime * 0.001f, fireTime * 0.001f, 0, 0, timerCallback, &timerContext);
-		if (platformTimer)
-			CFRunLoopAddTimer (CFRunLoopGetCurrent (), (CFRunLoopTimerRef)platformTimer, kCFRunLoopCommonModes);
-
+		frame->setBackgroundColor (kTransparentCColor);
 		#elif WINDOWS
-		platformTimer = (void*)SetTimer ((HWND)NULL, (UINT_PTR)this, fireTime, TimerProc);
-		if (platformTimer)
-			gTimerList.push_back (this);
+		frame->setBackgroundColor (kBlackCColor);
 		#endif
-		
-		#if DEBUGLOG
-		DebugPrint ("Timer started (0x%x)\n", timerObject);
-		#endif
+
+		frame->setFocusDrawingEnabled (true);
+		frame->setFocusColor (MakeCColor (100, 100, 255, 200));
+		frame->setFocusWidth (1.2);
+
+		const CCoord kMargin = 12;
+		colorChooser = new CColorChooser (this);
+		CRect r = colorChooser->getViewSize ();
+		r.offset (kMargin, kMargin);
+		colorChooser->setViewSize (r);
+		colorChooser->setMouseableArea (r);
+		r.inset (-kMargin, -kMargin);
+		frame->setSize (r.getWidth (), r.getHeight ());
+		frame->addView (colorChooser);
+		platformWindow->setSize (r);
+		platformWindow->center ();
+		if (!lastSize.isEmpty ())
+			platformWindow->setSize (lastSize);
+		platformWindow->show ();
 	}
-	return (platformTimer != 0);
 }
 
 //-----------------------------------------------------------------------------
-bool CVSTGUITimer::stop ()
+CColorChooserPanel::~CColorChooserPanel ()
 {
-	if (platformTimer)
-	{
-		#if MAC
-		CFRunLoopTimerInvalidate ((CFRunLoopTimerRef)platformTimer);
-		CFRelease ((CFRunLoopTimerRef)platformTimer);
-
-		#elif WINDOWS
-		KillTimer ((HWND)NULL, (UINT_PTR)platformTimer);
-		std::list<CVSTGUITimer*>::iterator it = gTimerList.begin ();
-		while (it != gTimerList.end ())
-		{
-			if ((*it) == this)
-			{
-				gTimerList.remove (*it);
-				break;
-			}
-			it++;
-		}
-		#endif
-		platformTimer = 0;
-		#if DEBUGLOG
-		DebugPrint ("Timer stopped (0x%x)\n", timerObject);
-		#endif
-		return true;
-	}
-	return false;
+	owner = 0;
+	if (frame)
+		frame->forget ();
+	if (platformWindow)
+		windowClosed (platformWindow);
 }
 
 //-----------------------------------------------------------------------------
-bool CVSTGUITimer::setFireTime (int newFireTime)
+void CColorChooserPanel::setColorChangeCallback (IPlatformColorChangeCallback* newCallback)
 {
-	if (fireTime != newFireTime)
-	{
-		bool wasRunning = stop ();
-		fireTime = newFireTime;
-		if (wasRunning)
-			return start ();
-		return true;
-	}
-	return false;
+	callback = newCallback;
 }
 
-#if MAC
 //-----------------------------------------------------------------------------
-void CVSTGUITimer::timerCallback (CFRunLoopTimerRef t, void *info)
+void CColorChooserPanel::setColor (const CColor& newColor)
 {
-	CVSTGUITimer* timer = (CVSTGUITimer*)info;
-	if (timer->timerObject)
-		timer->timerObject->notify (timer, kMsgTimer);
+	colorChooser->setColor (newColor);
 }
 
-#elif WINDOWS
-//------------------------------------------------------------------------
-VOID CALLBACK CVSTGUITimer::TimerProc (HWND hwnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTime)
+// IPlatformWindowDelegate
+//-----------------------------------------------------------------------------
+void CColorChooserPanel::windowSizeChanged (const CRect& newSize, PlatformWindow* platformWindow)
 {
-	std::list<CVSTGUITimer*>::iterator it = gTimerList.begin ();
-	while (it != gTimerList.end ())
-	{
-		if ((UINT_PTR)((*it)->platformTimer) == idEvent)
-		{
-			(*it)->timerObject->notify ((*it), kMsgTimer);
-			break;
-		}
-		it++;
-	}
 }
-#endif
+
+//-----------------------------------------------------------------------------
+void CColorChooserPanel::windowClosed (PlatformWindow* _platformWindow)
+{
+	if (_platformWindow == platformWindow)
+	{
+		lastSize = platformWindow->getSize ();
+		platformWindow->forget ();
+		platformWindow = 0;
+	}
+	if (owner)
+		owner->notify (this, kMsgWindowClosed);
+}
+
+//-----------------------------------------------------------------------------
+void CColorChooserPanel::checkWindowSizeConstraints (CPoint& size, PlatformWindow* platformWindow)
+{
+}
+
+// IColorChooserDelegate
+//-----------------------------------------------------------------------------
+void CColorChooserPanel::colorChanged (CColorChooser* chooser, const CColor& color)
+{
+	if (callback)
+		callback->colorChanged (color);
+}
+
 
 } // namespace
 

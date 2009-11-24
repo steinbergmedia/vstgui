@@ -37,12 +37,12 @@
 
 #include "cdrawcontext.h"
 
-BEGIN_NAMESPACE_VSTGUI
+namespace VSTGUI {
 class CGradient;
 class CFrame;
 
 //-----------------------------------------------------------------------------
-/// @brief Graphics Path Transformation [new since 4.0]
+/// @brief Graphics Path Transformation [new in 4.0]
 //-----------------------------------------------------------------------------
 struct CGraphicsTransformation
 {
@@ -151,6 +151,6 @@ protected:
 	CColor color2;
 };
 
-END_NAMESPACE_VSTGUI
+} // namespace
 
 #endif

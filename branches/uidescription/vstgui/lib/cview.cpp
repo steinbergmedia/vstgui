@@ -6,7 +6,7 @@
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
-// (c) 2008, Steinberg Media Technologies, All Rights Reserved
+// (c) 2009, Steinberg Media Technologies, All Rights Reserved
 //-----------------------------------------------------------------------------
 // Redistribution and use in source and binary forms, with or without modification,
 // are permitted provided that the following conditions are met:
@@ -41,7 +41,7 @@
 #include <typeinfo>
 #endif
 
-BEGIN_NAMESPACE_VSTGUI
+namespace VSTGUI {
 
 /// @cond ignore
 #define VSTGUI_CHECK_VIEW_RELEASING	DEBUG
@@ -319,10 +319,7 @@ void CView::draw (CDrawContext* pContext)
 {
 	if (pBackground)
 	{
-		if (bTransparencyEnabled)
-			pBackground->drawTransparent (pContext, size);
-		else
-			pBackground->draw (pContext, size);
+		pBackground->draw (pContext, size);
 	}
 	setDirty (false);
 }
@@ -611,4 +608,4 @@ void CView::dumpInfo ()
 #endif
 
 
-END_NAMESPACE_VSTGUI
+} // namespace

@@ -46,7 +46,7 @@
 
 extern OSVERSIONINFOEX	gSystemVersion;
 
-BEGIN_NAMESPACE_VSTGUI
+namespace VSTGUI {
 
 #define kAllSupportedFileTypesString	L"All supported file types"
 
@@ -318,6 +318,6 @@ bool VistaFileSelector::runModalInternal ()
 	return SUCCEEDED (hr);
 }
 
-END_NAMESPACE_VSTGUI
+} // namespace
 
 #endif

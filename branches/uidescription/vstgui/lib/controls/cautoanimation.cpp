@@ -6,7 +6,7 @@
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
-// (c) 2008, Steinberg Media Technologies, All Rights Reserved
+// (c) 2009, Steinberg Media Technologies, All Rights Reserved
 //-----------------------------------------------------------------------------
 // Redistribution and use in source and binary forms, with or without modification,
 // are permitted provided that the following conditions are met:
@@ -36,7 +36,7 @@
 #include "../cdrawcontext.h"
 #include "../cbitmap.h"
 
-BEGIN_NAMESPACE_VSTGUI
+namespace VSTGUI {
 
 //------------------------------------------------------------------------
 // CAutoAnimation
@@ -115,10 +115,7 @@ void CAutoAnimation::draw (CDrawContext *pContext)
 		
 		if (pBackground)
 		{
-			if (bTransparencyEnabled)
-				pBackground->drawTransparent (pContext, size, where);
-			else
-				pBackground->draw (pContext, size, where);
+			pBackground->draw (pContext, size, where);
 		}
 	}
 	setDirty (false);
@@ -179,4 +176,4 @@ void CAutoAnimation::previousPixmap ()
 		value = (float)(totalHeightOfBitmap - heightOfOneImage - 1);
 }
 
-END_NAMESPACE_VSTGUI
+} // namespace

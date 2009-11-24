@@ -1,3 +1,36 @@
+//-----------------------------------------------------------------------------
+// VST Plug-Ins SDK
+// VSTGUI: Graphical User Interface Framework for VST plugins : 
+//
+// Version 4.0
+//
+//-----------------------------------------------------------------------------
+// VSTGUI LICENSE
+// (c) 2009, Steinberg Media Technologies, All Rights Reserved
+//-----------------------------------------------------------------------------
+// Redistribution and use in source and binary forms, with or without modification,
+// are permitted provided that the following conditions are met:
+// 
+//   * Redistributions of source code must retain the above copyright notice, 
+//     this list of conditions and the following disclaimer.
+//   * Redistributions in binary form must reproduce the above copyright notice,
+//     this list of conditions and the following disclaimer in the documentation 
+//     and/or other materials provided with the distribution.
+//   * Neither the name of the Steinberg Media Technologies nor the names of its
+//     contributors may be used to endorse or promote products derived from this 
+//     software without specific prior written permission.
+// 
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+// ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED 
+// WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A  PARTICULAR PURPOSE ARE DISCLAIMED. 
+// IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, 
+// INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, 
+// BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, 
+// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF 
+// LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE 
+// OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE  OF THIS SOFTWARE, EVEN IF ADVISED
+// OF THE POSSIBILITY OF SUCH DAMAGE.
+//-----------------------------------------------------------------------------
 
 #import "nsviewframe.h"
 
@@ -17,7 +50,7 @@
 	#import "../carbon/hiviewframe.h"
 #endif
 
-USING_NAMESPACE_VSTGUI
+using namespace VSTGUI;
 
 static Class viewClass = 0;
 static CocoaDragContainer* gCocoaDragContainer = 0;
@@ -73,22 +106,14 @@ static BOOL VSTGUI_NSView_canBecomeKeyView (id self, SEL _cmd) { return YES; }
 //------------------------------------------------------------------------------------
 static BOOL VSTGUI_NSView_becomeFirstResponder (id self, SEL _cmd)
 {
-#if 0
-	IPlatformFrameCallback* frame = (IPlatformFrameCallback*)OBJC_GET_VALUE(self, _vstguiframe);
-	if (frame && [[self window] isKeyWindow])
-		frame->platformOnActivate (true);
-#endif
+	[self performSelector:@selector(windowKeyStateChanged:) withObject:nil afterDelay:0 inModes:[NSArray arrayWithObject:NSRunLoopCommonModes]];
 	return YES;
 }
 
 //------------------------------------------------------------------------------------
 static BOOL VSTGUI_NSView_resignFirstResponder (id self, SEL _cmd)
 {
-#if 0
-	IPlatformFrameCallback* frame = (IPlatformFrameCallback*)OBJC_GET_VALUE(self, _vstguiframe);
-	if (frame)
-		frame->platformOnActivate (false);
-#endif
+	[self performSelector:@selector(windowKeyStateChanged:) withObject:nil afterDelay:0 inModes:[NSArray arrayWithObject:NSRunLoopCommonModes]];
 	return YES;
 }
 
@@ -101,6 +126,9 @@ static void VSTGUI_NSView_viewDidMoveToWindow (id self, SEL _cmd)
 	{
 		[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(windowKeyStateChanged:) name:NSWindowDidBecomeKeyNotification object:window];
 		[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(windowKeyStateChanged:) name:NSWindowDidResignKeyNotification object:window];
+		IPlatformFrameCallback* frame = (IPlatformFrameCallback*)OBJC_GET_VALUE(self, _vstguiframe);
+		if (frame)
+			frame->platformOnActivate ([window isKeyWindow] ? true : false);
 	}
 }
 
@@ -111,9 +139,12 @@ static void VSTGUI_NSView_windowKeyStateChanged (id self, SEL _cmd, NSNotificati
 	NSView* firstResponder = (NSView*)[[self window] firstResponder];
 	if (![firstResponder isKindOfClass:[NSView class]])
 		firstResponder = nil;
-	if (frame && firstResponder && [firstResponder isDescendantOf:self])
+	if (frame && firstResponder)
 	{
-		frame->platformOnActivate ([[self window] isKeyWindow] ? true : false);
+		while (firstResponder != self && firstResponder != nil)
+			firstResponder = [firstResponder superview];
+		if (firstResponder == self)
+			frame->platformOnActivate ([[self window] isKeyWindow] ? true : false);
 	}
 }
 
@@ -486,7 +517,7 @@ static BOOL VSTGUI_NSView_performDragOperation (id self, SEL _cmd, id sender)
 	return result;
 }
 
-BEGIN_NAMESPACE_VSTGUI
+namespace VSTGUI {
 
 //------------------------------------------------------------------------------------
 class CocoaTooltipWindow : public CBaseObject
@@ -890,6 +921,6 @@ CMessageResult CocoaTooltipWindow::notify (CBaseObject* sender, const char* mess
 	}
 	return kMessageUnknown;
 }
-END_NAMESPACE_VSTGUI
+} // namespace
 
 #endif // MAC_COCOA

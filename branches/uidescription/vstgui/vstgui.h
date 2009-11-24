@@ -6,7 +6,7 @@
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
-// (c) 2008, Steinberg Media Technologies, All Rights Reserved
+// (c) 2009, Steinberg Media Technologies, All Rights Reserved
 //-----------------------------------------------------------------------------
 // Redistribution and use in source and binary forms, with or without modification,
 // are permitted provided that the following conditions are met:
@@ -57,6 +57,7 @@
 
 #include "lib/controls/ccontrol.h"
 #include "lib/controls/cbuttons.h"
+#include "lib/controls/ccolorchooser.h"
 #include "lib/controls/cparamdisplay.h"
 #include "lib/controls/ctextlabel.h"
 #include "lib/controls/ctextedit.h"
@@ -71,6 +72,6 @@
 #include "lib/controls/csplashscreen.h"
 #include "lib/controls/cvumeter.h"
 
-USING_NAMESPACE_VSTGUI
+using namespace VSTGUI;
 
 #endif

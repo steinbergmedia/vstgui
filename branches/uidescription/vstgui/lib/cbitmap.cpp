@@ -6,7 +6,7 @@
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
-// (c) 2008, Steinberg Media Technologies, All Rights Reserved
+// (c) 2009, Steinberg Media Technologies, All Rights Reserved
 //-----------------------------------------------------------------------------
 // Redistribution and use in source and binary forms, with or without modification,
 // are permitted provided that the following conditions are met:
@@ -40,7 +40,7 @@
 	#include "platform/mac/cgdrawcontext.h"
 #endif
 
-BEGIN_NAMESPACE_VSTGUI
+namespace VSTGUI {
 //-----------------------------------------------------------------------------
 // CBitmap Implementation
 //-----------------------------------------------------------------------------
@@ -176,7 +176,13 @@ CNinePartTiledBitmap::~CNinePartTiledBitmap ()
 }
 
 //-----------------------------------------------------------------------------
-void CNinePartTiledBitmap::drawParts (CDrawContext* inContext, const CRect& inDestRect, unsigned char inAlpha)
+void CNinePartTiledBitmap::draw (CDrawContext* inContext, const CRect& inDestRect, const CPoint& offset, float inAlpha)
+{
+	drawParts (inContext, inDestRect, inAlpha);
+}
+
+//-----------------------------------------------------------------------------
+void CNinePartTiledBitmap::drawParts (CDrawContext* inContext, const CRect& inDestRect, float inAlpha)
 {
 	CRect	myBitmapBounds (0, 0, getWidth (), getHeight ());
 	CRect	mySourceRect [kPartCount];
@@ -212,7 +218,7 @@ void CNinePartTiledBitmap::calcPartRects(const CRect& inBitmapRect, const PartOf
 }
 
 //-----------------------------------------------------------------------------
-void CNinePartTiledBitmap::drawPart (CDrawContext* inContext, const CRect& inSourceRect, const CRect& inDestRect, unsigned char inAlpha)
+void CNinePartTiledBitmap::drawPart (CDrawContext* inContext, const CRect& inSourceRect, const CRect& inDestRect, float inAlpha)
 {
 	if (	(inSourceRect.width()	<= 0)
 		||	(inSourceRect.height()	<= 0)
@@ -250,5 +256,5 @@ void CNinePartTiledBitmap::drawPart (CDrawContext* inContext, const CRect& inSou
 	}
 }
 
-END_NAMESPACE_VSTGUI
+} // namespace
 

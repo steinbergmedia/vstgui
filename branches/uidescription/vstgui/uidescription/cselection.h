@@ -40,7 +40,7 @@
 #include "../lib/cview.h"
 #include <list>
 
-BEGIN_NAMESPACE_VSTGUI
+namespace VSTGUI {
 
 //----------------------------------------------------------------------------------------------------
 class CSelection : public CBaseObject, protected std::list<CView*>
@@ -102,7 +102,7 @@ protected:
 		__it++; \
 	} \
 
-END_NAMESPACE_VSTGUI
+} // namespace
 
 #endif // VSTGUI_LIVE_EDITING
 

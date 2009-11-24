@@ -38,7 +38,7 @@
 #include "cframe.h"
 
 /// @cond ignore
-BEGIN_NAMESPACE_VSTGUI
+namespace VSTGUI {
 
 // CScrollContainer is private
 //-----------------------------------------------------------------------------
@@ -878,5 +878,5 @@ void CScrollbar::draw (CDrawContext* pContext)
 	setDirty (false);
 }
 
-END_NAMESPACE_VSTGUI
+} // namespace
 

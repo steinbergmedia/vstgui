@@ -6,7 +6,7 @@
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
-// (c) 2008, Steinberg Media Technologies, All Rights Reserved
+// (c) 2009, Steinberg Media Technologies, All Rights Reserved
 //-----------------------------------------------------------------------------
 // Redistribution and use in source and binary forms, with or without modification,
 // are permitted provided that the following conditions are met:
@@ -37,7 +37,7 @@
 #include "../cbitmap.h"
 #include <cmath>
 
-BEGIN_NAMESPACE_VSTGUI
+namespace VSTGUI {
 
 //------------------------------------------------------------------------
 // COnOffButton
@@ -88,10 +88,7 @@ void COnOffButton::draw (CDrawContext *pContext)
 		else
 			off = 0;
 
-		if (bTransparencyEnabled)
-			pBackground->drawTransparent (pContext, size, CPoint (0, off));
-		else
-			pBackground->draw (pContext, size, CPoint (0, off));
+		pBackground->draw (pContext, size, CPoint (0, off));
 	}
 	setDirty (false);
 }
@@ -199,10 +196,7 @@ void CKickButton::draw (CDrawContext *pContext)
 
 	if (pBackground)
 	{
-		if (bTransparencyEnabled)
-			pBackground->drawTransparent (pContext, size, where);
-		else
-			pBackground->draw (pContext, size, where);
+		pBackground->draw (pContext, size, where);
 	}
 	setDirty (false);
 }
@@ -365,7 +359,7 @@ void CCheckBox::setStyle (long newStyle)
 static CCoord getFontCapHeight (CFontRef font)
 {
 	CCoord c = font->getSize ();
-	CPlatformFont* pf = font->getPlatformFont ();
+	IPlatformFont* pf = font->getPlatformFont ();
 	if (pf)
 	{
 		CCoord capHeight = pf->getCapHeight ();
@@ -427,10 +421,7 @@ void CCheckBox::draw (CDrawContext* context)
 		if (hilight)
 			off.y += pBackground->getHeight () / 2;
 
-		if (bTransparencyEnabled)
-			pBackground->drawTransparent (context, checkBoxSize, off);
-		else
-			pBackground->draw (context, checkBoxSize, off);
+		pBackground->draw (context, checkBoxSize, off);
 	}
 	else
 	{
@@ -497,7 +488,7 @@ void CCheckBox::draw (CDrawContext* context)
 		context->setFont (font);
 		context->setFontColor (fontColor);
 		
-		context->drawStringUTF8 (title, p, true);
+		context->drawString (title, p, true);
 	}
 	
 	setDirty (false);
@@ -567,4 +558,4 @@ long CCheckBox::onKeyDown (VstKeyCode& keyCode)
 }
 
 
-END_NAMESPACE_VSTGUI
+} // namespace

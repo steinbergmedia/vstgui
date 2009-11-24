@@ -41,7 +41,7 @@
 #include "platformsupport.h"
 #include <string>
 
-BEGIN_NAMESPACE_VSTGUI
+namespace VSTGUI {
 
 //-----------------------------------------------------------------------------
 class Dialog : public CBaseObject, public CControlListener, public VSTGUIEditorInterface, public IKeyboardHook
@@ -68,7 +68,7 @@ protected:
 	bool result;
 };
 
-END_NAMESPACE_VSTGUI
+} // namespace
 
 #endif // VSTGUI_LIVE_EDITING
 

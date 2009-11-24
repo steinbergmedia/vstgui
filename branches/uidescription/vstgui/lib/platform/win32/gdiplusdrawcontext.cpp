@@ -1,3 +1,36 @@
+//-----------------------------------------------------------------------------
+// VST Plug-Ins SDK
+// VSTGUI: Graphical User Interface Framework for VST plugins : 
+//
+// Version 4.0
+//
+//-----------------------------------------------------------------------------
+// VSTGUI LICENSE
+// (c) 2009, Steinberg Media Technologies, All Rights Reserved
+//-----------------------------------------------------------------------------
+// Redistribution and use in source and binary forms, with or without modification,
+// are permitted provided that the following conditions are met:
+// 
+//   * Redistributions of source code must retain the above copyright notice, 
+//     this list of conditions and the following disclaimer.
+//   * Redistributions in binary form must reproduce the above copyright notice,
+//     this list of conditions and the following disclaimer in the documentation 
+//     and/or other materials provided with the distribution.
+//   * Neither the name of the Steinberg Media Technologies nor the names of its
+//     contributors may be used to endorse or promote products derived from this 
+//     software without specific prior written permission.
+// 
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+// ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED 
+// WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A  PARTICULAR PURPOSE ARE DISCLAIMED. 
+// IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, 
+// INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, 
+// BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, 
+// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF 
+// LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE 
+// OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE  OF THIS SOFTWARE, EVEN IF ADVISED
+// OF THE POSSIBILITY OF SUCH DAMAGE.
+//-----------------------------------------------------------------------------
 
 #include "gdiplusdrawcontext.h"
 
@@ -53,7 +86,7 @@ void GdiplusDrawContext::init ()
 {
 	pGraphics->SetInterpolationMode (Gdiplus::InterpolationModeLowQuality);
 	pGraphics->SetPageUnit (Gdiplus::UnitPixel);
-	pGraphics->SetPixelOffsetMode (Gdiplus::PixelOffsetModeNone);
+	pGraphics->SetPixelOffsetMode (Gdiplus::PixelOffsetModeHalf);
 	pPen = new Gdiplus::Pen (Gdiplus::Color (0, 0, 0), 1);
 	pBrush = new Gdiplus::SolidBrush (Gdiplus::Color (0, 0, 0));
 	pFontBrush = new Gdiplus::SolidBrush (Gdiplus::Color (0, 0, 0));
@@ -75,7 +108,11 @@ void GdiplusDrawContext::lineTo (const CPoint &point)
 	CPoint p (point);
 	p.offset (currentState.offset.x, currentState.offset.y);
 	if (pGraphics && pPen)
+	{
+		pGraphics->TranslateTransform (0.5f, 0.5f);
 		pGraphics->DrawLine (pPen, (Gdiplus::REAL)currentState.penLoc.h, (Gdiplus::REAL)currentState.penLoc.v, (Gdiplus::REAL)p.h, (Gdiplus::REAL)p.v);
+		pGraphics->TranslateTransform (-0.5f, -0.5f);
+	}
 	currentState.penLoc = p;
 }
 
@@ -112,7 +149,11 @@ void GdiplusDrawContext::drawPolygon (const CPoint *pPoints, long numberOfPoints
 	if (drawStyle == kDrawFilled || drawStyle == kDrawFilledAndStroked)
 		pGraphics->FillPolygon (pBrush, polyPoints, numberOfPoints);
 	if (drawStyle == kDrawFilledAndStroked || drawStyle == kDrawStroked)
+	{
+		pGraphics->TranslateTransform (0.5f, 0.5f);
 		pGraphics->DrawPolygon (pPen, polyPoints, numberOfPoints);
+		pGraphics->TranslateTransform (-0.5f, -0.5f);
+	}
 
 	if (allocated)
 		delete[] polyPoints;
@@ -133,8 +174,10 @@ void GdiplusDrawContext::drawRect (const CRect &_rect, const CDrawStyle drawStyl
 		}
 		if (pPen && (drawStyle == kDrawStroked || drawStyle == kDrawFilledAndStroked))
 		{
-			Gdiplus::RectF r ((Gdiplus::REAL)rect.left, (Gdiplus::REAL)rect.top, (Gdiplus::REAL)rect.getWidth ()-1, (Gdiplus::REAL)rect.getHeight ()-1);
+			Gdiplus::RectF r ((Gdiplus::REAL)rect.left, (Gdiplus::REAL)rect.top, (Gdiplus::REAL)rect.getWidth () - 1, (Gdiplus::REAL)rect.getHeight () - 1);
+			pGraphics->TranslateTransform (0.5f, 0.5f);
 			pGraphics->DrawRectangle (pPen, r);
+			pGraphics->TranslateTransform (-0.5f, -0.5f);
 		}
 	}
 }
@@ -372,15 +415,14 @@ void GdiplusDrawContext::setGlobalAlpha (float newAlpha)
 	if (currentState.globalAlpha == newAlpha)
 		return;
 	COffscreenContext::setGlobalAlpha (newAlpha);
-	const CColor notInitalized = {0, 0, 0, 0};
 	CColor color (currentState.frameColor);
-	currentState.frameColor = notInitalized;
+	currentState.frameColor = kTransparentCColor;
 	setFrameColor (color);
 	color = currentState.fillColor;
-	currentState.fillColor = notInitalized;
+	currentState.fillColor = kTransparentCColor;
 	setFillColor (color);
 	color = currentState.fontColor;
-	currentState.fontColor = notInitalized;
+	currentState.fontColor = kTransparentCColor;
 	setFontColor (color);
 }
 

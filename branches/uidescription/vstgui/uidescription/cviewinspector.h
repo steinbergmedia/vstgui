@@ -43,7 +43,7 @@
 #include "platformsupport.h"
 #include <list>
 
-BEGIN_NAMESPACE_VSTGUI
+namespace VSTGUI {
 
 class CSelection;
 class PlatformWindow;
@@ -88,7 +88,7 @@ protected:
 	std::list<CView*> attributeViews;
 };
 
-END_NAMESPACE_VSTGUI
+} // namespace
 
 #endif // VSTGUI_LIVE_EDITING
 

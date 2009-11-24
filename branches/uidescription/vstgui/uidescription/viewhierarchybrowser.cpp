@@ -44,7 +44,7 @@
 #include "../lib/cdrawcontext.h"
 #include <typeinfo>
 
-BEGIN_NAMESPACE_VSTGUI
+namespace VSTGUI {
 
 //-----------------------------------------------------------------------------
 class ViewHierarchyData : public IDataBrowser
@@ -236,7 +236,7 @@ void ViewHierarchyData::dbDrawCell (CDrawContext* context, const CRect& size, lo
 			else
 				context->setFontColor (kGreyCColor);
 			context->setFont (kNormalFont);
-			context->drawStringUTF8 (viewname, size);
+			context->drawString (viewname, size);
 		}
 	}
 	else
@@ -409,7 +409,7 @@ protected:
 			if (viewname == 0)
 				viewname = typeid(*view).name ();
 			name = viewname;
-			drawWidth = nameWidth = context->getStringWidthUTF8 (name.c_str ());
+			drawWidth = nameWidth = context->getStringWidth (name.c_str ());
 		}
 		bool operator==(const PathElement& pe) const { return pe.view == view; }
 		void setDrawWidth (CCoord w) { drawWidth = w; }
@@ -515,7 +515,7 @@ void ViewHierarchyPathView::drawPathElement (const CRect& size, const PathElemen
 	context->drawPolygon (polygon, isLast ? 5 : 6, kDrawFilledAndStroked);
 	r.right -= margin;
 	r.offset (2, 0);
-	context->drawStringUTF8 (element.getName (), r);
+	context->drawString (element.getName (), r);
 }
 
 //-----------------------------------------------------------------------------
@@ -746,6 +746,6 @@ void ViewHierarchyBrowserWindow::checkWindowSizeConstraints (CPoint& size, Platf
 		size.y = 200;
 }
 
-END_NAMESPACE_VSTGUI
+} // namespace
 
 #endif // VSTGUI_LIVE_EDITING

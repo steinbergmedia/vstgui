@@ -39,7 +39,7 @@
 #include "../lib/cview.h"
 #include <string>
 
-BEGIN_NAMESPACE_VSTGUI
+namespace VSTGUI {
 class IUIDescription;
 
 extern bool parseSize (const std::string& str, CPoint& point);
@@ -50,6 +50,6 @@ extern bool colorToString (const CColor& color, std::string& string, IUIDescript
 extern void rememberAttributeValueString (CView* view, const char* attrName, const std::string& value);
 extern bool getRememberedAttributeValueString (CView* view, const char* attrName, std::string& value);
 
-END_NAMESPACE_VSTGUI
+} // namespace
 
 #endif

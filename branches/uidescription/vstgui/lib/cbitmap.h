@@ -6,7 +6,7 @@
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
-// (c) 2008, Steinberg Media Technologies, All Rights Reserved
+// (c) 2009, Steinberg Media Technologies, All Rights Reserved
 //-----------------------------------------------------------------------------
 // Redistribution and use in source and binary forms, with or without modification,
 // are permitted provided that the following conditions are met:
@@ -42,7 +42,7 @@
 
 #include "platform/iplatformbitmap.h"
 
-BEGIN_NAMESPACE_VSTGUI
+namespace VSTGUI {
 class CDrawContext;
 
 //-----------------------------------------------------------------------------
@@ -87,7 +87,6 @@ public:
 	//-----------------------------------------------------------------------------
 	//@{
 	virtual void draw (CDrawContext* context, const CRect& rect, const CPoint& offset = CPoint (0, 0), float alpha = 1.f);
-	void drawTransparent (CDrawContext* context, const CRect& rect, const CPoint& offset = CPoint (0, 0), float alpha = 1.f) { draw (context, rect, offset, alpha); }
 
 	CCoord getWidth () const;		///< get the width of the image
 	CCoord getHeight () const;		///< get the height of the image
@@ -111,7 +110,7 @@ protected:
 
 //-----------------------------------------------------------------------------
 // CNinePartTiledBitmap Declaration
-//! @brief a nine-part tiled bitmap [new since 4.0]
+//! @brief a nine-part tiled bitmap [new in 4.0]
 //-----------------------------------------------------------------------------
 class CNinePartTiledBitmap : public CBitmap
 {
@@ -138,12 +137,14 @@ public:
 	const PartOffsets& getPartOffsets () const { return offsets; }
 	//@}
 
+	virtual void draw (CDrawContext* context, const CRect& rect, const CPoint& offset = CPoint (0, 0), float alpha = 1.f);
+
 //-----------------------------------------------------------------------------
 	CLASS_METHODS_NOCOPY(CNinePartTiledBitmap, CBitmap)
 protected:
-	virtual void drawParts (CDrawContext* pContext, const CRect& rect, unsigned char alpha = 128);
+	virtual void drawParts (CDrawContext* pContext, const CRect& rect, float alpha = 1.f);
 	virtual void calcPartRects(const CRect& inBitmapRect, const PartOffsets& inPartOffset, CRect* outRect);
-	virtual void drawPart (CDrawContext* inContext, const CRect& inSourceRect, const CRect& inDestRect, unsigned char inAlpha = 255);
+	virtual void drawPart (CDrawContext* inContext, const CRect& inSourceRect, const CRect& inDestRect, float inAlpha = 1.f);
 
 	enum
 	{
@@ -162,6 +163,6 @@ protected:
 	PartOffsets offsets;
 };
 
-END_NAMESPACE_VSTGUI
+} // namespace
 
 #endif

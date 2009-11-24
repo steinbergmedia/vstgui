@@ -1,6 +1,6 @@
 //-----------------------------------------------------------------------------
 // VST Plug-Ins SDK
-// VSTGUI: Graphical User Interface Framework for VST plugins : 
+// VSTGUI: Graphical User Interface Framework not only for VST plugins : 
 //
 // Version 4.0
 //
@@ -32,36 +32,76 @@
 // OF THE POSSIBILITY OF SUCH DAMAGE.
 //-----------------------------------------------------------------------------
 
-/*
-	You have the choice to include this file in your project
-	or the files listed below. Don't add this and the others, or you will get link errors.
+#ifndef __ccolorchooser__
+#define __ccolorchooser__
+
+#include "../cviewcontainer.h"
+#include "ccontrol.h"
+#include "ctextedit.h"
+
+namespace VSTGUI {
+class CColorChooser;
+class CSlider;
+namespace CColorChooserInternal {
+class ColorView;
+}
+
+//-----------------------------------------------------------------------------
+class IColorChooserDelegate
+{
+public:
+	virtual void colorChanged (CColorChooser* chooser, const CColor& color) = 0;
+};
+
+//-----------------------------------------------------------------------------
+class CColorChooser : public CViewContainer, public CControlListener
+{
+public:
+	CColorChooser (IColorChooserDelegate* delegate = 0, const CColor& initialColor = kBlackCColor);
+	~CColorChooser ();
+
+	void valueChanged (CControl* pControl);
+
+	void setColor (const CColor& newColor);
+//-----------------------------------------------------------------------------
+protected:
+	void updateState ();
+
+	IColorChooserDelegate* delegate;
+	CColor color;
 	
-	On Mac OS X you must compile this with the Objective-C++ compiler.
-*/
+	CSlider* redSlider;
+	CSlider* greenSlider;
+	CSlider* blueSlider;
+	CSlider* hueSlider;
+	CSlider* saturationSlider;
+	CSlider* brightnessSlider;
+	CSlider* alphaSlider;
+	CTextEdit* editFields[8];
+	CColorChooserInternal::ColorView* colorView;
 
-#include "vstgui_uidescription.h"
+	//-----------------------------------------------------------------------------
+	enum {
+		kRedTag = 10000,
+		kGreenTag,
+		kBlueTag,
+		kHueTag,
+		kSaturationTag,
+		kBrightnessTag,
+		kAlphaTag,
+		kColorTag,
+	};
 
-#if MAC
-	#ifdef __OBJC__
-		#import "uidescription/macplatformsupport.mm"
-	#else
-		#error You need to use the Objective-C++ compiler for this file
-	#endif
+	//-----------------------------------------------------------------------------
+	static void convertNormalized (char* string, float& output);
+	static void convertColorValue (char* string, float& output);
+	static void convertAngle (char* string, float& output);
+	static void convertNormalizedToString (float value, char* string);
+	static void convertColorValueToString (float value, char* string);
+	static void convertAngleToString (float value, char* string);
+
+};
+
+} // namespace
+
 #endif
-
-#if WINDOWS
-	#include "uidescription/winplatformsupport.cpp"
-#endif
-
-#include "uidescription/ccolorchooserpanel.cpp"
-#include "uidescription/ceditframe.cpp"
-#include "uidescription/cselection.cpp"
-#include "uidescription/cviewinspector.cpp"
-#include "uidescription/cviewswitchcontainer.cpp"
-#include "uidescription/dialog.cpp"
-#include "uidescription/uidescription.cpp"
-#include "uidescription/viewcreator.cpp"
-#include "uidescription/viewfactory.cpp"
-#include "uidescription/viewhierarchybrowser.cpp"
-
-#include "uidescription/xmlparser.cpp" // needs to be last

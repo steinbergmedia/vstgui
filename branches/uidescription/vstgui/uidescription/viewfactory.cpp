@@ -34,7 +34,7 @@
 
 #include "viewfactory.h"
 
-BEGIN_NAMESPACE_VSTGUI
+namespace VSTGUI {
 
 //-----------------------------------------------------------------------------
 class ViewCreatorRegistry : public std::map<std::string,const IViewCreator*>
@@ -256,4 +256,4 @@ void ViewFactory::registerViewCreator (const IViewCreator& viewCreator)
 	registry.insert (std::make_pair (viewCreator.getViewName (), &viewCreator));
 }
 
-END_NAMESPACE_VSTGUI
+} // namespace

@@ -40,7 +40,7 @@
 #include <string>
 #include <list>
 
-BEGIN_NAMESPACE_VSTGUI
+namespace VSTGUI {
 
 //-----------------------------------------------------------------------------
 class IViewCreator
@@ -99,7 +99,7 @@ protected:
 	CView* createViewByName (const std::string* className, const UIAttributes& attributes, IUIDescription* description);
 };
 
-END_NAMESPACE_VSTGUI
+} // namespace
 
 #endif
 

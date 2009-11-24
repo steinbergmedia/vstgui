@@ -50,7 +50,7 @@
 #include "../lib/platform/mac/cgdrawcontext.h"
 #endif
 
-BEGIN_NAMESPACE_VSTGUI
+namespace VSTGUI {
 
 //-----------------------------------------------------------------------------
 class UndoStackTop : public IActionOperation
@@ -2362,6 +2362,6 @@ bool CFileBitmap::load (const char* _path)
 }
 #endif
 
-END_NAMESPACE_VSTGUI
+} // namespace
 
 #endif // VSTGUI_LIVE_EDITING

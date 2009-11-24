@@ -40,7 +40,7 @@
 #include "../lib/cdrawcontext.h"
 #include "../lib/controls/cbuttons.h"
 
-BEGIN_NAMESPACE_VSTGUI
+namespace VSTGUI {
 
 //-----------------------------------------------------------------------------
 bool Dialog::runViewModal (CPoint& position, CView* view, long style, const char* title)
@@ -48,6 +48,8 @@ bool Dialog::runViewModal (CPoint& position, CView* view, long style, const char
 	Dialog dialog (position, view, style, title);
 	return dialog.run ();
 }
+
+namespace DialogInternal {
 
 //-----------------------------------------------------------------------------
 class SimpleButton : public CKickButton
@@ -71,7 +73,7 @@ public:
 		context->drawRect (size, kDrawFilledAndStroked);
 		context->setFont (kSystemFont);
 		context->setFontColor (kBlackCColor);
-		context->drawStringUTF8 (title.c_str (), size);
+		context->drawString (title.c_str (), size);
 	}
 
 	long onKeyDown (VstKeyCode& keyCode)
@@ -100,10 +102,12 @@ enum {
 };
 
 #if MAC
-#define okIsRightMost 1
+static bool DialogOkIsRightMost = true;
 #else
-#define okIsRightMost 0
+static bool DialogOkIsRightMost = false;
 #endif
+
+} // namespace DialogInternal
 
 //-----------------------------------------------------------------------------
 Dialog::Dialog (const CPoint& position, CView* rootView, long style, const char* title)
@@ -124,7 +128,7 @@ Dialog::Dialog (const CPoint& position, CView* rootView, long style, const char*
 	{
 		if (position.x == -1 && position.y == -1)
 			platformWindow->center ();
-		size.offset (position.x, position.y);
+		size.offset (-position.x, -position.y);
 		#if MAC_CARBON && MAC_COCOA
 		CFrame::setCocoaMode (true);
 		#endif
@@ -152,14 +156,14 @@ Dialog::Dialog (const CPoint& position, CView* rootView, long style, const char*
 		r.setWidth (80);
 		r.offset (size.right-(2*kMargin+r.getWidth ()), 0);
 
-		bool okIsFirst = (okIsRightMost || style == kOkButton);
-		SimpleButton* button;
-		button = new SimpleButton (r, this, okIsFirst ? kOkTag : kCancelTag, okIsRightMost ? "OK" : "Cancel");
+		bool okIsFirst = (DialogInternal::DialogOkIsRightMost || style == kOkButton);
+		DialogInternal::SimpleButton* button;
+		button = new DialogInternal::SimpleButton (r, this, okIsFirst ? DialogInternal::kOkTag : DialogInternal::kCancelTag, DialogInternal::DialogOkIsRightMost ? "OK" : "Cancel");
 		frame->addView (button);
 		if (style == kOkCancelButtons)
 		{
 			r.offset (-(r.getWidth () + kMargin), 0);
-			button = new SimpleButton (r, this, okIsRightMost ? kCancelTag : kOkTag, okIsRightMost ? "Cancel" : "OK");
+			button = new DialogInternal::SimpleButton (r, this, DialogInternal::DialogOkIsRightMost ? DialogInternal::kCancelTag : DialogInternal::kOkTag, DialogInternal::DialogOkIsRightMost ? "Cancel" : "OK");
 			frame->addView (button);
 		}
 	}
@@ -229,7 +233,7 @@ void Dialog::valueChanged (CControl* pControl)
 {
 	switch (pControl->getTag ())
 	{
-		case kOkTag:
+		case DialogInternal::kOkTag:
 		{
 			if (pControl->getValue () > 0.5)
 			{
@@ -238,7 +242,7 @@ void Dialog::valueChanged (CControl* pControl)
 			}
 			break;
 		}
-		case kCancelTag:
+		case DialogInternal::kCancelTag:
 		{
 			if (pControl->getValue () > 0.5)
 			{
@@ -250,6 +254,6 @@ void Dialog::valueChanged (CControl* pControl)
 	}
 }
 
-END_NAMESPACE_VSTGUI
+} // namespace
 
 #endif // VSTGUI_LIVE_EDITING

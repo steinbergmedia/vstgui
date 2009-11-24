@@ -32,7 +32,13 @@
 // OF THE POSSIBILITY OF SUCH DAMAGE.
 //-----------------------------------------------------------------------------
 
+#if VSTGUI_LIVE_EDITING
+
 #include "platformsupport.h"
+
+#if WINDOWS
+
+#include "ccolorchooserpanel.h"
 #include "../lib/platform/win32/win32support.h"
 #include <wingdi.h>
 
@@ -40,7 +46,7 @@ static TCHAR   gClassName[100];
 extern void* hInstance;
 inline HINSTANCE GetInstance () { return (HINSTANCE)hInstance; }
 
-BEGIN_NAMESPACE_VSTGUI
+namespace VSTGUI {
 
 //-----------------------------------------------------------------------------
 class Win32Window : public PlatformWindow
@@ -123,6 +129,11 @@ void Win32Window::getWindowFlags (DWORD& wStyle, DWORD& exStyle)
 	if (type == kPanelType)
 	{
 		wStyle |= WS_POPUP;
+		exStyle |= WS_EX_TOOLWINDOW;
+	}
+	else
+	{
+		exStyle |= WS_EX_DLGMODALFRAME;
 	}
 	if (styleFlags & kClosable)
 		wStyle |= WS_SYSMENU;
@@ -166,6 +177,7 @@ void* Win32Window::getPlatformHandle () const
 void Win32Window::show ()
 {
 	ShowWindow (platformWindow, SW_SHOW);
+	PostMessage (platformWindow, WM_NCACTIVATE, true, 0);
 }
 
 //-----------------------------------------------------------------------------
@@ -306,9 +318,53 @@ bool PlatformUtilities::startDrag (CFrame* frame, const CPoint& location, const 
 	return false;
 }
 
+#if !NATIVE_COLOR_CHOOSER
+class ColorChooserWindowOwner : public CBaseObject
+{
+public:
+	static ColorChooserWindowOwner* instance () { return &ccwo; }
+
+	CColorChooserPanel* getPanel (bool create = true)
+	{
+		if (panel == 0 && create)
+		{
+			panel = new CColorChooserPanel (this);
+		}
+		return panel;
+	}
+	
+	void closePanel ()
+	{
+		if (panel)
+			panel->forget ();
+		panel = 0;
+	}
+	
+protected:
+	static ColorChooserWindowOwner ccwo; 
+
+	ColorChooserWindowOwner () : panel (0) {}
+	~ColorChooserWindowOwner ()
+	{
+		closePanel ();
+	}
+	
+	CMessageResult notify (CBaseObject* sender, const char* message)
+	{
+		if (message == CColorChooserPanel::kMsgWindowClosed)
+			panel = 0;
+		return kMessageNotified;
+	}
+	
+	CColorChooserPanel* panel;
+};
+ColorChooserWindowOwner ColorChooserWindowOwner::ccwo; 
+#endif
+
 //-----------------------------------------------------------------------------
 void PlatformUtilities::colorChooser (const CColor* oldColor, IPlatformColorChangeCallback* callback)
 {
+	#if NATIVE_COLOR_CHOOSER
 	if (oldColor)
 	{
 		// TODO: Windows Colorchooser support (this implementation lacks alpha color support
@@ -324,7 +380,30 @@ void PlatformUtilities::colorChooser (const CColor* oldColor, IPlatformColorChan
 			callback->colorChanged (color);
 		}
 	}
+	#else
+	if (oldColor)
+	{
+		ColorChooserWindowOwner* owner = ColorChooserWindowOwner::instance ();
+		CColorChooserPanel* panel = owner->getPanel ();
+		panel->setColor (*oldColor);
+		panel->setColorChangeCallback (callback);
+	}
+	else
+	{
+		ColorChooserWindowOwner* owner = ColorChooserWindowOwner::instance ();
+		CColorChooserPanel* panel = owner->getPanel (false);
+		if (panel)
+		{
+			panel->setColorChangeCallback (0);
+			owner->closePanel ();
+		}
+	}
+	#endif
 
 }
 
-END_NAMESPACE_VSTGUI
+} // namespace
+
+#endif // WINDOWS
+
+#endif // VSTGUI_LIVE_EDITING

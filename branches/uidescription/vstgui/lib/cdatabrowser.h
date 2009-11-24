@@ -39,7 +39,7 @@
 
 #include "cscrollview.h"
 
-BEGIN_NAMESPACE_VSTGUI
+namespace VSTGUI {
 
 class CTextEdit;
 class CDataBrowser;
@@ -135,6 +135,6 @@ protected:
 	long selectedRow;
 };
 
-END_NAMESPACE_VSTGUI
+} // namespace
 
 #endif

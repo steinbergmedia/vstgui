@@ -53,6 +53,7 @@
 
 #include "lib/controls/ccontrol.cpp"
 #include "lib/controls/cbuttons.cpp"
+#include "lib/controls/ccolorchooser.cpp"
 #include "lib/controls/cparamdisplay.cpp"
 #include "lib/controls/ctextlabel.cpp"
 #include "lib/controls/ctextedit.cpp"

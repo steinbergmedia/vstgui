@@ -6,7 +6,7 @@
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
-// (c) 2008, Steinberg Media Technologies, All Rights Reserved
+// (c) 2009, Steinberg Media Technologies, All Rights Reserved
 //-----------------------------------------------------------------------------
 // Redistribution and use in source and binary forms, with or without modification,
 // are permitted provided that the following conditions are met:
@@ -36,7 +36,7 @@
 #include "../cdrawcontext.h"
 #include "../cbitmap.h"
 
-BEGIN_NAMESPACE_VSTGUI
+namespace VSTGUI {
 
 //------------------------------------------------------------------------
 // CSlider
@@ -245,10 +245,7 @@ void CSlider::draw (CDrawContext *pContext)
 	rect.offset (size.left, size.top);
 	if (pBackground)
 	{
-		if (bTransparencyEnabled)
-			pBackground->drawTransparent (drawContext, rect, offset);
-		else
-			pBackground->draw (drawContext, rect, offset);
+		pBackground->draw (drawContext, rect, offset);
 	}
 	
 	// calc new coords of slider
@@ -280,10 +277,7 @@ void CSlider::draw (CDrawContext *pContext)
 	// draw slider at new position
 	if (pHandle)
 	{
-		if (bDrawTransparentEnabled)
-			pHandle->drawTransparent (drawContext, rectNew);
-		else 
-			pHandle->draw (drawContext, rectNew);
+		pHandle->draw (drawContext, rectNew);
 	}
 
 	setDirty (false);
@@ -577,4 +571,4 @@ CHorizontalSlider::CHorizontalSlider (const CHorizontalSlider& slider)
 : CSlider (slider)
 {}
 
-END_NAMESPACE_VSTGUI
+} // namespace

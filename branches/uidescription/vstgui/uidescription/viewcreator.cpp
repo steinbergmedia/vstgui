@@ -264,7 +264,7 @@ public:
 #define strtof	(float)strtod
 #endif
 
-BEGIN_NAMESPACE_VSTGUI
+namespace VSTGUI {
 
 //-----------------------------------------------------------------------------
 bool parseSize (const std::string& str, CPoint& point)
@@ -2143,7 +2143,7 @@ public:
 };
 CVuMeterCreator __gCVuMeterCreator;
 
-END_NAMESPACE_VSTGUI
+} // namespace
 
 /**
 @endcond ignore

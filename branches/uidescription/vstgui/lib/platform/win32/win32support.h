@@ -48,7 +48,7 @@
 	#include <gdiplus.h>
 #endif
 
-BEGIN_NAMESPACE_VSTGUI
+namespace VSTGUI {
 
 #if VSTGUI_USES_UTF8
 	#define VSTGUI_STRCMP	wcscmp
@@ -176,7 +176,7 @@ protected:
 
 /// \endcond
 
-END_NAMESPACE_VSTGUI
+} // namespace
 
 #endif // WINDOWS
 

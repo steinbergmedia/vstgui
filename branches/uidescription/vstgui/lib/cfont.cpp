@@ -34,7 +34,7 @@
 
 #include "cfont.h"
 
-BEGIN_NAMESPACE_VSTGUI
+namespace VSTGUI {
 
 //-----------------------------------------------------------------------------
 // Global Fonts
@@ -104,17 +104,18 @@ CFontDesc::~CFontDesc ()
 }
 
 //-----------------------------------------------------------------------------
-CPlatformFont* CFontDesc::getPlatformFont ()
+IPlatformFont* CFontDesc::getPlatformFont ()
 {
 	if (platformFont == 0)
-		platformFont = CPlatformFont::create (name, size, style);
+		platformFont = IPlatformFont::create (name, size, style);
 	return platformFont;
 }
 
 //-----------------------------------------------------------------------------
 IFontPainter* CFontDesc::getFontPainter ()
 {
-	CPlatformFont* pf = getPlatformFont ();
+	IPlatformFont
+* pf = getPlatformFont ();
 	if (pf)
 		return pf->getPainter ();
 	return 0;
@@ -195,4 +196,4 @@ void CFontDesc::cleanup ()
 	gSymbolFont.freePlatformFont ();
 }
 
-END_NAMESPACE_VSTGUI
+} // namespace

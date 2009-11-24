@@ -65,7 +65,7 @@ protected:
 
 } // namespace Steinberg
 
-BEGIN_NAMESPACE_VSTGUI
+namespace VSTGUI {
 
 //-----------------------------------------------------------------------------
 class ParameterChangeListener : public Steinberg::FObject
@@ -1085,4 +1085,4 @@ void VST3Editor::runFocusSettingsDialog ()
 
 #endif // VSTGUI_LIVE_EDITING
 
-END_NAMESPACE_VSTGUI
+} // namespace

@@ -37,7 +37,7 @@
 
 #include "cframe.h"
 
-BEGIN_NAMESPACE_VSTGUI
+namespace VSTGUI {
 
 class CVSTGUITimer;
 
@@ -75,7 +75,7 @@ protected:
 	CPoint lastMouseMove;
 };
 
-END_NAMESPACE_VSTGUI
+} // namespace
 
 #endif
 

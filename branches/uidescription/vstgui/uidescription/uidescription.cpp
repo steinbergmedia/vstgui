@@ -45,7 +45,7 @@
 #include <fstream>
 #include <vector>
 
-BEGIN_NAMESPACE_VSTGUI
+namespace VSTGUI {
 
 //-----------------------------------------------------------------------------
 template <class T> class ScopePointer
@@ -1625,4 +1625,4 @@ void ResourceReader::rewind ()
 	}
 }
 
-END_NAMESPACE_VSTGUI
+} // namespace

@@ -33,20 +33,17 @@
 //-----------------------------------------------------------------------------
 
 #include "vstguidebug.h"
+
+#if DEBUG
+
 #if WINDOWS
 	#include "platform/win32/win32support.h"
 #endif
 
-#if DEBUG
-
 #include <stdarg.h>
 #include <stdio.h>
 
-BEGIN_NAMESPACE_VSTGUI
-
-long gNbCOffscreenContext = 0;
-long gBitmapAllocation = 0;
-long gNbDC = 0;
+namespace VSTGUI {
 
 //-----------------------------------------------------------------------------
 TimeWatch::TimeWatch (const char* name, bool startNow)
@@ -103,6 +100,6 @@ void DebugPrint (const char *format, ...)
 	#endif
 }
 
-END_NAMESPACE_VSTGUI
+} // namespace
 
 #endif // DEBUG

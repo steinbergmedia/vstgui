@@ -39,7 +39,7 @@
 #include "cfont.h"
 #include "controls/ccontrol.h"
 
-BEGIN_NAMESPACE_VSTGUI
+namespace VSTGUI {
 
 class CTabChildView;
 
@@ -110,6 +110,6 @@ protected:
 	CTabChildView* currentChild;
 };
 
-END_NAMESPACE_VSTGUI
+} // namespace
 
 #endif

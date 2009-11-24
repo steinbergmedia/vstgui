@@ -39,7 +39,7 @@
 #define DEBUGLOG 0
 #endif
 
-BEGIN_NAMESPACE_VSTGUI
+namespace VSTGUI {
 
 enum {
 	kHidden,
@@ -307,4 +307,4 @@ CMessageResult CTooltipSupport::notify (CBaseObject* sender, const char* msg)
 	return kMessageUnknown;
 }
 
-END_NAMESPACE_VSTGUI
+} // namespace

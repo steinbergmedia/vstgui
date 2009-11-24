@@ -36,7 +36,7 @@
 #include "cframe.h"
 #include <cmath>
 
-BEGIN_NAMESPACE_VSTGUI
+namespace VSTGUI {
 
 //-----------------------------------------------------------------------------
 CGraphicsPath* CGraphicsPath::create (CFrame* frame)
@@ -45,4 +45,4 @@ CGraphicsPath* CGraphicsPath::create (CFrame* frame)
 	return pf ? pf->createGraphicsPath () : 0;
 }
 
-END_NAMESPACE_VSTGUI
+} // namespace

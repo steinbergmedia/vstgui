@@ -6,7 +6,7 @@
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
-// (c) 2008, Steinberg Media Technologies, All Rights Reserved
+// (c) 2009, Steinberg Media Technologies, All Rights Reserved
 //-----------------------------------------------------------------------------
 // Redistribution and use in source and binary forms, with or without modification,
 // are permitted provided that the following conditions are met:
@@ -35,7 +35,7 @@
 #include "cframe.h"
 #include "coffscreencontext.h"
 
-BEGIN_NAMESPACE_VSTGUI
+namespace VSTGUI {
 
 #if MAC_CARBON && MAC_COCOA
 	static bool createNSViewMode = false;
@@ -69,8 +69,7 @@ CFrame::CFrame (const CRect &inSize, void* inSystemWindow, VSTGUIEditorInterface
 , pFocusView (0)
 , pActiveFocusView (0)
 , pMouseOverView (0)
-, bDropActive (false)
-, bActive (false)
+, bActive (true)
 {
 	bIsAttached = true;
 	
@@ -87,8 +86,6 @@ CFrame::~CFrame ()
 		removeView (pModalView, false);
 
 	setCursor (kCursorDefault);
-
-	setDropActive (false);
 
 	pParentFrame = 0;
 	removeAll ();
@@ -118,20 +115,6 @@ bool CFrame::initFrame (void* systemWin)
 	if (!platformFrame)
 		return false;
 
-	setDropActive (true);
-
-	return true;
-}
-
-//-----------------------------------------------------------------------------
-bool CFrame::setDropActive (bool val)
-{	
-	if (!bDropActive && !val)
-		return true;
-
-	// TODO: Do we still need this, or do we always enable drop active ?
-
-	bDropActive = val;
 	return true;
 }
 
@@ -212,7 +195,10 @@ CMouseEventResult CFrame::onMouseDown (CPoint &where, const long& buttons)
 //-----------------------------------------------------------------------------
 CMouseEventResult CFrame::onMouseUp (CPoint &where, const long& buttons)
 {
-	return CViewContainer::onMouseUp (where, buttons);
+	CMouseEventResult result = CViewContainer::onMouseUp (where, buttons);
+	long modifiers = buttons & (kShift | kControl | kAlt | kApple);
+	onMouseMoved (where, modifiers);
+	return result;
 }
 
 //-----------------------------------------------------------------------------
@@ -247,6 +233,7 @@ CMouseEventResult CFrame::onMouseMoved (CPoint &where, const long& buttons)
 					pMouseOverView = v;
 					if (getMouseObserver ())
 						getMouseObserver ()->onMouseEntered (pMouseOverView, this);
+					v->onMouseMoved (lr, buttons);
 				}
 				return kMouseEventHandled;
 			}
@@ -573,6 +560,12 @@ void CFrame::setFocusView (CView *pView)
 	if (pView == pFocusView || (recursion && pFocusView != 0))
 		return;
 
+	if (!bActive)
+	{
+		pActiveFocusView = pView;
+		return;
+	}
+
 	recursion = true;
 
 	CView *pOldFocusView = pFocusView;
@@ -690,6 +683,7 @@ void CFrame::onActivate (bool state)
 	{
 		if (state)
 		{
+			bActive = true;
 			if (pActiveFocusView)
 				setFocusView (pActiveFocusView);
 			pActiveFocusView = 0;
@@ -698,8 +692,8 @@ void CFrame::onActivate (bool state)
 		{
 			pActiveFocusView = getFocusView ();
 			setFocusView (0);
+			bActive = false;
 		}
-		bActive = state;
 	}
 }
 
@@ -881,5 +875,5 @@ void CFrame::platformOnActivate (bool state)
 	onActivate (state);
 }
 
-END_NAMESPACE_VSTGUI
+} // namespace
 

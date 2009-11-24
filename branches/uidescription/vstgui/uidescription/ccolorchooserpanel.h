@@ -1,6 +1,6 @@
 //-----------------------------------------------------------------------------
 // VST Plug-Ins SDK
-// VSTGUI: Graphical User Interface Framework for VST plugins : 
+// VSTGUI: Graphical User Interface Framework not only for VST plugins : 
 //
 // Version 4.0
 //
@@ -32,36 +32,44 @@
 // OF THE POSSIBILITY OF SUCH DAMAGE.
 //-----------------------------------------------------------------------------
 
-/*
-	You have the choice to include this file in your project
-	or the files listed below. Don't add this and the others, or you will get link errors.
-	
-	On Mac OS X you must compile this with the Objective-C++ compiler.
-*/
+#ifndef __ccolorchooserpanel__
+#define __ccolorchooserpanel__
 
-#include "vstgui_uidescription.h"
+#include "../lib/cframe.h"
+#include "../lib/controls/ccolorchooser.h"
+#include "platformsupport.h"
 
-#if MAC
-	#ifdef __OBJC__
-		#import "uidescription/macplatformsupport.mm"
-	#else
-		#error You need to use the Objective-C++ compiler for this file
-	#endif
-#endif
+namespace VSTGUI {
 
-#if WINDOWS
-	#include "uidescription/winplatformsupport.cpp"
-#endif
+//-----------------------------------------------------------------------------
+class CColorChooserPanel : public CBaseObject, public VSTGUIEditorInterface, public IPlatformWindowDelegate, public IColorChooserDelegate
+{
+public:
+	CColorChooserPanel (CBaseObject* owner, IPlatformColorChangeCallback* callback = 0, void* parentPlatformWindow = 0);
+	~CColorChooserPanel ();
 
-#include "uidescription/ccolorchooserpanel.cpp"
-#include "uidescription/ceditframe.cpp"
-#include "uidescription/cselection.cpp"
-#include "uidescription/cviewinspector.cpp"
-#include "uidescription/cviewswitchcontainer.cpp"
-#include "uidescription/dialog.cpp"
-#include "uidescription/uidescription.cpp"
-#include "uidescription/viewcreator.cpp"
-#include "uidescription/viewfactory.cpp"
-#include "uidescription/viewhierarchybrowser.cpp"
+	void setColorChangeCallback (IPlatformColorChangeCallback* callback);
+	void setColor (const CColor& newColor);
 
-#include "uidescription/xmlparser.cpp" // needs to be last
+	static const char* kMsgWindowClosed;
+//-----------------------------------------------------------------------------
+protected:
+	// IPlatformWindowDelegate
+	void windowSizeChanged (const CRect& newSize, PlatformWindow* platformWindow);
+	void windowClosed (PlatformWindow* platformWindow);
+	void checkWindowSizeConstraints (CPoint& size, PlatformWindow* platformWindow);
+
+	// IColorChooserDelegate
+	void colorChanged (CColorChooser* chooser, const CColor& color);
+
+	PlatformWindow* platformWindow;
+	CBaseObject* owner;
+	IPlatformColorChangeCallback* callback;
+	CColorChooser* colorChooser;
+
+	static CRect lastSize;
+};
+
+} // namespace
+
+#endif // __ccolorchooserpanel__

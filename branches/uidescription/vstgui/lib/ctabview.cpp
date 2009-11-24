@@ -38,7 +38,7 @@
 #include "cdrawcontext.h"
 #include "controls/cbuttons.h"
 
-BEGIN_NAMESPACE_VSTGUI
+namespace VSTGUI {
 
 #define  kTabButtonTagStart	20000
 
@@ -77,7 +77,7 @@ public:
 		{
 			pContext->setFont (textFont);
 			pContext->setFontColor (value ? activeTextColor : inactiveTextColor);
-			pContext->drawString (name, size, false);
+			pContext->drawString (name, size);
 		}
 	}
 
@@ -581,4 +581,4 @@ void CTabView::setViewSize (CRect &rect, bool invalid)
 }
 
 
-END_NAMESPACE_VSTGUI
+} // namespace

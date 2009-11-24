@@ -37,7 +37,7 @@
 
 #include "cgraphicspath.h"
 
-BEGIN_NAMESPACE_VSTGUI
+namespace VSTGUI {
 
 //-----------------------------------------------------------------------------
 // IFocusDrawing Declaration
@@ -56,6 +56,6 @@ public:
 	virtual bool getFocusPath (CGraphicsPath& outPath) = 0;
 };
 
-END_NAMESPACE_VSTGUI
+} // namespace
 
 #endif

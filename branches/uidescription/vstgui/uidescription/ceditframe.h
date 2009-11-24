@@ -45,7 +45,7 @@
 #include <list>
 #include <map>
 
-BEGIN_NAMESPACE_VSTGUI
+namespace VSTGUI {
 
 class CrossLines;
 class Grid;
@@ -229,7 +229,7 @@ protected:
 static const CColor kDefaultUIDescriptionScrollerColor = MakeCColor (255, 255, 255, 140);
 static const CColor kDefaultUIDescriptionBackgroundColor = MakeCColor (0, 0, 0, 0);
 
-END_NAMESPACE_VSTGUI
+} // namespace
 
 #endif // VSTGUI_LIVE_EDITING
 

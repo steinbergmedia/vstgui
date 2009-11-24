@@ -45,7 +45,7 @@
 
 #endif
 
-BEGIN_NAMESPACE_VSTGUI
+namespace VSTGUI {
 
 //-----------------------------------------------------------------------------
 // CVSTGUITimer Declaration
@@ -80,6 +80,6 @@ protected:
 	#endif
 };
 
-END_NAMESPACE_VSTGUI
+} // namespace
 
 #endif

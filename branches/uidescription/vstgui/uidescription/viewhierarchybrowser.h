@@ -41,7 +41,7 @@
 #include "uidescription.h"
 #include "platformsupport.h"
 
-BEGIN_NAMESPACE_VSTGUI
+namespace VSTGUI {
 
 class CDataBrowser;
 class ViewHierarchyData;
@@ -93,7 +93,7 @@ protected:
 };
 
 
-END_NAMESPACE_VSTGUI
+} // namespace
 
 #endif // VSTGUI_LIVE_EDITING
 

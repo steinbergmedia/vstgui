@@ -40,10 +40,10 @@
 
 #include "gdiplusdrawcontext.h"
 
-BEGIN_NAMESPACE_VSTGUI
+namespace VSTGUI {
 
 //-----------------------------------------------------------------------------
-CPlatformFont* CPlatformFont::create (const char* name, const CCoord& size, const long& style)
+IPlatformFont* IPlatformFont::create (const char* name, const CCoord& size, const long& style)
 {
 	#if GDIPLUS
 	GdiPlusFont* font = new GdiPlusFont (name, size, style);
@@ -272,6 +272,6 @@ double GdiFont::getCapHeight () const
 
 #endif // GDIPLUS
 
-END_NAMESPACE_VSTGUI
+} // namespace
 
 #endif // WINDOWS

@@ -38,7 +38,7 @@
 #include "cviewcontainer.h"
 #include "controls/ccontrol.h"
 
-BEGIN_NAMESPACE_VSTGUI
+namespace VSTGUI {
 
 class CScrollbar;
 class CScrollContainer;
@@ -206,6 +206,6 @@ public:
 	virtual void drawScrollbarScroller (CDrawContext* pContext, const CRect& size, CScrollbar::ScrollbarDirection direction, CScrollbar* bar) = 0;
 };
 
-END_NAMESPACE_VSTGUI
+} // namespace
 
 #endif

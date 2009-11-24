@@ -39,7 +39,7 @@
 #include "viewfactory.h"
 #include <vector>
 
-BEGIN_NAMESPACE_VSTGUI
+namespace VSTGUI {
 class IViewSwitchController;
 
 //-----------------------------------------------------------------------------
@@ -111,6 +111,6 @@ protected:
 	std::vector<std::string> templateNames;
 };
 
-END_NAMESPACE_VSTGUI
+} // namespace
 
 #endif
