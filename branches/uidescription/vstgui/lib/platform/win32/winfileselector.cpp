@@ -33,13 +33,11 @@
 //-----------------------------------------------------------------------------
 
 #include "../../cfileselector.h"
+
+#if WINDOWS
+
 #include "win32support.h"
-
-#if VSTGUI_NEW_CFILESELECTOR
-
-#if VSTGUI_PLATFORM_ABSTRACTION
 #include "win32frame.h"
-#endif
 #include <shobjidl.h>
 
 #define IID_PPV_ARG(IType, ppType) IID_##IType, (void**)ppType
@@ -250,12 +248,8 @@ bool VistaFileSelector::runModalInternal ()
 			shellItem->Release ();
 		}
 	}
-#if VSTGUI_PLATFORM_ABSTRACTION
 	Win32Frame* win32Frame = frame->getPlatformFrame () ? dynamic_cast<Win32Frame*> (frame->getPlatformFrame ()) : 0;
 	hr = fileDialog->Show (win32Frame ? win32Frame->getPlatformWindow () : 0);
-#else
-	hr = fileDialog->Show ((HWND)frame->getSystemWindow ());
-#endif
 	if (SUCCEEDED (hr))
 	{
 		if (allowMultiFileSelection)
@@ -320,4 +314,4 @@ bool VistaFileSelector::runModalInternal ()
 
 } // namespace
 
-#endif
+#endif // WINDOWS

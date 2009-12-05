@@ -45,7 +45,6 @@ namespace VSTGUI {
 HINSTANCE GetInstance () { return (HINSTANCE)hInstance; }
 
 /// \cond ignore
-#if GDIPLUS
 //-----------------------------------------------------------------------------
 GDIPlusGlobals* GDIPlusGlobals::gInstance = 0;
 
@@ -83,7 +82,6 @@ void GDIPlusGlobals::exit ()
 			gInstance = 0;
 	}
 }
-#endif
 
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------

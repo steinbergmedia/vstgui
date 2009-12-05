@@ -45,38 +45,25 @@ namespace VSTGUI {
 //-----------------------------------------------------------------------------
 IPlatformFont* IPlatformFont::create (const char* name, const CCoord& size, const long& style)
 {
-	#if GDIPLUS
 	GdiPlusFont* font = new GdiPlusFont (name, size, style);
 	if (font->getFont ())
 		return font;
 	font->forget ();
-	#else
-	GdiFont* font = new GdiFont (name, size, style);
-	if (font->getFont ())
-		return font;
-	font->forget ();
-	#endif
 	return 0;
 }
 
-#if GDIPLUS
+//-----------------------------------------------------------------------------
 static Gdiplus::Graphics* getGraphics (CDrawContext* context)
 {
-#if VSTGUI_PLATFORM_ABSTRACTION
 	GdiplusDrawContext* gpdc = dynamic_cast<GdiplusDrawContext*> (context);
 	return gpdc ? gpdc->getGraphics () : 0;
-#else
-	return context->getGraphics ();
-#endif
 }
+
+//-----------------------------------------------------------------------------
 static Gdiplus::Brush* getFontBrush (CDrawContext* context)
 {
-#if VSTGUI_PLATFORM_ABSTRACTION
 	GdiplusDrawContext* gpdc = dynamic_cast<GdiplusDrawContext*> (context);
 	return gpdc ? gpdc->getFontBrush () : 0;
-#else
-	return context->getFontBrush ();
-#endif
 }
 
 //-----------------------------------------------------------------------------
@@ -187,90 +174,6 @@ double GdiPlusFont::getCapHeight () const
 {
 	return -1;
 }
-
-#else
-//-----------------------------------------------------------------------------
-GdiFont::GdiFont (const char* name, const CCoord& size, const long& style)
-: font (0)
-{
-	LOGFONT logfont = {0};
-	if (style & kBoldFace)
-		logfont.lfWeight = FW_BOLD;
-	else
-		logfont.lfWeight = FW_NORMAL;
-	if (style & kItalicFace)
-		logfont.lfItalic = true;
-	if (style & kUnderlineFace)
-		logfont.lfUnderline = true;
-	
-	logfont.lfHeight         = -size;
-	logfont.lfPitchAndFamily = VARIABLE_PITCH | FF_SWISS;
-	strcpy (logfont.lfFaceName, name);
-
-	if (!strcmp (name, kSymbolFont->getName ()))
-		logfont.lfPitchAndFamily = DEFAULT_PITCH | FF_DECORATIVE;
-  
-	logfont.lfClipPrecision = CLIP_STROKE_PRECIS;
-	logfont.lfOutPrecision  = OUT_STRING_PRECIS;
-	logfont.lfQuality 	    = DEFAULT_QUALITY;
-	logfont.lfCharSet       = ANSI_CHARSET;
-
-	font = CreateFontIndirect (&logfont);
-}
-
-//-----------------------------------------------------------------------------
-GdiFont::~GdiFont ()
-{
-	if (font)
-		DeleteObject (font);
-}
-
-//-----------------------------------------------------------------------------
-void GdiFont::drawString (CDrawContext* context, const char* utf8String, const CPoint& p, bool antialias)
-{
-	HDC pSystemContext = (HDC)context->getSystemContext ();
-	SelectObject (pSystemContext, font);
-
-	RECT Rect = {p.x, p.y, p.x, p.y};
-	DrawText (pSystemContext, utf8String, (int)strlen (utf8String), &Rect, DT_NOCLIP);
-}
-
-//-----------------------------------------------------------------------------
-CCoord GdiFont::getStringWidth (CDrawContext* context, const char* utf8String, bool antialias)
-{
-	HDC pSystemContext = (HDC)context->getSystemContext ();
-
-	SIZE size;
-	GetTextExtentPoint32 ((HDC)pSystemContext, utf8String, (int)strlen (utf8String), &size);
-	return (CCoord)size.cx;
-}
-
-//-----------------------------------------------------------------------------
-double GdiFont::getAscent () const
-{
-	return -1;
-}
-
-//-----------------------------------------------------------------------------
-double GdiFont::getDescent () const
-{
-	return -1;
-}
-
-//-----------------------------------------------------------------------------
-double GdiFont::getLeading () const
-{
-	return -1;
-}
-
-//-----------------------------------------------------------------------------
-double GdiFont::getCapHeight () const
-{
-	return -1;
-}
-
-
-#endif // GDIPLUS
 
 } // namespace
 

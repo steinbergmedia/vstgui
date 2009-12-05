@@ -167,7 +167,7 @@ public:
 	virtual void setMin (float val) {}
 	virtual float getMin () const { return 0; }
 	virtual void setMax (float val) {}
-	virtual float getMax () const { return menuItems->size () - 1; }
+	virtual float getMax () const { return (float)(menuItems->size () - 1); }
 
 	virtual	void draw (CDrawContext* pContext);
 	virtual CMouseEventResult onMouseDown (CPoint& where, const long& buttons);

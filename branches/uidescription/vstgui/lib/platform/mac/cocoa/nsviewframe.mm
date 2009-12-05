@@ -54,12 +54,27 @@
 
 using namespace VSTGUI;
 
+//------------------------------------------------------------------------------------
+HIDDEN inline IPlatformFrameCallback* getFrame (id obj)
+{
+	NSViewFrame* nsViewFrame = (NSViewFrame*)OBJC_GET_VALUE(obj, _nsViewFrame);
+	if (nsViewFrame)
+		return nsViewFrame->getFrame ();
+	return 0;
+}
+
+//------------------------------------------------------------------------------------
+HIDDEN inline NSViewFrame* getNSViewFrame (id obj)
+{
+	return (NSViewFrame*)OBJC_GET_VALUE(obj, _nsViewFrame);
+}
+
 static Class viewClass = 0;
 static CocoaDragContainer* gCocoaDragContainer = 0;
 
 //------------------------------------------------------------------------------------
 @interface NSObject (VSTGUI_NSView)
-- (id) initWithFrame: (IPlatformFrameCallback*) frame parent: (NSView*) parent andSize: (const CRect*) size;
+- (id) initWithNSViewFrame: (NSViewFrame*) frame parent: (NSView*) parent andSize: (const CRect*) size;
 - (BOOL) onMouseDown: (NSEvent*) event;
 - (BOOL) onMouseUp: (NSEvent*) event;
 - (BOOL) onMouseMoved: (NSEvent*) event;
@@ -79,14 +94,14 @@ HIDDEN bool nsViewGetCurrentMouseLocation (void* nsView, CPoint& where)
 static id VSTGUI_NSView_Init (id self, SEL _cmd, void* _frame, NSView* parentView, const void* _size)
 {
 	const CRect* size = (const CRect*)_size;
-	IPlatformFrameCallback* frame = (IPlatformFrameCallback*)_frame;
+	NSViewFrame* frame = (NSViewFrame*)_frame;
 	NSRect nsSize = nsRectFromCRect (*size);
 
 	__OBJC_SUPER(self)
 	self = objc_msgSendSuper (SUPER, @selector(initWithFrame:), nsSize); // self = [super initWithFrame: nsSize];
 	if (self)
 	{
-		OBJC_SET_VALUE(self, _vstguiframe, frame); //		_vstguiframe = frame;
+		OBJC_SET_VALUE(self, _nsViewFrame, frame); //		_vstguiframe = frame;
 
 		[parentView addSubview: self];
 
@@ -128,7 +143,7 @@ static void VSTGUI_NSView_viewDidMoveToWindow (id self, SEL _cmd)
 	{
 		[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(windowKeyStateChanged:) name:NSWindowDidBecomeKeyNotification object:window];
 		[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(windowKeyStateChanged:) name:NSWindowDidResignKeyNotification object:window];
-		IPlatformFrameCallback* frame = (IPlatformFrameCallback*)OBJC_GET_VALUE(self, _vstguiframe);
+		IPlatformFrameCallback* frame = getFrame (self);
 		if (frame)
 			frame->platformOnActivate ([window isKeyWindow] ? true : false);
 	}
@@ -137,16 +152,19 @@ static void VSTGUI_NSView_viewDidMoveToWindow (id self, SEL _cmd)
 //------------------------------------------------------------------------------------
 static void VSTGUI_NSView_windowKeyStateChanged (id self, SEL _cmd, NSNotification* notification)
 {
-	IPlatformFrameCallback* frame = (IPlatformFrameCallback*)OBJC_GET_VALUE(self, _vstguiframe);
 	NSView* firstResponder = (NSView*)[[self window] firstResponder];
 	if (![firstResponder isKindOfClass:[NSView class]])
 		firstResponder = nil;
-	if (frame && firstResponder)
+	if (firstResponder)
 	{
 		while (firstResponder != self && firstResponder != nil)
 			firstResponder = [firstResponder superview];
 		if (firstResponder == self)
-			frame->platformOnActivate ([[self window] isKeyWindow] ? true : false);
+		{
+			IPlatformFrameCallback* frame = getFrame (self);
+			if (frame)
+				frame->platformOnActivate ([[self window] isKeyWindow] ? true : false);
+		}
 	}
 }
 
@@ -154,7 +172,7 @@ static void VSTGUI_NSView_windowKeyStateChanged (id self, SEL _cmd, NSNotificati
 static BOOL VSTGUI_NSView_isOpaque (id self, SEL _cmd)
 {
 	#if 0 // TODO: check this
-	IPlatformFrameCallback* frame = (IPlatformFrameCallback*)OBJC_GET_VALUE(self, _vstguiframe);
+	IPlatformFrameCallback* frame = getFrame (self);
 	if (frame)
 	{
 		BOOL transparent = (frame->getTransparency () 
@@ -172,26 +190,15 @@ static BOOL VSTGUI_NSView_isOpaque (id self, SEL _cmd)
 //------------------------------------------------------------------------------------
 static void VSTGUI_NSView_drawRect (id self, SEL _cmd, NSRect rect)
 {
-	IPlatformFrameCallback* _vstguiframe = (IPlatformFrameCallback*)OBJC_GET_VALUE(self, _vstguiframe);
-	if (_vstguiframe)
-	{
-		NSGraphicsContext* nsContext = [NSGraphicsContext currentContext];
-		
-		CGDrawContext drawContext ((CGContextRef)[nsContext graphicsPort], rectFromNSRect ([self bounds]));
-		const NSRect* dirtyRects;
-		NSInteger numDirtyRects;
-		[self getRectsBeingDrawn:&dirtyRects count:&numDirtyRects];
-		for (NSInteger i = 0; i < numDirtyRects; i++)
-		{
-			_vstguiframe->platformDrawRect (&drawContext, rectFromNSRect (dirtyRects[i]));
-		}
-	}
+	NSViewFrame* frame = getNSViewFrame (self);
+	if (frame)
+		frame->drawRect (&rect);
 }
 
 //------------------------------------------------------------------------------------
 static BOOL VSTGUI_NSView_onMouseDown (id self, SEL _cmd, NSEvent* theEvent)
 {
-	IPlatformFrameCallback* _vstguiframe = (IPlatformFrameCallback*)OBJC_GET_VALUE(self, _vstguiframe);
+	IPlatformFrameCallback* _vstguiframe = getFrame (self);
 	if (!_vstguiframe)
 		return NO;
 
@@ -218,7 +225,7 @@ static BOOL VSTGUI_NSView_onMouseDown (id self, SEL _cmd, NSEvent* theEvent)
 //------------------------------------------------------------------------------------
 static BOOL VSTGUI_NSView_onMouseUp (id self, SEL _cmd, NSEvent* theEvent)
 {
-	IPlatformFrameCallback* _vstguiframe = (IPlatformFrameCallback*)OBJC_GET_VALUE(self, _vstguiframe);
+	IPlatformFrameCallback* _vstguiframe = getFrame (self);
 	if (!_vstguiframe)
 		return NO;
 
@@ -242,7 +249,7 @@ static BOOL VSTGUI_NSView_onMouseUp (id self, SEL _cmd, NSEvent* theEvent)
 //------------------------------------------------------------------------------------
 static BOOL VSTGUI_NSView_onMouseMoved (id self, SEL _cmd, NSEvent* theEvent)
 {
-	IPlatformFrameCallback* _vstguiframe = (IPlatformFrameCallback*)OBJC_GET_VALUE(self, _vstguiframe);
+	IPlatformFrameCallback* _vstguiframe = getFrame (self);
 	if (!_vstguiframe)
 		return NO;
 
@@ -346,7 +353,7 @@ static void VSTGUI_NSView_otherMouseDragged (id self, SEL _cmd, NSEvent* theEven
 //------------------------------------------------------------------------------------
 static void VSTGUI_NSView_scrollWheel (id self, SEL _cmd, NSEvent* theEvent)
 {
-	IPlatformFrameCallback* _vstguiframe = (IPlatformFrameCallback*)OBJC_GET_VALUE(self, _vstguiframe);
+	IPlatformFrameCallback* _vstguiframe = getFrame (self);
 	if (!_vstguiframe)
 		return;
 
@@ -377,7 +384,7 @@ static void VSTGUI_NSView_mouseEntered (id self, SEL _cmd, NSEvent* theEvent)
 //------------------------------------------------------------------------------------
 static void VSTGUI_NSView_mouseExited (id self, SEL _cmd, NSEvent* theEvent)
 {
-	IPlatformFrameCallback* _vstguiframe = (IPlatformFrameCallback*)OBJC_GET_VALUE(self, _vstguiframe);
+	IPlatformFrameCallback* _vstguiframe = getFrame (self);
 	if (!_vstguiframe)
 		return;
 	long buttons = eventButton (theEvent);
@@ -408,7 +415,7 @@ static BOOL VSTGUI_NSView_acceptsFirstMouse (id self, SEL _cmd, NSEvent* event)
 //------------------------------------------------------------------------------------
 static BOOL VSTGUI_NSView_performKeyEquivalent (id self, SEL _cmd, NSEvent* theEvent)
 {
-	IPlatformFrameCallback* _vstguiframe = (IPlatformFrameCallback*)OBJC_GET_VALUE(self, _vstguiframe);
+	IPlatformFrameCallback* _vstguiframe = getFrame (self);
 	if (_vstguiframe)
 	{
 		VstKeyCode keyCode = CreateVstKeyCodeFromNSEvent (theEvent);
@@ -421,7 +428,7 @@ static BOOL VSTGUI_NSView_performKeyEquivalent (id self, SEL _cmd, NSEvent* theE
 //------------------------------------------------------------------------------------
 static void VSTGUI_NSView_keyDown (id self, SEL _cmd, NSEvent* theEvent)
 {
-	IPlatformFrameCallback* _vstguiframe = (IPlatformFrameCallback*)OBJC_GET_VALUE(self, _vstguiframe);
+	IPlatformFrameCallback* _vstguiframe = getFrame (self);
 	if (!_vstguiframe)
 		return;
 
@@ -442,7 +449,7 @@ static void VSTGUI_NSView_keyDown (id self, SEL _cmd, NSEvent* theEvent)
 //------------------------------------------------------------------------------------
 static void VSTGUI_NSView_keyUp (id self, SEL _cmd, NSEvent* theEvent)
 {
-	IPlatformFrameCallback* _vstguiframe = (IPlatformFrameCallback*)OBJC_GET_VALUE(self, _vstguiframe);
+	IPlatformFrameCallback* _vstguiframe = getFrame (self);
 	if (!_vstguiframe)
 		return;
 
@@ -456,7 +463,7 @@ static void VSTGUI_NSView_keyUp (id self, SEL _cmd, NSEvent* theEvent)
 //------------------------------------------------------------------------------------
 static NSDragOperation VSTGUI_NSView_draggingEntered (id self, SEL _cmd, id sender)
 {
-	IPlatformFrameCallback* _vstguiframe = (IPlatformFrameCallback*)OBJC_GET_VALUE(self, _vstguiframe);
+	IPlatformFrameCallback* _vstguiframe = getFrame (self);
 	if (!_vstguiframe)
 		return NSDragOperationNone;
 
@@ -476,7 +483,7 @@ static NSDragOperation VSTGUI_NSView_draggingEntered (id self, SEL _cmd, id send
 //------------------------------------------------------------------------------------
 static NSDragOperation VSTGUI_NSView_draggingUpdated (id self, SEL _cmd, id sender)
 {
-	IPlatformFrameCallback* _vstguiframe = (IPlatformFrameCallback*)OBJC_GET_VALUE(self, _vstguiframe);
+	IPlatformFrameCallback* _vstguiframe = getFrame (self);
 	if (!_vstguiframe)
 		return NSDragOperationNone;
 
@@ -490,7 +497,7 @@ static NSDragOperation VSTGUI_NSView_draggingUpdated (id self, SEL _cmd, id send
 //------------------------------------------------------------------------------------
 static void VSTGUI_NSView_draggingExited (id self, SEL _cmd, id sender)
 {
-	IPlatformFrameCallback* _vstguiframe = (IPlatformFrameCallback*)OBJC_GET_VALUE(self, _vstguiframe);
+	IPlatformFrameCallback* _vstguiframe = getFrame (self);
 	if (!_vstguiframe || !gCocoaDragContainer)
 		return;
 
@@ -506,7 +513,7 @@ static void VSTGUI_NSView_draggingExited (id self, SEL _cmd, id sender)
 //------------------------------------------------------------------------------------
 static BOOL VSTGUI_NSView_performDragOperation (id self, SEL _cmd, id sender)
 {
-	IPlatformFrameCallback* _vstguiframe = (IPlatformFrameCallback*)OBJC_GET_VALUE(self, _vstguiframe);
+	IPlatformFrameCallback* _vstguiframe = getFrame (self);
 	if (!_vstguiframe)
 		return NO;
 
@@ -555,7 +562,7 @@ void NSViewFrame::initClass ()
 		AutoreleasePool ap ();
 		NSMutableString* viewClassName = [[[NSMutableString alloc] initWithString:@"VSTGUI_NSView"] autorelease];
 		viewClass = generateUniqueClass (viewClassName, [NSView class]);
-		res = class_addMethod (viewClass, @selector(initWithFrame:parent:andSize:), IMP (VSTGUI_NSView_Init), "@@:@:^:^:^:");
+		res = class_addMethod (viewClass, @selector(initWithNSViewFrame:parent:andSize:), IMP (VSTGUI_NSView_Init), "@@:@:^:^:^:");
 	//	res = class_addMethod (viewClass, @selector(dealloc), IMP (VSTGUI_NSView_Dealloc), "v@:@:");
 		res = class_addMethod (viewClass, @selector(viewDidMoveToWindow), IMP (VSTGUI_NSView_viewDidMoveToWindow), "v@:@:");
 		res = class_addMethod (viewClass, @selector(windowKeyStateChanged:), IMP (VSTGUI_NSView_windowKeyStateChanged), "v@:@:^:");
@@ -599,18 +606,19 @@ void NSViewFrame::initClass ()
 		res = class_addMethod (viewClass, @selector(draggingExited:), IMP (VSTGUI_NSView_draggingExited), "v@:@:^:");
 		res = class_addMethod (viewClass, @selector(performDragOperation:), IMP (VSTGUI_NSView_performDragOperation), "B@:@:^:");
 
-		res = class_addIvar (viewClass, "_vstguiframe", sizeof (void*), (uint8_t)log2(sizeof(void*)), @encode(void*));
+		res = class_addIvar (viewClass, "_nsViewFrame", sizeof (void*), (uint8_t)log2(sizeof(void*)), @encode(void*));
 		objc_registerClassPair (viewClass);
 	}
 }
 
 //-----------------------------------------------------------------------------
 NSViewFrame::NSViewFrame (IPlatformFrameCallback* frame, const CRect& size, NSView* parent)
-: nsView (0)
+: frame (frame)
+, nsView (0)
 , tooltipWindow (0)
 {
 	initClass ();
-	nsView = [[viewClass alloc] initWithFrame: frame parent: parent andSize: &size];
+	nsView = [[viewClass alloc] initWithNSViewFrame: this parent: parent andSize: &size];
 }
 
 //-----------------------------------------------------------------------------
@@ -620,6 +628,21 @@ NSViewFrame::~NSViewFrame ()
 		tooltipWindow->forget ();
 	[nsView removeFromSuperview];
 	[nsView release];
+}
+
+//-----------------------------------------------------------------------------
+void NSViewFrame::drawRect (NSRect* rect)
+{
+	NSGraphicsContext* nsContext = [NSGraphicsContext currentContext];
+	
+	CGDrawContext drawContext ((CGContextRef)[nsContext graphicsPort], rectFromNSRect ([nsView bounds]));
+	const NSRect* dirtyRects;
+	NSInteger numDirtyRects;
+	[nsView getRectsBeingDrawn:&dirtyRects count:&numDirtyRects];
+	for (NSInteger i = 0; i < numDirtyRects; i++)
+	{
+		frame->platformDrawRect (&drawContext, rectFromNSRect (dirtyRects[i]));
+	}
 }
 
 // IPlatformFrame

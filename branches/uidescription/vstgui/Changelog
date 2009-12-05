@@ -1,3 +1,12 @@
+2009-12-05 arne
+
+	* more fixes because of bugs from platform abstraction
+	* added sub control listeners to CControl
+	* changed CControl::setValue(value) to CControl::setValue(value, updateSubListeners)
+	* CControl now implements IFocusDrawing
+	* fixing CSlider and CSwitch when using min != 0 and max != 1
+	* added UIDescription VST3 test 
+
 2009-11-24 arne
 
 	* fixed some bugs introduced with the platform abstraction

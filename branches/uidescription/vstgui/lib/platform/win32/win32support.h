@@ -43,10 +43,8 @@
 
 #include <windows.h>
 
-#if GDIPLUS
-	#include <objidl.h>
-	#include <gdiplus.h>
-#endif
+#include <objidl.h>
+#include <gdiplus.h>
 
 namespace VSTGUI {
 
@@ -71,20 +69,18 @@ namespace VSTGUI {
 extern HINSTANCE GetInstance ();
 
 /// \cond ignore
-#if GDIPLUS
-	class GDIPlusGlobals : public CBaseObject
-	{
-	public:
-		static void enter ();
-		static void exit ();
-	protected:
-		GDIPlusGlobals ();
-		~GDIPlusGlobals ();
+class GDIPlusGlobals : public CBaseObject
+{
+public:
+	static void enter ();
+	static void exit ();
+protected:
+	GDIPlusGlobals ();
+	~GDIPlusGlobals ();
 
-		static GDIPlusGlobals* gInstance;
-		ULONG_PTR gdiplusToken;
-	};
-#endif // GDIPLUS
+	static GDIPlusGlobals* gInstance;
+	ULONG_PTR gdiplusToken;
+};
 
 class UTF8StringHelper
 {

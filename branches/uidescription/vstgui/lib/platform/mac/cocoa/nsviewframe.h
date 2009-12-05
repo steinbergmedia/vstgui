@@ -40,9 +40,10 @@
 #if MAC_COCOA
 
 #ifdef __OBJC__
-@class NSView;
+#import <Cocoa/Cocoa.h>
 #else
 struct NSView;
+struct NSRect;
 #endif
 
 namespace VSTGUI {
@@ -56,6 +57,9 @@ public:
 	~NSViewFrame ();
 
 	NSView* getPlatformControl () const { return nsView; }
+	IPlatformFrameCallback* getFrame () const { return frame; }
+
+	virtual void drawRect (NSRect* rect);
 
 	// IPlatformFrame
 	bool getGlobalPosition (CPoint& pos) const;
@@ -79,6 +83,7 @@ public:
 protected:
 	static void initClass ();
 
+	IPlatformFrameCallback* frame;
 	NSView* nsView;
 	CocoaTooltipWindow* tooltipWindow;
 };
