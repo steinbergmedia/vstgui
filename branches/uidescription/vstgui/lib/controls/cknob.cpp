@@ -143,6 +143,9 @@ void CKnob::drawHandle (CDrawContext *pContext)
 		CCoord height = pHandle->getHeight ();
 		where.offset (size.left - width / 2, size.top - height / 2);
 
+		where.x = floor (where.x);
+		where.y = floor (where.y);
+
 		CRect handleSize (0, 0, width, height);
 		handleSize.offset (where.h, where.v);
 		pHandle->draw (pContext, handleSize);
@@ -259,8 +262,8 @@ CMouseEventResult CKnob::onMouseMoved (CPoint& where, const long& buttons)
 				else
 					startValue = value;
 			}
-			if (value != oldValue && listener)
-				listener->valueChanged (this);
+			if (value != oldValue)
+				valueChanged ();
 			if (isDirty ())
 				invalid ();
 		}
@@ -285,7 +288,7 @@ bool CKnob::onWheel (const CPoint& where, const float &distance, const long &but
 		// begin of edit parameter
 		beginEdit ();
 	
-		listener->valueChanged (this);
+		valueChanged ();
 	
 		// end of edit parameter
 		endEdit ();

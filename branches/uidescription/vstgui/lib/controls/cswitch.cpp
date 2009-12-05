@@ -152,10 +152,11 @@ CMouseEventResult CVerticalSwitch::onMouseMoved (CPoint& where, const long& butt
 		else if (value < 0.f)
 			value = 0.f;
 
-		if (isDirty () && listener)
-			listener->valueChanged (this);
 		if (isDirty ())
+		{
+			valueChanged ();
 			invalid ();
+		}
 	}
 	return kMouseEventHandled;
 }
@@ -226,8 +227,9 @@ void CHorizontalSwitch::draw (CDrawContext *pContext)
 {
 	if (pBackground)
 	{
+		float norm = (value - getMin ()) / (getMax () - getMin ());
 		// source position in bitmap
-		CPoint where (0, heightOfOneImage * ((long)(value * (getNumSubPixmaps () - 1) + 0.5f)));
+		CPoint where (0, heightOfOneImage * ((long)(norm * (getNumSubPixmaps () - 1) + 0.5f)));
 
 		pBackground->draw (pContext, size, where);
 	}
@@ -265,16 +267,18 @@ CMouseEventResult CHorizontalSwitch::onMouseMoved (CPoint& where, const long& bu
 {
 	if (buttons & kLButton)
 	{
-		value = (long)((where.h - size.left) / coef) / (float)(getNumSubPixmaps () - 1);
-		if (value > 1.f)
-			value = 1.f;
-		else if (value < 0.f)
-			value = 0.f;
+		float norm = (long)((where.h - size.left) / coef) / (float)(getNumSubPixmaps () - 1);
+		value = getMin () + norm * (getMax () - getMin ());
+		if (value > getMax ())
+			value = getMax ();
+		else if (value < getMin ())
+			value = getMin ();
 
-		if (isDirty () && listener)
-			listener->valueChanged (this);
 		if (isDirty ())
+		{
+			valueChanged ();
 			invalid ();
+		}
 	}
 	return kMouseEventHandled;
 }
@@ -409,10 +413,11 @@ CMouseEventResult CRockerSwitch::onMouseMoved (CPoint& where, const long& button
 				value = fEntryState;
 		}
 
-		if (isDirty () && listener)
-			listener->valueChanged (this);
 		if (isDirty ())
+		{
+			valueChanged ();
 			invalid ();
+		}
 	}
 	return kMouseEventHandled;
 }
@@ -431,12 +436,11 @@ bool CRockerSwitch::onWheel (const CPoint& where, const float &distance, const l
 	// begin of edit parameter
 	beginEdit ();
 
-	if (isDirty () && listener)
-		listener->valueChanged (this);
+	if (isDirty ())
+		valueChanged ();
 
 	value = 0.0f;  // set button to UNSELECTED state
-	if (listener)
-		listener->valueChanged (this);
+	valueChanged ();
 	
 	// end of edit parameter
 	endEdit ();

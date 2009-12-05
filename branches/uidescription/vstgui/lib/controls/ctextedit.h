@@ -65,7 +65,7 @@ public:
 	//@}
 
 	// overrides
-	virtual void setValue (float val);
+	virtual void setValue (float val, bool updateSubListeners = false);
 
 	virtual	void draw (CDrawContext* pContext);
 	virtual CMouseEventResult onMouseDown (CPoint& where, const long& buttons);

@@ -354,8 +354,7 @@ long COptionMenu::onKeyDown (VstKeyCode& keyCode)
 						beginEdit ();
 						setValue ((float)value);
 						lastResult = (long)getValue ();
-						if (listener)
-							listener->valueChanged (this);
+						valueChanged ();
 						endEdit ();
 						invalid ();
 					}
@@ -375,8 +374,7 @@ long COptionMenu::onKeyDown (VstKeyCode& keyCode)
 						beginEdit ();
 						setValue ((float)value);
 						lastResult = (long)getValue ();
-						if (listener)
-							listener->valueChanged (this);
+						valueChanged ();
 						endEdit ();
 						invalid ();
 					}
@@ -673,7 +671,7 @@ COptionMenu *COptionMenu::getLastItemMenu (long &idxInMenu) const
 }
 
 //------------------------------------------------------------------------
-void COptionMenu::setValue (float val)
+void COptionMenu::setValue (float val, bool updateSubListeners)
 {
 	if ((long)val < 0 || (long)val >= getNbEntries ())
 		return;
@@ -685,7 +683,7 @@ void COptionMenu::setValue (float val)
 		if (item)
 			item->setChecked (!item->isChecked ());
 	}
-	CParamDisplay::setValue (val);
+	CParamDisplay::setValue (val, updateSubListeners);
 	
 	// to force the redraw
 	setDirty ();

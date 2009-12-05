@@ -111,7 +111,7 @@ public:
 		{
 			CControl* control = controls.front ();
 			if (control)
-				value = control->getValue ();
+				value = (control->getValue () - control->getMin ()) / (control->getMax () - control->getMin ());
 		}
 		CParamDisplay* display = dynamic_cast<CParamDisplay*> (control);
 		if (display)
@@ -205,10 +205,14 @@ protected:
 			if (optMenu)
 			{
 				if (parameter)
-					optMenu->setValue (editController->normalizedParamToPlain (getParameterID (), value));
+					optMenu->setValue (editController->normalizedParamToPlain (getParameterID (), value), true);
 			}
 			else
-				(*it)->setValue (value);
+			{
+				float min = (*it)->getMin ();
+				float max = (*it)->getMax ();
+				(*it)->setValue (min + value * (max - min), true);
+			}
 			(*it)->invalid ();
 			it++;
 		}
@@ -328,6 +332,8 @@ void VST3Editor::init ()
 		rect.bottom = 300;
 		minSize (rect.right, rect.bottom);
 		maxSize (rect.right, rect.bottom);
+		description->changeColor ("black", kBlackCColor);
+		description->changeColor ("white", kWhiteCColor);
 	}
 	#endif
 }
@@ -384,7 +390,7 @@ void VST3Editor::valueChanged (CControl* pControl)
 	ParameterChangeListener* pcl = getParameterChangeListener (pControl->getTag ());
 	if (pcl)
 	{
-		Steinberg::Vst::ParamValue value = pControl->getValue ();
+		Steinberg::Vst::ParamValue value = (pControl->getValue () - pControl->getMin ()) / (pControl->getMax () - pControl->getMin ());
 		CTextEdit* textEdit = dynamic_cast<CTextEdit*> (pControl);
 		if (textEdit && pcl->getParameter ())
 		{
@@ -396,12 +402,8 @@ void VST3Editor::valueChanged (CControl* pControl)
 				return;
 			}
 		}
-		COptionMenu* optMenu = dynamic_cast<COptionMenu*> (pControl);
-		if (optMenu && pcl->getParameter ())
-		{
-			//need to convert to normalized from plain
-			value = getController ()->plainParamToNormalized (pcl->getParameterID (), value);
-		}
+//		else
+//			value = getController ()->plainParamToNormalized (pcl->getParameterID (), value);
 		pcl->performEdit (value);
 	}
 }
@@ -600,7 +602,10 @@ void PLUGIN_API VST3Editor::close ()
 	if (frame)
 	{
 		frame->removeAll (true);
+		long refCount = frame->getNbReference ();
 		frame->forget ();
+		if (refCount == 1)
+			frame = 0;
 	}
 }
 

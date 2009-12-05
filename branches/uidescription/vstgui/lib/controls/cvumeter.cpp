@@ -117,6 +117,22 @@ bool CVuMeter::attached (CView *parent)
 }
 
 //------------------------------------------------------------------------
+void CVuMeter::setViewSize (CRect& newSize, bool invalid)
+{
+	CControl::setViewSize (newSize, invalid);
+	if (pOScreen)
+	{
+		rectOn  (0, 0, size.width (), size.height ());
+		rectOff (0, 0, size.width (), size.height ());
+	}
+	else
+	{
+		rectOn  (size.left, size.top, size.right, size.bottom);
+		rectOff (size.left, size.top, size.right, size.bottom);
+	}
+}
+
+//------------------------------------------------------------------------
 void CVuMeter::setUseOffscreen (bool val)
 {
 	bUseOffscreen = val;

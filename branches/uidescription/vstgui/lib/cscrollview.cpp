@@ -718,8 +718,7 @@ void CScrollbar::doStepping ()
 	if (newValue != value)
 	{
 		value = newValue;
-		if (listener)
-			listener->valueChanged (this);
+		valueChanged ();
 		invalid ();
 	}
 }
@@ -795,8 +794,7 @@ CMouseEventResult CScrollbar::onMouseMoved (CPoint &where, const long& buttons)
 			if (newValue != value)
 			{
 				value = newValue;
-				if (listener)
-					listener->valueChanged (this);
+				valueChanged ();
 				invalid ();
 			}
 		}
@@ -828,9 +826,9 @@ bool CScrollbar::onWheel (const CPoint &where, const CMouseWheelAxis &axis, cons
 		value -= distance * wheelInc;
 	bounceValue ();
 
-	if (isDirty () && listener)
+	if (isDirty ())
 	{
-		listener->valueChanged (this);
+		valueChanged ();
 		invalid ();
 	}
 	return true;

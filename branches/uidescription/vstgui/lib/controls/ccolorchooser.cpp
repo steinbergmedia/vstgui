@@ -216,8 +216,7 @@ public:
 		if (dragContainerHasColor (drag, &color))
 		{
 			setColor (color);
-			if (listener)
-				listener->valueChanged (this);
+			valueChanged ();
 			return true;
 		}
 		return false;

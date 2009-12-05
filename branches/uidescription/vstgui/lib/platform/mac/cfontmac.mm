@@ -33,7 +33,7 @@
 //-----------------------------------------------------------------------------
 
 #include "cfontmac.h"
-#include "cdrawcontext.h"
+#include "../../cdrawcontext.h"
 
 #if MAC
 

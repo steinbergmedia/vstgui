@@ -35,6 +35,7 @@
 #include "uidescription.h"
 #include "viewfactory.h"
 #include "viewcreator.h"
+#include "cviewswitchcontainer.h"
 #include "../lib/cfont.h"
 #include "../lib/cframe.h"
 #include "../lib/cdrawcontext.h"
@@ -51,10 +52,22 @@ namespace VSTGUI {
 template <class T> class ScopePointer
 {
 public:
-	ScopePointer (T** pointer, T* obj) : pointer (pointer) { if (pointer) *pointer = obj; }
-	~ScopePointer () { if (pointer) *pointer = 0; }
+	ScopePointer (T** pointer, T* obj) : pointer (pointer), oldObject (0)
+	{
+		if (pointer)
+		{
+			oldObject = *pointer;
+			*pointer = obj;
+		}
+	}
+	~ScopePointer ()
+	{
+		if (pointer)
+			*pointer = oldObject;
+	}
 protected:
 	T** pointer;
+	T* oldObject;
 };
 
 class UIDescList;
@@ -383,7 +396,10 @@ CView* UIDescription::createViewFromNode (UINode* node, IController* controller)
 				{
 					CView* childView = createViewFromNode (*it, controller);
 					if (childView)
-						viewContainer->addView (childView);
+					{
+						if (!viewContainer->addView (childView))
+							childView->forget ();
+					}
 				}
 			}
 			if ((*it)->getName () == "attribute")

@@ -82,8 +82,7 @@ public:
 		{
 			beginEdit ();
 			value = 1;
-			if (listener)
-				listener->valueChanged (this);
+			valueChanged ();
 			value = 0;
 			endEdit ();
 			return 1;

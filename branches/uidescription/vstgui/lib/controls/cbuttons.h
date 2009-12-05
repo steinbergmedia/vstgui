@@ -119,6 +119,7 @@ public:
 	virtual long onKeyDown (VstKeyCode& keyCode);
 	virtual bool sizeToFit ();
 	virtual void setBackground (CBitmap *background);
+	virtual bool getFocusPath (CGraphicsPath& outPath);
 
 	CLASS_METHODS(CCheckBox, CControl)
 protected:

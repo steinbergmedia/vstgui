@@ -41,14 +41,6 @@
 
 #include "vstgui_uidescription.h"
 
-#if MAC
-	#ifdef __OBJC__
-		#import "uidescription/macplatformsupport.mm"
-	#else
-		#error You need to use the Objective-C++ compiler for this file
-	#endif
-#endif
-
 #if WINDOWS
 	#include "uidescription/winplatformsupport.cpp"
 #endif

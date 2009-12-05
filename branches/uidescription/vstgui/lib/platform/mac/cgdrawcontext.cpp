@@ -369,17 +369,13 @@ void CGDrawContext::drawBitmap (CBitmap* bitmap, const CRect& rect, const CPoint
 
 			CGRect dest;
 			dest.origin.x = rect.left - offset.h;
-			dest.origin.y = (-rect.top) - (bitmap->getHeight () - offset.v);
+			dest.origin.y = -(rect.top) - (bitmap->getHeight () - offset.v);
 			dest.size.width = cgBitmap->getSize ().x;
 			dest.size.height = cgBitmap->getSize ().y;
 			
-			CRect ccr (currentState.clipRect);
-			CGRect cgClipRect = CGRectMake (ccr.left, (-ccr.top) - ccr.height (), ccr.width (), ccr.height ());
-			CGContextClipToRect (context, cgClipRect);
-
 			CGRect clipRect2;
 			clipRect2.origin.x = rect.left;
-			clipRect2.origin.y = (-rect.top) - rect.height ();
+			clipRect2.origin.y = -(rect.top) - rect.height ();
 			clipRect2.size.width = rect.width (); 
 			clipRect2.size.height = rect.height ();
 		

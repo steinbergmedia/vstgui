@@ -66,6 +66,7 @@ public:
 	CLASS_METHODS (CViewSwitchContainer, CViewContainer)
 protected:
 	bool attached (CView* parent);
+	bool removed (CView* parent);
 
 	IViewSwitchController* controller;
 	long currentViewIndex;

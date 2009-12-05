@@ -35,6 +35,8 @@
 #ifndef __ccolorchooserpanel__
 #define __ccolorchooserpanel__
 
+#if VSTGUI_LIVE_EDITING
+
 #include "../lib/cframe.h"
 #include "../lib/controls/ccolorchooser.h"
 #include "platformsupport.h"
@@ -72,4 +74,5 @@ protected:
 
 } // namespace
 
+#endif // VSTGUI_LIVE_EDITING
 #endif // __ccolorchooserpanel__

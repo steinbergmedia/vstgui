@@ -253,7 +253,7 @@ CMessageResult CViewContainer::notify (CBaseObject* sender, const char* message)
 	else if (message == kMsgNewFocusView)
 	{
 		CView* view = dynamic_cast<CView*> (sender);
-		if (view)
+		if (view && isChild (view, false))
 		{
 			IFocusDrawing* focusDrawing = dynamic_cast<IFocusDrawing*> (view);
 			if (focusDrawing)
@@ -279,7 +279,9 @@ CMessageResult CViewContainer::notify (CBaseObject* sender, const char* message)
 	}
 	else if (message == kMsgOldFocusView)
 	{
-		invalidRect (lastDrawnFocus);
+		if (!lastDrawnFocus.isEmpty ())
+			invalidRect (lastDrawnFocus);
+		lastDrawnFocus = CRect (0, 0, 0, 0);
 	}
 	return kMessageUnknown;
 }
@@ -508,9 +510,8 @@ bool CViewContainer::isChild (CView *pView, bool deep) const
 long CViewContainer::getNbViews () const
 {
 	long nb = 0;
-	FOREACHSUBVIEW
+	for (CCView* pSv = pFirstView; pSv; pSv = pSv->pNext)
 		nb++;
-	ENDFOREACHSUBVIEW
 	return nb;
 }
 

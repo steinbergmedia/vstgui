@@ -141,8 +141,8 @@ CMouseEventResult CMovieButton::onMouseMoved (CPoint& where, const long& buttons
 		else
 			value = fEntryState;
 	
-		if (isDirty () && listener)
-			listener->valueChanged (this);
+		if (isDirty ())
+			valueChanged ();
 		if (isDirty ())
 			invalid ();
 	}

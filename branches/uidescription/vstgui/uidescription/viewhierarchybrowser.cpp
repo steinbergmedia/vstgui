@@ -38,6 +38,7 @@
 #include "viewfactory.h"
 #include "viewcreator.h"
 #include "ceditframe.h"
+#include "editingcolordefs.h"
 #include "../lib/cdatabrowser.h"
 #include "../lib/vstkeycode.h"
 #include "../lib/cfont.h"
@@ -199,7 +200,7 @@ CCoord ViewHierarchyData::dbGetRowHeight (CDataBrowser* browser)
 bool ViewHierarchyData::dbGetLineWidthAndColor (CCoord& width, CColor& color, CDataBrowser* browser)
 {
 	width = 1;
-	color = MakeCColor (255, 255, 255, 20);
+	color = uidDataBrowserLineColor;
 	return true;
 }
 
@@ -215,7 +216,7 @@ void ViewHierarchyData::dbDrawCell (CDrawContext* context, const CRect& size, lo
 		return;
 	if (browser->getSelectedRow () == row)
 	{
-		context->setFillColor (MakeCColor (255, 255, 255, 10));
+		context->setFillColor (uidDataBrowserSelectionColor);
 		context->drawRect (size, kDrawFilled);
 	}
 	if (column == 0)
@@ -224,7 +225,7 @@ void ViewHierarchyData::dbDrawCell (CDrawContext* context, const CRect& size, lo
 		if (view)
 		{
 			const char* viewname = 0;
-			ViewFactory* factory = dynamic_cast<ViewFactory*> (description->getViewFactory ());
+			ViewFactory* factory = description ? dynamic_cast<ViewFactory*> (description->getViewFactory ()) : 0;
 			if (factory)
 				viewname = factory->getViewName (view);
 			if (viewname == 0)
@@ -662,12 +663,9 @@ ViewHierarchyBrowserWindow::ViewHierarchyBrowserWindow (CViewContainer* baseView
 		#if MAC_CARBON && MAC_COCOA
 		CFrame::setCocoaMode (true);
 		#endif
+
 		frame = new CFrame (size, platformWindow->getPlatformHandle (), this);
-		#if MAC
-		frame->setBackgroundColor (kDefaultUIDescriptionBackgroundColor);
-		#elif WINDOWS
-		frame->setBackgroundColor (kBlackCColor);
-		#endif
+		frame->setBackgroundColor (uidPanelBackgroundColor);
 
 		const CCoord kMargin = 12;
 		size.left += kMargin;

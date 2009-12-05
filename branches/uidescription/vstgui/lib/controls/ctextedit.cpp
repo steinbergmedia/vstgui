@@ -92,9 +92,9 @@ CTextEdit::~CTextEdit ()
 }
 
 //------------------------------------------------------------------------
-void CTextEdit::setValue (float val)
+void CTextEdit::setValue (float val, bool updateSubListeners)
 {
-	CParamDisplay::setValue (val);
+	CParamDisplay::setValue (val, updateSubListeners);
 	if (platformControl)
 	{
 		char string[256];
@@ -334,8 +334,7 @@ void CTextEdit::looseFocus ()
 		change = true;
 		if (string2FloatConvert)
 			string2FloatConvert (text, value);
-		if (listener)
-			listener->valueChanged (this);
+		valueChanged ();
 	}
 
 	// if you want to destroy the text edit do it with the loose focus message

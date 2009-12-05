@@ -56,8 +56,7 @@ public:
 	{
 		if (buttons & kLButton)
 		{
-			if (listener)
-				listener->valueChanged (this);
+			valueChanged ();
 			return kMouseDownEventHandledButDontNeedMovedOrUpEvents;
 		}
 		return kMouseEventNotHandled;
@@ -152,8 +151,7 @@ CMouseEventResult CSplashScreen::onMouseDown (CPoint& where, const long& buttons
 		{
 			if (modalView && getFrame () && getFrame ()->setModalView (modalView))
 			{
-				if (listener)
-					listener->valueChanged (this);
+				CControl::valueChanged ();
 			}
 		}
 		return kMouseDownEventHandledButDontNeedMovedOrUpEvents;
@@ -167,8 +165,7 @@ void CSplashScreen::valueChanged (CControl *pControl)
 	if (pControl == modalView)
 	{
 		unSplash ();
-		if (listener)
-			listener->valueChanged (this);
+		CControl::valueChanged ();
 	}
 }
 

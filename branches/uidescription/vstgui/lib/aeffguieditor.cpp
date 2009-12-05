@@ -245,17 +245,13 @@ extern "C" {
 }
 #include <CoreFoundation/CFBundle.h>
 
-BEGIN_NAMESPACE_VSTGUI
+namespace VSTGUI {
 
 void* gBundleRef = 0;
 
-END_NAMESPACE_VSTGUI
+} // namespace
 
-#if USE_NAMESPACE
 #define VSTGUI_BUNDLEREF VSTGUI::gBundleRef
-#else
-#define VSTGUI_BUNDLEREF gBundleRef
-#endif
 
 // -----------------------------------------------------------------------------
 static CFBundleRef _CFXBundleCreateFromImageName (CFAllocatorRef allocator, const char* image_name);

@@ -1,6 +1,6 @@
 //-----------------------------------------------------------------------------
 // VST Plug-Ins SDK
-// VSTGUI: Graphical User Interface Framework not only for VST plugins : 
+// VSTGUI: Graphical User Interface Framework for VST plugins : 
 //
 // Version 4.0
 //
@@ -32,63 +32,5 @@
 // OF THE POSSIBILITY OF SUCH DAMAGE.
 //-----------------------------------------------------------------------------
 
-#ifndef __cviewinspector__
-#define __cviewinspector__
-
-#if VSTGUI_LIVE_EDITING
-
-#include "../vstgui.h"
-#include "uidescription.h"
-#include "ceditframe.h"
-#include "platformsupport.h"
-#include <list>
-
-namespace VSTGUI {
-
-class CSelection;
-class PlatformWindow;
-class CScrollView;
-
-//-----------------------------------------------------------------------------
-class CViewInspector : public VSTGUIEditorInterface, public CControlListener, public CBaseObject, public IPlatformWindowDelegate
-{
-public:
-	CViewInspector (CSelection* selection, IActionOperator* actionOperator, void* parentPlatformWindow = 0);
-	~CViewInspector ();
-
-	void show ();
-	void hide ();
-	bool isVisible () { return platformWindow ? true : false; }
-
-	void setUIDescription (UIDescription* desc);
-
-	void valueChanged (CControl* pControl);
-	void beforeSave ();
-	CMessageResult notify (CBaseObject* sender, const char* message);
-
-	static COptionMenu* createMenuFromList (const CRect& size, CControlListener* listener, std::list<const std::string*>& names, const std::string& defaultValue, bool addNoneItem = false);
-protected:
-	CView* createAttributesView (CCoord width);
-	void updateAttributeViews ();
-	CView* createViewForAttribute (const std::string& attrName, CCoord width);
-	void updateAttributeValueView (const std::string& attrName);
-
-	void windowSizeChanged (const CRect& newSize, PlatformWindow* platformWindow);
-	void windowClosed (PlatformWindow* platformWindow);
-	void checkWindowSizeConstraints (CPoint& size, PlatformWindow* platformWindow);
-
-	CSelection* selection;
-	IActionOperator* actionOperator;
-	UIDescription* description;
-	CScrollView* scrollView;
-	PlatformWindow* platformWindow;
-	void* parentPlatformWindow;
-	CRect windowSize;
-	std::list<CView*> attributeViews;
-};
-
-} // namespace
-
-#endif // VSTGUI_LIVE_EDITING
-
-#endif
+#import "uidescription/macplatformsupport.mm"
+#import "vstgui_uidescription.cpp"

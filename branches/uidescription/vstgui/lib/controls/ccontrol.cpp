@@ -129,6 +129,15 @@ void CControl::beginEdit ()
 	// begin of edit parameter
 	if (listener)
 		listener->controlBeginEdit (this);
+	if (listeners.size () > 0)
+	{
+		std::list<CControlListener*>::const_iterator it = listeners.begin ();
+		while (it != listeners.end ())
+		{
+			(*it)->controlBeginEdit (this);
+			it++;
+		}
+	}
 	if (getFrame ())
 	{
 		getFrame ()->setFocusView (this);
@@ -144,6 +153,46 @@ void CControl::endEdit ()
 		getFrame ()->endEdit (tag);
 	if (listener)
 		listener->controlEndEdit (this);
+	if (listeners.size () > 0)
+	{
+		std::list<CControlListener*>::const_iterator it = listeners.begin ();
+		while (it != listeners.end ())
+		{
+			(*it)->controlEndEdit (this);
+			it++;
+		}
+	}
+}
+
+//------------------------------------------------------------------------
+void CControl::setValue (float val, bool updateSubListeners)
+{
+	value = val;
+	if (updateSubListeners)
+	{
+		std::list<CControlListener*>::const_iterator it = listeners.begin ();
+		while (it != listeners.end ())
+		{
+			(*it)->valueChanged (this);
+			it++;
+		}
+	}
+}
+
+//------------------------------------------------------------------------
+void CControl::valueChanged ()
+{
+	if (listener)
+		listener->valueChanged (this);
+	if (listeners.size () > 0)
+	{
+		std::list<CControlListener*>::const_iterator it = listeners.begin ();
+		while (it != listeners.end ())
+		{
+			(*it)->valueChanged (this);
+			it++;
+		}
+	}
 }
 
 //------------------------------------------------------------------------
@@ -207,6 +256,29 @@ bool CControl::checkDefaultValue (long button)
 		return true;
 	}
 	return false;
+}
+
+//------------------------------------------------------------------------
+bool CControl::drawFocusOnTop ()
+{
+	return false;
+}
+
+//------------------------------------------------------------------------
+bool CControl::getFocusPath (CGraphicsPath& outPath)
+{
+	if (wantsFocus ())
+	{
+		CCoord focusWidth = getFrame ()->getFocusWidth ();
+		CRect r (getVisibleSize ());
+		if (!r.isEmpty ())
+		{
+			outPath.addRect (r);
+			r.inset (-focusWidth, -focusWidth);
+			outPath.addRect (r);
+		}
+	}
+	return true;
 }
 
 //------------------------------------------------------------------------

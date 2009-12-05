@@ -227,7 +227,6 @@ protected:
 };
 
 static const CColor kDefaultUIDescriptionScrollerColor = MakeCColor (255, 255, 255, 140);
-static const CColor kDefaultUIDescriptionBackgroundColor = MakeCColor (0, 0, 0, 0);
 
 } // namespace
 

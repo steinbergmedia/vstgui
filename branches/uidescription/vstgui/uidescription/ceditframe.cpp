@@ -39,6 +39,7 @@
 #include "viewhierarchybrowser.h"
 #include "viewfactory.h"
 #include "viewcreator.h"
+#include "editingcolordefs.h"
 #include "../lib/coffscreencontext.h"
 #include "../lib/vstkeycode.h"
 #include "../lib/cfileselector.h"
@@ -604,8 +605,7 @@ public:
 		CRect size = frame->getViewSize (size);
 		CRect selectionSize (currentRect);
 
-		CColor c = MakeCColor (255, 255, 255, 200);
-		pContext->setFrameColor (c);
+		pContext->setFrameColor (uidCrossLinesBackground);
 		pContext->setLineWidth (1);
 		pContext->setDrawMode (kCopyMode);
 		pContext->moveTo (CPoint (size.left, selectionSize.top+1));
@@ -619,8 +619,7 @@ public:
 			pContext->moveTo (CPoint (selectionSize.right-1, size.top));
 			pContext->lineTo (CPoint (selectionSize.right-1, size.bottom));
 		}
-		c = MakeCColor (0, 0, 0, 255);
-		pContext->setFrameColor (c);
+		pContext->setFrameColor (uidCrossLinesForeground);
 		pContext->setLineWidth (1);
 		pContext->setLineStyle (kLineOnOffDash);
 		pContext->moveTo (CPoint (size.left, selectionSize.top+1));
@@ -965,7 +964,8 @@ void CEditFrame::showOptionsMenu (const CPoint& where)
 		if (getGrid () == 15)
 			item->setChecked (true);
 		menu->addSeparator ();
-		menu->addEntry (new CMenuItem ("Save...", kSaveTag));
+		item = menu->addEntry (new CMenuItem ("Save...", kSaveTag));
+		item->setKey ("s", kControl);
 		menu->addSeparator ();
 		menu->addEntry (new CMenuItem (hierarchyBrowser ? "Hide Hierarchy Browser" : "Show Hierarchy Browser", kHierarchyBrowserTag));
 		menu->addSeparator ();
@@ -1371,19 +1371,16 @@ void CEditFrame::drawRect (CDrawContext *pContext, const CRect& updateRect)
 		{
 			CRect r = CSelection::getGlobalViewCoordinates (highlightView);
 			r.inset (2, 2);
-			CColor c = MakeCColor (255, 255, 255, 150);
-			pContext->setFrameColor (c);
+			pContext->setFrameColor (uidHilightColor);
 			pContext->setLineStyle (kLineSolid);
 			pContext->setLineWidth (3);
 			pContext->drawRect (r);
 		}
 		if (selection->total () > 0)
 		{
-			CColor c = MakeCColor (255, 0, 0, 255);
-			CColor c2 = MakeCColor (255, 0, 0, 150);
 			pContext->setDrawMode (kAntialias);
-			pContext->setFrameColor (c);
-			pContext->setFillColor (c2);
+			pContext->setFrameColor (uidSelectionColor);
+			pContext->setFillColor (uidSelectionHandleColor);
 			pContext->setLineStyle (kLineSolid);
 			pContext->setLineWidth (1);
 

@@ -85,8 +85,7 @@ public:
 	{
 		value = ((long)value) ? 0.f : 1.f;
 		
-		if (listener)
-			listener->valueChanged (this);
+		valueChanged ();
 
 		return kMouseDownEventHandledButDontNeedMovedOrUpEvents;
 	}
@@ -96,8 +95,7 @@ public:
 		if (value == 0.f)
 		{
 			value = 1.f;
-			if (listener)
-				listener->valueChanged (this);
+			valueChanged ();
 		}
 	}
 

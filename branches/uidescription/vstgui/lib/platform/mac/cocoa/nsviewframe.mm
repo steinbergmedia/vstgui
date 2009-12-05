@@ -50,6 +50,8 @@
 	#import "../carbon/hiviewframe.h"
 #endif
 
+#import <Carbon/Carbon.h>
+
 using namespace VSTGUI;
 
 static Class viewClass = 0;

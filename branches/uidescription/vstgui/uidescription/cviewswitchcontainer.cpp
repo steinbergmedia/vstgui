@@ -72,7 +72,7 @@ void CViewSwitchContainer::setCurrentViewIndex (long viewIndex)
 		CView* view = controller->createViewForIndex (viewIndex);
 		if (view)
 		{
-			CViewContainer::removeView (getView (0));
+			CViewContainer::removeAll ();
 			CViewContainer::addView (view);
 			currentViewIndex = viewIndex;
 			invalid ();
@@ -83,11 +83,22 @@ void CViewSwitchContainer::setCurrentViewIndex (long viewIndex)
 //-----------------------------------------------------------------------------
 bool CViewSwitchContainer::attached (CView* parent)
 {
-	setCurrentViewIndex (currentViewIndex);
 	bool result = CViewContainer::attached (parent);
 	if (result && controller)
 		controller->switchContainerAttached ();
 	return result;
+}
+
+//-----------------------------------------------------------------------------
+bool CViewSwitchContainer::removed (CView* parent)
+{
+	if (isAttached ())
+	{
+		bool result = CViewContainer::removed (parent);
+		CViewContainer::removeAll ();
+		return result;
+	}
+	return false;
 }
 
 //-----------------------------------------------------------------------------
@@ -143,7 +154,10 @@ void UIDescriptionViewSwitchController::switchContainerAttached ()
 		// find the switch Control
 		CControl* control = findControlTag (viewSwitch->getFrame (), switchControlTag);
 		if (control)
-			control->setListener (this);
+		{
+			control->addListener (this);
+			valueChanged (control);
+		}
 	}
 }
 

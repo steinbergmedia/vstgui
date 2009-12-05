@@ -35,6 +35,7 @@
 #include "cbuttons.h"
 #include "../cdrawcontext.h"
 #include "../cbitmap.h"
+#include "../cframe.h"
 #include <cmath>
 
 namespace VSTGUI {
@@ -105,8 +106,7 @@ CMouseEventResult COnOffButton::onMouseDown (CPoint& where, const long& buttons)
 
 	beginEdit ();
 
-	if (listener)
-		listener->valueChanged (this);
+	valueChanged ();
 
 	endEdit ();
 
@@ -121,8 +121,7 @@ long COnOffButton::onKeyDown (VstKeyCode& keyCode)
 		value = ((long)value) ? 0.f : 1.f;
 		invalid ();
 		beginEdit ();
-		if (listener)
-			listener->valueChanged (this);
+		valueChanged ();
 		endEdit ();
 		return 1;
 	}
@@ -214,11 +213,10 @@ CMouseEventResult CKickButton::onMouseDown (CPoint& where, const long& buttons)
 //------------------------------------------------------------------------
 CMouseEventResult CKickButton::onMouseUp (CPoint& where, const long& buttons)
 {
-	if (value && listener)
-		listener->valueChanged (this);
+	if (value)
+		valueChanged ();
 	value = 0.0f;  // set button to UNSELECTED state
-	if (listener)
-		listener->valueChanged (this);
+	valueChanged ();
 	if (isDirty ())
 		invalid ();
 	endEdit ();
@@ -495,6 +493,31 @@ void CCheckBox::draw (CDrawContext* context)
 }
 
 //------------------------------------------------------------------------
+bool CCheckBox::getFocusPath (CGraphicsPath& outPath)
+{
+	if (wantsFocus ())
+	{
+		CCoord focusWidth = getFrame ()->getFocusWidth ();
+		CRect checkBoxSize (size);
+		if (pBackground)
+		{
+			checkBoxSize.setWidth (pBackground->getWidth ());
+			checkBoxSize.setHeight (pBackground->getHeight () / 6);
+		}
+		else
+		{
+			checkBoxSize.setHeight (getFontCapHeight (font) + 2);
+			checkBoxSize.setWidth (checkBoxSize.getHeight ());
+			checkBoxSize.offset (1, ceil ((size.getHeight () - checkBoxSize.getHeight ()) / 2));
+		}
+		outPath.addRect (checkBoxSize);
+		checkBoxSize.inset (-focusWidth, -focusWidth);
+		outPath.addRect (checkBoxSize);
+	}
+	return true;
+}
+
+//------------------------------------------------------------------------
 CMouseEventResult CCheckBox::onMouseDown (CPoint& where, const long& buttons)
 {
 	if (buttons == kLButton)
@@ -533,8 +556,7 @@ CMouseEventResult CCheckBox::onMouseUp (CPoint& where, const long& buttons)
 		value = previousValue;
 	if (isDirty ())
 	{
-		if (listener)
-			listener->valueChanged (this);
+		valueChanged ();
 		invalid ();
 	}
 	endEdit ();
@@ -549,8 +571,7 @@ long CCheckBox::onKeyDown (VstKeyCode& keyCode)
 		value = ((long)value) ? 0.f : 1.f;
 		invalid ();
 		beginEdit ();
-		if (listener)
-			listener->valueChanged (this);
+		valueChanged ();
 		endEdit ();
 		return 1;
 	}

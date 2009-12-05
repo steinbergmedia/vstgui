@@ -32,7 +32,10 @@
 // OF THE POSSIBILITY OF SUCH DAMAGE.
 //-----------------------------------------------------------------------------
 
+#if VSTGUI_LIVE_EDITING
+
 #include "ccolorchooserpanel.h"
+#include "editingcolordefs.h"
 
 namespace VSTGUI {
 
@@ -52,15 +55,12 @@ CColorChooserPanel::CColorChooserPanel (CBaseObject* owner, IPlatformColorChange
 		#if MAC_CARBON && MAC_COCOA
 		CFrame::setCocoaMode (true);
 		#endif
+
 		frame = new CFrame (size, platformWindow->getPlatformHandle (), this);
-		#if MAC
-		frame->setBackgroundColor (kTransparentCColor);
-		#elif WINDOWS
-		frame->setBackgroundColor (kBlackCColor);
-		#endif
+		frame->setBackgroundColor (uidPanelBackgroundColor);
 
 		frame->setFocusDrawingEnabled (true);
-		frame->setFocusColor (MakeCColor (100, 100, 255, 200));
+		frame->setFocusColor (uidFocusColor);
 		frame->setFocusWidth (1.2);
 
 		const CCoord kMargin = 12;
@@ -137,3 +137,4 @@ void CColorChooserPanel::colorChanged (CColorChooser* chooser, const CColor& col
 
 } // namespace
 
+#endif // VSTGUI_LIVE_EDITING

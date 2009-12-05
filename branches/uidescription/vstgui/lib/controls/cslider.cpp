@@ -35,6 +35,7 @@
 #include "cslider.h"
 #include "../cdrawcontext.h"
 #include "../cbitmap.h"
+#include <cmath>
 
 namespace VSTGUI {
 
@@ -234,49 +235,47 @@ void CSlider::draw (CDrawContext *pContext)
 {
 	CDrawContext* drawContext = pContext;
 
-	float fValue;
-	if (style & kLeft || style & kTop)
-		fValue = value;
-	else 
-		fValue = 1.f - value;
-	
-	// (re)draw background
-	CRect rect (0, 0, widthControl, heightControl);
-	rect.offset (size.left, size.top);
+	// draw background
 	if (pBackground)
 	{
+		CRect rect (0, 0, widthControl, heightControl);
+		rect.offset (size.left, size.top);
 		pBackground->draw (drawContext, rect, offset);
 	}
 	
-	// calc new coords of slider
-	CRect   rectNew;
-	if (style & kHorizontal)
-	{
-		rectNew.top    = offsetHandle.v;
-		rectNew.bottom = rectNew.top + heightOfSlider;	
-
-		rectNew.left   = offsetHandle.h + (int)(fValue * rangeHandle);
-		rectNew.left   = (rectNew.left < minTmp) ? minTmp : rectNew.left;
-
-		rectNew.right  = rectNew.left + widthOfSlider;
-		rectNew.right  = (rectNew.right > maxTmp) ? maxTmp : rectNew.right;
-	}
-	else
-	{
-		rectNew.left   = offsetHandle.h;
-		rectNew.right  = rectNew.left + widthOfSlider;	
-
-		rectNew.top    = offsetHandle.v + (int)(fValue * rangeHandle);
-		rectNew.top    = (rectNew.top < minTmp) ? minTmp : rectNew.top;
-
-		rectNew.bottom = rectNew.top + heightOfSlider;
-		rectNew.bottom = (rectNew.bottom > maxTmp) ? maxTmp : rectNew.bottom;
-	}
-	rectNew.offset (size.left, size.top);
-
-	// draw slider at new position
 	if (pHandle)
 	{
+		float normValue = (value - getMin ()) / (getMax () - getMin ());
+		if (style & kRight || style & kBottom)
+			normValue = 1.f - normValue;
+		
+		// calc new coords of slider
+		CRect rectNew;
+		if (style & kHorizontal)
+		{
+			rectNew.top    = offsetHandle.v;
+			rectNew.bottom = rectNew.top + heightOfSlider;	
+
+			rectNew.left   = offsetHandle.h + floor (normValue * rangeHandle);
+			rectNew.left   = (rectNew.left < minTmp) ? minTmp : rectNew.left;
+
+			rectNew.right  = rectNew.left + widthOfSlider;
+			rectNew.right  = (rectNew.right > maxTmp) ? maxTmp : rectNew.right;
+		}
+		else
+		{
+			rectNew.left   = offsetHandle.h;
+			rectNew.right  = rectNew.left + widthOfSlider;	
+
+			rectNew.top    = offsetHandle.v + floor (normValue * rangeHandle);
+			rectNew.top    = (rectNew.top < minTmp) ? minTmp : rectNew.top;
+
+			rectNew.bottom = rectNew.top + heightOfSlider;
+			rectNew.bottom = (rectNew.bottom > maxTmp) ? maxTmp : rectNew.bottom;
+		}
+		rectNew.offset (size.left, size.top);
+
+		// draw slider at new position
 		pHandle->draw (drawContext, rectNew);
 	}
 
@@ -295,17 +294,15 @@ CMouseEventResult CSlider::onMouseDown (CPoint& where, const long& buttons)
 		delta = size.top + offsetHandle.v;
 	if (!bFreeClick)
 	{
-		float fValue;
-		if (style & kLeft || style & kTop)
-			fValue = value;
-		else 
-			fValue = 1.f - value;
+		float normValue = (value - getMin ()) / (getMax () - getMin ());
+		if (style & kRight || style & kBottom)
+			normValue = 1.f - normValue;
 		CCoord actualPos;
 		CRect rect;
 
 		if (style & kHorizontal)
 		{
-			actualPos = offsetHandle.h + (int)(fValue * rangeHandle) + size.left;
+			actualPos = offsetHandle.h + (int)(normValue * rangeHandle) + size.left;
 
 			rect.left   = actualPos;
 			rect.top    = size.top  + offsetHandle.v;
@@ -319,7 +316,7 @@ CMouseEventResult CSlider::onMouseDown (CPoint& where, const long& buttons)
 		}
 		else
 		{
-			actualPos = offsetHandle.v + (int)(fValue * rangeHandle) + size.top;
+			actualPos = offsetHandle.v + (int)(normValue * rangeHandle) + size.top;
 		
 			rect.left   = size.left  + offsetHandle.h;
 			rect.top    = actualPos;
@@ -340,7 +337,7 @@ CMouseEventResult CSlider::onMouseDown (CPoint& where, const long& buttons)
 			delta += heightOfSlider / 2 - 1;
 	}
 	
-	oldVal    = vmin-1;
+	oldVal    = getMin ()-1;
 	oldButton = buttons;
 
 	beginEdit ();
@@ -357,6 +354,7 @@ CMouseEventResult CSlider::onMouseDown (CPoint& where, const long& buttons)
 //------------------------------------------------------------------------
 CMouseEventResult CSlider::onMouseUp (CPoint& where, const long& buttons)
 {
+	oldButton = 0;
 	endEdit ();
 	return kMouseEventHandled;
 }
@@ -364,39 +362,40 @@ CMouseEventResult CSlider::onMouseUp (CPoint& where, const long& buttons)
 //------------------------------------------------------------------------
 CMouseEventResult CSlider::onMouseMoved (CPoint& where, const long& buttons)
 {
-	if (buttons & kLButton)
+	if (oldButton && buttons & kLButton)
 	{
-		if (oldVal == vmin - 1)
-			oldVal    = (value - vmin) / (vmax - vmin);
+		if (oldVal == getMin () - 1)
+			oldVal = (value - getMin ()) / (getMax () - getMin ());
 			
 		if ((oldButton != buttons) && (buttons & kShift))
 		{
-			oldVal    = (value - vmin) / (vmax - vmin);
+			oldVal = (value - getMin ()) / (getMax () - getMin ());
 			oldButton = buttons;
 		}
 		else if (!(buttons & kShift))
-			oldVal = (value - vmin) / (vmax - vmin);
+			oldVal = (value - getMin ()) / (getMax () - getMin ());
 
+		float normValue = getMin ();
 		if (style & kHorizontal)
-			value = (float)(where.h - delta) / (float)rangeHandle;
+			normValue = (float)(where.h - delta) / (float)rangeHandle;
 		else
-			value = (float)(where.v - delta) / (float)rangeHandle;
+			normValue = (float)(where.v - delta) / (float)rangeHandle;
 
 		if (style & kRight || style & kBottom)
-			value = 1.f - value;
+			normValue = 1.f - normValue;
 
 		if (buttons & kShift)
-			value = oldVal + ((value - oldVal) / zoomFactor);
+			normValue = oldVal + ((normValue - oldVal) / zoomFactor);
 
-		if (vmax != 1.f || vmin != 1.f)
-			value = vmin + ((vmax - vmin) * value);
+		value = getMin () + ((getMax () - getMin ()) * normValue);
 			
 		bounceValue ();
     	    
-		if (isDirty () && listener)
-			listener->valueChanged (this);
 		if (isDirty ())
+		{
+			valueChanged ();
 			invalid ();
+		}
 	}
 	return kMouseEventHandled;
 }
@@ -407,18 +406,22 @@ bool CSlider::onWheel (const CPoint& where, const float &distance, const long &b
 	if (!bMouseEnabled)
 		return false;
 
+	float normValue = (value - getMin ()) / (getMax () - getMin ());
 	if (buttons & kShift)
-		value += 0.1f * distance * wheelInc;
+		normValue += 0.1f * distance * wheelInc;
 	else
-		value += distance * wheelInc;
+		normValue += distance * wheelInc;
+
+	value = getMin () + ((getMax () - getMin ()) * normValue);
+
 	bounceValue ();
 
-	if (isDirty () && listener)
+	if (isDirty ())
 	{
 		// begin of edit parameter
 		beginEdit ();
 	
-		listener->valueChanged (this);
+		valueChanged ();
 	
 		// end of edit parameter
 		endEdit ();
@@ -441,18 +444,22 @@ long CSlider::onKeyDown (VstKeyCode& keyCode)
 			if (keyCode.virt == VKEY_DOWN || keyCode.virt == VKEY_LEFT)
 				distance = -distance;
 
+			float normValue = (value - getMin ()) / (getMax () - getMin ());
 			if (keyCode.modifier & MODIFIER_SHIFT)
-				value += 0.1f * distance * wheelInc;
+				normValue += 0.1f * distance * wheelInc;
 			else
-				value += distance * wheelInc;
+				normValue += distance * wheelInc;
+
+			value = getMin () + ((getMax () - getMin ()) * normValue);
+
 			bounceValue ();
 
-			if (isDirty () && listener)
+			if (isDirty ())
 			{
 				// begin of edit parameter
 				beginEdit ();
 			
-				listener->valueChanged (this);
+				valueChanged ();
 			
 				// end of edit parameter
 				endEdit ();

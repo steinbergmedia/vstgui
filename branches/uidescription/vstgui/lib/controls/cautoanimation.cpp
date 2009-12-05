@@ -131,8 +131,7 @@ CMouseEventResult CAutoAnimation::onMouseDown (CPoint& where, const long& button
 			value = 0;
 			openWindow ();
 			invalid ();
-			if (listener)
-				listener->valueChanged (this);
+			valueChanged ();
 		}
 		else
 		{                                                                       
@@ -140,8 +139,7 @@ CMouseEventResult CAutoAnimation::onMouseDown (CPoint& where, const long& button
 			value = 0; // draw first pic of bitmap
 			invalid ();
 			closeWindow ();
-			if (listener)
-				listener->valueChanged (this);
+			valueChanged ();
 		}
 		return kMouseDownEventHandledButDontNeedMovedOrUpEvents;
 	}

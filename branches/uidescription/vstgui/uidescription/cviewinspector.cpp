@@ -37,6 +37,7 @@
 #include "cviewinspector.h"
 #include "cselection.h"
 #include "viewfactory.h"
+#include "editingcolordefs.h"
 #include "../lib/cscrollview.h"
 #include "../lib/ctabview.h"
 #include "../lib/cdatabrowser.h"
@@ -52,7 +53,7 @@
 namespace VSTGUI {
 
 //-----------------------------------------------------------------------------
-class InspectorTabButton : public COnOffButton, public IFocusDrawing
+class InspectorTabButton : public COnOffButton
 //-----------------------------------------------------------------------------
 {
 public:
@@ -66,7 +67,7 @@ public:
 			name = (char*)malloc (strlen (inName) + 1);
 			strcpy (name, inName);
 		}
-		backgroundColor = kDefaultUIDescriptionBackgroundColor;
+		backgroundColor = kTransparentCColor; // uidWindowBackgroundColor;
 		activeTextColor = kWhiteCColor;
 		inactiveTextColor = kGreyCColor;
 		textFont = kSystemFont; textFont->remember ();
@@ -152,9 +153,7 @@ public:
 	{
 		beginEdit ();
 		value = ((long)value) ? 0.f : 1.f;
-		
-		if (listener)
-			listener->valueChanged (this);
+		valueChanged ();
 		endEdit ();
 		return kMouseDownEventHandledButDontNeedMovedOrUpEvents;
 	}
@@ -164,8 +163,7 @@ public:
 		if (value == 0.f)
 		{
 			value = 1.f;
-			if (listener)
-				listener->valueChanged (this);
+			valueChanged ();
 		}
 	}
 
@@ -295,8 +293,7 @@ public:
 	{
 		value = value == 0.f ? 1.f : 0.f;
 		beginEdit ();
-		if (listener)
-			listener->valueChanged (this);
+		valueChanged ();
 		endEdit ();
 		invalid ();
 		return kMouseDownEventHandledButDontNeedMovedOrUpEvents;
@@ -320,8 +317,7 @@ public:
 			value = ((long)value) ? 0.f : 1.f;
 			invalid ();
 			beginEdit ();
-			if (listener)
-				listener->valueChanged (this);
+			valueChanged ();
 			endEdit ();
 			return 1;
 		}
@@ -386,7 +382,7 @@ public:
 	bool dbGetLineWidthAndColor (CCoord& width, CColor& color, CDataBrowser* browser)
 	{
 		width = 1;
-		color = MakeCColor (255, 255, 255, 20);
+		color = uidDataBrowserLineColor;
 		return true;
 	}
 
@@ -396,7 +392,7 @@ public:
 
 	void drawBackgroundSelected (CDrawContext* context, const CRect& size)
 	{
-		context->setFillColor (MakeCColor (255, 255, 255, 10));
+		context->setFillColor (uidDataBrowserSelectionColor);
 		context->drawRect (size, kDrawFilled);
 	}
 
@@ -1305,8 +1301,8 @@ CView* CViewInspector::createViewForAttribute (const std::string& attrName, CCoo
 		if (paramDisplay)
 		{
 			paramDisplay->setHoriAlign (kLeftText);
-			paramDisplay->setBackColor (hasDifferentValues ? MakeCColor (100, 100, 255, 150) : MakeCColor (255, 255, 255, 150));
-			paramDisplay->setFrameColor (MakeCColor (0, 0, 0, 180));
+			paramDisplay->setBackColor (hasDifferentValues ? uidViewAttributeDifferentValuesBackgroundColor : uidViewAttributeValueBackgroundColor);
+			paramDisplay->setFrameColor (uidViewAttributeValueFrameColor);
 			paramDisplay->setFontColor (kBlackCColor);
 			paramDisplay->setFont (kNormalFont);
 			paramDisplay->setStyle (paramDisplay->getStyle ());
@@ -1539,7 +1535,7 @@ void CViewInspector::show ()
 		tabView->addTab (controlTagBrowser, new InspectorTabButton (tabButtonSize, "Tags", 1));
 		tabView->alignTabs ();
 		tabView->setAutosizeFlags (kAutosizeAll);
-		tabView->setBackgroundColor (kDefaultUIDescriptionBackgroundColor);
+		tabView->setBackgroundColor (uidPanelBackgroundColor);
 
 		size.offset (-kMargin, 0);
 		size.right += kMargin*2;
@@ -1550,15 +1546,13 @@ void CViewInspector::show ()
 			#if MAC_CARBON && MAC_COCOA
 			CFrame::setCocoaMode (true);
 			#endif
+
 			frame = new CFrame (size, platformWindow->getPlatformHandle (), this);
-#if WINDOWS
-			frame->setBackgroundColor (MakeCColor (0, 0, 0, 255));
-#else
-			frame->setBackgroundColor (kDefaultUIDescriptionBackgroundColor);
-#endif
+			frame->setBackgroundColor (uidPanelBackgroundColor);
+
 			frame->addView (tabView);
 			frame->setFocusDrawingEnabled (true);
-			frame->setFocusColor (MakeCColor (100, 100, 255, 200));
+			frame->setFocusColor (uidFocusColor);
 			frame->setFocusWidth (1.2);
 			platformWindow->center ();
 			if (windowSize.getWidth () > 0)

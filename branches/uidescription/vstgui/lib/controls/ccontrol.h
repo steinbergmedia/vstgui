@@ -36,6 +36,8 @@
 #define __ccontrol__
 
 #include "../cview.h"
+#include "../ifocusdrawing.h"
+#include <list>
 
 //------------------
 // defines
@@ -113,7 +115,7 @@ enum CControlEnum
 // CControl Declaration
 //! @brief base class of all VSTGUI controls
 //-----------------------------------------------------------------------------
-class CControl : public CView
+class CControl : public CView, public IFocusDrawing
 {
 public:
 	CControl (const CRect& size, CControlListener* listener = 0, long tag = 0, CBitmap* pBackground = 0);
@@ -123,7 +125,7 @@ public:
 	/// @name Value Methods
 	//-----------------------------------------------------------------------------
 	//@{
-	virtual void setValue (float val) { value = val; }
+	virtual void setValue (float val, bool updateSubListeners = false);
 	virtual float getValue () const { return value; };
 
 	virtual void setMin (float val) { vmin = val; }
@@ -138,6 +140,8 @@ public:
 
 	virtual void bounceValue ();
 	virtual bool checkDefaultValue (long button);
+	
+	virtual void valueChanged ();	///< notifies listeners
 	//@}
 
 	//-----------------------------------------------------------------------------
@@ -150,8 +154,12 @@ public:
 	virtual void beginEdit ();
 	virtual void endEdit ();
 
-	virtual CControlListener* getListener () const { return listener; }
-	virtual void setListener (CControlListener* l) { listener = l; }
+	virtual CControlListener* getListener () const { return listener; }	///< get main listener
+	virtual void setListener (CControlListener* l) { listener = l; } ///< set main listener
+	
+	virtual void addListener (CControlListener* l) { listeners.push_back (l); } ///< add sub listener
+	virtual void removeListener (CControlListener* l) { listeners.remove (l); } ///< remove sub listener
+	const std::list<CControlListener*> getListeners () const { return listeners; } ///< get sub listeners
 	//@}
 
 	//-----------------------------------------------------------------------------
@@ -173,6 +181,9 @@ public:
 	bool isDirty () const;
 	void setDirty (const bool val = true);
 
+	bool drawFocusOnTop ();
+	bool getFocusPath (CGraphicsPath& outPath);
+
 	CLASS_METHODS_VIRTUAL(CControl, CView)
 protected:
 	~CControl ();
@@ -190,6 +201,8 @@ protected:
 	long delta;
 
 	CPoint	backOffset;
+	
+	std::list<CControlListener*> listeners;
 };
 
 //-----------------------------------------------------------------------------
