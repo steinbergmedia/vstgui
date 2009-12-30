@@ -427,7 +427,7 @@ CView* UIDescription::createViewFromNode (UINode* node, IController* controller)
 		}
 	}
 	if (result && controller)
-		controller->verifyView (result, *node->getAttributes (), this);
+		result = controller->verifyView (result, *node->getAttributes (), this);
 	return result;
 }
 
@@ -542,14 +542,11 @@ UINode* UIDescription::findChildNodeByNameAttribute (UINode* node, const char* n
 long UIDescription::getTagForName (const char* name)
 {
 	long tag = -1;
+	UIControlTagNode* controlTagNode = dynamic_cast<UIControlTagNode*> (findChildNodeByNameAttribute (getBaseNode ("control-tags"), name));
+	if (controlTagNode)
+		tag = controlTagNode->getTag ();
 	if (controller)
-		tag = controller->getTagForName (name);
-	if (tag == -1)
-	{
-		UIControlTagNode* controlTagNode = dynamic_cast<UIControlTagNode*> (findChildNodeByNameAttribute (getBaseNode ("control-tags"), name));
-		if (controlTagNode)
-			tag = controlTagNode->getTag ();
-	}
+		tag = controller->getTagForName (name, tag);
 	return tag;
 }
 
@@ -729,122 +726,90 @@ void UIDescription::changeBitmapName (const char* oldName, const char* newName)
 //-----------------------------------------------------------------------------
 void UIDescription::changeColor (const char* name, const CColor& newColor)
 {
-	UINode* colorsNode = getBaseNode ("colors");
-	if (colorsNode)
+	UIColorNode* node = dynamic_cast<UIColorNode*> (findChildNodeByNameAttribute (getBaseNode ("colors"), name));
+	if (node)
 	{
-		UIDescList& children = colorsNode->getChildren ();
-		UIDescList::iterator it = children.begin ();
-		while (it != children.end ())
+		node->setColor (newColor);
+	}
+	else
+	{
+		UINode* colorsNode = getBaseNode ("colors");
+		if (colorsNode)
 		{
-			UIColorNode* node = dynamic_cast<UIColorNode*>(*it);
-			if (node)
-			{
-				const std::string* colorName = node->getAttributes ()->getAttributeValue ("name");
-				if (*colorName == name)
-				{
-					node->setColor (newColor);
-					return;
-				}
-			}
-			it++;
+			UIAttributes* attr = new UIAttributes;
+			attr->setAttribute ("name", name);
+			std::string colorStr;
+			colorToString (newColor, colorStr, 0);
+			attr->setAttribute ("rgba", colorStr.c_str ());
+			UIColorNode* node = new UIColorNode ("color", attr);
+			colorsNode->getChildren ().add (node);
 		}
-		UIAttributes* attr = new UIAttributes;
-		attr->setAttribute ("name", name);
-		std::string colorStr;
-		colorToString (newColor, colorStr, 0);
-		attr->setAttribute ("rgba", colorStr.c_str ());
-		UIColorNode* node = new UIColorNode ("color", attr);
-		children.add (node);
 	}
 }
 
 //-----------------------------------------------------------------------------
 void UIDescription::changeTag (const char* name, long tag)
 {
-	UINode* tagsNode = getBaseNode ("control-tags");
-	if (tagsNode)
+	UIControlTagNode* node = dynamic_cast<UIControlTagNode*> (findChildNodeByNameAttribute (getBaseNode ("control-tags"), name));
+	if (node)
 	{
-		UIDescList& children = tagsNode->getChildren ();
-		UIDescList::iterator it = children.begin ();
-		while (it != children.end ())
-		{
-			UIControlTagNode* node = dynamic_cast<UIControlTagNode*>(*it);
-			if (node)
-			{
-				const std::string* tagName = node->getAttributes ()->getAttributeValue ("name");
-				if (*tagName == name)
-				{
-					node->setTag (tag);
-					return;
-				}
-			}
-			it++;
-		}
-		UIAttributes* attr = new UIAttributes;
-		attr->setAttribute ("name", name);
-		UIControlTagNode* node = new UIControlTagNode ("control-tag", attr);
 		node->setTag (tag);
-		children.add (node);
+	}
+	else
+	{
+		UINode* tagsNode = getBaseNode ("control-tags");
+		if (tagsNode)
+		{
+			UIAttributes* attr = new UIAttributes;
+			attr->setAttribute ("name", name);
+			UIControlTagNode* node = new UIControlTagNode ("control-tag", attr);
+			node->setTag (tag);
+			tagsNode->getChildren ().add (node);
+		}
 	}
 }
 
 //-----------------------------------------------------------------------------
 void UIDescription::changeFont (const char* name, CFontRef newFont)
 {
-	UINode* tagsNode = getBaseNode ("fonts");
-	if (tagsNode)
+	UIFontNode* node = dynamic_cast<UIFontNode*> (findChildNodeByNameAttribute (getBaseNode ("fonts"), name));
+	if (node)
 	{
-		UIDescList& children = tagsNode->getChildren ();
-		UIDescList::iterator it = children.begin ();
-		while (it != children.end ())
-		{
-			UIFontNode* node = dynamic_cast<UIFontNode*>(*it);
-			if (node)
-			{
-				const std::string* tagName = node->getAttributes ()->getAttributeValue ("name");
-				if (*tagName == name)
-				{
-					node->setFont (newFont);
-					return;
-				}
-			}
-			it++;
-		}
-		UIAttributes* attr = new UIAttributes;
-		attr->setAttribute ("name", name);
-		UIFontNode* node = new UIFontNode ("font", attr);
 		node->setFont (newFont);
-		children.add (node);
+	}
+	else
+	{
+		UINode* fontsNode = getBaseNode ("fonts");
+		if (fontsNode)
+		{
+			UIAttributes* attr = new UIAttributes;
+			attr->setAttribute ("name", name);
+			UIFontNode* node = new UIFontNode ("font", attr);
+			node->setFont (newFont);
+			fontsNode->getChildren ().add (node);
+		}
 	}
 }
 
 //-----------------------------------------------------------------------------
 void UIDescription::changeBitmap (const char* name, const char* newName)
 {
-	UINode* tagsNode = getBaseNode ("bitmaps");
-	if (tagsNode)
+	UIBitmapNode* node = dynamic_cast<UIBitmapNode*> (findChildNodeByNameAttribute (getBaseNode ("bitmaps"), name));
+	if (node)
 	{
-		UIDescList& children = tagsNode->getChildren ();
-		UIDescList::iterator it = children.begin ();
-		while (it != children.end ())
-		{
-			UIBitmapNode* node = dynamic_cast<UIBitmapNode*>(*it);
-			if (node)
-			{
-				const std::string* tagName = node->getAttributes ()->getAttributeValue ("name");
-				if (*tagName == name)
-				{
-					node->setBitmap (newName);
-					return;
-				}
-			}
-			it++;
-		}
-		UIAttributes* attr = new UIAttributes;
-		attr->setAttribute ("name", name);
-		UIBitmapNode* node = new UIBitmapNode ("bitmap", attr);
 		node->setBitmap (newName);
-		children.add (node);
+	}
+	else
+	{
+		UINode* bitmapsNode = getBaseNode ("bitmaps");
+		if (bitmapsNode)
+		{
+			UIAttributes* attr = new UIAttributes;
+			attr->setAttribute ("name", name);
+			UIBitmapNode* node = new UIBitmapNode ("bitmap", attr);
+			node->setBitmap (newName);
+			bitmapsNode->getChildren ().add (node);
+		}
 	}
 }
 
@@ -1085,17 +1050,23 @@ void UIDescription::updateViewDescription (const char* name, CView* view)
 }
 
 //-----------------------------------------------------------------------------
-void UIDescription::addNewTemplate (const char* name, UIAttributes* attr)
+bool UIDescription::addNewTemplate (const char* name, UIAttributes* attr)
 {
 #if VSTGUI_LIVE_EDITING
 	if (!nodes)
 	{
 		nodes = new UINode ("vstgui-ui-description", new UIAttributes);
 	}
-	UINode* newNode = new UINode ("template", attr);
-	attr->setAttribute ("name", name);
-	nodes->getChildren ().add (newNode);
+	UINode* templateNode = findChildNodeByNameAttribute (nodes, name);
+	if (templateNode == 0)
+	{
+		UINode* newNode = new UINode ("template", attr);
+		attr->setAttribute ("name", name);
+		nodes->getChildren ().add (newNode);
+		return true;
+	}
 #endif
+	return false;
 }
 
 //-----------------------------------------------------------------------------

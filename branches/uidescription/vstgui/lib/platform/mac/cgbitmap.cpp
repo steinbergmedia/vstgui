@@ -161,66 +161,6 @@ CGImageRef CGBitmap::getCGImage ()
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
-class CDataProvider 
-{
-public:
-	CDataProvider (void* bitmap) : ptr ((unsigned char*)bitmap)
-	{
-	}
-
-	static size_t getBytes (void *info, void* buffer, size_t count)
-	{	// this could be optimized ;-)
-		CDataProvider* p = (CDataProvider*)info;
-		unsigned char* dst = (unsigned char*)buffer;
-		unsigned char* src = p->ptr + p->pos;
-		memcpy (dst, src, count);
-		#if 0
-		for (unsigned long i = 0; i < count / 4; i++)
-		{
-			*dst++ = *src++;
-			*dst++ = *src++;
-			*dst++ = *src++;
-			*dst++ = *src++;
-		}
-		#endif
-		p->pos += count;
-		return count;
-	}
-
-	static void skipBytes (void* info, size_t count)
-	{
-		CDataProvider* p = (CDataProvider*)info;
-		p->pos += count;
-	}
-
-	#if MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_5
-	static off_t skipForward (void *info, off_t count)
-	{
-		CDataProvider* p = (CDataProvider*)info;
-		p->pos += count;
-		return p->pos;
-	}
-	#endif
-
-	static void rewind (void* info)
-	{
-		CDataProvider* p = (CDataProvider*)info;
-		p->pos = 0;
-	}
-
-	static void releaseProvider (void* info)
-	{
-		CDataProvider* p = (CDataProvider*)info;
-		delete p;
-	}
-
-	unsigned long pos;
-	unsigned char* ptr;
-};
-
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
 CGOffscreenBitmap::CGOffscreenBitmap (const CPoint& inSize)
 : bits (0)
 , dirty (false)
@@ -248,18 +188,7 @@ CGImageRef CGOffscreenBitmap::getCGImage ()
 		size_t byteCount = rowBytes * size.y;
 		short bitDepth = 32;
 
-		CGDataProviderRef provider = 0;
-		#if MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_5
-		static CGDataProviderSequentialCallbacks callbacks = { 0, CDataProvider::getBytes, CDataProvider::skipForward, CDataProvider::rewind, CDataProvider::releaseProvider };
-		if (transparent)
-			provider = CGDataProviderCreateSequential (new CDataProvider (bits), &callbacks);
-		#else
-		static CGDataProviderCallbacks callbacks = { CDataProvider::getBytes, CDataProvider::skipBytes, CDataProvider::rewind, CDataProvider::releaseProvider };
-		if (transparent)
-			provider = CGDataProviderCreate (new CDataProvider (bits), &callbacks);
-		#endif
-		else
-			provider = CGDataProviderCreateWithData (NULL, bits, byteCount, NULL);
+		CGDataProviderRef provider = CGDataProviderCreateWithData (NULL, bits, byteCount, NULL);
 		CGImageAlphaInfo alphaInfo = kCGImageAlphaFirst;
 		image = CGImageCreate (size.x, size.y, 8, bitDepth, rowBytes, GetGenericRGBColorSpace (), alphaInfo, provider, NULL, false, kCGRenderingIntentDefault);
 		CGDataProviderRelease (provider);

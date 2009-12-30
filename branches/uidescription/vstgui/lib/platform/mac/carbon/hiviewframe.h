@@ -47,6 +47,8 @@ namespace VSTGUI {
 class HIViewFrame : public IPlatformFrame
 {
 public:
+	static void setAddToContentView (bool addToContentView); // defaults to true
+
 	HIViewFrame (IPlatformFrameCallback* frame, const CRect& size, WindowRef parent);
 	~HIViewFrame ();
 
@@ -81,6 +83,7 @@ protected:
 	bool hasFocus;
 	bool isInMouseTracking;
 	EventHandlerRef mouseEventHandler;
+	EventHandlerRef keyboardEventHandler;
 	CPoint hiScrollOffset;
 };
 

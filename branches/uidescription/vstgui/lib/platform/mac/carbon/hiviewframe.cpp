@@ -47,10 +47,6 @@
 
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations" // we know that we use deprecated functions from Carbon, so we don't want to be warned
 
-#ifndef EMBED_HIVIEW	// automaticly add the CFrame HIView to the content view of the window
-	#define EMBED_HIVIEW	!AU
-#endif // EMBED_HIVIEW
-
 namespace VSTGUI {
 
 #if !MAC_COCOA
@@ -322,6 +318,13 @@ void* MacDragContainer::next (long& size, long& type)
 	return NULL;
 }
 
+static bool addViewToContentView = true;
+//-----------------------------------------------------------------------------
+void HIViewFrame::setAddToContentView (bool addToContentView)
+{
+	addViewToContentView = addToContentView;
+}
+
 //-----------------------------------------------------------------------------
 HIViewFrame::HIViewFrame (IPlatformFrameCallback* frame, const CRect& size, WindowRef parent)
 : IPlatformFrame (frame)
@@ -375,7 +378,7 @@ HIViewFrame::HIViewFrame (IPlatformFrameCallback* frame, const CRect& size, Wind
 		{ kEventClassWindow,	kEventWindowFocusAcquired },
 		{ kEventClassWindow,	kEventWindowFocusRelinquish }
 	};
-	InstallWindowEventHandler (window, carbonEventHandler, GetEventTypeCount (keyWorkaroundEvents), keyWorkaroundEvents, this, NULL);
+	InstallWindowEventHandler (window, carbonEventHandler, GetEventTypeCount (keyWorkaroundEvents), keyWorkaroundEvents, this, &keyboardEventHandler);
 	const EventTypeSpec mouseEvents[] = {
 		{ kEventClassMouse, kEventMouseDown },
 		{ kEventClassMouse, kEventMouseUp },
@@ -386,30 +389,32 @@ HIViewFrame::HIViewFrame (IPlatformFrameCallback* frame, const CRect& size, Wind
 	
 	SetControlDragTrackingEnabled (controlRef, true);
 	SetAutomaticControlDragTrackingEnabledForWindow (window, true);
-	#if EMBED_HIVIEW
-	if (isWindowComposited (window)) 
+
+	if (addViewToContentView)
 	{
-		HIViewRef contentView;
-		HIViewRef rootView = HIViewGetRoot (window);
-		if (HIViewFindByID (rootView, kHIViewWindowContentID, &contentView) != noErr)
-			contentView = rootView;
-		HIViewAddSubview (contentView, controlRef);
+		if (isWindowComposited (window)) 
+		{
+			HIViewRef contentView;
+			HIViewRef rootView = HIViewGetRoot (window);
+			if (HIViewFindByID (rootView, kHIViewWindowContentID, &contentView) != noErr)
+				contentView = rootView;
+			HIViewAddSubview (contentView, controlRef);
+		}
+		else
+		{
+			ControlRef rootControl;
+			GetRootControl (window, &rootControl);
+			if (rootControl == NULL)
+				CreateRootControl (window, &rootControl);
+			EmbedControl(controlRef, rootControl);	
+		}
 	}
-	else
-	{
-		ControlRef rootControl;
-		GetRootControl (window, &rootControl);
-		if (rootControl == NULL)
-			CreateRootControl (window, &rootControl);
-		EmbedControl(controlRef, rootControl);	
-	}
-	#endif
 	
 	HIViewTrackingAreaRef trackingAreaRef;	// will automatically removed if view is destroyed
 	HIViewNewTrackingArea (controlRef, 0, 0, &trackingAreaRef);
 	
 	#if 0
-	// TODO: currently this is not supported
+	// TODO: currently this is not supported, do we need to ?
 	size.offset (-size.left, -size.top);
 	mouseableArea.offset (-size.left, -size.top);
 	#endif
@@ -418,6 +423,8 @@ HIViewFrame::HIViewFrame (IPlatformFrameCallback* frame, const CRect& size, Wind
 //-----------------------------------------------------------------------------
 HIViewFrame::~HIViewFrame ()
 {
+	if (keyboardEventHandler)
+		RemoveEventHandler (keyboardEventHandler);
 	if (mouseEventHandler)
 		RemoveEventHandler (mouseEventHandler);
 	if (controlRef)
@@ -573,9 +580,6 @@ bool HIViewFrame::getCurrentMouseButtons (long& buttons) const
 	return true;
 }
 
-#define kThemeResizeUpDownCursor	21
-#define kThemeNotAllowedCursor		18
-
 //-----------------------------------------------------------------------------
 bool HIViewFrame::setMouseCursor (CCursorType type)
 {
@@ -585,10 +589,10 @@ bool HIViewFrame::setMouseCursor (CCursorType type)
 			SetThemeCursor (kThemeWatchCursor);
 			break;
 		case kCursorHSize:
-			SetThemeCursor (pSystemVersion < 0x1030 ? kThemeCrossCursor : kThemeResizeLeftRightCursor);
+			SetThemeCursor (kThemeResizeLeftRightCursor);
 			break;
 		case kCursorVSize:
-			SetThemeCursor (pSystemVersion < 0x1030 ? kThemeCrossCursor : kThemeResizeUpDownCursor);
+			SetThemeCursor (kThemeResizeUpDownCursor);
 			break;
 		case kCursorNESWSize:
 			SetThemeCursor (kThemeCrossCursor);
@@ -603,7 +607,7 @@ bool HIViewFrame::setMouseCursor (CCursorType type)
 			SetThemeCursor (kThemeCopyArrowCursor);
 			break;
 		case kCursorNotAllowed:
-			SetThemeCursor (pSystemVersion < 0x1020 ? kThemeArrowCursor : kThemeNotAllowedCursor);
+			SetThemeCursor (kThemeNotAllowedCursor);
 			break;
 		case kCursorHand:
 			SetThemeCursor (kThemeOpenHandCursor);

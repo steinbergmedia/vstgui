@@ -45,28 +45,25 @@ namespace VSTGUI {
 // CBitmap Implementation
 //-----------------------------------------------------------------------------
 /*! @class CBitmap
-@section cbitmap_alphablend Alpha Blend and Transparency
-With Version 3.0 of VSTGUI it is possible to use alpha blended bitmaps. This comes free on Mac OS X and with Windows you need to include libpng.
-Per default PNG images will be rendered alpha blended. If you want to use a transparency color with PNG Bitmaps, you need to call setNoAlpha(true) on the bitmap and set the transparency color.
-@section cbitmap_macosx Apple Mac OS X
-The Bitmaps can be of type PNG, JPEG, PICT, BMP and are stored in the Resources folder of the plugin bundle. 
-With the latest version VSTGUI supports all image types supported by the Image I/O Framework.
-@section cbitmap_windows Microsoft Windows
-The Bitmaps are .bmp files and must be included in the plug (usually using a .rc file).
-It's also possible to use png as of version 3.0 if you define the macro USE_LIBPNG and include the libpng and zlib libraries/sources to your project.
-@section new New since 3.0
-There is a new way to name the bitmaps in the latest version. Instead of using a number identifier for the bitmaps you can now use real names for it.
-The CResourceDescription works with both names and numbers. If you use names, you need to use the real filename with extension. Then it gets automaticly
+@section changes_version_4 Changes in 4.0
+In Version 4.0 CBitmap was simplified. Previous versions supported drawing a color transparent of the bitmap. Since CBitmap supports
+alpha drawing of bitmaps since some time, it's now the only way of drawing a bitmap with some parts transparent.
+@section supported_file_formats Supported file formats
+File format support is handled in a platform dependent way. On Windows GDI+ is used to import images. On Mac OS X CoreGraphics is used to import them.
+For cross platform compatibility it is recommended to use PNG files.
+@section loading Loading Bitmaps
+You load a bitmap via a CResourceDescription which can hold a string or a number.
+If you use names, you need to use the real filename with extension. Then it gets automaticly
 loaded on Mac OS X out of the Resources folder of the vst bundle. On Windows you also specify the resource in the .rc file with the real filename.
 @code
-// Old way
-1001                    BITMAP  DISCARDABLE     "bmp01001.bmp"
-// New way
-RealFileName.bmp        BITMAP  DISCARDABLE     "RealFileName.bmp"
+// using a number
+1001                    PNG  DISCARDABLE     "bmp01001.png"
+// using a string
+RealFileName.png        PNG  DISCARDABLE     "RealFileName.png"
 @endcode
 @code
-CBitmap* bitmap1 = new CBitmap (1001);
-CBitmap* bitmap2 = new CBitmap ("RealFileName.bmp");
+CBitmap* bitmap1 = new CBitmap (1001); // number
+CBitmap* bitmap2 = new CBitmap ("RealFileName.png"); // string
 @endcode
 */
 //-----------------------------------------------------------------------------

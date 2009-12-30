@@ -65,6 +65,8 @@ GdiplusDrawContext::GdiplusDrawContext (GdiplusBitmap* inBitmap)
 	pGraphics = new Gdiplus::Graphics (inBitmap->getBitmap ());
 
 	init ();
+
+	bitmap->forget ();
 }
 
 //-----------------------------------------------------------------------------

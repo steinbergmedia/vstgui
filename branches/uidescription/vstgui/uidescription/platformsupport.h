@@ -92,7 +92,6 @@ public:
 class PlatformUtilities
 {
 public:
-	static bool collectPlatformFontNames (std::list<std::string*>& fontNames);
 	static bool startDrag (CFrame* frame, const CPoint& location, const char* string, CBitmap* dragBitmap, bool localOnly = true);
 	static void colorChooser (const CColor* oldColor, IPlatformColorChangeCallback* callback);
 };

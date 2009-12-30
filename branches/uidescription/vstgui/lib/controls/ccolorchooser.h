@@ -42,9 +42,11 @@
 namespace VSTGUI {
 class CColorChooser;
 class CSlider;
+/// @cond ignore
 namespace CColorChooserInternal {
 class ColorView;
 }
+/// @endcond
 
 //-----------------------------------------------------------------------------
 class IColorChooserDelegate
@@ -66,6 +68,8 @@ public:
 //-----------------------------------------------------------------------------
 protected:
 	void updateState ();
+
+	/// @cond ignore
 
 	IColorChooserDelegate* delegate;
 	CColor color;
@@ -99,6 +103,7 @@ protected:
 	static void convertNormalizedToString (float value, char* string);
 	static void convertColorValueToString (float value, char* string);
 	static void convertAngleToString (float value, char* string);
+	/// @endcond
 
 };
 

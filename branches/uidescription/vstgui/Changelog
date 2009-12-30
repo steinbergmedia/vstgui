@@ -1,3 +1,10 @@
+2009-12-30 arne
+
+	* added IViewAddedRemovedObserver as interface for observing the frame when a view is added or removed
+	* code cleanup
+	* added drag support for Windows UIDescription editor
+	* updated some documentation
+
 2009-12-05 arne
 
 	* more fixes because of bugs from platform abstraction

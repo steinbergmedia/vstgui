@@ -178,7 +178,9 @@ protected:
 };
 
 
+//-----------------------------------------------------------------------------
 class AttributeChangeAction : public IActionOperation, protected std::map<CView*, std::string>
+//-----------------------------------------------------------------------------
 {
 public:
 	AttributeChangeAction (UIDescription* desc, CSelection* selection, const std::string& attrName, const std::string& attrValue)
@@ -249,6 +251,7 @@ protected:
 
 //-----------------------------------------------------------------------------
 class FocusOptionMenu : public COptionMenu
+//-----------------------------------------------------------------------------
 {
 public:
 	FocusOptionMenu (const CRect& size, CControlListener* listener, long tag, CBitmap* background = 0, CBitmap* bgWhenClick = 0, const long style = 0)
@@ -271,6 +274,7 @@ protected:
 
 //-----------------------------------------------------------------------------
 class SimpleBooleanButton : public CParamDisplay
+//-----------------------------------------------------------------------------
 {
 public:
 	SimpleBooleanButton (const CRect& size, CControlListener* listener)
@@ -328,6 +332,7 @@ public:
 
 //-----------------------------------------------------------------------------
 class BrowserDelegateBase : public CBaseObject, public IDataBrowser
+//-----------------------------------------------------------------------------
 {
 public:
 	BrowserDelegateBase (UIDescription* desc, IActionOperator* actionOperator)
@@ -344,6 +349,7 @@ public:
 	{
 		std::list<const std::string*> _names;
 		getNames (_names);
+		_names.sort (std__stringCompare);
 		names.clear ();
 		names.insert (names.begin (), _names.begin (), _names.end ());
 	}
@@ -390,16 +396,27 @@ public:
 	{
 	}
 
-	void drawBackgroundSelected (CDrawContext* context, const CRect& size)
+	void drawBackgroundSelected (CDrawContext* context, const CRect& size, CDataBrowser* browser)
 	{
-		context->setFillColor (uidDataBrowserSelectionColor);
+		CColor color (browser->getFrame ()->getFocusColor ());
+		CView* focusView = browser->getFrame ()->getFocusView ();
+		if (!(focusView && browser->isChild (focusView)))
+		{
+			double hue, saturation, value;
+			color.toHSV (hue, saturation, value);
+			saturation = 0.;
+			color.fromHSV (hue, saturation, value);
+			color.alpha /= 3;
+		}
+		context->setDrawMode (kCopyMode);
+		context->setFillColor (color);
 		context->drawRect (size, kDrawFilled);
 	}
 
 	void dbDrawCell (CDrawContext* context, const CRect& size, long row, long column, long flags, CDataBrowser* browser)
 	{
 		if (flags & kRowSelected)
-			drawBackgroundSelected (context, size);
+			drawBackgroundSelected (context, size, browser);
 		if (row >= dbGetNumRows (browser)-1)
 		{
 			if (column == 0)
@@ -560,6 +577,7 @@ protected:
 
 //-----------------------------------------------------------------------------
 class BitmapBrowserDelegate : public BrowserDelegateBase
+//-----------------------------------------------------------------------------
 {
 public:
 	BitmapBrowserDelegate (UIDescription* desc, IActionOperator* actionOperator) : BrowserDelegateBase (desc, actionOperator) { updateNames (); }
@@ -612,7 +630,17 @@ public:
 				if (!desc->getBitmap (newText))
 				{
 					actionOperator->performBitmapChange (newText, "not yet defined");
-					browser->beginTextEdit (row, 1, "not yet defined");
+					updateNames ();
+					browser->recalculateLayout (true);
+					for (long i = 0; i < names.size (); i++)
+					{
+						if (*names[i] == newText)
+						{
+							browser->beginTextEdit (i, 1, "not yet defined");
+							break;
+						}
+					}
+					return;
 				}
 			}
 			else
@@ -631,6 +659,7 @@ public:
 
 //-----------------------------------------------------------------------------
 class ColorBrowserDelegate : public BrowserDelegateBase, public IPlatformColorChangeCallback
+//-----------------------------------------------------------------------------
 {
 public:
 	ColorBrowserDelegate (UIDescription* desc, IActionOperator* actionOperator) : BrowserDelegateBase (desc, actionOperator), browser (0) { updateNames (); }
@@ -760,7 +789,7 @@ public:
 		if (column == 1 && row < (dbGetNumRows (browser) - 1))
 		{
 			if (flags & kRowSelected)
-				drawBackgroundSelected (context, size);
+				drawBackgroundSelected (context, size, browser);
 			CColor color;
 			if (desc->getColor (names[row]->c_str (), color))
 			{
@@ -790,6 +819,7 @@ public:
 
 //-----------------------------------------------------------------------------
 class TagBrowserDelegate : public BrowserDelegateBase
+//-----------------------------------------------------------------------------
 {
 public:
 	TagBrowserDelegate (UIDescription* desc, IActionOperator* actionOperator) : BrowserDelegateBase (desc, actionOperator) { updateNames (); }
@@ -840,7 +870,18 @@ public:
 				if (desc->getTagForName (newText) == -1)
 				{
 					actionOperator->performTagChange (newText, -2);
-					browser->beginTextEdit (row, 1, "-2");
+					updateNames ();
+					browser->recalculateLayout (true);
+					for (long i = 0; i < names.size (); i++)
+					{
+						if (*names[i] == newText)
+						{
+							browser->makeRowVisible (i);
+							browser->beginTextEdit (i, 1, "-2");
+							break;
+						}
+					}
+					return;
 				}
 			}
 			else
@@ -861,6 +902,7 @@ public:
 
 //-----------------------------------------------------------------------------
 class FontBrowserDelegate : public BrowserDelegateBase
+//-----------------------------------------------------------------------------
 {
 public:
 	FontBrowserDelegate (UIDescription* desc, IActionOperator* actionOperator) : BrowserDelegateBase (desc, actionOperator) { updateNames (); }
@@ -932,20 +974,19 @@ public:
 		CMenuItem* item = 0;
 		COptionMenu* fontMenu = new COptionMenu ();
 		fontMenu->setStyle (kPopupStyle|kCheckStyle);
-		std::list<std::string*> fontNames;
-		if (PlatformUtilities::collectPlatformFontNames (fontNames))
+		std::list<std::string> fontNames;
+		if (IPlatformFont::getAllPlatformFontFamilies (fontNames))
 		{
-			fontNames.sort (std__stringCompare);
-			std::list<std::string*>::const_iterator it = fontNames.begin ();
+			fontNames.sort ();
+			std::list<std::string>::const_iterator it = fontNames.begin ();
 			while (it != fontNames.end ())
 			{
-				item = fontMenu->addEntry (new CMenuItem ((*it)->c_str ()));
-				if (*(*it) == oldFont->getName ())
+				item = fontMenu->addEntry (new CMenuItem ((*it).c_str ()));
+				if ((*it) == oldFont->getName ())
 				{
 					item->setChecked (true);
 					fontMenu->setValue (fontMenu->getNbEntries ()-1.f);
 				}
-				delete (*it);
 				it++;
 			}
 		}

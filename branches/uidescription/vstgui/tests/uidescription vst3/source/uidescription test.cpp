@@ -7,8 +7,7 @@
  *
  */
 
-//#define INIT_CLASS_IID
-
+#include "public.sdk/source/vst/vst2wrapper/vst2wrapper.h"
 #include "public.sdk/source/vst/vstaudioeffect.h"
 #include "public.sdk/source/main/pluginfactoryvst3.h"
 #include "pluginterfaces/base/ibstream.h"
@@ -17,7 +16,6 @@
 #include "vstgui/uidescription/vst3editor.h"
 
 using namespace Steinberg;
-using namespace Steinberg::Vst;
 
 namespace VSTGUI {
 
@@ -26,9 +24,56 @@ enum {
 };
 
 //------------------------------------------------------------------------
+class PeakParameter : public Steinberg::Vst::Parameter
+{
+public:
+	PeakParameter (int32 flags, int32 id, const Steinberg::Vst::TChar* title);
+
+	virtual void toString (Steinberg::Vst::ParamValue normValue, Steinberg::Vst::String128 string) const;
+	virtual bool fromString (const Steinberg::Vst::TChar* string, Steinberg::Vst::ParamValue& normValue) const;
+};
+
+//------------------------------------------------------------------------
+PeakParameter::PeakParameter (int32 flags, int32 id, const Steinberg::Vst::TChar* title)
+{
+	UString (info.title, USTRINGSIZE (info.title)).assign (title);
+	
+	info.flags = flags;
+	info.id = id;
+	info.stepCount = 0;
+	info.defaultNormalizedValue = 0.5f;
+	info.unitId = Steinberg::Vst::kRootUnitId;
+	
+	setNormalized (1.f);
+}
+
+//------------------------------------------------------------------------
+void PeakParameter::toString (Steinberg::Vst::ParamValue normValue, Steinberg::Vst::String128 string) const
+{
+	String str;
+	if (normValue > 0.0001)
+	{
+		str.printf ("%.3f", 20 * log10f ((float)normValue));
+	}
+	else
+	{
+		str.assign ("-");
+		str.append (kInfiniteSymbol);
+	}
+	str.toWideString (kCP_Utf8);
+	str.copyTo16 (string, 0, 128);
+}
+
+//------------------------------------------------------------------------
+bool PeakParameter::fromString (const Steinberg::Vst::TChar* string, Steinberg::Vst::ParamValue& normValue) const
+{
+	return false;
+}
+
 //------------------------------------------------------------------------
 //------------------------------------------------------------------------
-class UIDescriptionTestController : public EditController
+//------------------------------------------------------------------------
+class UIDescriptionTestController : public Steinberg::Vst::EditController
 {
 public:
 	UIDescriptionTestController ()
@@ -41,10 +86,11 @@ public:
 		if (res == kResultTrue)
 		{
 			// add processing parameters
-			parameters.addParameter (USTRING("Peak"), 0, 0, 0, ParameterInfo::kIsReadOnly, kPeakParam);
+			PeakParameter* peakParam = new PeakParameter (Steinberg::Vst::ParameterInfo::kIsReadOnly, kPeakParam, USTRING("Peak"));
+			parameters.addParameter (peakParam);
 			
 			// add ui parameters
-			StringListParameter* slp = new StringListParameter (USTRING("TabController"), 20000);
+			Steinberg::Vst::StringListParameter* slp = new Steinberg::Vst::StringListParameter (USTRING("TabController"), 20000);
 			slp->appendString (USTRING("Tab1"));
 			slp->appendString (USTRING("Tab2"));
 			slp->appendString (USTRING("Tab3"));
@@ -57,20 +103,16 @@ public:
 
 	IPlugView* PLUGIN_API createView (FIDString name)
 	{
-		if (strcmp (name, ViewType::kEditor) == 0)
+		if (strcmp (name, Steinberg::Vst::ViewType::kEditor) == 0)
 		{
-			#if DEBUG
-			return new VST3Editor (this, "view", "myEditor.uidesc", true);
-			#else
-			return new VST3Editor (this, "view", "myEditor.uidesc", false);
-			#endif
+			return new VST3Editor (this, "view", "myEditor.uidesc");
 		}
 		return 0;
 	}
 
-	Parameter* getParameterObject (ParamID tag)
+	Steinberg::Vst::Parameter* getParameterObject (Steinberg::Vst::ParamID tag)
 	{
-		Parameter* param = EditController::getParameterObject (tag);
+		Steinberg::Vst::Parameter* param = Steinberg::Vst::EditController::getParameterObject (tag);
 		if (param == 0)
 		{
 			param = uiParameters.getParameter (tag);
@@ -79,38 +121,38 @@ public:
 	}
 
 	// make sure that our UI only parameters doesn't call the following three EditController methods: beginEdit, endEdit, performEdit
-	tresult beginEdit (ParamID tag)
+	tresult beginEdit (Steinberg::Vst::ParamID tag)
 	{
-		if (EditController::getParameterObject (tag))
-			return EditController::beginEdit (tag);
+		if (Steinberg::Vst::EditController::getParameterObject (tag))
+			return Steinberg::Vst::EditController::beginEdit (tag);
 		return kResultFalse;
 	}
 	
-	tresult performEdit (ParamID tag, ParamValue valueNormalized)
+	tresult performEdit (Steinberg::Vst::ParamID tag, Steinberg::Vst::ParamValue valueNormalized)
 	{
-		if (EditController::getParameterObject (tag))
+		if (Steinberg::Vst::EditController::getParameterObject (tag))
 			return EditController::performEdit (tag, valueNormalized);
 		return kResultFalse;
 	}
 	
-	tresult endEdit (ParamID tag)
+	tresult endEdit (Steinberg::Vst::ParamID tag)
 	{
-		if (EditController::getParameterObject (tag))
-			return EditController::endEdit (tag);
+		if (Steinberg::Vst::EditController::getParameterObject (tag))
+			return Steinberg::Vst::EditController::endEdit (tag);
 		return kResultFalse;
 	}
 
 	static FUnknown* createInstance (void*) { return (IEditController*)new UIDescriptionTestController; }
 	static FUID cid;
 protected:
-	ParameterContainer uiParameters;
+	Steinberg::Vst::ParameterContainer uiParameters;
 };
 FUID UIDescriptionTestController::cid (0xF0FF3C24, 0x3F2F4C94, 0x84F6B6AE, 0xEF7BF28B);
 
 //------------------------------------------------------------------------
 //------------------------------------------------------------------------
 //------------------------------------------------------------------------
-class UIDescriptionTestProcessor : public AudioEffect
+class UIDescriptionTestProcessor : public Steinberg::Vst::AudioEffect
 {
 public:
 	UIDescriptionTestProcessor ()
@@ -123,24 +165,24 @@ public:
 		tresult res = AudioEffect::initialize (context);
 		if (res == kResultTrue)
 		{
-			addAudioInput (USTRING("Audio Input"), SpeakerArr::kStereo);
-			addAudioOutput (USTRING("Audio Output"), SpeakerArr::kStereo);
+			addAudioInput (USTRING("Audio Input"), Steinberg::Vst::SpeakerArr::kStereo);
+			addAudioOutput (USTRING("Audio Output"), Steinberg::Vst::SpeakerArr::kStereo);
 		}
 		return res;
 	}
 
-	tresult PLUGIN_API setBusArrangements (SpeakerArrangement* inputs, int32 numIns, SpeakerArrangement* outputs, int32 numOuts)
+	tresult PLUGIN_API setBusArrangements (Steinberg::Vst::SpeakerArrangement* inputs, int32 numIns, Steinberg::Vst::SpeakerArrangement* outputs, int32 numOuts)
 	{
 		if (numIns != 1 || numOuts != 1)
 			return kResultFalse;
 		if (inputs[0] != outputs[0])
 			return kResultFalse;
-		return AudioEffect::setBusArrangements (inputs, numIns, outputs, numOuts);
+		return Steinberg::Vst::AudioEffect::setBusArrangements (inputs, numIns, outputs, numOuts);
 	}
 	
-	tresult PLUGIN_API process (ProcessData& data)
+	tresult PLUGIN_API process (Steinberg::Vst::ProcessData& data)
 	{
-		ParamValue peak = 0.;
+		Steinberg::Vst::ParamValue peak = 0.;
 		for (int32 sample = 0; sample < data.numSamples; sample++)
 		{
 			for (int32 channel = 0; channel < data.inputs[0].numChannels; channel++)
@@ -155,7 +197,7 @@ public:
 		if (data.outputParameterChanges)
 		{
 			int32 index;
-			IParamValueQueue* queue = data.outputParameterChanges->addParameterData (kPeakParam, index);
+			Steinberg::Vst::IParamValueQueue* queue = data.outputParameterChanges->addParameterData (kPeakParam, index);
 			if (queue)
 				queue->addPoint (0, peak, index);
 		}
@@ -215,4 +257,10 @@ bool InitModule ()
 bool DeinitModule ()
 {
 	return true; 
+}
+
+//------------------------------------------------------------------------
+AudioEffect* createEffectInstance (audioMasterCallback audioMaster)
+{
+	return Steinberg::Vst::Vst2Wrapper::create (GetPluginFactory (), UIDescriptionTestProcessor::cid, '????', audioMaster);
 }

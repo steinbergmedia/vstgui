@@ -32,12 +32,13 @@
 // OF THE POSSIBILITY OF SUCH DAMAGE.
 //-----------------------------------------------------------------------------
 
-#include "cfontmac.h"
-#include "../../cdrawcontext.h"
+#import "cfontmac.h"
+#import "../../cdrawcontext.h"
 
 #if MAC
 
-#include "cgdrawcontext.h"
+#import "cgdrawcontext.h"
+#import <Cocoa/Cocoa.h>
 
 namespace VSTGUI {
 
@@ -56,6 +57,18 @@ IPlatformFont* IPlatformFont::create (const char* name, const CCoord& size, cons
 	font->forget ();
 	#endif
 	return 0;
+}
+
+//-----------------------------------------------------------------------------
+bool IPlatformFont::getAllPlatformFontFamilies (std::list<std::string>& fontFamilyNames)
+{
+	NSArray* fonts = [[NSFontManager sharedFontManager] availableFontFamilies];
+	for (unsigned int i = 0; i < [fonts count]; i++)
+	{
+		NSString* font = [fonts objectAtIndex:i];
+		fontFamilyNames.push_back (std::string ([font UTF8String]));
+	}
+	return true;
 }
 
 #if VSTGUI_USES_CORE_TEXT
@@ -202,7 +215,7 @@ CCoord CoreTextFont::getStringWidth (CDrawContext* context, const char* utf8Stri
 			CTLineRef line = CTLineCreateWithAttributedString (attrStr);
 			if (line)
 			{
-				result = floor (CTLineGetTypographicBounds (line, NULL, NULL, NULL) + 0.5);
+				result = floor (CTLineGetTypographicBounds (line, NULL, NULL, NULL) + (antialias ? 1.5 : 0.5));
 				CFRelease (line);
 			}
 			CFRelease (attrStr);

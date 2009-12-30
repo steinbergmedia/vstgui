@@ -53,6 +53,30 @@ IPlatformFont* IPlatformFont::create (const char* name, const CCoord& size, cons
 }
 
 //-----------------------------------------------------------------------------
+bool IPlatformFont::getAllPlatformFontFamilies (std::list<std::string>& fontFamilyNames)
+{
+	Gdiplus::InstalledFontCollection fonts;
+	if (fonts.GetFamilyCount () > 0)
+	{
+		Gdiplus::FontFamily* families = new Gdiplus::FontFamily[fonts.GetFamilyCount ()];
+		INT numFonts = fonts.GetFamilyCount ();
+		if (fonts.GetFamilies (fonts.GetFamilyCount (), families, &numFonts) == Gdiplus::Ok)
+		{
+			WCHAR familyName[LF_FACESIZE];
+			for (INT i = 0; i < numFonts; i++)
+			{
+				families[i].GetFamilyName (familyName);
+				UTF8StringHelper str (familyName);
+				fontFamilyNames.push_back (std::string (str));
+			}
+		}
+		delete [] families;
+		return true;
+	}
+	return false;
+}
+
+//-----------------------------------------------------------------------------
 static Gdiplus::Graphics* getGraphics (CDrawContext* context)
 {
 	GdiplusDrawContext* gpdc = dynamic_cast<GdiplusDrawContext*> (context);

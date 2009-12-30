@@ -35,6 +35,8 @@
 #ifndef __iplatformframe__
 #define __iplatformframe__
 
+/// @cond ignore
+
 #include "../cframe.h"
 
 namespace VSTGUI {
@@ -107,5 +109,7 @@ protected:
 };
 
 } // namespace
+
+/// @endcond
 
 #endif // __iplatformframe__

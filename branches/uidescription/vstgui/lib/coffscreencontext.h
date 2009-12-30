@@ -44,7 +44,48 @@ class CFrame;
 
 //-----------------------------------------------------------------------------
 // COffscreenContext Declaration
-//! @brief A drawing device which uses a pixmap as its drawing surface
+//! @brief A draw context using a bitmap as it's back buffer
+/*! @class COffscreenContext
+There are two usage scenarios :
+@section offscreen_usage1 Drawing into a bitmap and then push the contents into another draw context
+
+@code
+COffscreenContext* offscreen = COffscreenContext::create (frame, 100, 100);
+if (offscreen)
+{
+	// ... 
+	// draw into offscreen
+	// ...
+	offscreen->copyFrom (otherContext, destRect);
+	offscreen->forget ();
+}
+@endcode
+
+@section offscreen_usage2 Drawing static content into a bitmap and reuse the bitmap for drawing
+
+@code
+if (cachedBitmap == 0)
+{
+	COffscreenContext* offscreen = COffscreenContext::create (frame, 100, 100);
+	if (offscreen)
+	{
+		// ... 
+		// draw into offscreen
+		// ...
+		cachedBitmap = offscreen->getBitmap ();
+		if (cachedBitmap)
+			cachedBitmap->remember ();
+		offscreen->forget ();
+	}
+}
+if (cachedBitmap)
+{
+	// ...
+}
+
+@endcode
+
+ */
 //-----------------------------------------------------------------------------
 class COffscreenContext : public CDrawContext
 {

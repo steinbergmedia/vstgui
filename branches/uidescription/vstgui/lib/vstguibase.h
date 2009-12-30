@@ -61,7 +61,6 @@
 	#ifndef MAC
 		#define MAC 1
 	#endif
-	#define VSTGUI_USES_CORE_TEXT	(MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_5)
 	#if !__LP64__ && !defined (MAC_CARBON)
 		#define MAC_CARBON 1
 		#ifndef TARGET_API_MAC_CARBON
@@ -100,6 +99,12 @@
 #else
 #define VSTGUI_DEPRECATED(x)
 #endif
+
+//----------------------------------------------------
+// Helper makros
+//----------------------------------------------------
+#define	VSTGUI_MAKE_STRING_PRIVATE_DONT_USE(x)	# x
+#define	VSTGUI_MAKE_STRING(x)					VSTGUI_MAKE_STRING_PRIVATE_DONT_USE(x)
 
 #if DEVELOPMENT
 	#ifndef DEBUG

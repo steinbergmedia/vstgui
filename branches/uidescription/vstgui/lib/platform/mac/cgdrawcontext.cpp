@@ -70,11 +70,12 @@ CGDrawContext::CGDrawContext (CGContextRef cgContext, const CRect& rect)
 }
 
 //-----------------------------------------------------------------------------
-CGDrawContext::CGDrawContext (CGOffscreenBitmap* bitmap)
-: COffscreenContext (new CBitmap (bitmap))
-, cgContext (bitmap->createCGContext ())
+CGDrawContext::CGDrawContext (CGOffscreenBitmap* _bitmap)
+: COffscreenContext (new CBitmap (_bitmap))
+, cgContext (_bitmap->createCGContext ())
 {
 	init ();
+	bitmap->forget ();
 }
 
 //-----------------------------------------------------------------------------

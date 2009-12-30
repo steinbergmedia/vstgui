@@ -32,6 +32,8 @@
 // OF THE POSSIBILITY OF SUCH DAMAGE.
 //-----------------------------------------------------------------------------
 
+/// @cond ignore
+
 #import "../../cfileselector.h"
 
 // the cocoa fileselector is also used for carbon
@@ -315,3 +317,5 @@ void VSTGUI_FileSelector_Delegate_OpenPanelDidEnd (id self, SEL _cmd, NSOpenPane
 	[self autorelease];
 }
 #endif // MAC_COCOA
+
+/// @endcond

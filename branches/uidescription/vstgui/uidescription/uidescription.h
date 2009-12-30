@@ -57,8 +57,8 @@ class IUIDescription;
 class IController : public CControlListener
 {
 public:
-	virtual long getTagForName (const char* name) { return -1; };
-	virtual CControlListener* getControlListener (const char* name) { return this; }
+	virtual long getTagForName (const char* name, long registeredTag) { return registeredTag; };
+	virtual CControlListener* getControlListener (const char* controlTagName) { return this; }
 	virtual CView* createView (const UIAttributes& attributes, IUIDescription* description) { return 0; }
 	virtual CView* verifyView (CView* view, const UIAttributes& attributes, IUIDescription* description) { return view; }
 };
@@ -133,7 +133,7 @@ public:
 
 	void updateViewDescription (const char* name, CView* view);
 	bool getTemplateNameFromView (CView* view, std::string& templateName);
-	void addNewTemplate (const char* name, UIAttributes* attr); // owns attributes
+	bool addNewTemplate (const char* name, UIAttributes* attr); // owns attributes
 	bool removeTemplate (const char* name);
 
 	bool setCustomAttributes (const char* name, UIAttributes* attr); //owns attributes

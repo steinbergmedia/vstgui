@@ -42,6 +42,7 @@ namespace VSTGUI {
 class VSTGUIEditorInterface;
 class IMouseObserver;
 class IKeyboardHook;
+class IViewAddedRemovedObserver;
 
 //----------------------------
 // @brief Knob Mode
@@ -112,7 +113,7 @@ public:
 	//-----------------------------------------------------------------------------
 	/// @name Focus Drawing Methods [new in 4.0]
 	//! If focus drawing is enabled, the focus view will get a focus ring around it defined with the focus width and the focus color.
-	//! Views can define their own shape with the IFocusDrawing interface. Works only if CGraphicsPath is supported.
+	//! Views can define their own shape with the IFocusDrawing interface.
 	//-----------------------------------------------------------------------------
 	//@{
 	virtual void setFocusDrawingEnabled (bool state);				///< enable focus drawing
@@ -156,6 +157,8 @@ public:
 	virtual void setMouseObserver (IMouseObserver* observer) { pMouseObserver = observer; }
 	virtual IKeyboardHook* getKeyboardHook () const { return pKeyboardHook; }
 	virtual void setKeyboardHook (IKeyboardHook* hook) { pKeyboardHook = hook; }
+	virtual IViewAddedRemovedObserver* getViewAddedRemovedObserver () const { return pViewAddedRemovedObserver; }
+	virtual void setViewAddedRemovedObserver (IViewAddedRemovedObserver* observer) { pViewAddedRemovedObserver = observer; }
 
 	#if DEBUG
 	virtual void dumpHierarchy ();
@@ -168,9 +171,10 @@ protected:
 	~CFrame ();
 	bool   initFrame (void *pSystemWin);
 
-	VSTGUIEditorInterface   *pEditor;
-	IMouseObserver			*pMouseObserver;
-	IKeyboardHook			*pKeyboardHook;
+	VSTGUIEditorInterface*		pEditor;
+	IMouseObserver*				pMouseObserver;
+	IKeyboardHook*				pKeyboardHook;
+	IViewAddedRemovedObserver*	pViewAddedRemovedObserver;
 	
 	CView   *pModalView;
 	CView   *pFocusView;
@@ -242,6 +246,19 @@ public:
 	
 	virtual long onKeyDown (const VstKeyCode& code, CFrame* frame) = 0;	///< should return 1 if no further key down processing should apply, otherwise -1
 	virtual long onKeyUp (const VstKeyCode& code, CFrame* frame) = 0;	///< should return 1 if no further key up processing should apply, otherwise -1
+};
+
+//-----------------------------------------------------------------------------
+// IViewAddedRemovedObserver Declaration
+//! @brief view added removed observer interface for CFrame [new in 4.0]
+//-----------------------------------------------------------------------------
+class IViewAddedRemovedObserver
+{
+public:
+	virtual ~IViewAddedRemovedObserver () {}
+	
+	virtual void onViewAdded (CFrame* frame, CView* view) = 0;
+	virtual void onViewRemoved (CFrame* frame, CView* view) = 0;
 };
 
 } // namespace

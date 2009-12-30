@@ -141,6 +141,8 @@ public:
 	const CColor& getColor1 () const { return color1; }
 	const CColor& getColor2 () const { return color2; }
 	//@}
+//-----------------------------------------------------------------------------
+	CLASS_METHODS_NOCOPY(CGradient, CBaseObject)
 protected:
 	CGradient (double color1Start, double color2Start, const CColor& color1, const CColor& color2)
 	: color1Start (color1Start), color2Start (color2Start), color1 (color1), color2 (color2) {}

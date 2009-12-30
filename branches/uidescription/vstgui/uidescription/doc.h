@@ -45,6 +45,8 @@
 		
 	UIDescription todo:
 		- CTabView support (skipped, CViewSwitchContainer is the replacement)
+		- CNinePartTiledBitmap support
+		- alternate font support (allow more than one font family for fallback when first font not available on system)
 
 	Platform support:
 		- complete Win32 support
@@ -208,24 +210,21 @@ Templates are the main views in XML. You can have more than one.
 Per default the \b template tag will create a CViewContainer view, but you can use the \b class attribute to create any view class you want.
 (If the template should have subviews, the class must be an inherited class from CViewContainer like CScrollView)<br/>
 
-@page uidescription_vst3_support Inline Editing support for VST3
+@page uidescription_vst3_support Inline Editing support for VST3.1
 
-VSTGUI now supports easy and fast UI creation for VST3 plug-ins.
+VSTGUI now supports easy and fast UI creation for VST3.1 plug-ins.
 
 @section vst3_setup Setup
 
-First you need to add all the files from the uidescription subfolder to your project and define a preprocessor definition for VSTGUI_LIVE_EDITING=1.
+First you need to add vstgui_uidescription_win32.cpp or vstgui_uidescription_mac.mm and vst3editor.cpp to your project
+and define a preprocessor definition for VSTGUI_LIVE_EDITING=1.
 Then you have to modify your edit controller class to create a VST3Editor instance when asked to create it's view :
 @code
 IPlugView* PLUGIN_API MyEditController::createView (const char* name)
 {
 	if (strcmp (name, ViewType::kEditor) == 0)
 	{
-		#if DEBUG
-		return new VST3Editor (this, "view", "myEditor.uidesc", true);
-		#else
-		return new VST3Editor (this, "view", "myEditor.uidesc", false);
-		#endif
+		return new VST3Editor (this, "view", "myEditor.uidesc");
 	}
 	return 0;
 }
@@ -246,7 +245,7 @@ If you have enabled editing, a new window will open, where you can define tags, 
 
 To add new views just open the context menu (via right click) in your editor and choose the view type in the "Insert Subview" submenu.
 
-You have automatic VST3 parameter support if you use the Parameter class in your edit controller. This way you just have to
+You have automatic VST3 parameter support if you use the Steinberg::Vst::Parameter class in your edit controller. This way you just have to
 define a tag in the "VSTGUI Inspector" window with the same value as the VST3 parameter ID. Now you can set any VSTGUI control's tag
 to this tag and it will automatically be synced with the VST3 parameter.
 

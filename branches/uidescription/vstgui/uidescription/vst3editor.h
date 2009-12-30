@@ -53,16 +53,17 @@ class VST3EditorDelegate
 public:
 	virtual ~VST3EditorDelegate () {}
 	
-	virtual CView* createCustomView (const char* name, const UIAttributes& attributes, IUIDescription* description) = 0;
+	virtual CView* createCustomView (const char* name, const UIAttributes& attributes, IUIDescription* description, VST3Editor* editor) = 0;
 	virtual bool findParameter (const CPoint& pos, Steinberg::Vst::ParamID& paramID, VST3Editor* editor) { return false; }
+	virtual void willClose (VST3Editor* editor) {}
 };
 
 //-----------------------------------------------------------------------------
-class VST3Editor : public Steinberg::Vst::VSTGUIEditor, public Steinberg::Vst::IParameterFinder, public IController
+class VST3Editor : public Steinberg::Vst::VSTGUIEditor, public Steinberg::Vst::IParameterFinder, public IController, public IViewAddedRemovedObserver
 {
 public:
-	VST3Editor (void* controller, const char* viewName, const char* xmlFile, bool debugMode = false);
-	VST3Editor (UIDescription* desc, void* controller, const char* viewName, const char* xmlFile = 0, bool debugMode = false);
+	VST3Editor (void* controller, const char* viewName, const char* xmlFile);
+	VST3Editor (UIDescription* desc, void* controller, const char* viewName, const char* xmlFile = 0);
 
 	bool exchangeView (const char* newViewName);
 	void enableTooltips (bool state);
@@ -79,7 +80,6 @@ protected:
 	#if VSTGUI_LIVE_EDITING
 	void runNewTemplateDialog (const char* baseViewName);
 	void runTemplateSettingsDialog ();
-	void runFocusSettingsDialog ();
 	#endif // VSTGUI_LIVE_EDITING
 	
 	bool PLUGIN_API open (void* parent);
@@ -90,15 +90,12 @@ protected:
 
 	CView* createView (const UIAttributes& attributes, IUIDescription* description);
 	CView* verifyView (CView* view, const UIAttributes& attributes, IUIDescription* description);
+
 	CMessageResult notify (CBaseObject* sender, const char* message);
 
 	Steinberg::tresult PLUGIN_API onSize (Steinberg::ViewRect* newSize);
 	Steinberg::tresult PLUGIN_API canResize ();
 	Steinberg::tresult PLUGIN_API checkSizeConstraint (Steinberg::ViewRect* rect);
-
-	Steinberg::tresult PLUGIN_API onWheel (float distance);
-	Steinberg::tresult PLUGIN_API onKeyDown (Steinberg::char16 key, Steinberg::int16 keyMsg, Steinberg::int16 modifiers);
-	Steinberg::tresult PLUGIN_API onKeyUp (Steinberg::char16 key, Steinberg::int16 keyMsg, Steinberg::int16 modifiers);
 
 	// IParameterFinder
 	Steinberg::tresult PLUGIN_API findParameter (Steinberg::int32 xPos, Steinberg::int32 yPos, Steinberg::Vst::ParamID& resultTag);
@@ -107,6 +104,10 @@ protected:
 	virtual void valueChanged (CControl* pControl);
 	virtual void controlBeginEdit (CControl* pControl);
 	virtual void controlEndEdit (CControl* pControl);
+
+	// IViewAddedRemovedObserver
+	void onViewAdded (CFrame* frame, CView* view);
+	void onViewRemoved (CFrame* frame, CView* view);
 
 	UIDescription* description;
 	CTooltipSupport* tooltipSupport;

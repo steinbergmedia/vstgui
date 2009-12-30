@@ -120,17 +120,20 @@ Dialog::Dialog (const CPoint& position, CView* rootView, long style, const char*
 	rootView->setViewSize (size);
 	rootView->setMouseableArea (size);
 	size.bottom += kMargin*3+kControlHeight;
-	size.right += kMargin*2;
-	size.offset (position.x, position.y);
+	if (position.x != -1 && position.y != -1)
+		size.offset (position.x, position.y);
 	platformWindow = PlatformWindow::create (size, title, PlatformWindow::kWindowType, 0, 0);
 	if (platformWindow)
 	{
 		if (position.x == -1 && position.y == -1)
 			platformWindow->center ();
-		size.offset (-position.x, -position.y);
+		else
+			size.offset (-position.x, -position.y);
+
 		#if MAC_CARBON && MAC_COCOA
 		CFrame::setCocoaMode (true);
 		#endif
+
 		frame = new CFrame (size, platformWindow->getPlatformHandle (), this);
 		frame->setKeyboardHook (this);
 		frame->setFocusDrawingEnabled (true);

@@ -399,7 +399,12 @@ public:
 			view->setAutosizeFlags (autosize);
 		}
 		if (tooltipAttr)
-			view->setAttribute (kCViewTooltipAttribute, tooltipAttr->size ()+1, tooltipAttr->c_str ());
+		{
+			if (tooltipAttr->size () > 0)
+				view->setAttribute (kCViewTooltipAttribute, tooltipAttr->size ()+1, tooltipAttr->c_str ());
+			else
+				view->removeAttribute (kCViewTooltipAttribute);
+		}
 		if (customViewAttr)
 			view->setAttribute ('uicv', customViewAttr->size ()+1, customViewAttr->c_str ());
 

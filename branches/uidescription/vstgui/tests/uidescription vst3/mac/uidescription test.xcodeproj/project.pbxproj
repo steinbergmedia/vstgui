@@ -50,6 +50,7 @@
 		F44075D810BF0DD5003C59F6 /* switch horizontal.bmp in Resources */ = {isa = PBXBuildFile; fileRef = F44075D610BF0DD5003C59F6 /* switch horizontal.bmp */; };
 		F44075D910BF0DD5003C59F6 /* switch vertical.bmp in Resources */ = {isa = PBXBuildFile; fileRef = F44075D710BF0DD5003C59F6 /* switch vertical.bmp */; };
 		F44075E610BF147E003C59F6 /* animation knob.png in Resources */ = {isa = PBXBuildFile; fileRef = F44075E510BF147E003C59F6 /* animation knob.png */; };
+		F4F4013D10D2662500F2B46B /* vst2wrapper.sdk.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4F4013C10D2662500F2B46B /* vst2wrapper.sdk.cpp */; };
 		F4F5DA8A10BFD28900DB6C33 /* TabController.png in Resources */ = {isa = PBXBuildFile; fileRef = F4F5DA8910BFD28900DB6C33 /* TabController.png */; };
 /* End PBXBuildFile section */
 
@@ -140,6 +141,7 @@
 		F44075D610BF0DD5003C59F6 /* switch horizontal.bmp */ = {isa = PBXFileReference; lastKnownFileType = image.bmp; name = "switch horizontal.bmp"; path = "../resource/switch horizontal.bmp"; sourceTree = SOURCE_ROOT; };
 		F44075D710BF0DD5003C59F6 /* switch vertical.bmp */ = {isa = PBXFileReference; lastKnownFileType = image.bmp; name = "switch vertical.bmp"; path = "../resource/switch vertical.bmp"; sourceTree = SOURCE_ROOT; };
 		F44075E510BF147E003C59F6 /* animation knob.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "animation knob.png"; path = "../resource/animation knob.png"; sourceTree = SOURCE_ROOT; };
+		F4F4013C10D2662500F2B46B /* vst2wrapper.sdk.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = vst2wrapper.sdk.cpp; path = ../../../../../SKI/public.sdk/source/vst/vst2wrapper/vst2wrapper.sdk.cpp; sourceTree = SOURCE_ROOT; };
 		F4F5DA8910BFD28900DB6C33 /* TabController.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = TabController.png; path = ../resource/TabController.png; sourceTree = SOURCE_ROOT; };
 		F4F5DA9E10BFD5BF00DB6C33 /* ussage bugs.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = "ussage bugs.txt"; path = "../ussage bugs.txt"; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
@@ -267,6 +269,7 @@
 		F44074E510BE6BB6003C59F6 /* vst */ = {
 			isa = PBXGroup;
 			children = (
+				F4F4013C10D2662500F2B46B /* vst2wrapper.sdk.cpp */,
 				F44074E610BE6BB6003C59F6 /* vstaudioeffect.cpp */,
 				F44074E710BE6BB6003C59F6 /* vstaudioeffect.h */,
 				F44074E810BE6BB6003C59F6 /* vstbus.cpp */,
@@ -483,6 +486,7 @@
 				F403651810C59C44001BCC34 /* vstinitiids.cpp in Sources */,
 				F403651C10C59C84001BCC34 /* baseiids.cpp in Sources */,
 				F403673610C901AF001BCC34 /* vstgui_uidescription_mac.mm in Sources */,
+				F4F4013D10D2662500F2B46B /* vst2wrapper.sdk.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -499,6 +503,7 @@
 				GCC_SYMBOLS_PRIVATE_EXTERN = YES;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
+				GENERATE_PKGINFO_FILE = YES;
 				HEADER_SEARCH_PATHS = (
 					../../../../,
 					../../../../../SKI/,

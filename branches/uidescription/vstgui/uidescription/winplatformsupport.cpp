@@ -41,6 +41,13 @@
 #include "ccolorchooserpanel.h"
 #include "../lib/platform/win32/win32support.h"
 #include <wingdi.h>
+#include <oleidl.h>
+#include <ole2.h>
+#include <shlobj.h>
+#include <shellapi.h>
+#include <richedit.h>
+#include <shobjidl.h>
+#include <string>
 
 static TCHAR   gClassName[100];
 extern void* hInstance;
@@ -288,36 +295,61 @@ LONG_PTR WINAPI Win32Window::windowProc (HWND hWnd, UINT message, WPARAM wParam,
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
-bool PlatformUtilities::collectPlatformFontNames (std::list<std::string*>& fontNames)
+class DropSource : public CBaseObject, public ::IDropSource
 {
-	Gdiplus::InstalledFontCollection fonts;
-	if (fonts.GetFamilyCount () > 0)
-	{
-		Gdiplus::FontFamily* families = new Gdiplus::FontFamily[fonts.GetFamilyCount ()];
-		INT numFonts = fonts.GetFamilyCount ();
-		if (fonts.GetFamilies (fonts.GetFamilyCount (), families, &numFonts) == Gdiplus::Ok)
-		{
-			WCHAR familyName[LF_FACESIZE];
-			for (INT i = 0; i < numFonts; i++)
-			{
-				families[i].GetFamilyName (familyName);
-				UTF8StringHelper str (familyName);
-				fontNames.push_back (new std::string (str));
-			}
-		}
-		delete [] families;
-		return true;
-	}
-	return false;
-}
+public:
+	DropSource () {}
+
+	// IUnknown
+	STDMETHOD (QueryInterface) (REFIID riid, void** object);
+	STDMETHOD_ (ULONG, AddRef) (void) { remember (); return getNbReference ();}
+	STDMETHOD_ (ULONG, Release) (void) { ULONG refCount = getNbReference () - 1; forget (); return refCount; }
+	
+	// IDropSource
+	STDMETHOD (QueryContinueDrag) (BOOL escapePressed, DWORD keyState);
+	STDMETHOD (GiveFeedback) (DWORD effect);
+};
+
+//-----------------------------------------------------------------------------
+class DataObject : public CBaseObject, public ::IDataObject
+{
+public:
+	DataObject (const char* string);
+	~DataObject ();
+
+	// IUnknown
+	STDMETHOD (QueryInterface) (REFIID riid, void** object);
+	STDMETHOD_ (ULONG, AddRef) (void) { remember (); return getNbReference ();}
+	STDMETHOD_ (ULONG, Release) (void) { ULONG refCount = getNbReference () - 1; forget (); return refCount; }
+
+	// IDataObject
+	STDMETHOD (GetData) (FORMATETC *format, STGMEDIUM *medium);
+	STDMETHOD (GetDataHere) (FORMATETC *format, STGMEDIUM *medium);
+	STDMETHOD (QueryGetData) (FORMATETC *format);
+	STDMETHOD (GetCanonicalFormatEtc) (FORMATETC *formatIn, FORMATETC *formatOut);
+	STDMETHOD (SetData) (FORMATETC *format, STGMEDIUM *medium, BOOL release);
+	STDMETHOD (EnumFormatEtc) (DWORD direction, IEnumFORMATETC** enumFormat);
+	STDMETHOD (DAdvise) (FORMATETC* format, DWORD advf, IAdviseSink* advSink, DWORD* connection);
+	STDMETHOD (DUnadvise) (DWORD connection);
+	STDMETHOD (EnumDAdvise) (IEnumSTATDATA** enumAdvise);
+private:
+	std::string dataString;
+};
 
 //-----------------------------------------------------------------------------
 bool PlatformUtilities::startDrag (CFrame* frame, const CPoint& location, const char* string, CBitmap* dragBitmap, bool localOnly)
 {
 	// TODO: Windows start drag support
-	return false;
+	DataObject* dataObject = new DataObject (string);
+	DropSource* dropSource = new DropSource;
+	DWORD outEffect;
+	HRESULT result = DoDragDrop (dataObject, dropSource, DROPEFFECT_COPY, &outEffect);
+	dataObject->Release ();
+	dropSource->Release ();
+	return result == DRAGDROP_S_DROP;
 }
 
+//-----------------------------------------------------------------------------
 #if !NATIVE_COLOR_CHOOSER
 class ColorChooserWindowOwner : public CBaseObject
 {
@@ -400,6 +432,172 @@ void PlatformUtilities::colorChooser (const CColor* oldColor, IPlatformColorChan
 	}
 	#endif
 
+}
+
+//-----------------------------------------------------------------------------
+// DropSource
+//-----------------------------------------------------------------------------
+STDMETHODIMP DropSource::QueryInterface (REFIID riid, void** object)
+{
+	if (riid == ::IID_IDropSource)                        
+	{                                                              
+		AddRef ();                                                 
+		*object = (::IDropSource*)this;                               
+		return S_OK;                                          
+	}
+	else if (riid == ::IID_IUnknown)                        
+	{                                                              
+		AddRef ();                                                 
+		*object = (::IUnknown*)this;                               
+		return S_OK;                                          
+	}
+	return E_NOINTERFACE;
+}
+
+//-----------------------------------------------------------------------------
+STDMETHODIMP DropSource::QueryContinueDrag (BOOL escapePressed, DWORD keyState)
+{
+	if (escapePressed)
+		return DRAGDROP_S_CANCEL;
+	
+	if ((keyState & (MK_LBUTTON|MK_RBUTTON)) == 0)
+		return DRAGDROP_S_DROP;
+
+	return S_OK;	
+}
+
+//-----------------------------------------------------------------------------
+STDMETHODIMP DropSource::GiveFeedback (DWORD effect)
+{
+	return DRAGDROP_S_USEDEFAULTCURSORS;
+}
+
+//-----------------------------------------------------------------------------
+// DataObject
+//-----------------------------------------------------------------------------
+DataObject::DataObject (const char* string)
+{
+	dataString = string;
+}
+
+//-----------------------------------------------------------------------------
+DataObject::~DataObject ()
+{
+}
+
+//-----------------------------------------------------------------------------
+STDMETHODIMP DataObject::QueryInterface (REFIID riid, void** object)
+{
+	if (riid == ::IID_IDataObject)                        
+	{                                                              
+		AddRef ();                                                 
+		*object = (::IDataObject*)this;                               
+		return S_OK;                                          
+	}
+	else if (riid == ::IID_IUnknown)                        
+	{                                                              
+		AddRef ();                                                 
+		*object = (::IUnknown*)this;                               
+		return S_OK;                                          
+	}
+	return E_NOINTERFACE;
+}
+
+//-----------------------------------------------------------------------------
+STDMETHODIMP DataObject::GetData (FORMATETC* format, STGMEDIUM* medium)
+{
+	medium->tymed = 0;
+	medium->hGlobal = 0;
+	medium->pUnkForRelease = 0;
+
+	if (format->cfFormat == CF_TEXT || format->cfFormat == CF_UNICODETEXT)
+	{
+		UTF8StringHelper utf8String (dataString.c_str ());
+		SIZE_T size = 0;
+		const void* data = 0;
+		if (format->cfFormat == CF_UNICODETEXT)
+		{
+			size = (dataString.length () + 1) * sizeof (WCHAR);
+			data = utf8String.getWideString ();
+		}
+		else
+		{
+			size = (dataString.length () + 1) * sizeof (char);
+			data = dataString.c_str ();
+		}
+
+		if (data && size > 0)
+		{
+			HGLOBAL	memoryHandle = GlobalAlloc (GMEM_MOVEABLE, size); 
+			void* memory = GlobalLock (memoryHandle);
+			if (memory)
+			{
+				memcpy (memory, data, size);
+				GlobalUnlock (memoryHandle);
+			}
+
+			medium->hGlobal = memoryHandle;						
+			medium->tymed = TYMED_HGLOBAL;
+			return S_OK;
+		}
+	}
+	return E_UNEXPECTED;
+}
+
+//-----------------------------------------------------------------------------
+STDMETHODIMP DataObject::GetDataHere (FORMATETC *format, STGMEDIUM *pmedium)
+{
+	return E_NOTIMPL;
+}
+
+//-----------------------------------------------------------------------------
+STDMETHODIMP DataObject::QueryGetData (FORMATETC *format)
+{
+	if (format->cfFormat == CF_TEXT || format->cfFormat == CF_UNICODETEXT)
+	{
+		return S_OK;
+	}
+	return DV_E_FORMATETC;
+}
+
+//-----------------------------------------------------------------------------
+STDMETHODIMP DataObject::GetCanonicalFormatEtc (FORMATETC *formatIn, FORMATETC *formatOut)
+{
+	return E_NOTIMPL;
+}
+
+//-----------------------------------------------------------------------------
+STDMETHODIMP DataObject::SetData (FORMATETC *pformatetc, STGMEDIUM *pmedium, BOOL fRelease)
+{
+	return E_NOTIMPL;
+}
+
+//-----------------------------------------------------------------------------
+STDMETHODIMP DataObject::EnumFormatEtc (DWORD dwDirection, IEnumFORMATETC** enumFormat)
+{
+	return E_NOTIMPL;
+//	*enumFormat = NEW SmtgEnumFormat (source);
+//	if (*enumFormat)
+//		return NO_ERROR;
+//	return STG_E_UNKNOWN;
+}
+
+//-----------------------------------------------------------------------------
+STDMETHODIMP DataObject::DAdvise (FORMATETC* pformatetc, DWORD advf, IAdviseSink* pAdvSink, DWORD* pdwConnection)
+{
+	return E_NOTIMPL;
+}
+
+//-----------------------------------------------------------------------------
+STDMETHODIMP DataObject::DUnadvise (DWORD dwConnection)
+{
+	return E_NOTIMPL;
+}
+
+//-----------------------------------------------------------------------------
+STDMETHODIMP DataObject::EnumDAdvise (IEnumSTATDATA** ppenumAdvise)
+{
+	return E_NOTIMPL;
 }
 
 } // namespace

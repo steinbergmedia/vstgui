@@ -68,6 +68,7 @@ protected:
 	CBaseObject* owner;
 	IPlatformColorChangeCallback* callback;
 	CColorChooser* colorChooser;
+	CPoint minSize;
 
 	static CRect lastSize;
 };

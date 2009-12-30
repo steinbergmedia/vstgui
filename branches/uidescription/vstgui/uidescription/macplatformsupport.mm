@@ -205,17 +205,6 @@ void CocoaWindow::stopModal ()
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
-bool PlatformUtilities::collectPlatformFontNames (std::list<std::string*>& fontNames)
-{
-	NSArray* fonts = [[NSFontManager sharedFontManager] availableFontFamilies];
-	for (NSString* font in fonts)
-	{
-		fontNames.push_back (new std::string ([font UTF8String]));
-	}
-	return true;
-}
-
-//-----------------------------------------------------------------------------
 bool PlatformUtilities::startDrag (CFrame* frame, const CPoint& location, const char* string, CBitmap* dragBitmap, bool localOnly)
 {
 	CGImageRef cgImage = 0;

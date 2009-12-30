@@ -35,6 +35,8 @@
 #ifndef __iplatformbitmap__
 #define __iplatformbitmap__
 
+/// @cond ignore
+
 #include "../cbitmap.h"
 
 namespace VSTGUI {
@@ -53,5 +55,7 @@ public:
 };
 
 } // namespace
+
+/// @endcond
 
 #endif // __iplatformbitmap__

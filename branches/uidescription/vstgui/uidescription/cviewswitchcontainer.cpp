@@ -215,6 +215,7 @@ void UIDescriptionViewSwitchController::getTemplateNames (std::string& str)
 	}
 }
 
+/// @cond ignore
 //-----------------------------------------------------------------------------
 class CViewSwitchContainerCreator : public IViewCreator
 {
@@ -303,5 +304,6 @@ public:
 };
 CViewSwitchContainerCreator __gCViewSwitchContainerCreator;
 
+/// @endcond
 
 } // namespace

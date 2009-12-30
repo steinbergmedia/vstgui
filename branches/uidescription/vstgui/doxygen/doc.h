@@ -42,8 +42,8 @@
 Welcome to VSTGUI
 
 - @ref intro @n
-- @ref tutorial_getting_started @n
 - @ref changes_from_3_0 @n
+- @ref tutorial_getting_started @n
 - @ref changelog @n
 - @ref license @n
 

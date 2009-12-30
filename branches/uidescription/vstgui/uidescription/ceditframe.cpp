@@ -1031,6 +1031,7 @@ void CEditFrame::showOptionsMenu (const CPoint& where)
 					{
 						void* parentPlatformWindow = getPlatformFrame ()->getPlatformRepresentation ();
 						hierarchyBrowser = new ViewHierarchyBrowserWindow (dynamic_cast<CViewContainer*> (getView (0)), this, uiDescription, parentPlatformWindow);
+						hierarchyBrowser->getFrame ()->setKeyboardHook (this);
 					}
 					break;
 				}

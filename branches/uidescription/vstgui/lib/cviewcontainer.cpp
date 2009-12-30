@@ -497,7 +497,7 @@ bool CViewContainer::isChild (CView *pView, bool deep) const
 			break;
 		}
 		if (deep && pV->pView->isTypeOf ("CViewContainer"))
-			found = ((CViewContainer*)pV->pView)->isChild (pView);
+			found = ((CViewContainer*)pV->pView)->isChild (pView, true);
 		pV = pV->pNext;
 	}
 	return found;
@@ -716,7 +716,7 @@ void CViewContainer::drawRect (CDrawContext* pContext, const CRect& updateRect)
 	
 	CView* _focusView = 0;
 	IFocusDrawing* _focusDrawing = 0;
-	if (getFrame ()->focusDrawingEnabled () && isChild (getFrame ()->getFocusView (), false))
+	if (getFrame ()->focusDrawingEnabled () && isChild (getFrame ()->getFocusView (), false) && getFrame ()->getFocusView ()->wantsFocus ())
 	{
 		_focusView = getFrame ()->getFocusView ();
 		_focusDrawing = dynamic_cast<IFocusDrawing*> (_focusView);
@@ -1188,8 +1188,6 @@ bool CViewContainer::removed (CView* parent)
 	 if (pOffscreenContext)
 		pOffscreenContext->forget ();
 	pOffscreenContext = 0;
-
-	pParentFrame = 0;
 
 	FOREACHSUBVIEW
 		pV->removed (this);

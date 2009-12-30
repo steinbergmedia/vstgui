@@ -65,6 +65,7 @@ CFrame::CFrame (const CRect &inSize, void* inSystemWindow, VSTGUIEditorInterface
 , pEditor (inEditor)
 , pMouseObserver (0)
 , pKeyboardHook (0)
+, pViewAddedRemovedObserver (0)
 , pModalView (0)
 , pFocusView (0)
 , pActiveFocusView (0)
@@ -95,6 +96,7 @@ CFrame::~CFrame ()
 }
 
 #if MAC_COCOA && MAC_CARBON
+//-----------------------------------------------------------------------------
 void CFrame::setCocoaMode (bool state)
 {
 	createNSViewMode = state;
@@ -540,6 +542,8 @@ void CFrame::onViewRemoved (CView* pView)
 		if (container->isChild (pFocusView, true))
 			setFocusView (0);
 	}
+	if (getViewAddedRemovedObserver ())
+		getViewAddedRemovedObserver ()->onViewRemoved (this, pView);
 }
 
 //-----------------------------------------------------------------------------
@@ -548,6 +552,8 @@ void CFrame::onViewRemoved (CView* pView)
  */
 void CFrame::onViewAdded (CView* pView)
 {
+	if (getViewAddedRemovedObserver ())
+		getViewAddedRemovedObserver ()->onViewAdded (this, pView);
 }
 
 //-----------------------------------------------------------------------------

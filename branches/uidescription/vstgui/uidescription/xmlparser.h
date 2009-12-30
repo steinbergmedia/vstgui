@@ -75,6 +75,19 @@ protected:
 	IHandler* handler;
 };
 
+//-----------------------------------------------------------------------------
+class MemoryContentProvider : public IContentProvider
+{
+public:
+	MemoryContentProvider (const void* data, int dataSize);		// data must be valid the whole lifetime of this object
+	int readRawXmlData (char* buffer, int size);
+	void rewind ();
+protected:
+	const void* data;
+	int dataSize;
+	int pos;
+};
+
 }} // namespaces
 
 #endif

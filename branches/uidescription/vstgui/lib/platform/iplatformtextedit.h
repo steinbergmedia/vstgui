@@ -35,6 +35,8 @@
 #ifndef __iplatformtextedit__
 #define __iplatformtextedit__
 
+/// @cond ignore
+
 #include "../cfont.h"
 #include "../ccolor.h"
 #include "../crect.h"
@@ -77,5 +79,7 @@ protected:
 };
 
 } // namespace
+
+/// @endcond
 
 #endif // __iplatformtextedit__

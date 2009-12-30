@@ -45,6 +45,7 @@ namespace VSTGUI {
 class COptionMenu;
 //-----------------------------------------------------------------------------
 // CMenuItem Declaration
+//! @brief a menu item
 //-----------------------------------------------------------------------------
 class CMenuItem : public CBaseObject
 {

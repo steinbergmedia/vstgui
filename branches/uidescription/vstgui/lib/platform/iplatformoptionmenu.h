@@ -35,6 +35,8 @@
 #ifndef __iplatformoptionmenu__
 #define __iplatformoptionmenu__
 
+/// @cond ignore
+
 #include "../vstguibase.h"
 
 namespace VSTGUI {
@@ -58,5 +60,7 @@ protected:
 };
 
 } // namespace
+
+/// @endcond
 
 #endif // __iplatformtextedit__

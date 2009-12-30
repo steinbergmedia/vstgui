@@ -49,7 +49,7 @@ CColorChooserPanel::CColorChooserPanel (CBaseObject* owner, IPlatformColorChange
 , callback (callback)
 {
 	CRect size (0, 0, 300, 500);
-	platformWindow = PlatformWindow::create (size, "VSTGUI Color Chooser", PlatformWindow::kPanelType, PlatformWindow::kClosable, this, parentPlatformWindow);
+	platformWindow = PlatformWindow::create (size, "VSTGUI Color Chooser", PlatformWindow::kPanelType, PlatformWindow::kClosable|PlatformWindow::kResizable, this, parentPlatformWindow);
 	if (platformWindow)
 	{
 		#if MAC_CARBON && MAC_COCOA
@@ -70,6 +70,8 @@ CColorChooserPanel::CColorChooserPanel (CBaseObject* owner, IPlatformColorChange
 		colorChooser->setViewSize (r);
 		colorChooser->setMouseableArea (r);
 		r.inset (-kMargin, -kMargin);
+		minSize.x = r.getWidth ();
+		minSize.y = r.getHeight ();
 		frame->setSize (r.getWidth (), r.getHeight ());
 		frame->addView (colorChooser);
 		platformWindow->setSize (r);
@@ -106,6 +108,7 @@ void CColorChooserPanel::setColor (const CColor& newColor)
 //-----------------------------------------------------------------------------
 void CColorChooserPanel::windowSizeChanged (const CRect& newSize, PlatformWindow* platformWindow)
 {
+	frame->setSize (newSize.getWidth (), newSize.getHeight ());
 }
 
 //-----------------------------------------------------------------------------
@@ -124,6 +127,10 @@ void CColorChooserPanel::windowClosed (PlatformWindow* _platformWindow)
 //-----------------------------------------------------------------------------
 void CColorChooserPanel::checkWindowSizeConstraints (CPoint& size, PlatformWindow* platformWindow)
 {
+	if (size.x < minSize.x)
+		size.x = minSize.x;
+	if (size.y < minSize.y)
+		size.y = minSize.y;
 }
 
 // IColorChooserDelegate

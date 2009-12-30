@@ -87,7 +87,7 @@ class UTF8StringHelper
 public:
 	UTF8StringHelper (const char* utf8Str) : utf8Str (utf8Str), allocWideStr (0), allocStrIsWide (true) {}
 	UTF8StringHelper (const WCHAR* wideStr) : wideStr (wideStr), allocUTF8Str (0), allocStrIsWide (false) {}
-	UTF8StringHelper () { if (allocUTF8Str) free (allocUTF8Str); }
+	UTF8StringHelper () { if (allocUTF8Str) ::free (allocUTF8Str); }
 
 	operator const char* () { return getUTF8String (); }
 	operator const WCHAR*() { return getWideString (); }
@@ -101,7 +101,7 @@ public:
 			if (!allocWideStr && utf8Str)
 			{
 				int numChars = MultiByteToWideChar (CP_UTF8, 0, utf8Str, -1, 0, 0);
-				allocWideStr = (WCHAR*)malloc ((numChars+1)*2);
+				allocWideStr = (WCHAR*)::malloc ((numChars+1)*2);
 				if (MultiByteToWideChar (CP_UTF8, 0, utf8Str, -1, allocWideStr, numChars) == 0)
 				{
 					allocWideStr[0] = 0;
@@ -119,7 +119,7 @@ public:
 			if (!allocUTF8Str && wideStr)
 			{
 				int allocSize = WideCharToMultiByte (CP_UTF8, 0, wideStr, -1, 0, 0, 0, 0);
-				allocUTF8Str = (char*)malloc (allocSize+1);
+				allocUTF8Str = (char*)::malloc (allocSize+1);
 				if (WideCharToMultiByte (CP_UTF8, 0, wideStr, -1, allocUTF8Str, allocSize, 0, 0) == 0)
 				{
 					allocUTF8Str[0] = 0;

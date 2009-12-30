@@ -34,6 +34,8 @@
 
 #include <stdlib.h>
 
+/// @cond ignore
+
 #define XML_STATIC 1
 #define XML_NS 1
 #define XML_DTD 1
@@ -50,6 +52,7 @@ namespace Xml {
 }} // namespaces
 
 #include "xmlparser.h"
+#include <algorithm>
 
 #define PARSER static_cast<XML_ParserStruct*>(parser)
 
@@ -171,8 +174,36 @@ bool Parser::stop ()
 }
 
 //------------------------------------------------------------------------
+MemoryContentProvider::MemoryContentProvider (const void* data, int dataSize)
+: data (data)
+, dataSize (dataSize)
+, pos (0)
+{
+}
+
+//------------------------------------------------------------------------
+int MemoryContentProvider::readRawXmlData (char* buffer, int size)
+{
+	int bytesToCopy = std::min<int> (size, dataSize-pos);
+	if (bytesToCopy > 0)
+	{
+		memcpy (buffer, data, bytesToCopy);
+		pos += bytesToCopy;
+	}
+	return bytesToCopy;
+}
+
+//------------------------------------------------------------------------
+void MemoryContentProvider::rewind ()
+{
+	pos = 0;
+}
+
+//------------------------------------------------------------------------
 #include "./expat/xmltok.c"
 #include "./expat/xmlrole.c"
 #include "./expat/xmlparse.c"
 
 }} // namespaces
+
+/// @endcond

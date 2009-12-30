@@ -43,6 +43,8 @@
 
 namespace VSTGUI {
 
+#define VSTGUI_USES_CORE_TEXT	(MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_5)
+
 #if VSTGUI_USES_CORE_TEXT
 //-----------------------------------------------------------------------------
 class CoreTextFont : public IPlatformFont, public IFontPainter
