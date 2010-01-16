@@ -190,6 +190,16 @@ private:
 	long nbReference;
 };
 
+//-----------------------------------------------------------------------------
+class CBaseObjectGuard
+{
+public:
+	CBaseObjectGuard (CBaseObject* _obj) : obj (_obj) { if (obj) obj->remember (); }
+	~CBaseObjectGuard () { if (obj) obj->forget (); }
+protected:
+	CBaseObject* obj;
+};
+
 } // namespace
 
 //-----------------------------------------------------------------------------

@@ -59,7 +59,7 @@ public:
 class CColorChooser : public CViewContainer, public CControlListener
 {
 public:
-	CColorChooser (IColorChooserDelegate* delegate = 0, const CColor& initialColor = kBlackCColor);
+	CColorChooser (IColorChooserDelegate* delegate = 0, const CColor& initialColor = kTransparentCColor);
 	~CColorChooser ();
 
 	void valueChanged (CControl* pControl);

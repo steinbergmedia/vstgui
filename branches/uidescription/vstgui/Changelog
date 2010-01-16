@@ -1,3 +1,9 @@
+20010-01-16 arne
+
+	* changed size for IDataBrowser::dbDrawHeader() to include line width
+	* added CBaseObjectGuard object (it's now safe to remove a view while in mouse or key event methods)
+	* aligning offscreen bitmaps on mac to 16 bytes
+	
 2009-12-30 arne
 
 	* added IViewAddedRemovedObserver as interface for observing the frame when a view is added or removed

@@ -394,6 +394,17 @@ public:
 
 	void dbDrawHeader (CDrawContext* context, const CRect& size, long column, long flags, CDataBrowser* browser)
 	{
+		CRect r (size);
+		r.inset (0, 3);
+		context->setDrawMode (kCopyMode);
+		context->setFillColor (uidDataBrowserLineColor);
+		context->drawRect (r, kDrawFilled);
+		if (headerTitles.size () > column)
+		{
+			context->setFont (kSystemFont, 10);
+			context->setFontColor (kWhiteCColor);
+			context->drawString (headerTitles[column].c_str (), r);
+		}
 	}
 
 	void drawBackgroundSelected (CDrawContext* context, const CRect& size, CDataBrowser* browser)
@@ -571,6 +582,7 @@ protected:
 	UIDescription* desc;
 	IActionOperator* actionOperator;
 	std::vector<const std::string*> names;
+	std::vector<std::string> headerTitles;
 	long mouseRow;
 	CGraphicsPath* path;
 };
@@ -580,11 +592,30 @@ class BitmapBrowserDelegate : public BrowserDelegateBase
 //-----------------------------------------------------------------------------
 {
 public:
-	BitmapBrowserDelegate (UIDescription* desc, IActionOperator* actionOperator) : BrowserDelegateBase (desc, actionOperator) { updateNames (); }
+	BitmapBrowserDelegate (UIDescription* desc, IActionOperator* actionOperator)
+	: BrowserDelegateBase (desc, actionOperator)
+	{
+		updateNames ();
+		headerTitles.push_back ("Name");
+		headerTitles.push_back ("Bitmap");
+		headerTitles.push_back ("NinePartOffsets");
+	}
 
 	void getNames (std::list<const std::string*>& _names)
 	{
 		desc->collectBitmapNames (_names);
+	}
+	
+	long dbGetNumColumns (CDataBrowser* browser)
+	{
+		return 4;
+	}
+
+	CCoord dbGetCurrentColumnWidth (long index, CDataBrowser* browser)
+	{
+		if (index > 2)
+			return 20;
+		return (browser->getWidth () - 40) / 3;
 	}
 	
 	bool getCellText (long row, long column, std::string& result, CDataBrowser* browser)
@@ -605,7 +636,7 @@ public:
 	{
 		if (row < (dbGetNumRows (browser) - 1))
 		{
-			if (column == 2)
+			if (column == dbGetNumColumns (browser) - 1)
 			{
 				actionOperator->performBitmapChange (names[row]->c_str (), 0, true);
 				updateNames ();
@@ -662,7 +693,14 @@ class ColorBrowserDelegate : public BrowserDelegateBase, public IPlatformColorCh
 //-----------------------------------------------------------------------------
 {
 public:
-	ColorBrowserDelegate (UIDescription* desc, IActionOperator* actionOperator) : BrowserDelegateBase (desc, actionOperator), browser (0) { updateNames (); }
+	ColorBrowserDelegate (UIDescription* desc, IActionOperator* actionOperator) 
+	: BrowserDelegateBase (desc, actionOperator), browser (0) 
+	{
+		updateNames ();
+		headerTitles.push_back ("Name");
+		headerTitles.push_back ("Color");
+	}
+
 	~ColorBrowserDelegate ()
 	{
 		PlatformUtilities::colorChooser (0, this);
@@ -822,7 +860,13 @@ class TagBrowserDelegate : public BrowserDelegateBase
 //-----------------------------------------------------------------------------
 {
 public:
-	TagBrowserDelegate (UIDescription* desc, IActionOperator* actionOperator) : BrowserDelegateBase (desc, actionOperator) { updateNames (); }
+	TagBrowserDelegate (UIDescription* desc, IActionOperator* actionOperator)
+	: BrowserDelegateBase (desc, actionOperator)
+	{
+		updateNames ();
+		headerTitles.push_back ("Name");
+		headerTitles.push_back ("Tag");
+	}
 
 	void getNames (std::list<const std::string*>& _names)
 	{
@@ -905,7 +949,13 @@ class FontBrowserDelegate : public BrowserDelegateBase
 //-----------------------------------------------------------------------------
 {
 public:
-	FontBrowserDelegate (UIDescription* desc, IActionOperator* actionOperator) : BrowserDelegateBase (desc, actionOperator) { updateNames (); }
+	FontBrowserDelegate (UIDescription* desc, IActionOperator* actionOperator)
+	: BrowserDelegateBase (desc, actionOperator)
+	{
+		updateNames ();
+		headerTitles.push_back ("Name");
+		headerTitles.push_back ("Font");
+	}
 
 	void getNames (std::list<const std::string*>& _names)
 	{
@@ -1468,6 +1518,7 @@ CView* CViewInspector::createAttributesView (CCoord width)
 					attrNames = temp;
 				else
 				{
+					std::list<std::string> toRemove;
 					std::list<std::string>::const_iterator it = attrNames.begin ();
 					while (it != attrNames.end ())
 					{
@@ -1483,7 +1534,13 @@ CView* CViewInspector::createAttributesView (CCoord width)
 							it2++;
 						}
 						if (!found)
-							attrNames.remove (*it);
+							toRemove.push_back (*it);
+						it++;
+					}
+					it = toRemove.begin ();
+					while (it != toRemove.end ())
+					{
+						attrNames.remove (*it);
 						it++;
 					}
 				}
@@ -1524,7 +1581,7 @@ void CViewInspector::show ()
 			size.setHeight (400);
 
 		ColorBrowserDelegate* colorDelegate = new ColorBrowserDelegate (description, actionOperator);
-		CDataBrowser* colorBrowser = new CDataBrowser (size, 0, colorDelegate, CScrollView::kVerticalScrollbar|CScrollView::kDontDrawFrame|CDataBrowser::kDrawRowLines|CDataBrowser::kDrawColumnLines, 10);
+		CDataBrowser* colorBrowser = new CDataBrowser (size, 0, colorDelegate, CScrollView::kVerticalScrollbar|CScrollView::kDontDrawFrame|CDataBrowser::kDrawRowLines|CDataBrowser::kDrawColumnLines|CDataBrowser::kDrawHeader, 10);
 		colorBrowser->setBackgroundColor (kTransparentCColor);
 		colorBrowser->setAutosizeFlags (kAutosizeAll);
 		colorDelegate->forget ();
@@ -1534,7 +1591,7 @@ void CViewInspector::show ()
 		bar->setFrameColor (kTransparentCColor);
 
 		BitmapBrowserDelegate* bmpDelegate = new BitmapBrowserDelegate (description, actionOperator);
-		CDataBrowser* bitmapBrowser = new CDataBrowser (size, 0, bmpDelegate, CScrollView::kVerticalScrollbar|CScrollView::kDontDrawFrame|CDataBrowser::kDrawRowLines|CDataBrowser::kDrawColumnLines, 10);
+		CDataBrowser* bitmapBrowser = new CDataBrowser (size, 0, bmpDelegate, CScrollView::kVerticalScrollbar|CScrollView::kDontDrawFrame|CDataBrowser::kDrawRowLines|CDataBrowser::kDrawColumnLines|CDataBrowser::kDrawHeader, 10);
 		bitmapBrowser->setBackgroundColor (kTransparentCColor);
 		bitmapBrowser->setAutosizeFlags (kAutosizeAll);
 		bmpDelegate->forget ();
@@ -1544,7 +1601,7 @@ void CViewInspector::show ()
 		bar->setFrameColor (kTransparentCColor);
 
 		FontBrowserDelegate* fontDelegate = new FontBrowserDelegate (description, actionOperator);
-		CDataBrowser* fontBrowser = new CDataBrowser (size, 0, fontDelegate, CScrollView::kVerticalScrollbar|CScrollView::kDontDrawFrame|CDataBrowser::kDrawRowLines|CDataBrowser::kDrawColumnLines, 10);
+		CDataBrowser* fontBrowser = new CDataBrowser (size, 0, fontDelegate, CScrollView::kVerticalScrollbar|CScrollView::kDontDrawFrame|CDataBrowser::kDrawRowLines|CDataBrowser::kDrawColumnLines|CDataBrowser::kDrawHeader, 10);
 		fontBrowser->setBackgroundColor (kTransparentCColor);
 		fontBrowser->setAutosizeFlags (kAutosizeAll);
 		fontDelegate->forget ();
@@ -1554,7 +1611,7 @@ void CViewInspector::show ()
 		bar->setFrameColor (kTransparentCColor);
 
 		TagBrowserDelegate* tagDelegate = new TagBrowserDelegate (description, actionOperator);
-		CDataBrowser* controlTagBrowser = new CDataBrowser (size, 0, tagDelegate, CScrollView::kVerticalScrollbar|CScrollView::kDontDrawFrame|CDataBrowser::kDrawRowLines|CDataBrowser::kDrawColumnLines, 10);
+		CDataBrowser* controlTagBrowser = new CDataBrowser (size, 0, tagDelegate, CScrollView::kVerticalScrollbar|CScrollView::kDontDrawFrame|CDataBrowser::kDrawRowLines|CDataBrowser::kDrawColumnLines|CDataBrowser::kDrawHeader, 10);
 		controlTagBrowser->setBackgroundColor (kTransparentCColor);
 		controlTagBrowser->setAutosizeFlags (kAutosizeAll);
 		tagDelegate->forget ();

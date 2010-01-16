@@ -792,12 +792,14 @@ void UIDescription::changeFont (const char* name, CFontRef newFont)
 }
 
 //-----------------------------------------------------------------------------
-void UIDescription::changeBitmap (const char* name, const char* newName)
+void UIDescription::changeBitmap (const char* name, const char* newName, const CRect* nineparttiledOffset)
 {
 	UIBitmapNode* node = dynamic_cast<UIBitmapNode*> (findChildNodeByNameAttribute (getBaseNode ("bitmaps"), name));
 	if (node)
 	{
 		node->setBitmap (newName);
+		if (nineparttiledOffset)
+			node->setNinePartTiledOffset (*nineparttiledOffset);
 	}
 	else
 	{
@@ -807,6 +809,8 @@ void UIDescription::changeBitmap (const char* name, const char* newName)
 			UIAttributes* attr = new UIAttributes;
 			attr->setAttribute ("name", name);
 			UIBitmapNode* node = new UIBitmapNode ("bitmap", attr);
+			if (nineparttiledOffset)
+				node->setNinePartTiledOffset (*nineparttiledOffset);
 			node->setBitmap (newName);
 			bitmapsNode->getChildren ().add (node);
 		}
@@ -1308,7 +1312,10 @@ void UIBitmapNode::setNinePartTiledOffset (const CRect& offsets)
 			bitmap = 0;
 		}
 	}
-	attributes->setRectAttribute ("nineparttiled-offsets", offsets);
+	if (offsets.isEmpty ())
+		attributes->removeAttribute ("nineparttiled-offsets");
+	else
+		attributes->setRectAttribute ("nineparttiled-offsets", offsets);
 }
 
 //-----------------------------------------------------------------------------
@@ -1461,6 +1468,14 @@ void UIAttributes::setAttribute (const char* name, const char* value)
 	if (iter != end ())
 		erase (iter);
 	insert (std::make_pair (name, value));
+}
+
+//-----------------------------------------------------------------------------
+void UIAttributes::removeAttribute (const char* name)
+{
+	std::map<std::string, std::string>::iterator iter = find (name);
+	if (iter != end ())
+		erase (iter);
 }
 
 //-----------------------------------------------------------------------------

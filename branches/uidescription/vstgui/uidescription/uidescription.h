@@ -124,7 +124,7 @@ public:
 	void changeColor (const char* name, const CColor& newColor);
 	void changeTag (const char* name, long tag);
 	void changeFont (const char* name, CFontRef newFont);
-	void changeBitmap (const char* name, const char* newName);
+	void changeBitmap (const char* name, const char* newName, const CRect* nineparttiledOffset = 0);
 	
 	void removeColor (const char* name);
 	void removeTag (const char* name);
@@ -173,6 +173,7 @@ public:
 	bool hasAttribute (const char* name) const;
 	const std::string* getAttributeValue (const char* name) const;
 	void setAttribute (const char* name, const char* value);
+	void removeAttribute (const char* name);
 	
 	void setRectAttribute (const char* name, const CRect& r);
 	bool getRectAttribute (const char* name, CRect& r) const;

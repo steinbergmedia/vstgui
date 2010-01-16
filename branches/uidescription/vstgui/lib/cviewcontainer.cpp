@@ -398,7 +398,8 @@ bool CViewContainer::addView (CView* pView, CRect &mouseableArea, bool mouseEnab
  */
 bool CViewContainer::removeAll (const bool &withForget)
 {
-	mouseDownView = 0;
+	if (mouseDownView)
+		mouseDownView = 0;
 	currentDragView = 0;
 	CCView *pV = pFirstView;
 	while (pV)
@@ -870,6 +871,8 @@ CMouseEventResult CViewContainer::onMouseUp (CPoint &where, const long& buttons)
 {
 	if (mouseDownView)
 	{
+		CBaseObjectGuard crg (mouseDownView);
+
 		// convert to relativ pos
 		CPoint where2 (where);
 		where2.offset (-size.left, -size.top);
@@ -885,6 +888,8 @@ CMouseEventResult CViewContainer::onMouseMoved (CPoint &where, const long& butto
 {
 	if (mouseDownView)
 	{
+		CBaseObjectGuard crg (mouseDownView);
+
 		// convert to relativ pos
 		CPoint where2 (where);
 		where2.offset (-size.left, -size.top);

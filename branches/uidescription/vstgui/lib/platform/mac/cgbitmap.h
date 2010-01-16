@@ -77,14 +77,16 @@ public:
 	CGContextRef createCGContext ();
 	void setDirty () { dirty = true; }
 	void* getBits () const { return bits; }
-	int getBytesPerRow () const;
+	int getBytesPerRow () const { return bytesPerRow; }
 
 //-----------------------------------------------------------------------------
 protected:
 	void allocBits ();
+	void freeCGImage ();
 	
 	void* bits;
 	bool dirty;
+	int bytesPerRow;
 };
 
 } // namespace

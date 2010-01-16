@@ -223,14 +223,12 @@ long CTextEdit::onKeyDown (VstKeyCode& keyCode)
 		{
 			bWasReturnPressed = false;
 			platformControl->setText (text);
-			endEdit ();
 			looseFocus ();
 			return 1;
 		}
 		else if (keyCode.virt == VKEY_RETURN)
 		{
 			bWasReturnPressed = true;
-			endEdit ();
 			looseFocus ();
 			return 1;
 		}
@@ -263,7 +261,6 @@ void CTextEdit::platformLooseFocus (bool returnPressed)
 {
 	remember ();
 	bWasReturnPressed = returnPressed;
-	endEdit ();
 	looseFocus ();
 	forget ();
 }

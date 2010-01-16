@@ -99,6 +99,13 @@ CGDrawContext::~CGDrawContext ()
 	CGContextRestoreGState (cgContext); // we need to do it twice !!!
 	CGContextSynchronize (cgContext);
 	CFRelease (cgContext);
+	CBitmap* bitmap = getBitmap ();
+	if (bitmap && bitmap->getPlatformBitmap ())
+	{
+		CGOffscreenBitmap* cgOffscreenBitmap = dynamic_cast<CGOffscreenBitmap*> (bitmap->getPlatformBitmap ());
+		if (cgOffscreenBitmap)
+			cgOffscreenBitmap->setDirty ();
+	}
 }
 
 //-----------------------------------------------------------------------------

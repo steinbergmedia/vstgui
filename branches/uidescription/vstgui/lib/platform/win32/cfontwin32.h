@@ -40,14 +40,11 @@
 #if WINDOWS
 
 #include <windows.h>
-#if GDIPLUS
 #include <objidl.h>
 #include <gdiplus.h>
-#endif
 
 namespace VSTGUI {
 
-#if GDIPLUS
 //-----------------------------------------------------------------------------
 class GdiPlusFont : public IPlatformFont, public IFontPainter
 {
@@ -72,30 +69,6 @@ protected:
 	Gdiplus::Font* font;
 	INT gdiStyle;
 };
-#else // GDIPLUS
-//-----------------------------------------------------------------------------
-class GdiFont : public IPlatformFont, public IFontPainter
-{
-	GdiFont (const char* name, const CCoord& size, const long& style);
-
-	HANDLE getFont () const { return font; }
-protected:
-	~GdiFont ();
-	
-	double getAscent () const;
-	double getDescent () const;
-	double getLeading () const;
-	double getCapHeight () const;
-
-	IFontPainter* getPainter () { return this; }
-
-	void drawString (CDrawContext* context, const char* utf8String, const CPoint& p, bool antialias = true);
-	CCoord getStringWidth (CDrawContext* context, const char* utf8String, bool antialias = true);
-
-	HANDLE font;
-};
-
-#endif
 
 } // namespace
 

@@ -307,6 +307,7 @@ CColorChooser::CColorChooser (IColorChooserDelegate* delegate, const CColor& ini
 , brightnessSlider (0)
 , alphaSlider (0)
 , colorView (0)
+, color (initialColor)
 {
 	setTransparency (true);
 	setAutosizeFlags (kAutosizeAll);

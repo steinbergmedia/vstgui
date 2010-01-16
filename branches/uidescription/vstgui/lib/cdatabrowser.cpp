@@ -244,6 +244,7 @@ void CDataBrowser::recalculateLayout (bool rememberSelection)
 				hcs.left = hcs.top = 1;
 			hcs.setWidth (size.getWidth () - ((style & kDontDrawFrame) ? 0 : 2));
 			dbHeaderContainer = new CViewContainer (hcs, getFrame ());
+			dbHeaderContainer->setAutosizeFlags (kAutosizeLeft|kAutosizeRight|kAutosizeTop);
 			dbHeaderContainer->setTransparency (true);
 			headerSize.offset (-headerSize.left, -headerSize.top);
 			dbHeader = new CDataBrowserHeader (headerSize, db, this, style);
@@ -439,15 +440,15 @@ void CDataBrowserHeader::drawRect (CDrawContext* context, const CRect& updateRec
 	{
 		CCoord columnWidth = db->dbGetCurrentColumnWidth (col, browser);
 		r.setWidth (columnWidth);
+		if (style & CDataBrowser::kDrawColumnLines)
+			r.right += lineWidth;
 		CRect testRect (r);
 		testRect.bound (updateRect);
 		if (!testRect.isEmpty ())
 		{
 			db->dbDrawHeader (context, r, col, 0, browser);
 		}
-		r.offset (columnWidth, 0);
-		if (style & CDataBrowser::kDrawColumnLines)
-			r.offset (lineWidth, 0);
+		r.offset (r.getWidth (), 0);
 	}
 	setDirty (false);
 }

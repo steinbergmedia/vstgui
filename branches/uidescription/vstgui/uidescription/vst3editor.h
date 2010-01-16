@@ -55,6 +55,7 @@ public:
 	
 	virtual CView* createCustomView (const char* name, const UIAttributes& attributes, IUIDescription* description, VST3Editor* editor) = 0;
 	virtual bool findParameter (const CPoint& pos, Steinberg::Vst::ParamID& paramID, VST3Editor* editor) { return false; }
+	virtual void didOpen (VST3Editor* editor) {}
 	virtual void willClose (VST3Editor* editor) {}
 };
 

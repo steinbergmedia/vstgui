@@ -655,7 +655,6 @@ LONG_PTR WINAPI Win32Frame::WindowProc (HWND hwnd, UINT message, WPARAM wParam, 
 					buttons |= kControl;
 				if (wParam & MK_SHIFT)
 					buttons |= kShift;
-				// added to achieve information from the ALT button
 				if (GetKeyState (VK_MENU)    < 0)
 					buttons |= kAlt;
 				if (doubleClick)
@@ -729,8 +728,7 @@ LONG_PTR WINAPI Win32Frame::WindowProc (HWND hwnd, UINT message, WPARAM wParam, 
 					buttons |= kControl;
 				if (wParam & MK_SHIFT)
 					buttons |= kShift;
-				// added to achieve information from the ALT button
-				if (GetKeyState (VK_MENU)    < 0)
+				if (GetKeyState (VK_MENU) < 0)
 					buttons |= kAlt;
 				CPoint where ((CCoord)((int)(short)LOWORD(lParam)), (CCoord)((int)(short)HIWORD(lParam)));
 				pFrame->platformOnMouseUp (where, buttons);

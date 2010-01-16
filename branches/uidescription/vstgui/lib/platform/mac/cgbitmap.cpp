@@ -153,6 +153,7 @@ CGImageRef CGBitmap::getCGImage ()
 		CFDictionaryRef options = CFDictionaryCreate (NULL, keys, values, 2, NULL, NULL);
 		image = CGImageSourceCreateImageAtIndex (imageSource, 0, options);
 		CFRelease (imageSource);
+		CFRelease (options);
 		imageSource = 0;
 	}
 	return image;
@@ -166,6 +167,9 @@ CGOffscreenBitmap::CGOffscreenBitmap (const CPoint& inSize)
 , dirty (false)
 {
 	size = inSize;
+	bytesPerRow = size.x * 4;
+	if (bytesPerRow % 16)
+		bytesPerRow += 16 - (bytesPerRow % 16);
 	allocBits ();
 }
 
@@ -177,21 +181,33 @@ CGOffscreenBitmap::~CGOffscreenBitmap ()
 }
 
 //-----------------------------------------------------------------------------
+void CGOffscreenBitmap::freeCGImage ()
+{
+	if (image)
+		CGImageRelease (image);
+	image = 0;
+}
+
+//-----------------------------------------------------------------------------
 CGImageRef CGOffscreenBitmap::getCGImage ()
 {
-	if (image == 0 || dirty)
+	if (dirty)
+		freeCGImage ();
+	if (image == 0)
 	{
-		if (image)
-			CGImageRelease (image);
-
 		size_t rowBytes = getBytesPerRow ();
 		size_t byteCount = rowBytes * size.y;
 		short bitDepth = 32;
 
 		CGDataProviderRef provider = CGDataProviderCreateWithData (NULL, bits, byteCount, NULL);
+	#if defined (__BIG_ENDIAN__)
 		CGImageAlphaInfo alphaInfo = kCGImageAlphaFirst;
+	#else
+		CGImageAlphaInfo alphaInfo = kCGImageAlphaLast;
+	#endif
 		image = CGImageCreate (size.x, size.y, 8, bitDepth, rowBytes, GetGenericRGBColorSpace (), alphaInfo, provider, NULL, false, kCGRenderingIntentDefault);
 		CGDataProviderRelease (provider);
+		dirty = false;
 	}
 	return image;
 }
@@ -202,16 +218,20 @@ CGContextRef CGOffscreenBitmap::createCGContext ()
 	CGContextRef context = 0;
 	if (bits)
 	{
+	#if defined (__BIG_ENDIAN__)
+		CGBitmapInfo bitmapInfo = kCGImageAlphaPremultipliedFirst;
+	#else
+		CGBitmapInfo bitmapInfo = kCGImageAlphaPremultipliedLast;
+	#endif
 		context = CGBitmapContextCreate (bits,
 						size.x,
 						size.y,
 						8,
 						getBytesPerRow (),
 						GetGenericRGBColorSpace (),
-						kCGImageAlphaPremultipliedFirst);
+						bitmapInfo);
 		CGContextTranslateCTM (context, 0, (CGFloat)size.y);
 		CGContextScaleCTM (context, 1, -1);
-		dirty = true;
 	}
 	return context;
 }
@@ -225,12 +245,6 @@ void CGOffscreenBitmap::allocBits ()
 		int bitmapByteCount     = bitmapBytesPerRow * size.y; 
 		bits = calloc (1, bitmapByteCount);
 	}
-}
-
-//-----------------------------------------------------------------------------
-int CGOffscreenBitmap::getBytesPerRow () const
-{
-	return getSize ().x * 4;
 }
 
 } // namespace

@@ -168,6 +168,8 @@ CMouseEventResult CFrame::onMouseDown (CPoint &where, const long& buttons)
 		setFocusView (NULL);
 	if (pMouseOverView)
 	{
+		CBaseObjectGuard rg (pMouseOverView);
+
 		pMouseOverView->onMouseExited (where, buttons);
 		if (getMouseObserver ())
 			getMouseObserver ()->onMouseExited (pMouseOverView, this);
@@ -179,6 +181,8 @@ CMouseEventResult CFrame::onMouseDown (CPoint &where, const long& buttons)
 
 	if (pModalView)
 	{
+		CBaseObjectGuard rg (pModalView);
+
 		if (pModalView->hitTest (where, buttons))
 		{
 			CMouseEventResult result = pModalView->onMouseDown (where, buttons);
@@ -220,6 +224,8 @@ CMouseEventResult CFrame::onMouseMoved (CPoint &where, const long& buttons)
 			{
 				if (pMouseOverView)
 				{
+					CBaseObjectGuard rg (pMouseOverView);
+
 					CPoint lr (where);
 					pMouseOverView->frameToLocal (lr);
 					pMouseOverView->onMouseExited (lr, buttons);
@@ -229,6 +235,8 @@ CMouseEventResult CFrame::onMouseMoved (CPoint &where, const long& buttons)
 				pMouseOverView = 0;
 				if (v)
 				{
+					CBaseObjectGuard rg (v);
+
 					CPoint lr (where);
 					v->frameToLocal (lr);
 					v->onMouseEntered (lr, buttons);
@@ -255,6 +263,8 @@ CMouseEventResult CFrame::onMouseExited (CPoint &where, const long& buttons)
 { // this should only get called from the platform implementation
 	if (pMouseOverView)
 	{
+		CBaseObjectGuard rg (pMouseOverView);
+
 		CPoint lr (where);
 		pMouseOverView->frameToLocal (lr);
 		pMouseOverView->onMouseExited (lr, buttons);
@@ -275,10 +285,16 @@ long CFrame::onKeyDown (VstKeyCode& keyCode)
 		result = getKeyboardHook ()->onKeyDown (keyCode, this);
 
 	if (result == -1 && pFocusView)
+	{
+		CBaseObjectGuard og (pFocusView);
 		result = pFocusView->onKeyDown (keyCode);
+	}
 
 	if (result == -1 && pModalView)
+	{
+		CBaseObjectGuard og (pModalView);
 		result = pModalView->onKeyDown (keyCode);
+	}
 
 	if (result == -1 && keyCode.virt == VKEY_TAB)
 		result = advanceNextFocusView (pFocusView, (keyCode.modifier & MODIFIER_SHIFT) ? true : false) ? 1 : -1;

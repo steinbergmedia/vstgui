@@ -216,14 +216,10 @@ HMENU Win32OptionMenu::createMenu (COptionMenu* _menu, long& offsetIdx)
 					MENUITEMINFO mInfo = {0};
 					mInfo.cbSize = sizeof (MENUITEMINFO);
 					mInfo.fMask = MIIM_BITMAP;
-					#if GDIPLUS
 					Gdiplus::Bitmap* bitmap = item->getIcon ()->getBitmap ();
 					HBITMAP hBmp = NULL;
 					bitmap->GetHBITMAP (Gdiplus::Color (0, 0, 0, 0), &hBmp);
 					mInfo.hbmpItem = hBmp;
-					#else
-					mInfo.hbmpItem = item->getIcon ()->getHandle ();
-					#endif
 					SetMenuItemInfo (menu, offset + inc, TRUE, &mInfo);
 				}
 				#endif

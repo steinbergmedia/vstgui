@@ -43,6 +43,7 @@
 #include "dialog.h"
 #include "cviewinspector.h"
 #include "vst3editortemplates.h"
+#include "viewfactory.h"
 #include <list>
 #include <sstream>
 
@@ -297,6 +298,7 @@ Steinberg::tresult PLUGIN_API VST3Editor::queryInterface (const Steinberg::TUID 
 //-----------------------------------------------------------------------------
 void VST3Editor::init ()
 {
+	setIdleRate (300);
 	Steinberg::IdleUpdateHandler::instance ();
 	if (description->parse ())
 	{
@@ -626,6 +628,9 @@ bool PLUGIN_API VST3Editor::open (void* parent)
 				}
 			}
 		}
+		VST3EditorDelegate* delegate = dynamic_cast<VST3EditorDelegate*> (getController ());
+		if (delegate)
+			delegate->didOpen (this);
 		return true;
 	}
 	return false;
