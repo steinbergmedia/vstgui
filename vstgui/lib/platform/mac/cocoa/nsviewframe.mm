@@ -123,14 +123,33 @@ static BOOL VSTGUI_NSView_canBecomeKeyView (id self, SEL _cmd) { return YES; }
 //------------------------------------------------------------------------------------
 static BOOL VSTGUI_NSView_becomeFirstResponder (id self, SEL _cmd)
 {
-	[self performSelector:@selector(windowKeyStateChanged:) withObject:nil afterDelay:0 inModes:[NSArray arrayWithObject:NSRunLoopCommonModes]];
+	if ([[self window] isKeyWindow])
+	{
+		IPlatformFrameCallback* frame = getFrame (self);
+		if (frame)
+			frame->platformOnActivate (true);
+	}
 	return YES;
 }
 
 //------------------------------------------------------------------------------------
 static BOOL VSTGUI_NSView_resignFirstResponder (id self, SEL _cmd)
 {
-	[self performSelector:@selector(windowKeyStateChanged:) withObject:nil afterDelay:0 inModes:[NSArray arrayWithObject:NSRunLoopCommonModes]];
+	NSView* firstResponder = (NSView*)[[self window] firstResponder];
+	if (![firstResponder isKindOfClass:[NSView class]])
+		firstResponder = nil;
+	if (firstResponder)
+	{
+		while (firstResponder != self && firstResponder != nil)
+			firstResponder = [firstResponder superview];
+		if (firstResponder == self && [[self window] isKeyWindow])
+		{
+			return YES;
+		}
+		IPlatformFrameCallback* frame = getFrame (self);
+		if (frame)
+			frame->platformOnActivate (false);
+	}
 	return YES;
 }
 
@@ -163,7 +182,7 @@ static void VSTGUI_NSView_windowKeyStateChanged (id self, SEL _cmd, NSNotificati
 		{
 			IPlatformFrameCallback* frame = getFrame (self);
 			if (frame)
-				frame->platformOnActivate ([[self window] isKeyWindow] ? true : false);
+				frame->platformOnActivate ([[notification name] isEqualToString:NSWindowDidBecomeKeyNotification] ? true : false);
 		}
 	}
 }
@@ -415,12 +434,23 @@ static BOOL VSTGUI_NSView_acceptsFirstMouse (id self, SEL _cmd, NSEvent* event)
 //------------------------------------------------------------------------------------
 static BOOL VSTGUI_NSView_performKeyEquivalent (id self, SEL _cmd, NSEvent* theEvent)
 {
-	IPlatformFrameCallback* _vstguiframe = getFrame (self);
-	if (_vstguiframe)
+	NSView* firstResponder = (NSView*)[[self window] firstResponder];
+	if (![firstResponder isKindOfClass:[NSView class]])
+		firstResponder = nil;
+	if (firstResponder)
 	{
-		VstKeyCode keyCode = CreateVstKeyCodeFromNSEvent (theEvent);
-		if (_vstguiframe->platformOnKeyDown (keyCode))
-			return YES;
+		while (firstResponder != self && firstResponder != nil)
+			firstResponder = [firstResponder superview];
+		if (firstResponder == self)
+		{
+			IPlatformFrameCallback* frame = getFrame (self);
+			if (frame)
+			{
+				VstKeyCode keyCode = CreateVstKeyCodeFromNSEvent (theEvent);
+				if (frame->platformOnKeyDown (keyCode))
+					return YES;
+			}
+		}
 	}
 	return NO;
 }

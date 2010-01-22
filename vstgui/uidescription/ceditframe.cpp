@@ -750,6 +750,7 @@ void CEditFrame::setEditMode (EditMode mode)
 	editMode = mode;
 	if (editMode == kEditMode)
 	{
+		setFocusView (0);
 		inspector->show ();
 		inspector->getFrame ()->setKeyboardHook (this);
 	}

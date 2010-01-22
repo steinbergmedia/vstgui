@@ -123,6 +123,7 @@ static id VSTGUI_NSTextField_Init (id self, SEL _cmd, void* textEdit)
 			[cell setAlignment:NSRightTextAlignment];
 
 		[self setDelegate:self];
+		[self setNextKeyView:frameView];
 		[[self window] makeFirstResponder: self];
 	}
 	return self;
@@ -151,7 +152,6 @@ static void VSTGUI_NSTextField_RemoveFromSuperview (id self, SEL _cmd)
 	NSView* containerView = [self superview];
 	if (containerView)
 	{
-		[[containerView window] makeFirstResponder:[containerView superview]];
 		[containerView removeFromSuperview];
 		__OBJC_SUPER(self)
 		objc_msgSendSuper (SUPER, @selector(removeFromSuperview)); // [super removeFromSuperview];
@@ -165,6 +165,7 @@ static BOOL VSTGUI_NSTextField_DoCommandBySelector (id self, SEL _cmd, NSControl
 	CocoaTextEdit* te = (CocoaTextEdit*)OBJC_GET_VALUE(self, _textEdit);
 	if (!te)
 		return NO;
+	NSView* parent = te->getParent ();
 	IPlatformTextEditCallback* tec = te->getTextEdit ();
 	if (commandSelector == @selector (insertNewline:))
 	{
@@ -176,7 +177,11 @@ static BOOL VSTGUI_NSTextField_DoCommandBySelector (id self, SEL _cmd, NSControl
 		VstKeyCode keyCode = {0};
 		keyCode.virt = VKEY_TAB;
 		if (tec->platformOnKeyDown (keyCode))
+		{
+			if ([self window] == nil)
+				[[parent window] makeFirstResponder:parent];
 			return YES;
+		}
 	}
 	else if (commandSelector == @selector (insertBacktab:))
 	{
@@ -184,7 +189,11 @@ static BOOL VSTGUI_NSTextField_DoCommandBySelector (id self, SEL _cmd, NSControl
 		keyCode.virt = VKEY_TAB;
 		keyCode.modifier = MODIFIER_SHIFT;
 		if (tec->platformOnKeyDown (keyCode))
+		{
+			if ([self window] == nil)
+				[[parent window] makeFirstResponder:parent];
 			return YES;
+		}
 	}
 	else if (commandSelector == @selector (cancelOperation:))
 	{

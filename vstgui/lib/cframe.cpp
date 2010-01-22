@@ -707,8 +707,12 @@ void CFrame::onActivate (bool state)
 		{
 			bActive = true;
 			if (pActiveFocusView)
+			{
 				setFocusView (pActiveFocusView);
-			pActiveFocusView = 0;
+				pActiveFocusView = 0;
+			}
+			else
+				advanceNextFocusView (0, false);
 		}
 		else
 		{
