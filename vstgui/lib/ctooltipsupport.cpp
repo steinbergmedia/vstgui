@@ -1,0 +1,310 @@
+//-----------------------------------------------------------------------------
+// VST Plug-Ins SDK
+// VSTGUI: Graphical User Interface Framework not only for VST plugins : 
+//
+// Version 4.0
+//
+//-----------------------------------------------------------------------------
+// VSTGUI LICENSE
+// (c) 2010, Steinberg Media Technologies, All Rights Reserved
+//-----------------------------------------------------------------------------
+// Redistribution and use in source and binary forms, with or without modification,
+// are permitted provided that the following conditions are met:
+// 
+//   * Redistributions of source code must retain the above copyright notice, 
+//     this list of conditions and the following disclaimer.
+//   * Redistributions in binary form must reproduce the above copyright notice,
+//     this list of conditions and the following disclaimer in the documentation 
+//     and/or other materials provided with the distribution.
+//   * Neither the name of the Steinberg Media Technologies nor the names of its
+//     contributors may be used to endorse or promote products derived from this 
+//     software without specific prior written permission.
+// 
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+// ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED 
+// WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A  PARTICULAR PURPOSE ARE DISCLAIMED. 
+// IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, 
+// INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, 
+// BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, 
+// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF 
+// LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE 
+// OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE  OF THIS SOFTWARE, EVEN IF ADVISED
+// OF THE POSSIBILITY OF SUCH DAMAGE.
+//-----------------------------------------------------------------------------
+
+#include "ctooltipsupport.h"
+#include "cvstguitimer.h"
+
+#if DEBUG
+#define DEBUGLOG 0
+#endif
+
+namespace VSTGUI {
+
+enum {
+	kHidden,
+	kVisible,
+	kHiding,
+	kShowing,
+	kForceVisible,
+};
+
+//------------------------------------------------------------------------
+/*! @class VSTGUI::CTooltipSupport
+A generic way to add tooltip support to VSTGUI.
+@section ctooltipsupport_example Example
+Adding a tooltip to a view
+@code
+const char* tooltipText = "This is a tooltip";
+view->setAttribute (kCViewTooltipAttribute, strlen (tooltipText)+1, tooltipText);
+@endcode
+Adding CTooltipSupport
+@code
+CTooltipSupport* tooltipSupport = new CTooltipSupport (frame);
+@endcode
+------------------------------------------------------------------------*/
+/**
+ * @param frame CFrame object
+ * @param delay tooltip delay time in milliseconds
+ */
+CTooltipSupport::CTooltipSupport (CFrame* frame, int delay)
+: timer (0)
+, frame (frame)
+, currentView (0)
+, delay (delay)
+, state (kHidden)
+{
+	timer = new CVSTGUITimer (this, delay);
+	frame->setMouseObserver (this);
+	frame->remember ();
+}
+
+//------------------------------------------------------------------------
+CTooltipSupport::~CTooltipSupport ()
+{
+	timer->forget ();
+
+	IPlatformFrame* platformFrame = frame->getPlatformFrame ();
+	if (platformFrame)
+		platformFrame->hideTooltip ();
+
+	frame->setMouseObserver (0);
+	frame->forget ();
+
+}
+
+//------------------------------------------------------------------------
+static char* getTooltipFromView (CView* view)
+{
+	char* tooltip = 0;
+	long tooltipSize = 0;
+	if (view->getAttributeSize (kCViewTooltipAttribute, tooltipSize))
+	{
+		tooltip = (char*)malloc (tooltipSize + 1);
+		memset (tooltip, 0, tooltipSize+1);
+		if (!view->getAttribute (kCViewTooltipAttribute, tooltipSize, tooltip, tooltipSize))
+		{
+			free (tooltip);
+			tooltip = 0;
+		}
+	}
+	return tooltip;
+}
+
+//------------------------------------------------------------------------
+static bool viewHasTooltip (CView* view)
+{
+	long tooltipSize = 0;
+	if (view->getAttributeSize (kCViewTooltipAttribute, tooltipSize))
+	{
+		if (tooltipSize > 0)
+			return true;
+	}
+	return false;
+}
+
+//------------------------------------------------------------------------
+void CTooltipSupport::onMouseEntered (CView* view, CFrame* frame)
+{
+	if (viewHasTooltip (view))
+	{
+		currentView = view;
+		if (state == kHiding)
+		{
+			#if DEBUGLOG
+			DebugPrint ("CTooltipSupport::onMouseEntered (%s) - show tooltip\n", view->getClassName ());
+			#endif
+			state = kShowing;
+			timer->setFireTime (50);
+			timer->start ();
+		}
+		else if (state == kHidden)
+		{
+			#if DEBUGLOG
+			DebugPrint ("CTooltipSupport::onMouseEntered (%s) - start timer\n", view->getClassName ());
+			#endif
+			state = kShowing;
+			timer->setFireTime (delay);
+			timer->start ();
+		}
+		else
+		{
+			#if DEBUGLOG
+			DebugPrint ("CTooltipSupport::onMouseEntered (%s) - unexpected internal state\n", view->getClassName ());
+			#endif
+		}
+	}
+}
+
+//------------------------------------------------------------------------
+void CTooltipSupport::onMouseExited (CView* view, CFrame* frame)
+{
+	if (currentView)
+	{
+		if (state == kHidden || state == kShowing)
+		{
+			hideTooltip ();
+			timer->stop ();
+			timer->setFireTime (delay);
+		}
+		else
+		{
+			state = kHiding;
+			timer->setFireTime (200);
+			timer->start ();
+		}
+		currentView = 0;
+		#if DEBUGLOG
+		DebugPrint ("CTooltipSupport::onMouseExited (%s)\n", view->getClassName ());
+		#endif
+	}
+}
+
+//------------------------------------------------------------------------
+void CTooltipSupport::onMouseMoved (CFrame* frame, const CPoint& where)
+{
+	if (currentView && state != kForceVisible)
+	{
+		CRect r (lastMouseMove.x-2, lastMouseMove.y-2, lastMouseMove.x+2, lastMouseMove.y+2);
+		if (!r.pointInside (where))
+		{
+			if (state == kHidden)
+			{
+				if (timer->stop ())
+				{
+					#if DEBUGLOG
+					DebugPrint ("CTooltipSupport::onMouseMoved (%s) - Timer restarted\n", currentView->getClassName ());
+					#endif
+					timer->start ();
+				}
+			}
+			else if (state == kVisible)
+			{
+				#if DEBUGLOG
+				DebugPrint ("CTooltipSupport::onMouseMoved (%s) - will hide tooltip\n", currentView->getClassName ());
+				#endif
+				state = kHiding;
+				timer->setFireTime (200);
+				timer->start ();
+			}
+			else
+			{
+				#if DEBUGLOG
+				DebugPrint ("CTooltipSupport::onMouseMoved (%s) - state: %d\n", currentView->getClassName (), state);
+				#endif
+			}
+		}
+		else
+		{
+			#if DEBUGLOG
+			DebugPrint ("CTooltipSupport::onMouseMoved (%s) - small move\n", currentView->getClassName ());
+			#endif
+		}
+	}
+	lastMouseMove = where;
+}
+
+//------------------------------------------------------------------------
+void CTooltipSupport::onMouseDown (CFrame* frame, const CPoint& where)
+{
+	if (state != kHidden)
+	{
+		timer->stop ();
+		timer->setFireTime (delay);
+		hideTooltip ();
+	}
+}
+
+//------------------------------------------------------------------------
+void CTooltipSupport::hideTooltip ()
+{
+	if (state != kHidden)
+	{
+		state = kHidden;
+		IPlatformFrame* platformFrame = frame->getPlatformFrame ();
+		if (platformFrame)
+			platformFrame->hideTooltip ();
+
+		#if DEBUGLOG
+		DebugPrint ("CTooltipSupport::hideTooltip\n");
+		#endif
+	}
+}
+
+//------------------------------------------------------------------------
+void CTooltipSupport::showTooltip ()
+{
+	if (currentView)
+	{
+		CRect r (currentView->getVisibleSize ());
+		CPoint p;
+		currentView->localToFrame (p);
+		r.offset (p.x, p.y);
+
+		char* tooltip = getTooltipFromView (currentView);
+		
+		if (tooltip)
+		{
+			state = kForceVisible;
+			
+			IPlatformFrame* platformFrame = frame->getPlatformFrame ();
+			if (platformFrame)
+				platformFrame->showTooltip (r, tooltip);
+
+			free (tooltip);
+
+			#if DEBUGLOG
+			DebugPrint ("CTooltipSupport::showTooltip (%s)\n", currentView->getClassName ());
+			#endif
+		}
+	}
+}
+
+//------------------------------------------------------------------------
+CMessageResult CTooltipSupport::notify (CBaseObject* sender, const char* msg)
+{
+	if (msg == CVSTGUITimer::kMsgTimer)
+	{
+		if (state == kHiding)
+		{
+			hideTooltip ();
+			timer->stop ();
+			timer->setFireTime (delay);
+		}
+		else if (state == kShowing)
+		{
+			showTooltip ();
+			timer->setFireTime (100);
+		}
+		else if (state == kForceVisible)
+		{
+			state = kVisible;
+			timer->stop ();
+			timer->setFireTime (delay);
+		}
+		return kMessageNotified;
+	}
+	return kMessageUnknown;
+}
+
+} // namespace
