@@ -6,7 +6,7 @@
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
-// (c) 2009, Steinberg Media Technologies, All Rights Reserved
+// (c) 2010, Steinberg Media Technologies, All Rights Reserved
 //-----------------------------------------------------------------------------
 // Redistribution and use in source and binary forms, with or without modification,
 // are permitted provided that the following conditions are met:
@@ -70,7 +70,8 @@ public:
 	virtual void performTagNameChange (const char* oldName, const char* newName) = 0;
 	virtual void performFontNameChange (const char* oldName, const char* newName) = 0;
 	virtual void performBitmapNameChange (const char* oldName, const char* newName) = 0;
-	
+
+	virtual void performBitmapNinePartTiledChange (const char* bitmapName, const CRect* offsets) = 0;
 	virtual void makeSelection (CView* view) = 0;
 };
 
@@ -107,6 +108,8 @@ public:
 	void performFontNameChange (const char* oldName, const char* newName);
 	void performBitmapNameChange (const char* oldName, const char* newName);
 
+	void performBitmapNinePartTiledChange (const char* bitmapName, const CRect* offsets);
+
 	void makeSelection (CView* view);
 
 	static const char* kMsgPerformOptionsMenuAction;
@@ -115,6 +118,7 @@ public:
 //----------------------------------------------------------------------------------------------------
 protected:
 	CBitmap* createBitmapFromSelection (CSelection* selection);
+	CSelection* getSelectionOutOfDrag (CDragContainer* drag);
 	CMessageResult notify (CBaseObject* sender, const char* message);
 	void showOptionsMenu (const CPoint& where);
 	void createNewSubview (const CPoint& where, const char* viewName);
@@ -178,6 +182,7 @@ protected:
 	CrossLines* lines;
 	Grid* grid;
 	CSelection* selection;
+	CSelection* dragSelection;
 	UIDescription* uiDescription;
 	ViewHierarchyBrowserWindow* hierarchyBrowser;
 	CViewInspector* inspector;

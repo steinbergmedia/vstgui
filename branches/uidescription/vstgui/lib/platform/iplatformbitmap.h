@@ -6,7 +6,7 @@
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
-// (c) 2009, Steinberg Media Technologies, All Rights Reserved
+// (c) 2010, Steinberg Media Technologies, All Rights Reserved
 //-----------------------------------------------------------------------------
 // Redistribution and use in source and binary forms, with or without modification,
 // are permitted provided that the following conditions are met:
@@ -41,6 +41,7 @@
 
 namespace VSTGUI {
 class CResourceDescription;
+class IBitmapReaderCreator;
 
 //-----------------------------------------------------------------------------
 class IPlatformBitmap : public CBaseObject
@@ -51,7 +52,23 @@ public:
 	virtual bool load (const CResourceDescription& desc) = 0;
 	virtual const CPoint& getSize () const = 0;
 
+	static IBitmapReaderCreator* gCustomBitmapReaderCreator; // overrides default platform specific bitmap loading, see below
+};
+
 //------------------------------------------------------------------------------------
+class IBitmapReader : public CBaseObject
+{
+public:
+	virtual int readBytes (void* buffer, int numBytes) = 0;
+	virtual int getNumBytes () = 0;
+	virtual void rewind () = 0;
+};
+
+//------------------------------------------------------------------------------------
+class IBitmapReaderCreator
+{
+public:
+	virtual IBitmapReader* createBitmapReader (const CResourceDescription& desc) = 0;
 };
 
 } // namespace

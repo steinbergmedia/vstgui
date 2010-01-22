@@ -6,7 +6,7 @@
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
-// (c) 2009, Steinberg Media Technologies, All Rights Reserved
+// (c) 2010, Steinberg Media Technologies, All Rights Reserved
 //-----------------------------------------------------------------------------
 // Redistribution and use in source and binary forms, with or without modification,
 // are permitted provided that the following conditions are met:
@@ -48,23 +48,13 @@
 
 namespace VSTGUI {
 
-#if VSTGUI_USES_UTF8
-	#define VSTGUI_STRCMP	wcscmp
-	#define VSTGUI_STRCPY	wcscpy
-	#define VSTGUI_SPRINTF	wsprintf
-	#define VSTGUI_STRRCHR	wcschr
-	#define VSTGUI_STRICMP	_wcsicmp
-	#define VSTGUI_STRLEN	wcslen
-	#define VSTGUI_STRCAT	wcscat
-#else
-	#define VSTGUI_STRCMP	strcmp
-	#define VSTGUI_STRCPY	strcpy
-	#define VSTGUI_SPRINTF	sprintf
-	#define VSTGUI_STRRCHR	strrchr
-	#define VSTGUI_STRICMP	_stricmp
-	#define VSTGUI_STRLEN	strlen
-	#define VSTGUI_STRCAT	strcat
-#endif
+#define VSTGUI_STRCMP	wcscmp
+#define VSTGUI_STRCPY	wcscpy
+#define VSTGUI_SPRINTF	wsprintf
+#define VSTGUI_STRRCHR	wcschr
+#define VSTGUI_STRICMP	_wcsicmp
+#define VSTGUI_STRLEN	wcslen
+#define VSTGUI_STRCAT	wcscat
 
 extern HINSTANCE GetInstance ();
 

@@ -6,7 +6,7 @@
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
-// (c) 2009, Steinberg Media Technologies, All Rights Reserved
+// (c) 2010, Steinberg Media Technologies, All Rights Reserved
 //-----------------------------------------------------------------------------
 // Redistribution and use in source and binary forms, with or without modification,
 // are permitted provided that the following conditions are met:
@@ -35,7 +35,10 @@
 #if VSTGUI_LIVE_EDITING
 
 #include "cselection.h"
+#include "viewfactory.h"
+#include "cstream.h"
 #include "../lib/cviewcontainer.h"
+#include <sstream>
 
 namespace VSTGUI {
 
@@ -219,6 +222,105 @@ void CSelection::moveBy (const CPoint& p)
 		it++;
 	}
 	changed (kMsgSelectionViewChanged);
+}
+
+//----------------------------------------------------------------------------------------------------
+bool storeAttributesForView (OutputStream& stream, ViewFactory* viewFactory, IUIDescription* uiDescription, CView* view)
+{
+	UIAttributes attr;
+	if (viewFactory->getAttributesForView (view, uiDescription, attr))
+	{
+		if (!(stream << 'view')) return false;
+		if (!attr.store (stream))
+			return false;
+		CViewContainer* container = dynamic_cast<CViewContainer*> (view);
+		if (container)
+		{
+			long subViews = container->getNbViews ();
+			if (!(stream << (int)subViews)) return false;
+			for (long i = 0; i < subViews; i++)
+			{
+				storeAttributesForView (stream, viewFactory, uiDescription, container->getView (i));
+			}
+		}
+		else
+			if (!(stream << (int)0)) return false;
+		return true;
+	}
+	return false;
+}
+
+//----------------------------------------------------------------------------------------------------
+static CView* createView (InputStream& stream, ViewFactory* viewFactory, IUIDescription* uiDescription)
+{
+	int identifier;
+	if (!(stream >> identifier)) return 0;
+	if (identifier != 'view') return 0;
+	UIAttributes attr;
+	if (!attr.restore (stream)) return 0;
+	CView* view = viewFactory->createView (attr, uiDescription);
+	int subViews;
+	if (!(stream >> subViews)) return view;
+	CViewContainer* container = view ? dynamic_cast<CViewContainer*> (view) : 0;
+	for (int i = 0; i < subViews; i++)
+	{
+		CView* subView = createView (stream, viewFactory, uiDescription);
+		if (subView)
+		{
+			if (container)
+				container->addView (subView);
+			else
+				subView->forget ();
+		}
+	}
+	return view;
+}
+
+//----------------------------------------------------------------------------------------------------
+bool CSelection::store (OutputStream& stream, ViewFactory* viewFactory, IUIDescription* uiDescription)
+{
+	if (!(stream << 'CSEL')) return false;
+	FOREACH_IN_SELECTION(this, view)
+		if (!containsParent (view))
+		{
+			if (!(stream << 'selv')) return false;
+			if (!storeAttributesForView (stream, viewFactory, uiDescription, view))
+				return false;
+		}
+	FOREACH_IN_SELECTION_END
+	if (!(stream << 'ende')) return false;
+	if (!(stream << dragOffset.x)) return false;
+	if (!(stream << dragOffset.y)) return false;
+	return true;
+}
+
+//----------------------------------------------------------------------------------------------------
+bool CSelection::restore (InputStream& stream, ViewFactory* viewFactory, IUIDescription* uiDescription)
+{
+	empty ();
+	int identifier = 0;
+	if (!(stream >> identifier)) return false;
+	if (identifier == 'CSEL')
+	{
+		while (true)
+		{
+			if (!(stream >> identifier)) return false;
+			if (identifier == 'ende')
+				break;
+			if (identifier == 'selv')
+			{
+				CView* view = createView (stream, viewFactory, uiDescription);
+				if (view)
+					add (view);
+			}
+			else
+				return false;
+		}
+		if (!(stream >> dragOffset.x)) return false;
+		if (!(stream >> dragOffset.y)) return false;
+		return true;
+	}
+	return false;
 }
 
 } // namespace

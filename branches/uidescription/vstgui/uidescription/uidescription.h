@@ -52,6 +52,8 @@ class UINode;
 class UIAttributes;
 class IViewFactory;
 class IUIDescription;
+class InputStream;
+class OutputStream;
 
 //-----------------------------------------------------------------------------
 class IController : public CControlListener
@@ -179,7 +181,9 @@ public:
 	bool getRectAttribute (const char* name, CRect& r) const;
 	
 	void removeAll () { clear (); }
-protected:
+
+	bool store (OutputStream& stream);
+	bool restore (InputStream& stream);
 };
 
 //-----------------------------------------------------------------------------

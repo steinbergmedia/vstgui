@@ -6,7 +6,7 @@
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
-// (c) 2009, Steinberg Media Technologies, All Rights Reserved
+// (c) 2010, Steinberg Media Technologies, All Rights Reserved
 //-----------------------------------------------------------------------------
 // Redistribution and use in source and binary forms, with or without modification,
 // are permitted provided that the following conditions are met:
@@ -218,7 +218,7 @@ VSTGUI now supports easy and fast UI creation for VST3.1 plug-ins.
 
 First you need to add vstgui_uidescription_win32.cpp or vstgui_uidescription_mac.mm and vst3editor.cpp to your project
 and define a preprocessor definition for VSTGUI_LIVE_EDITING=1.
-Then you have to modify your edit controller class to create a VST3Editor instance when asked to create it's view :
+Then you have to modify your edit controller class to create a VSTGUI::VST3Editor instance when asked to create it's view :
 @code
 IPlugView* PLUGIN_API MyEditController::createView (const char* name)
 {
@@ -249,7 +249,7 @@ You have automatic VST3 parameter support if you use the Steinberg::Vst::Paramet
 define a tag in the "VSTGUI Inspector" window with the same value as the VST3 parameter ID. Now you can set any VSTGUI control's tag
 to this tag and it will automatically be synced with the VST3 parameter.
 
-If you need to create custom views, you can implement the IVST3CustomViewCreator interface in your edit controller class.
+If you need to create custom views, you can implement the VSTGUI::VST3EditorDelegate interface in your edit controller class.
 The createCustomView method will be called if you set the 'custom-view-name' attribute in one of the views.
 
 */

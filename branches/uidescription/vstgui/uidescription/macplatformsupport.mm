@@ -6,7 +6,7 @@
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
-// (c) 2009, Steinberg Media Technologies, All Rights Reserved
+// (c) 2010, Steinberg Media Technologies, All Rights Reserved
 //-----------------------------------------------------------------------------
 // Redistribution and use in source and binary forms, with or without modification,
 // are permitted provided that the following conditions are met:
@@ -223,8 +223,7 @@ bool PlatformUtilities::startDrag (CFrame* frame, const CPoint& location, const 
 		if (cgImage)
 		{
 			nsImage = [imageFromCGImageRef (cgImage) autorelease];
-			bitmapOffset.x -= [nsImage size].width/2;
-			bitmapOffset.y += [nsImage size].height/2;
+			bitmapOffset.y += [nsImage size].height;
 		}
 		else
 		{
@@ -238,6 +237,45 @@ bool PlatformUtilities::startDrag (CFrame* frame, const CPoint& location, const 
 		
 		[nsView dragImage:nsImage at:bitmapOffset offset:NSMakeSize (0, 0) event:[NSApp currentEvent] pasteboard:nsPasteboard source:sourceObj slideBack:YES];
 		[sourceObj release];
+		return true;
+	}
+	return false;
+}
+
+//-----------------------------------------------------------------------------
+bool PlatformUtilities::startDrag (CFrame* frame, const CPoint& location, const void* data, unsigned int dataSize, CBitmap* dragBitmap, bool localOnly)
+{
+	CGImageRef cgImage = 0;
+	if (!frame->getPlatformFrame ())
+		return false;
+
+	NSViewFrame* nsViewFrame = dynamic_cast<NSViewFrame*> (frame->getPlatformFrame ());
+	NSView* nsView = nsViewFrame ? nsViewFrame->getPlatformControl () : 0;
+	CGBitmap* cgBitmap = dragBitmap ? dynamic_cast<CGBitmap*> (dragBitmap->getPlatformBitmap ()) : 0;
+	cgImage = cgBitmap ? cgBitmap->getCGImage () : 0;
+	if (nsView)
+	{
+		NSPoint bitmapOffset = { location.x, location.y };
+		NSPasteboard* nsPasteboard = [NSPasteboard pasteboardWithName:NSDragPboard];
+		NSImage* nsImage = nil;
+		if (cgImage)
+		{
+			nsImage = [imageFromCGImageRef (cgImage) autorelease];
+			bitmapOffset.y += [nsImage size].height;
+		}
+		else
+		{
+			nsImage = [[[NSImage alloc] initWithSize:NSMakeSize (2, 2)] autorelease];
+		}
+		VSTGUI_CocoaDraggingSource* sourceObj = [[VSTGUI_CocoaDraggingSource alloc] init];
+		[sourceObj setLocalOnly:localOnly];
+		
+		[nsPasteboard declareTypes:[NSArray arrayWithObject:@"net.sourceforge.vstgui.binary.drag"] owner:sourceObj];
+		[nsPasteboard setData:[NSData dataWithBytesNoCopy:(void*)data length:dataSize freeWhenDone:NO] forType:@"net.sourceforge.vstgui.binary.drag"];
+		
+		[nsView dragImage:nsImage at:bitmapOffset offset:NSMakeSize (0, 0) event:[NSApp currentEvent] pasteboard:nsPasteboard source:sourceObj slideBack:YES];
+		[sourceObj release];
+		return true;
 	}
 	return false;
 }

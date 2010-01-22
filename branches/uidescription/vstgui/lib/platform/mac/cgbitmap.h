@@ -6,7 +6,7 @@
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
-// (c) 2009, Steinberg Media Technologies, All Rights Reserved
+// (c) 2010, Steinberg Media Technologies, All Rights Reserved
 //-----------------------------------------------------------------------------
 // Redistribution and use in source and binary forms, with or without modification,
 // are permitted provided that the following conditions are met:
@@ -53,7 +53,7 @@ public:
 	bool load (const CResourceDescription& desc);
 	const CPoint& getSize () const { return size; }
 
-	bool loadFromUrl (CFURLRef url);
+	bool loadFromImageSource (CGImageSourceRef source);
 	void loadImage ();
 	virtual CGImageRef getCGImage ();
 

@@ -6,7 +6,7 @@
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
-// (c) 2009, Steinberg Media Technologies, All Rights Reserved
+// (c) 2010, Steinberg Media Technologies, All Rights Reserved
 //-----------------------------------------------------------------------------
 // Redistribution and use in source and binary forms, with or without modification,
 // are permitted provided that the following conditions are met:
@@ -36,6 +36,7 @@
 #include "viewfactory.h"
 #include "viewcreator.h"
 #include "cviewswitchcontainer.h"
+#include "cstream.h"
 #include "../lib/cfont.h"
 #include "../lib/cframe.h"
 #include "../lib/cdrawcontext.h"
@@ -107,7 +108,7 @@ public:
 	UIBitmapNode (const std::string& name, UIAttributes* attributes);
 	CBitmap* getBitmap ();
 	void setBitmap (const char* bitmapName);
-	void setNinePartTiledOffset (const CRect& offsets);
+	void setNinePartTiledOffset (const CRect* offsets);
 protected:
 	~UIBitmapNode ();
 	CBitmap* bitmap;
@@ -798,8 +799,7 @@ void UIDescription::changeBitmap (const char* name, const char* newName, const C
 	if (node)
 	{
 		node->setBitmap (newName);
-		if (nineparttiledOffset)
-			node->setNinePartTiledOffset (*nineparttiledOffset);
+		node->setNinePartTiledOffset (nineparttiledOffset);
 	}
 	else
 	{
@@ -810,7 +810,7 @@ void UIDescription::changeBitmap (const char* name, const char* newName, const C
 			attr->setAttribute ("name", name);
 			UIBitmapNode* node = new UIBitmapNode ("bitmap", attr);
 			if (nineparttiledOffset)
-				node->setNinePartTiledOffset (*nineparttiledOffset);
+				node->setNinePartTiledOffset (nineparttiledOffset);
 			node->setBitmap (newName);
 			bitmapsNode->getChildren ().add (node);
 		}
@@ -1290,21 +1290,22 @@ CBitmap* UIBitmapNode::getBitmap ()
 //-----------------------------------------------------------------------------
 void UIBitmapNode::setBitmap (const char* bitmapName)
 {
+	std::string attrValue (bitmapName);
+	attributes->setAttribute ("path", attrValue.c_str ());
 	if (bitmap)
 		bitmap->forget ();
 	bitmap = 0;
-	attributes->setAttribute ("path", bitmapName);
 }
 
 //-----------------------------------------------------------------------------
-void UIBitmapNode::setNinePartTiledOffset (const CRect& offsets)
+void UIBitmapNode::setNinePartTiledOffset (const CRect* offsets)
 {
 	if (bitmap)
 	{
 		CNinePartTiledBitmap* tiledBitmap = dynamic_cast<CNinePartTiledBitmap*> (bitmap);
-		if (tiledBitmap)
+		if (offsets && tiledBitmap)
 		{
-			tiledBitmap->setPartOffsets (CNinePartTiledBitmap::PartOffsets (offsets.left, offsets.top, offsets.right, offsets.bottom));
+			tiledBitmap->setPartOffsets (CNinePartTiledBitmap::PartOffsets (offsets->left, offsets->top, offsets->right, offsets->bottom));
 		}
 		else
 		{
@@ -1312,10 +1313,10 @@ void UIBitmapNode::setNinePartTiledOffset (const CRect& offsets)
 			bitmap = 0;
 		}
 	}
-	if (offsets.isEmpty ())
-		attributes->removeAttribute ("nineparttiled-offsets");
+	if (offsets)
+		attributes->setRectAttribute ("nineparttiled-offsets", *offsets);
 	else
-		attributes->setRectAttribute ("nineparttiled-offsets", offsets);
+		attributes->removeAttribute ("nineparttiled-offsets");
 }
 
 //-----------------------------------------------------------------------------
@@ -1525,6 +1526,41 @@ bool UIAttributes::getRectAttribute (const char* name, CRect& r) const
 	return false;
 }
 
+//-----------------------------------------------------------------------------
+bool UIAttributes::store (OutputStream& stream)
+{
+	if (!(stream << 'UIAT')) return false;
+	if (!(stream << (unsigned int)size ())) return false;
+	iterator it = begin ();
+	while (it != end ())
+	{
+		if (!(stream << (*it).first)) return false;
+		if (!(stream << (*it).second)) return false;
+		it++;
+	}
+	return true;
+}
+
+//-----------------------------------------------------------------------------
+bool UIAttributes::restore (InputStream& stream)
+{
+	int identifier;
+	if (!(stream >> identifier)) return false;
+	if (identifier == 'UIAT')
+	{
+		unsigned int numAttr;
+		if (!(stream >> numAttr)) return false;
+		for (int i = 0; i < numAttr; i++)
+		{
+			std::string key, value;
+			if (!(stream >> key)) return false;
+			if (!(stream >> value)) return false;
+			setAttribute (key.c_str (), value.c_str ());
+		}
+		return true;
+	}
+	return false;
+}
 
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------

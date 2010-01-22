@@ -1,3 +1,9 @@
+2010-01-22 arne
+
+	* CViewContainer::drawBackgroundRect() draws bitmap now with the same size as the size of itself and not the size of the bitmap
+	* IBitmapReader interface for custom bitmap loading (only mac implementation yet, win to come)
+	* updated copyright year to 2010
+
 20010-01-16 arne
 
 	* changed size for IDataBrowser::dbDrawHeader() to include line width

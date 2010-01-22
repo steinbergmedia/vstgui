@@ -6,7 +6,7 @@
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
-// (c) 2009, Steinberg Media Technologies, All Rights Reserved
+// (c) 2010, Steinberg Media Technologies, All Rights Reserved
 //-----------------------------------------------------------------------------
 // Redistribution and use in source and binary forms, with or without modification,
 // are permitted provided that the following conditions are met:
@@ -53,10 +53,10 @@ class VST3EditorDelegate
 public:
 	virtual ~VST3EditorDelegate () {}
 	
-	virtual CView* createCustomView (const char* name, const UIAttributes& attributes, IUIDescription* description, VST3Editor* editor) = 0;
-	virtual bool findParameter (const CPoint& pos, Steinberg::Vst::ParamID& paramID, VST3Editor* editor) { return false; }
-	virtual void didOpen (VST3Editor* editor) {}
-	virtual void willClose (VST3Editor* editor) {}
+	virtual CView* createCustomView (const char* name, const UIAttributes& attributes, IUIDescription* description, VST3Editor* editor) = 0; ///< create a custom view
+	virtual bool findParameter (const CPoint& pos, Steinberg::Vst::ParamID& paramID, VST3Editor* editor) { return false; } ///< find a parameter
+	virtual void didOpen (VST3Editor* editor) {}	///< called after the editor was opened
+	virtual void willClose (VST3Editor* editor) {}	///< called before the editor will close
 };
 
 //-----------------------------------------------------------------------------

@@ -6,7 +6,7 @@
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
-// (c) 2009, Steinberg Media Technologies, All Rights Reserved
+// (c) 2010, Steinberg Media Technologies, All Rights Reserved
 //-----------------------------------------------------------------------------
 // Redistribution and use in source and binary forms, with or without modification,
 // are permitted provided that the following conditions are met:
@@ -77,6 +77,13 @@ bool GdiplusBitmap::load (const CResourceDescription& desc)
 {
 	if (bitmap == 0)
 	{
+		if (gCustomBitmapReaderCreator)
+		{
+			// TODO: gCustomBitmapReaderCreator win32 support
+			#if DEBUG
+			DebugPrint ("TODO: gCustomBitmapReaderCreator win32 support\n");
+			#endif
+		}
 		ResourceStream* resourceStream = new ResourceStream;
 		if (resourceStream->open (desc, "PNG"))
 			bitmap = Gdiplus::Bitmap::FromStream (resourceStream, TRUE);

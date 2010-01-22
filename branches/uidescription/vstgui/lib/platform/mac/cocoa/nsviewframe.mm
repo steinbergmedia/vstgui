@@ -6,7 +6,7 @@
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
-// (c) 2009, Steinberg Media Technologies, All Rights Reserved
+// (c) 2010, Steinberg Media Technologies, All Rights Reserved
 //-----------------------------------------------------------------------------
 // Redistribution and use in source and binary forms, with or without modification,
 // are permitted provided that the following conditions are met:
@@ -105,7 +105,7 @@ static id VSTGUI_NSView_Init (id self, SEL _cmd, void* _frame, NSView* parentVie
 
 		[parentView addSubview: self];
 
-		[self registerForDraggedTypes:[NSArray arrayWithObjects:NSStringPboardType, NSFilenamesPboardType, nil]];
+		[self registerForDraggedTypes:[NSArray arrayWithObjects:NSStringPboardType, NSFilenamesPboardType, @"net.sourceforge.vstgui.binary.drag", nil]];
 		
 		NSTrackingArea* trackingArea = [[[NSTrackingArea alloc] initWithRect:[self frame] options:NSTrackingMouseEnteredAndExited|NSTrackingMouseMoved|NSTrackingActiveInActiveApp|NSTrackingInVisibleRect owner:self userInfo:nil] autorelease];
 		[self addTrackingArea: trackingArea];
@@ -474,7 +474,8 @@ static NSDragOperation VSTGUI_NSView_draggingEntered (id self, SEL _cmd, id send
 	CPoint where;
 	nsViewGetCurrentMouseLocation (self, where);
 
-	[[NSCursor operationNotAllowedCursor] set];
+	if ([NSCursor respondsToSelector:@selector(operationNotAllowedCursor)])
+		[[NSCursor performSelector:@selector(operationNotAllowedCursor)] set];
 	_vstguiframe->platformOnDragEnter (gCocoaDragContainer, where);
 
 	return NSDragOperationGeneric;

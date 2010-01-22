@@ -6,7 +6,7 @@
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
-// (c) 2009, Steinberg Media Technologies, All Rights Reserved
+// (c) 2010, Steinberg Media Technologies, All Rights Reserved
 //-----------------------------------------------------------------------------
 // Redistribution and use in source and binary forms, with or without modification,
 // are permitted provided that the following conditions are met:
@@ -629,6 +629,25 @@ public:
 				return true;
 			}
 		}
+		else if (column == 2)
+		{
+			CBitmap* bitmap = desc->getBitmap (names[row]->c_str ());
+			CNinePartTiledBitmap* nptBitmap = bitmap ? dynamic_cast<CNinePartTiledBitmap*> (bitmap) : 0;
+			if (nptBitmap)
+			{
+				CNinePartTiledBitmap::PartOffsets offsets = nptBitmap->getPartOffsets ();
+				std::stringstream stream;
+				stream << offsets.left;
+				stream << ", ";
+				stream << offsets.top;
+				stream << ", ";
+				stream << offsets.right;
+				stream << ", ";
+				stream << offsets.bottom;
+				result = stream.str ();
+				return true;
+			}
+		}
 		return BrowserDelegateBase::getCellText (row, column, result, browser);
 	}
 
@@ -643,13 +662,46 @@ public:
 				browser->recalculateLayout (true);
 				return kMouseDownEventHandledButDontNeedMovedOrUpEvents;
 			}
+			if (column == 2)
+			{
+				std::string str;
+				getCellText (row, column, str, browser);
+				browser->beginTextEdit (row, column, str.c_str ());
+				return kMouseDownEventHandledButDontNeedMovedOrUpEvents;
+			}
 		}
 		return BrowserDelegateBase::dbOnMouseDown (where, buttons, row, column, browser);
 	}
 
+	bool parseRect (const std::string& str, CRect& r)
+	{
+		size_t sep = str.find (',', 0);
+		if (sep != std::string::npos)
+		{
+			r.left = strtol (str.c_str (), 0, 10);
+			size_t sep2 = str.find (',', sep);
+			if (sep2 != std::string::npos)
+			{
+				r.top = strtol (str.c_str () + sep2+1, 0, 10);
+				sep = str.find (',', sep2+1);
+				if (sep != std::string::npos)
+				{
+					r.right = strtol (str.c_str () + sep+1, 0, 10);
+					sep2 = str.find (',', sep+1);
+					if (sep2 != std::string::npos)
+					{
+						r.bottom = strtol (str.c_str () + sep2+1, 0, 10);
+						return true;
+					}
+				}
+			}
+		}
+		return false;
+	}
+
 	void dbCellTextChanged (long row, long column, const char* newText, CDataBrowser* browser)
 	{
-		if (newText == 0 || strlen (newText) == 0)
+		if (column != 2 && (newText == 0 || strlen (newText) == 0))
 			return;
 		std::string str;
 		if (getCellText (row, column, str, browser) && str == newText)
@@ -684,6 +736,15 @@ public:
 		else if (column == 1)
 		{
 			actionOperator->performBitmapChange (names[row]->c_str (), newText);
+		}
+		else if (column == 2)
+		{
+			str = newText;
+			CRect r;
+			if (parseRect (str, r))
+				actionOperator->performBitmapNinePartTiledChange (names[row]->c_str (), &r);
+			else
+				actionOperator->performBitmapNinePartTiledChange (names[row]->c_str (), 0);
 		}
 	}
 };
@@ -1252,6 +1313,8 @@ CViewInspector::CViewInspector (CSelection* selection, IActionOperator* actionOp
 : selection (selection)
 , actionOperator (actionOperator)
 , description (0)
+, attributesView (0)
+, viewNameLabel (0)
 , scrollView (0)
 , platformWindow (0)
 , parentPlatformWindow (parentPlatformWindow)
@@ -1423,6 +1486,7 @@ void CViewInspector::updateAttributeViews ()
 		CView* view = (*it);
 		if (view && getViewAttributeName (view, attrName))
 		{
+			attrValue = "";
 			viewFactory->getAttributeValue (*selection->begin (), attrName, attrValue, description);
 			CTextEdit* textEdit = dynamic_cast<CTextEdit*> (view);
 			COptionMenu* optMenu = dynamic_cast<COptionMenu*> (view);
@@ -1488,15 +1552,34 @@ CView* CViewInspector::createAttributesView (CCoord width)
 	if (viewFactory == 0)
 		return 0;
 	CRect size (0, 0, width, 400);
+	if (attributesView == 0)
+	{
+		attributesView = new CViewContainer (size, 0);
+		attributesView->setTransparency (true);
+		attributesView->setAutosizeFlags (kAutosizeAll);
+		viewNameLabel = new CTextLabel (CRect (0, 3, width, 18));
+		viewNameLabel->setStyle (kNoFrame);
+		viewNameLabel->setTextInset (CPoint (5, 0));
+		viewNameLabel->setHoriAlign (kLeftText);
+		CFontDesc* labelFont = new CFontDesc (*kSystemFont);
+		labelFont->setSize (10);
+		viewNameLabel->setFont (labelFont);
+		labelFont->forget ();
+		viewNameLabel->setAutosizeFlags (kAutosizeLeft|kAutosizeRight);
+		viewNameLabel->setBackColor (uidDataBrowserLineColor);
+		attributesView->addView (viewNameLabel);
+	}
 	if (scrollView == 0)
 	{
-		scrollView = new CScrollView (size, size, 0, CScrollView::kVerticalScrollbar|CScrollView::kDontDrawFrame, 10);
+		size.top += 20;
+		scrollView = new CScrollView (size, CRect (0, 0, 0, 0), 0, CScrollView::kVerticalScrollbar|CScrollView::kDontDrawFrame, 10);
 		scrollView->setBackgroundColor (kTransparentCColor);
 		scrollView->setAutosizeFlags (kAutosizeAll);
 		CScrollbar* bar = scrollView->getVerticalScrollbar ();
 		bar->setScrollerColor (kDefaultUIDescriptionScrollerColor);
 		bar->setBackgroundColor (kTransparentCColor);
 		bar->setFrameColor (kTransparentCColor);
+		attributesView->addView (scrollView);
 	}
 	else
 	{
@@ -1507,8 +1590,21 @@ CView* CViewInspector::createAttributesView (CCoord width)
 	}
 	CCoord viewLocation = 0;
 	CCoord containerWidth = width - 10;
-	if (selection->total () > 0)
+	int selectedViews = selection->total ();
+	if (selectedViews > 0)
 	{
+		if (selectedViews == 1)
+		{
+			CView* view = selection->first ();
+			const char* viewname = viewFactory->getViewName (view);
+			if (viewname == 0)
+				viewname = typeid(*view).name ();
+			viewNameLabel->setText (viewname);
+		}
+		else
+		{
+			viewNameLabel->setText ("Multiple Selection");
+		}
 		std::list<std::string> attrNames;
 		FOREACH_IN_SELECTION(selection, view)
 			std::list<std::string> temp;
@@ -1562,10 +1658,15 @@ CView* CViewInspector::createAttributesView (CCoord width)
 			it++;
 		}
 	}
+	else
+	{
+		viewNameLabel->setText ("No Selection");
+	}
+
 	size.setHeight (viewLocation);
 	scrollView->setContainerSize (size);
-	scrollView->invalid ();
-	return scrollView;
+	attributesView->invalid ();
+	return attributesView;
 }
 
 //-----------------------------------------------------------------------------
@@ -1573,7 +1674,7 @@ void CViewInspector::show ()
 {
 	if (platformWindow == 0)
 	{
-		CView* attributesView = createAttributesView (400);
+		createAttributesView (400);
 		if (attributesView == 0)
 			return;
 		CRect size = attributesView->getViewSize ();
@@ -1662,6 +1763,8 @@ void CViewInspector::show ()
 			attributeViews.clear ();
 			tabView->forget ();
 			scrollView = 0;
+			attributesView = 0;
+			viewNameLabel = 0;
 		}
 	}
 }
@@ -1691,6 +1794,8 @@ void CViewInspector::hide ()
 		frame->forget ();
 		frame = 0;
 		scrollView = 0;
+		attributesView = 0;
+		viewNameLabel = 0;
 		platformWindow->forget ();
 		platformWindow = 0;
 	}

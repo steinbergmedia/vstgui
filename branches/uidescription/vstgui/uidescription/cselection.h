@@ -6,7 +6,7 @@
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
-// (c) 2009, Steinberg Media Technologies, All Rights Reserved
+// (c) 2010, Steinberg Media Technologies, All Rights Reserved
 //-----------------------------------------------------------------------------
 // Redistribution and use in source and binary forms, with or without modification,
 // are permitted provided that the following conditions are met:
@@ -39,8 +39,13 @@
 
 #include "../lib/cview.h"
 #include <list>
+#include <string>
 
 namespace VSTGUI {
+class ViewFactory;
+class IUIDescription;
+class OutputStream;
+class InputStream;
 
 //----------------------------------------------------------------------------------------------------
 class CSelection : public CBaseObject, protected std::list<CView*>
@@ -80,18 +85,27 @@ public:
 
 	void addDependent (CBaseObject* obj);
 	void removeDependent (CBaseObject* obj);
+
+	void setDragOffset (const CPoint& p) { dragOffset = p; }
+	const CPoint& getDragOffset () const { return dragOffset; }
 	
 	static const char* kMsgSelectionChanged;
 	static const char* kMsgSelectionViewChanged;
 	void changed (const char* what);
+
+	bool store (OutputStream& stream, ViewFactory* viewFactory, IUIDescription* uiDescription);
+	bool restore (InputStream& str, ViewFactory* viewFactory, IUIDescription* uiDescription);
 protected:
 
 	std::list<CBaseObject*> dependencies;
 	int style;
+	
+	CPoint dragOffset;
 };
 
 //----------------------------------------------------------------------------------------------------
 #define FOREACH_IN_SELECTION(__selection, view) \
+	{ \
 	CSelection::const_iterator __it = __selection->begin (); \
 	while (__it != __selection->end ()) \
 	{ \
@@ -101,6 +115,7 @@ protected:
 #define FOREACH_IN_SELECTION_END \
 		__it++; \
 	} \
+	}
 
 } // namespace
 

@@ -50,6 +50,7 @@
 		F44075D810BF0DD5003C59F6 /* switch horizontal.bmp in Resources */ = {isa = PBXBuildFile; fileRef = F44075D610BF0DD5003C59F6 /* switch horizontal.bmp */; };
 		F44075D910BF0DD5003C59F6 /* switch vertical.bmp in Resources */ = {isa = PBXBuildFile; fileRef = F44075D710BF0DD5003C59F6 /* switch vertical.bmp */; };
 		F44075E610BF147E003C59F6 /* animation knob.png in Resources */ = {isa = PBXBuildFile; fileRef = F44075E510BF147E003C59F6 /* animation knob.png */; };
+		F4457815110A06590022C0E5 /* FrameBackground.png in Resources */ = {isa = PBXBuildFile; fileRef = F4457814110A06590022C0E5 /* FrameBackground.png */; };
 		F4F4013D10D2662500F2B46B /* vst2wrapper.sdk.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4F4013C10D2662500F2B46B /* vst2wrapper.sdk.cpp */; };
 		F4F5DA8A10BFD28900DB6C33 /* TabController.png in Resources */ = {isa = PBXBuildFile; fileRef = F4F5DA8910BFD28900DB6C33 /* TabController.png */; };
 /* End PBXBuildFile section */
@@ -141,6 +142,7 @@
 		F44075D610BF0DD5003C59F6 /* switch horizontal.bmp */ = {isa = PBXFileReference; lastKnownFileType = image.bmp; name = "switch horizontal.bmp"; path = "../resource/switch horizontal.bmp"; sourceTree = SOURCE_ROOT; };
 		F44075D710BF0DD5003C59F6 /* switch vertical.bmp */ = {isa = PBXFileReference; lastKnownFileType = image.bmp; name = "switch vertical.bmp"; path = "../resource/switch vertical.bmp"; sourceTree = SOURCE_ROOT; };
 		F44075E510BF147E003C59F6 /* animation knob.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "animation knob.png"; path = "../resource/animation knob.png"; sourceTree = SOURCE_ROOT; };
+		F4457814110A06590022C0E5 /* FrameBackground.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = FrameBackground.png; path = ../resource/FrameBackground.png; sourceTree = SOURCE_ROOT; };
 		F4F4013C10D2662500F2B46B /* vst2wrapper.sdk.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = vst2wrapper.sdk.cpp; path = ../../../../../SKI/public.sdk/source/vst/vst2wrapper/vst2wrapper.sdk.cpp; sourceTree = SOURCE_ROOT; };
 		F4F5DA8910BFD28900DB6C33 /* TabController.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = TabController.png; path = ../resource/TabController.png; sourceTree = SOURCE_ROOT; };
 		F4F5DA9E10BFD5BF00DB6C33 /* ussage bugs.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = "ussage bugs.txt"; path = "../ussage bugs.txt"; sourceTree = SOURCE_ROOT; };
@@ -358,6 +360,7 @@
 		F44075AA10BF0525003C59F6 /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				F4457814110A06590022C0E5 /* FrameBackground.png */,
 				F4F5DA8910BFD28900DB6C33 /* TabController.png */,
 				F44075E510BF147E003C59F6 /* animation knob.png */,
 				F44075AE10BF05A5003C59F6 /* horizontal slider back.bmp */,
@@ -430,6 +433,7 @@
 				F403647D10C12D95001BCC34 /* rocker switch.bmp in Resources */,
 				F40364DB10C13694001BCC34 /* vumeter back.bmp in Resources */,
 				F40364DC10C13694001BCC34 /* vumeter front.bmp in Resources */,
+				F4457815110A06590022C0E5 /* FrameBackground.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

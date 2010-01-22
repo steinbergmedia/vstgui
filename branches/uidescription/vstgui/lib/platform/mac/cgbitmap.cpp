@@ -6,7 +6,7 @@
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
-// (c) 2009, Steinberg Media Technologies, All Rights Reserved
+// (c) 2010, Steinberg Media Technologies, All Rights Reserved
 //-----------------------------------------------------------------------------
 // Redistribution and use in source and binary forms, with or without modification,
 // are permitted provided that the following conditions are met:
@@ -48,6 +48,43 @@ IPlatformBitmap* IPlatformBitmap::create (CPoint* size)
 }
 
 //-----------------------------------------------------------------------------
+static size_t DataProviderGetBytesCallback (void *info, void *buffer, size_t count)
+{
+	IBitmapReader* reader = (IBitmapReader*)info;
+	return reader->readBytes (buffer, count);
+}
+
+//-----------------------------------------------------------------------------
+static off_t DataProviderSkipForwardCallback (void *info, off_t count)
+{
+	IBitmapReader* reader = (IBitmapReader*)info;
+	off_t skipped = 0;
+	char buffer;
+	for (off_t i = 0; i < count; i++)
+	{
+		int read = reader->readBytes (&buffer, 1);
+		if (read != 0)
+			break;
+		skipped += read;
+	}
+	return skipped;
+}
+
+//-----------------------------------------------------------------------------
+static void DataProviderRewindCallback (void *info)
+{
+	IBitmapReader* reader = (IBitmapReader*)info;
+	reader->rewind ();
+}
+
+//-----------------------------------------------------------------------------
+static void DataProviderReleaseInfoCallback (void *info)
+{
+	IBitmapReader* reader = (IBitmapReader*)info;
+	reader->forget ();
+}
+
+//-----------------------------------------------------------------------------
 CGBitmap::CGBitmap ()
 : image (0)
 , imageSource (0)
@@ -67,7 +104,34 @@ CGBitmap::~CGBitmap ()
 bool CGBitmap::load (const CResourceDescription& desc)
 {
 	bool result = false;
-	if (getBundleRef ())
+	if (gCustomBitmapReaderCreator)
+	{
+		IBitmapReader* reader = gCustomBitmapReaderCreator->createBitmapReader (desc);
+		if (reader)
+		{
+			static CGDataProviderSequentialCallbacks callbacks = {
+				0,
+				DataProviderGetBytesCallback,
+				DataProviderSkipForwardCallback,
+				DataProviderRewindCallback,
+				DataProviderReleaseInfoCallback
+			};
+			
+			CGDataProviderRef dataProvider = CGDataProviderCreateSequential (reader, &callbacks);
+			if (dataProvider)
+			{
+				CGImageSourceRef source = CGImageSourceCreateWithDataProvider (dataProvider, 0);
+				if (source)
+				{
+					result = loadFromImageSource (source);
+					CFRelease (source);
+				}
+				CFRelease (dataProvider);
+			}
+			reader->forget ();
+		}
+	}
+	if (!result && getBundleRef ())
 	{
 		// find the bitmap in our Bundle.
 		// If the resource description is of type integer, it must be in the form of bmp00123.png, where the resource id would be 123.
@@ -92,26 +156,31 @@ bool CGBitmap::load (const CResourceDescription& desc)
 			CFRelease (cfStr);
 			if (url)
 			{
-				result = loadFromUrl (url);
+				CGImageSourceRef source = CGImageSourceCreateWithURL (url, NULL);
 				CFRelease (url);
-			}
-			else
-			{
-				#if DEBUG
-				DebugPrint ("*** Bitmap Nr.:%d not found.\n", desc.u.id);
-				#endif
+				result = loadFromImageSource (source);
+				CFRelease (source);
 			}
 		}
 	}
+#if DEBUG
+	if (result == false)
+	{
+		if (desc.type == CResourceDescription::kIntegerType)
+			DebugPrint ("*** Bitmap Nr.:%d not found.\n", desc.u.id);
+		else
+			DebugPrint ("*** Bitmap '%s' not found.\n", desc.u.name);
+	}
+#endif
 	return result;
 }
 
 static CFStringRef kCGImageSourceShouldPreferRGB32 = CFSTR("kCGImageSourceShouldPreferRGB32");
 
 //-----------------------------------------------------------------------------
-bool CGBitmap::loadFromUrl (CFURLRef url)
+bool CGBitmap::loadFromImageSource (CGImageSourceRef source)
 {
-	imageSource = CGImageSourceCreateWithURL (url, NULL);
+	imageSource = source;
 	if (imageSource)
 	{
 		CFDictionaryRef properties = CGImageSourceCopyPropertiesAtIndex (imageSource, 0, 0);
@@ -132,14 +201,8 @@ bool CGBitmap::loadFromUrl (CFURLRef url)
 				size.x = fValue;
 		}
 		CFRelease (properties);
+		CFRetain (imageSource);
 	}
-	#if DEBUG
-	else
-	{
-		DebugPrint ("*** Bitmap not found :"); 
-		CFShow (url);
-	}
-	#endif
 	return (size.x != 0 && size.y != 0);
 }
 

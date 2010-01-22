@@ -6,7 +6,7 @@
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
-// (c) 2009, Steinberg Media Technologies, All Rights Reserved
+// (c) 2010, Steinberg Media Technologies, All Rights Reserved
 //-----------------------------------------------------------------------------
 // Redistribution and use in source and binary forms, with or without modification,
 // are permitted provided that the following conditions are met:
@@ -62,6 +62,8 @@ CocoaDragContainer::CocoaDragContainer (NSPasteboard* platformDrag)
 			NSArray* fileNames = [pb propertyListForType:hasFilenames];
 			nbItems = [fileNames count];
 		}
+		else
+			nbItems = [[pb types] count];
 	}
 }
 
@@ -132,6 +134,19 @@ void* CocoaDragContainer::next (long& size, long& type)
 		}
 		type = CDragContainer::kError;
 		return 0;
+	}
+	else
+	{
+		NSData* nsData = [pb dataForType:[[pb types] objectAtIndex:iterator-1]];
+		if (nsData)
+		{
+			char* data = (char*)malloc ([nsData length]);
+			memcpy (data, [nsData bytes], [nsData length]);
+			type = CDragContainer::kUnknown;
+			size = [nsData length];
+			lastItem = data;
+			return data;
+		}
 	}
 	
 	type = CDragContainer::kError;

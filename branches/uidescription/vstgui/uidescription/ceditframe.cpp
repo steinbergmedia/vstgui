@@ -6,7 +6,7 @@
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
-// (c) 2009, Steinberg Media Technologies, All Rights Reserved
+// (c) 2010, Steinberg Media Technologies, All Rights Reserved
 //-----------------------------------------------------------------------------
 // Redistribution and use in source and binary forms, with or without modification,
 // are permitted provided that the following conditions are met:
@@ -40,6 +40,7 @@
 #include "viewfactory.h"
 #include "viewcreator.h"
 #include "editingcolordefs.h"
+#include "cstream.h"
 #include "../lib/coffscreencontext.h"
 #include "../lib/vstkeycode.h"
 #include "../lib/cfileselector.h"
@@ -155,29 +156,30 @@ protected:
 class ViewCopyOperation : public IActionOperation, protected std::list<CView*>
 {
 public:
-	ViewCopyOperation (CSelection* selection, CViewContainer* parent, const CPoint& offset, ViewFactory* viewFactory, IUIDescription* desc)
+	ViewCopyOperation (CSelection* copySelection, CSelection* workingSelection, CViewContainer* parent, const CPoint& offset, ViewFactory* viewFactory, IUIDescription* desc)
 	: parent (parent)
-	, selection (selection)
+	, copySelection (copySelection)
+	, workingSelection (workingSelection)
 	{
 		parent->remember ();
-		selection->remember ();
-		CRect selectionBounds = selection->getBounds ();
-		FOREACH_IN_SELECTION(selection, view)
-			if (!selection->containsParent (view))
+		copySelection->remember ();
+		workingSelection->remember ();
+		CRect selectionBounds = copySelection->getBounds ();
+		FOREACH_IN_SELECTION(copySelection, view)
+			if (!copySelection->containsParent (view))
 			{
-				CView* viewCopy = duplicateView (view, viewFactory, desc);
-				if (viewCopy)
-				{
-					CRect viewSize = CSelection::getGlobalViewCoordinates (view);
-					CRect newSize (0, 0, viewSize.getWidth (), viewSize.getHeight ());
-					newSize.offset (offset.x, offset.y);
-					newSize.offset (viewSize.left - selectionBounds.left, viewSize.top - selectionBounds.top);
+				CRect viewSize = CSelection::getGlobalViewCoordinates (view);
+				CRect newSize (0, 0, viewSize.getWidth (), viewSize.getHeight ());
+				newSize.offset (offset.x, offset.y);
+				newSize.offset (viewSize.left - selectionBounds.left, viewSize.top - selectionBounds.top);
 
-					viewCopy->setViewSize (newSize);
-					viewCopy->setMouseableArea (newSize);
-					push_back (viewCopy);
-				}
+				view->setViewSize (newSize);
+				view->setMouseableArea (newSize);
+				push_back (view);
 			}
+		FOREACH_IN_SELECTION_END
+
+		FOREACH_IN_SELECTION(workingSelection, view)
 			oldSelectedViews.push_back (view);
 		FOREACH_IN_SELECTION_END
 	}
@@ -191,7 +193,8 @@ public:
 			it++;
 		}
 		parent->forget ();
-		selection->forget ();
+		copySelection->forget ();
+		workingSelection->forget ();
 	}
 	
 	const char* getName () 
@@ -203,21 +206,21 @@ public:
 
 	void perform ()
 	{
-		selection->empty ();
+		workingSelection->empty ();
 		const_iterator it = begin ();
 		while (it != end ())
 		{
 			parent->addView (*it);
 			(*it)->remember ();
 			(*it)->invalid ();
-			selection->add (*it);
+			workingSelection->add (*it);
 			it++;
 		}
 	}
 	
 	void undo ()
 	{
-		selection->empty ();
+		workingSelection->empty ();
 		const_iterator it = begin ();
 		while (it != end ())
 		{
@@ -228,45 +231,15 @@ public:
 		it = oldSelectedViews.begin ();
 		while (it != oldSelectedViews.end ())
 		{
-			selection->add (*it);
+			workingSelection->add (*it);
 			(*it)->invalid ();
 			it++;
 		}
 	}
 protected:
-	//----------------------------------------------------------------------------------------------------
-	static CView* duplicateView (CView* view, ViewFactory* viewFactory, IUIDescription* desc)
-	{
-		UIAttributes attr;
-		if (viewFactory->getAttributesForView (view, desc, attr))
-		{
-			CView* viewCopy = viewFactory->createView (attr, desc);
-			if (viewCopy)
-			{
-				viewFactory->applyAttributeValues (viewCopy, attr, desc);
-				CViewContainer* container = dynamic_cast<CViewContainer*> (view);
-				if (container)
-				{
-					for (long i = 0; i < container->getNbViews (); i++)
-					{
-						CView* subview = container->getView (i);
-						if (!subview)
-							continue;
-						CView* subviewCopy = duplicateView (subview, viewFactory, desc);
-						if (subviewCopy)
-						{
-							dynamic_cast<CViewContainer*> (viewCopy)->addView (subviewCopy);
-						}
-					}
-				}
-			}
-			return viewCopy;
-		}
-		return 0;
-	}
-
 	CViewContainer* parent;
-	CSelection* selection;
+	CSelection* copySelection;
+	CSelection* workingSelection;
 	std::list<CView*> oldSelectedViews;
 };
 
@@ -676,6 +649,7 @@ CEditFrame::CEditFrame (const CRect& size, void* windowPtr, VSTGUIEditorInterfac
 , lines (0)
 , grid (0)
 , selection (_selection)
+, dragSelection (0)
 , uiDescription (0)
 , hierarchyBrowser (0)
 , inspector (0)
@@ -1762,31 +1736,39 @@ void CEditFrame::startDrag (CPoint& where)
 	if (bitmap == 0)
 		return;
 
-	// this is really bad, should be done with some kind of storing the CSelection object as string and later on recreating it from the string
-	char dragString[40] = {0};
-	sprintf (dragString, "CSelection: %p", selection);
-	PlatformUtilities::startDrag (this, where, dragString, bitmap);
+	CRect selectionBounds = selection->getBounds ();
+	CPoint offset (where);
+	offset.x -= (where.x - selectionBounds.left);
+	offset.y -= (where.y - selectionBounds.top);
+
+	selection->setDragOffset (CPoint (where.x - offset.x, where.y - offset.y));
+
+	ViewFactory* viewFactory = dynamic_cast<ViewFactory*> (uiDescription->getViewFactory ());
+	CMemoryStream stream;
+	if (!selection->store (stream, viewFactory, uiDescription))
+		return;
+	PlatformUtilities::startDrag (this, offset, stream.getBuffer (), stream.tell (), bitmap);
 	if (bitmap)
 		bitmap->forget ();
 }
 
 //----------------------------------------------------------------------------------------------------
-static CSelection* getSelectionOutOfDrag (CDragContainer* drag)
+CSelection* CEditFrame::getSelectionOutOfDrag (CDragContainer* drag)
 {
-	CSelection* selection = 0;
 	long size, type;
 	const char* dragData = (const char*)drag->first (size, type);
-	if (type == CDragContainer::kUnicodeText)
+	if (type == CDragContainer::kUnknown)
 	{
-		if (strncmp (dragData, "CSelection: ", 12) == 0)
+		ViewFactory* viewFactory = dynamic_cast<ViewFactory*> (uiDescription->getViewFactory ());
+		CMemoryStream stream (dragData, size);
+		CSelection* selection = new CSelection;
+		if (selection->restore (stream, viewFactory, uiDescription))
 		{
-			// as said above, really not a good practice
-			long ptr = strtol (dragData+12, 0, 16);
-			selection = (CSelection*)ptr;
-			selection->remember ();
+			return selection;
 		}
+		selection->forget ();
 	}
-	return selection;
+	return 0;
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -1799,7 +1781,6 @@ bool CEditFrame::onDrop (CDragContainer* drag, const CPoint& where)
 			delete lines;
 			lines = 0;
 		}
-		CSelection* dragSelection = getSelectionOutOfDrag (drag);
 		if (dragSelection)
 		{
 			if (highlightView)
@@ -1811,7 +1792,7 @@ bool CEditFrame::onDrop (CDragContainer* drag, const CPoint& where)
 			CRect selectionBounds = dragSelection->getBounds ();
 
 			CPoint where2 (where);
-			where2.offset (-selectionBounds.getWidth () / 2, -selectionBounds.getHeight () / 2);
+			where2.offset (-dragSelection->getDragOffset ().x, -dragSelection->getDragOffset ().y);
 			if (grid)
 			{
 				where2.offset (grid->getSize ()/2, grid->getSize ()/2);
@@ -1826,8 +1807,7 @@ bool CEditFrame::onDrop (CDragContainer* drag, const CPoint& where)
 				where2.offset (-containerOffset.x, -containerOffset.y);
 
 				ViewFactory* viewFactory = dynamic_cast<ViewFactory*> (uiDescription->getViewFactory ());
-			
-				performAction (new ViewCopyOperation (dragSelection, viewContainer, where2, viewFactory, uiDescription));
+				performAction (new ViewCopyOperation (dragSelection, selection, viewContainer, where2, viewFactory, uiDescription));
 			}
 			dragSelection->forget ();
 		}
@@ -1842,12 +1822,12 @@ void CEditFrame::onDragEnter (CDragContainer* drag, const CPoint& where)
 {
 	if (editMode == kEditMode)
 	{
-		CSelection* selection = getSelectionOutOfDrag (drag);
-		if (selection)
+		dragSelection = getSelectionOutOfDrag (drag);
+		if (dragSelection)
 		{
-			CRect vr = selection->getBounds ();
+			CRect vr = dragSelection->getBounds ();
 			CPoint where2 (where);
-			where2.offset (-vr.getWidth () / 2, -vr.getHeight () / 2);
+			where2.offset (-dragSelection->getDragOffset ().x, -dragSelection->getDragOffset ().y);
 			if (grid)
 			{
 				where2.offset (grid->getSize ()/2, grid->getSize ()/2);
@@ -1862,7 +1842,10 @@ void CEditFrame::onDragEnter (CDragContainer* drag, const CPoint& where)
 			if (highlightView)
 				highlightView->invalid ();
 			setCursor (kCursorCopy);
-			selection->forget ();
+		}
+		else
+		{
+			setCursor (kCursorNotAllowed);
 		}
 	}
 	else
@@ -1872,6 +1855,11 @@ void CEditFrame::onDragEnter (CDragContainer* drag, const CPoint& where)
 //----------------------------------------------------------------------------------------------------
 void CEditFrame::onDragLeave (CDragContainer* drag, const CPoint& where)
 {
+	if (dragSelection)
+	{
+		dragSelection->forget ();
+		dragSelection = 0;
+	}
 	if (editMode == kEditMode)
 	{
 		if (highlightView)
@@ -1897,12 +1885,11 @@ void CEditFrame::onDragMove (CDragContainer* drag, const CPoint& where)
 	{
 		if (lines)
 		{
-			CSelection* selection = getSelectionOutOfDrag (drag);
-			if (selection)
+			if (dragSelection)
 			{
-				CRect vr = selection->getBounds ();
+				CRect vr = dragSelection->getBounds ();
 				CPoint where2 (where);
-				where2.offset (-vr.getWidth () / 2, -vr.getHeight () / 2);
+				where2.offset (-dragSelection->getDragOffset ().x, -dragSelection->getDragOffset ().y);
 				if (grid)
 				{
 					where2.offset (grid->getSize ()/2, grid->getSize ()/2);
@@ -1918,7 +1905,6 @@ void CEditFrame::onDragMove (CDragContainer* drag, const CPoint& where)
 					if (highlightView)
 						highlightView->invalid ();
 				}
-				selection->forget ();
 			}
 		}
 	}
@@ -2136,6 +2122,23 @@ void CEditFrame::performFontNameChange (const char* oldName, const char* newName
 void CEditFrame::performBitmapNameChange (const char* oldName, const char* newName)
 {
 	uiDescription->changeBitmapName (oldName, newName);
+	selection->changed (CSelection::kMsgSelectionViewChanged);
+}
+
+//----------------------------------------------------------------------------------------------------
+void CEditFrame::performBitmapNinePartTiledChange (const char* bitmapName, const CRect* offsets)
+{
+	ViewFactory* viewFactory = dynamic_cast<ViewFactory*> (uiDescription->getViewFactory ());
+	std::map<CView*, std::string> m;
+	collectViewsWithAttributeValue (viewFactory, uiDescription, getView (0), IViewCreator::kBitmapType, bitmapName, m);
+
+	CBitmap* bitmap = uiDescription->getBitmap (bitmapName);
+	if (bitmap == 0)
+		return;
+
+	uiDescription->changeBitmap (bitmapName, bitmap->getResourceDescription ().u.name, offsets);
+	performAttributeChange (viewFactory, uiDescription, bitmapName, m);
+
 	selection->changed (CSelection::kMsgSelectionViewChanged);
 }
 

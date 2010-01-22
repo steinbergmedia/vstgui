@@ -6,7 +6,7 @@
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
-// (c) 2009, Steinberg Media Technologies, All Rights Reserved
+// (c) 2010, Steinberg Media Technologies, All Rights Reserved
 //-----------------------------------------------------------------------------
 // Redistribution and use in source and binary forms, with or without modification,
 // are permitted provided that the following conditions are met:
@@ -339,7 +339,6 @@ private:
 //-----------------------------------------------------------------------------
 bool PlatformUtilities::startDrag (CFrame* frame, const CPoint& location, const char* string, CBitmap* dragBitmap, bool localOnly)
 {
-	// TODO: Windows start drag support
 	DataObject* dataObject = new DataObject (string);
 	DropSource* dropSource = new DropSource;
 	DWORD outEffect;
@@ -347,6 +346,13 @@ bool PlatformUtilities::startDrag (CFrame* frame, const CPoint& location, const 
 	dataObject->Release ();
 	dropSource->Release ();
 	return result == DRAGDROP_S_DROP;
+}
+
+//-----------------------------------------------------------------------------
+bool PlatformUtilities::startDrag (CFrame* frame, const CPoint& location, const void* data, unsigned int dataSize, CBitmap* dragBitmap, bool localOnly)
+{
+	// TODO: Windows start drag support
+	return false;
 }
 
 //-----------------------------------------------------------------------------

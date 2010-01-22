@@ -6,7 +6,7 @@
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
-// (c) 2009, Steinberg Media Technologies, All Rights Reserved
+// (c) 2010, Steinberg Media Technologies, All Rights Reserved
 //-----------------------------------------------------------------------------
 // Redistribution and use in source and binary forms, with or without modification,
 // are permitted provided that the following conditions are met:
@@ -93,6 +93,7 @@ class PlatformUtilities
 {
 public:
 	static bool startDrag (CFrame* frame, const CPoint& location, const char* string, CBitmap* dragBitmap, bool localOnly = true);
+	static bool startDrag (CFrame* frame, const CPoint& location, const void* data, unsigned int dataSize, CBitmap* dragBitmap, bool localOnly = true);
 	static void colorChooser (const CColor* oldColor, IPlatformColorChangeCallback* callback);
 };
 
