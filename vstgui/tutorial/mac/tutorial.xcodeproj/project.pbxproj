@@ -10,8 +10,9 @@
 		8D01CCCA0486CAD60068D4B7 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 089C167DFE841241C02AAC07 /* InfoPlist.strings */; };
 		8D01CCCE0486CAD60068D4B7 /* Carbon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 08EA7FFBFE8413EDC02AAC07 /* Carbon.framework */; };
 		F405CDB70B048647008E3886 /* TutorialEditor.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F405CDB60B048647008E3886 /* TutorialEditor.cpp */; };
-		F405CDC80B048736008E3886 /* vstcontrols.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F405CDC30B048736008E3886 /* vstcontrols.cpp */; };
-		F405CDC90B048736008E3886 /* vstgui.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F405CDC50B048736008E3886 /* vstgui.cpp */; };
+		F405CDC70B048736008E3886 /* aeffguieditor.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F405CDC10B048736008E3886 /* aeffguieditor.cpp */; };
+		F405CE000B048824008E3886 /* audioeffect.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F405CDFB0B048824008E3886 /* audioeffect.cpp */; };
+		F405CE010B048824008E3886 /* audioeffectx.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F405CDFD0B048824008E3886 /* audioeffectx.cpp */; };
 		F405CE020B048824008E3886 /* vstplugmain.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F405CDFF0B048824008E3886 /* vstplugmain.cpp */; };
 		F405CE0E0B048898008E3886 /* TutorialVST2Effect.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F405CE0D0B048898008E3886 /* TutorialVST2Effect.cpp */; };
 		F405CE470B048C59008E3886 /* KnobBackground.png in Resources */ = {isa = PBXBuildFile; fileRef = F405CE450B048C59008E3886 /* KnobBackground.png */; };
@@ -20,8 +21,6 @@
 		F405D03C0B04E47B008E3886 /* KnobBackground.png in Resources */ = {isa = PBXBuildFile; fileRef = F405CE450B048C59008E3886 /* KnobBackground.png */; };
 		F405D03D0B04E47B008E3886 /* KnobHandle.png in Resources */ = {isa = PBXBuildFile; fileRef = F405CE460B048C59008E3886 /* KnobHandle.png */; };
 		F405D0400B04E47B008E3886 /* aeffguieditor.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F405CDC10B048736008E3886 /* aeffguieditor.cpp */; };
-		F405D0410B04E47B008E3886 /* vstcontrols.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F405CDC30B048736008E3886 /* vstcontrols.cpp */; };
-		F405D0420B04E47B008E3886 /* vstgui.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F405CDC50B048736008E3886 /* vstgui.cpp */; };
 		F405D0430B04E47B008E3886 /* audioeffect.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F405CDFB0B048824008E3886 /* audioeffect.cpp */; };
 		F405D0440B04E47B008E3886 /* audioeffectx.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F405CDFD0B048824008E3886 /* audioeffectx.cpp */; };
 		F405D0450B04E47B008E3886 /* vstplugmain.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F405CDFF0B048824008E3886 /* vstplugmain.cpp */; };
@@ -29,9 +28,10 @@
 		F405D0480B04E47B008E3886 /* Carbon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 08EA7FFBFE8413EDC02AAC07 /* Carbon.framework */; };
 		F405D0720B04E59A008E3886 /* Tutorial2Editor.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F405D0710B04E59A008E3886 /* Tutorial2Editor.cpp */; };
 		F405D0830B04E7B3008E3886 /* KnobHandleHighlight.png in Resources */ = {isa = PBXBuildFile; fileRef = F405D0820B04E7B3008E3886 /* KnobHandleHighlight.png */; };
-		F41582C7100E545500E208B6 /* audioeffectx.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F405CDFD0B048824008E3886 /* audioeffectx.cpp */; };
-		F41582C8100E545600E208B6 /* audioeffect.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F405CDFB0B048824008E3886 /* audioeffect.cpp */; };
-		F41582C9100E545700E208B6 /* aeffguieditor.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F405CDC10B048736008E3886 /* aeffguieditor.cpp */; };
+		F42C1FCA108F83FD0048C2EE /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F42C1FC9108F83FD0048C2EE /* Cocoa.framework */; };
+		F44864EB10AEEEC500D7EFBA /* vstgui_mac.mm in Sources */ = {isa = PBXBuildFile; fileRef = F44864EA10AEEEC500D7EFBA /* vstgui_mac.mm */; };
+		F44864EC10AEEEC500D7EFBA /* vstgui_mac.mm in Sources */ = {isa = PBXBuildFile; fileRef = F44864EA10AEEEC500D7EFBA /* vstgui_mac.mm */; };
+		F448654710AEEFAD00D7EFBA /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F42C1FC9108F83FD0048C2EE /* Cocoa.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -42,12 +42,8 @@
 		8D01CCD20486CAD60068D4B7 /* tutorial.vst */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = tutorial.vst; sourceTree = BUILT_PRODUCTS_DIR; };
 		F405CDB50B048647008E3886 /* TutorialEditor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = TutorialEditor.h; path = ../source/TutorialEditor.h; sourceTree = SOURCE_ROOT; };
 		F405CDB60B048647008E3886 /* TutorialEditor.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = TutorialEditor.cpp; path = ../source/TutorialEditor.cpp; sourceTree = SOURCE_ROOT; };
-		F405CDC10B048736008E3886 /* aeffguieditor.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = aeffguieditor.cpp; path = ../../aeffguieditor.cpp; sourceTree = SOURCE_ROOT; };
-		F405CDC20B048736008E3886 /* aeffguieditor.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = aeffguieditor.h; path = ../../aeffguieditor.h; sourceTree = SOURCE_ROOT; };
-		F405CDC30B048736008E3886 /* vstcontrols.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = vstcontrols.cpp; path = ../../vstcontrols.cpp; sourceTree = SOURCE_ROOT; };
-		F405CDC40B048736008E3886 /* vstcontrols.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = vstcontrols.h; path = ../../vstcontrols.h; sourceTree = SOURCE_ROOT; };
-		F405CDC50B048736008E3886 /* vstgui.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = vstgui.cpp; path = ../../vstgui.cpp; sourceTree = SOURCE_ROOT; };
-		F405CDC60B048736008E3886 /* vstgui.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = vstgui.h; path = ../../vstgui.h; sourceTree = SOURCE_ROOT; };
+		F405CDC10B048736008E3886 /* aeffguieditor.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = aeffguieditor.cpp; path = ../../lib/aeffguieditor.cpp; sourceTree = SOURCE_ROOT; };
+		F405CDC20B048736008E3886 /* aeffguieditor.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = aeffguieditor.h; path = ../../lib/aeffguieditor.h; sourceTree = SOURCE_ROOT; };
 		F405CDFA0B048824008E3886 /* aeffeditor.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = aeffeditor.h; path = ../vstsdk2.4/public.sdk/source/vst2.x/aeffeditor.h; sourceTree = SOURCE_ROOT; };
 		F405CDFB0B048824008E3886 /* audioeffect.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = audioeffect.cpp; path = ../vstsdk2.4/public.sdk/source/vst2.x/audioeffect.cpp; sourceTree = SOURCE_ROOT; };
 		F405CDFC0B048824008E3886 /* audioeffect.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = audioeffect.h; path = ../vstsdk2.4/public.sdk/source/vst2.x/audioeffect.h; sourceTree = SOURCE_ROOT; };
@@ -66,6 +62,8 @@
 		F405D04D0B04E47B008E3886 /* Info2.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info2.plist; sourceTree = "<group>"; };
 		F405D0710B04E59A008E3886 /* Tutorial2Editor.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = Tutorial2Editor.cpp; path = ../source/Tutorial2Editor.cpp; sourceTree = SOURCE_ROOT; };
 		F405D0820B04E7B3008E3886 /* KnobHandleHighlight.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = KnobHandleHighlight.png; path = ../resource/KnobHandleHighlight.png; sourceTree = SOURCE_ROOT; };
+		F42C1FC9108F83FD0048C2EE /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = System/Library/Frameworks/Cocoa.framework; sourceTree = SDKROOT; };
+		F44864EA10AEEEC500D7EFBA /* vstgui_mac.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = vstgui_mac.mm; path = ../../vstgui_mac.mm; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -74,6 +72,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				8D01CCCE0486CAD60068D4B7 /* Carbon.framework in Frameworks */,
+				F42C1FCA108F83FD0048C2EE /* Cocoa.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -82,6 +81,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				F405D0480B04E47B008E3886 /* Carbon.framework in Frameworks */,
+				F448654710AEEFAD00D7EFBA /* Cocoa.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -104,6 +104,7 @@
 			isa = PBXGroup;
 			children = (
 				08EA7FFBFE8413EDC02AAC07 /* Carbon.framework */,
+				F42C1FC9108F83FD0048C2EE /* Cocoa.framework */,
 			);
 			name = "External Frameworks and Libraries";
 			sourceTree = "<group>";
@@ -150,10 +151,7 @@
 			children = (
 				F405CDC10B048736008E3886 /* aeffguieditor.cpp */,
 				F405CDC20B048736008E3886 /* aeffguieditor.h */,
-				F405CDC30B048736008E3886 /* vstcontrols.cpp */,
-				F405CDC40B048736008E3886 /* vstcontrols.h */,
-				F405CDC50B048736008E3886 /* vstgui.cpp */,
-				F405CDC60B048736008E3886 /* vstgui.h */,
+				F44864EA10AEEEC500D7EFBA /* vstgui_mac.mm */,
 			);
 			name = vstgui;
 			sourceTree = "<group>";
@@ -223,6 +221,7 @@
 			hasScannedForEncodings = 1;
 			mainGroup = 089C166AFE841209C02AAC07 /* tutorial */;
 			projectDirPath = "";
+			projectRoot = "";
 			targets = (
 				8D01CCC60486CAD60068D4B7 /* tutorial 1 vstsdk 2.4 */,
 				F405D0390B04E47B008E3886 /* tutorial 2 vstsdk 2.4 */,
@@ -260,13 +259,12 @@
 			buildActionMask = 2147483647;
 			files = (
 				F405CDB70B048647008E3886 /* TutorialEditor.cpp in Sources */,
-				F405CDC80B048736008E3886 /* vstcontrols.cpp in Sources */,
-				F405CDC90B048736008E3886 /* vstgui.cpp in Sources */,
+				F405CDC70B048736008E3886 /* aeffguieditor.cpp in Sources */,
+				F405CE000B048824008E3886 /* audioeffect.cpp in Sources */,
+				F405CE010B048824008E3886 /* audioeffectx.cpp in Sources */,
 				F405CE020B048824008E3886 /* vstplugmain.cpp in Sources */,
 				F405CE0E0B048898008E3886 /* TutorialVST2Effect.cpp in Sources */,
-				F41582C7100E545500E208B6 /* audioeffectx.cpp in Sources */,
-				F41582C8100E545600E208B6 /* audioeffect.cpp in Sources */,
-				F41582C9100E545700E208B6 /* aeffguieditor.cpp in Sources */,
+				F44864EB10AEEEC500D7EFBA /* vstgui_mac.mm in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -275,13 +273,12 @@
 			buildActionMask = 2147483647;
 			files = (
 				F405D0400B04E47B008E3886 /* aeffguieditor.cpp in Sources */,
-				F405D0410B04E47B008E3886 /* vstcontrols.cpp in Sources */,
-				F405D0420B04E47B008E3886 /* vstgui.cpp in Sources */,
 				F405D0430B04E47B008E3886 /* audioeffect.cpp in Sources */,
 				F405D0440B04E47B008E3886 /* audioeffectx.cpp in Sources */,
 				F405D0450B04E47B008E3886 /* vstplugmain.cpp in Sources */,
 				F405D0460B04E47B008E3886 /* TutorialVST2Effect.cpp in Sources */,
 				F405D0720B04E59A008E3886 /* Tutorial2Editor.cpp in Sources */,
+				F44864EC10AEEEC500D7EFBA /* vstgui_mac.mm in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -341,7 +338,8 @@
 		4FADC23808B4156C00ABE55E /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				GCC_PREPROCESSOR_DEFINITIONS = "VSTGUI_ENABLE_DEPRECATED_METHODS=0";
+				GCC_PREPROCESSOR_DEFINITIONS = "";
+				GCC_VERSION = 4.0;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				HEADER_SEARCH_PATHS = ../vstsdk2.4/;
@@ -353,7 +351,7 @@
 		4FADC23908B4156C00ABE55E /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				GCC_PREPROCESSOR_DEFINITIONS = "VSTGUI_ENABLE_DEPRECATED_METHODS=0";
+				GCC_PREPROCESSOR_DEFINITIONS = "";
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				HEADER_SEARCH_PATHS = ../vstsdk2.4/;

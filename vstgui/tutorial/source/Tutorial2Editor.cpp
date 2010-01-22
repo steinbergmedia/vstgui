@@ -1,7 +1,7 @@
 //-----------------------------------------------------------------------------------
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 //
-// Version 3.5       $Date: 2009-07-15 18:20:48 $
+// Version 3.5
 //
 //-----------------------------------------------------------------------------------
 // VSTGUI LICENSE
@@ -118,7 +118,7 @@ void TutorialEditor::close ()
 	//-- so that calls to setParameter won't crash.
 	CFrame* oldFrame = frame;
 	frame = 0;
-	delete oldFrame;
+	oldFrame->forget ();
 }
 
 //-----------------------------------------------------------------------------------

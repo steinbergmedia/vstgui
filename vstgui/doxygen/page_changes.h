@@ -1,16 +1,44 @@
 /**
 @page changes_from_3_0 Changes from earlier versions of VSTGUI
 
+- @ref version4_introduction @n
 - @ref new_stuff @n
-- @ref about_deprecation @n
-- @ref code_changes_for_3_5 @n
-- @ref code_changes_for_3_0 @n
-- @ref code_changes_for_2_3 @n
+- @ref code_changes_for_3_6 @n
+- @ref old_new_stuff @n
 - @ref cocoa_support @n
+
+@section version4_introduction Introduction
+
+Version 4 of VSTGUI is a new milestone release with a restructured code base with the focus of code conformity and easier future enhancements.
+The result is that code written for any earlier version of VSTGUI is not always compatible.
+It's recomended to start new projects with version 4 while old projects should stay with version 3.6.
 
 @section new_stuff New Stuff
 
-@subsection mouse New mouse handling
+- UIDescription : Building user interfaces via XML description files. See @ref uidescription @n
+- VST3 Support : Complete inline VST3 Editor support. See @ref uidescription_vst3_support @n
+- Amalgamation : Easy integration in your projects via one or two source files
+- Cleaned Code : Removed all deprecated methods and classes, splittet individual classes into different files
+- Platform Abstraction : Platform dependent code was refactored and moved into its own files
+- New notable classes : VSTGUI::CCheckBox, VSTGUI::CGraphicsPath, VSTGUI::CNinePartTiledBitmap, VSTGUI::IFocusDrawing
+
+@section code_changes_for_3_6 Code changes for existing VSTGUI 3.6 code
+
+- your custom views need to use the new mouse methods
+- COptionMenuScheme is not available anymore
+- VSTGUI::CFileSelector is gone, you have to use VSTGUI::CNewFileSelector
+- VST extensions previously enabled via ENABLE_VST_EXTENSION_IN_VSTGUI is gone without replacement
+- VSTGUI::CBitmap was completely changed and does not use a transparency color anymore, you need to use the alpha channel of a bitmap to get the same results
+- VSTGUI::CControl::setValue (value) changed to VSTGUI::CControl::setValue (value, updateSubListeners)
+- VSTGUI::COffscreenContext is handled completely different. But in most cases you can simply remove all offscreens where you needed them to reduce flicker.
+- On Windows only GDI+ is used, GDI is completely removed
+- The internal string encoding is now always UTF-8
+- The VSTGUI::CCoord type is now always a double
+
+@section old_new_stuff Stuff that was new in VSTGUI 3.0 - VSTGUI 3.6
+
+@section new_mouse_methods New mouse methods
+
 In earlier versions there were only one method in CView for handling mouse events (VSTGUI::CView::mouse). 
 In this version there are five new methods :
 - VSTGUI::CView::onMouseDown	(new in 3.5)
@@ -21,13 +49,11 @@ In this version there are five new methods :
 
 For convenience the old method is still working, but should be replaced with the ones above.
 
-@subsection new_views New included views
+@section other_new_things Other new things
 
 - VSTGUI::CDataBrowser	(new in 3.5)
 - VSTGUI::CScrollView	(new in 3.0)
 - VSTGUI::CTabView		(new in 3.0)
-
-@subsection and_more_new and ...
 
 - Mac OS X 64 bit support via Cocoa. (new in 3.6)
 - New Fileselector class : VSTGUI::CNewFileSelector (new in 3.6)
@@ -42,7 +68,7 @@ For convenience the old method is still working, but should be replaced with the
 - Windows GDI+ support	(new in 3.5)
 - Mac OS X Composited Window support (new in 3.0)
 
-@section about_deprecation About deprecation
+@section about_deprecation About deprecation in version 3.6
 
 With VSTGUI 3.6 the VSTGUI_ENABLE_DEPRECATED_METHODS macro has changed to be zero per default. You should change your code so that
 it compiles without changing the macro. All methods marked this way will be unavailable in the next version.

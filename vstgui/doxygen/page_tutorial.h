@@ -1,5 +1,5 @@
 /**
-@page tutorial_getting_started Getting Started Tutorial
+@page tutorial_getting_started Getting Started Tutorial (VST 2.x)
 
 This tutorial should give you a brief overview on how to get started using VSTGUI.
 

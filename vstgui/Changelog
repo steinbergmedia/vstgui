@@ -1,3 +1,117 @@
+2010-01-22 arne
+
+	* CViewContainer::drawBackgroundRect() draws bitmap now with the same size as the size of itself and not the size of the bitmap
+	* IBitmapReader interface for custom bitmap loading (only mac implementation yet, win to come)
+	* updated copyright year to 2010
+
+20010-01-16 arne
+
+	* changed size for IDataBrowser::dbDrawHeader() to include line width
+	* added CBaseObjectGuard object (it's now safe to remove a view while in mouse or key event methods)
+	* aligning offscreen bitmaps on mac to 16 bytes
+	
+2009-12-30 arne
+
+	* added IViewAddedRemovedObserver as interface for observing the frame when a view is added or removed
+	* code cleanup
+	* added drag support for Windows UIDescription editor
+	* updated some documentation
+
+2009-12-05 arne
+
+	* more fixes because of bugs from platform abstraction
+	* added sub control listeners to CControl
+	* changed CControl::setValue(value) to CControl::setValue(value, updateSubListeners)
+	* CControl now implements IFocusDrawing
+	* fixing CSlider and CSwitch when using min != 0 and max != 1
+	* added UIDescription VST3 test 
+
+2009-11-24 arne
+
+	* fixed some bugs introduced with the platform abstraction
+	* added color chooser view (and panel for uidescription)
+	* replaced NAMESPACES makros with namespace VSTGUI
+
+2009-11-20 arne
+
+	* completed platform abstraction (except the CVSTGUITimer class)
+	* eliminated the following macros : VSTGUI_USES_COREGRAPHICS, GDIPLUS, VSTGUI_USES_UTF8 and VSTGUI_FLOAT_COORDINATES
+		this means:
+		- On Windows VSTGUI now only uses GDI+ as the drawing API
+		- CCoord is of type double
+		- The text drawing methods expects the strings to be in UTF-8 not ASCII
+
+	* because of the changes above, many classes have some changes, here are the most prominent
+		- CBitmap only has one draw method which actually calls thru to CDrawContext.
+		- CBitmap transparency is gone. Use PNG Bitmaps with an alpha channel to get the same result.
+		- COffscreenContext must be created via the static create method.
+
+	* the concept behind the platform abstraction is that the platform frame implementation 
+	  is responsible to create nearly all the necessary platform objects except bitmaps and fonts for now (this may be the next step).
+	  this way it should be easier to maintain the source and much easier to add more platform implementations.
+
+2009-11-19 arne
+
+	* more windows platform abstraction
+
+2009-11-15 arne
+
+	* first part of platform abstraction for windows
+
+2009-11-14 arne
+
+	* platform abstraction
+	* mac carbon and cocoa done, windows to be done
+	
+2009-10-25 arne
+
+	* make text edit transparent on windows
+	* add focus navigation to windows text edit control
+	* fix cocoa option menu opening at wrong position sometimes
+	* add new COffscreenContext constructor which doesn't need a CDrawContext for drawing into a bitmap
+	
+2009-10-21 arne
+
+	* fix tutorial project (mac only for now) to work with vstgui 4.0
+	
+2009-10-18 arne
+
+	* added focus drawing support, see IFocusDrawing and CFrame::setFocusDrawingEnabled()
+	* set CFrame::createDrawContext() deprecated
+	* added CFrame::onActivate(bool state) which will be called from the platform view/window when the view/window is activated or deactived.
+			Currently this remembers the focus view on deactivate and set the focus view to zero and resets the focus view when activated.
+	* changed CBitmap::draw() rect argument to be const (dito for drawTransparent and drawAlpha)
+
+2009-09-27 arne
+
+	* added CNinePartTiledBitmap (original from Wolfram)
+	* moved all destructors into protected for classes which are not allowed to create on the stack
+	* added amalgamation file vstgui_uidescription.cpp for all uidescription files
+	
+2009-09-19 arne
+
+	* splittet vstcontrols.cpp into different files
+	* added CCheckBox control
+
+2009-09-16 arne
+
+	* major directory change
+		* all main VSTGUI source code went into the lib subdirectory
+		* splittet vstgui.cpp into different files (vstcontrols.cpp should follow)
+		* vstgui.cpp will still be alive but it will be the amalgamation file
+	* removed all deprecated methods and classes
+	* minimum supported system on Mac OS X will be 10.4 (needs check if it's possible to build on 10.4)
+	* minimum supported system on Windows will be Windows XP. (Windows 98 support will be dropped, but not completely done yet)
+	* removed all Quickdraw stuff (was only needed for Mac OS X 10.3)
+	* changed CBitmap (CFrame& frame, CCoord width, CCoord height) to CBitmap (CCoord width, CCoord height)
+	* removed Mac Metrowerks compiler support
+
+2009-09-15 arne
+
+	* CFontDesc refactored, so that custom Font Renderer could be used
+	* Add global alpha state to CDrawContext
+	* set version to 4.0
+
 2009-07-15 arne
 
 	* bump version info to 3.6 in all source/header files
@@ -11,7 +125,7 @@
 			* remove CBitmap (void* platformBitmap) constructor
 			* GDIPlus is by default enable
 			* add win project for tutorial
-	
+
 		2008-01-12 arne
 
 			* fix a flaw in removing views from containers
@@ -19,7 +133,7 @@
 		2008-01-10 yvan
 
 			* update copyright and some documentation
-	
+
 		2007-12-11 arne
 
 			* added closePolygon parameter to CDrawContext::drawPolygon. Now you can draw opened and closed polygons.
@@ -28,12 +142,58 @@
 				- CDrawContext::getStringWidth does not always work
 			* CFileSelector should work now in Unicode mode on Windows
 			* added virtual destructors for IDataBrowser, IScrollbarDrawer
-	
+
 		2007-10-12 wolfram
 
 			* added virtual destructors for IMouseObserver, CControlListener and IMultiBitmapControl
 
+2009-07-02 arne
 
+	* added numSubPixmaps to IMultiBitmapControl and removed it from its subclasses.
+	* fixed an issue with CDataBrowser where the mouse moved method of the delegate was not called when the scroll view was scrolled via the mouse wheel
+	* added kMsgViewSizeChanged message which is send from a view to its parent when the size changed.
+	* added CFrame accessor method to VSTGUIEditorInterface
+	
+2009-06-14 arne
+
+	* changed focus and popup handling of COptionMenu. When the menu takes focus it doesn't popup anymore. This way you can build
+		full keyboard accessible plug-ins. Now if the menu has focus and the return key is pressed the menu will popup.
+		You may need to change some of your code, if you manually called menu->takeFocs() change it to menu->popup()
+
+	* added keyboard hook for CFrame (see IKeyboardHook)
+	* added keyboard handling to IDataBrowser
+	* moved background drawing in CParamDisplay in its own method drawBack() and changed drawText() method by removing the newBack parameter
+
+	* fix CScrollView::makeRectVisible()
+	* fix crash in COptionMenu when calling getEntry(index) with index higher than number of items in menu
+	* fix CViewContainer::addView (view, beforeView)
+	
+2009-06-06 arne
+
+	* make CDataBrowser autosize aware
+	* CScrollView: when there is a new focus view in the scroll view, the scroll view automatically make this view visible now
+	* CScrollView: don't use CViewContainer drawBackgroundRect, instead it draws it itself
+	* CScroolView: fixes to scrolling when used with VSTGUI_FLOAT_COORDINATES
+	* CTabView: autosize fixes
+	* CTabView: tab views are now resized to the size of the tab view minus the size of the tab buttons
+	* CTabView: add a view inset point to add a gap between the tabview and it's children
+	* COnOffButton is now a focus view (if it has focus you can change the value of it with the return key)
+	* CParamDisplay: new CPoint member textInset which is used to inset the size for drawing the text
+	* add tag value to CMenuItem
+	* changed the constructors of CMenuItem
+	* changed CParamDisplay::setBackOffset() to take a const CPoint reference instead of a CPoint reference
+	* added CParamDisplay::getBackOffset()
+	* COptionMenu can now be used simpler for on the fly context menus. (Empty constructor + popup method)
+	* fix CViewContainer::drawBackgroundRect when no background bitmap but a color is drawn (sometimes the context draw state was not as expected)
+	* CFontDesc got some metric methods (only implemented yet for CoreText on Mac OS X)
+	* CDrawContext::drawArc() should now draw exactly the same on Windows and Mac OS X
+	* fixes to the focus handling in CFrame
+	* CViewContainer new method: isChild (CView* view, bool deep)
+	* ResourceStream class can now be used outside of vstgui.cpp
+	* Cocoa: fix for wrong key modifier. CONTROL and COMMAND were swapped
+	* Cocoa: make view click-through
+	* Cocoa: many more bug fixes
+	
 2009-05-06 arne
 
 	* fix: calling GDIPlusGlobals::exit () in the destructor of CBitmap after the platform gdiplus bitmap is destroyed not before
