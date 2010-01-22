@@ -104,6 +104,7 @@ CGBitmap::~CGBitmap ()
 bool CGBitmap::load (const CResourceDescription& desc)
 {
 	bool result = false;
+	#if MAC_OS_X_VERSION_MIN_REQUIRED > MAC_OS_X_VERSION_10_4
 	if (gCustomBitmapReaderCreator)
 	{
 		IBitmapReader* reader = gCustomBitmapReaderCreator->createBitmapReader (desc);
@@ -131,6 +132,7 @@ bool CGBitmap::load (const CResourceDescription& desc)
 			reader->forget ();
 		}
 	}
+	#endif
 	if (!result && getBundleRef ())
 	{
 		// find the bitmap in our Bundle.
