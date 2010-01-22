@@ -72,4 +72,6 @@
 #include "lib/controls/csplashscreen.h"
 #include "lib/controls/cvumeter.h"
 
+using namespace VSTGUI;
+
 #endif	// __vstgui__
