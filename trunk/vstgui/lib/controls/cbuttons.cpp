@@ -189,7 +189,7 @@ void CKickButton::draw (CDrawContext *pContext)
 
 	bounceValue ();
 
-	if (value)
+	if (value == getMax ())
 		where.v += heightOfOneImage;
 
 	if (pBackground)
@@ -229,9 +229,9 @@ CMouseEventResult CKickButton::onMouseMoved (CPoint& where, const long& buttons)
 	{
 		if (where.h >= size.left && where.v >= size.top  &&
 			where.h <= size.right && where.v <= size.bottom)
-			value = getMin ();
-		else
 			value = getMax ();
+		else
+			value = getMin ();
 		
 		if (isDirty ())
 			invalid ();
