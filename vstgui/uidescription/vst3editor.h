@@ -115,7 +115,6 @@ protected:
 	std::map<long, ParameterChangeListener*> paramChangeListeners;
 	std::string viewName;
 	std::string xmlFile;
-	bool debugMode;
 	bool tooltipsEnabled;
 	bool doCreateView;
 	

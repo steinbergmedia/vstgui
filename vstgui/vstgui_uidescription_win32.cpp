@@ -32,18 +32,6 @@
 // OF THE POSSIBILITY OF SUCH DAMAGE.
 //-----------------------------------------------------------------------------
 
-#include "vstgui_uidescription.h"
+#include "uidescription/winplatformsupport.cpp"
+#include "vstgui_uidescription.cpp"
 
-#include "uidescription/ccolorchooserpanel.cpp"
-#include "uidescription/ceditframe.cpp"
-#include "uidescription/cselection.cpp"
-#include "uidescription/cviewinspector.cpp"
-#include "uidescription/cviewswitchcontainer.cpp"
-#include "uidescription/dialog.cpp"
-#include "uidescription/uidescription.cpp"
-#include "uidescription/viewcreator.cpp"
-#include "uidescription/viewfactory.cpp"
-#include "uidescription/viewhierarchybrowser.cpp"
-#include "uidescription/cstream.cpp"
-
-#include "uidescription/xmlparser.cpp" // needs to be last
