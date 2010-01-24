@@ -245,7 +245,7 @@ void CSlider::draw (CDrawContext *pContext)
 	
 	if (pHandle)
 	{
-		float normValue = (value - getMin ()) / (getMax () - getMin ());
+		float normValue = getValueNormalized ();
 		if (style & kRight || style & kBottom)
 			normValue = 1.f - normValue;
 		
@@ -294,7 +294,7 @@ CMouseEventResult CSlider::onMouseDown (CPoint& where, const long& buttons)
 		delta = size.top + offsetHandle.v;
 	if (!bFreeClick)
 	{
-		float normValue = (value - getMin ()) / (getMax () - getMin ());
+		float normValue = getValueNormalized ();
 		if (style & kRight || style & kBottom)
 			normValue = 1.f - normValue;
 		CCoord actualPos;
@@ -387,9 +387,7 @@ CMouseEventResult CSlider::onMouseMoved (CPoint& where, const long& buttons)
 		if (buttons & kShift)
 			normValue = oldVal + ((normValue - oldVal) / zoomFactor);
 
-		value = getMin () + ((getMax () - getMin ()) * normValue);
-			
-		bounceValue ();
+		setValueNormalized (normValue);
     	    
 		if (isDirty ())
 		{
@@ -401,20 +399,31 @@ CMouseEventResult CSlider::onMouseMoved (CPoint& where, const long& buttons)
 }
 
 //------------------------------------------------------------------------
+static bool styleIsInverseStyle (long style)
+{
+	if (style & kVertical && style & kTop)
+		return true;
+	if (style & kHorizontal && style & kRight)
+		return true;
+	return false;
+}
+
+//------------------------------------------------------------------------
 bool CSlider::onWheel (const CPoint& where, const float &distance, const long &buttons)
 {
 	if (!bMouseEnabled)
 		return false;
 
-	float normValue = (value - getMin ()) / (getMax () - getMin ());
+	float _distance = distance;
+	if (styleIsInverseStyle (style))
+		_distance *= -1.f;
+	float normValue = getValueNormalized ();
 	if (buttons & kShift)
-		normValue += 0.1f * distance * wheelInc;
+		normValue += 0.1f * _distance * wheelInc;
 	else
-		normValue += distance * wheelInc;
+		normValue += _distance * wheelInc;
 
-	value = getMin () + ((getMax () - getMin ()) * normValue);
-
-	bounceValue ();
+	setValueNormalized (normValue);
 
 	if (isDirty ())
 	{
@@ -435,24 +444,28 @@ long CSlider::onKeyDown (VstKeyCode& keyCode)
 {
 	switch (keyCode.virt)
 	{
-	case VKEY_UP :
-	case VKEY_RIGHT :
-	case VKEY_DOWN :
-	case VKEY_LEFT :
+		case VKEY_UP :
+		case VKEY_RIGHT :
+		case VKEY_DOWN :
+		case VKEY_LEFT :
 		{
 			float distance = 1.f;
-			if (keyCode.virt == VKEY_DOWN || keyCode.virt == VKEY_LEFT)
+			bool isInverse = styleIsInverseStyle (style);
+			if ((keyCode.virt == VKEY_DOWN && !isInverse) 
+			 || (keyCode.virt == VKEY_UP && isInverse)
+			 || (keyCode.virt == VKEY_LEFT && !isInverse)
+			 || (keyCode.virt == VKEY_RIGHT && isInverse))
+			{
 				distance = -distance;
+			}
 
-			float normValue = (value - getMin ()) / (getMax () - getMin ());
+			float normValue = getValueNormalized ();
 			if (keyCode.modifier & MODIFIER_SHIFT)
 				normValue += 0.1f * distance * wheelInc;
 			else
 				normValue += distance * wheelInc;
 
-			value = getMin () + ((getMax () - getMin ()) * normValue);
-
-			bounceValue ();
+			setValueNormalized (normValue);
 
 			if (isDirty ())
 			{
@@ -464,7 +477,8 @@ long CSlider::onKeyDown (VstKeyCode& keyCode)
 				// end of edit parameter
 				endEdit ();
 			}
-		} return 1;
+			return 1;
+		}
 	}
 	return -1;
 }

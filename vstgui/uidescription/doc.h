@@ -214,6 +214,8 @@ Per default the \b template tag will create a CViewContainer view, but you can u
 
 VSTGUI now supports easy and fast UI creation for VST3.1 plug-ins.
 
+Note that you need at least VST SDK 3.1, any earlier version will not work.
+
 @section vst3_setup Setup
 
 First you need to add vstgui_uidescription_win32.cpp or vstgui_uidescription_mac.mm and vst3editor.cpp to your project

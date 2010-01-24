@@ -186,7 +186,7 @@ CMouseEventResult CKnob::onMouseDown (CPoint& where, const long& buttons)
 	modeLinear = false;
 	fEntryState = value;
 	range = 200.f;
-	coef = (vmax - vmin) / range;
+	coef = (getMax () - getMin ()) / range;
 	oldButton = buttons;
 
 	long mode    = kCircularMode;
@@ -205,7 +205,7 @@ CMouseEventResult CKnob::onMouseDown (CPoint& where, const long& buttons)
 			range *= zoomFactor;
 		lastPoint = where;
 		modeLinear = true;
-		coef = (vmax - vmin) / range;
+		coef = (getMax () - getMin ()) / range;
 	}
 	else
 	{
@@ -229,7 +229,7 @@ CMouseEventResult CKnob::onMouseMoved (CPoint& where, const long& buttons)
 {
 	if (buttons & kLButton)
 	{
-		float middle = (vmax - vmin) * 0.5f;
+		float middle = (getMax () - getMin ()) * 0.5f;
 
 		if (where != lastPoint)
 		{
@@ -243,7 +243,7 @@ CMouseEventResult CKnob::onMouseMoved (CPoint& where, const long& buttons)
 					if (buttons & kShift)
 						range *= zoomFactor;
 
-					float coef2 = (vmax - vmin) / range;
+					float coef2 = (getMax () - getMin ()) / range;
 					fEntryState += (float)(diff * (coef - coef2));
 					coef = coef2;
 					oldButton = buttons;
@@ -256,9 +256,9 @@ CMouseEventResult CKnob::onMouseMoved (CPoint& where, const long& buttons)
 				where.offset (-size.left, -size.top);
 				value = valueFromPoint (where);
 				if (startValue - value > middle)
-					value = vmax;
+					value = getMax ();
 				else if (value - startValue > middle)
-					value = vmin;
+					value = getMin ();
 				else
 					startValue = value;
 			}
@@ -348,8 +348,8 @@ void CKnob::setRangeAngle (float val)
 //------------------------------------------------------------------------
 void CKnob::compute ()
 {
-	aCoef = (vmax - vmin) / rangeAngle;
-	bCoef = vmin - aCoef * startAngle;
+	aCoef = (getMax () - getMin ()) / rangeAngle;
+	bCoef = getMin () - aCoef * startAngle;
 	halfAngle = ((float)k2PI - fabsf (rangeAngle)) * 0.5f;
 	setDirty ();
 }
@@ -380,16 +380,16 @@ float CKnob::valueFromPoint (CPoint &point) const
 		else if (alpha3 > k2PI)
 			alpha3 -= (float)k2PI;
 		if (alpha3 > halfAngle - rangeAngle)
-			v = vmax;
+			v = getMax ();
 		else if (alpha3 > -rangeAngle)
-			v = vmin;
+			v = getMin ();
 		else
 		{
 			if (alpha2 > halfAngle - rangeAngle)
 				alpha2 -= (float)k2PI;
 			else if (alpha2 < -halfAngle)
 				alpha2 += (float)k2PI;
-			v = aCoef * alpha2 + vmax;
+			v = aCoef * alpha2 + getMax ();
 		}
 	}
 	else
@@ -400,16 +400,16 @@ float CKnob::valueFromPoint (CPoint &point) const
 		else if (alpha3 > k2PI)
 			alpha3 -= (float)k2PI;
 		if (alpha3 > rangeAngle + halfAngle)
-			v = vmin;
+			v = getMin ();
 		else if (alpha3 > rangeAngle)
-			v = vmax;
+			v = getMax ();
 		else
 		{
 			if (alpha2 > rangeAngle + halfAngle)
 				alpha2 -= (float)k2PI;
 			else if (alpha2 < -halfAngle)
 				alpha2 += (float)k2PI;
-			v = aCoef * alpha2 + vmin;
+			v = aCoef * alpha2 + getMin ();
 		}
 	}
 
@@ -544,7 +544,7 @@ bool CAnimKnob::isDirty () const
 void CAnimKnob::draw (CDrawContext *pContext)
 {
 	CPoint where (0, 0);
-	if (value >= 0.f) 
+	if (value >= 0.f && heightOfOneImage > (CCoord)0) 
 	{
 		CCoord tmp = heightOfOneImage * (getNumSubPixmaps () - 1);
 		if (bInverseBitmap)

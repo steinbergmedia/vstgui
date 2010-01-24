@@ -114,7 +114,7 @@ public:
 		{
 			CControl* control = controls.front ();
 			if (control)
-				value = (control->getValue () - control->getMin ()) / (control->getMax () - control->getMin ());
+				value = control->getValueNormalized ();
 		}
 		CParamDisplay* display = dynamic_cast<CParamDisplay*> (control);
 		if (display)
@@ -216,22 +216,14 @@ protected:
 	
 	void updateControlValue (Steinberg::Vst::ParamValue value)
 	{
+		bool mouseEnabled = true;
+		if (parameter && parameter->getInfo ().flags & Steinberg::Vst::ParameterInfo::kIsReadOnly)
+			mouseEnabled = false;
 		std::list<CControl*>::iterator it = controls.begin ();
 		while (it != controls.end ())
 		{
-			COptionMenu* optMenu = dynamic_cast<COptionMenu*> (*it);
-			if (optMenu)
-			{
-				if (parameter)
-					optMenu->setValue (editController->normalizedParamToPlain (getParameterID (), value), true);
-			}
-			else
-			{
-				double min = (*it)->getMin ();
-				double max = (*it)->getMax ();
-				double value2 = min + value * (max - min);
-				(*it)->setValue (value2, true);
-			}
+			(*it)->setMouseEnabled (mouseEnabled);
+			(*it)->setValueNormalized (value, true);
 			(*it)->invalid ();
 			it++;
 		}
@@ -410,7 +402,7 @@ void VST3Editor::valueChanged (CControl* pControl)
 	ParameterChangeListener* pcl = getParameterChangeListener (pControl->getTag ());
 	if (pcl)
 	{
-		Steinberg::Vst::ParamValue value = (pControl->getValue () - pControl->getMin ()) / (pControl->getMax () - pControl->getMin ());
+		Steinberg::Vst::ParamValue value = pControl->getValueNormalized ();
 		CTextEdit* textEdit = dynamic_cast<CTextEdit*> (pControl);
 		if (textEdit && pcl->getParameter ())
 		{

@@ -1,3 +1,12 @@
+2010-01-24 arne
+
+	* added CControl::setValueNormalized() and CControl::getValueNormalized()
+	* added key event handling to CHorizontalSwitch, CVerticalSwitch, CRockerSwitch, CMovieButton
+	* all included controls respect the min and max values (before some only worked between zero and one)
+	* new behaviour in CFrame::onMouseDown(): the focus view will only be resetted if the focus view is a text edit control, otherwise controls are responsible to set itself as focus view on a mouse down
+	* removed CControl::delta variable as it wasn't used anymore (if you used it in any of your custom controls, change your code so that it uses kDoubleClick)
+	* removed CSpecialDigit::getNormValue(), use CControl::getValueNormalized() instead
+
 2010-01-22 arne
 
 	* CViewContainer::drawBackgroundRect() draws bitmap now with the same size as the size of itself and not the size of the bitmap

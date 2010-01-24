@@ -154,6 +154,8 @@ public:
 	virtual CMouseEventResult onMouseDown (CPoint& where, const long& buttons);
 	virtual CMouseEventResult onMouseUp (CPoint& where, const long& buttons);
 	virtual CMouseEventResult onMouseMoved (CPoint& where, const long& buttons);
+	virtual long onKeyDown (VstKeyCode& keyCode);
+	virtual long onKeyUp (VstKeyCode& keyCode);
 
 	void setNumSubPixmaps (long numSubPixmaps) { IMultiBitmapControl::setNumSubPixmaps (numSubPixmaps); invalid (); }
 

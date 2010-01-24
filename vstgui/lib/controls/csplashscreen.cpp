@@ -146,8 +146,8 @@ CMouseEventResult CSplashScreen::onMouseDown (CPoint& where, const long& buttons
 {
 	if (buttons & kLButton)
 	{
-		value = !value;
-		if (value)
+		value = (value == getMax ()) ? getMin () : getMax ();
+		if (value == getMax ())
 		{
 			if (modalView && getFrame () && getFrame ()->setModalView (modalView))
 			{
@@ -172,7 +172,7 @@ void CSplashScreen::valueChanged (CControl *pControl)
 //------------------------------------------------------------------------
 void CSplashScreen::unSplash ()
 {
-	value = 0.f;
+	value = getMin ();
 
 	if (getFrame ())
 	{

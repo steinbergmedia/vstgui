@@ -96,11 +96,7 @@ void CMovieBitmap::draw (CDrawContext *pContext)
 {
 	CPoint where (offset.h, offset.v);
 
-	if (value > 1.0f)
-		value = 1.0f;
-
- 	if (value > 0.0f)
-		where.v += heightOfOneImage * (int)(value * (getNumSubPixmaps () - 1) + 0.5);
+	where.v += heightOfOneImage * (int)(getValueNormalized () * (getNumSubPixmaps () - 1) + 0.5);
 
 	if (pBackground)
 	{
