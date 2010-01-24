@@ -254,4 +254,5 @@ to this tag and it will automatically be synced with the VST3 parameter.
 If you need to create custom views, you can implement the VSTGUI::VST3EditorDelegate interface in your edit controller class.
 The createCustomView method will be called if you set the 'custom-view-name' attribute in one of the views.
 
+For your release versions make sure to set the VSTGUI_LIVE_EDITING definition to zero.
 */
