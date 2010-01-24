@@ -35,6 +35,7 @@
 #include "cswitch.h"
 #include "../cdrawcontext.h"
 #include "../cbitmap.h"
+#include "../cvstguitimer.h"
 
 namespace VSTGUI {
 
@@ -65,6 +66,7 @@ CVerticalSwitch::CVerticalSwitch (const CRect& size, CControlListener* listener,
 	setNumSubPixmaps (background ? (long)(background->getHeight () / heightOfOneImage) : 0);
 
 	setDefaultValue (0.f);
+	setWantsFocus (true);
 }
 
 //------------------------------------------------------------------------
@@ -87,6 +89,7 @@ CVerticalSwitch::CVerticalSwitch (const CRect& size, CControlListener* listener,
 	setNumSubPixmaps (subPixmaps);
 	setHeightOfOneImage (heightOfOneImage);
 	setDefaultValue (0.f);
+	setWantsFocus (true);
 }
 
 //------------------------------------------------------------------------
@@ -96,6 +99,7 @@ CVerticalSwitch::CVerticalSwitch (const CVerticalSwitch& v)
 {
 	setNumSubPixmaps (v.subPixmaps);
 	setHeightOfOneImage (v.heightOfOneImage);
+	setWantsFocus (true);
 }
 
 //------------------------------------------------------------------------
@@ -107,8 +111,9 @@ void CVerticalSwitch::draw (CDrawContext *pContext)
 {
 	if (pBackground)
 	{
+		float norm = (value - getMin ()) / (getMax () - getMin ());
 		// source position in bitmap
-		CPoint where (0, heightOfOneImage * ((long)(value * (getNumSubPixmaps () - 1) + 0.5f)));
+		CPoint where (0, heightOfOneImage * ((long)(norm * (getNumSubPixmaps () - 1) + 0.5f)));
 
 		pBackground->draw (pContext, size, where);
 	}
@@ -146,11 +151,12 @@ CMouseEventResult CVerticalSwitch::onMouseMoved (CPoint& where, const long& butt
 {
 	if (buttons & kLButton)
 	{
-		value = (long)((where.v - size.top) / coef) / (float)(getNumSubPixmaps () - 1);
-		if (value > 1.f)
-			value = 1.f;
-		else if (value < 0.f)
-			value = 0.f;
+		float norm = (long)((where.v - size.top) / coef) / (float)(getNumSubPixmaps () - 1);
+		value = getMin () + norm * (getMax () - getMin ());
+		if (value > getMax ())
+			value = getMax ();
+		else if (value < getMin ())
+			value = getMin ();
 
 		if (isDirty ())
 		{
@@ -159,6 +165,37 @@ CMouseEventResult CVerticalSwitch::onMouseMoved (CPoint& where, const long& butt
 		}
 	}
 	return kMouseEventHandled;
+}
+
+//------------------------------------------------------------------------
+long CVerticalSwitch::onKeyDown (VstKeyCode& keyCode)
+{
+	if (keyCode.modifier == 0)
+	{
+		float norm = (value - getMin ()) / (getMax () - getMin ());
+		long currentIndex = (long)(norm * (getNumSubPixmaps () - 1) + 0.5f);
+		if (keyCode.virt == VKEY_UP && currentIndex > 0)
+		{
+			currentIndex--;
+			norm = (float)currentIndex / (float)(getNumSubPixmaps () - 1);
+			value = (getMax () - getMin ()) * norm + getMin ();
+		}
+		if (keyCode.virt == VKEY_DOWN && currentIndex < (getNumSubPixmaps () - 1))
+		{
+			currentIndex++;
+			norm = (float)currentIndex / (float)(getNumSubPixmaps () - 1);
+			value = (getMax () - getMin ()) * norm + getMin ();
+		}
+		if (isDirty ())
+		{
+			invalid ();
+			beginEdit ();
+			valueChanged ();
+			endEdit ();
+			return 1;
+		}
+	}
+	return -1;
 }
 
 //------------------------------------------------------------------------
@@ -185,6 +222,7 @@ CHorizontalSwitch::CHorizontalSwitch (const CRect& size, CControlListener* liste
 	setNumSubPixmaps (background ? (long)(background->getWidth () / heightOfOneImage) : 0);
 
 	setDefaultValue (0.f);
+	setWantsFocus (true);
 }
 
 //------------------------------------------------------------------------
@@ -207,6 +245,7 @@ CHorizontalSwitch::CHorizontalSwitch (const CRect& size, CControlListener* liste
 	setNumSubPixmaps (subPixmaps);
 	setHeightOfOneImage (heightOfOneImage);
 	setDefaultValue (0.f);
+	setWantsFocus (true);
 }
 
 //------------------------------------------------------------------------
@@ -216,6 +255,7 @@ CHorizontalSwitch::CHorizontalSwitch (const CHorizontalSwitch& v)
 {
 	setNumSubPixmaps (v.subPixmaps);
 	setHeightOfOneImage (v.heightOfOneImage);
+	setWantsFocus (true);
 }
 
 //------------------------------------------------------------------------
@@ -284,6 +324,37 @@ CMouseEventResult CHorizontalSwitch::onMouseMoved (CPoint& where, const long& bu
 }
 
 //------------------------------------------------------------------------
+long CHorizontalSwitch::onKeyDown (VstKeyCode& keyCode)
+{
+	if (keyCode.modifier == 0)
+	{
+		float norm = getValueNormalized ();
+		long currentIndex = (long)(norm * (getNumSubPixmaps () - 1) + 0.5f);
+		if (keyCode.virt == VKEY_LEFT && currentIndex > 0)
+		{
+			currentIndex--;
+			norm = (float)currentIndex / (float)(getNumSubPixmaps () - 1);
+			value = (getMax () - getMin ()) * norm + getMin ();
+		}
+		if (keyCode.virt == VKEY_RIGHT && currentIndex < (getNumSubPixmaps () - 1))
+		{
+			currentIndex++;
+			norm = (float)currentIndex / (float)(getNumSubPixmaps () - 1);
+			value = (getMax () - getMin ()) * norm + getMin ();
+		}
+		if (isDirty ())
+		{
+			invalid ();
+			beginEdit ();
+			valueChanged ();
+			endEdit ();
+			return 1;
+		}
+	}
+	return -1;
+}
+
+//------------------------------------------------------------------------
 // CRockerSwitch
 //------------------------------------------------------------------------
 /*! @class CRockerSwitch
@@ -306,9 +377,14 @@ CRockerSwitch::CRockerSwitch (const CRect& size, CControlListener* listener, lon
 : CControl (size, listener, tag, background)
 , offset (offset)
 , style (style)
+, resetValueTimer (0)
 {
 	setNumSubPixmaps (3);
 	setHeightOfOneImage (size.height ());
+	setWantsFocus (true);
+	setMin (-1.f);
+	setMax (1.f);
+	setValue ((getMax () - getMin ()) / 2.f + getMin ());
 }
 
 //------------------------------------------------------------------------
@@ -327,9 +403,14 @@ CRockerSwitch::CRockerSwitch (const CRect& size, CControlListener* listener, lon
 : CControl (size, listener, tag, background)
 , offset (offset)
 , style (style)
+, resetValueTimer (0)
 {
 	setNumSubPixmaps (3);
 	setHeightOfOneImage (heightOfOneImage);
+	setWantsFocus (true);
+	setMin (-1.f);
+	setMax (1.f);
+	setValue ((getMax () - getMin ()) / 2.f + getMin ());
 }
 
 //------------------------------------------------------------------------
@@ -337,22 +418,27 @@ CRockerSwitch::CRockerSwitch (const CRockerSwitch& v)
 : CControl (v)
 , offset (v.offset)
 , style (v.style)
+, resetValueTimer (0)
 {
 	setHeightOfOneImage (v.heightOfOneImage);
+	setWantsFocus (true);
 }
 
 //------------------------------------------------------------------------
 CRockerSwitch::~CRockerSwitch ()
-{}
+{
+	if (resetValueTimer)
+		resetValueTimer->forget ();
+}
 
 //------------------------------------------------------------------------
 void CRockerSwitch::draw (CDrawContext *pContext)
 {
 	CPoint where (offset.h, offset.v);
 
-	if (value == 1.f)
+	if (value == getMax ())
 		where.v += 2 * heightOfOneImage;
-	else if (value == 0.f)
+	else if (value == (getMax () - getMin ()) / 2.f + getMin ())
 		where.v += heightOfOneImage;
 
 	if (pBackground)
@@ -375,7 +461,7 @@ CMouseEventResult CRockerSwitch::onMouseDown (CPoint& where, const long& buttons
 //------------------------------------------------------------------------
 CMouseEventResult CRockerSwitch::onMouseUp (CPoint& where, const long& buttons)
 {
-	value = 0.f;
+	value = (getMax () - getMin ()) / 2.f + getMin ();
 	if (isDirty ())
 		invalid ();
 	endEdit ();
@@ -394,10 +480,10 @@ CMouseEventResult CRockerSwitch::onMouseMoved (CPoint& where, const long& button
 		{
 			if (where.h >= size.left && where.v >= size.top  &&
 				where.h <= (size.left + width_2) && where.v <= size.bottom)
-				value = -1.0f;
+				value = getMin ();
 			else if (where.h >= (size.left + width_2) && where.v >= size.top  &&
 				where.h <= size.right && where.v <= size.bottom)
-				value = 1.0f;
+				value = getMax ();
 			else
 				value = fEntryState;
 		}
@@ -405,10 +491,10 @@ CMouseEventResult CRockerSwitch::onMouseMoved (CPoint& where, const long& button
 		{
 			if (where.h >= size.left && where.v >= size.top  &&
 				where.h <= size.right && where.v <= (size.top + height_2))
-				value = -1.0f;
+				value = getMin ();
 			else if (where.h >= size.left && where.v >= (size.top + height_2) &&
 				where.h <= size.right && where.v <= size.bottom)
-				value = 1.0f;
+				value = getMax ();
 			else
 				value = fEntryState;
 		}
@@ -423,29 +509,87 @@ CMouseEventResult CRockerSwitch::onMouseMoved (CPoint& where, const long& button
 }
 
 //------------------------------------------------------------------------
+long CRockerSwitch::onKeyDown (VstKeyCode& keyCode)
+{
+	if (keyCode.modifier == 0)
+	{
+		if (style & kHorizontal && (keyCode.virt == VKEY_LEFT || keyCode.virt == VKEY_RIGHT))
+		{
+			value = keyCode.virt == VKEY_LEFT ? getMin () : getMax ();
+			invalid ();
+			beginEdit ();
+			valueChanged ();
+			return 1;
+		}
+		if (style & kVertical && (keyCode.virt == VKEY_UP || keyCode.virt == VKEY_DOWN))
+		{
+			value = keyCode.virt == VKEY_UP ? getMin () : getMax ();
+			invalid ();
+			beginEdit ();
+			valueChanged ();
+			return 1;
+		}
+	}
+	return -1;
+}
+
+//------------------------------------------------------------------------
+long CRockerSwitch::onKeyUp (VstKeyCode& keyCode)
+{
+	if (keyCode.modifier == 0)
+	{
+		if (keyCode.virt == VKEY_LEFT || keyCode.virt == VKEY_RIGHT)
+		{
+			value = (getMax () - getMin ()) / 2.f + getMin ();
+			invalid ();
+			valueChanged ();
+			endEdit ();
+
+			return 1;
+		}
+	}
+	return -1;
+}
+
+//------------------------------------------------------------------------
 bool CRockerSwitch::onWheel (const CPoint& where, const float &distance, const long &buttons)
 {
 	if (!bMouseEnabled)
 		return false;
 
 	if (distance > 0)
-		value = -1.0f;
+		value = getMin ();
 	else
-		value = 1.0f;
-
-	// begin of edit parameter
-	beginEdit ();
+		value = getMax ();
 
 	if (isDirty ())
+	{
+		invalid ();
+		beginEdit ();
 		valueChanged ();
+	}
 
-	value = 0.0f;  // set button to UNSELECTED state
-	valueChanged ();
-	
-	// end of edit parameter
-	endEdit ();
+	if (resetValueTimer == 0)
+		resetValueTimer = new CVSTGUITimer (this, 200);
+	resetValueTimer->stop ();
+	resetValueTimer->start ();
 
 	return true;
+}
+
+//------------------------------------------------------------------------
+CMessageResult CRockerSwitch::notify (CBaseObject* sender, const char* message)
+{
+	if (sender == resetValueTimer)
+	{
+		value = (getMax () - getMin ()) / 2.f + getMin ();
+		valueChanged ();
+		endEdit ();
+		resetValueTimer->forget ();
+		resetValueTimer = 0;
+		return kMessageNotified;
+	}
+	return CControl::notify (sender, message);
 }
 
 } // namespace

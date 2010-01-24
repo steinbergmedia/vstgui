@@ -857,8 +857,10 @@ CMouseEventResult CViewContainer::onMouseDown (CPoint &where, const long& button
 				if (((CControl*)pV)->getListener ()->controlModifierClicked ((CControl*)pV, buttons) != 0)
 					return kMouseEventHandled;
 			}
+			CBaseObjectGuard crg (pV);
+
 			CMouseEventResult result = pV->onMouseDown (where2, buttons);
-			if (result == kMouseEventHandled)
+			if (result == kMouseEventHandled && pV->getNbReference () > 1)
 				mouseDownView = pV;
 			return result;
 		}

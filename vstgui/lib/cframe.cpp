@@ -164,7 +164,7 @@ CMouseEventResult CFrame::onMouseDown (CPoint &where, const long& buttons)
 {
 	// reset views
 	mouseDownView = 0;
-	if (pFocusView)
+	if (pFocusView && pFocusView->isTypeOf ("CTextEdit"))
 		setFocusView (NULL);
 	if (pMouseOverView)
 	{
@@ -213,7 +213,10 @@ CMouseEventResult CFrame::onMouseMoved (CPoint &where, const long& buttons)
 	if (getMouseObserver ())
 		getMouseObserver ()->onMouseMoved (this, where);
 	if (pModalView)
+	{
+		CBaseObjectGuard rg (pModalView);
 		return pModalView->onMouseMoved (where, buttons);
+	}
 	else
 	{
 		CMouseEventResult result = CViewContainer::onMouseMoved (where, buttons);
@@ -249,6 +252,8 @@ CMouseEventResult CFrame::onMouseMoved (CPoint &where, const long& buttons)
 			}
 			else if (pMouseOverView)
 			{
+				CBaseObjectGuard rg (pMouseOverView);
+
 				CPoint lr (where);
 				pMouseOverView->frameToLocal (lr);
 				return pMouseOverView->onMouseMoved (lr, mouseDownView ? buttons : 0);

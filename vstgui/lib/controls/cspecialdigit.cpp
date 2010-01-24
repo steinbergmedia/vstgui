@@ -162,17 +162,4 @@ void CSpecialDigit::draw (CDrawContext *pContext)
 	setDirty (false);
 }
 
-//------------------------------------------------------------------------
-float CSpecialDigit::getNormValue () const
-{ 
-	float fTemp;
-	fTemp = value / getMax ();
-	if (fTemp > 1.0f)
-		fTemp = 1.0f;
-	else if (fTemp < 0.0f) 
-		fTemp = 0.0f;
-	
-	return fTemp;
-}
-
 } // namespace

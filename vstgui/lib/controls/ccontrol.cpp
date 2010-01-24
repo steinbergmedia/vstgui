@@ -57,11 +57,6 @@ namespace VSTGUI {
 //------------------------------------------------------------------------
 /*! @class CControl
 This object manages the tag identification and the value of a control object.
-
-Note:
-Since version 2.1, when an object uses the transparency for its background and draws on it (tranparency area)
-or the transparency area changes during different draws (CMovieBitmap ,...), the background will be false (not updated),
-you have to rewrite the draw function in order to redraw the background and then call the draw of the object.
 */
 CControl::CControl (const CRect& size, CControlListener* listener, long tag, CBitmap *pBackground)
 : CView (size)
@@ -74,21 +69,7 @@ CControl::CControl (const CRect& size, CControlListener* listener, long tag, CBi
 , vmax (1.f)
 , wheelInc (0.1f)
 , lastTicks (-1)
-, delta (0)
 {
-	#if 0 // TODO: Platform Abstraction
-	#if WINDOWS
-		delta = GetDoubleClickTime ();
-	#elif MAC_CARBON
-		delta = GetDblTime ();
-	#else
-		delta = 500;
-	#endif
-	#endif
-
-	if (delta < 250)
-		delta = 250;
-
 	setTransparency (false);
 	setMouseEnabled (true);
 	backOffset (0 ,0);
@@ -167,16 +148,39 @@ void CControl::endEdit ()
 //------------------------------------------------------------------------
 void CControl::setValue (float val, bool updateSubListeners)
 {
-	value = val;
-	if (updateSubListeners)
+	if (val < getMin ())
+		val = getMin ();
+	else if (val > getMax ())
+		val = getMax ();
+	if (val != value)
 	{
-		std::list<CControlListener*>::const_iterator it = listeners.begin ();
-		while (it != listeners.end ())
+		value = val;
+		if (updateSubListeners)
 		{
-			(*it)->valueChanged (this);
-			it++;
+			std::list<CControlListener*>::const_iterator it = listeners.begin ();
+			while (it != listeners.end ())
+			{
+				(*it)->valueChanged (this);
+				it++;
+			}
 		}
 	}
+}
+
+//------------------------------------------------------------------------
+void CControl::setValueNormalized (float val, bool updateSubListeners)
+{
+	if (val > 1.f)
+		val = 1.f;
+	else if (val < 0.f)
+		val = 0.f;
+	setValue ((getMax () - getMin ()) * val + getMin (), updateSubListeners);
+}
+
+//------------------------------------------------------------------------
+float CControl::getValueNormalized () const
+{
+	return (value - getMin ()) / (getMax () - getMin ());
 }
 
 //------------------------------------------------------------------------
@@ -233,10 +237,10 @@ void CControl::copyBackOffset ()
 //------------------------------------------------------------------------
 void CControl::bounceValue ()
 {
-	if (value > vmax)
-		value = vmax;
-	else if (value < vmin)
-		value = vmin;
+	if (value > getMax ())
+		value = getMax ();
+	else if (value < getMin ())
+		value = getMin ();
 }
 
 //-----------------------------------------------------------------------------

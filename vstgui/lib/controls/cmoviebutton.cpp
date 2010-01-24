@@ -54,6 +54,7 @@ CMovieButton::CMovieButton (const CRect& size, CControlListener* listener, long 
 : CControl (size, listener, tag, background), offset (offset), buttonState (value)
 {
 	heightOfOneImage = size.height ();
+	setWantsFocus (true);
 }
 
 //------------------------------------------------------------------------
@@ -73,6 +74,7 @@ CMovieButton::CMovieButton (const CRect& size, CControlListener* listener, long 
 , buttonState (value)
 {
 	setHeightOfOneImage (heightOfOneImage);
+	setWantsFocus (true);
 }
 
 //------------------------------------------------------------------------
@@ -82,6 +84,7 @@ CMovieButton::CMovieButton (const CMovieButton& v)
 , buttonState (v.buttonState)
 {
 	setHeightOfOneImage (v.heightOfOneImage);
+	setWantsFocus (true);
 }
 
 //------------------------------------------------------------------------
@@ -95,9 +98,7 @@ void CMovieButton::draw (CDrawContext *pContext)
 
 	where.h = 0;
 
-	bounceValue ();
-
-	if (value)
+	if (value == getMax ())
 		where.v = heightOfOneImage;
 	else
 		where.v = 0;
@@ -137,7 +138,7 @@ CMouseEventResult CMovieButton::onMouseMoved (CPoint& where, const long& buttons
 				where.v >= size.top  &&
 				where.h <= size.right &&
 				where.v <= size.bottom)
-			value = !fEntryState;
+			value = (fEntryState == getMax ()) ? getMin () : getMax ();
 		else
 			value = fEntryState;
 	
@@ -147,6 +148,21 @@ CMouseEventResult CMovieButton::onMouseMoved (CPoint& where, const long& buttons
 			invalid ();
 	}
 	return kMouseEventHandled;
+}
+
+//------------------------------------------------------------------------
+long CMovieButton::onKeyDown (VstKeyCode& keyCode)
+{
+	if (keyCode.virt == VKEY_RETURN && keyCode.modifier == 0)
+	{
+		value = (value == getMax ()) ? getMin () : getMax ();
+		invalid ();
+		beginEdit ();
+		valueChanged ();
+		endEdit ();
+		return 1;
+	}
+	return -1;
 }
 
 } // namespace

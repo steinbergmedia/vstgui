@@ -52,13 +52,6 @@ public:
 	
 	virtual void  draw (CDrawContext*);
 
-	//-----------------------------------------------------------------------------
-	/// @name CSpecialDigit Methods
-	//-----------------------------------------------------------------------------
-	//@{
-	virtual float getNormValue (void) const;
-	//@}
-
 	CLASS_METHODS(CSpecialDigit, CControl)
 protected:
 	~CSpecialDigit ();
