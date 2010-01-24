@@ -128,6 +128,9 @@ public:
 	virtual void setValue (float val, bool updateSubListeners = false);
 	virtual float getValue () const { return value; };
 
+	virtual void setValueNormalized (float val, bool updateSubListeners = false);
+	virtual float getValueNormalized () const;
+
 	virtual void setMin (float val) { vmin = val; }
 	virtual float getMin () const { return vmin; }
 	virtual void setMax (float val) { vmax = val; }
@@ -198,7 +201,6 @@ protected:
 	float wheelInc;
 
 	long lastTicks;
-	long delta;
 
 	CPoint	backOffset;
 	

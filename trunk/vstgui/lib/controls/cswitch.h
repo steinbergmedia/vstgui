@@ -38,6 +38,7 @@
 #include "ccontrol.h"
 
 namespace VSTGUI {
+class CVSTGUITimer;
 
 //-----------------------------------------------------------------------------
 // CVerticalSwitch Declaration
@@ -56,6 +57,7 @@ public:
 	virtual CMouseEventResult onMouseDown (CPoint& where, const long& buttons);
 	virtual CMouseEventResult onMouseUp (CPoint& where, const long& buttons);
 	virtual CMouseEventResult onMouseMoved (CPoint& where, const long& buttons);
+	virtual long onKeyDown (VstKeyCode& keyCode);
 
 	void setNumSubPixmaps (long numSubPixmaps) { IMultiBitmapControl::setNumSubPixmaps (numSubPixmaps); invalid (); }
 
@@ -86,6 +88,7 @@ public:
 	virtual CMouseEventResult onMouseDown (CPoint& where, const long& buttons);
 	virtual CMouseEventResult onMouseUp (CPoint& where, const long& buttons);
 	virtual CMouseEventResult onMouseMoved (CPoint& where, const long& buttons);
+	virtual long onKeyDown (VstKeyCode& keyCode);
 
 	void setNumSubPixmaps (long numSubPixmaps) { IMultiBitmapControl::setNumSubPixmaps (numSubPixmaps); invalid (); }
 
@@ -117,15 +120,21 @@ public:
 	virtual CMouseEventResult onMouseDown (CPoint& where, const long& buttons);
 	virtual CMouseEventResult onMouseUp (CPoint& where, const long& buttons);
 	virtual CMouseEventResult onMouseMoved (CPoint& where, const long& buttons);
+	virtual long onKeyDown (VstKeyCode& keyCode);
+	virtual long onKeyUp (VstKeyCode& keyCode);
 
 	void setNumSubPixmaps (long numSubPixmaps) { IMultiBitmapControl::setNumSubPixmaps (numSubPixmaps); invalid (); }
 
 	CLASS_METHODS(CRockerSwitch, CControl)
 protected:
 	~CRockerSwitch ();
+
+	CMessageResult notify (CBaseObject* sender, const char* message);
+
 	CPoint	offset;
 	long	style;
 
+	CVSTGUITimer* resetValueTimer;
 private:
 	float fEntryState;
 };

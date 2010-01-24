@@ -84,7 +84,7 @@ void COnOffButton::draw (CDrawContext *pContext)
 	{
 		CCoord off;
 
-		if (value)
+		if (value == getMax ())
 			off = pBackground->getHeight () / 2;
 		else
 			off = 0;
@@ -100,14 +100,10 @@ CMouseEventResult COnOffButton::onMouseDown (CPoint& where, const long& buttons)
 	if (!(buttons & kLButton))
 		return kMouseEventNotHandled;
 
-	value = ((long)value) ? 0.f : 1.f;
-
+	value = (value == getMax ()) ? getMin () : getMax ();
 	invalid ();
-
 	beginEdit ();
-
 	valueChanged ();
-
 	endEdit ();
 
 	return kMouseDownEventHandledButDontNeedMovedOrUpEvents;
@@ -118,7 +114,7 @@ long COnOffButton::onKeyDown (VstKeyCode& keyCode)
 {
 	if (keyCode.virt == VKEY_RETURN && keyCode.modifier == 0)
 	{
-		value = ((long)value) ? 0.f : 1.f;
+		value = (value == getMax ()) ? getMin () : getMax ();
 		invalid ();
 		beginEdit ();
 		valueChanged ();
@@ -151,6 +147,7 @@ CKickButton::CKickButton (const CRect& size, CControlListener* listener, long ta
 , offset (offset)
 {
 	heightOfOneImage = size.height ();
+	setWantsFocus (true);
 }
 
 //------------------------------------------------------------------------
@@ -169,6 +166,7 @@ CKickButton::CKickButton (const CRect& size, CControlListener* listener, long ta
 , offset (offset)
 {
 	setHeightOfOneImage (heightOfOneImage);
+	setWantsFocus (true);
 }
 
 //------------------------------------------------------------------------
@@ -177,6 +175,7 @@ CKickButton::CKickButton (const CKickButton& v)
 , offset (v.offset)
 {
 	setHeightOfOneImage (v.heightOfOneImage);
+	setWantsFocus (true);
 }
 
 //------------------------------------------------------------------------
@@ -215,7 +214,7 @@ CMouseEventResult CKickButton::onMouseUp (CPoint& where, const long& buttons)
 {
 	if (value)
 		valueChanged ();
-	value = 0.0f;  // set button to UNSELECTED state
+	value = getMin ();  // set button to UNSELECTED state
 	valueChanged ();
 	if (isDirty ())
 		invalid ();
@@ -230,15 +229,44 @@ CMouseEventResult CKickButton::onMouseMoved (CPoint& where, const long& buttons)
 	{
 		if (where.h >= size.left && where.v >= size.top  &&
 			where.h <= size.right && where.v <= size.bottom)
-			value = !fEntryState;
+			value = getMin ();
 		else
-			value = fEntryState;
+			value = getMax ();
 		
 		if (isDirty ())
 			invalid ();
 	}
 	return kMouseEventHandled;
 }
+
+//------------------------------------------------------------------------
+long CKickButton::onKeyDown (VstKeyCode& keyCode)
+{
+	if (keyCode.modifier == 0 && keyCode.virt == VKEY_RETURN)
+	{
+		beginEdit ();
+		value = getMax ();
+		invalid ();
+		valueChanged ();
+		return 1;
+	}
+	return -1;
+}
+
+//------------------------------------------------------------------------
+long CKickButton::onKeyUp (VstKeyCode& keyCode)
+{
+	if (keyCode.modifier == 0 && keyCode.virt == VKEY_RETURN)
+	{
+		value = getMin ();
+		invalid ();
+		valueChanged ();
+		endEdit ();
+		return 1;
+	}
+	return -1;
+}
+
 
 //------------------------------------------------------------------------
 // CCheckBox
@@ -402,6 +430,7 @@ bool CCheckBox::sizeToFit ()
 //------------------------------------------------------------------------
 void CCheckBox::draw (CDrawContext* context)
 {
+	float norm = getValueNormalized ();
 	CRect checkBoxSize (size);
 	if (pBackground)
 	{
@@ -410,9 +439,9 @@ void CCheckBox::draw (CDrawContext* context)
 		checkBoxSize.setWidth (pBackground->getWidth ());
 		checkBoxSize.setHeight (pBackground->getHeight () / 6);
 
-		if (value == 0.5)
+		if (norm == 0.5)
 			off.y = checkBoxSize.getHeight ();
-		else if (value > 0.5)
+		else if (norm > 0.5)
 			off.y = checkBoxSize.getHeight () * 2;
 		else
 			off.y = 0;
@@ -450,12 +479,12 @@ void CCheckBox::draw (CDrawContext* context)
 		
 		if (style & kDrawCrossBox)
 		{
-			if (value == 0.5f)
+			if (norm == 0.5f)
 			{
 				context->moveTo (CPoint (checkBoxSize.left + cbInset, checkBoxSize.top + checkBoxSize.getHeight () / 2));
 				context->lineTo (CPoint (checkBoxSize.right - cbInset, checkBoxSize.top + checkBoxSize.getHeight () / 2));
 			}
-			else if (value > 0.5f)
+			else if (norm > 0.5f)
 			{
 				context->moveTo (CPoint (checkBoxSize.left + cbInset, checkBoxSize.top + cbInset));
 				context->lineTo (CPoint (checkBoxSize.right - cbInset, checkBoxSize.bottom - cbInset));
@@ -466,11 +495,11 @@ void CCheckBox::draw (CDrawContext* context)
 		else
 		{
 			context->moveTo (CPoint (checkBoxSize.left + cbInset, checkBoxSize.top + checkBoxSize.getHeight () / 2));
-			if (value == 0.5f)
+			if (norm == 0.5f)
 			{
 				context->lineTo (CPoint (checkBoxSize.right - cbInset, checkBoxSize.top + checkBoxSize.getHeight () / 2));
 			}
-			else if (value > 0.5f)
+			else if (norm > 0.5f)
 			{
 				context->lineTo (CPoint (checkBoxSize.left + checkBoxSize.getWidth () / 2, checkBoxSize.bottom - cbInset));
 				context->lineTo (CPoint (checkBoxSize.right + 1, checkBoxSize.top - 1));
@@ -551,7 +580,7 @@ CMouseEventResult CCheckBox::onMouseUp (CPoint& where, const long& buttons)
 {
 	hilight = false;
 	if (where.isInside (size))
-		value = (previousValue < 1.f) ? 1.f : 0.f;
+		value = (previousValue < getMax ()) ? getMax () : getMin ();
 	else
 		value = previousValue;
 	if (isDirty ())
@@ -568,7 +597,7 @@ long CCheckBox::onKeyDown (VstKeyCode& keyCode)
 {
 	if (keyCode.virt == VKEY_RETURN && keyCode.modifier == 0)
 	{
-		value = ((long)value) ? 0.f : 1.f;
+		value = (value < getMax ()) ? getMax () : getMin ();
 		invalid ();
 		beginEdit ();
 		valueChanged ();
