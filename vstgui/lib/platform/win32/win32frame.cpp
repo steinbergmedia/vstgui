@@ -45,6 +45,7 @@
 #include "win32optionmenu.h"
 #include "win32support.h"
 #include "win32dragcontainer.h"
+#include "../../cdropsource.h"
 
 namespace VSTGUI {
 
@@ -56,8 +57,8 @@ static bool bSwapped_mouse_buttons = false;
 static OSVERSIONINFOEX gSystemVersion;
 
 //-----------------------------------------------------------------------------
-//static LONG_PTR WINAPI WindowProc (HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam);
-
+//-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
 class CDropTarget : public IDropTarget
 {	
 public:
@@ -79,6 +80,52 @@ private:
 	bool accept;
 	Win32Frame* pFrame;
 	WinDragContainer* gDragContainer;
+};
+
+//-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
+class Win32DropSource : public CBaseObject, public ::IDropSource
+{
+public:
+	Win32DropSource () {}
+
+	// IUnknown
+	STDMETHOD (QueryInterface) (REFIID riid, void** object);
+	STDMETHOD_ (ULONG, AddRef) (void) { remember (); return getNbReference ();}
+	STDMETHOD_ (ULONG, Release) (void) { ULONG refCount = getNbReference () - 1; forget (); return refCount; }
+	
+	// IDropSource
+	STDMETHOD (QueryContinueDrag) (BOOL escapePressed, DWORD keyState);
+	STDMETHOD (GiveFeedback) (DWORD effect);
+};
+
+//-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
+class Win32DataObject : public CBaseObject, public ::IDataObject
+{
+public:
+	Win32DataObject (CDropSource* dropSource);
+	~Win32DataObject ();
+
+	// IUnknown
+	STDMETHOD (QueryInterface) (REFIID riid, void** object);
+	STDMETHOD_ (ULONG, AddRef) (void) { remember (); return getNbReference ();}
+	STDMETHOD_ (ULONG, Release) (void) { ULONG refCount = getNbReference () - 1; forget (); return refCount; }
+
+	// IDataObject
+	STDMETHOD (GetData) (FORMATETC *format, STGMEDIUM *medium);
+	STDMETHOD (GetDataHere) (FORMATETC *format, STGMEDIUM *medium);
+	STDMETHOD (QueryGetData) (FORMATETC *format);
+	STDMETHOD (GetCanonicalFormatEtc) (FORMATETC *formatIn, FORMATETC *formatOut);
+	STDMETHOD (SetData) (FORMATETC *format, STGMEDIUM *medium, BOOL release);
+	STDMETHOD (EnumFormatEtc) (DWORD direction, IEnumFORMATETC** enumFormat);
+	STDMETHOD (DAdvise) (FORMATETC* format, DWORD advf, IAdviseSink* advSink, DWORD* connection);
+	STDMETHOD (DUnadvise) (DWORD connection);
+	STDMETHOD (EnumDAdvise) (IEnumSTATDATA** enumAdvise);
+private:
+	CDropSource* dropSource;
 };
 
 //-----------------------------------------------------------------------------
@@ -505,6 +552,27 @@ CGraphicsPath* Win32Frame::createGraphicsPath ()
 	return new GdiplusGraphicsPath ();
 }
 
+//------------------------------------------------------------------------------------
+long Win32Frame::doDrag (CDropSource* source, const CPoint& offset, CBitmap* dragBitmap)
+{
+	// TODO: implement doDrag for Win32
+	long result = 0;
+	Win32DataObject* dataObject = new Win32DataObject (source);
+	Win32DropSource* dropSource = new Win32DropSource;
+	DWORD outEffect;
+	HRESULT hResult = DoDragDrop (dataObject, dropSource, DROPEFFECT_COPY, &outEffect);
+	dataObject->Release ();
+	dropSource->Release ();
+	if (hResult == DRAGDROP_S_DROP)
+	{
+		if (outEffect == DROPEFFECT_MOVE)
+			result = -1;
+		else
+			result = 1;
+	}
+	return result;
+}
+
 //-----------------------------------------------------------------------------
 LONG_PTR WINAPI Win32Frame::WindowProc (HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
@@ -858,6 +926,251 @@ STDMETHODIMP CDropTarget::Drop (IDataObject* dataObject, DWORD keyState, POINTL 
 		gDragContainer = 0;
 	}
 	return S_OK;
+}
+
+//-----------------------------------------------------------------------------
+// Win32DropSource
+//-----------------------------------------------------------------------------
+STDMETHODIMP Win32DropSource::QueryInterface (REFIID riid, void** object)
+{
+	if (riid == ::IID_IDropSource)                        
+	{                                                              
+		AddRef ();                                                 
+		*object = (::IDropSource*)this;                               
+		return S_OK;                                          
+	}
+	else if (riid == ::IID_IUnknown)                        
+	{                                                              
+		AddRef ();                                                 
+		*object = (::IUnknown*)this;                               
+		return S_OK;                                          
+	}
+	return E_NOINTERFACE;
+}
+
+//-----------------------------------------------------------------------------
+STDMETHODIMP Win32DropSource::QueryContinueDrag (BOOL escapePressed, DWORD keyState)
+{
+	if (escapePressed)
+		return DRAGDROP_S_CANCEL;
+	
+	if ((keyState & (MK_LBUTTON|MK_RBUTTON)) == 0)
+		return DRAGDROP_S_DROP;
+
+	return S_OK;	
+}
+
+//-----------------------------------------------------------------------------
+STDMETHODIMP Win32DropSource::GiveFeedback (DWORD effect)
+{
+	return DRAGDROP_S_USEDEFAULTCURSORS;
+}
+
+//-----------------------------------------------------------------------------
+// DataObject
+//-----------------------------------------------------------------------------
+Win32DataObject::Win32DataObject (CDropSource* dropSource)
+: dropSource (dropSource)
+{
+	dropSource->remember ();
+}
+
+//-----------------------------------------------------------------------------
+Win32DataObject::~Win32DataObject ()
+{
+	dropSource->forget ();
+}
+
+//-----------------------------------------------------------------------------
+STDMETHODIMP Win32DataObject::QueryInterface (REFIID riid, void** object)
+{
+	if (riid == ::IID_IDataObject)                        
+	{                                                              
+		AddRef ();                                                 
+		*object = (::IDataObject*)this;                               
+		return S_OK;                                          
+	}
+	else if (riid == ::IID_IUnknown)                        
+	{                                                              
+		AddRef ();                                                 
+		*object = (::IUnknown*)this;                               
+		return S_OK;                                          
+	}
+	return E_NOINTERFACE;
+}
+
+//-----------------------------------------------------------------------------
+STDMETHODIMP Win32DataObject::GetData (FORMATETC* format, STGMEDIUM* medium)
+{
+	medium->tymed = 0;
+	medium->hGlobal = 0;
+	medium->pUnkForRelease = 0;
+
+	if (format->cfFormat == CF_TEXT || format->cfFormat == CF_UNICODETEXT)
+	{
+		for (long i = 0; i < dropSource->getCount (); i++)
+		{
+			if (dropSource->getEntryType (i) == CDropSource::kText)
+			{
+				const void* buffer;
+				CDropSource::Type type;
+				long bufferSize = dropSource->getEntry (i, buffer, type);
+				UTF8StringHelper utf8String ((const char*)buffer);
+				SIZE_T size = 0;
+				const void* data = 0;
+				if (format->cfFormat == CF_UNICODETEXT)
+				{
+					size = bufferSize * sizeof (WCHAR);
+					data = utf8String.getWideString ();
+				}
+				else
+				{
+					size = bufferSize * sizeof (char);
+					data = buffer;
+				}
+				if (data && size > 0)
+				{
+					HGLOBAL	memoryHandle = GlobalAlloc (GMEM_MOVEABLE, size); 
+					void* memory = GlobalLock (memoryHandle);
+					if (memory)
+					{
+						memcpy (memory, data, size);
+						GlobalUnlock (memoryHandle);
+					}
+
+					medium->hGlobal = memoryHandle;						
+					medium->tymed = TYMED_HGLOBAL;
+					return S_OK;
+				}
+			}
+		}
+	}
+	else if (format->cfFormat == CF_PRIVATEFIRST)
+	{
+		for (long i = 0; i < dropSource->getCount (); i++)
+		{
+			if (dropSource->getEntryType (i) == CDropSource::kBinary)
+			{
+				const void* buffer;
+				CDropSource::Type type;
+				long bufferSize = dropSource->getEntry (i, buffer, type);
+
+				HGLOBAL	memoryHandle = GlobalAlloc (GMEM_MOVEABLE, bufferSize); 
+				void* memory = GlobalLock (memoryHandle);
+				if (memory)
+				{
+					memcpy (memory, buffer, bufferSize);
+					GlobalUnlock (memoryHandle);
+				}
+
+				medium->hGlobal = memoryHandle;						
+				medium->tymed = TYMED_HGLOBAL;
+				return S_OK;
+			}
+		}
+	}
+
+#if 0
+	if (format->cfFormat == CF_TEXT || format->cfFormat == CF_UNICODETEXT)
+	{
+		UTF8StringHelper utf8String (dataString.c_str ());
+		SIZE_T size = 0;
+		const void* data = 0;
+		if (format->cfFormat == CF_UNICODETEXT)
+		{
+			size = (dataString.length () + 1) * sizeof (WCHAR);
+			data = utf8String.getWideString ();
+		}
+		else
+		{
+			size = (dataString.length () + 1) * sizeof (char);
+			data = dataString.c_str ();
+		}
+
+		if (data && size > 0)
+		{
+			HGLOBAL	memoryHandle = GlobalAlloc (GMEM_MOVEABLE, size); 
+			void* memory = GlobalLock (memoryHandle);
+			if (memory)
+			{
+				memcpy (memory, data, size);
+				GlobalUnlock (memoryHandle);
+			}
+
+			medium->hGlobal = memoryHandle;						
+			medium->tymed = TYMED_HGLOBAL;
+			return S_OK;
+		}
+	}
+#endif
+	return E_UNEXPECTED;
+}
+
+//-----------------------------------------------------------------------------
+STDMETHODIMP Win32DataObject::GetDataHere (FORMATETC *format, STGMEDIUM *pmedium)
+{
+	return E_NOTIMPL;
+}
+
+//-----------------------------------------------------------------------------
+STDMETHODIMP Win32DataObject::QueryGetData (FORMATETC *format)
+{
+	if (format->cfFormat == CF_TEXT || format->cfFormat == CF_UNICODETEXT)
+	{
+		for (long i = 0; i < dropSource->getCount (); i++)
+		{
+			if (dropSource->getEntryType (i) == CDropSource::kText)
+				return S_OK;
+		}
+	}
+	else if (format->cfFormat == CF_PRIVATEFIRST)
+	{
+		for (long i = 0; i < dropSource->getCount (); i++)
+		{
+			if (dropSource->getEntryType (i) == CDropSource::kBinary)
+				return S_OK;
+		}
+	}
+	else if (format->cfFormat == CF_HDROP)
+	{
+	}
+	return DV_E_FORMATETC;
+}
+
+//-----------------------------------------------------------------------------
+STDMETHODIMP Win32DataObject::GetCanonicalFormatEtc (FORMATETC *formatIn, FORMATETC *formatOut)
+{
+	return E_NOTIMPL;
+}
+
+//-----------------------------------------------------------------------------
+STDMETHODIMP Win32DataObject::SetData (FORMATETC *pformatetc, STGMEDIUM *pmedium, BOOL fRelease)
+{
+	return E_NOTIMPL;
+}
+
+//-----------------------------------------------------------------------------
+STDMETHODIMP Win32DataObject::EnumFormatEtc (DWORD dwDirection, IEnumFORMATETC** enumFormat)
+{
+	return E_NOTIMPL;
+}
+
+//-----------------------------------------------------------------------------
+STDMETHODIMP Win32DataObject::DAdvise (FORMATETC* pformatetc, DWORD advf, IAdviseSink* pAdvSink, DWORD* pdwConnection)
+{
+	return E_NOTIMPL;
+}
+
+//-----------------------------------------------------------------------------
+STDMETHODIMP Win32DataObject::DUnadvise (DWORD dwConnection)
+{
+	return E_NOTIMPL;
+}
+
+//-----------------------------------------------------------------------------
+STDMETHODIMP Win32DataObject::EnumDAdvise (IEnumSTATDATA** ppenumAdvise)
+{
+	return E_NOTIMPL;
 }
 
 } // namespace

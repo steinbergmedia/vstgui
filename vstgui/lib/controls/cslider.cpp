@@ -214,6 +214,21 @@ void CSlider::setViewSize (CRect& rect, bool invalid)
 }
 
 //------------------------------------------------------------------------
+bool CSlider::sizeToFit ()
+{
+	if (pBackground)
+	{
+		CRect vs (getViewSize ());
+		vs.setWidth (pBackground->getWidth ());
+		vs.setHeight (pBackground->getHeight ());
+		setViewSize (vs, true);
+		setMouseableArea (vs);
+		return true;
+	}
+	return false;
+}
+
+//------------------------------------------------------------------------
 void CSlider::setOffsetHandle (const CPoint &val)
 {
 	offsetHandle = val;

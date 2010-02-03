@@ -38,6 +38,7 @@
 
 #include "../../iplatformtextedit.h"
 #include "../../../cdrawcontext.h"
+#include "../../../cdropsource.h"
 #include "hiviewtextedit.h"
 #include "hiviewoptionmenu.h"
 #include "../cgdrawcontext.h"
@@ -240,8 +241,6 @@ void* MacDragContainer::next (long& size, long& type)
 				if (flavorType == 0)
 					continue;
 				CFStringRef osTypeFlavorType = UTTypeCopyPreferredTagWithClass (flavorType, kUTTagClassOSType);
-				if (osTypeFlavorType == 0)
-					continue;
 				PasteboardFlavorFlags flavorFlags;
 				PasteboardGetItemFlavorFlags (pasteboard, itemID, flavorType, &flavorFlags);
 				CFDataRef flavorData = 0;
@@ -251,7 +250,14 @@ void* MacDragContainer::next (long& size, long& type)
 					const UInt8* data = CFDataGetBytePtr (flavorData);
 					if (data)
 					{
-						if (CFStringCompare (osTypeFlavorType, CFSTR("utxt"), 0) == kCFCompareEqualTo)
+						if (osTypeFlavorType == 0)
+						{
+							type = CDragContainer::kUnknown;
+							size = flavorDataSize;
+							lastItem = malloc (size);
+							memcpy (lastItem, data, size);
+						}
+						else if (CFStringCompare (osTypeFlavorType, CFSTR("utxt"), 0) == kCFCompareEqualTo)
 						{
 							CFStringRef utf16String = CFStringCreateWithBytes(0, data, flavorDataSize, kCFStringEncodingUTF16, false);
 							if (utf16String)
@@ -307,8 +313,9 @@ void* MacDragContainer::next (long& size, long& type)
 					}
 					CFRelease (flavorData);
 				}
-				CFRelease (osTypeFlavorType);
-				if (type != CDragContainer::kUnknown)
+				if (osTypeFlavorType)
+					CFRelease (osTypeFlavorType);
+				if (type != CDragContainer::kError)
 					break;
 			}
 			CFRelease (flavors);
@@ -726,6 +733,105 @@ COffscreenContext* HIViewFrame::createOffscreenContext (CCoord width, CCoord hei
 CGraphicsPath* HIViewFrame::createGraphicsPath ()
 {
 	return new QuartzGraphicsPath;
+}
+
+//------------------------------------------------------------------------------------
+long HIViewFrame::doDrag (CDropSource* source, const CPoint& offset, CBitmap* dragBitmap)
+{
+	long result = 0;
+	PasteboardRef pb;
+	if (PasteboardCreate (kPasteboardUniqueName, &pb) == noErr)
+	{
+		PasteboardClear (pb);
+		for (long i = 0; i < source->getCount (); i++)
+		{
+			const void* buffer = 0;
+			CDropSource::Type type;
+			long bufferSize = source->getEntry (i, buffer, type);
+			if (bufferSize > 0)
+			{
+				switch (type)
+				{
+					case CDropSource::kFile:
+					{
+						CFURLRef cfUrl = CFURLCreateFromFileSystemRepresentation (0, (const UInt8*)buffer, bufferSize, false);
+						if (cfUrl)
+						{
+							CFDataRef dataRef = CFURLCreateData (0, cfUrl, kCFStringEncodingUTF8, false);
+							if (dataRef)
+							{
+								PasteboardPutItemFlavor (pb, (void*)buffer, kUTTypeFileURL, dataRef, kPasteboardFlavorNoFlags);
+								CFRelease (dataRef);
+							}
+							CFRelease (cfUrl);
+						}
+						break;
+					}
+					case CDropSource::kText:
+					{
+						CFStringRef stringRef = CFStringCreateWithCString (0, (const char*)buffer, kCFStringEncodingUTF8);
+						if (stringRef)
+						{
+							CFDataRef dataRef = CFStringCreateExternalRepresentation (0, stringRef, kCFStringEncodingUTF8, 0);
+							if (dataRef)
+							{
+								PasteboardPutItemFlavor (pb, (void*)buffer, kUTTypeUTF8PlainText, dataRef, kPasteboardFlavorNoFlags);
+								CFRelease (dataRef);
+							}
+							CFRelease (stringRef);
+						}
+						break;
+					}
+					case CDropSource::kBinary:
+					{
+						CFDataRef dataRef = CFDataCreate (0, (const UInt8*)buffer, bufferSize);
+						if (dataRef)
+						{
+							PasteboardPutItemFlavor (pb, (void*)buffer, kUTTypeData, dataRef, kPasteboardFlavorSenderOnly);
+							CFRelease (dataRef);
+						}
+						break;
+					}
+				}
+			}
+		}
+		DragRef drag;
+		if (NewDragWithPasteboard (pb, &drag) == noErr)
+		{
+			EventRecord eventRecord;
+			EventRef eventRef = GetCurrentEvent ();
+			if (eventRef && ConvertEventRefToEventRecord (eventRef, &eventRecord))
+			{
+
+				CGBitmap* cgBitmap = dragBitmap ? dynamic_cast<CGBitmap*> (dragBitmap->getPlatformBitmap ()) : 0;
+				CGImageRef cgImage = cgBitmap ? cgBitmap->getCGImage () : 0;
+				if (cgImage)
+				{
+					HIPoint imageOffset = { offset.x, offset.y };
+					SetDragImageWithCGImage (drag, cgImage, &imageOffset, 0);
+				}
+
+				RgnHandle region = NewRgn ();
+				if (TrackDrag (drag, &eventRecord, region) == noErr)
+				{
+					DragActions action;
+					if (GetDragDropAction (drag, &action) == noErr)
+					{
+						if (action == kDragActionNothing)
+							result = 0;
+						else if (action & kDragActionMove)
+							result = -1;
+						else
+							result = 1;
+					}
+				}
+				DisposeRgn (region);
+			}
+			DisposeDrag (drag);
+		}
+		CFRelease (pb);
+	}
+	return result;
 }
 
 #define ENABLE_LOGGING 0

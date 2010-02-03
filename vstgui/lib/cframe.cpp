@@ -347,6 +347,14 @@ bool CFrame::onWheel (const CPoint &where, const float &distance, const long &bu
 }
 
 //-----------------------------------------------------------------------------
+long CFrame::doDrag (CDropSource* source, const CPoint& offset, CBitmap* dragBitmap)
+{
+	if (platformFrame)
+		return platformFrame->doDrag (source, offset, dragBitmap);
+	return 0;
+}
+
+//-----------------------------------------------------------------------------
 void CFrame::idle ()
 {
 	invalidateDirtyViews ();

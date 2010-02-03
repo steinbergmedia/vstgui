@@ -198,6 +198,21 @@ long CVerticalSwitch::onKeyDown (VstKeyCode& keyCode)
 	return -1;
 }
 
+//-----------------------------------------------------------------------------------------------
+bool CVerticalSwitch::sizeToFit ()
+{
+	if (pBackground)
+	{
+		CRect vs (getViewSize ());
+		vs.setWidth (pBackground->getWidth ());
+		vs.setHeight (getHeightOfOneImage ());
+		setViewSize (vs);
+		setMouseableArea (vs);
+		return true;
+	}
+	return false;
+}
+
 //------------------------------------------------------------------------
 // CHorizontalSwitch
 //------------------------------------------------------------------------
@@ -352,6 +367,21 @@ long CHorizontalSwitch::onKeyDown (VstKeyCode& keyCode)
 		}
 	}
 	return -1;
+}
+
+//-----------------------------------------------------------------------------------------------
+bool CHorizontalSwitch::sizeToFit ()
+{
+	if (pBackground)
+	{
+		CRect vs (getViewSize ());
+		vs.setWidth (pBackground->getWidth ());
+		vs.setHeight (getHeightOfOneImage ());
+		setViewSize (vs);
+		setMouseableArea (vs);
+		return true;
+	}
+	return false;
 }
 
 //------------------------------------------------------------------------
@@ -590,6 +620,21 @@ CMessageResult CRockerSwitch::notify (CBaseObject* sender, const char* message)
 		return kMessageNotified;
 	}
 	return CControl::notify (sender, message);
+}
+
+//-----------------------------------------------------------------------------------------------
+bool CRockerSwitch::sizeToFit ()
+{
+	if (pBackground)
+	{
+		CRect vs (getViewSize ());
+		vs.setWidth (pBackground->getWidth ());
+		vs.setHeight (getHeightOfOneImage ());
+		setViewSize (vs);
+		setMouseableArea (vs);
+		return true;
+	}
+	return false;
 }
 
 } // namespace

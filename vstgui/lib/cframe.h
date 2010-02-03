@@ -150,6 +150,7 @@ public:
 	bool onWheel (const CPoint &where, const CMouseWheelAxis &axis, const float &distance, const long &buttons);
 	long onKeyDown (VstKeyCode& keyCode);
 	long onKeyUp (VstKeyCode& keyCode);
+	long doDrag (CDropSource* source, const CPoint& offset, CBitmap* dragBitmap);
 	void setViewSize (CRect& rect, bool invalid = true);
 
 	virtual VSTGUIEditorInterface* getEditor () const { return pEditor; }

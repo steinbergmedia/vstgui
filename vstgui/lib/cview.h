@@ -43,6 +43,7 @@
 namespace VSTGUI {
 class CDrawContext;
 class CDragContainer;
+class CDropSource;
 class VSTGUIEditorInterface;
 class CBitmap;
 class CFrame;
@@ -196,6 +197,7 @@ public:
 	/// @name Drag & Drop Methods
 	//-----------------------------------------------------------------------------
 	//@{
+	virtual long doDrag (CDropSource* source, const CPoint& offset = CPoint (0, 0), CBitmap* dragBitmap = 0);	///< start a drag operation
 	virtual bool onDrop (CDragContainer* drag, const CPoint& where) { return false; }			///< called if a drag is dropped onto this view
 	virtual void onDragEnter (CDragContainer* drag, const CPoint& where) {}						///< called if a drag is entering this view
 	virtual void onDragLeave (CDragContainer* drag, const CPoint& where) {}						///< called if a drag is leaving this view

@@ -84,6 +84,8 @@ public:
 	virtual bool onWheel (const CPoint& where, const float& distance, const long& buttons);
 	virtual long onKeyDown (VstKeyCode& keyCode);
 
+	virtual bool sizeToFit ();
+
 	CLASS_METHODS(CSlider, CControl)
 protected:
 	~CSlider ();

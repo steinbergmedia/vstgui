@@ -45,6 +45,7 @@
 #import "../cgbitmap.h"
 #import "../quartzgraphicspath.h"
 #import "../../../cvstguitimer.h"
+#import "../../../cdropsource.h"
 
 #if MAC_CARBON
 	#import "../carbon/hiviewframe.h"
@@ -557,6 +558,26 @@ static BOOL VSTGUI_NSView_performDragOperation (id self, SEL _cmd, id sender)
 	return result;
 }
 
+//------------------------------------------------------------------------------------
+static void VSTGUI_NSView_draggedImageEndedAtOperation (id self, SEL _cmd, NSImage* image, NSPoint aPoint, NSDragOperation operation)
+{
+	NSViewFrame* frame = getNSViewFrame (self);
+	if (frame)
+	{
+		if (operation == NSDragOperationNone)
+		{
+			frame->setLastDragOperationResult (0);
+		}
+		else if (operation == NSDragOperationMove)
+		{
+			frame->setLastDragOperationResult (-1);
+		}
+		else
+			frame->setLastDragOperationResult (1);
+	}
+}
+
+
 namespace VSTGUI {
 
 //------------------------------------------------------------------------------------
@@ -591,6 +612,12 @@ void NSViewFrame::initClass ()
 	{
 		BOOL res;
 		AutoreleasePool ap ();
+
+		const char* nsPointEncoded = @encode(NSPoint);
+		const char* nsUIntegerEncoded = @encode(NSUInteger);
+		const char* nsRectEncoded = @encode(NSRect);
+		char funcSig[100];
+
 		NSMutableString* viewClassName = [[[NSMutableString alloc] initWithString:@"VSTGUI_NSView"] autorelease];
 		viewClass = generateUniqueClass (viewClassName, [NSView class]);
 		res = class_addMethod (viewClass, @selector(initWithNSViewFrame:parent:andSize:), IMP (VSTGUI_NSView_Init), "@@:@:^:^:^:");
@@ -603,8 +630,6 @@ void NSViewFrame::initClass ()
 		res = class_addMethod (viewClass, @selector(resignFirstResponder), IMP (VSTGUI_NSView_resignFirstResponder), "B@:@:");
 		res = class_addMethod (viewClass, @selector(canBecomeKeyView), IMP (VSTGUI_NSView_canBecomeKeyView), "B@:@:");
 		res = class_addMethod (viewClass, @selector(isOpaque), IMP (VSTGUI_NSView_isOpaque), "B@:@:");
-		const char* nsRectEncoded = @encode(NSRect);
-		char funcSig[100];
 		sprintf (funcSig, "v@:@:%s:", nsRectEncoded);
 		res = class_addMethod (viewClass, @selector(drawRect:), IMP (VSTGUI_NSView_drawRect), funcSig);
 		res = class_addMethod (viewClass, @selector(onMouseDown:), IMP (VSTGUI_NSView_onMouseDown), "B@:@:^:");
@@ -627,15 +652,15 @@ void NSViewFrame::initClass ()
 		res = class_addMethod (viewClass, @selector(performKeyEquivalent:), IMP (VSTGUI_NSView_performKeyEquivalent), "B@:@:^:");
 		res = class_addMethod (viewClass, @selector(keyDown:), IMP (VSTGUI_NSView_keyDown), "v@:@:^:");
 		res = class_addMethod (viewClass, @selector(keyUp:), IMP (VSTGUI_NSView_keyUp), "v@:@:^:");
-		#if __LP64__
-		res = class_addMethod (viewClass, @selector(draggingEntered:), IMP (VSTGUI_NSView_draggingEntered), "L@:@:^:");
-		res = class_addMethod (viewClass, @selector(draggingUpdated:), IMP (VSTGUI_NSView_draggingUpdated), "L@:@:^:");
-		#else
-		res = class_addMethod (viewClass, @selector(draggingEntered:), IMP (VSTGUI_NSView_draggingEntered), "I@:@:^:");
-		res = class_addMethod (viewClass, @selector(draggingUpdated:), IMP (VSTGUI_NSView_draggingUpdated), "I@:@:^:");
-		#endif
+
+		sprintf (funcSig, "%s@:@:^:", nsUIntegerEncoded);
+		res = class_addMethod (viewClass, @selector(draggingEntered:), IMP (VSTGUI_NSView_draggingEntered), funcSig);
+		res = class_addMethod (viewClass, @selector(draggingUpdated:), IMP (VSTGUI_NSView_draggingUpdated), funcSig);
 		res = class_addMethod (viewClass, @selector(draggingExited:), IMP (VSTGUI_NSView_draggingExited), "v@:@:^:");
 		res = class_addMethod (viewClass, @selector(performDragOperation:), IMP (VSTGUI_NSView_performDragOperation), "B@:@:^:");
+
+		sprintf (funcSig, "v@:@:^:%s:%s", nsPointEncoded, nsUIntegerEncoded);
+		res = class_addMethod (viewClass, @selector(draggedImage:endedAt:operation:), IMP (VSTGUI_NSView_draggedImageEndedAtOperation), funcSig);
 
 		res = class_addIvar (viewClass, "_nsViewFrame", sizeof (void*), (uint8_t)log2(sizeof(void*)), @encode(void*));
 		objc_registerClassPair (viewClass);
@@ -868,6 +893,86 @@ COffscreenContext* NSViewFrame::createOffscreenContext (CCoord width, CCoord hei
 CGraphicsPath* NSViewFrame::createGraphicsPath ()
 {
 	return new QuartzGraphicsPath;
+}
+
+//------------------------------------------------------------------------------------
+long NSViewFrame::doDrag (CDropSource* source, const CPoint& offset, CBitmap* dragBitmap)
+{
+	lastDragOperationResult = 0;
+	CGBitmap* cgBitmap = dragBitmap ? dynamic_cast<CGBitmap*> (dragBitmap->getPlatformBitmap ()) : 0;
+	CGImageRef cgImage = cgBitmap ? cgBitmap->getCGImage () : 0;
+	if (nsView)
+	{
+		NSPoint bitmapOffset = { offset.x, offset.y };
+		NSPasteboard* nsPasteboard = [NSPasteboard pasteboardWithName:NSDragPboard];
+		NSImage* nsImage = nil;
+		NSEvent* event = [NSApp currentEvent];
+		if (event == 0 || [event type] != NSLeftMouseDown)
+			return 0;
+		NSPoint nsLocation = [event locationInWindow];
+		if (cgImage)
+		{
+			nsImage = [imageFromCGImageRef (cgImage) autorelease];
+			nsLocation = [nsView convertPoint:nsLocation fromView:nil];
+			bitmapOffset.x += nsLocation.x;
+			bitmapOffset.y += nsLocation.y + [nsImage size].height;
+		}
+		else
+		{
+			nsImage = [[[NSImage alloc] initWithSize:NSMakeSize (fabs (bitmapOffset.x)*2, fabs (bitmapOffset.y)*2)] autorelease];
+			bitmapOffset.x += nsLocation.x;
+			bitmapOffset.y += nsLocation.y;
+		}
+
+		
+		CDropSource::Type type = source->getEntryType (0);
+		switch (type)
+		{
+			case CDropSource::kFile:
+			{
+				NSMutableArray* files = [[[NSMutableArray alloc] init] autorelease];
+				// we allow more than one file
+				for (long i = 0; i < source->getCount (); i++)
+				{
+					const void* buffer = 0;
+					long bufferSize = source->getEntry (i, buffer, type);
+					if (type == CDropSource::kFile && bufferSize > 0 && ((const char*)buffer)[bufferSize-1] == 0)
+					{
+						[files addObject:[NSString stringWithCString:(const char*)buffer encoding:NSUTF8StringEncoding]];
+					}
+				}
+				[nsPasteboard declareTypes:[NSArray arrayWithObject:NSFilenamesPboardType] owner:nil];
+				[nsPasteboard setPropertyList:files forType:NSFilenamesPboardType];
+				break;
+			}
+			case CDropSource::kText:
+			{
+				const void* buffer = 0;
+				long bufferSize = source->getEntry (0, buffer, type);
+				if (bufferSize > 0 && ((const char*)buffer)[bufferSize-1] == 0)
+				{
+					[nsPasteboard declareTypes:[NSArray arrayWithObject:NSStringPboardType] owner:nil];
+					[nsPasteboard setString:[NSString stringWithCString:(const char*)buffer encoding:NSUTF8StringEncoding] forType:NSStringPboardType];
+				}
+				break;
+			}
+			case CDropSource::kBinary:
+			{
+				const void* buffer = 0;
+				long bufferSize = source->getEntry (0, buffer, type);
+				if (bufferSize > 0)
+				{
+					[nsPasteboard declareTypes:[NSArray arrayWithObject:@"net.sourceforge.vstgui.binary.drag"] owner:nil];
+					[nsPasteboard setData:[NSData dataWithBytes:buffer length:bufferSize] forType:@"net.sourceforge.vstgui.binary.drag"];
+				}
+				break;
+			}
+		}
+
+		[nsView dragImage:nsImage at:bitmapOffset offset:NSMakeSize (0, 0) event:event pasteboard:nsPasteboard source:nsView slideBack:YES];
+		return lastDragOperationResult;
+	}
+	return 0;
 }
 
 //-----------------------------------------------------------------------------

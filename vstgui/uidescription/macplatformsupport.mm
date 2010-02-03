@@ -42,6 +42,7 @@
 #include "../lib/platform/mac/cocoa/nsviewframe.h"
 #include "../lib/platform/mac/cocoa/cocoahelpers.h"
 #include "../lib/platform/mac/cgbitmap.h"
+#include "../lib/platform/mac/macglobals.h"
 #include <Cocoa/Cocoa.h>
 
 using namespace VSTGUI;
@@ -56,13 +57,6 @@ using namespace VSTGUI;
 	PlatformWindow* platformWindow;
 }
 - (id) initWithDelegate:(IPlatformWindowDelegate*) delegate platformWindow: (PlatformWindow*) platformWindow;
-@end
-
-//-----------------------------------------------------------------------------
-@interface VSTGUI_CocoaDraggingSource : NSObject {
-	BOOL localOnly;
-}
-- (void) setLocalOnly:(BOOL)flag;
 @end
 
 //-----------------------------------------------------------------------------
@@ -205,79 +199,39 @@ void CocoaWindow::stopModal ()
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
-bool PlatformUtilities::startDrag (CFrame* frame, const CPoint& location, const char* string, CBitmap* dragBitmap, bool localOnly)
+void PlatformUtilities::gatherResourceBitmaps (std::list<std::string>& filenames)
 {
-	CGImageRef cgImage = 0;
-	if (!frame->getPlatformFrame ())
-		return false;
-
-	NSViewFrame* nsViewFrame = dynamic_cast<NSViewFrame*> (frame->getPlatformFrame ());
-	NSView* nsView = nsViewFrame ? nsViewFrame->getPlatformControl () : 0;
-	CGBitmap* cgBitmap = dragBitmap ? dynamic_cast<CGBitmap*> (dragBitmap->getPlatformBitmap ()) : 0;
-	cgImage = cgBitmap ? cgBitmap->getCGImage () : 0;
-	if (nsView)
+	CFBundleRef bundle = getBundleRef ();
+	if (bundle)
 	{
-		NSPoint bitmapOffset = { location.x, location.y };
-		NSPasteboard* nsPasteboard = [NSPasteboard pasteboardWithName:NSDragPboard];
-		NSImage* nsImage = nil;
-		if (cgImage)
+		static CFStringRef bitmapTypes [] = { CFSTR("png"), CFSTR("bmp"), CFSTR("jpg"), NULL };
+		CFStringRef type = bitmapTypes[0];
+		int index = 0;
+		while (type != NULL)
 		{
-			nsImage = [imageFromCGImageRef (cgImage) autorelease];
-			bitmapOffset.y += [nsImage size].height;
+			CFArrayRef urls = CFBundleCopyResourceURLsOfType (bundle, type, NULL);
+			if (urls)
+			{
+				for (CFIndex i = 0; i < CFArrayGetCount (urls); i++)
+				{
+					CFURLRef url = (CFURLRef)CFArrayGetValueAtIndex (urls, i);
+					if (url)
+					{
+						CFStringRef str = CFURLCopyLastPathComponent (url);
+						if (str)
+						{
+							char cstr[PATH_MAX];
+							if (CFStringGetCString (str, cstr, PATH_MAX, kCFStringEncodingUTF8))
+								filenames.push_back (cstr);
+							CFRelease (str);
+						}
+					}
+				}
+				CFRelease (urls);
+			}
+			type = bitmapTypes[++index];
 		}
-		else
-		{
-			nsImage = [[[NSImage alloc] initWithSize:NSMakeSize (2, 2)] autorelease];
-		}
-		VSTGUI_CocoaDraggingSource* sourceObj = [[VSTGUI_CocoaDraggingSource alloc] init];
-		[sourceObj setLocalOnly:localOnly];
-		
-		[nsPasteboard declareTypes:[NSArray arrayWithObject:NSStringPboardType] owner:sourceObj];
-		[nsPasteboard setString:[NSString stringWithCString:string encoding:NSUTF8StringEncoding] forType:NSStringPboardType];
-		
-		[nsView dragImage:nsImage at:bitmapOffset offset:NSMakeSize (0, 0) event:[NSApp currentEvent] pasteboard:nsPasteboard source:sourceObj slideBack:YES];
-		[sourceObj release];
-		return true;
 	}
-	return false;
-}
-
-//-----------------------------------------------------------------------------
-bool PlatformUtilities::startDrag (CFrame* frame, const CPoint& location, const void* data, unsigned int dataSize, CBitmap* dragBitmap, bool localOnly)
-{
-	CGImageRef cgImage = 0;
-	if (!frame->getPlatformFrame ())
-		return false;
-
-	NSViewFrame* nsViewFrame = dynamic_cast<NSViewFrame*> (frame->getPlatformFrame ());
-	NSView* nsView = nsViewFrame ? nsViewFrame->getPlatformControl () : 0;
-	CGBitmap* cgBitmap = dragBitmap ? dynamic_cast<CGBitmap*> (dragBitmap->getPlatformBitmap ()) : 0;
-	cgImage = cgBitmap ? cgBitmap->getCGImage () : 0;
-	if (nsView)
-	{
-		NSPoint bitmapOffset = { location.x, location.y };
-		NSPasteboard* nsPasteboard = [NSPasteboard pasteboardWithName:NSDragPboard];
-		NSImage* nsImage = nil;
-		if (cgImage)
-		{
-			nsImage = [imageFromCGImageRef (cgImage) autorelease];
-			bitmapOffset.y += [nsImage size].height;
-		}
-		else
-		{
-			nsImage = [[[NSImage alloc] initWithSize:NSMakeSize (2, 2)] autorelease];
-		}
-		VSTGUI_CocoaDraggingSource* sourceObj = [[VSTGUI_CocoaDraggingSource alloc] init];
-		[sourceObj setLocalOnly:localOnly];
-		
-		[nsPasteboard declareTypes:[NSArray arrayWithObject:@"net.sourceforge.vstgui.binary.drag"] owner:sourceObj];
-		[nsPasteboard setData:[NSData dataWithBytesNoCopy:(void*)data length:dataSize freeWhenDone:NO] forType:@"net.sourceforge.vstgui.binary.drag"];
-		
-		[nsView dragImage:nsImage at:bitmapOffset offset:NSMakeSize (0, 0) event:[NSApp currentEvent] pasteboard:nsPasteboard source:sourceObj slideBack:YES];
-		[sourceObj release];
-		return true;
-	}
-	return false;
 }
 
 #if !NATIVE_COLOR_CHOOSER
@@ -408,43 +362,6 @@ void PlatformUtilities::colorChooser (const CColor* oldColor, IPlatformColorChan
 	r.size.height = p.y;
 	r = [sender frameRectForContentRect:r];
 	return r.size;
-}
-
-@end
-
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
-@implementation VSTGUI_CocoaDraggingSource
-//-----------------------------------------------------------------------------
-- (id) init
-{
-	self = [super init];
-	if (self)
-	{
-		localOnly = NO;
-	}
-	return self;
-}
-
-//-----------------------------------------------------------------------------
-- (void) setLocalOnly:(BOOL)flag
-{
-	localOnly = flag;
-}
-
-//-----------------------------------------------------------------------------
-- (NSDragOperation)draggingSourceOperationMaskForLocal:(BOOL)flag
-{
-	if (localOnly && !flag)
-		return NSDragOperationNone;
-	return NSDragOperationGeneric;
-}
-
-//-----------------------------------------------------------------------------
-- (BOOL)ignoreModifierKeysWhileDragging
-{
-	return YES;
 }
 
 @end

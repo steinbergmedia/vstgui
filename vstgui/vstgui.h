@@ -40,6 +40,7 @@
 #include "lib/ccolor.h"
 #include "lib/cdatabrowser.h"
 #include "lib/cdrawcontext.h"
+#include "lib/cdropsource.h"
 #include "lib/cfileselector.h"
 #include "lib/cfont.h"
 #include "lib/cframe.h"

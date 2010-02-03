@@ -36,6 +36,7 @@
 #include "cvstguitimer.h"
 #include "cdrawcontext.h"
 #include "cframe.h"
+#include <cmath>
 
 /// @cond ignore
 namespace VSTGUI {
@@ -101,8 +102,8 @@ void CScrollContainer::setContainerSize (const CRect& cs)
 //-----------------------------------------------------------------------------
 void CScrollContainer::setScrollOffset (CPoint newOffset, bool redraw)
 {
-	newOffset.x = round (newOffset.x);
-	newOffset.y = round (newOffset.y);
+	newOffset.x = floor (newOffset.x + 0.5);
+	newOffset.y = floor (newOffset.y + 0.5);
 	if (newOffset.x < containerSize.left - containerSize.width ())
 		newOffset.x = containerSize.left - containerSize.width ();
 	if (newOffset.x > containerSize.right)

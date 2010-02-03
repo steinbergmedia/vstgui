@@ -378,6 +378,26 @@ long CView::onKeyUp (VstKeyCode& keyCode)
 
 //------------------------------------------------------------------------------
 /**
+ * a drag can only be started from within onMouseDown
+ * @param source source drop
+ * @param offset bitmap offset
+ * @param dragBitmap bitmap to drag
+ * @return 0 on failure, negative if source was moved and positive if source was copied
+ */
+long CView::doDrag (CDropSource* source, const CPoint& offset, CBitmap* dragBitmap)
+{
+	CFrame* frame = getFrame ();
+	if (frame)
+	{
+		CPoint off (offset);
+		localToFrame (off);
+		return frame->doDrag (source, off, dragBitmap);
+	}
+	return 0;
+}
+
+//------------------------------------------------------------------------------
+/**
  * @param sender message sender
  * @param message message text
  * @return message handled or not. See #CMessageResult

@@ -143,6 +143,17 @@ HMENU Win32OptionMenu::createMenu (COptionMenu* _menu, long& offsetIdx)
 
 	bool multipleCheck = _menu->getStyle () & (kMultipleCheckStyle & ~kCheckStyle);
 
+#if 0
+	if (!multipleCheck && !(_menu->getStyle () & kCheckStyle))
+	{
+		MENUINFO mi = {0};
+		mi.cbSize = sizeof (MENUINFO);
+		mi.fMask = MIM_STYLE;
+		mi.dwStyle = MNS_NOCHECK;
+		SetMenuInfo (menu, &mi);
+	}
+#endif
+
 	int flags = 0;
 	long idxSubmenu = 0;
 	long offset = offsetIdx;
@@ -205,7 +216,7 @@ HMENU Win32OptionMenu::createMenu (COptionMenu* _menu, long& offsetIdx)
 					flags |= MF_DISABLED;
 				if (multipleCheck && item->isChecked ())
 					flags |= MF_CHECKED;
-				if (_menu->getStyle () & kCheckStyle && inc == _menu->getCurrentIndex () && item->isChecked ())
+				if (_menu->getStyle () & kCheckStyle && inc == _menu->getCurrentIndex ())
 					flags |= MF_CHECKED;
 				if (!(flags & MF_CHECKED))
 					flags |= MF_UNCHECKED;

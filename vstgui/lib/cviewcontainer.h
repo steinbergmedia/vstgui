@@ -121,6 +121,7 @@ public:
 	virtual void setViewSize (CRect &rect, bool invalid = true);
 	virtual void parentSizeChanged ();
 	virtual CRect getVisibleSize (const CRect rect) const;
+	virtual bool sizeToFit ();
 
 	virtual bool removed (CView* parent);
 	virtual bool attached (CView* parent);

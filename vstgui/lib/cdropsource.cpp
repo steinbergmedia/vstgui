@@ -32,45 +32,91 @@
 // OF THE POSSIBILITY OF SUCH DAMAGE.
 //-----------------------------------------------------------------------------
 
-#ifndef __cmoviebutton__
-#define __cmoviebutton__
-
-#include "ccontrol.h"
+#include "cdropsource.h"
 
 namespace VSTGUI {
 
 //-----------------------------------------------------------------------------
-// CMovieButton Declaration
-//! @brief a bi-states button with 2 subbitmaps
-/// @ingroup controls
-//-----------------------------------------------------------------------------
-class CMovieButton : public CControl, public IMultiBitmapControl
+CDropSource::CDropSource ()
 {
-public:
-	CMovieButton (const CRect& size, CControlListener* listener, long tag, CBitmap* background, const CPoint& offset = CPoint (0, 0));
-	CMovieButton (const CRect& size, CControlListener* listener, long tag, CCoord heightOfOneImage, CBitmap* background, const CPoint& offset = CPoint (0, 0));
-	CMovieButton (const CMovieButton& movieButton);
+}
 
-	virtual void draw (CDrawContext*);
+//-----------------------------------------------------------------------------
+CDropSource::CDropSource (const void* buffer, long bufferSize, Type type)
+{
+	add (buffer, bufferSize, type);
+}
 
-	virtual CMouseEventResult onMouseDown (CPoint& where, const long& buttons);
-	virtual CMouseEventResult onMouseUp (CPoint& where, const long& buttons);
-	virtual CMouseEventResult onMouseMoved (CPoint& where, const long& buttons);
-	virtual long onKeyDown (VstKeyCode& keyCode);
-	virtual bool sizeToFit ();
+//-----------------------------------------------------------------------------
+CDropSource::~CDropSource ()
+{
+	for (long i = getCount ()-1; i >= 0; i--)
+	{
+		CDropEntry* entry = entries[i];
+		free (entry->buffer);
+		delete entry;
+	}
+}
 
-	void setNumSubPixmaps (long numSubPixmaps) { IMultiBitmapControl::setNumSubPixmaps (numSubPixmaps); invalid (); }
+//-----------------------------------------------------------------------------
+bool CDropSource::add (const void* buffer, long bufferSize, Type type)
+{
+	if (bufferSize > 0)
+	{
+		CDropEntry* entry = new CDropEntry;
+		entry->buffer = malloc (bufferSize);
+		if (entry->buffer)
+		{
+			memcpy (entry->buffer, buffer, bufferSize);
+			entry->bufferSize = bufferSize;
+			entry->type = type;
+			entries.push_back (entry);
+			return true;
+		}
+		delete entry;
+	}
+	return false;
+}
 
-	CLASS_METHODS(CMovieButton, CControl)
-protected:
-	~CMovieButton ();	
-	CPoint   offset;
-	float    buttonState;
+//-----------------------------------------------------------------------------
+long CDropSource::getCount () const
+{
+	return entries.size ();
+}
 
-private:
-	float    fEntryState;
-};
+//-----------------------------------------------------------------------------
+long CDropSource::getEntrySize (long index) const
+{
+	CDropEntry* entry = index < getCount () ? entries[index] : 0;
+	if (entry)
+	{
+		return entry->bufferSize;
+	}
+	return -1;
+}
+
+//-----------------------------------------------------------------------------
+CDropSource::Type CDropSource::getEntryType (long index) const
+{
+	CDropEntry* entry = index < getCount () ? entries[index] : 0;
+	if (entry)
+	{
+		return entry->type;
+	}
+	return kError;
+}
+
+//-----------------------------------------------------------------------------
+long CDropSource::getEntry (long index, const void*& buffer, Type& type) const
+{
+	CDropEntry* entry = index < getCount () ? entries[index] : 0;
+	if (entry)
+	{
+		buffer = entry->buffer;
+		type = entry->type;
+		return entry->bufferSize;
+	}
+	return -1;
+}
 
 } // namespace
-
-#endif

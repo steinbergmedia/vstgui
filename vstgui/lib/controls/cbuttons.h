@@ -64,6 +64,7 @@ public:
 	virtual void draw (CDrawContext*);
 	virtual CMouseEventResult onMouseDown (CPoint& where, const long& buttons);
 	virtual long onKeyDown (VstKeyCode& keyCode);
+	virtual bool sizeToFit ();
 
 	CLASS_METHODS(COnOffButton, CControl)
 protected:
@@ -156,6 +157,8 @@ public:
 	virtual CMouseEventResult onMouseMoved (CPoint& where, const long& buttons);
 	virtual long onKeyDown (VstKeyCode& keyCode);
 	virtual long onKeyUp (VstKeyCode& keyCode);
+
+	virtual bool sizeToFit ();
 
 	void setNumSubPixmaps (long numSubPixmaps) { IMultiBitmapControl::setNumSubPixmaps (numSubPixmaps); invalid (); }
 
