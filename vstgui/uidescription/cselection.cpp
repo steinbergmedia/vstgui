@@ -225,7 +225,7 @@ void CSelection::moveBy (const CPoint& p)
 }
 
 //----------------------------------------------------------------------------------------------------
-bool storeAttributesForView (OutputStream& stream, ViewFactory* viewFactory, IUIDescription* uiDescription, CView* view)
+bool CSelection::storeAttributesForView (OutputStream& stream, ViewFactory* viewFactory, IUIDescription* uiDescription, CView* view)
 {
 	UIAttributes attr;
 	if (viewFactory->getAttributesForView (view, uiDescription, attr))
@@ -251,14 +251,18 @@ bool storeAttributesForView (OutputStream& stream, ViewFactory* viewFactory, IUI
 }
 
 //----------------------------------------------------------------------------------------------------
-static CView* createView (InputStream& stream, ViewFactory* viewFactory, IUIDescription* uiDescription)
+CView* CSelection::createView (InputStream& stream, ViewFactory* viewFactory, IUIDescription* uiDescription)
 {
 	int identifier;
 	if (!(stream >> identifier)) return 0;
 	if (identifier != 'view') return 0;
 	UIAttributes attr;
 	if (!attr.restore (stream)) return 0;
-	CView* view = viewFactory->createView (attr, uiDescription);
+	CView* view = 0; 
+	if (uiDescription->getController ())
+		view = uiDescription->getController ()->createView (attr, uiDescription);
+	if (view == 0)
+		view = viewFactory->createView (attr, uiDescription);
 	int subViews;
 	if (!(stream >> subViews)) return view;
 	CViewContainer* container = view ? dynamic_cast<CViewContainer*> (view) : 0;
@@ -311,7 +315,10 @@ bool CSelection::restore (InputStream& stream, ViewFactory* viewFactory, IUIDesc
 			{
 				CView* view = createView (stream, viewFactory, uiDescription);
 				if (view)
+				{
 					add (view);
+					view->forget ();
+				}
 			}
 			else
 				return false;

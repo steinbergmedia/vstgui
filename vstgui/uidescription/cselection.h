@@ -96,6 +96,8 @@ public:
 	bool store (OutputStream& stream, ViewFactory* viewFactory, IUIDescription* uiDescription);
 	bool restore (InputStream& str, ViewFactory* viewFactory, IUIDescription* uiDescription);
 protected:
+	static bool storeAttributesForView (OutputStream& stream, ViewFactory* viewFactory, IUIDescription* uiDescription, CView* view);
+	static CView* createView (InputStream& stream, ViewFactory* viewFactory, IUIDescription* uiDescription);
 
 	std::list<CBaseObject*> dependencies;
 	int style;

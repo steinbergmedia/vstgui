@@ -125,6 +125,21 @@ long COnOffButton::onKeyDown (VstKeyCode& keyCode)
 }
 
 //------------------------------------------------------------------------
+bool COnOffButton::sizeToFit ()
+{
+	if (pBackground)
+	{
+		CRect vs (getViewSize ());
+		vs.setWidth (pBackground->getWidth ());
+		vs.setHeight (pBackground->getHeight () / 2.);
+		setViewSize (vs, true);
+		setMouseableArea (vs);
+		return true;
+	}
+	return false;
+}
+
+//------------------------------------------------------------------------
 // CKickButton
 //------------------------------------------------------------------------
 /*! @class CKickButton
@@ -267,6 +282,20 @@ long CKickButton::onKeyUp (VstKeyCode& keyCode)
 	return -1;
 }
 
+//------------------------------------------------------------------------
+bool CKickButton::sizeToFit ()
+{
+	if (pBackground)
+	{
+		CRect vs (getViewSize ());
+		vs.setHeight (heightOfOneImage);
+		vs.setWidth (pBackground->getWidth ());
+		setViewSize (vs, true);
+		setMouseableArea (vs);
+		return true;
+	}
+	return false;
+}
 
 //------------------------------------------------------------------------
 // CCheckBox

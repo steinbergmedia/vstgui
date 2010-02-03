@@ -1,6 +1,6 @@
 //-----------------------------------------------------------------------------
 // VST Plug-Ins SDK
-// VSTGUI: Graphical User Interface Framework not only for VST plugins : 
+// VSTGUI: Graphical User Interface Framework for VST plugins : 
 //
 // Version 4.0
 //
@@ -32,72 +32,53 @@
 // OF THE POSSIBILITY OF SUCH DAMAGE.
 //-----------------------------------------------------------------------------
 
-#ifndef __platformsupport__
-#define __platformsupport__
+#ifndef __cdropsource__
+#define __cdropsource__
 
-#include "../lib/crect.h"
-#include "uidescription.h"
-#include <string>
-#include <list>
-
-/// @cond ignore
+#include "vstguibase.h"
+#include <vector>
 
 namespace VSTGUI {
-class CBitmap;
-class CFrame;
-class PlatformWindow;
 
 //-----------------------------------------------------------------------------
-class IPlatformWindowDelegate
-{
-public:
-	virtual void windowSizeChanged (const CRect& newSize, PlatformWindow* platformWindow) = 0;
-	virtual void windowClosed (PlatformWindow* platformWindow) = 0;
-	virtual void checkWindowSizeConstraints (CPoint& size, PlatformWindow* platformWindow) = 0;
-};
-
+// CDropSource Declaration
+//! @brief drop source
 //-----------------------------------------------------------------------------
-class PlatformWindow : public CBaseObject
+class CDropSource : public CBaseObject
 {
 public:
-	enum WindowType {
-		kPanelType,
-		kWindowType
+	enum Type {
+		kFile = 0,	///< File type (UTF-8 C-String, must be null terminated)
+		kText,		///< Text type (UTF-8 C-String, must be null terminated)
+		kBinary,	///< Binary type
+		
+		kError = -1,
 	};
-	enum WindowStyleFlags {
-		kClosable = 1 << 0,
-		kResizable  = 1 << 1,
+
+	CDropSource ();
+	CDropSource (const void* buffer, long bufferSize, Type type);
+	~CDropSource ();
+	
+	bool add (const void* buffer, long bufferSize, Type type);
+
+	long getCount () const;
+	long getEntrySize (long index) const; 
+	Type getEntryType (long index) const; 
+	long getEntry (long index, const void*& buffer, Type& type) const;
+	
+	//-------------------------------------------
+	CLASS_METHODS_NOCOPY(CDropSource, CBaseObject)
+protected:
+	/// @cond ignore
+	struct CDropEntry {
+		void* buffer;
+		long bufferSize;
+		Type type;
 	};
-	
-	static PlatformWindow* create (const CRect& size, const char* title = 0, WindowType type = kPanelType, long styleFlags = 0, IPlatformWindowDelegate* delegate = 0, void* parentWindow = 0);
-	
-	virtual void* getPlatformHandle () const = 0;
-	virtual void show () = 0;
-	virtual void center () = 0;
-	virtual CRect getSize () = 0;
-	virtual void setSize (const CRect& size) = 0;
-	
-	virtual void runModal () = 0;
-	virtual void stopModal () = 0;
-};
-
-//-----------------------------------------------------------------------------
-class IPlatformColorChangeCallback
-{
-public:
-	virtual void colorChanged (const CColor& color) = 0;
-};
-
-//-----------------------------------------------------------------------------
-class PlatformUtilities
-{
-public:
-	static void colorChooser (const CColor* oldColor, IPlatformColorChangeCallback* callback);
-	static void gatherResourceBitmaps (std::list<std::string>& filenames);
+	/// @endcond
+	std::vector<CDropEntry*> entries;
 };
 
 } // namespace
 
-/// @endcond ignore
-
-#endif
+#endif // __cdropsource__

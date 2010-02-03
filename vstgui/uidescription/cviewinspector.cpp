@@ -1734,7 +1734,7 @@ void CViewInspector::show ()
 		tabView->addTab (controlTagBrowser, new InspectorTabButton (tabButtonSize, "Tags", 1));
 		tabView->alignTabs ();
 		tabView->setAutosizeFlags (kAutosizeAll);
-		tabView->setBackgroundColor (uidPanelBackgroundColor);
+		tabView->setBackgroundColor (kTransparentCColor);
 
 		size.offset (-kMargin, 0);
 		size.right += kMargin*2;

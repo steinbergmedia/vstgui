@@ -99,7 +99,10 @@ void CVuMeter::setDirty (const bool val)
 bool CVuMeter::attached (CView *parent)
 {
 	if (pOScreen)
+	{
 		pOScreen->forget ();
+		pOScreen = 0;
+	}
 
 	if (bUseOffscreen)
 	{
@@ -130,6 +133,21 @@ void CVuMeter::setViewSize (CRect& newSize, bool invalid)
 		rectOn  (size.left, size.top, size.right, size.bottom);
 		rectOff (size.left, size.top, size.right, size.bottom);
 	}
+}
+
+//------------------------------------------------------------------------
+bool CVuMeter::sizeToFit ()
+{
+	if (pBackground)
+	{
+		CRect vs (getViewSize ());
+		vs.setWidth (pBackground->getWidth ());
+		vs.setHeight (pBackground->getHeight ());
+		setViewSize (vs);
+		setMouseableArea (vs);
+		return true;
+	}
+	return false;
 }
 
 //------------------------------------------------------------------------

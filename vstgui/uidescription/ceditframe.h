@@ -126,6 +126,7 @@ protected:
 	void embedSelectedViewsInto (const char* containerViewName);
 	void invalidSelection ();
 	void deleteSelectedViews ();
+	void updateResourceBitmaps ();
 	void performUndo ();
 	void performRedo ();
 	bool canUndo ();

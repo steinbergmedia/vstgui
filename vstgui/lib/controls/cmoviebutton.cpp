@@ -165,4 +165,19 @@ long CMovieButton::onKeyDown (VstKeyCode& keyCode)
 	return -1;
 }
 
+//-----------------------------------------------------------------------------------------------
+bool CMovieButton::sizeToFit ()
+{
+	if (pBackground)
+	{
+		CRect vs (getViewSize ());
+		vs.setWidth (pBackground->getWidth ());
+		vs.setHeight (getHeightOfOneImage ());
+		setViewSize (vs);
+		setMouseableArea (vs);
+		return true;
+	}
+	return false;
+}
+
 } // namespace

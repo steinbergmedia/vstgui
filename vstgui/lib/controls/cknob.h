@@ -85,6 +85,7 @@ public:
 	virtual bool onWheel (const CPoint& where, const float& distance, const long& buttons);
 	virtual long onKeyDown (VstKeyCode& keyCode);
 	virtual void setViewSize (CRect &rect, bool invalid = true);
+	virtual bool sizeToFit ();
 
 	virtual CMouseEventResult onMouseDown (CPoint& where, const long& buttons);
 	virtual CMouseEventResult onMouseUp (CPoint& where, const long& buttons);
@@ -141,6 +142,7 @@ public:
 	// overrides
 	virtual bool isDirty () const;
 	virtual void draw (CDrawContext* pContext);
+	virtual bool sizeToFit ();
 	void setHeightOfOneImage (const CCoord& height);
 	void setBackground (CBitmap *background);
 	void setNumSubPixmaps (long numSubPixmaps) { IMultiBitmapControl::setNumSubPixmaps (numSubPixmaps); invalid (); }

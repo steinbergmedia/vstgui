@@ -1,3 +1,8 @@
+2010-02-03 arne
+
+	* implementation for sizeToFit() for all controls
+	* new CView::doDrag() implementation for starting a drag
+
 2010-01-24 arne
 
 	* added CControl::setValueNormalized() and CControl::getValueNormalized()

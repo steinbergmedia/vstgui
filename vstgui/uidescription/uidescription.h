@@ -99,6 +99,8 @@ public:
 	CView* createView (const char* name, IController* controller);
 	const UIAttributes* getViewAttributes (const char* name);
 
+	void setController (IController* controller);
+
 	CBitmap* getBitmap (const char* name);
 	CFontRef getFont (const char* name);
 	bool getColor (const char* name, CColor& color);

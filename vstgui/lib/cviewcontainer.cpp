@@ -236,6 +236,37 @@ CRect CViewContainer::getVisibleSize (const CRect rect) const
 }
 
 //-----------------------------------------------------------------------------
+bool CViewContainer::sizeToFit ()
+{
+	bool treatAsColumn = (getAutosizeFlags () & kAutosizeColumn) != 0;
+	bool treatAsRow = (getAutosizeFlags () & kAutosizeRow) != 0;
+	if (treatAsColumn || treatAsRow)
+		return false;
+
+	CRect bounds (50000, 50000, -50000, -50000);
+	FOREACHSUBVIEW
+		CRect vs (pV->getViewSize ());
+		if (vs.left < bounds.left)
+			bounds.left = vs.left;
+		if (vs.right > bounds.right)
+			bounds.right = vs.right;
+		if (vs.top < bounds.top)
+			bounds.top = vs.top;
+		if (vs.bottom > bounds.bottom)
+			bounds.bottom = vs.bottom;
+	ENDFOREACHSUBVIEW
+	
+	CRect vs (getViewSize ());
+	vs.right = vs.left + bounds.right + bounds.left;
+	vs.bottom = vs.top + bounds.bottom + bounds.top;
+	
+	setViewSize (vs);
+	setMouseableArea (vs);
+
+	return true;
+}
+
+//-----------------------------------------------------------------------------
 /**
  * @param color the new background color of the container
  */

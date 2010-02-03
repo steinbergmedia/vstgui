@@ -42,42 +42,39 @@
 
 namespace VSTGUI {
 
+FORMATETC WinDragContainer::formatTEXTDrop		= {CF_UNICODETEXT,0, DVASPECT_CONTENT, -1, TYMED_HGLOBAL};
+FORMATETC WinDragContainer::formatHDrop			= {CF_HDROP, 0, DVASPECT_CONTENT, -1, TYMED_HGLOBAL};
+FORMATETC WinDragContainer::formatBinaryDrop	= {CF_PRIVATEFIRST, 0, DVASPECT_CONTENT, -1, TYMED_HGLOBAL};
+
 //-----------------------------------------------------------------------------
 WinDragContainer::WinDragContainer (IDataObject* platformDrag)
 : platformDrag (platformDrag)
 , nbItems (0)
 , iterator (0)
 , lastItem (0)
+, isFileDrag (false)
 {
 	if (!platformDrag)
 		return;
 
-	IDataObject* dataObject = platformDrag;
-	STGMEDIUM medium;
-	FORMATETC formatTEXTDrop = {
-		CF_UNICODETEXT,
-		0, 
-		DVASPECT_CONTENT, 
-		-1, 
-		TYMED_HGLOBAL
-	};
-	
-	FORMATETC formatHDrop    = {CF_HDROP, 0, DVASPECT_CONTENT, -1, TYMED_HGLOBAL};
-
-	// todo : Support CF_UNICODETEXT
-
-	long type = 0; // 0 = file, 1 = text
-
-	HRESULT hr = dataObject->GetData (&formatTEXTDrop, &medium);
+	HRESULT hr = platformDrag->QueryGetData (&formatTEXTDrop);
 	if (hr != S_OK)
-		hr = dataObject->GetData (&formatHDrop, &medium);
-	else
-		type = 1;
-	
-	if (type == 0)
-		nbItems = (long)DragQueryFile ((HDROP)medium.hGlobal, 0xFFFFFFFFL, 0, 0);
+	{
+		STGMEDIUM medium = {0};
+		hr = platformDrag->GetData (&formatHDrop, &medium);
+		if (hr == S_OK)
+		{
+			nbItems = (long)DragQueryFile ((HDROP)medium.hGlobal, 0xFFFFFFFFL, 0, 0);
+			isFileDrag = true;
+		}
+		else if (platformDrag->QueryGetData (&formatBinaryDrop) == S_OK)
+		{
+			nbItems = 1;
+		}
+	}
 	else
 		nbItems = 1;
+	
 }
 
 //-----------------------------------------------------------------------------
@@ -93,32 +90,22 @@ WinDragContainer::~WinDragContainer ()
 //-----------------------------------------------------------------------------
 long WinDragContainer::getType (long idx) const
 {
-	if (platformDrag == 0)
+	if (platformDrag == 0 || nbItems < idx)
 		return kError;
 
-	IDataObject* dataObject = platformDrag;
-	STGMEDIUM medium;
-	FORMATETC formatTEXTDrop = {
-		CF_UNICODETEXT,
-		0, 
-		DVASPECT_CONTENT, 
-		-1, 
-		TYMED_HGLOBAL
-	};
-	FORMATETC formatHDrop    = {CF_HDROP, 0, DVASPECT_CONTENT, -1, TYMED_HGLOBAL};
+	if (idx > 0 && !isFileDrag)
+		return kError;
 
-	long type = 0; // 0 = file, 1 = text
-
-	HRESULT hr = dataObject->GetData (&formatTEXTDrop, &medium);
-	if (hr != S_OK)
-		hr = dataObject->GetData (&formatHDrop, &medium);
-	else
-		type = 1;
-	if (type == 0)
-		return kFile;
-	else
+	HRESULT hr = platformDrag->QueryGetData (&formatTEXTDrop);
+	if (hr == S_OK)
 		return kText;
-
+	STGMEDIUM medium;
+	hr = platformDrag->GetData (&formatHDrop, &medium);
+	if (hr == S_OK)
+		return kFile;
+	hr = platformDrag->QueryGetData (&formatBinaryDrop);
+	if (hr == S_OK)
+		return kUnknown;
 	return kUnknown;
 }
 
@@ -145,31 +132,29 @@ void* WinDragContainer::next (long& size, long& type)
 	size = 0;
 	type = kUnknown;
 
-	IDataObject* dataObject = platformDrag;
 	void* hDrop = 0;
 	STGMEDIUM medium;
-	FORMATETC formatTEXTDrop = {
-		CF_UNICODETEXT,
-		0, 
-		DVASPECT_CONTENT, 
-		-1, 
-		TYMED_HGLOBAL
-	};
-	FORMATETC formatHDrop    = {CF_HDROP, 0, DVASPECT_CONTENT, -1, TYMED_HGLOBAL};
 
-	long wintype = 0; // 0 = file, 1 = text
-
-	HRESULT hr = dataObject->GetData (&formatTEXTDrop, &medium);
-	if (hr != S_OK)
-		hr = dataObject->GetData (&formatHDrop, &medium);
+	HRESULT hr;
+	if (isFileDrag)
+		hr = platformDrag->GetData (&formatHDrop, &medium);
 	else
-		wintype = 1;
-	if (hr == S_OK)
-		hDrop = medium.hGlobal;
+	{
+		hr = platformDrag->GetData (&formatTEXTDrop, &medium);
+		if (hr == S_OK)
+		{
+			hDrop = medium.hGlobal;
+			type = kUnicodeText;
+		}
+		else if (platformDrag->GetData (&formatBinaryDrop, &medium) == S_OK)
+		{
+			hDrop = medium.hGlobal;
+		}
+	}
 
 	if (hDrop)
 	{
-		if (wintype == 0)
+		if (isFileDrag)
 		{
 			TCHAR fileDropped[1024];
 
@@ -193,11 +178,19 @@ void* WinDragContainer::next (long& size, long& type)
 			long dataSize = (long)GlobalSize (medium.hGlobal);
 			if (data && dataSize)
 			{
-				UTF8StringHelper wideString ((const WCHAR*)data);
-				size = strlen (wideString.getUTF8String ());
-				lastItem = malloc (size+1);
-				strcpy ((char*)lastItem, wideString.getUTF8String ());
-				type = kUnicodeText;
+				if (type == kUnicodeText)
+				{
+					UTF8StringHelper wideString ((const WCHAR*)data);
+					size = strlen (wideString.getUTF8String ());
+					lastItem = malloc (size+1);
+					strcpy ((char*)lastItem, wideString.getUTF8String ());
+				}
+				else
+				{
+					lastItem = malloc (dataSize);
+					memcpy (lastItem, data, dataSize);
+					size = dataSize;
+				}
 			}
 
 			GlobalUnlock (medium.hGlobal);

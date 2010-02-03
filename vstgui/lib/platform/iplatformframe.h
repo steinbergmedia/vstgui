@@ -102,6 +102,8 @@ public:
 	virtual COffscreenContext* createOffscreenContext (CCoord width, CCoord height) = 0; ///< create an offscreen draw device
 	virtual CGraphicsPath* createGraphicsPath () = 0; ///< create a platform graphics path
 
+	virtual long doDrag (CDropSource* source, const CPoint& offset, CBitmap* dragBitmap) = 0; ///< start a drag operation
+
 //-----------------------------------------------------------------------------
 protected:
 	IPlatformFrame (IPlatformFrameCallback* frame = 0) : frame (frame) {}
