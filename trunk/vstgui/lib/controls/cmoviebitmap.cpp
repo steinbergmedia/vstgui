@@ -105,4 +105,19 @@ void CMovieBitmap::draw (CDrawContext *pContext)
 	setDirty (false);
 }
 
+//-----------------------------------------------------------------------------------------------
+bool CMovieBitmap::sizeToFit ()
+{
+	if (pBackground)
+	{
+		CRect vs (getViewSize ());
+		vs.setWidth (pBackground->getWidth ());
+		vs.setHeight (getHeightOfOneImage ());
+		setViewSize (vs);
+		setMouseableArea (vs);
+		return true;
+	}
+	return false;
+}
+
 } // namespace

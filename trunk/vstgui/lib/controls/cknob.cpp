@@ -121,6 +121,21 @@ void CKnob::setViewSize (CRect &rect, bool invalid)
 }
 
 //------------------------------------------------------------------------
+bool CKnob::sizeToFit ()
+{
+	if (pBackground)
+	{
+		CRect vs (getViewSize ());
+		vs.setWidth (pBackground->getWidth ());
+		vs.setHeight (pBackground->getHeight ());
+		setViewSize (vs);
+		setMouseableArea (vs);
+		return true;
+	}
+	return false;
+}
+
+//------------------------------------------------------------------------
 void CKnob::draw (CDrawContext *pContext)
 {
 	if (pBackground)
@@ -508,6 +523,21 @@ CAnimKnob::CAnimKnob (const CAnimKnob& v)
 //------------------------------------------------------------------------
 CAnimKnob::~CAnimKnob ()
 {}
+
+//-----------------------------------------------------------------------------------------------
+bool CAnimKnob::sizeToFit ()
+{
+	if (pBackground)
+	{
+		CRect vs (getViewSize ());
+		vs.setWidth (pBackground->getWidth ());
+		vs.setHeight (getHeightOfOneImage ());
+		setViewSize (vs);
+		setMouseableArea (vs);
+		return true;
+	}
+	return false;
+}
 
 //-----------------------------------------------------------------------------------------------
 void CAnimKnob::setHeightOfOneImage (const CCoord& height)

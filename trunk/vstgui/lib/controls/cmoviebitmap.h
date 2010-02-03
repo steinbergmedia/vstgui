@@ -52,6 +52,7 @@ public:
 	CMovieBitmap (const CMovieBitmap& movieBitmap);
 
 	virtual void draw (CDrawContext*);
+	virtual bool sizeToFit ();
 
 	void setNumSubPixmaps (long numSubPixmaps) { IMultiBitmapControl::setNumSubPixmaps (numSubPixmaps); invalid (); }
 

@@ -45,8 +45,8 @@ namespace VSTGUI {
 static CColor uidPanelBackgroundColor (kTransparentCColor);
 static CColor uidDialogBackgroundColor (kTransparentCColor);
 #elif WINDOWS
-static CColor uidPanelBackgroundColor (kBlackCColor);
-static CColor uidDialogBackgroundColor (kWhiteCColor);
+static CColor uidPanelBackgroundColor (0, 0, 0, 200);
+static CColor uidDialogBackgroundColor (kBlackCColor);
 #endif
 
 static CColor uidFocusColor (100, 100, 255, 200);

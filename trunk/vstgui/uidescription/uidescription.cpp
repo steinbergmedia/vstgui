@@ -359,6 +359,12 @@ bool UIDescription::parse ()
 }
 
 //-----------------------------------------------------------------------------
+void UIDescription::setController (IController* inController)
+{
+	controller = inController;
+}
+
+//-----------------------------------------------------------------------------
 bool UIDescription::save (const char* filename)
 {
 	nodes->getAttributes ()->setAttribute ("version", "1");

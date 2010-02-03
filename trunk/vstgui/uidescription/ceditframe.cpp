@@ -45,6 +45,7 @@
 #include "../lib/vstkeycode.h"
 #include "../lib/cfileselector.h"
 #include "../lib/cvstguitimer.h"
+#include "../lib/cdropsource.h"
 #include <map>
 #include <sstream>
 
@@ -61,6 +62,71 @@ public:
 	const char* getName () { return 0; }
 	void perform () {}
 	void undo () {}
+};
+
+//-----------------------------------------------------------------------------
+class SizeToFitOperation : public IActionOperation, protected std::list<CView*>
+{
+public:
+	SizeToFitOperation (CSelection* selection)
+	: selection (selection)
+	{
+		selection->remember ();
+		FOREACH_IN_SELECTION(selection, view)
+			push_back (view);
+			view->remember ();
+			sizes.push_back (view->getViewSize ());
+		FOREACH_IN_SELECTION_END
+	}
+	
+	~SizeToFitOperation ()
+	{
+		iterator it = begin ();
+		while (it != end ())
+		{
+			(*it)->forget ();
+			it++;
+		}
+		selection->forget ();
+	}
+
+	const char* getName () { return "size to fit"; }
+	
+	void perform ()
+	{
+		selection->empty ();
+		const_iterator it = begin ();
+		while (it != end ())
+		{
+			(*it)->invalid ();
+			(*it)->sizeToFit ();
+			(*it)->invalid ();
+			selection->add (*it);
+			it++;
+		}
+	}
+	
+	void undo ()
+	{
+		selection->empty ();
+		const_iterator it = begin ();
+		std::list<CRect>::const_iterator it2 = sizes.begin ();
+		while (it != end ())
+		{
+			(*it)->invalid ();
+			CRect r (*it2);
+			(*it)->setViewSize (r);
+			(*it)->setMouseableArea (r);
+			(*it)->invalid ();
+			selection->add (*it);
+			it++;
+			it2++;
+		}
+	}
+
+protected:
+	CSelection* selection;
+	std::list<CRect> sizes;
 };
 
 //-----------------------------------------------------------------------------
@@ -176,6 +242,7 @@ public:
 				view->setViewSize (newSize);
 				view->setMouseableArea (newSize);
 				push_back (view);
+				view->remember ();
 			}
 		FOREACH_IN_SELECTION_END
 
@@ -751,6 +818,7 @@ void CEditFrame::setEditMode (EditMode mode)
 	if (editMode == kEditMode)
 	{
 		setFocusView (0);
+		updateResourceBitmaps ();
 		inspector->show ();
 		inspector->getFrame ()->setKeyboardHook (this);
 	}
@@ -828,6 +896,7 @@ void CEditFrame::showOptionsMenu (const CPoint& where)
 		kUndoTag,
 		kRedoTag,
 		kSaveTag,
+		kSizeToFitTag,
 	};
 	
 	COptionMenu* menu = new COptionMenu ();
@@ -857,8 +926,12 @@ void CEditFrame::showOptionsMenu (const CPoint& where)
 		item->setEnabled (canRedo ());
 		
 		menu->addSeparator ();
+		int selectionCount = selection->total ();
+		item = menu->addEntry (new CMenuItem ("Size To Fit", kSizeToFitTag));
+		if (selectionCount <= 0 || selection->contains (getView (0)))
+			item->setEnabled (false);
 		item = menu->addEntry (new CMenuItem ("Delete", kDeleteSelectionTag));
-		if (selection->total () <= 0 || selection->contains (getView (0)))
+		if (selectionCount <= 0 || selection->contains (getView (0)))
 			item->setEnabled (false);
 		if (uiDescription)
 		{
@@ -878,7 +951,7 @@ void CEditFrame::showOptionsMenu (const CPoint& where)
 					it++;
 				}
 				menu->addEntry (viewMenu, "Insert Subview");
-				if (selection->total () > 0 && !selection->contains (getView (0)))
+				if (selectionCount > 0 && !selection->contains (getView (0)))
 				{
 					COptionMenu* embedViewMenu = new COptionMenu ();
 					viewNames.clear ();
@@ -909,7 +982,7 @@ void CEditFrame::showOptionsMenu (const CPoint& where)
 					menu->addEntry (templateNameMenu, "Insert Template");
 					templateNameMenu->forget ();
 				}
-				if (selection->total () == 1 && selection->first () != getView (0))
+				if (selectionCount == 1 && selection->first () != getView (0))
 					menu->addEntry (transformViewMenu, "Transform View Type");
 				viewMenu->forget ();
 				transformViewMenu->forget ();
@@ -1010,6 +1083,11 @@ void CEditFrame::showOptionsMenu (const CPoint& where)
 					}
 					break;
 				}
+				case kSizeToFitTag:
+				{
+					performAction (new SizeToFitOperation (selection));
+					break;
+				}
 				default:
 				{
 					if (editorObj)
@@ -1022,6 +1100,40 @@ void CEditFrame::showOptionsMenu (const CPoint& where)
 		}
 	}
 	menu->forget ();
+}
+
+//----------------------------------------------------------------------------------------------------
+void CEditFrame::updateResourceBitmaps ()
+{
+	std::list<std::string> resBitmapPaths;
+	PlatformUtilities::gatherResourceBitmaps (resBitmapPaths);
+	std::list<const std::string*> uiDescBitmapNames;
+	uiDescription->collectBitmapNames (uiDescBitmapNames);
+	std::list<std::string>::const_iterator it = resBitmapPaths.begin ();
+	while (it != resBitmapPaths.end ())
+	{
+		bool found = false;
+		std::list<const std::string*>::const_iterator it2 = uiDescBitmapNames.begin ();
+		while (!found && it2 != uiDescBitmapNames.end ())
+		{
+			CBitmap* bitmap = uiDescription->getBitmap ((*it2)->c_str ());
+			if (bitmap && bitmap->getResourceDescription ().type == CResourceDescription::kStringType)
+			{
+				if ((*it) == bitmap->getResourceDescription ().u.name)
+					found = true;
+			}
+			it2++;
+		}
+		if (!found)
+		{
+			std::string name (*it);
+			size_t dotPos = name.find (".");
+			if (dotPos != std::string::npos)
+				name.erase (dotPos, name.length () - dotPos);
+			uiDescription->changeBitmap (name.c_str (), (*it).c_str (), 0);
+		}
+		it++;
+	}
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -1711,7 +1823,7 @@ CBitmap* CEditFrame::createBitmapFromSelection (CSelection* selection)
 	CRect viewSize = selection->getBounds ();
 	
 	COffscreenContext* context = COffscreenContext::create (this, viewSize.getWidth (), viewSize.getHeight ());
-	context->setGlobalAlpha (0.8f);
+//	context->setGlobalAlpha (0.9f);
 
 	FOREACH_IN_SELECTION(selection, view)
 		if (!selection->containsParent (view))
@@ -1719,7 +1831,7 @@ CBitmap* CEditFrame::createBitmapFromSelection (CSelection* selection)
 			CPoint p;
 			view->getParentView ()->localToFrame (p);
 			context->setOffset (CPoint (-viewSize.left + p.x, -viewSize.top + p.y));
-			view->draw (context);
+			view->drawRect (context, view->getViewSize ());
 		}
 
 	FOREACH_IN_SELECTION_END
@@ -1738,17 +1850,20 @@ void CEditFrame::startDrag (CPoint& where)
 		return;
 
 	CRect selectionBounds = selection->getBounds ();
-	CPoint offset (where);
-	offset.x -= (where.x - selectionBounds.left);
-	offset.y -= (where.y - selectionBounds.top);
 
-	selection->setDragOffset (CPoint (where.x - offset.x, where.y - offset.y));
+	CPoint offset;
+	offset.x = (selectionBounds.left - where.x);
+	offset.y = (selectionBounds.top - where.y);
+
+	selection->setDragOffset (CPoint (offset.x, offset.y));
 
 	ViewFactory* viewFactory = dynamic_cast<ViewFactory*> (uiDescription->getViewFactory ());
 	CMemoryStream stream;
 	if (!selection->store (stream, viewFactory, uiDescription))
 		return;
-	PlatformUtilities::startDrag (this, offset, stream.getBuffer (), stream.tell (), bitmap);
+		
+	CDropSource dropSource (stream.getBuffer (), stream.tell (), CDropSource::kBinary);
+	doDrag (&dropSource, offset, bitmap);
 	if (bitmap)
 		bitmap->forget ();
 }
@@ -1758,17 +1873,21 @@ CSelection* CEditFrame::getSelectionOutOfDrag (CDragContainer* drag)
 {
 	long size, type;
 	const char* dragData = (const char*)drag->first (size, type);
-	if (type == CDragContainer::kUnknown)
+
+	IController* controller = getEditor () ? dynamic_cast<IController*> (getEditor ()) : 0;
+	if (controller)
+		uiDescription->setController (controller);
+	ViewFactory* viewFactory = dynamic_cast<ViewFactory*> (uiDescription->getViewFactory ());
+	CMemoryStream stream (dragData, size);
+	CSelection* selection = new CSelection;
+	if (selection->restore (stream, viewFactory, uiDescription))
 	{
-		ViewFactory* viewFactory = dynamic_cast<ViewFactory*> (uiDescription->getViewFactory ());
-		CMemoryStream stream (dragData, size);
-		CSelection* selection = new CSelection;
-		if (selection->restore (stream, viewFactory, uiDescription))
-		{
-			return selection;
-		}
-		selection->forget ();
+		uiDescription->setController (0);
+		return selection;
 	}
+	uiDescription->setController (0);
+	selection->forget ();
+
 	return 0;
 }
 
@@ -1793,7 +1912,7 @@ bool CEditFrame::onDrop (CDragContainer* drag, const CPoint& where)
 			CRect selectionBounds = dragSelection->getBounds ();
 
 			CPoint where2 (where);
-			where2.offset (-dragSelection->getDragOffset ().x, -dragSelection->getDragOffset ().y);
+			where2.offset (dragSelection->getDragOffset ().x, dragSelection->getDragOffset ().y);
 			if (grid)
 			{
 				where2.offset (grid->getSize ()/2, grid->getSize ()/2);
@@ -1828,7 +1947,7 @@ void CEditFrame::onDragEnter (CDragContainer* drag, const CPoint& where)
 		{
 			CRect vr = dragSelection->getBounds ();
 			CPoint where2 (where);
-			where2.offset (-dragSelection->getDragOffset ().x, -dragSelection->getDragOffset ().y);
+			where2.offset (dragSelection->getDragOffset ().x, dragSelection->getDragOffset ().y);
 			if (grid)
 			{
 				where2.offset (grid->getSize ()/2, grid->getSize ()/2);
@@ -1890,7 +2009,7 @@ void CEditFrame::onDragMove (CDragContainer* drag, const CPoint& where)
 			{
 				CRect vr = dragSelection->getBounds ();
 				CPoint where2 (where);
-				where2.offset (-dragSelection->getDragOffset ().x, -dragSelection->getDragOffset ().y);
+				where2.offset (dragSelection->getDragOffset ().x, dragSelection->getDragOffset ().y);
 				if (grid)
 				{
 					where2.offset (grid->getSize ()/2, grid->getSize ()/2);

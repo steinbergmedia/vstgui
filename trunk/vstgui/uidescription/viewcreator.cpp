@@ -1434,12 +1434,16 @@ public:
 		{
 			if (*attr == "true")
 				menu->setStyle (menu->getStyle () | kPopupStyle);
+			else
+				menu->setStyle (menu->getStyle () & ~kPopupStyle);
 		}
 		attr = attributes.getAttributeValue ("menu-check-style");
 		if (attr)
 		{
 			if (*attr == "true")
 				menu->setStyle (menu->getStyle () | kCheckStyle);
+			else
+				menu->setStyle (menu->getStyle () & ~kCheckStyle);
 		}
 
 		return true;
@@ -1463,12 +1467,12 @@ public:
 			return false;
 		if (attributeName == "menu-popup-style")
 		{
-			stringValue = menu->getStyle () & kPopupStyle ? "true" : "false";
+			stringValue = (menu->getStyle () & kPopupStyle) ? "true" : "false";
 			return true;
 		}
 		if (attributeName == "menu-check-style")
 		{
-			stringValue = menu->getStyle () & kCheckStyle ? "true" : "false";
+			stringValue = (menu->getStyle () & kCheckStyle) ? "true" : "false";
 			return true;
 		}
 		return false;

@@ -59,6 +59,8 @@ public:
 	virtual CMouseEventResult onMouseMoved (CPoint& where, const long& buttons);
 	virtual long onKeyDown (VstKeyCode& keyCode);
 
+	virtual bool sizeToFit ();
+
 	void setNumSubPixmaps (long numSubPixmaps) { IMultiBitmapControl::setNumSubPixmaps (numSubPixmaps); invalid (); }
 
 	CLASS_METHODS(CVerticalSwitch, CControl)
@@ -89,6 +91,8 @@ public:
 	virtual CMouseEventResult onMouseUp (CPoint& where, const long& buttons);
 	virtual CMouseEventResult onMouseMoved (CPoint& where, const long& buttons);
 	virtual long onKeyDown (VstKeyCode& keyCode);
+
+	virtual bool sizeToFit ();
 
 	void setNumSubPixmaps (long numSubPixmaps) { IMultiBitmapControl::setNumSubPixmaps (numSubPixmaps); invalid (); }
 
@@ -122,6 +126,8 @@ public:
 	virtual CMouseEventResult onMouseMoved (CPoint& where, const long& buttons);
 	virtual long onKeyDown (VstKeyCode& keyCode);
 	virtual long onKeyUp (VstKeyCode& keyCode);
+
+	virtual bool sizeToFit ();
 
 	void setNumSubPixmaps (long numSubPixmaps) { IMultiBitmapControl::setNumSubPixmaps (numSubPixmaps); invalid (); }
 

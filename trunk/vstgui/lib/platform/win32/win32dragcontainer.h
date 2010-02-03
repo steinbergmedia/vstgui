@@ -57,9 +57,13 @@ public:
 
 protected:
 	static bool checkResolveLink (const TCHAR* nativePath, TCHAR* resolved);
+	static FORMATETC formatTEXTDrop;
+	static FORMATETC formatHDrop;
+	static FORMATETC formatBinaryDrop;
 
 	IDataObject* platformDrag;
 	long nbItems;
+	bool isFileDrag;
 	
 	long iterator;
 	void* lastItem;

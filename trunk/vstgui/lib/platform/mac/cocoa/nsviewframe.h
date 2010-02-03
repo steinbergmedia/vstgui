@@ -58,6 +58,8 @@ public:
 
 	NSView* getPlatformControl () const { return nsView; }
 	IPlatformFrameCallback* getFrame () const { return frame; }
+	
+	void setLastDragOperationResult (long result) { lastDragOperationResult = result; }
 
 	virtual void drawRect (NSRect* rect);
 
@@ -78,6 +80,7 @@ public:
 	IPlatformOptionMenu* createPlatformOptionMenu ();
 	COffscreenContext* createOffscreenContext (CCoord width, CCoord height);
 	CGraphicsPath* createGraphicsPath ();
+	long doDrag (CDropSource* source, const CPoint& offset, CBitmap* dragBitmap);
 
 //-----------------------------------------------------------------------------
 protected:
@@ -86,6 +89,8 @@ protected:
 	IPlatformFrameCallback* frame;
 	NSView* nsView;
 	CocoaTooltipWindow* tooltipWindow;
+	
+	long lastDragOperationResult;
 };
 
 } // namespace

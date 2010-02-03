@@ -72,7 +72,8 @@ public:
 	IPlatformOptionMenu* createPlatformOptionMenu ();
 	COffscreenContext* createOffscreenContext (CCoord width, CCoord height);
 	CGraphicsPath* createGraphicsPath ();
-	
+	long doDrag (CDropSource* source, const CPoint& offset, CBitmap* dragBitmap);
+
 //-----------------------------------------------------------------------------
 protected:
 	void initTooltip ();
