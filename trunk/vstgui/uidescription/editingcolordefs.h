@@ -42,28 +42,31 @@
 namespace VSTGUI {
 
 #if MAC
-static CColor uidPanelBackgroundColor (kTransparentCColor);
-static CColor uidDialogBackgroundColor (kTransparentCColor);
+static const CColor uidPanelBackgroundColor (kTransparentCColor);
+static const CColor uidDialogBackgroundColor (kTransparentCColor);
 #elif WINDOWS
-static CColor uidPanelBackgroundColor (0, 0, 0, 200);
-static CColor uidDialogBackgroundColor (kBlackCColor);
+static const CColor uidPanelBackgroundColor (0, 0, 0, 200);
+static const CColor uidDialogBackgroundColor (kBlackCColor);
 #endif
 
-static CColor uidFocusColor (100, 100, 255, 200);
+static const CColor uidFocusColor (100, 100, 255, 200);
 
-static CColor uidHilightColor (255, 255, 255, 150);
-static CColor uidSelectionColor (255, 0, 0, 255);
-static CColor uidSelectionHandleColor (255, 0, 0, 150);
+static const CColor uidHilightColor (255, 255, 255, 150);
+static const CColor uidSelectionColor (255, 0, 0, 255);
+static const CColor uidSelectionHandleColor (255, 0, 0, 150);
 
-static CColor uidCrossLinesBackground (255, 255, 255, 200);
-static CColor uidCrossLinesForeground (0, 0, 0, 255);
+static const CColor uidCrossLinesBackground (255, 255, 255, 200);
+static const CColor uidCrossLinesForeground (0, 0, 0, 255);
 
-static CColor uidDataBrowserLineColor (255, 255, 255, 30);
-static CColor uidDataBrowserSelectionColor (255, 255, 255, 30);
+static const CColor uidDataBrowserLineColor (255, 255, 255, 30);
+static const CColor uidDataBrowserSelectionColor (255, 255, 255, 30);
 
-static CColor uidViewAttributeValueBackgroundColor (255, 255, 255, 150);
-static CColor uidViewAttributeDifferentValuesBackgroundColor (150, 150, 255, 150);
-static CColor uidViewAttributeValueFrameColor (0, 0, 0, 180);
+static const CColor uidViewAttributeValueBackgroundColor (255, 255, 255, 150);
+static const CColor uidViewAttributeDifferentValuesBackgroundColor (150, 150, 255, 150);
+static const CColor uidViewAttributeValueFrameColor (0, 0, 0, 180);
+
+static const CColor uidScrollerColor (255, 255, 255, 140);
+
 
 } // namespace VSTGUI
 

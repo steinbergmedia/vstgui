@@ -87,7 +87,7 @@ CColorChooserPanel::~CColorChooserPanel ()
 {
 	owner = 0;
 	if (frame)
-		frame->forget ();
+		frame->close ();
 	if (platformWindow)
 		windowClosed (platformWindow);
 }

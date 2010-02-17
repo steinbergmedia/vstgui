@@ -233,7 +233,7 @@ void CDataBrowser::recalculateLayout (bool rememberSelection)
 	if (style & kDrawHeader)
 	{
 		newContainerSize.offset (0, rowHeight+lineWidth);
-		
+
 		CRect headerSize (0, 0, newContainerSize.getWidth (), rowHeight+lineWidth);
 		if (style & kHorizontalScrollbar && hsb)
 			headerSize.right += hsb->getWidth ();

@@ -373,7 +373,7 @@ bool UIDescription::save (const char* filename)
 }
 
 //-----------------------------------------------------------------------------
-CView* UIDescription::createViewFromNode (UINode* node, IController* controller)
+CView* UIDescription::createViewFromNode (UINode* node)
 {
 	const std::string* templateName = node->getAttributes ()->getAttributeValue ("template");
 	if (templateName)
@@ -401,7 +401,7 @@ CView* UIDescription::createViewFromNode (UINode* node, IController* controller)
 			{
 				if ((*it)->getName () == "view")
 				{
-					CView* childView = createViewFromNode (*it, controller);
+					CView* childView = createViewFromNode (*it);
 					if (childView)
 					{
 						if (!viewContainer->addView (childView))
@@ -455,7 +455,7 @@ CView* UIDescription::createView (const char* name, IController* _controller)
 				const std::string* nodeName = (*it)->getAttributes ()->getAttributeValue ("name");
 				if (*nodeName == name)
 				{
-					CView* view = createViewFromNode (*it, controller);
+					CView* view = createViewFromNode (*it);
 					if (view)
 						view->setAttribute (kTemplateNameAttributeID, strlen (name)+1, name);
 					return view;
@@ -1556,7 +1556,7 @@ bool UIAttributes::restore (InputStream& stream)
 	{
 		unsigned int numAttr;
 		if (!(stream >> numAttr)) return false;
-		for (int i = 0; i < numAttr; i++)
+		for (unsigned int i = 0; i < numAttr; i++)
 		{
 			std::string key, value;
 			if (!(stream >> key)) return false;

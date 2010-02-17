@@ -551,7 +551,7 @@ void CScrollView::drawBackgroundRect (CDrawContext *pContext, CRect& _updateRect
 	}
 	if (!(style & kDontDrawFrame))
 	{
-		pContext->setFrameColor (kBlackCColor);
+		pContext->setFrameColor (backgroundColor);
 		pContext->setLineWidth (1);
 		pContext->drawRect (r);
 	}

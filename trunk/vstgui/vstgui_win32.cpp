@@ -32,12 +32,19 @@
 // OF THE POSSIBILITY OF SUCH DAMAGE.
 //-----------------------------------------------------------------------------
 
+#pragma warning (disable : 4996) // deprecated insecure calls (strcpy, memset etc)
+
+#pragma comment (lib, "gdiplus.lib")
+
 #include "vstgui.cpp"
 
+#include "lib/platform/win32/cfontwin32.cpp"
 #include "lib/platform/win32/gdiplusbitmap.cpp"
 #include "lib/platform/win32/gdiplusdrawcontext.cpp"
 #include "lib/platform/win32/gdiplusgraphicspath.cpp"
 #include "lib/platform/win32/win32dragcontainer.cpp"
 #include "lib/platform/win32/win32frame.cpp"
 #include "lib/platform/win32/win32optionmenu.cpp"
+#include "lib/platform/win32/win32support.cpp"
 #include "lib/platform/win32/win32textedit.cpp"
+#include "lib/platform/win32/winfileselector.cpp"

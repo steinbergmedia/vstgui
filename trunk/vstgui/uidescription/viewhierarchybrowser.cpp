@@ -597,7 +597,7 @@ ViewHierarchyBrowser::ViewHierarchyBrowser (const CRect& rect, CViewContainer* b
 	browser->setTransparency (true);
 	browser->setAutosizeFlags (kAutosizeAll);
 	CScrollbar* bar = browser->getVerticalScrollbar ();
-	bar->setScrollerColor (kDefaultUIDescriptionScrollerColor);
+	bar->setScrollerColor (uidScrollerColor);
 	bar->setBackgroundColor (kTransparentCColor);
 	bar->setFrameColor (kTransparentCColor);
 	addView (browser);
@@ -692,7 +692,7 @@ ViewHierarchyBrowserWindow::~ViewHierarchyBrowserWindow ()
 {
 	owner = 0;
 	if (frame)
-		frame->forget ();
+		frame->close ();
 	if (platformWindow)
 		windowClosed (platformWindow);
 }

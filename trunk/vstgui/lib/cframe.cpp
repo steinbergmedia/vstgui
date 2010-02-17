@@ -108,6 +108,22 @@ bool CFrame::getCocoaMode ()
 #endif
 
 //-----------------------------------------------------------------------------
+void CFrame::close ()
+{
+	if (pModalView)
+		removeView (pModalView, false);
+	setCursor (kCursorDefault);
+	pParentFrame = 0;
+	removeAll ();
+	if (platformFrame)
+	{
+		platformFrame->forget ();
+		platformFrame = 0;
+	}
+	forget ();
+}
+
+//-----------------------------------------------------------------------------
 bool CFrame::initFrame (void* systemWin)
 {
 	if (!systemWin)
@@ -165,7 +181,7 @@ CMouseEventResult CFrame::onMouseDown (CPoint &where, const long& buttons)
 	// reset views
 	mouseDownView = 0;
 	if (pFocusView && pFocusView->isTypeOf ("CTextEdit"))
-		setFocusView (NULL);
+		setFocusView (0);
 	if (pMouseOverView)
 	{
 		CBaseObjectGuard rg (pMouseOverView);
@@ -667,7 +683,7 @@ bool CFrame::advanceNextFocusView (CView* oldFocus, bool reverse)
 			return true;
 		else
 		{
-			setFocusView (NULL);
+			setFocusView (0);
 			return false;
 		}
 	}
@@ -845,66 +861,77 @@ bool CFrame::platformDrawRect (CDrawContext* context, const CRect& rect)
 //-----------------------------------------------------------------------------
 CMouseEventResult CFrame::platformOnMouseDown (CPoint& where, const long& buttons)
 {
+	CBaseObjectGuard bog (this);
 	return onMouseDown (where, buttons);
 }
 
 //-----------------------------------------------------------------------------
 CMouseEventResult CFrame::platformOnMouseMoved (CPoint& where, const long& buttons)
 {
+	CBaseObjectGuard bog (this);
 	return onMouseMoved (where, buttons);
 }
 
 //-----------------------------------------------------------------------------
 CMouseEventResult CFrame::platformOnMouseUp (CPoint& where, const long& buttons)
 {
+	CBaseObjectGuard bog (this);
 	return onMouseUp (where, buttons);
 }
 
 //-----------------------------------------------------------------------------
 CMouseEventResult CFrame::platformOnMouseExited (CPoint& where, const long& buttons)
 {
+	CBaseObjectGuard bog (this);
 	return onMouseExited (where, buttons);
 }
 
 //-----------------------------------------------------------------------------
 bool CFrame::platformOnMouseWheel (const CPoint &where, const CMouseWheelAxis &axis, const float &distance, const long &buttons)
 {
+	CBaseObjectGuard bog (this);
 	return onWheel (where, axis, distance, buttons);
 }
 
 //-----------------------------------------------------------------------------
 bool CFrame::platformOnDrop (CDragContainer* drag, const CPoint& where)
 {
+	CBaseObjectGuard bog (this);
 	return onDrop (drag, where);
 }
 
 //-----------------------------------------------------------------------------
 void CFrame::platformOnDragEnter (CDragContainer* drag, const CPoint& where)
 {
+	CBaseObjectGuard bog (this);
 	return onDragEnter (drag, where);
 }
 
 //-----------------------------------------------------------------------------
 void CFrame::platformOnDragLeave (CDragContainer* drag, const CPoint& where)
 {
+	CBaseObjectGuard bog (this);
 	return onDragLeave (drag, where);
 }
 
 //-----------------------------------------------------------------------------
 void CFrame::platformOnDragMove (CDragContainer* drag, const CPoint& where)
 {
+	CBaseObjectGuard bog (this);
 	return onDragMove (drag, where);
 }
 
 //-----------------------------------------------------------------------------
 bool CFrame::platformOnKeyDown (VstKeyCode& keyCode)
 {
+	CBaseObjectGuard bog (this);
 	return onKeyDown (keyCode) == 1;
 }
 
 //-----------------------------------------------------------------------------
 bool CFrame::platformOnKeyUp (VstKeyCode& keyCode)
 {
+	CBaseObjectGuard bog (this);
 	return onKeyUp (keyCode) == 1;
 }
 

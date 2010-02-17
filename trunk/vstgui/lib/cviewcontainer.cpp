@@ -786,8 +786,10 @@ void CViewContainer::drawRect (CDrawContext* pContext, const CRect& updateRect)
 			if (viewSize.getWidth () == 0 || viewSize.getHeight () == 0)
 				continue;
 			pC->setClipRect (viewSize);
-
+			float globalContextAlpha = pC->getGlobalAlpha ();
+			pC->setGlobalAlpha (globalContextAlpha * pV->getAlphaValue ());
 			pV->drawRect (pC, clientRect);
+			pC->setGlobalAlpha (globalContextAlpha);
 		}
 	ENDFOREACHSUBVIEW
 
@@ -891,8 +893,13 @@ CMouseEventResult CViewContainer::onMouseDown (CPoint &where, const long& button
 			CBaseObjectGuard crg (pV);
 
 			CMouseEventResult result = pV->onMouseDown (where2, buttons);
-			if (result == kMouseEventHandled && pV->getNbReference () > 1)
-				mouseDownView = pV;
+			if (result != kMouseEventNotHandled && pV->getNbReference () > 1)
+			{
+				if (pV->wantsFocus ())
+					getFrame ()->setFocusView (pV);
+				if (result == kMouseEventHandled)
+					mouseDownView = pV;
+			}
 			return result;
 		}
 	ENDFOREACHSUBVIEW

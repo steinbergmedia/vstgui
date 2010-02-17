@@ -114,7 +114,7 @@ UIDescriptionViewSwitchController::UIDescriptionViewSwitchController (CViewSwitc
 //-----------------------------------------------------------------------------
 CView* UIDescriptionViewSwitchController::createViewForIndex (long index)
 {
-	if (index < templateNames.size ())
+	if (index < (long)templateNames.size ())
 	{
 		return uiDescription->createView (templateNames[index].c_str (), uiController);
 	}
@@ -168,7 +168,7 @@ void UIDescriptionViewSwitchController::valueChanged (CControl* pControl)
 	float min = pControl->getMin ();
 	float max = pControl->getMax ();
 	float norm = (value - min) / (max - min);
-	long index = std::min<long> (norm * templateNames.size (), templateNames.size ()-1);
+	long index = std::min<long> ((long)(norm * (float)templateNames.size ()), templateNames.size ()-1);
 	viewSwitch->setCurrentViewIndex (index);
 }
 

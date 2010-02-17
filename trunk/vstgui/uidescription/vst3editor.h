@@ -41,30 +41,37 @@
 #include "../lib/ctooltipsupport.h"
 #include <string>
 #include <map>
+#include <deque>
 
 namespace VSTGUI {
 class ParameterChangeListener;
 class VST3Editor;
 
 //-----------------------------------------------------------------------------
-// extension to VSTEditController
+//! @brief delegate extension to Steinberg::Vst::EditController for a VST3 Editor [new in 4.0]
+//-----------------------------------------------------------------------------
 class VST3EditorDelegate
 {
 public:
 	virtual ~VST3EditorDelegate () {}
 	
-	virtual CView* createCustomView (const char* name, const UIAttributes& attributes, IUIDescription* description, VST3Editor* editor) = 0; ///< create a custom view
+	virtual CView* createCustomView (const char* name, const UIAttributes& attributes, IUIDescription* description, VST3Editor* editor) { return 0; } ///< create a custom view
 	virtual bool findParameter (const CPoint& pos, Steinberg::Vst::ParamID& paramID, VST3Editor* editor) { return false; } ///< find a parameter
 	virtual void didOpen (VST3Editor* editor) {}	///< called after the editor was opened
 	virtual void willClose (VST3Editor* editor) {}	///< called before the editor will close
+
+	/** called when a sub controller should be created. The VST3Editor will call forget() if it is a CBaseObject or release() if it is a Steinberg::FObject on the returned controller when the frame will be closed. */
+	virtual IController* createSubController (const char* name, IUIDescription* description, VST3Editor* editor) { return 0; } ///< create a sub controller
 };
 
+//-----------------------------------------------------------------------------
+//! @brief VST3 Editor with automatic parameter binding [new in 4.0]
 //-----------------------------------------------------------------------------
 class VST3Editor : public Steinberg::Vst::VSTGUIEditor, public Steinberg::Vst::IParameterFinder, public IController, public IViewAddedRemovedObserver
 {
 public:
-	VST3Editor (void* controller, const char* viewName, const char* xmlFile);
-	VST3Editor (UIDescription* desc, void* controller, const char* viewName, const char* xmlFile = 0);
+	VST3Editor (Steinberg::Vst::EditController* controller, const char* viewName, const char* xmlFile);
+	VST3Editor (UIDescription* desc, Steinberg::Vst::EditController* controller, const char* viewName, const char* xmlFile = 0);
 
 	bool exchangeView (const char* newViewName);
 	void enableTooltips (bool state);
@@ -105,14 +112,29 @@ protected:
 	virtual void valueChanged (CControl* pControl);
 	virtual void controlBeginEdit (CControl* pControl);
 	virtual void controlEndEdit (CControl* pControl);
+	virtual void controlTagWillChange (CControl* pControl);
+	virtual void controlTagDidChange (CControl* pControl);
 
 	// IViewAddedRemovedObserver
 	void onViewAdded (CFrame* frame, CView* view);
 	void onViewRemoved (CFrame* frame, CView* view);
 
+	// @cond ignore
+	struct SubController
+	{
+		IController* controller;
+		std::string name;
+		
+		SubController (IController* c, const std::string& n) : controller (c), name (n) {}
+	};
+	// @endcond
+
 	UIDescription* description;
+	VST3EditorDelegate* delegate;
 	CTooltipSupport* tooltipSupport;
 	std::map<long, ParameterChangeListener*> paramChangeListeners;
+	std::deque<SubController> subControllerStack;
+	std::list<IController*> subControllers;
 	std::string viewName;
 	std::string xmlFile;
 	bool tooltipsEnabled;

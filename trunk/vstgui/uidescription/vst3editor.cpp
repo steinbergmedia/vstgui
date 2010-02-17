@@ -247,11 +247,31 @@ static bool parseSize (const std::string& str, CPoint& point)
 }
 
 //-----------------------------------------------------------------------------
-VST3Editor::VST3Editor (void* controller, const char* _viewName, const char* _xmlFile)
+/*! @class VST3Editor
+The VST3Editor class represents the view for a VST3 plug-in. It automatically binds the VST3 parameters to VSTGUI control tags and it includes an inline UI editor for rapid development.
+@section setup Setup
+Add the following code to your Steinberg::Vst::EditController class:
+@code
+IPlugView* PLUGIN_API MyEditController::createView (const char* name)
+{
+	if (strcmp (name, ViewType::kEditor) == 0)
+	{
+		return new VST3Editor (this, "view", "myEditor.uidesc");
+	}
+	return 0;
+}
+@endcode
+To activate the inline editor you need to define the preprocessor definition "VSTGUI_LIVE_EDITING=1".
+Rebuild your plug-in, start your prefered host, instanciate your plug-in, open the context menu inside your editor and choose "Enable Editing".
+Now you can define tags, colors, fonts, bitmaps and add views to your editor.
+*/
+//-----------------------------------------------------------------------------
+VST3Editor::VST3Editor (Steinberg::Vst::EditController* controller, const char* _viewName, const char* _xmlFile)
 : VSTGUIEditor (controller)
 , doCreateView (false)
 , tooltipSupport (0)
 , tooltipsEnabled (true)
+, delegate (dynamic_cast<VST3EditorDelegate*> (controller))
 {
 	description = new UIDescription (_xmlFile);
 	viewName = _viewName;
@@ -260,11 +280,12 @@ VST3Editor::VST3Editor (void* controller, const char* _viewName, const char* _xm
 }
 
 //-----------------------------------------------------------------------------
-VST3Editor::VST3Editor (UIDescription* desc, void* controller, const char* _viewName, const char* _xmlFile)
+VST3Editor::VST3Editor (UIDescription* desc, Steinberg::Vst::EditController* controller, const char* _viewName, const char* _xmlFile)
 : VSTGUIEditor (controller)
 , doCreateView (false)
 , tooltipSupport (0)
 , tooltipsEnabled (true)
+, delegate (dynamic_cast<VST3EditorDelegate*> (controller))
 {
 	description = desc;
 	description->remember ();
@@ -452,6 +473,41 @@ void VST3Editor::controlEndEdit (CControl* pControl)
 }
 
 //-----------------------------------------------------------------------------
+void VST3Editor::controlTagWillChange (CControl* pControl)
+{
+	if (pControl->getTag () != -1 && pControl->getListener () == this)
+	{
+		ParameterChangeListener* pcl = getParameterChangeListener (pControl->getTag ());
+		if (pcl)
+		{
+			pcl->removeControl (pControl);
+		}
+	}
+}
+
+//-----------------------------------------------------------------------------
+void VST3Editor::controlTagDidChange (CControl* pControl)
+{
+	if (pControl->getTag () != -1 && pControl->getListener () == this)
+	{
+		ParameterChangeListener* pcl = getParameterChangeListener (pControl->getTag ());
+		if (pcl)
+		{
+			pcl->addControl (pControl);
+		}
+		else
+		{
+			Steinberg::Vst::EditController* editController = getController ();
+			if (editController)
+			{
+				Steinberg::Vst::Parameter* parameter = editController->getParameterObject (pControl->getTag ());
+				paramChangeListeners.insert (std::make_pair (pControl->getTag (), new ParameterChangeListener (editController, parameter, pControl)));
+			}
+		}
+	}
+}
+
+//-----------------------------------------------------------------------------
 void VST3Editor::onViewAdded (CFrame* frame, CView* view)
 {
 }
@@ -486,7 +542,6 @@ Steinberg::tresult PLUGIN_API VST3Editor::findParameter (Steinberg::int32 xPos, 
 				return Steinberg::kResultTrue;
 			}
 		}
-		VST3EditorDelegate* delegate = dynamic_cast<VST3EditorDelegate*> (getController ());
 		if (delegate)
 		{
 			return (delegate->findParameter (CPoint (xPos, yPos), resultTag, this) ? Steinberg::kResultTrue : Steinberg::kResultFalse);
@@ -498,16 +553,30 @@ Steinberg::tresult PLUGIN_API VST3Editor::findParameter (Steinberg::int32 xPos, 
 //-----------------------------------------------------------------------------
 CView* VST3Editor::createView (const UIAttributes& attributes, IUIDescription* description)
 {
-	const std::string* customViewName = attributes.getAttributeValue ("custom-view-name");
-	if (customViewName)
+	if (delegate)
 	{
-		VST3EditorDelegate* delegate = dynamic_cast<VST3EditorDelegate*> (getController ());
-		if (delegate)
+		UIDescription* uiDesc = dynamic_cast<UIDescription*> (description);
+		const std::string* subControllerName = attributes.getAttributeValue ("sub-controller");
+		if (subControllerName)
+		{
+			if (!(subControllerStack.size () > 0 && subControllerStack.back ().name == *subControllerName))
+			{
+				IController* subController = delegate->createSubController (subControllerName->c_str (), description, this);
+				if (subController)
+				{
+					subControllerStack.push_back (SubController (subController, *subControllerName));
+					subControllers.push_back (subController);
+					uiDesc->setController (subController);
+					return subController->createView (attributes, description);
+				}
+			}
+		}
+		const std::string* customViewName = attributes.getAttributeValue ("custom-view-name");
+		if (customViewName)
 		{
 			CView* view = delegate->createCustomView (customViewName->c_str (), attributes, description, this);
 			if (view)
 			{
-				UIDescription* uiDesc = dynamic_cast<UIDescription*> (description);
 				ViewFactory* viewFactory = uiDesc ? dynamic_cast<ViewFactory*> (uiDesc->getViewFactory ()) : 0;
 				if (viewFactory)
 				{
@@ -525,6 +594,21 @@ CView* VST3Editor::createView (const UIAttributes& attributes, IUIDescription* d
 //-----------------------------------------------------------------------------
 CView* VST3Editor::verifyView (CView* view, const UIAttributes& attributes, IUIDescription* description)
 {
+	const std::string* subControllerName = attributes.getAttributeValue ("sub-controller");
+	if (subControllerName && subControllerStack.size () > 0)
+	{
+		if (subControllerStack.back ().name == *subControllerName)
+		{
+			UIDescription* uiDesc = dynamic_cast<UIDescription*> (description);
+			IController* subController = subControllerStack.back ().controller;
+			subControllerStack.pop_back ();
+			if (subControllerStack.size () > 0)
+				uiDesc->setController (subControllerStack.back ().controller);
+			else
+				uiDesc->setController (this);
+			return subController->verifyView (view, attributes, description);
+		}
+	}
 	CControl* control = dynamic_cast<CControl*> (view);
 	if (control && control->getTag () != -1 && control->getListener () == this)
 	{
@@ -620,7 +704,6 @@ bool PLUGIN_API VST3Editor::open (void* parent)
 				}
 			}
 		}
-		VST3EditorDelegate* delegate = dynamic_cast<VST3EditorDelegate*> (getController ());
 		if (delegate)
 			delegate->didOpen (this);
 		return true;
@@ -631,6 +714,9 @@ bool PLUGIN_API VST3Editor::open (void* parent)
 //-----------------------------------------------------------------------------
 void PLUGIN_API VST3Editor::close ()
 {
+	if (delegate)
+		delegate->willClose (this);
+
 	std::map<long, ParameterChangeListener*>::iterator it = paramChangeListeners.begin ();
 	while (it != paramChangeListeners.end ())
 	{
@@ -643,11 +729,24 @@ void PLUGIN_API VST3Editor::close ()
 		tooltipSupport->forget ();
 		tooltipSupport = 0;
 	}
+	std::list<IController*>::iterator scit = subControllers.begin ();
+	while (scit != subControllers.end ())
+	{
+		CBaseObject* obj = dynamic_cast<CBaseObject*> ((*scit));
+		if (obj)
+			obj->forget ();
+		else
+		{
+			FObject* fObj = dynamic_cast<FObject*> ((*scit));
+			if (fObj)
+				fObj->release ();
+		}
+
+		scit++;
+	}
+	subControllers.clear ();
 	if (frame)
 	{
-		VST3EditorDelegate* delegate = dynamic_cast<VST3EditorDelegate*> (getController ());
-		if (delegate)
-			delegate->willClose (this);
 		frame->removeAll (true);
 		long refCount = frame->getNbReference ();
 		frame->forget ();

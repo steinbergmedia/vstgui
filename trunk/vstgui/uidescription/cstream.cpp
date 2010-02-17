@@ -111,7 +111,7 @@ int CMemoryStream::readRaw (void* outBuffer, int outSize)
 	if ((size - pos) <= 0)
 		return 0;
 
-	outSize = std::min (outSize, size - pos);
+	outSize = std::min<int> (outSize, size - pos);
 	memcpy (outBuffer, buffer + pos, outSize);
 	pos += outSize;
 

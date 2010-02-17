@@ -1,3 +1,11 @@
+2010-02-17 arne
+
+	* new alphaValue member for CView which affects the opaqueness when drawing
+	* new optional virtual methods in CControlListener: controlTagWillChange and controlTagDidChange
+	* added CFrame::close() method. Should be called instead of CFrame::forget() when you want make sure to detach the platform view from its parent
+	* CScrollView draws its border with the background color, not with black anymore
+	* focus handling change: a view which says wantsFocus() gets focus on mouse down now. A control does not set itself as focus view if beginEdit is called.
+
 2010-02-03 arne
 
 	* implementation for sizeToFit() for all controls

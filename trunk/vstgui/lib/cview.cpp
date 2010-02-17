@@ -146,6 +146,7 @@ CView::CView (const CRect& size)
 , pBackground (0)
 , pAttributeList (0)
 , autosizeFlags (kAutosizeNone)
+, alphaValue (1.f)
 {
 	#if VSTGUI_CHECK_VIEW_RELEASING
 	static AllocatedViews allocatedViews;
@@ -169,6 +170,7 @@ CView::CView (const CView& v)
 , pBackground (v.pBackground)
 , pAttributeList (0)
 , autosizeFlags (v.autosizeFlags)
+, alphaValue (v.alphaValue)
 {
 	if (pBackground)
 		pBackground->remember ();
@@ -449,6 +451,16 @@ void CView::setVisible (bool state)
 	{
 		bVisible = state;
 		setDirty ();
+	}
+}
+
+//-----------------------------------------------------------------------------
+void CView::setAlphaValue (float alpha)
+{
+	if (alphaValue != alpha)
+	{
+		alphaValue = alpha;
+		invalid ();
 	}
 }
 

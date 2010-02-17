@@ -39,6 +39,8 @@
 
 #if MAC_COCOA
 
+#include <list>
+
 #ifdef __OBJC__
 #import <Cocoa/Cocoa.h>
 #else
@@ -89,7 +91,7 @@ protected:
 	IPlatformFrameCallback* frame;
 	NSView* nsView;
 	CocoaTooltipWindow* tooltipWindow;
-	
+
 	long lastDragOperationResult;
 };
 

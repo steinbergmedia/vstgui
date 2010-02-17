@@ -175,7 +175,7 @@ Dialog::Dialog (const CPoint& position, CView* rootView, long style, const char*
 Dialog::~Dialog ()
 {
 	if (frame)
-		frame->forget ();
+		frame->close ();
 	if (platformWindow)
 		platformWindow->forget ();
 }
