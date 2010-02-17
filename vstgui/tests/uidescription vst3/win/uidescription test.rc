@@ -1,0 +1,17 @@
+#define APSTUDIO_READONLY_SYMBOLS
+
+myEditor.uidesc					DATA	"../resource/myEditor.uidesc"
+SubControllerTest.uidesc		DATA	"../resource/SubControllerTest.uidesc"
+
+FrameBackground.png				PNG		"../resource/FrameBackground.png"
+TabController.png				PNG		"../resource/TabController.png"
+animation_knob.png				PNG		"../resource/animation_knob.png"
+horizontal_slider_back.bmp		PNG		"../resource/horizontal_slider_back.bmp"
+slider_handle.bmp				PNG		"../resource/slider_handle.bmp"
+vertical_slider_back.bmp		PNG		"../resource/vertical_slider_back.bmp"
+switch_horizontal.bmp			PNG		"../resource/switch_horizontal.bmp"
+switch_vertical.bmp				PNG		"../resource/switch_vertical.bmp"
+onoff_button.bmp				PNG		"../resource/onoff_button.bmp"
+rocker_switch.bmp				PNG		"../resource/rocker_switch.bmp"
+vumeter_back.bmp				PNG		"../resource/vumeter_back.bmp"
+vumeter_front.bmp				PNG		"../resource/vumeter_front.bmp"

@@ -7,13 +7,22 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		F403641610C125F5001BCC34 /* onoff button.bmp in Resources */ = {isa = PBXBuildFile; fileRef = F403641510C125F5001BCC34 /* onoff button.bmp */; };
-		F403647D10C12D95001BCC34 /* rocker switch.bmp in Resources */ = {isa = PBXBuildFile; fileRef = F403647C10C12D95001BCC34 /* rocker switch.bmp */; };
-		F40364DB10C13694001BCC34 /* vumeter back.bmp in Resources */ = {isa = PBXBuildFile; fileRef = F40364D910C13694001BCC34 /* vumeter back.bmp */; };
-		F40364DC10C13694001BCC34 /* vumeter front.bmp in Resources */ = {isa = PBXBuildFile; fileRef = F40364DA10C13694001BCC34 /* vumeter front.bmp */; };
 		F403651810C59C44001BCC34 /* vstinitiids.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F403651710C59C44001BCC34 /* vstinitiids.cpp */; };
 		F403651C10C59C84001BCC34 /* baseiids.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F403651B10C59C84001BCC34 /* baseiids.cpp */; };
 		F403673610C901AF001BCC34 /* vstgui_uidescription_mac.mm in Sources */ = {isa = PBXBuildFile; fileRef = F403673510C901AF001BCC34 /* vstgui_uidescription_mac.mm */; };
+		F42731DE1125507F00BE2194 /* factory.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F42731DD1125507F00BE2194 /* factory.cpp */; };
+		F42731E51125516A00BE2194 /* subcontrollertest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F42731E41125516A00BE2194 /* subcontrollertest.cpp */; };
+		F427326A1125623200BE2194 /* SubControllerTest.uidesc in Resources */ = {isa = PBXBuildFile; fileRef = F42732691125623200BE2194 /* SubControllerTest.uidesc */; };
+		F4273C10112C0C2400BE2194 /* animation_knob.png in Resources */ = {isa = PBXBuildFile; fileRef = F4273C06112C0C2400BE2194 /* animation_knob.png */; };
+		F4273C11112C0C2400BE2194 /* horizontal_slider_back.bmp in Resources */ = {isa = PBXBuildFile; fileRef = F4273C07112C0C2400BE2194 /* horizontal_slider_back.bmp */; };
+		F4273C12112C0C2400BE2194 /* onoff_button.bmp in Resources */ = {isa = PBXBuildFile; fileRef = F4273C08112C0C2400BE2194 /* onoff_button.bmp */; };
+		F4273C13112C0C2400BE2194 /* rocker_switch.bmp in Resources */ = {isa = PBXBuildFile; fileRef = F4273C09112C0C2400BE2194 /* rocker_switch.bmp */; };
+		F4273C14112C0C2400BE2194 /* slider_handle.bmp in Resources */ = {isa = PBXBuildFile; fileRef = F4273C0A112C0C2400BE2194 /* slider_handle.bmp */; };
+		F4273C15112C0C2400BE2194 /* switch_horizontal.bmp in Resources */ = {isa = PBXBuildFile; fileRef = F4273C0B112C0C2400BE2194 /* switch_horizontal.bmp */; };
+		F4273C16112C0C2400BE2194 /* switch_vertical.bmp in Resources */ = {isa = PBXBuildFile; fileRef = F4273C0C112C0C2400BE2194 /* switch_vertical.bmp */; };
+		F4273C17112C0C2400BE2194 /* vertical_slider_back.bmp in Resources */ = {isa = PBXBuildFile; fileRef = F4273C0D112C0C2400BE2194 /* vertical_slider_back.bmp */; };
+		F4273C18112C0C2400BE2194 /* vumeter_back.bmp in Resources */ = {isa = PBXBuildFile; fileRef = F4273C0E112C0C2400BE2194 /* vumeter_back.bmp */; };
+		F4273C19112C0C2400BE2194 /* vumeter_front.bmp in Resources */ = {isa = PBXBuildFile; fileRef = F4273C0F112C0C2400BE2194 /* vumeter_front.bmp */; };
 		F440751010BE6BB6003C59F6 /* classfactory.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F44074CA10BE6BB6003C59F6 /* classfactory.cpp */; };
 		F440751110BE6BB6003C59F6 /* fatomic.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F44074CB10BE6BB6003C59F6 /* fatomic.cpp */; };
 		F440751210BE6BB6003C59F6 /* fbuffer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F44074CD10BE6BB6003C59F6 /* fbuffer.cpp */; };
@@ -44,12 +53,6 @@
 		F440756710BEFE31003C59F6 /* pluginfactoryvst3.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F440756510BEFE31003C59F6 /* pluginfactoryvst3.cpp */; };
 		F440758810BF043D003C59F6 /* vst3editor.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F440758610BF043D003C59F6 /* vst3editor.cpp */; };
 		F44075AD10BF053A003C59F6 /* myEditor.uidesc in Resources */ = {isa = PBXBuildFile; fileRef = F44075AC10BF053A003C59F6 /* myEditor.uidesc */; };
-		F44075B110BF05A5003C59F6 /* horizontal slider back.bmp in Resources */ = {isa = PBXBuildFile; fileRef = F44075AE10BF05A5003C59F6 /* horizontal slider back.bmp */; };
-		F44075B210BF05A5003C59F6 /* slider handle.bmp in Resources */ = {isa = PBXBuildFile; fileRef = F44075AF10BF05A5003C59F6 /* slider handle.bmp */; };
-		F44075B310BF05A5003C59F6 /* vertical slider back.bmp in Resources */ = {isa = PBXBuildFile; fileRef = F44075B010BF05A5003C59F6 /* vertical slider back.bmp */; };
-		F44075D810BF0DD5003C59F6 /* switch horizontal.bmp in Resources */ = {isa = PBXBuildFile; fileRef = F44075D610BF0DD5003C59F6 /* switch horizontal.bmp */; };
-		F44075D910BF0DD5003C59F6 /* switch vertical.bmp in Resources */ = {isa = PBXBuildFile; fileRef = F44075D710BF0DD5003C59F6 /* switch vertical.bmp */; };
-		F44075E610BF147E003C59F6 /* animation knob.png in Resources */ = {isa = PBXBuildFile; fileRef = F44075E510BF147E003C59F6 /* animation knob.png */; };
 		F4457815110A06590022C0E5 /* FrameBackground.png in Resources */ = {isa = PBXBuildFile; fileRef = F4457814110A06590022C0E5 /* FrameBackground.png */; };
 		F4F4013D10D2662500F2B46B /* vst2wrapper.sdk.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4F4013C10D2662500F2B46B /* vst2wrapper.sdk.cpp */; };
 		F4F5DA8A10BFD28900DB6C33 /* TabController.png in Resources */ = {isa = PBXBuildFile; fileRef = F4F5DA8910BFD28900DB6C33 /* TabController.png */; };
@@ -58,13 +61,24 @@
 /* Begin PBXFileReference section */
 		508817D409F0C9AD0071BF1A /* uidescription test.vst3 */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "uidescription test.vst3"; sourceTree = BUILT_PRODUCTS_DIR; };
 		508817D609F0C9AD0071BF1A /* uidescription test-Info.plist */ = {isa = PBXFileReference; explicitFileType = text.plist.xml; path = "uidescription test-Info.plist"; sourceTree = "<group>"; };
-		F403641510C125F5001BCC34 /* onoff button.bmp */ = {isa = PBXFileReference; lastKnownFileType = image.bmp; name = "onoff button.bmp"; path = "../resource/onoff button.bmp"; sourceTree = SOURCE_ROOT; };
-		F403647C10C12D95001BCC34 /* rocker switch.bmp */ = {isa = PBXFileReference; lastKnownFileType = image.bmp; name = "rocker switch.bmp"; path = "../resource/rocker switch.bmp"; sourceTree = SOURCE_ROOT; };
-		F40364D910C13694001BCC34 /* vumeter back.bmp */ = {isa = PBXFileReference; lastKnownFileType = image.bmp; name = "vumeter back.bmp"; path = "../resource/vumeter back.bmp"; sourceTree = SOURCE_ROOT; };
-		F40364DA10C13694001BCC34 /* vumeter front.bmp */ = {isa = PBXFileReference; lastKnownFileType = image.bmp; name = "vumeter front.bmp"; path = "../resource/vumeter front.bmp"; sourceTree = SOURCE_ROOT; };
 		F403651710C59C44001BCC34 /* vstinitiids.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = vstinitiids.cpp; path = ../../../../../SKI/public.sdk/source/vst/vstinitiids.cpp; sourceTree = SOURCE_ROOT; };
 		F403651B10C59C84001BCC34 /* baseiids.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = baseiids.cpp; path = ../../../../../SKI/base/source/baseiids.cpp; sourceTree = SOURCE_ROOT; };
 		F403673510C901AF001BCC34 /* vstgui_uidescription_mac.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = vstgui_uidescription_mac.mm; path = ../../../vstgui_uidescription_mac.mm; sourceTree = SOURCE_ROOT; };
+		F42731C011254BEC00BE2194 /* uidescription test.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "uidescription test.h"; path = "../source/uidescription test.h"; sourceTree = SOURCE_ROOT; };
+		F42731DD1125507F00BE2194 /* factory.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = factory.cpp; path = ../source/factory.cpp; sourceTree = SOURCE_ROOT; };
+		F42731E31125516A00BE2194 /* subcontrollertest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = subcontrollertest.h; path = ../source/subcontrollertest.h; sourceTree = SOURCE_ROOT; };
+		F42731E41125516A00BE2194 /* subcontrollertest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = subcontrollertest.cpp; path = ../source/subcontrollertest.cpp; sourceTree = SOURCE_ROOT; };
+		F42732691125623200BE2194 /* SubControllerTest.uidesc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; name = SubControllerTest.uidesc; path = ../resource/SubControllerTest.uidesc; sourceTree = SOURCE_ROOT; };
+		F4273C06112C0C2400BE2194 /* animation_knob.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = animation_knob.png; path = ../resource/animation_knob.png; sourceTree = SOURCE_ROOT; };
+		F4273C07112C0C2400BE2194 /* horizontal_slider_back.bmp */ = {isa = PBXFileReference; lastKnownFileType = image.bmp; name = horizontal_slider_back.bmp; path = ../resource/horizontal_slider_back.bmp; sourceTree = SOURCE_ROOT; };
+		F4273C08112C0C2400BE2194 /* onoff_button.bmp */ = {isa = PBXFileReference; lastKnownFileType = image.bmp; name = onoff_button.bmp; path = ../resource/onoff_button.bmp; sourceTree = SOURCE_ROOT; };
+		F4273C09112C0C2400BE2194 /* rocker_switch.bmp */ = {isa = PBXFileReference; lastKnownFileType = image.bmp; name = rocker_switch.bmp; path = ../resource/rocker_switch.bmp; sourceTree = SOURCE_ROOT; };
+		F4273C0A112C0C2400BE2194 /* slider_handle.bmp */ = {isa = PBXFileReference; lastKnownFileType = image.bmp; name = slider_handle.bmp; path = ../resource/slider_handle.bmp; sourceTree = SOURCE_ROOT; };
+		F4273C0B112C0C2400BE2194 /* switch_horizontal.bmp */ = {isa = PBXFileReference; lastKnownFileType = image.bmp; name = switch_horizontal.bmp; path = ../resource/switch_horizontal.bmp; sourceTree = SOURCE_ROOT; };
+		F4273C0C112C0C2400BE2194 /* switch_vertical.bmp */ = {isa = PBXFileReference; lastKnownFileType = image.bmp; name = switch_vertical.bmp; path = ../resource/switch_vertical.bmp; sourceTree = SOURCE_ROOT; };
+		F4273C0D112C0C2400BE2194 /* vertical_slider_back.bmp */ = {isa = PBXFileReference; lastKnownFileType = image.bmp; name = vertical_slider_back.bmp; path = ../resource/vertical_slider_back.bmp; sourceTree = SOURCE_ROOT; };
+		F4273C0E112C0C2400BE2194 /* vumeter_back.bmp */ = {isa = PBXFileReference; lastKnownFileType = image.bmp; name = vumeter_back.bmp; path = ../resource/vumeter_back.bmp; sourceTree = SOURCE_ROOT; };
+		F4273C0F112C0C2400BE2194 /* vumeter_front.bmp */ = {isa = PBXFileReference; lastKnownFileType = image.bmp; name = vumeter_front.bmp; path = ../resource/vumeter_front.bmp; sourceTree = SOURCE_ROOT; };
 		F44074C910BE6BB6003C59F6 /* classfactory.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = classfactory.h; path = ../../../../../SKI/base/source/classfactory.h; sourceTree = SOURCE_ROOT; };
 		F44074CA10BE6BB6003C59F6 /* classfactory.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = classfactory.cpp; path = ../../../../../SKI/base/source/classfactory.cpp; sourceTree = SOURCE_ROOT; };
 		F44074CB10BE6BB6003C59F6 /* fatomic.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = fatomic.cpp; path = ../../../../../SKI/base/source/fatomic.cpp; sourceTree = SOURCE_ROOT; };
@@ -136,12 +150,6 @@
 		F440758610BF043D003C59F6 /* vst3editor.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = vst3editor.cpp; path = ../../../uidescription/vst3editor.cpp; sourceTree = SOURCE_ROOT; };
 		F440758710BF043D003C59F6 /* vst3editor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = vst3editor.h; path = ../../../uidescription/vst3editor.h; sourceTree = SOURCE_ROOT; };
 		F44075AC10BF053A003C59F6 /* myEditor.uidesc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; name = myEditor.uidesc; path = ../resource/myEditor.uidesc; sourceTree = SOURCE_ROOT; };
-		F44075AE10BF05A5003C59F6 /* horizontal slider back.bmp */ = {isa = PBXFileReference; lastKnownFileType = image.bmp; name = "horizontal slider back.bmp"; path = "../resource/horizontal slider back.bmp"; sourceTree = SOURCE_ROOT; };
-		F44075AF10BF05A5003C59F6 /* slider handle.bmp */ = {isa = PBXFileReference; lastKnownFileType = image.bmp; name = "slider handle.bmp"; path = "../resource/slider handle.bmp"; sourceTree = SOURCE_ROOT; };
-		F44075B010BF05A5003C59F6 /* vertical slider back.bmp */ = {isa = PBXFileReference; lastKnownFileType = image.bmp; name = "vertical slider back.bmp"; path = "../resource/vertical slider back.bmp"; sourceTree = SOURCE_ROOT; };
-		F44075D610BF0DD5003C59F6 /* switch horizontal.bmp */ = {isa = PBXFileReference; lastKnownFileType = image.bmp; name = "switch horizontal.bmp"; path = "../resource/switch horizontal.bmp"; sourceTree = SOURCE_ROOT; };
-		F44075D710BF0DD5003C59F6 /* switch vertical.bmp */ = {isa = PBXFileReference; lastKnownFileType = image.bmp; name = "switch vertical.bmp"; path = "../resource/switch vertical.bmp"; sourceTree = SOURCE_ROOT; };
-		F44075E510BF147E003C59F6 /* animation knob.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "animation knob.png"; path = "../resource/animation knob.png"; sourceTree = SOURCE_ROOT; };
 		F4457814110A06590022C0E5 /* FrameBackground.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = FrameBackground.png; path = ../resource/FrameBackground.png; sourceTree = SOURCE_ROOT; };
 		F4F4013C10D2662500F2B46B /* vst2wrapper.sdk.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = vst2wrapper.sdk.cpp; path = ../../../../../SKI/public.sdk/source/vst/vst2wrapper/vst2wrapper.sdk.cpp; sourceTree = SOURCE_ROOT; };
 		F4F5DA8910BFD28900DB6C33 /* TabController.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = TabController.png; path = ../resource/TabController.png; sourceTree = SOURCE_ROOT; };
@@ -188,6 +196,10 @@
 				F44074C710BE6BB6003C59F6 /* VST3SDK */,
 				F440753410BE6C0A003C59F6 /* prefix.h */,
 				F440755510BE6D26003C59F6 /* uidescription test.cpp */,
+				F42731C011254BEC00BE2194 /* uidescription test.h */,
+				F42731DD1125507F00BE2194 /* factory.cpp */,
+				F42731E31125516A00BE2194 /* subcontrollertest.h */,
+				F42731E41125516A00BE2194 /* subcontrollertest.cpp */,
 			);
 			name = Sources;
 			sourceTree = "<group>";
@@ -362,17 +374,18 @@
 			children = (
 				F4457814110A06590022C0E5 /* FrameBackground.png */,
 				F4F5DA8910BFD28900DB6C33 /* TabController.png */,
-				F44075E510BF147E003C59F6 /* animation knob.png */,
-				F44075AE10BF05A5003C59F6 /* horizontal slider back.bmp */,
-				F44075AF10BF05A5003C59F6 /* slider handle.bmp */,
-				F44075B010BF05A5003C59F6 /* vertical slider back.bmp */,
-				F44075D610BF0DD5003C59F6 /* switch horizontal.bmp */,
-				F44075D710BF0DD5003C59F6 /* switch vertical.bmp */,
-				F403641510C125F5001BCC34 /* onoff button.bmp */,
-				F403647C10C12D95001BCC34 /* rocker switch.bmp */,
-				F40364D910C13694001BCC34 /* vumeter back.bmp */,
-				F40364DA10C13694001BCC34 /* vumeter front.bmp */,
+				F4273C06112C0C2400BE2194 /* animation_knob.png */,
+				F4273C07112C0C2400BE2194 /* horizontal_slider_back.bmp */,
+				F4273C08112C0C2400BE2194 /* onoff_button.bmp */,
+				F4273C09112C0C2400BE2194 /* rocker_switch.bmp */,
+				F4273C0A112C0C2400BE2194 /* slider_handle.bmp */,
+				F4273C0B112C0C2400BE2194 /* switch_horizontal.bmp */,
+				F4273C0C112C0C2400BE2194 /* switch_vertical.bmp */,
+				F4273C0D112C0C2400BE2194 /* vertical_slider_back.bmp */,
+				F4273C0E112C0C2400BE2194 /* vumeter_back.bmp */,
+				F4273C0F112C0C2400BE2194 /* vumeter_front.bmp */,
 				F44075AC10BF053A003C59F6 /* myEditor.uidesc */,
+				F42732691125623200BE2194 /* SubControllerTest.uidesc */,
 			);
 			name = Resources;
 			sourceTree = "<group>";
@@ -422,18 +435,19 @@
 			buildActionMask = 2147483647;
 			files = (
 				F44075AD10BF053A003C59F6 /* myEditor.uidesc in Resources */,
-				F44075B110BF05A5003C59F6 /* horizontal slider back.bmp in Resources */,
-				F44075B210BF05A5003C59F6 /* slider handle.bmp in Resources */,
-				F44075B310BF05A5003C59F6 /* vertical slider back.bmp in Resources */,
-				F44075D810BF0DD5003C59F6 /* switch horizontal.bmp in Resources */,
-				F44075D910BF0DD5003C59F6 /* switch vertical.bmp in Resources */,
-				F44075E610BF147E003C59F6 /* animation knob.png in Resources */,
 				F4F5DA8A10BFD28900DB6C33 /* TabController.png in Resources */,
-				F403641610C125F5001BCC34 /* onoff button.bmp in Resources */,
-				F403647D10C12D95001BCC34 /* rocker switch.bmp in Resources */,
-				F40364DB10C13694001BCC34 /* vumeter back.bmp in Resources */,
-				F40364DC10C13694001BCC34 /* vumeter front.bmp in Resources */,
 				F4457815110A06590022C0E5 /* FrameBackground.png in Resources */,
+				F427326A1125623200BE2194 /* SubControllerTest.uidesc in Resources */,
+				F4273C10112C0C2400BE2194 /* animation_knob.png in Resources */,
+				F4273C11112C0C2400BE2194 /* horizontal_slider_back.bmp in Resources */,
+				F4273C12112C0C2400BE2194 /* onoff_button.bmp in Resources */,
+				F4273C13112C0C2400BE2194 /* rocker_switch.bmp in Resources */,
+				F4273C14112C0C2400BE2194 /* slider_handle.bmp in Resources */,
+				F4273C15112C0C2400BE2194 /* switch_horizontal.bmp in Resources */,
+				F4273C16112C0C2400BE2194 /* switch_vertical.bmp in Resources */,
+				F4273C17112C0C2400BE2194 /* vertical_slider_back.bmp in Resources */,
+				F4273C18112C0C2400BE2194 /* vumeter_back.bmp in Resources */,
+				F4273C19112C0C2400BE2194 /* vumeter_front.bmp in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -491,6 +505,8 @@
 				F403651C10C59C84001BCC34 /* baseiids.cpp in Sources */,
 				F403673610C901AF001BCC34 /* vstgui_uidescription_mac.mm in Sources */,
 				F4F4013D10D2662500F2B46B /* vst2wrapper.sdk.cpp in Sources */,
+				F42731DE1125507F00BE2194 /* factory.cpp in Sources */,
+				F42731E51125516A00BE2194 /* subcontrollertest.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
