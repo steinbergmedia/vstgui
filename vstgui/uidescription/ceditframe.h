@@ -215,24 +215,11 @@ public:
 	virtual void undo () = 0;
 };
 
-//----------------------------------------------------------------------------------------------------
-class CFileBitmap : public CBitmap
-//----------------------------------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
+static bool std__stringCompare (const std::string* lhs, const std::string* rhs)
 {
-public:
-	CFileBitmap (const char* path);
-	~CFileBitmap ();
-
-	virtual bool load (const char* path);
-
-	char* getPath () const { return path; }
-
-protected:
-	void setPath (const char* path);
-	char* path;
-};
-
-static const CColor kDefaultUIDescriptionScrollerColor = MakeCColor (255, 255, 255, 140);
+  return *lhs < *rhs;
+}
 
 } // namespace
 

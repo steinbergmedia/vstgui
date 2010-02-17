@@ -84,6 +84,8 @@ public:
 	virtual long controlModifierClicked (VSTGUI::CControl* pControl, long button) { return 0; }	///< return 1 if you want the control to not handle it, otherwise 0
 	virtual void controlBeginEdit (VSTGUI::CControl* pControl) {}
 	virtual void controlEndEdit (VSTGUI::CControl* pControl) {}
+	virtual void controlTagWillChange (VSTGUI::CControl* pControl) {}
+	virtual void controlTagDidChange (VSTGUI::CControl* pControl) {}
 };
 
 namespace VSTGUI {
@@ -151,7 +153,7 @@ public:
 	/// @name Editing Methods
 	//-----------------------------------------------------------------------------
 	//@{
-	virtual void setTag (long val) { tag = val; }
+	virtual void setTag (long val);
 	virtual long getTag () const { return tag; }
 
 	virtual void beginEdit ();

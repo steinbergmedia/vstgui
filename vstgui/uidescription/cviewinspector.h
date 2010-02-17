@@ -77,6 +77,8 @@ protected:
 	void windowClosed (PlatformWindow* platformWindow);
 	void checkWindowSizeConstraints (CPoint& size, PlatformWindow* platformWindow);
 
+	void addColorBitmapsToColorMenu (COptionMenu* menu, IUIDescription* desc);
+
 	CSelection* selection;
 	IActionOperator* actionOperator;
 	UIDescription* description;

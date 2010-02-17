@@ -166,7 +166,10 @@ public:
 	virtual void invalid () { setDirty (false); invalidRect (size); }									///< mark whole view as invalid
 
 	virtual void setVisible (bool state);																///< set visibility state
-	bool isVisible () const { return bVisible; }														///< get visibility state
+	bool isVisible () const { return bVisible && alphaValue > 0.f; }									///< get visibility state
+
+	virtual void setAlphaValue (float alpha);															///< set alpha value which will be applied when drawing this view
+	float getAlphaValue () const { return alphaValue; }													///< get alpha value
 	//@}
 
 	//-----------------------------------------------------------------------------
@@ -309,6 +312,8 @@ protected:
 	bool  bVisible;
 	
 	long  autosizeFlags;
+	
+	float alphaValue;
 	
 	CBitmap* pBackground;
 	CAttributeListEntry* pAttributeList;

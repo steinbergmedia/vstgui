@@ -32,6 +32,8 @@
 // OF THE POSSIBILITY OF SUCH DAMAGE.
 //-----------------------------------------------------------------------------
 
+#pragma warning (disable : 4996) // deprecated insecure calls (strcpy, memset etc)
+
 #include "uidescription/winplatformsupport.cpp"
 #include "vstgui_uidescription.cpp"
 

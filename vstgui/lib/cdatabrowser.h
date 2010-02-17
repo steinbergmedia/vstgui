@@ -87,15 +87,23 @@ public:
 //-----------------------------------------------------------------------------------------------
 class CDataBrowser : public CScrollView
 {
+protected:
+	enum
+	{
+		kDrawRowLinesFlag = kLastScrollViewStyleFlag,
+		kDrawColumnLinesFlag,
+		kDrawHeaderFlag
+	};
+	
 public:
 	CDataBrowser (const CRect& size, CFrame* pParent, IDataBrowser* db, long style = 0, CCoord scrollbarWidth = 16, CBitmap* pBackground = 0);
 
 	enum CDataBrowserStyle 
 	{
 		// see CScrollView for more styles
-		kDrawRowLines			= 1 << 4,
-		kDrawColumnLines		= 1 << 5,
-		kDrawHeader				= 1 << 6,
+		kDrawRowLines			= 1 << kDrawRowLinesFlag,
+		kDrawColumnLines		= 1 << kDrawColumnLinesFlag,
+		kDrawHeader				= 1 << kDrawHeaderFlag,
 	};
 	
 	enum 

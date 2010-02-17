@@ -2430,59 +2430,6 @@ long CEditFrame::onKeyUp (VstKeyCode& keyCode)
 		return CFrame::onKeyUp (keyCode);
 }
 
-#if 0
-//----------------------------------------------------------------------------------------------------
-//----------------------------------------------------------------------------------------------------
-//----------------------------------------------------------------------------------------------------
-CFileBitmap::CFileBitmap (const char* path)
-: path (0)
-{
-	if (path)
-		load (path);
-}
-
-//----------------------------------------------------------------------------------------------------
-CFileBitmap::~CFileBitmap ()
-{
-	setPath (0);
-}
-
-//----------------------------------------------------------------------------------------------------
-void CFileBitmap::setPath (const char* _path)
-{
-	if (path)
-	{
-		free (path);
-		path = 0;
-	}
-	if (_path)
-	{
-		path = (char*)malloc (strlen (_path) + 1);
-		strcpy (path, _path);
-		resourceDesc.type = CResourceDescription::kStringType;
-		resourceDesc.u.name = path;
-	}
-}
-
-//----------------------------------------------------------------------------------------------------
-bool CFileBitmap::load (const char* _path)
-{
-	bool result = false;
-	// platform dependent code
-	#if MAC
-	CFURLRef url = CFURLCreateFromFileSystemRepresentation (0, (const UInt8*)_path, strlen (_path), false);
-	if (url)
-	{
-		result = loadFromPath (url);
-		CFRelease (url);
-	}
-	#endif
-	if (result)
-		setPath (_path);
-	return result;
-}
-#endif
-
 } // namespace
 
 #endif // VSTGUI_LIVE_EDITING

@@ -98,6 +98,34 @@ CControl::~CControl ()
 }
 
 //------------------------------------------------------------------------
+void CControl::setTag (long val)
+{
+	if (listener)
+		listener->controlTagWillChange (this);
+	if (listeners.size () > 0)
+	{
+		std::list<CControlListener*>::const_iterator it = listeners.begin ();
+		while (it != listeners.end ())
+		{
+			(*it)->controlTagWillChange (this);
+			it++;
+		}
+	}
+	tag = val;
+	if (listener)
+		listener->controlTagDidChange (this);
+	if (listeners.size () > 0)
+	{
+		std::list<CControlListener*>::const_iterator it = listeners.begin ();
+		while (it != listeners.end ())
+		{
+			(*it)->controlTagDidChange (this);
+			it++;
+		}
+	}
+}
+
+//------------------------------------------------------------------------
 void CControl::doIdleStuff ()
 {
 	if (pParentFrame)
@@ -120,10 +148,7 @@ void CControl::beginEdit ()
 		}
 	}
 	if (getFrame ())
-	{
-		getFrame ()->setFocusView (this);
 		getFrame ()->beginEdit (tag);
-	}
 }
 
 //------------------------------------------------------------------------
