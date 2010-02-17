@@ -347,6 +347,7 @@ public:
 		const std::string* autosizeAttr = attributes.getAttributeValue ("autosize");
 		const std::string* tooltipAttr = attributes.getAttributeValue ("tooltip");
 		const std::string* customViewAttr = attributes.getAttributeValue ("custom-view-name");
+		const std::string* subControllerAttr = attributes.getAttributeValue ("sub-controller");
 		
 		CPoint p;
 		CRect size;
@@ -408,6 +409,9 @@ public:
 		if (customViewAttr)
 			view->setAttribute ('uicv', customViewAttr->size ()+1, customViewAttr->c_str ());
 
+		if (subControllerAttr)
+			view->setAttribute ('uisc', subControllerAttr->size ()+1, subControllerAttr->c_str ());
+
 		return true;
 	}
 	bool getAttributeNames (std::list<std::string>& attributeNames) const
@@ -419,6 +423,7 @@ public:
 		attributeNames.push_back ("autosize");
 		attributeNames.push_back ("tooltip");
 		attributeNames.push_back ("custom-view-name");
+		attributeNames.push_back ("sub-controller");
 		return true;
 	}
 	AttrType getAttributeType (const std::string& attributeName) const
@@ -430,6 +435,7 @@ public:
 		else if (attributeName == "autosize") return kStringType;
 		else if (attributeName == "tooltip") return kStringType;
 		else if (attributeName == "custom-view-name") return kStringType;
+		else if (attributeName == "sub-controller") return kStringType;
 		return kUnknownType;
 	}
 	bool getAttributeValue (CView* view, const std::string& attributeName, std::string& stringValue, IUIDescription* desc) const
@@ -504,6 +510,20 @@ public:
 				if (view->getAttribute ('uicv', customViewNameSize, customViewName, customViewNameSize))
 					stringValue = customViewName;
 				free (customViewName);
+				return true;
+			}
+		}
+		else if (attributeName == "sub-controller")
+		{
+			char* subControllerName = 0;
+			long subControllerNameSize = 0;
+			if (view->getAttributeSize ('uisc', subControllerNameSize))
+			{
+				subControllerName = (char*)malloc (subControllerNameSize + 1);
+				memset (subControllerName, 0, subControllerNameSize+1);
+				if (view->getAttribute ('uisc', subControllerNameSize, subControllerName, subControllerNameSize))
+					stringValue = subControllerName;
+				free (subControllerName);
 				return true;
 			}
 		}

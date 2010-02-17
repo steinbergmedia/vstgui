@@ -51,15 +51,25 @@ class CVSTGUITimer;
 //-----------------------------------------------------------------------------
 class CScrollView : public CViewContainer, CControlListener
 {
+protected:
+	enum 
+	{
+		kHorizontalScrollbarFlag,
+		kVerticalScrollbarFlag,
+		kDontDrawFrameFlag,
+		
+		kLastScrollViewStyleFlag
+	};
+	
 public:
 	CScrollView (const CRect &size, const CRect &containerSize, CFrame* pParent, long style, CCoord scrollbarWidth = 16, CBitmap* pBackground = 0);
 	CScrollView (const CScrollView& scrollView);
 
 	enum CScrollViewStyle 
 	{
-		kHorizontalScrollbar	= 1 << 1,	///< add a horizontal scrollbar
-		kVerticalScrollbar 		= 1 << 2,	///< add a vertical scrollbar
-		kDontDrawFrame			= 1 << 3,	///< don't draw frame
+		kHorizontalScrollbar	= 1 << kHorizontalScrollbarFlag,	///< add a horizontal scrollbar
+		kVerticalScrollbar 		= 1 << kVerticalScrollbarFlag,		///< add a vertical scrollbar
+		kDontDrawFrame			= 1 << kDontDrawFrameFlag,			///< don't draw frame
 	};
 
 	//-----------------------------------------------------------------------------

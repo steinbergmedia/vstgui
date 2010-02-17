@@ -240,6 +240,7 @@ void GdiplusDrawContext::drawPoint (const CPoint &point, CColor color)
 //-----------------------------------------------------------------------------
 void GdiplusDrawContext::drawBitmap (CBitmap* cbitmap, const CRect& dest, const CPoint& offset, float alpha)
 {
+	alpha *= currentState.globalAlpha;
 	if (alpha == 0.f || pGraphics == 0)
 		return;
 	IPlatformBitmap* platformBitmap = cbitmap ? cbitmap->getPlatformBitmap () : 0;

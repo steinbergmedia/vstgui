@@ -71,6 +71,8 @@ public:
 	/// @name CFrame Methods
 	//-----------------------------------------------------------------------------
 	//@{
+	virtual void close ();						///< closes the frame and calls forget
+
 	virtual void idle ();
 	virtual void doIdleStuff ();
 

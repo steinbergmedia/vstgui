@@ -655,6 +655,7 @@ CMouseEventResult COptionMenu::onMouseDown (CPoint& where, const long& buttons)
 	{
 		if (bgWhenClick)
 			invalid ();
+		getFrame ()->setFocusView (this);
 		popup ();
 		if (bgWhenClick)
 			invalid ();

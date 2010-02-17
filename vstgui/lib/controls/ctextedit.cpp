@@ -301,37 +301,33 @@ void CTextEdit::takeFocus ()
 	rect.offset (p.x, p.y);
 
 	platformControl = getFrame ()->getPlatformFrame ()->createPlatformTextEdit (this);
-	if (platformControl)
-		beginEdit ();
 }
 
 //------------------------------------------------------------------------
 void CTextEdit::looseFocus ()
 {
-	// Call this yet to avoid recursive call
-	if (getFrame () && getFrame ()->getFocusView () == this)
-		getFrame ()->setFocusView (0);
-
 	if (platformControl == 0)
 		return;
 
-	endEdit();
-
+	IPlatformTextEdit* _platformControl = platformControl;
+	platformControl = 0;
+	
 	char oldText[256];
 	strcpy (oldText, text);
 
-	platformControl->getText (text, 255);
-	platformControl->forget ();
-	platformControl = 0;
+	_platformControl->getText (text, 255);
+	_platformControl->forget ();
 
 	// update dependency
-	bool change = false;
 	if (strcmp (oldText, text))
 	{
-		change = true;
+		beginEdit ();
+
 		if (string2FloatConvert)
 			string2FloatConvert (text, value);
 		valueChanged ();
+
+		endEdit ();
 	}
 
 	// if you want to destroy the text edit do it with the loose focus message

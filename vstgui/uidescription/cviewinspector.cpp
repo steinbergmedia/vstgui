@@ -399,7 +399,7 @@ public:
 		context->setDrawMode (kCopyMode);
 		context->setFillColor (uidDataBrowserLineColor);
 		context->drawRect (r, kDrawFilled);
-		if (headerTitles.size () > column)
+		if (headerTitles.size () > (size_t)column)
 		{
 			context->setFont (kSystemFont, 10);
 			context->setFontColor (kWhiteCColor);
@@ -715,7 +715,7 @@ public:
 					actionOperator->performBitmapChange (newText, "not yet defined");
 					updateNames ();
 					browser->recalculateLayout (true);
-					for (long i = 0; i < names.size (); i++)
+					for (size_t i = 0; i < names.size (); i++)
 					{
 						if (*names[i] == newText)
 						{
@@ -977,7 +977,7 @@ public:
 					actionOperator->performTagChange (newText, -2);
 					updateNames ();
 					browser->recalculateLayout (true);
-					for (long i = 0; i < names.size (); i++)
+					for (size_t i = 0; i < names.size (); i++)
 					{
 						if (*names[i] == newText)
 						{
@@ -1358,6 +1358,32 @@ void CViewInspector::updateAttributeValueView (const std::string& attrName)
 }
 
 //-----------------------------------------------------------------------------
+void CViewInspector::addColorBitmapsToColorMenu (COptionMenu* menu, IUIDescription* desc)
+{
+	CMenuItemList* items = menu->getItems ();
+	CMenuItemList::iterator it = items->begin ();
+	CColor color;
+	const CCoord size = 15;
+	while (it != items->end ())
+	{
+		CMenuItem* item = (*it);
+		
+		if (desc->getColor (item->getTitle (), color))
+		{
+			COffscreenContext* context = COffscreenContext::create (getFrame (), size, size);
+			if (context)
+			{
+				context->setFillColor (color);
+				context->drawRect (CRect (0, 0, size, size), kDrawFilled);
+				item->setIcon (context->getBitmap ());
+				context->forget ();
+			}
+		}
+		it++;
+	}
+}
+
+//-----------------------------------------------------------------------------
 CView* CViewInspector::createViewForAttribute (const std::string& attrName, CCoord width)
 {
 	if (description == 0)
@@ -1407,6 +1433,7 @@ CView* CViewInspector::createViewForAttribute (const std::string& attrName, CCoo
 				menu->addEntry (new CMenuItem (attrValue.c_str ()));
 				menu->setValue ((float)menu->getNbEntries ());
 			}
+			addColorBitmapsToColorMenu (menu, description);
 			valueView = menu;
 			break;
 		}
@@ -1528,6 +1555,8 @@ void CViewInspector::updateAttributeViews ()
 					}
 				}
 				updateMenuFromList (optMenu, names, attrValue, addNoneItem);
+				if (type == IViewCreator::kColorType)
+					addColorBitmapsToColorMenu (optMenu, description);
 			}
 			else if (booleanButton)
 			{
@@ -1576,13 +1605,14 @@ CView* CViewInspector::createAttributesView (CCoord width)
 		scrollView->setBackgroundColor (kTransparentCColor);
 		scrollView->setAutosizeFlags (kAutosizeAll);
 		CScrollbar* bar = scrollView->getVerticalScrollbar ();
-		bar->setScrollerColor (kDefaultUIDescriptionScrollerColor);
+		bar->setScrollerColor (uidScrollerColor);
 		bar->setBackgroundColor (kTransparentCColor);
 		bar->setFrameColor (kTransparentCColor);
 		attributesView->addView (scrollView);
 	}
 	else
 	{
+		scrollView->setContainerSize (CRect (0, 0, 0, 0));
 		width = scrollView->getWidth ();
 		size.setWidth (width);
 		attributeViews.clear ();
@@ -1687,7 +1717,7 @@ void CViewInspector::show ()
 		colorBrowser->setAutosizeFlags (kAutosizeAll);
 		colorDelegate->forget ();
 		CScrollbar* bar = colorBrowser->getVerticalScrollbar ();
-		bar->setScrollerColor (kDefaultUIDescriptionScrollerColor);
+		bar->setScrollerColor (uidScrollerColor);
 		bar->setBackgroundColor (kTransparentCColor);
 		bar->setFrameColor (kTransparentCColor);
 
@@ -1697,7 +1727,7 @@ void CViewInspector::show ()
 		bitmapBrowser->setAutosizeFlags (kAutosizeAll);
 		bmpDelegate->forget ();
 		bar = bitmapBrowser->getVerticalScrollbar ();
-		bar->setScrollerColor (kDefaultUIDescriptionScrollerColor);
+		bar->setScrollerColor (uidScrollerColor);
 		bar->setBackgroundColor (kTransparentCColor);
 		bar->setFrameColor (kTransparentCColor);
 
@@ -1707,7 +1737,7 @@ void CViewInspector::show ()
 		fontBrowser->setAutosizeFlags (kAutosizeAll);
 		fontDelegate->forget ();
 		bar = fontBrowser->getVerticalScrollbar ();
-		bar->setScrollerColor (kDefaultUIDescriptionScrollerColor);
+		bar->setScrollerColor (uidScrollerColor);
 		bar->setBackgroundColor (kTransparentCColor);
 		bar->setFrameColor (kTransparentCColor);
 
@@ -1717,7 +1747,7 @@ void CViewInspector::show ()
 		controlTagBrowser->setAutosizeFlags (kAutosizeAll);
 		tagDelegate->forget ();
 		bar = controlTagBrowser->getVerticalScrollbar ();
-		bar->setScrollerColor (kDefaultUIDescriptionScrollerColor);
+		bar->setScrollerColor (uidScrollerColor);
 		bar->setBackgroundColor (kTransparentCColor);
 		bar->setFrameColor (kTransparentCColor);
 
@@ -1791,7 +1821,7 @@ void CViewInspector::hide ()
 	{
 		beforeSave ();
 		attributeViews.clear ();
-		frame->forget ();
+		frame->close ();
 		frame = 0;
 		scrollView = 0;
 		attributesView = 0;

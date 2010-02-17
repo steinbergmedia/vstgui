@@ -146,7 +146,7 @@ public:
 	static bool parseColor (const std::string& colorString, CColor& color);
 	static CViewAttributeID kTemplateNameAttributeID;
 protected:
-	CView* createViewFromNode (UINode* node, IController* controller);
+	CView* createViewFromNode (UINode* node);
 	UINode* getBaseNode (const char* name) const;
 	UINode* findChildNodeByNameAttribute (UINode* node, const char* nameAttribute) const;
 	void updateAttributesForView (UINode* node, CView* view, bool deep = true);
@@ -199,10 +199,26 @@ public:
 };
 
 //-----------------------------------------------------------------------------
-static bool std__stringCompare (const std::string* lhs, const std::string* rhs)
+class DelegationController : public IController
 {
-  return *lhs < *rhs;
-}
+public:
+	DelegationController (IController* controller) : controller (controller) {}
+
+	// CControlListener
+	void valueChanged (CControl* pControl) { controller->valueChanged (pControl); }
+	long controlModifierClicked (CControl* pControl, long button) { return controller->controlModifierClicked (pControl, button); }
+	void controlBeginEdit (CControl* pControl) { controller->controlBeginEdit (pControl); }
+	void controlEndEdit (CControl* pControl) { controller->controlEndEdit (pControl); }
+	void controlTagWillChange (VSTGUI::CControl* pControl) { controller->controlTagWillChange (pControl); }
+	void controlTagDidChange (VSTGUI::CControl* pControl) { controller->controlTagDidChange (pControl); }
+	// IController
+	long getTagForName (const char* name, long registeredTag) { return controller->getTagForName (name, registeredTag); }
+	CControlListener* getControlListener (const char* name) { return controller->getControlListener (name); }
+	CView* createView (const UIAttributes& attributes, IUIDescription* description) { return controller->createView (attributes, description); }
+	CView* verifyView (CView* view, const UIAttributes& attributes, IUIDescription* description) { return controller->verifyView (view, attributes, description); }
+protected:
+	IController* controller;
+};
 
 } // namespace
 

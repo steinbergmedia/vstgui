@@ -263,6 +263,8 @@ CView* CSelection::createView (InputStream& stream, ViewFactory* viewFactory, IU
 		view = uiDescription->getController ()->createView (attr, uiDescription);
 	if (view == 0)
 		view = viewFactory->createView (attr, uiDescription);
+	if (view && uiDescription->getController ())
+		view = uiDescription->getController ()->verifyView (view, attr, uiDescription);
 	int subViews;
 	if (!(stream >> subViews)) return view;
 	CViewContainer* container = view ? dynamic_cast<CViewContainer*> (view) : 0;
