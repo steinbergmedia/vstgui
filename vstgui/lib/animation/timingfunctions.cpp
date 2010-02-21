@@ -32,67 +32,78 @@
 // OF THE POSSIBILITY OF SUCH DAMAGE.
 //-----------------------------------------------------------------------------
 
-#ifndef __win32frame__
-#define __win32frame__
-
-#include "../../cframe.h"
-
-#if WINDOWS
-
-#include <windows.h>
+#include "timingfunctions.h"
+#include "../vstguibase.h"
 
 namespace VSTGUI {
+namespace Animation {
 
 //-----------------------------------------------------------------------------
-class Win32Frame : public IPlatformFrame
+LinearTimingFunction::LinearTimingFunction (unsigned long length)
+: TimingFunctionBase (length)
 {
-public:
-	Win32Frame (IPlatformFrameCallback* frame, const CRect& size, HWND parent);
-	~Win32Frame ();
-
-	HWND getPlatformWindow () const { return windowHandle; }
-	HWND getParentPlatformWindow () const { return parentWindow; }
-	HWND getOuterWindow () const;
-	IPlatformFrameCallback* getFrame () const { return frame; }
-	
-	// IPlatformFrame
-	bool getGlobalPosition (CPoint& pos) const;
-	bool setSize (const CRect& newSize);
-	bool getSize (CRect& size) const;
-	bool getCurrentMousePosition (CPoint& mousePosition) const;
-	bool getCurrentMouseButtons (long& buttons) const;
-	bool setMouseCursor (CCursorType type);
-	bool invalidRect (const CRect& rect);
-	bool scrollRect (const CRect& src, const CPoint& distance);
-	bool showTooltip (const CRect& rect, const char* utf8Text);
-	bool hideTooltip ();
-	void* getPlatformRepresentation () const { return windowHandle; }
-	IPlatformTextEdit* createPlatformTextEdit (IPlatformTextEditCallback* textEdit);
-	IPlatformOptionMenu* createPlatformOptionMenu ();
-	COffscreenContext* createOffscreenContext (CCoord width, CCoord height);
-	CGraphicsPath* createGraphicsPath ();
-	long doDrag (CDropSource* source, const CPoint& offset, CBitmap* dragBitmap);
+}
 
 //-----------------------------------------------------------------------------
-protected:
-	void initTooltip ();
+float LinearTimingFunction::getPosition (unsigned long milliseconds) 
+{
+	float pos = ((float)milliseconds) / ((float)length);
+	if (pos > 1.f)
+		pos = 1.f;
+	else if (pos < 0.f)
+		pos = 0.f;
+	return pos;
+}
 
-	static void initWindowClass ();
-	static void destroyWindowClass ();
-	static LONG_PTR WINAPI WindowProc (HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam);
-	static long gUseCount;
+//-----------------------------------------------------------------------------
+bool LinearTimingFunction::isDone (unsigned long milliseconds)
+{
+	return milliseconds >= length;
+}
 
-	HWND parentWindow;
-	HWND windowHandle;
-	HWND tooltipWindow;
+//-----------------------------------------------------------------------------
+RepeatTimingFunction::RepeatTimingFunction (TimingFunctionBase* tf, long repeatCount, bool autoReverse)
+: tf (tf)
+, repeatCount (repeatCount)
+, autoReverse (autoReverse)
+, isReverse (false)
+, runCounter (0)
+{
+}
 
-	COffscreenContext* backBuffer;
+//-----------------------------------------------------------------------------
+RepeatTimingFunction::~RepeatTimingFunction ()
+{
+	CBaseObject* obj = dynamic_cast<CBaseObject*> (tf);
+	if (obj)
+		obj->forget ();
+	else
+		delete tf;
+}
 
-	bool mouseInside;
-};
+//-----------------------------------------------------------------------------
+float RepeatTimingFunction::getPosition (unsigned long milliseconds)
+{
+	if (runCounter > 0)
+		milliseconds -= tf->getLength () * runCounter;
+	float pos = tf->getPosition (milliseconds);
+	return isReverse ? 1.f - pos : pos;
+}
 
-} // namespace
+//-----------------------------------------------------------------------------
+bool RepeatTimingFunction::isDone (unsigned long milliseconds)
+{
+	if (runCounter > 0)
+		milliseconds -= tf->getLength () * runCounter;
+	if (tf->isDone (milliseconds))
+	{
+		runCounter++;
+		if (autoReverse)
+			isReverse = !isReverse;
+		if (runCounter >= repeatCount)
+			return true;
+	}
+	return false;
+}
 
-#endif // WINDOWS
-
-#endif // __win32frame__
+}} // namespaces

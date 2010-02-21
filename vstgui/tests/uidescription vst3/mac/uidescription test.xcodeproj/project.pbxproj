@@ -10,6 +10,8 @@
 		F403651810C59C44001BCC34 /* vstinitiids.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F403651710C59C44001BCC34 /* vstinitiids.cpp */; };
 		F403651C10C59C84001BCC34 /* baseiids.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F403651B10C59C84001BCC34 /* baseiids.cpp */; };
 		F403673610C901AF001BCC34 /* vstgui_uidescription_mac.mm in Sources */ = {isa = PBXBuildFile; fileRef = F403673510C901AF001BCC34 /* vstgui_uidescription_mac.mm */; };
+		F41CA1C8112E99F000D425D7 /* animationtest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F41CA1C7112E99F000D425D7 /* animationtest.cpp */; };
+		F41CA21F112E9E6B00D425D7 /* AnimationTest.uidesc in Resources */ = {isa = PBXBuildFile; fileRef = F41CA21E112E9E6B00D425D7 /* AnimationTest.uidesc */; };
 		F42731DE1125507F00BE2194 /* factory.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F42731DD1125507F00BE2194 /* factory.cpp */; };
 		F42731E51125516A00BE2194 /* subcontrollertest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F42731E41125516A00BE2194 /* subcontrollertest.cpp */; };
 		F427326A1125623200BE2194 /* SubControllerTest.uidesc in Resources */ = {isa = PBXBuildFile; fileRef = F42732691125623200BE2194 /* SubControllerTest.uidesc */; };
@@ -64,6 +66,9 @@
 		F403651710C59C44001BCC34 /* vstinitiids.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = vstinitiids.cpp; path = ../../../../../SKI/public.sdk/source/vst/vstinitiids.cpp; sourceTree = SOURCE_ROOT; };
 		F403651B10C59C84001BCC34 /* baseiids.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = baseiids.cpp; path = ../../../../../SKI/base/source/baseiids.cpp; sourceTree = SOURCE_ROOT; };
 		F403673510C901AF001BCC34 /* vstgui_uidescription_mac.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = vstgui_uidescription_mac.mm; path = ../../../vstgui_uidescription_mac.mm; sourceTree = SOURCE_ROOT; };
+		F41CA1C6112E99F000D425D7 /* animationtest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = animationtest.h; path = ../source/animationtest.h; sourceTree = SOURCE_ROOT; };
+		F41CA1C7112E99F000D425D7 /* animationtest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = animationtest.cpp; path = ../source/animationtest.cpp; sourceTree = SOURCE_ROOT; };
+		F41CA21E112E9E6B00D425D7 /* AnimationTest.uidesc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; name = AnimationTest.uidesc; path = ../resource/AnimationTest.uidesc; sourceTree = SOURCE_ROOT; };
 		F42731C011254BEC00BE2194 /* uidescription test.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "uidescription test.h"; path = "../source/uidescription test.h"; sourceTree = SOURCE_ROOT; };
 		F42731DD1125507F00BE2194 /* factory.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = factory.cpp; path = ../source/factory.cpp; sourceTree = SOURCE_ROOT; };
 		F42731E31125516A00BE2194 /* subcontrollertest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = subcontrollertest.h; path = ../source/subcontrollertest.h; sourceTree = SOURCE_ROOT; };
@@ -200,6 +205,8 @@
 				F42731DD1125507F00BE2194 /* factory.cpp */,
 				F42731E31125516A00BE2194 /* subcontrollertest.h */,
 				F42731E41125516A00BE2194 /* subcontrollertest.cpp */,
+				F41CA1C6112E99F000D425D7 /* animationtest.h */,
+				F41CA1C7112E99F000D425D7 /* animationtest.cpp */,
 			);
 			name = Sources;
 			sourceTree = "<group>";
@@ -386,6 +393,7 @@
 				F4273C0F112C0C2400BE2194 /* vumeter_front.bmp */,
 				F44075AC10BF053A003C59F6 /* myEditor.uidesc */,
 				F42732691125623200BE2194 /* SubControllerTest.uidesc */,
+				F41CA21E112E9E6B00D425D7 /* AnimationTest.uidesc */,
 			);
 			name = Resources;
 			sourceTree = "<group>";
@@ -448,6 +456,7 @@
 				F4273C17112C0C2400BE2194 /* vertical_slider_back.bmp in Resources */,
 				F4273C18112C0C2400BE2194 /* vumeter_back.bmp in Resources */,
 				F4273C19112C0C2400BE2194 /* vumeter_front.bmp in Resources */,
+				F41CA21F112E9E6B00D425D7 /* AnimationTest.uidesc in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -507,6 +516,7 @@
 				F4F4013D10D2662500F2B46B /* vst2wrapper.sdk.cpp in Sources */,
 				F42731DE1125507F00BE2194 /* factory.cpp in Sources */,
 				F42731E51125516A00BE2194 /* subcontrollertest.cpp in Sources */,
+				F41CA1C8112E99F000D425D7 /* animationtest.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

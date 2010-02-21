@@ -73,6 +73,10 @@
 #include "lib/controls/csplashscreen.h"
 #include "lib/controls/cvumeter.h"
 
+#include "lib/animation/animations.h"
+#include "lib/animation/animator.h"
+#include "lib/animation/timingfunctions.h"
+
 using namespace VSTGUI;
 
 #endif	// __vstgui__

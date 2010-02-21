@@ -98,7 +98,7 @@ static id VSTGUI_NSTextField_Init (id self, SEL _cmd, void* textEdit)
 		[self setStringValue:text];
 		[self setFocusRingType:NSFocusRingTypeNone];
 		[self sizeToFit];
-		[self setAutoresizingMask:NSViewMinYMargin];
+		[(NSView*)self setAutoresizingMask:NSViewMinYMargin];
 		if ([self frame].size.height < editFrameRect.size.height)
 		{
 			CGFloat offset = editFrameRect.size.height - [self frame].size.height;
