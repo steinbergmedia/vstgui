@@ -32,67 +32,80 @@
 // OF THE POSSIBILITY OF SUCH DAMAGE.
 //-----------------------------------------------------------------------------
 
-#ifndef __win32frame__
-#define __win32frame__
+#ifndef __animator__
+#define __animator__
 
-#include "../../cframe.h"
-
-#if WINDOWS
-
-#include <windows.h>
+#include "../vstguibase.h"
+#include <list>
+#include <string>
 
 namespace VSTGUI {
+class CVSTGUITimer;
+class CView;
+
+namespace Animation {
 
 //-----------------------------------------------------------------------------
-class Win32Frame : public IPlatformFrame
+class IAnimationTarget
 {
 public:
-	Win32Frame (IPlatformFrameCallback* frame, const CRect& size, HWND parent);
-	~Win32Frame ();
+	virtual ~IAnimationTarget () {}
 
-	HWND getPlatformWindow () const { return windowHandle; }
-	HWND getParentPlatformWindow () const { return parentWindow; }
-	HWND getOuterWindow () const;
-	IPlatformFrameCallback* getFrame () const { return frame; }
-	
-	// IPlatformFrame
-	bool getGlobalPosition (CPoint& pos) const;
-	bool setSize (const CRect& newSize);
-	bool getSize (CRect& size) const;
-	bool getCurrentMousePosition (CPoint& mousePosition) const;
-	bool getCurrentMouseButtons (long& buttons) const;
-	bool setMouseCursor (CCursorType type);
-	bool invalidRect (const CRect& rect);
-	bool scrollRect (const CRect& src, const CPoint& distance);
-	bool showTooltip (const CRect& rect, const char* utf8Text);
-	bool hideTooltip ();
-	void* getPlatformRepresentation () const { return windowHandle; }
-	IPlatformTextEdit* createPlatformTextEdit (IPlatformTextEditCallback* textEdit);
-	IPlatformOptionMenu* createPlatformOptionMenu ();
-	COffscreenContext* createOffscreenContext (CCoord width, CCoord height);
-	CGraphicsPath* createGraphicsPath ();
-	long doDrag (CDropSource* source, const CPoint& offset, CBitmap* dragBitmap);
-
-//-----------------------------------------------------------------------------
-protected:
-	void initTooltip ();
-
-	static void initWindowClass ();
-	static void destroyWindowClass ();
-	static LONG_PTR WINAPI WindowProc (HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam);
-	static long gUseCount;
-
-	HWND parentWindow;
-	HWND windowHandle;
-	HWND tooltipWindow;
-
-	COffscreenContext* backBuffer;
-
-	bool mouseInside;
+	virtual void animationStart (CView* view, const char* name) = 0;			///< animation starts
+	virtual void animationTick (CView* view, const char* name, float time) = 0;	///< time is a normalized value between zero and one
+	virtual void animationFinished (CView* view, const char* name) = 0;			///< animation ended
 };
 
-} // namespace
+//-----------------------------------------------------------------------------
+class ITimingFunction
+{
+public:
+	virtual ~ITimingFunction () {}
 
-#endif // WINDOWS
+	virtual float getPosition (unsigned long milliseconds) = 0;
+	virtual bool isDone (unsigned long milliseconds) = 0;
+};
 
-#endif // __win32frame__
+//-----------------------------------------------------------------------------
+class Animator : public CBaseObject
+{
+public:
+	Animator ();	///< do not use this, instead use CFrame::getAnimator()
+
+	/** adds an animation. animation and timingFunction is now owned by the animator. An already running animation for view with name will be canceled. */
+	void addAnimation (CView* view, const char* name, IAnimationTarget* target, ITimingFunction* timingFunction);
+	/** removes an animation. if animation is a CBaseObject forget() will be called otherwise it is deleted. The same will be done with the timingFunction. */
+	void removeAnimation (CView* view, const char* name);
+
+	/** removes all animations for view */
+	void removeAnimations (CView* view);
+
+	CMessageResult notify (CBaseObject* sender, const char* message);
+
+	CLASS_METHODS_NOCOPY(Animator, CBaseObject)
+protected:
+	class Animation : public CBaseObject
+	{
+	public:
+		Animation (CView* view, const std::string& name, IAnimationTarget* at, ITimingFunction* t);
+		~Animation ();
+
+		std::string name;
+		CView* view;
+		IAnimationTarget* target;
+		ITimingFunction* timingFunction;
+		unsigned long startTime;
+		bool started;
+	};
+
+	~Animator ();
+	void removeAnimation (Animation* a);
+
+	std::list<Animation*> animations;
+	std::list<Animation*> toRemove;
+	bool inTimer;
+};
+
+}} // namespaces
+
+#endif // __animator__

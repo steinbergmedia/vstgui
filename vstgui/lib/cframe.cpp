@@ -34,6 +34,7 @@
 
 #include "cframe.h"
 #include "coffscreencontext.h"
+#include "animation/animator.h"
 
 namespace VSTGUI {
 
@@ -66,6 +67,7 @@ CFrame::CFrame (const CRect &inSize, void* inSystemWindow, VSTGUIEditorInterface
 , pMouseObserver (0)
 , pKeyboardHook (0)
 , pViewAddedRemovedObserver (0)
+, pAnimator (0)
 , pModalView (0)
 , pFocusView (0)
 , pActiveFocusView (0)
@@ -83,6 +85,8 @@ CFrame::CFrame (const CRect &inSize, void* inSystemWindow, VSTGUIEditorInterface
 //-----------------------------------------------------------------------------
 CFrame::~CFrame ()
 {
+	if (pAnimator)
+		pAnimator->forget ();
 	if (pModalView)
 		removeView (pModalView, false);
 
@@ -381,6 +385,14 @@ void CFrame::doIdleStuff ()
 {
 	if (pEditor)
 		pEditor->doIdleStuff ();
+}
+
+//-----------------------------------------------------------------------------
+Animation::Animator* CFrame::getAnimator ()
+{
+	if (pAnimator == 0)
+		pAnimator = new Animation::Animator;
+	return pAnimator;
 }
 
 //-----------------------------------------------------------------------------

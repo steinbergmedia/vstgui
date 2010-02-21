@@ -44,7 +44,7 @@ namespace VSTGUI {
 
 HINSTANCE GetInstance () { return (HINSTANCE)hInstance; }
 
-/// \cond ignore
+/// @cond ignore
 //-----------------------------------------------------------------------------
 GDIPlusGlobals* GDIPlusGlobals::gInstance = 0;
 
@@ -234,7 +234,7 @@ ULONG STDMETHODCALLTYPE ResourceStream::Release(void)
     return res;
 }
 
-/// \endcond ignore
+/// @endcond ignore
 
 } // namespace
 

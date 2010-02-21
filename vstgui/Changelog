@@ -1,3 +1,9 @@
+2010-02-21 arne
+
+	* new animation classes
+	* using mach_absolute_time() instead of TickCount() for IPlatformFrame::getTicks() for Mac OS X
+	* fix drawing bitmaps with globalAlpha value other than 1 on Mac OS X
+	
 2010-02-17 arne
 
 	* new alphaValue member for CView which affects the opaqueness when drawing

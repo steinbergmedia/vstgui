@@ -669,12 +669,6 @@ bool HIViewFrame::scrollRect (const CRect& _src, const CPoint& distance)
 }
 
 //-----------------------------------------------------------------------------
-unsigned long HIViewFrame::getTicks () const
-{
-	return (TickCount () * 1000) / 60;
-}
-
-//-----------------------------------------------------------------------------
 bool HIViewFrame::showTooltip (const CRect& _rect, const char* utf8Text)
 {
 	CRect rect (_rect);

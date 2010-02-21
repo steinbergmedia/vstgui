@@ -37,13 +37,21 @@
 
 /// @cond ignore
 
-#include "../cframe.h"
+#include "../cview.h"
+
+struct VstKeyCode;
 
 namespace VSTGUI {
 class IPlatformTextEdit;
 class IPlatformTextEditCallback;
 class IPlatformOptionMenu;
 class CGraphicsPath;
+class CDrawContext;
+class COffscreenContext;
+class CDragContainer;
+class CDropSource;
+struct CRect;
+struct CPoint;
 
 //-----------------------------------------------------------------------------
 // Callback interface from IPlatformFrame implementations
@@ -77,7 +85,8 @@ class IPlatformFrame : public CBaseObject
 {
 public:
 	static IPlatformFrame* createPlatformFrame (IPlatformFrameCallback* frame, const CRect& size, void* parent);	///< create platform representation
-	
+	static unsigned long getTicks ();
+
 	virtual bool getGlobalPosition (CPoint& pos) const = 0;	///< get the top left position in global coordinates
 	virtual bool setSize (const CRect& newSize) = 0;	///< set size of platform representation relative to parent
 	virtual bool getSize (CRect& size) const = 0;	///< get size of platform representation relative to parent
@@ -88,8 +97,6 @@ public:
 	
 	virtual bool invalidRect (const CRect& rect) = 0;	///< invalidates rect in platform representation
 	virtual bool scrollRect (const CRect& src, const CPoint& distance) = 0; ///< blit scroll the src rect by distance, return false if not supported
-
-	virtual unsigned long getTicks () const = 0;
 
 	virtual bool showTooltip (const CRect& rect, const char* utf8Text) = 0; ///< show tooltip
 	virtual bool hideTooltip () = 0;	///< hide tooltip

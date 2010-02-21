@@ -373,7 +373,7 @@ void CGDrawContext::drawBitmap (CBitmap* bitmap, const CRect& rect, const CPoint
 		CGContextRef context = beginCGContext ();
 		if (context)
 		{
-			CGContextSetAlpha (context, (CGFloat)alpha);
+			CGContextSetAlpha (context, (CGFloat)alpha*currentState.globalAlpha);
 
 			CGRect dest;
 			dest.origin.x = rect.left - offset.h;

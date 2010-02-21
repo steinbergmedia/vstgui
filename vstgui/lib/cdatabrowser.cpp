@@ -368,7 +368,7 @@ void CDataBrowser::beginTextEdit (long row, long column, const char* initialText
 	CTextEdit* te = new CTextEdit (cellRect, 0, -1, initialText);
 	db->dbCellSetupTextEdit(row, column, te, this);
 	addView (te);
-	te->takeFocus ();
+//	te->takeFocus ();
 	getFrame ()->setFocusView (te);
 	// save row and column
 	te->setAttribute ('row ', sizeof (long), &row);

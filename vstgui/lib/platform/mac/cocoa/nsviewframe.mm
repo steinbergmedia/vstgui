@@ -843,12 +843,6 @@ bool NSViewFrame::scrollRect (const CRect& src, const CPoint& distance)
 }
 
 //-----------------------------------------------------------------------------
-unsigned long NSViewFrame::getTicks () const
-{
-	return (TickCount () * 1000) / 60;
-}
-
-//-----------------------------------------------------------------------------
 bool NSViewFrame::showTooltip (const CRect& rect, const char* utf8Text)
 {
 	if (tooltipWindow == 0)

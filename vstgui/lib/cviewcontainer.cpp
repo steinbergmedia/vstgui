@@ -892,11 +892,12 @@ CMouseEventResult CViewContainer::onMouseDown (CPoint &where, const long& button
 			}
 			CBaseObjectGuard crg (pV);
 
+			if (pV->wantsFocus ())
+				getFrame ()->setFocusView (pV);
+
 			CMouseEventResult result = pV->onMouseDown (where2, buttons);
 			if (result != kMouseEventNotHandled && pV->getNbReference () > 1)
 			{
-				if (pV->wantsFocus ())
-					getFrame ()->setFocusView (pV);
 				if (result == kMouseEventHandled)
 					mouseDownView = pV;
 			}
