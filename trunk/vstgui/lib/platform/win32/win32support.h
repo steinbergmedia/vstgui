@@ -58,7 +58,7 @@ namespace VSTGUI {
 
 extern HINSTANCE GetInstance ();
 
-/// \cond ignore
+/// @cond ignore
 class GDIPlusGlobals : public CBaseObject
 {
 public:
@@ -160,7 +160,7 @@ protected:
 	long _refcount;
 };
 
-/// \endcond
+/// @endcond
 
 } // namespace
 

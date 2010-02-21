@@ -478,7 +478,7 @@ bool Win32Frame::scrollRect (const CRect& src, const CPoint& distance)
 }
 
 //-----------------------------------------------------------------------------
-unsigned long Win32Frame::getTicks () const
+unsigned long IPlatformFrame::getTicks ()
 {
 	return (unsigned long)GetTickCount ();
 }

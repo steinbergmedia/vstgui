@@ -68,3 +68,7 @@
 #include "lib/controls/cspecialdigit.cpp"
 #include "lib/controls/csplashscreen.cpp"
 #include "lib/controls/cvumeter.cpp"
+
+#include "lib/animation/animations.cpp"
+#include "lib/animation/animator.cpp"
+#include "lib/animation/timingfunctions.cpp"

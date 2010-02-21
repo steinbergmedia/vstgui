@@ -32,90 +32,77 @@
 // OF THE POSSIBILITY OF SUCH DAMAGE.
 //-----------------------------------------------------------------------------
 
-#include "macglobals.h"
-
-#if MAC
-#include "../../cframe.h"
-#include "../iplatformframe.h"
-#include <mach/mach_time.h>
+#include "animations.h"
+#include "../cview.h"
+#include "../cframe.h"
 
 namespace VSTGUI {
+namespace Animation {
 
 //-----------------------------------------------------------------------------
-unsigned long IPlatformFrame::getTicks ()
+AlphaValueAnimation::AlphaValueAnimation (float endValue)
+: endValue (endValue)
 {
-	static struct mach_timebase_info timebaseInfo;
-	static bool initialized = false;
-	if (!initialized)
-	{
-		initialized = true;
-		mach_timebase_info (&timebaseInfo);
-	}
-	uint64_t absTime = mach_absolute_time ();
-	double d = (absTime / timebaseInfo.denom) * timebaseInfo.numer;	// nano seconds
-	return static_cast<unsigned long> (d / 1000000);
 }
 
 //-----------------------------------------------------------------------------
-class GenericMacColorSpace
+void AlphaValueAnimation::animationStart (CView* view, const char* name)
 {
-public:
-	GenericMacColorSpace ()
-	{
-		#if MAC_COCOA
-		colorspace = CGColorSpaceCreateWithName (kCGColorSpaceGenericRGB);
-		#else
-		CreateGenericRGBColorSpace ();
-		#endif
-	}
-	
-	~GenericMacColorSpace () { CGColorSpaceRelease (colorspace); }
-
-	#if !MAC_COCOA
-	//-----------------------------------------------------------------------------
-	CMProfileRef OpenGenericProfile(void)
-	{
-		#define	kGenericRGBProfilePathStr       "/System/Library/ColorSync/Profiles/Generic RGB Profile.icc"
-
-		CMProfileLocation 	loc;
-		CMProfileRef cmProfile;
-			
-		loc.locType = cmPathBasedProfile;
-		strcpy (loc.u.pathLoc.path, kGenericRGBProfilePathStr);
-	
-		if (CMOpenProfile (&cmProfile, &loc) != noErr)
-			cmProfile = NULL;
-		
-	    return cmProfile;
-	}
-
-	//-----------------------------------------------------------------------------
-	void CreateGenericRGBColorSpace(void)
-	{
-		CMProfileRef genericRGBProfile = OpenGenericProfile ();
-	
-		if (genericRGBProfile)
-		{
-			colorspace = CGColorSpaceCreateWithPlatformColorSpace (genericRGBProfile);
-			
-			// we opened the profile so it is up to us to close it
-			CMCloseProfile (genericRGBProfile); 
-		}
-		if (colorspace == NULL)
-			colorspace = CGColorSpaceCreateDeviceRGB ();
-	}
-	#endif
-
-	CGColorSpaceRef colorspace;
-};
-
-//-----------------------------------------------------------------------------
-CGColorSpaceRef GetGenericRGBColorSpace ()
-{
-	static GenericMacColorSpace gGenericMacColorSpace;
-	return gGenericMacColorSpace.colorspace;
+	startValue = view->getAlphaValue ();
 }
 
-} // namespace
+//-----------------------------------------------------------------------------
+void AlphaValueAnimation::animationTick (CView* view, const char* name, float time)
+{
+	float alpha = startValue + (endValue - startValue) * time;
+	view->setAlphaValue (alpha);
+}
 
-#endif // MAC
+//-----------------------------------------------------------------------------
+void AlphaValueAnimation::animationFinished (CView* view, const char* name)
+{
+	view->setAlphaValue (endValue);
+}
+
+//-----------------------------------------------------------------------------
+ViewSizeAnimation::ViewSizeAnimation (const CRect& inNewRect)
+: newRect (inNewRect)
+{
+}
+
+//-----------------------------------------------------------------------------
+void ViewSizeAnimation::animationStart (CView* view, const char* name)
+{
+	startRect = view->getViewSize ();
+}
+
+//-----------------------------------------------------------------------------
+void ViewSizeAnimation::animationFinished (CView* view, const char* name)
+{
+	if (view->getViewSize () != newRect)
+	{
+		view->invalid ();
+		view->setViewSize (newRect);
+		view->setMouseableArea (newRect);
+		view->invalid ();
+	}
+}
+
+//-----------------------------------------------------------------------------
+void ViewSizeAnimation::animationTick (CView* view, const char* name, float time)
+{
+	CRect r;
+	r.left = abs (startRect.left + ((newRect.left - startRect.left) * time));
+	r.right = abs (startRect.right + ((newRect.right - startRect.right) * time));
+	r.top = abs (startRect.top + ((newRect.top - startRect.top) * time));
+	r.bottom = abs (startRect.bottom + ((newRect.bottom - startRect.bottom) * time));
+	if (view->getViewSize () != r)
+	{
+		view->invalid ();
+		view->setViewSize (r);
+		view->setMouseableArea (r);
+		view->invalid ();
+	}
+}
+
+}} // namespaces

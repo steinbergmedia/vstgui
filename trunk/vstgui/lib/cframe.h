@@ -43,6 +43,9 @@ class VSTGUIEditorInterface;
 class IMouseObserver;
 class IKeyboardHook;
 class IViewAddedRemovedObserver;
+namespace Animation {
+	class Animator;
+}
 
 //----------------------------
 // @brief Knob Mode
@@ -128,6 +131,8 @@ public:
 	virtual CCoord getFocusWidth () const;							///< get focus draw width
 	//@}
 
+	Animation::Animator* getAnimator ();
+
 	void invalid () { invalidRect (size); bDirty = false; }
 	void invalidRect (const CRect rect);
 
@@ -178,7 +183,8 @@ protected:
 	IMouseObserver*				pMouseObserver;
 	IKeyboardHook*				pKeyboardHook;
 	IViewAddedRemovedObserver*	pViewAddedRemovedObserver;
-	
+	Animation::Animator*		pAnimator;
+
 	CView   *pModalView;
 	CView   *pFocusView;
 	CView   *pActiveFocusView;

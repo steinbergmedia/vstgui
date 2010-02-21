@@ -261,7 +261,7 @@ void CTextEdit::platformLooseFocus (bool returnPressed)
 {
 	remember ();
 	bWasReturnPressed = returnPressed;
-	looseFocus ();
+	getFrame ()->setFocusView (0);
 	forget ();
 }
 

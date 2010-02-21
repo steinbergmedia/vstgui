@@ -74,7 +74,6 @@ public:
 	bool setMouseCursor (CCursorType type);
 	bool invalidRect (const CRect& rect);
 	bool scrollRect (const CRect& src, const CPoint& distance);
-	unsigned long getTicks () const;
 	bool showTooltip (const CRect& rect, const char* utf8Text);
 	bool hideTooltip ();
 	void* getPlatformRepresentation () const { return nsView; }

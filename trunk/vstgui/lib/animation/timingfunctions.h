@@ -32,67 +32,52 @@
 // OF THE POSSIBILITY OF SUCH DAMAGE.
 //-----------------------------------------------------------------------------
 
-#ifndef __win32frame__
-#define __win32frame__
+#ifndef __timingfunctions__
+#define __timingfunctions__
 
-#include "../../cframe.h"
-
-#if WINDOWS
-
-#include <windows.h>
+#include "animator.h"
 
 namespace VSTGUI {
+namespace Animation {
 
 //-----------------------------------------------------------------------------
-class Win32Frame : public IPlatformFrame
+class TimingFunctionBase : public ITimingFunction
 {
 public:
-	Win32Frame (IPlatformFrameCallback* frame, const CRect& size, HWND parent);
-	~Win32Frame ();
+	TimingFunctionBase (unsigned long length) : length (length) {}
 
-	HWND getPlatformWindow () const { return windowHandle; }
-	HWND getParentPlatformWindow () const { return parentWindow; }
-	HWND getOuterWindow () const;
-	IPlatformFrameCallback* getFrame () const { return frame; }
-	
-	// IPlatformFrame
-	bool getGlobalPosition (CPoint& pos) const;
-	bool setSize (const CRect& newSize);
-	bool getSize (CRect& size) const;
-	bool getCurrentMousePosition (CPoint& mousePosition) const;
-	bool getCurrentMouseButtons (long& buttons) const;
-	bool setMouseCursor (CCursorType type);
-	bool invalidRect (const CRect& rect);
-	bool scrollRect (const CRect& src, const CPoint& distance);
-	bool showTooltip (const CRect& rect, const char* utf8Text);
-	bool hideTooltip ();
-	void* getPlatformRepresentation () const { return windowHandle; }
-	IPlatformTextEdit* createPlatformTextEdit (IPlatformTextEditCallback* textEdit);
-	IPlatformOptionMenu* createPlatformOptionMenu ();
-	COffscreenContext* createOffscreenContext (CCoord width, CCoord height);
-	CGraphicsPath* createGraphicsPath ();
-	long doDrag (CDropSource* source, const CPoint& offset, CBitmap* dragBitmap);
-
-//-----------------------------------------------------------------------------
+	unsigned long getLength () const { return length; }
 protected:
-	void initTooltip ();
-
-	static void initWindowClass ();
-	static void destroyWindowClass ();
-	static LONG_PTR WINAPI WindowProc (HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam);
-	static long gUseCount;
-
-	HWND parentWindow;
-	HWND windowHandle;
-	HWND tooltipWindow;
-
-	COffscreenContext* backBuffer;
-
-	bool mouseInside;
+	unsigned long length; // in milliseconds
 };
 
-} // namespace
+//-----------------------------------------------------------------------------
+class LinearTimingFunction : public TimingFunctionBase
+{
+public:
+	LinearTimingFunction (unsigned long length);
 
-#endif // WINDOWS
+	float getPosition (unsigned long milliseconds);
+	bool isDone (unsigned long milliseconds);
+};
 
-#endif // __win32frame__
+//-----------------------------------------------------------------------------
+class RepeatTimingFunction : public ITimingFunction
+{
+public:
+	RepeatTimingFunction (TimingFunctionBase* tf, long repeatCount, bool autoReverse = true);
+	~RepeatTimingFunction ();
+
+	float getPosition (unsigned long milliseconds);
+	bool isDone (unsigned long milliseconds);
+protected:
+	TimingFunctionBase* tf;
+	long repeatCount;
+	bool autoReverse;
+	unsigned long runCounter;
+	bool isReverse;
+};
+
+}} // namespaces
+
+#endif // __timingfunctions__
