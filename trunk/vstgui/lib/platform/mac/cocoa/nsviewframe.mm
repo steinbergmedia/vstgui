@@ -399,6 +399,26 @@ static void VSTGUI_NSView_scrollWheel (id self, SEL _cmd, NSEvent* theEvent)
 //------------------------------------------------------------------------------------
 static void VSTGUI_NSView_mouseEntered (id self, SEL _cmd, NSEvent* theEvent)
 {
+	IPlatformFrameCallback* _vstguiframe = getFrame (self);
+	if (!_vstguiframe)
+		return;
+	long buttons = eventButton (theEvent);
+	unsigned int modifiers = [theEvent modifierFlags];
+	NSPoint nsPoint;
+	nsPoint = [NSEvent mouseLocation];
+	nsPoint = [[self window] convertScreenToBase:nsPoint];
+
+	nsPoint = [self convertPoint:nsPoint fromView:nil];
+	if (modifiers & NSShiftKeyMask)
+		buttons |= kShift;
+	if (modifiers & NSCommandKeyMask)
+		buttons |= kControl;
+	if (modifiers & NSAlternateKeyMask)
+		buttons |= kAlt;
+	if (modifiers & NSControlKeyMask)
+		buttons |= kApple;
+	CPoint p = pointFromNSPoint (nsPoint);
+	_vstguiframe->platformOnMouseMoved (p, buttons);
 }
 
 //------------------------------------------------------------------------------------
@@ -692,6 +712,7 @@ void NSViewFrame::drawRect (NSRect* rect)
 	NSGraphicsContext* nsContext = [NSGraphicsContext currentContext];
 	
 	CGDrawContext drawContext ((CGContextRef)[nsContext graphicsPort], rectFromNSRect ([nsView bounds]));
+	drawContext.beginDraw ();
 	const NSRect* dirtyRects;
 	NSInteger numDirtyRects;
 	[nsView getRectsBeingDrawn:&dirtyRects count:&numDirtyRects];
@@ -699,6 +720,7 @@ void NSViewFrame::drawRect (NSRect* rect)
 	{
 		frame->platformDrawRect (&drawContext, rectFromNSRect (dirtyRects[i]));
 	}
+	drawContext.endDraw ();
 }
 
 // IPlatformFrame

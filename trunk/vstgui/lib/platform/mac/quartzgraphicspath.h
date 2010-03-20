@@ -59,11 +59,11 @@ public:
 	void addEllipse (const CRect& rect);
 	void addLine (const CPoint& start, const CPoint& end);
 	void addRect (const CRect& rect);
-	void addPath (const CGraphicsPath& path, CGraphicsTransformation* transformation = 0);
+	void addPath (const CGraphicsPath& path, CGraphicsTransform* transformation = 0);
 	void addString (const char* utf8String, CFontRef font, const CPoint& position);
 	void closeSubpath ();
-	void draw (CDrawContext* context, PathDrawMode mode = kFilled, CGraphicsTransformation* transformation = 0);
-	void fillLinearGradient (CDrawContext* context, const CGradient& gradient, const CPoint& startPoint, const CPoint& endPoint, bool evenOdd = false, CGraphicsTransformation* transformation = 0);
+	void draw (CDrawContext* context, PathDrawMode mode = kFilled, CGraphicsTransform* transformation = 0);
+	void fillLinearGradient (CDrawContext* context, const CGradient& gradient, const CPoint& startPoint, const CPoint& endPoint, bool evenOdd = false, CGraphicsTransform* transformation = 0);
 	CPoint getCurrentPosition () const;
 	CRect getBoundingBox () const;
 

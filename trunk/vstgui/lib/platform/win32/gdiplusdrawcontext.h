@@ -50,7 +50,7 @@ class GdiplusBitmap;
 class GdiplusDrawContext : public COffscreenContext
 {
 public:
-	GdiplusDrawContext (HDC deviceContext, const CRect& drawSurface);
+	GdiplusDrawContext (HWND window, const CRect& drawSurface);
 	GdiplusDrawContext (GdiplusBitmap* bitmap);
 	~GdiplusDrawContext ();
 
@@ -69,6 +69,7 @@ public:
 	void drawEllipse (const CRect &rect, const CDrawStyle drawStyle = kDrawStroked);
 	void drawPoint (const CPoint &point, CColor color);
 	void drawBitmap (CBitmap* bitmap, const CRect& dest, const CPoint& offset = CPoint (0, 0), float alpha = 1.f);
+	void clearRect (const CRect& rect);
 	void setLineStyle (CLineStyle style);
 	void setLineWidth (CCoord width);
 	void setDrawMode (CDrawMode mode);
@@ -81,10 +82,12 @@ public:
 	void saveGlobalState ();
 	void restoreGlobalState ();
 
+	void endDraw ();
 //-----------------------------------------------------------------------------
 protected:
 	void init ();
 
+	HWND window;
 	Gdiplus::Graphics	*pGraphics;
 	Gdiplus::Pen		*pPen;
 	Gdiplus::SolidBrush	*pBrush;

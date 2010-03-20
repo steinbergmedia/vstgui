@@ -213,11 +213,14 @@ bool UIDescWriter::writeAttributes (UIAttributes* attr, std::iostream& stream)
 	UIAttributes::iterator it = attr->begin ();
 	while (it != attr->end ())
 	{
-		stream << " ";
-		stream << (*it).first;
-		stream << "=\"";
-		stream << (*it).second;
-		stream << "\"";
+		if ((*it).second.length () > 0)
+		{
+			stream << " ";
+			stream << (*it).first;
+			stream << "=\"";
+			stream << (*it).second;
+			stream << "\"";
+		}
 		it++;
 	}
 	return result;

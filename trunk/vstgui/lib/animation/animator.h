@@ -46,16 +46,20 @@ class CView;
 namespace Animation {
 
 //-----------------------------------------------------------------------------
+//! @brief Animation target interface
+//-----------------------------------------------------------------------------
 class IAnimationTarget
 {
 public:
 	virtual ~IAnimationTarget () {}
 
-	virtual void animationStart (CView* view, const char* name) = 0;			///< animation starts
-	virtual void animationTick (CView* view, const char* name, float time) = 0;	///< time is a normalized value between zero and one
-	virtual void animationFinished (CView* view, const char* name) = 0;			///< animation ended
+	virtual void animationStart (CView* view, const char* name) = 0;						///< animation starts
+	virtual void animationTick (CView* view, const char* name, float pos) = 0;				///< pos is a normalized value between zero and one
+	virtual void animationFinished (CView* view, const char* name, bool wasCanceled) = 0;	///< animation ended
 };
 
+//-----------------------------------------------------------------------------
+//! @brief Animation timing function interface
 //-----------------------------------------------------------------------------
 class ITimingFunction
 {
@@ -67,11 +71,17 @@ public:
 };
 
 //-----------------------------------------------------------------------------
+//! @brief Animation runner
+//-----------------------------------------------------------------------------
 class Animator : public CBaseObject
 {
 public:
 	Animator ();	///< do not use this, instead use CFrame::getAnimator()
 
+	//-----------------------------------------------------------------------------
+	/// @name Adding and removing Animations
+	//-----------------------------------------------------------------------------
+	//@{
 	/** adds an animation. animation and timingFunction is now owned by the animator. An already running animation for view with name will be canceled. */
 	void addAnimation (CView* view, const char* name, IAnimationTarget* target, ITimingFunction* timingFunction);
 	/** removes an animation. if animation is a CBaseObject forget() will be called otherwise it is deleted. The same will be done with the timingFunction. */
@@ -79,11 +89,17 @@ public:
 
 	/** removes all animations for view */
 	void removeAnimations (CView* view);
+	//@}
+
+	/// @cond ignore
 
 	CMessageResult notify (CBaseObject* sender, const char* message);
 
 	CLASS_METHODS_NOCOPY(Animator, CBaseObject)
 protected:
+
+	~Animator ();
+
 	class Animation : public CBaseObject
 	{
 	public:
@@ -95,15 +111,14 @@ protected:
 		IAnimationTarget* target;
 		ITimingFunction* timingFunction;
 		unsigned long startTime;
-		bool started;
 	};
 
-	~Animator ();
 	void removeAnimation (Animation* a);
 
 	std::list<Animation*> animations;
 	std::list<Animation*> toRemove;
 	bool inTimer;
+	/// @endcond
 };
 
 }} // namespaces

@@ -647,7 +647,7 @@ public:
 
 		pContext->setFrameColor (uidCrossLinesBackground);
 		pContext->setLineWidth (1);
-		pContext->setDrawMode (kCopyMode);
+		pContext->setDrawMode (kAliasing);
 		pContext->moveTo (CPoint (size.left, selectionSize.top+1));
 		pContext->lineTo (CPoint (size.right, selectionSize.top+1));
 		pContext->moveTo (CPoint (selectionSize.left, size.top+1));
@@ -1454,7 +1454,7 @@ void CEditFrame::drawRect (CDrawContext *pContext, const CRect& updateRect)
 		lines->draw (pContext);
 	if (editMode == kEditMode)
 	{
-		pContext->setDrawMode (kAntialias);
+		pContext->setDrawMode (kAntiAliasing);
 		if (highlightView)
 		{
 			CRect r = CSelection::getGlobalViewCoordinates (highlightView);
@@ -1466,7 +1466,7 @@ void CEditFrame::drawRect (CDrawContext *pContext, const CRect& updateRect)
 		}
 		if (selection->total () > 0)
 		{
-			pContext->setDrawMode (kAntialias);
+			pContext->setDrawMode (kAntiAliasing);
 			pContext->setFrameColor (uidSelectionColor);
 			pContext->setFillColor (uidSelectionHandleColor);
 			pContext->setLineStyle (kLineSolid);
@@ -1481,7 +1481,7 @@ void CEditFrame::drawRect (CDrawContext *pContext, const CRect& updateRect)
 
 		}
 	}
-	pContext->setDrawMode (kCopyMode);
+	pContext->setDrawMode (kAliasing);
 	pContext->setClipRect (oldClip);
 }
 

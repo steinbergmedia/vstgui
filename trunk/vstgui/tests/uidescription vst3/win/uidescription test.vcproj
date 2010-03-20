@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="9,00"
+	Version="9.00"
 	Name="uidescription test"
 	ProjectGUID="{5539D570-C38A-43EB-8404-067F2F559670}"
 	RootNamespace="uidescriptiontest"
@@ -186,6 +186,14 @@
 			</File>
 			<File
 				RelativePath="..\source\factory.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\source\graphicstest.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\source\graphicstest.h"
 				>
 			</File>
 			<File

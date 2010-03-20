@@ -36,13 +36,139 @@
 
 #if WINDOWS
 
-#include "../../cfont.h"
+#if VSTGUI_DIRECT2D_SUPPORT
+	#include <d2d1.h>
+	#include <dwrite.h>
+#endif
+
+#include "cfontwin32.h"
+#include "gdiplusbitmap.h"
+#include "gdiplusdrawcontext.h"
+#include "direct2d/d2ddrawcontext.h"
+#include "direct2d/d2dbitmap.h"
+#include "direct2d/d2dfont.h"
 
 extern void* hInstance;
 
 namespace VSTGUI {
 
 HINSTANCE GetInstance () { return (HINSTANCE)hInstance; }
+
+const OSVERSIONINFOEX& getSystemVersion ()
+{
+	static OSVERSIONINFOEX gSystemVersion = {0};
+	static bool once = true;
+	if (once)
+	{
+		memset (&gSystemVersion, 0, sizeof (gSystemVersion));
+		gSystemVersion.dwOSVersionInfoSize = sizeof (gSystemVersion);
+		GetVersionEx ((OSVERSIONINFO *)&gSystemVersion);
+	}
+	return gSystemVersion;
+}
+
+//-----------------------------------------------------------------------------
+#if VSTGUI_DIRECT2D_SUPPORT
+typedef HRESULT (WINAPI *D2D1CreateFactoryProc) (D2D1_FACTORY_TYPE type, REFIID riid, CONST D2D1_FACTORY_OPTIONS *pFactoryOptions, void** factory);
+typedef HRESULT (WINAPI *DWriteCreateFactoryProc) (DWRITE_FACTORY_TYPE factoryType, REFIID iid, void** factory);
+
+class D2DFactory
+{
+public:
+	D2DFactory ()
+	: factory (0)
+	, writeFactory (0)
+	{
+		HMODULE d2d1Dll = LoadLibraryA ("d2d1.dll");
+		if (d2d1Dll)
+		{
+			D2D1CreateFactoryProc _D2D1CreateFactory = (D2D1CreateFactoryProc)GetProcAddress (d2d1Dll, "D2D1CreateFactory");
+			if (_D2D1CreateFactory)
+			{
+				HRESULT hr = _D2D1CreateFactory (D2D1_FACTORY_TYPE_SINGLE_THREADED, __uuidof(ID2D1Factory), 0, (void**)&factory);
+			}
+		}
+		HMODULE dwriteDll = LoadLibraryA ("dwrite.dll");
+		if (dwriteDll)
+		{
+			DWriteCreateFactoryProc _DWriteCreateFactory = (DWriteCreateFactoryProc)GetProcAddress (dwriteDll, "DWriteCreateFactory");
+			if (_DWriteCreateFactory)
+			{
+				HRESULT hr = _DWriteCreateFactory (DWRITE_FACTORY_TYPE_SHARED, __uuidof(IDWriteFactory), (void**)&writeFactory);
+			}
+		}	
+	}
+
+	~D2DFactory ()
+	{
+		if (factory)
+			factory->Release ();
+		if (writeFactory)
+			writeFactory->Release ();
+	}
+	ID2D1Factory* getFactory () const { return factory; }
+	IDWriteFactory* getWriteFactory () const { return writeFactory; }
+protected:
+	ID2D1Factory* factory;
+	IDWriteFactory* writeFactory;
+};
+
+static D2DFactory d2dFactory;
+
+//-----------------------------------------------------------------------------
+ID2D1Factory* getD2DFactory ()
+{
+	return d2dFactory.getFactory ();
+}
+
+IDWriteFactory* getDWriteFactory ()
+{
+	return d2dFactory.getWriteFactory ();
+}
+#endif
+
+//-----------------------------------------------------------------------------
+CDrawContext* createDrawContext (HWND window, HDC device, const CRect& surfaceRect)
+{
+#if VSTGUI_DIRECT2D_SUPPORT
+	if (getD2DFactory ())
+		return new D2DDrawContext (window, surfaceRect);
+#endif
+	return new GdiplusDrawContext (window, surfaceRect);
+}
+
+//-----------------------------------------------------------------------------
+IPlatformBitmap* IPlatformBitmap::create (CPoint* size)
+{
+#if VSTGUI_DIRECT2D_SUPPORT
+	if (getD2DFactory ())
+	{
+		if (size)
+			return new D2DOffscreenBitmap (*size);
+		else
+			return new D2DBitmap ();
+	}
+#endif
+	if (size)
+		return new GdiplusBitmap (*size);
+	return new GdiplusBitmap ();
+}
+
+//-----------------------------------------------------------------------------
+IPlatformFont* IPlatformFont::create (const char* name, const CCoord& size, const long& style)
+{
+#if VSTGUI_DIRECT2D_SUPPORT
+	if (getD2DFactory ())
+	{
+		return new D2DFont (name, size, style);
+	}
+#endif
+	GdiPlusFont* font = new GdiPlusFont (name, size, style);
+	if (font->getFont ())
+		return font;
+	font->forget ();
+	return 0;
+}
 
 /// @cond ignore
 //-----------------------------------------------------------------------------

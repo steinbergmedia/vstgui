@@ -65,7 +65,7 @@ public:
 
 	void draw (CDrawContext* context)
 	{
-		context->setDrawMode (kCopyMode);
+		context->setDrawMode (kAliasing);
 		context->setLineWidth (1);
 		context->setLineStyle (kLineSolid);
 		context->setFillColor (value > 0.5 ? kGreyCColor : kWhiteCColor);

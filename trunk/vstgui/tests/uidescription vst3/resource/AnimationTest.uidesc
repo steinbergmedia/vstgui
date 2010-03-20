@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <vstgui-ui-description version="1">
-	<template autosize="left right top bottom " background-color="white" bitmap="" class="CViewContainer" maxSize="300, 500" minSize="300, 300" name="view" origin="0, 0" size="300, 448" transparent="false">
-		<view background-color="black" bitmap="FrameBackground" class="CViewContainer" origin="50, 20" size="100, 100" sub-controller="AnimationController" transparent="false">
-			<view autosize-to-fit="false" background-offset="0, 0" bitmap="" boxfill-color="white" boxframe-color="black" checkmark-color="#ff0000ff" class="CCheckBox" control-tag="Switch" default-value="0.5" draw-crossbox="false" font-color="white" max-value="1" min-value="0" origin="20, 0" size="60, 20" title="Close" transparent="false" wheel-inc-value="0.1"/>
+	<template autosize="left right top bottom " background-color="white" class="CViewContainer" maxSize="300, 500" minSize="300, 300" name="view" origin="0, 0" size="300, 498" transparent="false">
+		<view background-color="black" bitmap="FrameBackground" class="CViewContainer" origin="50, 20" size="90, 60" sub-controller="AnimationController" transparent="false">
+			<view autosize-to-fit="false" background-offset="0, 0" boxfill-color="white" boxframe-color="black" checkmark-color="#ff0000ff" class="CCheckBox" control-tag="Switch" default-value="0.5" draw-crossbox="false" font-color="white" max-value="1" min-value="0" origin="20, 0" size="60, 20" title="Close" transparent="false" wheel-inc-value="0.1"/>
 		</view>
-		<view back-color="black" background-offset="0, 0" bitmap="" class="CTextLabel" default-value="0.5" font-antialias="true" font-color="black" frame-color="black" max-value="1" min-value="0" origin="100, 240" shadow-color="#ff0000ff" size="90, 20" style-3D-in="false" style-3D-out="false" style-no-draw="false" style-no-frame="false" style-no-text="false" style-shadow-text="false" text-alignment="center" text-inset="0, 0" title="Move Over Me" transparent="true" wheel-inc-value="0.1"/>
-		<view bitmap="FrameBackground" class="CView" custom-view-name="ScaleView" origin="100, 240" size="90, 80" transparent="false"/>
+		<view background-color="black" bitmap="FrameBackground" class="CViewContainer" custom-view-name="ScaleView" origin="100, 220" size="90, 80" transparent="false">
+			<view autosize="left right top " back-color="black" background-offset="0, 0" class="CTextLabel" default-value="0.5" font-antialias="true" font-color="black" frame-color="black" max-value="1" min-value="0" origin="0, 0" shadow-color="#ff0000ff" size="90, 20" style-3D-in="false" style-3D-out="false" style-no-draw="false" style-no-frame="false" style-no-text="false" style-shadow-text="false" text-alignment="center" text-inset="0, 0" title="Move Over Me" transparent="true" wheel-inc-value="0.1"/>
+		</view>
 	</template>
 	<colors>
 		<color name="black" rgba="#000000ff"/>
@@ -14,7 +15,7 @@
 	<custom>
 		<attributes name="CViewInspector" windowSize="71, 247, 495, 709"/>
 		<attributes gridsize="10" name="CEditFrame" uidescPath="/Volumes/DATA/subversion/trunk/vstgui_head/vstgui/tests/uidescription vst3/resource/AnimationTest.uidesc"/>
-		<attributes frame-enable-focus-drawing="false" frame-focus-color="" frame-focus-width="2" name="VST3Editor"/>
+		<attributes frame-enable-focus-drawing="false" frame-focus-width="2" name="VST3Editor"/>
 		<attributes name="ViewHierarchyBrowser" windowSize="513, 194, 813, 694"/>
 	</custom>
 	<bitmaps>

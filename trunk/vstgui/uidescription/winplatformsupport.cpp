@@ -50,7 +50,11 @@
 #include <shobjidl.h>
 #include <string>
 
+#define NOT_WINDOWS_XP	1 // if you want to develop on Windows XP, set this to zero
+
+#if NOT_WINDOWS_XP
 #pragma comment (lib,"dwmapi.lib")
+#endif
 
 static TCHAR   gClassName[100];
 extern void* hInstance;
@@ -92,6 +96,7 @@ PlatformWindow* PlatformWindow::create (const CRect& size, const char* title, Wi
 	return new Win32Window (size, title, type, styleFlags, delegate, parentWindow);
 }
 
+#if NOT_WINDOWS_XP
 //-----------------------------------------------------------------------------
 HRESULT EnableBlurBehind(HWND hwnd)
 {
@@ -113,6 +118,7 @@ HRESULT EnableBlurBehind(HWND hwnd)
 	}
     return hr;
 }
+#endif
 
 //-----------------------------------------------------------------------------
 Win32Window::Win32Window (const CRect& size, const char* title, WindowType type, long styleFlags, IPlatformWindowDelegate* delegate, void* parentWindow)
@@ -131,20 +137,13 @@ Win32Window::Win32Window (const CRect& size, const char* title, WindowType type,
 	getWindowFlags (wStyle, exStyle);
 	AdjustWindowRectEx (&r, wStyle, FALSE, exStyle);
 	HWND baseWindow = parentWindow ? (HWND)parentWindow : GetForegroundWindow ();
-#if 0
-	while (baseWindow)
-	{
-		HWND temp = GetWindow (baseWindow, GW_OWNER);
-		if (temp == 0)
-			break;
-		baseWindow = temp;
-		break;
-	}
-#endif
+
 	platformWindow = CreateWindowEx (exStyle, gClassName, titleStr, wStyle, r.left, r.top, r.right - r.left, r.bottom - r.top, baseWindow, 0, GetInstance (), 0);
 	SetWindowLongPtr (platformWindow, GWLP_USERDATA, (LONG_PTR)this);
+#if NOT_WINDOWS_XP
 	if (type == kPanelType)
 		EnableBlurBehind (platformWindow);
+#endif
 }
 
 //-----------------------------------------------------------------------------

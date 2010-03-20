@@ -43,16 +43,6 @@
 namespace VSTGUI {
 
 //-----------------------------------------------------------------------------
-IPlatformFont* IPlatformFont::create (const char* name, const CCoord& size, const long& style)
-{
-	GdiPlusFont* font = new GdiPlusFont (name, size, style);
-	if (font->getFont ())
-		return font;
-	font->forget ();
-	return 0;
-}
-
-//-----------------------------------------------------------------------------
 bool IPlatformFont::getAllPlatformFontFamilies (std::list<std::string>& fontFamilyNames)
 {
 	Gdiplus::InstalledFontCollection fonts;

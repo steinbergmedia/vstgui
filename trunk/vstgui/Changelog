@@ -1,3 +1,15 @@
+2010-03-20 arne
+
+	* add documentation for the animation support
+	* initial Direct2D support for Windows
+
+2010-03-03 arne
+
+	* redesign for onMouseEntered and onMouseExited in CFrame. The new implementation calls all views on enter or exit.
+	  That means if a view is embedded into a viewcontainer and has the same size as its parent if the mouse enters this view the parent will also get a onMouseEntered call.
+	  In the previous implementation only the view did get called not its parents
+	* tooltip support is now moved into CFrame and you can enable or disable it via CFrame::enableTooltips (state)
+	
 2010-02-21 arne
 
 	* new animation classes

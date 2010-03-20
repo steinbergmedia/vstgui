@@ -1107,6 +1107,7 @@ pascal OSStatus HIViewFrame::carbonEventHandler (EventHandlerCallRef inHandlerCa
 						break;
 					CFrame* cframe = dynamic_cast<CFrame*> (frame);
 					context = new CGDrawContext (cgcontext, dirtyRect);
+					context->beginDraw ();
 
 					RgnHandle dirtyRegion;
 					if (GetEventParameter (inEvent, kEventParamRgnHandle, typeQDRgnHandle, NULL, sizeof (RgnHandle), NULL, &dirtyRegion) == noErr)
@@ -1118,6 +1119,7 @@ pascal OSStatus HIViewFrame::carbonEventHandler (EventHandlerCallRef inHandlerCa
 					}
 					else
 						frame->platformDrawRect (context, dirtyRect);
+					context->endDraw ();
 					context->forget ();
 					result = noErr;
 					break;

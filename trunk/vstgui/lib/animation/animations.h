@@ -44,32 +44,64 @@ class CView;
 
 namespace Animation {
 
+/// @ingroup AnimationTargets
 //-----------------------------------------------------------------------------
 class AlphaValueAnimation : public IAnimationTarget
 {
 public:
-	AlphaValueAnimation (float endValue);
+	AlphaValueAnimation (float endValue, bool forceEndValueOnFinish = false);
 
 	void animationStart (CView* view, const char* name);
-	void animationTick (CView* view, const char* name, float time);
-	void animationFinished (CView* view, const char* name);
+	void animationTick (CView* view, const char* name, float pos);
+	void animationFinished (CView* view, const char* name, bool wasCanceled);
 protected:
 	float startValue;
 	float endValue;
+	bool forceEndValueOnFinish;
 };
 
+/// @ingroup AnimationTargets
 //-----------------------------------------------------------------------------
 class ViewSizeAnimation : public IAnimationTarget
 {
 public:
-	ViewSizeAnimation (const CRect& newRect);
+	ViewSizeAnimation (const CRect& newRect, bool forceEndValueOnFinish = false);
 
 	void animationStart (CView* view, const char* name);
-	void animationTick (CView* view, const char* name, float time);
-	void animationFinished (CView* view, const char* name);
+	void animationTick (CView* view, const char* name, float pos);
+	void animationFinished (CView* view, const char* name, bool wasCanceled);
 protected:
 	CRect startRect;
 	CRect newRect;
+	bool forceEndValueOnFinish;
+};
+
+/// @ingroup AnimationTargets
+//-----------------------------------------------------------------------------
+class ExchangeViewAnimation : public IAnimationTarget
+{
+public:
+	enum AnimationStyle {
+		kAlphaValueFade = 0,
+		kPushInFromLeft,
+		kPushInFromRight,
+		kPushInFromTop,
+		kPushInFromBottom,
+	};
+
+	/** oldView must be a subview of the animation view */
+	ExchangeViewAnimation (CView* oldView, CView* newView, AnimationStyle style = kAlphaValueFade);
+	~ExchangeViewAnimation ();
+	void animationStart (CView* view, const char* name);
+	void animationTick (CView* view, const char* name, float pos);
+	void animationFinished (CView* view, const char* name, bool wasCanceled);
+
+protected:
+	CView* newView;
+	CView* viewToRemove;
+	AnimationStyle style;
+	float newViewValueEnd;
+	float oldViewValueStart;
 };
 
 }} // namespaces

@@ -32,48 +32,75 @@
 // OF THE POSSIBILITY OF SUCH DAMAGE.
 //-----------------------------------------------------------------------------
 
-#ifndef __gdiplusgraphicspath__
-#define __gdiplusgraphicspath__
+#ifndef __d2dbitmap__
+#define __d2dbitmap__
 
-#include "../../cgraphicspath.h"
+#include "../../iplatformbitmap.h"
 
-#if WINDOWS
+#if WINDOWS && VSTGUI_DIRECT2D_SUPPORT
 
-namespace Gdiplus {
-class GraphicsPath;
-}
+struct IWICFormatConverter;
+struct IWICBitmapSource;
+struct ID2D1Bitmap;
+struct ID2D1RenderTarget;
+struct IWICBitmap;
+
+#include <map>
 
 namespace VSTGUI {
 
 //-----------------------------------------------------------------------------
-class GdiplusGraphicsPath : public CGraphicsPath
+class D2DBitmap : public IPlatformBitmap
 {
 public:
-	GdiplusGraphicsPath ();
-	~GdiplusGraphicsPath ();
+	D2DBitmap ();
+	~D2DBitmap ();
 
-	Gdiplus::GraphicsPath* getGraphicsPath () const { return platformPath; }
+	bool load (const CResourceDescription& desc);
+	const CPoint& getSize () const { return size; }
 
-	// CGraphicsPath
-	CGradient* createGradient (double color1Start, double color2Start, const CColor& color1, const CColor& color2);
-	void addArc (const CRect& rect, double startAngle, double endAngle);
-	void addCurve (const CPoint& start, const CPoint& control1, const CPoint& control2, const CPoint& end);
-	void addEllipse (const CRect& rect);
-	void addLine (const CPoint& start, const CPoint& end);
-	void addRect (const CRect& rect);
-	void addPath (const CGraphicsPath& path, CGraphicsTransform* transformation = 0);
-	void addString (const char* utf8String, CFontRef font, const CPoint& position);
-	void closeSubpath ();
-	void draw (CDrawContext* context, PathDrawMode mode = kFilled, CGraphicsTransform* transformation = 0);
-	void fillLinearGradient (CDrawContext* context, const CGradient& gradient, const CPoint& startPoint, const CPoint& endPoint, bool evenOdd = false, CGraphicsTransform* transformation = 0);
-	CPoint getCurrentPosition () const;
-	CRect getBoundingBox () const;
+	virtual IWICBitmapSource* getSource ();
+//-----------------------------------------------------------------------------
 protected:
-	Gdiplus::GraphicsPath* platformPath;
+	D2DBitmap (const CPoint& size);
+
+	CPoint size;
+	IWICFormatConverter* converter;
+};
+
+//-----------------------------------------------------------------------------
+class D2DOffscreenBitmap : public D2DBitmap
+{
+public:
+	D2DOffscreenBitmap (const CPoint& size);
+	bool load (const CResourceDescription& desc) { return false; }
+
+	IWICBitmapSource* getSource ();
+	IWICBitmap* getBitmap () const { return bitmap; }
+protected:
+	IWICBitmap* bitmap;
+};
+
+//-----------------------------------------------------------------------------
+class D2DBitmapCache
+{
+public:
+	ID2D1Bitmap* getBitmap (D2DBitmap* bitmap, ID2D1RenderTarget* renderTarget);
+	
+	void removeBitmap (D2DBitmap* bitmap);
+	void removeRenderTarget (ID2D1RenderTarget* renderTarget);
+
+	static D2DBitmapCache* instance ();
+//-----------------------------------------------------------------------------
+protected:
+	D2DBitmapCache () {};
+	~D2DBitmapCache ();
+	ID2D1Bitmap* createBitmap (D2DBitmap* bitmap, ID2D1RenderTarget* renderTarget);
+	std::map<D2DBitmap*, std::map<ID2D1RenderTarget*, ID2D1Bitmap*> > cache;
 };
 
 } // namespace
 
 #endif // WINDOWS
 
-#endif // __gdiplusgraphicspath__
+#endif // __d2dbitmap__

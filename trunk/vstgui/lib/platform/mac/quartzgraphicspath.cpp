@@ -82,14 +82,15 @@ protected:
 #endif
 
 //-----------------------------------------------------------------------------
-#define ___radians(degrees) (degrees * M_PI / 180.)
-
-//-----------------------------------------------------------------------------
-static CGAffineTransform createCGAfflineTransform (const CGraphicsTransformation& transformation)
+static CGAffineTransform createCGAfflineTransform (const CGraphicsTransform& t)
 {
-	CGAffineTransform transform = CGAffineTransformMakeTranslation (transformation.offset.x, transformation.offset.y);
-	transform = CGAffineTransformScale (transform, transformation.scaleX, transformation.scaleY);
-	transform = CGAffineTransformRotate (transform, ___radians (transformation.rotation));
+	CGAffineTransform transform;
+	transform.a = t.m11;
+	transform.b = t.m12;
+	transform.c = t.m21;
+	transform.d = t.m22;
+	transform.tx = t.dx;
+	transform.ty = t.dy;
 	return transform;
 }
 
@@ -133,18 +134,18 @@ CGradient* QuartzGraphicsPath::createGradient (double color1Start, double color2
 }
 
 //-----------------------------------------------------------------------------
-void QuartzGraphicsPath::draw (CDrawContext* context, PathDrawMode mode, CGraphicsTransformation* transformation)
+void QuartzGraphicsPath::draw (CDrawContext* context, PathDrawMode mode, CGraphicsTransform* t)
 {
 	CGContextRef cgContext = beginCGContext (context);
 	if (cgContext)
 	{
-		if (transformation)
+		if (t)
 		{
-			CGAffineTransform transform = createCGAfflineTransform (*transformation);
-			CGMutablePathRef tmpPath = CGPathCreateMutable ();
-			CGPathAddPath (tmpPath, &transform, path);
-			CGContextAddPath (cgContext, tmpPath);
-			CFRelease (tmpPath);
+			CGContextSaveGState (cgContext);
+			CGAffineTransform transform = createCGAfflineTransform (*t);
+			CGContextConcatCTM (cgContext, transform);
+			CGContextAddPath (cgContext, path);
+			CGContextRestoreGState (cgContext);
 		}
 		else
 			CGContextAddPath (cgContext, path);
@@ -156,6 +157,10 @@ void QuartzGraphicsPath::draw (CDrawContext* context, PathDrawMode mode, CGraphi
 			case kStroked: cgMode = kCGPathStroke; break;
 		}
 
+		CGDrawContext* cgDrawContext = dynamic_cast<CGDrawContext*> (context);
+		if (cgDrawContext)
+			cgDrawContext->applyLineDash ();
+
 		CGContextDrawPath (cgContext, cgMode);
 		
 		releaseCGContext (context, cgContext);
@@ -163,7 +168,7 @@ void QuartzGraphicsPath::draw (CDrawContext* context, PathDrawMode mode, CGraphi
 }
 
 //-----------------------------------------------------------------------------
-void QuartzGraphicsPath::fillLinearGradient (CDrawContext* context, const CGradient& gradient, const CPoint& startPoint, const CPoint& endPoint, bool evenOdd, CGraphicsTransformation* transformation)
+void QuartzGraphicsPath::fillLinearGradient (CDrawContext* context, const CGradient& gradient, const CPoint& startPoint, const CPoint& endPoint, bool evenOdd, CGraphicsTransform* t)
 {
 #if MAC_OS_X_VERSION_MIN_REQUIRED > MAC_OS_X_VERSION_10_4
 	const QuartzGradient* cgGradient = dynamic_cast<const QuartzGradient*> (&gradient);
@@ -173,13 +178,13 @@ void QuartzGraphicsPath::fillLinearGradient (CDrawContext* context, const CGradi
 	CGContextRef cgContext = beginCGContext (context);
 	if (cgContext)
 	{
-		if (transformation)
+		if (t)
 		{
-			CGAffineTransform transform = createCGAfflineTransform (*transformation);
-			CGMutablePathRef tmpPath = CGPathCreateMutable ();
-			CGPathAddPath (tmpPath, &transform, path);
-			CGContextAddPath (cgContext, tmpPath);
-			CFRelease (tmpPath);
+			CGContextSaveGState (cgContext);
+			CGAffineTransform transform = createCGAfflineTransform (*t);
+			CGContextConcatCTM (cgContext, transform);
+			CGContextAddPath (cgContext, path);
+			CGContextRestoreGState (cgContext);
 		}
 		else
 			CGContextAddPath (cgContext, path);
@@ -213,9 +218,9 @@ void QuartzGraphicsPath::addArc (const CRect& rect, double startAngle, double en
 	CGAffineTransform transform = CGAffineTransformMakeTranslation (centerX, centerY);
 	transform = CGAffineTransformScale (transform, rect.getWidth () / 2, rect.getHeight () / 2);
 	
-	CGPathMoveToPoint (path, &transform, cos (___radians (startAngle)), sin (___radians (startAngle)));
+	CGPathMoveToPoint (path, &transform, cos (radians (startAngle)), sin (radians (startAngle)));
 
-	CGPathAddArc (path, &transform, 0, 0, 1, ___radians (startAngle), ___radians (endAngle), false);
+	CGPathAddArc (path, &transform, 0, 0, 1, radians (startAngle), radians (endAngle), false);
 }
 
 //-----------------------------------------------------------------------------
@@ -248,11 +253,11 @@ void QuartzGraphicsPath::addRect (const CRect& rect)
 }
 
 //-----------------------------------------------------------------------------
-void QuartzGraphicsPath::addPath (const CGraphicsPath& inPath, CGraphicsTransformation* transformation)
+void QuartzGraphicsPath::addPath (const CGraphicsPath& inPath, CGraphicsTransform* t)
 {
-	if (transformation)
+	if (t)
 	{
-		CGAffineTransform transform = createCGAfflineTransform (*transformation);
+		CGAffineTransform transform = createCGAfflineTransform (*t);
 		if (&inPath == this)
 		{
 			CGPathRef pathCopy = CGPathCreateCopy (path);

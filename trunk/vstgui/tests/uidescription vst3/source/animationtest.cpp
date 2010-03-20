@@ -48,7 +48,7 @@ protected:
 };
 
 //------------------------------------------------------------------------
-class ScaleView : public CView
+class ScaleView : public CViewContainer
 {
 public:
 	ScaleView ();
@@ -141,19 +141,21 @@ void PLUGIN_API TestAnimationController::update (FUnknown* changedUnknown, int32
 	if (message == kChanged)
 	{
 		FUnknownPtr<Parameter> parameter (changedUnknown);
-		if (parameter)
+		if (parameter && animationView->getFrame ())
 		{
+			Animation::InterpolationTimingFunction* timingFunction = new Animation::InterpolationTimingFunction (200);
+			timingFunction->addPoint (0.5f, 0.2f);
 			int32 value = parameter->toPlain (parameter->getNormalized ());
 			if (value)
 			{
-				animationView->getFrame ()->getAnimator ()->addAnimation (animationView, "SizeAnimation", new Animation::ViewSizeAnimation (originalRect), new Animation::LinearTimingFunction (2000));
+				animationView->getFrame ()->getAnimator ()->addAnimation (animationView, "SizeAnimation", new Animation::ViewSizeAnimation (originalRect), timingFunction);
 			}
 			else
 			{
 				CRect r (originalRect);
 				r.bottom += 300;
 				r.right += 80;
-				animationView->getFrame ()->getAnimator ()->addAnimation (animationView, "SizeAnimation", new Animation::ViewSizeAnimation (r), new Animation::LinearTimingFunction (2000));
+				animationView->getFrame ()->getAnimator ()->addAnimation (animationView, "SizeAnimation", new Animation::ViewSizeAnimation (r), timingFunction);
 			}
 		}
 	}
@@ -161,7 +163,7 @@ void PLUGIN_API TestAnimationController::update (FUnknown* changedUnknown, int32
 
 //------------------------------------------------------------------------
 ScaleView::ScaleView ()
-:CView (CRect (0, 0, 0, 0))
+:CViewContainer (CRect (0, 0, 0, 0))
 {
 	setAlphaValue (0.1f);
 }
@@ -173,9 +175,11 @@ CMouseEventResult ScaleView::onMouseEntered (CPoint &where, const long& buttons)
 		origRect = getViewSize ();
 	CRect r (origRect);
 	r.inset (-40, -15);
+	getFrame ()->getAnimator ()->removeAnimation (this, "AlphaAnimation");
+	getFrame ()->getAnimator ()->removeAnimation (this, "SizeAnimation");
 	getFrame ()->getAnimator ()->addAnimation (this, "AlphaAnimation", new Animation::AlphaValueAnimation (1.f), new Animation::RepeatTimingFunction (new Animation::LinearTimingFunction (300), -1, true));
 	getFrame ()->getAnimator ()->addAnimation (this, "SizeAnimation", new Animation::ViewSizeAnimation (r), new Animation::RepeatTimingFunction (new Animation::LinearTimingFunction (200), -1, true));
-	return CView::onMouseEntered (where, buttons);
+	return CViewContainer::onMouseEntered (where, buttons);
 }
 
 //------------------------------------------------------------------------
@@ -183,7 +187,7 @@ CMouseEventResult ScaleView::onMouseExited (CPoint &where, const long& buttons)
 {
 	getFrame ()->getAnimator ()->addAnimation (this, "AlphaAnimation", new Animation::AlphaValueAnimation (0.1f), new Animation::LinearTimingFunction (100));
 	getFrame ()->getAnimator ()->addAnimation (this, "SizeAnimation", new Animation::ViewSizeAnimation (origRect), new Animation::LinearTimingFunction (100));
-	return CView::onMouseExited (where, buttons);
+	return CViewContainer::onMouseExited (where, buttons);
 }
 
 } // namespace

@@ -41,6 +41,9 @@
 #include "gdiplusdrawcontext.h"
 #include "gdiplusbitmap.h"
 #include "gdiplusgraphicspath.h"
+#include "direct2d/d2ddrawcontext.h"
+#include "direct2d/d2dbitmap.h"
+#include "direct2d/d2dgraphicspath.h"
 #include "win32textedit.h"
 #include "win32optionmenu.h"
 #include "win32support.h"
@@ -54,7 +57,6 @@ namespace VSTGUI {
 //-----------------------------------------------------------------------------
 static TCHAR gClassName[100];
 static bool bSwapped_mouse_buttons = false; 
-static OSVERSIONINFOEX gSystemVersion;
 
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
@@ -141,13 +143,14 @@ Win32Frame::Win32Frame (IPlatformFrameCallback* frame, const CRect& size, HWND p
 , parentWindow (parent)
 , tooltipWindow (0)
 , backBuffer (0)
+, deviceContext (0)
 , mouseInside (false)
 {
 	initWindowClass ();
 
 	DWORD style = WS_EX_TRANSPARENT;
 	#if !DEBUG_DRAWING
-	if (gSystemVersion.dwMajorVersion >= 6) // Vista and above
+	if (getSystemVersion ().dwMajorVersion >= 6) // Vista and above
 		style |= WS_EX_COMPOSITED;
 	else
 		backBuffer = createOffscreenContext (size.getWidth (), size.getHeight ());
@@ -167,6 +170,8 @@ Win32Frame::Win32Frame (IPlatformFrameCallback* frame, const CRect& size, HWND p
 //-----------------------------------------------------------------------------
 Win32Frame::~Win32Frame ()
 {
+	if (deviceContext)
+		deviceContext->forget ();
 	if (tooltipWindow)
 		DestroyWindow (tooltipWindow);
 	if (windowHandle)
@@ -192,10 +197,6 @@ void Win32Frame::initWindowClass ()
 		OleInitialize (0);
 
 		// get OS version
-		memset (&gSystemVersion, 0, sizeof (gSystemVersion));
-		gSystemVersion.dwOSVersionInfoSize = sizeof (gSystemVersion);
-		GetVersionEx ((OSVERSIONINFO *)&gSystemVersion);
-
 		VSTGUI_SPRINTF (gClassName, TEXT("VSTGUI%p"), GetInstance ());
 		
 		WNDCLASS windowClass;
@@ -339,6 +340,11 @@ bool Win32Frame::getGlobalPosition (CPoint& pos) const
 //-----------------------------------------------------------------------------
 bool Win32Frame::setSize (const CRect& newSize)
 {
+	if (deviceContext)
+	{
+		deviceContext->forget ();
+		deviceContext = 0;
+	}
 	if (backBuffer)
 	{
 		backBuffer->forget ();
@@ -540,6 +546,15 @@ IPlatformOptionMenu* Win32Frame::createPlatformOptionMenu ()
 //-----------------------------------------------------------------------------
 COffscreenContext* Win32Frame::createOffscreenContext (CCoord width, CCoord height)
 {
+#if VSTGUI_DIRECT2D_SUPPORT
+	if (getD2DFactory ())
+	{
+		D2DOffscreenBitmap* bitmap = new D2DOffscreenBitmap (CPoint (width, height));
+		D2DDrawContext* context = new D2DDrawContext (bitmap);
+		bitmap->forget ();
+		return context;
+	}
+#endif
 	GdiplusBitmap* bitmap = new GdiplusBitmap (CPoint (width, height));
 	GdiplusDrawContext* context = new GdiplusDrawContext (bitmap);
 	bitmap->forget ();
@@ -549,6 +564,12 @@ COffscreenContext* Win32Frame::createOffscreenContext (CCoord width, CCoord heig
 //-----------------------------------------------------------------------------
 CGraphicsPath* Win32Frame::createGraphicsPath ()
 {
+#if VSTGUI_DIRECT2D_SUPPORT
+	if (getD2DFactory ())
+	{
+		return new D2DGraphicsPath ();
+	}
+#endif
 	return new GdiplusGraphicsPath ();
 }
 
@@ -601,6 +622,23 @@ LONG_PTR WINAPI Win32Frame::WindowProc (HWND hwnd, UINT message, WPARAM wParam, 
 				pFrame->platformOnMouseWheel (where, kMouseWheelAxisY, (float)(zDelta / WHEEL_DELTA), buttons);
 				break;
 			}
+			case WM_MOUSEHWHEEL:	// new since vista
+			{
+				long buttons = 0;
+				if (GetKeyState (VK_SHIFT)   < 0)
+					buttons |= kShift;
+				if (GetKeyState (VK_CONTROL) < 0)
+					buttons |= kControl;
+				if (GetKeyState (VK_MENU)    < 0)
+					buttons |= kAlt;
+				CPoint where (LOWORD (lParam), HIWORD (lParam));
+				short zDelta = (short) HIWORD(wParam);
+				RECT rctWnd;
+				GetWindowRect (hwnd, &rctWnd);
+				where.offset ((CCoord)-rctWnd.left, (CCoord)-rctWnd.top);
+				pFrame->platformOnMouseWheel (where, kMouseWheelAxisX, (float)(-zDelta / WHEEL_DELTA), buttons);
+				break;
+			}
 			case WM_CTLCOLOREDIT:
 			{
 				Win32TextEdit* win32TextEdit = (Win32TextEdit*)(LONG_PTR) GetWindowLongPtr ((HWND)lParam, GWLP_USERDATA);
@@ -634,14 +672,54 @@ LONG_PTR WINAPI Win32Frame::WindowProc (HWND hwnd, UINT message, WPARAM wParam, 
 				PAINTSTRUCT ps;
 				HDC hdc = BeginPaint (hwnd, &ps);
 
-				#if 1
 				if (hdc)
 				{
+					CRect updateRect ((CCoord)ps.rcPaint.left, (CCoord)ps.rcPaint.top, (CCoord)ps.rcPaint.right, (CCoord)ps.rcPaint.bottom);
 					CRect frameSize;
 					win32Frame->getSize (frameSize);
 					frameSize.offset (-frameSize.left, -frameSize.top);
+					#if 1
+					if (win32Frame->deviceContext == 0)
+						win32Frame->deviceContext = createDrawContext (hwnd, hdc, frameSize);
+					if (win32Frame->deviceContext)
+					{
+						win32Frame->deviceContext->setClipRect (updateRect);
+						win32Frame->deviceContext->beginDraw ();
+
+						CDrawContext* drawContext = win32Frame->backBuffer ? win32Frame->backBuffer : win32Frame->deviceContext;
+						#if 1
+						int len = GetRegionData (rgn, 0, NULL);
+						if (len)
+						{
+							RGNDATA* rlist = (RGNDATA* )new char[len];
+							GetRegionData (rgn, len, rlist);
+							if (rlist->rdh.nCount > 0)
+							{
+								RECT* rp = (RECT*)rlist->Buffer;
+								for (unsigned int i = 0; i < rlist->rdh.nCount; i++)
+								{
+									CRect ur (rp->left, rp->top, rp->right, rp->bottom);
+									drawContext->clearRect (ur);
+									pFrame->platformDrawRect (drawContext, ur);
+									rp++;
+								}
+							}
+							else
+								pFrame->platformDrawRect (drawContext, updateRect);
+							delete [] (char*)rlist;
+						}
+						#else
+
+						drawContext->clearRect (updateRect);
+						pFrame->platformDrawRect (drawContext, updateRect);
+
+						#endif
+						if (win32Frame->backBuffer)
+							win32Frame->backBuffer->copyFrom (win32Frame->deviceContext, updateRect, CPoint (updateRect.left, updateRect.top));
+						win32Frame->deviceContext->endDraw ();
+					}
+					#else
 					GdiplusDrawContext context (hdc, frameSize);
-					CRect updateRect ((CCoord)ps.rcPaint.left, (CCoord)ps.rcPaint.top, (CCoord)ps.rcPaint.right, (CCoord)ps.rcPaint.bottom);
 					if (win32Frame->backBuffer)
 					{
 						pFrame->platformDrawRect (win32Frame->backBuffer, updateRect);
@@ -649,50 +727,9 @@ LONG_PTR WINAPI Win32Frame::WindowProc (HWND hwnd, UINT message, WPARAM wParam, 
 					}
 					else
 						pFrame->platformDrawRect (&context, updateRect);
+					#endif
 				}
 
-				#else
-
-				CDrawContext* context = pFrame->getBackBuffer ();
-				if (!context)
-					context = new CDrawContext (pFrame, hdc, hwnd);
-				
-				CRect updateRect ((CCoord)ps.rcPaint.left, (CCoord)ps.rcPaint.top, (CCoord)ps.rcPaint.right, (CCoord)ps.rcPaint.bottom);
-
-				#if 0
-				int len = GetRegionData (rgn, 0, NULL);
-				if (len)
-				{
-					RGNDATA* rlist = (RGNDATA* )new char[len];
-					GetRegionData (rgn, len, rlist);
-					if (rlist->rdh.nCount > 0)
-					{
-						RECT* rp = (RECT*)rlist->Buffer;
-						for (unsigned int i = 0; i < rlist->rdh.nCount; i++)
-						{
-							CRect ur (rp->left, rp->top, rp->right, rp->bottom);
-							pFrame->drawRect (context, ur);
-							rp++;
-						}
-					}
-					else
-						pFrame->drawRect (context, updateRect);
-					delete [] (char*)rlist;
-				}
-				else
-				#endif
-					pFrame->platformDrawRect (context, updateRect);
-
-				if (pFrame->getBackBuffer ())
-				{
-					CDrawContext localContext (pFrame, hdc, hwnd);
-					pFrame->getBackBuffer ()->copyFrom (&localContext, updateRect, CPoint ((CCoord)ps.rcPaint.left, (CCoord)ps.rcPaint.top));
-				}
-				else
-					context->forget ();
-
-				#endif
-				
 				EndPaint (hwnd, &ps);
 				DeleteObject (rgn);
 				return 0;
