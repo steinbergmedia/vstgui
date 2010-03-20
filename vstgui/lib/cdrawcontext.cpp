@@ -46,7 +46,7 @@ CDrawContext::CDrawContext (const CRect& surfaceRect)
 	currentState.frameColor = kTransparentCColor;
 	currentState.fillColor = kTransparentCColor;
 	currentState.lineStyle = kLineOnOffDash;
-	currentState.drawMode = kAntialias;
+	currentState.drawMode = kAntiAliasing;
 	currentState.globalAlpha = 1;
 }
 
@@ -65,6 +65,8 @@ CDrawContext::~CDrawContext ()
 			state->font->forget ();
 		delete state;
 	}
+	if (currentState.font)
+		currentState.font->forget ();
 }
 
 //-----------------------------------------------------------------------------
@@ -77,7 +79,7 @@ void CDrawContext::init ()
 	setFillColor (kBlackCColor);
 	setFontColor (kWhiteCColor);
 	setFont (kSystemFont);
-	setDrawMode (kCopyMode);
+	setDrawMode (kAliasing);
 	setClipRect (surfaceRect);
 }
 

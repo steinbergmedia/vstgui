@@ -42,21 +42,67 @@ class CGradient;
 class CFrame;
 
 //-----------------------------------------------------------------------------
-/// @brief Graphics Path Transformation [new in 4.0]
+/// @brief Graphics Transform Matrix [new in 4.0]
 //-----------------------------------------------------------------------------
-struct CGraphicsTransformation
+struct CGraphicsTransform
 {
-	CPoint offset;
-	double scaleX;
-	double scaleY;
-	double rotation;
+	double m11;
+	double m12;
+	double m21;
+	double m22;
+	double dx;
+	double dy;
 	
-	CGraphicsTransformation ()
+	CGraphicsTransform (double _m11 = 1., double _m12 = 0., double _m21 = 0., double _m22 = 1., double _dx = 0., double _dy = 0.)
+	: m11 (_m11), m12 (_m12), m21 (_m21), m22 (_m22), dx (_dx), dy (_dy)
+	{}
+	
+	void translate (double x, double y)
 	{
-		offset (0, 0);
-		scaleX = scaleY = 1.;
-		rotation = 0;
+		*this = CGraphicsTransform (1, 0, 0, 1, x, y) * this;
 	}
+	
+	void scale (double x, double y)
+	{
+		*this = CGraphicsTransform (x, 0., 0., y, 0., 0.) * this;
+	}
+	
+	void rotate (double angle)
+	{
+		angle = radians (angle);
+		*this = CGraphicsTransform (cos (angle), sin (angle), -sin (angle), cos (angle), 0, 0) * this;
+	}
+	
+	CPoint& transform (CPoint& p)
+	{
+		CCoord x = m11*p.x + m12*p.y + dx;
+		CCoord y = m21*p.x + m22*p.y + dy;
+		p.x = x;
+		p.y = y;
+		return p;
+	}
+
+	CRect& transform (CRect& r)
+	{
+		CPoint p (r.getTopLeft ());
+		r.setTopLeft (transform (p));
+		p = r.getBottomRight ();
+		r.setBottomRight (transform (p));
+		return r;
+	}
+
+	CGraphicsTransform operator* (const CGraphicsTransform& t) const
+	{
+		CGraphicsTransform result;
+		result.m11 = (m11 * t.m11) + (m12 * t.m21);
+		result.m21 = (m21 * t.m11) + (m22 * t.m21);
+		result.dx = (dx * t.m11) + (dy * t.m21) + t.dx;
+		result.m12 = (m11 * t.m12) + (m12 * t.m22);
+		result.m22 = (m21 * t.m12) + (m22 * t.m22);
+		result.dy = (dx * t.m12) + (dy * t.m22) + t.dy;
+		return result;
+	}
+	CGraphicsTransform operator* (const CGraphicsTransform* t) const { return *this * *t; }
 };
 
 //-----------------------------------------------------------------------------
@@ -93,7 +139,7 @@ public:
 	virtual void addEllipse (const CRect& rect) = 0;
 	virtual void addLine (const CPoint& start, const CPoint& end) = 0;
 	virtual void addRect (const CRect& rect) = 0;
-	virtual void addPath (const CGraphicsPath& path, CGraphicsTransformation* transformation = 0) = 0;
+	virtual void addPath (const CGraphicsPath& path, CGraphicsTransform* transformation = 0) = 0;
 	virtual void addString (const char* utf8String, CFontRef font, const CPoint& position) = 0;
 	virtual void closeSubpath () = 0;
 	//@}
@@ -109,8 +155,8 @@ public:
 		kStroked,
 	};
 
-	virtual void draw (CDrawContext* context, PathDrawMode mode = kFilled, CGraphicsTransformation* transformation = 0) = 0;
-	virtual void fillLinearGradient (CDrawContext* context, const CGradient& gradient, const CPoint& startPoint, const CPoint& endPoint, bool evenOdd = false, CGraphicsTransformation* transformation = 0) = 0;
+	virtual void draw (CDrawContext* context, PathDrawMode mode = kFilled, CGraphicsTransform* transformation = 0) = 0;
+	virtual void fillLinearGradient (CDrawContext* context, const CGradient& gradient, const CPoint& startPoint, const CPoint& endPoint, bool evenOdd = false, CGraphicsTransform* transformation = 0) = 0;
 	//@}
 	
 	//-----------------------------------------------------------------------------

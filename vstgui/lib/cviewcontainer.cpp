@@ -645,7 +645,7 @@ void CViewContainer::drawBackgroundRect (CDrawContext* pContext, CRect& _updateR
 	}
 	else if ((backgroundColor.alpha != 255 && bTransparencyEnabled) || !bTransparencyEnabled)
 	{
-		pContext->setDrawMode (kCopyMode);
+		pContext->setDrawMode (kAliasing);
 		pContext->setLineWidth (1);
 		pContext->setFillColor (backgroundColor);
 		pContext->setFrameColor (backgroundColor);
@@ -768,7 +768,7 @@ void CViewContainer::drawRect (CDrawContext* pContext, const CRect& updateRect)
 					if (!lastDrawnFocus.isEmpty ())
 					{
 						pC->setClipRect (oldClip2);
-						pC->setDrawMode (kAntialias);
+						pC->setDrawMode (kAntiAliasing);
 						pC->setFillColor (getFrame ()->getFocusColor ());
 						focusPath->draw (pC, CGraphicsPath::kFilledEvenOdd);
 					}
@@ -816,7 +816,7 @@ void CViewContainer::drawRect (CDrawContext* pContext, const CRect& updateRect)
 			lastDrawnFocus = focusPath->getBoundingBox ();
 			if (!lastDrawnFocus.isEmpty ())
 			{
-				pC->setDrawMode (kAntialias);
+				pC->setDrawMode (kAntiAliasing);
 				pC->setFillColor (getFrame ()->getFocusColor ());
 				focusPath->draw (pC, CGraphicsPath::kFilledEvenOdd);
 			}

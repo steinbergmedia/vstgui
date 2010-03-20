@@ -98,7 +98,7 @@ public:
 	
 	virtual void draw (CDrawContext *pContext)
 	{
-		pContext->setDrawMode (kCopyMode);
+		pContext->setDrawMode (kAliasing);
 		pContext->setFillColor (backgroundColor);
 		CRect r (size);
 		if (tabPosition < 0)
@@ -396,7 +396,7 @@ public:
 	{
 		CRect r (size);
 		r.inset (0, 3);
-		context->setDrawMode (kCopyMode);
+		context->setDrawMode (kAliasing);
 		context->setFillColor (uidDataBrowserLineColor);
 		context->drawRect (r, kDrawFilled);
 		if (headerTitles.size () > (size_t)column)
@@ -419,7 +419,7 @@ public:
 			color.fromHSV (hue, saturation, value);
 			color.alpha /= 3;
 		}
-		context->setDrawMode (kCopyMode);
+		context->setDrawMode (kAliasing);
 		context->setFillColor (color);
 		context->drawRect (size, kDrawFilled);
 	}
@@ -457,14 +457,13 @@ public:
 			}
 			CRect r (size);
 			r.inset (4, 4);
-			CGraphicsTransformation trans;
-			trans.offset = r.getTopLeft ();
-			trans.scaleX = r.getWidth ();
-			trans.scaleY = r.getHeight ();
+			CGraphicsTransform t;
+			t.translate (r.left, r.top);
+			t.scale (r.getWidth (), r.getHeight ());
 			context->setFrameColor (mouseRow == row ? kRedCColor : kGreyCColor);
 			context->setLineWidth (1.5);
-			context->setDrawMode (kAntialias);
-			path->draw (context, CGraphicsPath::kStroked, &trans);
+			context->setDrawMode (kAntiAliasing);
+			path->draw (context, CGraphicsPath::kStroked, &t);
 		}
 		else
 		{
@@ -657,7 +656,8 @@ public:
 		{
 			if (column == dbGetNumColumns (browser) - 1)
 			{
-				actionOperator->performBitmapChange (names[row]->c_str (), 0, true);
+				std::string bitmapName (*names[row]);
+				actionOperator->performBitmapChange (bitmapName.c_str (), 0, true);
 				updateNames ();
 				browser->recalculateLayout (true);
 				return kMouseDownEventHandledButDontNeedMovedOrUpEvents;
@@ -728,23 +728,26 @@ public:
 			}
 			else
 			{
-				actionOperator->performBitmapNameChange (names[row]->c_str (), newText);
+				std::string bitmapName (*names[row]);
+				actionOperator->performBitmapNameChange (bitmapName.c_str (), newText);
 			}
 			updateNames ();
 			browser->recalculateLayout (true);
 		}
 		else if (column == 1)
 		{
-			actionOperator->performBitmapChange (names[row]->c_str (), newText);
+			std::string bitmapName (*names[row]);
+			actionOperator->performBitmapChange (bitmapName.c_str (), newText);
 		}
 		else if (column == 2)
 		{
+			std::string bitmapName (*names[row]);
 			str = newText;
 			CRect r;
 			if (parseRect (str, r))
-				actionOperator->performBitmapNinePartTiledChange (names[row]->c_str (), &r);
+				actionOperator->performBitmapNinePartTiledChange (bitmapName.c_str (), &r);
 			else
-				actionOperator->performBitmapNinePartTiledChange (names[row]->c_str (), 0);
+				actionOperator->performBitmapNinePartTiledChange (bitmapName.c_str (), 0);
 		}
 	}
 };
@@ -839,8 +842,9 @@ public:
 	{
 		if (lastChoosenRow != -1 && names.size () > (size_t)lastChoosenRow)
 		{
+			std::string colorName (*names[lastChoosenRow]);
 			long temp = lastChoosenRow;
-			actionOperator->performColorChange (names[lastChoosenRow]->c_str (), color);
+			actionOperator->performColorChange (colorName.c_str (), color);
 			updateNames ();
 			lastChoosenRow = temp;
 			browser->invalidateRow (lastChoosenRow);
@@ -867,7 +871,8 @@ public:
 			}
 			else
 			{
-				actionOperator->performColorNameChange (names[row]->c_str (), newText);
+				std::string colorName (*names[row]);
+				actionOperator->performColorNameChange (colorName.c_str (), newText);
 			}
 			updateNames ();
 			browser->recalculateLayout (true);
@@ -878,7 +883,8 @@ public:
 			CColor newColor;
 			if (UIDescription::parseColor (colorString, newColor))
 			{
-				actionOperator->performColorChange (names[row]->c_str (), newColor);
+				std::string colorName (*names[row]);
+				actionOperator->performColorChange (colorName.c_str (), newColor);
 			}
 		}
 	}
@@ -952,7 +958,8 @@ public:
 		{
 			if (column == 2)
 			{
-				actionOperator->performTagChange (names[row]->c_str (), 0, true);
+				std::string tagName (*names[row]);
+				actionOperator->performTagChange (tagName.c_str (), 0, true);
 				updateNames ();
 				browser->recalculateLayout (true);
 				return kMouseDownEventHandledButDontNeedMovedOrUpEvents;
@@ -991,7 +998,8 @@ public:
 			}
 			else
 			{
-				actionOperator->performTagNameChange (names[row]->c_str (), newText);
+				std::string tagName (*names[row]);
+				actionOperator->performTagNameChange (tagName.c_str (), newText);
 			}
 			updateNames ();
 			browser->recalculateLayout (true);
@@ -1120,14 +1128,15 @@ public:
 	{
 		if (row < (dbGetNumRows (browser) - 1))
 		{
+			std::string fontName (*names[row]);
 			CRect r = browser->getCellBounds (row, 1);
 			CPoint location (r.getTopLeft ());
 			browser->localToFrame (location);
-			CFontRef currentFont = desc->getFont (names[row]->c_str ());
+			CFontRef currentFont = desc->getFont (fontName.c_str ());
 			CFontRef newFont = showFontMenu (browser->getFrame (), location, currentFont);
 			if (newFont)
 			{
-				actionOperator->performFontChange (names[row]->c_str (), newFont);
+				actionOperator->performFontChange (fontName.c_str (), newFont);
 				newFont->forget ();
 				updateNames ();
 				browser->recalculateLayout (true);
@@ -1150,13 +1159,14 @@ public:
 			}
 			else if (column == 1)
 			{
+				std::string fontName (*names[row]);
 				CPoint location (where);
 				browser->localToFrame (location);
-				CFontRef currentFont = desc->getFont (names[row]->c_str ());
+				CFontRef currentFont = desc->getFont (fontName.c_str ());
 				CFontRef newFont = showFontMenu (browser->getFrame (), location, currentFont);
 				if (newFont)
 				{
-					actionOperator->performFontChange (names[row]->c_str (), newFont);
+					actionOperator->performFontChange (fontName.c_str (), newFont);
 					newFont->forget ();
 					updateNames ();
 					browser->recalculateLayout (true);
@@ -1165,9 +1175,10 @@ public:
 			}
 			else if (column == 2)
 			{
+				std::string fontName (*names[row]);
 				CPoint location (where);
 				browser->localToFrame (location);
-				CFontRef currentFont = desc->getFont (names[row]->c_str ());
+				CFontRef currentFont = desc->getFont (fontName.c_str ());
 				COptionMenu* styleMenu = new COptionMenu ();
 				styleMenu->setStyle (kPopupStyle|kCheckStyle|kMultipleCheckStyle);
 				CMenuItem* item = styleMenu->addEntry (new CMenuItem ("Bold", kBoldFace));
@@ -1191,7 +1202,7 @@ public:
 					else
 						style &= ~item->getTag ();
 					newFont->setStyle (style);
-					actionOperator->performFontChange (names[row]->c_str (), newFont);
+					actionOperator->performFontChange (fontName.c_str (), newFont);
 					newFont->forget ();
 					updateNames ();
 					browser->recalculateLayout (true);
@@ -1222,20 +1233,22 @@ public:
 			}
 			else
 			{
-				actionOperator->performFontNameChange (names[row]->c_str (), newText);
+				std::string fontName (*names[row]);
+				actionOperator->performFontNameChange (fontName.c_str (), newText);
 			}
 			updateNames ();
 			browser->recalculateLayout (true);
 		}
 		else if (column == 3)
 		{
-			CFontRef currentFont = desc->getFont (names[row]->c_str ());
+			std::string fontName (*names[row]);
+			CFontRef currentFont = desc->getFont (fontName.c_str ());
 			if (currentFont)
 			{
 				CCoord size = strtol (newText, 0, 10);
 				CFontRef newFont = new CFontDesc (*currentFont);
 				newFont->setSize (size);
-				actionOperator->performFontChange (names[row]->c_str (), newFont);
+				actionOperator->performFontChange (fontName.c_str (), newFont);
 				newFont->forget ();
 				updateNames ();
 				browser->recalculateLayout (true);

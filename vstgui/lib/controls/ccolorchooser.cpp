@@ -72,7 +72,7 @@ public:
 
 		CRect backgroundRect (0, 0, widthControl, heightControl);
 		backgroundRect.offset (size.left, size.top);
-		context->setDrawMode (kAntialias);
+		context->setDrawMode (kAntiAliasing);
 		context->setFillColor (backgroundFillColor);
 		context->setFrameColor (backgroundFrameColor);
 		context->setLineWidth (backgroundFrameWidth);
@@ -147,7 +147,7 @@ public:
 	
 	void draw (CDrawContext* context)
 	{
-		context->setDrawMode (kCopyMode);
+		context->setDrawMode (kAliasing);
 		context->setFillColor (color);
 		context->setFrameColor (kBlackCColor);
 		context->drawRect (size, kDrawFilledAndStroked);

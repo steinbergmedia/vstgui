@@ -1,0 +1,331 @@
+/*
+ *  graphicstest.cpp
+ *  uidescription test
+ *
+ *  Created by Arne Scheffler on 3/16/10.
+ *  Copyright 2010 Arne Scheffler. All rights reserved.
+ *
+ */
+
+#include "graphicstest.h"
+#include "vstgui/lib/animation/animations.h"
+
+using namespace Steinberg;
+using namespace Steinberg::Vst;
+using namespace VSTGUI::Animation;
+
+namespace VSTGUI {
+
+//------------------------------------------------------------------------
+class GraphicsView : public CView, public IAnimationTarget
+{
+public:
+	GraphicsView ();
+	
+	void setRotation (double angle) { pathRotation = angle; invalid (); }
+	void setFillGradient (bool state) { fillGradient = state; invalid (); }
+	void setStrokePath (bool state) { strokePath = state; invalid (); }
+	
+	void draw (CDrawContext *pContext);
+
+	bool attached (CView* parent);
+	bool removed (CView* parent);
+
+	// IAnimationTarget
+	void animationStart (CView* view, const char* name);
+	void animationTick (CView* view, const char* name, float time);
+	void animationFinished (CView* view, const char* name, bool wasCanceled);
+protected:
+	void buildStarPath ();
+	void buildBezierPath ();
+
+	CGraphicsPath* starPath;
+	CGraphicsPath* bezierPath;
+	CGraphicsPath* combinedPath;
+	CGradient* gradient;
+	double pathRotation;
+	bool fillGradient;
+	bool strokePath;
+};
+
+//------------------------------------------------------------------------
+class GraphicsViewController : public DelegationController
+{
+public:
+	GraphicsViewController (IController* controller) : DelegationController (controller), graphicsView (0) {}
+
+	CView* verifyView (CView* view, const UIAttributes& attributes, IUIDescription* description);
+	CControlListener* getControlListener (const char* controlTagName);
+	void valueChanged (CControl* pControl);
+
+protected:
+	GraphicsView* graphicsView;
+};
+
+//------------------------------------------------------------------------
+FUID GraphicsTestProcessor::cid (0xFFEF9061, 0x21994D6F, 0x91F5F358, 0x6AB1FA41);
+FUID GraphicsTestController::cid (0xDF130F0E, 0xFD0A4543, 0x9AEE67FB, 0xD868F0AA);
+
+//------------------------------------------------------------------------
+tresult PLUGIN_API GraphicsTestController::initialize (FUnknown* context)
+{
+	tresult res = UIDescriptionBaseController::initialize (context);
+	if (res == kResultTrue)
+	{
+		// add ui parameters
+//		StringListParameter* slp = new StringListParameter (USTRING("Animation Switch"), 20000);
+//		slp->appendString (USTRING("On"));
+//		slp->appendString (USTRING("Off"));
+//		uiParameters.addParameter (slp);
+	}
+	return res;
+}
+
+//------------------------------------------------------------------------
+IPlugView* PLUGIN_API GraphicsTestController::createView (FIDString name)
+{
+	if (strcmp (name, ViewType::kEditor) == 0)
+	{
+		return new VST3Editor (this, "view", "GraphicsTest.uidesc");
+	}
+	return 0;
+}
+
+//------------------------------------------------------------------------
+CView* GraphicsTestController::createCustomView (const char* name, const UIAttributes& attributes, IUIDescription* description, VST3Editor* editor)
+{
+	if (strcmp (name, "GraphicsView") == 0)
+	{
+		return new GraphicsView;
+	}
+	return 0;
+}
+
+//------------------------------------------------------------------------
+IController* GraphicsTestController::createSubController (const char* name, IUIDescription* description, VST3Editor* editor)
+{
+	if (strcmp (name, "GraphicsViewController") == 0)
+		return new GraphicsViewController (editor);
+	return 0;
+}
+
+//------------------------------------------------------------------------
+//------------------------------------------------------------------------
+//------------------------------------------------------------------------
+CView* GraphicsViewController::verifyView (CView* view, const UIAttributes& attributes, IUIDescription* description)
+{
+	if (graphicsView == 0)
+		graphicsView = dynamic_cast<GraphicsView*> (view);
+	return DelegationController::verifyView (view, attributes, description);
+}
+
+//------------------------------------------------------------------------
+CControlListener* GraphicsViewController::getControlListener (const char* controlTagName)
+{
+	if (strcmp (controlTagName, "Rotate") == 0 
+	 || strcmp (controlTagName, "FillGradient") == 0
+	 || strcmp (controlTagName, "StrokePath") == 0)
+	{
+		return this;
+	}
+	return DelegationController::getControlListener (controlTagName);
+}
+
+//------------------------------------------------------------------------
+void GraphicsViewController::valueChanged (CControl* pControl)
+{
+	if (graphicsView == 0)
+		return;
+	switch (pControl->getTag ())
+	{
+		case 0: // rotate star
+		{
+			if (pControl->getValue () > 0)
+			{
+				graphicsView->remember (); // the animator will call a forget on it
+				graphicsView->getFrame ()->getAnimator ()->addAnimation (graphicsView, "Rotation", graphicsView, new RepeatTimingFunction (new LinearTimingFunction (4000), -1, false));
+			}
+			else
+			{
+				graphicsView->getFrame ()->getAnimator ()->removeAnimation (graphicsView, "Rotation");
+			}
+			break;
+		}
+		case 1: // fill gradient
+		{
+			graphicsView->setFillGradient (pControl->getValue () > 0.f);
+			break;
+		}
+		case 2: // stroke path
+		{
+			graphicsView->setStrokePath (pControl->getValue () > 0.f);
+			break;
+		}
+	}
+}
+
+//------------------------------------------------------------------------
+//------------------------------------------------------------------------
+//------------------------------------------------------------------------
+GraphicsView::GraphicsView ()
+: CView (CRect (0, 0, 0, 0))
+, starPath (0)
+, bezierPath (0)
+, combinedPath (0)
+, gradient (0)
+, pathRotation (0)
+, fillGradient (false)
+, strokePath (false)
+{
+}
+
+//------------------------------------------------------------------------
+void GraphicsView::draw (CDrawContext *pContext)
+{
+	CView::draw (pContext);
+	CGraphicsPath* drawPath = combinedPath;
+	if (drawPath)
+	{
+		pContext->setDrawMode (kAntialias);
+		pContext->setLineWidth (4.);
+		pContext->setFrameColor (kRedCColor);
+		pContext->setFillColor (kBlueCColor);
+		pContext->setLineStyle (kLineOnOffDash);
+		CGraphicsTransform t;
+		t.translate (size.left + getWidth ()/2., size.top + getHeight ()/2.);
+		t.scale (getWidth ()/1.5, getHeight ()/1.5);
+		t.rotate (pathRotation);
+		if (strokePath)
+			drawPath->draw (pContext, CGraphicsPath::kStroked, &t);
+		if (fillGradient)
+		{
+			if (gradient == 0)
+			{
+				CColor c1 (kGreenCColor);
+				CColor c2 (kBlackCColor);
+				c1.alpha = 100; 
+				gradient = drawPath->createGradient (0.0, 0.7, c1, c2);
+			}
+			if (gradient)
+				drawPath->fillLinearGradient (pContext, *gradient, size.getTopLeft (), size.getBottomRight (), false, &t);
+		}
+		else
+			drawPath->draw (pContext, CGraphicsPath::kFilled, &t);
+	}
+}
+
+//------------------------------------------------------------------------
+void GraphicsView::buildStarPath ()
+{
+	starPath = CGraphicsPath::create (getFrame ());
+	if (starPath)
+	{
+		starPath->addLine (CPoint (-0.4, -0.1), CPoint (-0.1, -0.1));
+		starPath->addLine (starPath->getCurrentPosition (), CPoint (0.0, -0.45));
+		starPath->addLine (starPath->getCurrentPosition (), CPoint (0.1, -0.1));
+		starPath->addLine (starPath->getCurrentPosition (), CPoint (0.4, -0.1));
+		starPath->addLine (starPath->getCurrentPosition (), CPoint (0.1, 0.1));
+		starPath->addLine (starPath->getCurrentPosition (), CPoint (0.3, 0.45));
+		starPath->addLine (starPath->getCurrentPosition (), CPoint (0.0, 0.25));
+		starPath->addLine (starPath->getCurrentPosition (), CPoint (-0.3, 0.45));
+		starPath->addLine (starPath->getCurrentPosition (), CPoint (-0.1, 0.1));
+		starPath->addLine (starPath->getCurrentPosition (), CPoint (-0.4, -0.1));
+		starPath->closeSubpath ();
+	}
+}
+
+//------------------------------------------------------------------------
+void GraphicsView::buildBezierPath ()
+{
+	bezierPath = CGraphicsPath::create (getFrame ());
+	if (bezierPath)
+	{
+		bezierPath->addCurve (CPoint (-0.5, -0.5), CPoint (0, -0.2), CPoint (0, -0.2), CPoint (0.5, -0.5));
+		bezierPath->addCurve (bezierPath->getCurrentPosition (), CPoint (0.4, 0), CPoint (0.4, 0), CPoint (0.5, 0.5));
+		bezierPath->addCurve (bezierPath->getCurrentPosition (), CPoint (0, 0.2), CPoint (0, 0.2), CPoint (-0.5, 0.5));
+		bezierPath->addCurve (bezierPath->getCurrentPosition (), CPoint (-0.4, 0), CPoint (-0.4, 0), CPoint (-0.5, -0.5));
+		bezierPath->closeSubpath ();
+	}
+}
+
+//------------------------------------------------------------------------
+void GraphicsView::animationStart (CView* view, const char* name)
+{
+}
+
+//------------------------------------------------------------------------
+void GraphicsView::animationTick (CView* view, const char* name, float time)
+{
+	if (strcmp (name, "Rotation") == 0 || strcmp (name, "RotateBack") == 0)
+	{
+		setRotation (360.*time);
+	}
+}
+
+//------------------------------------------------------------------------
+void GraphicsView::animationFinished (CView* view, const char* name, bool wasCanceled)
+{
+	if (strcmp (name, "Rotation") == 0)
+	{
+		if (wasCanceled)
+		{
+			if (pathRotation > 0. && pathRotation < 180.)
+			{
+				remember ();
+				InterpolationTimingFunction* tf = new InterpolationTimingFunction (100, pathRotation/360., 0);
+				getFrame ()->getAnimator ()->addAnimation (this, "RotateBack", this, tf);
+			}
+			else if (pathRotation >= 180.)
+			{
+				remember ();
+				InterpolationTimingFunction* tf = new InterpolationTimingFunction (100, pathRotation/360., 1);
+				getFrame ()->getAnimator ()->addAnimation (this, "RotateBack", this, tf);
+			}
+		}
+	}
+}
+
+//------------------------------------------------------------------------
+bool GraphicsView::attached (CView* parent)
+{
+	bool result = CView::attached (parent);
+	if (result)
+	{
+		buildStarPath ();
+		buildBezierPath ();
+		combinedPath = CGraphicsPath::create (getFrame ());
+		combinedPath->addPath (*bezierPath);
+		CGraphicsTransform t;
+		t.rotate (90);
+		combinedPath->addPath (*starPath, &t);
+	}
+	return result;
+}
+
+//------------------------------------------------------------------------
+bool GraphicsView::removed (CView* parent)
+{
+	if (starPath)
+	{
+		starPath->forget ();
+		starPath = 0;
+	}
+	if (bezierPath)
+	{
+		bezierPath->forget ();
+		bezierPath = 0;
+	}
+	if (combinedPath)
+	{
+		combinedPath->forget ();
+		combinedPath = 0;
+	}
+	if (gradient)
+	{
+		gradient->forget ();
+		gradient = 0;
+	}
+	return CView::removed (parent);
+}
+
+} // namespace

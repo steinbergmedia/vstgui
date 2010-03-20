@@ -270,7 +270,7 @@ void ViewHierarchyData::dbDrawCell (CDrawContext* context, const CRect& size, lo
 			polygon[2] = CPoint (r.right, r.top);
 		}
 		polygon[3] = polygon[0];
-		context->setDrawMode (kAntialias);
+		context->setDrawMode (kAntiAliasing);
 		if ((row == 0 && column == 1) || (row == dbGetNumRows (browser) -1 && column == 2))
 			context->setFillColor (MakeCColor (255, 255, 255, 50));
 		else
@@ -531,7 +531,7 @@ void ViewHierarchyPathView::draw (CDrawContext* context)
 	context->setFillColor (MakeCColor (255, 255, 255, 20));
 	context->setFontColor (kWhiteCColor);
 	context->setFont (kNormalFont);
-	context->setDrawMode (kAntialias);
+	context->setDrawMode (kAntiAliasing);
 	context->setLineWidth (1);
 
 	if (needCompute)

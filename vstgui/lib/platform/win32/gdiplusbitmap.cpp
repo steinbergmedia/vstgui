@@ -41,14 +41,6 @@
 namespace VSTGUI {
 
 //-----------------------------------------------------------------------------
-IPlatformBitmap* IPlatformBitmap::create (CPoint* size)
-{
-	if (size)
-		return new GdiplusBitmap (*size);
-	return new GdiplusBitmap ();
-}
-
-//-----------------------------------------------------------------------------
 GdiplusBitmap::GdiplusBitmap ()
 : bitmap (0)
 {

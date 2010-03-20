@@ -545,7 +545,7 @@ void CScrollView::drawBackgroundRect (CDrawContext *pContext, CRect& _updateRect
 	r.offset (-r.left, -r.top);
 	if ((backgroundColor.alpha != 255 && bTransparencyEnabled) || !bTransparencyEnabled)
 	{
-		pContext->setDrawMode (kCopyMode);
+		pContext->setDrawMode (kAliasing);
 		pContext->setFillColor (backgroundColor);
 		pContext->drawRect (r, kDrawFilled);
 	}

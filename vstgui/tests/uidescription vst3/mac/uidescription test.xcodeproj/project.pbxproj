@@ -56,6 +56,8 @@
 		F440758810BF043D003C59F6 /* vst3editor.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F440758610BF043D003C59F6 /* vst3editor.cpp */; };
 		F44075AD10BF053A003C59F6 /* myEditor.uidesc in Resources */ = {isa = PBXBuildFile; fileRef = F44075AC10BF053A003C59F6 /* myEditor.uidesc */; };
 		F4457815110A06590022C0E5 /* FrameBackground.png in Resources */ = {isa = PBXBuildFile; fileRef = F4457814110A06590022C0E5 /* FrameBackground.png */; };
+		F4657609114F83D100846DAE /* graphicstest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4657608114F83D100846DAE /* graphicstest.cpp */; };
+		F465763D114F8EA200846DAE /* GraphicsTest.uidesc in Resources */ = {isa = PBXBuildFile; fileRef = F465763C114F8EA200846DAE /* GraphicsTest.uidesc */; };
 		F4F4013D10D2662500F2B46B /* vst2wrapper.sdk.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4F4013C10D2662500F2B46B /* vst2wrapper.sdk.cpp */; };
 		F4F5DA8A10BFD28900DB6C33 /* TabController.png in Resources */ = {isa = PBXBuildFile; fileRef = F4F5DA8910BFD28900DB6C33 /* TabController.png */; };
 /* End PBXBuildFile section */
@@ -156,6 +158,9 @@
 		F440758710BF043D003C59F6 /* vst3editor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = vst3editor.h; path = ../../../uidescription/vst3editor.h; sourceTree = SOURCE_ROOT; };
 		F44075AC10BF053A003C59F6 /* myEditor.uidesc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; name = myEditor.uidesc; path = ../resource/myEditor.uidesc; sourceTree = SOURCE_ROOT; };
 		F4457814110A06590022C0E5 /* FrameBackground.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = FrameBackground.png; path = ../resource/FrameBackground.png; sourceTree = SOURCE_ROOT; };
+		F4657607114F83D100846DAE /* graphicstest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = graphicstest.h; path = ../source/graphicstest.h; sourceTree = SOURCE_ROOT; };
+		F4657608114F83D100846DAE /* graphicstest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = graphicstest.cpp; path = ../source/graphicstest.cpp; sourceTree = SOURCE_ROOT; };
+		F465763C114F8EA200846DAE /* GraphicsTest.uidesc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; name = GraphicsTest.uidesc; path = ../resource/GraphicsTest.uidesc; sourceTree = SOURCE_ROOT; };
 		F4F4013C10D2662500F2B46B /* vst2wrapper.sdk.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = vst2wrapper.sdk.cpp; path = ../../../../../SKI/public.sdk/source/vst/vst2wrapper/vst2wrapper.sdk.cpp; sourceTree = SOURCE_ROOT; };
 		F4F5DA8910BFD28900DB6C33 /* TabController.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = TabController.png; path = ../resource/TabController.png; sourceTree = SOURCE_ROOT; };
 		F4F5DA9E10BFD5BF00DB6C33 /* ussage bugs.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = "ussage bugs.txt"; path = "../ussage bugs.txt"; sourceTree = SOURCE_ROOT; };
@@ -207,6 +212,8 @@
 				F42731E41125516A00BE2194 /* subcontrollertest.cpp */,
 				F41CA1C6112E99F000D425D7 /* animationtest.h */,
 				F41CA1C7112E99F000D425D7 /* animationtest.cpp */,
+				F4657607114F83D100846DAE /* graphicstest.h */,
+				F4657608114F83D100846DAE /* graphicstest.cpp */,
 			);
 			name = Sources;
 			sourceTree = "<group>";
@@ -379,6 +386,7 @@
 		F44075AA10BF0525003C59F6 /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				F465763C114F8EA200846DAE /* GraphicsTest.uidesc */,
 				F4457814110A06590022C0E5 /* FrameBackground.png */,
 				F4F5DA8910BFD28900DB6C33 /* TabController.png */,
 				F4273C06112C0C2400BE2194 /* animation_knob.png */,
@@ -457,6 +465,7 @@
 				F4273C18112C0C2400BE2194 /* vumeter_back.bmp in Resources */,
 				F4273C19112C0C2400BE2194 /* vumeter_front.bmp in Resources */,
 				F41CA21F112E9E6B00D425D7 /* AnimationTest.uidesc in Resources */,
+				F465763D114F8EA200846DAE /* GraphicsTest.uidesc in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -517,6 +526,7 @@
 				F42731DE1125507F00BE2194 /* factory.cpp in Sources */,
 				F42731E51125516A00BE2194 /* subcontrollertest.cpp in Sources */,
 				F41CA1C8112E99F000D425D7 /* animationtest.cpp in Sources */,
+				F4657609114F83D100846DAE /* graphicstest.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

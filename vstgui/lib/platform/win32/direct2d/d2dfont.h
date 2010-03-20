@@ -32,48 +32,49 @@
 // OF THE POSSIBILITY OF SUCH DAMAGE.
 //-----------------------------------------------------------------------------
 
-#ifndef __gdiplusgraphicspath__
-#define __gdiplusgraphicspath__
+#ifndef __d2dfont__
+#define __d2dfont__
 
-#include "../../cgraphicspath.h"
+#include "../../../cfont.h"
 
-#if WINDOWS
+#if WINDOWS && VSTGUI_DIRECT2D_SUPPORT
 
-namespace Gdiplus {
-class GraphicsPath;
-}
+struct IDWriteTextFormat;
+struct IDWriteTextLayout;
 
 namespace VSTGUI {
 
 //-----------------------------------------------------------------------------
-class GdiplusGraphicsPath : public CGraphicsPath
+class D2DFont : public IPlatformFont, public IFontPainter
 {
 public:
-	GdiplusGraphicsPath ();
-	~GdiplusGraphicsPath ();
+	D2DFont (const char* name, const CCoord& size, const long& style);
 
-	Gdiplus::GraphicsPath* getGraphicsPath () const { return platformPath; }
-
-	// CGraphicsPath
-	CGradient* createGradient (double color1Start, double color2Start, const CColor& color1, const CColor& color2);
-	void addArc (const CRect& rect, double startAngle, double endAngle);
-	void addCurve (const CPoint& start, const CPoint& control1, const CPoint& control2, const CPoint& end);
-	void addEllipse (const CRect& rect);
-	void addLine (const CPoint& start, const CPoint& end);
-	void addRect (const CRect& rect);
-	void addPath (const CGraphicsPath& path, CGraphicsTransform* transformation = 0);
-	void addString (const char* utf8String, CFontRef font, const CPoint& position);
-	void closeSubpath ();
-	void draw (CDrawContext* context, PathDrawMode mode = kFilled, CGraphicsTransform* transformation = 0);
-	void fillLinearGradient (CDrawContext* context, const CGradient& gradient, const CPoint& startPoint, const CPoint& endPoint, bool evenOdd = false, CGraphicsTransform* transformation = 0);
-	CPoint getCurrentPosition () const;
-	CRect getBoundingBox () const;
 protected:
-	Gdiplus::GraphicsPath* platformPath;
+	~D2DFont ();
+	
+	double getAscent () const { return ascent; }
+	double getDescent () const { return descent; }
+	double getLeading () const { return leading; }
+	double getCapHeight () const { return capHeight; }
+
+	IFontPainter* getPainter () { return this; }
+
+	void drawString (CDrawContext* context, const char* utf8String, const CPoint& p, bool antialias = true);
+	CCoord getStringWidth (CDrawContext* context, const char* utf8String, bool antialias = true);
+
+	IDWriteTextLayout* createTextLayout (const char* utf8Text);
+
+	IDWriteTextFormat* textFormat;
+	double ascent;
+	double descent;
+	double leading;
+	double capHeight;
+	long style;
 };
 
 } // namespace
 
-#endif // WINDOWS
+#endif // WINDOWS && VSTGUI_DIRECT2D_SUPPORT
 
-#endif // __gdiplusgraphicspath__
+#endif // __d2dfont__

@@ -45,10 +45,15 @@ class CVSTGUITimer;
 // CTooltipSupport Declaration
 //! Generic Tooltip Support class
 //-----------------------------------------------------------------------------
-class CTooltipSupport : public CBaseObject, public IMouseObserver
+class CTooltipSupport : public CBaseObject
 {
 public:
 	CTooltipSupport (CFrame* frame, int delay = 1000);
+
+	void onMouseEntered (CView* view);
+	void onMouseExited (CView* view);
+	void onMouseMoved (const CPoint& where);
+	void onMouseDown (const CPoint& where);
 
 	//-------------------------------------------
 	CLASS_METHODS_NOCOPY(CTooltipSupport, CBaseObject)
@@ -59,12 +64,6 @@ protected:
 
 	// CBaseObject
 	CMessageResult notify (CBaseObject* sender, const char* msg);
-
-	// IMouseObserver
-	void onMouseEntered (CView* view, CFrame* frame);
-	void onMouseExited (CView* view, CFrame* frame);
-	void onMouseMoved (CFrame* frame, const CPoint& where);
-	void onMouseDown (CFrame* frame, const CPoint& where);
 
 	CVSTGUITimer* timer;
 	CFrame* frame;

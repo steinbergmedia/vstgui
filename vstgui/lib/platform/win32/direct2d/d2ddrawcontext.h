@@ -32,30 +32,35 @@
 // OF THE POSSIBILITY OF SUCH DAMAGE.
 //-----------------------------------------------------------------------------
 
-#ifndef __cgdrawcontext__
-#define __cgdrawcontext__
+#ifndef __d2ddrawcontext__
+#define __d2ddrawcontext__
 
-#include "../../coffscreencontext.h"
+#include "../../../coffscreencontext.h"
 
-#if MAC
+#if WINDOWS && VSTGUI_DIRECT2D_SUPPORT
 
-#include <ApplicationServices/ApplicationServices.h>
-
-#if MAC_CARBON
-#include <Carbon/Carbon.h>
-#endif
+#include "d2dbitmap.h"
+#include <windows.h>
+#include <d2d1.h>
 
 namespace VSTGUI {
-class CGOffscreenBitmap;
 
 //-----------------------------------------------------------------------------
-class CGDrawContext : public COffscreenContext
+class D2DDrawContext : public COffscreenContext
 {
 public:
-	CGDrawContext (CGContextRef cgContext, const CRect& rect);
-	CGDrawContext (CGOffscreenBitmap* bitmap);
-	~CGDrawContext ();
-	
+	D2DDrawContext (HWND window, const CRect& drawSurface);
+	D2DDrawContext (D2DOffscreenBitmap* bitmap);
+	~D2DDrawContext ();
+
+	ID2D1RenderTarget* getRenderTarget () const { return renderTarget; }
+	ID2D1SolidColorBrush* getFillBrush () const { return fillBrush; }
+	ID2D1SolidColorBrush* getStrokeBrush () const { return strokeBrush; }
+	ID2D1SolidColorBrush* getFontBrush () const { return fontBrush; }
+	ID2D1StrokeStyle* getStrokeStyle () const { return strokeStyle; }
+
+	// CDrawContext
+	void moveTo (const CPoint &point);
 	void lineTo (const CPoint &point);
 	void drawLines (const CPoint* points, const long& numberOfLines);
 	void drawPolygon (const CPoint *pPoints, long numberOfPoints, const CDrawStyle drawStyle = kDrawStroked);
@@ -76,24 +81,50 @@ public:
 	void setGlobalAlpha (float newAlpha);
 	void saveGlobalState ();
 	void restoreGlobalState ();
+
+	void beginDraw ();
 	void endDraw ();
 
-	CGContextRef beginCGContext (bool swapYAxis = false);
-	void releaseCGContext (CGContextRef context);
+	//-----------------------------------------------------------------------------
+	class D2DApplyClip
+	{
+	public:
+		D2DApplyClip (D2DDrawContext* drawContext);
+		~D2DApplyClip ();
+	protected:
+		D2DDrawContext* drawContext;
+	};
 
-	CGContextRef getCGContext () const { return cgContext; }
-	void applyLineDash ();
-
-//------------------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
 protected:
 	void init ();
+	void createRenderTarget ();
+	void releaseRenderTarget ();
 
-	CGContextRef cgContext;
+	HWND window;
+	ID2D1RenderTarget* renderTarget;
+	ID2D1SolidColorBrush* fillBrush;
+	ID2D1SolidColorBrush* strokeBrush;
+	ID2D1SolidColorBrush* fontBrush;
+	ID2D1StrokeStyle* strokeStyle;
 };
+
+//-----------------------------------------------------------------------------
+static inline D2D1_RECT_F makeD2DRect (const CRect& r)
+{
+	D2D1_RECT_F dr = {(FLOAT)r.left, (FLOAT)r.top, (FLOAT)r.right, (FLOAT)r.bottom};
+	return dr;
+}
+
+//-----------------------------------------------------------------------------
+static inline D2D1_POINT_2F makeD2DPoint (const CPoint& p)
+{
+	D2D1_POINT_2F dp = {(FLOAT)p.x, (FLOAT)p.y};
+	return dp;
+}
 
 } // namespace
 
-#endif // MAC
+#endif // WINDOWS
 
-#endif // __cgdrawcontext__
-
+#endif // __d2ddrawcontext__

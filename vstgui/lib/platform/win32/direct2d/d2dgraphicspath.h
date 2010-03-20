@@ -32,28 +32,26 @@
 // OF THE POSSIBILITY OF SUCH DAMAGE.
 //-----------------------------------------------------------------------------
 
-#ifndef __gdiplusgraphicspath__
-#define __gdiplusgraphicspath__
+#ifndef __d2dgraphicspath__
+#define __d2dgraphicspath__
 
-#include "../../cgraphicspath.h"
+#include "../../../cgraphicspath.h"
 
-#if WINDOWS
+#if WINDOWS && VSTGUI_DIRECT2D_SUPPORT
 
-namespace Gdiplus {
-class GraphicsPath;
-}
+#include <list>
+
+struct ID2D1PathGeometry;
 
 namespace VSTGUI {
 
 //-----------------------------------------------------------------------------
-class GdiplusGraphicsPath : public CGraphicsPath
+class D2DGraphicsPath : public CGraphicsPath
 {
 public:
-	GdiplusGraphicsPath ();
-	~GdiplusGraphicsPath ();
-
-	Gdiplus::GraphicsPath* getGraphicsPath () const { return platformPath; }
-
+	D2DGraphicsPath ();
+	~D2DGraphicsPath ();
+	
 	// CGraphicsPath
 	CGradient* createGradient (double color1Start, double color2Start, const CColor& color1, const CColor& color2);
 	void addArc (const CRect& rect, double startAngle, double endAngle);
@@ -68,12 +66,49 @@ public:
 	void fillLinearGradient (CDrawContext* context, const CGradient& gradient, const CPoint& startPoint, const CPoint& endPoint, bool evenOdd = false, CGraphicsTransform* transformation = 0);
 	CPoint getCurrentPosition () const;
 	CRect getBoundingBox () const;
+
 protected:
-	Gdiplus::GraphicsPath* platformPath;
+	struct Instruction
+	{
+		enum Type {
+			kArc,
+			kCurve,
+			kEllipse,
+			kLine,
+			kRect,
+			kPath,
+			kString,
+			kCloseSubpath
+		};
+		struct Arc
+		{
+			double startAngle;
+			double endAngle;
+		};
+		struct Curve
+		{
+			CPoint control1;
+			CPoint control2;
+		};
+		Type type;
+
+		Arc arc;
+		Curve curve;
+		CRect rect;
+
+	};
+	std::list<Instruction> instructions;
+
+	bool buildPath (long fillMode = 0);
+
+	ID2D1PathGeometry* path;
+	CPoint currentPosition;
+	bool dirty;
+	long currentPathFillMode;
 };
 
 } // namespace
 
 #endif // WINDOWS
 
-#endif // __gdiplusgraphicspath__
+#endif // __d2dgraphicspath__

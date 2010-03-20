@@ -35,13 +35,22 @@
 #include "animations.h"
 #include "../cview.h"
 #include "../cframe.h"
+#include <assert.h>
+#include <cmath>
 
 namespace VSTGUI {
 namespace Animation {
+//------------------------------------------------------------------------
+/*! @defgroup AnimationTargets Animation Targets
+ *	@ingroup animation
+ */
+//------------------------------------------------------------------------
 
 //-----------------------------------------------------------------------------
-AlphaValueAnimation::AlphaValueAnimation (float endValue)
-: endValue (endValue)
+AlphaValueAnimation::AlphaValueAnimation (float endValue, bool forceEndValueOnFinish)
+: startValue (0.f)
+, endValue (endValue)
+, forceEndValueOnFinish (forceEndValueOnFinish)
 {
 }
 
@@ -52,21 +61,25 @@ void AlphaValueAnimation::animationStart (CView* view, const char* name)
 }
 
 //-----------------------------------------------------------------------------
-void AlphaValueAnimation::animationTick (CView* view, const char* name, float time)
+void AlphaValueAnimation::animationTick (CView* view, const char* name, float pos)
 {
-	float alpha = startValue + (endValue - startValue) * time;
+	float alpha = startValue + (endValue - startValue) * pos;
 	view->setAlphaValue (alpha);
 }
 
 //-----------------------------------------------------------------------------
-void AlphaValueAnimation::animationFinished (CView* view, const char* name)
+void AlphaValueAnimation::animationFinished (CView* view, const char* name, bool wasCanceled)
 {
-	view->setAlphaValue (endValue);
+	if (!wasCanceled || forceEndValueOnFinish)
+		view->setAlphaValue (endValue);
 }
 
 //-----------------------------------------------------------------------------
-ViewSizeAnimation::ViewSizeAnimation (const CRect& inNewRect)
+//-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
+ViewSizeAnimation::ViewSizeAnimation (const CRect& inNewRect, bool forceEndValueOnFinish)
 : newRect (inNewRect)
+, forceEndValueOnFinish (forceEndValueOnFinish)
 {
 }
 
@@ -77,31 +90,168 @@ void ViewSizeAnimation::animationStart (CView* view, const char* name)
 }
 
 //-----------------------------------------------------------------------------
-void ViewSizeAnimation::animationFinished (CView* view, const char* name)
+void ViewSizeAnimation::animationFinished (CView* view, const char* name, bool wasCanceled)
 {
-	if (view->getViewSize () != newRect)
+	if (!wasCanceled || forceEndValueOnFinish)
 	{
-		view->invalid ();
-		view->setViewSize (newRect);
-		view->setMouseableArea (newRect);
-		view->invalid ();
+		if (view->getViewSize () != newRect)
+		{
+			view->invalid ();
+			view->setViewSize (newRect);
+			view->setMouseableArea (newRect);
+			view->invalid ();
+		}
 	}
 }
 
 //-----------------------------------------------------------------------------
-void ViewSizeAnimation::animationTick (CView* view, const char* name, float time)
+void ViewSizeAnimation::animationTick (CView* view, const char* name, float pos)
 {
 	CRect r;
-	r.left = abs (startRect.left + ((newRect.left - startRect.left) * time));
-	r.right = abs (startRect.right + ((newRect.right - startRect.right) * time));
-	r.top = abs (startRect.top + ((newRect.top - startRect.top) * time));
-	r.bottom = abs (startRect.bottom + ((newRect.bottom - startRect.bottom) * time));
+	r.left = (int)fabs (startRect.left + ((newRect.left - startRect.left) * pos));
+	r.right = (int)fabs (startRect.right + ((newRect.right - startRect.right) * pos));
+	r.top = (int)fabs (startRect.top + ((newRect.top - startRect.top) * pos));
+	r.bottom = (int)fabs (startRect.bottom + ((newRect.bottom - startRect.bottom) * pos));
 	if (view->getViewSize () != r)
 	{
 		view->invalid ();
 		view->setViewSize (r);
 		view->setMouseableArea (r);
 		view->invalid ();
+	}
+}
+
+//-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
+ExchangeViewAnimation::ExchangeViewAnimation (CView* oldView, CView* newView, AnimationStyle style)
+: newView (newView)
+, viewToRemove (oldView)
+, style (style)
+{
+	assert (newView->isAttached () == false);
+	assert (viewToRemove->isAttached ());
+
+	viewToRemove->remember ();
+	newView->remember ();
+	CViewContainer* parent = dynamic_cast<CViewContainer*> (viewToRemove->getParentView ());
+	if (parent)
+		parent->addView (newView);
+
+	newViewValueEnd = newView->getAlphaValue ();
+	newView->setAlphaValue (0.f);
+}
+
+//-----------------------------------------------------------------------------
+ExchangeViewAnimation::~ExchangeViewAnimation ()
+{
+	viewToRemove->forget ();
+	newView->forget ();
+}
+
+//-----------------------------------------------------------------------------
+void ExchangeViewAnimation::animationStart (CView* view, const char* name)
+{
+	#if DEBUG
+	CViewContainer* parent = dynamic_cast<CViewContainer*> (viewToRemove->getParentView ());
+	assert (view == parent);
+	#endif
+	if (style == kAlphaValueFade)
+	{
+		oldViewValueStart = viewToRemove->getAlphaValue ();
+	}
+	else
+	{
+		newView->setAlphaValue (newViewValueEnd);
+	}
+}
+
+//-----------------------------------------------------------------------------
+void ExchangeViewAnimation::animationTick (CView* view, const char* name, float pos)
+{
+	switch (style)
+	{
+		case kAlphaValueFade:
+		{
+			float alpha = oldViewValueStart - (oldViewValueStart * pos);
+			viewToRemove->setAlphaValue (alpha);
+			alpha = newViewValueEnd * pos;
+			newView->setAlphaValue (alpha);
+			break;
+		}
+		case kPushInFromLeft:
+		{
+			CRect viewSize (newView->getViewSize ());
+			CCoord leftOrigin = viewToRemove->getViewSize ().left;
+			CCoord offset = viewSize.getWidth () * (1.f - pos);
+			viewSize.offset (-viewSize.left, 0);
+			viewSize.offset (leftOrigin - offset, 0);
+			newView->invalid ();
+			newView->setViewSize (viewSize);
+			newView->setMouseableArea (viewSize);
+			newView->invalid ();
+		}
+		case kPushInFromRight:
+		{
+			CRect viewSize (newView->getViewSize ());
+			CCoord rightOrigin = viewToRemove->getViewSize ().left + viewToRemove->getViewSize ().getWidth ();
+			CCoord offset = viewSize.getWidth () * pos;
+			viewSize.offset (-viewSize.left, 0);
+			viewSize.offset (rightOrigin - offset, 0);
+			newView->invalid ();
+			newView->setViewSize (viewSize);
+			newView->setMouseableArea (viewSize);
+			newView->invalid ();
+		}
+		case kPushInFromTop:
+		{
+			CRect viewSize (newView->getViewSize ());
+			CCoord topOrigin = viewToRemove->getViewSize ().top;
+			CCoord offset = viewSize.getHeight () * (1.f - pos);
+			viewSize.offset (0, -viewSize.top);
+			viewSize.offset (0, topOrigin - offset);
+			newView->invalid ();
+			newView->setViewSize (viewSize);
+			newView->setMouseableArea (viewSize);
+			newView->invalid ();
+		}
+		case kPushInFromBottom:
+		{
+			CRect viewSize (newView->getViewSize ());
+			CCoord bottomOrigin = viewToRemove->getViewSize ().top + viewToRemove->getViewSize ().getHeight ();
+			CCoord offset = viewSize.getHeight () * pos;
+			viewSize.offset (0, -viewSize.top);
+			viewSize.offset (0, bottomOrigin - offset);
+			newView->invalid ();
+			newView->setViewSize (viewSize);
+			newView->setMouseableArea (viewSize);
+			newView->invalid ();
+		}
+	}
+}
+
+//-----------------------------------------------------------------------------
+void ExchangeViewAnimation::animationFinished (CView* view, const char* name, bool wasCanceled)
+{
+	if (wasCanceled)
+	{
+		switch (style)
+		{
+			case kPushInFromLeft:
+			case kPushInFromRight:
+			case kPushInFromTop:
+			case kPushInFromBottom:
+			{
+				animationTick (0, 0, 1.f);
+				break;
+			}
+		}
+	}
+	if (viewToRemove->getParentView ())
+	{
+		CViewContainer* parent = dynamic_cast<CViewContainer*> (viewToRemove->getParentView ());
+		if (parent)
+			parent->removeView (viewToRemove);
 	}
 }
 

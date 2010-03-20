@@ -17,6 +17,7 @@ It's recomended to start new projects with version 4 while old projects should s
 
 - UIDescription : Building user interfaces via XML description files. See @ref uidescription @n
 - VST3 Support : Complete inline VST3 Editor support. See @ref uidescription_vst3_support @n
+- Animation Support : Simple to use animations. See @ref animation
 - Amalgamation : Easy integration in your projects via one or two source files
 - Cleaned Code : Removed all deprecated methods and classes, splittet individual classes into different files
 - Platform Abstraction : Platform dependent code was refactored and moved into its own files
@@ -31,7 +32,7 @@ It's recomended to start new projects with version 4 while old projects should s
 - VSTGUI::CBitmap was completely changed and does not use a transparency color anymore, you need to use the alpha channel of a bitmap to get the same results
 - VSTGUI::CControl::setValue (value) changed to VSTGUI::CControl::setValue (value, updateSubListeners)
 - VSTGUI::COffscreenContext is handled completely different. But in most cases you can simply remove all offscreens where you needed them to reduce flicker.
-- On Windows only GDI+ is used, GDI is completely removed
+- On Windows graphics are entirely drawn with GDI+ or Direct2D (when available), GDI is not used anymore
 - The internal string encoding is now always UTF-8
 - The VSTGUI::CCoord type is now always a double
 

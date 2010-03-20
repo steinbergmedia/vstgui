@@ -48,3 +48,7 @@
 #include "lib/platform/win32/win32support.cpp"
 #include "lib/platform/win32/win32textedit.cpp"
 #include "lib/platform/win32/winfileselector.cpp"
+#include "lib/platform/win32/direct2d/d2dbitmap.cpp"
+#include "lib/platform/win32/direct2d/d2ddrawcontext.cpp"
+#include "lib/platform/win32/direct2d/d2dfont.cpp"
+#include "lib/platform/win32/direct2d/d2dgraphicspath.cpp"

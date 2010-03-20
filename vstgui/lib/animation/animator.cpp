@@ -32,15 +32,105 @@
 // OF THE POSSIBILITY OF SUCH DAMAGE.
 //-----------------------------------------------------------------------------
 
+/**
+@page animation Animation
+
+@section about_animation Animation Support in VSTGUI
+
+VSTGUI version 4 adds simple to use view animation support.
+
+The source can be found under /lib/animation/
+
+@section the_animator The Animator
+Every @link VSTGUI::CFrame::getAnimator CFrame @endlink object can have one @link VSTGUI::Animation::Animator Animator @endlink object which runs animations at 60 Hz.
+
+The animator is responsible for running animations.
+You can add and remove animations.
+Animations are identified by a view and a name.
+
+To add an animation you just call @link VSTGUI::Animation::Animator::addAnimation Animator::addAnimation (view, name, target, timing)@endlink.
+The animation will start immediately and will automatically be removed if it has finished.
+If you want to stop it before it has finished you can use @link VSTGUI::Animation::Animator::removeAnimation Animator::removeAnimation (view, name)@endlink.
+You can also stop all animations for a view with @link VSTGUI::Animation::Animator::removeAnimations Animator::removeAnimations (view)@endlink.
+
+The animator is the owner of the target and timing function objects and will destroy these objects when the animation has finished.
+This means that the animator will call delete on these objects or if they are inherited from CBaseObject it will call forget() on them.
+
+@section the_animation The Animation
+
+An animation is made up of an @link VSTGUI::Animation::IAnimationTarget IAnimationTarget @endlink and an @link VSTGUI::Animation::ITimingFunction ITimingFunction @endlink object.
+
+@subsection animation_target The Animation Target
+The animation target is responsible for changing the view from one state to another state.
+
+The animation target interface consists of 3 methods:
+- @link VSTGUI::Animation::IAnimationTarget::animationStart animationStart (view, name) @endlink
+- @link VSTGUI::Animation::IAnimationTarget::animationTick animationTick (view, name, pos) @endlink
+- @link VSTGUI::Animation::IAnimationTarget::animationFinished animationFinished (view, name, wasCanceled) @endlink
+
+All these methods have the view and the animation name as arguments to identify the animation within the target.
+The animationTick method in addition has the normalized animation position as argument and the animationFinished method has a bool argument indicating if the animation was canceled.
+
+see @link AnimationTargets included animation target classes @endlink
+
+@subsection animation_timing The Animation Timing Function
+the animation timing function maps elapsed time to a normalized position.
+
+see @link AnimationTimingFunctions included animation timing function classes @endlink
+
+@section simple_example Simple Usage Example
+In this example the custom view animates it's alpha value when the mouse moves inside or outside the view.
+
+@code
+
+using namespace VSTGUI::Animation;
+
+class MyView : public CView
+{
+public:
+	MyView (const CRect& r) : CView (r) { setAlphaValue (0.5f); }
+
+	CMouseEventResult onMouseEntered (CPoint &where, const long& buttons)
+	{
+		// this adds an animation which takes 200 ms to make a linear alpha fade from the current value to 1
+		getFrame ()->getAnimator ()->addAnimation (this, "AlphaValueAnimation", new AlphaValueAnimation (1.f), new LinearTimingFunction (200));
+		return kMouseEventHandled;
+	}
+	
+	CMouseEventResult onMouseExited (CPoint &where, const long& buttons)
+	{
+		// this adds an animation which takes 200 ms to make a linear alpha fade from the current value to 0.5
+		getFrame ()->getAnimator ()->addAnimation (this, "AlphaValueAnimation", new AlphaValueAnimation (0.5f), new LinearTimingFunction (200));
+		return kMouseEventHandled;
+	}
+
+	void draw (CDrawContext* context)
+	{
+		// ... any drawing code here
+	}
+};
+
+@endcode
+
+
+*/
+
+//------------------------------------------------------------------------
+/*! @defgroup animation Animation
+ */
+//-----------------------------------------------------------------------------
+
 #include "animator.h"
 #include "../cvstguitimer.h"
 #include "../cview.h"
 #include "../platform/iplatformframe.h"
 
+#define DEBUG_LOG	0 // DEBUG
+
 namespace VSTGUI {
 namespace Animation {
 
-///@ cond ignore
+///@cond ignore
 //-----------------------------------------------------------------------------
 class Timer : public CBaseObject
 {
@@ -48,18 +138,29 @@ public:
 	static void addAnimator (Animator* animator)
 	{
 		getInstance ()->animators.push_back (animator);
+		#if DEBUG_LOG
+		DebugPrint ("Animator added: %p\n", animator);
+		#endif
 	}
 	static void removeAnimator (Animator* animator)
 	{
-		if (getInstance ()->inTimer)
-			gInstance->toRemove.push_back (animator);
-		else
+		if (gInstance)
 		{
-			gInstance->animators.remove (animator);
-			if (gInstance->animators.size () == 0)
+			if (getInstance ()->inTimer)
 			{
-				gInstance->forget ();
-				gInstance = 0;
+				gInstance->toRemove.push_back (animator);
+			}
+			else
+			{
+				#if DEBUG_LOG
+				DebugPrint ("Animator removed: %p\n", animator);
+				#endif
+				gInstance->animators.remove (animator);
+				if (gInstance->animators.size () == 0)
+				{
+					gInstance->forget ();
+					gInstance = 0;
+				}
 			}
 		}
 	}
@@ -74,13 +175,20 @@ protected:
 
 	Timer ()
 	{
+		#if DEBUG_LOG
+		DebugPrint ("Animation timer started\n");
+		#endif
 		timer = new CVSTGUITimer (this, 1000/60); // 60 Hz
 		timer->start ();
 	}
 	
 	~Timer ()
 	{
+		#if DEBUG_LOG
+		DebugPrint ("Animation timer stopped\n");
+		#endif
 		timer->forget ();
+		gInstance = 0;
 	}
 	
 	CMessageResult notify (CBaseObject* sender, const char* message)
@@ -89,6 +197,9 @@ protected:
 		{
 			inTimer = true;
 			CBaseObjectGuard guard (this);
+			#if DEBUG_LOG
+			DebugPrint ("Current Animators : %d\n", animators.size ());
+			#endif
 			std::list<Animator*>::iterator it = animators.begin ();
 			while (it != animators.end ())
 			{
@@ -102,6 +213,7 @@ protected:
 				removeAnimator (*it);
 				it++;
 			}
+			toRemove.clear ();
 			return kMessageNotified;
 		}
 		return kMessageUnknown;
@@ -114,7 +226,7 @@ protected:
 	static Timer* gInstance;
 };
 Timer* Timer::gInstance = 0;
-///@ endcond
+///@endcond
 
 //-----------------------------------------------------------------------------
 Animator::Animator ()
@@ -125,9 +237,9 @@ Animator::Animator ()
 //-----------------------------------------------------------------------------
 Animator::~Animator ()
 {
+	Timer::removeAnimator (this);
 	if (animations.size () > 0)
 	{
-		Timer::removeAnimator (this);
 		std::list<Animation*>::iterator it = animations.begin ();
 		while (it != animations.end ())
 		{
@@ -140,10 +252,13 @@ Animator::~Animator ()
 //-----------------------------------------------------------------------------
 void Animator::addAnimation (CView* view, const char* name, IAnimationTarget* target, ITimingFunction* timingFunction)
 {
-	removeAnimation (view, name); // cancel animation with same view and name
 	if (animations.size () == 0)
 		Timer::addAnimator (this);
+	removeAnimation (view, name); // cancel animation with same view and name
 	animations.push_back (new Animation (view, name, target, timingFunction));
+	#if DEBUG_LOG
+	DebugPrint ("new animation added: %p - %s\n", view, name);
+	#endif
 }
 
 //-----------------------------------------------------------------------------
@@ -154,6 +269,10 @@ void Animator::removeAnimation (CView* view, const char* name)
 	{
 		if ((*it)->view == view && (*it)->name == name)
 		{
+			#if DEBUG_LOG
+			DebugPrint ("animation removed: %p - %s\n", view, name);
+			#endif
+			(*it)->target->animationFinished (view, name, true);
 			removeAnimation (*it);
 			break;
 		}
@@ -168,7 +287,10 @@ void Animator::removeAnimations (CView* view)
 	while (it != animations.end ())
 	{
 		if ((*it)->view == view)
+		{
+			(*it)->target->animationFinished ((*it)->view, (*it)->name.c_str (), true);
 			removeAnimation (*it);
+		}
 		it++;
 	}
 }
@@ -179,13 +301,12 @@ void Animator::removeAnimation (Animation* a)
 	if (inTimer)
 	{
 		toRemove.push_back (a);
+		toRemove.unique ();
 	}
 	else
 	{
 		a->forget ();
 		animations.remove (a);
-		if (animations.size () == 0)
-			Timer::removeAnimator (this);
 	}
 }
 
@@ -204,6 +325,9 @@ CMessageResult Animator::notify (CBaseObject* sender, const char* message)
 			CBaseObjectGuard guard (a);
 			if (a->startTime == 0)
 			{
+				#if DEBUG_LOG
+				DebugPrint ("animation start: %p - %s\n", a->view, a->name.c_str ());
+				#endif
 				a->target->animationStart (a->view, a->name.c_str ());
 				a->startTime = currentTicks;
 			}
@@ -211,7 +335,10 @@ CMessageResult Animator::notify (CBaseObject* sender, const char* message)
 			a->target->animationTick (a->view, a->name.c_str (), a->timingFunction->getPosition (time));
 			if (a->timingFunction->isDone (time))
 			{
-				a->target->animationFinished (a->view, a->name.c_str ());
+				a->target->animationFinished (a->view, a->name.c_str (), false);
+				#if DEBUG_LOG
+				DebugPrint ("animation finished: %p - %s\n", a->view, a->name.c_str ());
+				#endif
 				removeAnimation (a);
 			}
 			it++;
@@ -224,6 +351,8 @@ CMessageResult Animator::notify (CBaseObject* sender, const char* message)
 			cit++;
 		}
 		toRemove.clear ();
+		if (animations.size () == 0)
+			Timer::removeAnimator (this);
 		return kMessageNotified;
 	}
 	return kMessageUnknown;

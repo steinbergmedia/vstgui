@@ -485,7 +485,8 @@ void CCheckBox::draw (CDrawContext* context)
 		checkBoxSize.setWidth (checkBoxSize.getHeight ());
 		checkBoxSize.offset (1, ceil ((size.getHeight () - checkBoxSize.getHeight ()) / 2));
 		context->setLineWidth (1);
-		context->setDrawMode (kCopyMode);
+		context->setLineStyle (kLineSolid);
+		context->setDrawMode (kAliasing);
 		context->setFrameColor (boxFrameColor);
 		context->setFillColor (boxFillColor);
 		context->drawRect (checkBoxSize, kDrawFilledAndStroked);
@@ -500,7 +501,7 @@ void CCheckBox::draw (CDrawContext* context)
 			context->drawRect (r, kDrawStroked);
 		}
 
-		context->setDrawMode (kAntialias);
+		context->setDrawMode (kAntiAliasing);
 		context->setFrameColor (checkMarkColor);
 		context->setLineWidth (2);
 
