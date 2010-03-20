@@ -46,6 +46,9 @@
 #include <objidl.h>
 #include <gdiplus.h>
 
+interface ID2D1Factory;
+interface IDWriteFactory;
+
 namespace VSTGUI {
 
 #define VSTGUI_STRCMP	wcscmp
@@ -56,7 +59,13 @@ namespace VSTGUI {
 #define VSTGUI_STRLEN	wcslen
 #define VSTGUI_STRCAT	wcscat
 
+class CDrawContext;
+
 extern HINSTANCE GetInstance ();
+extern const OSVERSIONINFOEX& getSystemVersion ();
+extern ID2D1Factory* getD2DFactory ();
+extern IDWriteFactory* getDWriteFactory ();
+extern CDrawContext* createDrawContext (HWND window, HDC device, const CRect& surfaceRect);
 
 /// @cond ignore
 class GDIPlusGlobals : public CBaseObject
@@ -77,7 +86,7 @@ class UTF8StringHelper
 public:
 	UTF8StringHelper (const char* utf8Str) : utf8Str (utf8Str), allocWideStr (0), allocStrIsWide (true) {}
 	UTF8StringHelper (const WCHAR* wideStr) : wideStr (wideStr), allocUTF8Str (0), allocStrIsWide (false) {}
-	UTF8StringHelper () { if (allocUTF8Str) ::free (allocUTF8Str); }
+	~UTF8StringHelper () { if (allocUTF8Str) ::free (allocUTF8Str); }
 
 	operator const char* () { return getUTF8String (); }
 	operator const WCHAR*() { return getWideString (); }

@@ -138,10 +138,13 @@ CNewFileSelector* CNewFileSelector::create (CFrame* parent, Style style)
 		#endif
 		return 0;
 	}
-//	if (gSystemVersion.dwMajorVersion >= 6) // Vista
+	if (getSystemVersion ().dwMajorVersion >= 6) // Vista
 		return new VistaFileSelector (parent, style);
 	return 0; // TODO: Support for older Windows versions
 }
+
+typedef HRESULT (STDAPICALLTYPE *SHCreateItemFromParsingNameProc) (__in PCWSTR pszPath, __in_opt IBindCtx *pbc, __in REFIID riid, __deref_out void **ppv);
+SHCreateItemFromParsingNameProc _SHCreateItemFromParsingName = 0;
 
 //-----------------------------------------------------------------------------
 VistaFileSelector::VistaFileSelector (CFrame* frame, Style style)
@@ -149,6 +152,14 @@ VistaFileSelector::VistaFileSelector (CFrame* frame, Style style)
 , style (style)
 , fileDialog (0)
 {
+	if (_SHCreateItemFromParsingName == 0)
+	{
+		HINSTANCE shell32Instance = LoadLibraryA ("shell32.dll");
+		if (shell32Instance)
+		{
+			_SHCreateItemFromParsingName = (SHCreateItemFromParsingNameProc)GetProcAddress (shell32Instance, "SHCreateItemFromParsingName");
+		}
+	}
 }
 
 //-----------------------------------------------------------------------------
@@ -238,10 +249,10 @@ bool VistaFileSelector::runModalInternal ()
 		if (defaultFileTypeIndex)
 			fileDialog->SetFileTypeIndex (defaultFileTypeIndex);
 	}
-	if (initialPath)
+	if (initialPath && _SHCreateItemFromParsingName)
 	{
 		IShellItem* shellItem;
-		hr = SHCreateItemFromParsingName (UTF8StringHelper (initialPath), 0, IID_PPV_ARG (IShellItem, &shellItem));
+		hr = _SHCreateItemFromParsingName (UTF8StringHelper (initialPath), 0, IID_PPV_ARG (IShellItem, &shellItem));
 		if (SUCCEEDED (hr))
 		{
 			fileDialog->SetFolder (shellItem);

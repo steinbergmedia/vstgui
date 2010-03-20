@@ -40,6 +40,8 @@
 #include "crect.h"
 #include "cfont.h"
 #include "ccolor.h"
+#include <cmath>
+#include <stack>
 
 namespace VSTGUI {
 
@@ -57,8 +59,10 @@ enum CLineStyle
 //-----------
 enum CDrawMode
 {
-	kCopyMode = 0,					///< non antialiased drawing
-	kAntialias						///< antialised drawing
+	kAliasing = 0,					///< aliased drawing
+	kAntiAliasing,					///< antialised drawing
+	kCopyMode = kAliasing,			///< \deprecated use kAliasing
+	kAntialias = kAntiAliasing,		///< \deprecated use kAntiAliasing
 };
 
 //----------------------------
@@ -81,11 +85,6 @@ enum CDrawStyle
 	kDrawFilledAndStroked
 };
 
-} // namespace
-
-#include <stack>
-
-namespace VSTGUI {
 class CBitmap;
 
 //-----------------------------------------------------------------------------
@@ -109,6 +108,8 @@ public:
 	virtual void drawEllipse (const CRect &rect, const CDrawStyle drawStyle = kDrawStroked) = 0;	///< draw an ellipse
 	virtual void drawPoint (const CPoint &point, CColor color) = 0;	///< draw a point
 	virtual void drawBitmap (CBitmap* bitmap, const CRect& dest, const CPoint& offset = CPoint (0, 0), float alpha = 1.f) = 0; ///< don't call directly, please use CBitmap::draw instead
+
+	virtual void clearRect (const CRect& rect) = 0;	///< clears the rect (makes r = 0, g = 0, b = 0, a = 0)
 	//@}
 
 	//-----------------------------------------------------------------------------
@@ -192,6 +193,9 @@ public:
 	const CPoint& getOffset () const { return currentState.offset; }
 	//@}
 
+	virtual void beginDraw () {}
+	virtual void endDraw () {}
+
 	CLASS_METHODS_NOCOPY(CDrawContext, CBaseObject)
 protected:
 	CDrawContext (const CRect& surfaceRect);
@@ -221,6 +225,12 @@ protected:
 	CDrawContextState currentState;
 	std::stack<CDrawContextState*> globalStatesStack;
 };
+
+#ifndef M_PI
+#define M_PI        3.14159265358979323846264338327950288
+#endif
+
+static inline double radians (double degrees) { return degrees * M_PI / 180; }
 
 } // namespace
 

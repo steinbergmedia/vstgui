@@ -35,6 +35,8 @@
 #include "cviewswitchcontainer.h"
 #include "viewcreator.h"
 #include "../lib/cframe.h"
+#include "../lib/animation/animations.h"
+#include "../lib/animation/timingfunctions.h"
 
 namespace VSTGUI {
 
@@ -72,8 +74,23 @@ void CViewSwitchContainer::setCurrentViewIndex (long viewIndex)
 		CView* view = controller->createViewForIndex (viewIndex);
 		if (view)
 		{
+			#if 1
+			if (getFrame ())
+				getFrame ()->getAnimator ()->removeAnimation (this, "CViewSwitchContainer::setCurrentViewIndex");
+			CView* oldView = getView (0);
+			if (oldView && getFrame ())
+			{
+				getFrame ()->getAnimator ()->addAnimation (this, "CViewSwitchContainer::setCurrentViewIndex", new Animation::ExchangeViewAnimation (oldView, view, Animation::ExchangeViewAnimation::kAlphaValueFade), new Animation::LinearTimingFunction (120));
+			}
+			else
+			{
+				removeAll ();
+				addView (view);
+			}
+			#else
 			CViewContainer::removeAll ();
 			CViewContainer::addView (view);
+			#endif
 			currentViewIndex = viewIndex;
 			invalid ();
 		}
@@ -83,6 +100,7 @@ void CViewSwitchContainer::setCurrentViewIndex (long viewIndex)
 //-----------------------------------------------------------------------------
 bool CViewSwitchContainer::attached (CView* parent)
 {
+	CViewContainer::removeAll ();
 	bool result = CViewContainer::attached (parent);
 	if (result && controller)
 		controller->switchContainerAttached ();

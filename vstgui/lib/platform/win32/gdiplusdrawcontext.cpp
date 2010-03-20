@@ -42,14 +42,15 @@
 namespace VSTGUI {
 
 //-----------------------------------------------------------------------------
-GdiplusDrawContext::GdiplusDrawContext (HDC deviceContext, const CRect& drawSurface)
+GdiplusDrawContext::GdiplusDrawContext (HWND window, const CRect& drawSurface)
 : COffscreenContext (drawSurface)
+, window (window)
 , pGraphics (0)
 , pPen (0)
 , pBrush (0)
 , pFontBrush (0)
 {
-	pGraphics = new Gdiplus::Graphics (deviceContext);
+	pGraphics = new Gdiplus::Graphics (window);
 
 	init ();
 }
@@ -94,6 +95,13 @@ void GdiplusDrawContext::init ()
 	pFontBrush = new Gdiplus::SolidBrush (Gdiplus::Color (0, 0, 0));
 
 	COffscreenContext::init ();
+}
+
+//-----------------------------------------------------------------------------
+void GdiplusDrawContext::endDraw ()
+{
+//	if (pGraphics)
+//		pGraphics->Flush ();
 }
 
 //-----------------------------------------------------------------------------
@@ -263,6 +271,22 @@ void GdiplusDrawContext::drawBitmap (CBitmap* cbitmap, const CRect& dest, const 
 			// create the imageattribute modifier
 			imageAtt.SetColorMatrix (&colorMatrix, Gdiplus::ColorMatrixFlagsDefault,
 				Gdiplus::ColorAdjustTypeBitmap);
+#if 1
+			Gdiplus::Rect	myDestRect(
+				(INT)dest.left + (INT)currentState.offset.h,
+				(INT)dest.top + (INT)currentState.offset.v,
+				(INT)dest.getWidth (),
+				(INT)dest.getHeight ());
+			pGraphics->DrawImage (
+				bitmap,
+				myDestRect,
+				(INT)offset.x,
+				(INT)offset.y,
+				(INT)dest.getWidth (),
+				(INT)dest.getHeight (),
+				Gdiplus::UnitPixel,
+				&imageAtt);
+#else
 			// create a temporary bitmap to prevent OutOfMemory errors
 			Gdiplus::Bitmap myBitmapBuffer ((INT)dest.getWidth (), (INT)dest.getHeight (),PixelFormat32bppARGB);
 			// create a graphics context for the temporary bitmap
@@ -300,6 +324,7 @@ void GdiplusDrawContext::drawBitmap (CBitmap* cbitmap, const CRect& dest, const 
 				&imageAtt);
 			// delete the temporary context of the temporary bitmap
 			delete myGraphicsBuffer;
+#endif
 		}
 		else
 		{
@@ -319,6 +344,12 @@ void GdiplusDrawContext::drawBitmap (CBitmap* cbitmap, const CRect& dest, const 
 				0);
 		}
 	}
+}
+
+//-----------------------------------------------------------------------------
+void GdiplusDrawContext::clearRect (const CRect& rect)
+{
+	// TODO:
 }
 
 //-----------------------------------------------------------------------------
@@ -358,7 +389,7 @@ void GdiplusDrawContext::setDrawMode (CDrawMode mode)
 		return;
 	if (pGraphics)
 	{
-		if (mode == kAntialias)
+		if (mode == kAntiAliasing)
 			pGraphics->SetSmoothingMode (Gdiplus::SmoothingModeAntiAlias);
 		else
 			pGraphics->SetSmoothingMode (Gdiplus::SmoothingModeNone);

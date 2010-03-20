@@ -269,7 +269,6 @@ Now you can define tags, colors, fonts, bitmaps and add views to your editor.
 VST3Editor::VST3Editor (Steinberg::Vst::EditController* controller, const char* _viewName, const char* _xmlFile)
 : VSTGUIEditor (controller)
 , doCreateView (false)
-, tooltipSupport (0)
 , tooltipsEnabled (true)
 , delegate (dynamic_cast<VST3EditorDelegate*> (controller))
 {
@@ -283,7 +282,6 @@ VST3Editor::VST3Editor (Steinberg::Vst::EditController* controller, const char* 
 VST3Editor::VST3Editor (UIDescription* desc, Steinberg::Vst::EditController* controller, const char* _viewName, const char* _xmlFile)
 : VSTGUIEditor (controller)
 , doCreateView (false)
-, tooltipSupport (0)
 , tooltipsEnabled (true)
 , delegate (dynamic_cast<VST3EditorDelegate*> (controller))
 {
@@ -388,19 +386,8 @@ bool VST3Editor::exchangeView (const char* newViewName)
 void VST3Editor::enableTooltips (bool state)
 {
 	tooltipsEnabled = state;
-	if (state)
-	{
-		if (frame && !tooltipSupport)
-			tooltipSupport = new CTooltipSupport (frame);
-	}
-	else
-	{
-		if (tooltipSupport)
-		{
-			tooltipSupport->forget ();
-			tooltipSupport = 0;
-		}
-	}
+	if (frame)
+		frame->enableTooltips (state);
 }
 
 //-----------------------------------------------------------------------------
@@ -651,8 +638,6 @@ void VST3Editor::recreateView ()
 			frame->setSize (view->getWidth (), view->getHeight ());
 		}
 		frame->addView (view);
-		if (tooltipsEnabled)
-			tooltipSupport = new CTooltipSupport (frame);
 	}
 	init ();
 	frame->invalid ();
@@ -678,8 +663,7 @@ bool PLUGIN_API VST3Editor::open (void* parent)
 		frame->addView (view);
 		CRect size (rect.left, rect.top, rect.right, rect.bottom);
 		frame->setSize (size.getWidth (), size.getHeight ());
-		if (tooltipsEnabled)
-			tooltipSupport = new CTooltipSupport (frame);
+		frame->enableTooltips (tooltipsEnabled);
 			
 		// focus drawing support
 		const UIAttributes* attributes = description->getCustomAttributes ("VST3Editor");
@@ -724,11 +708,6 @@ void PLUGIN_API VST3Editor::close ()
 		it++;
 	}
 	paramChangeListeners.clear ();
-	if (tooltipSupport)
-	{
-		tooltipSupport->forget ();
-		tooltipSupport = 0;
-	}
 	std::list<IController*>::iterator scit = subControllers.begin ();
 	while (scit != subControllers.end ())
 	{
@@ -740,6 +719,8 @@ void PLUGIN_API VST3Editor::close ()
 			FObject* fObj = dynamic_cast<FObject*> ((*scit));
 			if (fObj)
 				fObj->release ();
+			else
+				delete (*scit);
 		}
 
 		scit++;

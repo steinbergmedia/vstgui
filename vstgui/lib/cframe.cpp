@@ -34,7 +34,9 @@
 
 #include "cframe.h"
 #include "coffscreencontext.h"
+#include "ctooltipsupport.h"
 #include "animation/animator.h"
+#include <assert.h>
 
 namespace VSTGUI {
 
@@ -44,6 +46,8 @@ namespace VSTGUI {
 
 const char* kMsgNewFocusView = "kMsgNewFocusView";
 const char* kMsgOldFocusView = "kMsgOldFocusView";
+
+#define DEBUG_MOUSE_VIEWS	0//DEBUG
 
 //-----------------------------------------------------------------------------
 // CFrame Implementation
@@ -67,11 +71,11 @@ CFrame::CFrame (const CRect &inSize, void* inSystemWindow, VSTGUIEditorInterface
 , pMouseObserver (0)
 , pKeyboardHook (0)
 , pViewAddedRemovedObserver (0)
+, pTooltips (0)
 , pAnimator (0)
 , pModalView (0)
 , pFocusView (0)
 , pActiveFocusView (0)
-, pMouseOverView (0)
 , bActive (true)
 {
 	bIsAttached = true;
@@ -85,8 +89,13 @@ CFrame::CFrame (const CRect &inSize, void* inSystemWindow, VSTGUIEditorInterface
 //-----------------------------------------------------------------------------
 CFrame::~CFrame ()
 {
+	if (pTooltips)
+		pTooltips->forget ();
 	if (pAnimator)
 		pAnimator->forget ();
+
+	clearMouseViews (CPoint (0, 0), 0, false);
+
 	if (pModalView)
 		removeView (pModalView, false);
 
@@ -114,6 +123,8 @@ bool CFrame::getCocoaMode ()
 //-----------------------------------------------------------------------------
 void CFrame::close ()
 {
+	clearMouseViews (CPoint (0, 0), 0, false);
+
 	if (pModalView)
 		removeView (pModalView, false);
 	setCursor (kCursorDefault);
@@ -138,6 +149,21 @@ bool CFrame::initFrame (void* systemWin)
 		return false;
 
 	return true;
+}
+
+//-----------------------------------------------------------------------------
+void CFrame::enableTooltips (bool state)
+{
+	if (state)
+	{
+		if (pTooltips == 0)
+			pTooltips = new CTooltipSupport (this);
+	}
+	else if (pTooltips)
+	{
+		pTooltips->forget ();
+		pTooltips = 0;
+	}
 }
 
 #if VSTGUI_ENABLE_DEPRECATED_METHODS
@@ -180,21 +206,183 @@ void CFrame::drawRect (CDrawContext* pContext, const CRect& updateRect)
 }
 
 //-----------------------------------------------------------------------------
+void CFrame::clearMouseViews (const CPoint& where, const long& buttons, bool callMouseExit)
+{
+	IMouseObserver* mouseObserver = getMouseObserver ();
+	CPoint lp;
+	std::list<CView*>::reverse_iterator it = pMouseViews.rbegin ();
+	while (it != pMouseViews.rend ())
+	{
+		if (callMouseExit)
+		{
+			lp = where;
+			(*it)->frameToLocal (lp);
+			(*it)->onMouseExited (lp, buttons);
+		#if DEBUG_MOUSE_VIEWS
+			DebugPrint ("mouseExited : %p\n", (*it));
+		#endif
+		}
+		if (mouseObserver)
+			mouseObserver->onMouseExited ((*it), this);
+		(*it)->forget ();
+		it++;
+	}
+	pMouseViews.clear ();
+}
+
+//-----------------------------------------------------------------------------
+void CFrame::removeFromMouseViews (CView* view)
+{
+	IMouseObserver* mouseObserver = getMouseObserver ();
+	bool found = false;
+	std::list<CView*>::iterator it = pMouseViews.begin ();
+	while (it != pMouseViews.end ())
+	{
+		if (found || (*it) == view)
+		{
+			if (pTooltips)
+				pTooltips->onMouseExited ((*it));
+			if (mouseObserver)
+				mouseObserver->onMouseExited ((*it), this);
+			(*it)->forget ();
+			pMouseViews.erase (it++);
+			found = true;
+		}
+		else
+			it++;
+	}
+}
+
+//-----------------------------------------------------------------------------
+void CFrame::checkMouseViews (const CPoint& where, const long& buttons)
+{
+	if (mouseDownView)
+		return;
+	CPoint lp;
+	CView* mouseView = getViewAt (where, true);
+	if (mouseView == 0)
+		mouseView = getContainerAt (where, true);
+	CView* currentMouseView = pMouseViews.size () > 0 ? pMouseViews.back () : 0;
+	if (currentMouseView == mouseView)
+		return; // no change
+
+	if (pTooltips)
+	{
+		if (currentMouseView)
+			pTooltips->onMouseExited (currentMouseView);
+		if (mouseView && mouseView != this)
+			pTooltips->onMouseEntered (mouseView);
+	}
+
+	if (mouseView == 0 || mouseView == this)
+	{
+		clearMouseViews (where, buttons);
+		return;
+	}
+	IMouseObserver* mouseObserver = getMouseObserver ();
+	CViewContainer* vc = currentMouseView ? dynamic_cast<CViewContainer*> (currentMouseView) : 0;
+	// if the currentMouseView is not a view container, we know that the new mouseView won't be a child of it and that all other
+	// views in the list are viewcontainers
+	if (vc == 0 && currentMouseView)
+	{
+		lp = where;
+		currentMouseView->frameToLocal (lp);
+		currentMouseView->onMouseExited (lp, buttons);
+		if (mouseObserver)
+			mouseObserver->onMouseExited (currentMouseView, this);
+	#if DEBUG_MOUSE_VIEWS
+		DebugPrint ("mouseExited : %p\n", currentMouseView);
+	#endif
+		currentMouseView->forget ();
+		pMouseViews.remove (currentMouseView);
+	}
+	std::list<CView*>::reverse_iterator it = pMouseViews.rbegin ();
+	while (it != pMouseViews.rend ())
+	{
+		vc = dynamic_cast<CViewContainer*> ((*it));
+		if (vc == mouseView)
+			return;
+		if (vc->isChild (mouseView, true) == false)
+		{
+			lp = where;
+			vc->frameToLocal (lp);
+			vc->onMouseExited (lp, buttons);
+			if (mouseObserver)
+				mouseObserver->onMouseExited (vc, this);
+		#if DEBUG_MOUSE_VIEWS
+			DebugPrint ("mouseExited : %p\n", vc);
+		#endif
+			vc->forget ();
+			pMouseViews.erase (--it.base ());
+		}
+		else
+			break;
+	}
+	vc = pMouseViews.size () > 0 ? dynamic_cast<CViewContainer*> (pMouseViews.back ()) : 0;
+	if (vc)
+	{
+		std::list<CView*>::iterator it2 = pMouseViews.end ();
+		it2--;
+		while ((vc = dynamic_cast<CViewContainer*> (mouseView->getParentView ())) != *it2)
+		{
+			pMouseViews.insert (it2, vc);
+			vc->remember ();
+			mouseView = vc;
+		}
+		pMouseViews.push_back (mouseView);
+		mouseView->remember ();
+		it2++;
+		while (it2 != pMouseViews.end ())
+		{
+			lp = where;
+			(*it2)->frameToLocal (lp);
+			(*it2)->onMouseEntered (lp, buttons);
+			if (mouseObserver)
+				mouseObserver->onMouseEntered ((*it2), this);
+		#if DEBUG_MOUSE_VIEWS
+			DebugPrint ("mouseEntered : %p\n", (*it2));
+		#endif
+			it2++;
+		}
+	}
+	else
+	{
+		// must be pMouseViews.size () == 0
+		assert (pMouseViews.size () == 0);
+		pMouseViews.push_back (mouseView);
+		mouseView->remember ();
+		while ((vc = dynamic_cast<CViewContainer*> (mouseView->getParentView ())) != this)
+		{
+			pMouseViews.push_front (vc);
+			vc->remember ();
+			mouseView = vc;
+		}
+		std::list<CView*>::iterator it2 = pMouseViews.begin ();
+		while (it2 != pMouseViews.end ())
+		{
+			lp = where;
+			(*it2)->frameToLocal (lp);
+			(*it2)->onMouseEntered (lp, buttons);
+			if (mouseObserver)
+				mouseObserver->onMouseEntered ((*it2), this);
+		#if DEBUG_MOUSE_VIEWS
+			DebugPrint ("mouseEntered : %p\n", (*it2));
+		#endif
+			it2++;
+		}
+	}
+}
+
+//-----------------------------------------------------------------------------
 CMouseEventResult CFrame::onMouseDown (CPoint &where, const long& buttons)
 {
 	// reset views
 	mouseDownView = 0;
 	if (pFocusView && pFocusView->isTypeOf ("CTextEdit"))
 		setFocusView (0);
-	if (pMouseOverView)
-	{
-		CBaseObjectGuard rg (pMouseOverView);
 
-		pMouseOverView->onMouseExited (where, buttons);
-		if (getMouseObserver ())
-			getMouseObserver ()->onMouseExited (pMouseOverView, this);
-		pMouseOverView = 0;
-	}
+	if (pTooltips)
+		pTooltips->onMouseDown (where);
 
 	if (getMouseObserver ())
 		getMouseObserver ()->onMouseDown (this, where);
@@ -223,80 +411,55 @@ CMouseEventResult CFrame::onMouseUp (CPoint &where, const long& buttons)
 {
 	CMouseEventResult result = CViewContainer::onMouseUp (where, buttons);
 	long modifiers = buttons & (kShift | kControl | kAlt | kApple);
-	onMouseMoved (where, modifiers);
+	checkMouseViews (where, modifiers);
 	return result;
 }
 
 //-----------------------------------------------------------------------------
 CMouseEventResult CFrame::onMouseMoved (CPoint &where, const long& buttons)
 {
+	if (pTooltips)
+		pTooltips->onMouseMoved (where);
 	if (getMouseObserver ())
 		getMouseObserver ()->onMouseMoved (this, where);
+
+	checkMouseViews (where, buttons);
+
+	CMouseEventResult result = kMouseEventNotHandled;
 	if (pModalView)
 	{
 		CBaseObjectGuard rg (pModalView);
-		return pModalView->onMouseMoved (where, buttons);
+		result = pModalView->onMouseMoved (where, buttons);
 	}
 	else
 	{
-		CMouseEventResult result = CViewContainer::onMouseMoved (where, buttons);
+		CPoint p (where);
+		result = CViewContainer::onMouseMoved (p, buttons);
 		if (result == kMouseEventNotHandled)
 		{
-			CView* v = getViewAt (where, true);
-			if (v != pMouseOverView)
+			std::list<CView*>::reverse_iterator it = pMouseViews.rbegin ();
+			while (it != pMouseViews.rend ())
 			{
-				if (pMouseOverView)
-				{
-					CBaseObjectGuard rg (pMouseOverView);
-
-					CPoint lr (where);
-					pMouseOverView->frameToLocal (lr);
-					pMouseOverView->onMouseExited (lr, buttons);
-					if (getMouseObserver ())
-						getMouseObserver ()->onMouseExited (pMouseOverView, this);
-				}
-				pMouseOverView = 0;
-				if (v)
-				{
-					CBaseObjectGuard rg (v);
-
-					CPoint lr (where);
-					v->frameToLocal (lr);
-					v->onMouseEntered (lr, buttons);
-					pMouseOverView = v;
-					if (getMouseObserver ())
-						getMouseObserver ()->onMouseEntered (pMouseOverView, this);
-					v->onMouseMoved (lr, buttons);
-				}
-				return kMouseEventHandled;
-			}
-			else if (pMouseOverView)
-			{
-				CBaseObjectGuard rg (pMouseOverView);
-
-				CPoint lr (where);
-				pMouseOverView->frameToLocal (lr);
-				return pMouseOverView->onMouseMoved (lr, mouseDownView ? buttons : 0);
+				p = where;
+				(*it)->frameToLocal (p);
+				result = (*it)->onMouseMoved (p, buttons);
+				if (result == kMouseEventHandled)
+					break;
+				it++;
 			}
 		}
-		return result;
 	}
+	return result;
 }
 
 //-----------------------------------------------------------------------------
 CMouseEventResult CFrame::onMouseExited (CPoint &where, const long& buttons)
 { // this should only get called from the platform implementation
-	if (pMouseOverView)
-	{
-		CBaseObjectGuard rg (pMouseOverView);
 
-		CPoint lr (where);
-		pMouseOverView->frameToLocal (lr);
-		pMouseOverView->onMouseExited (lr, buttons);
-		if (getMouseObserver ())
-			getMouseObserver ()->onMouseExited (pMouseOverView, this);
+	if (mouseDownView == 0)
+	{
+		clearMouseViews (where, buttons);
 	}
-	pMouseOverView = 0;
 
 	return kMouseEventHandled;
 }
@@ -355,6 +518,7 @@ bool CFrame::onWheel (const CPoint &where, const CMouseWheelAxis &axis, const fl
 		if (view)
 		{
 			result = view->onWheel (where, axis, distance, buttons);
+			checkMouseViews (where, buttons);
 		}
 	}
 	return result;
@@ -585,8 +749,8 @@ void CFrame::setCursor (CCursorType type)
  */
 void CFrame::onViewRemoved (CView* pView)
 {
-	if (pMouseOverView == pView)
-		pMouseOverView = 0;
+	removeFromMouseViews (pView);
+
 	if (pActiveFocusView == pView)
 		pActiveFocusView = 0;
 	if (pFocusView == pView)
@@ -594,8 +758,6 @@ void CFrame::onViewRemoved (CView* pView)
 	if (pView->isTypeOf ("CViewContainer"))
 	{
 		CViewContainer* container = (CViewContainer*)pView;
-		if (container->isChild (pMouseOverView, true))
-			pMouseOverView = 0;
 		if (container->isChild (pFocusView, true))
 			setFocusView (0);
 	}
@@ -735,7 +897,7 @@ bool CFrame::removeAll (const bool &withForget)
 	pModalView = 0;
 	pFocusView = 0;
 	pActiveFocusView = 0;
-	pMouseOverView = 0;
+	clearMouseViews (CPoint (0, 0), 0, false);
 	return CViewContainer::removeAll (withForget);
 }
 

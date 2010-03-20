@@ -37,6 +37,7 @@
 #if WINDOWS
 
 #include "win32support.h"
+#include "gdiplusbitmap.h"
 #include "../../controls/coptionmenu.h"
 #include "../../cframe.h"
 
@@ -221,19 +222,22 @@ HMENU Win32OptionMenu::createMenu (COptionMenu* _menu, long& offsetIdx)
 				if (!(flags & MF_CHECKED))
 					flags |= MF_UNCHECKED;
 				AppendMenu (menu, flags, offset + inc, entryText);
-				#if 0 // TODO
-				if (item->getIcon ())
+				IPlatformBitmap* platformBitmap = item->getIcon () ? item->getIcon ()->getPlatformBitmap () : 0;
+				if (platformBitmap)
 				{
-					MENUITEMINFO mInfo = {0};
-					mInfo.cbSize = sizeof (MENUITEMINFO);
-					mInfo.fMask = MIIM_BITMAP;
-					Gdiplus::Bitmap* bitmap = item->getIcon ()->getBitmap ();
-					HBITMAP hBmp = NULL;
-					bitmap->GetHBITMAP (Gdiplus::Color (0, 0, 0, 0), &hBmp);
-					mInfo.hbmpItem = hBmp;
-					SetMenuItemInfo (menu, offset + inc, TRUE, &mInfo);
+					GdiplusBitmap* gdpBitmap = dynamic_cast<GdiplusBitmap*> (platformBitmap);
+					if (gdpBitmap)
+					{
+						MENUITEMINFO mInfo = {0};
+						mInfo.cbSize = sizeof (MENUITEMINFO);
+						mInfo.fMask = MIIM_BITMAP;
+						Gdiplus::Bitmap* bitmap = gdpBitmap->getBitmap ();
+						HBITMAP hBmp = NULL;
+						bitmap->GetHBITMAP (Gdiplus::Color (0, 0, 0, 0), &hBmp);
+						mInfo.hbmpItem = hBmp;
+						SetMenuItemInfo (menu, offset + inc, TRUE, &mInfo);
+					}
 				}
-				#endif
 			}
 			if (titleWithPrefixNumbers)
 				free (titleWithPrefixNumbers);

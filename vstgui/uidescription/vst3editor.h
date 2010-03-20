@@ -38,7 +38,6 @@
 #include "public.sdk/source/vst/vstguieditor.h"
 #include "pluginterfaces/vst/ivstplugview.h"
 #include "uidescription.h"
-#include "../lib/ctooltipsupport.h"
 #include <string>
 #include <map>
 #include <deque>
@@ -60,7 +59,8 @@ public:
 	virtual void didOpen (VST3Editor* editor) {}	///< called after the editor was opened
 	virtual void willClose (VST3Editor* editor) {}	///< called before the editor will close
 
-	/** called when a sub controller should be created. The VST3Editor will call forget() if it is a CBaseObject or release() if it is a Steinberg::FObject on the returned controller when the frame will be closed. */
+	/** called when a sub controller should be created.
+	    The controller is now owned by the editor, which will call forget() if it is a CBaseObject, release() if it is a Steinberg::FObject or it will be simply deleted if the frame gets closed. */
 	virtual IController* createSubController (const char* name, IUIDescription* description, VST3Editor* editor) { return 0; } ///< create a sub controller
 };
 
@@ -131,7 +131,6 @@ protected:
 
 	UIDescription* description;
 	VST3EditorDelegate* delegate;
-	CTooltipSupport* tooltipSupport;
 	std::map<long, ParameterChangeListener*> paramChangeListeners;
 	std::deque<SubController> subControllerStack;
 	std::list<IController*> subControllers;

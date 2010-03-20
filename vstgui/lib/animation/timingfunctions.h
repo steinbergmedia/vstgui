@@ -36,6 +36,7 @@
 #define __timingfunctions__
 
 #include "animator.h"
+#include <map>
 
 namespace VSTGUI {
 namespace Animation {
@@ -47,20 +48,55 @@ public:
 	TimingFunctionBase (unsigned long length) : length (length) {}
 
 	unsigned long getLength () const { return length; }
+	bool isDone (unsigned long milliseconds) { return milliseconds >= length; }
 protected:
 	unsigned long length; // in milliseconds
 };
 
+//-----------------------------------------------------------------------------
+/// @ingroup AnimationTimingFunctions
 //-----------------------------------------------------------------------------
 class LinearTimingFunction : public TimingFunctionBase
 {
 public:
 	LinearTimingFunction (unsigned long length);
 
+protected:
 	float getPosition (unsigned long milliseconds);
-	bool isDone (unsigned long milliseconds);
 };
 
+//-----------------------------------------------------------------------------
+/// @ingroup AnimationTimingFunctions
+//-----------------------------------------------------------------------------
+class PowerTimingFunction : public TimingFunctionBase
+{
+public:
+	PowerTimingFunction (unsigned long length, float factor);
+
+protected:
+	float getPosition (unsigned long milliseconds);
+
+	float factor;
+};
+
+//-----------------------------------------------------------------------------
+/// @ingroup AnimationTimingFunctions
+//-----------------------------------------------------------------------------
+class InterpolationTimingFunction : public TimingFunctionBase
+{
+public:
+	InterpolationTimingFunction (unsigned long length, float startPos = 0.f, float endPos = 1.f);
+
+	void addPoint (float time, float pos); ///< both values are normalized ones
+
+protected:
+	float getPosition (unsigned long milliseconds);
+
+	std::map<unsigned long, float> points;
+};
+
+//-----------------------------------------------------------------------------
+/// @ingroup AnimationTimingFunctions
 //-----------------------------------------------------------------------------
 class RepeatTimingFunction : public ITimingFunction
 {

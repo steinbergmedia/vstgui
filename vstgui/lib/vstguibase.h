@@ -73,8 +73,12 @@
 #endif
 
 #if WINDOWS
-	#ifndef _WIN32_WINNT
-		#define _WIN32_WINNT 0x0600
+	#include <sdkddkver.h>
+	#if _WIN32_WINNT < 0x600
+		#error unsupported Platform SDK you need at least the Vista Platform SDK to compile VSTGUI
+	#endif
+	#ifdef _WIN32_WINNT_WIN7 && !defined (VSTGUI_DIRECT2D_SUPPORT)
+		#define VSTGUI_DIRECT2D_SUPPORT	1
 	#endif
 #endif
 

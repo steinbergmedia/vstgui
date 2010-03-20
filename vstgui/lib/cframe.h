@@ -37,12 +37,14 @@
 
 #include "cviewcontainer.h"
 #include "platform/iplatformframe.h"
+#include <list>
 
 namespace VSTGUI {
 class VSTGUIEditorInterface;
 class IMouseObserver;
 class IKeyboardHook;
 class IViewAddedRemovedObserver;
+class CTooltipSupport;
 namespace Animation {
 	class Animator;
 }
@@ -112,7 +114,11 @@ public:
 
 	virtual void invalidate (const CRect &rect);
 
-	void scrollRect (const CRect& src, const CPoint& distance);		///< scroll src rect by distance
+	void scrollRect (const CRect& src, const CPoint& distance);				///< scroll src rect by distance
+
+	void enableTooltips (bool state);										///< enable or disable tooltips
+
+	Animation::Animator* getAnimator ();									///< get animator for this frame
 	//@}
 
 	//-----------------------------------------------------------------------------
@@ -130,8 +136,6 @@ public:
 	virtual void setFocusWidth (CCoord width);						///< set focus draw width
 	virtual CCoord getFocusWidth () const;							///< get focus draw width
 	//@}
-
-	Animation::Animator* getAnimator ();
 
 	void invalid () { invalidRect (size); bDirty = false; }
 	void invalidRect (const CRect rect);
@@ -177,18 +181,22 @@ public:
 	//-------------------------------------------
 protected:
 	~CFrame ();
-	bool   initFrame (void *pSystemWin);
+	bool initFrame (void *pSystemWin);
+	void checkMouseViews (const CPoint& where, const long& buttons);
+	void clearMouseViews (const CPoint& where, const long& buttons, bool callMouseExit = true);
+	void removeFromMouseViews (CView* view);
 
 	VSTGUIEditorInterface*		pEditor;
 	IMouseObserver*				pMouseObserver;
 	IKeyboardHook*				pKeyboardHook;
 	IViewAddedRemovedObserver*	pViewAddedRemovedObserver;
+	CTooltipSupport*			pTooltips;
 	Animation::Animator*		pAnimator;
 
 	CView   *pModalView;
 	CView   *pFocusView;
 	CView   *pActiveFocusView;
-	CView   *pMouseOverView;
+	std::list<CView*> pMouseViews;
 
 	bool	bActive;
 

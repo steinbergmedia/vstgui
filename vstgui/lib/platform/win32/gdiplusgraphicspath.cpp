@@ -102,7 +102,7 @@ CGradient* GdiplusGraphicsPath::createGradient (double color1Start, double color
 }
 
 //-----------------------------------------------------------------------------
-void GdiplusGraphicsPath::draw (CDrawContext* context, PathDrawMode mode, CGraphicsTransformation* transformation)
+void GdiplusGraphicsPath::draw (CDrawContext* context, PathDrawMode mode, CGraphicsTransform* t)
 {
 	Gdiplus::Graphics* graphics = GdiPlusGraphicsPathHelper::getGraphics (context);
 	if (graphics)
@@ -112,12 +112,9 @@ void GdiplusGraphicsPath::draw (CDrawContext* context, PathDrawMode mode, CGraph
 
 		Gdiplus::GraphicsPath* path = platformPath;
 
-		if (transformation)
+		if (t)
 		{
-			Gdiplus::Matrix matrix;
-			matrix.Translate ((Gdiplus::REAL)transformation->offset.x, (Gdiplus::REAL)transformation->offset.y);
-			matrix.Scale ((Gdiplus::REAL)transformation->scaleX, (Gdiplus::REAL)transformation->scaleY);
-			matrix.Rotate ((Gdiplus::REAL)transformation->rotation);
+			Gdiplus::Matrix matrix ((Gdiplus::REAL)t->m11, (Gdiplus::REAL)t->m12, (Gdiplus::REAL)t->m21, (Gdiplus::REAL)t->m22, (Gdiplus::REAL)t->dx, (Gdiplus::REAL)t->dy);
 			path = platformPath->Clone ();
 			path->Transform (&matrix);
 		}
@@ -138,7 +135,7 @@ void GdiplusGraphicsPath::draw (CDrawContext* context, PathDrawMode mode, CGraph
 }
 
 //-----------------------------------------------------------------------------
-void GdiplusGraphicsPath::fillLinearGradient (CDrawContext* context, const CGradient& gradient, const CPoint& startPoint, const CPoint& endPoint, bool evenOdd, CGraphicsTransformation* transformation)
+void GdiplusGraphicsPath::fillLinearGradient (CDrawContext* context, const CGradient& gradient, const CPoint& startPoint, const CPoint& endPoint, bool evenOdd, CGraphicsTransform* t)
 {
 	Gdiplus::Graphics* graphics = GdiPlusGraphicsPathHelper::getGraphics (context);
 	if (graphics)
@@ -148,12 +145,9 @@ void GdiplusGraphicsPath::fillLinearGradient (CDrawContext* context, const CGrad
 
 		Gdiplus::GraphicsPath* path = platformPath;
 
-		if (transformation)
+		if (t)
 		{
-			Gdiplus::Matrix matrix;
-			matrix.Translate ((Gdiplus::REAL)transformation->offset.x, (Gdiplus::REAL)transformation->offset.y);
-			matrix.Scale ((Gdiplus::REAL)transformation->scaleX, (Gdiplus::REAL)transformation->scaleY);
-			matrix.Rotate ((Gdiplus::REAL)transformation->rotation);
+			Gdiplus::Matrix matrix ((Gdiplus::REAL)t->m11, (Gdiplus::REAL)t->m12, (Gdiplus::REAL)t->m21, (Gdiplus::REAL)t->m22, (Gdiplus::REAL)t->dx, (Gdiplus::REAL)t->dy);
 			path = platformPath->Clone ();
 			path->Transform (&matrix);
 		}
@@ -215,18 +209,15 @@ void GdiplusGraphicsPath::addRect (const CRect& rect)
 }
 
 //-----------------------------------------------------------------------------
-void GdiplusGraphicsPath::addPath (const CGraphicsPath& inPath, CGraphicsTransformation* transformation)
+void GdiplusGraphicsPath::addPath (const CGraphicsPath& inPath, CGraphicsTransform* t)
 {
 	const GdiplusGraphicsPath* path = dynamic_cast<const GdiplusGraphicsPath*> (&inPath);
 	if (path)
 	{
 		Gdiplus::GraphicsPath* gdiPath = path->getGraphicsPath ()->Clone ();
-		if (transformation)
+		if (t)
 		{
-			Gdiplus::Matrix matrix;
-			matrix.Translate ((Gdiplus::REAL)transformation->offset.x, (Gdiplus::REAL)transformation->offset.y);
-			matrix.Scale ((Gdiplus::REAL)transformation->scaleX, (Gdiplus::REAL)transformation->scaleY);
-			matrix.Rotate ((Gdiplus::REAL)transformation->rotation);
+			Gdiplus::Matrix matrix ((Gdiplus::REAL)t->m11, (Gdiplus::REAL)t->m12, (Gdiplus::REAL)t->m21, (Gdiplus::REAL)t->m22, (Gdiplus::REAL)t->dx, (Gdiplus::REAL)t->dy);
 			gdiPath->Transform (&matrix);
 		}
 		platformPath->AddPath (gdiPath, true); // TODO: maybe the second parameter must be false

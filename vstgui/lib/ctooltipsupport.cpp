@@ -58,11 +58,8 @@ Adding a tooltip to a view
 const char* tooltipText = "This is a tooltip";
 view->setAttribute (kCViewTooltipAttribute, strlen (tooltipText)+1, tooltipText);
 @endcode
-Adding CTooltipSupport
-@code
-CTooltipSupport* tooltipSupport = new CTooltipSupport (frame);
-@endcode
-------------------------------------------------------------------------*/
+Adding CTooltipSupport is done via VSTGUI::CFrame::enableTooltips (true) */
+//------------------------------------------------------------------------
 /**
  * @param frame CFrame object
  * @param delay tooltip delay time in milliseconds
@@ -75,8 +72,6 @@ CTooltipSupport::CTooltipSupport (CFrame* frame, int delay)
 , state (kHidden)
 {
 	timer = new CVSTGUITimer (this, delay);
-	frame->setMouseObserver (this);
-	frame->remember ();
 }
 
 //------------------------------------------------------------------------
@@ -87,10 +82,6 @@ CTooltipSupport::~CTooltipSupport ()
 	IPlatformFrame* platformFrame = frame->getPlatformFrame ();
 	if (platformFrame)
 		platformFrame->hideTooltip ();
-
-	frame->setMouseObserver (0);
-	frame->forget ();
-
 }
 
 //------------------------------------------------------------------------
@@ -124,7 +115,7 @@ static bool viewHasTooltip (CView* view)
 }
 
 //------------------------------------------------------------------------
-void CTooltipSupport::onMouseEntered (CView* view, CFrame* frame)
+void CTooltipSupport::onMouseEntered (CView* view)
 {
 	if (viewHasTooltip (view))
 	{
@@ -157,9 +148,9 @@ void CTooltipSupport::onMouseEntered (CView* view, CFrame* frame)
 }
 
 //------------------------------------------------------------------------
-void CTooltipSupport::onMouseExited (CView* view, CFrame* frame)
+void CTooltipSupport::onMouseExited (CView* view)
 {
-	if (currentView)
+	if (currentView == view)
 	{
 		if (state == kHidden || state == kShowing)
 		{
@@ -181,7 +172,7 @@ void CTooltipSupport::onMouseExited (CView* view, CFrame* frame)
 }
 
 //------------------------------------------------------------------------
-void CTooltipSupport::onMouseMoved (CFrame* frame, const CPoint& where)
+void CTooltipSupport::onMouseMoved (const CPoint& where)
 {
 	if (currentView && state != kForceVisible)
 	{
@@ -225,7 +216,7 @@ void CTooltipSupport::onMouseMoved (CFrame* frame, const CPoint& where)
 }
 
 //------------------------------------------------------------------------
-void CTooltipSupport::onMouseDown (CFrame* frame, const CPoint& where)
+void CTooltipSupport::onMouseDown (const CPoint& where)
 {
 	if (state != kHidden)
 	{

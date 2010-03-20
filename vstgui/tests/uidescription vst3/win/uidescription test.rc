@@ -3,6 +3,7 @@
 myEditor.uidesc					DATA	"../resource/myEditor.uidesc"
 SubControllerTest.uidesc		DATA	"../resource/SubControllerTest.uidesc"
 AnimationTest.uidesc			DATA	"../resource/AnimationTest.uidesc"
+GraphicsTest.uidesc				DATA	"../resource/GraphicsTest.uidesc"
 
 FrameBackground.png				PNG		"../resource/FrameBackground.png"
 TabController.png				PNG		"../resource/TabController.png"

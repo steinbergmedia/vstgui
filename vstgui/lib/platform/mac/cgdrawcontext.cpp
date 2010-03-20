@@ -46,18 +46,7 @@
 
 namespace VSTGUI {
 
-static inline double radians (double degrees) { return degrees * M_PI / 180; }
 static void addOvalToPath (CGContextRef c, CPoint center, CGFloat a, CGFloat b, CGFloat start_angle, CGFloat end_angle);
-
-#if MAC_CARBON
-//#pragma GCC diagnostic ignored "-Wdeprecated-declarations" // we know that we use deprecated functions from Carbon, so we don't want to be warned
-//extern bool isWindowComposited (WindowRef window);
-#endif // MAC_CARBON
-#ifndef CGFLOAT_DEFINED
-	#define CGFLOAT_DEFINED
-	typedef float CGFloat;
-#endif // CGFLOAT_DEFINED
-
 
 //-----------------------------------------------------------------------------
 CGDrawContext::CGDrawContext (CGContextRef cgContext, const CRect& rect)
@@ -97,8 +86,13 @@ CGDrawContext::~CGDrawContext ()
 {
 	CGContextRestoreGState (cgContext); // restore the original state
 	CGContextRestoreGState (cgContext); // we need to do it twice !!!
-	CGContextSynchronize (cgContext);
 	CFRelease (cgContext);
+}
+
+//-----------------------------------------------------------------------------
+void CGDrawContext::endDraw ()
+{
+	CGContextSynchronize (cgContext);
 	CBitmap* bitmap = getBitmap ();
 	if (bitmap && bitmap->getPlatformBitmap ())
 	{
@@ -159,7 +153,7 @@ void CGDrawContext::setDrawMode (CDrawMode mode)
 	if (currentState.drawMode == mode)
 		return;
 
-	CGContextSetShouldAntialias (cgContext, mode == kAntialias ? true : false);
+	CGContextSetShouldAntialias (cgContext, mode == kAntiAliasing ? true : false);
 
 	CDrawContext::setDrawMode (mode);
 }
@@ -393,6 +387,18 @@ void CGDrawContext::drawBitmap (CBitmap* bitmap, const CRect& rect, const CPoint
 
 			releaseCGContext (context);
 		}
+	}
+}
+
+//-----------------------------------------------------------------------------
+void CGDrawContext::clearRect (const CRect& rect)
+{
+	CGContextRef context = beginCGContext (true);
+	if (context)
+	{
+		CGRect cgRect = CGRectMake (rect.left, rect.top, rect.width (), rect.height ());
+		CGContextClearRect (context, cgRect);
+		releaseCGContext (context);
 	}
 }
 

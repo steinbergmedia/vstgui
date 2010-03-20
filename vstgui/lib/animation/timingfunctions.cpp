@@ -34,10 +34,19 @@
 
 #include "timingfunctions.h"
 #include "../vstguibase.h"
+#include <cmath>
 
 namespace VSTGUI {
 namespace Animation {
 
+//------------------------------------------------------------------------
+/*! @defgroup AnimationTimingFunctions Animation Timing Functions
+ *	@ingroup animation
+ */
+//------------------------------------------------------------------------
+
+//-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 LinearTimingFunction::LinearTimingFunction (unsigned long length)
 : TimingFunctionBase (length)
@@ -56,11 +65,68 @@ float LinearTimingFunction::getPosition (unsigned long milliseconds)
 }
 
 //-----------------------------------------------------------------------------
-bool LinearTimingFunction::isDone (unsigned long milliseconds)
+//-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
+PowerTimingFunction::PowerTimingFunction (unsigned long length, float factor)
+: TimingFunctionBase (length)
+, factor (factor)
 {
-	return milliseconds >= length;
 }
 
+//-----------------------------------------------------------------------------
+float PowerTimingFunction::getPosition (unsigned long milliseconds)
+{
+	float pos = ((float)milliseconds) / ((float)length);
+	pos = pow (pos, factor);
+	if (pos > 1.f)
+		pos = 1.f;
+	else if (pos < 0.f)
+		pos = 0.f;
+	return pos;
+}
+
+//-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
+InterpolationTimingFunction::InterpolationTimingFunction (unsigned long length, float startPos, float endPos)
+: TimingFunctionBase (length)
+{
+	addPoint (0.f, startPos);
+	addPoint (1.f, endPos);
+}
+
+//-----------------------------------------------------------------------------
+void InterpolationTimingFunction::addPoint (float time, float pos)
+{
+	points.insert (std::make_pair ((unsigned long)((float)getLength () * time), pos));
+}
+
+//-----------------------------------------------------------------------------
+float InterpolationTimingFunction::getPosition (unsigned long milliseconds)
+{
+	unsigned long prevTime = getLength ();
+	float prevPos = points[prevTime];
+	std::map<unsigned long, float>::reverse_iterator it = points.rbegin ();
+	while (it != points.rend ())
+	{
+		unsigned long time = it->first;
+		float pos = it->second;
+		if (time == milliseconds)
+			return pos;
+		else if (time <= milliseconds && prevTime > milliseconds)
+		{
+			float timePos = (float)(milliseconds - time) / (float)(prevTime - time);
+			return pos + ((prevPos - pos) * timePos);
+		}
+		prevTime = time;
+		prevPos = pos;
+		it++;
+	}
+	return 1.f;
+}
+
+//-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 RepeatTimingFunction::RepeatTimingFunction (TimingFunctionBase* tf, long repeatCount, bool autoReverse)
 : tf (tf)

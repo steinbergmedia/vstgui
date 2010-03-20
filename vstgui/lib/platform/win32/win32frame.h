@@ -87,6 +87,7 @@ protected:
 	HWND tooltipWindow;
 
 	COffscreenContext* backBuffer;
+	CDrawContext* deviceContext;
 
 	bool mouseInside;
 };
