@@ -797,7 +797,7 @@ CDrawContext::CDrawContext (CFrame* inFrame, void* inSystemContext, void* inWind
 					HIViewRef contentView;
 					HIViewFindByID (HIViewGetRoot ((WindowRef)pWindow), kHIViewWindowContentID, &contentView);
 					if (HIViewGetSuperview ((HIViewRef)pFrame->getPlatformControl ()) != contentView)
-						HIViewConvertRect (&bounds, (HIViewRef)pFrame->getPlatformControl (), contentView);
+						HIViewConvertRect (&bounds, HIViewGetSuperview ((HIViewRef)pFrame->getPlatformControl ()), contentView);
 					bounds.origin.x += pFrame->hiScrollOffset.x;
 					bounds.origin.y += pFrame->hiScrollOffset.y;
 				}
@@ -6707,6 +6707,7 @@ public:
     
     virtual HRESULT STDMETHODCALLTYPE Stat (STATSTG *pstatstg, DWORD grfStatFlag)
 	{
+		memset (pstatstg, 0, sizeof (STATSTG));
 		pstatstg->cbSize.QuadPart = resSize;
 		return S_OK;
 	}
