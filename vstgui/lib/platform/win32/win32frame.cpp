@@ -684,9 +684,9 @@ LONG_PTR WINAPI Win32Frame::WindowProc (HWND hwnd, UINT message, WPARAM wParam, 
 					if (win32Frame->deviceContext)
 					{
 						win32Frame->deviceContext->setClipRect (updateRect);
-						win32Frame->deviceContext->beginDraw ();
 
 						CDrawContext* drawContext = win32Frame->backBuffer ? win32Frame->backBuffer : win32Frame->deviceContext;
+						drawContext->beginDraw ();
 						#if 1
 						int len = GetRegionData (rgn, 0, NULL);
 						if (len)
@@ -714,9 +714,14 @@ LONG_PTR WINAPI Win32Frame::WindowProc (HWND hwnd, UINT message, WPARAM wParam, 
 						pFrame->platformDrawRect (drawContext, updateRect);
 
 						#endif
+						drawContext->endDraw ();
 						if (win32Frame->backBuffer)
+						{
+							win32Frame->deviceContext->beginDraw ();
+							win32Frame->deviceContext->clearRect (updateRect);
 							win32Frame->backBuffer->copyFrom (win32Frame->deviceContext, updateRect, CPoint (updateRect.left, updateRect.top));
-						win32Frame->deviceContext->endDraw ();
+							win32Frame->deviceContext->endDraw ();
+						}
 					}
 					#else
 					GdiplusDrawContext context (hdc, frameSize);

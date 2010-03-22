@@ -44,6 +44,7 @@ class CView;
 
 namespace Animation {
 
+/// @brief animates the alpha value of the view
 /// @ingroup AnimationTargets
 //-----------------------------------------------------------------------------
 class AlphaValueAnimation : public IAnimationTarget
@@ -60,6 +61,7 @@ protected:
 	bool forceEndValueOnFinish;
 };
 
+/// @brief animates the view size of the view
 /// @ingroup AnimationTargets
 //-----------------------------------------------------------------------------
 class ViewSizeAnimation : public IAnimationTarget
@@ -76,6 +78,7 @@ protected:
 	bool forceEndValueOnFinish;
 };
 
+/// @brief exchange a view by another view with an animation
 /// @ingroup AnimationTargets
 //-----------------------------------------------------------------------------
 class ExchangeViewAnimation : public IAnimationTarget

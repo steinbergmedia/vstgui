@@ -77,7 +77,7 @@
 	#if _WIN32_WINNT < 0x600
 		#error unsupported Platform SDK you need at least the Vista Platform SDK to compile VSTGUI
 	#endif
-	#ifdef _WIN32_WINNT_WIN7 && !defined (VSTGUI_DIRECT2D_SUPPORT)
+	#if defined (_WIN32_WINNT_WIN7) && !defined (VSTGUI_DIRECT2D_SUPPORT)
 		#define VSTGUI_DIRECT2D_SUPPORT	1
 	#endif
 #endif

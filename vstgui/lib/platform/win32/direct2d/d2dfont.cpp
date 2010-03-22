@@ -52,10 +52,10 @@ D2DFont::D2DFont (const char* name, const CCoord& size, const long& style)
 , capHeight (-1)
 , style (style)
 {
-	DWRITE_FONT_STYLE fontStyle = (style & kBoldFace) ? DWRITE_FONT_STYLE_OBLIQUE : DWRITE_FONT_STYLE_NORMAL;
-	// TODO: italic
+	DWRITE_FONT_STYLE fontStyle = (style & kItalicFace) ? DWRITE_FONT_STYLE_ITALIC : DWRITE_FONT_STYLE_NORMAL;
+	DWRITE_FONT_WEIGHT fontWeight = (style & kBoldFace) ? DWRITE_FONT_WEIGHT_BOLD : DWRITE_FONT_WEIGHT_NORMAL;
 	UTF8StringHelper nameStr (name);
-	getDWriteFactory ()->CreateTextFormat (nameStr, NULL, DWRITE_FONT_WEIGHT_REGULAR, fontStyle, DWRITE_FONT_STRETCH_NORMAL, (FLOAT)size, L"en-us", &textFormat);
+	getDWriteFactory ()->CreateTextFormat (nameStr, NULL, fontWeight, fontStyle, DWRITE_FONT_STRETCH_NORMAL, (FLOAT)size, L"en-us", &textFormat);
 	if (textFormat)
 	{
 		IDWriteFontCollection* fontCollection = 0;
@@ -74,6 +74,7 @@ D2DFont::D2DFont (const char* name, const CCoord& size, const long& style)
 					font->GetMetrics (&fontMetrics);
 					ascent = fontMetrics.ascent * (size / fontMetrics.designUnitsPerEm);
 					descent = fontMetrics.descent * (size / fontMetrics.designUnitsPerEm);
+					leading = fontMetrics.lineGap * (size / fontMetrics.designUnitsPerEm);
 					capHeight = fontMetrics.capHeight * (size / fontMetrics.designUnitsPerEm);
 				}
 			}
@@ -103,19 +104,24 @@ void D2DFont::drawString (CDrawContext* context, const char* utf8String, const C
 	D2DDrawContext* d2dContext = dynamic_cast<D2DDrawContext*> (context);
 	if (d2dContext && textFormat)
 	{
-		IDWriteTextLayout* textLayout = createTextLayout (utf8String);
-		if (textLayout)
+		ID2D1RenderTarget* renderTarget = d2dContext->getRenderTarget ();
+		if (renderTarget)
 		{
-			if (style & kUnderlineFace)
+			IDWriteTextLayout* textLayout = createTextLayout (utf8String);
+			if (textLayout)
 			{
-				DWRITE_TEXT_RANGE range = { 0, -1 };
-				textLayout->SetUnderline (true, range);
+				if (style & kUnderlineFace)
+				{
+					DWRITE_TEXT_RANGE range = { 0, -1 };
+					textLayout->SetUnderline (true, range);
+				}
+				renderTarget->SetTextAntialiasMode (antialias ? D2D1_TEXT_ANTIALIAS_MODE_GRAYSCALE : D2D1_TEXT_ANTIALIAS_MODE_ALIASED);
+				CRect clipRect;
+				D2DDrawContext::D2DApplyClip ac (d2dContext);
+				D2D1_POINT_2F origin = {(FLOAT)(p.x + context->getOffset ().x), (FLOAT)(p.y + context->getOffset ().y) - textFormat->GetFontSize ()};
+				d2dContext->getRenderTarget ()->DrawTextLayout (origin, textLayout, d2dContext->getFontBrush ());
+				textLayout->Release ();
 			}
-			CRect clipRect;
-			D2DDrawContext::D2DApplyClip ac (d2dContext);
-			D2D1_POINT_2F origin = {(FLOAT)(p.x + context->getOffset ().x), (FLOAT)(p.y + context->getOffset ().y) - textFormat->GetFontSize ()};
-			d2dContext->getRenderTarget ()->DrawTextLayout (origin, textLayout, d2dContext->getFontBrush ());
-			textLayout->Release ();
 		}
 	}
 }

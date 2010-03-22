@@ -51,7 +51,7 @@ const CColor kCyanCColor		= CColor (  0, 255, 255, 255);
 /// @cond ignore
 //-----------------------------------------------------------------------------
 template<typename _Tp>
-inline const _Tp& min3 (const _Tp v1, const _Tp v2, const _Tp v3)
+inline const _Tp& min3 (const _Tp& v1, const _Tp& v2, const _Tp& v3)
 {
 	if (v1 <= v2)
 		return (v1 <= v3) ? v1 : v3;
@@ -60,7 +60,7 @@ inline const _Tp& min3 (const _Tp v1, const _Tp v2, const _Tp v3)
 
 //-----------------------------------------------------------------------------
 template<typename _Tp>
-inline const _Tp& max3 (const _Tp v1, const _Tp v2, const _Tp v3)
+inline const _Tp& max3 (const _Tp& v1, const _Tp& v2, const _Tp& v3)
 {
 	if (v1 >= v2)
 		return (v1 >= v3) ? v1 : v3;
