@@ -324,6 +324,7 @@ HRESULT STDMETHODCALLTYPE ResourceStream::UnlockRegion (ULARGE_INTEGER libOffset
 //-----------------------------------------------------------------------------
 HRESULT STDMETHODCALLTYPE ResourceStream::Stat (STATSTG *pstatstg, DWORD grfStatFlag)
 {
+	memset (pstatstg, 0, sizeof (STATSTG));
 	pstatstg->cbSize.QuadPart = resSize;
 	return S_OK;
 }

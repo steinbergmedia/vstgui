@@ -40,6 +40,12 @@
 #define XML_NS 1
 #define XML_DTD 1
 #define XML_CONTEXT_BYTES 1024
+
+#ifdef BYTEORDER
+	#define OLD_BYTEORDER = BYTEORDER
+	#undef BYTEORDER
+#endif
+
 #if MAC && defined (__BIG_ENDIAN__)
 	#define BYTEORDER 4321
 #else
@@ -205,5 +211,10 @@ void MemoryContentProvider::rewind ()
 #include "./expat/xmlparse.c"
 
 }} // namespaces
+
+#ifdef OLD_BYTEORDER
+	#undef BYTEORDER
+	#define BYTEORDER = OLD_BYTEORDER
+#endif
 
 /// @endcond

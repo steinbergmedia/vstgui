@@ -35,8 +35,6 @@
 /**
 @page animation Animation
 
-@section about_animation Animation Support in VSTGUI
-
 VSTGUI version 4 adds simple to use view animation support.
 
 The source can be found under /lib/animation/

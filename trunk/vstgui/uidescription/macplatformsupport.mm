@@ -59,6 +59,7 @@ using namespace VSTGUI;
 - (id) initWithDelegate:(IPlatformWindowDelegate*) delegate platformWindow: (PlatformWindow*) platformWindow;
 @end
 
+#if NATIVE_COLOR_CHOOSER
 //-----------------------------------------------------------------------------
 @interface VSTGUI_ColorChangeCallback : NSObject {
 	IPlatformColorChangeCallback* callback;
@@ -73,6 +74,7 @@ static __attribute__((__destructor__)) void colorChangeCallbackDestructor ()
 	if (gColorChangeCallback)
 		[gColorChangeCallback release];
 }
+#endif
 
 namespace VSTGUI {
 
@@ -366,6 +368,7 @@ void PlatformUtilities::colorChooser (const CColor* oldColor, IPlatformColorChan
 
 @end
 
+#if NATIVE_COLOR_CHOOSER
 //-----------------------------------------------------------------------------
 @implementation VSTGUI_ColorChangeCallback
 - (void) setCallback: (IPlatformColorChangeCallback*) _callback
@@ -386,6 +389,7 @@ void PlatformUtilities::colorChooser (const CColor* oldColor, IPlatformColorChan
 	}
 }
 @end
+#endif // NATIVE_COLOR_CHOOSER
 
 #endif // MAC
 
