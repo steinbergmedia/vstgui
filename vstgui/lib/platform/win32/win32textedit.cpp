@@ -80,8 +80,11 @@ Win32TextEdit::Win32TextEdit (HWND parent, IPlatformTextEditCallback* textEdit)
 	}
 	UTF8StringHelper stringHelper (textEdit->platformGetText ());
 
+	DWORD wxStyle = 0;
+	if (getSystemVersion ().dwMajorVersion >= 6) // Vista and above
+		wxStyle = WS_EX_COMPOSITED;
 	wstyle |= WS_CHILD | WS_VISIBLE | ES_AUTOHSCROLL;
-	platformControl = CreateWindowEx (WS_EX_TRANSPARENT,
+	platformControl = CreateWindowEx (wxStyle,
 		TEXT("EDIT"), stringHelper, wstyle,
 		(int)rect.left, (int)rect.top, (int)rect.width (), (int)rect.height (),
 		parent, NULL, GetInstance (), 0);

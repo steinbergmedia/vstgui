@@ -115,7 +115,6 @@ void D2DDrawContext::createRenderTarget ()
 			D2D1_RENDER_TARGET_TYPE targetType = D2D1_RENDER_TARGET_TYPE_SOFTWARE;
 			D2D1_PIXEL_FORMAT pixelFormat = D2D1::PixelFormat (DXGI_FORMAT_UNKNOWN, D2D1_ALPHA_MODE_PREMULTIPLIED);
 			HRESULT hr = getD2DFactory ()->CreateWicBitmapRenderTarget (d2dBitmap->getBitmap (), D2D1::RenderTargetProperties (targetType, pixelFormat), &renderTarget);
-
 		}
 	}
 	init ();
@@ -172,6 +171,11 @@ void D2DDrawContext::endDraw ()
 		{
 			releaseRenderTarget ();
 			createRenderTarget ();
+		}
+		if (bitmap)
+		{
+			D2DOffscreenBitmap* d2dBitmap = dynamic_cast<D2DOffscreenBitmap*> (bitmap->getPlatformBitmap ());
+			D2DBitmapCache::instance ()->removeBitmap (d2dBitmap);
 		}
 	}
 }
