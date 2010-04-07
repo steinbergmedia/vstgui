@@ -55,6 +55,7 @@ public:
 
 	bool load (const CResourceDescription& desc);
 	const CPoint& getSize () const { return size; }
+	IPlatformBitmapPixelAccess* lockPixels () { return 0; } // TODO: Implementation for GdiplusBitmap::lockPixels
 
 	Gdiplus::Bitmap* getBitmap () const { return bitmap; }
 

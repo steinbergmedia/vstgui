@@ -39,7 +39,6 @@
 #include "ccolor.h"
 
 namespace VSTGUI {
-class COffscreenContext;
 class CCView;
 
 extern const char* kMsgCheckIfViewContainer;	///< Message to check if View is a CViewContainer
@@ -83,8 +82,6 @@ public:
 	virtual const CPoint& getBackgroundOffset () const { return backgroundOffset; }	///< get the offset of the background bitmap
 	virtual void drawBackgroundRect (CDrawContext *pContext, CRect& _updateRect);	///< draw the background
 	//@}
-
-	virtual void useOffscreen (bool b);	///< turn on/off using an offscreen. Not necessary with GDI+ on Windows, or on Mac OS X.
 
 	void modifyDrawContext (CCoord save[4], CDrawContext* pContext);
 	void restoreDrawContext (CDrawContext* pContext, CCoord save[4]);
@@ -145,11 +142,9 @@ protected:
 
 	CCView  *pFirstView;
 	CCView  *pLastView;
-	COffscreenContext *pOffscreenContext;
 	CColor backgroundColor;
 	CPoint backgroundOffset;
 	CRect lastDrawnFocus;
-	bool bDrawInOffscreen;
 
 	CView* currentDragView;
 	CView* mouseDownView;

@@ -265,11 +265,7 @@ CGImageRef CGOffscreenBitmap::getCGImage ()
 		short bitDepth = 32;
 
 		CGDataProviderRef provider = CGDataProviderCreateWithData (NULL, bits, byteCount, NULL);
-	#if defined (__BIG_ENDIAN__)
-		CGImageAlphaInfo alphaInfo = kCGImageAlphaFirst;
-	#else
-		CGImageAlphaInfo alphaInfo = kCGImageAlphaLast;
-	#endif
+		CGBitmapInfo alphaInfo = kCGImageAlphaLast | kCGBitmapByteOrder32Host;
 		image = CGImageCreate (size.x, size.y, 8, bitDepth, rowBytes, GetGenericRGBColorSpace (), alphaInfo, provider, NULL, false, kCGRenderingIntentDefault);
 		CGDataProviderRelease (provider);
 		dirty = false;
@@ -283,11 +279,7 @@ CGContextRef CGOffscreenBitmap::createCGContext ()
 	CGContextRef context = 0;
 	if (bits)
 	{
-	#if defined (__BIG_ENDIAN__)
-		CGBitmapInfo bitmapInfo = kCGImageAlphaPremultipliedFirst;
-	#else
-		CGBitmapInfo bitmapInfo = kCGImageAlphaPremultipliedLast;
-	#endif
+		CGBitmapInfo bitmapInfo = kCGImageAlphaPremultipliedLast | kCGBitmapByteOrder32Host;
 		context = CGBitmapContextCreate (bits,
 						size.x,
 						size.y,
@@ -310,6 +302,35 @@ void CGOffscreenBitmap::allocBits ()
 		int bitmapByteCount     = bitmapBytesPerRow * size.y; 
 		bits = calloc (1, bitmapByteCount);
 	}
+}
+
+//-----------------------------------------------------------------------------
+class CGOffscreenBitmapPixelAccess : public IPlatformBitmapPixelAccess
+{
+public:
+	CGOffscreenBitmapPixelAccess (CGOffscreenBitmap* bitmap) : bitmap (bitmap) { bitmap->remember (); }
+	~CGOffscreenBitmapPixelAccess () { bitmap->setDirty (); bitmap->forget (); }
+
+	unsigned char* getAddress () { return (unsigned char*)bitmap->getBits (); }
+	long getBytesPerRow () { return bitmap->getBytesPerRow (); }
+	
+	PixelFormat getPixelFormat () 
+	{
+		#ifdef __BIG_ENDIAN__
+		return kRGBA;
+		#else
+		return kABGR;
+		#endif
+	}
+	
+protected:
+	CGOffscreenBitmap* bitmap;
+};
+
+//-----------------------------------------------------------------------------
+IPlatformBitmapPixelAccess* CGOffscreenBitmap::lockPixels ()
+{
+	return new CGOffscreenBitmapPixelAccess (this);
 }
 
 } // namespace

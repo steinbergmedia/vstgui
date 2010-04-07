@@ -30,7 +30,6 @@
 		F440751210BE6BB6003C59F6 /* fbuffer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F44074CD10BE6BB6003C59F6 /* fbuffer.cpp */; };
 		F440751310BE6BB6003C59F6 /* fdebug.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F44074CF10BE6BB6003C59F6 /* fdebug.cpp */; };
 		F440751410BE6BB6003C59F6 /* fobject.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F44074D110BE6BB6003C59F6 /* fobject.cpp */; };
-		F440751510BE6BB6003C59F6 /* fstreamer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F44074D310BE6BB6003C59F6 /* fstreamer.cpp */; };
 		F440751610BE6BB6003C59F6 /* fstring.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F44074D510BE6BB6003C59F6 /* fstring.cpp */; };
 		F440751710BE6BB6003C59F6 /* fthread.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F44074D710BE6BB6003C59F6 /* fthread.cpp */; };
 		F440751810BE6BB6003C59F6 /* timer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F44074D910BE6BB6003C59F6 /* timer.cpp */; };
@@ -58,8 +57,9 @@
 		F4457815110A06590022C0E5 /* FrameBackground.png in Resources */ = {isa = PBXBuildFile; fileRef = F4457814110A06590022C0E5 /* FrameBackground.png */; };
 		F4657609114F83D100846DAE /* graphicstest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4657608114F83D100846DAE /* graphicstest.cpp */; };
 		F465763D114F8EA200846DAE /* GraphicsTest.uidesc in Resources */ = {isa = PBXBuildFile; fileRef = F465763C114F8EA200846DAE /* GraphicsTest.uidesc */; };
-		F4F4013D10D2662500F2B46B /* vst2wrapper.sdk.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4F4013C10D2662500F2B46B /* vst2wrapper.sdk.cpp */; };
 		F4F5DA8A10BFD28900DB6C33 /* TabController.png in Resources */ = {isa = PBXBuildFile; fileRef = F4F5DA8910BFD28900DB6C33 /* TabController.png */; };
+		F4FFBFCA116A310500A9BD34 /* vst2wrapper.sdk.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4F4013C10D2662500F2B46B /* vst2wrapper.sdk.cpp */; };
+		F4FFBFCB116A310D00A9BD34 /* fstreamer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F44074D310BE6BB6003C59F6 /* fstreamer.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -164,6 +164,7 @@
 		F4F4013C10D2662500F2B46B /* vst2wrapper.sdk.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = vst2wrapper.sdk.cpp; path = ../../../../../SKI/public.sdk/source/vst/vst2wrapper/vst2wrapper.sdk.cpp; sourceTree = SOURCE_ROOT; };
 		F4F5DA8910BFD28900DB6C33 /* TabController.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = TabController.png; path = ../resource/TabController.png; sourceTree = SOURCE_ROOT; };
 		F4F5DA9E10BFD5BF00DB6C33 /* ussage bugs.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = "ussage bugs.txt"; path = "../ussage bugs.txt"; sourceTree = SOURCE_ROOT; };
+		F4FFBE471169E8CA00A9BD34 /* bitmapsaturator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = bitmapsaturator.h; path = ../source/bitmapsaturator.h; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -214,6 +215,7 @@
 				F41CA1C7112E99F000D425D7 /* animationtest.cpp */,
 				F4657607114F83D100846DAE /* graphicstest.h */,
 				F4657608114F83D100846DAE /* graphicstest.cpp */,
+				F4FFBE471169E8CA00A9BD34 /* bitmapsaturator.h */,
 			);
 			name = Sources;
 			sourceTree = "<group>";
@@ -386,10 +388,6 @@
 		F44075AA10BF0525003C59F6 /* Resources */ = {
 			isa = PBXGroup;
 			children = (
-				F465763C114F8EA200846DAE /* GraphicsTest.uidesc */,
-				F4457814110A06590022C0E5 /* FrameBackground.png */,
-				F4F5DA8910BFD28900DB6C33 /* TabController.png */,
-				F4273C06112C0C2400BE2194 /* animation_knob.png */,
 				F4273C07112C0C2400BE2194 /* horizontal_slider_back.bmp */,
 				F4273C08112C0C2400BE2194 /* onoff_button.bmp */,
 				F4273C09112C0C2400BE2194 /* rocker_switch.bmp */,
@@ -399,9 +397,13 @@
 				F4273C0D112C0C2400BE2194 /* vertical_slider_back.bmp */,
 				F4273C0E112C0C2400BE2194 /* vumeter_back.bmp */,
 				F4273C0F112C0C2400BE2194 /* vumeter_front.bmp */,
+				F4273C06112C0C2400BE2194 /* animation_knob.png */,
+				F4457814110A06590022C0E5 /* FrameBackground.png */,
+				F4F5DA8910BFD28900DB6C33 /* TabController.png */,
+				F41CA21E112E9E6B00D425D7 /* AnimationTest.uidesc */,
+				F465763C114F8EA200846DAE /* GraphicsTest.uidesc */,
 				F44075AC10BF053A003C59F6 /* myEditor.uidesc */,
 				F42732691125623200BE2194 /* SubControllerTest.uidesc */,
-				F41CA21E112E9E6B00D425D7 /* AnimationTest.uidesc */,
 			);
 			name = Resources;
 			sourceTree = "<group>";
@@ -497,7 +499,6 @@
 				F440751210BE6BB6003C59F6 /* fbuffer.cpp in Sources */,
 				F440751310BE6BB6003C59F6 /* fdebug.cpp in Sources */,
 				F440751410BE6BB6003C59F6 /* fobject.cpp in Sources */,
-				F440751510BE6BB6003C59F6 /* fstreamer.cpp in Sources */,
 				F440751610BE6BB6003C59F6 /* fstring.cpp in Sources */,
 				F440751710BE6BB6003C59F6 /* fthread.cpp in Sources */,
 				F440751810BE6BB6003C59F6 /* timer.cpp in Sources */,
@@ -522,11 +523,12 @@
 				F403651810C59C44001BCC34 /* vstinitiids.cpp in Sources */,
 				F403651C10C59C84001BCC34 /* baseiids.cpp in Sources */,
 				F403673610C901AF001BCC34 /* vstgui_uidescription_mac.mm in Sources */,
-				F4F4013D10D2662500F2B46B /* vst2wrapper.sdk.cpp in Sources */,
 				F42731DE1125507F00BE2194 /* factory.cpp in Sources */,
 				F42731E51125516A00BE2194 /* subcontrollertest.cpp in Sources */,
 				F41CA1C8112E99F000D425D7 /* animationtest.cpp in Sources */,
 				F4657609114F83D100846DAE /* graphicstest.cpp in Sources */,
+				F4FFBFCA116A310500A9BD34 /* vst2wrapper.sdk.cpp in Sources */,
+				F4FFBFCB116A310D00A9BD34 /* fstreamer.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -591,12 +593,15 @@
 		508817D809F0C9AE0071BF1A /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				GCC_OPTIMIZATION_LEVEL = 3;
 			};
 			name = Debug;
 		};
 		508817D909F0C9AE0071BF1A /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				GCC_VERSION = com.apple.compilers.llvmgcc42;
+				LLVM_LTO = YES;
 			};
 			name = Release;
 		};

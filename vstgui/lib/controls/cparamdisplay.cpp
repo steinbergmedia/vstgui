@@ -147,6 +147,7 @@ void CParamDisplay::drawBack (CDrawContext* pContext, CBitmap* newBack)
 	
 			if (!(style & (k3DIn|k3DOut|kNoFrame))) 
 			{
+				pContext->setLineStyle (kLineSolid);
 				pContext->setLineWidth (1);
 				pContext->setFrameColor (frameColor);
 				pContext->drawRect (size);
@@ -159,6 +160,7 @@ void CParamDisplay::drawBack (CDrawContext* pContext, CBitmap* newBack)
 		CRect r (size);
 		r.right--; r.top++;
 		pContext->setLineWidth (1);
+		pContext->setLineStyle (kLineSolid);
 		if (style & k3DIn)
 			pContext->setFrameColor (backColor);
 		else

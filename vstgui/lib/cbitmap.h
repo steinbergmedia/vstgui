@@ -96,8 +96,8 @@ public:
 	const CResourceDescription& getResourceDescription () const { return resourceDesc; }
 
 	IPlatformBitmap* getPlatformBitmap () const { return platformBitmap; }
+	void setPlatformBitmap (IPlatformBitmap* bitmap);
 	//@}
-
 
 //-----------------------------------------------------------------------------
 	CLASS_METHODS_NOCOPY(CBitmap, CBaseObject)
@@ -127,6 +127,7 @@ public:
 	};
 
 	CNinePartTiledBitmap (const CResourceDescription& desc, const PartOffsets& offsets);
+	CNinePartTiledBitmap (IPlatformBitmap* platformBitmap, const PartOffsets& offsets);
 	~CNinePartTiledBitmap ();
 	
 	//-----------------------------------------------------------------------------

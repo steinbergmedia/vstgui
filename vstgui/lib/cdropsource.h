@@ -48,7 +48,7 @@ class CDropSource : public CBaseObject
 {
 public:
 	enum Type {
-		kFile = 0,	///< File type (UTF-8 C-String, must be null terminated)
+		kFilePath = 0,	///< File type (UTF-8 C-String, must be null terminated)
 		kText,		///< Text type (UTF-8 C-String, must be null terminated)
 		kBinary,	///< Binary type
 		

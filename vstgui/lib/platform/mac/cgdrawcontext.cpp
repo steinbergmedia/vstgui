@@ -128,7 +128,7 @@ void CGDrawContext::setGlobalAlpha (float newAlpha)
 }
 
 //-----------------------------------------------------------------------------
-void CGDrawContext::setLineStyle (CLineStyle style)
+void CGDrawContext::setLineStyle (const CLineStyle& style)
 {
 	if (currentState.lineStyle == style)
 		return;
@@ -176,7 +176,7 @@ void CGDrawContext::lineTo (const CPoint& point)
 	CGContextRef context = beginCGContext (true);
 	if (context)
 	{
-		applyLineDash ();
+		applyLineStyle (context);
 
 		if ((((int)currentState.frameWidth) % 2))
 			CGContextTranslateCTM (context, 0.5f, -0.5f);
@@ -196,7 +196,7 @@ void CGDrawContext::drawLines (const CPoint* points, const long& numLines)
 	CGContextRef context = beginCGContext (true);
 	if (context) 
 	{
-		applyLineDash ();
+		applyLineStyle (context);
 
 		if ((((int)currentState.frameWidth) % 2))
 			CGContextTranslateCTM (context, 0.5f, -0.5f);
@@ -228,7 +228,7 @@ void CGDrawContext::drawPolygon (const CPoint* pPoints, long numberOfPoints, con
 			case kDrawFilledAndStroked : m = kCGPathFillStroke; break;
 			default : m = kCGPathStroke; break;
 		}
-		applyLineDash ();
+		applyLineStyle (context);
 
 		CGContextBeginPath (context);
 		CGContextMoveToPoint (context, pPoints[0].h, pPoints[0].v);
@@ -251,7 +251,7 @@ void CGDrawContext::drawRect (const CRect &rect, const CDrawStyle drawStyle)
 			case kDrawFilledAndStroked : m = kCGPathFillStroke; break;
 			default : m = kCGPathStroke; break;
 		}
-		applyLineDash ();
+		applyLineStyle (context);
 
 		CGRect r = CGRectMake (rect.left, rect.top+1, rect.width () - 1, rect.height () - 1);
 
@@ -283,7 +283,7 @@ void CGDrawContext::drawEllipse (const CRect &rect, const CDrawStyle drawStyle)
 			case kDrawFilledAndStroked : m = kCGPathFillStroke; break;
 			default : m = kCGPathStroke; break;
 		}
-		applyLineDash ();
+		applyLineStyle (context);
 
 		if (rect.width () != rect.height ())
 		{
@@ -318,7 +318,7 @@ void CGDrawContext::drawEllipse (const CRect &rect, const CDrawStyle drawStyle)
 }
 
 //-----------------------------------------------------------------------------
-void CGDrawContext::drawPoint (const CPoint &point, CColor color)
+void CGDrawContext::drawPoint (const CPoint &point, const CColor& color)
 {
 	saveGlobalState ();
 
@@ -344,7 +344,7 @@ void CGDrawContext::drawArc (const CRect &rect, const float _startAngle, const f
 			case kDrawFilledAndStroked : m = kCGPathFillStroke; break;
 			default : m = kCGPathStroke; break;
 		}
-		applyLineDash ();
+		applyLineStyle (context);
 
 		CGContextBeginPath (context);
 		addOvalToPath (context, CPoint (rect.left + rect.width () / 2, rect.top + rect.height () / 2), rect.width () / 2, rect.height () / 2, -_startAngle, -_endAngle);
@@ -403,7 +403,7 @@ void CGDrawContext::clearRect (const CRect& rect)
 }
 
 //-----------------------------------------------------------------------------
-void CGDrawContext::setFontColor (const CColor color)
+void CGDrawContext::setFontColor (const CColor& color)
 {
 	if (currentState.fontColor == color)
 		return;
@@ -412,7 +412,7 @@ void CGDrawContext::setFontColor (const CColor color)
 }
 
 //-----------------------------------------------------------------------------
-void CGDrawContext::setFrameColor (const CColor color)
+void CGDrawContext::setFrameColor (const CColor& color)
 {
 	if (currentState.frameColor == color)
 		return;
@@ -423,7 +423,7 @@ void CGDrawContext::setFrameColor (const CColor color)
 }
 
 //-----------------------------------------------------------------------------
-void CGDrawContext::setFillColor (const CColor color)
+void CGDrawContext::setFillColor (const CColor& color)
 {
 	if (currentState.fillColor == color)
 		return;
@@ -468,13 +468,29 @@ void CGDrawContext::releaseCGContext (CGContextRef context)
 }
 
 //-----------------------------------------------------------------------------
-void CGDrawContext::applyLineDash ()
+void CGDrawContext::applyLineStyle (CGContextRef context)
 {
-	if (currentState.lineStyle == kLineOnOffDash)
+	switch (currentState.lineStyle.getLineCap ())
 	{
-		CGFloat offset = 0;
-		CGFloat dotf[2] = { currentState.frameWidth, currentState.frameWidth };
-		CGContextSetLineDash (cgContext, offset, dotf, 2);
+		case CLineStyle::kLineCapButt: CGContextSetLineCap (context, kCGLineCapButt); break;
+		case CLineStyle::kLineCapRound: CGContextSetLineCap (context, kCGLineCapRound); break;
+		case CLineStyle::kLineCapSquare: CGContextSetLineCap (context, kCGLineCapSquare); break;
+	}
+	switch (currentState.lineStyle.getLineJoin ())
+	{
+		case CLineStyle::kLineJoinMiter: CGContextSetLineJoin (context, kCGLineJoinMiter); break;
+		case CLineStyle::kLineJoinRound: CGContextSetLineJoin (context, kCGLineJoinRound); break;
+		case CLineStyle::kLineJoinBevel: CGContextSetLineJoin (context, kCGLineJoinBevel); break;
+	}
+	if (currentState.lineStyle.getDashCount () > 0)
+	{
+		CGFloat* dashLengths = new CGFloat (currentState.lineStyle.getDashCount ());
+		for (long i = 0; i < currentState.lineStyle.getDashCount (); i++)
+		{
+			dashLengths[i] = currentState.frameWidth * currentState.lineStyle.getDashLengths ()[i];
+		}
+		CGContextSetLineDash (context, currentState.lineStyle.getDashPhase (), dashLengths, currentState.lineStyle.getDashCount ());
+		delete [] dashLengths;
 	}
 }
 

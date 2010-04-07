@@ -848,6 +848,7 @@ void CScrollbar::drawBackground (CDrawContext* pContext)
 		pContext->setLineWidth (1);
 		pContext->setFillColor (backgroundColor);
 		pContext->setFrameColor (frameColor);
+		pContext->setLineStyle (kLineSolid);
 		pContext->drawRect (r, kDrawFilledAndStroked);
 	}
 }

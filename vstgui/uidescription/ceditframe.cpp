@@ -646,7 +646,8 @@ public:
 		CRect selectionSize (currentRect);
 
 		pContext->setFrameColor (uidCrossLinesBackground);
-		pContext->setLineWidth (1);
+		pContext->setLineWidth (3);
+		pContext->setLineStyle (kLineSolid);
 		pContext->setDrawMode (kAliasing);
 		pContext->moveTo (CPoint (size.left, selectionSize.top+1));
 		pContext->lineTo (CPoint (size.right, selectionSize.top+1));
@@ -1823,6 +1824,7 @@ CBitmap* CEditFrame::createBitmapFromSelection (CSelection* selection)
 	CRect viewSize = selection->getBounds ();
 	
 	COffscreenContext* context = COffscreenContext::create (this, viewSize.getWidth (), viewSize.getHeight ());
+	context->beginDraw ();
 //	context->setGlobalAlpha (0.9f);
 
 	FOREACH_IN_SELECTION(selection, view)
@@ -1836,6 +1838,7 @@ CBitmap* CEditFrame::createBitmapFromSelection (CSelection* selection)
 
 	FOREACH_IN_SELECTION_END
 
+	context->endDraw ();
 	CBitmap* bitmap = context->getBitmap ();
 	bitmap->remember ();
 	context->forget ();

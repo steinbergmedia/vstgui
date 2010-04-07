@@ -58,6 +58,7 @@ public:
 
 	bool load (const CResourceDescription& desc);
 	const CPoint& getSize () const { return size; }
+	IPlatformBitmapPixelAccess* lockPixels () { return 0; }
 
 	virtual IWICBitmapSource* getSource ();
 //-----------------------------------------------------------------------------
@@ -74,9 +75,11 @@ class D2DOffscreenBitmap : public D2DBitmap
 public:
 	D2DOffscreenBitmap (const CPoint& size);
 	bool load (const CResourceDescription& desc) { return false; }
+	IPlatformBitmapPixelAccess* lockPixels ();
 
 	IWICBitmapSource* getSource ();
 	IWICBitmap* getBitmap () const { return bitmap; }
+
 protected:
 	IWICBitmap* bitmap;
 };

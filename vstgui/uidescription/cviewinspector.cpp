@@ -1386,8 +1386,10 @@ void CViewInspector::addColorBitmapsToColorMenu (COptionMenu* menu, IUIDescripti
 			COffscreenContext* context = COffscreenContext::create (getFrame (), size, size);
 			if (context)
 			{
+				context->beginDraw ();
 				context->setFillColor (color);
 				context->drawRect (CRect (0, 0, size, size), kDrawFilled);
+				context->endDraw ();
 				item->setIcon (context->getBitmap ());
 				context->forget ();
 			}

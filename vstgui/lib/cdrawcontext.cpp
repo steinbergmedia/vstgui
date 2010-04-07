@@ -120,7 +120,7 @@ void CDrawContext::moveTo (const CPoint& point)
 }
 
 //-----------------------------------------------------------------------------
-void CDrawContext::setLineStyle (CLineStyle style)
+void CDrawContext::setLineStyle (const CLineStyle& style)
 {
 	currentState.lineStyle = style;
 }
@@ -159,19 +159,19 @@ void CDrawContext::resetClipRect ()
 }
 
 //-----------------------------------------------------------------------------
-void CDrawContext::setFillColor (const CColor color)
+void CDrawContext::setFillColor (const CColor& color)
 {
 	currentState.fillColor = color;
 }
 
 //-----------------------------------------------------------------------------
-void CDrawContext::setFrameColor (const CColor color)
+void CDrawContext::setFrameColor (const CColor& color)
 {
 	currentState.frameColor = color;
 }
 
 //-----------------------------------------------------------------------------
-void CDrawContext::setFontColor (const CColor color)
+void CDrawContext::setFontColor (const CColor& color)
 {
 	currentState.fontColor = color;
 }
@@ -268,5 +268,76 @@ void CDrawContext::drawString (const char* string, const CRect& _rect, const CHo
 	drawString (string, CPoint (rect.left, rect.bottom), antialias);
 	setClipRect (oldClip);
 }
+
+//-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
+CLineStyle::CLineStyle (LineCap _cap, LineJoin _join, CCoord _dashPhase, long _dashCount, const CCoord* _dashLengths)
+: cap (_cap)
+, join (_join)
+, dashPhase (_dashPhase)
+, dashCount (0)
+, dashLengths (0)
+{
+	if (_dashCount && _dashLengths)
+	{
+		dashCount = _dashCount;
+		dashLengths = new CCoord[dashCount];
+		for (long i = 0; i < dashCount; i++)
+			dashLengths[i] = _dashLengths[i];
+	}
+}
+
+//-----------------------------------------------------------------------------
+CLineStyle::~CLineStyle ()
+{
+	if (dashLengths)
+		delete [] dashLengths;
+}
+
+//-----------------------------------------------------------------------------
+bool CLineStyle::operator== (const CLineStyle& cls) const
+{
+	if (cap == cls.cap && join == cls.join && dashPhase == cls.dashPhase && dashCount == cls.dashCount)
+	{
+		if (dashCount)
+		{
+			for (long i = 0; i < dashCount; i++)
+			{
+				if (dashLengths[i] != cls.dashLengths[i])
+					return false;
+			}
+		}
+		return true;
+	}
+	return false;
+}
+
+//-----------------------------------------------------------------------------
+CLineStyle& CLineStyle::operator= (const CLineStyle& cls)
+{
+	if (dashLengths)
+	{
+		delete [] dashLengths;
+		dashLengths = 0;
+	}
+	cap = cls.cap;
+	join = cls.join;
+	dashPhase = cls.dashPhase;
+	dashCount = 0;
+	if (cls.dashCount && cls.dashLengths)
+	{
+		dashCount = cls.dashCount;
+		dashLengths = new CCoord[dashCount];
+		for (long i = 0; i < dashCount; i++)
+			dashLengths[i] = cls.dashLengths[i];
+	}
+	return *this;
+}
+
+//-----------------------------------------------------------------------------
+static const CCoord kDefaultOnOffDashLength[] = {-1, -1};
+const CLineStyle kLineSolid;
+const CLineStyle kLineOnOffDash (CLineStyle::kLineCapButt, CLineStyle::kLineJoinMiter, 0, 2, kDefaultOnOffDashLength);
 
 } // namespace

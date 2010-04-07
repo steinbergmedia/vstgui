@@ -52,6 +52,7 @@ public:
 	
 	bool load (const CResourceDescription& desc);
 	const CPoint& getSize () const { return size; }
+	IPlatformBitmapPixelAccess* lockPixels () { return 0; }
 
 	bool loadFromImageSource (CGImageSourceRef source);
 	void loadImage ();
@@ -72,6 +73,7 @@ public:
 	~CGOffscreenBitmap ();
 	
 	bool load (const CResourceDescription& desc) { return false; }
+	IPlatformBitmapPixelAccess* lockPixels ();
 
 	CGImageRef getCGImage ();
 	CGContextRef createCGContext ();

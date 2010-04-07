@@ -38,7 +38,6 @@
 #include "ccontrol.h"
 
 namespace VSTGUI {
-class COffscreenContext;
 
 //-----------------------------------------------------------------------------
 // CVuMeter Declaration
@@ -68,9 +67,6 @@ public:
 	
 	void setStyle (long newStyle) { style = newStyle; invalid (); }
 	long getStyle () const { return style; }
-
-	void setUseOffscreen (bool val = true);
-	bool getUseOffscreen () const { return bUseOffscreen; }
 	//@}
 
 
@@ -86,12 +82,10 @@ protected:
 	~CVuMeter ();	
 	CBitmap* onBitmap;
 	CBitmap* offBitmap;
-	COffscreenContext* pOScreen;
 	
 	long     nbLed;
 	long     style;
 	float    decreaseValue;
-	bool	 bUseOffscreen;
 
 	CRect    rectOn;
 	CRect    rectOff;

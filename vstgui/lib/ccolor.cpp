@@ -123,16 +123,25 @@ void CColor::toHSV (double& hue, double& saturation, double& value)
 //-----------------------------------------------------------------------------
 void CColor::fromHSV (double hue, double saturation, double value)
 {
-	if (value == 0)
+	if (value <= 0.)
 	{
-		red = green = blue = 0;
+		red = green = blue = 0.;
 		return;
 	}
-	if (saturation == 0)
+	else if (value > 1.)
+		value = 1.;
+	if (saturation <= 0.)
 	{
 		red = green = blue = (unsigned char) (value * 255.);
 		return;
 	}
+	else if (saturation > 1.)
+		saturation = 1.;
+	while (hue > 360.)
+		hue -= 360.;
+	while (hue < 0.)
+		hue += 360.;
+
 	const double hf = hue / 60.0;
 	const int    i  = (int) floor ( hf );
 	const double f  = hf - i;

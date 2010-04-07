@@ -9,6 +9,7 @@
 
 #include "graphicstest.h"
 #include "vstgui/lib/animation/animations.h"
+#include "bitmapsaturator.h"
 
 using namespace Steinberg;
 using namespace Steinberg::Vst;
@@ -33,19 +34,38 @@ public:
 
 	// IAnimationTarget
 	void animationStart (CView* view, const char* name);
-	void animationTick (CView* view, const char* name, float time);
+	void animationTick (CView* view, const char* name, float pos);
 	void animationFinished (CView* view, const char* name, bool wasCanceled);
 protected:
 	void buildStarPath ();
 	void buildBezierPath ();
 
+	CBitmap* bitmap2;
 	CGraphicsPath* starPath;
 	CGraphicsPath* bezierPath;
-	CGraphicsPath* combinedPath;
 	CGradient* gradient;
 	double pathRotation;
 	bool fillGradient;
 	bool strokePath;
+};
+
+//------------------------------------------------------------------------
+class FadeViewContainer : public CViewContainer
+{
+public:
+	FadeViewContainer () : CViewContainer (CRect (0, 0, 0, 0)) { setAlphaValue (0.3f); }
+	
+	CMouseEventResult onMouseEntered (CPoint &where, const long& buttons)
+	{
+		addAnimation ("AlphaAnimation", new Animation::AlphaValueAnimation (1.f), new Animation::LinearTimingFunction (100));
+		return kMouseEventHandled;
+	}
+
+	CMouseEventResult onMouseExited (CPoint &where, const long& buttons)
+	{
+		addAnimation ("AlphaAnimation", new Animation::AlphaValueAnimation (0.3f), new Animation::LinearTimingFunction (100));
+		return kMouseEventHandled;
+	}
 };
 
 //------------------------------------------------------------------------
@@ -98,6 +118,10 @@ CView* GraphicsTestController::createCustomView (const char* name, const UIAttri
 	{
 		return new GraphicsView;
 	}
+	else if (strcmp (name, "FadeViewContainer") == 0)
+	{
+		return new FadeViewContainer;
+	}
 	return 0;
 }
 
@@ -143,11 +167,11 @@ void GraphicsViewController::valueChanged (CControl* pControl)
 			if (pControl->getValue () > 0)
 			{
 				graphicsView->remember (); // the animator will call a forget on it
-				graphicsView->getFrame ()->getAnimator ()->addAnimation (graphicsView, "Rotation", graphicsView, new RepeatTimingFunction (new LinearTimingFunction (4000), -1, false));
+				graphicsView->addAnimation ("Rotation", graphicsView, new RepeatTimingFunction (new LinearTimingFunction (4000), -1, false));
 			}
 			else
 			{
-				graphicsView->getFrame ()->getAnimator ()->removeAnimation (graphicsView, "Rotation");
+				graphicsView->removeAnimation ("Rotation");
 			}
 			break;
 		}
@@ -171,11 +195,11 @@ GraphicsView::GraphicsView ()
 : CView (CRect (0, 0, 0, 0))
 , starPath (0)
 , bezierPath (0)
-, combinedPath (0)
 , gradient (0)
 , pathRotation (0)
 , fillGradient (false)
 , strokePath (false)
+, bitmap2 (0)
 {
 }
 
@@ -183,20 +207,28 @@ GraphicsView::GraphicsView ()
 void GraphicsView::draw (CDrawContext *pContext)
 {
 	CView::draw (pContext);
-	CGraphicsPath* drawPath = combinedPath;
+	CGraphicsPath* drawPath = CGraphicsPath::create (getFrame ());
 	if (drawPath)
 	{
+		drawPath->addPath (*bezierPath);
+		CGraphicsTransform t;
+		t.rotate (90.-pathRotation*2.);
+		t.scale (1.3, 1.3);
+		drawPath->addPath (*starPath, &t);
+
 		pContext->setDrawMode (kAntialias);
-		pContext->setLineWidth (4.);
+		pContext->setLineWidth (getWidth () / 100.);
 		pContext->setFrameColor (kRedCColor);
 		pContext->setFillColor (kBlueCColor);
-		pContext->setLineStyle (kLineOnOffDash);
-		CGraphicsTransform t;
-		t.translate (size.left + getWidth ()/2., size.top + getHeight ()/2.);
-		t.scale (getWidth ()/1.5, getHeight ()/1.5);
-		t.rotate (pathRotation);
+		double lengths[] = {1, 3, 4, 2};
+		CLineStyle lineStyle (CLineStyle::kLineCapSquare, CLineStyle::kLineJoinBevel, 0, 4, lengths);
+		pContext->setLineStyle (lineStyle);
+		CGraphicsTransform t2;
+		t2.translate (size.left + getWidth ()/2., size.top + getHeight ()/2.);
+		t2.scale (getWidth ()/1.5, getHeight ()/1.5);
+		t2.rotate (pathRotation);
 		if (strokePath)
-			drawPath->draw (pContext, CGraphicsPath::kStroked, &t);
+			drawPath->draw (pContext, CGraphicsPath::kStroked, &t2);
 		if (fillGradient)
 		{
 			if (gradient == 0)
@@ -207,10 +239,13 @@ void GraphicsView::draw (CDrawContext *pContext)
 				gradient = drawPath->createGradient (0.0, 0.7, c1, c2);
 			}
 			if (gradient)
-				drawPath->fillLinearGradient (pContext, *gradient, size.getTopLeft (), size.getBottomRight (), false, &t);
+				drawPath->fillLinearGradient (pContext, *gradient, size.getTopLeft (), size.getBottomRight (), false, &t2);
 		}
 		else
-			drawPath->draw (pContext, CGraphicsPath::kFilled, &t);
+		{
+			drawPath->draw (pContext, CGraphicsPath::kFilled, &t2);
+		}
+		drawPath->forget ();
 	}
 }
 
@@ -230,7 +265,7 @@ void GraphicsView::buildStarPath ()
 		starPath->addLine (starPath->getCurrentPosition (), CPoint (-0.3, 0.45));
 		starPath->addLine (starPath->getCurrentPosition (), CPoint (-0.1, 0.1));
 		starPath->addLine (starPath->getCurrentPosition (), CPoint (-0.4, -0.1));
-		starPath->closeSubpath ();
+		//starPath->closeSubpath ();
 	}
 }
 
@@ -254,11 +289,16 @@ void GraphicsView::animationStart (CView* view, const char* name)
 }
 
 //------------------------------------------------------------------------
-void GraphicsView::animationTick (CView* view, const char* name, float time)
+void GraphicsView::animationTick (CView* view, const char* name, float pos)
 {
 	if (strcmp (name, "Rotation") == 0 || strcmp (name, "RotateBack") == 0)
 	{
-		setRotation (360.*time);
+		setRotation (360.*pos);
+	}
+	else if (strcmp (name, "Saturation") == 0)
+	{
+		if (Bitmap::hueSaturateValue (pBackground, 20., 0.01, 0.005))
+			invalid ();
 	}
 }
 
@@ -273,13 +313,13 @@ void GraphicsView::animationFinished (CView* view, const char* name, bool wasCan
 			{
 				remember ();
 				InterpolationTimingFunction* tf = new InterpolationTimingFunction (100, pathRotation/360., 0);
-				getFrame ()->getAnimator ()->addAnimation (this, "RotateBack", this, tf);
+				addAnimation ("RotateBack", this, tf);
 			}
 			else if (pathRotation >= 180.)
 			{
 				remember ();
 				InterpolationTimingFunction* tf = new InterpolationTimingFunction (100, pathRotation/360., 1);
-				getFrame ()->getAnimator ()->addAnimation (this, "RotateBack", this, tf);
+				addAnimation ("RotateBack", this, tf);
 			}
 		}
 	}
@@ -293,11 +333,25 @@ bool GraphicsView::attached (CView* parent)
 	{
 		buildStarPath ();
 		buildBezierPath ();
-		combinedPath = CGraphicsPath::create (getFrame ());
-		combinedPath->addPath (*bezierPath);
-		CGraphicsTransform t;
-		t.rotate (90);
-		combinedPath->addPath (*starPath, &t);
+		
+		if (pBackground && bitmap2 == 0)
+		{
+			COffscreenContext* context = COffscreenContext::create (getFrame (), pBackground->getWidth (), pBackground->getHeight ());
+			if (context)
+			{
+				context->beginDraw ();
+				pBackground->draw (context, CRect (0, 0, pBackground->getWidth (), pBackground->getHeight ()));
+				context->endDraw ();
+				bitmap2 = context->getBitmap ();
+				if (bitmap2)
+				{
+					pBackground->setPlatformBitmap (bitmap2->getPlatformBitmap ());
+				}
+				context->forget ();
+			}
+		}
+		remember ();
+		addAnimation ("Saturation", this, new LinearTimingFunction (15000));
 	}
 	return result;
 }
@@ -314,11 +368,6 @@ bool GraphicsView::removed (CView* parent)
 	{
 		bezierPath->forget ();
 		bezierPath = 0;
-	}
-	if (combinedPath)
-	{
-		combinedPath->forget ();
-		combinedPath = 0;
 	}
 	if (gradient)
 	{

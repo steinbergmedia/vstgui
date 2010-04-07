@@ -36,6 +36,7 @@
 #include "cdrawcontext.h"
 #include "cbitmap.h"
 #include "cframe.h"
+#include "animation/animator.h"
 #if DEBUG
 #include <list>
 #include <typeinfo>
@@ -621,6 +622,33 @@ bool CView::removeAttribute (const CViewAttributeID id)
 		}
 	}
 	return false;
+}
+
+//-----------------------------------------------------------------------------
+void CView::addAnimation (const char* name, Animation::IAnimationTarget* target, Animation::ITimingFunction* timingFunction)
+{
+	if (getFrame ())
+	{
+		getFrame ()->getAnimator ()->addAnimation (this, name, target, timingFunction);
+	}
+}
+
+//-----------------------------------------------------------------------------
+void CView::removeAnimation (const char* name)
+{
+	if (getFrame ())
+	{
+		getFrame ()->getAnimator ()->removeAnimation (this, name);
+	}
+}
+
+//-----------------------------------------------------------------------------
+void CView::removeAllAnimations ()
+{
+	if (getFrame ())
+	{
+		getFrame ()->getAnimator ()->removeAnimations (this);
+	}
 }
 
 #if DEBUG
