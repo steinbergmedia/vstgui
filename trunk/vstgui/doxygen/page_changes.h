@@ -23,6 +23,7 @@ The main focus while developing this version was on compatibility with VST SDK 3
 And there is stuff currently not implemented:
 - on Windows when Direct2D is used, all arc drawing is not yet implemented
 - on Windows when Direct2D is used, the graphics path object can not draw a string
+- on Windows when Direct2D is used, menu item icons are not yet implemented.
 - on Windows XP the file selector is not implemented yet.
 - on Mac OS X, when target OS version is 10.4 some of the graphics path methods are not implemented and never will. You see a compiler warning which ones are not implemented.
 

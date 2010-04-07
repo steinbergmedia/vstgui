@@ -42,6 +42,7 @@
 namespace VSTGUI {
 class CResourceDescription;
 class IBitmapReaderCreator;
+class IPlatformBitmapPixelAccess;
 
 //-----------------------------------------------------------------------------
 class IPlatformBitmap : public CBaseObject
@@ -52,7 +53,25 @@ public:
 	virtual bool load (const CResourceDescription& desc) = 0;
 	virtual const CPoint& getSize () const = 0;
 
+	virtual IPlatformBitmapPixelAccess* lockPixels () = 0;	// you need to forget the result after use. this is only supported for Bitmaps that are initialized with a size not a file
+
 	static IBitmapReaderCreator* gCustomBitmapReaderCreator; // overrides default platform specific bitmap loading, see below
+};
+
+//------------------------------------------------------------------------------------
+class IPlatformBitmapPixelAccess : public CBaseObject
+{
+public:
+	enum PixelFormat {
+		kARGB,
+		kRGBA,
+		kABGR,
+		kBGRA
+	};
+	
+	virtual unsigned char* getAddress () = 0;
+	virtual long getBytesPerRow () = 0;
+	virtual PixelFormat getPixelFormat () = 0;
 };
 
 //------------------------------------------------------------------------------------

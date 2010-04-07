@@ -647,6 +647,7 @@ void CDataBrowserView::drawRect (CDrawContext* context, const CRect& updateRect)
 		{
 			context->setLineWidth (lineWidth);
 			context->setFrameColor (lineColor);
+			context->setLineStyle (kLineSolid);
 			context->moveTo (CPoint (r.left + lineWidth/2, size.top));
 			context->lineTo (CPoint (r.left + lineWidth/2, size.bottom));
 			r.offset (lineWidth, 0);
@@ -656,6 +657,7 @@ void CDataBrowserView::drawRect (CDrawContext* context, const CRect& updateRect)
 	if (style & CDataBrowser::kDrawRowLines)
 	{
 		context->setLineWidth (lineWidth);
+		context->setLineStyle (kLineSolid);
 		context->setFrameColor (lineColor);
 		CRect rr (size.left, size.top, size.right, size.top + rowHeight);
 		for (long row = 0; row < numRows; row++)

@@ -402,7 +402,7 @@ static void VSTGUI_NSView_mouseEntered (id self, SEL _cmd, NSEvent* theEvent)
 	IPlatformFrameCallback* _vstguiframe = getFrame (self);
 	if (!_vstguiframe)
 		return;
-	long buttons = eventButton (theEvent);
+	long buttons = 0; //eventButton (theEvent);
 	unsigned int modifiers = [theEvent modifierFlags];
 	NSPoint nsPoint;
 	nsPoint = [NSEvent mouseLocation];
@@ -427,7 +427,7 @@ static void VSTGUI_NSView_mouseExited (id self, SEL _cmd, NSEvent* theEvent)
 	IPlatformFrameCallback* _vstguiframe = getFrame (self);
 	if (!_vstguiframe)
 		return;
-	long buttons = eventButton (theEvent);
+	long buttons = 0; //eventButton (theEvent);
 	unsigned int modifiers = [theEvent modifierFlags];
 	NSPoint nsPoint;
 	nsPoint = [NSEvent mouseLocation];
@@ -944,7 +944,7 @@ long NSViewFrame::doDrag (CDropSource* source, const CPoint& offset, CBitmap* dr
 		CDropSource::Type type = source->getEntryType (0);
 		switch (type)
 		{
-			case CDropSource::kFile:
+			case CDropSource::kFilePath:
 			{
 				NSMutableArray* files = [[[NSMutableArray alloc] init] autorelease];
 				// we allow more than one file
@@ -952,7 +952,7 @@ long NSViewFrame::doDrag (CDropSource* source, const CPoint& offset, CBitmap* dr
 				{
 					const void* buffer = 0;
 					long bufferSize = source->getEntry (i, buffer, type);
-					if (type == CDropSource::kFile && bufferSize > 0 && ((const char*)buffer)[bufferSize-1] == 0)
+					if (type == CDropSource::kFilePath && bufferSize > 0 && ((const char*)buffer)[bufferSize-1] == 0)
 					{
 						[files addObject:[NSString stringWithCString:(const char*)buffer encoding:NSUTF8StringEncoding]];
 					}

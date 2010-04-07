@@ -746,7 +746,7 @@ long HIViewFrame::doDrag (CDropSource* source, const CPoint& offset, CBitmap* dr
 			{
 				switch (type)
 				{
-					case CDropSource::kFile:
+					case CDropSource::kFilePath:
 					{
 						CFURLRef cfUrl = CFURLCreateFromFileSystemRepresentation (0, (const UInt8*)buffer, bufferSize, false);
 						if (cfUrl)

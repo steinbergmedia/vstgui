@@ -1,19 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <vstgui-ui-description version="1">
-	<template autosize="left right top bottom " background-color="black" class="CViewContainer" maxSize="480, 280" minSize="240, 140" name="view" origin="0, 0" size="480, 280" transparent="false">
-		<view autosize="left right top bottom " background-color="white" class="CViewContainer" origin="10, 10" size="460, 260" sub-controller="GraphicsViewController" transparent="false">
-			<view autosize="left right top bottom " bitmap="FrameBackground" class="CView" custom-view-name="GraphicsView" origin="10, 10" size="340, 240" transparent="false"/>
-			<view autosize="right top " autosize-to-fit="false" background-offset="0, 0" boxfill-color="white" boxframe-color="black" checkmark-color="#ff0000ff" class="CCheckBox" control-tag="Rotate" default-value="0.5" draw-crossbox="false" font-color="black" max-value="1" min-value="0" origin="360, 10" size="100, 20" title="Rotate" transparent="true" wheel-inc-value="0.1"/>
-			<view autosize="right top " autosize-to-fit="false" background-offset="0, 0" boxfill-color="white" boxframe-color="black" checkmark-color="#ff0000ff" class="CCheckBox" control-tag="FillGradient" default-value="0.5" draw-crossbox="false" font-color="black" max-value="1" min-value="0" origin="360, 30" size="100, 20" title="Fill Gradient" transparent="true" wheel-inc-value="0.1"/>
-			<view autosize="right top " autosize-to-fit="false" background-offset="0, 0" boxfill-color="white" boxframe-color="black" checkmark-color="#ff0000ff" class="CCheckBox" control-tag="StrokePath" default-value="0.5" draw-crossbox="false" font-color="black" max-value="1" min-value="0" origin="360, 50" size="100, 20" title="Stroke Path" transparent="true" wheel-inc-value="0.1"/>
+	<template autosize="left right top bottom " background-color="black" class="CViewContainer" maxSize="10000, 10000" minSize="240, 160" name="view" origin="0, 0" size="469, 350" transparent="false">
+		<view autosize="left right top bottom " background-color="white" class="CViewContainer" origin="10, 10" size="449, 330" sub-controller="GraphicsViewController" transparent="false">
+			<view autosize="left right top bottom " bitmap="FrameBackground" class="CView" custom-view-name="GraphicsView" origin="10, 10" size="429, 310" transparent="false"/>
+			<view autosize="right top " background-color="groupframe" class="CViewContainer" custom-view-name="FadeViewContainer" origin="309, 40" size="120, 80" transparent="false">
+				<view autosize="right top " autosize-to-fit="false" background-offset="0, 0" boxfill-color="white" boxframe-color="black" checkmark-color="#ff0000ff" class="CCheckBox" control-tag="StrokePath" default-value="0.5" draw-crossbox="false" font-color="black" max-value="1" min-value="0" origin="10, 50" size="100, 20" title="Stroke Path" transparent="true" wheel-inc-value="0.1"/>
+				<view autosize="right top " autosize-to-fit="false" background-offset="0, 0" boxfill-color="white" boxframe-color="black" checkmark-color="#ff0000ff" class="CCheckBox" control-tag="FillGradient" default-value="0.5" draw-crossbox="false" font-color="black" max-value="1" min-value="0" origin="10, 30" size="100, 20" title="Fill Gradient" transparent="true" wheel-inc-value="0.1"/>
+				<view autosize="right top " autosize-to-fit="false" background-offset="0, 0" boxfill-color="white" boxframe-color="black" checkmark-color="#ff0000ff" class="CCheckBox" control-tag="Rotate" default-value="0.5" draw-crossbox="false" font-color="black" max-value="1" min-value="0" origin="10, 10" size="100, 20" title="Rotate" transparent="true" wheel-inc-value="0.1"/>
+			</view>
 		</view>
 	</template>
 	<colors>
 		<color name="black" rgba="#000000ff"/>
 		<color name="white" rgba="#ffffffff"/>
+		<color name="groupframe" rgba="#ffffff76"/>
 	</colors>
 	<custom>
-		<attributes name="CViewInspector" windowSize="80, 232, 480, 695"/>
+		<attributes name="CViewInspector" windowSize="48, 240, 448, 703"/>
 		<attributes gridsize="10" name="CEditFrame" uidescPath="/Volumes/DATA/subversion/trunk/vstgui_head/vstgui/tests/uidescription vst3/resource/GraphicsTest.uidesc"/>
 		<attributes frame-enable-focus-drawing="false" frame-focus-width="2" name="VST3Editor"/>
 	</custom>

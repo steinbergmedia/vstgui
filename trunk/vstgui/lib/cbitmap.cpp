@@ -135,6 +135,16 @@ CCoord CBitmap::getHeight () const
 }
 
 //-----------------------------------------------------------------------------
+void CBitmap::setPlatformBitmap (IPlatformBitmap* bitmap)
+{
+	if (platformBitmap)
+		platformBitmap->forget ();
+	platformBitmap = bitmap;
+	if (platformBitmap)
+		platformBitmap->remember ();
+}
+
+//-----------------------------------------------------------------------------
 // CNinePartTiledBitmap Implementation
 //-----------------------------------------------------------------------------
 /*! @class CNinePartTiledBitmap
@@ -167,6 +177,13 @@ A nine-part tiled bitmap is tiled in nine parts which are drawing according to i
 //-----------------------------------------------------------------------------
 CNinePartTiledBitmap::CNinePartTiledBitmap (const CResourceDescription& desc, const PartOffsets& offsets)
 : CBitmap (desc)
+, offsets (offsets)
+{
+}
+
+//-----------------------------------------------------------------------------
+CNinePartTiledBitmap::CNinePartTiledBitmap (IPlatformBitmap* platformBitmap, const PartOffsets& offsets)
+: CBitmap (platformBitmap)
 , offsets (offsets)
 {
 }

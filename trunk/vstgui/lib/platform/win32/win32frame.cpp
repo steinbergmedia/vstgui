@@ -576,7 +576,6 @@ CGraphicsPath* Win32Frame::createGraphicsPath ()
 //------------------------------------------------------------------------------------
 long Win32Frame::doDrag (CDropSource* source, const CPoint& offset, CBitmap* dragBitmap)
 {
-	// TODO: implement doDrag for Win32
 	long result = 0;
 	Win32DataObject* dataObject = new Win32DataObject (source);
 	Win32DropSource* dropSource = new Win32DropSource;
@@ -844,6 +843,12 @@ LONG_PTR WINAPI Win32Frame::WindowProc (HWND hwnd, UINT message, WPARAM wParam, 
 				pFrame->platformOnMouseUp (where, buttons);
 				ReleaseCapture ();
 				return 0;
+			}
+			case WM_NCACTIVATE:
+			{
+				// TODO: check correctness and side effects
+				pFrame->platformOnActivate (wParam == TRUE ? true : false);
+				break;
 			}
 			case WM_DESTROY:
 			{

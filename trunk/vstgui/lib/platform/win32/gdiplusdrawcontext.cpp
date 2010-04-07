@@ -233,7 +233,7 @@ void GdiplusDrawContext::drawEllipse (const CRect &_rect, const CDrawStyle drawS
 }
 
 //-----------------------------------------------------------------------------
-void GdiplusDrawContext::drawPoint (const CPoint &point, CColor color)
+void GdiplusDrawContext::drawPoint (const CPoint &point, const CColor& color)
 {
 	saveGlobalState ();
 	setLineWidth (1);
@@ -353,12 +353,13 @@ void GdiplusDrawContext::clearRect (const CRect& rect)
 }
 
 //-----------------------------------------------------------------------------
-void GdiplusDrawContext::setLineStyle (CLineStyle style)
+void GdiplusDrawContext::setLineStyle (const CLineStyle& style)
 {
 	if (currentState.lineStyle == style)
 		return;
 	if (pPen)
 	{
+		#if 0 // TODO: Implementation
 		switch (style) 
 		{
 			case kLineOnOffDash: 
@@ -368,6 +369,7 @@ void GdiplusDrawContext::setLineStyle (CLineStyle style)
 				pPen->SetDashStyle (Gdiplus::DashStyleSolid);
 				break;
 		}
+		#endif
 	}
 	COffscreenContext::setLineStyle (style);
 }
@@ -414,7 +416,7 @@ void GdiplusDrawContext::resetClipRect ()
 }
 
 //-----------------------------------------------------------------------------
-void GdiplusDrawContext::setFillColor (const CColor color)
+void GdiplusDrawContext::setFillColor (const CColor& color)
 {
 	if (currentState.fillColor == color)
 		return;
@@ -424,7 +426,7 @@ void GdiplusDrawContext::setFillColor (const CColor color)
 }
 
 //-----------------------------------------------------------------------------
-void GdiplusDrawContext::setFrameColor (const CColor color)
+void GdiplusDrawContext::setFrameColor (const CColor& color)
 {
 	if (currentState.frameColor == color)
 		return;
@@ -434,7 +436,7 @@ void GdiplusDrawContext::setFrameColor (const CColor color)
 }
 
 //-----------------------------------------------------------------------------
-void GdiplusDrawContext::setFontColor (const CColor color)
+void GdiplusDrawContext::setFontColor (const CColor& color)
 {
 	if (currentState.fontColor == color)
 		return;

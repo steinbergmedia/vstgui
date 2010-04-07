@@ -55,7 +55,7 @@ static const CColor uidHilightColor (255, 255, 255, 150);
 static const CColor uidSelectionColor (255, 0, 0, 255);
 static const CColor uidSelectionHandleColor (255, 0, 0, 150);
 
-static const CColor uidCrossLinesBackground (255, 255, 255, 200);
+static const CColor uidCrossLinesBackground (255, 255, 255, 100);
 static const CColor uidCrossLinesForeground (0, 0, 0, 255);
 
 static const CColor uidDataBrowserLineColor (255, 255, 255, 30);

@@ -154,12 +154,15 @@ void QuartzGraphicsPath::draw (CDrawContext* context, PathDrawMode mode, CGraphi
 		switch (mode)
 		{
 			case kFilledEvenOdd: cgMode = kCGPathEOFill; break;
-			case kStroked: cgMode = kCGPathStroke; break;
+			case kStroked: 
+			{
+				cgMode = kCGPathStroke; 
+				CGDrawContext* cgDrawContext = dynamic_cast<CGDrawContext*> (context);
+				if (cgDrawContext)
+					cgDrawContext->applyLineStyle (cgContext);
+				break;
+			}
 		}
-
-		CGDrawContext* cgDrawContext = dynamic_cast<CGDrawContext*> (context);
-		if (cgDrawContext)
-			cgDrawContext->applyLineDash ();
 
 		CGContextDrawPath (cgContext, cgMode);
 		

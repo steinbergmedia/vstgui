@@ -78,8 +78,6 @@ CViewContainer::CViewContainer (const CRect &rect, CFrame* pParent, CBitmap* pBa
 : CView (rect)
 , pFirstView (0)
 , pLastView (0)
-, pOffscreenContext (0)
-, bDrawInOffscreen (false)
 , currentDragView (0)
 , mouseDownView (0)
 {
@@ -94,10 +92,8 @@ CViewContainer::CViewContainer (const CViewContainer& v)
 : CView (v)
 , pFirstView (0)
 , pLastView (0)
-, pOffscreenContext (0)
 , backgroundColor (v.backgroundColor)
 , backgroundOffset (v.backgroundOffset)
-, bDrawInOffscreen (v.bDrawInOffscreen)
 , currentDragView (0)
 , mouseDownView (0)
 {
@@ -112,10 +108,6 @@ CViewContainer::~CViewContainer ()
 {
 	// remove all views
 	removeAll (true);
-
-	 if (pOffscreenContext)
-		pOffscreenContext->forget ();
-	pOffscreenContext = 0;
 }
 
 //-----------------------------------------------------------------------------
@@ -202,17 +194,6 @@ void CViewContainer::setViewSize (CRect &rect, bool invalid)
 	}
 	
 	parentSizeChanged ();
-
-	if (pOffscreenContext && bDrawInOffscreen)
-	{
-		pOffscreenContext->forget ();
-		pOffscreenContext = COffscreenContext::create (getFrame (), size.getWidth (), size.getHeight ());
-		if (pOffscreenContext)
-		{
-			pOffscreenContext->setFillColor (kBlackCColor);
-			pOffscreenContext->drawRect (CRect (0, 0, size.getWidth (), size.getHeight ()), kDrawFilled);
-		}
-	}
 }
 
 //-----------------------------------------------------------------------------
@@ -649,6 +630,7 @@ void CViewContainer::drawBackgroundRect (CDrawContext* pContext, CRect& _updateR
 		pContext->setLineWidth (1);
 		pContext->setFillColor (backgroundColor);
 		pContext->setFrameColor (backgroundColor);
+		pContext->setLineStyle (kLineSolid);
 		CRect r (size);
 		r.offset (-r.left, -r.top);
 		pContext->drawRect (r, kDrawFilledAndStroked);
@@ -670,8 +652,6 @@ void CViewContainer::drawBackToFront (CDrawContext* pContext, const CRect& updat
 	CRect oldClip;
 	pContext->getClipRect (oldClip);
 	CRect oldClip2 (oldClip);
-	if (bDrawInOffscreen && getFrame () != this)
-		oldClip.offset (-oldClip.left, -oldClip.top);
 	
 	CRect newClip (clientRect);
 	newClip.bound (oldClip);
@@ -709,23 +689,8 @@ void CViewContainer::drawRect (CDrawContext* pContext, const CRect& updateRect)
 	CDrawContext* pC;
 	CCoord save[4];
 
-	if (!pOffscreenContext && bDrawInOffscreen)
-	{
-		pOffscreenContext = COffscreenContext::create (getFrame (), size.getWidth (), size.getHeight ());
-		if (pOffscreenContext)
-		{
-			pOffscreenContext->setFillColor (kBlackCColor);
-			pOffscreenContext->drawRect (CRect (0, 0, size.getWidth (), size.getHeight ()), kDrawFilled);
-		}
-	}
-
-	if (bDrawInOffscreen)
-		pC = pOffscreenContext;
-	else
-	{
-		pC = pContext;
-		modifyDrawContext (save, pContext);
-	}
+	pC = pContext;
+	modifyDrawContext (save, pContext);
 
 	CRect _updateRect (updateRect);
 	_updateRect.bound (size);
@@ -736,8 +701,6 @@ void CViewContainer::drawRect (CDrawContext* pContext, const CRect& updateRect)
 	CRect oldClip;
 	pContext->getClipRect (oldClip);
 	CRect oldClip2 (oldClip);
-	if (bDrawInOffscreen && getFrame () != this)
-		oldClip.offset (-oldClip.left, -oldClip.top);
 	
 	CRect newClip (clientRect);
 	newClip.bound (oldClip);
@@ -824,11 +787,7 @@ void CViewContainer::drawRect (CDrawContext* pContext, const CRect& updateRect)
 		}
 	}
 	
-	// transfer offscreen
-	if (bDrawInOffscreen)
-		((COffscreenContext*)pC)->copyFrom (pContext, _updateRect, CPoint (clientRect.left, clientRect.top));
-	else
-		restoreDrawContext (pContext, save);
+	restoreDrawContext (pContext, save);
 
 	setDirty (false);
 }
@@ -1231,10 +1190,6 @@ CPoint& CViewContainer::localToFrame (CPoint& point) const
 //-----------------------------------------------------------------------------
 bool CViewContainer::removed (CView* parent)
 {
-	 if (pOffscreenContext)
-		pOffscreenContext->forget ();
-	pOffscreenContext = 0;
-
 	FOREACHSUBVIEW
 		pV->removed (this);
 	ENDFOREACHSUBVIEW
@@ -1247,34 +1202,11 @@ bool CViewContainer::attached (CView* parent)
 {
 	pParentFrame = parent->getFrame ();
 
-	// create offscreen bitmap
-	if (!pOffscreenContext && bDrawInOffscreen)
-	{
-		pOffscreenContext = COffscreenContext::create (getFrame (), size.getWidth (), size.getHeight ());
-		if (pOffscreenContext)
-		{
-			pOffscreenContext->setFillColor (kBlackCColor);
-			pOffscreenContext->drawRect (CRect (0, 0, size.getWidth (), size.getHeight ()), kDrawFilled);
-		}
-	}
-
 	FOREACHSUBVIEW
 		pV->attached (this);
 	ENDFOREACHSUBVIEW
 
 	return CView::attached (parent);
-}
-
-//-----------------------------------------------------------------------------
-void CViewContainer::useOffscreen (bool b)
-{
-	bDrawInOffscreen = b;
-	
-	if (!bDrawInOffscreen && pOffscreenContext)
-	{
-		pOffscreenContext->forget ();
-		pOffscreenContext = 0;
-	}
 }
 
 //-----------------------------------------------------------------------------
@@ -1302,7 +1234,6 @@ static long _debugDumpLevel = 0;
 //-----------------------------------------------------------------------------
 void CViewContainer::dumpInfo ()
 {
-	DebugPrint ("CViewContainer: Offscreen:%s ", bDrawInOffscreen ? "Yes" : "No");
 	CView::dumpInfo ();
 }
 
