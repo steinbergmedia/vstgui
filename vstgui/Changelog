@@ -1,3 +1,8 @@
+2010-04-
+
+	* removed COffscreenContext in CViewContainer & CVUMeter as it is not needed there anymore
+	* added IPlatformBitmapPixelAccess for those who needs to alter pixels of a bitmap directly
+
 2010-03-20 arne
 
 	* add documentation for the animation support

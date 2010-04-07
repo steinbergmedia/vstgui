@@ -172,6 +172,7 @@ void CKnob::drawHandle (CDrawContext *pContext)
 		where.offset (size.left - 1, size.top);
 		origin.offset (size.left - 1, size.top);
 		pContext->setFrameColor (colorShadowHandle);
+		pContext->setLineStyle (kLineSolid);
 		pContext->moveTo (where);
 		pContext->lineTo (origin);
 		

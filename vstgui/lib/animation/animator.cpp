@@ -91,14 +91,14 @@ public:
 	CMouseEventResult onMouseEntered (CPoint &where, const long& buttons)
 	{
 		// this adds an animation which takes 200 ms to make a linear alpha fade from the current value to 1
-		getFrame ()->getAnimator ()->addAnimation (this, "AlphaValueAnimation", new AlphaValueAnimation (1.f), new LinearTimingFunction (200));
+		addAnimation ("AlphaValueAnimation", new AlphaValueAnimation (1.f), new LinearTimingFunction (200));
 		return kMouseEventHandled;
 	}
 	
 	CMouseEventResult onMouseExited (CPoint &where, const long& buttons)
 	{
 		// this adds an animation which takes 200 ms to make a linear alpha fade from the current value to 0.5
-		getFrame ()->getAnimator ()->addAnimation (this, "AlphaValueAnimation", new AlphaValueAnimation (0.5f), new LinearTimingFunction (200));
+		addAnimation ("AlphaValueAnimation", new AlphaValueAnimation (0.5f), new LinearTimingFunction (200));
 		return kMouseEventHandled;
 	}
 
@@ -330,7 +330,12 @@ CMessageResult Animator::notify (CBaseObject* sender, const char* message)
 				a->startTime = currentTicks;
 			}
 			unsigned long time = currentTicks - a->startTime;
-			a->target->animationTick (a->view, a->name.c_str (), a->timingFunction->getPosition (time));
+			float pos = a->timingFunction->getPosition (time);
+			if (pos != a->lastPos)
+			{
+				a->target->animationTick (a->view, a->name.c_str (), pos);
+				a->lastPos = pos;
+			}
 			if (a->timingFunction->isDone (time))
 			{
 				a->target->animationFinished (a->view, a->name.c_str (), false);
@@ -363,6 +368,7 @@ Animator::Animation::Animation (CView* view, const std::string& name, IAnimation
 , target (at)
 , timingFunction (t)
 , startTime (0)
+, lastPos (-1)
 {
 	view->remember ();
 }

@@ -294,7 +294,12 @@ void D2DDrawContext::drawRect (const CRect &_rect, const CDrawStyle drawStyle)
 		}
 		if (drawStyle == kDrawStroked || drawStyle == kDrawFilledAndStroked)
 		{
+			rect.left++;
+			rect.bottom--;
+			if ((((int)currentState.frameWidth) % 2))
+				renderTarget->SetTransform (D2D1::Matrix3x2F::Translation (0.f, 0.5f));
 			renderTarget->DrawRectangle (makeD2DRect (rect), strokeBrush, (FLOAT)currentState.frameWidth, strokeStyle);
+			renderTarget->SetTransform (D2D1::Matrix3x2F::Identity ());
 		}
 	}
 }
@@ -351,7 +356,7 @@ void D2DDrawContext::drawEllipse (const CRect &_rect, const CDrawStyle drawStyle
 }
 
 //-----------------------------------------------------------------------------
-void D2DDrawContext::drawPoint (const CPoint &point, CColor color)
+void D2DDrawContext::drawPoint (const CPoint &point, const CColor& color)
 {
 	saveGlobalState ();
 	setLineWidth (1);
@@ -364,9 +369,9 @@ void D2DDrawContext::drawPoint (const CPoint &point, CColor color)
 }
 
 //-----------------------------------------------------------------------------
-void D2DDrawContext::setLineStyle (CLineStyle style)
+void D2DDrawContext::setLineStyle (const CLineStyle& style)
 {
-	if (currentState.lineStyle == style)
+	if (strokeStyle && currentState.lineStyle == style)
 		return;
 	if (strokeStyle)
 	{
@@ -374,15 +379,32 @@ void D2DDrawContext::setLineStyle (CLineStyle style)
 		strokeStyle = 0;
 	}
 	D2D1_STROKE_STYLE_PROPERTIES properties;
-	if (style != kLineSolid)
+	switch (style.getLineCap ())
 	{
-		properties.startCap = D2D1_CAP_STYLE_FLAT;
-		properties.endCap = D2D1_CAP_STYLE_FLAT;
-		properties.dashCap = D2D1_CAP_STYLE_SQUARE;
-		properties.lineJoin = D2D1_LINE_JOIN_MITER;
-		properties.miterLimit = 10.f;
-		properties.dashStyle = D2D1_DASH_STYLE_DOT;
-		properties.dashOffset = 0.f;
+		case CLineStyle::kLineCapButt: properties.startCap = properties.endCap = properties.dashCap = D2D1_CAP_STYLE_FLAT; break;
+		case CLineStyle::kLineCapRound: properties.startCap = properties.endCap = properties.dashCap = D2D1_CAP_STYLE_ROUND; break;
+		case CLineStyle::kLineCapSquare: properties.startCap = properties.endCap = properties.dashCap = D2D1_CAP_STYLE_SQUARE; break;
+	}
+	switch (style.getLineJoin ())
+	{
+		case CLineStyle::kLineJoinMiter: properties.lineJoin = D2D1_LINE_JOIN_MITER; break;
+		case CLineStyle::kLineJoinRound: properties.lineJoin = D2D1_LINE_JOIN_ROUND; break;
+		case CLineStyle::kLineJoinBevel: properties.lineJoin = D2D1_LINE_JOIN_BEVEL; break;
+	}
+	properties.dashOffset = (FLOAT)style.getDashPhase ();
+	properties.miterLimit = 10.f;
+	if (style.getDashCount ())
+	{
+		properties.dashStyle = D2D1_DASH_STYLE_CUSTOM;
+		FLOAT* lengths = new FLOAT[style.getDashCount ()];
+		for (long i = 0; i < style.getDashCount (); i++)
+			lengths[i] = (FLOAT)style.getDashLengths ()[i];
+		getD2DFactory ()->CreateStrokeStyle (properties, lengths, style.getDashCount (), &strokeStyle);
+		delete [] lengths;
+	}
+	else
+	{
+		properties.dashStyle = D2D1_DASH_STYLE_SOLID;
 		getD2DFactory ()->CreateStrokeStyle (properties, 0, 0, &strokeStyle);
 	}
 	COffscreenContext::setLineStyle (style);
@@ -393,6 +415,11 @@ void D2DDrawContext::setLineWidth (CCoord width)
 {
 	if (currentState.frameWidth == width)
 		return;
+	if (strokeStyle)
+	{
+		strokeStyle->Release ();
+		strokeStyle = 0;
+	}
 	COffscreenContext::setLineWidth (width);
 }
 
@@ -424,7 +451,7 @@ void D2DDrawContext::resetClipRect ()
 }
 
 //-----------------------------------------------------------------------------
-void D2DDrawContext::setFillColor (const CColor color)
+void D2DDrawContext::setFillColor (const CColor& color)
 {
 	if (currentState.fillColor == color)
 		return;
@@ -442,7 +469,7 @@ void D2DDrawContext::setFillColor (const CColor color)
 }
 
 //-----------------------------------------------------------------------------
-void D2DDrawContext::setFrameColor (const CColor color)
+void D2DDrawContext::setFrameColor (const CColor& color)
 {
 	if (currentState.frameColor == color)
 		return;
@@ -460,7 +487,7 @@ void D2DDrawContext::setFrameColor (const CColor color)
 }
 
 //-----------------------------------------------------------------------------
-void D2DDrawContext::setFontColor (const CColor color)
+void D2DDrawContext::setFontColor (const CColor& color)
 {
 	if (currentState.fontColor == color)
 		return;

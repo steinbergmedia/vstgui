@@ -49,6 +49,11 @@ class CBitmap;
 class CFrame;
 class CAttributeListEntry;
 
+namespace Animation {
+	class IAnimationTarget;
+	class ITimingFunction;
+}
+
 //----------------------------
 // @brief Buttons Type (+modifiers)
 //----------------------------
@@ -285,6 +290,15 @@ public:
 	CView  *getParentView () const { return pParentView; }										///< get parent view
 	CFrame *getFrame () const { return pParentFrame; }											///< get frame
 	virtual VSTGUIEditorInterface *getEditor () const;											///< get editor
+	//@}
+
+	//-----------------------------------------------------------------------------
+	/// @name Animation Methods
+	//-----------------------------------------------------------------------------
+	//@{
+	void addAnimation (const char* name, Animation::IAnimationTarget* target, Animation::ITimingFunction* timingFunction);
+	void removeAnimation (const char* name);
+	void removeAllAnimations ();
 	//@}
 	
 	#if DEBUG

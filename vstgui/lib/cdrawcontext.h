@@ -48,11 +48,44 @@ namespace VSTGUI {
 //-----------
 // @brief Line Style
 //-----------
-enum CLineStyle
+class CLineStyle
 {
-	kLineSolid = 0,
-	kLineOnOffDash
+public:
+	enum LineCap
+	{
+		kLineCapButt = 0,
+		kLineCapRound,
+		kLineCapSquare
+	};
+
+	enum LineJoin
+	{
+		kLineJoinMiter = 0,
+		kLineJoinRound,
+		kLineJoinBevel
+	};
+
+	CLineStyle (LineCap cap = kLineCapButt, LineJoin join = kLineJoinMiter, CCoord dashPhase = 0., long dashCount = 0, const CCoord* dashLengths = 0);
+	~CLineStyle ();
+
+	LineCap getLineCap () const { return cap; }
+	LineJoin getLineJoin () const { return join; }
+	CCoord getDashPhase () const { return dashPhase; }
+	long getDashCount () const { return dashCount; }
+	const CCoord* getDashLengths () const { return dashLengths; }
+
+	bool operator== (const CLineStyle& cls) const;
+	CLineStyle& operator= (const CLineStyle& cls);
+protected:
+	LineCap cap;
+	LineJoin join;
+	CCoord dashPhase;
+	long dashCount;
+	CCoord* dashLengths;
 };
+
+extern const CLineStyle kLineSolid;
+extern const CLineStyle kLineOnOffDash;
 
 //-----------
 // @brief Draw Mode
@@ -102,11 +135,11 @@ public:
 	virtual void lineTo (const CPoint &point) = 0;	///< draw a line from current position to point
 	void getLoc (CPoint &where) const { where = currentState.penLoc; }
 	virtual void drawLines (const CPoint* points, const long& numberOfLines) = 0;	///< draw multiple lines at once
-	virtual void drawPolygon (const CPoint *pPoints, long numberOfPoints, const CDrawStyle drawStyle = kDrawStroked) = 0; ///< draw a polygon
+	virtual void drawPolygon (const CPoint* pPoints, long numberOfPoints, const CDrawStyle drawStyle = kDrawStroked) = 0; ///< draw a polygon
 	virtual void drawRect (const CRect &rect, const CDrawStyle drawStyle = kDrawStroked) = 0;	///< draw a rect
 	virtual void drawArc (const CRect &rect, const float startAngle1, const float endAngle2, const CDrawStyle drawStyle = kDrawStroked) = 0;	///< draw an arc, angles are in degree
 	virtual void drawEllipse (const CRect &rect, const CDrawStyle drawStyle = kDrawStroked) = 0;	///< draw an ellipse
-	virtual void drawPoint (const CPoint &point, CColor color) = 0;	///< draw a point
+	virtual void drawPoint (const CPoint &point, const CColor& color) = 0;	///< draw a point
 	virtual void drawBitmap (CBitmap* bitmap, const CRect& dest, const CPoint& offset = CPoint (0, 0), float alpha = 1.f) = 0; ///< don't call directly, please use CBitmap::draw instead
 
 	virtual void clearRect (const CRect& rect) = 0;	///< clears the rect (makes r = 0, g = 0, b = 0, a = 0)
@@ -116,8 +149,8 @@ public:
 	/// @name Line Mode
 	//-----------------------------------------------------------------------------
 	//@{
-	virtual void setLineStyle (CLineStyle style);	///< set the current line style
-	CLineStyle getLineStyle () const { return currentState.lineStyle; }	///< get the current line style
+	virtual void setLineStyle (const CLineStyle& style);	///< set the current line style
+	const CLineStyle& getLineStyle () const { return currentState.lineStyle; }	///< get the current line style
 
 	virtual void setLineWidth (CCoord width);	///< set the current line width
 	CCoord getLineWidth () const { return currentState.frameWidth; }	///< get the current line width
@@ -144,9 +177,9 @@ public:
 	/// @name Color
 	//-----------------------------------------------------------------------------
 	//@{
-	virtual void setFillColor  (const CColor color);	///< set current fill color
+	virtual void setFillColor  (const CColor& color);	///< set current fill color
 	CColor getFillColor () const { return currentState.fillColor; }	///< get current fill color
-	virtual void setFrameColor (const CColor color);	///< set current stroke color
+	virtual void setFrameColor (const CColor& color);	///< set current stroke color
 	CColor getFrameColor () const { return currentState.frameColor; }///< get current stroke color
 	//@}
 
@@ -154,7 +187,7 @@ public:
 	/// @name Font
 	//-----------------------------------------------------------------------------
 	//@{
-	virtual void setFontColor (const CColor color);	///< set current font color
+	virtual void setFontColor (const CColor& color);	///< set current font color
 	CColor getFontColor () const { return currentState.fontColor; }	///< get current font color
 	virtual void setFont (const CFontRef font, const long& size = 0, const long& style = -1); ///< set current font
 	const CFontRef&  getFont () const { return currentState.font; }	///< get current font

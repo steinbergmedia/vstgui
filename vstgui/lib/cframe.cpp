@@ -437,12 +437,13 @@ CMouseEventResult CFrame::onMouseMoved (CPoint &where, const long& buttons)
 		result = CViewContainer::onMouseMoved (p, buttons);
 		if (result == kMouseEventNotHandled)
 		{
+			long buttons2 = (buttons & (kShift | kControl | kAlt | kApple));
 			std::list<CView*>::reverse_iterator it = pMouseViews.rbegin ();
 			while (it != pMouseViews.rend ())
 			{
 				p = where;
 				(*it)->frameToLocal (p);
-				result = (*it)->onMouseMoved (p, buttons);
+				result = (*it)->onMouseMoved (p, buttons2);
 				if (result == kMouseEventHandled)
 					break;
 				it++;
@@ -1112,7 +1113,8 @@ bool CFrame::platformOnKeyUp (VstKeyCode& keyCode)
 //-----------------------------------------------------------------------------
 void CFrame::platformOnActivate (bool state)
 {
-	onActivate (state);
+	if (pParentFrame)
+		onActivate (state);
 }
 
 } // namespace

@@ -111,6 +111,7 @@ protected:
 		IAnimationTarget* target;
 		ITimingFunction* timingFunction;
 		unsigned long startTime;
+		float lastPos;
 	};
 
 	void removeAnimation (Animation* a);

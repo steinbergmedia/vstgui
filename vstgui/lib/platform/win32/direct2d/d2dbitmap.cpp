@@ -160,6 +160,51 @@ IWICBitmapSource* D2DOffscreenBitmap::getSource ()
 }
 
 //-----------------------------------------------------------------------------
+class D2DOffscreenBitmapPixelAccess : public IPlatformBitmapPixelAccess
+{
+public:
+	D2DOffscreenBitmapPixelAccess (D2DOffscreenBitmap* bitmap)
+	: bitmap (bitmap)
+	, bLock (0)
+	, ptr (0)
+	, bytesPerRow (0)
+	{
+		bitmap->remember ();
+		IWICBitmap* b = bitmap->getBitmap ();
+		WICRect rcLock = { 0, 0, (INT)bitmap->getSize ().x, (INT)bitmap->getSize ().y };
+		if (SUCCEEDED (b->Lock (&rcLock, WICBitmapLockRead | WICBitmapLockWrite, &bLock)))
+		{
+			bLock->GetStride (&bytesPerRow);
+			UINT bufferSize;
+			bLock->GetDataPointer (&bufferSize, &ptr);
+		}
+	}
+	
+	~D2DOffscreenBitmapPixelAccess ()
+	{
+		if (bLock)
+			bLock->Release ();
+		D2DBitmapCache::instance ()->removeBitmap (bitmap);
+		bitmap->forget ();
+	}
+
+	unsigned char* getAddress () { return (unsigned char*)ptr; }
+	long getBytesPerRow () { return (long)bytesPerRow; }
+	PixelFormat getPixelFormat () { return kBGRA; }
+protected:
+	D2DOffscreenBitmap* bitmap;
+	IWICBitmapLock* bLock;
+	BYTE* ptr;
+	UINT bytesPerRow;
+};
+
+//-----------------------------------------------------------------------------
+IPlatformBitmapPixelAccess* D2DOffscreenBitmap::lockPixels ()
+{
+	return new D2DOffscreenBitmapPixelAccess (this);
+}
+
+//-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 ID2D1Bitmap* D2DBitmapCache::getBitmap (D2DBitmap* bitmap, ID2D1RenderTarget* renderTarget)
