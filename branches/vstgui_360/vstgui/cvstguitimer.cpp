@@ -98,6 +98,7 @@ bool CVSTGUITimer::stop ()
 		#if MAC
 		CFRunLoopRemoveTimer (CFRunLoopGetCurrent (), (CFRunLoopTimerRef)platformTimer, kCFRunLoopCommonModes);
 		CFRunLoopTimerInvalidate ((CFRunLoopTimerRef)platformTimer);
+		CFRelease ((CFRunLoopTimerRef)platformTimer);
 
 		#elif WINDOWS
 		KillTimer ((HWND)NULL, (UINT_PTR)platformTimer);

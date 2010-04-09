@@ -6048,7 +6048,7 @@ CMouseEventResult CViewContainer::onMouseDown (CPoint &where, const long& button
 		CView* pV = pSv->pView;
 		if (pV && pV->isVisible () && pV->getMouseEnabled () && pV->hitTest (where2, buttons))
 		{
-			if (pV->isTypeOf("CControl") && ((CControl*)pV)->getListener () && buttons & (kAlt | kShift | kControl | kApple))
+			if (pV->isTypeOf("CControl") && ((CControl*)pV)->getListener () && buttons & (kAlt | kShift | kControl | kApple | kRButton))
 			{
 				if (((CControl*)pV)->getListener ()->controlModifierClicked ((CControl*)pV, buttons) != 0)
 					return kMouseEventHandled;

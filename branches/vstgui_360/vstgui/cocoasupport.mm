@@ -542,6 +542,8 @@ static id VSTGUI_NSView_Init (id self, SEL _cmd, void* _frame, const void* _size
 		
 		NSTrackingArea* trackingArea = [[[NSTrackingArea alloc] initWithRect:[self frame] options:NSTrackingMouseEnteredAndExited|NSTrackingMouseMoved|NSTrackingActiveInActiveApp|NSTrackingInVisibleRect owner:self userInfo:nil] autorelease];
 		[self addTrackingArea: trackingArea];
+
+		[self setFocusRingType:NSFocusRingTypeNone];
 	}
 	return self;
 }

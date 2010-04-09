@@ -2111,7 +2111,7 @@ COptionMenuScheme::~COptionMenuScheme ()
 //------------------------------------------------------------------------
 void COptionMenuScheme::getItemSize (const char* text, CDrawContext* pContext, CPoint& size)
 {
-	if (!strcmp (text, kMenuSeparator)) // separator
+	if (!strcmp (text, "-")) // separator
 	{
 		#if MAC_CARBON
 		size.h = 6;
@@ -2152,7 +2152,7 @@ void COptionMenuScheme::drawItem (const char* text, long itemId, long state, CDr
 	
 	drawItemBack (pContext, rect, hilite);
 
-	if (!strcmp (text, kMenuSeparator))
+	if (!strcmp (text, "-"))
 	{
 		CCoord y = rect.top + rect.height () / 2;
 

@@ -1,7 +1,15 @@
+2010-04-08 arne
+
+	* make sure the Cocoa NSView set its focus ring type to none. Fixes some drawing performance issues.
+
 2010-03-21 arne
 
 	* fix a crashing bug when loading images with gdi+
 	* fix a drawing issues with HIViews which are not directly embedded into the content view of the window, but in another sub view
+
+2009-10-01 arne
+
+	* fix memory leak in CVSTGUITimer on Mac OS X
 
 2009-07-15 arne
 

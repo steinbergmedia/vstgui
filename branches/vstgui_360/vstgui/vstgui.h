@@ -86,9 +86,13 @@
  #define USING_NAMESPACE_VSTGUI
 #endif
 
+#ifndef VSTGUI_USES_UTF8
+#define VSTGUI_USES_UTF8 1
+#endif
+ 
 // VSTGUI Version
 #define VSTGUI_VERSION_MAJOR  3
-#define VSTGUI_VERSION_MINOR  5
+#define VSTGUI_VERSION_MINOR  6
 
 //----------------------------------------------------
 // Deprecation setting
