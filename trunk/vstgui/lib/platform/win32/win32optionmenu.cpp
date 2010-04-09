@@ -37,7 +37,7 @@
 #if WINDOWS
 
 #include "win32support.h"
-#include "gdiplusbitmap.h"
+#include "win32bitmapbase.h"
 #include "../../controls/coptionmenu.h"
 #include "../../cframe.h"
 
@@ -132,6 +132,12 @@ PlatformOptionMenuResult Win32OptionMenu::popup (COptionMenu* optionMenu)
 				}
 			}
 		}
+		std::list<HBITMAP>::iterator it = bitmaps.begin ();
+		while (it != bitmaps.end ())
+		{
+			DeleteObject (*it);
+			it++;
+		}
 		DestroyMenu (menu);
 	}
 	return result;
@@ -154,6 +160,11 @@ HMENU Win32OptionMenu::createMenu (COptionMenu* _menu, long& offsetIdx)
 		SetMenuInfo (menu, &mi);
 	}
 #endif
+
+	MENUINFO mi = {0};
+	mi.cbSize = sizeof (MENUINFO);
+	mi.dwStyle = MNS_CHECKORBMP;
+	SetMenuInfo (menu, &mi);
 
 	int flags = 0;
 	long idxSubmenu = 0;
@@ -225,17 +236,19 @@ HMENU Win32OptionMenu::createMenu (COptionMenu* _menu, long& offsetIdx)
 				IPlatformBitmap* platformBitmap = item->getIcon () ? item->getIcon ()->getPlatformBitmap () : 0;
 				if (platformBitmap)
 				{
-					GdiplusBitmap* gdpBitmap = dynamic_cast<GdiplusBitmap*> (platformBitmap);
-					if (gdpBitmap)
+					Win32BitmapBase* win32Bitmap = dynamic_cast<Win32BitmapBase*> (platformBitmap);
+					if (win32Bitmap)
 					{
 						MENUITEMINFO mInfo = {0};
 						mInfo.cbSize = sizeof (MENUITEMINFO);
 						mInfo.fMask = MIIM_BITMAP;
-						Gdiplus::Bitmap* bitmap = gdpBitmap->getBitmap ();
-						HBITMAP hBmp = NULL;
-						bitmap->GetHBITMAP (Gdiplus::Color (0, 0, 0, 0), &hBmp);
-						mInfo.hbmpItem = hBmp;
-						SetMenuItemInfo (menu, offset + inc, TRUE, &mInfo);
+						HBITMAP hBmp = win32Bitmap->createHBitmap ();
+						if (hBmp)
+						{
+							mInfo.hbmpItem = hBmp;
+							SetMenuItemInfo (menu, offset + inc, TRUE, &mInfo);
+							bitmaps.push_back (hBmp);
+						}
 					}
 				}
 			}

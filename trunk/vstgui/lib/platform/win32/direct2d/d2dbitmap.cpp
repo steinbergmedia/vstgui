@@ -141,6 +141,29 @@ bool D2DBitmap::load (const CResourceDescription& resourceDesc)
 }
 
 //-----------------------------------------------------------------------------
+HBITMAP D2DBitmap::createHBitmap ()
+{
+	BITMAPINFO pbmi = {0};
+	pbmi.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
+	pbmi.bmiHeader.biPlanes = 1;
+	pbmi.bmiHeader.biCompression = BI_RGB;
+	pbmi.bmiHeader.biWidth = (LONG)size.x;
+	pbmi.bmiHeader.biHeight = (LONG)size.y;
+	pbmi.bmiHeader.biBitCount = 32;
+
+	HDC hdc = GetDC (NULL);
+	if (hdc == 0)
+		return 0;
+	BYTE* bits = 0;
+	HBITMAP result = CreateDIBSection (hdc, &pbmi, DIB_RGB_COLORS, reinterpret_cast<void**> (&bits), 0, 0);
+	if (result)
+	{
+		getSource ()->CopyPixels (NULL, (INT)size.x * sizeof (DWORD), (INT)size.x * sizeof (DWORD) * (INT)size.y, bits);
+	}
+	return result;
+}
+
+//-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 D2DOffscreenBitmap::D2DOffscreenBitmap (const CPoint& size)

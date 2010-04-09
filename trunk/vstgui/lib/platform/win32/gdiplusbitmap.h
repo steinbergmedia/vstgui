@@ -35,7 +35,7 @@
 #ifndef __gdiplusbitmap__
 #define __gdiplusbitmap__
 
-#include "../iplatformbitmap.h"
+#include "win32bitmapbase.h"
 
 #if WINDOWS
 
@@ -46,7 +46,7 @@
 namespace VSTGUI {
 
 //-----------------------------------------------------------------------------
-class GdiplusBitmap : public IPlatformBitmap
+class GdiplusBitmap : public Win32BitmapBase
 {
 public:
 	GdiplusBitmap ();
@@ -58,6 +58,7 @@ public:
 	IPlatformBitmapPixelAccess* lockPixels () { return 0; } // TODO: Implementation for GdiplusBitmap::lockPixels
 
 	Gdiplus::Bitmap* getBitmap () const { return bitmap; }
+	HBITMAP createHBitmap ();
 
 //-----------------------------------------------------------------------------
 protected:
