@@ -125,7 +125,7 @@ void CColor::fromHSV (double hue, double saturation, double value)
 {
 	if (value <= 0.)
 	{
-		red = green = blue = 0.;
+		red = green = blue = 0;
 		return;
 	}
 	else if (value > 1.)

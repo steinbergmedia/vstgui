@@ -630,12 +630,12 @@ public:
 		if (!currentRect.isEmpty ())
 		{
 			CRect frameRect = frame->getViewSize (frameRect);
-			frame->invalidRect (CRect (currentRect.left-2, frameRect.top, currentRect.left+2, frameRect.bottom));
-			frame->invalidRect (CRect (frameRect.left, currentRect.top-2, frameRect.right, currentRect.top+2));
+			frame->invalidRect (CRect (currentRect.left-3, frameRect.top, currentRect.left+3, frameRect.bottom));
+			frame->invalidRect (CRect (frameRect.left, currentRect.top-3, frameRect.right, currentRect.top+3));
 			if (style == kSelectionStyle)
 			{
-				frame->invalidRect (CRect (currentRect.right-2, frameRect.top, currentRect.right+2, frameRect.bottom));
-				frame->invalidRect (CRect (frameRect.left, currentRect.bottom-2, frameRect.right, currentRect.bottom+2));
+				frame->invalidRect (CRect (currentRect.right-3, frameRect.top, currentRect.right+3, frameRect.bottom));
+				frame->invalidRect (CRect (frameRect.left, currentRect.bottom-3, frameRect.right, currentRect.bottom+3));
 			}
 		}
 	}

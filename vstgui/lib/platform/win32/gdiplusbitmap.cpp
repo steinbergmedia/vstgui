@@ -73,7 +73,7 @@ bool GdiplusBitmap::load (const CResourceDescription& desc)
 		{
 			// TODO: gCustomBitmapReaderCreator win32 support
 			#if DEBUG
-			DebugPrint ("TODO: gCustomBitmapReaderCreator win32 support\n");
+			DebugPrint ("TODO: gCustomBitmapReaderCreator gdiplus support\n");
 			#endif
 		}
 		ResourceStream* resourceStream = new ResourceStream;
@@ -90,6 +90,15 @@ bool GdiplusBitmap::load (const CResourceDescription& desc)
 		}
 	}
 	return false;
+}
+
+//-----------------------------------------------------------------------------
+HBITMAP GdiplusBitmap::createHBitmap ()
+{
+	HBITMAP hBmp = 0;
+	if (bitmap->GetHBITMAP (Gdiplus::Color (0, 0, 0, 0), &hBmp) == Gdiplus::Ok)
+		return hBmp;
+	return 0;
 }
 
 } // namespace

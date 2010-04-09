@@ -35,7 +35,7 @@
 #ifndef __d2dbitmap__
 #define __d2dbitmap__
 
-#include "../../iplatformbitmap.h"
+#include "../win32bitmapbase.h"
 
 #if WINDOWS && VSTGUI_DIRECT2D_SUPPORT
 
@@ -50,7 +50,7 @@ struct IWICBitmap;
 namespace VSTGUI {
 
 //-----------------------------------------------------------------------------
-class D2DBitmap : public IPlatformBitmap
+class D2DBitmap : public Win32BitmapBase
 {
 public:
 	D2DBitmap ();
@@ -59,6 +59,8 @@ public:
 	bool load (const CResourceDescription& desc);
 	const CPoint& getSize () const { return size; }
 	IPlatformBitmapPixelAccess* lockPixels () { return 0; }
+
+	HBITMAP createHBitmap ();
 
 	virtual IWICBitmapSource* getSource ();
 //-----------------------------------------------------------------------------

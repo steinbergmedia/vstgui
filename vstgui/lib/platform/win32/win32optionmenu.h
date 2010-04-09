@@ -40,6 +40,7 @@
 #if WINDOWS
 
 #include <windows.h>
+#include <list>
 
 namespace VSTGUI {
 
@@ -55,6 +56,8 @@ protected:
 	HMENU createMenu (COptionMenu* menu, long& offsetIdx);
 	
 	HWND windowHandle;
+	
+	std::list<HBITMAP> bitmaps;
 };
 
 } // namespace

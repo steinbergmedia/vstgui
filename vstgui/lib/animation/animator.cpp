@@ -46,10 +46,10 @@ The animator is responsible for running animations.
 You can add and remove animations.
 Animations are identified by a view and a name.
 
-To add an animation you just call @link VSTGUI::Animation::Animator::addAnimation Animator::addAnimation (view, name, target, timing)@endlink.
+To add an animation you just call @link VSTGUI::CView::addAnimation CView::addAnimation (name, target, timing)@endlink.
 The animation will start immediately and will automatically be removed if it has finished.
-If you want to stop it before it has finished you can use @link VSTGUI::Animation::Animator::removeAnimation Animator::removeAnimation (view, name)@endlink.
-You can also stop all animations for a view with @link VSTGUI::Animation::Animator::removeAnimations Animator::removeAnimations (view)@endlink.
+If you want to stop it before it has finished you can use @link VSTGUI::CView::removeAnimation CView::removeAnimation (name)@endlink.
+You can also stop all animations for a view with @link VSTGUI::CView::removeAllAnimations CView::removeAllAnimations ()@endlink.
 
 The animator is the owner of the target and timing function objects and will destroy these objects when the animation has finished.
 This means that the animator will call delete on these objects or if they are inherited from CBaseObject it will call forget() on them.
