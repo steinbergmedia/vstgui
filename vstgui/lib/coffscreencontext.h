@@ -53,9 +53,11 @@ There are two usage scenarios :
 COffscreenContext* offscreen = COffscreenContext::create (frame, 100, 100);
 if (offscreen)
 {
+	offscreen->beginDraw ();
 	// ... 
 	// draw into offscreen
 	// ...
+	offscreen->endDraw ();
 	offscreen->copyFrom (otherContext, destRect);
 	offscreen->forget ();
 }
@@ -69,9 +71,11 @@ if (cachedBitmap == 0)
 	COffscreenContext* offscreen = COffscreenContext::create (frame, 100, 100);
 	if (offscreen)
 	{
+		offscreen->beginDraw ();
 		// ... 
 		// draw into offscreen
 		// ...
+		offscreen->endDraw ();
 		cachedBitmap = offscreen->getBitmap ();
 		if (cachedBitmap)
 			cachedBitmap->remember ();
