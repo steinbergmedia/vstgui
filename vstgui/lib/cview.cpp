@@ -555,6 +555,8 @@ bool CView::getAttribute (const CViewAttributeID id, const long inSize, void* ou
  */
 bool CView::setAttribute (const CViewAttributeID id, const long inSize, const void* inData)
 {
+	if (inData == 0 || inSize <= 0)
+		return false;
 	CAttributeListEntry* lastEntry = 0;
 	if (pAttributeList)
 	{

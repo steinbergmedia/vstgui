@@ -408,10 +408,9 @@ bool COptionMenu::popup ()
 		{
 			lastMenu = platformPopupResult.menu;
 			lastResult = platformPopupResult.index;
-			lastMenu->setValue ((float)lastResult);
+			lastMenu->value = lastResult;
+			valueChanged ();
 			invalid ();
-			if (listener)
-				listener->valueChanged (lastMenu);
 			popupResult = true;
 		}
 		platformMenu->forget ();

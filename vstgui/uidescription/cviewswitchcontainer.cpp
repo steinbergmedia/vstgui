@@ -100,8 +100,8 @@ void CViewSwitchContainer::setCurrentViewIndex (long viewIndex)
 //-----------------------------------------------------------------------------
 bool CViewSwitchContainer::attached (CView* parent)
 {
-	CViewContainer::removeAll ();
 	bool result = CViewContainer::attached (parent);
+	CViewContainer::removeAll ();
 	if (result && controller)
 		controller->switchContainerAttached ();
 	return result;

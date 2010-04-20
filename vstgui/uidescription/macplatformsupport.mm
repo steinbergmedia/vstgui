@@ -47,6 +47,8 @@
 
 using namespace VSTGUI;
 
+#define NATIVE_COLOR_CHOOSER 1
+
 //-----------------------------------------------------------------------------
 @interface VSTGUI_CocoaWindowDelegate : NSObject 
 #if MAC_OS_X_VERSION_MAX_ALLOWED > MAC_OS_X_VERSION_10_5
