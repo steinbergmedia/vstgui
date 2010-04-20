@@ -123,6 +123,7 @@ public:
 		COptionMenu* optMenu = dynamic_cast<COptionMenu*> (control);
 		if (optMenu && parameter && parameter->getInfo ().stepCount > 0)
 		{
+			optMenu->removeAllEntry ();
 			for (Steinberg::int32 i = 0; i <= parameter->getInfo ().stepCount; i++)
 			{
 				Steinberg::Vst::String128 utf16Str;
@@ -217,13 +218,27 @@ protected:
 	void updateControlValue (Steinberg::Vst::ParamValue value)
 	{
 		bool mouseEnabled = true;
-		if (parameter && parameter->getInfo ().flags & Steinberg::Vst::ParameterInfo::kIsReadOnly)
-			mouseEnabled = false;
+		bool isStepCount = false;
+		if (parameter)
+		{
+			if (parameter->getInfo ().flags & Steinberg::Vst::ParameterInfo::kIsReadOnly)
+				mouseEnabled = false;
+			if (parameter->getInfo ().stepCount)
+			{
+				isStepCount = true;
+				value = parameter->toPlain (value);
+			}
+		}
 		std::list<CControl*>::iterator it = controls.begin ();
 		while (it != controls.end ())
 		{
 			(*it)->setMouseEnabled (mouseEnabled);
-			(*it)->setValueNormalized (value, true);
+			if (isStepCount)
+			{
+				(*it)->setValue (value, true);
+			}
+			else
+				(*it)->setValueNormalized (value, true);
 			(*it)->invalid ();
 			it++;
 		}
@@ -244,6 +259,22 @@ static bool parseSize (const std::string& str, CPoint& point)
 		return true;
 	}
 	return false;
+}
+
+//-----------------------------------------------------------------------------
+static void releaseSubController (IController* subController)
+{
+	CBaseObject* baseObject = dynamic_cast<CBaseObject*> (subController);
+	if (baseObject)
+		baseObject->forget ();
+	else
+	{
+		Steinberg::FObject* fobj = dynamic_cast<Steinberg::FObject*> (subController);
+		if (fobj)
+			fobj->release ();
+		else
+			delete subController;
+	}
 }
 
 //-----------------------------------------------------------------------------
@@ -511,6 +542,13 @@ void VST3Editor::onViewRemoved (CFrame* frame, CView* view)
 			pcl->removeControl (control);
 		}
 	}
+	IController* controller = 0;
+	long size = sizeof (IController*);
+	if (view->getAttribute ('ictr', sizeof (IController*), &controller, size))
+	{
+		subControllers.remove (controller);
+		releaseSubController (controller);
+	}
 }
 
 //-----------------------------------------------------------------------------
@@ -562,16 +600,6 @@ CView* VST3Editor::createView (const UIAttributes& attributes, IUIDescription* d
 		if (customViewName)
 		{
 			CView* view = delegate->createCustomView (customViewName->c_str (), attributes, description, this);
-			if (view)
-			{
-				ViewFactory* viewFactory = uiDesc ? dynamic_cast<ViewFactory*> (uiDesc->getViewFactory ()) : 0;
-				if (viewFactory)
-				{
-					const std::string* viewClass = attributes.getAttributeValue ("class");
-					if (viewClass)
-						viewFactory->applyCustomViewAttributeValues (view, viewClass->c_str (), attributes, description);
-				}
-			}
 			return view;
 		}
 	}
@@ -593,6 +621,7 @@ CView* VST3Editor::verifyView (CView* view, const UIAttributes& attributes, IUID
 				uiDesc->setController (subControllerStack.back ().controller);
 			else
 				uiDesc->setController (this);
+			view->setAttribute ('ictr', sizeof (IController*), &subController);
 			return subController->verifyView (view, attributes, description);
 		}
 	}
@@ -638,6 +667,8 @@ void VST3Editor::recreateView ()
 			frame->setSize (view->getWidth (), view->getHeight ());
 		}
 		frame->addView (view);
+		if (delegate)
+			delegate->didOpen (this);
 	}
 	init ();
 	frame->invalid ();
@@ -708,24 +739,6 @@ void PLUGIN_API VST3Editor::close ()
 		it++;
 	}
 	paramChangeListeners.clear ();
-	std::list<IController*>::iterator scit = subControllers.begin ();
-	while (scit != subControllers.end ())
-	{
-		CBaseObject* obj = dynamic_cast<CBaseObject*> ((*scit));
-		if (obj)
-			obj->forget ();
-		else
-		{
-			FObject* fObj = dynamic_cast<FObject*> ((*scit));
-			if (fObj)
-				fObj->release ();
-			else
-				delete (*scit);
-		}
-
-		scit++;
-	}
-	subControllers.clear ();
 	if (frame)
 	{
 		frame->removeAll (true);
@@ -734,6 +747,7 @@ void PLUGIN_API VST3Editor::close ()
 		if (refCount == 1)
 			frame = 0;
 	}
+	assert (subControllers.size () == 0);
 }
 
 //------------------------------------------------------------------------

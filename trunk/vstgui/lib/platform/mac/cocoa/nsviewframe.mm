@@ -702,6 +702,7 @@ NSViewFrame::~NSViewFrame ()
 {
 	if (tooltipWindow)
 		tooltipWindow->forget ();
+	[nsView unregisterDraggedTypes]; // this is neccessary otherwise AppKit will crash if the plug-in is unloaded from the process
 	[nsView removeFromSuperview];
 	[nsView release];
 }
@@ -984,8 +985,8 @@ long NSViewFrame::doDrag (CDropSource* source, const CPoint& offset, CBitmap* dr
 				break;
 			}
 		}
-
 		[nsView dragImage:nsImage at:bitmapOffset offset:NSMakeSize (0, 0) event:event pasteboard:nsPasteboard source:nsView slideBack:YES];
+		[nsPasteboard clearContents];
 		return lastDragOperationResult;
 	}
 	return 0;
