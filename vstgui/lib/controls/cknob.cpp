@@ -337,7 +337,7 @@ long CKnob::onKeyDown (VstKeyCode& keyCode)
 				// begin of edit parameter
 				beginEdit ();
 				
-				listener->valueChanged (this);
+				valueChanged ();
 			
 				// end of edit parameter
 				endEdit ();

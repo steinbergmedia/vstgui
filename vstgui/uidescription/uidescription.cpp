@@ -389,7 +389,19 @@ CView* UIDescription::createViewFromNode (UINode* node)
 
 	CView* result = 0;
 	if (controller)
+	{
 		result = controller->createView (*node->getAttributes (), this);
+		if (result && viewFactory)
+		{
+			ViewFactory* _viewFactory = dynamic_cast<ViewFactory*> (viewFactory);
+			if (_viewFactory)
+			{
+				const std::string* viewClass = node->getAttributes ()->getAttributeValue ("class");
+				if (viewClass)
+					_viewFactory->applyCustomViewAttributeValues (result, viewClass->c_str (), *node->getAttributes (), this);
+			}
+		}
+	}
 	if (result == 0 && viewFactory)
 	{
 		result = viewFactory->createView (*node->getAttributes (), this);
