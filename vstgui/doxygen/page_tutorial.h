@@ -173,7 +173,7 @@ Now in our valueChanged method we can differentiate between the controls :
 @code
 void MyEditor::valueChanged (CControl* pControl)
 {
-	long tag = pControl->getTag ();
+	int32_t tag = pControl->getTag ();
 	if (tag == 0)
 	{
 		// the first knob

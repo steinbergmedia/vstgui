@@ -37,7 +37,7 @@
 namespace VSTGUI {
 
 //-----------------------------------------------------------------------------
-CFileExtension::CFileExtension (const char* inDescription, const char* inExtension, const char* inMimeType, int inMacType)
+CFileExtension::CFileExtension (UTF8StringPtr inDescription, UTF8StringPtr inExtension, UTF8StringPtr inMimeType, int32_t inMacType)
 : description (0)
 , extension (0)
 , mimeType (0)
@@ -68,21 +68,21 @@ CFileExtension::~CFileExtension ()
 }
 
 //-----------------------------------------------------------------------------
-void CFileExtension::init (const char* inDescription, const char* inExtension, const char* inMimeType)
+void CFileExtension::init (UTF8StringPtr inDescription, UTF8StringPtr inExtension, UTF8StringPtr inMimeType)
 {
 	if (inDescription)
 	{
-		description = (char*)malloc (strlen (inDescription) + 1);
+		description = (UTF8StringBuffer)malloc (strlen (inDescription) + 1);
 		strcpy (description, inDescription);
 	}
 	if (inExtension)
 	{
-		extension = (char*)malloc (strlen (inExtension) + 1);
+		extension = (UTF8StringBuffer)malloc (strlen (inExtension) + 1);
 		strcpy (extension, inExtension);
 	}
 	if (inMimeType)
 	{
-		mimeType = (char*)malloc (strlen (inMimeType) + 1);
+		mimeType = (UTF8StringBuffer)malloc (strlen (inMimeType) + 1);
 		strcpy (mimeType, inMimeType);
 	}
 	if (description == 0 && extension)
@@ -114,7 +114,7 @@ const CFileExtension& CNewFileSelector::getAllFilesExtension ()
 }
 
 //-----------------------------------------------------------------------------
-const char* CNewFileSelector::kSelectEndMessage = "CNewFileSelector Select End Message";
+IdStringPtr CNewFileSelector::kSelectEndMessage = "CNewFileSelector Select End Message";
 
 //-----------------------------------------------------------------------------
 // CNewFileSelector Implementation
@@ -165,40 +165,40 @@ bool CNewFileSelector::runModal ()
 }
 
 //-----------------------------------------------------------------------------
-void CNewFileSelector::setTitle (const char* inTitle)
+void CNewFileSelector::setTitle (UTF8StringPtr inTitle)
 {
 	if (title)
 		free (title);
 	title = 0;
 	if (inTitle)
 	{
-		title = (char*)malloc (strlen (inTitle) + 1);
+		title = (UTF8StringBuffer)malloc (strlen (inTitle) + 1);
 		strcpy (title, inTitle);
 	}
 }
 
 //-----------------------------------------------------------------------------
-void CNewFileSelector::setInitialDirectory (const char* path)
+void CNewFileSelector::setInitialDirectory (UTF8StringPtr path)
 {
 	if (initialPath)
 		free (initialPath);
 	initialPath = 0;
 	if (path)
 	{
-		initialPath = (char*)malloc (strlen (path) + 1);
+		initialPath = (UTF8StringBuffer)malloc (strlen (path) + 1);
 		strcpy (initialPath, path);
 	}
 }
 
 //-----------------------------------------------------------------------------
-void CNewFileSelector::setDefaultSaveName (const char* name)
+void CNewFileSelector::setDefaultSaveName (UTF8StringPtr name)
 {
 	if (defaultSaveName)
 		free (defaultSaveName);
 	defaultSaveName = 0;
 	if (name)
 	{
-		defaultSaveName = (char*)malloc (strlen (name) + 1);
+		defaultSaveName = (UTF8StringBuffer)malloc (strlen (name) + 1);
 		strcpy (defaultSaveName, name);
 	}
 }
@@ -246,13 +246,13 @@ void CNewFileSelector::addFileExtension (const CFileExtension& extension)
 }
 
 //-----------------------------------------------------------------------------
-int CNewFileSelector::getNumSelectedFiles () const
+int32_t CNewFileSelector::getNumSelectedFiles () const
 {
 	return result.size ();
 }
 
 //-----------------------------------------------------------------------------
-const char* CNewFileSelector::getSelectedFile (unsigned int index) const
+UTF8StringPtr CNewFileSelector::getSelectedFile (uint32_t index) const
 {
 	if (index < result.size ())
 		return result[index];

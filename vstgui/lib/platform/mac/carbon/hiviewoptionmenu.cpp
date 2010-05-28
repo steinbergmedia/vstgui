@@ -57,12 +57,12 @@ PlatformOptionMenuResult HIViewOptionMenu::popup (COptionMenu* optionMenu)
 	optionMenu->localToFrame (p);
 	rect.offset (p.x, p.y);
 
-	long offset;
+	int32_t offset;
 
 	if (optionMenu->getStyle () & kPopupStyle)
 		offset = 0;
 	else
-		offset = (long)optionMenu->getViewSize ().getHeight ();
+		offset = (int32_t)optionMenu->getViewSize ().getHeight ();
 
 	CCoord gx = 0, gy = 0;
 	optionMenu->getFrame()->getPosition (gx, gy);
@@ -76,8 +76,8 @@ PlatformOptionMenuResult HIViewOptionMenu::popup (COptionMenu* optionMenu)
 		SInt16 menuWidth = GetMenuWidth (menuRef);
 		if (menuWidth < optionMenu->getViewSize ().getWidth ())
 			SetMenuWidth (menuRef, optionMenu->getViewSize ().getWidth ());
-		long popUpItem = optionMenu->getStyle () & kPopupStyle ? (optionMenu->getValue () + 1) : 1;
-		long PopUpMenuItem = PopUpMenuItem = PopUpMenuSelect (menuRef, gy, gx, popUpItem);
+		int32_t popUpItem = optionMenu->getStyle () & kPopupStyle ? (optionMenu->getValue () + 1) : 1;
+		int32_t PopUpMenuItem = PopUpMenuItem = PopUpMenuSelect (menuRef, gy, gx, popUpItem);
 		
 		short result = LoWord (PopUpMenuItem) - 1;	
 		short menuIDResult = HiWord (PopUpMenuItem);
@@ -110,7 +110,7 @@ MenuRef HIViewOptionMenu::createMenu (COptionMenu* menu)
 	{
 		bool multipleCheck = menu->getStyle () & (kMultipleCheckStyle & ~kCheckStyle);
 		CConstMenuItemIterator it = menuItems->begin ();
-		long i = 0;
+		int32_t i = 0;
 		while (it != menuItems->end ())
 		{
 			i++;
@@ -174,7 +174,7 @@ MenuRef HIViewOptionMenu::createMenu (COptionMenu* menu)
 				{
 					SetItemCmd (menuRef, i, item->getKeycode ()[0]);
 					UInt8 keyModifiers = 0;
-					long itemModifiers = item->getKeyModifiers ();
+					int32_t itemModifiers = item->getKeyModifiers ();
 					if (itemModifiers & kShift)
 						keyModifiers |= kMenuShiftModifier;
 					if (!(itemModifiers & kControl))
@@ -192,7 +192,7 @@ MenuRef HIViewOptionMenu::createMenu (COptionMenu* menu)
 		}
 		if (menu->getStyle () & kCheckStyle && !multipleCheck)
 			CheckMenuItem (menuRef, menu->getCurrentIndex () + 1, true);
-		SetMenuItemRefCon (menuRef, 0, (int)menu);
+		SetMenuItemRefCon (menuRef, 0, (int32_t)menu);
 		InsertMenu (menuRef, kInsertHierarchicalMenu);
 	}
 	return menuRef;

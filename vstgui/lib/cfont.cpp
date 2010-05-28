@@ -87,7 +87,7 @@ The CFontDesc class replaces the old font handling. You have now the possibilty 
 as long as it is available on the system. You should cache your own CFontDesc as this speeds up drawing on some systems.
 */
 //-----------------------------------------------------------------------------
-CFontDesc::CFontDesc (const char* inName, const CCoord& inSize, const long inStyle)
+CFontDesc::CFontDesc (UTF8StringPtr inName, const CCoord& inSize, const int32_t inStyle)
 : name (0)
 , size (inSize)
 , style (inStyle)
@@ -142,7 +142,7 @@ void CFontDesc::freePlatformFont ()
 }
 
 //-----------------------------------------------------------------------------
-void CFontDesc::setName (const char* newName)
+void CFontDesc::setName (UTF8StringPtr newName)
 {
 	if (newName && name && !strcmp (newName, name))
 		return;
@@ -152,7 +152,7 @@ void CFontDesc::setName (const char* newName)
 	name = 0;
 	if (newName)
 	{
-		name = (char*)malloc (strlen (newName) + 1);
+		name = (UTF8StringBuffer)malloc (strlen (newName) + 1);
 		strcpy (name, newName);
 	}
 	freePlatformFont ();
@@ -166,7 +166,7 @@ void CFontDesc::setSize (CCoord newSize)
 }
 
 //-----------------------------------------------------------------------------
-void CFontDesc::setStyle (long newStyle)
+void CFontDesc::setStyle (int32_t newStyle)
 {
 	style = newStyle;
 	freePlatformFont ();

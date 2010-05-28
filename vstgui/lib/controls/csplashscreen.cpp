@@ -52,7 +52,7 @@ public:
 		setDirty (false);
 	}
 
-	CMouseEventResult onMouseDown (CPoint& where, const long& buttons)
+	CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons)
 	{
 		if (buttons & kLButton)
 		{
@@ -85,7 +85,7 @@ and another click on the displayed area will leave the modal mode.
  * @param offset offset of background bitmap
  */
 //------------------------------------------------------------------------
-CSplashScreen::CSplashScreen (const CRect& size, CControlListener* listener, long tag, CBitmap* background, const CRect& toDisplay, const CPoint& offset)
+CSplashScreen::CSplashScreen (const CRect& size, CControlListener* listener, int32_t tag, CBitmap* background, const CRect& toDisplay, const CPoint& offset)
 : CControl (size, listener, tag, background)
 , toDisplay (toDisplay)
 , offset (offset)
@@ -103,7 +103,7 @@ CSplashScreen::CSplashScreen (const CRect& size, CControlListener* listener, lon
  * @param splashView the view to show
  */
 //------------------------------------------------------------------------
-CSplashScreen::CSplashScreen (const CRect& size, CControlListener* listener, long tag, CView* splashView)
+CSplashScreen::CSplashScreen (const CRect& size, CControlListener* listener, int32_t tag, CView* splashView)
 : CControl (size, listener, tag)
 , modalView (splashView)
 {
@@ -133,7 +133,7 @@ void CSplashScreen::draw (CDrawContext *pContext)
 }
 
 //------------------------------------------------------------------------
-bool CSplashScreen::hitTest (const CPoint& where, const long buttons)
+bool CSplashScreen::hitTest (const CPoint& where, const CButtonState buttons)
 {
 	bool result = CView::hitTest (where, buttons);
 	if (result && !(buttons & kLButton))
@@ -142,7 +142,7 @@ bool CSplashScreen::hitTest (const CPoint& where, const long buttons)
 }
 
 //------------------------------------------------------------------------
-CMouseEventResult CSplashScreen::onMouseDown (CPoint& where, const long& buttons)
+CMouseEventResult CSplashScreen::onMouseDown (CPoint& where, const CButtonState& buttons)
 {
 	if (buttons & kLButton)
 	{

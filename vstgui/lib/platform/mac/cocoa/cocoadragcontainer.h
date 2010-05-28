@@ -54,18 +54,18 @@ public:
 	CocoaDragContainer (NSPasteboard* platformDrag);
 	~CocoaDragContainer ();
 	
-	void* first (long& size, long& type);
-	void* next (long& size, long& type);
-	long getType (long idx) const;
-	long getCount () const { return nbItems; }
+	void* first (int32_t& size, int32_t& type);
+	void* next (int32_t& size, int32_t& type);
+	int32_t getType (int32_t idx) const;
+	int32_t getCount () const { return nbItems; }
 
 //------------------------------------------------------------------------------------
 protected:
 	NSPasteboard* pb;
 
-	long nbItems;
+	int32_t nbItems;
 	
-	long iterator;
+	int32_t iterator;
 	void* lastItem;
 };
 

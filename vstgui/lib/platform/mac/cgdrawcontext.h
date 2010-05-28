@@ -46,19 +46,19 @@
 #endif
 
 namespace VSTGUI {
-class CGOffscreenBitmap;
+class CGBitmap;
 
 //-----------------------------------------------------------------------------
 class CGDrawContext : public COffscreenContext
 {
 public:
 	CGDrawContext (CGContextRef cgContext, const CRect& rect);
-	CGDrawContext (CGOffscreenBitmap* bitmap);
+	CGDrawContext (CGBitmap* bitmap);
 	~CGDrawContext ();
 	
 	void lineTo (const CPoint &point);
-	void drawLines (const CPoint* points, const long& numberOfLines);
-	void drawPolygon (const CPoint *pPoints, long numberOfPoints, const CDrawStyle drawStyle = kDrawStroked);
+	void drawLines (const CPoint* points, const int32_t& numberOfLines);
+	void drawPolygon (const CPoint *pPoints, int32_t numberOfPoints, const CDrawStyle drawStyle = kDrawStroked);
 	void drawRect (const CRect &rect, const CDrawStyle drawStyle = kDrawStroked);
 	void drawArc (const CRect &rect, const float startAngle1, const float endAngle2, const CDrawStyle drawStyle = kDrawStroked);
 	void drawEllipse (const CRect &rect, const CDrawStyle drawStyle = kDrawStroked);

@@ -39,37 +39,35 @@
 #include "../platform/iplatformtextedit.h"
 
 namespace VSTGUI {
+class CTextEdit;
+
+typedef bool (*CTextEditStringToValueProc) (UTF8StringPtr txt, float& result, void* userData);
 
 //-----------------------------------------------------------------------------
 // CTextEdit Declaration
 //! @brief a text edit control
 /// @ingroup controls
 //-----------------------------------------------------------------------------
-class CTextEdit : public CParamDisplay, public IPlatformTextEditCallback
+class CTextEdit : public CTextLabel, public IPlatformTextEditCallback
 {
 public:
-	CTextEdit (const CRect& size, CControlListener* listener, long tag, const char* txt = 0, CBitmap* background = 0, const long style = 0);
+	CTextEdit (const CRect& size, CControlListener* listener, int32_t tag, UTF8StringPtr txt = 0, CBitmap* background = 0, const int32_t style = 0);
 	CTextEdit (const CTextEdit& textEdit);
 
 	//-----------------------------------------------------------------------------
 	/// @name CTextEdit Methods
 	//-----------------------------------------------------------------------------
 	//@{
-	virtual void setText (const char* txt);					///< set the text (only 256 bytes are allowed)
-	virtual void getText (char* txt) const;					///< copies text to txt (make sure txt is at least 256 bytes big)
-	virtual const char* getText () const { return text; }	///< read only access to text
-
-	virtual void setTextEditConvert (void (*editConvert) (char* input, char* string));
-	virtual void setTextEditConvert (void (*editConvert2) (char* input, char* string,
-										void* userDta), void* userData);
+	virtual void setStringToValueProc (CTextEditStringToValueProc proc, void* userData = 0);
 	//@}
 
 	// overrides
+	virtual void setText (UTF8StringPtr txt);
 	virtual void setValue (float val, bool updateSubListeners = false);
 
 	virtual	void draw (CDrawContext* pContext);
-	virtual CMouseEventResult onMouseDown (CPoint& where, const long& buttons);
-	virtual long onKeyDown (VstKeyCode& keyCode);
+	virtual CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons);
+	virtual int32_t onKeyDown (VstKeyCode& keyCode);
 
 	virtual	void takeFocus ();
 	virtual	void looseFocus ();
@@ -87,7 +85,7 @@ protected:
 	CColor platformGetFontColor () const { return getFontColor (); }
 	CFontRef platformGetFont () const { return getFont (); }
 	CHoriTxtAlign platformGetHoriTxtAlign () const { return getHoriAlign (); }
-	const char* platformGetText () const { return text; }
+	UTF8StringPtr platformGetText () const { return text; }
 	CRect platformGetSize () const;
 	CRect platformGetVisibleSize () const;
 	CPoint platformGetTextInset () const { return getTextInset (); }
@@ -96,10 +94,8 @@ protected:
 
 	IPlatformTextEdit* platformControl;
 
-	char text[256];
-
-	void (*editConvert) (char* input, char* string);
-	void (*editConvert2) (char* input, char* string, void* userData);
+	CTextEditStringToValueProc textToValue;
+	void* textToValueUserData;
 };
 
 } // namespace

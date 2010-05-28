@@ -82,12 +82,19 @@ public:
 	UIAttributes* getAttributes () const { return attributes; }
 	UIDescList& getChildren () const { return *children; }
 	bool hasChildren () const;
+
+	enum {
+		kNoExport = 1 << 0,
+	};
 	
+	bool noExport () const { return flags & kNoExport; }
+	void noExport (bool state) { if (state) flags |= kNoExport; else flags &= ~kNoExport; }
 protected:
 	~UINode ();
 	std::string name;
 	UIAttributes* attributes;
 	UIDescList* children;
+	int32_t flags;
 };
 
 //-----------------------------------------------------------------------------
@@ -95,10 +102,10 @@ class UIControlTagNode : public UINode
 {
 public:
 	UIControlTagNode (const std::string& name, UIAttributes* attributes);
-	long getTag ();
-	void setTag (long newTag);
+	int32_t getTag ();
+	void setTag (int32_t newTag);
 protected:
-	long tag;
+	int32_t tag;
 };
 
 //-----------------------------------------------------------------------------
@@ -107,7 +114,7 @@ class UIBitmapNode : public UINode
 public:
 	UIBitmapNode (const std::string& name, UIAttributes* attributes);
 	CBitmap* getBitmap ();
-	void setBitmap (const char* bitmapName);
+	void setBitmap (UTF8StringPtr bitmapName);
 	void setNinePartTiledOffset (const CRect* offsets);
 protected:
 	~UIBitmapNode ();
@@ -150,7 +157,7 @@ public:
 	void add (UINode* obj) { if (!ownsObjects) obj->remember (); std::list<UINode*>::push_back (obj); }
 	void remove (UINode* obj) { std::list<UINode*>::remove (obj); obj->forget (); }
 
-	int total () { return size (); }
+	int32_t total () { return size (); }
 	void removeAll () { riterator it = rbegin (); while (it != rend ()) remove (*it); }
 
 	iterator begin () { return std::list<UINode*>::begin (); }
@@ -171,7 +178,7 @@ public:
 	bool open ();
 
 protected:
-	int readRawXmlData (char* buffer, int size);
+	int32_t readRawXmlData (int8_t* buffer, int32_t size);
 	void rewind ();
 
 	CResourceDescription resFile;
@@ -182,15 +189,15 @@ protected:
 class UIDescWriter
 {
 public:
-	bool write (const char* filename, UINode* rootNode);
+	bool write (UTF8StringPtr filename, UINode* rootNode);
 protected:
 	bool writeNode (UINode* node, std::iostream& stream);
 	bool writeAttributes (UIAttributes* attr, std::iostream& stream);
-	int intendLevel;
+	int32_t intendLevel;
 };
 
 //-----------------------------------------------------------------------------
-bool UIDescWriter::write (const char* filename, UINode* rootNode)
+bool UIDescWriter::write (UTF8StringPtr filename, UINode* rootNode)
 {
 	bool result = false;
 	intendLevel = 0;
@@ -230,7 +237,9 @@ bool UIDescWriter::writeAttributes (UIAttributes* attr, std::iostream& stream)
 bool UIDescWriter::writeNode (UINode* node, std::iostream& stream)
 {
 	bool result = true;
-	for (int i = 0; i < intendLevel; i++) stream << "\t";
+	if (node->noExport ())
+		return result;
+	for (int32_t i = 0; i < intendLevel; i++) stream << "\t";
 	stream << "<";
 	stream << node->getName ();
 	result = writeAttributes (node->getAttributes (), stream);
@@ -249,7 +258,7 @@ bool UIDescWriter::writeNode (UINode* node, std::iostream& stream)
 				it++;
 			}
 			intendLevel--;
-			for (int i = 0; i < intendLevel; i++) stream << "\t";
+			for (int32_t i = 0; i < intendLevel; i++) stream << "\t";
 			stream << "</";
 			stream << node->getName ();
 			stream << ">\n";
@@ -272,9 +281,9 @@ bool UIDescription::parseColor (const std::string& colorString, CColor& color)
 			std::string rv (colorString.substr (1, 2));
 			std::string gv (colorString.substr (3, 2));
 			std::string bv (colorString.substr (5, 2));
-			color.red = (unsigned char)strtol (rv.c_str (), 0, 16);
-			color.green = (unsigned char)strtol (gv.c_str (), 0, 16);
-			color.blue = (unsigned char)strtol (bv.c_str (), 0, 16);
+			color.red = (uint8_t)strtol (rv.c_str (), 0, 16);
+			color.green = (uint8_t)strtol (gv.c_str (), 0, 16);
+			color.blue = (uint8_t)strtol (bv.c_str (), 0, 16);
 			color.alpha = 255;
 			return true;
 		}
@@ -287,10 +296,10 @@ bool UIDescription::parseColor (const std::string& colorString, CColor& color)
 			std::string gv (colorString.substr (3, 2));
 			std::string bv (colorString.substr (5, 2));
 			std::string av (colorString.substr (7, 2));
-			color.red = (unsigned char)strtol (rv.c_str (), 0, 16);
-			color.green = (unsigned char)strtol (gv.c_str (), 0, 16);
-			color.blue = (unsigned char)strtol (bv.c_str (), 0, 16);
-			color.alpha = (unsigned char)strtol (av.c_str (), 0, 16);
+			color.red = (uint8_t)strtol (rv.c_str (), 0, 16);
+			color.green = (uint8_t)strtol (gv.c_str (), 0, 16);
+			color.blue = (uint8_t)strtol (bv.c_str (), 0, 16);
+			color.alpha = (uint8_t)strtol (av.c_str (), 0, 16);
 			return true;
 		}
 	}
@@ -335,6 +344,78 @@ UIDescription::~UIDescription ()
 }
 
 //-----------------------------------------------------------------------------
+void UIDescription::addDefaultNodes ()
+{
+	UINode* fontsNode = getBaseNode ("fonts");
+	if (fontsNode)
+	{
+		struct DefaultFont {
+			UTF8StringPtr name;
+			CFontRef font;
+		};
+
+		const DefaultFont defaultFonts [] = {
+			{ "~ SystemFont", kSystemFont },
+			{ "~ NormalFontVeryBig", kNormalFontVeryBig },
+			{ "~ NormalFontBig", kNormalFontBig },
+			{ "~ NormalFont", kNormalFont },
+			{ "~ NormalFontSmall", kNormalFontSmall },
+			{ "~ NormalFontSmaller", kNormalFontSmaller },
+			{ "~ NormalFontVerySmall", kNormalFontVerySmall },
+			{ "~ SymbolFont", kSymbolFont },
+			{ 0, 0 },
+		};
+		int32_t i = 0;
+		while (defaultFonts[i].name != 0)
+		{
+			UIAttributes* attr = new UIAttributes;
+			attr->setAttribute ("name", defaultFonts[i].name);
+			UIFontNode* node = new UIFontNode ("font", attr);
+			node->setFont (defaultFonts[i].font);
+			node->noExport (true);
+			fontsNode->getChildren ().add (node);
+			i++;
+		}
+	}
+	UINode* colorsNode = getBaseNode ("colors");
+	if (colorsNode)
+	{
+		struct DefaultColor {
+			UTF8StringPtr name;
+			CColor color;
+		};
+
+		const DefaultColor defaultColors [] = {
+			{ "~ BlackCColor", kBlackCColor },
+			{ "~ WhiteCColor", kWhiteCColor },
+			{ "~ GreyCColor", kGreyCColor },
+			{ "~ RedCColor", kRedCColor },
+			{ "~ GreenCColor", kGreenCColor },
+			{ "~ BlueCColor", kBlueCColor },
+			{ "~ YellowCColor", kYellowCColor },
+			{ "~ CyanCColor", kCyanCColor },
+			{ "~ MagentaCColor", kMagentaCColor },
+			{ "~ TransparentCColor", kTransparentCColor },
+			{ 0, kBlackCColor }
+		};
+		
+		int32_t i = 0;
+		while (defaultColors[i].name != 0)
+		{
+			UIAttributes* attr = new UIAttributes;
+			attr->setAttribute ("name", defaultColors[i].name);
+			std::string colorStr;
+			colorToString (defaultColors[i].color, colorStr, 0);
+			attr->setAttribute ("rgba", colorStr.c_str ());
+			UIColorNode* node = new UIColorNode ("color", attr);
+			node->noExport (true);
+			colorsNode->getChildren ().add (node);
+			i++;
+		}
+	}
+}
+
+//-----------------------------------------------------------------------------
 bool UIDescription::parse ()
 {
 	if (nodes)
@@ -344,6 +425,7 @@ bool UIDescription::parse ()
 	{
 		if (parser.parse (xmlContentProvider, this))
 		{
+			addDefaultNodes ();
 			return true;
 		}
 	}
@@ -354,6 +436,7 @@ bool UIDescription::parse ()
 		{
 			if (parser.parse (&reader, this))
 			{
+				addDefaultNodes ();
 				return true;
 			}
 		}
@@ -368,7 +451,7 @@ void UIDescription::setController (IController* inController)
 }
 
 //-----------------------------------------------------------------------------
-bool UIDescription::save (const char* filename)
+bool UIDescription::save (UTF8StringPtr filename)
 {
 	nodes->getAttributes ()->setAttribute ("version", "1");
 	UIDescWriter writer;
@@ -437,7 +520,7 @@ CView* UIDescription::createViewFromNode (UINode* node)
 						char c2 = (*attrName)[1];
 						char c3 = (*attrName)[2];
 						char c4 = (*attrName)[3];
-						attrId = ((((int)c1) << 24) | (((int)c2) << 16) | (((int)c3) << 8) | (((int)c4) << 0));
+						attrId = ((((int32_t)c1) << 24) | (((int32_t)c2) << 16) | (((int32_t)c3) << 8) | (((int32_t)c4) << 0));
 					}
 					else
 						attrId = strtol (attrName->c_str (), 0, 10);
@@ -457,7 +540,7 @@ CView* UIDescription::createViewFromNode (UINode* node)
 CViewAttributeID UIDescription::kTemplateNameAttributeID = 'uitl';
 
 //-----------------------------------------------------------------------------
-CView* UIDescription::createView (const char* name, IController* _controller)
+CView* UIDescription::createView (UTF8StringPtr name, IController* _controller)
 {
 	ScopePointer<IController> sp (&controller, _controller);
 	if (nodes)
@@ -486,7 +569,7 @@ CView* UIDescription::createView (const char* name, IController* _controller)
 bool UIDescription::getTemplateNameFromView (CView* view, std::string& templateName)
 {
 	bool result = false;
-	long attrSize = 0;
+	int32_t attrSize = 0;
 	if (view->getAttributeSize (kTemplateNameAttributeID, attrSize))
 	{
 		char* str = new char[attrSize];
@@ -501,7 +584,7 @@ bool UIDescription::getTemplateNameFromView (CView* view, std::string& templateN
 }
 
 //-----------------------------------------------------------------------------
-const UIAttributes* UIDescription::getViewAttributes (const char* name)
+const UIAttributes* UIDescription::getViewAttributes (UTF8StringPtr name)
 {
 	if (nodes)
 	{
@@ -521,7 +604,7 @@ const UIAttributes* UIDescription::getViewAttributes (const char* name)
 }
 
 //-----------------------------------------------------------------------------
-UINode* UIDescription::getBaseNode (const char* name) const
+UINode* UIDescription::getBaseNode (UTF8StringPtr name) const
 {
 	if (nodes)
 	{
@@ -542,7 +625,7 @@ UINode* UIDescription::getBaseNode (const char* name) const
 }
 
 //-----------------------------------------------------------------------------
-UINode* UIDescription::findChildNodeByNameAttribute (UINode* node, const char* nameAttribute) const
+UINode* UIDescription::findChildNodeByNameAttribute (UINode* node, UTF8StringPtr nameAttribute) const
 {
 	if (node)
 	{
@@ -561,9 +644,9 @@ UINode* UIDescription::findChildNodeByNameAttribute (UINode* node, const char* n
 }
 
 //-----------------------------------------------------------------------------
-long UIDescription::getTagForName (const char* name)
+int32_t UIDescription::getTagForName (UTF8StringPtr name)
 {
-	long tag = -1;
+	int32_t tag = -1;
 	UIControlTagNode* controlTagNode = dynamic_cast<UIControlTagNode*> (findChildNodeByNameAttribute (getBaseNode ("control-tags"), name));
 	if (controlTagNode)
 		tag = controlTagNode->getTag ();
@@ -573,7 +656,7 @@ long UIDescription::getTagForName (const char* name)
 }
 
 //-----------------------------------------------------------------------------
-CControlListener* UIDescription::getControlListener (const char* name)
+CControlListener* UIDescription::getControlListener (UTF8StringPtr name)
 {
 	if (controller)
 		return controller->getControlListener (name);
@@ -581,7 +664,7 @@ CControlListener* UIDescription::getControlListener (const char* name)
 }
 
 //-----------------------------------------------------------------------------
-CBitmap* UIDescription::getBitmap (const char* name)
+CBitmap* UIDescription::getBitmap (UTF8StringPtr name)
 {
 	UIBitmapNode* bitmapNode = dynamic_cast<UIBitmapNode*> (findChildNodeByNameAttribute (getBaseNode ("bitmaps"), name));
 	if (bitmapNode)
@@ -592,7 +675,7 @@ CBitmap* UIDescription::getBitmap (const char* name)
 }
 
 //-----------------------------------------------------------------------------
-CFontRef UIDescription::getFont (const char* name)
+CFontRef UIDescription::getFont (UTF8StringPtr name)
 {
 	UIFontNode* fontNode = dynamic_cast<UIFontNode*> (findChildNodeByNameAttribute (getBaseNode ("fonts"), name));
 	if (fontNode)
@@ -603,7 +686,7 @@ CFontRef UIDescription::getFont (const char* name)
 }
 
 //-----------------------------------------------------------------------------
-bool UIDescription::getColor (const char* name, CColor& color)
+bool UIDescription::getColor (UTF8StringPtr name, CColor& color)
 {
 	UIColorNode* colorNode = dynamic_cast<UIColorNode*> (findChildNodeByNameAttribute (getBaseNode ("colors"), name));
 	if (colorNode)
@@ -618,7 +701,7 @@ bool UIDescription::getColor (const char* name, CColor& color)
 }
 
 //-----------------------------------------------------------------------------
-const char* UIDescription::lookupColorName (const CColor& color) const
+UTF8StringPtr UIDescription::lookupColorName (const CColor& color) const
 {
 	UINode* colorsNode = getBaseNode ("colors");
 	if (colorsNode)
@@ -640,7 +723,7 @@ const char* UIDescription::lookupColorName (const CColor& color) const
 }
 
 //-----------------------------------------------------------------------------
-const char* UIDescription::lookupFontName (const CFontRef font) const
+UTF8StringPtr UIDescription::lookupFontName (const CFontRef font) const
 {
 	UINode* fontsNode = getBaseNode ("fonts");
 	if (fontsNode)
@@ -662,7 +745,7 @@ const char* UIDescription::lookupFontName (const CFontRef font) const
 }
 
 //-----------------------------------------------------------------------------
-const char* UIDescription::lookupBitmapName (const CBitmap* bitmap) const
+UTF8StringPtr UIDescription::lookupBitmapName (const CBitmap* bitmap) const
 {
 	UINode* bitmapsNode = getBaseNode ("bitmaps");
 	if (bitmapsNode)
@@ -684,7 +767,7 @@ const char* UIDescription::lookupBitmapName (const CBitmap* bitmap) const
 }
 
 //-----------------------------------------------------------------------------
-const char* UIDescription::lookupControlTagName (const long tag) const
+UTF8StringPtr UIDescription::lookupControlTagName (const int32_t tag) const
 {
 	UINode* tagsNode = getBaseNode ("control-tags");
 	if (tagsNode)
@@ -706,7 +789,7 @@ const char* UIDescription::lookupControlTagName (const long tag) const
 }
 
 //-----------------------------------------------------------------------------
-void UIDescription::changeColorName (const char* oldName, const char* newName)
+void UIDescription::changeColorName (UTF8StringPtr oldName, UTF8StringPtr newName)
 {
 	UIColorNode* node = dynamic_cast<UIColorNode*> (findChildNodeByNameAttribute (getBaseNode ("colors"), oldName));
 	if (node)
@@ -716,7 +799,7 @@ void UIDescription::changeColorName (const char* oldName, const char* newName)
 }
 
 //-----------------------------------------------------------------------------
-void UIDescription::changeTagName (const char* oldName, const char* newName)
+void UIDescription::changeTagName (UTF8StringPtr oldName, UTF8StringPtr newName)
 {
 	UIControlTagNode* node = dynamic_cast<UIControlTagNode*> (findChildNodeByNameAttribute (getBaseNode ("control-tags"), oldName));
 	if (node)
@@ -726,7 +809,7 @@ void UIDescription::changeTagName (const char* oldName, const char* newName)
 }
 
 //-----------------------------------------------------------------------------
-void UIDescription::changeFontName (const char* oldName, const char* newName)
+void UIDescription::changeFontName (UTF8StringPtr oldName, UTF8StringPtr newName)
 {
 	UIFontNode* node = dynamic_cast<UIFontNode*> (findChildNodeByNameAttribute (getBaseNode ("fonts"), oldName));
 	if (node)
@@ -736,7 +819,7 @@ void UIDescription::changeFontName (const char* oldName, const char* newName)
 }
 
 //-----------------------------------------------------------------------------
-void UIDescription::changeBitmapName (const char* oldName, const char* newName)
+void UIDescription::changeBitmapName (UTF8StringPtr oldName, UTF8StringPtr newName)
 {
 	UIBitmapNode* node = dynamic_cast<UIBitmapNode*> (findChildNodeByNameAttribute (getBaseNode ("bitmaps"), oldName));
 	if (node)
@@ -746,12 +829,13 @@ void UIDescription::changeBitmapName (const char* oldName, const char* newName)
 }
 
 //-----------------------------------------------------------------------------
-void UIDescription::changeColor (const char* name, const CColor& newColor)
+void UIDescription::changeColor (UTF8StringPtr name, const CColor& newColor)
 {
 	UIColorNode* node = dynamic_cast<UIColorNode*> (findChildNodeByNameAttribute (getBaseNode ("colors"), name));
 	if (node)
 	{
-		node->setColor (newColor);
+		if (!node->noExport ())
+			node->setColor (newColor);
 	}
 	else
 	{
@@ -770,12 +854,13 @@ void UIDescription::changeColor (const char* name, const CColor& newColor)
 }
 
 //-----------------------------------------------------------------------------
-void UIDescription::changeTag (const char* name, long tag)
+void UIDescription::changeTag (UTF8StringPtr name, int32_t tag)
 {
 	UIControlTagNode* node = dynamic_cast<UIControlTagNode*> (findChildNodeByNameAttribute (getBaseNode ("control-tags"), name));
 	if (node)
 	{
-		node->setTag (tag);
+		if (!node->noExport ())
+			node->setTag (tag);
 	}
 	else
 	{
@@ -792,12 +877,13 @@ void UIDescription::changeTag (const char* name, long tag)
 }
 
 //-----------------------------------------------------------------------------
-void UIDescription::changeFont (const char* name, CFontRef newFont)
+void UIDescription::changeFont (UTF8StringPtr name, CFontRef newFont)
 {
 	UIFontNode* node = dynamic_cast<UIFontNode*> (findChildNodeByNameAttribute (getBaseNode ("fonts"), name));
 	if (node)
 	{
-		node->setFont (newFont);
+		if (!node->noExport ())
+			node->setFont (newFont);
 	}
 	else
 	{
@@ -814,13 +900,16 @@ void UIDescription::changeFont (const char* name, CFontRef newFont)
 }
 
 //-----------------------------------------------------------------------------
-void UIDescription::changeBitmap (const char* name, const char* newName, const CRect* nineparttiledOffset)
+void UIDescription::changeBitmap (UTF8StringPtr name, UTF8StringPtr newName, const CRect* nineparttiledOffset)
 {
 	UIBitmapNode* node = dynamic_cast<UIBitmapNode*> (findChildNodeByNameAttribute (getBaseNode ("bitmaps"), name));
 	if (node)
 	{
-		node->setBitmap (newName);
-		node->setNinePartTiledOffset (nineparttiledOffset);
+		if (!node->noExport ())
+		{
+			node->setBitmap (newName);
+			node->setNinePartTiledOffset (nineparttiledOffset);
+		}
 	}
 	else
 	{
@@ -839,7 +928,7 @@ void UIDescription::changeBitmap (const char* name, const char* newName, const C
 }
 
 //-----------------------------------------------------------------------------
-static void removeChildNode (UINode* baseNode, const char* nodeName)
+static void removeChildNode (UINode* baseNode, UTF8StringPtr nodeName)
 {
 	UIDescList& children = baseNode->getChildren ();
 	UIDescList::iterator it = children.begin ();
@@ -848,7 +937,8 @@ static void removeChildNode (UINode* baseNode, const char* nodeName)
 		const std::string* name = (*it)->getAttributes ()->getAttributeValue ("name");
 		if (*name == nodeName)
 		{
-			children.remove (*it);
+			if (!(*it)->noExport ())
+				children.remove (*it);
 			return;
 		}
 		it++;
@@ -856,7 +946,7 @@ static void removeChildNode (UINode* baseNode, const char* nodeName)
 }
 
 //-----------------------------------------------------------------------------
-void UIDescription::removeColor (const char* name)
+void UIDescription::removeColor (UTF8StringPtr name)
 {
 	UINode* node = getBaseNode ("colors");
 	if (node)
@@ -864,7 +954,7 @@ void UIDescription::removeColor (const char* name)
 }
 
 //-----------------------------------------------------------------------------
-void UIDescription::removeTag (const char* name)
+void UIDescription::removeTag (UTF8StringPtr name)
 {
 	UINode* node = getBaseNode ("control-tags");
 	if (node)
@@ -872,7 +962,7 @@ void UIDescription::removeTag (const char* name)
 }
 
 //-----------------------------------------------------------------------------
-void UIDescription::removeFont (const char* name)
+void UIDescription::removeFont (UTF8StringPtr name)
 {
 	UINode* node = getBaseNode ("fonts");
 	if (node)
@@ -880,7 +970,7 @@ void UIDescription::removeFont (const char* name)
 }
 
 //-----------------------------------------------------------------------------
-void UIDescription::removeBitmap (const char* name)
+void UIDescription::removeBitmap (UTF8StringPtr name)
 {
 	UINode* node = getBaseNode ("bitmaps");
 	if (node)
@@ -1011,7 +1101,7 @@ void UIDescription::updateAttributesForView (UINode* node, CView* view, bool dee
 		CViewContainer* container = dynamic_cast<CViewContainer*> (view);
 		if (deep && container)
 		{
-			for (long i = 0; i < container->getNbViews (); i++)
+			for (int32_t i = 0; i < container->getNbViews (); i++)
 			{
 				CView* subView = container->getView (i);
 				std::string subTemplateName;
@@ -1044,7 +1134,7 @@ void UIDescription::updateAttributesForView (UINode* node, CView* view, bool dee
 }
 
 //-----------------------------------------------------------------------------
-void UIDescription::updateViewDescription (const char* name, CView* view)
+void UIDescription::updateViewDescription (UTF8StringPtr name, CView* view)
 {
 #if VSTGUI_LIVE_EDITING
 	ViewFactory* factory = dynamic_cast<ViewFactory*> (viewFactory);
@@ -1075,7 +1165,7 @@ void UIDescription::updateViewDescription (const char* name, CView* view)
 }
 
 //-----------------------------------------------------------------------------
-bool UIDescription::addNewTemplate (const char* name, UIAttributes* attr)
+bool UIDescription::addNewTemplate (UTF8StringPtr name, UIAttributes* attr)
 {
 #if VSTGUI_LIVE_EDITING
 	if (!nodes)
@@ -1095,7 +1185,7 @@ bool UIDescription::addNewTemplate (const char* name, UIAttributes* attr)
 }
 
 //-----------------------------------------------------------------------------
-bool UIDescription::removeTemplate (const char* name)
+bool UIDescription::removeTemplate (UTF8StringPtr name)
 {
 #if VSTGUI_LIVE_EDITING
 	UINode* templateNode = findChildNodeByNameAttribute (nodes, name);
@@ -1109,7 +1199,7 @@ bool UIDescription::removeTemplate (const char* name)
 }
 
 //-----------------------------------------------------------------------------
-bool UIDescription::setCustomAttributes (const char* name, UIAttributes* attr)
+bool UIDescription::setCustomAttributes (UTF8StringPtr name, UIAttributes* attr)
 {
 	UINode* customNode = findChildNodeByNameAttribute (getBaseNode ("custom"), name);
 	if (customNode)
@@ -1122,7 +1212,7 @@ bool UIDescription::setCustomAttributes (const char* name, UIAttributes* attr)
 }
 
 //-----------------------------------------------------------------------------
-UIAttributes* UIDescription::getCustomAttributes (const char* name) const
+UIAttributes* UIDescription::getCustomAttributes (UTF8StringPtr name) const
 {
 	UINode* customNode = findChildNodeByNameAttribute (getBaseNode ("custom"), name);
 	if (customNode)
@@ -1131,7 +1221,7 @@ UIAttributes* UIDescription::getCustomAttributes (const char* name) const
 }
 
 //-----------------------------------------------------------------------------
-void UIDescription::startXmlElement (Xml::Parser* parser, const char* elementName, const char** elementAttributes)
+void UIDescription::startXmlElement (Xml::Parser* parser, IdStringPtr elementName, UTF8StringPtr* elementAttributes)
 {
 	std::string name (elementName);
 	if (nodes)
@@ -1190,18 +1280,18 @@ void UIDescription::startXmlElement (Xml::Parser* parser, const char* elementNam
 }
 
 //-----------------------------------------------------------------------------
-void UIDescription::endXmlElement (Xml::Parser* parser, const char* name)
+void UIDescription::endXmlElement (Xml::Parser* parser, IdStringPtr name)
 {
 	nodeStack.pop_back ();
 }
 
 //-----------------------------------------------------------------------------
-void UIDescription::xmlCharData (Xml::Parser* parser, const char* data, int length)
+void UIDescription::xmlCharData (Xml::Parser* parser, const int8_t* data, int32_t length)
 {
 }
 
 //-----------------------------------------------------------------------------
-void UIDescription::xmlComment (Xml::Parser* parser, const char* comment)
+void UIDescription::xmlComment (Xml::Parser* parser, IdStringPtr comment)
 {
 }
 
@@ -1212,6 +1302,7 @@ UINode::UINode (const std::string& _name, UIAttributes* _attributes)
 : name (_name)
 , attributes (_attributes)
 , children (new UIDescList)
+, flags (0)
 {
 	if (attributes == 0)
 		attributes = new UIAttributes ();
@@ -1241,7 +1332,7 @@ UIControlTagNode::UIControlTagNode (const std::string& name, UIAttributes* attri
 }
 
 //-----------------------------------------------------------------------------
-long UIControlTagNode::getTag ()
+int32_t UIControlTagNode::getTag ()
 {
 	if (tag == -1)
 	{
@@ -1254,7 +1345,7 @@ long UIControlTagNode::getTag ()
 				char c2 = (*tagStr)[2];
 				char c3 = (*tagStr)[3];
 				char c4 = (*tagStr)[4];
-				tag = ((((int)c1) << 24) | (((int)c2) << 16) | (((int)c3) << 8) | (((int)c4) << 0));
+				tag = ((((int32_t)c1) << 24) | (((int32_t)c2) << 16) | (((int32_t)c3) << 8) | (((int32_t)c4) << 0));
 			}
 			else
 				tag = strtol (tagStr->c_str (), 0, 10);
@@ -1264,7 +1355,7 @@ long UIControlTagNode::getTag ()
 }
 
 //-----------------------------------------------------------------------------
-void UIControlTagNode::setTag (long newTag)
+void UIControlTagNode::setTag (int32_t newTag)
 {
 	tag = newTag;
 	std::stringstream str;
@@ -1309,7 +1400,7 @@ CBitmap* UIBitmapNode::getBitmap ()
 }
 
 //-----------------------------------------------------------------------------
-void UIBitmapNode::setBitmap (const char* bitmapName)
+void UIBitmapNode::setBitmap (UTF8StringPtr bitmapName)
 {
 	std::string attrValue (bitmapName);
 	attributes->setAttribute ("path", attrValue.c_str ());
@@ -1368,10 +1459,10 @@ CFontRef UIFontNode::getFont ()
 		const std::string* underlineAttr = attributes->getAttributeValue ("underline");
 		if (nameAttr)
 		{
-			int size = 12;
+			int32_t size = 12;
 			if (sizeAttr)
 				size = strtol (sizeAttr->c_str (), 0, 10);
-			int fontStyle = 0;
+			int32_t fontStyle = 0;
 			if (boldAttr && *boldAttr == "true")
 				fontStyle |= kBoldFace;
 			if (italicAttr && *italicAttr == "true")
@@ -1419,13 +1510,13 @@ UIColorNode::UIColorNode (const std::string& name, UIAttributes* attributes)
 	const std::string* rgb = attributes->getAttributeValue ("rgb");
 	const std::string* rgba = attributes->getAttributeValue ("rgba");
 	if (red)
-		color.red = (unsigned char)strtol (red->c_str (), 0, 10);
+		color.red = (uint8_t)strtol (red->c_str (), 0, 10);
 	if (green)
-		color.green = (unsigned char)strtol (green->c_str (), 0, 10);
+		color.green = (uint8_t)strtol (green->c_str (), 0, 10);
 	if (blue)
-		color.blue = (unsigned char)strtol (blue->c_str (), 0, 10);
+		color.blue = (uint8_t)strtol (blue->c_str (), 0, 10);
 	if (alpha)
-		color.alpha = (unsigned char)strtol (alpha->c_str (), 0, 10);
+		color.alpha = (uint8_t)strtol (alpha->c_str (), 0, 10);
 	if (rgb)
 		UIDescription::parseColor (*rgb, color);
 	if (rgba)
@@ -1448,11 +1539,11 @@ void UIColorNode::setColor (const CColor& newColor)
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
-UIAttributes::UIAttributes (const char** attributes)
+UIAttributes::UIAttributes (UTF8StringPtr* attributes)
 {
 	if (attributes)
 	{
-		int i = 0;
+		int32_t i = 0;
 		while (attributes[i] != NULL && attributes[i+1] != NULL)
 		{
 			insert (std::make_pair (attributes[i], attributes[i+1]));
@@ -1467,7 +1558,7 @@ UIAttributes::~UIAttributes ()
 }
 
 //-----------------------------------------------------------------------------
-bool UIAttributes::hasAttribute (const char* name) const
+bool UIAttributes::hasAttribute (UTF8StringPtr name) const
 {
 	if (getAttributeValue (name) != 0)
 		return true;
@@ -1475,7 +1566,7 @@ bool UIAttributes::hasAttribute (const char* name) const
 }
 
 //-----------------------------------------------------------------------------
-const std::string* UIAttributes::getAttributeValue (const char* name) const
+const std::string* UIAttributes::getAttributeValue (UTF8StringPtr name) const
 {
 	std::map<std::string, std::string>::const_iterator iter = find (name);
 	if (iter != end ())
@@ -1484,7 +1575,7 @@ const std::string* UIAttributes::getAttributeValue (const char* name) const
 }
 
 //-----------------------------------------------------------------------------
-void UIAttributes::setAttribute (const char* name, const char* value)
+void UIAttributes::setAttribute (UTF8StringPtr name, UTF8StringPtr value)
 {
 	std::map<std::string, std::string>::iterator iter = find (name);
 	if (iter != end ())
@@ -1493,7 +1584,7 @@ void UIAttributes::setAttribute (const char* name, const char* value)
 }
 
 //-----------------------------------------------------------------------------
-void UIAttributes::removeAttribute (const char* name)
+void UIAttributes::removeAttribute (UTF8StringPtr name)
 {
 	std::map<std::string, std::string>::iterator iter = find (name);
 	if (iter != end ())
@@ -1501,7 +1592,7 @@ void UIAttributes::removeAttribute (const char* name)
 }
 
 //-----------------------------------------------------------------------------
-void UIAttributes::setRectAttribute (const char* name, const CRect& r)
+void UIAttributes::setRectAttribute (UTF8StringPtr name, const CRect& r)
 {
 	std::stringstream str;
 	str << r.left;
@@ -1515,7 +1606,7 @@ void UIAttributes::setRectAttribute (const char* name, const CRect& r)
 }
 
 //-----------------------------------------------------------------------------
-bool UIAttributes::getRectAttribute (const char* name, CRect& r) const
+bool UIAttributes::getRectAttribute (UTF8StringPtr name, CRect& r) const
 {
 	const std::string* str = getAttributeValue (name);
 	if (str)
@@ -1550,8 +1641,8 @@ bool UIAttributes::getRectAttribute (const char* name, CRect& r) const
 //-----------------------------------------------------------------------------
 bool UIAttributes::store (OutputStream& stream)
 {
-	if (!(stream << 'UIAT')) return false;
-	if (!(stream << (unsigned int)size ())) return false;
+	if (!(stream << (int32_t)'UIAT')) return false;
+	if (!(stream << (uint32_t)size ())) return false;
 	iterator it = begin ();
 	while (it != end ())
 	{
@@ -1565,13 +1656,13 @@ bool UIAttributes::store (OutputStream& stream)
 //-----------------------------------------------------------------------------
 bool UIAttributes::restore (InputStream& stream)
 {
-	int identifier;
+	int32_t identifier;
 	if (!(stream >> identifier)) return false;
 	if (identifier == 'UIAT')
 	{
-		unsigned int numAttr;
+		uint32_t numAttr;
 		if (!(stream >> numAttr)) return false;
-		for (unsigned int i = 0; i < numAttr; i++)
+		for (uint32_t i = 0; i < numAttr; i++)
 		{
 			std::string key, value;
 			if (!(stream >> key)) return false;
@@ -1621,7 +1712,7 @@ bool ResourceReader::open ()
 	{
 		char filename [PATH_MAX];
 		if (resFile.type == CResourceDescription::kIntegerType)
-			sprintf (filename, "%05d.uidesc", (int)resFile.u.id);
+			sprintf (filename, "%05d.uidesc", (int32_t)resFile.u.id);
 		else
 			strcpy (filename, resFile.u.name);
 		CFStringRef cfStr = CFStringCreateWithCString (NULL, filename, kCFStringEncodingUTF8);
@@ -1656,7 +1747,7 @@ bool ResourceReader::open ()
 }
 
 //-----------------------------------------------------------------------------
-int ResourceReader::readRawXmlData (char* buffer, int size)
+int32_t ResourceReader::readRawXmlData (int8_t* buffer, int32_t size)
 {
 	if (platformHandle)
 	{

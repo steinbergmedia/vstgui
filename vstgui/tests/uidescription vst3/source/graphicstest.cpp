@@ -55,13 +55,13 @@ class FadeViewContainer : public CViewContainer
 public:
 	FadeViewContainer () : CViewContainer (CRect (0, 0, 0, 0)) { setAlphaValue (0.3f); }
 	
-	CMouseEventResult onMouseEntered (CPoint &where, const long& buttons)
+	CMouseEventResult onMouseEntered (CPoint &where, const CButtonState& buttons)
 	{
 		addAnimation ("AlphaAnimation", new Animation::AlphaValueAnimation (1.f), new Animation::LinearTimingFunction (100));
 		return kMouseEventHandled;
 	}
 
-	CMouseEventResult onMouseExited (CPoint &where, const long& buttons)
+	CMouseEventResult onMouseExited (CPoint &where, const CButtonState& buttons)
 	{
 		addAnimation ("AlphaAnimation", new Animation::AlphaValueAnimation (0.3f), new Animation::LinearTimingFunction (100));
 		return kMouseEventHandled;
@@ -333,7 +333,8 @@ bool GraphicsView::attached (CView* parent)
 	{
 		buildStarPath ();
 		buildBezierPath ();
-		
+
+#if 0		
 		if (pBackground && bitmap2 == 0)
 		{
 			COffscreenContext* context = COffscreenContext::create (getFrame (), pBackground->getWidth (), pBackground->getHeight ());
@@ -350,6 +351,7 @@ bool GraphicsView::attached (CView* parent)
 				context->forget ();
 			}
 		}
+#endif
 		remember ();
 		addAnimation ("Saturation", this, new LinearTimingFunction (15000));
 	}

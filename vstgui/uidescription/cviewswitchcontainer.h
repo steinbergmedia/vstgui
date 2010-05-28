@@ -52,8 +52,8 @@ public:
 	IViewSwitchController* getController () const { return controller; }
 	void setController (IViewSwitchController* controller);	// owns controller if it is a CBaseObject
 
-	void setCurrentViewIndex (long viewIndex);
-	long getCurrentViewIndex () const { return currentViewIndex; }
+	void setCurrentViewIndex (int32_t viewIndex);
+	int32_t getCurrentViewIndex () const { return currentViewIndex; }
 
 	// overrides, views can not be directly added or removed, use the controller
 //	bool addView (CView *pView) { return false; }
@@ -69,7 +69,7 @@ protected:
 	bool removed (CView* parent);
 
 	IViewSwitchController* controller;
-	long currentViewIndex;
+	int32_t currentViewIndex;
 };
 
 //-----------------------------------------------------------------------------
@@ -83,7 +83,7 @@ public:
 
 	CViewSwitchContainer* getViewSwitchContainer () const { return viewSwitch; }
 
-	virtual CView* createViewForIndex (long index) = 0;
+	virtual CView* createViewForIndex (int32_t index) = 0;
 	virtual void switchContainerAttached () {}
 protected:
 	CViewSwitchContainer* viewSwitch;
@@ -95,20 +95,21 @@ class UIDescriptionViewSwitchController : public CBaseObject, public IViewSwitch
 public:
 	UIDescriptionViewSwitchController (CViewSwitchContainer* viewSwitch, UIDescription* uiDescription, IController* uiController);
 
-	CView* createViewForIndex (long index);
+	CView* createViewForIndex (int32_t index);
 	void switchContainerAttached ();
 
 	void valueChanged (CControl* pControl);
 
-	void setTemplateNames (const char* templateNames); // comma separated
+	void setTemplateNames (UTF8StringPtr templateNames); // comma separated
 	void getTemplateNames (std::string& str); // comma separated
 
-	void setSwitchControlTag (long tag) { switchControlTag = tag; }
-	long getSwitchControlTag () const { return switchControlTag; }
+	void setSwitchControlTag (int32_t tag) { switchControlTag = tag; }
+	int32_t getSwitchControlTag () const { return switchControlTag; }
 protected:
 	UIDescription* uiDescription;
 	IController* uiController;
-	long switchControlTag;
+	int32_t switchControlTag;
+	int32_t currentIndex;
 	std::vector<std::string> templateNames;
 };
 

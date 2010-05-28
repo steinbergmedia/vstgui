@@ -211,8 +211,8 @@ public:
 		bitmap->forget ();
 	}
 
-	unsigned char* getAddress () { return (unsigned char*)ptr; }
-	long getBytesPerRow () { return (long)bytesPerRow; }
+	uint8_t* getAddress () { return (uint8_t*)ptr; }
+	int32_t getBytesPerRow () { return (int32_t)bytesPerRow; }
 	PixelFormat getPixelFormat () { return kBGRA; }
 protected:
 	D2DOffscreenBitmap* bitmap;
@@ -222,7 +222,7 @@ protected:
 };
 
 //-----------------------------------------------------------------------------
-IPlatformBitmapPixelAccess* D2DOffscreenBitmap::lockPixels ()
+IPlatformBitmapPixelAccess* D2DOffscreenBitmap::lockPixels (bool alphaPremultiplied)
 {
 	return new D2DOffscreenBitmapPixelAccess (this);
 }

@@ -47,7 +47,7 @@ namespace VSTGUI {
 class CVuMeter : public CControl
 {
 public:
-	CVuMeter (const CRect& size, CBitmap* onBitmap, CBitmap* offBitmap, long nbLed, long style = kVertical);
+	CVuMeter (const CRect& size, CBitmap* onBitmap, CBitmap* offBitmap, int32_t nbLed, int32_t style = kVertical);
 	CVuMeter (const CVuMeter& vuMeter);
   
 	//-----------------------------------------------------------------------------
@@ -62,11 +62,11 @@ public:
 	void setOnBitmap (CBitmap* bitmap) { setBackground (bitmap); }
 	void setOffBitmap (CBitmap* bitmap);
 	
-	long getNbLed () const { return nbLed; }
-	void setNbLed (long nb) { nbLed = nb; invalid (); }
+	int32_t getNbLed () const { return nbLed; }
+	void setNbLed (int32_t nb) { nbLed = nb; invalid (); }
 	
-	void setStyle (long newStyle) { style = newStyle; invalid (); }
-	long getStyle () const { return style; }
+	void setStyle (int32_t newStyle) { style = newStyle; invalid (); }
+	int32_t getStyle () const { return style; }
 	//@}
 
 
@@ -83,8 +83,8 @@ protected:
 	CBitmap* onBitmap;
 	CBitmap* offBitmap;
 	
-	long     nbLed;
-	long     style;
+	int32_t     nbLed;
+	int32_t     style;
 	float    decreaseValue;
 
 	CRect    rectOn;

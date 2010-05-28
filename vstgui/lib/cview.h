@@ -55,23 +55,6 @@ namespace Animation {
 }
 
 //----------------------------
-// @brief Buttons Type (+modifiers)
-//----------------------------
-enum CButton
-{
-	kLButton		= 1 << 1,		///< left mouse button
-	kMButton		= 1 << 2,		///< middle mouse button
-	kRButton		= 1 << 3,		///< right mouse button
-	kShift			= 1 << 4,		///< shift modifier
-	kControl		= 1 << 5,		///< control modifier
-	kAlt			= 1 << 6,		///< alt modifier
-	kApple			= 1 << 7,		///< apple modifier
-	kButton4		= 1 << 8,		///< 4th mouse button
-	kButton5		= 1 << 9,		///< 5th mouse button
-	kDoubleClick	= 1 << 10		///< mouse button is double click
-};
-
-//----------------------------
 // @brief Mouse Wheel Axis
 //----------------------------
 enum CMouseWheelAxis
@@ -125,25 +108,75 @@ enum CViewAutosizing
 
 //-----------------------------------------------------------------------------
 // Definitions of special characters in a platform independent way
-extern const char* kDegreeSymbol;			///< degree sign
-extern const char* kInfiniteSymbol;			///< infinity
-extern const char* kCopyrightSymbol;		///< copyright sign
-extern const char* kTrademarkSymbol;		///< trade mark sign
-extern const char* kRegisteredSymbol;		///< registered sign
-extern const char* kMicroSymbol;			///< micro sign
-extern const char* kPerthousandSymbol;		///< per mille sign
+extern UTF8StringPtr kDegreeSymbol;			///< degree sign
+extern UTF8StringPtr kInfiniteSymbol;		///< infinity
+extern UTF8StringPtr kCopyrightSymbol;		///< copyright sign
+extern UTF8StringPtr kTrademarkSymbol;		///< trade mark sign
+extern UTF8StringPtr kRegisteredSymbol;		///< registered sign
+extern UTF8StringPtr kMicroSymbol;			///< micro sign
+extern UTF8StringPtr kPerthousandSymbol;	///< per mille sign
 
 //-----------------------------------------------------------------------------
-extern const char* kMsgViewSizeChanged;			///< Message send to parent that the size of the view has changed
+extern IdStringPtr kMsgViewSizeChanged;		///< Message send to parent that the size of the view has changed
 
 //-----------------------------------------------------------------------------
-typedef unsigned int CViewAttributeID;
+typedef uint32_t CViewAttributeID;
 //-----------------------------------------------------------------------------
 // Attributes
 //		all attributes where the first letter is lowercase are reserved for the vstgui lib
 
 extern const CViewAttributeID kCViewAttributeReferencePointer;	// 'cvrp'
 extern const CViewAttributeID kCViewTooltipAttribute;			// 'cvtt'
+
+//----------------------------
+// @brief Button Types (+modifiers)
+//----------------------------
+enum CButton
+{
+	kLButton		= 1 << 1,		///< left mouse button
+	kMButton		= 1 << 2,		///< middle mouse button
+	kRButton		= 1 << 3,		///< right mouse button
+	kShift			= 1 << 4,		///< shift modifier
+	kControl		= 1 << 5,		///< control modifier
+	kAlt			= 1 << 6,		///< alt modifier
+	kApple			= 1 << 7,		///< apple modifier
+	kButton4		= 1 << 8,		///< 4th mouse button
+	kButton5		= 1 << 9,		///< 5th mouse button
+	kDoubleClick	= 1 << 10		///< mouse button is double click
+};
+
+//-----------------------------------------------------------------------------
+// CButtonState Declaration
+//! @brief Button and Modifier state
+//-----------------------------------------------------------------------------
+class CButtonState
+{
+public:
+	CButtonState (int32_t state = 0) : state (state) {}
+	CButtonState (const CButtonState& bs) : state (bs.state) {}
+	
+	int32_t getButtonState () const { return state & (kLButton | kRButton | kMButton | kButton4 | kButton5); }
+	int32_t getModifierState () const { return state & (kShift | kAlt | kControl | kApple); }
+
+	/** returns true if only the left button is set. Ignores modifier state */
+	bool isLeftButton () const { return getButtonState () == kLButton; }
+	/** returns true if only the right button is set. Ignores modifier state */
+	bool isRightButton () const { return getButtonState () == kRButton; }
+
+	int32_t operator() () const { return state; }
+	CButtonState& operator= (int32_t s) { state = s; return *this; }
+	CButtonState& operator&= (int32_t s) { state &= s; return *this; }
+	CButtonState& operator|= (int32_t s) { state |= s; return *this; }
+
+	int32_t operator& (const CButtonState& s) const { return state & s.state; }
+	int32_t operator| (const CButtonState& s) const { return state | s.state; }
+	int32_t operator~ () const { return ~state; }
+
+	bool operator== (const CButtonState& s) const { return state == s.state; }
+	bool operator!= (const CButtonState& s) const { return state != s.state; }
+protected:
+	int32_t state;
+};
 
 //-----------------------------------------------------------------------------
 // CView Declaration
@@ -153,7 +186,7 @@ extern const CViewAttributeID kCViewTooltipAttribute;			// 'cvtt'
 class CView : public CBaseObject
 {
 public:
-	CView (const CRect &size);
+	CView (const CRect& size);
 	CView (const CView& view);
 
 	//-----------------------------------------------------------------------------
@@ -181,23 +214,23 @@ public:
 	/// @name Mouse Methods
 	//-----------------------------------------------------------------------------
 	//@{
-	virtual CMouseEventResult onMouseDown (CPoint &where, const long& buttons);											///< called when a mouse down event occurs
-	virtual CMouseEventResult onMouseUp (CPoint &where, const long& buttons);											///< called when a mouse up event occurs
-	virtual CMouseEventResult onMouseMoved (CPoint &where, const long& buttons);										///< called when a mouse move event occurs
+	virtual CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons);											///< called when a mouse down event occurs
+	virtual CMouseEventResult onMouseUp (CPoint& where, const CButtonState& buttons);											///< called when a mouse up event occurs
+	virtual CMouseEventResult onMouseMoved (CPoint& where, const CButtonState& buttons);										///< called when a mouse move event occurs
 
-	virtual CMouseEventResult onMouseEntered (CPoint &where, const long& buttons) {return kMouseEventNotImplemented;}	///< called when the mouse enters this view
-	virtual CMouseEventResult onMouseExited (CPoint &where, const long& buttons) {return kMouseEventNotImplemented;}	///< called when the mouse leaves this view
+	virtual CMouseEventResult onMouseEntered (CPoint& where, const CButtonState& buttons) {return kMouseEventNotImplemented;}	///< called when the mouse enters this view
+	virtual CMouseEventResult onMouseExited (CPoint& where, const CButtonState& buttons) {return kMouseEventNotImplemented;}	///< called when the mouse leaves this view
 	
-	virtual bool hitTest (const CPoint& where, const long buttons = -1) { return where.isInside (mouseableArea); }		///< check if where hits this view
+	virtual bool hitTest (const CPoint& where, const CButtonState buttons = -1) { return where.isInside (mouseableArea); }		///< check if where hits this view
 
-	virtual bool onWheel (const CPoint &where, const float &distance, const long &buttons);									///< called if a mouse wheel event is happening over this view
-	virtual bool onWheel (const CPoint &where, const CMouseWheelAxis &axis, const float &distance, const long &buttons);	///< called if a mouse wheel event is happening over this view
+	virtual bool onWheel (const CPoint& where, const float& distance, const CButtonState& buttons);									///< called if a mouse wheel event is happening over this view
+	virtual bool onWheel (const CPoint& where, const CMouseWheelAxis& axis, const float& distance, const CButtonState& buttons);	///< called if a mouse wheel event is happening over this view
 
 	virtual void setMouseEnabled (const bool bEnable = true) { bMouseEnabled = bEnable; }		///< turn on/off mouse usage for this view
 	virtual bool getMouseEnabled () const { return bMouseEnabled; }								///< get the state of wheather this view uses the mouse or not
 
-	virtual void setMouseableArea (const CRect &rect)  { mouseableArea = rect; }				///< set the area in which the view reacts to the mouse
-	virtual CRect &getMouseableArea (CRect &rect) const { rect = mouseableArea; return rect;}	///< get the area in which the view reacts to the mouse
+	virtual void setMouseableArea (const CRect& rect)  { mouseableArea = rect; }				///< set the area in which the view reacts to the mouse
+	virtual CRect& getMouseableArea (CRect& rect) const { rect = mouseableArea; return rect;}	///< get the area in which the view reacts to the mouse
 	virtual const CRect& getMouseableArea () const { return mouseableArea; }					///< read only access to the mouseable area
 	//@}
 
@@ -205,7 +238,13 @@ public:
 	/// @name Drag & Drop Methods
 	//-----------------------------------------------------------------------------
 	//@{
-	virtual long doDrag (CDropSource* source, const CPoint& offset = CPoint (0, 0), CBitmap* dragBitmap = 0);	///< start a drag operation
+	enum DragResult {
+		kDragRefused = 0,
+		kDragMoved,
+		kDragCopied,
+		kDragError = -1,
+	};
+	virtual DragResult doDrag (CDropSource* source, const CPoint& offset = CPoint (0, 0), CBitmap* dragBitmap = 0);	///< start a drag operation
 	virtual bool onDrop (CDragContainer* drag, const CPoint& where) { return false; }			///< called if a drag is dropped onto this view
 	virtual void onDragEnter (CDragContainer* drag, const CPoint& where) {}						///< called if a drag is entering this view
 	virtual void onDragLeave (CDragContainer* drag, const CPoint& where) {}						///< called if a drag is leaving this view
@@ -216,8 +255,8 @@ public:
 	/// @name Keyboard Methods
 	//-----------------------------------------------------------------------------
 	//@{
-	virtual long onKeyDown (VstKeyCode& keyCode);												///< called if a key down event occurs and this view has focus
-	virtual long onKeyUp (VstKeyCode& keyCode);													///< called if a key up event occurs and this view has focus
+	virtual int32_t onKeyDown (VstKeyCode& keyCode);												///< called if a key down event occurs and this view has focus
+	virtual int32_t onKeyUp (VstKeyCode& keyCode);													///< called if a key up event occurs and this view has focus
 	//@}
 
 	//-----------------------------------------------------------------------------
@@ -226,15 +265,15 @@ public:
 	//@{
 	CCoord getHeight () const { return size.height (); }										///< get the height of the view
 	CCoord getWidth ()  const { return size.width (); }											///< get the width of the view
-	virtual void setViewSize (CRect &rect, bool invalid = true);								///< set views size
-	virtual CRect &getViewSize (CRect &rect) const { rect = size; return rect; }				///< returns the current view size
+	virtual void setViewSize (CRect& rect, bool invalid = true);								///< set views size
+	virtual CRect& getViewSize (CRect& rect) const { rect = size; return rect; }				///< returns the current view size
 	virtual const CRect& getViewSize () const { return size; }									///< read only access to view size
 	virtual CRect getVisibleSize () const;														///< returns the visible size of the view
 	virtual void parentSizeChanged () {}														///< notification that one of the views parent has changed its size
 	virtual CPoint& frameToLocal (CPoint& point) const;											///< conversion from frame coordinates to local view coordinates
 	virtual CPoint& localToFrame (CPoint& point) const;											///< conversion from local view coordinates to frame coordinates
-	virtual void setAutosizeFlags (long flags) { autosizeFlags = flags; }						///< set autosize flags
-	virtual long getAutosizeFlags () const { return autosizeFlags; }							///< get autosize flags
+	virtual void setAutosizeFlags (int32_t flags) { autosizeFlags = flags; }						///< set autosize flags
+	virtual int32_t getAutosizeFlags () const { return autosizeFlags; }							///< get autosize flags
 	virtual bool sizeToFit () { return false; }													///< resize view to optimal size
 	//@}
 
@@ -252,9 +291,9 @@ public:
 	/// @name Attribute Methods
 	//-----------------------------------------------------------------------------
 	//@{
-	bool getAttributeSize (const CViewAttributeID id, long& outSize) const;									///< get the size of an attribute
-	bool getAttribute (const CViewAttributeID id, const long inSize, void* outData, long& outSize) const;	///< get an attribute
-	bool setAttribute (const CViewAttributeID id, const long inSize, const void* inData);					///< set an attribute
+	bool getAttributeSize (const CViewAttributeID id, int32_t& outSize) const;									///< get the size of an attribute
+	bool getAttribute (const CViewAttributeID id, const int32_t inSize, void* outData, int32_t& outSize) const;	///< get an attribute
+	bool setAttribute (const CViewAttributeID id, const int32_t inSize, const void* inData);					///< set an attribute
 	bool removeAttribute (const CViewAttributeID id);														///< remove an attribute
 	//@}
 
@@ -296,8 +335,8 @@ public:
 	/// @name Animation Methods
 	//-----------------------------------------------------------------------------
 	//@{
-	void addAnimation (const char* name, Animation::IAnimationTarget* target, Animation::ITimingFunction* timingFunction);
-	void removeAnimation (const char* name);
+	void addAnimation (IdStringPtr name, Animation::IAnimationTarget* target, Animation::ITimingFunction* timingFunction);
+	void removeAnimation (IdStringPtr name);
 	void removeAllAnimations ();
 	//@}
 	
@@ -306,7 +345,7 @@ public:
 	#endif
 
 	// overwrites
-	CMessageResult notify (CBaseObject* sender, const char* message);
+	CMessageResult notify (CBaseObject* sender, IdStringPtr message);
 
 	//-------------------------------------------
 	CLASS_METHODS(CView, CBaseObject)
@@ -325,12 +364,24 @@ protected:
 	bool  bIsAttached;
 	bool  bVisible;
 	
-	long  autosizeFlags;
+	int32_t  autosizeFlags;
 	
 	float alphaValue;
 	
 	CBitmap* pBackground;
 	CAttributeListEntry* pAttributeList;
+#if DEBUG
+public:
+	// these are here so that inherited classes which have not changed the buttons parameter type will fail on compilation
+	virtual char onMouseDown (CPoint &where, const long& buttons) {return kMouseEventNotImplemented;}
+	virtual char onMouseUp (CPoint &where, const long& buttons) {return kMouseEventNotImplemented;}
+	virtual char onMouseMoved (CPoint &where, const long& buttons) {return kMouseEventNotImplemented;}
+	virtual char onMouseEntered (CPoint &where, const long& buttons) {return kMouseEventNotImplemented;}
+	virtual char onMouseExited (CPoint &where, const long& buttons) {return kMouseEventNotImplemented;}
+	virtual long hitTest (const CPoint& where, const long buttons = -1) { return false;}
+	virtual long onWheel (const CPoint &where, const float &distance, const long &buttons) { return false; }
+	virtual long onWheel (const CPoint &where, const CMouseWheelAxis &axis, const float &distance, const long &buttons) { return false; }
+#endif
 };
 
 //-----------------------------------------------------------------------------
@@ -340,11 +391,11 @@ protected:
 class CDragContainer : public CBaseObject
 {
 public:
-	virtual void* first (long& size, long& type) = 0;		///< returns pointer on a char array if type is known
-	virtual void* next (long& size, long& type) = 0;		///< returns pointer on a char array if type is known
+	virtual void* first (int32_t& size, int32_t& type) = 0;		///< returns pointer on a char array if type is known
+	virtual void* next (int32_t& size, int32_t& type) = 0;		///< returns pointer on a char array if type is known
 	
-	virtual long getType (long idx) const = 0;
-	virtual long getCount () const = 0;
+	virtual int32_t getType (int32_t idx) const = 0;
+	virtual int32_t getCount () const = 0;
 
 	enum CDragType {
 		kFile = 0,								///< File (MacOSX = UTF8 String)

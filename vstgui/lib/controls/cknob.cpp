@@ -60,15 +60,18 @@ By clicking alt modifier and left mouse button the value changes with a vertical
  * @param offset offset of background bitmap
  */
 //------------------------------------------------------------------------
-CKnob::CKnob (const CRect& size, CControlListener* listener, long tag, CBitmap* background, CBitmap* handle, const CPoint& offset)
+CKnob::CKnob (const CRect& size, CControlListener* listener, int32_t tag, CBitmap* background, CBitmap* handle, const CPoint& offset, int32_t drawStyle)
 : CControl (size, listener, tag, background)
+, drawStyle (drawStyle)
 , offset (offset)
 , pHandle (handle)
+, handleLineWidth (1.)
+, coronaInset (0)
 {
 	if (pHandle)
 	{
 		pHandle->remember ();
-		inset = (long)((float)pHandle->getWidth () / 2.f + 2.5f);
+		inset = (CCoord)((float)pHandle->getWidth () / 2.f + 2.5f);
 	}
 	else
 		inset = 3;
@@ -89,9 +92,12 @@ CKnob::CKnob (const CRect& size, CControlListener* listener, long tag, CBitmap* 
 CKnob::CKnob (const CKnob& v)
 : CControl (v)
 , offset (v.offset)
+, drawStyle (v.drawStyle)
 , colorHandle (v.colorHandle)
 , colorShadowHandle (v.colorShadowHandle)
+, handleLineWidth (v.handleLineWidth)
 , inset (v.inset)
+, coronaInset (v.coronaInset)
 , startAngle (v.startAngle)
 , rangeAngle (v.rangeAngle)
 , halfAngle (v.halfAngle)
@@ -167,26 +173,102 @@ void CKnob::drawHandle (CDrawContext *pContext)
 	}
 	else
 	{
-		CPoint origin (size.width () / 2, size.height () / 2);
-		
-		where.offset (size.left - 1, size.top);
-		origin.offset (size.left - 1, size.top);
-		pContext->setFrameColor (colorShadowHandle);
-		pContext->setLineStyle (kLineSolid);
-		pContext->moveTo (where);
-		pContext->lineTo (origin);
-		
-		where.offset (1, -1);
-		origin.offset (1, -1);
-		pContext->setFrameColor (colorHandle);
-		pContext->moveTo (where);
-		pContext->lineTo (origin);
+		pContext->setDrawMode (kAntiAliasing);
+		if (drawStyle == 0)
+		{
+			CPoint origin (size.width () / 2, size.height () / 2);
+			where.offset (size.left - 1, size.top);
+			origin.offset (size.left - 1, size.top);
+			pContext->setFrameColor (colorShadowHandle);
+			pContext->setLineWidth (handleLineWidth);
+			pContext->setLineStyle (kLineSolid);
+			pContext->moveTo (where);
+			pContext->lineTo (origin);
+			
+			where.offset (1, -1);
+			origin.offset (1, -1);
+			pContext->setFrameColor (colorHandle);
+			pContext->moveTo (where);
+			pContext->lineTo (origin);
+		}
+		if (drawStyle & kCoronaOutline)
+		{
+			CGraphicsPath* path = CGraphicsPath::create (getFrame ());
+			if (path)
+			{
+				CRect corona (getViewSize ());
+				corona.inset (coronaInset, coronaInset);
+				double rangeDegree = -(rangeAngle / kPI * 180.);
+				double startDegree = (startAngle / kPI * 180.) - 90.;
+				path->addArc (corona, startDegree, startDegree + rangeDegree, false);
+				pContext->setFrameColor (colorShadowHandle);
+				pContext->setLineStyle (kLineSolid);
+				pContext->setLineWidth (handleLineWidth+2.);
+				path->draw (pContext, CGraphicsPath::kStroked);
+				path->forget ();
+			}
+		}
+		if (drawStyle & kCoronaDrawing)
+		{
+			CGraphicsPath* path = CGraphicsPath::create (getFrame ());
+			if (path)
+			{
+				float coronaValue = getValueNormalized ();
+				if (drawStyle & kCoronaInverted)
+					coronaValue = 1.f - coronaValue;
+				CRect corona (getViewSize ());
+				corona.inset (coronaInset, coronaInset);
+				double rangeDegree = -(rangeAngle / kPI * 180.);
+				if (drawStyle & kCoronaFromCenter)
+				{
+					double startDegree = 270.;
+					rangeDegree = startDegree + (rangeDegree * (coronaValue - 0.5));
+					path->addArc (corona, startDegree, rangeDegree, coronaValue > 0.5 ? false : true);
+				}
+				else
+				{
+					if (drawStyle & kCoronaInverted)
+					{
+						double startDegree = (startAngle / kPI * 180.) - 90. + rangeDegree;
+						rangeDegree *= coronaValue;
+						path->addArc (corona, startDegree, startDegree - rangeDegree, true);
+					}
+					else
+					{
+						double startDegree = (startAngle / kPI * 180.) - 90.;
+						rangeDegree *= coronaValue;
+						path->addArc (corona, startDegree, startDegree + rangeDegree, false);
+					}
+				}
+				pContext->setFrameColor (coronaColor);
+				pContext->setLineStyle (drawStyle & kCoronaLineDashDot ? kLineOnOffDash : kLineSolid);
+				pContext->setLineWidth (handleLineWidth);
+				path->draw (pContext, CGraphicsPath::kStroked);
+				path->forget ();
+			}
+		}
+		if (drawStyle & kHandleCircleDrawing)
+		{
+			where.offset (size.left, size.top);
+			CRect r (where.x - 0.5, where.y - 0.5, where.x + 0.5, where.y + 0.5);
+			r.inset (-handleLineWidth, -handleLineWidth);
+			pContext->setDrawMode (kAntiAliasing);
+			pContext->setFrameColor (colorShadowHandle);
+			pContext->setFillColor (colorHandle);
+			pContext->setLineWidth (0.5);
+			pContext->setLineStyle (kLineSolid);
+			pContext->drawEllipse (r, kDrawFilledAndStroked);
+
+		}
 	}
 }
 
 //------------------------------------------------------------------------
-CMouseEventResult CKnob::onMouseDown (CPoint& where, const long& buttons)
+CMouseEventResult CKnob::onMouseDown (CPoint& where, const CButtonState& buttons)
 {
+	if (!buttons.isLeftButton ())
+		return kMouseEventNotHandled;
+
 	beginEdit ();
 
 	if (checkDefaultValue (buttons))
@@ -205,8 +287,8 @@ CMouseEventResult CKnob::onMouseDown (CPoint& where, const long& buttons)
 	coef = (getMax () - getMin ()) / range;
 	oldButton = buttons;
 
-	long mode    = kCircularMode;
-	long newMode = getFrame ()->getKnobMode ();
+	int32_t mode    = kCircularMode;
+	int32_t newMode = getFrame ()->getKnobMode ();
 	if (kLinearMode == newMode)
 	{
 		if (!(buttons & kAlt))
@@ -215,7 +297,7 @@ CMouseEventResult CKnob::onMouseDown (CPoint& where, const long& buttons)
 	else if (buttons & kAlt) 
 		mode = kLinearMode;
 
-	if (mode == kLinearMode && (buttons & kLButton))
+	if (mode == kLinearMode)
 	{
 		if (buttons & kShift)
 			range *= zoomFactor;
@@ -234,16 +316,16 @@ CMouseEventResult CKnob::onMouseDown (CPoint& where, const long& buttons)
 }
 
 //------------------------------------------------------------------------
-CMouseEventResult CKnob::onMouseUp (CPoint& where, const long& buttons)
+CMouseEventResult CKnob::onMouseUp (CPoint& where, const CButtonState& buttons)
 {
 	endEdit ();
 	return kMouseEventHandled;
 }
 
 //------------------------------------------------------------------------
-CMouseEventResult CKnob::onMouseMoved (CPoint& where, const long& buttons)
+CMouseEventResult CKnob::onMouseMoved (CPoint& where, const CButtonState& buttons)
 {
-	if (buttons & kLButton)
+	if (buttons.isLeftButton ())
 	{
 		float middle = (getMax () - getMin ()) * 0.5f;
 
@@ -288,7 +370,7 @@ CMouseEventResult CKnob::onMouseMoved (CPoint& where, const long& buttons)
 }
 
 //------------------------------------------------------------------------
-bool CKnob::onWheel (const CPoint& where, const float &distance, const long &buttons)
+bool CKnob::onWheel (const CPoint& where, const float &distance, const CButtonState &buttons)
 {
 	if (!bMouseEnabled)
 		return false;
@@ -313,7 +395,7 @@ bool CKnob::onWheel (const CPoint& where, const float &distance, const long &but
 }
 
 //------------------------------------------------------------------------
-long CKnob::onKeyDown (VstKeyCode& keyCode)
+int32_t CKnob::onKeyDown (VstKeyCode& keyCode)
 {
 	switch (keyCode.virt)
 	{
@@ -433,17 +515,63 @@ float CKnob::valueFromPoint (CPoint &point) const
 }
 
 //------------------------------------------------------------------------
+void CKnob::setCoronaInset (CCoord inset)
+{
+	if (inset != coronaInset)
+	{
+		coronaInset = inset;
+		setDirty ();
+	}
+}
+
+//------------------------------------------------------------------------
+void CKnob::setCoronaColor (CColor color)
+{
+	if (color != coronaColor)
+	{
+		coronaColor = color;
+		setDirty ();
+	}
+}
+
+//------------------------------------------------------------------------
 void CKnob::setColorShadowHandle (CColor color)
 {
-	colorShadowHandle = color;
-	setDirty ();
+	if (color != colorShadowHandle)
+	{
+		colorShadowHandle = color;
+		setDirty ();
+	}
 }
 
 //------------------------------------------------------------------------
 void CKnob::setColorHandle (CColor color)
 {
-	colorHandle = color;
-	setDirty ();
+	if (color != colorHandle)
+	{
+		colorHandle = color;
+		setDirty ();
+	}
+}
+
+//------------------------------------------------------------------------
+void CKnob::setHandleLineWidth (CCoord width)
+{
+	if (width != handleLineWidth)
+	{
+		handleLineWidth = width;
+		setDirty ();
+	}
+}
+
+//------------------------------------------------------------------------
+void CKnob::setDrawStyle (int32_t style)
+{
+	if (style != drawStyle)
+	{
+		drawStyle = style;
+		setDirty ();
+	}
 }
 
 //------------------------------------------------------------------------
@@ -459,11 +587,10 @@ void CKnob::setHandleBitmap (CBitmap* bitmap)
 	{
 		pHandle = bitmap;
 		pHandle->remember ();
-		inset = (long)((float)pHandle->getWidth () / 2.f + 2.5f);
+		inset = (CCoord)((float)pHandle->getWidth () / 2.f + 2.5f);
 	}
+	setDirty ();
 }
-
-
 
 //------------------------------------------------------------------------
 // CAnimKnob
@@ -482,12 +609,12 @@ According to the value, a specific subbitmap is displayed. The different subbitm
  * @param offset unused
  */
 //------------------------------------------------------------------------
-CAnimKnob::CAnimKnob (const CRect& size, CControlListener* listener, long tag, CBitmap* background, const CPoint &offset)
+CAnimKnob::CAnimKnob (const CRect& size, CControlListener* listener, int32_t tag, CBitmap* background, const CPoint &offset)
 : CKnob (size, listener, tag, background, 0, offset)
 , bInverseBitmap (false)
 {
 	heightOfOneImage = size.height ();
-	setNumSubPixmaps (background ? (short)(background->getHeight () / heightOfOneImage) : 0);
+	setNumSubPixmaps (background ? (int32_t)(background->getHeight () / heightOfOneImage) : 0);
 	inset = 0;
 }
 
@@ -503,7 +630,7 @@ CAnimKnob::CAnimKnob (const CRect& size, CControlListener* listener, long tag, C
  * @param offset unused
  */
 //------------------------------------------------------------------------
-CAnimKnob::CAnimKnob (const CRect& size, CControlListener* listener, long tag, long subPixmaps, CCoord heightOfOneImage, CBitmap* background, const CPoint &offset)
+CAnimKnob::CAnimKnob (const CRect& size, CControlListener* listener, int32_t tag, int32_t subPixmaps, CCoord heightOfOneImage, CBitmap* background, const CPoint &offset)
 : CKnob (size, listener, tag, background, 0, offset)
 , bInverseBitmap (false)
 {
@@ -545,7 +672,7 @@ void CAnimKnob::setHeightOfOneImage (const CCoord& height)
 {
 	IMultiBitmapControl::setHeightOfOneImage (height);
 	if (pBackground && heightOfOneImage)
-		setNumSubPixmaps ((long)(pBackground->getHeight () / heightOfOneImage));
+		setNumSubPixmaps ((int32_t)(pBackground->getHeight () / heightOfOneImage));
 }
 
 //-----------------------------------------------------------------------------------------------
@@ -555,50 +682,27 @@ void CAnimKnob::setBackground (CBitmap *background)
 	if (heightOfOneImage == 0)
 		heightOfOneImage = size.height ();
 	if (background && heightOfOneImage)
-		setNumSubPixmaps ((long)(background->getHeight () / heightOfOneImage));
-}
-
-//-----------------------------------------------------------------------------------------------
-bool CAnimKnob::isDirty () const
-{
-	if (!bDirty)
-	{
-		CPoint p;
-		valueToPoint (p);
-		if (p == lastDrawnPoint)
-			return false;
-	}
-	return CKnob::isDirty ();
+		setNumSubPixmaps ((int32_t)(background->getHeight () / heightOfOneImage));
 }
 
 //------------------------------------------------------------------------
 void CAnimKnob::draw (CDrawContext *pContext)
 {
-	CPoint where (0, 0);
-	if (value >= 0.f && heightOfOneImage > (CCoord)0) 
-	{
-		CCoord tmp = heightOfOneImage * (getNumSubPixmaps () - 1);
-		if (bInverseBitmap)
-			where.v = (CCoord)((1 - value) * (float)tmp);
-		else
-			where.v = (CCoord)(value * (float)tmp);
-		for (CCoord realY = 0; realY <= tmp, tmp > 0; realY += heightOfOneImage) 
-		{
-			if (where.v < realY) 
-			{
-				where.v = realY - heightOfOneImage;
-				if (where.v < 0)
-					where.v = 0;
-				break;
-			}
-		}
-	}
-
 	if (pBackground)
 	{
+		CPoint where (0, 0);
+		if (value >= 0.f && heightOfOneImage > 0.) 
+		{
+			CCoord tmp = heightOfOneImage * (getNumSubPixmaps () - 1);
+			if (bInverseBitmap)
+				where.v = floor ((1. - value) * tmp);
+			else
+				where.v = floor (value * tmp);
+			where.v -= (int32_t)where.v % (int32_t)heightOfOneImage;
+		}
+
 		pBackground->draw (pContext, size, where);
 	}
-	valueToPoint (lastDrawnPoint);
 	setDirty (false);
 }
 

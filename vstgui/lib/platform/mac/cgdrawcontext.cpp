@@ -59,7 +59,7 @@ CGDrawContext::CGDrawContext (CGContextRef cgContext, const CRect& rect)
 }
 
 //-----------------------------------------------------------------------------
-CGDrawContext::CGDrawContext (CGOffscreenBitmap* _bitmap)
+CGDrawContext::CGDrawContext (CGBitmap* _bitmap)
 : COffscreenContext (new CBitmap (_bitmap))
 , cgContext (_bitmap->createCGContext ())
 {
@@ -93,12 +93,11 @@ CGDrawContext::~CGDrawContext ()
 void CGDrawContext::endDraw ()
 {
 	CGContextSynchronize (cgContext);
-	CBitmap* bitmap = getBitmap ();
 	if (bitmap && bitmap->getPlatformBitmap ())
 	{
-		CGOffscreenBitmap* cgOffscreenBitmap = dynamic_cast<CGOffscreenBitmap*> (bitmap->getPlatformBitmap ());
-		if (cgOffscreenBitmap)
-			cgOffscreenBitmap->setDirty ();
+		CGBitmap* cgBitmap = dynamic_cast<CGBitmap*> (bitmap->getPlatformBitmap ());
+		if (cgBitmap)
+			cgBitmap->setDirty ();
 	}
 }
 
@@ -178,7 +177,7 @@ void CGDrawContext::lineTo (const CPoint& point)
 	{
 		applyLineStyle (context);
 
-		if ((((int)currentState.frameWidth) % 2))
+		if ((((int32_t)currentState.frameWidth) % 2))
 			CGContextTranslateCTM (context, 0.5f, -0.5f);
 
 		CGContextBeginPath (context);
@@ -191,18 +190,18 @@ void CGDrawContext::lineTo (const CPoint& point)
 }
 
 //-----------------------------------------------------------------------------
-void CGDrawContext::drawLines (const CPoint* points, const long& numLines)
+void CGDrawContext::drawLines (const CPoint* points, const int32_t& numLines)
 {
 	CGContextRef context = beginCGContext (true);
 	if (context) 
 	{
 		applyLineStyle (context);
 
-		if ((((int)currentState.frameWidth) % 2))
+		if ((((int32_t)currentState.frameWidth) % 2))
 			CGContextTranslateCTM (context, 0.5f, -0.5f);
 
 		CGPoint* cgPoints = new CGPoint[numLines*2];
-		for (long i = 0; i < numLines * 2; i += 2)
+		for (int32_t i = 0; i < numLines * 2; i += 2)
 		{
 			cgPoints[i].x = points[i].x;
 			cgPoints[i+1].x = points[i+1].x;
@@ -217,7 +216,7 @@ void CGDrawContext::drawLines (const CPoint* points, const long& numLines)
 }
 
 //-----------------------------------------------------------------------------
-void CGDrawContext::drawPolygon (const CPoint* pPoints, long numberOfPoints, const CDrawStyle drawStyle)
+void CGDrawContext::drawPolygon (const CPoint* pPoints, int32_t numberOfPoints, const CDrawStyle drawStyle)
 {
 	CGContextRef context = beginCGContext (true);
 	{
@@ -232,7 +231,7 @@ void CGDrawContext::drawPolygon (const CPoint* pPoints, long numberOfPoints, con
 
 		CGContextBeginPath (context);
 		CGContextMoveToPoint (context, pPoints[0].h, pPoints[0].v);
-		for (long i = 1; i < numberOfPoints; i++)
+		for (int32_t i = 1; i < numberOfPoints; i++)
 			CGContextAddLineToPoint (context, pPoints[i].h, pPoints[i].v);
 		CGContextDrawPath (context, m);
 		releaseCGContext (context);
@@ -255,7 +254,7 @@ void CGDrawContext::drawRect (const CRect &rect, const CDrawStyle drawStyle)
 
 		CGRect r = CGRectMake (rect.left, rect.top+1, rect.width () - 1, rect.height () - 1);
 
-		if ((((int)currentState.frameWidth) % 2))
+		if ((((int32_t)currentState.frameWidth) % 2))
 			CGContextTranslateCTM (context, 0.5f, -0.5f);
 
 		CGContextBeginPath (context);
@@ -458,12 +457,6 @@ void CGDrawContext::releaseCGContext (CGContextRef context)
 	if (context)
 	{
 		CGContextRestoreGState (context);
-		if (bitmap)
-		{
-			CGOffscreenBitmap* ob = dynamic_cast<CGOffscreenBitmap*> (bitmap->getPlatformBitmap ());
-			if (ob)
-				ob->setDirty ();
-		}
 	}
 }
 
@@ -485,7 +478,7 @@ void CGDrawContext::applyLineStyle (CGContextRef context)
 	if (currentState.lineStyle.getDashCount () > 0)
 	{
 		CGFloat* dashLengths = new CGFloat (currentState.lineStyle.getDashCount ());
-		for (long i = 0; i < currentState.lineStyle.getDashCount (); i++)
+		for (int32_t i = 0; i < currentState.lineStyle.getDashCount (); i++)
 		{
 			dashLengths[i] = currentState.frameWidth * currentState.lineStyle.getDashLengths ()[i];
 		}

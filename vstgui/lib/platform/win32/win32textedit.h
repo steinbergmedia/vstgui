@@ -56,8 +56,8 @@ public:
 	Win32TextEdit (HWND parent, IPlatformTextEditCallback* textEdit);
 	~Win32TextEdit ();
 	
-	bool getText (char* text, long maxSize);
-	bool setText (const char* text);
+	UTF8StringPtr getText ();
+	bool setText (UTF8StringPtr text);
 	bool updateSize ();
 
 	HWND getPlatformControl () const { return platformControl; }
@@ -70,6 +70,7 @@ protected:
 	HANDLE platformFont;
 	HBRUSH platformBackColor;
 	WINDOWSPROC oldWndProcEdit;
+	std::string text;
 
 	static LONG_PTR WINAPI procEdit (HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam);
 };

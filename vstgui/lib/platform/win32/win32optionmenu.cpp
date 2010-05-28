@@ -50,9 +50,9 @@ Win32OptionMenu::Win32OptionMenu (HWND windowHandle)
 }
 
 //------------------------------------------------------------------------
-COptionMenu* getItemMenu (long idx, long &idxInMenu, long &offsetIdx, COptionMenu* _menu)
+COptionMenu* getItemMenu (int32_t idx, int32_t &idxInMenu, int32_t &offsetIdx, COptionMenu* _menu)
 {
-	long oldIDx = offsetIdx;
+	int32_t oldIDx = offsetIdx;
 	offsetIdx += _menu->getNbEntries ();
 
 	if (idx < offsetIdx)
@@ -88,19 +88,19 @@ PlatformOptionMenuResult Win32OptionMenu::popup (COptionMenu* optionMenu)
 	optionMenu->localToFrame (p);
 	rect.offset (p.x, p.y);
 
-	long offset;
+	int32_t offset;
 
 	if (optionMenu->getStyle () & kPopupStyle)
 		offset = 0;
 	else
-		offset = (long)optionMenu->getViewSize ().getHeight ();
+		offset = (int32_t)optionMenu->getViewSize ().getHeight ();
 
 	CCoord gx = 0, gy = 0;
 	optionMenu->getFrame()->getPosition (gx, gy);
 	gy += rect.top + offset;
 	gx += rect.left;
 
-	long offsetIndex = 0;
+	int32_t offsetIndex = 0;
 	HMENU menu = createMenu (optionMenu, offsetIndex);
 	if (menu)
 	{
@@ -117,10 +117,10 @@ PlatformOptionMenuResult Win32OptionMenu::popup (COptionMenu* optionMenu)
 			{
 				if (HIWORD (msg.wParam) == 0)
 				{
-					long res = LOWORD (msg.wParam);
+					int32_t res = LOWORD (msg.wParam);
 					if (res != -1)
 					{
-						long idx = 0;
+						int32_t idx = 0;
 						offsetIndex = 0;
 						COptionMenu* resultMenu = getItemMenu (res, idx, offsetIndex, optionMenu);
 						if (resultMenu)
@@ -144,7 +144,7 @@ PlatformOptionMenuResult Win32OptionMenu::popup (COptionMenu* optionMenu)
 }
 
 //-----------------------------------------------------------------------------
-HMENU Win32OptionMenu::createMenu (COptionMenu* _menu, long& offsetIdx)
+HMENU Win32OptionMenu::createMenu (COptionMenu* _menu, int32_t& offsetIdx)
 {
 	HMENU menu = CreatePopupMenu ();
 
@@ -167,11 +167,11 @@ HMENU Win32OptionMenu::createMenu (COptionMenu* _menu, long& offsetIdx)
 	SetMenuInfo (menu, &mi);
 
 	int flags = 0;
-	long idxSubmenu = 0;
-	long offset = offsetIdx;
-	long nbEntries = _menu->getNbEntries ();
+	int32_t idxSubmenu = 0;
+	int32_t offset = offsetIdx;
+	int32_t nbEntries = _menu->getNbEntries ();
 	offsetIdx += nbEntries;
-	long inc = 0;
+	int32_t inc = 0;
 	CMenuItemIterator it = _menu->getItems ()->begin ();
 	while (it != _menu->getItems ()->end ())
 	{

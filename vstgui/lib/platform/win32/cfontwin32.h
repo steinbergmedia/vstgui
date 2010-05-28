@@ -49,7 +49,7 @@ namespace VSTGUI {
 class GdiPlusFont : public IPlatformFont, public IFontPainter
 {
 public:
-	GdiPlusFont (const char* name, const CCoord& size, const long& style);
+	GdiPlusFont (const char* name, const CCoord& size, const int32_t& style);
 
 	Gdiplus::Font* getFont () const { return font; }
 

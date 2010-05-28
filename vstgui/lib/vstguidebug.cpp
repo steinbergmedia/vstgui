@@ -46,12 +46,12 @@
 namespace VSTGUI {
 
 //-----------------------------------------------------------------------------
-TimeWatch::TimeWatch (const char* name, bool startNow)
+TimeWatch::TimeWatch (UTF8StringPtr name, bool startNow)
 : startTime (0)
 {
 	if (name)
 	{
-		this->name = (char*) malloc (strlen (name) + 1);
+		this->name = (UTF8StringBuffer) malloc (strlen (name) + 1);
 		strcpy (this->name, name);
 	}
 	if (startNow)

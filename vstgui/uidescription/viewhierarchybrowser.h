@@ -80,7 +80,7 @@ public:
 	void changeBaseView (CViewContainer* newBaseView);
 	void notifyHierarchyChange (CView* view, bool wasRemoved = false);
 	
-	static const char* kMsgWindowClosed;
+	static IdStringPtr kMsgWindowClosed;
 protected:
 	void windowSizeChanged (const CRect& newSize, PlatformWindow* platformWindow);
 	void windowClosed (PlatformWindow* platformWindow);

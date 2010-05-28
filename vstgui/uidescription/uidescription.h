@@ -59,8 +59,8 @@ class OutputStream;
 class IController : public CControlListener
 {
 public:
-	virtual long getTagForName (const char* name, long registeredTag) { return registeredTag; };
-	virtual CControlListener* getControlListener (const char* controlTagName) { return this; }
+	virtual int32_t getTagForName (UTF8StringPtr name, int32_t registeredTag) { return registeredTag; };
+	virtual CControlListener* getControlListener (UTF8StringPtr controlTagName) { return this; }
 	virtual CView* createView (const UIAttributes& attributes, IUIDescription* description) { return 0; }
 	virtual CView* verifyView (CView* view, const UIAttributes& attributes, IUIDescription* description) { return view; }
 };
@@ -71,17 +71,17 @@ class IUIDescription
 public:
 	virtual ~IUIDescription () {}
 
-	virtual CBitmap* getBitmap (const char* name) = 0;
-	virtual CFontRef getFont (const char* name) = 0;
-	virtual bool getColor (const char* name, CColor& color) = 0;
-	virtual long getTagForName (const char* name) = 0;
-	virtual CControlListener* getControlListener (const char* name) = 0;
+	virtual CBitmap* getBitmap (UTF8StringPtr name) = 0;
+	virtual CFontRef getFont (UTF8StringPtr name) = 0;
+	virtual bool getColor (UTF8StringPtr name, CColor& color) = 0;
+	virtual int32_t getTagForName (UTF8StringPtr name) = 0;
+	virtual CControlListener* getControlListener (UTF8StringPtr name) = 0;
 	virtual IController* getController () const = 0;
 
-	virtual const char* lookupColorName (const CColor& color) const = 0;
-	virtual const char* lookupFontName (const CFontRef font) const = 0;
-	virtual const char* lookupBitmapName (const CBitmap* bitmap) const = 0;
-	virtual const char* lookupControlTagName (const long tag) const = 0;
+	virtual UTF8StringPtr lookupColorName (const CColor& color) const = 0;
+	virtual UTF8StringPtr lookupFontName (const CFontRef font) const = 0;
+	virtual UTF8StringPtr lookupBitmapName (const CBitmap* bitmap) const = 0;
+	virtual UTF8StringPtr lookupControlTagName (const int32_t tag) const = 0;
 };
 
 //-----------------------------------------------------------------------------
@@ -93,26 +93,26 @@ public:
 	~UIDescription ();
 
 	bool parse ();
-	bool save (const char* filename);
-	const char* getXmFileName () const { return xmlFile.u.name; }
+	bool save (UTF8StringPtr filename);
+	UTF8StringPtr getXmFileName () const { return xmlFile.u.name; }
 	
-	CView* createView (const char* name, IController* controller);
-	const UIAttributes* getViewAttributes (const char* name);
+	CView* createView (UTF8StringPtr name, IController* controller);
+	const UIAttributes* getViewAttributes (UTF8StringPtr name);
 
 	void setController (IController* controller);
 
-	CBitmap* getBitmap (const char* name);
-	CFontRef getFont (const char* name);
-	bool getColor (const char* name, CColor& color);
-	long getTagForName (const char* name);
-	CControlListener* getControlListener (const char* name);
+	CBitmap* getBitmap (UTF8StringPtr name);
+	CFontRef getFont (UTF8StringPtr name);
+	bool getColor (UTF8StringPtr name, CColor& color);
+	int32_t getTagForName (UTF8StringPtr name);
+	CControlListener* getControlListener (UTF8StringPtr name);
 	IController* getController () const { return controller; }
 	IViewFactory* getViewFactory () const { return viewFactory; }
 	
-	const char* lookupColorName (const CColor& color) const;
-	const char* lookupFontName (const CFontRef font) const;
-	const char* lookupBitmapName (const CBitmap* bitmap) const;
-	const char* lookupControlTagName (const long tag) const;
+	UTF8StringPtr lookupColorName (const CColor& color) const;
+	UTF8StringPtr lookupFontName (const CFontRef font) const;
+	UTF8StringPtr lookupBitmapName (const CBitmap* bitmap) const;
+	UTF8StringPtr lookupControlTagName (const int32_t tag) const;
 	
 	void collectTemplateViewNames (std::list<const std::string*>& names) const;
 	void collectColorNames (std::list<const std::string*>& names) const;
@@ -120,42 +120,44 @@ public:
 	void collectBitmapNames (std::list<const std::string*>& names) const;
 	void collectControlTagNames (std::list<const std::string*>& names) const;
 	
-	void changeColorName (const char* oldName, const char* newName);
-	void changeTagName (const char* oldName, const char* newName);
-	void changeFontName (const char* oldName, const char* newName);
-	void changeBitmapName (const char* oldName, const char* newName);
+	void changeColorName (UTF8StringPtr oldName, UTF8StringPtr newName);
+	void changeTagName (UTF8StringPtr oldName, UTF8StringPtr newName);
+	void changeFontName (UTF8StringPtr oldName, UTF8StringPtr newName);
+	void changeBitmapName (UTF8StringPtr oldName, UTF8StringPtr newName);
 
-	void changeColor (const char* name, const CColor& newColor);
-	void changeTag (const char* name, long tag);
-	void changeFont (const char* name, CFontRef newFont);
-	void changeBitmap (const char* name, const char* newName, const CRect* nineparttiledOffset = 0);
+	void changeColor (UTF8StringPtr name, const CColor& newColor);
+	void changeTag (UTF8StringPtr name, int32_t tag);
+	void changeFont (UTF8StringPtr name, CFontRef newFont);
+	void changeBitmap (UTF8StringPtr name, UTF8StringPtr newName, const CRect* nineparttiledOffset = 0);
 	
-	void removeColor (const char* name);
-	void removeTag (const char* name);
-	void removeFont (const char* name);
-	void removeBitmap (const char* name);
+	void removeColor (UTF8StringPtr name);
+	void removeTag (UTF8StringPtr name);
+	void removeFont (UTF8StringPtr name);
+	void removeBitmap (UTF8StringPtr name);
 
-	void updateViewDescription (const char* name, CView* view);
+	void updateViewDescription (UTF8StringPtr name, CView* view);
 	bool getTemplateNameFromView (CView* view, std::string& templateName);
-	bool addNewTemplate (const char* name, UIAttributes* attr); // owns attributes
-	bool removeTemplate (const char* name);
+	bool addNewTemplate (UTF8StringPtr name, UIAttributes* attr); // owns attributes
+	bool removeTemplate (UTF8StringPtr name);
 
-	bool setCustomAttributes (const char* name, UIAttributes* attr); //owns attributes
-	UIAttributes* getCustomAttributes (const char* name) const;
+	bool setCustomAttributes (UTF8StringPtr name, UIAttributes* attr); //owns attributes
+	UIAttributes* getCustomAttributes (UTF8StringPtr name) const;
 
 	static bool parseColor (const std::string& colorString, CColor& color);
 	static CViewAttributeID kTemplateNameAttributeID;
 protected:
 	CView* createViewFromNode (UINode* node);
-	UINode* getBaseNode (const char* name) const;
-	UINode* findChildNodeByNameAttribute (UINode* node, const char* nameAttribute) const;
+	UINode* getBaseNode (UTF8StringPtr name) const;
+	UINode* findChildNodeByNameAttribute (UINode* node, UTF8StringPtr nameAttribute) const;
 	void updateAttributesForView (UINode* node, CView* view, bool deep = true);
 
+	void addDefaultNodes ();
+
 	// Xml::IHandler
-	void startXmlElement (Xml::Parser* parser, const char* elementName, const char** elementAttributes);
-	void endXmlElement (Xml::Parser* parser, const char* name);
-	void xmlCharData (Xml::Parser* parser, const char* data, int length);
-	void xmlComment (Xml::Parser* parser, const char* comment);
+	void startXmlElement (Xml::Parser* parser, IdStringPtr elementName, UTF8StringPtr* elementAttributes);
+	void endXmlElement (Xml::Parser* parser, IdStringPtr name);
+	void xmlCharData (Xml::Parser* parser, const int8_t* data, int32_t length);
+	void xmlComment (Xml::Parser* parser, IdStringPtr comment);
 
 	CResourceDescription xmlFile;
 	UINode* nodes;
@@ -164,23 +166,23 @@ protected:
 	Xml::IContentProvider* xmlContentProvider;
 
 	std::deque<UINode*> nodeStack;
-	int parseState;
+	int32_t parseState;
 };
  
 //-----------------------------------------------------------------------------
 class UIAttributes : public CBaseObject, public std::map<std::string,std::string>
 {
 public:
-	UIAttributes (const char** attributes = 0);
+	UIAttributes (UTF8StringPtr* attributes = 0);
 	~UIAttributes ();
 
-	bool hasAttribute (const char* name) const;
-	const std::string* getAttributeValue (const char* name) const;
-	void setAttribute (const char* name, const char* value);
-	void removeAttribute (const char* name);
+	bool hasAttribute (UTF8StringPtr name) const;
+	const std::string* getAttributeValue (UTF8StringPtr name) const;
+	void setAttribute (UTF8StringPtr name, UTF8StringPtr value);
+	void removeAttribute (UTF8StringPtr name);
 	
-	void setRectAttribute (const char* name, const CRect& r);
-	bool getRectAttribute (const char* name, CRect& r) const;
+	void setRectAttribute (UTF8StringPtr name, const CRect& r);
+	bool getRectAttribute (UTF8StringPtr name, CRect& r) const;
 	
 	void removeAll () { clear (); }
 
@@ -206,14 +208,14 @@ public:
 
 	// CControlListener
 	void valueChanged (CControl* pControl) { controller->valueChanged (pControl); }
-	long controlModifierClicked (CControl* pControl, long button) { return controller->controlModifierClicked (pControl, button); }
+	int32_t controlModifierClicked (CControl* pControl, CButtonState button) { return controller->controlModifierClicked (pControl, button); }
 	void controlBeginEdit (CControl* pControl) { controller->controlBeginEdit (pControl); }
 	void controlEndEdit (CControl* pControl) { controller->controlEndEdit (pControl); }
 	void controlTagWillChange (VSTGUI::CControl* pControl) { controller->controlTagWillChange (pControl); }
 	void controlTagDidChange (VSTGUI::CControl* pControl) { controller->controlTagDidChange (pControl); }
 	// IController
-	long getTagForName (const char* name, long registeredTag) { return controller->getTagForName (name, registeredTag); }
-	CControlListener* getControlListener (const char* name) { return controller->getControlListener (name); }
+	int32_t getTagForName (UTF8StringPtr name, int32_t registeredTag) { return controller->getTagForName (name, registeredTag); }
+	CControlListener* getControlListener (UTF8StringPtr name) { return controller->getControlListener (name); }
 	CView* createView (const UIAttributes& attributes, IUIDescription* description) { return controller->createView (attributes, description); }
 	CView* verifyView (CView* view, const UIAttributes& attributes, IUIDescription* description) { return controller->verifyView (view, attributes, description); }
 protected:

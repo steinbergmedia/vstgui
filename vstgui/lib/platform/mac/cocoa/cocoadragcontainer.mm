@@ -75,14 +75,14 @@ CocoaDragContainer::~CocoaDragContainer ()
 }
 
 //-----------------------------------------------------------------------------
-void* CocoaDragContainer::first (long& size, long& type)
+void* CocoaDragContainer::first (int32_t& size, int32_t& type)
 {
 	iterator = 0;
 	return next (size, type);
 }
 
 //------------------------------------------------------------------------------------
-void* CocoaDragContainer::next (long& size, long& type)
+void* CocoaDragContainer::next (int32_t& size, int32_t& type)
 {
 	if (lastItem)
 	{
@@ -118,7 +118,7 @@ void* CocoaDragContainer::next (long& size, long& type)
 	if (hasFilenames)
 	{
 		NSArray* fileNames = [pb propertyListForType:hasFilenames];
-		if (iterator-1 < (long)[fileNames count])
+		if (iterator-1 < (int32_t)[fileNames count])
 		{
 			NSString* filename = [fileNames objectAtIndex:iterator-1];
 			if (filename)
@@ -154,7 +154,7 @@ void* CocoaDragContainer::next (long& size, long& type)
 }
 
 //------------------------------------------------------------------------------------
-long CocoaDragContainer::getType (long idx) const
+int32_t CocoaDragContainer::getType (int32_t idx) const
 {
 	NSArray *supportedTypes = [NSArray arrayWithObjects: NSStringPboardType, nil];
 	NSString* hasString = [pb availableTypeFromArray: supportedTypes];
@@ -166,7 +166,7 @@ long CocoaDragContainer::getType (long idx) const
 	if (hasFilenames)
 	{
 		NSArray* fileNames = [pb propertyListForType:hasFilenames];
-		if ((long)[fileNames count] > idx)
+		if ((int32_t)[fileNames count] > idx)
 			return CDragContainer::kFile;
 	}
 

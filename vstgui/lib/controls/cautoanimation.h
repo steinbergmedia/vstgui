@@ -47,12 +47,12 @@ namespace VSTGUI {
 class CAutoAnimation : public CControl, public IMultiBitmapControl
 {
 public:
-	CAutoAnimation (const CRect& size, CControlListener* listener, long tag, CBitmap* background, const CPoint& offset = CPoint (0, 0));
-	CAutoAnimation (const CRect& size, CControlListener* listener, long tag, long subPixmaps, CCoord heightOfOneImage, CBitmap* background, const CPoint& offset = CPoint (0, 0));
+	CAutoAnimation (const CRect& size, CControlListener* listener, int32_t tag, CBitmap* background, const CPoint& offset = CPoint (0, 0));
+	CAutoAnimation (const CRect& size, CControlListener* listener, int32_t tag, int32_t subPixmaps, CCoord heightOfOneImage, CBitmap* background, const CPoint& offset = CPoint (0, 0));
 	CAutoAnimation (const CAutoAnimation& autoAnimation);
 
 	virtual void draw (CDrawContext*);
-	virtual CMouseEventResult onMouseDown (CPoint& where, const long& buttons);
+	virtual CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons);
 
 	//-----------------------------------------------------------------------------
 	/// @name CAutoAnimation Methods
@@ -67,7 +67,7 @@ public:
 	bool    isWindowOpened () const { return bWindowOpened; }
 	//@}
 
-	void setNumSubPixmaps (long numSubPixmaps) { IMultiBitmapControl::setNumSubPixmaps (numSubPixmaps); invalid (); }
+	void setNumSubPixmaps (int32_t numSubPixmaps) { IMultiBitmapControl::setNumSubPixmaps (numSubPixmaps); invalid (); }
 
 	CLASS_METHODS(CAutoAnimation, CControl)
 protected:

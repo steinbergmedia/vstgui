@@ -48,7 +48,17 @@ namespace VSTGUI {
 class CKnob : public CControl
 {
 public:
-	CKnob (const CRect& size, CControlListener* listener, long tag, CBitmap* background, CBitmap* handle, const CPoint& offset = CPoint (0, 0));
+	enum DrawStyle {
+		kLegacyHandleLineDrawing	= 0,
+		kHandleCircleDrawing		= 1 << 0,
+		kCoronaDrawing				= 1 << 1,
+		kCoronaFromCenter			= 1 << 2,
+		kCoronaInverted				= 1 << 3,
+		kCoronaLineDashDot			= 1 << 4,
+		kCoronaOutline				= 1 << 5,
+	};
+	
+	CKnob (const CRect& size, CControlListener* listener, int32_t tag, CBitmap* background, CBitmap* handle, const CPoint& offset = CPoint (0, 0), int32_t drawStyle = kLegacyHandleLineDrawing);
 	CKnob (const CKnob& knob);
 
 	//-----------------------------------------------------------------------------
@@ -64,14 +74,26 @@ public:
 	virtual void  valueToPoint (CPoint& point) const;
 	virtual float valueFromPoint (CPoint& point) const;
 
-	virtual long getInsetValue () const { return inset; }
-	virtual void setInsetValue (long val) { inset = val; }
+	virtual CCoord getInsetValue () const { return inset; }
+	virtual void setInsetValue (CCoord val) { inset = val; }
 
+	virtual int32_t getDrawStyle () const { return drawStyle; }
+	virtual void setDrawStyle (int32_t style);
+	
+	virtual CColor getCoronaColor () const { return coronaColor; }
+	virtual void setCoronaColor (CColor color);
+
+	virtual CCoord getCoronaInset () const { return coronaInset; }
+	virtual void setCoronaInset (CCoord inset);
+	
 	virtual CColor getColorShadowHandle () const { return colorShadowHandle; }
 	virtual void setColorShadowHandle (CColor color);
 
 	virtual CColor getColorHandle () const { return colorHandle; }
 	virtual void setColorHandle (CColor color);
+
+	virtual CCoord getHandleLineWidth () const { return handleLineWidth; }
+	virtual void setHandleLineWidth (CCoord width);
 
 	virtual CBitmap* getHandleBitmap () const { return pHandle; }
 	virtual void setHandleBitmap (CBitmap* bitmap);
@@ -82,14 +104,14 @@ public:
 
 	// overrides
 	virtual void draw (CDrawContext* pContext);
-	virtual bool onWheel (const CPoint& where, const float& distance, const long& buttons);
-	virtual long onKeyDown (VstKeyCode& keyCode);
+	virtual bool onWheel (const CPoint& where, const float& distance, const CButtonState& buttons);
+	virtual int32_t onKeyDown (VstKeyCode& keyCode);
 	virtual void setViewSize (CRect &rect, bool invalid = true);
 	virtual bool sizeToFit ();
 
-	virtual CMouseEventResult onMouseDown (CPoint& where, const long& buttons);
-	virtual CMouseEventResult onMouseUp (CPoint& where, const long& buttons);
-	virtual CMouseEventResult onMouseMoved (CPoint& where, const long& buttons);
+	virtual CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons);
+	virtual CMouseEventResult onMouseUp (CPoint& where, const CButtonState& buttons);
+	virtual CMouseEventResult onMouseMoved (CPoint& where, const CButtonState& buttons);
 
 	CLASS_METHODS(CKnob, CControl)
 protected:
@@ -99,14 +121,17 @@ protected:
 
 	CPoint offset;
 	
-	CColor   colorHandle, colorShadowHandle;
+	int32_t drawStyle;
+	CColor colorHandle, colorShadowHandle, coronaColor;
+	CCoord handleLineWidth;
+	CCoord inset;
+	CCoord coronaInset;
 
 	CBitmap* pHandle;
-	long     inset;
-	float    startAngle, rangeAngle, halfAngle;
-	float    aCoef, bCoef;
-	float    radius;
-	float    zoomFactor;
+	float startAngle, rangeAngle, halfAngle;
+	float aCoef, bCoef;
+	float radius;
+	float zoomFactor;
 
 private:
 	CPoint firstPoint;
@@ -115,7 +140,7 @@ private:
 	float  fEntryState;
 	float  range;
 	float  coef;
-	long   oldButton;
+	CButtonState   oldButton;
 	bool   modeLinear;
 	
 };
@@ -128,8 +153,8 @@ private:
 class CAnimKnob : public CKnob, public IMultiBitmapControl
 {
 public:
-	CAnimKnob (const CRect& size, CControlListener* listener, long tag, CBitmap* background, const CPoint& offset = CPoint (0, 0));
-	CAnimKnob (const CRect& size, CControlListener* listener, long tag, long subPixmaps, CCoord heightOfOneImage, CBitmap* background, const CPoint& offset = CPoint (0, 0));
+	CAnimKnob (const CRect& size, CControlListener* listener, int32_t tag, CBitmap* background, const CPoint& offset = CPoint (0, 0));
+	CAnimKnob (const CRect& size, CControlListener* listener, int32_t tag, int32_t subPixmaps, CCoord heightOfOneImage, CBitmap* background, const CPoint& offset = CPoint (0, 0));
 	CAnimKnob (const CAnimKnob& knob);
 
 	//-----------------------------------------------------------------------------
@@ -140,18 +165,16 @@ public:
 	//@}
 
 	// overrides
-	virtual bool isDirty () const;
 	virtual void draw (CDrawContext* pContext);
 	virtual bool sizeToFit ();
 	void setHeightOfOneImage (const CCoord& height);
 	void setBackground (CBitmap *background);
-	void setNumSubPixmaps (long numSubPixmaps) { IMultiBitmapControl::setNumSubPixmaps (numSubPixmaps); invalid (); }
+	void setNumSubPixmaps (int32_t numSubPixmaps) { IMultiBitmapControl::setNumSubPixmaps (numSubPixmaps); invalid (); }
 
 	CLASS_METHODS(CAnimKnob, CKnob)
 protected:
 	~CAnimKnob ();
 	bool	bInverseBitmap;
-	CPoint	lastDrawnPoint;
 };
 
 } // namespace

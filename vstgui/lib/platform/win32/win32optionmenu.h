@@ -53,7 +53,7 @@ public:
 	PlatformOptionMenuResult popup (COptionMenu* optionMenu);
 
 protected:
-	HMENU createMenu (COptionMenu* menu, long& offsetIdx);
+	HMENU createMenu (COptionMenu* menu, int32_t& offsetIdx);
 	
 	HWND windowHandle;
 	

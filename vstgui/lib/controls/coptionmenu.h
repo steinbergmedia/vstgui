@@ -58,49 +58,49 @@ public:
 		kSeparator	= 1 << 3,	///< item is a separator
 	};
 
-	CMenuItem (const char* title, const char* keycode = 0, long keyModifiers = 0, CBitmap* icon = 0, long flags = kNoFlags);
-	CMenuItem (const char* title, COptionMenu* submenu, CBitmap* icon = 0);
-	CMenuItem (const char* title, long tag);
+	CMenuItem (UTF8StringPtr title, UTF8StringPtr keycode = 0, int32_t keyModifiers = 0, CBitmap* icon = 0, int32_t flags = kNoFlags);
+	CMenuItem (UTF8StringPtr title, COptionMenu* submenu, CBitmap* icon = 0);
+	CMenuItem (UTF8StringPtr title, int32_t tag);
 	CMenuItem (const CMenuItem& item);
 
 	//-----------------------------------------------------------------------------
 	/// @name CMenuItem Methods
 	//-----------------------------------------------------------------------------
 	//@{
-	virtual void setTitle (const char* title);							///< set title of menu item
+	virtual void setTitle (UTF8StringPtr title);							///< set title of menu item
 	virtual void setSubmenu (COptionMenu* submenu);						///< set submenu of menu item
-	virtual void setKey (const char* keyCode, long keyModifiers = 0);	///< set keycode and key modifiers of menu item
+	virtual void setKey (UTF8StringPtr keyCode, int32_t keyModifiers = 0);	///< set keycode and key modifiers of menu item
 	virtual void setEnabled (bool state = true);						///< set menu item enabled state
 	virtual void setChecked (bool state = true);						///< set menu item checked state
 	virtual void setIsTitle (bool state = true);						///< set menu item title state
 	virtual void setIsSeparator (bool state = true);					///< set menu item separator state
 	virtual void setIcon (CBitmap* icon);								///< set menu item icon
-	virtual void setTag (long tag);										///< set menu item tag
+	virtual void setTag (int32_t tag);										///< set menu item tag
 
 	bool isEnabled () const { return !(flags & kDisabled); }			///< returns whether the item is enabled or not
 	bool isChecked () const { return (flags & kChecked) != 0; }				///< returns whether the item is checked or not
 	bool isTitle () const { return (flags & kTitle) != 0; }					///< returns whether the item is a title item or not
 	bool isSeparator () const { return (flags & kSeparator) != 0; }			///< returns whether the item is a separator or not
 
-	const char* getTitle () const { return title; }						///< returns the title of the item
-	long getKeyModifiers () const { return keyModifiers; }				///< returns the key modifiers of the item
-	const char* getKeycode () const { return keycode; }					///< returns the keycode of the item
+	UTF8StringPtr getTitle () const { return title; }						///< returns the title of the item
+	int32_t getKeyModifiers () const { return keyModifiers; }				///< returns the key modifiers of the item
+	UTF8StringPtr getKeycode () const { return keycode; }					///< returns the keycode of the item
 	COptionMenu* getSubmenu () const { return submenu; }				///< returns the submenu of the item
 	CBitmap* getIcon () const { return icon; }							///< returns the icon of the item
-	long getTag () const { return tag; }								///< returns the tag of the item
+	int32_t getTag () const { return tag; }								///< returns the tag of the item
 	//@}
 
 //------------------------------------------------------------------------
 protected:
 	~CMenuItem ();
 
-	char* title;
-	char* keycode;
+	UTF8StringBuffer title;
+	UTF8StringBuffer keycode;
 	COptionMenu* submenu;
 	CBitmap* icon;
-	long flags;
-	long keyModifiers;
-	long tag;
+	int32_t flags;
+	int32_t keyModifiers;
+	int32_t tag;
 };
 
 //-----------------------------------------------------------------------------
@@ -124,38 +124,38 @@ class COptionMenu : public CParamDisplay
 {
 public:
 	COptionMenu ();
-	COptionMenu (const CRect& size, CControlListener* listener, long tag, CBitmap* background = 0, CBitmap* bgWhenClick = 0, const long style = 0);
+	COptionMenu (const CRect& size, CControlListener* listener, int32_t tag, CBitmap* background = 0, CBitmap* bgWhenClick = 0, const int32_t style = 0);
 	COptionMenu (const COptionMenu& menu);
 
 	//-----------------------------------------------------------------------------
 	/// @name COptionMenu Methods
 	//-----------------------------------------------------------------------------
 	//@{
-	virtual CMenuItem* addEntry (CMenuItem* item, long index = -1);											///< add a new entry
-	virtual CMenuItem* addEntry (COptionMenu* submenu, const char* title);									///< add a new submenu entry
-	virtual CMenuItem* addEntry (const char* title, long index = -1, long itemFlags = CMenuItem::kNoFlags);	///< add a new entry
+	virtual CMenuItem* addEntry (CMenuItem* item, int32_t index = -1);											///< add a new entry
+	virtual CMenuItem* addEntry (COptionMenu* submenu, UTF8StringPtr title);									///< add a new submenu entry
+	virtual CMenuItem* addEntry (UTF8StringPtr title, int32_t index = -1, int32_t itemFlags = CMenuItem::kNoFlags);	///< add a new entry
 	virtual CMenuItem* addSeparator ();																		///< add a new separator entry
 	virtual CMenuItem* getCurrent () const;																	///< get current entry
-	virtual long getCurrentIndex (bool countSeparator = false) const;
-	virtual CMenuItem* getEntry (long index) const;															///< get entry at index position
-	virtual long getNbEntries () const;																		///< get number of entries
-	virtual	bool setCurrent (long index, bool countSeparator = true);										///< set current entry
-	virtual	bool removeEntry (long index);																	///< remove an entry
+	virtual int32_t getCurrentIndex (bool countSeparator = false) const;
+	virtual CMenuItem* getEntry (int32_t index) const;															///< get entry at index position
+	virtual int32_t getNbEntries () const;																		///< get number of entries
+	virtual	bool setCurrent (int32_t index, bool countSeparator = true);										///< set current entry
+	virtual	bool removeEntry (int32_t index);																	///< remove an entry
 	virtual	bool removeAllEntry ();																			///< remove all entries
 
-	virtual bool checkEntry (long index, bool state);														///< change check state of entry at index
-	virtual bool checkEntryAlone (long index);																///< check entry at index and uncheck every other item
-	virtual bool isCheckEntry (long index) const;															///< get check state of entry at index
-	virtual void setNbItemsPerColumn (long val) { nbItemsPerColumn = val; }									///< Windows only
-	virtual long getNbItemsPerColumn () const { return nbItemsPerColumn; }									///< Windows only
+	virtual bool checkEntry (int32_t index, bool state);														///< change check state of entry at index
+	virtual bool checkEntryAlone (int32_t index);																///< check entry at index and uncheck every other item
+	virtual bool isCheckEntry (int32_t index) const;															///< get check state of entry at index
+	virtual void setNbItemsPerColumn (int32_t val) { nbItemsPerColumn = val; }									///< Windows only
+	virtual int32_t getNbItemsPerColumn () const { return nbItemsPerColumn; }									///< Windows only
 
-	long getLastResult () const { return lastResult; }														///< get last index of choosen entry
-	COptionMenu* getLastItemMenu (long& idxInMenu) const;													///< get last menu and index of choosen entry
+	int32_t getLastResult () const { return lastResult; }														///< get last index of choosen entry
+	COptionMenu* getLastItemMenu (int32_t& idxInMenu) const;													///< get last menu and index of choosen entry
 
-	virtual void setPrefixNumbers (long preCount);															///< set prefix numbering
-	long getPrefixNumbers () const { return prefixNumbers; }												///< get prefix numbering
+	virtual void setPrefixNumbers (int32_t preCount);															///< set prefix numbering
+	int32_t getPrefixNumbers () const { return prefixNumbers; }												///< get prefix numbering
 
-	COptionMenu* getSubMenu (long idx) const;																///< get a submenu
+	COptionMenu* getSubMenu (int32_t idx) const;																///< get a submenu
 
 	bool popup ();																							///< pops up menu
 	bool popup (CFrame* frame, const CPoint& frameLocation);												///< pops up menu at frameLocation
@@ -171,8 +171,8 @@ public:
 	virtual float getMax () const { return (float)(menuItems->size () - 1); }
 
 	virtual	void draw (CDrawContext* pContext);
-	virtual CMouseEventResult onMouseDown (CPoint& where, const long& buttons);
-	virtual long onKeyDown (VstKeyCode& keyCode);
+	virtual CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons);
+	virtual int32_t onKeyDown (VstKeyCode& keyCode);
 
 	virtual	void takeFocus ();
 	virtual	void looseFocus ();
@@ -184,11 +184,11 @@ protected:
 	CMenuItemList* menuItems;
 
 	bool     inPopup;
-	long     currentIndex;
-	long     lastButton;
-	long     nbItemsPerColumn;
-	long	 lastResult;
-	long	 prefixNumbers;
+	int32_t     currentIndex;
+	CButtonState     lastButton;
+	int32_t     nbItemsPerColumn;
+	int32_t	 lastResult;
+	int32_t	 prefixNumbers;
 	CBitmap* bgWhenClick;
 	COptionMenu* lastMenu;
 };

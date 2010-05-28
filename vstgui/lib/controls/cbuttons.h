@@ -49,27 +49,27 @@ namespace VSTGUI {
 class COnOffButton : public CControl
 {
 public:
-	COnOffButton (const CRect& size, CControlListener* listener, long tag, CBitmap* background, long style = 0);
+	COnOffButton (const CRect& size, CControlListener* listener, int32_t tag, CBitmap* background, int32_t style = 0);
 	COnOffButton (const COnOffButton& onOffButton);
 
 	//-----------------------------------------------------------------------------
 	/// @name COnOffButton Methods
 	//-----------------------------------------------------------------------------
 	//@{
-	virtual long getStyle () const { return style; }
-	virtual void setStyle (long newStyle) { style = newStyle; }
+	virtual int32_t getStyle () const { return style; }
+	virtual void setStyle (int32_t newStyle) { style = newStyle; }
 	//@}
 
 	// overrides
 	virtual void draw (CDrawContext*);
-	virtual CMouseEventResult onMouseDown (CPoint& where, const long& buttons);
-	virtual long onKeyDown (VstKeyCode& keyCode);
+	virtual CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons);
+	virtual int32_t onKeyDown (VstKeyCode& keyCode);
 	virtual bool sizeToFit ();
 
 	CLASS_METHODS(COnOffButton, CControl)
 protected:
 	~COnOffButton ();
-	long style;
+	int32_t style;
 };
 
 //-----------------------------------------------------------------------------
@@ -80,7 +80,7 @@ protected:
 class CCheckBox : public CControl
 {
 public:
-	CCheckBox (const CRect& size, CControlListener* listener, long tag, const char* title, CBitmap* bitmap = 0, long style = 0);
+	CCheckBox (const CRect& size, CControlListener* listener, int32_t tag, UTF8StringPtr title, CBitmap* bitmap = 0, int32_t style = 0);
 	CCheckBox (const CCheckBox& checkbox);
 
 	enum Styles {
@@ -92,8 +92,8 @@ public:
 	/// @name CCheckBox Methods
 	//-----------------------------------------------------------------------------
 	//@{
-	virtual void setTitle (const char* newTitle);
-	const char* getTitle () const { return title; }
+	virtual void setTitle (UTF8StringPtr newTitle);
+	UTF8StringPtr getTitle () const { return title; }
 	
 	virtual void setFont (CFontRef newFont);
 	const CFontRef getFont () const { return font; }
@@ -108,16 +108,16 @@ public:
 	virtual void setCheckMarkColor (const CColor& newColor) { checkMarkColor = newColor; invalid (); }
 	const CColor& getCheckMarkColor () const { return checkMarkColor; }
 
-	virtual long getStyle () const { return style; }
-	virtual void setStyle (long newStyle);
+	virtual int32_t getStyle () const { return style; }
+	virtual void setStyle (int32_t newStyle);
 	//@}
 
 	// overrides
 	virtual void draw (CDrawContext* context);
-	virtual CMouseEventResult onMouseDown (CPoint& where, const long& buttons);
-	virtual CMouseEventResult onMouseMoved (CPoint& where, const long& buttons);
-	virtual CMouseEventResult onMouseUp (CPoint& where, const long& buttons);
-	virtual long onKeyDown (VstKeyCode& keyCode);
+	virtual CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons);
+	virtual CMouseEventResult onMouseMoved (CPoint& where, const CButtonState& buttons);
+	virtual CMouseEventResult onMouseUp (CPoint& where, const CButtonState& buttons);
+	virtual int32_t onKeyDown (VstKeyCode& keyCode);
 	virtual bool sizeToFit ();
 	virtual void setBackground (CBitmap *background);
 	virtual bool getFocusPath (CGraphicsPath& outPath);
@@ -125,8 +125,8 @@ public:
 	CLASS_METHODS(CCheckBox, CControl)
 protected:
 	~CCheckBox ();
-	char* title;
-	long style;
+	UTF8StringBuffer title;
+	int32_t style;
 	CColor fontColor;
 	CColor boxFrameColor;
 	CColor boxFillColor;
@@ -146,21 +146,21 @@ private:
 class CKickButton : public CControl, public IMultiBitmapControl
 {
 public:
-	CKickButton (const CRect& size, CControlListener* listener, long tag, CBitmap* background, const CPoint& offset = CPoint (0, 0));
-	CKickButton (const CRect& size, CControlListener* listener, long tag, CCoord heightOfOneImage, CBitmap* background, const CPoint& offset = CPoint (0, 0));
+	CKickButton (const CRect& size, CControlListener* listener, int32_t tag, CBitmap* background, const CPoint& offset = CPoint (0, 0));
+	CKickButton (const CRect& size, CControlListener* listener, int32_t tag, CCoord heightOfOneImage, CBitmap* background, const CPoint& offset = CPoint (0, 0));
 	CKickButton (const CKickButton& kickButton);
 
 	virtual void draw (CDrawContext*);
 
-	virtual CMouseEventResult onMouseDown (CPoint& where, const long& buttons);
-	virtual CMouseEventResult onMouseUp (CPoint& where, const long& buttons);
-	virtual CMouseEventResult onMouseMoved (CPoint& where, const long& buttons);
-	virtual long onKeyDown (VstKeyCode& keyCode);
-	virtual long onKeyUp (VstKeyCode& keyCode);
+	virtual CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons);
+	virtual CMouseEventResult onMouseUp (CPoint& where, const CButtonState& buttons);
+	virtual CMouseEventResult onMouseMoved (CPoint& where, const CButtonState& buttons);
+	virtual int32_t onKeyDown (VstKeyCode& keyCode);
+	virtual int32_t onKeyUp (VstKeyCode& keyCode);
 
 	virtual bool sizeToFit ();
 
-	void setNumSubPixmaps (long numSubPixmaps) { IMultiBitmapControl::setNumSubPixmaps (numSubPixmaps); invalid (); }
+	void setNumSubPixmaps (int32_t numSubPixmaps) { IMultiBitmapControl::setNumSubPixmaps (numSubPixmaps); invalid (); }
 
 	CLASS_METHODS(CKickButton, CControl)
 protected:

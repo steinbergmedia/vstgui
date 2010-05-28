@@ -50,7 +50,7 @@ namespace VSTGUI {
  * @param offset
  */
 //------------------------------------------------------------------------
-CMovieButton::CMovieButton (const CRect& size, CControlListener* listener, long tag, CBitmap* background, const CPoint &offset)
+CMovieButton::CMovieButton (const CRect& size, CControlListener* listener, int32_t tag, CBitmap* background, const CPoint &offset)
 : CControl (size, listener, tag, background), offset (offset), buttonState (value)
 {
 	heightOfOneImage = size.height ();
@@ -68,7 +68,7 @@ CMovieButton::CMovieButton (const CRect& size, CControlListener* listener, long 
  * @param offset
  */
 //------------------------------------------------------------------------
-CMovieButton::CMovieButton (const CRect& size, CControlListener* listener, long tag, CCoord heightOfOneImage, CBitmap* background, const CPoint &offset)
+CMovieButton::CMovieButton (const CRect& size, CControlListener* listener, int32_t tag, CCoord heightOfOneImage, CBitmap* background, const CPoint &offset)
 : CControl (size, listener, tag, background)
 , offset (offset)
 , buttonState (value)
@@ -113,7 +113,7 @@ void CMovieButton::draw (CDrawContext *pContext)
 }
 
 //------------------------------------------------------------------------
-CMouseEventResult CMovieButton::onMouseDown (CPoint& where, const long& buttons)
+CMouseEventResult CMovieButton::onMouseDown (CPoint& where, const CButtonState& buttons)
 {
 	if (!(buttons & kLButton))
 		return kMouseEventNotHandled;
@@ -123,14 +123,14 @@ CMouseEventResult CMovieButton::onMouseDown (CPoint& where, const long& buttons)
 }
 
 //------------------------------------------------------------------------
-CMouseEventResult CMovieButton::onMouseUp (CPoint& where, const long& buttons)
+CMouseEventResult CMovieButton::onMouseUp (CPoint& where, const CButtonState& buttons)
 {
 	endEdit ();
 	return kMouseEventHandled;
 }
 
 //------------------------------------------------------------------------
-CMouseEventResult CMovieButton::onMouseMoved (CPoint& where, const long& buttons)
+CMouseEventResult CMovieButton::onMouseMoved (CPoint& where, const CButtonState& buttons)
 {
 	if (buttons & kLButton)
 	{
@@ -151,7 +151,7 @@ CMouseEventResult CMovieButton::onMouseMoved (CPoint& where, const long& buttons
 }
 
 //------------------------------------------------------------------------
-long CMovieButton::onKeyDown (VstKeyCode& keyCode)
+int32_t CMovieButton::onKeyDown (VstKeyCode& keyCode)
 {
 	if (keyCode.virt == VKEY_RETURN && keyCode.modifier == 0)
 	{

@@ -59,10 +59,10 @@ public:
 		kSingleSelectionStyle
 	};
 	
-	CSelection (int style = kMultiSelectionStyle);
+	CSelection (int32_t style = kMultiSelectionStyle);
 	~CSelection ();
 
-	void setStyle (int style);
+	void setStyle (int32_t style);
 
 	void add (CView* view);
 	void remove (CView* view);
@@ -77,7 +77,7 @@ public:
 	bool contains (CView* view) const;
 	bool containsParent (CView* view) const;
 
-	int total () const;
+	int32_t total () const;
 	CRect getBounds () const;
 	static CRect getGlobalViewCoordinates (CView* view);
 
@@ -89,9 +89,9 @@ public:
 	void setDragOffset (const CPoint& p) { dragOffset = p; }
 	const CPoint& getDragOffset () const { return dragOffset; }
 	
-	static const char* kMsgSelectionChanged;
-	static const char* kMsgSelectionViewChanged;
-	void changed (const char* what);
+	static IdStringPtr kMsgSelectionChanged;
+	static IdStringPtr kMsgSelectionViewChanged;
+	void changed (IdStringPtr what);
 
 	bool store (OutputStream& stream, ViewFactory* viewFactory, IUIDescription* uiDescription);
 	bool restore (InputStream& str, ViewFactory* viewFactory, IUIDescription* uiDescription);
@@ -100,7 +100,7 @@ protected:
 	static CView* createView (InputStream& stream, ViewFactory* viewFactory, IUIDescription* uiDescription);
 
 	std::list<CBaseObject*> dependencies;
-	int style;
+	int32_t style;
 	
 	CPoint dragOffset;
 };

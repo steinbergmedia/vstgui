@@ -54,14 +54,14 @@ class VST3EditorDelegate
 public:
 	virtual ~VST3EditorDelegate () {}
 	
-	virtual CView* createCustomView (const char* name, const UIAttributes& attributes, IUIDescription* description, VST3Editor* editor) { return 0; } ///< create a custom view
+	virtual CView* createCustomView (UTF8StringPtr name, const UIAttributes& attributes, IUIDescription* description, VST3Editor* editor) { return 0; } ///< create a custom view
 	virtual bool findParameter (const CPoint& pos, Steinberg::Vst::ParamID& paramID, VST3Editor* editor) { return false; } ///< find a parameter
 	virtual void didOpen (VST3Editor* editor) {}	///< called after the editor was opened
 	virtual void willClose (VST3Editor* editor) {}	///< called before the editor will close
 
 	/** called when a sub controller should be created.
 	    The controller is now owned by the editor, which will call forget() if it is a CBaseObject, release() if it is a Steinberg::FObject or it will be simply deleted if the frame gets closed. */
-	virtual IController* createSubController (const char* name, IUIDescription* description, VST3Editor* editor) { return 0; } ///< create a sub controller
+	virtual IController* createSubController (UTF8StringPtr name, IUIDescription* description, VST3Editor* editor) { return 0; } ///< create a sub controller
 };
 
 //-----------------------------------------------------------------------------
@@ -70,10 +70,10 @@ public:
 class VST3Editor : public Steinberg::Vst::VSTGUIEditor, public Steinberg::Vst::IParameterFinder, public IController, public IViewAddedRemovedObserver
 {
 public:
-	VST3Editor (Steinberg::Vst::EditController* controller, const char* viewName, const char* xmlFile);
-	VST3Editor (UIDescription* desc, Steinberg::Vst::EditController* controller, const char* viewName, const char* xmlFile = 0);
+	VST3Editor (Steinberg::Vst::EditController* controller, UTF8StringPtr viewName, UTF8StringPtr xmlFile);
+	VST3Editor (UIDescription* desc, Steinberg::Vst::EditController* controller, UTF8StringPtr viewName, UTF8StringPtr xmlFile = 0);
 
-	bool exchangeView (const char* newViewName);
+	bool exchangeView (UTF8StringPtr newViewName);
 	void enableTooltips (bool state);
 
 //-----------------------------------------------------------------------------
@@ -82,24 +82,24 @@ public:
 protected:
 	~VST3Editor ();
 	void init ();
-	ParameterChangeListener* getParameterChangeListener (long tag);
+	ParameterChangeListener* getParameterChangeListener (int32_t tag);
 	void recreateView ();
 
 	#if VSTGUI_LIVE_EDITING
-	void runNewTemplateDialog (const char* baseViewName);
+	void runNewTemplateDialog (IdStringPtr baseViewName);
 	void runTemplateSettingsDialog ();
 	#endif // VSTGUI_LIVE_EDITING
 	
 	bool PLUGIN_API open (void* parent);
 	void PLUGIN_API close ();
 
-	void beginEdit (long index);
-	void endEdit (long index);
+	void beginEdit (int32_t index);
+	void endEdit (int32_t index);
 
 	CView* createView (const UIAttributes& attributes, IUIDescription* description);
 	CView* verifyView (CView* view, const UIAttributes& attributes, IUIDescription* description);
 
-	CMessageResult notify (CBaseObject* sender, const char* message);
+	CMessageResult notify (CBaseObject* sender, IdStringPtr message);
 
 	Steinberg::tresult PLUGIN_API onSize (Steinberg::ViewRect* newSize);
 	Steinberg::tresult PLUGIN_API canResize ();
@@ -131,7 +131,7 @@ protected:
 
 	UIDescription* description;
 	VST3EditorDelegate* delegate;
-	std::map<long, ParameterChangeListener*> paramChangeListeners;
+	std::map<int32_t, ParameterChangeListener*> paramChangeListeners;
 	std::deque<SubController> subControllerStack;
 	std::list<IController*> subControllers;
 	std::string viewName;

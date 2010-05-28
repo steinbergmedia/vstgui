@@ -52,9 +52,9 @@ class AlphaValueAnimation : public IAnimationTarget
 public:
 	AlphaValueAnimation (float endValue, bool forceEndValueOnFinish = false);
 
-	void animationStart (CView* view, const char* name);
-	void animationTick (CView* view, const char* name, float pos);
-	void animationFinished (CView* view, const char* name, bool wasCanceled);
+	void animationStart (CView* view, IdStringPtr name);
+	void animationTick (CView* view, IdStringPtr name, float pos);
+	void animationFinished (CView* view, IdStringPtr name, bool wasCanceled);
 protected:
 	float startValue;
 	float endValue;
@@ -69,9 +69,9 @@ class ViewSizeAnimation : public IAnimationTarget
 public:
 	ViewSizeAnimation (const CRect& newRect, bool forceEndValueOnFinish = false);
 
-	void animationStart (CView* view, const char* name);
-	void animationTick (CView* view, const char* name, float pos);
-	void animationFinished (CView* view, const char* name, bool wasCanceled);
+	void animationStart (CView* view, IdStringPtr name);
+	void animationTick (CView* view, IdStringPtr name, float pos);
+	void animationFinished (CView* view, IdStringPtr name, bool wasCanceled);
 protected:
 	CRect startRect;
 	CRect newRect;
@@ -95,9 +95,9 @@ public:
 	/** oldView must be a subview of the animation view */
 	ExchangeViewAnimation (CView* oldView, CView* newView, AnimationStyle style = kAlphaValueFade);
 	~ExchangeViewAnimation ();
-	void animationStart (CView* view, const char* name);
-	void animationTick (CView* view, const char* name, float pos);
-	void animationFinished (CView* view, const char* name, bool wasCanceled);
+	void animationStart (CView* view, IdStringPtr name);
+	void animationTick (CView* view, IdStringPtr name, float pos);
+	void animationFinished (CView* view, IdStringPtr name, bool wasCanceled);
 
 protected:
 	CView* newView;

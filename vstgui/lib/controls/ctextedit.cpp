@@ -56,30 +56,25 @@ A bitmap can be used as background.
  * @param style the display style (see CParamDisplay for styles)
  */
 //------------------------------------------------------------------------
-CTextEdit::CTextEdit (const CRect& size, CControlListener* listener, long tag, const char *txt, CBitmap* background, const long style)
-: CParamDisplay (size, background, style)
+CTextEdit::CTextEdit (const CRect& size, CControlListener* listener, int32_t tag, UTF8StringPtr txt, CBitmap* background, const int32_t style)
+: CTextLabel (size, txt, background, style)
 , platformControl (0)
-, editConvert (0)
-, editConvert2 (0)
+, textToValue (0)
+, textToValueUserData (0)
 {
 	this->listener = listener;
 	this->tag = tag;
 
-	if (txt)
-		strcpy (text, txt);
-	else
-		strcpy (text, "");
 	setWantsFocus (true);
 }
 
 //------------------------------------------------------------------------
 CTextEdit::CTextEdit (const CTextEdit& v)
-: CParamDisplay (v)
+: CTextLabel (v)
 , platformControl (0)
-, editConvert (v.editConvert)
-, editConvert2 (v.editConvert2)
+, textToValue (v.textToValue)
+, textToValueUserData (v.textToValueUserData)
 {
-	setText ((char*)v.text);
 	setWantsFocus (true);
 }
 
@@ -92,67 +87,38 @@ CTextEdit::~CTextEdit ()
 }
 
 //------------------------------------------------------------------------
+void CTextEdit::setStringToValueProc (CTextEditStringToValueProc proc, void* userData)
+{
+	textToValue = proc;
+	textToValueUserData = userData;
+}
+
+//------------------------------------------------------------------------
 void CTextEdit::setValue (float val, bool updateSubListeners)
 {
-	CParamDisplay::setValue (val, updateSubListeners);
-	if (platformControl)
-	{
-		char string[256];
-		string[0] = 0;
+	CTextLabel::setValue (val, updateSubListeners);
+	bool converted = false;
+	char string[256] = {0};
+	if (valueToString)
+		converted = valueToString (getValue (), string, valueToStringUserData);
+	if (!converted)
+		sprintf (string, "%2.2f", getValue ());
 
-		if (editConvert2)
-			editConvert2 (text, string, userData);
-		else if (editConvert)
-			editConvert (text, string);
-		else if (stringConvert2)
-		{
-			string[0] = 0;
-			stringConvert2 (value, string, userData);
-		}
-		else if (stringConvert)
-		{
-			string[0] = 0;
-			stringConvert (value, string);
-		}
-		else
-			sprintf (string, "%s", text);
-		platformControl->setText (string);
-	}
+	setText (string);
 }
 
 //------------------------------------------------------------------------
-void CTextEdit::setText (const char *txt)
+void CTextEdit::setText (UTF8StringPtr txt)
 {
-	if (txt)
+	if (textToValue)
 	{
-		if (strcmp (text, txt))
-		{
-			strncpy (text, txt, 255);
-			text[255] = 0;	// make sure we end with a 0 byte
-
-			// to force the redraw
-			setDirty ();
-		}
+		float val = getValue ();
+		if (textToValue (txt, val, textToValueUserData))
+			CTextLabel::setValue (val, true);
 	}
-	else
-	{
-		if (strcmp (text, ""))
-		{
-			strcpy (text, "");
-
-			// to force the redraw
-			setDirty ();
-		}
-	}
+	CTextLabel::setText (txt);
 	if (platformControl)
-		platformControl->setText (text);
-}
-
-//------------------------------------------------------------------------
-void CTextEdit::getText (char *txt) const
-{
-	if (txt)
-		strcpy (txt, text);
+		platformControl->setText (getText ());
 }
 
 //------------------------------------------------------------------------
@@ -165,37 +131,13 @@ void CTextEdit::draw (CDrawContext *pContext)
 		return;
 	}
 
-	char string[256];
-	string[0] = 0;
-
-	if (editConvert2)
-		editConvert2 (text, string, userData);
-	else if (editConvert)
-		editConvert (text, string);
-	// Allow to display strings through the stringConvert
-	// callbacks inherited from CParamDisplay
-	else if (stringConvert2)
-	{
-		string[0] = 0;
-		stringConvert2 (value, string, userData);
-		strcpy(text, string);
-	}
-	else if (stringConvert)
-	{
-		string[0] = 0;
-		stringConvert (value, string);
-		strcpy(text, string);
-	}
-	else
-		sprintf (string, "%s", text);
-
 	drawBack (pContext);
-	drawText (pContext, string);
+	drawText (pContext, text);
 	setDirty (false);
 }
 
 //------------------------------------------------------------------------
-CMouseEventResult CTextEdit::onMouseDown (CPoint& where, const long& buttons)
+CMouseEventResult CTextEdit::onMouseDown (CPoint& where, const CButtonState& buttons)
 {
 	if (buttons & kLButton)
 	{
@@ -215,7 +157,7 @@ CMouseEventResult CTextEdit::onMouseDown (CPoint& where, const long& buttons)
 }
 
 //------------------------------------------------------------------------
-long CTextEdit::onKeyDown (VstKeyCode& keyCode)
+int32_t CTextEdit::onKeyDown (VstKeyCode& keyCode)
 {
 	if (platformControl)
 	{
@@ -312,23 +254,19 @@ void CTextEdit::looseFocus ()
 	IPlatformTextEdit* _platformControl = platformControl;
 	platformControl = 0;
 	
-	char oldText[256];
-	strcpy (oldText, text);
-
-	_platformControl->getText (text, 255);
-	_platformControl->forget ();
-
-	// update dependency
-	if (strcmp (oldText, text))
+	const char* newText = _platformControl->getText ();
+	if (strcmp (newText, getText ()) != 0)
 	{
 		beginEdit ();
 
-		if (string2FloatConvert)
-			string2FloatConvert (text, value);
+		setText (newText);
+
 		valueChanged ();
 
 		endEdit ();
 	}
+	
+	_platformControl->forget ();
 
 	// if you want to destroy the text edit do it with the loose focus message
 	CView* receiver = pParentView ? pParentView : pParentFrame;
@@ -338,20 +276,6 @@ void CTextEdit::looseFocus ()
 			break;
 		receiver = receiver->getParentView ();
 	}
-}
-
-//------------------------------------------------------------------------
-void CTextEdit::setTextEditConvert (void (*convert) (char *input, char *string))
-{
-	editConvert = convert;
-}
-
-//------------------------------------------------------------------------
-void CTextEdit::setTextEditConvert (void (*convert) (char *input, char *string,
-									  void *userDta), void *userData)
-{
-	editConvert2 = convert;
-	this->userData = userData;
 }
 
 } // namespace

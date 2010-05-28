@@ -39,7 +39,7 @@
 
 namespace VSTGUI {
 
-const char* CColorChooserPanel::kMsgWindowClosed = "kMsgWindowClosed";
+IdStringPtr CColorChooserPanel::kMsgWindowClosed = "kMsgWindowClosed";
 CRect CColorChooserPanel::lastSize;
 
 //-----------------------------------------------------------------------------

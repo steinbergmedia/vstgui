@@ -47,7 +47,7 @@ namespace VSTGUI {
 class CSpecialDigit : public CControl
 {
 public:
-	CSpecialDigit (const CRect& size, CControlListener* listener, long tag, long dwPos, long iNumbers, long* xpos, long* ypos, long width, long height, CBitmap* background);
+	CSpecialDigit (const CRect& size, CControlListener* listener, int32_t tag, int32_t dwPos, int32_t iNumbers, int32_t* xpos, int32_t* ypos, int32_t width, int32_t height, CBitmap* background);
 	CSpecialDigit (const CSpecialDigit& digit);
 	
 	virtual void  draw (CDrawContext*);
@@ -55,11 +55,11 @@ public:
 	CLASS_METHODS(CSpecialDigit, CControl)
 protected:
 	~CSpecialDigit ();
-	long     iNumbers;
-	long     xpos[7];
-	long     ypos[7];
-	long     width;
-	long     height;
+	int32_t     iNumbers;
+	int32_t     xpos[7];
+	int32_t     ypos[7];
+	int32_t     width;
+	int32_t     height;
 };
 
 } // namespace

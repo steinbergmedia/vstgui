@@ -44,7 +44,7 @@ namespace VSTGUI {
 //-----------------------------------------------------------------------------
 struct CColor
 {
-	CColor (unsigned char red = 255, unsigned char green = 255, unsigned char blue = 255, unsigned char alpha = 255)
+	CColor (uint8_t red = 255, uint8_t green = 255, uint8_t blue = 255, uint8_t alpha = 255)
 	: red (red), green (green), blue (blue), alpha (alpha)
 	{}
 
@@ -56,7 +56,7 @@ struct CColor
 	/// @name Operator Methods
 	//-----------------------------------------------------------------------------
 	//@{
-	CColor& operator () (unsigned char red, unsigned char green, unsigned char blue, unsigned char alpha)
+	CColor& operator() (uint8_t red, uint8_t green, uint8_t blue, uint8_t alpha)
 	{
 		this->red   = red;
 		this->green = green;
@@ -65,7 +65,7 @@ struct CColor
 		return *this; 
 	}
 
-	CColor& operator = (const CColor& newColor)
+	CColor& operator= (const CColor& newColor)
 	{
 		red   = newColor.red;
 		green = newColor.green;
@@ -74,7 +74,7 @@ struct CColor
 		return *this; 
 	}
 	
-	CColor operator ~ ()
+	CColor operator~ ()
 	{
 		CColor c;
 		c.red   = ~red;
@@ -84,10 +84,10 @@ struct CColor
 		return c;
 	}
 
-	bool operator != (const CColor &other) const 
+	bool operator!= (const CColor &other) const 
 	{ return (red != other.red || green != other.green || blue  != other.blue || alpha != other.alpha); }
 
-	bool operator == (const CColor &other) const
+	bool operator== (const CColor &other) const
 	{ return (red == other.red && green == other.green && blue  == other.blue && alpha == other.alpha); }
 	//@}
 
@@ -111,13 +111,13 @@ struct CColor
 	void fromHSV (double hue, double saturation, double value);
 	//@}
 	
-	unsigned char red;		///< red component [0..255]
-	unsigned char green;	///< green component [0..255]
-	unsigned char blue;		///< blue component [0..255]
-	unsigned char alpha;	///< alpha component [0..255]
+	uint8_t red;		///< red component [0..255]
+	uint8_t green;		///< green component [0..255]
+	uint8_t blue;		///< blue component [0..255]
+	uint8_t alpha;		///< alpha component [0..255]
 };
 
-inline CColor MakeCColor (unsigned char red = 0, unsigned char green = 0, unsigned char blue = 0, unsigned char alpha = 255)
+inline CColor MakeCColor (uint8_t red = 0, uint8_t green = 0, uint8_t blue = 0, uint8_t alpha = 255)
 {
 	return CColor (red, green, blue, alpha);
 }

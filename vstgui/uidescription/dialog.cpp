@@ -43,7 +43,7 @@
 namespace VSTGUI {
 
 //-----------------------------------------------------------------------------
-bool Dialog::runViewModal (CPoint& position, CView* view, long style, const char* title)
+bool Dialog::runViewModal (CPoint& position, CView* view, int32_t style, UTF8StringPtr title)
 {
 	Dialog dialog (position, view, style, title);
 	return dialog.run ();
@@ -55,7 +55,7 @@ namespace DialogInternal {
 class SimpleButton : public CKickButton
 {
 public:
-	SimpleButton (const CRect& size, CControlListener* listener, long tag, const char* _title)
+	SimpleButton (const CRect& size, CControlListener* listener, int32_t tag, UTF8StringPtr _title)
 	: CKickButton (size, listener, tag, 0)
 	{
 		if (_title)
@@ -76,7 +76,7 @@ public:
 		context->drawString (title.c_str (), size);
 	}
 
-	long onKeyDown (VstKeyCode& keyCode)
+	int32_t onKeyDown (VstKeyCode& keyCode)
 	{
 		if ((keyCode.virt == VKEY_ENTER || keyCode.virt == VKEY_RETURN) && getFrame ()->getFocusView () == this)
 		{
@@ -109,7 +109,7 @@ static bool DialogOkIsRightMost = false;
 } // namespace DialogInternal
 
 //-----------------------------------------------------------------------------
-Dialog::Dialog (const CPoint& position, CView* rootView, long style, const char* title)
+Dialog::Dialog (const CPoint& position, CView* rootView, int32_t style, UTF8StringPtr title)
 : platformWindow (0)
 , result (false)
 {
@@ -193,7 +193,7 @@ bool Dialog::run ()
 }
 
 //-----------------------------------------------------------------------------
-long Dialog::onKeyDown (const VstKeyCode& code, CFrame* frame)
+int32_t Dialog::onKeyDown (const VstKeyCode& code, CFrame* frame)
 {
 	static bool recursion = false;
 	if (recursion)
@@ -202,7 +202,7 @@ long Dialog::onKeyDown (const VstKeyCode& code, CFrame* frame)
 	recursion = true;
 
 	VstKeyCode keyCode = code;
-	long keyResult = frame->onKeyDown (keyCode);
+	int32_t keyResult = frame->onKeyDown (keyCode);
 
 	recursion = false;
 
@@ -225,7 +225,7 @@ long Dialog::onKeyDown (const VstKeyCode& code, CFrame* frame)
 }
 
 //-----------------------------------------------------------------------------
-long Dialog::onKeyUp (const VstKeyCode& code, CFrame* frame)
+int32_t Dialog::onKeyUp (const VstKeyCode& code, CFrame* frame)
 {
 	return -1;
 }

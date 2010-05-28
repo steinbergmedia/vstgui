@@ -142,6 +142,8 @@ struct CRect
 		}
 	}
 
+	void makeIntegral ();
+
 	CCoord left;
 	CCoord top;
 	CCoord right;

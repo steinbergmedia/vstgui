@@ -61,17 +61,17 @@ public:
 	ByteOrder getByteOrder () const { return byteOrder; }
 	void setByteOrder (ByteOrder newByteOrder) { byteOrder = newByteOrder; }
 	
-	bool operator<< (const int& input);
-	bool operator<< (const unsigned int& input);
-	bool operator<< (const char& input);
-	bool operator<< (const unsigned char& input);
-	bool operator<< (const short& input);
-	bool operator<< (const unsigned short& input);
+	bool operator<< (const int32_t& input);
+	bool operator<< (const uint32_t& input);
+	bool operator<< (const int8_t& input);
+	bool operator<< (const uint8_t& input);
+	bool operator<< (const int16_t& input);
+	bool operator<< (const uint16_t& input);
 	bool operator<< (const double& input);
 
 	bool operator<< (const std::string& str);
 
-	virtual int writeRaw (const void* buffer, int size) = 0;
+	virtual int32_t writeRaw (const void* buffer, int32_t size) = 0;
 private:
 	ByteOrder byteOrder;
 };
@@ -87,17 +87,17 @@ public:
 	ByteOrder getByteOrder () const { return byteOrder; }
 	void setByteOrder (ByteOrder newByteOrder) { byteOrder = newByteOrder; }
 	
-	bool operator>> (int& output);
-	bool operator>> (unsigned int& output);
-	bool operator>> (char& output);
-	bool operator>> (unsigned char& output);
-	bool operator>> (short& output);
-	bool operator>> (unsigned short& output);
+	bool operator>> (int32_t& output);
+	bool operator>> (uint32_t& output);
+	bool operator>> (int8_t& output);
+	bool operator>> (uint8_t& output);
+	bool operator>> (int16_t& output);
+	bool operator>> (uint16_t& output);
 	bool operator>> (double& output);
 
 	bool operator>> (std::string& string);
 
-	virtual int readRaw (void* buffer, int size) = 0;
+	virtual int32_t readRaw (void* buffer, int32_t size) = 0;
 private:
 	ByteOrder byteOrder;
 };
@@ -108,26 +108,26 @@ private:
 class CMemoryStream : public OutputStream, public InputStream, public CBaseObject
 {
 public:
-	CMemoryStream (int initialSize = 1024, int delta = 1024, ByteOrder byteOrder = kNativeByteOrder);
-	CMemoryStream (const char* buffer, int bufferSize, ByteOrder byteOrder = kNativeByteOrder);
+	CMemoryStream (int32_t initialSize = 1024, int32_t delta = 1024, ByteOrder byteOrder = kNativeByteOrder);
+	CMemoryStream (const int8_t* buffer, int32_t bufferSize, ByteOrder byteOrder = kNativeByteOrder);
 	~CMemoryStream ();
 	
-	int writeRaw (const void* buffer, int size);
-	int readRaw (void* buffer, int size);
+	int32_t writeRaw (const void* buffer, int32_t size);
+	int32_t readRaw (void* buffer, int32_t size);
 
-	int tell () const { return pos; }
+	int32_t tell () const { return pos; }
 	void rewind () { pos = 0; }
 
-	const char* getBuffer () const { return buffer; }
+	const int8_t* getBuffer () const { return buffer; }
 
 protected:
-	bool resize (int newSize);
+	bool resize (int32_t newSize);
 
 	bool ownsBuffer;
-	char* buffer;
-	int size;
-	int pos;
-	int delta;
+	int8_t* buffer;
+	int32_t size;
+	int32_t pos;
+	int32_t delta;
 };
 
 } // namespace

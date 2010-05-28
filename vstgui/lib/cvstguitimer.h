@@ -54,21 +54,21 @@ namespace VSTGUI {
 class CVSTGUITimer : public CBaseObject
 {
 public:
-	CVSTGUITimer (CBaseObject* timerObject, int fireTime = 100);
+	CVSTGUITimer (CBaseObject* timerObject, int32_t fireTime = 100);
 	
 	virtual bool start ();							///< starts the timer
 	virtual bool stop ();							///< stops the timer, returns wheather timer was running or not
 
-	virtual bool setFireTime (int newFireTime);		///< in milliseconds
-	int getFireTime () const { return fireTime; }	///< in milliseconds
+	virtual bool setFireTime (int32_t newFireTime);		///< in milliseconds
+	int32_t getFireTime () const { return fireTime; }	///< in milliseconds
 
 //-----------------------------------------------------------------------------
-	static const char* kMsgTimer;					///< message string posted to CBaseObject's notify method
+	static IdStringPtr kMsgTimer;					///< message string posted to CBaseObject's notify method
 //-----------------------------------------------------------------------------
 	CLASS_METHODS_NOCOPY(CVSTGUITimer, CBaseObject)
 protected:
 	~CVSTGUITimer ();
-	int fireTime;
+	int32_t fireTime;
 	CBaseObject* timerObject;
 
 	void* platformTimer;

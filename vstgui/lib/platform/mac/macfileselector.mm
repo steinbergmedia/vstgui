@@ -50,7 +50,7 @@
 static Class fileSelectorDelegateClass = 0;
 static id VSTGUI_FileSelector_Delegate_Init (id self, SEL _cmd, void* fileSelector);
 static void VSTGUI_FileSelector_Delegate_Dealloc (id self, SEL _cmd);
-static void VSTGUI_FileSelector_Delegate_OpenPanelDidEnd (id self, SEL _cmd, NSOpenPanel* openPanel, int returnCode, void* contextInfo);
+static void VSTGUI_FileSelector_Delegate_OpenPanelDidEnd (id self, SEL _cmd, NSOpenPanel* openPanel, int32_t returnCode, void* contextInfo);
 #endif
 
 namespace VSTGUI {
@@ -64,7 +64,7 @@ public:
 	CocoaFileSelector (CFrame* frame, Style style);
 	~CocoaFileSelector ();
 
-	void openPanelDidEnd (NSOpenPanel* panel, int resultCode);
+	void openPanelDidEnd (NSSavePanel* panel, int32_t resultCode);
 protected:
 	static void initClass ();
 	
@@ -117,13 +117,13 @@ CocoaFileSelector::~CocoaFileSelector ()
 }
 
 //-----------------------------------------------------------------------------
-void CocoaFileSelector::openPanelDidEnd (NSOpenPanel* openPanel, int res)
+void CocoaFileSelector::openPanelDidEnd (NSSavePanel* savePanel, int32_t res)
 {
 	if (res == NSFileHandlingPanelOKButton)
 	{
 		if (style == kSelectSaveFile)
 		{
-			NSURL* url = [openPanel URL];
+			NSURL* url = [savePanel URL];
 			const char* utf8Path = url ? [[url path] UTF8String] : 0;
 			if (utf8Path)
 			{
@@ -134,6 +134,7 @@ void CocoaFileSelector::openPanelDidEnd (NSOpenPanel* openPanel, int res)
 		}
 		else
 		{
+			NSOpenPanel* openPanel = (NSOpenPanel*)savePanel;
 			NSArray* urls = [openPanel URLs];
 			for (NSUInteger i = 0; i < [urls count]; i++)
 			{
@@ -239,7 +240,7 @@ bool CocoaFileSelector::runInternal (CBaseObject* _delegate)
 		else
 		#endif
 		{
-			int res = [openPanel runModalForDirectory:initialPath ? [NSString stringWithCString:initialPath encoding:NSUTF8StringEncoding] : nil file:nil types:typesArray];
+			int32_t res = [openPanel runModalForDirectory:initialPath ? [NSString stringWithCString:initialPath encoding:NSUTF8StringEncoding] : nil file:nil types:typesArray];
 			openPanelDidEnd (openPanel, res);
 			return res == NSFileHandlingPanelOKButton;
 		}
@@ -255,7 +256,7 @@ bool CocoaFileSelector::runInternal (CBaseObject* _delegate)
 		else
 		#endif
 		{
-			int res = [savePanel runModalForDirectory:initialPath ? [NSString stringWithCString:initialPath encoding:NSUTF8StringEncoding]:nil file:defaultSaveName ? [NSString stringWithCString:defaultSaveName encoding:NSUTF8StringEncoding] : nil];
+			int32_t res = [savePanel runModalForDirectory:initialPath ? [NSString stringWithCString:initialPath encoding:NSUTF8StringEncoding]:nil file:defaultSaveName ? [NSString stringWithCString:defaultSaveName encoding:NSUTF8StringEncoding] : nil];
 			openPanelDidEnd (savePanel, res);
 			return res == NSFileHandlingPanelOKButton;
 		}
@@ -307,7 +308,7 @@ void VSTGUI_FileSelector_Delegate_Dealloc (id self, SEL _cmd)
 }
 
 //-----------------------------------------------------------------------------
-void VSTGUI_FileSelector_Delegate_OpenPanelDidEnd (id self, SEL _cmd, NSOpenPanel* openPanel, int returnCode, void* contextInfo)
+void VSTGUI_FileSelector_Delegate_OpenPanelDidEnd (id self, SEL _cmd, NSOpenPanel* openPanel, int32_t returnCode, void* contextInfo)
 {
 	id fileSelector = OBJC_GET_VALUE(self, _fileSelector);
 	if (fileSelector)

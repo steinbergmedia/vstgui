@@ -41,8 +41,8 @@
 namespace VSTGUI {
 class CCView;
 
-extern const char* kMsgCheckIfViewContainer;	///< Message to check if View is a CViewContainer
-extern const char* kMsgLooseFocus;				///< Message of a view loosing focus (only CTextEdit and COptionMenu send this yet)
+extern IdStringPtr kMsgCheckIfViewContainer;	///< Message to check if View is a CViewContainer
+extern IdStringPtr kMsgLooseFocus;				///< Message of a view loosing focus (only CTextEdit and COptionMenu send this yet)
 
 //-----------------------------------------------------------------------------
 // CViewContainer Declaration
@@ -52,22 +52,22 @@ extern const char* kMsgLooseFocus;				///< Message of a view loosing focus (only
 class CViewContainer : public CView
 {
 public:
-	CViewContainer (const CRect &size, CFrame *pParent = 0, CBitmap *pBackground = 0);
+	CViewContainer (const CRect& size, CFrame* pParent = 0, CBitmap* pBackground = 0);
 	CViewContainer (const CViewContainer& viewContainer);
 
 	//-----------------------------------------------------------------------------
 	/// @name Sub View Methods
 	//-----------------------------------------------------------------------------
 	//@{
-	virtual bool addView (CView *pView);	///< add a child view
-	virtual bool addView (CView *pView, CRect &mouseableArea, bool mouseEnabled = true);	///< add a child view
-	virtual bool addView (CView *pView, CView* pBefore);	///< add a child view before another view
-	virtual bool removeView (CView *pView, const bool &withForget = true);	///< remove a child view
-	virtual bool removeAll (const bool &withForget = true);	///< remove all child views
-	virtual bool isChild (CView *pView) const;	///< check if pView is a child view of this container
-	virtual bool isChild (CView *pView, bool deep) const;	///< check if pView is a child view of this container
-	virtual long getNbViews () const;			///< get the number of child views
-	virtual CView* getView (long index) const;	///< get the child view at index
+	virtual bool addView (CView* pView);	///< add a child view
+	virtual bool addView (CView* pView, CRect& mouseableArea, bool mouseEnabled = true);	///< add a child view
+	virtual bool addView (CView* pView, CView* pBefore);	///< add a child view before another view
+	virtual bool removeView (CView* pView, const bool& withForget = true);	///< remove a child view
+	virtual bool removeAll (const bool& withForget = true);	///< remove all child views
+	virtual bool isChild (CView* pView) const;	///< check if pView is a child view of this container
+	virtual bool isChild (CView* pView, bool deep) const;	///< check if pView is a child view of this container
+	virtual int32_t getNbViews () const;			///< get the number of child views
+	virtual CView* getView (int32_t index) const;	///< get the child view at index
 	virtual CView* getViewAt (const CPoint& where, bool deep = false) const;	///< get the view at point where
 	virtual CViewContainer* getContainerAt (const CPoint& where, bool deep = true) const;		///< get the container at point where
 	//@}
@@ -78,9 +78,9 @@ public:
 	//@{
 	virtual void setBackgroundColor (const CColor& color);	///< set the background color (will only be drawn if this container is not set to transparent and does not have a background bitmap)
 	virtual CColor getBackgroundColor () const { return backgroundColor; }	///< get the background color
-	virtual void setBackgroundOffset (const CPoint &p) { backgroundOffset = p; }	///< set the offset of the background bitmap
+	virtual void setBackgroundOffset (const CPoint& p) { backgroundOffset = p; }	///< set the offset of the background bitmap
 	virtual const CPoint& getBackgroundOffset () const { return backgroundOffset; }	///< get the offset of the background bitmap
-	virtual void drawBackgroundRect (CDrawContext *pContext, CRect& _updateRect);	///< draw the background
+	virtual void drawBackgroundRect (CDrawContext* pContext, CRect& _updateRect);	///< draw the background
 	//@}
 
 	void modifyDrawContext (CCoord save[4], CDrawContext* pContext);
@@ -89,17 +89,17 @@ public:
 	virtual bool advanceNextFocusView (CView* oldFocus, bool reverse = false);
 
 	// CView
-	virtual void draw (CDrawContext *pContext);
-	virtual void drawRect (CDrawContext *pContext, const CRect& updateRect);
-	virtual CMouseEventResult onMouseDown (CPoint &where, const long& buttons);
-	virtual CMouseEventResult onMouseUp (CPoint &where, const long& buttons);
-	virtual CMouseEventResult onMouseMoved (CPoint &where, const long& buttons);
-	virtual bool onWheel (const CPoint &where, const float &distance, const long &buttons);
-	virtual bool onWheel (const CPoint &where, const CMouseWheelAxis &axis, const float &distance, const long &buttons);
-	virtual bool hitTest (const CPoint& where, const long buttons = -1);
-	virtual long onKeyDown (VstKeyCode& keyCode);
-	virtual long onKeyUp (VstKeyCode& keyCode);
-	virtual CMessageResult notify (CBaseObject* sender, const char* message);
+	virtual void draw (CDrawContext* pContext);
+	virtual void drawRect (CDrawContext* pContext, const CRect& updateRect);
+	virtual CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons);
+	virtual CMouseEventResult onMouseUp (CPoint& where, const CButtonState& buttons);
+	virtual CMouseEventResult onMouseMoved (CPoint& where, const CButtonState& buttons);
+	virtual bool onWheel (const CPoint& where, const float& distance, const CButtonState& buttons);
+	virtual bool onWheel (const CPoint& where, const CMouseWheelAxis& axis, const float& distance, const CButtonState& buttons);
+	virtual bool hitTest (const CPoint& where, const CButtonState buttons = -1);
+	virtual int32_t onKeyDown (VstKeyCode& keyCode);
+	virtual int32_t onKeyUp (VstKeyCode& keyCode);
+	virtual CMessageResult notify (CBaseObject* sender, IdStringPtr message);
 
 	virtual bool onDrop (CDragContainer* drag, const CPoint& where);
 	virtual void onDragEnter (CDragContainer* drag, const CPoint& where);
@@ -115,7 +115,7 @@ public:
 	virtual void invalidRect (const CRect rect);
 	virtual bool invalidateDirtyViews ();
 	
-	virtual void setViewSize (CRect &rect, bool invalid = true);
+	virtual void setViewSize (CRect& rect, bool invalid = true);
 	virtual void parentSizeChanged ();
 	virtual CRect getVisibleSize (const CRect rect) const;
 	virtual bool sizeToFit ();
@@ -137,7 +137,7 @@ public:
 protected:
 	~CViewContainer ();
 	virtual bool checkUpdateRect (CView* view, const CRect& rect);
-	virtual bool hitTestSubViews (const CPoint& where, const long buttons = -1);
+	virtual bool hitTestSubViews (const CPoint& where, const CButtonState buttons = -1);
 	VSTGUI_DEPRECATED(void drawBackToFront (CDrawContext* context, const CRect& rect);)
 
 	CCView  *pFirstView;
@@ -157,7 +157,7 @@ protected:
 class CCView
 {
 public:
-	CCView (CView *pView);
+	CCView (CView* pView);
 	~CCView ();
 
 	CView    *pView;

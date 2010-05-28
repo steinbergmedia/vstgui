@@ -213,7 +213,7 @@ void QuartzGraphicsPath::closeSubpath ()
 }
 
 //-----------------------------------------------------------------------------
-void QuartzGraphicsPath::addArc (const CRect& rect, double startAngle, double endAngle)
+void QuartzGraphicsPath::addArc (const CRect& rect, double startAngle, double endAngle, bool clockwise)
 {
 	CGFloat centerX = rect.left + rect.getWidth () / 2.;
 	CGFloat centerY = rect.top + rect.getHeight () / 2.;
@@ -223,7 +223,7 @@ void QuartzGraphicsPath::addArc (const CRect& rect, double startAngle, double en
 	
 	CGPathMoveToPoint (path, &transform, cos (radians (startAngle)), sin (radians (startAngle)));
 
-	CGPathAddArc (path, &transform, 0, 0, 1, radians (startAngle), radians (endAngle), false);
+	CGPathAddArc (path, &transform, 0, 0, 1, radians (startAngle), radians (endAngle), clockwise);
 }
 
 //-----------------------------------------------------------------------------
@@ -289,66 +289,6 @@ void QuartzGraphicsPath::addPath (const CGraphicsPath& inPath, CGraphicsTransfor
 				CGPathAddPath (path, 0, qp->getCGPathRef ());
 		}
 	}
-}
-
-//-----------------------------------------------------------------------------
-void QuartzGraphicsPath::addString (const char* utf8String, CFontRef font, const CPoint& position)
-{
-#if MAC_OS_X_VERSION_MIN_REQUIRED > MAC_OS_X_VERSION_10_4
-	CoreTextFont* ctf = dynamic_cast<CoreTextFont*> (font->getPlatformFont ());
-	if (ctf == 0)
-		return;
-	CTFontRef fontRef = ctf->getFontRef ();
-	if (fontRef == 0)
-		return;
-	CFStringRef utf8Str = CFStringCreateWithCString (NULL, utf8String, kCFStringEncodingUTF8);
-	if (utf8Str)
-	{
-		CFStringRef keys[] = { kCTFontAttributeName };
-		CFTypeRef values[] = { fontRef };
-		CFDictionaryRef attributes = CFDictionaryCreate (kCFAllocatorDefault, (const void**)&keys,(const void**)&values, sizeof(keys) / sizeof(keys[0]), &kCFTypeDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks);
-		CFAttributedStringRef attrStr = CFAttributedStringCreate (0, utf8Str, attributes);
-		CFRelease (attributes);
-		if (attrStr)
-		{
-			CTLineRef lineRef = CTLineCreateWithAttributedString (attrStr);
-			if (lineRef)
-			{
-				CFArrayRef array = CTLineGetGlyphRuns (lineRef);
-				if (array)
-				{
-					CTRunRef runRef = (CTRunRef)CFArrayGetValueAtIndex (array, 0);
-					if (runRef)
-					{
-						const CGGlyph* glyphs = CTRunGetGlyphsPtr (runRef);
-						const CGPoint* points = CTRunGetPositionsPtr (runRef);
-						if (glyphs && points)
-						{
-							CGAffineTransform textTransform = CGAffineTransformMake (1.0, 0.0, 0.0, -1.0, 0.0, 0.0);
-							textTransform = CGAffineTransformTranslate (textTransform, position.x, -position.y);
-							CFIndex numGlyphs = CTRunGetGlyphCount (runRef);
-							for (CFIndex i = 0; i < numGlyphs; i++)
-							{
-								CGPathRef glyphPath = CTFontCreatePathForGlyph (fontRef, glyphs[i], 0);
-								if (glyphPath)
-								{
-									CGAffineTransform transform = CGAffineTransformTranslate (textTransform, points[i].x, points[i].y);
-									CGPathAddPath (path, &transform, glyphPath);
-									CFRelease (glyphPath);
-								}
-							}
-						}
-					}
-				}
-				CFRelease (lineRef);
-			}
-			CFRelease (attrStr);
-		}
-		CFRelease (utf8Str);
-	}
-#else
-#warning adding a string to QuartzGraphicsPath is not supported when minimum required Mac OS X version is 10.4
-#endif
 }
 
 //-----------------------------------------------------------------------------

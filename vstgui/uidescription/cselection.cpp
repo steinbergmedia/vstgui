@@ -43,7 +43,7 @@
 namespace VSTGUI {
 
 //----------------------------------------------------------------------------------------------------
-CSelection::CSelection (int style)
+CSelection::CSelection (int32_t style)
 : style (style)
 {
 }
@@ -54,8 +54,8 @@ CSelection::~CSelection ()
 	empty ();
 }
 
-const char* CSelection::kMsgSelectionChanged = "kMsgSelectionChanged";
-const char* CSelection::kMsgSelectionViewChanged = "kMsgSelectionViewChanged";
+IdStringPtr CSelection::kMsgSelectionChanged = "kMsgSelectionChanged";
+IdStringPtr CSelection::kMsgSelectionViewChanged = "kMsgSelectionViewChanged";
 
 //----------------------------------------------------------------------------------------------------
 void CSelection::addDependent (CBaseObject* obj)
@@ -70,7 +70,7 @@ void CSelection::removeDependent (CBaseObject* obj)
 }
 
 //----------------------------------------------------------------------------------------------------
-void CSelection::changed (const char* what)
+void CSelection::changed (IdStringPtr what)
 {
 	std::list<CBaseObject*>::iterator it = dependencies.begin ();
 	while (it != dependencies.end ())
@@ -81,7 +81,7 @@ void CSelection::changed (const char* what)
 }
 
 //----------------------------------------------------------------------------------------------------
-void CSelection::setStyle (int _style)
+void CSelection::setStyle (int32_t _style)
 {
 	style = _style;
 }
@@ -160,7 +160,7 @@ bool CSelection::containsParent (CView* view) const
 }
 
 //----------------------------------------------------------------------------------------------------
-int CSelection::total () const
+int32_t CSelection::total () const
 {
 	return size ();
 }
@@ -230,21 +230,21 @@ bool CSelection::storeAttributesForView (OutputStream& stream, ViewFactory* view
 	UIAttributes attr;
 	if (viewFactory->getAttributesForView (view, uiDescription, attr))
 	{
-		if (!(stream << 'view')) return false;
+		if (!(stream << (int32_t)'view')) return false;
 		if (!attr.store (stream))
 			return false;
 		CViewContainer* container = dynamic_cast<CViewContainer*> (view);
 		if (container)
 		{
-			long subViews = container->getNbViews ();
-			if (!(stream << (int)subViews)) return false;
-			for (long i = 0; i < subViews; i++)
+			int32_t subViews = container->getNbViews ();
+			if (!(stream << (int32_t)subViews)) return false;
+			for (int32_t i = 0; i < subViews; i++)
 			{
 				storeAttributesForView (stream, viewFactory, uiDescription, container->getView (i));
 			}
 		}
 		else
-			if (!(stream << (int)0)) return false;
+			if (!(stream << (int32_t)0)) return false;
 		return true;
 	}
 	return false;
@@ -253,7 +253,7 @@ bool CSelection::storeAttributesForView (OutputStream& stream, ViewFactory* view
 //----------------------------------------------------------------------------------------------------
 CView* CSelection::createView (InputStream& stream, ViewFactory* viewFactory, IUIDescription* uiDescription)
 {
-	int identifier;
+	int32_t identifier;
 	if (!(stream >> identifier)) return 0;
 	if (identifier != 'view') return 0;
 	UIAttributes attr;
@@ -265,10 +265,10 @@ CView* CSelection::createView (InputStream& stream, ViewFactory* viewFactory, IU
 		view = viewFactory->createView (attr, uiDescription);
 	if (view && uiDescription->getController ())
 		view = uiDescription->getController ()->verifyView (view, attr, uiDescription);
-	int subViews;
+	int32_t subViews;
 	if (!(stream >> subViews)) return view;
 	CViewContainer* container = view ? dynamic_cast<CViewContainer*> (view) : 0;
-	for (int i = 0; i < subViews; i++)
+	for (int32_t i = 0; i < subViews; i++)
 	{
 		CView* subView = createView (stream, viewFactory, uiDescription);
 		if (subView)
@@ -285,16 +285,16 @@ CView* CSelection::createView (InputStream& stream, ViewFactory* viewFactory, IU
 //----------------------------------------------------------------------------------------------------
 bool CSelection::store (OutputStream& stream, ViewFactory* viewFactory, IUIDescription* uiDescription)
 {
-	if (!(stream << 'CSEL')) return false;
+	if (!(stream << (int32_t)'CSEL')) return false;
 	FOREACH_IN_SELECTION(this, view)
 		if (!containsParent (view))
 		{
-			if (!(stream << 'selv')) return false;
+			if (!(stream << (int32_t)'selv')) return false;
 			if (!storeAttributesForView (stream, viewFactory, uiDescription, view))
 				return false;
 		}
 	FOREACH_IN_SELECTION_END
-	if (!(stream << 'ende')) return false;
+	if (!(stream << (int32_t)'ende')) return false;
 	if (!(stream << dragOffset.x)) return false;
 	if (!(stream << dragOffset.y)) return false;
 	return true;
@@ -304,7 +304,7 @@ bool CSelection::store (OutputStream& stream, ViewFactory* viewFactory, IUIDescr
 bool CSelection::restore (InputStream& stream, ViewFactory* viewFactory, IUIDescription* uiDescription)
 {
 	empty ();
-	int identifier = 0;
+	int32_t identifier = 0;
 	if (!(stream >> identifier)) return false;
 	if (identifier == 'CSEL')
 	{

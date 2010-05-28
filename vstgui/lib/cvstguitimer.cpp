@@ -50,10 +50,10 @@ static std::list<CVSTGUITimer*> gTimerList;
 namespace VSTGUI {
 
 //-----------------------------------------------------------------------------
-const char* CVSTGUITimer::kMsgTimer = "timer fired";
+IdStringPtr CVSTGUITimer::kMsgTimer = "timer fired";
 
 //-----------------------------------------------------------------------------
-CVSTGUITimer::CVSTGUITimer (CBaseObject* timerObject, int fireTime)
+CVSTGUITimer::CVSTGUITimer (CBaseObject* timerObject, int32_t fireTime)
 : fireTime (fireTime)
 , timerObject (timerObject)
 , platformTimer (0)
@@ -123,7 +123,7 @@ bool CVSTGUITimer::stop ()
 }
 
 //-----------------------------------------------------------------------------
-bool CVSTGUITimer::setFireTime (int newFireTime)
+bool CVSTGUITimer::setFireTime (int32_t newFireTime)
 {
 	if (fireTime != newFireTime)
 	{

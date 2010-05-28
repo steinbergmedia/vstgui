@@ -54,13 +54,12 @@ public:
 
 	// CGraphicsPath
 	CGradient* createGradient (double color1Start, double color2Start, const CColor& color1, const CColor& color2);
-	void addArc (const CRect& rect, double startAngle, double endAngle);
+	void addArc (const CRect& rect, double startAngle, double endAngle, bool clockwise);
 	void addCurve (const CPoint& start, const CPoint& control1, const CPoint& control2, const CPoint& end);
 	void addEllipse (const CRect& rect);
 	void addLine (const CPoint& start, const CPoint& end);
 	void addRect (const CRect& rect);
 	void addPath (const CGraphicsPath& path, CGraphicsTransform* transformation = 0);
-	void addString (const char* utf8String, CFontRef font, const CPoint& position);
 	void closeSubpath ();
 	void draw (CDrawContext* context, PathDrawMode mode = kFilled, CGraphicsTransform* transformation = 0);
 	void fillLinearGradient (CDrawContext* context, const CGradient& gradient, const CPoint& startPoint, const CPoint& endPoint, bool evenOdd = false, CGraphicsTransform* transformation = 0);

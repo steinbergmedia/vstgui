@@ -50,14 +50,14 @@ extern void DebugPrint (const char *format, ...);
 class TimeWatch
 {
 public:
-	TimeWatch (const char* name = 0, bool startNow = true);
+	TimeWatch (UTF8StringPtr name = 0, bool startNow = true);
 	~TimeWatch ();
 	
 	void start ();
 	void stop ();
 
 protected:
-	char* name;
+	UTF8StringBuffer name;
 	clock_t startTime;
 };
 

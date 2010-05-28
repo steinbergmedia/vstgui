@@ -50,12 +50,12 @@ namespace VSTGUI {
  * @param offset
  */
 //------------------------------------------------------------------------
-CMovieBitmap::CMovieBitmap (const CRect& size, CControlListener* listener, long tag, CBitmap* background, const CPoint &offset)
+CMovieBitmap::CMovieBitmap (const CRect& size, CControlListener* listener, int32_t tag, CBitmap* background, const CPoint &offset)
 : CControl (size, listener, tag, background)
 , offset (offset)
 {
 	setHeightOfOneImage (size.getHeight ());
-	setNumSubPixmaps (background ? (long)(background->getHeight () / heightOfOneImage) : 0);
+	setNumSubPixmaps (background ? (int32_t)(background->getHeight () / heightOfOneImage) : 0);
 }
 
 //------------------------------------------------------------------------
@@ -70,7 +70,7 @@ CMovieBitmap::CMovieBitmap (const CRect& size, CControlListener* listener, long 
  * @param offset
  */
 //------------------------------------------------------------------------
-CMovieBitmap::CMovieBitmap (const CRect& size, CControlListener* listener, long tag, long subPixmaps, CCoord heightOfOneImage, CBitmap* background, const CPoint &offset)
+CMovieBitmap::CMovieBitmap (const CRect& size, CControlListener* listener, int32_t tag, int32_t subPixmaps, CCoord heightOfOneImage, CBitmap* background, const CPoint &offset)
 : CControl (size, listener, tag, background)
 , offset (offset)
 {
@@ -96,7 +96,7 @@ void CMovieBitmap::draw (CDrawContext *pContext)
 {
 	CPoint where (offset.h, offset.v);
 
-	where.v += heightOfOneImage * (int)(getValueNormalized () * (getNumSubPixmaps () - 1) + 0.5);
+	where.v += heightOfOneImage * (int32_t)(getValueNormalized () * (getNumSubPixmaps () - 1) + 0.5);
 
 	if (pBackground)
 	{

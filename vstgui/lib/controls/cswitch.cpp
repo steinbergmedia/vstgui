@@ -58,12 +58,12 @@ By clicking Alt+Left Mouse the default value is used.
  * @param offset unused 
  */
 //------------------------------------------------------------------------
-CVerticalSwitch::CVerticalSwitch (const CRect& size, CControlListener* listener, long tag, CBitmap* background, const CPoint &offset)
+CVerticalSwitch::CVerticalSwitch (const CRect& size, CControlListener* listener, int32_t tag, CBitmap* background, const CPoint &offset)
 : CControl (size, listener, tag, background)
 , offset (offset)
 {
 	heightOfOneImage = size.height ();
-	setNumSubPixmaps (background ? (long)(background->getHeight () / heightOfOneImage) : 0);
+	setNumSubPixmaps (background ? (int32_t)(background->getHeight () / heightOfOneImage) : 0);
 
 	setDefaultValue (0.f);
 	setWantsFocus (true);
@@ -82,7 +82,7 @@ CVerticalSwitch::CVerticalSwitch (const CRect& size, CControlListener* listener,
  * @param offset unused
  */
 //------------------------------------------------------------------------
-CVerticalSwitch::CVerticalSwitch (const CRect& size, CControlListener* listener, long tag, long subPixmaps, CCoord heightOfOneImage, long iMaxPositions, CBitmap* background, const CPoint &offset)
+CVerticalSwitch::CVerticalSwitch (const CRect& size, CControlListener* listener, int32_t tag, int32_t subPixmaps, CCoord heightOfOneImage, int32_t iMaxPositions, CBitmap* background, const CPoint &offset)
 : CControl (size, listener, tag, background)
 , offset (offset)
 {
@@ -113,7 +113,7 @@ void CVerticalSwitch::draw (CDrawContext *pContext)
 	{
 		float norm = (value - getMin ()) / (getMax () - getMin ());
 		// source position in bitmap
-		CPoint where (0, heightOfOneImage * ((long)(norm * (getNumSubPixmaps () - 1) + 0.5f)));
+		CPoint where (0, heightOfOneImage * ((int32_t)(norm * (getNumSubPixmaps () - 1) + 0.5f)));
 
 		pBackground->draw (pContext, size, where);
 	}
@@ -121,7 +121,7 @@ void CVerticalSwitch::draw (CDrawContext *pContext)
 }
 
 //------------------------------------------------------------------------
-CMouseEventResult CVerticalSwitch::onMouseDown (CPoint& where, const long& buttons)
+CMouseEventResult CVerticalSwitch::onMouseDown (CPoint& where, const CButtonState& buttons)
 {
 	if (!(buttons & kLButton))
 		return kMouseEventNotHandled;
@@ -140,18 +140,18 @@ CMouseEventResult CVerticalSwitch::onMouseDown (CPoint& where, const long& butto
 }
 
 //------------------------------------------------------------------------
-CMouseEventResult CVerticalSwitch::onMouseUp (CPoint& where, const long& buttons)
+CMouseEventResult CVerticalSwitch::onMouseUp (CPoint& where, const CButtonState& buttons)
 {
 	endEdit ();
 	return kMouseEventHandled;
 }
 
 //------------------------------------------------------------------------
-CMouseEventResult CVerticalSwitch::onMouseMoved (CPoint& where, const long& buttons)
+CMouseEventResult CVerticalSwitch::onMouseMoved (CPoint& where, const CButtonState& buttons)
 {
 	if (buttons & kLButton)
 	{
-		float norm = (long)((where.v - size.top) / coef) / (float)(getNumSubPixmaps () - 1);
+		float norm = (int32_t)((where.v - size.top) / coef) / (float)(getNumSubPixmaps () - 1);
 		value = getMin () + norm * (getMax () - getMin ());
 		if (value > getMax ())
 			value = getMax ();
@@ -168,12 +168,12 @@ CMouseEventResult CVerticalSwitch::onMouseMoved (CPoint& where, const long& butt
 }
 
 //------------------------------------------------------------------------
-long CVerticalSwitch::onKeyDown (VstKeyCode& keyCode)
+int32_t CVerticalSwitch::onKeyDown (VstKeyCode& keyCode)
 {
 	if (keyCode.modifier == 0)
 	{
 		float norm = (value - getMin ()) / (getMax () - getMin ());
-		long currentIndex = (long)(norm * (getNumSubPixmaps () - 1) + 0.5f);
+		int32_t currentIndex = (int32_t)(norm * (getNumSubPixmaps () - 1) + 0.5f);
 		if (keyCode.virt == VKEY_UP && currentIndex > 0)
 		{
 			currentIndex--;
@@ -229,12 +229,12 @@ Same as the CVerticalSwitch but horizontal.
  * @param offset unused
  */
 //------------------------------------------------------------------------
-CHorizontalSwitch::CHorizontalSwitch (const CRect& size, CControlListener* listener, long tag, CBitmap* background, const CPoint &offset)
+CHorizontalSwitch::CHorizontalSwitch (const CRect& size, CControlListener* listener, int32_t tag, CBitmap* background, const CPoint &offset)
 : CControl (size, listener, tag, background)
 , offset (offset)
 {
 	heightOfOneImage = size.width ();
-	setNumSubPixmaps (background ? (long)(background->getWidth () / heightOfOneImage) : 0);
+	setNumSubPixmaps (background ? (int32_t)(background->getWidth () / heightOfOneImage) : 0);
 
 	setDefaultValue (0.f);
 	setWantsFocus (true);
@@ -253,7 +253,7 @@ CHorizontalSwitch::CHorizontalSwitch (const CRect& size, CControlListener* liste
  * @param offset unused
  */
 //------------------------------------------------------------------------
-CHorizontalSwitch::CHorizontalSwitch (const CRect& size, CControlListener* listener, long tag, long subPixmaps, CCoord heightOfOneImage, long iMaxPositions, CBitmap* background, const CPoint &offset)
+CHorizontalSwitch::CHorizontalSwitch (const CRect& size, CControlListener* listener, int32_t tag, int32_t subPixmaps, CCoord heightOfOneImage, int32_t iMaxPositions, CBitmap* background, const CPoint &offset)
 : CControl (size, listener, tag, background)
 , offset (offset)
 {
@@ -284,7 +284,7 @@ void CHorizontalSwitch::draw (CDrawContext *pContext)
 	{
 		float norm = (value - getMin ()) / (getMax () - getMin ());
 		// source position in bitmap
-		CPoint where (0, heightOfOneImage * ((long)(norm * (getNumSubPixmaps () - 1) + 0.5f)));
+		CPoint where (0, heightOfOneImage * ((int32_t)(norm * (getNumSubPixmaps () - 1) + 0.5f)));
 
 		pBackground->draw (pContext, size, where);
 	}
@@ -292,7 +292,7 @@ void CHorizontalSwitch::draw (CDrawContext *pContext)
 }
 
 //------------------------------------------------------------------------
-CMouseEventResult CHorizontalSwitch::onMouseDown (CPoint& where, const long& buttons)
+CMouseEventResult CHorizontalSwitch::onMouseDown (CPoint& where, const CButtonState& buttons)
 {
 	if (!(buttons & kLButton))
 		return kMouseEventNotHandled;
@@ -311,18 +311,18 @@ CMouseEventResult CHorizontalSwitch::onMouseDown (CPoint& where, const long& but
 }
 
 //------------------------------------------------------------------------
-CMouseEventResult CHorizontalSwitch::onMouseUp (CPoint& where, const long& buttons)
+CMouseEventResult CHorizontalSwitch::onMouseUp (CPoint& where, const CButtonState& buttons)
 {
 	endEdit ();
 	return kMouseEventHandled;
 }
 
 //------------------------------------------------------------------------
-CMouseEventResult CHorizontalSwitch::onMouseMoved (CPoint& where, const long& buttons)
+CMouseEventResult CHorizontalSwitch::onMouseMoved (CPoint& where, const CButtonState& buttons)
 {
 	if (buttons & kLButton)
 	{
-		float norm = (long)((where.h - size.left) / coef) / (float)(getNumSubPixmaps () - 1);
+		float norm = (int32_t)((where.h - size.left) / coef) / (float)(getNumSubPixmaps () - 1);
 		value = getMin () + norm * (getMax () - getMin ());
 		if (value > getMax ())
 			value = getMax ();
@@ -339,12 +339,12 @@ CMouseEventResult CHorizontalSwitch::onMouseMoved (CPoint& where, const long& bu
 }
 
 //------------------------------------------------------------------------
-long CHorizontalSwitch::onKeyDown (VstKeyCode& keyCode)
+int32_t CHorizontalSwitch::onKeyDown (VstKeyCode& keyCode)
 {
 	if (keyCode.modifier == 0)
 	{
 		float norm = getValueNormalized ();
-		long currentIndex = (long)(norm * (getNumSubPixmaps () - 1) + 0.5f);
+		int32_t currentIndex = (int32_t)(norm * (getNumSubPixmaps () - 1) + 0.5f);
 		if (keyCode.virt == VKEY_LEFT && currentIndex > 0)
 		{
 			currentIndex--;
@@ -403,7 +403,7 @@ When the mouse button is relaxed, the second subbitmap is framed. */
  * @param style
  */
 //------------------------------------------------------------------------
-CRockerSwitch::CRockerSwitch (const CRect& size, CControlListener* listener, long tag, CBitmap* background, const CPoint &offset, const long style)
+CRockerSwitch::CRockerSwitch (const CRect& size, CControlListener* listener, int32_t tag, CBitmap* background, const CPoint &offset, const int32_t style)
 : CControl (size, listener, tag, background)
 , offset (offset)
 , style (style)
@@ -429,7 +429,7 @@ CRockerSwitch::CRockerSwitch (const CRect& size, CControlListener* listener, lon
  * @param style
  */
 //------------------------------------------------------------------------
-CRockerSwitch::CRockerSwitch (const CRect& size, CControlListener* listener, long tag, CCoord heightOfOneImage, CBitmap* background, const CPoint &offset, const long style)
+CRockerSwitch::CRockerSwitch (const CRect& size, CControlListener* listener, int32_t tag, CCoord heightOfOneImage, CBitmap* background, const CPoint &offset, const int32_t style)
 : CControl (size, listener, tag, background)
 , offset (offset)
 , style (style)
@@ -479,7 +479,7 @@ void CRockerSwitch::draw (CDrawContext *pContext)
 }
 
 //------------------------------------------------------------------------
-CMouseEventResult CRockerSwitch::onMouseDown (CPoint& where, const long& buttons)
+CMouseEventResult CRockerSwitch::onMouseDown (CPoint& where, const CButtonState& buttons)
 {
 	if (!(buttons & kLButton))
 		return kMouseEventNotHandled;
@@ -489,7 +489,7 @@ CMouseEventResult CRockerSwitch::onMouseDown (CPoint& where, const long& buttons
 }
 
 //------------------------------------------------------------------------
-CMouseEventResult CRockerSwitch::onMouseUp (CPoint& where, const long& buttons)
+CMouseEventResult CRockerSwitch::onMouseUp (CPoint& where, const CButtonState& buttons)
 {
 	value = (getMax () - getMin ()) / 2.f + getMin ();
 	if (isDirty ())
@@ -499,7 +499,7 @@ CMouseEventResult CRockerSwitch::onMouseUp (CPoint& where, const long& buttons)
 }
 
 //------------------------------------------------------------------------
-CMouseEventResult CRockerSwitch::onMouseMoved (CPoint& where, const long& buttons)
+CMouseEventResult CRockerSwitch::onMouseMoved (CPoint& where, const CButtonState& buttons)
 {
 	if (buttons & kLButton)
 	{
@@ -539,7 +539,7 @@ CMouseEventResult CRockerSwitch::onMouseMoved (CPoint& where, const long& button
 }
 
 //------------------------------------------------------------------------
-long CRockerSwitch::onKeyDown (VstKeyCode& keyCode)
+int32_t CRockerSwitch::onKeyDown (VstKeyCode& keyCode)
 {
 	if (keyCode.modifier == 0)
 	{
@@ -564,7 +564,7 @@ long CRockerSwitch::onKeyDown (VstKeyCode& keyCode)
 }
 
 //------------------------------------------------------------------------
-long CRockerSwitch::onKeyUp (VstKeyCode& keyCode)
+int32_t CRockerSwitch::onKeyUp (VstKeyCode& keyCode)
 {
 	if (keyCode.modifier == 0)
 	{
@@ -582,7 +582,7 @@ long CRockerSwitch::onKeyUp (VstKeyCode& keyCode)
 }
 
 //------------------------------------------------------------------------
-bool CRockerSwitch::onWheel (const CPoint& where, const float &distance, const long &buttons)
+bool CRockerSwitch::onWheel (const CPoint& where, const float &distance, const CButtonState &buttons)
 {
 	if (!bMouseEnabled)
 		return false;
@@ -608,7 +608,7 @@ bool CRockerSwitch::onWheel (const CPoint& where, const float &distance, const l
 }
 
 //------------------------------------------------------------------------
-CMessageResult CRockerSwitch::notify (CBaseObject* sender, const char* message)
+CMessageResult CRockerSwitch::notify (CBaseObject* sender, IdStringPtr message)
 {
 	if (sender == resetValueTimer)
 	{

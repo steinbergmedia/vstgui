@@ -50,7 +50,7 @@ namespace VSTGUI {
  * @param style the display style (see CParamDisplay for styles)
  */
 //------------------------------------------------------------------------
-CTextLabel::CTextLabel (const CRect& size, const char* txt, CBitmap* background, const long style)
+CTextLabel::CTextLabel (const CRect& size, UTF8StringPtr txt, CBitmap* background, const int32_t style)
 : CParamDisplay (size, background, style)
 , text (0)
 {
@@ -80,21 +80,26 @@ void CTextLabel::freeText ()
 }
 
 //------------------------------------------------------------------------
-void CTextLabel::setText (const char* txt)
+void CTextLabel::setText (UTF8StringPtr txt)
 {
-	if (!text && !txt || (text && txt && strcmp (text, txt) == 0))
+	if (text && txt && strcmp (text, txt) == 0)
 		return;
 	freeText ();
 	if (txt)
 	{
-		text = (char*)malloc (strlen (txt)+1);
+		text = (UTF8StringBuffer)malloc (strlen (txt)+1);
 		strcpy (text, txt);
+	}
+	else
+	{
+		text = (UTF8StringBuffer)malloc (1);
+		text[0] = 0;
 	}
 	setDirty (true);
 }
 
 //------------------------------------------------------------------------
-const char* CTextLabel::getText () const
+UTF8StringPtr CTextLabel::getText () const
 {
 	return text;
 }

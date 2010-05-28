@@ -177,7 +177,7 @@ void CDrawContext::setFontColor (const CColor& color)
 }
 
 //-----------------------------------------------------------------------------
-void CDrawContext::setFont (const CFontRef newFont, const long& size, const long& style)
+void CDrawContext::setFont (const CFontRef newFont, const CCoord& size, const int32_t& style)
 {
 	if (newFont == 0)
 		return;
@@ -211,7 +211,7 @@ void CDrawContext::setOffset (const CPoint& offset)
 }
 
 //-----------------------------------------------------------------------------
-CCoord CDrawContext::getStringWidth (const char* string)
+CCoord CDrawContext::getStringWidth (UTF8StringPtr string)
 {
 	CCoord result = -1;
 	if (currentState.font == 0 || string == 0)
@@ -225,7 +225,7 @@ CCoord CDrawContext::getStringWidth (const char* string)
 }
 
 //-----------------------------------------------------------------------------
-void CDrawContext::drawString (const char* string, const CPoint& point, bool antialias)
+void CDrawContext::drawString (UTF8StringPtr string, const CPoint& point, bool antialias)
 {
 	if (string == 0 || currentState.font == 0)
 		return;
@@ -236,7 +236,7 @@ void CDrawContext::drawString (const char* string, const CPoint& point, bool ant
 }
 
 //-----------------------------------------------------------------------------
-void CDrawContext::drawString (const char* string, const CRect& _rect, const CHoriTxtAlign hAlign, bool antialias)
+void CDrawContext::drawString (UTF8StringPtr string, const CRect& _rect, const CHoriTxtAlign hAlign, bool antialias)
 {
 	if (!string || currentState.font == 0)
 		return;
@@ -272,7 +272,7 @@ void CDrawContext::drawString (const char* string, const CRect& _rect, const CHo
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
-CLineStyle::CLineStyle (LineCap _cap, LineJoin _join, CCoord _dashPhase, long _dashCount, const CCoord* _dashLengths)
+CLineStyle::CLineStyle (LineCap _cap, LineJoin _join, CCoord _dashPhase, int32_t _dashCount, const CCoord* _dashLengths)
 : cap (_cap)
 , join (_join)
 , dashPhase (_dashPhase)
@@ -283,7 +283,7 @@ CLineStyle::CLineStyle (LineCap _cap, LineJoin _join, CCoord _dashPhase, long _d
 	{
 		dashCount = _dashCount;
 		dashLengths = new CCoord[dashCount];
-		for (long i = 0; i < dashCount; i++)
+		for (int32_t i = 0; i < dashCount; i++)
 			dashLengths[i] = _dashLengths[i];
 	}
 }
@@ -302,7 +302,7 @@ bool CLineStyle::operator== (const CLineStyle& cls) const
 	{
 		if (dashCount)
 		{
-			for (long i = 0; i < dashCount; i++)
+			for (int32_t i = 0; i < dashCount; i++)
 			{
 				if (dashLengths[i] != cls.dashLengths[i])
 					return false;
@@ -329,7 +329,7 @@ CLineStyle& CLineStyle::operator= (const CLineStyle& cls)
 	{
 		dashCount = cls.dashCount;
 		dashLengths = new CCoord[dashCount];
-		for (long i = 0; i < dashCount; i++)
+		for (int32_t i = 0; i < dashCount; i++)
 			dashLengths[i] = cls.dashLengths[i];
 	}
 	return *this;

@@ -78,7 +78,7 @@ public:
 	STDMETHOD (DragLeave) (void);
 	STDMETHOD (Drop) (IDataObject* dataObject, DWORD keyState, POINTL pt, DWORD* effect);
 private:
-	long refCount;
+	int32_t refCount;
 	bool accept;
 	Win32Frame* pFrame;
 	WinDragContainer* gDragContainer;
@@ -186,7 +186,7 @@ Win32Frame::~Win32Frame ()
 }
 
 //-----------------------------------------------------------------------------
-long Win32Frame::gUseCount = 0;
+int32_t Win32Frame::gUseCount = 0;
 
 //-----------------------------------------------------------------------------
 void Win32Frame::initWindowClass ()
@@ -413,7 +413,7 @@ bool Win32Frame::getCurrentMousePosition (CPoint& mousePosition) const
 }
 
 //-----------------------------------------------------------------------------
-bool Win32Frame::getCurrentMouseButtons (long& buttons) const
+bool Win32Frame::getCurrentMouseButtons (CButtonState& buttons) const
 {
 	if (GetAsyncKeyState (VK_LBUTTON) < 0)
 		buttons |= (bSwapped_mouse_buttons ? kRButton : kLButton);
@@ -484,9 +484,9 @@ bool Win32Frame::scrollRect (const CRect& src, const CPoint& distance)
 }
 
 //-----------------------------------------------------------------------------
-unsigned long IPlatformFrame::getTicks ()
+uint32_t IPlatformFrame::getTicks ()
 {
-	return (unsigned long)GetTickCount ();
+	return (uint32_t)GetTickCount ();
 }
 
 //-----------------------------------------------------------------------------
@@ -574,9 +574,9 @@ CGraphicsPath* Win32Frame::createGraphicsPath ()
 }
 
 //------------------------------------------------------------------------------------
-long Win32Frame::doDrag (CDropSource* source, const CPoint& offset, CBitmap* dragBitmap)
+CView::DragResult Win32Frame::doDrag (CDropSource* source, const CPoint& offset, CBitmap* dragBitmap)
 {
-	long result = 0;
+	CView::DragResult result = CView::kDragRefused;
 	Win32DataObject* dataObject = new Win32DataObject (source);
 	Win32DropSource* dropSource = new Win32DropSource;
 	DWORD outEffect;
@@ -586,9 +586,9 @@ long Win32Frame::doDrag (CDropSource* source, const CPoint& offset, CBitmap* dra
 	if (hResult == DRAGDROP_S_DROP)
 	{
 		if (outEffect == DROPEFFECT_MOVE)
-			result = -1;
+			result = CView::kDragMoved;
 		else
-			result = 1;
+			result = CView::kDragCopied;
 	}
 	return result;
 }
@@ -606,7 +606,7 @@ LONG_PTR WINAPI Win32Frame::WindowProc (HWND hwnd, UINT message, WPARAM wParam, 
 		{
 			case WM_MOUSEWHEEL:
 			{
-				long buttons = 0;
+				CButtonState buttons = 0;
 				if (GetKeyState (VK_SHIFT)   < 0)
 					buttons |= kShift;
 				if (GetKeyState (VK_CONTROL) < 0)
@@ -623,7 +623,7 @@ LONG_PTR WINAPI Win32Frame::WindowProc (HWND hwnd, UINT message, WPARAM wParam, 
 			}
 			case WM_MOUSEHWHEEL:	// new since vista
 			{
-				long buttons = 0;
+				CButtonState buttons = 0;
 				if (GetKeyState (VK_SHIFT)   < 0)
 					buttons |= kShift;
 				if (GetKeyState (VK_CONTROL) < 0)
@@ -695,7 +695,7 @@ LONG_PTR WINAPI Win32Frame::WindowProc (HWND hwnd, UINT message, WPARAM wParam, 
 							if (rlist->rdh.nCount > 0)
 							{
 								RECT* rp = (RECT*)rlist->Buffer;
-								for (unsigned int i = 0; i < rlist->rdh.nCount; i++)
+								for (uint32_t i = 0; i < rlist->rdh.nCount; i++)
 								{
 									CRect ur (rp->left, rp->top, rp->right, rp->bottom);
 									drawContext->clearRect (ur);
@@ -749,7 +749,7 @@ LONG_PTR WINAPI Win32Frame::WindowProc (HWND hwnd, UINT message, WPARAM wParam, 
 			case WM_LBUTTONDOWN:
 			case WM_XBUTTONDOWN:
 			{
-				long buttons = 0;
+				CButtonState buttons = 0;
 				if (wParam & MK_LBUTTON)
 					buttons |= kLButton;
 				if (wParam & MK_RBUTTON)
@@ -778,7 +778,7 @@ LONG_PTR WINAPI Win32Frame::WindowProc (HWND hwnd, UINT message, WPARAM wParam, 
 			{
 				CPoint where;
 				win32Frame->getCurrentMousePosition (where);
-				long buttons;
+				CButtonState buttons;
 				win32Frame->getCurrentMouseButtons (buttons);
 				pFrame->platformOnMouseExited (where, buttons);
 				win32Frame->mouseInside = false;
@@ -786,7 +786,7 @@ LONG_PTR WINAPI Win32Frame::WindowProc (HWND hwnd, UINT message, WPARAM wParam, 
 			}
 			case WM_MOUSEMOVE:
 			{
-				long buttons = 0;
+				CButtonState buttons = 0;
 				if (wParam & MK_LBUTTON)
 					buttons |= kLButton;
 				if (wParam & MK_RBUTTON)
@@ -822,7 +822,7 @@ LONG_PTR WINAPI Win32Frame::WindowProc (HWND hwnd, UINT message, WPARAM wParam, 
 			case WM_MBUTTONUP:
 			case WM_XBUTTONUP:
 			{
-				long buttons = 0;
+				CButtonState buttons = 0;
 				if (wParam & MK_LBUTTON)
 					buttons |= kLButton;
 				if (wParam & MK_RBUTTON)
@@ -1055,13 +1055,13 @@ STDMETHODIMP Win32DataObject::GetData (FORMATETC* format, STGMEDIUM* medium)
 
 	if (format->cfFormat == CF_TEXT || format->cfFormat == CF_UNICODETEXT)
 	{
-		for (long i = 0; i < dropSource->getCount (); i++)
+		for (int32_t i = 0; i < dropSource->getCount (); i++)
 		{
 			if (dropSource->getEntryType (i) == CDropSource::kText)
 			{
 				const void* buffer;
 				CDropSource::Type type;
-				long bufferSize = dropSource->getEntry (i, buffer, type);
+				int32_t bufferSize = dropSource->getEntry (i, buffer, type);
 				UTF8StringHelper utf8String ((const char*)buffer);
 				SIZE_T size = 0;
 				const void* data = 0;
@@ -1094,13 +1094,13 @@ STDMETHODIMP Win32DataObject::GetData (FORMATETC* format, STGMEDIUM* medium)
 	}
 	else if (format->cfFormat == CF_PRIVATEFIRST)
 	{
-		for (long i = 0; i < dropSource->getCount (); i++)
+		for (int32_t i = 0; i < dropSource->getCount (); i++)
 		{
 			if (dropSource->getEntryType (i) == CDropSource::kBinary)
 			{
 				const void* buffer;
 				CDropSource::Type type;
-				long bufferSize = dropSource->getEntry (i, buffer, type);
+				int32_t bufferSize = dropSource->getEntry (i, buffer, type);
 
 				HGLOBAL	memoryHandle = GlobalAlloc (GMEM_MOVEABLE, bufferSize); 
 				void* memory = GlobalLock (memoryHandle);
@@ -1164,7 +1164,7 @@ STDMETHODIMP Win32DataObject::QueryGetData (FORMATETC *format)
 {
 	if (format->cfFormat == CF_TEXT || format->cfFormat == CF_UNICODETEXT)
 	{
-		for (long i = 0; i < dropSource->getCount (); i++)
+		for (int32_t i = 0; i < dropSource->getCount (); i++)
 		{
 			if (dropSource->getEntryType (i) == CDropSource::kText)
 				return S_OK;
@@ -1172,7 +1172,7 @@ STDMETHODIMP Win32DataObject::QueryGetData (FORMATETC *format)
 	}
 	else if (format->cfFormat == CF_PRIVATEFIRST)
 	{
-		for (long i = 0; i < dropSource->getCount (); i++)
+		for (int32_t i = 0; i < dropSource->getCount (); i++)
 		{
 			if (dropSource->getEntryType (i) == CDropSource::kBinary)
 				return S_OK;

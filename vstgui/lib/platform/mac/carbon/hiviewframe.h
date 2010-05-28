@@ -60,7 +60,7 @@ public:
 	bool setSize (const CRect& newSize);
 	bool getSize (CRect& size) const;
 	bool getCurrentMousePosition (CPoint& mousePosition) const;
-	bool getCurrentMouseButtons (long& buttons) const;
+	bool getCurrentMouseButtons (CButtonState& buttons) const;
 	bool setMouseCursor (CCursorType type);
 	bool invalidRect (const CRect& rect);
 	bool scrollRect (const CRect& src, const CPoint& distance);
@@ -71,7 +71,7 @@ public:
 	IPlatformOptionMenu* createPlatformOptionMenu ();
 	COffscreenContext* createOffscreenContext (CCoord width, CCoord height);
 	CGraphicsPath* createGraphicsPath ();
-	long doDrag (CDropSource* source, const CPoint& offset, CBitmap* dragBitmap);
+	CView::DragResult doDrag (CDropSource* source, const CPoint& offset, CBitmap* dragBitmap);
 
 //-----------------------------------------------------------------------------
 protected:

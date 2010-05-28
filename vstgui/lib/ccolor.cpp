@@ -71,8 +71,8 @@ inline const _Tp& max3 (const _Tp& v1, const _Tp& v2, const _Tp& v3)
 //-----------------------------------------------------------------------------
 void CColor::toHSV (double& hue, double& saturation, double& value)
 {
-	double rgbMin = (min3<unsigned char> (red, green, blue)) / 255.;
-	double rgbMax = (max3<unsigned char> (red, green, blue)) / 255.;
+	double rgbMin = (min3<uint8_t> (red, green, blue)) / 255.;
+	double rgbMax = (max3<uint8_t> (red, green, blue)) / 255.;
 	value = rgbMax;
 	if (value == 0)
 	{
@@ -132,7 +132,7 @@ void CColor::fromHSV (double hue, double saturation, double value)
 		value = 1.;
 	if (saturation <= 0.)
 	{
-		red = green = blue = (unsigned char) (value * 255.);
+		red = green = blue = (uint8_t) (value * 255.);
 		return;
 	}
 	else if (saturation > 1.)
@@ -142,9 +142,9 @@ void CColor::fromHSV (double hue, double saturation, double value)
 	while (hue < 0.)
 		hue += 360.;
 
-	const double hf = hue / 60.0;
-	const int    i  = (int) floor ( hf );
-	const double f  = hf - i;
+	const double hf  = hue / 60.0;
+	const int32_t i  = (int32_t) floor ( hf );
+	const double f   = hf - i;
 	const double pv  = value * ( 1 - saturation );
 	const double qv  = value * ( 1 - saturation * f );
 	const double tv  = value * ( 1 - saturation * ( 1 - f ) );
@@ -215,9 +215,9 @@ void CColor::fromHSV (double hue, double saturation, double value)
 			break;
 		}
 	}
-	red = (unsigned char) floor (r * 255. + 0.5);
-	green = (unsigned char) floor (g * 255. + 0.5);
-	blue = (unsigned char) floor (b * 255. + 0.5);
+	red = (uint8_t) floor (r * 255. + 0.5);
+	green = (uint8_t) floor (g * 255. + 0.5);
+	blue = (uint8_t) floor (b * 255. + 0.5);
 }
 
 #if 0 // MAC && DEBUG

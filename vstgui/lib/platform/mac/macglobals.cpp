@@ -42,7 +42,7 @@
 namespace VSTGUI {
 
 //-----------------------------------------------------------------------------
-unsigned long IPlatformFrame::getTicks ()
+uint32_t IPlatformFrame::getTicks ()
 {
 	static struct mach_timebase_info timebaseInfo;
 	static bool initialized = false;
@@ -53,7 +53,7 @@ unsigned long IPlatformFrame::getTicks ()
 	}
 	uint64_t absTime = mach_absolute_time ();
 	double d = (absTime / timebaseInfo.denom) * timebaseInfo.numer;	// nano seconds
-	return static_cast<unsigned long> (d / 1000000);
+	return static_cast<uint32_t> (d / 1000000);
 }
 
 //-----------------------------------------------------------------------------

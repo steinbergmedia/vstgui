@@ -49,11 +49,11 @@ public:
 	WinDragContainer (IDataObject* platformDrag);
 	~WinDragContainer ();
 
-	virtual void* first (long& size, long& type);		///< returns pointer on a char array if type is known
-	virtual void* next (long& size, long& type);		///< returns pointer on a char array if type is known
+	virtual void* first (int32_t& size, int32_t& type);		///< returns pointer on a char array if type is known
+	virtual void* next (int32_t& size, int32_t& type);		///< returns pointer on a char array if type is known
 	
-	virtual long getType (long idx) const;
-	virtual long getCount () const { return nbItems; }
+	virtual int32_t getType (int32_t idx) const;
+	virtual int32_t getCount () const { return nbItems; }
 
 protected:
 	static bool checkResolveLink (const TCHAR* nativePath, TCHAR* resolved);
@@ -62,10 +62,10 @@ protected:
 	static FORMATETC formatBinaryDrop;
 
 	IDataObject* platformDrag;
-	long nbItems;
+	int32_t nbItems;
 	bool isFileDrag;
 	
-	long iterator;
+	int32_t iterator;
 	void* lastItem;
 };
 

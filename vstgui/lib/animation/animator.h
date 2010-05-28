@@ -53,9 +53,9 @@ class IAnimationTarget
 public:
 	virtual ~IAnimationTarget () {}
 
-	virtual void animationStart (CView* view, const char* name) = 0;						///< animation starts
-	virtual void animationTick (CView* view, const char* name, float pos) = 0;				///< pos is a normalized value between zero and one
-	virtual void animationFinished (CView* view, const char* name, bool wasCanceled) = 0;	///< animation ended
+	virtual void animationStart (CView* view, IdStringPtr name) = 0;						///< animation starts
+	virtual void animationTick (CView* view, IdStringPtr name, float pos) = 0;				///< pos is a normalized value between zero and one
+	virtual void animationFinished (CView* view, IdStringPtr name, bool wasCanceled) = 0;	///< animation ended
 };
 
 //-----------------------------------------------------------------------------
@@ -66,8 +66,8 @@ class ITimingFunction
 public:
 	virtual ~ITimingFunction () {}
 
-	virtual float getPosition (unsigned long milliseconds) = 0;
-	virtual bool isDone (unsigned long milliseconds) = 0;
+	virtual float getPosition (uint32_t milliseconds) = 0;
+	virtual bool isDone (uint32_t milliseconds) = 0;
 };
 
 //-----------------------------------------------------------------------------
@@ -83,9 +83,9 @@ public:
 	//-----------------------------------------------------------------------------
 	//@{
 	/** adds an animation. animation and timingFunction is now owned by the animator. An already running animation for view with name will be canceled. */
-	void addAnimation (CView* view, const char* name, IAnimationTarget* target, ITimingFunction* timingFunction);
+	void addAnimation (CView* view, IdStringPtr name, IAnimationTarget* target, ITimingFunction* timingFunction);
 	/** removes an animation. if animation is a CBaseObject forget() will be called otherwise it is deleted. The same will be done with the timingFunction. */
-	void removeAnimation (CView* view, const char* name);
+	void removeAnimation (CView* view, IdStringPtr name);
 
 	/** removes all animations for view */
 	void removeAnimations (CView* view);
@@ -93,7 +93,7 @@ public:
 
 	/// @cond ignore
 
-	CMessageResult notify (CBaseObject* sender, const char* message);
+	CMessageResult notify (CBaseObject* sender, IdStringPtr message);
 
 	CLASS_METHODS_NOCOPY(Animator, CBaseObject)
 protected:
@@ -110,7 +110,7 @@ protected:
 		CView* view;
 		IAnimationTarget* target;
 		ITimingFunction* timingFunction;
-		unsigned long startTime;
+		uint32_t startTime;
 		float lastPos;
 	};
 

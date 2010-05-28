@@ -41,7 +41,7 @@
 //---Structure and enum used for keyUp/keyDown-----
 struct VstKeyCode
 {
-	long character;
+	int32_t character;
 	unsigned char virt;     // see enum VstVirtualKey
 	unsigned char modifier; // see enum VstModifierKey
 };

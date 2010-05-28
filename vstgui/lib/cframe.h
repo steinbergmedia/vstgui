@@ -59,8 +59,8 @@ enum CKnobMode
 	kLinearMode
 };
 
-extern const char* kMsgNewFocusView;			///< Message send to all parents of the new focus view
-extern const char* kMsgOldFocusView;			///< Message send to all parents of the old focus view
+extern IdStringPtr kMsgNewFocusView;			///< Message send to all parents of the new focus view
+extern IdStringPtr kMsgOldFocusView;			///< Message send to all parents of the old focus view
 
 //-----------------------------------------------------------------------------
 // CFrame Declaration
@@ -81,8 +81,8 @@ public:
 	virtual void idle ();
 	virtual void doIdleStuff ();
 
-	virtual unsigned long getTicks () const;	///< get the current time (in ms)
-	virtual long getKnobMode () const;			///< get hosts knob mode
+	virtual uint32_t getTicks () const;	///< get the current time (in ms)
+	virtual int32_t getKnobMode () const;			///< get hosts knob mode
 
 	virtual bool setPosition (CCoord x, CCoord y);
 	virtual bool getPosition (CCoord &x, CCoord &y) const;
@@ -94,11 +94,11 @@ public:
 	virtual bool   setModalView (CView *pView);
 	virtual CView *getModalView () const { return pModalView; }
 
-	virtual void  beginEdit (long index);
-	virtual void  endEdit (long index);
+	virtual void  beginEdit (int32_t index);
+	virtual void  endEdit (int32_t index);
 
 	virtual bool getCurrentMouseLocation (CPoint &where) const;				///< get current mouse location
-	virtual long getCurrentMouseButtons () const;							///< get current mouse buttons and key modifiers
+	virtual CButtonState getCurrentMouseButtons () const;							///< get current mouse buttons and key modifiers
 	virtual void setCursor (CCursorType type);								///< set mouse cursor
 
 	virtual void   setFocusView (CView *pView);
@@ -153,15 +153,15 @@ public:
 	// CView
 	void draw (CDrawContext *pContext);
 	void drawRect (CDrawContext *pContext, const CRect& updateRect);
-	CMouseEventResult onMouseDown (CPoint &where, const long& buttons);
-	CMouseEventResult onMouseUp (CPoint &where, const long& buttons);
-	CMouseEventResult onMouseMoved (CPoint &where, const long& buttons);
-	CMouseEventResult onMouseExited (CPoint &where, const long& buttons);
-	bool onWheel (const CPoint &where, const float &distance, const long &buttons);
-	bool onWheel (const CPoint &where, const CMouseWheelAxis &axis, const float &distance, const long &buttons);
-	long onKeyDown (VstKeyCode& keyCode);
-	long onKeyUp (VstKeyCode& keyCode);
-	long doDrag (CDropSource* source, const CPoint& offset, CBitmap* dragBitmap);
+	CMouseEventResult onMouseDown (CPoint &where, const CButtonState& buttons);
+	CMouseEventResult onMouseUp (CPoint &where, const CButtonState& buttons);
+	CMouseEventResult onMouseMoved (CPoint &where, const CButtonState& buttons);
+	CMouseEventResult onMouseExited (CPoint &where, const CButtonState& buttons);
+	bool onWheel (const CPoint &where, const float &distance, const CButtonState &buttons);
+	bool onWheel (const CPoint &where, const CMouseWheelAxis &axis, const float &distance, const CButtonState &buttons);
+	int32_t onKeyDown (VstKeyCode& keyCode);
+	int32_t onKeyUp (VstKeyCode& keyCode);
+	DragResult doDrag (CDropSource* source, const CPoint& offset, CBitmap* dragBitmap);
 	void setViewSize (CRect& rect, bool invalid = true);
 
 	virtual VSTGUIEditorInterface* getEditor () const { return pEditor; }
@@ -182,8 +182,8 @@ public:
 protected:
 	~CFrame ();
 	bool initFrame (void *pSystemWin);
-	void checkMouseViews (const CPoint& where, const long& buttons);
-	void clearMouseViews (const CPoint& where, const long& buttons, bool callMouseExit = true);
+	void checkMouseViews (const CPoint& where, const CButtonState& buttons);
+	void clearMouseViews (const CPoint& where, const CButtonState& buttons, bool callMouseExit = true);
 	void removeFromMouseViews (CView* view);
 
 	VSTGUIEditorInterface*		pEditor;
@@ -204,11 +204,11 @@ protected:
 
 	// IPlatformFrameCallback
 	bool platformDrawRect (CDrawContext* context, const CRect& rect);
-	CMouseEventResult platformOnMouseDown (CPoint& where, const long& buttons);
-	CMouseEventResult platformOnMouseMoved (CPoint& where, const long& buttons);
-	CMouseEventResult platformOnMouseUp (CPoint& where, const long& buttons);
-	CMouseEventResult platformOnMouseExited (CPoint& where, const long& buttons);
-	bool platformOnMouseWheel (const CPoint &where, const CMouseWheelAxis &axis, const float &distance, const long &buttons);
+	CMouseEventResult platformOnMouseDown (CPoint& where, const CButtonState& buttons);
+	CMouseEventResult platformOnMouseMoved (CPoint& where, const CButtonState& buttons);
+	CMouseEventResult platformOnMouseUp (CPoint& where, const CButtonState& buttons);
+	CMouseEventResult platformOnMouseExited (CPoint& where, const CButtonState& buttons);
+	bool platformOnMouseWheel (const CPoint &where, const CMouseWheelAxis &axis, const float &distance, const CButtonState &buttons);
 	bool platformOnDrop (CDragContainer* drag, const CPoint& where);
 	void platformOnDragEnter (CDragContainer* drag, const CPoint& where);
 	void platformOnDragLeave (CDragContainer* drag, const CPoint& where);
@@ -223,10 +223,10 @@ class VSTGUIEditorInterface
 {
 public:
 	virtual void doIdleStuff () {}
-	virtual long getKnobMode () const { return 0; }
+	virtual int32_t getKnobMode () const { return 0; }
 	
-	virtual void beginEdit (long index) {}
-	virtual void endEdit (long index) {}
+	virtual void beginEdit (int32_t index) {}
+	virtual void endEdit (int32_t index) {}
 
 	virtual bool beforeSizeChange (const CRect& newSize, const CRect& oldSize) { return true; } ///< frame will change size, if this returns false the upstream implementation does not allow it and thus the size of the frame will not change
 
@@ -261,8 +261,8 @@ class IKeyboardHook
 public:
 	virtual ~IKeyboardHook () {}
 	
-	virtual long onKeyDown (const VstKeyCode& code, CFrame* frame) = 0;	///< should return 1 if no further key down processing should apply, otherwise -1
-	virtual long onKeyUp (const VstKeyCode& code, CFrame* frame) = 0;	///< should return 1 if no further key up processing should apply, otherwise -1
+	virtual int32_t onKeyDown (const VstKeyCode& code, CFrame* frame) = 0;	///< should return 1 if no further key down processing should apply, otherwise -1
+	virtual int32_t onKeyUp (const VstKeyCode& code, CFrame* frame) = 0;	///< should return 1 if no further key up processing should apply, otherwise -1
 };
 
 //-----------------------------------------------------------------------------

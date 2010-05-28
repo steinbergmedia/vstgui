@@ -55,20 +55,20 @@ AlphaValueAnimation::AlphaValueAnimation (float endValue, bool forceEndValueOnFi
 }
 
 //-----------------------------------------------------------------------------
-void AlphaValueAnimation::animationStart (CView* view, const char* name)
+void AlphaValueAnimation::animationStart (CView* view, IdStringPtr name)
 {
 	startValue = view->getAlphaValue ();
 }
 
 //-----------------------------------------------------------------------------
-void AlphaValueAnimation::animationTick (CView* view, const char* name, float pos)
+void AlphaValueAnimation::animationTick (CView* view, IdStringPtr name, float pos)
 {
 	float alpha = startValue + (endValue - startValue) * pos;
 	view->setAlphaValue (alpha);
 }
 
 //-----------------------------------------------------------------------------
-void AlphaValueAnimation::animationFinished (CView* view, const char* name, bool wasCanceled)
+void AlphaValueAnimation::animationFinished (CView* view, IdStringPtr name, bool wasCanceled)
 {
 	if (!wasCanceled || forceEndValueOnFinish)
 		view->setAlphaValue (endValue);
@@ -84,13 +84,13 @@ ViewSizeAnimation::ViewSizeAnimation (const CRect& inNewRect, bool forceEndValue
 }
 
 //-----------------------------------------------------------------------------
-void ViewSizeAnimation::animationStart (CView* view, const char* name)
+void ViewSizeAnimation::animationStart (CView* view, IdStringPtr name)
 {
 	startRect = view->getViewSize ();
 }
 
 //-----------------------------------------------------------------------------
-void ViewSizeAnimation::animationFinished (CView* view, const char* name, bool wasCanceled)
+void ViewSizeAnimation::animationFinished (CView* view, IdStringPtr name, bool wasCanceled)
 {
 	if (!wasCanceled || forceEndValueOnFinish)
 	{
@@ -105,13 +105,13 @@ void ViewSizeAnimation::animationFinished (CView* view, const char* name, bool w
 }
 
 //-----------------------------------------------------------------------------
-void ViewSizeAnimation::animationTick (CView* view, const char* name, float pos)
+void ViewSizeAnimation::animationTick (CView* view, IdStringPtr name, float pos)
 {
 	CRect r;
-	r.left = (int)fabs (startRect.left + ((newRect.left - startRect.left) * pos));
-	r.right = (int)fabs (startRect.right + ((newRect.right - startRect.right) * pos));
-	r.top = (int)fabs (startRect.top + ((newRect.top - startRect.top) * pos));
-	r.bottom = (int)fabs (startRect.bottom + ((newRect.bottom - startRect.bottom) * pos));
+	r.left = (int32_t)fabs (startRect.left + ((newRect.left - startRect.left) * pos));
+	r.right = (int32_t)fabs (startRect.right + ((newRect.right - startRect.right) * pos));
+	r.top = (int32_t)fabs (startRect.top + ((newRect.top - startRect.top) * pos));
+	r.bottom = (int32_t)fabs (startRect.bottom + ((newRect.bottom - startRect.bottom) * pos));
 	if (view->getViewSize () != r)
 	{
 		view->invalid ();
@@ -150,7 +150,7 @@ ExchangeViewAnimation::~ExchangeViewAnimation ()
 }
 
 //-----------------------------------------------------------------------------
-void ExchangeViewAnimation::animationStart (CView* view, const char* name)
+void ExchangeViewAnimation::animationStart (CView* view, IdStringPtr name)
 {
 	#if DEBUG
 	CViewContainer* parent = dynamic_cast<CViewContainer*> (viewToRemove->getParentView ());
@@ -167,7 +167,7 @@ void ExchangeViewAnimation::animationStart (CView* view, const char* name)
 }
 
 //-----------------------------------------------------------------------------
-void ExchangeViewAnimation::animationTick (CView* view, const char* name, float pos)
+void ExchangeViewAnimation::animationTick (CView* view, IdStringPtr name, float pos)
 {
 	switch (style)
 	{
@@ -231,7 +231,7 @@ void ExchangeViewAnimation::animationTick (CView* view, const char* name, float 
 }
 
 //-----------------------------------------------------------------------------
-void ExchangeViewAnimation::animationFinished (CView* view, const char* name, bool wasCanceled)
+void ExchangeViewAnimation::animationFinished (CView* view, IdStringPtr name, bool wasCanceled)
 {
 	if (wasCanceled)
 	{

@@ -35,11 +35,6 @@
 #include "cbitmap.h"
 #include "cdrawcontext.h"
 
-#if MAC
-	#include "platform/mac/macglobals.h"
-	#include "platform/mac/cgdrawcontext.h"
-#endif
-
 namespace VSTGUI {
 
 //-----------------------------------------------------------------------------

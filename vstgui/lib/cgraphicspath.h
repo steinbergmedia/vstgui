@@ -134,13 +134,12 @@ public:
 	/// @name Adding Elements
 	//-----------------------------------------------------------------------------
 	//@{
-	virtual void addArc (const CRect& rect, double startAngle, double endAngle) = 0;
+	virtual void addArc (const CRect& rect, double startAngle, double endAngle, bool clockwise) = 0;
 	virtual void addCurve (const CPoint& start, const CPoint& control1, const CPoint& control2, const CPoint& end) = 0;
 	virtual void addEllipse (const CRect& rect) = 0;
 	virtual void addLine (const CPoint& start, const CPoint& end) = 0;
 	virtual void addRect (const CRect& rect) = 0;
 	virtual void addPath (const CGraphicsPath& path, CGraphicsTransform* transformation = 0) = 0;
-	virtual void addString (const char* utf8String, CFontRef font, const CPoint& position) = 0;
 	virtual void closeSubpath () = 0;
 	//@}
 

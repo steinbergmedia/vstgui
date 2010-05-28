@@ -141,7 +141,7 @@ HIDDEN VstKeyCode CreateVstKeyCodeFromNSEvent (NSEvent* theEvent)
 		}
     }
 
-	unsigned int modifiers = [theEvent modifierFlags];
+	uint32_t modifiers = [theEvent modifierFlags];
 	if (modifiers & NSShiftKeyMask)
 		kc.modifier |= MODIFIER_SHIFT;
 	if (modifiers & NSCommandKeyMask)
@@ -155,11 +155,11 @@ HIDDEN VstKeyCode CreateVstKeyCodeFromNSEvent (NSEvent* theEvent)
 }
 
 //------------------------------------------------------------------------------------
-HIDDEN long eventButton (NSEvent* theEvent)
+HIDDEN int32_t eventButton (NSEvent* theEvent)
 {
 	if ([theEvent type] == NSMouseMoved)
 		return 0;
-	long buttons = 0;
+	int32_t buttons = 0;
 	switch ([theEvent buttonNumber])
 	{
 		case 0: buttons = kLButton; break;

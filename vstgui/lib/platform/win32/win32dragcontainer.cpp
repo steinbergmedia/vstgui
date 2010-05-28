@@ -64,7 +64,7 @@ WinDragContainer::WinDragContainer (IDataObject* platformDrag)
 		hr = platformDrag->GetData (&formatHDrop, &medium);
 		if (hr == S_OK)
 		{
-			nbItems = (long)DragQueryFile ((HDROP)medium.hGlobal, 0xFFFFFFFFL, 0, 0);
+			nbItems = (int32_t)DragQueryFile ((HDROP)medium.hGlobal, 0xFFFFFFFFL, 0, 0);
 			isFileDrag = true;
 		}
 		else if (platformDrag->QueryGetData (&formatBinaryDrop) == S_OK)
@@ -88,7 +88,7 @@ WinDragContainer::~WinDragContainer ()
 }
 
 //-----------------------------------------------------------------------------
-long WinDragContainer::getType (long idx) const
+int32_t WinDragContainer::getType (int32_t idx) const
 {
 	if (platformDrag == 0 || nbItems < idx)
 		return kError;
@@ -110,14 +110,14 @@ long WinDragContainer::getType (long idx) const
 }
 
 //-----------------------------------------------------------------------------
-void* WinDragContainer::first (long& size, long& type)
+void* WinDragContainer::first (int32_t& size, int32_t& type)
 {
 	iterator = 0;
 	return next (size, type);
 }
 
 //-----------------------------------------------------------------------------
-void* WinDragContainer::next (long& size, long& type)
+void* WinDragContainer::next (int32_t& size, int32_t& type)
 {
 	if (platformDrag == 0)
 	{
@@ -158,7 +158,7 @@ void* WinDragContainer::next (long& size, long& type)
 		{
 			TCHAR fileDropped[1024];
 
-			long nbRealItems = 0;
+			int32_t nbRealItems = 0;
 			if (DragQueryFile ((HDROP)hDrop, iterator++, fileDropped, sizeof (fileDropped))) 
 			{
 				// resolve link
@@ -166,7 +166,7 @@ void* WinDragContainer::next (long& size, long& type)
 				UTF8StringHelper path (fileDropped);
 				lastItem = malloc (strlen (path)+1);
 				strcpy ((char*)lastItem, path);
-				size = (long)strlen ((const char*)lastItem);
+				size = (int32_t)strlen ((const char*)lastItem);
 				type = kFile;
 				return lastItem;
 			}
@@ -175,7 +175,7 @@ void* WinDragContainer::next (long& size, long& type)
 		//---TEXT----------------------------
 		{
 			void* data = GlobalLock (medium.hGlobal);
-			long dataSize = (long)GlobalSize (medium.hGlobal);
+			int32_t dataSize = (int32_t)GlobalSize (medium.hGlobal);
 			if (data && dataSize)
 			{
 				if (type == kUnicodeText)

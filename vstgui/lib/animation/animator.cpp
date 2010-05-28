@@ -88,14 +88,14 @@ class MyView : public CView
 public:
 	MyView (const CRect& r) : CView (r) { setAlphaValue (0.5f); }
 
-	CMouseEventResult onMouseEntered (CPoint &where, const long& buttons)
+	CMouseEventResult onMouseEntered (CPoint &where, const CButtonState& buttons)
 	{
 		// this adds an animation which takes 200 ms to make a linear alpha fade from the current value to 1
 		addAnimation ("AlphaValueAnimation", new AlphaValueAnimation (1.f), new LinearTimingFunction (200));
 		return kMouseEventHandled;
 	}
 	
-	CMouseEventResult onMouseExited (CPoint &where, const long& buttons)
+	CMouseEventResult onMouseExited (CPoint &where, const CButtonState& buttons)
 	{
 		// this adds an animation which takes 200 ms to make a linear alpha fade from the current value to 0.5
 		addAnimation ("AlphaValueAnimation", new AlphaValueAnimation (0.5f), new LinearTimingFunction (200));
@@ -189,7 +189,7 @@ protected:
 		gInstance = 0;
 	}
 	
-	CMessageResult notify (CBaseObject* sender, const char* message)
+	CMessageResult notify (CBaseObject* sender, IdStringPtr message)
 	{
 		if (message == CVSTGUITimer::kMsgTimer)
 		{
@@ -248,7 +248,7 @@ Animator::~Animator ()
 }
 
 //-----------------------------------------------------------------------------
-void Animator::addAnimation (CView* view, const char* name, IAnimationTarget* target, ITimingFunction* timingFunction)
+void Animator::addAnimation (CView* view, IdStringPtr name, IAnimationTarget* target, ITimingFunction* timingFunction)
 {
 	if (animations.size () == 0)
 		Timer::addAnimator (this);
@@ -260,7 +260,7 @@ void Animator::addAnimation (CView* view, const char* name, IAnimationTarget* ta
 }
 
 //-----------------------------------------------------------------------------
-void Animator::removeAnimation (CView* view, const char* name)
+void Animator::removeAnimation (CView* view, IdStringPtr name)
 {
 	std::list<Animation*>::iterator it = animations.begin ();
 	while (it != animations.end ())
@@ -309,13 +309,13 @@ void Animator::removeAnimation (Animation* a)
 }
 
 //-----------------------------------------------------------------------------
-CMessageResult Animator::notify (CBaseObject* sender, const char* message)
+CMessageResult Animator::notify (CBaseObject* sender, IdStringPtr message)
 {
 	if (message == CVSTGUITimer::kMsgTimer)
 	{
 		CBaseObjectGuard selfGuard (this);
 		inTimer = true;
-		unsigned long currentTicks = IPlatformFrame::getTicks ();
+		uint32_t currentTicks = IPlatformFrame::getTicks ();
 		std::list<Animation*>::iterator it = animations.begin ();
 		while (it != animations.end ())
 		{
@@ -329,7 +329,7 @@ CMessageResult Animator::notify (CBaseObject* sender, const char* message)
 				a->target->animationStart (a->view, a->name.c_str ());
 				a->startTime = currentTicks;
 			}
-			unsigned long time = currentTicks - a->startTime;
+			uint32_t time = currentTicks - a->startTime;
 			float pos = a->timingFunction->getPosition (time);
 			if (pos != a->lastPos)
 			{
