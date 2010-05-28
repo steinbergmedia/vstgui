@@ -56,13 +56,13 @@ Two functions allows to get the previous or the next subbitmap (these functions 
  * @param offset unused
  */
 //------------------------------------------------------------------------
-CAutoAnimation::CAutoAnimation (const CRect& size, CControlListener* listener, long tag, CBitmap* background, const CPoint& offset)
+CAutoAnimation::CAutoAnimation (const CRect& size, CControlListener* listener, int32_t tag, CBitmap* background, const CPoint& offset)
 : CControl (size, listener, tag, background)
 , offset (offset)
 , bWindowOpened (false)
 {
 	heightOfOneImage = size.height ();
-	setNumSubPixmaps (background ? (long)(background->getHeight () / heightOfOneImage) : 0);
+	setNumSubPixmaps (background ? (int32_t)(background->getHeight () / heightOfOneImage) : 0);
 
 	totalHeightOfBitmap = heightOfOneImage * getNumSubPixmaps ();
 }
@@ -79,7 +79,7 @@ CAutoAnimation::CAutoAnimation (const CRect& size, CControlListener* listener, l
  * @param offset unused
  */
 //------------------------------------------------------------------------
-CAutoAnimation::CAutoAnimation (const CRect& size, CControlListener* listener, long tag, long subPixmaps, CCoord heightOfOneImage, CBitmap* background, const CPoint& offset)
+CAutoAnimation::CAutoAnimation (const CRect& size, CControlListener* listener, int32_t tag, int32_t subPixmaps, CCoord heightOfOneImage, CBitmap* background, const CPoint& offset)
 : CControl (size, listener, tag, background)
 , offset (offset)
 , bWindowOpened (false)
@@ -110,7 +110,7 @@ void CAutoAnimation::draw (CDrawContext *pContext)
 	if (isWindowOpened ())
 	{	
 		CPoint where;
-		where.v = (long)value + offset.v;
+		where.v = (int32_t)value + offset.v;
 		where.h = offset.h;
 		
 		if (pBackground)
@@ -122,7 +122,7 @@ void CAutoAnimation::draw (CDrawContext *pContext)
 }
 
 //------------------------------------------------------------------------
-CMouseEventResult CAutoAnimation::onMouseDown (CPoint& where, const long& buttons)
+CMouseEventResult CAutoAnimation::onMouseDown (CPoint& where, const CButtonState& buttons)
 {
 	if (buttons & kLButton)
 	{

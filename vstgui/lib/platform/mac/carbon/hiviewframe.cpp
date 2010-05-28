@@ -59,7 +59,7 @@ IPlatformFrame* IPlatformFrame::createPlatformFrame (IPlatformFrameCallback* fra
 
 #endif
 
-long pSystemVersion;
+SInt32 pSystemVersion;
 
 //-----------------------------------------------------------------------------
 bool isWindowComposited (WindowRef window)
@@ -100,20 +100,20 @@ public:
 	MacDragContainer (DragRef platformDrag);
 	~MacDragContainer ();
 
-	virtual void* first (long& size, long& type);		///< returns pointer on a char array if type is known
-	virtual void* next (long& size, long& type);		///< returns pointer on a char array if type is known
+	virtual void* first (int32_t& size, int32_t& type);		///< returns pointer on a char array if type is known
+	virtual void* next (int32_t& size, int32_t& type);		///< returns pointer on a char array if type is known
 	
-	virtual long getType (long idx) const;
-	virtual long getCount () const { return nbItems; }
+	virtual int32_t getType (int32_t idx) const;
+	virtual int32_t getCount () const { return nbItems; }
 
 	DragRef getPlatformDrag () const { return platformDrag; }
 
 protected:
 	DragRef platformDrag;
 	PasteboardRef pasteboard;
-	long nbItems;
+	int32_t nbItems;
 	
-	long iterator;
+	int32_t iterator;
 	void* lastItem;
 };
 
@@ -165,7 +165,7 @@ MacDragContainer::~MacDragContainer ()
 }
 
 //-----------------------------------------------------------------------------
-long MacDragContainer::getType (long idx) const
+int32_t MacDragContainer::getType (int32_t idx) const
 {
 	if (platformDrag == 0)
 		return CDragContainer::kError;
@@ -176,7 +176,7 @@ long MacDragContainer::getType (long idx) const
 		CFArrayRef flavors = 0;
 		if (PasteboardCopyItemFlavors (pasteboard, itemID, &flavors) == noErr)
 		{
-			long result = CDragContainer::kUnknown;
+			int32_t result = CDragContainer::kUnknown;
 			for (CFIndex i = 0; i < CFArrayGetCount (flavors); i++)
 			{
 				CFStringRef flavorType = (CFStringRef)CFArrayGetValueAtIndex (flavors, i);
@@ -207,14 +207,14 @@ long MacDragContainer::getType (long idx) const
 }
 
 //-----------------------------------------------------------------------------
-void* MacDragContainer::first (long& size, long& type)
+void* MacDragContainer::first (int32_t& size, int32_t& type)
 {
 	iterator = 0;
 	return next (size, type);
 }
 
 //-----------------------------------------------------------------------------
-void* MacDragContainer::next (long& size, long& type)
+void* MacDragContainer::next (int32_t& size, int32_t& type)
 {
 	if (platformDrag == 0)
 	{
@@ -353,7 +353,7 @@ HIViewFrame::HIViewFrame (IPlatformFrameCallback* frame, const CRect& size, Wind
 	OSStatus status = CreateUserPaneControl (0, &r, features, &controlRef);
 	if (status != noErr)
 	{
-		fprintf (stderr, "Could not create Control : %d\n", (int)status);
+		fprintf (stderr, "Could not create Control : %d\n", (int32_t)status);
 		return;
 	}
 	const EventTypeSpec controlEventTypes[] = {	
@@ -554,7 +554,7 @@ bool HIViewFrame::getCurrentMousePosition (CPoint& mousePosition) const
 }
 
 //-----------------------------------------------------------------------------
-bool HIViewFrame::getCurrentMouseButtons (long& buttons) const
+bool HIViewFrame::getCurrentMouseButtons (CButtonState& buttons) const
 {
 	UInt32 state = GetCurrentButtonState ();
 	if (state == kEventMouseButtonPrimary)
@@ -717,7 +717,7 @@ IPlatformOptionMenu* HIViewFrame::createPlatformOptionMenu ()
 //-----------------------------------------------------------------------------
 COffscreenContext* HIViewFrame::createOffscreenContext (CCoord width, CCoord height)
 {
-	CGOffscreenBitmap* bitmap = new CGOffscreenBitmap (CPoint (width, height));
+	CGBitmap* bitmap = new CGBitmap (CPoint (width, height));
 	CGDrawContext* context = new CGDrawContext (bitmap);
 	bitmap->forget ();
 	return context;
@@ -730,18 +730,18 @@ CGraphicsPath* HIViewFrame::createGraphicsPath ()
 }
 
 //------------------------------------------------------------------------------------
-long HIViewFrame::doDrag (CDropSource* source, const CPoint& offset, CBitmap* dragBitmap)
+CView::DragResult HIViewFrame::doDrag (CDropSource* source, const CPoint& offset, CBitmap* dragBitmap)
 {
-	long result = 0;
+	CView::DragResult result = CView::kDragError;
 	PasteboardRef pb;
 	if (PasteboardCreate (kPasteboardUniqueName, &pb) == noErr)
 	{
 		PasteboardClear (pb);
-		for (long i = 0; i < source->getCount (); i++)
+		for (int32_t i = 0; i < source->getCount (); i++)
 		{
 			const void* buffer = 0;
 			CDropSource::Type type;
-			long bufferSize = source->getEntry (i, buffer, type);
+			int32_t bufferSize = source->getEntry (i, buffer, type);
 			if (bufferSize > 0)
 			{
 				switch (type)
@@ -812,11 +812,11 @@ long HIViewFrame::doDrag (CDropSource* source, const CPoint& offset, CBitmap* dr
 					if (GetDragDropAction (drag, &action) == noErr)
 					{
 						if (action == kDragActionNothing)
-							result = 0;
+							result = CView::kDragRefused;
 						else if (action & kDragActionMove)
-							result = -1;
+							result = CView::kDragMoved;
 						else
-							result = 1;
+							result = CView::kDragCopied;
 					}
 				}
 				DisposeRgn (region);
@@ -831,7 +831,7 @@ long HIViewFrame::doDrag (CDropSource* source, const CPoint& offset, CBitmap* dr
 #define ENABLE_LOGGING 0
 
 #if ENABLE_LOGGING
-#define LOG_HIPOINT(text,point) fprintf (stdout, "%s%d, %d\n", text, (long)point.x, (long)point.y);
+#define LOG_HIPOINT(text,point) fprintf (stdout, "%s%d, %d\n", text, (int32_t)point.x, (int32_t)point.y);
 #define LOG(text) fprintf (stdout, "%s\n", text);
 #else
 #define LOG_HIPOINT(x,y)
@@ -861,7 +861,7 @@ pascal OSStatus HIViewFrame::carbonMouseEventHandler (EventHandlerCallRef inHand
 		{
 			UInt32 modifiers = 0;
 			EventMouseButton buttonState = 0;
-			long buttons = 0;
+			CButtonState buttons = 0;
 			HIPoint location = { 0.f, 0.f };
 			if (GetEventParameter (inEvent, kEventParamWindowMouseLocation, typeHIPoint, NULL, sizeof (HIPoint), NULL, &location) == noErr)
 			{
@@ -1301,7 +1301,7 @@ pascal OSStatus HIViewFrame::carbonEventHandler (EventHandlerCallRef inHandlerCa
 					GetEventParameter (inEvent, kEventParamMouseWheelDelta, typeSInt32, NULL, sizeof (SInt32), NULL, &wheelDelta);
 					GetEventParameter (inEvent, kEventParamWindowMouseLocation, typeHIPoint, NULL, sizeof (HIPoint), NULL, &windowHIPoint);
 					GetEventParameter (inEvent, kEventParamKeyModifiers, typeUInt32, NULL, sizeof (UInt32), NULL, &modifiers);
-					long buttons = 0;
+					CButtonState buttons = 0;
 					if (modifiers & cmdKey)
 						buttons |= kControl;
 					if (modifiers & shiftKey)
@@ -1410,7 +1410,7 @@ pascal OSStatus HIViewFrame::carbonEventHandler (EventHandlerCallRef inHandlerCa
 							}
 						}
 						short entries = sizeof (keyTable) / (sizeof (short));
-						for (int i = 0; i < entries; i += 2)
+						for (int32_t i = 0; i < entries; i += 2)
 						{
 							if (keyTable[i + 1] == scanCode)
 							{

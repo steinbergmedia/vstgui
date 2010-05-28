@@ -89,7 +89,7 @@ static void XMLCALL gCharacterDataHandler (void* userData, const char* s, int le
 	Parser* parser = (Parser*)userData;
 	IHandler* handler = parser ? parser->getHandler () : 0;
 	if (handler)
-		handler->xmlCharData (parser, s, len);
+		handler->xmlCharData (parser, (const int8_t*)s, len);
 }
 
 //------------------------------------------------------------------------
@@ -129,7 +129,7 @@ bool Parser::parse (IContentProvider* provider, IHandler* _handler)
 	XML_SetCharacterDataHandler (PARSER, gCharacterDataHandler);
 	XML_SetCommentHandler (PARSER, gCommentHandler);
 
-	static const unsigned int kBufferSize = 0x8000;
+	static const uint32_t kBufferSize = 0x8000;
 
 	provider->rewind ();
 
@@ -142,7 +142,7 @@ bool Parser::parse (IContentProvider* provider, IHandler* _handler)
 			return false;
 		}
 
-		int bytesRead = provider->readRawXmlData ((char*)buffer, kBufferSize);
+		int32_t bytesRead = provider->readRawXmlData ((int8_t*)buffer, kBufferSize);
 
 		XML_Status status = XML_ParseBuffer (PARSER, bytesRead, bytesRead == 0);
 		switch (status) 
@@ -180,7 +180,7 @@ bool Parser::stop ()
 }
 
 //------------------------------------------------------------------------
-MemoryContentProvider::MemoryContentProvider (const void* data, int dataSize)
+MemoryContentProvider::MemoryContentProvider (const void* data, int32_t dataSize)
 : data (data)
 , dataSize (dataSize)
 , pos (0)
@@ -188,9 +188,9 @@ MemoryContentProvider::MemoryContentProvider (const void* data, int dataSize)
 }
 
 //------------------------------------------------------------------------
-int MemoryContentProvider::readRawXmlData (char* buffer, int size)
+int32_t MemoryContentProvider::readRawXmlData (int8_t* buffer, int32_t size)
 {
-	int bytesToCopy = std::min<int> (size, dataSize-pos);
+	int32_t bytesToCopy = std::min<int32_t> (size, dataSize-pos);
 	if (bytesToCopy > 0)
 	{
 		memcpy (buffer, data, bytesToCopy);

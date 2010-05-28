@@ -64,7 +64,7 @@ enum CTxtFace
 class CFontDesc : public CBaseObject
 {
 public:
-	CFontDesc (const char* name = 0, const CCoord& size = 0, const long style = 0);
+	CFontDesc (UTF8StringPtr name = 0, const CCoord& size = 0, const int32_t style = 0);
 	CFontDesc (const CFontDesc& font);
 	~CFontDesc ();
 
@@ -72,13 +72,13 @@ public:
 	/// @name Size, Name and Style Methods
 	//-----------------------------------------------------------------------------
 	//@{
-	const char* getName () const { return name; }		///< get the name of the font
+	UTF8StringPtr getName () const { return name; }		///< get the name of the font
 	const CCoord& getSize () const { return size; }		///< get the height of the font
-	const long& getStyle () const { return style; }		///< get the style of the font
+	const int32_t& getStyle () const { return style; }		///< get the style of the font
 
-	virtual void setName (const char* newName);			///< set the name of the font
+	virtual void setName (UTF8StringPtr newName);			///< set the name of the font
 	virtual void setSize (CCoord newSize);				///< set the height of the font
-	virtual void setStyle (long newStyle);				///< set the style of the font @sa CTxtFace
+	virtual void setStyle (int32_t newStyle);				///< set the style of the font @sa CTxtFace
 	//@}
 
 	virtual IPlatformFont* getPlatformFont ();
@@ -94,9 +94,9 @@ protected:
 	IPlatformFont* platformFont;
 	
 	virtual void freePlatformFont ();
-	char* name;
+	UTF8StringBuffer name;
 	CCoord size;
-	long style;
+	int32_t style;
 };
 
 typedef CFontDesc*	CFontRef;
@@ -122,8 +122,8 @@ class IFontPainter
 public:
 	virtual ~IFontPainter () {}
 
-	virtual void drawString (CDrawContext* context, const char* utf8String, const CPoint& p, bool antialias = true) = 0;
-	virtual CCoord getStringWidth (CDrawContext* context, const char* utf8String, bool antialias = true) = 0;
+	virtual void drawString (CDrawContext* context, UTF8StringPtr utf8String, const CPoint& p, bool antialias = true) = 0;
+	virtual CCoord getStringWidth (CDrawContext* context, UTF8StringPtr utf8String, bool antialias = true) = 0;
 };
 
 //-----------------------------------------------------------------------------
@@ -135,7 +135,7 @@ public:
 class IPlatformFont : public CBaseObject
 {
 public:
-	static IPlatformFont* create (const char* name, const CCoord& size, const long& style);
+	static IPlatformFont* create (UTF8StringPtr name, const CCoord& size, const int32_t& style);
 	static bool getAllPlatformFontFamilies (std::list<std::string>& fontFamilyNames);
 	
 	virtual double getAscent () const = 0;		///< returns the ascent line offset of the baseline of this font. If not supported returns -1

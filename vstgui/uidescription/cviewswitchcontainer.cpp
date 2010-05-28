@@ -67,13 +67,20 @@ void CViewSwitchContainer::setController (IViewSwitchController* _controller)
 }
 
 //-----------------------------------------------------------------------------
-void CViewSwitchContainer::setCurrentViewIndex (long viewIndex)
+void CViewSwitchContainer::setCurrentViewIndex (int32_t viewIndex)
 {
 	if (controller)
 	{
 		CView* view = controller->createViewForIndex (viewIndex);
 		if (view)
 		{
+			if (view->getAutosizeFlags () & kAutosizeAll)
+			{
+				CRect vs (getViewSize ());
+				vs.offset (-vs.left, -vs.top);
+				view->setViewSize (vs);
+				view->setMouseableArea (vs);
+			}
 			#if 1
 			if (getFrame ())
 				getFrame ()->getAnimator ()->removeAnimation (this, "CViewSwitchContainer::setCurrentViewIndex");
@@ -125,14 +132,15 @@ UIDescriptionViewSwitchController::UIDescriptionViewSwitchController (CViewSwitc
 , uiDescription (uiDescription)
 , uiController (uiController)
 , switchControlTag (-1)
+, currentIndex (-1)
 {
 	init ();
 }
 
 //-----------------------------------------------------------------------------
-CView* UIDescriptionViewSwitchController::createViewForIndex (long index)
+CView* UIDescriptionViewSwitchController::createViewForIndex (int32_t index)
 {
-	if (index < (long)templateNames.size ())
+	if (index < (int32_t)templateNames.size ())
 	{
 		return uiDescription->createView (templateNames[index].c_str (), uiController);
 	}
@@ -140,10 +148,10 @@ CView* UIDescriptionViewSwitchController::createViewForIndex (long index)
 }
 
 //-----------------------------------------------------------------------------
-static CControl* findControlTag (CViewContainer* parent, long tag)
+static CControl* findControlTag (CViewContainer* parent, int32_t tag)
 {
 	CControl* result = 0;
-	for (long i = 0; i < parent->getNbViews (); i++)
+	for (int32_t i = 0; i < parent->getNbViews (); i++)
 	{
 		CView* view = parent->getView (i);
 		CControl* control = dynamic_cast<CControl*> (view);
@@ -186,12 +194,16 @@ void UIDescriptionViewSwitchController::valueChanged (CControl* pControl)
 	float min = pControl->getMin ();
 	float max = pControl->getMax ();
 	float norm = (value - min) / (max - min);
-	long index = std::min<long> ((long)(norm * (float)templateNames.size ()), templateNames.size ()-1);
-	viewSwitch->setCurrentViewIndex (index);
+	int32_t index = std::min<int32_t> ((int32_t)(norm * (float)templateNames.size ()), templateNames.size ()-1);
+	if (index != currentIndex)
+	{
+		viewSwitch->setCurrentViewIndex (index);
+		currentIndex = index;
+	}
 }
 
 //-----------------------------------------------------------------------------
-void UIDescriptionViewSwitchController::setTemplateNames (const char* _templateNames)
+void UIDescriptionViewSwitchController::setTemplateNames (UTF8StringPtr _templateNames)
 {
 	templateNames.clear ();
 	if (_templateNames)
@@ -239,8 +251,8 @@ class CViewSwitchContainerCreator : public IViewCreator
 {
 public:
 	CViewSwitchContainerCreator () { ViewFactory::registerViewCreator (*this); }
-	const char* getViewName () const { return "CViewSwitchContainer"; }
-	const char* getBaseViewName () const { return "CViewContainer"; }
+	IdStringPtr getViewName () const { return "CViewSwitchContainer"; }
+	IdStringPtr getBaseViewName () const { return "CViewContainer"; }
 	CView* create (const UIAttributes& attributes, IUIDescription* description) const 
 	{
 		CViewSwitchContainer* vsc = new CViewSwitchContainer (CRect (0, 0, 100, 100));
@@ -269,7 +281,7 @@ public:
 			UIDescriptionViewSwitchController* controller = dynamic_cast<UIDescriptionViewSwitchController*> (viewSwitch->getController ());
 			if (controller)
 			{
-				long tag = description->getTagForName (attr->c_str ());
+				int32_t tag = description->getTagForName (attr->c_str ());
 				controller->setSwitchControlTag (tag);
 			}
 		}
@@ -308,7 +320,7 @@ public:
 			{
 				if (getRememberedAttributeValueString (view, "template-switch-control", stringValue))
 					return true;
-				const char* controlTag = desc->lookupControlTagName (controller->getSwitchControlTag ());
+				UTF8StringPtr controlTag = desc->lookupControlTagName (controller->getSwitchControlTag ());
 				if (controlTag)
 				{
 					stringValue = controlTag;

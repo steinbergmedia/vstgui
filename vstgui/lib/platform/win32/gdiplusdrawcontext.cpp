@@ -127,9 +127,9 @@ void GdiplusDrawContext::lineTo (const CPoint &point)
 }
 
 //-----------------------------------------------------------------------------
-void GdiplusDrawContext::drawLines (const CPoint* points, const long& numberOfLines)
+void GdiplusDrawContext::drawLines (const CPoint* points, const int32_t& numberOfLines)
 {
-	for (long i = 0; i < numberOfLines * 2; i+=2)
+	for (int32_t i = 0; i < numberOfLines * 2; i+=2)
 	{
 		moveTo (points[i]);
 		lineTo (points[i+1]);
@@ -137,7 +137,7 @@ void GdiplusDrawContext::drawLines (const CPoint* points, const long& numberOfLi
 }
 
 //-----------------------------------------------------------------------------
-void GdiplusDrawContext::drawPolygon (const CPoint *pPoints, long numberOfPoints, const CDrawStyle drawStyle)
+void GdiplusDrawContext::drawPolygon (const CPoint *pPoints, int32_t numberOfPoints, const CDrawStyle drawStyle)
 {
 	Gdiplus::PointF points[30];
 	Gdiplus::PointF* polyPoints;
@@ -150,7 +150,7 @@ void GdiplusDrawContext::drawPolygon (const CPoint *pPoints, long numberOfPoints
 	else
 		polyPoints = points;
 	
-	for (long i = 0; i < numberOfPoints; i++)
+	for (int32_t i = 0; i < numberOfPoints; i++)
 	{
 		polyPoints[i].X = (Gdiplus::REAL)(pPoints[i].h + currentState.offset.h);
 		polyPoints[i].Y = (Gdiplus::REAL)(pPoints[i].v + currentState.offset.v);

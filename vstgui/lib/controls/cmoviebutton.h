@@ -47,19 +47,19 @@ namespace VSTGUI {
 class CMovieButton : public CControl, public IMultiBitmapControl
 {
 public:
-	CMovieButton (const CRect& size, CControlListener* listener, long tag, CBitmap* background, const CPoint& offset = CPoint (0, 0));
-	CMovieButton (const CRect& size, CControlListener* listener, long tag, CCoord heightOfOneImage, CBitmap* background, const CPoint& offset = CPoint (0, 0));
+	CMovieButton (const CRect& size, CControlListener* listener, int32_t tag, CBitmap* background, const CPoint& offset = CPoint (0, 0));
+	CMovieButton (const CRect& size, CControlListener* listener, int32_t tag, CCoord heightOfOneImage, CBitmap* background, const CPoint& offset = CPoint (0, 0));
 	CMovieButton (const CMovieButton& movieButton);
 
 	virtual void draw (CDrawContext*);
 
-	virtual CMouseEventResult onMouseDown (CPoint& where, const long& buttons);
-	virtual CMouseEventResult onMouseUp (CPoint& where, const long& buttons);
-	virtual CMouseEventResult onMouseMoved (CPoint& where, const long& buttons);
-	virtual long onKeyDown (VstKeyCode& keyCode);
+	virtual CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons);
+	virtual CMouseEventResult onMouseUp (CPoint& where, const CButtonState& buttons);
+	virtual CMouseEventResult onMouseMoved (CPoint& where, const CButtonState& buttons);
+	virtual int32_t onKeyDown (VstKeyCode& keyCode);
 	virtual bool sizeToFit ();
 
-	void setNumSubPixmaps (long numSubPixmaps) { IMultiBitmapControl::setNumSubPixmaps (numSubPixmaps); invalid (); }
+	void setNumSubPixmaps (int32_t numSubPixmaps) { IMultiBitmapControl::setNumSubPixmaps (numSubPixmaps); invalid (); }
 
 	CLASS_METHODS(CMovieButton, CControl)
 protected:

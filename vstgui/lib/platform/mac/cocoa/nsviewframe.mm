@@ -222,9 +222,9 @@ static BOOL VSTGUI_NSView_onMouseDown (id self, SEL _cmd, NSEvent* theEvent)
 	if (!_vstguiframe)
 		return NO;
 
-	long buttons = eventButton (theEvent);
+	CButtonState buttons = eventButton (theEvent);
 	[[self window] makeFirstResponder:self];
-	unsigned int modifiers = [theEvent modifierFlags];
+	uint32_t modifiers = [theEvent modifierFlags];
 	NSPoint nsPoint = [theEvent locationInWindow];
 	nsPoint = [self convertPoint:nsPoint fromView:nil];
 	if (modifiers & NSShiftKeyMask)
@@ -249,8 +249,8 @@ static BOOL VSTGUI_NSView_onMouseUp (id self, SEL _cmd, NSEvent* theEvent)
 	if (!_vstguiframe)
 		return NO;
 
-	long buttons = eventButton (theEvent);
-	unsigned int modifiers = [theEvent modifierFlags];
+	CButtonState buttons = eventButton (theEvent);
+	uint32_t modifiers = [theEvent modifierFlags];
 	NSPoint nsPoint = [theEvent locationInWindow];
 	nsPoint = [self convertPoint:nsPoint fromView:nil];
 	if (modifiers & NSShiftKeyMask)
@@ -273,8 +273,8 @@ static BOOL VSTGUI_NSView_onMouseMoved (id self, SEL _cmd, NSEvent* theEvent)
 	if (!_vstguiframe)
 		return NO;
 
-	long buttons = eventButton (theEvent);
-	unsigned int modifiers = [theEvent modifierFlags];
+	CButtonState buttons = eventButton (theEvent);
+	uint32_t modifiers = [theEvent modifierFlags];
 	NSPoint nsPoint = [theEvent locationInWindow];
 	nsPoint = [self convertPoint:nsPoint fromView:nil];
 	if (modifiers & NSShiftKeyMask)
@@ -377,8 +377,8 @@ static void VSTGUI_NSView_scrollWheel (id self, SEL _cmd, NSEvent* theEvent)
 	if (!_vstguiframe)
 		return;
 
-	long buttons = 0;
-	unsigned int modifiers = [theEvent modifierFlags];
+	CButtonState buttons = 0;
+	uint32_t modifiers = [theEvent modifierFlags];
 	NSPoint nsPoint = [theEvent locationInWindow];
 	nsPoint = [self convertPoint:nsPoint fromView:nil];
 	if (modifiers & NSShiftKeyMask)
@@ -402,8 +402,8 @@ static void VSTGUI_NSView_mouseEntered (id self, SEL _cmd, NSEvent* theEvent)
 	IPlatformFrameCallback* _vstguiframe = getFrame (self);
 	if (!_vstguiframe)
 		return;
-	long buttons = 0; //eventButton (theEvent);
-	unsigned int modifiers = [theEvent modifierFlags];
+	CButtonState buttons = 0; //eventButton (theEvent);
+	uint32_t modifiers = [theEvent modifierFlags];
 	NSPoint nsPoint;
 	nsPoint = [NSEvent mouseLocation];
 	nsPoint = [[self window] convertScreenToBase:nsPoint];
@@ -427,8 +427,8 @@ static void VSTGUI_NSView_mouseExited (id self, SEL _cmd, NSEvent* theEvent)
 	IPlatformFrameCallback* _vstguiframe = getFrame (self);
 	if (!_vstguiframe)
 		return;
-	long buttons = 0; //eventButton (theEvent);
-	unsigned int modifiers = [theEvent modifierFlags];
+	CButtonState buttons = 0; //eventButton (theEvent);
+	uint32_t modifiers = [theEvent modifierFlags];
 	NSPoint nsPoint;
 	nsPoint = [NSEvent mouseLocation];
 	nsPoint = [[self window] convertScreenToBase:nsPoint];
@@ -586,14 +586,14 @@ static void VSTGUI_NSView_draggedImageEndedAtOperation (id self, SEL _cmd, NSIma
 	{
 		if (operation == NSDragOperationNone)
 		{
-			frame->setLastDragOperationResult (0);
+			frame->setLastDragOperationResult (CView::kDragRefused);
 		}
 		else if (operation == NSDragOperationMove)
 		{
-			frame->setLastDragOperationResult (-1);
+			frame->setLastDragOperationResult (CView::kDragMoved);
 		}
 		else
-			frame->setLastDragOperationResult (1);
+			frame->setLastDragOperationResult (CView::kDragCopied);
 	}
 }
 
@@ -610,7 +610,7 @@ public:
 	void set (NSViewFrame* nsViewFrame, const CRect& rect, const char* tooltip);
 	void hide ();
 
-	CMessageResult notify (CBaseObject* sender, const char* message);
+	CMessageResult notify (CBaseObject* sender, IdStringPtr message);
 protected:
 	CVSTGUITimer* timer;
 	CFrame* frame;
@@ -734,7 +734,7 @@ bool NSViewFrame::getGlobalPosition (CPoint& pos) const
 //-----------------------------------------------------------------------------
 bool NSViewFrame::setSize (const CRect& newSize)
 {
-	unsigned int oldResizeMask = [nsView autoresizingMask];
+	uint32_t oldResizeMask = [nsView autoresizingMask];
 	NSRect oldFrame = [nsView frame];
 	[nsView setAutoresizingMask: 0];
 	NSRect r = nsRectFromCRect (newSize);
@@ -760,7 +760,7 @@ bool NSViewFrame::getCurrentMousePosition (CPoint& mousePosition) const
 }
 
 //-----------------------------------------------------------------------------
-bool NSViewFrame::getCurrentMouseButtons (long& buttons) const
+bool NSViewFrame::getCurrentMouseButtons (CButtonState& buttons) const
 {
 	UInt32 state = GetCurrentButtonState ();
 	if (state == kEventMouseButtonPrimary)
@@ -900,7 +900,7 @@ IPlatformOptionMenu* NSViewFrame::createPlatformOptionMenu ()
 //-----------------------------------------------------------------------------
 COffscreenContext* NSViewFrame::createOffscreenContext (CCoord width, CCoord height)
 {
-	CGOffscreenBitmap* bitmap = new CGOffscreenBitmap (CPoint (width, height));
+	CGBitmap* bitmap = new CGBitmap (CPoint (width, height));
 	CGDrawContext* context = new CGDrawContext (bitmap);
 	bitmap->forget ();
 	return context;
@@ -913,9 +913,9 @@ CGraphicsPath* NSViewFrame::createGraphicsPath ()
 }
 
 //------------------------------------------------------------------------------------
-long NSViewFrame::doDrag (CDropSource* source, const CPoint& offset, CBitmap* dragBitmap)
+CView::DragResult NSViewFrame::doDrag (CDropSource* source, const CPoint& offset, CBitmap* dragBitmap)
 {
-	lastDragOperationResult = 0;
+	lastDragOperationResult = CView::kDragError;
 	CGBitmap* cgBitmap = dragBitmap ? dynamic_cast<CGBitmap*> (dragBitmap->getPlatformBitmap ()) : 0;
 	CGImageRef cgImage = cgBitmap ? cgBitmap->getCGImage () : 0;
 	if (nsView)
@@ -924,8 +924,8 @@ long NSViewFrame::doDrag (CDropSource* source, const CPoint& offset, CBitmap* dr
 		NSPasteboard* nsPasteboard = [NSPasteboard pasteboardWithName:NSDragPboard];
 		NSImage* nsImage = nil;
 		NSEvent* event = [NSApp currentEvent];
-		if (event == 0 || [event type] != NSLeftMouseDown)
-			return 0;
+		if (event == 0 || !([event type] == NSLeftMouseDown || [event type] == NSLeftMouseDragged))
+			return CView::kDragRefused;
 		NSPoint nsLocation = [event locationInWindow];
 		if (cgImage)
 		{
@@ -949,10 +949,10 @@ long NSViewFrame::doDrag (CDropSource* source, const CPoint& offset, CBitmap* dr
 			{
 				NSMutableArray* files = [[[NSMutableArray alloc] init] autorelease];
 				// we allow more than one file
-				for (long i = 0; i < source->getCount (); i++)
+				for (int32_t i = 0; i < source->getCount (); i++)
 				{
 					const void* buffer = 0;
-					long bufferSize = source->getEntry (i, buffer, type);
+					int32_t bufferSize = source->getEntry (i, buffer, type);
 					if (type == CDropSource::kFilePath && bufferSize > 0 && ((const char*)buffer)[bufferSize-1] == 0)
 					{
 						[files addObject:[NSString stringWithCString:(const char*)buffer encoding:NSUTF8StringEncoding]];
@@ -965,7 +965,7 @@ long NSViewFrame::doDrag (CDropSource* source, const CPoint& offset, CBitmap* dr
 			case CDropSource::kText:
 			{
 				const void* buffer = 0;
-				long bufferSize = source->getEntry (0, buffer, type);
+				int32_t bufferSize = source->getEntry (0, buffer, type);
 				if (bufferSize > 0 && ((const char*)buffer)[bufferSize-1] == 0)
 				{
 					[nsPasteboard declareTypes:[NSArray arrayWithObject:NSStringPboardType] owner:nil];
@@ -976,7 +976,7 @@ long NSViewFrame::doDrag (CDropSource* source, const CPoint& offset, CBitmap* dr
 			case CDropSource::kBinary:
 			{
 				const void* buffer = 0;
-				long bufferSize = source->getEntry (0, buffer, type);
+				int32_t bufferSize = source->getEntry (0, buffer, type);
 				if (bufferSize > 0)
 				{
 					[nsPasteboard declareTypes:[NSArray arrayWithObject:@"net.sourceforge.vstgui.binary.drag"] owner:nil];
@@ -985,11 +985,11 @@ long NSViewFrame::doDrag (CDropSource* source, const CPoint& offset, CBitmap* dr
 				break;
 			}
 		}
-		[nsView dragImage:nsImage at:bitmapOffset offset:NSMakeSize (0, 0) event:event pasteboard:nsPasteboard source:nsView slideBack:YES];
+		[nsView dragImage:nsImage at:bitmapOffset offset:NSMakeSize (0, 0) event:event pasteboard:nsPasteboard source:nsView slideBack:dragBitmap ? YES : NO];
 		[nsPasteboard clearContents];
 		return lastDragOperationResult;
 	}
-	return 0;
+	return CView::kDragError;
 }
 
 //-----------------------------------------------------------------------------
@@ -1084,7 +1084,7 @@ void CocoaTooltipWindow::hide ()
 }
 
 //------------------------------------------------------------------------------------
-CMessageResult CocoaTooltipWindow::notify (CBaseObject* sender, const char* message)
+CMessageResult CocoaTooltipWindow::notify (CBaseObject* sender, IdStringPtr message)
 {
 	if (message == CVSTGUITimer::kMsgTimer)
 	{

@@ -58,7 +58,7 @@ namespace VSTGUI {
 /*! @class CControl
 This object manages the tag identification and the value of a control object.
 */
-CControl::CControl (const CRect& size, CControlListener* listener, long tag, CBitmap *pBackground)
+CControl::CControl (const CRect& size, CControlListener* listener, int32_t tag, CBitmap *pBackground)
 : CView (size)
 , listener (listener)
 , tag (tag)
@@ -68,7 +68,6 @@ CControl::CControl (const CRect& size, CControlListener* listener, long tag, CBi
 , vmin (0)
 , vmax (1.f)
 , wheelInc (0.1f)
-, lastTicks (-1)
 {
 	setTransparency (false);
 	setMouseEnabled (true);
@@ -88,7 +87,6 @@ CControl::CControl (const CControl& c)
 , vmin (c.vmin)
 , vmax (c.vmax)
 , wheelInc (c.wheelInc)
-, lastTicks (c.lastTicks)
 {
 }
 
@@ -98,7 +96,7 @@ CControl::~CControl ()
 }
 
 //------------------------------------------------------------------------
-void CControl::setTag (long val)
+void CControl::setTag (int32_t val)
 {
 	if (listener)
 		listener->controlTagWillChange (this);
@@ -269,7 +267,7 @@ void CControl::bounceValue ()
 }
 
 //-----------------------------------------------------------------------------
-bool CControl::checkDefaultValue (long button)
+bool CControl::checkDefaultValue (CButtonState button)
 {
 	if (button == (kControl|kLButton))
 	{

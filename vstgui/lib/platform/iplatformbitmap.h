@@ -53,7 +53,7 @@ public:
 	virtual bool load (const CResourceDescription& desc) = 0;
 	virtual const CPoint& getSize () const = 0;
 
-	virtual IPlatformBitmapPixelAccess* lockPixels () = 0;	// you need to forget the result after use. this is only supported for Bitmaps that are initialized with a size not a file
+	virtual IPlatformBitmapPixelAccess* lockPixels (bool alphaPremultiplied) = 0;	// you need to forget the result after use.
 
 	static IBitmapReaderCreator* gCustomBitmapReaderCreator; // overrides default platform specific bitmap loading, see below
 };
@@ -69,8 +69,8 @@ public:
 		kBGRA
 	};
 	
-	virtual unsigned char* getAddress () = 0;
-	virtual long getBytesPerRow () = 0;
+	virtual uint8_t* getAddress () = 0;
+	virtual int32_t getBytesPerRow () = 0;
 	virtual PixelFormat getPixelFormat () = 0;
 };
 
@@ -78,8 +78,8 @@ public:
 class IBitmapReader : public CBaseObject
 {
 public:
-	virtual int readBytes (void* buffer, int numBytes) = 0;
-	virtual int getNumBytes () = 0;
+	virtual int32_t readBytes (void* buffer, int32_t numBytes) = 0;
+	virtual int32_t getNumBytes () = 0;
 	virtual void rewind () = 0;
 };
 

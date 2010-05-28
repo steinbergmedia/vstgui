@@ -52,17 +52,17 @@ public:
 		kOkButton = 1
 	};
 
-	static bool runViewModal (CPoint& position, CView* view, long style = kOkButton, const char* title = 0);
+	static bool runViewModal (CPoint& position, CView* view, int32_t style = kOkButton, UTF8StringPtr title = 0);
 
 protected:
-	Dialog (const CPoint& position, CView* rootView, long style = kOkButton, const char* title = 0);
+	Dialog (const CPoint& position, CView* rootView, int32_t style = kOkButton, UTF8StringPtr title = 0);
 	~Dialog ();
 
 	bool run ();
 	void valueChanged (CControl* pControl);
 
-	long onKeyDown (const VstKeyCode& code, CFrame* frame);
-	long onKeyUp (const VstKeyCode& code, CFrame* frame);
+	int32_t onKeyDown (const VstKeyCode& code, CFrame* frame);
+	int32_t onKeyUp (const VstKeyCode& code, CFrame* frame);
 
 	PlatformWindow* platformWindow;
 	bool result;

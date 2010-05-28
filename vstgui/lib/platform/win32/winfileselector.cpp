@@ -53,9 +53,9 @@ static COMDLG_FILTERSPEC* buildExtensionFilter (std::list<CFileExtension>& exten
 {
 	if (extensions.size () > 0)
 	{
-		int i = extensions.size () > 1 ? 1:0;
+		int32_t i = extensions.size () > 1 ? 1:0;
 		COMDLG_FILTERSPEC* filters = new COMDLG_FILTERSPEC[extensions.size ()+1+i];
-		int allExtensionCharCount = 0;
+		int32_t allExtensionCharCount = 0;
 		std::list<CFileExtension>::iterator it = extensions.begin ();
 		while (it != extensions.end ())
 		{
@@ -80,7 +80,7 @@ static COMDLG_FILTERSPEC* buildExtensionFilter (std::list<CFileExtension>& exten
 			wcscpy (wAllName, kAllSupportedFileTypesString);
 			WCHAR* wAllSpec = (WCHAR*)malloc (allExtensionCharCount * sizeof (WCHAR));
 			wAllSpec[0] = 0;
-			for (int j = 1; j < i; j++)
+			for (int32_t j = 1; j < i; j++)
 			{
 				wcscat (wAllSpec, filters[j].pszSpec);
 				if (j != i-1)
@@ -102,7 +102,7 @@ static void freeExtensionFilter (COMDLG_FILTERSPEC* filters)
 {
 	if (filters)
 	{
-		int i = 0;
+		int32_t i = 0;
 		while (filters[i].pszName)
 		{
 			free ((void*)filters[i].pszName);

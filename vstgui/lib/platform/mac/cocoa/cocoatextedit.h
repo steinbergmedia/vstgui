@@ -56,8 +56,8 @@ public:
 	CocoaTextEdit (NSView* parent, IPlatformTextEditCallback* textEdit);
 	~CocoaTextEdit ();
 	
-	bool getText (char* text, long maxSize);
-	bool setText (const char* text);
+	UTF8StringPtr getText ();
+	bool setText (UTF8StringPtr text);
 	bool updateSize ();
 
 	NSTextField* getPlatformControl () const { return platformControl; }

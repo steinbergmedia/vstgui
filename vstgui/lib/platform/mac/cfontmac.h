@@ -50,7 +50,7 @@ namespace VSTGUI {
 class CoreTextFont : public IPlatformFont, public IFontPainter
 {
 public:
-	CoreTextFont (const char* name, const CCoord& size, const long& style);
+	CoreTextFont (UTF8StringPtr name, const CCoord& size, const int32_t& style);
 
 	CTFontRef getFontRef () const { return fontRef; }
 
@@ -58,8 +58,8 @@ public:
 protected:
 	~CoreTextFont ();
 
-	void drawString (CDrawContext* context, const char* utf8String, const CPoint& p, bool antialias = true);
-	CCoord getStringWidth (CDrawContext* context, const char* utf8String, bool antialias = true);
+	void drawString (CDrawContext* context, UTF8StringPtr utf8String, const CPoint& p, bool antialias = true);
+	CCoord getStringWidth (CDrawContext* context, UTF8StringPtr utf8String, bool antialias = true);
 
 	double getAscent () const;
 	double getDescent () const;
@@ -77,15 +77,15 @@ protected:
 class ATSUFont : public IPlatformFont, public IFontPainter
 {
 public:
-	ATSUFont (const char* name, const CCoord& size, const long& style);
+	ATSUFont (UTF8StringPtr name, const CCoord& size, const int32_t& style);
 
 	ATSUStyle getATSUStyle () const { return atsuStyle; }
 
 protected:
 	~ATSUFont ();
 
-	void drawString (CDrawContext* context, const char* utf8String, const CPoint& p, bool antialias = true);
-	CCoord getStringWidth (CDrawContext* context, const char* utf8String, bool antialias = true);
+	void drawString (CDrawContext* context, UTF8StringPtr utf8String, const CPoint& p, bool antialias = true);
+	CCoord getStringWidth (CDrawContext* context, UTF8StringPtr utf8String, bool antialias = true);
 
 	double getAscent () const { return -1.; }
 	double getDescent () const { return -1.; }

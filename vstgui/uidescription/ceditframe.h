@@ -61,17 +61,17 @@ public:
 	virtual ~IActionOperator () {}
 	virtual void performAction (IActionOperation* action) = 0;
 
-	virtual void performColorChange (const char* colorName, const CColor& newColor, bool remove = false) = 0;
-	virtual void performTagChange (const char* tagName, long tag, bool remove = false) = 0;
-	virtual void performBitmapChange (const char* bitmapName, const char* bitmapPath, bool remove = false) = 0;
-	virtual void performFontChange (const char* fontName, CFontRef newFont, bool remove = false) = 0;
+	virtual void performColorChange (UTF8StringPtr colorName, const CColor& newColor, bool remove = false) = 0;
+	virtual void performTagChange (UTF8StringPtr tagName, int32_t tag, bool remove = false) = 0;
+	virtual void performBitmapChange (UTF8StringPtr bitmapName, UTF8StringPtr bitmapPath, bool remove = false) = 0;
+	virtual void performFontChange (UTF8StringPtr fontName, CFontRef newFont, bool remove = false) = 0;
 
-	virtual void performColorNameChange (const char* oldName, const char* newName) = 0;
-	virtual void performTagNameChange (const char* oldName, const char* newName) = 0;
-	virtual void performFontNameChange (const char* oldName, const char* newName) = 0;
-	virtual void performBitmapNameChange (const char* oldName, const char* newName) = 0;
+	virtual void performColorNameChange (UTF8StringPtr oldName, UTF8StringPtr newName) = 0;
+	virtual void performTagNameChange (UTF8StringPtr oldName, UTF8StringPtr newName) = 0;
+	virtual void performFontNameChange (UTF8StringPtr oldName, UTF8StringPtr newName) = 0;
+	virtual void performBitmapNameChange (UTF8StringPtr oldName, UTF8StringPtr newName) = 0;
 
-	virtual void performBitmapNinePartTiledChange (const char* bitmapName, const CRect* offsets) = 0;
+	virtual void performBitmapNinePartTiledChange (UTF8StringPtr bitmapName, const CRect* offsets) = 0;
 	virtual void makeSelection (CView* view) = 0;
 };
 
@@ -85,45 +85,45 @@ public:
 		kEditMode
 	};
 
-	CEditFrame (const CRect& size, void* windowPtr, VSTGUIEditorInterface* editor, EditMode editMode, CSelection* selection, UIDescription* description, const char* uiDescViewName);
+	CEditFrame (const CRect& size, void* windowPtr, VSTGUIEditorInterface* editor, EditMode editMode, CSelection* selection, UIDescription* description, UTF8StringPtr uiDescViewName);
 	~CEditFrame ();
 
 	EditMode getEditMode () const { return editMode; }
 	void setEditMode (EditMode mode);
 
-	void setGrid (int size);
-	int getGrid () const;
+	void setGrid (int32_t size);
+	int32_t getGrid () const;
 
 	void setUIDescription (UIDescription* description);
 	UIDescription* getUIDescription () const { return uiDescription; }
 
 	void performAction (IActionOperation* action);
-	void performColorChange (const char* colorName, const CColor& newColor, bool remove = false);
-	void performTagChange (const char* tagName, long tag, bool remove = false);
-	void performBitmapChange (const char* bitmapName, const char* bitmapPath, bool remove = false);
-	void performFontChange (const char* fontName, CFontRef newFont, bool remove = false);
+	void performColorChange (UTF8StringPtr colorName, const CColor& newColor, bool remove = false);
+	void performTagChange (UTF8StringPtr tagName, int32_t tag, bool remove = false);
+	void performBitmapChange (UTF8StringPtr bitmapName, UTF8StringPtr bitmapPath, bool remove = false);
+	void performFontChange (UTF8StringPtr fontName, CFontRef newFont, bool remove = false);
 
-	void performColorNameChange (const char* oldName, const char* newName);
-	void performTagNameChange (const char* oldName, const char* newName);
-	void performFontNameChange (const char* oldName, const char* newName);
-	void performBitmapNameChange (const char* oldName, const char* newName);
+	void performColorNameChange (UTF8StringPtr oldName, UTF8StringPtr newName);
+	void performTagNameChange (UTF8StringPtr oldName, UTF8StringPtr newName);
+	void performFontNameChange (UTF8StringPtr oldName, UTF8StringPtr newName);
+	void performBitmapNameChange (UTF8StringPtr oldName, UTF8StringPtr newName);
 
-	void performBitmapNinePartTiledChange (const char* bitmapName, const CRect* offsets);
+	void performBitmapNinePartTiledChange (UTF8StringPtr bitmapName, const CRect* offsets);
 
 	void makeSelection (CView* view);
 
-	static const char* kMsgPerformOptionsMenuAction;
-	static const char* kMsgShowOptionsMenu;
-	static const char* kMsgEditEnding;
+	static IdStringPtr kMsgPerformOptionsMenuAction;
+	static IdStringPtr kMsgShowOptionsMenu;
+	static IdStringPtr kMsgEditEnding;
 //----------------------------------------------------------------------------------------------------
 protected:
 	CBitmap* createBitmapFromSelection (CSelection* selection);
 	CSelection* getSelectionOutOfDrag (CDragContainer* drag);
-	CMessageResult notify (CBaseObject* sender, const char* message);
+	CMessageResult notify (CBaseObject* sender, IdStringPtr message);
 	void showOptionsMenu (const CPoint& where);
-	void createNewSubview (const CPoint& where, const char* viewName);
-	void insertTemplate (const CPoint& where, const char* templateName);
-	void embedSelectedViewsInto (const char* containerViewName);
+	void createNewSubview (const CPoint& where, UTF8StringPtr viewName);
+	void insertTemplate (const CPoint& where, UTF8StringPtr templateName);
+	void embedSelectedViewsInto (IdStringPtr containerViewName);
 	void invalidSelection ();
 	void deleteSelectedViews ();
 	void updateResourceBitmaps ();
@@ -131,14 +131,14 @@ protected:
 	void performRedo ();
 	bool canUndo ();
 	bool canRedo ();
-	const char* getUndoName ();
-	const char* getRedoName ();
+	UTF8StringPtr getUndoName ();
+	UTF8StringPtr getRedoName ();
 	void emptyUndoStack ();
 
 	void startDrag (CPoint& where);
 
 	void drawSizingHandles (CDrawContext* context, const CRect& r);
-	long selectionHitTest (const CPoint& where, CView** resultView);
+	int32_t selectionHitTest (const CPoint& where, CView** resultView);
 
 	void storeAttributes ();
 	void restoreAttributes ();
@@ -150,11 +150,11 @@ protected:
 	CView* getViewAt (const CPoint& p, bool deep = false) const;
 	CViewContainer* getContainerAt (const CPoint& p, bool deep = true) const;
 	
-	CMouseEventResult onMouseDown (CPoint &where, const long& buttons);
-	CMouseEventResult onMouseUp (CPoint &where, const long& buttons);
-	CMouseEventResult onMouseMoved (CPoint &where, const long& buttons);
+	CMouseEventResult onMouseDown (CPoint &where, const CButtonState& buttons);
+	CMouseEventResult onMouseUp (CPoint &where, const CButtonState& buttons);
+	CMouseEventResult onMouseMoved (CPoint &where, const CButtonState& buttons);
 
-	bool onWheel (const CPoint &where, const CMouseWheelAxis &axis, const float &distance, const long &buttons);
+	bool onWheel (const CPoint &where, const CMouseWheelAxis &axis, const float &distance, const CButtonState &buttons);
 
 	bool onDrop (CDragContainer* drag, const CPoint& where);
 	void onDragEnter (CDragContainer* drag, const CPoint& where);
@@ -163,11 +163,11 @@ protected:
 
 	void invalidRect (const CRect rect);
 
-	long onKeyDown (VstKeyCode& keyCode);
-	long onKeyUp (VstKeyCode& keyCode);
+	int32_t onKeyDown (VstKeyCode& keyCode);
+	int32_t onKeyUp (VstKeyCode& keyCode);
 
-	long onKeyDown (const VstKeyCode& code, CFrame* frame);
-	long onKeyUp (const VstKeyCode& code, CFrame* frame);
+	int32_t onKeyDown (const VstKeyCode& code, CFrame* frame);
+	int32_t onKeyUp (const VstKeyCode& code, CFrame* frame);
 
 	void onViewAdded (CView* pView);
 	void onViewRemoved (CView* pView);
@@ -191,7 +191,7 @@ protected:
 	CView* highlightView;
 	EditMode editMode;
 	MouseEditMode mouseEditMode;
-	long mouseSizeMode;
+	int32_t mouseSizeMode;
 	bool showLines;
 	
 	CPoint mouseStartPoint;
@@ -210,7 +210,7 @@ class IActionOperation
 public:
 	virtual ~IActionOperation () {}
 	
-	virtual const char* getName () = 0;
+	virtual UTF8StringPtr getName () = 0;
 	virtual void perform () = 0;
 	virtual void undo () = 0;
 };

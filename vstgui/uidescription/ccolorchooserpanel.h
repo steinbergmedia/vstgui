@@ -53,7 +53,7 @@ public:
 	void setColorChangeCallback (IPlatformColorChangeCallback* callback);
 	void setColor (const CColor& newColor);
 
-	static const char* kMsgWindowClosed;
+	static IdStringPtr kMsgWindowClosed;
 //-----------------------------------------------------------------------------
 protected:
 	// IPlatformWindowDelegate

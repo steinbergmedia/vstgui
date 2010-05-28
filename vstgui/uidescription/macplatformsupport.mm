@@ -47,7 +47,7 @@
 
 using namespace VSTGUI;
 
-#define NATIVE_COLOR_CHOOSER 1
+#define NATIVE_COLOR_CHOOSER 0
 
 //-----------------------------------------------------------------------------
 @interface VSTGUI_CocoaWindowDelegate : NSObject 
@@ -84,7 +84,7 @@ namespace VSTGUI {
 class CocoaWindow : public PlatformWindow
 {
 public:
-	CocoaWindow (const CRect& size, const char* title, WindowType type, long styleFlags, IPlatformWindowDelegate* delegate);
+	CocoaWindow (const CRect& size, const char* title, WindowType type, int32_t styleFlags, IPlatformWindowDelegate* delegate);
 	~CocoaWindow ();
 
 	void* getPlatformHandle () const { return [window contentView]; }
@@ -99,17 +99,17 @@ protected:
 	IPlatformWindowDelegate* delegate;
 	VSTGUI_CocoaWindowDelegate* cocoaDelegate;
 	WindowType type;
-	long styleFlags;
+	int32_t styleFlags;
 };
 
 //-----------------------------------------------------------------------------
-PlatformWindow* PlatformWindow::create (const CRect& size, const char* title, WindowType type, long styleFlags, IPlatformWindowDelegate* delegate, void* parentWindow)
+PlatformWindow* PlatformWindow::create (const CRect& size, const char* title, WindowType type, int32_t styleFlags, IPlatformWindowDelegate* delegate, void* parentWindow)
 {
 	return new CocoaWindow (size, title, type, styleFlags, delegate);
 }
 
 //-----------------------------------------------------------------------------
-CocoaWindow::CocoaWindow (const CRect& size, const char* title, WindowType type, long styleFlags, IPlatformWindowDelegate* delegate)
+CocoaWindow::CocoaWindow (const CRect& size, const char* title, WindowType type, int32_t styleFlags, IPlatformWindowDelegate* delegate)
 : window (0)
 , delegate (delegate)
 , cocoaDelegate (0)
@@ -151,7 +151,7 @@ CocoaWindow::~CocoaWindow ()
 		[cocoaDelegate release];
 	}
 	[window orderOut:nil];
-	[window release];
+	[window autorelease];
 }
 
 //-----------------------------------------------------------------------------
@@ -210,7 +210,7 @@ void PlatformUtilities::gatherResourceBitmaps (std::list<std::string>& filenames
 	{
 		static CFStringRef bitmapTypes [] = { CFSTR("png"), CFSTR("bmp"), CFSTR("jpg"), NULL };
 		CFStringRef type = bitmapTypes[0];
-		int index = 0;
+		int32_t index = 0;
 		while (type != NULL)
 		{
 			CFArrayRef urls = CFBundleCopyResourceURLsOfType (bundle, type, NULL);
@@ -269,7 +269,7 @@ protected:
 		closePanel ();
 	}
 	
-	CMessageResult notify (CBaseObject* sender, const char* message)
+	CMessageResult notify (CBaseObject* sender, IdStringPtr message)
 	{
 		if (message == CColorChooserPanel::kMsgWindowClosed)
 			panel = 0;

@@ -40,7 +40,7 @@ namespace VSTGUI {
 class ViewCreatorRegistry : public std::map<std::string,const IViewCreator*>
 {
 public:
-	const_iterator find (const char* name)
+	const_iterator find (IdStringPtr name)
 	{
 		if (name)
 			return std::map<std::string,const IViewCreator*>::find (name);
@@ -75,8 +75,8 @@ CView* ViewFactory::createViewByName (const std::string* className, const UIAttr
 		CView* view = (*iter).second->create (attributes, description);
 		if (view)
 		{
-			const char* viewName = (*iter).second->getViewName ();
-			view->setAttribute ('cvcr', sizeof (const char*), &viewName);
+			IdStringPtr viewName = (*iter).second->getViewName ();
+			view->setAttribute ('cvcr', sizeof (IdStringPtr), &viewName);
 			while (iter != registry.end () && (*iter).second->apply (view, attributes, description))
 			{
 				if ((*iter).second->getBaseViewName () == 0)
@@ -123,15 +123,15 @@ bool ViewFactory::applyAttributeValues (CView* view, const UIAttributes& attribu
 }
 
 //-----------------------------------------------------------------------------
-bool ViewFactory::applyCustomViewAttributeValues (CView* customView, const char* baseViewName, const UIAttributes& attributes, IUIDescription* desc) const
+bool ViewFactory::applyCustomViewAttributeValues (CView* customView, IdStringPtr baseViewName, const UIAttributes& attributes, IUIDescription* desc) const
 {
 	bool result = false;
 	ViewCreatorRegistry& registry = getCreatorRegistry ();
 	ViewCreatorRegistry::const_iterator iter = registry.find (baseViewName);
 	if (iter != registry.end ())
 	{
-		const char* viewName = (*iter).second->getViewName ();
-		customView->setAttribute ('cvcr', sizeof (const char*), &viewName);
+		IdStringPtr viewName = (*iter).second->getViewName ();
+		customView->setAttribute ('cvcr', sizeof (IdStringPtr), &viewName);
 	}
 	while (iter != registry.end () && (result = (*iter).second->apply (customView, attributes, desc)) && (*iter).second->getBaseViewName ())
 	{
@@ -141,10 +141,10 @@ bool ViewFactory::applyCustomViewAttributeValues (CView* customView, const char*
 }
 
 //-----------------------------------------------------------------------------
-const char* ViewFactory::getViewName (CView* view) const
+IdStringPtr ViewFactory::getViewName (CView* view) const
 {
-	const char* viewName = 0;
-	long size = sizeof (const char*);
+	IdStringPtr viewName = 0;
+	int32_t size = sizeof (IdStringPtr);
 	view->getAttribute ('cvcr', size, &viewName, size);
 	return viewName;
 }
@@ -211,7 +211,7 @@ bool ViewFactory::getAttributesForView (CView* view, IUIDescription* desc, UIAtt
 }
 
 //-----------------------------------------------------------------------------
-void ViewFactory::collectRegisteredViewNames (std::list<const std::string*>& viewNames, const char* baseClassNameFilter) const
+void ViewFactory::collectRegisteredViewNames (std::list<const std::string*>& viewNames, IdStringPtr baseClassNameFilter) const
 {
 	ViewCreatorRegistry& registry = getCreatorRegistry ();
 	ViewCreatorRegistry::const_iterator iter = registry.begin ();

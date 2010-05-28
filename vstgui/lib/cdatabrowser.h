@@ -53,27 +53,27 @@ class CDataBrowserHeader;
 class IDataBrowser
 {
 public:
-	virtual long dbGetNumRows (CDataBrowser* browser) = 0;	///< return number of rows for CDataBrowser browser
-	virtual long dbGetNumColumns (CDataBrowser* browser) = 0;	///< return number of columns for CDataBrowser browser
-	virtual bool dbGetColumnDescription (long index, CCoord& minWidth, CCoord& maxWidth, CDataBrowser* browser) { return false; }
-	virtual CCoord dbGetCurrentColumnWidth (long index, CDataBrowser* browser) = 0;	///< return current width of index column
-	virtual void dbSetCurrentColumnWidth (long index, const CCoord& width, CDataBrowser* browser) {}	///< the width of a column has changed
+	virtual int32_t dbGetNumRows (CDataBrowser* browser) = 0;	///< return number of rows for CDataBrowser browser
+	virtual int32_t dbGetNumColumns (CDataBrowser* browser) = 0;	///< return number of columns for CDataBrowser browser
+	virtual bool dbGetColumnDescription (int32_t index, CCoord& minWidth, CCoord& maxWidth, CDataBrowser* browser) { return false; }
+	virtual CCoord dbGetCurrentColumnWidth (int32_t index, CDataBrowser* browser) = 0;	///< return current width of index column
+	virtual void dbSetCurrentColumnWidth (int32_t index, const CCoord& width, CDataBrowser* browser) {}	///< the width of a column has changed
 	virtual CCoord dbGetRowHeight (CDataBrowser* browser) = 0;	///< return height of one row
 	virtual bool dbGetLineWidthAndColor (CCoord& width, CColor& color, CDataBrowser* browser) { return false; } ///< return the line width and color
 
-	virtual void dbDrawHeader (CDrawContext* context, const CRect& size, long column, long flags, CDataBrowser* browser) = 0;	///< draw the db header
-	virtual void dbDrawCell (CDrawContext* context, const CRect& size, long row, long column, long flags, CDataBrowser* browser) = 0;	///< draw a db cell
+	virtual void dbDrawHeader (CDrawContext* context, const CRect& size, int32_t column, int32_t flags, CDataBrowser* browser) = 0;	///< draw the db header
+	virtual void dbDrawCell (CDrawContext* context, const CRect& size, int32_t row, int32_t column, int32_t flags, CDataBrowser* browser) = 0;	///< draw a db cell
 
-	virtual CMouseEventResult dbOnMouseDown (const CPoint& where, const long& buttons, long row, long column, CDataBrowser* browser) { return kMouseDownEventHandledButDontNeedMovedOrUpEvents; } ///< mouse button was pressed on a cell
-	virtual CMouseEventResult dbOnMouseMoved (const CPoint& where, const long& buttons, long row, long column, CDataBrowser* browser) { return kMouseEventNotHandled; } ///< mouse was moved over a cell
-	virtual CMouseEventResult dbOnMouseUp (const CPoint& where, const long& buttons, long row, long column, CDataBrowser* browser) { return kMouseEventNotHandled; } ///< mouse button was released on a cell
+	virtual CMouseEventResult dbOnMouseDown (const CPoint& where, const CButtonState& buttons, int32_t row, int32_t column, CDataBrowser* browser) { return kMouseDownEventHandledButDontNeedMovedOrUpEvents; } ///< mouse button was pressed on a cell
+	virtual CMouseEventResult dbOnMouseMoved (const CPoint& where, const CButtonState& buttons, int32_t row, int32_t column, CDataBrowser* browser) { return kMouseEventNotHandled; } ///< mouse was moved over a cell
+	virtual CMouseEventResult dbOnMouseUp (const CPoint& where, const CButtonState& buttons, int32_t row, int32_t column, CDataBrowser* browser) { return kMouseEventNotHandled; } ///< mouse button was released on a cell
 
 	virtual void dbSelectionChanged (CDataBrowser* browser) {}	///< the selection of the db changed
 
-	virtual void dbCellTextChanged (long row, long column, const char* newText, CDataBrowser* browser) {} ///< the text of the cell changed beginTextEdit was called for
-	virtual void dbCellSetupTextEdit (long row, long column, CTextEdit* textEditControl, CDataBrowser* browser) {} ///< beginTextEdit calls this, so you can setup the textedit control
+	virtual void dbCellTextChanged (int32_t row, int32_t column, UTF8StringPtr newText, CDataBrowser* browser) {} ///< the text of the cell changed beginTextEdit was called for
+	virtual void dbCellSetupTextEdit (int32_t row, int32_t column, CTextEdit* textEditControl, CDataBrowser* browser) {} ///< beginTextEdit calls this, so you can setup the textedit control
 
-	virtual long dbOnKeyDown (const VstKeyCode& key, CDataBrowser* browser) { return -1; }
+	virtual int32_t dbOnKeyDown (const VstKeyCode& key, CDataBrowser* browser) { return -1; }
 
 	enum {
 		kRowSelected = 1 << 1,
@@ -96,7 +96,7 @@ protected:
 	};
 	
 public:
-	CDataBrowser (const CRect& size, CFrame* pParent, IDataBrowser* db, long style = 0, CCoord scrollbarWidth = 16, CBitmap* pBackground = 0);
+	CDataBrowser (const CRect& size, CFrame* pParent, IDataBrowser* db, int32_t style = 0, CCoord scrollbarWidth = 16, CBitmap* pBackground = 0);
 
 	enum CDataBrowserStyle 
 	{
@@ -116,31 +116,31 @@ public:
 	//-----------------------------------------------------------------------------
 	//@{
 	virtual void recalculateLayout (bool rememberSelection = false);				///< trigger recalculation, call if numRows or numColumns changed
-	virtual void invalidate (long row, long column);								///< invalidates an individual cell
-	virtual void invalidateRow (long row);											///< invalidates a complete row
-	virtual void makeRowVisible (long row);											///< scrolls the scrollview so that row is visible
+	virtual void invalidate (int32_t row, int32_t column);								///< invalidates an individual cell
+	virtual void invalidateRow (int32_t row);											///< invalidates a complete row
+	virtual void makeRowVisible (int32_t row);											///< scrolls the scrollview so that row is visible
 
-	virtual CRect getCellBounds (long row, long column);							///< get bounds of a cell
+	virtual CRect getCellBounds (int32_t row, int32_t column);							///< get bounds of a cell
 
-	virtual long getSelectedRow () const { return selectedRow; }					///< get selected row
-	virtual void setSelectedRow (long row, bool makeVisible = false);				///< set the exclusive selected row
+	virtual int32_t getSelectedRow () const { return selectedRow; }					///< get selected row
+	virtual void setSelectedRow (int32_t row, bool makeVisible = false);				///< set the exclusive selected row
 
-	virtual void beginTextEdit (long row, long column, const char* initialText);	///< starts a text edit for a cell
+	virtual void beginTextEdit (int32_t row, int32_t column, UTF8StringPtr initialText);	///< starts a text edit for a cell
 	//@}
 
-	void setAutosizeFlags (long flags);
+	void setAutosizeFlags (int32_t flags);
 	void setViewSize (CRect& size, bool invalid);
 protected:
 	~CDataBrowser ();
 	void valueChanged (CControl *pControl);
-	CMessageResult notify (CBaseObject* sender, const char* message);
+	CMessageResult notify (CBaseObject* sender, IdStringPtr message);
 	bool attached (CView *parent);
 
 	IDataBrowser* db;
 	CDataBrowserView* dbView;
 	CDataBrowserHeader* dbHeader;
 	CViewContainer* dbHeaderContainer;
-	long selectedRow;
+	int32_t selectedRow;
 };
 
 } // namespace

@@ -57,12 +57,13 @@ protected:
 		kHorizontalScrollbarFlag,
 		kVerticalScrollbarFlag,
 		kDontDrawFrameFlag,
+		kAutoDragScollingFlag,
 		
 		kLastScrollViewStyleFlag
 	};
 	
 public:
-	CScrollView (const CRect &size, const CRect &containerSize, CFrame* pParent, long style, CCoord scrollbarWidth = 16, CBitmap* pBackground = 0);
+	CScrollView (const CRect& size, const CRect& containerSize, CFrame* pParent, int32_t style, CCoord scrollbarWidth = 16, CBitmap* pBackground = 0);
 	CScrollView (const CScrollView& scrollView);
 
 	enum CScrollViewStyle 
@@ -70,14 +71,15 @@ public:
 		kHorizontalScrollbar	= 1 << kHorizontalScrollbarFlag,	///< add a horizontal scrollbar
 		kVerticalScrollbar 		= 1 << kVerticalScrollbarFlag,		///< add a vertical scrollbar
 		kDontDrawFrame			= 1 << kDontDrawFrameFlag,			///< don't draw frame
+		kAutoDragScrolling		= 1 << kAutoDragScollingFlag,		///< automatic scrolling for drag moves
 	};
 
 	//-----------------------------------------------------------------------------
 	/// @name CScrollView Methods
 	//-----------------------------------------------------------------------------
 	//@{
-	long getStyle () const { return style; }
-	void setStyle (long newStyle);
+	int32_t getStyle () const { return style; }
+	void setStyle (int32_t newStyle);
 	
 	CCoord getScrollbarWidth () const { return scrollbarWidth; }
 	void setScrollbarWidth (CCoord width);
@@ -93,21 +95,21 @@ public:
 	//@}
 	
 	// overwrite
-	bool addView (CView *pView);
-	bool addView (CView *pView, CRect &mouseableArea, bool mouseEnabled = true);
-	bool removeView (CView *pView, const bool &withForget = true);
-	bool removeAll (const bool &withForget = true);
-	bool isChild (CView *pView) const;
-	long getNbViews () const;
-	CView *getView (long index) const;
-	void drawBackgroundRect (CDrawContext *pContext, CRect& _updateRect);
-	bool onWheel (const CPoint &where, const CMouseWheelAxis &axis, const float &distance, const long &buttons);
-	void valueChanged (CControl *pControl);
+	bool addView (CView* pView);
+	bool addView (CView* pView, CRect& mouseableArea, bool mouseEnabled = true);
+	bool removeView (CView* pView, const bool& withForget = true);
+	bool removeAll (const bool& withForget = true);
+	bool isChild (CView* pView) const;
+	int32_t getNbViews () const;
+	CView *getView (int32_t index) const;
+	void drawBackgroundRect (CDrawContext* pContext, CRect& _updateRect);
+	bool onWheel (const CPoint& where, const CMouseWheelAxis& axis, const float& distance, const CButtonState& buttons);
+	void valueChanged (CControl* pControl);
 	void setTransparency (bool val);
 	void setBackgroundColor (const CColor& color);
-	void setViewSize (CRect &rect, bool invalid = true);
-	void setAutosizeFlags (long flags);
-	CMessageResult notify (CBaseObject* sender, const char* message);
+	void setViewSize (CRect& rect, bool invalid = true);
+	void setAutosizeFlags (int32_t flags);
+	CMessageResult notify (CBaseObject* sender, IdStringPtr message);
 
 	CLASS_METHODS(CScrollView, CViewContainer)
 //-----------------------------------------------------------------------------
@@ -121,7 +123,7 @@ protected:
 
 	CRect containerSize;
 	CCoord scrollbarWidth;
-	long style;
+	int32_t style;
 
 	enum {
 		kHSBTag,
@@ -144,7 +146,7 @@ public:
 		kVertical,
 	};
 
-	CScrollbar (const CRect& size, CControlListener* listener, long tag, ScrollbarDirection style, const CRect& scrollSize);
+	CScrollbar (const CRect& size, CControlListener* listener, int32_t tag, ScrollbarDirection style, const CRect& scrollSize);
 	CScrollbar (const CScrollbar& scrollbar);
 
 	//-----------------------------------------------------------------------------
@@ -169,12 +171,12 @@ public:
 
 	// overwrite
 	void draw (CDrawContext* pContext);
-	bool onWheel (const CPoint &where, const CMouseWheelAxis &axis, const float &distance, const long &buttons);
-	CMouseEventResult onMouseDown (CPoint &where, const long& buttons);
-	CMouseEventResult onMouseUp (CPoint &where, const long& buttons);
-	CMouseEventResult onMouseMoved (CPoint &where, const long& buttons);
-	CMessageResult notify (CBaseObject* sender, const char* message);
-	void setViewSize (CRect &newSize, bool invalid);
+	bool onWheel (const CPoint& where, const CMouseWheelAxis& axis, const float& distance, const CButtonState& buttons);
+	CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons);
+	CMouseEventResult onMouseUp (CPoint& where, const CButtonState& buttons);
+	CMouseEventResult onMouseMoved (CPoint& where, const CButtonState& buttons);
+	CMessageResult notify (CBaseObject* sender, IdStringPtr message);
+	void setViewSize (CRect& newSize, bool invalid);
 
 	CLASS_METHODS(CScrollbar, CControl)
 //-----------------------------------------------------------------------------

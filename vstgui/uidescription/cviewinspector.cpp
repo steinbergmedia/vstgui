@@ -57,14 +57,14 @@ class InspectorTabButton : public COnOffButton
 //-----------------------------------------------------------------------------
 {
 public:
-	InspectorTabButton (const CRect &size, const char* inName, long tabPosition = 0)
+	InspectorTabButton (const CRect &size, UTF8StringPtr inName, int32_t tabPosition = 0)
 	: COnOffButton (size, 0, -1, 0)
 	, name (0)
 	, tabPosition (tabPosition)
 	{
 		if (inName)
 		{
-			name = (char*)malloc (strlen (inName) + 1);
+			name = (UTF8StringBuffer)malloc (strlen (inName) + 1);
 			strcpy (name, inName);
 		}
 		backgroundColor = kTransparentCColor; // uidWindowBackgroundColor;
@@ -149,10 +149,10 @@ public:
 		pContext->lineTo (CPoint (size.right, size.bottom));
 	}
 
-	CMouseEventResult onMouseDown (CPoint &where, const long& button)
+	CMouseEventResult onMouseDown (CPoint &where, const CButtonState& button)
 	{
 		beginEdit ();
-		value = ((long)value) ? 0.f : 1.f;
+		value = ((int32_t)value) ? 0.f : 1.f;
 		valueChanged ();
 		endEdit ();
 		return kMouseDownEventHandledButDontNeedMovedOrUpEvents;
@@ -169,12 +169,12 @@ public:
 
 	CLASS_METHODS (InspectorTabButton, COnOffButton)
 protected:
-	char* name;
+	UTF8StringBuffer name;
 	CFontRef textFont;
 	CColor activeTextColor;
 	CColor inactiveTextColor;
 	CColor backgroundColor;
-	long tabPosition;
+	int32_t tabPosition;
 };
 
 
@@ -208,7 +208,7 @@ public:
 		}
 	}
 
-	const char* getName ()
+	UTF8StringPtr getName ()
 	{
 		return name.c_str ();
 	}
@@ -254,7 +254,7 @@ class FocusOptionMenu : public COptionMenu
 //-----------------------------------------------------------------------------
 {
 public:
-	FocusOptionMenu (const CRect& size, CControlListener* listener, long tag, CBitmap* background = 0, CBitmap* bgWhenClick = 0, const long style = 0)
+	FocusOptionMenu (const CRect& size, CControlListener* listener, int32_t tag, CBitmap* background = 0, CBitmap* bgWhenClick = 0, const int32_t style = 0)
 	: COptionMenu (size, listener, tag, background, bgWhenClick, style) {}
 	
 	void takeFocus ()
@@ -281,19 +281,20 @@ public:
 	: CParamDisplay (size)
 	{
 		setListener (listener);
-		setStringConvert (booleanStringConvert);
+		setValueToStringProc (booleanStringConvert, 0);
 		setWantsFocus (true);
 	}
 
-	static void booleanStringConvert (float value, char* string)
+	static bool booleanStringConvert (float value, char string[256], void* userData)
 	{
 		if (value == 0)
 			strcpy (string, "false");
 		else
 			strcpy (string, "true");
+		return true;
 	}
 	
-	CMouseEventResult onMouseDown (CPoint &where, const long& buttons)
+	CMouseEventResult onMouseDown (CPoint &where, const CButtonState& buttons)
 	{
 		value = value == 0.f ? 1.f : 0.f;
 		beginEdit ();
@@ -314,11 +315,11 @@ public:
 		backColor = origBackgroundColor;
 	}
 	
-	long onKeyDown (VstKeyCode& keyCode)
+	int32_t onKeyDown (VstKeyCode& keyCode)
 	{
 		if (keyCode.virt == VKEY_RETURN && keyCode.modifier == 0)
 		{
-			value = ((long)value) ? 0.f : 1.f;
+			value = ((int32_t)value) ? 0.f : 1.f;
 			invalid ();
 			beginEdit ();
 			valueChanged ();
@@ -354,29 +355,29 @@ public:
 		names.insert (names.begin (), _names.begin (), _names.end ());
 	}
 
-	long dbGetNumRows (CDataBrowser* browser)
+	int32_t dbGetNumRows (CDataBrowser* browser)
 	{
 		return names.size () + 1;
 	}
 	
-	long dbGetNumColumns (CDataBrowser* browser)
+	int32_t dbGetNumColumns (CDataBrowser* browser)
 	{
 		return 3;
 	}
 	
-	bool dbGetColumnDescription (long index, CCoord& minWidth, CCoord& maxWidth, CDataBrowser* browser)
+	bool dbGetColumnDescription (int32_t index, CCoord& minWidth, CCoord& maxWidth, CDataBrowser* browser)
 	{
 		return false;
 	}
 	
-	CCoord dbGetCurrentColumnWidth (long index, CDataBrowser* browser)
+	CCoord dbGetCurrentColumnWidth (int32_t index, CDataBrowser* browser)
 	{
 		if (index == 2)
 			return 20;
 		return (browser->getWidth () - 40) / 2;
 	}
 	
-	void dbSetCurrentColumnWidth (long index, const CCoord& width, CDataBrowser* browser)
+	void dbSetCurrentColumnWidth (int32_t index, const CCoord& width, CDataBrowser* browser)
 	{
 	}
 	
@@ -392,7 +393,7 @@ public:
 		return true;
 	}
 
-	void dbDrawHeader (CDrawContext* context, const CRect& size, long column, long flags, CDataBrowser* browser)
+	void dbDrawHeader (CDrawContext* context, const CRect& size, int32_t column, int32_t flags, CDataBrowser* browser)
 	{
 		CRect r (size);
 		r.inset (0, 3);
@@ -424,7 +425,7 @@ public:
 		context->drawRect (size, kDrawFilled);
 	}
 
-	void dbDrawCell (CDrawContext* context, const CRect& size, long row, long column, long flags, CDataBrowser* browser)
+	void dbDrawCell (CDrawContext* context, const CRect& size, int32_t row, int32_t column, int32_t flags, CDataBrowser* browser)
 	{
 		if (flags & kRowSelected)
 			drawBackgroundSelected (context, size, browser);
@@ -475,7 +476,7 @@ public:
 		}
 	}
 
-	virtual bool getCellText (long row, long column, std::string& result, CDataBrowser* browser)	// return true if cell is editable
+	virtual bool getCellText (int32_t row, int32_t column, std::string& result, CDataBrowser* browser)	// return true if cell is editable
 	{
 		if (row >= dbGetNumRows (browser)-1)
 		{
@@ -498,7 +499,7 @@ public:
 		return false;
 	}
 
-	void dbCellSetupTextEdit (long row, long column, CTextEdit* textEditControl, CDataBrowser* browser)
+	void dbCellSetupTextEdit (int32_t row, int32_t column, CTextEdit* textEditControl, CDataBrowser* browser)
 	{
 		textEditControl->setBackColor (kWhiteCColor);
 		textEditControl->setFrameColor (kBlackCColor);
@@ -510,7 +511,7 @@ public:
 		textEditControl->setMouseableArea (size);
 	}
 
-	CMouseEventResult dbOnMouseDown (const CPoint& where, const long& buttons, long row, long column, CDataBrowser* browser)
+	CMouseEventResult dbOnMouseDown (const CPoint& where, const CButtonState& buttons, int32_t row, int32_t column, CDataBrowser* browser)
 	{
 		if (row == dbGetNumRows (browser)-1)
 		{
@@ -526,7 +527,7 @@ public:
 		return kMouseEventHandled;
 	}
 
-	CMouseEventResult dbOnMouseMoved (const CPoint& where, const long& buttons, long row, long column, CDataBrowser* browser)
+	CMouseEventResult dbOnMouseMoved (const CPoint& where, const CButtonState& buttons, int32_t row, int32_t column, CDataBrowser* browser)
 	{
 		if (column == dbGetNumColumns (browser)-1)
 		{
@@ -545,7 +546,7 @@ public:
 		return kMouseEventHandled;
 	}
 
-	virtual bool startEditing (long row, CDataBrowser* browser)
+	virtual bool startEditing (int32_t row, CDataBrowser* browser)
 	{
 		if (row == dbGetNumRows (browser)-1)
 		{
@@ -564,11 +565,11 @@ public:
 		return false;
 	}
 	
-	long dbOnKeyDown (const VstKeyCode& key, CDataBrowser* browser)
+	int32_t dbOnKeyDown (const VstKeyCode& key, CDataBrowser* browser)
 	{
 		if (key.virt == VKEY_RETURN)
 		{
-			long row = browser->getSelectedRow ();
+			int32_t row = browser->getSelectedRow ();
 			if (startEditing (row, browser))
 				return 1;
 		}
@@ -582,7 +583,7 @@ protected:
 	IActionOperator* actionOperator;
 	std::vector<const std::string*> names;
 	std::vector<std::string> headerTitles;
-	long mouseRow;
+	int32_t mouseRow;
 	CGraphicsPath* path;
 };
 
@@ -605,19 +606,19 @@ public:
 		desc->collectBitmapNames (_names);
 	}
 	
-	long dbGetNumColumns (CDataBrowser* browser)
+	int32_t dbGetNumColumns (CDataBrowser* browser)
 	{
 		return 4;
 	}
 
-	CCoord dbGetCurrentColumnWidth (long index, CDataBrowser* browser)
+	CCoord dbGetCurrentColumnWidth (int32_t index, CDataBrowser* browser)
 	{
 		if (index > 2)
 			return 20;
 		return (browser->getWidth () - 40) / 3;
 	}
 	
-	bool getCellText (long row, long column, std::string& result, CDataBrowser* browser)
+	bool getCellText (int32_t row, int32_t column, std::string& result, CDataBrowser* browser)
 	{
 		if (column == 1)
 		{
@@ -650,7 +651,7 @@ public:
 		return BrowserDelegateBase::getCellText (row, column, result, browser);
 	}
 
-	CMouseEventResult dbOnMouseDown (const CPoint& where, const long& buttons, long row, long column, CDataBrowser* browser)
+	CMouseEventResult dbOnMouseDown (const CPoint& where, const CButtonState& buttons, int32_t row, int32_t column, CDataBrowser* browser)
 	{
 		if (row < (dbGetNumRows (browser) - 1))
 		{
@@ -699,7 +700,7 @@ public:
 		return false;
 	}
 
-	void dbCellTextChanged (long row, long column, const char* newText, CDataBrowser* browser)
+	void dbCellTextChanged (int32_t row, int32_t column, UTF8StringPtr newText, CDataBrowser* browser)
 	{
 		if (column != 2 && (newText == 0 || strlen (newText) == 0))
 			return;
@@ -776,17 +777,17 @@ public:
 		desc->collectColorNames (_names);
 	}
 	
-	bool getCellText (long row, long column, std::string& result, CDataBrowser* browser)
+	bool getCellText (int32_t row, int32_t column, std::string& result, CDataBrowser* browser)
 	{
 		if (column == 1)
 		{
 			CColor color;
 			if (desc->getColor (names[row]->c_str (), color))
 			{
-				unsigned char red = color.red;
-				unsigned char green = color.green;
-				unsigned char blue = color.blue;
-				unsigned char alpha = color.alpha;
+				uint8_t red = color.red;
+				uint8_t green = color.green;
+				uint8_t blue = color.blue;
+				uint8_t alpha = color.alpha;
 				char strBuffer[10];
 				sprintf (strBuffer, "#%02x%02x%02x%02x", red, green, blue, alpha);
 				result = strBuffer;
@@ -796,7 +797,7 @@ public:
 		return BrowserDelegateBase::getCellText (row, column, result, browser);
 	}
 
-	bool startEditing (long row, CDataBrowser* browser)
+	bool startEditing (int32_t row, CDataBrowser* browser)
 	{
 		if (row < (dbGetNumRows (browser) - 1))
 		{
@@ -812,7 +813,7 @@ public:
 		return BrowserDelegateBase::startEditing (row, browser);
 	}
 	
-	CMouseEventResult dbOnMouseDown (const CPoint& where, const long& buttons, long row, long column, CDataBrowser* browser)
+	CMouseEventResult dbOnMouseDown (const CPoint& where, const CButtonState& buttons, int32_t row, int32_t column, CDataBrowser* browser)
 	{
 		if (row < (dbGetNumRows (browser) - 1))
 		{
@@ -843,7 +844,7 @@ public:
 		if (lastChoosenRow != -1 && names.size () > (size_t)lastChoosenRow)
 		{
 			std::string colorName (*names[lastChoosenRow]);
-			long temp = lastChoosenRow;
+			int32_t temp = lastChoosenRow;
 			actionOperator->performColorChange (colorName.c_str (), color);
 			updateNames ();
 			lastChoosenRow = temp;
@@ -851,7 +852,7 @@ public:
 		}
 	}
 	
-	void dbCellTextChanged (long row, long column, const char* newText, CDataBrowser* browser)
+	void dbCellTextChanged (int32_t row, int32_t column, UTF8StringPtr newText, CDataBrowser* browser)
 	{
 		if (newText == 0 || strlen (newText) == 0)
 			return;
@@ -889,7 +890,7 @@ public:
 		}
 	}
 
-	void dbDrawCell (CDrawContext* context, const CRect& size, long row, long column, long flags, CDataBrowser* browser)
+	void dbDrawCell (CDrawContext* context, const CRect& size, int32_t row, int32_t column, int32_t flags, CDataBrowser* browser)
 	{
 		if (column == 1 && row < (dbGetNumRows (browser) - 1))
 		{
@@ -904,10 +905,10 @@ public:
 				context->setFillColor (color);
 				context->drawRect (colorRect, kDrawFilled);
 
-				unsigned char red = color.red;
-				unsigned char green = color.green;
-				unsigned char blue = color.blue;
-				unsigned char alpha = color.alpha;
+				uint8_t red = color.red;
+				uint8_t green = color.green;
+				uint8_t blue = color.blue;
+				uint8_t alpha = color.alpha;
 				char strBuffer[10];
 				sprintf (strBuffer, "#%02x%02x%02x%02x", red, green, blue, alpha);
 				context->setFontColor (kWhiteCColor);
@@ -918,7 +919,7 @@ public:
 		}
 		BrowserDelegateBase::dbDrawCell (context, size, row, column, flags, browser);
 	}
-	long lastChoosenRow;
+	int32_t lastChoosenRow;
 	CDataBrowser* browser;
 };
 
@@ -940,7 +941,7 @@ public:
 		desc->collectControlTagNames (_names);
 	}
 	
-	bool getCellText (long row, long column, std::string& result, CDataBrowser* browser)
+	bool getCellText (int32_t row, int32_t column, std::string& result, CDataBrowser* browser)
 	{
 		if (column == 1 && row < (dbGetNumRows (browser) - 1))
 		{
@@ -952,7 +953,7 @@ public:
 		return BrowserDelegateBase::getCellText (row, column, result, browser);
 	}
 
-	CMouseEventResult dbOnMouseDown (const CPoint& where, const long& buttons, long row, long column, CDataBrowser* browser)
+	CMouseEventResult dbOnMouseDown (const CPoint& where, const CButtonState& buttons, int32_t row, int32_t column, CDataBrowser* browser)
 	{
 		if (row < (dbGetNumRows (browser) - 1))
 		{
@@ -968,7 +969,7 @@ public:
 		return BrowserDelegateBase::dbOnMouseDown (where, buttons, row, column, browser);
 	}
 
-	void dbCellTextChanged (long row, long column, const char* newText, CDataBrowser* browser)
+	void dbCellTextChanged (int32_t row, int32_t column, UTF8StringPtr newText, CDataBrowser* browser)
 	{
 		if (newText == 0 || strlen (newText) == 0)
 			return;
@@ -1006,7 +1007,7 @@ public:
 		}
 		else if (column == 1)
 		{
-			long tag = strtol (newText, 0, 10);
+			int32_t tag = strtol (newText, 0, 10);
 			actionOperator->performTagChange (names[row]->c_str (), tag);
 		}
 	}
@@ -1031,12 +1032,12 @@ public:
 		desc->collectFontNames (_names);
 	}
 	
-	long dbGetNumColumns (CDataBrowser* browser)
+	int32_t dbGetNumColumns (CDataBrowser* browser)
 	{
 		return 5;
 	}
 	
-	CCoord dbGetCurrentColumnWidth (long index, CDataBrowser* browser)
+	CCoord dbGetCurrentColumnWidth (int32_t index, CDataBrowser* browser)
 	{
 		if (index == 4)
 			return 20;
@@ -1050,7 +1051,7 @@ public:
 		return (browser->getWidth () - 40) / 4;
 	}
 	
-	bool getCellText (long row, long column, std::string& result, CDataBrowser* browser)
+	bool getCellText (int32_t row, int32_t column, std::string& result, CDataBrowser* browser)
 	{
 		if (row < (dbGetNumRows (browser) - 1))
 		{
@@ -1065,7 +1066,7 @@ public:
 			else if (column == 2)
 			{
 				std::stringstream str;
-				long fstyle = font->getStyle ();
+				int32_t fstyle = font->getStyle ();
 				if (fstyle & kBoldFace)
 					str << "b";
 				if (fstyle & kItalicFace)
@@ -1111,7 +1112,7 @@ public:
 		}
 		if (fontMenu->popup (frame, location))
 		{
-			long index = 0;
+			int32_t index = 0;
 			COptionMenu* menu = fontMenu->getLastItemMenu (index);
 			if (menu)
 			{
@@ -1124,7 +1125,7 @@ public:
 		return result;
 	}
 
-	bool startEditing (long row, CDataBrowser* browser)
+	bool startEditing (int32_t row, CDataBrowser* browser)
 	{
 		if (row < (dbGetNumRows (browser) - 1))
 		{
@@ -1146,7 +1147,7 @@ public:
 		return BrowserDelegateBase::startEditing (row, browser);
 	}
 	
-	CMouseEventResult dbOnMouseDown (const CPoint& where, const long& buttons, long row, long column, CDataBrowser* browser)
+	CMouseEventResult dbOnMouseDown (const CPoint& where, const CButtonState& buttons, int32_t row, int32_t column, CDataBrowser* browser)
 	{
 		if (row < (dbGetNumRows (browser) - 1))
 		{
@@ -1193,8 +1194,8 @@ public:
 				if (styleMenu->popup (browser->getFrame (), location))
 				{
 					CFontRef newFont = new CFontDesc (*currentFont);
-					long style = newFont->getStyle ();
-					long index;
+					int32_t style = newFont->getStyle ();
+					int32_t index;
 					styleMenu->getLastItemMenu (index);
 					item = styleMenu->getEntry (index);
 					if (item->isChecked ())
@@ -1213,7 +1214,7 @@ public:
 		return BrowserDelegateBase::dbOnMouseDown (where, buttons, row, column, browser);
 	}
 
-	void dbCellTextChanged (long row, long column, const char* newText, CDataBrowser* browser)
+	void dbCellTextChanged (int32_t row, int32_t column, UTF8StringPtr newText, CDataBrowser* browser)
 	{
 		if (newText == 0 || strlen (newText) == 0)
 			return;
@@ -1260,7 +1261,7 @@ public:
 static const CViewAttributeID attrNameID = 'atnm';
 
 //-----------------------------------------------------------------------------
-static void setViewAttributeName (CView* view, const char* name)
+static void setViewAttributeName (CView* view, UTF8StringPtr name)
 {
 	view->setAttribute (attrNameID, strlen (name) + 1, name);
 }
@@ -1269,7 +1270,7 @@ static void setViewAttributeName (CView* view, const char* name)
 static bool getViewAttributeName (CView* view, std::string& name)
 {
 	bool result = false;
-	long attrSize = 0;
+	int32_t attrSize = 0;
 	if (view->getAttributeSize (attrNameID, attrSize))
 	{
 		char* attrNameCStr = new char [attrSize];
@@ -1288,7 +1289,7 @@ static void updateMenuFromList (COptionMenu* menu, std::list<const std::string*>
 {
 	menu->removeAllEntry ();
 	names.sort (std__stringCompare);
-	long current = -1;
+	int32_t current = -1;
 	std::list<const std::string*>::const_iterator it = names.begin ();
 	while (it != names.end ())
 	{
@@ -1635,13 +1636,13 @@ CView* CViewInspector::createAttributesView (CCoord width)
 	}
 	CCoord viewLocation = 0;
 	CCoord containerWidth = width - 10;
-	int selectedViews = selection->total ();
+	int32_t selectedViews = selection->total ();
 	if (selectedViews > 0)
 	{
 		if (selectedViews == 1)
 		{
 			CView* view = selection->first ();
-			const char* viewname = viewFactory->getViewName (view);
+			UTF8StringPtr viewname = viewFactory->getViewName (view);
 			if (viewname == 0)
 				viewname = typeid(*view).name ();
 			viewNameLabel->setText (viewname);
@@ -1866,7 +1867,7 @@ void CViewInspector::valueChanged (CControl* pControl)
 		SimpleBooleanButton* booleanButton = dynamic_cast<SimpleBooleanButton*> (pControl);
 		if (textEdit)
 		{
-			const char* textValueCStr = textEdit->getText ();
+			UTF8StringPtr textValueCStr = textEdit->getText ();
 			if (textValueCStr)
 			{
 				attrValue = textValueCStr;
@@ -1874,7 +1875,7 @@ void CViewInspector::valueChanged (CControl* pControl)
 		}
 		else if (optMenu)
 		{
-			long index = optMenu->getLastResult ();
+			int32_t index = optMenu->getLastResult ();
 			CMenuItem* item = optMenu->getEntry (index);
 			if (item)
 			{
@@ -1895,7 +1896,7 @@ void CViewInspector::valueChanged (CControl* pControl)
 }
 
 //-----------------------------------------------------------------------------
-CMessageResult CViewInspector::notify (CBaseObject* sender, const char* message)
+CMessageResult CViewInspector::notify (CBaseObject* sender, IdStringPtr message)
 {
 	if (message == CSelection::kMsgSelectionChanged)
 	{

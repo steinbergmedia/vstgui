@@ -77,7 +77,7 @@ inline HIDDEN void set_Objc_Value (id obj, const char* name, id value)
 
 extern HIDDEN Class generateUniqueClass (NSMutableString* className, Class baseClass);
 extern HIDDEN VstKeyCode CreateVstKeyCodeFromNSEvent (NSEvent* theEvent);
-extern HIDDEN long eventButton (NSEvent* theEvent);
+extern HIDDEN int32_t eventButton (NSEvent* theEvent);
 
 //------------------------------------------------------------------------------------
 // Helpers

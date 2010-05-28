@@ -48,25 +48,25 @@ namespace VSTGUI {
 class CFileExtension : public CBaseObject
 {
 public:
-	CFileExtension (const char* description, const char* extension, const char* mimeType = 0, int macType = 0);
+	CFileExtension (UTF8StringPtr description, UTF8StringPtr extension, UTF8StringPtr mimeType = 0, int32_t macType = 0);
 	CFileExtension (const CFileExtension& ext);
 	~CFileExtension ();
 
-	const char* getDescription () const { return description; }
-	const char* getExtension () const { return extension; }
-	const char* getMimeType () const { return mimeType; }
-	int getMacType () const { return macType; }
+	UTF8StringPtr getDescription () const { return description; }
+	UTF8StringPtr getExtension () const { return extension; }
+	UTF8StringPtr getMimeType () const { return mimeType; }
+	int32_t getMacType () const { return macType; }
 
 	bool operator== (const CFileExtension& ext) const;
 //-----------------------------------------------------------------------------
 	CLASS_METHODS(CFileExtension, CBaseObject)
 protected:
-	void init (const char* description, const char* extension, const char* mimeType);
+	void init (UTF8StringPtr description, UTF8StringPtr extension, UTF8StringPtr mimeType);
 	
-	char* description;
-	char* extension;
-	char* mimeType;
-	int macType;
+	UTF8StringBuffer description;
+	UTF8StringBuffer extension;
+	UTF8StringBuffer mimeType;
+	int32_t macType;
 };
 
 //-----------------------------------------------------------------------------
@@ -91,7 +91,7 @@ void MyClass::runFileSelector ()
 @endcode
 Getting results
 @code
-CMessageResult MyClass::notify (CBaseObject* sender, const char* message)
+CMessageResult MyClass::notify (CBaseObject* sender, IdStringPtr message)
 {
 	if (message == CNewFileSelector::kSelectEndMessage)
 	{
@@ -131,9 +131,9 @@ public:
 	/// @name CFileSelector setup
 	//-----------------------------------------------------------------------------
 	//@{
-	void setTitle (const char* title);							///< set title of file selector
-	void setInitialDirectory (const char* path);				///< set initial directory (UTF8 string)
-	void setDefaultSaveName (const char* name);					///< set initial save name (UTF8 string)
+	void setTitle (UTF8StringPtr title);							///< set title of file selector
+	void setInitialDirectory (UTF8StringPtr path);				///< set initial directory (UTF8 string)
+	void setDefaultSaveName (UTF8StringPtr name);					///< set initial save name (UTF8 string)
 	void setDefaultExtension (const CFileExtension& extension);	///< set default file extension
 	void setAllowMultiFileSelection (bool state);				///< set allow multi file selection (only valid for kSelectFile selector style)
 	void addFileExtension (const CFileExtension& extension);	///< add a file extension
@@ -143,13 +143,13 @@ public:
 	/// @name CFileSelector result
 	//-----------------------------------------------------------------------------
 	//@{
-	int getNumSelectedFiles () const;							///< get number of selected files
-	const char* getSelectedFile (unsigned int index) const;		///< get selected file. Result is only valid as long as the instance of CNewFileSelector is valid.
+	int32_t getNumSelectedFiles () const;							///< get number of selected files
+	UTF8StringPtr getSelectedFile (uint32_t index) const;		///< get selected file. Result is only valid as long as the instance of CNewFileSelector is valid.
 	//@}
 
 	static const CFileExtension& getAllFilesExtension ();		///< get the all files extension
 
-	static const char* kSelectEndMessage;
+	static IdStringPtr kSelectEndMessage;
 //-----------------------------------------------------------------------------
 	CLASS_METHODS_NOCOPY(CNewFileSelector, CBaseObject)
 protected:
@@ -161,14 +161,14 @@ protected:
 	virtual bool runModalInternal () = 0;
 
 	CFrame* frame;
-	char* title;
-	char* initialPath;
-	char* defaultSaveName;
+	UTF8StringBuffer title;
+	UTF8StringBuffer initialPath;
+	UTF8StringBuffer defaultSaveName;
 	const CFileExtension* defaultExtension;
 	bool allowMultiFileSelection;
 
 	std::list<CFileExtension> extensions;
-	std::vector<char*> result;
+	std::vector<UTF8StringBuffer> result;
 };
 
 } // namespace

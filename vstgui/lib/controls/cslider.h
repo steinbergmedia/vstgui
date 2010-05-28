@@ -47,10 +47,10 @@ namespace VSTGUI {
 class CSlider : public CControl
 {
 public:
-	CSlider (const CRect& size, CControlListener* listener, long tag, long iMinPos, long iMaxPos, CBitmap* handle, CBitmap* background, const CPoint& offset = CPoint (0, 0), const long style = kLeft|kHorizontal);
-	CSlider (const CRect& rect, CControlListener* listener, long tag, const CPoint& offsetHandle, long rangeHandle, CBitmap* handle, CBitmap* background, const CPoint& offset = CPoint (0, 0), const long style = kLeft|kHorizontal);
+	CSlider (const CRect& size, CControlListener* listener, int32_t tag, int32_t iMinPos, int32_t iMaxPos, CBitmap* handle, CBitmap* background, const CPoint& offset = CPoint (0, 0), const int32_t style = kLeft|kHorizontal);
+	CSlider (const CRect& rect, CControlListener* listener, int32_t tag, const CPoint& offsetHandle, int32_t rangeHandle, CBitmap* handle, CBitmap* background, const CPoint& offset = CPoint (0, 0), const int32_t style = kLeft|kHorizontal);
 	CSlider (const CSlider& slider);
-  
+
 	//-----------------------------------------------------------------------------
 	/// @name CSlider Methods
 	//-----------------------------------------------------------------------------
@@ -64,8 +64,8 @@ public:
 	virtual void setOffset (const CPoint& val) { offset = val; }
 	virtual CPoint getOffset () const { return offset; }
 
-	virtual void setStyle (long style);
-	virtual long getStyle () const { return style; }
+	virtual void setStyle (int32_t style);
+	virtual int32_t getStyle () const { return style; }
 
 	virtual void     setHandle (CBitmap* pHandle);
 	virtual CBitmap* getHandle () const { return pHandle; }
@@ -74,15 +74,38 @@ public:
 	virtual float getZoomFactor () const { return zoomFactor; }
 	//@}
 
+	//-----------------------------------------------------------------------------
+	/// @name Draw Style Methods
+	//-----------------------------------------------------------------------------
+	//@{
+	enum DrawStyle {
+		kDrawFrame				= 1 << 0,
+		kDrawBack				= 1 << 1,
+		kDrawValue				= 1 << 2,
+		kDrawValueFromCenter	= 1 << 3,
+		kDrawInverted			= 1 << 4
+	};
+
+	virtual void setDrawStyle (int32_t style);
+	virtual void setFrameColor (CColor color);
+	virtual void setBackColor (CColor color);
+	virtual void setValueColor (CColor color);
+
+	int32_t getDrawStyle () const { return drawStyle; }
+	CColor getFrameColor () const { return frameColor; }
+	CColor getBackColor () const { return backColor; }
+	CColor getValueColor () const { return valueColor; }
+	//@}
+
 	// overrides
 	virtual void draw (CDrawContext*);
 
-	virtual CMouseEventResult onMouseDown (CPoint& where, const long& buttons);
-	virtual CMouseEventResult onMouseUp (CPoint& where, const long& buttons);
-	virtual CMouseEventResult onMouseMoved (CPoint& where, const long& buttons);
+	virtual CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons);
+	virtual CMouseEventResult onMouseUp (CPoint& where, const CButtonState& buttons);
+	virtual CMouseEventResult onMouseMoved (CPoint& where, const CButtonState& buttons);
 
-	virtual bool onWheel (const CPoint& where, const float& distance, const long& buttons);
-	virtual long onKeyDown (VstKeyCode& keyCode);
+	virtual bool onWheel (const CPoint& where, const float& distance, const CButtonState& buttons);
+	virtual int32_t onKeyDown (VstKeyCode& keyCode);
 
 	virtual bool sizeToFit ();
 
@@ -96,7 +119,7 @@ protected:
 
 	CBitmap* pHandle;
 
-	long	style;
+	int32_t	style;
 
 	CCoord	widthOfSlider;
 	CCoord	heightOfSlider;
@@ -111,10 +134,14 @@ protected:
 	bool     bDrawTransparentEnabled;
 	bool     bFreeClick;
 
+	int32_t    drawStyle;
+	CColor  frameColor;
+	CColor  backColor;
+	CColor  valueColor;
 private:
 	CCoord   delta;
 	float    oldVal;
-	long     oldButton; 
+	CButtonState     oldButton; 
 };
 
 //-----------------------------------------------------------------------------
@@ -125,8 +152,8 @@ private:
 class CVerticalSlider : public CSlider
 {
 public:
-	CVerticalSlider (const CRect& size, CControlListener* listener, long tag, long iMinPos, long iMaxPos, CBitmap* handle, CBitmap* background, const CPoint& offset = CPoint (0, 0), const long style = kBottom);
-	CVerticalSlider (const CRect& rect, CControlListener* listener, long tag, const CPoint& offsetHandle, long rangeHandle, CBitmap* handle, CBitmap* background, const CPoint& offset = CPoint (0, 0), const long style = kBottom);
+	CVerticalSlider (const CRect& size, CControlListener* listener, int32_t tag, int32_t iMinPos, int32_t iMaxPos, CBitmap* handle, CBitmap* background, const CPoint& offset = CPoint (0, 0), const int32_t style = kBottom);
+	CVerticalSlider (const CRect& rect, CControlListener* listener, int32_t tag, const CPoint& offsetHandle, int32_t rangeHandle, CBitmap* handle, CBitmap* background, const CPoint& offset = CPoint (0, 0), const int32_t style = kBottom);
 	CVerticalSlider (const CVerticalSlider& slider);
 };
 
@@ -138,8 +165,8 @@ public:
 class CHorizontalSlider : public CSlider
 {
 public:
-	CHorizontalSlider (const CRect& size, CControlListener* listener, long tag, long iMinPos, long iMaxPos, CBitmap* handle, CBitmap* background, const CPoint& offset = CPoint (0, 0), const long style = kRight);
-	CHorizontalSlider (const CRect& rect, CControlListener* listener, long tag, const CPoint& offsetHandle, long rangeHandle, CBitmap* handle, CBitmap* background, const CPoint& offset = CPoint (0, 0), const long style = kRight);
+	CHorizontalSlider (const CRect& size, CControlListener* listener, int32_t tag, int32_t iMinPos, int32_t iMaxPos, CBitmap* handle, CBitmap* background, const CPoint& offset = CPoint (0, 0), const int32_t style = kRight);
+	CHorizontalSlider (const CRect& rect, CControlListener* listener, int32_t tag, const CPoint& offsetHandle, int32_t rangeHandle, CBitmap* handle, CBitmap* background, const CPoint& offset = CPoint (0, 0), const int32_t style = kRight);
 	CHorizontalSlider (const CHorizontalSlider& slider);
 };
 

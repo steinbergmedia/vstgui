@@ -248,9 +248,9 @@ CocoaTextEdit::~CocoaTextEdit ()
 }
 
 //-----------------------------------------------------------------------------
-bool CocoaTextEdit::getText (char* text, long maxSize)
+UTF8StringPtr CocoaTextEdit::getText ()
 {
-	return [[platformControl stringValue] getCString:text maxLength:maxSize encoding:NSUTF8StringEncoding] == YES ? true : false;
+	return [[platformControl stringValue] UTF8String];
 }
 
 //-----------------------------------------------------------------------------
@@ -261,7 +261,7 @@ bool CocoaTextEdit::updateSize ()
 }
 
 //-----------------------------------------------------------------------------
-bool CocoaTextEdit::setText (const char* text)
+bool CocoaTextEdit::setText (UTF8StringPtr text)
 {
 	NSString* nsText = [NSString stringWithCString:text encoding:NSUTF8StringEncoding];
 	[platformControl setStringValue:nsText];

@@ -35,8 +35,13 @@
 #ifndef __vst3editortemplates__
 #define __vst3editortemplates__
 
+#include "../lib/vstguibase.h"
+
 #if VSTGUI_LIVE_EDITING
-static const char* vst3EditorTemplatesString = VSTGUI_MAKE_STRING(
+
+namespace VSTGUI {
+
+static UTF8StringPtr vst3EditorTemplatesString = VSTGUI_MAKE_STRING(
 <?xml version="1.0" encoding="UTF-8"?>
 <vstgui-ui-description version="1">
 	<fonts>
@@ -85,6 +90,8 @@ static const char* vst3EditorTemplatesString = VSTGUI_MAKE_STRING(
 	</template>
 </vstgui-ui-description>
 );
+
+} // namespace
 
 #endif // VSTGUI_LIVE_EDITING
 

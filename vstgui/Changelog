@@ -1,3 +1,15 @@
+2010-04-xx arne
+
+	* changed to use C99 variable types (int8_t, uint8_t, etc)
+	* added CButtonState class which replaces the buttons parameter in CView mouse methods
+	* Auto drag scrolling flag for CScrollView
+	* removed CGraphicsPath::addString method
+	* added some new draw styles to CKnob :
+		- drawing a circle instead of lines for the handle
+		- drawing the value as a corona (with support for inverted value and value from center)
+	* added drawing style to CSlider
+	* simplified stringToValue and valueToString functions for CParamDisplay and CTextEdit
+
 2010-04-09 arne
 
 	* Direct2D menu icon implementation

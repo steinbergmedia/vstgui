@@ -155,7 +155,7 @@ IPlatformBitmap* IPlatformBitmap::create (CPoint* size)
 }
 
 //-----------------------------------------------------------------------------
-IPlatformFont* IPlatformFont::create (const char* name, const CCoord& size, const long& style)
+IPlatformFont* IPlatformFont::create (const char* name, const CCoord& size, const int32_t& style)
 {
 #if VSTGUI_DIRECT2D_SUPPORT
 	if (getD2DFactory ())
@@ -247,7 +247,7 @@ HRESULT STDMETHODCALLTYPE ResourceStream::Read (void *pv, ULONG cb, ULONG *pcbRe
 	int readSize = min (resSize - streamPos, cb);
 	if (readSize > 0)
 	{
-		memcpy (pv, ((unsigned char*)resData+streamPos), readSize);
+		memcpy (pv, ((uint8_t*)resData+streamPos), readSize);
 		streamPos += readSize;
 		if (pcbRead)
 			*pcbRead = readSize;
@@ -270,7 +270,7 @@ HRESULT STDMETHODCALLTYPE ResourceStream::Seek (LARGE_INTEGER dlibMove, DWORD dw
 		{
 			if (dlibMove.QuadPart < resSize)
 			{
-				streamPos = (unsigned long)dlibMove.QuadPart;
+				streamPos = (uint32_t)dlibMove.QuadPart;
 				if (plibNewPosition)
 					plibNewPosition->QuadPart = streamPos;
 				return S_OK;
@@ -281,7 +281,7 @@ HRESULT STDMETHODCALLTYPE ResourceStream::Seek (LARGE_INTEGER dlibMove, DWORD dw
 		{
 			if (streamPos + dlibMove.QuadPart < resSize && streamPos + dlibMove.QuadPart >= 0)
 			{
-				streamPos += (long)dlibMove.QuadPart;
+				streamPos += (int32_t)dlibMove.QuadPart;
 				if (plibNewPosition)
 					plibNewPosition->QuadPart = streamPos;
 				return S_OK;

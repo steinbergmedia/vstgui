@@ -164,9 +164,9 @@ public:
 
 protected:
 	HGLOBAL resData;
-	unsigned long streamPos;
-	unsigned long resSize;
-	long _refcount;
+	uint32_t streamPos;
+	uint32_t resSize;
+	uint32_t _refcount;
 };
 
 /// @endcond

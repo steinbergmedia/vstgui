@@ -48,7 +48,7 @@ namespace VSTGUI {
 #define VSTGUI_CHECK_VIEW_RELEASING	DEBUG
 #if VSTGUI_CHECK_VIEW_RELEASING
 	std::list<CView*>gViewList;
-	long gNbCView = 0;
+	int32_t gNbCView = 0;
 
 	//-----------------------------------------------------------------------------
 	class AllocatedViews
@@ -77,7 +77,7 @@ namespace VSTGUI {
 class CAttributeListEntry
 {
 public:
-	CAttributeListEntry (long size, CViewAttributeID id)
+	CAttributeListEntry (int32_t size, CViewAttributeID id)
 	: nextEntry (0)
 	, pointer (0)
 	, sizeOfPointer (size)
@@ -93,13 +93,13 @@ public:
 	}
 
 	const CViewAttributeID getID () const { return id; }
-	const long getSize () const { return sizeOfPointer; }
+	const int32_t getSize () const { return sizeOfPointer; }
 	void* getPointer () const { return pointer; }
 	CAttributeListEntry* getNext () const { return nextEntry; }
 	
 	void setNext (CAttributeListEntry* entry) { nextEntry = entry; }
 
-	void resize (long newSize)
+	void resize (int32_t newSize)
 	{
 		if (pointer)
 			free (pointer);
@@ -115,21 +115,21 @@ protected:
 
 	CAttributeListEntry* nextEntry;
 	void* pointer;
-	long sizeOfPointer;
+	int32_t sizeOfPointer;
 	CViewAttributeID id;
 };
 /// @endcond
 
-const char* kDegreeSymbol		= "\xC2\xB0";
-const char* kInfiniteSymbol		= "\xE2\x88\x9E";
-const char* kCopyrightSymbol	= "\xC2\xA9";
-const char* kTrademarkSymbol	= "\xE2\x84\xA2";
-const char* kRegisteredSymbol	= "\xC2\xAE";
-const char* kMicroSymbol		= "\xC2\xB5";
-const char* kPerthousandSymbol	= "\xE2\x80\xB0";
+UTF8StringPtr kDegreeSymbol		= "\xC2\xB0";
+UTF8StringPtr kInfiniteSymbol		= "\xE2\x88\x9E";
+UTF8StringPtr kCopyrightSymbol	= "\xC2\xA9";
+UTF8StringPtr kTrademarkSymbol	= "\xE2\x84\xA2";
+UTF8StringPtr kRegisteredSymbol	= "\xC2\xAE";
+UTF8StringPtr kMicroSymbol		= "\xC2\xB5";
+UTF8StringPtr kPerthousandSymbol	= "\xE2\x80\xB0";
 
 //-----------------------------------------------------------------------------
-const char* kMsgViewSizeChanged = "kMsgViewSizeChanged";
+IdStringPtr kMsgViewSizeChanged = "kMsgViewSizeChanged";
 //-----------------------------------------------------------------------------
 // CView
 //-----------------------------------------------------------------------------
@@ -248,7 +248,7 @@ bool CView::removed (CView* parent)
  * @param buttons button and modifier state
  * @return event result. see #CMouseEventResult
  */
-CMouseEventResult CView::onMouseDown (CPoint &where, const long& buttons)
+CMouseEventResult CView::onMouseDown (CPoint &where, const CButtonState& buttons)
 {
 	return kMouseEventNotImplemented;
 }
@@ -259,7 +259,7 @@ CMouseEventResult CView::onMouseDown (CPoint &where, const long& buttons)
  * @param buttons button and modifier state
  * @return event result. see #CMouseEventResult
  */
-CMouseEventResult CView::onMouseUp (CPoint &where, const long& buttons)
+CMouseEventResult CView::onMouseUp (CPoint &where, const CButtonState& buttons)
 {
 	return kMouseEventNotImplemented;
 }
@@ -270,7 +270,7 @@ CMouseEventResult CView::onMouseUp (CPoint &where, const long& buttons)
  * @param buttons button and modifier state
  * @return event result. see #CMouseEventResult
  */
-CMouseEventResult CView::onMouseMoved (CPoint &where, const long& buttons)
+CMouseEventResult CView::onMouseMoved (CPoint &where, const CButtonState& buttons)
 {
 	return kMouseEventNotImplemented;
 }
@@ -334,7 +334,7 @@ void CView::draw (CDrawContext* pContext)
  * @param buttons button and modifier state
  * @return true if handled
  */
-bool CView::onWheel (const CPoint &where, const float &distance, const long &buttons)
+bool CView::onWheel (const CPoint &where, const float &distance, const CButtonState &buttons)
 {
 	return false;
 }
@@ -347,7 +347,7 @@ bool CView::onWheel (const CPoint &where, const float &distance, const long &but
  * @param buttons button and modifier state
  * @return true if handled
  */
-bool CView::onWheel (const CPoint& where, const CMouseWheelAxis& axis, const float& distance, const long& buttons)
+bool CView::onWheel (const CPoint& where, const CMouseWheelAxis& axis, const float& distance, const CButtonState& buttons)
 {
 	if (axis == kMouseWheelAxisX)
 	{
@@ -364,7 +364,7 @@ bool CView::onWheel (const CPoint& where, const CMouseWheelAxis& axis, const flo
  * @param keyCode key code of pressed key
  * @return -1 if not handled and 1 if handled
  */
-long CView::onKeyDown (VstKeyCode& keyCode)
+int32_t CView::onKeyDown (VstKeyCode& keyCode)
 {
 	return -1;
 }
@@ -374,7 +374,7 @@ long CView::onKeyDown (VstKeyCode& keyCode)
  * @param keyCode key code of pressed key
  * @return -1 if not handled and 1 if handled
  */
-long CView::onKeyUp (VstKeyCode& keyCode)
+int32_t CView::onKeyUp (VstKeyCode& keyCode)
 {
 	return -1;
 }
@@ -387,7 +387,7 @@ long CView::onKeyUp (VstKeyCode& keyCode)
  * @param dragBitmap bitmap to drag
  * @return 0 on failure, negative if source was moved and positive if source was copied
  */
-long CView::doDrag (CDropSource* source, const CPoint& offset, CBitmap* dragBitmap)
+CView::DragResult CView::doDrag (CDropSource* source, const CPoint& offset, CBitmap* dragBitmap)
 {
 	CFrame* frame = getFrame ();
 	if (frame)
@@ -396,7 +396,7 @@ long CView::doDrag (CDropSource* source, const CPoint& offset, CBitmap* dragBitm
 		localToFrame (off);
 		return frame->doDrag (source, off, dragBitmap);
 	}
-	return 0;
+	return kDragError;
 }
 
 //------------------------------------------------------------------------------
@@ -405,7 +405,7 @@ long CView::doDrag (CDropSource* source, const CPoint& offset, CBitmap* dragBitm
  * @param message message text
  * @return message handled or not. See #CMessageResult
  */
-CMessageResult CView::notify (CBaseObject* sender, const char* message)
+CMessageResult CView::notify (CBaseObject* sender, IdStringPtr message)
 {
 	return kMessageUnknown;
 }
@@ -495,7 +495,7 @@ const CViewAttributeID kCViewTooltipAttribute = 'cvtt';
  * @param outSize on return the size of the attribute
  * @return true if attribute exists. outSize is valid then.
  */
-bool CView::getAttributeSize (const CViewAttributeID id, long& outSize) const
+bool CView::getAttributeSize (const CViewAttributeID id, int32_t& outSize) const
 {
 	if (pAttributeList)
 	{
@@ -523,7 +523,7 @@ bool CView::getAttributeSize (const CViewAttributeID id, long& outSize) const
  * @param outSize the size in bytes which was copied into outData
  * @return true if attribute exists and outData was big enough. outSize and outData is valid then.
  */
-bool CView::getAttribute (const CViewAttributeID id, const long inSize, void* outData, long& outSize) const
+bool CView::getAttribute (const CViewAttributeID id, const int32_t inSize, void* outData, int32_t& outSize) const
 {
 	if (pAttributeList)
 	{
@@ -553,7 +553,7 @@ bool CView::getAttribute (const CViewAttributeID id, const long inSize, void* ou
  * @param inData a pointer to the data
  * @return true if attribute was set
  */
-bool CView::setAttribute (const CViewAttributeID id, const long inSize, const void* inData)
+bool CView::setAttribute (const CViewAttributeID id, const int32_t inSize, const void* inData)
 {
 	if (inData == 0 || inSize <= 0)
 		return false;
@@ -627,7 +627,7 @@ bool CView::removeAttribute (const CViewAttributeID id)
 }
 
 //-----------------------------------------------------------------------------
-void CView::addAnimation (const char* name, Animation::IAnimationTarget* target, Animation::ITimingFunction* timingFunction)
+void CView::addAnimation (IdStringPtr name, Animation::IAnimationTarget* target, Animation::ITimingFunction* timingFunction)
 {
 	if (getFrame ())
 	{
@@ -636,7 +636,7 @@ void CView::addAnimation (const char* name, Animation::IAnimationTarget* target,
 }
 
 //-----------------------------------------------------------------------------
-void CView::removeAnimation (const char* name)
+void CView::removeAnimation (IdStringPtr name)
 {
 	if (getFrame ())
 	{

@@ -48,7 +48,7 @@ class CVSTGUITimer;
 class CTooltipSupport : public CBaseObject
 {
 public:
-	CTooltipSupport (CFrame* frame, int delay = 1000);
+	CTooltipSupport (CFrame* frame, int32_t delay = 1000);
 
 	void onMouseEntered (CView* view);
 	void onMouseExited (CView* view);
@@ -63,14 +63,14 @@ protected:
 	void hideTooltip ();
 
 	// CBaseObject
-	CMessageResult notify (CBaseObject* sender, const char* msg);
+	CMessageResult notify (CBaseObject* sender, IdStringPtr msg);
 
 	CVSTGUITimer* timer;
 	CFrame* frame;
 	CView* currentView;
 
-	int delay;
-	int state;
+	int32_t delay;
+	int32_t state;
 	CPoint lastMouseMove;
 };
 

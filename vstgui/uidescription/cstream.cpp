@@ -38,7 +38,7 @@
 namespace VSTGUI {
 
 //-----------------------------------------------------------------------------
-CMemoryStream::CMemoryStream (int initialSize, int inDelta, ByteOrder byteOrder)
+CMemoryStream::CMemoryStream (int32_t initialSize, int32_t inDelta, ByteOrder byteOrder)
 : OutputStream (byteOrder)
 , InputStream (byteOrder)
 , buffer (0)
@@ -51,10 +51,10 @@ CMemoryStream::CMemoryStream (int initialSize, int inDelta, ByteOrder byteOrder)
 }
 
 //-----------------------------------------------------------------------------
-CMemoryStream::CMemoryStream (const char* inBuffer, int bufferSize, ByteOrder byteOrder)
+CMemoryStream::CMemoryStream (const int8_t* inBuffer, int32_t bufferSize, ByteOrder byteOrder)
 : OutputStream (byteOrder)
 , InputStream (byteOrder)
-, buffer (const_cast<char*> (inBuffer))
+, buffer (const_cast<int8_t*> (inBuffer))
 , size (bufferSize)
 , pos (0)
 , delta (0)
@@ -70,7 +70,7 @@ CMemoryStream::~CMemoryStream ()
 }
 
 //-----------------------------------------------------------------------------
-bool CMemoryStream::resize (int inSize)
+bool CMemoryStream::resize (int32_t inSize)
 {
 	if (size >= inSize)
 		return true;
@@ -78,11 +78,11 @@ bool CMemoryStream::resize (int inSize)
 	if (ownsBuffer == false)
 		return false;
 
-	int newSize = size + delta;
+	int32_t newSize = size + delta;
 	while (newSize < inSize)
 		newSize += delta;
 
-	char* newBuffer = (char*)malloc (newSize);
+	int8_t* newBuffer = (int8_t*)malloc (newSize);
 	if (newBuffer && buffer)
 		memcpy (newBuffer, buffer, size);
 	if (buffer)
@@ -94,7 +94,7 @@ bool CMemoryStream::resize (int inSize)
 }
 
 //-----------------------------------------------------------------------------
-int CMemoryStream::writeRaw (const void* inBuffer, int size)
+int32_t CMemoryStream::writeRaw (const void* inBuffer, int32_t size)
 {
 	if (!resize (pos + size))
 		return -1;
@@ -106,12 +106,12 @@ int CMemoryStream::writeRaw (const void* inBuffer, int size)
 }
 
 //-----------------------------------------------------------------------------
-int CMemoryStream::readRaw (void* outBuffer, int outSize)
+int32_t CMemoryStream::readRaw (void* outBuffer, int32_t outSize)
 {
 	if ((size - pos) <= 0)
 		return 0;
 
-	outSize = std::min<int> (outSize, size - pos);
+	outSize = std::min<int32_t> (outSize, size - pos);
 	memcpy (outBuffer, buffer + pos, outSize);
 	pos += outSize;
 
@@ -121,83 +121,83 @@ int CMemoryStream::readRaw (void* outBuffer, int outSize)
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
-bool OutputStream::operator<< (const int& input)
+bool OutputStream::operator<< (const int32_t& input)
 {
 	if (byteOrder == kNativeByteOrder)
 	{
-		return writeRaw (&input, sizeof (int)) == sizeof (int);
+		return writeRaw (&input, sizeof (int32_t)) == sizeof (int32_t);
 	}
 	else
 	{
-		const unsigned char* p = (const unsigned char*)&input;
-		if (writeRaw (&p[3], sizeof (char)) != sizeof (char)) return false;
-		if (writeRaw (&p[2], sizeof (char)) != sizeof (char)) return false;
-		if (writeRaw (&p[1], sizeof (char)) != sizeof (char)) return false;
-		if (writeRaw (&p[0], sizeof (char)) != sizeof (char)) return false;
+		const uint8_t* p = (const uint8_t*)&input;
+		if (writeRaw (&p[3], sizeof (int8_t)) != sizeof (int8_t)) return false;
+		if (writeRaw (&p[2], sizeof (int8_t)) != sizeof (int8_t)) return false;
+		if (writeRaw (&p[1], sizeof (int8_t)) != sizeof (int8_t)) return false;
+		if (writeRaw (&p[0], sizeof (int8_t)) != sizeof (int8_t)) return false;
 		return true;
 	}
 }
 
 //-----------------------------------------------------------------------------
-bool OutputStream::operator<< (const unsigned int& input)
+bool OutputStream::operator<< (const uint32_t& input)
 {
 	if (byteOrder == kNativeByteOrder)
 	{
-		return writeRaw (&input, sizeof (unsigned int)) == sizeof (unsigned int);
+		return writeRaw (&input, sizeof (uint32_t)) == sizeof (uint32_t);
 	}
 	else
 	{
-		const unsigned char* p = (const unsigned char*)&input;
-		if (writeRaw (&p[3], sizeof (char)) != sizeof (char)) return false;
-		if (writeRaw (&p[2], sizeof (char)) != sizeof (char)) return false;
-		if (writeRaw (&p[1], sizeof (char)) != sizeof (char)) return false;
-		if (writeRaw (&p[0], sizeof (char)) != sizeof (char)) return false;
+		const uint8_t* p = (const uint8_t*)&input;
+		if (writeRaw (&p[3], sizeof (int8_t)) != sizeof (int8_t)) return false;
+		if (writeRaw (&p[2], sizeof (int8_t)) != sizeof (int8_t)) return false;
+		if (writeRaw (&p[1], sizeof (int8_t)) != sizeof (int8_t)) return false;
+		if (writeRaw (&p[0], sizeof (int8_t)) != sizeof (int8_t)) return false;
 		return true;
 	}
 }
 
 //-----------------------------------------------------------------------------
-bool OutputStream::operator<< (const short& input)
+bool OutputStream::operator<< (const int16_t& input)
 {
 	if (byteOrder == kNativeByteOrder)
 	{
-		return writeRaw (&input, sizeof (short)) == sizeof (short);
+		return writeRaw (&input, sizeof (int16_t)) == sizeof (int16_t);
 	}
 	else
 	{
-		const unsigned char* p = (const unsigned char*)&input;
-		if (writeRaw (&p[1], sizeof (char)) != sizeof (char)) return false;
-		if (writeRaw (&p[0], sizeof (char)) != sizeof (char)) return false;
+		const uint8_t* p = (const uint8_t*)&input;
+		if (writeRaw (&p[1], sizeof (int8_t)) != sizeof (int8_t)) return false;
+		if (writeRaw (&p[0], sizeof (int8_t)) != sizeof (int8_t)) return false;
 		return true;
 	}
 }
 
 //-----------------------------------------------------------------------------
-bool OutputStream::operator<< (const unsigned short& input)
+bool OutputStream::operator<< (const uint16_t& input)
 {
 	if (byteOrder == kNativeByteOrder)
 	{
-		return writeRaw (&input, sizeof (unsigned short)) == sizeof (unsigned short);
+		return writeRaw (&input, sizeof (uint16_t)) == sizeof (uint16_t);
 	}
 	else
 	{
-		const unsigned char* p = (const unsigned char*)&input;
-		if (writeRaw (&p[1], sizeof (char)) != sizeof (char)) return false;
-		if (writeRaw (&p[0], sizeof (char)) != sizeof (char)) return false;
+		const uint8_t* p = (const uint8_t*)&input;
+		if (writeRaw (&p[1], sizeof (int8_t)) != sizeof (int8_t)) return false;
+		if (writeRaw (&p[0], sizeof (int8_t)) != sizeof (int8_t)) return false;
 		return true;
 	}
 }
 
 //-----------------------------------------------------------------------------
-bool OutputStream::operator<< (const char& input)
+bool OutputStream::operator<< (const int8_t& input)
 {
-	return writeRaw (&input, sizeof (char)) == sizeof (char);
+	return writeRaw (&input, sizeof (int8_t)) == sizeof (int8_t);
 }
 
 //-----------------------------------------------------------------------------
-bool OutputStream::operator<< (const unsigned char& input)
+bool OutputStream::operator<< (const uint8_t& input)
 {
-	return writeRaw (&input, sizeof (unsigned char)) == sizeof (unsigned char);
+	return writeRaw (&input, sizeof (uint8_t)) == sizeof (uint8_t);
 }
 
 //-----------------------------------------------------------------------------
@@ -209,15 +209,15 @@ bool OutputStream::operator<< (const double& input)
 	}
 	else
 	{
-		const unsigned char* p = (const unsigned char*)&input;
-		if (writeRaw (&p[7], sizeof (char)) != sizeof (char)) return false;
-		if (writeRaw (&p[6], sizeof (char)) != sizeof (char)) return false;
-		if (writeRaw (&p[5], sizeof (char)) != sizeof (char)) return false;
-		if (writeRaw (&p[4], sizeof (char)) != sizeof (char)) return false;
-		if (writeRaw (&p[3], sizeof (char)) != sizeof (char)) return false;
-		if (writeRaw (&p[2], sizeof (char)) != sizeof (char)) return false;
-		if (writeRaw (&p[1], sizeof (char)) != sizeof (char)) return false;
-		if (writeRaw (&p[0], sizeof (char)) != sizeof (char)) return false;
+		const uint8_t* p = (const uint8_t*)&input;
+		if (writeRaw (&p[7], sizeof (int8_t)) != sizeof (int8_t)) return false;
+		if (writeRaw (&p[6], sizeof (int8_t)) != sizeof (int8_t)) return false;
+		if (writeRaw (&p[5], sizeof (int8_t)) != sizeof (int8_t)) return false;
+		if (writeRaw (&p[4], sizeof (int8_t)) != sizeof (int8_t)) return false;
+		if (writeRaw (&p[3], sizeof (int8_t)) != sizeof (int8_t)) return false;
+		if (writeRaw (&p[2], sizeof (int8_t)) != sizeof (int8_t)) return false;
+		if (writeRaw (&p[1], sizeof (int8_t)) != sizeof (int8_t)) return false;
+		if (writeRaw (&p[0], sizeof (int8_t)) != sizeof (int8_t)) return false;
 		return true;
 	}
 }
@@ -225,8 +225,8 @@ bool OutputStream::operator<< (const double& input)
 //-----------------------------------------------------------------------------
 bool OutputStream::operator<< (const std::string& str)
 {
-	if (!(*this << 'str ')) return false;
-	if (!(*this << (int)str.length ())) return false;
+	if (!(*this << (int32_t)'str ')) return false;
+	if (!(*this << (int32_t)str.length ())) return false;
 	return writeRaw (str.c_str (), str.length ()) == str.length ();
 }
 
@@ -234,14 +234,14 @@ bool OutputStream::operator<< (const std::string& str)
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
-bool InputStream::operator>> (int& output)
+bool InputStream::operator>> (int32_t& output)
 {
-	if (readRaw (&output, sizeof (int)) == sizeof (int))
+	if (readRaw (&output, sizeof (int32_t)) == sizeof (int32_t))
 	{
 		if (byteOrder != kNativeByteOrder)
 		{
-			unsigned char* p = (unsigned char*)&output;
-			char temp = p[0];
+			uint8_t* p = (uint8_t*)&output;
+			int8_t temp = p[0];
 			p[0] = p[3];
 			p[3] = temp;
 			temp = p[1];
@@ -254,14 +254,14 @@ bool InputStream::operator>> (int& output)
 }
 
 //-----------------------------------------------------------------------------
-bool InputStream::operator>> (unsigned int& output)
+bool InputStream::operator>> (uint32_t& output)
 {
-	if (readRaw (&output, sizeof (unsigned int)) == sizeof (unsigned int))
+	if (readRaw (&output, sizeof (uint32_t)) == sizeof (uint32_t))
 	{
 		if (byteOrder != kNativeByteOrder)
 		{
-			unsigned char* p = (unsigned char*)&output;
-			char temp = p[0];
+			uint8_t* p = (uint8_t*)&output;
+			int8_t temp = p[0];
 			p[0] = p[3];
 			p[3] = temp;
 			temp = p[1];
@@ -274,14 +274,14 @@ bool InputStream::operator>> (unsigned int& output)
 }
 
 //-----------------------------------------------------------------------------
-bool InputStream::operator>> (short& output)
+bool InputStream::operator>> (int16_t& output)
 {
-	if (readRaw (&output, sizeof (short)) == sizeof (short))
+	if (readRaw (&output, sizeof (int16_t)) == sizeof (int16_t))
 	{
 		if (byteOrder != kNativeByteOrder)
 		{
-			unsigned char* p = (unsigned char*)&output;
-			char temp = p[0];
+			uint8_t* p = (uint8_t*)&output;
+			int8_t temp = p[0];
 			p[0] = p[1];
 			p[1] = temp;
 		}
@@ -291,14 +291,14 @@ bool InputStream::operator>> (short& output)
 }
 
 //-----------------------------------------------------------------------------
-bool InputStream::operator>> (unsigned short& output)
+bool InputStream::operator>> (uint16_t& output)
 {
-	if (readRaw (&output, sizeof (unsigned short)) == sizeof (unsigned short))
+	if (readRaw (&output, sizeof (uint16_t)) == sizeof (uint16_t))
 	{
 		if (byteOrder != kNativeByteOrder)
 		{
-			unsigned char* p = (unsigned char*)&output;
-			char temp = p[0];
+			uint8_t* p = (uint8_t*)&output;
+			int8_t temp = p[0];
 			p[0] = p[1];
 			p[1] = temp;
 		}
@@ -308,15 +308,15 @@ bool InputStream::operator>> (unsigned short& output)
 }
 
 //-----------------------------------------------------------------------------
-bool InputStream::operator>> (char& output)
+bool InputStream::operator>> (int8_t& output)
 {
-	return readRaw (&output, sizeof (char)) == sizeof (char);
+	return readRaw (&output, sizeof (int8_t)) == sizeof (int8_t);
 }
 
 //-----------------------------------------------------------------------------
-bool InputStream::operator>> (unsigned char& output)
+bool InputStream::operator>> (uint8_t& output)
 {
-	return readRaw (&output, sizeof (unsigned char)) == sizeof (unsigned char);
+	return readRaw (&output, sizeof (uint8_t)) == sizeof (uint8_t);
 }
 
 //-----------------------------------------------------------------------------
@@ -326,8 +326,8 @@ bool InputStream::operator>> (double& output)
 	{
 		if (byteOrder != kNativeByteOrder)
 		{
-			unsigned char* p = (unsigned char*)&output;
-			char temp = p[0];
+			uint8_t* p = (uint8_t*)&output;
+			int8_t temp = p[0];
 			p[0] = p[7];
 			p[7] = temp;
 			temp = p[6];
@@ -348,16 +348,16 @@ bool InputStream::operator>> (double& output)
 //-----------------------------------------------------------------------------
 bool InputStream::operator>> (std::string& string)
 {
-	int identifier;
+	int32_t identifier;
 	if (!(*this >> identifier)) return false;
 	if (identifier == 'str ')
 	{
-		int length;
+		int32_t length;
 		if (!(*this >> length)) return false;
-		char* buffer = (char*)malloc (length);
-		int read = readRaw (buffer, length);
+		int8_t* buffer = (int8_t*)malloc (length);
+		int32_t read = readRaw (buffer, length);
 		if (read == length)
-			string.assign (buffer, length);
+			string.assign ((const char*)buffer, length);
 		free (buffer);
 		return read == length;
 	}

@@ -45,12 +45,12 @@ namespace Animation {
 class TimingFunctionBase : public ITimingFunction
 {
 public:
-	TimingFunctionBase (unsigned long length) : length (length) {}
+	TimingFunctionBase (uint32_t length) : length (length) {}
 
-	unsigned long getLength () const { return length; }
-	bool isDone (unsigned long milliseconds) { return milliseconds >= length; }
+	uint32_t getLength () const { return length; }
+	bool isDone (uint32_t milliseconds) { return milliseconds >= length; }
 protected:
-	unsigned long length; // in milliseconds
+	uint32_t length; // in milliseconds
 };
 
 //-----------------------------------------------------------------------------
@@ -59,10 +59,10 @@ protected:
 class LinearTimingFunction : public TimingFunctionBase
 {
 public:
-	LinearTimingFunction (unsigned long length);
+	LinearTimingFunction (uint32_t length);
 
 protected:
-	float getPosition (unsigned long milliseconds);
+	float getPosition (uint32_t milliseconds);
 };
 
 //-----------------------------------------------------------------------------
@@ -71,10 +71,10 @@ protected:
 class PowerTimingFunction : public TimingFunctionBase
 {
 public:
-	PowerTimingFunction (unsigned long length, float factor);
+	PowerTimingFunction (uint32_t length, float factor);
 
 protected:
-	float getPosition (unsigned long milliseconds);
+	float getPosition (uint32_t milliseconds);
 
 	float factor;
 };
@@ -85,14 +85,14 @@ protected:
 class InterpolationTimingFunction : public TimingFunctionBase
 {
 public:
-	InterpolationTimingFunction (unsigned long length, float startPos = 0.f, float endPos = 1.f);
+	InterpolationTimingFunction (uint32_t length, float startPos = 0.f, float endPos = 1.f);
 
 	void addPoint (float time, float pos); ///< both values are normalized ones
 
 protected:
-	float getPosition (unsigned long milliseconds);
+	float getPosition (uint32_t milliseconds);
 
-	std::map<unsigned long, float> points;
+	std::map<uint32_t, float> points;
 };
 
 //-----------------------------------------------------------------------------
@@ -101,16 +101,16 @@ protected:
 class RepeatTimingFunction : public ITimingFunction
 {
 public:
-	RepeatTimingFunction (TimingFunctionBase* tf, long repeatCount, bool autoReverse = true);
+	RepeatTimingFunction (TimingFunctionBase* tf, int32_t repeatCount, bool autoReverse = true);
 	~RepeatTimingFunction ();
 
-	float getPosition (unsigned long milliseconds);
-	bool isDone (unsigned long milliseconds);
+	float getPosition (uint32_t milliseconds);
+	bool isDone (uint32_t milliseconds);
 protected:
 	TimingFunctionBase* tf;
-	long repeatCount;
+	int32_t repeatCount;
 	bool autoReverse;
-	unsigned long runCounter;
+	uint32_t runCounter;
 	bool isReverse;
 };
 

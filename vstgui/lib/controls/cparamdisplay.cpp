@@ -45,11 +45,10 @@ Define a rectangle view where a text-value can be displayed with a given font an
 The user can specify its convert function (from float to char) by default the string format is "%2.2f".
 The text-value is centered in the given rect.
 */
-CParamDisplay::CParamDisplay (const CRect& size, CBitmap* background, const long style)
+CParamDisplay::CParamDisplay (const CRect& size, CBitmap* background, const int32_t style)
 : CControl (size, 0, -1, background)
-, stringConvert (0)
-, stringConvert2 (0)
-, string2FloatConvert (0)
+, valueToString (0)
+, valueToStringUserData (0)
 , horiTxtAlign (kCenterText)
 , style (style)
 , bTextTransparencyEnabled (true)
@@ -62,7 +61,6 @@ CParamDisplay::CParamDisplay (const CRect& size, CBitmap* background, const long
 	backColor   = kBlackCColor;
 	frameColor  = kBlackCColor;
 	shadowColor = kRedCColor;
-	userData    = 0;
 	if (style & kNoDrawStyle)
 		setDirty (false);
 }
@@ -70,10 +68,8 @@ CParamDisplay::CParamDisplay (const CRect& size, CBitmap* background, const long
 //------------------------------------------------------------------------
 CParamDisplay::CParamDisplay (const CParamDisplay& v)
 : CControl (v)
-, stringConvert (v.stringConvert)
-, stringConvert2 (v.stringConvert2)
-, string2FloatConvert (v.string2FloatConvert)
-, userData (v.userData)
+, valueToString (v.valueToString)
+, valueToStringUserData (v.valueToStringUserData)
 , horiTxtAlign (v.horiTxtAlign)
 , style (v.style)
 , fontID (v.fontID)
@@ -96,13 +92,20 @@ CParamDisplay::~CParamDisplay ()
 }
 
 //------------------------------------------------------------------------
-void CParamDisplay::setStyle (long val)
+void CParamDisplay::setStyle (int32_t val)
 {
 	if (style != val)
 	{
 		style = val;
 		setDirty ();
 	}
+}
+
+//------------------------------------------------------------------------
+void CParamDisplay::setValueToStringProc (CParamDisplayValueToStringProc proc, void* userData)
+{
+	valueToString = proc;
+	valueToStringUserData = userData;
 }
 
 //------------------------------------------------------------------------
@@ -114,11 +117,10 @@ void CParamDisplay::draw (CDrawContext *pContext)
 	char string[256];
 	string[0] = 0;
 
-	if (stringConvert2)
-		stringConvert2 (value, string, userData);
-	else if (stringConvert)
-		stringConvert (value, string);
-	else
+	bool converted = false;
+	if (valueToString)
+		converted = valueToString (value, string, valueToStringUserData);
+	if (!converted)
 		sprintf (string, "%2.2f", value);
 
 	drawBack (pContext);
@@ -129,7 +131,7 @@ void CParamDisplay::draw (CDrawContext *pContext)
 //------------------------------------------------------------------------
 void CParamDisplay::drawBack (CDrawContext* pContext, CBitmap* newBack)
 {
-	// draw the background
+	pContext->setDrawMode (kAliasing);
 	if (newBack)
 	{
 		newBack->draw (pContext, size, backOffset);
@@ -181,7 +183,7 @@ void CParamDisplay::drawBack (CDrawContext* pContext, CBitmap* newBack)
 }
 
 //------------------------------------------------------------------------
-void CParamDisplay::drawText (CDrawContext *pContext, const char *string)
+void CParamDisplay::drawText (CDrawContext *pContext, UTF8StringPtr string)
 {
 	if (!(style & kNoTextStyle) && string && strlen (string))
 	{
@@ -261,26 +263,6 @@ void CParamDisplay::setHoriAlign (CHoriTxtAlign hAlign)
 	if (horiTxtAlign != hAlign)
 		setDirty ();
 	horiTxtAlign = hAlign;
-}
-
-//------------------------------------------------------------------------
-void CParamDisplay::setStringConvert (void (*convert) (float value, char* string))
-{
-	stringConvert = convert;
-}
-
-//------------------------------------------------------------------------
-void CParamDisplay::setStringConvert (void (*convert) (float value, char* string,
-									  void* userDta), void* userData)
-{
-	stringConvert2 = convert;
-	this->userData = userData;
-}
-
-//------------------------------------------------------------------------
-void CParamDisplay::setString2FloatConvert (void (*convert) (char *string, float &output))
-{
-	string2FloatConvert = convert;
 }
 
 } // namespace

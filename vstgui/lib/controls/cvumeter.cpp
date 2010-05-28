@@ -50,7 +50,7 @@ namespace VSTGUI {
  * @param style kHorizontal or kVertical
  */
 //------------------------------------------------------------------------
-CVuMeter::CVuMeter (const CRect& size, CBitmap* onBitmap, CBitmap* offBitmap, long nbLed, long style)
+CVuMeter::CVuMeter (const CRect& size, CBitmap* onBitmap, CBitmap* offBitmap, int32_t nbLed, int32_t style)
 : CControl (size, 0, 0)
 , offBitmap (0)
 , nbLed (nbLed)
@@ -158,7 +158,7 @@ void CVuMeter::draw (CDrawContext *_pContext)
 
 	if (style & kHorizontal) 
 	{
-		CCoord tmp = (CCoord)(((long)(nbLed * newValue + 0.5f) / (float)nbLed) * getOnBitmap ()->getWidth ());
+		CCoord tmp = (CCoord)(((int32_t)(nbLed * newValue + 0.5f) / (float)nbLed) * getOnBitmap ()->getWidth ());
 		pointOff (tmp, 0);
 
 		rectOff.left = tmp;
@@ -166,7 +166,7 @@ void CVuMeter::draw (CDrawContext *_pContext)
 	}
 	else 
 	{
-		CCoord tmp = (CCoord)(((long)(nbLed * (getMax () - newValue) + 0.5f) / (float)nbLed) * getOnBitmap ()->getHeight ());
+		CCoord tmp = (CCoord)(((int32_t)(nbLed * (getMax () - newValue) + 0.5f) / (float)nbLed) * getOnBitmap ()->getHeight ());
 		pointOn (0, tmp);
 
 		rectOff.bottom = tmp;

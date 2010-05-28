@@ -47,8 +47,8 @@ extern bool pointToString (const CPoint& p, std::string& string);
 extern bool bitmapToString (CBitmap* bitmap, std::string& string, IUIDescription* desc);
 extern bool colorToString (const CColor& color, std::string& string, IUIDescription* desc);
 
-extern void rememberAttributeValueString (CView* view, const char* attrName, const std::string& value);
-extern bool getRememberedAttributeValueString (CView* view, const char* attrName, std::string& value);
+extern void rememberAttributeValueString (CView* view, IdStringPtr attrName, const std::string& value);
+extern bool getRememberedAttributeValueString (CView* view, IdStringPtr attrName, std::string& value);
 
 } // namespace
 

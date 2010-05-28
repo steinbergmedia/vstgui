@@ -174,8 +174,9 @@ void GdiplusGraphicsPath::closeSubpath ()
 }
 
 //-----------------------------------------------------------------------------
-void GdiplusGraphicsPath::addArc (const CRect& rect, double startAngle, double endAngle)
+void GdiplusGraphicsPath::addArc (const CRect& rect, double startAngle, double endAngle, bool clockwise)
 {
+	// TODO: clockwise
 	if (endAngle < startAngle)
 		endAngle += 360.f;
 	endAngle = fabs (endAngle - (Gdiplus::REAL)startAngle);
@@ -223,32 +224,6 @@ void GdiplusGraphicsPath::addPath (const CGraphicsPath& inPath, CGraphicsTransfo
 		platformPath->AddPath (gdiPath, true); // TODO: maybe the second parameter must be false
 		delete gdiPath;
 	}
-}
-
-//-----------------------------------------------------------------------------
-void GdiplusGraphicsPath::addString (const char* utf8String, CFontRef font, const CPoint& position)
-{
-	GdiPlusFont* gf = dynamic_cast<GdiPlusFont*> (font->getPlatformFont ());
-	if (gf == 0)
-		return;
-
-	Gdiplus::Font* gdiFont = gf->getFont ();
-	if (gdiFont == 0)
-		return;
-
-	Gdiplus::FontFamily family;
-	gdiFont->GetFamily (&family);
-	INT fontStyle = 0;
-	if (font->getStyle () & kBoldFace)
-		fontStyle |= Gdiplus::FontStyleBold;
-	if (font->getStyle () & kItalicFace)
-		fontStyle |= Gdiplus::FontStyleItalic;
-	// kUnderlineFace is not supported on Mac OS X, so we neither support it with GDIPlus
-	//if (font->getStyle () & kUnderlineFace)
-	//	fontStyle |= Gdiplus::FontStyleUnderline;
-
-	UTF8StringHelper str (utf8String);
-	platformPath->AddString (str, -1, &family, fontStyle, (Gdiplus::REAL)font->getSize (), Gdiplus::PointF ((Gdiplus::REAL)position.x, (Gdiplus::REAL)position.y - (Gdiplus::REAL)font->getSize ()), 0);
 }
 
 //-----------------------------------------------------------------------------

@@ -50,15 +50,18 @@ public:
 	HIViewTextEdit (HIViewRef parent, IPlatformTextEditCallback* textEdit);
 	~HIViewTextEdit ();
 	
-	bool getText (char* text, long maxSize);
-	bool setText (const char* text);
+	UTF8StringPtr getText ();
+	bool setText (UTF8StringPtr text);
 	bool updateSize ();
 
 	HIViewRef getPlatformControl () const { return platformControl; }
 //-----------------------------------------------------------------------------
 protected:
+	void freeText ();
+
 	HIViewRef platformControl;
 	EventHandlerRef eventHandler;
+	UTF8StringBuffer text;
 
 	static pascal OSStatus CarbonEventsTextControlProc (EventHandlerCallRef inHandlerCallRef, EventRef inEvent, void *inUserData);
 };

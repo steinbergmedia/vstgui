@@ -48,7 +48,7 @@ namespace CColorChooserInternal {
 class Slider : public CSlider
 {
 public:
-	Slider (const CRect& size, CControlListener* listener = 0, long tag = -1)
+	Slider (const CRect& size, CControlListener* listener = 0, int32_t tag = -1)
 	: CSlider (size, listener, tag, 0, 0, 0, 0)
 	{
 		if (size.getWidth () > size.getHeight ())
@@ -106,7 +106,7 @@ public:
 			rectNew.top    = offsetHandle.v;
 			rectNew.bottom = rectNew.top + heightOfSlider;	
 
-			rectNew.left   = offsetHandle.h + (int)(fValue * rangeHandle);
+			rectNew.left   = offsetHandle.h + (int32_t)(fValue * rangeHandle);
 			rectNew.left   = (rectNew.left < minTmp) ? minTmp : rectNew.left;
 
 			rectNew.right  = rectNew.left + widthOfSlider;
@@ -117,7 +117,7 @@ public:
 			rectNew.left   = offsetHandle.h;
 			rectNew.right  = rectNew.left + widthOfSlider;	
 
-			rectNew.top    = offsetHandle.v + (int)(fValue * rangeHandle);
+			rectNew.top    = offsetHandle.v + (int32_t)(fValue * rangeHandle);
 			rectNew.top    = (rectNew.top < minTmp) ? minTmp : rectNew.top;
 
 			rectNew.bottom = rectNew.top + heightOfSlider;
@@ -139,7 +139,7 @@ public:
 class ColorView : public CControl
 {
 public:
-	ColorView (const CRect& r, const CColor& initialColor, CControlListener* listener = 0, long tag = -1)
+	ColorView (const CRect& r, const CColor& initialColor, CControlListener* listener = 0, int32_t tag = -1)
 	: CControl (r, listener, tag)
 	, color (initialColor)
 	{
@@ -165,12 +165,12 @@ public:
 	// we accept strings which look like : '#ff3355' (rgb) and '#ff3355bb' (rgba)
 	static bool dragContainerHasColor (CDragContainer* dragContainer, CColor* color)
 	{
-		long size = 0; 
-		long type = 0;
+		int32_t size = 0; 
+		int32_t type = 0;
 		void* item = dragContainer->first (size, type);
 		if (type == CDragContainer::kUnicodeText)
 		{
-			const char* text = static_cast<const char*> (item);
+			UTF8StringPtr text = static_cast<UTF8StringPtr> (item);
 			std::string colorString (text);
 			if (colorString.length () == 7)
 			{
@@ -181,9 +181,9 @@ public:
 						std::string rv (colorString.substr (1, 2));
 						std::string gv (colorString.substr (3, 2));
 						std::string bv (colorString.substr (5, 2));
-						color->red = (unsigned char)strtol (rv.c_str (), 0, 16);
-						color->green = (unsigned char)strtol (gv.c_str (), 0, 16);
-						color->blue = (unsigned char)strtol (bv.c_str (), 0, 16);
+						color->red = (uint8_t)strtol (rv.c_str (), 0, 16);
+						color->green = (uint8_t)strtol (gv.c_str (), 0, 16);
+						color->blue = (uint8_t)strtol (bv.c_str (), 0, 16);
 						color->alpha = 255;
 					}
 					return true;
@@ -199,10 +199,10 @@ public:
 						std::string gv (colorString.substr (3, 2));
 						std::string bv (colorString.substr (5, 2));
 						std::string av (colorString.substr (7, 2));
-						color->red = (unsigned char)strtol (rv.c_str (), 0, 16);
-						color->green = (unsigned char)strtol (gv.c_str (), 0, 16);
-						color->blue = (unsigned char)strtol (bv.c_str (), 0, 16);
-						color->alpha = (unsigned char)strtol (av.c_str (), 0, 16);
+						color->red = (uint8_t)strtol (rv.c_str (), 0, 16);
+						color->green = (uint8_t)strtol (gv.c_str (), 0, 16);
+						color->blue = (uint8_t)strtol (bv.c_str (), 0, 16);
+						color->alpha = (uint8_t)strtol (av.c_str (), 0, 16);
 					}
 					return true;
 				}
@@ -246,35 +246,39 @@ protected:
 /// @endcond
 
 //-----------------------------------------------------------------------------
-void CColorChooser::convertNormalizedToString (float value, char* string)
+bool CColorChooser::convertNormalizedToString (float value, char string[256], void* userData)
 {
 	sprintf (string, "%.3f", value);
+	return true;
 }
 
 //-----------------------------------------------------------------------------
-void CColorChooser::convertColorValueToString (float value, char* string)
+bool CColorChooser::convertColorValueToString (float value, char string[256], void* userData)
 {
-	sprintf (string, "%d", (int)(value*255.f));
+	sprintf (string, "%d", (int32_t)(value*255.f));
+	return true;
 }
 
 //-----------------------------------------------------------------------------
-void CColorChooser::convertAngleToString (float value, char* string)
+bool CColorChooser::convertAngleToString (float value, char string[256], void* userData)
 {
-	sprintf (string, "%d%s", (int)(value*360.f), kDegreeSymbol);
+	sprintf (string, "%d%s", (int32_t)(value*360.f), kDegreeSymbol);
+	return true;
 }
 
 //-----------------------------------------------------------------------------
-void CColorChooser::convertNormalized (char* string, float& output)
+bool CColorChooser::convertNormalized (UTF8StringPtr string, float& output, void* userData)
 {
 	output = (float)strtod (string, 0);
 	if (output < 0.f)
 		output = 0.f;
 	else if (output > 1.f)
 		output = 1.f;
+	return true;
 }
 
 //-----------------------------------------------------------------------------
-void CColorChooser::convertColorValue (char* string, float& output)
+bool CColorChooser::convertColorValue (UTF8StringPtr string, float& output, void* userData)
 {
 	output = (float)strtod (string, 0);
 	if (output < 0.f)
@@ -282,10 +286,11 @@ void CColorChooser::convertColorValue (char* string, float& output)
 	else if (output > 255.f)
 		output = 255.f;
 	output /= 255.f;
+	return true;
 }
 
 //-----------------------------------------------------------------------------
-void CColorChooser::convertAngle (char* string, float& output)
+bool CColorChooser::convertAngle (UTF8StringPtr string, float& output, void* userData)
 {
 	output = (float)strtod (string, 0);
 	if (output < 0.f)
@@ -293,6 +298,7 @@ void CColorChooser::convertAngle (char* string, float& output)
 	else if (output > 360.f)
 		output = 360.f;
 	output /= 360.f;
+	return true;
 }
 
 //-----------------------------------------------------------------------------
@@ -417,56 +423,56 @@ CColorChooser::CColorChooser (IColorChooserDelegate* delegate, const CColor& ini
 	editFields[0] = new CTextEdit (r, this, kRedTag, 0);
 	editFields[0]->setAutosizeFlags (kAutosizeRight|kAutosizeBottom);
 	editFields[0]->setTransparency (true);
-	editFields[0]->setString2FloatConvert (convertColorValue);
-	editFields[0]->setStringConvert (convertColorValueToString);
+	editFields[0]->setStringToValueProc (convertColorValue);
+	editFields[0]->setValueToStringProc (convertColorValueToString);
 	addView (editFields[0]);
 
 	r.offset (0, margin + controlHeight);
 	editFields[1] = new CTextEdit (r, this, kGreenTag, 0);
 	editFields[1]->setAutosizeFlags (kAutosizeRight|kAutosizeBottom);
 	editFields[1]->setTransparency (true);
-	editFields[1]->setString2FloatConvert (convertColorValue);
-	editFields[1]->setStringConvert (convertColorValueToString);
+	editFields[1]->setStringToValueProc (convertColorValue);
+	editFields[1]->setValueToStringProc (convertColorValueToString);
 	addView (editFields[1]);
 
 	r.offset (0, margin + controlHeight);
 	editFields[2] = new CTextEdit (r, this, kBlueTag, 0);
 	editFields[2]->setAutosizeFlags (kAutosizeRight|kAutosizeBottom);
 	editFields[2]->setTransparency (true);
-	editFields[2]->setString2FloatConvert (convertColorValue);
-	editFields[2]->setStringConvert (convertColorValueToString);
+	editFields[2]->setStringToValueProc (convertColorValue);
+	editFields[2]->setValueToStringProc (convertColorValueToString);
 	addView (editFields[2]);
 
 	r.offset (0, margin + margin + controlHeight);
 	editFields[3] = new CTextEdit (r, this, kHueTag, 0);
 	editFields[3]->setAutosizeFlags (kAutosizeRight|kAutosizeBottom);
 	editFields[3]->setTransparency (true);
-	editFields[3]->setString2FloatConvert (convertAngle);
-	editFields[3]->setStringConvert (convertAngleToString);
+	editFields[3]->setStringToValueProc (convertAngle);
+	editFields[3]->setValueToStringProc (convertAngleToString);
 	addView (editFields[3]);
 
 	r.offset (0, margin + controlHeight);
 	editFields[4] = new CTextEdit (r, this, kSaturationTag, 0);
 	editFields[4]->setAutosizeFlags (kAutosizeRight|kAutosizeBottom);
 	editFields[4]->setTransparency (true);
-	editFields[4]->setString2FloatConvert (convertNormalized);
-	editFields[4]->setStringConvert (convertNormalizedToString);
+	editFields[4]->setStringToValueProc (convertNormalized);
+	editFields[4]->setValueToStringProc (convertNormalizedToString);
 	addView (editFields[4]);
 
 	r.offset (0, margin + controlHeight);
 	editFields[5] = new CTextEdit (r, this, kBrightnessTag, 0);
 	editFields[5]->setAutosizeFlags (kAutosizeRight|kAutosizeBottom);
 	editFields[5]->setTransparency (true);
-	editFields[5]->setString2FloatConvert (convertNormalized);
-	editFields[5]->setStringConvert (convertNormalizedToString);
+	editFields[5]->setStringToValueProc (convertNormalized);
+	editFields[5]->setValueToStringProc (convertNormalizedToString);
 	addView (editFields[5]);
 
 	r.offset (0, margin + margin + controlHeight);
 	editFields[6] = new CTextEdit (r, this, kAlphaTag, 0);
 	editFields[6]->setAutosizeFlags (kAutosizeRight|kAutosizeBottom);
 	editFields[6]->setTransparency (true);
-	editFields[6]->setString2FloatConvert (convertColorValue);
-	editFields[6]->setStringConvert (convertColorValueToString);
+	editFields[6]->setStringToValueProc (convertColorValue);
+	editFields[6]->setValueToStringProc (convertColorValueToString);
 	addView (editFields[6]);
 
 	updateState ();
@@ -484,22 +490,22 @@ void CColorChooser::valueChanged (CControl* control)
 	{
 		case kRedTag:
 		{
-			color.red = (unsigned char) (control->getValue () * 255.f);
+			color.red = (uint8_t) (control->getValue () * 255.f);
 			break;
 		}
 		case kGreenTag:
 		{
-			color.green = (unsigned char) (control->getValue () * 255.f);
+			color.green = (uint8_t) (control->getValue () * 255.f);
 			break;
 		}
 		case kBlueTag:
 		{
-			color.blue = (unsigned char) (control->getValue () * 255.f);
+			color.blue = (uint8_t) (control->getValue () * 255.f);
 			break;
 		}
 		case kAlphaTag:
 		{
-			color.alpha = (unsigned char) (control->getValue () * 255.f);
+			color.alpha = (uint8_t) (control->getValue () * 255.f);
 			break;
 		}
 		case kHueTag:
@@ -565,7 +571,7 @@ void CColorChooser::updateState ()
 	editFields[5]->setValue (brightnessSlider->getValue ());
 	editFields[6]->setValue (alphaSlider->getValue ());
 
-	for (long i = 0; i < 7; i++)
+	for (int32_t i = 0; i < 7; i++)
 		editFields[i]->invalid ();
 
 	redSlider->invalid ();

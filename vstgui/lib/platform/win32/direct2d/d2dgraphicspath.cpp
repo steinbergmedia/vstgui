@@ -76,7 +76,7 @@ CGradient* D2DGraphicsPath::createGradient (double color1Start, double color2Sta
 }
 
 //-----------------------------------------------------------------------------
-void D2DGraphicsPath::addArc (const CRect& rect, double startAngle, double endAngle)
+void D2DGraphicsPath::addArc (const CRect& rect, double startAngle, double endAngle, bool clockwise)
 {
 	Instruction in;
 	in.type = Instruction::kArc;
@@ -161,13 +161,6 @@ void D2DGraphicsPath::addPath (const CGraphicsPath& path, CGraphicsTransform* t)
 		}
 		dirty = true;
 	}
-}
-
-//-----------------------------------------------------------------------------
-void D2DGraphicsPath::addString (const char* utf8String, CFontRef font, const CPoint& position)
-{
-	// TODO: addString
-//	dirty = true;
 }
 
 //-----------------------------------------------------------------------------
@@ -302,7 +295,7 @@ CRect D2DGraphicsPath::getBoundingBox () const
 }
 
 //-----------------------------------------------------------------------------
-bool D2DGraphicsPath::buildPath (long fillMode)
+bool D2DGraphicsPath::buildPath (int32_t fillMode)
 {
 	if (path)
 	{

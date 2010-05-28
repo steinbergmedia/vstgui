@@ -130,21 +130,23 @@ Win32TextEdit::~Win32TextEdit ()
 }
 
 //-----------------------------------------------------------------------------
-bool Win32TextEdit::getText (char* text, long maxSize)
+UTF8StringPtr Win32TextEdit::getText ()
 {
 	if (platformControl)
 	{
-		TCHAR* newText = new TCHAR[maxSize+1];
-		GetWindowText (platformControl, newText, maxSize);
+		int textLength = GetWindowTextLength (platformControl);
+		TCHAR* newText = new TCHAR[textLength+1];
+		GetWindowText (platformControl, newText, textLength+1);
 		UTF8StringHelper windowText (newText);
-		strncpy (text, windowText, maxSize-1);
+		text = windowText;		
 		delete [] newText;
+		return text.c_str ();
 	}
-	return false;
+	return "";
 }
 
 //-----------------------------------------------------------------------------
-bool Win32TextEdit::setText (const char* text)
+bool Win32TextEdit::setText (UTF8StringPtr text)
 {
 	if (platformControl)
 	{
@@ -171,7 +173,7 @@ LONG_PTR WINAPI Win32TextEdit::procEdit (HWND hwnd, UINT message, WPARAM wParam,
 		{
 			case WM_GETDLGCODE :
 			{
-				long flags = DLGC_WANTALLKEYS;
+				LONG_PTR flags = DLGC_WANTALLKEYS;
 				return flags;
 			}
 

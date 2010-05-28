@@ -64,7 +64,7 @@ public:
 
 	void valueChanged (CControl* pControl);
 	void beforeSave ();
-	CMessageResult notify (CBaseObject* sender, const char* message);
+	CMessageResult notify (CBaseObject* sender, IdStringPtr message);
 
 	static COptionMenu* createMenuFromList (const CRect& size, CControlListener* listener, std::list<const std::string*>& names, const std::string& defaultValue, bool addNoneItem = false);
 protected:

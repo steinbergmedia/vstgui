@@ -56,15 +56,15 @@ public:
 	};
 
 	CDropSource ();
-	CDropSource (const void* buffer, long bufferSize, Type type);
+	CDropSource (const void* buffer, int32_t bufferSize, Type type);
 	~CDropSource ();
 	
-	bool add (const void* buffer, long bufferSize, Type type);
+	bool add (const void* buffer, int32_t bufferSize, Type type);
 
-	long getCount () const;
-	long getEntrySize (long index) const; 
-	Type getEntryType (long index) const; 
-	long getEntry (long index, const void*& buffer, Type& type) const;
+	int32_t getCount () const;
+	int32_t getEntrySize (int32_t index) const; 
+	Type getEntryType (int32_t index) const; 
+	int32_t getEntry (int32_t index, const void*& buffer, Type& type) const;
 	
 	//-------------------------------------------
 	CLASS_METHODS_NOCOPY(CDropSource, CBaseObject)
@@ -72,7 +72,7 @@ protected:
 	/// @cond ignore
 	struct CDropEntry {
 		void* buffer;
-		long bufferSize;
+		int32_t bufferSize;
 		Type type;
 	};
 	/// @endcond

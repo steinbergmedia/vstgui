@@ -22,7 +22,6 @@ The main focus while developing this version was on compatibility with VST SDK 3
 
 And there is stuff currently not implemented:
 - on Windows when Direct2D is used, all arc drawing is not yet implemented
-- on Windows when Direct2D is used, the graphics path object can not draw a string
 - on Windows when GDI+ is used, direct pixel access to bitmaps are not yet implemented
 - on Windows XP the file selector is not implemented yet.
 - on Mac OS X, when target OS version is 10.4 some of the graphics path methods are not implemented and never will. You see a compiler warning which ones are not implemented.
@@ -40,6 +39,8 @@ And there is stuff currently not implemented:
 
 @section code_changes_for_3_6 Code changes for existing VSTGUI 3.6 code
 
+- the long variable type was changed to int32_t, you must do this for all your derivate VSTGUI classes too
+- the buttons parameter has changed from long to CButtonState
 - your custom views need to use the new mouse methods
 - COptionMenuScheme is not available anymore
 - VSTGUI::CFileSelector is gone, you have to use VSTGUI::CNewFileSelector

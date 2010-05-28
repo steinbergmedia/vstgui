@@ -54,7 +54,7 @@ public:
 	virtual CColor platformGetFontColor () const = 0;
 	virtual CFontRef platformGetFont () const = 0;
 	virtual CHoriTxtAlign platformGetHoriTxtAlign () const = 0; 
-	virtual const char* platformGetText () const = 0;
+	virtual UTF8StringPtr platformGetText () const = 0;
 	virtual CRect platformGetSize () const = 0;
 	virtual CRect platformGetVisibleSize () const = 0;
 	virtual CPoint platformGetTextInset () const = 0;
@@ -68,8 +68,8 @@ public:
 class IPlatformTextEdit : public CBaseObject
 {
 public:
-	virtual bool getText (char* text, long maxSize) = 0;
-	virtual bool setText (const char* text) = 0;
+	virtual UTF8StringPtr getText () = 0;
+	virtual bool setText (UTF8StringPtr text) = 0;
 	virtual bool updateSize () = 0;
 
 //-----------------------------------------------------------------------------

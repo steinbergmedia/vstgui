@@ -62,13 +62,14 @@ By clicking Alt+Left Mouse the default value is used.
  * @param style style (kBottom,kRight,kTop,kLeft,kHorizontal,kVertical)
  */
 //------------------------------------------------------------------------
-CSlider::CSlider (const CRect &rect, CControlListener* listener, long tag, long iMinPos, long iMaxPos, CBitmap* handle, CBitmap* background, const CPoint& offset, const long style)
+CSlider::CSlider (const CRect &rect, CControlListener* listener, int32_t tag, int32_t iMinPos, int32_t iMaxPos, CBitmap* handle, CBitmap* background, const CPoint& offset, const int32_t style)
 : CControl (rect, listener, tag, background)
 , offset (offset)
 , pHandle (handle)
 , style (style)
 , minPos (iMinPos)
 , bFreeClick (true)
+, drawStyle (0)
 {
 	setDrawTransparentHandle (true);
 
@@ -120,13 +121,14 @@ CSlider::CSlider (const CRect &rect, CControlListener* listener, long tag, long 
  * @param style style (kBottom,kRight,kTop,kLeft,kHorizontal,kVertical)
  */
 //------------------------------------------------------------------------
-CSlider::CSlider (const CRect &rect, CControlListener* listener, long tag, const CPoint& offsetHandle, long _rangeHandle, CBitmap* handle, CBitmap* background, const CPoint& offset, const long style)
+CSlider::CSlider (const CRect &rect, CControlListener* listener, int32_t tag, const CPoint& offsetHandle, int32_t _rangeHandle, CBitmap* handle, CBitmap* background, const CPoint& offset, const int32_t style)
 : CControl (rect, listener, tag, background)
 , offset (offset)
 , pHandle (handle) 
 , style (style)
 , minPos (0)
 , bFreeClick (true)
+, drawStyle (0)
 {
 	setDrawTransparentHandle (true);
 
@@ -174,6 +176,10 @@ CSlider::CSlider (const CSlider& v)
 , zoomFactor (v.zoomFactor)
 , bDrawTransparentEnabled (v.bDrawTransparentEnabled)
 , bFreeClick (v.bFreeClick)
+, drawStyle (v.drawStyle)
+, backColor (v.backColor)
+, frameColor (v.frameColor)
+, valueColor (v.valueColor)
 {
 	if (pHandle)
 		pHandle->remember ();
@@ -187,7 +193,7 @@ CSlider::~CSlider ()
 }
 
 //------------------------------------------------------------------------
-void CSlider::setStyle (long _style)
+void CSlider::setStyle (int32_t _style)
 {
 	style =_style;
 }
@@ -258,6 +264,46 @@ void CSlider::draw (CDrawContext *pContext)
 		pBackground->draw (drawContext, rect, offset);
 	}
 	
+	if (drawStyle != 0)
+	{
+		pContext->setDrawMode (kAntiAliasing);
+		if (drawStyle & kDrawFrame || drawStyle & kDrawBack)
+		{
+			pContext->setFrameColor (frameColor);
+			pContext->setFillColor (backColor);
+			CDrawStyle d = kDrawFilled;
+			if (drawStyle & (kDrawFrame | kDrawBack))
+				d = kDrawFilledAndStroked;
+			else if (drawStyle & kDrawFrame)
+				d = kDrawStroked;
+			pContext->drawRect (getViewSize (), d);
+		}
+		if (drawStyle & kDrawValue)
+		{
+			CRect r (getViewSize ());
+			r.inset (1., 1.);
+			float drawValue = getValueNormalized ();
+			if (drawStyle & kDrawValueFromCenter)
+			{
+				if (drawStyle & kDrawInverted)
+					drawValue = 1.f - drawValue;
+				CCoord width = r.getWidth ();
+				r.right = r.left + r.getWidth () * drawValue;
+				r.left += width / 2.;
+				r.normalize ();
+			}
+			else
+			{
+				if (drawStyle & kDrawInverted)
+					r.left = r.right - r.getWidth () * drawValue;
+				else
+					r.right = r.left + r.getWidth () * drawValue;
+			}
+			pContext->setFillColor (valueColor);
+			pContext->drawRect (r, kDrawFilled);
+		}
+	}
+	
 	if (pHandle)
 	{
 		float normValue = getValueNormalized ();
@@ -298,7 +344,7 @@ void CSlider::draw (CDrawContext *pContext)
 }
 
 //------------------------------------------------------------------------
-CMouseEventResult CSlider::onMouseDown (CPoint& where, const long& buttons)
+CMouseEventResult CSlider::onMouseDown (CPoint& where, const CButtonState& buttons)
 {
 	if (!(buttons & kLButton))
 		return kMouseEventNotHandled;
@@ -317,7 +363,7 @@ CMouseEventResult CSlider::onMouseDown (CPoint& where, const long& buttons)
 
 		if (style & kHorizontal)
 		{
-			actualPos = offsetHandle.h + (int)(normValue * rangeHandle) + size.left;
+			actualPos = offsetHandle.h + (int32_t)(normValue * rangeHandle) + size.left;
 
 			rect.left   = actualPos;
 			rect.top    = size.top  + offsetHandle.v;
@@ -331,7 +377,7 @@ CMouseEventResult CSlider::onMouseDown (CPoint& where, const long& buttons)
 		}
 		else
 		{
-			actualPos = offsetHandle.v + (int)(normValue * rangeHandle) + size.top;
+			actualPos = offsetHandle.v + (int32_t)(normValue * rangeHandle) + size.top;
 		
 			rect.left   = size.left  + offsetHandle.h;
 			rect.top    = actualPos;
@@ -367,7 +413,7 @@ CMouseEventResult CSlider::onMouseDown (CPoint& where, const long& buttons)
 }
 
 //------------------------------------------------------------------------
-CMouseEventResult CSlider::onMouseUp (CPoint& where, const long& buttons)
+CMouseEventResult CSlider::onMouseUp (CPoint& where, const CButtonState& buttons)
 {
 	oldButton = 0;
 	endEdit ();
@@ -375,9 +421,9 @@ CMouseEventResult CSlider::onMouseUp (CPoint& where, const long& buttons)
 }
 
 //------------------------------------------------------------------------
-CMouseEventResult CSlider::onMouseMoved (CPoint& where, const long& buttons)
+CMouseEventResult CSlider::onMouseMoved (CPoint& where, const CButtonState& buttons)
 {
-	if (oldButton && buttons & kLButton)
+	if (oldButton != 0 && buttons & kLButton)
 	{
 		if (oldVal == getMin () - 1)
 			oldVal = (value - getMin ()) / (getMax () - getMin ());
@@ -414,7 +460,7 @@ CMouseEventResult CSlider::onMouseMoved (CPoint& where, const long& buttons)
 }
 
 //------------------------------------------------------------------------
-static bool styleIsInverseStyle (long style)
+static bool styleIsInverseStyle (int32_t style)
 {
 	if (style & kVertical && style & kTop)
 		return true;
@@ -424,7 +470,7 @@ static bool styleIsInverseStyle (long style)
 }
 
 //------------------------------------------------------------------------
-bool CSlider::onWheel (const CPoint& where, const float &distance, const long &buttons)
+bool CSlider::onWheel (const CPoint& where, const float &distance, const CButtonState &buttons)
 {
 	if (!bMouseEnabled)
 		return false;
@@ -455,7 +501,7 @@ bool CSlider::onWheel (const CPoint& where, const float &distance, const long &b
 }
 
 //------------------------------------------------------------------------
-long CSlider::onKeyDown (VstKeyCode& keyCode)
+int32_t CSlider::onKeyDown (VstKeyCode& keyCode)
 {
 	switch (keyCode.virt)
 	{
@@ -512,6 +558,45 @@ void CSlider::setHandle (CBitmap *_pHandle)
 	}
 }
 
+//------------------------------------------------------------------------
+void CSlider::setDrawStyle (int32_t style)
+{
+	if (style != drawStyle)
+	{
+		drawStyle = style;
+		invalid ();
+	}
+}
+
+//------------------------------------------------------------------------
+void CSlider::setFrameColor (CColor color)
+{
+	if (color != frameColor)
+	{
+		frameColor = color;
+		invalid ();
+	}
+}
+
+//------------------------------------------------------------------------
+void CSlider::setBackColor (CColor color)
+{
+	if (color != backColor)
+	{
+		backColor = color;
+		invalid ();
+	}
+}
+
+//------------------------------------------------------------------------
+void CSlider::setValueColor (CColor color)
+{
+	if (color != valueColor)
+	{
+		valueColor = color;
+		invalid ();
+	}
+}
 
 //------------------------------------------------------------------------
 // CVerticalSlider
@@ -533,7 +618,7 @@ This is the vertical slider. See CSlider.
  * @param style style (kLeft, kRight)
  */
 //------------------------------------------------------------------------
-CVerticalSlider::CVerticalSlider (const CRect &rect, CControlListener* listener, long tag, long iMinPos, long iMaxPos, CBitmap* handle, CBitmap* background, const CPoint& offset, const long style)
+CVerticalSlider::CVerticalSlider (const CRect &rect, CControlListener* listener, int32_t tag, int32_t iMinPos, int32_t iMaxPos, CBitmap* handle, CBitmap* background, const CPoint& offset, const int32_t style)
 : CSlider (rect, listener, tag, iMinPos, iMaxPos, handle, background, offset, style|kVertical)
 {}
 
@@ -551,7 +636,7 @@ CVerticalSlider::CVerticalSlider (const CRect &rect, CControlListener* listener,
  * @param style style (kLeft, kRight)
  */
 //------------------------------------------------------------------------
-CVerticalSlider::CVerticalSlider (const CRect &rect, CControlListener* listener, long tag, const CPoint& offsetHandle, long rangeHandle, CBitmap* handle, CBitmap* background, const CPoint& offset, const long style)
+CVerticalSlider::CVerticalSlider (const CRect &rect, CControlListener* listener, int32_t tag, const CPoint& offsetHandle, int32_t rangeHandle, CBitmap* handle, CBitmap* background, const CPoint& offset, const int32_t style)
 : CSlider (rect, listener, tag, offsetHandle, rangeHandle, handle, background, offset, style|kVertical)
 {}
 
@@ -580,7 +665,7 @@ This is the horizontal slider. See CSlider.
  * @param style style (kLeft, kRight)
  */
 //------------------------------------------------------------------------
-CHorizontalSlider::CHorizontalSlider (const CRect &rect, CControlListener* listener, long tag, long iMinPos, long iMaxPos, CBitmap* handle, CBitmap* background, const CPoint& offset, const long style)
+CHorizontalSlider::CHorizontalSlider (const CRect &rect, CControlListener* listener, int32_t tag, int32_t iMinPos, int32_t iMaxPos, CBitmap* handle, CBitmap* background, const CPoint& offset, const int32_t style)
 : CSlider (rect, listener, tag, iMinPos, iMaxPos, handle, background, offset, style|kHorizontal)
 {}
 
@@ -598,7 +683,7 @@ CHorizontalSlider::CHorizontalSlider (const CRect &rect, CControlListener* liste
  * @param style style (kLeft, kRight)
  */
 //------------------------------------------------------------------------
-CHorizontalSlider::CHorizontalSlider (const CRect &rect, CControlListener* listener, long tag, const CPoint& offsetHandle, long rangeHandle, CBitmap* handle, CBitmap* background, const CPoint& offset, const long style)
+CHorizontalSlider::CHorizontalSlider (const CRect &rect, CControlListener* listener, int32_t tag, const CPoint& offsetHandle, int32_t rangeHandle, CBitmap* handle, CBitmap* background, const CPoint& offset, const int32_t style)
 : CSlider (rect, listener, tag, offsetHandle, rangeHandle, handle, background, offset, style|kHorizontal)
 {}
 

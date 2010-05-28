@@ -53,24 +53,24 @@ class ViewHierarchyData : public IDataBrowser
 public:
 	ViewHierarchyData (ViewHierarchyBrowser* parent, UIDescription* description, IActionOperator* actionOperator);
 
-	long dbGetNumRows (CDataBrowser* browser);
-	long dbGetNumColumns (CDataBrowser* browser);
-	bool dbGetColumnDescription (long index, CCoord& minWidth, CCoord& maxWidth, CDataBrowser* browser);
-	CCoord dbGetCurrentColumnWidth (long index, CDataBrowser* browser);
-	void dbSetCurrentColumnWidth (long index, const CCoord& width, CDataBrowser* browser);
+	int32_t dbGetNumRows (CDataBrowser* browser);
+	int32_t dbGetNumColumns (CDataBrowser* browser);
+	bool dbGetColumnDescription (int32_t index, CCoord& minWidth, CCoord& maxWidth, CDataBrowser* browser);
+	CCoord dbGetCurrentColumnWidth (int32_t index, CDataBrowser* browser);
+	void dbSetCurrentColumnWidth (int32_t index, const CCoord& width, CDataBrowser* browser);
 	CCoord dbGetRowHeight (CDataBrowser* browser);
 	bool dbGetLineWidthAndColor (CCoord& width, CColor& color, CDataBrowser* browser);
-	void dbDrawHeader (CDrawContext* context, const CRect& size, long column, long flags, CDataBrowser* browser);
-	void dbDrawCell (CDrawContext* context, const CRect& size, long row, long column, long flags, CDataBrowser* browser);
-	CMouseEventResult dbOnMouseDown (const CPoint& where, const long& buttons, long row, long column, CDataBrowser* browser);
-	CMouseEventResult dbOnMouseMoved (const CPoint& where, const long& buttons, long row, long column, CDataBrowser* browser);
-	CMouseEventResult dbOnMouseUp (const CPoint& where, const long& buttons, long row, long column, CDataBrowser* browser);
+	void dbDrawHeader (CDrawContext* context, const CRect& size, int32_t column, int32_t flags, CDataBrowser* browser);
+	void dbDrawCell (CDrawContext* context, const CRect& size, int32_t row, int32_t column, int32_t flags, CDataBrowser* browser);
+	CMouseEventResult dbOnMouseDown (const CPoint& where, const CButtonState& buttons, int32_t row, int32_t column, CDataBrowser* browser);
+	CMouseEventResult dbOnMouseMoved (const CPoint& where, const CButtonState& buttons, int32_t row, int32_t column, CDataBrowser* browser);
+	CMouseEventResult dbOnMouseUp (const CPoint& where, const CButtonState& buttons, int32_t row, int32_t column, CDataBrowser* browser);
 	void dbSelectionChanged (CDataBrowser* browser);
-	void dbCellTextChanged (long row, long column, const char* newText, CDataBrowser* browser) {}
-	void dbCellSetupTextEdit (long row, long column, CTextEdit* textEditControl, CDataBrowser* browser) {}
-	long dbOnKeyDown (const VstKeyCode& key, CDataBrowser* browser);
+	void dbCellTextChanged (int32_t row, int32_t column, UTF8StringPtr newText, CDataBrowser* browser) {}
+	void dbCellSetupTextEdit (int32_t row, int32_t column, CTextEdit* textEditControl, CDataBrowser* browser) {}
+	int32_t dbOnKeyDown (const VstKeyCode& key, CDataBrowser* browser);
 protected:
-	void doMoveOperation (long row, bool up, CDataBrowser* browser);
+	void doMoveOperation (int32_t row, bool up, CDataBrowser* browser);
 
 	ViewHierarchyBrowser* parent;
 	UIDescription* description;
@@ -99,15 +99,15 @@ public:
 			parent->forget ();
 	}
 
-	const char* getName () { return "change view hierarchy"; }
+	UTF8StringPtr getName () { return "change view hierarchy"; }
 
 	void perform ()
 	{
 		if (!parent)
 			return;
 		CView* nextView = 0;
-		long numSubViews = parent->getNbViews ();
-		for (long i = 0; i < numSubViews; i++)
+		int32_t numSubViews = parent->getNbViews ();
+		for (int32_t i = 0; i < numSubViews; i++)
 		{
 			CView* v = parent->getView (i);
 			if (up)
@@ -155,7 +155,7 @@ ViewHierarchyData::ViewHierarchyData (ViewHierarchyBrowser* parent, UIDescriptio
 }
 
 //-----------------------------------------------------------------------------
-long ViewHierarchyData::dbGetNumRows (CDataBrowser* browser)
+int32_t ViewHierarchyData::dbGetNumRows (CDataBrowser* browser)
 {
 	if (parent->getCurrentView () == 0)
 		return 0;
@@ -163,19 +163,19 @@ long ViewHierarchyData::dbGetNumRows (CDataBrowser* browser)
 }
 
 //-----------------------------------------------------------------------------
-long ViewHierarchyData::dbGetNumColumns (CDataBrowser* browser)
+int32_t ViewHierarchyData::dbGetNumColumns (CDataBrowser* browser)
 {
 	return 3;
 }
 
 //-----------------------------------------------------------------------------
-bool ViewHierarchyData::dbGetColumnDescription (long index, CCoord& minWidth, CCoord& maxWidth, CDataBrowser* browser)
+bool ViewHierarchyData::dbGetColumnDescription (int32_t index, CCoord& minWidth, CCoord& maxWidth, CDataBrowser* browser)
 {
 	return false;
 }
 
 //-----------------------------------------------------------------------------
-CCoord ViewHierarchyData::dbGetCurrentColumnWidth (long index, CDataBrowser* browser)
+CCoord ViewHierarchyData::dbGetCurrentColumnWidth (int32_t index, CDataBrowser* browser)
 {
 	CCoord scrollbarWidth = 0;
 	if (browser->getVerticalScrollbar ())
@@ -186,7 +186,7 @@ CCoord ViewHierarchyData::dbGetCurrentColumnWidth (long index, CDataBrowser* bro
 }
 
 //-----------------------------------------------------------------------------
-void ViewHierarchyData::dbSetCurrentColumnWidth (long index, const CCoord& width, CDataBrowser* browser)
+void ViewHierarchyData::dbSetCurrentColumnWidth (int32_t index, const CCoord& width, CDataBrowser* browser)
 {
 }
 
@@ -205,12 +205,12 @@ bool ViewHierarchyData::dbGetLineWidthAndColor (CCoord& width, CColor& color, CD
 }
 
 //-----------------------------------------------------------------------------
-void ViewHierarchyData::dbDrawHeader (CDrawContext* context, const CRect& size, long column, long flags, CDataBrowser* browser)
+void ViewHierarchyData::dbDrawHeader (CDrawContext* context, const CRect& size, int32_t column, int32_t flags, CDataBrowser* browser)
 {
 }
 
 //-----------------------------------------------------------------------------
-void ViewHierarchyData::dbDrawCell (CDrawContext* context, const CRect& size, long row, long column, long flags, CDataBrowser* browser)
+void ViewHierarchyData::dbDrawCell (CDrawContext* context, const CRect& size, int32_t row, int32_t column, int32_t flags, CDataBrowser* browser)
 {
 	if (parent->getCurrentView () == 0)
 		return;
@@ -224,7 +224,7 @@ void ViewHierarchyData::dbDrawCell (CDrawContext* context, const CRect& size, lo
 		CView* view = parent->getCurrentView ()->getView (row);
 		if (view)
 		{
-			const char* viewname = 0;
+			IdStringPtr viewname = 0;
 			ViewFactory* factory = description ? dynamic_cast<ViewFactory*> (description->getViewFactory ()) : 0;
 			if (factory)
 				viewname = factory->getViewName (view);
@@ -280,7 +280,7 @@ void ViewHierarchyData::dbDrawCell (CDrawContext* context, const CRect& size, lo
 }
 
 //-----------------------------------------------------------------------------
-void ViewHierarchyData::doMoveOperation (long row, bool up, CDataBrowser* browser)
+void ViewHierarchyData::doMoveOperation (int32_t row, bool up, CDataBrowser* browser)
 {
 	if (parent->getCurrentView ())
 	{
@@ -294,7 +294,7 @@ void ViewHierarchyData::doMoveOperation (long row, bool up, CDataBrowser* browse
 }
 
 //-----------------------------------------------------------------------------
-CMouseEventResult ViewHierarchyData::dbOnMouseDown (const CPoint& where, const long& buttons, long row, long column, CDataBrowser* browser)
+CMouseEventResult ViewHierarchyData::dbOnMouseDown (const CPoint& where, const CButtonState& buttons, int32_t row, int32_t column, CDataBrowser* browser)
 {
 	if (parent->getCurrentView ())
 	{
@@ -316,19 +316,19 @@ CMouseEventResult ViewHierarchyData::dbOnMouseDown (const CPoint& where, const l
 }
 
 //-----------------------------------------------------------------------------
-CMouseEventResult ViewHierarchyData::dbOnMouseMoved (const CPoint& where, const long& buttons, long row, long column, CDataBrowser* browser)
+CMouseEventResult ViewHierarchyData::dbOnMouseMoved (const CPoint& where, const CButtonState& buttons, int32_t row, int32_t column, CDataBrowser* browser)
 {
 	return kMouseEventHandled;
 }
 
 //-----------------------------------------------------------------------------
-CMouseEventResult ViewHierarchyData::dbOnMouseUp (const CPoint& where, const long& buttons, long row, long column, CDataBrowser* browser)
+CMouseEventResult ViewHierarchyData::dbOnMouseUp (const CPoint& where, const CButtonState& buttons, int32_t row, int32_t column, CDataBrowser* browser)
 {
 	return kMouseEventHandled;
 }
 
 //-----------------------------------------------------------------------------
-long ViewHierarchyData::dbOnKeyDown (const VstKeyCode& key, CDataBrowser* browser)
+int32_t ViewHierarchyData::dbOnKeyDown (const VstKeyCode& key, CDataBrowser* browser)
 {
 	if (parent->getCurrentView ())
 	{
@@ -348,7 +348,7 @@ long ViewHierarchyData::dbOnKeyDown (const VstKeyCode& key, CDataBrowser* browse
 			{
 				CView* currentView = parent->getCurrentView ();
 				parent->setCurrentView (view);
-				for (long i = 0; i < view->getNbViews (); i++)
+				for (int32_t i = 0; i < view->getNbViews (); i++)
 				{
 					if (view->getView (i) == currentView)
 					{
@@ -389,7 +389,7 @@ public:
 	ViewHierarchyPathView (const CRect& size, ViewHierarchyBrowser* browser, ViewFactory* viewFactory);
 	~ViewHierarchyPathView ();
 
-	CMouseEventResult onMouseDown (CPoint &where, const long& buttons);
+	CMouseEventResult onMouseDown (CPoint &where, const CButtonState& buttons);
 	void draw (CDrawContext* context);
 	void setViewSize (CRect &rect, bool invalid) { CView::setViewSize (rect, invalid); needCompute = true; }
 
@@ -404,7 +404,7 @@ protected:
 		PathElement (ViewFactory* factory, CViewContainer* view, CDrawContext* context)
 		: view (view)
 		{
-			const char* viewname = 0;
+			IdStringPtr viewname = 0;
 			if (factory)
 				viewname = factory->getViewName (view);
 			if (viewname == 0)
@@ -415,7 +415,7 @@ protected:
 		bool operator==(const PathElement& pe) const { return pe.view == view; }
 		void setDrawWidth (CCoord w) { drawWidth = w; }
 
-		const char* getName () const { return name.c_str (); }
+		IdStringPtr getName () const { return name.c_str (); }
 		CViewContainer* getView () const { return view; }
 		CCoord getNameWidth () const { return nameWidth; }
 		CCoord getDrawWidth () const { return drawWidth; }
@@ -550,7 +550,7 @@ void ViewHierarchyPathView::draw (CDrawContext* context)
 }
 
 //-----------------------------------------------------------------------------
-CMouseEventResult ViewHierarchyPathView::onMouseDown (CPoint &where, const long& buttons)
+CMouseEventResult ViewHierarchyPathView::onMouseDown (CPoint &where, const CButtonState& buttons)
 {
 	CRect r (size);
 	const_elements_iterator it = elements.begin ();
@@ -647,7 +647,7 @@ void ViewHierarchyBrowser::notifyHierarchyChange (CView* view, bool wasRemoved)
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
-const char* ViewHierarchyBrowserWindow::kMsgWindowClosed = "ViewHierarchyBrowserWindow closed";
+IdStringPtr ViewHierarchyBrowserWindow::kMsgWindowClosed = "ViewHierarchyBrowserWindow closed";
 
 //-----------------------------------------------------------------------------
 ViewHierarchyBrowserWindow::ViewHierarchyBrowserWindow (CViewContainer* baseView, CBaseObject* owner, UIDescription* description, void* parentPlatformWindow)

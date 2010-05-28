@@ -65,19 +65,19 @@ public:
 		kAlignBottom = kAlignRight
 	};
 
-	CTabView (const CRect& size, CFrame* parent, CBitmap* tabBitmap, CBitmap* background = 0, TabPosition tabPosition = kPositionTop, long style = 0);
-	CTabView (const CRect& size, CFrame* parent, const CRect& tabSize, CBitmap* background = 0, TabPosition tabPosition = kPositionTop, long style = 0);
+	CTabView (const CRect& size, CFrame* parent, CBitmap* tabBitmap, CBitmap* background = 0, TabPosition tabPosition = kPositionTop, int32_t style = 0);
+	CTabView (const CRect& size, CFrame* parent, const CRect& tabSize, CBitmap* background = 0, TabPosition tabPosition = kPositionTop, int32_t style = 0);
 	
 	//-----------------------------------------------------------------------------
 	/// @name Tab View Functions
 	//-----------------------------------------------------------------------------
 	//@{
-	virtual bool addTab (CView* view, const char* name = 0, CBitmap* tabBitmap = 0);	///< add a tab
+	virtual bool addTab (CView* view, UTF8StringPtr name = 0, CBitmap* tabBitmap = 0);	///< add a tab
 	virtual bool addTab (CView* view, CControl* button);	///< add a tab
 	virtual bool removeTab (CView* view);	///< remove a tab
 	virtual bool removeAllTabs ();			///< remove all tabs
-	virtual bool selectTab (long index);	///< select tab at index
-	virtual long getCurrentSelectedTab () const { return currentTab; } ///< get current index of selected tab
+	virtual bool selectTab (int32_t index);	///< select tab at index
+	virtual int32_t getCurrentSelectedTab () const { return currentTab; } ///< get current index of selected tab
 
 	virtual CRect& getTabViewSize (CRect& rect) const;	///< the size of one tab
 
@@ -91,17 +91,17 @@ public:
 	virtual void drawBackgroundRect (CDrawContext *pContext, CRect& _updateRect);
 	virtual void valueChanged (CControl *pControl);
 	virtual void setViewSize (CRect &rect, bool invalid = true);
-	virtual void setAutosizeFlags (long flags);
+	virtual void setAutosizeFlags (int32_t flags);
 //-----------------------------------------------------------------------------
 	CLASS_METHODS (CTabView, CViewContainer)
 protected:
 	~CTabView ();
 	void setCurrentChild (CTabChildView* childView);
 
-	long numberOfChilds;
-	long currentTab;
+	int32_t numberOfChilds;
+	int32_t currentTab;
 	TabPosition tabPosition;
-	long style;
+	int32_t style;
 	CRect tabSize;
 	CPoint tabViewInset;
 	CBitmap* tabBitmap;

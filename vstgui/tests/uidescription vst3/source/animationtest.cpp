@@ -52,8 +52,8 @@ class ScaleView : public CViewContainer
 {
 public:
 	ScaleView ();
-	CMouseEventResult onMouseEntered (CPoint &where, const long& buttons);
-	CMouseEventResult onMouseExited (CPoint &where, const long& buttons);
+	CMouseEventResult onMouseEntered (CPoint &where, const CButtonState& buttons);
+	CMouseEventResult onMouseExited (CPoint &where, const CButtonState& buttons);
 protected:
 	CRect origRect;
 };
@@ -169,7 +169,7 @@ ScaleView::ScaleView ()
 }
 
 //------------------------------------------------------------------------
-CMouseEventResult ScaleView::onMouseEntered (CPoint &where, const long& buttons)
+CMouseEventResult ScaleView::onMouseEntered (CPoint &where, const CButtonState& buttons)
 {
 	if (origRect.isEmpty ())
 		origRect = getViewSize ();
@@ -183,7 +183,7 @@ CMouseEventResult ScaleView::onMouseEntered (CPoint &where, const long& buttons)
 }
 
 //------------------------------------------------------------------------
-CMouseEventResult ScaleView::onMouseExited (CPoint &where, const long& buttons)
+CMouseEventResult ScaleView::onMouseExited (CPoint &where, const CButtonState& buttons)
 {
 	getFrame ()->getAnimator ()->addAnimation (this, "AlphaAnimation", new Animation::AlphaValueAnimation (0.1f), new Animation::LinearTimingFunction (100));
 	getFrame ()->getAnimator ()->addAnimation (this, "SizeAnimation", new Animation::ViewSizeAnimation (origRect), new Animation::LinearTimingFunction (100));

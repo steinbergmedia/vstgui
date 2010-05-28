@@ -58,7 +58,7 @@ When its value changes, the listener is called.
  * @param style style, currently not used
  */
 //------------------------------------------------------------------------
-COnOffButton::COnOffButton (const CRect& size, CControlListener* listener, long tag, CBitmap* background, long style)
+COnOffButton::COnOffButton (const CRect& size, CControlListener* listener, int32_t tag, CBitmap* background, int32_t style)
 : CControl (size, listener, tag, background)
 , style (style)
 {
@@ -95,7 +95,7 @@ void COnOffButton::draw (CDrawContext *pContext)
 }
 
 //------------------------------------------------------------------------
-CMouseEventResult COnOffButton::onMouseDown (CPoint& where, const long& buttons)
+CMouseEventResult COnOffButton::onMouseDown (CPoint& where, const CButtonState& buttons)
 {
 	if (!(buttons & kLButton))
 		return kMouseEventNotHandled;
@@ -110,7 +110,7 @@ CMouseEventResult COnOffButton::onMouseDown (CPoint& where, const long& buttons)
 }
 
 //------------------------------------------------------------------------
-long COnOffButton::onKeyDown (VstKeyCode& keyCode)
+int32_t COnOffButton::onKeyDown (VstKeyCode& keyCode)
 {
 	if (keyCode.virt == VKEY_RETURN && keyCode.modifier == 0)
 	{
@@ -157,7 +157,7 @@ When the mouse button is relaxed, the first subbitmap is framed.
  * @param offset unused
  */
 //------------------------------------------------------------------------
-CKickButton::CKickButton (const CRect& size, CControlListener* listener, long tag, CBitmap* background, const CPoint& offset)
+CKickButton::CKickButton (const CRect& size, CControlListener* listener, int32_t tag, CBitmap* background, const CPoint& offset)
 : CControl (size, listener, tag, background)
 , offset (offset)
 {
@@ -176,7 +176,7 @@ CKickButton::CKickButton (const CRect& size, CControlListener* listener, long ta
  * @param offset of background
  */
 //------------------------------------------------------------------------
-CKickButton::CKickButton (const CRect& size, CControlListener* listener, long tag, CCoord heightOfOneImage, CBitmap* background, const CPoint& offset)
+CKickButton::CKickButton (const CRect& size, CControlListener* listener, int32_t tag, CCoord heightOfOneImage, CBitmap* background, const CPoint& offset)
 : CControl (size, listener, tag, background)
 , offset (offset)
 {
@@ -215,7 +215,7 @@ void CKickButton::draw (CDrawContext *pContext)
 }
 
 //------------------------------------------------------------------------
-CMouseEventResult CKickButton::onMouseDown (CPoint& where, const long& buttons)
+CMouseEventResult CKickButton::onMouseDown (CPoint& where, const CButtonState& buttons)
 {
 	if (!(buttons & kLButton))
 		return kMouseEventNotHandled;
@@ -225,7 +225,7 @@ CMouseEventResult CKickButton::onMouseDown (CPoint& where, const long& buttons)
 }
 
 //------------------------------------------------------------------------
-CMouseEventResult CKickButton::onMouseUp (CPoint& where, const long& buttons)
+CMouseEventResult CKickButton::onMouseUp (CPoint& where, const CButtonState& buttons)
 {
 	if (value)
 		valueChanged ();
@@ -238,7 +238,7 @@ CMouseEventResult CKickButton::onMouseUp (CPoint& where, const long& buttons)
 }
 
 //------------------------------------------------------------------------
-CMouseEventResult CKickButton::onMouseMoved (CPoint& where, const long& buttons)
+CMouseEventResult CKickButton::onMouseMoved (CPoint& where, const CButtonState& buttons)
 {
 	if (buttons & kLButton)
 	{
@@ -255,7 +255,7 @@ CMouseEventResult CKickButton::onMouseMoved (CPoint& where, const long& buttons)
 }
 
 //------------------------------------------------------------------------
-long CKickButton::onKeyDown (VstKeyCode& keyCode)
+int32_t CKickButton::onKeyDown (VstKeyCode& keyCode)
 {
 	if (keyCode.modifier == 0 && keyCode.virt == VKEY_RETURN)
 	{
@@ -269,7 +269,7 @@ long CKickButton::onKeyDown (VstKeyCode& keyCode)
 }
 
 //------------------------------------------------------------------------
-long CKickButton::onKeyUp (VstKeyCode& keyCode)
+int32_t CKickButton::onKeyUp (VstKeyCode& keyCode)
 {
 	if (keyCode.modifier == 0 && keyCode.virt == VKEY_RETURN)
 	{
@@ -319,7 +319,7 @@ If the bitmap is set, the bitmap must contain 6 states of the checkbox in the fo
 */
 //------------------------------------------------------------------------
 //------------------------------------------------------------------------
-CCheckBox::CCheckBox (const CRect& size, CControlListener* listener, long tag, const char* title, CBitmap* bitmap, long style)
+CCheckBox::CCheckBox (const CRect& size, CControlListener* listener, int32_t tag, UTF8StringPtr title, CBitmap* bitmap, int32_t style)
 : CControl (size, listener, tag, bitmap)
 , title (0)
 , style (style)
@@ -364,7 +364,7 @@ CCheckBox::~CCheckBox ()
 }
 
 //------------------------------------------------------------------------
-void CCheckBox::setTitle (const char* newTitle)
+void CCheckBox::setTitle (UTF8StringPtr newTitle)
 {
 	if (title)
 		delete [] title;
@@ -399,7 +399,7 @@ void CCheckBox::setBackground (CBitmap *background)
 }
 
 //------------------------------------------------------------------------
-void CCheckBox::setStyle (long newStyle)
+void CCheckBox::setStyle (int32_t newStyle)
 {
 	if (style != newStyle)
 	{
@@ -577,7 +577,7 @@ bool CCheckBox::getFocusPath (CGraphicsPath& outPath)
 }
 
 //------------------------------------------------------------------------
-CMouseEventResult CCheckBox::onMouseDown (CPoint& where, const long& buttons)
+CMouseEventResult CCheckBox::onMouseDown (CPoint& where, const CButtonState& buttons)
 {
 	if (buttons == kLButton)
 	{
@@ -589,7 +589,7 @@ CMouseEventResult CCheckBox::onMouseDown (CPoint& where, const long& buttons)
 }
 
 //------------------------------------------------------------------------
-CMouseEventResult CCheckBox::onMouseMoved (CPoint& where, const long& buttons)
+CMouseEventResult CCheckBox::onMouseMoved (CPoint& where, const CButtonState& buttons)
 {
 	if (buttons == kLButton)
 	{
@@ -606,7 +606,7 @@ CMouseEventResult CCheckBox::onMouseMoved (CPoint& where, const long& buttons)
 }
 
 //------------------------------------------------------------------------
-CMouseEventResult CCheckBox::onMouseUp (CPoint& where, const long& buttons)
+CMouseEventResult CCheckBox::onMouseUp (CPoint& where, const CButtonState& buttons)
 {
 	hilight = false;
 	if (where.isInside (size))
@@ -623,7 +623,7 @@ CMouseEventResult CCheckBox::onMouseUp (CPoint& where, const long& buttons)
 }
 
 //------------------------------------------------------------------------
-long CCheckBox::onKeyDown (VstKeyCode& keyCode)
+int32_t CCheckBox::onKeyDown (VstKeyCode& keyCode)
 {
 	if (keyCode.virt == VKEY_RETURN && keyCode.modifier == 0)
 	{

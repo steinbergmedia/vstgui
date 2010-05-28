@@ -44,8 +44,8 @@ namespace VSTGUI {
 	static bool createNSViewMode = false;
 #endif
 
-const char* kMsgNewFocusView = "kMsgNewFocusView";
-const char* kMsgOldFocusView = "kMsgOldFocusView";
+IdStringPtr kMsgNewFocusView = "kMsgNewFocusView";
+IdStringPtr kMsgOldFocusView = "kMsgOldFocusView";
 
 #define DEBUG_MOUSE_VIEWS	0//DEBUG
 
@@ -206,7 +206,7 @@ void CFrame::drawRect (CDrawContext* pContext, const CRect& updateRect)
 }
 
 //-----------------------------------------------------------------------------
-void CFrame::clearMouseViews (const CPoint& where, const long& buttons, bool callMouseExit)
+void CFrame::clearMouseViews (const CPoint& where, const CButtonState& buttons, bool callMouseExit)
 {
 	IMouseObserver* mouseObserver = getMouseObserver ();
 	CPoint lp;
@@ -254,7 +254,7 @@ void CFrame::removeFromMouseViews (CView* view)
 }
 
 //-----------------------------------------------------------------------------
-void CFrame::checkMouseViews (const CPoint& where, const long& buttons)
+void CFrame::checkMouseViews (const CPoint& where, const CButtonState& buttons)
 {
 	if (mouseDownView)
 		return;
@@ -374,7 +374,7 @@ void CFrame::checkMouseViews (const CPoint& where, const long& buttons)
 }
 
 //-----------------------------------------------------------------------------
-CMouseEventResult CFrame::onMouseDown (CPoint &where, const long& buttons)
+CMouseEventResult CFrame::onMouseDown (CPoint &where, const CButtonState& buttons)
 {
 	// reset views
 	mouseDownView = 0;
@@ -407,16 +407,16 @@ CMouseEventResult CFrame::onMouseDown (CPoint &where, const long& buttons)
 }
 
 //-----------------------------------------------------------------------------
-CMouseEventResult CFrame::onMouseUp (CPoint &where, const long& buttons)
+CMouseEventResult CFrame::onMouseUp (CPoint &where, const CButtonState& buttons)
 {
 	CMouseEventResult result = CViewContainer::onMouseUp (where, buttons);
-	long modifiers = buttons & (kShift | kControl | kAlt | kApple);
+	CButtonState modifiers = buttons & (kShift | kControl | kAlt | kApple);
 	checkMouseViews (where, modifiers);
 	return result;
 }
 
 //-----------------------------------------------------------------------------
-CMouseEventResult CFrame::onMouseMoved (CPoint &where, const long& buttons)
+CMouseEventResult CFrame::onMouseMoved (CPoint &where, const CButtonState& buttons)
 {
 	if (pTooltips)
 		pTooltips->onMouseMoved (where);
@@ -437,7 +437,7 @@ CMouseEventResult CFrame::onMouseMoved (CPoint &where, const long& buttons)
 		result = CViewContainer::onMouseMoved (p, buttons);
 		if (result == kMouseEventNotHandled)
 		{
-			long buttons2 = (buttons & (kShift | kControl | kAlt | kApple));
+			CButtonState buttons2 = (buttons & (kShift | kControl | kAlt | kApple));
 			std::list<CView*>::reverse_iterator it = pMouseViews.rbegin ();
 			while (it != pMouseViews.rend ())
 			{
@@ -454,7 +454,7 @@ CMouseEventResult CFrame::onMouseMoved (CPoint &where, const long& buttons)
 }
 
 //-----------------------------------------------------------------------------
-CMouseEventResult CFrame::onMouseExited (CPoint &where, const long& buttons)
+CMouseEventResult CFrame::onMouseExited (CPoint &where, const CButtonState& buttons)
 { // this should only get called from the platform implementation
 
 	if (mouseDownView == 0)
@@ -466,9 +466,9 @@ CMouseEventResult CFrame::onMouseExited (CPoint &where, const long& buttons)
 }
 
 //-----------------------------------------------------------------------------
-long CFrame::onKeyDown (VstKeyCode& keyCode)
+int32_t CFrame::onKeyDown (VstKeyCode& keyCode)
 {
-	long result = -1;
+	int32_t result = -1;
 
 	if (getKeyboardHook ())
 		result = getKeyboardHook ()->onKeyDown (keyCode, this);
@@ -492,9 +492,9 @@ long CFrame::onKeyDown (VstKeyCode& keyCode)
 }
 
 //-----------------------------------------------------------------------------
-long CFrame::onKeyUp (VstKeyCode& keyCode)
+int32_t CFrame::onKeyUp (VstKeyCode& keyCode)
 {
-	long result = -1;
+	int32_t result = -1;
 
 	if (getKeyboardHook ())
 		result = getKeyboardHook ()->onKeyUp (keyCode, this);
@@ -509,7 +509,7 @@ long CFrame::onKeyUp (VstKeyCode& keyCode)
 }
 
 //------------------------------------------------------------------------
-bool CFrame::onWheel (const CPoint &where, const CMouseWheelAxis &axis, const float &distance, const long &buttons)
+bool CFrame::onWheel (const CPoint &where, const CMouseWheelAxis &axis, const float &distance, const CButtonState &buttons)
 {
 	bool result = false;
 
@@ -526,17 +526,17 @@ bool CFrame::onWheel (const CPoint &where, const CMouseWheelAxis &axis, const fl
 }
 
 //-----------------------------------------------------------------------------
-bool CFrame::onWheel (const CPoint &where, const float &distance, const long &buttons)
+bool CFrame::onWheel (const CPoint &where, const float &distance, const CButtonState &buttons)
 {
 	return onWheel (where, kMouseWheelAxisY, distance, buttons);
 }
 
 //-----------------------------------------------------------------------------
-long CFrame::doDrag (CDropSource* source, const CPoint& offset, CBitmap* dragBitmap)
+CView::DragResult CFrame::doDrag (CDropSource* source, const CPoint& offset, CBitmap* dragBitmap)
 {
 	if (platformFrame)
 		return platformFrame->doDrag (source, offset, dragBitmap);
-	return 0;
+	return CView::kDragError;
 }
 
 //-----------------------------------------------------------------------------
@@ -564,7 +564,7 @@ Animation::Animator* CFrame::getAnimator ()
 /**
  * @return tick count in milliseconds
  */
-unsigned long CFrame::getTicks () const
+uint32_t CFrame::getTicks () const
 {
 	if (platformFrame)
 		return platformFrame->getTicks ();
@@ -572,7 +572,7 @@ unsigned long CFrame::getTicks () const
 }
 
 //-----------------------------------------------------------------------------
-long CFrame::getKnobMode () const
+int32_t CFrame::getKnobMode () const
 {
 	if (pEditor)
 		return pEditor->getKnobMode ();
@@ -695,14 +695,14 @@ bool CFrame::setModalView (CView* pView)
 }
 
 //-----------------------------------------------------------------------------
-void CFrame::beginEdit (long index)
+void CFrame::beginEdit (int32_t index)
 {
 	if (pEditor)
 		pEditor->beginEdit (index);
 }
 
 //-----------------------------------------------------------------------------
-void CFrame::endEdit (long index)
+void CFrame::endEdit (int32_t index)
 {
 	if (pEditor)
 		pEditor->endEdit (index);
@@ -724,9 +724,9 @@ bool CFrame::getCurrentMouseLocation (CPoint &where) const
 /**
  * @return mouse and modifier state
  */
-long CFrame::getCurrentMouseButtons () const
+CButtonState CFrame::getCurrentMouseButtons () const
 {
-	long buttons = 0;
+	CButtonState buttons = 0;
 
 	if (platformFrame)
 		platformFrame->getCurrentMouseButtons (buttons);
@@ -930,7 +930,7 @@ void CFrame::onActivate (bool state)
 //-----------------------------------------------------------------------------
 bool CFrame::focusDrawingEnabled () const
 {
-	long attrSize;
+	int32_t attrSize;
 	if (getAttributeSize ('vfde', attrSize))
 		return true;
 	return false;
@@ -940,7 +940,7 @@ bool CFrame::focusDrawingEnabled () const
 CColor CFrame::getFocusColor () const
 {
 	CColor focusColor (kRedCColor);
-	long outSize;
+	int32_t outSize;
 	getAttribute ('vfco', sizeof (CColor), &focusColor, outSize);
 	return focusColor;
 }
@@ -949,7 +949,7 @@ CColor CFrame::getFocusColor () const
 CCoord CFrame::getFocusWidth () const
 {
 	CCoord focusWidth = 2;
-	long outSize;
+	int32_t outSize;
 	getAttribute ('vfwi', sizeof (CCoord), &focusWidth, outSize);
 	return focusWidth;
 }
@@ -1034,35 +1034,35 @@ bool CFrame::platformDrawRect (CDrawContext* context, const CRect& rect)
 }
 
 //-----------------------------------------------------------------------------
-CMouseEventResult CFrame::platformOnMouseDown (CPoint& where, const long& buttons)
+CMouseEventResult CFrame::platformOnMouseDown (CPoint& where, const CButtonState& buttons)
 {
 	CBaseObjectGuard bog (this);
 	return onMouseDown (where, buttons);
 }
 
 //-----------------------------------------------------------------------------
-CMouseEventResult CFrame::platformOnMouseMoved (CPoint& where, const long& buttons)
+CMouseEventResult CFrame::platformOnMouseMoved (CPoint& where, const CButtonState& buttons)
 {
 	CBaseObjectGuard bog (this);
 	return onMouseMoved (where, buttons);
 }
 
 //-----------------------------------------------------------------------------
-CMouseEventResult CFrame::platformOnMouseUp (CPoint& where, const long& buttons)
+CMouseEventResult CFrame::platformOnMouseUp (CPoint& where, const CButtonState& buttons)
 {
 	CBaseObjectGuard bog (this);
 	return onMouseUp (where, buttons);
 }
 
 //-----------------------------------------------------------------------------
-CMouseEventResult CFrame::platformOnMouseExited (CPoint& where, const long& buttons)
+CMouseEventResult CFrame::platformOnMouseExited (CPoint& where, const CButtonState& buttons)
 {
 	CBaseObjectGuard bog (this);
 	return onMouseExited (where, buttons);
 }
 
 //-----------------------------------------------------------------------------
-bool CFrame::platformOnMouseWheel (const CPoint &where, const CMouseWheelAxis &axis, const float &distance, const long &buttons)
+bool CFrame::platformOnMouseWheel (const CPoint &where, const CMouseWheelAxis &axis, const float &distance, const CButtonState &buttons)
 {
 	CBaseObjectGuard bog (this);
 	return onWheel (where, axis, distance, buttons);

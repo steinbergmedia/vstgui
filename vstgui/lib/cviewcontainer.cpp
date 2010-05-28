@@ -62,8 +62,8 @@ CCView::~CCView ()
 }
 /// @endcond
 
-const char* kMsgCheckIfViewContainer	= "kMsgCheckIfViewContainer";
-const char* kMsgLooseFocus = "LooseFocus";
+IdStringPtr kMsgCheckIfViewContainer	= "kMsgCheckIfViewContainer";
+IdStringPtr kMsgLooseFocus = "LooseFocus";
 
 //-----------------------------------------------------------------------------
 // CViewContainer Implementation
@@ -97,7 +97,7 @@ CViewContainer::CViewContainer (const CViewContainer& v)
 , currentDragView (0)
 , mouseDownView (0)
 {
-	for (long i = 0; i < v.getNbViews (); i++)
+	for (int32_t i = 0; i < v.getNbViews (); i++)
 	{
 		addView ((CView*)v.getView (i)->newCopy ());
 	}
@@ -136,12 +136,12 @@ void CViewContainer::setViewSize (CRect &rect, bool invalid)
 
 	if (widthDelta != 0 || heightDelta != 0)
 	{
-		long numSubviews = getNbViews ();
-		long counter = 0;
+		int32_t numSubviews = getNbViews ();
+		int32_t counter = 0;
 		bool treatAsColumn = (getAutosizeFlags () & kAutosizeColumn) != 0;
 		bool treatAsRow = (getAutosizeFlags () & kAutosizeRow) != 0;
 		FOREACHSUBVIEW
-			long autosize = pV->getAutosizeFlags ();
+			int32_t autosize = pV->getAutosizeFlags ();
 			CRect viewSize (pV->getViewSize ());
 			CRect mouseSize (pV->getMouseableArea ());
 			if (treatAsColumn)
@@ -258,7 +258,7 @@ void CViewContainer::setBackgroundColor (const CColor& color)
 }
 
 //------------------------------------------------------------------------------
-CMessageResult CViewContainer::notify (CBaseObject* sender, const char* message)
+CMessageResult CViewContainer::notify (CBaseObject* sender, IdStringPtr message)
 {
 	if (message == kMsgCheckIfViewContainer)
 		return kMessageNotified;
@@ -520,9 +520,9 @@ bool CViewContainer::isChild (CView *pView, bool deep) const
 /**
  * @return number of subviews
  */
-long CViewContainer::getNbViews () const
+int32_t CViewContainer::getNbViews () const
 {
-	long nb = 0;
+	int32_t nb = 0;
 	for (CCView* pSv = pFirstView; pSv; pSv = pSv->pNext)
 		nb++;
 	return nb;
@@ -533,9 +533,9 @@ long CViewContainer::getNbViews () const
  * @param index the index of the view to return
  * @return view at index. NULL if view at index does not exist.
  */
-CView* CViewContainer::getView (long index) const
+CView* CViewContainer::getView (int32_t index) const
 {
-	long nb = 0;
+	int32_t nb = 0;
 	FOREACHSUBVIEW
 		if (nb == index)
 			return pV;
@@ -810,7 +810,7 @@ bool CViewContainer::checkUpdateRect (CView* view, const CRect& rect)
  * @param buttons mouse button and modifier state
  * @return true if any sub view accepts the hit
  */
-bool CViewContainer::hitTestSubViews (const CPoint& where, const long buttons)
+bool CViewContainer::hitTestSubViews (const CPoint& where, const CButtonState buttons)
 {
 	CPoint where2 (where);
 	where2.offset (-size.left, -size.top);
@@ -828,14 +828,14 @@ bool CViewContainer::hitTestSubViews (const CPoint& where, const long buttons)
  * @param buttons mouse button and modifier state
  * @return true if container accepts the hit
  */
-bool CViewContainer::hitTest (const CPoint& where, const long buttons)
+bool CViewContainer::hitTest (const CPoint& where, const CButtonState buttons)
 {
 	//return hitTestSubViews (where); would change default behavior
 	return CView::hitTest (where, buttons);
 }
 
 //-----------------------------------------------------------------------------
-CMouseEventResult CViewContainer::onMouseDown (CPoint &where, const long& buttons)
+CMouseEventResult CViewContainer::onMouseDown (CPoint &where, const CButtonState& buttons)
 {
 	// convert to relativ pos
 	CPoint where2 (where);
@@ -867,7 +867,7 @@ CMouseEventResult CViewContainer::onMouseDown (CPoint &where, const long& button
 }
 
 //-----------------------------------------------------------------------------
-CMouseEventResult CViewContainer::onMouseUp (CPoint &where, const long& buttons)
+CMouseEventResult CViewContainer::onMouseUp (CPoint &where, const CButtonState& buttons)
 {
 	if (mouseDownView)
 	{
@@ -884,7 +884,7 @@ CMouseEventResult CViewContainer::onMouseUp (CPoint &where, const long& buttons)
 }
 
 //-----------------------------------------------------------------------------
-CMouseEventResult CViewContainer::onMouseMoved (CPoint &where, const long& buttons)
+CMouseEventResult CViewContainer::onMouseMoved (CPoint &where, const CButtonState& buttons)
 {
 	if (mouseDownView)
 	{
@@ -904,9 +904,9 @@ CMouseEventResult CViewContainer::onMouseMoved (CPoint &where, const long& butto
 }
 
 //-----------------------------------------------------------------------------
-long CViewContainer::onKeyDown (VstKeyCode& keyCode)
+int32_t CViewContainer::onKeyDown (VstKeyCode& keyCode)
 {
-	long result = -1;
+	int32_t result = -1;
 
 	FOREACHSUBVIEW_REVERSE(true)
 		result = pV->onKeyDown (keyCode);
@@ -918,9 +918,9 @@ long CViewContainer::onKeyDown (VstKeyCode& keyCode)
 }
 
 //-----------------------------------------------------------------------------
-long CViewContainer::onKeyUp (VstKeyCode& keyCode)
+int32_t CViewContainer::onKeyUp (VstKeyCode& keyCode)
 {
-	long result = -1;
+	int32_t result = -1;
 
 	FOREACHSUBVIEW_REVERSE(true)
 		result = pV->onKeyUp (keyCode);
@@ -932,7 +932,7 @@ long CViewContainer::onKeyUp (VstKeyCode& keyCode)
 }
 
 //-----------------------------------------------------------------------------
-bool CViewContainer::onWheel (const CPoint &where, const CMouseWheelAxis &axis, const float &distance, const long &buttons)
+bool CViewContainer::onWheel (const CPoint &where, const CMouseWheelAxis &axis, const float &distance, const CButtonState &buttons)
 {
 	bool result = false;
 	CView* view = getViewAt (where);
@@ -948,7 +948,7 @@ bool CViewContainer::onWheel (const CPoint &where, const CMouseWheelAxis &axis, 
 }
 
 //-----------------------------------------------------------------------------
-bool CViewContainer::onWheel (const CPoint &where, const float &distance, const long &buttons)
+bool CViewContainer::onWheel (const CPoint &where, const float &distance, const CButtonState &buttons)
 {
 	return onWheel (where, kMouseWheelAxisY, distance, buttons);
 }
@@ -1074,7 +1074,7 @@ bool CViewContainer::advanceNextFocusView (CView* oldFocus, bool reverse)
 		}
 		else
 		{
-			if (pV->wantsFocus ())
+			if (pV->wantsFocus () && pV->getMouseEnabled ())
 			{
 				getFrame ()->setFocusView (pV);
 				return true;
@@ -1230,7 +1230,7 @@ void CViewContainer::restoreDrawContext (CDrawContext* pContext, CCoord save[4])
 }
 
 #if DEBUG
-static long _debugDumpLevel = 0;
+static int32_t _debugDumpLevel = 0;
 //-----------------------------------------------------------------------------
 void CViewContainer::dumpInfo ()
 {
@@ -1242,7 +1242,7 @@ void CViewContainer::dumpHierarchy ()
 {
 	_debugDumpLevel++;
 	FOREACHSUBVIEW
-		for (long i = 0; i < _debugDumpLevel; i++)
+		for (int32_t i = 0; i < _debugDumpLevel; i++)
 			DebugPrint ("\t");
 		pV->dumpInfo ();
 		DebugPrint ("\n");

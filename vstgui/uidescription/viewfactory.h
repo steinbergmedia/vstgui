@@ -62,8 +62,8 @@ public:
 		kTagType,
 	};
 
-	virtual const char* getViewName () const = 0;
-	virtual const char* getBaseViewName () const = 0;
+	virtual IdStringPtr getViewName () const = 0;
+	virtual IdStringPtr getBaseViewName () const = 0;
 	virtual CView* create (const UIAttributes& attributes, IUIDescription* description) const = 0;
 	virtual bool apply (CView* view, const UIAttributes& attributes, IUIDescription* description) const = 0;
 	virtual bool getAttributeNames (std::list<std::string>& attributeNames) const = 0;
@@ -88,12 +88,12 @@ public:
 	bool getAttributeNamesForView (CView* view, std::list<std::string>& attributeNames) const;
 	bool getAttributeValue (CView* view, const std::string& attributeName, std::string& stringValue, IUIDescription* desc) const;
 	IViewCreator::AttrType getAttributeType (CView* view, const std::string& attributeName) const;
-	void collectRegisteredViewNames (std::list<const std::string*>& viewNames, const char* baseClassNameFilter = 0) const;
+	void collectRegisteredViewNames (std::list<const std::string*>& viewNames, IdStringPtr baseClassNameFilter = 0) const;
 	bool getAttributesForView (CView* view, IUIDescription* desc, UIAttributes& attr) const;
 	#endif
 
-	const char* getViewName (CView* view) const;
-	bool applyCustomViewAttributeValues (CView* customView, const char* baseViewName, const UIAttributes& attributes, IUIDescription* desc) const;
+	IdStringPtr getViewName (CView* view) const;
+	bool applyCustomViewAttributeValues (CView* customView, IdStringPtr baseViewName, const UIAttributes& attributes, IUIDescription* desc) const;
 
 protected:
 	CView* createViewByName (const std::string* className, const UIAttributes& attributes, IUIDescription* description);
