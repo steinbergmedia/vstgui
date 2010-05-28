@@ -47,12 +47,12 @@ namespace VSTGUI {
 class CSplashScreen : public CControl, public CControlListener
 {
 public:
-	CSplashScreen (const CRect& size, CControlListener* listener, long tag, CBitmap* background, const CRect& toDisplay, const CPoint& offset = CPoint (0, 0));
-	CSplashScreen (const CRect& size, CControlListener* listener, long tag, CView* splashView);
+	CSplashScreen (const CRect& size, CControlListener* listener, int32_t tag, CBitmap* background, const CRect& toDisplay, const CPoint& offset = CPoint (0, 0));
+	CSplashScreen (const CRect& size, CControlListener* listener, int32_t tag, CView* splashView);
 	CSplashScreen (const CSplashScreen& splashScreen);
   
 	virtual void draw (CDrawContext*);
-	virtual bool hitTest (const CPoint& where, const long buttons = -1);
+	virtual bool hitTest (const CPoint& where, const CButtonState buttons = -1);
 
 	//-----------------------------------------------------------------------------
 	/// @name CSplashScreen Methods
@@ -64,7 +64,7 @@ public:
 	virtual CRect& getDisplayArea (CRect& rect) const { rect = toDisplay; return rect; }	///< get the area in which the splash will be displayed
 	//@}
 
-	virtual CMouseEventResult onMouseDown (CPoint& where, const long& buttons);
+	virtual CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons);
 
 	CLASS_METHODS(CSplashScreen, CControl)
 protected:

@@ -35,6 +35,8 @@
 #ifndef __xmlparser__
 #define __xmlparser__
 
+#include "../lib/vstguibase.h"
+
 namespace VSTGUI {
 namespace Xml {
 
@@ -44,7 +46,7 @@ class Parser;
 class IContentProvider
 {
 public:
-	virtual int readRawXmlData (char* buffer, int size) = 0;
+	virtual int32_t readRawXmlData (int8_t* buffer, int32_t size) = 0;
 	virtual void rewind () = 0;
 };
 
@@ -52,10 +54,10 @@ public:
 class IHandler
 {
 public:
-	virtual void startXmlElement (Parser* parser, const char* elementName, const char** elementAttributes) = 0;
-	virtual void endXmlElement (Parser* parser, const char* name) = 0;
-	virtual void xmlCharData (Parser* parser, const char* data, int length) = 0;
-	virtual void xmlComment (Parser* parser, const char* comment) = 0;
+	virtual void startXmlElement (Parser* parser, IdStringPtr elementName, UTF8StringPtr* elementAttributes) = 0;
+	virtual void endXmlElement (Parser* parser, IdStringPtr name) = 0;
+	virtual void xmlCharData (Parser* parser, const int8_t* data, int32_t length) = 0;
+	virtual void xmlComment (Parser* parser, IdStringPtr comment) = 0;
 };
 
 //-----------------------------------------------------------------------------
@@ -79,13 +81,13 @@ protected:
 class MemoryContentProvider : public IContentProvider
 {
 public:
-	MemoryContentProvider (const void* data, int dataSize);		// data must be valid the whole lifetime of this object
-	int readRawXmlData (char* buffer, int size);
+	MemoryContentProvider (const void* data, int32_t dataSize);		// data must be valid the whole lifetime of this object
+	int32_t readRawXmlData (int8_t* buffer, int32_t size);
 	void rewind ();
 protected:
 	const void* data;
-	int dataSize;
-	int pos;
+	int32_t dataSize;
+	int32_t pos;
 };
 
 }} // namespaces

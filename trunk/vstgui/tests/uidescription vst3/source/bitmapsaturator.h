@@ -68,7 +68,7 @@ Pixel* Pixel::create (IPlatformBitmapPixelAccess::PixelFormat pixelFormat)
 static bool hueSaturateValue (CBitmap* bitmap, double hueAngle, double saturation, double value)
 {
 	bool result = false;
-	IPlatformBitmapPixelAccess* bipa = bitmap->getPlatformBitmap ()->lockPixels ();
+	IPlatformBitmapPixelAccess* bipa = bitmap->getPlatformBitmap ()->lockPixels (false);
 	if (bipa)
 	{
 		Pixel* pixel = Pixel::create (bipa->getPixelFormat ());

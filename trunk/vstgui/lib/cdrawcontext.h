@@ -65,13 +65,13 @@ public:
 		kLineJoinBevel
 	};
 
-	CLineStyle (LineCap cap = kLineCapButt, LineJoin join = kLineJoinMiter, CCoord dashPhase = 0., long dashCount = 0, const CCoord* dashLengths = 0);
+	CLineStyle (LineCap cap = kLineCapButt, LineJoin join = kLineJoinMiter, CCoord dashPhase = 0., int32_t dashCount = 0, const CCoord* dashLengths = 0);
 	~CLineStyle ();
 
 	LineCap getLineCap () const { return cap; }
 	LineJoin getLineJoin () const { return join; }
 	CCoord getDashPhase () const { return dashPhase; }
-	long getDashCount () const { return dashCount; }
+	int32_t getDashCount () const { return dashCount; }
 	const CCoord* getDashLengths () const { return dashLengths; }
 
 	bool operator== (const CLineStyle& cls) const;
@@ -80,7 +80,7 @@ protected:
 	LineCap cap;
 	LineJoin join;
 	CCoord dashPhase;
-	long dashCount;
+	int32_t dashCount;
 	CCoord* dashLengths;
 };
 
@@ -134,8 +134,8 @@ public:
 	virtual void moveTo (const CPoint &point);	///< move line position to point
 	virtual void lineTo (const CPoint &point) = 0;	///< draw a line from current position to point
 	void getLoc (CPoint &where) const { where = currentState.penLoc; }
-	virtual void drawLines (const CPoint* points, const long& numberOfLines) = 0;	///< draw multiple lines at once
-	virtual void drawPolygon (const CPoint* pPoints, long numberOfPoints, const CDrawStyle drawStyle = kDrawStroked) = 0; ///< draw a polygon
+	virtual void drawLines (const CPoint* points, const int32_t& numberOfLines) = 0;	///< draw multiple lines at once
+	virtual void drawPolygon (const CPoint* pPoints, int32_t numberOfPoints, const CDrawStyle drawStyle = kDrawStroked) = 0; ///< draw a polygon
 	virtual void drawRect (const CRect &rect, const CDrawStyle drawStyle = kDrawStroked) = 0;	///< draw a rect
 	virtual void drawArc (const CRect &rect, const float startAngle1, const float endAngle2, const CDrawStyle drawStyle = kDrawStroked) = 0;	///< draw an arc, angles are in degree
 	virtual void drawEllipse (const CRect &rect, const CDrawStyle drawStyle = kDrawStroked) = 0;	///< draw an ellipse
@@ -189,7 +189,7 @@ public:
 	//@{
 	virtual void setFontColor (const CColor& color);	///< set current font color
 	CColor getFontColor () const { return currentState.fontColor; }	///< get current font color
-	virtual void setFont (const CFontRef font, const long& size = 0, const long& style = -1); ///< set current font
+	virtual void setFont (const CFontRef font, const CCoord& size = 0, const int32_t& style = -1); ///< set current font
 	const CFontRef&  getFont () const { return currentState.font; }	///< get current font
 	//@}
 	
@@ -197,9 +197,9 @@ public:
 	/// @name Text
 	//-----------------------------------------------------------------------------
 	//@{
-	CCoord getStringWidth (const char* pStr);	///< get the width of an UTF-8 encoded string
-	void drawString (const char* string, const CRect& _rect, const CHoriTxtAlign hAlign = kCenterText, bool antialias = true);	///< draw an UTF-8 encoded string
-	void drawString (const char* string, const CPoint& _point, bool antialias = true);	///< draw an UTF-8 encoded string
+	CCoord getStringWidth (UTF8StringPtr pStr);	///< get the width of an UTF-8 encoded string
+	void drawString (UTF8StringPtr string, const CRect& _rect, const CHoriTxtAlign hAlign = kCenterText, bool antialias = true);	///< draw an UTF-8 encoded string
+	void drawString (UTF8StringPtr string, const CPoint& _point, bool antialias = true);	///< draw an UTF-8 encoded string
 	//@}
 	
 	//-----------------------------------------------------------------------------

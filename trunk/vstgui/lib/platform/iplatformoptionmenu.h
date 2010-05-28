@@ -47,7 +47,7 @@ class CMenuItem;
 struct PlatformOptionMenuResult
 {
 	COptionMenu* menu;
-	long index;
+	int32_t index;
 };
 
 //-----------------------------------------------------------------------------

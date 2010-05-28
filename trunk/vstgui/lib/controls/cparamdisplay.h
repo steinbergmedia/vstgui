@@ -41,6 +41,10 @@
 #include "../cdrawcontext.h"
 
 namespace VSTGUI {
+class CParamDisplay;
+
+//-----------------------------------------------------------------------------
+typedef bool (*CParamDisplayValueToStringProc) (float value, char utf8String[256], void* userData);
 
 //-----------------------------------------------------------------------------
 // CParamDisplay Declaration
@@ -50,7 +54,7 @@ namespace VSTGUI {
 class CParamDisplay : public CControl
 {
 public:
-	CParamDisplay (const CRect& size, CBitmap* background = 0, const long style = 0);
+	CParamDisplay (const CRect& size, CBitmap* background = 0, const int32_t style = 0);
 	CParamDisplay (const CParamDisplay& paramDisplay);
 	
 	//-----------------------------------------------------------------------------
@@ -81,12 +85,10 @@ public:
 	virtual void setTextInset (const CPoint& p) { textInset = p; }
 	CPoint getTextInset () const { return textInset; }
 
-	virtual void setStringConvert (void (*convert) (float value, char* string));
-	virtual void setStringConvert (void (*convert) (float value, char* string, void* userDta), void* userData);
-	virtual void setString2FloatConvert (void (*convert) (char* string, float& output));
+	virtual void setValueToStringProc (CParamDisplayValueToStringProc proc, void* userData = 0);
 
-	virtual void setStyle (long val);
-	long getStyle () const { return style; }
+	virtual void setStyle (int32_t val);
+	int32_t getStyle () const { return style; }
 
 	virtual void setTextTransparency (bool val) { bTextTransparencyEnabled = val; }
 	bool getTextTransparency () const { return bTextTransparencyEnabled; }
@@ -98,15 +100,13 @@ public:
 protected:
 	~CParamDisplay ();
 	virtual void drawBack (CDrawContext* pContext, CBitmap* newBack = 0);
-	virtual void drawText (CDrawContext* pContext, const char* string);
+	virtual void drawText (CDrawContext* pContext, UTF8StringPtr string);
 
-	void (*stringConvert) (float value, char* string);
-	void (*stringConvert2) (float value, char* string, void* userData);
-	void (*string2FloatConvert) (char* string, float& output);
-	void* userData;
-
+	CParamDisplayValueToStringProc valueToString;
+	void* valueToStringUserData;
+	
 	CHoriTxtAlign horiTxtAlign;
-	long		style;
+	int32_t		style;
 
 	CFontRef	fontID;
 	CColor		fontColor;

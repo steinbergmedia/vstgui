@@ -61,7 +61,7 @@ All digit have the same size and are stacked in height in the bitmap.
  * @param background bitmap
  */
 //------------------------------------------------------------------------
-CSpecialDigit::CSpecialDigit (const CRect& size, CControlListener* listener, long tag, long dwPos, long iNumbers, long* xpos, long* ypos, long width, long height, CBitmap* background)
+CSpecialDigit::CSpecialDigit (const CRect& size, CControlListener* listener, int32_t tag, int32_t dwPos, int32_t iNumbers, int32_t* xpos, int32_t* ypos, int32_t width, int32_t height, CBitmap* background)
 : CControl (size, listener, tag, background)
 , iNumbers (iNumbers)
 , width (width)
@@ -75,19 +75,19 @@ CSpecialDigit::CSpecialDigit (const CRect& size, CControlListener* listener, lon
 	if (xpos == NULL)
 	{
 		// automatically init xpos/ypos if not provided by caller
-		const int numw = (const int)background->getWidth();
-		int x = (int)size.left;
-		for (long i = 0; i < iNumbers; i++)
+		const int32_t numw = (const int32_t)background->getWidth();
+		int32_t x = (int32_t)size.left;
+		for (int32_t i = 0; i < iNumbers; i++)
 		{
 			this->xpos[i] = x; 
-			this->ypos[i] = (long)size.top;
+			this->ypos[i] = (int32_t)size.top;
 			x += numw;
 		}
 	} 
 	else if (xpos && ypos)
 	{
 		// store coordinates of x/y pos of each digit
-		for (long i = 0; i < iNumbers; i++)
+		for (int32_t i = 0; i < iNumbers; i++)
 		{
 			this->xpos[i] = xpos[i];
 			this->ypos[i] = ypos[i];
@@ -105,7 +105,7 @@ CSpecialDigit::CSpecialDigit (const CSpecialDigit& v)
 , width (v.width)
 , height (v.height)
 {
-	for (int i = 0; i < 7; i++)
+	for (int32_t i = 0; i < 7; i++)
 	{
 		xpos[i] = v.xpos[i];
 		ypos[i] = v.ypos[i];
@@ -121,18 +121,18 @@ void CSpecialDigit::draw (CDrawContext *pContext)
 {
 	CPoint  where;
 	CRect   rectDest;
-	long    i, j;
-	long    dwValue;
-	long     one_digit[16];
+	int32_t    i, j;
+	int32_t    dwValue;
+	int32_t     one_digit[16];
   
-	if ((long)value >= getMax ()) 
-		dwValue = (long)getMax ();
-	else if ((long)value < getMin ()) 
-		dwValue = (long)getMin ();
+	if ((int32_t)value >= getMax ()) 
+		dwValue = (int32_t)getMax ();
+	else if ((int32_t)value < getMin ()) 
+		dwValue = (int32_t)getMin ();
 	else
-		dwValue = (long)value;
+		dwValue = (int32_t)value;
 	
-	for (i = 0, j = ((long)getMax () + 1) / 10; i < iNumbers; i++, j /= 10)
+	for (i = 0, j = ((int32_t)getMax () + 1) / 10; i < iNumbers; i++, j /= 10)
 	{
 		one_digit[i] = dwValue / j;
 		dwValue -= (one_digit[i] * j);

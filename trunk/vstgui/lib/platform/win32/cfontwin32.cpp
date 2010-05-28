@@ -81,7 +81,7 @@ static Gdiplus::Brush* getFontBrush (CDrawContext* context)
 }
 
 //-----------------------------------------------------------------------------
-GdiPlusFont::GdiPlusFont (const char* name, const CCoord& size, const long& style)
+GdiPlusFont::GdiPlusFont (const char* name, const CCoord& size, const int32_t& style)
 : font (0)
 {
 	gdiStyle = Gdiplus::FontStyleRegular;

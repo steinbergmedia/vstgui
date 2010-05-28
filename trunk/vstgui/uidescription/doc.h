@@ -222,7 +222,7 @@ First you need to add vstgui_uidescription_win32.cpp or vstgui_uidescription_mac
 and define a preprocessor definition for VSTGUI_LIVE_EDITING=1.
 Then you have to modify your edit controller class to create a VSTGUI::VST3Editor instance when asked to create it's view :
 @code
-IPlugView* PLUGIN_API MyEditController::createView (const char* name)
+IPlugView* PLUGIN_API MyEditController::createView (FIDString name)
 {
 	if (strcmp (name, ViewType::kEditor) == 0)
 	{

@@ -55,7 +55,7 @@ A generic way to add tooltip support to VSTGUI.
 @section ctooltipsupport_example Example
 Adding a tooltip to a view
 @code
-const char* tooltipText = "This is a tooltip";
+UTF8StringPtr tooltipText = "This is a tooltip";
 view->setAttribute (kCViewTooltipAttribute, strlen (tooltipText)+1, tooltipText);
 @endcode
 Adding CTooltipSupport is done via VSTGUI::CFrame::enableTooltips (true) */
@@ -64,7 +64,7 @@ Adding CTooltipSupport is done via VSTGUI::CFrame::enableTooltips (true) */
  * @param frame CFrame object
  * @param delay tooltip delay time in milliseconds
  */
-CTooltipSupport::CTooltipSupport (CFrame* frame, int delay)
+CTooltipSupport::CTooltipSupport (CFrame* frame, int32_t delay)
 : timer (0)
 , frame (frame)
 , currentView (0)
@@ -85,13 +85,13 @@ CTooltipSupport::~CTooltipSupport ()
 }
 
 //------------------------------------------------------------------------
-static char* getTooltipFromView (CView* view)
+static UTF8StringBuffer getTooltipFromView (CView* view)
 {
-	char* tooltip = 0;
-	long tooltipSize = 0;
+	UTF8StringBuffer tooltip = 0;
+	int32_t tooltipSize = 0;
 	if (view->getAttributeSize (kCViewTooltipAttribute, tooltipSize))
 	{
-		tooltip = (char*)malloc (tooltipSize + 1);
+		tooltip = (UTF8StringBuffer)malloc (tooltipSize + 1);
 		memset (tooltip, 0, tooltipSize+1);
 		if (!view->getAttribute (kCViewTooltipAttribute, tooltipSize, tooltip, tooltipSize))
 		{
@@ -105,7 +105,7 @@ static char* getTooltipFromView (CView* view)
 //------------------------------------------------------------------------
 static bool viewHasTooltip (CView* view)
 {
-	long tooltipSize = 0;
+	int32_t tooltipSize = 0;
 	if (view->getAttributeSize (kCViewTooltipAttribute, tooltipSize))
 	{
 		if (tooltipSize > 0)
@@ -252,7 +252,7 @@ void CTooltipSupport::showTooltip ()
 		currentView->localToFrame (p);
 		r.offset (p.x, p.y);
 
-		char* tooltip = getTooltipFromView (currentView);
+		UTF8StringBuffer tooltip = getTooltipFromView (currentView);
 		
 		if (tooltip)
 		{
@@ -272,7 +272,7 @@ void CTooltipSupport::showTooltip ()
 }
 
 //------------------------------------------------------------------------
-CMessageResult CTooltipSupport::notify (CBaseObject* sender, const char* msg)
+CMessageResult CTooltipSupport::notify (CBaseObject* sender, IdStringPtr msg)
 {
 	if (msg == CVSTGUITimer::kMsgTimer)
 	{

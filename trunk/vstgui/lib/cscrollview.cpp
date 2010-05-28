@@ -60,11 +60,17 @@ public:
 	
 	bool isDirty () const;
 
+	void onDragMove (CDragContainer* drag, const CPoint& where);
+	void setAutoDragScroll (bool state) { autoDragScroll = state; }
+
 	CLASS_METHODS(CScrollContainer, CViewContainer)
 //-----------------------------------------------------------------------------
 protected:
+	bool getScrollValue (const CPoint& where, float& x, float& y);
+
 	CRect containerSize;
 	CPoint offset;
+	bool autoDragScroll;
 };
 
 //-----------------------------------------------------------------------------
@@ -74,6 +80,7 @@ CScrollContainer::CScrollContainer (const CRect &size, const CRect &containerSiz
 : CViewContainer (size, pParent, pBackground)
 , containerSize (containerSize)
 , offset (CPoint (0, 0))
+, autoDragScroll (false)
 {
 	setTransparency (true);
 }
@@ -112,7 +119,7 @@ void CScrollContainer::setScrollOffset (CPoint newOffset, bool redraw)
 		newOffset.y = containerSize.top;
 	if (newOffset.y > containerSize.bottom)
 		newOffset.y = containerSize.bottom;
-	CPoint diff ((long)(newOffset.x - offset.x), (long)(offset.y - newOffset.y));
+	CPoint diff ((int32_t)(newOffset.x - offset.x), (int32_t)(offset.y - newOffset.y));
 	if (diff.x == 0 && diff.y == 0)
 		return;
 	FOREACHSUBVIEW
@@ -174,12 +181,57 @@ bool CScrollContainer::isDirty () const
 	return false;
 }
 
+//-----------------------------------------------------------------------------
+bool CScrollContainer::getScrollValue (const CPoint& where, float& x, float& y)
+{
+	const CCoord kWidth = 10;
+	x = 0.f;
+	y = 0.f;
+	if (where.x <= getViewSize ().left + kWidth)
+	{
+		x = (float)(where.x - (getViewSize ().left + kWidth));
+	}
+	else if (where.x >= getViewSize ().right - kWidth)
+	{
+		x = (float)((getViewSize ().right - kWidth) - where.x);
+	}
+	if (where.y <= getViewSize ().top + kWidth)
+	{
+		y = (float)(where.y - (getViewSize ().top + kWidth));
+	}
+	else if (where.y >= getViewSize ().bottom - kWidth)
+	{
+		y = (float)(where.y - (getViewSize ().bottom - kWidth));
+	}
+	return (x != 0.f || y != 0.f);
+}
+
+//-----------------------------------------------------------------------------
+void CScrollContainer::onDragMove (CDragContainer* drag, const CPoint& where)
+{
+	if (autoDragScroll)
+	{
+		float x, y;
+		if (getScrollValue (where, x, y))
+		{
+			CScrollView* scrollView = dynamic_cast<CScrollView*> (getParentView ());
+			if (scrollView)
+			{
+				CRect r (getViewSize ());
+				r.offset (x, y);
+				scrollView->makeRectVisible (r);
+			}
+		}
+	}
+	return CViewContainer::onDragMove (drag, where);
+}
+
 /// @endcond
 
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
-CScrollView::CScrollView (const CRect &size, const CRect &containerSize, CFrame* pParent, long style, CCoord scrollbarWidth, CBitmap* pBackground)
+CScrollView::CScrollView (const CRect &size, const CRect &containerSize, CFrame* pParent, int32_t style, CCoord scrollbarWidth, CBitmap* pBackground)
 : CViewContainer (size, pParent, pBackground)
 , sc (0)
 , vsb (0)
@@ -295,6 +347,7 @@ void CScrollView::recalculateSubViews ()
 		sc->setViewSize (scsize, true);
 		sc->setMouseableArea (scsize);
 	}
+	sc->setAutoDragScroll (style & kAutoDragScrolling ? true : false);
 }
 
 //-----------------------------------------------------------------------------
@@ -305,7 +358,7 @@ void CScrollView::setViewSize (CRect &rect, bool invalid)
 }
 
 //-----------------------------------------------------------------------------
-void CScrollView::setAutosizeFlags (long flags)
+void CScrollView::setAutosizeFlags (int32_t flags)
 {
 	CViewContainer::setAutosizeFlags (flags);
 	if (sc)
@@ -313,7 +366,7 @@ void CScrollView::setAutosizeFlags (long flags)
 }
 
 //-----------------------------------------------------------------------------
-void CScrollView::setStyle (long newStyle)
+void CScrollView::setStyle (int32_t newStyle)
 {
 	if (style != newStyle)
 	{
@@ -469,13 +522,13 @@ bool CScrollView::isChild (CView *pView) const
 }
 
 //-----------------------------------------------------------------------------
-long CScrollView::getNbViews () const
+int32_t CScrollView::getNbViews () const
 {
 	return sc->getNbViews ();
 }
 
 //-----------------------------------------------------------------------------
-CView* CScrollView::getView (long index) const
+CView* CScrollView::getView (int32_t index) const
 {
 	return sc->getView (index);
 }
@@ -498,7 +551,7 @@ void CScrollView::valueChanged (CControl *pControl)
 	if (sc)
 	{
 		float value = pControl->getValue ();
-		long tag = pControl->getTag ();
+		int32_t tag = pControl->getTag ();
 		CPoint offset;
 		CRect vsize = sc->getViewSize (vsize);
 		CRect csize = sc->getContainerSize ();
@@ -510,7 +563,7 @@ void CScrollView::valueChanged (CControl *pControl)
 			{
 				if (csize.getWidth () > vsize.getWidth ())
 				{
-					offset.x = (long) (csize.left - (csize.width () - vsize.width ()) * value);
+					offset.x = (int32_t) (csize.left - (csize.width () - vsize.width ()) * value);
 					sc->setScrollOffset (offset, false);
 				}
 				else if (offset.x > 0)
@@ -524,7 +577,7 @@ void CScrollView::valueChanged (CControl *pControl)
 			{
 				if (csize.getHeight () > vsize.getHeight ())
 				{
-					offset.y = (long) (csize.top + (csize.height () - vsize.height ()) * value);
+					offset.y = (int32_t) (csize.top + (csize.height () - vsize.height ()) * value);
 					sc->setScrollOffset (offset, false);
 				}
 				else if (offset.y > 0)
@@ -551,6 +604,7 @@ void CScrollView::drawBackgroundRect (CDrawContext *pContext, CRect& _updateRect
 	}
 	if (!(style & kDontDrawFrame))
 	{
+		pContext->setDrawMode (kAliasing);
 		pContext->setFrameColor (backgroundColor);
 		pContext->setLineWidth (1);
 		pContext->drawRect (r);
@@ -558,7 +612,7 @@ void CScrollView::drawBackgroundRect (CDrawContext *pContext, CRect& _updateRect
 }
 
 //-----------------------------------------------------------------------------
-bool CScrollView::onWheel (const CPoint &where, const CMouseWheelAxis &axis, const float &distance, const long &buttons)
+bool CScrollView::onWheel (const CPoint &where, const CMouseWheelAxis &axis, const float &distance, const CButtonState &buttons)
 {
 	bool result = CViewContainer::onWheel (where, axis, distance, buttons);
 	if (!result)
@@ -572,7 +626,7 @@ bool CScrollView::onWheel (const CPoint &where, const CMouseWheelAxis &axis, con
 }
 
 //-----------------------------------------------------------------------------
-CMessageResult CScrollView::notify (CBaseObject* sender, const char* message)
+CMessageResult CScrollView::notify (CBaseObject* sender, IdStringPtr message)
 {
 	if (message == kMsgNewFocusView)
 	{
@@ -580,7 +634,7 @@ CMessageResult CScrollView::notify (CBaseObject* sender, const char* message)
 		if (sc->isChild (focusView, true))
 		{
 			CRect r = focusView->getViewSize ();
-			CPoint p (0, 0);
+			CPoint p (-r.left, -r.top);
 			focusView->localToFrame (p);
 			frameToLocal (p);
 			r.offset (p.x, p.y);
@@ -591,7 +645,7 @@ CMessageResult CScrollView::notify (CBaseObject* sender, const char* message)
 }
 
 //-----------------------------------------------------------------------------
-CScrollbar::CScrollbar (const CRect& size, CControlListener* listener, long tag, ScrollbarDirection direction, const CRect& scrollSize)
+CScrollbar::CScrollbar (const CRect& size, CControlListener* listener, int32_t tag, ScrollbarDirection direction, const CRect& scrollSize)
 : CControl (size, listener, tag, 0)
 , direction (direction)
 , scrollSize (scrollSize)
@@ -727,7 +781,7 @@ void CScrollbar::doStepping ()
 }
 
 //-----------------------------------------------------------------------------
-CMessageResult CScrollbar::notify (CBaseObject* sender, const char* message)
+CMessageResult CScrollbar::notify (CBaseObject* sender, IdStringPtr message)
 {
 	if (message == CVSTGUITimer::kMsgTimer && timer)
 	{
@@ -739,7 +793,7 @@ CMessageResult CScrollbar::notify (CBaseObject* sender, const char* message)
 }
 
 //-----------------------------------------------------------------------------
-CMouseEventResult CScrollbar::onMouseDown (CPoint &where, const long& buttons)
+CMouseEventResult CScrollbar::onMouseDown (CPoint &where, const CButtonState& buttons)
 {
 	if (buttons != kLButton || scrollerLength == 0) 
 		return kMouseDownEventHandledButDontNeedMovedOrUpEvents;
@@ -763,7 +817,7 @@ CMouseEventResult CScrollbar::onMouseDown (CPoint &where, const long& buttons)
 }
 
 //-----------------------------------------------------------------------------
-CMouseEventResult CScrollbar::onMouseUp (CPoint &where, const long& buttons)
+CMouseEventResult CScrollbar::onMouseUp (CPoint &where, const CButtonState& buttons)
 {
 	if (timer)
 	{
@@ -774,7 +828,7 @@ CMouseEventResult CScrollbar::onMouseUp (CPoint &where, const long& buttons)
 }
 
 //-----------------------------------------------------------------------------
-CMouseEventResult CScrollbar::onMouseMoved (CPoint &where, const long& buttons)
+CMouseEventResult CScrollbar::onMouseMoved (CPoint &where, const CButtonState& buttons)
 {
 	if (buttons & kLButton)
 	{
@@ -814,7 +868,7 @@ CMouseEventResult CScrollbar::onMouseMoved (CPoint &where, const long& buttons)
 }
 
 //------------------------------------------------------------------------
-bool CScrollbar::onWheel (const CPoint &where, const CMouseWheelAxis &axis, const float &_distance, const long &buttons)
+bool CScrollbar::onWheel (const CPoint &where, const CMouseWheelAxis &axis, const float &_distance, const CButtonState &buttons)
 {
 	if (!bMouseEnabled)
 		return false;
@@ -845,6 +899,7 @@ void CScrollbar::drawBackground (CDrawContext* pContext)
 		drawer->drawScrollbarBackground (pContext, r, direction, this);
 	else
 	{
+		pContext->setDrawMode (kAliasing);
 		pContext->setLineWidth (1);
 		pContext->setFillColor (backgroundColor);
 		pContext->setFrameColor (frameColor);
@@ -861,6 +916,7 @@ void CScrollbar::drawScroller (CDrawContext* pContext, const CRect& size)
 		drawer->drawScrollbarScroller (pContext, r, direction, this);
 	else
 	{
+		pContext->setDrawMode (kAliasing);
 		pContext->setLineWidth (1);
 		pContext->setFillColor (scrollerColor);
 		pContext->setFrameColor (frameColor);

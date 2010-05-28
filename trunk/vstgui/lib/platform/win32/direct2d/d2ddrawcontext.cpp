@@ -239,7 +239,7 @@ void D2DDrawContext::lineTo (const CPoint &point)
 	if (renderTarget)
 	{
 		D2DApplyClip clip (this);
-		if ((((int)currentState.frameWidth) % 2))
+		if ((((int32_t)currentState.frameWidth) % 2))
 			renderTarget->SetTransform (D2D1::Matrix3x2F::Translation (0.f, 0.5f));
 		renderTarget->DrawLine (makeD2DPoint (currentState.penLoc), makeD2DPoint (p), strokeBrush, (FLOAT)currentState.frameWidth, strokeStyle);
 		renderTarget->SetTransform (D2D1::Matrix3x2F::Identity ());
@@ -248,9 +248,9 @@ void D2DDrawContext::lineTo (const CPoint &point)
 }
 
 //-----------------------------------------------------------------------------
-void D2DDrawContext::drawLines (const CPoint* points, const long& numberOfLines)
+void D2DDrawContext::drawLines (const CPoint* points, const int32_t& numberOfLines)
 {
-	for (long i = 0; i < numberOfLines * 2; i+=2)
+	for (int32_t i = 0; i < numberOfLines * 2; i+=2)
 	{
 		moveTo (points[i]);
 		lineTo (points[i+1]);
@@ -258,13 +258,13 @@ void D2DDrawContext::drawLines (const CPoint* points, const long& numberOfLines)
 }
 
 //-----------------------------------------------------------------------------
-void D2DDrawContext::drawPolygon (const CPoint *pPoints, long numberOfPoints, const CDrawStyle drawStyle)
+void D2DDrawContext::drawPolygon (const CPoint *pPoints, int32_t numberOfPoints, const CDrawStyle drawStyle)
 {
 	if (renderTarget)
 	{
 		D2DGraphicsPath path;
 		path.addLine (pPoints[0], pPoints[1]);
-		for (long i = 2; i < numberOfPoints; i++)
+		for (int32_t i = 2; i < numberOfPoints; i++)
 		{
 			path.addLine (path.getCurrentPosition (), pPoints[i]);
 		}
@@ -296,7 +296,7 @@ void D2DDrawContext::drawRect (const CRect &_rect, const CDrawStyle drawStyle)
 		{
 			rect.left++;
 			rect.bottom--;
-			if ((((int)currentState.frameWidth) % 2))
+			if ((((int32_t)currentState.frameWidth) % 2))
 				renderTarget->SetTransform (D2D1::Matrix3x2F::Translation (0.f, 0.5f));
 			renderTarget->DrawRectangle (makeD2DRect (rect), strokeBrush, (FLOAT)currentState.frameWidth, strokeStyle);
 			renderTarget->SetTransform (D2D1::Matrix3x2F::Identity ());
@@ -397,7 +397,7 @@ void D2DDrawContext::setLineStyle (const CLineStyle& style)
 	{
 		properties.dashStyle = D2D1_DASH_STYLE_CUSTOM;
 		FLOAT* lengths = new FLOAT[style.getDashCount ()];
-		for (long i = 0; i < style.getDashCount (); i++)
+		for (int32_t i = 0; i < style.getDashCount (); i++)
 			lengths[i] = (FLOAT)style.getDashLengths ()[i];
 		getD2DFactory ()->CreateStrokeStyle (properties, lengths, style.getDashCount (), &strokeStyle);
 		delete [] lengths;

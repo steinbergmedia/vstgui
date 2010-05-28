@@ -51,6 +51,7 @@
 #if WIN32
 	#define WINDOWS 1
 #elif __APPLE_CC__
+	#include <stdint.h>
 	#include <AvailabilityMacros.h>
 	#ifndef MAC_OS_X_VERSION_10_5
 		#define MAC_OS_X_VERSION_10_5 1050
@@ -80,6 +81,14 @@
 	#if defined (_WIN32_WINNT_WIN7) && !defined (VSTGUI_DIRECT2D_SUPPORT)
 		#define VSTGUI_DIRECT2D_SUPPORT	1
 	#endif
+	typedef char				int8_t;
+	typedef unsigned char		uint8_t;
+	typedef short				int16_t;
+	typedef unsigned short		uint16_t;
+	typedef long				int32_t;
+	typedef unsigned long		uint32_t;
+	typedef __int64				int64_t;
+	typedef unsigned __int64	uint64_t;
 #endif
 
 #ifdef UNICODE
@@ -120,31 +129,34 @@ namespace VSTGUI {
 
 #if DEBUG
 #define CLASS_METHODS(name, parent)             \
-	virtual bool isTypeOf (const char* s) const \
+	virtual bool isTypeOf (IdStringPtr s) const \
 		{ return (!strcmp (s, (#name))) ? true : parent::isTypeOf (s); }\
-	virtual const char* getClassName () const { return (#name); } \
+	virtual IdStringPtr getClassName () const { return (#name); } \
 	virtual CBaseObject* newCopy () const { return new name (*this); }
 #define CLASS_METHODS_NOCOPY(name, parent)             \
-	virtual bool isTypeOf (const char* s) const \
+	virtual bool isTypeOf (IdStringPtr s) const \
 		{ return (!strcmp (s, (#name))) ? true : parent::isTypeOf (s); }\
-	virtual const char* getClassName () const { return (#name); } \
+	virtual IdStringPtr getClassName () const { return (#name); } \
 	virtual CBaseObject* newCopy () const { return 0; }
 #else
 #define CLASS_METHODS(name, parent)             \
-	virtual bool isTypeOf (const char* s) const \
+	virtual bool isTypeOf (IdStringPtr s) const \
 		{ return (!strcmp (s, (#name))) ? true : parent::isTypeOf (s); } \
 	virtual CBaseObject* newCopy () const { return (CBaseObject*)new name (*this); }
 #define CLASS_METHODS_NOCOPY(name, parent)             \
-	virtual bool isTypeOf (const char* s) const \
+	virtual bool isTypeOf (IdStringPtr s) const \
 		{ return (!strcmp (s, (#name))) ? true : parent::isTypeOf (s); } \
 	virtual CBaseObject* newCopy () const { return 0; }
 #endif
 #define CLASS_METHODS_VIRTUAL(name, parent)             \
-	virtual bool isTypeOf (const char* s) const \
+	virtual bool isTypeOf (IdStringPtr s) const \
 		{ return (!strcmp (s, (#name))) ? true : parent::isTypeOf (s); } \
 	virtual CBaseObject* newCopy () const = 0;
 
-typedef double CCoord;	///< coordinate type
+typedef double		CCoord;				///< coordinate type
+typedef const char* IdStringPtr;		///< ID String pointer
+typedef const char* UTF8StringPtr;		///< UTF8 String pointer
+typedef char*		UTF8StringBuffer;	///< UTF8 String buffer pointer
 
 //-----------------------------------------------------------------------------
 // @brief Message Results
@@ -171,27 +183,27 @@ public:
 	//@{
 	virtual void forget () { nbReference--; if (nbReference == 0) delete this; }	///< decrease refcount and delete object if refcount == 0
 	virtual void remember () { nbReference++; }										///< increase refcount
-	virtual long getNbReference () const { return nbReference; }					///< get refcount
+	virtual int32_t getNbReference () const { return nbReference; }					///< get refcount
 	//@}
 	
 	//-----------------------------------------------------------------------------
 	/// @name Message Methods
 	//-----------------------------------------------------------------------------
 	//@{
-	virtual CMessageResult notify (CBaseObject* sender, const char* message) { return kMessageUnknown; }
+	virtual CMessageResult notify (CBaseObject* sender, IdStringPtr message) { return kMessageUnknown; }
 	//@}
 
 	/// @cond ignore
-	virtual bool isTypeOf (const char* s) const { return (!strcmp (s, "CBaseObject")); }
+	virtual bool isTypeOf (IdStringPtr s) const { return (!strcmp (s, "CBaseObject")); }
 	virtual CBaseObject* newCopy () const { return 0; }
 	/// @endcond
 
 	#if DEBUG
-	virtual const char* getClassName () const { return "CBaseObject"; }
+	virtual IdStringPtr getClassName () const { return "CBaseObject"; }
 	#endif
 	
 private:
-	long nbReference;
+	int32_t nbReference;
 };
 
 //-----------------------------------------------------------------------------

@@ -61,11 +61,11 @@ class IPlatformFrameCallback
 public:
 	virtual bool platformDrawRect (CDrawContext* context, const CRect& rect) = 0;
 	
-	virtual CMouseEventResult platformOnMouseDown (CPoint& where, const long& buttons) = 0;
-	virtual CMouseEventResult platformOnMouseMoved (CPoint& where, const long& buttons) = 0;
-	virtual CMouseEventResult platformOnMouseUp (CPoint& where, const long& buttons) = 0;
-	virtual CMouseEventResult platformOnMouseExited (CPoint& where, const long& buttons) = 0;
-	virtual bool platformOnMouseWheel (const CPoint &where, const CMouseWheelAxis &axis, const float &distance, const long &buttons) = 0;
+	virtual CMouseEventResult platformOnMouseDown (CPoint& where, const CButtonState& buttons) = 0;
+	virtual CMouseEventResult platformOnMouseMoved (CPoint& where, const CButtonState& buttons) = 0;
+	virtual CMouseEventResult platformOnMouseUp (CPoint& where, const CButtonState& buttons) = 0;
+	virtual CMouseEventResult platformOnMouseExited (CPoint& where, const CButtonState& buttons) = 0;
+	virtual bool platformOnMouseWheel (const CPoint &where, const CMouseWheelAxis &axis, const float &distance, const CButtonState &buttons) = 0;
 
 	virtual bool platformOnDrop (CDragContainer* drag, const CPoint& where) = 0;
 	virtual void platformOnDragEnter (CDragContainer* drag, const CPoint& where) = 0;
@@ -85,14 +85,14 @@ class IPlatformFrame : public CBaseObject
 {
 public:
 	static IPlatformFrame* createPlatformFrame (IPlatformFrameCallback* frame, const CRect& size, void* parent);	///< create platform representation
-	static unsigned long getTicks ();
+	static uint32_t getTicks ();
 
 	virtual bool getGlobalPosition (CPoint& pos) const = 0;	///< get the top left position in global coordinates
 	virtual bool setSize (const CRect& newSize) = 0;	///< set size of platform representation relative to parent
 	virtual bool getSize (CRect& size) const = 0;	///< get size of platform representation relative to parent
 	
 	virtual bool getCurrentMousePosition (CPoint& mousePosition) const = 0;	///< get current mouse position out of event stream
-	virtual bool getCurrentMouseButtons (long& buttons) const = 0;	///< get current mouse buttons out of event stream
+	virtual bool getCurrentMouseButtons (CButtonState& buttons) const = 0;	///< get current mouse buttons out of event stream
 	virtual bool setMouseCursor (CCursorType type) = 0;	///< set mouse cursor shape
 	
 	virtual bool invalidRect (const CRect& rect) = 0;	///< invalidates rect in platform representation
@@ -109,7 +109,7 @@ public:
 	virtual COffscreenContext* createOffscreenContext (CCoord width, CCoord height) = 0; ///< create an offscreen draw device
 	virtual CGraphicsPath* createGraphicsPath () = 0; ///< create a platform graphics path
 
-	virtual long doDrag (CDropSource* source, const CPoint& offset, CBitmap* dragBitmap) = 0; ///< start a drag operation
+	virtual CView::DragResult doDrag (CDropSource* source, const CPoint& offset, CBitmap* dragBitmap) = 0; ///< start a drag operation
 
 //-----------------------------------------------------------------------------
 protected:

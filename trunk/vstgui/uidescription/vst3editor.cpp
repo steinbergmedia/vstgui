@@ -46,6 +46,7 @@
 #include "viewfactory.h"
 #include <list>
 #include <sstream>
+#include <assert.h>
 
 namespace Steinberg {
 
@@ -118,7 +119,7 @@ public:
 		}
 		CParamDisplay* display = dynamic_cast<CParamDisplay*> (control);
 		if (display)
-			display->setStringConvert (stringConvert, this);
+			display->setValueToStringProc (valueToString, this);
 
 		COptionMenu* optMenu = dynamic_cast<COptionMenu*> (control);
 		if (optMenu && parameter && parameter->getInfo ().stepCount > 0)
@@ -197,7 +198,7 @@ public:
 	Steinberg::Vst::Parameter* getParameter () const { return parameter; }
 
 protected:
-	void convertValueToString (float value, char* string)
+	bool convertValueToString (float value, char utf8String[256])
 	{
 		if (parameter)
 		{
@@ -205,16 +206,18 @@ protected:
 			editController->getParamStringByValue (getParameterID (), value, utf16Str);
 			Steinberg::String utf8Str (utf16Str);
 			utf8Str.toMultiByte (Steinberg::kCP_Utf8);
-			utf8Str.copyTo8 (string, 0, 256);
+			utf8Str.copyTo8 (utf8String, 0, 256);
+			return true;
 		}
+		return false;
 	}
 
-	static void stringConvert (float value, char* string, void* userDta)
+	static bool valueToString (float value, char utf8String[256], void* userData)
 	{
-		ParameterChangeListener* This = (ParameterChangeListener*)userDta;
-		This->convertValueToString (value, string);
+		ParameterChangeListener* This = (ParameterChangeListener*)userData;
+		return This->convertValueToString (value, utf8String);
 	}
-	
+
 	void updateControlValue (Steinberg::Vst::ParamValue value)
 	{
 		bool mouseEnabled = true;
@@ -297,7 +300,7 @@ Rebuild your plug-in, start your prefered host, instanciate your plug-in, open t
 Now you can define tags, colors, fonts, bitmaps and add views to your editor.
 */
 //-----------------------------------------------------------------------------
-VST3Editor::VST3Editor (Steinberg::Vst::EditController* controller, const char* _viewName, const char* _xmlFile)
+VST3Editor::VST3Editor (Steinberg::Vst::EditController* controller, UTF8StringPtr _viewName, UTF8StringPtr _xmlFile)
 : VSTGUIEditor (controller)
 , doCreateView (false)
 , tooltipsEnabled (true)
@@ -310,7 +313,7 @@ VST3Editor::VST3Editor (Steinberg::Vst::EditController* controller, const char* 
 }
 
 //-----------------------------------------------------------------------------
-VST3Editor::VST3Editor (UIDescription* desc, Steinberg::Vst::EditController* controller, const char* _viewName, const char* _xmlFile)
+VST3Editor::VST3Editor (UIDescription* desc, Steinberg::Vst::EditController* controller, UTF8StringPtr _viewName, UTF8StringPtr _xmlFile)
 : VSTGUIEditor (controller)
 , doCreateView (false)
 , tooltipsEnabled (true)
@@ -378,8 +381,6 @@ void VST3Editor::init ()
 			rect.bottom = 300;
 			minSize (rect.right, rect.bottom);
 			maxSize (rect.right, rect.bottom);
-			description->changeColor ("black", kBlackCColor);
-			description->changeColor ("white", kWhiteCColor);
 		}
 		#endif
 	}
@@ -394,14 +395,12 @@ void VST3Editor::init ()
 		rect.bottom = 300;
 		minSize (rect.right, rect.bottom);
 		maxSize (rect.right, rect.bottom);
-		description->changeColor ("black", kBlackCColor);
-		description->changeColor ("white", kWhiteCColor);
 	}
 	#endif
 }
 
 //-----------------------------------------------------------------------------
-bool VST3Editor::exchangeView (const char* newViewName)
+bool VST3Editor::exchangeView (UTF8StringPtr newViewName)
 {
 	const UIAttributes* attr = description->getViewAttributes (newViewName);
 	if (attr)
@@ -422,11 +421,11 @@ void VST3Editor::enableTooltips (bool state)
 }
 
 //-----------------------------------------------------------------------------
-ParameterChangeListener* VST3Editor::getParameterChangeListener (long tag)
+ParameterChangeListener* VST3Editor::getParameterChangeListener (int32_t tag)
 {
 	if (tag != -1)
 	{
-		std::map<long, ParameterChangeListener*>::iterator it = paramChangeListeners.find (tag);
+		std::map<int32_t, ParameterChangeListener*>::iterator it = paramChangeListeners.find (tag);
 		if (it != paramChangeListeners.end ())
 		{
 			return it->second;
@@ -458,14 +457,14 @@ void VST3Editor::valueChanged (CControl* pControl)
 }
 
 //-----------------------------------------------------------------------------
-void VST3Editor::beginEdit (long index)
+void VST3Editor::beginEdit (int32_t index)
 {
 	// we don't assume that every control tag is a parameter tag handled by this editor
 	// as sub classes could build custom CControlListeners for controls
 }
 
 //-----------------------------------------------------------------------------
-void VST3Editor::endEdit (long index)
+void VST3Editor::endEdit (int32_t index)
 {
 	// see above
 }
@@ -543,7 +542,7 @@ void VST3Editor::onViewRemoved (CFrame* frame, CView* view)
 		}
 	}
 	IController* controller = 0;
-	long size = sizeof (IController*);
+	int32_t size = sizeof (IController*);
 	if (view->getAttribute ('ictr', sizeof (IController*), &controller, size))
 	{
 		subControllers.remove (controller);
@@ -732,7 +731,7 @@ void PLUGIN_API VST3Editor::close ()
 	if (delegate)
 		delegate->willClose (this);
 
-	std::map<long, ParameterChangeListener*>::iterator it = paramChangeListeners.begin ();
+	std::map<int32_t, ParameterChangeListener*>::iterator it = paramChangeListeners.begin ();
 	while (it != paramChangeListeners.end ())
 	{
 		it->second->release ();
@@ -742,7 +741,7 @@ void PLUGIN_API VST3Editor::close ()
 	if (frame)
 	{
 		frame->removeAll (true);
-		long refCount = frame->getNbReference ();
+		int32_t refCount = frame->getNbReference ();
 		frame->forget ();
 		if (refCount == 1)
 			frame = 0;
@@ -784,7 +783,7 @@ Steinberg::tresult PLUGIN_API VST3Editor::checkSizeConstraint (Steinberg::ViewRe
 }
 
 //------------------------------------------------------------------------
-CMessageResult VST3Editor::notify (CBaseObject* sender, const char* message)
+CMessageResult VST3Editor::notify (CBaseObject* sender, IdStringPtr message)
 {
 	if (message == CVSTGUITimer::kMsgTimer)
 	{
@@ -804,7 +803,7 @@ CMessageResult VST3Editor::notify (CBaseObject* sender, const char* message)
 			if (templateNames.size () > 0)
 			{
 				COptionMenu* submenu = new COptionMenu ();
-				long menuTag = 1000;
+				int32_t menuTag = 1000;
 				std::list<const std::string*>::const_iterator it = templateNames.begin ();
 				while (it != templateNames.end ())
 				{
@@ -850,7 +849,7 @@ CMessageResult VST3Editor::notify (CBaseObject* sender, const char* message)
 			}
 			else
 			{
-				long index = item->getTag ();
+				int32_t index = item->getTag ();
 				if (index >= 10000)
 				{
 					runNewTemplateDialog (item->getTitle ());
@@ -903,13 +902,13 @@ public:
 		CTextEdit* textEdit = dynamic_cast<CTextEdit*> (pControl);
 		if (textEdit)
 		{
-			long tag = textEdit->getTag ();
+			int32_t tag = textEdit->getTag ();
 			if (tag <= 2)
 			{
 				if (tag > 0)
 				{
 					// verify text
-					long tmp = strtol (textEdit->getText (), 0, 10);
+					int32_t tmp = strtol (textEdit->getText (), 0, 10);
 					if (tmp > 0)
 					{
 						std::stringstream str;
@@ -929,7 +928,7 @@ public:
 		CTextEdit* textEdit = dynamic_cast<CTextEdit*> (view);
 		if (textEdit)
 		{
-			long tag = textEdit->getTag ();
+			int32_t tag = textEdit->getTag ();
 			if (tag <= 2)
 				textEdit->setText (values[tag].c_str ());
 		}
@@ -940,7 +939,7 @@ public:
 };
 
 //------------------------------------------------------------------------
-void VST3Editor::runNewTemplateDialog (const char* baseViewName)
+void VST3Editor::runNewTemplateDialog (IdStringPtr baseViewName)
 {
 	Xml::MemoryContentProvider mcp (vst3EditorTemplatesString, strlen (vst3EditorTemplatesString));
 	UIDescription uiDesc (&mcp);
@@ -980,7 +979,7 @@ public:
 		kFocusDrawingEnabled,
 	};
 
-	VST3EditorTemplateSettingsDialogController (const CPoint& minSize, const CPoint& maxSize, bool focusDrawingEnabled, const char* focusColorName, CCoord focusWidth, std::list<const std::string*>& colorNames)
+	VST3EditorTemplateSettingsDialogController (const CPoint& minSize, const CPoint& maxSize, bool focusDrawingEnabled, UTF8StringPtr focusColorName, CCoord focusWidth, std::list<const std::string*>& colorNames)
 	: focusDrawingEnabled (focusDrawingEnabled)
 	, colorNames (colorNames)
 	{
@@ -1004,7 +1003,7 @@ public:
 	
 	void valueChanged (VSTGUI::CControl* pControl) 
 	{
-		long tag = pControl->getTag ();
+		int32_t tag = pControl->getTag ();
 		CTextEdit* textEdit = dynamic_cast<CTextEdit*> (pControl);
 		if (textEdit)
 		{
@@ -1021,7 +1020,7 @@ public:
 			}
 			else
 			{
-				long tmp = strtol (textEdit->getText (), 0, 10);
+				int32_t tmp = strtol (textEdit->getText (), 0, 10);
 				if (tmp > 0)
 				{
 					std::stringstream str;
@@ -1051,7 +1050,7 @@ public:
 		CTextEdit* textEdit = dynamic_cast<CTextEdit*> (view);
 		if (textEdit)
 		{
-			long tag = textEdit->getTag ();
+			int32_t tag = textEdit->getTag ();
 			if (tag < 6)
 				textEdit->setText (values[tag].c_str ());
 		}

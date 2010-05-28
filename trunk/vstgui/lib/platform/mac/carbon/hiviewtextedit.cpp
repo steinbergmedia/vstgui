@@ -46,6 +46,7 @@ extern bool isWindowComposited (WindowRef window);
 HIViewTextEdit::HIViewTextEdit (HIViewRef parent, IPlatformTextEditCallback* textEdit)
 : IPlatformTextEdit (textEdit)
 , eventHandler (0)
+, text (0)
 {
 	extern bool hiToolboxAllowFocusChange;
 	bool oldState = hiToolboxAllowFocusChange;
@@ -72,7 +73,7 @@ HIViewTextEdit::HIViewTextEdit (HIViewRef parent, IPlatformTextEditCallback* tex
 		r.bottom = (short)(r.top + fontID->getSize ());
 	}
 	HIViewRef textControl = 0;
-	const char* text = textEdit->platformGetText ();
+	UTF8StringPtr text = textEdit->platformGetText ();
 	if (CreateEditUnicodeTextControl (NULL, &r, NULL, false, NULL, &textControl) == noErr)
 	{
 		HIViewAddSubview (parent, textControl);
@@ -119,10 +120,19 @@ HIViewTextEdit::~HIViewTextEdit ()
 		CFRelease (platformControl);
 		SetThemeCursor (kThemeArrowCursor);
 	}
+	freeText ();
 }
 
 //-----------------------------------------------------------------------------
-bool HIViewTextEdit::setText (const char* text)
+void HIViewTextEdit::freeText ()
+{
+	if (text)
+		free (text);
+	text = 0;
+}
+
+//-----------------------------------------------------------------------------
+bool HIViewTextEdit::setText (UTF8StringPtr text)
 {
 	if (platformControl)
 	{
@@ -142,19 +152,23 @@ bool HIViewTextEdit::setText (const char* text)
 }
 
 //-----------------------------------------------------------------------------
-bool HIViewTextEdit::getText (char* text, long maxSize)
+UTF8StringPtr HIViewTextEdit::getText ()
 {
 	if (platformControl)
 	{
 		CFStringRef cfstr;
 		if (GetControlData (platformControl, kControlEditTextPart, kControlEditTextCFStringTag, sizeof cfstr, (void*)&cfstr, NULL) == noErr)
 		{
-			CFStringGetCString (cfstr, text, maxSize, kCFStringEncodingUTF8);
+			freeText ();
+			CFIndex textSize = CFStringGetMaximumSizeForEncoding (CFStringGetLength (cfstr), kCFStringEncodingUTF8);
+			text = (UTF8StringBuffer)malloc (textSize);
+			
+			CFStringGetCString (cfstr, text, textSize, kCFStringEncodingUTF8);
 			CFRelease (cfstr);
-			return true;
+			return text;
 		}
 	}
-	return false;
+	return "";
 }
 
 //-----------------------------------------------------------------------------

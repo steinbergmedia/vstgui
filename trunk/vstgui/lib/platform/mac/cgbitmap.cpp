@@ -36,6 +36,7 @@
 
 #if MAC
 #include "macglobals.h"
+#include <Accelerate/Accelerate.h>
 
 namespace VSTGUI {
 
@@ -43,7 +44,7 @@ namespace VSTGUI {
 IPlatformBitmap* IPlatformBitmap::create (CPoint* size)
 {
 	if (size)
-		return new CGOffscreenBitmap (*size);
+		return new CGBitmap (*size);
 	return new CGBitmap ();
 }
 
@@ -62,7 +63,7 @@ static off_t DataProviderSkipForwardCallback (void *info, off_t count)
 	char buffer;
 	for (off_t i = 0; i < count; i++)
 	{
-		int read = reader->readBytes (&buffer, 1);
+		int32_t read = reader->readBytes (&buffer, 1);
 		if (read != 0)
 			break;
 		skipped += read;
@@ -85,9 +86,24 @@ static void DataProviderReleaseInfoCallback (void *info)
 }
 
 //-----------------------------------------------------------------------------
+CGBitmap::CGBitmap (const CPoint& inSize)
+: image (0)
+, imageSource (0)
+, bits (0)
+, dirty (false)
+, bytesPerRow (0)
+{
+	size = inSize;
+	allocBits ();
+}
+
+//-----------------------------------------------------------------------------
 CGBitmap::CGBitmap ()
 : image (0)
 , imageSource (0)
+, bits (0)
+, dirty (false)
+, bytesPerRow (0)
 {
 }
 
@@ -98,11 +114,16 @@ CGBitmap::~CGBitmap ()
 		CGImageRelease (image);
 	if (imageSource)
 		CFRelease (imageSource);
+	if (bits)
+		free (bits);
 }
 
 //-----------------------------------------------------------------------------
 bool CGBitmap::load (const CResourceDescription& desc)
 {
+	if (bits)
+		return false;
+
 	bool result = false;
 	#if MAC_OS_X_VERSION_MIN_REQUIRED > MAC_OS_X_VERSION_10_4
 	if (gCustomBitmapReaderCreator)
@@ -140,14 +161,14 @@ bool CGBitmap::load (const CResourceDescription& desc)
 		// else it just uses the name
 		char filename [PATH_MAX];
 		if (desc.type == CResourceDescription::kIntegerType)
-			sprintf (filename, "bmp%05d", (int)desc.u.id);
+			sprintf (filename, "bmp%05d", (int32_t)desc.u.id);
 		else
 			strcpy (filename, desc.u.name);
 		CFStringRef cfStr = CFStringCreateWithCString (NULL, filename, kCFStringEncodingUTF8);
 		if (cfStr)
 		{
 			CFURLRef url = NULL;
-			int i = 0;
+			int32_t i = 0;
 			while (url == NULL)
 			{
 				static CFStringRef resTypes [] = { CFSTR("png"), CFSTR("bmp"), CFSTR("jpg"), CFSTR("pict"), NULL };
@@ -221,51 +242,16 @@ CGImageRef CGBitmap::getCGImage ()
 		CFRelease (options);
 		imageSource = 0;
 	}
-	return image;
-}
-
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
-CGOffscreenBitmap::CGOffscreenBitmap (const CPoint& inSize)
-: bits (0)
-, dirty (false)
-{
-	size = inSize;
-	bytesPerRow = size.x * 4;
-	if (bytesPerRow % 16)
-		bytesPerRow += 16 - (bytesPerRow % 16);
-	allocBits ();
-}
-
-//-----------------------------------------------------------------------------
-CGOffscreenBitmap::~CGOffscreenBitmap ()
-{
-	if (bits)
-		free (bits);
-}
-
-//-----------------------------------------------------------------------------
-void CGOffscreenBitmap::freeCGImage ()
-{
-	if (image)
-		CGImageRelease (image);
-	image = 0;
-}
-
-//-----------------------------------------------------------------------------
-CGImageRef CGOffscreenBitmap::getCGImage ()
-{
-	if (dirty)
-		freeCGImage ();
-	if (image == 0)
+	if (dirty && bits)
 	{
+		freeCGImage ();
+
 		size_t rowBytes = getBytesPerRow ();
 		size_t byteCount = rowBytes * size.y;
-		short bitDepth = 32;
+		size_t bitDepth = 32;
 
 		CGDataProviderRef provider = CGDataProviderCreateWithData (NULL, bits, byteCount, NULL);
-		CGBitmapInfo alphaInfo = kCGImageAlphaLast | kCGBitmapByteOrder32Host;
+		CGBitmapInfo alphaInfo = kCGImageAlphaPremultipliedFirst | kCGBitmapByteOrder32Big;
 		image = CGImageCreate (size.x, size.y, 8, bitDepth, rowBytes, GetGenericRGBColorSpace (), alphaInfo, provider, NULL, false, kCGRenderingIntentDefault);
 		CGDataProviderRelease (provider);
 		dirty = false;
@@ -274,12 +260,27 @@ CGImageRef CGOffscreenBitmap::getCGImage ()
 }
 
 //-----------------------------------------------------------------------------
-CGContextRef CGOffscreenBitmap::createCGContext ()
+CGContextRef CGBitmap::createCGContext ()
 {
 	CGContextRef context = 0;
+	if (bits == 0)
+	{
+		allocBits ();
+		if (image)
+		{
+			context = createCGContext ();
+			if (context)
+			{
+				CGContextScaleCTM (context, 1, -1);
+				CGContextDrawImage (context, CGRectMake (0, -size.y, size.x, size.y), image);
+				CGContextScaleCTM (context, 1, -1);
+				return context;
+			}
+		}
+	}
 	if (bits)
 	{
-		CGBitmapInfo bitmapInfo = kCGImageAlphaPremultipliedLast | kCGBitmapByteOrder32Host;
+		CGBitmapInfo bitmapInfo = kCGImageAlphaPremultipliedFirst | kCGBitmapByteOrder32Big;
 		context = CGBitmapContextCreate (bits,
 						size.x,
 						size.y,
@@ -294,25 +295,72 @@ CGContextRef CGOffscreenBitmap::createCGContext ()
 }
 
 //-----------------------------------------------------------------------------
-void CGOffscreenBitmap::allocBits ()
+void CGBitmap::allocBits ()
 {
 	if (bits == 0)
 	{
-		int bitmapBytesPerRow   = getBytesPerRow ();
-		int bitmapByteCount     = bitmapBytesPerRow * size.y; 
+		bytesPerRow = size.x * 4;
+		if (bytesPerRow % 16)
+			bytesPerRow += 16 - (bytesPerRow % 16);
+		int32_t bitmapByteCount     = bytesPerRow * size.y; 
 		bits = calloc (1, bitmapByteCount);
 	}
 }
 
 //-----------------------------------------------------------------------------
-class CGOffscreenBitmapPixelAccess : public IPlatformBitmapPixelAccess
+void CGBitmap::freeCGImage ()
+{
+	if (image)
+		CFRelease (image);
+	image = 0;
+}
+
+//-----------------------------------------------------------------------------
+class CGBitmapPixelAccess : public IPlatformBitmapPixelAccess
 {
 public:
-	CGOffscreenBitmapPixelAccess (CGOffscreenBitmap* bitmap) : bitmap (bitmap) { bitmap->remember (); }
-	~CGOffscreenBitmapPixelAccess () { bitmap->setDirty (); bitmap->forget (); }
+	CGBitmapPixelAccess (CGBitmap* bitmap, bool alphaPremultiplied)
+	: bitmap (bitmap)
+	, alphaPremultiplied (alphaPremultiplied)
+	{
+		if (!alphaPremultiplied)
+		{
+			vImage_Buffer buffer;
+			buffer.data = bitmap->getBits ();
+			buffer.width = bitmap->getSize ().x;
+			buffer.height = bitmap->getSize ().y;
+			buffer.rowBytes = bitmap->getBytesPerRow ();
+			vImage_Error error = vImageUnpremultiplyData_ARGB8888 (&buffer, &buffer, kvImageNoFlags);
+			assert (error == kvImageNoError);
+		}
+		bitmap->remember ();
+	}
+	
+	~CGBitmapPixelAccess ()
+	{
+		if (!alphaPremultiplied)
+		{
+			vImage_Buffer buffer;
+			buffer.data = bitmap->getBits ();
+			buffer.width = bitmap->getSize ().x;
+			buffer.height = bitmap->getSize ().y;
+			buffer.rowBytes = bitmap->getBytesPerRow ();
+			vImage_Error error = vImagePremultiplyData_ARGB8888 (&buffer, &buffer, kvImageNoFlags);
+			assert (error == kvImageNoError);
+		}
+		bitmap->setDirty ();
+		bitmap->forget ();
+	}
 
-	unsigned char* getAddress () { return (unsigned char*)bitmap->getBits (); }
-	long getBytesPerRow () { return bitmap->getBytesPerRow (); }
+	uint8_t* getAddress ()
+	{
+		return (uint8_t*)bitmap->getBits ();
+	}
+	
+	int32_t getBytesPerRow ()
+	{
+		return bitmap->getBytesPerRow ();
+	}
 	
 	PixelFormat getPixelFormat () 
 	{
@@ -324,13 +372,24 @@ public:
 	}
 	
 protected:
-	CGOffscreenBitmap* bitmap;
+	CGBitmap* bitmap;
+	bool alphaPremultiplied;
 };
 
 //-----------------------------------------------------------------------------
-IPlatformBitmapPixelAccess* CGOffscreenBitmap::lockPixels ()
+IPlatformBitmapPixelAccess* CGBitmap::lockPixels (bool alphaPremultiplied)
 {
-	return new CGOffscreenBitmapPixelAccess (this);
+	if (bits == 0)
+	{
+		CGContextRef context = createCGContext ();
+		if (context)
+			CFRelease (context);
+	}
+	if (bits)
+	{
+		return new CGBitmapPixelAccess (this, alphaPremultiplied);
+	}
+	return 0;
 }
 
 } // namespace

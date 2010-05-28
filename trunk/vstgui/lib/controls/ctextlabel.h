@@ -47,15 +47,15 @@ namespace VSTGUI {
 class CTextLabel : public CParamDisplay
 {
 public:
-	CTextLabel (const CRect& size, const char* txt = 0, CBitmap* background = 0, const long style = 0);
+	CTextLabel (const CRect& size, UTF8StringPtr txt = 0, CBitmap* background = 0, const int32_t style = 0);
 	CTextLabel (const CTextLabel& textLabel);
 	
 	//-----------------------------------------------------------------------------
 	/// @name CTextLabel Methods
 	//-----------------------------------------------------------------------------
 	//@{
-	virtual void setText (const char* txt);	///< set text
-	virtual const char* getText () const;	///< read only access to text
+	virtual void setText (UTF8StringPtr txt);	///< set text
+	virtual UTF8StringPtr getText () const;		///< read only access to text
 	//@}
 	
 	virtual	void draw (CDrawContext* pContext);
@@ -64,7 +64,7 @@ public:
 protected:
 	~CTextLabel ();
 	void freeText ();
-	char* text;
+	UTF8StringBuffer text;
 };
 
 } // namespace

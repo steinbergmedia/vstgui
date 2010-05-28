@@ -48,13 +48,13 @@ class CTabButton : public COnOffButton
 //-----------------------------------------------------------------------------
 {
 public:
-	CTabButton (const CRect &size, CControlListener *listener, long tag, CBitmap *background, const char* inName)
+	CTabButton (const CRect &size, CControlListener *listener, int32_t tag, CBitmap *background, UTF8StringPtr inName)
 	: COnOffButton (size, listener, tag, background)
 	, name (0)
 	{
 		if (inName)
 		{
-			name = (char*)malloc (strlen (inName) + 1);
+			name = (UTF8StringBuffer)malloc (strlen (inName) + 1);
 			strcpy (name, inName);
 		}
 		activeTextColor = kBlackCColor;
@@ -81,9 +81,9 @@ public:
 		}
 	}
 
-	CMouseEventResult onMouseDown (CPoint &where, const long& button)
+	CMouseEventResult onMouseDown (CPoint &where, const CButtonState& button)
 	{
-		value = ((long)value) ? 0.f : 1.f;
+		value = ((int32_t)value) ? 0.f : 1.f;
 		
 		valueChanged ();
 
@@ -105,7 +105,7 @@ public:
 
 	CLASS_METHODS (CTabButton, COnOffButton)
 protected:
-	char* name;
+	UTF8StringBuffer name;
 	CFontRef textFont;
 	CColor activeTextColor;
 	CColor inactiveTextColor;
@@ -137,7 +137,7 @@ public:
 /// @endcond
 
 //-----------------------------------------------------------------------------
-CTabView::CTabView (const CRect& size, CFrame* parent, CBitmap* tabBitmap, CBitmap* background, TabPosition tabPosition, long style)
+CTabView::CTabView (const CRect& size, CFrame* parent, CBitmap* tabBitmap, CBitmap* background, TabPosition tabPosition, int32_t style)
 : CViewContainer (size, parent, background)
 , numberOfChilds (0)
 , tabPosition (tabPosition)
@@ -158,7 +158,7 @@ CTabView::CTabView (const CRect& size, CFrame* parent, CBitmap* tabBitmap, CBitm
 }
 
 //-----------------------------------------------------------------------------
-CTabView::CTabView (const CRect& size, CFrame* parent, const CRect& tabSize, CBitmap* background, TabPosition tabPosition, long style)
+CTabView::CTabView (const CRect& size, CFrame* parent, const CRect& tabSize, CBitmap* background, TabPosition tabPosition, int32_t style)
 : CViewContainer (size, parent, background)
 , numberOfChilds (0)
 , currentTab (-1)
@@ -184,13 +184,13 @@ CTabView::~CTabView ()
 }
 
 //-----------------------------------------------------------------------------
-void CTabView::setAutosizeFlags (long flags)
+void CTabView::setAutosizeFlags (int32_t flags)
 {
 	CViewContainer::setAutosizeFlags (flags);
 }
 
 //-----------------------------------------------------------------------------
-bool CTabView::addTab (CView* view, const char* name, CBitmap* tabBitmap)
+bool CTabView::addTab (CView* view, UTF8StringPtr name, CBitmap* tabBitmap)
 {
 	if (!view)
 		return false;
@@ -212,7 +212,7 @@ bool CTabView::addTab (CView* view, CControl* button)
 	CViewContainer* tabContainer = dynamic_cast<CViewContainer*>(getView (0));
 	if (tabContainer == 0)
 	{
-		long asf = kAutosizeLeft | kAutosizeTop | kAutosizeRight | kAutosizeColumn;
+		int32_t asf = kAutosizeLeft | kAutosizeTop | kAutosizeRight | kAutosizeColumn;
 		CRect tsc (0, 0, size.getWidth (), tabSize.getHeight () / 2);
 		switch (tabPosition)
 		{
@@ -336,12 +336,12 @@ bool CTabView::removeAllTabs ()
 }
 
 //-----------------------------------------------------------------------------
-bool CTabView::selectTab (long index)
+bool CTabView::selectTab (int32_t index)
 {
 	if (index > numberOfChilds)
 		return false;
 	CTabChildView* v = firstChild;
-	long i = 0;
+	int32_t i = 0;
 	while (v)
 	{
 		if (index == i)
@@ -511,8 +511,8 @@ void CTabView::setViewSize (CRect &rect, bool invalid)
 
 	if (widthDelta != 0 || heightDelta != 0)
 	{
-		long numSubviews = getNbViews();
-		long counter = 1;
+		int32_t numSubviews = getNbViews();
+		int32_t counter = 1;
 		bool treatAsColumn = (getAutosizeFlags () & kAutosizeColumn) ? true : false;
 		bool treatAsRow = (getAutosizeFlags () & kAutosizeRow) ? true : false;
 		CTabChildView* v = firstChild;
@@ -521,7 +521,7 @@ void CTabView::setViewSize (CRect &rect, bool invalid)
 			if (v != currentChild)
 			{
 				CView* pV = v->view;
-				long autosize = pV->getAutosizeFlags ();
+				int32_t autosize = pV->getAutosizeFlags ();
 				CRect viewSize (pV->getViewSize ());
 				CRect mouseSize (pV->getMouseableArea ());
 				if (treatAsColumn)

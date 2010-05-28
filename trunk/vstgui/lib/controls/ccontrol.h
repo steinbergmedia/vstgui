@@ -81,11 +81,14 @@ class CControlListener
 public:
 	virtual ~CControlListener() {}
 	virtual void valueChanged (VSTGUI::CControl* pControl) = 0;
-	virtual long controlModifierClicked (VSTGUI::CControl* pControl, long button) { return 0; }	///< return 1 if you want the control to not handle it, otherwise 0
+	virtual int32_t controlModifierClicked (VSTGUI::CControl* pControl, VSTGUI::CButtonState button) { return 0; }	///< return 1 if you want the control to not handle it, otherwise 0
 	virtual void controlBeginEdit (VSTGUI::CControl* pControl) {}
 	virtual void controlEndEdit (VSTGUI::CControl* pControl) {}
 	virtual void controlTagWillChange (VSTGUI::CControl* pControl) {}
 	virtual void controlTagDidChange (VSTGUI::CControl* pControl) {}
+#if DEBUG
+	virtual char controlModifierClicked (VSTGUI::CControl* pControl, long button) { return 0; }
+#endif
 };
 
 namespace VSTGUI {
@@ -120,7 +123,7 @@ enum CControlEnum
 class CControl : public CView, public IFocusDrawing
 {
 public:
-	CControl (const CRect& size, CControlListener* listener = 0, long tag = 0, CBitmap* pBackground = 0);
+	CControl (const CRect& size, CControlListener* listener = 0, int32_t tag = 0, CBitmap* pBackground = 0);
 	CControl (const CControl& c);
 
 	//-----------------------------------------------------------------------------
@@ -144,7 +147,7 @@ public:
 	virtual	float getDefaultValue (void) const { return defaultValue; }
 
 	virtual void bounceValue ();
-	virtual bool checkDefaultValue (long button);
+	virtual bool checkDefaultValue (CButtonState button);
 	
 	virtual void valueChanged ();	///< notifies listeners
 	//@}
@@ -153,8 +156,8 @@ public:
 	/// @name Editing Methods
 	//-----------------------------------------------------------------------------
 	//@{
-	virtual void setTag (long val);
-	virtual long getTag () const { return tag; }
+	virtual void setTag (int32_t val);
+	virtual int32_t getTag () const { return tag; }
 
 	virtual void beginEdit ();
 	virtual void endEdit ();
@@ -194,15 +197,13 @@ protected:
 	~CControl ();
 
 	CControlListener* listener;
-	long  tag;
+	int32_t  tag;
 	float oldValue;
 	float defaultValue;
 	float value;
 	float vmin;
 	float vmax;
 	float wheelInc;
-
-	long lastTicks;
 
 	CPoint	backOffset;
 	
@@ -220,13 +221,13 @@ public:
 	virtual void setHeightOfOneImage (const CCoord& height) { heightOfOneImage = height; }
 	virtual CCoord getHeightOfOneImage () const { return heightOfOneImage; }
 
-	virtual void setNumSubPixmaps (long numSubPixmaps) { subPixmaps = numSubPixmaps; }
-	virtual long getNumSubPixmaps () const { return subPixmaps; }
+	virtual void setNumSubPixmaps (int32_t numSubPixmaps) { subPixmaps = numSubPixmaps; }
+	virtual int32_t getNumSubPixmaps () const { return subPixmaps; }
 
 	virtual void autoComputeHeightOfOneImage ();
 protected:
 	CCoord heightOfOneImage;
-	long subPixmaps;
+	int32_t subPixmaps;
 };
 
 } // namespace

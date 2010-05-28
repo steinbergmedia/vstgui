@@ -59,7 +59,7 @@ namespace VSTGUI {
 class UndoStackTop : public IActionOperation
 {
 public:
-	const char* getName () { return 0; }
+	UTF8StringPtr getName () { return 0; }
 	void perform () {}
 	void undo () {}
 };
@@ -90,7 +90,7 @@ public:
 		selection->forget ();
 	}
 
-	const char* getName () { return "size to fit"; }
+	UTF8StringPtr getName () { return "size to fit"; }
 	
 	void perform ()
 	{
@@ -176,7 +176,7 @@ public:
 		newContainer->forget ();
 	}
 	
-	const char* getName () { return 0; }
+	UTF8StringPtr getName () { return 0; }
 	void perform ()
 	{
 		CRect parentRect = newContainer->getViewSize ();
@@ -264,7 +264,7 @@ public:
 		workingSelection->forget ();
 	}
 	
-	const char* getName () 
+	UTF8StringPtr getName () 
 	{
 		if (size () > 0)
 			return "copy views";
@@ -334,7 +334,7 @@ public:
 		}
 	}
 	
-	const char* getName ()
+	UTF8StringPtr getName ()
 	{
 		if (size () > 1)
 			return sizing ? "resize views" : "move views";
@@ -388,7 +388,7 @@ public:
 		FOREACH_IN_SELECTION(selection, view)
 			CViewContainer* container = dynamic_cast<CViewContainer*> (view->getParentView ());
 			CView* nextView = 0;
-			for (long i = 0; i < container->getNbViews (); i++)
+			for (int32_t i = 0; i < container->getNbViews (); i++)
 			{
 				if (container->getView (i) == view)
 				{
@@ -419,7 +419,7 @@ public:
 		selection->forget ();
 	}
 	
-	const char* getName ()
+	UTF8StringPtr getName ()
 	{
 		if (size () > 1)
 			return "delete views";
@@ -477,7 +477,7 @@ public:
 		selection->forget ();
 	}
 	
-	const char* getName ()
+	UTF8StringPtr getName ()
 	{
 		return "create new subview";
 	}
@@ -505,7 +505,7 @@ protected:
 class TransformViewTypeOperation : public IActionOperation
 {
 public:
-	TransformViewTypeOperation (CSelection* selection, const char* viewClassName, IUIDescription* desc, ViewFactory* factory)
+	TransformViewTypeOperation (CSelection* selection, IdStringPtr viewClassName, IUIDescription* desc, ViewFactory* factory)
 	: view (selection->first ())
 	, newView (0)
 	, beforeView (0)
@@ -517,7 +517,7 @@ public:
 		{
 			attr.setAttribute ("class", viewClassName);
 			newView = factory->createView (attr, desc);
-			for (long i = 0; i < parent->getNbViews (); i++)
+			for (int32_t i = 0; i < parent->getNbViews (); i++)
 			{
 				if (parent->getView (i) == view)
 					beforeView = parent->getView (i+1);
@@ -533,13 +533,13 @@ public:
 			newView->forget ();
 	}
 	
-	const char* getName () { return "transform view type"; }
+	UTF8StringPtr getName () { return "transform view type"; }
 
 	void exchangeSubViews (CViewContainer* src, CViewContainer* dst)
 	{
 		if (src && dst)
 		{
-			for (long i = src->getNbViews ()-1; i >= 0; i--)
+			for (int32_t i = src->getNbViews ()-1; i >= 0; i--)
 			{
 				CView* view = src->getView (i);
 				src->removeView (view, false);
@@ -595,7 +595,7 @@ public:
 		kDragStyle
 	};
 	
-	CrossLines (CFrame* frame, int style)
+	CrossLines (CFrame* frame, int32_t style)
 	: frame (frame)
 	, style (style)
 	{
@@ -606,7 +606,7 @@ public:
 		invalid ();
 	}
 	
-	int getStyle () const { return style; }
+	int32_t getStyle () const { return style; }
 
 	void update (CSelection* selection)
 	{
@@ -678,7 +678,7 @@ public:
 protected:
 	CFrame* frame;
 	CRect currentRect;
-	int style;
+	int32_t style;
 };
 
 //----------------------------------------------------------------------------------------------------
@@ -687,32 +687,32 @@ protected:
 class Grid
 {
 public:
-	Grid (int size) : size (size) {}
+	Grid (int32_t size) : size (size) {}
 	
 	void process (CPoint& p)
 	{
-		int x = (int) (p.x / size);
+		int32_t x = (int32_t) (p.x / size);
 		p.x = x * size;
-		int y = (int) (p.y / size);
+		int32_t y = (int32_t) (p.y / size);
 		p.y = y * size;
 	}
 
-	void setSize (int s) { size = s; }
-	int getSize () const { return size; }
+	void setSize (int32_t s) { size = s; }
+	int32_t getSize () const { return size; }
 
 protected:
-	int size;
+	int32_t size;
 };
 
 //----------------------------------------------------------------------------------------------------
-const char* CEditFrame::kMsgPerformOptionsMenuAction = "CEditFrame PerformOptionsMenuAction";
-const char* CEditFrame::kMsgShowOptionsMenu = "CEditFrame ShowOptionsMenu";
-const char* CEditFrame::kMsgEditEnding = "CEditFrame Edit Ending";
+IdStringPtr CEditFrame::kMsgPerformOptionsMenuAction = "CEditFrame PerformOptionsMenuAction";
+IdStringPtr CEditFrame::kMsgShowOptionsMenu = "CEditFrame ShowOptionsMenu";
+IdStringPtr CEditFrame::kMsgEditEnding = "CEditFrame Edit Ending";
 
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
-CEditFrame::CEditFrame (const CRect& size, void* windowPtr, VSTGUIEditorInterface* editor, EditMode _editMode, CSelection* _selection, UIDescription* description, const char* uiDescViewName)
+CEditFrame::CEditFrame (const CRect& size, void* windowPtr, VSTGUIEditorInterface* editor, EditMode _editMode, CSelection* _selection, UIDescription* description, UTF8StringPtr uiDescViewName)
 : CFrame (size, windowPtr, editor)
 , lines (0)
 , grid (0)
@@ -785,14 +785,14 @@ void CEditFrame::emptyUndoStack ()
 }
 
 //----------------------------------------------------------------------------------------------------
-void CEditFrame::setGrid (int size)
+void CEditFrame::setGrid (int32_t size)
 {
 	if (grid)
 		grid->setSize (size);
 }
 
 //----------------------------------------------------------------------------------------------------
-int CEditFrame::getGrid () const
+int32_t CEditFrame::getGrid () const
 {
 	if (grid)
 		return grid->getSize ();
@@ -927,7 +927,7 @@ void CEditFrame::showOptionsMenu (const CPoint& where)
 		item->setEnabled (canRedo ());
 		
 		menu->addSeparator ();
-		int selectionCount = selection->total ();
+		int32_t selectionCount = selection->total ();
 		item = menu->addEntry (new CMenuItem ("Size To Fit", kSizeToFitTag));
 		if (selectionCount <= 0 || selection->contains (getView (0)))
 			item->setEnabled (false);
@@ -1028,7 +1028,7 @@ void CEditFrame::showOptionsMenu (const CPoint& where)
 	}
 	if (menu->popup (this, where))
 	{
-		long index = 0;
+		int32_t index = 0;
 		COptionMenu* resMenu = menu->getLastItemMenu (index);
 		if (resMenu)
 		{
@@ -1058,7 +1058,7 @@ void CEditFrame::showOptionsMenu (const CPoint& where)
 						fileSelector->setInitialDirectory (savePath.c_str ());
 					if (fileSelector->runModal ())
 					{
-						const char* filename = fileSelector->getSelectedFile (0);
+						UTF8StringPtr filename = fileSelector->getSelectedFile (0);
 						savePath = filename;
 						uiDescription->updateViewDescription (templateName.c_str (), getView (0));
 						if (inspector)
@@ -1170,14 +1170,14 @@ void CEditFrame::restoreAttributes ()
 		value = attr->getAttributeValue ("gridsize");
 		if (value)
 		{
-			long gridSize = strtol (value->c_str (), 0, 10);
+			int32_t gridSize = strtol (value->c_str (), 0, 10);
 			grid->setSize (gridSize);
 		}
 	}
 }
 
 //----------------------------------------------------------------------------------------------------
-void CEditFrame::insertTemplate (const CPoint& where, const char* templateName)
+void CEditFrame::insertTemplate (const CPoint& where, UTF8StringPtr templateName)
 {
 	CViewContainer* parent = dynamic_cast<CViewContainer*> (selection->first ());
 	if (parent == 0)
@@ -1202,7 +1202,7 @@ void CEditFrame::insertTemplate (const CPoint& where, const char* templateName)
 }
 
 //----------------------------------------------------------------------------------------------------
-void CEditFrame::createNewSubview (const CPoint& where, const char* viewName)
+void CEditFrame::createNewSubview (const CPoint& where, UTF8StringPtr viewName)
 {
 	CViewContainer* parent = dynamic_cast<CViewContainer*> (selection->first ());
 	if (parent == 0)
@@ -1237,7 +1237,7 @@ void CEditFrame::createNewSubview (const CPoint& where, const char* viewName)
 }
 
 //----------------------------------------------------------------------------------------------------
-void CEditFrame::embedSelectedViewsInto (const char* containerViewName)
+void CEditFrame::embedSelectedViewsInto (IdStringPtr containerViewName)
 {
 	ViewFactory* viewFactory = dynamic_cast<ViewFactory*> (uiDescription->getViewFactory ());
 	UIAttributes viewAttr;
@@ -1250,7 +1250,7 @@ void CEditFrame::embedSelectedViewsInto (const char* containerViewName)
 }
 
 //----------------------------------------------------------------------------------------------------
-CMessageResult CEditFrame::notify (CBaseObject* sender, const char* message)
+CMessageResult CEditFrame::notify (CBaseObject* sender, IdStringPtr message)
 {
 	if (message == CVSTGUITimer::kMsgTimer)
 	{
@@ -1336,7 +1336,7 @@ enum {
 };
 
 //----------------------------------------------------------------------------------------------------
-long CEditFrame::selectionHitTest (const CPoint& where, CView** resultView)
+int32_t CEditFrame::selectionHitTest (const CPoint& where, CView** resultView)
 {
 	FOREACH_IN_SELECTION(selection, view)
 		CRect r = selection->getGlobalViewCoordinates (view);
@@ -1523,7 +1523,7 @@ CViewContainer* CEditFrame::getContainerAt (const CPoint& p, bool deep) const
 }
 
 //----------------------------------------------------------------------------------------------------
-CMouseEventResult CEditFrame::onMouseDown (CPoint &where, const long& buttons)
+CMouseEventResult CEditFrame::onMouseDown (CPoint &where, const CButtonState& buttons)
 {
 	if (editMode != kNoEditMode)
 	{
@@ -1539,7 +1539,7 @@ CMouseEventResult CEditFrame::onMouseDown (CPoint &where, const long& buttons)
 			if (view)
 			{
 				CView* mouseHitView = 0;
-				long sizeMode = selectionHitTest (where, &mouseHitView);
+				int32_t sizeMode = selectionHitTest (where, &mouseHitView);
 				if (sizeMode == kSizeModeNone)
 				{
 					// first alter selection
@@ -1609,7 +1609,7 @@ CMouseEventResult CEditFrame::onMouseDown (CPoint &where, const long& buttons)
 						mouseSizeMode = sizeMode;
 						if (showLines)
 						{
-							int crossLineMode = 0;
+							int32_t crossLineMode = 0;
 							switch (sizeMode)
 							{
 								case kSizeModeLeft:
@@ -1652,7 +1652,7 @@ CMouseEventResult CEditFrame::onMouseDown (CPoint &where, const long& buttons)
 }
 
 //----------------------------------------------------------------------------------------------------
-CMouseEventResult CEditFrame::onMouseUp (CPoint &where, const long& buttons)
+CMouseEventResult CEditFrame::onMouseUp (CPoint &where, const CButtonState& buttons)
 {
 	if (editMode != kNoEditMode)
 	{
@@ -1696,7 +1696,7 @@ CMouseEventResult CEditFrame::onMouseUp (CPoint &where, const long& buttons)
 }
 
 //----------------------------------------------------------------------------------------------------
-CMouseEventResult CEditFrame::onMouseMoved (CPoint &where, const long& buttons)
+CMouseEventResult CEditFrame::onMouseMoved (CPoint &where, const CButtonState& buttons)
 {
 	if (editMode != kNoEditMode)
 	{
@@ -1788,7 +1788,7 @@ CMouseEventResult CEditFrame::onMouseMoved (CPoint &where, const long& buttons)
 		}
 		else if (buttons == 0)
 		{
-			long mode = selectionHitTest (where, 0);
+			int32_t mode = selectionHitTest (where, 0);
 			switch (mode)
 			{
 				case kSizeModeRight:
@@ -1811,7 +1811,7 @@ CMouseEventResult CEditFrame::onMouseMoved (CPoint &where, const long& buttons)
 }
 
 //----------------------------------------------------------------------------------------------------
-bool CEditFrame::onWheel (const CPoint &where, const CMouseWheelAxis &axis, const float &distance, const long &buttons)
+bool CEditFrame::onWheel (const CPoint &where, const CMouseWheelAxis &axis, const float &distance, const CButtonState &buttons)
 {
 	if (editMode == kNoEditMode)
 		return CFrame::onWheel (where, axis, distance, buttons);
@@ -1874,8 +1874,8 @@ void CEditFrame::startDrag (CPoint& where)
 //----------------------------------------------------------------------------------------------------
 CSelection* CEditFrame::getSelectionOutOfDrag (CDragContainer* drag)
 {
-	long size, type;
-	const char* dragData = (const char*)drag->first (size, type);
+	int32_t size, type;
+	const int8_t* dragData = (const int8_t*)drag->first (size, type);
 
 	IController* controller = getEditor () ? dynamic_cast<IController*> (getEditor ()) : 0;
 	if (controller)
@@ -2042,7 +2042,7 @@ static void collectAllSubViews (CView* view, std::list<CView*>& views)
 	CViewContainer* container = dynamic_cast<CViewContainer*> (view);
 	if (container)
 	{
-		for (long i = 0; i < container->getNbViews (); i++)
+		for (int32_t i = 0; i < container->getNbViews (); i++)
 		{
 			CView* subview = container->getView (i);
 			collectAllSubViews (subview, views);
@@ -2135,7 +2135,7 @@ static void performAttributeChange (ViewFactory* viewFactory, IUIDescription* de
 }
 
 //----------------------------------------------------------------------------------------------------
-void CEditFrame::performColorChange (const char* colorName, const CColor& newColor, bool remove)
+void CEditFrame::performColorChange (UTF8StringPtr colorName, const CColor& newColor, bool remove)
 {
 	if (remove)
 	{
@@ -2153,7 +2153,7 @@ void CEditFrame::performColorChange (const char* colorName, const CColor& newCol
 }
 
 //----------------------------------------------------------------------------------------------------
-void CEditFrame::performTagChange (const char* tagName, long tag, bool remove)
+void CEditFrame::performTagChange (UTF8StringPtr tagName, int32_t tag, bool remove)
 {
 	ViewFactory* viewFactory = dynamic_cast<ViewFactory*> (uiDescription->getViewFactory ());
 	std::map<CView*, std::string> m;
@@ -2175,7 +2175,7 @@ void CEditFrame::performTagChange (const char* tagName, long tag, bool remove)
 }
 
 //----------------------------------------------------------------------------------------------------
-void CEditFrame::performBitmapChange (const char* bitmapName, const char* bitmapPath, bool remove)
+void CEditFrame::performBitmapChange (UTF8StringPtr bitmapName, UTF8StringPtr bitmapPath, bool remove)
 {
 	ViewFactory* viewFactory = dynamic_cast<ViewFactory*> (uiDescription->getViewFactory ());
 	std::map<CView*, std::string> m;
@@ -2195,7 +2195,7 @@ void CEditFrame::performBitmapChange (const char* bitmapName, const char* bitmap
 }
 
 //----------------------------------------------------------------------------------------------------
-void CEditFrame::performFontChange (const char* fontName, CFontRef newFont, bool remove)
+void CEditFrame::performFontChange (UTF8StringPtr fontName, CFontRef newFont, bool remove)
 {
 	ViewFactory* viewFactory = dynamic_cast<ViewFactory*> (uiDescription->getViewFactory ());
 	std::map<CView*, std::string> m;
@@ -2215,7 +2215,7 @@ void CEditFrame::performFontChange (const char* fontName, CFontRef newFont, bool
 }
 
 //----------------------------------------------------------------------------------------------------
-void CEditFrame::performColorNameChange (const char* oldName, const char* newName)
+void CEditFrame::performColorNameChange (UTF8StringPtr oldName, UTF8StringPtr newName)
 {
 	ViewFactory* viewFactory = dynamic_cast<ViewFactory*> (uiDescription->getViewFactory ());
 	std::map<CView*, std::string> m;
@@ -2228,28 +2228,28 @@ void CEditFrame::performColorNameChange (const char* oldName, const char* newNam
 }
 
 //----------------------------------------------------------------------------------------------------
-void CEditFrame::performTagNameChange (const char* oldName, const char* newName)
+void CEditFrame::performTagNameChange (UTF8StringPtr oldName, UTF8StringPtr newName)
 {
 	uiDescription->changeTagName (oldName, newName);
 	selection->changed (CSelection::kMsgSelectionViewChanged);
 }
 
 //----------------------------------------------------------------------------------------------------
-void CEditFrame::performFontNameChange (const char* oldName, const char* newName)
+void CEditFrame::performFontNameChange (UTF8StringPtr oldName, UTF8StringPtr newName)
 {
 	uiDescription->changeFontName (oldName, newName);
 	selection->changed (CSelection::kMsgSelectionViewChanged);
 }
 
 //----------------------------------------------------------------------------------------------------
-void CEditFrame::performBitmapNameChange (const char* oldName, const char* newName)
+void CEditFrame::performBitmapNameChange (UTF8StringPtr oldName, UTF8StringPtr newName)
 {
 	uiDescription->changeBitmapName (oldName, newName);
 	selection->changed (CSelection::kMsgSelectionViewChanged);
 }
 
 //----------------------------------------------------------------------------------------------------
-void CEditFrame::performBitmapNinePartTiledChange (const char* bitmapName, const CRect* offsets)
+void CEditFrame::performBitmapNinePartTiledChange (UTF8StringPtr bitmapName, const CRect* offsets)
 {
 	ViewFactory* viewFactory = dynamic_cast<ViewFactory*> (uiDescription->getViewFactory ());
 	std::map<CView*, std::string> m;
@@ -2313,7 +2313,7 @@ bool CEditFrame::canRedo ()
 }
 
 //----------------------------------------------------------------------------------------------------
-const char* CEditFrame::getUndoName ()
+UTF8StringPtr CEditFrame::getUndoName ()
 {
 	if (undoStack != undoStackList.end () && undoStack != undoStackList.begin ())
 		return (*undoStack)->getName ();
@@ -2321,9 +2321,9 @@ const char* CEditFrame::getUndoName ()
 }
 
 //----------------------------------------------------------------------------------------------------
-const char* CEditFrame::getRedoName ()
+UTF8StringPtr CEditFrame::getRedoName ()
 {
-	const char* redoName = 0;
+	UTF8StringPtr redoName = 0;
 	if (undoStack != undoStackList.end ())
 	{
 		undoStack++;
@@ -2368,7 +2368,7 @@ void CEditFrame::deleteSelectedViews ()
 }
 
 //----------------------------------------------------------------------------------------------------
-long CEditFrame::onKeyDown (const VstKeyCode& code, CFrame* frame)
+int32_t CEditFrame::onKeyDown (const VstKeyCode& code, CFrame* frame)
 {
 	VstKeyCode vc (code);
 	if (onKeyDown (vc) == 1)
@@ -2377,13 +2377,13 @@ long CEditFrame::onKeyDown (const VstKeyCode& code, CFrame* frame)
 }
 
 //----------------------------------------------------------------------------------------------------
-long CEditFrame::onKeyUp (const VstKeyCode& code, CFrame* frame)
+int32_t CEditFrame::onKeyUp (const VstKeyCode& code, CFrame* frame)
 {
 	return -1;
 }
 
 //----------------------------------------------------------------------------------------------------
-long CEditFrame::onKeyDown (VstKeyCode& keycode)
+int32_t CEditFrame::onKeyDown (VstKeyCode& keycode)
 {
 	if (keycode.character == 'e' && keycode.modifier == MODIFIER_CONTROL)
 	{
@@ -2423,7 +2423,7 @@ long CEditFrame::onKeyDown (VstKeyCode& keycode)
 }
 
 //----------------------------------------------------------------------------------------------------
-long CEditFrame::onKeyUp (VstKeyCode& keyCode)
+int32_t CEditFrame::onKeyUp (VstKeyCode& keyCode)
 {
 	if (editMode == kEditMode)
 	{

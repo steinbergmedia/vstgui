@@ -231,8 +231,8 @@ Attributes:
 class CViewCreator : public IViewCreator
 {
 public:
-	const char* getViewName () const { return "CView"; }
-	const char* getBaseViewName () const { return 0; }
+	IdStringPtr getViewName () const { return "CView"; }
+	IdStringPtr getBaseViewName () const { return 0; }
 	CView* create (const UIAttributes& attributes, IUIDescription* description) const { return new CView (CRect (0, 0, 0, 0)); }
 	bool apply (CView* view, const UIAttributes& attributes, IUIDescription* description) const
 	{
@@ -293,7 +293,7 @@ bool pointToString (const CPoint& p, std::string& string)
 //-----------------------------------------------------------------------------
 bool bitmapToString (CBitmap* bitmap, std::string& string, IUIDescription* desc)
 {
-	const char* bitmapName = desc->lookupBitmapName (bitmap);
+	UTF8StringPtr bitmapName = desc->lookupBitmapName (bitmap);
 	if (bitmapName)
 		string = bitmapName;
 	else
@@ -314,15 +314,15 @@ bool bitmapToString (CBitmap* bitmap, std::string& string, IUIDescription* desc)
 //-----------------------------------------------------------------------------
 bool colorToString (const CColor& color, std::string& string, IUIDescription* desc)
 {
-	const char* colorName = desc ? desc->lookupColorName (color) : 0;
+	UTF8StringPtr colorName = desc ? desc->lookupColorName (color) : 0;
 	if (colorName)
 		string = colorName;
 	else
 	{
-		unsigned char red = color.red;
-		unsigned char green = color.green;
-		unsigned char blue = color.blue;
-		unsigned char alpha = color.alpha;
+		uint8_t red = color.red;
+		uint8_t green = color.green;
+		uint8_t blue = color.blue;
+		uint8_t alpha = color.alpha;
 		char strBuffer[10];
 		sprintf (strBuffer, "#%02x%02x%02x%02x", red, green, blue, alpha);
 		string = strBuffer;
@@ -335,8 +335,8 @@ class CViewCreator : public IViewCreator
 {
 public:
 	CViewCreator () { ViewFactory::registerViewCreator (*this); }
-	const char* getViewName () const { return "CView"; }
-	const char* getBaseViewName () const { return 0; }
+	IdStringPtr getViewName () const { return "CView"; }
+	IdStringPtr getBaseViewName () const { return 0; }
 	CView* create (const UIAttributes& attributes, IUIDescription* description) const { return new CView (CRect (0, 0, 0, 0)); }
 	bool apply (CView* view, const UIAttributes& attributes, IUIDescription* description) const
 	{
@@ -384,7 +384,7 @@ public:
 
 		if (autosizeAttr)
 		{
-			long autosize = kAutosizeNone;
+			int32_t autosize = kAutosizeNone;
 			if (autosizeAttr->find ("left") != std::string::npos)
 				autosize |= kAutosizeLeft;
 			if (autosizeAttr->find ("top") != std::string::npos)
@@ -467,7 +467,7 @@ public:
 		else if (attributeName == "autosize")
 		{
 			std::stringstream stream;
-			long autosize = view->getAutosizeFlags ();
+			int32_t autosize = view->getAutosizeFlags ();
 			if (autosize == 0)
 				return false;
 			if (autosize & kAutosizeLeft)
@@ -488,7 +488,7 @@ public:
 		else if (attributeName == "tooltip")
 		{
 			char* tooltip = 0;
-			long tooltipSize = 0;
+			int32_t tooltipSize = 0;
 			if (view->getAttributeSize (kCViewTooltipAttribute, tooltipSize))
 			{
 				tooltip = (char*)malloc (tooltipSize + 1);
@@ -502,7 +502,7 @@ public:
 		else if (attributeName == "custom-view-name")
 		{
 			char* customViewName = 0;
-			long customViewNameSize = 0;
+			int32_t customViewNameSize = 0;
 			if (view->getAttributeSize ('uicv', customViewNameSize))
 			{
 				customViewName = (char*)malloc (customViewNameSize + 1);
@@ -516,7 +516,7 @@ public:
 		else if (attributeName == "sub-controller")
 		{
 			char* subControllerName = 0;
-			long subControllerNameSize = 0;
+			int32_t subControllerNameSize = 0;
 			if (view->getAttributeSize ('uisc', subControllerNameSize))
 			{
 				subControllerName = (char*)malloc (subControllerNameSize + 1);
@@ -533,9 +533,9 @@ public:
 CViewCreator __gCViewCreator;
 
 //-----------------------------------------------------------------------------
-static unsigned int DJBHash (const std::string& str)
+static uint32_t DJBHash (const std::string& str)
 {
-   unsigned int hash = 5381;
+   uint32_t hash = 5381;
    for (std::size_t i = 0; i < str.length (); i++)
    {
       hash = ((hash << 5) + hash) + str[i];
@@ -544,21 +544,21 @@ static unsigned int DJBHash (const std::string& str)
 }
 
 //-----------------------------------------------------------------------------
-void rememberAttributeValueString (CView* view, const char* attrName, const std::string& value)
+void rememberAttributeValueString (CView* view, IdStringPtr attrName, const std::string& value)
 {
 	#if VSTGUI_LIVE_EDITING
-	unsigned int hash = DJBHash (attrName);
+	uint32_t hash = DJBHash (attrName);
 	view->setAttribute (hash, value.size () + 1, value.c_str ());
 	#endif
 }
 
 //-----------------------------------------------------------------------------
-bool getRememberedAttributeValueString (CView* view, const char* attrName, std::string& value)
+bool getRememberedAttributeValueString (CView* view, IdStringPtr attrName, std::string& value)
 {
 	bool result = false;
 	#if VSTGUI_LIVE_EDITING
-	unsigned int hash = DJBHash (attrName);
-	long attrSize = 0;
+	uint32_t hash = DJBHash (attrName);
+	int32_t attrSize = 0;
 	if (view->getAttributeSize (hash, attrSize))
 	{
 		char* temp = new char[attrSize];
@@ -578,8 +578,8 @@ class CViewContainerCreator : public IViewCreator
 {
 public:
 	CViewContainerCreator () { ViewFactory::registerViewCreator (*this); }
-	const char* getViewName () const { return "CViewContainer"; }
-	const char* getBaseViewName () const { return "CView"; }
+	IdStringPtr getViewName () const { return "CViewContainer"; }
+	IdStringPtr getBaseViewName () const { return "CView"; }
 	CView* create (const UIAttributes& attributes, IUIDescription* description) const { return new CViewContainer (CRect (0, 0, 100, 100), 0); }
 	bool apply (CView* view, const UIAttributes& attributes, IUIDescription* description) const
 	{
@@ -630,8 +630,8 @@ class CScrollViewCreator : public IViewCreator
 {
 public:
 	CScrollViewCreator () { ViewFactory::registerViewCreator (*this); }
-	const char* getViewName () const { return "CScrollView"; }
-	const char* getBaseViewName () const { return "CViewContainer"; }
+	IdStringPtr getViewName () const { return "CScrollView"; }
+	IdStringPtr getBaseViewName () const { return "CViewContainer"; }
 	CView* create (const UIAttributes& attributes, IUIDescription* description) const { return new CScrollView (CRect (0, 0, 100, 100), CRect (0, 0, 200, 200), 0, CScrollView::kHorizontalScrollbar|CScrollView::kVerticalScrollbar); }
 	bool apply (CView* view, const UIAttributes& attributes, IUIDescription* description) const
 	{
@@ -682,7 +682,7 @@ public:
 				if (hscrollbar) hscrollbar->setScrollerColor (color);
 			}
 		}
-		long style = scrollView->getStyle ();
+		int32_t style = scrollView->getStyle ();
 		attr = attributes.getAttributeValue ("horizontal-scrollbar");
 		if (attr)
 		{
@@ -698,6 +698,14 @@ public:
 				style |= CScrollView::kVerticalScrollbar;
 			else
 				style &= ~CScrollView::kVerticalScrollbar;
+		}
+		attr = attributes.getAttributeValue ("auto-drag-scrolling");
+		if (attr)
+		{
+			if (*attr == "true")
+				style |= CScrollView::kAutoDragScrolling;
+			else
+				style &= ~CScrollView::kAutoDragScrolling;
 		}
 		attr = attributes.getAttributeValue ("bordered");
 		if (attr)
@@ -724,6 +732,7 @@ public:
 		attributeNames.push_back ("scrollbar-scroller-color");
 		attributeNames.push_back ("horizontal-scrollbar");
 		attributeNames.push_back ("vertical-scrollbar");
+		attributeNames.push_back ("auto-drag-scrolling");
 		attributeNames.push_back ("scrollbar-width");
 		attributeNames.push_back ("bordered");
 		return true;
@@ -736,6 +745,7 @@ public:
 		if (attributeName == "scrollbar-scroller-color") return kColorType;
 		if (attributeName == "horizontal-scrollbar") return kBooleanType;
 		if (attributeName == "vertical-scrollbar") return kBooleanType;
+		if (attributeName == "auto-drag-scrolling") return kBooleanType;
 		if (attributeName == "bordered") return kBooleanType;
 		if (attributeName == "scrollbar-width") return kIntegerType;
 		return kUnknownType;
@@ -791,6 +801,11 @@ public:
 			stringValue = sc->getStyle () & CScrollView::kVerticalScrollbar ? "true" : "false";
 			return true;
 		}
+		if (attributeName == "auto-drag-scrolling")
+		{
+			stringValue = sc->getStyle () & CScrollView::kAutoDragScrolling ? "true" : "false";
+			return true;
+		}
 		if (attributeName == "bordered")
 		{
 			stringValue = sc->getStyle () & CScrollView::kDontDrawFrame ? "false" : "true";
@@ -807,8 +822,8 @@ class CControlCreator : public IViewCreator
 {
 public:
 	CControlCreator () { ViewFactory::registerViewCreator (*this); }
-	const char* getViewName () const { return "CControl"; }
-	const char* getBaseViewName () const { return "CView"; }
+	IdStringPtr getViewName () const { return "CControl"; }
+	IdStringPtr getBaseViewName () const { return "CView"; }
 	CView* create (const UIAttributes& attributes, IUIDescription* description) const { return 0; }
 	bool apply (CView* view, const UIAttributes& attributes, IUIDescription* description) const
 	{
@@ -859,7 +874,7 @@ public:
 			}
 			else
 			{
-				long tag = description->getTagForName (controlTagAttr->c_str ());
+				int32_t tag = description->getTagForName (controlTagAttr->c_str ());
 				if (tag != -1)
 				{
 					control->setTag (tag);
@@ -912,7 +927,7 @@ public:
 			{
 				if (getRememberedAttributeValueString (view, "control-tag", stringValue))
 					return true;
-				const char* controlTag = desc->lookupControlTagName (control->getTag ());
+				UTF8StringPtr controlTag = desc->lookupControlTagName (control->getTag ());
 				if (controlTag)
 				{
 					stringValue = controlTag;
@@ -960,8 +975,8 @@ class COnOffButtonCreator : public IViewCreator
 {
 public:
 	COnOffButtonCreator () { ViewFactory::registerViewCreator (*this); }
-	const char* getViewName () const { return "COnOffButton"; }
-	const char* getBaseViewName () const { return "CControl"; }
+	IdStringPtr getViewName () const { return "COnOffButton"; }
+	IdStringPtr getBaseViewName () const { return "CControl"; }
 	CView* create (const UIAttributes& attributes, IUIDescription* description) const { return new COnOffButton (CRect (0, 0, 0, 0), 0, -1, 0); }
 	bool apply (CView* view, const UIAttributes& attributes, IUIDescription* description) const
 	{
@@ -988,8 +1003,8 @@ class CCheckBoxCreator : public IViewCreator
 {
 public:
 	CCheckBoxCreator () { ViewFactory::registerViewCreator (*this); }
-	const char* getViewName () const { return "CCheckBox"; }
-	const char* getBaseViewName () const { return "CControl"; }
+	IdStringPtr getViewName () const { return "CCheckBox"; }
+	IdStringPtr getBaseViewName () const { return "CControl"; }
 	CView* create (const UIAttributes& attributes, IUIDescription* description) const { return new CCheckBox (CRect (0, 0, 100, 20), 0, -1, "Title"); }
 	bool apply (CView* view, const UIAttributes& attributes, IUIDescription* description) const
 	{
@@ -1052,7 +1067,7 @@ public:
 				checkbox->setCheckMarkColor (color);
 			}
 		}
-		long style = checkbox->getStyle ();
+		int32_t style = checkbox->getStyle ();
 		attr = attributes.getAttributeValue ("draw-crossbox");
 		if (attr)
 		{
@@ -1113,7 +1128,7 @@ public:
 		{
 			if (getRememberedAttributeValueString (view, "font", stringValue))
 				return true;
-			const char* fontName = desc->lookupFontName (checkbox->getFont ());
+			UTF8StringPtr fontName = desc->lookupFontName (checkbox->getFont ());
 			if (fontName)
 			{
 				stringValue = fontName;
@@ -1172,8 +1187,8 @@ class CParamDisplayCreator : public IViewCreator
 {
 public:
 	CParamDisplayCreator () { ViewFactory::registerViewCreator (*this); }
-	const char* getViewName () const { return "CParamDisplay"; }
-	const char* getBaseViewName () const { return "CControl"; }
+	IdStringPtr getViewName () const { return "CParamDisplay"; }
+	IdStringPtr getBaseViewName () const { return "CControl"; }
 	CView* create (const UIAttributes& attributes, IUIDescription* description) const { return new CParamDisplay (CRect (0, 0, 0, 0)); }
 	bool apply (CView* view, const UIAttributes& attributes, IUIDescription* description) const
 	{
@@ -1255,7 +1270,7 @@ public:
 				align = kRightText;
 			display->setHoriAlign (align);
 		}
-		long style = display->getStyle ();
+		int32_t style = display->getStyle ();
 		if (style3DInAttr)
 		{
 			if (*style3DInAttr == "true")
@@ -1346,7 +1361,7 @@ public:
 		{
 			if (getRememberedAttributeValueString (view, "font", stringValue))
 				return true;
-			const char* fontName = desc->lookupFontName (pd->getFont ());
+			UTF8StringPtr fontName = desc->lookupFontName (pd->getFont ());
 			if (fontName)
 			{
 				stringValue = fontName;
@@ -1440,8 +1455,8 @@ class COptionMenuCreator : public IViewCreator
 {
 public:
 	COptionMenuCreator () { ViewFactory::registerViewCreator (*this); }
-	const char* getViewName () const { return "COptionMenu"; }
-	const char* getBaseViewName () const { return "CParamDisplay"; }
+	IdStringPtr getViewName () const { return "COptionMenu"; }
+	IdStringPtr getBaseViewName () const { return "CParamDisplay"; }
 	CView* create (const UIAttributes& attributes, IUIDescription* description) const { return new COptionMenu (); }
 	bool apply (CView* view, const UIAttributes& attributes, IUIDescription* description) const
 	{
@@ -1506,8 +1521,8 @@ class CTextLabelCreator : public IViewCreator
 {
 public:
 	CTextLabelCreator () { ViewFactory::registerViewCreator (*this); }
-	const char* getViewName () const { return "CTextLabel"; }
-	const char* getBaseViewName () const { return "CParamDisplay"; }
+	IdStringPtr getViewName () const { return "CTextLabel"; }
+	IdStringPtr getBaseViewName () const { return "CParamDisplay"; }
 	CView* create (const UIAttributes& attributes, IUIDescription* description) const { return new CTextLabel (CRect (0, 0, 0, 0)); }
 	bool apply (CView* view, const UIAttributes& attributes, IUIDescription* description) const
 	{
@@ -1538,7 +1553,7 @@ public:
 			return false;
 		if (attributeName == "title")
 		{
-			const char* title = label->getText ();
+			UTF8StringPtr title = label->getText ();
 			stringValue = title ? title : "";
 			return true;
 		}
@@ -1553,8 +1568,8 @@ class CTextEditCreator : public IViewCreator
 {
 public:
 	CTextEditCreator () { ViewFactory::registerViewCreator (*this); }
-	const char* getViewName () const { return "CTextEdit"; }
-	const char* getBaseViewName () const { return "CParamDisplay"; }
+	IdStringPtr getViewName () const { return "CTextEdit"; }
+	IdStringPtr getBaseViewName () const { return "CParamDisplay"; }
 	CView* create (const UIAttributes& attributes, IUIDescription* description) const { return new CTextEdit (CRect (0, 0, 0, 0), 0, -1); }
 	bool apply (CView* view, const UIAttributes& attributes, IUIDescription* description) const
 	{
@@ -1585,7 +1600,7 @@ public:
 			return false;
 		if (attributeName == "title")
 		{
-			const char* title = label->getText ();
+			UTF8StringPtr title = label->getText ();
 			stringValue = title ? title : "";
 			return true;
 		}
@@ -1600,8 +1615,8 @@ class CKnobCreator : public IViewCreator
 {
 public:
 	CKnobCreator () { ViewFactory::registerViewCreator (*this); }
-	const char* getViewName () const { return "CKnob"; }
-	const char* getBaseViewName () const { return "CControl"; }
+	IdStringPtr getViewName () const { return "CKnob"; }
+	IdStringPtr getBaseViewName () const { return "CControl"; }
 	CView* create (const UIAttributes& attributes, IUIDescription* description) const { return new CKnob (CRect (0, 0, 0, 0), 0, -1, 0, 0); }
 	bool apply (CView* view, const UIAttributes& attributes, IUIDescription* description) const
 	{
@@ -1612,13 +1627,21 @@ public:
 		const std::string* angleStartAttr = attributes.getAttributeValue ("angle-start");
 		const std::string* angleRangeAttr = attributes.getAttributeValue ("angle-range");
 		const std::string* insetValueAttr = attributes.getAttributeValue ("value-inset");
+		const std::string* coronaInsetAttr = attributes.getAttributeValue ("corona-inset");
 		const std::string* zoomFactorAttr = attributes.getAttributeValue ("zoom-factor");
+		const std::string* coronaColorAttr = attributes.getAttributeValue ("corona-color");
 		const std::string* handleShadowColorAttr = attributes.getAttributeValue ("handle-shadow-color");
 		const std::string* handleColorAttr = attributes.getAttributeValue ("handle-color");
 		const std::string* handleBitmapAttr = attributes.getAttributeValue ("handle-bitmap");
+		const std::string* handleLineWidthAttr = attributes.getAttributeValue ("handle-line-width");
+		const std::string* circleDrawingAttr = attributes.getAttributeValue ("circle-drawing");
+		const std::string* coronaDrawingAttr = attributes.getAttributeValue ("corona-drawing");
+		const std::string* coronaFromCenterAttr = attributes.getAttributeValue ("corona-from-center");
+		const std::string* coronaInvertedAttr = attributes.getAttributeValue ("corona-inverted");
+		const std::string* coronaDashDotAttr = attributes.getAttributeValue ("corona-dash-dot");
+		const std::string* coronaOutlineAttr = attributes.getAttributeValue ("corona-outline");
 
 		float fvalue = 0.f;
-		long lvalue = 0;
 		CColor color;
 		if (angleStartAttr)
 		{
@@ -1632,13 +1655,31 @@ public:
 		}
 		if (insetValueAttr)
 		{
-			lvalue = strtol (insetValueAttr->c_str (), 0, 10);
-			knob->setInsetValue (lvalue);
+			fvalue = strtof (insetValueAttr->c_str (), 0);
+			knob->setInsetValue (fvalue);
+		}
+		if (coronaInsetAttr)
+		{
+			fvalue = strtof (coronaInsetAttr->c_str (), 0);
+			knob->setCoronaInset (fvalue);
 		}
 		if (zoomFactorAttr)
 		{
 			fvalue = strtof (zoomFactorAttr->c_str (), 0);
 			knob->setZoomFactor (fvalue);
+		}
+		if (handleLineWidthAttr)
+		{
+			fvalue = strtof (handleLineWidthAttr->c_str (), 0);
+			knob->setHandleLineWidth (fvalue);
+		}
+		if (coronaColorAttr)
+		{
+			if (description->getColor (coronaColorAttr->c_str (), color))
+			{
+				rememberAttributeValueString (view, "corona-color", *coronaColorAttr);
+				knob->setCoronaColor (color);
+			}
 		}
 		if (handleShadowColorAttr)
 		{
@@ -1662,6 +1703,50 @@ public:
 			if (bitmap)
 				knob->setHandleBitmap (bitmap);
 		}
+		int32_t drawStyle = knob->getDrawStyle ();
+		if (circleDrawingAttr)
+		{
+			if (*circleDrawingAttr == "true")
+				drawStyle |= CKnob::kHandleCircleDrawing;
+			else
+				drawStyle &= ~CKnob::kHandleCircleDrawing;
+		}
+		if (coronaDrawingAttr)
+		{
+			if (*coronaDrawingAttr == "true")
+				drawStyle |= CKnob::kCoronaDrawing;
+			else
+				drawStyle &= ~CKnob::kCoronaDrawing;
+		}
+		if (coronaFromCenterAttr)
+		{
+			if (*coronaFromCenterAttr == "true")
+				drawStyle |= CKnob::kCoronaFromCenter;
+			else
+				drawStyle &= ~CKnob::kCoronaFromCenter;
+		}
+		if (coronaInvertedAttr)
+		{
+			if (*coronaInvertedAttr == "true")
+				drawStyle |= CKnob::kCoronaInverted;
+			else
+				drawStyle &= ~CKnob::kCoronaInverted;
+		}
+		if (coronaDashDotAttr)
+		{
+			if (*coronaDashDotAttr == "true")
+				drawStyle |= CKnob::kCoronaLineDashDot;
+			else
+				drawStyle &= ~CKnob::kCoronaLineDashDot;
+		}
+		if (coronaOutlineAttr)
+		{
+			if (*coronaOutlineAttr == "true")
+				drawStyle |= CKnob::kCoronaOutline;
+			else
+				drawStyle &= ~CKnob::kCoronaOutline;
+		}
+		knob->setDrawStyle (drawStyle);
 		return true;
 	}
 	bool getAttributeNames (std::list<std::string>& attributeNames) const
@@ -1670,8 +1755,17 @@ public:
 		attributeNames.push_back ("angle-range");
 		attributeNames.push_back ("value-inset");
 		attributeNames.push_back ("zoom-factor");
+		attributeNames.push_back ("circle-drawing");
+		attributeNames.push_back ("corona-drawing");
+		attributeNames.push_back ("corona-outline");
+		attributeNames.push_back ("corona-from-center");
+		attributeNames.push_back ("corona-inverted");
+		attributeNames.push_back ("corona-dash-dot");
+		attributeNames.push_back ("corona-inset");
+		attributeNames.push_back ("corona-color");
 		attributeNames.push_back ("handle-shadow-color");
 		attributeNames.push_back ("handle-color");
+		attributeNames.push_back ("handle-line-width");
 		attributeNames.push_back ("handle-bitmap");
 		return true;
 	}
@@ -1679,10 +1773,19 @@ public:
 	{
 		if (attributeName == "angle-start") return kFloatType;
 		else if (attributeName == "angle-range") return kFloatType;
-		else if (attributeName == "value-inset") return kIntegerType;
+		else if (attributeName == "value-inset") return kFloatType;
 		else if (attributeName == "zoom-factor") return kFloatType;
+		else if (attributeName == "circle-drawing") return kBooleanType;
+		else if (attributeName == "corona-drawing") return kBooleanType;
+		else if (attributeName == "corona-outline") return kBooleanType;
+		else if (attributeName == "corona-from-center") return kBooleanType;
+		else if (attributeName == "corona-inverted") return kBooleanType;
+		else if (attributeName == "corona-dash-dot") return kBooleanType;
+		else if (attributeName == "corona-inset") return kFloatType;
+		else if (attributeName == "corona-color") return kColorType;
 		else if (attributeName == "handle-shadow-color") return kColorType;
 		else if (attributeName == "handle-color") return kColorType;
+		else if (attributeName == "handle-line-width") return kFloatType;
 		else if (attributeName == "handle-bitmap") return kBitmapType;
 		return kUnknownType;
 	}
@@ -1713,11 +1816,31 @@ public:
 			stringValue = stream.str ();
 			return true;
 		}
+		else if (attributeName == "corona-inset")
+		{
+			std::stringstream stream;
+			stream << knob->getCoronaInset ();
+			stringValue = stream.str ();
+			return true;
+		}
 		else if (attributeName == "zoom-factor")
 		{
 			std::stringstream stream;
 			stream << knob->getZoomFactor ();
 			stringValue = stream.str ();
+			return true;
+		}
+		else if (attributeName == "handle-line-width")
+		{
+			std::stringstream stream;
+			stream << knob->getHandleLineWidth ();
+			stringValue = stream.str ();
+			return true;
+		}
+		else if (attributeName == "corona-color")
+		{
+			if (!getRememberedAttributeValueString (view, "corona-color", stringValue))
+				colorToString (knob->getCoronaColor (), stringValue, desc);
 			return true;
 		}
 		else if (attributeName == "handle-shadow-color")
@@ -1739,6 +1862,54 @@ public:
 			{
 				return bitmapToString (bitmap, stringValue, desc);
 			}
+		}
+		else if (attributeName == "circle-drawing")
+		{
+			if (knob->getDrawStyle () & CKnob::kHandleCircleDrawing)
+				stringValue = "true";
+			else
+				stringValue = "false";
+			return true;
+		}
+		else if (attributeName == "corona-drawing")
+		{
+			if (knob->getDrawStyle () & CKnob::kCoronaDrawing)
+				stringValue = "true";
+			else
+				stringValue = "false";
+			return true;
+		}
+		else if (attributeName == "corona-from-center")
+		{
+			if (knob->getDrawStyle () & CKnob::kCoronaFromCenter)
+				stringValue = "true";
+			else
+				stringValue = "false";
+			return true;
+		}
+		else if (attributeName == "corona-inverted")
+		{
+			if (knob->getDrawStyle () & CKnob::kCoronaInverted)
+				stringValue = "true";
+			else
+				stringValue = "false";
+			return true;
+		}
+		else if (attributeName == "corona-dash-dot")
+		{
+			if (knob->getDrawStyle () & CKnob::kCoronaLineDashDot)
+				stringValue = "true";
+			else
+				stringValue = "false";
+			return true;
+		}
+		else if (attributeName == "corona-outline")
+		{
+			if (knob->getDrawStyle () & CKnob::kCoronaOutline)
+				stringValue = "true";
+			else
+				stringValue = "false";
+			return true;
 		}
 		return false;
 	}
@@ -1769,7 +1940,7 @@ public:
 		const std::string* attr = attributes.getAttributeValue ("sub-pixmaps");
 		if (attr)
 		{
-			long value = strtol (attr->c_str (), 0, 10);
+			int32_t value = strtol (attr->c_str (), 0, 10);
 			multiBitmapControl->setNumSubPixmaps (value);
 		}
 		return true;
@@ -1816,8 +1987,8 @@ class CAnimKnobCreator : public IMultiBitmapControlCreator
 {
 public:
 	CAnimKnobCreator () { ViewFactory::registerViewCreator (*this); }
-	const char* getViewName () const { return "CAnimKnob"; }
-	const char* getBaseViewName () const { return "CKnob"; }
+	IdStringPtr getViewName () const { return "CAnimKnob"; }
+	IdStringPtr getBaseViewName () const { return "CKnob"; }
 	CView* create (const UIAttributes& attributes, IUIDescription* description) const { return new CAnimKnob (CRect (0, 0, 0, 0), 0, -1, 0); }
 };
 CAnimKnobCreator __gCAnimKnobCreator;
@@ -1827,8 +1998,8 @@ class CVerticalSwitchCreator : public IMultiBitmapControlCreator
 {
 public:
 	CVerticalSwitchCreator () { ViewFactory::registerViewCreator (*this); }
-	const char* getViewName () const { return "CVerticalSwitch"; }
-	const char* getBaseViewName () const { return "CControl"; }
+	IdStringPtr getViewName () const { return "CVerticalSwitch"; }
+	IdStringPtr getBaseViewName () const { return "CControl"; }
 	CView* create (const UIAttributes& attributes, IUIDescription* description) const { return new CVerticalSwitch (CRect (0, 0, 0, 0), 0, -1, 0); }
 };
 CVerticalSwitchCreator __gCVerticalSwitchCreator;
@@ -1838,8 +2009,8 @@ class CHorizontalSwitchCreator : public IMultiBitmapControlCreator
 {
 public:
 	CHorizontalSwitchCreator () { ViewFactory::registerViewCreator (*this); }
-	const char* getViewName () const { return "CHorizontalSwitch"; }
-	const char* getBaseViewName () const { return "CControl"; }
+	IdStringPtr getViewName () const { return "CHorizontalSwitch"; }
+	IdStringPtr getBaseViewName () const { return "CControl"; }
 	CView* create (const UIAttributes& attributes, IUIDescription* description) const { return new CHorizontalSwitch (CRect (0, 0, 0, 0), 0, -1, 0); }
 };
 CHorizontalSwitchCreator __gCHorizontalSwitchCreator;
@@ -1849,8 +2020,8 @@ class CRockerSwitchCreator : public IMultiBitmapControlCreator
 {
 public:
 	CRockerSwitchCreator () { ViewFactory::registerViewCreator (*this); }
-	const char* getViewName () const { return "CRockerSwitch"; }
-	const char* getBaseViewName () const { return "CControl"; }
+	IdStringPtr getViewName () const { return "CRockerSwitch"; }
+	IdStringPtr getBaseViewName () const { return "CControl"; }
 	CView* create (const UIAttributes& attributes, IUIDescription* description) const { return new CRockerSwitch (CRect (0, 0, 0, 0), 0, -1, 0); }
 };
 CRockerSwitchCreator __gCRockerSwitchCreator;
@@ -1860,8 +2031,8 @@ class CMovieBitmapCreator : public IMultiBitmapControlCreator
 {
 public:
 	CMovieBitmapCreator () { ViewFactory::registerViewCreator (*this); }
-	const char* getViewName () const { return "CMovieBitmap"; }
-	const char* getBaseViewName () const { return "CControl"; }
+	IdStringPtr getViewName () const { return "CMovieBitmap"; }
+	IdStringPtr getBaseViewName () const { return "CControl"; }
 	CView* create (const UIAttributes& attributes, IUIDescription* description) const { return new CMovieBitmap (CRect (0, 0, 0, 0), 0, -1, 0); }
 };
 CMovieBitmapCreator __gCMovieBitmapCreator;
@@ -1871,8 +2042,8 @@ class CMovieButtonCreator : public IMultiBitmapControlCreator
 {
 public:
 	CMovieButtonCreator () { ViewFactory::registerViewCreator (*this); }
-	const char* getViewName () const { return "CMovieButton"; }
-	const char* getBaseViewName () const { return "CControl"; }
+	IdStringPtr getViewName () const { return "CMovieButton"; }
+	IdStringPtr getBaseViewName () const { return "CControl"; }
 	CView* create (const UIAttributes& attributes, IUIDescription* description) const { return new CMovieButton (CRect (0, 0, 0, 0), 0, -1, 0); }
 };
 CMovieButtonCreator __gCMovieButtonCreator;
@@ -1882,8 +2053,8 @@ class CKickButtonCreator : public IMultiBitmapControlCreator
 {
 public:
 	CKickButtonCreator () { ViewFactory::registerViewCreator (*this); }
-	const char* getViewName () const { return "CKickButton"; }
-	const char* getBaseViewName () const { return "CControl"; }
+	IdStringPtr getViewName () const { return "CKickButton"; }
+	IdStringPtr getBaseViewName () const { return "CControl"; }
 	CView* create (const UIAttributes& attributes, IUIDescription* description) const { return new CKickButton (CRect (0, 0, 0, 0), 0, -1, 0); }
 };
 CKickButtonCreator __gCKickButtonCreator;
@@ -1893,8 +2064,8 @@ class CSliderCreator : public IViewCreator
 {
 public:
 	CSliderCreator () { ViewFactory::registerViewCreator (*this); }
-	const char* getViewName () const { return "CSlider"; }
-	const char* getBaseViewName () const { return "CControl"; }
+	IdStringPtr getViewName () const { return "CSlider"; }
+	IdStringPtr getBaseViewName () const { return "CControl"; }
 	CView* create (const UIAttributes& attributes, IUIDescription* description) const { return new CSlider (CRect (0, 0, 0, 0), 0, -1, 0, 0, 0, 0); }
 	bool apply (CView* view, const UIAttributes& attributes, IUIDescription* description) const
 	{
@@ -1910,6 +2081,14 @@ public:
 		const std::string* zoomFactorAttr = attributes.getAttributeValue ("zoom-factor");
 		const std::string* orientationAttr = attributes.getAttributeValue ("orientation");
 		const std::string* reverseOrientationAttr = attributes.getAttributeValue ("reverse-orientation");
+		const std::string* drawFrameAttr = attributes.getAttributeValue ("draw-frame");
+		const std::string* drawBackAttr = attributes.getAttributeValue ("draw-back");
+		const std::string* drawValueAttr = attributes.getAttributeValue ("draw-value");
+		const std::string* drawValueFromCenterAttr = attributes.getAttributeValue ("draw-value-from-center");
+		const std::string* drawValueInvertedAttr = attributes.getAttributeValue ("draw-value-inverted");
+		const std::string* drawFrameColorAttr = attributes.getAttributeValue ("draw-frame-color");
+		const std::string* drawBackColorAttr = attributes.getAttributeValue ("draw-back-color");
+		const std::string* drawValueColorAttr = attributes.getAttributeValue ("draw-value-color");
 
 		CPoint p;
 		if (transparentHandleAttr)
@@ -1939,7 +2118,7 @@ public:
 		}
 		if (orientationAttr)
 		{
-			long style = slider->getStyle ();
+			int32_t style = slider->getStyle ();
 			if (*orientationAttr == "vertical")
 			{
 				style &= ~kHorizontal;
@@ -1954,7 +2133,7 @@ public:
 		}
 		if (reverseOrientationAttr)
 		{
-			long style = slider->getStyle ();
+			int32_t style = slider->getStyle ();
 			if (*reverseOrientationAttr == "true")
 			{
 				if (style & kVertical)
@@ -1983,6 +2162,68 @@ public:
 			}
 			slider->setStyle (style);
 		}
+		int32_t drawStyle = slider->getDrawStyle ();
+		if (drawFrameAttr)
+		{
+			if (*drawFrameAttr == "true")
+				drawStyle |= CSlider::kDrawFrame;
+			else
+				drawStyle &= ~CSlider::kDrawFrame;
+		}
+		if (drawBackAttr)
+		{
+			if (*drawBackAttr == "true")
+				drawStyle |= CSlider::kDrawBack;
+			else
+				drawStyle &= ~CSlider::kDrawBack;
+		}
+		if (drawValueAttr)
+		{
+			if (*drawValueAttr == "true")
+				drawStyle |= CSlider::kDrawValue;
+			else
+				drawStyle &= ~CSlider::kDrawValue;
+		}
+		if (drawValueFromCenterAttr)
+		{
+			if (*drawValueFromCenterAttr == "true")
+				drawStyle |= CSlider::kDrawValueFromCenter;
+			else
+				drawStyle &= ~CSlider::kDrawValueFromCenter;
+		}
+		if (drawValueInvertedAttr)
+		{
+			if (*drawValueInvertedAttr == "true")
+				drawStyle |= CSlider::kDrawInverted;
+			else
+				drawStyle &= ~CSlider::kDrawInverted;
+		}
+		slider->setDrawStyle (drawStyle);
+		CColor color;
+		if (drawFrameColorAttr)
+		{
+			if (description->getColor (drawFrameColorAttr->c_str (), color))
+			{
+				rememberAttributeValueString (view, "draw-frame-color", *drawFrameColorAttr);
+				slider->setFrameColor (color);
+			}
+		}
+		if (drawBackColorAttr)
+		{
+			if (description->getColor (drawBackColorAttr->c_str (), color))
+			{
+				rememberAttributeValueString (view, "draw-back-color", *drawBackColorAttr);
+				slider->setBackColor (color);
+			}
+		}
+		if (drawValueColorAttr)
+		{
+			if (description->getColor (drawValueColorAttr->c_str (), color))
+			{
+				rememberAttributeValueString (view, "draw-value-color", *drawValueColorAttr);
+				slider->setValueColor (color);
+			}
+		}
 		return true;
 	}
 	bool getAttributeNames (std::list<std::string>& attributeNames) const
@@ -1995,6 +2236,14 @@ public:
 		attributeNames.push_back ("zoom-factor");
 		attributeNames.push_back ("orientation");
 		attributeNames.push_back ("reverse-orientation");
+		attributeNames.push_back ("draw-frame");
+		attributeNames.push_back ("draw-back");
+		attributeNames.push_back ("draw-value");
+		attributeNames.push_back ("draw-value-from-center");
+		attributeNames.push_back ("draw-value-inverted");
+		attributeNames.push_back ("draw-frame-color");
+		attributeNames.push_back ("draw-back-color");
+		attributeNames.push_back ("draw-value-color");
 		return true;
 	}
 	AttrType getAttributeType (const std::string& attributeName) const
@@ -2007,6 +2256,14 @@ public:
 		if (attributeName == "zoom-factor") return kFloatType;
 		if (attributeName == "orientation") return kStringType;
 		if (attributeName == "reverse-orientation") return kBooleanType;
+		if (attributeName == "draw-frame") return kBooleanType;
+		if (attributeName == "draw-back") return kBooleanType;
+		if (attributeName == "draw-value") return kBooleanType;
+		if (attributeName == "draw-value-from-center") return kBooleanType;
+		if (attributeName == "draw-value-inverted") return kBooleanType;
+		if (attributeName == "draw-frame-color") return kColorType;
+		if (attributeName == "draw-back-color") return kColorType;
+		if (attributeName == "draw-value-color") return kColorType;
 		return kUnknownType;
 	}
 	bool getAttributeValue (CView* view, const std::string& attributeName, std::string& stringValue, IUIDescription* desc) const
@@ -2060,12 +2317,70 @@ public:
 		}
 		else if (attributeName == "reverse-orientation")
 		{
-			long style = slider->getStyle ();
+			int32_t style = slider->getStyle ();
 			stringValue = "false";
 			if (((style & kVertical) && (style & kTop)) || ((style & kHorizontal) && (style & kRight)))
 				stringValue = "true";
 			else
 				stringValue = "false";
+			return true;
+		}
+		else if (attributeName == "draw-frame")
+		{
+			if (slider->getDrawStyle () & CSlider::kDrawFrame)
+				stringValue = "true";
+			else
+				stringValue = "false";
+			return true;
+		}
+		else if (attributeName == "draw-back")
+		{
+			if (slider->getDrawStyle () & CSlider::kDrawBack)
+				stringValue = "true";
+			else
+				stringValue = "false";
+			return true;
+		}
+		else if (attributeName == "draw-value")
+		{
+			if (slider->getDrawStyle () & CSlider::kDrawValue)
+				stringValue = "true";
+			else
+				stringValue = "false";
+			return true;
+		}
+		else if (attributeName == "draw-value-from-center")
+		{
+			if (slider->getDrawStyle () & CSlider::kDrawValueFromCenter)
+				stringValue = "true";
+			else
+				stringValue = "false";
+			return true;
+		}
+		else if (attributeName == "draw-value-inverted")
+		{
+			if (slider->getDrawStyle () & CSlider::kDrawInverted)
+				stringValue = "true";
+			else
+				stringValue = "false";
+			return true;
+		}
+		else if (attributeName == "draw-frame-color")
+		{
+			if (!getRememberedAttributeValueString (view, "draw-frame-color", stringValue))
+				colorToString (slider->getFrameColor (), stringValue, desc);
+			return true;
+		}
+		else if (attributeName == "draw-back-color")
+		{
+			if (!getRememberedAttributeValueString (view, "draw-back-color", stringValue))
+				colorToString (slider->getBackColor (), stringValue, desc);
+			return true;
+		}
+		else if (attributeName == "draw-value-color")
+		{
+			if (!getRememberedAttributeValueString (view, "draw-value-color", stringValue))
+				colorToString (slider->getValueColor (), stringValue, desc);
 			return true;
 		}
 
@@ -2080,8 +2395,8 @@ class CVuMeterCreator : public IViewCreator
 {
 public:
 	CVuMeterCreator () { ViewFactory::registerViewCreator (*this); }
-	const char* getViewName () const { return "CVuMeter"; }
-	const char* getBaseViewName () const { return "CControl"; }
+	IdStringPtr getViewName () const { return "CVuMeter"; }
+	IdStringPtr getBaseViewName () const { return "CControl"; }
 	CView* create (const UIAttributes& attributes, IUIDescription* description) const { return new CVuMeter (CRect (0, 0, 0, 0), 0, 0, 100); }
 	bool apply (CView* view, const UIAttributes& attributes, IUIDescription* description) const
 	{
@@ -2103,7 +2418,7 @@ public:
 		attr = attributes.getAttributeValue ("num-led");
 		if (attr)
 		{
-			long numLed = strtol (attr->c_str (), 0, 10);
+			int32_t numLed = strtol (attr->c_str (), 0, 10);
 			vuMeter->setNbLed (numLed);
 		}
 		attr = attributes.getAttributeValue ("decrease-step-value");

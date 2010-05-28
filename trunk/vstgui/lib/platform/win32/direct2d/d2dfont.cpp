@@ -44,7 +44,7 @@
 namespace VSTGUI {
 
 //-----------------------------------------------------------------------------
-D2DFont::D2DFont (const char* name, const CCoord& size, const long& style)
+D2DFont::D2DFont (const char* name, const CCoord& size, const int32_t& style)
 : textFormat (0)
 , ascent (-1)
 , descent (-1)
@@ -130,8 +130,7 @@ void D2DFont::drawString (CDrawContext* context, const char* utf8String, const C
 CCoord D2DFont::getStringWidth (CDrawContext* context, const char* utf8String, bool antialias)
 {
 	CCoord result = 0;
-	D2DDrawContext* d2dContext = dynamic_cast<D2DDrawContext*> (context);
-	if (d2dContext && textFormat)
+	if (textFormat)
 	{
 		IDWriteTextLayout* textLayout = createTextLayout (utf8String);
 		if (textLayout)

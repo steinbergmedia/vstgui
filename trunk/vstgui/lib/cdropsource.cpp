@@ -42,7 +42,7 @@ CDropSource::CDropSource ()
 }
 
 //-----------------------------------------------------------------------------
-CDropSource::CDropSource (const void* buffer, long bufferSize, Type type)
+CDropSource::CDropSource (const void* buffer, int32_t bufferSize, Type type)
 {
 	add (buffer, bufferSize, type);
 }
@@ -50,7 +50,7 @@ CDropSource::CDropSource (const void* buffer, long bufferSize, Type type)
 //-----------------------------------------------------------------------------
 CDropSource::~CDropSource ()
 {
-	for (long i = getCount ()-1; i >= 0; i--)
+	for (int32_t i = getCount ()-1; i >= 0; i--)
 	{
 		CDropEntry* entry = entries[i];
 		free (entry->buffer);
@@ -59,7 +59,7 @@ CDropSource::~CDropSource ()
 }
 
 //-----------------------------------------------------------------------------
-bool CDropSource::add (const void* buffer, long bufferSize, Type type)
+bool CDropSource::add (const void* buffer, int32_t bufferSize, Type type)
 {
 	if (bufferSize > 0)
 	{
@@ -79,13 +79,13 @@ bool CDropSource::add (const void* buffer, long bufferSize, Type type)
 }
 
 //-----------------------------------------------------------------------------
-long CDropSource::getCount () const
+int32_t CDropSource::getCount () const
 {
 	return entries.size ();
 }
 
 //-----------------------------------------------------------------------------
-long CDropSource::getEntrySize (long index) const
+int32_t CDropSource::getEntrySize (int32_t index) const
 {
 	CDropEntry* entry = index < getCount () ? entries[index] : 0;
 	if (entry)
@@ -96,7 +96,7 @@ long CDropSource::getEntrySize (long index) const
 }
 
 //-----------------------------------------------------------------------------
-CDropSource::Type CDropSource::getEntryType (long index) const
+CDropSource::Type CDropSource::getEntryType (int32_t index) const
 {
 	CDropEntry* entry = index < getCount () ? entries[index] : 0;
 	if (entry)
@@ -107,7 +107,7 @@ CDropSource::Type CDropSource::getEntryType (long index) const
 }
 
 //-----------------------------------------------------------------------------
-long CDropSource::getEntry (long index, const void*& buffer, Type& type) const
+int32_t CDropSource::getEntry (int32_t index, const void*& buffer, Type& type) const
 {
 	CDropEntry* entry = index < getCount () ? entries[index] : 0;
 	if (entry)

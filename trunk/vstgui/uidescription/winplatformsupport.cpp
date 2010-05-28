@@ -66,7 +66,7 @@ namespace VSTGUI {
 class Win32Window : public PlatformWindow
 {
 public:
-	Win32Window (const CRect& size, const char* title, WindowType type, long styleFlags, IPlatformWindowDelegate* delegate, void* parentWindow);
+	Win32Window (const CRect& size, const char* title, WindowType type, int32_t styleFlags, IPlatformWindowDelegate* delegate, void* parentWindow);
 	~Win32Window ();
 
 	void* getPlatformHandle () const;
@@ -85,13 +85,13 @@ protected:
 	HWND platformWindow;
 	IPlatformWindowDelegate* delegate;
 	WindowType type;
-	long styleFlags;
+	int32_t styleFlags;
 	bool recursiveGuard;
 	bool runModalMode;
 };
 
 //-----------------------------------------------------------------------------
-PlatformWindow* PlatformWindow::create (const CRect& size, const char* title, WindowType type, long styleFlags, IPlatformWindowDelegate* delegate, void* parentWindow)
+PlatformWindow* PlatformWindow::create (const CRect& size, const char* title, WindowType type, int32_t styleFlags, IPlatformWindowDelegate* delegate, void* parentWindow)
 {
 	return new Win32Window (size, title, type, styleFlags, delegate, parentWindow);
 }
@@ -121,7 +121,7 @@ HRESULT EnableBlurBehind(HWND hwnd)
 #endif
 
 //-----------------------------------------------------------------------------
-Win32Window::Win32Window (const CRect& size, const char* title, WindowType type, long styleFlags, IPlatformWindowDelegate* delegate, void* parentWindow)
+Win32Window::Win32Window (const CRect& size, const char* title, WindowType type, int32_t styleFlags, IPlatformWindowDelegate* delegate, void* parentWindow)
 : platformWindow (0)
 , delegate (delegate)
 , type (type)
@@ -355,7 +355,7 @@ protected:
 		closePanel ();
 	}
 	
-	CMessageResult notify (CBaseObject* sender, const char* message)
+	CMessageResult notify (CBaseObject* sender, IdStringPtr message)
 	{
 		if (message == CColorChooserPanel::kMsgWindowClosed)
 			panel = 0;

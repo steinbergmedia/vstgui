@@ -57,6 +57,7 @@
 		F4457815110A06590022C0E5 /* FrameBackground.png in Resources */ = {isa = PBXBuildFile; fileRef = F4457814110A06590022C0E5 /* FrameBackground.png */; };
 		F4657609114F83D100846DAE /* graphicstest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4657608114F83D100846DAE /* graphicstest.cpp */; };
 		F465763D114F8EA200846DAE /* GraphicsTest.uidesc in Resources */ = {isa = PBXBuildFile; fileRef = F465763C114F8EA200846DAE /* GraphicsTest.uidesc */; };
+		F496F16C119715B500DD3F7A /* Accelerate.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F496F16B119715B500DD3F7A /* Accelerate.framework */; };
 		F4F5DA8A10BFD28900DB6C33 /* TabController.png in Resources */ = {isa = PBXBuildFile; fileRef = F4F5DA8910BFD28900DB6C33 /* TabController.png */; };
 		F4FFBFCA116A310500A9BD34 /* vst2wrapper.sdk.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4F4013C10D2662500F2B46B /* vst2wrapper.sdk.cpp */; };
 		F4FFBFCB116A310D00A9BD34 /* fstreamer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F44074D310BE6BB6003C59F6 /* fstreamer.cpp */; };
@@ -161,6 +162,7 @@
 		F4657607114F83D100846DAE /* graphicstest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = graphicstest.h; path = ../source/graphicstest.h; sourceTree = SOURCE_ROOT; };
 		F4657608114F83D100846DAE /* graphicstest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = graphicstest.cpp; path = ../source/graphicstest.cpp; sourceTree = SOURCE_ROOT; };
 		F465763C114F8EA200846DAE /* GraphicsTest.uidesc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; name = GraphicsTest.uidesc; path = ../resource/GraphicsTest.uidesc; sourceTree = SOURCE_ROOT; };
+		F496F16B119715B500DD3F7A /* Accelerate.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Accelerate.framework; path = System/Library/Frameworks/Accelerate.framework; sourceTree = SDKROOT; };
 		F4F4013C10D2662500F2B46B /* vst2wrapper.sdk.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = vst2wrapper.sdk.cpp; path = ../../../../../SKI/public.sdk/source/vst/vst2wrapper/vst2wrapper.sdk.cpp; sourceTree = SOURCE_ROOT; };
 		F4F5DA8910BFD28900DB6C33 /* TabController.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = TabController.png; path = ../resource/TabController.png; sourceTree = SOURCE_ROOT; };
 		F4F5DA9E10BFD5BF00DB6C33 /* ussage bugs.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = "ussage bugs.txt"; path = "../ussage bugs.txt"; sourceTree = SOURCE_ROOT; };
@@ -174,6 +176,7 @@
 			files = (
 				F440754A10BE6D00003C59F6 /* Carbon.framework in Frameworks */,
 				F440754C10BE6D00003C59F6 /* Cocoa.framework in Frameworks */,
+				F496F16C119715B500DD3F7A /* Accelerate.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -225,6 +228,7 @@
 			children = (
 				F440754910BE6D00003C59F6 /* Carbon.framework */,
 				F440754B10BE6D00003C59F6 /* Cocoa.framework */,
+				F496F16B119715B500DD3F7A /* Accelerate.framework */,
 			);
 			name = "External Frameworks and Libraries";
 			sourceTree = "<group>";
@@ -593,7 +597,7 @@
 		508817D809F0C9AE0071BF1A /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				GCC_OPTIMIZATION_LEVEL = 3;
+				GCC_OPTIMIZATION_LEVEL = 0;
 			};
 			name = Debug;
 		};

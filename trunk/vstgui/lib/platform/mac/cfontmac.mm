@@ -43,7 +43,7 @@
 namespace VSTGUI {
 
 //-----------------------------------------------------------------------------
-IPlatformFont* IPlatformFont::create (const char* name, const CCoord& size, const long& style)
+IPlatformFont* IPlatformFont::create (UTF8StringPtr name, const CCoord& size, const int32_t& style)
 {
 	#if VSTGUI_USES_CORE_TEXT
 	CoreTextFont* font = new CoreTextFont (name, size, style);
@@ -63,7 +63,7 @@ IPlatformFont* IPlatformFont::create (const char* name, const CCoord& size, cons
 bool IPlatformFont::getAllPlatformFontFamilies (std::list<std::string>& fontFamilyNames)
 {
 	NSArray* fonts = [[NSFontManager sharedFontManager] availableFontFamilies];
-	for (unsigned int i = 0; i < [fonts count]; i++)
+	for (uint32_t i = 0; i < [fonts count]; i++)
 	{
 		NSString* font = [fonts objectAtIndex:i];
 		fontFamilyNames.push_back (std::string ([font UTF8String]));
@@ -73,7 +73,7 @@ bool IPlatformFont::getAllPlatformFontFamilies (std::list<std::string>& fontFami
 
 #if VSTGUI_USES_CORE_TEXT
 //-----------------------------------------------------------------------------
-CoreTextFont::CoreTextFont (const char* name, const CCoord& size, const long& style)
+CoreTextFont::CoreTextFont (UTF8StringPtr name, const CCoord& size, const int32_t& style)
 : fontRef (0)
 , underlineStyle (false)
 {
@@ -150,7 +150,7 @@ double CoreTextFont::getCapHeight () const
 }
 
 //-----------------------------------------------------------------------------
-void CoreTextFont::drawString (CDrawContext* context, const char* utf8String, const CPoint& point, bool antialias)
+void CoreTextFont::drawString (CDrawContext* context, UTF8StringPtr utf8String, const CPoint& point, bool antialias)
 {
 	CColor fontColor = context->getFontColor ();
 	
@@ -199,7 +199,7 @@ void CoreTextFont::drawString (CDrawContext* context, const char* utf8String, co
 }
 
 //-----------------------------------------------------------------------------
-CCoord CoreTextFont::getStringWidth (CDrawContext* context, const char* utf8String, bool antialias)
+CCoord CoreTextFont::getStringWidth (CDrawContext* context, UTF8StringPtr utf8String, bool antialias)
 {
 	CCoord result = 0;
 	CFStringRef utf8Str = CFStringCreateWithCString (NULL, utf8String, kCFStringEncodingUTF8);
@@ -227,7 +227,7 @@ CCoord CoreTextFont::getStringWidth (CDrawContext* context, const char* utf8Stri
 
 #else // VSTGUI_USES_CORE_TEXT
 //-----------------------------------------------------------------------------
-ATSUFont::ATSUFont (const char* name, const CCoord& size, const long& style)
+ATSUFont::ATSUFont (UTF8StringPtr name, const CCoord& size, const int32_t& style)
 : atsuStyle (0)
 {
 	OSStatus status = ATSUCreateStyle (&atsuStyle);
@@ -264,7 +264,7 @@ ATSUFont::~ATSUFont ()
 }
 
 //-----------------------------------------------------------------------------
-void ATSUFont::drawString (CDrawContext* context, const char* utf8String, const CPoint& point, bool antialias)
+void ATSUFont::drawString (CDrawContext* context, UTF8StringPtr utf8String, const CPoint& point, bool antialias)
 {
 	if (atsuStyle == 0)
 		return;
@@ -314,7 +314,7 @@ void ATSUFont::drawString (CDrawContext* context, const char* utf8String, const 
 }
 
 //-----------------------------------------------------------------------------
-CCoord ATSUFont::getStringWidth (CDrawContext* context, const char* utf8String, bool antialias)
+CCoord ATSUFont::getStringWidth (CDrawContext* context, UTF8StringPtr utf8String, bool antialias)
 {
 	CCoord result = 0;
 	if (atsuStyle)

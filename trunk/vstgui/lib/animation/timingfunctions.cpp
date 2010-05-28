@@ -48,13 +48,13 @@ namespace Animation {
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
-LinearTimingFunction::LinearTimingFunction (unsigned long length)
+LinearTimingFunction::LinearTimingFunction (uint32_t length)
 : TimingFunctionBase (length)
 {
 }
 
 //-----------------------------------------------------------------------------
-float LinearTimingFunction::getPosition (unsigned long milliseconds) 
+float LinearTimingFunction::getPosition (uint32_t milliseconds) 
 {
 	float pos = ((float)milliseconds) / ((float)length);
 	if (pos > 1.f)
@@ -67,14 +67,14 @@ float LinearTimingFunction::getPosition (unsigned long milliseconds)
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
-PowerTimingFunction::PowerTimingFunction (unsigned long length, float factor)
+PowerTimingFunction::PowerTimingFunction (uint32_t length, float factor)
 : TimingFunctionBase (length)
 , factor (factor)
 {
 }
 
 //-----------------------------------------------------------------------------
-float PowerTimingFunction::getPosition (unsigned long milliseconds)
+float PowerTimingFunction::getPosition (uint32_t milliseconds)
 {
 	float pos = ((float)milliseconds) / ((float)length);
 	pos = pow (pos, factor);
@@ -88,7 +88,7 @@ float PowerTimingFunction::getPosition (unsigned long milliseconds)
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
-InterpolationTimingFunction::InterpolationTimingFunction (unsigned long length, float startPos, float endPos)
+InterpolationTimingFunction::InterpolationTimingFunction (uint32_t length, float startPos, float endPos)
 : TimingFunctionBase (length)
 {
 	addPoint (0.f, startPos);
@@ -98,18 +98,18 @@ InterpolationTimingFunction::InterpolationTimingFunction (unsigned long length, 
 //-----------------------------------------------------------------------------
 void InterpolationTimingFunction::addPoint (float time, float pos)
 {
-	points.insert (std::make_pair ((unsigned long)((float)getLength () * time), pos));
+	points.insert (std::make_pair ((uint32_t)((float)getLength () * time), pos));
 }
 
 //-----------------------------------------------------------------------------
-float InterpolationTimingFunction::getPosition (unsigned long milliseconds)
+float InterpolationTimingFunction::getPosition (uint32_t milliseconds)
 {
-	unsigned long prevTime = getLength ();
+	uint32_t prevTime = getLength ();
 	float prevPos = points[prevTime];
-	std::map<unsigned long, float>::reverse_iterator it = points.rbegin ();
+	std::map<uint32_t, float>::reverse_iterator it = points.rbegin ();
 	while (it != points.rend ())
 	{
-		unsigned long time = it->first;
+		uint32_t time = it->first;
 		float pos = it->second;
 		if (time == milliseconds)
 			return pos;
@@ -128,7 +128,7 @@ float InterpolationTimingFunction::getPosition (unsigned long milliseconds)
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
-RepeatTimingFunction::RepeatTimingFunction (TimingFunctionBase* tf, long repeatCount, bool autoReverse)
+RepeatTimingFunction::RepeatTimingFunction (TimingFunctionBase* tf, int32_t repeatCount, bool autoReverse)
 : tf (tf)
 , repeatCount (repeatCount)
 , autoReverse (autoReverse)
@@ -148,7 +148,7 @@ RepeatTimingFunction::~RepeatTimingFunction ()
 }
 
 //-----------------------------------------------------------------------------
-float RepeatTimingFunction::getPosition (unsigned long milliseconds)
+float RepeatTimingFunction::getPosition (uint32_t milliseconds)
 {
 	if (runCounter > 0)
 		milliseconds -= tf->getLength () * runCounter;
@@ -157,7 +157,7 @@ float RepeatTimingFunction::getPosition (unsigned long milliseconds)
 }
 
 //-----------------------------------------------------------------------------
-bool RepeatTimingFunction::isDone (unsigned long milliseconds)
+bool RepeatTimingFunction::isDone (uint32_t milliseconds)
 {
 	if (runCounter > 0)
 		milliseconds -= tf->getLength () * runCounter;

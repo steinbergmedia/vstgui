@@ -48,7 +48,7 @@ namespace VSTGUI {
 class D2DFont : public IPlatformFont, public IFontPainter
 {
 public:
-	D2DFont (const char* name, const CCoord& size, const long& style);
+	D2DFont (const char* name, const CCoord& size, const int32_t& style);
 
 protected:
 	~D2DFont ();
@@ -70,7 +70,7 @@ protected:
 	double descent;
 	double leading;
 	double capHeight;
-	long style;
+	int32_t style;
 };
 
 } // namespace

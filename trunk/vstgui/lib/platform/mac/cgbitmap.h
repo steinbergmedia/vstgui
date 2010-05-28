@@ -47,24 +47,36 @@ namespace VSTGUI {
 class CGBitmap : public IPlatformBitmap
 {
 public:
+	CGBitmap (const CPoint& size);
 	CGBitmap ();
 	~CGBitmap ();
 	
 	bool load (const CResourceDescription& desc);
 	const CPoint& getSize () const { return size; }
-	IPlatformBitmapPixelAccess* lockPixels () { return 0; }
+	IPlatformBitmapPixelAccess* lockPixels (bool alphaPremultiplied);
 
-	bool loadFromImageSource (CGImageSourceRef source);
-	void loadImage ();
-	virtual CGImageRef getCGImage ();
+	CGImageRef getCGImage ();
+	CGContextRef createCGContext ();
 
+	void setDirty () { dirty = true; }
+	void* getBits () const { return bits; }
+	int32_t getBytesPerRow () const { return bytesPerRow; }
 //-----------------------------------------------------------------------------
 protected:
+	bool loadFromImageSource (CGImageSourceRef source);
+	void allocBits ();
+	void freeCGImage ();
+
 	CPoint size;
 	CGImageRef image;
 	CGImageSourceRef imageSource;
+
+	void* bits;
+	bool dirty;
+	int32_t bytesPerRow;
 };
 
+#if 0
 //-----------------------------------------------------------------------------
 class CGOffscreenBitmap : public CGBitmap
 {
@@ -79,7 +91,7 @@ public:
 	CGContextRef createCGContext ();
 	void setDirty () { dirty = true; }
 	void* getBits () const { return bits; }
-	int getBytesPerRow () const { return bytesPerRow; }
+	int32_t getBytesPerRow () const { return bytesPerRow; }
 
 //-----------------------------------------------------------------------------
 protected:
@@ -88,8 +100,9 @@ protected:
 	
 	void* bits;
 	bool dirty;
-	int bytesPerRow;
+	int32_t bytesPerRow;
 };
+#endif
 
 } // namespace
 

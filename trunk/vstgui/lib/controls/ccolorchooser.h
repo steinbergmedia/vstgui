@@ -97,12 +97,12 @@ protected:
 	};
 
 	//-----------------------------------------------------------------------------
-	static void convertNormalized (char* string, float& output);
-	static void convertColorValue (char* string, float& output);
-	static void convertAngle (char* string, float& output);
-	static void convertNormalizedToString (float value, char* string);
-	static void convertColorValueToString (float value, char* string);
-	static void convertAngleToString (float value, char* string);
+	static bool convertNormalized (UTF8StringPtr string, float& output, void* userData);
+	static bool convertColorValue (UTF8StringPtr string, float& output, void* userData);
+	static bool convertAngle (UTF8StringPtr string, float& output, void* userData);
+	static bool convertNormalizedToString (float value, char string[256], void* userData);
+	static bool convertColorValueToString (float value, char string[256], void* userData);
+	static bool convertAngleToString (float value, char string[256], void* userData);
 	/// @endcond
 
 };
