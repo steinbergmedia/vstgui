@@ -41,6 +41,7 @@
 #include "ifocusdrawing.h"
 #include "cvstguitimer.h"
 #include <cmath>
+#include <algorithm>
 
 namespace VSTGUI {
 
