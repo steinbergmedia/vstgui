@@ -303,7 +303,7 @@ CPoint& CView::localToFrame (CPoint& point) const
 /**
  * @param rect rect to invalidate
  */
-void CView::invalidRect (CRect rect)
+void CView::invalidRect (const CRect& rect)
 {
 	if (bIsAttached && bVisible)
 	{
@@ -423,7 +423,7 @@ void CView::takeFocus ()
  * @param newSize rect of new size of view
  * @param invalid if true set view dirty
  */
-void CView::setViewSize (CRect &newSize, bool invalid)
+void CView::setViewSize (const CRect& newSize, bool invalid)
 {
 	size = newSize;
 	if (invalid)

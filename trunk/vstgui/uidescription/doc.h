@@ -44,7 +44,7 @@
 		- move views out of parents action
 		
 	UIDescription todo:
-		- CTabView support (skipped, CViewSwitchContainer is the replacement)
+		- CTabView support (skipped, UIViewSwitchContainer is the replacement)
 		- CNinePartTiledBitmap support
 		- alternate font support (allow more than one font family for fallback when first font not available on system)
 

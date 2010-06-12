@@ -69,6 +69,7 @@ protected:
 	IFontPainter* getPainter () { return this; }
 
 	CTFontRef fontRef;
+	int32_t style;
 	bool underlineStyle;
 };
 

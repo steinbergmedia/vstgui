@@ -112,7 +112,7 @@ public:
 	CLASS_METHODS(CSlider, CControl)
 protected:
 	~CSlider ();
-	void setViewSize (CRect& rect, bool invalid);
+	void setViewSize (const CRect& rect, bool invalid);
 	
 	CPoint   offset; 
 	CPoint   offsetHandle;

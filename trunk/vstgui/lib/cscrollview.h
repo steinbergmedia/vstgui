@@ -102,12 +102,12 @@ public:
 	bool isChild (CView* pView) const;
 	int32_t getNbViews () const;
 	CView *getView (int32_t index) const;
-	void drawBackgroundRect (CDrawContext* pContext, CRect& _updateRect);
+	void drawBackgroundRect (CDrawContext* pContext, const CRect& _updateRect);
 	bool onWheel (const CPoint& where, const CMouseWheelAxis& axis, const float& distance, const CButtonState& buttons);
 	void valueChanged (CControl* pControl);
 	void setTransparency (bool val);
 	void setBackgroundColor (const CColor& color);
-	void setViewSize (CRect& rect, bool invalid = true);
+	void setViewSize (const CRect& rect, bool invalid = true);
 	void setAutosizeFlags (int32_t flags);
 	CMessageResult notify (CBaseObject* sender, IdStringPtr message);
 
@@ -176,7 +176,7 @@ public:
 	CMouseEventResult onMouseUp (CPoint& where, const CButtonState& buttons);
 	CMouseEventResult onMouseMoved (CPoint& where, const CButtonState& buttons);
 	CMessageResult notify (CBaseObject* sender, IdStringPtr message);
-	void setViewSize (CRect& newSize, bool invalid);
+	void setViewSize (const CRect& newSize, bool invalid);
 
 	CLASS_METHODS(CScrollbar, CControl)
 //-----------------------------------------------------------------------------

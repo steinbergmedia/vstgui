@@ -112,4 +112,22 @@ void CTextLabel::draw (CDrawContext *pContext)
 	setDirty (false);
 }
 
+//------------------------------------------------------------------------
+bool CTextLabel::sizeToFit ()
+{
+	if (fontID == 0 || fontID->getPlatformFont () == 0 || fontID->getPlatformFont ()->getPainter () == 0)
+		return false;
+	CCoord width = fontID->getPlatformFont ()->getPainter ()->getStringWidth (0, text, true);
+	if (width > 0)
+	{
+		width += (getTextInset ().x * 2.);
+		CRect newSize = getViewSize ();
+		newSize.setWidth (width);
+		setViewSize (newSize);
+		setMouseableArea (newSize);
+		return true;
+	}
+	return false;
+}
+
 } // namespace

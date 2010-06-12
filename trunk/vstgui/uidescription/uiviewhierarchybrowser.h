@@ -32,80 +32,67 @@
 // OF THE POSSIBILITY OF SUCH DAMAGE.
 //-----------------------------------------------------------------------------
 
-#ifndef __ccolorchooser__
-#define __ccolorchooser__
+#ifndef __uiviewhierarchybrowser__
+#define __uiviewhierarchybrowser__
 
-#include "../cviewcontainer.h"
-#include "ccontrol.h"
-#include "ctextedit.h"
+#if VSTGUI_LIVE_EDITING
+
+#include "../lib/cframe.h"
+#include "uidescription.h"
+#include "uipanelbase.h"
 
 namespace VSTGUI {
-class CColorChooser;
-class CSlider;
-/// @cond ignore
-namespace CColorChooserInternal {
-class ColorView;
-}
-/// @endcond
+
+class CDataBrowser;
+class UIViewHierarchyData;
+class ViewHierarchyPathView;
+class IActionOperator;
 
 //-----------------------------------------------------------------------------
-class IColorChooserDelegate
+class UIViewHierarchyBrowser : public CViewContainer
 {
 public:
-	virtual void colorChanged (CColorChooser* chooser, const CColor& color) = 0;
-};
-
-//-----------------------------------------------------------------------------
-class CColorChooser : public CViewContainer, public CControlListener
-{
-public:
-	CColorChooser (IColorChooserDelegate* delegate = 0, const CColor& initialColor = kTransparentCColor);
-	~CColorChooser ();
-
-	void setColor (const CColor& newColor);
-//-----------------------------------------------------------------------------
-protected:
-	void valueChanged (CControl* pControl);
-	void updateState ();
-
-	/// @cond ignore
-
-	IColorChooserDelegate* delegate;
-	CColor color;
+	UIViewHierarchyBrowser (const CRect& rect, CViewContainer* baseView, UIDescription* description, IActionOperator* actionOperator);
+	~UIViewHierarchyBrowser ();
 	
-	CSlider* redSlider;
-	CSlider* greenSlider;
-	CSlider* blueSlider;
-	CSlider* hueSlider;
-	CSlider* saturationSlider;
-	CSlider* brightnessSlider;
-	CSlider* alphaSlider;
-	CTextEdit* editFields[8];
-	CColorChooserInternal::ColorView* colorView;
+	void setCurrentView (CViewContainer* newView);
+	CViewContainer* getCurrentView () const { return currentView; }
+	CViewContainer* getBaseView () const { return baseView; }
 
-	//-----------------------------------------------------------------------------
-	enum {
-		kRedTag = 10000,
-		kGreenTag,
-		kBlueTag,
-		kHueTag,
-		kSaturationTag,
-		kBrightnessTag,
-		kAlphaTag,
-		kColorTag,
-	};
+	void changeBaseView (CViewContainer* newBaseView);
+	void notifyHierarchyChange (CView* view, bool wasRemoved = false);
+protected:
+	CViewContainer* baseView;
+	CViewContainer* currentView;
 
-	//-----------------------------------------------------------------------------
-	static bool convertNormalized (UTF8StringPtr string, float& output, void* userData);
-	static bool convertColorValue (UTF8StringPtr string, float& output, void* userData);
-	static bool convertAngle (UTF8StringPtr string, float& output, void* userData);
-	static bool convertNormalizedToString (float value, char string[256], void* userData);
-	static bool convertColorValueToString (float value, char string[256], void* userData);
-	static bool convertAngleToString (float value, char string[256], void* userData);
-	/// @endcond
-
+	CDataBrowser* browser;
+	UIViewHierarchyData* data;
+	ViewHierarchyPathView* pathView;
 };
+
+//-----------------------------------------------------------------------------
+class UIViewHierarchyBrowserWindow : public UIPanelBase
+{
+public:
+	UIViewHierarchyBrowserWindow (CViewContainer* baseView, CBaseObject* owner, UIDescription* description, void* parentPlatformWindow = 0);
+	~UIViewHierarchyBrowserWindow ();
+
+	void changeBaseView (CViewContainer* newBaseView);
+	void notifyHierarchyChange (CView* view, bool wasRemoved = false);
+	
+protected:
+	CFrame* createFrame (void* platformWindow, const CCoord& width, const CCoord& height);
+
+	void windowClosed (PlatformWindow* platformWindow);
+	void checkWindowSizeConstraints (CPoint& size, PlatformWindow* platformWindow);
+
+	UIViewHierarchyBrowser* browser;
+	UIDescription* description;
+};
+
 
 } // namespace
 
-#endif
+#endif // VSTGUI_LIVE_EDITING
+
+#endif // __uiviewhierarchybrowser__

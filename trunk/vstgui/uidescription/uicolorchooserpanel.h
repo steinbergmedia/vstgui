@@ -32,74 +32,44 @@
 // OF THE POSSIBILITY OF SUCH DAMAGE.
 //-----------------------------------------------------------------------------
 
-#ifndef __viewfactory__
-#define __viewfactory__
+#ifndef __uicolorchooserpanel__
+#define __uicolorchooserpanel__
 
-#include "../lib/cview.h"
-#include "uidescription.h"
-#include <string>
-#include <list>
+#if VSTGUI_LIVE_EDITING
+
+#include "../lib/cframe.h"
+#include "../lib/controls/ccolorchooser.h"
+#include "uipanelbase.h"
 
 namespace VSTGUI {
 
 //-----------------------------------------------------------------------------
-class IViewCreator
+class UIColorChooserPanel : public UIPanelBase, public IColorChooserDelegate
 {
 public:
-	virtual ~IViewCreator () {}
-	
-	enum AttrType {
-		kUnknownType,
-		kBooleanType,
-		kIntegerType,
-		kFloatType,
-		kStringType,
-		kColorType,
-		kFontType,
-		kBitmapType,
-		kPointType,
-		kRectType,
-		kTagType,
-	};
+	UIColorChooserPanel (CBaseObject* owner, IPlatformColorChangeCallback* callback = 0, void* parentPlatformWindow = 0);
+	~UIColorChooserPanel ();
 
-	virtual IdStringPtr getViewName () const = 0;
-	virtual IdStringPtr getBaseViewName () const = 0;
-	virtual CView* create (const UIAttributes& attributes, IUIDescription* description) const = 0;
-	virtual bool apply (CView* view, const UIAttributes& attributes, IUIDescription* description) const = 0;
-	virtual bool getAttributeNames (std::list<std::string>& attributeNames) const = 0;
-	virtual AttrType getAttributeType (const std::string& attributeName) const = 0;
-	virtual bool getAttributeValue (CView* view, const std::string& attributeName, std::string& stringValue, IUIDescription* desc) const = 0;
-};
-
+	void setColorChangeCallback (IPlatformColorChangeCallback* callback);
+	void setColor (const CColor& newColor);
 //-----------------------------------------------------------------------------
-class ViewFactory : public CBaseObject, public IViewFactory
-{
-public:
-	ViewFactory ();
-	~ViewFactory ();
-
-	// IViewFactory
-	CView* createView (const UIAttributes& attributes, IUIDescription* description);
-	bool applyAttributeValues (CView* view, const UIAttributes& attributes, IUIDescription* desc) const;
-	
-	static void registerViewCreator (const IViewCreator& viewCreator);
-
-	#if VSTGUI_LIVE_EDITING
-	bool getAttributeNamesForView (CView* view, std::list<std::string>& attributeNames) const;
-	bool getAttributeValue (CView* view, const std::string& attributeName, std::string& stringValue, IUIDescription* desc) const;
-	IViewCreator::AttrType getAttributeType (CView* view, const std::string& attributeName) const;
-	void collectRegisteredViewNames (std::list<const std::string*>& viewNames, IdStringPtr baseClassNameFilter = 0) const;
-	bool getAttributesForView (CView* view, IUIDescription* desc, UIAttributes& attr) const;
-	#endif
-
-	IdStringPtr getViewName (CView* view) const;
-	bool applyCustomViewAttributeValues (CView* customView, IdStringPtr baseViewName, const UIAttributes& attributes, IUIDescription* desc) const;
-
 protected:
-	CView* createViewByName (const std::string* className, const UIAttributes& attributes, IUIDescription* description);
+	CFrame* createFrame (void* platformWindow, const CCoord& width, const CCoord& height);
+	// IPlatformWindowDelegate
+	void windowClosed (PlatformWindow* platformWindow);
+	void checkWindowSizeConstraints (CPoint& size, PlatformWindow* platformWindow);
+
+	// IColorChooserDelegate
+	void colorChanged (CColorChooser* chooser, const CColor& color);
+
+	IPlatformColorChangeCallback* callback;
+	CColorChooser* colorChooser;
+	CPoint minSize;
+
+	static CRect lastSize;
 };
 
 } // namespace
 
-#endif
-
+#endif // VSTGUI_LIVE_EDITING
+#endif // __uicolorchooserpanel__

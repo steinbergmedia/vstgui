@@ -32,80 +32,74 @@
 // OF THE POSSIBILITY OF SUCH DAMAGE.
 //-----------------------------------------------------------------------------
 
-#ifndef __ccolorchooser__
-#define __ccolorchooser__
+#ifndef __uiviewfactory__
+#define __uiviewfactory__
 
-#include "../cviewcontainer.h"
-#include "ccontrol.h"
-#include "ctextedit.h"
+#include "../lib/cview.h"
+#include "uidescription.h"
+#include <string>
+#include <list>
 
 namespace VSTGUI {
-class CColorChooser;
-class CSlider;
-/// @cond ignore
-namespace CColorChooserInternal {
-class ColorView;
-}
-/// @endcond
 
 //-----------------------------------------------------------------------------
-class IColorChooserDelegate
+class IViewCreator
 {
 public:
-	virtual void colorChanged (CColorChooser* chooser, const CColor& color) = 0;
+	virtual ~IViewCreator () {}
+	
+	enum AttrType {
+		kUnknownType,
+		kBooleanType,
+		kIntegerType,
+		kFloatType,
+		kStringType,
+		kColorType,
+		kFontType,
+		kBitmapType,
+		kPointType,
+		kRectType,
+		kTagType,
+	};
+
+	virtual IdStringPtr getViewName () const = 0;
+	virtual IdStringPtr getBaseViewName () const = 0;
+	virtual CView* create (const UIAttributes& attributes, IUIDescription* description) const = 0;
+	virtual bool apply (CView* view, const UIAttributes& attributes, IUIDescription* description) const = 0;
+	virtual bool getAttributeNames (std::list<std::string>& attributeNames) const = 0;
+	virtual AttrType getAttributeType (const std::string& attributeName) const = 0;
+	virtual bool getAttributeValue (CView* view, const std::string& attributeName, std::string& stringValue, IUIDescription* desc) const = 0;
 };
 
 //-----------------------------------------------------------------------------
-class CColorChooser : public CViewContainer, public CControlListener
+class UIViewFactory : public CBaseObject, public IViewFactory
 {
 public:
-	CColorChooser (IColorChooserDelegate* delegate = 0, const CColor& initialColor = kTransparentCColor);
-	~CColorChooser ();
+	UIViewFactory ();
+	~UIViewFactory ();
 
-	void setColor (const CColor& newColor);
-//-----------------------------------------------------------------------------
-protected:
-	void valueChanged (CControl* pControl);
-	void updateState ();
-
-	/// @cond ignore
-
-	IColorChooserDelegate* delegate;
-	CColor color;
+	// IViewFactory
+	CView* createView (const UIAttributes& attributes, IUIDescription* description);
+	bool applyAttributeValues (CView* view, const UIAttributes& attributes, IUIDescription* desc) const;
 	
-	CSlider* redSlider;
-	CSlider* greenSlider;
-	CSlider* blueSlider;
-	CSlider* hueSlider;
-	CSlider* saturationSlider;
-	CSlider* brightnessSlider;
-	CSlider* alphaSlider;
-	CTextEdit* editFields[8];
-	CColorChooserInternal::ColorView* colorView;
+	static void registerViewCreator (const IViewCreator& viewCreator);
 
-	//-----------------------------------------------------------------------------
-	enum {
-		kRedTag = 10000,
-		kGreenTag,
-		kBlueTag,
-		kHueTag,
-		kSaturationTag,
-		kBrightnessTag,
-		kAlphaTag,
-		kColorTag,
-	};
+	#if VSTGUI_LIVE_EDITING
+	bool getAttributeNamesForView (CView* view, std::list<std::string>& attributeNames) const;
+	bool getAttributeValue (CView* view, const std::string& attributeName, std::string& stringValue, IUIDescription* desc) const;
+	IViewCreator::AttrType getAttributeType (CView* view, const std::string& attributeName) const;
+	void collectRegisteredViewNames (std::list<const std::string*>& viewNames, IdStringPtr baseClassNameFilter = 0) const;
+	bool getAttributesForView (CView* view, IUIDescription* desc, UIAttributes& attr) const;
+	#endif
 
-	//-----------------------------------------------------------------------------
-	static bool convertNormalized (UTF8StringPtr string, float& output, void* userData);
-	static bool convertColorValue (UTF8StringPtr string, float& output, void* userData);
-	static bool convertAngle (UTF8StringPtr string, float& output, void* userData);
-	static bool convertNormalizedToString (float value, char string[256], void* userData);
-	static bool convertColorValueToString (float value, char string[256], void* userData);
-	static bool convertAngleToString (float value, char string[256], void* userData);
-	/// @endcond
+	IdStringPtr getViewName (CView* view) const;
+	bool applyCustomViewAttributeValues (CView* customView, IdStringPtr baseViewName, const UIAttributes& attributes, IUIDescription* desc) const;
 
+protected:
+	CView* createViewByName (const std::string* className, const UIAttributes& attributes, IUIDescription* description);
 };
 
 } // namespace
 
-#endif
+#endif // __uiviewfactory__
+

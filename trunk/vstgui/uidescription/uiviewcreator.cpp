@@ -256,7 +256,7 @@ public:
 };
 */
 
-#include "viewfactory.h"
+#include "uiviewfactory.h"
 #include "../vstgui.h"
 #include <sstream>
 
@@ -334,7 +334,7 @@ bool colorToString (const CColor& color, std::string& string, IUIDescription* de
 class CViewCreator : public IViewCreator
 {
 public:
-	CViewCreator () { ViewFactory::registerViewCreator (*this); }
+	CViewCreator () { UIViewFactory::registerViewCreator (*this); }
 	IdStringPtr getViewName () const { return "CView"; }
 	IdStringPtr getBaseViewName () const { return 0; }
 	CView* create (const UIAttributes& attributes, IUIDescription* description) const { return new CView (CRect (0, 0, 0, 0)); }
@@ -577,7 +577,7 @@ bool getRememberedAttributeValueString (CView* view, IdStringPtr attrName, std::
 class CViewContainerCreator : public IViewCreator
 {
 public:
-	CViewContainerCreator () { ViewFactory::registerViewCreator (*this); }
+	CViewContainerCreator () { UIViewFactory::registerViewCreator (*this); }
 	IdStringPtr getViewName () const { return "CViewContainer"; }
 	IdStringPtr getBaseViewName () const { return "CView"; }
 	CView* create (const UIAttributes& attributes, IUIDescription* description) const { return new CViewContainer (CRect (0, 0, 100, 100), 0); }
@@ -629,7 +629,7 @@ CViewContainerCreator __CViewContainerCreator;
 class CScrollViewCreator : public IViewCreator
 {
 public:
-	CScrollViewCreator () { ViewFactory::registerViewCreator (*this); }
+	CScrollViewCreator () { UIViewFactory::registerViewCreator (*this); }
 	IdStringPtr getViewName () const { return "CScrollView"; }
 	IdStringPtr getBaseViewName () const { return "CViewContainer"; }
 	CView* create (const UIAttributes& attributes, IUIDescription* description) const { return new CScrollView (CRect (0, 0, 100, 100), CRect (0, 0, 200, 200), 0, CScrollView::kHorizontalScrollbar|CScrollView::kVerticalScrollbar); }
@@ -821,7 +821,7 @@ CScrollViewCreator __CScrollViewCreator;
 class CControlCreator : public IViewCreator
 {
 public:
-	CControlCreator () { ViewFactory::registerViewCreator (*this); }
+	CControlCreator () { UIViewFactory::registerViewCreator (*this); }
 	IdStringPtr getViewName () const { return "CControl"; }
 	IdStringPtr getBaseViewName () const { return "CView"; }
 	CView* create (const UIAttributes& attributes, IUIDescription* description) const { return 0; }
@@ -974,7 +974,7 @@ CControlCreator __gCControlCreator;
 class COnOffButtonCreator : public IViewCreator
 {
 public:
-	COnOffButtonCreator () { ViewFactory::registerViewCreator (*this); }
+	COnOffButtonCreator () { UIViewFactory::registerViewCreator (*this); }
 	IdStringPtr getViewName () const { return "COnOffButton"; }
 	IdStringPtr getBaseViewName () const { return "CControl"; }
 	CView* create (const UIAttributes& attributes, IUIDescription* description) const { return new COnOffButton (CRect (0, 0, 0, 0), 0, -1, 0); }
@@ -1002,7 +1002,7 @@ COnOffButtonCreator __gCOnOffButtonCreator;
 class CCheckBoxCreator : public IViewCreator
 {
 public:
-	CCheckBoxCreator () { ViewFactory::registerViewCreator (*this); }
+	CCheckBoxCreator () { UIViewFactory::registerViewCreator (*this); }
 	IdStringPtr getViewName () const { return "CCheckBox"; }
 	IdStringPtr getBaseViewName () const { return "CControl"; }
 	CView* create (const UIAttributes& attributes, IUIDescription* description) const { return new CCheckBox (CRect (0, 0, 100, 20), 0, -1, "Title"); }
@@ -1186,7 +1186,7 @@ CCheckBoxCreator __gCCheckBoxCreator;
 class CParamDisplayCreator : public IViewCreator
 {
 public:
-	CParamDisplayCreator () { ViewFactory::registerViewCreator (*this); }
+	CParamDisplayCreator () { UIViewFactory::registerViewCreator (*this); }
 	IdStringPtr getViewName () const { return "CParamDisplay"; }
 	IdStringPtr getBaseViewName () const { return "CControl"; }
 	CView* create (const UIAttributes& attributes, IUIDescription* description) const { return new CParamDisplay (CRect (0, 0, 0, 0)); }
@@ -1454,7 +1454,7 @@ CParamDisplayCreator __gCParamDisplayCreator;
 class COptionMenuCreator : public IViewCreator
 {
 public:
-	COptionMenuCreator () { ViewFactory::registerViewCreator (*this); }
+	COptionMenuCreator () { UIViewFactory::registerViewCreator (*this); }
 	IdStringPtr getViewName () const { return "COptionMenu"; }
 	IdStringPtr getBaseViewName () const { return "CParamDisplay"; }
 	CView* create (const UIAttributes& attributes, IUIDescription* description) const { return new COptionMenu (); }
@@ -1520,7 +1520,7 @@ COptionMenuCreator __gCOptionMenuCreator;
 class CTextLabelCreator : public IViewCreator
 {
 public:
-	CTextLabelCreator () { ViewFactory::registerViewCreator (*this); }
+	CTextLabelCreator () { UIViewFactory::registerViewCreator (*this); }
 	IdStringPtr getViewName () const { return "CTextLabel"; }
 	IdStringPtr getBaseViewName () const { return "CParamDisplay"; }
 	CView* create (const UIAttributes& attributes, IUIDescription* description) const { return new CTextLabel (CRect (0, 0, 0, 0)); }
@@ -1567,7 +1567,7 @@ CTextLabelCreator __gCTextLabelCreator;
 class CTextEditCreator : public IViewCreator
 {
 public:
-	CTextEditCreator () { ViewFactory::registerViewCreator (*this); }
+	CTextEditCreator () { UIViewFactory::registerViewCreator (*this); }
 	IdStringPtr getViewName () const { return "CTextEdit"; }
 	IdStringPtr getBaseViewName () const { return "CParamDisplay"; }
 	CView* create (const UIAttributes& attributes, IUIDescription* description) const { return new CTextEdit (CRect (0, 0, 0, 0), 0, -1); }
@@ -1614,7 +1614,7 @@ CTextEditCreator __gCTextEditCreator;
 class CKnobCreator : public IViewCreator
 {
 public:
-	CKnobCreator () { ViewFactory::registerViewCreator (*this); }
+	CKnobCreator () { UIViewFactory::registerViewCreator (*this); }
 	IdStringPtr getViewName () const { return "CKnob"; }
 	IdStringPtr getBaseViewName () const { return "CControl"; }
 	CView* create (const UIAttributes& attributes, IUIDescription* description) const { return new CKnob (CRect (0, 0, 0, 0), 0, -1, 0, 0); }
@@ -1986,7 +1986,7 @@ public:
 class CAnimKnobCreator : public IMultiBitmapControlCreator
 {
 public:
-	CAnimKnobCreator () { ViewFactory::registerViewCreator (*this); }
+	CAnimKnobCreator () { UIViewFactory::registerViewCreator (*this); }
 	IdStringPtr getViewName () const { return "CAnimKnob"; }
 	IdStringPtr getBaseViewName () const { return "CKnob"; }
 	CView* create (const UIAttributes& attributes, IUIDescription* description) const { return new CAnimKnob (CRect (0, 0, 0, 0), 0, -1, 0); }
@@ -1997,7 +1997,7 @@ CAnimKnobCreator __gCAnimKnobCreator;
 class CVerticalSwitchCreator : public IMultiBitmapControlCreator
 {
 public:
-	CVerticalSwitchCreator () { ViewFactory::registerViewCreator (*this); }
+	CVerticalSwitchCreator () { UIViewFactory::registerViewCreator (*this); }
 	IdStringPtr getViewName () const { return "CVerticalSwitch"; }
 	IdStringPtr getBaseViewName () const { return "CControl"; }
 	CView* create (const UIAttributes& attributes, IUIDescription* description) const { return new CVerticalSwitch (CRect (0, 0, 0, 0), 0, -1, 0); }
@@ -2008,7 +2008,7 @@ CVerticalSwitchCreator __gCVerticalSwitchCreator;
 class CHorizontalSwitchCreator : public IMultiBitmapControlCreator
 {
 public:
-	CHorizontalSwitchCreator () { ViewFactory::registerViewCreator (*this); }
+	CHorizontalSwitchCreator () { UIViewFactory::registerViewCreator (*this); }
 	IdStringPtr getViewName () const { return "CHorizontalSwitch"; }
 	IdStringPtr getBaseViewName () const { return "CControl"; }
 	CView* create (const UIAttributes& attributes, IUIDescription* description) const { return new CHorizontalSwitch (CRect (0, 0, 0, 0), 0, -1, 0); }
@@ -2019,7 +2019,7 @@ CHorizontalSwitchCreator __gCHorizontalSwitchCreator;
 class CRockerSwitchCreator : public IMultiBitmapControlCreator
 {
 public:
-	CRockerSwitchCreator () { ViewFactory::registerViewCreator (*this); }
+	CRockerSwitchCreator () { UIViewFactory::registerViewCreator (*this); }
 	IdStringPtr getViewName () const { return "CRockerSwitch"; }
 	IdStringPtr getBaseViewName () const { return "CControl"; }
 	CView* create (const UIAttributes& attributes, IUIDescription* description) const { return new CRockerSwitch (CRect (0, 0, 0, 0), 0, -1, 0); }
@@ -2030,7 +2030,7 @@ CRockerSwitchCreator __gCRockerSwitchCreator;
 class CMovieBitmapCreator : public IMultiBitmapControlCreator
 {
 public:
-	CMovieBitmapCreator () { ViewFactory::registerViewCreator (*this); }
+	CMovieBitmapCreator () { UIViewFactory::registerViewCreator (*this); }
 	IdStringPtr getViewName () const { return "CMovieBitmap"; }
 	IdStringPtr getBaseViewName () const { return "CControl"; }
 	CView* create (const UIAttributes& attributes, IUIDescription* description) const { return new CMovieBitmap (CRect (0, 0, 0, 0), 0, -1, 0); }
@@ -2041,7 +2041,7 @@ CMovieBitmapCreator __gCMovieBitmapCreator;
 class CMovieButtonCreator : public IMultiBitmapControlCreator
 {
 public:
-	CMovieButtonCreator () { ViewFactory::registerViewCreator (*this); }
+	CMovieButtonCreator () { UIViewFactory::registerViewCreator (*this); }
 	IdStringPtr getViewName () const { return "CMovieButton"; }
 	IdStringPtr getBaseViewName () const { return "CControl"; }
 	CView* create (const UIAttributes& attributes, IUIDescription* description) const { return new CMovieButton (CRect (0, 0, 0, 0), 0, -1, 0); }
@@ -2052,7 +2052,7 @@ CMovieButtonCreator __gCMovieButtonCreator;
 class CKickButtonCreator : public IMultiBitmapControlCreator
 {
 public:
-	CKickButtonCreator () { ViewFactory::registerViewCreator (*this); }
+	CKickButtonCreator () { UIViewFactory::registerViewCreator (*this); }
 	IdStringPtr getViewName () const { return "CKickButton"; }
 	IdStringPtr getBaseViewName () const { return "CControl"; }
 	CView* create (const UIAttributes& attributes, IUIDescription* description) const { return new CKickButton (CRect (0, 0, 0, 0), 0, -1, 0); }
@@ -2063,7 +2063,7 @@ CKickButtonCreator __gCKickButtonCreator;
 class CSliderCreator : public IViewCreator
 {
 public:
-	CSliderCreator () { ViewFactory::registerViewCreator (*this); }
+	CSliderCreator () { UIViewFactory::registerViewCreator (*this); }
 	IdStringPtr getViewName () const { return "CSlider"; }
 	IdStringPtr getBaseViewName () const { return "CControl"; }
 	CView* create (const UIAttributes& attributes, IUIDescription* description) const { return new CSlider (CRect (0, 0, 0, 0), 0, -1, 0, 0, 0, 0); }
@@ -2394,7 +2394,7 @@ CSliderCreator __gCSliderCreator;
 class CVuMeterCreator : public IViewCreator
 {
 public:
-	CVuMeterCreator () { ViewFactory::registerViewCreator (*this); }
+	CVuMeterCreator () { UIViewFactory::registerViewCreator (*this); }
 	IdStringPtr getViewName () const { return "CVuMeter"; }
 	IdStringPtr getBaseViewName () const { return "CControl"; }
 	CView* create (const UIAttributes& attributes, IUIDescription* description) const { return new CVuMeter (CRect (0, 0, 0, 0), 0, 0, 100); }

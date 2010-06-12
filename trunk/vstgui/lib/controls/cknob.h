@@ -106,8 +106,10 @@ public:
 	virtual void draw (CDrawContext* pContext);
 	virtual bool onWheel (const CPoint& where, const float& distance, const CButtonState& buttons);
 	virtual int32_t onKeyDown (VstKeyCode& keyCode);
-	virtual void setViewSize (CRect &rect, bool invalid = true);
+	virtual void setViewSize (const CRect &rect, bool invalid = true);
 	virtual bool sizeToFit ();
+	virtual void setMin (float val);
+	virtual void setMax (float val);
 
 	virtual CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons);
 	virtual CMouseEventResult onMouseUp (CPoint& where, const CButtonState& buttons);

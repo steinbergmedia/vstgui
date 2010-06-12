@@ -32,80 +32,41 @@
 // OF THE POSSIBILITY OF SUCH DAMAGE.
 //-----------------------------------------------------------------------------
 
-#ifndef __ccolorchooser__
-#define __ccolorchooser__
+#ifndef __uipanelbase__
+#define __uipanelbase__
 
-#include "../cviewcontainer.h"
-#include "ccontrol.h"
-#include "ctextedit.h"
+#if VSTGUI_LIVE_EDITING
+
+#include "../lib/cframe.h"
+#include "platformsupport.h"
 
 namespace VSTGUI {
-class CColorChooser;
-class CSlider;
-/// @cond ignore
-namespace CColorChooserInternal {
-class ColorView;
-}
-/// @endcond
 
 //-----------------------------------------------------------------------------
-class IColorChooserDelegate
+class UIPanelBase : public CBaseObject, public VSTGUIEditorInterface, public IPlatformWindowDelegate
 {
 public:
-	virtual void colorChanged (CColorChooser* chooser, const CColor& color) = 0;
-};
+	UIPanelBase (CBaseObject* owner, void* parentPlatformWindow = 0);
+	~UIPanelBase ();
 
-//-----------------------------------------------------------------------------
-class CColorChooser : public CViewContainer, public CControlListener
-{
-public:
-	CColorChooser (IColorChooserDelegate* delegate = 0, const CColor& initialColor = kTransparentCColor);
-	~CColorChooser ();
-
-	void setColor (const CColor& newColor);
+	static IdStringPtr kMsgWindowClosed;
 //-----------------------------------------------------------------------------
 protected:
-	void valueChanged (CControl* pControl);
-	void updateState ();
+	virtual CFrame* createFrame (void* platformWindow, const CCoord& width, const CCoord& height) = 0;
 
-	/// @cond ignore
-
-	IColorChooserDelegate* delegate;
-	CColor color;
+	bool init (const CRect& initialSize, UTF8StringPtr title, int32_t windowStyle);
 	
-	CSlider* redSlider;
-	CSlider* greenSlider;
-	CSlider* blueSlider;
-	CSlider* hueSlider;
-	CSlider* saturationSlider;
-	CSlider* brightnessSlider;
-	CSlider* alphaSlider;
-	CTextEdit* editFields[8];
-	CColorChooserInternal::ColorView* colorView;
+	// IPlatformWindowDelegate
+	void windowSizeChanged (const CRect& newSize, PlatformWindow* platformWindow);
+	void windowClosed (PlatformWindow* platformWindow);
+	void checkWindowSizeConstraints (CPoint& size, PlatformWindow* platformWindow);
 
-	//-----------------------------------------------------------------------------
-	enum {
-		kRedTag = 10000,
-		kGreenTag,
-		kBlueTag,
-		kHueTag,
-		kSaturationTag,
-		kBrightnessTag,
-		kAlphaTag,
-		kColorTag,
-	};
-
-	//-----------------------------------------------------------------------------
-	static bool convertNormalized (UTF8StringPtr string, float& output, void* userData);
-	static bool convertColorValue (UTF8StringPtr string, float& output, void* userData);
-	static bool convertAngle (UTF8StringPtr string, float& output, void* userData);
-	static bool convertNormalizedToString (float value, char string[256], void* userData);
-	static bool convertColorValueToString (float value, char string[256], void* userData);
-	static bool convertAngleToString (float value, char string[256], void* userData);
-	/// @endcond
-
+	PlatformWindow* platformWindow;
+	CBaseObject* owner;
+	void* parentPlatformWindow;
 };
 
 } // namespace
 
-#endif
+#endif // VSTGUI_LIVE_EDITING
+#endif // __uipanelbase__

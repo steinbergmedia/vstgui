@@ -32,69 +32,76 @@
 // OF THE POSSIBILITY OF SUCH DAMAGE.
 //-----------------------------------------------------------------------------
 
-#ifndef __viewhierarchybrowser__
-#define __viewhierarchybrowser__
+#include "uipanelbase.h"
 
 #if VSTGUI_LIVE_EDITING
 
-#include "../lib/cframe.h"
-#include "uidescription.h"
-#include "platformsupport.h"
-
 namespace VSTGUI {
 
-class CDataBrowser;
-class ViewHierarchyData;
-class ViewHierarchyPathView;
-class IActionOperator;
+//-----------------------------------------------------------------------------
+IdStringPtr UIPanelBase::kMsgWindowClosed = "kMsgWindowClosed";
 
 //-----------------------------------------------------------------------------
-class ViewHierarchyBrowser : public CViewContainer
+UIPanelBase::UIPanelBase (CBaseObject* owner, void* parentPlatformWindow)
+: platformWindow (0)
+, owner (owner)
+, parentPlatformWindow (parentPlatformWindow)
 {
-public:
-	ViewHierarchyBrowser (const CRect& rect, CViewContainer* baseView, UIDescription* description, IActionOperator* actionOperator);
-	~ViewHierarchyBrowser ();
-	
-	void setCurrentView (CViewContainer* newView);
-	CViewContainer* getCurrentView () const { return currentView; }
-	CViewContainer* getBaseView () const { return baseView; }
-
-	void changeBaseView (CViewContainer* newBaseView);
-	void notifyHierarchyChange (CView* view, bool wasRemoved = false);
-protected:
-	CViewContainer* baseView;
-	CViewContainer* currentView;
-
-	CDataBrowser* browser;
-	ViewHierarchyData* data;
-	ViewHierarchyPathView* pathView;
-};
+}
 
 //-----------------------------------------------------------------------------
-class ViewHierarchyBrowserWindow : public CBaseObject, public VSTGUIEditorInterface, public IPlatformWindowDelegate
+UIPanelBase::~UIPanelBase ()
 {
-public:
-	ViewHierarchyBrowserWindow (CViewContainer* baseView, CBaseObject* owner, UIDescription* description, void* parentPlatformWindow = 0);
-	~ViewHierarchyBrowserWindow ();
+	owner = 0;
+	if (frame)
+		frame->close ();
+	windowClosed (platformWindow);
+}
 
-	void changeBaseView (CViewContainer* newBaseView);
-	void notifyHierarchyChange (CView* view, bool wasRemoved = false);
-	
-	static IdStringPtr kMsgWindowClosed;
-protected:
-	void windowSizeChanged (const CRect& newSize, PlatformWindow* platformWindow);
-	void windowClosed (PlatformWindow* platformWindow);
-	void checkWindowSizeConstraints (CPoint& size, PlatformWindow* platformWindow);
+//-----------------------------------------------------------------------------
+bool UIPanelBase::init (const CRect& initialSize, UTF8StringPtr title, int32_t windowStyle)
+{
+	platformWindow = PlatformWindow::create (initialSize, title, PlatformWindow::kPanelType, windowStyle, this);
+	if (platformWindow)
+	{
+		#if MAC_CARBON && MAC_COCOA
+		CFrame::setCocoaMode (true);
+		#endif
+		frame = createFrame (platformWindow->getPlatformHandle (), initialSize.getWidth (), initialSize.getHeight ());
+		CRect r (frame->getViewSize ());
+		r.offset (initialSize.left, initialSize.top);
+		platformWindow->setSize (r);
+		return true;
+	}
+	return false;
+}
 
-	CBaseObject* owner;
-	PlatformWindow* platformWindow;
-	ViewHierarchyBrowser* browser;
-	UIDescription* description;
-};
+// IPlatformWindowDelegate
+//-----------------------------------------------------------------------------
+void UIPanelBase::windowSizeChanged (const CRect& newSize, PlatformWindow* platformWindow)
+{
+	frame->setSize (newSize.getWidth (), newSize.getHeight ());
+}
 
+//-----------------------------------------------------------------------------
+void UIPanelBase::windowClosed (PlatformWindow* _platformWindow)
+{
+	if (platformWindow && _platformWindow == platformWindow)
+	{
+		platformWindow->forget ();
+		platformWindow = 0;
+	}
+	if (owner)
+		owner->notify (this, kMsgWindowClosed);
+	if (getNbReference () >= 1)
+		forget ();
+}
+
+//-----------------------------------------------------------------------------
+void UIPanelBase::checkWindowSizeConstraints (CPoint& size, PlatformWindow* platformWindow)
+{
+}
 
 } // namespace
 
 #endif // VSTGUI_LIVE_EDITING
-
-#endif

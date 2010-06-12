@@ -38,7 +38,7 @@
 
 #if WINDOWS
 
-#include "ccolorchooserpanel.h"
+#include "uicolorchooserpanel.h"
 #include "../lib/platform/win32/win32support.h"
 #include <wingdi.h>
 #include <dwmapi.h>
@@ -330,11 +330,11 @@ class ColorChooserWindowOwner : public CBaseObject
 public:
 	static ColorChooserWindowOwner* instance () { return &ccwo; }
 
-	CColorChooserPanel* getPanel (bool create = true)
+	UIColorChooserPanel* getPanel (bool create = true)
 	{
 		if (panel == 0 && create)
 		{
-			panel = new CColorChooserPanel (this);
+			panel = new UIColorChooserPanel (this);
 		}
 		return panel;
 	}
@@ -357,12 +357,12 @@ protected:
 	
 	CMessageResult notify (CBaseObject* sender, IdStringPtr message)
 	{
-		if (message == CColorChooserPanel::kMsgWindowClosed)
+		if (message == UIColorChooserPanel::kMsgWindowClosed)
 			panel = 0;
 		return kMessageNotified;
 	}
 	
-	CColorChooserPanel* panel;
+	UIColorChooserPanel* panel;
 };
 ColorChooserWindowOwner ColorChooserWindowOwner::ccwo; 
 #endif
@@ -390,14 +390,14 @@ void PlatformUtilities::colorChooser (const CColor* oldColor, IPlatformColorChan
 	if (oldColor)
 	{
 		ColorChooserWindowOwner* owner = ColorChooserWindowOwner::instance ();
-		CColorChooserPanel* panel = owner->getPanel ();
+		UIColorChooserPanel* panel = owner->getPanel ();
 		panel->setColor (*oldColor);
 		panel->setColorChangeCallback (callback);
 	}
 	else
 	{
 		ColorChooserWindowOwner* owner = ColorChooserWindowOwner::instance ();
-		CColorChooserPanel* panel = owner->getPanel (false);
+		UIColorChooserPanel* panel = owner->getPanel (false);
 		if (panel)
 		{
 			panel->setColorChangeCallback (0);

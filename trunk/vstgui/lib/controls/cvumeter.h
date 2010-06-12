@@ -74,7 +74,7 @@ public:
 	virtual bool removed (CView* parent);
 	virtual void draw (CDrawContext* pContext);
 	virtual void setDirty (const bool val = true);
-	virtual void setViewSize (CRect& newSize, bool invalid = true);
+	virtual void setViewSize (const CRect& newSize, bool invalid = true);
 	virtual bool sizeToFit ();
 	
 	CLASS_METHODS(CVuMeter, CControl)

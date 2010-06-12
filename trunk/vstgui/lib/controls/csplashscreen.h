@@ -52,7 +52,7 @@ public:
 	CSplashScreen (const CSplashScreen& splashScreen);
   
 	virtual void draw (CDrawContext*);
-	virtual bool hitTest (const CPoint& where, const CButtonState buttons = -1);
+	virtual bool hitTest (const CPoint& where, const CButtonState& buttons = -1);
 
 	//-----------------------------------------------------------------------------
 	/// @name CSplashScreen Methods

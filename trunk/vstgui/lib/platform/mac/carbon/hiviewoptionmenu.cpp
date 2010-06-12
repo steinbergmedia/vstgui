@@ -191,7 +191,7 @@ MenuRef HIViewOptionMenu::createMenu (COptionMenu* menu)
 			it++;
 		}
 		if (menu->getStyle () & kCheckStyle && !multipleCheck)
-			CheckMenuItem (menuRef, menu->getCurrentIndex () + 1, true);
+			CheckMenuItem (menuRef, menu->getCurrentIndex (true) + 1, true);
 		SetMenuItemRefCon (menuRef, 0, (int32_t)menu);
 		InsertMenu (menuRef, kInsertHierarchicalMenu);
 	}

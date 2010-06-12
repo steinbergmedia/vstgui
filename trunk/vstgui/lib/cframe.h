@@ -138,7 +138,7 @@ public:
 	//@}
 
 	void invalid () { invalidRect (size); bDirty = false; }
-	void invalidRect (const CRect rect);
+	void invalidRect (const CRect& rect);
 
 	#if MAC_COCOA && MAC_CARBON
 	static void setCocoaMode (bool state);
@@ -162,7 +162,7 @@ public:
 	int32_t onKeyDown (VstKeyCode& keyCode);
 	int32_t onKeyUp (VstKeyCode& keyCode);
 	DragResult doDrag (CDropSource* source, const CPoint& offset, CBitmap* dragBitmap);
-	void setViewSize (CRect& rect, bool invalid = true);
+	void setViewSize (const CRect& rect, bool invalid = true);
 
 	virtual VSTGUIEditorInterface* getEditor () const { return pEditor; }
 	virtual IMouseObserver* getMouseObserver () const { return pMouseObserver; }

@@ -32,48 +32,67 @@
 // OF THE POSSIBILITY OF SUCH DAMAGE.
 //-----------------------------------------------------------------------------
 
-#ifndef __ccolorchooserpanel__
-#define __ccolorchooserpanel__
+#ifndef __uiviewinspector__
+#define __uiviewinspector__
 
 #if VSTGUI_LIVE_EDITING
 
-#include "../lib/cframe.h"
-#include "../lib/controls/ccolorchooser.h"
+#include "../vstgui.h"
+#include "uidescription.h"
+#include "uieditframe.h"
 #include "platformsupport.h"
+#include <list>
 
 namespace VSTGUI {
 
+class UISelection;
+class PlatformWindow;
+class CScrollView;
+
 //-----------------------------------------------------------------------------
-class CColorChooserPanel : public CBaseObject, public VSTGUIEditorInterface, public IPlatformWindowDelegate, public IColorChooserDelegate
+class UIViewInspector : public VSTGUIEditorInterface, public CControlListener, public CBaseObject, public IPlatformWindowDelegate
 {
 public:
-	CColorChooserPanel (CBaseObject* owner, IPlatformColorChangeCallback* callback = 0, void* parentPlatformWindow = 0);
-	~CColorChooserPanel ();
+	UIViewInspector (UISelection* selection, IActionOperator* actionOperator, void* parentPlatformWindow = 0);
+	~UIViewInspector ();
 
-	void setColorChangeCallback (IPlatformColorChangeCallback* callback);
-	void setColor (const CColor& newColor);
+	void show ();
+	void hide ();
+	bool isVisible () { return platformWindow ? true : false; }
 
-	static IdStringPtr kMsgWindowClosed;
-//-----------------------------------------------------------------------------
+	void setUIDescription (UIDescription* desc);
+
+	void valueChanged (CControl* pControl);
+	void beforeSave ();
+	CMessageResult notify (CBaseObject* sender, IdStringPtr message);
+
+	static COptionMenu* createMenuFromList (const CRect& size, CControlListener* listener, std::list<const std::string*>& names, const std::string& defaultValue, bool addNoneItem = false);
 protected:
-	// IPlatformWindowDelegate
+	CView* createAttributesView (CCoord width);
+	void updateAttributeViews ();
+	CView* createViewForAttribute (const std::string& attrName, CCoord width);
+	void updateAttributeValueView (const std::string& attrName);
+
 	void windowSizeChanged (const CRect& newSize, PlatformWindow* platformWindow);
 	void windowClosed (PlatformWindow* platformWindow);
 	void checkWindowSizeConstraints (CPoint& size, PlatformWindow* platformWindow);
 
-	// IColorChooserDelegate
-	void colorChanged (CColorChooser* chooser, const CColor& color);
+	void addColorBitmapsToColorMenu (COptionMenu* menu, IUIDescription* desc);
 
+	UISelection* selection;
+	IActionOperator* actionOperator;
+	UIDescription* description;
+	CViewContainer* attributesView;
+	CTextLabel* viewNameLabel;
+	CScrollView* scrollView;
 	PlatformWindow* platformWindow;
-	CBaseObject* owner;
-	IPlatformColorChangeCallback* callback;
-	CColorChooser* colorChooser;
-	CPoint minSize;
-
-	static CRect lastSize;
+	void* parentPlatformWindow;
+	CRect windowSize;
+	std::list<CView*> attributeViews;
 };
 
 } // namespace
 
 #endif // VSTGUI_LIVE_EDITING
-#endif // __ccolorchooserpanel__
+
+#endif // __uiviewinspector__

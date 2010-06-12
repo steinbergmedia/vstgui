@@ -58,6 +58,7 @@ By clicking alt modifier and left mouse button the value changes with a vertical
  * @param background background bitmap
  * @param handle handle bitmap
  * @param offset offset of background bitmap
+ * @param drawStyle draw style
  */
 //------------------------------------------------------------------------
 CKnob::CKnob (const CRect& size, CControlListener* listener, int32_t tag, CBitmap* background, CBitmap* handle, const CPoint& offset, int32_t drawStyle)
@@ -74,7 +75,9 @@ CKnob::CKnob (const CRect& size, CControlListener* listener, int32_t tag, CBitma
 		inset = (CCoord)((float)pHandle->getWidth () / 2.f + 2.5f);
 	}
 	else
+	{
 		inset = 3;
+	}
 	
 	colorShadowHandle = kGreyCColor;
 	colorHandle = kWhiteCColor;
@@ -119,7 +122,7 @@ CKnob::~CKnob ()
 }
 
 //------------------------------------------------------------------------
-void CKnob::setViewSize (CRect &rect, bool invalid)
+void CKnob::setViewSize (const CRect &rect, bool invalid)
 {
 	CControl::setViewSize (rect, invalid);
 	radius = (float)(size.right - size.left) / 2.f;
@@ -294,8 +297,10 @@ CMouseEventResult CKnob::onMouseDown (CPoint& where, const CButtonState& buttons
 		if (!(buttons & kAlt))
 			mode = newMode;
 	}
-	else if (buttons & kAlt) 
+	else if (buttons & kAlt)
+	{
 		mode = kLinearMode;
+	}
 
 	if (mode == kLinearMode)
 	{
@@ -399,10 +404,10 @@ int32_t CKnob::onKeyDown (VstKeyCode& keyCode)
 {
 	switch (keyCode.virt)
 	{
-	case VKEY_UP :
-	case VKEY_RIGHT :
-	case VKEY_DOWN :
-	case VKEY_LEFT :
+		case VKEY_UP :
+		case VKEY_RIGHT :
+		case VKEY_DOWN :
+		case VKEY_LEFT :
 		{
 			float distance = 1.f;
 			if (keyCode.virt == VKEY_DOWN || keyCode.virt == VKEY_LEFT)
@@ -590,6 +595,20 @@ void CKnob::setHandleBitmap (CBitmap* bitmap)
 		inset = (CCoord)((float)pHandle->getWidth () / 2.f + 2.5f);
 	}
 	setDirty ();
+}
+
+//------------------------------------------------------------------------
+void CKnob::setMin (float val)
+{
+	CControl::setMin (val);
+	compute ();
+}
+
+//------------------------------------------------------------------------
+void CKnob::setMax (float val)
+{
+	CControl::setMax (val);
+	compute ();
 }
 
 //------------------------------------------------------------------------

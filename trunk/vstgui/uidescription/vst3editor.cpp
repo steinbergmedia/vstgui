@@ -34,16 +34,16 @@
 
 #include "vst3editor.h"
 #include "../lib/vstkeycode.h"
-#include "ceditframe.h"
+#include "uieditframe.h"
 #include "editingcolordefs.h"
 #include "base/source/updatehandler.h"
 #include "base/source/fstring.h"
 #include "base/source/timer.h"
 #include "pluginterfaces/base/keycodes.h"
-#include "dialog.h"
-#include "cviewinspector.h"
+#include "uidialog.h"
+#include "uiviewinspector.h"
 #include "vst3editortemplates.h"
-#include "viewfactory.h"
+#include "uiviewfactory.h"
 #include <list>
 #include <sstream>
 #include <assert.h>
@@ -684,7 +684,7 @@ bool PLUGIN_API VST3Editor::open (void* parent)
 	if (view)
 	{
 	#if VSTGUI_LIVE_EDITING
-		frame = new CEditFrame (view->getViewSize (), parent, this, CEditFrame::kNoEditMode, 0, description, viewName.c_str ());
+		frame = new UIEditFrame (view->getViewSize (), parent, this, UIEditFrame::kNoEditMode, 0, description, viewName.c_str ());
 	#else
 		frame = new CFrame (view->getViewSize (), parent, this);
 	#endif
@@ -791,7 +791,7 @@ CMessageResult VST3Editor::notify (CBaseObject* sender, IdStringPtr message)
 			recreateView ();
  	}
 	#if VSTGUI_LIVE_EDITING
-	else if (message == CEditFrame::kMsgShowOptionsMenu)
+	else if (message == UIEditFrame::kMsgShowOptionsMenu)
 	{
 		COptionMenu* menu = dynamic_cast<COptionMenu*> (sender);
 		if (menu)
@@ -813,7 +813,7 @@ CMessageResult VST3Editor::notify (CBaseObject* sender, IdStringPtr message)
 				menu->addEntry (submenu, "Change Template");
 				submenu->forget ();
 
-				ViewFactory* viewFactory = dynamic_cast<ViewFactory*> (description->getViewFactory ());
+				UIViewFactory* viewFactory = dynamic_cast<UIViewFactory*> (description->getViewFactory ());
 				if (viewFactory)
 				{
 					std::list<const std::string*> viewNames;
@@ -838,7 +838,7 @@ CMessageResult VST3Editor::notify (CBaseObject* sender, IdStringPtr message)
 		}
 		return kMessageNotified;
 	}
-	else if (message == CEditFrame::kMsgPerformOptionsMenuAction)
+	else if (message == UIEditFrame::kMsgPerformOptionsMenuAction)
 	{
 		CMenuItem* item = dynamic_cast<CMenuItem*> (sender);
 		if (item)
@@ -862,7 +862,7 @@ CMessageResult VST3Editor::notify (CBaseObject* sender, IdStringPtr message)
 		}
 		return kMessageNotified;
 	}
-	else if (message == CEditFrame::kMsgEditEnding)
+	else if (message == UIEditFrame::kMsgEditEnding)
 	{
 		exchangeView (viewName.c_str ());
 		return kMessageNotified;
@@ -950,7 +950,7 @@ void VST3Editor::runNewTemplateDialog (IdStringPtr baseViewName)
 	if (view)
 	{
 		CPoint p (-1, -1);
-		if (Dialog::runViewModal (p, view, Dialog::kOkCancelButtons, "Create New Template"))
+		if (UIDialog::runViewModal (p, view, UIDialog::kOkCancelButtons, "Create New Template"))
 		{
 			std::string sizeAttr (controller.values[VST3EditorNewTemplateDialogController::kWidth]);
 			sizeAttr += ", ";
@@ -1061,7 +1061,7 @@ public:
 		if (menu && menu->getTag () == kFocusColor)
 		{
 			CRect size;
-			COptionMenu* colorMenu = CViewInspector::createMenuFromList (size, 0, colorNames, values[kFocusColor].c_str ());
+			COptionMenu* colorMenu = UIViewInspector::createMenuFromList (size, 0, colorNames, values[kFocusColor].c_str ());
 			if (colorMenu)
 			{
 				CMenuItemIterator it = colorMenu->getItems ()->begin ();
@@ -1123,7 +1123,7 @@ void VST3Editor::runTemplateSettingsDialog ()
 	if (view)
 	{
 		CPoint p (-1, -1);
-		if (Dialog::runViewModal (p, view, Dialog::kOkCancelButtons, "Template Settings"))
+		if (UIDialog::runViewModal (p, view, UIDialog::kOkCancelButtons, "Template Settings"))
 		{
 			currentColorName = controller.values[VST3EditorTemplateSettingsDialogController::kFocusColor];
 			focusWidth = strtod (controller.values[VST3EditorTemplateSettingsDialogController::kFocusWidth].c_str (), 0);

@@ -351,7 +351,7 @@ void CScrollView::recalculateSubViews ()
 }
 
 //-----------------------------------------------------------------------------
-void CScrollView::setViewSize (CRect &rect, bool invalid)
+void CScrollView::setViewSize (const CRect &rect, bool invalid)
 {
 	CViewContainer::setViewSize (rect, invalid);
 	setContainerSize (containerSize, true);
@@ -592,7 +592,7 @@ void CScrollView::valueChanged (CControl *pControl)
 }
 
 //-----------------------------------------------------------------------------
-void CScrollView::drawBackgroundRect (CDrawContext *pContext, CRect& _updateRect)
+void CScrollView::drawBackgroundRect (CDrawContext *pContext, const CRect& _updateRect)
 {
 	CRect r (size);
 	r.offset (-r.left, -r.top);
@@ -686,7 +686,7 @@ CScrollbar::~CScrollbar ()
 }
 
 //-----------------------------------------------------------------------------
-void CScrollbar::setViewSize (CRect &newSize, bool invalid)
+void CScrollbar::setViewSize (const CRect &newSize, bool invalid)
 {
 	scrollerArea = newSize;
 	scrollerArea.inset (2, 2);

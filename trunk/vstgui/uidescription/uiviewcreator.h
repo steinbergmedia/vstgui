@@ -32,67 +32,24 @@
 // OF THE POSSIBILITY OF SUCH DAMAGE.
 //-----------------------------------------------------------------------------
 
-#ifndef __cviewinspector__
-#define __cviewinspector__
+#ifndef __uiviewcreator__
+#define __uiviewcreator__
 
-#if VSTGUI_LIVE_EDITING
-
-#include "../vstgui.h"
-#include "uidescription.h"
-#include "ceditframe.h"
-#include "platformsupport.h"
-#include <list>
+#include "../lib/cbitmap.h"
+#include "../lib/cview.h"
+#include <string>
 
 namespace VSTGUI {
+class IUIDescription;
 
-class CSelection;
-class PlatformWindow;
-class CScrollView;
+extern bool parseSize (const std::string& str, CPoint& point);
+extern bool pointToString (const CPoint& p, std::string& string);
+extern bool bitmapToString (CBitmap* bitmap, std::string& string, IUIDescription* desc);
+extern bool colorToString (const CColor& color, std::string& string, IUIDescription* desc);
 
-//-----------------------------------------------------------------------------
-class CViewInspector : public VSTGUIEditorInterface, public CControlListener, public CBaseObject, public IPlatformWindowDelegate
-{
-public:
-	CViewInspector (CSelection* selection, IActionOperator* actionOperator, void* parentPlatformWindow = 0);
-	~CViewInspector ();
-
-	void show ();
-	void hide ();
-	bool isVisible () { return platformWindow ? true : false; }
-
-	void setUIDescription (UIDescription* desc);
-
-	void valueChanged (CControl* pControl);
-	void beforeSave ();
-	CMessageResult notify (CBaseObject* sender, IdStringPtr message);
-
-	static COptionMenu* createMenuFromList (const CRect& size, CControlListener* listener, std::list<const std::string*>& names, const std::string& defaultValue, bool addNoneItem = false);
-protected:
-	CView* createAttributesView (CCoord width);
-	void updateAttributeViews ();
-	CView* createViewForAttribute (const std::string& attrName, CCoord width);
-	void updateAttributeValueView (const std::string& attrName);
-
-	void windowSizeChanged (const CRect& newSize, PlatformWindow* platformWindow);
-	void windowClosed (PlatformWindow* platformWindow);
-	void checkWindowSizeConstraints (CPoint& size, PlatformWindow* platformWindow);
-
-	void addColorBitmapsToColorMenu (COptionMenu* menu, IUIDescription* desc);
-
-	CSelection* selection;
-	IActionOperator* actionOperator;
-	UIDescription* description;
-	CViewContainer* attributesView;
-	CTextLabel* viewNameLabel;
-	CScrollView* scrollView;
-	PlatformWindow* platformWindow;
-	void* parentPlatformWindow;
-	CRect windowSize;
-	std::list<CView*> attributeViews;
-};
+extern void rememberAttributeValueString (CView* view, IdStringPtr attrName, const std::string& value);
+extern bool getRememberedAttributeValueString (CView* view, IdStringPtr attrName, std::string& value);
 
 } // namespace
 
-#endif // VSTGUI_LIVE_EDITING
-
-#endif
+#endif // __uiviewcreator__

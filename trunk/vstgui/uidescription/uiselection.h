@@ -32,8 +32,8 @@
 // OF THE POSSIBILITY OF SUCH DAMAGE.
 //-----------------------------------------------------------------------------
 
-#ifndef __cselection__
-#define __cselection__
+#ifndef __uiselection__
+#define __uiselection__
 
 #if VSTGUI_LIVE_EDITING
 
@@ -42,13 +42,13 @@
 #include <string>
 
 namespace VSTGUI {
-class ViewFactory;
+class UIViewFactory;
 class IUIDescription;
 class OutputStream;
 class InputStream;
 
 //----------------------------------------------------------------------------------------------------
-class CSelection : public CBaseObject, protected std::list<CView*>
+class UISelection : public CBaseObject, protected std::list<CView*>
 //----------------------------------------------------------------------------------------------------
 {
 public:
@@ -59,8 +59,8 @@ public:
 		kSingleSelectionStyle
 	};
 	
-	CSelection (int32_t style = kMultiSelectionStyle);
-	~CSelection ();
+	UISelection (int32_t style = kMultiSelectionStyle);
+	~UISelection ();
 
 	void setStyle (int32_t style);
 
@@ -93,11 +93,11 @@ public:
 	static IdStringPtr kMsgSelectionViewChanged;
 	void changed (IdStringPtr what);
 
-	bool store (OutputStream& stream, ViewFactory* viewFactory, IUIDescription* uiDescription);
-	bool restore (InputStream& str, ViewFactory* viewFactory, IUIDescription* uiDescription);
+	bool store (OutputStream& stream, UIViewFactory* viewFactory, IUIDescription* uiDescription);
+	bool restore (InputStream& str, UIViewFactory* viewFactory, IUIDescription* uiDescription);
 protected:
-	static bool storeAttributesForView (OutputStream& stream, ViewFactory* viewFactory, IUIDescription* uiDescription, CView* view);
-	static CView* createView (InputStream& stream, ViewFactory* viewFactory, IUIDescription* uiDescription);
+	static bool storeAttributesForView (OutputStream& stream, UIViewFactory* viewFactory, IUIDescription* uiDescription, CView* view);
+	static CView* createView (InputStream& stream, UIViewFactory* viewFactory, IUIDescription* uiDescription);
 
 	std::list<CBaseObject*> dependencies;
 	int32_t style;
@@ -108,7 +108,7 @@ protected:
 //----------------------------------------------------------------------------------------------------
 #define FOREACH_IN_SELECTION(__selection, view) \
 	{ \
-	CSelection::const_iterator __it = __selection->begin (); \
+	UISelection::const_iterator __it = __selection->begin (); \
 	while (__it != __selection->end ()) \
 	{ \
 		CView* view = (*__it);
@@ -123,4 +123,4 @@ protected:
 
 #endif // VSTGUI_LIVE_EDITING
 
-#endif
+#endif // __uiselection__

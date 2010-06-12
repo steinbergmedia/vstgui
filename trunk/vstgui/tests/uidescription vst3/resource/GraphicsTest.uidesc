@@ -16,8 +16,8 @@
 		<color name="groupframe" rgba="#ffffff76"/>
 	</colors>
 	<custom>
-		<attributes name="CViewInspector" windowSize="48, 240, 448, 703"/>
-		<attributes gridsize="10" name="CEditFrame" uidescPath="/Volumes/DATA/subversion/trunk/vstgui_head/vstgui/tests/uidescription vst3/resource/GraphicsTest.uidesc"/>
+		<attributes name="UIViewInspector" windowSize="48, 240, 448, 703"/>
+		<attributes gridsize="10" name="UIEditFrame" uidescPath="/Volumes/DATA/subversion/trunk/vstgui_head/vstgui/tests/uidescription vst3/resource/GraphicsTest.uidesc"/>
 		<attributes frame-enable-focus-drawing="false" frame-focus-width="2" name="VST3Editor"/>
 	</custom>
 	<bitmaps>

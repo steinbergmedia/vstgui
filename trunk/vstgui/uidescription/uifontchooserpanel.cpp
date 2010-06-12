@@ -32,100 +32,105 @@
 // OF THE POSSIBILITY OF SUCH DAMAGE.
 //-----------------------------------------------------------------------------
 
+#include "uifontchooserpanel.h"
+
 #if VSTGUI_LIVE_EDITING
 
-#include "ccolorchooserpanel.h"
 #include "editingcolordefs.h"
 
 namespace VSTGUI {
 
-IdStringPtr CColorChooserPanel::kMsgWindowClosed = "kMsgWindowClosed";
-CRect CColorChooserPanel::lastSize;
+UIFontChooserPanel* UIFontChooserPanel::gInstance = 0;
 
 //-----------------------------------------------------------------------------
-CColorChooserPanel::CColorChooserPanel (CBaseObject* owner, IPlatformColorChangeCallback* callback, void* parentPlatformWindow)
-: platformWindow (0)
-, owner (owner)
-, callback (callback)
+void UIFontChooserPanel::show (CFontRef initialFont, CBaseObject* owner, void* parentPlatformWindow)
 {
-	CRect size (0, 0, 300, 500);
-	platformWindow = PlatformWindow::create (size, "VSTGUI Color Chooser", PlatformWindow::kPanelType, PlatformWindow::kClosable|PlatformWindow::kResizable, this, parentPlatformWindow);
-	if (platformWindow)
+	if (gInstance == 0)
+		new UIFontChooserPanel (initialFont, owner, parentPlatformWindow);
+	else
 	{
-		#if MAC_CARBON && MAC_COCOA
-		CFrame::setCocoaMode (true);
-		#endif
+		gInstance->setOwner (owner);
+		gInstance->setFont (initialFont);
+	}
+}
 
-		frame = new CFrame (size, platformWindow->getPlatformHandle (), this);
-		frame->setBackgroundColor (uidPanelBackgroundColor);
+//-----------------------------------------------------------------------------
+void UIFontChooserPanel::hide ()
+{
+	if (gInstance)
+	{
+		gInstance->setOwner (0);
+		gInstance->forget ();
+	}
+}
 
-		frame->setFocusDrawingEnabled (true);
-		frame->setFocusColor (uidFocusColor);
-		frame->setFocusWidth (1.2);
-
-		const CCoord kMargin = 12;
-		colorChooser = new CColorChooser (this);
-		CRect r = colorChooser->getViewSize ();
-		r.offset (kMargin, kMargin);
-		colorChooser->setViewSize (r);
-		colorChooser->setMouseableArea (r);
-		r.inset (-kMargin, -kMargin);
-		minSize.x = r.getWidth ();
-		minSize.y = r.getHeight ();
-		frame->setSize (r.getWidth (), r.getHeight ());
-		frame->addView (colorChooser);
-		platformWindow->setSize (r);
+//-----------------------------------------------------------------------------
+UIFontChooserPanel::UIFontChooserPanel (CFontRef initialFont, CBaseObject* owner, void* parentPlatformWindow)
+: UIPanelBase (owner, parentPlatformWindow)
+, fontChooser (0)
+{
+	gInstance = this;
+	CRect size (0, 0, 500, 300);
+	if (init (size, "VSTGUI Font Chooser", PlatformWindow::kClosable|PlatformWindow::kResizable))
+	{
+		if (initialFont)
+			fontChooser->setFont (initialFont);
 		platformWindow->center ();
-		if (!lastSize.isEmpty ())
-			platformWindow->setSize (lastSize);
+		minSize = platformWindow->getSize ().getBottomRight ();
 		platformWindow->show ();
 	}
 }
 
 //-----------------------------------------------------------------------------
-CColorChooserPanel::~CColorChooserPanel ()
+UIFontChooserPanel::~UIFontChooserPanel ()
 {
-	owner = 0;
-	if (frame)
-		frame->close ();
-	if (platformWindow)
-		windowClosed (platformWindow);
+	gInstance = 0;
 }
 
 //-----------------------------------------------------------------------------
-void CColorChooserPanel::setColorChangeCallback (IPlatformColorChangeCallback* newCallback)
+CFrame* UIFontChooserPanel::createFrame (void* platformWindow, const CCoord& width, const CCoord& height)
 {
-	callback = newCallback;
+	CRect size (0, 0, width, height);
+	CFrame* frame = new CFrame (size, platformWindow, this);
+	frame->setBackgroundColor (uidPanelBackgroundColor);
+
+	frame->setFocusDrawingEnabled (true);
+	frame->setFocusColor (uidFocusColor);
+	frame->setFocusWidth (1.2);
+
+	const CCoord kMargin = 12;
+	size.left += kMargin;
+	size.top += kMargin;
+	size.right -= kMargin;
+	size.bottom -= kMargin;
+
+	CFontChooserUIDefinition uiDef;
+	uiDef.rowHeight = 20;
+	uiDef.rowlineColor = uidDataBrowserLineColor;
+	uiDef.selectionColor = uidFocusColor;
+	uiDef.scrollbarWidth = 10;
+	uiDef.scrollbarScrollerColor = uidScrollerColor;
+	uiDef.scrollbarBackgroundColor = kTransparentCColor;
+	uiDef.scrollbarFrameColor = kTransparentCColor;
+	uiDef.font = kNormalFont;
+
+	fontChooser = new CFontChooser (this, 0, uiDef);
+	fontChooser->setTransparency (true);
+	fontChooser->setAutosizeFlags (kAutosizeAll);
+	fontChooser->setViewSize (size);
+	fontChooser->setMouseableArea (size);
+	frame->addView (fontChooser);
+	return frame;
 }
 
 //-----------------------------------------------------------------------------
-void CColorChooserPanel::setColor (const CColor& newColor)
+void UIFontChooserPanel::windowClosed (PlatformWindow* _platformWindow)
 {
-	colorChooser->setColor (newColor);
-}
-
-// IPlatformWindowDelegate
-//-----------------------------------------------------------------------------
-void CColorChooserPanel::windowSizeChanged (const CRect& newSize, PlatformWindow* platformWindow)
-{
-	frame->setSize (newSize.getWidth (), newSize.getHeight ());
+	UIPanelBase::windowClosed (_platformWindow);
 }
 
 //-----------------------------------------------------------------------------
-void CColorChooserPanel::windowClosed (PlatformWindow* _platformWindow)
-{
-	if (_platformWindow == platformWindow)
-	{
-		lastSize = platformWindow->getSize ();
-		platformWindow->forget ();
-		platformWindow = 0;
-	}
-	if (owner)
-		owner->notify (this, kMsgWindowClosed);
-}
-
-//-----------------------------------------------------------------------------
-void CColorChooserPanel::checkWindowSizeConstraints (CPoint& size, PlatformWindow* platformWindow)
+void UIFontChooserPanel::checkWindowSizeConstraints (CPoint& size, PlatformWindow* platformWindow)
 {
 	if (size.x < minSize.x)
 		size.x = minSize.x;
@@ -133,14 +138,25 @@ void CColorChooserPanel::checkWindowSizeConstraints (CPoint& size, PlatformWindo
 		size.y = minSize.y;
 }
 
-// IColorChooserDelegate
 //-----------------------------------------------------------------------------
-void CColorChooserPanel::colorChanged (CColorChooser* chooser, const CColor& color)
+void UIFontChooserPanel::fontChanged (CFontChooser* chooser, CFontRef newFont)
 {
-	if (callback)
-		callback->colorChanged (color);
+	IFontChooserDelegate* delegate = owner ? dynamic_cast<IFontChooserDelegate*> (owner) : 0;
+	if (delegate)
+		delegate->fontChanged (chooser, newFont);
 }
 
+//-----------------------------------------------------------------------------
+void UIFontChooserPanel::setOwner (CBaseObject* _owner)
+{
+	owner = _owner;
+}
+
+//-----------------------------------------------------------------------------
+void UIFontChooserPanel::setFont (CFontRef font)
+{
+	fontChooser->setFont (font);
+}
 
 } // namespace
 
