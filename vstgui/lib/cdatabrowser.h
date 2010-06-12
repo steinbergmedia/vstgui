@@ -38,6 +38,8 @@
 #define __cdatabrowser__
 
 #include "cscrollview.h"
+#include <vector>
+#include <string>
 
 namespace VSTGUI {
 
@@ -45,6 +47,7 @@ class CTextEdit;
 class CDataBrowser;
 class CDataBrowserView;
 class CDataBrowserHeader;
+class GenericStringListDataBrowserSource;
 
 //-----------------------------------------------------------------------------
 // IDataBrowser Declaration
@@ -129,7 +132,10 @@ public:
 	//@}
 
 	void setAutosizeFlags (int32_t flags);
-	void setViewSize (CRect& size, bool invalid);
+	void setViewSize (const CRect& size, bool invalid);
+
+	int32_t onKeyDown (VstKeyCode& keyCode);
+	CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons);
 protected:
 	~CDataBrowser ();
 	void valueChanged (CControl *pControl);
@@ -141,6 +147,68 @@ protected:
 	CDataBrowserHeader* dbHeader;
 	CViewContainer* dbHeaderContainer;
 	int32_t selectedRow;
+};
+
+//-----------------------------------------------------------------------------
+class IGenericStringListDataBrowserSourceSelectionChanged
+{
+public:
+	virtual void dbSelectionChanged (int32_t selectedRow, GenericStringListDataBrowserSource* source) = 0;
+};
+
+//-----------------------------------------------------------------------------
+// GenericStringListDataBrowserSource Declaration
+//! @brief Generic string list data browser source
+//-----------------------------------------------------------------------------------------------
+class GenericStringListDataBrowserSource : public IDataBrowser, public CBaseObject
+{
+public:
+	GenericStringListDataBrowserSource (const std::vector<std::string>* stringList, IGenericStringListDataBrowserSourceSelectionChanged* delegate = 0);
+	~GenericStringListDataBrowserSource ();
+
+	void setStringList (const std::vector<std::string>* stringList);
+	const std::vector<std::string>* getStringList () const { return stringList; }
+
+	void setupUI (const CColor& selectionColor, const CColor& fontColor, const CColor& rowlineColor, const CColor& rowBackColor, const CColor& rowAlteranteBackColor, CFontRef font = 0, int32_t rowHeight = -1);
+
+protected:
+	int32_t dbGetNumRows (CDataBrowser* browser);
+	int32_t dbGetNumColumns (CDataBrowser* browser) { return 1; }
+	bool dbGetColumnDescription (int32_t index, CCoord& minWidth, CCoord& maxWidth, CDataBrowser* browser) { return false; }
+	CCoord dbGetCurrentColumnWidth (int32_t index, CDataBrowser* browser);
+	void dbSetCurrentColumnWidth (int32_t index, const CCoord& width, CDataBrowser* browser) {}
+	CCoord dbGetRowHeight (CDataBrowser* browser);
+	bool dbGetLineWidthAndColor (CCoord& width, CColor& color, CDataBrowser* browser);
+
+	void dbDrawHeader (CDrawContext* context, const CRect& size, int32_t column, int32_t flags, CDataBrowser* browser);
+	void dbDrawCell (CDrawContext* context, const CRect& size, int32_t row, int32_t column, int32_t flags, CDataBrowser* browser);
+
+	CMouseEventResult dbOnMouseDown (const CPoint& where, const CButtonState& buttons, int32_t row, int32_t column, CDataBrowser* browser) { return kMouseDownEventHandledButDontNeedMovedOrUpEvents; }
+	CMouseEventResult dbOnMouseMoved (const CPoint& where, const CButtonState& buttons, int32_t row, int32_t column, CDataBrowser* browser) { return kMouseEventNotHandled; }
+	CMouseEventResult dbOnMouseUp (const CPoint& where, const CButtonState& buttons, int32_t row, int32_t column, CDataBrowser* browser) { return kMouseEventNotHandled; }
+
+	void dbSelectionChanged (CDataBrowser* browser);
+
+	void dbCellTextChanged (int32_t row, int32_t column, UTF8StringPtr newText, CDataBrowser* browser) {}
+	void dbCellSetupTextEdit (int32_t row, int32_t column, CTextEdit* textEditControl, CDataBrowser* browser) {}
+
+	int32_t dbOnKeyDown (const VstKeyCode& key, CDataBrowser* browser);
+
+	CMessageResult notify (CBaseObject* sender, IdStringPtr message);
+
+	const std::vector<std::string>* stringList;
+	int32_t rowHeight;
+	CColor fontColor;
+	CColor selectionColor;
+	CColor rowlineColor;
+	CColor rowBackColor;
+	CColor rowAlternateBackColor;
+	CFontRef drawFont;
+	CDataBrowser* dataBrowser;
+	IGenericStringListDataBrowserSourceSelectionChanged* delegate;
+
+	CVSTGUITimer* timer;
+	std::string keyDownFindString;
 };
 
 } // namespace

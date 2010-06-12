@@ -735,7 +735,6 @@ bool NSViewFrame::getGlobalPosition (CPoint& pos) const
 bool NSViewFrame::setSize (const CRect& newSize)
 {
 	uint32_t oldResizeMask = [nsView autoresizingMask];
-	NSRect oldFrame = [nsView frame];
 	[nsView setAutoresizingMask: 0];
 	NSRect r = nsRectFromCRect (newSize);
 	[nsView setFrame: r];

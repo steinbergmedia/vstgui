@@ -59,6 +59,7 @@ public:
 	//@}
 	
 	virtual	void draw (CDrawContext* pContext);
+	virtual bool sizeToFit ();
 
 	CLASS_METHODS(CTextLabel, CParamDisplay)
 protected:

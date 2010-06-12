@@ -34,10 +34,10 @@
 
 #if VSTGUI_LIVE_EDITING
 
-#include "viewhierarchybrowser.h"
-#include "viewfactory.h"
-#include "viewcreator.h"
-#include "ceditframe.h"
+#include "uiviewhierarchybrowser.h"
+#include "uiviewfactory.h"
+#include "uiviewcreator.h"
+#include "uieditframe.h"
 #include "editingcolordefs.h"
 #include "../lib/cdatabrowser.h"
 #include "../lib/vstkeycode.h"
@@ -48,10 +48,10 @@
 namespace VSTGUI {
 
 //-----------------------------------------------------------------------------
-class ViewHierarchyData : public IDataBrowser
+class UIViewHierarchyData : public IDataBrowser
 {
 public:
-	ViewHierarchyData (ViewHierarchyBrowser* parent, UIDescription* description, IActionOperator* actionOperator);
+	UIViewHierarchyData (UIViewHierarchyBrowser* parent, UIDescription* description, IActionOperator* actionOperator);
 
 	int32_t dbGetNumRows (CDataBrowser* browser);
 	int32_t dbGetNumColumns (CDataBrowser* browser);
@@ -72,16 +72,16 @@ public:
 protected:
 	void doMoveOperation (int32_t row, bool up, CDataBrowser* browser);
 
-	ViewHierarchyBrowser* parent;
+	UIViewHierarchyBrowser* parent;
 	UIDescription* description;
 	IActionOperator* actionOperator;
 };
 
 //-----------------------------------------------------------------------------
-class HierarchyMoveViewOperation : public IActionOperation
+class UIHierarchyMoveViewOperation : public IActionOperation
 {
 public:
-	HierarchyMoveViewOperation (CView* view, bool up)
+	UIHierarchyMoveViewOperation (CView* view, bool up)
 	: view (view)
 	, parent (0)
 	, up (up)
@@ -92,7 +92,7 @@ public:
 			parent->remember ();
 	}
 
-	~HierarchyMoveViewOperation ()
+	~UIHierarchyMoveViewOperation ()
 	{
 		view->forget ();
 		if (parent)
@@ -147,7 +147,7 @@ protected:
 };
 
 //-----------------------------------------------------------------------------
-ViewHierarchyData::ViewHierarchyData (ViewHierarchyBrowser* parent, UIDescription* description, IActionOperator* actionOperator)
+UIViewHierarchyData::UIViewHierarchyData (UIViewHierarchyBrowser* parent, UIDescription* description, IActionOperator* actionOperator)
 : parent (parent)
 , description (description)
 , actionOperator (actionOperator)
@@ -155,7 +155,7 @@ ViewHierarchyData::ViewHierarchyData (ViewHierarchyBrowser* parent, UIDescriptio
 }
 
 //-----------------------------------------------------------------------------
-int32_t ViewHierarchyData::dbGetNumRows (CDataBrowser* browser)
+int32_t UIViewHierarchyData::dbGetNumRows (CDataBrowser* browser)
 {
 	if (parent->getCurrentView () == 0)
 		return 0;
@@ -163,19 +163,19 @@ int32_t ViewHierarchyData::dbGetNumRows (CDataBrowser* browser)
 }
 
 //-----------------------------------------------------------------------------
-int32_t ViewHierarchyData::dbGetNumColumns (CDataBrowser* browser)
+int32_t UIViewHierarchyData::dbGetNumColumns (CDataBrowser* browser)
 {
 	return 3;
 }
 
 //-----------------------------------------------------------------------------
-bool ViewHierarchyData::dbGetColumnDescription (int32_t index, CCoord& minWidth, CCoord& maxWidth, CDataBrowser* browser)
+bool UIViewHierarchyData::dbGetColumnDescription (int32_t index, CCoord& minWidth, CCoord& maxWidth, CDataBrowser* browser)
 {
 	return false;
 }
 
 //-----------------------------------------------------------------------------
-CCoord ViewHierarchyData::dbGetCurrentColumnWidth (int32_t index, CDataBrowser* browser)
+CCoord UIViewHierarchyData::dbGetCurrentColumnWidth (int32_t index, CDataBrowser* browser)
 {
 	CCoord scrollbarWidth = 0;
 	if (browser->getVerticalScrollbar ())
@@ -186,18 +186,18 @@ CCoord ViewHierarchyData::dbGetCurrentColumnWidth (int32_t index, CDataBrowser* 
 }
 
 //-----------------------------------------------------------------------------
-void ViewHierarchyData::dbSetCurrentColumnWidth (int32_t index, const CCoord& width, CDataBrowser* browser)
+void UIViewHierarchyData::dbSetCurrentColumnWidth (int32_t index, const CCoord& width, CDataBrowser* browser)
 {
 }
 
 //-----------------------------------------------------------------------------
-CCoord ViewHierarchyData::dbGetRowHeight (CDataBrowser* browser)
+CCoord UIViewHierarchyData::dbGetRowHeight (CDataBrowser* browser)
 {
 	return 20;
 }
 
 //-----------------------------------------------------------------------------
-bool ViewHierarchyData::dbGetLineWidthAndColor (CCoord& width, CColor& color, CDataBrowser* browser)
+bool UIViewHierarchyData::dbGetLineWidthAndColor (CCoord& width, CColor& color, CDataBrowser* browser)
 {
 	width = 1;
 	color = uidDataBrowserLineColor;
@@ -205,12 +205,12 @@ bool ViewHierarchyData::dbGetLineWidthAndColor (CCoord& width, CColor& color, CD
 }
 
 //-----------------------------------------------------------------------------
-void ViewHierarchyData::dbDrawHeader (CDrawContext* context, const CRect& size, int32_t column, int32_t flags, CDataBrowser* browser)
+void UIViewHierarchyData::dbDrawHeader (CDrawContext* context, const CRect& size, int32_t column, int32_t flags, CDataBrowser* browser)
 {
 }
 
 //-----------------------------------------------------------------------------
-void ViewHierarchyData::dbDrawCell (CDrawContext* context, const CRect& size, int32_t row, int32_t column, int32_t flags, CDataBrowser* browser)
+void UIViewHierarchyData::dbDrawCell (CDrawContext* context, const CRect& size, int32_t row, int32_t column, int32_t flags, CDataBrowser* browser)
 {
 	if (parent->getCurrentView () == 0)
 		return;
@@ -225,7 +225,7 @@ void ViewHierarchyData::dbDrawCell (CDrawContext* context, const CRect& size, in
 		if (view)
 		{
 			IdStringPtr viewname = 0;
-			ViewFactory* factory = description ? dynamic_cast<ViewFactory*> (description->getViewFactory ()) : 0;
+			UIViewFactory* factory = description ? dynamic_cast<UIViewFactory*> (description->getViewFactory ()) : 0;
 			if (factory)
 				viewname = factory->getViewName (view);
 			if (viewname == 0)
@@ -280,21 +280,21 @@ void ViewHierarchyData::dbDrawCell (CDrawContext* context, const CRect& size, in
 }
 
 //-----------------------------------------------------------------------------
-void ViewHierarchyData::doMoveOperation (int32_t row, bool up, CDataBrowser* browser)
+void UIViewHierarchyData::doMoveOperation (int32_t row, bool up, CDataBrowser* browser)
 {
 	if (parent->getCurrentView ())
 	{
 		if (!(row == 0 && up) && !(row == dbGetNumRows (browser)-1 && !up))
 		{
 			if (actionOperator)
-				actionOperator->performAction (new HierarchyMoveViewOperation (parent->getCurrentView ()->getView (row), up));
+				actionOperator->performAction (new UIHierarchyMoveViewOperation (parent->getCurrentView ()->getView (row), up));
 			browser->setSelectedRow (row + (up ? -1 : 1), true);
 		}
 	}
 }
 
 //-----------------------------------------------------------------------------
-CMouseEventResult ViewHierarchyData::dbOnMouseDown (const CPoint& where, const CButtonState& buttons, int32_t row, int32_t column, CDataBrowser* browser)
+CMouseEventResult UIViewHierarchyData::dbOnMouseDown (const CPoint& where, const CButtonState& buttons, int32_t row, int32_t column, CDataBrowser* browser)
 {
 	if (parent->getCurrentView ())
 	{
@@ -316,19 +316,19 @@ CMouseEventResult ViewHierarchyData::dbOnMouseDown (const CPoint& where, const C
 }
 
 //-----------------------------------------------------------------------------
-CMouseEventResult ViewHierarchyData::dbOnMouseMoved (const CPoint& where, const CButtonState& buttons, int32_t row, int32_t column, CDataBrowser* browser)
+CMouseEventResult UIViewHierarchyData::dbOnMouseMoved (const CPoint& where, const CButtonState& buttons, int32_t row, int32_t column, CDataBrowser* browser)
 {
 	return kMouseEventHandled;
 }
 
 //-----------------------------------------------------------------------------
-CMouseEventResult ViewHierarchyData::dbOnMouseUp (const CPoint& where, const CButtonState& buttons, int32_t row, int32_t column, CDataBrowser* browser)
+CMouseEventResult UIViewHierarchyData::dbOnMouseUp (const CPoint& where, const CButtonState& buttons, int32_t row, int32_t column, CDataBrowser* browser)
 {
 	return kMouseEventHandled;
 }
 
 //-----------------------------------------------------------------------------
-int32_t ViewHierarchyData::dbOnKeyDown (const VstKeyCode& key, CDataBrowser* browser)
+int32_t UIViewHierarchyData::dbOnKeyDown (const VstKeyCode& key, CDataBrowser* browser)
 {
 	if (parent->getCurrentView ())
 	{
@@ -374,7 +374,7 @@ int32_t ViewHierarchyData::dbOnKeyDown (const VstKeyCode& key, CDataBrowser* bro
 }
 
 //-----------------------------------------------------------------------------
-void ViewHierarchyData::dbSelectionChanged (CDataBrowser* browser)
+void UIViewHierarchyData::dbSelectionChanged (CDataBrowser* browser)
 {
 	if (actionOperator && parent->getCurrentView ())
 	{
@@ -386,12 +386,12 @@ void ViewHierarchyData::dbSelectionChanged (CDataBrowser* browser)
 class ViewHierarchyPathView : public CView
 {
 public:
-	ViewHierarchyPathView (const CRect& size, ViewHierarchyBrowser* browser, ViewFactory* viewFactory);
+	ViewHierarchyPathView (const CRect& size, UIViewHierarchyBrowser* browser, UIViewFactory* viewFactory);
 	~ViewHierarchyPathView ();
 
 	CMouseEventResult onMouseDown (CPoint &where, const CButtonState& buttons);
 	void draw (CDrawContext* context);
-	void setViewSize (CRect &rect, bool invalid) { CView::setViewSize (rect, invalid); needCompute = true; }
+	void setViewSize (const CRect &rect, bool invalid) { CView::setViewSize (rect, invalid); needCompute = true; }
 
 	void setHierarchyDirty () { needCompute = true; invalid (); }
 protected:
@@ -401,7 +401,7 @@ protected:
 		PathElement (const PathElement& pe)
 		: view (pe.view), name (pe.name), nameWidth (pe.nameWidth), drawWidth (pe.drawWidth) {}
 		
-		PathElement (ViewFactory* factory, CViewContainer* view, CDrawContext* context)
+		PathElement (UIViewFactory* factory, CViewContainer* view, CDrawContext* context)
 		: view (view)
 		{
 			IdStringPtr viewname = 0;
@@ -429,8 +429,8 @@ protected:
 	void compute (CDrawContext* context);
 	void drawPathElement (const CRect& size, const PathElement& element, CDrawContext* context, bool isLast);
 
-	ViewHierarchyBrowser* browser;
-	ViewFactory* viewFactory;
+	UIViewHierarchyBrowser* browser;
+	UIViewFactory* viewFactory;
 	std::list<PathElement> elements;
 	CCoord margin;
 	bool needCompute;
@@ -440,7 +440,7 @@ protected:
 };
 
 //-----------------------------------------------------------------------------
-ViewHierarchyPathView::ViewHierarchyPathView (const CRect& size, ViewHierarchyBrowser* browser, ViewFactory* viewFactory)
+ViewHierarchyPathView::ViewHierarchyPathView (const CRect& size, UIViewHierarchyBrowser* browser, UIViewFactory* viewFactory)
 : CView (size)
 , browser (browser)
 , viewFactory (viewFactory)
@@ -572,7 +572,7 @@ CMouseEventResult ViewHierarchyPathView::onMouseDown (CPoint &where, const CButt
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
-ViewHierarchyBrowser::ViewHierarchyBrowser (const CRect& rect, CViewContainer* baseView, UIDescription* description, IActionOperator* actionOperator)
+UIViewHierarchyBrowser::UIViewHierarchyBrowser (const CRect& rect, CViewContainer* baseView, UIDescription* description, IActionOperator* actionOperator)
 : CViewContainer (rect, 0)
 , baseView (baseView)
 , currentView (baseView)
@@ -581,12 +581,12 @@ ViewHierarchyBrowser::ViewHierarchyBrowser (const CRect& rect, CViewContainer* b
 , pathView (0)
 {
 	setTransparency (true);
-	data = new ViewHierarchyData (this, description, actionOperator);
+	data = new UIViewHierarchyData (this, description, actionOperator);
 	CRect r2 (rect);
 	r2.offset (-r2.left, -r2.top);
 	r2.setHeight (25);
 	r2.inset (1, 4);
-	pathView = new ViewHierarchyPathView (r2, this, description ? dynamic_cast<ViewFactory*>(description->getViewFactory ()) : 0);
+	pathView = new ViewHierarchyPathView (r2, this, description ? dynamic_cast<UIViewFactory*>(description->getViewFactory ()) : 0);
 	pathView->setAutosizeFlags (kAutosizeLeft|kAutosizeRight|kAutosizeTop);
 	addView (pathView);
 
@@ -605,12 +605,12 @@ ViewHierarchyBrowser::ViewHierarchyBrowser (const CRect& rect, CViewContainer* b
 }
 
 //-----------------------------------------------------------------------------
-ViewHierarchyBrowser::~ViewHierarchyBrowser ()
+UIViewHierarchyBrowser::~UIViewHierarchyBrowser ()
 {
 }
 
 //-----------------------------------------------------------------------------
-void ViewHierarchyBrowser::setCurrentView (CViewContainer* newView)
+void UIViewHierarchyBrowser::setCurrentView (CViewContainer* newView)
 {
 	if ((newView && newView->isChild (baseView, true)) || newView == currentView)
 		return;
@@ -621,7 +621,7 @@ void ViewHierarchyBrowser::setCurrentView (CViewContainer* newView)
 }
 
 //-----------------------------------------------------------------------------
-void ViewHierarchyBrowser::changeBaseView (CViewContainer* newBaseView)
+void UIViewHierarchyBrowser::changeBaseView (CViewContainer* newBaseView)
 {
 	baseView = currentView = newBaseView;
 	browser->recalculateLayout (false);
@@ -630,7 +630,7 @@ void ViewHierarchyBrowser::changeBaseView (CViewContainer* newBaseView)
 }
 
 //-----------------------------------------------------------------------------
-void ViewHierarchyBrowser::notifyHierarchyChange (CView* view, bool wasRemoved)
+void UIViewHierarchyBrowser::notifyHierarchyChange (CView* view, bool wasRemoved)
 {
 	CViewContainer* parent = dynamic_cast<CViewContainer*> (view->getParentView ());
 	if (parent == currentView)
@@ -647,36 +647,17 @@ void ViewHierarchyBrowser::notifyHierarchyChange (CView* view, bool wasRemoved)
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
-IdStringPtr ViewHierarchyBrowserWindow::kMsgWindowClosed = "ViewHierarchyBrowserWindow closed";
-
-//-----------------------------------------------------------------------------
-ViewHierarchyBrowserWindow::ViewHierarchyBrowserWindow (CViewContainer* baseView, CBaseObject* owner, UIDescription* description, void* parentPlatformWindow)
-: owner (owner)
-, platformWindow (0)
+UIViewHierarchyBrowserWindow::UIViewHierarchyBrowserWindow (CViewContainer* baseView, CBaseObject* owner, UIDescription* description, void* parentPlatformWindow)
+: UIPanelBase (owner, parentPlatformWindow)
 , browser (0)
 , description (description)
 {
 	CRect size (0, 0, 300, 500);
-	platformWindow = PlatformWindow::create (size, "VSTGUI Hierarchy Browser", PlatformWindow::kPanelType, PlatformWindow::kClosable|PlatformWindow::kResizable, this, parentPlatformWindow);
-	if (platformWindow)
+	if (init (size, "VSTGUI Hierarchy Browser", PlatformWindow::kClosable|PlatformWindow::kResizable))
 	{
-		#if MAC_CARBON && MAC_COCOA
-		CFrame::setCocoaMode (true);
-		#endif
-
-		frame = new CFrame (size, platformWindow->getPlatformHandle (), this);
-		frame->setBackgroundColor (uidPanelBackgroundColor);
-
-		const CCoord kMargin = 12;
-		size.left += kMargin;
-		size.right -= kMargin;
-		size.bottom -= kMargin;
-		browser = new ViewHierarchyBrowser (size, baseView, description, dynamic_cast<IActionOperator*> (owner));
-		browser->setAutosizeFlags (kAutosizeAll);
-		frame->addView (browser);
-
+		browser->changeBaseView (baseView);
 		platformWindow->center ();
-		UIAttributes* customAttributes = description->getCustomAttributes ("ViewHierarchyBrowser");
+		UIAttributes* customAttributes = description->getCustomAttributes ("UIViewHierarchyBrowser");
 		if (customAttributes)
 		{
 			CRect windowSize;
@@ -688,55 +669,58 @@ ViewHierarchyBrowserWindow::ViewHierarchyBrowserWindow (CViewContainer* baseView
 }
 
 //-----------------------------------------------------------------------------
-ViewHierarchyBrowserWindow::~ViewHierarchyBrowserWindow ()
+CFrame* UIViewHierarchyBrowserWindow::createFrame (void* platformWindow, const CCoord& width, const CCoord& height)
 {
-	owner = 0;
-	if (frame)
-		frame->close ();
-	if (platformWindow)
-		windowClosed (platformWindow);
+	CRect size (0, 0, width, height);
+	CFrame* frame = new CFrame (size, platformWindow, this);
+	frame->setBackgroundColor (uidPanelBackgroundColor);
+
+	const CCoord kMargin = 12;
+	size.left += kMargin;
+	size.right -= kMargin;
+	size.bottom -= kMargin;
+	browser = new UIViewHierarchyBrowser (size, 0, description, dynamic_cast<IActionOperator*> (owner));
+	browser->setAutosizeFlags (kAutosizeAll);
+	frame->addView (browser);
+	return frame;
 }
 
 //-----------------------------------------------------------------------------
-void ViewHierarchyBrowserWindow::changeBaseView (CViewContainer* newBaseView)
+UIViewHierarchyBrowserWindow::~UIViewHierarchyBrowserWindow ()
+{
+}
+
+//-----------------------------------------------------------------------------
+void UIViewHierarchyBrowserWindow::changeBaseView (CViewContainer* newBaseView)
 {
 	if (browser)
 		browser->changeBaseView (newBaseView);
 }
 
 //-----------------------------------------------------------------------------
-void ViewHierarchyBrowserWindow::notifyHierarchyChange (CView* view, bool wasRemoved)
+void UIViewHierarchyBrowserWindow::notifyHierarchyChange (CView* view, bool wasRemoved)
 {
 	if (browser)
 		browser->notifyHierarchyChange (view, wasRemoved);
 }
 
 //-----------------------------------------------------------------------------
-void ViewHierarchyBrowserWindow::windowSizeChanged (const CRect& newSize, PlatformWindow* platformWindow)
-{
-	frame->setSize (newSize.getWidth (), newSize.getHeight ());
-}
-
-//-----------------------------------------------------------------------------
-void ViewHierarchyBrowserWindow::windowClosed (PlatformWindow* _platformWindow)
+void UIViewHierarchyBrowserWindow::windowClosed (PlatformWindow* _platformWindow)
 {
 	if (_platformWindow == platformWindow)
 	{
-		UIAttributes* customAttributes = description->getCustomAttributes ("ViewHierarchyBrowser");
+		UIAttributes* customAttributes = description->getCustomAttributes ("UIViewHierarchyBrowser");
 		if (!customAttributes)
 			customAttributes = new UIAttributes;
 		CRect windowSize (platformWindow->getSize ());
 		customAttributes->setRectAttribute ("windowSize", windowSize);
-		description->setCustomAttributes ("ViewHierarchyBrowser", customAttributes);
-		platformWindow->forget ();
-		platformWindow = 0;
+		description->setCustomAttributes ("UIViewHierarchyBrowser", customAttributes);
 	}
-	if (owner)
-		owner->notify (this, kMsgWindowClosed);
+	UIPanelBase::windowClosed (_platformWindow);
 }
 
 //-----------------------------------------------------------------------------
-void ViewHierarchyBrowserWindow::checkWindowSizeConstraints (CPoint& size, PlatformWindow* platformWindow)
+void UIViewHierarchyBrowserWindow::checkWindowSizeConstraints (CPoint& size, PlatformWindow* platformWindow)
 {
 	if (size.x < 300)
 		size.x = 300;

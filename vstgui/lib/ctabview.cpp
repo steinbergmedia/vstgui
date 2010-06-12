@@ -384,7 +384,7 @@ void CTabView::setCurrentChild (CTabChildView* childView)
 }
 
 //-----------------------------------------------------------------------------
-void CTabView::drawBackgroundRect (CDrawContext *pContext, CRect& _updateRect)
+void CTabView::drawBackgroundRect (CDrawContext *pContext, const CRect& _updateRect)
 {
 	CRect oldClip = pContext->getClipRect (oldClip);
 	CRect updateRect (_updateRect);
@@ -499,7 +499,7 @@ void CTabView::alignTabs (TabAlignment alignment)
 }
 
 //-----------------------------------------------------------------------------
-void CTabView::setViewSize (CRect &rect, bool invalid)
+void CTabView::setViewSize (const CRect &rect, bool invalid)
 {
 	if (rect == getViewSize ())
 		return;

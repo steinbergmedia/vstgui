@@ -37,7 +37,7 @@
 
 #include "lib/vstguibase.h"
 #include "uidescription/uidescription.h"
-#include "uidescription/viewcreator.h"
-#include "uidescription/viewfactory.h"
+#include "uidescription/uiviewcreator.h"
+#include "uidescription/uiviewfactory.h"
 
 #endif

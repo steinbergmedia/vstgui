@@ -34,16 +34,18 @@
 
 #include "vstgui_uidescription.h"
 
-#include "uidescription/ccolorchooserpanel.cpp"
-#include "uidescription/ceditframe.cpp"
-#include "uidescription/cselection.cpp"
-#include "uidescription/cviewinspector.cpp"
-#include "uidescription/cviewswitchcontainer.cpp"
-#include "uidescription/dialog.cpp"
+#include "uidescription/uicolorchooserpanel.cpp"
+#include "uidescription/uifontchooserpanel.cpp"
+#include "uidescription/uipanelbase.cpp"
+#include "uidescription/uieditframe.cpp"
+#include "uidescription/uiselection.cpp"
+#include "uidescription/uiviewinspector.cpp"
+#include "uidescription/uiviewswitchcontainer.cpp"
+#include "uidescription/uidialog.cpp"
 #include "uidescription/uidescription.cpp"
-#include "uidescription/viewcreator.cpp"
-#include "uidescription/viewfactory.cpp"
-#include "uidescription/viewhierarchybrowser.cpp"
+#include "uidescription/uiviewcreator.cpp"
+#include "uidescription/uiviewfactory.cpp"
+#include "uidescription/uiviewhierarchybrowser.cpp"
 #include "uidescription/cstream.cpp"
 
 #include "uidescription/xmlparser.cpp" // needs to be last

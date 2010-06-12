@@ -32,8 +32,8 @@
 // OF THE POSSIBILITY OF SUCH DAMAGE.
 //-----------------------------------------------------------------------------
 
-#include "cviewswitchcontainer.h"
-#include "viewcreator.h"
+#include "uiviewswitchcontainer.h"
+#include "uiviewcreator.h"
 #include "../lib/cframe.h"
 #include "../lib/animation/animations.h"
 #include "../lib/animation/timingfunctions.h"
@@ -41,7 +41,7 @@
 namespace VSTGUI {
 
 //-----------------------------------------------------------------------------
-CViewSwitchContainer::CViewSwitchContainer (const CRect& size)
+UIViewSwitchContainer::UIViewSwitchContainer (const CRect& size)
 : CViewContainer (size, 0)
 , controller (0)
 , currentViewIndex (0)
@@ -49,13 +49,13 @@ CViewSwitchContainer::CViewSwitchContainer (const CRect& size)
 }
 
 //-----------------------------------------------------------------------------
-CViewSwitchContainer::~CViewSwitchContainer ()
+UIViewSwitchContainer::~UIViewSwitchContainer ()
 {
 	setController (0);
 }
 
 //-----------------------------------------------------------------------------
-void CViewSwitchContainer::setController (IViewSwitchController* _controller)
+void UIViewSwitchContainer::setController (IViewSwitchController* _controller)
 {
 	if (controller)
 	{
@@ -67,7 +67,7 @@ void CViewSwitchContainer::setController (IViewSwitchController* _controller)
 }
 
 //-----------------------------------------------------------------------------
-void CViewSwitchContainer::setCurrentViewIndex (int32_t viewIndex)
+void UIViewSwitchContainer::setCurrentViewIndex (int32_t viewIndex)
 {
 	if (controller)
 	{
@@ -83,11 +83,11 @@ void CViewSwitchContainer::setCurrentViewIndex (int32_t viewIndex)
 			}
 			#if 1
 			if (getFrame ())
-				getFrame ()->getAnimator ()->removeAnimation (this, "CViewSwitchContainer::setCurrentViewIndex");
+				getFrame ()->getAnimator ()->removeAnimation (this, "UIViewSwitchContainer::setCurrentViewIndex");
 			CView* oldView = getView (0);
 			if (oldView && getFrame ())
 			{
-				getFrame ()->getAnimator ()->addAnimation (this, "CViewSwitchContainer::setCurrentViewIndex", new Animation::ExchangeViewAnimation (oldView, view, Animation::ExchangeViewAnimation::kAlphaValueFade), new Animation::LinearTimingFunction (120));
+				getFrame ()->getAnimator ()->addAnimation (this, "UIViewSwitchContainer::setCurrentViewIndex", new Animation::ExchangeViewAnimation (oldView, view, Animation::ExchangeViewAnimation::kAlphaValueFade), new Animation::LinearTimingFunction (120));
 			}
 			else
 			{
@@ -105,7 +105,7 @@ void CViewSwitchContainer::setCurrentViewIndex (int32_t viewIndex)
 }
 
 //-----------------------------------------------------------------------------
-bool CViewSwitchContainer::attached (CView* parent)
+bool UIViewSwitchContainer::attached (CView* parent)
 {
 	bool result = CViewContainer::attached (parent);
 	CViewContainer::removeAll ();
@@ -115,7 +115,7 @@ bool CViewSwitchContainer::attached (CView* parent)
 }
 
 //-----------------------------------------------------------------------------
-bool CViewSwitchContainer::removed (CView* parent)
+bool UIViewSwitchContainer::removed (CView* parent)
 {
 	if (isAttached ())
 	{
@@ -127,7 +127,7 @@ bool CViewSwitchContainer::removed (CView* parent)
 }
 
 //-----------------------------------------------------------------------------
-UIDescriptionViewSwitchController::UIDescriptionViewSwitchController (CViewSwitchContainer* viewSwitch, UIDescription* uiDescription, IController* uiController)
+UIDescriptionViewSwitchController::UIDescriptionViewSwitchController (UIViewSwitchContainer* viewSwitch, UIDescription* uiDescription, IController* uiController)
 : IViewSwitchController (viewSwitch)
 , uiDescription (uiDescription)
 , uiController (uiController)
@@ -247,22 +247,22 @@ void UIDescriptionViewSwitchController::getTemplateNames (std::string& str)
 
 /// @cond ignore
 //-----------------------------------------------------------------------------
-class CViewSwitchContainerCreator : public IViewCreator
+class UIViewSwitchContainerCreator : public IViewCreator
 {
 public:
-	CViewSwitchContainerCreator () { ViewFactory::registerViewCreator (*this); }
-	IdStringPtr getViewName () const { return "CViewSwitchContainer"; }
+	UIViewSwitchContainerCreator () { UIViewFactory::registerViewCreator (*this); }
+	IdStringPtr getViewName () const { return "UIViewSwitchContainer"; }
 	IdStringPtr getBaseViewName () const { return "CViewContainer"; }
 	CView* create (const UIAttributes& attributes, IUIDescription* description) const 
 	{
-		CViewSwitchContainer* vsc = new CViewSwitchContainer (CRect (0, 0, 100, 100));
+		UIViewSwitchContainer* vsc = new UIViewSwitchContainer (CRect (0, 0, 100, 100));
 		new UIDescriptionViewSwitchController (vsc, dynamic_cast<UIDescription*> (description), description->getController ());
 		return vsc;
 	}
 
 	bool apply (CView* view, const UIAttributes& attributes, IUIDescription* description) const
 	{
-		CViewSwitchContainer* viewSwitch = dynamic_cast<CViewSwitchContainer*> (view);
+		UIViewSwitchContainer* viewSwitch = dynamic_cast<UIViewSwitchContainer*> (view);
 		if (!viewSwitch)
 			return false;
 		const std::string* attr = attributes.getAttributeValue ("template-names");
@@ -301,7 +301,7 @@ public:
 	}
 	bool getAttributeValue (CView* view, const std::string& attributeName, std::string& stringValue, IUIDescription* desc) const
 	{
-		CViewSwitchContainer* viewSwitch = dynamic_cast<CViewSwitchContainer*> (view);
+		UIViewSwitchContainer* viewSwitch = dynamic_cast<UIViewSwitchContainer*> (view);
 		if (!viewSwitch)
 			return false;
 		if (attributeName == "template-names")
@@ -332,7 +332,7 @@ public:
 		return false;
 	}
 };
-CViewSwitchContainerCreator __gCViewSwitchContainerCreator;
+UIViewSwitchContainerCreator __gUIViewSwitchContainerCreator;
 
 /// @endcond
 

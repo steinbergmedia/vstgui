@@ -34,13 +34,14 @@
 
 #if VSTGUI_LIVE_EDITING
 
-#include "ceditframe.h"
-#include "cviewinspector.h"
-#include "viewhierarchybrowser.h"
-#include "viewfactory.h"
-#include "viewcreator.h"
+#include "uieditframe.h"
+#include "uiviewinspector.h"
+#include "uiviewhierarchybrowser.h"
+#include "uiviewfactory.h"
+#include "uiviewcreator.h"
 #include "editingcolordefs.h"
 #include "cstream.h"
+#include "uifontchooserpanel.h"
 #include "../lib/coffscreencontext.h"
 #include "../lib/vstkeycode.h"
 #include "../lib/cfileselector.h"
@@ -68,7 +69,7 @@ public:
 class SizeToFitOperation : public IActionOperation, protected std::list<CView*>
 {
 public:
-	SizeToFitOperation (CSelection* selection)
+	SizeToFitOperation (UISelection* selection)
 	: selection (selection)
 	{
 		selection->remember ();
@@ -125,15 +126,96 @@ public:
 	}
 
 protected:
-	CSelection* selection;
+	UISelection* selection;
 	std::list<CRect> sizes;
+};
+
+//-----------------------------------------------------------------------------
+class UnembedViewOperation : public IActionOperation, protected std::list<CView*>
+{
+public:
+	UnembedViewOperation (UISelection* selection)
+	: selection (selection)
+	{
+		containerView = dynamic_cast<CViewContainer*> (selection->first ());
+		int32_t numViews = containerView->getNbViews ();
+		for (int32_t i = 0; i < numViews; i++)
+		{
+			CView* view = containerView->getView (i);
+			push_back (view);
+			view->remember ();
+		}
+		containerView->remember ();
+		parent = dynamic_cast<CViewContainer*> (containerView->getParentView ());
+	}
+	
+	~UnembedViewOperation ()
+	{
+		const_iterator it = begin ();
+		while (it != end ())
+		{
+			(*it)->forget ();
+			it++;
+		}
+		containerView->forget ();
+	}
+
+	UTF8StringPtr getName () { return "unembed views"; }
+
+	void perform ()
+	{
+		selection->remove (containerView);
+		CRect containerViewSize = containerView->getViewSize ();
+		iterator it = begin ();
+		while (it != end ())
+		{
+			CView* view = (*it);
+			containerView->removeView (view, false);
+			CRect viewSize = view->getViewSize ();
+			CRect mouseSize = view->getMouseableArea ();
+			viewSize.offset (containerViewSize.left, containerViewSize.top);
+			mouseSize.offset (containerViewSize.left, containerViewSize.top);
+			view->setViewSize (viewSize);
+			view->setMouseableArea (mouseSize);
+			parent->addView (view);
+			selection->add (view);
+			it++;
+		}
+		parent->removeView (containerView, false);
+	}
+
+	void undo ()
+	{
+		CRect containerViewSize = containerView->getViewSize ();
+		iterator it = begin ();
+		while (it != end ())
+		{
+			CView* view = (*it);
+			parent->removeView (view, false);
+			CRect viewSize = view->getViewSize ();
+			CRect mouseSize = view->getMouseableArea ();
+			viewSize.offset (-containerViewSize.left, -containerViewSize.top);
+			mouseSize.offset (-containerViewSize.left, -containerViewSize.top);
+			view->setViewSize (viewSize);
+			view->setMouseableArea (mouseSize);
+			containerView->addView (view);
+			it++;
+		}
+		parent->addView (containerView);
+		selection->setExclusive (containerView);
+	}
+
+protected:
+	UISelection* selection;
+	CViewContainer* containerView;
+	CViewContainer* parent;
 };
 
 //-----------------------------------------------------------------------------
 class EmbedViewOperation : public IActionOperation, protected std::list<CView*>
 {
 public:
-	EmbedViewOperation (CSelection* selection, CViewContainer* newContainer)
+	EmbedViewOperation (UISelection* selection, CViewContainer* newContainer)
 	: newContainer (newContainer)
 	{
 		parent = dynamic_cast<CViewContainer*> (selection->first ()->getParentView ());
@@ -176,7 +258,7 @@ public:
 		newContainer->forget ();
 	}
 	
-	UTF8StringPtr getName () { return 0; }
+	UTF8StringPtr getName () { return "embed views"; }
 	void perform ()
 	{
 		CRect parentRect = newContainer->getViewSize ();
@@ -222,7 +304,7 @@ protected:
 class ViewCopyOperation : public IActionOperation, protected std::list<CView*>
 {
 public:
-	ViewCopyOperation (CSelection* copySelection, CSelection* workingSelection, CViewContainer* parent, const CPoint& offset, ViewFactory* viewFactory, IUIDescription* desc)
+	ViewCopyOperation (UISelection* copySelection, UISelection* workingSelection, CViewContainer* parent, const CPoint& offset, UIViewFactory* viewFactory, IUIDescription* desc)
 	: parent (parent)
 	, copySelection (copySelection)
 	, workingSelection (workingSelection)
@@ -234,7 +316,7 @@ public:
 		FOREACH_IN_SELECTION(copySelection, view)
 			if (!copySelection->containsParent (view))
 			{
-				CRect viewSize = CSelection::getGlobalViewCoordinates (view);
+				CRect viewSize = UISelection::getGlobalViewCoordinates (view);
 				CRect newSize (0, 0, viewSize.getWidth (), viewSize.getHeight ());
 				newSize.offset (offset.x, offset.y);
 				newSize.offset (viewSize.left - selectionBounds.left, viewSize.top - selectionBounds.top);
@@ -305,8 +387,8 @@ public:
 	}
 protected:
 	CViewContainer* parent;
-	CSelection* copySelection;
-	CSelection* workingSelection;
+	UISelection* copySelection;
+	UISelection* workingSelection;
 	std::list<CView*> oldSelectedViews;
 };
 
@@ -314,7 +396,7 @@ protected:
 class ViewSizeChangeOperation : public IActionOperation, protected std::map<CView*, CRect>
 {
 public:
-	ViewSizeChangeOperation (CSelection* selection, bool sizing)
+	ViewSizeChangeOperation (UISelection* selection, bool sizing)
 	: first (true)
 	, sizing (sizing)
 	{
@@ -381,7 +463,7 @@ struct ViewAndNext
 class DeleteOperation : public IActionOperation, protected std::multimap<CViewContainer*, ViewAndNext*>
 {
 public:
-	DeleteOperation (CSelection* selection)
+	DeleteOperation (UISelection* selection)
 	: selection (selection)
 	{
 		selection->remember ();
@@ -453,14 +535,14 @@ public:
 		}
 	}
 protected:
-	CSelection* selection;
+	UISelection* selection;
 };
 
 //-----------------------------------------------------------------------------
 class InsertViewOperation : public IActionOperation
 {
 public:
-	InsertViewOperation (CViewContainer* parent, CView* view, CSelection* selection)
+	InsertViewOperation (CViewContainer* parent, CView* view, UISelection* selection)
 	: parent (parent)
 	, view (view)
 	, selection (selection)
@@ -498,14 +580,14 @@ public:
 protected:
 	CViewContainer* parent;
 	CView* view;
-	CSelection* selection;
+	UISelection* selection;
 };
 
 //-----------------------------------------------------------------------------
 class TransformViewTypeOperation : public IActionOperation
 {
 public:
-	TransformViewTypeOperation (CSelection* selection, IdStringPtr viewClassName, IUIDescription* desc, ViewFactory* factory)
+	TransformViewTypeOperation (UISelection* selection, IdStringPtr viewClassName, IUIDescription* desc, UIViewFactory* factory)
 	: view (selection->first ())
 	, newView (0)
 	, beforeView (0)
@@ -582,7 +664,7 @@ protected:
 	CView* newView;
 	CView* beforeView;
 	CViewContainer* parent;
-	CSelection* selection;
+	UISelection* selection;
 };
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
@@ -608,7 +690,7 @@ public:
 	
 	int32_t getStyle () const { return style; }
 
-	void update (CSelection* selection)
+	void update (UISelection* selection)
 	{
 		invalid ();
 		currentRect = selection->getBounds ();
@@ -705,14 +787,14 @@ protected:
 };
 
 //----------------------------------------------------------------------------------------------------
-IdStringPtr CEditFrame::kMsgPerformOptionsMenuAction = "CEditFrame PerformOptionsMenuAction";
-IdStringPtr CEditFrame::kMsgShowOptionsMenu = "CEditFrame ShowOptionsMenu";
-IdStringPtr CEditFrame::kMsgEditEnding = "CEditFrame Edit Ending";
+IdStringPtr UIEditFrame::kMsgPerformOptionsMenuAction = "UIEditFrame PerformOptionsMenuAction";
+IdStringPtr UIEditFrame::kMsgShowOptionsMenu = "UIEditFrame ShowOptionsMenu";
+IdStringPtr UIEditFrame::kMsgEditEnding = "UIEditFrame Edit Ending";
 
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
-CEditFrame::CEditFrame (const CRect& size, void* windowPtr, VSTGUIEditorInterface* editor, EditMode _editMode, CSelection* _selection, UIDescription* description, UTF8StringPtr uiDescViewName)
+UIEditFrame::UIEditFrame (const CRect& size, void* windowPtr, VSTGUIEditorInterface* editor, EditMode _editMode, UISelection* _selection, UIDescription* description, UTF8StringPtr uiDescViewName)
 : CFrame (size, windowPtr, editor)
 , lines (0)
 , grid (0)
@@ -737,12 +819,12 @@ CEditFrame::CEditFrame (const CRect& size, void* windowPtr, VSTGUIEditorInterfac
 	if (selection)
 		selection->remember ();
 	else
-		selection = new CSelection;
+		selection = new UISelection;
 
 	if (uiDescViewName)
 		templateName = uiDescViewName;
 
-	inspector = new CViewInspector (selection, this, windowPtr);
+	inspector = new UIViewInspector (selection, this, windowPtr);
 	setUIDescription (description);
 	setEditMode (_editMode);
 	undoStackList.push_back (new UndoStackTop);
@@ -752,12 +834,13 @@ CEditFrame::CEditFrame (const CRect& size, void* windowPtr, VSTGUIEditorInterfac
 }
 
 //----------------------------------------------------------------------------------------------------
-CEditFrame::~CEditFrame ()
+UIEditFrame::~UIEditFrame ()
 {
 	emptyUndoStack ();
 	undoStack--;
 	delete (*undoStack);
 	setUIDescription (0);
+	UIFontChooserPanel::hide ();
 	if (hierarchyBrowser)
 		hierarchyBrowser->forget ();
 	if (inspector)
@@ -771,7 +854,7 @@ CEditFrame::~CEditFrame ()
 }
 
 //----------------------------------------------------------------------------------------------------
-void CEditFrame::emptyUndoStack ()
+void UIEditFrame::emptyUndoStack ()
 {
 	std::list<IActionOperation*>::reverse_iterator it = undoStackList.rbegin ();
 	while (it != undoStackList.rend ())
@@ -785,14 +868,14 @@ void CEditFrame::emptyUndoStack ()
 }
 
 //----------------------------------------------------------------------------------------------------
-void CEditFrame::setGrid (int32_t size)
+void UIEditFrame::setGrid (int32_t size)
 {
 	if (grid)
 		grid->setSize (size);
 }
 
 //----------------------------------------------------------------------------------------------------
-int32_t CEditFrame::getGrid () const
+int32_t UIEditFrame::getGrid () const
 {
 	if (grid)
 		return grid->getSize ();
@@ -800,7 +883,7 @@ int32_t CEditFrame::getGrid () const
 }
 
 //----------------------------------------------------------------------------------------------------
-void CEditFrame::setUIDescription (UIDescription* description)
+void UIEditFrame::setUIDescription (UIDescription* description)
 {
 	if (selection)
 		selection->empty ();
@@ -813,7 +896,7 @@ void CEditFrame::setUIDescription (UIDescription* description)
 }
 
 //----------------------------------------------------------------------------------------------------
-void CEditFrame::setEditMode (EditMode mode)
+void UIEditFrame::setEditMode (EditMode mode)
 {
 	editMode = mode;
 	if (editMode == kEditMode)
@@ -839,6 +922,7 @@ void CEditFrame::setEditMode (EditMode mode)
 			hierarchyBrowser->forget ();
 			hierarchyBrowser = 0;
 		}
+		UIFontChooserPanel::hide ();
 		inspector->hide ();
 		selection->empty ();
 		CBaseObject* editorObj = dynamic_cast<CBaseObject*> (pEditor);
@@ -849,7 +933,7 @@ void CEditFrame::setEditMode (EditMode mode)
 }
 
 //----------------------------------------------------------------------------------------------------
-void CEditFrame::onViewAdded (CView* pView)
+void UIEditFrame::onViewAdded (CView* pView)
 {
 	if (pView == getView (0))
 	{
@@ -863,7 +947,7 @@ void CEditFrame::onViewAdded (CView* pView)
 }
 
 //----------------------------------------------------------------------------------------------------
-void CEditFrame::onViewRemoved (CView* pView)
+void UIEditFrame::onViewRemoved (CView* pView)
 {
 	if (pView == getView (0))
 	{
@@ -879,7 +963,7 @@ void CEditFrame::onViewRemoved (CView* pView)
 }
 
 //----------------------------------------------------------------------------------------------------
-void CEditFrame::showOptionsMenu (const CPoint& where)
+void UIEditFrame::showOptionsMenu (const CPoint& where)
 {
 	enum {
 		kEnableEditing = 1,
@@ -898,6 +982,7 @@ void CEditFrame::showOptionsMenu (const CPoint& where)
 		kRedoTag,
 		kSaveTag,
 		kSizeToFitTag,
+		kUnembedViewsTag,
 	};
 	
 	COptionMenu* menu = new COptionMenu ();
@@ -931,12 +1016,15 @@ void CEditFrame::showOptionsMenu (const CPoint& where)
 		item = menu->addEntry (new CMenuItem ("Size To Fit", kSizeToFitTag));
 		if (selectionCount <= 0 || selection->contains (getView (0)))
 			item->setEnabled (false);
+		item = menu->addEntry (new CMenuItem ("Unembed Views", kUnembedViewsTag));
+		if (!(selectionCount == 1 && selection->first () != getView (0) && dynamic_cast<CViewContainer*> (selection->first ())))
+			item->setEnabled (false);
 		item = menu->addEntry (new CMenuItem ("Delete", kDeleteSelectionTag));
 		if (selectionCount <= 0 || selection->contains (getView (0)))
 			item->setEnabled (false);
 		if (uiDescription)
 		{
-			ViewFactory* viewFactory = dynamic_cast<ViewFactory*> (uiDescription->getViewFactory ());
+			UIViewFactory* viewFactory = dynamic_cast<UIViewFactory*> (uiDescription->getViewFactory ());
 			if (viewFactory)
 			{
 				menu->addSeparator ();
@@ -966,7 +1054,6 @@ void CEditFrame::showOptionsMenu (const CPoint& where)
 					menu->addEntry (embedViewMenu, "Embed Into ...");
 					embedViewMenu->forget ();
 				}
-
 				std::list<const std::string*> templateNames;
 				uiDescription->collectTemplateViewNames (templateNames);
 				if (templateNames.size () > 1)
@@ -1042,7 +1129,7 @@ void CEditFrame::showOptionsMenu (const CPoint& where)
 				case kGridSize10: setGrid (10); break;
 				case kGridSize15: setGrid (15); break;
 				case kCreateNewViewTag: createNewSubview (where, item->getTitle ()); break;
-				case kTransformViewTag: performAction (new TransformViewTypeOperation (selection, item->getTitle (), uiDescription, dynamic_cast<ViewFactory*> (uiDescription->getViewFactory ()))); break;
+				case kTransformViewTag: performAction (new TransformViewTypeOperation (selection, item->getTitle (), uiDescription, dynamic_cast<UIViewFactory*> (uiDescription->getViewFactory ()))); break;
 				case kInsertTemplateTag: insertTemplate (where, item->getTitle ()); break;
 				case kEmbedViewTag: embedSelectedViewsInto (item->getTitle ()); break;
 				case kDeleteSelectionTag: deleteSelectedViews (); break;
@@ -1079,7 +1166,7 @@ void CEditFrame::showOptionsMenu (const CPoint& where)
 					else
 					{
 						void* parentPlatformWindow = getPlatformFrame ()->getPlatformRepresentation ();
-						hierarchyBrowser = new ViewHierarchyBrowserWindow (dynamic_cast<CViewContainer*> (getView (0)), this, uiDescription, parentPlatformWindow);
+						hierarchyBrowser = new UIViewHierarchyBrowserWindow (dynamic_cast<CViewContainer*> (getView (0)), this, uiDescription, parentPlatformWindow);
 						hierarchyBrowser->getFrame ()->setKeyboardHook (this);
 					}
 					break;
@@ -1087,6 +1174,11 @@ void CEditFrame::showOptionsMenu (const CPoint& where)
 				case kSizeToFitTag:
 				{
 					performAction (new SizeToFitOperation (selection));
+					break;
+				}
+				case kUnembedViewsTag:
+				{
+					performAction (new UnembedViewOperation (selection));
 					break;
 				}
 				default:
@@ -1104,7 +1196,7 @@ void CEditFrame::showOptionsMenu (const CPoint& where)
 }
 
 //----------------------------------------------------------------------------------------------------
-void CEditFrame::updateResourceBitmaps ()
+void UIEditFrame::updateResourceBitmaps ()
 {
 	std::list<std::string> resBitmapPaths;
 	PlatformUtilities::gatherResourceBitmaps (resBitmapPaths);
@@ -1138,9 +1230,9 @@ void CEditFrame::updateResourceBitmaps ()
 }
 
 //----------------------------------------------------------------------------------------------------
-void CEditFrame::storeAttributes ()
+void UIEditFrame::storeAttributes ()
 {
-	UIAttributes* attr = uiDescription->getCustomAttributes ("CEditFrame");
+	UIAttributes* attr = uiDescription->getCustomAttributes ("UIEditFrame");
 	if (!attr)
 		attr = new UIAttributes;
 	if (attr)
@@ -1154,14 +1246,14 @@ void CEditFrame::storeAttributes ()
 			attr->setAttribute ("gridsize", stream.str ().c_str ());
 		}
 
-		uiDescription->setCustomAttributes ("CEditFrame", attr);
+		uiDescription->setCustomAttributes ("UIEditFrame", attr);
 	}
 }
 
 //----------------------------------------------------------------------------------------------------
-void CEditFrame::restoreAttributes ()
+void UIEditFrame::restoreAttributes ()
 {
-	UIAttributes* attr = uiDescription->getCustomAttributes ("CEditFrame");
+	UIAttributes* attr = uiDescription->getCustomAttributes ("UIEditFrame");
 	if (attr)
 	{
 		const std::string* value = attr->getAttributeValue ("uidescPath");
@@ -1177,7 +1269,7 @@ void CEditFrame::restoreAttributes ()
 }
 
 //----------------------------------------------------------------------------------------------------
-void CEditFrame::insertTemplate (const CPoint& where, UTF8StringPtr templateName)
+void UIEditFrame::insertTemplate (const CPoint& where, UTF8StringPtr templateName)
 {
 	CViewContainer* parent = dynamic_cast<CViewContainer*> (selection->first ());
 	if (parent == 0)
@@ -1202,7 +1294,7 @@ void CEditFrame::insertTemplate (const CPoint& where, UTF8StringPtr templateName
 }
 
 //----------------------------------------------------------------------------------------------------
-void CEditFrame::createNewSubview (const CPoint& where, UTF8StringPtr viewName)
+void UIEditFrame::createNewSubview (const CPoint& where, UTF8StringPtr viewName)
 {
 	CViewContainer* parent = dynamic_cast<CViewContainer*> (selection->first ());
 	if (parent == 0)
@@ -1213,7 +1305,7 @@ void CEditFrame::createNewSubview (const CPoint& where, UTF8StringPtr viewName)
 	CPoint origin (where);
 	grid->process (origin);
 	parent->frameToLocal (origin);
-	ViewFactory* viewFactory = dynamic_cast<ViewFactory*> (uiDescription->getViewFactory ());
+	UIViewFactory* viewFactory = dynamic_cast<UIViewFactory*> (uiDescription->getViewFactory ());
 	UIAttributes viewAttr;
 	viewAttr.setAttribute ("class", viewName);
 	CView* view = viewFactory->createView (viewAttr, uiDescription);
@@ -1237,9 +1329,9 @@ void CEditFrame::createNewSubview (const CPoint& where, UTF8StringPtr viewName)
 }
 
 //----------------------------------------------------------------------------------------------------
-void CEditFrame::embedSelectedViewsInto (IdStringPtr containerViewName)
+void UIEditFrame::embedSelectedViewsInto (IdStringPtr containerViewName)
 {
-	ViewFactory* viewFactory = dynamic_cast<ViewFactory*> (uiDescription->getViewFactory ());
+	UIViewFactory* viewFactory = dynamic_cast<UIViewFactory*> (uiDescription->getViewFactory ());
 	UIAttributes viewAttr;
 	viewAttr.setAttribute ("class", containerViewName);
 	CViewContainer* newContainer = dynamic_cast<CViewContainer*> (viewFactory->createView (viewAttr, uiDescription));
@@ -1250,7 +1342,7 @@ void CEditFrame::embedSelectedViewsInto (IdStringPtr containerViewName)
 }
 
 //----------------------------------------------------------------------------------------------------
-CMessageResult CEditFrame::notify (CBaseObject* sender, IdStringPtr message)
+CMessageResult UIEditFrame::notify (CBaseObject* sender, IdStringPtr message)
 {
 	if (message == CVSTGUITimer::kMsgTimer)
 	{
@@ -1269,11 +1361,10 @@ CMessageResult CEditFrame::notify (CBaseObject* sender, IdStringPtr message)
 		}
 		return kMessageNotified;
 	}
-	else if (message == ViewHierarchyBrowserWindow::kMsgWindowClosed)
+	else if (message == UIViewHierarchyBrowserWindow::kMsgWindowClosed)
 	{
 		if (hierarchyBrowser)
 		{
-			hierarchyBrowser->forget ();
 			hierarchyBrowser = 0;
 		}
 		return kMessageNotified;
@@ -1301,7 +1392,7 @@ CMessageResult CEditFrame::notify (CBaseObject* sender, IdStringPtr message)
 #define kSizingRectSize 10
 
 //----------------------------------------------------------------------------------------------------
-void CEditFrame::invalidSelection ()
+void UIEditFrame::invalidSelection ()
 {
 	CRect r (selection->getBounds ());
 	r.inset (-kSizingRectSize, -kSizingRectSize);
@@ -1309,7 +1400,7 @@ void CEditFrame::invalidSelection ()
 }
 
 //----------------------------------------------------------------------------------------------------
-void CEditFrame::invalidRect (const CRect rect)
+void UIEditFrame::invalidRect (const CRect& rect)
 {
 	CRect r (rect);
 //	r.inset (-kSizingRectSize, -kSizingRectSize);
@@ -1317,7 +1408,7 @@ void CEditFrame::invalidRect (const CRect rect)
 }
 
 //----------------------------------------------------------------------------------------------------
-void CEditFrame::draw (CDrawContext *pContext)
+void UIEditFrame::draw (CDrawContext *pContext)
 {
 	drawRect (pContext, size);
 }
@@ -1336,7 +1427,7 @@ enum {
 };
 
 //----------------------------------------------------------------------------------------------------
-int32_t CEditFrame::selectionHitTest (const CPoint& where, CView** resultView)
+int32_t UIEditFrame::selectionHitTest (const CPoint& where, CView** resultView)
 {
 	FOREACH_IN_SELECTION(selection, view)
 		CRect r = selection->getGlobalViewCoordinates (view);
@@ -1388,7 +1479,7 @@ int32_t CEditFrame::selectionHitTest (const CPoint& where, CView** resultView)
 }
 
 //----------------------------------------------------------------------------------------------------
-void CEditFrame::drawSizingHandles (CDrawContext* context, const CRect& r)
+void UIEditFrame::drawSizingHandles (CDrawContext* context, const CRect& r)
 {
 	if (r.getHeight () >= kSizingRectSize && r.getWidth () >= kSizingRectSize)
 	{
@@ -1446,7 +1537,7 @@ void CEditFrame::drawSizingHandles (CDrawContext* context, const CRect& r)
 }
 
 //----------------------------------------------------------------------------------------------------
-void CEditFrame::drawRect (CDrawContext *pContext, const CRect& updateRect)
+void UIEditFrame::drawRect (CDrawContext *pContext, const CRect& updateRect)
 {
 	CFrame::drawRect (pContext, updateRect);
 	CRect oldClip = pContext->getClipRect (oldClip);
@@ -1458,7 +1549,7 @@ void CEditFrame::drawRect (CDrawContext *pContext, const CRect& updateRect)
 		pContext->setDrawMode (kAntiAliasing);
 		if (highlightView)
 		{
-			CRect r = CSelection::getGlobalViewCoordinates (highlightView);
+			CRect r = UISelection::getGlobalViewCoordinates (highlightView);
 			r.inset (2, 2);
 			pContext->setFrameColor (uidHilightColor);
 			pContext->setLineStyle (kLineSolid);
@@ -1487,12 +1578,12 @@ void CEditFrame::drawRect (CDrawContext *pContext, const CRect& updateRect)
 }
 
 //----------------------------------------------------------------------------------------------------
-CView* CEditFrame::getViewAt (const CPoint& p, bool deep) const
+CView* UIEditFrame::getViewAt (const CPoint& p, bool deep) const
 {
 	CView* view = CViewContainer::getViewAt (p, deep);
 	if (editMode != kNoEditMode)
 	{
-		ViewFactory* factory = dynamic_cast<ViewFactory*> (uiDescription->getViewFactory ());
+		UIViewFactory* factory = dynamic_cast<UIViewFactory*> (uiDescription->getViewFactory ());
 		if (factory)
 		{
 			while (view && factory->getViewName (view) == 0)
@@ -1505,12 +1596,12 @@ CView* CEditFrame::getViewAt (const CPoint& p, bool deep) const
 }
 
 //----------------------------------------------------------------------------------------------------
-CViewContainer* CEditFrame::getContainerAt (const CPoint& p, bool deep) const
+CViewContainer* UIEditFrame::getContainerAt (const CPoint& p, bool deep) const
 {
 	CViewContainer* view = CViewContainer::getContainerAt (p, deep);
 	if (editMode != kNoEditMode)
 	{
-		ViewFactory* factory = dynamic_cast<ViewFactory*> (uiDescription->getViewFactory ());
+		UIViewFactory* factory = dynamic_cast<UIViewFactory*> (uiDescription->getViewFactory ());
 		if (factory)
 		{
 			while (view && factory->getViewName (view) == 0)
@@ -1523,7 +1614,7 @@ CViewContainer* CEditFrame::getContainerAt (const CPoint& p, bool deep) const
 }
 
 //----------------------------------------------------------------------------------------------------
-CMouseEventResult CEditFrame::onMouseDown (CPoint &where, const CButtonState& buttons)
+CMouseEventResult UIEditFrame::onMouseDown (CPoint &where, const CButtonState& buttons)
 {
 	if (editMode != kNoEditMode)
 	{
@@ -1652,7 +1743,7 @@ CMouseEventResult CEditFrame::onMouseDown (CPoint &where, const CButtonState& bu
 }
 
 //----------------------------------------------------------------------------------------------------
-CMouseEventResult CEditFrame::onMouseUp (CPoint &where, const CButtonState& buttons)
+CMouseEventResult UIEditFrame::onMouseUp (CPoint &where, const CButtonState& buttons)
 {
 	if (editMode != kNoEditMode)
 	{
@@ -1696,7 +1787,7 @@ CMouseEventResult CEditFrame::onMouseUp (CPoint &where, const CButtonState& butt
 }
 
 //----------------------------------------------------------------------------------------------------
-CMouseEventResult CEditFrame::onMouseMoved (CPoint &where, const CButtonState& buttons)
+CMouseEventResult UIEditFrame::onMouseMoved (CPoint &where, const CButtonState& buttons)
 {
 	if (editMode != kNoEditMode)
 	{
@@ -1776,7 +1867,7 @@ CMouseEventResult CEditFrame::onMouseMoved (CPoint &where, const CButtonState& b
 							else
 								lines->update (mouseStartPoint);
 						}
-						selection->changed (CSelection::kMsgSelectionViewChanged);
+						selection->changed (UISelection::kMsgSelectionViewChanged);
 					}
 				}
 				else if (mouseEditMode == kDragEditing)
@@ -1811,7 +1902,7 @@ CMouseEventResult CEditFrame::onMouseMoved (CPoint &where, const CButtonState& b
 }
 
 //----------------------------------------------------------------------------------------------------
-bool CEditFrame::onWheel (const CPoint &where, const CMouseWheelAxis &axis, const float &distance, const CButtonState &buttons)
+bool UIEditFrame::onWheel (const CPoint &where, const CMouseWheelAxis &axis, const float &distance, const CButtonState &buttons)
 {
 	if (editMode == kNoEditMode)
 		return CFrame::onWheel (where, axis, distance, buttons);
@@ -1819,7 +1910,7 @@ bool CEditFrame::onWheel (const CPoint &where, const CMouseWheelAxis &axis, cons
 }
 
 //----------------------------------------------------------------------------------------------------
-CBitmap* CEditFrame::createBitmapFromSelection (CSelection* selection)
+CBitmap* UIEditFrame::createBitmapFromSelection (UISelection* selection)
 {
 	CRect viewSize = selection->getBounds ();
 	
@@ -1846,7 +1937,7 @@ CBitmap* CEditFrame::createBitmapFromSelection (CSelection* selection)
 }
 
 //----------------------------------------------------------------------------------------------------
-void CEditFrame::startDrag (CPoint& where)
+void UIEditFrame::startDrag (CPoint& where)
 {
 	CBitmap* bitmap = createBitmapFromSelection (selection);
 	if (bitmap == 0)
@@ -1860,7 +1951,7 @@ void CEditFrame::startDrag (CPoint& where)
 
 	selection->setDragOffset (CPoint (offset.x, offset.y));
 
-	ViewFactory* viewFactory = dynamic_cast<ViewFactory*> (uiDescription->getViewFactory ());
+	UIViewFactory* viewFactory = dynamic_cast<UIViewFactory*> (uiDescription->getViewFactory ());
 	CMemoryStream stream;
 	if (!selection->store (stream, viewFactory, uiDescription))
 		return;
@@ -1872,7 +1963,7 @@ void CEditFrame::startDrag (CPoint& where)
 }
 
 //----------------------------------------------------------------------------------------------------
-CSelection* CEditFrame::getSelectionOutOfDrag (CDragContainer* drag)
+UISelection* UIEditFrame::getSelectionOutOfDrag (CDragContainer* drag)
 {
 	int32_t size, type;
 	const int8_t* dragData = (const int8_t*)drag->first (size, type);
@@ -1880,9 +1971,9 @@ CSelection* CEditFrame::getSelectionOutOfDrag (CDragContainer* drag)
 	IController* controller = getEditor () ? dynamic_cast<IController*> (getEditor ()) : 0;
 	if (controller)
 		uiDescription->setController (controller);
-	ViewFactory* viewFactory = dynamic_cast<ViewFactory*> (uiDescription->getViewFactory ());
+	UIViewFactory* viewFactory = dynamic_cast<UIViewFactory*> (uiDescription->getViewFactory ());
 	CMemoryStream stream (dragData, size);
-	CSelection* selection = new CSelection;
+	UISelection* selection = new UISelection;
 	if (selection->restore (stream, viewFactory, uiDescription))
 	{
 		uiDescription->setController (0);
@@ -1895,7 +1986,7 @@ CSelection* CEditFrame::getSelectionOutOfDrag (CDragContainer* drag)
 }
 
 //----------------------------------------------------------------------------------------------------
-bool CEditFrame::onDrop (CDragContainer* drag, const CPoint& where)
+bool UIEditFrame::onDrop (CDragContainer* drag, const CPoint& where)
 {
 	if (editMode == kEditMode)
 	{
@@ -1911,7 +2002,7 @@ bool CEditFrame::onDrop (CDragContainer* drag, const CPoint& where)
 				highlightView->invalid ();
 				highlightView = 0;
 			}
-			CSelection newSelection;
+			UISelection newSelection;
 			CRect selectionBounds = dragSelection->getBounds ();
 
 			CPoint where2 (where);
@@ -1929,7 +2020,7 @@ bool CEditFrame::onDrop (CDragContainer* drag, const CPoint& where)
 				viewContainer->localToFrame (containerOffset);
 				where2.offset (-containerOffset.x, -containerOffset.y);
 
-				ViewFactory* viewFactory = dynamic_cast<ViewFactory*> (uiDescription->getViewFactory ());
+				UIViewFactory* viewFactory = dynamic_cast<UIViewFactory*> (uiDescription->getViewFactory ());
 				performAction (new ViewCopyOperation (dragSelection, selection, viewContainer, where2, viewFactory, uiDescription));
 			}
 			dragSelection->forget ();
@@ -1941,7 +2032,7 @@ bool CEditFrame::onDrop (CDragContainer* drag, const CPoint& where)
 }
 
 //----------------------------------------------------------------------------------------------------
-void CEditFrame::onDragEnter (CDragContainer* drag, const CPoint& where)
+void UIEditFrame::onDragEnter (CDragContainer* drag, const CPoint& where)
 {
 	if (editMode == kEditMode)
 	{
@@ -1976,7 +2067,7 @@ void CEditFrame::onDragEnter (CDragContainer* drag, const CPoint& where)
 }
 
 //----------------------------------------------------------------------------------------------------
-void CEditFrame::onDragLeave (CDragContainer* drag, const CPoint& where)
+void UIEditFrame::onDragLeave (CDragContainer* drag, const CPoint& where)
 {
 	if (dragSelection)
 	{
@@ -2002,7 +2093,7 @@ void CEditFrame::onDragLeave (CDragContainer* drag, const CPoint& where)
 }
 
 //----------------------------------------------------------------------------------------------------
-void CEditFrame::onDragMove (CDragContainer* drag, const CPoint& where)
+void UIEditFrame::onDragMove (CDragContainer* drag, const CPoint& where)
 {
 	if (editMode == kEditMode)
 	{
@@ -2051,7 +2142,7 @@ static void collectAllSubViews (CView* view, std::list<CView*>& views)
 }
 
 //----------------------------------------------------------------------------------------------------
-static void changeAttributeValueForType (ViewFactory* viewFactory, IUIDescription* desc, CView* startView, IViewCreator::AttrType type, const std::string& oldValue, const std::string& newValue)
+static void changeAttributeValueForType (UIViewFactory* viewFactory, IUIDescription* desc, CView* startView, IViewCreator::AttrType type, const std::string& oldValue, const std::string& newValue)
 {
 	std::list<CView*> views;
 	collectAllSubViews (startView, views);
@@ -2087,7 +2178,7 @@ static void changeAttributeValueForType (ViewFactory* viewFactory, IUIDescriptio
 }
 
 //----------------------------------------------------------------------------------------------------
-static void collectViewsWithAttributeValue (ViewFactory* viewFactory, IUIDescription* desc, CView* startView, IViewCreator::AttrType type, const std::string& value, std::map<CView*, std::string>& result)
+static void collectViewsWithAttributeValue (UIViewFactory* viewFactory, IUIDescription* desc, CView* startView, IViewCreator::AttrType type, const std::string& value, std::map<CView*, std::string>& result)
 {
 	std::list<CView*> views;
 	collectAllSubViews (startView, views);
@@ -2120,7 +2211,7 @@ static void collectViewsWithAttributeValue (ViewFactory* viewFactory, IUIDescrip
 }
 
 //----------------------------------------------------------------------------------------------------
-static void performAttributeChange (ViewFactory* viewFactory, IUIDescription* desc, const std::string& newValue, const std::map<CView*, std::string>& m)
+static void performAttributeChange (UIViewFactory* viewFactory, IUIDescription* desc, const std::string& newValue, const std::map<CView*, std::string>& m)
 {
 	std::map<CView*, std::string>::const_iterator it = m.begin ();
 	while (it != m.end ())
@@ -2135,7 +2226,7 @@ static void performAttributeChange (ViewFactory* viewFactory, IUIDescription* de
 }
 
 //----------------------------------------------------------------------------------------------------
-void CEditFrame::performColorChange (UTF8StringPtr colorName, const CColor& newColor, bool remove)
+void UIEditFrame::performColorChange (UTF8StringPtr colorName, const CColor& newColor, bool remove)
 {
 	if (remove)
 	{
@@ -2143,19 +2234,19 @@ void CEditFrame::performColorChange (UTF8StringPtr colorName, const CColor& newC
 	}
 	else
 	{
-		ViewFactory* viewFactory = dynamic_cast<ViewFactory*> (uiDescription->getViewFactory ());
+		UIViewFactory* viewFactory = dynamic_cast<UIViewFactory*> (uiDescription->getViewFactory ());
 		std::map<CView*, std::string> m;
 		collectViewsWithAttributeValue (viewFactory, uiDescription, getView (0), IViewCreator::kColorType, colorName, m);
 		uiDescription->changeColor (colorName, newColor);
 		performAttributeChange (viewFactory, uiDescription, colorName, m);
 	}
-	selection->changed (CSelection::kMsgSelectionViewChanged);
+	selection->changed (UISelection::kMsgSelectionViewChanged);
 }
 
 //----------------------------------------------------------------------------------------------------
-void CEditFrame::performTagChange (UTF8StringPtr tagName, int32_t tag, bool remove)
+void UIEditFrame::performTagChange (UTF8StringPtr tagName, int32_t tag, bool remove)
 {
-	ViewFactory* viewFactory = dynamic_cast<ViewFactory*> (uiDescription->getViewFactory ());
+	UIViewFactory* viewFactory = dynamic_cast<UIViewFactory*> (uiDescription->getViewFactory ());
 	std::map<CView*, std::string> m;
 	collectViewsWithAttributeValue (viewFactory, uiDescription, getView (0), IViewCreator::kTagType, tagName, m);
 
@@ -2171,13 +2262,13 @@ void CEditFrame::performTagChange (UTF8StringPtr tagName, int32_t tag, bool remo
 		uiDescription->changeTag (tagName, tag);
 		performAttributeChange (viewFactory, uiDescription, tagName, m);
 	}
-	selection->changed (CSelection::kMsgSelectionViewChanged);
+	selection->changed (UISelection::kMsgSelectionViewChanged);
 }
 
 //----------------------------------------------------------------------------------------------------
-void CEditFrame::performBitmapChange (UTF8StringPtr bitmapName, UTF8StringPtr bitmapPath, bool remove)
+void UIEditFrame::performBitmapChange (UTF8StringPtr bitmapName, UTF8StringPtr bitmapPath, bool remove)
 {
-	ViewFactory* viewFactory = dynamic_cast<ViewFactory*> (uiDescription->getViewFactory ());
+	UIViewFactory* viewFactory = dynamic_cast<UIViewFactory*> (uiDescription->getViewFactory ());
 	std::map<CView*, std::string> m;
 	collectViewsWithAttributeValue (viewFactory, uiDescription, getView (0), IViewCreator::kBitmapType, bitmapName, m);
 
@@ -2191,13 +2282,13 @@ void CEditFrame::performBitmapChange (UTF8StringPtr bitmapName, UTF8StringPtr bi
 		uiDescription->changeBitmap (bitmapName, bitmapPath);
 		performAttributeChange (viewFactory, uiDescription, bitmapName, m);
 	}
-	selection->changed (CSelection::kMsgSelectionViewChanged);
+	selection->changed (UISelection::kMsgSelectionViewChanged);
 }
 
 //----------------------------------------------------------------------------------------------------
-void CEditFrame::performFontChange (UTF8StringPtr fontName, CFontRef newFont, bool remove)
+void UIEditFrame::performFontChange (UTF8StringPtr fontName, CFontRef newFont, bool remove)
 {
-	ViewFactory* viewFactory = dynamic_cast<ViewFactory*> (uiDescription->getViewFactory ());
+	UIViewFactory* viewFactory = dynamic_cast<UIViewFactory*> (uiDescription->getViewFactory ());
 	std::map<CView*, std::string> m;
 	collectViewsWithAttributeValue (viewFactory, uiDescription, getView (0), IViewCreator::kFontType, fontName, m);
 
@@ -2211,47 +2302,47 @@ void CEditFrame::performFontChange (UTF8StringPtr fontName, CFontRef newFont, bo
 		uiDescription->changeFont (fontName, newFont);
 		performAttributeChange (viewFactory, uiDescription, fontName, m);
 	}
-	selection->changed (CSelection::kMsgSelectionViewChanged);
+	selection->changed (UISelection::kMsgSelectionViewChanged);
 }
 
 //----------------------------------------------------------------------------------------------------
-void CEditFrame::performColorNameChange (UTF8StringPtr oldName, UTF8StringPtr newName)
+void UIEditFrame::performColorNameChange (UTF8StringPtr oldName, UTF8StringPtr newName)
 {
-	ViewFactory* viewFactory = dynamic_cast<ViewFactory*> (uiDescription->getViewFactory ());
+	UIViewFactory* viewFactory = dynamic_cast<UIViewFactory*> (uiDescription->getViewFactory ());
 	std::map<CView*, std::string> m;
 	collectViewsWithAttributeValue (viewFactory, uiDescription, getView (0), IViewCreator::kColorType, oldName, m);
 
 	uiDescription->changeColorName (oldName, newName);
 
 	performAttributeChange (viewFactory, uiDescription, newName, m);
-	selection->changed (CSelection::kMsgSelectionViewChanged);
+	selection->changed (UISelection::kMsgSelectionViewChanged);
 }
 
 //----------------------------------------------------------------------------------------------------
-void CEditFrame::performTagNameChange (UTF8StringPtr oldName, UTF8StringPtr newName)
+void UIEditFrame::performTagNameChange (UTF8StringPtr oldName, UTF8StringPtr newName)
 {
 	uiDescription->changeTagName (oldName, newName);
-	selection->changed (CSelection::kMsgSelectionViewChanged);
+	selection->changed (UISelection::kMsgSelectionViewChanged);
 }
 
 //----------------------------------------------------------------------------------------------------
-void CEditFrame::performFontNameChange (UTF8StringPtr oldName, UTF8StringPtr newName)
+void UIEditFrame::performFontNameChange (UTF8StringPtr oldName, UTF8StringPtr newName)
 {
 	uiDescription->changeFontName (oldName, newName);
-	selection->changed (CSelection::kMsgSelectionViewChanged);
+	selection->changed (UISelection::kMsgSelectionViewChanged);
 }
 
 //----------------------------------------------------------------------------------------------------
-void CEditFrame::performBitmapNameChange (UTF8StringPtr oldName, UTF8StringPtr newName)
+void UIEditFrame::performBitmapNameChange (UTF8StringPtr oldName, UTF8StringPtr newName)
 {
 	uiDescription->changeBitmapName (oldName, newName);
-	selection->changed (CSelection::kMsgSelectionViewChanged);
+	selection->changed (UISelection::kMsgSelectionViewChanged);
 }
 
 //----------------------------------------------------------------------------------------------------
-void CEditFrame::performBitmapNinePartTiledChange (UTF8StringPtr bitmapName, const CRect* offsets)
+void UIEditFrame::performBitmapNinePartTiledChange (UTF8StringPtr bitmapName, const CRect* offsets)
 {
-	ViewFactory* viewFactory = dynamic_cast<ViewFactory*> (uiDescription->getViewFactory ());
+	UIViewFactory* viewFactory = dynamic_cast<UIViewFactory*> (uiDescription->getViewFactory ());
 	std::map<CView*, std::string> m;
 	collectViewsWithAttributeValue (viewFactory, uiDescription, getView (0), IViewCreator::kBitmapType, bitmapName, m);
 
@@ -2262,11 +2353,11 @@ void CEditFrame::performBitmapNinePartTiledChange (UTF8StringPtr bitmapName, con
 	uiDescription->changeBitmap (bitmapName, bitmap->getResourceDescription ().u.name, offsets);
 	performAttributeChange (viewFactory, uiDescription, bitmapName, m);
 
-	selection->changed (CSelection::kMsgSelectionViewChanged);
+	selection->changed (UISelection::kMsgSelectionViewChanged);
 }
 
 //----------------------------------------------------------------------------------------------------
-void CEditFrame::makeSelection (CView* view)
+void UIEditFrame::makeSelection (CView* view)
 {
 	invalidSelection ();
 	selection->setExclusive (view);
@@ -2274,7 +2365,7 @@ void CEditFrame::makeSelection (CView* view)
 }
 
 //----------------------------------------------------------------------------------------------------
-void CEditFrame::performAction (IActionOperation* action)
+void UIEditFrame::performAction (IActionOperation* action)
 {
 	if (undoStack != undoStackList.end ())
 	{
@@ -2296,13 +2387,13 @@ void CEditFrame::performAction (IActionOperation* action)
 }
 
 //----------------------------------------------------------------------------------------------------
-bool CEditFrame::canUndo ()
+bool UIEditFrame::canUndo ()
 {
 	return (undoStack != undoStackList.end () && undoStack != undoStackList.begin ());
 }
 
 //----------------------------------------------------------------------------------------------------
-bool CEditFrame::canRedo ()
+bool UIEditFrame::canRedo ()
 {
 	if (undoStack == undoStackList.end () && undoStack != undoStackList.begin ())
 		return false;
@@ -2313,7 +2404,7 @@ bool CEditFrame::canRedo ()
 }
 
 //----------------------------------------------------------------------------------------------------
-UTF8StringPtr CEditFrame::getUndoName ()
+UTF8StringPtr UIEditFrame::getUndoName ()
 {
 	if (undoStack != undoStackList.end () && undoStack != undoStackList.begin ())
 		return (*undoStack)->getName ();
@@ -2321,7 +2412,7 @@ UTF8StringPtr CEditFrame::getUndoName ()
 }
 
 //----------------------------------------------------------------------------------------------------
-UTF8StringPtr CEditFrame::getRedoName ()
+UTF8StringPtr UIEditFrame::getRedoName ()
 {
 	UTF8StringPtr redoName = 0;
 	if (undoStack != undoStackList.end ())
@@ -2335,7 +2426,7 @@ UTF8StringPtr CEditFrame::getRedoName ()
 }
 
 //----------------------------------------------------------------------------------------------------
-void CEditFrame::performUndo ()
+void UIEditFrame::performUndo ()
 {
 	if (undoStack != undoStackList.end () && undoStack != undoStackList.begin ())
 	{
@@ -2347,7 +2438,7 @@ void CEditFrame::performUndo ()
 }
 
 //----------------------------------------------------------------------------------------------------
-void CEditFrame::performRedo ()
+void UIEditFrame::performRedo ()
 {
 	if (undoStack != undoStackList.end ())
 	{
@@ -2362,13 +2453,13 @@ void CEditFrame::performRedo ()
 }
 
 //----------------------------------------------------------------------------------------------------
-void CEditFrame::deleteSelectedViews ()
+void UIEditFrame::deleteSelectedViews ()
 {
 	performAction (new DeleteOperation (selection));
 }
 
 //----------------------------------------------------------------------------------------------------
-int32_t CEditFrame::onKeyDown (const VstKeyCode& code, CFrame* frame)
+int32_t UIEditFrame::onKeyDown (const VstKeyCode& code, CFrame* frame)
 {
 	VstKeyCode vc (code);
 	if (onKeyDown (vc) == 1)
@@ -2377,13 +2468,13 @@ int32_t CEditFrame::onKeyDown (const VstKeyCode& code, CFrame* frame)
 }
 
 //----------------------------------------------------------------------------------------------------
-int32_t CEditFrame::onKeyUp (const VstKeyCode& code, CFrame* frame)
+int32_t UIEditFrame::onKeyUp (const VstKeyCode& code, CFrame* frame)
 {
 	return -1;
 }
 
 //----------------------------------------------------------------------------------------------------
-int32_t CEditFrame::onKeyDown (VstKeyCode& keycode)
+int32_t UIEditFrame::onKeyDown (VstKeyCode& keycode)
 {
 	if (keycode.character == 'e' && keycode.modifier == MODIFIER_CONTROL)
 	{
@@ -2423,7 +2514,7 @@ int32_t CEditFrame::onKeyDown (VstKeyCode& keycode)
 }
 
 //----------------------------------------------------------------------------------------------------
-int32_t CEditFrame::onKeyUp (VstKeyCode& keyCode)
+int32_t UIEditFrame::onKeyUp (VstKeyCode& keyCode)
 {
 	if (editMode == kEditMode)
 	{

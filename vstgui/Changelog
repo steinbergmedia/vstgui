@@ -1,4 +1,19 @@
-2010-04-xx arne
+2010-06-08 arne
+
+	* added CFontChooser class
+	* added GenericStringListDataBrowserSource class
+	* changed key event flow in CFrame. New event flow is :
+			- IKeyboardHook
+			- focus view
+			- parents of focus view (new)
+			- modal view
+		CViewContainer now does not propagate key events to child views
+	* fixing bug 2992884 : CDrawContext::drawString does not work on Mac OSX < 10.5
+	* fixing bug 2994963 : Mac Carbon option menu - wrong item checked
+	* fixing setMin(..) and setMax(..) for CKnob
+	* consistent names for uidescription files and classes
+
+2010-04-28 arne
 
 	* changed to use C99 variable types (int8_t, uint8_t, etc)
 	* added CButtonState class which replaces the buttons parameter in CView mouse methods

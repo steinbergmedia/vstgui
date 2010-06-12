@@ -133,7 +133,7 @@ void CSplashScreen::draw (CDrawContext *pContext)
 }
 
 //------------------------------------------------------------------------
-bool CSplashScreen::hitTest (const CPoint& where, const CButtonState buttons)
+bool CSplashScreen::hitTest (const CPoint& where, const CButtonState& buttons)
 {
 	bool result = CView::hitTest (where, buttons);
 	if (result && !(buttons & kLButton))
