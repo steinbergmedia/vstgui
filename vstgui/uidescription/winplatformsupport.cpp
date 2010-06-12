@@ -313,6 +313,13 @@ LONG_PTR WINAPI Win32Window::windowProc (HWND hWnd, UINT message, WPARAM wParam,
 				}
 				break;
 			}
+			case WM_SETFOCUS:
+			{
+				HWND firstChild = GetWindow (window->platformWindow, GW_CHILD);
+				if (firstChild)
+					SetFocus (firstChild);
+				break;
+			}
 		}
 	}
 	return DefWindowProc (hWnd, message, wParam, lParam);

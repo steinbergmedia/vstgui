@@ -90,7 +90,7 @@ protected:
 
 static bool stringToValue (UTF8StringPtr txt, float& result, void* userData)
 {
-	result = strtod (txt, 0);
+	result = (float)strtod (txt, 0);
 	return true;
 }
 
@@ -211,10 +211,10 @@ void CFontChooser::setFont (CFontRef font)
 		if (selFont)
 			selFont->forget ();
 		selFont = new CFontDesc (*font);
-		sizeEdit->setValue (font->getSize ());
-		boldBox->setValue (font->getStyle () & kBoldFace ? 1 : 0);
-		italicBox->setValue (font->getStyle () & kItalicFace ? 1 : 0);
-		underlineBox->setValue (font->getStyle () & kUnderlineFace ? 1 : 0);
+		sizeEdit->setValue ((float)font->getSize ());
+		boldBox->setValue (font->getStyle () & kBoldFace ? 1.f : 0.f);
+		italicBox->setValue (font->getStyle () & kItalicFace ? 1.f : 0.f);
+		underlineBox->setValue (font->getStyle () & kUnderlineFace ? 1.f : 0.f);
 
 		std::vector<std::string>::const_iterator it = fontNames.begin ();
 		int32_t row = 0;
