@@ -73,50 +73,32 @@ bool IPlatformFont::getAllPlatformFontFamilies (std::list<std::string>& fontFami
 
 #if VSTGUI_USES_CORE_TEXT
 //-----------------------------------------------------------------------------
+static CTFontRef CoreTextCreateTraitsVariant (CTFontRef fontRef, CTFontSymbolicTraits trait)
+{
+	CTFontRef traitsFontRef = CTFontCreateCopyWithSymbolicTraits (fontRef, CTFontGetSize (fontRef), NULL, trait, trait);
+	if (traitsFontRef)
+	{
+		CFRelease (fontRef);
+		return traitsFontRef;
+	}
+	return fontRef;
+}
+
+//-----------------------------------------------------------------------------
 CoreTextFont::CoreTextFont (UTF8StringPtr name, const CCoord& size, const int32_t& style)
 : fontRef (0)
-, underlineStyle (false)
+, style (style)
 {
 	CFStringRef fontNameRef = CFStringCreateWithCString (0, name, kCFStringEncodingUTF8);
 	if (fontNameRef)
 	{
 		fontRef = CTFontCreateWithName (fontNameRef, size, 0);
-		if (fontRef && (style & kBoldFace || style & kItalicFace))
-		{
-			CTFontSymbolicTraits desiredTrait = 0;
-			CTFontSymbolicTraits traitMask = 0;
-			if (style & kBoldFace)
-			{
-				desiredTrait |= kCTFontBoldTrait;
-				traitMask |= kCTFontBoldTrait;
-			}
-			if (style & kItalicFace)
-			{
-				desiredTrait |= kCTFontItalicTrait;
-				traitMask |= kCTFontItalicTrait;
-			}
-			CTFontRef traitsFontRef = CTFontCreateCopyWithSymbolicTraits (fontRef, size, NULL, desiredTrait, traitMask);
-			if (!traitsFontRef)
-			{
-				if (style & kBoldFace && style & ~kItalicFace)
-				{
-					CFStringRef boldFontNameRef = CFStringCreateWithFormat (0, 0, CFSTR("%s Bold"), name);
-					if (boldFontNameRef)
-					{
-						traitsFontRef = CTFontCreateWithName (boldFontNameRef, size, 0);
-						CFRelease (boldFontNameRef);
-					}
-				}
-			}
-			if (traitsFontRef)
-			{
-				CFRelease (fontRef);
-				fontRef = traitsFontRef;
-			}
-		}
+		if (style & kBoldFace)
+			fontRef = CoreTextCreateTraitsVariant (fontRef, kCTFontBoldTrait);
+		if (style & kItalicFace)
+			fontRef = CoreTextCreateTraitsVariant (fontRef, kCTFontItalicTrait);
 		CFRelease (fontNameRef);
 	}
-	underlineStyle = style & kUnderlineFace;
 }
 
 //-----------------------------------------------------------------------------
@@ -152,14 +134,13 @@ double CoreTextFont::getCapHeight () const
 //-----------------------------------------------------------------------------
 void CoreTextFont::drawString (CDrawContext* context, UTF8StringPtr utf8String, const CPoint& point, bool antialias)
 {
-	CColor fontColor = context->getFontColor ();
-	
 	CFStringRef utf8Str = CFStringCreateWithCString (NULL, utf8String, kCFStringEncodingUTF8);
 	if (utf8Str)
 	{
-		CGColorRef cgColor = CGColorCreateGenericRGB (fontColor.red/255.f, fontColor.green/255.f, fontColor.blue/255.f, fontColor.alpha/255.f);
+		CColor fontColor = context->getFontColor ();
+		CGColorRef cgColorRef = CGColorCreateGenericRGB (fontColor.red/255.f, fontColor.green/255.f, fontColor.blue/255.f, fontColor.alpha/255.f);
 		CFStringRef keys[] = { kCTFontAttributeName, kCTForegroundColorAttributeName };
-		CFTypeRef values[] = { fontRef, cgColor };
+		CFTypeRef values[] = { fontRef, cgColorRef };
 		CFDictionaryRef attributes = CFDictionaryCreate (kCFAllocatorDefault, (const void**)&keys,(const void**)&values, sizeof(keys) / sizeof(keys[0]), &kCFTypeDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks);
 		CFAttributedStringRef attrStr = CFAttributedStringCreate (0, utf8Str, attributes);
 		CFRelease (attributes);
@@ -175,11 +156,11 @@ void CoreTextFont::drawString (CDrawContext* context, UTF8StringPtr utf8String, 
 					CGContextSetShouldAntialias (cgContext, antialias);
 					CGContextSetTextPosition (cgContext, point.x, point.y);
 					CTLineDraw (line, cgContext);
-					if (underlineStyle)
+					if (style & kUnderlineFace)
 					{
 						CGFloat underlineOffset = CTFontGetUnderlinePosition (fontRef);
 						CGFloat underlineThickness = CTFontGetUnderlineThickness (fontRef);
-						CGContextSetStrokeColorWithColor (cgContext, cgColor);
+						CGContextSetStrokeColorWithColor (cgContext, cgColorRef);
 						CGContextSetLineWidth (cgContext, underlineThickness);
 						CGPoint cgPoint = CGContextGetTextPosition (cgContext);
 						CGContextBeginPath (cgContext);
@@ -193,7 +174,7 @@ void CoreTextFont::drawString (CDrawContext* context, UTF8StringPtr utf8String, 
 			}
 			CFRelease (attrStr);
 		}
-		CFRelease (cgColor);
+		CFRelease (cgColorRef);
 		CFRelease (utf8Str);
 	}
 }
@@ -275,7 +256,7 @@ void ATSUFont::drawString (CDrawContext* context, UTF8StringPtr utf8String, cons
 	if (utf8Str)
 	{
 		CGDrawContext* cgDrawContext = dynamic_cast<CGDrawContext*> (context);
-		CGContextRef cgContext = cgDrawContext ? cgDrawContext->beginCGContext (true) : 0;
+		CGContextRef cgContext = cgDrawContext ? cgDrawContext->beginCGContext (false) : 0;
 		if (cgContext)
 		{
 			OSStatus status;

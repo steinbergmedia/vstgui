@@ -163,6 +163,8 @@ public:
 	/** returns true if only the right button is set. Ignores modifier state */
 	bool isRightButton () const { return getButtonState () == kRButton; }
 
+	bool isDoubleClick () const { return state & kDoubleClick; }
+
 	int32_t operator() () const { return state; }
 	CButtonState& operator= (int32_t s) { state = s; return *this; }
 	CButtonState& operator&= (int32_t s) { state &= s; return *this; }
@@ -200,14 +202,11 @@ public:
 	virtual bool isDirty () const { return bDirty; }													///< check if view is dirty
 	virtual void setDirty (const bool val = true) { bDirty = val; }										///< set the view to dirty so that it is redrawn in the next idle. Thread Safe !
 
-	virtual void invalidRect (const CRect rect);														///< mark rect as invalid
+	virtual void invalidRect (const CRect& rect);														///< mark rect as invalid
 	virtual void invalid () { setDirty (false); invalidRect (size); }									///< mark whole view as invalid
 
 	virtual void setVisible (bool state);																///< set visibility state
 	bool isVisible () const { return bVisible && alphaValue > 0.f; }									///< get visibility state
-
-	virtual void setAlphaValue (float alpha);															///< set alpha value which will be applied when drawing this view
-	float getAlphaValue () const { return alphaValue; }													///< get alpha value
 	//@}
 
 	//-----------------------------------------------------------------------------
@@ -221,7 +220,7 @@ public:
 	virtual CMouseEventResult onMouseEntered (CPoint& where, const CButtonState& buttons) {return kMouseEventNotImplemented;}	///< called when the mouse enters this view
 	virtual CMouseEventResult onMouseExited (CPoint& where, const CButtonState& buttons) {return kMouseEventNotImplemented;}	///< called when the mouse leaves this view
 	
-	virtual bool hitTest (const CPoint& where, const CButtonState buttons = -1) { return where.isInside (mouseableArea); }		///< check if where hits this view
+	virtual bool hitTest (const CPoint& where, const CButtonState& buttons = -1) { return where.isInside (mouseableArea); }		///< check if where hits this view
 
 	virtual bool onWheel (const CPoint& where, const float& distance, const CButtonState& buttons);									///< called if a mouse wheel event is happening over this view
 	virtual bool onWheel (const CPoint& where, const CMouseWheelAxis& axis, const float& distance, const CButtonState& buttons);	///< called if a mouse wheel event is happening over this view
@@ -265,7 +264,7 @@ public:
 	//@{
 	CCoord getHeight () const { return size.height (); }										///< get the height of the view
 	CCoord getWidth ()  const { return size.width (); }											///< get the width of the view
-	virtual void setViewSize (CRect& rect, bool invalid = true);								///< set views size
+	virtual void setViewSize (const CRect& rect, bool invalid = true);								///< set views size
 	virtual CRect& getViewSize (CRect& rect) const { rect = size; return rect; }				///< returns the current view size
 	virtual const CRect& getViewSize () const { return size; }									///< read only access to view size
 	virtual CRect getVisibleSize () const;														///< returns the visible size of the view
@@ -302,7 +301,7 @@ public:
 	//-----------------------------------------------------------------------------
 	//@{
 	virtual void setBackground (CBitmap *background);											///< set the background image of this view
-	virtual CBitmap *getBackground () const { return pBackground; }								///< get the background image of this view
+	virtual CBitmap* getBackground () const { return pBackground; }								///< get the background image of this view
 	//@}
 
 	//-----------------------------------------------------------------------------
@@ -311,6 +310,9 @@ public:
 	//@{
 	virtual void setTransparency (bool val) { bTransparencyEnabled = val; }						///< set views transparent state
 	virtual bool getTransparency () const { return bTransparencyEnabled; }						///< get views transparent state
+
+	virtual void setAlphaValue (float alpha);													///< set alpha value which will be applied when drawing this view
+	float getAlphaValue () const { return alphaValue; }											///< get alpha value
 	//@}
 
 	//-----------------------------------------------------------------------------
@@ -326,9 +328,9 @@ public:
 	/// @name Parent Methods
 	//-----------------------------------------------------------------------------
 	//@{
-	CView  *getParentView () const { return pParentView; }										///< get parent view
-	CFrame *getFrame () const { return pParentFrame; }											///< get frame
-	virtual VSTGUIEditorInterface *getEditor () const;											///< get editor
+	CView* getParentView () const { return pParentView; }										///< get parent view
+	CFrame* getFrame () const { return pParentFrame; }											///< get frame
+	virtual VSTGUIEditorInterface* getEditor () const;											///< get editor
 	//@}
 
 	//-----------------------------------------------------------------------------
@@ -354,17 +356,17 @@ protected:
 	CRect  size;
 	CRect  mouseableArea;
 
-	CFrame *pParentFrame;
-	CView  *pParentView;
+	CFrame* pParentFrame;
+	CView* pParentView;
 
-	bool  bDirty;
-	bool  bMouseEnabled;
-	bool  bTransparencyEnabled;
-	bool  bWantsFocus;
-	bool  bIsAttached;
-	bool  bVisible;
+	bool bDirty;
+	bool bMouseEnabled;
+	bool bTransparencyEnabled;
+	bool bWantsFocus;
+	bool bIsAttached;
+	bool bVisible;
 	
-	int32_t  autosizeFlags;
+	int32_t autosizeFlags;
 	
 	float alphaValue;
 	

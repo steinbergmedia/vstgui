@@ -34,8 +34,8 @@
 
 #if VSTGUI_LIVE_EDITING
 
-#include "cselection.h"
-#include "viewfactory.h"
+#include "uiselection.h"
+#include "uiviewfactory.h"
 #include "cstream.h"
 #include "../lib/cviewcontainer.h"
 #include <sstream>
@@ -43,34 +43,34 @@
 namespace VSTGUI {
 
 //----------------------------------------------------------------------------------------------------
-CSelection::CSelection (int32_t style)
+UISelection::UISelection (int32_t style)
 : style (style)
 {
 }
 
 //----------------------------------------------------------------------------------------------------
-CSelection::~CSelection ()
+UISelection::~UISelection ()
 {
 	empty ();
 }
 
-IdStringPtr CSelection::kMsgSelectionChanged = "kMsgSelectionChanged";
-IdStringPtr CSelection::kMsgSelectionViewChanged = "kMsgSelectionViewChanged";
+IdStringPtr UISelection::kMsgSelectionChanged = "kMsgSelectionChanged";
+IdStringPtr UISelection::kMsgSelectionViewChanged = "kMsgSelectionViewChanged";
 
 //----------------------------------------------------------------------------------------------------
-void CSelection::addDependent (CBaseObject* obj)
+void UISelection::addDependent (CBaseObject* obj)
 {
 	dependencies.push_back (obj);
 }
 
 //----------------------------------------------------------------------------------------------------
-void CSelection::removeDependent (CBaseObject* obj)
+void UISelection::removeDependent (CBaseObject* obj)
 {
 	dependencies.remove (obj);
 }
 
 //----------------------------------------------------------------------------------------------------
-void CSelection::changed (IdStringPtr what)
+void UISelection::changed (IdStringPtr what)
 {
 	std::list<CBaseObject*>::iterator it = dependencies.begin ();
 	while (it != dependencies.end ())
@@ -81,13 +81,13 @@ void CSelection::changed (IdStringPtr what)
 }
 
 //----------------------------------------------------------------------------------------------------
-void CSelection::setStyle (int32_t _style)
+void UISelection::setStyle (int32_t _style)
 {
 	style = _style;
 }
 
 //----------------------------------------------------------------------------------------------------
-void CSelection::add (CView* view)
+void UISelection::add (CView* view)
 {
 	if (style == kSingleSelectionStyle)
 		empty ();
@@ -97,7 +97,7 @@ void CSelection::add (CView* view)
 }
 
 //----------------------------------------------------------------------------------------------------
-void CSelection::remove (CView* view)
+void UISelection::remove (CView* view)
 {
 	if (contains (view))
 	{
@@ -108,7 +108,7 @@ void CSelection::remove (CView* view)
 }
 
 //----------------------------------------------------------------------------------------------------
-void CSelection::setExclusive (CView* view)
+void UISelection::setExclusive (CView* view)
 {
 	empty ();
 	add (view);
@@ -116,7 +116,7 @@ void CSelection::setExclusive (CView* view)
 }
 
 //----------------------------------------------------------------------------------------------------
-void CSelection::empty ()
+void UISelection::empty ()
 {
 	const_iterator it = begin ();
 	while (it != end ())
@@ -129,7 +129,7 @@ void CSelection::empty ()
 }
 
 //----------------------------------------------------------------------------------------------------
-bool CSelection::contains (CView* view) const
+bool UISelection::contains (CView* view) const
 {
 	const_iterator it = begin ();
 	while (it != end ())
@@ -142,7 +142,7 @@ bool CSelection::contains (CView* view) const
 }
 
 //----------------------------------------------------------------------------------------------------
-bool CSelection::containsParent (CView* view) const
+bool UISelection::containsParent (CView* view) const
 {
 	CView* parent = view->getParentView ();
 	if (parent)
@@ -160,13 +160,13 @@ bool CSelection::containsParent (CView* view) const
 }
 
 //----------------------------------------------------------------------------------------------------
-int32_t CSelection::total () const
+int32_t UISelection::total () const
 {
 	return size ();
 }
 
 //----------------------------------------------------------------------------------------------------
-CView* CSelection::first () const
+CView* UISelection::first () const
 {
 	if (size () > 0)
 		return *begin ();
@@ -174,7 +174,7 @@ CView* CSelection::first () const
 }
 
 //----------------------------------------------------------------------------------------------------
-CRect CSelection::getBounds () const
+CRect UISelection::getBounds () const
 {
 	CRect result (50000, 50000, 0, 0);
 	const_iterator it = begin ();
@@ -195,7 +195,7 @@ CRect CSelection::getBounds () const
 }
 
 //----------------------------------------------------------------------------------------------------
-CRect CSelection::getGlobalViewCoordinates (CView* view)
+CRect UISelection::getGlobalViewCoordinates (CView* view)
 {
 	CRect r = view->getViewSize (r);
 	CPoint p;
@@ -207,7 +207,7 @@ CRect CSelection::getGlobalViewCoordinates (CView* view)
 }
 
 //----------------------------------------------------------------------------------------------------
-void CSelection::moveBy (const CPoint& p)
+void UISelection::moveBy (const CPoint& p)
 {
 	const_iterator it = begin ();
 	while (it != end ())
@@ -225,7 +225,7 @@ void CSelection::moveBy (const CPoint& p)
 }
 
 //----------------------------------------------------------------------------------------------------
-bool CSelection::storeAttributesForView (OutputStream& stream, ViewFactory* viewFactory, IUIDescription* uiDescription, CView* view)
+bool UISelection::storeAttributesForView (OutputStream& stream, UIViewFactory* viewFactory, IUIDescription* uiDescription, CView* view)
 {
 	UIAttributes attr;
 	if (viewFactory->getAttributesForView (view, uiDescription, attr))
@@ -251,7 +251,7 @@ bool CSelection::storeAttributesForView (OutputStream& stream, ViewFactory* view
 }
 
 //----------------------------------------------------------------------------------------------------
-CView* CSelection::createView (InputStream& stream, ViewFactory* viewFactory, IUIDescription* uiDescription)
+CView* UISelection::createView (InputStream& stream, UIViewFactory* viewFactory, IUIDescription* uiDescription)
 {
 	int32_t identifier;
 	if (!(stream >> identifier)) return 0;
@@ -283,7 +283,7 @@ CView* CSelection::createView (InputStream& stream, ViewFactory* viewFactory, IU
 }
 
 //----------------------------------------------------------------------------------------------------
-bool CSelection::store (OutputStream& stream, ViewFactory* viewFactory, IUIDescription* uiDescription)
+bool UISelection::store (OutputStream& stream, UIViewFactory* viewFactory, IUIDescription* uiDescription)
 {
 	if (!(stream << (int32_t)'CSEL')) return false;
 	FOREACH_IN_SELECTION(this, view)
@@ -301,7 +301,7 @@ bool CSelection::store (OutputStream& stream, ViewFactory* viewFactory, IUIDescr
 }
 
 //----------------------------------------------------------------------------------------------------
-bool CSelection::restore (InputStream& stream, ViewFactory* viewFactory, IUIDescription* uiDescription)
+bool UISelection::restore (InputStream& stream, UIViewFactory* viewFactory, IUIDescription* uiDescription)
 {
 	empty ();
 	int32_t identifier = 0;

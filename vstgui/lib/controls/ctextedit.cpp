@@ -221,7 +221,7 @@ void CTextEdit::parentSizeChanged ()
 }
 
 //------------------------------------------------------------------------
-void CTextEdit::setViewSize (CRect& newSize, bool invalid)
+void CTextEdit::setViewSize (const CRect& newSize, bool invalid)
 {
 	CView::setViewSize (newSize, invalid);
 	if (platformControl)

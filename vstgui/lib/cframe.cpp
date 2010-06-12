@@ -477,6 +477,15 @@ int32_t CFrame::onKeyDown (VstKeyCode& keyCode)
 	{
 		CBaseObjectGuard og (pFocusView);
 		result = pFocusView->onKeyDown (keyCode);
+		if (result == -1)
+		{
+			CView* parent = pFocusView->getParentView ();
+			while (parent != this && result == -1)
+			{
+				result = parent->onKeyDown (keyCode);
+				parent = parent->getParentView ();
+			}
+		}
 	}
 
 	if (result == -1 && pModalView)
@@ -500,7 +509,18 @@ int32_t CFrame::onKeyUp (VstKeyCode& keyCode)
 		result = getKeyboardHook ()->onKeyUp (keyCode, this);
 
 	if (result == -1 && pFocusView)
+	{
 		result = pFocusView->onKeyUp (keyCode);
+		if (result == -1)
+		{
+			CView* parent = pFocusView->getParentView ();
+			while (parent != this && result == -1)
+			{
+				result = parent->onKeyUp (keyCode);
+				parent = parent->getParentView ();
+			}
+		}
+	}
 
 	if (result == -1 && pModalView)
 		result = pModalView->onKeyUp (keyCode);
@@ -620,7 +640,7 @@ bool CFrame::getPosition (CCoord &x, CCoord &y) const
 }
 
 //-----------------------------------------------------------------------------
-void CFrame::setViewSize (CRect& rect, bool invalid)
+void CFrame::setViewSize (const CRect& rect, bool invalid)
 {
 	CViewContainer::setViewSize (rect, invalid);
 }
@@ -920,6 +940,8 @@ void CFrame::onActivate (bool state)
 		}
 		else
 		{
+			if (pTooltips)
+				pTooltips->hideTooltip ();
 			pActiveFocusView = getFocusView ();
 			setFocusView (0);
 			bActive = false;
@@ -1008,7 +1030,7 @@ void CFrame::invalidate (const CRect &rect)
 }
 
 //-----------------------------------------------------------------------------
-void CFrame::invalidRect (CRect rect)
+void CFrame::invalidRect (const CRect& rect)
 {
 	if (!bVisible)
 		return;

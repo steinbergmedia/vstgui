@@ -32,7 +32,7 @@
 // OF THE POSSIBILITY OF SUCH DAMAGE.
 //-----------------------------------------------------------------------------
 
-#include "viewfactory.h"
+#include "uiviewfactory.h"
 
 namespace VSTGUI {
 
@@ -56,17 +56,17 @@ ViewCreatorRegistry& getCreatorRegistry ()
 }
 
 //-----------------------------------------------------------------------------
-ViewFactory::ViewFactory ()
+UIViewFactory::UIViewFactory ()
 {
 }
 
 //-----------------------------------------------------------------------------
-ViewFactory::~ViewFactory ()
+UIViewFactory::~UIViewFactory ()
 {
 }
 
 //-----------------------------------------------------------------------------
-CView* ViewFactory::createViewByName (const std::string* className, const UIAttributes& attributes, IUIDescription* description)
+CView* UIViewFactory::createViewByName (const std::string* className, const UIAttributes& attributes, IUIDescription* description)
 {
 	ViewCreatorRegistry& registry = getCreatorRegistry ();
 	ViewCreatorRegistry::const_iterator iter = registry.find (className->c_str ());
@@ -89,14 +89,14 @@ CView* ViewFactory::createViewByName (const std::string* className, const UIAttr
 	else
 	{
 		#if DEBUG
-		DebugPrint ("ViewFactory::createView(..): Could not find view of class: %s\n", className->c_str ());
+		DebugPrint ("UIViewFactory::createView(..): Could not find view of class: %s\n", className->c_str ());
 		#endif
 	}
 	return 0;
 }
 
 //-----------------------------------------------------------------------------
-CView* ViewFactory::createView (const UIAttributes& attributes, IUIDescription* description)
+CView* UIViewFactory::createView (const UIAttributes& attributes, IUIDescription* description)
 {
 	const std::string* className = attributes.getAttributeValue ("class");
 	if (className)
@@ -110,7 +110,7 @@ CView* ViewFactory::createView (const UIAttributes& attributes, IUIDescription* 
 }
 
 //-----------------------------------------------------------------------------
-bool ViewFactory::applyAttributeValues (CView* view, const UIAttributes& attributes, IUIDescription* desc) const
+bool UIViewFactory::applyAttributeValues (CView* view, const UIAttributes& attributes, IUIDescription* desc) const
 {
 	bool result = false;
 	ViewCreatorRegistry& registry = getCreatorRegistry ();
@@ -123,7 +123,7 @@ bool ViewFactory::applyAttributeValues (CView* view, const UIAttributes& attribu
 }
 
 //-----------------------------------------------------------------------------
-bool ViewFactory::applyCustomViewAttributeValues (CView* customView, IdStringPtr baseViewName, const UIAttributes& attributes, IUIDescription* desc) const
+bool UIViewFactory::applyCustomViewAttributeValues (CView* customView, IdStringPtr baseViewName, const UIAttributes& attributes, IUIDescription* desc) const
 {
 	bool result = false;
 	ViewCreatorRegistry& registry = getCreatorRegistry ();
@@ -141,7 +141,7 @@ bool ViewFactory::applyCustomViewAttributeValues (CView* customView, IdStringPtr
 }
 
 //-----------------------------------------------------------------------------
-IdStringPtr ViewFactory::getViewName (CView* view) const
+IdStringPtr UIViewFactory::getViewName (CView* view) const
 {
 	IdStringPtr viewName = 0;
 	int32_t size = sizeof (IdStringPtr);
@@ -151,7 +151,7 @@ IdStringPtr ViewFactory::getViewName (CView* view) const
 
 #if VSTGUI_LIVE_EDITING
 //-----------------------------------------------------------------------------
-bool ViewFactory::getAttributeNamesForView (CView* view, std::list<std::string>& attributeNames) const
+bool UIViewFactory::getAttributeNamesForView (CView* view, std::list<std::string>& attributeNames) const
 {
 	bool result = false;
 	ViewCreatorRegistry& registry = getCreatorRegistry ();
@@ -164,7 +164,7 @@ bool ViewFactory::getAttributeNamesForView (CView* view, std::list<std::string>&
 }
 
 //-----------------------------------------------------------------------------
-bool ViewFactory::getAttributeValue (CView* view, const std::string& attributeName, std::string& stringValue, IUIDescription* desc) const
+bool UIViewFactory::getAttributeValue (CView* view, const std::string& attributeName, std::string& stringValue, IUIDescription* desc) const
 {
 	bool result = false;
 	ViewCreatorRegistry& registry = getCreatorRegistry ();
@@ -177,7 +177,7 @@ bool ViewFactory::getAttributeValue (CView* view, const std::string& attributeNa
 }
 
 //-----------------------------------------------------------------------------
-IViewCreator::AttrType ViewFactory::getAttributeType (CView* view, const std::string& attributeName) const
+IViewCreator::AttrType UIViewFactory::getAttributeType (CView* view, const std::string& attributeName) const
 {
 	ViewCreatorRegistry& registry = getCreatorRegistry ();
 	IViewCreator::AttrType type = IViewCreator::kUnknownType;
@@ -190,7 +190,7 @@ IViewCreator::AttrType ViewFactory::getAttributeType (CView* view, const std::st
 }
 
 //-----------------------------------------------------------------------------
-bool ViewFactory::getAttributesForView (CView* view, IUIDescription* desc, UIAttributes& attr) const
+bool UIViewFactory::getAttributesForView (CView* view, IUIDescription* desc, UIAttributes& attr) const
 {
 	bool result = false;
 	std::list<std::string> attrNames;
@@ -211,7 +211,7 @@ bool ViewFactory::getAttributesForView (CView* view, IUIDescription* desc, UIAtt
 }
 
 //-----------------------------------------------------------------------------
-void ViewFactory::collectRegisteredViewNames (std::list<const std::string*>& viewNames, IdStringPtr baseClassNameFilter) const
+void UIViewFactory::collectRegisteredViewNames (std::list<const std::string*>& viewNames, IdStringPtr baseClassNameFilter) const
 {
 	ViewCreatorRegistry& registry = getCreatorRegistry ();
 	ViewCreatorRegistry::const_iterator iter = registry.begin ();
@@ -244,7 +244,7 @@ void ViewFactory::collectRegisteredViewNames (std::list<const std::string*>& vie
 #endif
 
 //-----------------------------------------------------------------------------
-void ViewFactory::registerViewCreator (const IViewCreator& viewCreator)
+void UIViewFactory::registerViewCreator (const IViewCreator& viewCreator)
 {
 	ViewCreatorRegistry& registry = getCreatorRegistry ();
 	if (registry.find (viewCreator.getViewName ()) != registry.end ())

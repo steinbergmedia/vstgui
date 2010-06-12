@@ -32,8 +32,8 @@
 // OF THE POSSIBILITY OF SUCH DAMAGE.
 //-----------------------------------------------------------------------------
 
-#ifndef __dialog__
-#define __dialog__
+#ifndef __uidialog__
+#define __uidialog__
 
 #if VSTGUI_LIVE_EDITING
 
@@ -44,7 +44,7 @@
 namespace VSTGUI {
 
 //-----------------------------------------------------------------------------
-class Dialog : public CBaseObject, public CControlListener, public VSTGUIEditorInterface, public IKeyboardHook
+class UIDialog : public CBaseObject, public CControlListener, public VSTGUIEditorInterface, public IKeyboardHook
 {
 public:
 	enum {
@@ -55,8 +55,8 @@ public:
 	static bool runViewModal (CPoint& position, CView* view, int32_t style = kOkButton, UTF8StringPtr title = 0);
 
 protected:
-	Dialog (const CPoint& position, CView* rootView, int32_t style = kOkButton, UTF8StringPtr title = 0);
-	~Dialog ();
+	UIDialog (const CPoint& position, CView* rootView, int32_t style = kOkButton, UTF8StringPtr title = 0);
+	~UIDialog ();
 
 	bool run ();
 	void valueChanged (CControl* pControl);
@@ -72,4 +72,4 @@ protected:
 
 #endif // VSTGUI_LIVE_EDITING
 
-#endif
+#endif // __uidialog__

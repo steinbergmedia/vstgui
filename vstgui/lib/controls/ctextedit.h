@@ -72,7 +72,7 @@ public:
 	virtual	void takeFocus ();
 	virtual	void looseFocus ();
 
-	virtual void setViewSize (CRect& newSize, bool invalid = true);
+	virtual void setViewSize (const CRect& newSize, bool invalid = true);
 	virtual void parentSizeChanged ();
 
 	bool bWasReturnPressed;

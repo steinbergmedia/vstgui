@@ -32,24 +32,45 @@
 // OF THE POSSIBILITY OF SUCH DAMAGE.
 //-----------------------------------------------------------------------------
 
-#ifndef __viewcreator__
-#define __viewcreator__
+#ifndef __uifontchooserpanel__
+#define __uifontchooserpanel__
 
-#include "../lib/cbitmap.h"
-#include "../lib/cview.h"
-#include <string>
+#if VSTGUI_LIVE_EDITING
+
+#include "uipanelbase.h"
+#include "../lib/controls/cfontchooser.h"
 
 namespace VSTGUI {
-class IUIDescription;
+class CFontChooser;
 
-extern bool parseSize (const std::string& str, CPoint& point);
-extern bool pointToString (const CPoint& p, std::string& string);
-extern bool bitmapToString (CBitmap* bitmap, std::string& string, IUIDescription* desc);
-extern bool colorToString (const CColor& color, std::string& string, IUIDescription* desc);
+//-----------------------------------------------------------------------------
+class UIFontChooserPanel : public UIPanelBase, public IFontChooserDelegate
+{
+public:
+	static void show (CFontRef initialFont, CBaseObject* owner, void* parentPlatformWindow); // owner must implement IFontChooserDelegate
+	static void hide ();
+//-----------------------------------------------------------------------------
+protected:
+	UIFontChooserPanel (CFontRef initialFont, CBaseObject* owner, void* parentPlatformWindow = 0);
+	~UIFontChooserPanel ();
 
-extern void rememberAttributeValueString (CView* view, IdStringPtr attrName, const std::string& value);
-extern bool getRememberedAttributeValueString (CView* view, IdStringPtr attrName, std::string& value);
+	CFrame* createFrame (void* platformWindow, const CCoord& width, const CCoord& height);
+
+	void windowClosed (PlatformWindow* platformWindow);
+	void checkWindowSizeConstraints (CPoint& size, PlatformWindow* platformWindow);
+
+	void fontChanged (CFontChooser* chooser, CFontRef newFont);
+	void setOwner (CBaseObject* owner);
+	void setFont (CFontRef font);
+	
+	CFontChooser* fontChooser;
+	CPoint minSize;
+	
+	static UIFontChooserPanel* gInstance;
+};
 
 } // namespace
 
-#endif
+#endif // VSTGUI_LIVE_EDITING
+
+#endif // __uifontchooserpanel__

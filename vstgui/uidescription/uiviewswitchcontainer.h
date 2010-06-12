@@ -32,22 +32,22 @@
 // OF THE POSSIBILITY OF SUCH DAMAGE.
 //-----------------------------------------------------------------------------
 
-#ifndef __cviewswitchcontainer__
-#define __cviewswitchcontainer__
+#ifndef __uiviewswitchcontainer__
+#define __uiviewswitchcontainer__
 
 #include "../lib/cviewcontainer.h"
-#include "viewfactory.h"
+#include "uiviewfactory.h"
 #include <vector>
 
 namespace VSTGUI {
 class IViewSwitchController;
 
 //-----------------------------------------------------------------------------
-class CViewSwitchContainer : public CViewContainer
+class UIViewSwitchContainer : public CViewContainer
 {
 public:
-	CViewSwitchContainer (const CRect& size);
-	~CViewSwitchContainer ();
+	UIViewSwitchContainer (const CRect& size);
+	~UIViewSwitchContainer ();
 
 	IViewSwitchController* getController () const { return controller; }
 	void setController (IViewSwitchController* controller);	// owns controller if it is a CBaseObject
@@ -63,7 +63,7 @@ public:
 //	bool removeAll (const bool &withForget = true) { return false; }
 
 //-----------------------------------------------------------------------------
-	CLASS_METHODS (CViewSwitchContainer, CViewContainer)
+	CLASS_METHODS (UIViewSwitchContainer, CViewContainer)
 protected:
 	bool attached (CView* parent);
 	bool removed (CView* parent);
@@ -76,24 +76,24 @@ protected:
 class IViewSwitchController
 {
 public:
-	IViewSwitchController (CViewSwitchContainer* viewSwitch) : viewSwitch (viewSwitch) {}
+	IViewSwitchController (UIViewSwitchContainer* viewSwitch) : viewSwitch (viewSwitch) {}
 	virtual ~IViewSwitchController () {}
 
 	void init () { viewSwitch->setController (this); }
 
-	CViewSwitchContainer* getViewSwitchContainer () const { return viewSwitch; }
+	UIViewSwitchContainer* getViewSwitchContainer () const { return viewSwitch; }
 
 	virtual CView* createViewForIndex (int32_t index) = 0;
 	virtual void switchContainerAttached () {}
 protected:
-	CViewSwitchContainer* viewSwitch;
+	UIViewSwitchContainer* viewSwitch;
 };
 
 //-----------------------------------------------------------------------------
 class UIDescriptionViewSwitchController : public CBaseObject, public IViewSwitchController, public CControlListener
 {
 public:
-	UIDescriptionViewSwitchController (CViewSwitchContainer* viewSwitch, UIDescription* uiDescription, IController* uiController);
+	UIDescriptionViewSwitchController (UIViewSwitchContainer* viewSwitch, UIDescription* uiDescription, IController* uiController);
 
 	CView* createViewForIndex (int32_t index);
 	void switchContainerAttached ();
@@ -115,4 +115,4 @@ protected:
 
 } // namespace
 
-#endif
+#endif // __uiviewswitchcontainer__

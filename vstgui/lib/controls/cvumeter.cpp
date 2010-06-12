@@ -101,7 +101,7 @@ bool CVuMeter::attached (CView *parent)
 }
 
 //------------------------------------------------------------------------
-void CVuMeter::setViewSize (CRect& newSize, bool invalid)
+void CVuMeter::setViewSize (const CRect& newSize, bool invalid)
 {
 	CControl::setViewSize (newSize, invalid);
 	rectOn  (size.left, size.top, size.right, size.bottom);

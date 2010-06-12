@@ -34,7 +34,7 @@
 
 #if VSTGUI_LIVE_EDITING
 
-#include "dialog.h"
+#include "uidialog.h"
 #include "../lib/vstkeycode.h"
 #include "../lib/cfont.h"
 #include "../lib/cdrawcontext.h"
@@ -43,9 +43,9 @@
 namespace VSTGUI {
 
 //-----------------------------------------------------------------------------
-bool Dialog::runViewModal (CPoint& position, CView* view, int32_t style, UTF8StringPtr title)
+bool UIDialog::runViewModal (CPoint& position, CView* view, int32_t style, UTF8StringPtr title)
 {
-	Dialog dialog (position, view, style, title);
+	UIDialog dialog (position, view, style, title);
 	return dialog.run ();
 }
 
@@ -109,7 +109,7 @@ static bool DialogOkIsRightMost = false;
 } // namespace DialogInternal
 
 //-----------------------------------------------------------------------------
-Dialog::Dialog (const CPoint& position, CView* rootView, int32_t style, UTF8StringPtr title)
+UIDialog::UIDialog (const CPoint& position, CView* rootView, int32_t style, UTF8StringPtr title)
 : platformWindow (0)
 , result (false)
 {
@@ -172,7 +172,7 @@ Dialog::Dialog (const CPoint& position, CView* rootView, int32_t style, UTF8Stri
 }
 
 //-----------------------------------------------------------------------------
-Dialog::~Dialog ()
+UIDialog::~UIDialog ()
 {
 	if (frame)
 		frame->close ();
@@ -181,7 +181,7 @@ Dialog::~Dialog ()
 }
 
 //-----------------------------------------------------------------------------
-bool Dialog::run ()
+bool UIDialog::run ()
 {
 	if (platformWindow)
 	{
@@ -193,7 +193,7 @@ bool Dialog::run ()
 }
 
 //-----------------------------------------------------------------------------
-int32_t Dialog::onKeyDown (const VstKeyCode& code, CFrame* frame)
+int32_t UIDialog::onKeyDown (const VstKeyCode& code, CFrame* frame)
 {
 	static bool recursion = false;
 	if (recursion)
@@ -225,13 +225,13 @@ int32_t Dialog::onKeyDown (const VstKeyCode& code, CFrame* frame)
 }
 
 //-----------------------------------------------------------------------------
-int32_t Dialog::onKeyUp (const VstKeyCode& code, CFrame* frame)
+int32_t UIDialog::onKeyUp (const VstKeyCode& code, CFrame* frame)
 {
 	return -1;
 }
 
 //-----------------------------------------------------------------------------
-void Dialog::valueChanged (CControl* pControl)
+void UIDialog::valueChanged (CControl* pControl)
 {
 	switch (pControl->getTag ())
 	{

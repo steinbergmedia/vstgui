@@ -55,12 +55,12 @@ public:
 	void onMouseMoved (const CPoint& where);
 	void onMouseDown (const CPoint& where);
 
+	void hideTooltip ();
 	//-------------------------------------------
 	CLASS_METHODS_NOCOPY(CTooltipSupport, CBaseObject)
 protected:
 	~CTooltipSupport ();
 	void showTooltip ();
-	void hideTooltip ();
 
 	// CBaseObject
 	CMessageResult notify (CBaseObject* sender, IdStringPtr msg);

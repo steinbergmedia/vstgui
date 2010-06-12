@@ -123,7 +123,7 @@ void CViewContainer::parentSizeChanged ()
  * @param rect the new size of the container
  * @param invalid the views to dirty
  */
-void CViewContainer::setViewSize (CRect &rect, bool invalid)
+void CViewContainer::setViewSize (const CRect &rect, bool invalid)
 {
 	if (rect == getViewSize ())
 		return;
@@ -389,7 +389,7 @@ bool CViewContainer::addView (CView *pView, CView* pBefore)
  * @param mouseEnabled bool to set if view will get mouse events
  * @return true on success. false if view was already attached
  */
-bool CViewContainer::addView (CView* pView, CRect &mouseableArea, bool mouseEnabled)
+bool CViewContainer::addView (CView* pView, const CRect &mouseableArea, bool mouseEnabled)
 {
 	if (!pView)
 		return false;
@@ -582,7 +582,7 @@ void CViewContainer::invalid ()
 }
 
 //-----------------------------------------------------------------------------
-void CViewContainer::invalidRect (CRect rect)
+void CViewContainer::invalidRect (const CRect& rect)
 {
 	if (!bVisible)
 		return;
@@ -611,7 +611,7 @@ void CViewContainer::draw (CDrawContext* pContext)
  * @param pContext the context which to use to draw the background
  * @param _updateRect the area which to draw
  */
-void CViewContainer::drawBackgroundRect (CDrawContext* pContext, CRect& _updateRect)
+void CViewContainer::drawBackgroundRect (CDrawContext* pContext, const CRect& _updateRect)
 {
 	if (pBackground)
 	{
@@ -828,7 +828,7 @@ bool CViewContainer::hitTestSubViews (const CPoint& where, const CButtonState bu
  * @param buttons mouse button and modifier state
  * @return true if container accepts the hit
  */
-bool CViewContainer::hitTest (const CPoint& where, const CButtonState buttons)
+bool CViewContainer::hitTest (const CPoint& where, const CButtonState& buttons)
 {
 	//return hitTestSubViews (where); would change default behavior
 	return CView::hitTest (where, buttons);
@@ -901,34 +901,6 @@ CMouseEventResult CViewContainer::onMouseMoved (CPoint &where, const CButtonStat
 		return kMouseEventHandled;
 	}
 	return kMouseEventNotHandled;
-}
-
-//-----------------------------------------------------------------------------
-int32_t CViewContainer::onKeyDown (VstKeyCode& keyCode)
-{
-	int32_t result = -1;
-
-	FOREACHSUBVIEW_REVERSE(true)
-		result = pV->onKeyDown (keyCode);
-		if (result != -1)
-			break;
-	ENDFOREACHSUBVIEW
-
-	return result;
-}
-
-//-----------------------------------------------------------------------------
-int32_t CViewContainer::onKeyUp (VstKeyCode& keyCode)
-{
-	int32_t result = -1;
-
-	FOREACHSUBVIEW_REVERSE(true)
-		result = pV->onKeyUp (keyCode);
-		if (result != -1)
-			break;
-	ENDFOREACHSUBVIEW
-	
-	return result;
 }
 
 //-----------------------------------------------------------------------------

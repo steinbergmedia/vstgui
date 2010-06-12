@@ -39,7 +39,7 @@ And there is stuff currently not implemented:
 
 @section code_changes_for_3_6 Code changes for existing VSTGUI 3.6 code
 
-- the long variable type was changed to int32_t, you must do this for all your derivate VSTGUI classes too
+- the variable types were changed to use C99 style types (int32_t, etc), you must do this for all your derivated VSTGUI classes too
 - the buttons parameter has changed from long to CButtonState
 - your custom views need to use the new mouse methods
 - COptionMenuScheme is not available anymore
@@ -51,6 +51,13 @@ And there is stuff currently not implemented:
 - On Windows graphics are entirely drawn with GDI+ or Direct2D (when available), GDI is not used anymore
 - The internal string encoding is now always UTF-8
 - The VSTGUI::CCoord type is now always a double
+
+- Method signature changes which don't lead to compile errors:
+	- CView::setViewSize (CRect& rect, bool invalid = true)
+	- CView::hitTest (const CPoint& where, CButtonState& buttons = -1)
+	- CView::invalidRect (CRect& rect)
+	- CViewContainer::drawBackgroundRect (CDrawContext* pContext, CRect& _updateRect)
+	- CViewContainer::addView (CView* pView, CRect& mouseableArea, bool mouseEnabled = true)
 
 @section old_new_stuff Stuff that was new in VSTGUI 3.0 - VSTGUI 3.6
 

@@ -32,15 +32,15 @@
 // OF THE POSSIBILITY OF SUCH DAMAGE.
 //-----------------------------------------------------------------------------
 
-#ifndef __ceditframe__
-#define __ceditframe__
+#ifndef __uieditframe__
+#define __uieditframe__
 
 #if VSTGUI_LIVE_EDITING
 
 #include "../lib/cframe.h"
-#include "cselection.h"
+#include "uiselection.h"
 #include "uidescription.h"
-#include "viewfactory.h"
+#include "uiviewfactory.h"
 
 #include <list>
 #include <map>
@@ -49,9 +49,9 @@ namespace VSTGUI {
 
 class CrossLines;
 class Grid;
-class CViewInspector;
+class UIViewInspector;
 class IActionOperation;
-class ViewHierarchyBrowserWindow;
+class UIViewHierarchyBrowserWindow;
 class CVSTGUITimer;
 
 //----------------------------------------------------------------------------------------------------
@@ -76,7 +76,7 @@ public:
 };
 
 //----------------------------------------------------------------------------------------------------
-class CEditFrame : public CFrame, public IActionOperator, public IKeyboardHook
+class UIEditFrame : public CFrame, public IActionOperator, public IKeyboardHook
 //----------------------------------------------------------------------------------------------------
 {
 public:
@@ -85,8 +85,8 @@ public:
 		kEditMode
 	};
 
-	CEditFrame (const CRect& size, void* windowPtr, VSTGUIEditorInterface* editor, EditMode editMode, CSelection* selection, UIDescription* description, UTF8StringPtr uiDescViewName);
-	~CEditFrame ();
+	UIEditFrame (const CRect& size, void* windowPtr, VSTGUIEditorInterface* editor, EditMode editMode, UISelection* selection, UIDescription* description, UTF8StringPtr uiDescViewName);
+	~UIEditFrame ();
 
 	EditMode getEditMode () const { return editMode; }
 	void setEditMode (EditMode mode);
@@ -117,8 +117,8 @@ public:
 	static IdStringPtr kMsgEditEnding;
 //----------------------------------------------------------------------------------------------------
 protected:
-	CBitmap* createBitmapFromSelection (CSelection* selection);
-	CSelection* getSelectionOutOfDrag (CDragContainer* drag);
+	CBitmap* createBitmapFromSelection (UISelection* selection);
+	UISelection* getSelectionOutOfDrag (CDragContainer* drag);
 	CMessageResult notify (CBaseObject* sender, IdStringPtr message);
 	void showOptionsMenu (const CPoint& where);
 	void createNewSubview (const CPoint& where, UTF8StringPtr viewName);
@@ -161,7 +161,7 @@ protected:
 	void onDragLeave (CDragContainer* drag, const CPoint& where);
 	void onDragMove (CDragContainer* drag, const CPoint& where);
 
-	void invalidRect (const CRect rect);
+	void invalidRect (const CRect& rect);
 
 	int32_t onKeyDown (VstKeyCode& keyCode);
 	int32_t onKeyUp (VstKeyCode& keyCode);
@@ -182,11 +182,11 @@ protected:
 	CVSTGUITimer* editTimer;
 	CrossLines* lines;
 	Grid* grid;
-	CSelection* selection;
-	CSelection* dragSelection;
+	UISelection* selection;
+	UISelection* dragSelection;
 	UIDescription* uiDescription;
-	ViewHierarchyBrowserWindow* hierarchyBrowser;
-	CViewInspector* inspector;
+	UIViewHierarchyBrowserWindow* hierarchyBrowser;
+	UIViewInspector* inspector;
 	IActionOperation* moveSizeOperation;
 	CView* highlightView;
 	EditMode editMode;
@@ -225,4 +225,4 @@ static bool std__stringCompare (const std::string* lhs, const std::string* rhs)
 
 #endif // VSTGUI_LIVE_EDITING
 
-#endif
+#endif // __uieditframe__

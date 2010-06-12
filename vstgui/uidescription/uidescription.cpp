@@ -33,9 +33,9 @@
 //-----------------------------------------------------------------------------
 
 #include "uidescription.h"
-#include "viewfactory.h"
-#include "viewcreator.h"
-#include "cviewswitchcontainer.h"
+#include "uiviewfactory.h"
+#include "uiviewcreator.h"
+#include "uiviewswitchcontainer.h"
 #include "cstream.h"
 #include "../lib/cfont.h"
 #include "../lib/cframe.h"
@@ -307,9 +307,9 @@ bool UIDescription::parseColor (const std::string& colorString, CColor& color)
 }
 
 //-----------------------------------------------------------------------------
-static ViewFactory* getGenericViewFactory ()
+static UIViewFactory* getGenericViewFactory ()
 {
-	static ViewFactory genericViewFactory;
+	static UIViewFactory genericViewFactory;
 	return &genericViewFactory;
 }
 
@@ -476,7 +476,7 @@ CView* UIDescription::createViewFromNode (UINode* node)
 		result = controller->createView (*node->getAttributes (), this);
 		if (result && viewFactory)
 		{
-			ViewFactory* _viewFactory = dynamic_cast<ViewFactory*> (viewFactory);
+			UIViewFactory* _viewFactory = dynamic_cast<UIViewFactory*> (viewFactory);
 			if (_viewFactory)
 			{
 				const std::string* viewClass = node->getAttributes ()->getAttributeValue ("class");
@@ -1085,7 +1085,7 @@ void UIDescription::collectControlTagNames (std::list<const std::string*>& names
 void UIDescription::updateAttributesForView (UINode* node, CView* view, bool deep)
 {
 #if VSTGUI_LIVE_EDITING
-	ViewFactory* factory = dynamic_cast<ViewFactory*> (viewFactory);
+	UIViewFactory* factory = dynamic_cast<UIViewFactory*> (viewFactory);
 	std::list<std::string> attributeNames;
 	if (factory->getAttributeNamesForView (view, attributeNames))
 	{
@@ -1137,7 +1137,7 @@ void UIDescription::updateAttributesForView (UINode* node, CView* view, bool dee
 void UIDescription::updateViewDescription (UTF8StringPtr name, CView* view)
 {
 #if VSTGUI_LIVE_EDITING
-	ViewFactory* factory = dynamic_cast<ViewFactory*> (viewFactory);
+	UIViewFactory* factory = dynamic_cast<UIViewFactory*> (viewFactory);
 	if (factory && nodes)
 	{
 		UINode* node = 0;

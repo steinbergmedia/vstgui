@@ -39,6 +39,8 @@
 #include "cframe.h"
 #include "controls/ctextedit.h"
 #include "ifocusdrawing.h"
+#include "cvstguitimer.h"
+#include <cmath>
 
 namespace VSTGUI {
 
@@ -141,7 +143,7 @@ void CDataBrowser::setAutosizeFlags (int32_t flags)
 }
 
 //-----------------------------------------------------------------------------------------------
-void CDataBrowser::setViewSize (CRect& size, bool invalid)
+void CDataBrowser::setViewSize (const CRect& size, bool invalid)
 {
 	CScrollView::setViewSize (size, invalid);
 	recalculateLayout (true);
@@ -152,6 +154,22 @@ bool CDataBrowser::attached (CView *parent)
 {
 	recalculateLayout (true);
 	return CScrollView::attached (parent);
+}
+
+//-----------------------------------------------------------------------------------------------
+int32_t CDataBrowser::onKeyDown (VstKeyCode& keyCode)
+{
+	return dbView ? dbView->onKeyDown (keyCode) : -1;
+}
+
+//-----------------------------------------------------------------------------
+CMouseEventResult CDataBrowser::onMouseDown (CPoint& where, const CButtonState& buttons)
+{
+	CMouseEventResult result = CViewContainer::onMouseDown (where, buttons);
+	CView* focusView = getFrame ()->getFocusView ();
+	if (focusView != dbView && !isChild (focusView))
+		getFrame ()->setFocusView (dbView);
+	return result;
 }
 
 //-----------------------------------------------------------------------------
@@ -272,14 +290,12 @@ void CDataBrowser::recalculateLayout (bool rememberSelection)
 
 //-----------------------------------------------------------------------------------------------
 /**
- * currently this will invalidate the whole row
  * @param row row to invalidate
  * @param column column to invalidate
  */
 void CDataBrowser::invalidate (int32_t row, int32_t column)
 {
-	// TODO
-	dbView->invalidateRow (row);
+	invalidRect (getCellBounds (row, column));
 }
 
 //-----------------------------------------------------------------------------------------------
@@ -318,6 +334,8 @@ void CDataBrowser::setSelectedRow (int32_t index, bool makeVisible)
 		selectedRow = index;
 		db->dbSelectionChanged (this);
 	}
+	if (makeVisible)
+		makeRowVisible (selectedRow);
 }
 
 //-----------------------------------------------------------------------------------------------
@@ -806,6 +824,192 @@ bool CDataBrowserView::getFocusPath (CGraphicsPath& outPath)
 }
 
 /// @endcond
+
+//-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
+GenericStringListDataBrowserSource::GenericStringListDataBrowserSource (const std::vector<std::string>* stringList, IGenericStringListDataBrowserSourceSelectionChanged* delegate)
+: stringList (stringList)
+, rowHeight (-1)
+, fontColor (kWhiteCColor)
+, selectionColor (kBlueCColor)
+, rowlineColor (kGreyCColor)
+, rowBackColor (kTransparentCColor)
+, rowAlternateBackColor (kTransparentCColor)
+, drawFont (kSystemFont)
+, dataBrowser (0)
+, delegate (delegate)
+, timer (0)
+{
+	drawFont->remember ();
+}
+
+//-----------------------------------------------------------------------------
+GenericStringListDataBrowserSource::~GenericStringListDataBrowserSource ()
+{
+	if (timer)
+		timer->forget ();
+	drawFont->forget ();
+}
+
+//-----------------------------------------------------------------------------
+void GenericStringListDataBrowserSource::setStringList (const std::vector<std::string>* stringList)
+{
+	this->stringList = stringList;
+	if (dataBrowser)
+		dataBrowser->recalculateLayout (false);
+}
+
+//-----------------------------------------------------------------------------
+void GenericStringListDataBrowserSource::setupUI (const CColor& _selectionColor, const CColor& _fontColor, const CColor& _rowlineColor, const CColor& _rowBackColor, const CColor& _rowAlternateBackColor, CFontRef _font, int32_t _rowHeight)
+{
+	if (_font)
+	{
+		if (drawFont)
+			drawFont->forget ();
+		drawFont = _font;
+		drawFont->remember ();
+	}
+	rowHeight = _rowHeight;
+	selectionColor = _selectionColor;
+	fontColor = _fontColor;
+	rowlineColor = _rowlineColor;
+	rowBackColor = _rowBackColor;
+	rowAlternateBackColor = _rowAlternateBackColor;
+	if (dataBrowser)
+		dataBrowser->recalculateLayout (true);
+}
+
+//-----------------------------------------------------------------------------
+void GenericStringListDataBrowserSource::dbSelectionChanged (CDataBrowser* browser)
+{
+	if (delegate)
+		delegate->dbSelectionChanged (browser->getSelectedRow (), this);
+}
+
+//-----------------------------------------------------------------------------
+int32_t GenericStringListDataBrowserSource::dbGetNumRows (CDataBrowser* browser)
+{
+	if (dataBrowser == 0)
+		dataBrowser = browser;
+	return stringList->size ();
+}
+
+//-----------------------------------------------------------------------------
+CCoord GenericStringListDataBrowserSource::dbGetCurrentColumnWidth (int32_t index, CDataBrowser* browser)
+{
+	return browser->getWidth () - browser->getScrollbarWidth ();
+}
+
+//-----------------------------------------------------------------------------
+bool GenericStringListDataBrowserSource::dbGetLineWidthAndColor (CCoord& width, CColor& color, CDataBrowser* browser)
+{
+	width = 1.;
+	color = rowlineColor;
+	return true;
+}
+
+//-----------------------------------------------------------------------------
+CCoord GenericStringListDataBrowserSource::dbGetRowHeight (CDataBrowser* browser)
+{
+	if (rowHeight < 0)
+	{
+		if (drawFont->getPlatformFont ())
+		{
+			CCoord height = drawFont->getPlatformFont ()->getAscent ();
+			height += drawFont->getPlatformFont ()->getDescent ();
+			height += drawFont->getPlatformFont ()->getLeading ();
+			return ceil (height + 2.);
+		}
+		return drawFont->getSize () + 2.;
+	}
+	return rowHeight;
+}
+
+//-----------------------------------------------------------------------------
+void GenericStringListDataBrowserSource::dbDrawHeader (CDrawContext* context, const CRect& size, int32_t column, int32_t flags, CDataBrowser* browser)
+{
+}
+
+//-----------------------------------------------------------------------------
+void GenericStringListDataBrowserSource::dbDrawCell (CDrawContext* context, const CRect& size, int32_t row, int32_t column, int32_t flags, CDataBrowser* browser)
+{
+	context->setFillColor (row % 2 ? rowBackColor : rowAlternateBackColor);
+	context->drawRect (size, kDrawFilled);
+	if (flags & kRowSelected)
+	{
+		CColor color (selectionColor);
+		CView* focusView = browser->getFrame ()->getFocusView ();
+		if (!(focusView && browser->isChild (focusView)))
+		{
+			double hue, saturation, value;
+			color.toHSV (hue, saturation, value);
+			saturation = 0.;
+			color.fromHSV (hue, saturation, value);
+			color.alpha /= 3;
+		}
+		context->setFillColor (color);
+		context->drawRect (size, kDrawFilled);
+	}
+	CRect stringSize (size);
+	stringSize.inset (2., 0.);
+	context->setFont (drawFont);
+	context->setFontColor (fontColor);
+	context->drawString ((*stringList)[row].c_str (), stringSize, kLeftText);
+}
+
+//-----------------------------------------------------------------------------
+int32_t GenericStringListDataBrowserSource::dbOnKeyDown (const VstKeyCode& _key, CDataBrowser* browser)
+{
+	VstKeyCode key = _key;
+	if (key.virt == VKEY_SPACE)
+	{
+		key.virt = 0;
+		key.character = 0x20;
+	}
+	if (dataBrowser && key.virt == 0 && key.modifier == 0)
+	{
+		if (timer == 0)
+		{
+			timer = new CVSTGUITimer (this, 1000);
+			timer->start ();
+		}
+		else
+		{
+			timer->stop ();
+			timer->start ();
+		}
+		keyDownFindString += toupper (key.character);
+		std::vector<std::string>::const_iterator it = stringList->begin ();
+		int32_t row = 0;
+		while (it != stringList->end ())
+		{
+			std::string str ((*it), 0, keyDownFindString.length ());
+			std::transform (str.begin(), str.end(), str.begin(), ::toupper);
+			if (str == keyDownFindString)
+			{
+				dataBrowser->setSelectedRow (row, true);
+				return 1;
+			}
+			row++;
+			it++;
+		}
+	}
+	return -1;
+}
+
+//-----------------------------------------------------------------------------
+CMessageResult GenericStringListDataBrowserSource::notify (CBaseObject* sender, IdStringPtr message)
+{
+	if (message == CVSTGUITimer::kMsgTimer)
+	{
+		keyDownFindString = "";
+		timer->forget ();
+		timer = 0;
+		return kMessageNotified;
+	}
+	return kMessageUnknown;
+}
 
 } // namespace
 

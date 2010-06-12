@@ -199,7 +199,7 @@ void CSlider::setStyle (int32_t _style)
 }
 
 //------------------------------------------------------------------------
-void CSlider::setViewSize (CRect& rect, bool invalid)
+void CSlider::setViewSize (const CRect& rect, bool invalid)
 {
 	CControl::setViewSize (rect, invalid);
 	if (style & kHorizontal)

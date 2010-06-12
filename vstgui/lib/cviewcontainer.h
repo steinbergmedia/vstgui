@@ -60,7 +60,7 @@ public:
 	//-----------------------------------------------------------------------------
 	//@{
 	virtual bool addView (CView* pView);	///< add a child view
-	virtual bool addView (CView* pView, CRect& mouseableArea, bool mouseEnabled = true);	///< add a child view
+	virtual bool addView (CView* pView, const CRect& mouseableArea, bool mouseEnabled = true);	///< add a child view
 	virtual bool addView (CView* pView, CView* pBefore);	///< add a child view before another view
 	virtual bool removeView (CView* pView, const bool& withForget = true);	///< remove a child view
 	virtual bool removeAll (const bool& withForget = true);	///< remove all child views
@@ -80,7 +80,7 @@ public:
 	virtual CColor getBackgroundColor () const { return backgroundColor; }	///< get the background color
 	virtual void setBackgroundOffset (const CPoint& p) { backgroundOffset = p; }	///< set the offset of the background bitmap
 	virtual const CPoint& getBackgroundOffset () const { return backgroundOffset; }	///< get the offset of the background bitmap
-	virtual void drawBackgroundRect (CDrawContext* pContext, CRect& _updateRect);	///< draw the background
+	virtual void drawBackgroundRect (CDrawContext* pContext, const CRect& _updateRect);	///< draw the background
 	//@}
 
 	void modifyDrawContext (CCoord save[4], CDrawContext* pContext);
@@ -96,9 +96,7 @@ public:
 	virtual CMouseEventResult onMouseMoved (CPoint& where, const CButtonState& buttons);
 	virtual bool onWheel (const CPoint& where, const float& distance, const CButtonState& buttons);
 	virtual bool onWheel (const CPoint& where, const CMouseWheelAxis& axis, const float& distance, const CButtonState& buttons);
-	virtual bool hitTest (const CPoint& where, const CButtonState buttons = -1);
-	virtual int32_t onKeyDown (VstKeyCode& keyCode);
-	virtual int32_t onKeyUp (VstKeyCode& keyCode);
+	virtual bool hitTest (const CPoint& where, const CButtonState& buttons = -1);
 	virtual CMessageResult notify (CBaseObject* sender, IdStringPtr message);
 
 	virtual bool onDrop (CDragContainer* drag, const CPoint& where);
@@ -112,10 +110,10 @@ public:
 	virtual bool isDirty () const;
 
 	virtual void invalid ();
-	virtual void invalidRect (const CRect rect);
+	virtual void invalidRect (const CRect& rect);
 	virtual bool invalidateDirtyViews ();
 	
-	virtual void setViewSize (CRect& rect, bool invalid = true);
+	virtual void setViewSize (const CRect& rect, bool invalid = true);
 	virtual void parentSizeChanged ();
 	virtual CRect getVisibleSize (const CRect rect) const;
 	virtual bool sizeToFit ();

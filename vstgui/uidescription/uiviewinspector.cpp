@@ -34,9 +34,10 @@
 
 #if VSTGUI_LIVE_EDITING
 
-#include "cviewinspector.h"
-#include "cselection.h"
-#include "viewfactory.h"
+#include "uiviewinspector.h"
+#include "uiselection.h"
+#include "uiviewfactory.h"
+#include "uifontchooserpanel.h"
 #include "editingcolordefs.h"
 #include "../lib/cscrollview.h"
 #include "../lib/ctabview.h"
@@ -183,12 +184,12 @@ class AttributeChangeAction : public IActionOperation, protected std::map<CView*
 //-----------------------------------------------------------------------------
 {
 public:
-	AttributeChangeAction (UIDescription* desc, CSelection* selection, const std::string& attrName, const std::string& attrValue)
+	AttributeChangeAction (UIDescription* desc, UISelection* selection, const std::string& attrName, const std::string& attrValue)
 	: desc (desc)
 	, attrName (attrName)
 	, attrValue (attrValue)
 	{
-		ViewFactory* viewFactory = dynamic_cast<ViewFactory*> (desc->getViewFactory ());
+		UIViewFactory* viewFactory = dynamic_cast<UIViewFactory*> (desc->getViewFactory ());
 		std::string attrOldValue;
 		FOREACH_IN_SELECTION(selection, view)
 			viewFactory->getAttributeValue (view, attrName, attrOldValue, desc);
@@ -215,7 +216,7 @@ public:
 	
 	void perform ()
 	{
-		ViewFactory* viewFactory = dynamic_cast<ViewFactory*> (desc->getViewFactory ());
+		UIViewFactory* viewFactory = dynamic_cast<UIViewFactory*> (desc->getViewFactory ());
 		UIAttributes attr;
 		attr.setAttribute (attrName.c_str (), attrValue.c_str ());
 		const_iterator it = begin ();
@@ -230,7 +231,7 @@ public:
 	
 	void undo ()
 	{
-		ViewFactory* viewFactory = dynamic_cast<ViewFactory*> (desc->getViewFactory ());
+		UIViewFactory* viewFactory = dynamic_cast<UIViewFactory*> (desc->getViewFactory ());
 		const_iterator it = begin ();
 		while (it != end ())
 		{
@@ -1015,40 +1016,26 @@ public:
 
 
 //-----------------------------------------------------------------------------
-class FontBrowserDelegate : public BrowserDelegateBase
+class FontBrowserDelegate : public BrowserDelegateBase, public IFontChooserDelegate
 //-----------------------------------------------------------------------------
 {
 public:
 	FontBrowserDelegate (UIDescription* desc, IActionOperator* actionOperator)
-	: BrowserDelegateBase (desc, actionOperator)
+	: BrowserDelegateBase (desc, actionOperator), browser (0)
 	{
 		updateNames ();
 		headerTitles.push_back ("Name");
 		headerTitles.push_back ("Font");
 	}
 
+	~FontBrowserDelegate ()
+	{
+		UIFontChooserPanel::hide ();
+	}
+	
 	void getNames (std::list<const std::string*>& _names)
 	{
 		desc->collectFontNames (_names);
-	}
-	
-	int32_t dbGetNumColumns (CDataBrowser* browser)
-	{
-		return 5;
-	}
-	
-	CCoord dbGetCurrentColumnWidth (int32_t index, CDataBrowser* browser)
-	{
-		if (index == 4)
-			return 20;
-		CCoord half = (browser->getWidth () - 40) / 2;
-		switch (index)
-		{
-			case 0 : return half;
-			case 1 : return half * (2./3.);
-			default: return half * (1./6.);
-		}
-		return (browser->getWidth () - 40) / 4;
 	}
 	
 	bool getCellText (int32_t row, int32_t column, std::string& result, CDataBrowser* browser)
@@ -1060,25 +1047,20 @@ public:
 				return false;
 			if (column == 1)
 			{
-				result = font->getName ();
-				return true;
-			}
-			else if (column == 2)
-			{
 				std::stringstream str;
+				str << font->getName ();
 				int32_t fstyle = font->getStyle ();
+				if (fstyle != 0)
+					str << " [";
 				if (fstyle & kBoldFace)
 					str << "b";
 				if (fstyle & kItalicFace)
 					str << "i";
 				if (fstyle & kUnderlineFace)
 					str << "u";
-				result = str.str ();
-				return true;
-			}
-			else if (column == 3)
-			{
-				std::stringstream str;
+				if (fstyle != 0)
+					str << "]";
+				str << " ";
 				str << font->getSize ();
 				result = str.str ();
 				return true;
@@ -1087,64 +1069,12 @@ public:
 		return BrowserDelegateBase::getCellText (row, column, result, browser);
 	}
 
-	//-----------------------------------------------------------------------------
-	static CFontRef showFontMenu (CFrame* frame, const CPoint& location, CFontRef oldFont)
+	void fontChanged (CFontChooser* chooser, CFontRef newFont)
 	{
-		CFontRef result = 0;
-		CMenuItem* item = 0;
-		COptionMenu* fontMenu = new COptionMenu ();
-		fontMenu->setStyle (kPopupStyle|kCheckStyle);
-		std::list<std::string> fontNames;
-		if (IPlatformFont::getAllPlatformFontFamilies (fontNames))
-		{
-			fontNames.sort ();
-			std::list<std::string>::const_iterator it = fontNames.begin ();
-			while (it != fontNames.end ())
-			{
-				item = fontMenu->addEntry (new CMenuItem ((*it).c_str ()));
-				if ((*it) == oldFont->getName ())
-				{
-					item->setChecked (true);
-					fontMenu->setValue (fontMenu->getNbEntries ()-1.f);
-				}
-				it++;
-			}
-		}
-		if (fontMenu->popup (frame, location))
-		{
-			int32_t index = 0;
-			COptionMenu* menu = fontMenu->getLastItemMenu (index);
-			if (menu)
-			{
-				item = menu->getEntry (index);
-				result = new CFontDesc (*oldFont);
-				result->setName (item->getTitle ()); 
-			}
-		}
-		fontMenu->forget ();
-		return result;
-	}
-
-	bool startEditing (int32_t row, CDataBrowser* browser)
-	{
-		if (row < (dbGetNumRows (browser) - 1))
-		{
-			std::string fontName (*names[row]);
-			CRect r = browser->getCellBounds (row, 1);
-			CPoint location (r.getTopLeft ());
-			browser->localToFrame (location);
-			CFontRef currentFont = desc->getFont (fontName.c_str ());
-			CFontRef newFont = showFontMenu (browser->getFrame (), location, currentFont);
-			if (newFont)
-			{
-				actionOperator->performFontChange (fontName.c_str (), newFont);
-				newFont->forget ();
-				updateNames ();
-				browser->recalculateLayout (true);
-			}
-			return true;
-		}
-		return BrowserDelegateBase::startEditing (row, browser);
+		std::string fontName (*names[lastChoosenRow]);
+		actionOperator->performFontChange (fontName.c_str (), newFont);
+		updateNames ();
+		browser->recalculateLayout (true);
 	}
 	
 	CMouseEventResult dbOnMouseDown (const CPoint& where, const CButtonState& buttons, int32_t row, int32_t column, CDataBrowser* browser)
@@ -1161,53 +1091,10 @@ public:
 			else if (column == 1)
 			{
 				std::string fontName (*names[row]);
-				CPoint location (where);
-				browser->localToFrame (location);
 				CFontRef currentFont = desc->getFont (fontName.c_str ());
-				CFontRef newFont = showFontMenu (browser->getFrame (), location, currentFont);
-				if (newFont)
-				{
-					actionOperator->performFontChange (fontName.c_str (), newFont);
-					newFont->forget ();
-					updateNames ();
-					browser->recalculateLayout (true);
-				}
-				return kMouseDownEventHandledButDontNeedMovedOrUpEvents;
-			}
-			else if (column == 2)
-			{
-				std::string fontName (*names[row]);
-				CPoint location (where);
-				browser->localToFrame (location);
-				CFontRef currentFont = desc->getFont (fontName.c_str ());
-				COptionMenu* styleMenu = new COptionMenu ();
-				styleMenu->setStyle (kPopupStyle|kCheckStyle|kMultipleCheckStyle);
-				CMenuItem* item = styleMenu->addEntry (new CMenuItem ("Bold", kBoldFace));
-				if (currentFont->getStyle () & kBoldFace)
-					item->setChecked (true);
-				item = styleMenu->addEntry (new CMenuItem ("Italic", kItalicFace));
-				if (currentFont->getStyle () & kItalicFace)
-					item->setChecked (true);
-				item = styleMenu->addEntry (new CMenuItem ("Underline", kUnderlineFace));
-				if (currentFont->getStyle () & kUnderlineFace)
-					item->setChecked (true);
-				if (styleMenu->popup (browser->getFrame (), location))
-				{
-					CFontRef newFont = new CFontDesc (*currentFont);
-					int32_t style = newFont->getStyle ();
-					int32_t index;
-					styleMenu->getLastItemMenu (index);
-					item = styleMenu->getEntry (index);
-					if (item->isChecked ())
-						style |= item->getTag ();
-					else
-						style &= ~item->getTag ();
-					newFont->setStyle (style);
-					actionOperator->performFontChange (fontName.c_str (), newFont);
-					newFont->forget ();
-					updateNames ();
-					browser->recalculateLayout (true);
-				}
+				this->browser = browser;
+				lastChoosenRow = row;
+				UIFontChooserPanel::show (currentFont, this, browser->getFrame ()->getPlatformFrame ()->getPlatformRepresentation ());
 				return kMouseDownEventHandledButDontNeedMovedOrUpEvents;
 			}
 		}
@@ -1240,22 +1127,9 @@ public:
 			updateNames ();
 			browser->recalculateLayout (true);
 		}
-		else if (column == 3)
-		{
-			std::string fontName (*names[row]);
-			CFontRef currentFont = desc->getFont (fontName.c_str ());
-			if (currentFont)
-			{
-				CCoord size = strtol (newText, 0, 10);
-				CFontRef newFont = new CFontDesc (*currentFont);
-				newFont->setSize (size);
-				actionOperator->performFontChange (fontName.c_str (), newFont);
-				newFont->forget ();
-				updateNames ();
-				browser->recalculateLayout (true);
-			}
-		}
 	}
+	int32_t lastChoosenRow;
+	CDataBrowser* browser;
 };
 
 static const CViewAttributeID attrNameID = 'atnm';
@@ -1314,7 +1188,7 @@ static void updateMenuFromList (COptionMenu* menu, std::list<const std::string*>
 }
 
 //-----------------------------------------------------------------------------
-COptionMenu* CViewInspector::createMenuFromList (const CRect& size, CControlListener* listener, std::list<const std::string*>& names, const std::string& defaultValue, bool addNoneItem)
+COptionMenu* UIViewInspector::createMenuFromList (const CRect& size, CControlListener* listener, std::list<const std::string*>& names, const std::string& defaultValue, bool addNoneItem)
 {
 	COptionMenu* menu = new FocusOptionMenu (size, listener, -1);
 	menu->setStyle (kCheckStyle|kPopupStyle);
@@ -1323,7 +1197,7 @@ COptionMenu* CViewInspector::createMenuFromList (const CRect& size, CControlList
 }
 
 //-----------------------------------------------------------------------------
-CViewInspector::CViewInspector (CSelection* selection, IActionOperator* actionOperator, void* parentPlatformWindow)
+UIViewInspector::UIViewInspector (UISelection* selection, IActionOperator* actionOperator, void* parentPlatformWindow)
 : selection (selection)
 , actionOperator (actionOperator)
 , description (0)
@@ -1338,7 +1212,7 @@ CViewInspector::CViewInspector (CSelection* selection, IActionOperator* actionOp
 }
 
 //-----------------------------------------------------------------------------
-CViewInspector::~CViewInspector ()
+UIViewInspector::~UIViewInspector ()
 {
 	hide ();
 	setUIDescription (0);
@@ -1347,7 +1221,7 @@ CViewInspector::~CViewInspector ()
 }
 
 //-----------------------------------------------------------------------------
-void CViewInspector::setUIDescription (UIDescription* desc)
+void UIViewInspector::setUIDescription (UIDescription* desc)
 {
 	if (description != desc)
 	{
@@ -1358,7 +1232,7 @@ void CViewInspector::setUIDescription (UIDescription* desc)
 		description = desc;
 		if (description)
 		{
-			UIAttributes* attr = description->getCustomAttributes ("CViewInspector");
+			UIAttributes* attr = description->getCustomAttributes ("UIViewInspector");
 			if (attr)
 				attr->getRectAttribute ("windowSize", windowSize);
 			description->remember ();
@@ -1367,12 +1241,12 @@ void CViewInspector::setUIDescription (UIDescription* desc)
 }
 
 //-----------------------------------------------------------------------------
-void CViewInspector::updateAttributeValueView (const std::string& attrName)
+void UIViewInspector::updateAttributeValueView (const std::string& attrName)
 {
 }
 
 //-----------------------------------------------------------------------------
-void CViewInspector::addColorBitmapsToColorMenu (COptionMenu* menu, IUIDescription* desc)
+void UIViewInspector::addColorBitmapsToColorMenu (COptionMenu* menu, IUIDescription* desc)
 {
 	CMenuItemList* items = menu->getItems ();
 	CMenuItemList::iterator it = items->begin ();
@@ -1400,11 +1274,11 @@ void CViewInspector::addColorBitmapsToColorMenu (COptionMenu* menu, IUIDescripti
 }
 
 //-----------------------------------------------------------------------------
-CView* CViewInspector::createViewForAttribute (const std::string& attrName, CCoord width)
+CView* UIViewInspector::createViewForAttribute (const std::string& attrName, CCoord width)
 {
 	if (description == 0)
 		return 0;
-	ViewFactory* viewFactory = dynamic_cast<ViewFactory*> (description->getViewFactory ());
+	UIViewFactory* viewFactory = dynamic_cast<UIViewFactory*> (description->getViewFactory ());
 	if (viewFactory == 0)
 		return 0;
 
@@ -1513,11 +1387,11 @@ CView* CViewInspector::createViewForAttribute (const std::string& attrName, CCoo
 }
 
 //-----------------------------------------------------------------------------
-void CViewInspector::updateAttributeViews ()
+void UIViewInspector::updateAttributeViews ()
 {
 	if (description == 0)
 		return;
-	ViewFactory* viewFactory = dynamic_cast<ViewFactory*> (description->getViewFactory ());
+	UIViewFactory* viewFactory = dynamic_cast<UIViewFactory*> (description->getViewFactory ());
 	if (viewFactory == 0)
 		return;
 
@@ -1589,11 +1463,11 @@ void CViewInspector::updateAttributeViews ()
 }
 
 //-----------------------------------------------------------------------------
-CView* CViewInspector::createAttributesView (CCoord width)
+CView* UIViewInspector::createAttributesView (CCoord width)
 {
 	if (description == 0)
 		return 0;
-	ViewFactory* viewFactory = dynamic_cast<ViewFactory*> (description->getViewFactory ());
+	UIViewFactory* viewFactory = dynamic_cast<UIViewFactory*> (description->getViewFactory ());
 	if (viewFactory == 0)
 		return 0;
 	CRect size (0, 0, width, 400);
@@ -1716,7 +1590,7 @@ CView* CViewInspector::createAttributesView (CCoord width)
 }
 
 //-----------------------------------------------------------------------------
-void CViewInspector::show ()
+void UIViewInspector::show ()
 {
 	if (platformWindow == 0)
 	{
@@ -1816,22 +1690,22 @@ void CViewInspector::show ()
 }
 
 //-----------------------------------------------------------------------------
-void CViewInspector::beforeSave ()
+void UIViewInspector::beforeSave ()
 {
 	if (platformWindow)
 		windowSize = platformWindow->getSize ();
 	if (description)
 	{
-		UIAttributes* attr = description->getCustomAttributes ("CViewInspector");
+		UIAttributes* attr = description->getCustomAttributes ("UIViewInspector");
 		if (!attr)
 			attr = new UIAttributes;
 		attr->setRectAttribute ("windowSize", windowSize);
-		description->setCustomAttributes ("CViewInspector", attr);
+		description->setCustomAttributes ("UIViewInspector", attr);
 	}
 }
 
 //-----------------------------------------------------------------------------
-void CViewInspector::hide ()
+void UIViewInspector::hide ()
 {
 	if (platformWindow)
 	{
@@ -1848,11 +1722,11 @@ void CViewInspector::hide ()
 }
 
 //-----------------------------------------------------------------------------
-void CViewInspector::valueChanged (CControl* pControl)
+void UIViewInspector::valueChanged (CControl* pControl)
 {
 	if (description == 0)
 		return;
-	ViewFactory* viewFactory = dynamic_cast<ViewFactory*> (description->getViewFactory ());
+	UIViewFactory* viewFactory = dynamic_cast<UIViewFactory*> (description->getViewFactory ());
 	if (viewFactory == 0)
 		return;
 
@@ -1896,9 +1770,9 @@ void CViewInspector::valueChanged (CControl* pControl)
 }
 
 //-----------------------------------------------------------------------------
-CMessageResult CViewInspector::notify (CBaseObject* sender, IdStringPtr message)
+CMessageResult UIViewInspector::notify (CBaseObject* sender, IdStringPtr message)
 {
-	if (message == CSelection::kMsgSelectionChanged)
+	if (message == UISelection::kMsgSelectionChanged)
 	{
 		if (frame)
 		{
@@ -1906,7 +1780,7 @@ CMessageResult CViewInspector::notify (CBaseObject* sender, IdStringPtr message)
 		}
 		return kMessageNotified;
 	}
-	else if (message == CSelection::kMsgSelectionViewChanged)
+	else if (message == UISelection::kMsgSelectionViewChanged)
 	{
 		if (frame)
 		{
@@ -1918,7 +1792,7 @@ CMessageResult CViewInspector::notify (CBaseObject* sender, IdStringPtr message)
 }
 
 //-----------------------------------------------------------------------------
-void CViewInspector::checkWindowSizeConstraints (CPoint& size, PlatformWindow* platformWindow)
+void UIViewInspector::checkWindowSizeConstraints (CPoint& size, PlatformWindow* platformWindow)
 {
 	if (size.x < 400)
 		size.x = 400;
@@ -1927,13 +1801,13 @@ void CViewInspector::checkWindowSizeConstraints (CPoint& size, PlatformWindow* p
 }
 
 //-----------------------------------------------------------------------------
-void CViewInspector::windowSizeChanged (const CRect& newSize, PlatformWindow* platformWindow)
+void UIViewInspector::windowSizeChanged (const CRect& newSize, PlatformWindow* platformWindow)
 {
 	frame->setSize (newSize.getWidth (), newSize.getHeight ());
 }
 
 //-----------------------------------------------------------------------------
-void CViewInspector::windowClosed (PlatformWindow* platformWindow)
+void UIViewInspector::windowClosed (PlatformWindow* platformWindow)
 {
 }
 
