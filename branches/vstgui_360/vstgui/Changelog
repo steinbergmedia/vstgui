@@ -1,3 +1,9 @@
+2010-06-25 arne
+
+	* Mac 64 bit AEffGUIEditor implementation
+	* Build 32/64 bit universal binary for tutorial project
+	* fix font creation bug with GDI+ when combining multiple font styles
+
 2010-04-08 arne
 
 	* make sure the Cocoa NSView set its focus ring type to none. Fixes some drawing performance issues.

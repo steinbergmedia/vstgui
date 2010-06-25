@@ -625,11 +625,11 @@ void* CFontDesc::getPlatformFont ()
 	#elif GDIPLUS
 	int gdiStyle = Gdiplus::FontStyleRegular;
 	if (style & kBoldFace)
-		gdiStyle = Gdiplus::FontStyleBold;
+		gdiStyle |= Gdiplus::FontStyleBold;
 	if (style & kItalicFace)
-		gdiStyle = Gdiplus::FontStyleItalic;
+		gdiStyle |= Gdiplus::FontStyleItalic;
 	if (style & kUnderlineFace)
-		gdiStyle = Gdiplus::FontStyleUnderline;
+		gdiStyle |= Gdiplus::FontStyleUnderline;
 
 	WCHAR tempName [200];
 	mbstowcs (tempName, name, 200);
