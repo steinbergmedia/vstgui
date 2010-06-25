@@ -57,10 +57,10 @@ public:
 	float getDecreaseStepValue () const { return decreaseValue; }
 	virtual void setDecreaseStepValue (float value) { decreaseValue = value; }
 
-	CBitmap* getOnBitmap () const { return getBackground (); }
-	CBitmap* getOffBitmap () const { return offBitmap; }
-	void setOnBitmap (CBitmap* bitmap) { setBackground (bitmap); }
-	void setOffBitmap (CBitmap* bitmap);
+	virtual CBitmap* getOnBitmap () const { return getBackground (); }
+	virtual CBitmap* getOffBitmap () const { return offBitmap; }
+	virtual void setOnBitmap (CBitmap* bitmap) { setBackground (bitmap); }
+	virtual void setOffBitmap (CBitmap* bitmap);
 	
 	int32_t getNbLed () const { return nbLed; }
 	void setNbLed (int32_t nb) { nbLed = nb; invalid (); }
@@ -70,17 +70,15 @@ public:
 	//@}
 
 
-	virtual bool attached (CView* parent);
-	virtual bool removed (CView* parent);
 	virtual void draw (CDrawContext* pContext);
-	virtual void setDirty (const bool val = true);
+	virtual void setDirty (const bool val);
 	virtual void setViewSize (const CRect& newSize, bool invalid = true);
 	virtual bool sizeToFit ();
 	
 	CLASS_METHODS(CVuMeter, CControl)
 protected:
 	~CVuMeter ();	
-	CBitmap* onBitmap;
+
 	CBitmap* offBitmap;
 	
 	int32_t     nbLed;

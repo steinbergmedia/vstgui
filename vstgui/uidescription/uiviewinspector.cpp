@@ -1077,6 +1077,20 @@ public:
 		browser->recalculateLayout (true);
 	}
 	
+	bool startEditing (int32_t row, CDataBrowser* browser)
+	{
+		if (row < (dbGetNumRows (browser) - 1))
+		{
+			std::string fontName (*names[row]);
+			CFontRef currentFont = desc->getFont (fontName.c_str ());
+			this->browser = browser;
+			lastChoosenRow = row;
+			UIFontChooserPanel::show (currentFont, this, browser->getFrame ()->getPlatformFrame ()->getPlatformRepresentation ());
+			return true;
+		}
+		return BrowserDelegateBase::startEditing (row, browser);
+	}
+	
 	CMouseEventResult dbOnMouseDown (const CPoint& where, const CButtonState& buttons, int32_t row, int32_t column, CDataBrowser* browser)
 	{
 		if (row < (dbGetNumRows (browser) - 1))

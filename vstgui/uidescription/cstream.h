@@ -61,12 +61,12 @@ public:
 	ByteOrder getByteOrder () const { return byteOrder; }
 	void setByteOrder (ByteOrder newByteOrder) { byteOrder = newByteOrder; }
 	
-	bool operator<< (const int32_t& input);
-	bool operator<< (const uint32_t& input);
 	bool operator<< (const int8_t& input);
 	bool operator<< (const uint8_t& input);
 	bool operator<< (const int16_t& input);
 	bool operator<< (const uint16_t& input);
+	bool operator<< (const int32_t& input);
+	bool operator<< (const uint32_t& input);
 	bool operator<< (const double& input);
 
 	bool operator<< (const std::string& str);	// TODO: this does not belong here, the stream should not know anything about std::string
@@ -87,12 +87,12 @@ public:
 	ByteOrder getByteOrder () const { return byteOrder; }
 	void setByteOrder (ByteOrder newByteOrder) { byteOrder = newByteOrder; }
 	
-	bool operator>> (int32_t& output);
-	bool operator>> (uint32_t& output);
 	bool operator>> (int8_t& output);
 	bool operator>> (uint8_t& output);
 	bool operator>> (int16_t& output);
 	bool operator>> (uint16_t& output);
+	bool operator>> (int32_t& output);
+	bool operator>> (uint32_t& output);
 	bool operator>> (double& output);
 
 	bool operator>> (std::string& string);	// TODO: this does not belong here, the stream should not know anything about std::string

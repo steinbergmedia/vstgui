@@ -1,3 +1,10 @@
+2010-06-25 arne
+
+	* Mac 64 bit AEffGUIEditor implementation
+	* Build 32/64 bit universal binary for tutorial project
+	* fix focus issues with Cocoa and text edit fields
+	* fix bugs in CVUMeter
+
 2010-06-08 arne
 
 	* added CFontChooser class
