@@ -91,15 +91,6 @@ void CVuMeter::setDirty (const bool val)
 	CView::setDirty (val);
 }
 
-//-----------------------------------------------------------------------------
-bool CVuMeter::attached (CView *parent)
-{
-	rectOn  (size.left, size.top, size.right, size.bottom);
-	rectOff (size.left, size.top, size.right, size.bottom);
-
-	return CControl::attached (parent);
-}
-
 //------------------------------------------------------------------------
 void CVuMeter::setViewSize (const CRect& newSize, bool invalid)
 {
@@ -133,18 +124,14 @@ void CVuMeter::setOffBitmap (CBitmap* bitmap)
 		offBitmap->remember ();
 }
 
-//-----------------------------------------------------------------------------
-bool CVuMeter::removed (CView *parent)
-{
-	return CControl::removed (parent);
-}
-
 //------------------------------------------------------------------------
 void CVuMeter::draw (CDrawContext *_pContext)
 {
 	if (!getOnBitmap ())
 		return;
 
+	CRect _rectOn (rectOn);
+	CRect _rectOff (rectOff);
 	CPoint pointOn;
 	CPoint pointOff;
 	CDrawContext *pContext = _pContext;
@@ -158,27 +145,27 @@ void CVuMeter::draw (CDrawContext *_pContext)
 
 	if (style & kHorizontal) 
 	{
-		CCoord tmp = (CCoord)(((int32_t)(nbLed * newValue + 0.5f) / (float)nbLed) * getOnBitmap ()->getWidth ());
+		CCoord tmp = (CCoord)(((int32_t)(nbLed * (getMax () - newValue) + 0.5f) / (float)nbLed) * getOnBitmap ()->getWidth ());
 		pointOff (tmp, 0);
 
-		rectOff.left = tmp;
-		rectOn.right = tmp;
+		_rectOff.left += tmp;
+		_rectOn.right = tmp + rectOn.left;
 	}
 	else 
 	{
 		CCoord tmp = (CCoord)(((int32_t)(nbLed * (getMax () - newValue) + 0.5f) / (float)nbLed) * getOnBitmap ()->getHeight ());
 		pointOn (0, tmp);
 
-		rectOff.bottom = tmp;
-		rectOn.top     = tmp;
+		_rectOff.bottom = tmp + rectOff.top;
+		_rectOn.top     += tmp;
 	}
 
 	if (getOffBitmap ())
 	{
-		getOffBitmap ()->draw (pContext, rectOff, pointOff);
+		getOffBitmap ()->draw (pContext, _rectOff, pointOff);
 	}
 
-	getOnBitmap ()->draw (pContext, rectOn, pointOn);
+	getOnBitmap ()->draw (pContext, _rectOn, pointOn);
 
 	setDirty (false);
 }

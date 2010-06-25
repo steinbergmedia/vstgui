@@ -604,7 +604,6 @@
 		508817D909F0C9AE0071BF1A /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				GCC_VERSION = com.apple.compilers.llvmgcc42;
 				LLVM_LTO = YES;
 			};
 			name = Release;

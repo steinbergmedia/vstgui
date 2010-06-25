@@ -122,6 +122,18 @@ static BOOL VSTGUI_NSView_acceptsFirstResponder (id self, SEL _cmd) { return YES
 static BOOL VSTGUI_NSView_canBecomeKeyView (id self, SEL _cmd) { return YES; }
 
 //------------------------------------------------------------------------------------
+static void VSTGUI_NSView_makeSubViewFirstResponder (id self, SEL _cmd, NSResponder* newFirstResponder)
+{
+	NSViewFrame* nsFrame = getNSViewFrame (self);
+	if (nsFrame)
+	{
+		nsFrame->setIgnoreNextResignFirstResponder (true);
+		[[self window] makeFirstResponder:newFirstResponder];
+		nsFrame->setIgnoreNextResignFirstResponder (false);
+	}
+}
+
+//------------------------------------------------------------------------------------
 static BOOL VSTGUI_NSView_becomeFirstResponder (id self, SEL _cmd)
 {
 	if ([[self window] isKeyWindow])
@@ -141,11 +153,15 @@ static BOOL VSTGUI_NSView_resignFirstResponder (id self, SEL _cmd)
 		firstResponder = nil;
 	if (firstResponder)
 	{
-		while (firstResponder != self && firstResponder != nil)
-			firstResponder = [firstResponder superview];
-		if (firstResponder == self && [[self window] isKeyWindow])
+		NSViewFrame* nsFrame = getNSViewFrame (self);
+		if (nsFrame && nsFrame->getIgnoreNextResignFirstResponder ())
 		{
-			return YES;
+			while (firstResponder != self && firstResponder != nil)
+				firstResponder = [firstResponder superview];
+			if (firstResponder == self && [[self window] isKeyWindow])
+			{
+				return YES;
+			}
 		}
 		IPlatformFrameCallback* frame = getFrame (self);
 		if (frame)
@@ -191,20 +207,7 @@ static void VSTGUI_NSView_windowKeyStateChanged (id self, SEL _cmd, NSNotificati
 //------------------------------------------------------------------------------------
 static BOOL VSTGUI_NSView_isOpaque (id self, SEL _cmd)
 {
-	#if 0 // TODO: check this
-	IPlatformFrameCallback* frame = getFrame (self);
-	if (frame)
-	{
-		BOOL transparent = (frame->getTransparency () 
-				   || (frame->getBackground () && !frame->getBackground ()->getNoAlpha ())
-				   || (!frame->getBackground () && frame->getBackgroundColor().alpha != 255)
-					  );
-		return !transparent;
-	}
-	return YES;
-	#else
 	return NO;
-	#endif
 }
 
 //------------------------------------------------------------------------------------
@@ -673,6 +676,8 @@ void NSViewFrame::initClass ()
 		res = class_addMethod (viewClass, @selector(keyDown:), IMP (VSTGUI_NSView_keyDown), "v@:@:^:");
 		res = class_addMethod (viewClass, @selector(keyUp:), IMP (VSTGUI_NSView_keyUp), "v@:@:^:");
 
+		res = class_addMethod (viewClass, @selector(makeSubViewFirstResponder:), IMP (VSTGUI_NSView_makeSubViewFirstResponder), "v@:@:^:");
+
 		sprintf (funcSig, "%s@:@:^:", nsUIntegerEncoded);
 		res = class_addMethod (viewClass, @selector(draggingEntered:), IMP (VSTGUI_NSView_draggingEntered), funcSig);
 		res = class_addMethod (viewClass, @selector(draggingUpdated:), IMP (VSTGUI_NSView_draggingUpdated), funcSig);
@@ -692,6 +697,7 @@ NSViewFrame::NSViewFrame (IPlatformFrameCallback* frame, const CRect& size, NSVi
 : frame (frame)
 , nsView (0)
 , tooltipWindow (0)
+, ignoreNextResignFirstResponder (false)
 {
 	initClass ();
 	nsView = [[viewClass alloc] initWithNSViewFrame: this parent: parent andSize: &size];
