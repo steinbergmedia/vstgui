@@ -124,7 +124,10 @@ static id VSTGUI_NSTextField_Init (id self, SEL _cmd, void* textEdit)
 
 		[self setDelegate:self];
 		[self setNextKeyView:frameView];
-		[[self window] makeFirstResponder: self];
+		if ([frameView respondsToSelector:@selector(makeSubViewFirstResponder:)])
+			[frameView performSelector:@selector(makeSubViewFirstResponder:) withObject:self];
+		else
+			[[self window] makeFirstResponder: self];
 	}
 	return self;
 }

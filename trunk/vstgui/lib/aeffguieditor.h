@@ -71,15 +71,11 @@ public :
 	virtual bool onKeyUp (VstKeyCode& keyCode);
 	#endif
 
-	#if MAC
-	virtual long mouse (long x, long y);
-	#endif
-
 	// wait (in ms)
-	void wait (unsigned long ms);
+	void wait (uint32_t ms);
 
 	// get the current time (in ms)
-	unsigned long getTicks ();
+	uint32_t getTicks ();
 
 	// feedback to appli.
 	virtual void doIdleStuff ();
@@ -88,24 +84,17 @@ public :
 	AudioEffect* getEffect () { return effect; }
 
 	// get version of this VSTGUI
-	long getVstGuiVersion () { return (VSTGUI_VERSION_MAJOR << 16) + VSTGUI_VERSION_MINOR; }
+	int32_t getVstGuiVersion () { return (VSTGUI_VERSION_MAJOR << 16) + VSTGUI_VERSION_MINOR; }
 
 	// set/get the knob mode
-	virtual bool setKnobMode (int val);
-	virtual long getKnobMode () const { return knobMode; }
+	virtual bool setKnobMode (int32_t val);
+	virtual int32_t getKnobMode () const { return knobMode; }
 
 	virtual bool onWheel (float distance);
 
-	// get the CFrame object
-	#if USE_NAMESPACE
-	VSTGUI::CFrame* getFrame () { return frame; }
-	#else
-	CFrame* getFrame () { return frame; }
-	#endif
-
 #if VST_2_1_EXTENSIONS
-	virtual void beginEdit (long index) { ((AudioEffectX*)effect)->beginEdit (index); }
-	virtual void endEdit (long index)   { ((AudioEffectX*)effect)->endEdit (index); }
+	virtual void beginEdit (int32_t index) { ((AudioEffectX*)effect)->beginEdit (index); }
+	virtual void endEdit (int32_t index)   { ((AudioEffectX*)effect)->endEdit (index); }
 #endif
 
 //---------------------------------------
@@ -113,10 +102,10 @@ protected:
 	ERect   rect;
 
 private:
-	unsigned long lLastTicks;
+	uint32_t lLastTicks;
 	bool inIdleStuff;
 
-	static long knobMode;
+	static int32_t knobMode;
 };
 
 #endif

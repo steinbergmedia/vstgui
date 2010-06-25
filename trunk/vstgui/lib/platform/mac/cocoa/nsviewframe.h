@@ -62,6 +62,8 @@ public:
 	IPlatformFrameCallback* getFrame () const { return frame; }
 	
 	void setLastDragOperationResult (CView::DragResult result) { lastDragOperationResult = result; }
+	void setIgnoreNextResignFirstResponder (bool state) { ignoreNextResignFirstResponder = state; }
+	bool getIgnoreNextResignFirstResponder () const { return ignoreNextResignFirstResponder; }
 
 	virtual void drawRect (NSRect* rect);
 
@@ -92,6 +94,7 @@ protected:
 	CocoaTooltipWindow* tooltipWindow;
 
 	CView::DragResult lastDragOperationResult;
+	bool ignoreNextResignFirstResponder;
 };
 
 } // namespace

@@ -293,7 +293,7 @@ PlatformOptionMenuResult NSViewOptionMenu::popup (COptionMenu* optionMenu)
 	[cellContainer removeFromSuperviewWithoutNeedingDisplay];
 	[cellContainer release];
 	result.menu = (COptionMenu*)[nsMenu performSelector:@selector(selectedMenu)];
-	result.index = (int32_t)[nsMenu performSelector:@selector(selectedItem)];
+	result.index = (int32_t)(intptr_t)[nsMenu performSelector:@selector(selectedItem)];
 
 	return result;
 }

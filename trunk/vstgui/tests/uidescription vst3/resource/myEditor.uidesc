@@ -43,7 +43,7 @@
 		</view>
 		<view background-color="group frame color" bitmap="FrameBackground" class="CViewContainer" origin="215, 60" size="100, 95" transparent="false">
 			<view background-color="transparent" class="CViewContainer" origin="10, 20" size="80, 70" transparent="true">
-				<view background-offset="0, 0" bitmap="vumeter_front" class="CVuMeter" control-tag="peak tag" decrease-step-value="0.1" default-value="0" max-value="1" min-value="0" num-led="14" off-bitmap="vumeter_back" orientation="vertical" origin="36, 10" size="7, 55" tooltip="A VU meter control" transparent="false" wheel-inc-value="0.1"/>
+				<view background-offset="0, 0" bitmap="vumeter_front" class="CVuMeter" control-tag="peak tag" decrease-step-value="0.05" default-value="0" max-value="1" min-value="0" num-led="14" off-bitmap="vumeter_back" orientation="vertical" origin="36, 10" size="7, 55" tooltip="A VU meter control" transparent="false" wheel-inc-value="0.1"/>
 			</view>
 			<view back-color="black" background-offset="0, 0" class="CTextLabel" default-value="0.5" font="small label bold" font-antialias="true" font-color="white" frame-color="black" max-value="1" min-value="0" origin="0, 0" shadow-color="#ff0000ff" size="100, 20" style-3D-in="false" style-3D-out="false" style-no-draw="false" style-no-frame="false" style-no-text="false" style-shadow-text="false" text-alignment="center" text-inset="0, 0" title="VU Meter" transparent="true" wheel-inc-value="0.1"/>
 		</view>
@@ -67,7 +67,7 @@
 		</view>
 		<view background-color="group frame color" bitmap="FrameBackground" class="CViewContainer" origin="320, 170" size="100, 50" transparent="false">
 			<view back-color="black" background-offset="0, 0" class="CTextLabel" default-value="0.5" font="small label bold" font-antialias="true" font-color="white" frame-color="black" max-value="1" min-value="0" origin="0, 0" shadow-color="#ff0000ff" size="100, 20" style-3D-in="false" style-3D-out="false" style-no-draw="false" style-no-frame="false" style-no-text="false" style-shadow-text="false" text-alignment="center" text-inset="0, 0" title="Text Edit" transparent="true" wheel-inc-value="0.1"/>
-			<view back-color="black" background-offset="0, 0" class="CTextEdit" default-value="0.5" font="small label" font-antialias="true" font-color="white" frame-color="black" max-value="1" min-value="0" origin="15, 25" shadow-color="#ff0000ff" size="70, 15" style-3D-in="false" style-3D-out="false" style-no-draw="false" style-no-frame="false" style-no-text="false" style-shadow-text="false" text-alignment="center" text-inset="0, 0" tooltip="A text edit control" transparent="false" wheel-inc-value="0.1"/>
+			<view back-color="black" background-offset="0, 0" class="CTextEdit" default-value="0.5" font="small label" font-antialias="true" font-color="white" frame-color="black" max-value="1" min-value="0" origin="15, 25" shadow-color="#ff0000ff" size="70, 15" style-3D-in="false" style-3D-out="false" style-no-draw="false" style-no-frame="false" style-no-text="false" style-shadow-text="false" text-alignment="center" text-inset="0, 0" title="test me" tooltip="A text edit control" transparent="false" wheel-inc-value="0.1"/>
 			<view back-color="black" background-offset="0, 0" class="CTextLabel" default-value="0.5" font="small label bold" font-antialias="true" font-color="white" frame-color="black" max-value="1" min-value="0" origin="0, 0" shadow-color="#ff0000ff" size="100, 20" style-3D-in="false" style-3D-out="false" style-no-draw="false" style-no-frame="false" style-no-text="false" style-shadow-text="false" text-alignment="center" text-inset="0, 0" title="Text Edit" transparent="true" wheel-inc-value="0.1"/>
 		</view>
 	</template>
@@ -103,7 +103,7 @@
 	<fonts>
 		<font font-name="Helvetica" name="small label" size="8"/>
 		<font bold="true" font-name="Helvetica" name="small label bold" size="8"/>
-		<font font-name="Menlo" name="display" size="9"/>
+		<font font-name="Menlo" name="display" size="8"/>
 	</fonts>
 	<control-tags>
 		<control-tag name="slider tag" tag="1000"/>
