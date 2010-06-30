@@ -56,6 +56,8 @@ class InputStream;
 class OutputStream;
 
 //-----------------------------------------------------------------------------
+//! @brief extension to CControlListener used by UIDescription [new in 4.0]
+//-----------------------------------------------------------------------------
 class IController : public CControlListener
 {
 public:
@@ -84,6 +86,8 @@ public:
 	virtual UTF8StringPtr lookupControlTagName (const int32_t tag) const = 0;
 };
 
+//-----------------------------------------------------------------------------
+//! @brief XML description parser and view creator [new in 4.0]
 //-----------------------------------------------------------------------------
 class UIDescription : public CBaseObject, public IUIDescription, public Xml::IHandler
 {

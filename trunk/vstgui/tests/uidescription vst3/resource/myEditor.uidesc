@@ -85,6 +85,7 @@
 		<color name="group frame color" rgba="#ffffff37"/>
 		<color name="tab background" rgba="#98989819"/>
 		<color name="transparent" rgba="#01020300"/>
+		<color name="modal view background" rgba="#fefefebd"/>
 	</colors>
 	<bitmaps>
 		<bitmap name="slider_back_horizontal" path="horizontal_slider_back.bmp"/>
@@ -110,13 +111,16 @@
 		<control-tag name="switch tag" tag="1001"/>
 		<control-tag name="TabController" tag="20000"/>
 		<control-tag name="peak tag" tag="20"/>
+		<control-tag name="close modal view tag" tag="1"/>
+		<control-tag name="open modal view tag" tag="0"/>
 	</control-tags>
 	<template background-color="default background" class="CViewContainer" maxSize="500, 320" minSize="500, 320" name="view" origin="0, 0" size="500, 320" transparent="false">
 		<view background-offset="0, 0" bitmap="TabController" class="CHorizontalSwitch" control-tag="TabController" default-value="0" height-of-one-image="19" max-value="4" min-value="0" origin="2, 5" size="496, 20" sub-pixmaps="5" transparent="false" wheel-inc-value="0.1"/>
 		<view background-color="tab background" class="UIViewSwitchContainer" origin="10, 35" size="480, 260" template-names="controls,tab2,tab3,tab4,tab5" template-switch-control="TabController" transparent="false">
-			<view background-color="tab background" class="CViewContainer" origin="0, 0" size="480, 260" template="controls" transparent="true"/>
+			<view background-color="black" class="CViewContainer" origin="0, 0" size="480, 260" template="tab2" transparent="true"/>
 		</view>
 		<view back-color="black" background-offset="0, 0" class="COptionMenu" control-tag="TabController" default-value="0.5" font="small label bold" font-antialias="true" font-color="white" frame-color="black" max-value="4" menu-check-style="true" menu-popup-style="true" min-value="0" origin="420, 300" shadow-color="#ff0000ff" size="70, 15" style-3D-in="false" style-3D-out="false" style-no-draw="false" style-no-frame="false" style-no-text="false" style-shadow-text="false" text-alignment="center" text-inset="0, 0" tooltip="An option menu" transparent="false" wheel-inc-value="0.1"/>
+		<view autosize-to-fit="false" background-offset="0, 0" boxfill-color="white" boxframe-color="black" checkmark-color="~ RedCColor" class="CCheckBox" control-tag="open modal view tag" default-value="0.5" draw-crossbox="false" font="~ SystemFont" font-color="white" max-value="1" min-value="0" origin="170, 300" size="127, 20" sub-controller="ModalViewController" title="Open Modal View" transparent="false" wheel-inc-value="0.1"/>
 	</template>
 	<template background-color="black" class="CViewContainer" name="tab2" origin="0, 0" size="480, 260" transparent="true">
 		<view background-color="black" bitmap="FrameBackground" class="CViewContainer" origin="45, 35" size="385, 185" transparent="false"/>
@@ -131,4 +135,10 @@
 	</template>
 	<template background-color="black" class="CViewContainer" name="tab4" origin="0, 0" size="480, 260" transparent="true"/>
 	<template background-color="black" class="CViewContainer" name="tab5" origin="0, 0" size="480, 260" transparent="true"/>
+	<template background-color="modal view background" class="CViewContainer" maxSize="500, 320" minSize="500, 320" name="ModalView" origin="0, 0" size="500, 320" transparent="false">
+		<view background-color="black" bitmap="FrameBackground" class="CViewContainer" origin="130, 70" size="260, 190" transparent="false">
+			<view back-color="black" background-offset="0, 0" class="CTextLabel" default-value="0.5" font="~ NormalFontVeryBig" font-antialias="true" font-color="white" frame-color="black" max-value="1" min-value="0" origin="0, 20" shadow-color="~ BlackCColor" size="260, 70" style-3D-in="false" style-3D-out="false" style-no-draw="false" style-no-frame="false" style-no-text="false" style-shadow-text="true" text-alignment="center" text-inset="0, 0" title="This is a Modal View" transparent="true" wheel-inc-value="0.1"/>
+			<view autosize-to-fit="false" background-offset="0, 0" boxfill-color="white" boxframe-color="black" checkmark-color="~ RedCColor" class="CCheckBox" control-tag="close modal view tag" default-value="0.5" draw-crossbox="false" font="~ SystemFont" font-color="white" max-value="1" min-value="0" origin="80, 140" size="100, 20" title="Click to close" transparent="false" wheel-inc-value="0.1"/>
+		</view>
+	</template>
 </vstgui-ui-description>

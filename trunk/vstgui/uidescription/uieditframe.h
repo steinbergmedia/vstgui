@@ -193,6 +193,7 @@ protected:
 	MouseEditMode mouseEditMode;
 	int32_t mouseSizeMode;
 	bool showLines;
+	bool tooltipsEnabled;
 	
 	CPoint mouseStartPoint;
 	CPoint dragSelectionOffset;
