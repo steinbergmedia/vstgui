@@ -41,6 +41,7 @@
 namespace VSTGUI {
 
 UIFontChooserPanel* UIFontChooserPanel::gInstance = 0;
+CRect UIFontChooserPanel::lastSize;
 
 //-----------------------------------------------------------------------------
 void UIFontChooserPanel::show (CFontRef initialFont, CBaseObject* owner, void* parentPlatformWindow)
@@ -76,7 +77,8 @@ UIFontChooserPanel::UIFontChooserPanel (CFontRef initialFont, CBaseObject* owner
 		if (initialFont)
 			fontChooser->setFont (initialFont);
 		platformWindow->center ();
-		minSize = platformWindow->getSize ().getBottomRight ();
+		if (lastSize.getWidth () > 0 && lastSize.getHeight () > 0)
+			platformWindow->setSize (lastSize);
 		platformWindow->show ();
 	}
 }
@@ -120,12 +122,15 @@ CFrame* UIFontChooserPanel::createFrame (void* platformWindow, const CCoord& wid
 	fontChooser->setViewSize (size);
 	fontChooser->setMouseableArea (size);
 	frame->addView (fontChooser);
+	minSize = frame->getViewSize ().getBottomRight ();
 	return frame;
 }
 
 //-----------------------------------------------------------------------------
 void UIFontChooserPanel::windowClosed (PlatformWindow* _platformWindow)
 {
+	if (_platformWindow)
+		lastSize = _platformWindow->getSize ();
 	UIPanelBase::windowClosed (_platformWindow);
 }
 

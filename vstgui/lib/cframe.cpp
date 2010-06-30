@@ -222,6 +222,8 @@ void CFrame::clearMouseViews (const CPoint& where, const CButtonState& buttons, 
 			DebugPrint ("mouseExited : %p\n", (*it));
 		#endif
 		}
+		if (pTooltips)
+			pTooltips->onMouseExited ((*it));
 		if (mouseObserver)
 			mouseObserver->onMouseExited ((*it), this);
 		(*it)->forget ();
@@ -535,7 +537,7 @@ bool CFrame::onWheel (const CPoint &where, const CMouseWheelAxis &axis, const fl
 
 	if (mouseDownView == 0)
 	{
-		CView* view = pModalView ? pModalView : getViewAt (where);
+		CView* view = getViewAt (where);
 		if (view)
 		{
 			result = view->onWheel (where, axis, distance, buttons);
@@ -708,8 +710,21 @@ bool CFrame::setModalView (CView* pView)
 		removeView (pModalView, false);
 	
 	pModalView = pView;
+
 	if (pModalView)
-		return addView (pModalView);
+	{
+		bool result = addView (pModalView);
+		if (result)
+		{
+			clearMouseViews (CPoint (0, 0), 0, true);
+			CViewContainer* container = dynamic_cast<CViewContainer*> (pModalView);
+			if (container)
+				container->advanceNextFocusView (0, false);
+			else
+				setFocusView (pModalView->wantsFocus () ? pModalView : 0);
+		}
+		return result;
+	}
 
 	return true;
 }
@@ -920,6 +935,48 @@ bool CFrame::removeAll (const bool &withForget)
 	pActiveFocusView = 0;
 	clearMouseViews (CPoint (0, 0), 0, false);
 	return CViewContainer::removeAll (withForget);
+}
+
+//-----------------------------------------------------------------------------
+CView* CFrame::getViewAt (const CPoint& where, bool deep) const
+{
+	if (pModalView)
+	{
+		if (where.isInside (pModalView->getViewSize ()))
+		{
+			if (deep)
+			{
+				CViewContainer* container = dynamic_cast<CViewContainer*> (pModalView);
+				if (container)
+				{
+					container->getViewAt (where, deep);
+				}
+			}
+			return pModalView;
+		}
+		return 0;
+	}
+	return CViewContainer::getViewAt (where, deep);
+}
+
+//-----------------------------------------------------------------------------
+CViewContainer* CFrame::getContainerAt (const CPoint& where, bool deep) const
+{
+	if (pModalView)
+	{
+		if (where.isInside (pModalView->getViewSize ()))
+		{
+			CViewContainer* container = dynamic_cast<CViewContainer*> (pModalView);
+			if (container)
+			{
+				if (deep)
+					return container->getContainerAt (where, deep);
+				return container;
+			}
+		}
+		return 0;
+	}
+	return CViewContainer::getContainerAt (where, deep);
 }
 
 //-----------------------------------------------------------------------------

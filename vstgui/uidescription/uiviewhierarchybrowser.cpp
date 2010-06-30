@@ -106,24 +106,26 @@ public:
 		if (!parent)
 			return;
 		CView* nextView = 0;
-		int32_t numSubViews = parent->getNbViews ();
-		for (int32_t i = 0; i < numSubViews; i++)
+		ViewIterator it (parent);
+		while (*it)
 		{
-			CView* v = parent->getView (i);
 			if (up)
 			{
-				if (v == view)
-					break;
-				nextView = v;
+				if (*it != view)
+					nextView = *it;
+				break;
 			}
 			else
 			{
-				if (v == view)
+				if (*it == view)
 				{
-					nextView = parent->getView (i+2);
+					++it;
+					++it;
+					nextView = *it;
 					break;
 				}
 			}
+			++it;
 		}
 		view->remember ();
 		parent->removeView (view);
@@ -348,13 +350,17 @@ int32_t UIViewHierarchyData::dbOnKeyDown (const VstKeyCode& key, CDataBrowser* b
 			{
 				CView* currentView = parent->getCurrentView ();
 				parent->setCurrentView (view);
-				for (int32_t i = 0; i < view->getNbViews (); i++)
+				int32_t i = 0;
+				ViewIterator it (view);
+				while (*it)
 				{
-					if (view->getView (i) == currentView)
+					if (*it == currentView)
 					{
 						browser->setSelectedRow (i, true);
 						break;
 					}
+					++it;
+					++i;
 				}
 				return 1;
 			}

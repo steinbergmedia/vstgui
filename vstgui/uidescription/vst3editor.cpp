@@ -286,7 +286,7 @@ The VST3Editor class represents the view for a VST3 plug-in. It automatically bi
 @section setup Setup
 Add the following code to your Steinberg::Vst::EditController class:
 @code
-IPlugView* PLUGIN_API MyEditController::createView (const char* name)
+IPlugView* PLUGIN_API MyEditController::createView (FIDString name)
 {
 	if (strcmp (name, ViewType::kEditor) == 0)
 	{
@@ -541,12 +541,14 @@ void VST3Editor::onViewRemoved (CFrame* frame, CView* view)
 			pcl->removeControl (control);
 		}
 	}
+	// TODO: Currently when in Edit Mode in UIEditor, subcontrollers will be released, even tho the view may be added again later on.
 	IController* controller = 0;
 	int32_t size = sizeof (IController*);
 	if (view->getAttribute ('ictr', sizeof (IController*), &controller, size))
 	{
 		subControllers.remove (controller);
 		releaseSubController (controller);
+		view->removeAttribute ('ictr');
 	}
 }
 

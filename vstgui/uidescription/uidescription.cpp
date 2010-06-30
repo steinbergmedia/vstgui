@@ -1101,9 +1101,10 @@ void UIDescription::updateAttributesForView (UINode* node, CView* view, bool dee
 		CViewContainer* container = dynamic_cast<CViewContainer*> (view);
 		if (deep && container)
 		{
-			for (int32_t i = 0; i < container->getNbViews (); i++)
+			ViewIterator it (container);
+			while (*it)
 			{
-				CView* subView = container->getView (i);
+				CView* subView = *it;
 				std::string subTemplateName;
 				if (getTemplateNameFromView (subView, subTemplateName))
 				{
@@ -1127,6 +1128,7 @@ void UIDescription::updateAttributesForView (UINode* node, CView* view, bool dee
 					updateAttributesForView (subNode, subView);
 					node->getChildren ().add (subNode);
 				}
+				++it;
 			}
 		}
 	}

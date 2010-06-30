@@ -97,9 +97,11 @@ CViewContainer::CViewContainer (const CViewContainer& v)
 , currentDragView (0)
 , mouseDownView (0)
 {
-	for (int32_t i = 0; i < v.getNbViews (); i++)
+	ViewIterator it (const_cast<CViewContainer*> (&v));
+	while (*it)
 	{
-		addView ((CView*)v.getView (i)->newCopy ());
+		addView ((CView*)(*it)->newCopy ());
+		++it;
 	}
 }
 

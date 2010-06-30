@@ -40,6 +40,8 @@
 
 namespace VSTGUI {
 class CCView;
+class ViewIterator;
+class ReverseViewIterator;
 
 extern IdStringPtr kMsgCheckIfViewContainer;	///< Message to check if View is a CViewContainer
 extern IdStringPtr kMsgLooseFocus;				///< Message of a view loosing focus (only CTextEdit and COptionMenu send this yet)
@@ -138,6 +140,9 @@ protected:
 	virtual bool hitTestSubViews (const CPoint& where, const CButtonState buttons = -1);
 	VSTGUI_DEPRECATED(void drawBackToFront (CDrawContext* context, const CRect& rect);)
 
+	friend class ViewIterator;
+	friend class ReverseViewIterator;
+
 	CCView  *pFirstView;
 	CCView  *pLastView;
 	CColor backgroundColor;
@@ -174,6 +179,98 @@ public:
 #endif
 
 /// @endcond
+
+//-----------------------------------------------------------------------------
+class ViewIterator
+{
+public:
+	ViewIterator (CViewContainer* container) : current (container ? container->pFirstView : 0) {}
+	ViewIterator (const ViewIterator& vi) : current (vi.current) {}
+
+	ViewIterator& operator++ ()
+	{
+		if (current)
+			current = current->pNext;
+		return *this;
+	}
+
+	ViewIterator operator++ (int)
+	{
+		ViewIterator old (*this);
+		if (current)
+			current = current->pNext;
+		return old;
+	}
+
+	ViewIterator& operator-- ()
+	{
+		if (current)
+			current = current->pPrevious;
+		return *this;
+	}
+	
+	ViewIterator operator-- (int)
+	{
+		ViewIterator old (*this);
+		if (current)
+			current = current->pPrevious;
+		return old;
+	}
+	
+	CView* operator* () const
+	{
+		return current ? current->pView : 0;
+	}
+
+protected:
+	CCView* current;
+};
+
+//-----------------------------------------------------------------------------
+class ReverseViewIterator
+{
+public:
+	ReverseViewIterator (CViewContainer* container) : current (container ? container->pLastView : 0) {}
+	ReverseViewIterator (const ReverseViewIterator& vi) : current (vi.current) {}
+
+	ReverseViewIterator& operator++ ()
+	{
+		if (current)
+			current = current->pPrevious;
+		return *this;
+	}
+
+	ReverseViewIterator operator++ (int)
+	{
+		ReverseViewIterator old (*this);
+		if (current)
+			current = current->pPrevious;
+		return old;
+	}
+
+	ReverseViewIterator& operator-- ()
+	{
+		if (current)
+			current = current->pNext;
+		return *this;
+	}
+	
+	ReverseViewIterator operator-- (int)
+	{
+		ReverseViewIterator old (*this);
+		if (current)
+			current = current->pNext;
+		return old;
+	}
+	
+	CView* operator* () const
+	{
+		return current ? current->pView : 0;
+	}
+
+protected:
+	CCView* current;
+};
 
 } // namespace
 

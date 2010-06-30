@@ -151,9 +151,10 @@ CView* UIDescriptionViewSwitchController::createViewForIndex (int32_t index)
 static CControl* findControlTag (CViewContainer* parent, int32_t tag)
 {
 	CControl* result = 0;
-	for (int32_t i = 0; i < parent->getNbViews (); i++)
+	ViewIterator it (parent);
+	while (*it)
 	{
-		CView* view = parent->getView (i);
+		CView* view = *it;
 		CControl* control = dynamic_cast<CControl*> (view);
 		if (control)
 		{
@@ -168,6 +169,7 @@ static CControl* findControlTag (CViewContainer* parent, int32_t tag)
 		}
 		if (result)
 			break;
+		++it;
 	}
 	return result;
 }

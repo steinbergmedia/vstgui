@@ -129,6 +129,53 @@ tresult UIDescriptionBaseController::endEdit (ParamID tag)
 //------------------------------------------------------------------------
 //------------------------------------------------------------------------
 //------------------------------------------------------------------------
+class ModalViewController : public DelegationController
+{
+public:
+	ModalViewController (IController* controller, UIDescription* desc) : DelegationController (controller), desc (desc) {}
+
+	CControlListener* getControlListener (const char* controlTagName) { return this; }
+	void valueChanged (CControl* pControl)
+	{
+		if (pControl->getValue ())
+		{
+			switch (pControl->getTag ())
+			{
+				case 0:
+				{
+					CView* view = desc->createView ("ModalView", this);
+					if (view)
+					{
+						CFrame* frame = pControl->getFrame ();
+						CPoint center = frame->getViewSize ().getCenter ();
+						CRect viewSize = view->getViewSize ();
+						viewSize.offset (center.x - viewSize.getWidth () / 2, center.y - viewSize.getHeight () / 2);
+						view->setViewSize (viewSize);
+						view->setMouseableArea (viewSize);
+						frame->setModalView (view);
+						view->setAlphaValue (0.f);
+						view->addAnimation ("AlphaFadeIn", new Animation::AlphaValueAnimation (1.f), new Animation::LinearTimingFunction (200));
+						pControl->setValue (0);
+						view->forget ();
+					}
+					break;
+				}
+				case 1:
+				{
+					pControl->getFrame ()->setModalView (0);
+					break;
+				}
+			}
+		}
+	}
+
+protected:
+	UIDescription* desc;
+};
+
+//------------------------------------------------------------------------
+//------------------------------------------------------------------------
+//------------------------------------------------------------------------
 UIDescriptionTestController::UIDescriptionTestController ()
 {
 }
@@ -157,6 +204,16 @@ IPlugView* PLUGIN_API UIDescriptionTestController::createView (FIDString name)
 	if (strcmp (name, ViewType::kEditor) == 0)
 	{
 		return new VST3Editor (this, "view", "myEditor.uidesc");
+	}
+	return 0;
+}
+
+//------------------------------------------------------------------------
+IController* UIDescriptionTestController::createSubController (const char* name, IUIDescription* description, VST3Editor* editor)
+{
+	if (strcmp (name, "ModalViewController") == 0)
+	{
+		return new ModalViewController (editor, dynamic_cast<UIDescription*> (description));
 	}
 	return 0;
 }
