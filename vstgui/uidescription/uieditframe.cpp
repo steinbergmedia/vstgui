@@ -138,12 +138,12 @@ public:
 	: selection (selection)
 	{
 		containerView = dynamic_cast<CViewContainer*> (selection->first ());
-		int32_t numViews = containerView->getNbViews ();
-		for (int32_t i = 0; i < numViews; i++)
+		ViewIterator it (containerView);
+		while (*it)
 		{
-			CView* view = containerView->getView (i);
-			push_back (view);
-			view->remember ();
+			push_back (*it);
+			(*it)->remember ();
+			++it;
 		}
 		containerView->remember ();
 		parent = dynamic_cast<CViewContainer*> (containerView->getParentView ());
@@ -470,13 +470,15 @@ public:
 		FOREACH_IN_SELECTION(selection, view)
 			CViewContainer* container = dynamic_cast<CViewContainer*> (view->getParentView ());
 			CView* nextView = 0;
-			for (int32_t i = 0; i < container->getNbViews (); i++)
+			ViewIterator it (container);
+			while (*it)
 			{
-				if (container->getView (i) == view)
+				if (*it == view)
 				{
-					nextView = container->getView (i+1);
+					nextView = *++it;
 					break;
 				}
+				++it;
 			}
 			insert (std::make_pair (container, new ViewAndNext (view, nextView)));
 			container->remember ();
@@ -599,10 +601,15 @@ public:
 		{
 			attr.setAttribute ("class", viewClassName);
 			newView = factory->createView (attr, desc);
-			for (int32_t i = 0; i < parent->getNbViews (); i++)
+			ViewIterator it (parent);
+			while (*it)
 			{
-				if (parent->getView (i) == view)
-					beforeView = parent->getView (i+1);
+				if (*it == view)
+				{
+					beforeView = *++it;
+					break;
+				}
+				++it;
 			}
 		}
 		view->remember ();
@@ -621,9 +628,11 @@ public:
 	{
 		if (src && dst)
 		{
-			for (int32_t i = src->getNbViews ()-1; i >= 0; i--)
+			ReverseViewIterator it (src);
+			while (*it)
 			{
-				CView* view = src->getView (i);
+				CView* view = *it;
+				++it;
 				src->removeView (view, false);
 				dst->addView (view, dst->getView (0));
 			}
@@ -810,6 +819,7 @@ UIEditFrame::UIEditFrame (const CRect& size, void* windowPtr, VSTGUIEditorInterf
 , timer (0)
 , editTimer (0)
 , showLines (true)
+, tooltipsEnabled (false)
 {
 	timer = new CVSTGUITimer (this, 100);
 	timer->start ();
@@ -901,6 +911,8 @@ void UIEditFrame::setEditMode (EditMode mode)
 	editMode = mode;
 	if (editMode == kEditMode)
 	{
+		tooltipsEnabled = pTooltips ? true : false;
+		enableTooltips (false);
 		setFocusView (0);
 		updateResourceBitmaps ();
 		inspector->show ();
@@ -928,6 +940,7 @@ void UIEditFrame::setEditMode (EditMode mode)
 		CBaseObject* editorObj = dynamic_cast<CBaseObject*> (pEditor);
 		if (editorObj)
 			editorObj->notify (this, kMsgEditEnding);
+		enableTooltips (tooltipsEnabled);
 	}
 	invalid ();
 }
@@ -1580,7 +1593,7 @@ void UIEditFrame::drawRect (CDrawContext *pContext, const CRect& updateRect)
 //----------------------------------------------------------------------------------------------------
 CView* UIEditFrame::getViewAt (const CPoint& p, bool deep) const
 {
-	CView* view = CViewContainer::getViewAt (p, deep);
+	CView* view = CFrame::getViewAt (p, deep);
 	if (editMode != kNoEditMode)
 	{
 		UIViewFactory* factory = dynamic_cast<UIViewFactory*> (uiDescription->getViewFactory ());
@@ -1598,7 +1611,7 @@ CView* UIEditFrame::getViewAt (const CPoint& p, bool deep) const
 //----------------------------------------------------------------------------------------------------
 CViewContainer* UIEditFrame::getContainerAt (const CPoint& p, bool deep) const
 {
-	CViewContainer* view = CViewContainer::getContainerAt (p, deep);
+	CViewContainer* view = CFrame::getContainerAt (p, deep);
 	if (editMode != kNoEditMode)
 	{
 		UIViewFactory* factory = dynamic_cast<UIViewFactory*> (uiDescription->getViewFactory ());
@@ -2133,10 +2146,11 @@ static void collectAllSubViews (CView* view, std::list<CView*>& views)
 	CViewContainer* container = dynamic_cast<CViewContainer*> (view);
 	if (container)
 	{
-		for (int32_t i = 0; i < container->getNbViews (); i++)
+		ViewIterator it (container);
+		while (*it)
 		{
-			CView* subview = container->getView (i);
-			collectAllSubViews (subview, views);
+			collectAllSubViews (*it, views);
+			++it;
 		}
 	}
 }

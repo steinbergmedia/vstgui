@@ -238,9 +238,11 @@ bool UISelection::storeAttributesForView (OutputStream& stream, UIViewFactory* v
 		{
 			int32_t subViews = container->getNbViews ();
 			if (!(stream << (int32_t)subViews)) return false;
-			for (int32_t i = 0; i < subViews; i++)
+			ViewIterator it (container);
+			while (*it)
 			{
-				storeAttributesForView (stream, viewFactory, uiDescription, container->getView (i));
+				storeAttributesForView (stream, viewFactory, uiDescription, *it);
+				++it;
 			}
 		}
 		else

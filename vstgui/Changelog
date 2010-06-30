@@ -1,3 +1,9 @@
+2010-06-30 arne
+
+	* added ViewIterator and ReverseViewIterator classes, so that iterating over CViewContainer children are not that expensive
+	* fix modal view handling
+	* fix font creation bug with GDI+ when combining multiple font styles
+
 2010-06-25 arne
 
 	* Mac 64 bit AEffGUIEditor implementation

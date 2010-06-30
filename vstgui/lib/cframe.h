@@ -149,6 +149,8 @@ public:
 
 	bool removeView (CView *pView, const bool &withForget = true);
 	bool removeAll (const bool &withForget = true);
+	CView* getViewAt (const CPoint& where, bool deep = false) const;
+	CViewContainer* getContainerAt (const CPoint& where, bool deep = true) const;
 
 	// CView
 	void draw (CDrawContext *pContext);

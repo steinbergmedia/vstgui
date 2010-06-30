@@ -67,6 +67,7 @@ protected:
 	CPoint minSize;
 	
 	static UIFontChooserPanel* gInstance;
+	static CRect lastSize;
 };
 
 } // namespace
