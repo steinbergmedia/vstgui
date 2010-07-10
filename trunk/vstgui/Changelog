@@ -1,3 +1,10 @@
+2010-07-10 arne
+
+	* fix invisible state inconsistency of CViewContainer children
+	* send key events only to mouse enabled views
+	* move CGraphicsPath creation into CDrawContext
+	* move CGraphicsPath draw methods into CDrawContext
+
 2010-06-30 arne
 
 	* added ViewIterator and ReverseViewIterator classes, so that iterating over CViewContainer children are not that expensive

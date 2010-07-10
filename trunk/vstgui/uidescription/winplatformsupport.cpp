@@ -380,7 +380,6 @@ void PlatformUtilities::colorChooser (const CColor* oldColor, IPlatformColorChan
 	#if NATIVE_COLOR_CHOOSER
 	if (oldColor)
 	{
-		// TODO: Windows Colorchooser support (this implementation lacks alpha color support
 		static COLORREF acrCustClr[16];
 		CHOOSECOLOR cc = {0};
 		cc.lStructSize = sizeof (CHOOSECOLOR);

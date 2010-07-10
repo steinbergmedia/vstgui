@@ -113,7 +113,8 @@ public:
 			{
 				if (*it != view)
 					nextView = *it;
-				break;
+				else
+					break;
 			}
 			else
 			{

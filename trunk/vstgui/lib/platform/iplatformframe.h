@@ -107,7 +107,6 @@ public:
 	virtual IPlatformOptionMenu* createPlatformOptionMenu () = 0; ///< create a native popup menu
 	
 	virtual COffscreenContext* createOffscreenContext (CCoord width, CCoord height) = 0; ///< create an offscreen draw device
-	virtual CGraphicsPath* createGraphicsPath () = 0; ///< create a platform graphics path
 
 	virtual CView::DragResult doDrag (CDropSource* source, const CPoint& offset, CBitmap* dragBitmap) = 0; ///< start a drag operation
 

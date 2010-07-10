@@ -92,7 +92,7 @@ protected:
 		kSaturationTag,
 		kBrightnessTag,
 		kAlphaTag,
-		kColorTag,
+		kColorTag
 	};
 
 	//-----------------------------------------------------------------------------

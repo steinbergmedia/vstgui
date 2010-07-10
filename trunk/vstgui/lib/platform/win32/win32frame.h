@@ -70,7 +70,6 @@ public:
 	IPlatformTextEdit* createPlatformTextEdit (IPlatformTextEditCallback* textEdit);
 	IPlatformOptionMenu* createPlatformOptionMenu ();
 	COffscreenContext* createOffscreenContext (CCoord width, CCoord height);
-	CGraphicsPath* createGraphicsPath ();
 	CView::DragResult doDrag (CDropSource* source, const CPoint& offset, CBitmap* dragBitmap);
 
 //-----------------------------------------------------------------------------

@@ -59,7 +59,7 @@ public:
 		kBitmapType,
 		kPointType,
 		kRectType,
-		kTagType,
+		kTagType
 	};
 
 	virtual IdStringPtr getViewName () const = 0;

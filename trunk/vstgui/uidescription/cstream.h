@@ -67,9 +67,11 @@ public:
 	bool operator<< (const uint16_t& input);
 	bool operator<< (const int32_t& input);
 	bool operator<< (const uint32_t& input);
+	bool operator<< (const int64_t& input);
+	bool operator<< (const uint64_t& input);
 	bool operator<< (const double& input);
 
-	bool operator<< (const std::string& str);	// TODO: this does not belong here, the stream should not know anything about std::string
+	bool operator<< (const std::string& str);
 
 	virtual int32_t writeRaw (const void* buffer, int32_t size) = 0;
 private:
@@ -93,9 +95,11 @@ public:
 	bool operator>> (uint16_t& output);
 	bool operator>> (int32_t& output);
 	bool operator>> (uint32_t& output);
+	bool operator>> (int64_t& output);
+	bool operator>> (uint64_t& output);
 	bool operator>> (double& output);
 
-	bool operator>> (std::string& string);	// TODO: this does not belong here, the stream should not know anything about std::string
+	bool operator>> (std::string& string);
 
 	virtual int32_t readRaw (void* buffer, int32_t size) = 0;
 private:

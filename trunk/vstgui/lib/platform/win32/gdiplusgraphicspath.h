@@ -63,8 +63,6 @@ public:
 	void addRect (const CRect& rect);
 	void addPath (const CGraphicsPath& path, CGraphicsTransform* transformation = 0);
 	void closeSubpath ();
-	void draw (CDrawContext* context, PathDrawMode mode = kFilled, CGraphicsTransform* transformation = 0);
-	void fillLinearGradient (CDrawContext* context, const CGradient& gradient, const CPoint& startPoint, const CPoint& endPoint, bool evenOdd = false, CGraphicsTransform* transformation = 0);
 	CPoint getCurrentPosition () const;
 	CRect getBoundingBox () const;
 protected:

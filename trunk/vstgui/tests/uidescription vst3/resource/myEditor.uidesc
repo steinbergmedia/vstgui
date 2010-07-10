@@ -135,8 +135,8 @@
 	</template>
 	<template background-color="black" class="CViewContainer" name="tab4" origin="0, 0" size="480, 260" transparent="true"/>
 	<template background-color="black" class="CViewContainer" name="tab5" origin="0, 0" size="480, 260" transparent="true"/>
-	<template background-color="modal view background" class="CViewContainer" maxSize="500, 320" minSize="500, 320" name="ModalView" origin="0, 0" size="500, 320" transparent="false">
-		<view background-color="black" bitmap="FrameBackground" class="CViewContainer" origin="130, 70" size="260, 190" transparent="false">
+	<template background-color="modal view background" class="CViewContainer" maxSize="500, 320" minSize="500, 320" name="ModalView" origin="0, 0" size="480, 300" transparent="false">
+		<view background-color="black" bitmap="FrameBackground" class="CViewContainer" origin="120, 60" size="260, 190" transparent="false">
 			<view back-color="black" background-offset="0, 0" class="CTextLabel" default-value="0.5" font="~ NormalFontVeryBig" font-antialias="true" font-color="white" frame-color="black" max-value="1" min-value="0" origin="0, 20" shadow-color="~ BlackCColor" size="260, 70" style-3D-in="false" style-3D-out="false" style-no-draw="false" style-no-frame="false" style-no-text="false" style-shadow-text="true" text-alignment="center" text-inset="0, 0" title="This is a Modal View" transparent="true" wheel-inc-value="0.1"/>
 			<view autosize-to-fit="false" background-offset="0, 0" boxfill-color="white" boxframe-color="black" checkmark-color="~ RedCColor" class="CCheckBox" control-tag="close modal view tag" default-value="0.5" draw-crossbox="false" font="~ SystemFont" font-color="white" max-value="1" min-value="0" origin="80, 140" size="100, 20" title="Click to close" transparent="false" wheel-inc-value="0.1"/>
 		</view>

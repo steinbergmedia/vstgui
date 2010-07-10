@@ -84,7 +84,7 @@ public:
 	bool hasChildren () const;
 
 	enum {
-		kNoExport = 1 << 0,
+		kNoExport = 1 << 0
 	};
 	
 	bool noExport () const { return flags & kNoExport; }

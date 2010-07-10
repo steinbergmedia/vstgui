@@ -46,7 +46,7 @@ enum {
 	kVisible,
 	kHiding,
 	kShowing,
-	kForceVisible,
+	kForceVisible
 };
 
 //------------------------------------------------------------------------

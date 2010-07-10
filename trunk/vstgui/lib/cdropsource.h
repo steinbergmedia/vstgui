@@ -52,7 +52,7 @@ public:
 		kText,		///< Text type (UTF-8 C-String, must be null terminated)
 		kBinary,	///< Binary type
 		
-		kError = -1,
+		kError = -1
 	};
 
 	CDropSource ();
