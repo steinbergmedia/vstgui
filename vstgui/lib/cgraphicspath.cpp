@@ -33,16 +33,15 @@
 //-----------------------------------------------------------------------------
 
 #include "cgraphicspath.h"
-#include "cframe.h"
-#include <cmath>
+#include "cdrawcontext.h"
 
 namespace VSTGUI {
 
-//-----------------------------------------------------------------------------
-CGraphicsPath* CGraphicsPath::create (CFrame* frame)
+void CGraphicsTransform::rotate (double angle)
 {
-	IPlatformFrame* pf = frame->getPlatformFrame ();
-	return pf ? pf->createGraphicsPath () : 0;
+	angle = radians (angle);
+	*this = CGraphicsTransform (cos (angle), sin (angle), -sin (angle), cos (angle), 0, 0) * this;
 }
+	
 
 } // namespace

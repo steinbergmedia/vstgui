@@ -37,8 +37,8 @@ public:
 	void animationTick (CView* view, const char* name, float pos);
 	void animationFinished (CView* view, const char* name, bool wasCanceled);
 protected:
-	void buildStarPath ();
-	void buildBezierPath ();
+	void buildStarPath (CDrawContext *pContext);
+	void buildBezierPath (CDrawContext *pContext);
 
 	CBitmap* bitmap2;
 	CGraphicsPath* starPath;
@@ -207,7 +207,11 @@ GraphicsView::GraphicsView ()
 void GraphicsView::draw (CDrawContext *pContext)
 {
 	CView::draw (pContext);
-	CGraphicsPath* drawPath = CGraphicsPath::create (getFrame ());
+	buildStarPath (pContext);
+	buildBezierPath (pContext);
+	if (starPath == 0 || bezierPath == 0)
+		return;
+	CGraphicsPath* drawPath = pContext->createGraphicsPath ();
 	if (drawPath)
 	{
 		drawPath->addPath (*bezierPath);
@@ -228,7 +232,7 @@ void GraphicsView::draw (CDrawContext *pContext)
 		t2.scale (getWidth ()/1.5, getHeight ()/1.5);
 		t2.rotate (pathRotation);
 		if (strokePath)
-			drawPath->draw (pContext, CGraphicsPath::kStroked, &t2);
+			pContext->drawGraphicsPath (drawPath, CDrawContext::kPathStroked, &t2);
 		if (fillGradient)
 		{
 			if (gradient == 0)
@@ -239,20 +243,22 @@ void GraphicsView::draw (CDrawContext *pContext)
 				gradient = drawPath->createGradient (0.0, 0.7, c1, c2);
 			}
 			if (gradient)
-				drawPath->fillLinearGradient (pContext, *gradient, size.getTopLeft (), size.getBottomRight (), false, &t2);
+				pContext->fillLinearGradient (drawPath, *gradient, size.getTopLeft (), size.getBottomRight (), false, &t2);
 		}
 		else
 		{
-			drawPath->draw (pContext, CGraphicsPath::kFilled, &t2);
+			pContext->drawGraphicsPath (drawPath, CDrawContext::kPathFilled, &t2);
 		}
 		drawPath->forget ();
 	}
 }
 
 //------------------------------------------------------------------------
-void GraphicsView::buildStarPath ()
+void GraphicsView::buildStarPath (CDrawContext *pContext)
 {
-	starPath = CGraphicsPath::create (getFrame ());
+	if (starPath)
+		return;
+	starPath = pContext->createGraphicsPath ();
 	if (starPath)
 	{
 		starPath->addLine (CPoint (-0.4, -0.1), CPoint (-0.1, -0.1));
@@ -270,9 +276,11 @@ void GraphicsView::buildStarPath ()
 }
 
 //------------------------------------------------------------------------
-void GraphicsView::buildBezierPath ()
+void GraphicsView::buildBezierPath (CDrawContext *pContext)
 {
-	bezierPath = CGraphicsPath::create (getFrame ());
+	if (bezierPath)
+		return;
+	bezierPath = pContext->createGraphicsPath ();
 	if (bezierPath)
 	{
 		bezierPath->addCurve (CPoint (-0.5, -0.5), CPoint (0, -0.2), CPoint (0, -0.2), CPoint (0.5, -0.5));
@@ -331,27 +339,6 @@ bool GraphicsView::attached (CView* parent)
 	bool result = CView::attached (parent);
 	if (result)
 	{
-		buildStarPath ();
-		buildBezierPath ();
-
-#if 0		
-		if (pBackground && bitmap2 == 0)
-		{
-			COffscreenContext* context = COffscreenContext::create (getFrame (), pBackground->getWidth (), pBackground->getHeight ());
-			if (context)
-			{
-				context->beginDraw ();
-				pBackground->draw (context, CRect (0, 0, pBackground->getWidth (), pBackground->getHeight ()));
-				context->endDraw ();
-				bitmap2 = context->getBitmap ();
-				if (bitmap2)
-				{
-					pBackground->setPlatformBitmap (bitmap2->getPlatformBitmap ());
-				}
-				context->forget ();
-			}
-		}
-#endif
 		remember ();
 		addAnimation ("Saturation", this, new LinearTimingFunction (15000));
 	}

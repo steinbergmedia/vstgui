@@ -52,6 +52,8 @@ public:
 	D2DGraphicsPath ();
 	~D2DGraphicsPath ();
 	
+	ID2D1PathGeometry* getPath (int32_t fillMode = 0);
+
 	// CGraphicsPath
 	CGradient* createGradient (double color1Start, double color2Start, const CColor& color1, const CColor& color2);
 	void addArc (const CRect& rect, double startAngle, double endAngle, bool clockwise);
@@ -61,8 +63,6 @@ public:
 	void addRect (const CRect& rect);
 	void addPath (const CGraphicsPath& path, CGraphicsTransform* transformation = 0);
 	void closeSubpath ();
-	void draw (CDrawContext* context, PathDrawMode mode = kFilled, CGraphicsTransform* transformation = 0);
-	void fillLinearGradient (CDrawContext* context, const CGradient& gradient, const CPoint& startPoint, const CPoint& endPoint, bool evenOdd = false, CGraphicsTransform* transformation = 0);
 	CPoint getCurrentPosition () const;
 	CRect getBoundingBox () const;
 
@@ -96,8 +96,6 @@ protected:
 
 	};
 	std::list<Instruction> instructions;
-
-	bool buildPath (int32_t fillMode = 0);
 
 	ID2D1PathGeometry* path;
 	CPoint currentPosition;

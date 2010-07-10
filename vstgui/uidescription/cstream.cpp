@@ -121,6 +121,50 @@ int32_t CMemoryStream::readRaw (void* outBuffer, int32_t outSize)
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
+bool OutputStream::operator<< (const int8_t& input)
+{
+	return writeRaw (&input, sizeof (int8_t)) == sizeof (int8_t);
+}
+
+//-----------------------------------------------------------------------------
+bool OutputStream::operator<< (const uint8_t& input)
+{
+	return writeRaw (&input, sizeof (uint8_t)) == sizeof (uint8_t);
+}
+
+//-----------------------------------------------------------------------------
+bool OutputStream::operator<< (const int16_t& input)
+{
+	if (byteOrder == kNativeByteOrder)
+	{
+		return writeRaw (&input, sizeof (int16_t)) == sizeof (int16_t);
+	}
+	else
+	{
+		const uint8_t* p = (const uint8_t*)&input;
+		if (writeRaw (&p[1], sizeof (int8_t)) != sizeof (int8_t)) return false;
+		if (writeRaw (&p[0], sizeof (int8_t)) != sizeof (int8_t)) return false;
+		return true;
+	}
+}
+
+//-----------------------------------------------------------------------------
+bool OutputStream::operator<< (const uint16_t& input)
+{
+	if (byteOrder == kNativeByteOrder)
+	{
+		return writeRaw (&input, sizeof (uint16_t)) == sizeof (uint16_t);
+	}
+	else
+	{
+		const uint8_t* p = (const uint8_t*)&input;
+		if (writeRaw (&p[1], sizeof (int8_t)) != sizeof (int8_t)) return false;
+		if (writeRaw (&p[0], sizeof (int8_t)) != sizeof (int8_t)) return false;
+		return true;
+	}
+}
+
+//-----------------------------------------------------------------------------
 bool OutputStream::operator<< (const int32_t& input)
 {
 	if (byteOrder == kNativeByteOrder)
@@ -157,15 +201,21 @@ bool OutputStream::operator<< (const uint32_t& input)
 }
 
 //-----------------------------------------------------------------------------
-bool OutputStream::operator<< (const int16_t& input)
+bool OutputStream::operator<< (const int64_t& input)
 {
 	if (byteOrder == kNativeByteOrder)
 	{
-		return writeRaw (&input, sizeof (int16_t)) == sizeof (int16_t);
+		return writeRaw (&input, sizeof (int64_t)) == sizeof (int64_t);
 	}
 	else
 	{
 		const uint8_t* p = (const uint8_t*)&input;
+		if (writeRaw (&p[7], sizeof (int8_t)) != sizeof (int8_t)) return false;
+		if (writeRaw (&p[6], sizeof (int8_t)) != sizeof (int8_t)) return false;
+		if (writeRaw (&p[5], sizeof (int8_t)) != sizeof (int8_t)) return false;
+		if (writeRaw (&p[4], sizeof (int8_t)) != sizeof (int8_t)) return false;
+		if (writeRaw (&p[3], sizeof (int8_t)) != sizeof (int8_t)) return false;
+		if (writeRaw (&p[2], sizeof (int8_t)) != sizeof (int8_t)) return false;
 		if (writeRaw (&p[1], sizeof (int8_t)) != sizeof (int8_t)) return false;
 		if (writeRaw (&p[0], sizeof (int8_t)) != sizeof (int8_t)) return false;
 		return true;
@@ -173,31 +223,25 @@ bool OutputStream::operator<< (const int16_t& input)
 }
 
 //-----------------------------------------------------------------------------
-bool OutputStream::operator<< (const uint16_t& input)
+bool OutputStream::operator<< (const uint64_t& input)
 {
 	if (byteOrder == kNativeByteOrder)
 	{
-		return writeRaw (&input, sizeof (uint16_t)) == sizeof (uint16_t);
+		return writeRaw (&input, sizeof (uint64_t)) == sizeof (uint64_t);
 	}
 	else
 	{
 		const uint8_t* p = (const uint8_t*)&input;
+		if (writeRaw (&p[7], sizeof (int8_t)) != sizeof (int8_t)) return false;
+		if (writeRaw (&p[6], sizeof (int8_t)) != sizeof (int8_t)) return false;
+		if (writeRaw (&p[5], sizeof (int8_t)) != sizeof (int8_t)) return false;
+		if (writeRaw (&p[4], sizeof (int8_t)) != sizeof (int8_t)) return false;
+		if (writeRaw (&p[3], sizeof (int8_t)) != sizeof (int8_t)) return false;
+		if (writeRaw (&p[2], sizeof (int8_t)) != sizeof (int8_t)) return false;
 		if (writeRaw (&p[1], sizeof (int8_t)) != sizeof (int8_t)) return false;
 		if (writeRaw (&p[0], sizeof (int8_t)) != sizeof (int8_t)) return false;
 		return true;
 	}
-}
-
-//-----------------------------------------------------------------------------
-bool OutputStream::operator<< (const int8_t& input)
-{
-	return writeRaw (&input, sizeof (int8_t)) == sizeof (int8_t);
-}
-
-//-----------------------------------------------------------------------------
-bool OutputStream::operator<< (const uint8_t& input)
-{
-	return writeRaw (&input, sizeof (uint8_t)) == sizeof (uint8_t);
 }
 
 //-----------------------------------------------------------------------------
@@ -233,6 +277,52 @@ bool OutputStream::operator<< (const std::string& str)
 
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
+bool InputStream::operator>> (int8_t& output)
+{
+	return readRaw (&output, sizeof (int8_t)) == sizeof (int8_t);
+}
+
+//-----------------------------------------------------------------------------
+bool InputStream::operator>> (uint8_t& output)
+{
+	return readRaw (&output, sizeof (uint8_t)) == sizeof (uint8_t);
+}
+
+//-----------------------------------------------------------------------------
+bool InputStream::operator>> (int16_t& output)
+{
+	if (readRaw (&output, sizeof (int16_t)) == sizeof (int16_t))
+	{
+		if (byteOrder != kNativeByteOrder)
+		{
+			uint8_t* p = (uint8_t*)&output;
+			int8_t temp = p[0];
+			p[0] = p[1];
+			p[1] = temp;
+		}
+		return true;
+	}
+	return false;
+}
+
+//-----------------------------------------------------------------------------
+bool InputStream::operator>> (uint16_t& output)
+{
+	if (readRaw (&output, sizeof (uint16_t)) == sizeof (uint16_t))
+	{
+		if (byteOrder != kNativeByteOrder)
+		{
+			uint8_t* p = (uint8_t*)&output;
+			int8_t temp = p[0];
+			p[0] = p[1];
+			p[1] = temp;
+		}
+		return true;
+	}
+	return false;
+}
+
 //-----------------------------------------------------------------------------
 bool InputStream::operator>> (int32_t& output)
 {
@@ -274,16 +364,25 @@ bool InputStream::operator>> (uint32_t& output)
 }
 
 //-----------------------------------------------------------------------------
-bool InputStream::operator>> (int16_t& output)
+bool InputStream::operator>> (int64_t& output)
 {
-	if (readRaw (&output, sizeof (int16_t)) == sizeof (int16_t))
+	if (readRaw (&output, sizeof (int64_t)) == sizeof (int64_t))
 	{
 		if (byteOrder != kNativeByteOrder)
 		{
 			uint8_t* p = (uint8_t*)&output;
 			int8_t temp = p[0];
-			p[0] = p[1];
-			p[1] = temp;
+			p[0] = p[7];
+			p[7] = temp;
+			temp = p[6];
+			p[1] = p[6];
+			p[6] = temp;
+			temp = p[5];
+			p[2] = p[5];
+			p[2] = temp;
+			temp = p[3];
+			p[3] = p[4];
+			p[4] = temp;
 		}
 		return true;
 	}
@@ -291,32 +390,29 @@ bool InputStream::operator>> (int16_t& output)
 }
 
 //-----------------------------------------------------------------------------
-bool InputStream::operator>> (uint16_t& output)
+bool InputStream::operator>> (uint64_t& output)
 {
-	if (readRaw (&output, sizeof (uint16_t)) == sizeof (uint16_t))
+	if (readRaw (&output, sizeof (uint64_t)) == sizeof (uint64_t))
 	{
 		if (byteOrder != kNativeByteOrder)
 		{
 			uint8_t* p = (uint8_t*)&output;
 			int8_t temp = p[0];
-			p[0] = p[1];
-			p[1] = temp;
+			p[0] = p[7];
+			p[7] = temp;
+			temp = p[6];
+			p[1] = p[6];
+			p[6] = temp;
+			temp = p[5];
+			p[2] = p[5];
+			p[2] = temp;
+			temp = p[3];
+			p[3] = p[4];
+			p[4] = temp;
 		}
 		return true;
 	}
 	return false;
-}
-
-//-----------------------------------------------------------------------------
-bool InputStream::operator>> (int8_t& output)
-{
-	return readRaw (&output, sizeof (int8_t)) == sizeof (int8_t);
-}
-
-//-----------------------------------------------------------------------------
-bool InputStream::operator>> (uint8_t& output)
-{
-	return readRaw (&output, sizeof (uint8_t)) == sizeof (uint8_t);
 }
 
 //-----------------------------------------------------------------------------

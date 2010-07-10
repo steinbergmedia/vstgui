@@ -41,48 +41,8 @@
 
 namespace VSTGUI {
 
-#if MAC_OS_X_VERSION_MIN_REQUIRED > MAC_OS_X_VERSION_10_4
 //-----------------------------------------------------------------------------
-class QuartzGradient : public CGradient
-{
-public:
-	QuartzGradient (double _color1Start, double _color2Start, const CColor& _color1, const CColor& _color2)
-	: CGradient (_color1Start, _color2Start, _color1, _color2)
-	, gradient (0)
-	{
-		CGColorRef cgColor1 = CGColorCreateGenericRGB (color1.red/255.f, color1.green/255.f, color1.blue/255.f, color1.alpha/255.f);
-		CGColorRef cgColor2 = CGColorCreateGenericRGB (color2.red/255.f, color2.green/255.f, color2.blue/255.f, color2.alpha/255.f);
-		const void* colors[] = { cgColor1, cgColor2 };
-		CFArrayRef colorArray = CFArrayCreate (0, colors, 2, &kCFTypeArrayCallBacks);
-
-		if (color1Start < 0) color1Start = 0;
-		else if (color1Start > 1) color1Start = 1;
-		if (color2Start < 0) color2Start = 0;
-		else if (color2Start > 1) color2Start = 1;
-		CGFloat locations[] = { color1Start, color2Start };
-		
-		gradient = CGGradientCreateWithColors (0, colorArray, locations);
-
-		CFRelease (cgColor1);
-		CFRelease (cgColor2);
-		CFRelease (colorArray);
-	}
-	
-	~QuartzGradient ()
-	{
-		if (gradient)
-			CFRelease (gradient);
-	}
-
-	operator CGGradientRef () const { return gradient; }
-
-protected:
-	CGGradientRef gradient;
-};
-#endif
-
-//-----------------------------------------------------------------------------
-static CGAffineTransform createCGAfflineTransform (const CGraphicsTransform& t)
+CGAffineTransform QuartzGraphicsPath::createCGAfflineTransform (const CGraphicsTransform& t)
 {
 	CGAffineTransform transform;
 	transform.a = t.m11;
@@ -130,79 +90,6 @@ CGradient* QuartzGraphicsPath::createGradient (double color1Start, double color2
 	return new QuartzGradient (color1Start, color2Start, color1, color2);
 #else
 	return 0;
-#endif
-}
-
-//-----------------------------------------------------------------------------
-void QuartzGraphicsPath::draw (CDrawContext* context, PathDrawMode mode, CGraphicsTransform* t)
-{
-	CGContextRef cgContext = beginCGContext (context);
-	if (cgContext)
-	{
-		if (t)
-		{
-			CGContextSaveGState (cgContext);
-			CGAffineTransform transform = createCGAfflineTransform (*t);
-			CGContextConcatCTM (cgContext, transform);
-			CGContextAddPath (cgContext, path);
-			CGContextRestoreGState (cgContext);
-		}
-		else
-			CGContextAddPath (cgContext, path);
-
-		CGPathDrawingMode cgMode = kCGPathFill;
-		switch (mode)
-		{
-			case kFilledEvenOdd: cgMode = kCGPathEOFill; break;
-			case kStroked: 
-			{
-				cgMode = kCGPathStroke; 
-				CGDrawContext* cgDrawContext = dynamic_cast<CGDrawContext*> (context);
-				if (cgDrawContext)
-					cgDrawContext->applyLineStyle (cgContext);
-				break;
-			}
-		}
-
-		CGContextDrawPath (cgContext, cgMode);
-		
-		releaseCGContext (context, cgContext);
-	}
-}
-
-//-----------------------------------------------------------------------------
-void QuartzGraphicsPath::fillLinearGradient (CDrawContext* context, const CGradient& gradient, const CPoint& startPoint, const CPoint& endPoint, bool evenOdd, CGraphicsTransform* t)
-{
-#if MAC_OS_X_VERSION_MIN_REQUIRED > MAC_OS_X_VERSION_10_4
-	const QuartzGradient* cgGradient = dynamic_cast<const QuartzGradient*> (&gradient);
-	if (cgGradient == 0)
-		return;
-
-	CGContextRef cgContext = beginCGContext (context);
-	if (cgContext)
-	{
-		if (t)
-		{
-			CGContextSaveGState (cgContext);
-			CGAffineTransform transform = createCGAfflineTransform (*t);
-			CGContextConcatCTM (cgContext, transform);
-			CGContextAddPath (cgContext, path);
-			CGContextRestoreGState (cgContext);
-		}
-		else
-			CGContextAddPath (cgContext, path);
-
-		if (evenOdd)
-			CGContextEOClip (cgContext);
-		else
-			CGContextClip (cgContext);
-
-		CGContextDrawLinearGradient (cgContext, *cgGradient, CGPointMake (startPoint.x, startPoint.y), CGPointMake (endPoint.x, endPoint.y), 0);
-		
-		releaseCGContext (context, cgContext);
-	}
-#else
-#warning drawing gradient not support when minimum required Mac OS X version is 10.4
 #endif
 }
 

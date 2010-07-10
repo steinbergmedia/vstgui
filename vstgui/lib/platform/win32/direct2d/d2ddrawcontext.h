@@ -81,6 +81,9 @@ public:
 	void setGlobalAlpha (float newAlpha);
 	void saveGlobalState ();
 	void restoreGlobalState ();
+	CGraphicsPath* createGraphicsPath ();
+	void drawGraphicsPath (CGraphicsPath* path, PathDrawMode mode = kPathFilled, CGraphicsTransform* transformation = 0);
+	void fillLinearGradient (CGraphicsPath* path, const CGradient& gradient, const CPoint& startPoint, const CPoint& endPoint, bool evenOdd = false, CGraphicsTransform* transformation = 0);
 
 	void beginDraw ();
 	void endDraw ();

@@ -38,6 +38,7 @@
 
 #include "macglobals.h"
 #include "cgbitmap.h"
+#include "quartzgraphicspath.h"
 
 #ifndef CGFLOAT_DEFINED
 	#define CGFLOAT_DEFINED
@@ -99,6 +100,91 @@ void CGDrawContext::endDraw ()
 		if (cgBitmap)
 			cgBitmap->setDirty ();
 	}
+}
+
+//-----------------------------------------------------------------------------
+CGraphicsPath* CGDrawContext::createGraphicsPath ()
+{
+	return new QuartzGraphicsPath;
+}
+
+//-----------------------------------------------------------------------------
+void CGDrawContext::drawGraphicsPath (CGraphicsPath* _path, PathDrawMode mode, CGraphicsTransform* t)
+{
+	QuartzGraphicsPath* path = dynamic_cast<QuartzGraphicsPath*> (_path);
+	if (path == 0)
+		return;
+
+	CGContextRef cgContext = beginCGContext (true);
+	if (cgContext)
+	{
+		if (t)
+		{
+			CGContextSaveGState (cgContext);
+			CGAffineTransform transform = QuartzGraphicsPath::createCGAfflineTransform (*t);
+			CGContextConcatCTM (cgContext, transform);
+			CGContextAddPath (cgContext, path->getCGPathRef ());
+			CGContextRestoreGState (cgContext);
+		}
+		else
+			CGContextAddPath (cgContext, path->getCGPathRef ());
+
+		CGPathDrawingMode cgMode = kCGPathFill;
+		switch (mode)
+		{
+			case kPathFilledEvenOdd: cgMode = kCGPathEOFill; break;
+			case kPathStroked: 
+			{
+				cgMode = kCGPathStroke; 
+				applyLineStyle (cgContext);
+				break;
+			}
+		}
+
+		CGContextDrawPath (cgContext, cgMode);
+		
+		releaseCGContext (cgContext);
+	}
+}
+
+//-----------------------------------------------------------------------------
+void CGDrawContext::fillLinearGradient (CGraphicsPath* _path, const CGradient& gradient, const CPoint& startPoint, const CPoint& endPoint, bool evenOdd, CGraphicsTransform* t)
+{
+#if MAC_OS_X_VERSION_MIN_REQUIRED > MAC_OS_X_VERSION_10_4
+	QuartzGraphicsPath* path = dynamic_cast<QuartzGraphicsPath*> (_path);
+	if (path == 0)
+		return;
+
+	const QuartzGradient* cgGradient = dynamic_cast<const QuartzGradient*> (&gradient);
+	if (cgGradient == 0)
+		return;
+
+	CGContextRef cgContext = beginCGContext (true);
+	if (cgContext)
+	{
+		if (t)
+		{
+			CGContextSaveGState (cgContext);
+			CGAffineTransform transform = QuartzGraphicsPath::createCGAfflineTransform (*t);
+			CGContextConcatCTM (cgContext, transform);
+			CGContextAddPath (cgContext, path->getCGPathRef ());
+			CGContextRestoreGState (cgContext);
+		}
+		else
+			CGContextAddPath (cgContext, path->getCGPathRef ());
+
+		if (evenOdd)
+			CGContextEOClip (cgContext);
+		else
+			CGContextClip (cgContext);
+
+		CGContextDrawLinearGradient (cgContext, *cgGradient, CGPointMake (startPoint.x, startPoint.y), CGPointMake (endPoint.x, endPoint.y), 0);
+		
+		releaseCGContext (cgContext);
+	}
+#else
+#warning drawing gradient not support when minimum required Mac OS X version is 10.4
+#endif
 }
 
 //-----------------------------------------------------------------------------
@@ -477,7 +563,7 @@ void CGDrawContext::applyLineStyle (CGContextRef context)
 	}
 	if (currentState.lineStyle.getDashCount () > 0)
 	{
-		CGFloat* dashLengths = new CGFloat (currentState.lineStyle.getDashCount ());
+		CGFloat* dashLengths = new CGFloat [currentState.lineStyle.getDashCount ()];
 		for (int32_t i = 0; i < currentState.lineStyle.getDashCount (); i++)
 		{
 			dashLengths[i] = currentState.frameWidth * currentState.lineStyle.getDashLengths ()[i];

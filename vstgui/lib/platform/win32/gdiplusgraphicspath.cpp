@@ -43,38 +43,6 @@
 
 namespace VSTGUI {
 
-namespace GdiPlusGraphicsPathHelper
-{
-
-//-----------------------------------------------------------------------------
-inline Gdiplus::Color createGdiPlusColor (const CColor& color)
-{
-	return Gdiplus::Color (color.alpha, color.red, color.green, color.blue);
-}
-
-//-----------------------------------------------------------------------------
-inline Gdiplus::Graphics* getGraphics (CDrawContext* context)
-{
-	GdiplusDrawContext* gpdc = dynamic_cast<GdiplusDrawContext*> (context);
-	return gpdc ? gpdc->getGraphics () : 0;
-}
-
-//-----------------------------------------------------------------------------
-inline Gdiplus::Pen* getPen (CDrawContext* context)
-{
-	GdiplusDrawContext* gpdc = dynamic_cast<GdiplusDrawContext*> (context);
-	return gpdc ? gpdc->getPen () : 0;
-}
-
-//-----------------------------------------------------------------------------
-inline Gdiplus::Brush* getBrush (CDrawContext* context)
-{
-	GdiplusDrawContext* gpdc = dynamic_cast<GdiplusDrawContext*> (context);
-	return gpdc ? gpdc->getBrush () : 0;
-}
-
-} // namespace GdiPlusGraphicsPathHelper
-
 //-----------------------------------------------------------------------------
 class GdiplusGradient : public CGradient
 {
@@ -99,72 +67,6 @@ GdiplusGraphicsPath::~GdiplusGraphicsPath ()
 CGradient* GdiplusGraphicsPath::createGradient (double color1Start, double color2Start, const CColor& color1, const CColor& color2)
 {
 	return new GdiplusGradient (color1Start, color2Start, color1, color2);
-}
-
-//-----------------------------------------------------------------------------
-void GdiplusGraphicsPath::draw (CDrawContext* context, PathDrawMode mode, CGraphicsTransform* t)
-{
-	Gdiplus::Graphics* graphics = GdiPlusGraphicsPathHelper::getGraphics (context);
-	if (graphics)
-	{
-		Gdiplus::GraphicsState state = graphics->Save ();
-		graphics->TranslateTransform ((Gdiplus::REAL)context->getOffset ().x, (Gdiplus::REAL)context->getOffset ().y);
-
-		Gdiplus::GraphicsPath* path = platformPath;
-
-		if (t)
-		{
-			Gdiplus::Matrix matrix ((Gdiplus::REAL)t->m11, (Gdiplus::REAL)t->m12, (Gdiplus::REAL)t->m21, (Gdiplus::REAL)t->m22, (Gdiplus::REAL)t->dx, (Gdiplus::REAL)t->dy);
-			path = platformPath->Clone ();
-			path->Transform (&matrix);
-		}
-
-		if (mode == kStroked)
-		{
-			graphics->DrawPath (GdiPlusGraphicsPathHelper::getPen (context), path);
-		}
-		else
-		{
-			path->SetFillMode (mode == kFilledEvenOdd ? Gdiplus::FillModeAlternate : Gdiplus::FillModeWinding);
-			graphics->FillPath (GdiPlusGraphicsPathHelper::getBrush (context), path);
-		}
-		graphics->Restore (state);
-		if (path != platformPath)
-			delete path;
-	}
-}
-
-//-----------------------------------------------------------------------------
-void GdiplusGraphicsPath::fillLinearGradient (CDrawContext* context, const CGradient& gradient, const CPoint& startPoint, const CPoint& endPoint, bool evenOdd, CGraphicsTransform* t)
-{
-	Gdiplus::Graphics* graphics = GdiPlusGraphicsPathHelper::getGraphics (context);
-	if (graphics)
-	{
-		Gdiplus::GraphicsState state = graphics->Save ();
-		graphics->TranslateTransform ((Gdiplus::REAL)context->getOffset ().x, (Gdiplus::REAL)context->getOffset ().y);
-
-		Gdiplus::GraphicsPath* path = platformPath;
-
-		if (t)
-		{
-			Gdiplus::Matrix matrix ((Gdiplus::REAL)t->m11, (Gdiplus::REAL)t->m12, (Gdiplus::REAL)t->m21, (Gdiplus::REAL)t->m22, (Gdiplus::REAL)t->dx, (Gdiplus::REAL)t->dy);
-			path = platformPath->Clone ();
-			path->Transform (&matrix);
-		}
-
-		Gdiplus::PointF c1p ((Gdiplus::REAL)(startPoint.x-context->getOffset ().x), (Gdiplus::REAL)(startPoint.y-context->getOffset ().y));
-		Gdiplus::PointF c2p ((Gdiplus::REAL)(endPoint.x-context->getOffset ().x), (Gdiplus::REAL)(endPoint.y-context->getOffset ().y));
-		Gdiplus::LinearGradientBrush brush (c1p, c2p, GdiPlusGraphicsPathHelper::createGdiPlusColor (gradient.getColor1 ()), GdiPlusGraphicsPathHelper::createGdiPlusColor (gradient.getColor2 ()));
-		Gdiplus::REAL blendFactors[] = { 0.f, 0.f, 1.f, 1.f };
-		Gdiplus::REAL blendPositions [] = { 0.f, (Gdiplus::REAL)gradient.getColor1Start (), (Gdiplus::REAL)gradient.getColor2Start (), 1.f };
-		brush.SetBlend (blendFactors, blendPositions, 4);
-		path->SetFillMode (evenOdd ? Gdiplus::FillModeAlternate : Gdiplus::FillModeWinding);
-
-		graphics->FillPath (&brush, path);
-		graphics->Restore (state);
-		if (path != platformPath)
-			delete path;
-	}
 }
 
 //-----------------------------------------------------------------------------

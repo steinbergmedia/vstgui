@@ -55,7 +55,7 @@ public:
 		kDisabled	= 1 << 0,	///< item is gray and not selectable
 		kTitle		= 1 << 1,	///< item indicates a title and is not selectable
 		kChecked	= 1 << 2,	///< item has a checkmark
-		kSeparator	= 1 << 3,	///< item is a separator
+		kSeparator	= 1 << 3	///< item is a separator
 	};
 
 	CMenuItem (UTF8StringPtr title, UTF8StringPtr keycode = 0, int32_t keyModifiers = 0, CBitmap* icon = 0, int32_t flags = kNoFlags);

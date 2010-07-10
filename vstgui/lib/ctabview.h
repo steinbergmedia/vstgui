@@ -54,7 +54,7 @@ public:
 		kPositionLeft = 0,
 		kPositionRight,
 		kPositionTop,
-		kPositionBottom,
+		kPositionBottom
 	};
 
 	enum TabAlignment {

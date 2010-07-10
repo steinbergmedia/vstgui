@@ -561,18 +561,6 @@ COffscreenContext* Win32Frame::createOffscreenContext (CCoord width, CCoord heig
 	return context;
 }
 
-//-----------------------------------------------------------------------------
-CGraphicsPath* Win32Frame::createGraphicsPath ()
-{
-#if VSTGUI_DIRECT2D_SUPPORT
-	if (getD2DFactory ())
-	{
-		return new D2DGraphicsPath ();
-	}
-#endif
-	return new GdiplusGraphicsPath ();
-}
-
 //------------------------------------------------------------------------------------
 CView::DragResult Win32Frame::doDrag (CDropSource* source, const CPoint& offset, CBitmap* dragBitmap)
 {

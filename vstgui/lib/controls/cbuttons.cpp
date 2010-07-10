@@ -579,7 +579,7 @@ bool CCheckBox::getFocusPath (CGraphicsPath& outPath)
 //------------------------------------------------------------------------
 CMouseEventResult CCheckBox::onMouseDown (CPoint& where, const CButtonState& buttons)
 {
-	if (buttons == kLButton)
+	if (buttons.isLeftButton ())
 	{
 		beginEdit ();
 		previousValue = value;
@@ -591,7 +591,7 @@ CMouseEventResult CCheckBox::onMouseDown (CPoint& where, const CButtonState& but
 //------------------------------------------------------------------------
 CMouseEventResult CCheckBox::onMouseMoved (CPoint& where, const CButtonState& buttons)
 {
-	if (buttons == kLButton)
+	if (buttons.isLeftButton ())
 	{
 		bool wasHilighted = hilight;
 		if (where.isInside (size))

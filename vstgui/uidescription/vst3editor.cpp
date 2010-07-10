@@ -978,7 +978,7 @@ public:
 		kMaxHeight,
 		kFocusColor,
 		kFocusWidth,
-		kFocusDrawingEnabled,
+		kFocusDrawingEnabled
 	};
 
 	VST3EditorTemplateSettingsDialogController (const CPoint& minSize, const CPoint& maxSize, bool focusDrawingEnabled, UTF8StringPtr focusColorName, CCoord focusWidth, std::list<const std::string*>& colorNames)

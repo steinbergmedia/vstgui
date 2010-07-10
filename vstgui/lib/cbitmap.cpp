@@ -244,25 +244,25 @@ void CNinePartTiledBitmap::drawPart (CDrawContext* inContext, const CRect& inSou
 	CPoint	mySourceOffset (inSourceRect.left, inSourceRect.top);
 	CRect	myPartRect;
 	
-	for (myTop = inDestRect.top; myTop < inDestRect.bottom; myTop += inSourceRect.height())
+	for (myTop = inDestRect.top; myTop < inDestRect.bottom; myTop += inSourceRect.height ())
 	{
 		myPartRect.top		= myTop;
-		myPartRect.bottom	= myTop + inSourceRect.height();
+		myPartRect.bottom	= myTop + inSourceRect.height ();
 		if (myPartRect.bottom > inDestRect.bottom)
 			myPartRect.bottom = inDestRect.bottom;
 		// The following if should never be true, I guess
-		if (myPartRect.height() > inSourceRect.height())
-			myPartRect.setHeight(inSourceRect.height());
+		if (myPartRect.height () > inSourceRect.height ())
+			myPartRect.setHeight (inSourceRect.height ());
 		
-		for (myLeft = inDestRect.left; myLeft < inDestRect.right; myLeft += inSourceRect.width())
+		for (myLeft = inDestRect.left; myLeft < inDestRect.right; myLeft += inSourceRect.width ())
 		{
 			myPartRect.left		= myLeft;
-			myPartRect.right	= myLeft + inSourceRect.width();
+			myPartRect.right	= myLeft + inSourceRect.width ();
 			if (myPartRect.right > inDestRect.right)
 				myPartRect.right = inDestRect.right;
 			// The following if should never be true, I guess
-			if (myPartRect.width() > inSourceRect.width())
-				myPartRect.setWidth(inSourceRect.width());
+			if (myPartRect.width () > inSourceRect.width ())
+				myPartRect.setWidth (inSourceRect.width ());
 			
 			CBitmap::draw (inContext, myPartRect, mySourceOffset, inAlpha);
 		}

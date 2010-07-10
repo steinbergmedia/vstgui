@@ -169,7 +169,7 @@ bool CScrollContainer::isDirty () const
 		return true;
 		
 	FOREACHSUBVIEW
-		if (pV->isDirty ())
+		if (pV->isDirty () && pV->isVisible ())
 		{
 			CRect r = pV->getVisibleSize ();
 			if (r.getWidth () > 0 && r.getHeight () > 0)

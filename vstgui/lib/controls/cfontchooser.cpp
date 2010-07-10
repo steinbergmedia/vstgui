@@ -98,7 +98,7 @@ enum {
 	kFontChooserSizeTag,
 	kFontChooserBoldTag,
 	kFontChooserItalicTag,
-	kFontChooserUnderlineTag,
+	kFontChooserUnderlineTag
 };
 
 } // namespace CFontChooserInternal

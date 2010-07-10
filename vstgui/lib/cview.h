@@ -103,7 +103,7 @@ enum CViewAutosizing
 	kAutosizeBottom			= 1 << 3,
 	kAutosizeColumn			= 1 << 4,	///< view containers treat their children as columns
 	kAutosizeRow			= 1 << 5,	///< view containers treat their children as rows
-	kAutosizeAll			= kAutosizeLeft | kAutosizeTop | kAutosizeRight | kAutosizeBottom,
+	kAutosizeAll			= kAutosizeLeft | kAutosizeTop | kAutosizeRight | kAutosizeBottom
 };
 
 //-----------------------------------------------------------------------------
@@ -241,7 +241,7 @@ public:
 		kDragRefused = 0,
 		kDragMoved,
 		kDragCopied,
-		kDragError = -1,
+		kDragError = -1
 	};
 	virtual DragResult doDrag (CDropSource* source, const CPoint& offset = CPoint (0, 0), CBitmap* dragBitmap = 0);	///< start a drag operation
 	virtual bool onDrop (CDragContainer* drag, const CPoint& where) { return false; }			///< called if a drag is dropped onto this view

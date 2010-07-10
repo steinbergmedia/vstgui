@@ -38,6 +38,7 @@
 #define __cdatabrowser__
 
 #include "cscrollview.h"
+#include "cfont.h"
 #include <vector>
 #include <string>
 
@@ -79,7 +80,7 @@ public:
 	virtual int32_t dbOnKeyDown (const VstKeyCode& key, CDataBrowser* browser) { return -1; }
 
 	enum {
-		kRowSelected = 1 << 1,
+		kRowSelected = 1 << 1
 	};
 };
 
@@ -106,7 +107,7 @@ public:
 		// see CScrollView for more styles
 		kDrawRowLines			= 1 << kDrawRowLinesFlag,
 		kDrawColumnLines		= 1 << kDrawColumnLinesFlag,
-		kDrawHeader				= 1 << kDrawHeaderFlag,
+		kDrawHeader				= 1 << kDrawHeaderFlag
 	};
 	
 	enum 

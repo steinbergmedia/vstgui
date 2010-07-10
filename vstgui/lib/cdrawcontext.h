@@ -95,7 +95,7 @@ enum CDrawMode
 	kAliasing = 0,					///< aliased drawing
 	kAntiAliasing,					///< antialised drawing
 	kCopyMode = kAliasing,			///< \deprecated use kAliasing
-	kAntialias = kAntiAliasing,		///< \deprecated use kAntiAliasing
+	kAntialias = kAntiAliasing		///< \deprecated use kAntiAliasing
 };
 
 //----------------------------
@@ -119,6 +119,9 @@ enum CDrawStyle
 };
 
 class CBitmap;
+class CGraphicsPath;
+class CGradient;
+struct CGraphicsTransform;
 
 //-----------------------------------------------------------------------------
 // CDrawContext Declaration
@@ -224,6 +227,23 @@ public:
 	//@{
 	virtual void setOffset (const CPoint& offset);
 	const CPoint& getOffset () const { return currentState.offset; }
+	//@}
+
+	//-----------------------------------------------------------------------------
+	/// @name Graphics Paths
+	//-----------------------------------------------------------------------------
+	//@{
+	virtual CGraphicsPath* createGraphicsPath () = 0;	///< create a graphics path object, you need to forget it after usage
+
+	enum PathDrawMode
+	{
+		kPathFilled,
+		kPathFilledEvenOdd,
+		kPathStroked
+	};
+
+	virtual void drawGraphicsPath (CGraphicsPath* path, PathDrawMode mode = kPathFilled, CGraphicsTransform* transformation = 0) = 0;
+	virtual void fillLinearGradient (CGraphicsPath* path, const CGradient& gradient, const CPoint& startPoint, const CPoint& endPoint, bool evenOdd = false, CGraphicsTransform* transformation = 0) = 0;
 	//@}
 
 	virtual void beginDraw () {}

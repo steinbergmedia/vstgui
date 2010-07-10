@@ -995,7 +995,7 @@ void UIEditFrame::showOptionsMenu (const CPoint& where)
 		kRedoTag,
 		kSaveTag,
 		kSizeToFitTag,
-		kUnembedViewsTag,
+		kUnembedViewsTag
 	};
 	
 	COptionMenu* menu = new COptionMenu ();
