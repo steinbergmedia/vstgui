@@ -71,7 +71,7 @@ public:
 		kHorizontalScrollbar	= 1 << kHorizontalScrollbarFlag,	///< add a horizontal scrollbar
 		kVerticalScrollbar 		= 1 << kVerticalScrollbarFlag,		///< add a vertical scrollbar
 		kDontDrawFrame			= 1 << kDontDrawFrameFlag,			///< don't draw frame
-		kAutoDragScrolling		= 1 << kAutoDragScollingFlag,		///< automatic scrolling for drag moves
+		kAutoDragScrolling		= 1 << kAutoDragScollingFlag		///< automatic scrolling for drag moves
 	};
 
 	//-----------------------------------------------------------------------------
@@ -127,7 +127,7 @@ protected:
 
 	enum {
 		kHSBTag,
-		kVSBTag,
+		kVSBTag
 	};
 };
 
@@ -143,7 +143,7 @@ class CScrollbar : public CControl
 public:
 	enum ScrollbarDirection {
 		kHorizontal,
-		kVertical,
+		kVertical
 	};
 
 	CScrollbar (const CRect& size, CControlListener* listener, int32_t tag, ScrollbarDirection style, const CRect& scrollSize);

@@ -61,15 +61,55 @@ public:
 	void addRect (const CRect& rect);
 	void addPath (const CGraphicsPath& path, CGraphicsTransform* transformation = 0);
 	void closeSubpath ();
-	void draw (CDrawContext* context, PathDrawMode mode = kFilled, CGraphicsTransform* transformation = 0);
-	void fillLinearGradient (CDrawContext* context, const CGradient& gradient, const CPoint& startPoint, const CPoint& endPoint, bool evenOdd = false, CGraphicsTransform* transformation = 0);
 	CPoint getCurrentPosition () const;
 	CRect getBoundingBox () const;
+
+	static CGAffineTransform createCGAfflineTransform (const CGraphicsTransform& t);
 
 //------------------------------------------------------------------------------------
 protected:
 	CGMutablePathRef path;
 };
+
+#if MAC_OS_X_VERSION_MIN_REQUIRED > MAC_OS_X_VERSION_10_4
+//-----------------------------------------------------------------------------
+class QuartzGradient : public CGradient
+{
+public:
+	QuartzGradient (double _color1Start, double _color2Start, const CColor& _color1, const CColor& _color2)
+	: CGradient (_color1Start, _color2Start, _color1, _color2)
+	, gradient (0)
+	{
+		CGColorRef cgColor1 = CGColorCreateGenericRGB (color1.red/255.f, color1.green/255.f, color1.blue/255.f, color1.alpha/255.f);
+		CGColorRef cgColor2 = CGColorCreateGenericRGB (color2.red/255.f, color2.green/255.f, color2.blue/255.f, color2.alpha/255.f);
+		const void* colors[] = { cgColor1, cgColor2 };
+		CFArrayRef colorArray = CFArrayCreate (0, colors, 2, &kCFTypeArrayCallBacks);
+
+		if (color1Start < 0) color1Start = 0;
+		else if (color1Start > 1) color1Start = 1;
+		if (color2Start < 0) color2Start = 0;
+		else if (color2Start > 1) color2Start = 1;
+		CGFloat locations[] = { color1Start, color2Start };
+		
+		gradient = CGGradientCreateWithColors (0, colorArray, locations);
+
+		CFRelease (cgColor1);
+		CFRelease (cgColor2);
+		CFRelease (colorArray);
+	}
+	
+	~QuartzGradient ()
+	{
+		if (gradient)
+			CFRelease (gradient);
+	}
+
+	operator CGGradientRef () const { return gradient; }
+
+protected:
+	CGGradientRef gradient;
+};
+#endif
 
 } // namespace
 

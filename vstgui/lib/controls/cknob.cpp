@@ -196,7 +196,7 @@ void CKnob::drawHandle (CDrawContext *pContext)
 		}
 		if (drawStyle & kCoronaOutline)
 		{
-			CGraphicsPath* path = CGraphicsPath::create (getFrame ());
+			CGraphicsPath* path = pContext->createGraphicsPath ();
 			if (path)
 			{
 				CRect corona (getViewSize ());
@@ -207,13 +207,13 @@ void CKnob::drawHandle (CDrawContext *pContext)
 				pContext->setFrameColor (colorShadowHandle);
 				pContext->setLineStyle (kLineSolid);
 				pContext->setLineWidth (handleLineWidth+2.);
-				path->draw (pContext, CGraphicsPath::kStroked);
+				pContext->drawGraphicsPath (path, CDrawContext::kPathStroked);
 				path->forget ();
 			}
 		}
 		if (drawStyle & kCoronaDrawing)
 		{
-			CGraphicsPath* path = CGraphicsPath::create (getFrame ());
+			CGraphicsPath* path = pContext->createGraphicsPath ();
 			if (path)
 			{
 				float coronaValue = getValueNormalized ();
@@ -246,7 +246,7 @@ void CKnob::drawHandle (CDrawContext *pContext)
 				pContext->setFrameColor (coronaColor);
 				pContext->setLineStyle (drawStyle & kCoronaLineDashDot ? kLineOnOffDash : kLineSolid);
 				pContext->setLineWidth (handleLineWidth);
-				path->draw (pContext, CGraphicsPath::kStroked);
+				pContext->drawGraphicsPath (path, CDrawContext::kPathStroked);
 				path->forget ();
 			}
 		}

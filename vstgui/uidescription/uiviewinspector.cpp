@@ -449,7 +449,7 @@ public:
 		{
 			if (path == 0)
 			{
-				path = CGraphicsPath::create (browser->getFrame ());
+				path = context->createGraphicsPath ();
 				if (path)
 				{
 					path->addEllipse (CRect (0, 0, 1, 1));
@@ -465,7 +465,7 @@ public:
 			context->setFrameColor (mouseRow == row ? kRedCColor : kGreyCColor);
 			context->setLineWidth (1.5);
 			context->setDrawMode (kAntiAliasing);
-			path->draw (context, CGraphicsPath::kStroked, &t);
+			context->drawGraphicsPath (path, CDrawContext::kPathStroked, &t);
 		}
 		else
 		{

@@ -478,13 +478,15 @@ int32_t CFrame::onKeyDown (VstKeyCode& keyCode)
 	if (result == -1 && pFocusView)
 	{
 		CBaseObjectGuard og (pFocusView);
-		result = pFocusView->onKeyDown (keyCode);
+		if (pFocusView->getMouseEnabled ())
+			result = pFocusView->onKeyDown (keyCode);
 		if (result == -1)
 		{
 			CView* parent = pFocusView->getParentView ();
 			while (parent != this && result == -1)
 			{
-				result = parent->onKeyDown (keyCode);
+				if (parent->getMouseEnabled ())
+					result = parent->onKeyDown (keyCode);
 				parent = parent->getParentView ();
 			}
 		}
@@ -512,13 +514,15 @@ int32_t CFrame::onKeyUp (VstKeyCode& keyCode)
 
 	if (result == -1 && pFocusView)
 	{
-		result = pFocusView->onKeyUp (keyCode);
+		if (pFocusView->getMouseEnabled ())
+			result = pFocusView->onKeyUp (keyCode);
 		if (result == -1)
 		{
 			CView* parent = pFocusView->getParentView ();
 			while (parent != this && result == -1)
 			{
-				result = parent->onKeyUp (keyCode);
+				if (parent->getMouseEnabled ())
+					result = parent->onKeyUp (keyCode);
 				parent = parent->getParentView ();
 			}
 		}

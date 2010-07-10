@@ -89,7 +89,7 @@ public:
 		kPushInFromLeft,
 		kPushInFromRight,
 		kPushInFromTop,
-		kPushInFromBottom,
+		kPushInFromBottom
 	};
 
 	/** oldView must be a subview of the animation view */

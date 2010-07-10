@@ -129,6 +129,25 @@ tresult UIDescriptionBaseController::endEdit (ParamID tag)
 //------------------------------------------------------------------------
 //------------------------------------------------------------------------
 //------------------------------------------------------------------------
+class RemoveModalViewAnimation : public Animation::AlphaValueAnimation
+{
+public:
+	RemoveModalViewAnimation (float endValue, bool forceEndValueOnFinish = false) : Animation::AlphaValueAnimation (endValue, forceEndValueOnFinish) {}
+
+	void animationFinished (CView* view, IdStringPtr name, bool wasCanceled)
+	{
+		Animation::AlphaValueAnimation::animationFinished (view, name, wasCanceled);
+		if (view == view->getFrame ()->getModalView ())
+		{
+			view->getFrame ()->setModalView (0);
+		}
+	}
+
+};
+
+//------------------------------------------------------------------------
+//------------------------------------------------------------------------
+//------------------------------------------------------------------------
 class ModalViewController : public DelegationController
 {
 public:
@@ -154,7 +173,7 @@ public:
 						view->setMouseableArea (viewSize);
 						frame->setModalView (view);
 						view->setAlphaValue (0.f);
-						view->addAnimation ("AlphaFadeIn", new Animation::AlphaValueAnimation (1.f), new Animation::LinearTimingFunction (200));
+						view->addAnimation ("AlphaAnimation", new Animation::AlphaValueAnimation (1.f), new Animation::PowerTimingFunction (240, 2));
 						pControl->setValue (0);
 						view->forget ();
 					}
@@ -162,7 +181,9 @@ public:
 				}
 				case 1:
 				{
-					pControl->getFrame ()->setModalView (0);
+					CView* modalView = pControl->getFrame ()->getModalView ();
+					modalView->addAnimation ("AlphaAnimation", new RemoveModalViewAnimation (0.f), new Animation::PowerTimingFunction (240, 0.5));
+					pControl->setMouseEnabled (false);
 					break;
 				}
 			}

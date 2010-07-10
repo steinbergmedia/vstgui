@@ -55,7 +55,7 @@ public:
 		kCoronaFromCenter			= 1 << 2,
 		kCoronaInverted				= 1 << 3,
 		kCoronaLineDashDot			= 1 << 4,
-		kCoronaOutline				= 1 << 5,
+		kCoronaOutline				= 1 << 5
 	};
 	
 	CKnob (const CRect& size, CControlListener* listener, int32_t tag, CBitmap* background, CBitmap* handle, const CPoint& offset = CPoint (0, 0), int32_t drawStyle = kLegacyHandleLineDrawing);

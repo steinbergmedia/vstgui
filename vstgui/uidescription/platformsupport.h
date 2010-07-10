@@ -66,7 +66,7 @@ public:
 	};
 	enum WindowStyleFlags {
 		kClosable = 1 << 0,
-		kResizable  = 1 << 1,
+		kResizable  = 1 << 1
 	};
 	
 	static PlatformWindow* create (const CRect& size, const char* title = 0, WindowType type = kPanelType, int32_t styleFlags = 0, IPlatformWindowDelegate* delegate = 0, void* parentWindow = 0);

@@ -187,6 +187,116 @@ void D2DDrawContext::init ()
 }
 
 //-----------------------------------------------------------------------------
+CGraphicsPath* D2DDrawContext::createGraphicsPath ()
+{
+	return new D2DGraphicsPath ();
+}
+
+//-----------------------------------------------------------------------------
+void D2DDrawContext::drawGraphicsPath (CGraphicsPath* _path, PathDrawMode mode, CGraphicsTransform* t)
+{
+	D2DGraphicsPath* d2dPath = dynamic_cast<D2DGraphicsPath*> (_path);
+	if (d2dPath == 0)
+		return;
+
+	ID2D1PathGeometry* path = d2dPath->getPath (mode == kPathFilledEvenOdd ? D2D1_FILL_MODE_ALTERNATE : D2D1_FILL_MODE_WINDING);
+	if (path)
+	{
+		D2DApplyClip ac (this);
+
+		ID2D1Geometry* geometry = 0;
+		if (t)
+		{
+			ID2D1TransformedGeometry* tg = 0;
+			D2D1_MATRIX_3X2_F matrix;
+			matrix._11 = (FLOAT)t->m11;
+			matrix._12 = (FLOAT)t->m12;
+			matrix._21 = (FLOAT)t->m21;
+			matrix._22 = (FLOAT)t->m22;
+			matrix._31 = (FLOAT)t->dx;
+			matrix._32 = (FLOAT)t->dy;
+			getD2DFactory ()->CreateTransformedGeometry (path, matrix, &tg);
+			geometry = tg;
+		}
+		else
+		{
+			geometry = path;
+			geometry->AddRef ();
+		}
+
+		getRenderTarget ()->SetTransform (D2D1::Matrix3x2F::Translation ((FLOAT)getOffset ().x, (FLOAT)getOffset ().y));
+
+		if (mode == kPathFilled || mode == kPathFilledEvenOdd)
+			getRenderTarget ()->FillGeometry (geometry, getFillBrush ());
+		else if (mode == kPathStroked)
+			getRenderTarget ()->DrawGeometry (geometry, getStrokeBrush (), (FLOAT)getLineWidth (), getStrokeStyle ());
+
+		getRenderTarget ()->SetTransform (D2D1::Matrix3x2F::Identity ());
+
+		geometry->Release ();
+	}
+}
+
+//-----------------------------------------------------------------------------
+void D2DDrawContext::fillLinearGradient (CGraphicsPath* _path, const CGradient& gradient, const CPoint& startPoint, const CPoint& endPoint, bool evenOdd, CGraphicsTransform* t)
+{
+	D2DGraphicsPath* d2dPath = dynamic_cast<D2DGraphicsPath*> (_path);
+	if (d2dPath == 0)
+		return;
+
+	ID2D1PathGeometry* path = d2dPath->getPath (evenOdd ? D2D1_FILL_MODE_ALTERNATE : D2D1_FILL_MODE_WINDING);
+	if (path)
+	{
+		D2DApplyClip ac (this);
+
+		ID2D1Geometry* geometry = 0;
+		if (t)
+		{
+			ID2D1TransformedGeometry* tg = 0;
+			D2D1_MATRIX_3X2_F matrix;
+			matrix._11 = (FLOAT)t->m11;
+			matrix._12 = (FLOAT)t->m12;
+			matrix._21 = (FLOAT)t->m21;
+			matrix._22 = (FLOAT)t->m22;
+			matrix._31 = (FLOAT)t->dx;
+			matrix._32 = (FLOAT)t->dy;
+			getD2DFactory ()->CreateTransformedGeometry (path, matrix, &tg);
+			geometry = tg;
+		}
+		else
+		{
+			geometry = path;
+			geometry->AddRef ();
+		}
+
+		ID2D1GradientStopCollection* collection = 0;
+		D2D1_GRADIENT_STOP gradientStops[2];
+		gradientStops[0].position = (FLOAT)gradient.getColor1Start ();
+		gradientStops[1].position = (FLOAT)gradient.getColor2Start ();
+		gradientStops[0].color = D2D1::ColorF (gradient.getColor1 ().red/255.f, gradient.getColor1 ().green/255.f, gradient.getColor1 ().blue/255.f, gradient.getColor1 ().alpha/255.f);
+		gradientStops[1].color = D2D1::ColorF (gradient.getColor2 ().red/255.f, gradient.getColor2 ().green/255.f, gradient.getColor2 ().blue/255.f, gradient.getColor2 ().alpha/255.f);
+
+		if (SUCCEEDED (getRenderTarget ()->CreateGradientStopCollection (gradientStops, 2, &collection)))
+		{
+			ID2D1LinearGradientBrush* brush = 0;
+			D2D1_LINEAR_GRADIENT_BRUSH_PROPERTIES properties;
+			properties.startPoint = makeD2DPoint (startPoint);
+			properties.endPoint = makeD2DPoint (endPoint);
+			if (SUCCEEDED (getRenderTarget ()->CreateLinearGradientBrush (properties, collection, &brush)))
+			{
+				getRenderTarget ()->SetTransform (D2D1::Matrix3x2F::Translation ((FLOAT)getOffset ().x, (FLOAT)getOffset ().y));
+				getRenderTarget ()->FillGeometry (geometry, brush);
+				getRenderTarget ()->SetTransform (D2D1::Matrix3x2F::Identity ());
+				brush->Release ();
+			}
+			collection->Release ();
+		}
+
+		geometry->Release ();
+	}
+}
+
+//-----------------------------------------------------------------------------
 void D2DDrawContext::clearRect (const CRect& rect)
 {
 	if (renderTarget)
@@ -264,17 +374,17 @@ void D2DDrawContext::drawPolygon (const CPoint *pPoints, int32_t numberOfPoints,
 	{
 		D2DGraphicsPath path;
 		path.addLine (pPoints[0], pPoints[1]);
-		for (int32_t i = 2; i < numberOfPoints; i++)
+		for (int32_t i = 2; i < numberOfPoints; i+=2)
 		{
 			path.addLine (path.getCurrentPosition (), pPoints[i]);
 		}
 		if (drawStyle == kDrawFilled || drawStyle == kDrawFilledAndStroked)
 		{
-			path.draw (this, CGraphicsPath::kFilled);
+			drawGraphicsPath (&path, kPathFilled);
 		}
 		if (drawStyle == kDrawStroked || drawStyle == kDrawFilledAndStroked)
 		{
-			path.draw (this, CGraphicsPath::kStroked);
+			drawGraphicsPath (&path, kPathStroked);
 		}
 	}
 }

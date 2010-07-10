@@ -35,11 +35,12 @@
 #ifndef __cgraphicspath__
 #define __cgraphicspath__
 
-#include "cdrawcontext.h"
+#include "crect.h"
+#include "cpoint.h"
+#include "ccolor.h"
 
 namespace VSTGUI {
 class CGradient;
-class CFrame;
 
 //-----------------------------------------------------------------------------
 /// @brief Graphics Transform Matrix [new in 4.0]
@@ -67,11 +68,7 @@ struct CGraphicsTransform
 		*this = CGraphicsTransform (x, 0., 0., y, 0., 0.) * this;
 	}
 	
-	void rotate (double angle)
-	{
-		angle = radians (angle);
-		*this = CGraphicsTransform (cos (angle), sin (angle), -sin (angle), cos (angle), 0, 0) * this;
-	}
+	void rotate (double angle);
 	
 	CPoint& transform (CPoint& p)
 	{
@@ -113,8 +110,6 @@ struct CGraphicsTransform
 class CGraphicsPath : public CBaseObject
 {
 public:
-	static CGraphicsPath* create (CFrame* frame);
-
 	//-----------------------------------------------------------------------------
 	/// @name Creating gradients
 	//-----------------------------------------------------------------------------
@@ -144,21 +139,6 @@ public:
 	//@}
 
 	//-----------------------------------------------------------------------------
-	/// @name Drawing
-	//-----------------------------------------------------------------------------
-	//@{
-	enum PathDrawMode
-	{
-		kFilled,
-		kFilledEvenOdd,
-		kStroked,
-	};
-
-	virtual void draw (CDrawContext* context, PathDrawMode mode = kFilled, CGraphicsTransform* transformation = 0) = 0;
-	virtual void fillLinearGradient (CDrawContext* context, const CGradient& gradient, const CPoint& startPoint, const CPoint& endPoint, bool evenOdd = false, CGraphicsTransform* transformation = 0) = 0;
-	//@}
-	
-	//-----------------------------------------------------------------------------
 	/// @name States
 	//-----------------------------------------------------------------------------
 	//@{
@@ -168,6 +148,8 @@ public:
 	
 //-----------------------------------------------------------------------------
 	CLASS_METHODS_NOCOPY(CGraphicsPath, CBaseObject)
+protected:
+	CGraphicsPath () {}
 };
 
 //-----------------------------------------------------------------------------
