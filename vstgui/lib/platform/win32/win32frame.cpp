@@ -549,7 +549,7 @@ COffscreenContext* Win32Frame::createOffscreenContext (CCoord width, CCoord heig
 #if VSTGUI_DIRECT2D_SUPPORT
 	if (getD2DFactory ())
 	{
-		D2DOffscreenBitmap* bitmap = new D2DOffscreenBitmap (CPoint (width, height));
+		D2DBitmap* bitmap = new D2DBitmap (CPoint (width, height));
 		D2DDrawContext* context = new D2DDrawContext (bitmap);
 		bitmap->forget ();
 		return context;

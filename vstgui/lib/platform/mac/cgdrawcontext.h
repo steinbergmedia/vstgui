@@ -81,7 +81,7 @@ public:
 	void drawGraphicsPath (CGraphicsPath* path, PathDrawMode mode = kPathFilled, CGraphicsTransform* transformation = 0);
 	void fillLinearGradient (CGraphicsPath* path, const CGradient& gradient, const CPoint& startPoint, const CPoint& endPoint, bool evenOdd = false, CGraphicsTransform* transformation = 0);
 
-	CGContextRef beginCGContext (bool swapYAxis = false);
+	CGContextRef beginCGContext (bool swapYAxis = false, bool integralOffset = false);
 	void releaseCGContext (CGContextRef context);
 
 	CGContextRef getCGContext () const { return cgContext; }

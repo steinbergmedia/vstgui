@@ -60,6 +60,8 @@ struct CPoint
 
 	CPoint& offset (const CCoord h, const CCoord v) { *this += CPoint (h, v); return *this; }
 
+	void makeIntegral ();
+
 	union { CCoord h; CCoord x;};
 	union { CCoord v; CCoord y;};
 };

@@ -144,9 +144,8 @@ IPlatformBitmap* IPlatformBitmap::create (CPoint* size)
 	if (getD2DFactory ())
 	{
 		if (size)
-			return new D2DOffscreenBitmap (*size);
-		else
-			return new D2DBitmap ();
+			return new D2DBitmap (*size);
+		return new D2DBitmap ();
 	}
 #endif
 	if (size)

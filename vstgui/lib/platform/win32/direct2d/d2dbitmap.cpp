@@ -58,35 +58,53 @@ protected:
 
 //-----------------------------------------------------------------------------
 D2DBitmap::D2DBitmap ()
-: converter (0)
+: source (0)
 {
 }
 
 //-----------------------------------------------------------------------------
 D2DBitmap::D2DBitmap (const CPoint& size)
-: converter (0)
+: source (0)
 , size (size)
 {
+	REFWICPixelFormatGUID pixelFormat = GUID_WICPixelFormat32bppPBGRA;
+	WICBitmapCreateCacheOption options = WICBitmapCacheOnLoad;
+	IWICBitmap* bitmap = 0;
+	HRESULT hr = WICGlobal::getFactory ()->CreateBitmap ((UINT)size.x, (UINT)size.y, pixelFormat, options, &bitmap);
+	if (hr == S_OK && bitmap)
+	{
+		source = bitmap;
+	}
 }
 
 //-----------------------------------------------------------------------------
 D2DBitmap::~D2DBitmap ()
 {
 	D2DBitmapCache::instance ()->removeBitmap (this);
-	if (converter)
-		converter->Release ();
+	if (source)
+		source->Release ();
 }
 
 //-----------------------------------------------------------------------------
-IWICBitmapSource* D2DBitmap::getSource ()
+IWICBitmap* D2DBitmap::getBitmap ()
 {
-	return converter;
+	IWICBitmap* icBitmap = 0;
+	if (!SUCCEEDED (getSource ()->QueryInterface (IID_IWICBitmap, (void**)&icBitmap)))
+	{
+		if (SUCCEEDED (WICGlobal::getFactory ()->CreateBitmapFromSource (getSource (), WICBitmapCacheOnDemand, &icBitmap)))
+		{
+			replaceBitmapSource (icBitmap);
+		}
+	}
+	if (icBitmap)
+		icBitmap->Release ();
+	return icBitmap;
 }
 
 //-----------------------------------------------------------------------------
 bool D2DBitmap::load (const CResourceDescription& resourceDesc)
 {
-	if (converter)
+	if (source)
 		return true;
 
 	IWICBitmapDecoder* decoder = 0;
@@ -124,6 +142,7 @@ bool D2DBitmap::load (const CResourceDescription& resourceDesc)
 			frame->GetSize (&w, &h);
 			size.x = w;
 			size.y = h;
+			IWICFormatConverter* converter = 0;
 			WICGlobal::getFactory ()->CreateFormatConverter (&converter);
 			if (converter)
 			{
@@ -132,12 +151,14 @@ bool D2DBitmap::load (const CResourceDescription& resourceDesc)
 					converter->Release ();
 					converter = 0;
 				}
+				else
+					source = converter;
 			}
 			frame->Release ();
 		}
 		decoder->Release ();
 	}
-	return converter != 0;
+	return source != 0;
 }
 
 //-----------------------------------------------------------------------------
@@ -164,67 +185,71 @@ HBITMAP D2DBitmap::createHBitmap ()
 }
 
 //-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
-D2DOffscreenBitmap::D2DOffscreenBitmap (const CPoint& size)
-: D2DBitmap (size)
-, bitmap (0)
+void D2DBitmap::replaceBitmapSource (IWICBitmapSource* newSourceBitmap)
 {
-	REFWICPixelFormatGUID pixelFormat = GUID_WICPixelFormat32bppPBGRA;
-	WICBitmapCreateCacheOption options = WICBitmapCacheOnLoad;
-	HRESULT hr = WICGlobal::getFactory ()->CreateBitmap ((UINT)size.x, (UINT)size.y, pixelFormat, options, &bitmap);
-	assert (hr == S_OK);
-}
-
-//-----------------------------------------------------------------------------
-IWICBitmapSource* D2DOffscreenBitmap::getSource ()
-{
-	return bitmap;
-}
-
-//-----------------------------------------------------------------------------
-class D2DOffscreenBitmapPixelAccess : public IPlatformBitmapPixelAccess
-{
-public:
-	D2DOffscreenBitmapPixelAccess (D2DOffscreenBitmap* bitmap)
-	: bitmap (bitmap)
-	, bLock (0)
-	, ptr (0)
-	, bytesPerRow (0)
+	if (source)
 	{
-		bitmap->remember ();
-		IWICBitmap* b = bitmap->getBitmap ();
-		WICRect rcLock = { 0, 0, (INT)bitmap->getSize ().x, (INT)bitmap->getSize ().y };
-		if (SUCCEEDED (b->Lock (&rcLock, WICBitmapLockRead | WICBitmapLockWrite, &bLock)))
+		D2DBitmapCache::instance ()->removeBitmap (this);
+		source->Release ();
+	}
+	source = newSourceBitmap;
+	if (source)
+		source->AddRef ();
+}
+
+//-----------------------------------------------------------------------------
+IPlatformBitmapPixelAccess* D2DBitmap::lockPixels (bool alphaPremultiplied)
+{
+	PixelAccess* pixelAccess = new PixelAccess;
+	if (pixelAccess->init (this, alphaPremultiplied))
+		return pixelAccess;
+	pixelAccess->forget ();
+	return 0;
+}
+
+//-----------------------------------------------------------------------------
+D2DBitmap::PixelAccess::PixelAccess ()
+: bitmap (0)
+, bLock (0)
+, ptr (0)
+, bytesPerRow (0)
+{
+}
+
+//-----------------------------------------------------------------------------
+D2DBitmap::PixelAccess::~PixelAccess ()
+{
+	if (bLock)
+		bLock->Release ();
+	if (bitmap)
+	{
+		D2DBitmapCache::instance ()->removeBitmap (bitmap);
+		bitmap->forget ();
+	}
+}
+
+//-----------------------------------------------------------------------------
+bool D2DBitmap::PixelAccess::init (D2DBitmap* inBitmap, bool alphaPremultiplied)
+{
+	bool result = false;
+	assert (inBitmap);
+	IWICBitmap* icBitmap = inBitmap->getBitmap ();
+	if (icBitmap)
+	{
+		WICRect rcLock = { 0, 0, (INT)inBitmap->getSize ().x, (INT)inBitmap->getSize ().y };
+		if (SUCCEEDED (icBitmap->Lock (&rcLock, WICBitmapLockRead | WICBitmapLockWrite, &bLock)))
 		{
 			bLock->GetStride (&bytesPerRow);
 			UINT bufferSize;
 			bLock->GetDataPointer (&bufferSize, &ptr);
+
+			bitmap = inBitmap;
+			bitmap->remember ();
+
+			result = true;
 		}
 	}
-	
-	~D2DOffscreenBitmapPixelAccess ()
-	{
-		if (bLock)
-			bLock->Release ();
-		D2DBitmapCache::instance ()->removeBitmap (bitmap);
-		bitmap->forget ();
-	}
-
-	uint8_t* getAddress () { return (uint8_t*)ptr; }
-	int32_t getBytesPerRow () { return (int32_t)bytesPerRow; }
-	PixelFormat getPixelFormat () { return kBGRA; }
-protected:
-	D2DOffscreenBitmap* bitmap;
-	IWICBitmapLock* bLock;
-	BYTE* ptr;
-	UINT bytesPerRow;
-};
-
-//-----------------------------------------------------------------------------
-IPlatformBitmapPixelAccess* D2DOffscreenBitmap::lockPixels (bool alphaPremultiplied)
-{
-	return new D2DOffscreenBitmapPixelAccess (this);
+	return result;
 }
 
 //-----------------------------------------------------------------------------

@@ -55,23 +55,6 @@ CGAffineTransform QuartzGraphicsPath::createCGAfflineTransform (const CGraphicsT
 }
 
 //-----------------------------------------------------------------------------
-inline CGContextRef beginCGContext (CDrawContext* drawContext)
-{
-	CGDrawContext* cgDrawContext = dynamic_cast<CGDrawContext*> (drawContext);
-	if (cgDrawContext)
-		return cgDrawContext->beginCGContext (true);
-	return 0;
-}
-
-//-----------------------------------------------------------------------------
-inline void releaseCGContext (CDrawContext* drawContext, CGContextRef cgContext)
-{
-	CGDrawContext* cgDrawContext = dynamic_cast<CGDrawContext*> (drawContext);
-	if (cgDrawContext)
-		cgDrawContext->releaseCGContext (cgContext);
-}
-
-//-----------------------------------------------------------------------------
 QuartzGraphicsPath::QuartzGraphicsPath ()
 : path (CGPathCreateMutable ())
 {

@@ -69,7 +69,7 @@ D2DDrawContext::D2DDrawContext (HWND window, const CRect& drawSurface)
 }
 
 //-----------------------------------------------------------------------------
-D2DDrawContext::D2DDrawContext (D2DOffscreenBitmap* inBitmap)
+D2DDrawContext::D2DDrawContext (D2DBitmap* inBitmap)
 : COffscreenContext (new CBitmap (inBitmap))
 , window (0)
 , renderTarget (0)
@@ -109,7 +109,7 @@ void D2DDrawContext::createRenderTarget ()
 	}
 	else if (bitmap)
 	{
-		D2DOffscreenBitmap* d2dBitmap = dynamic_cast<D2DOffscreenBitmap*> (bitmap->getPlatformBitmap ());
+		D2DBitmap* d2dBitmap = dynamic_cast<D2DBitmap*> (bitmap->getPlatformBitmap ());
 		if (d2dBitmap)
 		{
 			D2D1_RENDER_TARGET_TYPE targetType = D2D1_RENDER_TARGET_TYPE_SOFTWARE;
@@ -174,7 +174,7 @@ void D2DDrawContext::endDraw ()
 		}
 		if (bitmap)
 		{
-			D2DOffscreenBitmap* d2dBitmap = dynamic_cast<D2DOffscreenBitmap*> (bitmap->getPlatformBitmap ());
+			D2DBitmap* d2dBitmap = dynamic_cast<D2DBitmap*> (bitmap->getPlatformBitmap ());
 			D2DBitmapCache::instance ()->removeBitmap (d2dBitmap);
 		}
 	}
