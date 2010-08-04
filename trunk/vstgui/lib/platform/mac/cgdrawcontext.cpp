@@ -441,7 +441,7 @@ void CGDrawContext::drawArc (const CRect &rect, const float _startAngle, const f
 }
 
 //-----------------------------------------------------------------------------
-void CGDrawContext::drawBitmap (CBitmap* bitmap, const CRect& rect, const CPoint& offset, float alpha)
+void CGDrawContext::drawBitmap (CBitmap* bitmap, const CRect& inRect, const CPoint& inOffset, float alpha)
 {
 	if (bitmap == 0 || alpha == 0.f)
 		return;
@@ -449,9 +449,14 @@ void CGDrawContext::drawBitmap (CBitmap* bitmap, const CRect& rect, const CPoint
 	CGImageRef image = cgBitmap ? cgBitmap->getCGImage () : 0;
 	if (image)
 	{
-		CGContextRef context = beginCGContext ();
+		CGContextRef context = beginCGContext (false, true);
 		if (context)
 		{
+			CRect rect (inRect);
+			rect.makeIntegral ();
+			CPoint offset (inOffset);
+			offset.makeIntegral ();
+
 			CGContextSetAlpha (context, (CGFloat)alpha*currentState.globalAlpha);
 
 			CGRect dest;
@@ -519,7 +524,7 @@ void CGDrawContext::setFillColor (const CColor& color)
 }
 
 //-----------------------------------------------------------------------------
-CGContextRef CGDrawContext::beginCGContext (bool swapYAxis)
+CGContextRef CGDrawContext::beginCGContext (bool swapYAxis, bool integralOffset)
 {
 	if (cgContext)
 	{
@@ -528,7 +533,10 @@ CGContextRef CGDrawContext::beginCGContext (bool swapYAxis)
 		CGRect cgClipRect = CGRectMake (currentState.clipRect.left, currentState.clipRect.top, currentState.clipRect.width (), currentState.clipRect.height ());
 		CGContextClipToRect (cgContext, cgClipRect);
 
-		CGContextTranslateCTM (cgContext, currentState.offset.x, currentState.offset.y);
+		if (integralOffset)
+			CGContextTranslateCTM (cgContext, abs (currentState.offset.x), abs (currentState.offset.y));
+		else
+			CGContextTranslateCTM (cgContext, currentState.offset.x, currentState.offset.y);
 
 		if (!swapYAxis)
 			CGContextScaleCTM (cgContext, 1, -1);

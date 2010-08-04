@@ -39,11 +39,11 @@
 
 #if WINDOWS && VSTGUI_DIRECT2D_SUPPORT
 
-struct IWICFormatConverter;
 struct IWICBitmapSource;
 struct ID2D1Bitmap;
 struct ID2D1RenderTarget;
 struct IWICBitmap;
+struct IWICBitmapLock;
 
 #include <map>
 
@@ -54,36 +54,42 @@ class D2DBitmap : public Win32BitmapBase
 {
 public:
 	D2DBitmap ();
+	D2DBitmap (const CPoint& size);
 	~D2DBitmap ();
 
 	bool load (const CResourceDescription& desc);
 	const CPoint& getSize () const { return size; }
-	IPlatformBitmapPixelAccess* lockPixels (bool alphaPremultiplied) { return 0; }
+	IPlatformBitmapPixelAccess* lockPixels (bool alphaPremultiplied);
 
 	HBITMAP createHBitmap ();
 
-	virtual IWICBitmapSource* getSource ();
+	IWICBitmapSource* getSource () const { return source; }
+	IWICBitmap* getBitmap ();
 //-----------------------------------------------------------------------------
 protected:
-	D2DBitmap (const CPoint& size);
+	void replaceBitmapSource (IWICBitmapSource* newSourceBitmap);
+
+	class PixelAccess : public IPlatformBitmapPixelAccess
+	{
+	public:
+		PixelAccess ();
+		~PixelAccess ();
+
+		bool init (D2DBitmap* bitmap, bool alphaPremultiplied);
+
+		uint8_t* getAddress () { return (uint8_t*)ptr; }
+		int32_t getBytesPerRow () { return (int32_t)bytesPerRow; }
+		PixelFormat getPixelFormat () { return kBGRA; }
+
+	protected:
+		D2DBitmap* bitmap;
+		IWICBitmapLock* bLock;
+		BYTE* ptr;
+		UINT bytesPerRow;
+	};
 
 	CPoint size;
-	IWICFormatConverter* converter;
-};
-
-//-----------------------------------------------------------------------------
-class D2DOffscreenBitmap : public D2DBitmap
-{
-public:
-	D2DOffscreenBitmap (const CPoint& size);
-	bool load (const CResourceDescription& desc) { return false; }
-	IPlatformBitmapPixelAccess* lockPixels (bool alphaPremultiplied);
-
-	IWICBitmapSource* getSource ();
-	IWICBitmap* getBitmap () const { return bitmap; }
-
-protected:
-	IWICBitmap* bitmap;
+	IWICBitmapSource* source;
 };
 
 //-----------------------------------------------------------------------------

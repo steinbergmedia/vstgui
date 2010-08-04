@@ -50,7 +50,7 @@ class D2DDrawContext : public COffscreenContext
 {
 public:
 	D2DDrawContext (HWND window, const CRect& drawSurface);
-	D2DDrawContext (D2DOffscreenBitmap* bitmap);
+	D2DDrawContext (D2DBitmap* bitmap);
 	~D2DDrawContext ();
 
 	ID2D1RenderTarget* getRenderTarget () const { return renderTarget; }
