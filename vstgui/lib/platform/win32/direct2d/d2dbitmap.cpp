@@ -245,7 +245,7 @@ bool D2DBitmap::PixelAccess::init (D2DBitmap* inBitmap, bool alphaPremultiplied)
 
 			bitmap = inBitmap;
 			bitmap->remember ();
-
+			// TODO: unpremultiply alpha
 			result = true;
 		}
 	}

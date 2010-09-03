@@ -441,6 +441,9 @@
 			buildConfigurationList = 508817C509F0C9740071BF1A /* Build configuration list for PBXProject "uidescription test" */;
 			compatibilityVersion = "Xcode 3.1";
 			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+			);
 			mainGroup = 508817C209F0C9740071BF1A;
 			productRefGroup = 508817D509F0C9AD0071BF1A /* Products */;
 			projectDirPath = "";
@@ -597,15 +600,12 @@
 		508817D809F0C9AE0071BF1A /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				GCC_OPTIMIZATION_LEVEL = 0;
-				GCC_VERSION = com.apple.compilers.llvmgcc42;
 			};
 			name = Debug;
 		};
 		508817D909F0C9AE0071BF1A /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				LLVM_LTO = YES;
 			};
 			name = Release;
 		};

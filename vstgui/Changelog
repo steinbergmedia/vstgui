@@ -1,3 +1,8 @@
+2010-09-03 arne
+
+	* add isControlDefaultButton(..) to VSTGUIEditorInterface to customize the buttons which act as setting the default value of controls
+	* removed custom bitmap reader interface
+
 2010-08-04 arne
 
 	* quartz: draw bitmaps on pixel boundaries

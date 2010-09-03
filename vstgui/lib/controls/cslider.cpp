@@ -272,7 +272,7 @@ void CSlider::draw (CDrawContext *pContext)
 			pContext->setFrameColor (frameColor);
 			pContext->setFillColor (backColor);
 			CDrawStyle d = kDrawFilled;
-			if (drawStyle & (kDrawFrame | kDrawBack))
+			if (drawStyle & kDrawFrame && drawStyle & kDrawBack)
 				d = kDrawFilledAndStroked;
 			else if (drawStyle & kDrawFrame)
 				d = kDrawStroked;
