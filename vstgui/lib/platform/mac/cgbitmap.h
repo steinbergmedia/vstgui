@@ -76,34 +76,6 @@ protected:
 	int32_t bytesPerRow;
 };
 
-#if 0
-//-----------------------------------------------------------------------------
-class CGOffscreenBitmap : public CGBitmap
-{
-public:
-	CGOffscreenBitmap (const CPoint& size);
-	~CGOffscreenBitmap ();
-	
-	bool load (const CResourceDescription& desc) { return false; }
-	IPlatformBitmapPixelAccess* lockPixels ();
-
-	CGImageRef getCGImage ();
-	CGContextRef createCGContext ();
-	void setDirty () { dirty = true; }
-	void* getBits () const { return bits; }
-	int32_t getBytesPerRow () const { return bytesPerRow; }
-
-//-----------------------------------------------------------------------------
-protected:
-	void allocBits ();
-	void freeCGImage ();
-	
-	void* bits;
-	bool dirty;
-	int32_t bytesPerRow;
-};
-#endif
-
 } // namespace
 
 #endif // MAC

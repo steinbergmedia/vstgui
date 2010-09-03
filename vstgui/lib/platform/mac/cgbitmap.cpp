@@ -49,43 +49,6 @@ IPlatformBitmap* IPlatformBitmap::create (CPoint* size)
 }
 
 //-----------------------------------------------------------------------------
-static size_t DataProviderGetBytesCallback (void *info, void *buffer, size_t count)
-{
-	IBitmapReader* reader = (IBitmapReader*)info;
-	return reader->readBytes (buffer, count);
-}
-
-//-----------------------------------------------------------------------------
-static off_t DataProviderSkipForwardCallback (void *info, off_t count)
-{
-	IBitmapReader* reader = (IBitmapReader*)info;
-	off_t skipped = 0;
-	char buffer;
-	for (off_t i = 0; i < count; i++)
-	{
-		int32_t read = reader->readBytes (&buffer, 1);
-		if (read != 0)
-			break;
-		skipped += read;
-	}
-	return skipped;
-}
-
-//-----------------------------------------------------------------------------
-static void DataProviderRewindCallback (void *info)
-{
-	IBitmapReader* reader = (IBitmapReader*)info;
-	reader->rewind ();
-}
-
-//-----------------------------------------------------------------------------
-static void DataProviderReleaseInfoCallback (void *info)
-{
-	IBitmapReader* reader = (IBitmapReader*)info;
-	reader->forget ();
-}
-
-//-----------------------------------------------------------------------------
 CGBitmap::CGBitmap (const CPoint& inSize)
 : image (0)
 , imageSource (0)
@@ -125,36 +88,7 @@ bool CGBitmap::load (const CResourceDescription& desc)
 		return false;
 
 	bool result = false;
-	#if MAC_OS_X_VERSION_MIN_REQUIRED > MAC_OS_X_VERSION_10_4
-	if (gCustomBitmapReaderCreator)
-	{
-		IBitmapReader* reader = gCustomBitmapReaderCreator->createBitmapReader (desc);
-		if (reader)
-		{
-			static CGDataProviderSequentialCallbacks callbacks = {
-				0,
-				DataProviderGetBytesCallback,
-				DataProviderSkipForwardCallback,
-				DataProviderRewindCallback,
-				DataProviderReleaseInfoCallback
-			};
-			
-			CGDataProviderRef dataProvider = CGDataProviderCreateSequential (reader, &callbacks);
-			if (dataProvider)
-			{
-				CGImageSourceRef source = CGImageSourceCreateWithDataProvider (dataProvider, 0);
-				if (source)
-				{
-					result = loadFromImageSource (source);
-					CFRelease (source);
-				}
-				CFRelease (dataProvider);
-			}
-			reader->forget ();
-		}
-	}
-	#endif
-	if (!result && getBundleRef ())
+	if (getBundleRef ())
 	{
 		// find the bitmap in our Bundle.
 		// If the resource description is of type integer, it must be in the form of bmp00123.png, where the resource id would be 123.

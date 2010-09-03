@@ -269,7 +269,7 @@ void CControl::bounceValue ()
 //-----------------------------------------------------------------------------
 bool CControl::checkDefaultValue (CButtonState button)
 {
-	if (button == (kControl|kLButton))
+	if (getFrame () && getFrame ()->getEditor () && getFrame ()->getEditor ()->isControlDefaultButton (button))
 	{
 		// begin of edit parameter
 		beginEdit ();

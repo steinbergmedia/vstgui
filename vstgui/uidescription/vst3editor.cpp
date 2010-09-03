@@ -222,20 +222,24 @@ protected:
 	{
 		bool mouseEnabled = true;
 		bool isStepCount = false;
+		Steinberg::Vst::ParamValue defaultValue = 0.5;
 		if (parameter)
 		{
+			defaultValue = parameter->getInfo ().defaultNormalizedValue;
 			if (parameter->getInfo ().flags & Steinberg::Vst::ParameterInfo::kIsReadOnly)
 				mouseEnabled = false;
 			if (parameter->getInfo ().stepCount)
 			{
 				isStepCount = true;
 				value = parameter->toPlain (value);
+				defaultValue = parameter->toPlain (defaultValue);
 			}
 		}
 		std::list<CControl*>::iterator it = controls.begin ();
 		while (it != controls.end ())
 		{
 			(*it)->setMouseEnabled (mouseEnabled);
+			(*it)->setDefaultValue (defaultValue);
 			if (isStepCount)
 			{
 				(*it)->setValue (value, true);
