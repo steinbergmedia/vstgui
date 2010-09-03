@@ -40,11 +40,13 @@
 
 namespace VSTGUI {
 
+//-----------------------------------------------------------------------------
 AutoreleasePool::AutoreleasePool ()
 {
 	pool = [[NSAutoreleasePool alloc] init];
 }
 
+//-----------------------------------------------------------------------------
 AutoreleasePool::~AutoreleasePool ()
 {
 	[pool release];

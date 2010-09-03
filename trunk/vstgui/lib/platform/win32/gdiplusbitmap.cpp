@@ -69,13 +69,6 @@ bool GdiplusBitmap::load (const CResourceDescription& desc)
 {
 	if (bitmap == 0)
 	{
-		if (gCustomBitmapReaderCreator)
-		{
-			// TODO: gCustomBitmapReaderCreator win32 support
-			#if DEBUG
-			DebugPrint ("TODO: gCustomBitmapReaderCreator gdiplus support\n");
-			#endif
-		}
 		ResourceStream* resourceStream = new ResourceStream;
 		if (resourceStream->open (desc, "PNG"))
 			bitmap = Gdiplus::Bitmap::FromStream (resourceStream, TRUE);

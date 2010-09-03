@@ -41,7 +41,6 @@
 
 namespace VSTGUI {
 class CResourceDescription;
-class IBitmapReaderCreator;
 class IPlatformBitmapPixelAccess;
 
 //-----------------------------------------------------------------------------
@@ -54,8 +53,6 @@ public:
 	virtual const CPoint& getSize () const = 0;
 
 	virtual IPlatformBitmapPixelAccess* lockPixels (bool alphaPremultiplied) = 0;	// you need to forget the result after use.
-
-	static IBitmapReaderCreator* gCustomBitmapReaderCreator; // overrides default platform specific bitmap loading, see below
 };
 
 //------------------------------------------------------------------------------------
@@ -72,22 +69,6 @@ public:
 	virtual uint8_t* getAddress () = 0;
 	virtual int32_t getBytesPerRow () = 0;
 	virtual PixelFormat getPixelFormat () = 0;
-};
-
-//------------------------------------------------------------------------------------
-class IBitmapReader : public CBaseObject
-{
-public:
-	virtual int32_t readBytes (void* buffer, int32_t numBytes) = 0;
-	virtual int32_t getNumBytes () = 0;
-	virtual void rewind () = 0;
-};
-
-//------------------------------------------------------------------------------------
-class IBitmapReaderCreator
-{
-public:
-	virtual IBitmapReader* createBitmapReader (const CResourceDescription& desc) = 0;
 };
 
 } // namespace
