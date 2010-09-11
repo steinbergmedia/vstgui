@@ -17,7 +17,7 @@
 namespace VSTGUI {
 
 //------------------------------------------------------------------------
-class UIDescriptionBaseController : public Steinberg::Vst::EditController
+class UIDescriptionBaseController : public Steinberg::Vst::EditController, public VST3EditorDelegate
 {
 public:
 	Steinberg::tresult PLUGIN_API initialize (Steinberg::FUnknown* context);
@@ -25,6 +25,8 @@ public:
 	Steinberg::tresult performEdit (Steinberg::Vst::ParamID tag, Steinberg::Vst::ParamValue valueNormalized);
 	Steinberg::tresult endEdit (Steinberg::Vst::ParamID tag);
 	Steinberg::Vst::Parameter* getParameterObject (Steinberg::Vst::ParamID tag);
+
+	bool isPrivateParameter (const Steinberg::Vst::ParamID paramID);
 protected:
 	Steinberg::Vst::ParameterContainer uiParameters;
 };
@@ -44,7 +46,7 @@ public:
 };
 
 //------------------------------------------------------------------------
-class UIDescriptionTestController : public UIDescriptionBaseController, public VST3EditorDelegate
+class UIDescriptionTestController : public UIDescriptionBaseController
 {
 public:
 	UIDescriptionTestController ();

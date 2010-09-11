@@ -166,7 +166,7 @@ protected:
 
 //------------------------------------------------------------------------
 // CBitmapPixelAccess
-//! @brief direct pixel access to a CBitmap
+//! @brief direct pixel access to a CBitmap [new in 4.0]
 //------------------------------------------------------------------------
 class CBitmapPixelAccess : public CBaseObject
 {

@@ -566,15 +566,19 @@ Steinberg::tresult PLUGIN_API VST3Editor::findParameter (Steinberg::int32 xPos, 
 		if (control && control->getTag () != -1)
 		{
 			ParameterChangeListener* pcl = getParameterChangeListener (control->getTag ());
-			if (pcl)
+			if (pcl && pcl->getParameter ())
 			{
+				if (delegate && delegate->isPrivateParameter (pcl->getParameterID ()))
+					return Steinberg::kResultFalse;
 				resultTag = pcl->getParameterID ();
 				return Steinberg::kResultTrue;
 			}
 		}
-		if (delegate)
+		Steinberg::Vst::ParamID pid;
+		if (delegate && delegate->findParameter (CPoint (xPos, yPos), pid, this) && !delegate->isPrivateParameter (pid))
 		{
-			return (delegate->findParameter (CPoint (xPos, yPos), resultTag, this) ? Steinberg::kResultTrue : Steinberg::kResultFalse);
+			resultTag = pid;
+			return Steinberg::kResultTrue;
 		}
 	}
 	return Steinberg::kResultFalse;
