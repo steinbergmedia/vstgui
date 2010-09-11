@@ -1058,7 +1058,19 @@ void CocoaTooltipWindow::set (NSViewFrame* nsViewFrame, const CRect& rect, const
 		[window setContentView:textfield];
 	}
 	NSString* string = [NSString stringWithCString:tooltip encoding:NSUTF8StringEncoding];
-	[textfield setStringValue: string];
+	NSDictionary* attributes = [NSDictionary dictionaryWithObjectsAndKeys:[NSFont controlContentFontOfSize:0], NSFontAttributeName, nil];
+	NSMutableAttributedString* attrString = [[[NSMutableAttributedString alloc] init] autorelease];
+	NSArray* lines = [string componentsSeparatedByString:@"\\n"];
+	bool first = true;
+	for (NSString* str in lines)
+	{
+		if (!first)
+			[attrString appendAttributedString:[[[NSAttributedString alloc] initWithString:@"\n" attributes:attributes] autorelease]];
+		else
+			first = false;
+		[attrString appendAttributedString:[[[NSAttributedString alloc] initWithString:str attributes:attributes] autorelease]];
+	}
+	[textfield setAttributedStringValue:attrString];
 	[textfield sizeToFit];
 	NSSize textSize = [textfield bounds].size;
 

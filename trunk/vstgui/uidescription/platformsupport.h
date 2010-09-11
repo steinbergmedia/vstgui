@@ -35,6 +35,8 @@
 #ifndef __platformsupport__
 #define __platformsupport__
 
+#if VSTGUI_LIVE_EDITING
+
 #include "../lib/crect.h"
 #include "uidescription.h"
 #include <string>
@@ -99,5 +101,7 @@ public:
 } // namespace
 
 /// @endcond ignore
+
+#endif // VSTGUI_LIVE_EDITING
 
 #endif

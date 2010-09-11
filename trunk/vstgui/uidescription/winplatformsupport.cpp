@@ -50,12 +50,6 @@
 #include <shobjidl.h>
 #include <string>
 
-#define NOT_WINDOWS_XP	1 // if you want to develop on Windows XP, set this to zero
-
-#if NOT_WINDOWS_XP
-#pragma comment (lib,"dwmapi.lib")
-#endif
-
 static TCHAR   gClassName[100];
 extern void* hInstance;
 inline HINSTANCE GetInstance () { return (HINSTANCE)hInstance; }
@@ -96,29 +90,56 @@ PlatformWindow* PlatformWindow::create (const CRect& size, const char* title, Wi
 	return new Win32Window (size, title, type, styleFlags, delegate, parentWindow);
 }
 
-#if NOT_WINDOWS_XP
+//-----------------------------------------------------------------------------
+typedef struct _VSTGUI_DWM_BLURBEHIND
+{
+    DWORD dwFlags;
+    BOOL fEnable;
+    HRGN hRgnBlur;
+    BOOL fTransitionOnMaximized;
+} VSTGUI_DWM_BLURBEHIND;
+
+#define VSTGUI_DWM_BB_ENABLE                 0x00000001  // fEnable has been specified
+#define VSTGUI_DWM_BB_BLURREGION             0x00000002  // hRgnBlur has been specified
+#define VSTGUI_DWM_BB_TRANSITIONONMAXIMIZED  0x00000004  // fTransitionOnMaximized has been specified
+
+//-----------------------------------------------------------------------------
+typedef HRESULT (WINAPI *DwmEnableBlurBehindWindowProc) (HWND windowHandle, VSTGUI_DWM_BLURBEHIND* blurBehind);
+static DwmEnableBlurBehindWindowProc _DwmEnableBlurBehindWindow = 0;
+
 //-----------------------------------------------------------------------------
 HRESULT EnableBlurBehind(HWND hwnd)
 {
 	HRESULT hr = S_OK;
+	
+	if (_DwmEnableBlurBehindWindow == 0)
+	{
+		HMODULE dwmapiDll = LoadLibraryA ("dwmapi.dll");
+		if (dwmapiDll)
+		{
+			_DwmEnableBlurBehindWindow = (DwmEnableBlurBehindWindowProc)GetProcAddress (dwmapiDll, "DwmEnableBlurBehindWindow");
+		}
+	}
+	if (_DwmEnableBlurBehindWindow == 0)
+		return hr;
 
 	// Create and populate the blur-behind structure.
-	DWM_BLURBEHIND bb = {0};
+	VSTGUI_DWM_BLURBEHIND bb = {0};
 
 	// Specify blur-behind and blur region.
-	bb.dwFlags = DWM_BB_ENABLE;
+	bb.dwFlags = VSTGUI_DWM_BB_ENABLE;
 	bb.fEnable = true;
 	bb.hRgnBlur = NULL;
 
 	// Enable blur-behind.
-	hr = DwmEnableBlurBehindWindow (hwnd, &bb);
+	hr = _DwmEnableBlurBehindWindow (hwnd, &bb);
 	if (SUCCEEDED(hr))
 	{
 		// ...
 	}
+
     return hr;
 }
-#endif
 
 //-----------------------------------------------------------------------------
 Win32Window::Win32Window (const CRect& size, const char* title, WindowType type, int32_t styleFlags, IPlatformWindowDelegate* delegate, void* parentWindow)
@@ -140,10 +161,8 @@ Win32Window::Win32Window (const CRect& size, const char* title, WindowType type,
 
 	platformWindow = CreateWindowEx (exStyle, gClassName, titleStr, wStyle, r.left, r.top, r.right - r.left, r.bottom - r.top, baseWindow, 0, GetInstance (), 0);
 	SetWindowLongPtr (platformWindow, GWLP_USERDATA, (LONG_PTR)this);
-#if NOT_WINDOWS_XP
 	if (type == kPanelType)
 		EnableBlurBehind (platformWindow);
-#endif
 }
 
 //-----------------------------------------------------------------------------

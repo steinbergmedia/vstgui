@@ -1,7 +1,7 @@
 /**
 @page key_event_flow Keyboard Event Flow
 
-@section Short Story
+@section short_story Short Story
 
 Keyboard events are dispatched from CFrame in this order :
 
@@ -10,7 +10,7 @@ Keyboard events are dispatched from CFrame in this order :
 - parents of focus view
 - modal view
 
-@section Long Story
+@section long_story Long Story
 
 If a keyboard event is coming to CFrame::onKeyDown or CFrame::onKeyUp, CFrame will first sent the event to the keyboard hook if 
 it is set. If the keyboard hook has not handled the event, the next candidate is the focus view. If there is a focus view and 

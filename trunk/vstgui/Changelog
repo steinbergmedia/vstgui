@@ -1,3 +1,9 @@
+2010-09-10 arne
+
+	* add CBitmapPixelAccess class
+	* add support for multi-line tooltips for Cocoa and Windows
+	* fix a crash when CFrame is closed and a modal view was set and an animation was used on this modal view
+
 2010-09-03 arne
 
 	* add isControlDefaultButton(..) to VSTGUIEditorInterface to customize the buttons which act as setting the default value of controls
