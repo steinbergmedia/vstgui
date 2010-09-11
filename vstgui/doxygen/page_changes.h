@@ -13,20 +13,23 @@ Version 4 of VSTGUI is a new milestone release with a restructured code base wit
 The result is that code written for any earlier version of VSTGUI is not always compatible.
 It's recomended to start new projects with version 4 while old projects should stay with version 3.6.
 
-@section alpha_notes Alpha Version Notes
+@section preview_notes Preview Notes
 
-As this is an alpha version, not everything is set in stone yet. The plan is to not change any API, but if there are good reasons
+As this is a preview version, not everything is set in stone yet. The plan is to not change any API, but if there are good reasons
 to change some it will happen.
 
 The main focus while developing this version was on compatibility with VST SDK 3.1. Testing for VST 2.x or AU was very limited at this point.
 
 And there is stuff currently not implemented or not working:
-- on Windows when Direct2D is used, all arc drawing is not yet implemented
-- on Windows when GDI+ is used, direct pixel access to bitmaps is not yet implemented
-- on Windows when Direct2D is used, direct pixel access currenlty only works with alpha premultiplied
+- on Windows when Direct2D is used, all arc drawing methods are not yet implemented
+- on Windows when GDI+ is used, bitmap pixel access is not yet implemented
+- on Windows when GDI+ is used, line style is not yet implemented
+- on Windows when Direct2D is used, bitmap pixel access currently only works with alpha premultiplied
 - on Windows XP the file selector is not implemented yet.
 - on Mac OS X, when target OS version is 10.4 some of the graphics path methods are not implemented and never will. You will see a compiler warning which ones are not implemented.
 - on Mac OS X, Carbon non composited windows are not working
+
+You are welcome to fix these holes and all other inlined 'TODO:' comments.
 
 @section new_stuff New Stuff
 

@@ -159,6 +159,19 @@ typedef const char* UTF8StringPtr;		///< UTF8 String pointer
 typedef char*		UTF8StringBuffer;	///< UTF8 String buffer pointer
 
 //-----------------------------------------------------------------------------
+// @brief Byte Order
+//-----------------------------------------------------------------------------
+enum ByteOrder {
+	kBigEndianByteOrder = 0,
+	kLittleEndianByteOrder,
+#if WINDOWS || defined (__LITTLE_ENDIAN__)
+	kNativeByteOrder = kLittleEndianByteOrder
+#else
+	kNativeByteOrder = kBigEndianByteOrder
+#endif
+};
+
+//-----------------------------------------------------------------------------
 // @brief Message Results
 //-----------------------------------------------------------------------------
 enum CMessageResult 

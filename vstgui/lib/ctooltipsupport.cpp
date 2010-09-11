@@ -41,14 +41,6 @@
 
 namespace VSTGUI {
 
-enum {
-	kHidden,
-	kVisible,
-	kHiding,
-	kShowing,
-	kForceVisible
-};
-
 //------------------------------------------------------------------------
 /*! @class VSTGUI::CTooltipSupport
 A generic way to add tooltip support to VSTGUI.

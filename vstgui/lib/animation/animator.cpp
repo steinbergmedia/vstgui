@@ -56,7 +56,7 @@ This means that the animator will call delete on these objects or if they are in
 
 @section the_animation The Animation
 
-An animation is made up of an @link VSTGUI::Animation::IAnimationTarget IAnimationTarget @endlink and an @link VSTGUI::Animation::ITimingFunction ITimingFunction @endlink object.
+An animation is made up by an @link VSTGUI::Animation::IAnimationTarget IAnimationTarget @endlink and an @link VSTGUI::Animation::ITimingFunction ITimingFunction @endlink object.
 
 @subsection animation_target The Animation Target
 The animation target is responsible for changing the view from one state to another state.
