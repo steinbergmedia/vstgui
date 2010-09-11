@@ -20,16 +20,18 @@ to change some it will happen.
 
 The main focus while developing this version was on compatibility with VST SDK 3.1. Testing for VST 2.x or AU was very limited at this point.
 
-And there is stuff currently not implemented:
+And there is stuff currently not implemented or not working:
 - on Windows when Direct2D is used, all arc drawing is not yet implemented
-- on Windows when GDI+ is used, direct pixel access to bitmaps are not yet implemented
+- on Windows when GDI+ is used, direct pixel access to bitmaps is not yet implemented
+- on Windows when Direct2D is used, direct pixel access currenlty only works with alpha premultiplied
 - on Windows XP the file selector is not implemented yet.
-- on Mac OS X, when target OS version is 10.4 some of the graphics path methods are not implemented and never will. You see a compiler warning which ones are not implemented.
+- on Mac OS X, when target OS version is 10.4 some of the graphics path methods are not implemented and never will. You will see a compiler warning which ones are not implemented.
+- on Mac OS X, Carbon non composited windows are not working
 
 @section new_stuff New Stuff
 
-- UIDescription : Building user interfaces via XML description files. See @ref uidescription @n
 - VST3 Support : Complete inline VST3 Editor support. See @ref uidescription_vst3_support @n
+- UIDescription : Building user interfaces via XML description files. See @ref uidescription @n
 - Animation Support : Simple to use animations. See @ref animation
 - Amalgamation : Easy integration in your projects via one or two source files
 - Cleaned Code : Removed all deprecated methods and classes, splittet individual classes into different files

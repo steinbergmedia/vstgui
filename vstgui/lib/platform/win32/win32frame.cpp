@@ -495,7 +495,14 @@ bool Win32Frame::showTooltip (const CRect& rect, const char* utf8Text)
 	initTooltip ();
 	if (tooltipWindow)
 	{
-		UTF8StringHelper tooltipText (utf8Text);
+		std::string str (utf8Text);
+		size_t pos = 0;
+		while ((pos = str.find ("\\n", pos)) != std::string::npos)
+		{
+			str.erase (pos, 2);
+			str.insert (pos, "\r\n");
+		}
+		UTF8StringHelper tooltipText (str.c_str ());
 		RECT rc;
 		rc.left = (LONG)rect.left;
 		rc.top = (LONG)rect.top;
@@ -507,6 +514,8 @@ bool Win32Frame::showTooltip (const CRect& rect, const char* utf8Text)
 		ti.uId = 0;
 		ti.rect = rc;
 		ti.lpszText = (TCHAR*)(const TCHAR*)tooltipText;
+		SendMessage (tooltipWindow, TTM_SETMAXTIPWIDTH, 0, 0);
+		SendMessage (tooltipWindow, TTM_SETDELAYTIME, 0, 2000);
 		SendMessage (tooltipWindow, TTM_UPDATETIPTEXT, 0, (LPARAM)&ti);
 		SendMessage (tooltipWindow, TTM_NEWTOOLRECT, 0, (LPARAM)&ti);
 		SendMessage (tooltipWindow, TTM_POPUP, 0, 0);
