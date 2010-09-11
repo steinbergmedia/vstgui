@@ -127,6 +127,12 @@ tresult UIDescriptionBaseController::endEdit (ParamID tag)
 }
 
 //------------------------------------------------------------------------
+bool UIDescriptionBaseController::isPrivateParameter (const Steinberg::Vst::ParamID paramID)
+{
+	return uiParameters.getParameter (paramID) != 0 ? true : false;
+}
+
+//------------------------------------------------------------------------
 //------------------------------------------------------------------------
 //------------------------------------------------------------------------
 class RemoveModalViewAnimation : public Animation::AlphaValueAnimation
