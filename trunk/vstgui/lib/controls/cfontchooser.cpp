@@ -41,6 +41,8 @@
 
 namespace VSTGUI {
 
+/// @cond ignore
+
 namespace CFontChooserInternal {
 
 class FontPreviewView : public CView
@@ -102,6 +104,8 @@ enum {
 };
 
 } // namespace CFontChooserInternal
+
+/// @endcond
 
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------

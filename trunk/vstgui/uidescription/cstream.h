@@ -40,16 +40,6 @@
 
 namespace VSTGUI {
 
-enum ByteOrder {
-	kBigEndianByteOrder = 0,
-	kLittleEndianByteOrder,
-	#if WINDOWS || defined (__LITTLE_ENDIAN__)
-	kNativeByteOrder = kLittleEndianByteOrder
-	#else
-	kNativeByteOrder = kBigEndianByteOrder
-	#endif
-};
-
 /**
 	ByteOrder aware output stream interface
  */
