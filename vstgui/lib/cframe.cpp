@@ -96,8 +96,7 @@ CFrame::~CFrame ()
 
 	clearMouseViews (CPoint (0, 0), 0, false);
 
-	if (pModalView)
-		removeView (pModalView, false);
+	setModalView (0);
 
 	setCursor (kCursorDefault);
 
@@ -934,7 +933,7 @@ bool CFrame::removeView (CView* pView, const bool &withForget)
 //-----------------------------------------------------------------------------
 bool CFrame::removeAll (const bool &withForget)
 {
-	pModalView = 0;
+	setModalView (0);
 	pFocusView = 0;
 	pActiveFocusView = 0;
 	clearMouseViews (CPoint (0, 0), 0, false);

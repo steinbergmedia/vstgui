@@ -7,8 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		F403651810C59C44001BCC34 /* vstinitiids.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F403651710C59C44001BCC34 /* vstinitiids.cpp */; };
-		F403651C10C59C84001BCC34 /* baseiids.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F403651B10C59C84001BCC34 /* baseiids.cpp */; };
 		F403673610C901AF001BCC34 /* vstgui_uidescription_mac.mm in Sources */ = {isa = PBXBuildFile; fileRef = F403673510C901AF001BCC34 /* vstgui_uidescription_mac.mm */; };
 		F41CA1C8112E99F000D425D7 /* animationtest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F41CA1C7112E99F000D425D7 /* animationtest.cpp */; };
 		F41CA21F112E9E6B00D425D7 /* AnimationTest.uidesc in Resources */ = {isa = PBXBuildFile; fileRef = F41CA21E112E9E6B00D425D7 /* AnimationTest.uidesc */; };
@@ -25,49 +23,24 @@
 		F4273C17112C0C2400BE2194 /* vertical_slider_back.bmp in Resources */ = {isa = PBXBuildFile; fileRef = F4273C0D112C0C2400BE2194 /* vertical_slider_back.bmp */; };
 		F4273C18112C0C2400BE2194 /* vumeter_back.bmp in Resources */ = {isa = PBXBuildFile; fileRef = F4273C0E112C0C2400BE2194 /* vumeter_back.bmp */; };
 		F4273C19112C0C2400BE2194 /* vumeter_front.bmp in Resources */ = {isa = PBXBuildFile; fileRef = F4273C0F112C0C2400BE2194 /* vumeter_front.bmp */; };
-		F440751010BE6BB6003C59F6 /* classfactory.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F44074CA10BE6BB6003C59F6 /* classfactory.cpp */; };
-		F440751110BE6BB6003C59F6 /* fatomic.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F44074CB10BE6BB6003C59F6 /* fatomic.cpp */; };
-		F440751210BE6BB6003C59F6 /* fbuffer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F44074CD10BE6BB6003C59F6 /* fbuffer.cpp */; };
-		F440751310BE6BB6003C59F6 /* fdebug.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F44074CF10BE6BB6003C59F6 /* fdebug.cpp */; };
-		F440751410BE6BB6003C59F6 /* fobject.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F44074D110BE6BB6003C59F6 /* fobject.cpp */; };
-		F440751610BE6BB6003C59F6 /* fstring.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F44074D510BE6BB6003C59F6 /* fstring.cpp */; };
-		F440751710BE6BB6003C59F6 /* fthread.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F44074D710BE6BB6003C59F6 /* fthread.cpp */; };
-		F440751810BE6BB6003C59F6 /* timer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F44074D910BE6BB6003C59F6 /* timer.cpp */; };
-		F440751910BE6BB6003C59F6 /* updatehandler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F44074DC10BE6BB6003C59F6 /* updatehandler.cpp */; };
-		F440751A10BE6BB6003C59F6 /* pluginview.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F44074DF10BE6BB6003C59F6 /* pluginview.cpp */; };
-		F440751B10BE6BB6003C59F6 /* macmain.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F44074E210BE6BB6003C59F6 /* macmain.cpp */; };
-		F440751D10BE6BB6003C59F6 /* vstaudioeffect.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F44074E610BE6BB6003C59F6 /* vstaudioeffect.cpp */; };
-		F440751E10BE6BB6003C59F6 /* vstbus.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F44074E810BE6BB6003C59F6 /* vstbus.cpp */; };
-		F440751F10BE6BB6003C59F6 /* vstcomponent.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F44074EA10BE6BB6003C59F6 /* vstcomponent.cpp */; };
-		F440752010BE6BB6003C59F6 /* vstcomponentbase.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F44074EC10BE6BB6003C59F6 /* vstcomponentbase.cpp */; };
-		F440752110BE6BB6003C59F6 /* vsteditcontroller.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F44074EE10BE6BB6003C59F6 /* vsteditcontroller.cpp */; };
-		F440752210BE6BB6003C59F6 /* vstguieditor.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F44074F010BE6BB6003C59F6 /* vstguieditor.cpp */; };
-		F440752310BE6BB6003C59F6 /* vstparameters.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F44074F210BE6BB6003C59F6 /* vstparameters.cpp */; };
-		F440752410BE6BB6003C59F6 /* vstpresetfile.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F44074F410BE6BB6003C59F6 /* vstpresetfile.cpp */; };
-		F440752510BE6BB6003C59F6 /* conststringtable.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F44074F810BE6BB6003C59F6 /* conststringtable.cpp */; };
-		F440752610BE6BB6003C59F6 /* funknown.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F44074FC10BE6BB6003C59F6 /* funknown.cpp */; };
-		F440752710BE6BB6003C59F6 /* ustring.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F44074FE10BE6BB6003C59F6 /* ustring.cpp */; };
 		F440752F10BE6BCB003C59F6 /* vstgui_mac.mm in Sources */ = {isa = PBXBuildFile; fileRef = F440752D10BE6BCB003C59F6 /* vstgui_mac.mm */; };
 		F440754A10BE6D00003C59F6 /* Carbon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F440754910BE6D00003C59F6 /* Carbon.framework */; };
 		F440754C10BE6D00003C59F6 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F440754B10BE6D00003C59F6 /* Cocoa.framework */; };
 		F440755610BE6D26003C59F6 /* uidescription test.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F440755510BE6D26003C59F6 /* uidescription test.cpp */; };
-		F440756710BEFE31003C59F6 /* pluginfactoryvst3.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F440756510BEFE31003C59F6 /* pluginfactoryvst3.cpp */; };
 		F440758810BF043D003C59F6 /* vst3editor.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F440758610BF043D003C59F6 /* vst3editor.cpp */; };
 		F44075AD10BF053A003C59F6 /* myEditor.uidesc in Resources */ = {isa = PBXBuildFile; fileRef = F44075AC10BF053A003C59F6 /* myEditor.uidesc */; };
 		F4457815110A06590022C0E5 /* FrameBackground.png in Resources */ = {isa = PBXBuildFile; fileRef = F4457814110A06590022C0E5 /* FrameBackground.png */; };
 		F4657609114F83D100846DAE /* graphicstest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4657608114F83D100846DAE /* graphicstest.cpp */; };
 		F465763D114F8EA200846DAE /* GraphicsTest.uidesc in Resources */ = {isa = PBXBuildFile; fileRef = F465763C114F8EA200846DAE /* GraphicsTest.uidesc */; };
 		F496F16C119715B500DD3F7A /* Accelerate.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F496F16B119715B500DD3F7A /* Accelerate.framework */; };
+		F4C04ECE123B8E450082BA28 /* vst3sdksources.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4C04ECD123B8E450082BA28 /* vst3sdksources.cpp */; };
+		F4C04F01123B90940082BA28 /* README.txt in Resources */ = {isa = PBXBuildFile; fileRef = F4C04F00123B90940082BA28 /* README.txt */; };
 		F4F5DA8A10BFD28900DB6C33 /* TabController.png in Resources */ = {isa = PBXBuildFile; fileRef = F4F5DA8910BFD28900DB6C33 /* TabController.png */; };
-		F4FFBFCA116A310500A9BD34 /* vst2wrapper.sdk.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4F4013C10D2662500F2B46B /* vst2wrapper.sdk.cpp */; };
-		F4FFBFCB116A310D00A9BD34 /* fstreamer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F44074D310BE6BB6003C59F6 /* fstreamer.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		508817D409F0C9AD0071BF1A /* uidescription test.vst3 */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "uidescription test.vst3"; sourceTree = BUILT_PRODUCTS_DIR; };
 		508817D609F0C9AD0071BF1A /* uidescription test-Info.plist */ = {isa = PBXFileReference; explicitFileType = text.plist.xml; path = "uidescription test-Info.plist"; sourceTree = "<group>"; };
-		F403651710C59C44001BCC34 /* vstinitiids.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = vstinitiids.cpp; path = ../../../../../SKI/public.sdk/source/vst/vstinitiids.cpp; sourceTree = SOURCE_ROOT; };
-		F403651B10C59C84001BCC34 /* baseiids.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = baseiids.cpp; path = ../../../../../SKI/base/source/baseiids.cpp; sourceTree = SOURCE_ROOT; };
 		F403673510C901AF001BCC34 /* vstgui_uidescription_mac.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = vstgui_uidescription_mac.mm; path = ../../../vstgui_uidescription_mac.mm; sourceTree = SOURCE_ROOT; };
 		F41CA1C6112E99F000D425D7 /* animationtest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = animationtest.h; path = ../source/animationtest.h; sourceTree = SOURCE_ROOT; };
 		F41CA1C7112E99F000D425D7 /* animationtest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = animationtest.cpp; path = ../source/animationtest.cpp; sourceTree = SOURCE_ROOT; };
@@ -87,74 +60,11 @@
 		F4273C0D112C0C2400BE2194 /* vertical_slider_back.bmp */ = {isa = PBXFileReference; lastKnownFileType = image.bmp; name = vertical_slider_back.bmp; path = ../resource/vertical_slider_back.bmp; sourceTree = SOURCE_ROOT; };
 		F4273C0E112C0C2400BE2194 /* vumeter_back.bmp */ = {isa = PBXFileReference; lastKnownFileType = image.bmp; name = vumeter_back.bmp; path = ../resource/vumeter_back.bmp; sourceTree = SOURCE_ROOT; };
 		F4273C0F112C0C2400BE2194 /* vumeter_front.bmp */ = {isa = PBXFileReference; lastKnownFileType = image.bmp; name = vumeter_front.bmp; path = ../resource/vumeter_front.bmp; sourceTree = SOURCE_ROOT; };
-		F44074C910BE6BB6003C59F6 /* classfactory.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = classfactory.h; path = ../../../../../SKI/base/source/classfactory.h; sourceTree = SOURCE_ROOT; };
-		F44074CA10BE6BB6003C59F6 /* classfactory.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = classfactory.cpp; path = ../../../../../SKI/base/source/classfactory.cpp; sourceTree = SOURCE_ROOT; };
-		F44074CB10BE6BB6003C59F6 /* fatomic.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = fatomic.cpp; path = ../../../../../SKI/base/source/fatomic.cpp; sourceTree = SOURCE_ROOT; };
-		F44074CC10BE6BB6003C59F6 /* fatomic.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = fatomic.h; path = ../../../../../SKI/base/source/fatomic.h; sourceTree = SOURCE_ROOT; };
-		F44074CD10BE6BB6003C59F6 /* fbuffer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = fbuffer.cpp; path = ../../../../../SKI/base/source/fbuffer.cpp; sourceTree = SOURCE_ROOT; };
-		F44074CE10BE6BB6003C59F6 /* fbuffer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = fbuffer.h; path = ../../../../../SKI/base/source/fbuffer.h; sourceTree = SOURCE_ROOT; };
-		F44074CF10BE6BB6003C59F6 /* fdebug.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = fdebug.cpp; path = ../../../../../SKI/base/source/fdebug.cpp; sourceTree = SOURCE_ROOT; };
-		F44074D010BE6BB6003C59F6 /* fdebug.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = fdebug.h; path = ../../../../../SKI/base/source/fdebug.h; sourceTree = SOURCE_ROOT; };
-		F44074D110BE6BB6003C59F6 /* fobject.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = fobject.cpp; path = ../../../../../SKI/base/source/fobject.cpp; sourceTree = SOURCE_ROOT; };
-		F44074D210BE6BB6003C59F6 /* fobject.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = fobject.h; path = ../../../../../SKI/base/source/fobject.h; sourceTree = SOURCE_ROOT; };
-		F44074D310BE6BB6003C59F6 /* fstreamer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = fstreamer.cpp; path = ../../../../../SKI/base/source/fstreamer.cpp; sourceTree = SOURCE_ROOT; };
-		F44074D410BE6BB6003C59F6 /* fstreamer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = fstreamer.h; path = ../../../../../SKI/base/source/fstreamer.h; sourceTree = SOURCE_ROOT; };
-		F44074D510BE6BB6003C59F6 /* fstring.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = fstring.cpp; path = ../../../../../SKI/base/source/fstring.cpp; sourceTree = SOURCE_ROOT; };
-		F44074D610BE6BB6003C59F6 /* fstring.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = fstring.h; path = ../../../../../SKI/base/source/fstring.h; sourceTree = SOURCE_ROOT; };
-		F44074D710BE6BB6003C59F6 /* fthread.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = fthread.cpp; path = ../../../../../SKI/base/source/fthread.cpp; sourceTree = SOURCE_ROOT; };
-		F44074D810BE6BB6003C59F6 /* fthread.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = fthread.h; path = ../../../../../SKI/base/source/fthread.h; sourceTree = SOURCE_ROOT; };
-		F44074D910BE6BB6003C59F6 /* timer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = timer.cpp; path = ../../../../../SKI/base/source/timer.cpp; sourceTree = SOURCE_ROOT; };
-		F44074DA10BE6BB6003C59F6 /* timer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = timer.h; path = ../../../../../SKI/base/source/timer.h; sourceTree = SOURCE_ROOT; };
-		F44074DB10BE6BB6003C59F6 /* updatehandler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = updatehandler.h; path = ../../../../../SKI/base/source/updatehandler.h; sourceTree = SOURCE_ROOT; };
-		F44074DC10BE6BB6003C59F6 /* updatehandler.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = updatehandler.cpp; path = ../../../../../SKI/base/source/updatehandler.cpp; sourceTree = SOURCE_ROOT; };
-		F44074DF10BE6BB6003C59F6 /* pluginview.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = pluginview.cpp; path = ../../../../../SKI/public.sdk/source/common/pluginview.cpp; sourceTree = SOURCE_ROOT; };
-		F44074E010BE6BB6003C59F6 /* pluginview.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = pluginview.h; path = ../../../../../SKI/public.sdk/source/common/pluginview.h; sourceTree = SOURCE_ROOT; };
-		F44074E210BE6BB6003C59F6 /* macmain.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = macmain.cpp; path = ../../../../../SKI/public.sdk/source/main/macmain.cpp; sourceTree = SOURCE_ROOT; };
-		F44074E610BE6BB6003C59F6 /* vstaudioeffect.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = vstaudioeffect.cpp; path = ../../../../../SKI/public.sdk/source/vst/vstaudioeffect.cpp; sourceTree = SOURCE_ROOT; };
-		F44074E710BE6BB6003C59F6 /* vstaudioeffect.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = vstaudioeffect.h; path = ../../../../../SKI/public.sdk/source/vst/vstaudioeffect.h; sourceTree = SOURCE_ROOT; };
-		F44074E810BE6BB6003C59F6 /* vstbus.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = vstbus.cpp; path = ../../../../../SKI/public.sdk/source/vst/vstbus.cpp; sourceTree = SOURCE_ROOT; };
-		F44074E910BE6BB6003C59F6 /* vstbus.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = vstbus.h; path = ../../../../../SKI/public.sdk/source/vst/vstbus.h; sourceTree = SOURCE_ROOT; };
-		F44074EA10BE6BB6003C59F6 /* vstcomponent.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = vstcomponent.cpp; path = ../../../../../SKI/public.sdk/source/vst/vstcomponent.cpp; sourceTree = SOURCE_ROOT; };
-		F44074EB10BE6BB6003C59F6 /* vstcomponent.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = vstcomponent.h; path = ../../../../../SKI/public.sdk/source/vst/vstcomponent.h; sourceTree = SOURCE_ROOT; };
-		F44074EC10BE6BB6003C59F6 /* vstcomponentbase.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = vstcomponentbase.cpp; path = ../../../../../SKI/public.sdk/source/vst/vstcomponentbase.cpp; sourceTree = SOURCE_ROOT; };
-		F44074ED10BE6BB6003C59F6 /* vstcomponentbase.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = vstcomponentbase.h; path = ../../../../../SKI/public.sdk/source/vst/vstcomponentbase.h; sourceTree = SOURCE_ROOT; };
-		F44074EE10BE6BB6003C59F6 /* vsteditcontroller.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = vsteditcontroller.cpp; path = ../../../../../SKI/public.sdk/source/vst/vsteditcontroller.cpp; sourceTree = SOURCE_ROOT; };
-		F44074EF10BE6BB6003C59F6 /* vsteditcontroller.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = vsteditcontroller.h; path = ../../../../../SKI/public.sdk/source/vst/vsteditcontroller.h; sourceTree = SOURCE_ROOT; };
-		F44074F010BE6BB6003C59F6 /* vstguieditor.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = vstguieditor.cpp; path = ../../../../../SKI/public.sdk/source/vst/vstguieditor.cpp; sourceTree = SOURCE_ROOT; };
-		F44074F110BE6BB6003C59F6 /* vstguieditor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = vstguieditor.h; path = ../../../../../SKI/public.sdk/source/vst/vstguieditor.h; sourceTree = SOURCE_ROOT; };
-		F44074F210BE6BB6003C59F6 /* vstparameters.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = vstparameters.cpp; path = ../../../../../SKI/public.sdk/source/vst/vstparameters.cpp; sourceTree = SOURCE_ROOT; };
-		F44074F310BE6BB6003C59F6 /* vstparameters.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = vstparameters.h; path = ../../../../../SKI/public.sdk/source/vst/vstparameters.h; sourceTree = SOURCE_ROOT; };
-		F44074F410BE6BB6003C59F6 /* vstpresetfile.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = vstpresetfile.cpp; path = ../../../../../SKI/public.sdk/source/vst/vstpresetfile.cpp; sourceTree = SOURCE_ROOT; };
-		F44074F510BE6BB6003C59F6 /* vstpresetfile.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = vstpresetfile.h; path = ../../../../../SKI/public.sdk/source/vst/vstpresetfile.h; sourceTree = SOURCE_ROOT; };
-		F44074F810BE6BB6003C59F6 /* conststringtable.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = conststringtable.cpp; path = ../../../../../SKI/pluginterfaces/base/conststringtable.cpp; sourceTree = SOURCE_ROOT; };
-		F44074F910BE6BB6003C59F6 /* conststringtable.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = conststringtable.h; path = ../../../../../SKI/pluginterfaces/base/conststringtable.h; sourceTree = SOURCE_ROOT; };
-		F44074FA10BE6BB6003C59F6 /* fplatform.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = fplatform.h; path = ../../../../../SKI/pluginterfaces/base/fplatform.h; sourceTree = SOURCE_ROOT; };
-		F44074FB10BE6BB6003C59F6 /* ftypes.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ftypes.h; path = ../../../../../SKI/pluginterfaces/base/ftypes.h; sourceTree = SOURCE_ROOT; };
-		F44074FC10BE6BB6003C59F6 /* funknown.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = funknown.cpp; path = ../../../../../SKI/pluginterfaces/base/funknown.cpp; sourceTree = SOURCE_ROOT; };
-		F44074FD10BE6BB6003C59F6 /* funknown.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = funknown.h; path = ../../../../../SKI/pluginterfaces/base/funknown.h; sourceTree = SOURCE_ROOT; };
-		F44074FE10BE6BB6003C59F6 /* ustring.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = ustring.cpp; path = ../../../../../SKI/pluginterfaces/base/ustring.cpp; sourceTree = SOURCE_ROOT; };
-		F44074FF10BE6BB6003C59F6 /* ustring.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ustring.h; path = ../../../../../SKI/pluginterfaces/base/ustring.h; sourceTree = SOURCE_ROOT; };
-		F440750110BE6BB6003C59F6 /* iplugview.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = iplugview.h; path = ../../../../../SKI/pluginterfaces/gui/iplugview.h; sourceTree = SOURCE_ROOT; };
-		F440750310BE6BB6003C59F6 /* ivstattributes.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ivstattributes.h; path = ../../../../../SKI/pluginterfaces/vst/ivstattributes.h; sourceTree = SOURCE_ROOT; };
-		F440750410BE6BB6003C59F6 /* ivstaudioprocessor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ivstaudioprocessor.h; path = ../../../../../SKI/pluginterfaces/vst/ivstaudioprocessor.h; sourceTree = SOURCE_ROOT; };
-		F440750510BE6BB6003C59F6 /* ivstcomponent.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ivstcomponent.h; path = ../../../../../SKI/pluginterfaces/vst/ivstcomponent.h; sourceTree = SOURCE_ROOT; };
-		F440750610BE6BB6003C59F6 /* ivsteditcontroller.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ivsteditcontroller.h; path = ../../../../../SKI/pluginterfaces/vst/ivsteditcontroller.h; sourceTree = SOURCE_ROOT; };
-		F440750710BE6BB6003C59F6 /* ivstevents.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ivstevents.h; path = ../../../../../SKI/pluginterfaces/vst/ivstevents.h; sourceTree = SOURCE_ROOT; };
-		F440750810BE6BB6003C59F6 /* ivsthostapplication.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ivsthostapplication.h; path = ../../../../../SKI/pluginterfaces/vst/ivsthostapplication.h; sourceTree = SOURCE_ROOT; };
-		F440750910BE6BB6003C59F6 /* ivstmessage.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ivstmessage.h; path = ../../../../../SKI/pluginterfaces/vst/ivstmessage.h; sourceTree = SOURCE_ROOT; };
-		F440750A10BE6BB6003C59F6 /* ivstmidicontrollers.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ivstmidicontrollers.h; path = ../../../../../SKI/pluginterfaces/vst/ivstmidicontrollers.h; sourceTree = SOURCE_ROOT; };
-		F440750B10BE6BB6003C59F6 /* ivstparameterchanges.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ivstparameterchanges.h; path = ../../../../../SKI/pluginterfaces/vst/ivstparameterchanges.h; sourceTree = SOURCE_ROOT; };
-		F440750C10BE6BB6003C59F6 /* ivstprocesscontext.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ivstprocesscontext.h; path = ../../../../../SKI/pluginterfaces/vst/ivstprocesscontext.h; sourceTree = SOURCE_ROOT; };
-		F440750D10BE6BB6003C59F6 /* ivstunits.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ivstunits.h; path = ../../../../../SKI/pluginterfaces/vst/ivstunits.h; sourceTree = SOURCE_ROOT; };
-		F440750E10BE6BB6003C59F6 /* vstpresetkeys.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = vstpresetkeys.h; path = ../../../../../SKI/pluginterfaces/vst/vstpresetkeys.h; sourceTree = SOURCE_ROOT; };
-		F440750F10BE6BB6003C59F6 /* vsttypes.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = vsttypes.h; path = ../../../../../SKI/pluginterfaces/vst/vsttypes.h; sourceTree = SOURCE_ROOT; };
 		F440752D10BE6BCB003C59F6 /* vstgui_mac.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = vstgui_mac.mm; path = ../../../vstgui_mac.mm; sourceTree = SOURCE_ROOT; };
 		F440753410BE6C0A003C59F6 /* prefix.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = prefix.h; path = ../source/prefix.h; sourceTree = SOURCE_ROOT; };
 		F440754910BE6D00003C59F6 /* Carbon.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Carbon.framework; path = System/Library/Frameworks/Carbon.framework; sourceTree = SDKROOT; };
 		F440754B10BE6D00003C59F6 /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = System/Library/Frameworks/Cocoa.framework; sourceTree = SDKROOT; };
 		F440755510BE6D26003C59F6 /* uidescription test.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = "uidescription test.cpp"; path = "../source/uidescription test.cpp"; sourceTree = SOURCE_ROOT; };
-		F440756510BEFE31003C59F6 /* pluginfactoryvst3.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = pluginfactoryvst3.cpp; path = ../../../../../SKI/public.sdk/source/main/pluginfactoryvst3.cpp; sourceTree = SOURCE_ROOT; };
-		F440756610BEFE31003C59F6 /* pluginfactoryvst3.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = pluginfactoryvst3.h; path = ../../../../../SKI/public.sdk/source/main/pluginfactoryvst3.h; sourceTree = SOURCE_ROOT; };
 		F440758610BF043D003C59F6 /* vst3editor.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = vst3editor.cpp; path = ../../../uidescription/vst3editor.cpp; sourceTree = SOURCE_ROOT; };
 		F440758710BF043D003C59F6 /* vst3editor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = vst3editor.h; path = ../../../uidescription/vst3editor.h; sourceTree = SOURCE_ROOT; };
 		F44075AC10BF053A003C59F6 /* myEditor.uidesc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; name = myEditor.uidesc; path = ../resource/myEditor.uidesc; sourceTree = SOURCE_ROOT; };
@@ -163,9 +73,12 @@
 		F4657608114F83D100846DAE /* graphicstest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = graphicstest.cpp; path = ../source/graphicstest.cpp; sourceTree = SOURCE_ROOT; };
 		F465763C114F8EA200846DAE /* GraphicsTest.uidesc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; name = GraphicsTest.uidesc; path = ../resource/GraphicsTest.uidesc; sourceTree = SOURCE_ROOT; };
 		F496F16B119715B500DD3F7A /* Accelerate.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Accelerate.framework; path = System/Library/Frameworks/Accelerate.framework; sourceTree = SDKROOT; };
-		F4F4013C10D2662500F2B46B /* vst2wrapper.sdk.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = vst2wrapper.sdk.cpp; path = ../../../../../SKI/public.sdk/source/vst/vst2wrapper/vst2wrapper.sdk.cpp; sourceTree = SOURCE_ROOT; };
+		F4AA8992123A546A00CDBBF7 /* lib */ = {isa = PBXFileReference; lastKnownFileType = folder; name = lib; path = ../../../lib; sourceTree = SOURCE_ROOT; };
+		F4AA8A3C123A547300CDBBF7 /* uidescription */ = {isa = PBXFileReference; lastKnownFileType = folder; name = uidescription; path = ../../../uidescription; sourceTree = SOURCE_ROOT; };
+		F4AA8AC9123A5A8200CDBBF7 /* Changelog */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = Changelog; path = ../../../Changelog; sourceTree = SOURCE_ROOT; };
+		F4C04ECD123B8E450082BA28 /* vst3sdksources.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = vst3sdksources.cpp; path = ../source/vst3sdksources.cpp; sourceTree = SOURCE_ROOT; };
+		F4C04F00123B90940082BA28 /* README.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = README.txt; path = ../README.txt; sourceTree = SOURCE_ROOT; };
 		F4F5DA8910BFD28900DB6C33 /* TabController.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = TabController.png; path = ../resource/TabController.png; sourceTree = SOURCE_ROOT; };
-		F4F5DA9E10BFD5BF00DB6C33 /* ussage bugs.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = "ussage bugs.txt"; path = "../ussage bugs.txt"; sourceTree = SOURCE_ROOT; };
 		F4FFBE471169E8CA00A9BD34 /* bitmapsaturator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = bitmapsaturator.h; path = ../source/bitmapsaturator.h; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
@@ -186,12 +99,12 @@
 		508817C209F0C9740071BF1A = {
 			isa = PBXGroup;
 			children = (
-				508817D609F0C9AD0071BF1A /* uidescription test-Info.plist */,
+				F4C04F00123B90940082BA28 /* README.txt */,
+				F4C04F04123B918F0082BA28 /* VSTGUI */,
 				508817F509F0CAB50071BF1A /* Sources */,
 				F44075AA10BF0525003C59F6 /* Resources */,
 				5088180609F0CDD00071BF1A /* External Frameworks and Libraries */,
 				508817D509F0C9AD0071BF1A /* Products */,
-				F4F5DA9E10BFD5BF00DB6C33 /* ussage bugs.txt */,
 			);
 			sourceTree = "<group>";
 		};
@@ -236,146 +149,9 @@
 		F44074C710BE6BB6003C59F6 /* VST3SDK */ = {
 			isa = PBXGroup;
 			children = (
-				F44074C810BE6BB6003C59F6 /* base */,
-				F44074F610BE6BB6003C59F6 /* pluginterfaces */,
-				F44074DD10BE6BB6003C59F6 /* public.sdk */,
+				F4C04ECD123B8E450082BA28 /* vst3sdksources.cpp */,
 			);
 			name = VST3SDK;
-			sourceTree = "<group>";
-		};
-		F44074C810BE6BB6003C59F6 /* base */ = {
-			isa = PBXGroup;
-			children = (
-				F403651B10C59C84001BCC34 /* baseiids.cpp */,
-				F44074CA10BE6BB6003C59F6 /* classfactory.cpp */,
-				F44074C910BE6BB6003C59F6 /* classfactory.h */,
-				F44074CB10BE6BB6003C59F6 /* fatomic.cpp */,
-				F44074CC10BE6BB6003C59F6 /* fatomic.h */,
-				F44074CD10BE6BB6003C59F6 /* fbuffer.cpp */,
-				F44074CE10BE6BB6003C59F6 /* fbuffer.h */,
-				F44074CF10BE6BB6003C59F6 /* fdebug.cpp */,
-				F44074D010BE6BB6003C59F6 /* fdebug.h */,
-				F44074D110BE6BB6003C59F6 /* fobject.cpp */,
-				F44074D210BE6BB6003C59F6 /* fobject.h */,
-				F44074D310BE6BB6003C59F6 /* fstreamer.cpp */,
-				F44074D410BE6BB6003C59F6 /* fstreamer.h */,
-				F44074D510BE6BB6003C59F6 /* fstring.cpp */,
-				F44074D610BE6BB6003C59F6 /* fstring.h */,
-				F44074D710BE6BB6003C59F6 /* fthread.cpp */,
-				F44074D810BE6BB6003C59F6 /* fthread.h */,
-				F44074D910BE6BB6003C59F6 /* timer.cpp */,
-				F44074DA10BE6BB6003C59F6 /* timer.h */,
-				F44074DC10BE6BB6003C59F6 /* updatehandler.cpp */,
-				F44074DB10BE6BB6003C59F6 /* updatehandler.h */,
-			);
-			name = base;
-			sourceTree = "<group>";
-		};
-		F44074DD10BE6BB6003C59F6 /* public.sdk */ = {
-			isa = PBXGroup;
-			children = (
-				F44074DE10BE6BB6003C59F6 /* common */,
-				F44074E110BE6BB6003C59F6 /* main */,
-				F44074E510BE6BB6003C59F6 /* vst */,
-			);
-			name = public.sdk;
-			sourceTree = "<group>";
-		};
-		F44074DE10BE6BB6003C59F6 /* common */ = {
-			isa = PBXGroup;
-			children = (
-				F44074DF10BE6BB6003C59F6 /* pluginview.cpp */,
-				F44074E010BE6BB6003C59F6 /* pluginview.h */,
-			);
-			name = common;
-			sourceTree = "<group>";
-		};
-		F44074E110BE6BB6003C59F6 /* main */ = {
-			isa = PBXGroup;
-			children = (
-				F44074E210BE6BB6003C59F6 /* macmain.cpp */,
-				F440756510BEFE31003C59F6 /* pluginfactoryvst3.cpp */,
-				F440756610BEFE31003C59F6 /* pluginfactoryvst3.h */,
-			);
-			name = main;
-			sourceTree = "<group>";
-		};
-		F44074E510BE6BB6003C59F6 /* vst */ = {
-			isa = PBXGroup;
-			children = (
-				F4F4013C10D2662500F2B46B /* vst2wrapper.sdk.cpp */,
-				F44074E610BE6BB6003C59F6 /* vstaudioeffect.cpp */,
-				F44074E710BE6BB6003C59F6 /* vstaudioeffect.h */,
-				F44074E810BE6BB6003C59F6 /* vstbus.cpp */,
-				F44074E910BE6BB6003C59F6 /* vstbus.h */,
-				F44074EA10BE6BB6003C59F6 /* vstcomponent.cpp */,
-				F44074EB10BE6BB6003C59F6 /* vstcomponent.h */,
-				F44074EC10BE6BB6003C59F6 /* vstcomponentbase.cpp */,
-				F44074ED10BE6BB6003C59F6 /* vstcomponentbase.h */,
-				F44074EE10BE6BB6003C59F6 /* vsteditcontroller.cpp */,
-				F44074EF10BE6BB6003C59F6 /* vsteditcontroller.h */,
-				F44074F010BE6BB6003C59F6 /* vstguieditor.cpp */,
-				F44074F110BE6BB6003C59F6 /* vstguieditor.h */,
-				F44074F210BE6BB6003C59F6 /* vstparameters.cpp */,
-				F44074F310BE6BB6003C59F6 /* vstparameters.h */,
-				F44074F410BE6BB6003C59F6 /* vstpresetfile.cpp */,
-				F44074F510BE6BB6003C59F6 /* vstpresetfile.h */,
-				F403651710C59C44001BCC34 /* vstinitiids.cpp */,
-			);
-			name = vst;
-			sourceTree = "<group>";
-		};
-		F44074F610BE6BB6003C59F6 /* pluginterfaces */ = {
-			isa = PBXGroup;
-			children = (
-				F44074F710BE6BB6003C59F6 /* base */,
-				F440750010BE6BB6003C59F6 /* gui */,
-				F440750210BE6BB6003C59F6 /* vst */,
-			);
-			name = pluginterfaces;
-			sourceTree = "<group>";
-		};
-		F44074F710BE6BB6003C59F6 /* base */ = {
-			isa = PBXGroup;
-			children = (
-				F44074F810BE6BB6003C59F6 /* conststringtable.cpp */,
-				F44074F910BE6BB6003C59F6 /* conststringtable.h */,
-				F44074FA10BE6BB6003C59F6 /* fplatform.h */,
-				F44074FB10BE6BB6003C59F6 /* ftypes.h */,
-				F44074FC10BE6BB6003C59F6 /* funknown.cpp */,
-				F44074FD10BE6BB6003C59F6 /* funknown.h */,
-				F44074FE10BE6BB6003C59F6 /* ustring.cpp */,
-				F44074FF10BE6BB6003C59F6 /* ustring.h */,
-			);
-			name = base;
-			sourceTree = "<group>";
-		};
-		F440750010BE6BB6003C59F6 /* gui */ = {
-			isa = PBXGroup;
-			children = (
-				F440750110BE6BB6003C59F6 /* iplugview.h */,
-			);
-			name = gui;
-			sourceTree = "<group>";
-		};
-		F440750210BE6BB6003C59F6 /* vst */ = {
-			isa = PBXGroup;
-			children = (
-				F440750310BE6BB6003C59F6 /* ivstattributes.h */,
-				F440750410BE6BB6003C59F6 /* ivstaudioprocessor.h */,
-				F440750510BE6BB6003C59F6 /* ivstcomponent.h */,
-				F440750610BE6BB6003C59F6 /* ivsteditcontroller.h */,
-				F440750710BE6BB6003C59F6 /* ivstevents.h */,
-				F440750810BE6BB6003C59F6 /* ivsthostapplication.h */,
-				F440750910BE6BB6003C59F6 /* ivstmessage.h */,
-				F440750A10BE6BB6003C59F6 /* ivstmidicontrollers.h */,
-				F440750B10BE6BB6003C59F6 /* ivstparameterchanges.h */,
-				F440750C10BE6BB6003C59F6 /* ivstprocesscontext.h */,
-				F440750D10BE6BB6003C59F6 /* ivstunits.h */,
-				F440750E10BE6BB6003C59F6 /* vstpresetkeys.h */,
-				F440750F10BE6BB6003C59F6 /* vsttypes.h */,
-			);
-			name = vst;
 			sourceTree = "<group>";
 		};
 		F440752910BE6BBD003C59F6 /* vstgui */ = {
@@ -392,6 +168,7 @@
 		F44075AA10BF0525003C59F6 /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				508817D609F0C9AD0071BF1A /* uidescription test-Info.plist */,
 				F4273C07112C0C2400BE2194 /* horizontal_slider_back.bmp */,
 				F4273C08112C0C2400BE2194 /* onoff_button.bmp */,
 				F4273C09112C0C2400BE2194 /* rocker_switch.bmp */,
@@ -410,6 +187,16 @@
 				F42732691125623200BE2194 /* SubControllerTest.uidesc */,
 			);
 			name = Resources;
+			sourceTree = "<group>";
+		};
+		F4C04F04123B918F0082BA28 /* VSTGUI */ = {
+			isa = PBXGroup;
+			children = (
+				F4AA8AC9123A5A8200CDBBF7 /* Changelog */,
+				F4AA8992123A546A00CDBBF7 /* lib */,
+				F4AA8A3C123A547300CDBBF7 /* uidescription */,
+			);
+			name = VSTGUI;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -475,6 +262,7 @@
 				F4273C19112C0C2400BE2194 /* vumeter_front.bmp in Resources */,
 				F41CA21F112E9E6B00D425D7 /* AnimationTest.uidesc in Resources */,
 				F465763D114F8EA200846DAE /* GraphicsTest.uidesc in Resources */,
+				F4C04F01123B90940082BA28 /* README.txt in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -501,41 +289,15 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				F440751010BE6BB6003C59F6 /* classfactory.cpp in Sources */,
-				F440751110BE6BB6003C59F6 /* fatomic.cpp in Sources */,
-				F440751210BE6BB6003C59F6 /* fbuffer.cpp in Sources */,
-				F440751310BE6BB6003C59F6 /* fdebug.cpp in Sources */,
-				F440751410BE6BB6003C59F6 /* fobject.cpp in Sources */,
-				F440751610BE6BB6003C59F6 /* fstring.cpp in Sources */,
-				F440751710BE6BB6003C59F6 /* fthread.cpp in Sources */,
-				F440751810BE6BB6003C59F6 /* timer.cpp in Sources */,
-				F440751910BE6BB6003C59F6 /* updatehandler.cpp in Sources */,
-				F440751A10BE6BB6003C59F6 /* pluginview.cpp in Sources */,
-				F440751B10BE6BB6003C59F6 /* macmain.cpp in Sources */,
-				F440751D10BE6BB6003C59F6 /* vstaudioeffect.cpp in Sources */,
-				F440751E10BE6BB6003C59F6 /* vstbus.cpp in Sources */,
-				F440751F10BE6BB6003C59F6 /* vstcomponent.cpp in Sources */,
-				F440752010BE6BB6003C59F6 /* vstcomponentbase.cpp in Sources */,
-				F440752110BE6BB6003C59F6 /* vsteditcontroller.cpp in Sources */,
-				F440752210BE6BB6003C59F6 /* vstguieditor.cpp in Sources */,
-				F440752310BE6BB6003C59F6 /* vstparameters.cpp in Sources */,
-				F440752410BE6BB6003C59F6 /* vstpresetfile.cpp in Sources */,
-				F440752510BE6BB6003C59F6 /* conststringtable.cpp in Sources */,
-				F440752610BE6BB6003C59F6 /* funknown.cpp in Sources */,
-				F440752710BE6BB6003C59F6 /* ustring.cpp in Sources */,
+				F4C04ECE123B8E450082BA28 /* vst3sdksources.cpp in Sources */,
 				F440752F10BE6BCB003C59F6 /* vstgui_mac.mm in Sources */,
-				F440755610BE6D26003C59F6 /* uidescription test.cpp in Sources */,
-				F440756710BEFE31003C59F6 /* pluginfactoryvst3.cpp in Sources */,
-				F440758810BF043D003C59F6 /* vst3editor.cpp in Sources */,
-				F403651810C59C44001BCC34 /* vstinitiids.cpp in Sources */,
-				F403651C10C59C84001BCC34 /* baseiids.cpp in Sources */,
 				F403673610C901AF001BCC34 /* vstgui_uidescription_mac.mm in Sources */,
+				F440755610BE6D26003C59F6 /* uidescription test.cpp in Sources */,
+				F440758810BF043D003C59F6 /* vst3editor.cpp in Sources */,
 				F42731DE1125507F00BE2194 /* factory.cpp in Sources */,
 				F42731E51125516A00BE2194 /* subcontrollertest.cpp in Sources */,
 				F41CA1C8112E99F000D425D7 /* animationtest.cpp in Sources */,
 				F4657609114F83D100846DAE /* graphicstest.cpp in Sources */,
-				F4FFBFCA116A310500A9BD34 /* vst2wrapper.sdk.cpp in Sources */,
-				F4FFBFCB116A310D00A9BD34 /* fstreamer.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

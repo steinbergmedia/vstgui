@@ -44,6 +44,8 @@
 
 namespace VSTGUI {
 class CDrawContext;
+class IPlatformBitmap;
+class IPlatformBitmapPixelAccess;
 
 //-----------------------------------------------------------------------------
 // CResourceDescription Declaration
@@ -67,8 +69,6 @@ public:
 		UTF8StringPtr name;
 	} u;
 };
-
-class IPlatformBitmap;
 
 //-----------------------------------------------------------------------------
 // CBitmap Declaration
@@ -164,6 +164,39 @@ protected:
 	PartOffsets offsets;
 };
 
-} // namespace
+//------------------------------------------------------------------------
+// CBitmapPixelAccess
+//! @brief direct pixel access to a CBitmap
+//------------------------------------------------------------------------
+class CBitmapPixelAccess : public CBaseObject
+{
+public:
+	bool operator++ ();								///< advance position
+	bool setPosition (uint32_t x, uint32_t y);		///< set current position
+	uint32_t getX () const { return x; }			///< return current x position
+	uint32_t getY () const { return y; }			///< return current y position
+	virtual void getColor (CColor& c) const = 0;	///< get color of current pixel
+	virtual void setColor (const CColor& c) = 0;	///< set color of current pixel
+
+	/** create an accessor.
+		can return 0 if platform implementation does not support this.
+		result needs to be forgotten before the CBitmap reflects the change to the pixels */
+	static CBitmapPixelAccess* create (CBitmap* bitmap, bool alphaPremultiplied = true);
+//-----------------------------------------------------------------------------
+protected:
+	CBitmapPixelAccess ();
+	~CBitmapPixelAccess ();
+	void init (CBitmap* bitmap, IPlatformBitmapPixelAccess* pixelAccess);
+
+	CBitmap* bitmap;
+	IPlatformBitmapPixelAccess* pixelAccess;
+	unsigned char* currentPos;
+	uint32_t maxX;
+	uint32_t maxY;
+	uint32_t x;
+	uint32_t y;
+};
+
+} // namespace VSTGUI
 
 #endif

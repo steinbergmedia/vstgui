@@ -247,7 +247,7 @@ void CNinePartTiledBitmap::drawPart (CDrawContext* inContext, const CRect& inSou
 		myPartRect.bottom	= myTop + inSourceRect.height ();
 		if (myPartRect.bottom > inDestRect.bottom)
 			myPartRect.bottom = inDestRect.bottom;
-		// The following if should never be true, I guess
+		// The following should never be true, I guess
 		if (myPartRect.height () > inSourceRect.height ())
 			myPartRect.setHeight (inSourceRect.height ());
 		
@@ -257,7 +257,7 @@ void CNinePartTiledBitmap::drawPart (CDrawContext* inContext, const CRect& inSou
 			myPartRect.right	= myLeft + inSourceRect.width ();
 			if (myPartRect.right > inDestRect.right)
 				myPartRect.right = inDestRect.right;
-			// The following if should never be true, I guess
+			// The following should never be true, I guess
 			if (myPartRect.width () > inSourceRect.width ())
 				myPartRect.setWidth (inSourceRect.width ());
 			
@@ -266,5 +266,110 @@ void CNinePartTiledBitmap::drawPart (CDrawContext* inContext, const CRect& inSou
 	}
 }
 
-} // namespace
+//------------------------------------------------------------------------
+//------------------------------------------------------------------------
+//------------------------------------------------------------------------
+CBitmapPixelAccess::CBitmapPixelAccess ()
+: bitmap (0)
+, pixelAccess (0)
+, currentPos (0)
+, maxX (0)
+, maxY (0)
+, x (0)
+, y (0)
+{
+}
+
+//------------------------------------------------------------------------
+CBitmapPixelAccess::~CBitmapPixelAccess ()
+{
+	if (pixelAccess)
+		pixelAccess->forget ();
+}
+
+//------------------------------------------------------------------------
+void CBitmapPixelAccess::init (CBitmap* _bitmap, IPlatformBitmapPixelAccess* _pixelAccess)
+{
+	bitmap = _bitmap;
+	pixelAccess = _pixelAccess;
+	currentPos = pixelAccess->getAddress ();
+	maxX = (uint32_t)(bitmap->getWidth ())-1;
+	maxY = (uint32_t)(bitmap->getHeight ())-1;
+}
+
+//------------------------------------------------------------------------
+bool CBitmapPixelAccess::operator++ ()
+{
+	if (x < maxX)
+	{
+		x++;
+		currentPos += 4;
+		return true;
+	}
+	else if (y < maxY)
+	{
+		y++;
+		x = 0;
+		currentPos = pixelAccess->getAddress () + y * pixelAccess->getBytesPerRow ();
+		return true;
+	}
+	return false;
+}
+
+//------------------------------------------------------------------------
+bool CBitmapPixelAccess::setPosition (uint32_t _x, uint32_t _y)
+{
+	if (_x >= maxX || _y >= maxY)
+		return false;
+	x = _x;
+	y = _y;
+	currentPos = pixelAccess->getAddress () + y * pixelAccess->getBytesPerRow () + x * 4;
+	return true;
+}
+
+//------------------------------------------------------------------------
+//------------------------------------------------------------------------
+//------------------------------------------------------------------------
+template <int redPosition, int greenPosition, int bluePosition, int alphaPosition>
+class CBitmapPixelAccessOrder : public CBitmapPixelAccess
+{
+public:
+	void getColor (CColor& c) const
+	{
+		c.red = currentPos[redPosition];
+		c.green = currentPos[greenPosition];
+		c.blue = currentPos[bluePosition];
+		c.alpha = currentPos[alphaPosition];
+	}
+	void setColor (const CColor& c)
+	{
+		currentPos[redPosition] = c.red;
+		currentPos[greenPosition] = c.green;
+		currentPos[bluePosition] = c.blue;
+		currentPos[alphaPosition] = c.alpha;
+	}
+};
+
+//------------------------------------------------------------------------
+CBitmapPixelAccess* CBitmapPixelAccess::create (CBitmap* bitmap, bool alphaPremultiplied)
+{
+	if (bitmap->getPlatformBitmap () == 0)
+		return 0;
+	IPlatformBitmapPixelAccess* pixelAccess = bitmap->getPlatformBitmap ()->lockPixels (alphaPremultiplied);
+	if (pixelAccess == 0)
+		return 0;
+	CBitmapPixelAccess* result = 0;
+	switch (pixelAccess->getPixelFormat ())
+	{
+		case IPlatformBitmapPixelAccess::kARGB: result = new CBitmapPixelAccessOrder<1,2,3,0> (); break;
+		case IPlatformBitmapPixelAccess::kRGBA: result = new CBitmapPixelAccessOrder<0,1,2,3> (); break;
+		case IPlatformBitmapPixelAccess::kABGR: result = new CBitmapPixelAccessOrder<3,2,1,0> (); break;
+		case IPlatformBitmapPixelAccess::kBGRA: result = new CBitmapPixelAccessOrder<2,1,0,3> (); break;
+	}
+	if (result)
+		result->init (bitmap, pixelAccess);
+	return result;
+}
+
+} // namespace VSTGUI
 
