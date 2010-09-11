@@ -62,6 +62,14 @@ protected:
 	~CTooltipSupport ();
 	void showTooltip ();
 
+	enum {
+		kHidden,
+		kVisible,
+		kHiding,
+		kShowing,
+		kForceVisible
+	};
+
 	// CBaseObject
 	CMessageResult notify (CBaseObject* sender, IdStringPtr msg);
 
