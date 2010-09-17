@@ -46,13 +46,13 @@
 class MyKnob : public CKnob
 {
 public:
-	MyKnob (const CRect& size, CControlListener* listener, long tag, CBitmap* background, CBitmap* handle, CBitmap* highlightHandle);
+	MyKnob (const CRect& size, CControlListener* listener, int32_t tag, CBitmap* background, CBitmap* handle, CBitmap* highlightHandle);
 	~MyKnob ();
 
-	CMouseEventResult onMouseDown (CPoint &where, const long& buttons);
-	CMouseEventResult onMouseUp (CPoint &where, const long& buttons);
-	CMouseEventResult onMouseEntered (CPoint &where, const long& buttons);
-	CMouseEventResult onMouseExited (CPoint &where, const long& buttons);
+	CMouseEventResult onMouseDown (CPoint &where, const CButtonState& buttons);
+	CMouseEventResult onMouseUp (CPoint &where, const CButtonState& buttons);
+	CMouseEventResult onMouseEntered (CPoint &where, const CButtonState& buttons);
+	CMouseEventResult onMouseExited (CPoint &where, const CButtonState& buttons);
 protected:
 	CBitmap* handleBitmap;
 	CBitmap* highlightHandleBitmap;
@@ -143,7 +143,7 @@ void TutorialEditor::setParameter (VstInt32 index, float value)
 //-- MyKnob is just like CKnob except that it displays a different handle
 //-- if the mouse is over it or if it is being tracked
 //-----------------------------------------------------------------------------------
-MyKnob::MyKnob (const CRect& size, CControlListener* listener, long tag, CBitmap* background, CBitmap* handle, CBitmap* highlightHandle)
+MyKnob::MyKnob (const CRect& size, CControlListener* listener, int32_t tag, CBitmap* background, CBitmap* handle, CBitmap* highlightHandle)
 : CKnob (size, listener, tag, background, handle, CPoint (0, 0))
 , handleBitmap (handle)
 , highlightHandleBitmap (highlightHandle)
@@ -162,7 +162,7 @@ MyKnob::~MyKnob ()
 }
 
 //-----------------------------------------------------------------------------------
-CMouseEventResult MyKnob::onMouseDown (CPoint &where, const long& buttons)
+CMouseEventResult MyKnob::onMouseDown (CPoint &where, const CButtonState& buttons)
 {
 	//-- we are being tracked so change the handle bitmap to the highlighted one
 	setHandleBitmap (highlightHandleBitmap);
@@ -175,7 +175,7 @@ CMouseEventResult MyKnob::onMouseDown (CPoint &where, const long& buttons)
 }
 
 //-----------------------------------------------------------------------------------
-CMouseEventResult MyKnob::onMouseUp (CPoint &where, const long& buttons)
+CMouseEventResult MyKnob::onMouseUp (CPoint &where, const CButtonState& buttons)
 {
 	//-- if the mouse is not over the knob
 	if (!where.isInside (size))
@@ -190,7 +190,7 @@ CMouseEventResult MyKnob::onMouseUp (CPoint &where, const long& buttons)
 }
 
 //-----------------------------------------------------------------------------------
-CMouseEventResult MyKnob::onMouseEntered (CPoint &where, const long& buttons)
+CMouseEventResult MyKnob::onMouseEntered (CPoint &where, const CButtonState& buttons)
 {
 	//-- the mouse entered our knob, so we change the handle to the highlighted one
 	setHandleBitmap (highlightHandleBitmap);
@@ -202,7 +202,7 @@ CMouseEventResult MyKnob::onMouseEntered (CPoint &where, const long& buttons)
 }
 
 //-----------------------------------------------------------------------------------
-CMouseEventResult MyKnob::onMouseExited (CPoint &where, const long& buttons)
+CMouseEventResult MyKnob::onMouseExited (CPoint &where, const CButtonState& buttons)
 {
 	//-- the mouse exited our knob, so change the handle to the default one
 	setHandleBitmap (handleBitmap);
