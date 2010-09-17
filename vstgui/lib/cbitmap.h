@@ -111,6 +111,8 @@ protected:
 //-----------------------------------------------------------------------------
 // CNinePartTiledBitmap Declaration
 //! @brief a nine-part tiled bitmap [new in 4.0]
+//!
+//! @ingroup new_in_4_0
 //-----------------------------------------------------------------------------
 class CNinePartTiledBitmap : public CBitmap
 {
@@ -167,6 +169,8 @@ protected:
 //------------------------------------------------------------------------
 // CBitmapPixelAccess
 //! @brief direct pixel access to a CBitmap [new in 4.0]
+//!
+//! @ingroup new_in_4_0
 //------------------------------------------------------------------------
 class CBitmapPixelAccess : public CBaseObject
 {

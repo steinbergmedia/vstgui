@@ -46,7 +46,8 @@ class CView;
 namespace Animation {
 
 //-----------------------------------------------------------------------------
-//! @brief Animation target interface
+/// @brief Animation target interface
+///	@ingroup new_in_4_0
 //-----------------------------------------------------------------------------
 class IAnimationTarget
 {
@@ -59,7 +60,8 @@ public:
 };
 
 //-----------------------------------------------------------------------------
-//! @brief Animation timing function interface
+/// @brief Animation timing function interface
+///	@ingroup new_in_4_0
 //-----------------------------------------------------------------------------
 class ITimingFunction
 {
@@ -71,7 +73,8 @@ public:
 };
 
 //-----------------------------------------------------------------------------
-//! @brief Animation runner
+/// @brief Animation runner
+///	@ingroup new_in_4_0
 //-----------------------------------------------------------------------------
 class Animator : public CBaseObject
 {

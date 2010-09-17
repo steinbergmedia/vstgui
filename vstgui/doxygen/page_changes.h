@@ -150,3 +150,28 @@ please see the "Migrating from 2.3.rtf" file in the Documentation folder.
 - The pSystemWindow pointer in the CFrame constructor must be a NSView not a NSWindow.
 
 */
+
+//------------------------------------------------------------------------
+// Doxygen Group Definitions
+//------------------------------------------------------------------------
+/*! @defgroup new_in New classes
+ */
+//------------------------------------------------------------------------
+/*! @defgroup new_in_4_0 Version 4.0
+ *	@ingroup new_in
+ */
+//------------------------------------------------------------------------
+/*! @defgroup views Views
+ *	@ingroup viewsandcontrols
+ */
+//------------------------------------------------------------------------
+/*! @defgroup controls Controls
+ *	@ingroup views
+ *	@brief Controls are views the user can interact with
+ */
+//------------------------------------------------------------------------
+/*! @defgroup containerviews Container Views
+ *	@ingroup views
+ */
+//------------------------------------------------------------------------
+

@@ -258,6 +258,7 @@ public:
 //-----------------------------------------------------------------------------
 // IKeyboardHook Declaration
 //! @brief generic keyboard hook interface for CFrame [new in 4.0]
+//! @ingroup new_in_4_0
 //-----------------------------------------------------------------------------
 class IKeyboardHook
 {
@@ -271,6 +272,7 @@ public:
 //-----------------------------------------------------------------------------
 // IViewAddedRemovedObserver Declaration
 //! @brief view added removed observer interface for CFrame [new in 4.0]
+//! @ingroup new_in_4_0
 //-----------------------------------------------------------------------------
 class IViewAddedRemovedObserver
 {

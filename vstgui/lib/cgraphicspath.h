@@ -44,6 +44,8 @@ class CGradient;
 
 //-----------------------------------------------------------------------------
 /// @brief Graphics Transform Matrix [new in 4.0]
+//!
+//! @ingroup new_in_4_0
 //-----------------------------------------------------------------------------
 struct CGraphicsTransform
 {
@@ -105,6 +107,8 @@ struct CGraphicsTransform
 //-----------------------------------------------------------------------------
 /*! @class CGraphicsPath
 	@brief Graphics Path Object [new in 4.0]
+
+	@ingroup new_in_4_0
 */
 //-----------------------------------------------------------------------------
 class CGraphicsPath : public CBaseObject
@@ -155,6 +159,8 @@ protected:
 //-----------------------------------------------------------------------------
 /*! @class CGradient
 	@brief Gradient Object [new in 4.0]
+
+	@ingroup new_in_4_0
 */
 class CGradient : public CBaseObject
 {

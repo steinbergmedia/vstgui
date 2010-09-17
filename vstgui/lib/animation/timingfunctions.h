@@ -42,6 +42,9 @@ namespace VSTGUI {
 namespace Animation {
 
 //-----------------------------------------------------------------------------
+/// @ingroup AnimationTimingFunctions
+///	@ingroup new_in_4_0
+//-----------------------------------------------------------------------------
 class TimingFunctionBase : public ITimingFunction
 {
 public:
@@ -55,6 +58,7 @@ protected:
 
 //-----------------------------------------------------------------------------
 /// @ingroup AnimationTimingFunctions
+///	@ingroup new_in_4_0
 //-----------------------------------------------------------------------------
 class LinearTimingFunction : public TimingFunctionBase
 {
@@ -67,6 +71,7 @@ protected:
 
 //-----------------------------------------------------------------------------
 /// @ingroup AnimationTimingFunctions
+///	@ingroup new_in_4_0
 //-----------------------------------------------------------------------------
 class PowerTimingFunction : public TimingFunctionBase
 {
@@ -81,6 +86,7 @@ protected:
 
 //-----------------------------------------------------------------------------
 /// @ingroup AnimationTimingFunctions
+///	@ingroup new_in_4_0
 //-----------------------------------------------------------------------------
 class InterpolationTimingFunction : public TimingFunctionBase
 {
@@ -97,6 +103,7 @@ protected:
 
 //-----------------------------------------------------------------------------
 /// @ingroup AnimationTimingFunctions
+///	@ingroup new_in_4_0
 //-----------------------------------------------------------------------------
 class RepeatTimingFunction : public ITimingFunction
 {

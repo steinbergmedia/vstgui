@@ -48,6 +48,7 @@ class ColorView;
 }
 /// @endcond
 
+///	@ingroup new_in_4_0
 //-----------------------------------------------------------------------------
 class IColorChooserDelegate
 {
@@ -55,6 +56,7 @@ public:
 	virtual void colorChanged (CColorChooser* chooser, const CColor& color) = 0;
 };
 
+///	@ingroup new_in_4_0
 //-----------------------------------------------------------------------------
 class CColorChooser : public CViewContainer, public CControlListener
 {
