@@ -43,6 +43,8 @@ namespace VSTGUI {
 //-----------------------------------------------------------------------------
 // CDropSource Declaration
 //! @brief drop source
+//!
+//! @ingroup new_in_4_0
 //-----------------------------------------------------------------------------
 class CDropSource : public CBaseObject
 {

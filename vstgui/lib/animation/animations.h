@@ -46,6 +46,7 @@ namespace Animation {
 
 /// @brief animates the alpha value of the view
 /// @ingroup AnimationTargets
+///	@ingroup new_in_4_0
 //-----------------------------------------------------------------------------
 class AlphaValueAnimation : public IAnimationTarget
 {
@@ -63,6 +64,7 @@ protected:
 
 /// @brief animates the view size of the view
 /// @ingroup AnimationTargets
+///	@ingroup new_in_4_0
 //-----------------------------------------------------------------------------
 class ViewSizeAnimation : public IAnimationTarget
 {
@@ -80,6 +82,7 @@ protected:
 
 /// @brief exchange a view by another view with an animation
 /// @ingroup AnimationTargets
+///	@ingroup new_in_4_0
 //-----------------------------------------------------------------------------
 class ExchangeViewAnimation : public IAnimationTarget
 {

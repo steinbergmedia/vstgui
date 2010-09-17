@@ -41,15 +41,11 @@
 		- Point attributes should be editable as points not as string
 		- A lasso selection would also be nice
 		- delete templates
-		- move views out of parents action
 		
 	UIDescription todo:
 		- CTabView support (skipped, UIViewSwitchContainer is the replacement)
-		- CNinePartTiledBitmap support
 		- alternate font support (allow more than one font family for fallback when first font not available on system)
 
-	Platform support:
-		- complete Win32 support
 */
 
 
