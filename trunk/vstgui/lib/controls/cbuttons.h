@@ -76,6 +76,7 @@ protected:
 // CCheckBox Declaration
 //! @brief a check box control with a title and 3 states [new in 4.0]
 /// @ingroup controls
+///	@ingroup new_in_4_0
 //-----------------------------------------------------------------------------
 class CCheckBox : public CControl
 {

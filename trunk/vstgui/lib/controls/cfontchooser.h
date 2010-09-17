@@ -45,6 +45,7 @@ class CDataBrowser;
 class CCheckBox;
 class CTextEdit;
 
+///	@ingroup new_in_4_0
 //-----------------------------------------------------------------------------
 class IFontChooserDelegate
 {
@@ -52,6 +53,7 @@ public:
 	virtual void fontChanged (CFontChooser* chooser, CFontRef newFont) = 0;
 };
 
+///	@ingroup new_in_4_0
 //-----------------------------------------------------------------------------
 struct CFontChooserUIDefinition
 {
@@ -89,6 +91,7 @@ struct CFontChooserUIDefinition
 	{}
 };
 
+///	@ingroup new_in_4_0
 //-----------------------------------------------------------------------------
 class CFontChooser : public CViewContainer, public CControlListener, public IGenericStringListDataBrowserSourceSelectionChanged
 {

@@ -327,10 +327,11 @@ bool CBitmapPixelAccess::setPosition (uint32_t _x, uint32_t _y)
 	return true;
 }
 
+/// @cond ignore
 //------------------------------------------------------------------------
 //------------------------------------------------------------------------
 //------------------------------------------------------------------------
-template <int redPosition, int greenPosition, int bluePosition, int alphaPosition>
+template <int32_t redPosition, int32_t greenPosition, int32_t bluePosition, int32_t alphaPosition>
 class CBitmapPixelAccessOrder : public CBitmapPixelAccess
 {
 public:
@@ -349,11 +350,12 @@ public:
 		currentPos[alphaPosition] = c.alpha;
 	}
 };
+/// @endcond
 
 //------------------------------------------------------------------------
 CBitmapPixelAccess* CBitmapPixelAccess::create (CBitmap* bitmap, bool alphaPremultiplied)
 {
-	if (bitmap->getPlatformBitmap () == 0)
+	if (bitmap == 0 || bitmap->getPlatformBitmap () == 0)
 		return 0;
 	IPlatformBitmapPixelAccess* pixelAccess = bitmap->getPlatformBitmap ()->lockPixels (alphaPremultiplied);
 	if (pixelAccess == 0)
