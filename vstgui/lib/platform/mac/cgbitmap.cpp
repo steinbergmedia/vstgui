@@ -200,6 +200,8 @@ CGContextRef CGBitmap::createCGContext ()
 	if (bits == 0)
 	{
 		allocBits ();
+		if (imageSource)
+			getCGImage ();
 		if (image)
 		{
 			context = createCGContext ();

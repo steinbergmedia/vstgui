@@ -25,7 +25,7 @@ public:
 };
 
 //------------------------------------------------------------------------
-class AnimationTestController : public UIDescriptionBaseController, public VST3EditorDelegate
+class AnimationTestController : public UIDescriptionBaseController
 {
 public:
 	Steinberg::tresult PLUGIN_API initialize (Steinberg::FUnknown* context);

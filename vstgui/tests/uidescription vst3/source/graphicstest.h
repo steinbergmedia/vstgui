@@ -15,7 +15,7 @@
 namespace VSTGUI {
 
 //------------------------------------------------------------------------
-class GraphicsTestController : public UIDescriptionBaseController, public VST3EditorDelegate
+class GraphicsTestController : public UIDescriptionBaseController
 {
 public:
 	Steinberg::tresult PLUGIN_API initialize (Steinberg::FUnknown* context);
