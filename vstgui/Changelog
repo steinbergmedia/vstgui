@@ -1,3 +1,7 @@
+2010-09-23 arne
+
+	* workaround bug on Mac OS X that PNG images are always decoded when drawn
+
 2010-09-10 arne
 
 	* add CBitmapPixelAccess class
