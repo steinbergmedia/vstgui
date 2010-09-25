@@ -1,3 +1,7 @@
+2010-09-25 arne
+
+	* fix Direct2D issues after installing IE 9 Beta (the new Direct2D version does not like to draw into WS_EX_COMPOSITED windows)
+
 2010-09-23 arne
 
 	* workaround bug on Mac OS X that PNG images are always decoded when drawn

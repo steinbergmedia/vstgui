@@ -85,7 +85,13 @@ public:
 			D2D1CreateFactoryProc _D2D1CreateFactory = (D2D1CreateFactoryProc)GetProcAddress (d2d1Dll, "D2D1CreateFactory");
 			if (_D2D1CreateFactory)
 			{
-				HRESULT hr = _D2D1CreateFactory (D2D1_FACTORY_TYPE_SINGLE_THREADED, __uuidof(ID2D1Factory), 0, (void**)&factory);
+				D2D1_FACTORY_OPTIONS* options = 0;
+			#if 0 //DEBUG
+				D2D1_FACTORY_OPTIONS debugOptions;
+				debugOptions.debugLevel = D2D1_DEBUG_LEVEL_INFORMATION;
+				options = &debugOptions;
+			#endif
+				HRESULT hr = _D2D1CreateFactory (D2D1_FACTORY_TYPE_SINGLE_THREADED, __uuidof(ID2D1Factory), options, (void**)&factory);
 			}
 		}
 		HMODULE dwriteDll = LoadLibraryA ("dwrite.dll");

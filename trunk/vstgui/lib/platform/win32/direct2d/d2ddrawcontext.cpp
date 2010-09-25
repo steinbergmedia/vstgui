@@ -166,6 +166,7 @@ void D2DDrawContext::endDraw ()
 {
 	if (renderTarget)
 	{
+		renderTarget->Flush ();
 		HRESULT result = renderTarget->EndDraw ();
 		if (result == D2DERR_RECREATE_TARGET)
 		{
