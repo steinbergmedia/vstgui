@@ -203,6 +203,11 @@ protected:
 		if (parameter)
 		{
 			Steinberg::Vst::String128 utf16Str;
+			if (parameter && parameter->getInfo ().stepCount)
+			{
+				// convert back to normalized value
+				value = editController->plainParamToNormalized (getParameterID (), value);
+			}
 			editController->getParamStringByValue (getParameterID (), value, utf16Str);
 			Steinberg::String utf8Str (utf16Str);
 			utf8Str.toMultiByte (Steinberg::kCP_Utf8);
@@ -223,6 +228,8 @@ protected:
 		bool mouseEnabled = true;
 		bool isStepCount = false;
 		Steinberg::Vst::ParamValue defaultValue = 0.5;
+		float minValue = 0.f;
+		float maxValue = 1.f;
 		if (parameter)
 		{
 			defaultValue = parameter->getInfo ().defaultNormalizedValue;
@@ -233,6 +240,8 @@ protected:
 				isStepCount = true;
 				value = parameter->toPlain (value);
 				defaultValue = parameter->toPlain (defaultValue);
+				minValue = parameter->toPlain (minValue);
+				maxValue = parameter->toPlain (maxValue);
 			}
 		}
 		std::list<CControl*>::iterator it = controls.begin ();
@@ -242,7 +251,13 @@ protected:
 			(*it)->setDefaultValue (defaultValue);
 			if (isStepCount)
 			{
-				(*it)->setValue (value, true);
+				(*it)->setMin (minValue);
+				(*it)->setMax (maxValue);
+				COptionMenu* optMenu = dynamic_cast<COptionMenu*> (*it);
+				if (optMenu)
+					(*it)->setValue (value - minValue, true);
+				else
+					(*it)->setValue (value, true);
 			}
 			else
 				(*it)->setValueNormalized (value, true);

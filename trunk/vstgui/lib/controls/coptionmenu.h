@@ -126,6 +126,7 @@ public:
 	COptionMenu ();
 	COptionMenu (const CRect& size, CControlListener* listener, int32_t tag, CBitmap* background = 0, CBitmap* bgWhenClick = 0, const int32_t style = 0);
 	COptionMenu (const COptionMenu& menu);
+	~COptionMenu ();
 
 	//-----------------------------------------------------------------------------
 	/// @name COptionMenu Methods
@@ -179,7 +180,6 @@ public:
 
 	CLASS_METHODS(COptionMenu, CParamDisplay)
 protected:
-	~COptionMenu ();
 
 	CMenuItemList* menuItems;
 
