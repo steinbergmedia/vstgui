@@ -185,9 +185,14 @@ public:
 
 	VSTGUI_DEPRECATED(bool isDoubleClick ();) ///< \deprecated use kDoubleClick in onMouseDown
 
+	static long kZoomModifier;	///< zoom modifier key, per default is the shift key
+	static long kDefaultValueModifier; ///< default value modifier key, per default is the control key
+
 	CLASS_METHODS_VIRTUAL(CControl, CView)
 
 protected:
+	static long mapVstKeyModifier (long vstModifier);
+
 	CControlListener* listener;
 	long  tag;
 	float oldValue;
@@ -580,7 +585,7 @@ public:
 	virtual CMenuItem* addEntry (CMenuItem* item, long index = -1);											///< add a new entry
 	virtual CMenuItem* addEntry (COptionMenu* submenu, const char* title);									///< add a new submenu entry
 	virtual CMenuItem* addEntry (const char* title, long index = -1, long itemFlags = CMenuItem::kNoFlags);	///< add a new entry
-	virtual CMenuItem* addSeparator ();																		///< add a new separator entry
+	virtual CMenuItem* addSeparator (long index = -1);														///< add a new separator entry
 	virtual CMenuItem* getCurrent () const;																	///< get current entry
 	virtual long getCurrentIndex (bool countSeparator = false) const;
 	virtual CMenuItem* getEntry (long index) const;															///< get entry at index position

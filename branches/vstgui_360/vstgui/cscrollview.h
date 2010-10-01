@@ -51,7 +51,7 @@ class CVSTGUITimer;
 /// \nosubgrouping
 /// \ingroup containerviews
 //-----------------------------------------------------------------------------
-class CScrollView : public CViewContainer, CControlListener
+class CScrollView : public CViewContainer, public CControlListener
 {
 public:
 	//-----------------------------------------------------------------------------

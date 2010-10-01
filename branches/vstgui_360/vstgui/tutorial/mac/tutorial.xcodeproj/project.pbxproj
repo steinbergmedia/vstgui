@@ -32,6 +32,12 @@
 		F41582C7100E545500E208B6 /* audioeffectx.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F405CDFD0B048824008E3886 /* audioeffectx.cpp */; };
 		F41582C8100E545600E208B6 /* audioeffect.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F405CDFB0B048824008E3886 /* audioeffect.cpp */; };
 		F41582C9100E545700E208B6 /* aeffguieditor.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F405CDC10B048736008E3886 /* aeffguieditor.cpp */; };
+		F4658BE41255CC3100840AE0 /* cdatabrowser.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4658BDE1255CC3100840AE0 /* cdatabrowser.cpp */; };
+		F4658BE51255CC3100840AE0 /* cscrollview.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4658BE01255CC3100840AE0 /* cscrollview.cpp */; };
+		F4658BE61255CC3100840AE0 /* ctabview.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4658BE21255CC3100840AE0 /* ctabview.cpp */; };
+		F4658BE71255CC3100840AE0 /* cdatabrowser.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4658BDE1255CC3100840AE0 /* cdatabrowser.cpp */; };
+		F4658BE81255CC3100840AE0 /* cscrollview.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4658BE01255CC3100840AE0 /* cscrollview.cpp */; };
+		F4658BE91255CC3100840AE0 /* ctabview.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4658BE21255CC3100840AE0 /* ctabview.cpp */; };
 		F47F245811D4C3B900C94CAF /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F47F245711D4C3B900C94CAF /* Cocoa.framework */; };
 		F47F246411D4C44500C94CAF /* cocoasupport.mm in Sources */ = {isa = PBXBuildFile; fileRef = F47F246311D4C44500C94CAF /* cocoasupport.mm */; };
 		F47F246511D4C44500C94CAF /* cocoasupport.mm in Sources */ = {isa = PBXBuildFile; fileRef = F47F246311D4C44500C94CAF /* cocoasupport.mm */; };
@@ -73,6 +79,13 @@
 		F405D04D0B04E47B008E3886 /* Info2.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info2.plist; sourceTree = "<group>"; };
 		F405D0710B04E59A008E3886 /* Tutorial2Editor.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = Tutorial2Editor.cpp; path = ../source/Tutorial2Editor.cpp; sourceTree = SOURCE_ROOT; };
 		F405D0820B04E7B3008E3886 /* KnobHandleHighlight.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = KnobHandleHighlight.png; path = ../resource/KnobHandleHighlight.png; sourceTree = SOURCE_ROOT; };
+		F4658BDE1255CC3100840AE0 /* cdatabrowser.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = cdatabrowser.cpp; path = ../../cdatabrowser.cpp; sourceTree = SOURCE_ROOT; };
+		F4658BDF1255CC3100840AE0 /* cdatabrowser.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = cdatabrowser.h; path = ../../cdatabrowser.h; sourceTree = SOURCE_ROOT; };
+		F4658BE01255CC3100840AE0 /* cscrollview.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = cscrollview.cpp; path = ../../cscrollview.cpp; sourceTree = SOURCE_ROOT; };
+		F4658BE11255CC3100840AE0 /* cscrollview.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = cscrollview.h; path = ../../cscrollview.h; sourceTree = SOURCE_ROOT; };
+		F4658BE21255CC3100840AE0 /* ctabview.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = ctabview.cpp; path = ../../ctabview.cpp; sourceTree = SOURCE_ROOT; };
+		F4658BE31255CC3100840AE0 /* ctabview.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ctabview.h; path = ../../ctabview.h; sourceTree = SOURCE_ROOT; };
+		F4658BF91255D59D00840AE0 /* Changelog */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = Changelog; path = ../../Changelog; sourceTree = SOURCE_ROOT; };
 		F47F245711D4C3B900C94CAF /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = /System/Library/Frameworks/Cocoa.framework; sourceTree = "<absolute>"; };
 		F47F246211D4C44500C94CAF /* cocoasupport.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = cocoasupport.h; path = ../../cocoasupport.h; sourceTree = SOURCE_ROOT; };
 		F47F246311D4C44500C94CAF /* cocoasupport.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = cocoasupport.mm; path = ../../cocoasupport.mm; sourceTree = SOURCE_ROOT; };
@@ -106,6 +119,7 @@
 		089C166AFE841209C02AAC07 /* tutorial */ = {
 			isa = PBXGroup;
 			children = (
+				F4658BF91255D59D00840AE0 /* Changelog */,
 				32BAE0B30371A71500C91783 /* tutorial_Prefix.pch */,
 				08FB77ADFE841716C02AAC07 /* Source */,
 				089C167CFE841241C02AAC07 /* Resources */,
@@ -166,10 +180,16 @@
 			children = (
 				F405CDC10B048736008E3886 /* aeffguieditor.cpp */,
 				F405CDC20B048736008E3886 /* aeffguieditor.h */,
+				F4658BDE1255CC3100840AE0 /* cdatabrowser.cpp */,
+				F4658BDF1255CC3100840AE0 /* cdatabrowser.h */,
 				F47F246811D4C45E00C94CAF /* cfileselector.cpp */,
 				F47F246911D4C45E00C94CAF /* cfileselector.h */,
 				F47F246211D4C44500C94CAF /* cocoasupport.h */,
 				F47F246311D4C44500C94CAF /* cocoasupport.mm */,
+				F4658BE01255CC3100840AE0 /* cscrollview.cpp */,
+				F4658BE11255CC3100840AE0 /* cscrollview.h */,
+				F4658BE21255CC3100840AE0 /* ctabview.cpp */,
+				F4658BE31255CC3100840AE0 /* ctabview.h */,
 				F47F246E11D4C46D00C94CAF /* cvstguitimer.cpp */,
 				F47F246F11D4C46D00C94CAF /* cvstguitimer.h */,
 				F405CDC30B048736008E3886 /* vstcontrols.cpp */,
@@ -293,6 +313,9 @@
 				F47F246411D4C44500C94CAF /* cocoasupport.mm in Sources */,
 				F47F246A11D4C45E00C94CAF /* cfileselector.cpp in Sources */,
 				F47F247011D4C46D00C94CAF /* cvstguitimer.cpp in Sources */,
+				F4658BE41255CC3100840AE0 /* cdatabrowser.cpp in Sources */,
+				F4658BE51255CC3100840AE0 /* cscrollview.cpp in Sources */,
+				F4658BE61255CC3100840AE0 /* ctabview.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -311,6 +334,9 @@
 				F47F246511D4C44500C94CAF /* cocoasupport.mm in Sources */,
 				F47F246B11D4C45E00C94CAF /* cfileselector.cpp in Sources */,
 				F47F247111D4C46D00C94CAF /* cvstguitimer.cpp in Sources */,
+				F4658BE71255CC3100840AE0 /* cdatabrowser.cpp in Sources */,
+				F4658BE81255CC3100840AE0 /* cscrollview.cpp in Sources */,
+				F4658BE91255CC3100840AE0 /* ctabview.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

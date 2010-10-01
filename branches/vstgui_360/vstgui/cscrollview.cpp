@@ -817,7 +817,7 @@ bool CScrollbar::onWheel (const CPoint &where, const CMouseWheelAxis &axis, cons
 	if (direction == kHorizontal && axis == kMouseWheelAxisY)
 		distance *= -1;
 
-	if (buttons & kShift)
+	if (buttons & kZoomModifier)
 		value -= 0.1f * distance * wheelInc;
 	else
 		value -= distance * wheelInc;

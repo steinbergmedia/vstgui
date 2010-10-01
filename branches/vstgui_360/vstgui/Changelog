@@ -1,3 +1,8 @@
+2010-10-01 arne
+
+	* add a possibility to declare custom key modifiers for control zooming and setting the default value for a control
+	* some fixes and enhancements from Vítězslav Kot
+	
 2010-06-25 arne
 
 	* Mac 64 bit AEffGUIEditor implementation

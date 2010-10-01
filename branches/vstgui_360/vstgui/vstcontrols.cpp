@@ -146,6 +146,10 @@ CControl::~CControl ()
 }
 
 //------------------------------------------------------------------------
+long CControl::kZoomModifier = kShift;
+long CControl::kDefaultValueModifier = kControl;
+
+//------------------------------------------------------------------------
 void CControl::beginEdit ()
 {
 	// begin of edit parameter
@@ -215,7 +219,7 @@ void CControl::bounceValue ()
 //-----------------------------------------------------------------------------
 bool CControl::checkDefaultValue (long button)
 {
-	if (button == (kControl|kLButton))
+	if (button == (kDefaultValueModifier|kLButton))
 	{
 		// begin of edit parameter
 		beginEdit ();
@@ -229,6 +233,21 @@ bool CControl::checkDefaultValue (long button)
 		return true;
 	}
 	return false;
+}
+
+//-----------------------------------------------------------------------------
+long CControl::mapVstKeyModifier (long vstModifier)
+{
+	long modifiers = 0;
+	if (vstModifier & MODIFIER_SHIFT)
+		modifiers | kShift;
+	if (vstModifier & MODIFIER_ALTERNATE)
+		modifiers | kAlt;
+	if (vstModifier & MODIFIER_COMMAND)
+		modifiers | kApple;
+	if (vstModifier & MODIFIER_CONTROL)
+		modifiers | kControl;
+	return modifiers;
 }
 
 #if VSTGUI_ENABLE_DEPRECATED_METHODS
@@ -550,7 +569,7 @@ void CKnob::mouse (CDrawContext *pContext, CPoint& where, long button)
 
 	if (mode == kLinearMode && (button & kLButton))
 	{
-		if (button & kShift)
+		if (button & kZoomModifier)
 			range *= zoomFactor;
 		firstPoint = where;
 		modeLinear = true;
@@ -579,7 +598,7 @@ void CKnob::mouse (CDrawContext *pContext, CPoint& where, long button)
 				if (button != oldButton)
 				{
 					range = 200.f;
-					if (button & kShift)
+					if (button & kZoomModifier)
 						range *= zoomFactor;
 	
 					float coef2 = (vmax - vmin) / range;
@@ -647,7 +666,7 @@ CMouseEventResult CKnob::onMouseDown (CPoint& where, const long& buttons)
 
 	if (mode == kLinearMode && (buttons & kLButton))
 	{
-		if (buttons & kShift)
+		if (buttons & kZoomModifier)
 			range *= zoomFactor;
 		lastPoint = where;
 		modeLinear = true;
@@ -686,7 +705,7 @@ CMouseEventResult CKnob::onMouseMoved (CPoint& where, const long& buttons)
 				if (buttons != oldButton)
 				{
 					range = 200.f;
-					if (buttons & kShift)
+					if (buttons & kZoomModifier)
 						range *= zoomFactor;
 
 					float coef2 = (vmax - vmin) / range;
@@ -723,7 +742,7 @@ bool CKnob::onWheel (const CPoint& where, const float &distance, const long &but
 	if (!bMouseEnabled)
 		return false;
 
-	if (buttons & kShift)
+	if (buttons & kZoomModifier)
 		value += 0.1f * distance * wheelInc;
 	else
 		value += distance * wheelInc;
@@ -756,7 +775,7 @@ long CKnob::onKeyDown (VstKeyCode& keyCode)
 			if (keyCode.virt == VKEY_DOWN || keyCode.virt == VKEY_LEFT)
 				distance = -distance;
 
-			if (keyCode.modifier & MODIFIER_SHIFT)
+			if (mapVstKeyModifier (keyCode.modifier) & kZoomModifier)
 				value += 0.1f * distance * wheelInc;
 			else
 				value += distance * wheelInc;
@@ -2753,10 +2772,10 @@ CMenuItem* COptionMenu::addEntry (const char* title, long index, long itemFlags)
 }
 
 //-----------------------------------------------------------------------------
-CMenuItem* COptionMenu::addSeparator ()
+CMenuItem* COptionMenu::addSeparator (long index)
 {
 	CMenuItem* item = new CMenuItem ("", CMenuItem::kSeparator);
-	return addEntry (item);
+	return addEntry (item, index);
 }
 
 //-----------------------------------------------------------------------------
@@ -2770,10 +2789,14 @@ CMenuItem* COptionMenu::getEntry (long index) const
 {
 	if (menuItems->empty())
 		return 0;
-	
-	CMenuItemIterator it = menuItems->begin ();
-	for (int i = 0; i < index; i++, it++);
-	return (*it);
+	long count = 0;
+	for (CMenuItemIterator it = menuItems->begin (); it != menuItems->end (); it++, count++ )
+	{
+		if (index == count)
+			return (*it);
+	}
+
+	return 0;
 }
 
 //-----------------------------------------------------------------------------
@@ -3490,6 +3513,8 @@ void COptionMenu::takeFocus ()
 //------------------------------------------------------------------------
 void COptionMenu::looseFocus ()
 {	
+	invalid (); // it seems necessary on Win XP
+
 	if (platformControl == 0) 
 		return;
 
@@ -4992,7 +5017,7 @@ void CSlider::mouse (CDrawContext *pContext, CPoint& where, long button)
 		if (style & kRight || style & kBottom)
 			value = 1.f - value;
 
-		if (button & kShift)
+		if (button & kZoomModifier)
 			value = oldVal + ((value - oldVal) / zoomFactor);
 		bounceValue ();
     	    
@@ -5075,7 +5100,7 @@ CMouseEventResult CSlider::onMouseDown (CPoint& where, const long& buttons)
 		endEdit ();
 		return kMouseDownEventHandledButDontNeedMovedOrUpEvents;
 	}
-	if (buttons & kShift)
+	if (buttons & kZoomModifier)
 		return kMouseEventHandled;
 	return onMouseMoved (where, buttons);
 }
@@ -5095,12 +5120,12 @@ CMouseEventResult CSlider::onMouseMoved (CPoint& where, const long& buttons)
 		if (oldVal == vmin - 1)
 			oldVal    = (value - vmin) / (vmax - vmin);
 			
-		if ((oldButton != buttons) && (buttons & kShift))
+		if ((oldButton != buttons) && (buttons & kZoomModifier))
 		{
 			oldVal    = (value - vmin) / (vmax - vmin);
 			oldButton = buttons;
 		}
-		else if (!(buttons & kShift))
+		else if (!(buttons & kZoomModifier))
 			oldVal = (value - vmin) / (vmax - vmin);
 
 		if (style & kHorizontal)
@@ -5111,7 +5136,7 @@ CMouseEventResult CSlider::onMouseMoved (CPoint& where, const long& buttons)
 		if (style & kRight || style & kBottom)
 			value = 1.f - value;
 
-		if (buttons & kShift)
+		if (buttons & kZoomModifier)
 			value = oldVal + ((value - oldVal) / zoomFactor);
 
 		if (vmax != 1.f || vmin != 1.f)
@@ -5133,7 +5158,7 @@ bool CSlider::onWheel (const CPoint& where, const float &distance, const long &b
 	if (!bMouseEnabled)
 		return false;
 
-	if (buttons & kShift)
+	if (buttons & kZoomModifier)
 		value += 0.1f * distance * wheelInc;
 	else
 		value += distance * wheelInc;
@@ -5167,7 +5192,7 @@ long CSlider::onKeyDown (VstKeyCode& keyCode)
 			if (keyCode.virt == VKEY_DOWN || keyCode.virt == VKEY_LEFT)
 				distance = -distance;
 
-			if (keyCode.modifier & MODIFIER_SHIFT)
+			if (mapVstKeyModifier (keyCode.modifier) & kZoomModifier)
 				value += 0.1f * distance * wheelInc;
 			else
 				value += distance * wheelInc;
