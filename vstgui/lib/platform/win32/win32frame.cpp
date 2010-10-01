@@ -50,6 +50,10 @@
 #include "win32dragcontainer.h"
 #include "../../cdropsource.h"
 
+// windows libraries VSTGUI depends on
+#pragma comment(lib, "Shlwapi.lib")
+#pragma comment(lib, "gdiplus.lib")
+
 namespace VSTGUI {
 
 #define DEBUG_DRAWING	0

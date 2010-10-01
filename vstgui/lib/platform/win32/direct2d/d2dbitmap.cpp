@@ -102,35 +102,18 @@ IWICBitmap* D2DBitmap::getBitmap ()
 }
 
 //-----------------------------------------------------------------------------
-bool D2DBitmap::load (const CResourceDescription& resourceDesc)
+bool D2DBitmap::loadFromStream (IStream* iStream)
 {
-	if (source)
-		return true;
-
+	bool result = false;
 	IWICBitmapDecoder* decoder = 0;
-	HRSRC rsrc = 0;
-	if (resourceDesc.type == CResourceDescription::kIntegerType)
-		rsrc = FindResourceA (GetInstance (), MAKEINTRESOURCEA (resourceDesc.u.id), "PNG");
-	else
-		rsrc = FindResourceA (GetInstance (), resourceDesc.u.name, "PNG");
-	if (rsrc)
+	IWICStream* stream = 0;
+	if (SUCCEEDED (WICGlobal::getFactory ()->CreateStream (&stream)))
 	{
-		HGLOBAL resDataLoad = LoadResource (GetInstance (), rsrc);
-		if (resDataLoad)
+		if (SUCCEEDED (stream->InitializeFromIStream (iStream)))
 		{
-			BYTE* resData = (BYTE*)LockResource (resDataLoad);
-			DWORD resSize = SizeofResource (GetInstance (), rsrc);
-			IWICStream* stream = 0;
-			if (SUCCEEDED (WICGlobal::getFactory ()->CreateStream (&stream)))
-			{
-				if (SUCCEEDED (stream->InitializeFromMemory (resData, resSize)))
-				{
-					WICGlobal::getFactory ()->CreateDecoderFromStream (stream, NULL, WICDecodeMetadataCacheOnLoad, &decoder);
-				}
-				stream->Release ();
-			}
-			FreeResource (resDataLoad);
+			WICGlobal::getFactory ()->CreateDecoderFromStream (stream, NULL, WICDecodeMetadataCacheOnLoad, &decoder);
 		}
+		stream->Release ();
 	}
 	if (decoder)
 	{
@@ -159,6 +142,22 @@ bool D2DBitmap::load (const CResourceDescription& resourceDesc)
 		decoder->Release ();
 	}
 	return source != 0;
+}
+
+//-----------------------------------------------------------------------------
+bool D2DBitmap::load (const CResourceDescription& resourceDesc)
+{
+	if (source)
+		return true;
+
+	bool result = false;
+	ResourceStream* resourceStream = new ResourceStream;
+	if (resourceStream->open (resourceDesc, "PNG"))
+	{
+		result = loadFromStream (resourceStream);
+	}
+	resourceStream->Release ();
+	return result;
 }
 
 //-----------------------------------------------------------------------------

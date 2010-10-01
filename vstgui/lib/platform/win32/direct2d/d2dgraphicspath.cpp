@@ -199,6 +199,9 @@ CRect D2DGraphicsPath::getBoundingBox () const
 //-----------------------------------------------------------------------------
 ID2D1PathGeometry* D2DGraphicsPath::getPath (int32_t fillMode)
 {
+	if (instructions.empty ())
+		return 0;
+
 	if (path)
 	{
 		if (!dirty && fillMode == currentPathFillMode)

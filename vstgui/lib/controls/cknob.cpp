@@ -304,7 +304,7 @@ CMouseEventResult CKnob::onMouseDown (CPoint& where, const CButtonState& buttons
 
 	if (mode == kLinearMode)
 	{
-		if (buttons & kShift)
+		if (buttons & kZoomModifier)
 			range *= zoomFactor;
 		lastPoint = where;
 		modeLinear = true;
@@ -343,7 +343,7 @@ CMouseEventResult CKnob::onMouseMoved (CPoint& where, const CButtonState& button
 				if (buttons != oldButton)
 				{
 					range = 200.f;
-					if (buttons & kShift)
+					if (buttons & kZoomModifier)
 						range *= zoomFactor;
 
 					float coef2 = (getMax () - getMin ()) / range;
@@ -380,7 +380,7 @@ bool CKnob::onWheel (const CPoint& where, const float &distance, const CButtonSt
 	if (!bMouseEnabled)
 		return false;
 
-	if (buttons & kShift)
+	if (buttons & kZoomModifier)
 		value += 0.1f * distance * wheelInc;
 	else
 		value += distance * wheelInc;
@@ -413,7 +413,7 @@ int32_t CKnob::onKeyDown (VstKeyCode& keyCode)
 			if (keyCode.virt == VKEY_DOWN || keyCode.virt == VKEY_LEFT)
 				distance = -distance;
 
-			if (keyCode.modifier & MODIFIER_SHIFT)
+			if (mapVstKeyModifier (keyCode.modifier) & kZoomModifier)
 				value += 0.1f * distance * wheelInc;
 			else
 				value += distance * wheelInc;

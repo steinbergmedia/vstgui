@@ -48,6 +48,7 @@ class IPlatformBitmap : public CBaseObject
 {
 public:
 	static IPlatformBitmap* create (CPoint* size = 0); // if size pointer is not zero, create a bitmap which can be used as a draw surface
+	static IPlatformBitmap* createFromPath (UTF8StringPtr absolutePath); // create a bitmap from an absolute path
 
 	virtual bool load (const CResourceDescription& desc) = 0;
 	virtual const CPoint& getSize () const = 0;

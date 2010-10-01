@@ -1392,10 +1392,10 @@ CBitmap* UIBitmapNode::getBitmap ()
 			CRect offsets;
 			if (attributes->getRectAttribute ("nineparttiled-offsets", offsets))
 			{
-				bitmap = new CNinePartTiledBitmap (path->c_str (), CNinePartTiledBitmap::PartOffsets (offsets.left, offsets.top, offsets.right, offsets.bottom));
+				bitmap = new CNinePartTiledBitmap (CResourceDescription (path->c_str ()), CNinePartTiledBitmap::PartOffsets (offsets.left, offsets.top, offsets.right, offsets.bottom));
 			}
 			else
-				bitmap = new CBitmap (path->c_str ());
+				bitmap = new CBitmap (CResourceDescription (path->c_str ()));
 		}
 	}
 	return bitmap;

@@ -57,13 +57,13 @@ public:
 
 	CGImageRef getCGImage ();
 	CGContextRef createCGContext ();
+	bool loadFromImageSource (CGImageSourceRef source);
 
 	void setDirty () { dirty = true; }
 	void* getBits () const { return bits; }
 	int32_t getBytesPerRow () const { return bytesPerRow; }
 //-----------------------------------------------------------------------------
 protected:
-	bool loadFromImageSource (CGImageSourceRef source);
 	void allocBits ();
 	void freeCGImage ();
 

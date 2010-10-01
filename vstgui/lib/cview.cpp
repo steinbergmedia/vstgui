@@ -73,51 +73,48 @@ namespace VSTGUI {
 
 #endif // DEBUG
 
+typedef std::map<CViewAttributeID, CViewAttributeEntry*>::const_iterator CViewAttributeConstIterator;
+typedef std::map<CViewAttributeID, CViewAttributeEntry*>::iterator CViewAttributeIterator;
 //-----------------------------------------------------------------------------
-class CAttributeListEntry
+class CViewAttributeEntry
 {
 public:
-	CAttributeListEntry (int32_t size, CViewAttributeID id)
-	: nextEntry (0)
-	, pointer (0)
-	, sizeOfPointer (size)
-	, id (id)
+	CViewAttributeEntry (int32_t _size, const void* _data)
+	: size (0)
+	, data (0)
 	{
-		pointer = malloc (size);
+		updateData (_size, _data);
 	}
 
-	~CAttributeListEntry ()
+	~CViewAttributeEntry ()
 	{
-		if (pointer)
-			free (pointer);
+		if (data)
+			free (data);
 	}
 
-	const CViewAttributeID getID () const { return id; }
-	const int32_t getSize () const { return sizeOfPointer; }
-	void* getPointer () const { return pointer; }
-	CAttributeListEntry* getNext () const { return nextEntry; }
-	
-	void setNext (CAttributeListEntry* entry) { nextEntry = entry; }
+	int32_t getSize () const { return size; }
+	const void* getData () const { return data; }
 
-	void resize (int32_t newSize)
+	void updateData (int32_t _size, const void* _data)
 	{
-		if (pointer)
-			free (pointer);
-		if (newSize > 0)
-			pointer = malloc (newSize);
-		else
-			pointer = 0;
-		sizeOfPointer = newSize;
+		if (data && size != _size)
+		{
+			free (data);
+			data = 0;
+		}
+		size = _size;
+		if (size)
+		{
+			if (data == 0)
+				data = malloc (_size);
+			memcpy (data, _data, size);
+		}
 	}
-
 protected:
-	CAttributeListEntry () : nextEntry (0), pointer (0), sizeOfPointer (0), id (0) {}
-
-	CAttributeListEntry* nextEntry;
-	void* pointer;
-	int32_t sizeOfPointer;
-	CViewAttributeID id;
+	int32_t size;
+	void* data;
 };
+
 /// @endcond
 
 UTF8StringPtr kDegreeSymbol		= "\xC2\xB0";
@@ -145,7 +142,6 @@ CView::CView (const CRect& size)
 , bIsAttached (false)
 , bVisible (true)
 , pBackground (0)
-, pAttributeList (0)
 , autosizeFlags (kAutosizeNone)
 , alphaValue (1.f)
 {
@@ -169,21 +165,13 @@ CView::CView (const CView& v)
 , bIsAttached (false)
 , bVisible (true)
 , pBackground (v.pBackground)
-, pAttributeList (0)
 , autosizeFlags (v.autosizeFlags)
 , alphaValue (v.alphaValue)
 {
 	if (pBackground)
 		pBackground->remember ();
-	if (v.pAttributeList)
-	{
-		CAttributeListEntry* entry = v.pAttributeList;
-		while (entry)
-		{
-			setAttribute (entry->getID (), entry->getSize (), entry->getPointer ());
-			entry = entry->getNext ();
-		}
-	}
+	for (CViewAttributeIterator it = attributes.begin (); it != attributes.end (); it++)
+		setAttribute (it->first, it->second->getSize (), it->second->getData ());
 }
 
 //-----------------------------------------------------------------------------
@@ -192,16 +180,10 @@ CView::~CView ()
 	if (pBackground)
 		pBackground->forget ();
 
-	if (pAttributeList)
-	{
-		CAttributeListEntry* entry = pAttributeList;
-		while (entry)
-		{
-			CAttributeListEntry* nextEntry = entry->getNext ();
-			delete entry;
-			entry = nextEntry;
-		}
-	}
+	CViewAttributeIterator it = attributes.begin ();
+	for (CViewAttributeIterator it = attributes.begin (); it != attributes.end (); it++)
+		delete it->second;
+
 	#if VSTGUI_CHECK_VIEW_RELEASING
 	gNbCView--;
 	gViewList.remove (this);
@@ -497,20 +479,11 @@ const CViewAttributeID kCViewTooltipAttribute = 'cvtt';
  */
 bool CView::getAttributeSize (const CViewAttributeID id, int32_t& outSize) const
 {
-	if (pAttributeList)
+	CViewAttributeConstIterator it = attributes.find (id);
+	if (it != attributes.end ())
 	{
-		CAttributeListEntry* entry = pAttributeList;
-		while (entry)
-		{
-			if (entry->getID () == id)
-				break;
-			entry = entry->getNext ();
-		}
-		if (entry)
-		{
-			outSize = entry->getSize ();
-			return true;
-		}
+		outSize = it->second->getSize ();
+		return true;
 	}
 	return false;
 }
@@ -525,20 +498,14 @@ bool CView::getAttributeSize (const CViewAttributeID id, int32_t& outSize) const
  */
 bool CView::getAttribute (const CViewAttributeID id, const int32_t inSize, void* outData, int32_t& outSize) const
 {
-	if (pAttributeList)
+	CViewAttributeConstIterator it = attributes.find (id);
+	if (it != attributes.end ())
 	{
-		CAttributeListEntry* entry = pAttributeList;
-		while (entry)
+		if (inSize >= it->second->getSize ())
 		{
-			if (entry->getID () == id)
-				break;
-			entry = entry->getNext ();
-		}
-		if (entry && inSize >= entry->getSize ())
-		{
-			outSize = entry->getSize ();
+			outSize = it->second->getSize ();
 			if (outSize > 0)
-				memcpy (outData, entry->getPointer (), outSize);
+				memcpy (outData, it->second->getData (), outSize);
 			return true;
 		}
 	}
@@ -557,71 +524,23 @@ bool CView::setAttribute (const CViewAttributeID id, const int32_t inSize, const
 {
 	if (inData == 0 || inSize <= 0)
 		return false;
-	CAttributeListEntry* lastEntry = 0;
-	if (pAttributeList)
-	{
-		CAttributeListEntry* entry = pAttributeList;
-		while (entry)
-		{
-			if (entry->getID () == id)
-				break;
-			if (entry->getNext () == 0)
-				lastEntry = entry;
-			entry = entry->getNext ();
-		}
-		if (entry)
-		{
-			if (entry->getSize () < inSize)
-				entry->resize (inSize);
-			if (entry->getSize () >= inSize)
-			{
-				if (inSize > 0)
-					memcpy (entry->getPointer (), inData, inSize);
-				return true;
-			}
-			else
-				return false;
-		}
-	}
-	
-	// create a new attribute
-	CAttributeListEntry* newEntry = new CAttributeListEntry (inSize, id);
-	memcpy (newEntry->getPointer (), inData, inSize);
-	if (lastEntry)
-		lastEntry->setNext (newEntry);
-	else if (!pAttributeList)
-		pAttributeList = newEntry;
+	CViewAttributeConstIterator it = attributes.find (id);
+	if (it != attributes.end ())
+		it->second->updateData (inSize, inData);
 	else
-	{
-		delete newEntry;
-		return false;
-	}
+		attributes.insert (std::make_pair<CViewAttributeID, CViewAttributeEntry*> (id, new CViewAttributeEntry (inSize, inData)));
 	return true;
 }
 
 //-----------------------------------------------------------------------------
 bool CView::removeAttribute (const CViewAttributeID id)
 {
-	if (pAttributeList)
+	CViewAttributeConstIterator it = attributes.find (id);
+	if (it != attributes.end ())
 	{
-		CAttributeListEntry* entry = pAttributeList;
-		CAttributeListEntry* prevEntry = 0;
-		while (entry)
-		{
-			if (entry->getID () == id)
-				break;
-			prevEntry = entry;
-			entry = entry->getNext ();
-		}
-		if (entry)
-		{
-			if (prevEntry)
-				prevEntry->setNext (entry->getNext ());
-			else if (entry == pAttributeList)
-				pAttributeList = entry->getNext ();
-			delete entry;
-			return true;
-		}
+		delete it->second;
+		attributes.erase (id);
+		return true;
 	}
 	return false;
 }

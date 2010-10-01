@@ -49,7 +49,7 @@ class CVSTGUITimer;
 //! @brief a scrollable container view with scrollbars
 /// @ingroup containerviews
 //-----------------------------------------------------------------------------
-class CScrollView : public CViewContainer, CControlListener
+class CScrollView : public CViewContainer, public CControlListener
 {
 protected:
 	enum 
