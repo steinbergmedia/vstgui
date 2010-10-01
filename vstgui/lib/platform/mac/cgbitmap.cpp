@@ -49,6 +49,30 @@ IPlatformBitmap* IPlatformBitmap::create (CPoint* size)
 }
 
 //-----------------------------------------------------------------------------
+IPlatformBitmap* IPlatformBitmap::createFromPath (UTF8StringPtr absolutePath)
+{
+	CGBitmap* bitmap = 0;
+	CFURLRef url = CFURLCreateFromFileSystemRepresentation (0, (const UInt8*)absolutePath, strlen (absolutePath), false);
+	if (url)
+	{
+		CGImageSourceRef source = CGImageSourceCreateWithURL (url, NULL);
+		if (source)
+		{
+			bitmap = new CGBitmap ();
+			bool result = bitmap->loadFromImageSource (source);
+			if (result == false)
+			{
+				delete bitmap;
+				bitmap = 0;
+			}
+			CFRelease (source);
+		}
+		CFRelease (url);
+	}
+	return bitmap;
+}
+
+//-----------------------------------------------------------------------------
 CGBitmap::CGBitmap (const CPoint& inSize)
 : image (0)
 , imageSource (0)
@@ -114,9 +138,12 @@ bool CGBitmap::load (const CResourceDescription& desc)
 			if (url)
 			{
 				CGImageSourceRef source = CGImageSourceCreateWithURL (url, NULL);
+				if (source)
+				{
+					result = loadFromImageSource (source);
+					CFRelease (source);
+				}
 				CFRelease (url);
-				result = loadFromImageSource (source);
-				CFRelease (source);
 			}
 		}
 	}

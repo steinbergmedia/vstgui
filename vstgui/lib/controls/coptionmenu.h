@@ -135,7 +135,7 @@ public:
 	virtual CMenuItem* addEntry (CMenuItem* item, int32_t index = -1);											///< add a new entry
 	virtual CMenuItem* addEntry (COptionMenu* submenu, UTF8StringPtr title);									///< add a new submenu entry
 	virtual CMenuItem* addEntry (UTF8StringPtr title, int32_t index = -1, int32_t itemFlags = CMenuItem::kNoFlags);	///< add a new entry
-	virtual CMenuItem* addSeparator ();																		///< add a new separator entry
+	virtual CMenuItem* addSeparator (int32_t index = -1);														///< add a new separator entry
 	virtual CMenuItem* getCurrent () const;																	///< get current entry
 	virtual int32_t getCurrentIndex (bool countSeparator = false) const;
 	virtual CMenuItem* getEntry (int32_t index) const;															///< get entry at index position

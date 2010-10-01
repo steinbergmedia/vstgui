@@ -39,6 +39,7 @@
 #include "cpoint.h"
 #include "crect.h"
 #include "vstkeycode.h"
+#include <map>
 
 namespace VSTGUI {
 class CDrawContext;
@@ -47,7 +48,7 @@ class CDropSource;
 class VSTGUIEditorInterface;
 class CBitmap;
 class CFrame;
-class CAttributeListEntry;
+class CViewAttributeEntry;
 
 namespace Animation {
 	class IAnimationTarget;
@@ -371,7 +372,8 @@ protected:
 	float alphaValue;
 	
 	CBitmap* pBackground;
-	CAttributeListEntry* pAttributeList;
+
+	std::map<CViewAttributeID, CViewAttributeEntry*> attributes;
 #if DEBUG
 public:
 	// these are here so that inherited classes which have not changed the buttons parameter type will fail on compilation

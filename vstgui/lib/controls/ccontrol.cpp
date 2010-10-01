@@ -81,6 +81,10 @@ CControl::~CControl ()
 }
 
 //------------------------------------------------------------------------
+int32_t CControl::kZoomModifier = kShift;
+int32_t CControl::kDefaultValueModifier = kControl;
+
+//------------------------------------------------------------------------
 void CControl::setTag (int32_t val)
 {
 	if (listener)
@@ -254,7 +258,7 @@ void CControl::bounceValue ()
 //-----------------------------------------------------------------------------
 bool CControl::checkDefaultValue (CButtonState button)
 {
-	if (getFrame () && getFrame ()->getEditor () && getFrame ()->getEditor ()->isControlDefaultButton (button))
+	if (button.isLeftButton () && button.getModifierState () & kDefaultValueModifier)
 	{
 		// begin of edit parameter
 		beginEdit ();
@@ -291,6 +295,21 @@ bool CControl::getFocusPath (CGraphicsPath& outPath)
 		}
 	}
 	return true;
+}
+
+//-----------------------------------------------------------------------------
+int32_t CControl::mapVstKeyModifier (int32_t vstModifier)
+{
+	int32_t modifiers = 0;
+	if (vstModifier & MODIFIER_SHIFT)
+		modifiers |= kShift;
+	if (vstModifier & MODIFIER_ALTERNATE)
+		modifiers |= kAlt;
+	if (vstModifier & MODIFIER_COMMAND)
+		modifiers |= kApple;
+	if (vstModifier & MODIFIER_CONTROL)
+		modifiers |= kControl;
+	return modifiers;
 }
 
 //------------------------------------------------------------------------

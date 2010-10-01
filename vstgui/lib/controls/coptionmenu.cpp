@@ -477,16 +477,16 @@ CMenuItem* COptionMenu::addEntry (COptionMenu* submenu, UTF8StringPtr title)
 CMenuItem* COptionMenu::addEntry (UTF8StringPtr title, int32_t index, int32_t itemFlags)
 {
 	if (title && strcmp (title, "-") == 0)
-		return addSeparator ();
+		return addSeparator (index);
 	CMenuItem* item = new CMenuItem (title, 0, 0, 0, itemFlags);
 	return addEntry (item, index);
 }
 
 //-----------------------------------------------------------------------------
-CMenuItem* COptionMenu::addSeparator ()
+CMenuItem* COptionMenu::addSeparator (int32_t index)
 {
 	CMenuItem* item = new CMenuItem ("", 0, 0, 0, CMenuItem::kSeparator);
-	return addEntry (item);
+	return addEntry (item, index);
 }
 
 //-----------------------------------------------------------------------------

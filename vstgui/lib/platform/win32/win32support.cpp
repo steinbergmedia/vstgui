@@ -41,6 +41,7 @@
 	#include <dwrite.h>
 #endif
 
+#include <shlwapi.h>
 #include "cfontwin32.h"
 #include "gdiplusbitmap.h"
 #include "gdiplusdrawcontext.h"
@@ -72,14 +73,18 @@ const OSVERSIONINFOEX& getSystemVersion ()
 typedef HRESULT (WINAPI *D2D1CreateFactoryProc) (D2D1_FACTORY_TYPE type, REFIID riid, CONST D2D1_FACTORY_OPTIONS *pFactoryOptions, void** factory);
 typedef HRESULT (WINAPI *DWriteCreateFactoryProc) (DWRITE_FACTORY_TYPE factoryType, REFIID iid, void** factory);
 
+static int VSTGUI_Eval_Exception( int ) { return EXCEPTION_EXECUTE_HANDLER; }
+
 class D2DFactory
 {
 public:
 	D2DFactory ()
 	: factory (0)
 	, writeFactory (0)
+	, d2d1Dll (0)
+	, dwriteDll (0)
 	{
-		HMODULE d2d1Dll = LoadLibraryA ("d2d1.dll");
+		d2d1Dll = LoadLibraryA ("d2d1.dll");
 		if (d2d1Dll)
 		{
 			D2D1CreateFactoryProc _D2D1CreateFactory = (D2D1CreateFactoryProc)GetProcAddress (d2d1Dll, "D2D1CreateFactory");
@@ -91,10 +96,10 @@ public:
 				debugOptions.debugLevel = D2D1_DEBUG_LEVEL_INFORMATION;
 				options = &debugOptions;
 			#endif
-				HRESULT hr = _D2D1CreateFactory (D2D1_FACTORY_TYPE_SINGLE_THREADED, __uuidof(ID2D1Factory), options, (void**)&factory);
+				HRESULT hr = _D2D1CreateFactory (D2D1_FACTORY_TYPE_MULTI_THREADED, __uuidof(ID2D1Factory), options, (void**)&factory);
 			}
 		}
-		HMODULE dwriteDll = LoadLibraryA ("dwrite.dll");
+		dwriteDll = LoadLibraryA ("dwrite.dll");
 		if (dwriteDll)
 		{
 			DWriteCreateFactoryProc _DWriteCreateFactory = (DWriteCreateFactoryProc)GetProcAddress (dwriteDll, "DWriteCreateFactory");
@@ -107,29 +112,44 @@ public:
 
 	~D2DFactory ()
 	{
-		if (factory)
-			factory->Release ();
 		if (writeFactory)
 			writeFactory->Release ();
+		if (dwriteDll)
+			FreeLibrary (dwriteDll);
+		if (factory)
+		{
+			__try { // since the Direct2D hotfix (KB2028560) this is necessary
+				factory->Release ();
+			} __except (VSTGUI_Eval_Exception (GetExceptionCode ())) {}
+		}
+		if (d2d1Dll)
+			FreeLibrary (d2d1Dll);
 	}
 	ID2D1Factory* getFactory () const { return factory; }
 	IDWriteFactory* getWriteFactory () const { return writeFactory; }
 protected:
 	ID2D1Factory* factory;
 	IDWriteFactory* writeFactory;
+	HMODULE d2d1Dll;
+	HMODULE dwriteDll;
 };
 
-static D2DFactory d2dFactory;
+//-----------------------------------------------------------------------------
+D2DFactory& getD2DFactoryInstance ()
+{
+	static D2DFactory d2dFactory;
+	return d2dFactory;
+}
 
 //-----------------------------------------------------------------------------
 ID2D1Factory* getD2DFactory ()
 {
-	return d2dFactory.getFactory ();
+	return getD2DFactoryInstance ().getFactory ();
 }
 
 IDWriteFactory* getDWriteFactory ()
 {
-	return d2dFactory.getWriteFactory ();
+	return getD2DFactoryInstance ().getWriteFactory ();
 }
 #endif
 
@@ -157,6 +177,38 @@ IPlatformBitmap* IPlatformBitmap::create (CPoint* size)
 	if (size)
 		return new GdiplusBitmap (*size);
 	return new GdiplusBitmap ();
+}
+
+//-----------------------------------------------------------------------------
+IPlatformBitmap* IPlatformBitmap::createFromPath (UTF8StringPtr absolutePath)
+{
+	// TODO: check that this implementation actually works
+	UTF8StringHelper path (absolutePath);
+	IStream* stream = 0;
+	if (SUCCEEDED (SHCreateStreamOnFileEx (path, STGM_READ|STGM_SHARE_DENY_WRITE, 0, false, 0, &stream)))
+	{
+#if VSTGUI_DIRECT2D_SUPPORT
+		if (getD2DFactory ())
+		{
+			D2DBitmap* result = new D2DBitmap ();
+			if (result->loadFromStream (stream))
+			{
+				stream->Release ();
+				return result;
+			}
+			result->forget ();
+			return 0;
+		}
+#endif
+		GdiplusBitmap* bitmap = new GdiplusBitmap ();
+		if (bitmap->loadFromStream (stream))
+		{
+			stream->Release ();
+			return bitmap;
+		}
+		stream->Release ();
+	}
+	return 0;
 }
 
 //-----------------------------------------------------------------------------

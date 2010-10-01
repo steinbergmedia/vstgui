@@ -65,13 +65,28 @@ GdiplusBitmap::~GdiplusBitmap ()
 }
 
 //-----------------------------------------------------------------------------
+bool GdiplusBitmap::loadFromStream (IStream* stream)
+{
+	if (bitmap)
+		return false;
+	bool result = false;
+	bitmap = Gdiplus::Bitmap::FromStream (stream, TRUE);
+	if (bitmap)
+	{
+		size.x = (CCoord)bitmap->GetWidth ();
+		size.y = (CCoord)bitmap->GetHeight ();
+	}
+	return bitmap != 0;
+}
+
+//-----------------------------------------------------------------------------
 bool GdiplusBitmap::load (const CResourceDescription& desc)
 {
 	if (bitmap == 0)
 	{
 		ResourceStream* resourceStream = new ResourceStream;
 		if (resourceStream->open (desc, "PNG"))
-			bitmap = Gdiplus::Bitmap::FromStream (resourceStream, TRUE);
+			loadFromStream (resourceStream);
 		resourceStream->Release ();
 		if (!bitmap)
 			bitmap = Gdiplus::Bitmap::FromResource (GetInstance (), desc.type == CResourceDescription::kIntegerType ? (WCHAR*)MAKEINTRESOURCE(desc.u.id) : (WCHAR*)desc.u.name);
