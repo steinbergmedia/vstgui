@@ -74,7 +74,7 @@ CBitmap::CBitmap (const CResourceDescription& desc)
 , resourceDesc (desc)
 {
 	platformBitmap = IPlatformBitmap::create ();
-	if (!platformBitmap->load (desc))
+	if (platformBitmap && !platformBitmap->load (desc))
 	{
 		platformBitmap->forget ();
 		platformBitmap = 0;

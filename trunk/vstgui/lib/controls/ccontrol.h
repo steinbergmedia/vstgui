@@ -192,9 +192,13 @@ public:
 	bool drawFocusOnTop ();
 	bool getFocusPath (CGraphicsPath& outPath);
 
+	static int32_t kZoomModifier;			///< zoom modifier key, per default is the shift key
+	static int32_t kDefaultValueModifier;	///< default value modifier key, per default is the control key
+
 	CLASS_METHODS_VIRTUAL(CControl, CView)
 protected:
 	~CControl ();
+	static int32_t mapVstKeyModifier (int32_t vstModifier);
 
 	CControlListener* listener;
 	int32_t  tag;

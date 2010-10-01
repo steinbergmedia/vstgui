@@ -407,7 +407,7 @@ CMouseEventResult CSlider::onMouseDown (CPoint& where, const CButtonState& butto
 		endEdit ();
 		return kMouseDownEventHandledButDontNeedMovedOrUpEvents;
 	}
-	if (buttons & kShift)
+	if (buttons & kZoomModifier)
 		return kMouseEventHandled;
 	return onMouseMoved (where, buttons);
 }
@@ -428,12 +428,12 @@ CMouseEventResult CSlider::onMouseMoved (CPoint& where, const CButtonState& butt
 		if (oldVal == getMin () - 1)
 			oldVal = (value - getMin ()) / (getMax () - getMin ());
 			
-		if ((oldButton != buttons) && (buttons & kShift))
+		if ((oldButton != buttons) && (buttons & kZoomModifier))
 		{
 			oldVal = (value - getMin ()) / (getMax () - getMin ());
 			oldButton = buttons;
 		}
-		else if (!(buttons & kShift))
+		else if (!(buttons & kZoomModifier))
 			oldVal = (value - getMin ()) / (getMax () - getMin ());
 
 		float normValue = getMin ();
@@ -445,7 +445,7 @@ CMouseEventResult CSlider::onMouseMoved (CPoint& where, const CButtonState& butt
 		if (style & kRight || style & kBottom)
 			normValue = 1.f - normValue;
 
-		if (buttons & kShift)
+		if (buttons & kZoomModifier)
 			normValue = oldVal + ((normValue - oldVal) / zoomFactor);
 
 		setValueNormalized (normValue);
@@ -479,7 +479,7 @@ bool CSlider::onWheel (const CPoint& where, const float &distance, const CButton
 	if (styleIsInverseStyle (style))
 		_distance *= -1.f;
 	float normValue = getValueNormalized ();
-	if (buttons & kShift)
+	if (buttons & kZoomModifier)
 		normValue += 0.1f * _distance * wheelInc;
 	else
 		normValue += _distance * wheelInc;
@@ -521,7 +521,7 @@ int32_t CSlider::onKeyDown (VstKeyCode& keyCode)
 			}
 
 			float normValue = getValueNormalized ();
-			if (keyCode.modifier & MODIFIER_SHIFT)
+			if (mapVstKeyModifier (keyCode.modifier) & kZoomModifier)
 				normValue += 0.1f * distance * wheelInc;
 			else
 				normValue += distance * wheelInc;

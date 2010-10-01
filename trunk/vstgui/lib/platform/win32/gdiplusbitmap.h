@@ -59,6 +59,7 @@ public:
 
 	Gdiplus::Bitmap* getBitmap () const { return bitmap; }
 	HBITMAP createHBitmap ();
+	bool loadFromStream (IStream* stream);
 
 //-----------------------------------------------------------------------------
 protected:

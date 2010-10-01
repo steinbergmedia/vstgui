@@ -62,6 +62,7 @@ public:
 	IPlatformBitmapPixelAccess* lockPixels (bool alphaPremultiplied);
 
 	HBITMAP createHBitmap ();
+	bool loadFromStream (IStream* stream);
 
 	IWICBitmapSource* getSource () const { return source; }
 	IWICBitmap* getBitmap ();

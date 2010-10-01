@@ -231,7 +231,6 @@ public:
 	virtual void endEdit (int32_t index) {}
 
 	virtual bool beforeSizeChange (const CRect& newSize, const CRect& oldSize) { return true; } ///< frame will change size, if this returns false the upstream implementation does not allow it and thus the size of the frame will not change
-	virtual bool isControlDefaultButton (const CButtonState& state) const { return state == (kControl|kLButton); } ///< check if button combination should be used to set controls to its default value
 
 	virtual CFrame* getFrame () const { return frame; }
 protected:

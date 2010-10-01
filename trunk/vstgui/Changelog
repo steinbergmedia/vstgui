@@ -1,3 +1,11 @@
+2010-10-01 arne
+
+	* rewrite implementation for CView attributes to use std::map instead of a linked list
+	* some fixes and enhancements from Vítězslav Kot
+	* the zoom modifier and default value modifier can now be set with CControl::kZoomModifier and CControl::kDefaultValueModifier
+	* add possibility to load bitmaps from absolute paths via IPlatformBitmap
+	* fix non visible textedit field with Direct2D (because of not using WS_EX_COMPOSITED)
+
 2010-09-25 arne
 
 	* fix Direct2D issues after installing IE 9 Beta (the new Direct2D version does not like to draw into WS_EX_COMPOSITED windows)

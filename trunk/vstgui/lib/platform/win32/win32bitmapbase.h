@@ -15,6 +15,7 @@
 #if WINDOWS
 
 #include <windows.h>
+#include <objidl.h>
 
 namespace VSTGUI {
 
@@ -22,6 +23,7 @@ class Win32BitmapBase : public IPlatformBitmap
 {
 public:
 	virtual HBITMAP createHBitmap () = 0;
+	virtual bool loadFromStream (IStream* stream) = 0;
 };
 
 } // namespace
