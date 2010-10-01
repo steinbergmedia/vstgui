@@ -240,13 +240,13 @@ long CControl::mapVstKeyModifier (long vstModifier)
 {
 	long modifiers = 0;
 	if (vstModifier & MODIFIER_SHIFT)
-		modifiers | kShift;
+		modifiers |= kShift;
 	if (vstModifier & MODIFIER_ALTERNATE)
-		modifiers | kAlt;
+		modifiers |= kAlt;
 	if (vstModifier & MODIFIER_COMMAND)
-		modifiers | kApple;
+		modifiers |= kApple;
 	if (vstModifier & MODIFIER_CONTROL)
-		modifiers | kControl;
+		modifiers |= kControl;
 	return modifiers;
 }
 
