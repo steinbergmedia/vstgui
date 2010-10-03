@@ -196,6 +196,9 @@ CGraphicsPath* D2DDrawContext::createGraphicsPath ()
 //-----------------------------------------------------------------------------
 void D2DDrawContext::drawGraphicsPath (CGraphicsPath* _path, PathDrawMode mode, CGraphicsTransform* t)
 {
+	if (renderTarget == 0)
+		return;
+
 	D2DGraphicsPath* d2dPath = dynamic_cast<D2DGraphicsPath*> (_path);
 	if (d2dPath == 0)
 		return;
@@ -241,6 +244,9 @@ void D2DDrawContext::drawGraphicsPath (CGraphicsPath* _path, PathDrawMode mode, 
 //-----------------------------------------------------------------------------
 void D2DDrawContext::fillLinearGradient (CGraphicsPath* _path, const CGradient& gradient, const CPoint& startPoint, const CPoint& endPoint, bool evenOdd, CGraphicsTransform* t)
 {
+	if (renderTarget == 0)
+		return;
+
 	D2DGraphicsPath* d2dPath = dynamic_cast<D2DGraphicsPath*> (_path);
 	if (d2dPath == 0)
 		return;
@@ -373,9 +379,10 @@ void D2DDrawContext::drawPolygon (const CPoint *pPoints, int32_t numberOfPoints,
 {
 	if (renderTarget)
 	{
+		D2DApplyClip clip (this);
 		D2DGraphicsPath path;
 		path.addLine (pPoints[0], pPoints[1]);
-		for (int32_t i = 2; i < numberOfPoints; i+=2)
+		for (int32_t i = 2; i < numberOfPoints; i++)
 		{
 			path.addLine (path.getCurrentPosition (), pPoints[i]);
 		}

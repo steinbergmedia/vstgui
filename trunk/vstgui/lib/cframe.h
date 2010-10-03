@@ -110,7 +110,7 @@ public:
 
 	virtual void onActivate (bool state);									///< called when the platform view/window is activated/deactivated
 
-	VSTGUI_DEPRECATED(CDrawContext* createDrawContext ();)
+	VSTGUI_DEPRECATED(CDrawContext* createDrawContext ();)					///< \deprecated and currently not implemented
 
 	virtual void invalidate (const CRect &rect);
 
