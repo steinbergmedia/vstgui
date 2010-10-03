@@ -219,7 +219,11 @@ D2DBitmap::PixelAccess::PixelAccess ()
 D2DBitmap::PixelAccess::~PixelAccess ()
 {
 	if (bLock)
+	{
+		if (!alphaPremultiplied)
+			premultiplyAlpha (ptr, bytesPerRow, bitmap->getSize ());
 		bLock->Release ();
+	}
 	if (bitmap)
 	{
 		D2DBitmapCache::instance ()->removeBitmap (bitmap);
@@ -228,7 +232,7 @@ D2DBitmap::PixelAccess::~PixelAccess ()
 }
 
 //-----------------------------------------------------------------------------
-bool D2DBitmap::PixelAccess::init (D2DBitmap* inBitmap, bool alphaPremultiplied)
+bool D2DBitmap::PixelAccess::init (D2DBitmap* inBitmap, bool _alphaPremultiplied)
 {
 	bool result = false;
 	assert (inBitmap);
@@ -244,11 +248,52 @@ bool D2DBitmap::PixelAccess::init (D2DBitmap* inBitmap, bool alphaPremultiplied)
 
 			bitmap = inBitmap;
 			bitmap->remember ();
-			// TODO: unpremultiply alpha
+			alphaPremultiplied = _alphaPremultiplied;
+			if (!alphaPremultiplied)
+				unpremultiplyAlpha (ptr, bytesPerRow, bitmap->getSize ());
 			result = true;
 		}
 	}
 	return result;
+}
+
+//-----------------------------------------------------------------------------
+void D2DBitmap::PixelAccess::premultiplyAlpha (BYTE* ptr, UINT bytesPerRow, const CPoint& size)
+{
+	for (int32_t y = 0; y < (int32_t)size.y; y++, ptr += bytesPerRow)
+	{
+		uint32_t* pixelPtr = (uint32_t*)ptr;
+		for (int32_t x = 0; x < (int32_t)size.x; x++, pixelPtr++)
+		{
+			uint8_t* pixel = (uint8_t*)pixelPtr;
+			if (pixel[3] == 0)
+			{
+				*pixelPtr = 0;
+				continue;
+			}
+			pixel[0] = (uint32_t)((pixel[0] * pixel[3]) >> 8);
+			pixel[1] = (uint32_t)((pixel[1] * pixel[3]) >> 8);
+			pixel[2] = (uint32_t)((pixel[2] * pixel[3]) >> 8);
+		}
+	}
+}
+
+//-----------------------------------------------------------------------------
+void D2DBitmap::PixelAccess::unpremultiplyAlpha (BYTE* ptr, UINT bytesPerRow, const CPoint& size)
+{
+	for (int32_t y = 0; y < (int32_t)size.y; y++, ptr += bytesPerRow)
+	{
+		uint32_t* pixelPtr = (uint32_t*)ptr;
+		for (int32_t x = 0; x < (int32_t)size.x; x++, pixelPtr++)
+		{
+			uint8_t* pixel = (uint8_t*)pixelPtr;
+			if (pixel[3] == 0)
+				continue;
+			pixel[0] = (uint32_t)(pixel[0] * 255) / pixel[3];
+			pixel[1] = (uint32_t)(pixel[1] * 255) / pixel[3];
+			pixel[2] = (uint32_t)(pixel[2] * 255) / pixel[3];
+		}
+	}
 }
 
 //-----------------------------------------------------------------------------

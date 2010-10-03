@@ -11,7 +11,7 @@
 #define __uidescription_test__
 
 #include "public.sdk/source/vst/vstaudioeffect.h"
-#include "vstgui/uidescription/vst3editor.h"
+#include "vstgui/plugin-bindings/vst3editor.h"
 #include "pluginterfaces/base/ustring.h"
 
 namespace VSTGUI {

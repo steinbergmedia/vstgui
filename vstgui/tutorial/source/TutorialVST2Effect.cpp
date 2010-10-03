@@ -32,7 +32,7 @@
 //-----------------------------------------------------------------------------
 
 #include "TutorialVST2Effect.h"
-#include "../../lib/aeffguieditor.h"
+#include "../../plugin-bindings/aeffguieditor.h"
 
 //------------------------------------------------------------------------------------
 AudioEffect* createEffectInstance (audioMasterCallback audioMaster)

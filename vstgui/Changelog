@@ -1,3 +1,9 @@
+2010-10-03 arne
+
+	* add buttons parameter to IMouseObserver::onMouseDown and IMouseObserver::onMouseMoved
+	* alphaPremultiply implementation for Direct2D IPlatformBitmapPixelAccess
+	* moved plug-in API specific files into plugin-bindings folder
+
 2010-10-01 arne
 
 	* rewrite implementation for CView attributes to use std::map instead of a linked list

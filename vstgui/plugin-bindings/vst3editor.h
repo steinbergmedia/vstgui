@@ -37,7 +37,7 @@
 
 #include "public.sdk/source/vst/vstguieditor.h"
 #include "pluginterfaces/vst/ivstplugview.h"
-#include "uidescription.h"
+#include "../uidescription/uidescription.h"
 #include <string>
 #include <map>
 #include <deque>

@@ -386,7 +386,7 @@ CMouseEventResult CFrame::onMouseDown (CPoint &where, const CButtonState& button
 		pTooltips->onMouseDown (where);
 
 	if (getMouseObserver ())
-		getMouseObserver ()->onMouseDown (this, where);
+		getMouseObserver ()->onMouseDown (this, where, buttons);
 
 	if (pModalView)
 	{
@@ -422,7 +422,7 @@ CMouseEventResult CFrame::onMouseMoved (CPoint &where, const CButtonState& butto
 	if (pTooltips)
 		pTooltips->onMouseMoved (where);
 	if (getMouseObserver ())
-		getMouseObserver ()->onMouseMoved (this, where);
+		getMouseObserver ()->onMouseMoved (this, where, buttons);
 
 	checkMouseViews (where, buttons);
 

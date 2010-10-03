@@ -83,10 +83,14 @@ protected:
 		PixelFormat getPixelFormat () { return kBGRA; }
 
 	protected:
+		static void premultiplyAlpha (BYTE* ptr, UINT bytesPerRow, const CPoint& size);
+		static void unpremultiplyAlpha (BYTE* ptr, UINT bytesPerRow, const CPoint& size);
+
 		D2DBitmap* bitmap;
 		IWICBitmapLock* bLock;
 		BYTE* ptr;
 		UINT bytesPerRow;
+		bool alphaPremultiplied;
 	};
 
 	CPoint size;

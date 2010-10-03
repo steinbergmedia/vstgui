@@ -62,7 +62,7 @@ IPlatformBitmap* IPlatformBitmap::createFromPath (UTF8StringPtr absolutePath)
 			bool result = bitmap->loadFromImageSource (source);
 			if (result == false)
 			{
-				delete bitmap;
+				bitmap->forget ();
 				bitmap = 0;
 			}
 			CFRelease (source);
