@@ -530,11 +530,11 @@
 				Name="vstgui"
 				>
 				<File
-					RelativePath="..\..\lib\aeffguieditor.cpp"
+					RelativePath="..\..\plugin-bindings\aeffguieditor.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\..\lib\aeffguieditor.h"
+					RelativePath="..\..\plugin-bindings\aeffguieditor.h"
 					>
 				</File>
 				<File

@@ -250,8 +250,8 @@ public:
 	virtual ~IMouseObserver() {}
 	virtual void onMouseEntered (CView* view, CFrame* frame) = 0;
 	virtual void onMouseExited (CView* view, CFrame* frame) = 0;
-	virtual void onMouseMoved (CFrame* frame, const CPoint& where) {}
-	virtual void onMouseDown (CFrame* frame, const CPoint& where) {}
+	virtual void onMouseMoved (CFrame* frame, const CPoint& where, const CButtonState& buttons) {}
+	virtual void onMouseDown (CFrame* frame, const CPoint& where, const CButtonState& buttons) {}
 };
 
 //-----------------------------------------------------------------------------
