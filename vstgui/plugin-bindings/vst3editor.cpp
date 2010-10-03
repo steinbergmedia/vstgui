@@ -33,17 +33,17 @@
 //-----------------------------------------------------------------------------
 
 #include "vst3editor.h"
+#include "vst3editortemplates.h"
 #include "../lib/vstkeycode.h"
-#include "uieditframe.h"
-#include "editingcolordefs.h"
+#include "../uidescription/uieditframe.h"
+#include "../uidescription/editingcolordefs.h"
+#include "../uidescription/uidialog.h"
+#include "../uidescription/uiviewinspector.h"
+#include "../uidescription/uiviewfactory.h"
 #include "base/source/updatehandler.h"
 #include "base/source/fstring.h"
 #include "base/source/timer.h"
 #include "pluginterfaces/base/keycodes.h"
-#include "uidialog.h"
-#include "uiviewinspector.h"
-#include "vst3editortemplates.h"
-#include "uiviewfactory.h"
 #include <list>
 #include <sstream>
 #include <assert.h>

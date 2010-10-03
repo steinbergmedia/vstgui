@@ -196,6 +196,7 @@ IPlatformBitmap* IPlatformBitmap::createFromPath (UTF8StringPtr absolutePath)
 				stream->Release ();
 				return result;
 			}
+			stream->Release ();
 			result->forget ();
 			return 0;
 		}
@@ -206,6 +207,7 @@ IPlatformBitmap* IPlatformBitmap::createFromPath (UTF8StringPtr absolutePath)
 			stream->Release ();
 			return bitmap;
 		}
+		bitmap->forget ();
 		stream->Release ();
 	}
 	return 0;

@@ -216,11 +216,11 @@
 				Name="VSTGUI"
 				>
 				<File
-					RelativePath="..\..\..\uidescription\vst3editor.cpp"
+					RelativePath="..\..\..\plugin-bindings\vst3editor.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\..\..\uidescription\vst3editor.h"
+					RelativePath="..\..\..\plugin-bindings\vst3editor.h"
 					>
 				</File>
 				<File

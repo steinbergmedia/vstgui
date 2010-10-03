@@ -34,7 +34,7 @@
 #ifndef __TutorialEditor__
 #define __TutorialEditor__
 
-#include "../../lib/aeffguieditor.h"
+#include "../../plugin-bindings/aeffguieditor.h"
 #include "TutorialParameters.h"
 
 class TutorialEditor : public AEffGUIEditor, public CControlListener
