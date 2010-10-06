@@ -166,7 +166,7 @@ protected:
 	HGLOBAL resData;
 	uint32_t streamPos;
 	uint32_t resSize;
-	uint32_t _refcount;
+	LONG _refcount;
 };
 
 /// @endcond

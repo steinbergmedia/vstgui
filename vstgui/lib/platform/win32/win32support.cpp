@@ -140,18 +140,26 @@ D2DFactory& getD2DFactoryInstance ()
 	static D2DFactory d2dFactory;
 	return d2dFactory;
 }
+#endif
 
 //-----------------------------------------------------------------------------
 ID2D1Factory* getD2DFactory ()
 {
+#if VSTGUI_DIRECT2D_SUPPORT
 	return getD2DFactoryInstance ().getFactory ();
+#else
+	return 0;
+#endif
 }
 
 IDWriteFactory* getDWriteFactory ()
 {
+#if VSTGUI_DIRECT2D_SUPPORT
 	return getD2DFactoryInstance ().getWriteFactory ();
-}
+#else
+	return 0;
 #endif
+}
 
 //-----------------------------------------------------------------------------
 CDrawContext* createDrawContext (HWND window, HDC device, const CRect& surfaceRect)
