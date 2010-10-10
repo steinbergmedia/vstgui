@@ -467,7 +467,7 @@ void VST3Editor::valueChanged (CControl* pControl)
 			str.toWideString (Steinberg::kCP_Utf8);
 			if (getController ()->getParamValueByString (pcl->getParameterID (), (Steinberg::Vst::TChar*)str.text16 (), value) != Steinberg::kResultTrue)
 			{
-				pcl->changed ();
+				pcl->update (0, kChanged);
 				return;
 			}
 		}
@@ -572,13 +572,42 @@ void VST3Editor::onViewRemoved (CFrame* frame, CView* view)
 }
 
 //-----------------------------------------------------------------------------
+CMouseEventResult VST3Editor::onMouseDown (CFrame* frame, const CPoint& where, const CButtonState& buttons)
+{
+	#if defined(kVstVersionMajor) && kVstVersionMajor >= 3 && defined(kVstVersionMinor) && kVstVersionMinor > 1
+	if (buttons.isRightButton ())
+	{
+		Steinberg::Vst::ParamID paramID;
+		if (findParameter ((Steinberg::int32)where.x, (Steinberg::int32)where.y, paramID) == Steinberg::kResultTrue)
+		{
+		}
+	}
+	#endif
+	return kMouseEventNotHandled;
+}
+
+//-----------------------------------------------------------------------------
 Steinberg::tresult PLUGIN_API VST3Editor::findParameter (Steinberg::int32 xPos, Steinberg::int32 yPos, Steinberg::Vst::ParamID& resultTag)
 {
-	CView* view = frame->getViewAt (CPoint (xPos, yPos), true);
-	if (view)
+	std::list<CView*> views;
+	if (frame->getViewsAt (CPoint (xPos, yPos), views))
 	{
-		CControl* control = dynamic_cast<CControl*> (view);
-		if (control && control->getTag () != -1)
+		CControl* control = 0;
+		std::list<CView*>::const_iterator it = views.begin ();
+		while (it != views.end ())
+		{
+			control = dynamic_cast<CControl*> (*it);
+			if (control)
+			{
+				if (control->getMouseEnabled () && control->getTag () != -1)
+					break;
+				control = 0;
+				if ((*it)->getTransparency () == false)
+					break;
+			}
+			it++;
+		}
+		if (control)
 		{
 			ParameterChangeListener* pcl = getParameterChangeListener (control->getTag ());
 			if (pcl && pcl->getParameter ())
@@ -719,6 +748,7 @@ bool PLUGIN_API VST3Editor::open (void* parent)
 		CRect size (rect.left, rect.top, rect.right, rect.bottom);
 		frame->setSize (size.getWidth (), size.getHeight ());
 		frame->enableTooltips (tooltipsEnabled);
+		frame->registerMouseObserver (this);
 			
 		// focus drawing support
 		const UIAttributes* attributes = description->getCustomAttributes ("VST3Editor");
@@ -765,6 +795,7 @@ void PLUGIN_API VST3Editor::close ()
 	paramChangeListeners.clear ();
 	if (frame)
 	{
+		frame->unregisterMouseObserver (this);
 		frame->removeAll (true);
 		int32_t refCount = frame->getNbReference ();
 		frame->forget ();

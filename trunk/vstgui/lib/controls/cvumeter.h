@@ -71,7 +71,6 @@ public:
 
 
 	virtual void draw (CDrawContext* pContext);
-	virtual void setDirty (const bool val);
 	virtual void setViewSize (const CRect& newSize, bool invalid = true);
 	virtual bool sizeToFit ();
 	

@@ -129,7 +129,7 @@ void CGDrawContext::drawGraphicsPath (CGraphicsPath* _path, PathDrawMode mode, C
 		else
 			CGContextAddPath (cgContext, path->getCGPathRef ());
 
-		CGPathDrawingMode cgMode = kCGPathFill;
+		CGPathDrawingMode cgMode;
 		switch (mode)
 		{
 			case kPathFilledEvenOdd: cgMode = kCGPathEOFill; break;
@@ -139,6 +139,7 @@ void CGDrawContext::drawGraphicsPath (CGraphicsPath* _path, PathDrawMode mode, C
 				applyLineStyle (cgContext);
 				break;
 			}
+			default: cgMode = kCGPathFill; break;
 		}
 
 		CGContextDrawPath (cgContext, cgMode);

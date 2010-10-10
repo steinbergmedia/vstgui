@@ -1,3 +1,10 @@
+2010-10-10 arne
+
+	* add CMouseEventResult as return value to IMouseObserver::onMouseDown and IMouseObserver::onMouseMoved
+	* allow registering of more than one IMouseObserver. CFrame::setMouseObserver renamed to CFrame::registerMouseObserver and CFrame::unregisterMouseObserver
+	* mouse events now propagated to views behind views if the front view does not handle the event and the views transparency flag is set
+	* IPlatformBitmapPixelAccess implementation for Gdiplus
+
 2010-10-03 arne
 
 	* add buttons parameter to IMouseObserver::onMouseDown and IMouseObserver::onMouseMoved

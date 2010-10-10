@@ -55,7 +55,7 @@ public:
 
 	bool load (const CResourceDescription& desc);
 	const CPoint& getSize () const { return size; }
-	IPlatformBitmapPixelAccess* lockPixels (bool alphaPremultiplied) { return 0; } // TODO: Implementation for GdiplusBitmap::lockPixels
+	IPlatformBitmapPixelAccess* lockPixels (bool alphaPremultiplied);
 
 	Gdiplus::Bitmap* getBitmap () const { return bitmap; }
 	HBITMAP createHBitmap ();
@@ -63,6 +63,21 @@ public:
 
 //-----------------------------------------------------------------------------
 protected:
+	class PixelAccess : public IPlatformBitmapPixelAccess
+	{
+	public:
+		PixelAccess ();
+		~PixelAccess ();
+
+		bool init (GdiplusBitmap* bitmap, bool alphaPremulitplied);
+
+		uint8_t* getAddress () { return (uint8_t*)data.Scan0; }
+		int32_t getBytesPerRow () { return data.Stride; }
+		PixelFormat getPixelFormat () { return kBGRA; }
+	protected:
+		GdiplusBitmap* bitmap;
+		Gdiplus::BitmapData data;
+	};
 	Gdiplus::Bitmap* bitmap;
 	CPoint size;
 };

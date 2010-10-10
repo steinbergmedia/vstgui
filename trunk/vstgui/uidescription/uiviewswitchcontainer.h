@@ -59,8 +59,8 @@ public:
 //	bool addView (CView *pView) { return false; }
 //	bool addView (CView *pView, CRect &mouseableArea, bool mouseEnabled = true) { return false; }
 //	bool addView (CView *pView, CView* pBefore) { return false; }
-//	bool removeView (CView *pView, const bool &withForget = true) { return false; }
-//	bool removeAll (const bool &withForget = true) { return false; }
+//	bool removeView (CView *pView, bool withForget = true) { return false; }
+//	bool removeAll (bool withForget = true) { return false; }
 
 //-----------------------------------------------------------------------------
 	CLASS_METHODS (UIViewSwitchContainer, CViewContainer)

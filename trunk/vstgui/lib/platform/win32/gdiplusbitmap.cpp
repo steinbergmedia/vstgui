@@ -109,6 +109,52 @@ HBITMAP GdiplusBitmap::createHBitmap ()
 	return 0;
 }
 
+//-----------------------------------------------------------------------------
+IPlatformBitmapPixelAccess* GdiplusBitmap::lockPixels (bool alphaPremultiplied)
+{
+	PixelAccess* pixelAccess = 0;
+	if (bitmap)
+	{
+		pixelAccess = new PixelAccess ();
+		if (pixelAccess->init (this, alphaPremultiplied) == false)
+		{
+			delete pixelAccess;
+			pixelAccess = 0;
+		}
+	}
+	return pixelAccess;
+}
+
+//-----------------------------------------------------------------------------
+GdiplusBitmap::PixelAccess::PixelAccess ()
+: bitmap (0)
+{
+}
+
+//-----------------------------------------------------------------------------
+GdiplusBitmap::PixelAccess::~PixelAccess ()
+{
+	if (bitmap)
+	{
+		bitmap->bitmap->UnlockBits (&data);
+		bitmap->forget ();
+	}
+}
+
+//-----------------------------------------------------------------------------
+bool GdiplusBitmap::PixelAccess::init (GdiplusBitmap* _bitmap, bool _alphaPremulitplied)
+{
+	Gdiplus::Rect r (0, 0, (INT)_bitmap->getSize ().x, (INT)_bitmap->getSize ().y);
+	Gdiplus::PixelFormat pixelFormat = _alphaPremulitplied ? PixelFormat32bppPARGB : PixelFormat32bppARGB;
+	if (_bitmap->bitmap->LockBits (&r, Gdiplus::ImageLockModeRead|Gdiplus::ImageLockModeWrite, pixelFormat, &data) == Gdiplus::Ok)
+	{
+		bitmap = _bitmap;
+		bitmap->remember ();
+		return true;
+	}
+	return false;
+}
+
 } // namespace
 
 #endif // WINDOWS

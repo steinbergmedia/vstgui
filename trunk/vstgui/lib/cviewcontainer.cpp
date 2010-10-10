@@ -71,7 +71,7 @@ IdStringPtr kMsgLooseFocus = "LooseFocus";
 /**
  * CViewContainer constructor.
  * @param rect the size of the container
- * @param pParent the parent CFrame
+ * @param pParent (unused)
  * @param pBackground the background bitmap, can be NULL
  */
 CViewContainer::CViewContainer (const CRect &rect, CFrame* pParent, CBitmap* pBackground)
@@ -82,7 +82,6 @@ CViewContainer::CViewContainer (const CRect &rect, CFrame* pParent, CBitmap* pBa
 , mouseDownView (0)
 {
 	backgroundOffset (0, 0);
-	this->pParentFrame = pParent;
 	setBackground (pBackground);
 	backgroundColor = kBlackCColor;
 }
@@ -397,7 +396,7 @@ bool CViewContainer::addView (CView* pView, const CRect &mouseableArea, bool mou
  * @param withForget bool to indicate if the view's reference counter should be decreased after removed from the container
  * @return true on success
  */
-bool CViewContainer::removeAll (const bool &withForget)
+bool CViewContainer::removeAll (bool withForget)
 {
 	if (mouseDownView)
 		mouseDownView = 0;
@@ -429,7 +428,7 @@ bool CViewContainer::removeAll (const bool &withForget)
  * @param withForget bool to indicate if the view's reference counter should be decreased after removed from the container
  * @return true on success
  */
-bool CViewContainer::removeView (CView *pView, const bool &withForget)
+bool CViewContainer::removeView (CView *pView, bool withForget)
 {
 	if (pView == mouseDownView)
 		mouseDownView = 0;
@@ -536,9 +535,9 @@ CView* CViewContainer::getView (int32_t index) const
 //-----------------------------------------------------------------------------
 bool CViewContainer::invalidateDirtyViews ()
 {
-	if (!bVisible)
+	if (!isVisible ())
 		return true;
-	if (bDirty)
+	if (CView::isDirty ())
 	{
 		if (pParentView)
 			pParentView->invalidRect (size);
@@ -561,7 +560,7 @@ bool CViewContainer::invalidateDirtyViews ()
 //-----------------------------------------------------------------------------
 void CViewContainer::invalid ()
 {
-	if (!bVisible)
+	if (!isVisible ())
 		return;
 	CRect _rect (size);
 	if (pParentView)
@@ -573,7 +572,7 @@ void CViewContainer::invalid ()
 //-----------------------------------------------------------------------------
 void CViewContainer::invalidRect (const CRect& rect)
 {
-	if (!bVisible)
+	if (!isVisible ())
 		return;
 	CRect _rect (rect);
 	_rect.offset (size.left, size.top);
@@ -613,7 +612,7 @@ void CViewContainer::drawBackgroundRect (CDrawContext* pContext, const CRect& _u
 		pBackground->draw (pContext, tr, backgroundOffset);
 		pContext->setClipRect (oldClip);
 	}
-	else if ((backgroundColor.alpha != 255 && bTransparencyEnabled) || !bTransparencyEnabled)
+	else if ((backgroundColor.alpha != 255 && getTransparency ()) || !getTransparency ())
 	{
 		pContext->setDrawMode (kAliasing);
 		pContext->setLineWidth (1);
@@ -846,12 +845,14 @@ CMouseEventResult CViewContainer::onMouseDown (CPoint &where, const CButtonState
 				getFrame ()->setFocusView (pV);
 
 			CMouseEventResult result = pV->onMouseDown (where2, buttons);
-			if (result != kMouseEventNotHandled && pV->getNbReference () > 1)
+			if (result != kMouseEventNotHandled && result != kMouseEventNotImplemented)
 			{
-				if (result == kMouseEventHandled)
+				if (pV->getNbReference () > 1 && result == kMouseEventHandled)
 					mouseDownView = pV;
+				return result;
 			}
-			return result;
+			if (!pV->getTransparency ())
+				return result;
 		}
 	ENDFOREACHSUBVIEW
 	return kMouseEventNotHandled;
@@ -897,17 +898,19 @@ CMouseEventResult CViewContainer::onMouseMoved (CPoint &where, const CButtonStat
 //-----------------------------------------------------------------------------
 bool CViewContainer::onWheel (const CPoint &where, const CMouseWheelAxis &axis, const float &distance, const CButtonState &buttons)
 {
-	bool result = false;
-	CView* view = getViewAt (where);
-	if (view)
-	{
+	FOREACHSUBVIEW_REVERSE(true)
 		// convert to relativ pos
 		CPoint where2 (where);
 		where2.offset (-size.left, -size.top);
-
-		result = view->onWheel (where2, axis, distance, buttons);
-	}
-	return result;
+		if (pV && pV->isVisible () && where2.isInside (pV->getMouseableArea ()))
+		{
+			if (pV->onWheel (where2, axis, distance, buttons))
+				return true;
+			if (!pV->getTransparency ())
+				return false;
+		}
+	ENDFOREACHSUBVIEW
+	return false;
 }
 
 //-----------------------------------------------------------------------------
@@ -1055,7 +1058,7 @@ bool CViewContainer::advanceNextFocusView (CView* oldFocus, bool reverse)
 //-----------------------------------------------------------------------------
 bool CViewContainer::isDirty () const
 {
-	if (bDirty)
+	if (CView::isDirty ())
 		return true;
 		
 	CRect viewSize (size);
@@ -1081,9 +1084,6 @@ bool CViewContainer::isDirty () const
  */
 CView* CViewContainer::getViewAt (const CPoint& p, bool deep) const
 {
-	if (!pParentFrame || !bVisible)
-		return 0;
-
 	CPoint where (p);
 
 	// convert to relativ pos
@@ -1107,14 +1107,40 @@ CView* CViewContainer::getViewAt (const CPoint& p, bool deep) const
 //-----------------------------------------------------------------------------
 /**
  * @param p location
+ * @param views result list
+ * @param deep search deep
+ * @return success
+ */
+bool CViewContainer::getViewsAt (const CPoint& p, std::list<CView*>& views, bool deep) const
+{
+	bool result = false;
+
+	CPoint where (p);
+
+	// convert to relativ pos
+	where.offset (-size.left, -size.top);
+
+	FOREACHSUBVIEW_REVERSE(true)
+		if (pV && pV->isVisible () && where.isInside (pV->getMouseableArea ()))
+		{
+			if (deep && pV->isTypeOf ("CViewContainer"))
+				((CViewContainer*)pV)->getViewsAt (where, views);
+			views.push_back (pV);
+			result = true;
+		}
+	ENDFOREACHSUBVIEW
+
+	return result;
+}
+
+//-----------------------------------------------------------------------------
+/**
+ * @param p location
  * @param deep search deep
  * @return view container at position p
  */
 CViewContainer* CViewContainer::getContainerAt (const CPoint& p, bool deep) const
 {
-	if (!pParentFrame)
-		return 0;
-
 	CPoint where (p);
 
 	// convert to relativ pos
@@ -1153,6 +1179,9 @@ CPoint& CViewContainer::localToFrame (CPoint& point) const
 //-----------------------------------------------------------------------------
 bool CViewContainer::removed (CView* parent)
 {
+	if (!isAttached ())
+		return false;
+
 	FOREACHSUBVIEW
 		pV->removed (this);
 	ENDFOREACHSUBVIEW
@@ -1163,6 +1192,9 @@ bool CViewContainer::removed (CView* parent)
 //-----------------------------------------------------------------------------
 bool CViewContainer::attached (CView* parent)
 {
+	if (isAttached ())
+		return false;
+
 	pParentFrame = parent->getFrame ();
 
 	FOREACHSUBVIEW

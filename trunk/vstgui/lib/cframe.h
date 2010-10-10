@@ -70,39 +70,39 @@ extern IdStringPtr kMsgOldFocusView;			///< Message send to all parents of the o
 class CFrame : public CViewContainer, public IPlatformFrameCallback 
 {
 public:
-	CFrame (const CRect &size, void *pSystemWindow, VSTGUIEditorInterface *pEditor);
+	CFrame (const CRect& size, void* pSystemWindow, VSTGUIEditorInterface* pEditor);
 
 	//-----------------------------------------------------------------------------
 	/// @name CFrame Methods
 	//-----------------------------------------------------------------------------
 	//@{
-	virtual void close ();						///< closes the frame and calls forget
+	virtual void close ();							///< closes the frame and calls forget
 
 	virtual void idle ();
 	virtual void doIdleStuff ();
 
-	virtual uint32_t getTicks () const;	///< get the current time (in ms)
+	virtual uint32_t getTicks () const;				///< get the current time (in ms)
 	virtual int32_t getKnobMode () const;			///< get hosts knob mode
 
 	virtual bool setPosition (CCoord x, CCoord y);
-	virtual bool getPosition (CCoord &x, CCoord &y) const;
+	virtual bool getPosition (CCoord& x, CCoord& y) const;
 
 	virtual bool setSize (CCoord width, CCoord height);
-	virtual bool getSize (CRect *pSize) const;
-	virtual bool getSize (CRect &pSize) const;
+	virtual bool getSize (CRect* pSize) const;
+	virtual bool getSize (CRect& pSize) const;
 
-	virtual bool   setModalView (CView *pView);
-	virtual CView *getModalView () const { return pModalView; }
+	virtual bool   setModalView (CView* pView);
+	virtual CView* getModalView () const { return pModalView; }
 
 	virtual void  beginEdit (int32_t index);
 	virtual void  endEdit (int32_t index);
 
-	virtual bool getCurrentMouseLocation (CPoint &where) const;				///< get current mouse location
-	virtual CButtonState getCurrentMouseButtons () const;							///< get current mouse buttons and key modifiers
+	virtual bool getCurrentMouseLocation (CPoint& where) const;				///< get current mouse location
+	virtual CButtonState getCurrentMouseButtons () const;					///< get current mouse buttons and key modifiers
 	virtual void setCursor (CCursorType type);								///< set mouse cursor
 
-	virtual void   setFocusView (CView *pView);
-	virtual CView *getFocusView () const { return pFocusView; }
+	virtual void   setFocusView (CView* pView);
+	virtual CView* getFocusView () const { return pFocusView; }
 	virtual bool advanceNextFocusView (CView* oldFocus, bool reverse = false);
 
 	virtual void onViewAdded (CView* pView);
@@ -112,7 +112,7 @@ public:
 
 	VSTGUI_DEPRECATED(CDrawContext* createDrawContext ();)					///< \deprecated and currently not implemented
 
-	virtual void invalidate (const CRect &rect);
+	virtual void invalidate (const CRect& rect);
 
 	void scrollRect (const CRect& src, const CPoint& distance);				///< scroll src rect by distance
 
@@ -137,7 +137,7 @@ public:
 	virtual CCoord getFocusWidth () const;							///< get focus draw width
 	//@}
 
-	void invalid () { invalidRect (size); bDirty = false; }
+	void invalid () { invalidRect (size); setDirty (false); }
 	void invalidRect (const CRect& rect);
 
 	#if MAC_COCOA && MAC_CARBON
@@ -147,32 +147,33 @@ public:
 
 	IPlatformFrame* getPlatformFrame () const { return platformFrame; }
 
-	bool removeView (CView *pView, const bool &withForget = true);
-	bool removeAll (const bool &withForget = true);
+	bool removeView (CView* pView, bool withForget = true);
+	bool removeAll (bool withForget = true);
 	CView* getViewAt (const CPoint& where, bool deep = false) const;
 	CViewContainer* getContainerAt (const CPoint& where, bool deep = true) const;
 
 	// CView
-	void draw (CDrawContext *pContext);
-	void drawRect (CDrawContext *pContext, const CRect& updateRect);
-	CMouseEventResult onMouseDown (CPoint &where, const CButtonState& buttons);
-	CMouseEventResult onMouseUp (CPoint &where, const CButtonState& buttons);
-	CMouseEventResult onMouseMoved (CPoint &where, const CButtonState& buttons);
-	CMouseEventResult onMouseExited (CPoint &where, const CButtonState& buttons);
-	bool onWheel (const CPoint &where, const float &distance, const CButtonState &buttons);
-	bool onWheel (const CPoint &where, const CMouseWheelAxis &axis, const float &distance, const CButtonState &buttons);
+	void draw (CDrawContext* pContext);
+	void drawRect (CDrawContext* pContext, const CRect& updateRect);
+	CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons);
+	CMouseEventResult onMouseUp (CPoint& where, const CButtonState& buttons);
+	CMouseEventResult onMouseMoved (CPoint& where, const CButtonState& buttons);
+	CMouseEventResult onMouseExited (CPoint& where, const CButtonState& buttons);
+	bool onWheel (const CPoint& where, const float& distance, const CButtonState& buttons);
+	bool onWheel (const CPoint& where, const CMouseWheelAxis& axis, const float& distance, const CButtonState& buttons);
 	int32_t onKeyDown (VstKeyCode& keyCode);
 	int32_t onKeyUp (VstKeyCode& keyCode);
 	DragResult doDrag (CDropSource* source, const CPoint& offset, CBitmap* dragBitmap);
 	void setViewSize (const CRect& rect, bool invalid = true);
 
 	virtual VSTGUIEditorInterface* getEditor () const { return pEditor; }
-	virtual IMouseObserver* getMouseObserver () const { return pMouseObserver; }
-	virtual void setMouseObserver (IMouseObserver* observer) { pMouseObserver = observer; }
 	virtual IKeyboardHook* getKeyboardHook () const { return pKeyboardHook; }
 	virtual void setKeyboardHook (IKeyboardHook* hook) { pKeyboardHook = hook; }
 	virtual IViewAddedRemovedObserver* getViewAddedRemovedObserver () const { return pViewAddedRemovedObserver; }
 	virtual void setViewAddedRemovedObserver (IViewAddedRemovedObserver* observer) { pViewAddedRemovedObserver = observer; }
+
+	void registerMouseObserver (IMouseObserver* observer);		///< registers a mouse observer
+	void unregisterMouseObserver (IMouseObserver* observer);	///< unregisters a mouse observer
 
 	#if DEBUG
 	virtual void dumpHierarchy ();
@@ -183,13 +184,12 @@ public:
 	//-------------------------------------------
 protected:
 	~CFrame ();
-	bool initFrame (void *pSystemWin);
+	bool initFrame (void* pSystemWin);
 	void checkMouseViews (const CPoint& where, const CButtonState& buttons);
 	void clearMouseViews (const CPoint& where, const CButtonState& buttons, bool callMouseExit = true);
 	void removeFromMouseViews (CView* view);
 
 	VSTGUIEditorInterface*		pEditor;
-	IMouseObserver*				pMouseObserver;
 	IKeyboardHook*				pKeyboardHook;
 	IViewAddedRemovedObserver*	pViewAddedRemovedObserver;
 	CTooltipSupport*			pTooltips;
@@ -202,15 +202,21 @@ protected:
 
 	bool	bActive;
 
-	IPlatformFrame* platformFrame;
+	// mouse observers
+	std::list<IMouseObserver*>* pMouseObservers;
+	void callMouseObserverMouseEntered (CView* view);
+	void callMouseObserverMouseExited (CView* view);
+	CMouseEventResult callMouseObserverMouseDown (const CPoint& where, const CButtonState& buttons);
+	CMouseEventResult callMouseObserverMouseMoved (const CPoint& where, const CButtonState& buttons);
 
-	// IPlatformFrameCallback
+	// platform frame
+	IPlatformFrame* platformFrame;
 	bool platformDrawRect (CDrawContext* context, const CRect& rect);
 	CMouseEventResult platformOnMouseDown (CPoint& where, const CButtonState& buttons);
 	CMouseEventResult platformOnMouseMoved (CPoint& where, const CButtonState& buttons);
 	CMouseEventResult platformOnMouseUp (CPoint& where, const CButtonState& buttons);
 	CMouseEventResult platformOnMouseExited (CPoint& where, const CButtonState& buttons);
-	bool platformOnMouseWheel (const CPoint &where, const CMouseWheelAxis &axis, const float &distance, const CButtonState &buttons);
+	bool platformOnMouseWheel (const CPoint& where, const CMouseWheelAxis& axis, const float& distance, const CButtonState& buttons);
 	bool platformOnDrop (CDragContainer* drag, const CPoint& where);
 	void platformOnDragEnter (CDragContainer* drag, const CPoint& where);
 	void platformOnDragLeave (CDragContainer* drag, const CPoint& where);
@@ -250,8 +256,8 @@ public:
 	virtual ~IMouseObserver() {}
 	virtual void onMouseEntered (CView* view, CFrame* frame) = 0;
 	virtual void onMouseExited (CView* view, CFrame* frame) = 0;
-	virtual void onMouseMoved (CFrame* frame, const CPoint& where, const CButtonState& buttons) {}
-	virtual void onMouseDown (CFrame* frame, const CPoint& where, const CButtonState& buttons) {}
+	virtual CMouseEventResult onMouseMoved (CFrame* frame, const CPoint& where, const CButtonState& buttons) { return kMouseEventNotHandled; }	///< a mouse move event happend on the frame at position where. If the observer handles this, the event won't be propagated further
+	virtual CMouseEventResult onMouseDown (CFrame* frame, const CPoint& where, const CButtonState& buttons) { return kMouseEventNotHandled; }	///< a mouse down event happend on the frame at position where. If the observer handles this, the event won't be propagated further
 };
 
 //-----------------------------------------------------------------------------

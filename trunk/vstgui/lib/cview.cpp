@@ -135,12 +135,6 @@ CView::CView (const CRect& size)
 , mouseableArea (size)
 , pParentFrame (0)
 , pParentView (0)
-, bDirty (false)
-, bMouseEnabled (true)
-, bTransparencyEnabled (false)
-, bWantsFocus (false)
-, bIsAttached (false)
-, bVisible (true)
 , pBackground (0)
 , autosizeFlags (kAutosizeNone)
 , alphaValue (1.f)
@@ -150,6 +144,8 @@ CView::CView (const CRect& size)
 	gNbCView++;
 	gViewList.push_back (this);
 	#endif
+
+	viewFlags = kMouseEnabled | kVisible;
 }
 
 //-----------------------------------------------------------------------------
@@ -158,13 +154,8 @@ CView::CView (const CView& v)
 , mouseableArea (v.mouseableArea)
 , pParentFrame (0)
 , pParentView (0)
-, bDirty (false)
-, bMouseEnabled (v.bMouseEnabled)
-, bTransparencyEnabled (v.bTransparencyEnabled)
-, bWantsFocus (v.bWantsFocus)
-, bIsAttached (false)
-, bVisible (true)
 , pBackground (v.pBackground)
+, viewFlags (v.viewFlags)
 , autosizeFlags (v.autosizeFlags)
 , alphaValue (v.alphaValue)
 {
@@ -191,6 +182,42 @@ CView::~CView ()
 }
 
 //-----------------------------------------------------------------------------
+void CView::setMouseEnabled (bool state)
+{
+	if (state)
+		viewFlags |= kMouseEnabled;
+	else
+		viewFlags &= ~kMouseEnabled;
+}
+
+//-----------------------------------------------------------------------------
+void CView::setTransparency (bool state)
+{
+	if (state)
+		viewFlags |= kTransparencyEnabled;
+	else
+		viewFlags &= ~kTransparencyEnabled;
+}
+
+//-----------------------------------------------------------------------------
+void CView::setWantsFocus (bool state)
+{
+	if (state)
+		viewFlags |= kWantsFocus;
+	else
+		viewFlags &= ~kWantsFocus;
+}
+
+//-----------------------------------------------------------------------------
+void CView::setDirty (bool state)
+{
+	if (state)
+		viewFlags |= kDirty;
+	else
+		viewFlags &= ~kDirty;
+}
+
+//-----------------------------------------------------------------------------
 /**
  * @param parent parent view
  * @return true if view successfully attached to parent
@@ -201,7 +228,7 @@ bool CView::attached (CView* parent)
 		return false;
 	pParentView = parent;
 	pParentFrame = parent->getFrame ();
-	bIsAttached = true;
+	viewFlags |= kIsAttached;
 	if (pParentFrame)
 		pParentFrame->onViewAdded (this);
 	return true;
@@ -220,7 +247,7 @@ bool CView::removed (CView* parent)
 		pParentFrame->onViewRemoved (this);
 	pParentView = 0;
 	pParentFrame = 0;
-	bIsAttached = false;
+	viewFlags &= ~kIsAttached;
 	return true;
 }
 
@@ -287,7 +314,7 @@ CPoint& CView::localToFrame (CPoint& point) const
  */
 void CView::invalidRect (const CRect& rect)
 {
-	if (bIsAttached && bVisible)
+	if (isAttached () && viewFlags & kVisible)
 	{
 		if (pParentView)
 			pParentView->invalidRect (rect);
@@ -430,10 +457,13 @@ CRect CView::getVisibleSize () const
 //-----------------------------------------------------------------------------
 void CView::setVisible (bool state)
 {
-	if (state != bVisible)
+	if ((viewFlags & kVisible) ? true : false != state)
 	{
-		bVisible = state;
-		setDirty ();
+		if (state)
+			viewFlags |= kVisible;
+		else
+			viewFlags &= ~kVisible;
+		invalid ();
 	}
 }
 
@@ -443,7 +473,9 @@ void CView::setAlphaValue (float alpha)
 	if (alphaValue != alpha)
 	{
 		alphaValue = alpha;
-		invalid ();
+		// we invalidate the parent to make sure that when alpha == 0 that a redraw occurs
+		if (pParentView)
+			pParentView->invalidRect (getViewSize ());
 	}
 }
 
