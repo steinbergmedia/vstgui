@@ -165,7 +165,7 @@ void CScrollContainer::setScrollOffset (CPoint newOffset, bool redraw)
 //-----------------------------------------------------------------------------
 bool CScrollContainer::isDirty () const
 {
-	if (bDirty)
+	if (CView::isDirty ())
 		return true;
 		
 	FOREACHSUBVIEW
@@ -504,13 +504,13 @@ bool CScrollView::addView (CView *pView, CRect &mouseableArea, bool mouseEnabled
 }
 
 //-----------------------------------------------------------------------------
-bool CScrollView::removeView (CView *pView, const bool &withForget)
+bool CScrollView::removeView (CView *pView, bool withForget)
 {
 	return sc->removeView (pView, withForget);
 }
 
 //-----------------------------------------------------------------------------
-bool CScrollView::removeAll (const bool &withForget)
+bool CScrollView::removeAll (bool withForget)
 {
 	return sc->removeAll ();
 }
@@ -596,7 +596,7 @@ void CScrollView::drawBackgroundRect (CDrawContext *pContext, const CRect& _upda
 {
 	CRect r (size);
 	r.offset (-r.left, -r.top);
-	if ((backgroundColor.alpha != 255 && bTransparencyEnabled) || !bTransparencyEnabled)
+	if ((backgroundColor.alpha != 255 && getTransparency ()) || !getTransparency ())
 	{
 		pContext->setDrawMode (kAliasing);
 		pContext->setFillColor (backgroundColor);
@@ -870,7 +870,7 @@ CMouseEventResult CScrollbar::onMouseMoved (CPoint &where, const CButtonState& b
 //------------------------------------------------------------------------
 bool CScrollbar::onWheel (const CPoint &where, const CMouseWheelAxis &axis, const float &_distance, const CButtonState &buttons)
 {
-	if (!bMouseEnabled)
+	if (!getMouseEnabled ())
 		return false;
 
 	float distance = _distance;

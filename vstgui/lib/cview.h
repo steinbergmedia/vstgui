@@ -200,14 +200,14 @@ public:
 	virtual void drawRect (CDrawContext *pContext, const CRect& updateRect) { draw (pContext); }		///< called if the view should draw itself
 	virtual bool checkUpdate (const CRect& updateRect) const { return updateRect.rectOverlap (size); }
 
-	virtual bool isDirty () const { return bDirty; }													///< check if view is dirty
-	virtual void setDirty (const bool val = true) { bDirty = val; }										///< set the view to dirty so that it is redrawn in the next idle. Thread Safe !
+	virtual bool isDirty () const { return (viewFlags & kDirty) ? true : false; }						///< check if view is dirty
+	virtual void setDirty (bool val = true);															///< set the view to dirty so that it is redrawn in the next idle. Thread Safe !
 
 	virtual void invalidRect (const CRect& rect);														///< mark rect as invalid
 	virtual void invalid () { setDirty (false); invalidRect (size); }									///< mark whole view as invalid
 
 	virtual void setVisible (bool state);																///< set visibility state
-	bool isVisible () const { return bVisible && alphaValue > 0.f; }									///< get visibility state
+	bool isVisible () const { return (viewFlags & kVisible) && alphaValue > 0.f; }						///< get visibility state
 	//@}
 
 	//-----------------------------------------------------------------------------
@@ -226,8 +226,8 @@ public:
 	virtual bool onWheel (const CPoint& where, const float& distance, const CButtonState& buttons);									///< called if a mouse wheel event is happening over this view
 	virtual bool onWheel (const CPoint& where, const CMouseWheelAxis& axis, const float& distance, const CButtonState& buttons);	///< called if a mouse wheel event is happening over this view
 
-	virtual void setMouseEnabled (const bool bEnable = true) { bMouseEnabled = bEnable; }		///< turn on/off mouse usage for this view
-	virtual bool getMouseEnabled () const { return bMouseEnabled; }								///< get the state of wheather this view uses the mouse or not
+	virtual void setMouseEnabled (bool bEnable = true);											///< turn on/off mouse usage for this view
+	virtual bool getMouseEnabled () const { return viewFlags & kMouseEnabled; }					///< get the state of wheather this view uses the mouse or not
 
 	virtual void setMouseableArea (const CRect& rect)  { mouseableArea = rect; }				///< set the area in which the view reacts to the mouse
 	virtual CRect& getMouseableArea (CRect& rect) const { rect = mouseableArea; return rect;}	///< get the area in which the view reacts to the mouse
@@ -283,8 +283,8 @@ public:
 	//@{
 	virtual void looseFocus ();																	///< called if view should loose focus
 	virtual void takeFocus ();																	///< called if view should take focus
-	virtual bool wantsFocus () const { return bWantsFocus; }									///< check if view supports focus
-	virtual void setWantsFocus (bool state) { bWantsFocus = state; }							///< set focus support on/off
+	virtual bool wantsFocus () const { return (viewFlags & kWantsFocus) ? true : false; }		///< check if view supports focus
+	virtual void setWantsFocus (bool state);													///< set focus support on/off
 	//@}
 
 	//-----------------------------------------------------------------------------
@@ -309,8 +309,8 @@ public:
 	/// @name Transparency Methods
 	//-----------------------------------------------------------------------------
 	//@{
-	virtual void setTransparency (bool val) { bTransparencyEnabled = val; }						///< set views transparent state
-	virtual bool getTransparency () const { return bTransparencyEnabled; }						///< get views transparent state
+	virtual void setTransparency (bool val);															///< set views transparent state
+	virtual bool getTransparency () const { return (viewFlags & kTransparencyEnabled) ? true : false; }	///< get views transparent state
 
 	virtual void setAlphaValue (float alpha);													///< set alpha value which will be applied when drawing this view
 	float getAlphaValue () const { return alphaValue; }											///< get alpha value
@@ -322,7 +322,7 @@ public:
 	//@{
 	virtual bool removed (CView* parent);														///< view is removed from parent view
 	virtual bool attached (CView* parent);														///< view is attached to a parent view
-	bool isAttached () const { return bIsAttached; }											///< is view attached to a parentView
+	bool isAttached () const { return (viewFlags & kIsAttached) ? true : false; }				///< is view attached to a parentView
 	//@}
 
 	//-----------------------------------------------------------------------------
@@ -360,12 +360,15 @@ protected:
 	CFrame* pParentFrame;
 	CView* pParentView;
 
-	bool bDirty;
-	bool bMouseEnabled;
-	bool bTransparencyEnabled;
-	bool bWantsFocus;
-	bool bIsAttached;
-	bool bVisible;
+	enum {
+		kMouseEnabled			= 1 << 0,
+		kTransparencyEnabled	= 1 << 1,
+		kWantsFocus				= 1 << 2,
+		kIsAttached				= 1 << 3,
+		kVisible				= 1 << 4,
+		kDirty					= 1 << 5,
+	};
+	int32_t viewFlags;
 	
 	int32_t autosizeFlags;
 	
@@ -374,6 +377,7 @@ protected:
 	CBitmap* pBackground;
 
 	std::map<CViewAttributeID, CViewAttributeEntry*> attributes;
+
 #if DEBUG
 public:
 	// these are here so that inherited classes which have not changed the buttons parameter type will fail on compilation

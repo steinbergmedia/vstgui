@@ -187,7 +187,7 @@ public:
 	// overrides
 	void draw (CDrawContext* pContext) = 0;
 	bool isDirty () const;
-	void setDirty (const bool val = true);
+	void setDirty (bool val = true);
 
 	bool drawFocusOnTop ();
 	bool getFocusPath (CGraphicsPath& outPath);

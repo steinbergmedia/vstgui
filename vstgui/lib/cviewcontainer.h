@@ -37,6 +37,7 @@
 
 #include "cview.h"
 #include "ccolor.h"
+#include <list>
 
 namespace VSTGUI {
 class CCView;
@@ -64,14 +65,15 @@ public:
 	virtual bool addView (CView* pView);	///< add a child view
 	virtual bool addView (CView* pView, const CRect& mouseableArea, bool mouseEnabled = true);	///< add a child view
 	virtual bool addView (CView* pView, CView* pBefore);	///< add a child view before another view
-	virtual bool removeView (CView* pView, const bool& withForget = true);	///< remove a child view
-	virtual bool removeAll (const bool& withForget = true);	///< remove all child views
+	virtual bool removeView (CView* pView, bool withForget = true);	///< remove a child view
+	virtual bool removeAll (bool withForget = true);	///< remove all child views
 	virtual bool isChild (CView* pView) const;	///< check if pView is a child view of this container
 	virtual bool isChild (CView* pView, bool deep) const;	///< check if pView is a child view of this container
 	virtual int32_t getNbViews () const;			///< get the number of child views
 	virtual CView* getView (int32_t index) const;	///< get the child view at index
 	virtual CView* getViewAt (const CPoint& where, bool deep = false) const;	///< get the view at point where
 	virtual CViewContainer* getContainerAt (const CPoint& where, bool deep = true) const;		///< get the container at point where
+	virtual bool getViewsAt (const CPoint& where, std::list<CView*>& views, bool deep = true) const;	///< get all views at point where, top->down
 	//@}
 
 	//-----------------------------------------------------------------------------

@@ -142,7 +142,7 @@ void CParamDisplay::drawBack (CDrawContext* pContext, CBitmap* newBack)
 	}
 	else
 	{
-		if (!bTransparencyEnabled)
+		if (!getTransparency ())
 		{
 			pContext->setFillColor (backColor);
 			pContext->drawRect (size, kDrawFilled);

@@ -86,12 +86,6 @@ CVuMeter::~CVuMeter ()
 }
 
 //------------------------------------------------------------------------
-void CVuMeter::setDirty (const bool val)
-{
-	CView::setDirty (val);
-}
-
-//------------------------------------------------------------------------
 void CVuMeter::setViewSize (const CRect& newSize, bool invalid)
 {
 	CControl::setViewSize (newSize, invalid);
