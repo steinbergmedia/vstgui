@@ -472,7 +472,7 @@ static bool styleIsInverseStyle (int32_t style)
 //------------------------------------------------------------------------
 bool CSlider::onWheel (const CPoint& where, const float &distance, const CButtonState &buttons)
 {
-	if (!bMouseEnabled)
+	if (!getMouseEnabled ())
 		return false;
 
 	float _distance = distance;

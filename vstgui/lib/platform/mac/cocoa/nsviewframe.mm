@@ -989,6 +989,10 @@ CView::DragResult NSViewFrame::doDrag (CDropSource* source, const CPoint& offset
 				}
 				break;
 			}
+			case CDropSource::kError:
+			{
+				return CView::kDragError;
+			}
 		}
 		[nsView dragImage:nsImage at:bitmapOffset offset:NSMakeSize (0, 0) event:event pasteboard:nsPasteboard source:nsView slideBack:dragBitmap ? YES : NO];
 		[nsPasteboard clearContents];

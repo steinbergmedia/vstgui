@@ -235,17 +235,7 @@ void ExchangeViewAnimation::animationFinished (CView* view, IdStringPtr name, bo
 {
 	if (wasCanceled)
 	{
-		switch (style)
-		{
-			case kPushInFromLeft:
-			case kPushInFromRight:
-			case kPushInFromTop:
-			case kPushInFromBottom:
-			{
-				animationTick (0, 0, 1.f);
-				break;
-			}
-		}
+		animationTick (0, 0, 1.f);
 	}
 	if (viewToRemove->getParentView ())
 	{

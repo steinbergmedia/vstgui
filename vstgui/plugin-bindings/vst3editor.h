@@ -70,7 +70,7 @@ public:
 //! @brief VST3 Editor with automatic parameter binding [new in 4.0]
 //! @ingroup new_in_4_0
 //-----------------------------------------------------------------------------
-class VST3Editor : public Steinberg::Vst::VSTGUIEditor, public Steinberg::Vst::IParameterFinder, public IController, public IViewAddedRemovedObserver
+class VST3Editor : public Steinberg::Vst::VSTGUIEditor, public Steinberg::Vst::IParameterFinder, public IController, public IViewAddedRemovedObserver, public IMouseObserver
 {
 public:
 	VST3Editor (Steinberg::Vst::EditController* controller, UTF8StringPtr viewName, UTF8StringPtr xmlFile);
@@ -121,6 +121,12 @@ protected:
 	// IViewAddedRemovedObserver
 	void onViewAdded (CFrame* frame, CView* view);
 	void onViewRemoved (CFrame* frame, CView* view);
+
+	// IMouseObserver
+	void onMouseEntered (CView* view, CFrame* frame) {}
+	void onMouseExited (CView* view, CFrame* frame) {}
+	CMouseEventResult onMouseMoved (CFrame* frame, const CPoint& where, const CButtonState& buttons) { return kMouseEventNotHandled; }
+	CMouseEventResult onMouseDown (CFrame* frame, const CPoint& where, const CButtonState& buttons);
 
 	// @cond ignore
 	struct SubController

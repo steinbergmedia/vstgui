@@ -97,11 +97,11 @@ public:
 	// overwrite
 	bool addView (CView* pView);
 	bool addView (CView* pView, CRect& mouseableArea, bool mouseEnabled = true);
-	bool removeView (CView* pView, const bool& withForget = true);
-	bool removeAll (const bool& withForget = true);
+	bool removeView (CView* pView, bool withForget = true);
+	bool removeAll (bool withForget = true);
 	bool isChild (CView* pView) const;
 	int32_t getNbViews () const;
-	CView *getView (int32_t index) const;
+	CView* getView (int32_t index) const;
 	void drawBackgroundRect (CDrawContext* pContext, const CRect& _updateRect);
 	bool onWheel (const CPoint& where, const CMouseWheelAxis& axis, const float& distance, const CButtonState& buttons);
 	void valueChanged (CControl* pControl);

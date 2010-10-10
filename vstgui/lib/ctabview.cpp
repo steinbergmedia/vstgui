@@ -237,6 +237,10 @@ bool CTabView::addTab (CView* view, CControl* button)
 				tsc.setHeight (size.getHeight ());
 				break;
 			}
+			case kPositionTop:
+			{
+				break;
+			}
 		}
 		tabContainer = new CViewContainer (tsc, getFrame (), 0);
 		tabContainer->setTransparency (true);

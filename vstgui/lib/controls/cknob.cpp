@@ -377,14 +377,15 @@ CMouseEventResult CKnob::onMouseMoved (CPoint& where, const CButtonState& button
 //------------------------------------------------------------------------
 bool CKnob::onWheel (const CPoint& where, const float &distance, const CButtonState &buttons)
 {
-	if (!bMouseEnabled)
+	if (!getMouseEnabled ())
 		return false;
 
+	float v = getValueNormalized ();
 	if (buttons & kZoomModifier)
-		value += 0.1f * distance * wheelInc;
+		v += 0.1f * distance * wheelInc;
 	else
-		value += distance * wheelInc;
-	bounceValue ();
+		v += distance * wheelInc;
+	setValueNormalized (v, false);
 
 	if (isDirty () && listener)
 	{
@@ -413,11 +414,12 @@ int32_t CKnob::onKeyDown (VstKeyCode& keyCode)
 			if (keyCode.virt == VKEY_DOWN || keyCode.virt == VKEY_LEFT)
 				distance = -distance;
 
+			float v = getValueNormalized ();
 			if (mapVstKeyModifier (keyCode.modifier) & kZoomModifier)
-				value += 0.1f * distance * wheelInc;
+				v += 0.1f * distance * wheelInc;
 			else
-				value += distance * wheelInc;
-			bounceValue ();
+				v += distance * wheelInc;
+			setValueNormalized (v, false);
 
 			if (isDirty () && listener)
 			{
@@ -467,7 +469,7 @@ void CKnob::valueToPoint (CPoint &point) const
 
 //------------------------------------------------------------------------
 float CKnob::valueFromPoint (CPoint &point) const
-{
+{ // TODO: does not work when startAngle is something different than 135 degree
 	float v;
 	float alpha = (float)atan2 (radius - point.v, point.h - radius);
 	if (alpha < 0.f)
@@ -601,6 +603,8 @@ void CKnob::setHandleBitmap (CBitmap* bitmap)
 void CKnob::setMin (float val)
 {
 	CControl::setMin (val);
+	if (getValue () < val)
+		setValue (val);
 	compute ();
 }
 
@@ -608,6 +612,8 @@ void CKnob::setMin (float val)
 void CKnob::setMax (float val)
 {
 	CControl::setMax (val);
+	if (getValue () > val)
+		setValue (val);
 	compute ();
 }
 

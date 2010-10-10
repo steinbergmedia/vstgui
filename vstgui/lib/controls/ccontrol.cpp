@@ -220,7 +220,7 @@ bool CControl::isDirty () const
 }
 
 //------------------------------------------------------------------------
-void CControl::setDirty (const bool val)
+void CControl::setDirty (bool val)
 {
 	CView::setDirty (val);
 	if (val)
