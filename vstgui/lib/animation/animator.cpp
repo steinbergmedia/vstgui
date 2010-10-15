@@ -201,15 +201,15 @@ protected:
 			std::list<Animator*>::iterator it = animators.begin ();
 			while (it != animators.end ())
 			{
-				(*it)->notify (sender, message);
-				it++;
+				Animator* animator = *it++;
+				animator->notify (sender, message);
 			}
 			inTimer = false;
 			it = toRemove.begin ();
 			while (it != toRemove.end ())
 			{
-				removeAnimator (*it);
-				it++;
+				Animator* animator = *it++;
+				removeAnimator (animator);
 			}
 			toRemove.clear ();
 			return kMessageNotified;
@@ -241,8 +241,8 @@ Animator::~Animator ()
 		std::list<Animation*>::iterator it = animations.begin ();
 		while (it != animations.end ())
 		{
-			(*it)->forget ();
-			it++;
+			Animation* animation = *it++;
+			animation->forget ();
 		}
 	}
 }
@@ -265,16 +265,16 @@ void Animator::removeAnimation (CView* view, IdStringPtr name)
 	std::list<Animation*>::iterator it = animations.begin ();
 	while (it != animations.end ())
 	{
-		if ((*it)->view == view && (*it)->name == name)
+		Animation* animation = *it++;
+		if (animation->view == view && animation->name == name)
 		{
 			#if DEBUG_LOG
 			DebugPrint ("animation removed: %p - %s\n", view, name);
 			#endif
-			(*it)->target->animationFinished (view, name, true);
-			removeAnimation (*it);
+			animation->target->animationFinished (view, name, true);
+			removeAnimation (animation);
 			break;
 		}
-		it++;
 	}
 }
 
@@ -284,12 +284,12 @@ void Animator::removeAnimations (CView* view)
 	std::list<Animation*>::iterator it = animations.begin ();
 	while (it != animations.end ())
 	{
-		if ((*it)->view == view)
+		Animation* animation = *it++;
+		if (animation->view == view)
 		{
-			(*it)->target->animationFinished ((*it)->view, (*it)->name.c_str (), true);
-			removeAnimation (*it);
+			animation->target->animationFinished (animation->view, animation->name.c_str (), true);
+			removeAnimation (animation);
 		}
-		it++;
 	}
 }
 
@@ -319,7 +319,7 @@ CMessageResult Animator::notify (CBaseObject* sender, IdStringPtr message)
 		std::list<Animation*>::iterator it = animations.begin ();
 		while (it != animations.end ())
 		{
-			Animation* a = (*it);
+			Animation* a = *it++;
 			CBaseObjectGuard guard (a);
 			if (a->startTime == 0)
 			{
@@ -344,14 +344,13 @@ CMessageResult Animator::notify (CBaseObject* sender, IdStringPtr message)
 				#endif
 				removeAnimation (a);
 			}
-			it++;
 		}
 		inTimer = false;
 		std::list<Animation*>::const_iterator cit = toRemove.begin ();
 		while (cit != toRemove.end ())
 		{
-			removeAnimation (*cit);
-			cit++;
+			Animation* a = *cit++;
+			removeAnimation (a);
 		}
 		toRemove.clear ();
 		if (animations.size () == 0)

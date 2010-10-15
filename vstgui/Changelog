@@ -1,3 +1,7 @@
+2010-10-15 arne
+
+	* fix some possible crashes with animations
+
 2010-10-10 arne
 
 	* add CMouseEventResult as return value to IMouseObserver::onMouseDown and IMouseObserver::onMouseMoved

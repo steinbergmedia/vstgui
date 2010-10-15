@@ -124,6 +124,10 @@ HIDDEN inline NSColor* nsColorFromCColor (const VSTGUI::CColor& color)
 //------------------------------------------------------------------------------------
 HIDDEN inline NSImage* imageFromCGImageRef (CGImageRef image)
 {
+	#if MAC_OS_X_VERSION_MIN_REQUIRED > MAC_OS_X_VERSION_10_5
+	return [[NSImage alloc] initWithCGImage:image size:NSZeroSize];
+
+	#else
     NSRect imageRect = NSMakeRect (0.0, 0.0, 0.0, 0.0);
     CGContextRef imageContext = nil;
     NSImage* newImage = nil;
@@ -142,6 +146,7 @@ HIDDEN inline NSImage* imageFromCGImageRef (CGImageRef image)
     [newImage unlockFocus];
  
     return newImage;
+	#endif
 }
 
 #endif // MAC_COCOA
