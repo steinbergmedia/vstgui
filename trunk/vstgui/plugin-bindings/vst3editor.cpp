@@ -134,8 +134,10 @@ public:
 				optMenu->addEntry (utf8Str);
 			}
 		}
-
-		updateControlValue (value);
+		if (parameter)
+			parameter->deferUpdate ();
+		else
+			updateControlValue (value);
 	}
 	
 	void removeControl (CControl* control)
