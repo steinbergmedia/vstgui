@@ -36,6 +36,7 @@
 #define __xmlparser__
 
 #include "../lib/vstguibase.h"
+#include "cstream.h"
 
 namespace VSTGUI {
 namespace Xml {
@@ -78,16 +79,12 @@ protected:
 };
 
 //-----------------------------------------------------------------------------
-class MemoryContentProvider : public IContentProvider
+class MemoryContentProvider : public CMemoryStream, public IContentProvider
 {
 public:
 	MemoryContentProvider (const void* data, int32_t dataSize);		// data must be valid the whole lifetime of this object
 	int32_t readRawXmlData (int8_t* buffer, int32_t size);
 	void rewind ();
-protected:
-	const void* data;
-	int32_t dataSize;
-	int32_t pos;
 };
 
 }} // namespaces

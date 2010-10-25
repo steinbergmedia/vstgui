@@ -34,30 +34,38 @@
 
 #include "cstream.h"
 #include <algorithm>
+#include <sstream>
+
+#if WINDOWS
+#define fseeko _fseeki64
+#define ftello _ftelli64
+#endif
 
 namespace VSTGUI {
 
 //-----------------------------------------------------------------------------
-CMemoryStream::CMemoryStream (int32_t initialSize, int32_t inDelta, ByteOrder byteOrder)
+CMemoryStream::CMemoryStream (int32_t initialSize, int32_t inDelta, bool binaryMode, ByteOrder byteOrder)
 : OutputStream (byteOrder)
 , InputStream (byteOrder)
 , buffer (0)
 , size (0)
 , pos (0)
 , delta (inDelta)
+, binaryMode (binaryMode)
 , ownsBuffer (true)
 {
 	resize (initialSize);
 }
 
 //-----------------------------------------------------------------------------
-CMemoryStream::CMemoryStream (const int8_t* inBuffer, int32_t bufferSize, ByteOrder byteOrder)
+CMemoryStream::CMemoryStream (const int8_t* inBuffer, int32_t bufferSize, bool binaryMode, ByteOrder byteOrder)
 : OutputStream (byteOrder)
 , InputStream (byteOrder)
 , buffer (const_cast<int8_t*> (inBuffer))
 , size (bufferSize)
 , pos (0)
 , delta (0)
+, binaryMode (binaryMode)
 , ownsBuffer (false)
 {
 }
@@ -116,6 +124,206 @@ int32_t CMemoryStream::readRaw (void* outBuffer, int32_t outSize)
 	pos += outSize;
 
 	return outSize;
+}
+
+//-----------------------------------------------------------------------------
+int64_t CMemoryStream::seek (int64_t seekpos, SeekMode mode)
+{
+	int64_t newPos;
+	switch (mode)
+	{
+		case kSeekSet: newPos = seekpos; break;
+		case kSeekCurrent: newPos = pos + seekpos; break;
+		case kSeekEnd: newPos = size - seekpos; break;
+	}
+	if (newPos < size)
+	{
+		pos = newPos;
+		return pos;
+	}
+	return -1;
+}
+
+//-----------------------------------------------------------------------------
+bool CMemoryStream::operator>> (std::string& string)
+{
+	if (binaryMode)
+	{
+		int32_t identifier;
+		if (!(*(InputStream*)this >> identifier)) return false;
+		if (identifier == 'str ')
+		{
+			int32_t length;
+			if (!(*(InputStream*)this >> length)) return false;
+			int8_t* buffer = (int8_t*)malloc (length);
+			int32_t read = readRaw (buffer, length);
+			if (read == length)
+				string.assign ((const char*)buffer, length);
+			free (buffer);
+			return read == length;
+		}
+	}
+	else
+	{
+		int8_t character;
+		while (readRaw (&character, sizeof (character)) == sizeof (character))
+		{
+			if (character == 0)
+				break;
+			string.push_back (character);
+		}
+		return true;
+	}
+	return false;
+}
+
+//-----------------------------------------------------------------------------
+bool CMemoryStream::operator<< (const std::string& str)
+{
+	if (binaryMode)
+	{
+		if (!(*(OutputStream*)this << (int32_t)'str ')) return false;
+		if (!(*(OutputStream*)this << (int32_t)str.length ())) return false;
+	}
+	return writeRaw (str.c_str (), str.length ()) == str.length ();
+}
+
+//-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
+CFileStream::CFileStream ()
+: stream (0)
+{
+}
+
+//-----------------------------------------------------------------------------
+CFileStream::~CFileStream ()
+{
+	if (stream)
+	{
+		fclose (stream);
+	}
+}
+
+//-----------------------------------------------------------------------------
+bool CFileStream::open (UTF8StringPtr path, int32_t mode, ByteOrder byteOrder)
+{
+	if (stream)
+		return false;
+	InputStream::setByteOrder (byteOrder);
+	OutputStream::setByteOrder (byteOrder);
+	std::stringstream fmode;
+	if (mode & kTruncateMode)
+	{
+		if (mode & kReadMode && mode & kWriteMode)
+			fmode << "w+";
+		else if (mode & kReadMode)
+			fmode << "r";
+		else if (mode & kWriteMode)
+			fmode << "w";
+	}
+	else
+	{
+		if (mode & kReadMode && mode & kWriteMode)
+			fmode << "a+";
+		else if (mode & kWriteMode)
+			fmode << "a";
+		else
+			return false;
+	}
+	if (mode & kBinaryMode)
+		fmode << "b";
+	stream = fopen (path, fmode.str ().c_str ());
+	openMode = mode;
+
+	return stream != 0;
+}
+
+//-----------------------------------------------------------------------------
+int32_t CFileStream::writeRaw (const void* buffer, int32_t size)
+{
+	if (stream)
+	{
+		int32_t written = fwrite (buffer, size, 1, stream);
+		return written * size;
+	}
+	return -1;
+}
+
+//-----------------------------------------------------------------------------
+int32_t CFileStream::readRaw (void* buffer, int32_t size)
+{
+	if (stream)
+	{
+		return fread (buffer, size, 1, stream) * size;
+	}
+	return -1;
+}
+
+//-----------------------------------------------------------------------------
+int64_t CFileStream::seek (int64_t pos, SeekMode mode)
+{
+	if (stream)
+	{
+		int fseekmode;
+		switch (mode)
+		{
+			case kSeekSet: fseekmode = SEEK_SET; break;
+			case kSeekCurrent: fseekmode = SEEK_CUR; break;
+			case kSeekEnd: fseekmode = SEEK_END; break;
+		}
+		if (fseeko (stream, pos, fseekmode) == 0)
+			return tell ();
+	}
+	return -1;
+}
+
+//-----------------------------------------------------------------------------
+int64_t CFileStream::tell () const
+{
+	if (stream)
+	{
+		return ftello (stream);
+	}
+	return -1;
+}
+
+//-----------------------------------------------------------------------------
+void CFileStream::rewind ()
+{
+	if (stream)
+	{
+		fseek (stream, 0, SEEK_SET);
+	}
+}
+
+//-----------------------------------------------------------------------------
+bool CFileStream::operator>> (std::string& string)
+{
+	int8_t character;
+	string.clear ();
+	while (readRaw (&character, sizeof (character)) == sizeof (character))
+	{
+		if (character == 0)
+			break;
+		string.push_back (character);
+	}
+	return true;
+}
+
+//-----------------------------------------------------------------------------
+bool CFileStream::operator<< (const std::string& str)
+{
+	if (writeRaw (str.c_str (), str.size ()) == str.size ())
+	{
+		if (openMode & kBinaryMode)
+		{
+			if (!(*(OutputStream*)this << (int8_t)0))
+				return false;
+		}
+		return true;
+	}
+	return false;
 }
 
 //-----------------------------------------------------------------------------
@@ -264,14 +472,6 @@ bool OutputStream::operator<< (const double& input)
 		if (writeRaw (&p[0], sizeof (int8_t)) != sizeof (int8_t)) return false;
 		return true;
 	}
-}
-
-//-----------------------------------------------------------------------------
-bool OutputStream::operator<< (const std::string& str)
-{
-	if (!(*this << (int32_t)'str ')) return false;
-	if (!(*this << (int32_t)str.length ())) return false;
-	return writeRaw (str.c_str (), str.length ()) == str.length ();
 }
 
 
@@ -437,25 +637,6 @@ bool InputStream::operator>> (double& output)
 			p[4] = temp;
 		}
 		return true;
-	}
-	return false;
-}
-
-//-----------------------------------------------------------------------------
-bool InputStream::operator>> (std::string& string)
-{
-	int32_t identifier;
-	if (!(*this >> identifier)) return false;
-	if (identifier == 'str ')
-	{
-		int32_t length;
-		if (!(*this >> length)) return false;
-		int8_t* buffer = (int8_t*)malloc (length);
-		int32_t read = readRaw (buffer, length);
-		if (read == length)
-			string.assign ((const char*)buffer, length);
-		free (buffer);
-		return read == length;
 	}
 	return false;
 }

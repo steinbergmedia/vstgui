@@ -314,6 +314,7 @@ LONG_PTR WINAPI Win32Window::windowProc (HWND hWnd, UINT message, WPARAM wParam,
 	{
 		switch (message)
 		{
+			// TODO: checkSizeConstraints implementation
 			case WM_DESTROY:
 			{
 				if (window->delegate)

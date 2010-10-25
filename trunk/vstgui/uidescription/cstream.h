@@ -61,7 +61,7 @@ public:
 	bool operator<< (const uint64_t& input);
 	bool operator<< (const double& input);
 
-	bool operator<< (const std::string& str);
+	virtual bool operator<< (const std::string& str) = 0;
 
 	virtual int32_t writeRaw (const void* buffer, int32_t size) = 0;
 private:
@@ -89,7 +89,7 @@ public:
 	bool operator>> (uint64_t& output);
 	bool operator>> (double& output);
 
-	bool operator>> (std::string& string);
+	virtual bool operator>> (std::string& string) = 0;
 
 	virtual int32_t readRaw (void* buffer, int32_t size) = 0;
 private:
@@ -97,31 +97,84 @@ private:
 };
 
 /**
-	Memory input and output stream
+	Seekable stream interface
  */
-class CMemoryStream : public OutputStream, public InputStream, public CBaseObject
+class SeekableStream
 {
 public:
-	CMemoryStream (int32_t initialSize = 1024, int32_t delta = 1024, ByteOrder byteOrder = kNativeByteOrder);
-	CMemoryStream (const int8_t* buffer, int32_t bufferSize, ByteOrder byteOrder = kNativeByteOrder);
+	enum SeekMode {
+		kSeekSet,
+		kSeekCurrent,
+		kSeekEnd
+	};
+	
+	virtual int64_t seek (int64_t pos, SeekMode mode) = 0;	///< returns -1 if seek fails otherwise new position
+	virtual int64_t tell () const = 0;
+	virtual void rewind () = 0;
+};
+
+/**
+	Memory input and output stream
+ */
+class CMemoryStream : public OutputStream, public InputStream, public SeekableStream, public CBaseObject
+{
+public:
+	CMemoryStream (int32_t initialSize = 1024, int32_t delta = 1024, bool binaryMode = true, ByteOrder byteOrder = kNativeByteOrder);
+	CMemoryStream (const int8_t* buffer, int32_t bufferSize, bool binaryMode = true, ByteOrder byteOrder = kNativeByteOrder);
 	~CMemoryStream ();
 	
 	int32_t writeRaw (const void* buffer, int32_t size);
 	int32_t readRaw (void* buffer, int32_t size);
 
-	int32_t tell () const { return pos; }
+	int64_t seek (int64_t pos, SeekMode mode);
+	int64_t tell () const { return pos; }
 	void rewind () { pos = 0; }
 
 	const int8_t* getBuffer () const { return buffer; }
 
+	virtual bool operator<< (const std::string& str);
+	virtual bool operator>> (std::string& string);
 protected:
 	bool resize (int32_t newSize);
 
+	bool binaryMode;
 	bool ownsBuffer;
 	int8_t* buffer;
 	int32_t size;
 	int32_t pos;
 	int32_t delta;
+};
+
+/**
+	File input and output stream
+ */
+class CFileStream : public OutputStream, public InputStream, public SeekableStream, public CBaseObject
+{
+public:
+	CFileStream ();
+	~CFileStream ();
+
+	enum {
+		kReadMode		= 1 << 0,
+		kWriteMode		= 1 << 1,
+		kTruncateMode	= 1 << 2,
+		kBinaryMode		= 1 << 3
+	};
+	
+	bool open (UTF8StringPtr path, int32_t mode, ByteOrder byteOrder = kNativeByteOrder);
+	
+	int32_t writeRaw (const void* buffer, int32_t size);
+	int32_t readRaw (void* buffer, int32_t size);
+
+	int64_t seek (int64_t pos, SeekMode mode);
+	int64_t tell () const;
+	void rewind ();
+
+	virtual bool operator<< (const std::string& str);
+	virtual bool operator>> (std::string& string);
+protected:
+	FILE* stream;
+	int32_t openMode;
 };
 
 } // namespace
