@@ -189,32 +189,23 @@ protected:
 class UIDescWriter
 {
 public:
-	bool write (UTF8StringPtr filename, UINode* rootNode);
+	bool write (OutputStream& stream, UINode* rootNode);
 protected:
-	bool writeNode (UINode* node, std::iostream& stream);
-	bool writeAttributes (UIAttributes* attr, std::iostream& stream);
+	bool writeNode (UINode* node, OutputStream& stream);
+	bool writeAttributes (UIAttributes* attr, OutputStream& stream);
 	int32_t intendLevel;
 };
 
 //-----------------------------------------------------------------------------
-bool UIDescWriter::write (UTF8StringPtr filename, UINode* rootNode)
+bool UIDescWriter::write (OutputStream& stream, UINode* rootNode)
 {
-	bool result = false;
 	intendLevel = 0;
-	std::fstream stream (filename, std::ios::out | std::ios::trunc);
-	if (stream.is_open ())
-	{
-		stream << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
-		result = writeNode (rootNode, stream);
-		stream.close ();
-	}
-	else
-		result = false;
-	return result;
+	stream << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
+	return writeNode (rootNode, stream);
 }
 
 //-----------------------------------------------------------------------------
-bool UIDescWriter::writeAttributes (UIAttributes* attr, std::iostream& stream)
+bool UIDescWriter::writeAttributes (UIAttributes* attr, OutputStream& stream)
 {
 	bool result = true;
 	UIAttributes::iterator it = attr->begin ();
@@ -234,7 +225,7 @@ bool UIDescWriter::writeAttributes (UIAttributes* attr, std::iostream& stream)
 }
 
 //-----------------------------------------------------------------------------
-bool UIDescWriter::writeNode (UINode* node, std::iostream& stream)
+bool UIDescWriter::writeNode (UINode* node, OutputStream& stream)
 {
 	bool result = true;
 	if (node->noExport ())
@@ -453,9 +444,21 @@ void UIDescription::setController (IController* inController)
 //-----------------------------------------------------------------------------
 bool UIDescription::save (UTF8StringPtr filename)
 {
+	bool result = false;
+	CFileStream stream;
+	if (stream.open (filename, CFileStream::kWriteMode|CFileStream::kTruncateMode))
+	{
+		result = saveToStream (stream);
+	}
+	return result;
+}
+
+//-----------------------------------------------------------------------------
+bool UIDescription::saveToStream (OutputStream& stream)
+{
 	nodes->getAttributes ()->setAttribute ("version", "1");
 	UIDescWriter writer;
-	return writer.write (filename, nodes);
+	return writer.write (stream, nodes);
 }
 
 //-----------------------------------------------------------------------------
