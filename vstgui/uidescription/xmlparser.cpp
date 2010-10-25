@@ -155,6 +155,10 @@ bool Parser::parse (IContentProvider* provider, IHandler* _handler)
 					handler = 0;
 					return true;
 				}
+				#if DEBUG
+				XML_Size currentLineNumber = XML_GetCurrentLineNumber (PARSER);
+				DebugPrint ("XML Parser Error on line: %d\n", currentLineNumber);
+				#endif
 				handler = 0;
 				return false;
 			}
@@ -163,6 +167,8 @@ bool Parser::parse (IContentProvider* provider, IHandler* _handler)
 				handler = 0;
 				return true;
 			}
+			default:
+				break;
 		}
 
 		if (bytesRead == 0)
@@ -180,29 +186,23 @@ bool Parser::stop ()
 }
 
 //------------------------------------------------------------------------
+//------------------------------------------------------------------------
+//------------------------------------------------------------------------
 MemoryContentProvider::MemoryContentProvider (const void* data, int32_t dataSize)
-: data (data)
-, dataSize (dataSize)
-, pos (0)
+: CMemoryStream ((const int8_t*)data, dataSize, false)
 {
 }
 
 //------------------------------------------------------------------------
 int32_t MemoryContentProvider::readRawXmlData (int8_t* buffer, int32_t size)
 {
-	int32_t bytesToCopy = std::min<int32_t> (size, dataSize-pos);
-	if (bytesToCopy > 0)
-	{
-		memcpy (buffer, data, bytesToCopy);
-		pos += bytesToCopy;
-	}
-	return bytesToCopy;
+	return readRaw (buffer, size);
 }
 
 //------------------------------------------------------------------------
 void MemoryContentProvider::rewind ()
 {
-	pos = 0;
+	CMemoryStream::rewind ();
 }
 
 //------------------------------------------------------------------------

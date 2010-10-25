@@ -1457,6 +1457,8 @@ void UIViewInspector::updateAttributeViews ()
 						addNoneItem = true;
 						break;
 					}
+					default:
+						break;
 				}
 				updateMenuFromList (optMenu, names, attrValue, addNoneItem);
 				if (type == IViewCreator::kColorType)

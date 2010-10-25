@@ -98,8 +98,9 @@ public:
 	UIDescription (Xml::IContentProvider* xmlContentProvider, IViewFactory* viewFactory = 0);
 	~UIDescription ();
 
-	bool parse ();
-	bool save (UTF8StringPtr filename);
+	virtual bool parse ();
+	virtual bool save (UTF8StringPtr filename);
+
 	UTF8StringPtr getXmFileName () const { return xmlFile.u.name; }
 	
 	CView* createView (UTF8StringPtr name, IController* controller);
@@ -158,6 +159,8 @@ protected:
 	void updateAttributesForView (UINode* node, CView* view, bool deep = true);
 
 	void addDefaultNodes ();
+
+	bool saveToStream (OutputStream& stream);
 
 	// Xml::IHandler
 	void startXmlElement (Xml::Parser* parser, IdStringPtr elementName, UTF8StringPtr* elementAttributes);
