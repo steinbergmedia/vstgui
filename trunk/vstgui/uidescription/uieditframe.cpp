@@ -1035,6 +1035,7 @@ void UIEditFrame::showOptionsMenu (const CPoint& where)
 		item = menu->addEntry (new CMenuItem ("Delete", kDeleteSelectionTag));
 		if (selectionCount <= 0 || selection->contains (getView (0)))
 			item->setEnabled (false);
+		item->setKey ("\b", kControl);
 		if (uiDescription)
 		{
 			UIViewFactory* viewFactory = dynamic_cast<UIViewFactory*> (uiDescription->getViewFactory ());
