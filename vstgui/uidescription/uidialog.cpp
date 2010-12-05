@@ -186,6 +186,7 @@ bool UIDialog::run ()
 	if (platformWindow)
 	{
 		platformWindow->show ();
+		frame->setFocusView (0);
 		frame->advanceNextFocusView (0, false);
 		platformWindow->runModal ();
 	}
