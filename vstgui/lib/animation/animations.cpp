@@ -190,6 +190,7 @@ void ExchangeViewAnimation::animationTick (CView* view, IdStringPtr name, float 
 			newView->setViewSize (viewSize);
 			newView->setMouseableArea (viewSize);
 			newView->invalid ();
+			break;
 		}
 		case kPushInFromRight:
 		{
@@ -202,6 +203,7 @@ void ExchangeViewAnimation::animationTick (CView* view, IdStringPtr name, float 
 			newView->setViewSize (viewSize);
 			newView->setMouseableArea (viewSize);
 			newView->invalid ();
+			break;
 		}
 		case kPushInFromTop:
 		{
@@ -214,6 +216,7 @@ void ExchangeViewAnimation::animationTick (CView* view, IdStringPtr name, float 
 			newView->setViewSize (viewSize);
 			newView->setMouseableArea (viewSize);
 			newView->invalid ();
+			break;
 		}
 		case kPushInFromBottom:
 		{
@@ -226,6 +229,7 @@ void ExchangeViewAnimation::animationTick (CView* view, IdStringPtr name, float 
 			newView->setViewSize (viewSize);
 			newView->setMouseableArea (viewSize);
 			newView->invalid ();
+			break;
 		}
 	}
 }
