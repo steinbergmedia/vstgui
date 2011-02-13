@@ -147,7 +147,6 @@ void CTooltipSupport::onMouseExited (CView* view)
 		if (state == kHidden || state == kShowing)
 		{
 			hideTooltip ();
-			timer->stop ();
 			timer->setFireTime (delay);
 		}
 		else
@@ -212,26 +211,23 @@ void CTooltipSupport::onMouseDown (const CPoint& where)
 {
 	if (state != kHidden)
 	{
-		timer->stop ();
-		timer->setFireTime (delay);
 		hideTooltip ();
+		timer->setFireTime (delay);
 	}
 }
 
 //------------------------------------------------------------------------
 void CTooltipSupport::hideTooltip ()
 {
-	if (state != kHidden)
-	{
-		state = kHidden;
-		IPlatformFrame* platformFrame = frame->getPlatformFrame ();
-		if (platformFrame)
-			platformFrame->hideTooltip ();
+	state = kHidden;
+	timer->stop ();
+	IPlatformFrame* platformFrame = frame->getPlatformFrame ();
+	if (platformFrame)
+		platformFrame->hideTooltip ();
 
-		#if DEBUGLOG
-		DebugPrint ("CTooltipSupport::hideTooltip\n");
-		#endif
-	}
+	#if DEBUGLOG
+	DebugPrint ("CTooltipSupport::hideTooltip\n");
+	#endif
 }
 
 //------------------------------------------------------------------------
@@ -271,7 +267,6 @@ CMessageResult CTooltipSupport::notify (CBaseObject* sender, IdStringPtr msg)
 		if (state == kHiding)
 		{
 			hideTooltip ();
-			timer->stop ();
 			timer->setFireTime (delay);
 		}
 		else if (state == kShowing)

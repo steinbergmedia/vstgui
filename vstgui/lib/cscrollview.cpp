@@ -504,6 +504,12 @@ bool CScrollView::addView (CView *pView, CRect &mouseableArea, bool mouseEnabled
 }
 
 //-----------------------------------------------------------------------------
+bool CScrollView::addView (CView* pView, CView* pBefore)
+{
+	return sc->addView (pView, pBefore);
+}
+
+//-----------------------------------------------------------------------------
 bool CScrollView::removeView (CView *pView, bool withForget)
 {
 	return sc->removeView (pView, withForget);
@@ -519,6 +525,12 @@ bool CScrollView::removeAll (bool withForget)
 bool CScrollView::isChild (CView *pView) const
 {
 	return sc->isChild (pView);
+}
+
+//-----------------------------------------------------------------------------
+bool CScrollView::isChild (CView* pView, bool deep) const
+{
+	return sc->isChild (pView, deep);
 }
 
 //-----------------------------------------------------------------------------

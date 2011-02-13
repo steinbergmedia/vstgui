@@ -402,15 +402,15 @@ public:
 		if (tooltipAttr)
 		{
 			if (tooltipAttr->size () > 0)
-				view->setAttribute (kCViewTooltipAttribute, tooltipAttr->size ()+1, tooltipAttr->c_str ());
+				view->setAttribute (kCViewTooltipAttribute, (int32_t)tooltipAttr->size ()+1, tooltipAttr->c_str ());
 			else
 				view->removeAttribute (kCViewTooltipAttribute);
 		}
 		if (customViewAttr)
-			view->setAttribute ('uicv', customViewAttr->size ()+1, customViewAttr->c_str ());
+			view->setAttribute ('uicv', (int32_t)customViewAttr->size ()+1, customViewAttr->c_str ());
 
 		if (subControllerAttr)
-			view->setAttribute ('uisc', subControllerAttr->size ()+1, subControllerAttr->c_str ());
+			view->setAttribute ('uisc', (int32_t)subControllerAttr->size ()+1, subControllerAttr->c_str ());
 
 		return true;
 	}
@@ -548,7 +548,7 @@ void rememberAttributeValueString (CView* view, IdStringPtr attrName, const std:
 {
 	#if VSTGUI_LIVE_EDITING
 	uint32_t hash = DJBHash (attrName);
-	view->setAttribute (hash, value.size () + 1, value.c_str ());
+	view->setAttribute (hash, (int32_t)value.size () + 1, value.c_str ());
 	#endif
 }
 
@@ -883,7 +883,7 @@ public:
 				else
 				{
 					char* endPtr = 0;
-					tag = strtol (controlTagAttr->c_str (), &endPtr, 10);
+					tag = (int32_t)strtol (controlTagAttr->c_str (), &endPtr, 10);
 					if (endPtr != controlTagAttr->c_str ())
 					{
 						control->setTag (tag);
@@ -1647,7 +1647,7 @@ public:
 		if (angleStartAttr)
 		{
 			fvalue = strtof (angleStartAttr->c_str (), 0);
-			ivalue = strtol (angleStartAttr->c_str (), 0, 10);
+			ivalue = (int32_t)strtol (angleStartAttr->c_str (), 0, 10);
 			if (fvalue == ivalue)
 			{	// convert from degree
 				fvalue = (fvalue + 90.f) / 180.f * (float)kPI;
@@ -1657,7 +1657,7 @@ public:
 		if (angleRangeAttr)
 		{
 			fvalue = strtof (angleRangeAttr->c_str (), 0);
-			ivalue = strtol (angleRangeAttr->c_str (), 0, 10);
+			ivalue = (int32_t)strtol (angleRangeAttr->c_str (), 0, 10);
 			if (fvalue == ivalue)
 			{	// convert from degree
 				fvalue = -fvalue / 180.f * (float)kPI;
@@ -1951,7 +1951,7 @@ public:
 		const std::string* attr = attributes.getAttributeValue ("sub-pixmaps");
 		if (attr)
 		{
-			int32_t value = strtol (attr->c_str (), 0, 10);
+			int32_t value = (int32_t)strtol (attr->c_str (), 0, 10);
 			multiBitmapControl->setNumSubPixmaps (value);
 		}
 		return true;
@@ -2429,7 +2429,7 @@ public:
 		attr = attributes.getAttributeValue ("num-led");
 		if (attr)
 		{
-			int32_t numLed = strtol (attr->c_str (), 0, 10);
+			int32_t numLed = (int32_t)strtol (attr->c_str (), 0, 10);
 			vuMeter->setNbLed (numLed);
 		}
 		attr = attributes.getAttributeValue ("decrease-step-value");
@@ -2497,6 +2497,126 @@ public:
 
 };
 CVuMeterCreator __gCVuMeterCreator;
+
+//-----------------------------------------------------------------------------
+class CAnimationSplashScreenCreator : public IViewCreator
+{
+public:
+	CAnimationSplashScreenCreator () { UIViewFactory::registerViewCreator (*this); }
+	IdStringPtr getViewName () const { return "CAnimationSplashScreen"; }
+	IdStringPtr getBaseViewName () const { return "CControl"; }
+	CView* create (const UIAttributes& attributes, IUIDescription* description) const { return new CAnimationSplashScreen (CRect (0, 0, 0, 0), -1, 0, 0); }
+	bool apply (CView* view, const UIAttributes& attributes, IUIDescription* description) const
+	{
+		CAnimationSplashScreen* splashScreen = dynamic_cast<CAnimationSplashScreen*> (view);
+		if (!splashScreen)
+			return false;
+
+		const std::string* attr = attributes.getAttributeValue ("splash-bitmap");
+		if (attr)
+		{
+			CBitmap* bitmap = description->getBitmap (attr->c_str ());
+			splashScreen->setSplashBitmap (bitmap);
+		}
+		attr = attributes.getAttributeValue ("splash-origin");
+		CPoint p;
+		if (attr)
+		{
+			if (parseSize (*attr, p))
+			{
+				CRect size = splashScreen->getSplashRect ();
+				size.offset (p.x, p.y);
+				splashScreen->setSplashRect (size);
+			}
+		}
+		attr = attributes.getAttributeValue ("splash-size");
+		if (attr)
+		{
+			if (parseSize (*attr, p))
+			{
+				CRect size = splashScreen->getSplashRect ();
+				size.setWidth (p.x);
+				size.setHeight (p.y);
+				splashScreen->setSplashRect (size);
+			}
+		}
+		attr = attributes.getAttributeValue ("animation-index");
+		if (attr)
+		{
+			int32_t index = (int32_t)strtol (attr->c_str (), 0, 10);
+			splashScreen->setAnimationIndex (index);
+		}
+		attr = attributes.getAttributeValue ("animation-time");
+		if (attr)
+		{
+			int32_t time = (int32_t)strtol (attr->c_str (), 0, 10);
+			splashScreen->setAnimationTime (time);
+		}
+
+		return true;
+	}
+	bool getAttributeNames (std::list<std::string>& attributeNames) const
+	{
+		attributeNames.push_back ("splash-bitmap");
+		attributeNames.push_back ("splash-origin");
+		attributeNames.push_back ("splash-size");
+		attributeNames.push_back ("animation-index");
+		attributeNames.push_back ("animation-time");
+		return true;
+	}
+	AttrType getAttributeType (const std::string& attributeName) const
+	{
+		if (attributeName == "splash-bitmap") return kBitmapType;
+		if (attributeName == "splash-origin") return kRectType;
+		if (attributeName == "splash-size") return kRectType;
+		if (attributeName == "animation-index") return kIntegerType;
+		if (attributeName == "animation-time") return kIntegerType;
+		return kUnknownType;
+	}
+	bool getAttributeValue (CView* view, const std::string& attributeName, std::string& stringValue, IUIDescription* desc) const
+	{
+		CAnimationSplashScreen* splashScreen = dynamic_cast<CAnimationSplashScreen*> (view);
+		if (!splashScreen)
+			return false;
+
+		if (attributeName == "splash-bitmap")
+		{
+			CBitmap* bitmap = splashScreen->getSplashBitmap ();
+			if (bitmap)
+				bitmapToString (bitmap, stringValue, desc);
+			else
+				stringValue = "";
+			return true;
+		}
+		else if (attributeName == "splash-origin")
+		{
+			pointToString (splashScreen->getSplashRect ().getTopLeft (), stringValue);
+			return true;
+		}
+		else if (attributeName == "splash-size")
+		{
+			pointToString (splashScreen->getSplashRect ().getSize (), stringValue);
+			return true;
+		}
+		else if (attributeName == "animation-index")
+		{
+			std::stringstream stream;
+			stream << splashScreen->getAnimationIndex ();
+			stringValue = stream.str ();
+			return true;
+		}
+		else if (attributeName == "animation-time")
+		{
+			std::stringstream stream;
+			stream << splashScreen->getAnimationTime ();
+			stringValue = stream.str ();
+			return true;
+		}
+		return false;
+	}
+
+};
+CAnimationSplashScreenCreator __gCAnimationSplashScreenCreator;
 
 } // namespace
 

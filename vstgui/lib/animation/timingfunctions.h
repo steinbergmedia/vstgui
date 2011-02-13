@@ -116,8 +116,8 @@ public:
 protected:
 	TimingFunctionBase* tf;
 	int32_t repeatCount;
-	bool autoReverse;
 	uint32_t runCounter;
+	bool autoReverse;
 	bool isReverse;
 };
 

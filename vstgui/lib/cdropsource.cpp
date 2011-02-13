@@ -81,7 +81,7 @@ bool CDropSource::add (const void* buffer, int32_t bufferSize, Type type)
 //-----------------------------------------------------------------------------
 int32_t CDropSource::getCount () const
 {
-	return entries.size ();
+	return (int32_t)entries.size ();
 }
 
 //-----------------------------------------------------------------------------

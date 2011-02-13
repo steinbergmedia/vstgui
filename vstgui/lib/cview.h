@@ -338,7 +338,7 @@ public:
 	/// @name Animation Methods
 	//-----------------------------------------------------------------------------
 	//@{
-	void addAnimation (IdStringPtr name, Animation::IAnimationTarget* target, Animation::ITimingFunction* timingFunction);
+	void addAnimation (IdStringPtr name, Animation::IAnimationTarget* target, Animation::ITimingFunction* timingFunction, CBaseObject* notificationObject = 0);
 	void removeAnimation (IdStringPtr name);
 	void removeAllAnimations ();
 	//@}

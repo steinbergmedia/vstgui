@@ -196,7 +196,7 @@ void UIDescriptionViewSwitchController::valueChanged (CControl* pControl)
 	float min = pControl->getMin ();
 	float max = pControl->getMax ();
 	float norm = (value - min) / (max - min);
-	int32_t index = std::min<int32_t> ((int32_t)(norm * (float)templateNames.size ()), templateNames.size ()-1);
+	int32_t index = std::min<int32_t> ((int32_t)(norm * (float)templateNames.size ()), (int32_t)templateNames.size ()-1);
 	if (index != currentIndex)
 	{
 		viewSwitch->setCurrentViewIndex (index);

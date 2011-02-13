@@ -35,6 +35,7 @@
 #include "animations.h"
 #include "../cview.h"
 #include "../cframe.h"
+#include "../controls/ccontrol.h"
 #include <assert.h>
 #include <cmath>
 
@@ -108,10 +109,10 @@ void ViewSizeAnimation::animationFinished (CView* view, IdStringPtr name, bool w
 void ViewSizeAnimation::animationTick (CView* view, IdStringPtr name, float pos)
 {
 	CRect r;
-	r.left = (int32_t)fabs (startRect.left + ((newRect.left - startRect.left) * pos));
-	r.right = (int32_t)fabs (startRect.right + ((newRect.right - startRect.right) * pos));
-	r.top = (int32_t)fabs (startRect.top + ((newRect.top - startRect.top) * pos));
-	r.bottom = (int32_t)fabs (startRect.bottom + ((newRect.bottom - startRect.bottom) * pos));
+	r.left = (int32_t)(startRect.left + ((newRect.left - startRect.left) * pos));
+	r.right = (int32_t)(startRect.right + ((newRect.right - startRect.right) * pos));
+	r.top = (int32_t)(startRect.top + ((newRect.top - startRect.top) * pos));
+	r.bottom = (int32_t)(startRect.bottom + ((newRect.bottom - startRect.bottom) * pos));
 	if (view->getViewSize () != r)
 	{
 		view->invalid ();
@@ -246,6 +247,46 @@ void ExchangeViewAnimation::animationFinished (CView* view, IdStringPtr name, bo
 		CViewContainer* parent = dynamic_cast<CViewContainer*> (viewToRemove->getParentView ());
 		if (parent)
 			parent->removeView (viewToRemove);
+	}
+}
+
+//-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
+ControlValueAnimation::ControlValueAnimation (float endValue, bool forceEndValueOnFinish)
+: startValue (0.f)
+, endValue (endValue)
+, forceEndValueOnFinish (forceEndValueOnFinish)
+{
+}
+
+//-----------------------------------------------------------------------------
+void ControlValueAnimation::animationStart (CView* view, IdStringPtr name)
+{
+	CControl* control = dynamic_cast<CControl*> (view);
+	if (control)
+		startValue = control->getValue ();
+}
+
+//-----------------------------------------------------------------------------
+void ControlValueAnimation::animationTick (CView* view, IdStringPtr name, float pos)
+{
+	CControl* control = dynamic_cast<CControl*> (view);
+	if (control)
+	{
+		float value = startValue + (endValue - startValue) * pos;
+		control->setValue (value);
+	}
+}
+
+//-----------------------------------------------------------------------------
+void ControlValueAnimation::animationFinished (CView* view, IdStringPtr name, bool wasCanceled)
+{
+	CControl* control = dynamic_cast<CControl*> (view);
+	if (control)
+	{
+		if (!wasCanceled || forceEndValueOnFinish)
+			control->setValue (endValue);
 	}
 }
 

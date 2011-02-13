@@ -535,7 +535,7 @@ CGContextRef CGDrawContext::beginCGContext (bool swapYAxis, bool integralOffset)
 		CGContextClipToRect (cgContext, cgClipRect);
 
 		if (integralOffset)
-			CGContextTranslateCTM (cgContext, abs (currentState.offset.x), abs (currentState.offset.y));
+			CGContextTranslateCTM (cgContext, ceil (currentState.offset.x), ceil (currentState.offset.y));
 		else
 			CGContextTranslateCTM (cgContext, currentState.offset.x, currentState.offset.y);
 

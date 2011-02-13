@@ -142,6 +142,7 @@ struct CRect
 		}
 	}
 
+	void centerInside (const CRect& r); ///< moves this rect to the center of r
 	void makeIntegral ();
 
 	CCoord left;

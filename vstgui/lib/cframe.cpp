@@ -390,7 +390,7 @@ CMouseEventResult CFrame::onMouseDown (CPoint &where, const CButtonState& button
 	{
 		CBaseObjectGuard rg (pModalView);
 
-		if (pModalView->hitTest (where, buttons))
+		if (pModalView->isVisible () && pModalView->getMouseEnabled () && pModalView->hitTest (where, buttons))
 		{
 			CMouseEventResult result = pModalView->onMouseDown (where, buttons);
 			if (result == kMouseEventHandled)
@@ -460,6 +460,8 @@ CMouseEventResult CFrame::onMouseExited (CPoint &where, const CButtonState& butt
 	if (mouseDownView == 0)
 	{
 		clearMouseViews (where, buttons);
+		if (pTooltips)
+			pTooltips->hideTooltip ();
 	}
 
 	return kMouseEventHandled;
@@ -726,6 +728,12 @@ bool CFrame::setModalView (CView* pView)
 				setFocusView (pModalView->wantsFocus () ? pModalView : 0);
 		}
 		return result;
+	}
+	else
+	{
+		CPoint where;
+		getCurrentMouseLocation (where);
+		checkMouseViews (where, getCurrentMouseButtons ());
 	}
 
 	return true;
