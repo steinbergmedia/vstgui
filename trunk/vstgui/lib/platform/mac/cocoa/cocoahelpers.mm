@@ -141,7 +141,7 @@ HIDDEN VstKeyCode CreateVstKeyCodeFromNSEvent (NSEvent* theEvent)
 		}
     }
 
-	uint32_t modifiers = [theEvent modifierFlags];
+	NSUInteger modifiers = [theEvent modifierFlags];
 	if (modifiers & NSShiftKeyMask)
 		kc.modifier |= MODIFIER_SHIFT;
 	if (modifiers & NSCommandKeyMask)

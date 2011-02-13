@@ -248,7 +248,7 @@ void CNewFileSelector::addFileExtension (const CFileExtension& extension)
 //-----------------------------------------------------------------------------
 int32_t CNewFileSelector::getNumSelectedFiles () const
 {
-	return result.size ();
+	return (int32_t)result.size ();
 }
 
 //-----------------------------------------------------------------------------

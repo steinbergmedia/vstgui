@@ -893,7 +893,7 @@ int32_t GenericStringListDataBrowserSource::dbGetNumRows (CDataBrowser* browser)
 {
 	if (dataBrowser == 0)
 		dataBrowser = browser;
-	return stringList->size ();
+	return (int32_t)stringList->size ();
 }
 
 //-----------------------------------------------------------------------------

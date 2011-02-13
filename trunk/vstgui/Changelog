@@ -1,3 +1,11 @@
+2011-02-13 arne
+
+	* merge back changes from VST SDK 3.5:
+
+		* fix some warnings with some compilers
+		* add CAnimationSplashScreen class
+		* animations can have an optional notification object for receiving a message when the animation has finished
+
 2010-12-05 arne
 
 	* fix ExchangeViewAnimation

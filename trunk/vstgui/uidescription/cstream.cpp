@@ -138,7 +138,7 @@ int64_t CMemoryStream::seek (int64_t seekpos, SeekMode mode)
 	}
 	if (newPos < size)
 	{
-		pos = newPos;
+		pos = (int32_t)newPos;
 		return pos;
 	}
 	return -1;
@@ -185,7 +185,7 @@ bool CMemoryStream::operator<< (const std::string& str)
 		if (!(*(OutputStream*)this << (int32_t)'str ')) return false;
 		if (!(*(OutputStream*)this << (int32_t)str.length ())) return false;
 	}
-	return writeRaw (str.c_str (), str.length ()) == str.length ();
+	return writeRaw (str.c_str (), (int32_t)str.length ()) == str.length ();
 }
 
 //-----------------------------------------------------------------------------
@@ -244,7 +244,7 @@ int32_t CFileStream::writeRaw (const void* buffer, int32_t size)
 {
 	if (stream)
 	{
-		int32_t written = fwrite (buffer, size, 1, stream);
+		int32_t written = (int32_t)fwrite (buffer, size, 1, stream);
 		return written * size;
 	}
 	return -1;
@@ -255,7 +255,7 @@ int32_t CFileStream::readRaw (void* buffer, int32_t size)
 {
 	if (stream)
 	{
-		return fread (buffer, size, 1, stream) * size;
+		return (int32_t)fread (buffer, size, 1, stream) * size;
 	}
 	return -1;
 }
@@ -314,7 +314,7 @@ bool CFileStream::operator>> (std::string& string)
 //-----------------------------------------------------------------------------
 bool CFileStream::operator<< (const std::string& str)
 {
-	if (writeRaw (str.c_str (), str.size ()) == str.size ())
+	if (writeRaw (str.c_str (), (int32_t)str.size ()) == str.size ())
 	{
 		if (openMode & kBinaryMode)
 		{

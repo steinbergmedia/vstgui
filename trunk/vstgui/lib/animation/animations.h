@@ -44,6 +44,7 @@ class CView;
 
 namespace Animation {
 
+//-----------------------------------------------------------------------------
 /// @brief animates the alpha value of the view
 /// @ingroup AnimationTargets
 ///	@ingroup new_in_4_0
@@ -62,6 +63,7 @@ protected:
 	bool forceEndValueOnFinish;
 };
 
+//-----------------------------------------------------------------------------
 /// @brief animates the view size of the view
 /// @ingroup AnimationTargets
 ///	@ingroup new_in_4_0
@@ -80,6 +82,7 @@ protected:
 	bool forceEndValueOnFinish;
 };
 
+//-----------------------------------------------------------------------------
 /// @brief exchange a view by another view with an animation
 /// @ingroup AnimationTargets
 ///	@ingroup new_in_4_0
@@ -98,16 +101,35 @@ public:
 	/** oldView must be a subview of the animation view */
 	ExchangeViewAnimation (CView* oldView, CView* newView, AnimationStyle style = kAlphaValueFade);
 	~ExchangeViewAnimation ();
+
 	void animationStart (CView* view, IdStringPtr name);
 	void animationTick (CView* view, IdStringPtr name, float pos);
 	void animationFinished (CView* view, IdStringPtr name, bool wasCanceled);
-
 protected:
 	CView* newView;
 	CView* viewToRemove;
 	AnimationStyle style;
 	float newViewValueEnd;
 	float oldViewValueStart;
+};
+
+//-----------------------------------------------------------------------------
+/// @brief animates the value of a CControl
+/// @ingroup AnimationTargets
+///	@ingroup new_in_4_0
+//-----------------------------------------------------------------------------
+class ControlValueAnimation : public IAnimationTarget
+{
+public:
+	ControlValueAnimation (float endValue, bool forceEndValueOnFinish = false);
+
+	void animationStart (CView* view, IdStringPtr name);
+	void animationTick (CView* view, IdStringPtr name, float pos);
+	void animationFinished (CView* view, IdStringPtr name, bool wasCanceled);
+protected:
+	float startValue;
+	float endValue;
+	bool forceEndValueOnFinish;
 };
 
 }} // namespaces

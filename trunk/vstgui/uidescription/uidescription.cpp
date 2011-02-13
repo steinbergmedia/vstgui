@@ -157,7 +157,7 @@ public:
 	void add (UINode* obj) { if (!ownsObjects) obj->remember (); std::list<UINode*>::push_back (obj); }
 	void remove (UINode* obj) { std::list<UINode*>::remove (obj); obj->forget (); }
 
-	int32_t total () { return size (); }
+	int32_t total () { return (int32_t)size (); }
 	void removeAll () { riterator it = rbegin (); while (it != rend ()) remove (*it); }
 
 	iterator begin () { return std::list<UINode*>::begin (); }
@@ -526,9 +526,9 @@ CView* UIDescription::createViewFromNode (UINode* node)
 						attrId = ((((int32_t)c1) << 24) | (((int32_t)c2) << 16) | (((int32_t)c3) << 8) | (((int32_t)c4) << 0));
 					}
 					else
-						attrId = strtol (attrName->c_str (), 0, 10);
+						attrId = (CViewAttributeID)strtol (attrName->c_str (), 0, 10);
 					if (attrId)
-						result->setAttribute (attrId, attrValue->size ()+1, attrValue->c_str ());
+						result->setAttribute (attrId, (int32_t)attrValue->size ()+1, attrValue->c_str ());
 				}
 			}
 			it++;
@@ -558,7 +558,7 @@ CView* UIDescription::createView (UTF8StringPtr name, IController* _controller)
 				{
 					CView* view = createViewFromNode (*it);
 					if (view)
-						view->setAttribute (kTemplateNameAttributeID, strlen (name)+1, name);
+						view->setAttribute (kTemplateNameAttributeID, (int32_t)strlen (name)+1, name);
 					return view;
 				}
 			}
@@ -1085,7 +1085,7 @@ void UIDescription::collectControlTagNames (std::list<const std::string*>& names
 }
 
 //-----------------------------------------------------------------------------
-void UIDescription::updateAttributesForView (UINode* node, CView* view, bool deep)
+bool UIDescription::updateAttributesForView (UINode* node, CView* view, bool deep)
 {
 #if VSTGUI_LIVE_EDITING
 	UIViewFactory* factory = dynamic_cast<UIViewFactory*> (viewFactory);
@@ -1128,14 +1128,22 @@ void UIDescription::updateAttributesForView (UINode* node, CView* view, bool dee
 				else
 				{
 					UINode* subNode = new UINode ("view", 0);
-					updateAttributesForView (subNode, subView);
-					node->getChildren ().add (subNode);
+					if (updateAttributesForView (subNode, subView))
+					{
+						node->getChildren ().add (subNode);
+					}
+					else
+					{
+						subNode->forget ();
+					}
 				}
 				++it;
 			}
 		}
+		return true;
 	}
 #endif
+	return false;
 }
 
 //-----------------------------------------------------------------------------
@@ -1176,6 +1184,7 @@ bool UIDescription::addNewTemplate (UTF8StringPtr name, UIAttributes* attr)
 	if (!nodes)
 	{
 		nodes = new UINode ("vstgui-ui-description", new UIAttributes);
+		addDefaultNodes ();
 	}
 	UINode* templateNode = findChildNodeByNameAttribute (nodes, name);
 	if (templateNode == 0)
@@ -1353,7 +1362,7 @@ int32_t UIControlTagNode::getTag ()
 				tag = ((((int32_t)c1) << 24) | (((int32_t)c2) << 16) | (((int32_t)c3) << 8) | (((int32_t)c4) << 0));
 			}
 			else
-				tag = strtol (tagStr->c_str (), 0, 10);
+				tag = (int32_t)strtol (tagStr->c_str (), 0, 10);
 		}
 	}
 	return tag;
@@ -1466,7 +1475,7 @@ CFontRef UIFontNode::getFont ()
 		{
 			int32_t size = 12;
 			if (sizeAttr)
-				size = strtol (sizeAttr->c_str (), 0, 10);
+				size = (int32_t)strtol (sizeAttr->c_str (), 0, 10);
 			int32_t fontStyle = 0;
 			if (boldAttr && *boldAttr == "true")
 				fontStyle |= kBoldFace;
@@ -1757,7 +1766,7 @@ int32_t ResourceReader::readRawXmlData (int8_t* buffer, int32_t size)
 	if (platformHandle)
 	{
 		#if MAC
-		return fread (buffer, 1, size, (FILE*)platformHandle);
+		return (int32_t)fread (buffer, 1, size, (FILE*)platformHandle);
 		#elif WINDOWS
 		ULONG read = 0;
 		((ResourceStream*)platformHandle)->Read (buffer, size, &read);

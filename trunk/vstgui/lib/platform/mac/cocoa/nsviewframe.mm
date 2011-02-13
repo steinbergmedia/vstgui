@@ -227,7 +227,7 @@ static BOOL VSTGUI_NSView_onMouseDown (id self, SEL _cmd, NSEvent* theEvent)
 
 	CButtonState buttons = eventButton (theEvent);
 	[[self window] makeFirstResponder:self];
-	uint32_t modifiers = [theEvent modifierFlags];
+	NSUInteger modifiers = [theEvent modifierFlags];
 	NSPoint nsPoint = [theEvent locationInWindow];
 	nsPoint = [self convertPoint:nsPoint fromView:nil];
 	if (modifiers & NSShiftKeyMask)
@@ -253,7 +253,7 @@ static BOOL VSTGUI_NSView_onMouseUp (id self, SEL _cmd, NSEvent* theEvent)
 		return NO;
 
 	CButtonState buttons = eventButton (theEvent);
-	uint32_t modifiers = [theEvent modifierFlags];
+	NSUInteger modifiers = [theEvent modifierFlags];
 	NSPoint nsPoint = [theEvent locationInWindow];
 	nsPoint = [self convertPoint:nsPoint fromView:nil];
 	if (modifiers & NSShiftKeyMask)
@@ -277,7 +277,7 @@ static BOOL VSTGUI_NSView_onMouseMoved (id self, SEL _cmd, NSEvent* theEvent)
 		return NO;
 
 	CButtonState buttons = eventButton (theEvent);
-	uint32_t modifiers = [theEvent modifierFlags];
+	NSUInteger modifiers = [theEvent modifierFlags];
 	NSPoint nsPoint = [theEvent locationInWindow];
 	nsPoint = [self convertPoint:nsPoint fromView:nil];
 	if (modifiers & NSShiftKeyMask)
@@ -381,7 +381,7 @@ static void VSTGUI_NSView_scrollWheel (id self, SEL _cmd, NSEvent* theEvent)
 		return;
 
 	CButtonState buttons = 0;
-	uint32_t modifiers = [theEvent modifierFlags];
+	NSUInteger modifiers = [theEvent modifierFlags];
 	NSPoint nsPoint = [theEvent locationInWindow];
 	nsPoint = [self convertPoint:nsPoint fromView:nil];
 	if (modifiers & NSShiftKeyMask)
@@ -406,7 +406,7 @@ static void VSTGUI_NSView_mouseEntered (id self, SEL _cmd, NSEvent* theEvent)
 	if (!_vstguiframe)
 		return;
 	CButtonState buttons = 0; //eventButton (theEvent);
-	uint32_t modifiers = [theEvent modifierFlags];
+	NSUInteger modifiers = [theEvent modifierFlags];
 	NSPoint nsPoint;
 	nsPoint = [NSEvent mouseLocation];
 	nsPoint = [[self window] convertScreenToBase:nsPoint];
@@ -431,7 +431,7 @@ static void VSTGUI_NSView_mouseExited (id self, SEL _cmd, NSEvent* theEvent)
 	if (!_vstguiframe)
 		return;
 	CButtonState buttons = 0; //eventButton (theEvent);
-	uint32_t modifiers = [theEvent modifierFlags];
+	NSUInteger modifiers = [theEvent modifierFlags];
 	NSPoint nsPoint;
 	nsPoint = [NSEvent mouseLocation];
 	nsPoint = [[self window] convertScreenToBase:nsPoint];
@@ -740,7 +740,7 @@ bool NSViewFrame::getGlobalPosition (CPoint& pos) const
 //-----------------------------------------------------------------------------
 bool NSViewFrame::setSize (const CRect& newSize)
 {
-	uint32_t oldResizeMask = [nsView autoresizingMask];
+	NSUInteger oldResizeMask = [nsView autoresizingMask];
 	[nsView setAutoresizingMask: 0];
 	NSRect r = nsRectFromCRect (newSize);
 	[nsView setFrame: r];

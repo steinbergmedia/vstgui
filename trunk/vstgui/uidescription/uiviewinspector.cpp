@@ -358,7 +358,7 @@ public:
 
 	int32_t dbGetNumRows (CDataBrowser* browser)
 	{
-		return names.size () + 1;
+		return (int32_t)names.size () + 1;
 	}
 	
 	int32_t dbGetNumColumns (CDataBrowser* browser)
@@ -717,11 +717,11 @@ public:
 					actionOperator->performBitmapChange (newText, "not yet defined");
 					updateNames ();
 					browser->recalculateLayout (true);
-					for (size_t i = 0; i < names.size (); i++)
+					for (int32_t i = 0; i < (int32_t)names.size (); i++)
 					{
 						if (*names[i] == newText)
 						{
-							browser->beginTextEdit (i, 1, "not yet defined");
+							browser->beginTextEdit ((int32_t)i, 1, "not yet defined");
 							break;
 						}
 					}
@@ -986,7 +986,7 @@ public:
 					actionOperator->performTagChange (newText, -2);
 					updateNames ();
 					browser->recalculateLayout (true);
-					for (size_t i = 0; i < names.size (); i++)
+					for (int32_t i = 0; i < (int32_t)names.size (); i++)
 					{
 						if (*names[i] == newText)
 						{
@@ -1151,7 +1151,7 @@ static const CViewAttributeID attrNameID = 'atnm';
 //-----------------------------------------------------------------------------
 static void setViewAttributeName (CView* view, UTF8StringPtr name)
 {
-	view->setAttribute (attrNameID, strlen (name) + 1, name);
+	view->setAttribute (attrNameID, (int32_t)strlen (name) + 1, name);
 }
 
 //-----------------------------------------------------------------------------

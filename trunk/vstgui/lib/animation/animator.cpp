@@ -248,12 +248,12 @@ Animator::~Animator ()
 }
 
 //-----------------------------------------------------------------------------
-void Animator::addAnimation (CView* view, IdStringPtr name, IAnimationTarget* target, ITimingFunction* timingFunction)
+void Animator::addAnimation (CView* view, IdStringPtr name, IAnimationTarget* target, ITimingFunction* timingFunction, CBaseObject* notificationObject)
 {
 	if (animations.size () == 0)
 		Timer::addAnimator (this);
 	removeAnimation (view, name); // cancel animation with same view and name
-	animations.push_back (new Animation (view, name, target, timingFunction));
+	animations.push_back (new Animation (view, name, target, timingFunction, notificationObject));
 	#if DEBUG_LOG
 	DebugPrint ("new animation added: %p - %s\n", view, name);
 	#endif
@@ -360,21 +360,32 @@ CMessageResult Animator::notify (CBaseObject* sender, IdStringPtr message)
 	return kMessageUnknown;
 }
 
+IdStringPtr kMsgAnimationFinished = "kMsgAnimationFinished";
+
 //-----------------------------------------------------------------------------
-Animator::Animation::Animation (CView* view, const std::string& name, IAnimationTarget* at, ITimingFunction* t)
+Animator::Animation::Animation (CView* view, const std::string& name, IAnimationTarget* at, ITimingFunction* t, CBaseObject* notificationObject)
 : view (view)
 , name (name)
 , target (at)
 , timingFunction (t)
+, notificationObject (notificationObject)
 , startTime (0)
 , lastPos (-1)
 {
 	view->remember ();
+	if (notificationObject)
+		notificationObject->remember ();
 }
 
 //-----------------------------------------------------------------------------
 Animator::Animation::~Animation ()
 {
+	if (notificationObject)
+	{
+		FinishedMessage fmsg (view, name, target);
+		notificationObject->notify (&fmsg, kMsgAnimationFinished);
+		notificationObject->forget ();
+	}
 	CBaseObject* obj = dynamic_cast<CBaseObject*> (target);
 	if (obj)
 		obj->forget ();

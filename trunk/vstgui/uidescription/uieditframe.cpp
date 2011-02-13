@@ -1930,7 +1930,9 @@ CBitmap* UIEditFrame::createBitmapFromSelection (UISelection* selection)
 	
 	COffscreenContext* context = COffscreenContext::create (this, viewSize.getWidth (), viewSize.getHeight ());
 	context->beginDraw ();
-//	context->setGlobalAlpha (0.9f);
+	context->setFillColor (CColor (0, 0, 0, 40));
+	context->setFrameColor (CColor (255, 255, 255, 40));
+	context->drawRect (CRect (0, 0, viewSize.getWidth (), viewSize.getHeight ()), kDrawFilledAndStroked);
 
 	FOREACH_IN_SELECTION(selection, view)
 		if (!selection->containsParent (view))
@@ -1938,9 +1940,9 @@ CBitmap* UIEditFrame::createBitmapFromSelection (UISelection* selection)
 			CPoint p;
 			view->getParentView ()->localToFrame (p);
 			context->setOffset (CPoint (-viewSize.left + p.x, -viewSize.top + p.y));
+			context->setClipRect (view->getViewSize ());
 			view->drawRect (context, view->getViewSize ());
 		}
-
 	FOREACH_IN_SELECTION_END
 
 	context->endDraw ();
@@ -1970,7 +1972,7 @@ void UIEditFrame::startDrag (CPoint& where)
 	if (!selection->store (stream, viewFactory, uiDescription))
 		return;
 		
-	CDropSource dropSource (stream.getBuffer (), stream.tell (), CDropSource::kBinary);
+	CDropSource dropSource (stream.getBuffer (), (int32_t)stream.tell (), CDropSource::kBinary);
 	doDrag (&dropSource, offset, bitmap);
 	if (bitmap)
 		bitmap->forget ();

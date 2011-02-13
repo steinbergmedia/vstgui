@@ -163,7 +163,7 @@ static BOOL VSTGUI_NSMenu_ValidateMenuItem (id self, SEL _cmd, id item)
 	VSTGUI_NSMenu_Var* var = (VSTGUI_NSMenu_Var*)OBJC_GET_VALUE(self, _private);
 	if (var && var->_optionMenu)
 	{
-		CMenuItem* menuItem = var->_optionMenu->getEntry ([item tag]);
+		CMenuItem* menuItem = var->_optionMenu->getEntry ((int32_t)[item tag]);
 		if (!menuItem->isEnabled () || menuItem->isTitle ())
 			return NO;
 	}
