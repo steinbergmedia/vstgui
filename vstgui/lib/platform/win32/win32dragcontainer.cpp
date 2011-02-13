@@ -181,7 +181,7 @@ void* WinDragContainer::next (int32_t& size, int32_t& type)
 				if (type == kUnicodeText)
 				{
 					UTF8StringHelper wideString ((const WCHAR*)data);
-					size = strlen (wideString.getUTF8String ());
+					size = (int32_t)strlen (wideString.getUTF8String ());
 					lastItem = malloc (size+1);
 					strcpy ((char*)lastItem, wideString.getUTF8String ());
 				}

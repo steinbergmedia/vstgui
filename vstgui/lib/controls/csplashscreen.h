@@ -77,6 +77,55 @@ protected:
 	CView* modalView;
 };
 
+//-----------------------------------------------------------------------------
+// CAnimationSplashScreen Declaration
+//!
+/// @ingroup views
+///	@ingroup new_in_4_0
+//-----------------------------------------------------------------------------
+class CAnimationSplashScreen : public CSplashScreen
+{
+public:
+	CAnimationSplashScreen (const CRect& size, int32_t tag, CBitmap* background, CBitmap* splashBitmap);
+	CAnimationSplashScreen (const CAnimationSplashScreen& splashScreen);
+
+	//-----------------------------------------------------------------------------
+	/// @name CAnimationSplashScreen Methods
+	//-----------------------------------------------------------------------------
+	//@{
+	virtual void setSplashBitmap (CBitmap* bitmap);
+	CBitmap* getSplashBitmap () const;
+
+	virtual void setSplashRect (const CRect& splashRect);
+	const CRect& getSplashRect () const;
+
+	virtual void setAnimationIndex (int32_t index) { animationIndex = index; }
+	int32_t getAnimationIndex () const { return animationIndex; }
+
+	virtual void setAnimationTime (int32_t time) { animationTime = time; }
+	int32_t getAnimationTime () const { return animationTime; }
+	//@}
+
+	//-----------------------------------------------------------------------------
+	/// @name For Subclassers to add more animations
+	//-----------------------------------------------------------------------------
+	//@{
+	virtual bool createAnimation (int32_t animationIndex, int32_t animationTime, CView* splashView, bool removeViewAnimation);
+	//@}
+
+	virtual void unSplash ();
+	virtual void draw (CDrawContext*);
+	virtual CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons);
+	virtual bool sizeToFit ();
+	virtual CMessageResult notify (CBaseObject* sender, IdStringPtr message);
+	
+protected:
+	~CAnimationSplashScreen ();
+
+	int32_t animationIndex;
+	int32_t animationTime;
+};
+
 } // namespace
 
 #endif

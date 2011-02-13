@@ -71,7 +71,7 @@ static COMDLG_FILTERSPEC* buildExtensionFilter (std::list<CFileExtension>& exten
 			filters[i].pszSpec = wSpec;
 			if (defaultExtension && *defaultExtension == (*it))
 				defaultFileTypeIndex = i+1;
-			allExtensionCharCount += wcslen (filters[i].pszSpec) + 1;
+			allExtensionCharCount += (int32_t)wcslen (filters[i].pszSpec) + 1;
 			it++; i++;
 		}
 		if (extensions.size () > 1)

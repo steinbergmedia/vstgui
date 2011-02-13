@@ -64,7 +64,7 @@ public:
 	CocoaFileSelector (CFrame* frame, Style style);
 	~CocoaFileSelector ();
 
-	void openPanelDidEnd (NSSavePanel* panel, int32_t resultCode);
+	void openPanelDidEnd (NSSavePanel* panel, NSInteger resultCode);
 protected:
 	static void initClass ();
 	
@@ -107,6 +107,7 @@ CocoaFileSelector::CocoaFileSelector (CFrame* frame, Style style)
 , delegate (0)
 {
 	savePanel = nil;
+	initClass ();
 }
 
 //-----------------------------------------------------------------------------
@@ -117,7 +118,7 @@ CocoaFileSelector::~CocoaFileSelector ()
 }
 
 //-----------------------------------------------------------------------------
-void CocoaFileSelector::openPanelDidEnd (NSSavePanel* savePanel, int32_t res)
+void CocoaFileSelector::openPanelDidEnd (NSSavePanel* savePanel, NSInteger res)
 {
 	if (res == NSFileHandlingPanelOKButton)
 	{
@@ -240,7 +241,7 @@ bool CocoaFileSelector::runInternal (CBaseObject* _delegate)
 		else
 		#endif
 		{
-			int32_t res = [openPanel runModalForDirectory:initialPath ? [NSString stringWithCString:initialPath encoding:NSUTF8StringEncoding] : nil file:nil types:typesArray];
+			NSInteger res = [openPanel runModalForDirectory:initialPath ? [NSString stringWithCString:initialPath encoding:NSUTF8StringEncoding] : nil file:nil types:typesArray];
 			openPanelDidEnd (openPanel, res);
 			return res == NSFileHandlingPanelOKButton;
 		}
@@ -256,7 +257,7 @@ bool CocoaFileSelector::runInternal (CBaseObject* _delegate)
 		else
 		#endif
 		{
-			int32_t res = [savePanel runModalForDirectory:initialPath ? [NSString stringWithCString:initialPath encoding:NSUTF8StringEncoding]:nil file:defaultSaveName ? [NSString stringWithCString:defaultSaveName encoding:NSUTF8StringEncoding] : nil];
+			NSInteger res = [savePanel runModalForDirectory:initialPath ? [NSString stringWithCString:initialPath encoding:NSUTF8StringEncoding]:nil file:defaultSaveName ? [NSString stringWithCString:defaultSaveName encoding:NSUTF8StringEncoding] : nil];
 			openPanelDidEnd (savePanel, res);
 			return res == NSFileHandlingPanelOKButton;
 		}

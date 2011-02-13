@@ -170,4 +170,12 @@ void CRect::setSize (const CPoint& size)
 	setHeight (size.y);
 }
 
+//-----------------------------------------------------------------------------
+void CRect::centerInside (const CRect& r)
+{
+	CPoint cp = r.getCenter ();
+	CPoint cp2 = getCenter ();
+	offset (cp.x-cp2.x, cp.y-cp2.y);
+}
+
 } // namespace

@@ -48,6 +48,11 @@
 #include <sstream>
 #include <assert.h>
 
+#define VST3_SUPPORTS_CONTEXTMENU	(defined(kVstVersionMajor) && defined(kVstVersionMinor) && (kVstVersionMajor > 3 || (kVstVersionMajor == 3 && kVstVersionMinor > 1)))
+#if VST3_SUPPORTS_CONTEXTMENU
+	#include "pluginterfaces/vst/ivstcontextmenu.h"
+#endif
+
 namespace Steinberg {
 
 //-----------------------------------------------------------------------------
@@ -208,7 +213,7 @@ protected:
 			if (parameter && parameter->getInfo ().stepCount)
 			{
 				// convert back to normalized value
-				value = editController->plainParamToNormalized (getParameterID (), value);
+				value = (float)editController->plainParamToNormalized (getParameterID (), (Steinberg::Vst::ParamValue)value);
 			}
 			editController->getParamStringByValue (getParameterID (), value, utf16Str);
 			Steinberg::String utf8Str (utf16Str);
@@ -242,27 +247,27 @@ protected:
 				isStepCount = true;
 				value = parameter->toPlain (value);
 				defaultValue = parameter->toPlain (defaultValue);
-				minValue = parameter->toPlain (minValue);
-				maxValue = parameter->toPlain (maxValue);
+				minValue = (float)parameter->toPlain ((Steinberg::Vst::ParamValue)minValue);
+				maxValue = (float)parameter->toPlain ((Steinberg::Vst::ParamValue)maxValue);
 			}
 		}
 		std::list<CControl*>::iterator it = controls.begin ();
 		while (it != controls.end ())
 		{
 			(*it)->setMouseEnabled (mouseEnabled);
-			(*it)->setDefaultValue (defaultValue);
+			(*it)->setDefaultValue ((float)defaultValue);
 			if (isStepCount)
 			{
 				(*it)->setMin (minValue);
 				(*it)->setMax (maxValue);
 				COptionMenu* optMenu = dynamic_cast<COptionMenu*> (*it);
 				if (optMenu)
-					(*it)->setValue (value - minValue, true);
+					(*it)->setValue ((float)value - minValue, true);
 				else
-					(*it)->setValue (value, true);
+					(*it)->setValue ((float)value, true);
 			}
 			else
-				(*it)->setValueNormalized (value, true);
+				(*it)->setValueNormalized ((float)value, true);
 			(*it)->invalid ();
 			it++;
 		}
@@ -576,23 +581,35 @@ void VST3Editor::onViewRemoved (CFrame* frame, CView* view)
 //-----------------------------------------------------------------------------
 CMouseEventResult VST3Editor::onMouseDown (CFrame* frame, const CPoint& where, const CButtonState& buttons)
 {
-	#if defined(kVstVersionMajor) && kVstVersionMajor >= 3 && defined(kVstVersionMinor) && kVstVersionMinor > 1
+	CMouseEventResult result = kMouseEventNotHandled;
+	#if VST3_SUPPORTS_CONTEXTMENU
 	if (buttons.isRightButton ())
 	{
-		Steinberg::Vst::ParamID paramID;
-		if (findParameter ((Steinberg::int32)where.x, (Steinberg::int32)where.y, paramID) == Steinberg::kResultTrue)
+		Steinberg::FUnknownPtr<Steinberg::Vst::IComponentHandler3> handler (getController ()->getComponentHandler ());
+		if (handler)
 		{
+			Steinberg::Vst::ParamID paramID;
+			if (findParameter ((Steinberg::int32)where.x, (Steinberg::int32)where.y, paramID) == Steinberg::kResultTrue)
+			{
+				Steinberg::Vst::IContextMenu* contextMenu = handler->createContextMenu (this, &paramID);
+				if (contextMenu)
+				{
+					if (contextMenu->popup (where.x, where.y) == Steinberg::kResultTrue)
+						result = kMouseEventHandled;
+					contextMenu->release ();
+				}
+			}
 		}
 	}
 	#endif
-	return kMouseEventNotHandled;
+	return result;
 }
 
 //-----------------------------------------------------------------------------
 Steinberg::tresult PLUGIN_API VST3Editor::findParameter (Steinberg::int32 xPos, Steinberg::int32 yPos, Steinberg::Vst::ParamID& resultTag)
 {
 	std::list<CView*> views;
-	if (frame->getViewsAt (CPoint (xPos, yPos), views))
+	if (frame && frame->getViewsAt (CPoint (xPos, yPos), views))
 	{
 		CControl* control = 0;
 		std::list<CView*>::const_iterator it = views.begin ();
@@ -770,7 +787,7 @@ bool PLUGIN_API VST3Editor::open (void* parent)
 				attr = attributes->getAttributeValue (kFrameFocusWidthAttr);
 				if (attr)
 				{
-					float focusWidth = strtod (attr->c_str (), 0);
+					double focusWidth = strtod (attr->c_str (), 0);
 					frame->setFocusWidth (focusWidth);
 				}
 			}
@@ -999,7 +1016,7 @@ public:
 //------------------------------------------------------------------------
 void VST3Editor::runNewTemplateDialog (IdStringPtr baseViewName)
 {
-	Xml::MemoryContentProvider mcp (vst3EditorTemplatesString, strlen (vst3EditorTemplatesString));
+	Xml::MemoryContentProvider mcp (vst3EditorTemplatesString, (int32_t)strlen (vst3EditorTemplatesString));
 	UIDescription uiDesc (&mcp);
 	if (!uiDesc.parse ())
 		return;
@@ -1093,7 +1110,7 @@ public:
 			COptionMenu* menu = dynamic_cast<COptionMenu*> (pControl);
 			if (menu)
 			{
-				values[kFocusColor] = menu->getEntry (menu->getValue ())->getTitle ();
+				values[kFocusColor] = menu->getEntry ((int32_t)menu->getValue ())->getTitle ();
 			}
 			else if (tag == kFocusDrawingEnabled)
 			{
@@ -1144,7 +1161,7 @@ public:
 //------------------------------------------------------------------------
 void VST3Editor::runTemplateSettingsDialog ()
 {
-	Xml::MemoryContentProvider mcp (vst3EditorTemplatesString, strlen (vst3EditorTemplatesString));
+	Xml::MemoryContentProvider mcp (vst3EditorTemplatesString, (int32_t)strlen (vst3EditorTemplatesString));
 	UIDescription uiDesc (&mcp);
 	if (!uiDesc.parse ())
 		return;

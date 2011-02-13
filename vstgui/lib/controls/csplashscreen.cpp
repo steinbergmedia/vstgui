@@ -36,6 +36,8 @@
 #include "../cdrawcontext.h"
 #include "../cbitmap.h"
 #include "../cframe.h"
+#include "../animation/animations.h"
+#include "../animation/timingfunctions.h"
 
 namespace VSTGUI {
 
@@ -48,13 +50,14 @@ public:
 
 	void draw (CDrawContext *pContext)
 	{
-		pBackground->draw (pContext, size, offset);
+		if (pBackground)
+			pBackground->draw (pContext, size, offset);
 		setDirty (false);
 	}
 
 	CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons)
 	{
-		if (buttons & kLButton)
+		if (buttons.isLeftButton ())
 		{
 			valueChanged ();
 			return kMouseDownEventHandledButDontNeedMovedOrUpEvents;
@@ -183,6 +186,170 @@ void CSplashScreen::unSplash ()
 			getFrame ()->setModalView (NULL);
 		}
 	}
+}
+
+//------------------------------------------------------------------------
+//------------------------------------------------------------------------
+//------------------------------------------------------------------------
+CAnimationSplashScreen::CAnimationSplashScreen (const CRect& size, int32_t tag, CBitmap* background, CBitmap* splashBitmap)
+: CSplashScreen (size, 0, tag, splashBitmap, CRect (0, 0, 0, 0))
+, animationIndex (0)
+, animationTime (500)
+{
+	CView::setBackground (background);
+}
+
+//------------------------------------------------------------------------
+CAnimationSplashScreen::CAnimationSplashScreen (const CAnimationSplashScreen& splashScreen)
+: CSplashScreen (splashScreen)
+, animationIndex (splashScreen.animationIndex)
+, animationTime (splashScreen.animationTime)
+{
+}
+
+//------------------------------------------------------------------------
+CAnimationSplashScreen::~CAnimationSplashScreen ()
+{
+}
+
+//------------------------------------------------------------------------
+void CAnimationSplashScreen::setSplashBitmap (CBitmap* bitmap)
+{
+	if (modalView)
+	{
+		modalView->setBackground (bitmap);
+	}
+}
+
+//------------------------------------------------------------------------
+CBitmap* CAnimationSplashScreen::getSplashBitmap () const
+{
+	if (modalView)
+		return modalView->getBackground ();
+	return 0;
+}
+
+//------------------------------------------------------------------------
+void CAnimationSplashScreen::setSplashRect (const CRect& splashRect)
+{
+	if (modalView)
+	{
+		modalView->setViewSize (splashRect);
+		modalView->setMouseableArea (splashRect);
+	}
+}
+
+//------------------------------------------------------------------------
+const CRect& CAnimationSplashScreen::getSplashRect () const
+{
+	if (modalView)
+		return modalView->getViewSize ();
+	return getViewSize ();
+}
+
+//------------------------------------------------------------------------
+CMouseEventResult CAnimationSplashScreen::onMouseDown (CPoint& where, const CButtonState& buttons)
+{
+	CMouseEventResult result = CSplashScreen::onMouseDown (where, buttons);
+	if (modalView && value == getMax ())
+	{
+		createAnimation (animationIndex, animationTime, modalView, false);
+	}
+	return result;
+}
+
+//------------------------------------------------------------------------
+void CAnimationSplashScreen::unSplash ()
+{
+	value = getMin ();
+
+	if (getFrame ())
+	{
+		if (getFrame ()->getModalView () == modalView)
+		{
+			if (!createAnimation (animationIndex, animationTime, modalView, true))
+			{
+				if (modalView)
+					modalView->invalid ();
+				getFrame ()->setModalView (NULL);
+			}
+		}
+	}
+}
+
+//------------------------------------------------------------------------
+void CAnimationSplashScreen::draw (CDrawContext *pContext)
+{
+	CView::draw (pContext);
+	setDirty (false);
+}
+
+//------------------------------------------------------------------------
+bool CAnimationSplashScreen::sizeToFit ()
+{
+	if (modalView && modalView->getBackground ())
+	{
+		CRect r = modalView->getViewSize ();
+		r.setWidth (modalView->getBackground ()->getWidth ());
+		r.setHeight (modalView->getBackground ()->getHeight ());
+		if (getFrame ())
+		{
+			r.centerInside (getFrame ()->getViewSize ());
+		}
+		modalView->setViewSize (r);
+		modalView->setMouseableArea (r);
+	}
+	if (getBackground ())
+	{
+		CRect r = getViewSize ();
+		r.setWidth (getBackground ()->getWidth ());
+		r.setHeight (getBackground ()->getHeight ());
+		setViewSize (r);
+		setMouseableArea (r);
+	}
+	return true;
+}
+
+//------------------------------------------------------------------------
+bool CAnimationSplashScreen::createAnimation (int32_t animationIndex, int32_t animationTime, CView* splashView, bool removeViewAnimation)
+{
+	switch (animationIndex)
+	{
+		case 0:
+		{
+			if (removeViewAnimation)
+			{
+				splashView->setMouseEnabled (false);
+				splashView->addAnimation ("AnimationSplashScreenAnimation", new Animation::AlphaValueAnimation (0.f), new Animation::PowerTimingFunction (animationTime, 2), this);
+				return true;
+			}
+			else
+			{
+				splashView->setAlphaValue (0.f);
+				splashView->addAnimation ("AnimationSplashScreenAnimation", new Animation::AlphaValueAnimation (1.f), new Animation::PowerTimingFunction (animationTime, 2));
+				return true;
+			}
+			break;
+		}
+	}
+	return false;
+}
+
+//------------------------------------------------------------------------
+CMessageResult CAnimationSplashScreen::notify (CBaseObject* sender, IdStringPtr message)
+{
+	if (message == Animation::kMsgAnimationFinished)
+	{
+		if (modalView)
+		{
+			modalView->invalid ();
+			modalView->setMouseEnabled (true);
+		}
+		if (getFrame ())
+			getFrame ()->setModalView (NULL);
+		return kMessageNotified;
+	}
+	return CSplashScreen::notify (sender, message);
 }
 
 } // namespace

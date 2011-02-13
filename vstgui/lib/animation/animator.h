@@ -79,15 +79,21 @@ public:
 class Animator : public CBaseObject
 {
 public:
-	Animator ();	///< do not use this, instead use CFrame::getAnimator()
-
 	//-----------------------------------------------------------------------------
 	/// @name Adding and removing Animations
 	//-----------------------------------------------------------------------------
 	//@{
-	/** adds an animation. animation and timingFunction is now owned by the animator. An already running animation for view with name will be canceled. */
-	void addAnimation (CView* view, IdStringPtr name, IAnimationTarget* target, ITimingFunction* timingFunction);
-	/** removes an animation. if animation is a CBaseObject forget() will be called otherwise it is deleted. The same will be done with the timingFunction. */
+	/** adds an animation.
+		Animation and timingFunction is now owned by the animator.
+		An already running animation for view with name will be canceled.
+		If a notificationObject is supplied, it will be notified when the animation has finished @see FinishedMessage.
+	*/
+	void addAnimation (CView* view, IdStringPtr name, IAnimationTarget* target, ITimingFunction* timingFunction, CBaseObject* notificationObject = 0);
+
+	/** removes an animation.
+		If animation is a CBaseObject forget() will be called otherwise it is deleted.
+		The same will be done with the timingFunction.
+	*/
 	void removeAnimation (CView* view, IdStringPtr name);
 
 	/** removes all animations for view */
@@ -96,6 +102,7 @@ public:
 
 	/// @cond ignore
 
+	Animator ();	// do not use this, instead use CFrame::getAnimator()
 	CMessageResult notify (CBaseObject* sender, IdStringPtr message);
 
 	CLASS_METHODS_NOCOPY(Animator, CBaseObject)
@@ -106,13 +113,14 @@ protected:
 	class Animation : public CBaseObject
 	{
 	public:
-		Animation (CView* view, const std::string& name, IAnimationTarget* at, ITimingFunction* t);
+		Animation (CView* view, const std::string& name, IAnimationTarget* at, ITimingFunction* t, CBaseObject* notificationObject);
 		~Animation ();
 
 		std::string name;
 		CView* view;
 		IAnimationTarget* target;
 		ITimingFunction* timingFunction;
+		CBaseObject* notificationObject;
 		uint32_t startTime;
 		float lastPos;
 	};
@@ -123,6 +131,30 @@ protected:
 	std::list<Animation*> toRemove;
 	bool inTimer;
 	/// @endcond
+};
+
+extern IdStringPtr kMsgAnimationFinished;	///< message sent to the notificationObject when the animation has finished, the sender parameter will be a FinishedMessage object.
+
+//-----------------------------------------------------------------------------
+/// @brief Animation Finished Message Object
+///
+/// The FinishedMessage will be sent to the notificationObject when the animation has finished
+///	@ingroup new_in_4_0
+//-----------------------------------------------------------------------------
+class FinishedMessage : public CBaseObject
+{
+public:
+	FinishedMessage (CView* view, const std::string& name, IAnimationTarget* target) : view (view), name (name), target (target) {}
+	
+	CView* getView () const { return view; }
+	const IdStringPtr getName () const { return name.c_str (); }
+	IAnimationTarget* getTarget () const { return target; }
+
+	CLASS_METHODS_NOCOPY(FinishedMessage, CBaseObject)
+protected:
+	CView* view;
+	const std::string& name;
+	IAnimationTarget* target;
 };
 
 }} // namespaces

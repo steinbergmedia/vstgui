@@ -578,11 +578,11 @@ bool CView::removeAttribute (const CViewAttributeID id)
 }
 
 //-----------------------------------------------------------------------------
-void CView::addAnimation (IdStringPtr name, Animation::IAnimationTarget* target, Animation::ITimingFunction* timingFunction)
+void CView::addAnimation (IdStringPtr name, Animation::IAnimationTarget* target, Animation::ITimingFunction* timingFunction, CBaseObject* notificationObject)
 {
 	if (getFrame ())
 	{
-		getFrame ()->getAnimator ()->addAnimation (this, name, target, timingFunction);
+		getFrame ()->getAnimator ()->addAnimation (this, name, target, timingFunction, notificationObject);
 	}
 }
 

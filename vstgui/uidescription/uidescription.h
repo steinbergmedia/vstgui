@@ -156,7 +156,7 @@ protected:
 	CView* createViewFromNode (UINode* node);
 	UINode* getBaseNode (UTF8StringPtr name) const;
 	UINode* findChildNodeByNameAttribute (UINode* node, UTF8StringPtr nameAttribute) const;
-	void updateAttributesForView (UINode* node, CView* view, bool deep = true);
+	bool updateAttributesForView (UINode* node, CView* view, bool deep = true);
 
 	void addDefaultNodes ();
 

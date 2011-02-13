@@ -60,10 +60,10 @@ CocoaDragContainer::CocoaDragContainer (NSPasteboard* platformDrag)
 		if (hasFilenames)
 		{
 			NSArray* fileNames = [pb propertyListForType:hasFilenames];
-			nbItems = [fileNames count];
+			nbItems = (int32_t)[fileNames count];
 		}
 		else
-			nbItems = [[pb types] count];
+			nbItems = (int32_t)[[pb types] count];
 	}
 }
 
@@ -104,7 +104,7 @@ void* CocoaDragContainer::next (int32_t& size, int32_t& type)
 				char* data = (char*)malloc (strlen (utf8Text) + 1);
 				strcpy (data, utf8Text);
 				type = CDragContainer::kUnicodeText;
-				size = strlen (utf8Text);
+				size = (int32_t)strlen (utf8Text);
 				lastItem = data;
 				return data;
 			}
@@ -127,7 +127,7 @@ void* CocoaDragContainer::next (int32_t& size, int32_t& type)
 				char* data = (char*)malloc (strlen (utf8Text) + 1);
 				strcpy (data, utf8Text);
 				type = CDragContainer::kFile;
-				size = strlen (utf8Text);
+				size = (int32_t)strlen (utf8Text);
 				lastItem = data;
 				return data;
 			}
@@ -143,7 +143,7 @@ void* CocoaDragContainer::next (int32_t& size, int32_t& type)
 			char* data = (char*)malloc ([nsData length]);
 			memcpy (data, [nsData bytes], [nsData length]);
 			type = CDragContainer::kUnknown;
-			size = [nsData length];
+			size = (int32_t)[nsData length];
 			lastItem = data;
 			return data;
 		}
