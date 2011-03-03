@@ -203,7 +203,68 @@ protected:
 //------------------------------------------------------------------------
 //------------------------------------------------------------------------
 //------------------------------------------------------------------------
+class SplitViewController : public DelegationController, public ISplitViewController, public CBaseObject
+{
+public:
+	SplitViewController (IController* controller) : DelegationController (controller)
+	{
+		for (int32_t i = 0; i < 3; i++)
+			viewSizes[i] = -1.;
+	}
+
+	bool getSplitViewSizeConstraint (int32_t index, CCoord& minWidth, CCoord& maxWidth, CSplitView* splitView)
+	{
+		if (index == 0)
+		{
+			minWidth = 30;
+		}
+		else if (index == 1)
+		{
+			minWidth = 50;
+		}
+		else if (index == 2)
+		{
+			minWidth = 100;
+			maxWidth = 300;
+		}
+		return true;
+	}
+	
+	ISplitViewSeparatorDrawer* getSplitViewSeparatorDrawer ()
+	{
+		return 0;
+	}
+
+	bool storeViewSize (int32_t index, const CCoord& size, CSplitView* splitView)
+	{
+		if (index < 3)
+		{
+			viewSizes[index] = size;
+			return true;
+		}
+		return false;
+	}
+	
+	bool restoreViewSize (int32_t index, CCoord& size, CSplitView* splitView)
+	{
+		if (index < 3 && viewSizes[index] != -1.)
+		{
+			size = viewSizes[index];
+			return true;
+		}
+		return false;
+	}
+
+	CLASS_METHODS(SplitViewController, CBaseObject)
+protected:
+	CCoord viewSizes[3];
+};
+
+//------------------------------------------------------------------------
+//------------------------------------------------------------------------
+//------------------------------------------------------------------------
 UIDescriptionTestController::UIDescriptionTestController ()
+: splitViewController (0)
 {
 }
 
@@ -242,7 +303,24 @@ IController* UIDescriptionTestController::createSubController (const char* name,
 	{
 		return new ModalViewController (editor, dynamic_cast<UIDescription*> (description));
 	}
+	if (strcmp (name, "SplitViewController") == 0)
+	{
+		if (splitViewController == 0)
+			splitViewController = new SplitViewController (editor);
+		splitViewController->remember ();
+		return dynamic_cast<IController*> (splitViewController);
+	}
 	return 0;
+}
+
+//------------------------------------------------------------------------
+void UIDescriptionTestController::willClose (VST3Editor* editor)
+{
+	if (splitViewController)
+	{
+		splitViewController->forget ();
+		splitViewController = 0;
+	}
 }
 
 //------------------------------------------------------------------------

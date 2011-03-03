@@ -55,13 +55,6 @@ public:
 	void setCurrentViewIndex (int32_t viewIndex);
 	int32_t getCurrentViewIndex () const { return currentViewIndex; }
 
-	// overrides, views can not be directly added or removed, use the controller
-//	bool addView (CView *pView) { return false; }
-//	bool addView (CView *pView, CRect &mouseableArea, bool mouseEnabled = true) { return false; }
-//	bool addView (CView *pView, CView* pBefore) { return false; }
-//	bool removeView (CView *pView, bool withForget = true) { return false; }
-//	bool removeAll (bool withForget = true) { return false; }
-
 //-----------------------------------------------------------------------------
 	CLASS_METHODS (UIViewSwitchContainer, CViewContainer)
 protected:

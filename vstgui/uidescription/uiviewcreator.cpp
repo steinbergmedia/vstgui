@@ -257,6 +257,7 @@ public:
 */
 
 #include "uiviewfactory.h"
+#include "uiviewswitchcontainer.h"
 #include "../vstgui.h"
 #include <sstream>
 
@@ -2617,6 +2618,165 @@ public:
 
 };
 CAnimationSplashScreenCreator __gCAnimationSplashScreenCreator;
+
+//-----------------------------------------------------------------------------
+class UIViewSwitchContainerCreator : public IViewCreator
+{
+public:
+	UIViewSwitchContainerCreator () { UIViewFactory::registerViewCreator (*this); }
+	IdStringPtr getViewName () const { return "UIViewSwitchContainer"; }
+	IdStringPtr getBaseViewName () const { return "CViewContainer"; }
+	CView* create (const UIAttributes& attributes, IUIDescription* description) const 
+	{
+		UIViewSwitchContainer* vsc = new UIViewSwitchContainer (CRect (0, 0, 100, 100));
+		new UIDescriptionViewSwitchController (vsc, dynamic_cast<UIDescription*> (description), description->getController ());
+		return vsc;
+	}
+
+	bool apply (CView* view, const UIAttributes& attributes, IUIDescription* description) const
+	{
+		UIViewSwitchContainer* viewSwitch = dynamic_cast<UIViewSwitchContainer*> (view);
+		if (!viewSwitch)
+			return false;
+		const std::string* attr = attributes.getAttributeValue ("template-names");
+		if (attr)
+		{
+			UIDescriptionViewSwitchController* controller = dynamic_cast<UIDescriptionViewSwitchController*> (viewSwitch->getController ());
+			if (controller)
+			{
+				controller->setTemplateNames (attr->c_str ());
+			}
+		}
+		attr = attributes.getAttributeValue ("template-switch-control");
+		if (attr)
+		{
+			rememberAttributeValueString (view, "template-switch-control", *attr);
+			UIDescriptionViewSwitchController* controller = dynamic_cast<UIDescriptionViewSwitchController*> (viewSwitch->getController ());
+			if (controller)
+			{
+				int32_t tag = description->getTagForName (attr->c_str ());
+				controller->setSwitchControlTag (tag);
+			}
+		}
+		return true;
+	}
+	bool getAttributeNames (std::list<std::string>& attributeNames) const
+	{
+		attributeNames.push_back ("template-names");
+		attributeNames.push_back ("template-switch-control");
+		return true;
+	}
+	AttrType getAttributeType (const std::string& attributeName) const
+	{
+		if (attributeName == "template-names") return kStringType;
+		if (attributeName == "template-switch-control") return kTagType;
+		return kUnknownType;
+	}
+	bool getAttributeValue (CView* view, const std::string& attributeName, std::string& stringValue, IUIDescription* desc) const
+	{
+		UIViewSwitchContainer* viewSwitch = dynamic_cast<UIViewSwitchContainer*> (view);
+		if (!viewSwitch)
+			return false;
+		if (attributeName == "template-names")
+		{
+			UIDescriptionViewSwitchController* controller = dynamic_cast<UIDescriptionViewSwitchController*> (viewSwitch->getController ());
+			if (controller)
+			{
+				controller->getTemplateNames (stringValue);
+				return true;
+			}
+		}
+		if (attributeName == "template-switch-control")
+		{
+			UIDescriptionViewSwitchController* controller = dynamic_cast<UIDescriptionViewSwitchController*> (viewSwitch->getController ());
+			if (controller)
+			{
+				if (getRememberedAttributeValueString (view, "template-switch-control", stringValue))
+					return true;
+				UTF8StringPtr controlTag = desc->lookupControlTagName (controller->getSwitchControlTag ());
+				if (controlTag)
+				{
+					stringValue = controlTag;
+					return true;
+				}
+				return true;
+			}
+		}
+		return false;
+	}
+};
+UIViewSwitchContainerCreator __gUIViewSwitchContainerCreator;
+
+//-----------------------------------------------------------------------------
+class CSplitViewCreator : public IViewCreator
+{
+public:
+	CSplitViewCreator () { UIViewFactory::registerViewCreator (*this); }
+	IdStringPtr getViewName () const { return "CSplitView"; }
+	IdStringPtr getBaseViewName () const { return "CViewContainer"; }
+	CView* create (const UIAttributes& attributes, IUIDescription* description) const { return new CSplitView (CRect (0, 0, 100, 100)); }
+
+	bool apply (CView* view, const UIAttributes& attributes, IUIDescription* description) const
+	{
+		CSplitView* splitView = dynamic_cast<CSplitView*> (view);
+		if (!splitView)
+			return false;
+
+		const std::string* attr = attributes.getAttributeValue ("separator-width");
+		if (attr)
+		{
+			int32_t width = (int32_t)strtol (attr->c_str (), 0, 10);
+			splitView->setSeparatorWidth (width);
+		}
+		attr = attributes.getAttributeValue ("orientation");
+		if (attr)
+		{
+			if (*attr == "horizontal")
+			{
+				splitView->setStyle (CSplitView::kHorizontal);
+			}
+			else
+			{
+				splitView->setStyle (CSplitView::kVertical);
+			}
+		}
+
+		return true;
+	}
+	bool getAttributeNames (std::list<std::string>& attributeNames) const
+	{
+		attributeNames.push_back ("orientation");
+		attributeNames.push_back ("separator-width");
+		return true;
+	}
+	AttrType getAttributeType (const std::string& attributeName) const
+	{
+		if (attributeName == "orientation") return kStringType;
+		if (attributeName == "separator-width") return kIntegerType;
+		return kUnknownType;
+	}
+	bool getAttributeValue (CView* view, const std::string& attributeName, std::string& stringValue, IUIDescription* desc) const
+	{
+		CSplitView* splitView = dynamic_cast<CSplitView*> (view);
+		if (!splitView)
+			return false;
+		if (attributeName == "separator-width")
+		{
+			std::stringstream stream;
+			stream << (int32_t)splitView->getSeparatorWidth ();
+			stringValue = stream.str ();
+			return true;
+		}
+		if (attributeName == "orientation")
+		{
+			stringValue = splitView->getStyle () == CSplitView::kHorizontal ? "horizontal" : "vertical";
+			return true;
+		}
+		return false;
+	}
+
+};
+CSplitViewCreator __gCSplitViewCreator;
 
 } // namespace
 

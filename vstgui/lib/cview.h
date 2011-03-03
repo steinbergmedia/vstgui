@@ -128,6 +128,7 @@ typedef uint32_t CViewAttributeID;
 
 extern const CViewAttributeID kCViewAttributeReferencePointer;	// 'cvrp'
 extern const CViewAttributeID kCViewTooltipAttribute;			// 'cvtt'
+extern const CViewAttributeID kCViewControllerAttribute;		// 'ictr' ///< see @ref IController
 
 //----------------------------
 // @brief Button Types (+modifiers)
@@ -202,6 +203,7 @@ public:
 
 	virtual bool isDirty () const { return (viewFlags & kDirty) ? true : false; }						///< check if view is dirty
 	virtual void setDirty (bool val = true);															///< set the view to dirty so that it is redrawn in the next idle. Thread Safe !
+	static bool kDirtyCallAlwaysOnMainThread;															///< if this is true, setting a view dirty will call invalid() instead of checking it in idle. Default value is false.
 
 	virtual void invalidRect (const CRect& rect);														///< mark rect as invalid
 	virtual void invalid () { setDirty (false); invalidRect (size); }									///< mark whole view as invalid

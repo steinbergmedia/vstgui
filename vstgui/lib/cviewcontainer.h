@@ -74,6 +74,7 @@ public:
 	virtual CView* getViewAt (const CPoint& where, bool deep = false) const;	///< get the view at point where
 	virtual CViewContainer* getContainerAt (const CPoint& where, bool deep = true) const;		///< get the container at point where
 	virtual bool getViewsAt (const CPoint& where, std::list<CView*>& views, bool deep = true) const;	///< get all views at point where, top->down
+	virtual bool changeViewZOrder (CView* view, int32_t newIndex);	///< change view z order position
 	//@}
 
 	//-----------------------------------------------------------------------------

@@ -1008,7 +1008,7 @@ public:
 		}
 		else if (column == 1)
 		{
-			int32_t tag = strtol (newText, 0, 10);
+			int32_t tag = (int32_t)strtol (newText, 0, 10);
 			actionOperator->performTagChange (names[row]->c_str (), tag);
 		}
 	}

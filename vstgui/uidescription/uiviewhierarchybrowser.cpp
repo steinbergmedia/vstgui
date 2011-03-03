@@ -105,35 +105,14 @@ public:
 	{
 		if (!parent)
 			return;
-		CView* nextView = 0;
+		int32_t currentIndex = 0;
 		ViewIterator it (parent);
-		while (*it)
+		while (*it && *it != view)
 		{
-			if (up)
-			{
-				if (*it != view)
-					nextView = *it;
-				else
-					break;
-			}
-			else
-			{
-				if (*it == view)
-				{
-					++it;
-					++it;
-					nextView = *it;
-					break;
-				}
-			}
-			++it;
+			it++;
+			currentIndex++;
 		}
-		view->remember ();
-		parent->removeView (view);
-		if (nextView)
-			parent->addView (view, nextView);
-		else
-			parent->addView (view);
+		parent->changeViewZOrder (view, up ? currentIndex - 1 : currentIndex + 1);
 		view->invalid ();
 	}
 	

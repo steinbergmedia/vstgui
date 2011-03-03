@@ -134,15 +134,19 @@ protected:
 class UnembedViewOperation : public IActionOperation, protected std::list<CView*>
 {
 public:
-	UnembedViewOperation (UISelection* selection)
+	UnembedViewOperation (UISelection* selection, UIViewFactory* factory)
 	: selection (selection)
+	, factory (factory)
 	{
 		containerView = dynamic_cast<CViewContainer*> (selection->first ());
 		ViewIterator it (containerView);
 		while (*it)
 		{
-			push_back (*it);
-			(*it)->remember ();
+			if (factory->getViewName (*it))
+			{
+				push_back (*it);
+				(*it)->remember ();
+			}
 			++it;
 		}
 		containerView->remember ();
@@ -177,8 +181,8 @@ public:
 			mouseSize.offset (containerViewSize.left, containerViewSize.top);
 			view->setViewSize (viewSize);
 			view->setMouseableArea (mouseSize);
-			parent->addView (view);
-			selection->add (view);
+			if (parent->addView (view))
+				selection->add (view);
 			it++;
 		}
 		parent->removeView (containerView, false);
@@ -206,6 +210,7 @@ public:
 	}
 
 protected:
+	UIViewFactory* factory;
 	UISelection* selection;
 	CViewContainer* containerView;
 	CViewContainer* parent;
@@ -914,6 +919,7 @@ void UIEditFrame::setEditMode (EditMode mode)
 		tooltipsEnabled = pTooltips ? true : false;
 		enableTooltips (false);
 		setFocusView (0);
+		clearMouseViews (CPoint (0, 0), CButtonState (0), true);
 		updateResourceBitmaps ();
 		inspector->show ();
 		inspector->getFrame ()->setKeyboardHook (this);
@@ -941,6 +947,10 @@ void UIEditFrame::setEditMode (EditMode mode)
 		if (editorObj)
 			editorObj->notify (this, kMsgEditEnding);
 		enableTooltips (tooltipsEnabled);
+
+		CPoint where;
+		getCurrentMouseLocation (where);
+		onMouseMoved (where, getCurrentMouseButtons ());
 	}
 	invalid ();
 }
@@ -1192,7 +1202,7 @@ void UIEditFrame::showOptionsMenu (const CPoint& where)
 				}
 				case kUnembedViewsTag:
 				{
-					performAction (new UnembedViewOperation (selection));
+					performAction (new UnembedViewOperation (selection, dynamic_cast<UIViewFactory*> (uiDescription->getViewFactory ())));
 					break;
 				}
 				default:
@@ -1276,7 +1286,7 @@ void UIEditFrame::restoreAttributes ()
 		value = attr->getAttributeValue ("gridsize");
 		if (value)
 		{
-			int32_t gridSize = strtol (value->c_str (), 0, 10);
+			int32_t gridSize = (int32_t)strtol (value->c_str (), 0, 10);
 			grid->setSize (gridSize);
 		}
 	}

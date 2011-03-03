@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		F45BD679131817CD00C46C02 /* csplitview.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F45BD677131817CD00C46C02 /* csplitview.cpp */; };
+		F45BD67A131817CD00C46C02 /* csplitview.h in Headers */ = {isa = PBXBuildFile; fileRef = F45BD678131817CD00C46C02 /* csplitview.h */; };
 		F497F0EC13080A1C00F0A613 /* cbitmap.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F497F0C213080A1C00F0A613 /* cbitmap.cpp */; };
 		F497F0ED13080A1C00F0A613 /* cbitmap.h in Headers */ = {isa = PBXBuildFile; fileRef = F497F0C313080A1C00F0A613 /* cbitmap.h */; };
 		F497F0EE13080A1C00F0A613 /* ccolor.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F497F0C413080A1C00F0A613 /* ccolor.cpp */; };
@@ -157,6 +159,8 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		F45BD677131817CD00C46C02 /* csplitview.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = csplitview.cpp; path = ../../lib/csplitview.cpp; sourceTree = "<group>"; };
+		F45BD678131817CD00C46C02 /* csplitview.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = csplitview.h; path = ../../lib/csplitview.h; sourceTree = "<group>"; };
 		F497F0AD1308094300F0A613 /* libvstgui.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libvstgui.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		F497F0C213080A1C00F0A613 /* cbitmap.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = cbitmap.cpp; path = ../../lib/cbitmap.cpp; sourceTree = "<group>"; };
 		F497F0C313080A1C00F0A613 /* cbitmap.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = cbitmap.h; path = ../../lib/cbitmap.h; sourceTree = "<group>"; };
@@ -305,7 +309,7 @@
 		F4E3903813080ECC00615042 /* xmlparser.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = xmlparser.cpp; path = ../../uidescription/xmlparser.cpp; sourceTree = "<group>"; };
 		F4E3903913080ECC00615042 /* xmlparser.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = xmlparser.h; path = ../../uidescription/xmlparser.h; sourceTree = "<group>"; };
 		F4E3905B1308155200615042 /* vstgui.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = vstgui.h; path = ../../vstgui.h; sourceTree = "<group>"; };
-		F4E3905D1308190800615042 /* Changelog */ = {isa = PBXFileReference; lastKnownFileType = text; name = Changelog; path = ../../Changelog; sourceTree = "<group>"; };
+		F4E3905D1308190800615042 /* Changelog */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = Changelog; path = ../../Changelog; sourceTree = "<group>"; };
 		F4E3905F13081BA500615042 /* win32 */ = {isa = PBXFileReference; lastKnownFileType = folder; name = win32; path = ../../lib/platform/win32; sourceTree = "<group>"; };
 		F4E3906013081BCD00615042 /* doxygen */ = {isa = PBXFileReference; lastKnownFileType = folder; name = doxygen; path = ../../doxygen; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -373,6 +377,8 @@
 				F497F0DA13080A1C00F0A613 /* crect.h */,
 				F497F0DB13080A1C00F0A613 /* cscrollview.cpp */,
 				F497F0DC13080A1C00F0A613 /* cscrollview.h */,
+				F45BD677131817CD00C46C02 /* csplitview.cpp */,
+				F45BD678131817CD00C46C02 /* csplitview.h */,
 				F497F0DD13080A1C00F0A613 /* ctabview.cpp */,
 				F497F0DE13080A1C00F0A613 /* ctabview.h */,
 				F497F0DF13080A1C00F0A613 /* ctooltipsupport.cpp */,
@@ -635,6 +641,7 @@
 				F4E3905713080ECC00615042 /* uiviewswitchcontainer.h in Headers */,
 				F4E3905A13080ECC00615042 /* xmlparser.h in Headers */,
 				F4E3905C1308155200615042 /* vstgui.h in Headers */,
+				F45BD67A131817CD00C46C02 /* csplitview.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -757,6 +764,7 @@
 				F4E3905413080ECC00615042 /* uiviewinspector.cpp in Sources */,
 				F4E3905613080ECC00615042 /* uiviewswitchcontainer.cpp in Sources */,
 				F4E3905913080ECC00615042 /* xmlparser.cpp in Sources */,
+				F45BD679131817CD00C46C02 /* csplitview.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -769,7 +777,10 @@
 				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_OPTIMIZATION_LEVEL = 0;
-				GCC_PREPROCESSOR_DEFINITIONS = DEBUG;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					DEBUG,
+					"VSTGUI_LIVE_EDITING=1",
+				);
 				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
@@ -785,6 +796,7 @@
 			buildSettings = {
 				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
 				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_PREPROCESSOR_DEFINITIONS = NDEBUG;
 				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
