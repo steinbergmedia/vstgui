@@ -62,7 +62,12 @@ public:
 	OBJ_METHODS (IdleUpdateHandler, FObject)
 	SINGLETON (IdleUpdateHandler)
 protected:
-	IdleUpdateHandler () { UpdateHandler::instance (); timer = Timer::create (this, 1000/30); } // 30 Hz timer
+	IdleUpdateHandler () 
+	{
+		UpdateHandler::instance ();
+		timer = Timer::create (this, 1000/30); // 30 Hz timer
+		CView::kDirtyCallAlwaysOnMainThread = true; // we will always call CView::setDirty() on the main thread
+	}
 	~IdleUpdateHandler () { timer->release (); }
 	void onTimer (Timer* timer)
 	{
@@ -568,13 +573,12 @@ void VST3Editor::onViewRemoved (CFrame* frame, CView* view)
 		}
 	}
 	// TODO: Currently when in Edit Mode in UIEditor, subcontrollers will be released, even tho the view may be added again later on.
-	IController* controller = 0;
-	int32_t size = sizeof (IController*);
-	if (view->getAttribute ('ictr', sizeof (IController*), &controller, size))
+	IController* controller = getViewController (view);
+	if (controller)
 	{
 		subControllers.remove (controller);
 		releaseSubController (controller);
-		view->removeAttribute ('ictr');
+		view->removeAttribute (kCViewControllerAttribute);
 	}
 }
 
@@ -693,7 +697,7 @@ CView* VST3Editor::verifyView (CView* view, const UIAttributes& attributes, IUID
 				uiDesc->setController (subControllerStack.back ().controller);
 			else
 				uiDesc->setController (this);
-			view->setAttribute ('ictr', sizeof (IController*), &subController);
+			view->setAttribute (kCViewControllerAttribute, sizeof (IController*), &subController);
 			return subController->verifyView (view, attributes, description);
 		}
 	}

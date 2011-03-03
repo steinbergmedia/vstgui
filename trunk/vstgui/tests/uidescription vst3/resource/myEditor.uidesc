@@ -75,7 +75,7 @@
 		<attributes frame-enable-focus-drawing="true" frame-focus-color="focus color" frame-focus-width="2" name="VST3Editor"/>
 		<attributes name="UIViewHierarchyBrowser" windowSize="935, 84, 1235, 584"/>
 		<attributes name="UIViewInspector" windowSize="66, 193, 466, 742"/>
-		<attributes gridsize="10" name="UIEditFrame" uidescPath="/Volumes/DATA/subversion/trunk/vstgui_head/vstgui/tests/uidescription vst3/resource/myEditor.uidesc"/>
+		<attributes gridsize="5" name="UIEditFrame" uidescPath="/Volumes/DATA/subversion/trunk/vstgui_head/vstgui/tests/uidescription vst3/resource/myEditor.uidesc"/>
 	</custom>
 	<colors>
 		<color name="black" rgba="#000000ff"/>
@@ -117,7 +117,7 @@
 	<template background-color="default background" class="CViewContainer" maxSize="500, 320" minSize="500, 320" name="view" origin="0, 0" size="500, 320" transparent="false">
 		<view background-offset="0, 0" bitmap="TabController" class="CHorizontalSwitch" control-tag="TabController" default-value="0" height-of-one-image="19" max-value="4" min-value="0" origin="2, 5" size="496, 20" sub-pixmaps="5" transparent="false" wheel-inc-value="0.1"/>
 		<view background-color="tab background" class="UIViewSwitchContainer" origin="10, 35" size="480, 260" template-names="controls,tab2,tab3,tab4,tab5" template-switch-control="TabController" transparent="false">
-			<view background-color="tab background" class="CViewContainer" origin="0, 0" size="480, 260" template="controls" transparent="true"/>
+			<view background-color="black" class="CViewContainer" origin="0, 0" size="480, 260" template="tab4" transparent="true"/>
 		</view>
 		<view back-color="black" background-offset="0, 0" class="COptionMenu" control-tag="TabController" default-value="0" font="small label bold" font-antialias="true" font-color="white" frame-color="black" max-value="4" menu-check-style="true" menu-popup-style="true" min-value="0" origin="420, 300" shadow-color="#ff0000ff" size="70, 15" style-3D-in="false" style-3D-out="false" style-no-draw="false" style-no-frame="false" style-no-text="false" style-shadow-text="false" text-alignment="center" text-inset="0, 0" tooltip="An option menu" transparent="false" wheel-inc-value="0.1"/>
 		<view autosize-to-fit="false" background-offset="0, 0" boxfill-color="white" boxframe-color="black" checkmark-color="~ RedCColor" class="CCheckBox" control-tag="open modal view tag" default-value="0.5" draw-crossbox="false" font="~ SystemFont" font-color="white" max-value="1" min-value="0" origin="170, 300" size="127, 20" sub-controller="ModalViewController" title="Open Modal View" tooltip="This opens a modal view with an animation.\n\nAll other controls are disabled while the modal view is open." transparent="false" wheel-inc-value="0.1"/>
@@ -133,7 +133,16 @@
 			<view back-color="black" background-offset="0, 0" class="CTextLabel" default-value="0.5" font="small label bold" font-antialias="true" font-color="white" frame-color="black" max-value="1" min-value="0" origin="0, 0" shadow-color="#ff0000ff" size="260, 20" style-3D-in="false" style-3D-out="false" style-no-draw="false" style-no-frame="false" style-no-text="false" style-shadow-text="false" text-alignment="center" text-inset="0, 0" title="Scroll View" transparent="true" wheel-inc-value="0.1"/>
 		</view>
 	</template>
-	<template background-color="black" class="CViewContainer" name="tab4" origin="0, 0" size="480, 260" transparent="true"/>
+	<template background-color="black" class="CViewContainer" name="tab4" origin="0, 0" size="480, 260" transparent="true">
+		<view background-color="group frame color" class="CSplitView" origin="20, 20" separator-width="7" size="440, 225" sub-controller="SplitViewController" transparent="false">
+			<view background-color="tab background" class="CViewContainer" origin="0, 0" size="99, 225" transparent="false"/>
+			<view background-color="black" bitmap="FrameBackground" class="CViewContainer" origin="106, 0" size="200, 225" transparent="false">
+				<view auto-drag-scrolling="false" autosize="left right top bottom " background-color="black" bordered="false" class="CScrollView" container-size="200, 200" horizontal-scrollbar="true" origin="0, 20" scrollbar-background-color="~ TransparentCColor" scrollbar-frame-color="~ TransparentCColor" scrollbar-scroller-color="default background" scrollbar-width="8" size="200, 203" transparent="true" vertical-scrollbar="false"/>
+			</view>
+			<view background-color="tab background" class="CViewContainer" origin="313, 0" size="127, 225" transparent="false"/>
+		</view>
+		<view back-color="black" background-offset="0, 0" class="CTextLabel" default-value="0.5" font="~ NormalFont" font-antialias="true" font-color="white" frame-color="black" max-value="1" min-value="0" origin="0, 0" shadow-color="~ RedCColor" size="480, 20" style-3D-in="false" style-3D-out="false" style-no-draw="false" style-no-frame="false" style-no-text="false" style-shadow-text="false" text-alignment="center" text-inset="0, 0" title="CSplitView Test" transparent="true" wheel-inc-value="0.1"/>
+	</template>
 	<template background-color="black" class="CViewContainer" name="tab5" origin="0, 0" size="480, 260" transparent="true"/>
 	<template background-color="modal view background" class="CViewContainer" maxSize="500, 320" minSize="500, 320" name="ModalView" origin="0, 0" size="480, 300" transparent="false">
 		<view background-color="black" bitmap="FrameBackground" class="CViewContainer" origin="120, 60" size="260, 190" transparent="false">

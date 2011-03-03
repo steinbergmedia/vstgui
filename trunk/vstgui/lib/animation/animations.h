@@ -49,7 +49,7 @@ namespace Animation {
 /// @ingroup AnimationTargets
 ///	@ingroup new_in_4_0
 //-----------------------------------------------------------------------------
-class AlphaValueAnimation : public IAnimationTarget
+class AlphaValueAnimation : public IAnimationTarget, public CBaseObject
 {
 public:
 	AlphaValueAnimation (float endValue, bool forceEndValueOnFinish = false);
@@ -68,7 +68,7 @@ protected:
 /// @ingroup AnimationTargets
 ///	@ingroup new_in_4_0
 //-----------------------------------------------------------------------------
-class ViewSizeAnimation : public IAnimationTarget
+class ViewSizeAnimation : public IAnimationTarget, public CBaseObject
 {
 public:
 	ViewSizeAnimation (const CRect& newRect, bool forceEndValueOnFinish = false);
@@ -87,7 +87,7 @@ protected:
 /// @ingroup AnimationTargets
 ///	@ingroup new_in_4_0
 //-----------------------------------------------------------------------------
-class ExchangeViewAnimation : public IAnimationTarget
+class ExchangeViewAnimation : public IAnimationTarget, public CBaseObject
 {
 public:
 	enum AnimationStyle {
@@ -118,7 +118,7 @@ protected:
 /// @ingroup AnimationTargets
 ///	@ingroup new_in_4_0
 //-----------------------------------------------------------------------------
-class ControlValueAnimation : public IAnimationTarget
+class ControlValueAnimation : public IAnimationTarget, public CBaseObject
 {
 public:
 	ControlValueAnimation (float endValue, bool forceEndValueOnFinish = false);

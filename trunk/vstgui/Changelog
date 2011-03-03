@@ -1,3 +1,18 @@
+2011-03-03 arne
+	
+	* new static bool CView::kDirtyCallAlwaysOnMainThread. When this is set to true a call to CView::setDirty(true) will
+	  call CView::invalidRect (size) instead of setting the dirty flag. This can fix redraw issues for overlapping views, but
+	  you must make sure that you never call setDirty() from any other thread than the main thread. The default value is false to
+	  maintain the old behavior.
+	* fix: a CScrollView does not write it's subviews to the UIDescription.
+	* a CScrollView will now automatically resize it's container size if it has only one child view and this view was resized.
+	* the default animation classes are now inherited from CBaseObject.
+	* new view container class : CSplitView (documentation will follow)
+	* uiswitchcontroller creator class moved to uiviewcreator.cpp (to allow using vstgui as static library)
+	* added kCViewControllerAttribute which holds the sub controller of a view
+	* new method in CViewContainer to change the Z order of a view
+	* new method CRect::originize ()
+
 2011-02-13 arne
 
 	* merge back changes from VST SDK 3.5:
