@@ -533,6 +533,73 @@ CView* CViewContainer::getView (int32_t index) const
 }
 
 //-----------------------------------------------------------------------------
+/**
+ * @param view view which z order position should be changed
+ * @param newIndex index of new z position
+ * @return true if z order of view changed
+ */
+bool CViewContainer::changeViewZOrder (CView* view, int32_t newIndex)
+{
+	if (pFirstView == pLastView)
+		return false;
+
+	CCView* ccView = 0;
+	for (CCView* pSv = pFirstView; pSv; pSv = pSv->pNext)
+	{
+		if (pSv->pView == view)
+		{
+			ccView = pSv;
+			break;
+		}
+	}
+	if (ccView)
+	{
+		CCView* pNext = ccView->pNext;
+		CCView* pPrevious = ccView->pPrevious;
+		if (pPrevious)
+			pPrevious->pNext = pNext;
+		else
+			pFirstView = pNext;
+		if (pNext)
+			pNext->pPrevious = pPrevious;
+		else
+			pLastView = pPrevious;
+		
+		CCView* ccView2 = 0;
+		for (CCView* pSv = pFirstView; pSv; pSv = pSv->pNext, newIndex--)
+		{
+			if (newIndex == 0)
+			{
+				ccView2 = pSv;
+				break;
+			}
+		}
+		if (ccView2 == 0)
+		{
+			pLastView->pNext = ccView;
+			ccView->pPrevious = pLastView;
+			ccView->pNext = 0;
+			pLastView = ccView;
+			return true;
+		}
+		else
+		{
+			pNext = ccView2->pNext;
+			pPrevious = ccView2->pPrevious;
+			ccView->pPrevious = pPrevious;
+			ccView->pNext = ccView2;
+			ccView2->pPrevious = ccView;
+			if (pPrevious)
+				pPrevious->pNext = ccView;
+			else
+				pFirstView = ccView;
+			return true;
+		}
+	}
+	return false;
+}
+
+//-----------------------------------------------------------------------------
 bool CViewContainer::invalidateDirtyViews ()
 {
 	if (!isVisible ())

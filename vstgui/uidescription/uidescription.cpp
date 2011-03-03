@@ -35,7 +35,6 @@
 #include "uidescription.h"
 #include "uiviewfactory.h"
 #include "uiviewcreator.h"
-#include "uiviewswitchcontainer.h"
 #include "cstream.h"
 #include "../lib/cfont.h"
 #include "../lib/cframe.h"
@@ -1087,9 +1086,11 @@ void UIDescription::collectControlTagNames (std::list<const std::string*>& names
 //-----------------------------------------------------------------------------
 bool UIDescription::updateAttributesForView (UINode* node, CView* view, bool deep)
 {
+	bool result = false;
 #if VSTGUI_LIVE_EDITING
 	UIViewFactory* factory = dynamic_cast<UIViewFactory*> (viewFactory);
 	std::list<std::string> attributeNames;
+	CViewContainer* container = dynamic_cast<CViewContainer*> (view);
 	if (factory->getAttributeNamesForView (view, attributeNames))
 	{
 		std::list<std::string>::const_iterator it = attributeNames.begin ();
@@ -1101,49 +1102,59 @@ bool UIDescription::updateAttributesForView (UINode* node, CView* view, bool dee
 			it++;
 		}
 		node->getAttributes ()->setAttribute ("class", factory->getViewName (view));
-		CViewContainer* container = dynamic_cast<CViewContainer*> (view);
-		if (deep && container)
+		result = true;
+	}
+	if (deep && container)
+	{
+		ViewIterator it (container);
+		while (*it)
 		{
-			ViewIterator it (container);
-			while (*it)
+			CView* subView = *it;
+			std::string subTemplateName;
+			if (getTemplateNameFromView (subView, subTemplateName))
 			{
-				CView* subView = *it;
-				std::string subTemplateName;
-				if (getTemplateNameFromView (subView, subTemplateName))
+				UIAttributes* attr = new UIAttributes;
+				attr->setAttribute ("template", subTemplateName.c_str ());
+				UINode* subNode = new UINode ("view", attr);
+				node->getChildren ().add (subNode);
+				updateAttributesForView (subNode, subView, false);
+				CRect r = subView->getViewSize ();
+				CRect r2 (r);
+				r.offset (-r.left, -r.top);
+				subView->setViewSize (r);
+				subView->setMouseableArea (r);
+				updateViewDescription (subTemplateName.c_str (), subView);
+				subView->setViewSize (r2);
+				subView->setMouseableArea (r2);
+			}
+			else
+			{
+				// check if subview is created via UIDescription
+				// if it is, it's just added to this node
+				UINode* subNode = new UINode ("view", 0);
+				if (updateAttributesForView (subNode, subView))
 				{
-					UIAttributes* attr = new UIAttributes;
-					attr->setAttribute ("template", subTemplateName.c_str ());
-					UINode* subNode = new UINode ("view", attr);
 					node->getChildren ().add (subNode);
-					updateAttributesForView (subNode, subView, false);
-					CRect r = subView->getViewSize ();
-					CRect r2 (r);
-					r.offset (-r.left, -r.top);
-					subView->setViewSize (r);
-					subView->setMouseableArea (r);
-					updateViewDescription (subTemplateName.c_str (), subView);
-					subView->setViewSize (r2);
-					subView->setMouseableArea (r2);
 				}
 				else
 				{
-					UINode* subNode = new UINode ("view", 0);
-					if (updateAttributesForView (subNode, subView))
+					// if it is not, we check if it has children. This can happen per example for a CScrollView for its container view.
+					if (subNode->getChildren ().total () > 0)
 					{
-						node->getChildren ().add (subNode);
+						for (UIDescList::iterator it = subNode->getChildren ().begin (); it != subNode->getChildren ().end (); it++)
+						{
+							(*it)->remember ();
+							node->getChildren ().add (*it);
+						}
 					}
-					else
-					{
-						subNode->forget ();
-					}
+					subNode->forget ();
 				}
-				++it;
 			}
+			++it;
 		}
-		return true;
 	}
 #endif
-	return false;
+	return result;
 }
 
 //-----------------------------------------------------------------------------

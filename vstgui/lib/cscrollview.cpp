@@ -63,6 +63,9 @@ public:
 	void onDragMove (CDragContainer* drag, const CPoint& where);
 	void setAutoDragScroll (bool state) { autoDragScroll = state; }
 
+	bool attached (CView* parent);
+	CMessageResult notify (CBaseObject* sender, IdStringPtr message);
+
 	CLASS_METHODS(CScrollContainer, CViewContainer)
 //-----------------------------------------------------------------------------
 protected:
@@ -71,6 +74,7 @@ protected:
 	CRect containerSize;
 	CPoint offset;
 	bool autoDragScroll;
+	bool inScrolling;
 };
 
 //-----------------------------------------------------------------------------
@@ -81,6 +85,7 @@ CScrollContainer::CScrollContainer (const CRect &size, const CRect &containerSiz
 , containerSize (containerSize)
 , offset (CPoint (0, 0))
 , autoDragScroll (false)
+, inScrolling (false)
 {
 	setTransparency (true);
 }
@@ -90,6 +95,7 @@ CScrollContainer::CScrollContainer (const CScrollContainer& v)
 : CViewContainer (v)
 , containerSize (v.containerSize)
 , offset (v.offset)
+, inScrolling (false)
 {
 }
 
@@ -122,6 +128,7 @@ void CScrollContainer::setScrollOffset (CPoint newOffset, bool redraw)
 	CPoint diff ((int32_t)(newOffset.x - offset.x), (int32_t)(offset.y - newOffset.y));
 	if (diff.x == 0 && diff.y == 0)
 		return;
+	inScrolling = true;
 	FOREACHSUBVIEW
 		CRect r;
 		pV->getViewSize (r);
@@ -131,6 +138,7 @@ void CScrollContainer::setScrollOffset (CPoint newOffset, bool redraw)
 		r.offset (diff.x , diff.y);
 		pV->setMouseableArea (r);
 	ENDFOREACHSUBVIEW
+	inScrolling = false;
 	offset = newOffset;
 	if (!isAttached ())
 		return;
@@ -224,6 +232,52 @@ void CScrollContainer::onDragMove (CDragContainer* drag, const CPoint& where)
 		}
 	}
 	return CViewContainer::onDragMove (drag, where);
+}
+
+//-----------------------------------------------------------------------------
+bool CScrollContainer::attached (CView* parent)
+{
+	bool result = CViewContainer::attached (parent);
+	if (getNbViews () == 1)
+	{
+		CView* view = getView (0);
+		if (view)
+		{
+			CRect r (view->getViewSize ());
+			CRect newContainerSize (containerSize);
+			newContainerSize.setWidth (r.getWidth ());
+			newContainerSize.setHeight (r.getHeight ());
+			if (newContainerSize != containerSize)
+			{
+				CScrollView* scrollView = (CScrollView*)getParentView ();
+				scrollView->setContainerSize (newContainerSize);
+			}
+		}
+	}
+	return result;
+}
+
+//-----------------------------------------------------------------------------
+CMessageResult CScrollContainer::notify (CBaseObject* sender, IdStringPtr message)
+{
+	if (message == kMsgViewSizeChanged && !inScrolling)
+	{
+		int32_t numSubViews = getNbViews ();
+		CView* view = dynamic_cast<CView*> (sender);
+		if (numSubViews == 1 && view && isChild (view))
+		{
+			CRect r (view->getViewSize ());
+			CRect newContainerSize (containerSize);
+			newContainerSize.setWidth (r.getWidth ());
+			newContainerSize.setHeight (r.getHeight ());
+			if (newContainerSize != containerSize)
+			{
+				CScrollView* scrollView = (CScrollView*)getParentView ();
+				scrollView->setContainerSize (newContainerSize);
+			}
+		}
+	}
+	return getParentView () ? getParentView ()->notify (sender, message) : kMessageUnknown;
 }
 
 /// @endcond

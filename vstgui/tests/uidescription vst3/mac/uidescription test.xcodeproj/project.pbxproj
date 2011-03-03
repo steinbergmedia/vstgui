@@ -7,7 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		F403673610C901AF001BCC34 /* vstgui_uidescription_mac.mm in Sources */ = {isa = PBXBuildFile; fileRef = F403673510C901AF001BCC34 /* vstgui_uidescription_mac.mm */; };
+		F40DCFBD13119C6A0084A8AE /* libvstgui.a in Frameworks */ = {isa = PBXBuildFile; fileRef = F40DCFBC13119C6A0084A8AE /* libvstgui.a */; };
 		F41CA1C8112E99F000D425D7 /* animationtest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F41CA1C7112E99F000D425D7 /* animationtest.cpp */; };
 		F41CA21F112E9E6B00D425D7 /* AnimationTest.uidesc in Resources */ = {isa = PBXBuildFile; fileRef = F41CA21E112E9E6B00D425D7 /* AnimationTest.uidesc */; };
 		F42731DE1125507F00BE2194 /* factory.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F42731DD1125507F00BE2194 /* factory.cpp */; };
@@ -23,7 +23,6 @@
 		F4273C17112C0C2400BE2194 /* vertical_slider_back.bmp in Resources */ = {isa = PBXBuildFile; fileRef = F4273C0D112C0C2400BE2194 /* vertical_slider_back.bmp */; };
 		F4273C18112C0C2400BE2194 /* vumeter_back.bmp in Resources */ = {isa = PBXBuildFile; fileRef = F4273C0E112C0C2400BE2194 /* vumeter_back.bmp */; };
 		F4273C19112C0C2400BE2194 /* vumeter_front.bmp in Resources */ = {isa = PBXBuildFile; fileRef = F4273C0F112C0C2400BE2194 /* vumeter_front.bmp */; };
-		F440752F10BE6BCB003C59F6 /* vstgui_mac.mm in Sources */ = {isa = PBXBuildFile; fileRef = F440752D10BE6BCB003C59F6 /* vstgui_mac.mm */; };
 		F440754A10BE6D00003C59F6 /* Carbon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F440754910BE6D00003C59F6 /* Carbon.framework */; };
 		F440754C10BE6D00003C59F6 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F440754B10BE6D00003C59F6 /* Cocoa.framework */; };
 		F440755610BE6D26003C59F6 /* uidescription test.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F440755510BE6D26003C59F6 /* uidescription test.cpp */; };
@@ -38,10 +37,28 @@
 		F4F5DA8A10BFD28900DB6C33 /* TabController.png in Resources */ = {isa = PBXBuildFile; fileRef = F4F5DA8910BFD28900DB6C33 /* TabController.png */; };
 /* End PBXBuildFile section */
 
+/* Begin PBXContainerItemProxy section */
+		F40DCF9D13119C240084A8AE /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = F40DCF9913119C240084A8AE /* vstgui.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = F497F0AD1308094300F0A613;
+			remoteInfo = vstgui;
+		};
+		F40DCFBA13119C620084A8AE /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = F40DCF9913119C240084A8AE /* vstgui.xcodeproj */;
+			proxyType = 1;
+			remoteGlobalIDString = F497F0AC1308094300F0A613;
+			remoteInfo = vstgui;
+		};
+/* End PBXContainerItemProxy section */
+
 /* Begin PBXFileReference section */
 		508817D409F0C9AD0071BF1A /* uidescription test.vst3 */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "uidescription test.vst3"; sourceTree = BUILT_PRODUCTS_DIR; };
 		508817D609F0C9AD0071BF1A /* uidescription test-Info.plist */ = {isa = PBXFileReference; explicitFileType = text.plist.xml; path = "uidescription test-Info.plist"; sourceTree = "<group>"; };
-		F403673510C901AF001BCC34 /* vstgui_uidescription_mac.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = vstgui_uidescription_mac.mm; path = ../../../vstgui_uidescription_mac.mm; sourceTree = SOURCE_ROOT; };
+		F40DCF9913119C240084A8AE /* vstgui.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = vstgui.xcodeproj; path = ../../../ide/xcode4/vstgui.xcodeproj; sourceTree = "<group>"; };
+		F40DCFBC13119C6A0084A8AE /* libvstgui.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; name = libvstgui.a; path = /Volumes/DATA/subversion/trunk/vstgui_head/vstgui/ide/xcode4/build/Debug/libvstgui.a; sourceTree = "<absolute>"; };
 		F41CA1C6112E99F000D425D7 /* animationtest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = animationtest.h; path = ../source/animationtest.h; sourceTree = SOURCE_ROOT; };
 		F41CA1C7112E99F000D425D7 /* animationtest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = animationtest.cpp; path = ../source/animationtest.cpp; sourceTree = SOURCE_ROOT; };
 		F41CA21E112E9E6B00D425D7 /* AnimationTest.uidesc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; name = AnimationTest.uidesc; path = ../resource/AnimationTest.uidesc; sourceTree = SOURCE_ROOT; };
@@ -60,7 +77,6 @@
 		F4273C0D112C0C2400BE2194 /* vertical_slider_back.bmp */ = {isa = PBXFileReference; lastKnownFileType = image.bmp; name = vertical_slider_back.bmp; path = ../resource/vertical_slider_back.bmp; sourceTree = SOURCE_ROOT; };
 		F4273C0E112C0C2400BE2194 /* vumeter_back.bmp */ = {isa = PBXFileReference; lastKnownFileType = image.bmp; name = vumeter_back.bmp; path = ../resource/vumeter_back.bmp; sourceTree = SOURCE_ROOT; };
 		F4273C0F112C0C2400BE2194 /* vumeter_front.bmp */ = {isa = PBXFileReference; lastKnownFileType = image.bmp; name = vumeter_front.bmp; path = ../resource/vumeter_front.bmp; sourceTree = SOURCE_ROOT; };
-		F440752D10BE6BCB003C59F6 /* vstgui_mac.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = vstgui_mac.mm; path = ../../../vstgui_mac.mm; sourceTree = SOURCE_ROOT; };
 		F440753410BE6C0A003C59F6 /* prefix.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = prefix.h; path = ../source/prefix.h; sourceTree = SOURCE_ROOT; };
 		F440754910BE6D00003C59F6 /* Carbon.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Carbon.framework; path = System/Library/Frameworks/Carbon.framework; sourceTree = SDKROOT; };
 		F440754B10BE6D00003C59F6 /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = System/Library/Frameworks/Cocoa.framework; sourceTree = SDKROOT; };
@@ -73,9 +89,6 @@
 		F4657608114F83D100846DAE /* graphicstest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = graphicstest.cpp; path = ../source/graphicstest.cpp; sourceTree = SOURCE_ROOT; };
 		F465763C114F8EA200846DAE /* GraphicsTest.uidesc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; name = GraphicsTest.uidesc; path = ../resource/GraphicsTest.uidesc; sourceTree = SOURCE_ROOT; };
 		F496F16B119715B500DD3F7A /* Accelerate.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Accelerate.framework; path = System/Library/Frameworks/Accelerate.framework; sourceTree = SDKROOT; };
-		F4AA8992123A546A00CDBBF7 /* lib */ = {isa = PBXFileReference; lastKnownFileType = folder; name = lib; path = ../../../lib; sourceTree = SOURCE_ROOT; };
-		F4AA8A3C123A547300CDBBF7 /* uidescription */ = {isa = PBXFileReference; lastKnownFileType = folder; name = uidescription; path = ../../../uidescription; sourceTree = SOURCE_ROOT; };
-		F4AA8AC9123A5A8200CDBBF7 /* Changelog */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = Changelog; path = ../../../Changelog; sourceTree = SOURCE_ROOT; };
 		F4C04ECD123B8E450082BA28 /* vst3sdksources.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = vst3sdksources.cpp; path = ../source/vst3sdksources.cpp; sourceTree = SOURCE_ROOT; };
 		F4C04F00123B90940082BA28 /* README.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = README.txt; path = ../README.txt; sourceTree = SOURCE_ROOT; };
 		F4F5DA8910BFD28900DB6C33 /* TabController.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = TabController.png; path = ../resource/TabController.png; sourceTree = SOURCE_ROOT; };
@@ -87,6 +100,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F40DCFBD13119C6A0084A8AE /* libvstgui.a in Frameworks */,
 				F440754A10BE6D00003C59F6 /* Carbon.framework in Frameworks */,
 				F440754C10BE6D00003C59F6 /* Cocoa.framework in Frameworks */,
 				F496F16C119715B500DD3F7A /* Accelerate.framework in Frameworks */,
@@ -99,8 +113,8 @@
 		508817C209F0C9740071BF1A = {
 			isa = PBXGroup;
 			children = (
+				F40DCF9913119C240084A8AE /* vstgui.xcodeproj */,
 				F4C04F00123B90940082BA28 /* README.txt */,
-				F4C04F04123B918F0082BA28 /* VSTGUI */,
 				508817F509F0CAB50071BF1A /* Sources */,
 				F44075AA10BF0525003C59F6 /* Resources */,
 				5088180609F0CDD00071BF1A /* External Frameworks and Libraries */,
@@ -139,11 +153,20 @@
 		5088180609F0CDD00071BF1A /* External Frameworks and Libraries */ = {
 			isa = PBXGroup;
 			children = (
+				F40DCFBC13119C6A0084A8AE /* libvstgui.a */,
 				F440754910BE6D00003C59F6 /* Carbon.framework */,
 				F440754B10BE6D00003C59F6 /* Cocoa.framework */,
 				F496F16B119715B500DD3F7A /* Accelerate.framework */,
 			);
 			name = "External Frameworks and Libraries";
+			sourceTree = "<group>";
+		};
+		F40DCF9A13119C240084A8AE /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				F40DCF9E13119C240084A8AE /* libvstgui.a */,
+			);
+			name = Products;
 			sourceTree = "<group>";
 		};
 		F44074C710BE6BB6003C59F6 /* VST3SDK */ = {
@@ -159,8 +182,6 @@
 			children = (
 				F440758610BF043D003C59F6 /* vst3editor.cpp */,
 				F440758710BF043D003C59F6 /* vst3editor.h */,
-				F440752D10BE6BCB003C59F6 /* vstgui_mac.mm */,
-				F403673510C901AF001BCC34 /* vstgui_uidescription_mac.mm */,
 			);
 			name = vstgui;
 			sourceTree = "<group>";
@@ -189,16 +210,6 @@
 			name = Resources;
 			sourceTree = "<group>";
 		};
-		F4C04F04123B918F0082BA28 /* VSTGUI */ = {
-			isa = PBXGroup;
-			children = (
-				F4AA8AC9123A5A8200CDBBF7 /* Changelog */,
-				F4AA8992123A546A00CDBBF7 /* lib */,
-				F4AA8A3C123A547300CDBBF7 /* uidescription */,
-			);
-			name = VSTGUI;
-			sourceTree = "<group>";
-		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -214,6 +225,7 @@
 			buildRules = (
 			);
 			dependencies = (
+				F40DCFBB13119C620084A8AE /* PBXTargetDependency */,
 			);
 			name = "uidescription test";
 			productName = "uidescription test";
@@ -235,12 +247,28 @@
 			mainGroup = 508817C209F0C9740071BF1A;
 			productRefGroup = 508817D509F0C9AD0071BF1A /* Products */;
 			projectDirPath = "";
+			projectReferences = (
+				{
+					ProductGroup = F40DCF9A13119C240084A8AE /* Products */;
+					ProjectRef = F40DCF9913119C240084A8AE /* vstgui.xcodeproj */;
+				},
+			);
 			projectRoot = "";
 			targets = (
 				508817D309F0C9AD0071BF1A /* uidescription test */,
 			);
 		};
 /* End PBXProject section */
+
+/* Begin PBXReferenceProxy section */
+		F40DCF9E13119C240084A8AE /* libvstgui.a */ = {
+			isa = PBXReferenceProxy;
+			fileType = archive.ar;
+			path = libvstgui.a;
+			remoteRef = F40DCF9D13119C240084A8AE /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+/* End PBXReferenceProxy section */
 
 /* Begin PBXResourcesBuildPhase section */
 		508817D009F0C9AD0071BF1A /* Resources */ = {
@@ -291,8 +319,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				F4C04ECE123B8E450082BA28 /* vst3sdksources.cpp in Sources */,
-				F440752F10BE6BCB003C59F6 /* vstgui_mac.mm in Sources */,
-				F403673610C901AF001BCC34 /* vstgui_uidescription_mac.mm in Sources */,
 				F440755610BE6D26003C59F6 /* uidescription test.cpp in Sources */,
 				F440758810BF043D003C59F6 /* vst3editor.cpp in Sources */,
 				F42731DE1125507F00BE2194 /* factory.cpp in Sources */,
@@ -304,6 +330,14 @@
 		};
 /* End PBXSourcesBuildPhase section */
 
+/* Begin PBXTargetDependency section */
+		F40DCFBB13119C620084A8AE /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = vstgui;
+			targetProxy = F40DCFBA13119C620084A8AE /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
 /* Begin XCBuildConfiguration section */
 		508817C609F0C9740071BF1A /* Debug */ = {
 			isa = XCBuildConfiguration;
@@ -313,6 +347,7 @@
 				GCC_PREFIX_HEADER = ../source/prefix.h;
 				GCC_PREPROCESSOR_DEFINITIONS = "DEVELOPMENT=1";
 				GCC_SYMBOLS_PRIVATE_EXTERN = YES;
+				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				GENERATE_PKGINFO_FILE = YES;
@@ -325,6 +360,7 @@
 				MACOSX_DEPLOYMENT_TARGET = 10.5;
 				ONLY_ACTIVE_ARCH = YES;
 				PREBINDING = NO;
+				PRESERVE_DEAD_CODE_INITS_AND_TERMS = YES;
 				PRODUCT_NAME = "uidescription test";
 				SDKROOT = macosx10.6;
 				WRAPPER_EXTENSION = vst3;
@@ -335,12 +371,13 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
-				DEAD_CODE_STRIPPING = YES;
+				DEAD_CODE_STRIPPING = NO;
 				DEPLOYMENT_POSTPROCESSING = YES;
 				GCC_DEBUGGING_SYMBOLS = full;
 				GCC_PREFIX_HEADER = ../source/prefix.h;
 				GCC_PREPROCESSOR_DEFINITIONS = "RELEASE=1";
 				GCC_SYMBOLS_PRIVATE_EXTERN = YES;
+				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				GENERATE_PKGINFO_FILE = YES;
@@ -363,12 +400,20 @@
 		508817D809F0C9AE0071BF1A /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"\"$(SRCROOT)/../../../ide/xcode4/build/Debug\"",
+				);
 			};
 			name = Debug;
 		};
 		508817D909F0C9AE0071BF1A /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"\"$(SRCROOT)/../../../ide/xcode4/build/Debug\"",
+				);
 			};
 			name = Release;
 		};

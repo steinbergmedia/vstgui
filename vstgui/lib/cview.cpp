@@ -127,6 +127,9 @@ UTF8StringPtr kPerthousandSymbol	= "\xE2\x80\xB0";
 
 //-----------------------------------------------------------------------------
 IdStringPtr kMsgViewSizeChanged = "kMsgViewSizeChanged";
+
+bool CView::kDirtyCallAlwaysOnMainThread = false;
+
 //-----------------------------------------------------------------------------
 // CView
 //-----------------------------------------------------------------------------
@@ -211,10 +214,19 @@ void CView::setWantsFocus (bool state)
 //-----------------------------------------------------------------------------
 void CView::setDirty (bool state)
 {
-	if (state)
-		viewFlags |= kDirty;
-	else
+	if (kDirtyCallAlwaysOnMainThread)
+	{
+		if (state)
+			invalidRect (size);
 		viewFlags &= ~kDirty;
+	}
+	else
+	{
+		if (state)
+			viewFlags |= kDirty;
+		else
+			viewFlags &= ~kDirty;
+	}
 }
 
 //-----------------------------------------------------------------------------
@@ -502,6 +514,7 @@ void CView::setBackground (CBitmap* background)
 //-----------------------------------------------------------------------------
 const CViewAttributeID kCViewAttributeReferencePointer = 'cvrp';
 const CViewAttributeID kCViewTooltipAttribute = 'cvtt';
+const CViewAttributeID kCViewControllerAttribute = 'ictr';
 
 //-----------------------------------------------------------------------------
 /**
