@@ -91,7 +91,8 @@ void QuartzGraphicsPath::addArc (const CRect& rect, double startAngle, double en
 	CGAffineTransform transform = CGAffineTransformMakeTranslation (centerX, centerY);
 	transform = CGAffineTransformScale (transform, rect.getWidth () / 2, rect.getHeight () / 2);
 	
-	CGPathMoveToPoint (path, &transform, cos (radians (startAngle)), sin (radians (startAngle)));
+	if (CGPathIsEmpty (path))
+		CGPathMoveToPoint (path, &transform, cos (radians (startAngle)), sin (radians (startAngle)));
 
 	CGPathAddArc (path, &transform, 0, 0, 1, radians (startAngle), radians (endAngle), clockwise);
 }
