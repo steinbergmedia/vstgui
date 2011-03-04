@@ -33,6 +33,7 @@
 //-----------------------------------------------------------------------------
 
 #include "cdrawcontext.h"
+#include "cgraphicspath.h"
 
 namespace VSTGUI {
 
@@ -267,6 +268,30 @@ void CDrawContext::drawString (UTF8StringPtr string, const CRect& _rect, const C
 	setClipRect (newClip);
 	drawString (string, CPoint (rect.left, rect.bottom), antialias);
 	setClipRect (oldClip);
+}
+
+//-----------------------------------------------------------------------------
+CGraphicsPath* CDrawContext::createRoundRectGraphicsPath (const CRect& size, CCoord radius)
+{
+	CGraphicsPath* path = createGraphicsPath ();
+	if (path)
+	{
+		CRect rect2 (size);
+		rect2.normalize ();
+		const CCoord X = rect2.left;
+		const CCoord X3 = rect2.right; 
+		const CCoord X2 = X3 - radius;
+		const CCoord Y = rect2.top;
+		const CCoord Y3 = rect2.bottom; 
+		const CCoord Y2 = Y3 - radius;
+		const CPoint arcsize (radius, radius);
+		path->addArc (CRect (CPoint (X2, Y), arcsize), 270., 360., false);
+		path->addArc (CRect (CPoint (X2, Y2), arcsize), 0., 90., false);
+		path->addArc (CRect (CPoint (X, Y2), arcsize), 90., 180., false);
+		path->addArc (CRect (CPoint (X, Y), arcsize), 180., 270., false);
+		path->closeSubpath();
+	}
+	return path;
 }
 
 //-----------------------------------------------------------------------------
