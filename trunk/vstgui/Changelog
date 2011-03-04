@@ -1,6 +1,7 @@
 2011-03-04 arne
 
 	* add CDrawContext::createRoundRectGraphicsPath(..) method (thanks to Big Tick for contribution)
+	* add CGraphicsPath::addRoundRect(..)
 	* fix quartz graphics path addArc method
 
 2011-03-03 arne

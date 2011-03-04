@@ -701,16 +701,16 @@ void CSplitViewSeparatorView::draw (CDrawContext *pContext)
 		pContext->setDrawMode (kAliasing);
 		if (style == CSplitView::kHorizontal)
 		{
-			CPoint p (getViewSize ().left + getWidth () / 2 - 1, getViewSize ().top + 2);
+			CPoint p (getViewSize ().left + getWidth () / 2 - 1, getViewSize ().top + 3);
 			pContext->moveTo (p);
 			p.y = getViewSize ().bottom - 2;
 			pContext->lineTo (p);
 		}
 		else
 		{
-			CPoint p (getViewSize ().left + 2, getViewSize ().top + getHeight () / 2 - 1);
+			CPoint p (getViewSize ().left + 2, getViewSize ().top + getHeight () / 2 + 1);
 			pContext->moveTo (p);
-			p.x = getViewSize ().right - 2;
+			p.x = getViewSize ().right - 3;
 			pContext->lineTo (p);
 		}
 	}

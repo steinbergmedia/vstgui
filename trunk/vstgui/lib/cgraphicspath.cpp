@@ -37,11 +37,30 @@
 
 namespace VSTGUI {
 
+//-----------------------------------------------------------------------------
 void CGraphicsTransform::rotate (double angle)
 {
 	angle = radians (angle);
 	*this = CGraphicsTransform (cos (angle), sin (angle), -sin (angle), cos (angle), 0, 0) * this;
 }
 	
+//-----------------------------------------------------------------------------
+void CGraphicsPath::addRoundRect (const CRect& size, CCoord radius)
+{
+	CRect rect2 (size);
+	rect2.normalize ();
+	const CCoord X = rect2.left;
+	const CCoord X3 = rect2.right; 
+	const CCoord X2 = X3 - radius;
+	const CCoord Y = rect2.top;
+	const CCoord Y3 = rect2.bottom; 
+	const CCoord Y2 = Y3 - radius;
+	const CPoint arcsize (radius, radius);
+	addArc (CRect (CPoint (X2, Y), arcsize), 270., 360., false);
+	addArc (CRect (CPoint (X2, Y2), arcsize), 0., 90., false);
+	addArc (CRect (CPoint (X, Y2), arcsize), 90., 180., false);
+	addArc (CRect (CPoint (X, Y), arcsize), 180., 270., false);
+	closeSubpath();
+}
 
 } // namespace
