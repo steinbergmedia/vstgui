@@ -236,7 +236,8 @@ void UIViewFactory::collectRegisteredViewNames (std::list<const std::string*>& v
 				continue;
 			}
 		}
-		viewNames.push_back (&(*iter).first);
+		if ((*iter).first != "CControl")
+			viewNames.push_back (&(*iter).first);
 		iter++;
 	}
 }

@@ -14,7 +14,7 @@
 		</view>
 		<view background-color="group frame color" bitmap="FrameBackground" class="CViewContainer" origin="5, 160" size="100, 80" transparent="false">
 			<view background-color="transparent" class="CViewContainer" origin="10, 20" size="80, 55" transparent="true">
-				<view angle-range="-4.71239" angle-start="3.92699" background-offset="0, 0" bitmap="animation_knob" circle-drawing="false" class="CAnimKnob" control-tag="slider tag" corona-color="white" corona-dash-dot="false" corona-drawing="false" corona-from-center="false" corona-inset="0" corona-inverted="false" corona-outline="false" default-value="0.5" handle-color="#ffffffff" handle-line-width="1" handle-shadow-color="#7f7f7fff" height-of-one-image="40" max-value="1" min-value="0" origin="20, 10" size="40, 40" sub-pixmaps="7" tooltip="An animation knob control" transparent="false" value-inset="0" wheel-inc-value="0.1" zoom-factor="1.5"/>
+				<view angle-range="270" angle-start="135" background-offset="0, 0" bitmap="animation_knob" circle-drawing="false" class="CAnimKnob" control-tag="slider tag" corona-color="white" corona-dash-dot="false" corona-drawing="false" corona-from-center="false" corona-inset="0" corona-inverted="false" corona-outline="false" default-value="0.5" handle-color="#ffffffff" handle-line-width="1" handle-shadow-color="#7f7f7fff" height-of-one-image="40" max-value="1" min-value="0" origin="20, 10" size="40, 40" sub-pixmaps="7" tooltip="An animation knob control" transparent="false" value-inset="0" wheel-inc-value="0.1" zoom-factor="1.5"/>
 			</view>
 			<view back-color="black" background-offset="0, 0" class="CTextLabel" default-value="0.5" font="small label bold" font-antialias="true" font-color="white" frame-color="black" max-value="1" min-value="0" origin="0, 0" shadow-color="#ff0000ff" size="100, 20" style-3D-in="false" style-3D-out="false" style-no-draw="false" style-no-frame="false" style-no-text="false" style-shadow-text="false" text-alignment="center" text-inset="0, 0" title="Animation Knob" transparent="true" wheel-inc-value="0.1"/>
 		</view>
@@ -134,12 +134,17 @@
 		</view>
 	</template>
 	<template background-color="black" class="CViewContainer" name="tab4" origin="0, 0" size="480, 260" transparent="true">
-		<view background-color="group frame color" class="CSplitView" origin="20, 20" separator-width="7" size="440, 225" sub-controller="SplitViewController" transparent="false">
-			<view background-color="tab background" class="CViewContainer" origin="0, 0" size="99, 225" transparent="false"/>
-			<view background-color="black" bitmap="FrameBackground" class="CViewContainer" origin="106, 0" size="200, 225" transparent="false">
-				<view auto-drag-scrolling="false" autosize="left right top bottom " background-color="black" bordered="false" class="CScrollView" container-size="200, 200" horizontal-scrollbar="true" origin="0, 20" scrollbar-background-color="~ TransparentCColor" scrollbar-frame-color="~ TransparentCColor" scrollbar-scroller-color="default background" scrollbar-width="8" size="200, 203" transparent="true" vertical-scrollbar="false"/>
+		<view background-color="group frame color" class="CSplitView" orientation="horizontal" origin="20, 20" separator-width="7" size="440, 225" sub-controller="SplitViewController" transparent="false">
+			<view background-color="tab background" class="CViewContainer" origin="0, 0" size="46, 225" transparent="false"/>
+			<view background-color="black" bitmap="FrameBackground" class="CViewContainer" origin="53, 0" size="280, 225" transparent="false">
+				<view auto-drag-scrolling="false" autosize="left right top bottom " background-color="black" bordered="false" class="CScrollView" container-size="295, 195" horizontal-scrollbar="true" origin="0, 20" scrollbar-background-color="~ TransparentCColor" scrollbar-frame-color="~ TransparentCColor" scrollbar-scroller-color="default background" scrollbar-width="8" size="280, 203" transparent="true" vertical-scrollbar="false">
+					<view background-color="black" class="CSplitView" orientation="vertical" origin="0, 0" separator-width="7" size="295, 195" transparent="true">
+						<view background-color="group frame color" class="CViewContainer" origin="0, 0" size="295, 72" transparent="false"/>
+						<view background-color="group frame color" class="CViewContainer" origin="0, 79" size="295, 116" transparent="false"/>
+					</view>
+				</view>
 			</view>
-			<view background-color="tab background" class="CViewContainer" origin="313, 0" size="127, 225" transparent="false"/>
+			<view background-color="tab background" class="CViewContainer" origin="340, 0" size="100, 225" transparent="false"/>
 		</view>
 		<view back-color="black" background-offset="0, 0" class="CTextLabel" default-value="0.5" font="~ NormalFont" font-antialias="true" font-color="white" frame-color="black" max-value="1" min-value="0" origin="0, 0" shadow-color="~ RedCColor" size="480, 20" style-3D-in="false" style-3D-out="false" style-no-draw="false" style-no-frame="false" style-no-text="false" style-shadow-text="false" text-alignment="center" text-inset="0, 0" title="CSplitView Test" transparent="true" wheel-inc-value="0.1"/>
 	</template>

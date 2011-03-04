@@ -986,6 +986,22 @@ void UIEditFrame::onViewRemoved (CView* pView)
 }
 
 //----------------------------------------------------------------------------------------------------
+static void gatherViewNames (UIViewFactory* factory, std::list<const std::string*>& controlViewNames, std::list<const std::string*>& containerViewNames, std::list<const std::string*>& otherViewNames)
+{
+	factory->collectRegisteredViewNames (controlViewNames, "CControl");
+	factory->collectRegisteredViewNames (containerViewNames, "CViewContainer");
+	factory->collectRegisteredViewNames (otherViewNames);
+	controlViewNames.sort (std__stringCompare);
+	containerViewNames.sort (std__stringCompare);
+	otherViewNames.sort (std__stringCompare);
+	
+	for (std::list<const std::string*>::const_iterator it = controlViewNames.begin (); it != controlViewNames.end (); it++)
+		otherViewNames.remove (*it);
+	for (std::list<const std::string*>::const_iterator it = containerViewNames.begin (); it != containerViewNames.end (); it++)
+		otherViewNames.remove (*it);
+}
+
+//----------------------------------------------------------------------------------------------------
 void UIEditFrame::showOptionsMenu (const CPoint& where)
 {
 	enum {
@@ -1052,44 +1068,62 @@ void UIEditFrame::showOptionsMenu (const CPoint& where)
 			if (viewFactory)
 			{
 				menu->addSeparator ();
-				std::list<const std::string*> viewNames;
-				viewFactory->collectRegisteredViewNames (viewNames);
+				std::list<const std::string*> controlViewNames;
+				std::list<const std::string*> containerViewNames;
+				std::list<const std::string*> otherViewNames;
+				gatherViewNames (viewFactory, controlViewNames, containerViewNames, otherViewNames);
+
 				COptionMenu* viewMenu = new COptionMenu ();
 				COptionMenu* transformViewMenu = new COptionMenu ();
-				std::list<const std::string*>::const_iterator it = viewNames.begin ();
-				while (it != viewNames.end ())
+				COptionMenu* embedViewMenu = new COptionMenu ();
+				viewMenu->addEntry (new CMenuItem ("Views", 0, 0, 0, CMenuItem::kTitle));
+				viewMenu->addSeparator();
+				transformViewMenu->addEntry (new CMenuItem ("Views", 0, 0, 0, CMenuItem::kTitle));
+				transformViewMenu->addSeparator();
+				for (std::list<const std::string*>::const_iterator it = otherViewNames.begin (); it != otherViewNames.end (); it++)
 				{
 					viewMenu->addEntry (new CMenuItem ((*it)->c_str (), kCreateNewViewTag));
 					transformViewMenu->addEntry (new CMenuItem ((*it)->c_str (), kTransformViewTag));
-					it++;
 				}
+				viewMenu->addSeparator();
+				viewMenu->addEntry (new CMenuItem ("Controls", 0, 0, 0, CMenuItem::kTitle));
+				viewMenu->addSeparator();
+				transformViewMenu->addSeparator();
+				transformViewMenu->addEntry (new CMenuItem ("Controls", 0, 0, 0, CMenuItem::kTitle));
+				transformViewMenu->addSeparator();
+				for (std::list<const std::string*>::const_iterator it = controlViewNames.begin (); it != controlViewNames.end (); it++)
+				{
+					viewMenu->addEntry (new CMenuItem ((*it)->c_str (), kCreateNewViewTag));
+					transformViewMenu->addEntry (new CMenuItem ((*it)->c_str (), kTransformViewTag));
+				}
+				viewMenu->addSeparator();
+				viewMenu->addEntry (new CMenuItem ("Container Views", 0, 0, 0, CMenuItem::kTitle));
+				viewMenu->addSeparator();
+				transformViewMenu->addSeparator();
+				transformViewMenu->addEntry (new CMenuItem ("Container Views", 0, 0, 0, CMenuItem::kTitle));
+				transformViewMenu->addSeparator();
+				for (std::list<const std::string*>::const_iterator it = containerViewNames.begin (); it != containerViewNames.end (); it++)
+				{
+					viewMenu->addEntry (new CMenuItem ((*it)->c_str (), kCreateNewViewTag));
+					transformViewMenu->addEntry (new CMenuItem ((*it)->c_str (), kTransformViewTag));
+					embedViewMenu->addEntry (new CMenuItem ((*it)->c_str (), kEmbedViewTag));
+				}
+
 				menu->addEntry (viewMenu, "Insert Subview");
 				if (selectionCount > 0 && !selection->contains (getView (0)))
-				{
-					COptionMenu* embedViewMenu = new COptionMenu ();
-					viewNames.clear ();
-					viewFactory->collectRegisteredViewNames (viewNames, "CViewContainer");
-					it = viewNames.begin ();
-					while (it != viewNames.end ())
-					{
-						embedViewMenu->addEntry (new CMenuItem ((*it)->c_str (), kEmbedViewTag));
-						it++;
-					}
 					menu->addEntry (embedViewMenu, "Embed Into ...");
-					embedViewMenu->forget ();
-				}
+				embedViewMenu->forget ();
+
 				std::list<const std::string*> templateNames;
 				uiDescription->collectTemplateViewNames (templateNames);
 				if (templateNames.size () > 1)
 				{
 					templateNames.sort (std__stringCompare);
 					COptionMenu* templateNameMenu = new COptionMenu ();
-					it = templateNames.begin ();
-					while (it != templateNames.end ())
+					for (std::list<const std::string*>::iterator it = templateNames.begin (); it != templateNames.end (); it++)
 					{
 						if (*(*it) != templateName)
 							templateNameMenu->addEntry (new CMenuItem ((*it)->c_str (), kInsertTemplateTag));
-						it++;
 					}
 					menu->addEntry (templateNameMenu, "Insert Template");
 					templateNameMenu->forget ();

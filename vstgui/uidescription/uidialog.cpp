@@ -51,6 +51,7 @@ bool UIDialog::runViewModal (CPoint& position, CView* view, int32_t style, UTF8S
 
 namespace DialogInternal {
 
+static const CCoord roundRectRadius = 6.;
 //-----------------------------------------------------------------------------
 class SimpleButton : public CKickButton
 {
@@ -63,16 +64,50 @@ public:
 		setWantsFocus (true);
 	}
 
+	bool getFocusPath (CGraphicsPath& outPath)
+	{
+		CRect r (getViewSize ());
+		CCoord focusWidth = getFrame ()->getFocusWidth ();
+		r.inset (-focusWidth, -focusWidth);
+		outPath.addRoundRect (r, roundRectRadius);
+		return true;
+	}
+
 	void draw (CDrawContext* context)
 	{
-		context->setDrawMode (kAliasing);
+		bool highlight = value > 0.5 ? true : false;
+		context->setDrawMode (kAntiAliasing);
 		context->setLineWidth (1);
 		context->setLineStyle (kLineSolid);
-		context->setFillColor (value > 0.5 ? kGreyCColor : kWhiteCColor);
 		context->setFrameColor (kBlackCColor);
-		context->drawRect (size, kDrawFilledAndStroked);
+		CRect r (getViewSize ());
+		r.inset (0.5, 0.5);
+		CGraphicsPath* path = context->createRoundRectGraphicsPath (r, roundRectRadius);
+		if (path)
+		{
+			CColor color1 = highlight ? MakeCColor (180,180,180,255) : MakeCColor (220,220,220,255);
+			CColor color2 = highlight ? MakeCColor (100,100,100,255) : MakeCColor (180,180,180,255);
+			CGradient* gradient = path->createGradient (0.2, 1, color1, color2);
+			if (gradient)
+			{
+				context->fillLinearGradient (path, *gradient, r.getTopLeft (), r.getBottomLeft (), false);
+				gradient->forget ();
+			}
+			else
+			{
+				context->setFillColor (value > 0.5 ? kGreyCColor : kWhiteCColor);
+				context->drawGraphicsPath (path, CDrawContext::kPathFilled);
+			}
+			context->drawGraphicsPath (path, CDrawContext::kPathStroked);
+			path->forget ();
+		}
+		else
+		{
+			context->setFillColor (value > 0.5 ? kGreyCColor : kWhiteCColor);
+			context->drawRect (size, kDrawFilledAndStroked);
+		}
 		context->setFont (kSystemFont);
-		context->setFontColor (kBlackCColor);
+		context->setFontColor (value > 0.5 ? kWhiteCColor : kBlackCColor);
 		context->drawString (title.c_str (), size);
 	}
 

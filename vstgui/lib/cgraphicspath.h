@@ -140,6 +140,8 @@ public:
 	virtual void addRect (const CRect& rect) = 0;
 	virtual void addPath (const CGraphicsPath& path, CGraphicsTransform* transformation = 0) = 0;
 	virtual void closeSubpath () = 0;
+
+	void addRoundRect (const CRect& size, CCoord radius);
 	//@}
 
 	//-----------------------------------------------------------------------------
