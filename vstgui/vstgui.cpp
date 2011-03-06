@@ -45,6 +45,7 @@
 #include "lib/cpoint.cpp"
 #include "lib/crect.cpp"
 #include "lib/cscrollview.cpp"
+#include "lib/csplitview.cpp"
 #include "lib/ctabview.cpp"
 #include "lib/ctooltipsupport.cpp"
 #include "lib/cview.cpp"
