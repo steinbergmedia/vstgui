@@ -959,7 +959,7 @@ CView* CFrame::getViewAt (const CPoint& where, bool deep) const
 				CViewContainer* container = dynamic_cast<CViewContainer*> (pModalView);
 				if (container)
 				{
-					container->getViewAt (where, deep);
+					return container->getViewAt (where, deep);
 				}
 			}
 			return pModalView;
