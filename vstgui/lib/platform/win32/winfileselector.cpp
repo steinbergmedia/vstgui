@@ -39,6 +39,7 @@
 #include "win32support.h"
 #include "win32frame.h"
 #include <shobjidl.h>
+#include <Commdlg.h>
 
 #define IID_PPV_ARG(IType, ppType) IID_##IType, (void**)ppType
 
@@ -129,6 +130,22 @@ protected:
 };
 
 //-----------------------------------------------------------------------------
+class XPFileSelector : public CNewFileSelector
+{
+public:
+	XPFileSelector (CFrame* frame, Style style);
+
+	virtual bool runInternal (CBaseObject* delegate);
+	virtual void cancelInternal ();
+	virtual bool runModalInternal ();
+protected:
+	Style style;
+};
+
+
+//-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
 CNewFileSelector* CNewFileSelector::create (CFrame* parent, Style style)
 {
 	if (parent == 0)
@@ -140,9 +157,12 @@ CNewFileSelector* CNewFileSelector::create (CFrame* parent, Style style)
 	}
 	if (getSystemVersion ().dwMajorVersion >= 6) // Vista
 		return new VistaFileSelector (parent, style);
-	return 0; // TODO: Support for older Windows versions
+	return new XPFileSelector (parent, style);
 }
 
+//-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
 typedef HRESULT (STDAPICALLTYPE *SHCreateItemFromParsingNameProc) (__in PCWSTR pszPath, __in_opt IBindCtx *pbc, __in REFIID riid, __deref_out void **ppv);
 SHCreateItemFromParsingNameProc _SHCreateItemFromParsingName = 0;
 
@@ -321,6 +341,101 @@ bool VistaFileSelector::runModalInternal ()
 	fileDialog = 0;
 	freeExtensionFilter (filters);
 	return SUCCEEDED (hr);
+}
+
+//-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
+XPFileSelector::XPFileSelector (CFrame* frame, Style style)
+: CNewFileSelector (frame)
+, style (style)
+{
+}
+
+//-----------------------------------------------------------------------------
+bool XPFileSelector::runInternal (CBaseObject* delegate)
+{
+	bool result = runModalInternal ();
+	if (result && delegate)
+	{
+		delegate->notify (this, kSelectEndMessage);
+	}
+	return result;
+}
+
+//-----------------------------------------------------------------------------
+void XPFileSelector::cancelInternal ()
+{
+}
+
+//-----------------------------------------------------------------------------
+bool XPFileSelector::runModalInternal ()
+{
+#if DEBUG
+	if (allowMultiFileSelection)
+	{
+		DebugPrint ("CNewFileSelector TODO: multi file selection currently not supported. Please implement this and share it.");
+	}
+#endif
+
+	OPENFILENAME ofn = {0};
+	ofn.lStructSize  = sizeof (OPENFILENAME);
+	ofn.hwndOwner= (HWND)(frame->getPlatformFrame ()->getPlatformRepresentation ());
+	ofn.hInstance = GetInstance ();
+	std::string filter;
+	for (std::list<CFileExtension>::const_iterator it = extensions.begin (); it!=extensions.end (); it++)
+	{
+		std::string s1= std::string ((it == extensions.begin ()) ? "*." : ";*.");
+		std::string s2 = (std::string) (it->getExtension ());
+		filter = filter + (s1 + s2);
+	}
+	UTF8StringHelper filterW (filter.c_str ());
+	ofn.lpstrFilter = filterW.getWideString ();
+	ofn.nFilterIndex = 1;
+
+	WCHAR filePathBuffer[MAX_PATH];
+	*filePathBuffer=0;
+
+	UTF8StringHelper defaultSaveNameW (defaultSaveName);
+	if (defaultSaveName)
+	{
+		wcscpy (filePathBuffer, defaultSaveNameW.getWideString ());
+	}
+	ofn.lpstrFile = filePathBuffer;
+	ofn.lpstrCustomFilter = NULL;
+	ofn.nMaxFile = MAX_PATH - 1;
+	ofn.lpstrFileTitle = NULL;
+
+	UTF8StringHelper initialPathW (initialPath);
+	if (initialPath)
+	{
+		ofn.lpstrInitialDir = initialPathW.getWideString ();
+	}
+	else
+	{
+		ofn.lpstrInitialDir = ofn.lpstrFilter;
+	}
+	
+	UTF8StringHelper titleW (title);
+	if (title)
+	{
+		ofn.lpstrTitle = titleW.getWideString ();
+	}
+	
+	ofn.Flags = OFN_EXPLORER | OFN_ENABLESIZING | OFN_HIDEREADONLY;
+
+	BOOL resultCode = (style == kSelectSaveFile) ? GetSaveFileName (&ofn) : GetOpenFileName (&ofn);
+	if (resultCode == 0)
+	{
+		DWORD errcode = CommDlgExtendedError ();
+		return false;
+	}
+
+	UTF8StringHelper str (filePathBuffer);
+	char* resultPath = (char*)malloc (strlen (str) + 1);
+	strcpy (resultPath, str);
+	result.push_back(resultPath);
+	return true;
 }
 
 } // namespace

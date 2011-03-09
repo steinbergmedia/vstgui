@@ -1,3 +1,10 @@
+2011-03-09 arne
+
+	* CNewFileSelector implementation for Windows XP (thanks to Bick Tick for the implementation)
+	* UTF8StringHelper optimization (only use malloc if more than 128 UTF-8 characters or 64 UTF-16 charachters needs to be translated)
+	* fix drawing issue with Wavelab 7 on Windows (WS_EX_TRANSPARENT is now only set when the parent window has WS_EX_LAYERED style set)
+	* the RGNDATA allocation in WM_PAINT on Windows is now only done when the size of this structure changes, otherwise the memory block will be remembered.
+
 2011-03-06 arne
 
 	* fix CFrame::getViewAt(..) returning wrong view in modal mode
