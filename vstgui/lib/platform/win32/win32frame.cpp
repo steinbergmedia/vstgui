@@ -141,6 +141,29 @@ IPlatformFrame* IPlatformFrame::createPlatformFrame (IPlatformFrameCallback* fra
 }
 
 //-----------------------------------------------------------------------------
+static bool isParentLayered (HWND parent)
+{
+	WINDOWINFO info;
+	info.cbSize = sizeof (info);
+	while (parent)
+	{
+		if (GetWindowInfo (parent, &info))
+		{
+			if (info.dwStyle & WS_CHILD)
+				parent = GetParent (parent);
+			else
+				break;
+		}
+	}
+	if (parent)
+	{
+		if (info.dwExStyle & WS_EX_LAYERED)
+			return true;
+	}
+	return false;
+}
+
+//-----------------------------------------------------------------------------
 Win32Frame::Win32Frame (IPlatformFrameCallback* frame, const CRect& size, HWND parent)
 : IPlatformFrame (frame)
 , windowHandle (0)
@@ -149,10 +172,12 @@ Win32Frame::Win32Frame (IPlatformFrameCallback* frame, const CRect& size, HWND p
 , backBuffer (0)
 , deviceContext (0)
 , mouseInside (false)
+, updateRegionList (0)
+, updateRegionListSize (0)
 {
 	initWindowClass ();
 
-	DWORD style = WS_EX_TRANSPARENT;
+	DWORD style = isParentLayered (parent) ? WS_EX_TRANSPARENT : 0;
 	#if !DEBUG_DRAWING
 	if (getD2DFactory ()) // workaround for Direct2D hotfix (KB2028560)
 	{
@@ -178,6 +203,8 @@ Win32Frame::Win32Frame (IPlatformFrameCallback* frame, const CRect& size, HWND p
 //-----------------------------------------------------------------------------
 Win32Frame::~Win32Frame ()
 {
+	if (updateRegionList)
+		free (updateRegionList);
 	if (deviceContext)
 		deviceContext->forget ();
 	if (tooltipWindow)
@@ -598,6 +625,82 @@ CView::DragResult Win32Frame::doDrag (CDropSource* source, const CPoint& offset,
 	return result;
 }
 
+//-----------------------------------------------------------------------------
+void Win32Frame::paint (HWND hwnd)
+{
+	HRGN rgn = CreateRectRgn (0, 0, 0, 0);
+	if (GetUpdateRgn (hwnd, rgn, false) == NULLREGION)
+	{
+		DeleteObject (rgn);
+		return;
+	}
+
+	PAINTSTRUCT ps;
+	HDC hdc = BeginPaint (hwnd, &ps);
+
+	if (hdc)
+	{
+		CRect updateRect ((CCoord)ps.rcPaint.left, (CCoord)ps.rcPaint.top, (CCoord)ps.rcPaint.right, (CCoord)ps.rcPaint.bottom);
+		CRect frameSize;
+		getSize (frameSize);
+		frameSize.offset (-frameSize.left, -frameSize.top);
+		if (deviceContext == 0)
+			deviceContext = createDrawContext (hwnd, hdc, frameSize);
+		if (deviceContext)
+		{
+			deviceContext->setClipRect (updateRect);
+
+			CDrawContext* drawContext = backBuffer ? backBuffer : deviceContext;
+			drawContext->beginDraw ();
+			#if 1
+			DWORD len = GetRegionData (rgn, 0, NULL);
+			if (len)
+			{
+				if (len > updateRegionListSize)
+				{
+					if (updateRegionList)
+						free (updateRegionList);
+					updateRegionListSize = len;
+					updateRegionList = (RGNDATA*) malloc (updateRegionListSize);
+				}
+				GetRegionData (rgn, len, updateRegionList);
+				if (updateRegionList->rdh.nCount > 0)
+				{
+					RECT* rp = (RECT*)updateRegionList->Buffer;
+					for (uint32_t i = 0; i < updateRegionList->rdh.nCount; i++)
+					{
+						CRect ur (rp->left, rp->top, rp->right, rp->bottom);
+						drawContext->clearRect (ur);
+						getFrame ()->platformDrawRect (drawContext, ur);
+						rp++;
+					}
+				}
+				else
+				{
+					getFrame ()->platformDrawRect (drawContext, updateRect);
+				}
+			}
+			#else
+
+			drawContext->clearRect (updateRect);
+			getFrame ()->platformDrawRect (drawContext, updateRect);
+
+			#endif
+			drawContext->endDraw ();
+			if (backBuffer)
+			{
+				deviceContext->beginDraw ();
+				deviceContext->clearRect (updateRect);
+				backBuffer->copyFrom (deviceContext, updateRect, CPoint (updateRect.left, updateRect.top));
+				deviceContext->endDraw ();
+			}
+		}
+	}
+
+	EndPaint (hwnd, &ps);
+	DeleteObject (rgn);
+}
+
 static unsigned char translateWinVirtualKey (WPARAM winVKey)
 {
 	switch (winVKey)
@@ -661,6 +764,7 @@ static unsigned char translateWinVirtualKey (WPARAM winVKey)
 	}
 	return 0;
 }
+
 //-----------------------------------------------------------------------------
 LONG_PTR WINAPI Win32Frame::WindowProc (HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
@@ -729,81 +833,7 @@ LONG_PTR WINAPI Win32Frame::WindowProc (HWND hwnd, UINT message, WPARAM wParam, 
 
 			case WM_PAINT:
 			{
-				HRGN rgn = CreateRectRgn (0, 0, 0, 0);
-				if (GetUpdateRgn (hwnd, rgn, false) == NULLREGION)
-				{
-					DeleteObject (rgn);
-					return 0;
-				}
-
-				PAINTSTRUCT ps;
-				HDC hdc = BeginPaint (hwnd, &ps);
-
-				if (hdc)
-				{
-					CRect updateRect ((CCoord)ps.rcPaint.left, (CCoord)ps.rcPaint.top, (CCoord)ps.rcPaint.right, (CCoord)ps.rcPaint.bottom);
-					CRect frameSize;
-					win32Frame->getSize (frameSize);
-					frameSize.offset (-frameSize.left, -frameSize.top);
-					#if 1
-					if (win32Frame->deviceContext == 0)
-						win32Frame->deviceContext = createDrawContext (hwnd, hdc, frameSize);
-					if (win32Frame->deviceContext)
-					{
-						win32Frame->deviceContext->setClipRect (updateRect);
-
-						CDrawContext* drawContext = win32Frame->backBuffer ? win32Frame->backBuffer : win32Frame->deviceContext;
-						drawContext->beginDraw ();
-						#if 1
-						int len = GetRegionData (rgn, 0, NULL);
-						if (len)
-						{
-							RGNDATA* rlist = (RGNDATA* )new char[len];
-							GetRegionData (rgn, len, rlist);
-							if (rlist->rdh.nCount > 0)
-							{
-								RECT* rp = (RECT*)rlist->Buffer;
-								for (uint32_t i = 0; i < rlist->rdh.nCount; i++)
-								{
-									CRect ur (rp->left, rp->top, rp->right, rp->bottom);
-									drawContext->clearRect (ur);
-									pFrame->platformDrawRect (drawContext, ur);
-									rp++;
-								}
-							}
-							else
-								pFrame->platformDrawRect (drawContext, updateRect);
-							delete [] (char*)rlist;
-						}
-						#else
-
-						drawContext->clearRect (updateRect);
-						pFrame->platformDrawRect (drawContext, updateRect);
-
-						#endif
-						drawContext->endDraw ();
-						if (win32Frame->backBuffer)
-						{
-							win32Frame->deviceContext->beginDraw ();
-							win32Frame->deviceContext->clearRect (updateRect);
-							win32Frame->backBuffer->copyFrom (win32Frame->deviceContext, updateRect, CPoint (updateRect.left, updateRect.top));
-							win32Frame->deviceContext->endDraw ();
-						}
-					}
-					#else
-					GdiplusDrawContext context (hdc, frameSize);
-					if (win32Frame->backBuffer)
-					{
-						pFrame->platformDrawRect (win32Frame->backBuffer, updateRect);
-						win32Frame->backBuffer->copyFrom (&context, updateRect, CPoint (updateRect.left, updateRect.top));
-					}
-					else
-						pFrame->platformDrawRect (&context, updateRect);
-					#endif
-				}
-
-				EndPaint (hwnd, &ps);
-				DeleteObject (rgn);
+				win32Frame->paint (hwnd);
 				return 0;
 			}
 

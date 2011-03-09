@@ -137,7 +137,13 @@ void* WinDragContainer::next (int32_t& size, int32_t& type)
 
 	HRESULT hr;
 	if (isFileDrag)
+	{
 		hr = platformDrag->GetData (&formatHDrop, &medium);
+		if (hr == S_OK)
+		{
+			hDrop = medium.hGlobal;
+		}
+	}
 	else
 	{
 		hr = platformDrag->GetData (&formatTEXTDrop, &medium);
