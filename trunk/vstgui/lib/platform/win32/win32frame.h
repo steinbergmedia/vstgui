@@ -75,6 +75,7 @@ public:
 //-----------------------------------------------------------------------------
 protected:
 	void initTooltip ();
+	void paint (HWND hwnd);
 
 	static void initWindowClass ();
 	static void destroyWindowClass ();
@@ -89,6 +90,9 @@ protected:
 	CDrawContext* deviceContext;
 
 	bool mouseInside;
+
+	RGNDATA* updateRegionList;
+	DWORD updateRegionListSize;
 };
 
 } // namespace
