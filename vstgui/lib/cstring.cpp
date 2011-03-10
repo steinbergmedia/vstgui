@@ -32,76 +32,31 @@
 // OF THE POSSIBILITY OF SUCH DAMAGE.
 //-----------------------------------------------------------------------------
 
-#ifndef __cfontmac__
-#define __cfontmac__
-
-#include "../../cfont.h"
-
-#if MAC
-
-#include <ApplicationServices/ApplicationServices.h>
+#include "cstring.h"
+#include "platform/iplatformstring.h"
 
 namespace VSTGUI {
 
-#define VSTGUI_USES_CORE_TEXT	(MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_5)
-
-#if VSTGUI_USES_CORE_TEXT
 //-----------------------------------------------------------------------------
-class CoreTextFont : public IPlatformFont, public IFontPainter
+CString::CString (UTF8StringPtr string)
+: utf8String (string)
 {
-public:
-	CoreTextFont (UTF8StringPtr name, const CCoord& size, const int32_t& style);
+	platformString = IPlatformString::createWithUTF8String (string);
+}
 
-	CTFontRef getFontRef () const { return fontRef; }
-
-//------------------------------------------------------------------------------------
-protected:
-	~CoreTextFont ();
-
-	void drawString (CDrawContext* context, const CString& string, const CPoint& p, bool antialias = true);
-	CCoord getStringWidth (CDrawContext* context, const CString& string, bool antialias = true);
-
-	double getAscent () const;
-	double getDescent () const;
-	double getLeading () const;
-	double getCapHeight () const;
-
-	IFontPainter* getPainter () { return this; }
-
-	CTFontRef fontRef;
-	int32_t style;
-	bool underlineStyle;
-};
-
-#else // VSTGUI_USES_CORE_TEXT
 //-----------------------------------------------------------------------------
-class ATSUFont : public IPlatformFont, public IFontPainter
+CString::~CString ()
 {
-public:
-	ATSUFont (UTF8StringPtr name, const CCoord& size, const int32_t& style);
+	if (platformString)
+		platformString->forget ();
+}
 
-	ATSUStyle getATSUStyle () const { return atsuStyle; }
-
-protected:
-	~ATSUFont ();
-
-	void drawString (CDrawContext* context, const CString& string, const CPoint& p, bool antialias = true);
-	CCoord getStringWidth (CDrawContext* context, const CString& string, bool antialias = true);
-
-	double getAscent () const { return -1.; }
-	double getDescent () const { return -1.; }
-	double getLeading () const { return -1.; }
-	double getCapHeight () const { return -1.; }
-
-	IFontPainter* getPainter () { return this; }
-
-	ATSUStyle atsuStyle;
-};
-
-#endif
+//-----------------------------------------------------------------------------
+void CString::setUTF8String (UTF8StringPtr string)
+{
+	utf8String = string;
+	if (platformString)
+		platformString->setUTF8String (string);
+}
 
 } // namespace
-
-#endif // MAC
-
-#endif

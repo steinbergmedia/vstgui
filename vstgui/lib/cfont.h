@@ -36,6 +36,7 @@
 #define __cfont__
 
 #include "vstguibase.h"
+#include "cstring.h"
 #include <string>
 #include <list>
 
@@ -122,8 +123,8 @@ class IFontPainter
 public:
 	virtual ~IFontPainter () {}
 
-	virtual void drawString (CDrawContext* context, UTF8StringPtr utf8String, const CPoint& p, bool antialias = true) = 0;
-	virtual CCoord getStringWidth (CDrawContext* context, UTF8StringPtr utf8String, bool antialias = true) = 0;
+	virtual void drawString (CDrawContext* context, const CString& string, const CPoint& p, bool antialias = true) = 0;
+	virtual CCoord getStringWidth (CDrawContext* context, const CString& string, bool antialias = true) = 0;
 };
 
 //-----------------------------------------------------------------------------

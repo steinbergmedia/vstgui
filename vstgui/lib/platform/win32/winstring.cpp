@@ -1,6 +1,6 @@
 //-----------------------------------------------------------------------------
 // VST Plug-Ins SDK
-// VSTGUI: Graphical User Interface Framework not only for VST plugins : 
+// VSTGUI: Graphical User Interface Framework for VST plugins : 
 //
 // Version 4.0
 //
@@ -32,76 +32,59 @@
 // OF THE POSSIBILITY OF SUCH DAMAGE.
 //-----------------------------------------------------------------------------
 
-#ifndef __cfontmac__
-#define __cfontmac__
+#include "winstring.h"
 
-#include "../../cfont.h"
+#if WINDOWS
 
-#if MAC
-
-#include <ApplicationServices/ApplicationServices.h>
+#include <algorithm>
 
 namespace VSTGUI {
 
-#define VSTGUI_USES_CORE_TEXT	(MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_5)
+static int kMinWinStringBufferSize = 256;
 
-#if VSTGUI_USES_CORE_TEXT
 //-----------------------------------------------------------------------------
-class CoreTextFont : public IPlatformFont, public IFontPainter
+IPlatformString* IPlatformString::createWithUTF8String (UTF8StringPtr utf8String)
 {
-public:
-	CoreTextFont (UTF8StringPtr name, const CCoord& size, const int32_t& style);
+	return new WinString (utf8String);
+}
 
-	CTFontRef getFontRef () const { return fontRef; }
-
-//------------------------------------------------------------------------------------
-protected:
-	~CoreTextFont ();
-
-	void drawString (CDrawContext* context, const CString& string, const CPoint& p, bool antialias = true);
-	CCoord getStringWidth (CDrawContext* context, const CString& string, bool antialias = true);
-
-	double getAscent () const;
-	double getDescent () const;
-	double getLeading () const;
-	double getCapHeight () const;
-
-	IFontPainter* getPainter () { return this; }
-
-	CTFontRef fontRef;
-	int32_t style;
-	bool underlineStyle;
-};
-
-#else // VSTGUI_USES_CORE_TEXT
 //-----------------------------------------------------------------------------
-class ATSUFont : public IPlatformFont, public IFontPainter
+WinString::WinString (UTF8StringPtr utf8String)
+: wideString (0)
+, wideStringBufferSize (0)
 {
-public:
-	ATSUFont (UTF8StringPtr name, const CCoord& size, const int32_t& style);
+	setUTF8String (utf8String);
+}
 
-	ATSUStyle getATSUStyle () const { return atsuStyle; }
+//-----------------------------------------------------------------------------
+WinString::~WinString ()
+{
+	if (wideString)
+		free (wideString);
+}
 
-protected:
-	~ATSUFont ();
-
-	void drawString (CDrawContext* context, const CString& string, const CPoint& p, bool antialias = true);
-	CCoord getStringWidth (CDrawContext* context, const CString& string, bool antialias = true);
-
-	double getAscent () const { return -1.; }
-	double getDescent () const { return -1.; }
-	double getLeading () const { return -1.; }
-	double getCapHeight () const { return -1.; }
-
-	IFontPainter* getPainter () { return this; }
-
-	ATSUStyle atsuStyle;
-};
-
-#endif
+//-----------------------------------------------------------------------------
+void WinString::setUTF8String (UTF8StringPtr utf8String)
+{
+	if (utf8String)
+	{
+		int numChars = MultiByteToWideChar (CP_UTF8, 0, utf8String, -1, 0, 0);
+		if ((numChars+1)*2 > wideStringBufferSize)
+		{
+			if (wideString)
+				free (wideString);
+			wideStringBufferSize = std::max<int> ((numChars+1)*2, kMinWinStringBufferSize);
+			wideString = (WCHAR*)malloc (wideStringBufferSize);
+		}
+		if (MultiByteToWideChar (CP_UTF8, 0, utf8String, -1, wideString, numChars) == 0)
+		{
+			wideString[0] = 0;
+		}
+	}
+	else if (wideString)
+		wideString[0] = 0;
+}
 
 } // namespace
 
-#endif // MAC
-
-#endif
+#endif // WINDOWS

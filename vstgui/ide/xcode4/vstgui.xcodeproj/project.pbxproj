@@ -156,6 +156,11 @@
 		F4E3905913080ECC00615042 /* xmlparser.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4E3903813080ECC00615042 /* xmlparser.cpp */; };
 		F4E3905A13080ECC00615042 /* xmlparser.h in Headers */ = {isa = PBXBuildFile; fileRef = F4E3903913080ECC00615042 /* xmlparser.h */; };
 		F4E3905C1308155200615042 /* vstgui.h in Headers */ = {isa = PBXBuildFile; fileRef = F4E3905B1308155200615042 /* vstgui.h */; };
+		F4FC1A9D1328C7B40066E2F8 /* iplatformstring.h in Headers */ = {isa = PBXBuildFile; fileRef = F4FC1A9C1328C7B40066E2F8 /* iplatformstring.h */; };
+		F4FC1AA11328C8C40066E2F8 /* macstring.mm in Sources */ = {isa = PBXBuildFile; fileRef = F4FC1A9F1328C8C40066E2F8 /* macstring.mm */; };
+		F4FC1AA21328C8C40066E2F8 /* macstring.h in Headers */ = {isa = PBXBuildFile; fileRef = F4FC1AA01328C8C40066E2F8 /* macstring.h */; };
+		F4FC1AA51328CB320066E2F8 /* cstring.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4FC1AA31328CB310066E2F8 /* cstring.cpp */; };
+		F4FC1AA61328CB320066E2F8 /* cstring.h in Headers */ = {isa = PBXBuildFile; fileRef = F4FC1AA41328CB310066E2F8 /* cstring.h */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -312,6 +317,11 @@
 		F4E3905D1308190800615042 /* Changelog */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = Changelog; path = ../../Changelog; sourceTree = "<group>"; };
 		F4E3905F13081BA500615042 /* win32 */ = {isa = PBXFileReference; lastKnownFileType = folder; name = win32; path = ../../lib/platform/win32; sourceTree = "<group>"; };
 		F4E3906013081BCD00615042 /* doxygen */ = {isa = PBXFileReference; lastKnownFileType = folder; name = doxygen; path = ../../doxygen; sourceTree = "<group>"; };
+		F4FC1A9C1328C7B40066E2F8 /* iplatformstring.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = iplatformstring.h; path = ../../lib/platform/iplatformstring.h; sourceTree = "<group>"; };
+		F4FC1A9F1328C8C40066E2F8 /* macstring.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = macstring.mm; path = ../../lib/platform/mac/macstring.mm; sourceTree = "<group>"; };
+		F4FC1AA01328C8C40066E2F8 /* macstring.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = macstring.h; path = ../../lib/platform/mac/macstring.h; sourceTree = "<group>"; };
+		F4FC1AA31328CB310066E2F8 /* cstring.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = cstring.cpp; path = ../../lib/cstring.cpp; sourceTree = "<group>"; };
+		F4FC1AA41328CB310066E2F8 /* cstring.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = cstring.h; path = ../../lib/cstring.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -379,6 +389,8 @@
 				F497F0DC13080A1C00F0A613 /* cscrollview.h */,
 				F45BD677131817CD00C46C02 /* csplitview.cpp */,
 				F45BD678131817CD00C46C02 /* csplitview.h */,
+				F4FC1AA31328CB310066E2F8 /* cstring.cpp */,
+				F4FC1AA41328CB310066E2F8 /* cstring.h */,
 				F497F0DD13080A1C00F0A613 /* ctabview.cpp */,
 				F497F0DE13080A1C00F0A613 /* ctabview.h */,
 				F497F0DF13080A1C00F0A613 /* ctooltipsupport.cpp */,
@@ -460,6 +472,7 @@
 				F497F16C13080B0200F0A613 /* iplatformbitmap.h */,
 				F497F16D13080B0200F0A613 /* iplatformframe.h */,
 				F497F16E13080B0200F0A613 /* iplatformoptionmenu.h */,
+				F4FC1A9C1328C7B40066E2F8 /* iplatformstring.h */,
 				F497F16F13080B0200F0A613 /* iplatformtextedit.h */,
 			);
 			name = platform;
@@ -479,6 +492,8 @@
 				F497F17B13080B1C00F0A613 /* macfileselector.mm */,
 				F497F17C13080B1C00F0A613 /* macglobals.cpp */,
 				F497F17D13080B1C00F0A613 /* macglobals.h */,
+				F4FC1A9F1328C8C40066E2F8 /* macstring.mm */,
+				F4FC1AA01328C8C40066E2F8 /* macstring.h */,
 				F497F17E13080B1C00F0A613 /* quartzgraphicspath.cpp */,
 				F497F17F13080B1C00F0A613 /* quartzgraphicspath.h */,
 			);
@@ -642,6 +657,9 @@
 				F4E3905A13080ECC00615042 /* xmlparser.h in Headers */,
 				F4E3905C1308155200615042 /* vstgui.h in Headers */,
 				F45BD67A131817CD00C46C02 /* csplitview.h in Headers */,
+				F4FC1A9D1328C7B40066E2F8 /* iplatformstring.h in Headers */,
+				F4FC1AA21328C8C40066E2F8 /* macstring.h in Headers */,
+				F4FC1AA61328CB320066E2F8 /* cstring.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -765,6 +783,8 @@
 				F4E3905613080ECC00615042 /* uiviewswitchcontainer.cpp in Sources */,
 				F4E3905913080ECC00615042 /* xmlparser.cpp in Sources */,
 				F45BD679131817CD00C46C02 /* csplitview.cpp in Sources */,
+				F4FC1AA11328C8C40066E2F8 /* macstring.mm in Sources */,
+				F4FC1AA51328CB320066E2F8 /* cstring.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

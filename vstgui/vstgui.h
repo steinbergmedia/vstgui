@@ -50,6 +50,7 @@
 #include "lib/crect.h"
 #include "lib/cscrollview.h"
 #include "lib/csplitview.h"
+#include "lib/cstring.h"
 #include "lib/ctabview.h"
 #include "lib/ctooltipsupport.h"
 #include "lib/cview.h"
