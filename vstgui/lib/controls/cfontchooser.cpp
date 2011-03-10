@@ -100,7 +100,8 @@ enum {
 	kFontChooserSizeTag,
 	kFontChooserBoldTag,
 	kFontChooserItalicTag,
-	kFontChooserUnderlineTag
+	kFontChooserUnderlineTag,
+	kFontChooserStrikeoutTag
 };
 
 } // namespace CFontChooserInternal
@@ -184,6 +185,13 @@ CFontChooser::CFontChooser (IFontChooserDelegate* delegate, CFontRef initialFont
 	underlineBox->setAutosizeFlags (kAutosizeLeft | kAutosizeTop);
 	underlineBox->sizeToFit ();
 	addView (underlineBox);
+	controlRect.offset (0, 20);
+	strikeoutBox = new CCheckBox (controlRect, this, CFontChooserInternal::kFontChooserStrikeoutTag, "Strikeout");
+	strikeoutBox->setFont (uiDef.font);
+	strikeoutBox->setFontColor (uiDef.fontColor);
+	strikeoutBox->setAutosizeFlags (kAutosizeLeft | kAutosizeTop);
+	strikeoutBox->sizeToFit ();
+	addView (strikeoutBox);
 
 	CViewContainer* container = new CViewContainer (CRect (controlRect.left, controlRect.bottom+10, 300, 500));
 	container->setBackgroundColor (uiDef.previewBackgroundColor);
@@ -219,6 +227,7 @@ void CFontChooser::setFont (CFontRef font)
 		boldBox->setValue (font->getStyle () & kBoldFace ? 1.f : 0.f);
 		italicBox->setValue (font->getStyle () & kItalicFace ? 1.f : 0.f);
 		underlineBox->setValue (font->getStyle () & kUnderlineFace ? 1.f : 0.f);
+		strikeoutBox->setValue (font->getStyle () & kStrikethroughFace ? 1.f : 0.f);
 
 		std::vector<std::string>::const_iterator it = fontNames.begin ();
 		int32_t row = 0;
@@ -273,6 +282,14 @@ void CFontChooser::valueChanged (CControl* pControl)
 				selFont->setStyle (selFont->getStyle () | kUnderlineFace);
 			else
 				selFont->setStyle (selFont->getStyle () & ~kUnderlineFace);
+			break;
+		}
+		case CFontChooserInternal::kFontChooserStrikeoutTag:
+		{
+			if (pControl->getValue () == 1)
+				selFont->setStyle (selFont->getStyle () | kStrikethroughFace);
+			else
+				selFont->setStyle (selFont->getStyle () & ~kStrikethroughFace);
 			break;
 		}
 	}

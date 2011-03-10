@@ -1,5 +1,6 @@
 2011-03-10 arne
 
+	* new font face kStrikethroughFace (thanks to Bick Tick for this)
 	* new class CString which holds a platform representation of a UTF8String.
 		The CDrawContext class has one CString so that the platform code does not need to convert a string twice when drawing
 		the string into a rectangle

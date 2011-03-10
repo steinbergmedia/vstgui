@@ -92,8 +92,6 @@ public:
 		CRect r = getViewSize ();
 		r.inset (2, 5);
 		outPath.addRect (r);
-//		r.inset (0.8, 0.8);
-//		outPath.addRect (r);
 		return true;
 	}
 	
@@ -127,17 +125,7 @@ public:
 		pContext->drawRect (r, kDrawFilled);
 		if (name)
 		{
-			#if 0
-			if (getFrame ()->getFocusView () == this)
-			{
-				CFontRef focusFont = (CFontRef)textFont->newCopy ();
-				focusFont->setStyle (textFont->getStyle () | kUnderlineFace);
-				pContext->setFont (focusFont);
-				focusFont->forget ();
-			}
-			else
-			#endif
-				pContext->setFont (textFont);
+			pContext->setFont (textFont);
 			pContext->setFontColor (value ? activeTextColor : inactiveTextColor);
 			pContext->drawString (name, size);
 		}
@@ -1058,6 +1046,8 @@ public:
 					str << "i";
 				if (fstyle & kUnderlineFace)
 					str << "u";
+				if (fstyle & kStrikethroughFace)
+					str << "s";
 				if (fstyle != 0)
 					str << "]";
 				str << " ";

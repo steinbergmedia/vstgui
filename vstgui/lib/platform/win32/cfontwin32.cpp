@@ -92,6 +92,8 @@ GdiPlusFont::GdiPlusFont (const char* name, const CCoord& size, const int32_t& s
 		gdiStyle |= Gdiplus::FontStyleItalic;
 	if (style & kUnderlineFace)
 		gdiStyle |= Gdiplus::FontStyleUnderline;
+	if (style & kStrikethroughFace)
+		gdiStyle |= Gdiplus::FontStyleStrikeout;
 
 	WCHAR tempName [200];
 	mbstowcs (tempName, name, 200);

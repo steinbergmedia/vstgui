@@ -169,6 +169,18 @@ void CoreTextFont::drawString (CDrawContext* context, const CString& string, con
 						CGContextAddLineToPoint (cgContext, cgPoint.x, point.y - underlineOffset);
 						CGContextDrawPath (cgContext, kCGPathStroke);
 					}
+					if (style & kStrikethroughFace)
+					{
+						CGFloat underlineThickness = CTFontGetUnderlineThickness (fontRef);
+						CGFloat offset = CTFontGetXHeight (fontRef) * 0.5;
+						CGContextSetStrokeColorWithColor (cgContext, cgColorRef);
+						CGContextSetLineWidth (cgContext, underlineThickness);
+						CGPoint cgPoint = CGContextGetTextPosition (cgContext);
+						CGContextBeginPath (cgContext);
+						CGContextMoveToPoint (cgContext, point.x, point.y - offset);
+						CGContextAddLineToPoint (cgContext, cgPoint.x, point.y - offset);
+						CGContextDrawPath (cgContext, kCGPathStroke);
+					}	
 					cgDrawContext->releaseCGContext (cgContext);
 				}
 				CFRelease (line);
