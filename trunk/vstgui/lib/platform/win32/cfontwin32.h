@@ -63,8 +63,8 @@ protected:
 
 	IFontPainter* getPainter () { return this; }
 
-	void drawString (CDrawContext* context, const char* utf8String, const CPoint& p, bool antialias = true);
-	CCoord getStringWidth (CDrawContext* context, const char* utf8String, bool antialias = true);
+	void drawString (CDrawContext* context, const CString& string, const CPoint& p, bool antialias = true);
+	CCoord getStringWidth (CDrawContext* context, const CString& string, bool antialias = true);
 
 	Gdiplus::Font* font;
 	INT gdiStyle;

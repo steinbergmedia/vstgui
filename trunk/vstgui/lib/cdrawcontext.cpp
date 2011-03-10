@@ -39,7 +39,8 @@ namespace VSTGUI {
 
 //-----------------------------------------------------------------------------
 CDrawContext::CDrawContext (const CRect& surfaceRect)
-: surfaceRect (surfaceRect)
+: drawStringHelper (0)
+, surfaceRect (surfaceRect)
 {
 	currentState.font = 0;
 	currentState.fontColor = kTransparentCColor;
@@ -68,6 +69,8 @@ CDrawContext::~CDrawContext ()
 	}
 	if (currentState.font)
 		currentState.font->forget ();
+	if (drawStringHelper)
+		drawStringHelper->forget ();
 }
 
 //-----------------------------------------------------------------------------
@@ -212,6 +215,23 @@ void CDrawContext::setOffset (const CPoint& offset)
 }
 
 //-----------------------------------------------------------------------------
+const CString& CDrawContext::getDrawString (UTF8StringPtr string)
+{
+	if (drawStringHelper == 0)
+		drawStringHelper = new CString (string);
+	else
+		drawStringHelper->setUTF8String (string);
+	return *drawStringHelper;
+}
+
+//-----------------------------------------------------------------------------
+void CDrawContext::clearDrawString ()
+{
+	if (drawStringHelper)
+		drawStringHelper->setUTF8String (0);
+}
+
+//-----------------------------------------------------------------------------
 CCoord CDrawContext::getStringWidth (UTF8StringPtr string)
 {
 	CCoord result = -1;
@@ -220,7 +240,10 @@ CCoord CDrawContext::getStringWidth (UTF8StringPtr string)
 
 	IFontPainter* painter = currentState.font->getFontPainter ();
 	if (painter)
-		result = painter->getStringWidth (this, string, true);
+	{
+		result = painter->getStringWidth (this, getDrawString (string), true);
+		clearDrawString ();
+	}
 
 	return result;
 }
@@ -233,15 +256,22 @@ void CDrawContext::drawString (UTF8StringPtr string, const CPoint& point, bool a
 
 	IFontPainter* painter = currentState.font->getFontPainter ();
 	if (painter)
-		painter->drawString (this, string, point, antialias);
+	{
+		painter->drawString (this, getDrawString (string), point, antialias);
+		clearDrawString ();
+	}
 }
 
 //-----------------------------------------------------------------------------
-void CDrawContext::drawString (UTF8StringPtr string, const CRect& _rect, const CHoriTxtAlign hAlign, bool antialias)
+void CDrawContext::drawString (UTF8StringPtr _string, const CRect& _rect, const CHoriTxtAlign hAlign, bool antialias)
 {
-	if (!string || currentState.font == 0)
+	if (!_string || currentState.font == 0)
+		return;
+	IFontPainter* painter = currentState.font->getFontPainter ();
+	if (painter == 0)
 		return;
 	
+	const CString& string = getDrawString (_string);
 	CRect rect (_rect);
 
 	double capHeight = -1;
@@ -255,7 +285,7 @@ void CDrawContext::drawString (UTF8StringPtr string, const CRect& _rect, const C
 		rect.bottom -= (rect.height ()/2 - currentState.font->getSize () / 2) + 1;
 	if (hAlign != kLeftText)
 	{
-		CCoord stringWidth = getStringWidth (string);
+		CCoord stringWidth = painter->getStringWidth (this, string, antialias);
 		if (hAlign == kRightText)
 			rect.left = rect.right - stringWidth;
 		else
@@ -266,8 +296,9 @@ void CDrawContext::drawString (UTF8StringPtr string, const CRect& _rect, const C
 	CRect newClip (_rect);
 	newClip.bound (oldClip);
 	setClipRect (newClip);
-	drawString (string, CPoint (rect.left, rect.bottom), antialias);
+	painter->drawString (this, string, CPoint (rect.left, rect.bottom), antialias);
 	setClipRect (oldClip);
+	clearDrawString ();
 }
 
 //-----------------------------------------------------------------------------

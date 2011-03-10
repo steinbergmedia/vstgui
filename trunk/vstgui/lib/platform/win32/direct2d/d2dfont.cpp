@@ -37,6 +37,7 @@
 #if WINDOWS && VSTGUI_DIRECT2D_SUPPORT
 
 #include "../win32support.h"
+#include "../winstring.h"
 #include "d2ddrawcontext.h"
 #include <dwrite.h>
 #include <d2d1.h>
@@ -90,16 +91,17 @@ D2DFont::~D2DFont ()
 }
 
 //-----------------------------------------------------------------------------
-IDWriteTextLayout* D2DFont::createTextLayout (const char* utf8String)
+IDWriteTextLayout* D2DFont::createTextLayout (const CString& string)
 {
+	const WinString* winString = dynamic_cast<const WinString*> (string.getPlatformString ());
 	IDWriteTextLayout* textLayout = 0;
-	UTF8StringHelper string (utf8String);
-	getDWriteFactory ()->CreateTextLayout (string, wcslen (string), textFormat, 10000, 1000, &textLayout);
+	if (winString)
+		getDWriteFactory ()->CreateTextLayout (winString->getWideString (), wcslen (winString->getWideString ()), textFormat, 10000, 1000, &textLayout);
 	return textLayout;
 }
 
 //-----------------------------------------------------------------------------
-void D2DFont::drawString (CDrawContext* context, const char* utf8String, const CPoint& p, bool antialias)
+void D2DFont::drawString (CDrawContext* context, const CString& string, const CPoint& p, bool antialias)
 {
 	D2DDrawContext* d2dContext = dynamic_cast<D2DDrawContext*> (context);
 	if (d2dContext && textFormat)
@@ -107,7 +109,7 @@ void D2DFont::drawString (CDrawContext* context, const char* utf8String, const C
 		ID2D1RenderTarget* renderTarget = d2dContext->getRenderTarget ();
 		if (renderTarget)
 		{
-			IDWriteTextLayout* textLayout = createTextLayout (utf8String);
+			IDWriteTextLayout* textLayout = createTextLayout (string);
 			if (textLayout)
 			{
 				if (style & kUnderlineFace)
@@ -127,12 +129,12 @@ void D2DFont::drawString (CDrawContext* context, const char* utf8String, const C
 }
 
 //-----------------------------------------------------------------------------
-CCoord D2DFont::getStringWidth (CDrawContext* context, const char* utf8String, bool antialias)
+CCoord D2DFont::getStringWidth (CDrawContext* context, const CString& string, bool antialias)
 {
 	CCoord result = 0;
 	if (textFormat)
 	{
-		IDWriteTextLayout* textLayout = createTextLayout (utf8String);
+		IDWriteTextLayout* textLayout = createTextLayout (string);
 		if (textLayout)
 		{
 			DWRITE_TEXT_METRICS textMetrics;

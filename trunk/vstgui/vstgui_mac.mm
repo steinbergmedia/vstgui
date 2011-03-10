@@ -39,6 +39,7 @@
 #import "lib/platform/mac/cgbitmap.cpp"
 #import "lib/platform/mac/quartzgraphicspath.cpp"
 #import "lib/platform/mac/macfileselector.mm"
+#import "lib/platform/mac/macstring.mm"
 #import "lib/platform/mac/cfontmac.mm"
 #import "lib/platform/mac/carbon/hiviewframe.cpp"
 #import "lib/platform/mac/carbon/hiviewoptionmenu.cpp"
