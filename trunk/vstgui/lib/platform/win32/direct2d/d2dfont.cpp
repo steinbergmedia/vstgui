@@ -117,6 +117,11 @@ void D2DFont::drawString (CDrawContext* context, const CString& string, const CP
 					DWRITE_TEXT_RANGE range = { 0, -1 };
 					textLayout->SetUnderline (true, range);
 				}
+				if (style & kStrikethroughFace) 
+				{
+					DWRITE_TEXT_RANGE range = { 0, -1 };
+					textLayout->SetStrikethrough (true, range);
+				}
 				renderTarget->SetTextAntialiasMode (antialias ? D2D1_TEXT_ANTIALIAS_MODE_GRAYSCALE : D2D1_TEXT_ANTIALIAS_MODE_ALIASED);
 				CRect clipRect;
 				D2DDrawContext::D2DApplyClip ac (d2dContext);
