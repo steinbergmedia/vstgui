@@ -1482,6 +1482,7 @@ CFontRef UIFontNode::getFont ()
 		const std::string* boldAttr = attributes->getAttributeValue ("bold");
 		const std::string* italicAttr = attributes->getAttributeValue ("italic");
 		const std::string* underlineAttr = attributes->getAttributeValue ("underline");
+		const std::string* strikethroughAttr = attributes->getAttributeValue ("strike-through");
 		if (nameAttr)
 		{
 			int32_t size = 12;
@@ -1494,6 +1495,8 @@ CFontRef UIFontNode::getFont ()
 				fontStyle |= kItalicFace;
 			if (underlineAttr && *underlineAttr == "true")
 				fontStyle |= kUnderlineFace;
+			if (strikethroughAttr && *strikethroughAttr == "true")
+				fontStyle |= kStrikethroughFace;
 			font = new CFontDesc (nameAttr->c_str (), size, fontStyle);
 		}
 	}
@@ -1521,6 +1524,8 @@ void UIFontNode::setFont (CFontRef newFont)
 		attributes->setAttribute ("italic", "true");
 	if (newFont->getStyle () & kUnderlineFace)
 		attributes->setAttribute ("underline", "true");
+	if (newFont->getStyle () & kStrikethroughFace)
+		attributes->setAttribute ("strike-through", "true");
 }
 
 //-----------------------------------------------------------------------------

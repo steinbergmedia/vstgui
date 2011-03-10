@@ -113,6 +113,7 @@ protected:
 	CCheckBox* boldBox;
 	CCheckBox* italicBox;
 	CCheckBox* underlineBox;
+	CCheckBox* strikeoutBox;
 	CView* fontPreviewView;
 	std::vector<std::string> fontNames;
 	
