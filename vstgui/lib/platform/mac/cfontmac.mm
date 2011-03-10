@@ -36,7 +36,7 @@
 #import "../../cdrawcontext.h"
 
 #if MAC
-
+#import "macstring.h"
 #import "cgdrawcontext.h"
 #import <Cocoa/Cocoa.h>
 
@@ -132,9 +132,10 @@ double CoreTextFont::getCapHeight () const
 }
 
 //-----------------------------------------------------------------------------
-void CoreTextFont::drawString (CDrawContext* context, UTF8StringPtr utf8String, const CPoint& point, bool antialias)
+void CoreTextFont::drawString (CDrawContext* context, const CString& string, const CPoint& point, bool antialias)
 {
-	CFStringRef utf8Str = CFStringCreateWithCString (NULL, utf8String, kCFStringEncodingUTF8);
+	const MacString* macString = dynamic_cast<const MacString*> (string.getPlatformString ());
+	CFStringRef utf8Str = macString ? macString->getCFString () : 0;
 	if (utf8Str)
 	{
 		CColor fontColor = context->getFontColor ();
@@ -175,15 +176,15 @@ void CoreTextFont::drawString (CDrawContext* context, UTF8StringPtr utf8String, 
 			CFRelease (attrStr);
 		}
 		CFRelease (cgColorRef);
-		CFRelease (utf8Str);
 	}
 }
 
 //-----------------------------------------------------------------------------
-CCoord CoreTextFont::getStringWidth (CDrawContext* context, UTF8StringPtr utf8String, bool antialias)
+CCoord CoreTextFont::getStringWidth (CDrawContext* context, const CString& string, bool antialias)
 {
 	CCoord result = 0;
-	CFStringRef utf8Str = CFStringCreateWithCString (NULL, utf8String, kCFStringEncodingUTF8);
+	const MacString* macString = dynamic_cast<const MacString*> (string.getPlatformString ());
+	CFStringRef utf8Str = macString ? macString->getCFString () : 0;
 	if (utf8Str)
 	{
 		CFStringRef keys[] = { kCTFontAttributeName };
@@ -201,7 +202,6 @@ CCoord CoreTextFont::getStringWidth (CDrawContext* context, UTF8StringPtr utf8St
 			}
 			CFRelease (attrStr);
 		}
-		CFRelease (utf8Str);
 	}
 	return result;
 }
@@ -245,14 +245,15 @@ ATSUFont::~ATSUFont ()
 }
 
 //-----------------------------------------------------------------------------
-void ATSUFont::drawString (CDrawContext* context, UTF8StringPtr utf8String, const CPoint& point, bool antialias)
+void ATSUFont::drawString (CDrawContext* context, const CString& string, const CPoint& point, bool antialias)
 {
 	if (atsuStyle == 0)
 		return;
 
 	CColor fontColor = context->getFontColor ();
 
-	CFStringRef utf8Str = CFStringCreateWithCString (NULL, utf8String, kCFStringEncodingUTF8);
+	const MacString* macString = dynamic_cast<const MacString*> (string.getPlatformString ());
+	CFStringRef utf8Str = macString ? macString->getCFString () : 0;
 	if (utf8Str)
 	{
 		CGDrawContext* cgDrawContext = dynamic_cast<CGDrawContext*> (context);
@@ -290,17 +291,17 @@ void ATSUFont::drawString (CDrawContext* context, UTF8StringPtr utf8String, cons
 			
 			cgDrawContext->releaseCGContext (cgContext);
 		}
-		CFRelease (utf8Str);
 	}
 }
 
 //-----------------------------------------------------------------------------
-CCoord ATSUFont::getStringWidth (CDrawContext* context, UTF8StringPtr utf8String, bool antialias)
+CCoord ATSUFont::getStringWidth (CDrawContext* context, const CString& string, bool antialias)
 {
 	CCoord result = 0;
 	if (atsuStyle)
 	{
-		CFStringRef utf8Str = CFStringCreateWithCString (NULL, utf8String, kCFStringEncodingUTF8);
+		const MacString* macString = dynamic_cast<const MacString*> (string.getPlatformString ());
+		CFStringRef utf8Str = macString ? macString->getCFString () : 0;
 		if (utf8Str)
 		{
 			OSStatus status;
@@ -335,7 +336,6 @@ CCoord ATSUFont::getStringWidth (CDrawContext* context, UTF8StringPtr utf8String
 			{
 				cgDrawContext->releaseCGContext (cgContext);
 			}
-			CFRelease (utf8Str);
 		}
 	}
 	return result;

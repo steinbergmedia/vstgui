@@ -38,6 +38,7 @@
 
 #if WINDOWS
 
+#include "winstring.h"
 #include "gdiplusdrawcontext.h"
 
 namespace VSTGUI {
@@ -105,44 +106,47 @@ GdiPlusFont::~GdiPlusFont ()
 }
 
 //-----------------------------------------------------------------------------
-void GdiPlusFont::drawString (CDrawContext* context, const char* utf8String, const CPoint& _point, bool antialias)
+void GdiPlusFont::drawString (CDrawContext* context, const CString& string, const CPoint& _point, bool antialias)
 {
 	CPoint point (_point);
 	point.offset (context->getOffset ().x, context->getOffset ().y);
 	Gdiplus::Graphics* pGraphics = getGraphics (context);
 	Gdiplus::Brush* pFontBrush = getFontBrush (context);
-	if (pGraphics && font && pFontBrush)
+	const WinString* winString = dynamic_cast<const WinString*> (string.getPlatformString ());
+	if (pGraphics && font && pFontBrush && winString)
 	{
-		UTF8StringHelper stringText (utf8String);
 		pGraphics->SetTextRenderingHint (antialias ? Gdiplus::TextRenderingHintClearTypeGridFit : Gdiplus::TextRenderingHintSystemDefault);
 		Gdiplus::PointF gdiPoint ((Gdiplus::REAL)point.x, (Gdiplus::REAL)point.y + 1.f - font->GetHeight (pGraphics->GetDpiY ()));
-		pGraphics->DrawString (stringText, -1, font, gdiPoint, pFontBrush);
+		pGraphics->DrawString (winString->getWideString (), -1, font, gdiPoint, pFontBrush);
 	}
 }
 
 //-----------------------------------------------------------------------------
-CCoord GdiPlusFont::getStringWidth (CDrawContext* context, const char* utf8String, bool antialias)
+CCoord GdiPlusFont::getStringWidth (CDrawContext* context, const CString& string, bool antialias)
 {
 	CCoord result = 0;
-	Gdiplus::Graphics* pGraphics = context ? getGraphics (context) : 0;
-	HDC hdc = 0;
-	if (context == 0)
+	const WinString* winString = dynamic_cast<const WinString*> (string.getPlatformString ());
+	if (winString)
 	{
-		hdc = CreateCompatibleDC (0);
-		pGraphics = new Gdiplus::Graphics (hdc);
-	}
-	if (pGraphics && font)
-	{
-		UTF8StringHelper stringText (utf8String);
-		Gdiplus::PointF gdiPoint (0., 0.);
-		Gdiplus::RectF resultRect;
-		pGraphics->MeasureString (stringText, -1, font, gdiPoint, &resultRect);
-		result = (CCoord)resultRect.Width;
-	}
-	if (hdc)
-	{
-		delete pGraphics;
-		DeleteDC (hdc);
+		Gdiplus::Graphics* pGraphics = context ? getGraphics (context) : 0;
+		HDC hdc = 0;
+		if (context == 0)
+		{
+			hdc = CreateCompatibleDC (0);
+			pGraphics = new Gdiplus::Graphics (hdc);
+		}
+		if (pGraphics && font)
+		{
+			Gdiplus::PointF gdiPoint (0., 0.);
+			Gdiplus::RectF resultRect;
+			pGraphics->MeasureString (winString->getWideString (), -1, font, gdiPoint, &resultRect);
+			result = (CCoord)resultRect.Width;
+		}
+		if (hdc)
+		{
+			delete pGraphics;
+			DeleteDC (hdc);
+		}
 	}
 	return result;
 }

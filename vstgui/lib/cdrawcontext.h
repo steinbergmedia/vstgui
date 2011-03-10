@@ -121,6 +121,7 @@ enum CDrawStyle
 class CBitmap;
 class CGraphicsPath;
 class CGradient;
+class CString;
 struct CGraphicsTransform;
 
 //-----------------------------------------------------------------------------
@@ -257,6 +258,9 @@ protected:
 
 	virtual void init ();
 
+	const CString& getDrawString (UTF8StringPtr string);
+	void clearDrawString ();
+
 	/// @cond ignore
 	struct CDrawContextState
 	{
@@ -274,6 +278,7 @@ protected:
 	};
 	/// @endcond
 
+	CString* drawStringHelper;
 	CRect surfaceRect;
 
 	CDrawContextState currentState;

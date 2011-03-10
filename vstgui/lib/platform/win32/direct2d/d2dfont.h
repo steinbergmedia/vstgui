@@ -60,10 +60,10 @@ protected:
 
 	IFontPainter* getPainter () { return this; }
 
-	void drawString (CDrawContext* context, const char* utf8String, const CPoint& p, bool antialias = true);
-	CCoord getStringWidth (CDrawContext* context, const char* utf8String, bool antialias = true);
+	void drawString (CDrawContext* context, const CString& string, const CPoint& p, bool antialias = true);
+	CCoord getStringWidth (CDrawContext* context, const CString& string, bool antialias = true);
 
-	IDWriteTextLayout* createTextLayout (const char* utf8Text);
+	IDWriteTextLayout* createTextLayout (const CString& string);
 
 	IDWriteTextFormat* textFormat;
 	double ascent;
