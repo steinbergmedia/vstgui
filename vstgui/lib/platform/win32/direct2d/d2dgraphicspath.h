@@ -82,6 +82,7 @@ protected:
 		{
 			double startAngle;
 			double endAngle;
+			bool clockwise;
 		};
 		struct Curve
 		{
