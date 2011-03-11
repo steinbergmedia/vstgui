@@ -83,7 +83,13 @@ void D2DGraphicsPath::addArc (const CRect& rect, double startAngle, double endAn
 	in.rect = rect;
 	in.arc.startAngle = startAngle;
 	in.arc.endAngle = endAngle;
+	in.arc.clockwise = clockwise;
 	instructions.push_back (in);
+	CRect or (rect);
+	or.originize ();
+	CPoint center = or.getCenter ();
+	currentPosition.x = rect.left + center.x + center.x * cos (endAngle * M_PI / 180.);
+	currentPosition.y = rect.top + center.y + center.y * sin (endAngle * M_PI / 180.);
 	dirty = true;
 }
 
@@ -312,9 +318,40 @@ ID2D1PathGeometry* D2DGraphicsPath::getPath (int32_t fillMode)
 			}
 			case Instruction::kArc:
 			{
-//				D2D1_ARC_SEGMENT arc;
-//				sink->AddArc (arc);
-				// TODO: AddArc
+				// TODO: Finish AddArc. non clickwise not implemented yet
+				bool clockwise = (*it).arc.clockwise; // TODO !
+				double startAngle = (*it).arc.startAngle;
+				double endAngle = (*it).arc.endAngle;
+				CRect or ((*it).rect);
+				CRect r (or);
+				or.originize ();
+				CPoint center = or.getCenter ();
+				CPoint start;
+				start.x = r.left + center.x + center.x * cos (radians (startAngle));
+				start.y = r.top + center.y + center.y * sin (radians (startAngle));
+				if (!figureOpen)
+				{
+					sink->BeginFigure (makeD2DPoint (start), D2D1_FIGURE_BEGIN_FILLED);
+					figureOpen = true;
+				}
+				else if (start != pos)
+				{
+					sink->AddLine (makeD2DPoint (start));
+				}
+				double rotationAngle = startAngle - endAngle;
+				CPoint endPoint;
+				endPoint.x = r.left + center.x + center.x * cos (radians (endAngle));
+				endPoint.y = r.top + center.y + center.y * sin (radians (endAngle));
+
+				D2D1_ARC_SEGMENT arc;
+				arc.size = makeD2DSize (r.getWidth ()/2., r.getHeight ()/2.);
+				arc.rotationAngle = (FLOAT)(rotationAngle);
+				arc.sweepDirection = D2D1_SWEEP_DIRECTION_CLOCKWISE;
+				arc.point = makeD2DPoint (endPoint);
+				arc.arcSize = rotationAngle <= 180. ? D2D1_ARC_SIZE_SMALL : D2D1_ARC_SIZE_LARGE; 
+				sink->AddArc (arc);
+
+				pos = endPoint;
 				break;
 			}
 			case Instruction::kCloseSubpath:

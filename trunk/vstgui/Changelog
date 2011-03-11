@@ -1,3 +1,7 @@
+2011-03-11 arne
+
+	* Direct2D graphics path addArc method implementation. clockwise setting not yet.
+	
 2011-03-10 arne
 
 	* new font face kStrikethroughFace (thanks to Bick Tick for this)

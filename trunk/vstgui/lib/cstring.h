@@ -42,7 +42,10 @@ namespace VSTGUI {
 class IPlatformString;
 
 //-----------------------------------------------------------------------------
-/** TODO: Doc 
+/** @brief a string holder class
+
+	It's main propose is to hold a platform dependent string represenation when the string is used more than once.
+	You should currently don't use this, it's used internally.
 */
 //-----------------------------------------------------------------------------
 class CString : public CBaseObject
