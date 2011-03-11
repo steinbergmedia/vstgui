@@ -44,34 +44,42 @@ class ISplitViewSeparatorDrawer;
 class CSplitViewSeparatorView;
 
 //-----------------------------------------------------------------------------
-/** TODO: Doc  
+/** @brief a split container view with separators between its child views
+	@ingroup containerviews
+	@ingroup new_in_4_0
 */
 //-----------------------------------------------------------------------------
 class CSplitView : public CViewContainer
 {
 public:
 	enum Style {
-		kHorizontal,
-		kVertical
+		kHorizontal,			///< subviews will be horizontally arranged
+		kVertical				///< subviews will be vertically arranged
 	};
 
+	/** Method how to resize the subviews if the size of the split view changes */
 	enum ResizeMethod {
-		kResizeFirstView,
-		kResizeLastView,
-		kResizeAllViews,
+		kResizeFirstView,		///< only the first view will be resized
+		kResizeLastView,		///< only the last view will be resized
+		kResizeAllViews,		///< all views will be resized equally
 	};
 	
 	CSplitView (const CRect& size, Style style = kHorizontal, CCoord separatorWidth = 10., ISplitViewSeparatorDrawer* drawer = 0);
 	~CSplitView ();
 
-	virtual void setStyle (Style s);
-	Style getStyle () const { return style; }
+	//-----------------------------------------------------------------------------
+	/// @name CSplitView Methods
+	//-----------------------------------------------------------------------------
+	//@{
+	virtual void setStyle (Style s);								///< set the style of the split view, see @ref CSplitView::Style
+	Style getStyle () const { return style; }						///< get the style of the split view, see @ref CSplitView::Style
 
-	virtual void setResizeMethod (ResizeMethod method);
-	ResizeMethod getResizeMethod () const { return resizeMethod; }
+	virtual void setResizeMethod (ResizeMethod method);				///< set the resize method, see @ref CSplitView::ResizeMethod
+	ResizeMethod getResizeMethod () const { return resizeMethod; }	///< get the resize method, see @ref CSplitView::ResizeMethod
 
-	virtual void setSeparatorWidth (CCoord width);
-	CCoord getSeparatorWidth () const { return separatorWidth; }
+	virtual void setSeparatorWidth (CCoord width);					///< set the width of the separators
+	CCoord getSeparatorWidth () const { return separatorWidth; }	///< get the width of the separators
+	//@}
 	
 	// overrides
 	virtual bool addView (CView* pView);

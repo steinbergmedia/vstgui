@@ -61,7 +61,7 @@ Currently VSTGUI compiles on
 - XP SP 2 (32 and 64 bit)
 - Vista (32 and 64 bit)
 - 7 (32 and 64 bit)
-\par Apple Mac OS X (with gcc 4.0 or gcc 4.2)
+\par Apple Mac OS X (with gcc 4.0/4.2 or Clang 2.0)
 - 10.4 (32 bit)
 - 10.5 (32 and 64 bit)
 - 10.6 (32 and 64 bit)

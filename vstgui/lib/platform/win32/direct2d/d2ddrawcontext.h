@@ -126,6 +126,12 @@ static inline D2D1_POINT_2F makeD2DPoint (const CPoint& p)
 	return dp;
 }
 
+static inline D2D1_SIZE_F makeD2DSize (CCoord width, CCoord height)
+{
+	D2D1_SIZE_F ds = {(FLOAT)width, (FLOAT)height};
+	return ds;
+}
+
 } // namespace
 
 #endif // WINDOWS
