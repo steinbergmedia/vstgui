@@ -260,15 +260,18 @@ bool CControl::checkDefaultValue (CButtonState button)
 {
 	if (button.isLeftButton () && button.getModifierState () & kDefaultValueModifier)
 	{
-		// begin of edit parameter
-		beginEdit ();
-	
-		value = getDefaultValue ();
-		if (isDirty () && listener)
-			listener->valueChanged (this);
+		float defValue = getDefaultValue ();
+		if (defValue != getValue ())
+		{
+			// begin of edit parameter
+			beginEdit ();
+		
+			setValue (defValue, false);
+			valueChanged ();
 
-		// end of edit parameter
-		endEdit ();
+			// end of edit parameter
+			endEdit ();
+		}
 		return true;
 	}
 	return false;

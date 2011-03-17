@@ -1,13 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <vstgui-ui-description version="1">
-	<template autosize="left right top bottom " background-color="black" class="CViewContainer" maxSize="10000, 10000" minSize="240, 160" name="view" origin="0, 0" size="469, 350" transparent="false">
-		<view autosize="left right top bottom " background-color="white" class="CViewContainer" origin="10, 10" size="449, 330" sub-controller="GraphicsViewController" transparent="false">
-			<view autosize="left right top bottom " bitmap="FrameBackground" class="CView" custom-view-name="GraphicsView" origin="10, 10" size="429, 310" transparent="false"/>
-			<view autosize="right top " background-color="groupframe" class="CViewContainer" custom-view-name="FadeViewContainer" origin="309, 40" size="120, 80" transparent="false">
-				<view autosize="right top " autosize-to-fit="false" background-offset="0, 0" boxfill-color="white" boxframe-color="black" checkmark-color="#ff0000ff" class="CCheckBox" control-tag="StrokePath" default-value="0.5" draw-crossbox="false" font-color="black" max-value="1" min-value="0" origin="10, 50" size="100, 20" title="Stroke Path" transparent="true" wheel-inc-value="0.1"/>
-				<view autosize="right top " autosize-to-fit="false" background-offset="0, 0" boxfill-color="white" boxframe-color="black" checkmark-color="#ff0000ff" class="CCheckBox" control-tag="FillGradient" default-value="0.5" draw-crossbox="false" font-color="black" max-value="1" min-value="0" origin="10, 30" size="100, 20" title="Fill Gradient" transparent="true" wheel-inc-value="0.1"/>
-				<view autosize="right top " autosize-to-fit="false" background-offset="0, 0" boxfill-color="white" boxframe-color="black" checkmark-color="#ff0000ff" class="CCheckBox" control-tag="Rotate" default-value="0.5" draw-crossbox="false" font-color="black" max-value="1" min-value="0" origin="10, 10" size="100, 20" title="Rotate" transparent="true" wheel-inc-value="0.1"/>
+	<template autosize="left right top bottom " background-color="black" class="CViewContainer" maxSize="10000, 10000" minSize="240, 160" name="view" origin="0, 0" size="240, 160" transparent="false">
+		<view autosize="left right top bottom " background-color="white" class="CViewContainer" origin="10, 10" size="220, 140" sub-controller="GraphicsViewController" transparent="false">
+			<view autosize="left right top bottom " bitmap="FrameBackground" class="CView" custom-view-name="GraphicsView" origin="10, 10" size="200, 100" transparent="false"/>
+			<view autosize="right top " background-color="groupframe" class="CViewContainer" custom-view-name="FadeViewContainer" origin="80, 40" size="120, 80" transparent="false">
+				<view autosize="right top " autosize-to-fit="false" background-offset="0, 0" boxfill-color="white" boxframe-color="black" checkmark-color="#ff0000ff" class="CCheckBox" control-tag="StrokePath" default-value="0.5" draw-crossbox="false" font="~ SystemFont" font-color="black" max-value="1" min-value="0" origin="10, 50" size="100, 20" title="Stroke Path" transparent="true" wheel-inc-value="0.1"/>
+				<view autosize="right top " autosize-to-fit="false" background-offset="0, 0" boxfill-color="white" boxframe-color="black" checkmark-color="#ff0000ff" class="CCheckBox" control-tag="FillGradient" default-value="0.5" draw-crossbox="false" font="~ SystemFont" font-color="black" max-value="1" min-value="0" origin="10, 30" size="100, 20" title="Fill Gradient" transparent="true" wheel-inc-value="0.1"/>
+				<view autosize="right top " autosize-to-fit="false" background-offset="0, 0" boxfill-color="white" boxframe-color="black" checkmark-color="#ff0000ff" class="CCheckBox" control-tag="Rotate" default-value="0.5" draw-crossbox="false" font="~ SystemFont" font-color="black" max-value="1" min-value="0" origin="10, 10" size="100, 20" title="Rotate" transparent="true" wheel-inc-value="0.1"/>
 			</view>
+			<view autosize="left bottom " back-color="~ TransparentCColor" background-offset="0, 0" class="COptionMenu" control-tag="GraphicsPath1" default-value="0" font="~ NormalFont" font-antialias="true" font-color="black" frame-color="black" max-value="2" menu-check-style="false" menu-popup-style="false" min-value="0" origin="20, 110" shadow-color="~ RedCColor" size="90, 20" style-3D-in="false" style-3D-out="false" style-no-draw="false" style-no-frame="false" style-no-text="false" style-shadow-text="false" text-alignment="center" text-inset="0, 0" transparent="false" wheel-inc-value="0.1"/>
+			<view autosize="right bottom " back-color="~ TransparentCColor" background-offset="0, 0" class="COptionMenu" control-tag="GraphicsPath2" default-value="0" font="~ NormalFont" font-antialias="true" font-color="black" frame-color="black" max-value="2" menu-check-style="false" menu-popup-style="false" min-value="0" origin="110, 110" shadow-color="~ RedCColor" size="90, 20" style-3D-in="false" style-3D-out="false" style-no-draw="false" style-no-frame="false" style-no-text="false" style-shadow-text="false" text-alignment="center" text-inset="0, 0" transparent="false" wheel-inc-value="0.1"/>
 		</view>
 	</template>
 	<colors>
@@ -34,10 +36,13 @@
 		<bitmap name="vumeter_back" path="vumeter_back.bmp"/>
 		<bitmap name="vumeter_front" path="vumeter_front.bmp"/>
 	</bitmaps>
-	<fonts/>
+	<fonts>
+	</fonts>
 	<control-tags>
 		<control-tag name="Rotate" tag="0"/>
 		<control-tag name="FillGradient" tag="1"/>
 		<control-tag name="StrokePath" tag="2"/>
+		<control-tag name="GraphicsPath1" tag="20000"/>
+		<control-tag name="GraphicsPath2" tag="20001"/>
 	</control-tags>
 </vstgui-ui-description>

@@ -109,6 +109,7 @@ public:
 		context->setFont (kSystemFont);
 		context->setFontColor (value > 0.5 ? kWhiteCColor : kBlackCColor);
 		context->drawString (title.c_str (), size);
+		setDirty (false);
 	}
 
 	int32_t onKeyDown (VstKeyCode& keyCode)

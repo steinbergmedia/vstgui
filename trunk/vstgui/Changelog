@@ -1,3 +1,8 @@
+2011-03-16 arne
+
+	* CGraphicsPath redesign
+	* fix an issue with CScrollView and focus view drawing
+
 2011-03-11 arne
 
 	* Direct2D graphics path addArc method implementation. clockwise setting not yet.

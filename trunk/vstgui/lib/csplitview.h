@@ -93,7 +93,6 @@ public:
 	virtual bool attached (CView* parent);
 
 	bool requestNewSeparatorSize (CSplitViewSeparatorView* separatorView, const CRect& newSize);
-	void onSeparatorDoubleClick (CSplitViewSeparatorView* separatorView);
 //-----------------------------------------------------------------------------
 protected:
 	void resizeFirstView (CPoint diff);
@@ -107,24 +106,20 @@ protected:
 };
 
 //-----------------------------------------------------------------------------
-/** Extension to IController 
-	TODO: Doc
+/** Extension to IController. 
+	controls the size of the subviews of the split view
 */
 //-----------------------------------------------------------------------------
 class ISplitViewController
 {
 public:
-	/** TODO: Doc 
-	*/
-	virtual bool getSplitViewSizeConstraint (int32_t index, CCoord& minWidth, CCoord& maxWidth, CSplitView* splitView) = 0;
-	/** TODO: Doc 
-	*/
+	/** return the minimum and maximum size (width or height) of a view. */
+	virtual bool getSplitViewSizeConstraint (int32_t index, CCoord& minSize, CCoord& maxSize, CSplitView* splitView) = 0;
+	/** return the separator drawer. */
 	virtual ISplitViewSeparatorDrawer* getSplitViewSeparatorDrawer () = 0;
-	/** TODO: Doc 
-	*/
+	/** store the size of the view. */
 	virtual bool storeViewSize (int32_t index, const CCoord& size, CSplitView* splitView) = 0;
-	/** TODO: Doc 
-	*/
+	/** restore the size of the view. */
 	virtual bool restoreViewSize (int32_t index, CCoord& size, CSplitView* splitView) = 0;
 };
 

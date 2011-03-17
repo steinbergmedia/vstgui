@@ -155,6 +155,7 @@ void CoreTextFont::drawString (CDrawContext* context, const CString& string, con
 				if (cgContext)
 				{
 					CGContextSetShouldAntialias (cgContext, antialias);
+					CGContextSetShouldSmoothFonts (cgContext, true);
 					CGContextSetTextPosition (cgContext, point.x, point.y);
 					CTLineDraw (line, cgContext);
 					if (style & kUnderlineFace)
