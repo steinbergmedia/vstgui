@@ -576,18 +576,6 @@ bool CScrollView::removeAll (bool withForget)
 }
 
 //-----------------------------------------------------------------------------
-bool CScrollView::isChild (CView *pView) const
-{
-	return sc->isChild (pView);
-}
-
-//-----------------------------------------------------------------------------
-bool CScrollView::isChild (CView* pView, bool deep) const
-{
-	return sc->isChild (pView, deep);
-}
-
-//-----------------------------------------------------------------------------
 int32_t CScrollView::getNbViews () const
 {
 	return sc->getNbViews ();

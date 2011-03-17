@@ -22,10 +22,13 @@ class GraphicsView : public CView, public IAnimationTarget
 {
 public:
 	GraphicsView ();
+	~GraphicsView ();
 	
 	void setRotation (double angle) { pathRotation = angle; invalid (); }
 	void setFillGradient (bool state) { fillGradient = state; invalid (); }
 	void setStrokePath (bool state) { strokePath = state; invalid (); }
+	void setPathOne (int32_t index);
+	void setPathTwo (int32_t index);
 	
 	void draw (CDrawContext *pContext);
 
@@ -36,13 +39,25 @@ public:
 	void animationStart (CView* view, const char* name);
 	void animationTick (CView* view, const char* name, float pos);
 	void animationFinished (CView* view, const char* name, bool wasCanceled);
+	
+	enum {
+		kStarPath,
+		kBezierPath,
+		kArcPath,
+		kNumPaths
+	};
+
 protected:
-	void buildStarPath (CDrawContext *pContext);
-	void buildBezierPath (CDrawContext *pContext);
+	static CGraphicsPath* buildStarPath (CDrawContext *pContext);
+	static CGraphicsPath* buildBezierPath (CDrawContext *pContext);
+	static CGraphicsPath* buildArcPath (CDrawContext *pContext);
 
 	CBitmap* bitmap2;
-	CGraphicsPath* starPath;
-	CGraphicsPath* bezierPath;
+
+	CGraphicsPath* path[kNumPaths];
+	int32_t path1Index;
+	int32_t path2Index;
+
 	CGradient* gradient;
 	double pathRotation;
 	bool fillGradient;
@@ -93,10 +108,16 @@ tresult PLUGIN_API GraphicsTestController::initialize (FUnknown* context)
 	if (res == kResultTrue)
 	{
 		// add ui parameters
-//		StringListParameter* slp = new StringListParameter (USTRING("Animation Switch"), 20000);
-//		slp->appendString (USTRING("On"));
-//		slp->appendString (USTRING("Off"));
-//		uiParameters.addParameter (slp);
+		StringListParameter* slp = new StringListParameter (USTRING("GraphicsPath1"), 20000);
+		slp->appendString (USTRING("Star"));
+		slp->appendString (USTRING("Bezier"));
+		slp->appendString (USTRING("Arc"));
+		uiParameters.addParameter (slp);
+		slp = new StringListParameter (USTRING("GraphicsPath2"), 20001);
+		slp->appendString (USTRING("Star"));
+		slp->appendString (USTRING("Bezier"));
+		slp->appendString (USTRING("Arc"));
+		uiParameters.addParameter (slp);
 	}
 	return res;
 }
@@ -140,6 +161,15 @@ CView* GraphicsViewController::verifyView (CView* view, const UIAttributes& attr
 {
 	if (graphicsView == 0)
 		graphicsView = dynamic_cast<GraphicsView*> (view);
+	CControl* control = dynamic_cast<CControl*> (view);
+	if (control)
+	{
+		if (control->getTag () == 20000 || control->getTag () == 20001)
+		{
+			control->addListener (this);
+			valueChanged (control);
+		}
+	}
 	return DelegationController::verifyView (view, attributes, description);
 }
 
@@ -148,7 +178,8 @@ CControlListener* GraphicsViewController::getControlListener (const char* contro
 {
 	if (strcmp (controlTagName, "Rotate") == 0 
 	 || strcmp (controlTagName, "FillGradient") == 0
-	 || strcmp (controlTagName, "StrokePath") == 0)
+	 || strcmp (controlTagName, "StrokePath") == 0
+	)
 	{
 		return this;
 	}
@@ -185,6 +216,16 @@ void GraphicsViewController::valueChanged (CControl* pControl)
 			graphicsView->setStrokePath (pControl->getValue () > 0.f);
 			break;
 		}
+		case 20000:
+		{
+			graphicsView->setPathOne (pControl->getValue ());
+			break;
+		}
+		case 20001:
+		{
+			graphicsView->setPathTwo (pControl->getValue ());
+			break;
+		}
 	}
 }
 
@@ -193,13 +234,20 @@ void GraphicsViewController::valueChanged (CControl* pControl)
 //------------------------------------------------------------------------
 GraphicsView::GraphicsView ()
 : CView (CRect (0, 0, 0, 0))
-, starPath (0)
-, bezierPath (0)
 , gradient (0)
 , pathRotation (0)
 , fillGradient (false)
 , strokePath (false)
 , bitmap2 (0)
+, path1Index (0)
+, path2Index (1)
+{
+	for (int32_t i = 0; i < kNumPaths; i++)
+		path[i] = 0;
+}
+
+//------------------------------------------------------------------------
+GraphicsView::~GraphicsView ()
 {
 }
 
@@ -207,18 +255,23 @@ GraphicsView::GraphicsView ()
 void GraphicsView::draw (CDrawContext *pContext)
 {
 	CView::draw (pContext);
-	buildStarPath (pContext);
-	buildBezierPath (pContext);
-	if (starPath == 0 || bezierPath == 0)
+	if (path[kStarPath] == 0)
+		path[kStarPath] = buildStarPath (pContext);
+	if (path[kBezierPath] == 0)
+		path[kBezierPath] = buildBezierPath (pContext);
+	if (path[kArcPath] == 0)
+		path[kArcPath] = buildArcPath (pContext);
+	if (path[path1Index] == 0 || path[path2Index] == 0)
 		return;
 	CGraphicsPath* drawPath = pContext->createGraphicsPath ();
 	if (drawPath)
 	{
-		drawPath->addPath (*bezierPath);
+		drawPath->addPath (*path[path1Index]);
+		drawPath->closeSubpath ();
 		CGraphicsTransform t;
 		t.rotate (90.-pathRotation*2.);
 		t.scale (1.3, 1.3);
-		drawPath->addPath (*starPath, &t);
+		drawPath->addPath (*path[path2Index], &t);
 
 		pContext->setDrawMode (kAntialias);
 		pContext->setLineWidth (getWidth () / 100.);
@@ -254,41 +307,69 @@ void GraphicsView::draw (CDrawContext *pContext)
 }
 
 //------------------------------------------------------------------------
-void GraphicsView::buildStarPath (CDrawContext *pContext)
+CGraphicsPath* GraphicsView::buildStarPath (CDrawContext *pContext)
 {
-	if (starPath)
-		return;
-	starPath = pContext->createGraphicsPath ();
+	CGraphicsPath* starPath = pContext->createGraphicsPath ();
 	if (starPath)
 	{
-		starPath->addLine (CPoint (-0.4, -0.1), CPoint (-0.1, -0.1));
-		starPath->addLine (starPath->getCurrentPosition (), CPoint (0.0, -0.45));
-		starPath->addLine (starPath->getCurrentPosition (), CPoint (0.1, -0.1));
-		starPath->addLine (starPath->getCurrentPosition (), CPoint (0.4, -0.1));
-		starPath->addLine (starPath->getCurrentPosition (), CPoint (0.1, 0.1));
-		starPath->addLine (starPath->getCurrentPosition (), CPoint (0.3, 0.45));
-		starPath->addLine (starPath->getCurrentPosition (), CPoint (0.0, 0.25));
-		starPath->addLine (starPath->getCurrentPosition (), CPoint (-0.3, 0.45));
-		starPath->addLine (starPath->getCurrentPosition (), CPoint (-0.1, 0.1));
-		starPath->addLine (starPath->getCurrentPosition (), CPoint (-0.4, -0.1));
+		starPath->beginSubpath (CPoint (-0.4, -0.1));
+		starPath->addLine (CPoint (-0.1, -0.1));
+		starPath->addLine (CPoint (0.0, -0.45));
+		starPath->addLine (CPoint (0.1, -0.1));
+		starPath->addLine (CPoint (0.4, -0.1));
+		starPath->addLine (CPoint (0.1, 0.1));
+		starPath->addLine (CPoint (0.3, 0.45));
+		starPath->addLine (CPoint (0.0, 0.25));
+		starPath->addLine (CPoint (-0.3, 0.45));
+		starPath->addLine (CPoint (-0.1, 0.1));
+		starPath->addLine (CPoint (-0.4, -0.1));
 		//starPath->closeSubpath ();
 	}
+	return starPath;
 }
 
 //------------------------------------------------------------------------
-void GraphicsView::buildBezierPath (CDrawContext *pContext)
+CGraphicsPath* GraphicsView::buildBezierPath (CDrawContext *pContext)
 {
-	if (bezierPath)
-		return;
-	bezierPath = pContext->createGraphicsPath ();
+	CGraphicsPath* bezierPath = pContext->createGraphicsPath ();
 	if (bezierPath)
 	{
-		bezierPath->addCurve (CPoint (-0.5, -0.5), CPoint (0, -0.2), CPoint (0, -0.2), CPoint (0.5, -0.5));
-		bezierPath->addCurve (bezierPath->getCurrentPosition (), CPoint (0.4, 0), CPoint (0.4, 0), CPoint (0.5, 0.5));
-		bezierPath->addCurve (bezierPath->getCurrentPosition (), CPoint (0, 0.2), CPoint (0, 0.2), CPoint (-0.5, 0.5));
-		bezierPath->addCurve (bezierPath->getCurrentPosition (), CPoint (-0.4, 0), CPoint (-0.4, 0), CPoint (-0.5, -0.5));
+		bezierPath->beginSubpath (CPoint (-0.5, -0.5));
+		bezierPath->addBezierCurve (CPoint (0, -0.2), CPoint (0, -0.2), CPoint (0.5, -0.5));
+		bezierPath->addBezierCurve (CPoint (0.4, 0), CPoint (0.4, 0), CPoint (0.5, 0.5));
+		bezierPath->addBezierCurve (CPoint (0, 0.2), CPoint (0, 0.2), CPoint (-0.5, 0.5));
+		bezierPath->addBezierCurve (CPoint (-0.4, 0), CPoint (-0.4, 0), CPoint (-0.5, -0.5));
 		bezierPath->closeSubpath ();
 	}
+	return bezierPath;
+}
+
+//------------------------------------------------------------------------
+CGraphicsPath* GraphicsView::buildArcPath (CDrawContext *pContext)
+{
+	CGraphicsPath* arcPath = pContext->createGraphicsPath ();
+	if (arcPath)
+	{
+		CRect r (0.,0.,0.5,0.5);
+#if 1
+		arcPath->addEllipse (r);
+		arcPath->closeSubpath ();
+#else
+		arcPath->addArc (r, 0, 30, false);
+//		arcPath->closeSubpath ();
+		arcPath->addArc (r, 60, 90, false);
+//		arcPath->closeSubpath ();
+		arcPath->addArc (r, 120, 150, false);
+//		arcPath->closeSubpath ();
+		arcPath->addArc (r, 180, 210, false);
+//		arcPath->closeSubpath ();
+		arcPath->addArc (r, 240, 270, false);
+//		arcPath->closeSubpath ();
+		arcPath->addArc (r, 200, 330, false);
+//		arcPath->closeSubpath ();
+#endif
+	}
+	return arcPath;
 }
 
 //------------------------------------------------------------------------
@@ -339,8 +420,8 @@ bool GraphicsView::attached (CView* parent)
 	bool result = CView::attached (parent);
 	if (result)
 	{
-		remember ();
-		addAnimation ("Saturation", this, new LinearTimingFunction (15000));
+//		remember ();
+//		addAnimation ("Saturation", this, new LinearTimingFunction (15000));
 	}
 	return result;
 }
@@ -348,15 +429,13 @@ bool GraphicsView::attached (CView* parent)
 //------------------------------------------------------------------------
 bool GraphicsView::removed (CView* parent)
 {
-	if (starPath)
+	for (int32_t i = 0; i < kNumPaths; i++)
 	{
-		starPath->forget ();
-		starPath = 0;
-	}
-	if (bezierPath)
-	{
-		bezierPath->forget ();
-		bezierPath = 0;
+		if (path[i])
+		{
+			path[i]->forget ();
+			path[i] = 0;
+		}
 	}
 	if (gradient)
 	{
@@ -364,6 +443,26 @@ bool GraphicsView::removed (CView* parent)
 		gradient = 0;
 	}
 	return CView::removed (parent);
+}
+
+//------------------------------------------------------------------------
+void GraphicsView::setPathOne (int32_t index)
+{
+	if (index < kNumPaths)
+	{
+		path1Index = index;
+		invalid ();
+	}
+}
+
+//------------------------------------------------------------------------
+void GraphicsView::setPathTwo (int32_t index)
+{
+	if (index < kNumPaths)
+	{
+		path2Index = index;
+		invalid ();
+	}
 }
 
 } // namespace

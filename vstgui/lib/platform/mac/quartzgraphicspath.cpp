@@ -56,14 +56,14 @@ CGAffineTransform QuartzGraphicsPath::createCGAfflineTransform (const CGraphicsT
 
 //-----------------------------------------------------------------------------
 QuartzGraphicsPath::QuartzGraphicsPath ()
-: path (CGPathCreateMutable ())
+: path (0)
 {
 }
 
 //-----------------------------------------------------------------------------
 QuartzGraphicsPath::~QuartzGraphicsPath ()
 {
-	CFRelease (path);
+	dirty ();
 }
 
 //-----------------------------------------------------------------------------
@@ -77,99 +77,92 @@ CGradient* QuartzGraphicsPath::createGradient (double color1Start, double color2
 }
 
 //-----------------------------------------------------------------------------
-void QuartzGraphicsPath::closeSubpath ()
+CGPathRef QuartzGraphicsPath::getCGPathRef ()
 {
-	CGPathCloseSubpath (path);
-}
-
-//-----------------------------------------------------------------------------
-void QuartzGraphicsPath::addArc (const CRect& rect, double startAngle, double endAngle, bool clockwise)
-{
-	CGFloat centerX = rect.left + rect.getWidth () / 2.;
-	CGFloat centerY = rect.top + rect.getHeight () / 2.;
-
-	CGAffineTransform transform = CGAffineTransformMakeTranslation (centerX, centerY);
-	transform = CGAffineTransformScale (transform, rect.getWidth () / 2, rect.getHeight () / 2);
-	
-	if (CGPathIsEmpty (path))
-		CGPathMoveToPoint (path, &transform, cos (radians (startAngle)), sin (radians (startAngle)));
-
-	CGPathAddArc (path, &transform, 0, 0, 1, radians (startAngle), radians (endAngle), clockwise);
-}
-
-//-----------------------------------------------------------------------------
-void QuartzGraphicsPath::addCurve (const CPoint& start, const CPoint& control1, const CPoint& control2, const CPoint& end)
-{
-	if (CGPathIsEmpty (path) || getCurrentPosition () != start)
-		CGPathMoveToPoint (path, 0, start.x, start.y);
-	CGPathAddCurveToPoint (path, 0, control1.x, control1.y, control2.x, control2.y, end.x, end.y);
-}
-
-//-----------------------------------------------------------------------------
-void QuartzGraphicsPath::addEllipse (const CRect& rect)
-{
-	CGPathAddEllipseInRect (path, 0, CGRectMake (rect.left, rect.top, rect.getWidth (), rect.getHeight ()));
-}
-
-//-----------------------------------------------------------------------------
-void QuartzGraphicsPath::addLine (const CPoint& start, const CPoint& end)
-{
-	if (CGPathIsEmpty (path) || getCurrentPosition () != start)
-		CGPathMoveToPoint (path, 0, start.x, start.y);
-	CGPathAddLineToPoint (path, 0, end.x, end.y);
-}
-
-//-----------------------------------------------------------------------------
-void QuartzGraphicsPath::addRect (const CRect& rect)
-{
-	CGRect r = CGRectMake (rect.left, rect.top, rect.getWidth (), rect.getHeight ());
-	CGPathAddRect (path, 0, r);
-}
-
-//-----------------------------------------------------------------------------
-void QuartzGraphicsPath::addPath (const CGraphicsPath& inPath, CGraphicsTransform* t)
-{
-	if (t)
+	if (path == 0)
 	{
-		CGAffineTransform transform = createCGAfflineTransform (*t);
-		if (&inPath == this)
+		path = CGPathCreateMutable ();
+		for (std::list<Element>::const_iterator it = elements.begin (); it != elements.end (); it++)
 		{
-			CGPathRef pathCopy = CGPathCreateCopy (path);
-			CGPathAddPath (path, &transform, pathCopy);
-			CFRelease (pathCopy);
-		}
-		else
-		{
-			const QuartzGraphicsPath* qp = dynamic_cast<const QuartzGraphicsPath*> (&inPath);
-			if (qp)
-				CGPathAddPath (path, &transform, qp->getCGPathRef ());
+			Element e = (*it);
+			switch (e.type)
+			{
+				case Element::kArc:
+				{
+					CCoord radiusX = (e.instruction.arc.rect.right - e.instruction.arc.rect.left) / 2.;
+					CCoord radiusY = (e.instruction.arc.rect.bottom - e.instruction.arc.rect.top) / 2.;
+					
+					CGFloat centerX = e.instruction.arc.rect.left + radiusX;
+					CGFloat centerY = e.instruction.arc.rect.top + radiusY;
+
+					CGAffineTransform transform = CGAffineTransformMakeTranslation (centerX, centerY);
+					transform = CGAffineTransformScale (transform, radiusX, radiusY);
+					
+					if (CGPathIsEmpty (path))
+						CGPathMoveToPoint (path, &transform, cos (radians (e.instruction.arc.startAngle)), sin (radians (e.instruction.arc.startAngle)));
+
+					CGPathAddArc (path, &transform, 0, 0, 1, radians (e.instruction.arc.startAngle), radians (e.instruction.arc.endAngle), e.instruction.arc.clockwise);
+					break;
+				}
+				case Element::kEllipse:
+				{
+					CCoord width = e.instruction.rect.right - e.instruction.rect.left;
+					CCoord height = e.instruction.rect.bottom - e.instruction.rect.top;
+					CGPathAddEllipseInRect (path, 0, CGRectMake (e.instruction.rect.left, e.instruction.rect.top, width, height));
+					break;
+				}
+				case Element::kRect:
+				{
+					CCoord width = e.instruction.rect.right - e.instruction.rect.left;
+					CCoord height = e.instruction.rect.bottom - e.instruction.rect.top;
+					CGPathAddRect (path, 0, CGRectMake (e.instruction.rect.left, e.instruction.rect.top, width, height));
+					break;
+				}
+				case Element::kLine:
+				{
+					CGPathAddLineToPoint (path, 0, e.instruction.point.x, e.instruction.point.y);
+					break;
+				}
+				case Element::kBezierCurve:
+				{
+					CGPathAddCurveToPoint (path, 0, e.instruction.curve.control1.x, e.instruction.curve.control1.y, e.instruction.curve.control2.x, e.instruction.curve.control2.y, e.instruction.curve.end.x, e.instruction.curve.end.y);
+					break;
+				}
+				case Element::kBeginSubpath:
+				{
+					CGPathMoveToPoint (path, 0, e.instruction.point.x, e.instruction.point.y);
+					break;
+				}
+				case Element::kCloseSubpath:
+				{
+					CGPathCloseSubpath (path);
+					break;
+				}
+			}
 		}
 	}
-	else
+	return path;
+}
+
+//-----------------------------------------------------------------------------
+void QuartzGraphicsPath::dirty ()
+{
+	if (path)
 	{
-		if (&inPath == this)
-		{
-			CGPathRef pathCopy = CGPathCreateCopy (path);
-			CGPathAddPath (path, 0, pathCopy);
-			CFRelease (pathCopy);
-		}
-		else
-		{
-			const QuartzGraphicsPath* qp = dynamic_cast<const QuartzGraphicsPath*> (&inPath);
-			if (qp)
-				CGPathAddPath (path, 0, qp->getCGPathRef ());
-		}
+		CFRelease (path);
+		path = 0;
 	}
 }
 
 //-----------------------------------------------------------------------------
-CPoint QuartzGraphicsPath::getCurrentPosition () const
+CPoint QuartzGraphicsPath::getCurrentPosition ()
 {
 	CPoint p (0, 0);
 
-	if (!CGPathIsEmpty (path))
+	CGPathRef cgPath = getCGPathRef ();
+	if (cgPath && !CGPathIsEmpty (cgPath))
 	{
-		CGPoint cgPoint = CGPathGetCurrentPoint (path);
+		CGPoint cgPoint = CGPathGetCurrentPoint (cgPath);
 		p.x = cgPoint.x;
 		p.y = cgPoint.y;
 	}
@@ -178,16 +171,19 @@ CPoint QuartzGraphicsPath::getCurrentPosition () const
 }
 
 //-----------------------------------------------------------------------------
-CRect QuartzGraphicsPath::getBoundingBox () const
+CRect QuartzGraphicsPath::getBoundingBox ()
 {
 	CRect r;
 
-	CGRect cgRect = CGPathGetBoundingBox (path);
-	r.left = cgRect.origin.x;
-	r.top = cgRect.origin.y;
-	r.setWidth (cgRect.size.width);
-	r.setHeight (cgRect.size.height);
-	
+	CGPathRef cgPath = getCGPathRef ();
+	if (cgPath)
+	{
+		CGRect cgRect = CGPathGetBoundingBox (cgPath);
+		r.left = cgRect.origin.x;
+		r.top = cgRect.origin.y;
+		r.setWidth (cgRect.size.width);
+		r.setHeight (cgRect.size.height);
+	}
 	return r;
 }
 

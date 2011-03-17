@@ -381,10 +381,11 @@ void D2DDrawContext::drawPolygon (const CPoint *pPoints, int32_t numberOfPoints,
 	{
 		D2DApplyClip clip (this);
 		D2DGraphicsPath path;
-		path.addLine (pPoints[0], pPoints[1]);
+		path.beginSubpath (pPoints[0]);
+		path.addLine (pPoints[1]);
 		for (int32_t i = 2; i < numberOfPoints; i++)
 		{
-			path.addLine (path.getCurrentPosition (), pPoints[i]);
+			path.addLine (pPoints[i]);
 		}
 		if (drawStyle == kDrawFilled || drawStyle == kDrawFilledAndStroked)
 		{
@@ -425,25 +426,15 @@ void D2DDrawContext::drawRect (const CRect &_rect, const CDrawStyle drawStyle)
 //-----------------------------------------------------------------------------
 void D2DDrawContext::drawArc (const CRect& _rect, const float _startAngle, const float _endAngle, const CDrawStyle drawStyle)
 {
-	if (renderTarget)
+	CGraphicsPath* path = createGraphicsPath ();
+	if (path)
 	{
-		CRect rect (_rect);
-		rect.offset (currentState.offset.x, currentState.offset.y);
-
-		// TODO: drawArc
-#if 0
-		float endAngle = _endAngle;
-		if (endAngle < _startAngle)
-			endAngle += 360.f;
-		endAngle = fabs (endAngle - _startAngle);
-		Gdiplus::RectF r ((Gdiplus::REAL)rect.left, (Gdiplus::REAL)rect.top, (Gdiplus::REAL)rect.getWidth (), (Gdiplus::REAL)rect.getHeight ());
-		Gdiplus::GraphicsPath path;
-		path.AddArc (r, _startAngle, endAngle);
+		path->addArc (_rect, _startAngle, _endAngle, false);
 		if (drawStyle == kDrawFilled || drawStyle == kDrawFilledAndStroked)
-			pGraphics->FillPath (pBrush, &path);
+			drawGraphicsPath (path, kPathFilled);
 		if (drawStyle == kDrawStroked || drawStyle == kDrawFilledAndStroked)
-			pGraphics->DrawPath (pPen, &path);
-#endif
+			drawGraphicsPath (path, kPathStroked);
+		path->forget ();
 	}
 }
 

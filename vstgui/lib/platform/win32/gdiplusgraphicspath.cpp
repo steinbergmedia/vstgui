@@ -53,14 +53,15 @@ public:
 
 //-----------------------------------------------------------------------------
 GdiplusGraphicsPath::GdiplusGraphicsPath ()
-: platformPath (new Gdiplus::GraphicsPath ())
+: platformPath (0)
 {
 }
 
 //-----------------------------------------------------------------------------
 GdiplusGraphicsPath::~GdiplusGraphicsPath ()
 {
-	delete platformPath;
+	if (platformPath)
+		delete platformPath;
 }
 
 //-----------------------------------------------------------------------------
@@ -70,89 +71,111 @@ CGradient* GdiplusGraphicsPath::createGradient (double color1Start, double color
 }
 
 //-----------------------------------------------------------------------------
-void GdiplusGraphicsPath::closeSubpath ()
+void GdiplusGraphicsPath::dirty ()
 {
-	platformPath->CloseFigure ();
-}
-
-//-----------------------------------------------------------------------------
-void GdiplusGraphicsPath::addArc (const CRect& rect, double startAngle, double endAngle, bool clockwise)
-{
-	// TODO: clockwise
-	if (endAngle < startAngle)
-		endAngle += 360.f;
-	endAngle = fabs (endAngle - (Gdiplus::REAL)startAngle);
-	platformPath->AddArc ((Gdiplus::REAL)rect.left, (Gdiplus::REAL)rect.top, (Gdiplus::REAL)rect.getWidth (), (Gdiplus::REAL)rect.getHeight (), (Gdiplus::REAL)startAngle, (Gdiplus::REAL)endAngle);
-}
-
-//-----------------------------------------------------------------------------
-void GdiplusGraphicsPath::addCurve (const CPoint& start, const CPoint& control1, const CPoint& control2, const CPoint& end)
-{
-	platformPath->AddBezier ((Gdiplus::REAL)start.x, (Gdiplus::REAL)start.y, (Gdiplus::REAL)control1.x, (Gdiplus::REAL)control1.y, (Gdiplus::REAL)control2.x, (Gdiplus::REAL)control2.y, (Gdiplus::REAL)end.x, (Gdiplus::REAL)end.y);
-}
-
-//-----------------------------------------------------------------------------
-void GdiplusGraphicsPath::addEllipse (const CRect& rect)
-{
-	platformPath->AddEllipse ((Gdiplus::REAL)rect.left, (Gdiplus::REAL)rect.top, (Gdiplus::REAL)rect.getWidth (), (Gdiplus::REAL)rect.getHeight ());
-}
-
-//-----------------------------------------------------------------------------
-void GdiplusGraphicsPath::addLine (const CPoint& start, const CPoint& end)
-{
-	if (start != getCurrentPosition ())
-		platformPath->StartFigure ();
-	platformPath->AddLine ((Gdiplus::REAL)start.x, (Gdiplus::REAL)start.y, (Gdiplus::REAL)end.x, (Gdiplus::REAL)end.y);
-}
-
-//-----------------------------------------------------------------------------
-void GdiplusGraphicsPath::addRect (const CRect& rect)
-{
-	platformPath->AddRectangle (Gdiplus::RectF ((Gdiplus::REAL)rect.left, (Gdiplus::REAL)rect.top, (Gdiplus::REAL)rect.getWidth (), (Gdiplus::REAL)rect.getHeight ()));
-}
-
-//-----------------------------------------------------------------------------
-void GdiplusGraphicsPath::addPath (const CGraphicsPath& inPath, CGraphicsTransform* t)
-{
-	const GdiplusGraphicsPath* path = dynamic_cast<const GdiplusGraphicsPath*> (&inPath);
-	if (path)
+	if (platformPath)
 	{
-		Gdiplus::GraphicsPath* gdiPath = path->getGraphicsPath ()->Clone ();
-		if (t)
-		{
-			Gdiplus::Matrix matrix ((Gdiplus::REAL)t->m11, (Gdiplus::REAL)t->m12, (Gdiplus::REAL)t->m21, (Gdiplus::REAL)t->m22, (Gdiplus::REAL)t->dx, (Gdiplus::REAL)t->dy);
-			gdiPath->Transform (&matrix);
-		}
-		platformPath->AddPath (gdiPath, true); // TODO: maybe the second parameter must be false
-		delete gdiPath;
+		delete platformPath;
+		platformPath = 0;
 	}
 }
 
 //-----------------------------------------------------------------------------
-CPoint GdiplusGraphicsPath::getCurrentPosition () const
+Gdiplus::GraphicsPath* GdiplusGraphicsPath::getGraphicsPath ()
+{
+	if (platformPath == 0)
+	{
+		platformPath = new Gdiplus::GraphicsPath ();
+		Gdiplus::PointF pos;
+		for (std::list<Element>::const_iterator it = elements.begin (); it != elements.end (); it++)
+		{
+			Element e = (*it);
+			switch (e.type)
+			{
+				case Element::kArc:
+				{
+					CCoord width = e.instruction.arc.rect.right - e.instruction.arc.rect.left;
+					CCoord height = e.instruction.arc.rect.bottom - e.instruction.arc.rect.top;
+					if (e.instruction.arc.endAngle < e.instruction.arc.startAngle)
+						e.instruction.arc.endAngle += 360.f;
+					e.instruction.arc.endAngle = fabs (e.instruction.arc.endAngle - (Gdiplus::REAL)e.instruction.arc.startAngle);
+					platformPath->AddArc ((Gdiplus::REAL)e.instruction.arc.rect.left, (Gdiplus::REAL)e.instruction.arc.rect.top, (Gdiplus::REAL)width, (Gdiplus::REAL)height, (Gdiplus::REAL)e.instruction.arc.startAngle, (Gdiplus::REAL)e.instruction.arc.endAngle);
+					break;
+				}
+				case Element::kEllipse:
+				{
+					CCoord width = e.instruction.rect.right - e.instruction.rect.left;
+					CCoord height = e.instruction.rect.bottom - e.instruction.rect.top;
+					platformPath->AddEllipse ((Gdiplus::REAL)e.instruction.rect.left, (Gdiplus::REAL)e.instruction.rect.top, (Gdiplus::REAL)width, (Gdiplus::REAL)height);
+					break;
+				}
+				case Element::kRect:
+				{
+					CCoord width = e.instruction.rect.right - e.instruction.rect.left;
+					CCoord height = e.instruction.rect.bottom - e.instruction.rect.top;
+					platformPath->AddRectangle (Gdiplus::RectF ((Gdiplus::REAL)e.instruction.rect.left, (Gdiplus::REAL)e.instruction.rect.top, (Gdiplus::REAL)width, (Gdiplus::REAL)height));
+					break;
+				}
+				case Element::kLine:
+				{
+					platformPath->AddLine (pos.X, pos.Y, (Gdiplus::REAL)e.instruction.point.x, (Gdiplus::REAL)e.instruction.point.y);
+					break;
+				}
+				case Element::kBezierCurve:
+				{
+					platformPath->AddBezier (pos.X, pos.Y, (Gdiplus::REAL)e.instruction.curve.control1.x, (Gdiplus::REAL)e.instruction.curve.control1.y, (Gdiplus::REAL)e.instruction.curve.control2.x, (Gdiplus::REAL)e.instruction.curve.control2.y, (Gdiplus::REAL)e.instruction.curve.end.x, (Gdiplus::REAL)e.instruction.curve.end.y);
+					break;
+				}
+				case Element::kBeginSubpath:
+				{
+					platformPath->StartFigure ();
+					pos.X = (Gdiplus::REAL)e.instruction.point.x;
+					pos.Y = (Gdiplus::REAL)e.instruction.point.y;
+					continue;
+				}
+				case Element::kCloseSubpath:
+				{
+					platformPath->CloseFigure ();
+					break;
+				}
+			}
+			platformPath->GetLastPoint (&pos);
+		}
+	}
+	return platformPath;
+}
+
+//-----------------------------------------------------------------------------
+CPoint GdiplusGraphicsPath::getCurrentPosition ()
 {
 	CPoint p (0, 0);
 
-	Gdiplus::PointF gdiPoint;
-	platformPath->GetLastPoint (&gdiPoint);
-	p.x = gdiPoint.X;
-	p.y = gdiPoint.Y;
-
+	Gdiplus::GraphicsPath* path = getGraphicsPath ();
+	if (path)
+	{
+		Gdiplus::PointF gdiPoint;
+		path->GetLastPoint (&gdiPoint);
+		p.x = gdiPoint.X;
+		p.y = gdiPoint.Y;
+	}
 	return p;
 }
 
 //-----------------------------------------------------------------------------
-CRect GdiplusGraphicsPath::getBoundingBox () const
+CRect GdiplusGraphicsPath::getBoundingBox ()
 {
 	CRect r;
 
-	Gdiplus::RectF gdiRect;
-	platformPath->GetBounds (&gdiRect);
-	r.left = gdiRect.X;
-	r.top = gdiRect.Y;
-	r.setWidth (gdiRect.Width);
-	r.setHeight (gdiRect.Height);
-	
+	Gdiplus::GraphicsPath* path = getGraphicsPath ();
+	if (path)
+	{
+		Gdiplus::RectF gdiRect;
+		path->GetBounds (&gdiRect);
+		r.left = gdiRect.X;
+		r.top = gdiRect.Y;
+		r.setWidth (gdiRect.Width);
+		r.setHeight (gdiRect.Height);
+	}
 	return r;
 }
 
