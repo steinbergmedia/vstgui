@@ -411,7 +411,6 @@ bool CSplitView::removed (CView* parent)
 	ISplitViewController* controller = getSplitViewController (this);
 	if (controller)
 	{
-		// TODO: give controller a chance to save view sizes
 		int32_t index = 0;
 		ViewIterator it (this);
 		while (*it)
@@ -436,7 +435,6 @@ bool CSplitView::attached (CView* parent)
 	ISplitViewController* controller = getSplitViewController (this);
 	if (controller)
 	{
-		// TODO: ask controller for initial view sizes
 		CRect r;
 		CPoint offset;
 		int32_t index = 0;
@@ -672,11 +670,6 @@ bool CSplitView::requestNewSeparatorSize (CSplitViewSeparatorView* separatorView
 }
 
 //-----------------------------------------------------------------------------
-void CSplitView::onSeparatorDoubleClick (CSplitViewSeparatorView* separatorView)
-{
-}
-
-//-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 CSplitViewSeparatorView::CSplitViewSeparatorView (const CRect& size, CSplitView::Style style, ISplitViewSeparatorDrawer* drawer)
@@ -719,12 +712,6 @@ void CSplitViewSeparatorView::draw (CDrawContext *pContext)
 //-----------------------------------------------------------------------------
 CMouseEventResult CSplitViewSeparatorView::onMouseDown (CPoint& where, const CButtonState& buttons)
 {
-	if (buttons.isDoubleClick ())
-	{
-		CSplitView* splitView = (CSplitView*)getParentView ();
-		splitView->onSeparatorDoubleClick (this);
-		return kMouseEventHandled;
-	}
 	if (buttons.isLeftButton ())
 	{
 		flags |= kMouseDown;

@@ -50,19 +50,13 @@ public:
 	QuartzGraphicsPath ();
 	~QuartzGraphicsPath ();
 
-	CGPathRef getCGPathRef () const { return path; }
+	CGPathRef getCGPathRef ();
+	void dirty ();
 
-	// CGraphicsPath
+	CPoint getCurrentPosition ();
+	CRect getBoundingBox ();
+
 	CGradient* createGradient (double color1Start, double color2Start, const CColor& color1, const CColor& color2);
-	void addArc (const CRect& rect, double startAngle, double endAngle, bool clockwise);
-	void addCurve (const CPoint& start, const CPoint& control1, const CPoint& control2, const CPoint& end);
-	void addEllipse (const CRect& rect);
-	void addLine (const CPoint& start, const CPoint& end);
-	void addRect (const CRect& rect);
-	void addPath (const CGraphicsPath& path, CGraphicsTransform* transformation = 0);
-	void closeSubpath ();
-	CPoint getCurrentPosition () const;
-	CRect getBoundingBox () const;
 
 	static CGAffineTransform createCGAfflineTransform (const CGraphicsTransform& t);
 

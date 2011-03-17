@@ -100,8 +100,6 @@ public:
 	bool addView (CView* pView, CView* pBefore);
 	bool removeView (CView* pView, bool withForget = true);
 	bool removeAll (bool withForget = true);
-	bool isChild (CView* pView) const;
-	bool isChild (CView* pView, bool deep) const;
 	int32_t getNbViews () const;
 	CView* getView (int32_t index) const;
 	void drawBackgroundRect (CDrawContext* pContext, const CRect& _updateRect);

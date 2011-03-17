@@ -38,6 +38,7 @@
 #include "crect.h"
 #include "cpoint.h"
 #include "ccolor.h"
+#include <list>
 
 namespace VSTGUI {
 class CGradient;
@@ -71,22 +72,30 @@ struct CGraphicsTransform
 	}
 	
 	void rotate (double angle);
+
+	void transform (CCoord& x, CCoord& y)
+	{
+		CCoord x2 = m11*x + m12*y + dx;
+		CCoord y2 = m21*x + m22*y + dy;
+		x = x2;
+		y = y2;
+	}
+		
+	void transform (CCoord& left, CCoord& right, CCoord& top, CCoord& bottom)
+	{
+		transform (left, top);
+		transform (right, bottom);
+	}
 	
 	CPoint& transform (CPoint& p)
 	{
-		CCoord x = m11*p.x + m12*p.y + dx;
-		CCoord y = m21*p.x + m22*p.y + dy;
-		p.x = x;
-		p.y = y;
+		transform (p.x, p.y);
 		return p;
 	}
 
 	CRect& transform (CRect& r)
 	{
-		CPoint p (r.getTopLeft ());
-		r.setTopLeft (transform (p));
-		p = r.getBottomRight ();
-		r.setBottomRight (transform (p));
+		transform (r.left, r.right, r.top, r.bottom);
 		return r;
 	}
 
@@ -133,14 +142,28 @@ public:
 	/// @name Adding Elements
 	//-----------------------------------------------------------------------------
 	//@{
-	virtual void addArc (const CRect& rect, double startAngle, double endAngle, bool clockwise) = 0;
-	virtual void addCurve (const CPoint& start, const CPoint& control1, const CPoint& control2, const CPoint& end) = 0;
-	virtual void addEllipse (const CRect& rect) = 0;
-	virtual void addLine (const CPoint& start, const CPoint& end) = 0;
-	virtual void addRect (const CRect& rect) = 0;
-	virtual void addPath (const CGraphicsPath& path, CGraphicsTransform* transformation = 0) = 0;
-	virtual void closeSubpath () = 0;
+	/** add an arc to the path. Begins a new subpath if no elements were added before. */
+	virtual void addArc (const CRect& rect, double startAngle, double endAngle, bool clockwise);
+	/** add an ellipse to the path. Begins a new subpath if no elements were added before. */
+	virtual void addEllipse (const CRect& rect);
+	/** add a rectangle to the path. Begins a new subpath if no elements were added before. */
+	virtual void addRect (const CRect& rect);
+	/** add another path to the path. Begins a new subpath if no elements were added before. */
+	virtual void addPath (const CGraphicsPath& path, CGraphicsTransform* transformation = 0);
+	/** add a line to the path. A subpath must begin before */
+	virtual void addLine (const CPoint& to);
+	/** add a bezier curve to the path. A subpath must begin before */
+	virtual void addBezierCurve (const CPoint& control1, const CPoint& control2, const CPoint& end);
+	/** begin a new subpath. */
+	virtual void beginSubpath (const CPoint& start);
+	/** close a subpath. A straight line will be added from the current point to the start point. */
+	virtual void closeSubpath ();
+	//@}
 
+	//-----------------------------------------------------------------------------
+	/// @name Helpers
+	//-----------------------------------------------------------------------------
+	//@{
 	void addRoundRect (const CRect& size, CCoord radius);
 	//@}
 
@@ -148,14 +171,66 @@ public:
 	/// @name States
 	//-----------------------------------------------------------------------------
 	//@{
-	virtual CPoint getCurrentPosition () const = 0;
-	virtual CRect getBoundingBox () const = 0;
+	virtual CPoint getCurrentPosition () = 0;
+	virtual CRect getBoundingBox () = 0;
 	//@}
 	
 //-----------------------------------------------------------------------------
 	CLASS_METHODS_NOCOPY(CGraphicsPath, CBaseObject)
 protected:
 	CGraphicsPath () {}
+
+	virtual void dirty () = 0; ///< platform object should be released
+
+	struct Rect {
+		CCoord left;
+		CCoord top;
+		CCoord right;
+		CCoord bottom;
+	};
+
+	struct Point {
+		CCoord x;
+		CCoord y;
+	};
+	
+	struct Arc {
+		Rect rect;
+		double startAngle;
+		double endAngle;
+		bool clockwise;
+	};
+
+	struct BezierCurve {
+		Point control1;
+		Point control2;
+		Point end;
+	};
+
+	struct Element {
+		enum Type {
+			kArc = 0,
+			kEllipse,
+			kRect,
+			kLine,
+			kBezierCurve,
+			kBeginSubpath,
+			kCloseSubpath,
+		};
+		
+		Type type;
+		union Instruction {
+			Arc arc;
+			Rect rect;
+			BezierCurve curve;
+			Point point;
+		} instruction;
+	};
+
+	inline void CRect2Rect (const CRect& rect, CGraphicsPath::Rect& r) {r.left = rect.left;r.right = rect.right;r.top = rect.top;r.bottom = rect.bottom;}
+	inline void CPoint2Point (const CPoint& point, CGraphicsPath::Point& p) {p.x = point.x;p.y = point.y;}
+
+	std::list<Element> elements;
 };
 
 //-----------------------------------------------------------------------------

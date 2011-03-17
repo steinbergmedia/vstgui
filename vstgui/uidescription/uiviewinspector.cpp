@@ -401,7 +401,7 @@ public:
 	{
 		CColor color (browser->getFrame ()->getFocusColor ());
 		CView* focusView = browser->getFrame ()->getFocusView ();
-		if (!(focusView && browser->isChild (focusView)))
+		if (!(focusView && browser->isChild (focusView, true)))
 		{
 			double hue, saturation, value;
 			color.toHSV (hue, saturation, value);
@@ -441,8 +441,10 @@ public:
 				if (path)
 				{
 					path->addEllipse (CRect (0, 0, 1, 1));
-					path->addLine (CPoint (0.3, 0.3), CPoint (0.7, 0.7));
-					path->addLine (CPoint (0.3, 0.7), CPoint (0.7, 0.3));
+					path->beginSubpath (CPoint (0.3, 0.3));
+					path->addLine (CPoint (0.7, 0.7));
+					path->beginSubpath (CPoint (0.3, 0.7));
+					path->addLine (CPoint (0.7, 0.3));
 				}
 			}
 			CRect r (size);

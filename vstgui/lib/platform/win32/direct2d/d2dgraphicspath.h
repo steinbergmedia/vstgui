@@ -54,53 +54,13 @@ public:
 	
 	ID2D1PathGeometry* getPath (int32_t fillMode = 0);
 
-	// CGraphicsPath
 	CGradient* createGradient (double color1Start, double color2Start, const CColor& color1, const CColor& color2);
-	void addArc (const CRect& rect, double startAngle, double endAngle, bool clockwise);
-	void addCurve (const CPoint& start, const CPoint& control1, const CPoint& control2, const CPoint& end);
-	void addEllipse (const CRect& rect);
-	void addLine (const CPoint& start, const CPoint& end);
-	void addRect (const CRect& rect);
-	void addPath (const CGraphicsPath& path, CGraphicsTransform* transformation = 0);
-	void closeSubpath ();
-	CPoint getCurrentPosition () const;
-	CRect getBoundingBox () const;
 
+	CPoint getCurrentPosition ();
+	CRect getBoundingBox ();
+	void dirty ();
 protected:
-	struct Instruction
-	{
-		enum Type {
-			kArc,
-			kCurve,
-			kEllipse,
-			kLine,
-			kRect,
-			kPath,
-			kCloseSubpath
-		};
-		struct Arc
-		{
-			double startAngle;
-			double endAngle;
-			bool clockwise;
-		};
-		struct Curve
-		{
-			CPoint control1;
-			CPoint control2;
-		};
-		Type type;
-
-		Arc arc;
-		Curve curve;
-		CRect rect;
-
-	};
-	std::list<Instruction> instructions;
-
 	ID2D1PathGeometry* path;
-	CPoint currentPosition;
-	bool dirty;
 	int32_t currentPathFillMode;
 };
 

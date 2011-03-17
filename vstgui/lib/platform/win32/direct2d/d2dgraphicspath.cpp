@@ -53,7 +53,6 @@ public:
 //-----------------------------------------------------------------------------
 D2DGraphicsPath::D2DGraphicsPath ()
 : path (0)
-, dirty (true)
 , currentPathFillMode (-1)
 {
 }
@@ -76,122 +75,22 @@ CGradient* D2DGraphicsPath::createGradient (double color1Start, double color2Sta
 }
 
 //-----------------------------------------------------------------------------
-void D2DGraphicsPath::addArc (const CRect& rect, double startAngle, double endAngle, bool clockwise)
+CPoint D2DGraphicsPath::getCurrentPosition ()
 {
-	Instruction in;
-	in.type = Instruction::kArc;
-	in.rect = rect;
-	in.arc.startAngle = startAngle;
-	in.arc.endAngle = endAngle;
-	in.arc.clockwise = clockwise;
-	instructions.push_back (in);
-	CRect or (rect);
-	or.originize ();
-	CPoint center = or.getCenter ();
-	currentPosition.x = rect.left + center.x + center.x * cos (endAngle * M_PI / 180.);
-	currentPosition.y = rect.top + center.y + center.y * sin (endAngle * M_PI / 180.);
-	dirty = true;
+	CPoint p;
+	// TODO:
+	return p;
 }
 
 //-----------------------------------------------------------------------------
-void D2DGraphicsPath::addCurve (const CPoint& start, const CPoint& control1, const CPoint& control2, const CPoint& end)
-{
-	Instruction in;
-	in.type = Instruction::kCurve;
-	in.rect.setTopLeft (start);
-	in.rect.setBottomRight (end);
-	in.curve.control1 = control1;
-	in.curve.control2 = control2;
-	instructions.push_back (in);
-	currentPosition = end;
-	dirty = true;
-}
-
-//-----------------------------------------------------------------------------
-void D2DGraphicsPath::addEllipse (const CRect& rect)
-{
-	Instruction in;
-	in.type = Instruction::kEllipse;
-	in.rect = rect;
-	instructions.push_back (in);
-	currentPosition = rect.getTopLeft ();
-	currentPosition.x += rect.getWidth () / 2.;
-	dirty = true;
-}
-
-//-----------------------------------------------------------------------------
-void D2DGraphicsPath::addLine (const CPoint& start, const CPoint& end)
-{
-	Instruction in;
-	in.type = Instruction::kLine;
-	in.rect.setTopLeft (start);
-	in.rect.setBottomRight (end);
-	instructions.push_back (in);
-	currentPosition = end;
-	dirty = true;
-}
-
-//-----------------------------------------------------------------------------
-void D2DGraphicsPath::addRect (const CRect& rect)
-{
-	Instruction in;
-	in.type = Instruction::kRect;
-	in.rect = rect;
-	instructions.push_back (in);
-	currentPosition = rect.getTopLeft ();
-	dirty = true;
-}
-
-//-----------------------------------------------------------------------------
-void D2DGraphicsPath::addPath (const CGraphicsPath& path, CGraphicsTransform* t)
-{
-	const D2DGraphicsPath* d2dGraphicsPath = dynamic_cast<const D2DGraphicsPath*> (&path);
-	if (d2dGraphicsPath)
-	{
-		if (t)
-		{
-			std::list<Instruction>::const_iterator it = d2dGraphicsPath->instructions.begin ();
-			while (it != d2dGraphicsPath->instructions.end ())
-			{
-				Instruction in = (*it);
-				t->transform (in.curve.control1);
-				t->transform (in.curve.control2);
-				t->transform (in.rect);
-				instructions.push_back (in);
-				it++;
-			}
-		}
-		else
-		{
-			instructions.insert (instructions.end (), d2dGraphicsPath->instructions.begin (), d2dGraphicsPath->instructions.end ());
-		}
-		dirty = true;
-	}
-}
-
-//-----------------------------------------------------------------------------
-void D2DGraphicsPath::closeSubpath ()
-{
-	Instruction in;
-	in.type = Instruction::kCloseSubpath;
-	instructions.push_back (in);
-	dirty = true;
-}
-
-//-----------------------------------------------------------------------------
-CPoint D2DGraphicsPath::getCurrentPosition () const
-{
-	return currentPosition;
-}
-
-//-----------------------------------------------------------------------------
-CRect D2DGraphicsPath::getBoundingBox () const
+CRect D2DGraphicsPath::getBoundingBox ()
 {
 	CRect r;
-	if (const_cast<D2DGraphicsPath*> (this)->getPath ())
+	ID2D1PathGeometry* _path = getPath (currentPathFillMode);
+	if (_path)
 	{
 		D2D1_RECT_F bounds;
-		if (SUCCEEDED (path->GetBounds (0, &bounds)))
+		if (SUCCEEDED (_path->GetBounds (0, &bounds)))
 		{
 			r.left = bounds.left;
 			r.top = bounds.top;
@@ -203,174 +102,183 @@ CRect D2DGraphicsPath::getBoundingBox () const
 }
 
 //-----------------------------------------------------------------------------
-ID2D1PathGeometry* D2DGraphicsPath::getPath (int32_t fillMode)
+void D2DGraphicsPath::dirty ()
 {
-	if (instructions.empty ())
-		return 0;
-
 	if (path)
 	{
-		if (!dirty && fillMode == currentPathFillMode)
-			return path;
 		path->Release ();
 		path = 0;
-		currentPathFillMode = -1;
 	}
-	if (!SUCCEEDED (getD2DFactory ()->CreatePathGeometry (&path)))
-		return 0;
+}
 
-	ID2D1GeometrySink* sink = 0;
-	if (!SUCCEEDED (path->Open (&sink)))
-		return 0;
-
-	sink->SetFillMode ((D2D1_FILL_MODE)fillMode);
-	currentPathFillMode = fillMode;
-
-	bool result = true;
-	bool figureOpen = false;
-	CPoint pos;
-
-	std::list<Instruction>::const_iterator it = instructions.begin ();
-	while (it != instructions.end () && result)
+//-----------------------------------------------------------------------------
+ID2D1PathGeometry* D2DGraphicsPath::getPath (int32_t fillMode)
+{
+	if (path == 0 || fillMode != currentPathFillMode)
 	{
-		switch ((*it).type)
+		dirty ();
+		if (!SUCCEEDED (getD2DFactory ()->CreatePathGeometry (&path)))
+			return 0;
+		if (fillMode == -1)
+			fillMode = 0;
+		currentPathFillMode = fillMode;
+		
+		ID2D1GeometrySink* sink = 0;
+		if (!SUCCEEDED (path->Open (&sink)))
 		{
-			case Instruction::kLine:
-			{
-				CPoint start = (*it).rect.getTopLeft ();
-				CPoint end = (*it).rect.getBottomRight ();
-				if (start != pos && figureOpen)
-				{
-					sink->EndFigure (D2D1_FIGURE_END_OPEN);
-					figureOpen = false;
-				}
-				if (!figureOpen)
-				{
-					sink->BeginFigure (makeD2DPoint (start), D2D1_FIGURE_BEGIN_FILLED);
-					figureOpen = true;
-				}
-				sink->AddLine (makeD2DPoint (end));
-				pos = end;
-				break;
-			}
-			case Instruction::kRect:
-			{
-				const CRect& r = (*it).rect;
-				if (r.getTopLeft () != pos && figureOpen)
-				{
-					sink->EndFigure (D2D1_FIGURE_END_OPEN);
-					figureOpen = false;
-				}
-				if (!figureOpen)
-				{
-					sink->BeginFigure (makeD2DPoint (r.getTopLeft ()), D2D1_FIGURE_BEGIN_FILLED);
-					figureOpen = true;
-				}
-				sink->AddLine (makeD2DPoint (r.getTopRight ()));
-				sink->AddLine (makeD2DPoint (r.getBottomRight ()));
-				sink->AddLine (makeD2DPoint (r.getBottomLeft ()));
-				sink->AddLine (makeD2DPoint (r.getTopLeft ()));
-				pos = r.getTopLeft ();
-				break;
-			}
-			case Instruction::kEllipse:
-			{
-				const CRect& r = (*it).rect;
-				CPoint top (r.getTopLeft ());
-				top.x += r.getWidth () / 2.;
-				CPoint bottom (r.getBottomLeft ());
-				bottom.x += r.getWidth () / 2.;
-				if (top != pos && figureOpen)
-				{
-					sink->EndFigure (D2D1_FIGURE_END_OPEN);
-					figureOpen = false;
-				}
-				if (!figureOpen)
-				{
-					sink->BeginFigure (makeD2DPoint (top), D2D1_FIGURE_BEGIN_FILLED);
-					figureOpen = true;
-				}
-				D2D1_ARC_SEGMENT arc = D2D1::ArcSegment (makeD2DPoint (bottom), D2D1::SizeF ((FLOAT)r.getWidth ()/2.f, (FLOAT)r.getHeight ()/2.f), 180.f, D2D1_SWEEP_DIRECTION_COUNTER_CLOCKWISE, D2D1_ARC_SIZE_SMALL);
-				sink->AddArc (arc);
-				arc.point = makeD2DPoint (top);
-				sink->AddArc (arc);
-				pos = top;
-				break;
-			}
-			case Instruction::kCurve:
-			{
-				CPoint start = (*it).rect.getTopLeft ();
-				CPoint end = (*it).rect.getBottomRight ();
-				if (start != pos && figureOpen)
-				{
-					sink->EndFigure (D2D1_FIGURE_END_OPEN);
-					figureOpen = false;
-				}
-				if (!figureOpen)
-				{
-					sink->BeginFigure (makeD2DPoint (start), D2D1_FIGURE_BEGIN_FILLED);
-					figureOpen = true;
-				}
-				D2D1_BEZIER_SEGMENT bezier = D2D1::BezierSegment (makeD2DPoint ((*it).curve.control1), makeD2DPoint ((*it).curve.control2), makeD2DPoint (end));
-				sink->AddBezier (bezier);
-				pos = end;
-				break;
-			}
-			case Instruction::kArc:
-			{
-				// TODO: Finish AddArc. non clickwise not implemented yet
-				bool clockwise = (*it).arc.clockwise; // TODO !
-				double startAngle = (*it).arc.startAngle;
-				double endAngle = (*it).arc.endAngle;
-				CRect or ((*it).rect);
-				CRect r (or);
-				or.originize ();
-				CPoint center = or.getCenter ();
-				CPoint start;
-				start.x = r.left + center.x + center.x * cos (radians (startAngle));
-				start.y = r.top + center.y + center.y * sin (radians (startAngle));
-				if (!figureOpen)
-				{
-					sink->BeginFigure (makeD2DPoint (start), D2D1_FIGURE_BEGIN_FILLED);
-					figureOpen = true;
-				}
-				else if (start != pos)
-				{
-					sink->AddLine (makeD2DPoint (start));
-				}
-				double rotationAngle = startAngle - endAngle;
-				CPoint endPoint;
-				endPoint.x = r.left + center.x + center.x * cos (radians (endAngle));
-				endPoint.y = r.top + center.y + center.y * sin (radians (endAngle));
+			path->Release ();
+			path = 0;
+			return 0;
+		}
 
-				D2D1_ARC_SEGMENT arc;
-				arc.size = makeD2DSize (r.getWidth ()/2., r.getHeight ()/2.);
-				arc.rotationAngle = (FLOAT)(rotationAngle);
-				arc.sweepDirection = D2D1_SWEEP_DIRECTION_CLOCKWISE;
-				arc.point = makeD2DPoint (endPoint);
-				arc.arcSize = rotationAngle <= 180. ? D2D1_ARC_SIZE_SMALL : D2D1_ARC_SIZE_LARGE; 
-				sink->AddArc (arc);
+		sink->SetFillMode ((D2D1_FILL_MODE)fillMode);
 
-				pos = endPoint;
-				break;
-			}
-			case Instruction::kCloseSubpath:
+		bool figureOpen = false;
+		CPoint lastPos;
+		for (std::list<Element>::const_iterator it = elements.begin (); it != elements.end (); it++)
+		{
+			Element e = (*it);
+			switch (e.type)
 			{
-				if (figureOpen)
+				case Element::kArc:
 				{
-					sink->EndFigure (D2D1_FIGURE_END_CLOSED);
-					figureOpen = false;
+					bool clockwise = e.instruction.arc.clockwise; // TODO !
+					double startAngle = e.instruction.arc.startAngle;
+					double endAngle = e.instruction.arc.endAngle;
+					CRect or (e.instruction.arc.rect.left, e.instruction.arc.rect.top, e.instruction.arc.rect.right, e.instruction.arc.rect.bottom);
+					CRect r (or);
+					or.originize ();
+					CPoint center = or.getCenter ();
+					CPoint start;
+					start.x = r.left + center.x + center.x * cos (radians (startAngle));
+					start.y = r.top + center.y + center.y * sin (radians (startAngle));
+					if (!figureOpen)
+					{
+						sink->BeginFigure (makeD2DPoint (start), D2D1_FIGURE_BEGIN_FILLED);
+						figureOpen = true;
+					}
+					else if (lastPos != start)
+					{
+						sink->AddLine (makeD2DPoint (start));
+					}
+					double rotationAngle = startAngle - endAngle;
+					CPoint endPoint;
+					endPoint.x = r.left + center.x + center.x * cos (radians (endAngle));
+					endPoint.y = r.top + center.y + center.y * sin (radians (endAngle));
+
+					D2D1_ARC_SEGMENT arc;
+					arc.size = makeD2DSize (r.getWidth ()/2., r.getHeight ()/2.);
+					arc.rotationAngle = (FLOAT)(rotationAngle);
+					arc.sweepDirection = D2D1_SWEEP_DIRECTION_CLOCKWISE;
+					arc.point = makeD2DPoint (endPoint);
+					arc.arcSize = rotationAngle <= 180. ? D2D1_ARC_SIZE_SMALL : D2D1_ARC_SIZE_LARGE; 
+					sink->AddArc (arc);
+					lastPos = endPoint;
+					break;
 				}
-				break;
+				case Element::kEllipse:
+				{
+					CRect r (e.instruction.rect.left, e.instruction.rect.top, e.instruction.rect.right, e.instruction.rect.bottom);
+					CPoint top (r.getTopLeft ());
+					top.x += r.getWidth () / 2.;
+					CPoint bottom (r.getBottomLeft ());
+					bottom.x += r.getWidth () / 2.;
+					if (figureOpen && lastPos != CPoint (e.instruction.rect.left, e.instruction.rect.top))
+					{
+						sink->EndFigure (D2D1_FIGURE_END_OPEN);
+						figureOpen = false;
+					}
+					if (!figureOpen)
+					{
+						sink->BeginFigure (makeD2DPoint (top), D2D1_FIGURE_BEGIN_FILLED);
+						figureOpen = true;
+					}
+					D2D1_ARC_SEGMENT arc = D2D1::ArcSegment (makeD2DPoint (bottom), D2D1::SizeF ((FLOAT)r.getWidth ()/2.f, (FLOAT)r.getHeight ()/2.f), 180.f, D2D1_SWEEP_DIRECTION_CLOCKWISE, D2D1_ARC_SIZE_SMALL);
+					sink->AddArc (arc);
+					arc.point = makeD2DPoint (top);
+					sink->AddArc (arc);
+					lastPos = top;
+					break;
+				}
+				case Element::kRect:
+				{
+					D2D1_POINT_2F points[4] = {
+						{(FLOAT)e.instruction.rect.right, (FLOAT)e.instruction.rect.top},
+						{(FLOAT)e.instruction.rect.right, (FLOAT)e.instruction.rect.bottom},
+						{(FLOAT)e.instruction.rect.left, (FLOAT)e.instruction.rect.bottom},
+						{(FLOAT)e.instruction.rect.left, (FLOAT)e.instruction.rect.top}
+					};
+					if (figureOpen && lastPos != CPoint (e.instruction.rect.left, e.instruction.rect.top))
+					{
+						sink->EndFigure (D2D1_FIGURE_END_OPEN);
+						figureOpen = false;
+					}
+					if (figureOpen == false)
+					{
+						sink->BeginFigure (points[3], D2D1_FIGURE_BEGIN_FILLED);
+						figureOpen = true;
+					}
+					sink->AddLine (points[0]);
+					sink->AddLine (points[1]);
+					sink->AddLine (points[2]);
+					sink->AddLine (points[3]);
+					lastPos = CPoint (e.instruction.rect.left, e.instruction.rect.top);
+					break;
+				}
+				case Element::kLine:
+				{
+					if (figureOpen)
+					{
+						D2D1_POINT_2F end = {(FLOAT)e.instruction.point.x, (FLOAT)e.instruction.point.y};
+						sink->AddLine (end);
+						lastPos = CPoint (e.instruction.point.x, e.instruction.point.y);
+					}
+					break;
+				}
+				case Element::kBezierCurve:
+				{
+					if (figureOpen)
+					{
+						D2D1_POINT_2F control1 = {(FLOAT)e.instruction.curve.control1.x, (FLOAT)e.instruction.curve.control1.y};
+						D2D1_POINT_2F control2 = {(FLOAT)e.instruction.curve.control2.x, (FLOAT)e.instruction.curve.control2.y};
+						D2D1_POINT_2F end = {(FLOAT)e.instruction.curve.end.x, (FLOAT)e.instruction.curve.end.y};
+						D2D1_BEZIER_SEGMENT bezier = D2D1::BezierSegment (control1, control2, end);
+						sink->AddBezier (bezier);
+						lastPos = CPoint (e.instruction.curve.end.x, e.instruction.curve.end.y);
+					}
+					break;
+				}
+				case Element::kBeginSubpath:
+				{
+					if (figureOpen)
+						sink->EndFigure (D2D1_FIGURE_END_OPEN);
+					D2D1_POINT_2F start = {(FLOAT)e.instruction.point.x, (FLOAT)e.instruction.point.y};
+					sink->BeginFigure (start, D2D1_FIGURE_BEGIN_FILLED);
+					figureOpen = true;
+					lastPos = CPoint (e.instruction.point.x, e.instruction.point.y);
+					break;
+				}
+				case Element::kCloseSubpath:
+				{
+					if (figureOpen)
+					{
+						sink->EndFigure (D2D1_FIGURE_END_CLOSED);
+						figureOpen = false;
+					}
+					break;
+				}
 			}
 		}
-		it++;
+		if (figureOpen)
+			sink->EndFigure (D2D1_FIGURE_END_OPEN);
+		HRESULT res = sink->Close ();
+		if (!SUCCEEDED (res))
+		{
+			path->Release ();
+			path = 0;
+		}
+		sink->Release ();
 	}
-	if (figureOpen)
-		sink->EndFigure (D2D1_FIGURE_END_OPEN);
-	sink->Close ();
-	sink->Release ();
-
 	return path;
 }
 

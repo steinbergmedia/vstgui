@@ -168,7 +168,7 @@ CMouseEventResult CDataBrowser::onMouseDown (CPoint& where, const CButtonState& 
 {
 	CMouseEventResult result = CViewContainer::onMouseDown (where, buttons);
 	CView* focusView = getFrame ()->getFocusView ();
-	if (focusView != dbView && !isChild (focusView))
+	if (focusView != dbView && !isChild (focusView, true))
 		getFrame ()->setFocusView (dbView);
 	return result;
 }
@@ -941,7 +941,7 @@ void GenericStringListDataBrowserSource::dbDrawCell (CDrawContext* context, cons
 	{
 		CColor color (selectionColor);
 		CView* focusView = browser->getFrame ()->getFocusView ();
-		if (!(focusView && browser->isChild (focusView)))
+		if (!(focusView && browser->isChild (focusView, true)))
 		{
 			double hue, saturation, value;
 			color.toHSV (hue, saturation, value);

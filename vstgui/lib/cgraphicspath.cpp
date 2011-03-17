@@ -63,4 +63,123 @@ void CGraphicsPath::addRoundRect (const CRect& size, CCoord radius)
 	closeSubpath();
 }
 
+//-----------------------------------------------------------------------------
+void CGraphicsPath::addPath (const CGraphicsPath& path, CGraphicsTransform* transformation)
+{
+	for (std::list<Element>::const_iterator it = path.elements.begin (); it != path.elements.end (); it++)
+	{
+		Element e = (*it);
+		if (transformation)
+		{
+			switch (e.type)
+			{
+				case Element::kArc:
+				{
+					transformation->transform (e.instruction.arc.rect.left, e.instruction.arc.rect.right, e.instruction.arc.rect.top, e.instruction.arc.rect.bottom);
+					break;
+				}
+				case Element::kEllipse:
+				case Element::kRect:
+				{
+					transformation->transform (e.instruction.rect.left, e.instruction.rect.right, e.instruction.rect.top, e.instruction.rect.bottom);
+					break;
+				}
+				case Element::kBeginSubpath:
+				case Element::kLine:
+				{
+					transformation->transform (e.instruction.point.x, e.instruction.point.y);
+					break;
+				}
+				case Element::kBezierCurve:
+				{
+					transformation->transform (e.instruction.curve.control1.x, e.instruction.curve.control1.y);
+					transformation->transform (e.instruction.curve.control2.x, e.instruction.curve.control2.y);
+					transformation->transform (e.instruction.curve.end.x, e.instruction.curve.end.y);
+					break;
+				}
+				case Element::kCloseSubpath:
+				{
+					break;
+				}
+			}
+		}
+		elements.push_back (e);
+	}
+	dirty ();
+}
+
+//-----------------------------------------------------------------------------
+void CGraphicsPath::addArc (const CRect& rect, double startAngle, double endAngle, bool clockwise)
+{
+	Element e;
+	e.type = Element::kArc;
+	CRect2Rect (rect, e.instruction.arc.rect);
+	e.instruction.arc.startAngle = startAngle;
+	e.instruction.arc.endAngle = endAngle;
+	e.instruction.arc.clockwise = clockwise;
+	elements.push_back (e);
+	dirty ();
+}
+
+//-----------------------------------------------------------------------------
+void CGraphicsPath::addEllipse (const CRect& rect)
+{
+	Element e;
+	e.type = Element::kEllipse;
+	CRect2Rect (rect, e.instruction.rect);
+	elements.push_back (e);
+	dirty ();
+}
+
+//-----------------------------------------------------------------------------
+void CGraphicsPath::addRect (const CRect& rect)
+{
+	Element e;
+	e.type = Element::kRect;
+	CRect2Rect (rect, e.instruction.rect);
+	elements.push_back (e);
+	dirty ();
+}
+
+//-----------------------------------------------------------------------------
+void CGraphicsPath::addLine (const CPoint& to)
+{
+	Element e;
+	e.type = Element::kLine;
+	CPoint2Point (to, e.instruction.point);
+	elements.push_back (e);
+	dirty ();
+}
+
+//-----------------------------------------------------------------------------
+void CGraphicsPath::addBezierCurve (const CPoint& control1, const CPoint& control2, const CPoint& end)
+{
+	Element e;
+	e.type = Element::kBezierCurve;
+	CPoint2Point (control1, e.instruction.curve.control1);
+	CPoint2Point (control2, e.instruction.curve.control2);
+	CPoint2Point (end, e.instruction.curve.end);
+	elements.push_back (e);
+	dirty ();
+}
+
+//-----------------------------------------------------------------------------
+void CGraphicsPath::beginSubpath (const CPoint& start)
+{
+	Element e;
+	e.type = Element::kBeginSubpath;
+	CPoint2Point (start, e.instruction.point);
+	elements.push_back (e);
+	dirty ();
+}
+
+//-----------------------------------------------------------------------------
+void CGraphicsPath::closeSubpath ()
+{
+	Element e;
+	e.type = Element::kCloseSubpath;
+	elements.push_back (e);
+	dirty ();
+}
+
 } // namespace
