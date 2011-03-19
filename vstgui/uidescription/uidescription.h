@@ -39,6 +39,7 @@
 #include "../lib/ccolor.h"
 #include "../lib/cfont.h"
 #include "../lib/cbitmap.h"
+#include "../lib/idependency.h"
 #include "xmlparser.h"
 #include <map>
 #include <deque>
@@ -91,7 +92,7 @@ public:
 //! @brief XML description parser and view creator [new in 4.0]
 //! @ingroup new_in_4_0
 //-----------------------------------------------------------------------------
-class UIDescription : public CBaseObject, public IUIDescription, public Xml::IHandler
+class UIDescription : public CBaseObject, public IUIDescription, public Xml::IHandler, public IDependency
 {
 public:
 	UIDescription (const CResourceDescription& xmlFile, IViewFactory* viewFactory = 0);
@@ -152,6 +153,11 @@ public:
 
 	static bool parseColor (const std::string& colorString, CColor& color);
 	static CViewAttributeID kTemplateNameAttributeID;
+	
+	static IdStringPtr kMessageTagChanged;
+	static IdStringPtr kMessageColorChanged;
+	static IdStringPtr kMessageFontChanged;
+	static IdStringPtr kMessageBitmapChanged;
 protected:
 	CView* createViewFromNode (UINode* node);
 	UINode* getBaseNode (UTF8StringPtr name) const;

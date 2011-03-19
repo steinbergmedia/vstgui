@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		F42E78C81334AB7900518C17 /* idependency.h in Headers */ = {isa = PBXBuildFile; fileRef = F42E78C71334AB7900518C17 /* idependency.h */; };
 		F45BD679131817CD00C46C02 /* csplitview.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F45BD677131817CD00C46C02 /* csplitview.cpp */; };
 		F45BD67A131817CD00C46C02 /* csplitview.h in Headers */ = {isa = PBXBuildFile; fileRef = F45BD678131817CD00C46C02 /* csplitview.h */; };
 		F497F0EC13080A1C00F0A613 /* cbitmap.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F497F0C213080A1C00F0A613 /* cbitmap.cpp */; };
@@ -164,6 +165,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		F42E78C71334AB7900518C17 /* idependency.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = idependency.h; path = ../../lib/idependency.h; sourceTree = "<group>"; };
 		F45BD677131817CD00C46C02 /* csplitview.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = csplitview.cpp; path = ../../lib/csplitview.cpp; sourceTree = "<group>"; };
 		F45BD678131817CD00C46C02 /* csplitview.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = csplitview.h; path = ../../lib/csplitview.h; sourceTree = "<group>"; };
 		F497F0AD1308094300F0A613 /* libvstgui.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libvstgui.a; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -401,6 +403,7 @@
 				F497F0E413080A1C00F0A613 /* cviewcontainer.h */,
 				F497F0E513080A1C00F0A613 /* cvstguitimer.cpp */,
 				F497F0E613080A1C00F0A613 /* cvstguitimer.h */,
+				F42E78C71334AB7900518C17 /* idependency.h */,
 				F497F0E713080A1C00F0A613 /* ifocusdrawing.h */,
 				F497F0E813080A1C00F0A613 /* vstguibase.h */,
 				F497F0E913080A1C00F0A613 /* vstguidebug.cpp */,
@@ -660,6 +663,7 @@
 				F4FC1A9D1328C7B40066E2F8 /* iplatformstring.h in Headers */,
 				F4FC1AA21328C8C40066E2F8 /* macstring.h in Headers */,
 				F4FC1AA61328CB320066E2F8 /* cstring.h in Headers */,
+				F42E78C81334AB7900518C17 /* idependency.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -795,19 +799,20 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
-				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = ../../vstgui.h;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					DEBUG,
 					"VSTGUI_LIVE_EDITING=1",
 				);
+				GCC_SYMBOLS_PRIVATE_EXTERN = YES;
 				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				MACOSX_DEPLOYMENT_TARGET = 10.6;
 				ONLY_ACTIVE_ARCH = YES;
-				SDKROOT = macosx;
+				SHARED_PRECOMPS_DIR = "$(PROJECT_TEMP_DIR)/$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)/SharedPrecompiledHeaders";
 			};
 			name = Debug;
 		};
@@ -815,14 +820,15 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
-				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = ../../vstgui.h;
 				GCC_PREPROCESSOR_DEFINITIONS = NDEBUG;
+				GCC_SYMBOLS_PRIVATE_EXTERN = YES;
 				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				MACOSX_DEPLOYMENT_TARGET = 10.6;
-				SDKROOT = macosx;
+				SHARED_PRECOMPS_DIR = "$(PROJECT_TEMP_DIR)/$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)/SharedPrecompiledHeaders";
 			};
 			name = Release;
 		};
@@ -830,10 +836,8 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				COPY_PHASE_STRIP = NO;
 				EXECUTABLE_PREFIX = lib;
 				GCC_DYNAMIC_NO_PIC = NO;
-				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Debug;
@@ -842,10 +846,8 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				COPY_PHASE_STRIP = YES;
-				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				EXECUTABLE_PREFIX = lib;
-				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
+				LLVM_LTO = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Release;

@@ -91,6 +91,7 @@ protected:
 	#if VSTGUI_LIVE_EDITING
 	void runNewTemplateDialog (IdStringPtr baseViewName);
 	void runTemplateSettingsDialog ();
+	void syncParameterTags ();
 	#endif // VSTGUI_LIVE_EDITING
 	
 	bool PLUGIN_API open (void* parent);
