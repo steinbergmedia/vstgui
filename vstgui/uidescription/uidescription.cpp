@@ -304,6 +304,12 @@ static UIViewFactory* getGenericViewFactory ()
 }
 
 //-----------------------------------------------------------------------------
+IdStringPtr UIDescription::kMessageTagChanged = "kMessageTagChanged";
+IdStringPtr UIDescription::kMessageColorChanged = "kMessageColorChanged";
+IdStringPtr UIDescription::kMessageFontChanged = "kMessageFontChanged";
+IdStringPtr UIDescription::kMessageBitmapChanged = "kMessageBitmapChanged";
+
+//-----------------------------------------------------------------------------
 UIDescription::UIDescription (const CResourceDescription& xmlFile, IViewFactory* _viewFactory)
 : xmlFile (xmlFile)
 , nodes (0)
@@ -797,6 +803,7 @@ void UIDescription::changeColorName (UTF8StringPtr oldName, UTF8StringPtr newNam
 	if (node)
 	{
 		node->getAttributes ()->setAttribute ("name", newName);
+		changed (kMessageColorChanged);
 	}
 }
 
@@ -807,6 +814,7 @@ void UIDescription::changeTagName (UTF8StringPtr oldName, UTF8StringPtr newName)
 	if (node)
 	{
 		node->getAttributes ()->setAttribute ("name", newName);
+		changed (kMessageTagChanged);
 	}
 }
 
@@ -817,6 +825,7 @@ void UIDescription::changeFontName (UTF8StringPtr oldName, UTF8StringPtr newName
 	if (node)
 	{
 		node->getAttributes ()->setAttribute ("name", newName);
+		changed (kMessageFontChanged);
 	}
 }
 
@@ -827,6 +836,7 @@ void UIDescription::changeBitmapName (UTF8StringPtr oldName, UTF8StringPtr newNa
 	if (node)
 	{
 		node->getAttributes ()->setAttribute ("name", newName);
+		changed (kMessageBitmapChanged);
 	}
 }
 
@@ -837,7 +847,10 @@ void UIDescription::changeColor (UTF8StringPtr name, const CColor& newColor)
 	if (node)
 	{
 		if (!node->noExport ())
+		{
 			node->setColor (newColor);
+			changed (kMessageColorChanged);
+		}
 	}
 	else
 	{
@@ -851,6 +864,7 @@ void UIDescription::changeColor (UTF8StringPtr name, const CColor& newColor)
 			attr->setAttribute ("rgba", colorStr.c_str ());
 			UIColorNode* node = new UIColorNode ("color", attr);
 			colorsNode->getChildren ().add (node);
+			changed (kMessageColorChanged);
 		}
 	}
 }
@@ -862,7 +876,10 @@ void UIDescription::changeTag (UTF8StringPtr name, int32_t tag)
 	if (node)
 	{
 		if (!node->noExport ())
+		{
 			node->setTag (tag);
+			changed (kMessageTagChanged);
+		}
 	}
 	else
 	{
@@ -874,6 +891,7 @@ void UIDescription::changeTag (UTF8StringPtr name, int32_t tag)
 			UIControlTagNode* node = new UIControlTagNode ("control-tag", attr);
 			node->setTag (tag);
 			tagsNode->getChildren ().add (node);
+			changed (kMessageTagChanged);
 		}
 	}
 }
@@ -885,7 +903,10 @@ void UIDescription::changeFont (UTF8StringPtr name, CFontRef newFont)
 	if (node)
 	{
 		if (!node->noExport ())
+		{
 			node->setFont (newFont);
+			changed (kMessageFontChanged);
+		}
 	}
 	else
 	{
@@ -897,6 +918,7 @@ void UIDescription::changeFont (UTF8StringPtr name, CFontRef newFont)
 			UIFontNode* node = new UIFontNode ("font", attr);
 			node->setFont (newFont);
 			fontsNode->getChildren ().add (node);
+			changed (kMessageFontChanged);
 		}
 	}
 }
@@ -911,6 +933,7 @@ void UIDescription::changeBitmap (UTF8StringPtr name, UTF8StringPtr newName, con
 		{
 			node->setBitmap (newName);
 			node->setNinePartTiledOffset (nineparttiledOffset);
+			changed (kMessageBitmapChanged);
 		}
 	}
 	else
@@ -925,6 +948,7 @@ void UIDescription::changeBitmap (UTF8StringPtr name, UTF8StringPtr newName, con
 				node->setNinePartTiledOffset (nineparttiledOffset);
 			node->setBitmap (newName);
 			bitmapsNode->getChildren ().add (node);
+			changed (kMessageBitmapChanged);
 		}
 	}
 }
@@ -952,7 +976,10 @@ void UIDescription::removeColor (UTF8StringPtr name)
 {
 	UINode* node = getBaseNode ("colors");
 	if (node)
+	{
 		removeChildNode (node, name);
+		changed (kMessageColorChanged);
+	}
 }
 
 //-----------------------------------------------------------------------------
@@ -960,7 +987,10 @@ void UIDescription::removeTag (UTF8StringPtr name)
 {
 	UINode* node = getBaseNode ("control-tags");
 	if (node)
+	{
 		removeChildNode (node, name);
+		changed (kMessageTagChanged);
+	}
 }
 
 //-----------------------------------------------------------------------------
@@ -968,7 +998,10 @@ void UIDescription::removeFont (UTF8StringPtr name)
 {
 	UINode* node = getBaseNode ("fonts");
 	if (node)
+	{
 		removeChildNode (node, name);
+		changed (kMessageFontChanged);
+	}
 }
 
 //-----------------------------------------------------------------------------
@@ -976,7 +1009,10 @@ void UIDescription::removeBitmap (UTF8StringPtr name)
 {
 	UINode* node = getBaseNode ("bitmaps");
 	if (node)
+	{
 		removeChildNode (node, name);
+		changed (kMessageBitmapChanged);
+	}
 }
 
 //-----------------------------------------------------------------------------

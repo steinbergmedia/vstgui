@@ -73,6 +73,8 @@ public:
 	virtual CMouseEventResult dbOnMouseUp (const CPoint& where, const CButtonState& buttons, int32_t row, int32_t column, CDataBrowser* browser) { return kMouseEventNotHandled; } ///< mouse button was released on a cell
 
 	virtual void dbSelectionChanged (CDataBrowser* browser) {}	///< the selection of the db changed
+	virtual void dbAttached (CDataBrowser* browser) {}	///< databrowser view was attached to a parent
+	virtual void dbRemoved (CDataBrowser* browser) {}		///< databrowser view will be removed from its parent
 
 	virtual void dbCellTextChanged (int32_t row, int32_t column, UTF8StringPtr newText, CDataBrowser* browser) {} ///< the text of the cell changed beginTextEdit was called for
 	virtual void dbCellSetupTextEdit (int32_t row, int32_t column, CTextEdit* textEditControl, CDataBrowser* browser) {} ///< beginTextEdit calls this, so you can setup the textedit control
@@ -142,6 +144,7 @@ protected:
 	void valueChanged (CControl *pControl);
 	CMessageResult notify (CBaseObject* sender, IdStringPtr message);
 	bool attached (CView *parent);
+	bool removed (CView* parent);
 
 	IDataBrowser* db;
 	CDataBrowserView* dbView;
@@ -194,6 +197,9 @@ protected:
 	void dbCellSetupTextEdit (int32_t row, int32_t column, CTextEdit* textEditControl, CDataBrowser* browser) {}
 
 	int32_t dbOnKeyDown (const VstKeyCode& key, CDataBrowser* browser);
+
+	void dbAttached (CDataBrowser* browser);
+	void dbRemoved (CDataBrowser* browser);
 
 	CMessageResult notify (CBaseObject* sender, IdStringPtr message);
 

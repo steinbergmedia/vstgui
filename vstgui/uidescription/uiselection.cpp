@@ -58,29 +58,6 @@ IdStringPtr UISelection::kMsgSelectionChanged = "kMsgSelectionChanged";
 IdStringPtr UISelection::kMsgSelectionViewChanged = "kMsgSelectionViewChanged";
 
 //----------------------------------------------------------------------------------------------------
-void UISelection::addDependent (CBaseObject* obj)
-{
-	dependencies.push_back (obj);
-}
-
-//----------------------------------------------------------------------------------------------------
-void UISelection::removeDependent (CBaseObject* obj)
-{
-	dependencies.remove (obj);
-}
-
-//----------------------------------------------------------------------------------------------------
-void UISelection::changed (IdStringPtr what)
-{
-	std::list<CBaseObject*>::iterator it = dependencies.begin ();
-	while (it != dependencies.end ())
-	{
-		(*it)->notify (this, what);
-		it++;
-	}
-}
-
-//----------------------------------------------------------------------------------------------------
 void UISelection::setStyle (int32_t _style)
 {
 	style = _style;

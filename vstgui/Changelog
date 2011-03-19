@@ -1,3 +1,8 @@
+2011-03-19 arne
+
+	* new class IDependency see idependency.h for documentation
+	* new IDataBrowser methods: dbAttached(..) and dbRemoved(..)
+
 2011-03-16 arne
 
 	* CGraphicsPath redesign
