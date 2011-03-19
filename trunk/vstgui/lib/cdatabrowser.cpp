@@ -154,7 +154,18 @@ void CDataBrowser::setViewSize (const CRect& size, bool invalid)
 bool CDataBrowser::attached (CView *parent)
 {
 	recalculateLayout (true);
-	return CScrollView::attached (parent);
+	bool result = CScrollView::attached (parent);
+	if (result && db)
+		db->dbAttached (this);
+	return result;
+}
+
+//-----------------------------------------------------------------------------------------------
+bool CDataBrowser::removed (CView* parent)
+{
+	if (isAttached () && db)
+		db->dbRemoved (this);
+	return CScrollView::removed (parent);
 }
 
 //-----------------------------------------------------------------------------------------------
@@ -807,20 +818,10 @@ bool CDataBrowserView::drawFocusOnTop ()
 //-----------------------------------------------------------------------------------------------
 bool CDataBrowserView::getFocusPath (CGraphicsPath& outPath)
 {
-	if (false) // browser->getSelectedRow () >= 0)
-	{
-		CRect r = getRowBounds (browser->getSelectedRow ());
-		outPath.addRect (r);
-		r.inset (0.6, 0.6);
-		outPath.addRect (r);
-	}
-	else
-	{
-		CRect r = getVisibleSize ();
-		outPath.addRect (r);
-		r.inset (0.6, 0.6);
-		outPath.addRect (r);
-	}
+	CRect r = getVisibleSize ();
+	outPath.addRect (r);
+	r.inset (0.6, 0.6);
+	outPath.addRect (r);
 	return true;
 }
 
@@ -851,6 +852,18 @@ GenericStringListDataBrowserSource::~GenericStringListDataBrowserSource ()
 	if (timer)
 		timer->forget ();
 	drawFont->forget ();
+}
+
+//-----------------------------------------------------------------------------
+void GenericStringListDataBrowserSource::dbAttached (CDataBrowser* browser)
+{
+	dataBrowser = browser;
+}
+
+//-----------------------------------------------------------------------------
+void GenericStringListDataBrowserSource::dbRemoved (CDataBrowser* browser)
+{
+	dataBrowser = 0;
 }
 
 //-----------------------------------------------------------------------------
@@ -891,8 +904,6 @@ void GenericStringListDataBrowserSource::dbSelectionChanged (CDataBrowser* brows
 //-----------------------------------------------------------------------------
 int32_t GenericStringListDataBrowserSource::dbGetNumRows (CDataBrowser* browser)
 {
-	if (dataBrowser == 0)
-		dataBrowser = browser;
 	return (int32_t)stringList->size ();
 }
 

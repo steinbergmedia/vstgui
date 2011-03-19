@@ -872,14 +872,16 @@ CMessageResult VST3Editor::notify (CBaseObject* sender, IdStringPtr message)
 	#if VSTGUI_LIVE_EDITING
 	else if (message == UIEditFrame::kMsgShowOptionsMenu)
 	{
+		UIEditFrame* editFrame = dynamic_cast<UIEditFrame*> (frame);
+		if (editFrame && editFrame->getEditMode () != UIEditFrame::kEditMode)
+			return kMessageNotified;
 		COptionMenu* menu = dynamic_cast<COptionMenu*> (sender);
 		if (menu)
 		{
-			menu->addSeparator ();
 			menu->addEntry (new CMenuItem ("Template Settings..."));
 			std::list<const std::string*> templateNames;
 			description->collectTemplateViewNames (templateNames);
-			if (templateNames.size () > 0)
+			if (templateNames.size () > 1)
 			{
 				COptionMenu* submenu = new COptionMenu ();
 				int32_t menuTag = 1000;
@@ -892,28 +894,31 @@ CMessageResult VST3Editor::notify (CBaseObject* sender, IdStringPtr message)
 				menu->addEntry (submenu, "Change Template");
 				submenu->forget ();
 
-				UIViewFactory* viewFactory = dynamic_cast<UIViewFactory*> (description->getViewFactory ());
-				if (viewFactory)
+			}
+			UIViewFactory* viewFactory = dynamic_cast<UIViewFactory*> (description->getViewFactory ());
+			if (viewFactory)
+			{
+				std::list<const std::string*> viewNames;
+				viewFactory->collectRegisteredViewNames (viewNames, "CViewContainer");
+				if (viewNames.size () > 0)
 				{
-					std::list<const std::string*> viewNames;
-					viewFactory->collectRegisteredViewNames (viewNames, "CViewContainer");
-					if (viewNames.size () > 0)
+					COptionMenu* submenu = new COptionMenu ();
+					CMenuItem* item = submenu->addEntry ("Root View Type");
+					item->setIsTitle (true);
+					int32_t menuTag = 10000;
+					std::list<const std::string*>::const_iterator it = viewNames.begin ();
+					while (it != viewNames.end ())
 					{
-						submenu = new COptionMenu ();
-						CMenuItem* item = submenu->addEntry ("Root View Type");
-						item->setIsTitle (true);
-						menuTag = 10000;
-						std::list<const std::string*>::const_iterator it = viewNames.begin ();
-						while (it != viewNames.end ())
-						{
-							submenu->addEntry (new CMenuItem ((*it)->c_str (), menuTag++));
-							it++;
-						}
-						menu->addEntry (submenu, "Add New Template");
-						submenu->forget ();
+						submenu->addEntry (new CMenuItem ((*it)->c_str (), menuTag++));
+						it++;
 					}
+					menu->addEntry (submenu, "Add New Template");
+					submenu->forget ();
 				}
 			}
+			menu->addSeparator ();
+			menu->addEntry (new CMenuItem ("Sync Parameter Tags"));
+			menu->addSeparator ();
 		}
 		return kMessageNotified;
 	}
@@ -925,6 +930,10 @@ CMessageResult VST3Editor::notify (CBaseObject* sender, IdStringPtr message)
 			if (item->getTitle () == std::string ("Template Settings..."))
 			{
 				runTemplateSettingsDialog ();
+			}
+			else if (item->getTitle () == std::string ("Sync Parameter Tags"))
+			{
+				syncParameterTags ();
 			}
 			else
 			{
@@ -960,6 +969,27 @@ CMessageResult VST3Editor::notify (CBaseObject* sender, IdStringPtr message)
 }
 
 #if VSTGUI_LIVE_EDITING
+//------------------------------------------------------------------------
+void VST3Editor::syncParameterTags ()
+{
+	UIEditFrame* editFrame = dynamic_cast<UIEditFrame*> (frame);
+	if (editFrame)
+	{
+		Steinberg::Vst::EditController* editController = getController ();
+		int32_t paramCount = editController->getParameterCount ();
+		for (int32_t i = 0; i < paramCount; i++)
+		{
+			Steinberg::Vst::ParameterInfo info;
+			if (editController->getParameterInfo (i, info) == Steinberg::kResultTrue)
+			{
+				Steinberg::String paramTitle (info.title);
+				paramTitle.toMultiByte (Steinberg::kCP_Utf8);
+				editFrame->performTagChange (paramTitle, info.id);
+			}
+		}
+	}
+}
+
 //------------------------------------------------------------------------
 class VST3EditorNewTemplateDialogController : public IController
 {

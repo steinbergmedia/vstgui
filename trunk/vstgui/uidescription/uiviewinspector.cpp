@@ -326,13 +326,28 @@ class BrowserDelegateBase : public CBaseObject, public IDataBrowser
 {
 public:
 	BrowserDelegateBase (UIDescription* desc, IActionOperator* actionOperator)
-	: desc (desc), actionOperator (actionOperator), mouseRow (-1), path (0) {}
+	: desc (desc), actionOperator (actionOperator), mouseRow (-1), path (0), db (0)
+	{
+		desc->addDependency (this);
+	}
+	
 	~BrowserDelegateBase ()
 	{
+		desc->removeDependency (this);
 		if (path)
 			path->forget ();
 	}
 	
+	void dbAttached (CDataBrowser* browser)
+	{
+		db = browser;
+	}
+	
+	void dbRemoved (CDataBrowser* browser)
+	{
+		db = 0;
+	}
+
 	virtual void getNames (std::list<const std::string*>& _names) = 0;
 
 	void updateNames ()
@@ -342,6 +357,8 @@ public:
 		_names.sort (std__stringCompare);
 		names.clear ();
 		names.insert (names.begin (), _names.begin (), _names.end ());
+		if (db)
+			db->recalculateLayout (true);
 	}
 
 	int32_t dbGetNumRows (CDataBrowser* browser)
@@ -576,6 +593,7 @@ protected:
 	std::vector<std::string> headerTitles;
 	int32_t mouseRow;
 	CGraphicsPath* path;
+	CDataBrowser* db;
 };
 
 //-----------------------------------------------------------------------------
@@ -592,6 +610,16 @@ public:
 		headerTitles.push_back ("NinePartOffsets");
 	}
 
+	CMessageResult notify (CBaseObject* obj, IdStringPtr message)
+	{
+		if (message == UIDescription::kMessageBitmapChanged)
+		{
+			updateNames ();
+			return kMessageNotified;
+		}
+		return kMessageUnknown;
+	}
+	
 	void getNames (std::list<const std::string*>& _names)
 	{
 		desc->collectBitmapNames (_names);
@@ -650,8 +678,6 @@ public:
 			{
 				std::string bitmapName (*names[row]);
 				actionOperator->performBitmapChange (bitmapName.c_str (), 0, true);
-				updateNames ();
-				browser->recalculateLayout (true);
 				return kMouseDownEventHandledButDontNeedMovedOrUpEvents;
 			}
 			if (column == 2)
@@ -705,8 +731,6 @@ public:
 				if (!desc->getBitmap (newText))
 				{
 					actionOperator->performBitmapChange (newText, "not yet defined");
-					updateNames ();
-					browser->recalculateLayout (true);
 					for (int32_t i = 0; i < (int32_t)names.size (); i++)
 					{
 						if (*names[i] == newText)
@@ -723,8 +747,6 @@ public:
 				std::string bitmapName (*names[row]);
 				actionOperator->performBitmapNameChange (bitmapName.c_str (), newText);
 			}
-			updateNames ();
-			browser->recalculateLayout (true);
 		}
 		else if (column == 1)
 		{
@@ -760,6 +782,16 @@ public:
 	~ColorBrowserDelegate ()
 	{
 		PlatformUtilities::colorChooser (0, this);
+	}
+	
+	CMessageResult notify (CBaseObject* obj, IdStringPtr message)
+	{
+		if (message == UIDescription::kMessageColorChanged)
+		{
+			updateNames ();
+			return kMessageNotified;
+		}
+		return kMessageUnknown;
 	}
 	
 	void getNames (std::list<const std::string*>& _names)
@@ -822,8 +854,6 @@ public:
 			else if (column == 2)
 			{
 				actionOperator->performColorChange (names[row]->c_str (), MakeCColor (0, 0, 0, 0), true);
-				updateNames ();
-				browser->recalculateLayout (true);
 				return kMouseDownEventHandledButDontNeedMovedOrUpEvents;
 			}
 		}
@@ -837,7 +867,6 @@ public:
 			std::string colorName (*names[lastChoosenRow]);
 			int32_t temp = lastChoosenRow;
 			actionOperator->performColorChange (colorName.c_str (), color);
-			updateNames ();
 			lastChoosenRow = temp;
 			browser->invalidateRow (lastChoosenRow);
 		}
@@ -866,8 +895,6 @@ public:
 				std::string colorName (*names[row]);
 				actionOperator->performColorNameChange (colorName.c_str (), newText);
 			}
-			updateNames ();
-			browser->recalculateLayout (true);
 		}
 		else if (column == 1)
 		{
@@ -927,6 +954,16 @@ public:
 		headerTitles.push_back ("Tag");
 	}
 
+	CMessageResult notify (CBaseObject* obj, IdStringPtr message)
+	{
+		if (obj == desc && message == UIDescription::kMessageTagChanged)
+		{
+			updateNames ();
+			return kMessageNotified;
+		}
+		return kMessageUnknown;
+	}
+	
 	void getNames (std::list<const std::string*>& _names)
 	{
 		desc->collectControlTagNames (_names);
@@ -952,8 +989,6 @@ public:
 			{
 				std::string tagName (*names[row]);
 				actionOperator->performTagChange (tagName.c_str (), 0, true);
-				updateNames ();
-				browser->recalculateLayout (true);
 				return kMouseDownEventHandledButDontNeedMovedOrUpEvents;
 			}
 		}
@@ -974,8 +1009,6 @@ public:
 				if (desc->getTagForName (newText) == -1)
 				{
 					actionOperator->performTagChange (newText, -2);
-					updateNames ();
-					browser->recalculateLayout (true);
 					for (int32_t i = 0; i < (int32_t)names.size (); i++)
 					{
 						if (*names[i] == newText)
@@ -993,8 +1026,6 @@ public:
 				std::string tagName (*names[row]);
 				actionOperator->performTagNameChange (tagName.c_str (), newText);
 			}
-			updateNames ();
-			browser->recalculateLayout (true);
 		}
 		else if (column == 1)
 		{
@@ -1021,6 +1052,16 @@ public:
 	~FontBrowserDelegate ()
 	{
 		UIFontChooserPanel::hide ();
+	}
+	
+	CMessageResult notify (CBaseObject* obj, IdStringPtr message)
+	{
+		if (message == UIDescription::kMessageFontChanged)
+		{
+			updateNames ();
+			return kMessageNotified;
+		}
+		return kMessageUnknown;
 	}
 	
 	void getNames (std::list<const std::string*>& _names)
@@ -1065,8 +1106,6 @@ public:
 	{
 		std::string fontName (*names[lastChoosenRow]);
 		actionOperator->performFontChange (fontName.c_str (), newFont);
-		updateNames ();
-		browser->recalculateLayout (true);
 	}
 	
 	bool startEditing (int32_t row, CDataBrowser* browser)
@@ -1090,8 +1129,6 @@ public:
 			if (column == dbGetNumColumns (browser) - 1)
 			{
 				actionOperator->performFontChange (names[row]->c_str (), 0, true);
-				updateNames ();
-				browser->recalculateLayout (true);
 				return kMouseDownEventHandledButDontNeedMovedOrUpEvents;
 			}
 			else if (column == 1)
@@ -1130,8 +1167,6 @@ public:
 				std::string fontName (*names[row]);
 				actionOperator->performFontNameChange (fontName.c_str (), newText);
 			}
-			updateNames ();
-			browser->recalculateLayout (true);
 		}
 	}
 	int32_t lastChoosenRow;
@@ -1214,7 +1249,7 @@ UIViewInspector::UIViewInspector (UISelection* selection, IActionOperator* actio
 , parentPlatformWindow (parentPlatformWindow)
 {
 	selection->remember ();
-	selection->addDependent (this);
+	selection->addDependency (this);
 }
 
 //-----------------------------------------------------------------------------
@@ -1222,7 +1257,7 @@ UIViewInspector::~UIViewInspector ()
 {
 	hide ();
 	setUIDescription (0);
-	selection->removeDependent (this);
+	selection->removeDependency (this);
 	selection->forget ();
 }
 

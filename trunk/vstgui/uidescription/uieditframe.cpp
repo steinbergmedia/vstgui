@@ -1164,13 +1164,13 @@ void UIEditFrame::showOptionsMenu (const CPoint& where)
 		menu->addEntry (new CMenuItem (hierarchyBrowser ? "Hide Hierarchy Browser" : "Show Hierarchy Browser", kHierarchyBrowserTag));
 		menu->addSeparator ();
 	}
-	CMenuItem* item = menu->addEntry (new CMenuItem (editMode == kEditMode ? "Disable Editing" : "Enable Editing", kEnableEditing));
-	item->setKey ("e", kControl);
 	CBaseObject* editorObj = dynamic_cast<CBaseObject*> (pEditor);
 	if (editorObj)
 	{
 		editorObj->notify (menu, kMsgShowOptionsMenu);
 	}
+	CMenuItem* item = menu->addEntry (new CMenuItem (editMode == kEditMode ? "Disable Editing" : "Enable Editing", kEnableEditing));
+	item->setKey ("e", kControl);
 	if (menu->popup (this, where))
 	{
 		int32_t index = 0;
