@@ -956,7 +956,7 @@ public:
 
 	CMessageResult notify (CBaseObject* obj, IdStringPtr message)
 	{
-		if (obj == desc && message == UIDescription::kMessageTagChanged)
+		if (message == UIDescription::kMessageTagChanged)
 		{
 			updateNames ();
 			return kMessageNotified;
