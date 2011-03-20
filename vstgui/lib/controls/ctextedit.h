@@ -63,7 +63,7 @@ public:
 
 	// overrides
 	virtual void setText (UTF8StringPtr txt);
-	virtual void setValue (float val, bool updateSubListeners = false);
+	virtual void setValue (float val);
 
 	virtual	void draw (CDrawContext* pContext);
 	virtual CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons);

@@ -37,6 +37,12 @@
 
 namespace VSTGUI {
 
+IdStringPtr CControl::kMessageTagWillChange = "kMessageTagWillChange";
+IdStringPtr CControl::kMessageTagDidChange = "kMessageTagDidChange";
+IdStringPtr CControl::kMessageValueChanged = "kMessageValueChanged";
+IdStringPtr CControl::kMessageBeginEdit = "kMessageBeginEdit";
+IdStringPtr CControl::kMessageEndEdit = "kMessageEndEdit";
+
 //------------------------------------------------------------------------
 // CControl
 //------------------------------------------------------------------------
@@ -89,27 +95,11 @@ void CControl::setTag (int32_t val)
 {
 	if (listener)
 		listener->controlTagWillChange (this);
-	if (listeners.size () > 0)
-	{
-		std::list<CControlListener*>::const_iterator it = listeners.begin ();
-		while (it != listeners.end ())
-		{
-			(*it)->controlTagWillChange (this);
-			it++;
-		}
-	}
+	changed (kMessageTagWillChange);
 	tag = val;
 	if (listener)
 		listener->controlTagDidChange (this);
-	if (listeners.size () > 0)
-	{
-		std::list<CControlListener*>::const_iterator it = listeners.begin ();
-		while (it != listeners.end ())
-		{
-			(*it)->controlTagDidChange (this);
-			it++;
-		}
-	}
+	changed (kMessageTagDidChange);
 }
 
 //------------------------------------------------------------------------
@@ -125,15 +115,7 @@ void CControl::beginEdit ()
 	// begin of edit parameter
 	if (listener)
 		listener->controlBeginEdit (this);
-	if (listeners.size () > 0)
-	{
-		std::list<CControlListener*>::const_iterator it = listeners.begin ();
-		while (it != listeners.end ())
-		{
-			(*it)->controlBeginEdit (this);
-			it++;
-		}
-	}
+	changed (kMessageBeginEdit);
 	if (getFrame ())
 		getFrame ()->beginEdit (tag);
 }
@@ -146,19 +128,11 @@ void CControl::endEdit ()
 		getFrame ()->endEdit (tag);
 	if (listener)
 		listener->controlEndEdit (this);
-	if (listeners.size () > 0)
-	{
-		std::list<CControlListener*>::const_iterator it = listeners.begin ();
-		while (it != listeners.end ())
-		{
-			(*it)->controlEndEdit (this);
-			it++;
-		}
-	}
+	changed (kMessageEndEdit);
 }
 
 //------------------------------------------------------------------------
-void CControl::setValue (float val, bool updateSubListeners)
+void CControl::setValue (float val)
 {
 	if (val < getMin ())
 		val = getMin ();
@@ -167,26 +141,18 @@ void CControl::setValue (float val, bool updateSubListeners)
 	if (val != value)
 	{
 		value = val;
-		if (updateSubListeners)
-		{
-			std::list<CControlListener*>::const_iterator it = listeners.begin ();
-			while (it != listeners.end ())
-			{
-				(*it)->valueChanged (this);
-				it++;
-			}
-		}
+		changed (kMessageValueChanged);
 	}
 }
 
 //------------------------------------------------------------------------
-void CControl::setValueNormalized (float val, bool updateSubListeners)
+void CControl::setValueNormalized (float val)
 {
 	if (val > 1.f)
 		val = 1.f;
 	else if (val < 0.f)
 		val = 0.f;
-	setValue ((getMax () - getMin ()) * val + getMin (), updateSubListeners);
+	setValue ((getMax () - getMin ()) * val + getMin ());
 }
 
 //------------------------------------------------------------------------
@@ -200,15 +166,7 @@ void CControl::valueChanged ()
 {
 	if (listener)
 		listener->valueChanged (this);
-	if (listeners.size () > 0)
-	{
-		std::list<CControlListener*>::const_iterator it = listeners.begin ();
-		while (it != listeners.end ())
-		{
-			(*it)->valueChanged (this);
-			it++;
-		}
-	}
+	changed (kMessageValueChanged);
 }
 
 //------------------------------------------------------------------------
@@ -266,7 +224,7 @@ bool CControl::checkDefaultValue (CButtonState button)
 			// begin of edit parameter
 			beginEdit ();
 		
-			setValue (defValue, false);
+			setValue (defValue);
 			valueChanged ();
 
 			// end of edit parameter

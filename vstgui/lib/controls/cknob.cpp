@@ -385,7 +385,7 @@ bool CKnob::onWheel (const CPoint& where, const float &distance, const CButtonSt
 		v += 0.1f * distance * wheelInc;
 	else
 		v += distance * wheelInc;
-	setValueNormalized (v, false);
+	setValueNormalized (v);
 
 	if (isDirty () && listener)
 	{
@@ -419,7 +419,7 @@ int32_t CKnob::onKeyDown (VstKeyCode& keyCode)
 				v += 0.1f * distance * wheelInc;
 			else
 				v += distance * wheelInc;
-			setValueNormalized (v, false);
+			setValueNormalized (v);
 
 			if (isDirty () && listener)
 			{

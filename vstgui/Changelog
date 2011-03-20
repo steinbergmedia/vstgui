@@ -1,3 +1,7 @@
+2011-03-20 arne
+
+	* removed the sublisteners in CControl and replaced it by IDependency
+	
 2011-03-19 arne
 
 	* new class IDependency see idependency.h for documentation
