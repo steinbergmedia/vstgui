@@ -94,9 +94,9 @@ void CTextEdit::setStringToValueProc (CTextEditStringToValueProc proc, void* use
 }
 
 //------------------------------------------------------------------------
-void CTextEdit::setValue (float val, bool updateSubListeners)
+void CTextEdit::setValue (float val)
 {
-	CTextLabel::setValue (val, updateSubListeners);
+	CTextLabel::setValue (val);
 	bool converted = false;
 	char string[256] = {0};
 	if (valueToString)
@@ -114,7 +114,7 @@ void CTextEdit::setText (UTF8StringPtr txt)
 	{
 		float val = getValue ();
 		if (textToValue (txt, val, textToValueUserData))
-			CTextLabel::setValue (val, true);
+			CTextLabel::setValue (val);
 	}
 	CTextLabel::setText (txt);
 	if (platformControl)

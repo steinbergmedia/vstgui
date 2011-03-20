@@ -671,7 +671,7 @@ COptionMenu *COptionMenu::getLastItemMenu (int32_t &idxInMenu) const
 }
 
 //------------------------------------------------------------------------
-void COptionMenu::setValue (float val, bool updateSubListeners)
+void COptionMenu::setValue (float val)
 {
 	if ((int32_t)val < 0 || (int32_t)val >= getNbEntries ())
 		return;
@@ -683,7 +683,7 @@ void COptionMenu::setValue (float val, bool updateSubListeners)
 		if (item)
 			item->setChecked (!item->isChecked ());
 	}
-	CParamDisplay::setValue (val, updateSubListeners);
+	CParamDisplay::setValue (val);
 	
 	// to force the redraw
 	setDirty ();

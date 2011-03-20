@@ -48,7 +48,6 @@ You are welcome to fix these holes and all other inlined 'TODO:' comments.
 - VSTGUI::CFileSelector is gone, you have to use VSTGUI::CNewFileSelector
 - VST extensions previously enabled via ENABLE_VST_EXTENSION_IN_VSTGUI is gone without replacement
 - VSTGUI::CBitmap was completely changed and does not use a transparency color anymore, you need to use the alpha channel of a bitmap to get the same results
-- VSTGUI::CControl::setValue (value) changed to VSTGUI::CControl::setValue (value, updateSubListeners)
 - VSTGUI::COffscreenContext is handled completely different. But in most cases you can simply remove all offscreens where you needed them to reduce flicker.
 - On Windows graphics are entirely drawn with GDI+ or Direct2D (when available), GDI is not used anymore
 - The internal string encoding is now always UTF-8

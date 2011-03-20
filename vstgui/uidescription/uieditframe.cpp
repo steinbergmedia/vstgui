@@ -1256,6 +1256,8 @@ void UIEditFrame::showOptionsMenu (const CPoint& where)
 //----------------------------------------------------------------------------------------------------
 void UIEditFrame::updateResourceBitmaps ()
 {
+	UIDescription::DeferChanges dc (uiDescription);
+
 	std::list<std::string> resBitmapPaths;
 	PlatformUtilities::gatherResourceBitmaps (resBitmapPaths);
 	std::list<const std::string*> uiDescBitmapNames;

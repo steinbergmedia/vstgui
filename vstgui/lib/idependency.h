@@ -38,11 +38,13 @@
 #include "vstguibase.h"
 #include "vstguidebug.h"
 #include <list>
+#include <set>
 
 namespace VSTGUI {
 
 //----------------------------------------------------------------------------------------------------
 /** @brief simple dependency between objects.
+	@ingroup new_in_4_0
 
 	You can inject this implementation into CBaseObjects whenever you need other CBaseObjects to be informed about
 	changes to that class instance. Note that you need to handle recursions yourself and that no reference counting is done
@@ -56,13 +58,28 @@ public:
 	virtual void addDependency (CBaseObject* obj);
 	/** remove a dependent object. */
 	virtual void removeDependency (CBaseObject* obj);
-
 	/** notify dependent objects of change with message. */
 	virtual void changed (IdStringPtr message);
+	/** defer changes until later. can be nested. If you use this, you must make sure that all message pointers are valid the whole time. */
+	virtual void deferChanges (bool state);
+
+	/** helper class to defer changes until instance is destroyed. */
+	class DeferChanges
+	{
+	public:
+		DeferChanges (IDependency* dep) : dep (dep) { dep->deferChanges (true); }
+		~DeferChanges () { dep->deferChanges (false); }
+	protected:
+		IDependency* dep;
+	};
+
 //----------------------------------------------------------------------------------------------------
 protected:
-	IDependency () {}
+	IDependency ();
 	virtual ~IDependency ();
+
+	int32_t deferChangeCount;
+	std::set<IdStringPtr> deferedChanges;
 	std::list<CBaseObject*> dependents;
 };
 
@@ -81,9 +98,37 @@ inline void IDependency::removeDependency (CBaseObject* obj)
 //----------------------------------------------------------------------------------------------------
 inline void IDependency::changed (IdStringPtr message)
 {
-	CBaseObject* This = dynamic_cast<CBaseObject*> (this);
-	for (std::list<CBaseObject*>::iterator it = dependents.begin (); it != dependents.end (); it++)
-		(*it)->notify (This, message);
+	if (deferChangeCount)
+	{
+		deferedChanges.insert (message);
+	}
+	else
+	{
+		CBaseObject* This = dynamic_cast<CBaseObject*> (this);
+		for (std::list<CBaseObject*>::const_iterator it = dependents.begin (); it != dependents.end (); it++)
+			(*it)->notify (This, message);
+	}
+}
+
+//----------------------------------------------------------------------------------------------------
+inline void IDependency::deferChanges (bool state)
+{
+	if (state)
+	{
+		deferChangeCount++;
+	}
+	else if (--deferChangeCount == 0)
+	{
+		for (std::set<IdStringPtr>::const_iterator it = deferedChanges.begin (); it != deferedChanges.end (); it++)
+			changed (*it);
+		deferedChanges.clear ();
+	}
+}
+
+//----------------------------------------------------------------------------------------------------
+inline IDependency::IDependency ()
+: deferChangeCount (0)
+{
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -97,5 +142,6 @@ inline IDependency::~IDependency ()
 #endif
 }
 
-}
+} // namespace
+
 #endif

@@ -78,20 +78,22 @@ public:
 
 	virtual CView* createViewForIndex (int32_t index) = 0;
 	virtual void switchContainerAttached () {}
+	virtual void switchContainerRemoved () {}
 protected:
 	UIViewSwitchContainer* viewSwitch;
 };
 
 //-----------------------------------------------------------------------------
-class UIDescriptionViewSwitchController : public CBaseObject, public IViewSwitchController, public CControlListener
+class UIDescriptionViewSwitchController : public CBaseObject, public IViewSwitchController
 {
 public:
 	UIDescriptionViewSwitchController (UIViewSwitchContainer* viewSwitch, UIDescription* uiDescription, IController* uiController);
 
 	CView* createViewForIndex (int32_t index);
 	void switchContainerAttached ();
+	void switchContainerRemoved ();
 
-	void valueChanged (CControl* pControl);
+	CMessageResult notify (CBaseObject* sender, IdStringPtr message);
 
 	void setTemplateNames (UTF8StringPtr templateNames); // comma separated
 	void getTemplateNames (std::string& str); // comma separated
@@ -103,6 +105,7 @@ protected:
 	IController* uiController;
 	int32_t switchControlTag;
 	int32_t currentIndex;
+	CControl* switchControl;
 	std::vector<std::string> templateNames;
 };
 
