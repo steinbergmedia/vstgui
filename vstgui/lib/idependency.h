@@ -43,7 +43,8 @@
 namespace VSTGUI {
 
 //----------------------------------------------------------------------------------------------------
-/** @brief simple dependency between objects.
+/** @brief simple dependency between objects [new in 4.0]
+
 	@ingroup new_in_4_0
 
 	You can inject this implementation into CBaseObjects whenever you need other CBaseObjects to be informed about
