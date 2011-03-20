@@ -13,20 +13,17 @@ Version 4 of VSTGUI is a new milestone release with a restructured code base wit
 The result is that code written for any earlier version of VSTGUI is not always compatible.
 It's recomended to start new projects with version 4 while old projects should stay with version 3.6.
 
-@section preview_notes Preview Notes
+@section beta_notes Beta Notes
 
-As this is a preview version, not everything is set in stone yet. The plan is to not change any API, but if there are good reasons
-to change some it will happen.
+This is the first beta version of VSTGUI 4. It's expected that from now on, no API changes will be made.
+There is still some work to do, before VSTGUI 4 will have release status :
 
-The main focus while developing this version was on compatibility with VST SDK 3.1. Testing for VST 2.x or AU was very limited at this point.
+- GDI+ line style needs implementation
+- more documentation about new classes needed
 
-And there is stuff currently not implemented or not working:
-- on Windows when Direct2D is used, all arc drawing methods are not yet implemented
-- on Windows when GDI+ is used, line style is not yet implemented
-- on Mac OS X, when target OS version is 10.4 some of the graphics path methods are not implemented and never will. You will see a compiler warning which ones are not implemented.
-- on Mac OS X, Carbon non composited windows are not working
-
-You are welcome to fix these holes and all other inlined 'TODO:' comments.
+Currently the following is not working and there is currently no plan to get this working. But if someone wants to make it work, you are welcome :
+- on Mac OS X, Carbon non composited windows
+- on Mac OS X, when target OS version is 10.4 some of the graphics path methods are not implemented.
 
 @section new_stuff New Stuff
 
