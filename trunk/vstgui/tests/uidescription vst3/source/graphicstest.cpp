@@ -84,17 +84,20 @@ public:
 };
 
 //------------------------------------------------------------------------
-class GraphicsViewController : public DelegationController
+class GraphicsViewController : public DelegationController, public CBaseObject
 {
 public:
 	GraphicsViewController (IController* controller) : DelegationController (controller), graphicsView (0) {}
+	~GraphicsViewController ();
 
 	CView* verifyView (CView* view, const UIAttributes& attributes, IUIDescription* description);
 	CControlListener* getControlListener (const char* controlTagName);
 	void valueChanged (CControl* pControl);
 
+	CMessageResult notify (CBaseObject* object, IdStringPtr message);
 protected:
 	GraphicsView* graphicsView;
+	std::list<CControl*> controls;
 };
 
 //------------------------------------------------------------------------
@@ -157,6 +160,13 @@ IController* GraphicsTestController::createSubController (const char* name, IUID
 //------------------------------------------------------------------------
 //------------------------------------------------------------------------
 //------------------------------------------------------------------------
+GraphicsViewController::~GraphicsViewController ()
+{
+	for (std::list<CControl*>::const_iterator it = controls.begin (); it != controls.end (); it++)
+		(*it)->removeDependency (this);
+}
+
+//------------------------------------------------------------------------
 CView* GraphicsViewController::verifyView (CView* view, const UIAttributes& attributes, IUIDescription* description)
 {
 	if (graphicsView == 0)
@@ -166,7 +176,8 @@ CView* GraphicsViewController::verifyView (CView* view, const UIAttributes& attr
 	{
 		if (control->getTag () == 20000 || control->getTag () == 20001)
 		{
-			control->addListener (this);
+			control->addDependency (this);
+			controls.push_back (control);
 			valueChanged (control);
 		}
 	}
@@ -184,6 +195,17 @@ CControlListener* GraphicsViewController::getControlListener (const char* contro
 		return this;
 	}
 	return DelegationController::getControlListener (controlTagName);
+}
+
+//------------------------------------------------------------------------
+CMessageResult GraphicsViewController::notify (CBaseObject* object, IdStringPtr message)
+{
+	if (message == CControl::kMessageValueChanged)
+	{
+		valueChanged (dynamic_cast<CControl*> (object));
+		return kMessageNotified;
+	}
+	return kMessageUnknown;
 }
 
 //------------------------------------------------------------------------

@@ -120,6 +120,8 @@ bool UIViewSwitchContainer::removed (CView* parent)
 	if (isAttached ())
 	{
 		bool result = CViewContainer::removed (parent);
+		if (result && controller)
+			controller->switchContainerRemoved ();
 		CViewContainer::removeAll ();
 		return result;
 	}
@@ -133,6 +135,7 @@ UIDescriptionViewSwitchController::UIDescriptionViewSwitchController (UIViewSwit
 , uiController (uiController)
 , switchControlTag (-1)
 , currentIndex (-1)
+, switchControl (0)
 {
 	init ();
 }
@@ -180,28 +183,39 @@ void UIDescriptionViewSwitchController::switchContainerAttached ()
 	if (switchControlTag != -1)
 	{
 		// find the switch Control
-		CControl* control = findControlTag (viewSwitch->getFrame (), switchControlTag);
-		if (control)
+		switchControl = findControlTag (viewSwitch->getFrame (), switchControlTag);
+		if (switchControl)
 		{
-			control->addListener (this);
-			valueChanged (control);
+			switchControl->addDependency (this);
+			notify (switchControl, CControl::kMessageValueChanged);
 		}
 	}
 }
 
 //-----------------------------------------------------------------------------
-void UIDescriptionViewSwitchController::valueChanged (CControl* pControl)
+void UIDescriptionViewSwitchController::switchContainerRemoved ()
 {
-	float value = pControl->getValue ();
-	float min = pControl->getMin ();
-	float max = pControl->getMax ();
-	float norm = (value - min) / (max - min);
-	int32_t index = std::min<int32_t> ((int32_t)(norm * (float)templateNames.size ()), (int32_t)templateNames.size ()-1);
-	if (index != currentIndex)
+	if (switchControl)
 	{
-		viewSwitch->setCurrentViewIndex (index);
-		currentIndex = index;
+		switchControl->removeDependency (this);
+		switchControl = 0;
 	}
+}
+
+//-----------------------------------------------------------------------------
+CMessageResult UIDescriptionViewSwitchController::notify (CBaseObject* sender, IdStringPtr message)
+{
+	if (sender == switchControl && message == CControl::kMessageValueChanged)
+	{
+		float norm = switchControl->getValueNormalized ();
+		int32_t index = std::min<int32_t> ((int32_t)(norm * (float)templateNames.size ()), (int32_t)templateNames.size ()-1);
+		if (index != currentIndex)
+		{
+			viewSwitch->setCurrentViewIndex (index);
+			currentIndex = index;
+		}
+	}
+	return kMessageUnknown;
 }
 
 //-----------------------------------------------------------------------------

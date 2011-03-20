@@ -165,7 +165,7 @@ public:
 	//@}
 
 	// overrides
-	virtual void setValue (float val, bool updateSubListeners = false);
+	virtual void setValue (float val);
 	virtual void setMin (float val) {}
 	virtual float getMin () const { return 0; }
 	virtual void setMax (float val) {}

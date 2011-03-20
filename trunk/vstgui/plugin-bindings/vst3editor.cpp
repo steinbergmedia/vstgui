@@ -267,12 +267,12 @@ protected:
 				(*it)->setMax (maxValue);
 				COptionMenu* optMenu = dynamic_cast<COptionMenu*> (*it);
 				if (optMenu)
-					(*it)->setValue ((float)value - minValue, true);
+					(*it)->setValue ((float)value - minValue);
 				else
-					(*it)->setValue ((float)value, true);
+					(*it)->setValue ((float)value);
 			}
 			else
-				(*it)->setValueNormalized ((float)value, true);
+				(*it)->setValueNormalized ((float)value);
 			(*it)->invalid ();
 			it++;
 		}
@@ -975,6 +975,7 @@ void VST3Editor::syncParameterTags ()
 	UIEditFrame* editFrame = dynamic_cast<UIEditFrame*> (frame);
 	if (editFrame)
 	{
+		UIDescription::DeferChanges dc (description);
 		Steinberg::Vst::EditController* editController = getController ();
 		int32_t paramCount = editController->getParameterCount ();
 		for (int32_t i = 0; i < paramCount; i++)

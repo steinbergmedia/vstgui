@@ -37,6 +37,7 @@
 
 #include "../cview.h"
 #include "../ifocusdrawing.h"
+#include "../idependency.h"
 #include <list>
 
 //------------------
@@ -120,7 +121,7 @@ enum CControlEnum
 // CControl Declaration
 //! @brief base class of all VSTGUI controls
 //-----------------------------------------------------------------------------
-class CControl : public CView, public IFocusDrawing
+class CControl : public CView, public IFocusDrawing, public IDependency
 {
 public:
 	CControl (const CRect& size, CControlListener* listener = 0, int32_t tag = 0, CBitmap* pBackground = 0);
@@ -130,10 +131,10 @@ public:
 	/// @name Value Methods
 	//-----------------------------------------------------------------------------
 	//@{
-	virtual void setValue (float val, bool updateSubListeners = false);
+	virtual void setValue (float val);
 	virtual float getValue () const { return value; };
 
-	virtual void setValueNormalized (float val, bool updateSubListeners = false);
+	virtual void setValueNormalized (float val);
 	virtual float getValueNormalized () const;
 
 	virtual void setMin (float val) { vmin = val; }
@@ -149,7 +150,7 @@ public:
 	virtual void bounceValue ();
 	virtual bool checkDefaultValue (CButtonState button);
 	
-	virtual void valueChanged ();	///< notifies listeners
+	virtual void valueChanged ();	///< notifies listener and dependent objects
 	//@}
 
 	//-----------------------------------------------------------------------------
@@ -164,10 +165,6 @@ public:
 
 	virtual CControlListener* getListener () const { return listener; }	///< get main listener
 	virtual void setListener (CControlListener* l) { listener = l; } ///< set main listener
-	
-	virtual void addListener (CControlListener* l) { listeners.push_back (l); } ///< add sub listener
-	virtual void removeListener (CControlListener* l) { listeners.remove (l); } ///< remove sub listener
-	const std::list<CControlListener*> getListeners () const { return listeners; } ///< get sub listeners
 	//@}
 
 	//-----------------------------------------------------------------------------
@@ -195,6 +192,13 @@ public:
 	static int32_t kZoomModifier;			///< zoom modifier key, per default is the shift key
 	static int32_t kDefaultValueModifier;	///< default value modifier key, per default is the control key
 
+	// messages send to dependent objects
+	static IdStringPtr kMessageTagWillChange;
+	static IdStringPtr kMessageTagDidChange;
+	static IdStringPtr kMessageValueChanged;
+	static IdStringPtr kMessageBeginEdit;
+	static IdStringPtr kMessageEndEdit;
+	
 	CLASS_METHODS_VIRTUAL(CControl, CView)
 protected:
 	~CControl ();
@@ -210,8 +214,6 @@ protected:
 	float wheelInc;
 
 	CPoint	backOffset;
-	
-	std::list<CControlListener*> listeners;
 };
 
 //-----------------------------------------------------------------------------

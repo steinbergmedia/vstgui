@@ -87,9 +87,9 @@ void UISelection::remove (CView* view)
 //----------------------------------------------------------------------------------------------------
 void UISelection::setExclusive (CView* view)
 {
+	DeferChanges dc (this);
 	empty ();
 	add (view);
-	changed (kMsgSelectionChanged);
 }
 
 //----------------------------------------------------------------------------------------------------
