@@ -1,8 +1,8 @@
 #!/bin/sh
 
-RELEASENAME=vstgui_beta_1
+RELEASENAME=vstgui_4_0_beta_1
 CHECKOUTDIR=tmp
-SVNDIR=trunk/vstgui/
+SVNDIR=tags/vstgui4/beta1/vstgui/
 
 # Export vstgui from Sourceforge
 mkdir -p $CHECKOUTDIR
@@ -16,3 +16,6 @@ doxygen Doxyfile
 # Build archive
 cd ../../
 tar cjvf $RELEASENAME.tar.bz2 .
+
+# Cleanup
+rm -r vstgui
