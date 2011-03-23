@@ -56,6 +56,7 @@ void CGraphicsPath::addRoundRect (const CRect& size, CCoord radius)
 	const CCoord Y3 = rect2.bottom; 
 	const CCoord Y2 = Y3 - radius;
 	const CPoint arcsize (radius, radius);
+	beginSubpath (CPoint (X2, Y));
 	addArc (CRect (CPoint (X2, Y), arcsize), 270., 360., false);
 	addArc (CRect (CPoint (X2, Y2), arcsize), 0., 90., false);
 	addArc (CRect (CPoint (X, Y2), arcsize), 90., 180., false);
