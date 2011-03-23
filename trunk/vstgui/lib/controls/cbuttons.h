@@ -172,6 +172,75 @@ private:
 	float   fEntryState;
 };
 
+//-----------------------------------------------------------------------------
+// CTextButton Declaration
+//!
+/// @ingroup controls
+//-----------------------------------------------------------------------------
+class CTextButton : public CKickButton
+{
+public:
+	CTextButton (const CRect& size, CControlListener* listener, int32_t tag, UTF8StringPtr title);
+
+	virtual void setTitle (UTF8StringPtr newTitle);
+	UTF8StringPtr getTitle () const { return title.c_str (); }
+
+	virtual void setFont (CFontRef newFont);
+	CFontRef getFont () const { return font; }
+	
+	virtual void setTextColor (const CColor& color);
+	const CColor& getTextColor () const { return textColor; }
+	virtual void setTextColorHighlighted (const CColor& color);
+	const CColor& getTextColorHighlighted () const { return textColorHighlighted; }
+	
+	virtual void setGradientStartColor (const CColor& color);
+	const CColor& getGradientStartColor () const { return gradientStartColor; }
+	virtual void setGradientStartColorHighlighted (const CColor& color);
+	const CColor& getGradientStartColorHighlighted () const { return gradientStartColorHighlighted; }
+	
+	virtual void setGradientEndColor (const CColor& color);
+	const CColor& getGradientEndColor () const { return gradientEndColor; }
+	virtual void setGradientEndColorHighlighted (const CColor& color);
+	const CColor& getGradientEndColorHighlighted () const { return gradientEndColorHighlighted; }
+	
+	virtual void setFrameColor (const CColor& color);
+	const CColor& getFrameColor () const { return frameColor; }
+	virtual void setFrameColorHighlighted (const CColor& color);
+	const CColor& getFrameColorHighlighted () const { return frameColorHighlighted; }
+
+	virtual void setFrameWidth (CCoord width);
+	CCoord getFrameWidth () const { return frameWidth; }
+
+	virtual void setRoundRadius (CCoord radius);
+	CCoord getRoundRadius () const { return roundRadius; }
+
+	void draw (CDrawContext* context);
+	int32_t onKeyDown (VstKeyCode& keyCode);
+	bool getFocusPath (CGraphicsPath& outPath);
+	void setViewSize (const CRect& rect, bool invalid = true);
+	bool removed (CView* parent);
+protected:
+	void invalidPath ();
+	CGraphicsPath* getPath (CDrawContext* context);
+
+	CFontRef font;
+	CGraphicsPath* _path;
+	
+	CColor textColor;
+	CColor gradientStartColor;
+	CColor gradientEndColor;
+	CColor frameColor;
+
+	CColor textColorHighlighted;
+	CColor gradientStartColorHighlighted;
+	CColor gradientEndColorHighlighted;
+	CColor frameColorHighlighted;
+
+	CCoord frameWidth;
+	CCoord roundRadius;
+	std::string title;
+};
+
 } // namespace
 
 #endif
