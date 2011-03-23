@@ -1612,6 +1612,245 @@ public:
 CTextEditCreator __gCTextEditCreator;
 
 //-----------------------------------------------------------------------------
+class CTextButtonCreator : public IViewCreator
+{
+public:
+	CTextButtonCreator () { UIViewFactory::registerViewCreator (*this); }
+	IdStringPtr getViewName () const { return "CTextButton"; }
+	IdStringPtr getBaseViewName () const { return "CControl"; }
+	CView* create (const UIAttributes& attributes, IUIDescription* description) const { return new CTextButton (CRect (0, 0, 100, 20), 0, -1, "Title"); }
+	bool apply (CView* view, const UIAttributes& attributes, IUIDescription* description) const
+	{
+		CTextButton* button = dynamic_cast<CTextButton*> (view);
+		if (!button)
+			return false;
+
+		const std::string* attr = attributes.getAttributeValue ("title");
+		if (attr)
+			button->setTitle (attr->c_str ());
+
+		attr = attributes.getAttributeValue ("font");
+		if (attr)
+		{
+			CFontRef font = description->getFont (attr->c_str ());
+			if (font)
+			{
+				rememberAttributeValueString (view, "font", *attr);
+				button->setFont (font);
+			}
+		}
+
+		CColor color;
+		attr = attributes.getAttributeValue ("text-color");
+		if (attr)
+		{
+			if (description->getColor (attr->c_str (), color))
+			{
+				rememberAttributeValueString (view, "text-color", *attr);
+				button->setTextColor (color);
+			}
+		}
+		attr = attributes.getAttributeValue ("text-color-highlighted");
+		if (attr)
+		{
+			if (description->getColor (attr->c_str (), color))
+			{
+				rememberAttributeValueString (view, "text-color-highlighted", *attr);
+				button->setTextColorHighlighted (color);
+			}
+		}
+		attr = attributes.getAttributeValue ("gradient-start-color");
+		if (attr)
+		{
+			if (description->getColor (attr->c_str (), color))
+			{
+				rememberAttributeValueString (view, "gradient-start-color", *attr);
+				button->setGradientStartColor (color);
+			}
+		}
+		attr = attributes.getAttributeValue ("gradient-start-color-highlighted");
+		if (attr)
+		{
+			if (description->getColor (attr->c_str (), color))
+			{
+				rememberAttributeValueString (view, "gradient-start-color-highlighted", *attr);
+				button->setGradientStartColorHighlighted (color);
+			}
+		}
+		attr = attributes.getAttributeValue ("gradient-end-color");
+		if (attr)
+		{
+			if (description->getColor (attr->c_str (), color))
+			{
+				rememberAttributeValueString (view, "gradient-end-color", *attr);
+				button->setGradientEndColor (color);
+			}
+		}
+		attr = attributes.getAttributeValue ("gradient-end-color-highlighted");
+		if (attr)
+		{
+			if (description->getColor (attr->c_str (), color))
+			{
+				rememberAttributeValueString (view, "gradient-end-color-highlighted", *attr);
+				button->setGradientEndColorHighlighted (color);
+			}
+		}
+		attr = attributes.getAttributeValue ("frame-color");
+		if (attr)
+		{
+			if (description->getColor (attr->c_str (), color))
+			{
+				rememberAttributeValueString (view, "frame-color", *attr);
+				button->setFrameColor (color);
+			}
+		}
+		attr = attributes.getAttributeValue ("frame-color-highlighted");
+		if (attr)
+		{
+			if (description->getColor (attr->c_str (), color))
+			{
+				rememberAttributeValueString (view, "frame-color-highlighted", *attr);
+				button->setFrameColorHighlighted (color);
+			}
+		}
+		attr = attributes.getAttributeValue ("frame-width");
+		if (attr)
+		{
+			CCoord width = strtof (attr->c_str (), 0);
+			button->setFrameWidth (width);
+		}
+		attr = attributes.getAttributeValue ("round-radius");
+		if (attr)
+		{
+			CCoord width = strtof (attr->c_str (), 0);
+			button->setRoundRadius (width);
+		}
+		return true;
+	}
+	bool getAttributeNames (std::list<std::string>& attributeNames) const
+	{
+		attributeNames.push_back ("title");
+		attributeNames.push_back ("font");
+		attributeNames.push_back ("text-color");
+		attributeNames.push_back ("text-color-highlighted");
+		attributeNames.push_back ("gradient-start-color");
+		attributeNames.push_back ("gradient-start-color-highlighted");
+		attributeNames.push_back ("gradient-end-color");
+		attributeNames.push_back ("gradient-end-color-highlighted");
+		attributeNames.push_back ("frame-color");
+		attributeNames.push_back ("frame-color-highlighted");
+		attributeNames.push_back ("frame-width");
+		attributeNames.push_back ("round-radius");
+		return true;
+	}
+	AttrType getAttributeType (const std::string& attributeName) const
+	{
+		if (attributeName == "title") return kStringType;
+		if (attributeName == "font") return kFontType;
+		if (attributeName == "text-color") return kColorType;
+		if (attributeName == "text-color-highlighted") return kColorType;
+		if (attributeName == "gradient-start-color") return kColorType;
+		if (attributeName == "gradient-start-color-highlighted") return kColorType;
+		if (attributeName == "gradient-end-color") return kColorType;
+		if (attributeName == "gradient-end-color-highlighted") return kColorType;
+		if (attributeName == "frame-color") return kColorType;
+		if (attributeName == "frame-color-highlighted") return kColorType;
+		if (attributeName == "frame-width") return kFloatType;
+		if (attributeName == "round-radius") return kFloatType;
+		return kUnknownType;
+	}
+	bool getAttributeValue (CView* view, const std::string& attributeName, std::string& stringValue, IUIDescription* desc) const
+	{
+		CTextButton* button = dynamic_cast<CTextButton*> (view);
+		if (!button)
+			return false;
+		if (attributeName == "title")
+		{
+			UTF8StringPtr title = button->getTitle ();
+			stringValue = title ? title : "";
+			return true;
+		}
+		else if (attributeName == "font")
+		{
+			if (getRememberedAttributeValueString (view, "font", stringValue))
+				return true;
+			UTF8StringPtr fontName = desc->lookupFontName (button->getFont ());
+			if (fontName)
+			{
+				stringValue = fontName;
+				return true;
+			}
+			return false;
+		}
+		else if (attributeName == "text-color")
+		{
+			if (!getRememberedAttributeValueString (view, "text-color", stringValue))
+				colorToString (button->getTextColor (), stringValue, desc);
+			return true;
+		}
+		else if (attributeName == "text-color-highlighted")
+		{
+			if (!getRememberedAttributeValueString (view, "text-color-highlighted", stringValue))
+				colorToString (button->getTextColorHighlighted (), stringValue, desc);
+			return true;
+		}
+		else if (attributeName == "gradient-start-color")
+		{
+			if (!getRememberedAttributeValueString (view, "gradient-start-color", stringValue))
+				colorToString (button->getGradientStartColor (), stringValue, desc);
+			return true;
+		}
+		else if (attributeName == "gradient-start-color-highlighted")
+		{
+			if (!getRememberedAttributeValueString (view, "gradient-start-color-highlighted", stringValue))
+				colorToString (button->getGradientStartColorHighlighted (), stringValue, desc);
+			return true;
+		}
+		else if (attributeName == "gradient-end-color")
+		{
+			if (!getRememberedAttributeValueString (view, "gradient-end-color", stringValue))
+				colorToString (button->getGradientEndColor (), stringValue, desc);
+			return true;
+		}
+		else if (attributeName == "gradient-end-color-highlighted")
+		{
+			if (!getRememberedAttributeValueString (view, "gradient-end-color-highlighted", stringValue))
+				colorToString (button->getGradientEndColorHighlighted (), stringValue, desc);
+			return true;
+		}
+		else if (attributeName == "frame-color")
+		{
+			if (!getRememberedAttributeValueString (view, "frame-color", stringValue))
+				colorToString (button->getFrameColor (), stringValue, desc);
+			return true;
+		}
+		else if (attributeName == "frame-color-highlighted")
+		{
+			if (!getRememberedAttributeValueString (view, "frame-color-highlighted", stringValue))
+				colorToString (button->getFrameColorHighlighted (), stringValue, desc);
+			return true;
+		}
+		else if (attributeName == "frame-width")
+		{
+			std::stringstream str;
+			str << button->getFrameWidth ();
+			stringValue = str.str ();
+			return true;
+		}
+		else if (attributeName == "round-radius")
+		{
+			std::stringstream str;
+			str << button->getRoundRadius ();
+			stringValue = str.str ();
+			return true;
+		}
+		return false;
+	}
+
+};
+CTextButtonCreator __gCTextButtonCreator;
+
+//-----------------------------------------------------------------------------
 class CKnobCreator : public IViewCreator
 {
 public:

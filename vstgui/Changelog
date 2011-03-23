@@ -1,3 +1,7 @@
+2011-03-23 arne
+
+	* added CTextButtton control view class
+
 2011-03-20 arne
 
 	* removed the sublisteners in CControl and replaced it by IDependency

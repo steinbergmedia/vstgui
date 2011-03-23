@@ -637,5 +637,221 @@ int32_t CCheckBox::onKeyDown (VstKeyCode& keyCode)
 	return -1;
 }
 
+//------------------------------------------------------------------------
+//------------------------------------------------------------------------
+//------------------------------------------------------------------------
+CTextButton::CTextButton (const CRect& size, CControlListener* listener, int32_t tag, UTF8StringPtr title)
+: CKickButton (size, listener, tag, 0)
+, title (title)
+, font (0)
+, _path (0)
+, frameWidth (1.)
+, roundRadius (6.)
+{
+	setFont (kSystemFont);
+	setTextColor (kBlackCColor);
+	setTextColorHighlighted (kWhiteCColor);
+	setGradientStartColor (CColor (220, 220, 220, 255));
+	setGradientStartColorHighlighted (CColor (180, 180, 180, 255));
+	setGradientEndColor (CColor (180, 180, 180, 255));
+	setGradientEndColorHighlighted (CColor (100, 100, 100, 255));
+	setFrameColor (kBlackCColor);
+	setFrameColorHighlighted (kBlackCColor);
+}
+
+//------------------------------------------------------------------------
+bool CTextButton::removed (CView* parent)
+{
+	invalidPath ();
+	return CKickButton::removed (parent);
+}
+
+//------------------------------------------------------------------------
+void CTextButton::setViewSize (const CRect& rect, bool invalid)
+{
+	invalidPath ();
+	CKickButton::setViewSize (rect, invalid);
+}
+
+//------------------------------------------------------------------------
+void CTextButton::setTitle (UTF8StringPtr newTitle)
+{
+	title = newTitle;
+	invalid ();
+}
+
+//------------------------------------------------------------------------
+void CTextButton::setFont (CFontRef newFont)
+{
+	if (newFont == 0)
+		return;
+	if (font)
+		font->forget ();
+	font = newFont;
+	if (font)
+		font->remember ();
+	invalid ();
+}
+
+//------------------------------------------------------------------------
+void CTextButton::setTextColor (const CColor& color)
+{
+	textColor = color;
+	invalid ();
+}
+
+//------------------------------------------------------------------------
+void CTextButton::setGradientStartColor (const CColor& color)
+{
+	gradientStartColor = color;
+	invalid ();
+}
+
+//------------------------------------------------------------------------
+void CTextButton::setGradientEndColor (const CColor& color)
+{
+	gradientEndColor = color;
+	invalid ();
+}
+
+//------------------------------------------------------------------------
+void CTextButton::setFrameColor (const CColor& color)
+{
+	frameColor = color;
+	invalid ();
+}
+
+//------------------------------------------------------------------------
+void CTextButton::setTextColorHighlighted (const CColor& color)
+{
+	textColorHighlighted = color;
+	invalid ();
+}
+
+//------------------------------------------------------------------------
+void CTextButton::setGradientStartColorHighlighted (const CColor& color)
+{
+	gradientStartColorHighlighted = color;
+	invalid ();
+}
+
+//------------------------------------------------------------------------
+void CTextButton::setGradientEndColorHighlighted (const CColor& color)
+{
+	gradientEndColorHighlighted = color;
+	invalid ();
+}
+
+//------------------------------------------------------------------------
+void CTextButton::setFrameColorHighlighted (const CColor& color)
+{
+	frameColorHighlighted = color;
+	invalid ();
+}
+
+//------------------------------------------------------------------------
+void CTextButton::setFrameWidth (CCoord width)
+{
+	frameWidth = width;
+	invalid ();
+}
+
+//------------------------------------------------------------------------
+void CTextButton::setRoundRadius (CCoord radius)
+{
+	roundRadius = radius;
+	invalidPath ();
+	invalid ();
+}
+
+//------------------------------------------------------------------------
+void CTextButton::draw (CDrawContext* context)
+{
+	bool highlight = value > 0.5 ? true : false;
+	context->setDrawMode (kAntiAliasing);
+	context->setLineWidth (frameWidth);
+	context->setLineStyle (CLineStyle (CLineStyle::kLineCapRound, CLineStyle::kLineJoinRound));
+	context->setFrameColor (highlight ? frameColorHighlighted : frameColor);
+	CRect r (getViewSize ());
+	r.inset (frameWidth / 2., frameWidth / 2.);
+	CGraphicsPath* path = getPath (context);
+	if (path)
+	{
+		CColor color1 = highlight ? gradientStartColorHighlighted : gradientStartColor;
+		CColor color2 = highlight ? gradientEndColorHighlighted : gradientEndColor;
+		CGradient* gradient = path->createGradient (0.2, 1, color1, color2);
+		if (gradient)
+		{
+			context->fillLinearGradient (path, *gradient, r.getTopLeft (), r.getBottomLeft (), false);
+			gradient->forget ();
+		}
+		else
+		{
+			context->setFillColor (highlight ? gradientStartColorHighlighted : gradientStartColor);
+			context->drawGraphicsPath (path, CDrawContext::kPathFilled);
+		}
+		context->drawGraphicsPath (path, CDrawContext::kPathStroked);
+	}
+	else
+	{
+		context->setFillColor (value > 0.5 ? gradientStartColorHighlighted : gradientStartColor);
+		context->drawRect (size, kDrawFilledAndStroked);
+	}
+	context->setFont (font);
+	context->setFontColor (value > 0.5 ? textColorHighlighted : textColor);
+	context->drawString (title.c_str (), size);
+	setDirty (false);
+}
+
+//------------------------------------------------------------------------
+int32_t CTextButton::onKeyDown (VstKeyCode& keyCode)
+{
+	if ((keyCode.virt == VKEY_ENTER || keyCode.virt == VKEY_RETURN) && getFrame ()->getFocusView () == this)
+	{
+		beginEdit ();
+		value = 1;
+		valueChanged ();
+		value = 0;
+		endEdit ();
+		return 1;
+	}
+	return -1;
+}
+
+//------------------------------------------------------------------------
+bool CTextButton::getFocusPath (CGraphicsPath& outPath)
+{
+	CRect r (getViewSize ());
+	CCoord focusWidth = getFrame ()->getFocusWidth ();
+	r.inset (-focusWidth, -focusWidth);
+	outPath.addRoundRect (r, roundRadius);
+	outPath.closeSubpath ();
+	r = getViewSize ();
+	r.inset (frameWidth / 2., frameWidth / 2.);
+	outPath.addRoundRect (r, roundRadius);
+	return true;
+}
+
+//------------------------------------------------------------------------
+CGraphicsPath* CTextButton::getPath (CDrawContext* context)
+{
+	if (_path == 0)
+	{
+		CRect r (getViewSize ());
+		r.inset (frameWidth / 2., frameWidth / 2.);
+		_path = context->createRoundRectGraphicsPath (r, roundRadius);
+	}
+	return _path;
+}
+
+//------------------------------------------------------------------------
+void CTextButton::invalidPath ()
+{
+	if (_path)
+	{
+		_path->forget ();
+		_path = 0;
+	}
+}
 
 } // namespace
