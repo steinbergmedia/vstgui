@@ -276,6 +276,8 @@ GraphicsView::~GraphicsView ()
 //------------------------------------------------------------------------
 void GraphicsView::draw (CDrawContext *pContext)
 {
+	CCoord x,y;
+	getFrame ()->getPosition (x, y);
 	CView::draw (pContext);
 	if (path[kStarPath] == 0)
 		path[kStarPath] = buildStarPath (pContext);

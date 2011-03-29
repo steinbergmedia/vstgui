@@ -42,7 +42,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				AdditionalIncludeDirectories="../../../../;../../../../../SKI/"
-				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;VSTGUI_LIVE_EDITING=1;DEVELOPMENT=1"
+				PreprocessorDefinitions="WIN32;_WINDOWS;VSTGUI_LIVE_EDITING=1;DEVELOPMENT=1"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
