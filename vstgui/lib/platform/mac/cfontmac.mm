@@ -160,7 +160,7 @@ void CoreTextFont::drawString (CDrawContext* context, const CString& string, con
 					CTLineDraw (line, cgContext);
 					if (style & kUnderlineFace)
 					{
-						CGFloat underlineOffset = CTFontGetUnderlinePosition (fontRef);
+						CGFloat underlineOffset = CTFontGetUnderlinePosition (fontRef) - 1.;
 						CGFloat underlineThickness = CTFontGetUnderlineThickness (fontRef);
 						CGContextSetStrokeColorWithColor (cgContext, cgColorRef);
 						CGContextSetLineWidth (cgContext, underlineThickness);
@@ -210,7 +210,7 @@ CCoord CoreTextFont::getStringWidth (CDrawContext* context, const CString& strin
 			CTLineRef line = CTLineCreateWithAttributedString (attrStr);
 			if (line)
 			{
-				result = floor (CTLineGetTypographicBounds (line, NULL, NULL, NULL) + (antialias ? 1.5 : 0.5));
+				result = CTLineGetTypographicBounds (line, NULL, NULL, NULL);
 				CFRelease (line);
 			}
 			CFRelease (attrStr);
