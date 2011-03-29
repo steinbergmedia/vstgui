@@ -77,11 +77,22 @@ HIViewTextEdit::HIViewTextEdit (HIViewRef parent, IPlatformTextEditCallback* tex
 	if (CreateEditUnicodeTextControl (NULL, &r, NULL, false, NULL, &textControl) == noErr)
 	{
 		HIViewAddSubview (parent, textControl);
-		EventTypeSpec eventTypes[] = { { kEventClassWindow, kEventWindowDeactivated }, { kEventClassKeyboard, kEventRawKeyDown }, { kEventClassKeyboard, kEventRawKeyRepeat }, { kEventClassControl, kEventControlDraw } };
+		EventTypeSpec eventTypes[] = {
+			{ kEventClassWindow, kEventWindowDeactivated },
+			{ kEventClassKeyboard, kEventRawKeyDown },
+			{ kEventClassKeyboard, kEventRawKeyRepeat },
+			{ kEventClassControl, kEventControlDraw },
+			{ kEventClassTextField, kEventTextDidChange }
+		};
 		InstallControlEventHandler (textControl, CarbonEventsTextControlProc, GetEventTypeCount (eventTypes), eventTypes, this, &eventHandler);
 		platformControl = textControl;
 
 		setText (text);
+
+		ControlEditTextSelectionRec selection;
+		selection.selStart = 0;
+		selection.selEnd = strlen (text);
+		SetControlData (platformControl, kControlEditTextPart, kControlEditTextSelectionTag, sizeof (ControlEditTextSelectionRec), &selection);
 
 		Boolean singleLineStyle = true;
 		SetControlData (textControl, kControlEditTextPart, kControlEditTextSingleLineTag, sizeof (Boolean), &singleLineStyle);
@@ -142,10 +153,6 @@ bool HIViewTextEdit::setText (UTF8StringPtr text)
 			SetControlData (platformControl, kControlEditTextPart, kControlEditTextCFStringTag, sizeof (CFStringRef), &textString);
 			CFRelease (textString);
 		}
-		ControlEditTextSelectionRec selection;
-		selection.selStart = 0;
-		selection.selEnd = strlen (text);
-		SetControlData (platformControl, kControlEditTextPart, kControlEditTextSelectionTag, sizeof (ControlEditTextSelectionRec), &selection);
 		return true;
 	}
 	return false;
@@ -232,12 +239,24 @@ pascal OSStatus HIViewTextEdit::CarbonEventsTextControlProc (EventHandlerCallRef
 			}
 			break;
 		}
-		#if 0 // TODO: make this work
-		#if (MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_4)
+		case kEventClassTextField:
+		{
+			switch (eventKind)
+			{
+				case kEventTextDidChange:
+				{
+					textEdit->textEdit->platformTextDidChange ();
+					break;
+				}
+			}
+			break;
+		}
 		case kEventClassControl:
 		{
 			switch (eventKind)
 			{
+			#if 0 // TODO: make this work
+			#if (MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_4)
 				case kEventControlDraw:
 				{
 					CGContextRef cgContext;
@@ -272,11 +291,11 @@ pascal OSStatus HIViewTextEdit::CarbonEventsTextControlProc (EventHandlerCallRef
 					}
 					break;
 				}
+			#endif
+			#endif
 			}
 			break;
 		}
-		#endif
-		#endif
 		case kEventClassWindow:
 		{
 			WindowRef window;

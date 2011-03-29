@@ -666,6 +666,12 @@ void Win32Frame::paint (HWND hwnd)
 				GetRegionData (rgn, len, updateRegionList);
 				if (updateRegionList->rdh.nCount > 0)
 				{
+#if 0
+					char str[1024];
+					sprintf (str, "WM_PAINT[%d]\n", updateRegionList->rdh.nCount);
+					DebugPrint (str);
+#endif
+
 					RECT* rp = (RECT*)updateRegionList->Buffer;
 					for (uint32_t i = 0; i < updateRegionList->rdh.nCount; i++)
 					{
@@ -984,7 +990,25 @@ LONG_PTR WINAPI Win32Frame::WindowProc (HWND hwnd, UINT message, WPARAM wParam, 
 				win32Frame->windowHandle = 0;
 				break;
 			}
-			case WM_ERASEBKGND: return 1; // don't draw background
+			case WM_ERASEBKGND:
+			{
+				return 1; // don't draw background
+			}
+			case WM_COMMAND:
+			{
+				if (HIWORD (wParam) == EN_CHANGE)
+				{
+					// text control changes will be forwarded to the text control window proc
+					HWND controlWindow = (HWND)lParam;
+					WINDOWSPROC textEditWindowProc = (WINDOWSPROC)(LONG_PTR)GetWindowLongPtr (controlWindow, GWLP_WNDPROC);
+					if (textEditWindowProc)
+					{
+						textEditWindowProc (controlWindow, WM_COMMAND, wParam, lParam);
+					}
+					DebugPrint ("");
+				}
+				break;
+			}
 		}
 	}
 	return DefWindowProc (hwnd, message, wParam, lParam);

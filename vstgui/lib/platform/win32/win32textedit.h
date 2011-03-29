@@ -66,6 +66,8 @@ public:
 
 //-----------------------------------------------------------------------------
 protected:
+	void textChanged ();
+
 	HWND platformControl;
 	HANDLE platformFont;
 	HBRUSH platformBackColor;

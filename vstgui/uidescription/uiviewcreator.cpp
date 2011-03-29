@@ -1578,20 +1578,25 @@ public:
 		if (!label)
 			return false;
 
-		const std::string* titleAttr = attributes.getAttributeValue ("title");
-		if (titleAttr)
-			label->setText (titleAttr->c_str ());
+		const std::string* attr = attributes.getAttributeValue ("title");
+		if (attr)
+			label->setText (attr->c_str ());
+		attr = attributes.getAttributeValue ("immediate-text-change");
+		if (attr)
+			label->setImmediateTextChange (*attr == "true" ? true : false);
 
 		return true;
 	}
 	bool getAttributeNames (std::list<std::string>& attributeNames) const
 	{
 		attributeNames.push_back ("title");
+		attributeNames.push_back ("immediate-text-change");
 		return true;
 	}
 	AttrType getAttributeType (const std::string& attributeName) const
 	{
 		if (attributeName == "title") return kStringType;
+		if (attributeName == "immediate-text-change") return kBooleanType;
 		return kUnknownType;
 	}
 	bool getAttributeValue (CView* view, const std::string& attributeName, std::string& stringValue, IUIDescription* desc) const
@@ -1605,6 +1610,12 @@ public:
 			stringValue = title ? title : "";
 			return true;
 		}
+		else if (attributeName == "immediate-text-change")
+		{
+			stringValue = label->getImmediateTextChange () ? "true" : "false";
+			return true;
+		}
+		
 		return false;
 	}
 

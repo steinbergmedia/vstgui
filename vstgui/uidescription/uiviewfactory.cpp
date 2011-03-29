@@ -33,6 +33,7 @@
 //-----------------------------------------------------------------------------
 
 #include "uiviewfactory.h"
+#include <map>
 
 namespace VSTGUI {
 
@@ -248,12 +249,12 @@ void UIViewFactory::collectRegisteredViewNames (std::list<const std::string*>& v
 void UIViewFactory::registerViewCreator (const IViewCreator& viewCreator)
 {
 	ViewCreatorRegistry& registry = getCreatorRegistry ();
+#if DEBUG
 	if (registry.find (viewCreator.getViewName ()) != registry.end ())
 	{
-		#if DEBUG
 		DebugPrint ("ViewCreateFunction for '%s' already registered\n", viewCreator.getViewName ());
-		#endif
 	}
+#endif
 	registry.insert (std::make_pair (viewCreator.getViewName (), &viewCreator));
 }
 

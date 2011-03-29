@@ -136,6 +136,7 @@ public:
 		pContext->setLineStyle (kLineSolid);
 		pContext->moveTo (CPoint (size.left, size.bottom));
 		pContext->lineTo (CPoint (size.right, size.bottom));
+		setDirty (false);
 	}
 
 	CMouseEventResult onMouseDown (CPoint &where, const CButtonState& button)

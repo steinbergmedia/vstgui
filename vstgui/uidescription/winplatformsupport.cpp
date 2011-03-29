@@ -203,7 +203,7 @@ void Win32Window::registerClass ()
 		VSTGUI_SPRINTF (gClassName, TEXT("PluginWin32Window%p"), GetInstance ());
 		
 		WNDCLASS windowClass;
-		windowClass.style = CS_DBLCLKS;
+		windowClass.style = CS_GLOBALCLASS | CS_DBLCLKS;
 
 		windowClass.lpfnWndProc = windowProc; 
 		windowClass.cbClsExtra  = 0; 
@@ -339,6 +339,17 @@ LONG_PTR WINAPI Win32Window::windowProc (HWND hWnd, UINT message, WPARAM wParam,
 				if (firstChild)
 					SetFocus (firstChild);
 				break;
+			}
+			case WM_ERASEBKGND:
+			{
+				return 1; // don't draw background
+			}
+			case WM_PAINT:
+			{
+				RECT r;
+				GetUpdateRect (hWnd, &r, FALSE);
+				ValidateRect (hWnd, &r);
+				return 0;
 			}
 		}
 	}
