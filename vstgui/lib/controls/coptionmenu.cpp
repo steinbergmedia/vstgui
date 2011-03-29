@@ -644,6 +644,7 @@ void COptionMenu::draw (CDrawContext *pContext)
 	CMenuItem* item = getEntry (currentIndex);
 	drawBack (pContext, inPopup ? bgWhenClick : 0);
 	drawText (pContext, item ? item->getTitle () : 0);
+	setDirty (false);
 }
 
 //------------------------------------------------------------------------

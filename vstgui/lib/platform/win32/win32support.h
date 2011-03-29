@@ -81,8 +81,6 @@ protected:
 	ULONG_PTR gdiplusToken;
 };
 
-static const int kUTFStringBufferSize = 128;
-
 class UTF8StringHelper
 {
 public:
@@ -90,7 +88,7 @@ public:
 	UTF8StringHelper (const WCHAR* wideStr) : wideStr (wideStr), allocUTF8Str (0), allocStrIsWide (false) {}
 	~UTF8StringHelper ()
 	{
-		if (allocUTF8Str && allocUTF8Str != buffer)
+		if (allocUTF8Str)
 			::free (allocUTF8Str);
 	}
 
@@ -106,14 +104,7 @@ public:
 			if (!allocWideStr && utf8Str)
 			{
 				int numChars = MultiByteToWideChar (CP_UTF8, 0, utf8Str, -1, 0, 0);
-				if ((numChars+1)*2 < kUTFStringBufferSize)
-				{
-					allocWideStr = (WCHAR*)buffer;
-				}
-				else
-				{
-					allocWideStr = (WCHAR*)::malloc ((numChars+1)*2);
-				}
+				allocWideStr = (WCHAR*)::malloc ((numChars+1)*2);
 				if (MultiByteToWideChar (CP_UTF8, 0, utf8Str, -1, allocWideStr, numChars) == 0)
 				{
 					allocWideStr[0] = 0;
@@ -131,14 +122,7 @@ public:
 			if (!allocUTF8Str && wideStr)
 			{
 				int allocSize = WideCharToMultiByte (CP_UTF8, 0, wideStr, -1, 0, 0, 0, 0);
-				if (allocSize < kUTFStringBufferSize)
-				{
-					allocUTF8Str = buffer;
-				}
-				else
-				{
-					allocUTF8Str = (char*)::malloc (allocSize+1);
-				}
+				allocUTF8Str = (char*)::malloc (allocSize+1);
 				if (WideCharToMultiByte (CP_UTF8, 0, wideStr, -1, allocUTF8Str, allocSize, 0, 0) == 0)
 				{
 					allocUTF8Str[0] = 0;
@@ -158,7 +142,6 @@ protected:
 	};
 
 	bool allocStrIsWide;
-	char buffer[kUTFStringBufferSize];
 };
 
 class ResourceStream : public IStream

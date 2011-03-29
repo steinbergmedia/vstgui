@@ -61,6 +61,7 @@ CTextEdit::CTextEdit (const CRect& size, CControlListener* listener, int32_t tag
 , platformControl (0)
 , textToValue (0)
 , textToValueUserData (0)
+, immediateTextChange (false)
 {
 	this->listener = listener;
 	this->tag = tag;
@@ -74,6 +75,7 @@ CTextEdit::CTextEdit (const CTextEdit& v)
 , platformControl (0)
 , textToValue (v.textToValue)
 , textToValueUserData (v.textToValueUserData)
+, immediateTextChange (v.immediateTextChange)
 {
 	setWantsFocus (true);
 }
@@ -91,6 +93,12 @@ void CTextEdit::setStringToValueProc (CTextEditStringToValueProc proc, void* use
 {
 	textToValue = proc;
 	textToValueUserData = userData;
+}
+
+//------------------------------------------------------------------------
+void CTextEdit::setImmediateTextChange (bool state)
+{
+	immediateTextChange = state;
 }
 
 //------------------------------------------------------------------------
@@ -214,6 +222,13 @@ bool CTextEdit::platformOnKeyDown (const VstKeyCode& key)
 }
 
 //------------------------------------------------------------------------
+void CTextEdit::platformTextDidChange ()
+{
+	if (platformControl && immediateTextChange)
+		updateText (platformControl);
+}
+
+//------------------------------------------------------------------------
 void CTextEdit::parentSizeChanged ()
 {
 	if (platformControl)
@@ -254,17 +269,7 @@ void CTextEdit::looseFocus ()
 	IPlatformTextEdit* _platformControl = platformControl;
 	platformControl = 0;
 	
-	const char* newText = _platformControl->getText ();
-	if (strcmp (newText, getText ()) != 0)
-	{
-		beginEdit ();
-
-		setText (newText);
-
-		valueChanged ();
-
-		endEdit ();
-	}
+	updateText (_platformControl);
 	
 	_platformControl->forget ();
 
@@ -275,6 +280,22 @@ void CTextEdit::looseFocus ()
 		if (receiver->notify (this, kMsgLooseFocus) == kMessageNotified)
 			break;
 		receiver = receiver->getParentView ();
+	}
+}
+
+//------------------------------------------------------------------------
+void CTextEdit::updateText (IPlatformTextEdit* pte)
+{
+	const char* newText = pte->getText ();
+	if (strcmp (newText, getText ()) != 0)
+	{
+		beginEdit ();
+
+		setText (newText);
+
+		valueChanged ();
+
+		endEdit ();
 	}
 }
 

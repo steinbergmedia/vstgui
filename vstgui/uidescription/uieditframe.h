@@ -169,6 +169,10 @@ protected:
 	int32_t onKeyDown (const VstKeyCode& code, CFrame* frame);
 	int32_t onKeyUp (const VstKeyCode& code, CFrame* frame);
 
+	void  setFocusView (CView* pView);
+	CView* getFocusView () const;
+	bool advanceNextFocusView (CView* oldFocus, bool reverse = false);
+
 	void onViewAdded (CView* pView);
 	void onViewRemoved (CView* pView);
 	

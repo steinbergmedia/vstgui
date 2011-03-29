@@ -750,9 +750,12 @@ void CScrollbar::setViewSize (const CRect &newSize, bool invalid)
 //-----------------------------------------------------------------------------
 void CScrollbar::setScrollSize (const CRect& ssize)
 {
-	scrollSize = ssize;
-	calculateScrollerLength ();
-	setDirty (true);
+	if (scrollSize != ssize)
+	{
+		scrollSize = ssize;
+		calculateScrollerLength ();
+		setDirty (true);
+	}
 }
 
 //-----------------------------------------------------------------------------

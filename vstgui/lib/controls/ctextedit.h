@@ -59,6 +59,9 @@ public:
 	//-----------------------------------------------------------------------------
 	//@{
 	virtual void setStringToValueProc (CTextEditStringToValueProc proc, void* userData = 0);
+	
+	virtual void setImmediateTextChange (bool state);	///< enable/disable immediate text change behaviour.
+	bool getImmediateTextChange () const { return immediateTextChange; }	///< get immediate text change behaviour
 	//@}
 
 	// overrides
@@ -81,6 +84,8 @@ public:
 protected:
 	~CTextEdit ();
 
+	void updateText (IPlatformTextEdit* pte);
+
 	CColor platformGetBackColor () const { return getBackColor (); }
 	CColor platformGetFontColor () const { return getFontColor (); }
 	CFontRef platformGetFont () const { return getFont (); }
@@ -91,11 +96,14 @@ protected:
 	CPoint platformGetTextInset () const { return getTextInset (); }
 	void platformLooseFocus (bool returnPressed);
 	bool platformOnKeyDown (const VstKeyCode& key);
+	void platformTextDidChange ();
 
 	IPlatformTextEdit* platformControl;
 
 	CTextEditStringToValueProc textToValue;
 	void* textToValueUserData;
+	
+	bool immediateTextChange;
 };
 
 } // namespace
