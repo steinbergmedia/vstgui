@@ -1,3 +1,10 @@
+2011-03-29 arne
+
+	* add immediate text change style to CTextEdit
+	* revert UTF8StringHelper optimization as it does not work under 64 bit
+	* some views does not call setDirty(false) in their draw methods. fixed.
+	* change default fonts on Mac to Arial like on Windows
+
 2011-03-23 arne
 
 	* added CTextButtton control view class

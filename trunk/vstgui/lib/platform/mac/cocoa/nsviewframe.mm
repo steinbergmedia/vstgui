@@ -734,7 +734,14 @@ void NSViewFrame::drawRect (NSRect* rect)
 //-----------------------------------------------------------------------------
 bool NSViewFrame::getGlobalPosition (CPoint& pos) const
 {
-	return false;
+	NSPoint p = [nsView convertPoint:[nsView bounds].origin toView:nil]; // window coordinates
+	p = [[nsView window] convertBaseToScreen:p];	// screen coordinates, 0,0 is bottom left
+	NSScreen* mainScreen = [[NSScreen screens] objectAtIndex:0];
+	NSRect screenRect = [mainScreen frame];
+	p.y = screenRect.size.height - (p.y + screenRect.origin.y);
+	pos.x = p.x;
+	pos.y = p.y;
+	return true;
 }
 
 //-----------------------------------------------------------------------------

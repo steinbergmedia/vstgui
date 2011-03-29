@@ -41,13 +41,13 @@ namespace VSTGUI {
 //-----------------------------------------------------------------------------
 #if MAC
 	static CFontDesc gSystemFont ("Lucida Grande", 12);
-	static CFontDesc gNormalFontVeryBig ("Helvetica", 18);
-	static CFontDesc gNormalFontBig ("Helvetica", 14);
-	static CFontDesc gNormalFont ("Helvetica", 12);
-	static CFontDesc gNormalFontSmall ("Helvetica", 11);
-	static CFontDesc gNormalFontSmaller ("Helvetica", 10);
-	static CFontDesc gNormalFontVerySmall ("Helvetica", 9);
-	static CFontDesc gSymbolFont ("Helvetica", 12);
+	static CFontDesc gNormalFontVeryBig ("Arial", 18);
+	static CFontDesc gNormalFontBig ("Arial", 14);
+	static CFontDesc gNormalFont ("Arial", 12);
+	static CFontDesc gNormalFontSmall ("Arial", 11);
+	static CFontDesc gNormalFontSmaller ("Arial", 10);
+	static CFontDesc gNormalFontVerySmall ("Arial", 9);
+	static CFontDesc gSymbolFont ("Symbol", 12);
 
 #elif WINDOWS
 	static CFontDesc gSystemFont ("Arial", 12);

@@ -164,6 +164,18 @@ static void VSTGUI_NSTextField_RemoveFromSuperview (id self, SEL _cmd)
 }
 
 //------------------------------------------------------------------------------------
+static void VSTGUI_NSTextField_TextDidChange (id self, SEL _cmd, NSNotification* notification)
+{
+	CocoaTextEdit* te = (CocoaTextEdit*)OBJC_GET_VALUE(self, _textEdit);
+	if (te && te->getTextEdit ())
+	{
+		te->getTextEdit ()->platformTextDidChange ();
+	}
+	__OBJC_SUPER(self)
+	objc_msgSendSuper (SUPER, @selector(textDidChange:), notification);
+}
+
+//------------------------------------------------------------------------------------
 static BOOL VSTGUI_NSTextField_DoCommandBySelector (id self, SEL _cmd, NSControl* control, NSTextView* textView, SEL commandSelector)
 {
 	CocoaTextEdit* te = (CocoaTextEdit*)OBJC_GET_VALUE(self, _textEdit);
@@ -228,6 +240,7 @@ void CocoaTextEdit::initClass ()
 		res = class_addMethod (textFieldClass, @selector(syncSize), IMP (VSTGUI_NSTextField_SyncSize), "v@:@:");
 		res = class_addMethod (textFieldClass, @selector(removeFromSuperview), IMP (VSTGUI_NSTextField_RemoveFromSuperview), "v@:@:");
 		res = class_addMethod (textFieldClass, @selector(control:textView:doCommandBySelector:), IMP (VSTGUI_NSTextField_DoCommandBySelector), "B@:@:@:@::");
+		res = class_addMethod (textFieldClass, @selector(textDidChange:), IMP (VSTGUI_NSTextField_TextDidChange), "v@:@:@@:");
 		res = class_addIvar (textFieldClass, "_textEdit", sizeof (void*), (uint8_t)log2(sizeof(void*)), @encode(void*));
 		objc_registerClassPair (textFieldClass);
 	}

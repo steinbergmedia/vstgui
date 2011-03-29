@@ -707,6 +707,7 @@ void CSplitViewSeparatorView::draw (CDrawContext *pContext)
 			pContext->lineTo (p);
 		}
 	}
+	setDirty (false);
 }
 
 //-----------------------------------------------------------------------------

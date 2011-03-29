@@ -60,6 +60,7 @@ public:
 	virtual CPoint platformGetTextInset () const = 0;
 	virtual void platformLooseFocus (bool returnPressed) = 0;
 	virtual bool platformOnKeyDown (const VstKeyCode& key) = 0;
+	virtual void platformTextDidChange () = 0;
 
 //------------------------------------------------------------------------------------
 };

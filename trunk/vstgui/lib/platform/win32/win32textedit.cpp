@@ -79,6 +79,7 @@ Win32TextEdit::Win32TextEdit (HWND parent, IPlatformTextEditCallback* textEdit)
 		rect.bottom -= adjust;
 	}
 	UTF8StringHelper stringHelper (textEdit->platformGetText ());
+	text = stringHelper;
 
 	DWORD wxStyle = 0;
 	if (getD2DFactory () == 0 && getSystemVersion ().dwMajorVersion >= 6) // Vista and above
@@ -132,6 +133,9 @@ Win32TextEdit::~Win32TextEdit ()
 //-----------------------------------------------------------------------------
 UTF8StringPtr Win32TextEdit::getText ()
 {
+#if 1
+	return text.c_str ();
+#else
 	if (platformControl)
 	{
 		int textLength = GetWindowTextLength (platformControl);
@@ -143,14 +147,15 @@ UTF8StringPtr Win32TextEdit::getText ()
 		return text.c_str ();
 	}
 	return "";
+#endif
 }
 
 //-----------------------------------------------------------------------------
-bool Win32TextEdit::setText (UTF8StringPtr text)
+bool Win32TextEdit::setText (UTF8StringPtr _text)
 {
-	if (platformControl)
+	if (platformControl && text != _text)
 	{
-		UTF8StringHelper windowText (text);
+		UTF8StringHelper windowText (_text);
 		return SetWindowText (platformControl, windowText) ? true : false;
 	}
 	return false;
@@ -159,7 +164,23 @@ bool Win32TextEdit::setText (UTF8StringPtr text)
 //-----------------------------------------------------------------------------
 bool Win32TextEdit::updateSize ()
 {
+	// TODO: Implement me !
 	return false;
+}
+
+//-----------------------------------------------------------------------------
+void Win32TextEdit::textChanged ()
+{
+	if (platformControl)
+	{
+		int textLength = GetWindowTextLength (platformControl);
+		TCHAR* newText = new TCHAR[textLength+1];
+		GetWindowText (platformControl, newText, textLength+1);
+		UTF8StringHelper windowText (newText);
+		text = windowText;		
+		delete [] newText;
+		textEdit->platformTextDidChange ();
+	}
 }
 
 //-----------------------------------------------------------------------------
@@ -195,7 +216,8 @@ LONG_PTR WINAPI Win32TextEdit::procEdit (HWND hwnd, UINT message, WPARAM wParam,
 							return 0;
 					}
 				}
-			} break;
+				break;
+			}
 
 			case WM_KILLFOCUS:
 			{
@@ -204,13 +226,16 @@ LONG_PTR WINAPI Win32TextEdit::procEdit (HWND hwnd, UINT message, WPARAM wParam,
 					win32TextEdit->textEdit->platformLooseFocus (false);
 					return 0;
 				}
-			} break;
-//			case WM_PAINT:
-//			{
-//				LONG_PTR result = CallWindowProc (oldProc, hwnd, message, wParam, lParam);
-//				return result;
-//				break;
-//			}
+				break;
+			}
+			case WM_COMMAND:
+			{
+				if (HIWORD (wParam) == EN_CHANGE && win32TextEdit->textEdit)
+				{
+					win32TextEdit->textChanged ();
+				}
+				return 0;
+			}
 		}
 		return CallWindowProc (oldProc, hwnd, message, wParam, lParam);
 	}

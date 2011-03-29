@@ -986,6 +986,29 @@ void UIEditFrame::onViewRemoved (CView* pView)
 }
 
 //----------------------------------------------------------------------------------------------------
+void  UIEditFrame::setFocusView (CView* pView)
+{
+	if (editMode != kEditMode)
+		CFrame::setFocusView (pView);
+}
+
+//----------------------------------------------------------------------------------------------------
+CView* UIEditFrame::getFocusView () const
+{
+	if (editMode == kEditMode)
+		return 0;
+	return CFrame::getFocusView ();
+}
+
+//----------------------------------------------------------------------------------------------------
+bool UIEditFrame::advanceNextFocusView (CView* oldFocus, bool reverse)
+{
+	if (editMode == kEditMode)
+		return false;
+	return CFrame::advanceNextFocusView (oldFocus, reverse);
+}
+
+//----------------------------------------------------------------------------------------------------
 static void gatherViewNames (UIViewFactory* factory, std::list<const std::string*>& controlViewNames, std::list<const std::string*>& containerViewNames, std::list<const std::string*>& otherViewNames)
 {
 	factory->collectRegisteredViewNames (controlViewNames, "CControl");

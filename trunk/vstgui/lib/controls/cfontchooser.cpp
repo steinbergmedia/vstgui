@@ -83,6 +83,7 @@ public:
 			glyphRect.offset (0, height);
 			text = "";
 		}
+		setDirty (false);
 	}
 	
 protected:

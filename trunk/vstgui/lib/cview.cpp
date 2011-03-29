@@ -446,11 +446,14 @@ void CView::takeFocus ()
  */
 void CView::setViewSize (const CRect& newSize, bool invalid)
 {
-	size = newSize;
-	if (invalid)
-		setDirty ();
-	if (getParentView ())
-		getParentView ()->notify (this, kMsgViewSizeChanged);
+	if (size != newSize)
+	{
+		size = newSize;
+		if (invalid)
+			setDirty ();
+		if (getParentView ())
+			getParentView ()->notify (this, kMsgViewSizeChanged);
+	}
 }
 
 //------------------------------------------------------------------------------
