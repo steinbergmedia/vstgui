@@ -1,3 +1,9 @@
+2011-04-06 arne
+
+	* fix control-click in cocoa not a right click
+	* fix an update bug with COptionMenu not setting the value correctly on popup
+	* gdiplus line style implementation
+
 2011-03-29 arne
 
 	* add immediate text change style to CTextEdit

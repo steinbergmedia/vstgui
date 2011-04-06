@@ -260,6 +260,50 @@ protected:
 	CCoord viewSizes[3];
 };
 
+class LineStyleTestView : public CControl
+{
+public:
+	LineStyleTestView (const CRect& size) : CControl (size) {}
+
+	void setupLineStyle (CDrawContext* context)
+	{
+		context->setFrameColor (kBlackCColor);
+		context->setDrawMode (kAntiAliasing);
+		context->setLineWidth (5);
+		const CCoord kDefaultOnOffDashLength[] = {1, 2};
+		switch ((int32_t)value)
+		{
+			case 0: context->setLineStyle (kLineSolid); break;
+			case 1: context->setLineStyle (CLineStyle (CLineStyle::kLineCapButt, CLineStyle::kLineJoinRound)); break;
+			case 2: context->setLineStyle (CLineStyle (CLineStyle::kLineCapButt, CLineStyle::kLineJoinBevel)); break;
+			case 3: context->setLineStyle (kLineOnOffDash); break;
+			case 4: context->setLineStyle (CLineStyle (CLineStyle::kLineCapRound, CLineStyle::kLineJoinMiter, 0, 2, kDefaultOnOffDashLength)); break;
+			case 5: context->setLineStyle (CLineStyle (CLineStyle::kLineCapSquare, CLineStyle::kLineJoinMiter, 0, 2, kDefaultOnOffDashLength)); break;
+		}
+		
+	}
+
+	void draw (CDrawContext* context)
+	{
+		CGraphicsPath* path = context->createGraphicsPath ();
+		if (path)
+		{
+			CRect r (getViewSize ());
+			r.inset (5, 5);
+			path->beginSubpath (CPoint (r.left + r.getWidth () / 2, r.top));
+			path->addLine (CPoint (r.left, r.bottom));
+			path->addLine (CPoint (r.right, r.bottom));
+			path->closeSubpath ();
+			setupLineStyle (context);
+			context->drawGraphicsPath (path, CDrawContext::kPathStroked);
+			path->forget ();
+		}
+		setDirty (false);
+	}
+
+	CLASS_METHODS(LineStyleTestView, CControl)
+};
+
 //------------------------------------------------------------------------
 //------------------------------------------------------------------------
 //------------------------------------------------------------------------
@@ -281,6 +325,15 @@ tresult PLUGIN_API UIDescriptionTestController::initialize (FUnknown* context)
 		slp->appendString (USTRING("Tab3"));
 		slp->appendString (USTRING("Tab4"));
 		slp->appendString (USTRING("Tab5"));
+		uiParameters.addParameter (slp);
+		
+		slp = new StringListParameter (USTRING("LineStyle"), 20001);
+		slp->appendString (USTRING("Solid"));
+		slp->appendString (USTRING("Solid Round Join"));
+		slp->appendString (USTRING("Solid Bevel Join"));
+		slp->appendString (USTRING("On-Off"));
+		slp->appendString (USTRING("On-Off Round Cap"));
+		slp->appendString (USTRING("On-Off Square Cap"));
 		uiParameters.addParameter (slp);
 	}
 	return res;
@@ -309,6 +362,16 @@ IController* UIDescriptionTestController::createSubController (const char* name,
 			splitViewController = new SplitViewController (editor);
 		splitViewController->remember ();
 		return dynamic_cast<IController*> (splitViewController);
+	}
+	return 0;
+}
+
+//------------------------------------------------------------------------
+CView* UIDescriptionTestController::createCustomView (UTF8StringPtr name, const UIAttributes& attributes, IUIDescription* description, VST3Editor* editor)
+{
+	if (strcmp (name, "LineStyleTestView") == 0)
+	{
+		return new LineStyleTestView (CRect (0, 0, 0, 0));
 	}
 	return 0;
 }

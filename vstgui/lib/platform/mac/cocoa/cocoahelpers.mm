@@ -162,7 +162,7 @@ HIDDEN int32_t eventButton (NSEvent* theEvent)
 	int32_t buttons = 0;
 	switch ([theEvent buttonNumber])
 	{
-		case 0: buttons = kLButton; break;
+		case 0: buttons = ([theEvent modifierFlags] & NSControlKeyMask) ? kRButton : kLButton; break;
 		case 1: buttons = kRButton; break;
 		case 2: buttons = kMButton; break;
 		case 3: buttons = kButton4; break;

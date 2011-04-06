@@ -406,9 +406,10 @@ bool COptionMenu::popup ()
 		PlatformOptionMenuResult platformPopupResult = platformMenu->popup (this);
 		if (platformPopupResult.menu != 0)
 		{
+			IDependency::DeferChanges dc (this);
 			lastMenu = platformPopupResult.menu;
 			lastResult = platformPopupResult.index;
-			lastMenu->value = (float)lastResult;
+			lastMenu->setValue ((float)lastResult);
 			valueChanged ();
 			invalid ();
 			popupResult = true;

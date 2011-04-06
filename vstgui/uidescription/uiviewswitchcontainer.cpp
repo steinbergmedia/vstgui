@@ -85,7 +85,7 @@ void UIViewSwitchContainer::setCurrentViewIndex (int32_t viewIndex)
 			if (getFrame ())
 				getFrame ()->getAnimator ()->removeAnimation (this, "UIViewSwitchContainer::setCurrentViewIndex");
 			CView* oldView = getView (0);
-			if (oldView && getFrame ())
+			if (isAttached () && oldView && getFrame ())
 			{
 				getFrame ()->getAnimator ()->addAnimation (this, "UIViewSwitchContainer::setCurrentViewIndex", new Animation::ExchangeViewAnimation (oldView, view, Animation::ExchangeViewAnimation::kAlphaValueFade), new Animation::LinearTimingFunction (120));
 			}

@@ -95,6 +95,8 @@ public:
 			parameter->addDependent (this);
 		}
 		addControl (control);
+		if (parameter)
+			parameter->changed ();
 	}
 
 	~ParameterChangeListener ()
