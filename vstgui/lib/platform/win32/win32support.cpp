@@ -98,16 +98,16 @@ public:
 			#endif
 				HRESULT hr = _D2D1CreateFactory (D2D1_FACTORY_TYPE_MULTI_THREADED, __uuidof(ID2D1Factory), options, (void**)&factory);
 			}
-		}
-		dwriteDll = LoadLibraryA ("dwrite.dll");
-		if (dwriteDll)
-		{
-			DWriteCreateFactoryProc _DWriteCreateFactory = (DWriteCreateFactoryProc)GetProcAddress (dwriteDll, "DWriteCreateFactory");
-			if (_DWriteCreateFactory)
+			dwriteDll = LoadLibraryA ("dwrite.dll");
+			if (dwriteDll)
 			{
-				HRESULT hr = _DWriteCreateFactory (DWRITE_FACTORY_TYPE_SHARED, __uuidof(IDWriteFactory), (void**)&writeFactory);
-			}
-		}	
+				DWriteCreateFactoryProc _DWriteCreateFactory = (DWriteCreateFactoryProc)GetProcAddress (dwriteDll, "DWriteCreateFactory");
+				if (_DWriteCreateFactory)
+				{
+					HRESULT hr = _DWriteCreateFactory (DWRITE_FACTORY_TYPE_SHARED, __uuidof(IDWriteFactory), (void**)&writeFactory);
+				}
+			}	
+		}
 	}
 
 	~D2DFactory ()

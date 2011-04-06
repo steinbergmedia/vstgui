@@ -745,6 +745,7 @@ void CScrollbar::setViewSize (const CRect &newSize, bool invalid)
 	scrollerArea = newSize;
 	scrollerArea.inset (2, 2);
 	CControl::setViewSize (newSize, invalid);
+	calculateScrollerLength ();
 }
 
 //-----------------------------------------------------------------------------

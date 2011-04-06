@@ -181,7 +181,6 @@ protected:
 	Xml::IContentProvider* xmlContentProvider;
 
 	std::deque<UINode*> nodeStack;
-	int32_t parseState;
 };
  
 //-----------------------------------------------------------------------------

@@ -438,17 +438,38 @@ void GdiplusDrawContext::setLineStyle (const CLineStyle& style)
 		return;
 	if (pPen)
 	{
-		#if 0 // TODO: Implementation
-		switch (style) 
+		Gdiplus::LineCap lineCap;
+		switch (style.getLineCap ())
 		{
-			case kLineOnOffDash: 
-				pPen->SetDashStyle (Gdiplus::DashStyleDot);
-				break;
-			default:
-				pPen->SetDashStyle (Gdiplus::DashStyleSolid);
-				break;
+			case CLineStyle::kLineCapButt: lineCap = Gdiplus::LineCapFlat; break;
+			case CLineStyle::kLineCapRound: lineCap = Gdiplus::LineCapRound; break;
+			case CLineStyle::kLineCapSquare: lineCap = Gdiplus::LineCapSquare; break;
 		}
-		#endif
+		pPen->SetLineCap (lineCap, lineCap, Gdiplus::DashCapFlat); // DashCapFlat correct ?
+
+		Gdiplus::LineJoin lineJoin;
+		switch (style.getLineJoin ())
+		{
+			case CLineStyle::kLineJoinMiter: lineJoin = Gdiplus::LineJoinMiter; break;
+			case CLineStyle::kLineJoinRound: lineJoin = Gdiplus::LineJoinRound; break;
+			case CLineStyle::kLineJoinBevel: lineJoin = Gdiplus::LineJoinBevel; break;
+		}
+		pPen->SetLineJoin (lineJoin);
+
+		pPen->SetDashOffset ((Gdiplus::REAL)style.getDashPhase ());
+		
+		if (style.getDashCount () == 0)
+		{
+			pPen->SetDashStyle (Gdiplus::DashStyleSolid);
+		}
+		else
+		{
+			Gdiplus::REAL* dashes = new Gdiplus::REAL [style.getDashCount ()];
+			for (int32_t i = 0; i < style.getDashCount (); i++)
+				dashes[i] = (Gdiplus::REAL)style.getDashLengths ()[i];
+			pPen->SetDashPattern (dashes, style.getDashCount ());
+			delete [] dashes; 
+		}
 	}
 	COffscreenContext::setLineStyle (style);
 }
