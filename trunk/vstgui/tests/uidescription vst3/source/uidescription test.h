@@ -56,6 +56,7 @@ public:
 	void willClose (VST3Editor* editor);
 
 	IController* createSubController (const char* name, IUIDescription* description, VST3Editor* editor);
+	CView* createCustomView (UTF8StringPtr name, const UIAttributes& attributes, IUIDescription* description, VST3Editor* editor);
 
 	static Steinberg::FUnknown* createInstance (void*) { return (Steinberg::Vst::IEditController*)new UIDescriptionTestController; }
 	static Steinberg::FUID cid;

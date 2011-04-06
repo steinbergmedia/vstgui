@@ -148,6 +148,26 @@ public:
 	void draw (CDrawContext* context)
 	{
 		context->setDrawMode (kAliasing);
+		if (color.alpha != 255)
+		{
+			context->setFillColor (kWhiteCColor);
+			context->drawRect (size, kDrawFilled);
+			context->setFillColor (kBlackCColor);
+			CRect r (size.left, size.top, size.left + 5, size.top + 5);
+			for (int32_t x = 0; x < size.getWidth (); x+=5)
+			{
+				r.left = size.left + x;
+				r.top = x % 2 ? size.top : size.top + 5;
+				r.right = r.left + 5;
+				r.bottom = r.top + 5;
+				for (int32_t y = 0; y < size.getHeight (); y+=10)
+				{
+					context->drawRect (r, kDrawFilled);
+					r.offset (0, 10);
+				}
+			}
+		}
+		
 		context->setFillColor (color);
 		context->setFrameColor (kBlackCColor);
 		context->drawRect (size, kDrawFilledAndStroked);
