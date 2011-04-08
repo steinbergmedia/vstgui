@@ -57,8 +57,8 @@ class InputStream;
 class OutputStream;
 
 //-----------------------------------------------------------------------------
-//! @brief extension to CControlListener used by UIDescription [new in 4.0]
-//! @ingroup new_in_4_0
+/// @brief extension to CControlListener used by UIDescription
+/// @ingroup new_in_4_0
 //-----------------------------------------------------------------------------
 class IController : public CControlListener
 {
@@ -89,8 +89,8 @@ public:
 };
 
 //-----------------------------------------------------------------------------
-//! @brief XML description parser and view creator [new in 4.0]
-//! @ingroup new_in_4_0
+/// @brief XML description parser and view creator
+/// @ingroup new_in_4_0
 //-----------------------------------------------------------------------------
 class UIDescription : public CBaseObject, public IUIDescription, public Xml::IHandler, public IDependency
 {

@@ -1134,7 +1134,7 @@ void UIEditFrame::showOptionsMenu (const CPoint& where)
 
 				menu->addEntry (viewMenu, "Insert Subview");
 				if (selectionCount > 0 && !selection->contains (getView (0)))
-					menu->addEntry (embedViewMenu, "Embed Into ...");
+					menu->addEntry (embedViewMenu, "Embed Into");
 				embedViewMenu->forget ();
 
 				std::list<const std::string*> templateNames;
@@ -2520,6 +2520,7 @@ void UIEditFrame::performUndo ()
 		(*undoStack)->undo ();
 		undoStack--;
 		invalidSelection ();
+		selection->changed (UISelection::kMsgSelectionViewChanged);
 	}
 }
 
@@ -2534,6 +2535,7 @@ void UIEditFrame::performRedo ()
 			invalidSelection ();
 			(*undoStack)->perform ();
 			invalidSelection ();
+			selection->changed (UISelection::kMsgSelectionViewChanged);
 		}
 	}
 }

@@ -41,8 +41,7 @@ namespace VSTGUI {
 
 //-----------------------------------------------------------------------------
 // IFocusDrawing Declaration
-/// @brief Custom focus drawing interface [new in 4.0]
-///
+/// @brief Custom focus drawing interface
 ///	@ingroup new_in_4_0
 ///
 /// If focus drawing is enabled custom views can implement this interface to set a custom shape to be drawn if the view is the focus view.

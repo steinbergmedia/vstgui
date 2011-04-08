@@ -44,9 +44,8 @@ namespace VSTGUI {
 class CGradient;
 
 //-----------------------------------------------------------------------------
-/// @brief Graphics Transform Matrix [new in 4.0]
-//!
-//! @ingroup new_in_4_0
+/// @brief Graphics Transform Matrix
+/// @ingroup new_in_4_0
 //-----------------------------------------------------------------------------
 struct CGraphicsTransform
 {
@@ -114,11 +113,8 @@ struct CGraphicsTransform
 };
 
 //-----------------------------------------------------------------------------
-/*! @class CGraphicsPath
-	@brief Graphics Path Object [new in 4.0]
-
-	@ingroup new_in_4_0
-*/
+///	@brief Graphics Path Object
+///	@ingroup new_in_4_0
 //-----------------------------------------------------------------------------
 class CGraphicsPath : public CBaseObject
 {
@@ -182,6 +178,8 @@ protected:
 
 	virtual void dirty () = 0; ///< platform object should be released
 
+	/// @cond ignore
+
 	struct Rect {
 		CCoord left;
 		CCoord top;
@@ -229,16 +227,15 @@ protected:
 
 	inline void CRect2Rect (const CRect& rect, CGraphicsPath::Rect& r) {r.left = rect.left;r.right = rect.right;r.top = rect.top;r.bottom = rect.bottom;}
 	inline void CPoint2Point (const CPoint& point, CGraphicsPath::Point& p) {p.x = point.x;p.y = point.y;}
+	/// @endcond
 
 	std::list<Element> elements;
 };
 
 //-----------------------------------------------------------------------------
-/*! @class CGradient
-	@brief Gradient Object [new in 4.0]
-
-	@ingroup new_in_4_0
-*/
+///	@brief Gradient Object [new in 4.0]
+///	@ingroup new_in_4_0
+//-----------------------------------------------------------------------------
 class CGradient : public CBaseObject
 {
 public:
