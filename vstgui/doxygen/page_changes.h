@@ -15,11 +15,12 @@ It's recomended to start new projects with version 4 while old projects should s
 
 @section beta_notes Beta Notes
 
-This is the first beta version of VSTGUI 4. It's expected that from now on, no API changes will be made.
-There is still some work to do, before VSTGUI 4 will have release status :
+This is the second beta version of VSTGUI 4. It's expected that no API changes will be made.
+But there is still some work to do, before VSTGUI 4 will have release status :
 
-- GDI+ line style needs implementation
-- more documentation about new classes needed
+- testing
+- bug fixing
+- more documentation
 
 Currently the following is not working and there is currently no plan to get this working. But if someone wants to make it work, you are welcome :
 - on Mac OS X, Carbon non composited windows

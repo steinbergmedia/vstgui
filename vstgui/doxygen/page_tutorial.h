@@ -7,6 +7,9 @@ This tutorial should give you a brief overview on how to get started using VSTGU
 - @ref addingviewsandcontrols @n
 - @ref controllistener @n
 
+Note: If you are new to VST in general, consider using the VST3 SDK so that you can use @ref uidescription_vst3_support.
+The VST3 SDK includes a wrapper so that the VST3 plug-in can be used in hosts which only supports VST2. 
+
 @section vstintegration VST Integration
 
 To add a user interface to a VST Plug-In with VSTGUI is quiet simple.

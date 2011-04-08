@@ -54,6 +54,8 @@ public:
 
 	CMouseEventResult onMouseEntered (CPoint& where, const CButtonState& buttons);
 	CMouseEventResult onMouseExited (CPoint& where, const CButtonState& buttons);
+
+	bool removed (CView* parent);
 protected:
 	enum {
 		kMouseOver = 1 << 0,
@@ -774,6 +776,14 @@ CMouseEventResult CSplitViewSeparatorView::onMouseExited (CPoint& where, const C
 	invalid ();
 	getFrame ()->setCursor (kCursorDefault);
 	return kMouseEventHandled;
+}
+
+//-----------------------------------------------------------------------------
+bool CSplitViewSeparatorView::removed (CView* parent)
+{
+	if (flags & kMouseOver && getFrame ())
+		getFrame ()->setCursor (kCursorDefault);
+	return CView::removed (parent);
 }
 
 } // namespace

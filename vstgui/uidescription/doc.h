@@ -206,17 +206,40 @@ Templates are the main views in XML. You can have more than one.
 Per default the \b template tag will create a CViewContainer view, but you can use the \b class attribute to create any view class you want.
 (If the template should have subviews, the class must be an inherited class from CViewContainer like CScrollView)<br/>
 
-@page uidescription_vst3_support Inline Editing support for VST3.1
+@page uidescription_vst3_support Inline Editing support for VST3
 
-VSTGUI now supports easy and fast UI creation for VST3.1 plug-ins.
+- @ref vst3_intro @n
+- @ref vst3_setup @n
+- @ref building_editing @n
+	- @ref vstgui_inspector @n
+	- @ref contextmenu @n
+- @ref parameter_binding @n
+- @ref custom_view_creation @n
+- @ref sub_controllers @n
+- @ref vst3_misc @n
+
+<hr/>
+
+@section vst3_intro Introduction
+
+VSTGUI now supports easy and fast UI creation for VST3 plug-ins.
+
+It will automatically support the following VST3 features (only if you have met the requirements for @ref parameter_binding):
+- IParameterFinder (find parameter under mouse)
+- IContextMenu (show host context menu on right click for an automatable parameter) [VST3.5 SDK required]
 
 Note that you need at least VST SDK 3.1, any earlier version will not work.
 
+<hr/>
+
 @section vst3_setup Setup
 
-First you need to add vstgui_uidescription_win32.cpp or vstgui_uidescription_mac.mm and vst3editor.cpp to your project
-and define a preprocessor definition for VSTGUI_LIVE_EDITING=1.
-Then you have to modify your edit controller class to create a VSTGUI::VST3Editor instance when asked to create it's view :
+- Add the following files to your project (in addition to the other vstgui files)
+	- plugin-bindings/vst3editor.cpp
+	- Windows only: vstgui_uidescription_win32.cpp
+	- Mac OS X only: vstgui_uidescription_mac.mm
+- Add VSTGUI_LIVE_EDITING=1 to your preprocessor definitions
+- Modify your VST Edit Controller class to add the createView(..) method :
 @code
 IPlugView* PLUGIN_API MyEditController::createView (FIDString name)
 {
@@ -227,28 +250,156 @@ IPlugView* PLUGIN_API MyEditController::createView (FIDString name)
 	return 0;
 }
 @endcode
-Next you have to create an empty myEditor.uidesc file.
-For Windows you add a line to your .rc file to include it :
+- Create an empty myEditor.uidesc file and save it somewhere in your project file hierarchy
+- On Windows add a line to your .rc file :
 @verbatim
 myEditor.uidesc DATA "realtive/path/to/myEditor.uidesc"
 @endverbatim
-On Mac OS X you just add the uidesc file to your resources so that it is placed into the Resources subfolder of the vst3 bundle.
+- On Mac OS X add the myEditor.uidesc file to your Xcode project and make sure that it is copied to the Resources folder of the vst3 bundle
 
-Next you can build your plug-in and start your VST3 host and open an instance of your plug-in. If you open the editor you will see that
-an empty black editor was automatically constructed. You can now make a right click on your editor and enable inline editing.
+<hr/>
 
-@section vst3_misc Misc
+@section building_editing Building and editing
 
-If you have enabled editing, a new window will open, where you can define tags, colors, fonts, bitmaps and edit view attributes.
+Now you can build your project, start any VST3 host and open an instance of your plugin.
 
-To add new views just open the context menu (via right click) in your editor and choose the view type in the "Insert Subview" submenu.
+If you open the editor of your plug-in you will initially see a black editor.
 
-You have automatic VST3 parameter support if you use the Steinberg::Vst::Parameter class in your edit controller. This way you just have to
-define a tag in the "VSTGUI Inspector" window with the same value as the VST3 parameter ID. Now you can set any VSTGUI control's tag
-to this tag and it will automatically be synced with the VST3 parameter.
+To start editing the user interface you need to make a right click on your editor and choose the "Enable Editing" menu item.
+When you do this the @ref vstgui_inspector window will open and you can start editing.
+
+If you are done with it, make sure to use the "Save..." command in the @ref contextmenu to save the changes to the myEditor.uidesc.
+Then you can choose the "Disable Editing" command to test your user interface.
+
+<hr/>
+
+<img src="inspector_overview.png" align="right"/>
+
+@subsection vstgui_inspector VSTGUI Inspector
+
+The @ref vstgui_inspector is used for defining Bitmaps, Colors, Fonts and Tags and to edit view attributes.
+
+On the top of the window are 5 tabs:
+- @ref vstgui_inspector_attributes
+- @ref vstgui_inspector_bitmaps
+- @ref vstgui_inspector_colors
+- @ref vstgui_inspector_fonts
+- @ref vstgui_inspector_tags
+
+@subsection vstgui_inspector_attributes Attributes Tab
+
+This tab contains the attributes of the view or views currently selected in your editor.
+The shown attributes depend on the selected view. If you have multiple views selected only those attributes are shown which are valid for all views.
+If the values of the attributes differ between the views they are shown in a different color.
+
+@subsection vstgui_inspector_bitmaps Bitmaps Tab
+
+In this tab you define your bitmaps.
+
+- the name column describes the name you use in the view attributes.
+- the bitmap column describes the name in your resources.
+- the NinePartsOffset is used for bitmaps which will use the VSTGUI::CNinePartTiledBitmap class to draw a tiled bitmap.
+The value needs to be 4 integers describing the left, top, right, bottom offsets separated by commas. 
+
+@subsection vstgui_inspector_colors Colors Tab
+
+In this tab you define your colors.
+
+- the name column describes the name you use in the view attributes.
+- the color column describes the color value. If you click on it, a color chooser window will open and you can change the color.
+You can switch to any other tab while the color chooser is open and you can still change the color.
+
+There are predefined colors whose names start with a '~'. You cannot change any of them.
+
+@subsection vstgui_inspector_fonts Fonts Tab
+
+In this tab you define your fonts.
+
+- the name column describes the name you use in the view attributes.
+- the font column describes the font. If you click on it, a font chooser window will open and you can change the font.
+You can switch to any other tab while the font chooser is open and you can still change the font.
+
+There are predefined fonts whose names start with a '~'. You cannot change any of them.
+
+@subsection vstgui_inspector_tags Tags Tab
+
+In this tab you define your tags.
+
+- the name column describes the name you use in the view attributes.
+- the tag column describes the tags used in VSTGUI::CControl. See also @ref parameter_binding.
+
+<hr/>
+
+<img src="contextmenu.png" align="right"/>
+
+@subsection contextmenu Context Menu
+
+Here is a brief description of the items in the context menu :
+
+- <b>Undo</b> : Undo last action
+- <b>Redo</b> : Redo last undo action
+
+- <b>Size To Fit</b> : Size views to fit according to its attributes (calls CView::sizeToFit() internally).
+- <b>Unembed Views</b> : If you have a container view selected, it will move all children out of it and delete it.
+- <b>Delete</b> : Delete all selected views.
+
+- <b>Insert Subview</b> : Insert the view chosen in the submenu at the current mouse location. If a container view is selected it is placed into it, otherwise it uses the top container view found under the mouse.
+- <b>Embed Into</b> : Insert the selected views into the container view chosen in the submenu.
+- <b>Insert Template</b> : Insert the template chosen in the submenu at the current mouse location. If a container view is selected it is placed into it, otherwise it uses the top container view found under the mouse. See @ref templates.
+- <b>Transform View Type</b> : Transform the selected view into the view chosen in the submenu.
+
+- <b>Grid</b> : Set the grid option.
+
+- <b>Save...</b> : Save the xml file to disk.
+
+- <b>Show Hierarchy Browser</b> : Show the view hierarchy browser.
+
+- <b>Template Settings...</b> : Open the template settings dialog.
+- <b>Change Template</b> : Change the editor to another template.
+- <b>Add New Template</b> : Create a new template and show it.
+
+- <b>Sync Parameter Tags</b> : Sync the parameter ids of the VST Edit Controller with the tags. This is not undoable.
+
+- <b>Disable Editing</b> : Disable editing. This also erases the undo stack.
+
+<hr/>
+
+@section parameter_binding Parameter Binding
+
+If you've used the Parameter class provided by the VST3 SDK, you will get automatic parameter bindings between the controls of your editor
+and the parameters in your VST Edit Controller.
+
+The only thing you need to do is to declare the ids of the parameters as tags in the \ref vstgui_inspector (or use the 'Sync Parameter Tags' command in the @ref contextmenu) and set the tags of your controls to these ids.
+After you've done this your VST Edit Controller will receive the beginEdit(..)/performEdit(..)/endEdit(..) calls when the user changes the controls and if the host
+automates the parameter the control will also reflect these changes.
+
+As an addition you can modify your VST Edit Controller to return specific parameter objects in the getParameterObject(int32 paramID) method for UI only needs, which are not
+parameters of your VST audio processor. This way you can store view settings like the tab which is open when the user closes the editor so that you can restore it
+when the user opens the editor again. You can look at the sources of the included 'uidescription test' project how this works.
+
+<hr/>
+
+@section custom_view_creation Creating Custom Views
 
 If you need to create custom views, you can implement the VSTGUI::VST3EditorDelegate interface in your edit controller class.
 The createCustomView method will be called if you set the 'custom-view-name' attribute in one of the views.
 
-For your release versions make sure to set the VSTGUI_LIVE_EDITING definition to zero.
+<hr/>
+
+@section sub_controllers Sub-Controllers
+
+TODO: Describe the sub controllers mechanism and usage
+
+<hr/>
+
+@section templates Templates
+
+TODO: Describe templates
+
+<hr/>
+
+@section vst3_misc Misc
+
+- For your deployment versions make sure to set the VSTGUI_LIVE_EDITING definition to zero.
+
 */

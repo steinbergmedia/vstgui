@@ -209,7 +209,7 @@ void CDataBrowser::valueChanged (CControl *pControl)
 				break;
 			}
 		}
-		if (mouseDownView == dbView || mouseDownView == 0)
+		if (isAttached () && mouseDownView == dbView || mouseDownView == 0)
 		{
 			CPoint where;
 			getFrame ()->getCurrentMouseLocation (where);
