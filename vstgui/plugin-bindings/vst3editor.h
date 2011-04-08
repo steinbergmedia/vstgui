@@ -47,7 +47,7 @@ class ParameterChangeListener;
 class VST3Editor;
 
 //-----------------------------------------------------------------------------
-//! @brief delegate extension to Steinberg::Vst::EditController for a VST3 Editor [new in 4.0]
+//! @brief delegate extension to Steinberg::Vst::EditController for a VST3 Editor
 //! @ingroup new_in_4_0
 //-----------------------------------------------------------------------------
 class VST3EditorDelegate
@@ -67,7 +67,7 @@ public:
 };
 
 //-----------------------------------------------------------------------------
-//! @brief VST3 Editor with automatic parameter binding [new in 4.0]
+//! @brief VST3 Editor with automatic parameter binding
 //! @ingroup new_in_4_0
 //-----------------------------------------------------------------------------
 class VST3Editor : public Steinberg::Vst::VSTGUIEditor, public Steinberg::Vst::IParameterFinder, public IController, public IViewAddedRemovedObserver, public IMouseObserver

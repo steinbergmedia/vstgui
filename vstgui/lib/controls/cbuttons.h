@@ -74,7 +74,7 @@ protected:
 
 //-----------------------------------------------------------------------------
 // CCheckBox Declaration
-//! @brief a check box control with a title and 3 states [new in 4.0]
+/// @brief a check box control with a title and 3 states
 /// @ingroup controls
 ///	@ingroup new_in_4_0
 //-----------------------------------------------------------------------------
@@ -174,14 +174,19 @@ private:
 
 //-----------------------------------------------------------------------------
 // CTextButton Declaration
-//!
+/// @brief a button which renders without bitmaps
 /// @ingroup controls
+///	@ingroup new_in_4_0
 //-----------------------------------------------------------------------------
 class CTextButton : public CKickButton
 {
 public:
 	CTextButton (const CRect& size, CControlListener* listener, int32_t tag, UTF8StringPtr title);
 
+	//-----------------------------------------------------------------------------
+	/// @name CTextButton Methods
+	//-----------------------------------------------------------------------------
+	//@{
 	virtual void setTitle (UTF8StringPtr newTitle);
 	UTF8StringPtr getTitle () const { return title.c_str (); }
 
@@ -213,7 +218,9 @@ public:
 
 	virtual void setRoundRadius (CCoord radius);
 	CCoord getRoundRadius () const { return roundRadius; }
+	//@}
 
+	// overrides
 	void draw (CDrawContext* context);
 	int32_t onKeyDown (VstKeyCode& keyCode);
 	bool getFocusPath (CGraphicsPath& outPath);

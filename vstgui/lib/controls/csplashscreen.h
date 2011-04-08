@@ -79,7 +79,7 @@ protected:
 
 //-----------------------------------------------------------------------------
 // CAnimationSplashScreen Declaration
-//!
+/// @brief a splash screen which animates the opening and closing of the splash bitmap
 /// @ingroup views
 ///	@ingroup new_in_4_0
 //-----------------------------------------------------------------------------
@@ -104,12 +104,8 @@ public:
 
 	virtual void setAnimationTime (int32_t time) { animationTime = time; }
 	int32_t getAnimationTime () const { return animationTime; }
-	//@}
 
-	//-----------------------------------------------------------------------------
-	/// @name For Subclassers to add more animations
-	//-----------------------------------------------------------------------------
-	//@{
+	/** create the animation. subclasses can override this to add special animations */
 	virtual bool createAnimation (int32_t animationIndex, int32_t animationTime, CView* splashView, bool removeViewAnimation);
 	//@}
 
