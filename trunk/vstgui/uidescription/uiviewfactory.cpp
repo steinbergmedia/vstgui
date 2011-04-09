@@ -50,7 +50,7 @@ public:
 };
 
 //-----------------------------------------------------------------------------
-ViewCreatorRegistry& getCreatorRegistry ()
+static ViewCreatorRegistry& getCreatorRegistry ()
 {
 	static ViewCreatorRegistry creatorRegistry;
 	return creatorRegistry;

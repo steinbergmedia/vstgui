@@ -245,7 +245,7 @@ IPlugView* PLUGIN_API MyEditController::createView (FIDString name)
 {
 	if (strcmp (name, ViewType::kEditor) == 0)
 	{
-		return new VST3Editor (this, "view", "myEditor.uidesc");
+		return new VSTGUI::VST3Editor (this, "view", "myEditor.uidesc");
 	}
 	return 0;
 }
@@ -388,13 +388,20 @@ The createCustomView method will be called if you set the 'custom-view-name' att
 
 @section sub_controllers Sub-Controllers
 
-TODO: Describe the sub controllers mechanism and usage
+@ref sub_controllers are useful if you need finer control of your views.
+You can define @ref sub_controllers for views with the 'sub-controller' attribute.
+@ref sub_controllers will be created via the VSTGUI::VST3EditorDelegate interface. When they are created they are owned by the VSTGUI::VST3Editor object.
+
+The VSTGUI::DelegationController is a helper class if you don't want to control every aspect of the views by forwarding every call to its parent controller.
+You only overwrite the methods you need in your inherited class.
 
 <hr/>
 
 @section templates Templates
 
-TODO: Describe templates
+@ref Templates are root views where you can group controls in logical entities.
+You can embed @ref templates into other @ref templates.
+Some views like the VSTGUI::UIViewSwitchContainer shows different @ref templates depending on a control value.
 
 <hr/>
 

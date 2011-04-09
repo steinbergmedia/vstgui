@@ -401,7 +401,7 @@ void UIDescription::addDefaultNodes ()
 			UIAttributes* attr = new UIAttributes;
 			attr->setAttribute ("name", defaultColors[i].name);
 			std::string colorStr;
-			colorToString (defaultColors[i].color, colorStr, 0);
+			UIViewCreator::colorToString (defaultColors[i].color, colorStr, 0);
 			attr->setAttribute ("rgba", colorStr.c_str ());
 			UIColorNode* node = new UIColorNode ("color", attr);
 			node->noExport (true);
@@ -860,7 +860,7 @@ void UIDescription::changeColor (UTF8StringPtr name, const CColor& newColor)
 			UIAttributes* attr = new UIAttributes;
 			attr->setAttribute ("name", name);
 			std::string colorStr;
-			colorToString (newColor, colorStr, 0);
+			UIViewCreator::colorToString (newColor, colorStr, 0);
 			attr->setAttribute ("rgba", colorStr.c_str ());
 			UIColorNode* node = new UIColorNode ("color", attr);
 			colorsNode->getChildren ().add (node);
@@ -1597,7 +1597,7 @@ void UIColorNode::setColor (const CColor& newColor)
 	attributes->setAttribute ("name", name.c_str ());
 
 	std::string colorString;
-	colorToString (newColor, colorString, 0);
+	UIViewCreator::colorToString (newColor, colorString, 0);
 	attributes->setAttribute ("rgba", colorString.c_str ());
 	color = newColor;
 }

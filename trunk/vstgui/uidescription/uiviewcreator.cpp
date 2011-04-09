@@ -266,6 +266,7 @@ public:
 #endif
 
 namespace VSTGUI {
+namespace UIViewCreator {
 
 //-----------------------------------------------------------------------------
 bool parseSize (const std::string& str, CPoint& point)
@@ -3028,7 +3029,7 @@ public:
 };
 CSplitViewCreator __gCSplitViewCreator;
 
-} // namespace
+}} // namespace
 
 /**
 @endcond ignore
