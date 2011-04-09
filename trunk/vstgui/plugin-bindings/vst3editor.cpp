@@ -331,6 +331,8 @@ IPlugView* PLUGIN_API MyEditController::createView (FIDString name)
 To activate the inline editor you need to define the preprocessor definition "VSTGUI_LIVE_EDITING=1".
 Rebuild your plug-in, start your prefered host, instanciate your plug-in, open the context menu inside your editor and choose "Enable Editing".
 Now you can define tags, colors, fonts, bitmaps and add views to your editor.
+
+See @ref uidescription_vst3_support @n
 */
 //-----------------------------------------------------------------------------
 VST3Editor::VST3Editor (Steinberg::Vst::EditController* controller, UTF8StringPtr _viewName, UTF8StringPtr _xmlFile)
