@@ -71,7 +71,7 @@ protected:
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
-inline ISplitViewController* getSplitViewController (CView* view)
+static ISplitViewController* getSplitViewController (CView* view)
 {
 	IController* controller = getViewController (view, true);
 	if (controller)

@@ -410,6 +410,7 @@ void CCheckBox::setStyle (int32_t newStyle)
 	}
 }
 
+/// @cond ignore
 //------------------------------------------------------------------------
 static CCoord getFontCapHeight (CFontRef font)
 {
@@ -425,6 +426,7 @@ static CCoord getFontCapHeight (CFontRef font)
 	}
 	return c;
 }
+/// @endcond
 
 //------------------------------------------------------------------------
 static CCoord kCheckBoxTitleMargin = 5;

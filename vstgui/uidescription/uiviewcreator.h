@@ -35,12 +35,16 @@
 #ifndef __uiviewcreator__
 #define __uiviewcreator__
 
+/// @cond ignore
+
 #include "../lib/cbitmap.h"
 #include "../lib/cview.h"
 #include <string>
 
 namespace VSTGUI {
 class IUIDescription;
+
+namespace UIViewCreator {
 
 extern bool parseSize (const std::string& str, CPoint& point);
 extern bool pointToString (const CPoint& p, std::string& string);
@@ -50,6 +54,8 @@ extern bool colorToString (const CColor& color, std::string& string, IUIDescript
 extern void rememberAttributeValueString (CView* view, IdStringPtr attrName, const std::string& value);
 extern bool getRememberedAttributeValueString (CView* view, IdStringPtr attrName, std::string& value);
 
-} // namespace
+} } // namespaces
+
+/// @endcond
 
 #endif // __uiviewcreator__
