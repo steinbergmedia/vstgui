@@ -141,7 +141,7 @@ void PLUGIN_API TestAnimationController::update (FUnknown* changedUnknown, int32
 	if (message == kChanged)
 	{
 		FUnknownPtr<Parameter> parameter (changedUnknown);
-		if (parameter && animationView->getFrame ())
+		if (parameter && animationView && animationView->getFrame ())
 		{
 			Animation::InterpolationTimingFunction* timingFunction = new Animation::InterpolationTimingFunction (200);
 			timingFunction->addPoint (0.5f, 0.2f);
