@@ -172,7 +172,7 @@ void CControl::valueChanged ()
 //------------------------------------------------------------------------
 bool CControl::isDirty () const
 {
-	if (oldValue != value || CView::isDirty ())
+	if (getOldValue () != value || CView::isDirty ())
 		return true;
 	return false;
 }
@@ -184,12 +184,12 @@ void CControl::setDirty (bool val)
 	if (val)
 	{
 		if (value != -1.f)
-			oldValue = -1.f;
+			setOldValue (-1.f);
 		else
-			oldValue = 0.f;
+			setOldValue (0.f);
 	}
 	else
-		oldValue = value;
+		setOldValue (value);
 }
 
 //------------------------------------------------------------------------
