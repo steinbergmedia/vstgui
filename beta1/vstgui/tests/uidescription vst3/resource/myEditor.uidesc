@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<vstgui-ui-description version="1">
+	<template background-color="tab background" class="CViewContainer" name="controls" origin="0, 0" size="480, 260" transparent="true">
+		<view background-color="group frame color" bitmap="FrameBackground" class="CViewContainer" origin="5, 5" size="100, 150" transparent="false">
+			<view back-color="black" background-offset="0, 0" class="CTextLabel" default-value="0.5" font="small label bold" font-antialias="true" font-color="white" frame-color="black" max-value="1" min-value="0" origin="0, 0" shadow-color="#ff0000ff" size="100, 20" style-3D-in="false" style-3D-out="false" style-no-draw="false" style-no-frame="false" style-no-text="false" style-shadow-text="false" text-alignment="center" text-inset="0, 0" title="Slider" transparent="true" wheel-inc-value="0.1"/>
+			<view background-color="transparent" class="CViewContainer" origin="10, 20" size="80, 40" transparent="true">
+				<view back-color="#000000ff" background-offset="0, 0" class="CTextLabel" default-value="0.5" font="small label" font-antialias="true" font-color="black" frame-color="#000000ff" max-value="1" min-value="0" origin="5, 0" shadow-color="#ff0000ff" size="70, 20" style-3D-in="false" style-3D-out="false" style-no-draw="false" style-no-frame="false" style-no-text="false" style-shadow-text="false" text-alignment="center" text-inset="0, 0" title="Horizontal" transparent="true" wheel-inc-value="0.1"/>
+				<view background-offset="0, 0" bitmap="slider_back_horizontal" bitmap-offset="0, 0" class="CSlider" control-tag="slider tag" default-value="0.5" draw-back="false" draw-back-color="white" draw-frame="false" draw-frame-color="white" draw-value="false" draw-value-color="white" draw-value-from-center="false" draw-value-inverted="false" free-click="false" handle-bitmap="slider_handle" handle-offset="2, 2" max-value="1" min-value="0" orientation="horizontal" origin="15, 20" reverse-orientation="false" size="50, 15" tooltip="An horizontal slider control" transparent="false" transparent-handle="true" wheel-inc-value="0.1" zoom-factor="10"/>
+			</view>
+			<view background-color="transparent" class="CViewContainer" origin="10, 65" size="80, 80" transparent="true">
+				<view back-color="#000000ff" background-offset="0, 0" class="CTextLabel" default-value="0.5" font="small label" font-antialias="true" font-color="black" frame-color="#000000ff" max-value="1" min-value="0" origin="5, 0" shadow-color="#ff0000ff" size="70, 20" style-3D-in="false" style-3D-out="false" style-no-draw="false" style-no-frame="false" style-no-text="false" style-shadow-text="false" text-alignment="center" text-inset="0, 0" title="Vertical" transparent="true" wheel-inc-value="0.1"/>
+				<view background-offset="0, 0" bitmap="slider_back_vertical" bitmap-offset="0, 0" class="CSlider" control-tag="slider tag" default-value="0.5" draw-back="false" draw-back-color="white" draw-frame="false" draw-frame-color="white" draw-value="false" draw-value-color="white" draw-value-from-center="false" draw-value-inverted="false" free-click="false" handle-bitmap="slider_handle" handle-offset="2, 2" max-value="1" min-value="0" orientation="vertical" origin="33, 20" reverse-orientation="true" size="15, 50" tooltip="A vertical slider control" transparent="false" transparent-handle="true" wheel-inc-value="0.1" zoom-factor="10"/>
+			</view>
+		</view>
+		<view background-color="group frame color" bitmap="FrameBackground" class="CViewContainer" origin="5, 160" size="100, 80" transparent="false">
+			<view background-color="transparent" class="CViewContainer" origin="10, 20" size="80, 55" transparent="true">
+				<view angle-range="270" angle-start="135" background-offset="0, 0" bitmap="animation_knob" circle-drawing="false" class="CAnimKnob" control-tag="slider tag" corona-color="white" corona-dash-dot="false" corona-drawing="false" corona-from-center="false" corona-inset="0" corona-inverted="false" corona-outline="false" default-value="0.5" handle-color="#ffffffff" handle-line-width="1" handle-shadow-color="#7f7f7fff" height-of-one-image="40" max-value="1" min-value="0" origin="20, 10" size="40, 40" sub-pixmaps="7" tooltip="An animation knob control" transparent="false" value-inset="0" wheel-inc-value="0.1" zoom-factor="1.5"/>
+			</view>
+			<view back-color="black" background-offset="0, 0" class="CTextLabel" default-value="0.5" font="small label bold" font-antialias="true" font-color="white" frame-color="black" max-value="1" min-value="0" origin="0, 0" shadow-color="#ff0000ff" size="100, 20" style-3D-in="false" style-3D-out="false" style-no-draw="false" style-no-frame="false" style-no-text="false" style-shadow-text="false" text-alignment="center" text-inset="0, 0" title="Animation Knob" transparent="true" wheel-inc-value="0.1"/>
+		</view>
+		<view background-color="group frame color" bitmap="FrameBackground" class="CViewContainer" origin="110, 5" size="100, 150" transparent="false">
+			<view background-color="transparent" class="CViewContainer" origin="10, 20" size="80, 40" transparent="true">
+				<view back-color="#000000ff" background-offset="0, 0" class="CTextLabel" default-value="0.5" font="small label" font-antialias="true" font-color="black" frame-color="#000000ff" max-value="1" min-value="0" origin="5, 0" shadow-color="#ff0000ff" size="70, 20" style-3D-in="false" style-3D-out="false" style-no-draw="false" style-no-frame="false" style-no-text="false" style-shadow-text="false" text-alignment="center" text-inset="0, 0" title="Horizontal" transparent="true" wheel-inc-value="0.1"/>
+				<view background-offset="0, 0" bitmap="switch_horizontal" class="CHorizontalSwitch" control-tag="switch tag" default-value="0.5" height-of-one-image="15" max-value="1" min-value="0" origin="15, 20" size="50, 15" sub-pixmaps="4" tooltip="An horizontal switch control" transparent="false" wheel-inc-value="0.1"/>
+			</view>
+			<view background-color="transparent" class="CViewContainer" origin="10, 65" size="80, 80" transparent="true">
+				<view back-color="#000000ff" background-offset="0, 0" class="CTextLabel" default-value="0.5" font="small label" font-antialias="true" font-color="black" frame-color="#000000ff" max-value="1" min-value="0" origin="5, 0" shadow-color="#ff0000ff" size="70, 20" style-3D-in="false" style-3D-out="false" style-no-draw="false" style-no-frame="false" style-no-text="false" style-shadow-text="false" text-alignment="center" text-inset="0, 0" title="Vertical" transparent="true" wheel-inc-value="0.1"/>
+				<view background-offset="0, 0" bitmap="switch_vertical" class="CVerticalSwitch" control-tag="switch tag" default-value="0.5" height-of-one-image="50" max-value="1" min-value="0" origin="33, 20" size="15, 50" sub-pixmaps="4" tooltip="A vertical switch control" transparent="false" wheel-inc-value="0.1"/>
+			</view>
+			<view back-color="black" background-offset="0, 0" class="CTextLabel" default-value="0.5" font="small label bold" font-antialias="true" font-color="white" frame-color="black" max-value="1" min-value="0" origin="0, 0" shadow-color="#ff0000ff" size="100, 20" style-3D-in="false" style-3D-out="false" style-no-draw="false" style-no-frame="false" style-no-text="false" style-shadow-text="false" text-alignment="center" text-inset="0, 0" title="Switch" transparent="true" wheel-inc-value="0.1"/>
+		</view>
+		<view background-color="group frame color" bitmap="FrameBackground" class="CViewContainer" origin="110, 160" size="100, 60" transparent="false">
+			<view background-color="transparent" class="CViewContainer" origin="10, 20" size="80, 35" transparent="true">
+				<view background-offset="0, 0" bitmap="rocker_switch" class="CRockerSwitch" default-value="0.5" height-of-one-image="18" max-value="1" min-value="0" origin="15, 10" size="51, 18" sub-pixmaps="3" tooltip="A rocker switch control" transparent="false" wheel-inc-value="0.1"/>
+			</view>
+			<view back-color="black" background-offset="0, 0" class="CTextLabel" default-value="0.5" font="small label bold" font-antialias="true" font-color="white" frame-color="black" max-value="1" min-value="0" origin="0, 0" shadow-color="#ff0000ff" size="100, 20" style-3D-in="false" style-3D-out="false" style-no-draw="false" style-no-frame="false" style-no-text="false" style-shadow-text="false" text-alignment="center" text-inset="0, 0" title="Rocker Switch" transparent="true" wheel-inc-value="0.1"/>
+		</view>
+		<view background-color="group frame color" bitmap="FrameBackground" class="CViewContainer" origin="215, 5" size="100, 50" transparent="false">
+			<view background-color="transparent" class="CViewContainer" origin="10, 20" size="80, 25" transparent="true">
+				<view autosize-to-fit="true" background-offset="0, 0" boxfill-color="white" boxframe-color="black" checkmark-color="black" class="CCheckBox" default-value="0.5" draw-crossbox="false" font="small label" font-color="white" max-value="1" min-value="0" origin="20, 5" size="44, 15" title="Check" tooltip="A checkbox control" transparent="false" wheel-inc-value="0.1"/>
+			</view>
+			<view back-color="black" background-offset="0, 0" class="CTextLabel" default-value="0.5" font="small label bold" font-antialias="true" font-color="white" frame-color="black" max-value="1" min-value="0" origin="0, 0" shadow-color="#ff0000ff" size="100, 20" style-3D-in="false" style-3D-out="false" style-no-draw="false" style-no-frame="false" style-no-text="false" style-shadow-text="false" text-alignment="center" text-inset="0, 0" title="Checkbox" transparent="true" wheel-inc-value="0.1"/>
+		</view>
+		<view background-color="group frame color" bitmap="FrameBackground" class="CViewContainer" origin="215, 60" size="100, 95" transparent="false">
+			<view background-color="transparent" class="CViewContainer" origin="10, 20" size="80, 70" transparent="true">
+				<view background-offset="0, 0" bitmap="vumeter_front" class="CVuMeter" control-tag="peak tag" decrease-step-value="0.05" default-value="0.5" max-value="1" min-value="0" num-led="14" off-bitmap="vumeter_back" orientation="vertical" origin="36, 10" size="7, 55" tooltip="A VU meter control" transparent="false" wheel-inc-value="0.1"/>
+			</view>
+			<view back-color="black" background-offset="0, 0" class="CTextLabel" default-value="0.5" font="small label bold" font-antialias="true" font-color="white" frame-color="black" max-value="1" min-value="0" origin="0, 0" shadow-color="#ff0000ff" size="100, 20" style-3D-in="false" style-3D-out="false" style-no-draw="false" style-no-frame="false" style-no-text="false" style-shadow-text="false" text-alignment="center" text-inset="0, 0" title="VU Meter" transparent="true" wheel-inc-value="0.1"/>
+		</view>
+		<view background-color="group frame color" bitmap="FrameBackground" class="CViewContainer" origin="215, 160" size="100, 60" transparent="false">
+			<view background-color="transparent" class="CViewContainer" origin="10, 20" size="80, 35" transparent="true">
+				<view back-color="black" background-offset="0, 0" class="CParamDisplay" control-tag="peak tag" default-value="0.5" font="display" font-antialias="true" font-color="white" frame-color="black" max-value="1" min-value="0" origin="5, 10" shadow-color="#ff0000ff" size="70, 15" style-3D-in="false" style-3D-out="false" style-no-draw="false" style-no-frame="false" style-no-text="false" style-shadow-text="false" text-alignment="center" text-inset="0, 0" tooltip="A parameter display view" transparent="false" wheel-inc-value="0.1"/>
+			</view>
+			<view back-color="black" background-offset="0, 0" class="CTextLabel" default-value="0.5" font="small label bold" font-antialias="true" font-color="white" frame-color="black" max-value="1" min-value="0" origin="0, 0" shadow-color="#ff0000ff" size="100, 20" style-3D-in="false" style-3D-out="false" style-no-draw="false" style-no-frame="false" style-no-text="false" style-shadow-text="false" text-alignment="center" text-inset="0, 0" title="Parameter Display" transparent="true" wheel-inc-value="0.1"/>
+		</view>
+		<view background-color="group frame color" bitmap="FrameBackground" class="CViewContainer" origin="320, 5" size="100, 50" transparent="false">
+			<view back-color="black" background-offset="0, 0" class="CTextLabel" default-value="0.5" font="small label bold" font-antialias="true" font-color="white" frame-color="black" max-value="1" min-value="0" origin="0, 0" shadow-color="#ff0000ff" size="100, 20" style-3D-in="false" style-3D-out="false" style-no-draw="false" style-no-frame="false" style-no-text="false" style-shadow-text="false" text-alignment="center" text-inset="0, 0" title="Kick Button" transparent="true" wheel-inc-value="0.1"/>
+			<view background-offset="0, 0" bitmap="onoff_button" class="CKickButton" default-value="0.5" height-of-one-image="15" max-value="1" min-value="0" origin="35, 25" size="30, 15" sub-pixmaps="2" tooltip="A kick button control" transparent="false" wheel-inc-value="0.1"/>
+		</view>
+		<view background-color="group frame color" bitmap="FrameBackground" class="CViewContainer" origin="320, 60" size="100, 50" transparent="false">
+			<view back-color="black" background-offset="0, 0" class="CTextLabel" default-value="0.5" font="small label bold" font-antialias="true" font-color="white" frame-color="black" max-value="1" min-value="0" origin="0, 0" shadow-color="#ff0000ff" size="100, 20" style-3D-in="false" style-3D-out="false" style-no-draw="false" style-no-frame="false" style-no-text="false" style-shadow-text="false" text-alignment="center" text-inset="0, 0" title="On Off Button" transparent="true" wheel-inc-value="0.1"/>
+			<view background-offset="0, 0" bitmap="onoff_button" class="COnOffButton" default-value="0.5" max-value="1" min-value="0" origin="35, 25" size="30, 15" tooltip="An on-off button control" transparent="false" wheel-inc-value="0.1"/>
+		</view>
+		<view background-color="group frame color" bitmap="FrameBackground" class="CViewContainer" origin="320, 115" size="100, 50" transparent="false">
+			<view back-color="black" background-offset="0, 0" class="CTextLabel" default-value="0.5" font="small label bold" font-antialias="true" font-color="white" frame-color="black" max-value="1" min-value="0" origin="0, 0" shadow-color="#ff0000ff" size="100, 20" style-3D-in="false" style-3D-out="false" style-no-draw="false" style-no-frame="false" style-no-text="false" style-shadow-text="false" text-alignment="center" text-inset="0, 0" title="Movie Button" transparent="true" wheel-inc-value="0.1"/>
+			<view background-offset="0, 0" bitmap="onoff_button" class="CMovieButton" default-value="0.5" height-of-one-image="15" max-value="1" min-value="0" origin="35, 25" size="30, 15" sub-pixmaps="2" tooltip="A movie button control" transparent="false" wheel-inc-value="0.1"/>
+		</view>
+		<view background-color="group frame color" bitmap="FrameBackground" class="CViewContainer" origin="320, 170" size="100, 50" transparent="false">
+			<view back-color="black" background-offset="0, 0" class="CTextLabel" default-value="0.5" font="small label bold" font-antialias="true" font-color="white" frame-color="black" max-value="1" min-value="0" origin="0, 0" shadow-color="#ff0000ff" size="100, 20" style-3D-in="false" style-3D-out="false" style-no-draw="false" style-no-frame="false" style-no-text="false" style-shadow-text="false" text-alignment="center" text-inset="0, 0" title="Text Edit" transparent="true" wheel-inc-value="0.1"/>
+			<view back-color="black" background-offset="0, 0" class="CTextEdit" default-value="0.5" font="small label" font-antialias="true" font-color="white" frame-color="black" max-value="1" min-value="0" origin="15, 25" shadow-color="#ff0000ff" size="70, 15" style-3D-in="false" style-3D-out="false" style-no-draw="false" style-no-frame="false" style-no-text="false" style-shadow-text="false" text-alignment="center" text-inset="0, 0" title="test me" tooltip="A text edit control" transparent="false" wheel-inc-value="0.1"/>
+			<view back-color="black" background-offset="0, 0" class="CTextLabel" default-value="0.5" font="small label bold" font-antialias="true" font-color="white" frame-color="black" max-value="1" min-value="0" origin="0, 0" shadow-color="#ff0000ff" size="100, 20" style-3D-in="false" style-3D-out="false" style-no-draw="false" style-no-frame="false" style-no-text="false" style-shadow-text="false" text-alignment="center" text-inset="0, 0" title="Text Edit" transparent="true" wheel-inc-value="0.1"/>
+		</view>
+	</template>
+	<custom>
+		<attributes frame-enable-focus-drawing="true" frame-focus-color="focus color" frame-focus-width="2" name="VST3Editor"/>
+		<attributes name="UIViewHierarchyBrowser" windowSize="935, 84, 1235, 584"/>
+		<attributes name="UIViewInspector" windowSize="66, 193, 466, 742"/>
+		<attributes gridsize="5" name="UIEditFrame" uidescPath="/Volumes/DATA/subversion/trunk/vstgui_head/vstgui/tests/uidescription vst3/resource/myEditor.uidesc"/>
+	</custom>
+	<colors>
+		<color name="black" rgba="#000000ff"/>
+		<color name="white" rgba="#ffffffff"/>
+		<color name="default background" rgba="#414c58ff"/>
+		<color name="focus color" rgba="#6c6cf1b8"/>
+		<color name="group frame color" rgba="#ffffff37"/>
+		<color name="tab background" rgba="#98989819"/>
+		<color name="transparent" rgba="#01020300"/>
+		<color name="modal view background" rgba="#fefefebd"/>
+	</colors>
+	<bitmaps>
+		<bitmap name="slider_back_horizontal" path="horizontal_slider_back.bmp"/>
+		<bitmap name="slider_back_vertical" path="vertical_slider_back.bmp"/>
+		<bitmap name="slider_handle" path="slider_handle.bmp"/>
+		<bitmap name="switch_horizontal" path="switch_horizontal.bmp"/>
+		<bitmap name="switch_vertical" path="switch_vertical.bmp"/>
+		<bitmap name="animation_knob" path="animation_knob.png"/>
+		<bitmap name="TabController" path="TabController.png"/>
+		<bitmap name="onoff_button" path="onoff_button.bmp"/>
+		<bitmap name="rocker_switch" path="rocker_switch.bmp"/>
+		<bitmap name="vumeter_back" path="vumeter_back.bmp"/>
+		<bitmap name="vumeter_front" path="vumeter_front.bmp"/>
+		<bitmap name="FrameBackground" nineparttiled-offsets="10, 20, 10, 10" path="FrameBackground.png"/>
+	</bitmaps>
+	<fonts>
+		<font font-name="Helvetica" name="small label" size="8"/>
+		<font bold="true" font-name="Helvetica" name="small label bold" size="8"/>
+		<font font-name="Menlo" name="display" size="8"/>
+	</fonts>
+	<control-tags>
+		<control-tag name="slider tag" tag="1000"/>
+		<control-tag name="switch tag" tag="1001"/>
+		<control-tag name="TabController" tag="20000"/>
+		<control-tag name="peak tag" tag="20"/>
+		<control-tag name="close modal view tag" tag="1"/>
+		<control-tag name="open modal view tag" tag="0"/>
+	</control-tags>
+	<template background-color="default background" class="CViewContainer" maxSize="500, 320" minSize="500, 320" name="view" origin="0, 0" size="500, 320" transparent="false">
+		<view background-offset="0, 0" bitmap="TabController" class="CHorizontalSwitch" control-tag="TabController" default-value="0" height-of-one-image="19" max-value="4" min-value="0" origin="2, 5" size="496, 20" sub-pixmaps="5" transparent="false" wheel-inc-value="0.1"/>
+		<view background-color="tab background" class="UIViewSwitchContainer" origin="10, 35" size="480, 260" template-names="controls,tab2,tab3,tab4,tab5" template-switch-control="TabController" transparent="false">
+			<view background-color="black" class="CViewContainer" origin="0, 0" size="480, 260" template="tab4" transparent="true"/>
+		</view>
+		<view back-color="black" background-offset="0, 0" class="COptionMenu" control-tag="TabController" default-value="0" font="small label bold" font-antialias="true" font-color="white" frame-color="black" max-value="4" menu-check-style="true" menu-popup-style="true" min-value="0" origin="420, 300" shadow-color="#ff0000ff" size="70, 15" style-3D-in="false" style-3D-out="false" style-no-draw="false" style-no-frame="false" style-no-text="false" style-shadow-text="false" text-alignment="center" text-inset="0, 0" tooltip="An option menu" transparent="false" wheel-inc-value="0.1"/>
+		<view autosize-to-fit="false" background-offset="0, 0" boxfill-color="white" boxframe-color="black" checkmark-color="~ RedCColor" class="CCheckBox" control-tag="open modal view tag" default-value="0.5" draw-crossbox="false" font="~ SystemFont" font-color="white" max-value="1" min-value="0" origin="170, 300" size="127, 20" sub-controller="ModalViewController" title="Open Modal View" tooltip="This opens a modal view with an animation.\n\nAll other controls are disabled while the modal view is open." transparent="false" wheel-inc-value="0.1"/>
+	</template>
+	<template background-color="black" class="CViewContainer" name="tab2" origin="0, 0" size="480, 260" transparent="true">
+		<view background-color="black" bitmap="FrameBackground" class="CViewContainer" origin="45, 35" size="385, 185" transparent="false"/>
+	</template>
+	<template background-color="black" class="CViewContainer" maxSize="480, 260" minSize="480, 260" name="tab3" origin="0, 0" size="480, 260" transparent="true">
+		<view background-color="black" bitmap="FrameBackground" class="CViewContainer" origin="120, 25" size="260, 205" transparent="true">
+			<view background-color="white" bordered="false" class="CScrollView" container-size="480, 260" horizontal-scrollbar="true" origin="0, 20" scrollbar-background-color="default background" scrollbar-frame-color="transparent" scrollbar-scroller-color="group frame color" scrollbar-width="12" size="260, 185" transparent="true" vertical-scrollbar="true">
+				<view background-color="tab background" class="CViewContainer" origin="0, 0" size="480, 260" template="controls" transparent="true"/>
+			</view>
+			<view back-color="black" background-offset="0, 0" class="CTextLabel" default-value="0.5" font="small label bold" font-antialias="true" font-color="white" frame-color="black" max-value="1" min-value="0" origin="0, 0" shadow-color="#ff0000ff" size="260, 20" style-3D-in="false" style-3D-out="false" style-no-draw="false" style-no-frame="false" style-no-text="false" style-shadow-text="false" text-alignment="center" text-inset="0, 0" title="Scroll View" transparent="true" wheel-inc-value="0.1"/>
+		</view>
+	</template>
+	<template background-color="black" class="CViewContainer" name="tab4" origin="0, 0" size="480, 260" transparent="true">
+		<view background-color="group frame color" class="CSplitView" orientation="horizontal" origin="20, 20" separator-width="7" size="440, 225" sub-controller="SplitViewController" transparent="false">
+			<view background-color="tab background" class="CViewContainer" origin="0, 0" size="46, 225" transparent="false"/>
+			<view background-color="black" bitmap="FrameBackground" class="CViewContainer" origin="53, 0" size="280, 225" transparent="false">
+				<view auto-drag-scrolling="false" autosize="left right top bottom " background-color="black" bordered="false" class="CScrollView" container-size="295, 195" horizontal-scrollbar="true" origin="0, 20" scrollbar-background-color="~ TransparentCColor" scrollbar-frame-color="~ TransparentCColor" scrollbar-scroller-color="default background" scrollbar-width="8" size="280, 203" transparent="true" vertical-scrollbar="false">
+					<view background-color="black" class="CSplitView" orientation="vertical" origin="0, 0" separator-width="7" size="295, 195" transparent="true">
+						<view background-color="group frame color" class="CViewContainer" origin="0, 0" size="295, 72" transparent="false"/>
+						<view background-color="group frame color" class="CViewContainer" origin="0, 79" size="295, 116" transparent="false"/>
+					</view>
+				</view>
+			</view>
+			<view background-color="tab background" class="CViewContainer" origin="340, 0" size="100, 225" transparent="false"/>
+		</view>
+		<view back-color="black" background-offset="0, 0" class="CTextLabel" default-value="0.5" font="~ NormalFont" font-antialias="true" font-color="white" frame-color="black" max-value="1" min-value="0" origin="0, 0" shadow-color="~ RedCColor" size="480, 20" style-3D-in="false" style-3D-out="false" style-no-draw="false" style-no-frame="false" style-no-text="false" style-shadow-text="false" text-alignment="center" text-inset="0, 0" title="CSplitView Test" transparent="true" wheel-inc-value="0.1"/>
+	</template>
+	<template background-color="black" class="CViewContainer" name="tab5" origin="0, 0" size="480, 260" transparent="true"/>
+	<template background-color="modal view background" class="CViewContainer" maxSize="500, 320" minSize="500, 320" name="ModalView" origin="0, 0" size="480, 300" transparent="false">
+		<view background-color="black" bitmap="FrameBackground" class="CViewContainer" origin="120, 60" size="260, 190" transparent="false">
+			<view back-color="black" background-offset="0, 0" class="CTextLabel" default-value="0.5" font="~ NormalFontVeryBig" font-antialias="true" font-color="white" frame-color="black" max-value="1" min-value="0" origin="0, 20" shadow-color="~ BlackCColor" size="260, 70" style-3D-in="false" style-3D-out="false" style-no-draw="false" style-no-frame="false" style-no-text="false" style-shadow-text="true" text-alignment="center" text-inset="0, 0" title="This is a Modal View" transparent="true" wheel-inc-value="0.1"/>
+			<view autosize-to-fit="false" background-offset="0, 0" boxfill-color="white" boxframe-color="black" checkmark-color="~ RedCColor" class="CCheckBox" control-tag="close modal view tag" default-value="0.5" draw-crossbox="false" font="~ SystemFont" font-color="white" max-value="1" min-value="0" origin="80, 140" size="100, 20" title="Click to close" transparent="false" wheel-inc-value="0.1"/>
+		</view>
+	</template>
+</vstgui-ui-description>
