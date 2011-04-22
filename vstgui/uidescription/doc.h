@@ -64,7 +64,6 @@ It is now possible to create VSTGUI based interfaces via a XML description.
 - @ref deftags @n
 - @ref deftemplates @n
 - @subpage uidescription_attributes @n
-- @subpage uidescription_vst3_support @n
 
 @section examplexml Example XML file
 
@@ -343,9 +342,9 @@ Here is a brief description of the items in the context menu :
 - <b>Unembed Views</b> : If you have a container view selected, it will move all children out of it and delete it.
 - <b>Delete</b> : Delete all selected views.
 
-- <b>Insert Subview</b> : Insert the view chosen in the submenu at the current mouse location. If a container view is selected it is placed into it, otherwise it uses the top container view found under the mouse.
+- <b>Insert Subview</b> : Insert the view chosen in the submenu at the current mouse location. If a container view is selected it is placed into it, otherwise it uses the deepest container view found under the mouse.
 - <b>Embed Into</b> : Insert the selected views into the container view chosen in the submenu.
-- <b>Insert Template</b> : Insert the template chosen in the submenu at the current mouse location. If a container view is selected it is placed into it, otherwise it uses the top container view found under the mouse. See @ref templates.
+- <b>Insert Template</b> : Insert the template chosen in the submenu at the current mouse location. If a container view is selected it is placed into it, otherwise it uses the deepest container view found under the mouse. See @ref templates.
 - <b>Transform View Type</b> : Transform the selected view into the view chosen in the submenu.
 
 - <b>Grid</b> : Set the grid option.

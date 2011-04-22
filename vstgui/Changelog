@@ -1,3 +1,8 @@
+2011-04-22 arne
+
+	* fix CVuMeter decreaseValue not working as expected
+	* moved all uses of kMsgCheckIfViewContainer into the deprecated macro
+
 2011-04-06 arne
 
 	* fix control-click in cocoa not a right click

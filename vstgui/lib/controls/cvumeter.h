@@ -70,6 +70,8 @@ public:
 	//@}
 
 
+	// overrides
+	virtual void setDirty (bool state);
 	virtual void draw (CDrawContext* pContext);
 	virtual void setViewSize (const CRect& newSize, bool invalid = true);
 	virtual bool sizeToFit ();

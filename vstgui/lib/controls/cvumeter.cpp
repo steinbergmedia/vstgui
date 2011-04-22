@@ -119,6 +119,12 @@ void CVuMeter::setOffBitmap (CBitmap* bitmap)
 }
 
 //------------------------------------------------------------------------
+void CVuMeter::setDirty (bool state)
+{
+	CView::setDirty (state);
+}
+
+//------------------------------------------------------------------------
 void CVuMeter::draw (CDrawContext *_pContext)
 {
 	if (!getOnBitmap ())
@@ -132,10 +138,10 @@ void CVuMeter::draw (CDrawContext *_pContext)
 
 	bounceValue ();
 	
-	float newValue = oldValue - decreaseValue;
+	float newValue = getOldValue () - decreaseValue;
 	if (newValue < value)
 		newValue = value;
-	oldValue = newValue;
+	setOldValue (newValue);
 
 	if (style & kHorizontal) 
 	{
