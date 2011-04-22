@@ -282,7 +282,7 @@ CMouseEventResult CKnob::onMouseDown (CPoint& where, const CButtonState& buttons
 
 	firstPoint = where;
 	lastPoint (-1, -1);
-	startValue = oldValue;
+	startValue = getOldValue ();
 
 	modeLinear = false;
 	fEntryState = value;
@@ -365,7 +365,7 @@ CMouseEventResult CKnob::onMouseMoved (CPoint& where, const CButtonState& button
 				else
 					startValue = value;
 			}
-			if (value != oldValue)
+			if (value != getOldValue ())
 				valueChanged ();
 			if (isDirty ())
 				invalid ();

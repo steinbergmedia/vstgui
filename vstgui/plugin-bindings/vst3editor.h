@@ -73,10 +73,10 @@ public:
 class VST3Editor : public Steinberg::Vst::VSTGUIEditor, public Steinberg::Vst::IParameterFinder, public IController, public IViewAddedRemovedObserver, public IMouseObserver
 {
 public:
-	VST3Editor (Steinberg::Vst::EditController* controller, UTF8StringPtr viewName, UTF8StringPtr xmlFile);
-	VST3Editor (UIDescription* desc, Steinberg::Vst::EditController* controller, UTF8StringPtr viewName, UTF8StringPtr xmlFile = 0);
+	VST3Editor (Steinberg::Vst::EditController* controller, UTF8StringPtr templateName, UTF8StringPtr xmlFile);
+	VST3Editor (UIDescription* desc, Steinberg::Vst::EditController* controller, UTF8StringPtr templateName, UTF8StringPtr xmlFile = 0);
 
-	bool exchangeView (UTF8StringPtr newViewName);
+	bool exchangeView (UTF8StringPtr templateName);
 	void enableTooltips (bool state);
 
 //-----------------------------------------------------------------------------

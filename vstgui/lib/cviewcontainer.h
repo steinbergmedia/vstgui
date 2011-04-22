@@ -43,7 +43,9 @@ namespace VSTGUI {
 class CCView;
 template<bool reverse> class CViewIterator;
 
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
 extern IdStringPtr kMsgCheckIfViewContainer;	///< Message to check if View is a CViewContainer	@deprecated use dynamic_cast
+#endif
 extern IdStringPtr kMsgLooseFocus;				///< Message of a view loosing focus (only CTextEdit and COptionMenu send this yet)
 
 //-----------------------------------------------------------------------------

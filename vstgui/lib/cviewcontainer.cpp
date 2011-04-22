@@ -62,7 +62,9 @@ CCView::~CCView ()
 }
 /// @endcond
 
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
 IdStringPtr kMsgCheckIfViewContainer	= "kMsgCheckIfViewContainer";
+#endif
 IdStringPtr kMsgLooseFocus = "LooseFocus";
 
 //-----------------------------------------------------------------------------
@@ -264,9 +266,12 @@ void CViewContainer::setBackgroundColor (const CColor& color)
 //------------------------------------------------------------------------------
 CMessageResult CViewContainer::notify (CBaseObject* sender, IdStringPtr message)
 {
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
 	if (message == kMsgCheckIfViewContainer)
 		return kMessageNotified;
-	else if (message == kMsgNewFocusView)
+	else 
+#endif
+	if (message == kMsgNewFocusView)
 	{
 		CView* view = dynamic_cast<CView*> (sender);
 		if (view && isChild (view, false) && getFrame ()->focusDrawingEnabled ())
