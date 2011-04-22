@@ -1,21 +1,29 @@
 #!/bin/sh
 
-RELEASENAME=vstgui_4_0_beta_1
+MAJORVERSION=4_0
+RELEASEVERSION=beta2
+
+RELEASENAME=vstgui_$MAJORVERSION\_$RELEASEVERSION
 CHECKOUTDIR=tmp
-SVNDIR=tags/vstgui4/beta1/vstgui/
+SVNDIR=tags/vstgui$MAJORVERSION/$RELEASEVERSION/vstgui/
 
 # Export vstgui from Sourceforge
 mkdir -p $CHECKOUTDIR
 cd $CHECKOUTDIR
 svn export https://vstgui.svn.sourceforge.net/svnroot/vstgui/$SVNDIR vstgui
 
-# Build documentation
-cd vstgui/doxygen
-doxygen Doxyfile
+if [[ -d vstgui/doxygen ]]
+then
 
-# Build archive
-cd ../../
-tar cjvf $RELEASENAME.tar.bz2 .
+	# Build documentation
+	cd vstgui/doxygen
+	doxygen Doxyfile
 
-# Cleanup
-rm -r vstgui
+	# Build archive
+	cd ../../
+	tar cjvf $RELEASENAME.tar.bz2 .
+
+	# Cleanup
+	rm -r vstgui
+
+fi
