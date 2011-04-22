@@ -90,6 +90,10 @@ PlatformWindow* PlatformWindow::create (const CRect& size, const char* title, Wi
 	return new Win32Window (size, title, type, styleFlags, delegate, parentWindow);
 }
 
+#define VSTGUI_BLURBEHIND_ENABLED	0
+// currently this does not work as expected, screen updates are slow as hell
+
+#if VSTGUI_BLURBEHIND_ENABLED
 //-----------------------------------------------------------------------------
 typedef struct _VSTGUI_DWM_BLURBEHIND
 {
@@ -140,6 +144,7 @@ HRESULT EnableBlurBehind(HWND hwnd)
 
     return hr;
 }
+#endif
 
 //-----------------------------------------------------------------------------
 Win32Window::Win32Window (const CRect& size, const char* title, WindowType type, int32_t styleFlags, IPlatformWindowDelegate* delegate, void* parentWindow)
@@ -161,8 +166,10 @@ Win32Window::Win32Window (const CRect& size, const char* title, WindowType type,
 
 	platformWindow = CreateWindowEx (exStyle, gClassName, titleStr, wStyle, r.left, r.top, r.right - r.left, r.bottom - r.top, baseWindow, 0, GetInstance (), 0);
 	SetWindowLongPtr (platformWindow, GWLP_USERDATA, (LONG_PTR)this);
+#if VSTGUI_BLURBEHIND_ENABLED
 	if (type == kPanelType)
 		EnableBlurBehind (platformWindow);
+#endif
 }
 
 //-----------------------------------------------------------------------------
@@ -176,7 +183,11 @@ Win32Window::~Win32Window ()
 //-----------------------------------------------------------------------------
 void Win32Window::getWindowFlags (DWORD& wStyle, DWORD& exStyle)
 {
+#if VSTGUI_BLURBEHIND_ENABLED
 	exStyle = WS_EX_COMPOSITED|WS_EX_LAYERED;
+#else
+	exStyle = 0;//WS_EX_COMPOSITED|WS_EX_LAYERED;
+#endif
 	wStyle = WS_CAPTION|WS_CLIPCHILDREN;
 	if (type == kPanelType)
 	{
