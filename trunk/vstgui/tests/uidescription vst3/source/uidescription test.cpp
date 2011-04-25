@@ -203,15 +203,26 @@ protected:
 //------------------------------------------------------------------------
 //------------------------------------------------------------------------
 //------------------------------------------------------------------------
-class SplitViewController : public DelegationController, public ISplitViewController, public CBaseObject
+class SplitViewController : public DelegationController, public ISplitViewController, public ISplitViewSeparatorDrawer, public CBaseObject
 {
 public:
-	SplitViewController (IController* controller) : DelegationController (controller)
+	SplitViewController (IController* controller)
+	: DelegationController (controller)
+	, path (0)
+	, gradient (0)
 	{
 		for (int32_t i = 0; i < 3; i++)
 			viewSizes[i] = -1.;
 	}
 
+	~SplitViewController ()
+	{
+		if (gradient)
+			gradient->forget ();
+		if (path)
+			path->forget ();
+	}
+	
 	bool getSplitViewSizeConstraint (int32_t index, CCoord& minWidth, CCoord& maxWidth, CSplitView* splitView)
 	{
 		if (index == 0)
@@ -230,9 +241,9 @@ public:
 		return true;
 	}
 	
-	ISplitViewSeparatorDrawer* getSplitViewSeparatorDrawer ()
+	ISplitViewSeparatorDrawer* getSplitViewSeparatorDrawer (CSplitView* splitView)
 	{
-		return 0;
+		return this;
 	}
 
 	bool storeViewSize (int32_t index, const CCoord& size, CSplitView* splitView)
@@ -255,9 +266,48 @@ public:
 		return false;
 	}
 
+	virtual void drawSplitViewSeparator (CDrawContext* context, const CRect& size, int32_t flags, int32_t index, CSplitView* splitView)
+	{
+		if (path == 0)
+		{
+			path = context->createGraphicsPath ();
+			path->addRect (CRect (0., 0., 1., 1.));
+		}
+		if (path && gradient == 0)
+		{
+			CColor c1 (140, 140, 140, 255);
+			CColor c2 (100, 100, 100, 255);
+			gradient = path->createGradient (0., 1., c1, c2);
+		}
+		if (path && gradient)
+		{
+			CGraphicsTransform tm;
+			tm.translate (size.left, size.top + 1);
+			tm.scale (size.getWidth (), size.getHeight () - 2);
+			CPoint start;
+			CPoint end;
+			if (index == 0)
+			{
+				start = CPoint (size.left, size.top);
+				end = CPoint (size.right, size.top);
+			}
+			else
+			{
+				start = CPoint (size.right, size.top);
+				end = CPoint (size.left, size.top);
+			}
+			context->saveGlobalState ();
+			context->setGlobalAlpha (flags == ISplitViewSeparatorDrawer::kMouseOver ? 0.9 : 0.6);
+			context->fillLinearGradient (path, *gradient, start, end, false, &tm);
+			context->restoreGlobalState ();
+		}
+	}
+
 	CLASS_METHODS(SplitViewController, CBaseObject)
 protected:
 	CCoord viewSizes[3];
+	CGraphicsPath* path;
+	CGradient* gradient;
 };
 
 class LineStyleTestView : public CControl

@@ -143,7 +143,8 @@ bool Parser::parse (IContentProvider* provider, IHandler* _handler)
 		}
 
 		int32_t bytesRead = provider->readRawXmlData ((int8_t*)buffer, kBufferSize);
-
+		if (bytesRead < 0)
+			bytesRead = 0;
 		XML_Status status = XML_ParseBuffer (PARSER, bytesRead, bytesRead == 0);
 		switch (status) 
 		{
@@ -203,6 +204,32 @@ int32_t MemoryContentProvider::readRawXmlData (int8_t* buffer, int32_t size)
 void MemoryContentProvider::rewind ()
 {
 	CMemoryStream::rewind ();
+}
+
+//------------------------------------------------------------------------
+//------------------------------------------------------------------------
+//------------------------------------------------------------------------
+InputStreamContentProvider::InputStreamContentProvider (InputStream& stream)
+: stream (stream)
+, startPos (0)
+{
+	SeekableStream* seekStream = dynamic_cast<SeekableStream*> (&stream);
+	if (seekStream)
+		startPos = seekStream->tell ();	
+}
+
+//------------------------------------------------------------------------
+int32_t InputStreamContentProvider::readRawXmlData (int8_t* buffer, int32_t size)
+{
+	return stream.readRaw (buffer, size);
+}
+
+//------------------------------------------------------------------------
+void InputStreamContentProvider::rewind ()
+{
+	SeekableStream* seekStream = dynamic_cast<SeekableStream*> (&stream);
+	if (seekStream)
+		seekStream->seek (startPos, SeekableStream::kSeekSet);
 }
 
 //------------------------------------------------------------------------
