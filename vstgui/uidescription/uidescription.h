@@ -238,7 +238,7 @@ protected:
 
 //-----------------------------------------------------------------------------
 /* helper method to get the controller of a view */
-inline IController* getViewController (CView* view, bool deep = false)
+inline IController* getViewController (const CView* view, bool deep = false)
 {
 	IController* controller = 0;
 	int32_t size = sizeof (IController*);

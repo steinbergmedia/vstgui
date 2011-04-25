@@ -170,23 +170,6 @@ protected:
 };
 
 //-----------------------------------------------------------------------------
-class ResourceReader : public Xml::IContentProvider
-{
-public:
-	ResourceReader (const CResourceDescription& resFile);
-	~ResourceReader ();
-
-	bool open ();
-
-protected:
-	int32_t readRawXmlData (int8_t* buffer, int32_t size);
-	void rewind ();
-
-	CResourceDescription resFile;
-	void* platformHandle;
-};
-
-//-----------------------------------------------------------------------------
 class UIDescWriter
 {
 public:
@@ -430,10 +413,11 @@ bool UIDescription::parse ()
 	}
 	else
 	{
-		ResourceReader reader (xmlFile);
-		if (reader.open ())
+		CResourceInputStream resInputStream;
+		if (resInputStream.open (xmlFile))
 		{
-			if (parser.parse (&reader, this))
+			Xml::InputStreamContentProvider contentProvider (resInputStream);
+			if (parser.parse (&contentProvider, this))
 			{
 				addDefaultNodes ();
 				return true;
@@ -1741,107 +1725,6 @@ bool UIAttributes::restore (InputStream& stream)
 		return true;
 	}
 	return false;
-}
-
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
-ResourceReader::ResourceReader (const CResourceDescription& resFile)
-: resFile (resFile)
-, platformHandle (0)
-{
-}
-
-//-----------------------------------------------------------------------------
-ResourceReader::~ResourceReader ()
-{
-	if (platformHandle)
-	{
-		#if MAC
-		fclose ((FILE*)platformHandle);
-		#elif WINDOWS
-		delete ((ResourceStream*)platformHandle);
-		#endif
-	}
-}
-
-//-----------------------------------------------------------------------------
-bool ResourceReader::open ()
-{
-	bool result = false;
-	#if MAC
-	if (resFile.type == CResourceDescription::kStringType && resFile.u.name[0] == '/')
-	{
-		// it's an absolute path, we can use it as is
-		platformHandle = fopen (resFile.u.name, "r");
-		if (platformHandle)
-			result = true;
-	}
-	if (!result && getBundleRef ())
-	{
-		char filename [PATH_MAX];
-		if (resFile.type == CResourceDescription::kIntegerType)
-			sprintf (filename, "%05d.uidesc", (int32_t)resFile.u.id);
-		else
-			strcpy (filename, resFile.u.name);
-		CFStringRef cfStr = CFStringCreateWithCString (NULL, filename, kCFStringEncodingUTF8);
-		if (cfStr)
-		{
-			CFURLRef url = CFBundleCopyResourceURL (getBundleRef (), cfStr, 0, NULL);
-			if (url)
-			{
-				char filePath[PATH_MAX];
-				if (CFURLGetFileSystemRepresentation (url, true, (UInt8*)filePath, PATH_MAX))
-				{
-					platformHandle = fopen (filePath, "r");
-					if (platformHandle)
-						result = true;
-				}
-				CFRelease (url);
-			}
-			CFRelease (cfStr);
-		}
-	}
-	#elif WINDOWS
-	platformHandle = new ResourceStream ();
-	if (!((ResourceStream*)platformHandle)->open (resFile, "DATA"))
-	{
-		delete ((ResourceStream*)platformHandle);
-		platformHandle = 0;
-	}
-	else
-		result = true;
-	#endif
-	return result;
-}
-
-//-----------------------------------------------------------------------------
-int32_t ResourceReader::readRawXmlData (int8_t* buffer, int32_t size)
-{
-	if (platformHandle)
-	{
-		#if MAC
-		return (int32_t)fread (buffer, 1, size, (FILE*)platformHandle);
-		#elif WINDOWS
-		ULONG read = 0;
-		((ResourceStream*)platformHandle)->Read (buffer, size, &read);
-		return read;
-		#endif
-	}
-	return 0;
-}
-
-//-----------------------------------------------------------------------------
-void ResourceReader::rewind ()
-{
-	if (platformHandle)
-	{
-		#if MAC
-		fseek ((FILE*)platformHandle, 0L, SEEK_SET);
-		#elif WINDOWS
-		((ResourceStream*)platformHandle)->Revert ();
-		#endif
-	}
 }
 
 } // namespace

@@ -1,3 +1,9 @@
+2011-04-25 arne
+
+	* fix a memory leak in CFontChooser
+	* rearrange some code in uidescription
+	* CSplitView docs and fixes
+
 2011-04-22 arne
 
 	* fix CVuMeter decreaseValue not working as expected

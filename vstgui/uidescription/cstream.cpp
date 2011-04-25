@@ -36,9 +36,12 @@
 #include <algorithm>
 #include <sstream>
 
-#if WINDOWS
-#define fseeko _fseeki64
-#define ftello _ftelli64
+#if MAC
+	#include "../lib/platform/mac/macglobals.h"
+#elif WINDOWS
+	#include "../lib/platform/win32/win32support.h"
+	#define fseeko _fseeki64
+	#define ftello _ftelli64
 #endif
 
 namespace VSTGUI {
@@ -228,6 +231,8 @@ bool CFileStream::open (UTF8StringPtr path, int32_t mode, ByteOrder byteOrder)
 			fmode << "a+";
 		else if (mode & kWriteMode)
 			fmode << "a";
+		else if (mode & kReadMode)
+			fmode << "r";
 		else
 			return false;
 	}
@@ -255,7 +260,7 @@ int32_t CFileStream::readRaw (void* buffer, int32_t size)
 {
 	if (stream)
 	{
-		return (int32_t)fread (buffer, size, 1, stream) * size;
+		return (int32_t)fread (buffer, 1, size, stream);
 	}
 	return -1;
 }
@@ -324,6 +329,157 @@ bool CFileStream::operator<< (const std::string& str)
 		return true;
 	}
 	return false;
+}
+
+//-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
+CResourceInputStream::CResourceInputStream (ByteOrder byteOrder)
+: InputStream (byteOrder)
+, platformHandle (0)
+{
+}
+
+//-----------------------------------------------------------------------------
+CResourceInputStream::~CResourceInputStream ()
+{
+	if (platformHandle)
+	{
+	#if MAC
+		fclose ((FILE*)platformHandle);
+	#elif WINDOWS
+		((ResourceStream*)platformHandle)->Release ();
+	#endif
+	}
+}
+
+//-----------------------------------------------------------------------------
+bool CResourceInputStream::open (const CResourceDescription& res)
+{
+	if (platformHandle != 0)
+		return false;
+#if MAC
+	if (res.type == CResourceDescription::kIntegerType)
+		return false;
+	if (res.type == CResourceDescription::kStringType && res.u.name[0] == '/')
+	{
+		// it's an absolute path, we can use it as is
+		platformHandle = fopen (res.u.name, "rb");
+	}
+	if (platformHandle == 0 && getBundleRef ())
+	{
+		CFStringRef cfStr = CFStringCreateWithCString (NULL, res.u.name, kCFStringEncodingUTF8);
+		if (cfStr)
+		{
+			CFURLRef url = CFBundleCopyResourceURL (getBundleRef (), cfStr, 0, NULL);
+			if (url)
+			{
+				char filePath[PATH_MAX];
+				if (CFURLGetFileSystemRepresentation (url, true, (UInt8*)filePath, PATH_MAX))
+				{
+					platformHandle = fopen (filePath, "rb");
+				}
+				CFRelease (url);
+			}
+			CFRelease (cfStr);
+		}
+	}
+#elif WINDOWS
+	platformHandle = new ResourceStream ();
+	if (!((ResourceStream*)platformHandle)->open (res, "DATA"))
+	{
+		((ResourceStream*)platformHandle)->Release ();
+		platformHandle = 0;
+	}
+#endif
+	return platformHandle != 0;
+}
+
+//-----------------------------------------------------------------------------
+int32_t CResourceInputStream::readRaw (void* buffer, int32_t size)
+{
+	int32_t readResult = -1;
+	if (platformHandle)
+	{
+	#if MAC
+		readResult = (int32_t)fread (buffer, 1, size, (FILE*)platformHandle);
+		if (readResult == 0)
+		{
+			if (ferror ((FILE*)platformHandle) != 0)
+			{
+				readResult = -1;
+				clearerr ((FILE*)platformHandle);
+			}
+		}
+	#elif WINDOWS
+		ULONG read = 0;
+		if (((ResourceStream*)platformHandle)->Read (buffer, size, &read) == S_OK)
+			readResult = read;
+	#endif
+	}
+	return readResult;
+}
+
+//-----------------------------------------------------------------------------
+int64_t CResourceInputStream::seek (int64_t pos, SeekMode mode)
+{
+	if (platformHandle)
+	{
+	#if MAC
+		int whence;
+		switch (mode)
+		{
+			case kSeekSet: whence = SEEK_SET; break;
+			case kSeekCurrent: whence = SEEK_CUR; break;
+			case kSeekEnd: whence = SEEK_END; break;
+		}
+		if (fseek ((FILE*)platformHandle, pos, whence) == 0)
+			return tell ();
+	#elif WINDOWS
+		DWORD dwOrigin;
+		switch (mode)
+		{
+			case kSeekSet: dwOrigin = STREAM_SEEK_SET; break;
+			case kSeekCurrent: dwOrigin = STREAM_SEEK_CUR; break;
+			case kSeekEnd: dwOrigin = STREAM_SEEK_END; break;
+		}
+		LARGE_INTEGER li;
+		li.QuadPart = pos;
+		if (((ResourceStream*)platformHandle)->Seek (li, dwOrigin, 0) == S_OK)
+			return tell ();
+	#endif
+	}
+	return -1;
+}
+
+//-----------------------------------------------------------------------------
+int64_t CResourceInputStream::tell () const
+{
+	if (platformHandle)
+	{
+	#if MAC
+		return ftello ((FILE*)platformHandle);
+	#elif WINDOWS
+		ULARGE_INTEGER pos;
+		LARGE_INTEGER dummy = {0};
+		if (((ResourceStream*)platformHandle)->Seek (dummy, STREAM_SEEK_CUR, &pos) == S_OK)
+			return (int64_t)pos.QuadPart;
+	#endif
+	}
+	return -1;
+}
+
+//-----------------------------------------------------------------------------
+void CResourceInputStream::rewind ()
+{
+	if (platformHandle)
+	{
+	#if MAC
+		fseek ((FILE*)platformHandle, 0L, SEEK_SET);
+	#elif WINDOWS
+		((ResourceStream*)platformHandle)->Revert ();
+	#endif
+	}
 }
 
 //-----------------------------------------------------------------------------

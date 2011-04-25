@@ -177,6 +177,27 @@ protected:
 	int32_t openMode;
 };
 
+/**
+	Resource input stream
+ */
+class CResourceInputStream : public InputStream, public SeekableStream
+{
+public:
+	CResourceInputStream (ByteOrder byteOrder = kNativeByteOrder);
+	~CResourceInputStream ();
+	
+	bool open (const CResourceDescription& res);
+
+	virtual bool operator>> (std::string& string) { return false; }
+	virtual int32_t readRaw (void* buffer, int32_t size);
+	virtual int64_t seek (int64_t pos, SeekMode mode);
+	virtual int64_t tell () const;
+	virtual void rewind ();
+protected:
+	void* platformHandle;	
+};
+
+
 } // namespace
 
 #endif

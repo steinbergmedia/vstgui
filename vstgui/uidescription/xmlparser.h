@@ -87,6 +87,19 @@ public:
 	void rewind ();
 };
 
+//-----------------------------------------------------------------------------
+class InputStreamContentProvider : public IContentProvider
+{
+public:
+	InputStreamContentProvider (InputStream& stream);
+
+	int32_t readRawXmlData (int8_t* buffer, int32_t size);
+	void rewind ();
+protected:
+	InputStream& stream;
+	int64_t startPos;
+};
+
 }} // namespaces
 
 #endif
