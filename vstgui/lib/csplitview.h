@@ -79,6 +79,8 @@ public:
 
 	virtual void setSeparatorWidth (CCoord width);					///< set the width of the separators
 	CCoord getSeparatorWidth () const { return separatorWidth; }	///< get the width of the separators
+
+	ISplitViewSeparatorDrawer* getDrawer ();
 	//@}
 	
 	// overrides
@@ -106,8 +108,11 @@ protected:
 };
 
 //-----------------------------------------------------------------------------
-/** Extension to IController. 
+/** @brief Split View Controller
+
 	controls the size of the subviews of the split view
+
+	Extension to IController 
 */
 //-----------------------------------------------------------------------------
 class ISplitViewController
@@ -116,7 +121,7 @@ public:
 	/** return the minimum and maximum size (width or height) of a view. */
 	virtual bool getSplitViewSizeConstraint (int32_t index, CCoord& minSize, CCoord& maxSize, CSplitView* splitView) = 0;
 	/** return the separator drawer. */
-	virtual ISplitViewSeparatorDrawer* getSplitViewSeparatorDrawer () = 0;
+	virtual ISplitViewSeparatorDrawer* getSplitViewSeparatorDrawer (CSplitView* splitView) = 0;
 	/** store the size of the view. */
 	virtual bool storeViewSize (int32_t index, const CCoord& size, CSplitView* splitView) = 0;
 	/** restore the size of the view. */
@@ -132,10 +137,11 @@ class ISplitViewSeparatorDrawer
 public:
 	enum Flags {
 		kMouseOver = 1 << 0,
+		kMouseDown = 1 << 1
 	};
 	/** TODO: Doc 
 	*/
-	virtual void drawSplitViewSeparator (CDrawContext* context, const CRect& size, int32_t flags, CSplitView* splitView) = 0;
+	virtual void drawSplitViewSeparator (CDrawContext* context, const CRect& size, int32_t flags, int32_t index, CSplitView* splitView) = 0;
 };
 
 }
