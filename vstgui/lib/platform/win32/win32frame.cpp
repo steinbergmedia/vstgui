@@ -1005,7 +1005,6 @@ LONG_PTR WINAPI Win32Frame::WindowProc (HWND hwnd, UINT message, WPARAM wParam, 
 					{
 						textEditWindowProc (controlWindow, WM_COMMAND, wParam, lParam);
 					}
-					DebugPrint ("");
 				}
 				break;
 			}
