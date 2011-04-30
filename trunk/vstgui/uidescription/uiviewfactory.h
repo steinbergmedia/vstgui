@@ -43,6 +43,9 @@
 namespace VSTGUI {
 
 //-----------------------------------------------------------------------------
+/// @brief View creator interface
+///	@ingroup new_in_4_0
+//-----------------------------------------------------------------------------
 class IViewCreator
 {
 public:
@@ -71,6 +74,9 @@ public:
 	virtual bool getAttributeValue (CView* view, const std::string& attributeName, std::string& stringValue, IUIDescription* desc) const = 0;
 };
 
+//-----------------------------------------------------------------------------
+/// @brief Default view factory
+///	@ingroup new_in_4_0
 //-----------------------------------------------------------------------------
 class UIViewFactory : public CBaseObject, public IViewFactory
 {

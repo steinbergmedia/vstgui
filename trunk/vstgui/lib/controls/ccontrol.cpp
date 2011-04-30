@@ -278,7 +278,7 @@ int32_t CControl::mapVstKeyModifier (int32_t vstModifier)
 //------------------------------------------------------------------------
 void IMultiBitmapControl::autoComputeHeightOfOneImage ()
 {
-	CView* view = dynamic_cast<CView*>(this);
+	CView* view = reinterpret_cast<CView*>(this);
 	if (view)
 	{
 		CRect viewSize = view->getViewSize (viewSize);

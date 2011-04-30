@@ -211,8 +211,8 @@ CRect CViewContainer::getVisibleSize (const CRect rect) const
 	result.bound (size);
 	if (pParentFrame == this)
 	{}
-	else if (pParentView && pParentView->isTypeOf("CViewContainer"))
-		result = ((CViewContainer*)pParentView)->getVisibleSize (result);
+	else if (pParentView)
+		result = reinterpret_cast<CViewContainer*> (pParentView)->getVisibleSize (result);
 	else if (pParentFrame)
 		result = pParentFrame->getVisibleSize (result);
 	result.offset (-size.left, -size.top);
@@ -502,8 +502,8 @@ bool CViewContainer::isChild (CView *pView, bool deep) const
 			found = true;
 			break;
 		}
-		if (deep && pV->pView->isTypeOf ("CViewContainer"))
-			found = ((CViewContainer*)pV->pView)->isChild (pView, true);
+		if (deep && dynamic_cast<CViewContainer*> (pV->pView))
+			found = reinterpret_cast<CViewContainer*> (pV->pView)->isChild (pView, true);
 		pV = pV->pNext;
 	}
 	return found;
@@ -620,8 +620,8 @@ bool CViewContainer::invalidateDirtyViews ()
 	FOREACHSUBVIEW
 		if (pV->isDirty () && pV->isVisible ())
 		{
-			if (pV->isTypeOf ("CViewContainer"))
-				((CViewContainer*)pV)->invalidateDirtyViews ();
+			if (dynamic_cast<CViewContainer*> (pV))
+				reinterpret_cast<CViewContainer*> (pV)->invalidateDirtyViews ();
 			else
 				pV->invalid ();
 		}
@@ -906,9 +906,10 @@ CMouseEventResult CViewContainer::onMouseDown (CPoint &where, const CButtonState
 	FOREACHSUBVIEW_REVERSE(true)
 		if (pV && pV->isVisible () && pV->getMouseEnabled () && pV->hitTest (where2, buttons))
 		{
-			if (pV->isTypeOf("CControl") && ((CControl*)pV)->getListener () && buttons & (kAlt | kShift | kControl | kApple))
+			CControl* control = dynamic_cast<CControl*> (pV);
+			if (control && control->getListener () && buttons & (kAlt | kShift | kControl | kApple))
 			{
-				if (((CControl*)pV)->getListener ()->controlModifierClicked ((CControl*)pV, buttons) != 0)
+				if (control->getListener ()->controlModifierClicked ((CControl*)pV, buttons) != 0)
 					return kMouseEventHandled;
 			}
 			CBaseObjectGuard crg (pV);
@@ -1117,9 +1118,9 @@ bool CViewContainer::advanceNextFocusView (CView* oldFocus, bool reverse)
 				getFrame ()->setFocusView (pV);
 				return true;
 			}
-			else if (pV->isTypeOf ("CViewContainer"))
+			else if (dynamic_cast<CViewContainer*> (pV))
 			{
-				if (((CViewContainer*)pV)->advanceNextFocusView (0, reverse))
+				if (reinterpret_cast<CViewContainer*> (pV)->advanceNextFocusView (0, reverse))
 					return true;
 			}
 		}
@@ -1166,8 +1167,8 @@ CView* CViewContainer::getViewAt (const CPoint& p, bool deep) const
 		{
 			if (deep)
 			{
-				if (pV->isTypeOf ("CViewContainer"))
-					return ((CViewContainer*)pV)->getViewAt (where, deep);
+				if (dynamic_cast<CViewContainer*> (pV))
+					return reinterpret_cast<CViewContainer*> (pV)->getViewAt (where, deep);
 			}
 			return pV;
 		}
@@ -1195,8 +1196,8 @@ bool CViewContainer::getViewsAt (const CPoint& p, std::list<CView*>& views, bool
 	FOREACHSUBVIEW_REVERSE(true)
 		if (pV && pV->isVisible () && where.isInside (pV->getMouseableArea ()))
 		{
-			if (deep && pV->isTypeOf ("CViewContainer"))
-				((CViewContainer*)pV)->getViewsAt (where, views);
+			if (deep && dynamic_cast<CViewContainer*> (pV))
+				reinterpret_cast<CViewContainer*> (pV)->getViewsAt (where, views);
 			views.push_back (pV);
 			result = true;
 		}
@@ -1221,8 +1222,8 @@ CViewContainer* CViewContainer::getContainerAt (const CPoint& p, bool deep) cons
 	FOREACHSUBVIEW_REVERSE(true)
 		if (pV && pV->isVisible () && where.isInside (pV->getMouseableArea ()))
 		{
-			if (deep && pV->isTypeOf ("CViewContainer"))
-				return ((CViewContainer*)pV)->getContainerAt (where, deep);
+			if (deep && dynamic_cast<CViewContainer*> (pV))
+				return reinterpret_cast<CViewContainer*> (pV)->getContainerAt (where, deep);
 			break;
 		}
 	ENDFOREACHSUBVIEW
@@ -1234,7 +1235,7 @@ CViewContainer* CViewContainer::getContainerAt (const CPoint& p, bool deep) cons
 CPoint& CViewContainer::frameToLocal (CPoint& point) const
 {
 	point.offset (-size.left, -size.top);
-	if (pParentView && pParentView->isTypeOf ("CViewContainer"))
+	if (pParentView)
 		return pParentView->frameToLocal (point);
 	return point;
 }
@@ -1243,7 +1244,7 @@ CPoint& CViewContainer::frameToLocal (CPoint& point) const
 CPoint& CViewContainer::localToFrame (CPoint& point) const
 {
 	point.offset (size.left, size.top);
-	if (pParentView && pParentView->isTypeOf ("CViewContainer"))
+	if (pParentView)
 		return pParentView->localToFrame (point);
 	return point;
 }
@@ -1313,8 +1314,8 @@ void CViewContainer::dumpHierarchy ()
 			DebugPrint ("\t");
 		pV->dumpInfo ();
 		DebugPrint ("\n");
-		if (pV->isTypeOf ("CViewContainer"))
-			((CViewContainer*)pV)->dumpHierarchy ();
+		if (dynamic_cast<CViewContainer*> (pV))
+			reinterpret_cast<CViewContainer*> (pV)->dumpHierarchy ();
 	ENDFOREACHSUBVIEW
 	_debugDumpLevel--;
 }

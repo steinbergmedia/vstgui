@@ -1,3 +1,10 @@
+2011-04-30 arne
+
+	* fix CKickButton key down repeat triggering beginEdit more than once
+	* remove usage of isTypeOf("CViewContainer") and instead use dynamic_cast/reinterpret_cast
+	* add assert in CView::attached(CView* parent) that checks that the parent is a CViewContainer, other types are not supported !
+	* fix drawcontext on windows did not work with globalAlpha other than 1 for fillLinearGradient
+
 2011-04-25 arne
 
 	* fix a memory leak in CFontChooser

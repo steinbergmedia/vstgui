@@ -300,7 +300,7 @@ void CFrame::checkMouseViews (const CPoint& where, const CButtonState& buttons)
 	std::list<CView*>::reverse_iterator it = pMouseViews.rbegin ();
 	while (it != pMouseViews.rend ())
 	{
-		vc = dynamic_cast<CViewContainer*> ((*it));
+		vc = reinterpret_cast<CViewContainer*> ((*it));
 		if (vc == mouseView)
 			return;
 		if (vc->isChild (mouseView, true) == false)
@@ -323,7 +323,7 @@ void CFrame::checkMouseViews (const CPoint& where, const CButtonState& buttons)
 	{
 		std::list<CView*>::iterator it2 = pMouseViews.end ();
 		it2--;
-		while ((vc = dynamic_cast<CViewContainer*> (mouseView->getParentView ())) != *it2)
+		while ((vc = reinterpret_cast<CViewContainer*> (mouseView->getParentView ())) != *it2)
 		{
 			pMouseViews.insert (it2, vc);
 			vc->remember ();
@@ -350,7 +350,7 @@ void CFrame::checkMouseViews (const CPoint& where, const CButtonState& buttons)
 		assert (pMouseViews.size () == 0);
 		pMouseViews.push_back (mouseView);
 		mouseView->remember ();
-		while ((vc = dynamic_cast<CViewContainer*> (mouseView->getParentView ())) != this)
+		while ((vc = reinterpret_cast<CViewContainer*> (mouseView->getParentView ())) != this)
 		{
 			pMouseViews.push_front (vc);
 			vc->remember ();
@@ -801,9 +801,9 @@ void CFrame::onViewRemoved (CView* pView)
 		pActiveFocusView = 0;
 	if (pFocusView == pView)
 		setFocusView (0);
-	if (pView->isTypeOf ("CViewContainer"))
+	CViewContainer* container = dynamic_cast<CViewContainer*> (pView);
+	if (container)
 	{
-		CViewContainer* container = (CViewContainer*)pView;
 		if (container->isChild (pFocusView, true))
 			setFocusView (0);
 	}
@@ -880,9 +880,10 @@ bool CFrame::advanceNextFocusView (CView* oldFocus, bool reverse)
 {
 	if (pModalView)
 	{
-		if (pModalView->isTypeOf("CViewContainer"))
+		CViewContainer* container = dynamic_cast<CViewContainer*> (pModalView);
+		if (container)
 		{
-			return ((CViewContainer*)pModalView)->advanceNextFocusView (oldFocus, reverse);
+			return container->advanceNextFocusView (oldFocus, reverse);
 		}
 		else if (oldFocus != pModalView)
 		{
@@ -907,22 +908,18 @@ bool CFrame::advanceNextFocusView (CView* oldFocus, bool reverse)
 			return false;
 		}
 	}
-	CView* parentView = oldFocus->getParentView ();
-	if (parentView && parentView->isTypeOf ("CViewContainer"))
+	CViewContainer* parentView = reinterpret_cast<CViewContainer*> (oldFocus->getParentView ());
+	if (parentView)
 	{
 		CView* tempOldFocus = oldFocus;
-		CViewContainer* vc = (CViewContainer*)parentView;
-		while (vc)
+		while (parentView)
 		{
-			if (vc->advanceNextFocusView (tempOldFocus, reverse))
+			if (parentView->advanceNextFocusView (tempOldFocus, reverse))
 				return true;
 			else
 			{
-				tempOldFocus = vc;
-				if (vc->getParentView () && vc->getParentView ()->isTypeOf ("CViewContainer"))
-					vc = (CViewContainer*)vc->getParentView ();
-				else
-					vc = 0;
+				tempOldFocus = parentView;
+				parentView = reinterpret_cast<CViewContainer*> (parentView->getParentView ());
 			}
 		}
 	}
