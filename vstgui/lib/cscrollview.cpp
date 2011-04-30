@@ -222,7 +222,7 @@ void CScrollContainer::onDragMove (CDragContainer* drag, const CPoint& where)
 		float x, y;
 		if (getScrollValue (where, x, y))
 		{
-			CScrollView* scrollView = dynamic_cast<CScrollView*> (getParentView ());
+			CScrollView* scrollView = reinterpret_cast<CScrollView*> (getParentView ());
 			if (scrollView)
 			{
 				CRect r (getViewSize ());
@@ -263,7 +263,7 @@ CMessageResult CScrollContainer::notify (CBaseObject* sender, IdStringPtr messag
 	if (message == kMsgViewSizeChanged && !inScrolling)
 	{
 		int32_t numSubViews = getNbViews ();
-		CView* view = dynamic_cast<CView*> (sender);
+		CView* view = reinterpret_cast<CView*> (sender);
 		if (numSubViews == 1 && view && isChild (view))
 		{
 			CRect r (view->getViewSize ());

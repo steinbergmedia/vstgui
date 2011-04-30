@@ -280,8 +280,8 @@ void D2DDrawContext::fillLinearGradient (CGraphicsPath* _path, const CGradient& 
 		D2D1_GRADIENT_STOP gradientStops[2];
 		gradientStops[0].position = (FLOAT)gradient.getColor1Start ();
 		gradientStops[1].position = (FLOAT)gradient.getColor2Start ();
-		gradientStops[0].color = D2D1::ColorF (gradient.getColor1 ().red/255.f, gradient.getColor1 ().green/255.f, gradient.getColor1 ().blue/255.f, gradient.getColor1 ().alpha/255.f);
-		gradientStops[1].color = D2D1::ColorF (gradient.getColor2 ().red/255.f, gradient.getColor2 ().green/255.f, gradient.getColor2 ().blue/255.f, gradient.getColor2 ().alpha/255.f);
+		gradientStops[0].color = D2D1::ColorF (gradient.getColor1 ().red/255.f, gradient.getColor1 ().green/255.f, gradient.getColor1 ().blue/255.f, gradient.getColor1 ().alpha/255.f * currentState.globalAlpha);
+		gradientStops[1].color = D2D1::ColorF (gradient.getColor2 ().red/255.f, gradient.getColor2 ().green/255.f, gradient.getColor2 ().blue/255.f, gradient.getColor2 ().alpha/255.f * currentState.globalAlpha);
 
 		if (SUCCEEDED (getRenderTarget ()->CreateGradientStopCollection (gradientStops, 2, &collection)))
 		{
