@@ -1571,7 +1571,7 @@ class CTextEditCreator : public IViewCreator
 public:
 	CTextEditCreator () { UIViewFactory::registerViewCreator (*this); }
 	IdStringPtr getViewName () const { return "CTextEdit"; }
-	IdStringPtr getBaseViewName () const { return "CParamDisplay"; }
+	IdStringPtr getBaseViewName () const { return "CTextLabel"; }
 	CView* create (const UIAttributes& attributes, IUIDescription* description) const { return new CTextEdit (CRect (0, 0, 0, 0), 0, -1); }
 	bool apply (CView* view, const UIAttributes& attributes, IUIDescription* description) const
 	{
@@ -1579,10 +1579,7 @@ public:
 		if (!label)
 			return false;
 
-		const std::string* attr = attributes.getAttributeValue ("title");
-		if (attr)
-			label->setText (attr->c_str ());
-		attr = attributes.getAttributeValue ("immediate-text-change");
+		const std::string* attr = attributes.getAttributeValue ("immediate-text-change");
 		if (attr)
 			label->setImmediateTextChange (*attr == "true" ? true : false);
 
@@ -1590,13 +1587,11 @@ public:
 	}
 	bool getAttributeNames (std::list<std::string>& attributeNames) const
 	{
-		attributeNames.push_back ("title");
 		attributeNames.push_back ("immediate-text-change");
 		return true;
 	}
 	AttrType getAttributeType (const std::string& attributeName) const
 	{
-		if (attributeName == "title") return kStringType;
 		if (attributeName == "immediate-text-change") return kBooleanType;
 		return kUnknownType;
 	}
@@ -1605,13 +1600,7 @@ public:
 		CTextEdit* label = dynamic_cast<CTextEdit*> (view);
 		if (!label)
 			return false;
-		if (attributeName == "title")
-		{
-			UTF8StringPtr title = label->getText ();
-			stringValue = title ? title : "";
-			return true;
-		}
-		else if (attributeName == "immediate-text-change")
+		if (attributeName == "immediate-text-change")
 		{
 			stringValue = label->getImmediateTextChange () ? "true" : "false";
 			return true;

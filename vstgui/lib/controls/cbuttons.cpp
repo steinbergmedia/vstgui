@@ -259,10 +259,13 @@ int32_t CKickButton::onKeyDown (VstKeyCode& keyCode)
 {
 	if (keyCode.modifier == 0 && keyCode.virt == VKEY_RETURN)
 	{
-		beginEdit ();
-		value = getMax ();
-		invalid ();
-		valueChanged ();
+		if (value != getMax ())
+		{
+			beginEdit ();
+			value = getMax ();
+			invalid ();
+			valueChanged ();
+		}
 		return 1;
 	}
 	return -1;

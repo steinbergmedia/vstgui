@@ -297,7 +297,7 @@ public:
 				end = CPoint (size.left, size.top);
 			}
 			context->saveGlobalState ();
-			context->setGlobalAlpha (flags == ISplitViewSeparatorDrawer::kMouseOver ? 0.9 : 0.6);
+			context->setGlobalAlpha (context->getGlobalAlpha () * (flags == ISplitViewSeparatorDrawer::kMouseOver ? 0.9 : 0.6));
 			context->fillLinearGradient (path, *gradient, start, end, false, &tm);
 			context->restoreGlobalState ();
 		}

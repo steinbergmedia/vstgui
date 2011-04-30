@@ -37,6 +37,82 @@
 
 namespace VSTGUI {
 
+/** @class IViewCreator
+
+	You can register your own custom views with the UIViewFactory by inheriting from this interface and register it
+	with UIViewFactory::registerViewCreator().
+	
+	Example for an imaginary view class called MyView which directly inherites from CView:
+	@code
+	class MyViewCreator : public IViewCreator
+	{
+	public:
+		// register this class with the view factory
+		MyViewCreator () { UIViewFactory::registerViewCreator (*this); }
+		
+		// return an unique name here
+		IdStringPtr getViewName () const { return "MyView"; }
+
+		// return the name here from where your custom view inherites.
+		// Your view automatically supports the attributes from it.
+		IdStringPtr getBaseViewName () const { return "CView"; }
+
+		// create your view here.
+		// Note you don't need to apply attributes here as the apply method will be called with this new view
+		CView* create (const UIAttributes& attributes, IUIDescription* description) const { return new MyView (); }
+
+		// apply custom attributes to your view		
+		bool apply (CView* view, const UIAttributes& attributes, IUIDescription* description) const
+		{
+			MyView* myView = dynamic_cast<MyView*> (view);
+			if (myView == 0)
+				return false;
+			const std::string* attr = attributes.getAttributeValue ("my-custom-attribute");
+			if (attr)
+			{
+				int32_t value = (int32_t)strtol (attr->c_str (), 0, 10);
+				myView->setCustomAttribute (value);
+			}
+			return true;
+		}
+
+		// add your custom attributes to the list		
+		bool getAttributeNames (std::list<std::string>& attributeNames) const
+		{
+			attributeNames.push_back ("my-custom-attribute");
+			return true;
+		}
+		
+		// return the type of your custom attributes
+		AttrType getAttributeType (const std::string& attributeName) const
+		{
+			if (attributeName == "my-custom-attribute")
+				return kIntegerType;
+			return kUnknownType;
+		}
+		
+		// return the string value of the custom attributes of the view
+		bool getAttributeValue (CView* view, const std::string& attributeName, std::string& stringValue, IUIDescription* desc) const
+		{
+			MyView* myView = dynamic_cast<MyView*> (view);
+			if (myView == 0)
+				return false;
+			if (attributeName == "my-custom-attribute")
+			{
+				std::stringstream stream;
+				stream << (int32_t)myView->getCustomAttribute ();
+				stringValue = stream.str ();
+				return true;
+			}
+			return false;
+		}
+	};
+	// create a static instance so that it registers itself with the view factory
+	MyViewCreator __gMyViewCreator;
+	
+	@endcode
+*/
+
 //-----------------------------------------------------------------------------
 class ViewCreatorRegistry : public std::map<std::string,const IViewCreator*>
 {

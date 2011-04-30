@@ -37,6 +37,7 @@
 #include "cbitmap.h"
 #include "cframe.h"
 #include "animation/animator.h"
+#include <assert.h>
 #if DEBUG
 #include <list>
 #include <typeinfo>
@@ -238,6 +239,7 @@ bool CView::attached (CView* parent)
 {
 	if (isAttached ())
 		return false;
+	assert (dynamic_cast<CViewContainer*> (parent) != 0);
 	pParentView = parent;
 	pParentFrame = parent->getFrame ();
 	viewFlags |= kIsAttached;
@@ -303,7 +305,7 @@ CMouseEventResult CView::onMouseMoved (CPoint &where, const CButtonState& button
  */
 CPoint& CView::frameToLocal (CPoint& point) const
 {
-	if (pParentView && pParentView->isTypeOf ("CViewContainer"))
+	if (pParentView)
 		return pParentView->frameToLocal (point);
 	return point;
 }
@@ -315,7 +317,7 @@ CPoint& CView::frameToLocal (CPoint& point) const
  */
 CPoint& CView::localToFrame (CPoint& point) const
 {
-	if (pParentView && pParentView->isTypeOf ("CViewContainer"))
+	if (pParentView)
 		return pParentView->localToFrame (point);
 	return point;
 }
@@ -462,8 +464,8 @@ void CView::setViewSize (const CRect& newSize, bool invalid)
  */
 CRect CView::getVisibleSize () const
 {
-	if (pParentView && pParentView->isTypeOf ("CViewContainer"))
-		return ((CViewContainer*)pParentView)->getVisibleSize (size);
+	if (pParentView)
+		return reinterpret_cast<CViewContainer*>(pParentView)->getVisibleSize (size);
 	else if (pParentFrame)
 		return pParentFrame->getVisibleSize (size);
 	return CRect (0, 0, 0, 0);

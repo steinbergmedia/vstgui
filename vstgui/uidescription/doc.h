@@ -215,6 +215,7 @@ Per default the \b template tag will create a CViewContainer view, but you can u
 - @ref parameter_binding @n
 - @ref custom_view_creation @n
 - @ref sub_controllers @n
+- @ref templates @n
 - @ref vst3_misc @n
 
 <hr/>
@@ -237,7 +238,7 @@ Note that you need at least VST SDK 3.1, any earlier version will not work.
 	- plugin-bindings/vst3editor.cpp
 	- Windows only: vstgui_uidescription_win32.cpp
 	- Mac OS X only: vstgui_uidescription_mac.mm
-- Add VSTGUI_LIVE_EDITING=1 to your preprocessor definitions
+- Add VSTGUI_LIVE_EDITING=1 to your preprocessor definitions (only for your debug builds)
 - Modify your VST Edit Controller class to add the createView(..) method :
 @code
 IPlugView* PLUGIN_API MyEditController::createView (FIDString name)
@@ -383,6 +384,9 @@ when the user opens the editor again. You can look at the sources of the include
 If you need to create custom views, you can implement the VSTGUI::VST3EditorDelegate interface in your edit controller class.
 The createCustomView method will be called if you set the 'custom-view-name' attribute in one of the views.
 
+Another way to use your own views is to register them at runtime with the UIViewFactory. This method requires more work but has the advantage
+that the view will be listed like the built-in views and changing attributes work on the fly. See \ref VSTGUI::IViewCreator.
+
 <hr/>
 
 @section sub_controllers Sub-Controllers
@@ -393,6 +397,53 @@ You can define @ref sub_controllers for views with the 'sub-controller' attribut
 
 The VSTGUI::DelegationController is a helper class if you don't want to control every aspect of the views by forwarding every call to its parent controller.
 You only overwrite the methods you need in your inherited class.
+
+If you want to be notified about value changes for controls in your sub-controller but don't want to loose the
+@ref parameter_binding you can add your sub-controller as dependent of the control:
+
+@code
+class MyController : public DelegationController, public CBaseObject
+{
+public:
+	MyController (IController* baseController) : DelegationController (baseController), controlView (0) {}
+	~MyController ()
+	{
+		if (controlView)
+		{
+			controlView->removeDependent (this);
+			controlView->forget ();
+		}
+	}
+	
+	CView* verifyView (CView* view, const UIAttributes& attributes, IUIDescription* description)
+	{
+		CControl* control = dynamic_cast<CControl*> (view);
+		if (control && control->getTag () == 20)
+		{
+			controlView = control;
+			controlView->addDependent (this);
+			controlView->remember ();
+		}
+		return controller->verifyView (view, attributes, description);
+	}
+	
+	CMessageResult notify (CBaseObject* sender, IdStringPtr message)
+	{
+		if (sender == controlView)
+		{
+			if (message == CControl::kMessageValueChanged)
+			{
+				// do something
+			}
+			return kMessageNotified;
+		}
+		return kMessageUnknown;
+	}
+	
+protected:
+	CControl* controlView;
+};
+@endcode
 
 <hr/>
 
