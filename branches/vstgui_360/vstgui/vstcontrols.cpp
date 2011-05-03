@@ -3174,7 +3174,7 @@ void *COptionMenu::appendItems (long &offsetIdx)
 					bitmap->GetHBITMAP (Gdiplus::Color (0, 0, 0, 0), &hBmp);
 					mInfo.hbmpItem = hBmp;
 					#else
-					mInfo.hbmpItem = item->getIcon ()->getHandle ();
+					mInfo.hbmpItem = (HBITMAP)item->getIcon ()->getHandle ();
 					#endif
 					SetMenuItemInfo ((HMENU)menu, offset + inc, TRUE, &mInfo);
 				}

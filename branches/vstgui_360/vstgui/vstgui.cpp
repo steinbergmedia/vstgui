@@ -648,7 +648,8 @@ void* CFontDesc::getPlatformFont ()
 	
 	logfont.lfHeight         = -size;
 	logfont.lfPitchAndFamily = VARIABLE_PITCH | FF_SWISS;
-	strcpy (logfont.lfFaceName, name);
+	UTF8StringHelper tempName (name);
+	VSTGUI_STRCPY (logfont.lfFaceName, tempName);
 
 	if (!strcmp (name, kSymbolFont->getName ()))
 		logfont.lfPitchAndFamily = DEFAULT_PITCH | FF_DECORATIVE;
@@ -1995,9 +1996,10 @@ CCoord CDrawContext::getStringWidth (const char* pStr)
 	HANDLE newFont = (HANDLE)font->getPlatformFont ();
 	if (newFont)
 	{
+		UTF8StringHelper tempStr (pStr);
 		SelectObject ((HDC)pSystemContext, newFont);
 		SIZE size;
-		GetTextExtentPoint32 ((HDC)pSystemContext, pStr, (int)strlen (pStr), &size);
+		GetTextExtentPoint32 ((HDC)pSystemContext, tempStr, (int)VSTGUI_STRLEN (tempStr), &size);
 		result = (long)size.cx;
 	}
 
@@ -2032,20 +2034,22 @@ void CDrawContext::drawString (const char* string, const CRect &_rect,
 
 		RECT Rect = {rect.left, rect.top, rect.right, rect.bottom};
 		UINT flag = DT_VCENTER + DT_SINGLELINE + DT_NOPREFIX;
+
+		UTF8StringHelper tempStr (string);
 		switch (hAlign)
 		{
 		case kCenterText:
 			// without DT_SINGLELINE no vertical center alignment here
-			DrawText ((HDC)pSystemContext, string, (int)strlen (string), &Rect, flag + DT_CENTER);
+			DrawText ((HDC)pSystemContext, tempStr, (int)VSTGUI_STRLEN (tempStr), &Rect, flag + DT_CENTER);
 			break;
 			
 		case kRightText:
-			DrawText ((HDC)pSystemContext, string, (int)strlen (string), &Rect, flag + DT_RIGHT);
+			DrawText ((HDC)pSystemContext, tempStr, (int)VSTGUI_STRLEN (tempStr), &Rect, flag + DT_RIGHT);
 			break;
 			
 		default : // left adjust
 			Rect.left++;
-			DrawText ((HDC)pSystemContext, string, (int)strlen (string), &Rect, flag + DT_LEFT);
+			DrawText ((HDC)pSystemContext, tempStr, (int)VSTGUI_STRLEN (tempStr), &Rect, flag + DT_LEFT);
 		}
 
 		SetBkMode ((HDC)pSystemContext, TRANSPARENT);
@@ -3645,7 +3649,7 @@ CFrame::CFrame (const CRect &inSize, void* inSystemWindow, VSTGUIEditorInterface
 	pfnAlphaBlend = 0;
 	pfnTransparentBlt = 0;
 
-	hInstMsimg32dll = LoadLibrary ("msimg32.dll");
+	hInstMsimg32dll = LoadLibrary (TEXT("msimg32.dll"));
 	if (hInstMsimg32dll)
 	{
 		pfnAlphaBlend = (PFNALPHABLEND)GetProcAddress (hInstMsimg32dll, "AlphaBlend");
@@ -7143,7 +7147,15 @@ bool CBitmap::loadFromResource (const CResourceDescription& resourceDesc)
 			height = (CCoord)pBitmap->GetHeight ();
 		}
 #else
-		pHandle = LoadBitmap (GetInstance (), resourceDesc.type == CResourceDescription::kIntegerType ? MAKEINTRESOURCE (resourceDesc.u.id) : resourceDesc.u.name);
+		if (resourceDesc.type == CResourceDescription::kIntegerType)
+		{
+			pHandle = LoadBitmap (GetInstance (), MAKEINTRESOURCE (resourceDesc.u.id));
+		}
+		else
+		{
+			UTF8StringHelper tempStr (resourceDesc.u.name);
+			pHandle = LoadBitmap (GetInstance (), tempStr);
+		}
 		BITMAP bm;
 		if (pHandle && GetObject (pHandle, sizeof (bm), &bm))
 		{
@@ -8294,7 +8306,7 @@ void* WinDragContainer::next (long& size, long& type)
 			{
 				#if VSTGUI_USES_UTF8
 				UTF8StringHelper wideString ((const WCHAR*)data);
-				size = strlen (wideString.getUTF8String ());
+				size = (long)strlen (wideString.getUTF8String ());
 				lastItem = malloc (size+1);
 				strcpy ((char*)lastItem, wideString.getUTF8String ());
 				type = kUnicodeText;
