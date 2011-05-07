@@ -43,6 +43,7 @@ Welcome to VSTGUI
 
 - @ref intro @n
 - @ref changes_from_3_0 @n
+- @ref uidescription_vst3_support @n
 - @ref tutorial_getting_started @n
 - @ref changelog @n
 - @ref license @n

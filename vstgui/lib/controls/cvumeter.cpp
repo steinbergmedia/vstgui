@@ -35,6 +35,8 @@
 #include "cvumeter.h"
 #include "../coffscreencontext.h"
 #include "../cbitmap.h"
+#include "../cvstguitimer.h"
+#include <list>
 
 namespace VSTGUI {
 
@@ -63,6 +65,8 @@ CVuMeter::CVuMeter (const CRect& size, CBitmap* onBitmap, CBitmap* offBitmap, in
 
 	rectOn  (size.left, size.top, size.right, size.bottom);
 	rectOff (size.left, size.top, size.right, size.bottom);
+
+	setWantsIdle (true);
 }
 
 //------------------------------------------------------------------------
@@ -76,6 +80,7 @@ CVuMeter::CVuMeter (const CVuMeter& v)
 , rectOff (v.rectOff)
 {
 	setOffBitmap (v.offBitmap);
+	setWantsIdle (true);
 }
 
 //------------------------------------------------------------------------
@@ -122,6 +127,13 @@ void CVuMeter::setOffBitmap (CBitmap* bitmap)
 void CVuMeter::setDirty (bool state)
 {
 	CView::setDirty (state);
+}
+
+//------------------------------------------------------------------------
+void CVuMeter::onIdle ()
+{
+	if (getOldValue () != value)
+		invalid ();
 }
 
 //------------------------------------------------------------------------

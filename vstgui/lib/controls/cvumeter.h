@@ -75,6 +75,7 @@ public:
 	virtual void draw (CDrawContext* pContext);
 	virtual void setViewSize (const CRect& newSize, bool invalid = true);
 	virtual bool sizeToFit ();
+	virtual void onIdle ();
 	
 	CLASS_METHODS(CVuMeter, CControl)
 protected:
