@@ -139,9 +139,9 @@ enum CButton
 	kMButton		= 1 << 2,		///< middle mouse button
 	kRButton		= 1 << 3,		///< right mouse button
 	kShift			= 1 << 4,		///< shift modifier
-	kControl		= 1 << 5,		///< control modifier
+	kControl		= 1 << 5,		///< control modifier (Command Key on Mac OS X and Control Key on Windows)
 	kAlt			= 1 << 6,		///< alt modifier
-	kApple			= 1 << 7,		///< apple modifier
+	kApple			= 1 << 7,		///< apple modifier (Mac OS X only. Is the Control key)
 	kButton4		= 1 << 8,		///< 4th mouse button
 	kButton5		= 1 << 9,		///< 5th mouse button
 	kDoubleClick	= 1 << 10		///< mouse button is double click
@@ -345,6 +345,18 @@ public:
 	void removeAllAnimations ();
 	//@}
 	
+	//-----------------------------------------------------------------------------
+	/// @name Idle Methods
+	//! Should be used when a view needs to do a task periodically.
+	//! The onIdle() method will be called only if the view is attached.
+	//-----------------------------------------------------------------------------
+	//@{
+	virtual void onIdle () {}																	///< called on idle when view wants idle
+	void setWantsIdle (bool state);																///< enable/disable onIdle() callback
+	bool wantsIdle () const { return viewFlags & kWantsIdle; }									///< returns if the view wants idle callback or not
+	static int32_t idleRate;																	///< global idle rate in Hz, defaults to 30 Hz
+	//@}
+
 	#if DEBUG
 	virtual void dumpInfo ();
 	#endif
@@ -369,6 +381,7 @@ protected:
 		kIsAttached				= 1 << 3,
 		kVisible				= 1 << 4,
 		kDirty					= 1 << 5,
+		kWantsIdle				= 1 << 6,
 	};
 	int32_t viewFlags;
 	

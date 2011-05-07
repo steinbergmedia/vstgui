@@ -1,3 +1,9 @@
+2011-05-06 arne
+
+	* add CView idle mechanism
+	* CVuMeter uses CView idle mechanism for smooth meter fallback
+	* CFrame disable invalidating views if CView::kDirtyCallAlwaysOnMainThread is true
+
 2011-04-30 arne
 
 	* fix CKickButton key down repeat triggering beginEdit more than once

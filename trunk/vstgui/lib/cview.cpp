@@ -116,6 +116,58 @@ protected:
 	void* data;
 };
 
+//-----------------------------------------------------------------------------
+class IdleViewUpdater : public CBaseObject
+{
+public:
+	static void add (CView* view)
+	{
+		if (gInstance == 0)
+			new IdleViewUpdater ();
+		gInstance->views.push_back (view);
+	}
+	
+	static void remove (CView* view)
+	{
+		if (gInstance)
+		{
+			gInstance->views.remove (view);
+			if (gInstance->views.size () == 0)
+			{
+				gInstance->forget ();
+			}
+		}
+	}
+	
+protected:
+	IdleViewUpdater ()
+	{
+		gInstance = this;
+		timer = new CVSTGUITimer (this, 1000/CView::idleRate);
+		timer->start ();
+	}
+	
+	~IdleViewUpdater ()
+	{
+		timer->forget ();
+		gInstance = 0;
+	}
+	
+	CMessageResult notify (CBaseObject* sender, IdStringPtr message)
+	{
+		for (std::list<CView*>::const_iterator it = views.begin (); it != views.end (); it++)
+		{
+			(*it)->onIdle ();
+		}
+		return kMessageNotified;
+	}
+	CVSTGUITimer* timer;
+	std::list<CView*> views;
+	
+	static IdleViewUpdater* gInstance;
+};
+IdleViewUpdater* IdleViewUpdater::gInstance = 0;
+int32_t CView::idleRate = 30;
 /// @endcond
 
 UTF8StringPtr kDegreeSymbol		= "\xC2\xB0";
@@ -213,6 +265,25 @@ void CView::setWantsFocus (bool state)
 }
 
 //-----------------------------------------------------------------------------
+void CView::setWantsIdle (bool state)
+{
+	if (wantsIdle () == state)
+		return;
+	if (state)
+	{
+		viewFlags |= kWantsIdle;
+		if (isAttached ())
+			IdleViewUpdater::add (this);
+	}
+	else
+	{
+		viewFlags &= ~kWantsIdle;
+		if (isAttached ())
+			IdleViewUpdater::remove (this);
+	}
+}
+
+//-----------------------------------------------------------------------------
 void CView::setDirty (bool state)
 {
 	if (kDirtyCallAlwaysOnMainThread)
@@ -245,6 +316,8 @@ bool CView::attached (CView* parent)
 	viewFlags |= kIsAttached;
 	if (pParentFrame)
 		pParentFrame->onViewAdded (this);
+	if (wantsIdle ())
+		IdleViewUpdater::add (this);
 	return true;
 }
 
@@ -257,6 +330,8 @@ bool CView::removed (CView* parent)
 {
 	if (!isAttached ())
 		return false;
+	if (wantsIdle ())
+		IdleViewUpdater::remove (this);
 	if (pParentFrame)
 		pParentFrame->onViewRemoved (this);
 	pParentView = 0;

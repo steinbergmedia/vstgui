@@ -568,6 +568,8 @@ CView::DragResult CFrame::doDrag (CDropSource* source, const CPoint& offset, CBi
 //-----------------------------------------------------------------------------
 void CFrame::idle ()
 {
+	if (CView::kDirtyCallAlwaysOnMainThread)
+		return;
 	invalidateDirtyViews ();
 }
 
