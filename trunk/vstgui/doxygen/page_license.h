@@ -1,5 +1,5 @@
 /**
-@page license License
+@page page_license License
 
 \code
 //-----------------------------------------------------------------------------

@@ -7,7 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		F40DCFBD13119C6A0084A8AE /* libvstgui.a in Frameworks */ = {isa = PBXBuildFile; fileRef = F40DCFBC13119C6A0084A8AE /* libvstgui.a */; };
 		F41CA1C8112E99F000D425D7 /* animationtest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F41CA1C7112E99F000D425D7 /* animationtest.cpp */; };
 		F41CA21F112E9E6B00D425D7 /* AnimationTest.uidesc in Resources */ = {isa = PBXBuildFile; fileRef = F41CA21E112E9E6B00D425D7 /* AnimationTest.uidesc */; };
 		F42731DE1125507F00BE2194 /* factory.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F42731DD1125507F00BE2194 /* factory.cpp */; };
@@ -33,7 +32,7 @@
 		F465763D114F8EA200846DAE /* GraphicsTest.uidesc in Resources */ = {isa = PBXBuildFile; fileRef = F465763C114F8EA200846DAE /* GraphicsTest.uidesc */; };
 		F496F16C119715B500DD3F7A /* Accelerate.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F496F16B119715B500DD3F7A /* Accelerate.framework */; };
 		F4C04ECE123B8E450082BA28 /* vst3sdksources.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4C04ECD123B8E450082BA28 /* vst3sdksources.cpp */; };
-		F4C04F01123B90940082BA28 /* README.txt in Resources */ = {isa = PBXBuildFile; fileRef = F4C04F00123B90940082BA28 /* README.txt */; };
+		F4D7874A1380432A00B06ADC /* libvstgui.a in Frameworks */ = {isa = PBXBuildFile; fileRef = F4D787491380432A00B06ADC /* libvstgui.a */; };
 		F4F5DA8A10BFD28900DB6C33 /* TabController.png in Resources */ = {isa = PBXBuildFile; fileRef = F4F5DA8910BFD28900DB6C33 /* TabController.png */; };
 /* End PBXBuildFile section */
 
@@ -45,7 +44,7 @@
 			remoteGlobalIDString = F497F0AD1308094300F0A613;
 			remoteInfo = vstgui;
 		};
-		F40DCFBA13119C620084A8AE /* PBXContainerItemProxy */ = {
+		F464566D137FFD7400209366 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = F40DCF9913119C240084A8AE /* vstgui.xcodeproj */;
 			proxyType = 1;
@@ -58,7 +57,6 @@
 		508817D409F0C9AD0071BF1A /* uidescription test.vst3 */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "uidescription test.vst3"; sourceTree = BUILT_PRODUCTS_DIR; };
 		508817D609F0C9AD0071BF1A /* uidescription test-Info.plist */ = {isa = PBXFileReference; explicitFileType = text.plist.xml; path = "uidescription test-Info.plist"; sourceTree = "<group>"; };
 		F40DCF9913119C240084A8AE /* vstgui.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = vstgui.xcodeproj; path = ../../../ide/xcode4/vstgui.xcodeproj; sourceTree = "<group>"; };
-		F40DCFBC13119C6A0084A8AE /* libvstgui.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; name = libvstgui.a; path = /Volumes/DATA/subversion/trunk/vstgui_head/vstgui/ide/xcode4/build/Debug/libvstgui.a; sourceTree = "<absolute>"; };
 		F41CA1C6112E99F000D425D7 /* animationtest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = animationtest.h; path = ../source/animationtest.h; sourceTree = SOURCE_ROOT; };
 		F41CA1C7112E99F000D425D7 /* animationtest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = animationtest.cpp; path = ../source/animationtest.cpp; sourceTree = SOURCE_ROOT; };
 		F41CA21E112E9E6B00D425D7 /* AnimationTest.uidesc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; name = AnimationTest.uidesc; path = ../resource/AnimationTest.uidesc; sourceTree = SOURCE_ROOT; };
@@ -91,6 +89,7 @@
 		F496F16B119715B500DD3F7A /* Accelerate.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Accelerate.framework; path = System/Library/Frameworks/Accelerate.framework; sourceTree = SDKROOT; };
 		F4C04ECD123B8E450082BA28 /* vst3sdksources.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = vst3sdksources.cpp; path = ../source/vst3sdksources.cpp; sourceTree = SOURCE_ROOT; };
 		F4C04F00123B90940082BA28 /* README.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = README.txt; path = ../README.txt; sourceTree = SOURCE_ROOT; };
+		F4D787491380432A00B06ADC /* libvstgui.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; name = libvstgui.a; path = /Volumes/DATA/subversion/trunk/vstgui_head/vstgui/ide/xcode4/build/Debug/libvstgui.a; sourceTree = "<absolute>"; };
 		F4F5DA8910BFD28900DB6C33 /* TabController.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = TabController.png; path = ../resource/TabController.png; sourceTree = SOURCE_ROOT; };
 		F4FFBE471169E8CA00A9BD34 /* bitmapsaturator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = bitmapsaturator.h; path = ../source/bitmapsaturator.h; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
@@ -100,7 +99,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				F40DCFBD13119C6A0084A8AE /* libvstgui.a in Frameworks */,
+				F4D7874A1380432A00B06ADC /* libvstgui.a in Frameworks */,
 				F440754A10BE6D00003C59F6 /* Carbon.framework in Frameworks */,
 				F440754C10BE6D00003C59F6 /* Cocoa.framework in Frameworks */,
 				F496F16C119715B500DD3F7A /* Accelerate.framework in Frameworks */,
@@ -153,7 +152,7 @@
 		5088180609F0CDD00071BF1A /* External Frameworks and Libraries */ = {
 			isa = PBXGroup;
 			children = (
-				F40DCFBC13119C6A0084A8AE /* libvstgui.a */,
+				F4D787491380432A00B06ADC /* libvstgui.a */,
 				F440754910BE6D00003C59F6 /* Carbon.framework */,
 				F440754B10BE6D00003C59F6 /* Cocoa.framework */,
 				F496F16B119715B500DD3F7A /* Accelerate.framework */,
@@ -225,7 +224,7 @@
 			buildRules = (
 			);
 			dependencies = (
-				F40DCFBB13119C620084A8AE /* PBXTargetDependency */,
+				F464566E137FFD7400209366 /* PBXTargetDependency */,
 			);
 			name = "uidescription test";
 			productName = "uidescription test";
@@ -291,7 +290,6 @@
 				F4273C19112C0C2400BE2194 /* vumeter_front.bmp in Resources */,
 				F41CA21F112E9E6B00D425D7 /* AnimationTest.uidesc in Resources */,
 				F465763D114F8EA200846DAE /* GraphicsTest.uidesc in Resources */,
-				F4C04F01123B90940082BA28 /* README.txt in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -331,10 +329,10 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
-		F40DCFBB13119C620084A8AE /* PBXTargetDependency */ = {
+		F464566E137FFD7400209366 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			name = vstgui;
-			targetProxy = F40DCFBA13119C620084A8AE /* PBXContainerItemProxy */;
+			targetProxy = F464566D137FFD7400209366 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -346,7 +344,6 @@
 				GCC_OPTIMIZATION_LEVEL = 0;
 				GCC_PREFIX_HEADER = ../source/prefix.h;
 				GCC_PREPROCESSOR_DEFINITIONS = "DEVELOPMENT=1";
-				GCC_SYMBOLS_PRIVATE_EXTERN = YES;
 				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
@@ -359,8 +356,7 @@
 				INFOPLIST_PREPROCESS = YES;
 				MACOSX_DEPLOYMENT_TARGET = 10.5;
 				ONLY_ACTIVE_ARCH = YES;
-				PREBINDING = NO;
-				PRESERVE_DEAD_CODE_INITS_AND_TERMS = YES;
+				PRESERVE_DEAD_CODE_INITS_AND_TERMS = NO;
 				PRODUCT_NAME = "uidescription test";
 				SDKROOT = macosx10.6;
 				WRAPPER_EXTENSION = vst3;
@@ -373,10 +369,8 @@
 				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
 				DEAD_CODE_STRIPPING = NO;
 				DEPLOYMENT_POSTPROCESSING = YES;
-				GCC_DEBUGGING_SYMBOLS = full;
 				GCC_PREFIX_HEADER = ../source/prefix.h;
 				GCC_PREPROCESSOR_DEFINITIONS = "RELEASE=1";
-				GCC_SYMBOLS_PRIVATE_EXTERN = YES;
 				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
@@ -388,8 +382,7 @@
 				INFOPLIST_FILE = "uidescription test-Info.plist";
 				INFOPLIST_PREPROCESS = YES;
 				MACOSX_DEPLOYMENT_TARGET = 10.5;
-				PREBINDING = NO;
-				PRESERVE_DEAD_CODE_INITS_AND_TERMS = YES;
+				PRESERVE_DEAD_CODE_INITS_AND_TERMS = NO;
 				PRODUCT_NAME = "uidescription test";
 				SDKROOT = macosx10.6;
 				STRIP_STYLE = "non-global";
@@ -412,7 +405,7 @@
 			buildSettings = {
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
-					"\"$(SRCROOT)/../../../ide/xcode4/build/Debug\"",
+					"\"$(SRCROOT)/../../../ide/xcode4/build/Release\"",
 				);
 			};
 			name = Release;

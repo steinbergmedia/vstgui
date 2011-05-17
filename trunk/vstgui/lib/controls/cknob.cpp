@@ -387,8 +387,10 @@ bool CKnob::onWheel (const CPoint& where, const float &distance, const CButtonSt
 		v += distance * wheelInc;
 	setValueNormalized (v);
 
-	if (isDirty () && listener)
+	if (isDirty ())
 	{
+		invalid ();
+
 		// begin of edit parameter
 		beginEdit ();
 	
@@ -421,8 +423,10 @@ int32_t CKnob::onKeyDown (VstKeyCode& keyCode)
 				v += distance * wheelInc;
 			setValueNormalized (v);
 
-			if (isDirty () && listener)
+			if (isDirty ())
 			{
+				invalid ();
+
 				// begin of edit parameter
 				beginEdit ();
 				

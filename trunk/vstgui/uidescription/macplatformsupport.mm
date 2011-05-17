@@ -47,7 +47,7 @@
 
 using namespace VSTGUI;
 
-#define NATIVE_COLOR_CHOOSER 0
+#define NATIVE_COLOR_CHOOSER 1
 
 //-----------------------------------------------------------------------------
 @interface VSTGUI_CocoaWindowDelegate : NSObject 

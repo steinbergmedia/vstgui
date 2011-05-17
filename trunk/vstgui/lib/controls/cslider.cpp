@@ -488,6 +488,8 @@ bool CSlider::onWheel (const CPoint& where, const float &distance, const CButton
 
 	if (isDirty ())
 	{
+		invalid ();
+		
 		// begin of edit parameter
 		beginEdit ();
 	
@@ -530,6 +532,8 @@ int32_t CSlider::onKeyDown (VstKeyCode& keyCode)
 
 			if (isDirty ())
 			{
+				invalid ();
+
 				// begin of edit parameter
 				beginEdit ();
 			

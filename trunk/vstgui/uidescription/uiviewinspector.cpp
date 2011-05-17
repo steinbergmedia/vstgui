@@ -362,6 +362,13 @@ public:
 			db->recalculateLayout (true);
 	}
 
+	void selectRowWithName (UTF8StringPtr name)
+	{
+		int32_t index = 0;
+		for (std::vector<const std::string*>::const_iterator it = names.begin (); it != names.end () && *(*it) != name; it++, index++) {}
+		db->setSelectedRow (index, true);
+	}
+
 	int32_t dbGetNumRows (CDataBrowser* browser)
 	{
 		return (int32_t)names.size () + 1;
@@ -732,14 +739,7 @@ public:
 				if (!desc->getBitmap (newText))
 				{
 					actionOperator->performBitmapChange (newText, "not yet defined");
-					for (int32_t i = 0; i < (int32_t)names.size (); i++)
-					{
-						if (*names[i] == newText)
-						{
-							browser->beginTextEdit ((int32_t)i, 1, "not yet defined");
-							break;
-						}
-					}
+					selectRowWithName (newText);
 					return;
 				}
 			}
@@ -889,6 +889,7 @@ public:
 				{
 					color = MakeCColor (1, 2, 3, 4);
 					actionOperator->performColorChange (newText, color);
+					selectRowWithName (newText);
 				}
 			}
 			else
@@ -1010,15 +1011,7 @@ public:
 				if (desc->getTagForName (newText) == -1)
 				{
 					actionOperator->performTagChange (newText, -2);
-					for (int32_t i = 0; i < (int32_t)names.size (); i++)
-					{
-						if (*names[i] == newText)
-						{
-							browser->makeRowVisible (i);
-							browser->beginTextEdit (i, 1, "-2");
-							break;
-						}
-					}
+					selectRowWithName (newText);
 					return;
 				}
 			}
@@ -1161,6 +1154,7 @@ public:
 					CFontRef font = new CFontDesc (*kSystemFont);
 					actionOperator->performFontChange (newText, font);
 					font->forget ();
+					selectRowWithName (newText);
 				}
 			}
 			else

@@ -205,7 +205,7 @@ Templates are the main views in XML. You can have more than one.
 Per default the \b template tag will create a CViewContainer view, but you can use the \b class attribute to create any view class you want.
 (If the template should have subviews, the class must be an inherited class from CViewContainer like CScrollView)<br/>
 
-@page uidescription_vst3_support Inline Editing support for VST3
+@page page_vst3_inline_editing Inline UI Editing for VST3 (WYSIWYG)
 
 - @ref vst3_intro @n
 - @ref vst3_setup @n
@@ -234,7 +234,7 @@ Note that you need at least VST SDK 3.1, any earlier version will not work.
 
 @section vst3_setup Setup
 
-- Add the following files to your project (in addition to the other vstgui files)
+- Add the following files to your project (in addition to the other vstgui files, see @ref page_setup)
 	- plugin-bindings/vst3editor.cpp
 	- Windows only: vstgui_uidescription_win32.cpp
 	- Mac OS X only: vstgui_uidescription_mac.mm

@@ -33,7 +33,7 @@
 //-----------------------------------------------------------------------------
 
 /**
-@page animation Animation
+@page page_animation Animations
 
 VSTGUI version 4 adds simple to use view animation support.
 
@@ -115,6 +115,7 @@ public:
 
 //------------------------------------------------------------------------
 /*! @defgroup animation Animation
+	see @ref page_animation
  */
 //-----------------------------------------------------------------------------
 
@@ -226,6 +227,8 @@ protected:
 Timer* Timer::gInstance = 0;
 ///@endcond
 
+/** @class Animator
+	see @ref page_animation Support */
 //-----------------------------------------------------------------------------
 Animator::Animator ()
 : inTimer (false)
