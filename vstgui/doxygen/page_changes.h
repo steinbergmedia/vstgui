@@ -1,9 +1,9 @@
 /**
-@page changes_from_3_0 Changes from earlier versions of VSTGUI
+@page page_news_and_changes New stuff and changes from earlier versions of VSTGUI
 
 - @ref version4_introduction @n
 - @ref new_stuff @n
-- @ref code_changes_for_3_6 @n
+- @ref changes_for_3_6 @n
 - @ref old_new_stuff @n
 - @ref cocoa_support @n
 
@@ -15,29 +15,25 @@ It's recomended to start new projects with version 4 while old projects should s
 
 @section beta_notes Beta Notes
 
-This is the second beta version of VSTGUI 4. It's expected that no API changes will be made.
+This is the third beta version of VSTGUI 4. API changes are not planned anymore.
 But there is still some work to do, before VSTGUI 4 will have release status :
 
 - testing
 - bug fixing
 - more documentation
 
-Currently the following is not working and there is currently no plan to get this working. But if someone wants to make it work, you are welcome :
-- on Mac OS X, Carbon non composited windows
-- on Mac OS X, when target OS version is 10.4 some of the graphics path methods are not implemented.
-
 @section new_stuff New Stuff
 
-- VST3 Support : Complete inline VST3 Editor support. See @ref uidescription_vst3_support @n
+- VST3 Support : Complete inline VST3 Editor support. See @ref page_vst3_inline_editing @n
 - UIDescription : Building user interfaces via XML description files. See @ref uidescription @n
-- Animation Support : Simple to use animations. See @ref animation
+- Animation Support : Simple to use animations. See @ref page_animation
 - Amalgamation : Easy integration in your projects via one or two source files
 - Cleaned Code : Removed all deprecated methods and classes, splittet individual classes into different files
 - Platform Abstraction : Platform dependent code was refactored and moved into its own files
 - New notable classes : VSTGUI::CCheckBox, VSTGUI::CGraphicsPath, VSTGUI::CNinePartTiledBitmap, VSTGUI::IFocusDrawing
 - Direct2D drawing on Windows (Windows Vista or Windows 7)
 
-@section code_changes_for_3_6 Code changes for existing VSTGUI 3.6 code
+@section changes_for_3_6 Changes for existing VSTGUI 3.6 code
 
 - the variable types were changed to use C99 style types (int32_t, etc), you must do this for all your derivated VSTGUI classes too
 - the buttons parameter has changed from long to CButtonState
@@ -50,6 +46,8 @@ Currently the following is not working and there is currently no plan to get thi
 - On Windows graphics are entirely drawn with GDI+ or Direct2D (when available), GDI is not used anymore
 - The internal string encoding is now always UTF-8
 - The VSTGUI::CCoord type is now always a double
+- on Mac OS X, embedding a CFrame into a non composited carbon window is not supported anymore
+- on Mac OS X, when targeting Mac OS X 10.4 some of the graphics path methods are not implemented.
 
 - Method signature changes which don't lead to compile errors:
 	- CView::setViewSize (CRect& rect, bool invalid = true)

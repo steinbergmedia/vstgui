@@ -31,7 +31,7 @@ PROJECT_NAME           = VSTGUI
 # This could be handy for archiving the generated documentation or 
 # if some version control system is used.
 
-PROJECT_NUMBER         = "4.0 Beta 2"
+PROJECT_NUMBER         = "4.0 Beta 3"
 
 # Using the PROJECT_BRIEF tag one can provide an optional one line description 
 # for a project that appears at the top of each page and should give viewer 
@@ -620,8 +620,8 @@ WARN_LOGFILE           =
 # with spaces.
 
 INPUT                  = ./doc.h \
-                         ./page_tutorial.h \
                          ./page_changes.h \
+                         ./page_tutorial.h \
                          ./page_changelog.h \
                          ./page_license.h \
                          ../lib/ \
@@ -1501,7 +1501,6 @@ INCLUDE_FILE_PATTERNS  =
 # instead of the = operator.
 
 PREDEFINED             = DEBUG=0 \
-                         VSTGUI_NEW_CFILESELECTOR=1 \
                          VSTGUI_BUILD_DOXYGEN=1 \
                          VSTGUI_ENABLE_DEPRECATED_METHODS=1
 
