@@ -47,6 +47,8 @@ namespace Animation {
  */
 //------------------------------------------------------------------------
 
+/** @class AlphaValueAnimation
+	see @ref page_animation Support */
 //-----------------------------------------------------------------------------
 AlphaValueAnimation::AlphaValueAnimation (float endValue, bool forceEndValueOnFinish)
 : startValue (0.f)
@@ -76,7 +78,8 @@ void AlphaValueAnimation::animationFinished (CView* view, IdStringPtr name, bool
 }
 
 //-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
+/** @class ViewSizeAnimation
+	see @ref page_animation Support */
 //-----------------------------------------------------------------------------
 ViewSizeAnimation::ViewSizeAnimation (const CRect& inNewRect, bool forceEndValueOnFinish)
 : newRect (inNewRect)
@@ -123,7 +126,8 @@ void ViewSizeAnimation::animationTick (CView* view, IdStringPtr name, float pos)
 }
 
 //-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
+/** @class ExchangeViewAnimation
+	see @ref page_animation Support */
 //-----------------------------------------------------------------------------
 ExchangeViewAnimation::ExchangeViewAnimation (CView* oldView, CView* newView, AnimationStyle style)
 : newView (newView)
@@ -249,7 +253,8 @@ void ExchangeViewAnimation::animationFinished (CView* view, IdStringPtr name, bo
 }
 
 //-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
+/** @class ControlValueAnimation
+	see @ref page_animation Support */
 //-----------------------------------------------------------------------------
 ControlValueAnimation::ControlValueAnimation (float endValue, bool forceEndValueOnFinish)
 : startValue (0.f)

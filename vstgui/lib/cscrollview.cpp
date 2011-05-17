@@ -201,7 +201,7 @@ bool CScrollContainer::getScrollValue (const CPoint& where, float& x, float& y)
 	}
 	else if (where.x >= getViewSize ().right - kWidth)
 	{
-		x = (float)((getViewSize ().right - kWidth) - where.x);
+		x = (float)(where.x - (getViewSize ().right - kWidth));
 	}
 	if (where.y <= getViewSize ().top + kWidth)
 	{

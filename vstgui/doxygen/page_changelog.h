@@ -1,5 +1,5 @@
 /**
-@page changelog Changelog
+@page page_changelog Changelog
 
 @include Changelog
 

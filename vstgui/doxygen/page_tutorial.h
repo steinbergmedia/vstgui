@@ -1,5 +1,5 @@
 /**
-@page tutorial_getting_started Getting Started Tutorial (VST 2.x)
+@page page_vst2_tutorial Getting Started Tutorial (VST 2.x)
 
 This tutorial should give you a brief overview on how to get started using VSTGUI.
 
@@ -7,7 +7,7 @@ This tutorial should give you a brief overview on how to get started using VSTGU
 - @ref addingviewsandcontrols @n
 - @ref controllistener @n
 
-Note: If you are new to VST in general, consider using the VST3 SDK so that you can use @ref uidescription_vst3_support.
+Note: If you are new to VST in general, consider using the VST3 SDK so that you can use @ref page_vst3_inline_editing.
 The VST3 SDK includes a wrapper so that the VST3 plug-in can be used in hosts which only supports VST2. 
 
 @section vstintegration VST Integration

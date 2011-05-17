@@ -121,7 +121,11 @@
 
 #if DEVELOPMENT
 	#ifndef DEBUG
-	#define DEBUG	1
+		#define DEBUG	1
+	#endif
+#else
+	#if !defined(NDEBUG) && !defined(DEBUG)
+		#define NDEBUG	1
 	#endif
 #endif
 

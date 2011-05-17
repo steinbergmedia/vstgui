@@ -221,8 +221,10 @@ class EmbedViewOperation : public IActionOperation, protected std::list<CView*>
 {
 public:
 	EmbedViewOperation (UISelection* selection, CViewContainer* newContainer)
-	: newContainer (newContainer)
+	: selection (selection)
+	, newContainer (newContainer)
 	{
+		selection->remember ();
 		parent = dynamic_cast<CViewContainer*> (selection->first ()->getParentView ());
 		FOREACH_IN_SELECTION(selection, view)
 			if (view->getParentView () == parent)
@@ -261,6 +263,7 @@ public:
 			it++;
 		}
 		newContainer->forget ();
+		selection->forget ();
 	}
 	
 	UTF8StringPtr getName () { return "embed views"; }
@@ -281,6 +284,7 @@ public:
 		}
 		parent->addView (newContainer);
 		newContainer->remember ();
+		selection->changed (UISelection::kMsgSelectionViewChanged);
 	}
 	void undo ()
 	{
@@ -298,9 +302,11 @@ public:
 			it++;
 		}
 		parent->removeView (newContainer);
+		selection->changed (UISelection::kMsgSelectionViewChanged);
 	}
 
 protected:
+	UISelection* selection;
 	CViewContainer* newContainer;
 	CViewContainer* parent;
 };
@@ -1152,7 +1158,30 @@ void UIEditFrame::showOptionsMenu (const CPoint& where)
 					templateNameMenu->forget ();
 				}
 				if (selectionCount == 1 && selection->first () != getView (0))
-					menu->addEntry (transformViewMenu, "Transform View Type");
+				{
+					bool insert = true;
+					CViewContainer* container = dynamic_cast<CViewContainer*> (selection->first ());
+					if (container)
+					{
+						// check if the container has added its own views. In this case we can not transform the view.
+						UIViewFactory* viewFactory = dynamic_cast<UIViewFactory*>(uiDescription->getViewFactory ());
+						if (viewFactory)
+						{
+							ReverseViewIterator it (container);
+							while (*it)
+							{
+								if (viewFactory->getViewName (*it) == 0)
+								{
+									insert = false;
+									break;
+								}
+								it++;
+							}
+						}
+					}
+					if (insert)
+						menu->addEntry (transformViewMenu, "Transform View Type");
+				}
 				viewMenu->forget ();
 				transformViewMenu->forget ();
 			}

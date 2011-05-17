@@ -42,11 +42,11 @@
 Welcome to VSTGUI
 
 - @ref intro @n
-- @ref changes_from_3_0 @n
-- @ref uidescription_vst3_support @n
-- @ref tutorial_getting_started @n
-- @ref changelog @n
-- @ref license @n
+- @ref page_news_and_changes @n
+- @ref page_vst3_inline_editing @n
+- @ref page_vst2_tutorial @n
+- @ref page_changelog @n
+- @ref page_license @n
 
 @section intro Introduction
 
@@ -69,5 +69,17 @@ Currently VSTGUI compiles on
 
 \sa
 <a href="http://vstgui.sf.net" target=_blank> VSTGUI @ Sourceforge </a>
+
+@page page_setup Setup
+
+To include VSTGUI in your projects you only have to add 
+
+- vstgui_win32.cpp (for Windows)
+
+or
+
+- vstgui_mac.mm (for Mac OS X)
+
+to your Visual Studio or Xcode project and add a search path to the parent of the root folder of vstgui.
 
 */

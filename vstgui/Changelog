@@ -1,3 +1,10 @@
+2011-05-17 arne
+
+	* fix horizontal auto drag scrolling in CScrollView
+	* prevent transforming a CSplitView or CScrollView to another view in UIEditFrame to fix a crash
+	* define NDEBUG if DEBUG is not defined so that asserts are not triggered in Release builds
+	* more documentation
+
 2011-05-06 arne
 
 	* add CView idle mechanism

@@ -433,7 +433,7 @@ int64_t CResourceInputStream::seek (int64_t pos, SeekMode mode)
 			case kSeekCurrent: whence = SEEK_CUR; break;
 			case kSeekEnd: whence = SEEK_END; break;
 		}
-		if (fseek ((FILE*)platformHandle, pos, whence) == 0)
+		if (fseeko ((FILE*)platformHandle, pos, whence) == 0)
 			return tell ();
 	#elif WINDOWS
 		DWORD dwOrigin;
