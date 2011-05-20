@@ -6,7 +6,7 @@
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
-// (c) 2010, Steinberg Media Technologies, All Rights Reserved
+// (c) 2011, Steinberg Media Technologies, All Rights Reserved
 //-----------------------------------------------------------------------------
 // Redistribution and use in source and binary forms, with or without modification,
 // are permitted provided that the following conditions are met:
@@ -1568,7 +1568,7 @@ CView* UIViewInspector::createAttributesView (CCoord width)
 			std::list<std::string> temp;
 			if (viewFactory->getAttributeNamesForView (view, temp))
 			{
-				if (attrNames.size () == 0)
+				if (attrNames.empty ())
 					attrNames = temp;
 				else
 				{
@@ -1771,7 +1771,7 @@ void UIViewInspector::valueChanged (CControl* pControl)
 	std::string attrName;
 	if (!getViewAttributeName (pControl, attrName))
 		return;
-	if (attrName.size () > 0)
+	if (attrName.empty () == false)
 	{
 		std::string attrValue;
 		CTextEdit* textEdit = dynamic_cast<CTextEdit*> (pControl);

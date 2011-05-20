@@ -6,7 +6,7 @@
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
-// (c) 2010, Steinberg Media Technologies, All Rights Reserved
+// (c) 2011, Steinberg Media Technologies, All Rights Reserved
 //-----------------------------------------------------------------------------
 // Redistribution and use in source and binary forms, with or without modification,
 // are permitted provided that the following conditions are met:
@@ -265,7 +265,7 @@ void CFrame::checkMouseViews (const CPoint& where, const CButtonState& buttons)
 	CView* mouseView = getViewAt (where, true);
 	if (mouseView == 0)
 		mouseView = getContainerAt (where, true);
-	CView* currentMouseView = pMouseViews.size () > 0 ? pMouseViews.back () : 0;
+	CView* currentMouseView = pMouseViews.empty () == false ? pMouseViews.back () : 0;
 	if (currentMouseView == mouseView)
 		return; // no change
 
@@ -318,7 +318,7 @@ void CFrame::checkMouseViews (const CPoint& where, const CButtonState& buttons)
 		else
 			break;
 	}
-	vc = pMouseViews.size () > 0 ? dynamic_cast<CViewContainer*> (pMouseViews.back ()) : 0;
+	vc = pMouseViews.empty () == false ? dynamic_cast<CViewContainer*> (pMouseViews.back ()) : 0;
 	if (vc)
 	{
 		std::list<CView*>::iterator it2 = pMouseViews.end ();
@@ -347,7 +347,7 @@ void CFrame::checkMouseViews (const CPoint& where, const CButtonState& buttons)
 	else
 	{
 		// must be pMouseViews.size () == 0
-		assert (pMouseViews.size () == 0);
+		assert (pMouseViews.empty ());
 		pMouseViews.push_back (mouseView);
 		mouseView->remember ();
 		while ((vc = reinterpret_cast<CViewContainer*> (mouseView->getParentView ())) != this)
