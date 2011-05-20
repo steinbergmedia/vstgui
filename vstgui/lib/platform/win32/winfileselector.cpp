@@ -6,7 +6,7 @@
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
-// (c) 2010, Steinberg Media Technologies, All Rights Reserved
+// (c) 2011, Steinberg Media Technologies, All Rights Reserved
 //-----------------------------------------------------------------------------
 // Redistribution and use in source and binary forms, with or without modification,
 // are permitted provided that the following conditions are met:
@@ -52,7 +52,7 @@ namespace VSTGUI {
 //-----------------------------------------------------------------------------
 static COMDLG_FILTERSPEC* buildExtensionFilter (std::list<CFileExtension>& extensions, const CFileExtension* defaultExtension, DWORD& numExtensions, DWORD& defaultFileTypeIndex)
 {
-	if (extensions.size () > 0)
+	if (extensions.empty () == false)
 	{
 		int32_t i = extensions.size () > 1 ? 1:0;
 		COMDLG_FILTERSPEC* filters = new COMDLG_FILTERSPEC[extensions.size ()+1+i];

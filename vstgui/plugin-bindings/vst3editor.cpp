@@ -6,7 +6,7 @@
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
-// (c) 2010, Steinberg Media Technologies, All Rights Reserved
+// (c) 2011, Steinberg Media Technologies, All Rights Reserved
 //-----------------------------------------------------------------------------
 // Redistribution and use in source and binary forms, with or without modification,
 // are permitted provided that the following conditions are met:
@@ -664,7 +664,7 @@ CView* VST3Editor::createView (const UIAttributes& attributes, IUIDescription* d
 		const std::string* subControllerName = attributes.getAttributeValue ("sub-controller");
 		if (subControllerName)
 		{
-			if (!(subControllerStack.size () > 0 && subControllerStack.back ().name == *subControllerName))
+			if (!(subControllerStack.empty () == false && subControllerStack.back ().name == *subControllerName))
 			{
 				IController* subController = delegate->createSubController (subControllerName->c_str (), description, this);
 				if (subController)
@@ -690,14 +690,14 @@ CView* VST3Editor::createView (const UIAttributes& attributes, IUIDescription* d
 CView* VST3Editor::verifyView (CView* view, const UIAttributes& attributes, IUIDescription* description)
 {
 	const std::string* subControllerName = attributes.getAttributeValue ("sub-controller");
-	if (subControllerName && subControllerStack.size () > 0)
+	if (subControllerName && subControllerStack.empty () == false)
 	{
 		if (subControllerStack.back ().name == *subControllerName)
 		{
 			UIDescription* uiDesc = dynamic_cast<UIDescription*> (description);
 			IController* subController = subControllerStack.back ().controller;
 			subControllerStack.pop_back ();
-			if (subControllerStack.size () > 0)
+			if (subControllerStack.empty () == false)
 				uiDesc->setController (subControllerStack.back ().controller);
 			else
 				uiDesc->setController (this);
@@ -829,7 +829,7 @@ void PLUGIN_API VST3Editor::close ()
 		if (refCount == 1)
 			frame = 0;
 	}
-	assert (subControllers.size () == 0);
+	assert (subControllers.empty ());
 }
 
 //------------------------------------------------------------------------
@@ -904,7 +904,7 @@ CMessageResult VST3Editor::notify (CBaseObject* sender, IdStringPtr message)
 			{
 				std::list<const std::string*> viewNames;
 				viewFactory->collectRegisteredViewNames (viewNames, "CViewContainer");
-				if (viewNames.size () > 0)
+				if (viewNames.empty () == false)
 				{
 					COptionMenu* submenu = new COptionMenu ();
 					CMenuItem* item = submenu->addEntry ("Root View Type");
