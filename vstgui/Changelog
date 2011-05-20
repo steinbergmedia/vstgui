@@ -1,3 +1,8 @@
+2011-05-20 arne
+
+	* replace checks for emptiness of std container from size () > 0 to empty () == false
+	* update copyright year
+
 2011-05-17 arne
 
 	* fix horizontal auto drag scrolling in CScrollView

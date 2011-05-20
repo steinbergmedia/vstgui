@@ -102,7 +102,7 @@ inline void IDependency::changed (IdStringPtr message)
 	{
 		deferedChanges.insert (message);
 	}
-	else if (dependents.size () > 0)
+	else if (dependents.empty () == false)
 	{
 		CBaseObject* This = dynamic_cast<CBaseObject*> (this);
 		for (std::list<CBaseObject*>::const_iterator it = dependents.begin (); it != dependents.end (); it++)

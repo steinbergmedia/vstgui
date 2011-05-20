@@ -6,7 +6,7 @@
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
-// (c) 2010, Steinberg Media Technologies, All Rights Reserved
+// (c) 2011, Steinberg Media Technologies, All Rights Reserved
 //-----------------------------------------------------------------------------
 // Redistribution and use in source and binary forms, with or without modification,
 // are permitted provided that the following conditions are met:
@@ -132,7 +132,7 @@ public:
 		if (gInstance)
 		{
 			gInstance->views.remove (view);
-			if (gInstance->views.size () == 0)
+			if (gInstance->views.empty ())
 			{
 				gInstance->forget ();
 			}

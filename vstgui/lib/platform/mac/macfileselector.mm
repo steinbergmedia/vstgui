@@ -6,7 +6,7 @@
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
-// (c) 2010, Steinberg Media Technologies, All Rights Reserved
+// (c) 2011, Steinberg Media Technologies, All Rights Reserved
 //-----------------------------------------------------------------------------
 // Redistribution and use in source and binary forms, with or without modification,
 // are permitted provided that the following conditions are met:
@@ -182,7 +182,7 @@ bool CocoaFileSelector::runInternal (CBaseObject* _delegate)
 	}
 	NSOpenPanel* openPanel = nil;
 	NSMutableArray* typesArray = nil;
-	if (extensions.size () > 0)
+	if (extensions.empty () == false)
 	{
 		typesArray = [[[NSMutableArray alloc] init] autorelease];
 		std::list<CFileExtension>::const_iterator it = extensions.begin ();

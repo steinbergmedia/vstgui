@@ -6,7 +6,7 @@
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
-// (c) 2010, Steinberg Media Technologies, All Rights Reserved
+// (c) 2011, Steinberg Media Technologies, All Rights Reserved
 //-----------------------------------------------------------------------------
 // Redistribution and use in source and binary forms, with or without modification,
 // are permitted provided that the following conditions are met:
@@ -155,7 +155,7 @@ public:
 				DebugPrint ("Animator removed: %p\n", animator);
 				#endif
 				gInstance->animators.remove (animator);
-				if (gInstance->animators.size () == 0)
+				if (gInstance->animators.empty ())
 				{
 					gInstance->forget ();
 					gInstance = 0;
@@ -239,7 +239,7 @@ Animator::Animator ()
 Animator::~Animator ()
 {
 	Timer::removeAnimator (this);
-	if (animations.size () > 0)
+	if (animations.empty () == false)
 	{
 		std::list<Animation*>::iterator it = animations.begin ();
 		while (it != animations.end ())
@@ -253,7 +253,7 @@ Animator::~Animator ()
 //-----------------------------------------------------------------------------
 void Animator::addAnimation (CView* view, IdStringPtr name, IAnimationTarget* target, ITimingFunction* timingFunction, CBaseObject* notificationObject)
 {
-	if (animations.size () == 0)
+	if (animations.empty ())
 		Timer::addAnimator (this);
 	removeAnimation (view, name); // cancel animation with same view and name
 	animations.push_back (new Animation (view, name, target, timingFunction, notificationObject));
@@ -356,7 +356,7 @@ CMessageResult Animator::notify (CBaseObject* sender, IdStringPtr message)
 			removeAnimation (a);
 		}
 		toRemove.clear ();
-		if (animations.size () == 0)
+		if (animations.empty ())
 			Timer::removeAnimator (this);
 		return kMessageNotified;
 	}
