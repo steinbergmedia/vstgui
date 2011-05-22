@@ -77,7 +77,7 @@ public:
 		{
 			pContext->setFont (textFont);
 			pContext->setFontColor (value ? activeTextColor : inactiveTextColor);
-			pContext->drawString (name, size);
+			pContext->drawString (name, getViewSize ());
 		}
 	}
 
@@ -213,28 +213,28 @@ bool CTabView::addTab (CView* view, CControl* button)
 	if (tabContainer == 0)
 	{
 		int32_t asf = kAutosizeLeft | kAutosizeTop | kAutosizeRight | kAutosizeColumn;
-		CRect tsc (0, 0, size.getWidth (), tabSize.getHeight () / 2);
+		CRect tsc (0, 0, getViewSize ().getWidth (), tabSize.getHeight () / 2);
 		switch (tabPosition)
 		{
 			case kPositionBottom:
 			{
 				asf = kAutosizeLeft | kAutosizeBottom | kAutosizeRight | kAutosizeColumn;
-				tsc.offset (0, size.getHeight () - tabSize.getHeight () / 2);
+				tsc.offset (0, getViewSize ().getHeight () - tabSize.getHeight () / 2);
 				break;
 			}
 			case kPositionLeft:
 			{
 				asf = kAutosizeLeft | kAutosizeTop | kAutosizeBottom | kAutosizeRow;
 				tsc.setWidth (tabSize.getWidth ());
-				tsc.setHeight (size.getHeight ());
+				tsc.setHeight (getViewSize ().getHeight ());
 				break;
 			}
 			case kPositionRight:
 			{
 				asf = kAutosizeRight | kAutosizeTop | kAutosizeBottom | kAutosizeRow;
-				tsc.setWidth (size.getWidth ());
+				tsc.setWidth (getViewSize ().getWidth ());
 				tsc.left = tsc.right - tabSize.getWidth ();
-				tsc.setHeight (size.getHeight ());
+				tsc.setHeight (getViewSize ().getHeight ());
 				break;
 			}
 			case kPositionTop:
@@ -419,8 +419,8 @@ void CTabView::setTabViewInsets (const CPoint& inset)
 //-----------------------------------------------------------------------------
 CRect& CTabView::getTabViewSize (CRect& rect) const
 {
-	rect = size;
-	rect.offset (-size.left, -size.top);
+	rect = getViewSize ();
+	rect.originize ();
 	switch (tabPosition)
 	{
 		case kPositionTop:
@@ -466,12 +466,12 @@ void CTabView::alignTabs (TabAlignment alignment)
 	if (tabPosition == kPositionTop || tabPosition == kPositionBottom)
 	{
 		allTabsWidth = tabSize.getWidth () * numberOfChilds;
-		viewWidth = size.getWidth ();
+		viewWidth = getViewSize ().getWidth ();
 	}
 	else
 	{
 		allTabsWidth = (tabSize.getHeight () / 2) * numberOfChilds;
-		viewWidth = size.getHeight ();
+		viewWidth = getViewSize ().getHeight ();
 	}
 	if (alignment == kAlignCenter)
 		offset = (viewWidth - allTabsWidth) / 2;

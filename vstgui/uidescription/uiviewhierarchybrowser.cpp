@@ -523,7 +523,7 @@ void ViewHierarchyPathView::draw (CDrawContext* context)
 	if (needCompute)
 		compute (context);
 
-	CRect r (size);
+	CRect r (getViewSize ());
 	const_elements_iterator it = elements.begin ();
 	while (it != elements.end ())
 	{
@@ -538,7 +538,7 @@ void ViewHierarchyPathView::draw (CDrawContext* context)
 //-----------------------------------------------------------------------------
 CMouseEventResult ViewHierarchyPathView::onMouseDown (CPoint &where, const CButtonState& buttons)
 {
-	CRect r (size);
+	CRect r (getViewSize ());
 	const_elements_iterator it = elements.begin ();
 	while (it != elements.end ())
 	{

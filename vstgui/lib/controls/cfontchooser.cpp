@@ -67,19 +67,19 @@ public:
 		context->setFont (font);
 		std::string text;
 		char string[2];
-		CRect glyphRect (size.left, size.top, size.left, size.top);
+		CRect glyphRect (getViewSize ().left, getViewSize ().top, getViewSize ().left, getViewSize ().top);
 		CCoord height = ceil (font->getPlatformFont ()->getAscent () + font->getPlatformFont ()->getDescent () + font->getPlatformFont ()->getLeading () + 2.);
 		glyphRect.setHeight (height);
 		for (int8_t i = 33; i < 126;)
 		{
-			while (glyphRect.right < size.right && i < 126)
+			while (glyphRect.right < getViewSize ().right && i < 126)
 			{
 				sprintf (string, "%c", i++);
 				text += string;
 				glyphRect.setWidth (context->getStringWidth (text.c_str ()));
 			}
 			context->drawString (text.c_str (), glyphRect, kLeftText);
-			glyphRect.left = glyphRect.right = size.left;
+			glyphRect.left = glyphRect.right = getViewSize ().left;
 			glyphRect.offset (0, height);
 			text = "";
 		}

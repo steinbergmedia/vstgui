@@ -99,7 +99,7 @@ public:
 	{
 		pContext->setDrawMode (kAliasing);
 		pContext->setFillColor (backgroundColor);
-		CRect r (size);
+		CRect r (getViewSize ());
 		if (tabPosition < 0)
 		{
 			CRect r2 (r);
@@ -127,15 +127,15 @@ public:
 		{
 			pContext->setFont (textFont);
 			pContext->setFontColor (value ? activeTextColor : inactiveTextColor);
-			pContext->drawString (name, size);
+			pContext->drawString (name, getViewSize ());
 		}
 		CColor lineColor (backgroundColor);
 		lineColor.alpha += 50;
 		pContext->setFrameColor (lineColor);
 		pContext->setLineWidth (1);
 		pContext->setLineStyle (kLineSolid);
-		pContext->moveTo (CPoint (size.left, size.bottom));
-		pContext->lineTo (CPoint (size.right, size.bottom));
+		pContext->moveTo (CPoint (getViewSize ().left, getViewSize ().bottom));
+		pContext->lineTo (CPoint (getViewSize ().right, getViewSize ().bottom));
 		setDirty (false);
 	}
 

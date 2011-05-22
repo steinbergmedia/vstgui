@@ -252,7 +252,7 @@ void CTextEdit::takeFocus ()
 	bWasReturnPressed = false;
 
 	// calculate offset for CViewContainers
-	CRect rect (size);
+	CRect rect (getViewSize ());
 	CPoint p (0, 0);
 	localToFrame (p);
 	rect.offset (p.x, p.y);

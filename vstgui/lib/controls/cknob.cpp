@@ -125,7 +125,7 @@ CKnob::~CKnob ()
 void CKnob::setViewSize (const CRect &rect, bool invalid)
 {
 	CControl::setViewSize (rect, invalid);
-	radius = (float)(size.right - size.left) / 2.f;
+	radius = (float)(getViewSize ().right - getViewSize ().left) / 2.f;
 	compute ();
 }
 
@@ -149,7 +149,7 @@ void CKnob::draw (CDrawContext *pContext)
 {
 	if (pBackground)
 	{
-		pBackground->draw (pContext, size, offset);
+		pBackground->draw (pContext, getViewSize (), offset);
 	}
 	drawHandle (pContext);
 	setDirty (false);
@@ -165,7 +165,7 @@ void CKnob::drawHandle (CDrawContext *pContext)
 	{
 		CCoord width  = pHandle->getWidth ();
 		CCoord height = pHandle->getHeight ();
-		where.offset (size.left - width / 2, size.top - height / 2);
+		where.offset (getViewSize ().left - width / 2, getViewSize ().top - height / 2);
 
 		where.x = floor (where.x);
 		where.y = floor (where.y);
@@ -179,9 +179,9 @@ void CKnob::drawHandle (CDrawContext *pContext)
 		pContext->setDrawMode (kAntiAliasing);
 		if (drawStyle == 0)
 		{
-			CPoint origin (size.width () / 2, size.height () / 2);
-			where.offset (size.left - 1, size.top);
-			origin.offset (size.left - 1, size.top);
+			CPoint origin (getViewSize ().width () / 2, getViewSize ().height () / 2);
+			where.offset (getViewSize ().left - 1, getViewSize ().top);
+			origin.offset (getViewSize ().left - 1, getViewSize ().top);
 			pContext->setFrameColor (colorShadowHandle);
 			pContext->setLineWidth (handleLineWidth);
 			pContext->setLineStyle (kLineSolid);
@@ -252,7 +252,7 @@ void CKnob::drawHandle (CDrawContext *pContext)
 		}
 		if (drawStyle & kHandleCircleDrawing)
 		{
-			where.offset (size.left, size.top);
+			where.offset (getViewSize ().left, getViewSize ().top);
 			CRect r (where.x - 0.5, where.y - 0.5, where.x + 0.5, where.y + 0.5);
 			r.inset (-handleLineWidth, -handleLineWidth);
 			pContext->setDrawMode (kAntiAliasing);
@@ -313,7 +313,7 @@ CMouseEventResult CKnob::onMouseDown (CPoint& where, const CButtonState& buttons
 	else
 	{
 		CPoint where2 (where);
-		where2.offset (-size.left, -size.top);
+		where2.offset (-getViewSize ().left, -getViewSize ().top);
 		startValue = valueFromPoint (where2);
 	}
 
@@ -356,7 +356,7 @@ CMouseEventResult CKnob::onMouseMoved (CPoint& where, const CButtonState& button
 			}
 			else
 			{
-				where.offset (-size.left, -size.top);
+				where.offset (-getViewSize ().left, -getViewSize ().top);
 				value = valueFromPoint (where);
 				if (startValue - value > middle)
 					value = getMax ();
@@ -709,7 +709,7 @@ void CAnimKnob::setBackground (CBitmap *background)
 {
 	CKnob::setBackground (background);
 	if (heightOfOneImage == 0)
-		heightOfOneImage = size.height ();
+		heightOfOneImage = getViewSize ().height ();
 	if (background && heightOfOneImage)
 		setNumSubPixmaps ((int32_t)(background->getHeight () / heightOfOneImage));
 }
@@ -730,7 +730,7 @@ void CAnimKnob::draw (CDrawContext *pContext)
 			where.v -= (int32_t)where.v % (int32_t)heightOfOneImage;
 		}
 
-		pBackground->draw (pContext, size, where);
+		pBackground->draw (pContext, getViewSize (), where);
 	}
 	setDirty (false);
 }

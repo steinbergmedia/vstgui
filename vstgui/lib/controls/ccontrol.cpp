@@ -201,7 +201,7 @@ void CControl::setBackOffset (const CPoint &offset)
 //-----------------------------------------------------------------------------
 void CControl::copyBackOffset ()
 {
-	backOffset (size.left, size.top);
+	backOffset (getViewSize ().left, getViewSize ().top);
 }
 
 //------------------------------------------------------------------------
