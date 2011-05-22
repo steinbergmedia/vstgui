@@ -145,7 +145,7 @@ bool CFrame::initFrame (void* systemWin)
 	if (!systemWin)
 		return false;
 
-	platformFrame = IPlatformFrame::createPlatformFrame (this, size, systemWin);
+	platformFrame = IPlatformFrame::createPlatformFrame (this, getViewSize (), systemWin);
 	if (!platformFrame)
 		return false;
 
@@ -180,7 +180,7 @@ CDrawContext* CFrame::createDrawContext ()
 //-----------------------------------------------------------------------------
 void CFrame::draw (CDrawContext* pContext)
 {
-	return CFrame::drawRect (pContext, size);
+	return CFrame::drawRect (pContext, getViewSize ());
 }
 
 //-----------------------------------------------------------------------------
@@ -618,7 +618,7 @@ bool CFrame::setPosition (CCoord x, CCoord y)
 {
 	if (platformFrame)
 	{
-		CRect rect (size);
+		CRect rect (getViewSize ());
 		size.offset (x - size.left, y - size.top);
 		return platformFrame->setSize (rect);
 	}
@@ -662,10 +662,10 @@ void CFrame::setViewSize (const CRect& rect, bool invalid)
  */
 bool CFrame::setSize (CCoord width, CCoord height)
 {
-	if ((width == size.width ()) && (height == size.height ()))
+	if ((width == getViewSize ().width ()) && (height == getViewSize ().height ()))
 		return false;
 
-	CRect newSize (size);
+	CRect newSize (getViewSize ());
 	newSize.setWidth (width);
 	newSize.setHeight (height);
 
@@ -1071,7 +1071,7 @@ void CFrame::setFocusWidth (CCoord width)
 void CFrame::scrollRect (const CRect& src, const CPoint& distance)
 {
 	CRect rect (src);
-	rect.offset (size.left, size.top);
+	rect.offset (getViewSize ().left, getViewSize ().top);
 
 	if (platformFrame)
 	{

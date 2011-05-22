@@ -1522,7 +1522,7 @@ void UIEditFrame::invalidRect (const CRect& rect)
 //----------------------------------------------------------------------------------------------------
 void UIEditFrame::draw (CDrawContext *pContext)
 {
-	drawRect (pContext, size);
+	drawRect (pContext, getViewSize ());
 }
 
 //----------------------------------------------------------------------------------------------------

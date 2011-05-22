@@ -115,7 +115,7 @@ void CVerticalSwitch::draw (CDrawContext *pContext)
 		// source position in bitmap
 		CPoint where (0, heightOfOneImage * ((int32_t)(norm * (getNumSubPixmaps () - 1) + 0.5f)));
 
-		pBackground->draw (pContext, size, where);
+		pBackground->draw (pContext, getViewSize (), where);
 	}
 	setDirty (false);
 }
@@ -151,7 +151,7 @@ CMouseEventResult CVerticalSwitch::onMouseMoved (CPoint& where, const CButtonSta
 {
 	if (buttons & kLButton)
 	{
-		float norm = (int32_t)((where.v - size.top) / coef) / (float)(getNumSubPixmaps () - 1);
+		float norm = (int32_t)((where.v - getViewSize ().top) / coef) / (float)(getNumSubPixmaps () - 1);
 		value = getMin () + norm * (getMax () - getMin ());
 		if (value > getMax ())
 			value = getMax ();
@@ -286,7 +286,7 @@ void CHorizontalSwitch::draw (CDrawContext *pContext)
 		// source position in bitmap
 		CPoint where (0, heightOfOneImage * ((int32_t)(norm * (getNumSubPixmaps () - 1) + 0.5f)));
 
-		pBackground->draw (pContext, size, where);
+		pBackground->draw (pContext, getViewSize (), where);
 	}
 	setDirty (false);
 }
@@ -322,7 +322,7 @@ CMouseEventResult CHorizontalSwitch::onMouseMoved (CPoint& where, const CButtonS
 {
 	if (buttons & kLButton)
 	{
-		float norm = (int32_t)((where.h - size.left) / coef) / (float)(getNumSubPixmaps () - 1);
+		float norm = (int32_t)((where.h - getViewSize ().left) / coef) / (float)(getNumSubPixmaps () - 1);
 		value = getMin () + norm * (getMax () - getMin ());
 		if (value > getMax ())
 			value = getMax ();
@@ -473,7 +473,7 @@ void CRockerSwitch::draw (CDrawContext *pContext)
 
 	if (pBackground)
 	{
-		pBackground->draw (pContext, size, where);
+		pBackground->draw (pContext, getViewSize (), where);
 	}
 	setDirty (false);
 }
@@ -503,27 +503,27 @@ CMouseEventResult CRockerSwitch::onMouseMoved (CPoint& where, const CButtonState
 {
 	if (buttons & kLButton)
 	{
-		CCoord  width_2  = size.width () / 2;
-		CCoord  height_2 = size.height () / 2;
+		CCoord  width_2  = getViewSize ().width () / 2;
+		CCoord  height_2 = getViewSize ().height () / 2;
 
 		if (style & kHorizontal) 
 		{
-			if (where.h >= size.left && where.v >= size.top  &&
-				where.h <= (size.left + width_2) && where.v <= size.bottom)
+			if (where.h >= getViewSize ().left && where.v >= getViewSize ().top  &&
+				where.h <= (getViewSize ().left + width_2) && where.v <= getViewSize ().bottom)
 				value = getMin ();
-			else if (where.h >= (size.left + width_2) && where.v >= size.top  &&
-				where.h <= size.right && where.v <= size.bottom)
+			else if (where.h >= (getViewSize ().left + width_2) && where.v >= getViewSize ().top  &&
+				where.h <= getViewSize ().right && where.v <= getViewSize ().bottom)
 				value = getMax ();
 			else
 				value = fEntryState;
 		}
 		else
 		{
-			if (where.h >= size.left && where.v >= size.top  &&
-				where.h <= size.right && where.v <= (size.top + height_2))
+			if (where.h >= getViewSize ().left && where.v >= getViewSize ().top  &&
+				where.h <= getViewSize ().right && where.v <= (getViewSize ().top + height_2))
 				value = getMin ();
-			else if (where.h >= size.left && where.v >= (size.top + height_2) &&
-				where.h <= size.right && where.v <= size.bottom)
+			else if (where.h >= getViewSize ().left && where.v >= (getViewSize ().top + height_2) &&
+				where.h <= getViewSize ().right && where.v <= getViewSize ().bottom)
 				value = getMax ();
 			else
 				value = fEntryState;

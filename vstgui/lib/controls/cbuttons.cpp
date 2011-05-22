@@ -89,7 +89,7 @@ void COnOffButton::draw (CDrawContext *pContext)
 		else
 			off = 0;
 
-		pBackground->draw (pContext, size, CPoint (0, off));
+		pBackground->draw (pContext, getViewSize (), CPoint (0, off));
 	}
 	setDirty (false);
 }
@@ -209,7 +209,7 @@ void CKickButton::draw (CDrawContext *pContext)
 
 	if (pBackground)
 	{
-		pBackground->draw (pContext, size, where);
+		pBackground->draw (pContext, getViewSize (), where);
 	}
 	setDirty (false);
 }
@@ -242,8 +242,8 @@ CMouseEventResult CKickButton::onMouseMoved (CPoint& where, const CButtonState& 
 {
 	if (buttons & kLButton)
 	{
-		if (where.h >= size.left && where.v >= size.top  &&
-			where.h <= size.right && where.v <= size.bottom)
+		if (where.h >= getViewSize ().left && where.v >= getViewSize ().top  &&
+			where.h <= getViewSize ().right && where.v <= getViewSize ().bottom)
 			value = getMax ();
 		else
 			value = getMin ();
@@ -442,7 +442,7 @@ bool CCheckBox::sizeToFit ()
 	IFontPainter* painter = font ? font->getFontPainter () : 0;
 	if (painter)
 	{
-		CRect fitSize (size);
+		CRect fitSize (getViewSize ());
 		if (pBackground)
 		{
 			fitSize.setWidth (pBackground->getWidth ());
@@ -465,7 +465,7 @@ bool CCheckBox::sizeToFit ()
 void CCheckBox::draw (CDrawContext* context)
 {
 	float norm = getValueNormalized ();
-	CRect checkBoxSize (size);
+	CRect checkBoxSize (getViewSize ());
 	if (pBackground)
 	{
 		CPoint off;
@@ -488,7 +488,7 @@ void CCheckBox::draw (CDrawContext* context)
 	{
 		checkBoxSize.setHeight (getFontCapHeight (font) + 2);
 		checkBoxSize.setWidth (checkBoxSize.getHeight ());
-		checkBoxSize.offset (1, ceil ((size.getHeight () - checkBoxSize.getHeight ()) / 2));
+		checkBoxSize.offset (1, ceil ((getViewSize ().getHeight () - checkBoxSize.getHeight ()) / 2));
 		context->setLineWidth (1);
 		context->setLineStyle (kLineSolid);
 		context->setDrawMode (kAliasing);
@@ -562,7 +562,7 @@ bool CCheckBox::getFocusPath (CGraphicsPath& outPath)
 	if (wantsFocus ())
 	{
 		CCoord focusWidth = getFrame ()->getFocusWidth ();
-		CRect checkBoxSize (size);
+		CRect checkBoxSize (getViewSize ());
 		if (pBackground)
 		{
 			checkBoxSize.setWidth (pBackground->getWidth ());
@@ -572,7 +572,7 @@ bool CCheckBox::getFocusPath (CGraphicsPath& outPath)
 		{
 			checkBoxSize.setHeight (getFontCapHeight (font) + 2);
 			checkBoxSize.setWidth (checkBoxSize.getHeight ());
-			checkBoxSize.offset (1, ceil ((size.getHeight () - checkBoxSize.getHeight ()) / 2));
+			checkBoxSize.offset (1, ceil ((getViewSize ().getHeight () - checkBoxSize.getHeight ()) / 2));
 		}
 		outPath.addRect (checkBoxSize);
 		checkBoxSize.inset (-focusWidth, -focusWidth);
@@ -599,7 +599,7 @@ CMouseEventResult CCheckBox::onMouseMoved (CPoint& where, const CButtonState& bu
 	if (buttons.isLeftButton ())
 	{
 		bool wasHilighted = hilight;
-		if (where.isInside (size))
+		if (where.isInside (getViewSize ()))
 			hilight = true;
 		else
 			hilight = false;
@@ -614,7 +614,7 @@ CMouseEventResult CCheckBox::onMouseMoved (CPoint& where, const CButtonState& bu
 CMouseEventResult CCheckBox::onMouseUp (CPoint& where, const CButtonState& buttons)
 {
 	hilight = false;
-	if (where.isInside (size))
+	if (where.isInside (getViewSize ()))
 		value = (previousValue < getMax ()) ? getMax () : getMin ();
 	else
 		value = previousValue;
@@ -800,11 +800,11 @@ void CTextButton::draw (CDrawContext* context)
 	else
 	{
 		context->setFillColor (value > 0.5 ? gradientStartColorHighlighted : gradientStartColor);
-		context->drawRect (size, kDrawFilledAndStroked);
+		context->drawRect (getViewSize (), kDrawFilledAndStroked);
 	}
 	context->setFont (font);
 	context->setFontColor (value > 0.5 ? textColorHighlighted : textColor);
-	context->drawString (title.c_str (), size);
+	context->drawString (title.c_str (), getViewSize ());
 	setDirty (false);
 }
 

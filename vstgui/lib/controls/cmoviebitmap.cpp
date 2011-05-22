@@ -100,7 +100,7 @@ void CMovieBitmap::draw (CDrawContext *pContext)
 
 	if (pBackground)
 	{
-		pBackground->draw (pContext, size, where);
+		pBackground->draw (pContext, getViewSize (), where);
 	}
 	setDirty (false);
 }

@@ -85,17 +85,17 @@ CSlider::CSlider (const CRect &rect, CControlListener* listener, int32_t tag, in
 		heightOfSlider = 1;
 	}
 
-	widthControl  = size.width ();
-	heightControl = size.height ();
+	widthControl  = getViewSize ().width ();
+	heightControl = getViewSize ().height ();
 
 	if (style & kHorizontal)
 	{
-		minPos = iMinPos - size.left;
+		minPos = iMinPos - getViewSize ().left;
 		rangeHandle = (CCoord)iMaxPos - iMinPos;
 	}
 	else
 	{
-		minPos = iMinPos - size.top;
+		minPos = iMinPos - getViewSize ().top;
 		rangeHandle = (CCoord)iMaxPos - iMinPos;
 	}
 
@@ -144,8 +144,8 @@ CSlider::CSlider (const CRect &rect, CControlListener* listener, int32_t tag, co
 		heightOfSlider = 1;
 	}
 
-	widthControl  = size.width ();
-	heightControl = size.height ();
+	widthControl  = getViewSize ().width ();
+	heightControl = getViewSize ().height ();
 	if (style & kHorizontal)
 		rangeHandle = _rangeHandle - widthOfSlider;
 	else
@@ -204,12 +204,12 @@ void CSlider::setViewSize (const CRect& rect, bool invalid)
 	CControl::setViewSize (rect, invalid);
 	if (style & kHorizontal)
 	{
-		minPos = rect.left - size.left;
+		minPos = rect.left - getViewSize ().left;
 		rangeHandle = rect.getWidth () - (widthOfSlider + offsetHandle.h*2);
 	}
 	else
 	{
-		minPos = rect.top - size.top;
+		minPos = rect.top - getViewSize ().top;
 		rangeHandle = rect.getHeight () - (heightOfSlider + offsetHandle.v * 2);
 	}
 	
@@ -260,7 +260,7 @@ void CSlider::draw (CDrawContext *pContext)
 	if (pBackground)
 	{
 		CRect rect (0, 0, widthControl, heightControl);
-		rect.offset (size.left, size.top);
+		rect.offset (getViewSize ().left, getViewSize ().top);
 		pBackground->draw (drawContext, rect, offset);
 	}
 	
@@ -334,7 +334,7 @@ void CSlider::draw (CDrawContext *pContext)
 			rectNew.bottom = rectNew.top + heightOfSlider;
 			rectNew.bottom = (rectNew.bottom > maxTmp) ? maxTmp : rectNew.bottom;
 		}
-		rectNew.offset (size.left, size.top);
+		rectNew.offset (getViewSize ().left, getViewSize ().top);
 
 		// draw slider at new position
 		pHandle->draw (drawContext, rectNew);
@@ -350,9 +350,9 @@ CMouseEventResult CSlider::onMouseDown (CPoint& where, const CButtonState& butto
 		return kMouseEventNotHandled;
 
 	if (style & kHorizontal)
-		delta = size.left + offsetHandle.h;
+		delta = getViewSize ().left + offsetHandle.h;
 	else
-		delta = size.top + offsetHandle.v;
+		delta = getViewSize ().top + offsetHandle.v;
 	if (!bFreeClick)
 	{
 		float normValue = getValueNormalized ();
@@ -363,10 +363,10 @@ CMouseEventResult CSlider::onMouseDown (CPoint& where, const CButtonState& butto
 
 		if (style & kHorizontal)
 		{
-			actualPos = offsetHandle.h + (int32_t)(normValue * rangeHandle) + size.left;
+			actualPos = offsetHandle.h + (int32_t)(normValue * rangeHandle) + getViewSize ().left;
 
 			rect.left   = actualPos;
-			rect.top    = size.top  + offsetHandle.v;
+			rect.top    = getViewSize ().top  + offsetHandle.v;
 			rect.right  = rect.left + widthOfSlider;
 			rect.bottom = rect.top  + heightOfSlider;
 
@@ -377,9 +377,9 @@ CMouseEventResult CSlider::onMouseDown (CPoint& where, const CButtonState& butto
 		}
 		else
 		{
-			actualPos = offsetHandle.v + (int32_t)(normValue * rangeHandle) + size.top;
+			actualPos = offsetHandle.v + (int32_t)(normValue * rangeHandle) + getViewSize ().top;
 		
-			rect.left   = size.left  + offsetHandle.h;
+			rect.left   = getViewSize ().left  + offsetHandle.h;
 			rect.top    = actualPos;
 			rect.right  = rect.left + widthOfSlider;
 			rect.bottom = rect.top  + heightOfSlider;

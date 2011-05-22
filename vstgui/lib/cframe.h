@@ -137,7 +137,7 @@ public:
 	virtual CCoord getFocusWidth () const;							///< get focus draw width
 	//@}
 
-	void invalid () { invalidRect (size); setDirty (false); }
+	void invalid () { invalidRect (getViewSize ()); setDirty (false); }
 	void invalidRect (const CRect& rect);
 
 	#if MAC_COCOA && MAC_CARBON
