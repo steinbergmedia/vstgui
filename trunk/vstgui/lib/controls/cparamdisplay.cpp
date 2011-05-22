@@ -134,32 +134,32 @@ void CParamDisplay::drawBack (CDrawContext* pContext, CBitmap* newBack)
 	pContext->setDrawMode (kAliasing);
 	if (newBack)
 	{
-		newBack->draw (pContext, size, backOffset);
+		newBack->draw (pContext, getViewSize (), backOffset);
 	}
 	else if (pBackground)
 	{
-		pBackground->draw (pContext, size, backOffset);
+		pBackground->draw (pContext, getViewSize (), backOffset);
 	}
 	else
 	{
 		if (!getTransparency ())
 		{
 			pContext->setFillColor (backColor);
-			pContext->drawRect (size, kDrawFilled);
+			pContext->drawRect (getViewSize (), kDrawFilled);
 	
 			if (!(style & (k3DIn|k3DOut|kNoFrame))) 
 			{
 				pContext->setLineStyle (kLineSolid);
 				pContext->setLineWidth (1);
 				pContext->setFrameColor (frameColor);
-				pContext->drawRect (size);
+				pContext->drawRect (getViewSize ());
 			}
 		}
 	}
 	// draw the frame for the 3D effect
 	if (style & (k3DIn|k3DOut)) 
 	{
-		CRect r (size);
+		CRect r (getViewSize ());
 		r.right--; r.top++;
 		pContext->setLineWidth (1);
 		pContext->setLineStyle (kLineSolid);
@@ -187,7 +187,7 @@ void CParamDisplay::drawText (CDrawContext *pContext, UTF8StringPtr string)
 {
 	if (!(style & kNoTextStyle) && string && strlen (string))
 	{
-		CRect textRect (size);
+		CRect textRect (getViewSize ());
 		textRect.inset (textInset.x, textInset.y);
 		CRect oldClip;
 		pContext->getClipRect (oldClip);

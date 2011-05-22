@@ -1,3 +1,9 @@
+2011-05-22 arne
+
+	* make CView::getViewSize() non virtual
+	* replace nearly all direct uses of CView::size with CView::getViewSize()
+	* fix a scroll view issues
+
 2011-05-20 arne
 
 	* replace checks for emptiness of std container from size () > 0 to empty () == false

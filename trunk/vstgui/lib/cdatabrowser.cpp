@@ -272,7 +272,7 @@ void CDataBrowser::recalculateLayout (bool rememberSelection)
 			CRect hcs (headerSize);
 			if (!(style & kDontDrawFrame))
 				hcs.left = hcs.top = 1;
-			hcs.setWidth (size.getWidth () - ((style & kDontDrawFrame) ? 0 : 2));
+			hcs.setWidth (getViewSize ().getWidth () - ((style & kDontDrawFrame) ? 0 : 2));
 			dbHeaderContainer = new CViewContainer (hcs, getFrame ());
 			dbHeaderContainer->setAutosizeFlags (kAutosizeLeft|kAutosizeRight|kAutosizeTop);
 			dbHeaderContainer->setTransparency (true);
@@ -445,7 +445,7 @@ CDataBrowserHeader::CDataBrowserHeader (const CRect& size, IDataBrowser* db, CDa
 //-----------------------------------------------------------------------------------------------
 void CDataBrowserHeader::draw (CDrawContext* context)
 {
-	drawRect (context, size);
+	drawRect (context, getViewSize ());
 }
 
 //-----------------------------------------------------------------------------------------------
@@ -462,7 +462,7 @@ void CDataBrowserHeader::drawRect (CDrawContext* context, const CRect& updateRec
 		rowHeight += lineWidth;
 	int32_t numColumns = db->dbGetNumColumns (browser);
 
-	CRect r (size.left, size.top, 0, 0);
+	CRect r (getViewSize ().left, getViewSize ().top, 0, 0);
 	r.setHeight (rowHeight);
 	for (int32_t col = 0; col < numColumns; col++)
 	{
@@ -493,7 +493,7 @@ int32_t CDataBrowserHeader::getColumnAtPoint (CPoint& where)
 	}
 	int32_t col = -1;
 	int32_t numColumns = db->dbGetNumColumns (browser);
-	CRect r (size.left, size.top, 0, size.bottom);
+	CRect r (getViewSize ().left, getViewSize ().top, 0, getViewSize ().bottom);
 	for (int32_t c = 0; c < numColumns; c++)
 	{
 		CCoord columnWidth = db->dbGetCurrentColumnWidth (c, browser);
@@ -606,12 +606,12 @@ CRect CDataBrowserView::getRowBounds (int32_t row)
 	}
 	CCoord rowHeight = db->dbGetRowHeight (browser);
 
-	CRect where (size);
-	where.offset (-size.left, -size.top);
+	CRect where (getViewSize ());
+	where.originize ();
 	if (style & CDataBrowser::kDrawRowLines)
 		rowHeight+=lineWidth;
 
-	CRect r (size.left, size.top + rowHeight * row, size.right, size.top + rowHeight * (row+1));
+	CRect r (getViewSize ().left, getViewSize ().top + rowHeight * row, getViewSize ().right, getViewSize ().top + rowHeight * (row+1));
 	return r;
 }
 
@@ -628,7 +628,7 @@ void CDataBrowserView::invalidateRow (int32_t row)
 //-----------------------------------------------------------------------------------------------
 void CDataBrowserView::draw (CDrawContext* context)
 {
-	drawRect (context, size);
+	drawRect (context, getViewSize ());
 }
 
 //-----------------------------------------------------------------------------------------------
@@ -646,12 +646,12 @@ void CDataBrowserView::drawRect (CDrawContext* context, const CRect& updateRect)
 	int32_t numRows = db->dbGetNumRows (browser);
 	int32_t numColumns = db->dbGetNumColumns (browser);
 
-	CRect r (size.left, size.top, 0, 0);
+	CRect r (getViewSize ().left, getViewSize ().top, 0, 0);
 	for (int32_t col = 0; col < numColumns; col++)
 	{
 		CCoord columnWidth = db->dbGetCurrentColumnWidth (col, browser);
 		r.setWidth (columnWidth);
-		r.setHeight (size.getHeight ());
+		r.setHeight (getViewSize ().getHeight ());
 		CRect testRect (r);
 		testRect.bound (updateRect);
 		if (testRect.isEmpty ())
@@ -677,11 +677,11 @@ void CDataBrowserView::drawRect (CDrawContext* context, const CRect& updateRect)
 			context->setLineWidth (lineWidth);
 			context->setFrameColor (lineColor);
 			context->setLineStyle (kLineSolid);
-			context->moveTo (CPoint (r.left + lineWidth/2, size.top));
-			context->lineTo (CPoint (r.left + lineWidth/2, size.bottom));
+			context->moveTo (CPoint (r.left + lineWidth/2, getViewSize ().top));
+			context->lineTo (CPoint (r.left + lineWidth/2, getViewSize ().bottom));
 			r.offset (lineWidth, 0);
 		}
-		r.top = size.top;
+		r.top = getViewSize ().top;
 	}
 	if (style & CDataBrowser::kDrawRowLines)
 	{
@@ -689,7 +689,7 @@ void CDataBrowserView::drawRect (CDrawContext* context, const CRect& updateRect)
 		context->setLineWidth (lineWidth);
 		context->setLineStyle (kLineSolid);
 		context->setFrameColor (lineColor);
-		CRect rr (size.left, size.top, size.right, size.top + rowHeight);
+		CRect rr (getViewSize ().left, getViewSize ().top, getViewSize ().right, getViewSize ().top + rowHeight);
 		for (int32_t row = 0; row < numRows; row++)
 		{
 			context->moveTo (CPoint (rr.left, rr.bottom));
@@ -713,7 +713,7 @@ bool CDataBrowserView::getCell (CPoint& where, int32_t& row, int32_t& column)
 	int32_t numColumns = db->dbGetNumColumns (browser);
 
 	CPoint _where (where);
-	_where.offset (-size.left, -size.top);
+	_where.offset (-getViewSize ().left, -getViewSize ().top);
 	if (style & CDataBrowser::kDrawRowLines)
 		rowHeight += lineWidth;
 	int32_t rowNum = (int32_t)(_where.y / rowHeight);

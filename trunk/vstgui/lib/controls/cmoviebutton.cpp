@@ -105,7 +105,7 @@ void CMovieButton::draw (CDrawContext *pContext)
 
 	if (pBackground)
 	{
-		pBackground->draw (pContext, size, where);
+		pBackground->draw (pContext, getViewSize (), where);
 	}
 	buttonState = value;
 
@@ -134,10 +134,10 @@ CMouseEventResult CMovieButton::onMouseMoved (CPoint& where, const CButtonState&
 {
 	if (buttons & kLButton)
 	{
-		if (where.h >= size.left &&
-				where.v >= size.top  &&
-				where.h <= size.right &&
-				where.v <= size.bottom)
+		if (where.h >= getViewSize ().left &&
+				where.v >= getViewSize ().top  &&
+				where.h <= getViewSize ().right &&
+				where.v <= getViewSize ().bottom)
 			value = (fEntryState == getMax ()) ? getMin () : getMax ();
 		else
 			value = fEntryState;

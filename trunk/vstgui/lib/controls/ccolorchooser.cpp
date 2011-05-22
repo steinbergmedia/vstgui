@@ -71,7 +71,7 @@ public:
 		CCoord handleFrameWidth = 1;
 
 		CRect backgroundRect (0, 0, widthControl, heightControl);
-		backgroundRect.offset (size.left, size.top);
+		backgroundRect.offset (getViewSize ().left, getViewSize ().top);
 		context->setDrawMode (kAntiAliasing);
 		context->setFillColor (backgroundFillColor);
 		context->setFrameColor (backgroundFrameColor);
@@ -123,7 +123,7 @@ public:
 			rectNew.bottom = rectNew.top + heightOfSlider;
 			rectNew.bottom = (rectNew.bottom > maxTmp) ? maxTmp : rectNew.bottom;
 		}
-		rectNew.offset (size.left, size.top);
+		rectNew.offset (getViewSize ().left, getViewSize ().top);
 
 		context->setFillColor (handleFillColor);
 		context->setFrameColor (handleFrameColor);
@@ -151,16 +151,16 @@ public:
 		if (color.alpha != 255)
 		{
 			context->setFillColor (kWhiteCColor);
-			context->drawRect (size, kDrawFilled);
+			context->drawRect (getViewSize (), kDrawFilled);
 			context->setFillColor (kBlackCColor);
-			CRect r (size.left, size.top, size.left + 5, size.top + 5);
-			for (int32_t x = 0; x < size.getWidth (); x+=5)
+			CRect r (getViewSize ().left, getViewSize ().top, getViewSize ().left + 5, getViewSize ().top + 5);
+			for (int32_t x = 0; x < getViewSize ().getWidth (); x+=5)
 			{
-				r.left = size.left + x;
-				r.top = x % 2 ? size.top : size.top + 5;
+				r.left = getViewSize ().left + x;
+				r.top = x % 2 ? getViewSize ().top : getViewSize ().top + 5;
 				r.right = r.left + 5;
 				r.bottom = r.top + 5;
-				for (int32_t y = 0; y < size.getHeight (); y+=10)
+				for (int32_t y = 0; y < getViewSize ().getHeight (); y+=10)
 				{
 					context->drawRect (r, kDrawFilled);
 					r.offset (0, 10);
@@ -170,7 +170,7 @@ public:
 		
 		context->setFillColor (color);
 		context->setFrameColor (kBlackCColor);
-		context->drawRect (size, kDrawFilledAndStroked);
+		context->drawRect (getViewSize (), kDrawFilledAndStroked);
 				
 		setDirty (false);
 	}
@@ -386,10 +386,13 @@ CColorChooser::CColorChooser (IColorChooserDelegate* delegate, const CColor& ini
 	alphaSlider->setAutosizeFlags (kAutosizeLeft|kAutosizeRight|kAutosizeBottom);
 	addView (alphaSlider);
 
-	size.bottom = r.bottom+1;
-	size.right = colorView->getViewSize ().right+2;
+	CRect newSize (getViewSize ());
 	
-	setMouseableArea (size);
+	newSize.bottom = r.bottom+1;
+	newSize.right = colorView->getViewSize ().right+2;
+
+	setViewSize (newSize);	
+	setMouseableArea (newSize);
 
 	r = colorView->getViewSize ();
 	r.offset (0, r.bottom + margin);

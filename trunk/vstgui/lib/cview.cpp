@@ -227,7 +227,6 @@ CView::~CView ()
 	if (pBackground)
 		pBackground->forget ();
 
-	CViewAttributeIterator it = attributes.begin ();
 	for (CViewAttributeIterator it = attributes.begin (); it != attributes.end (); it++)
 		delete it->second;
 

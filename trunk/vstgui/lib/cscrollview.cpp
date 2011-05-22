@@ -117,8 +117,8 @@ void CScrollContainer::setScrollOffset (CPoint newOffset, bool redraw)
 {
 	newOffset.x = floor (newOffset.x + 0.5);
 	newOffset.y = floor (newOffset.y + 0.5);
-	if (newOffset.x < containerSize.left - containerSize.width ())
-		newOffset.x = containerSize.left - containerSize.width ();
+	if (newOffset.x < containerSize.left - (containerSize.width () - getViewSize ().width ()))
+		newOffset.x = containerSize.left - (containerSize.width () - getViewSize ().width ());
 	if (newOffset.x > containerSize.right)
 		newOffset.x = containerSize.right;
 	if (newOffset.y < containerSize.top)
@@ -149,11 +149,11 @@ void CScrollContainer::setScrollOffset (CPoint newOffset, bool redraw)
 	}
 	else
 	{
-		CRect scrollRect (0, 0, size.getWidth (), size.getHeight ());
+		CRect scrollRect (0, 0, getViewSize ().getWidth (), getViewSize ().getHeight ());
 		CPoint p;
 		localToFrame (p);
 		scrollRect.offset (p.x, p.y);
-		CRect visibleRect = getVisibleSize (CRect (0, 0, size.getWidth (), size.getHeight ()));
+		CRect visibleRect = getVisibleSize (CRect (0, 0, getViewSize ().getWidth (), getViewSize ().getHeight ()));
 		visibleRect.offset (p.x, p.y);
 		scrollRect.bound (visibleRect);
 
@@ -329,7 +329,7 @@ CScrollView::~CScrollView ()
 //-----------------------------------------------------------------------------
 void CScrollView::recalculateSubViews ()
 {
-	CRect scsize (0, 0, size.getWidth (), size.getHeight ());
+	CRect scsize (0, 0, getViewSize ().getWidth (), getViewSize ().getHeight ());
 	if (!(style & kDontDrawFrame))
 	{
 		scsize.left++; scsize.top++;
@@ -337,8 +337,8 @@ void CScrollView::recalculateSubViews ()
 	}
 	if (style & kHorizontalScrollbar)
 	{
-		CRect sbr (size);
-		sbr.offset (-size.left, -size.top);
+		CRect sbr (getViewSize ());
+		sbr.originize ();
 		sbr.top = sbr.bottom - scrollbarWidth;
 		if (style & kVerticalScrollbar)
 		{
@@ -364,8 +364,8 @@ void CScrollView::recalculateSubViews ()
 	}
 	if (style & kVerticalScrollbar)
 	{
-		CRect sbr (size);
-		sbr.offset (-size.left, -size.top);
+		CRect sbr (getViewSize ());
+		sbr.originize ();
 		sbr.left = sbr.right - scrollbarWidth;
 		if (style & kHorizontalScrollbar)
 		{
@@ -453,7 +453,7 @@ void CScrollView::setContainerSize (const CRect& cs, bool keepVisibleArea)
 		CRect oldScrollSize = vsb->getScrollSize (oldScrollSize);
 		float oldValue = vsb->getValue ();
 		vsb->setScrollSize (cs);
-		if (cs.getHeight () < size.getHeight ())
+		if (cs.getHeight () < getViewSize ().getHeight ())
 			vsb->setValue (0);
 		else if (keepVisibleArea && oldScrollSize.getHeight () != cs.getHeight ())
 		{
@@ -472,7 +472,7 @@ void CScrollView::setContainerSize (const CRect& cs, bool keepVisibleArea)
 		CRect oldScrollSize = hsb->getScrollSize (oldScrollSize);
 		float oldValue = hsb->getValue ();
 		hsb->setScrollSize (cs);
-		if (cs.getWidth () < size.getWidth ())
+		if (cs.getWidth () < getViewSize ().getWidth ())
 			hsb->setValue (0);
 		else if (keepVisibleArea && oldScrollSize.getWidth () != cs.getWidth ())
 		{
@@ -648,8 +648,8 @@ void CScrollView::valueChanged (CControl *pControl)
 //-----------------------------------------------------------------------------
 void CScrollView::drawBackgroundRect (CDrawContext *pContext, const CRect& _updateRect)
 {
-	CRect r (size);
-	r.offset (-r.left, -r.top);
+	CRect r (getViewSize ());
+	r.originize ();
 	if ((backgroundColor.alpha != 255 && getTransparency ()) || !getTransparency ())
 	{
 		pContext->setDrawMode (kAliasing);
@@ -765,17 +765,17 @@ void CScrollbar::calculateScrollerLength ()
 	CCoord newScrollerLength = scrollerLength;
 	if (direction == kHorizontal)
 	{
-		float factor = (float)size.width () / (float)scrollSize.width ();
+		float factor = (float)getViewSize ().width () / (float)scrollSize.width ();
 		if (factor >= 1.f)
 			factor = 0;
-		newScrollerLength = (CCoord) (size.width () * factor);
+		newScrollerLength = (CCoord) (getViewSize ().width () * factor);
 	}
 	else
 	{
-		float factor = (float)size.height () / (float)scrollSize.height ();
+		float factor = (float)getViewSize ().height () / (float)scrollSize.height ();
 		if (factor >= 1.f)
 			factor = 0;
-		newScrollerLength = (CCoord) (size.height () * factor);
+		newScrollerLength = (CCoord) (getViewSize ().height () * factor);
 	}
 	if (newScrollerLength != scrollerLength)
 	{
@@ -809,7 +809,7 @@ void CScrollbar::doStepping ()
 	CRect scrollerRect = getScrollerRect ();
 	if (timer)
 	{
-		if (!startPoint.isInside (size) || startPoint.isInside (scrollerRect))
+		if (!startPoint.isInside (getViewSize ()) || startPoint.isInside (scrollerRect))
 			return;
 	}
 	bool dir = (direction == kHorizontal && startPoint.x < scrollerRect.left) || (direction == kVertical && startPoint.y < scrollerRect.top);
@@ -918,7 +918,7 @@ CMouseEventResult CScrollbar::onMouseMoved (CPoint &where, const CButtonState& b
 			CPoint old (startPoint);
 			startPoint = where;
 			CRect scollerRect = getScrollerRect ();
-			if (where.isInside (size) && old.isInside (scollerRect) && !startPoint.isInside (scrollerRect))
+			if (where.isInside (getViewSize ()) && old.isInside (scollerRect) && !startPoint.isInside (scrollerRect))
 				doStepping ();
 		}
 	}
@@ -952,7 +952,7 @@ bool CScrollbar::onWheel (const CPoint &where, const CMouseWheelAxis &axis, cons
 //-----------------------------------------------------------------------------
 void CScrollbar::drawBackground (CDrawContext* pContext)
 {
-	CRect r (size);
+	CRect r (getViewSize ());
 	if (drawer)
 		drawer->drawScrollbarBackground (pContext, r, direction, this);
 	else
