@@ -1,6 +1,6 @@
 //-----------------------------------------------------------------------------
 // VST Plug-Ins SDK
-// VSTGUI: Graphical User Interface Framework not only for VST plugins : 
+// VSTGUI: Graphical User Interface Framework not only for VST plugins :
 //
 // Version 4.0
 //
@@ -10,24 +10,24 @@
 //-----------------------------------------------------------------------------
 // Redistribution and use in source and binary forms, with or without modification,
 // are permitted provided that the following conditions are met:
-// 
-//   * Redistributions of source code must retain the above copyright notice, 
+//
+//   * Redistributions of source code must retain the above copyright notice,
 //     this list of conditions and the following disclaimer.
 //   * Redistributions in binary form must reproduce the above copyright notice,
-//     this list of conditions and the following disclaimer in the documentation 
+//     this list of conditions and the following disclaimer in the documentation
 //     and/or other materials provided with the distribution.
 //   * Neither the name of the Steinberg Media Technologies nor the names of its
-//     contributors may be used to endorse or promote products derived from this 
+//     contributors may be used to endorse or promote products derived from this
 //     software without specific prior written permission.
-// 
+//
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
-// ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED 
-// WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A  PARTICULAR PURPOSE ARE DISCLAIMED. 
-// IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, 
-// INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, 
-// BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, 
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF 
-// LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE 
+// ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+// WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A  PARTICULAR PURPOSE ARE DISCLAIMED.
+// IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
+// INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+// BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+// LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
 // OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE  OF THIS SOFTWARE, EVEN IF ADVISED
 // OF THE POSSIBILITY OF SUCH DAMAGE.
 //-----------------------------------------------------------------------------
@@ -50,6 +50,7 @@
 #include <vector>
 #include <algorithm>
 #include <sstream>
+#include <typeinfo>
 
 namespace VSTGUI {
 
@@ -80,13 +81,13 @@ public:
 			textFont->forget ();
 		if (name)
 			free (name);
-	}	
+	}
 
 	bool drawFocusOnTop ()
 	{
 		return false;
 	}
-	
+
 	bool getFocusPath (CGraphicsPath& outPath)
 	{
 		CRect r = getViewSize ();
@@ -94,7 +95,7 @@ public:
 		outPath.addRect (r);
 		return true;
 	}
-	
+
 	virtual void draw (CDrawContext *pContext)
 	{
 		pContext->setDrawMode (kAliasing);
@@ -202,7 +203,7 @@ public:
 	{
 		return name.c_str ();
 	}
-	
+
 	void perform ()
 	{
 		UIViewFactory* viewFactory = dynamic_cast<UIViewFactory*> (desc->getViewFactory ());
@@ -217,7 +218,7 @@ public:
 			it++;
 		}
 	}
-	
+
 	void undo ()
 	{
 		UIViewFactory* viewFactory = dynamic_cast<UIViewFactory*> (desc->getViewFactory ());
@@ -246,13 +247,13 @@ class FocusOptionMenu : public COptionMenu
 public:
 	FocusOptionMenu (const CRect& size, CControlListener* listener, int32_t tag, CBitmap* background = 0, CBitmap* bgWhenClick = 0, const int32_t style = 0)
 	: COptionMenu (size, listener, tag, background, bgWhenClick, style) {}
-	
+
 	void takeFocus ()
 	{
 		origBackgroundColor = backColor;
 		backColor.alpha = 255;
 	}
-	
+
 	void looseFocus ()
 	{
 		backColor = origBackgroundColor;
@@ -283,7 +284,7 @@ public:
 			strcpy (string, "true");
 		return true;
 	}
-	
+
 	CMouseEventResult onMouseDown (CPoint &where, const CButtonState& buttons)
 	{
 		value = value == 0.f ? 1.f : 0.f;
@@ -299,12 +300,12 @@ public:
 		origBackgroundColor = backColor;
 		backColor.alpha = 255;
 	}
-	
+
 	void looseFocus ()
 	{
 		backColor = origBackgroundColor;
 	}
-	
+
 	int32_t onKeyDown (VstKeyCode& keyCode)
 	{
 		if (keyCode.virt == VKEY_RETURN && keyCode.modifier == 0)
@@ -331,19 +332,19 @@ public:
 	{
 		desc->addDependency (this);
 	}
-	
+
 	~BrowserDelegateBase ()
 	{
 		desc->removeDependency (this);
 		if (path)
 			path->forget ();
 	}
-	
+
 	void dbAttached (CDataBrowser* browser)
 	{
 		db = browser;
 	}
-	
+
 	void dbRemoved (CDataBrowser* browser)
 	{
 		db = 0;
@@ -373,33 +374,33 @@ public:
 	{
 		return (int32_t)names.size () + 1;
 	}
-	
+
 	int32_t dbGetNumColumns (CDataBrowser* browser)
 	{
 		return 3;
 	}
-	
+
 	bool dbGetColumnDescription (int32_t index, CCoord& minWidth, CCoord& maxWidth, CDataBrowser* browser)
 	{
 		return false;
 	}
-	
+
 	CCoord dbGetCurrentColumnWidth (int32_t index, CDataBrowser* browser)
 	{
 		if (index == 2)
 			return 20;
 		return (browser->getWidth () - 40) / 2;
 	}
-	
+
 	void dbSetCurrentColumnWidth (int32_t index, const CCoord& width, CDataBrowser* browser)
 	{
 	}
-	
+
 	CCoord dbGetRowHeight (CDataBrowser* browser)
 	{
 		return 20;
 	}
-	
+
 	bool dbGetLineWidthAndColor (CCoord& width, CColor& color, CDataBrowser* browser)
 	{
 		width = 1;
@@ -580,7 +581,7 @@ public:
 		}
 		return false;
 	}
-	
+
 	int32_t dbOnKeyDown (const VstKeyCode& key, CDataBrowser* browser)
 	{
 		if (key.virt == VKEY_RETURN)
@@ -589,7 +590,7 @@ public:
 			if (startEditing (row, browser))
 				return 1;
 		}
-		
+
 		return -1;
 	}
 
@@ -627,12 +628,12 @@ public:
 		}
 		return kMessageUnknown;
 	}
-	
+
 	void getNames (std::list<const std::string*>& _names)
 	{
 		desc->collectBitmapNames (_names);
 	}
-	
+
 	int32_t dbGetNumColumns (CDataBrowser* browser)
 	{
 		return 4;
@@ -644,7 +645,7 @@ public:
 			return 20;
 		return (browser->getWidth () - 40) / 3;
 	}
-	
+
 	bool getCellText (int32_t row, int32_t column, std::string& result, CDataBrowser* browser)
 	{
 		if (column == 1)
@@ -772,8 +773,8 @@ class ColorBrowserDelegate : public BrowserDelegateBase, public IPlatformColorCh
 //-----------------------------------------------------------------------------
 {
 public:
-	ColorBrowserDelegate (UIDescription* desc, IActionOperator* actionOperator) 
-	: BrowserDelegateBase (desc, actionOperator), browser (0) 
+	ColorBrowserDelegate (UIDescription* desc, IActionOperator* actionOperator)
+	: BrowserDelegateBase (desc, actionOperator), browser (0)
 	{
 		updateNames ();
 		headerTitles.push_back ("Name");
@@ -784,7 +785,7 @@ public:
 	{
 		PlatformUtilities::colorChooser (0, this);
 	}
-	
+
 	CMessageResult notify (CBaseObject* obj, IdStringPtr message)
 	{
 		if (message == UIDescription::kMessageColorChanged)
@@ -794,13 +795,13 @@ public:
 		}
 		return kMessageUnknown;
 	}
-	
+
 	void getNames (std::list<const std::string*>& _names)
 	{
 		lastChoosenRow = -1;
 		desc->collectColorNames (_names);
 	}
-	
+
 	bool getCellText (int32_t row, int32_t column, std::string& result, CDataBrowser* browser)
 	{
 		if (column == 1)
@@ -836,7 +837,7 @@ public:
 		}
 		return BrowserDelegateBase::startEditing (row, browser);
 	}
-	
+
 	CMouseEventResult dbOnMouseDown (const CPoint& where, const CButtonState& buttons, int32_t row, int32_t column, CDataBrowser* browser)
 	{
 		if (row < (dbGetNumRows (browser) - 1))
@@ -872,7 +873,7 @@ public:
 			browser->invalidateRow (lastChoosenRow);
 		}
 	}
-	
+
 	void dbCellTextChanged (int32_t row, int32_t column, UTF8StringPtr newText, CDataBrowser* browser)
 	{
 		if (newText == 0 || strlen (newText) == 0)
@@ -965,12 +966,12 @@ public:
 		}
 		return kMessageUnknown;
 	}
-	
+
 	void getNames (std::list<const std::string*>& _names)
 	{
 		desc->collectControlTagNames (_names);
 	}
-	
+
 	bool getCellText (int32_t row, int32_t column, std::string& result, CDataBrowser* browser)
 	{
 		if (column == 1 && row < (dbGetNumRows (browser) - 1))
@@ -1047,7 +1048,7 @@ public:
 	{
 		UIFontChooserPanel::hide ();
 	}
-	
+
 	CMessageResult notify (CBaseObject* obj, IdStringPtr message)
 	{
 		if (message == UIDescription::kMessageFontChanged)
@@ -1057,12 +1058,12 @@ public:
 		}
 		return kMessageUnknown;
 	}
-	
+
 	void getNames (std::list<const std::string*>& _names)
 	{
 		desc->collectFontNames (_names);
 	}
-	
+
 	bool getCellText (int32_t row, int32_t column, std::string& result, CDataBrowser* browser)
 	{
 		if (row < (dbGetNumRows (browser) - 1))
@@ -1101,7 +1102,7 @@ public:
 		std::string fontName (*names[lastChoosenRow]);
 		actionOperator->performFontChange (fontName.c_str (), newFont);
 	}
-	
+
 	bool startEditing (int32_t row, CDataBrowser* browser)
 	{
 		if (row < (dbGetNumRows (browser) - 1))
@@ -1115,7 +1116,7 @@ public:
 		}
 		return BrowserDelegateBase::startEditing (row, browser);
 	}
-	
+
 	CMouseEventResult dbOnMouseDown (const CPoint& where, const CButtonState& buttons, int32_t row, int32_t column, CDataBrowser* browser)
 	{
 		if (row < (dbGetNumRows (browser) - 1))
@@ -1291,7 +1292,7 @@ void UIViewInspector::addColorBitmapsToColorMenu (COptionMenu* menu, IUIDescript
 	while (it != items->end ())
 	{
 		CMenuItem* item = (*it);
-		
+
 		if (desc->getColor (item->getTitle (), color))
 		{
 			COffscreenContext* context = COffscreenContext::create (getFrame (), size, size);
