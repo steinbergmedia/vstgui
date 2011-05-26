@@ -1542,7 +1542,7 @@ CView* UIViewInspector::createAttributesView (CCoord width)
 	else
 	{
 		scrollView->setContainerSize (CRect (0, 0, 0, 0));
-		width = scrollView->getWidth ();
+		width = scrollView->getWidth () - scrollView->getScrollbarWidth ();
 		size.setWidth (width);
 		attributeViews.clear ();
 		scrollView->removeAll ();

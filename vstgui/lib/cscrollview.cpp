@@ -117,8 +117,16 @@ void CScrollContainer::setScrollOffset (CPoint newOffset, bool redraw)
 {
 	newOffset.x = floor (newOffset.x + 0.5);
 	newOffset.y = floor (newOffset.y + 0.5);
-	if (newOffset.x < containerSize.left - (containerSize.width () - getViewSize ().width ()))
-		newOffset.x = containerSize.left - (containerSize.width () - getViewSize ().width ());
+	if (containerSize.getWidth () >= getViewSize ().width ())
+	{
+		if (newOffset.x < containerSize.left - (containerSize.width () - getViewSize ().width ()))
+			newOffset.x = containerSize.left - (containerSize.width () - getViewSize ().width ());
+	}
+	else
+	{
+		if (newOffset.x < containerSize.left - containerSize.width ())
+			newOffset.x = containerSize.left - containerSize.width ();
+	}
 	if (newOffset.x > containerSize.right)
 		newOffset.x = containerSize.right;
 	if (newOffset.y < containerSize.top)
