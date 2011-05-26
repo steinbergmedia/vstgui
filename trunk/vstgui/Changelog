@@ -1,3 +1,8 @@
+2011-05-26 arne
+
+	* fix for CView::setVisible(false) not invalidating the view area
+	* fix another scroll view issue
+
 2011-05-22 arne
 
 	* make CView::getViewSize() non virtual

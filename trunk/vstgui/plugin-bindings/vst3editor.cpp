@@ -167,6 +167,11 @@ public:
 		}
 	}
 	
+	bool containsControl (CControl* control)
+	{
+		return std::find (controls.begin (), controls.end (), control) != controls.end ();
+	}
+	
 	void PLUGIN_API update (FUnknown* changedUnknown, Steinberg::int32 message)
 	{
 		if (message == IDependent::kChanged && parameter)
@@ -637,7 +642,7 @@ Steinberg::tresult PLUGIN_API VST3Editor::findParameter (Steinberg::int32 xPos, 
 		if (control)
 		{
 			ParameterChangeListener* pcl = getParameterChangeListener (control->getTag ());
-			if (pcl && pcl->getParameter ())
+			if (pcl && pcl->containsControl (control) && pcl->getParameter ())
 			{
 				if (delegate && delegate->isPrivateParameter (pcl->getParameterID ()))
 					return Steinberg::kResultFalse;
