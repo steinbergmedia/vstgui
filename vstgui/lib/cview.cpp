@@ -552,10 +552,15 @@ void CView::setVisible (bool state)
 	if ((viewFlags & kVisible) ? true : false != state)
 	{
 		if (state)
+		{
 			viewFlags |= kVisible;
+			invalid ();
+		}
 		else
+		{
+			invalid ();
 			viewFlags &= ~kVisible;
-		invalid ();
+		}
 	}
 }
 

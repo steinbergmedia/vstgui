@@ -266,7 +266,7 @@ void CSlider::draw (CDrawContext *pContext)
 	
 	if (drawStyle != 0)
 	{
-		pContext->setDrawMode (kAntiAliasing);
+		pContext->setDrawMode (kAliasing);
 		if (drawStyle & kDrawFrame || drawStyle & kDrawBack)
 		{
 			pContext->setFrameColor (frameColor);
@@ -278,6 +278,7 @@ void CSlider::draw (CDrawContext *pContext)
 				d = kDrawStroked;
 			pContext->drawRect (getViewSize (), d);
 		}
+		pContext->setDrawMode (kAntiAliasing);
 		if (drawStyle & kDrawValue)
 		{
 			CRect r (getViewSize ());
