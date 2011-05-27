@@ -86,6 +86,7 @@ CViewContainer::CViewContainer (const CRect &rect, CFrame* pParent, CBitmap* pBa
 	backgroundOffset (0, 0);
 	setBackground (pBackground);
 	backgroundColor = kBlackCColor;
+	setAutosizingEnabled (true);
 }
 
 //-----------------------------------------------------------------------------
@@ -122,6 +123,15 @@ void CViewContainer::parentSizeChanged ()
 }
 
 //-----------------------------------------------------------------------------
+void CViewContainer::setAutosizingEnabled (bool state)
+{
+	if (state)
+		viewFlags |= kAutosizeSubviews;
+	else
+		viewFlags &= ~kAutosizeSubviews;
+}
+
+//-----------------------------------------------------------------------------
 /**
  * @param rect the new size of the container
  * @param invalid the views to dirty
@@ -134,68 +144,70 @@ void CViewContainer::setViewSize (const CRect &rect, bool invalid)
 	CRect oldSize (getViewSize ());
 	CView::setViewSize (rect, invalid);
 
-	CCoord widthDelta = rect.getWidth () - oldSize.getWidth ();
-	CCoord heightDelta = rect.getHeight () - oldSize.getHeight ();
-
-	if (widthDelta != 0 || heightDelta != 0)
+	if (getAutosizingEnabled ())
 	{
-		int32_t numSubviews = getNbViews ();
-		int32_t counter = 0;
-		bool treatAsColumn = (getAutosizeFlags () & kAutosizeColumn) != 0;
-		bool treatAsRow = (getAutosizeFlags () & kAutosizeRow) != 0;
-		FOREACHSUBVIEW
-			int32_t autosize = pV->getAutosizeFlags ();
-			CRect viewSize (pV->getViewSize ());
-			CRect mouseSize (pV->getMouseableArea ());
-			if (treatAsColumn)
-			{
-				if (counter)
+		CCoord widthDelta = rect.getWidth () - oldSize.getWidth ();
+		CCoord heightDelta = rect.getHeight () - oldSize.getHeight ();
+
+		if (widthDelta != 0 || heightDelta != 0)
+		{
+			int32_t numSubviews = getNbViews ();
+			int32_t counter = 0;
+			bool treatAsColumn = (getAutosizeFlags () & kAutosizeColumn) != 0;
+			bool treatAsRow = (getAutosizeFlags () & kAutosizeRow) != 0;
+			FOREACHSUBVIEW
+				int32_t autosize = pV->getAutosizeFlags ();
+				CRect viewSize (pV->getViewSize ());
+				CRect mouseSize (pV->getMouseableArea ());
+				if (treatAsColumn)
 				{
-					viewSize.offset (counter * (widthDelta / (numSubviews)), 0);
-					mouseSize.offset (counter * (widthDelta / (numSubviews)), 0);
+					if (counter)
+					{
+						viewSize.offset (counter * (widthDelta / (numSubviews)), 0);
+						mouseSize.offset (counter * (widthDelta / (numSubviews)), 0);
+					}
+					viewSize.setWidth (viewSize.getWidth () + (widthDelta / (numSubviews)));
+					mouseSize.setWidth (mouseSize.getWidth () + (widthDelta / (numSubviews)));
 				}
-				viewSize.setWidth (viewSize.getWidth () + (widthDelta / (numSubviews)));
-				mouseSize.setWidth (mouseSize.getWidth () + (widthDelta / (numSubviews)));
-			}
-			else if (widthDelta != 0 && autosize & kAutosizeRight)
-			{
-				viewSize.right += widthDelta;
-				mouseSize.right += widthDelta;
-				if (!(autosize & kAutosizeLeft))
+				else if (widthDelta != 0 && autosize & kAutosizeRight)
 				{
-					viewSize.left += widthDelta;
-					mouseSize.left += widthDelta;
+					viewSize.right += widthDelta;
+					mouseSize.right += widthDelta;
+					if (!(autosize & kAutosizeLeft))
+					{
+						viewSize.left += widthDelta;
+						mouseSize.left += widthDelta;
+					}
 				}
-			}
-			if (treatAsRow)
-			{
-				if (counter)
+				if (treatAsRow)
 				{
-					viewSize.offset (0, counter * (heightDelta / (numSubviews)));
-					mouseSize.offset (0, counter * (heightDelta / (numSubviews)));
+					if (counter)
+					{
+						viewSize.offset (0, counter * (heightDelta / (numSubviews)));
+						mouseSize.offset (0, counter * (heightDelta / (numSubviews)));
+					}
+					viewSize.setHeight (viewSize.getHeight () + (heightDelta / (numSubviews)));
+					mouseSize.setHeight (mouseSize.getHeight () + (heightDelta / (numSubviews)));
 				}
-				viewSize.setHeight (viewSize.getHeight () + (heightDelta / (numSubviews)));
-				mouseSize.setHeight (mouseSize.getHeight () + (heightDelta / (numSubviews)));
-			}
-			else if (heightDelta != 0 && autosize & kAutosizeBottom)
-			{
-				viewSize.bottom += heightDelta;
-				mouseSize.bottom += heightDelta;
-				if (!(autosize & kAutosizeTop))
+				else if (heightDelta != 0 && autosize & kAutosizeBottom)
 				{
-					viewSize.top += heightDelta;
-					mouseSize.top += heightDelta;
+					viewSize.bottom += heightDelta;
+					mouseSize.bottom += heightDelta;
+					if (!(autosize & kAutosizeTop))
+					{
+						viewSize.top += heightDelta;
+						mouseSize.top += heightDelta;
+					}
 				}
-			}
-			if (viewSize != pV->getViewSize ())
-			{
-				pV->setViewSize (viewSize);
-				pV->setMouseableArea (mouseSize);
-			}
-			counter++;
-		ENDFOREACHSUBVIEW
+				if (viewSize != pV->getViewSize ())
+				{
+					pV->setViewSize (viewSize);
+					pV->setMouseableArea (mouseSize);
+				}
+				counter++;
+			ENDFOREACHSUBVIEW
+		}
 	}
-	
 	parentSizeChanged ();
 }
 

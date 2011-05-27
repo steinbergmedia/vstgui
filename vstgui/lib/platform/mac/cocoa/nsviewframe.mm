@@ -82,6 +82,19 @@ static CocoaDragContainer* gCocoaDragContainer = 0;
 @end
 
 //------------------------------------------------------------------------------------
+HIDDEN static void mapModifiers (NSInteger nsEventModifiers, CButtonState& buttonState)
+{
+	if (nsEventModifiers & NSShiftKeyMask)
+		buttonState |= kShift;
+	if (nsEventModifiers & NSCommandKeyMask)
+		buttonState |= kControl;
+	if (nsEventModifiers & NSAlternateKeyMask)
+		buttonState |= kAlt;
+	if (nsEventModifiers & NSControlKeyMask)
+		buttonState |= kApple;
+}
+
+//------------------------------------------------------------------------------------
 HIDDEN bool nsViewGetCurrentMouseLocation (void* nsView, CPoint& where)
 {
 	NSView* view = (NSView*)nsView;
@@ -230,14 +243,7 @@ static BOOL VSTGUI_NSView_onMouseDown (id self, SEL _cmd, NSEvent* theEvent)
 	NSUInteger modifiers = [theEvent modifierFlags];
 	NSPoint nsPoint = [theEvent locationInWindow];
 	nsPoint = [self convertPoint:nsPoint fromView:nil];
-	if (modifiers & NSShiftKeyMask)
-		buttons |= kShift;
-	if (modifiers & NSCommandKeyMask)
-		buttons |= kControl;
-	if (modifiers & NSAlternateKeyMask)
-		buttons |= kAlt;
-	if (modifiers & NSControlKeyMask)
-		buttons |= kApple;
+	mapModifiers (modifiers, buttons);
 	if ([theEvent clickCount] > 1)
 		buttons |= kDoubleClick;
 	CPoint p = pointFromNSPoint (nsPoint);
@@ -256,14 +262,7 @@ static BOOL VSTGUI_NSView_onMouseUp (id self, SEL _cmd, NSEvent* theEvent)
 	NSUInteger modifiers = [theEvent modifierFlags];
 	NSPoint nsPoint = [theEvent locationInWindow];
 	nsPoint = [self convertPoint:nsPoint fromView:nil];
-	if (modifiers & NSShiftKeyMask)
-		buttons |= kShift;
-	if (modifiers & NSCommandKeyMask)
-		buttons |= kControl;
-	if (modifiers & NSAlternateKeyMask)
-		buttons |= kAlt;
-	if (modifiers & NSControlKeyMask)
-		buttons |= kApple;
+	mapModifiers (modifiers, buttons);
 	CPoint p = pointFromNSPoint (nsPoint);
 	CMouseEventResult result = _vstguiframe->platformOnMouseUp (p, buttons);
 	return (result != kMouseEventNotHandled) ? YES : NO;
@@ -280,14 +279,7 @@ static BOOL VSTGUI_NSView_onMouseMoved (id self, SEL _cmd, NSEvent* theEvent)
 	NSUInteger modifiers = [theEvent modifierFlags];
 	NSPoint nsPoint = [theEvent locationInWindow];
 	nsPoint = [self convertPoint:nsPoint fromView:nil];
-	if (modifiers & NSShiftKeyMask)
-		buttons |= kShift;
-	if (modifiers & NSCommandKeyMask)
-		buttons |= kControl;
-	if (modifiers & NSAlternateKeyMask)
-		buttons |= kAlt;
-	if (modifiers & NSControlKeyMask)
-		buttons |= kApple;
+	mapModifiers (modifiers, buttons);
 	CPoint p = pointFromNSPoint (nsPoint);
 	CMouseEventResult result = _vstguiframe->platformOnMouseMoved (p, buttons);
 	return (result != kMouseEventNotHandled) ? YES : NO;
@@ -384,14 +376,7 @@ static void VSTGUI_NSView_scrollWheel (id self, SEL _cmd, NSEvent* theEvent)
 	NSUInteger modifiers = [theEvent modifierFlags];
 	NSPoint nsPoint = [theEvent locationInWindow];
 	nsPoint = [self convertPoint:nsPoint fromView:nil];
-	if (modifiers & NSShiftKeyMask)
-		buttons |= kShift;
-	if (modifiers & NSCommandKeyMask)
-		buttons |= kControl;
-	if (modifiers & NSAlternateKeyMask)
-		buttons |= kAlt;
-	if (modifiers & NSControlKeyMask)
-		buttons |= kApple;
+	mapModifiers (modifiers, buttons);
 	CPoint p = pointFromNSPoint (nsPoint);
 	if ([theEvent deltaX])
 		_vstguiframe->platformOnMouseWheel (p, kMouseWheelAxisX, [theEvent deltaX], buttons);
@@ -412,14 +397,7 @@ static void VSTGUI_NSView_mouseEntered (id self, SEL _cmd, NSEvent* theEvent)
 	nsPoint = [[self window] convertScreenToBase:nsPoint];
 
 	nsPoint = [self convertPoint:nsPoint fromView:nil];
-	if (modifiers & NSShiftKeyMask)
-		buttons |= kShift;
-	if (modifiers & NSCommandKeyMask)
-		buttons |= kControl;
-	if (modifiers & NSAlternateKeyMask)
-		buttons |= kAlt;
-	if (modifiers & NSControlKeyMask)
-		buttons |= kApple;
+	mapModifiers (modifiers, buttons);
 	CPoint p = pointFromNSPoint (nsPoint);
 	_vstguiframe->platformOnMouseMoved (p, buttons);
 }
@@ -437,14 +415,7 @@ static void VSTGUI_NSView_mouseExited (id self, SEL _cmd, NSEvent* theEvent)
 	nsPoint = [[self window] convertScreenToBase:nsPoint];
 
 	nsPoint = [self convertPoint:nsPoint fromView:nil];
-	if (modifiers & NSShiftKeyMask)
-		buttons |= kShift;
-	if (modifiers & NSCommandKeyMask)
-		buttons |= kControl;
-	if (modifiers & NSAlternateKeyMask)
-		buttons |= kAlt;
-	if (modifiers & NSControlKeyMask)
-		buttons |= kApple;
+	mapModifiers (modifiers, buttons);
 	CPoint p = pointFromNSPoint (nsPoint);
 	_vstguiframe->platformOnMouseExited (p, buttons);
 }
@@ -774,6 +745,31 @@ bool NSViewFrame::getCurrentMousePosition (CPoint& mousePosition) const
 //-----------------------------------------------------------------------------
 bool NSViewFrame::getCurrentMouseButtons (CButtonState& buttons) const
 {
+#if MAC_OS_X_VERSION_MIN_REQUIRED > MAC_OS_X_VERSION_10_5
+	NSInteger modifiers = [NSEvent modifierFlags];
+	mapModifiers (modifiers, buttons);
+
+	NSInteger mouseButtons = [NSEvent pressedMouseButtons];
+	if (mouseButtons & (1 << 0))
+	{
+		if (mouseButtons == (1 << 0) && modifiers & NSControlKeyMask)
+		{
+			buttons = kRButton;
+			return true;
+		}
+		else
+			buttons |= kLButton;
+	}
+	if (mouseButtons & (1 << 1))
+		buttons |= kRButton;
+	if (mouseButtons & (1 << 2))
+		buttons |= kMButton;
+	if (mouseButtons & (1 << 3))
+		buttons |= kButton4;
+	if (mouseButtons & (1 << 4))
+		buttons |= kButton5;
+	
+#else
 	UInt32 state = GetCurrentButtonState ();
 	if (state == kEventMouseButtonPrimary)
 		buttons |= kLButton;
@@ -801,7 +797,7 @@ bool NSViewFrame::getCurrentMouseButtons (CButtonState& buttons) const
 		buttons &= ~(kApple | kLButton);
 		buttons |= kRButton;
 	}
-
+#endif
 	return true;
 }
 

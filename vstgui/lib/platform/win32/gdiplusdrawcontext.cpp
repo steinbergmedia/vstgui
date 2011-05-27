@@ -169,9 +169,9 @@ void GdiplusDrawContext::fillLinearGradient (CGraphicsPath* _path, const CGradie
 		}
 
 		CColor startColor (gradient.getColor1 ());
-		startColor.alpha *= currentState.globalAlpha;
+		startColor.alpha = (int8_t)(float)(startColor.alpha * currentState.globalAlpha);
 		CColor endColor (gradient.getColor2 ());
-		endColor.alpha *= currentState.globalAlpha;
+		endColor.alpha = (int8_t)(float)(endColor.alpha * currentState.globalAlpha);
 		Gdiplus::PointF c1p ((Gdiplus::REAL)(startPoint.x-getOffset ().x), (Gdiplus::REAL)(startPoint.y-getOffset ().y));
 		Gdiplus::PointF c2p ((Gdiplus::REAL)(endPoint.x-getOffset ().x), (Gdiplus::REAL)(endPoint.y-getOffset ().y));
 		Gdiplus::LinearGradientBrush brush (c1p, c2p, createGdiPlusColor (startColor), createGdiPlusColor (endColor));

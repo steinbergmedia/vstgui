@@ -430,6 +430,8 @@ bool COptionMenu::popup (CFrame* frame, const CPoint& frameLocation)
 	if (isAttached ())
 		return false;
 	CView* oldFocusView = frame->getFocusView ();
+	CBaseObjectGuard ofvg (oldFocusView);
+
 	CRect size (frameLocation, CPoint (0, 0));
 	setViewSize (size);
 	frame->addView (this);

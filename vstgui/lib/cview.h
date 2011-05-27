@@ -353,7 +353,7 @@ public:
 	//@{
 	virtual void onIdle () {}																	///< called on idle when view wants idle
 	void setWantsIdle (bool state);																///< enable/disable onIdle() callback
-	bool wantsIdle () const { return viewFlags & kWantsIdle; }									///< returns if the view wants idle callback or not
+	bool wantsIdle () const { return (viewFlags & kWantsIdle) ? true : false; }									///< returns if the view wants idle callback or not
 	static int32_t idleRate;																	///< global idle rate in Hz, defaults to 30 Hz
 	//@}
 
@@ -382,6 +382,7 @@ protected:
 		kVisible				= 1 << 4,
 		kDirty					= 1 << 5,
 		kWantsIdle				= 1 << 6,
+		kLastCViewFlag			= 6
 	};
 	int32_t viewFlags;
 	
