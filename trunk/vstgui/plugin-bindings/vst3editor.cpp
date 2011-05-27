@@ -47,6 +47,7 @@
 #include <list>
 #include <sstream>
 #include <assert.h>
+#include <algorithm>
 
 #define VST3_SUPPORTS_CONTEXTMENU	(defined(kVstVersionMajor) && defined(kVstVersionMinor) && (kVstVersionMajor > 3 || (kVstVersionMajor == 3 && kVstVersionMinor > 1)))
 #if VST3_SUPPORTS_CONTEXTMENU

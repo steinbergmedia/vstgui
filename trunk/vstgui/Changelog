@@ -1,3 +1,8 @@
+2011-05-27 arne
+
+	* fix a crash when resetting the focus view after a menu popup when that view was removed
+	* add CViewContainer method to enable/disable autosizing
+
 2011-05-26 arne
 
 	* fix for CView::setVisible(false) not invalidating the view area
