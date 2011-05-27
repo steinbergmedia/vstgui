@@ -94,7 +94,12 @@ CFrame::~CFrame ()
 	if (pAnimator)
 		pAnimator->forget ();
 	if (pMouseObservers)
+	{
+	#if DEBUG
+		DebugPrint ("Warning: Mouse Observers are not cleaned up correctly.\n If you register a mouse oberver you must also unregister it !\n");
+	#endif
 		delete pMouseObservers;
+	}
 
 	clearMouseViews (CPoint (0, 0), 0, false);
 
@@ -842,7 +847,10 @@ void CFrame::setFocusView (CView *pView)
 	recursion = true;
 
 	CView *pOldFocusView = pFocusView;
-	pFocusView = pView;
+	if (pView == 0  || (pView && pView->isAttached () == false))
+		pFocusView = 0;
+	else
+		pFocusView = pView;
 	if (pFocusView && pFocusView->wantsFocus ())
 	{
 		pFocusView->invalid ();
@@ -1131,11 +1139,9 @@ void CFrame::callMouseObserverMouseEntered (CView* view)
 {
 	if (pMouseObservers)
 	{
-		std::list<IMouseObserver*>::const_iterator it = pMouseObservers->begin ();
-		while (it != pMouseObservers->end ())
+		for (std::list<IMouseObserver*>::const_iterator it = pMouseObservers->begin (); it != pMouseObservers->end (); it++)
 		{
 			(*it)->onMouseEntered (view, this);
-			it++;
 		}
 	}
 }
@@ -1145,11 +1151,9 @@ void CFrame::callMouseObserverMouseExited (CView* view)
 {
 	if (pMouseObservers)
 	{
-		std::list<IMouseObserver*>::const_iterator it = pMouseObservers->begin ();
-		while (it != pMouseObservers->end ())
+		for (std::list<IMouseObserver*>::const_iterator it = pMouseObservers->begin (); it != pMouseObservers->end (); it++)
 		{
 			(*it)->onMouseExited (view, this);
-			it++;
 		}
 	}
 }
@@ -1160,13 +1164,11 @@ CMouseEventResult CFrame::callMouseObserverMouseDown (const CPoint& where, const
 	CMouseEventResult result = kMouseEventNotHandled;
 	if (pMouseObservers)
 	{
-		std::list<IMouseObserver*>::const_iterator it = pMouseObservers->begin ();
-		while (it != pMouseObservers->end ())
+		for (std::list<IMouseObserver*>::const_iterator it = pMouseObservers->begin (); it != pMouseObservers->end (); it++)
 		{
 			CMouseEventResult result2 = (*it)->onMouseDown (this, where, buttons);
 			if (result2 == kMouseEventHandled)
 				result = kMouseEventHandled;
-			it++;
 		}
 	}
 	return result;
@@ -1178,13 +1180,11 @@ CMouseEventResult CFrame::callMouseObserverMouseMoved (const CPoint& where, cons
 	CMouseEventResult result = kMouseEventNotHandled;
 	if (pMouseObservers)
 	{
-		std::list<IMouseObserver*>::const_iterator it = pMouseObservers->begin ();
-		while (it != pMouseObservers->end ())
+		for (std::list<IMouseObserver*>::const_iterator it = pMouseObservers->begin (); it != pMouseObservers->end (); it++)
 		{
 			CMouseEventResult result2 = (*it)->onMouseMoved (this, where, buttons);
 			if (result2 == kMouseEventHandled)
 				result = kMouseEventHandled;
-			it++;
 		}
 	}
 	return result;

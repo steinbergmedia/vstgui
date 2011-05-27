@@ -391,8 +391,10 @@ CColorChooser::CColorChooser (IColorChooserDelegate* delegate, const CColor& ini
 	newSize.bottom = r.bottom+1;
 	newSize.right = colorView->getViewSize ().right+2;
 
+	setAutosizingEnabled (false);
 	setViewSize (newSize);	
 	setMouseableArea (newSize);
+	setAutosizingEnabled (true);
 
 	r = colorView->getViewSize ();
 	r.offset (0, r.bottom + margin);

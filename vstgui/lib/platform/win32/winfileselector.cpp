@@ -40,6 +40,7 @@
 #include "win32frame.h"
 #include <shobjidl.h>
 #include <Commdlg.h>
+#include <string>
 
 #define IID_PPV_ARG(IType, ppType) IID_##IType, (void**)ppType
 
