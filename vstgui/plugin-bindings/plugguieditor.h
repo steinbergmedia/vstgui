@@ -2,7 +2,7 @@
 // VST Plug-Ins SDK
 // VSTGUI: Graphical User Interface Framework for VST plugins
 //
-// Version 3.6
+// Version 4.0
 //
 //-----------------------------------------------------------------------------
 //
@@ -44,10 +44,10 @@
 //----------------------------------------------------------------------
 struct ERect
 {
-	short top;
-	short left;
-	short bottom;
-	short right;
+	int16_t top;
+	int16_t left;
+	int16_t bottom;
+	int16_t right;
 };
 
 //-----------------------------------------------------------------------------
@@ -61,18 +61,18 @@ public :
 
 	virtual ~PluginGUIEditor ();
 
-	virtual void setParameter (long index, float value) {} 
-	virtual long getRect (ERect **ppRect);
+	virtual void setParameter (int32_t index, float value) {} 
+	virtual bool getRect (ERect **ppRect);
 	virtual bool open (void *ptr);
 	virtual void close () { systemWindow = 0; }
 	virtual void idle ();
 	virtual void draw (ERect *pRect);
 
 	// wait (in ms)
-	void wait (unsigned long ms);
+	void wait (uint32_t ms);
 
 	// get the current time (in ms)
-	unsigned long getTicks ();
+	uint32_t getTicks ();
 
 	// feedback to appli.
 	virtual void doIdleStuff ();
@@ -81,11 +81,11 @@ public :
 	void *getEffect () { return effect; }
 
 	// get version of this VSTGUI
-	long getVstGuiVersion () { return (VSTGUI_VERSION_MAJOR << 16) + VSTGUI_VERSION_MINOR; }
+	int32_t getVstGuiVersion () { return (VSTGUI_VERSION_MAJOR << 16) + VSTGUI_VERSION_MINOR; }
 
 	// set/get the knob mode
-	virtual long setKnobMode (int val);
-	virtual long getKnobMode () const { return knobMode; }
+	virtual int32_t setKnobMode (int32_t val);
+	virtual int32_t getKnobMode () const { return knobMode; }
 
 	// get the CFrame object
 	#if USE_NAMESPACE
@@ -94,8 +94,8 @@ public :
 	CFrame *getFrame () { return frame; }
 	#endif
 
-	virtual void beginEdit (long index) {}
-	virtual void endEdit (long index) {}
+	virtual void beginEdit (int32_t index) {}
+	virtual void endEdit (int32_t index) {}
 
 //---------------------------------------
 protected:
@@ -105,10 +105,10 @@ protected:
 	void* systemWindow;
 
 private:
-	unsigned long lLastTicks;
+	uint32_t lLastTicks;
 	bool inIdleStuff;
 
-	static long knobMode;
+	static int32_t knobMode;
 };
 
 #endif

@@ -1,3 +1,7 @@
+2011-06-03 arne
+
+	* rearrange some code in AEffGUIEditor and PlugGUIEditor and make it work on Mac OS X 64 bit
+
 2011-05-27 arne
 
 	* fix a crash when resetting the focus view after a menu popup when that view was removed

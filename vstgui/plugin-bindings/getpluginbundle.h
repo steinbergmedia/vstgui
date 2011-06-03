@@ -2,7 +2,7 @@
 // VST Plug-Ins SDK
 // VSTGUI: Graphical User Interface Framework for VST plugins
 //
-// Version 4.0
+// Version 4
 //
 //-----------------------------------------------------------------------------
 //
@@ -34,78 +34,53 @@
 // OF THE POSSIBILITY OF SUCH DAMAGE.
 //-----------------------------------------------------------------------------
 
-#ifndef __aeffguieditor__
-#define __aeffguieditor__
-
-#ifndef __aeffeditor__
-#include "public.sdk/source/vst2.x/aeffeditor.h"
-#endif
-
-#ifndef __audioeffectx__
-#include "audioeffectx.h"
-#endif
-
-#ifndef __vstgui__
-#include "vstgui.h"
-#endif
+#ifndef __getpluginbundle__
+#define __getpluginbundle__
 
 //-----------------------------------------------------------------------------
-// AEffGUIEditor Declaration
+/// @cond ignore
 //-----------------------------------------------------------------------------
-class AEffGUIEditor : public AEffEditor, public VSTGUIEditorInterface
+#if MAC
+#include <dlfcn.h>
+#include <CoreFoundation/CFBundle.h>
+#include <string>
+
+//-----------------------------------------------------------------------------
+static CFBundleRef GetPluginBundle ()
 {
-public :
-
-	AEffGUIEditor (void* pEffect);
-
-	virtual ~AEffGUIEditor ();
-
-	virtual void setParameter (VstInt32 index, float value) {} 
-	virtual bool getRect (ERect** ppRect);
-	virtual bool open (void* ptr);
-	virtual void idle ();
-	virtual void draw (ERect* pRect);
-
-	#if VST_2_1_EXTENSIONS
-	virtual bool onKeyDown (VstKeyCode& keyCode);
-	virtual bool onKeyUp (VstKeyCode& keyCode);
-	#endif
-
-	// wait (in ms)
-	void wait (uint32_t ms);
-
-	// get the current time (in ms)
-	uint32_t getTicks ();
-
-	// feedback to appli.
-	virtual void doIdleStuff ();
-
-	// get the effect attached to this editor
-	AudioEffect* getEffect () { return effect; }
-
-	// get version of this VSTGUI
-	int32_t getVstGuiVersion () { return (VSTGUI_VERSION_MAJOR << 16) + VSTGUI_VERSION_MINOR; }
-
-	// set/get the knob mode
-	virtual bool setKnobMode (int32_t val);
-	virtual int32_t getKnobMode () const { return knobMode; }
-
-	virtual bool onWheel (float distance);
-
-#if VST_2_1_EXTENSIONS
-	virtual void beginEdit (int32_t index) { ((AudioEffectX*)effect)->beginEdit (index); }
-	virtual void endEdit (int32_t index)   { ((AudioEffectX*)effect)->endEdit (index); }
-#endif
-
-//---------------------------------------
-protected:
-	ERect   rect;
-
-private:
-	uint32_t lLastTicks;
-	bool inIdleStuff;
-
-	static int32_t knobMode;
-};
+	CFBundleRef pluginBundle = 0;
+	Dl_info info;
+	if (dladdr ((const void*)GetPluginBundle, &info))
+	{
+		if (info.dli_fname)
+		{
+			std::string name;
+			name.assign (info.dli_fname);
+			for (int i = 0; i < 3; i++)
+			{
+				int delPos = name.find_last_of ('/');
+				if (delPos == -1)
+				{
+					fprintf (stdout, "Could not determine bundle location.\n");
+					return 0; // unexpected
+				}
+				name.erase (delPos, name.length () - delPos);
+			}
+			CFURLRef bundleUrl = CFURLCreateFromFileSystemRepresentation (0, (const UInt8*)name.c_str (), name.length (), true);
+			if (bundleUrl)
+			{
+				pluginBundle = CFBundleCreate (0, bundleUrl);
+				CFRelease (bundleUrl);
+			}
+		}
+	}
+	return pluginBundle;
+}
 
 #endif
+
+//-----------------------------------------------------------------------------
+/// @endcond
+//-----------------------------------------------------------------------------
+
+#endif // __getpluginbundle__
