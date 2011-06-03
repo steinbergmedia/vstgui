@@ -169,7 +169,7 @@ void PluginGUIEditor::doIdleStuff ()
 	if (PeekMessage (&windowsMessage, NULL, WM_PAINT, WM_PAINT, PM_REMOVE))
 		DispatchMessage (&windowsMessage);
 
-	#elif MAC
+	#elif MAC && !__LP64__
 	EventRef event;
 	EventTypeSpec eventTypes[] = { {kEventClassWindow, kEventWindowUpdate}, {kEventClassWindow, kEventWindowDrawContent} };
 	if (ReceiveNextEvent (GetEventTypeCount (eventTypes), eventTypes, kEventDurationNoWait, true, &event) == noErr)
@@ -193,11 +193,9 @@ long PluginGUIEditor::getRect (ERect **ppErect)
 #if MAC
 // -----------------------------------------------------------------------------
 // -----------------------------------------------------------------------------
-extern "C" {
-#include <mach-o/dyld.h>
-#include <mach-o/ldsyms.h>
-}
+#include <dlfcn.h>
 #include <CoreFoundation/CFBundle.h>
+#include <string>
 
 BEGIN_NAMESPACE_VSTGUI
 
@@ -220,57 +218,34 @@ void InitMachOLibrary ()
 void ExitMachOLibrary () {}
 #else
 // -----------------------------------------------------------------------------
-static CFBundleRef _CFXBundleCreateFromImageName (CFAllocatorRef allocator, const char* image_name);
-static CFBundleRef _CFXBundleCreateFromImageName (CFAllocatorRef allocator, const char* image_name)
-{
-	CFURLRef myBundleExecutableURL = CFURLCreateFromFileSystemRepresentation (allocator, (const unsigned char*)image_name, strlen (image_name), false);
-	if (myBundleExecutableURL == 0)
-		return 0;
-		
-	CFURLRef myBundleContentsMacOSURL = CFURLCreateCopyDeletingLastPathComponent (allocator, myBundleExecutableURL); // Delete Versions/Current/Executable
-	CFRelease (myBundleExecutableURL);
-	if (myBundleContentsMacOSURL == 0)
-		return 0;
-
-	CFURLRef myBundleContentsURL = CFURLCreateCopyDeletingLastPathComponent (allocator, myBundleContentsMacOSURL); // Delete Current
-	CFRelease (myBundleContentsMacOSURL);
-	if (myBundleContentsURL == 0)
-		return 0;
-		
-	CFURLRef theBundleURL = CFURLCreateCopyDeletingLastPathComponent (allocator, myBundleContentsURL); // Delete Versions
-	CFRelease (myBundleContentsURL);
-	if (theBundleURL == 0)
-		return 0;
-
-	CFBundleRef result = CFBundleCreate (allocator, theBundleURL);
-	CFRelease (theBundleURL);
-
-	return result;
-}
-
-// -----------------------------------------------------------------------------
 void InitMachOLibrary ();
 void InitMachOLibrary ()
 {
-	const mach_header* header = &_mh_bundle_header;
-	if (header == 0)
-		return;
-
-	const char* imagename = 0;
-	/* determine the image name, TODO: ther have to be a better way */
-	int cnt = _dyld_image_count();
-	for (int idx1 = 1; idx1 < cnt; idx1++) 
+	Dl_info info;
+	if (dladdr ((const void*)InitMachOLibrary, &info))
 	{
-		if (_dyld_get_image_header(idx1) == header)
+		if (info.dli_fname)
 		{
-			imagename = _dyld_get_image_name(idx1);
-			break;
+			std::string name;
+			name.assign (info.dli_fname);
+			for (int i = 0; i < 3; i++)
+			{
+				int delPos = name.find_last_of ('/');
+				if (delPos == -1)
+				{
+					fprintf (stdout, "Could not determine bundle location.\n");
+					return; // unexpected
+				}
+				name.erase (delPos, name.length () - delPos);
+			}
+			CFURLRef bundleUrl = CFURLCreateFromFileSystemRepresentation (0, (const UInt8*)name.c_str (), name.length (), true);
+			if (bundleUrl)
+			{
+				VSTGUI_BUNDLEREF = CFBundleCreate (0, bundleUrl);
+				CFRelease (bundleUrl);
+			}
 		}
 	}
-	if (imagename == 0)
-	return;
-	/* get the bundle of a header, TODO: ther have to be a better way */
-	VSTGUI_BUNDLEREF = _CFXBundleCreateFromImageName (NULL, imagename);
 }
 
 // -----------------------------------------------------------------------------
