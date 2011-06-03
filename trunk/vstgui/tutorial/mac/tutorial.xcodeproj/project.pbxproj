@@ -67,6 +67,7 @@
 		F44864EA10AEEEC500D7EFBA /* vstgui_mac.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = vstgui_mac.mm; path = ../../vstgui_mac.mm; sourceTree = SOURCE_ROOT; };
 		F47F241C11D4C2F600C94CAF /* Accelerate.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Accelerate.framework; path = /System/Library/Frameworks/Accelerate.framework; sourceTree = "<absolute>"; };
 		F47F241F11D4C30900C94CAF /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = /System/Library/Frameworks/Cocoa.framework; sourceTree = "<absolute>"; };
+		F4AB00B31398D19A0067538F /* getpluginbundle.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = getpluginbundle.h; path = "../../plugin-bindings/getpluginbundle.h"; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -157,6 +158,7 @@
 			children = (
 				F405CDC10B048736008E3886 /* aeffguieditor.cpp */,
 				F405CDC20B048736008E3886 /* aeffguieditor.h */,
+				F4AB00B31398D19A0067538F /* getpluginbundle.h */,
 				F44864EA10AEEEC500D7EFBA /* vstgui_mac.mm */,
 			);
 			name = vstgui;
@@ -224,7 +226,14 @@
 			isa = PBXProject;
 			buildConfigurationList = 4FADC23708B4156C00ABE55E /* Build configuration list for PBXProject "tutorial" */;
 			compatibilityVersion = "Xcode 2.4";
+			developmentRegion = English;
 			hasScannedForEncodings = 1;
+			knownRegions = (
+				English,
+				Japanese,
+				French,
+				German,
+			);
 			mainGroup = 089C166AFE841209C02AAC07 /* tutorial */;
 			projectDirPath = "";
 			projectRoot = "";
