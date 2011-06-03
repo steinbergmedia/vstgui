@@ -2,7 +2,7 @@
 // VST Plug-Ins SDK
 // VSTGUI: Graphical User Interface Framework for VST plugins
 //
-// Version 3.5       Date : 30/06/04
+// Version 4.0
 //
 //-----------------------------------------------------------------------------
 //
@@ -47,11 +47,13 @@
 #define kIdleRateMin   4 // minimum time between 2 idles in ms
 
 #if WINDOWS
-static struct tagMSG windowsMessage;
+#include <Windows.h>
 #endif
 
 #if MAC
 #include <Carbon/Carbon.h>
+static void InitMachOLibrary ();
+static void ExitMachOLibrary ();
 #endif
 
 //-----------------------------------------------------------------------------
@@ -69,7 +71,6 @@ AEffGUIEditor::AEffGUIEditor (void* pEffect)
 	OleInitialize (0);
 	#endif
 	#if MAC
-	void InitMachOLibrary ();
 	InitMachOLibrary ();
 	#endif
 }
@@ -81,7 +82,6 @@ AEffGUIEditor::~AEffGUIEditor ()
 	OleUninitialize ();
 	#endif
 	#if MAC
-	void ExitMachOLibrary ();
 	ExitMachOLibrary ();
 	#endif
 }
@@ -111,7 +111,7 @@ void AEffGUIEditor::draw (ERect* ppErect)
 			r (ppErect->left, ppErect->top, ppErect->right, ppErect->bottom);
 		else
 			r = frame->getViewSize ();
-		CDrawContext* context = frame->createDrawContext();
+		CDrawContext* context = frame->createDrawContext ();
 		if (context)
 		{
 			frame->drawRect (context, r);
@@ -205,6 +205,7 @@ void AEffGUIEditor::doIdleStuff ()
 	idle ();
 
 	#if WINDOWS
+	struct tagMSG windowsMessage;
 	if (PeekMessage (&windowsMessage, NULL, WM_PAINT, WM_PAINT, PM_REMOVE))
 		DispatchMessage (&windowsMessage);
 
@@ -231,9 +232,7 @@ bool AEffGUIEditor::getRect (ERect **ppErect)
 #if MAC
 // -----------------------------------------------------------------------------
 // -----------------------------------------------------------------------------
-#include <dlfcn.h>
-#include <CoreFoundation/CFBundle.h>
-#include <string>
+#include "getpluginbundle.h"
 
 namespace VSTGUI {
 
@@ -244,38 +243,12 @@ void* gBundleRef = 0;
 #define VSTGUI_BUNDLEREF VSTGUI::gBundleRef
 
 // -----------------------------------------------------------------------------
-void InitMachOLibrary ();
 void InitMachOLibrary ()
 {
-	Dl_info info;
-	if (dladdr ((const void*)InitMachOLibrary, &info))
-	{
-		if (info.dli_fname)
-		{
-			std::string name;
-			name.assign (info.dli_fname);
-			for (int i = 0; i < 3; i++)
-			{
-				int delPos = name.find_last_of ('/');
-				if (delPos == -1)
-				{
-					fprintf (stdout, "Could not determine bundle location.\n");
-					return; // unexpected
-				}
-				name.erase (delPos, name.length () - delPos);
-			}
-			CFURLRef bundleUrl = CFURLCreateFromFileSystemRepresentation (0, (const UInt8*)name.c_str (), name.length (), true);
-			if (bundleUrl)
-			{
-				VSTGUI_BUNDLEREF = CFBundleCreate (0, bundleUrl);
-				CFRelease (bundleUrl);
-			}
-		}
-	}
+	VSTGUI_BUNDLEREF = GetPluginBundle ();
 }
 
 // -----------------------------------------------------------------------------
-void ExitMachOLibrary ();
 void ExitMachOLibrary ()
 {
 	if (VSTGUI_BUNDLEREF)

@@ -2,7 +2,7 @@
 // VST Plug-Ins SDK
 // VSTGUI: Graphical User Interface Framework for VST plugins
 //
-// Version 3.6
+// Version 4.0
 //
 //-----------------------------------------------------------------------------
 //
@@ -43,7 +43,13 @@
 #define kIdleRateMin   4 // minimum time between 2 idles in ms
 
 #if WINDOWS
-static struct tagMSG windowsMessage;
+#include <Windows.h>
+#endif
+
+#if MAC
+#include <Carbon/Carbon.h>
+static void InitMachOLibrary ();
+static void ExitMachOLibrary ();
 #endif
 
 //-----------------------------------------------------------------------------
@@ -63,7 +69,6 @@ PluginGUIEditor::PluginGUIEditor (void *pEffect)
 	OleInitialize (0);
 	#endif
 	#if MAC
-	void InitMachOLibrary ();
 	InitMachOLibrary ();
 	#endif
 }
@@ -75,7 +80,6 @@ PluginGUIEditor::~PluginGUIEditor ()
 	OleUninitialize ();
 	#endif
 	#if MAC
-	void ExitMachOLibrary ();
 	ExitMachOLibrary ();
 	#endif
 }
@@ -83,17 +87,22 @@ PluginGUIEditor::~PluginGUIEditor ()
 //-----------------------------------------------------------------------------
 void PluginGUIEditor::draw (ERect *ppErect)
 {
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
 	if (frame)
 	{
+		CRect r;
 		if (ppErect)
-		{
-			CRect r (ppErect->left, ppErect->top, ppErect->right, ppErect->bottom);
-			CDrawContext context (frame, NULL, systemWindow);
-			frame->drawRect (&context, r);
-		}
+			r (ppErect->left, ppErect->top, ppErect->right, ppErect->bottom);
 		else
-			frame->draw ();
+			r = frame->getViewSize ();
+		CDrawContext* context = frame->createDrawContext ();
+		if (context)
+		{
+			frame->drawRect (context, r);
+			context->forget();
+		}
 	}
+#endif
 }
 
 //-----------------------------------------------------------------------------
@@ -111,21 +120,20 @@ void PluginGUIEditor::idle ()
 }
 
 //-----------------------------------------------------------------------------
-long PluginGUIEditor::knobMode = kCircularMode;
+int32_t PluginGUIEditor::knobMode = kCircularMode;
 
 //-----------------------------------------------------------------------------
-long PluginGUIEditor::setKnobMode (int val) 
+int32_t PluginGUIEditor::setKnobMode (int32_t val) 
 {
 	PluginGUIEditor::knobMode = val;
 	return 1;
 }
 
 //-----------------------------------------------------------------------------
-void PluginGUIEditor::wait (unsigned long ms)
+void PluginGUIEditor::wait (uint32_t ms)
 {
 	#if MAC
-	unsigned long ticks;
-	Delay (ms * 60 / 1000, &ticks);
+	RunCurrentEventLoop (kEventDurationMillisecond * ms);
 	
 	#elif WINDOWS
 	Sleep (ms);
@@ -134,13 +142,13 @@ void PluginGUIEditor::wait (unsigned long ms)
 }
 
 //-----------------------------------------------------------------------------
-unsigned long PluginGUIEditor::getTicks ()
+uint32_t PluginGUIEditor::getTicks ()
 {
 	#if MAC
 	return (TickCount () * 1000) / 60;
 	
 	#elif WINDOWS
-	return (unsigned long)GetTickCount ();
+	return (uint32_t)GetTickCount ();
 	
 	#endif
 
@@ -151,7 +159,7 @@ unsigned long PluginGUIEditor::getTicks ()
 void PluginGUIEditor::doIdleStuff ()
 {
 	// get the current time
-	unsigned long currentTicks = getTicks ();
+	uint32_t currentTicks = getTicks ();
 
 	// YG TEST idle ();
 	if (currentTicks < lLastTicks)
@@ -168,10 +176,11 @@ void PluginGUIEditor::doIdleStuff ()
 	idle (); // TEST
 
 	#if WINDOWS
+	struct tagMSG windowsMessage;
 	if (PeekMessage (&windowsMessage, NULL, WM_PAINT, WM_PAINT, PM_REMOVE))
 		DispatchMessage (&windowsMessage);
 
-	#elif MAC
+	#elif MAC && !__LP64__
 	EventRef event;
 	EventTypeSpec eventTypes[] = { {kEventClassWindow, kEventWindowUpdate}, {kEventClassWindow, kEventWindowDrawContent} };
 	if (ReceiveNextEvent (GetEventTypeCount (eventTypes), eventTypes, kEventDurationNoWait, true, &event) == noErr)
@@ -186,7 +195,7 @@ void PluginGUIEditor::doIdleStuff ()
 }
 
 //-----------------------------------------------------------------------------
-long PluginGUIEditor::getRect (ERect **ppErect)
+bool PluginGUIEditor::getRect (ERect **ppErect)
 {
 	*ppErect = &rect;
 	return true;
@@ -195,93 +204,23 @@ long PluginGUIEditor::getRect (ERect **ppErect)
 #if MAC
 // -----------------------------------------------------------------------------
 // -----------------------------------------------------------------------------
-extern "C" {
-#include <mach-o/dyld.h>
-#include <mach-o/ldsyms.h>
+#include "getpluginbundle.h"
+
+namespace VSTGUI {
+	void* gBundleRef = 0;
 }
-#include <CoreFoundation/CFBundle.h>
 
-BEGIN_NAMESPACE_VSTGUI
-
-void* gBundleRef = 0;
-
-END_NAMESPACE_VSTGUI
-
-#if USE_NAMESPACE
-#define VSTGUI_BUNDLEREF VSTGUI::gBundleRef
-#else
-#define VSTGUI_BUNDLEREF gBundleRef
-#endif
-
-#if PLUGGUI_STANDALONE
+// -----------------------------------------------------------------------------
 void InitMachOLibrary ()
 {
-	VSTGUI_BUNDLEREF = CFBundleGetMainBundle ();
-}
-
-void ExitMachOLibrary () {}
-#else
-// -----------------------------------------------------------------------------
-static CFBundleRef _CFXBundleCreateFromImageName (CFAllocatorRef allocator, const char* image_name);
-static CFBundleRef _CFXBundleCreateFromImageName (CFAllocatorRef allocator, const char* image_name)
-{
-	CFURLRef myBundleExecutableURL = CFURLCreateFromFileSystemRepresentation (allocator, (const unsigned char*)image_name, strlen (image_name), false);
-	if (myBundleExecutableURL == 0)
-		return 0;
-		
-	CFURLRef myBundleContentsMacOSURL = CFURLCreateCopyDeletingLastPathComponent (allocator, myBundleExecutableURL); // Delete Versions/Current/Executable
-	CFRelease (myBundleExecutableURL);
-	if (myBundleContentsMacOSURL == 0)
-		return 0;
-
-	CFURLRef myBundleContentsURL = CFURLCreateCopyDeletingLastPathComponent (allocator, myBundleContentsMacOSURL); // Delete Current
-	CFRelease (myBundleContentsMacOSURL);
-	if (myBundleContentsURL == 0)
-		return 0;
-		
-	CFURLRef theBundleURL = CFURLCreateCopyDeletingLastPathComponent (allocator, myBundleContentsURL); // Delete Versions
-	CFRelease (myBundleContentsURL);
-	if (theBundleURL == 0)
-		return 0;
-
-	CFBundleRef result = CFBundleCreate (allocator, theBundleURL);
-	CFRelease (theBundleURL);
-
-	return result;
+	VSTGUI::gBundleRef = GetPluginBundle ();
 }
 
 // -----------------------------------------------------------------------------
-void InitMachOLibrary ();
-void InitMachOLibrary ()
-{
-	const mach_header* header = &_mh_bundle_header;
-	if (header == 0)
-		return;
-
-	const char* imagename = 0;
-	/* determine the image name, TODO: ther have to be a better way */
-	int cnt = _dyld_image_count();
-	for (int idx1 = 1; idx1 < cnt; idx1++) 
-	{
-		if (_dyld_get_image_header(idx1) == header)
-		{
-			imagename = _dyld_get_image_name(idx1);
-			break;
-		}
-	}
-	if (imagename == 0)
-	return;
-	/* get the bundle of a header, TODO: ther have to be a better way */
-	VSTGUI_BUNDLEREF = _CFXBundleCreateFromImageName (NULL, imagename);
-}
-
-// -----------------------------------------------------------------------------
-void ExitMachOLibrary ();
 void ExitMachOLibrary ()
 {
-	if (VSTGUI_BUNDLEREF)
-		CFRelease (VSTGUI_BUNDLEREF);
+	if (VSTGUI::gBundleRef)
+		CFRelease (VSTGUI::gBundleRef);
 }
 
-#endif
 #endif
