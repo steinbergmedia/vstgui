@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<vstgui-ui-description version="1">
+	<template autosize="left right top bottom " background-color="~ WhiteCColor" class="CViewContainer" maxSize="300, 500" minSize="150, 300" name="view" origin="0, 0" size="300, 500" transparent="false">
+		<view background-color="~ BlackCColor" bitmap="FrameBackground" class="CViewContainer" origin="50, 20" size="100, 150" sub-controller="AnimationController" transparent="false">
+			<view autosize-to-fit="false" background-offset="0, 0" boxfill-color="~ WhiteCColor" boxframe-color="~ BlackCColor" checkmark-color="~ RedCColor" class="CCheckBox" control-tag="Switch" default-value="0.5" draw-crossbox="false" font="~ SystemFont" font-color="~ WhiteCColor" max-value="1" min-value="0" origin="20, 0" size="60, 20" title="Close" transparent="false" wheel-inc-value="0.1"/>
+		</view>
+		<view background-color="~ BlackCColor" bitmap="FrameBackground" class="CViewContainer" custom-view-name="ScaleView" origin="100, 220" size="90, 80" transparent="false">
+			<view autosize="left right top " back-color="~ BlackCColor" background-offset="0, 0" class="CTextLabel" default-value="0.5" font="~ NormalFont" font-antialias="true" font-color="~ BlackCColor" frame-color="~ BlackCColor" max-value="1" min-value="0" origin="0, 0" shadow-color="~ RedCColor" size="90, 20" style-3D-in="false" style-3D-out="false" style-no-draw="false" style-no-frame="false" style-no-text="false" style-shadow-text="false" text-alignment="center" text-inset="0, 0" title="Move Over Me" transparent="true" wheel-inc-value="0.1"/>
+		</view>
+	</template>
+	<colors>
+	</colors>
+	<custom>
+		<attributes name="UIViewInspector" windowSize="71, 194, 471, 709"/>
+		<attributes gridsize="10" name="UIEditFrame" uidescPath="/Volumes/DATA/subversion/trunk/vstgui_head/vstgui/tests/uidescription vst3/resource/AnimationTest.uidesc"/>
+		<attributes frame-enable-focus-drawing="false" frame-focus-width="2" name="VST3Editor"/>
+		<attributes name="UIViewHierarchyBrowser" windowSize="513, 194, 813, 694"/>
+	</custom>
+	<bitmaps>
+		<bitmap name="animation_knob" path="animation_knob.png"/>
+		<bitmap name="FrameBackground" nineparttiled-offsets="10, 20, 10, 10" path="FrameBackground.png"/>
+		<bitmap name="TabController" path="TabController.png"/>
+		<bitmap name="horizontal_slider_back" path="horizontal_slider_back.bmp"/>
+		<bitmap name="onoff_button" path="onoff_button.bmp"/>
+		<bitmap name="rocker_switch" path="rocker_switch.bmp"/>
+		<bitmap name="slider_handle" path="slider_handle.bmp"/>
+		<bitmap name="switch_horizontal" path="switch_horizontal.bmp"/>
+		<bitmap name="switch_vertical" path="switch_vertical.bmp"/>
+		<bitmap name="vertical_slider_back" path="vertical_slider_back.bmp"/>
+		<bitmap name="vumeter_back" path="vumeter_back.bmp"/>
+		<bitmap name="vumeter_front" path="vumeter_front.bmp"/>
+	</bitmaps>
+	<fonts>
+	</fonts>
+	<control-tags>
+		<control-tag name="Switch" tag="20000"/>
+	</control-tags>
+</vstgui-ui-description>
