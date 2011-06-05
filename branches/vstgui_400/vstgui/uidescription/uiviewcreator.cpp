@@ -257,6 +257,7 @@ public:
 */
 
 #include "uiviewfactory.h"
+#include "uiviewcreator.h"
 #include "uiviewswitchcontainer.h"
 #include "../vstgui.h"
 #include <sstream>

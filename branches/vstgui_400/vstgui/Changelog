@@ -1,3 +1,8 @@
+2011-06-05 arne
+
+	* implement missing file drag support for Windows
+	* fix a few warnings with clang
+
 2011-06-03 arne
 
 	* rearrange some code in AEffGUIEditor and PlugGUIEditor and make it work on Mac OS X 64 bit
