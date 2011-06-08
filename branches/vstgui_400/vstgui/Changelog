@@ -1,3 +1,8 @@
+2011-06-08 arne
+
+	* VST2.x frame resize implementation (mainly for Windows)
+	* make tutorial compile and work on Windows
+
 2011-06-05 arne
 
 	* implement missing file drag support for Windows
