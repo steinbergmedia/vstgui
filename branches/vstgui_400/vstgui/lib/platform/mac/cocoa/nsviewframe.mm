@@ -504,8 +504,8 @@ static NSDragOperation VSTGUI_NSView_draggingEntered (id self, SEL _cmd, id send
 #else
 	if ([NSCursor respondsToSelector:@selector(operationNotAllowedCursor)])
 		[[NSCursor performSelector:@selector(operationNotAllowedCursor)] set];
-	_vstguiframe->platformOnDragEnter (gCocoaDragContainer, where);
 #endif
+	_vstguiframe->platformOnDragEnter (gCocoaDragContainer, where);
 	
 	return NSDragOperationGeneric;
 }
