@@ -821,6 +821,8 @@ void CFrame::onViewRemoved (CView* pView)
 	}
 	if (getViewAddedRemovedObserver ())
 		getViewAddedRemovedObserver ()->onViewRemoved (this, pView);
+	if (pAnimator)
+		pAnimator->removeAnimations (pView);
 }
 
 //-----------------------------------------------------------------------------

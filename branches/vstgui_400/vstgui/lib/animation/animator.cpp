@@ -274,7 +274,11 @@ void Animator::removeAnimation (CView* view, IdStringPtr name)
 			#if DEBUG_LOG
 			DebugPrint ("animation removed: %p - %s\n", view, name);
 			#endif
-			animation->target->animationFinished (view, name, true);
+			if (animation->done == false)
+			{
+				animation->done = true;
+				animation->target->animationFinished (view, name, true);
+			}
 			removeAnimation (animation);
 			break;
 		}
@@ -290,7 +294,11 @@ void Animator::removeAnimations (CView* view)
 		Animation* animation = *it++;
 		if (animation->view == view)
 		{
-			animation->target->animationFinished (animation->view, animation->name.c_str (), true);
+			if (animation->done == false)
+			{
+				animation->done = true;
+				animation->target->animationFinished (animation->view, animation->name.c_str (), true);
+			}
 			removeAnimation (animation);
 		}
 	}
@@ -341,6 +349,7 @@ CMessageResult Animator::notify (CBaseObject* sender, IdStringPtr message)
 			}
 			if (a->timingFunction->isDone (time))
 			{
+				a->done = true;
 				a->target->animationFinished (a->view, a->name.c_str (), false);
 				#if DEBUG_LOG
 				DebugPrint ("animation finished: %p - %s\n", a->view, a->name.c_str ());
@@ -374,6 +383,7 @@ Animator::Animation::Animation (CView* view, const std::string& name, IAnimation
 , notificationObject (notificationObject)
 , startTime (0)
 , lastPos (-1)
+, done (false)
 {
 	view->remember ();
 	if (notificationObject)

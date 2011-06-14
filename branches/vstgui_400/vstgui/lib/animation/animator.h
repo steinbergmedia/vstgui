@@ -123,6 +123,7 @@ protected:
 		CBaseObject* notificationObject;
 		uint32_t startTime;
 		float lastPos;
+		bool done;
 	};
 
 	void removeAnimation (Animation* a);

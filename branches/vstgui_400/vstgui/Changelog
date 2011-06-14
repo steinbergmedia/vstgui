@@ -1,3 +1,9 @@
+2011-06-14 arne
+
+	* change call sequence for CViewContainer::attached(parent) to first call the base class before calling the subviews, so that subviews have access to all parents in attached(..)
+	* make sure animations will be stopped when views are removed and that IAnimationTarget::animationFinished() will only be called once
+	* fix a scroll view issue in makeRectVisible
+
 2011-06-08 arne
 
 	* VST2.x frame resize implementation (mainly for Windows)
