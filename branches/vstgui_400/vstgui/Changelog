@@ -1,3 +1,7 @@
+2011-06-24 arne
+
+	* make sure that Windows 7 magnification setting is ignored with Direct2D
+
 2011-06-14 arne
 
 	* change call sequence for CViewContainer::attached(parent) to first call the base class before calling the subviews, so that subviews have access to all parents in attached(..)
