@@ -1,3 +1,7 @@
+2011-07-01 arne
+
+	* fix horizontal CVUMeter drawing (was reversed)
+
 2011-06-24 arne
 
 	* make sure that Windows 7 magnification setting is ignored with Direct2D
