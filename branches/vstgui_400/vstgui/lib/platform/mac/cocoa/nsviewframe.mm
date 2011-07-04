@@ -82,7 +82,7 @@ static CocoaDragContainer* gCocoaDragContainer = 0;
 @end
 
 //------------------------------------------------------------------------------------
-HIDDEN static void mapModifiers (NSInteger nsEventModifiers, CButtonState& buttonState)
+static void mapModifiers (NSInteger nsEventModifiers, CButtonState& buttonState)
 {
 	if (nsEventModifiers & NSShiftKeyMask)
 		buttonState |= kShift;
@@ -95,7 +95,7 @@ HIDDEN static void mapModifiers (NSInteger nsEventModifiers, CButtonState& butto
 }
 
 //------------------------------------------------------------------------------------
-HIDDEN static bool nsViewGetCurrentMouseLocation (void* nsView, CPoint& where)
+static bool nsViewGetCurrentMouseLocation (void* nsView, CPoint& where)
 {
 	NSView* view = (NSView*)nsView;
 	NSPoint p = [[view window] mouseLocationOutsideOfEventStream];
