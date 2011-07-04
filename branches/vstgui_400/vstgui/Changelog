@@ -1,3 +1,8 @@
+2011-07-4 arne
+
+	* fixes to path arc drawing for Direct2D and GDI+
+	* fixes to CKnob
+
 2011-07-01 arne
 
 	* fix horizontal CVUMeter drawing (was reversed)

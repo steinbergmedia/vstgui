@@ -81,11 +81,10 @@ CKnob::CKnob (const CRect& size, CControlListener* listener, int32_t tag, CBitma
 	
 	colorShadowHandle = kGreyCColor;
 	colorHandle = kWhiteCColor;
-	radius = (float)(size.right - size.left) / 2.f;
 
 	rangeAngle = 1.f;
-	setStartAngle ((float)(5.f * kPI / 4.f));
-	setRangeAngle ((float)(-3.f * kPI / 2.f));
+	setStartAngle ((float)(3.f * kPI / 4.f));
+	setRangeAngle ((float)(3.f * kPI / 2.f));
 	zoomFactor = 1.5f;
 
 	setWantsFocus (true);
@@ -103,10 +102,6 @@ CKnob::CKnob (const CKnob& v)
 , coronaInset (v.coronaInset)
 , startAngle (v.startAngle)
 , rangeAngle (v.rangeAngle)
-, halfAngle (v.halfAngle)
-, aCoef (v.aCoef)
-, bCoef (v.bCoef)
-, radius (v.radius)
 , zoomFactor (v.zoomFactor)
 , pHandle (v.pHandle)
 {
@@ -125,7 +120,6 @@ CKnob::~CKnob ()
 void CKnob::setViewSize (const CRect &rect, bool invalid)
 {
 	CControl::setViewSize (rect, invalid);
-	radius = (float)(getViewSize ().right - getViewSize ().left) / 2.f;
 	compute ();
 }
 
@@ -177,23 +171,6 @@ void CKnob::drawHandle (CDrawContext *pContext)
 	else
 	{
 		pContext->setDrawMode (kAntiAliasing);
-		if (drawStyle == 0)
-		{
-			CPoint origin (getViewSize ().width () / 2, getViewSize ().height () / 2);
-			where.offset (getViewSize ().left - 1, getViewSize ().top);
-			origin.offset (getViewSize ().left - 1, getViewSize ().top);
-			pContext->setFrameColor (colorShadowHandle);
-			pContext->setLineWidth (handleLineWidth);
-			pContext->setLineStyle (kLineSolid);
-			pContext->moveTo (where);
-			pContext->lineTo (origin);
-			
-			where.offset (1, -1);
-			origin.offset (1, -1);
-			pContext->setFrameColor (colorHandle);
-			pContext->moveTo (where);
-			pContext->lineTo (origin);
-		}
 		if (drawStyle & kCoronaOutline)
 		{
 			CGraphicsPath* path = pContext->createGraphicsPath ();
@@ -201,9 +178,9 @@ void CKnob::drawHandle (CDrawContext *pContext)
 			{
 				CRect corona (getViewSize ());
 				corona.inset (coronaInset, coronaInset);
-				double rangeDegree = -(rangeAngle / kPI * 180.);
-				double startDegree = (startAngle / kPI * 180.) - 90.;
-				path->addArc (corona, startDegree, startDegree + rangeDegree, false);
+				double rangeDegree = (rangeAngle / kPI * 180.);
+				double startDegree = (startAngle / kPI * 180.);
+				path->addArc (corona, startDegree, startDegree + rangeDegree, rangeDegree > 0);
 				pContext->setFrameColor (colorShadowHandle);
 				pContext->setLineStyle (kLineSolid);
 				pContext->setLineWidth (handleLineWidth+2.);
@@ -221,26 +198,26 @@ void CKnob::drawHandle (CDrawContext *pContext)
 					coronaValue = 1.f - coronaValue;
 				CRect corona (getViewSize ());
 				corona.inset (coronaInset, coronaInset);
-				double rangeDegree = -(rangeAngle / kPI * 180.);
+				double rangeDegree = rangeAngle / kPI * 180.;
 				if (drawStyle & kCoronaFromCenter)
 				{
 					double startDegree = 270.;
-					rangeDegree = startDegree + (rangeDegree * (coronaValue - 0.5));
-					path->addArc (corona, startDegree, rangeDegree, coronaValue > 0.5 ? false : true);
+					double dd = rangeDegree * (coronaValue - 0.5);
+					path->addArc (corona, startDegree, startDegree + dd, dd > 0.0);
 				}
 				else
 				{
 					if (drawStyle & kCoronaInverted)
 					{
-						double startDegree = (startAngle / kPI * 180.) - 90. + rangeDegree;
+						double startDegree = (startAngle / kPI * 180.)  + rangeDegree;
 						rangeDegree *= coronaValue;
-						path->addArc (corona, startDegree, startDegree - rangeDegree, true);
+						path->addArc (corona, startDegree, startDegree - rangeDegree, rangeDegree <= 0.0);
 					}
 					else
 					{
-						double startDegree = (startAngle / kPI * 180.) - 90.;
+						double startDegree = (startAngle / kPI * 180.);
 						rangeDegree *= coronaValue;
-						path->addArc (corona, startDegree, startDegree + rangeDegree, false);
+						path->addArc (corona, startDegree, startDegree + rangeDegree, rangeDegree >= 0.0);
 					}
 				}
 				pContext->setFrameColor (coronaColor);
@@ -261,7 +238,23 @@ void CKnob::drawHandle (CDrawContext *pContext)
 			pContext->setLineWidth (0.5);
 			pContext->setLineStyle (kLineSolid);
 			pContext->drawEllipse (r, kDrawFilledAndStroked);
+		}
+		else  // Line handle drawing.
+		{
+			CPoint origin (getViewSize ().width () / 2, getViewSize ().height () / 2);
+			where.offset (getViewSize ().left - 1, getViewSize ().top);
+			origin.offset (getViewSize ().left - 1, getViewSize ().top);
+			pContext->setFrameColor (colorShadowHandle);
+			pContext->setLineWidth (handleLineWidth);
+			pContext->setLineStyle (kLineSolid);
+			pContext->moveTo (where);
+			pContext->lineTo (origin);
 
+			where.offset (1, -1);
+			origin.offset (1, -1);
+			pContext->setFrameColor (colorHandle);
+			pContext->moveTo (where);
+			pContext->lineTo (origin);
 		}
 	}
 }
@@ -315,6 +308,7 @@ CMouseEventResult CKnob::onMouseDown (CPoint& where, const CButtonState& buttons
 		CPoint where2 (where);
 		where2.offset (-getViewSize ().left, -getViewSize ().top);
 		startValue = valueFromPoint (where2);
+		lastPoint = where;
 	}
 
 	return onMouseMoved (where, buttons);
@@ -457,70 +451,54 @@ void CKnob::setRangeAngle (float val)
 //------------------------------------------------------------------------
 void CKnob::compute ()
 {
-	aCoef = (getMax () - getMin ()) / rangeAngle;
-	bCoef = getMin () - aCoef * startAngle;
-	halfAngle = ((float)k2PI - fabsf (rangeAngle)) * 0.5f;
 	setDirty ();
 }
 
 //------------------------------------------------------------------------
 void CKnob::valueToPoint (CPoint &point) const
 {
-	float alpha = (value - bCoef) / aCoef;
-	point.h = (CCoord)(radius + cosf (alpha) * (radius - inset) + 0.5f);
-	point.v = (CCoord)(radius - sinf (alpha) * (radius - inset) + 0.5f);
+	float alpha = (value - getMin()) / (getMax() - getMin());
+	alpha = startAngle + alpha*rangeAngle;
+
+	CPoint c(size.width()/2, size.height()/2);
+	double xradius = c.x - inset;
+	double yradius = c.y - inset;
+
+	point.h = (CCoord)(c.x + cosf(alpha) * xradius + 0.5f);
+	point.v = (CCoord)(c.y + sinf (alpha) * yradius + 0.5f);
 }
 
 //------------------------------------------------------------------------
 float CKnob::valueFromPoint (CPoint &point) const
-{ // TODO: does not work when startAngle is something different than 135 degree
+{
 	float v;
-	float alpha = (float)atan2 (radius - point.v, point.h - radius);
-	if (alpha < 0.f)
-		alpha += (float)k2PI;
+	double d = rangeAngle * 0.5;
+	double a = startAngle + d;
 
-	float alpha2 = alpha - startAngle;
-	if (rangeAngle < 0)
-	{
-		alpha2 -= rangeAngle;
-		float alpha3 = alpha2;
-		if (alpha3 < 0.f)
-			alpha3 += (float)k2PI;
-		else if (alpha3 > k2PI)
-			alpha3 -= (float)k2PI;
-		if (alpha3 > halfAngle - rangeAngle)
-			v = getMax ();
-		else if (alpha3 > -rangeAngle)
-			v = getMin ();
-		else
-		{
-			if (alpha2 > halfAngle - rangeAngle)
-				alpha2 -= (float)k2PI;
-			else if (alpha2 < -halfAngle)
-				alpha2 += (float)k2PI;
-			v = aCoef * alpha2 + getMax ();
-		}
-	}
+	CPoint c (size.width () / 2., size.height () / 2.);
+	double xradius = c.x - inset;
+	double yradius = c.y - inset;
+
+	double dx = (point.x - c.x) / xradius;
+	double dy = (point.y - c.y) / yradius;
+
+	double alpha = atan2 (dy, dx) - a;
+	while (alpha >= kPI)
+		alpha -= k2PI;
+	while (alpha < -kPI)
+		alpha += k2PI;
+
+	if (d < 0.0)
+		alpha = -alpha;
+
+	if (alpha > d)
+		v = getMax ();
+	else if (alpha < -d)
+		v = getMin ();
 	else
-	{
-		float alpha3 = alpha2;
-		if (alpha3 < 0.f)
-			alpha3 += (float)k2PI;
-		else if (alpha3 > k2PI)
-			alpha3 -= (float)k2PI;
-		if (alpha3 > rangeAngle + halfAngle)
-			v = getMin ();
-		else if (alpha3 > rangeAngle)
-			v = getMax ();
-		else
-		{
-			if (alpha2 > rangeAngle + halfAngle)
-				alpha2 -= (float)k2PI;
-			else if (alpha2 < -halfAngle)
-				alpha2 += (float)k2PI;
-			v = aCoef * alpha2 + getMin ();
-		}
-	}
+		v = float (0.5 + alpha / rangeAngle);
+
+	v *= (getMax () - getMin ());
 
 	return v;
 }

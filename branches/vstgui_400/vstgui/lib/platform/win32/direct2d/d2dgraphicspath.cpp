@@ -142,13 +142,13 @@ ID2D1PathGeometry* D2DGraphicsPath::getPath (int32_t fillMode)
 			{
 				case Element::kArc:
 				{
-					bool clockwise = e.instruction.arc.clockwise; // TODO !
+					bool clockwise = e.instruction.arc.clockwise;
 					double startAngle = e.instruction.arc.startAngle;
 					double endAngle = e.instruction.arc.endAngle;
-					CRect or (e.instruction.arc.rect.left, e.instruction.arc.rect.top, e.instruction.arc.rect.right, e.instruction.arc.rect.bottom);
-					CRect r (or);
-					or.originize ();
-					CPoint center = or.getCenter ();
+					CRect o_r (e.instruction.arc.rect.left, e.instruction.arc.rect.top, e.instruction.arc.rect.right, e.instruction.arc.rect.bottom);
+					CRect r (o_r);
+					o_r.originize ();
+					CPoint center = o_r.getCenter ();
 					CPoint start;
 					start.x = r.left + center.x + center.x * cos (radians (startAngle));
 					start.y = r.top + center.y + center.y * sin (radians (startAngle));
@@ -161,17 +161,32 @@ ID2D1PathGeometry* D2DGraphicsPath::getPath (int32_t fillMode)
 					{
 						sink->AddLine (makeD2DPoint (start));
 					}
-					double rotationAngle = startAngle - endAngle;
+
+					double sweepangle = endAngle - startAngle;
+					if (clockwise) {
+						// sweepangle positive
+						while (sweepangle < 0.0)
+							sweepangle += 360.0;
+						while (sweepangle > 360.0)
+							sweepangle -= 360.0;
+					} else {
+						// sweepangle negative
+						while (sweepangle > 0.0)
+							sweepangle -= 360.0;
+						while (sweepangle < -360.0)
+							sweepangle += 360.0;
+					}
+
 					CPoint endPoint;
 					endPoint.x = r.left + center.x + center.x * cos (radians (endAngle));
 					endPoint.y = r.top + center.y + center.y * sin (radians (endAngle));
 
 					D2D1_ARC_SEGMENT arc;
 					arc.size = makeD2DSize (r.getWidth ()/2., r.getHeight ()/2.);
-					arc.rotationAngle = (FLOAT)(rotationAngle);
-					arc.sweepDirection = D2D1_SWEEP_DIRECTION_CLOCKWISE;
+					arc.rotationAngle = 0;
+					arc.sweepDirection = clockwise ? D2D1_SWEEP_DIRECTION_CLOCKWISE : D2D1_SWEEP_DIRECTION_COUNTER_CLOCKWISE;
 					arc.point = makeD2DPoint (endPoint);
-					arc.arcSize = rotationAngle <= 180. ? D2D1_ARC_SIZE_SMALL : D2D1_ARC_SIZE_LARGE; 
+					arc.arcSize = fabs(sweepangle) <= 180. ? D2D1_ARC_SIZE_SMALL : D2D1_ARC_SIZE_LARGE;
 					sink->AddArc (arc);
 					lastPos = endPoint;
 					break;
