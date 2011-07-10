@@ -257,6 +257,7 @@ public:
 */
 
 #include "uiviewfactory.h"
+#include "uiviewcreator.h"
 #include "uiviewswitchcontainer.h"
 #include "../vstgui.h"
 #include <sstream>
@@ -1888,21 +1889,15 @@ public:
 		if (angleStartAttr)
 		{
 			fvalue = strtof (angleStartAttr->c_str (), 0);
-			ivalue = (int32_t)strtol (angleStartAttr->c_str (), 0, 10);
-			if (fvalue == ivalue)
-			{	// convert from degree
-				fvalue = (fvalue + 90.f) / 180.f * (float)kPI;
-			}
+			// convert from degree
+			fvalue = fvalue / 180.f * (float)kPI;
 			knob->setStartAngle (fvalue);
 		}
 		if (angleRangeAttr)
 		{
 			fvalue = strtof (angleRangeAttr->c_str (), 0);
-			ivalue = (int32_t)strtol (angleRangeAttr->c_str (), 0, 10);
-			if (fvalue == ivalue)
-			{	// convert from degree
-				fvalue = -fvalue / 180.f * (float)kPI;
-			}
+			// convert from degree
+			fvalue = fvalue / 180.f * (float)kPI;
 			knob->setRangeAngle (fvalue);
 		}
 		if (insetValueAttr)
@@ -2050,14 +2045,14 @@ public:
 		if (attributeName == "angle-start")
 		{
 			std::stringstream stream;
-			stream << (knob->getStartAngle () / kPI * 180.) - 90.;
+			stream << (knob->getStartAngle () / kPI * 180.);
 			stringValue = stream.str ();
 			return true;
 		}
 		else if (attributeName == "angle-range")
 		{
 			std::stringstream stream;
-			stream << -(knob->getRangeAngle () / kPI * 180.);
+			stream << (knob->getRangeAngle () / kPI * 180.);
 			stringValue = stream.str ();
 			return true;
 		}

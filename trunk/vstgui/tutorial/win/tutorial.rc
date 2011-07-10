@@ -5,9 +5,9 @@
 // Bitmap
 //
 
-KnobBackground.png      DATA  DISCARDABLE     "../resource/KnobBackground.png"
-KnobHandle.png          DATA  DISCARDABLE     "../resource/KnobHandle.png"
-KnobHandleHighlight.png DATA  DISCARDABLE     "../resource/KnobHandleHighlight.png"
+KnobBackground.png      PNG  DISCARDABLE     "../resource/KnobBackground.png"
+KnobHandle.png          PNG  DISCARDABLE     "../resource/KnobHandle.png"
+KnobHandleHighlight.png PNG  DISCARDABLE     "../resource/KnobHandleHighlight.png"
 
 
 #ifndef _MAC

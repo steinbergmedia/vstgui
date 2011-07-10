@@ -11,16 +11,7 @@
 
 Version 4 of VSTGUI is a new milestone release with a restructured code base with the focus of code conformity and easier future enhancements.
 The result is that code written for any earlier version of VSTGUI is not always compatible.
-It's recomended to start new projects with version 4 while old projects should stay with version 3.6.
-
-@section beta_notes Beta Notes
-
-This is the third beta version of VSTGUI 4. API changes are not planned anymore.
-But there is still some work to do, before VSTGUI 4 will have release status :
-
-- testing
-- bug fixing
-- more documentation
+It's recommended to start new projects with version 4 while old projects should stay with version 3.6.
 
 @section new_stuff New Stuff
 

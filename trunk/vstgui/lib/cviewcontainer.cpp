@@ -1282,11 +1282,14 @@ bool CViewContainer::attached (CView* parent)
 
 	pParentFrame = parent->getFrame ();
 
-	FOREACHSUBVIEW
-		pV->attached (this);
-	ENDFOREACHSUBVIEW
-
-	return CView::attached (parent);
+	bool result = CView::attached (parent);
+	if (result)
+	{
+		FOREACHSUBVIEW
+			pV->attached (this);
+		ENDFOREACHSUBVIEW
+	}
+	return result;
 }
 
 //-----------------------------------------------------------------------------

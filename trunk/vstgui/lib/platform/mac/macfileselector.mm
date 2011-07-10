@@ -279,7 +279,7 @@ bool CocoaFileSelector::runModalInternal ()
 using namespace VSTGUI;
 
 //-----------------------------------------------------------------------------
-__attribute__((__destructor__)) void cleanup_VSTGUI_FileSelector ()
+__attribute__((__destructor__)) static void cleanup_VSTGUI_FileSelector ()
 {
 	if (fileSelectorDelegateClass)
 		objc_disposeClassPair (fileSelectorDelegateClass);
