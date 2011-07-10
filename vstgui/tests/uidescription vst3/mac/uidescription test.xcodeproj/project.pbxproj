@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 45;
+	objectVersion = 46;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -89,7 +89,7 @@
 		F496F16B119715B500DD3F7A /* Accelerate.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Accelerate.framework; path = System/Library/Frameworks/Accelerate.framework; sourceTree = SDKROOT; };
 		F4C04ECD123B8E450082BA28 /* vst3sdksources.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = vst3sdksources.cpp; path = ../source/vst3sdksources.cpp; sourceTree = SOURCE_ROOT; };
 		F4C04F00123B90940082BA28 /* README.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = README.txt; path = ../README.txt; sourceTree = SOURCE_ROOT; };
-		F4D787491380432A00B06ADC /* libvstgui.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; name = libvstgui.a; path = /Volumes/DATA/subversion/trunk/vstgui_head/vstgui/ide/xcode4/build/Debug/libvstgui.a; sourceTree = "<absolute>"; };
+		F4D787491380432A00B06ADC /* libvstgui.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; name = libvstgui.a; path = ../../../ide/xcode4/build/Debug/libvstgui.a; sourceTree = SOURCE_ROOT; };
 		F4F5DA8910BFD28900DB6C33 /* TabController.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = TabController.png; path = ../resource/TabController.png; sourceTree = SOURCE_ROOT; };
 		F4FFBE471169E8CA00A9BD34 /* bitmapsaturator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = bitmapsaturator.h; path = ../source/bitmapsaturator.h; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
@@ -236,8 +236,11 @@
 /* Begin PBXProject section */
 		508817C409F0C9740071BF1A /* Project object */ = {
 			isa = PBXProject;
+			attributes = {
+				LastUpgradeCheck = 0410;
+			};
 			buildConfigurationList = 508817C509F0C9740071BF1A /* Build configuration list for PBXProject "uidescription test" */;
-			compatibilityVersion = "Xcode 3.1";
+			compatibilityVersion = "Xcode 3.2";
 			developmentRegion = English;
 			hasScannedForEncodings = 0;
 			knownRegions = (

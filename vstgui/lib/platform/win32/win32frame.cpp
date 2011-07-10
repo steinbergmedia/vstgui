@@ -1241,6 +1241,60 @@ STDMETHODIMP Win32DataObject::GetData (FORMATETC* format, STGMEDIUM* medium)
 			}
 		}
 	}
+	else if (format->cfFormat == CF_HDROP)
+	{
+		HRESULT result = E_UNEXPECTED;
+		UTF8StringHelper** wideStringFileNames = (UTF8StringHelper**)malloc (sizeof (UTF8StringHelper*) * dropSource->getCount ());
+		memset (wideStringFileNames, 0, sizeof (UTF8StringHelper*) * dropSource->getCount ());
+		int32_t fileNamesIndex = 0;
+		int32_t bufferSizeNeeded = 0;
+		for (int32_t i = 0; i < dropSource->getCount (); i++)
+		{
+			if (dropSource->getEntryType (i) == CDropSource::kFilePath)
+			{
+				const void* buffer;
+				CDropSource::Type type;
+				int32_t bufferSize = dropSource->getEntry (i, buffer, type);
+
+				wideStringFileNames[fileNamesIndex] = new UTF8StringHelper ((UTF8StringPtr)buffer);
+				bufferSizeNeeded += wcslen (*wideStringFileNames[fileNamesIndex]) + 1;
+				fileNamesIndex++;
+			}
+		}
+		bufferSizeNeeded++;
+		bufferSizeNeeded *= sizeof (WCHAR);
+		bufferSizeNeeded += sizeof (DROPFILES);
+		HGLOBAL	memoryHandle = GlobalAlloc (GMEM_MOVEABLE, bufferSizeNeeded); 
+		void* memory = GlobalLock (memoryHandle);
+		if (memory)
+		{
+			DROPFILES* dropFiles = (DROPFILES*)memory;
+			dropFiles->pFiles = sizeof (DROPFILES);
+			dropFiles->pt.x   = 0; 
+			dropFiles->pt.y   = 0;
+			dropFiles->fNC    = FALSE;
+			dropFiles->fWide  = TRUE;
+			int8_t* memAddr = ((int8_t*)memory) + sizeof (DROPFILES);
+			for (int32_t i = 0; i < fileNamesIndex; i++)
+			{
+				size_t len = (wcslen (wideStringFileNames[i]->getWideString ()) + 1) * 2;
+				memcpy (memAddr, wideStringFileNames[i]->getWideString (), len);
+				memAddr += len;
+			}
+			*memAddr = 0;
+			memAddr++;
+			*memAddr = 0;
+			memAddr++;
+			GlobalUnlock (memoryHandle);
+			medium->hGlobal = memoryHandle;
+			medium->tymed = TYMED_HGLOBAL;
+			result = S_OK;
+		}
+		for (int32_t i = 0; i < fileNamesIndex; i++)
+			delete wideStringFileNames[i];
+		free (wideStringFileNames);
+		return result;
+	}
 	else if (format->cfFormat == CF_PRIVATEFIRST)
 	{
 		for (int32_t i = 0; i < dropSource->getCount (); i++)
@@ -1266,39 +1320,6 @@ STDMETHODIMP Win32DataObject::GetData (FORMATETC* format, STGMEDIUM* medium)
 		}
 	}
 
-#if 0
-	if (format->cfFormat == CF_TEXT || format->cfFormat == CF_UNICODETEXT)
-	{
-		UTF8StringHelper utf8String (dataString.c_str ());
-		SIZE_T size = 0;
-		const void* data = 0;
-		if (format->cfFormat == CF_UNICODETEXT)
-		{
-			size = (dataString.length () + 1) * sizeof (WCHAR);
-			data = utf8String.getWideString ();
-		}
-		else
-		{
-			size = (dataString.length () + 1) * sizeof (char);
-			data = dataString.c_str ();
-		}
-
-		if (data && size > 0)
-		{
-			HGLOBAL	memoryHandle = GlobalAlloc (GMEM_MOVEABLE, size); 
-			void* memory = GlobalLock (memoryHandle);
-			if (memory)
-			{
-				memcpy (memory, data, size);
-				GlobalUnlock (memoryHandle);
-			}
-
-			medium->hGlobal = memoryHandle;						
-			medium->tymed = TYMED_HGLOBAL;
-			return S_OK;
-		}
-	}
-#endif
 	return E_UNEXPECTED;
 }
 
@@ -1329,6 +1350,11 @@ STDMETHODIMP Win32DataObject::QueryGetData (FORMATETC *format)
 	}
 	else if (format->cfFormat == CF_HDROP)
 	{
+		for (int32_t i = 0; i < dropSource->getCount (); i++)
+		{
+			if (dropSource->getEntryType (i) == CDropSource::kFilePath)
+				return S_OK;
+		}
 	}
 	return DV_E_FORMATETC;
 }

@@ -1,3 +1,32 @@
+2011-07-4 arne
+
+	* fixes to path arc drawing for Direct2D and GDI+
+	* fixes to CKnob
+
+2011-07-01 arne
+
+	* fix horizontal CVUMeter drawing (was reversed)
+
+2011-06-24 arne
+
+	* make sure that Windows 7 magnification setting is ignored with Direct2D
+
+2011-06-14 arne
+
+	* change call sequence for CViewContainer::attached(parent) to first call the base class before calling the subviews, so that subviews have access to all parents in attached(..)
+	* make sure animations will be stopped when views are removed and that IAnimationTarget::animationFinished() will only be called once
+	* fix a scroll view issue in makeRectVisible
+
+2011-06-08 arne
+
+	* VST2.x frame resize implementation (mainly for Windows)
+	* make tutorial compile and work on Windows
+
+2011-06-05 arne
+
+	* implement missing file drag support for Windows
+	* fix a few warnings with clang
+
 2011-06-03 arne
 
 	* rearrange some code in AEffGUIEditor and PlugGUIEditor and make it work on Mac OS X 64 bit

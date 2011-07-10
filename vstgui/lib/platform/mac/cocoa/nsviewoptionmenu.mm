@@ -223,7 +223,7 @@ static void VSTGUI_NSMenu_SetSelectedItem (id self, SEL _cmd, int32_t item)
 namespace VSTGUI {
 
 //-----------------------------------------------------------------------------
-__attribute__((__destructor__)) void cleanup_VSTGUI_NSMenu ()
+__attribute__((__destructor__)) static void cleanup_VSTGUI_NSMenu ()
 {
 	if (menuClass)
 		objc_disposeClassPair (menuClass);

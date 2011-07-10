@@ -157,7 +157,7 @@ void CVuMeter::draw (CDrawContext *_pContext)
 
 	if (style & kHorizontal) 
 	{
-		CCoord tmp = (CCoord)(((int32_t)(nbLed * (getMax () - newValue) + 0.5f) / (float)nbLed) * getOnBitmap ()->getWidth ());
+		CCoord tmp = (CCoord)(((int32_t)(nbLed * (getMin () + newValue) + 0.5f) / (float)nbLed) * getOnBitmap ()->getWidth ());
 		pointOff (tmp, 0);
 
 		_rectOff.left += tmp;

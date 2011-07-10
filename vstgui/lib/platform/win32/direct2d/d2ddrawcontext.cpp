@@ -104,6 +104,7 @@ void D2DDrawContext::createRenderTarget ()
 		HRESULT hr = getD2DFactory ()->CreateHwndRenderTarget (D2D1::RenderTargetProperties (targetType, pixelFormat), D2D1::HwndRenderTargetProperties (window, size, D2D1_PRESENT_OPTIONS_RETAIN_CONTENTS), &hwndRenderTarget);
 		if (SUCCEEDED (hr))
 		{
+			hwndRenderTarget->SetDpi (96.0, 96.0);
 			renderTarget = hwndRenderTarget;
 		}
 	}

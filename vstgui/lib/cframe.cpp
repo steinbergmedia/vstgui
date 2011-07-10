@@ -674,6 +674,11 @@ bool CFrame::setSize (CCoord width, CCoord height)
 	newSize.setWidth (width);
 	newSize.setHeight (height);
 
+	if (getEditor ())
+	{
+		if (getEditor ()->beforeSizeChange (newSize, getViewSize ()) == false)
+			return false;
+	}
 	if (platformFrame)
 	{
 		if (platformFrame->setSize (newSize))
@@ -816,6 +821,8 @@ void CFrame::onViewRemoved (CView* pView)
 	}
 	if (getViewAddedRemovedObserver ())
 		getViewAddedRemovedObserver ()->onViewRemoved (this, pView);
+	if (pAnimator)
+		pAnimator->removeAnimations (pView);
 }
 
 //-----------------------------------------------------------------------------

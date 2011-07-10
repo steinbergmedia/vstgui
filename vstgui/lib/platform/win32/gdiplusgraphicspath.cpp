@@ -96,10 +96,22 @@ Gdiplus::GraphicsPath* GdiplusGraphicsPath::getGraphicsPath ()
 				{
 					CCoord width = e.instruction.arc.rect.right - e.instruction.arc.rect.left;
 					CCoord height = e.instruction.arc.rect.bottom - e.instruction.arc.rect.top;
-					if (e.instruction.arc.endAngle < e.instruction.arc.startAngle)
-						e.instruction.arc.endAngle += 360.f;
-					e.instruction.arc.endAngle = fabs (e.instruction.arc.endAngle - (Gdiplus::REAL)e.instruction.arc.startAngle);
-					platformPath->AddArc ((Gdiplus::REAL)e.instruction.arc.rect.left, (Gdiplus::REAL)e.instruction.arc.rect.top, (Gdiplus::REAL)width, (Gdiplus::REAL)height, (Gdiplus::REAL)e.instruction.arc.startAngle, (Gdiplus::REAL)e.instruction.arc.endAngle);
+
+					double sweepangle = e.instruction.arc.endAngle - e.instruction.arc.startAngle;
+					if (e.instruction.arc.clockwise) {
+						// sweepangle positive
+						while (sweepangle < 0.0)
+							sweepangle += 360.0;
+						while (sweepangle > 360.0)
+							sweepangle -= 360.0;
+					} else {
+						// sweepangle negative
+						while (sweepangle > 0.0)
+							sweepangle -= 360.0;
+						while (sweepangle < -360.0)
+							sweepangle += 360.0;
+					}
+					platformPath->AddArc ((Gdiplus::REAL)e.instruction.arc.rect.left, (Gdiplus::REAL)e.instruction.arc.rect.top, (Gdiplus::REAL)width, (Gdiplus::REAL)height, (Gdiplus::REAL)e.instruction.arc.startAngle, (Gdiplus::REAL)sweepangle);
 					break;
 				}
 				case Element::kEllipse:
