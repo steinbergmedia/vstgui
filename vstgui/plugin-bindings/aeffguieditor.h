@@ -90,6 +90,8 @@ public :
 	virtual bool setKnobMode (int32_t val);
 	virtual int32_t getKnobMode () const { return knobMode; }
 
+	virtual bool beforeSizeChange (const CRect& newSize, const CRect& oldSize);
+
 	virtual bool onWheel (float distance);
 
 #if VST_2_1_EXTENSIONS

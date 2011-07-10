@@ -222,7 +222,7 @@ static BOOL VSTGUI_NSTextField_DoCommandBySelector (id self, SEL _cmd, NSControl
 namespace VSTGUI {
 
 //-----------------------------------------------------------------------------
-__attribute__((__destructor__)) void cleanup_VSTGUI_NSTextField ()
+__attribute__((__destructor__)) static void cleanup_VSTGUI_NSTextField ()
 {
 	if (textFieldClass)
 		objc_disposeClassPair (textFieldClass);

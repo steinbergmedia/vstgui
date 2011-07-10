@@ -130,9 +130,7 @@ protected:
 	CCoord coronaInset;
 
 	CBitmap* pHandle;
-	float startAngle, rangeAngle, halfAngle;
-	float aCoef, bCoef;
-	float radius;
+	float startAngle, rangeAngle;
 	float zoomFactor;
 
 private:

@@ -696,7 +696,7 @@ CMessageResult CScrollView::notify (CBaseObject* sender, IdStringPtr message)
 		if (sc->isChild (focusView, true))
 		{
 			CRect r = focusView->getViewSize ();
-			CPoint p (-r.left, -r.top);
+			CPoint p;
 			focusView->localToFrame (p);
 			frameToLocal (p);
 			r.offset (p.x, p.y);

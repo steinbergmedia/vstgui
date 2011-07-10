@@ -48,6 +48,7 @@
 
 #if WINDOWS
 #include <Windows.h>
+#include "../lib/platform/win32/win32support.h"
 #endif
 
 #if MAC
@@ -226,6 +227,65 @@ void AEffGUIEditor::doIdleStuff ()
 bool AEffGUIEditor::getRect (ERect **ppErect)
 {
 	*ppErect = &rect;
+	return true;
+}
+
+// -----------------------------------------------------------------------------
+bool AEffGUIEditor::beforeSizeChange (const CRect& newSize, const CRect& oldSize)
+{
+	AudioEffectX* eX = (AudioEffectX*)effect;
+	if (eX && eX->canHostDo ("sizeWindow"))
+	{
+		if (eX->sizeWindow ((VstInt32)newSize.getWidth (), (VstInt32)newSize.getHeight ()))
+		{
+			return true;
+		}
+		return false;
+	}
+#if WINDOWS
+	// old hack to size the window of the host. Very ugly stuff ...
+
+	if (getFrame () == 0)
+		return true;
+
+	RECT  rctTempWnd, rctParentWnd;
+	HWND  hTempWnd;
+	long   iFrame = (2 * GetSystemMetrics (SM_CYFIXEDFRAME));
+	
+	long diffWidth  = 0;
+	long diffHeight = 0;
+	
+	hTempWnd = (HWND)getFrame ()->getPlatformFrame ()->getPlatformRepresentation ();
+	
+	while ((diffWidth != iFrame) && (hTempWnd != NULL)) // look for FrameWindow
+	{
+		HWND hTempParentWnd = GetParent (hTempWnd);
+		TCHAR buffer[1024];
+		GetClassName (hTempParentWnd, buffer, 1024);
+		if (!hTempParentWnd || !VSTGUI_STRCMP (buffer, TEXT("MDIClient")))
+			break;
+		GetWindowRect (hTempWnd, &rctTempWnd);
+		GetWindowRect (hTempParentWnd, &rctParentWnd);
+		
+		SetWindowPos (hTempWnd, HWND_TOP, 0, 0, (int)newSize.getWidth () + diffWidth, (int)newSize.getHeight () + diffHeight, SWP_NOMOVE);
+		
+		diffWidth  += (rctParentWnd.right - rctParentWnd.left) - (rctTempWnd.right - rctTempWnd.left);
+		diffHeight += (rctParentWnd.bottom - rctParentWnd.top) - (rctTempWnd.bottom - rctTempWnd.top);
+		
+		if ((diffWidth > 80) || (diffHeight > 80)) // parent belongs to host
+			return true;
+
+		if (diffWidth < 0)
+			diffWidth = 0;
+        if (diffHeight < 0)
+			diffHeight = 0;
+		
+		hTempWnd = hTempParentWnd;
+	}
+	
+	if (hTempWnd)
+		SetWindowPos (hTempWnd, HWND_TOP, 0, 0, (int)newSize.getWidth () + diffWidth, (int)newSize.getHeight () + diffHeight, SWP_NOMOVE);
+#endif
 	return true;
 }
 

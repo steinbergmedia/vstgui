@@ -101,7 +101,7 @@ CGPathRef QuartzGraphicsPath::getCGPathRef ()
 					if (CGPathIsEmpty (path))
 						CGPathMoveToPoint (path, &transform, cos (radians (e.instruction.arc.startAngle)), sin (radians (e.instruction.arc.startAngle)));
 
-					CGPathAddArc (path, &transform, 0, 0, 1, radians (e.instruction.arc.startAngle), radians (e.instruction.arc.endAngle), e.instruction.arc.clockwise);
+					CGPathAddArc (path, &transform, 0, 0, 1, radians (e.instruction.arc.startAngle), radians (e.instruction.arc.endAngle), !e.instruction.arc.clockwise);
 					break;
 				}
 				case Element::kEllipse:

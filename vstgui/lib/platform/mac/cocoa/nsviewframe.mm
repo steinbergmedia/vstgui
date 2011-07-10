@@ -82,7 +82,7 @@ static CocoaDragContainer* gCocoaDragContainer = 0;
 @end
 
 //------------------------------------------------------------------------------------
-HIDDEN static void mapModifiers (NSInteger nsEventModifiers, CButtonState& buttonState)
+static void mapModifiers (NSInteger nsEventModifiers, CButtonState& buttonState)
 {
 	if (nsEventModifiers & NSShiftKeyMask)
 		buttonState |= kShift;
@@ -95,7 +95,7 @@ HIDDEN static void mapModifiers (NSInteger nsEventModifiers, CButtonState& butto
 }
 
 //------------------------------------------------------------------------------------
-HIDDEN bool nsViewGetCurrentMouseLocation (void* nsView, CPoint& where)
+static bool nsViewGetCurrentMouseLocation (void* nsView, CPoint& where)
 {
 	NSView* view = (NSView*)nsView;
 	NSPoint p = [[view window] mouseLocationOutsideOfEventStream];
@@ -499,10 +499,14 @@ static NSDragOperation VSTGUI_NSView_draggingEntered (id self, SEL _cmd, id send
 	CPoint where;
 	nsViewGetCurrentMouseLocation (self, where);
 
+#if MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_5
+	[[NSCursor operationNotAllowedCursor] set];
+#else
 	if ([NSCursor respondsToSelector:@selector(operationNotAllowedCursor)])
 		[[NSCursor performSelector:@selector(operationNotAllowedCursor)] set];
+#endif
 	_vstguiframe->platformOnDragEnter (gCocoaDragContainer, where);
-
+	
 	return NSDragOperationGeneric;
 }
 
@@ -593,7 +597,7 @@ protected:
 };
 
 //-----------------------------------------------------------------------------
-__attribute__((__destructor__)) void cleanup_VSTGUI_NSView ()
+__attribute__((__destructor__)) static void cleanup_VSTGUI_NSView ()
 {
 	if (viewClass)
 		objc_disposeClassPair (viewClass);
