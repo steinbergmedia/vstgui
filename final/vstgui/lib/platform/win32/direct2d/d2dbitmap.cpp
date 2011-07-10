@@ -1,0 +1,415 @@
+//-----------------------------------------------------------------------------
+// VST Plug-Ins SDK
+// VSTGUI: Graphical User Interface Framework for VST plugins : 
+//
+// Version 4.0
+//
+//-----------------------------------------------------------------------------
+// VSTGUI LICENSE
+// (c) 2011, Steinberg Media Technologies, All Rights Reserved
+//-----------------------------------------------------------------------------
+// Redistribution and use in source and binary forms, with or without modification,
+// are permitted provided that the following conditions are met:
+// 
+//   * Redistributions of source code must retain the above copyright notice, 
+//     this list of conditions and the following disclaimer.
+//   * Redistributions in binary form must reproduce the above copyright notice,
+//     this list of conditions and the following disclaimer in the documentation 
+//     and/or other materials provided with the distribution.
+//   * Neither the name of the Steinberg Media Technologies nor the names of its
+//     contributors may be used to endorse or promote products derived from this 
+//     software without specific prior written permission.
+// 
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+// ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED 
+// WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A  PARTICULAR PURPOSE ARE DISCLAIMED. 
+// IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, 
+// INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, 
+// BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, 
+// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF 
+// LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE 
+// OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE  OF THIS SOFTWARE, EVEN IF ADVISED
+// OF THE POSSIBILITY OF SUCH DAMAGE.
+//-----------------------------------------------------------------------------
+
+#include "d2dbitmap.h"
+
+#if WINDOWS && VSTGUI_DIRECT2D_SUPPORT
+
+#include "../win32support.h"
+#include <wincodec.h>
+#include <d2d1.h>
+#include <assert.h>
+
+#pragma comment (lib,"windowscodecs.lib") // this bumps client requirement to XP SP2, maybe we should use LoadLibrary
+
+namespace VSTGUI {
+
+//-----------------------------------------------------------------------------
+class WICGlobal
+{
+public:
+	static IWICImagingFactory* getFactory ();
+protected:
+	WICGlobal ();
+	~WICGlobal ();
+	IWICImagingFactory* factory;
+};
+
+//-----------------------------------------------------------------------------
+D2DBitmap::D2DBitmap ()
+: source (0)
+{
+}
+
+//-----------------------------------------------------------------------------
+D2DBitmap::D2DBitmap (const CPoint& size)
+: source (0)
+, size (size)
+{
+	REFWICPixelFormatGUID pixelFormat = GUID_WICPixelFormat32bppPBGRA;
+	WICBitmapCreateCacheOption options = WICBitmapCacheOnLoad;
+	IWICBitmap* bitmap = 0;
+	HRESULT hr = WICGlobal::getFactory ()->CreateBitmap ((UINT)size.x, (UINT)size.y, pixelFormat, options, &bitmap);
+	if (hr == S_OK && bitmap)
+	{
+		source = bitmap;
+	}
+}
+
+//-----------------------------------------------------------------------------
+D2DBitmap::~D2DBitmap ()
+{
+	D2DBitmapCache::instance ()->removeBitmap (this);
+	if (source)
+		source->Release ();
+}
+
+//-----------------------------------------------------------------------------
+IWICBitmap* D2DBitmap::getBitmap ()
+{
+	IWICBitmap* icBitmap = 0;
+	if (!SUCCEEDED (getSource ()->QueryInterface (IID_IWICBitmap, (void**)&icBitmap)))
+	{
+		if (SUCCEEDED (WICGlobal::getFactory ()->CreateBitmapFromSource (getSource (), WICBitmapCacheOnDemand, &icBitmap)))
+		{
+			replaceBitmapSource (icBitmap);
+		}
+	}
+	if (icBitmap)
+		icBitmap->Release ();
+	return icBitmap;
+}
+
+//-----------------------------------------------------------------------------
+bool D2DBitmap::loadFromStream (IStream* iStream)
+{
+	bool result = false;
+	IWICBitmapDecoder* decoder = 0;
+	IWICStream* stream = 0;
+	if (SUCCEEDED (WICGlobal::getFactory ()->CreateStream (&stream)))
+	{
+		if (SUCCEEDED (stream->InitializeFromIStream (iStream)))
+		{
+			WICGlobal::getFactory ()->CreateDecoderFromStream (stream, NULL, WICDecodeMetadataCacheOnLoad, &decoder);
+		}
+		stream->Release ();
+	}
+	if (decoder)
+	{
+		IWICBitmapFrameDecode* frame;
+		if (SUCCEEDED (decoder->GetFrame (0, &frame)))
+		{
+			UINT w = 0;
+			UINT h = 0;
+			frame->GetSize (&w, &h);
+			size.x = w;
+			size.y = h;
+			IWICFormatConverter* converter = 0;
+			WICGlobal::getFactory ()->CreateFormatConverter (&converter);
+			if (converter)
+			{
+				if (!SUCCEEDED (converter->Initialize (frame, GUID_WICPixelFormat32bppPBGRA, WICBitmapDitherTypeNone, NULL, 0.f, WICBitmapPaletteTypeMedianCut)))
+				{
+					converter->Release ();
+					converter = 0;
+				}
+				else
+					source = converter;
+			}
+			frame->Release ();
+		}
+		decoder->Release ();
+	}
+	return source != 0;
+}
+
+//-----------------------------------------------------------------------------
+bool D2DBitmap::load (const CResourceDescription& resourceDesc)
+{
+	if (source)
+		return true;
+
+	bool result = false;
+	ResourceStream* resourceStream = new ResourceStream;
+	if (resourceStream->open (resourceDesc, "PNG"))
+	{
+		result = loadFromStream (resourceStream);
+	}
+	resourceStream->Release ();
+	return result;
+}
+
+//-----------------------------------------------------------------------------
+HBITMAP D2DBitmap::createHBitmap ()
+{
+	BITMAPINFO pbmi = {0};
+	pbmi.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
+	pbmi.bmiHeader.biPlanes = 1;
+	pbmi.bmiHeader.biCompression = BI_RGB;
+	pbmi.bmiHeader.biWidth = (LONG)size.x;
+	pbmi.bmiHeader.biHeight = (LONG)size.y;
+	pbmi.bmiHeader.biBitCount = 32;
+
+	HDC hdc = GetDC (NULL);
+	if (hdc == 0)
+		return 0;
+	BYTE* bits = 0;
+	HBITMAP result = CreateDIBSection (hdc, &pbmi, DIB_RGB_COLORS, reinterpret_cast<void**> (&bits), 0, 0);
+	if (result)
+	{
+		getSource ()->CopyPixels (NULL, (INT)size.x * sizeof (DWORD), (INT)size.x * sizeof (DWORD) * (INT)size.y, bits);
+	}
+	return result;
+}
+
+//-----------------------------------------------------------------------------
+void D2DBitmap::replaceBitmapSource (IWICBitmapSource* newSourceBitmap)
+{
+	if (source)
+	{
+		D2DBitmapCache::instance ()->removeBitmap (this);
+		source->Release ();
+	}
+	source = newSourceBitmap;
+	if (source)
+		source->AddRef ();
+}
+
+//-----------------------------------------------------------------------------
+IPlatformBitmapPixelAccess* D2DBitmap::lockPixels (bool alphaPremultiplied)
+{
+	PixelAccess* pixelAccess = new PixelAccess;
+	if (pixelAccess->init (this, alphaPremultiplied))
+		return pixelAccess;
+	pixelAccess->forget ();
+	return 0;
+}
+
+//-----------------------------------------------------------------------------
+D2DBitmap::PixelAccess::PixelAccess ()
+: bitmap (0)
+, bLock (0)
+, ptr (0)
+, bytesPerRow (0)
+{
+}
+
+//-----------------------------------------------------------------------------
+D2DBitmap::PixelAccess::~PixelAccess ()
+{
+	if (bLock)
+	{
+		if (!alphaPremultiplied)
+			premultiplyAlpha (ptr, bytesPerRow, bitmap->getSize ());
+		bLock->Release ();
+	}
+	if (bitmap)
+	{
+		D2DBitmapCache::instance ()->removeBitmap (bitmap);
+		bitmap->forget ();
+	}
+}
+
+//-----------------------------------------------------------------------------
+bool D2DBitmap::PixelAccess::init (D2DBitmap* inBitmap, bool _alphaPremultiplied)
+{
+	bool result = false;
+	assert (inBitmap);
+	IWICBitmap* icBitmap = inBitmap->getBitmap ();
+	if (icBitmap)
+	{
+		WICRect rcLock = { 0, 0, (INT)inBitmap->getSize ().x, (INT)inBitmap->getSize ().y };
+		if (SUCCEEDED (icBitmap->Lock (&rcLock, WICBitmapLockRead | WICBitmapLockWrite, &bLock)))
+		{
+			bLock->GetStride (&bytesPerRow);
+			UINT bufferSize;
+			bLock->GetDataPointer (&bufferSize, &ptr);
+
+			bitmap = inBitmap;
+			bitmap->remember ();
+			alphaPremultiplied = _alphaPremultiplied;
+			if (!alphaPremultiplied)
+				unpremultiplyAlpha (ptr, bytesPerRow, bitmap->getSize ());
+			result = true;
+		}
+	}
+	return result;
+}
+
+//-----------------------------------------------------------------------------
+void D2DBitmap::PixelAccess::premultiplyAlpha (BYTE* ptr, UINT bytesPerRow, const CPoint& size)
+{
+	for (int32_t y = 0; y < (int32_t)size.y; y++, ptr += bytesPerRow)
+	{
+		uint32_t* pixelPtr = (uint32_t*)ptr;
+		for (int32_t x = 0; x < (int32_t)size.x; x++, pixelPtr++)
+		{
+			uint8_t* pixel = (uint8_t*)pixelPtr;
+			if (pixel[3] == 0)
+			{
+				*pixelPtr = 0;
+				continue;
+			}
+			pixel[0] = (uint32_t)((pixel[0] * pixel[3]) >> 8);
+			pixel[1] = (uint32_t)((pixel[1] * pixel[3]) >> 8);
+			pixel[2] = (uint32_t)((pixel[2] * pixel[3]) >> 8);
+		}
+	}
+}
+
+//-----------------------------------------------------------------------------
+void D2DBitmap::PixelAccess::unpremultiplyAlpha (BYTE* ptr, UINT bytesPerRow, const CPoint& size)
+{
+	for (int32_t y = 0; y < (int32_t)size.y; y++, ptr += bytesPerRow)
+	{
+		uint32_t* pixelPtr = (uint32_t*)ptr;
+		for (int32_t x = 0; x < (int32_t)size.x; x++, pixelPtr++)
+		{
+			uint8_t* pixel = (uint8_t*)pixelPtr;
+			if (pixel[3] == 0)
+				continue;
+			pixel[0] = (uint32_t)(pixel[0] * 255) / pixel[3];
+			pixel[1] = (uint32_t)(pixel[1] * 255) / pixel[3];
+			pixel[2] = (uint32_t)(pixel[2] * 255) / pixel[3];
+		}
+	}
+}
+
+//-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
+ID2D1Bitmap* D2DBitmapCache::getBitmap (D2DBitmap* bitmap, ID2D1RenderTarget* renderTarget)
+{
+	std::map<D2DBitmap*, std::map<ID2D1RenderTarget*, ID2D1Bitmap*> >::iterator it = cache.find (bitmap);
+	if (it != cache.end ())
+	{
+		std::map<ID2D1RenderTarget*, ID2D1Bitmap*>::iterator it2 = it->second.find (renderTarget);
+		if (it2 != it->second.end ())
+		{
+			return it2->second;
+		}
+		ID2D1Bitmap* b = createBitmap (bitmap, renderTarget);
+		if (b)
+			it->second.insert (std::make_pair (renderTarget, b));
+		return b;
+	}
+	std::pair<std::map<D2DBitmap*, std::map<ID2D1RenderTarget*, ID2D1Bitmap*> >::iterator, bool> insertSuccess = cache.insert (std::make_pair (bitmap, std::map<ID2D1RenderTarget*, ID2D1Bitmap*> ()));
+	if (insertSuccess.second == true)
+	{
+		ID2D1Bitmap* b = createBitmap (bitmap, renderTarget);
+		if (b)
+		{
+			insertSuccess.first->second.insert (std::make_pair (renderTarget, b));
+			return b;
+		}
+	}
+	return 0;
+}
+
+//-----------------------------------------------------------------------------
+void D2DBitmapCache::removeBitmap (D2DBitmap* bitmap)
+{
+	std::map<D2DBitmap*, std::map<ID2D1RenderTarget*, ID2D1Bitmap*> >::iterator it = cache.find (bitmap);
+	if (it != cache.end ())
+	{
+		std::map<ID2D1RenderTarget*, ID2D1Bitmap*>::iterator it2 = it->second.begin ();
+		while (it2 != it->second.end ())
+		{
+			it2->second->Release ();
+			it2++;
+		}
+		cache.erase (it);
+	}
+}
+
+//-----------------------------------------------------------------------------
+void D2DBitmapCache::removeRenderTarget (ID2D1RenderTarget* renderTarget)
+{
+	std::map<D2DBitmap*, std::map<ID2D1RenderTarget*, ID2D1Bitmap*> >::iterator it = cache.begin ();
+	while (it != cache.end ())
+	{
+		std::map<ID2D1RenderTarget*, ID2D1Bitmap*>::iterator it2 = it->second.begin ();
+		while (it2 != it->second.end ())
+		{
+			if (it2->first == renderTarget)
+			{
+				it2->second->Release ();
+				it->second.erase (it2++);
+			}
+			else
+				it2++;
+		}
+		it++;
+	}
+}
+
+//-----------------------------------------------------------------------------
+ID2D1Bitmap* D2DBitmapCache::createBitmap (D2DBitmap* bitmap, ID2D1RenderTarget* renderTarget)
+{
+	ID2D1Bitmap* d2d1Bitmap = 0; 
+	renderTarget->CreateBitmapFromWicBitmap (bitmap->getSource (), &d2d1Bitmap);
+	return d2d1Bitmap;
+}
+
+//-----------------------------------------------------------------------------
+D2DBitmapCache::~D2DBitmapCache ()
+{
+#if DEBUG
+	assert (cache.size () == 0);
+#endif
+}
+
+//-----------------------------------------------------------------------------
+D2DBitmapCache* D2DBitmapCache::instance ()
+{
+	static D2DBitmapCache gInstance;
+	return &gInstance;
+}
+
+//-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
+WICGlobal::WICGlobal ()
+: factory (0)
+{
+	HRESULT hr = CoCreateInstance (CLSID_WICImagingFactory, NULL, CLSCTX_INPROC_SERVER, IID_IWICImagingFactory, (void**)&factory);
+}
+
+//-----------------------------------------------------------------------------
+WICGlobal::~WICGlobal ()
+{
+	if (factory)
+		factory->Release ();
+}
+
+//-----------------------------------------------------------------------------
+IWICImagingFactory* WICGlobal::getFactory ()
+{
+	static WICGlobal wicGlobal;
+	return wicGlobal.factory;
+}
+
+} // namespace
+
+#endif // WINDOWS
