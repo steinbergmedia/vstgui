@@ -58,6 +58,7 @@ protected:
 		kVerticalScrollbarFlag,
 		kDontDrawFrameFlag,
 		kAutoDragScollingFlag,
+		kOverlayScrollbarsFlag,
 
 		kLastScrollViewStyleFlag
 	};
@@ -71,7 +72,8 @@ public:
 		kHorizontalScrollbar	= 1 << kHorizontalScrollbarFlag,	///< add a horizontal scrollbar
 		kVerticalScrollbar 		= 1 << kVerticalScrollbarFlag,		///< add a vertical scrollbar
 		kDontDrawFrame			= 1 << kDontDrawFrameFlag,			///< don't draw frame
-		kAutoDragScrolling		= 1 << kAutoDragScollingFlag		///< automatic scrolling for drag moves
+		kAutoDragScrolling		= 1 << kAutoDragScollingFlag,		///< automatic scrolling for drag moves
+		kOverlayScrollbars		= 1 << kOverlayScrollbarsFlag		///< scrollbars are overlayed of the content
 	};
 
 	//-----------------------------------------------------------------------------
@@ -167,6 +169,12 @@ public:
 	CColor getFrameColor () const { return frameColor; }
 	CColor getScrollerColor () const { return scrollerColor; }
 	CColor getBackgroundColor () const { return backgroundColor; }
+
+	bool getOverlayStyle () const { return overlayStyle; }
+	virtual void setOverlayStyle (bool state);
+	
+	virtual void onVisualChange ();
+	CRect getScrollerRect ();
 	//@}
 
 	// overwrite
@@ -178,6 +186,9 @@ public:
 	CMessageResult notify (CBaseObject* sender, IdStringPtr message);
 	void setViewSize (const CRect& newSize, bool invalid);
 
+	virtual CMouseEventResult onMouseEntered (CPoint& where, const CButtonState& buttons);
+	virtual CMouseEventResult onMouseExited (CPoint& where, const CButtonState& buttons);
+
 	CLASS_METHODS(CScrollbar, CControl)
 //-----------------------------------------------------------------------------
 protected:
@@ -185,7 +196,6 @@ protected:
 	void drawScroller (CDrawContext* pContext, const CRect& size);
 
 	void calculateScrollerLength ();
-	CRect getScrollerRect ();
 	void doStepping ();
 
 	ScrollbarDirection direction;
@@ -198,6 +208,8 @@ protected:
 	CColor frameColor;
 	CColor scrollerColor;
 	CColor backgroundColor;
+
+	bool overlayStyle;
 
 	IScrollbarDrawer* drawer;
 private:

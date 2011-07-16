@@ -96,6 +96,10 @@
 #endif
 #define UNICODE 1
 
+#ifndef VSTGUI_OPENGL_SUPPORT
+	#define VSTGUI_OPENGL_SUPPORT 1
+#endif
+
 //----------------------------------------------------
 // Deprecation setting
 //----------------------------------------------------

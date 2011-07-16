@@ -112,6 +112,8 @@ CFrame::~CFrame ()
 
 	if (platformFrame)
 		platformFrame->forget ();
+
+	viewFlags &= ~kIsAttached;
 }
 
 #if MAC_COCOA && MAC_CARBON

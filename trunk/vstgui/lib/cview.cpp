@@ -156,9 +156,12 @@ protected:
 
 	CMessageResult notify (CBaseObject* sender, IdStringPtr message)
 	{
-		for (std::list<CView*>::const_iterator it = views.begin (); it != views.end (); it++)
+		CBaseObjectGuard guard (this);
+		for (std::list<CView*>::const_iterator it = views.begin (); it != views.end ();)
 		{
-			(*it)->onIdle ();
+			CView* view = (*it);
+			it++;
+			view->onIdle ();
 		}
 		return kMessageNotified;
 	}
@@ -225,6 +228,7 @@ CView::CView (const CView& v)
 //-----------------------------------------------------------------------------
 CView::~CView ()
 {
+	assert (isAttached () == false);
 	if (pBackground)
 		pBackground->forget ();
 
