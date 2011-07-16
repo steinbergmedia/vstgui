@@ -49,7 +49,7 @@ AutoreleasePool::AutoreleasePool ()
 //-----------------------------------------------------------------------------
 AutoreleasePool::~AutoreleasePool ()
 {
-	[pool release];
+	[pool drain];
 }
 
 } // namespace

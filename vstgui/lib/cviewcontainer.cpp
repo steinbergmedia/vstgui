@@ -39,6 +39,8 @@
 #include "ifocusdrawing.h"
 #include "controls/ccontrol.h"
 
+#include <assert.h>
+
 namespace VSTGUI {
 
 //-----------------------------------------------------------------------------
@@ -50,15 +52,14 @@ CCView::CCView (CView* pView)
 , pNext (0)
 , pPrevious (0)
 {
-	if (pView)
-		pView->remember ();
+	assert (pView);
+	pView->remember ();
 }
 
 //-----------------------------------------------------------------------------
 CCView::~CCView ()
 { 
-	if (pView)
-		pView->forget (); 
+	pView->forget (); 
 }
 /// @endcond
 

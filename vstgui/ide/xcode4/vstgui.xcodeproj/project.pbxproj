@@ -8,6 +8,11 @@
 
 /* Begin PBXBuildFile section */
 		F42E78C81334AB7900518C17 /* idependency.h in Headers */ = {isa = PBXBuildFile; fileRef = F42E78C71334AB7900518C17 /* idependency.h */; };
+		F452950713A211E6006EEF82 /* cocoaopenglview.h in Headers */ = {isa = PBXBuildFile; fileRef = F452950513A211E6006EEF82 /* cocoaopenglview.h */; };
+		F452950813A211E6006EEF82 /* cocoaopenglview.mm in Sources */ = {isa = PBXBuildFile; fileRef = F452950613A211E6006EEF82 /* cocoaopenglview.mm */; };
+		F452950A13A2127D006EEF82 /* iplatformopenglview.h in Headers */ = {isa = PBXBuildFile; fileRef = F452950913A2127D006EEF82 /* iplatformopenglview.h */; };
+		F452950D13A2166A006EEF82 /* copenglview.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F452950B13A2166A006EEF82 /* copenglview.cpp */; };
+		F452950E13A2166A006EEF82 /* copenglview.h in Headers */ = {isa = PBXBuildFile; fileRef = F452950C13A2166A006EEF82 /* copenglview.h */; };
 		F45BD679131817CD00C46C02 /* csplitview.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F45BD677131817CD00C46C02 /* csplitview.cpp */; };
 		F45BD67A131817CD00C46C02 /* csplitview.h in Headers */ = {isa = PBXBuildFile; fileRef = F45BD678131817CD00C46C02 /* csplitview.h */; };
 		F497F0EC13080A1C00F0A613 /* cbitmap.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F497F0C213080A1C00F0A613 /* cbitmap.cpp */; };
@@ -166,6 +171,11 @@
 
 /* Begin PBXFileReference section */
 		F42E78C71334AB7900518C17 /* idependency.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = idependency.h; path = ../../lib/idependency.h; sourceTree = "<group>"; };
+		F452950513A211E6006EEF82 /* cocoaopenglview.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = cocoaopenglview.h; path = ../../lib/platform/mac/cocoa/cocoaopenglview.h; sourceTree = "<group>"; };
+		F452950613A211E6006EEF82 /* cocoaopenglview.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = cocoaopenglview.mm; path = ../../lib/platform/mac/cocoa/cocoaopenglview.mm; sourceTree = "<group>"; };
+		F452950913A2127D006EEF82 /* iplatformopenglview.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = iplatformopenglview.h; path = ../../lib/platform/iplatformopenglview.h; sourceTree = "<group>"; };
+		F452950B13A2166A006EEF82 /* copenglview.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = copenglview.cpp; path = ../../lib/copenglview.cpp; sourceTree = "<group>"; };
+		F452950C13A2166A006EEF82 /* copenglview.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = copenglview.h; path = ../../lib/copenglview.h; sourceTree = "<group>"; };
 		F45BD677131817CD00C46C02 /* csplitview.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = csplitview.cpp; path = ../../lib/csplitview.cpp; sourceTree = "<group>"; };
 		F45BD678131817CD00C46C02 /* csplitview.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = csplitview.h; path = ../../lib/csplitview.h; sourceTree = "<group>"; };
 		F497F0AD1308094300F0A613 /* libvstgui.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libvstgui.a; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -383,6 +393,8 @@
 				F497F0D313080A1C00F0A613 /* cgraphicspath.h */,
 				F497F0D413080A1C00F0A613 /* coffscreencontext.cpp */,
 				F497F0D513080A1C00F0A613 /* coffscreencontext.h */,
+				F452950B13A2166A006EEF82 /* copenglview.cpp */,
+				F452950C13A2166A006EEF82 /* copenglview.h */,
 				F497F0D713080A1C00F0A613 /* cpoint.cpp */,
 				F497F0D813080A1C00F0A613 /* cpoint.h */,
 				F497F0D913080A1C00F0A613 /* crect.cpp */,
@@ -474,6 +486,7 @@
 				F497F18B13080B2100F0A613 /* mac */,
 				F497F16C13080B0200F0A613 /* iplatformbitmap.h */,
 				F497F16D13080B0200F0A613 /* iplatformframe.h */,
+				F452950913A2127D006EEF82 /* iplatformopenglview.h */,
 				F497F16E13080B0200F0A613 /* iplatformoptionmenu.h */,
 				F4FC1A9C1328C7B40066E2F8 /* iplatformstring.h */,
 				F497F16F13080B0200F0A613 /* iplatformtextedit.h */,
@@ -527,6 +540,8 @@
 				F497F19E13080B4800F0A613 /* cocoahelpers.mm */,
 				F497F19F13080B4800F0A613 /* cocoatextedit.h */,
 				F497F1A013080B4800F0A613 /* cocoatextedit.mm */,
+				F452950513A211E6006EEF82 /* cocoaopenglview.h */,
+				F452950613A211E6006EEF82 /* cocoaopenglview.mm */,
 				F497F1A313080B4800F0A613 /* nsviewframe.h */,
 				F497F1A413080B4800F0A613 /* nsviewframe.mm */,
 				F497F1A513080B4800F0A613 /* nsviewoptionmenu.h */,
@@ -664,6 +679,9 @@
 				F4FC1AA21328C8C40066E2F8 /* macstring.h in Headers */,
 				F4FC1AA61328CB320066E2F8 /* cstring.h in Headers */,
 				F42E78C81334AB7900518C17 /* idependency.h in Headers */,
+				F452950713A211E6006EEF82 /* cocoaopenglview.h in Headers */,
+				F452950A13A2127D006EEF82 /* iplatformopenglview.h in Headers */,
+				F452950E13A2166A006EEF82 /* copenglview.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -693,7 +711,7 @@
 		F497F0A41308094300F0A613 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0410;
+				LastUpgradeCheck = 0420;
 				ORGANIZATIONNAME = "Steinberg Media Technologies AG";
 			};
 			buildConfigurationList = F497F0A71308094300F0A613 /* Build configuration list for PBXProject "vstgui" */;
@@ -790,6 +808,8 @@
 				F45BD679131817CD00C46C02 /* csplitview.cpp in Sources */,
 				F4FC1AA11328C8C40066E2F8 /* macstring.mm in Sources */,
 				F4FC1AA51328CB320066E2F8 /* cstring.cpp in Sources */,
+				F452950813A211E6006EEF82 /* cocoaopenglview.mm in Sources */,
+				F452950D13A2166A006EEF82 /* copenglview.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

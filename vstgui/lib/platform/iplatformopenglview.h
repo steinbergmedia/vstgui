@@ -2,7 +2,7 @@
 // VST Plug-Ins SDK
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 //
-// Version 4.0
+// Version 4.1
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
@@ -32,75 +32,70 @@
 // OF THE POSSIBILITY OF SUCH DAMAGE.
 //-----------------------------------------------------------------------------
 
-#ifndef __nsviewframe__
-#define __nsviewframe__
+#ifndef __iplatformopenglview__
+#define __iplatformopenglview__
 
-#include "../../../cframe.h"
+#include "../vstguibase.h"
 
-#if MAC_COCOA
+/// @cond ignore
 
-#include <list>
+#if VSTGUI_OPENGL_SUPPORT
 
-#ifdef __OBJC__
-#import <Cocoa/Cocoa.h>
-#else
-struct NSView;
-struct NSRect;
-#endif
+#include "../crect.h"
 
 namespace VSTGUI {
-class CocoaTooltipWindow;
+class IPlatformFrame;
 
 //-----------------------------------------------------------------------------
-class NSViewFrame : public IPlatformFrame
+struct PixelFormat
+{
+	// TODO: do we need more ?
+
+	enum {
+		kDoubleBuffered = 1 << 0,
+		kAccelerated	= 1 << 1,
+		kMultiSample	= 1 << 2,
+	};
+
+	uint32_t flags;
+	uint32_t depthSize;
+	uint32_t samples;		///< only used when kMultiSample is set
+
+	PixelFormat () : depthSize (32), samples (0), flags (kAccelerated) {}
+	PixelFormat (const PixelFormat& pf) : depthSize (pf.depthSize), samples (pf.samples), flags (pf.flags) {}
+	
+	PixelFormat& operator() (const PixelFormat& pf) { depthSize = pf.depthSize; samples = pf.samples; flags = pf.flags; return *this; }
+};
+
+//-----------------------------------------------------------------------------
+class IOpenGLView
 {
 public:
-	NSViewFrame (IPlatformFrameCallback* frame, const CRect& size, NSView* parent);
-	~NSViewFrame ();
-
-	NSView* getPlatformControl () const { return nsView; }
-	IPlatformFrameCallback* getFrame () const { return frame; }
-	
-	void setLastDragOperationResult (CView::DragResult result) { lastDragOperationResult = result; }
-	void setIgnoreNextResignFirstResponder (bool state) { ignoreNextResignFirstResponder = state; }
-	bool getIgnoreNextResignFirstResponder () const { return ignoreNextResignFirstResponder; }
-
-	virtual void drawRect (NSRect* rect);
-
-	// IPlatformFrame
-	bool getGlobalPosition (CPoint& pos) const;
-	bool setSize (const CRect& newSize);
-	bool getSize (CRect& size) const;
-	bool getCurrentMousePosition (CPoint& mousePosition) const;
-	bool getCurrentMouseButtons (CButtonState& buttons) const;
-	bool setMouseCursor (CCursorType type);
-	bool invalidRect (const CRect& rect);
-	bool scrollRect (const CRect& src, const CPoint& distance);
-	bool showTooltip (const CRect& rect, const char* utf8Text);
-	bool hideTooltip ();
-	void* getPlatformRepresentation () const { return nsView; }
-	IPlatformTextEdit* createPlatformTextEdit (IPlatformTextEditCallback* textEdit);
-	IPlatformOptionMenu* createPlatformOptionMenu ();
-#if VSTGUI_OPENGL_SUPPORT
-	IPlatformOpenGLView* createPlatformOpenGLView ();
-#endif
-	COffscreenContext* createOffscreenContext (CCoord width, CCoord height);
-	CGraphicsPath* createGraphicsPath ();
-	CView::DragResult doDrag (CDropSource* source, const CPoint& offset, CBitmap* dragBitmap);
+	virtual void drawOpenGL (const CRect& updateRect) = 0;
+};
 
 //-----------------------------------------------------------------------------
-protected:
-	static void initClass ();
+class IPlatformOpenGLView : public CBaseObject
+{
+public:
 
-	IPlatformFrameCallback* frame;
-	NSView* nsView;
-	CocoaTooltipWindow* tooltipWindow;
+	virtual bool init (IOpenGLView* view, PixelFormat* pixelFormat = 0) = 0;
+	virtual void remove () = 0;
 
-	CView::DragResult lastDragOperationResult;
-	bool ignoreNextResignFirstResponder;
+	virtual void invalidRect (const CRect& rect) = 0;
+	virtual void viewSizeChanged (const CRect& visibleSize) = 0; ///< visibleSize is cframe relative
+
+	virtual bool makeContextCurrent () = 0;
+	virtual bool lockContext () = 0;
+	virtual bool unlockContext () = 0;
+
+	virtual void swapBuffers () = 0;
 };
 
 } // namespace
 
-#endif // MAC_COCOA
-#endif // __nsviewframe__
+#endif // VSTGUI_OPENGL_SUPPORT
+
+/// @endcond
+
+#endif // __iplatformopenglview__

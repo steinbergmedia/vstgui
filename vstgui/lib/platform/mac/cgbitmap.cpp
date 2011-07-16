@@ -329,17 +329,17 @@ public:
 		bitmap->forget ();
 	}
 
-	uint8_t* getAddress ()
+	uint8_t* getAddress () const
 	{
 		return (uint8_t*)bitmap->getBits ();
 	}
 	
-	int32_t getBytesPerRow ()
+	int32_t getBytesPerRow () const
 	{
 		return bitmap->getBytesPerRow ();
 	}
 	
-	PixelFormat getPixelFormat () 
+	PixelFormat getPixelFormat () const
 	{
 		#ifdef __BIG_ENDIAN__
 		return kRGBA;

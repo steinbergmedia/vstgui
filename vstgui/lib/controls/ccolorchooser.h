@@ -56,12 +56,22 @@ public:
 	virtual void colorChanged (CColorChooser* chooser, const CColor& color) = 0;
 };
 
+struct CColorChooserUISettings
+{
+	CFontRef font;
+	CColor fontColor;
+
+	bool checkerBoardBack;
+	
+	CColorChooserUISettings ();
+};
+
 ///	@ingroup new_in_4_0
 //-----------------------------------------------------------------------------
 class CColorChooser : public CViewContainer, public CControlListener
 {
 public:
-	CColorChooser (IColorChooserDelegate* delegate = 0, const CColor& initialColor = kTransparentCColor);
+	CColorChooser (IColorChooserDelegate* delegate = 0, const CColor& initialColor = kTransparentCColor, const CColorChooserUISettings& settings = CColorChooserUISettings ());
 	~CColorChooser ();
 
 	void setColor (const CColor& newColor);

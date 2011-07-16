@@ -2,7 +2,7 @@
 // VST Plug-Ins SDK
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 //
-// Version 4.0
+// Version 4.1
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
@@ -32,74 +32,103 @@
 // OF THE POSSIBILITY OF SUCH DAMAGE.
 //-----------------------------------------------------------------------------
 
-#ifndef __win32frame__
-#define __win32frame__
+#include "copenglview.h"
+#include "platform/iplatformframe.h"
+#include "cframe.h"
+#include <assert.h>
 
-#include "../../cframe.h"
-
-#if WINDOWS
-
-#include <windows.h>
+#if VSTGUI_OPENGL_SUPPORT
 
 namespace VSTGUI {
 
 //-----------------------------------------------------------------------------
-class Win32Frame : public IPlatformFrame
+COpenGLView::COpenGLView (const CRect& size)
+: CView (size)
+, platformOpenGLView (0)
 {
-public:
-	Win32Frame (IPlatformFrameCallback* frame, const CRect& size, HWND parent);
-	~Win32Frame ();
-
-	HWND getPlatformWindow () const { return windowHandle; }
-	HWND getParentPlatformWindow () const { return parentWindow; }
-	HWND getOuterWindow () const;
-	IPlatformFrameCallback* getFrame () const { return frame; }
-	
-	// IPlatformFrame
-	bool getGlobalPosition (CPoint& pos) const;
-	bool setSize (const CRect& newSize);
-	bool getSize (CRect& size) const;
-	bool getCurrentMousePosition (CPoint& mousePosition) const;
-	bool getCurrentMouseButtons (CButtonState& buttons) const;
-	bool setMouseCursor (CCursorType type);
-	bool invalidRect (const CRect& rect);
-	bool scrollRect (const CRect& src, const CPoint& distance);
-	bool showTooltip (const CRect& rect, const char* utf8Text);
-	bool hideTooltip ();
-	void* getPlatformRepresentation () const { return windowHandle; }
-	IPlatformTextEdit* createPlatformTextEdit (IPlatformTextEditCallback* textEdit);
-	IPlatformOptionMenu* createPlatformOptionMenu ();
-#if VSTGUI_OPENGL_SUPPORT
-	IPlatformOpenGLView* createPlatformOpenGLView ();
-#endif
-	COffscreenContext* createOffscreenContext (CCoord width, CCoord height);
-	CView::DragResult doDrag (CDropSource* source, const CPoint& offset, CBitmap* dragBitmap);
+}
 
 //-----------------------------------------------------------------------------
-protected:
-	void initTooltip ();
-	void paint (HWND hwnd);
+COpenGLView::~COpenGLView ()
+{
+	assert (platformOpenGLView == 0);
+}
 
-	static void initWindowClass ();
-	static void destroyWindowClass ();
-	static LONG_PTR WINAPI WindowProc (HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam);
-	static int32_t gUseCount;
+//-----------------------------------------------------------------------------
+void COpenGLView::updatePlatformOpenGLViewSize ()
+{
+	if (platformOpenGLView)
+	{
+		CRect visibleSize (getVisibleSize ());
+		CPoint offset;
+		localToFrame (offset);
+		visibleSize.offset (offset.x, offset.y);
+		platformOpenGLView->viewSizeChanged (visibleSize);
+		platformOpenGLView->invalidRect (getViewSize ());
+	}
+}
 
-	HWND parentWindow;
-	HWND windowHandle;
-	HWND tooltipWindow;
+// CView
+//-----------------------------------------------------------------------------
+void COpenGLView::setViewSize (const CRect& rect, bool invalid)
+{
+	CView::setViewSize (rect, invalid);
+	updatePlatformOpenGLViewSize ();
+}
 
-	COffscreenContext* backBuffer;
-	CDrawContext* deviceContext;
+//-----------------------------------------------------------------------------
+void COpenGLView::parentSizeChanged ()
+{
+	CView::parentSizeChanged ();
+	updatePlatformOpenGLViewSize ();
+}
 
-	bool mouseInside;
+//-----------------------------------------------------------------------------
+bool COpenGLView::attached (CView* parent)
+{
+	if (CView::attached (parent))
+	{
+		IPlatformFrame* platformFrame = getFrame ()->getPlatformFrame ();
+		platformOpenGLView = platformFrame ? platformFrame->createPlatformOpenGLView () : 0;
+		if (platformOpenGLView)
+		{
+			if (platformOpenGLView->init (this, getPixelFormat ()))
+			{
+				updatePlatformOpenGLViewSize ();
+				return true;
+			}
+			platformOpenGLView->forget ();
+			platformOpenGLView = 0;
+		}
+	}
+	return false;
+}
 
-	RGNDATA* updateRegionList;
-	DWORD updateRegionListSize;
-};
+//-----------------------------------------------------------------------------
+bool COpenGLView::removed (CView* parent)
+{
+	if (platformOpenGLView)
+	{
+		platformOpenGLView->remove ();
+		platformOpenGLView->forget ();
+		platformOpenGLView = 0;
+	}
+	return CView::removed (parent);
+}
+
+//-----------------------------------------------------------------------------
+void COpenGLView::invalidRect (const CRect& rect)
+{
+	if (platformOpenGLView)
+	{
+		platformOpenGLView->invalidRect (rect);
+	}
+	else
+	{
+		CView::invalidRect (rect);
+	}
+}
 
 } // namespace
 
-#endif // WINDOWS
-
-#endif // __win32frame__
+#endif // VSTGUI_OPENGL_SUPPORT

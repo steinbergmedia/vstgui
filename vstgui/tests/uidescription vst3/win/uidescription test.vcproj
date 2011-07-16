@@ -198,6 +198,14 @@
 				>
 			</File>
 			<File
+				RelativePath="..\source\openglviewtest.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\source\openglviewtest.h"
+				>
+			</File>
+			<File
 				RelativePath="..\source\subcontrollertest.cpp"
 				>
 			</File>

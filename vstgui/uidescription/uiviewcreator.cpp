@@ -718,6 +718,14 @@ public:
 			else
 				style |= CScrollView::kDontDrawFrame;
 		}
+		attr = attributes.getAttributeValue ("overlay-scrollbars");
+		if (attr)
+		{
+			if (*attr == "true")
+				style |= CScrollView::kOverlayScrollbars;
+			else
+				style &= ~CScrollView::kOverlayScrollbars;
+		}
 		scrollView->setStyle (style);
 		attr = attributes.getAttributeValue ("scrollbar-width");
 		if (attr)
@@ -736,6 +744,7 @@ public:
 		attributeNames.push_back ("horizontal-scrollbar");
 		attributeNames.push_back ("vertical-scrollbar");
 		attributeNames.push_back ("auto-drag-scrolling");
+		attributeNames.push_back ("overlay-scrollbars");
 		attributeNames.push_back ("scrollbar-width");
 		attributeNames.push_back ("bordered");
 		return true;
@@ -749,6 +758,7 @@ public:
 		if (attributeName == "horizontal-scrollbar") return kBooleanType;
 		if (attributeName == "vertical-scrollbar") return kBooleanType;
 		if (attributeName == "auto-drag-scrolling") return kBooleanType;
+		if (attributeName == "overlay-scrollbars") return kBooleanType;
 		if (attributeName == "bordered") return kBooleanType;
 		if (attributeName == "scrollbar-width") return kIntegerType;
 		return kUnknownType;
@@ -812,6 +822,11 @@ public:
 		if (attributeName == "bordered")
 		{
 			stringValue = sc->getStyle () & CScrollView::kDontDrawFrame ? "false" : "true";
+			return true;
+		}
+		if (attributeName == "overlay-scrollbars")
+		{
+			stringValue = sc->getStyle () & CScrollView::kOverlayScrollbars ? "true" : "false";
 			return true;
 		}
 		return false;

@@ -42,6 +42,7 @@
 #include "lib/cframe.cpp"
 #include "lib/cgraphicspath.cpp"
 #include "lib/coffscreencontext.cpp"
+#include "lib/copenglview.cpp"
 #include "lib/cpoint.cpp"
 #include "lib/crect.cpp"
 #include "lib/cscrollview.cpp"

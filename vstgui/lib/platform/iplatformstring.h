@@ -41,6 +41,7 @@
 
 namespace VSTGUI {
 
+//-----------------------------------------------------------------------------
 class IPlatformString : public CBaseObject
 {
 public:

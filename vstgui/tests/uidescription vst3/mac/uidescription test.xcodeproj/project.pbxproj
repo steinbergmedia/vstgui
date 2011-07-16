@@ -28,10 +28,13 @@
 		F440758810BF043D003C59F6 /* vst3editor.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F440758610BF043D003C59F6 /* vst3editor.cpp */; };
 		F44075AD10BF053A003C59F6 /* myEditor.uidesc in Resources */ = {isa = PBXBuildFile; fileRef = F44075AC10BF053A003C59F6 /* myEditor.uidesc */; };
 		F4457815110A06590022C0E5 /* FrameBackground.png in Resources */ = {isa = PBXBuildFile; fileRef = F4457814110A06590022C0E5 /* FrameBackground.png */; };
+		F455A17013D1BBB800C2C7C5 /* openglviewtest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F455A16F13D1BBB800C2C7C5 /* openglviewtest.cpp */; };
+		F455A17713D1C60800C2C7C5 /* OpenGLViewTest.uidesc in Resources */ = {isa = PBXBuildFile; fileRef = F455A17613D1C60800C2C7C5 /* OpenGLViewTest.uidesc */; };
 		F4657609114F83D100846DAE /* graphicstest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4657608114F83D100846DAE /* graphicstest.cpp */; };
 		F465763D114F8EA200846DAE /* GraphicsTest.uidesc in Resources */ = {isa = PBXBuildFile; fileRef = F465763C114F8EA200846DAE /* GraphicsTest.uidesc */; };
 		F496F16C119715B500DD3F7A /* Accelerate.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F496F16B119715B500DD3F7A /* Accelerate.framework */; };
 		F4C04ECE123B8E450082BA28 /* vst3sdksources.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4C04ECD123B8E450082BA28 /* vst3sdksources.cpp */; };
+		F4CF0E1B13B5E17A0027351A /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F4CF0E1A13B5E17A0027351A /* OpenGL.framework */; };
 		F4D7874A1380432A00B06ADC /* libvstgui.a in Frameworks */ = {isa = PBXBuildFile; fileRef = F4D787491380432A00B06ADC /* libvstgui.a */; };
 		F4F5DA8A10BFD28900DB6C33 /* TabController.png in Resources */ = {isa = PBXBuildFile; fileRef = F4F5DA8910BFD28900DB6C33 /* TabController.png */; };
 /* End PBXBuildFile section */
@@ -83,12 +86,16 @@
 		F440758710BF043D003C59F6 /* vst3editor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = vst3editor.h; path = "../../../plugin-bindings/vst3editor.h"; sourceTree = SOURCE_ROOT; };
 		F44075AC10BF053A003C59F6 /* myEditor.uidesc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; name = myEditor.uidesc; path = ../resource/myEditor.uidesc; sourceTree = SOURCE_ROOT; };
 		F4457814110A06590022C0E5 /* FrameBackground.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = FrameBackground.png; path = ../resource/FrameBackground.png; sourceTree = SOURCE_ROOT; };
+		F455A16F13D1BBB800C2C7C5 /* openglviewtest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = openglviewtest.cpp; path = ../source/openglviewtest.cpp; sourceTree = "<group>"; };
+		F455A17113D1BBCD00C2C7C5 /* openglviewtest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = openglviewtest.h; path = ../source/openglviewtest.h; sourceTree = "<group>"; };
+		F455A17613D1C60800C2C7C5 /* OpenGLViewTest.uidesc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; name = OpenGLViewTest.uidesc; path = ../resource/OpenGLViewTest.uidesc; sourceTree = "<group>"; };
 		F4657607114F83D100846DAE /* graphicstest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = graphicstest.h; path = ../source/graphicstest.h; sourceTree = SOURCE_ROOT; };
 		F4657608114F83D100846DAE /* graphicstest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = graphicstest.cpp; path = ../source/graphicstest.cpp; sourceTree = SOURCE_ROOT; };
 		F465763C114F8EA200846DAE /* GraphicsTest.uidesc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; name = GraphicsTest.uidesc; path = ../resource/GraphicsTest.uidesc; sourceTree = SOURCE_ROOT; };
 		F496F16B119715B500DD3F7A /* Accelerate.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Accelerate.framework; path = System/Library/Frameworks/Accelerate.framework; sourceTree = SDKROOT; };
 		F4C04ECD123B8E450082BA28 /* vst3sdksources.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = vst3sdksources.cpp; path = ../source/vst3sdksources.cpp; sourceTree = SOURCE_ROOT; };
 		F4C04F00123B90940082BA28 /* README.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = README.txt; path = ../README.txt; sourceTree = SOURCE_ROOT; };
+		F4CF0E1A13B5E17A0027351A /* OpenGL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGL.framework; path = System/Library/Frameworks/OpenGL.framework; sourceTree = SDKROOT; };
 		F4D787491380432A00B06ADC /* libvstgui.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; name = libvstgui.a; path = ../../../ide/xcode4/build/Debug/libvstgui.a; sourceTree = SOURCE_ROOT; };
 		F4F5DA8910BFD28900DB6C33 /* TabController.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = TabController.png; path = ../resource/TabController.png; sourceTree = SOURCE_ROOT; };
 		F4FFBE471169E8CA00A9BD34 /* bitmapsaturator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = bitmapsaturator.h; path = ../source/bitmapsaturator.h; sourceTree = SOURCE_ROOT; };
@@ -99,6 +106,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F4CF0E1B13B5E17A0027351A /* OpenGL.framework in Frameworks */,
 				F4D7874A1380432A00B06ADC /* libvstgui.a in Frameworks */,
 				F440754A10BE6D00003C59F6 /* Carbon.framework in Frameworks */,
 				F440754C10BE6D00003C59F6 /* Cocoa.framework in Frameworks */,
@@ -136,6 +144,8 @@
 				F44074C710BE6BB6003C59F6 /* VST3SDK */,
 				F440753410BE6C0A003C59F6 /* prefix.h */,
 				F440755510BE6D26003C59F6 /* uidescription test.cpp */,
+				F455A16F13D1BBB800C2C7C5 /* openglviewtest.cpp */,
+				F455A17113D1BBCD00C2C7C5 /* openglviewtest.h */,
 				F42731C011254BEC00BE2194 /* uidescription test.h */,
 				F42731DD1125507F00BE2194 /* factory.cpp */,
 				F42731E31125516A00BE2194 /* subcontrollertest.h */,
@@ -153,6 +163,7 @@
 			isa = PBXGroup;
 			children = (
 				F4D787491380432A00B06ADC /* libvstgui.a */,
+				F4CF0E1A13B5E17A0027351A /* OpenGL.framework */,
 				F440754910BE6D00003C59F6 /* Carbon.framework */,
 				F440754B10BE6D00003C59F6 /* Cocoa.framework */,
 				F496F16B119715B500DD3F7A /* Accelerate.framework */,
@@ -205,6 +216,7 @@
 				F465763C114F8EA200846DAE /* GraphicsTest.uidesc */,
 				F44075AC10BF053A003C59F6 /* myEditor.uidesc */,
 				F42732691125623200BE2194 /* SubControllerTest.uidesc */,
+				F455A17613D1C60800C2C7C5 /* OpenGLViewTest.uidesc */,
 			);
 			name = Resources;
 			sourceTree = "<group>";
@@ -293,6 +305,7 @@
 				F4273C19112C0C2400BE2194 /* vumeter_front.bmp in Resources */,
 				F41CA21F112E9E6B00D425D7 /* AnimationTest.uidesc in Resources */,
 				F465763D114F8EA200846DAE /* GraphicsTest.uidesc in Resources */,
+				F455A17713D1C60800C2C7C5 /* OpenGLViewTest.uidesc in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -326,6 +339,7 @@
 				F42731E51125516A00BE2194 /* subcontrollertest.cpp in Sources */,
 				F41CA1C8112E99F000D425D7 /* animationtest.cpp in Sources */,
 				F4657609114F83D100846DAE /* graphicstest.cpp in Sources */,
+				F455A17013D1BBB800C2C7C5 /* openglviewtest.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

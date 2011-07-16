@@ -139,16 +139,17 @@ public:
 class ColorView : public CControl
 {
 public:
-	ColorView (const CRect& r, const CColor& initialColor, CControlListener* listener = 0, int32_t tag = -1)
+	ColorView (const CRect& r, const CColor& initialColor, CControlListener* listener = 0, int32_t tag = -1, bool checkerBoardBack = true)
 	: CControl (r, listener, tag)
 	, color (initialColor)
+	, checkerBoardBack (checkerBoardBack)
 	{
 	}
 	
 	void draw (CDrawContext* context)
 	{
 		context->setDrawMode (kAliasing);
-		if (color.alpha != 255)
+		if (checkerBoardBack && color.alpha != 255)
 		{
 			context->setFillColor (kWhiteCColor);
 			context->drawRect (getViewSize (), kDrawFilled);
@@ -259,7 +260,15 @@ public:
 	CLASS_METHODS(ColorView, CControl)
 protected:
 	CColor color;
+	bool checkerBoardBack;
 };
+
+//-----------------------------------------------------------------------------
+static void setupParamDisplay (CParamDisplay* display, const CColorChooserUISettings& settings)
+{
+	display->setFont (settings.font);
+	display->setFontColor (settings.fontColor);
+}
 
 } // namespace CColorChooserInternal
 
@@ -322,7 +331,15 @@ bool CColorChooser::convertAngle (UTF8StringPtr string, float& output, void* use
 }
 
 //-----------------------------------------------------------------------------
-CColorChooser::CColorChooser (IColorChooserDelegate* delegate, const CColor& initialColor)
+CColorChooserUISettings::CColorChooserUISettings ()
+{
+	font = kNormalFont;
+	fontColor = kWhiteCColor;
+	checkerBoardBack = true;
+}
+
+//-----------------------------------------------------------------------------
+CColorChooser::CColorChooser (IColorChooserDelegate* delegate, const CColor& initialColor, const CColorChooserUISettings& settings)
 : CViewContainer (CRect (0, 0, 0, 0))
 , delegate (delegate)
 , redSlider (0)
@@ -338,13 +355,13 @@ CColorChooser::CColorChooser (IColorChooserDelegate* delegate, const CColor& ini
 	setTransparency (true);
 	setAutosizeFlags (kAutosizeAll);
 
-	const CCoord controlHeight = 15;
+	const CCoord controlHeight = settings.font->getSize () + 2;
 	const CCoord controlWidth = 150;
 	const CCoord editWidth = 40;
 	const CCoord labelWidth = 40;
 	const CCoord margin = 5;
 	
-	colorView = new CColorChooserInternal::ColorView (CRect (1, 1, labelWidth + margin + controlWidth + margin + editWidth, 100), initialColor, this, kColorTag);
+	colorView = new CColorChooserInternal::ColorView (CRect (1, 1, labelWidth + margin + controlWidth + margin + editWidth, 100), initialColor, this, kColorTag, settings.checkerBoardBack);
 	colorView->setAutosizeFlags (kAutosizeAll);
 	addView (colorView);
 	CRect r (colorView->getViewSize ());
@@ -401,42 +418,49 @@ CColorChooser::CColorChooser (IColorChooserDelegate* delegate, const CColor& ini
 	r.setWidth (labelWidth);
 	r.setHeight (controlHeight);
 	CTextLabel* label = new CTextLabel (r, "Red");
+	CColorChooserInternal::setupParamDisplay (label, settings);
 	label->setAutosizeFlags (kAutosizeLeft|kAutosizeBottom);
 	label->setTransparency (true);
 	addView (label);
 
 	r.offset (0, margin + controlHeight);
 	label = new CTextLabel (r, "Green");
+	CColorChooserInternal::setupParamDisplay (label, settings);
 	label->setAutosizeFlags (kAutosizeLeft|kAutosizeBottom);
 	label->setTransparency (true);
 	addView (label);
 
 	r.offset (0, margin + controlHeight);
 	label = new CTextLabel (r, "Blue");
+	CColorChooserInternal::setupParamDisplay (label, settings);
 	label->setAutosizeFlags (kAutosizeLeft|kAutosizeBottom);
 	label->setTransparency (true);
 	addView (label);
 
 	r.offset (0, margin + margin + controlHeight);
 	label = new CTextLabel (r, "Hue");
+	CColorChooserInternal::setupParamDisplay (label, settings);
 	label->setAutosizeFlags (kAutosizeLeft|kAutosizeBottom);
 	label->setTransparency (true);
 	addView (label);
 
 	r.offset (0, margin + controlHeight);
 	label = new CTextLabel (r, "Sat");
+	CColorChooserInternal::setupParamDisplay (label, settings);
 	label->setAutosizeFlags (kAutosizeLeft|kAutosizeBottom);
 	label->setTransparency (true);
 	addView (label);
 
 	r.offset (0, margin + controlHeight);
 	label = new CTextLabel (r, "Value");
+	CColorChooserInternal::setupParamDisplay (label, settings);
 	label->setAutosizeFlags (kAutosizeLeft|kAutosizeBottom);
 	label->setTransparency (true);
 	addView (label);
 
 	r.offset (0, margin + margin + controlHeight);
 	label = new CTextLabel (r, "Alpha");
+	CColorChooserInternal::setupParamDisplay (label, settings);
 	label->setAutosizeFlags (kAutosizeLeft|kAutosizeBottom);
 	label->setTransparency (true);
 	addView (label);
@@ -446,6 +470,7 @@ CColorChooser::CColorChooser (IColorChooserDelegate* delegate, const CColor& ini
 	r.setWidth (editWidth);
 	r.setHeight (controlHeight);
 	editFields[0] = new CTextEdit (r, this, kRedTag, 0);
+	CColorChooserInternal::setupParamDisplay (editFields[0], settings);
 	editFields[0]->setAutosizeFlags (kAutosizeRight|kAutosizeBottom);
 	editFields[0]->setTransparency (true);
 	editFields[0]->setStringToValueProc (convertColorValue);
@@ -454,6 +479,7 @@ CColorChooser::CColorChooser (IColorChooserDelegate* delegate, const CColor& ini
 
 	r.offset (0, margin + controlHeight);
 	editFields[1] = new CTextEdit (r, this, kGreenTag, 0);
+	CColorChooserInternal::setupParamDisplay (editFields[1], settings);
 	editFields[1]->setAutosizeFlags (kAutosizeRight|kAutosizeBottom);
 	editFields[1]->setTransparency (true);
 	editFields[1]->setStringToValueProc (convertColorValue);
@@ -462,6 +488,7 @@ CColorChooser::CColorChooser (IColorChooserDelegate* delegate, const CColor& ini
 
 	r.offset (0, margin + controlHeight);
 	editFields[2] = new CTextEdit (r, this, kBlueTag, 0);
+	CColorChooserInternal::setupParamDisplay (editFields[2], settings);
 	editFields[2]->setAutosizeFlags (kAutosizeRight|kAutosizeBottom);
 	editFields[2]->setTransparency (true);
 	editFields[2]->setStringToValueProc (convertColorValue);
@@ -470,6 +497,7 @@ CColorChooser::CColorChooser (IColorChooserDelegate* delegate, const CColor& ini
 
 	r.offset (0, margin + margin + controlHeight);
 	editFields[3] = new CTextEdit (r, this, kHueTag, 0);
+	CColorChooserInternal::setupParamDisplay (editFields[3], settings);
 	editFields[3]->setAutosizeFlags (kAutosizeRight|kAutosizeBottom);
 	editFields[3]->setTransparency (true);
 	editFields[3]->setStringToValueProc (convertAngle);
@@ -478,6 +506,7 @@ CColorChooser::CColorChooser (IColorChooserDelegate* delegate, const CColor& ini
 
 	r.offset (0, margin + controlHeight);
 	editFields[4] = new CTextEdit (r, this, kSaturationTag, 0);
+	CColorChooserInternal::setupParamDisplay (editFields[4], settings);
 	editFields[4]->setAutosizeFlags (kAutosizeRight|kAutosizeBottom);
 	editFields[4]->setTransparency (true);
 	editFields[4]->setStringToValueProc (convertNormalized);
@@ -486,6 +515,7 @@ CColorChooser::CColorChooser (IColorChooserDelegate* delegate, const CColor& ini
 
 	r.offset (0, margin + controlHeight);
 	editFields[5] = new CTextEdit (r, this, kBrightnessTag, 0);
+	CColorChooserInternal::setupParamDisplay (editFields[5], settings);
 	editFields[5]->setAutosizeFlags (kAutosizeRight|kAutosizeBottom);
 	editFields[5]->setTransparency (true);
 	editFields[5]->setStringToValueProc (convertNormalized);
@@ -494,6 +524,7 @@ CColorChooser::CColorChooser (IColorChooserDelegate* delegate, const CColor& ini
 
 	r.offset (0, margin + margin + controlHeight);
 	editFields[6] = new CTextEdit (r, this, kAlphaTag, 0);
+	CColorChooserInternal::setupParamDisplay (editFields[6], settings);
 	editFields[6]->setAutosizeFlags (kAutosizeRight|kAutosizeBottom);
 	editFields[6]->setTransparency (true);
 	editFields[6]->setStringToValueProc (convertColorValue);

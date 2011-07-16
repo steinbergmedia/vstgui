@@ -46,6 +46,7 @@
 #include "lib/cframe.h"
 #include "lib/cgraphicspath.h"
 #include "lib/coffscreencontext.h"
+#include "lib/copenglview.h"
 #include "lib/cpoint.h"
 #include "lib/crect.h"
 #include "lib/cscrollview.h"
