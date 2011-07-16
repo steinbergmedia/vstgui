@@ -78,9 +78,9 @@ protected:
 
 		bool init (D2DBitmap* bitmap, bool alphaPremultiplied);
 
-		uint8_t* getAddress () { return (uint8_t*)ptr; }
-		int32_t getBytesPerRow () { return (int32_t)bytesPerRow; }
-		PixelFormat getPixelFormat () { return kBGRA; }
+		uint8_t* getAddress () const { return (uint8_t*)ptr; }
+		int32_t getBytesPerRow () const { return (int32_t)bytesPerRow; }
+		PixelFormat getPixelFormat () const { return kBGRA; }
 
 	protected:
 		static void premultiplyAlpha (BYTE* ptr, UINT bytesPerRow, const CPoint& size);

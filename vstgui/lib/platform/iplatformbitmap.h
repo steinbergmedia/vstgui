@@ -67,9 +67,9 @@ public:
 		kBGRA
 	};
 	
-	virtual uint8_t* getAddress () = 0;
-	virtual int32_t getBytesPerRow () = 0;
-	virtual PixelFormat getPixelFormat () = 0;
+	virtual uint8_t* getAddress () const = 0;
+	virtual int32_t getBytesPerRow () const = 0;
+	virtual PixelFormat getPixelFormat () const = 0;
 };
 
 } // namespace

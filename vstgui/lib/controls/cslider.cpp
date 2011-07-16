@@ -437,7 +437,7 @@ CMouseEventResult CSlider::onMouseMoved (CPoint& where, const CButtonState& butt
 		else if (!(buttons & kZoomModifier))
 			oldVal = (value - getMin ()) / (getMax () - getMin ());
 
-		float normValue = getMin ();
+		float normValue;
 		if (style & kHorizontal)
 			normValue = (float)(where.h - delta) / (float)rangeHandle;
 		else

@@ -45,6 +45,7 @@ namespace VSTGUI {
 class IPlatformTextEdit;
 class IPlatformTextEditCallback;
 class IPlatformOptionMenu;
+class IPlatformOpenGLView;
 class CGraphicsPath;
 class CDrawContext;
 class COffscreenContext;
@@ -105,6 +106,9 @@ public:
 
 	virtual IPlatformTextEdit* createPlatformTextEdit (IPlatformTextEditCallback* textEdit) = 0; ///< create a native text edit control
 	virtual IPlatformOptionMenu* createPlatformOptionMenu () = 0; ///< create a native popup menu
+#if VSTGUI_OPENGL_SUPPORT
+	virtual IPlatformOpenGLView* createPlatformOpenGLView () = 0; ///< create a native opengl sub view
+#endif // VSTGUI_OPENGL_SUPPORT
 	
 	virtual COffscreenContext* createOffscreenContext (CCoord width, CCoord height) = 0; ///< create an offscreen draw device
 

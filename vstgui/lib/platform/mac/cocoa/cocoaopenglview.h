@@ -2,7 +2,7 @@
 // VST Plug-Ins SDK
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 //
-// Version 4.0
+// Version 4.1
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
@@ -32,75 +32,56 @@
 // OF THE POSSIBILITY OF SUCH DAMAGE.
 //-----------------------------------------------------------------------------
 
-#ifndef __nsviewframe__
-#define __nsviewframe__
+#ifndef __cocoaopenglview__
+#define __cocoaopenglview__
 
-#include "../../../cframe.h"
+#include "../../iplatformopenglview.h"
 
+#if VSTGUI_OPENGL_SUPPORT
 #if MAC_COCOA
-
-#include <list>
 
 #ifdef __OBJC__
 #import <Cocoa/Cocoa.h>
 #else
+struct NSOpenGLView;
 struct NSView;
-struct NSRect;
 #endif
 
 namespace VSTGUI {
-class CocoaTooltipWindow;
+class NSViewFrame;
 
 //-----------------------------------------------------------------------------
-class NSViewFrame : public IPlatformFrame
+class CocoaOpenGLView : public IPlatformOpenGLView
 {
 public:
-	NSViewFrame (IPlatformFrameCallback* frame, const CRect& size, NSView* parent);
-	~NSViewFrame ();
+	CocoaOpenGLView (NSView* parent);
+	~CocoaOpenGLView ();
 
-	NSView* getPlatformControl () const { return nsView; }
-	IPlatformFrameCallback* getFrame () const { return frame; }
+	virtual bool init (IOpenGLView* view, PixelFormat* pixelFormat = 0);
+	virtual void remove ();
+
+	virtual void invalidRect (const CRect& rect);
+	virtual void viewSizeChanged (const CRect& visibleSize); ///< visibleSize is cframe relative
+
+	virtual bool makeContextCurrent ();
+	virtual bool lockContext ();
+	virtual bool unlockContext ();
+
+	virtual void swapBuffers ();
 	
-	void setLastDragOperationResult (CView::DragResult result) { lastDragOperationResult = result; }
-	void setIgnoreNextResignFirstResponder (bool state) { ignoreNextResignFirstResponder = state; }
-	bool getIgnoreNextResignFirstResponder () const { return ignoreNextResignFirstResponder; }
-
-	virtual void drawRect (NSRect* rect);
-
-	// IPlatformFrame
-	bool getGlobalPosition (CPoint& pos) const;
-	bool setSize (const CRect& newSize);
-	bool getSize (CRect& size) const;
-	bool getCurrentMousePosition (CPoint& mousePosition) const;
-	bool getCurrentMouseButtons (CButtonState& buttons) const;
-	bool setMouseCursor (CCursorType type);
-	bool invalidRect (const CRect& rect);
-	bool scrollRect (const CRect& src, const CPoint& distance);
-	bool showTooltip (const CRect& rect, const char* utf8Text);
-	bool hideTooltip ();
-	void* getPlatformRepresentation () const { return nsView; }
-	IPlatformTextEdit* createPlatformTextEdit (IPlatformTextEditCallback* textEdit);
-	IPlatformOptionMenu* createPlatformOptionMenu ();
-#if VSTGUI_OPENGL_SUPPORT
-	IPlatformOpenGLView* createPlatformOpenGLView ();
-#endif
-	COffscreenContext* createOffscreenContext (CCoord width, CCoord height);
-	CGraphicsPath* createGraphicsPath ();
-	CView::DragResult doDrag (CDropSource* source, const CPoint& offset, CBitmap* dragBitmap);
-
-//-----------------------------------------------------------------------------
+	void doDraw (const CRect& r);
 protected:
 	static void initClass ();
 
-	IPlatformFrameCallback* frame;
-	NSView* nsView;
-	CocoaTooltipWindow* tooltipWindow;
-
-	CView::DragResult lastDragOperationResult;
-	bool ignoreNextResignFirstResponder;
+	NSView* parent;
+	NSOpenGLView* platformView;
+	IOpenGLView* view;
+	PixelFormat pixelFormat;
 };
 
 } // namespace
 
 #endif // MAC_COCOA
-#endif // __nsviewframe__
+#endif // VSTGUI_OPENGL_SUPPORT
+
+#endif // __cocoaopenglview__

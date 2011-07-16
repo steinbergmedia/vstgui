@@ -71,7 +71,6 @@ inline const _Tp& max3 (const _Tp& v1, const _Tp& v2, const _Tp& v3)
 //-----------------------------------------------------------------------------
 void CColor::toHSV (double& hue, double& saturation, double& value)
 {
-	double rgbMin = (min3<uint8_t> (red, green, blue)) / 255.;
 	double rgbMax = (max3<uint8_t> (red, green, blue)) / 255.;
 	value = rgbMax;
 	if (value == 0)
@@ -84,7 +83,7 @@ void CColor::toHSV (double& hue, double& saturation, double& value)
 	double r = (double)(red / 255.) / value;
 	double g = (double)(green / 255.) / value;
 	double b = (double)(blue / 255.) / value;
-	rgbMin = min3<double> (r, g, b);
+	double rgbMin = min3<double> (r, g, b);
 	rgbMax = max3<double> (r, g, b);
 
 	saturation = rgbMax - rgbMin;
@@ -98,7 +97,6 @@ void CColor::toHSV (double& hue, double& saturation, double& value)
 	r = (r - rgbMin)/(rgbMax - rgbMin);
 	g = (g - rgbMin)/(rgbMax - rgbMin);
 	b = (b - rgbMin)/(rgbMax - rgbMin);
-	rgbMin = min3<double> (r, g, b);
 	rgbMax = max3<double> (r, g, b);
 
 	/* Compute hue */

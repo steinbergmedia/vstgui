@@ -36,6 +36,8 @@
 #include "cvstguitimer.h"
 #include "cdrawcontext.h"
 #include "cframe.h"
+#include "animation/animations.h"
+#include "animation/timingfunctions.h"
 #include <cmath>
 
 /// @cond ignore
@@ -364,7 +366,9 @@ void CScrollView::recalculateSubViews ()
 			hsb->setAutosizeFlags (kAutosizeLeft | kAutosizeRight | kAutosizeBottom);
 			CViewContainer::addView (hsb);
 		}
-		scsize.bottom = sbr.top;
+		if (!(style & kOverlayScrollbars))
+			scsize.bottom = sbr.top;
+		hsb->setOverlayStyle (style & kOverlayScrollbars ? true : false);
 	}
 	else if (hsb)
 	{
@@ -391,7 +395,9 @@ void CScrollView::recalculateSubViews ()
 			vsb->setAutosizeFlags (kAutosizeTop | kAutosizeRight | kAutosizeBottom);
 			CViewContainer::addView (vsb);
 		}
-		scsize.right = sbr.left;
+		if (!(style & kOverlayScrollbars))
+			scsize.right = sbr.left;
+		vsb->setOverlayStyle (style & kOverlayScrollbars ? true : false);
 	}
 	else if (vsb)
 	{
@@ -409,6 +415,8 @@ void CScrollView::recalculateSubViews ()
 		sc->setViewSize (scsize, true);
 		sc->setMouseableArea (scsize);
 	}
+	if (sc && style & kOverlayScrollbars)
+		CViewContainer::changeViewZOrder (sc, 0);
 	sc->setAutoDragScroll (style & kAutoDragScrolling ? true : false);
 }
 
@@ -535,6 +543,7 @@ void CScrollView::makeRectVisible (const CRect& rect)
 	{
 		vsb->setValue ((float)(newOffset.y - vs.top) / (float)(containerSize.getHeight () - vs.getHeight ()));
 		vsb->bounceValue ();
+		vsb->onVisualChange ();
 		vsb->invalid ();
 		valueChanged (vsb);
 	}
@@ -542,6 +551,7 @@ void CScrollView::makeRectVisible (const CRect& rect)
 	{
 		hsb->setValue (-(float)(newOffset.x - vs.left) / (float)(containerSize.getWidth () - vs.getWidth ()));
 		hsb->bounceValue ();
+		hsb->onVisualChange ();
 		hsb->invalid ();
 		valueChanged (hsb);
 	}
@@ -714,9 +724,11 @@ CScrollbar::CScrollbar (const CRect& size, CControlListener* listener, int32_t t
 , scrollerArea (size)
 , stepValue (0.1f)
 , scrollerLength (0)
+, overlayStyle (false)
 , drawer (0)
 , timer (0)
 {
+	setTransparency (true);
 	setWheelInc (0.05f);
 	scrollerArea.inset (2, 2);
 	calculateScrollerLength ();
@@ -736,6 +748,7 @@ CScrollbar::CScrollbar (const CScrollbar& v)
 , frameColor (v.frameColor)
 , scrollerColor (v.scrollerColor)
 , backgroundColor (v.backgroundColor)
+, overlayStyle (v.overlayStyle)
 , drawer (v.drawer)
 , timer (0)
 {
@@ -770,7 +783,7 @@ void CScrollbar::setScrollSize (const CRect& ssize)
 //-----------------------------------------------------------------------------
 void CScrollbar::calculateScrollerLength ()
 {
-	CCoord newScrollerLength = scrollerLength;
+	CCoord newScrollerLength;
 	if (direction == kHorizontal)
 	{
 		float factor = (float)getViewSize ().width () / (float)scrollSize.width ();
@@ -821,7 +834,7 @@ void CScrollbar::doStepping ()
 			return;
 	}
 	bool dir = (direction == kHorizontal && startPoint.x < scrollerRect.left) || (direction == kVertical && startPoint.y < scrollerRect.top);
-	float newValue = value;
+	float newValue;
 	if (direction == kHorizontal)
 	{
 		if (dir)
@@ -856,6 +869,45 @@ CMessageResult CScrollbar::notify (CBaseObject* sender, IdStringPtr message)
 		return kMessageNotified;
 	}
 	return kMessageUnknown;
+}
+
+//-----------------------------------------------------------------------------
+void CScrollbar::setOverlayStyle (bool state)
+{
+	if (overlayStyle != state)
+	{
+		overlayStyle = state;
+		setAlphaValue (overlayStyle ? 0.001f : 1.f);
+	}
+}
+
+//-----------------------------------------------------------------------------
+CMouseEventResult CScrollbar::onMouseEntered (CPoint& where, const CButtonState& buttons)
+{
+	if (overlayStyle)
+	{
+		addAnimation ("AlphaValueAnimation", new Animation::AlphaValueAnimation (1.f), new Animation::LinearTimingFunction (100));
+	}
+	return kMouseEventNotHandled;
+}
+
+//-----------------------------------------------------------------------------
+CMouseEventResult CScrollbar::onMouseExited (CPoint& where, const CButtonState& buttons)
+{
+	if (overlayStyle)
+	{
+		Animation::ITimingFunction* timingFunction = 0;
+		if (getAlphaValue () == 1.f)
+		{
+			Animation::InterpolationTimingFunction* interpolTimingFunction = new Animation::InterpolationTimingFunction (400);
+			interpolTimingFunction->addPoint (300.f/400.f, 1.f);
+			timingFunction = interpolTimingFunction;
+		}
+		else
+			timingFunction = new Animation::LinearTimingFunction (100);
+		addAnimation ("AlphaValueAnimation", new Animation::AlphaValueAnimation (0.001f), timingFunction);
+	}
+	return kMouseEventNotHandled;
 }
 
 //-----------------------------------------------------------------------------
@@ -929,14 +981,36 @@ CMouseEventResult CScrollbar::onMouseMoved (CPoint &where, const CButtonState& b
 			if (where.isInside (getViewSize ()) && old.isInside (scollerRect) && !startPoint.isInside (scrollerRect))
 				doStepping ();
 		}
+		return kMouseEventHandled;
 	}
-	return kMouseEventHandled;
+	return kMouseEventNotHandled;
+}
+
+//------------------------------------------------------------------------
+void CScrollbar::onVisualChange ()
+{
+	if (overlayStyle && getFrame ())
+	{
+		CPoint mousePos;
+		getFrame ()->getCurrentMouseLocation (mousePos);
+		frameToLocal (mousePos);
+		if (getMouseableArea ().pointInside (mousePos) == false)
+		{
+			Animation::InterpolationTimingFunction* timingFunction = new Animation::InterpolationTimingFunction (1100);
+			timingFunction->addPoint (1000.f/1100.f, 0);
+			addAnimation ("AlphaValueAnimation", new Animation::AlphaValueAnimation (0.001f), timingFunction);
+			setAlphaValue (1.f);
+		}
+	}
 }
 
 //------------------------------------------------------------------------
 bool CScrollbar::onWheel (const CPoint &where, const CMouseWheelAxis &axis, const float &_distance, const CButtonState &buttons)
 {
 	if (!getMouseEnabled ())
+		return false;
+
+	if (buttons != 0 && buttons != kShift)
 		return false;
 
 	float distance = _distance;
@@ -951,6 +1025,11 @@ bool CScrollbar::onWheel (const CPoint &where, const CMouseWheelAxis &axis, cons
 
 	if (isDirty ())
 	{
+		if (getMouseableArea().pointInside (where) == false)
+		{
+			onVisualChange ();
+		}
+
 		valueChanged ();
 		invalid ();
 	}

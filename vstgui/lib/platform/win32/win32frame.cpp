@@ -36,6 +36,7 @@
 
 #if WINDOWS
 
+#include <shlobj.h>
 #include <commctrl.h>
 #include <cmath>
 #include "gdiplusdrawcontext.h"
@@ -49,6 +50,10 @@
 #include "win32support.h"
 #include "win32dragcontainer.h"
 #include "../../cdropsource.h"
+
+#if VSTGUI_OPENGL_SUPPORT
+#include "win32openglview.h"
+#endif
 
 // windows libraries VSTGUI depends on
 #pragma comment(lib, "Shlwapi.lib")
@@ -231,7 +236,6 @@ void Win32Frame::initWindowClass ()
 	{
 		OleInitialize (0);
 
-		// get OS version
 		VSTGUI_SPRINTF (gClassName, TEXT("VSTGUI%p"), GetInstance ());
 		
 		WNDCLASS windowClass;
@@ -586,6 +590,14 @@ IPlatformOptionMenu* Win32Frame::createPlatformOptionMenu ()
 {
 	return new Win32OptionMenu (windowHandle);
 }
+
+#if VSTGUI_OPENGL_SUPPORT
+//-----------------------------------------------------------------------------
+IPlatformOpenGLView* Win32Frame::createPlatformOpenGLView ()
+{
+	return new Win32OpenGLView (this);
+}
+#endif
 
 //-----------------------------------------------------------------------------
 COffscreenContext* Win32Frame::createOffscreenContext (CCoord width, CCoord height)

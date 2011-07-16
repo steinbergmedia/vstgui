@@ -2,7 +2,7 @@
 // VST Plug-Ins SDK
 // VSTGUI: Graphical User Interface Framework for VST plugins : 
 //
-// Version 4.0
+// Version 4.1
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
@@ -32,75 +32,53 @@
 // OF THE POSSIBILITY OF SUCH DAMAGE.
 //-----------------------------------------------------------------------------
 
-#ifndef __nsviewframe__
-#define __nsviewframe__
+#ifndef __copenglview__
+#define __copenglview__
 
-#include "../../../cframe.h"
+#include "cview.h"
+#include "platform/iplatformopenglview.h"
 
-#if MAC_COCOA
-
-#include <list>
-
-#ifdef __OBJC__
-#import <Cocoa/Cocoa.h>
-#else
-struct NSView;
-struct NSRect;
-#endif
-
+#if VSTGUI_OPENGL_SUPPORT
 namespace VSTGUI {
-class CocoaTooltipWindow;
 
+/*
+TODO: Documentation
+
+	To setup OpenGL for a normal 2D matrix use this in drawOpenGL(..):
+
+	CRect r (getViewSize ());
+	glViewport (0, 0, r.getWidth (), r.getHeight ());
+	gluOrtho2D (r.left, r.right, r.bottom, r.top);
+	glTranslated (r.left, r.top, 0);
+
+*/
 //-----------------------------------------------------------------------------
-class NSViewFrame : public IPlatformFrame
+class COpenGLView : public CView, public IOpenGLView
 {
 public:
-	NSViewFrame (IPlatformFrameCallback* frame, const CRect& size, NSView* parent);
-	~NSViewFrame ();
+	COpenGLView (const CRect& size);
+	~COpenGLView ();
 
-	NSView* getPlatformControl () const { return nsView; }
-	IPlatformFrameCallback* getFrame () const { return frame; }
-	
-	void setLastDragOperationResult (CView::DragResult result) { lastDragOperationResult = result; }
-	void setIgnoreNextResignFirstResponder (bool state) { ignoreNextResignFirstResponder = state; }
-	bool getIgnoreNextResignFirstResponder () const { return ignoreNextResignFirstResponder; }
+	// IOpenGLView	
+	virtual void drawOpenGL (const CRect& updateRect) = 0; ///< will be called when the view was marked invalid or the view was resized
 
-	virtual void drawRect (NSRect* rect);
+	// CView
+	virtual void setViewSize (const CRect& rect, bool invalid = true);
+	virtual void parentSizeChanged ();
+	virtual bool removed (CView* parent);
+	virtual bool attached (CView* parent);
+	virtual void invalidRect (const CRect& rect);
 
-	// IPlatformFrame
-	bool getGlobalPosition (CPoint& pos) const;
-	bool setSize (const CRect& newSize);
-	bool getSize (CRect& size) const;
-	bool getCurrentMousePosition (CPoint& mousePosition) const;
-	bool getCurrentMouseButtons (CButtonState& buttons) const;
-	bool setMouseCursor (CCursorType type);
-	bool invalidRect (const CRect& rect);
-	bool scrollRect (const CRect& src, const CPoint& distance);
-	bool showTooltip (const CRect& rect, const char* utf8Text);
-	bool hideTooltip ();
-	void* getPlatformRepresentation () const { return nsView; }
-	IPlatformTextEdit* createPlatformTextEdit (IPlatformTextEditCallback* textEdit);
-	IPlatformOptionMenu* createPlatformOptionMenu ();
-#if VSTGUI_OPENGL_SUPPORT
-	IPlatformOpenGLView* createPlatformOpenGLView ();
-#endif
-	COffscreenContext* createOffscreenContext (CCoord width, CCoord height);
-	CGraphicsPath* createGraphicsPath ();
-	CView::DragResult doDrag (CDropSource* source, const CPoint& offset, CBitmap* dragBitmap);
-
-//-----------------------------------------------------------------------------
+	CLASS_METHODS_NOCOPY (COpenGLView, CView)
 protected:
-	static void initClass ();
+	virtual PixelFormat* getPixelFormat () { return 0; }	///< subclasses should return a pixelformat here If they don't want to use the default one
 
-	IPlatformFrameCallback* frame;
-	NSView* nsView;
-	CocoaTooltipWindow* tooltipWindow;
-
-	CView::DragResult lastDragOperationResult;
-	bool ignoreNextResignFirstResponder;
+	void updatePlatformOpenGLViewSize ();
+	
+	IPlatformOpenGLView* platformOpenGLView;
 };
 
 } // namespace
 
-#endif // MAC_COCOA
-#endif // __nsviewframe__
+#endif // VSTGUI_OPENGL_SUPPORT
+#endif // __copenglview__

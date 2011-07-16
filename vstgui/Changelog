@@ -1,3 +1,9 @@
+2011-07-
+
+	* new class COpenGLView + platform implementations for Windows + Mac Cocoa
+	* new style for CScrollView: kOverlayScrollbars (scrollbars are overlayed of the content)
+	* fix a crash when CView::setWantsIdle(false) was called inside CView::onIdle()
+
 2011-07-4 arne
 
 	* fixes to path arc drawing for Direct2D and GDI+

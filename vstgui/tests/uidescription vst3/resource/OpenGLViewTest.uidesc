@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<vstgui-ui-description version="1">
+	<fonts>
+	</fonts>
+	<colors>
+	</colors>
+	<template autosize="left right top bottom " background-color="~ GreyCColor" class="CViewContainer" maxSize="3000, 3000" minSize="300, 300" name="view" origin="0, 0" size="300, 300" transparent="false">
+		<view autosize="left right top bottom " class="CView" custom-view-name="OpenGLView" origin="10, 10" size="280, 280" transparent="false"/>
+	</template>
+	<custom>
+		<attributes name="UIViewInspector" windowSize="72, 215, 472, 731"/>
+		<attributes gridsize="10" name="UIEditFrame" uidescPath="/Volumes/DATA/subversion/trunk/vstgui_head/vstgui/tests/uidescription vst3/resource/OpenGLViewTest.uidesc"/>
+		<attributes frame-enable-focus-drawing="false" frame-focus-width="2" name="VST3Editor"/>
+	</custom>
+	<bitmaps>
+		<bitmap name="animation_knob" path="animation_knob.png"/>
+		<bitmap name="FrameBackground" path="FrameBackground.png"/>
+		<bitmap name="TabController" path="TabController.png"/>
+		<bitmap name="horizontal_slider_back" path="horizontal_slider_back.bmp"/>
+		<bitmap name="onoff_button" path="onoff_button.bmp"/>
+		<bitmap name="rocker_switch" path="rocker_switch.bmp"/>
+		<bitmap name="slider_handle" path="slider_handle.bmp"/>
+		<bitmap name="switch_horizontal" path="switch_horizontal.bmp"/>
+		<bitmap name="switch_vertical" path="switch_vertical.bmp"/>
+		<bitmap name="vertical_slider_back" path="vertical_slider_back.bmp"/>
+		<bitmap name="vumeter_back" path="vumeter_back.bmp"/>
+		<bitmap name="vumeter_front" path="vumeter_front.bmp"/>
+	</bitmaps>
+	<control-tags/>
+</vstgui-ui-description>

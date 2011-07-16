@@ -12,6 +12,7 @@
 #include "subcontrollertest.h"
 #include "animationtest.h"
 #include "graphicstest.h"
+#include "openglviewtest.h"
 #include "public.sdk/source/main/pluginfactoryvst3.h"
 
 //------------------------------------------------------------------------
@@ -98,6 +99,26 @@ BEGIN_FACTORY("VSTGUI", "", "", PFactoryInfo::kUnicode)
 				"1.0.0",
 				kVstVersionString,
 				GraphicsTestController::createInstance)
+				
+	DEF_CLASS2 (INLINE_UID_FROM_FUID(OpenGLViewTestProcessor::cid),
+				PClassInfo::kManyInstances,
+				kVstAudioEffectClass,
+				"VSTGUI UIDescription OpenGLView Test",
+				Vst::kDistributable,
+				"Fx",
+				"1.0.0",
+				kVstVersionString,
+				OpenGLViewTestProcessor::createInstance)
+				
+	DEF_CLASS2 (INLINE_UID_FROM_FUID(OpenGLViewTestController::cid),
+				PClassInfo::kManyInstances,
+				kVstComponentControllerClass,
+				"VSTGUI UIDescription OpenGLView Test",
+				Vst::kDistributable,
+				"Fx",
+				"1.0.0",
+				kVstVersionString,
+				OpenGLViewTestController::createInstance)
 				
 END_FACTORY
 

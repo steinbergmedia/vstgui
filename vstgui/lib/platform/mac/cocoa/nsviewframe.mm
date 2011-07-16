@@ -40,6 +40,7 @@
 #import "cocoadragcontainer.h"
 #import "cocoatextedit.h"
 #import "nsviewoptionmenu.h"
+#import "cocoaopenglview.h"
 #import "autoreleasepool.h"
 #import "../cgdrawcontext.h"
 #import "../cgbitmap.h"
@@ -908,6 +909,14 @@ IPlatformOptionMenu* NSViewFrame::createPlatformOptionMenu ()
 {
 	return new NSViewOptionMenu ();
 }
+
+#if VSTGUI_OPENGL_SUPPORT
+//-----------------------------------------------------------------------------
+IPlatformOpenGLView* NSViewFrame::createPlatformOpenGLView ()
+{
+	return new CocoaOpenGLView (nsView);
+}
+#endif
 
 //-----------------------------------------------------------------------------
 COffscreenContext* NSViewFrame::createOffscreenContext (CCoord width, CCoord height)

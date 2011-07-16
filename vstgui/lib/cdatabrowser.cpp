@@ -146,8 +146,11 @@ void CDataBrowser::setAutosizeFlags (int32_t flags)
 //-----------------------------------------------------------------------------------------------
 void CDataBrowser::setViewSize (const CRect& size, bool invalid)
 {
-	CScrollView::setViewSize (size, invalid);
-	recalculateLayout (true);
+	if (getViewSize () != size)
+	{
+		CScrollView::setViewSize (size, invalid);
+		recalculateLayout (true);
+	}
 }
 
 //-----------------------------------------------------------------------------------------------
@@ -155,7 +158,7 @@ bool CDataBrowser::attached (CView *parent)
 {
 	recalculateLayout (true);
 	bool result = CScrollView::attached (parent);
-	if (result && db)
+	if (result)
 		db->dbAttached (this);
 	return result;
 }
@@ -163,7 +166,7 @@ bool CDataBrowser::attached (CView *parent)
 //-----------------------------------------------------------------------------------------------
 bool CDataBrowser::removed (CView* parent)
 {
-	if (isAttached () && db)
+	if (isAttached ())
 		db->dbRemoved (this);
 	return CScrollView::removed (parent);
 }
@@ -293,6 +296,13 @@ void CDataBrowser::recalculateLayout (bool rememberSelection)
 	newContainerSize.offset (getScrollOffset ().x, -getScrollOffset ().y);
 	dbView->setViewSize (newContainerSize);
 	dbView->setMouseableArea (newContainerSize);
+
+	CControl* scrollbar = getVerticalScrollbar ();
+	if (scrollbar)
+	{
+		float wheelInc = (float) (rowHeight / newContainerSize.getHeight ());
+		scrollbar->setWheelInc (wheelInc);
+	}
 
 	if (isAttached ())
 		invalid ();
@@ -910,7 +920,7 @@ int32_t GenericStringListDataBrowserSource::dbGetNumRows (CDataBrowser* browser)
 //-----------------------------------------------------------------------------
 CCoord GenericStringListDataBrowserSource::dbGetCurrentColumnWidth (int32_t index, CDataBrowser* browser)
 {
-	return browser->getWidth () - browser->getScrollbarWidth ();
+	return browser->getWidth () - ((browser->getStyle() & CScrollView::kOverlayScrollbars) ? 0 : browser->getScrollbarWidth ());
 }
 
 //-----------------------------------------------------------------------------

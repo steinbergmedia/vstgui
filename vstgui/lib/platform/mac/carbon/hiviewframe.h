@@ -69,6 +69,9 @@ public:
 	void* getPlatformRepresentation () const { return controlRef; }
 	IPlatformTextEdit* createPlatformTextEdit (IPlatformTextEditCallback* textEdit);
 	IPlatformOptionMenu* createPlatformOptionMenu ();
+#if VSTGUI_OPENGL_SUPPORT
+	IPlatformOpenGLView* createPlatformOpenGLView () { return 0; } // not yet supported
+#endif
 	COffscreenContext* createOffscreenContext (CCoord width, CCoord height);
 	CGraphicsPath* createGraphicsPath ();
 	CView::DragResult doDrag (CDropSource* source, const CPoint& offset, CBitmap* dragBitmap);
