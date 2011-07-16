@@ -45,9 +45,7 @@
 #include "audioeffectx.h"
 #endif
 
-#ifndef __vstgui__
-#include "vstgui.h"
-#endif
+#include "../vstgui.h"
 
 //-----------------------------------------------------------------------------
 // AEffGUIEditor Declaration
