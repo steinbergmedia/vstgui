@@ -37,8 +37,8 @@
 
 #if VSTGUI_LIVE_EDITING
 
-#include "../lib/cview.h"
-#include "../lib/idependency.h"
+#include "../../lib/cview.h"
+#include "../../lib/idependency.h"
 #include <list>
 #include <string>
 

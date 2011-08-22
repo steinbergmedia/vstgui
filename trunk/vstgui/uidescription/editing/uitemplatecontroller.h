@@ -2,7 +2,7 @@
 #define __uitemplatecontroller__
 
 #include "../uidescription.h"
-#include "../uiselection.h"
+#include "uiselection.h"
 #include "uiundomanager.h"
 #include <vector>
 #include <list>

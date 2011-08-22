@@ -1,7 +1,7 @@
 #include "uitemplatecontroller.h"
 #include "uieditcontroller.h"
 #include "uiviewfactory.h"
-#include "../uiselection.h"
+#include "uiselection.h"
 
 /*
 	TODO: view z index editing via row drag and drop

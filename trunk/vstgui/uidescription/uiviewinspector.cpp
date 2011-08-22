@@ -35,7 +35,7 @@
 #if VSTGUI_LIVE_EDITING
 
 #include "uiviewinspector.h"
-#include "uiselection.h"
+#include "editing/uiselection.h"
 #include "uiviewfactory.h"
 #include "uifontchooserpanel.h"
 #include "editingcolordefs.h"

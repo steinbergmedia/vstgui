@@ -1,6 +1,6 @@
 #include "uicrosslines.h"
 #include "../../lib/cview.h"
-#include "../uiselection.h"
+#include "uiselection.h"
 
 namespace VSTGUI {
 

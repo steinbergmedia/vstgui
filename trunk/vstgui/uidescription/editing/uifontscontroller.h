@@ -2,7 +2,7 @@
 #define __uifontscontroller__
 
 #include "../uidescription.h"
-#include "../uiselection.h"
+#include "uiselection.h"
 #include "uiundomanager.h"
 #include "iactionoperation.h"
 
