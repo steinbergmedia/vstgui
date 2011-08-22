@@ -49,6 +49,7 @@
 #include "lib/copenglview.h"
 #include "lib/cpoint.h"
 #include "lib/crect.h"
+#include "lib/crowcolumnview.h"
 #include "lib/cscrollview.h"
 #include "lib/csplitview.h"
 #include "lib/cstring.h"

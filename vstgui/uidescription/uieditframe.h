@@ -41,6 +41,7 @@
 #include "uiselection.h"
 #include "uidescription.h"
 #include "uiviewfactory.h"
+#include "editing/iactionoperation.h"
 
 #include <list>
 #include <map>
@@ -50,30 +51,11 @@ namespace VSTGUI {
 class CrossLines;
 class Grid;
 class UIViewInspector;
-class IActionOperation;
 class UIViewHierarchyBrowserWindow;
+class UIUndoManager;
 class CVSTGUITimer;
-
-//----------------------------------------------------------------------------------------------------
-class IActionOperator
-{
-public:
-	virtual ~IActionOperator () {}
-	virtual void performAction (IActionOperation* action) = 0;
-
-	virtual void performColorChange (UTF8StringPtr colorName, const CColor& newColor, bool remove = false) = 0;
-	virtual void performTagChange (UTF8StringPtr tagName, int32_t tag, bool remove = false) = 0;
-	virtual void performBitmapChange (UTF8StringPtr bitmapName, UTF8StringPtr bitmapPath, bool remove = false) = 0;
-	virtual void performFontChange (UTF8StringPtr fontName, CFontRef newFont, bool remove = false) = 0;
-
-	virtual void performColorNameChange (UTF8StringPtr oldName, UTF8StringPtr newName) = 0;
-	virtual void performTagNameChange (UTF8StringPtr oldName, UTF8StringPtr newName) = 0;
-	virtual void performFontNameChange (UTF8StringPtr oldName, UTF8StringPtr newName) = 0;
-	virtual void performBitmapNameChange (UTF8StringPtr oldName, UTF8StringPtr newName) = 0;
-
-	virtual void performBitmapNinePartTiledChange (UTF8StringPtr bitmapName, const CRect* offsets) = 0;
-	virtual void makeSelection (CView* view) = 0;
-};
+class COptionMenu;
+class CCommandMenuItem;
 
 //----------------------------------------------------------------------------------------------------
 class UIEditFrame : public CFrame, public IActionOperator, public IKeyboardHook
@@ -86,7 +68,10 @@ public:
 	};
 
 	UIEditFrame (const CRect& size, void* windowPtr, VSTGUIEditorInterface* editor, EditMode editMode, UISelection* selection, UIDescription* description, UTF8StringPtr uiDescViewName);
+	UIEditFrame (const CRect& size, VSTGUIEditorInterface* editor, EditMode editMode, UISelection* selection, UIDescription* description, UTF8StringPtr uiDescViewName);
 	~UIEditFrame ();
+
+	virtual bool open (void* pSystemWindow);
 
 	EditMode getEditMode () const { return editMode; }
 	void setEditMode (EditMode mode);
@@ -112,14 +97,16 @@ public:
 
 	void makeSelection (CView* view);
 
-	static IdStringPtr kMsgPerformOptionsMenuAction;
+	void addEditItemsToMenu (COptionMenu* menu);
+
 	static IdStringPtr kMsgShowOptionsMenu;
-	static IdStringPtr kMsgEditEnding;
+	static IdStringPtr kMsgEditModeChanged;
 //----------------------------------------------------------------------------------------------------
 protected:
 	CBitmap* createBitmapFromSelection (UISelection* selection);
 	UISelection* getSelectionOutOfDrag (CDragContainer* drag);
 	CMessageResult notify (CBaseObject* sender, IdStringPtr message);
+	bool processMenuItemSelection (CCommandMenuItem* item);
 	void showOptionsMenu (const CPoint& where);
 	void createNewSubview (const CPoint& where, UTF8StringPtr viewName);
 	void insertTemplate (const CPoint& where, UTF8StringPtr templateName);
@@ -182,6 +169,28 @@ protected:
 		kSizeEditing
 	};
 
+	enum MenuTags {
+		kEnableEditing = 1,
+		kHierarchyBrowserTag,
+		kGridSize1,
+		kGridSize2,
+		kGridSize5,
+		kGridSize10,
+		kGridSize15,
+		kCreateNewViewTag,
+		kEmbedViewTag,
+		kTransformViewTag,
+		kInsertTemplateTag,
+		kDeleteSelectionTag,
+		kUndoTag,
+		kRedoTag,
+		kSaveTag,
+		kSizeToFitTag,
+		kUnembedViewsTag,
+		kSaveAndDisableEditingTag
+	};
+	CPoint menuCreatePos;
+
 	CVSTGUITimer* timer;
 	CVSTGUITimer* editTimer;
 	CrossLines* lines;
@@ -205,19 +214,9 @@ protected:
 	std::string templateName;
 	std::string savePath;
 
-	std::list<IActionOperation*> undoStackList;
-	std::list<IActionOperation*>::iterator undoStack;
-};
-
-//----------------------------------------------------------------------------------------------------
-class IActionOperation
-{
-public:
-	virtual ~IActionOperation () {}
-	
-	virtual UTF8StringPtr getName () = 0;
-	virtual void perform () = 0;
-	virtual void undo () = 0;
+	UIUndoManager* undoManager;
+//	std::list<IActionOperation*> undoStackList;
+//	std::list<IActionOperation*>::iterator undoStack;
 };
 
 //-----------------------------------------------------------------------------

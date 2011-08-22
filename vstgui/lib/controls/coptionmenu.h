@@ -68,16 +68,16 @@ public:
 	//-----------------------------------------------------------------------------
 	//@{
 	virtual void setTitle (UTF8StringPtr title);							///< set title of menu item
-	virtual void setSubmenu (COptionMenu* submenu);						///< set submenu of menu item
+	virtual void setSubmenu (COptionMenu* submenu);							///< set submenu of menu item
 	virtual void setKey (UTF8StringPtr keyCode, int32_t keyModifiers = 0);	///< set keycode and key modifiers of menu item
-	virtual void setEnabled (bool state = true);						///< set menu item enabled state
-	virtual void setChecked (bool state = true);						///< set menu item checked state
-	virtual void setIsTitle (bool state = true);						///< set menu item title state
-	virtual void setIsSeparator (bool state = true);					///< set menu item separator state
-	virtual void setIcon (CBitmap* icon);								///< set menu item icon
+	virtual void setEnabled (bool state = true);							///< set menu item enabled state
+	virtual void setChecked (bool state = true);							///< set menu item checked state
+	virtual void setIsTitle (bool state = true);							///< set menu item title state
+	virtual void setIsSeparator (bool state = true);						///< set menu item separator state
+	virtual void setIcon (CBitmap* icon);									///< set menu item icon
 	virtual void setTag (int32_t tag);										///< set menu item tag
 
-	bool isEnabled () const { return !(flags & kDisabled); }			///< returns whether the item is enabled or not
+	bool isEnabled () const { return !(flags & kDisabled); }				///< returns whether the item is enabled or not
 	bool isChecked () const { return (flags & kChecked) != 0; }				///< returns whether the item is checked or not
 	bool isTitle () const { return (flags & kTitle) != 0; }					///< returns whether the item is a title item or not
 	bool isSeparator () const { return (flags & kSeparator) != 0; }			///< returns whether the item is a separator or not
@@ -85,9 +85,9 @@ public:
 	UTF8StringPtr getTitle () const { return title; }						///< returns the title of the item
 	int32_t getKeyModifiers () const { return keyModifiers; }				///< returns the key modifiers of the item
 	UTF8StringPtr getKeycode () const { return keycode; }					///< returns the keycode of the item
-	COptionMenu* getSubmenu () const { return submenu; }				///< returns the submenu of the item
-	CBitmap* getIcon () const { return icon; }							///< returns the icon of the item
-	int32_t getTag () const { return tag; }								///< returns the tag of the item
+	COptionMenu* getSubmenu () const { return submenu; }					///< returns the submenu of the item
+	CBitmap* getIcon () const { return icon; }								///< returns the icon of the item
+	int32_t getTag () const { return tag; }									///< returns the tag of the item
 	//@}
 
 //------------------------------------------------------------------------
@@ -101,6 +101,45 @@ protected:
 	int32_t flags;
 	int32_t keyModifiers;
 	int32_t tag;
+};
+
+//-----------------------------------------------------------------------------
+// CCommandMenuItem Declaration
+/// @brief a command menu item
+/// @ingroup new_in_4_1
+//-----------------------------------------------------------------------------
+class CCommandMenuItem : public CMenuItem
+{
+public:
+	CCommandMenuItem (UTF8StringPtr title, UTF8StringPtr keycode = 0, int32_t keyModifiers = 0, CBitmap* icon = 0, int32_t flags = kNoFlags, CBaseObject* target = 0, IdStringPtr commandCategory = 0, IdStringPtr commandName = 0);
+	CCommandMenuItem (UTF8StringPtr title, COptionMenu* submenu, CBitmap* icon = 0, CBaseObject* target = 0, IdStringPtr commandCategory = 0, IdStringPtr commandName = 0);
+	CCommandMenuItem (UTF8StringPtr title, int32_t tag, CBaseObject* target = 0, IdStringPtr commandCategory = 0, IdStringPtr commandName = 0);
+	CCommandMenuItem (UTF8StringPtr title, CBaseObject* target = 0, IdStringPtr commandCategory = 0, IdStringPtr commandName = 0);
+	CCommandMenuItem (const CCommandMenuItem& item);
+	~CCommandMenuItem ();
+
+	//-----------------------------------------------------------------------------
+	/// @name CCommandMenuItem Methods
+	//-----------------------------------------------------------------------------
+	//@{
+	void setCommandCategory (IdStringPtr category);
+	IdStringPtr getCommandCategory () const { return commandCategory; }
+	bool isCommandCategory (IdStringPtr category) const;
+	
+	void setCommandName (IdStringPtr name);
+	IdStringPtr getCommandName () const { return commandName; }
+	bool isCommandName (IdStringPtr name) const;
+
+	void setTarget (CBaseObject* target);
+	CBaseObject* getTarget () const { return target; }
+	//@}
+
+	static IdStringPtr kMsgMenuItemValidate;	///< message send to the target before the item is shown
+	static IdStringPtr kMsgMenuItemSelected;	///< message send to the target when this item was selected
+protected:
+	CBaseObject* target;
+	char* commandCategory;
+	char* commandName;
 };
 
 //-----------------------------------------------------------------------------
@@ -178,8 +217,11 @@ public:
 	virtual	void takeFocus ();
 	virtual	void looseFocus ();
 
+	static IdStringPtr kMsgBeforePopup;
+	
 	CLASS_METHODS(COptionMenu, CParamDisplay)
 protected:
+	void beforePopup ();
 
 	CMenuItemList* menuItems;
 

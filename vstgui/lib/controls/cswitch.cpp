@@ -334,8 +334,9 @@ CMouseEventResult CHorizontalSwitch::onMouseMoved (CPoint& where, const CButtonS
 			valueChanged ();
 			invalid ();
 		}
+		return kMouseEventHandled;
 	}
-	return kMouseEventHandled;
+	return kMouseEventNotHandled;
 }
 
 //------------------------------------------------------------------------

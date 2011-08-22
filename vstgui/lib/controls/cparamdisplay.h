@@ -90,8 +90,6 @@ public:
 	virtual void setStyle (int32_t val);
 	int32_t getStyle () const { return style; }
 
-	virtual void setTextTransparency (bool val) { bTextTransparencyEnabled = val; }
-	bool getTextTransparency () const { return bTextTransparencyEnabled; }
 	//@}
 
 	virtual void draw (CDrawContext* pContext);
@@ -101,6 +99,7 @@ protected:
 	~CParamDisplay ();
 	virtual void drawBack (CDrawContext* pContext, CBitmap* newBack = 0);
 	virtual void drawText (CDrawContext* pContext, UTF8StringPtr string);
+	virtual void drawText (CDrawContext* pContext, UTF8StringPtr string, const CRect& size);
 
 	CParamDisplayValueToStringProc valueToString;
 	void* valueToStringUserData;
@@ -114,7 +113,6 @@ protected:
 	CColor		frameColor;
 	CColor		shadowColor;
 	CPoint		textInset;
-	bool		bTextTransparencyEnabled;
 	bool		bAntialias;
 };
 

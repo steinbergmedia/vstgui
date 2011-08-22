@@ -400,6 +400,57 @@ IPlugView* PLUGIN_API UIDescriptionTestController::createView (FIDString name)
 }
 
 //------------------------------------------------------------------------
+class UIDescriptionTestControllerMenuHandler : public CBaseObject
+{
+public:
+	UIDescriptionTestControllerMenuHandler (Parameter* param) : param (param) {}
+
+	CMessageResult notify (CBaseObject* sender, IdStringPtr message)
+	{
+		if (message == CCommandMenuItem::kMsgMenuItemSelected)
+		{
+			CCommandMenuItem* menuItem = dynamic_cast<CCommandMenuItem*>(sender);
+			if (menuItem)
+			{
+				param->setNormalized (param->toNormalized (menuItem->getTag ()));
+				return kMessageNotified;
+			}
+		}
+		return kMessageUnknown;
+	}
+	
+protected:
+	IPtr<Parameter> param;
+};
+
+//------------------------------------------------------------------------
+COptionMenu* UIDescriptionTestController::createContextMenu (const CPoint& pos, VST3Editor* editor)
+{
+	Parameter* tabParameter = getParameterObject (20000);
+	if (tabParameter)
+	{
+		UIDescriptionTestControllerMenuHandler* menuHandler = new UIDescriptionTestControllerMenuHandler (tabParameter);
+		COptionMenu* menu = new COptionMenu ();
+		menu->setStyle (kMultipleCheckStyle);
+		for (int32 i = 0; i <= tabParameter->getInfo ().stepCount; i++)
+		{
+			String128 valueString;
+			tabParameter->toString (tabParameter->toNormalized (i), valueString);
+			String str (valueString);
+			str.toMultiByte (kCP_Utf8);
+			CMenuItem* item = menu->addEntry (new CCommandMenuItem (str.text8 (), i, menuHandler));
+			if (tabParameter->getNormalized () == tabParameter->toNormalized (i))
+				item->setChecked (true);
+		}
+		COptionMenu* mainMenu = new COptionMenu ();
+		mainMenu->addEntry (new CMenuItem ("Show Tab"))->setSubmenu (menu);
+		menuHandler->forget ();
+		return mainMenu;
+	}
+	return 0;
+}
+
+//------------------------------------------------------------------------
 IController* UIDescriptionTestController::createSubController (const char* name, IUIDescription* description, VST3Editor* editor)
 {
 	if (strcmp (name, "ModalViewController") == 0)

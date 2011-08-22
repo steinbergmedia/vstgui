@@ -43,7 +43,7 @@
 // VSTGUI Version
 //-----------------------------------------------------------------------------
 #define VSTGUI_VERSION_MAJOR  4
-#define VSTGUI_VERSION_MINOR  0
+#define VSTGUI_VERSION_MINOR  1
 
 //-----------------------------------------------------------------------------
 // Platform definitions
@@ -235,6 +235,104 @@ public:
 	~CBaseObjectGuard () { if (obj) obj->forget (); }
 protected:
 	CBaseObject* obj;
+};
+
+//------------------------------------------------------------------------
+template <class I>
+class SharedPointer
+{
+public:
+//------------------------------------------------------------------------
+	inline SharedPointer (I* ptr, bool remember = true);
+	inline SharedPointer (const SharedPointer&);
+	inline SharedPointer ();
+	inline ~SharedPointer ();
+
+	inline I* operator=(I* ptr);
+	inline SharedPointer& operator=(const SharedPointer& );
+
+	inline operator I* ()  const { return ptr; }      // act as I*
+	inline I* operator->() const { return ptr; }      // act as I*
+//------------------------------------------------------------------------
+protected:
+	I* ptr;
+};
+
+//------------------------------------------------------------------------
+template <class I>
+inline SharedPointer<I>::SharedPointer (I* _ptr, bool remember)
+: ptr (_ptr)
+{
+	if (ptr && remember)
+		ptr->remember ();
+}
+
+//------------------------------------------------------------------------
+template <class I>
+inline SharedPointer<I>::SharedPointer (const SharedPointer<I>& other)
+: ptr (other.ptr)
+{
+	if (ptr)
+		ptr->remember ();
+}
+
+//------------------------------------------------------------------------
+template <class I>
+inline SharedPointer<I>::SharedPointer ()
+: ptr (0)
+{}
+
+//------------------------------------------------------------------------
+template <class I>
+inline SharedPointer<I>::~SharedPointer ()
+{
+	if (ptr)
+		ptr->forget ();
+}
+
+//------------------------------------------------------------------------
+template <class I>
+inline I* SharedPointer<I>::operator=(I* _ptr)
+{
+	if (_ptr != ptr)
+	{
+		if (ptr)
+			ptr->forget ();
+		ptr = _ptr;
+		if (ptr)
+			ptr->remember ();	
+	}
+	return ptr;
+}
+
+//------------------------------------------------------------------------
+template <class I>
+inline SharedPointer<I>& SharedPointer<I>::operator=(const SharedPointer<I>& ptr)
+{
+	operator= (ptr.ptr);
+	return *this;
+}
+
+//------------------------------------------------------------------------
+template <class I>
+class OwningPointer : public SharedPointer<I>
+{
+public:
+//------------------------------------------------------------------------
+	inline OwningPointer (I* p) : SharedPointer<I> (p, false) {}
+	inline OwningPointer (const SharedPointer<I>& p) : SharedPointer<I> (p) {}
+	inline OwningPointer (const OwningPointer<I>& p) : SharedPointer<I> (p) {}
+	inline OwningPointer () {}
+	inline I* operator=(I* _ptr)
+	{
+		if (_ptr != this->ptr)
+		{
+			if (this->ptr)
+				this->ptr->forget ();
+			this->ptr = _ptr;
+		}
+		return this->ptr;
+	}
 };
 
 } // namespace

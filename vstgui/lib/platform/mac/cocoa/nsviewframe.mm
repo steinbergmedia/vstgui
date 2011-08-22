@@ -120,7 +120,7 @@ static id VSTGUI_NSView_Init (id self, SEL _cmd, void* _frame, NSView* parentVie
 
 		[parentView addSubview: self];
 
-		[self registerForDraggedTypes:[NSArray arrayWithObjects:NSStringPboardType, NSFilenamesPboardType, @"net.sourceforge.vstgui.binary.drag", nil]];
+		[self registerForDraggedTypes:[NSArray arrayWithObjects:NSStringPboardType, NSFilenamesPboardType, NSColorPboardType, @"net.sourceforge.vstgui.binary.drag", nil]];
 		
 		NSTrackingArea* trackingArea = [[[NSTrackingArea alloc] initWithRect:[self frame] options:NSTrackingMouseEnteredAndExited|NSTrackingMouseMoved|NSTrackingActiveInActiveApp|NSTrackingInVisibleRect owner:self userInfo:nil] autorelease];
 		[self addTrackingArea: trackingArea];
@@ -957,6 +957,10 @@ CView::DragResult NSViewFrame::doDrag (CDropSource* source, const CPoint& offset
 		}
 		else
 		{
+			if (bitmapOffset.x == 0)
+				bitmapOffset.x = 1;
+			if (bitmapOffset.y == 0)
+				bitmapOffset.y = 1;
 			nsImage = [[[NSImage alloc] initWithSize:NSMakeSize (fabs (bitmapOffset.x)*2, fabs (bitmapOffset.y)*2)] autorelease];
 			bitmapOffset.x += nsLocation.x;
 			bitmapOffset.y += nsLocation.y;

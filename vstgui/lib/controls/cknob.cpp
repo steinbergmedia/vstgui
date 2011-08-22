@@ -246,7 +246,7 @@ void CKnob::drawHandle (CDrawContext *pContext)
 			origin.offset (getViewSize ().left - 1, getViewSize ().top);
 			pContext->setFrameColor (colorShadowHandle);
 			pContext->setLineWidth (handleLineWidth);
-			pContext->setLineStyle (kLineSolid);
+			pContext->setLineStyle (CLineStyle (CLineStyle::kLineCapRound));
 			pContext->moveTo (where);
 			pContext->lineTo (origin);
 
@@ -364,8 +364,9 @@ CMouseEventResult CKnob::onMouseMoved (CPoint& where, const CButtonState& button
 			if (isDirty ())
 				invalid ();
 		}
+		return kMouseEventHandled;
 	}
-	return kMouseEventHandled;
+	return kMouseEventNotHandled;
 }
 
 //------------------------------------------------------------------------

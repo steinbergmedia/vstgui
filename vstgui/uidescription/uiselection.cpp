@@ -54,6 +54,7 @@ UISelection::~UISelection ()
 	empty ();
 }
 
+IdStringPtr UISelection::kMsgSelectionWillChange = "kMsgSelectionWillChange";
 IdStringPtr UISelection::kMsgSelectionChanged = "kMsgSelectionChanged";
 IdStringPtr UISelection::kMsgSelectionViewChanged = "kMsgSelectionViewChanged";
 
@@ -66,6 +67,7 @@ void UISelection::setStyle (int32_t _style)
 //----------------------------------------------------------------------------------------------------
 void UISelection::add (CView* view)
 {
+	changed (kMsgSelectionWillChange);
 	if (style == kSingleSelectionStyle)
 		empty ();
 	push_back (view);
@@ -78,6 +80,7 @@ void UISelection::remove (CView* view)
 {
 	if (contains (view))
 	{
+		changed (kMsgSelectionWillChange);
 		std::list<CView*>::remove (view);
 		changed (kMsgSelectionChanged);
 		view->forget ();
@@ -87,6 +90,7 @@ void UISelection::remove (CView* view)
 //----------------------------------------------------------------------------------------------------
 void UISelection::setExclusive (CView* view)
 {
+	changed (kMsgSelectionWillChange);
 	DeferChanges dc (this);
 	empty ();
 	add (view);
@@ -95,6 +99,7 @@ void UISelection::setExclusive (CView* view)
 //----------------------------------------------------------------------------------------------------
 void UISelection::empty ()
 {
+	changed (kMsgSelectionWillChange);
 	const_iterator it = begin ();
 	while (it != end ())
 	{

@@ -346,6 +346,7 @@ VST3Editor::VST3Editor (Steinberg::Vst::EditController* controller, UTF8StringPt
 , doCreateView (false)
 , tooltipsEnabled (true)
 , delegate (dynamic_cast<VST3EditorDelegate*> (controller))
+, originalController (0)
 {
 	description = new UIDescription (_xmlFile);
 	viewName = _viewName;
@@ -359,6 +360,7 @@ VST3Editor::VST3Editor (UIDescription* desc, Steinberg::Vst::EditController* con
 , doCreateView (false)
 , tooltipsEnabled (true)
 , delegate (dynamic_cast<VST3EditorDelegate*> (controller))
+, originalController (0)
 {
 	description = desc;
 	description->remember ();
@@ -586,36 +588,131 @@ void VST3Editor::onViewRemoved (CFrame* frame, CView* view)
 	IController* controller = getViewController (view);
 	if (controller)
 	{
-		subControllers.remove (controller);
 		releaseSubController (controller);
 		view->removeAttribute (kCViewControllerAttribute);
 	}
 }
 
+#if VST3_SUPPORTS_CONTEXTMENU
+/// @cond ignore
+namespace VST3EditorInternal {
+//-----------------------------------------------------------------------------
+class ContextMenuTarget : public Steinberg::FObject, public Steinberg::Vst::IContextMenuTarget
+{
+public:
+	ContextMenuTarget (CCommandMenuItem* item) : item (item)
+	{
+		item->remember ();
+	}
+	~ContextMenuTarget ()
+	{
+		item->forget ();
+	}
+
+	Steinberg::tresult executeMenuItem (Steinberg::int32 tag)
+	{
+		if (item->getTarget ())
+			item->getTarget ()->notify (item, CCommandMenuItem::kMsgMenuItemSelected);
+		return Steinberg::kResultTrue;
+	}
+	
+	OBJ_METHODS(ContextMenuTarget, Steinberg::FObject)
+	FUNKNOWN_METHODS(Steinberg::Vst::IContextMenuTarget, Steinberg::FObject)
+protected:
+	CCommandMenuItem* item;
+};
+
+//-----------------------------------------------------------------------------
+static void addCOptionMenuEntriesToIContextMenu (VST3Editor* editor, COptionMenu* menu, Steinberg::Vst::IContextMenu* contextMenu)
+{
+	for (CConstMenuItemIterator it = menu->getItems ()->begin (); it != menu->getItems ()->end ();it++)
+	{
+		CCommandMenuItem* commandItem = dynamic_cast<CCommandMenuItem*>(*it);
+		if (commandItem && commandItem->getTarget ())
+			commandItem->getTarget ()->notify (commandItem, CCommandMenuItem::kMsgMenuItemValidate);
+
+		Steinberg::Vst::IContextMenu::Item item = {};
+		Steinberg::String title ((*it)->getTitle ());
+		title.toWideString (Steinberg::kCP_Utf8);
+		title.copyTo16 (item.name, 0, 128);
+		if ((*it)->getSubmenu ())
+		{
+			item.flags = Steinberg::Vst::IContextMenu::Item::kIsGroupStart;
+			contextMenu->addItem (item, 0);
+			addCOptionMenuEntriesToIContextMenu (editor, (*it)->getSubmenu (), contextMenu);
+			item.flags = Steinberg::Vst::IContextMenu::Item::kIsGroupEnd;
+			contextMenu->addItem (item, 0);
+		}
+		else if ((*it)->isSeparator ())
+		{
+			item.flags = Steinberg::Vst::IContextMenu::Item::kIsSeparator;
+			contextMenu->addItem (item, 0);
+		}
+		else
+		{
+			if (commandItem)
+			{
+				if ((*it)->isChecked ())
+					item.flags |= Steinberg::Vst::IContextMenu::Item::kIsChecked;
+				if ((*it)->isEnabled () == false)
+					item.flags |= Steinberg::Vst::IContextMenu::Item::kIsDisabled;
+				ContextMenuTarget* target = new ContextMenuTarget (commandItem);
+				contextMenu->addItem (item, target);
+				target->release ();
+			}
+		}
+	}
+}
+
+} // namespace
+/// @endcond ignore
+#endif
+
 //-----------------------------------------------------------------------------
 CMouseEventResult VST3Editor::onMouseDown (CFrame* frame, const CPoint& where, const CButtonState& buttons)
 {
 	CMouseEventResult result = kMouseEventNotHandled;
-	#if VST3_SUPPORTS_CONTEXTMENU
 	if (buttons.isRightButton ())
 	{
+		COptionMenu* controllerMenu = delegate ? delegate->createContextMenu (where, this) : 0;
+	#if VSTGUI_LIVE_EDITING
+		UIEditFrame* editFrame = dynamic_cast<UIEditFrame*> (frame);
+		if (editFrame)
+		{
+			if (controllerMenu == 0)
+				controllerMenu = new COptionMenu ();
+			else
+				controllerMenu->addSeparator ();
+			editFrame->addEditItemsToMenu (controllerMenu);
+		}
+	#endif
+	#if VST3_SUPPORTS_CONTEXTMENU
 		Steinberg::FUnknownPtr<Steinberg::Vst::IComponentHandler3> handler (getController ()->getComponentHandler ());
+		Steinberg::Vst::ParamID paramID;
 		if (handler)
 		{
-			Steinberg::Vst::ParamID paramID;
-			if (findParameter ((Steinberg::int32)where.x, (Steinberg::int32)where.y, paramID) == Steinberg::kResultTrue)
+			bool paramFound = findParameter ((Steinberg::int32)where.x, (Steinberg::int32)where.y, paramID) == Steinberg::kResultTrue;
+			Steinberg::Vst::IContextMenu* contextMenu = handler->createContextMenu (this, paramFound ? &paramID : 0);
+			if (contextMenu)
 			{
-				Steinberg::Vst::IContextMenu* contextMenu = handler->createContextMenu (this, &paramID);
-				if (contextMenu)
-				{
-					if (contextMenu->popup (where.x, where.y) == Steinberg::kResultTrue)
-						result = kMouseEventHandled;
-					contextMenu->release ();
-				}
+				if (controllerMenu)
+					VST3EditorInternal::addCOptionMenuEntriesToIContextMenu (this, controllerMenu, contextMenu);
+				if (contextMenu->popup (where.x, where.y) == Steinberg::kResultTrue)
+					result = kMouseEventHandled;
+				contextMenu->release ();
 			}
 		}
-	}
+		if (result == kMouseEventNotHandled)
 	#endif
+		if (controllerMenu)
+		{
+			controllerMenu->setStyle (kPopupStyle|kMultipleCheckStyle);
+			controllerMenu->popup (frame, where);
+			result = kMouseEventHandled;
+		}
+		if (controllerMenu)
+			controllerMenu->forget ();
+	}
 	return result;
 }
 
@@ -662,26 +759,16 @@ Steinberg::tresult PLUGIN_API VST3Editor::findParameter (Steinberg::int32 xPos, 
 }
 
 //-----------------------------------------------------------------------------
+IController* VST3Editor::createSubController (UTF8StringPtr name, IUIDescription* description)
+{
+	return delegate->createSubController (name, description, this);
+}
+
+//-----------------------------------------------------------------------------
 CView* VST3Editor::createView (const UIAttributes& attributes, IUIDescription* description)
 {
 	if (delegate)
 	{
-		UIDescription* uiDesc = dynamic_cast<UIDescription*> (description);
-		const std::string* subControllerName = attributes.getAttributeValue ("sub-controller");
-		if (subControllerName)
-		{
-			if (!(subControllerStack.empty () == false && subControllerStack.back ().name == *subControllerName))
-			{
-				IController* subController = delegate->createSubController (subControllerName->c_str (), description, this);
-				if (subController)
-				{
-					subControllerStack.push_back (SubController (subController, *subControllerName));
-					subControllers.push_back (subController);
-					uiDesc->setController (subController);
-					return subController->createView (attributes, description);
-				}
-			}
-		}
 		const std::string* customViewName = attributes.getAttributeValue ("custom-view-name");
 		if (customViewName)
 		{
@@ -695,22 +782,6 @@ CView* VST3Editor::createView (const UIAttributes& attributes, IUIDescription* d
 //-----------------------------------------------------------------------------
 CView* VST3Editor::verifyView (CView* view, const UIAttributes& attributes, IUIDescription* description)
 {
-	const std::string* subControllerName = attributes.getAttributeValue ("sub-controller");
-	if (subControllerName && subControllerStack.empty () == false)
-	{
-		if (subControllerStack.back ().name == *subControllerName)
-		{
-			UIDescription* uiDesc = dynamic_cast<UIDescription*> (description);
-			IController* subController = subControllerStack.back ().controller;
-			subControllerStack.pop_back ();
-			if (subControllerStack.empty () == false)
-				uiDesc->setController (subControllerStack.back ().controller);
-			else
-				uiDesc->setController (this);
-			view->setAttribute (kCViewControllerAttribute, sizeof (IController*), &subController);
-			return subController->verifyView (view, attributes, description);
-		}
-	}
 	CControl* control = dynamic_cast<CControl*> (view);
 	if (control && control->getTag () != -1 && control->getListener () == this)
 	{
@@ -739,6 +810,7 @@ void VST3Editor::recreateView ()
 	frame->remember ();
 	close ();
 
+	originalController = this;
 	CView* view = description->createView (viewName.c_str (), this);
 	if (view)
 	{
@@ -757,6 +829,7 @@ void VST3Editor::recreateView ()
 			delegate->didOpen (this);
 	}
 	init ();
+	frame->registerMouseObserver (this);
 	frame->invalid ();
 }
 
@@ -767,6 +840,7 @@ void VST3Editor::recreateView ()
 //-----------------------------------------------------------------------------
 bool PLUGIN_API VST3Editor::open (void* parent)
 {
+	originalController = this;
 	CView* view = description->createView (viewName.c_str (), this);
 	if (view)
 	{
@@ -835,7 +909,6 @@ void PLUGIN_API VST3Editor::close ()
 		if (refCount == 1)
 			frame = 0;
 	}
-	assert (subControllers.empty ());
 }
 
 //------------------------------------------------------------------------
@@ -888,22 +961,20 @@ CMessageResult VST3Editor::notify (CBaseObject* sender, IdStringPtr message)
 		COptionMenu* menu = dynamic_cast<COptionMenu*> (sender);
 		if (menu)
 		{
-			menu->addEntry (new CMenuItem ("Template Settings..."));
+			menu->addEntry (new CCommandMenuItem ("Template Settings...", this, "VST3Editor", "TemplateSettings"));
 			std::list<const std::string*> templateNames;
 			description->collectTemplateViewNames (templateNames);
 			if (templateNames.size () > 1)
 			{
 				COptionMenu* submenu = new COptionMenu ();
-				int32_t menuTag = 1000;
 				std::list<const std::string*>::const_iterator it = templateNames.begin ();
 				while (it != templateNames.end ())
 				{
-					submenu->addEntry (new CMenuItem ((*it)->c_str (), menuTag++));
+					submenu->addEntry (new CCommandMenuItem ((*it)->c_str (), this, "VST3Editor|ChangeTemplate", (*it)->c_str ()));
 					it++;
 				}
 				menu->addEntry (submenu, "Change Template");
 				submenu->forget ();
-
 			}
 			UIViewFactory* viewFactory = dynamic_cast<UIViewFactory*> (description->getViewFactory ());
 			if (viewFactory)
@@ -915,11 +986,10 @@ CMessageResult VST3Editor::notify (CBaseObject* sender, IdStringPtr message)
 					COptionMenu* submenu = new COptionMenu ();
 					CMenuItem* item = submenu->addEntry ("Root View Type");
 					item->setIsTitle (true);
-					int32_t menuTag = 10000;
 					std::list<const std::string*>::const_iterator it = viewNames.begin ();
 					while (it != viewNames.end ())
 					{
-						submenu->addEntry (new CMenuItem ((*it)->c_str (), menuTag++));
+						submenu->addEntry (new CCommandMenuItem ((*it)->c_str (), this, "VST3Editor|AddNewTemplate", (*it)->c_str ()));
 						it++;
 					}
 					menu->addEntry (submenu, "Add New Template");
@@ -927,42 +997,46 @@ CMessageResult VST3Editor::notify (CBaseObject* sender, IdStringPtr message)
 				}
 			}
 			menu->addSeparator ();
-			menu->addEntry (new CMenuItem ("Sync Parameter Tags"));
+			menu->addEntry (new CCommandMenuItem ("Sync Parameter Tags", this, "VST3Editor", "SyncParameterTags"));
 			menu->addSeparator ();
 		}
 		return kMessageNotified;
 	}
-	else if (message == UIEditFrame::kMsgPerformOptionsMenuAction)
+	else if (message == CCommandMenuItem::kMsgMenuItemSelected)
 	{
-		CMenuItem* item = dynamic_cast<CMenuItem*> (sender);
+		CCommandMenuItem* item = dynamic_cast<CCommandMenuItem*>(sender);
 		if (item)
 		{
-			if (item->getTitle () == std::string ("Template Settings..."))
+			if (item->isCommandCategory ("VST3Editor"))
 			{
-				runTemplateSettingsDialog ();
-			}
-			else if (item->getTitle () == std::string ("Sync Parameter Tags"))
-			{
-				syncParameterTags ();
-			}
-			else
-			{
-				int32_t index = item->getTag ();
-				if (index >= 10000)
+				if (item->isCommandName ("TemplateSettings"))
 				{
-					runNewTemplateDialog (item->getTitle ());
+					runTemplateSettingsDialog ();
 				}
-				else
+				else if (item->isCommandName ("SyncParameterTags"))
 				{
-					exchangeView (item->getTitle ());
+					syncParameterTags ();
 				}
+			}
+			else if (item->isCommandCategory ("VST3Editor|ChangeTemplate"))
+			{
+				exchangeView (item->getCommandName ());
+			}
+			else if (item->isCommandCategory ("VST3Editor|AddNewTemplate"))
+			{
+				runNewTemplateDialog (item->getCommandName ());
 			}
 		}
 		return kMessageNotified;
 	}
-	else if (message == UIEditFrame::kMsgEditEnding)
+	else if (message == UIEditFrame::kMsgEditModeChanged)
 	{
-		exchangeView (viewName.c_str ());
+		UIEditFrame* editFrame = dynamic_cast<UIEditFrame*> (frame);
+		if (editFrame)
+		{
+			if (editFrame->getEditMode() == UIEditFrame::kNoEditMode)
+				exchangeView (viewName.c_str ());
+		}
 		return kMessageNotified;
 	}
 	else if (message == kMsgViewSizeChanged)

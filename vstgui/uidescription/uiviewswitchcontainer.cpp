@@ -151,7 +151,7 @@ CView* UIDescriptionViewSwitchController::createViewForIndex (int32_t index)
 }
 
 //-----------------------------------------------------------------------------
-static CControl* findControlTag (CViewContainer* parent, int32_t tag)
+static CControl* findControlTag (CViewContainer* parent, int32_t tag, bool reverse = true)
 {
 	CControl* result = 0;
 	ViewIterator it (parent);
@@ -164,7 +164,7 @@ static CControl* findControlTag (CViewContainer* parent, int32_t tag)
 			if (control->getTag () == tag)
 				result = control;
 		}
-		else
+		else if (reverse)
 		{
 			CViewContainer* container = dynamic_cast<CViewContainer*> (view);
 			if (container)
@@ -174,6 +174,8 @@ static CControl* findControlTag (CViewContainer* parent, int32_t tag)
 			break;
 		++it;
 	}
+	if (result == 0 && !reverse)
+		return findControlTag (dynamic_cast<CViewContainer*> (parent->getParentView ()), reverse);
 	return result;
 }
 
@@ -183,10 +185,15 @@ void UIDescriptionViewSwitchController::switchContainerAttached ()
 	if (switchControlTag != -1)
 	{
 		// find the switch Control
-		switchControl = findControlTag (viewSwitch->getFrame (), switchControlTag);
+		switchControl = findControlTag (dynamic_cast<CViewContainer*> (viewSwitch->getParentView ()), switchControlTag, false);
+		if (switchControl == 0)
+		{
+			switchControl = findControlTag (viewSwitch->getFrame (), switchControlTag, true);
+		}
 		if (switchControl)
 		{
 			switchControl->addDependency (this);
+			switchControl->remember ();
 			notify (switchControl, CControl::kMessageValueChanged);
 		}
 	}
@@ -198,6 +205,7 @@ void UIDescriptionViewSwitchController::switchContainerRemoved ()
 	if (switchControl)
 	{
 		switchControl->removeDependency (this);
+		switchControl->forget ();
 		switchControl = 0;
 	}
 }
