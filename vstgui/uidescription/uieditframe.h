@@ -38,7 +38,7 @@
 #if VSTGUI_LIVE_EDITING
 
 #include "../lib/cframe.h"
-#include "uiselection.h"
+#include "editing/uiselection.h"
 #include "uidescription.h"
 #include "uiviewfactory.h"
 #include "editing/iactionoperation.h"

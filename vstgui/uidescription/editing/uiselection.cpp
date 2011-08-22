@@ -37,7 +37,7 @@
 #include "uiselection.h"
 #include "uiviewfactory.h"
 #include "cstream.h"
-#include "../lib/cviewcontainer.h"
+#include "../../lib/cviewcontainer.h"
 #include <sstream>
 
 namespace VSTGUI {

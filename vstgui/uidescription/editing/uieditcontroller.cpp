@@ -12,7 +12,7 @@
 #include "uiundomanager.h"
 #include "uisearchtextfield.h"
 #include "uiactions.h"
-#include "../uiselection.h"
+#include "uiselection.h"
 #include <sstream>
 
 /*

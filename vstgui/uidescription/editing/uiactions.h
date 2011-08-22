@@ -36,7 +36,7 @@
 #define __uiactions__
 
 #include "iactionoperation.h"
-#include "../uiselection.h"
+#include "uiselection.h"
 #include "../uiviewfactory.h"
 #include <list>
 #include <map>

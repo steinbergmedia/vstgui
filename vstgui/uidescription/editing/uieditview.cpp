@@ -3,7 +3,7 @@
 #include "uiactions.h"
 #include "uicrosslines.h"
 #include "uigrid.h"
-#include "../uiselection.h"
+#include "uiselection.h"
 //#include "../editingcolordefs.h"
 #include "../uidescription.h"
 #include "../uiviewfactory.h"
