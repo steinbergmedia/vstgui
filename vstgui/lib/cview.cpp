@@ -38,6 +38,7 @@
 #include "cframe.h"
 #include "cvstguitimer.h"
 #include "animation/animator.h"
+#include "../uidescription/icontroller.h"
 #include <assert.h>
 #if DEBUG
 #include <list>
@@ -231,6 +232,17 @@ CView::~CView ()
 	assert (isAttached () == false);
 	if (pBackground)
 		pBackground->forget ();
+
+	IController* controller = 0;
+	int32_t size = sizeof (IController*);
+	if (getAttribute (kCViewControllerAttribute, sizeof (IController*), &controller, size) == true)
+	{
+		CBaseObject* obj = dynamic_cast<CBaseObject*> (controller);
+		if (obj)
+			obj->forget ();
+		else
+			delete controller;
+	}
 
 	for (CViewAttributeIterator it = attributes.begin (); it != attributes.end (); it++)
 		delete it->second;
@@ -494,9 +506,7 @@ CView::DragResult CView::doDrag (CDropSource* source, const CPoint& offset, CBit
 	CFrame* frame = getFrame ();
 	if (frame)
 	{
-		CPoint off (offset);
-		localToFrame (off);
-		return frame->doDrag (source, off, dragBitmap);
+		return frame->doDrag (source, offset, dragBitmap);
 	}
 	return kDragError;
 }

@@ -629,6 +629,134 @@ public:
 CViewContainerCreator __CViewContainerCreator;
 
 //-----------------------------------------------------------------------------
+class CRowColumnViewCreator : public IViewCreator
+{
+public:
+	CRowColumnViewCreator () { UIViewFactory::registerViewCreator (*this); }
+	IdStringPtr getViewName () const { return "CRowColumnView"; }
+	IdStringPtr getBaseViewName () const { return "CViewContainer"; }
+	CView* create (const UIAttributes& attributes, IUIDescription* description) const { return new CRowColumnView (CRect (0, 0, 100, 100)); }
+	bool apply (CView* view, const UIAttributes& attributes, IUIDescription* description) const
+	{
+		CRowColumnView* rcv = dynamic_cast<CRowColumnView*> (view);
+		if (rcv == 0)
+			return false;
+		const std::string* attr = attributes.getAttributeValue ("row-style");
+		if (attr)
+			rcv->setStyle (*attr == "true" ? CRowColumnView::kRowStyle : CRowColumnView::kColumnStyle);
+		attr = attributes.getAttributeValue ("spacing");
+		if (attr)
+		{
+			CCoord spacing = strtof (attr->c_str (), 0);
+			rcv->setSpacing (spacing);
+		}
+		CRect margin;
+		if (attributes.getRectAttribute ("margin", margin))
+			rcv->setMargin (margin);
+		attr = attributes.getAttributeValue ("animate-view-resizing");
+		if (attr)
+			rcv->setAnimateViewResizing (*attr == "true" ? true : false);
+		attr = attributes.getAttributeValue ("equal-size-layout");
+		if (attr)
+		{
+			if (*attr == "stretch")
+				rcv->setLayoutStyle (CRowColumnView::kStretchEqualy);
+			else if (*attr == "center")
+				rcv->setLayoutStyle (CRowColumnView::kCenterEqualy);
+			else if (*attr == "right-bottom")
+				rcv->setLayoutStyle (CRowColumnView::kRightBottomEqualy);
+			else
+				rcv->setLayoutStyle (CRowColumnView::kLeftTopEqualy);
+		}
+		attr = attributes.getAttributeValue ("view-resize-animation-time");
+		if (attr)
+		{
+			uint32_t time = (uint32_t)strtol (attr->c_str(), 0, 10);
+			rcv->setViewResizeAnimationTime (time);
+		}
+		return true;
+	}
+	bool getAttributeNames (std::list<std::string>& attributeNames) const
+	{
+		attributeNames.push_back ("row-style");
+		attributeNames.push_back ("spacing");
+		attributeNames.push_back ("margin");
+		attributeNames.push_back ("equal-size-layout");
+		attributeNames.push_back ("animate-view-resizing");
+		attributeNames.push_back ("view-resize-animation-time");
+		return true;
+	}
+	AttrType getAttributeType (const std::string& attributeName) const
+	{
+		if (attributeName == "row-style") return kBooleanType;
+		if (attributeName == "spacing") return kIntegerType;
+		if (attributeName == "margin") return kRectType;
+		if (attributeName == "equal-size-layout") return kStringType;
+		if (attributeName == "animate-view-resizing") return kBooleanType;
+		if (attributeName == "view-resize-animation-time") return kIntegerType;
+		return kUnknownType;
+	}
+	bool getAttributeValue (CView* view, const std::string& attributeName, std::string& stringValue, IUIDescription* desc) const
+	{
+		CRowColumnView* rcv = dynamic_cast<CRowColumnView*> (view);
+		if (rcv == 0)
+			return false;
+		if (attributeName == "row-style")
+		{
+			stringValue = rcv->getStyle () == CRowColumnView::kRowStyle ? "true" : "false";
+			return true;
+		}
+		if (attributeName == "animate-view-resizing")
+		{
+			stringValue = rcv->isAnimateViewResizing () ? "true" : "false";
+			return true;
+		}
+		if (attributeName == "spacing")
+		{
+			std::stringstream str;
+			str << (int32_t)rcv->getSpacing ();
+			stringValue = str.str ();
+			return true;
+		}
+		if (attributeName == "view-resize-animation-time")
+		{
+			std::stringstream str;
+			str << rcv->getViewResizeAnimationTime ();
+			stringValue = str.str ();
+			return true;
+		}
+		if (attributeName == "margin")
+		{
+			const CRect& margin = rcv->getMargin ();
+			std::stringstream str;
+			str << (int32_t)margin.left;
+			str << ",";
+			str << (int32_t)margin.top;
+			str << ",";
+			str << (int32_t)margin.right;
+			str << ",";
+			str << (int32_t)margin.bottom;
+			stringValue = str.str ();
+			return true;
+		}
+		if (attributeName == "equal-size-layout")
+		{
+			switch (rcv->getLayoutStyle ())
+			{
+				case CRowColumnView::kLeftTopEqualy: stringValue = "left-top"; break;
+				case CRowColumnView::kStretchEqualy: stringValue = "stretch"; break;
+				case CRowColumnView::kCenterEqualy: stringValue = "center"; break;
+				case CRowColumnView::kRightBottomEqualy: stringValue = "right-bottom"; break;
+			}
+			return true;
+		}
+		return false;
+	}
+
+};
+CRowColumnViewCreator __CRowColumnViewCreator;
+
+//-----------------------------------------------------------------------------
 class CScrollViewCreator : public IViewCreator
 {
 public:
@@ -1742,6 +1870,11 @@ public:
 			CCoord width = strtof (attr->c_str (), 0);
 			button->setRoundRadius (width);
 		}
+		attr = attributes.getAttributeValue ("kick-style");
+		if (attr)
+		{
+			button->setStyle (*attr == "true" ? CTextButton::kKickStyle : CTextButton::kOnOffStyle);
+		}
 		return true;
 	}
 	bool getAttributeNames (std::list<std::string>& attributeNames) const
@@ -1758,6 +1891,7 @@ public:
 		attributeNames.push_back ("frame-color-highlighted");
 		attributeNames.push_back ("frame-width");
 		attributeNames.push_back ("round-radius");
+		attributeNames.push_back ("kick-style");
 		return true;
 	}
 	AttrType getAttributeType (const std::string& attributeName) const
@@ -1774,6 +1908,7 @@ public:
 		if (attributeName == "frame-color-highlighted") return kColorType;
 		if (attributeName == "frame-width") return kFloatType;
 		if (attributeName == "round-radius") return kFloatType;
+		if (attributeName == "kick-style") return kBooleanType;
 		return kUnknownType;
 	}
 	bool getAttributeValue (CView* view, const std::string& attributeName, std::string& stringValue, IUIDescription* desc) const
@@ -1859,6 +1994,11 @@ public:
 			std::stringstream str;
 			str << button->getRoundRadius ();
 			stringValue = str.str ();
+			return true;
+		}
+		else if (attributeName == "kick-style")
+		{
+			stringValue = button->getStyle() == CTextButton::kKickStyle ? "true" : "false";
 			return true;
 		}
 		return false;
@@ -1959,7 +2099,7 @@ public:
 				knob->setColorHandle (color);
 			}
 		}
-		if (handleBitmapAttr)
+		if (handleBitmapAttr && *handleBitmapAttr != "")
 		{
 			CBitmap* bitmap = description->getBitmap (handleBitmapAttr->c_str ());
 			if (bitmap)
@@ -2357,7 +2497,7 @@ public:
 			slider->setDrawTransparentHandle (*transparentHandleAttr == "true");
 		if (freeClickAttr)
 			slider->setFreeClick (*freeClickAttr == "true");
-		if (handleBitmapAttr)
+		if (handleBitmapAttr && *handleBitmapAttr != "")
 		{
 			CBitmap* bitmap = description->getBitmap (handleBitmapAttr->c_str ());
 			if (bitmap)
@@ -2667,7 +2807,7 @@ public:
 			return false;
 
 		const std::string* attr = attributes.getAttributeValue ("off-bitmap");
-		if (attr)
+		if (attr && *attr != "")
 		{
 			CBitmap* bitmap = description->getBitmap (attr->c_str ());
 			vuMeter->setOffBitmap (bitmap);
@@ -2764,7 +2904,7 @@ public:
 			return false;
 
 		const std::string* attr = attributes.getAttributeValue ("splash-bitmap");
-		if (attr)
+		if (attr && *attr != "")
 		{
 			CBitmap* bitmap = description->getBitmap (attr->c_str ());
 			splashScreen->setSplashBitmap (bitmap);
@@ -2990,18 +3130,40 @@ public:
 				splitView->setStyle (CSplitView::kVertical);
 			}
 		}
+		attr = attributes.getAttributeValue ("resize-method");
+		if (attr)
+		{
+			if (*attr == "first")
+			{
+				splitView->setResizeMethod (CSplitView::kResizeFirstView);
+			}
+			if (*attr == "second")
+			{
+				splitView->setResizeMethod (CSplitView::kResizeSecondView);
+			}
+			else if (*attr == "last")
+			{
+				splitView->setResizeMethod (CSplitView::kResizeLastView);
+			}
+			else if (*attr == "all")
+			{
+				splitView->setResizeMethod (CSplitView::kResizeAllViews);
+			}
+		}
 
 		return true;
 	}
 	bool getAttributeNames (std::list<std::string>& attributeNames) const
 	{
 		attributeNames.push_back ("orientation");
+		attributeNames.push_back ("resize-method");
 		attributeNames.push_back ("separator-width");
 		return true;
 	}
 	AttrType getAttributeType (const std::string& attributeName) const
 	{
 		if (attributeName == "orientation") return kStringType;
+		if (attributeName == "resize-method") return kStringType;
 		if (attributeName == "separator-width") return kIntegerType;
 		return kUnknownType;
 	}
@@ -3021,6 +3183,32 @@ public:
 		{
 			stringValue = splitView->getStyle () == CSplitView::kHorizontal ? "horizontal" : "vertical";
 			return true;
+		}
+		if (attributeName == "resize-method")
+		{
+			switch (splitView->getResizeMethod ())
+			{
+				case CSplitView::kResizeFirstView:
+				{
+					stringValue = "first";
+					return true;
+				}
+				case CSplitView::kResizeSecondView:
+				{
+					stringValue = "second";
+					return true;
+				}
+				case CSplitView::kResizeLastView:
+				{
+					stringValue = "last";
+					return true;
+				}
+				case CSplitView::kResizeAllViews:
+				{
+					stringValue = "all";
+					return true;
+				}
+			}
 		}
 		return false;
 	}

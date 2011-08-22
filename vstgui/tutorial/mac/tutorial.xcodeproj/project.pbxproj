@@ -34,6 +34,8 @@
 		F44864EC10AEEEC500D7EFBA /* vstgui_mac.mm in Sources */ = {isa = PBXBuildFile; fileRef = F44864EA10AEEEC500D7EFBA /* vstgui_mac.mm */; };
 		F47F241D11D4C2F600C94CAF /* Accelerate.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F47F241C11D4C2F600C94CAF /* Accelerate.framework */; };
 		F47F242011D4C30900C94CAF /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F47F241F11D4C30900C94CAF /* Cocoa.framework */; };
+		F4CF26E513EEA7B200C64EB7 /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F4CF26E413EEA7B200C64EB7 /* OpenGL.framework */; };
+		F4CF26E713EEA7DB00C64EB7 /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F4CF26E613EEA7DB00C64EB7 /* OpenGL.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -68,6 +70,8 @@
 		F47F241C11D4C2F600C94CAF /* Accelerate.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Accelerate.framework; path = /System/Library/Frameworks/Accelerate.framework; sourceTree = "<absolute>"; };
 		F47F241F11D4C30900C94CAF /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = /System/Library/Frameworks/Cocoa.framework; sourceTree = "<absolute>"; };
 		F4AB00B31398D19A0067538F /* getpluginbundle.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = getpluginbundle.h; path = "../../plugin-bindings/getpluginbundle.h"; sourceTree = SOURCE_ROOT; };
+		F4CF26E413EEA7B200C64EB7 /* OpenGL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGL.framework; path = /System/Library/Frameworks/OpenGL.framework; sourceTree = "<absolute>"; };
+		F4CF26E613EEA7DB00C64EB7 /* OpenGL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGL.framework; path = /System/Library/Frameworks/OpenGL.framework; sourceTree = "<absolute>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -75,6 +79,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F4CF26E713EEA7DB00C64EB7 /* OpenGL.framework in Frameworks */,
 				8D01CCCE0486CAD60068D4B7 /* Carbon.framework in Frameworks */,
 				F43771F012439E4600248B30 /* Cocoa.framework in Frameworks */,
 				F43771F312439E9100248B30 /* Accelerate.framework in Frameworks */,
@@ -85,6 +90,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F4CF26E513EEA7B200C64EB7 /* OpenGL.framework in Frameworks */,
 				F405D0480B04E47B008E3886 /* Carbon.framework in Frameworks */,
 				F47F241D11D4C2F600C94CAF /* Accelerate.framework in Frameworks */,
 				F47F242011D4C30900C94CAF /* Cocoa.framework in Frameworks */,
@@ -109,6 +115,8 @@
 		089C1671FE841209C02AAC07 /* External Frameworks and Libraries */ = {
 			isa = PBXGroup;
 			children = (
+				F4CF26E613EEA7DB00C64EB7 /* OpenGL.framework */,
+				F4CF26E413EEA7B200C64EB7 /* OpenGL.framework */,
 				F47F241C11D4C2F600C94CAF /* Accelerate.framework */,
 				08EA7FFBFE8413EDC02AAC07 /* Carbon.framework */,
 				F47F241F11D4C30900C94CAF /* Cocoa.framework */,

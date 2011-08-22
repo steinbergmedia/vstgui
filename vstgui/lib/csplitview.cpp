@@ -181,6 +181,62 @@ void CSplitView::resizeFirstView (CPoint diff)
 }
 
 //-----------------------------------------------------------------------------
+void CSplitView::resizeSecondView (CPoint diff)
+{
+	CRect r;
+	std::list<CSplitViewSeparatorView*> separators;
+	ViewIterator it (this);
+	int32_t viewIndex = 0;
+	while (*it)
+	{
+		CView* view = *it;
+		CSplitViewSeparatorView* separatorView = dynamic_cast<CSplitViewSeparatorView*> (view);
+		if (separatorView)
+			separators.push_back (separatorView);
+		else
+			viewIndex++;
+		r = view->getViewSize ();
+		if (separatorView == 0 && viewIndex == 2)
+		{
+			r.right += diff.x;
+			r.bottom += diff.y;
+		}
+		else if (viewIndex == 1)
+		{
+			if (style == kHorizontal)
+			{
+				r.bottom += diff.y;
+			}
+			else
+			{
+				r.right += diff.x;
+			}
+		}
+		else if (viewIndex > 1)
+		{
+			if (style == kHorizontal)
+			{
+				r.offset (diff.x, 0);
+				r.bottom += diff.y;
+			}
+			else
+			{
+				r.offset (0, diff.y);
+				r.right += diff.x;
+			}
+		}
+		view->setViewSize (r);
+		view->setMouseableArea (r);
+		it++;
+	}
+	for (std::list<CSplitViewSeparatorView*>::const_iterator sit = separators.begin (); sit != separators.end (); sit++)
+	{
+		CRect r ((*sit)->getViewSize ());
+		requestNewSeparatorSize (*sit, r);
+	}
+}
+
+//-----------------------------------------------------------------------------
 void CSplitView::resizeLastView (CPoint diff)
 {
 	CRect r;
@@ -309,6 +365,11 @@ void CSplitView::setViewSize (const CRect& rect, bool invalid)
 			resizeFirstView (diff);
 			break;
 		}
+		case kResizeSecondView:
+		{
+			resizeSecondView (diff);
+			break;
+		}
 		case kResizeLastView:
 		{
 			resizeLastView (diff);
@@ -405,7 +466,7 @@ bool CSplitView::sizeToFit ()
 }
 
 //-----------------------------------------------------------------------------
-bool CSplitView::removed (CView* parent)
+void CSplitView::storeViewSizes ()
 {
 	ISplitViewController* controller = getSplitViewController (this);
 	if (controller)
@@ -424,6 +485,12 @@ bool CSplitView::removed (CView* parent)
 			it++;
 		}
 	}
+}
+
+//-----------------------------------------------------------------------------
+bool CSplitView::removed (CView* parent)
+{
+	storeViewSizes ();
 	return CViewContainer::removed (parent);
 }
 
@@ -692,7 +759,7 @@ CSplitViewSeparatorView::CSplitViewSeparatorView (const CRect& size, CSplitView:
 //-----------------------------------------------------------------------------
 void CSplitViewSeparatorView::draw (CDrawContext *pContext)
 {
-	CSplitView* splitView = (CSplitView*)getParentView ();
+	CSplitView* splitView = reinterpret_cast<CSplitView*> (getParentView ());
 	ISplitViewSeparatorDrawer* drawer = splitView ? splitView->getDrawer () : 0;
 	if (drawer)
 	{
@@ -739,7 +806,7 @@ CMouseEventResult CSplitViewSeparatorView::onMouseMoved (CPoint& where, const CB
 				newSize.offset (where.x - lastMousePos.x, 0);
 			else
 				newSize.offset (0, where.y - lastMousePos.y);
-			CSplitView* splitView = (CSplitView*)getParentView ();
+			CSplitView* splitView = reinterpret_cast<CSplitView*> (getParentView ());
 			splitView->requestNewSeparatorSize (this, newSize);
 		}
 		return kMouseEventHandled;

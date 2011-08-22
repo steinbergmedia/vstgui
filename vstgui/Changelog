@@ -1,4 +1,12 @@
-2011-07-
+2011-08-22 arne
+
+	* new class CCommandMenuItem
+	* new container view CRowColumnView
+	* add on/off style to CTextButton
+	* remove unused bTextTransparencyEnabled from CParamDisplay
+	* first part of new uidescription editor
+
+2011-07-16 arne
 
 	* new class COpenGLView + platform implementations for Windows + Mac Cocoa
 	* new style for CScrollView: kOverlayScrollbars (scrollbars are overlayed of the content)

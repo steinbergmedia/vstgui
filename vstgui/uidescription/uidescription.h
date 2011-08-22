@@ -40,6 +40,7 @@
 #include "../lib/cfont.h"
 #include "../lib/cbitmap.h"
 #include "../lib/idependency.h"
+#include "icontroller.h"
 #include "xmlparser.h"
 #include <map>
 #include <deque>
@@ -53,9 +54,11 @@ class UINode;
 class UIAttributes;
 class IViewFactory;
 class IUIDescription;
+class IBitmapCreator;
 class InputStream;
 class OutputStream;
 
+#if 0
 //-----------------------------------------------------------------------------
 /// @brief extension to CControlListener used by UIDescription
 /// @ingroup new_in_4_0
@@ -67,7 +70,9 @@ public:
 	virtual CControlListener* getControlListener (UTF8StringPtr controlTagName) { return this; }
 	virtual CView* createView (const UIAttributes& attributes, IUIDescription* description) { return 0; }
 	virtual CView* verifyView (CView* view, const UIAttributes& attributes, IUIDescription* description) { return view; }
+	virtual IController* createSubController (IdStringPtr name, IUIDescription* description) { return 0; }
 };
+#endif
 
 //-----------------------------------------------------------------------------
 class IUIDescription
@@ -147,10 +152,14 @@ public:
 	bool getTemplateNameFromView (CView* view, std::string& templateName);
 	bool addNewTemplate (UTF8StringPtr name, UIAttributes* attr); // owns attributes
 	bool removeTemplate (UTF8StringPtr name);
+	bool changeTemplateName (UTF8StringPtr name, UTF8StringPtr newName);
+	bool duplicateTemplate (UTF8StringPtr name, UTF8StringPtr duplicateName);
 
 	bool setCustomAttributes (UTF8StringPtr name, UIAttributes* attr); //owns attributes
-	UIAttributes* getCustomAttributes (UTF8StringPtr name) const;
+	UIAttributes* getCustomAttributes (UTF8StringPtr name, bool create = false);
 
+	void setBitmapCreator (IBitmapCreator* bitmapCreator);
+	
 	static bool parseColor (const std::string& colorString, CColor& color);
 	static CViewAttributeID kTemplateNameAttributeID;
 	
@@ -158,6 +167,8 @@ public:
 	static IdStringPtr kMessageColorChanged;
 	static IdStringPtr kMessageFontChanged;
 	static IdStringPtr kMessageBitmapChanged;
+	static IdStringPtr kMessageTemplateChanged;
+	static IdStringPtr kMessageBeforeSave;
 protected:
 	CView* createViewFromNode (UINode* node);
 	UINode* getBaseNode (UTF8StringPtr name) const;
@@ -179,6 +190,9 @@ protected:
 	IController* controller;
 	IViewFactory* viewFactory;
 	Xml::IContentProvider* xmlContentProvider;
+	IBitmapCreator* bitmapCreator;
+
+	std::deque<IController*> subControllerStack;
 
 	std::deque<UINode*> nodeStack;
 };
@@ -194,6 +208,15 @@ public:
 	const std::string* getAttributeValue (UTF8StringPtr name) const;
 	void setAttribute (UTF8StringPtr name, UTF8StringPtr value);
 	void removeAttribute (UTF8StringPtr name);
+
+	void setIntegerAttribute (UTF8StringPtr name, int32_t value);
+	bool getIntegerAttribute (UTF8StringPtr name, int32_t& value);
+
+	void setDoubleAttribute (UTF8StringPtr name, double value);
+	bool getDoubleAttribute (UTF8StringPtr name, double& value);
+	
+	void setPointAttribute (UTF8StringPtr name, const CPoint& p);
+	bool getPointAttribute (UTF8StringPtr name, CPoint& p) const;
 	
 	void setRectAttribute (UTF8StringPtr name, const CRect& r);
 	bool getRectAttribute (UTF8StringPtr name, CRect& r) const;
@@ -215,6 +238,15 @@ public:
 };
 
 //-----------------------------------------------------------------------------
+class IBitmapCreator
+{
+public:
+	virtual ~IBitmapCreator () {}
+	
+	virtual IPlatformBitmap* createBitmap (const UIAttributes& attributes) = 0;
+};
+
+//-----------------------------------------------------------------------------
 class DelegationController : public IController
 {
 public:
@@ -232,6 +264,7 @@ public:
 	CControlListener* getControlListener (UTF8StringPtr name) { return controller->getControlListener (name); }
 	CView* createView (const UIAttributes& attributes, IUIDescription* description) { return controller->createView (attributes, description); }
 	CView* verifyView (CView* view, const UIAttributes& attributes, IUIDescription* description) { return controller->verifyView (view, attributes, description); }
+	IController* createSubController (IdStringPtr name, IUIDescription* description) { return controller->createSubController (name, description); }
 protected:
 	IController* controller;
 };
@@ -246,7 +279,7 @@ inline IController* getViewController (const CView* view, bool deep = false)
 	{
 		if (view->getParentView () && view->getParentView () != view)
 		{
-			return getViewController (view->getParentView ());
+			return getViewController (view->getParentView (), deep);
 		}
 	}
 	return controller;

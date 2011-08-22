@@ -121,17 +121,19 @@ public:
 	/// @name CDataBrowser Methods
 	//-----------------------------------------------------------------------------
 	//@{
-	virtual void recalculateLayout (bool rememberSelection = false);				///< trigger recalculation, call if numRows or numColumns changed
-	virtual void invalidate (int32_t row, int32_t column);								///< invalidates an individual cell
-	virtual void invalidateRow (int32_t row);											///< invalidates a complete row
-	virtual void makeRowVisible (int32_t row);											///< scrolls the scrollview so that row is visible
+	virtual void recalculateLayout (bool rememberSelection = false);						///< trigger recalculation, call if numRows or numColumns changed
+	virtual void invalidate (int32_t row, int32_t column);									///< invalidates an individual cell
+	virtual void invalidateRow (int32_t row);												///< invalidates a complete row
+	virtual void makeRowVisible (int32_t row);												///< scrolls the scrollview so that row is visible
 
-	virtual CRect getCellBounds (int32_t row, int32_t column);							///< get bounds of a cell
+	virtual CRect getCellBounds (int32_t row, int32_t column);								///< get bounds of a cell
 
-	virtual int32_t getSelectedRow () const { return selectedRow; }					///< get selected row
-	virtual void setSelectedRow (int32_t row, bool makeVisible = false);				///< set the exclusive selected row
+	virtual int32_t getSelectedRow () const { return selectedRow; }							///< get selected row
+	virtual void setSelectedRow (int32_t row, bool makeVisible = false);					///< set the exclusive selected row
 
 	virtual void beginTextEdit (int32_t row, int32_t column, UTF8StringPtr initialText);	///< starts a text edit for a cell
+
+	IDataBrowser* getDataSource () const { return db; }										///< get data source object
 	//@}
 
 	void setAutosizeFlags (int32_t flags);

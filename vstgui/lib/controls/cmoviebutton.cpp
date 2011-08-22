@@ -146,8 +146,9 @@ CMouseEventResult CMovieButton::onMouseMoved (CPoint& where, const CButtonState&
 			valueChanged ();
 		if (isDirty ())
 			invalid ();
+		return kMouseEventHandled;
 	}
-	return kMouseEventHandled;
+	return kMouseEventNotHandled;
 }
 
 //------------------------------------------------------------------------

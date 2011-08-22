@@ -87,6 +87,7 @@ public:
 	void setDragOffset (const CPoint& p) { dragOffset = p; }
 	const CPoint& getDragOffset () const { return dragOffset; }
 	
+	static IdStringPtr kMsgSelectionWillChange;
 	static IdStringPtr kMsgSelectionChanged;
 	static IdStringPtr kMsgSelectionViewChanged;
 

@@ -70,6 +70,7 @@ public:
 	virtual bool removeAll (bool withForget = true);	///< remove all child views
 	virtual bool isChild (CView* pView) const;	///< check if pView is a child view of this container
 	virtual bool isChild (CView* pView, bool deep) const;	///< check if pView is a child view of this container
+	virtual bool hasChildren () const;						///< check if container has child views
 	virtual int32_t getNbViews () const;			///< get the number of child views
 	virtual CView* getView (int32_t index) const;	///< get the child view at index
 	virtual CView* getViewAt (const CPoint& where, bool deep = false) const;	///< get the view at point where

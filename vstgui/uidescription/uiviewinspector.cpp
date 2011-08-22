@@ -46,6 +46,7 @@
 #include "../lib/cgraphicspath.h"
 #include "../lib/cfont.h"
 #include "../lib/ifocusdrawing.h"
+#include "editing/uiactions.h"
 #include <set>
 #include <vector>
 #include <algorithm>
@@ -166,78 +167,6 @@ protected:
 	CColor inactiveTextColor;
 	CColor backgroundColor;
 	int32_t tabPosition;
-};
-
-
-//-----------------------------------------------------------------------------
-class AttributeChangeAction : public IActionOperation, protected std::map<CView*, std::string>
-//-----------------------------------------------------------------------------
-{
-public:
-	AttributeChangeAction (UIDescription* desc, UISelection* selection, const std::string& attrName, const std::string& attrValue)
-	: desc (desc)
-	, attrName (attrName)
-	, attrValue (attrValue)
-	{
-		UIViewFactory* viewFactory = dynamic_cast<UIViewFactory*> (desc->getViewFactory ());
-		std::string attrOldValue;
-		FOREACH_IN_SELECTION(selection, view)
-			viewFactory->getAttributeValue (view, attrName, attrOldValue, desc);
-			insert (std::make_pair (view, attrOldValue));
-			view->remember ();
-		FOREACH_IN_SELECTION_END
-		name = "'" + attrName + "' change";
-	}
-
-	~AttributeChangeAction ()
-	{
-		const_iterator it = begin ();
-		while (it != end ())
-		{
-			(*it).first->forget ();
-			it++;
-		}
-	}
-
-	UTF8StringPtr getName ()
-	{
-		return name.c_str ();
-	}
-
-	void perform ()
-	{
-		UIViewFactory* viewFactory = dynamic_cast<UIViewFactory*> (desc->getViewFactory ());
-		UIAttributes attr;
-		attr.setAttribute (attrName.c_str (), attrValue.c_str ());
-		const_iterator it = begin ();
-		while (it != end ())
-		{
-			(*it).first->invalid ();	// we need to invalid before changing anything as the size may change
-			viewFactory->applyAttributeValues ((*it).first, attr, desc);
-			(*it).first->invalid ();	// and afterwards also
-			it++;
-		}
-	}
-
-	void undo ()
-	{
-		UIViewFactory* viewFactory = dynamic_cast<UIViewFactory*> (desc->getViewFactory ());
-		const_iterator it = begin ();
-		while (it != end ())
-		{
-			UIAttributes attr;
-			attr.setAttribute (attrName.c_str (), (*it).second.c_str ());
-			(*it).first->invalid ();	// we need to invalid before changing anything as the size may change
-			viewFactory->applyAttributeValues ((*it).first, attr, desc);
-			(*it).first->invalid ();	// and afterwards also
-			it++;
-		}
-	}
-protected:
-	UIDescription* desc;
-	std::string attrName;
-	std::string attrValue;
-	std::string name;
 };
 
 //-----------------------------------------------------------------------------

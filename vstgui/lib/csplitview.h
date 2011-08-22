@@ -60,6 +60,7 @@ public:
 	/** Method how to resize the subviews if the size of the split view changes */
 	enum ResizeMethod {
 		kResizeFirstView,		///< only the first view will be resized
+		kResizeSecondView,		///< only the second view will be resized
 		kResizeLastView,		///< only the last view will be resized
 		kResizeAllViews,		///< all views will be resized equally
 	};
@@ -81,6 +82,7 @@ public:
 	CCoord getSeparatorWidth () const { return separatorWidth; }	///< get the width of the separators
 
 	ISplitViewSeparatorDrawer* getDrawer ();
+	void storeViewSizes ();
 	//@}
 	
 	// overrides
@@ -98,6 +100,7 @@ public:
 //-----------------------------------------------------------------------------
 protected:
 	void resizeFirstView (CPoint diff);
+	void resizeSecondView (CPoint diff);
 	void resizeLastView (CPoint diff);
 	void resizeViewsEqual (CPoint diff);
 

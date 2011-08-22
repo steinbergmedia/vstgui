@@ -523,6 +523,12 @@ bool CViewContainer::isChild (CView *pView, bool deep) const
 }
 
 //-----------------------------------------------------------------------------
+bool CViewContainer::hasChildren () const
+{
+	return pFirstView != 0;
+}
+
+//-----------------------------------------------------------------------------
 /**
  * @return number of subviews
  */
@@ -602,7 +608,6 @@ bool CViewContainer::changeViewZOrder (CView* view, int32_t newIndex)
 		}
 		else
 		{
-			pNext = ccView2->pNext;
 			pPrevious = ccView2->pPrevious;
 			ccView->pPrevious = pPrevious;
 			ccView->pNext = ccView2;

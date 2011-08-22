@@ -232,6 +232,137 @@ void CMenuItem::setIsSeparator (bool state)
 }
 
 //------------------------------------------------------------------------
+/*! @class CCommandMenuItem
+//------------------------------------------------------------------------
+	The CCommandMenuItem supports setting a category, name and a target. The target will get a @link CBaseObject::notify notify()@endlink call before the item is
+	displayed and after it was selected. @see CCommandMenuItem::kMsgMenuItemValidate and @see CCommandMenuItem::kMsgMenuItemSelected
+*/
+//------------------------------------------------------------------------
+IdStringPtr CCommandMenuItem::kMsgMenuItemValidate = "kMsgMenuItemValidate";
+IdStringPtr CCommandMenuItem::kMsgMenuItemSelected = "kMsgMenuItemSelected";
+
+//------------------------------------------------------------------------
+CCommandMenuItem::CCommandMenuItem (UTF8StringPtr title, UTF8StringPtr keycode, int32_t keyModifiers, CBitmap* icon, int32_t flags, CBaseObject* _target, IdStringPtr _commandCategory, IdStringPtr _commandName)
+: CMenuItem (title, keycode, keyModifiers, icon, flags)
+, target (0)
+, commandCategory (0)
+, commandName (0)
+{
+	setTarget (_target);
+	setCommandCategory (_commandCategory);
+	setCommandName (_commandName);
+}
+
+//------------------------------------------------------------------------
+CCommandMenuItem::CCommandMenuItem (UTF8StringPtr title, COptionMenu* submenu, CBitmap* icon, CBaseObject* _target, IdStringPtr _commandCategory, IdStringPtr _commandName)
+: CMenuItem (title, submenu, icon)
+, target (0)
+, commandCategory (0)
+, commandName (0)
+{
+	setTarget (_target);
+	setCommandCategory (_commandCategory);
+	setCommandName (_commandName);
+}
+
+//------------------------------------------------------------------------
+CCommandMenuItem::CCommandMenuItem (UTF8StringPtr title, int32_t tag, CBaseObject* _target, IdStringPtr _commandCategory, IdStringPtr _commandName)
+: CMenuItem (title, tag)
+, target (0)
+, commandCategory (0)
+, commandName (0)
+{
+	setTarget (_target);
+	setCommandCategory (_commandCategory);
+	setCommandName (_commandName);
+}
+
+//------------------------------------------------------------------------
+CCommandMenuItem::CCommandMenuItem (UTF8StringPtr title, CBaseObject* _target, IdStringPtr _commandCategory, IdStringPtr _commandName)
+: CMenuItem (title, -1)
+, target (0)
+, commandCategory (0)
+, commandName (0)
+{
+	setTarget (_target);
+	setCommandCategory (_commandCategory);
+	setCommandName (_commandName);
+}
+
+//------------------------------------------------------------------------
+CCommandMenuItem::CCommandMenuItem (const CCommandMenuItem& item)
+: CMenuItem (item)
+, target (0)
+, commandCategory (0)
+, commandName (0)
+{
+	setTarget (item.target);
+	setCommandCategory (item.commandCategory);
+	setCommandName (item.commandName);
+}
+
+//------------------------------------------------------------------------
+CCommandMenuItem::~CCommandMenuItem ()
+{
+	setTarget (0);
+	setCommandCategory (0);
+	setCommandName (0);
+}
+
+//------------------------------------------------------------------------
+void CCommandMenuItem::setCommandCategory (IdStringPtr category)
+{
+	if (commandCategory)
+		free (commandCategory);
+	commandCategory = 0;
+	if (category)
+	{
+		size_t length = strlen (category);
+		commandCategory = (char*)malloc (length + 1);
+		strcpy (commandCategory, category);
+	}
+}
+
+//------------------------------------------------------------------------
+bool CCommandMenuItem::isCommandCategory (IdStringPtr category) const
+{
+	return commandCategory ? (strcmp (commandCategory, category) == 0) : (commandCategory == category);
+}
+
+//------------------------------------------------------------------------
+void CCommandMenuItem::setCommandName (IdStringPtr name)
+{
+	if (commandName)
+		free (commandName);
+	commandName = 0;
+	if (name)
+	{
+		size_t length = strlen (name);
+		commandName = (char*)malloc (length + 1);
+		strcpy (commandName, name);
+	}
+}
+
+//------------------------------------------------------------------------
+bool CCommandMenuItem::isCommandName (IdStringPtr name) const
+{
+	return commandName ? (strcmp (commandName, name) == 0) : (commandName == name);
+}
+
+//------------------------------------------------------------------------
+void CCommandMenuItem::setTarget (CBaseObject* _target)
+{
+	if (target)
+		target->forget ();
+	target = _target;
+	if (_target)
+		target->remember ();
+}
+
+//------------------------------------------------------------------------
+IdStringPtr COptionMenu::kMsgBeforePopup = "kMsgBeforePopup";
+
+//------------------------------------------------------------------------
 // COptionMenu
 //------------------------------------------------------------------------
 /*! @class COptionMenu
@@ -387,11 +518,27 @@ int32_t COptionMenu::onKeyDown (VstKeyCode& keyCode)
 }
 
 //------------------------------------------------------------------------
+void COptionMenu::beforePopup ()
+{
+	changed (kMsgBeforePopup);
+	for (CMenuItemIterator it = menuItems->begin (); it != menuItems->end (); it++)
+	{
+		CCommandMenuItem* commandItem = dynamic_cast<CCommandMenuItem*>(*it);
+		if (commandItem && commandItem->getTarget ())
+			commandItem->getTarget ()->notify (commandItem, CCommandMenuItem::kMsgMenuItemValidate);
+		if ((*it)->getSubmenu ())
+			(*it)->getSubmenu ()->beforePopup ();
+	}
+}
+
+//------------------------------------------------------------------------
 bool COptionMenu::popup ()
 {
 	bool popupResult = false;
 	if (!getFrame ())
 		return popupResult;
+
+	beforePopup ();
 
 	inPopup = true;
 
@@ -413,6 +560,11 @@ bool COptionMenu::popup ()
 			valueChanged ();
 			invalid ();
 			popupResult = true;
+			CCommandMenuItem* commandItem = dynamic_cast<CCommandMenuItem*>(lastMenu->getEntry (lastResult));
+			if (commandItem && commandItem->getTarget ())
+			{
+				commandItem->getTarget ()->notify (commandItem, CCommandMenuItem::kMsgMenuItemSelected);
+			}
 		}
 		platformMenu->forget ();
 	}

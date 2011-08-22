@@ -47,6 +47,8 @@
 #include "../lib/cfileselector.h"
 #include "../lib/cvstguitimer.h"
 #include "../lib/cdropsource.h"
+#include "editing/uiundomanager.h"
+#include "editing/uiactions.h"
 #include <map>
 #include <sstream>
 
@@ -56,636 +58,6 @@
 
 namespace VSTGUI {
 
-//-----------------------------------------------------------------------------
-class UndoStackTop : public IActionOperation
-{
-public:
-	UTF8StringPtr getName () { return 0; }
-	void perform () {}
-	void undo () {}
-};
-
-//-----------------------------------------------------------------------------
-class SizeToFitOperation : public IActionOperation, protected std::list<CView*>
-{
-public:
-	SizeToFitOperation (UISelection* selection)
-	: selection (selection)
-	{
-		selection->remember ();
-		FOREACH_IN_SELECTION(selection, view)
-			push_back (view);
-			view->remember ();
-			sizes.push_back (view->getViewSize ());
-		FOREACH_IN_SELECTION_END
-	}
-	
-	~SizeToFitOperation ()
-	{
-		iterator it = begin ();
-		while (it != end ())
-		{
-			(*it)->forget ();
-			it++;
-		}
-		selection->forget ();
-	}
-
-	UTF8StringPtr getName () { return "size to fit"; }
-	
-	void perform ()
-	{
-		selection->empty ();
-		const_iterator it = begin ();
-		while (it != end ())
-		{
-			(*it)->invalid ();
-			(*it)->sizeToFit ();
-			(*it)->invalid ();
-			selection->add (*it);
-			it++;
-		}
-	}
-	
-	void undo ()
-	{
-		selection->empty ();
-		const_iterator it = begin ();
-		std::list<CRect>::const_iterator it2 = sizes.begin ();
-		while (it != end ())
-		{
-			(*it)->invalid ();
-			CRect r (*it2);
-			(*it)->setViewSize (r);
-			(*it)->setMouseableArea (r);
-			(*it)->invalid ();
-			selection->add (*it);
-			it++;
-			it2++;
-		}
-	}
-
-protected:
-	UISelection* selection;
-	std::list<CRect> sizes;
-};
-
-//-----------------------------------------------------------------------------
-class UnembedViewOperation : public IActionOperation, protected std::list<CView*>
-{
-public:
-	UnembedViewOperation (UISelection* selection, UIViewFactory* factory)
-	: selection (selection)
-	, factory (factory)
-	{
-		containerView = dynamic_cast<CViewContainer*> (selection->first ());
-		ViewIterator it (containerView);
-		while (*it)
-		{
-			if (factory->getViewName (*it))
-			{
-				push_back (*it);
-				(*it)->remember ();
-			}
-			++it;
-		}
-		containerView->remember ();
-		parent = dynamic_cast<CViewContainer*> (containerView->getParentView ());
-	}
-	
-	~UnembedViewOperation ()
-	{
-		const_iterator it = begin ();
-		while (it != end ())
-		{
-			(*it)->forget ();
-			it++;
-		}
-		containerView->forget ();
-	}
-
-	UTF8StringPtr getName () { return "unembed views"; }
-
-	void perform ()
-	{
-		selection->remove (containerView);
-		CRect containerViewSize = containerView->getViewSize ();
-		iterator it = begin ();
-		while (it != end ())
-		{
-			CView* view = (*it);
-			containerView->removeView (view, false);
-			CRect viewSize = view->getViewSize ();
-			CRect mouseSize = view->getMouseableArea ();
-			viewSize.offset (containerViewSize.left, containerViewSize.top);
-			mouseSize.offset (containerViewSize.left, containerViewSize.top);
-			view->setViewSize (viewSize);
-			view->setMouseableArea (mouseSize);
-			if (parent->addView (view))
-				selection->add (view);
-			it++;
-		}
-		parent->removeView (containerView, false);
-	}
-
-	void undo ()
-	{
-		CRect containerViewSize = containerView->getViewSize ();
-		iterator it = begin ();
-		while (it != end ())
-		{
-			CView* view = (*it);
-			parent->removeView (view, false);
-			CRect viewSize = view->getViewSize ();
-			CRect mouseSize = view->getMouseableArea ();
-			viewSize.offset (-containerViewSize.left, -containerViewSize.top);
-			mouseSize.offset (-containerViewSize.left, -containerViewSize.top);
-			view->setViewSize (viewSize);
-			view->setMouseableArea (mouseSize);
-			containerView->addView (view);
-			it++;
-		}
-		parent->addView (containerView);
-		selection->setExclusive (containerView);
-	}
-
-protected:
-	UIViewFactory* factory;
-	UISelection* selection;
-	CViewContainer* containerView;
-	CViewContainer* parent;
-};
-
-//-----------------------------------------------------------------------------
-class EmbedViewOperation : public IActionOperation, protected std::list<CView*>
-{
-public:
-	EmbedViewOperation (UISelection* selection, CViewContainer* newContainer)
-	: selection (selection)
-	, newContainer (newContainer)
-	{
-		selection->remember ();
-		parent = dynamic_cast<CViewContainer*> (selection->first ()->getParentView ());
-		FOREACH_IN_SELECTION(selection, view)
-			if (view->getParentView () == parent)
-			{
-				push_back (view);
-				view->remember ();
-			}
-		FOREACH_IN_SELECTION_END
-
-		CRect r = selection->first ()->getViewSize ();
-		const_iterator it = begin ();
-		while (it != end ())
-		{
-			CView* view = (*it);
-			CRect viewSize = view->getViewSize ();
-			if (viewSize.left < r.left)
-				r.left = viewSize.left;
-			if (viewSize.right > r.right)
-				r.right = viewSize.right;
-			if (viewSize.top < r.top)
-				r.top = viewSize.top;
-			if (viewSize.bottom > r.bottom)
-				r.bottom = viewSize.bottom;
-			it++;
-		}
-		r.inset (-10, -10);
-		newContainer->setViewSize (r);
-		newContainer->setMouseableArea (r);
-	}
-	~EmbedViewOperation ()
-	{
-		const_iterator it = begin ();
-		while (it != end ())
-		{
-			(*it)->forget ();
-			it++;
-		}
-		newContainer->forget ();
-		selection->forget ();
-	}
-	
-	UTF8StringPtr getName () { return "embed views"; }
-	void perform ()
-	{
-		CRect parentRect = newContainer->getViewSize ();
-		const_iterator it = begin ();
-		while (it != end ())
-		{
-			CView* view = (*it);
-			parent->removeView (view, false);
-			CRect r = view->getViewSize ();
-			r.offset (-parentRect.left, -parentRect.top);
-			view->setViewSize (r);
-			view->setMouseableArea (r);
-			newContainer->addView (view);
-			it++;
-		}
-		parent->addView (newContainer);
-		newContainer->remember ();
-		selection->changed (UISelection::kMsgSelectionViewChanged);
-	}
-	void undo ()
-	{
-		CRect parentRect = newContainer->getViewSize ();
-		const_iterator it = begin ();
-		while (it != end ())
-		{
-			CView* view = (*it);
-			newContainer->removeView (view, false);
-			CRect r = view->getViewSize ();
-			r.offset (parentRect.left, parentRect.top);
-			view->setViewSize (r);
-			view->setMouseableArea (r);
-			parent->addView (view);
-			it++;
-		}
-		parent->removeView (newContainer);
-		selection->changed (UISelection::kMsgSelectionViewChanged);
-	}
-
-protected:
-	UISelection* selection;
-	CViewContainer* newContainer;
-	CViewContainer* parent;
-};
-
-//-----------------------------------------------------------------------------
-class ViewCopyOperation : public IActionOperation, protected std::list<CView*>
-{
-public:
-	ViewCopyOperation (UISelection* copySelection, UISelection* workingSelection, CViewContainer* parent, const CPoint& offset, UIViewFactory* viewFactory, IUIDescription* desc)
-	: parent (parent)
-	, copySelection (copySelection)
-	, workingSelection (workingSelection)
-	{
-		parent->remember ();
-		copySelection->remember ();
-		workingSelection->remember ();
-		CRect selectionBounds = copySelection->getBounds ();
-		FOREACH_IN_SELECTION(copySelection, view)
-			if (!copySelection->containsParent (view))
-			{
-				CRect viewSize = UISelection::getGlobalViewCoordinates (view);
-				CRect newSize (0, 0, viewSize.getWidth (), viewSize.getHeight ());
-				newSize.offset (offset.x, offset.y);
-				newSize.offset (viewSize.left - selectionBounds.left, viewSize.top - selectionBounds.top);
-
-				view->setViewSize (newSize);
-				view->setMouseableArea (newSize);
-				push_back (view);
-				view->remember ();
-			}
-		FOREACH_IN_SELECTION_END
-
-		FOREACH_IN_SELECTION(workingSelection, view)
-			oldSelectedViews.push_back (view);
-		FOREACH_IN_SELECTION_END
-	}
-	
-	~ViewCopyOperation ()
-	{
-		const_iterator it = begin ();
-		while (it != end ())
-		{
-			(*it)->forget ();
-			it++;
-		}
-		parent->forget ();
-		copySelection->forget ();
-		workingSelection->forget ();
-	}
-	
-	UTF8StringPtr getName () 
-	{
-		if (size () > 0)
-			return "copy views";
-		return "copy view";
-	}
-
-	void perform ()
-	{
-		workingSelection->empty ();
-		const_iterator it = begin ();
-		while (it != end ())
-		{
-			parent->addView (*it);
-			(*it)->remember ();
-			(*it)->invalid ();
-			workingSelection->add (*it);
-			it++;
-		}
-	}
-	
-	void undo ()
-	{
-		workingSelection->empty ();
-		const_iterator it = begin ();
-		while (it != end ())
-		{
-			(*it)->invalid ();
-			parent->removeView (*it, true);
-			it++;
-		}
-		it = oldSelectedViews.begin ();
-		while (it != oldSelectedViews.end ())
-		{
-			workingSelection->add (*it);
-			(*it)->invalid ();
-			it++;
-		}
-	}
-protected:
-	CViewContainer* parent;
-	UISelection* copySelection;
-	UISelection* workingSelection;
-	std::list<CView*> oldSelectedViews;
-};
-
-//-----------------------------------------------------------------------------
-class ViewSizeChangeOperation : public IActionOperation, protected std::map<CView*, CRect>
-{
-public:
-	ViewSizeChangeOperation (UISelection* selection, bool sizing)
-	: first (true)
-	, sizing (sizing)
-	{
-		FOREACH_IN_SELECTION(selection, view)
-			insert (std::make_pair (view, view->getViewSize ()));
-			view->remember ();
-		FOREACH_IN_SELECTION_END
-	}
-
-	~ViewSizeChangeOperation ()
-	{
-		const_iterator it = begin ();
-		while (it != end ())
-		{
-			(*it).first->forget ();
-			it++;
-		}
-	}
-	
-	UTF8StringPtr getName ()
-	{
-		if (size () > 1)
-			return sizing ? "resize views" : "move views";
-		return sizing ? "resize view" : "move view";
-	}
-
-	void perform ()
-	{
-		if (first)
-		{
-			first = false;
-			return;
-		}
-		undo ();
-	}
-	
-	void undo ()
-	{
-		iterator it = begin ();
-		while (it != end ())
-		{
-			CRect size ((*it).second);
-			(*it).first->invalid ();
-			(*it).second = (*it).first->getViewSize ();
-			(*it).first->setViewSize (size);
-			(*it).first->setMouseableArea (size);
-			(*it).first->invalid ();
-			it++;
-		}
-	}
-protected:
-	bool first;
-	bool sizing;
-};
-
-struct ViewAndNext
-{
-	ViewAndNext (CView* view, CView* nextView) : view (view), nextView (nextView) {}
-	ViewAndNext (const ViewAndNext& copy) : view (copy.view), nextView (copy.nextView) {}
-	CView* view;
-	CView* nextView;
-};
-//----------------------------------------------------------------------------------------------------
-class DeleteOperation : public IActionOperation, protected std::multimap<CViewContainer*, ViewAndNext*>
-{
-public:
-	DeleteOperation (UISelection* selection)
-	: selection (selection)
-	{
-		selection->remember ();
-		FOREACH_IN_SELECTION(selection, view)
-			CViewContainer* container = dynamic_cast<CViewContainer*> (view->getParentView ());
-			CView* nextView = 0;
-			ViewIterator it (container);
-			while (*it)
-			{
-				if (*it == view)
-				{
-					nextView = *++it;
-					break;
-				}
-				++it;
-			}
-			insert (std::make_pair (container, new ViewAndNext (view, nextView)));
-			container->remember ();
-			view->remember ();
-			if (nextView)
-				nextView->remember ();
-		FOREACH_IN_SELECTION_END
-	}
-
-	~DeleteOperation ()
-	{
-		const_iterator it = begin ();
-		while (it != end ())
-		{
-			(*it).first->forget ();
-			(*it).second->view->forget ();
-			if ((*it).second->nextView)
-				(*it).second->nextView->forget ();
-			delete (*it).second;
-			it++;
-		}
-		selection->forget ();
-	}
-	
-	UTF8StringPtr getName ()
-	{
-		if (size () > 1)
-			return "delete views";
-		return "delete view";
-	}
-
-	void perform ()
-	{
-		const_iterator it = begin ();
-		while (it != end ())
-		{
-			(*it).first->removeView ((*it).second->view);
-			it++;
-		}
-		selection->empty ();
-	}
-	
-	void undo ()
-	{
-		selection->empty ();
-		const_iterator it = begin ();
-		while (it != end ())
-		{
-			if ((*it).second->nextView)
-				(*it).first->addView ((*it).second->view, (*it).second->nextView);
-			else
-				(*it).first->addView ((*it).second->view);
-			(*it).second->view->remember ();
-			selection->add ((*it).second->view);
-			it++;
-		}
-	}
-protected:
-	UISelection* selection;
-};
-
-//-----------------------------------------------------------------------------
-class InsertViewOperation : public IActionOperation
-{
-public:
-	InsertViewOperation (CViewContainer* parent, CView* view, UISelection* selection)
-	: parent (parent)
-	, view (view)
-	, selection (selection)
-	{
-		parent->remember ();
-		view->remember ();
-		selection->remember ();
-	}
-
-	~InsertViewOperation ()
-	{
-		parent->forget ();
-		view->forget ();
-		selection->forget ();
-	}
-	
-	UTF8StringPtr getName ()
-	{
-		return "create new subview";
-	}
-	
-	void perform ()
-	{
-		if (parent->addView (view))
-			selection->setExclusive (view);
-	}
-	
-	void undo ()
-	{
-		selection->remove (view);
-		view->remember ();
-		if (!parent->removeView (view))
-			view->forget ();
-	}
-protected:
-	CViewContainer* parent;
-	CView* view;
-	UISelection* selection;
-};
-
-//-----------------------------------------------------------------------------
-class TransformViewTypeOperation : public IActionOperation
-{
-public:
-	TransformViewTypeOperation (UISelection* selection, IdStringPtr viewClassName, IUIDescription* desc, UIViewFactory* factory)
-	: view (selection->first ())
-	, newView (0)
-	, beforeView (0)
-	, parent (dynamic_cast<CViewContainer*> (view->getParentView ()))
-	, selection (selection)
-	{
-		UIAttributes attr;
-		if (factory->getAttributesForView (view, desc, attr))
-		{
-			attr.setAttribute ("class", viewClassName);
-			newView = factory->createView (attr, desc);
-			ViewIterator it (parent);
-			while (*it)
-			{
-				if (*it == view)
-				{
-					beforeView = *++it;
-					break;
-				}
-				++it;
-			}
-		}
-		view->remember ();
-	}
-	
-	~TransformViewTypeOperation ()
-	{
-		view->forget ();
-		if (newView)
-			newView->forget ();
-	}
-	
-	UTF8StringPtr getName () { return "transform view type"; }
-
-	void exchangeSubViews (CViewContainer* src, CViewContainer* dst)
-	{
-		if (src && dst)
-		{
-			ReverseViewIterator it (src);
-			while (*it)
-			{
-				CView* view = *it;
-				++it;
-				src->removeView (view, false);
-				dst->addView (view, dst->getView (0));
-			}
-		}
-	}
-
-	void perform ()
-	{
-		if (newView)
-		{
-			newView->remember ();
-			parent->removeView (view);
-			if (beforeView)
-				parent->addView (newView, beforeView);
-			else
-				parent->addView (newView);
-			exchangeSubViews (dynamic_cast<CViewContainer*> (view), dynamic_cast<CViewContainer*> (newView));
-			selection->setExclusive (newView);
-		}
-	}
-	
-	void undo ()
-	{
-		if (newView)
-		{
-			view->remember ();
-			parent->removeView (newView);
-			if (beforeView)
-				parent->addView (view, beforeView);
-			else
-				parent->addView (view);
-			exchangeSubViews (dynamic_cast<CViewContainer*> (newView), dynamic_cast<CViewContainer*> (view));
-			selection->setExclusive (view);
-		}
-	}
-protected:
-	CView* view;
-	CView* newView;
-	CView* beforeView;
-	CViewContainer* parent;
-	UISelection* selection;
-};
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
@@ -807,9 +179,8 @@ protected:
 };
 
 //----------------------------------------------------------------------------------------------------
-IdStringPtr UIEditFrame::kMsgPerformOptionsMenuAction = "UIEditFrame PerformOptionsMenuAction";
 IdStringPtr UIEditFrame::kMsgShowOptionsMenu = "UIEditFrame ShowOptionsMenu";
-IdStringPtr UIEditFrame::kMsgEditEnding = "UIEditFrame Edit Ending";
+IdStringPtr UIEditFrame::kMsgEditModeChanged = "UIEditFrame Edit Mode Changed";
 
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
@@ -831,6 +202,7 @@ UIEditFrame::UIEditFrame (const CRect& size, void* windowPtr, VSTGUIEditorInterf
 , editTimer (0)
 , showLines (true)
 , tooltipsEnabled (false)
+, undoManager (0)
 {
 	timer = new CVSTGUITimer (this, 100);
 	timer->start ();
@@ -845,11 +217,51 @@ UIEditFrame::UIEditFrame (const CRect& size, void* windowPtr, VSTGUIEditorInterf
 	if (uiDescViewName)
 		templateName = uiDescViewName;
 
-	inspector = new UIViewInspector (selection, this, windowPtr);
 	setUIDescription (description);
 	setEditMode (_editMode);
-	undoStackList.push_back (new UndoStackTop);
-	undoStack = undoStackList.end ();
+	undoManager = new UIUndoManager ();
+	
+	restoreAttributes ();
+}
+
+//----------------------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------
+UIEditFrame::UIEditFrame (const CRect& size, VSTGUIEditorInterface* editor, EditMode _editMode, UISelection* _selection, UIDescription* description, UTF8StringPtr uiDescViewName)
+: CFrame (size, editor)
+, lines (0)
+, grid (0)
+, selection (_selection)
+, dragSelection (0)
+, uiDescription (0)
+, hierarchyBrowser (0)
+, inspector (0)
+, moveSizeOperation (0)
+, highlightView (0)
+, editMode (kNoEditMode)
+, mouseEditMode (kNoEditing)
+, timer (0)
+, editTimer (0)
+, showLines (true)
+, tooltipsEnabled (false)
+, undoManager (0)
+{
+	timer = new CVSTGUITimer (this, 100);
+	timer->start ();
+	
+	grid = new Grid (10);
+
+	if (selection)
+		selection->remember ();
+	else
+		selection = new UISelection;
+
+	if (uiDescViewName)
+		templateName = uiDescViewName;
+
+	setUIDescription (description);
+	setEditMode (_editMode);
+	undoManager = new UIUndoManager ();
 	
 	restoreAttributes ();
 }
@@ -857,9 +269,8 @@ UIEditFrame::UIEditFrame (const CRect& size, void* windowPtr, VSTGUIEditorInterf
 //----------------------------------------------------------------------------------------------------
 UIEditFrame::~UIEditFrame ()
 {
-	emptyUndoStack ();
-	undoStack--;
-	delete (*undoStack);
+	if (undoManager)
+		undoManager->forget ();
 	setUIDescription (0);
 	UIFontChooserPanel::hide ();
 	if (hierarchyBrowser)
@@ -875,17 +286,22 @@ UIEditFrame::~UIEditFrame ()
 }
 
 //----------------------------------------------------------------------------------------------------
+bool UIEditFrame::open (void* pSystemWindow)
+{
+	if (CFrame::open (pSystemWindow))
+	{
+		inspector = new UIViewInspector (selection, this, pSystemWindow);
+		inspector->setUIDescription (uiDescription);
+		setEditMode (editMode);
+		return true;
+	}
+	return false;
+}
+
+//----------------------------------------------------------------------------------------------------
 void UIEditFrame::emptyUndoStack ()
 {
-	std::list<IActionOperation*>::reverse_iterator it = undoStackList.rbegin ();
-	while (it != undoStackList.rend ())
-	{
-		delete (*it);
-		it++;
-	}
-	undoStackList.clear ();
-	undoStackList.push_back (new UndoStackTop);
-	undoStack = undoStackList.end ();
+	undoManager->clear ();
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -913,7 +329,8 @@ void UIEditFrame::setUIDescription (UIDescription* description)
 	uiDescription = description;
 	if (uiDescription)
 		uiDescription->remember ();
-	inspector->setUIDescription (uiDescription);
+	if (inspector)
+		inspector->setUIDescription (uiDescription);
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -927,8 +344,11 @@ void UIEditFrame::setEditMode (EditMode mode)
 		setFocusView (0);
 		clearMouseViews (CPoint (0, 0), CButtonState (0), true);
 		updateResourceBitmaps ();
-		inspector->show ();
-		inspector->getFrame ()->setKeyboardHook (this);
+		if (inspector)
+		{
+			inspector->show ();
+			inspector->getFrame ()->setKeyboardHook (this);
+		}
 	}
 	else if (getView (0))
 	{
@@ -947,18 +367,20 @@ void UIEditFrame::setEditMode (EditMode mode)
 			hierarchyBrowser = 0;
 		}
 		UIFontChooserPanel::hide ();
-		inspector->hide ();
+		if (inspector)
+			inspector->hide ();
 		selection->empty ();
-		CBaseObject* editorObj = dynamic_cast<CBaseObject*> (pEditor);
-		if (editorObj)
-			editorObj->notify (this, kMsgEditEnding);
 		enableTooltips (tooltipsEnabled);
 
 		CPoint where;
 		getCurrentMouseLocation (where);
 		onMouseMoved (where, getCurrentMouseButtons ());
 	}
-	invalid ();
+	CBaseObject* editorObj = dynamic_cast<CBaseObject*> (pEditor);
+	if (editorObj)
+		editorObj->notify (this, kMsgEditModeChanged);
+	if (isAttached ())
+		invalid ();
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -1031,30 +453,8 @@ static void gatherViewNames (UIViewFactory* factory, std::list<const std::string
 }
 
 //----------------------------------------------------------------------------------------------------
-void UIEditFrame::showOptionsMenu (const CPoint& where)
+void UIEditFrame::addEditItemsToMenu (COptionMenu* menu)
 {
-	enum {
-		kEnableEditing = 1,
-		kHierarchyBrowserTag,
-		kGridSize1,
-		kGridSize2,
-		kGridSize5,
-		kGridSize10,
-		kGridSize15,
-		kCreateNewViewTag,
-		kEmbedViewTag,
-		kTransformViewTag,
-		kInsertTemplateTag,
-		kDeleteSelectionTag,
-		kUndoTag,
-		kRedoTag,
-		kSaveTag,
-		kSizeToFitTag,
-		kUnembedViewsTag
-	};
-	
-	COptionMenu* menu = new COptionMenu ();
-	menu->setStyle (kMultipleCheckStyle|kPopupStyle);
 	if (editMode == kEditMode)
 	{
 		std::stringstream undoName;
@@ -1064,7 +464,7 @@ void UIEditFrame::showOptionsMenu (const CPoint& where)
 			undoName << " ";
 			undoName << getUndoName ();
 		}
-		CMenuItem* item = menu->addEntry (new CMenuItem (undoName.str ().c_str (), kUndoTag));
+		CMenuItem* item = menu->addEntry (new CCommandMenuItem (undoName.str ().c_str (), kUndoTag, this));
 		item->setEnabled (canUndo ());
 		item->setKey ("z", kControl);
 		
@@ -1075,19 +475,19 @@ void UIEditFrame::showOptionsMenu (const CPoint& where)
 			redoName << " ";
 			redoName << getRedoName ();
 		}
-		item = menu->addEntry (new CMenuItem (redoName.str ().c_str (), kRedoTag));
+		item = menu->addEntry (new CCommandMenuItem (redoName.str ().c_str (), kRedoTag, this));
 		item->setKey ("z", kControl|kShift);
 		item->setEnabled (canRedo ());
 		
 		menu->addSeparator ();
 		int32_t selectionCount = selection->total ();
-		item = menu->addEntry (new CMenuItem ("Size To Fit", kSizeToFitTag));
+		item = menu->addEntry (new CCommandMenuItem ("Size To Fit", kSizeToFitTag, this));
 		if (selectionCount <= 0 || selection->contains (getView (0)))
 			item->setEnabled (false);
-		item = menu->addEntry (new CMenuItem ("Unembed Views", kUnembedViewsTag));
+		item = menu->addEntry (new CCommandMenuItem ("Unembed Views", kUnembedViewsTag, this));
 		if (!(selectionCount == 1 && selection->first () != getView (0) && dynamic_cast<CViewContainer*> (selection->first ())))
 			item->setEnabled (false);
-		item = menu->addEntry (new CMenuItem ("Delete", kDeleteSelectionTag));
+		item = menu->addEntry (new CCommandMenuItem ("Delete", kDeleteSelectionTag, this));
 		if (selectionCount <= 0 || selection->contains (getView (0)))
 			item->setEnabled (false);
 		item->setKey ("\b", kControl);
@@ -1111,8 +511,8 @@ void UIEditFrame::showOptionsMenu (const CPoint& where)
 				transformViewMenu->addSeparator();
 				for (std::list<const std::string*>::const_iterator it = otherViewNames.begin (); it != otherViewNames.end (); it++)
 				{
-					viewMenu->addEntry (new CMenuItem ((*it)->c_str (), kCreateNewViewTag));
-					transformViewMenu->addEntry (new CMenuItem ((*it)->c_str (), kTransformViewTag));
+					viewMenu->addEntry (new CCommandMenuItem ((*it)->c_str (), kCreateNewViewTag, this, "View|New", (*it)->c_str ()));
+					transformViewMenu->addEntry (new CCommandMenuItem ((*it)->c_str (), kTransformViewTag, this, "View|Transform", (*it)->c_str ()));
 				}
 				viewMenu->addSeparator();
 				viewMenu->addEntry (new CMenuItem ("Controls", 0, 0, 0, CMenuItem::kTitle));
@@ -1122,8 +522,8 @@ void UIEditFrame::showOptionsMenu (const CPoint& where)
 				transformViewMenu->addSeparator();
 				for (std::list<const std::string*>::const_iterator it = controlViewNames.begin (); it != controlViewNames.end (); it++)
 				{
-					viewMenu->addEntry (new CMenuItem ((*it)->c_str (), kCreateNewViewTag));
-					transformViewMenu->addEntry (new CMenuItem ((*it)->c_str (), kTransformViewTag));
+					viewMenu->addEntry (new CCommandMenuItem ((*it)->c_str (), kCreateNewViewTag, this, "View|New", (*it)->c_str ()));
+					transformViewMenu->addEntry (new CCommandMenuItem ((*it)->c_str (), kTransformViewTag, this, "View|Transform", (*it)->c_str ()));
 				}
 				viewMenu->addSeparator();
 				viewMenu->addEntry (new CMenuItem ("Container Views", 0, 0, 0, CMenuItem::kTitle));
@@ -1133,9 +533,9 @@ void UIEditFrame::showOptionsMenu (const CPoint& where)
 				transformViewMenu->addSeparator();
 				for (std::list<const std::string*>::const_iterator it = containerViewNames.begin (); it != containerViewNames.end (); it++)
 				{
-					viewMenu->addEntry (new CMenuItem ((*it)->c_str (), kCreateNewViewTag));
-					transformViewMenu->addEntry (new CMenuItem ((*it)->c_str (), kTransformViewTag));
-					embedViewMenu->addEntry (new CMenuItem ((*it)->c_str (), kEmbedViewTag));
+					viewMenu->addEntry (new CCommandMenuItem ((*it)->c_str (), kCreateNewViewTag, this, "View|New", (*it)->c_str ()));
+					transformViewMenu->addEntry (new CCommandMenuItem ((*it)->c_str (), kTransformViewTag, this, "View|Transform", (*it)->c_str ()));
+					embedViewMenu->addEntry (new CCommandMenuItem ((*it)->c_str (), kEmbedViewTag, this, "View|Embed", (*it)->c_str ()));
 				}
 
 				menu->addEntry (viewMenu, "Insert Subview");
@@ -1152,7 +552,7 @@ void UIEditFrame::showOptionsMenu (const CPoint& where)
 					for (std::list<const std::string*>::iterator it = templateNames.begin (); it != templateNames.end (); it++)
 					{
 						if (*(*it) != templateName)
-							templateNameMenu->addEntry (new CMenuItem ((*it)->c_str (), kInsertTemplateTag));
+							templateNameMenu->addEntry (new CCommandMenuItem ((*it)->c_str (), kInsertTemplateTag, this, "View|InsertTemplate", (*it)->c_str ()));
 					}
 					menu->addEntry (templateNameMenu, "Insert Template");
 					templateNameMenu->forget ();
@@ -1193,27 +593,27 @@ void UIEditFrame::showOptionsMenu (const CPoint& where)
 		gridMenu->setStyle (kMultipleCheckStyle|kPopupStyle);
 		item->setSubmenu (gridMenu);
 		gridMenu->forget (); // was remembered by the item
-		item = gridMenu->addEntry (new CMenuItem ("off", kGridSize1));
+		item = gridMenu->addEntry (new CCommandMenuItem ("off", kGridSize1, this, "Edit|Grid", "off"));
 		if (getGrid () == 1)
 			item->setChecked (true);
 		gridMenu->addSeparator ();
-		item = gridMenu->addEntry (new CMenuItem ("2x2", kGridSize2));
+		item = gridMenu->addEntry (new CCommandMenuItem ("2x2", kGridSize2, this, "Edit|Grid", "2x2"));
 		if (getGrid () == 2)
 			item->setChecked (true);
-		item = gridMenu->addEntry (new CMenuItem ("5x5", kGridSize5));
+		item = gridMenu->addEntry (new CCommandMenuItem ("5x5", kGridSize5, this, "Edit|Grid", "5x5"));
 		if (getGrid () == 5)
 			item->setChecked (true);
-		item = gridMenu->addEntry (new CMenuItem ("10x10", kGridSize10));
+		item = gridMenu->addEntry (new CCommandMenuItem ("10x10", kGridSize10, this, "Edit|Grid", "10x10"));
 		if (getGrid () == 10)
 			item->setChecked (true);
-		item = gridMenu->addEntry (new CMenuItem ("15x15", kGridSize15));
+		item = gridMenu->addEntry (new CCommandMenuItem ("15x15", kGridSize15, this, "Edit|Grid", "15x15"));
 		if (getGrid () == 15)
 			item->setChecked (true);
 		menu->addSeparator ();
-		item = menu->addEntry (new CMenuItem ("Save...", kSaveTag));
+		item = menu->addEntry (new CCommandMenuItem ("Save...", kSaveTag, this, "Edit|Save", "Save"));
 		item->setKey ("s", kControl);
 		menu->addSeparator ();
-		menu->addEntry (new CMenuItem (hierarchyBrowser ? "Hide Hierarchy Browser" : "Show Hierarchy Browser", kHierarchyBrowserTag));
+		menu->addEntry (new CCommandMenuItem (hierarchyBrowser ? "Hide Hierarchy Browser" : "Show Hierarchy Browser", kHierarchyBrowserTag, this, "Window", "ToggleHierarchyBrowser"));
 		menu->addSeparator ();
 	}
 	CBaseObject* editorObj = dynamic_cast<CBaseObject*> (pEditor);
@@ -1221,15 +621,39 @@ void UIEditFrame::showOptionsMenu (const CPoint& where)
 	{
 		editorObj->notify (menu, kMsgShowOptionsMenu);
 	}
-	CMenuItem* item = menu->addEntry (new CMenuItem (editMode == kEditMode ? "Disable Editing" : "Enable Editing", kEnableEditing));
-	item->setKey ("e", kControl);
-	if (menu->popup (this, where))
+	if (savePath.length () > 0 && editMode == kEditMode)
 	{
-		int32_t index = 0;
-		COptionMenu* resMenu = menu->getLastItemMenu (index);
-		if (resMenu)
+		menu->addEntry (new CCommandMenuItem ("Save & Disable Editing", kSaveAndDisableEditingTag, this, "File", "SaveAndClose"));
+	}
+	CMenuItem* item = menu->addEntry (new CCommandMenuItem (editMode == kEditMode ? "Disable Editing" : "Enable Editing", kEnableEditing, this, "File", "ToggleEditing"));
+	item->setKey ("e", kControl);
+	getCurrentMouseLocation (menuCreatePos);
+}
+
+//----------------------------------------------------------------------------------------------------
+bool UIEditFrame::processMenuItemSelection (CCommandMenuItem* item)
+{
+	bool result = false;
+	if (item->getTarget () == this)
+	{
+		if (item->isCommandCategory ("View|New"))
 		{
-			item = resMenu->getEntry (index);
+			createNewSubview (menuCreatePos, item->getCommandName ());
+		}
+		else if (item->isCommandCategory ("View|Transform"))
+		{
+			performAction (new TransformViewTypeOperation (selection, item->getCommandName (), uiDescription, dynamic_cast<UIViewFactory*> (uiDescription->getViewFactory ())));
+		}
+		else if (item->isCommandCategory ("View|Embed"))
+		{
+			embedSelectedViewsInto (item->getCommandName ());
+		}
+		else if (item->isCommandCategory ("View|InsertTemplate"))
+		{
+			insertTemplate (menuCreatePos, item->getCommandName ());
+		}
+		else
+		{
 			switch (item->getTag ())
 			{
 				case kEnableEditing: setEditMode (editMode == kEditMode ? kNoEditMode : kEditMode); break;
@@ -1238,13 +662,19 @@ void UIEditFrame::showOptionsMenu (const CPoint& where)
 				case kGridSize5: setGrid (5); break;
 				case kGridSize10: setGrid (10); break;
 				case kGridSize15: setGrid (15); break;
-				case kCreateNewViewTag: createNewSubview (where, item->getTitle ()); break;
-				case kTransformViewTag: performAction (new TransformViewTypeOperation (selection, item->getTitle (), uiDescription, dynamic_cast<UIViewFactory*> (uiDescription->getViewFactory ()))); break;
-				case kInsertTemplateTag: insertTemplate (where, item->getTitle ()); break;
-				case kEmbedViewTag: embedSelectedViewsInto (item->getTitle ()); break;
 				case kDeleteSelectionTag: deleteSelectedViews (); break;
 				case kUndoTag: performUndo (); break;
 				case kRedoTag: performRedo (); break;
+				case kSaveAndDisableEditingTag:
+				{
+					uiDescription->updateViewDescription (templateName.c_str (), getView (0));
+					if (inspector)
+						inspector->beforeSave ();
+					storeAttributes ();
+					uiDescription->save (savePath.c_str ());
+					setEditMode (kNoEditMode);
+					break;
+				}
 				case kSaveTag:
 				{
 					CNewFileSelector* fileSelector = CNewFileSelector::create (this, CNewFileSelector::kSelectSaveFile);
@@ -1291,17 +721,20 @@ void UIEditFrame::showOptionsMenu (const CPoint& where)
 					performAction (new UnembedViewOperation (selection, dynamic_cast<UIViewFactory*> (uiDescription->getViewFactory ())));
 					break;
 				}
-				default:
-				{
-					if (editorObj)
-					{
-						editorObj->notify (item, kMsgPerformOptionsMenuAction);
-					}
-					break;
-				}
 			}
 		}
+		result = true;
 	}
+	return result;
+}
+
+//----------------------------------------------------------------------------------------------------
+void UIEditFrame::showOptionsMenu (const CPoint& where)
+{
+	COptionMenu* menu = new COptionMenu ();
+	menu->setStyle (kMultipleCheckStyle|kPopupStyle);
+	addEditItemsToMenu (menu);
+	menu->popup (this, where);
 	menu->forget ();
 }
 
@@ -1489,14 +922,23 @@ CMessageResult UIEditFrame::notify (CBaseObject* sender, IdStringPtr message)
 			recursiveGuard = true;
 			CView* view = getView (0);
 			CRect viewSize = view->getViewSize ();
+			setAutosizingEnabled (false);
 			setSize (viewSize.getWidth (), viewSize.getHeight ());
+			setAutosizingEnabled (true);
 			CBaseObject* editorObj = dynamic_cast<CBaseObject*> (pEditor);
 			if (editorObj)
 			{
 				editorObj->notify (this, kMsgViewSizeChanged);
 			}
+			if (selection->contains (view))
+				selection->changed (UISelection::kMsgSelectionViewChanged);
 			recursiveGuard = false;
 		}
+	}
+	else if (message == CCommandMenuItem::kMsgMenuItemSelected)
+	{
+		if (processMenuItemSelection(dynamic_cast<CCommandMenuItem*>(sender)))
+			return kMessageNotified;
 	}
 	return CFrame::notify (sender, message);
 }
@@ -2482,91 +1924,51 @@ void UIEditFrame::makeSelection (CView* view)
 //----------------------------------------------------------------------------------------------------
 void UIEditFrame::performAction (IActionOperation* action)
 {
-	if (undoStack != undoStackList.end ())
-	{
-		undoStack++;
-		std::list<IActionOperation*>::iterator oldStack = undoStack;
-		while (undoStack != undoStackList.end ())
-		{
-			delete (*undoStack);
-			undoStack++;
-		}
-		undoStackList.erase (oldStack, undoStackList.end ());
-	}
-	undoStackList.push_back (action);
-	undoStack = undoStackList.end ();
-	undoStack--;
 	invalidSelection ();
-	(*undoStack)->perform ();
+	undoManager->pushAndPerform (action);
 	invalidSelection ();
 }
 
 //----------------------------------------------------------------------------------------------------
 bool UIEditFrame::canUndo ()
 {
-	return (undoStack != undoStackList.end () && undoStack != undoStackList.begin ());
+	return undoManager->canUndo ();
 }
 
 //----------------------------------------------------------------------------------------------------
 bool UIEditFrame::canRedo ()
 {
-	if (undoStack == undoStackList.end () && undoStack != undoStackList.begin ())
-		return false;
-	undoStack++;
-	bool result = (undoStack != undoStackList.end ());
-	undoStack--;
-	return result;
+	return undoManager->canRedo ();
 }
 
 //----------------------------------------------------------------------------------------------------
 UTF8StringPtr UIEditFrame::getUndoName ()
 {
-	if (undoStack != undoStackList.end () && undoStack != undoStackList.begin ())
-		return (*undoStack)->getName ();
-	return 0;
+	return undoManager->getUndoName ();
 }
 
 //----------------------------------------------------------------------------------------------------
 UTF8StringPtr UIEditFrame::getRedoName ()
 {
-	UTF8StringPtr redoName = 0;
-	if (undoStack != undoStackList.end ())
-	{
-		undoStack++;
-		if (undoStack != undoStackList.end ())
-			redoName = (*undoStack)->getName ();
-		undoStack--;
-	}
-	return redoName;
+	return undoManager->getRedoName ();
 }
 
 //----------------------------------------------------------------------------------------------------
 void UIEditFrame::performUndo ()
 {
-	if (undoStack != undoStackList.end () && undoStack != undoStackList.begin ())
-	{
-		invalidSelection ();
-		(*undoStack)->undo ();
-		undoStack--;
-		invalidSelection ();
-		selection->changed (UISelection::kMsgSelectionViewChanged);
-	}
+	invalidSelection ();
+	undoManager->performUndo ();
+	invalidSelection ();
+	selection->changed (UISelection::kMsgSelectionViewChanged);
 }
 
 //----------------------------------------------------------------------------------------------------
 void UIEditFrame::performRedo ()
 {
-	if (undoStack != undoStackList.end ())
-	{
-		undoStack++;
-		if (undoStack != undoStackList.end ())
-		{
-			invalidSelection ();
-			(*undoStack)->perform ();
-			invalidSelection ();
-			selection->changed (UISelection::kMsgSelectionViewChanged);
-		}
-	}
+	invalidSelection ();
+	undoManager->performRedo ();
+	invalidSelection ();
+	selection->changed (UISelection::kMsgSelectionViewChanged);
 }
 
 //----------------------------------------------------------------------------------------------------
