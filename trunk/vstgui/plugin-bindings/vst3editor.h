@@ -40,7 +40,6 @@
 #include "../uidescription/uidescription.h"
 #include <string>
 #include <map>
-#include <deque>
 
 namespace VSTGUI {
 class ParameterChangeListener;
@@ -60,6 +59,7 @@ public:
 	virtual bool isPrivateParameter (const Steinberg::Vst::ParamID paramID) { return false; } ///< check if parameter ID is private and should not be exposed to the host
 	virtual void didOpen (VST3Editor* editor) {}	///< called after the editor was opened
 	virtual void willClose (VST3Editor* editor) {}	///< called before the editor will close
+	virtual COptionMenu* createContextMenu (const CPoint& pos, VST3Editor* editor) { return 0; }	///< create the context menu for the editor, will be added to the host menu
 
 	/** called when a sub controller should be created.
 	    The controller is now owned by the editor, which will call forget() if it is a CBaseObject, release() if it is a Steinberg::FObject or it will be simply deleted if the frame gets closed. */
@@ -102,6 +102,7 @@ protected:
 
 	CView* createView (const UIAttributes& attributes, IUIDescription* description);
 	CView* verifyView (CView* view, const UIAttributes& attributes, IUIDescription* description);
+	IController* createSubController (UTF8StringPtr name, IUIDescription* description);
 
 	CMessageResult notify (CBaseObject* sender, IdStringPtr message);
 
@@ -129,21 +130,10 @@ protected:
 	CMouseEventResult onMouseMoved (CFrame* frame, const CPoint& where, const CButtonState& buttons) { return kMouseEventNotHandled; }
 	CMouseEventResult onMouseDown (CFrame* frame, const CPoint& where, const CButtonState& buttons);
 
-	// @cond ignore
-	struct SubController
-	{
-		IController* controller;
-		std::string name;
-		
-		SubController (IController* c, const std::string& n) : controller (c), name (n) {}
-	};
-	// @endcond
-
 	UIDescription* description;
 	VST3EditorDelegate* delegate;
+	IController* originalController;
 	std::map<int32_t, ParameterChangeListener*> paramChangeListeners;
-	std::deque<SubController> subControllerStack;
-	std::list<IController*> subControllers;
 	std::string viewName;
 	std::string xmlFile;
 	bool tooltipsEnabled;

@@ -51,7 +51,6 @@ CParamDisplay::CParamDisplay (const CRect& size, CBitmap* background, const int3
 , valueToStringUserData (0)
 , horiTxtAlign (kCenterText)
 , style (style)
-, bTextTransparencyEnabled (true)
 , bAntialias (true)
 {
 	backOffset (0, 0);
@@ -78,7 +77,6 @@ CParamDisplay::CParamDisplay (const CParamDisplay& v)
 , frameColor (v.frameColor)
 , shadowColor (v.shadowColor)
 , textInset (v.textInset)
-, bTextTransparencyEnabled (v.bTextTransparencyEnabled)
 , bAntialias (v.bAntialias)
 {
 	fontID->remember ();
@@ -183,11 +181,11 @@ void CParamDisplay::drawBack (CDrawContext* pContext, CBitmap* newBack)
 }
 
 //------------------------------------------------------------------------
-void CParamDisplay::drawText (CDrawContext *pContext, UTF8StringPtr string)
+void CParamDisplay::drawText (CDrawContext* pContext, UTF8StringPtr string, const CRect& size)
 {
 	if (!(style & kNoTextStyle) && string && strlen (string))
 	{
-		CRect textRect (getViewSize ());
+		CRect textRect (size);
 		textRect.inset (textInset.x, textInset.y);
 		CRect oldClip;
 		pContext->getClipRect (oldClip);
@@ -208,6 +206,12 @@ void CParamDisplay::drawText (CDrawContext *pContext, UTF8StringPtr string)
 		pContext->drawString (string, textRect, horiTxtAlign, bAntialias);
 		pContext->setClipRect (oldClip);
 	}
+}
+
+//------------------------------------------------------------------------
+void CParamDisplay::drawText (CDrawContext *pContext, UTF8StringPtr string)
+{
+	drawText (pContext, string, getViewSize ());
 }
 
 //------------------------------------------------------------------------

@@ -1,0 +1,104 @@
+#ifndef __uieditview__
+#define __uieditview__
+
+#include "../../lib/cviewcontainer.h"
+
+namespace VSTGUI {
+class UIUndoManager;
+class UISelection;
+class UIDescription;
+class IUIDescription;
+class UICrossLines;
+class IActionOperation;
+class UIGrid;
+
+//----------------------------------------------------------------------------------------------------
+class UIEditView : public CViewContainer
+{
+public:
+	UIEditView (const CRect& size, UIDescription* uidescription);
+	~UIEditView ();
+
+	void enableEditing (bool state);
+	void setEditView (CView* view);
+	CView* getEditView () const;
+
+	void setUndoManager (UIUndoManager* manager);
+	UIUndoManager* getUndoManger ();
+
+	void setSelection (UISelection* selection);
+	UISelection* getSelection ();
+	
+	void setGrid (UIGrid* grid);
+
+	void setupColors (IUIDescription* description);
+protected:
+	enum MouseEditMode {
+		kNoEditing,
+		kDragEditing,
+		kSizeEditing
+	};
+
+	enum MouseSizeMode {
+		kSizeModeNone = 0,
+		kSizeModeBottomRight,
+		kSizeModeBottomLeft,
+		kSizeModeTopRight,
+		kSizeModeTopLeft,
+		kSizeModeLeft,
+		kSizeModeRight,
+		kSizeModeTop,
+		kSizeModeBottom
+	};
+
+	void invalidSelection ();
+	MouseSizeMode selectionHitTest (const CPoint& where, CView** resultView);
+	CMouseEventResult onMouseDown (CPoint &where, const CButtonState& buttons);
+	CMouseEventResult onMouseUp (CPoint &where, const CButtonState& buttons);
+	CMouseEventResult onMouseMoved (CPoint &where, const CButtonState& buttons);
+	CMessageResult notify (CBaseObject* sender, IdStringPtr message);
+
+
+	CBitmap* createBitmapFromSelection (UISelection* selection);
+	void startDrag (CPoint& where);
+	UISelection* getSelectionOutOfDrag (CDragContainer* drag);
+	bool onDrop (CDragContainer* drag, const CPoint& where);
+	void onDragEnter (CDragContainer* drag, const CPoint& where);
+	void onDragLeave (CDragContainer* drag, const CPoint& where);
+	void onDragMove (CDragContainer* drag, const CPoint& where);
+
+	void draw (CDrawContext *pContext);
+	void drawRect (CDrawContext *pContext, const CRect& updateRect);
+	CView* getViewAt (const CPoint& p, bool deep) const;
+	CViewContainer* getContainerAt (const CPoint& p, bool deep) const;
+	bool advanceNextFocusView (CView* oldFocus, bool reverse);
+	bool onWheel (const CPoint &where, const CMouseWheelAxis &axis, const float &distance, const CButtonState &buttons);
+
+	void looseFocus ();
+	void takeFocus ();
+
+	bool editing;
+	MouseEditMode mouseEditMode;
+	MouseSizeMode mouseSizeMode;
+	CPoint mouseStartPoint;
+ 
+	SharedPointer<UIUndoManager> undoManger;
+	SharedPointer<UISelection> selection;
+	UISelection* dragSelection;
+	UIDescription* description;
+	SharedPointer<UIGrid> grid;
+	
+	CView* highlightView;
+	UICrossLines* lines;
+	IActionOperation* moveSizeOperation;
+	CVSTGUITimer* editTimer;
+	
+	CColor crosslineForegroundColor;
+	CColor crosslineBackgroundColor;
+	CColor viewHighlightColor;
+	CColor viewSelectionColor;
+};
+
+} // namespace
+
+#endif // __uieditview__

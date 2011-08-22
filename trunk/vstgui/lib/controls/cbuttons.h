@@ -178,10 +178,16 @@ private:
 /// @ingroup controls
 ///	@ingroup new_in_4_0
 //-----------------------------------------------------------------------------
-class CTextButton : public CKickButton
+class CTextButton : public CControl
 {
 public:
-	CTextButton (const CRect& size, CControlListener* listener, int32_t tag, UTF8StringPtr title);
+	enum Style ///< CTextButton style
+	{
+		kKickStyle = 0,
+		kOnOffStyle,
+	};
+
+	CTextButton (const CRect& size, CControlListener* listener, int32_t tag, UTF8StringPtr title, Style = kKickStyle);
 
 	//-----------------------------------------------------------------------------
 	/// @name CTextButton Methods
@@ -218,14 +224,23 @@ public:
 
 	virtual void setRoundRadius (CCoord radius);
 	CCoord getRoundRadius () const { return roundRadius; }
+	
+	virtual void setStyle (Style style);
+	Style getStyle () const { return style; }
 	//@}
 
 	// overrides
 	void draw (CDrawContext* context);
-	int32_t onKeyDown (VstKeyCode& keyCode);
 	bool getFocusPath (CGraphicsPath& outPath);
 	void setViewSize (const CRect& rect, bool invalid = true);
 	bool removed (CView* parent);
+	virtual CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons);
+	virtual CMouseEventResult onMouseUp (CPoint& where, const CButtonState& buttons);
+	virtual CMouseEventResult onMouseMoved (CPoint& where, const CButtonState& buttons);
+	virtual int32_t onKeyDown (VstKeyCode& keyCode);
+	virtual int32_t onKeyUp (VstKeyCode& keyCode);
+	
+	CLASS_METHODS(CTextButton, CControl)
 protected:
 	void invalidPath ();
 	CGraphicsPath* getPath (CDrawContext* context);
@@ -245,7 +260,11 @@ protected:
 
 	CCoord frameWidth;
 	CCoord roundRadius;
+	
+	Style style;
 	std::string title;
+private:
+	float fEntryState;
 };
 
 } // namespace

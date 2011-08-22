@@ -469,7 +469,7 @@ void CScrollView::setContainerSize (const CRect& cs, bool keepVisibleArea)
 		CRect oldScrollSize = vsb->getScrollSize (oldScrollSize);
 		float oldValue = vsb->getValue ();
 		vsb->setScrollSize (cs);
-		if (cs.getHeight () < getViewSize ().getHeight ())
+		if (cs.getHeight () <= getViewSize ().getHeight ())
 			vsb->setValue (0);
 		else if (keepVisibleArea && oldScrollSize.getHeight () != cs.getHeight ())
 		{
@@ -488,7 +488,7 @@ void CScrollView::setContainerSize (const CRect& cs, bool keepVisibleArea)
 		CRect oldScrollSize = hsb->getScrollSize (oldScrollSize);
 		float oldValue = hsb->getValue ();
 		hsb->setScrollSize (cs);
-		if (cs.getWidth () < getViewSize ().getWidth ())
+		if (cs.getWidth () <= getViewSize ().getWidth ())
 			hsb->setValue (0);
 		else if (keepVisibleArea && oldScrollSize.getWidth () != cs.getWidth ())
 		{
@@ -638,7 +638,7 @@ void CScrollView::valueChanged (CControl *pControl)
 					offset.x = (int32_t) (csize.left - (csize.width () - vsize.width ()) * value);
 					sc->setScrollOffset (offset, false);
 				}
-				else if (offset.x > 0)
+				else if (offset.x < 0)
 				{
 					offset.x = 0;
 					sc->setScrollOffset (offset, false);
@@ -1011,6 +1011,12 @@ bool CScrollbar::onWheel (const CPoint &where, const CMouseWheelAxis &axis, cons
 		return false;
 
 	if (buttons != 0 && buttons != kShift)
+		return false;
+
+	if (direction == kHorizontal && axis == kMouseWheelAxisY)
+		return false;
+
+	if (direction == kVertical && axis == kMouseWheelAxisX)
 		return false;
 
 	float distance = _distance;

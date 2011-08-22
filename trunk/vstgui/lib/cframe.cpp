@@ -77,22 +77,43 @@ CFrame::CFrame (const CRect &inSize, void* inSystemWindow, VSTGUIEditorInterface
 , pFocusView (0)
 , pActiveFocusView (0)
 , bActive (true)
+, platformFrame (0)
 {
-	viewFlags |= kIsAttached;
-	
 	pParentFrame = this;
+	open (inSystemWindow);
+}
 
-	initFrame (inSystemWindow);
-
+//-----------------------------------------------------------------------------
+CFrame::CFrame (const CRect& inSize, VSTGUIEditorInterface* inEditor)
+: CViewContainer (inSize, 0, 0)
+, pEditor (inEditor)
+, pMouseObservers (0)
+, pKeyboardHook (0)
+, pViewAddedRemovedObserver (0)
+, pTooltips (0)
+, pAnimator (0)
+, pModalView (0)
+, pFocusView (0)
+, pActiveFocusView (0)
+, bActive (true)
+, platformFrame (0)
+{
+	pParentFrame = this;
 }
 
 //-----------------------------------------------------------------------------
 CFrame::~CFrame ()
 {
 	if (pTooltips)
+	{
 		pTooltips->forget ();
+		pTooltips = 0;
+	}
 	if (pAnimator)
+	{
 		pAnimator->forget ();
+		pAnimator = 0;
+	}
 	if (pMouseObservers)
 	{
 	#if DEBUG
@@ -147,10 +168,15 @@ void CFrame::close ()
 }
 
 //-----------------------------------------------------------------------------
-bool CFrame::initFrame (void* systemWin)
+bool CFrame::open (void* systemWin)
 {
-	if (!systemWin)
+	if (!systemWin || isAttached ())
 		return false;
+
+//	viewFlags |= kIsAttached;
+	attached (this);
+
+	pParentView = 0;
 
 	platformFrame = IPlatformFrame::createPlatformFrame (this, getViewSize (), systemWin);
 	if (!platformFrame)
@@ -449,7 +475,7 @@ CMouseEventResult CFrame::onMouseMoved (CPoint &where, const CButtonState& butto
 			while (it != pMouseViews.rend ())
 			{
 				p = where;
-				(*it)->frameToLocal (p);
+				(*it)->getParentView ()->frameToLocal (p);
 				result = (*it)->onMouseMoved (p, buttons2);
 				if (result == kMouseEventHandled)
 					break;

@@ -181,6 +181,7 @@ bool Win32OpenGLView::createWindow ()
 
 	if (windowHandle)
 	{
+		EnableWindow (windowHandle, false);	// we don't handle mouse and keyboard events
 		SetWindowLongPtr (windowHandle, GWLP_USERDATA, (__int3264)(LONG_PTR)this);
 		deviceContext = GetDC (windowHandle);
 		if (deviceContext && setupPixelFormt ())

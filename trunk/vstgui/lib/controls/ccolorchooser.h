@@ -56,10 +56,14 @@ public:
 	virtual void colorChanged (CColorChooser* chooser, const CColor& color) = 0;
 };
 
+//-----------------------------------------------------------------------------
 struct CColorChooserUISettings
 {
 	CFontRef font;
 	CColor fontColor;
+	CColor checkerBoardColor1;
+	CColor checkerBoardColor2;
+	CPoint margin;
 
 	bool checkerBoardBack;
 	

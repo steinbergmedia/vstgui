@@ -250,8 +250,9 @@ CMouseEventResult CKickButton::onMouseMoved (CPoint& where, const CButtonState& 
 		
 		if (isDirty ())
 			invalid ();
+		return kMouseEventHandled;
 	}
-	return kMouseEventHandled;
+	return kMouseEventNotHandled;
 }
 
 //------------------------------------------------------------------------
@@ -645,13 +646,14 @@ int32_t CCheckBox::onKeyDown (VstKeyCode& keyCode)
 //------------------------------------------------------------------------
 //------------------------------------------------------------------------
 //------------------------------------------------------------------------
-CTextButton::CTextButton (const CRect& size, CControlListener* listener, int32_t tag, UTF8StringPtr title)
-: CKickButton (size, listener, tag, 0)
+CTextButton::CTextButton (const CRect& size, CControlListener* listener, int32_t tag, UTF8StringPtr title, Style style)
+: CControl (size, listener, tag, 0)
 , title (title)
 , font (0)
 , _path (0)
 , frameWidth (1.)
 , roundRadius (6.)
+, style (style)
 {
 	setFont (kSystemFont);
 	setTextColor (kBlackCColor);
@@ -662,20 +664,21 @@ CTextButton::CTextButton (const CRect& size, CControlListener* listener, int32_t
 	setGradientEndColorHighlighted (CColor (100, 100, 100, 255));
 	setFrameColor (kBlackCColor);
 	setFrameColorHighlighted (kBlackCColor);
+	setWantsFocus (true);
 }
 
 //------------------------------------------------------------------------
 bool CTextButton::removed (CView* parent)
 {
 	invalidPath ();
-	return CKickButton::removed (parent);
+	return CControl::removed (parent);
 }
 
 //------------------------------------------------------------------------
 void CTextButton::setViewSize (const CRect& rect, bool invalid)
 {
 	invalidPath ();
-	CKickButton::setViewSize (rect, invalid);
+	CControl::setViewSize (rect, invalid);
 }
 
 //------------------------------------------------------------------------
@@ -770,6 +773,12 @@ void CTextButton::setRoundRadius (CCoord radius)
 }
 
 //------------------------------------------------------------------------
+void CTextButton::setStyle (Style _style)
+{
+	style = _style;
+}
+
+//------------------------------------------------------------------------
 void CTextButton::draw (CDrawContext* context)
 {
 	bool highlight = value > 0.5 ? true : false;
@@ -809,21 +818,6 @@ void CTextButton::draw (CDrawContext* context)
 }
 
 //------------------------------------------------------------------------
-int32_t CTextButton::onKeyDown (VstKeyCode& keyCode)
-{
-	if ((keyCode.virt == VKEY_ENTER || keyCode.virt == VKEY_RETURN) && getFrame ()->getFocusView () == this)
-	{
-		beginEdit ();
-		value = 1;
-		valueChanged ();
-		value = 0;
-		endEdit ();
-		return 1;
-	}
-	return -1;
-}
-
-//------------------------------------------------------------------------
 bool CTextButton::getFocusPath (CGraphicsPath& outPath)
 {
 	CRect r (getViewSize ());
@@ -857,6 +851,93 @@ void CTextButton::invalidPath ()
 		_path->forget ();
 		_path = 0;
 	}
+}
+
+//------------------------------------------------------------------------
+CMouseEventResult CTextButton::onMouseDown (CPoint& where, const CButtonState& buttons)
+{
+	if (!(buttons & kLButton))
+		return kMouseEventNotHandled;
+	fEntryState = value;
+	beginEdit ();
+	return onMouseMoved (where, buttons);
+}
+
+//------------------------------------------------------------------------
+CMouseEventResult CTextButton::onMouseUp (CPoint& where, const CButtonState& buttons)
+{
+	if (value != fEntryState)
+	{
+		valueChanged ();
+		if (style == kKickStyle)
+		{
+			value = getMin ();  // set button to UNSELECTED state
+			valueChanged ();
+		}
+		if (isDirty ())
+			invalid ();
+	}
+	endEdit ();
+	return kMouseEventHandled;
+}
+
+//------------------------------------------------------------------------
+CMouseEventResult CTextButton::onMouseMoved (CPoint& where, const CButtonState& buttons)
+{
+	if (buttons & kLButton)
+	{
+		if (where.h >= getViewSize ().left && where.v >= getViewSize ().top  &&
+			where.h <= getViewSize ().right && where.v <= getViewSize ().bottom)
+			value = fEntryState == getMin () ? getMax () : getMin ();
+		else
+			value = fEntryState == getMin () ? getMin () : getMax ();
+		
+		if (isDirty ())
+			invalid ();
+		return kMouseEventHandled;
+	}
+	return kMouseEventNotHandled;
+}
+
+//------------------------------------------------------------------------
+int32_t CTextButton::onKeyDown (VstKeyCode& keyCode)
+{
+	if (keyCode.modifier == 0 && keyCode.virt == VKEY_RETURN)
+	{
+		if (style == kKickStyle)
+		{
+			if (value != getMax ())
+			{
+				beginEdit ();
+				value = getMax ();
+				invalid ();
+				valueChanged ();
+				value = getMin ();
+				invalid ();
+				valueChanged ();
+				endEdit ();
+			}
+		}
+		else
+		{
+			beginEdit ();
+			if (value == getMin ())
+				value = getMax ();
+			else
+				value = getMin ();
+			invalid ();
+			valueChanged ();
+			endEdit ();
+		}
+		return 1;
+	}
+	return -1;
+}
+
+//------------------------------------------------------------------------
+int32_t CTextButton::onKeyUp (VstKeyCode& keyCode)
+{
+	return -1;
 }
 
 } // namespace

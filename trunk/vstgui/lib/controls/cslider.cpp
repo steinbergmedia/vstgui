@@ -456,8 +456,9 @@ CMouseEventResult CSlider::onMouseMoved (CPoint& where, const CButtonState& butt
 			valueChanged ();
 			invalid ();
 		}
+		return kMouseEventHandled;
 	}
-	return kMouseEventHandled;
+	return kMouseEventNotHandled;
 }
 
 //------------------------------------------------------------------------

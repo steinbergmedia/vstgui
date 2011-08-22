@@ -71,11 +71,13 @@ class CFrame : public CViewContainer, public IPlatformFrameCallback
 {
 public:
 	CFrame (const CRect& size, void* pSystemWindow, VSTGUIEditorInterface* pEditor);
+	CFrame (const CRect& size, VSTGUIEditorInterface* pEditor);
 
 	//-----------------------------------------------------------------------------
 	/// @name CFrame Methods
 	//-----------------------------------------------------------------------------
 	//@{
+	virtual bool open (void* pSystemWindow);
 	virtual void close ();							///< closes the frame and calls forget
 
 	virtual void idle ();
@@ -184,7 +186,6 @@ public:
 	//-------------------------------------------
 protected:
 	~CFrame ();
-	bool initFrame (void* pSystemWin);
 	void checkMouseViews (const CPoint& where, const CButtonState& buttons);
 	void clearMouseViews (const CPoint& where, const CButtonState& buttons, bool callMouseExit = true);
 	void removeFromMouseViews (CView* view);

@@ -45,6 +45,7 @@
 #include "lib/copenglview.cpp"
 #include "lib/cpoint.cpp"
 #include "lib/crect.cpp"
+#include "lib/crowcolumnview.cpp"
 #include "lib/cscrollview.cpp"
 #include "lib/csplitview.cpp"
 #include "lib/cstring.cpp"
