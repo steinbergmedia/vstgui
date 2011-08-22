@@ -2,7 +2,7 @@
 #define __uiattributescontroller__
 
 #include "../uidescription.h"
-#include "../uiselection.h"
+#include "uiselection.h"
 #include "uiundomanager.h"
 
 namespace VSTGUI {

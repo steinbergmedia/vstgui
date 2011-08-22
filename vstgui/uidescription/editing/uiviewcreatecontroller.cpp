@@ -3,7 +3,7 @@
 #include "uisearchtextfield.h"
 #include "uibasedatasource.h"
 #include "../uiviewfactory.h"
-#include "../uiselection.h"
+#include "uiselection.h"
 
 namespace VSTGUI {
 
