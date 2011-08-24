@@ -693,7 +693,7 @@
 		F497F0A41308094300F0A613 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0410;
+				LastUpgradeCheck = 0420;
 				ORGANIZATIONNAME = "Steinberg Media Technologies AG";
 			};
 			buildConfigurationList = F497F0A71308094300F0A613 /* Build configuration list for PBXProject "vstgui" */;
