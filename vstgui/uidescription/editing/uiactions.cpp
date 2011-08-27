@@ -39,7 +39,6 @@
 #include "uieditview.h"
 #include "../uiviewfactory.h"
 #include "../uidescription.h"
-#include "../uieditframe.h"
 
 namespace VSTGUI {
 
@@ -455,7 +454,7 @@ DeleteOperation::DeleteOperation (UISelection* selection)
 	selection->remember ();
 	FOREACH_IN_SELECTION(selection, view)
 		CViewContainer* container = dynamic_cast<CViewContainer*> (view->getParentView ());
-		if (dynamic_cast<UIEditView*>(container) == 0 && dynamic_cast<UIEditFrame*>(container) == 0)
+		if (dynamic_cast<UIEditView*>(container) == 0)
 		{
 			CView* nextView = 0;
 			ViewIterator it (container);
@@ -835,6 +834,7 @@ TagChangeAction::TagChangeAction (UIDescription* description, UTF8StringPtr name
 , tag (tag)
 , remove (remove)
 , performOrUndo (performOrUndo)
+, isNewTag (!description->hasTagName (name))
 {
 	originalTag = description->getTagForName (name);
 }
@@ -865,7 +865,12 @@ void TagChangeAction::perform ()
 void TagChangeAction::undo ()
 {
 	if (performOrUndo == false)
-		description->changeTag (name.c_str (), originalTag);
+	{
+		if (isNewTag)
+			description->removeTag (name.c_str ());
+		else
+			description->changeTag (name.c_str (), originalTag);
+	}
 }
 
 //----------------------------------------------------------------------------------------------------

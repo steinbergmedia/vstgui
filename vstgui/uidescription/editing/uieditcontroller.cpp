@@ -20,6 +20,8 @@
 #include "uitemplatesettingscontroller.h"
 #include "uifocussettingscontroller.h"
 #include "../../lib/controls/coptionmenu.h"
+#include "../../lib/animation/animations.h"
+#include "../../lib/animation/timingfunctions.h"
 
 #include <sstream>
 #include <assert.h>
@@ -666,7 +668,7 @@ void UIEditController::setDirty (bool state)
 }
 
 //----------------------------------------------------------------------------------------------------
-void UIEditController::performAction (IActionOperation* action)
+void UIEditController::performAction (IAction* action)
 {
 	undoManager->pushAndPerform (action);
 }
@@ -676,7 +678,7 @@ void UIEditController::performColorChange (UTF8StringPtr colorName, const CColor
 {
 	// TODO: currently not on the undo stack
 	CView* view = editView ? editView->getEditView () : 0;
-	IActionOperation* action = 0;
+	IAction* action = 0;
 	if (view)
 		action = new MultipleAttributeChangeAction (editDescription, view, IViewCreator::kColorType, colorName, remove ? "" : colorName);
 	if (remove)
@@ -695,8 +697,9 @@ void UIEditController::performColorChange (UTF8StringPtr colorName, const CColor
 void UIEditController::performTagChange (UTF8StringPtr tagName, int32_t tag, bool remove)
 {
 	CView* view = editView ? editView->getEditView () : 0;
-	undoManager->startGroupAction (remove ? "Delete Tag" : "Change Tag");
-	undoManager->pushAndPerform (new TagChangeAction (editDescription, tagName, tag, remove, true));
+	TagChangeAction* action = new TagChangeAction (editDescription, tagName, tag, remove, true);
+	undoManager->startGroupAction (remove ? "Delete Tag" : action->newTag () ? "Add New Tag" : "Change Tag");
+	undoManager->pushAndPerform (action);
 	if (view)
 		undoManager->pushAndPerform (new MultipleAttributeChangeAction (editDescription, view, IViewCreator::kTagType, tagName, remove ? "" : tagName));
 	undoManager->pushAndPerform (new TagChangeAction (editDescription, tagName, tag, remove, false));

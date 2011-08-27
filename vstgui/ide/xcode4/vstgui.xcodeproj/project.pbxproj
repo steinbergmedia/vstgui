@@ -22,7 +22,7 @@
 		F452950E13A2166A006EEF82 /* copenglview.h in Headers */ = {isa = PBXBuildFile; fileRef = F452950C13A2166A006EEF82 /* copenglview.h */; };
 		F453B21D13F123550067C1C2 /* uiundomanager.h in Headers */ = {isa = PBXBuildFile; fileRef = F453B21C13F123550067C1C2 /* uiundomanager.h */; };
 		F453B21F13F123700067C1C2 /* uiundomanager.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F453B21E13F123700067C1C2 /* uiundomanager.cpp */; };
-		F453B22113F124090067C1C2 /* iactionoperation.h in Headers */ = {isa = PBXBuildFile; fileRef = F453B22013F124090067C1C2 /* iactionoperation.h */; };
+		F453B22113F124090067C1C2 /* iaction.h in Headers */ = {isa = PBXBuildFile; fileRef = F453B22013F124090067C1C2 /* iaction.h */; };
 		F453B22313F1299B0067C1C2 /* uiactions.h in Headers */ = {isa = PBXBuildFile; fileRef = F453B22213F1299B0067C1C2 /* uiactions.h */; };
 		F453B22513F129A20067C1C2 /* uiactions.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F453B22413F129A20067C1C2 /* uiactions.cpp */; };
 		F453B22713F19BBC0067C1C2 /* uieditview.h in Headers */ = {isa = PBXBuildFile; fileRef = F453B22613F19BBC0067C1C2 /* uieditview.h */; };
@@ -170,31 +170,14 @@
 		F4E3903A13080ECC00615042 /* cstream.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4E3901913080ECC00615042 /* cstream.cpp */; };
 		F4E3903B13080ECC00615042 /* cstream.h in Headers */ = {isa = PBXBuildFile; fileRef = F4E3901A13080ECC00615042 /* cstream.h */; };
 		F4E3903C13080ECC00615042 /* doc.h in Headers */ = {isa = PBXBuildFile; fileRef = F4E3901B13080ECC00615042 /* doc.h */; };
-		F4E3903D13080ECC00615042 /* editingcolordefs.h in Headers */ = {isa = PBXBuildFile; fileRef = F4E3901C13080ECC00615042 /* editingcolordefs.h */; };
-		F4E3903E13080ECC00615042 /* macplatformsupport.mm in Sources */ = {isa = PBXBuildFile; fileRef = F4E3901D13080ECC00615042 /* macplatformsupport.mm */; };
-		F4E3903F13080ECC00615042 /* platformsupport.h in Headers */ = {isa = PBXBuildFile; fileRef = F4E3901E13080ECC00615042 /* platformsupport.h */; };
-		F4E3904013080ECC00615042 /* uicolorchooserpanel.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4E3901F13080ECC00615042 /* uicolorchooserpanel.cpp */; };
-		F4E3904113080ECC00615042 /* uicolorchooserpanel.h in Headers */ = {isa = PBXBuildFile; fileRef = F4E3902013080ECC00615042 /* uicolorchooserpanel.h */; };
 		F4E3904213080ECC00615042 /* uidescription.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4E3902113080ECC00615042 /* uidescription.cpp */; };
 		F4E3904313080ECC00615042 /* uidescription.h in Headers */ = {isa = PBXBuildFile; fileRef = F4E3902213080ECC00615042 /* uidescription.h */; };
-		F4E3904413080ECC00615042 /* uidialog.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4E3902313080ECC00615042 /* uidialog.cpp */; };
-		F4E3904513080ECC00615042 /* uidialog.h in Headers */ = {isa = PBXBuildFile; fileRef = F4E3902413080ECC00615042 /* uidialog.h */; };
-		F4E3904613080ECC00615042 /* uieditframe.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4E3902513080ECC00615042 /* uieditframe.cpp */; };
-		F4E3904713080ECC00615042 /* uieditframe.h in Headers */ = {isa = PBXBuildFile; fileRef = F4E3902613080ECC00615042 /* uieditframe.h */; };
-		F4E3904813080ECC00615042 /* uifontchooserpanel.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4E3902713080ECC00615042 /* uifontchooserpanel.cpp */; };
-		F4E3904913080ECC00615042 /* uifontchooserpanel.h in Headers */ = {isa = PBXBuildFile; fileRef = F4E3902813080ECC00615042 /* uifontchooserpanel.h */; };
-		F4E3904A13080ECC00615042 /* uipanelbase.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4E3902913080ECC00615042 /* uipanelbase.cpp */; };
-		F4E3904B13080ECC00615042 /* uipanelbase.h in Headers */ = {isa = PBXBuildFile; fileRef = F4E3902A13080ECC00615042 /* uipanelbase.h */; };
 		F4E3904C13080ECC00615042 /* uiselection.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4E3902B13080ECC00615042 /* uiselection.cpp */; };
 		F4E3904D13080ECC00615042 /* uiselection.h in Headers */ = {isa = PBXBuildFile; fileRef = F4E3902C13080ECC00615042 /* uiselection.h */; };
 		F4E3904E13080ECC00615042 /* uiviewcreator.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4E3902D13080ECC00615042 /* uiviewcreator.cpp */; };
 		F4E3904F13080ECC00615042 /* uiviewcreator.h in Headers */ = {isa = PBXBuildFile; fileRef = F4E3902E13080ECC00615042 /* uiviewcreator.h */; };
 		F4E3905013080ECC00615042 /* uiviewfactory.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4E3902F13080ECC00615042 /* uiviewfactory.cpp */; };
 		F4E3905113080ECC00615042 /* uiviewfactory.h in Headers */ = {isa = PBXBuildFile; fileRef = F4E3903013080ECC00615042 /* uiviewfactory.h */; };
-		F4E3905213080ECC00615042 /* uiviewhierarchybrowser.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4E3903113080ECC00615042 /* uiviewhierarchybrowser.cpp */; };
-		F4E3905313080ECC00615042 /* uiviewhierarchybrowser.h in Headers */ = {isa = PBXBuildFile; fileRef = F4E3903213080ECC00615042 /* uiviewhierarchybrowser.h */; };
-		F4E3905413080ECC00615042 /* uiviewinspector.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4E3903313080ECC00615042 /* uiviewinspector.cpp */; };
-		F4E3905513080ECC00615042 /* uiviewinspector.h in Headers */ = {isa = PBXBuildFile; fileRef = F4E3903413080ECC00615042 /* uiviewinspector.h */; };
 		F4E3905613080ECC00615042 /* uiviewswitchcontainer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4E3903513080ECC00615042 /* uiviewswitchcontainer.cpp */; };
 		F4E3905713080ECC00615042 /* uiviewswitchcontainer.h in Headers */ = {isa = PBXBuildFile; fileRef = F4E3903613080ECC00615042 /* uiviewswitchcontainer.h */; };
 		F4E3905913080ECC00615042 /* xmlparser.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4E3903813080ECC00615042 /* xmlparser.cpp */; };
@@ -228,7 +211,7 @@
 		F452950C13A2166A006EEF82 /* copenglview.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = copenglview.h; sourceTree = "<group>"; };
 		F453B21C13F123550067C1C2 /* uiundomanager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = uiundomanager.h; sourceTree = "<group>"; };
 		F453B21E13F123700067C1C2 /* uiundomanager.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = uiundomanager.cpp; sourceTree = "<group>"; };
-		F453B22013F124090067C1C2 /* iactionoperation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = iactionoperation.h; sourceTree = "<group>"; };
+		F453B22013F124090067C1C2 /* iaction.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = iaction.h; sourceTree = "<group>"; };
 		F453B22213F1299B0067C1C2 /* uiactions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = uiactions.h; sourceTree = "<group>"; };
 		F453B22413F129A20067C1C2 /* uiactions.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = uiactions.cpp; sourceTree = "<group>"; };
 		F453B22613F19BBC0067C1C2 /* uieditview.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = uieditview.h; sourceTree = "<group>"; };
@@ -377,31 +360,14 @@
 		F4E3901913080ECC00615042 /* cstream.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = cstream.cpp; sourceTree = "<group>"; };
 		F4E3901A13080ECC00615042 /* cstream.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = cstream.h; sourceTree = "<group>"; };
 		F4E3901B13080ECC00615042 /* doc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = doc.h; sourceTree = "<group>"; };
-		F4E3901C13080ECC00615042 /* editingcolordefs.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = editingcolordefs.h; sourceTree = "<group>"; };
-		F4E3901D13080ECC00615042 /* macplatformsupport.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = macplatformsupport.mm; sourceTree = "<group>"; };
-		F4E3901E13080ECC00615042 /* platformsupport.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = platformsupport.h; sourceTree = "<group>"; };
-		F4E3901F13080ECC00615042 /* uicolorchooserpanel.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = uicolorchooserpanel.cpp; sourceTree = "<group>"; };
-		F4E3902013080ECC00615042 /* uicolorchooserpanel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = uicolorchooserpanel.h; sourceTree = "<group>"; };
 		F4E3902113080ECC00615042 /* uidescription.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = uidescription.cpp; sourceTree = "<group>"; };
 		F4E3902213080ECC00615042 /* uidescription.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = uidescription.h; sourceTree = "<group>"; };
-		F4E3902313080ECC00615042 /* uidialog.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = uidialog.cpp; sourceTree = "<group>"; };
-		F4E3902413080ECC00615042 /* uidialog.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = uidialog.h; sourceTree = "<group>"; };
-		F4E3902513080ECC00615042 /* uieditframe.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = uieditframe.cpp; sourceTree = "<group>"; };
-		F4E3902613080ECC00615042 /* uieditframe.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = uieditframe.h; sourceTree = "<group>"; };
-		F4E3902713080ECC00615042 /* uifontchooserpanel.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = uifontchooserpanel.cpp; sourceTree = "<group>"; };
-		F4E3902813080ECC00615042 /* uifontchooserpanel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = uifontchooserpanel.h; sourceTree = "<group>"; };
-		F4E3902913080ECC00615042 /* uipanelbase.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = uipanelbase.cpp; sourceTree = "<group>"; };
-		F4E3902A13080ECC00615042 /* uipanelbase.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = uipanelbase.h; sourceTree = "<group>"; };
 		F4E3902B13080ECC00615042 /* uiselection.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = uiselection.cpp; sourceTree = "<group>"; };
 		F4E3902C13080ECC00615042 /* uiselection.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = uiselection.h; sourceTree = "<group>"; };
 		F4E3902D13080ECC00615042 /* uiviewcreator.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = uiviewcreator.cpp; sourceTree = "<group>"; };
 		F4E3902E13080ECC00615042 /* uiviewcreator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = uiviewcreator.h; sourceTree = "<group>"; };
 		F4E3902F13080ECC00615042 /* uiviewfactory.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = uiviewfactory.cpp; sourceTree = "<group>"; };
 		F4E3903013080ECC00615042 /* uiviewfactory.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = uiviewfactory.h; sourceTree = "<group>"; };
-		F4E3903113080ECC00615042 /* uiviewhierarchybrowser.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = uiviewhierarchybrowser.cpp; sourceTree = "<group>"; };
-		F4E3903213080ECC00615042 /* uiviewhierarchybrowser.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = uiviewhierarchybrowser.h; sourceTree = "<group>"; };
-		F4E3903313080ECC00615042 /* uiviewinspector.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = uiviewinspector.cpp; sourceTree = "<group>"; };
-		F4E3903413080ECC00615042 /* uiviewinspector.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = uiviewinspector.h; sourceTree = "<group>"; };
 		F4E3903513080ECC00615042 /* uiviewswitchcontainer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = uiviewswitchcontainer.cpp; sourceTree = "<group>"; };
 		F4E3903613080ECC00615042 /* uiviewswitchcontainer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = uiviewswitchcontainer.h; sourceTree = "<group>"; };
 		F4E3903813080ECC00615042 /* xmlparser.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = xmlparser.cpp; sourceTree = "<group>"; };
@@ -437,7 +403,7 @@
 			isa = PBXGroup;
 			children = (
 				F40329C713FE499D00466973 /* doc.h */,
-				F453B22013F124090067C1C2 /* iactionoperation.h */,
+				F453B22013F124090067C1C2 /* iaction.h */,
 				F453B22413F129A20067C1C2 /* uiactions.cpp */,
 				F453B22213F1299B0067C1C2 /* uiactions.h */,
 				F48BCB4D13F69BB80010DCC1 /* uiattributescontroller.cpp */,
@@ -695,30 +661,13 @@
 				F4E3901913080ECC00615042 /* cstream.cpp */,
 				F4E3901A13080ECC00615042 /* cstream.h */,
 				F4E3901B13080ECC00615042 /* doc.h */,
-				F4E3901C13080ECC00615042 /* editingcolordefs.h */,
 				F4CF26DD13EEA65D00C64EB7 /* icontroller.h */,
-				F4E3901D13080ECC00615042 /* macplatformsupport.mm */,
-				F4E3901E13080ECC00615042 /* platformsupport.h */,
-				F4E3901F13080ECC00615042 /* uicolorchooserpanel.cpp */,
-				F4E3902013080ECC00615042 /* uicolorchooserpanel.h */,
 				F4E3902113080ECC00615042 /* uidescription.cpp */,
 				F4E3902213080ECC00615042 /* uidescription.h */,
-				F4E3902313080ECC00615042 /* uidialog.cpp */,
-				F4E3902413080ECC00615042 /* uidialog.h */,
-				F4E3902513080ECC00615042 /* uieditframe.cpp */,
-				F4E3902613080ECC00615042 /* uieditframe.h */,
-				F4E3902713080ECC00615042 /* uifontchooserpanel.cpp */,
-				F4E3902813080ECC00615042 /* uifontchooserpanel.h */,
-				F4E3902913080ECC00615042 /* uipanelbase.cpp */,
-				F4E3902A13080ECC00615042 /* uipanelbase.h */,
 				F4E3902D13080ECC00615042 /* uiviewcreator.cpp */,
 				F4E3902E13080ECC00615042 /* uiviewcreator.h */,
 				F4E3902F13080ECC00615042 /* uiviewfactory.cpp */,
 				F4E3903013080ECC00615042 /* uiviewfactory.h */,
-				F4E3903113080ECC00615042 /* uiviewhierarchybrowser.cpp */,
-				F4E3903213080ECC00615042 /* uiviewhierarchybrowser.h */,
-				F4E3903313080ECC00615042 /* uiviewinspector.cpp */,
-				F4E3903413080ECC00615042 /* uiviewinspector.h */,
 				F4E3903513080ECC00615042 /* uiviewswitchcontainer.cpp */,
 				F4E3903613080ECC00615042 /* uiviewswitchcontainer.h */,
 				F4E3903813080ECC00615042 /* xmlparser.cpp */,
@@ -797,19 +746,10 @@
 				F497F1B313080B4800F0A613 /* nsviewoptionmenu.h in Headers */,
 				F4E3903B13080ECC00615042 /* cstream.h in Headers */,
 				F4E3903C13080ECC00615042 /* doc.h in Headers */,
-				F4E3903D13080ECC00615042 /* editingcolordefs.h in Headers */,
-				F4E3903F13080ECC00615042 /* platformsupport.h in Headers */,
-				F4E3904113080ECC00615042 /* uicolorchooserpanel.h in Headers */,
 				F4E3904313080ECC00615042 /* uidescription.h in Headers */,
-				F4E3904513080ECC00615042 /* uidialog.h in Headers */,
-				F4E3904713080ECC00615042 /* uieditframe.h in Headers */,
-				F4E3904913080ECC00615042 /* uifontchooserpanel.h in Headers */,
-				F4E3904B13080ECC00615042 /* uipanelbase.h in Headers */,
 				F4E3904D13080ECC00615042 /* uiselection.h in Headers */,
 				F4E3904F13080ECC00615042 /* uiviewcreator.h in Headers */,
 				F4E3905113080ECC00615042 /* uiviewfactory.h in Headers */,
-				F4E3905313080ECC00615042 /* uiviewhierarchybrowser.h in Headers */,
-				F4E3905513080ECC00615042 /* uiviewinspector.h in Headers */,
 				F4E3905713080ECC00615042 /* uiviewswitchcontainer.h in Headers */,
 				F4E3905A13080ECC00615042 /* xmlparser.h in Headers */,
 				F4E3905C1308155200615042 /* vstgui.h in Headers */,
@@ -824,7 +764,7 @@
 				F4F52E0013E2B36500B3DB2F /* crowcolumnview.h in Headers */,
 				F4CF26DE13EEA65D00C64EB7 /* icontroller.h in Headers */,
 				F453B21D13F123550067C1C2 /* uiundomanager.h in Headers */,
-				F453B22113F124090067C1C2 /* iactionoperation.h in Headers */,
+				F453B22113F124090067C1C2 /* iaction.h in Headers */,
 				F453B22313F1299B0067C1C2 /* uiactions.h in Headers */,
 				F453B22713F19BBC0067C1C2 /* uieditview.h in Headers */,
 				F4CA76BC13F1A1EF00BB1842 /* uicrosslines.h in Headers */,
@@ -954,18 +894,10 @@
 				F497F1B213080B4800F0A613 /* nsviewframe.mm in Sources */,
 				F497F1B413080B4800F0A613 /* nsviewoptionmenu.mm in Sources */,
 				F4E3903A13080ECC00615042 /* cstream.cpp in Sources */,
-				F4E3903E13080ECC00615042 /* macplatformsupport.mm in Sources */,
-				F4E3904013080ECC00615042 /* uicolorchooserpanel.cpp in Sources */,
 				F4E3904213080ECC00615042 /* uidescription.cpp in Sources */,
-				F4E3904413080ECC00615042 /* uidialog.cpp in Sources */,
-				F4E3904613080ECC00615042 /* uieditframe.cpp in Sources */,
-				F4E3904813080ECC00615042 /* uifontchooserpanel.cpp in Sources */,
-				F4E3904A13080ECC00615042 /* uipanelbase.cpp in Sources */,
 				F4E3904C13080ECC00615042 /* uiselection.cpp in Sources */,
 				F4E3904E13080ECC00615042 /* uiviewcreator.cpp in Sources */,
 				F4E3905013080ECC00615042 /* uiviewfactory.cpp in Sources */,
-				F4E3905213080ECC00615042 /* uiviewhierarchybrowser.cpp in Sources */,
-				F4E3905413080ECC00615042 /* uiviewinspector.cpp in Sources */,
 				F4E3905613080ECC00615042 /* uiviewswitchcontainer.cpp in Sources */,
 				F4E3905913080ECC00615042 /* xmlparser.cpp in Sources */,
 				F45BD679131817CD00C46C02 /* csplitview.cpp in Sources */,

@@ -7,7 +7,7 @@
 
 #include "uiselection.h"
 #include "uiundomanager.h"
-#include "iactionoperation.h"
+#include "iaction.h"
 
 namespace VSTGUI {
 class UITagsDataSource;
@@ -16,7 +16,7 @@ class UITagsDataSource;
 class UITagsController : public CBaseObject, public DelegationController
 {
 public:
-	UITagsController (IController* baseController, UIDescription* description, IActionOperator* actionOperator);
+	UITagsController (IController* baseController, UIDescription* description, IActionPerformer* actionPerformer);
 	~UITagsController ();
 
 protected:
@@ -26,7 +26,7 @@ protected:
 	void valueChanged (CControl* pControl);
 
 	SharedPointer<UIDescription> editDescription;
-	IActionOperator* actionOperator;
+	IActionPerformer* actionPerformer;
 	UITagsDataSource* dataSource;
 	
 	enum {

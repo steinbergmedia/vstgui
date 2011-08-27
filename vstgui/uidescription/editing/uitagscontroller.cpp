@@ -13,7 +13,7 @@ namespace VSTGUI {
 class UITagsDataSource : public UIBaseDataSource
 {
 public:
-	UITagsDataSource (UIDescription* description, IActionOperator* actionOperator);
+	UITagsDataSource (UIDescription* description, IActionPerformer* actionPerformer);
 	~UITagsDataSource ();
 
 protected:
@@ -36,8 +36,8 @@ protected:
 };
 
 //----------------------------------------------------------------------------------------------------
-UITagsDataSource::UITagsDataSource (UIDescription* description, IActionOperator* actionOperator)
-: UIBaseDataSource (description, actionOperator, UIDescription::kMessageTagChanged)
+UITagsDataSource::UITagsDataSource (UIDescription* description, IActionPerformer* actionPerformer)
+: UIBaseDataSource (description, actionPerformer, UIDescription::kMessageTagChanged)
 {
 }
 
@@ -55,21 +55,21 @@ void UITagsDataSource::getNames (std::list<const std::string*>& names)
 //----------------------------------------------------------------------------------------------------
 bool UITagsDataSource::addItem (UTF8StringPtr name)
 {
-	actionOperator->performTagChange (name, -2);
+	actionPerformer->performTagChange (name, -2);
 	return true;
 }
 
 //----------------------------------------------------------------------------------------------------
 bool UITagsDataSource::removeItem (UTF8StringPtr name)
 {
-	actionOperator->performTagChange (name, -1, true);
+	actionPerformer->performTagChange (name, -1, true);
 	return true;
 }
 
 //----------------------------------------------------------------------------------------------------
 bool UITagsDataSource::performNameChange (UTF8StringPtr oldName, UTF8StringPtr newName)
 {
-	actionOperator->performTagNameChange (oldName, newName);
+	actionPerformer->performTagNameChange (oldName, newName);
 	return true;
 }
 
@@ -114,7 +114,7 @@ void UITagsDataSource::dbCellTextChanged (int32_t row, int32_t column, UTF8Strin
 	else
 	{
 		int32_t newTag = (int32_t)strtol (newText, 0, 10);
-		actionOperator->performTagChange (names.at (row).c_str (), newTag);
+		actionPerformer->performTagChange (names.at (row).c_str (), newTag);
 	}
 }
 
@@ -151,10 +151,10 @@ void UITagsDataSource::dbDrawCell (CDrawContext* context, const CRect& size, int
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
-UITagsController::UITagsController (IController* baseController, UIDescription* description, IActionOperator* actionOperator)
+UITagsController::UITagsController (IController* baseController, UIDescription* description, IActionPerformer* actionPerformer)
 : DelegationController (baseController)
 , editDescription (description)
-, actionOperator (actionOperator)
+, actionPerformer (actionPerformer)
 , dataSource (0)
 {
 }
@@ -174,7 +174,7 @@ CView* UITagsController::createView (const UIAttributes& attributes, IUIDescript
 	{
 		if (*name == "TagsBrowser")
 		{
-			dataSource = new UITagsDataSource (editDescription, actionOperator);
+			dataSource = new UITagsDataSource (editDescription, actionPerformer);
 			UIEditController::setupDataSource (dataSource);
 			return new CDataBrowser (CRect (0, 0, 0, 0), 0, dataSource, CDataBrowser::kDrawColumnLines|CDataBrowser::kDrawRowLines|CScrollView::kHorizontalScrollbar | CScrollView::kVerticalScrollbar);
 		}

@@ -11,7 +11,7 @@ class UISelection;
 class UIDescription;
 class IUIDescription;
 class UICrossLines;
-class IActionOperation;
+class IAction;
 class UIGrid;
 class CVSTGUITimer;
 
@@ -98,7 +98,7 @@ protected:
 	
 	CView* highlightView;
 	UICrossLines* lines;
-	IActionOperation* moveSizeOperation;
+	IAction* moveSizeOperation;
 	CVSTGUITimer* editTimer;
 	
 	CColor crosslineForegroundColor;

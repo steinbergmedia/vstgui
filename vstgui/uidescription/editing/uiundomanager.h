@@ -44,17 +44,17 @@
 #include <deque>
 
 namespace VSTGUI {
-class IActionOperation;
+class IAction;
 class UIGroupAction;
 
 //----------------------------------------------------------------------------------------------------
-class UIUndoManager : public CBaseObject, protected std::list<IActionOperation*>, public IDependency
+class UIUndoManager : public CBaseObject, protected std::list<IAction*>, public IDependency
 {
 public:
 	UIUndoManager ();
 	~UIUndoManager ();
 
-	void pushAndPerform (IActionOperation* action);
+	void pushAndPerform (IAction* action);
 
 	UTF8StringPtr getUndoName ();
 	UTF8StringPtr getRedoName ();

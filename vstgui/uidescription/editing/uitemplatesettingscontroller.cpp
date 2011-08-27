@@ -92,7 +92,7 @@ CView* UITemplateSettingsController::verifyView (CView* view, const UIAttributes
 				controls[kMinWidthTag] = control;
 				control->setStringToValueProc (stringToValue);
 				control->setValueToStringProc (valueToString);
-				control->setValue (minSize.x);
+				control->setValue ((float)minSize.x);
 				break;
 			}
 			case kMinHeightTag:
@@ -100,7 +100,7 @@ CView* UITemplateSettingsController::verifyView (CView* view, const UIAttributes
 				controls[kMinHeightTag] = control;
 				control->setStringToValueProc (stringToValue);
 				control->setValueToStringProc (valueToString);
-				control->setValue (minSize.y);
+				control->setValue ((float)minSize.y);
 				break;
 			}
 			case kMaxWidthTag:
@@ -108,7 +108,7 @@ CView* UITemplateSettingsController::verifyView (CView* view, const UIAttributes
 				controls[kMaxWidthTag] = control;
 				control->setStringToValueProc (stringToValue);
 				control->setValueToStringProc (valueToString);
-				control->setValue (maxSize.x);
+				control->setValue ((float)maxSize.x);
 				break;
 			}
 			case kMaxHeightTag:
@@ -116,7 +116,7 @@ CView* UITemplateSettingsController::verifyView (CView* view, const UIAttributes
 				controls[kMaxHeightTag] = control;
 				control->setStringToValueProc (stringToValue);
 				control->setValueToStringProc (valueToString);
-				control->setValue (maxSize.y);
+				control->setValue ((float)maxSize.y);
 				break;
 			}
 		}
@@ -177,12 +177,12 @@ void UITemplateSettingsController::valueChanged (CControl* control)
 							minSize = currentSize;
 							if (controls[kMinWidthTag])
 							{
-								controls[kMinWidthTag]->setValue (minSize.x);
+								controls[kMinWidthTag]->setValue ((float)minSize.x);
 								controls[kMinWidthTag]->invalid ();
 							}
 							if (controls[kMinHeightTag])
 							{
-								controls[kMinHeightTag]->setValue (minSize.y);
+								controls[kMinHeightTag]->setValue ((float)minSize.y);
 								controls[kMinHeightTag]->invalid ();
 							}
 						}
@@ -191,12 +191,12 @@ void UITemplateSettingsController::valueChanged (CControl* control)
 							maxSize = currentSize;
 							if (controls[kMaxWidthTag])
 							{
-								controls[kMaxWidthTag]->setValue (maxSize.x);
+								controls[kMaxWidthTag]->setValue ((float)maxSize.x);
 								controls[kMaxWidthTag]->invalid ();
 							}
 							if (controls[kMaxHeightTag])
 							{
-								controls[kMaxHeightTag]->setValue (maxSize.y);
+								controls[kMaxHeightTag]->setValue ((float)maxSize.y);
 								controls[kMaxHeightTag]->invalid ();
 							}
 						}
@@ -222,7 +222,7 @@ bool UITemplateSettingsController::valueToString (float value, char utf8String[2
 bool UITemplateSettingsController::stringToValue (UTF8StringPtr txt, float& result, void* userData)
 {
 	int32_t value = txt ? (int32_t)strtol (txt, 0, 10) : 0;
-	result = value;
+	result = (float)value;
 	return true;
 }
 

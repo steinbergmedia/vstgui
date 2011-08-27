@@ -17,8 +17,8 @@ namespace VSTGUI {
 class UIBaseDataSource : public GenericStringListDataBrowserSource, public CControlListener
 {
 public:
-	UIBaseDataSource (UIDescription* description, IActionOperator* actionOperator, IdStringPtr descriptionMessage, IGenericStringListDataBrowserSourceSelectionChanged* delegate = 0)
-	: GenericStringListDataBrowserSource (0, delegate) , description (description), actionOperator (actionOperator), descriptionMessage (descriptionMessage)
+	UIBaseDataSource (UIDescription* description, IActionPerformer* actionPerformer, IdStringPtr descriptionMessage, IGenericStringListDataBrowserSourceSelectionChanged* delegate = 0)
+	: GenericStringListDataBrowserSource (0, delegate) , description (description), actionPerformer (actionPerformer), descriptionMessage (descriptionMessage)
 	{
 		description->addDependency (this);
 	}
@@ -36,7 +36,7 @@ public:
 	
 	virtual bool add ()
 	{
-		if (dataBrowser && actionOperator)
+		if (dataBrowser && actionPerformer)
 		{
 			std::string newName (filterString.empty () ? "New" : filterString);
 			if (createUniqueName (newName))
@@ -55,7 +55,7 @@ public:
 
 	virtual bool remove ()
 	{
-		if (dataBrowser && actionOperator)
+		if (dataBrowser && actionPerformer)
 		{
 			int32_t selectedRow = dataBrowser->getSelectedRow ();
 			if (selectedRow != CDataBrowser::kNoSelection)
@@ -242,10 +242,13 @@ protected:
 
 	void dbCellTextChanged (int32_t row, int32_t column, UTF8StringPtr newText, CDataBrowser* browser)
 	{
-		if (performNameChange (names.at (row).c_str (), newText))
+		if (names.at (row) != newText)
 		{
-			if (selectName (newText) == -1 && row < (int32_t)names.size ())
-				selectName (names.at (row).c_str ());
+			if (performNameChange (names.at (row).c_str (), newText))
+			{
+				if (selectName (newText) == -1 && row < (int32_t)names.size ())
+					selectName (names.at (row).c_str ());
+			}
 		}
 	}
 
@@ -259,7 +262,7 @@ protected:
 
 	SharedPointer<UIDescription> description;
 	SharedPointer<UISearchTextField> searchField;
-	IActionOperator* actionOperator;
+	IActionPerformer* actionPerformer;
 	IdStringPtr descriptionMessage;
 
 	std::vector<std::string> names;
