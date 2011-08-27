@@ -3,6 +3,8 @@
 
 #include "../../lib/cviewcontainer.h"
 
+#if VSTGUI_LIVE_EDITING
+
 namespace VSTGUI {
 class UIUndoManager;
 class UISelection;
@@ -11,6 +13,7 @@ class IUIDescription;
 class UICrossLines;
 class IActionOperation;
 class UIGrid;
+class CVSTGUITimer;
 
 //----------------------------------------------------------------------------------------------------
 class UIEditView : public CViewContainer
@@ -32,6 +35,9 @@ public:
 	void setGrid (UIGrid* grid);
 
 	void setupColors (IUIDescription* description);
+	
+	static IdStringPtr kMsgAttached;
+	static IdStringPtr kMsgRemoved;
 protected:
 	enum MouseEditMode {
 		kNoEditing,
@@ -76,6 +82,8 @@ protected:
 
 	void looseFocus ();
 	void takeFocus ();
+	bool removed (CView* parent);
+	bool attached (CView* parent);
 
 	bool editing;
 	MouseEditMode mouseEditMode;
@@ -100,5 +108,7 @@ protected:
 };
 
 } // namespace
+
+#endif // VSTGUI_LIVE_EDITING
 
 #endif // __uieditview__

@@ -192,6 +192,8 @@ class UIDescWriter
 public:
 	bool write (OutputStream& stream, UINode* rootNode);
 protected:
+	static void encodeAttributeString (std::string& str);
+
 	bool writeNode (UINode* node, OutputStream& stream);
 	bool writeAttributes (UIAttributes* attr, OutputStream& stream);
 	int32_t intendLevel;
@@ -206,6 +208,24 @@ bool UIDescWriter::write (OutputStream& stream, UINode* rootNode)
 }
 
 //-----------------------------------------------------------------------------
+void UIDescWriter::encodeAttributeString (std::string& str)
+{
+	const int8_t entities[] = {'&', '<','>', '\'', '\"', 0};
+	const char* replacements[] = {"&amp;", "&lt;", "&gt;", "&apos;", "&quot;"};
+	int32_t i = 0;
+	while (entities[i] != 0)
+	{
+		size_t pos = 0;
+		while ((pos = str.find (entities[i], pos)) != std::string::npos)
+		{
+			str.replace (pos, 1, replacements[i]);
+			pos++;
+		}
+		i++;
+	}
+}
+
+//-----------------------------------------------------------------------------
 bool UIDescWriter::writeAttributes (UIAttributes* attr, OutputStream& stream)
 {
 	bool result = true;
@@ -217,7 +237,9 @@ bool UIDescWriter::writeAttributes (UIAttributes* attr, OutputStream& stream)
 			stream << " ";
 			stream << (*it).first;
 			stream << "=\"";
-			stream << (*it).second;
+			std::string value ((*it).second);
+			encodeAttributeString (value);
+			stream << value;
 			stream << "\"";
 		}
 		it++;
@@ -1817,6 +1839,32 @@ bool UIAttributes::getDoubleAttribute (UTF8StringPtr name, double& value)
 	{
 		value = strtod (str->c_str (), 0);
 		return true;
+	}
+	return false;
+}
+
+//-----------------------------------------------------------------------------
+void UIAttributes::setBooleanAttribute (UTF8StringPtr name, bool value)
+{
+	setAttribute (name, value ? "true" : "false");
+}
+
+//-----------------------------------------------------------------------------
+bool UIAttributes::getBooleanAttribute (UTF8StringPtr name, bool& value)
+{
+	const std::string* str = getAttributeValue (name);
+	if (str)
+	{
+		if (*str == "true")
+		{
+			value = true;
+			return true;
+		}
+		else if (*str == "false")
+		{
+			value = false;
+			return true;
+		}
 	}
 	return false;
 }

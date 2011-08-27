@@ -35,8 +35,8 @@
 #if VSTGUI_LIVE_EDITING
 
 #include "uiselection.h"
-#include "uiviewfactory.h"
-#include "cstream.h"
+#include "../uiviewfactory.h"
+#include "../cstream.h"
 #include "../../lib/cviewcontainer.h"
 #include <sstream>
 

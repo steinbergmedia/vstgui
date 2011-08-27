@@ -1,7 +1,11 @@
 #include "uibitmapscontroller.h"
+
+#if VSTGUI_LIVE_EDITING
+
 #include "uibasedatasource.h"
 #include "uisearchtextfield.h"
 #include "uieditcontroller.h"
+#include "../../lib/controls/ccolorchooser.h"
 
 namespace VSTGUI {
 //----------------------------------------------------------------------------------------------------
@@ -92,7 +96,7 @@ bool UIBitmapsDataSource::performNameChange (UTF8StringPtr oldName, UTF8StringPt
 CBitmap* UIBitmapsDataSource::getSelectedBitmap ()
 {
 	int32_t selectedRow = dataBrowser ? dataBrowser->getSelectedRow() : CDataBrowser::kNoSelection;
-	if (selectedRow != CDataBrowser::kNoSelection && selectedRow < names.size ())
+	if (selectedRow != CDataBrowser::kNoSelection && selectedRow < (int32_t)names.size ())
 		return description->getBitmap (names.at (selectedRow).c_str ());
 	return 0;
 }
@@ -101,7 +105,7 @@ CBitmap* UIBitmapsDataSource::getSelectedBitmap ()
 UTF8StringPtr UIBitmapsDataSource::getSelectedBitmapName ()
 {
 	int32_t selectedRow = dataBrowser ? dataBrowser->getSelectedRow() : CDataBrowser::kNoSelection;
-	if (selectedRow != CDataBrowser::kNoSelection && selectedRow < names.size ())
+	if (selectedRow != CDataBrowser::kNoSelection && selectedRow < (int32_t)names.size ())
 		return names.at (selectedRow).c_str ();
 	return 0;
 }
@@ -280,22 +284,22 @@ void UIBitmapsController::dbSelectionChanged (int32_t selectedRow, GenericString
 			const CNinePartTiledBitmap::PartOffsets offsets = nptb->getPartOffsets ();
 			if (ninePartRectEdit[0])
 			{
-				ninePartRectEdit[0]->setValue (offsets.left);
+				ninePartRectEdit[0]->setValue ((float)offsets.left);
 				ninePartRectEdit[0]->invalid ();
 			}
 			if (ninePartRectEdit[1])
 			{
-				ninePartRectEdit[1]->setValue (offsets.top);
+				ninePartRectEdit[1]->setValue ((float)offsets.top);
 				ninePartRectEdit[1]->invalid ();
 			}
 			if (ninePartRectEdit[2])
 			{
-				ninePartRectEdit[2]->setValue (offsets.right);
+				ninePartRectEdit[2]->setValue ((float)offsets.right);
 				ninePartRectEdit[2]->invalid ();
 			}
 			if (ninePartRectEdit[3])
 			{
-				ninePartRectEdit[3]->setValue (offsets.bottom);
+				ninePartRectEdit[3]->setValue ((float)offsets.bottom);
 				ninePartRectEdit[3]->invalid ();
 			}
 		}
@@ -329,8 +333,10 @@ bool UIBitmapsController::valueToString (float value, char utf8String[256], void
 bool UIBitmapsController::stringToValue (UTF8StringPtr txt, float& result, void* userData)
 {
 	int32_t value = txt ? (int32_t)strtol (txt, 0, 10) : 0;
-	result = value;
+	result = (float)value;
 	return true;
 }
 
 } // namespace
+
+#endif // VSTGUI_LIVE_EDITING

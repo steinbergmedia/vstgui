@@ -2,6 +2,9 @@
 #define __uicolorscontroller__
 
 #include "../uidescription.h"
+
+#if VSTGUI_LIVE_EDITING
+
 #include "uiselection.h"
 #include "uiundomanager.h"
 #include "iactionoperation.h"
@@ -34,5 +37,7 @@ protected:
 };
 
 } // namespace
+
+#endif // VSTGUI_LIVE_EDITING
 
 #endif // __uicolorscontroller__

@@ -34,6 +34,7 @@
 
 #include "cparamdisplay.h"
 #include "../cbitmap.h"
+#include "../cframe.h"
 
 namespace VSTGUI {
 
@@ -51,6 +52,7 @@ CParamDisplay::CParamDisplay (const CRect& size, CBitmap* background, const int3
 , valueToStringUserData (0)
 , horiTxtAlign (kCenterText)
 , style (style)
+, roundRectRadius (6.)
 , bAntialias (true)
 {
 	backOffset (0, 0);
@@ -77,6 +79,7 @@ CParamDisplay::CParamDisplay (const CParamDisplay& v)
 , frameColor (v.frameColor)
 , shadowColor (v.shadowColor)
 , textInset (v.textInset)
+, roundRectRadius (v.roundRectRadius)
 , bAntialias (v.bAntialias)
 {
 	fontID->remember ();
@@ -104,6 +107,26 @@ void CParamDisplay::setValueToStringProc (CParamDisplayValueToStringProc proc, v
 {
 	valueToString = proc;
 	valueToStringUserData = userData;
+}
+
+//------------------------------------------------------------------------
+bool CParamDisplay::getFocusPath (CGraphicsPath& outPath)
+{
+	if (style & kRoundRectStyle)
+	{
+		if (wantsFocus ())
+		{
+			CRect r (getViewSize ());
+			CCoord focusWidth = getFrame ()->getFocusWidth ();
+			r.inset (-focusWidth, -focusWidth);
+			outPath.addRoundRect (r, roundRectRadius);
+			outPath.closeSubpath ();
+			r = getViewSize ();
+			outPath.addRoundRect (r, roundRectRadius);
+		}
+		return true;
+	}
+	return CControl::getFocusPath (outPath);
 }
 
 //------------------------------------------------------------------------
@@ -143,14 +166,37 @@ void CParamDisplay::drawBack (CDrawContext* pContext, CBitmap* newBack)
 		if (!getTransparency ())
 		{
 			pContext->setFillColor (backColor);
-			pContext->drawRect (getViewSize (), kDrawFilled);
-	
-			if (!(style & (k3DIn|k3DOut|kNoFrame))) 
+			if (style & kRoundRectStyle)
 			{
-				pContext->setLineStyle (kLineSolid);
-				pContext->setLineWidth (1);
-				pContext->setFrameColor (frameColor);
-				pContext->drawRect (getViewSize ());
+				CRect pathRect = getViewSize ();
+				pathRect.inset (0.5, 0.5);
+				CGraphicsPath* path = pContext->createRoundRectGraphicsPath (pathRect, roundRectRadius);
+				if (path)
+				{
+					pContext->setDrawMode (kAntiAliasing);
+					pContext->drawGraphicsPath (path, CDrawContext::kPathFilled);
+					if (!(style & (k3DIn|k3DOut|kNoFrame)))
+					{
+						pContext->setLineStyle (kLineSolid);
+						pContext->setLineWidth (1);
+						pContext->setFrameColor (frameColor);
+						pContext->drawGraphicsPath (path, CDrawContext::kPathStroked);
+					}
+					path->forget ();
+				}
+			}
+			else
+			{
+				pContext->setDrawMode (kAliasing);
+				pContext->drawRect (getViewSize (), kDrawFilled);
+		
+				if (!(style & (k3DIn|k3DOut|kNoFrame))) 
+				{
+					pContext->setLineStyle (kLineSolid);
+					pContext->setLineWidth (1);
+					pContext->setFrameColor (frameColor);
+					pContext->drawRect (getViewSize ());
+				}
 			}
 		}
 	}
@@ -267,6 +313,22 @@ void CParamDisplay::setHoriAlign (CHoriTxtAlign hAlign)
 	if (horiTxtAlign != hAlign)
 		setDirty ();
 	horiTxtAlign = hAlign;
+}
+
+//------------------------------------------------------------------------
+void CParamDisplay::setTextInset (const CPoint& p)
+{
+	if (textInset != p)
+		setDirty ();
+	textInset = p;
+}
+
+//------------------------------------------------------------------------
+void CParamDisplay::setRoundRectRadius (const CCoord& radius)
+{
+	if (roundRectRadius != radius)
+		setDirty ();
+	roundRectRadius = radius;
 }
 
 } // namespace

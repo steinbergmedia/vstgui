@@ -2,9 +2,14 @@
 #define __uibasedatasource__
 
 #include "../uidescription.h"
+
+#if VSTGUI_LIVE_EDITING
+
+#include "../../lib/cdatabrowser.h"
 #include "uieditcontroller.h"
 #include "uisearchtextfield.h"
 #include <sstream>
+#include <algorithm>
 
 namespace VSTGUI {
 
@@ -239,7 +244,7 @@ protected:
 	{
 		if (performNameChange (names.at (row).c_str (), newText))
 		{
-			if (selectName (newText) == -1 && row < names.size ())
+			if (selectName (newText) == -1 && row < (int32_t)names.size ())
 				selectName (names.at (row).c_str ());
 		}
 	}
@@ -262,5 +267,7 @@ protected:
 };
 
 } // namespace
+
+#endif // VSTGUI_LIVE_EDITING
 
 #endif // __uibasedatasource__

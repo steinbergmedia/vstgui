@@ -35,10 +35,15 @@
 #include "vst3editor.h"
 #include "vst3editortemplates.h"
 #include "../lib/vstkeycode.h"
-#include "../uidescription/uieditframe.h"
-#include "../uidescription/editingcolordefs.h"
-#include "../uidescription/uidialog.h"
-#include "../uidescription/uiviewinspector.h"
+#if NEW_LIVE_EDITOR
+	#include "../uidescription/editing/uieditcontroller.h"
+	#include "../uidescription/editing/uieditmenucontroller.h"
+#else
+	#include "../uidescription/uieditframe.h"
+	#include "../uidescription/editingcolordefs.h"
+	#include "../uidescription/uidialog.h"
+	#include "../uidescription/uiviewinspector.h"
+#endif
 #include "../uidescription/uiviewfactory.h"
 #include "base/source/updatehandler.h"
 #include "base/source/fstring.h"
@@ -347,6 +352,7 @@ VST3Editor::VST3Editor (Steinberg::Vst::EditController* controller, UTF8StringPt
 , tooltipsEnabled (true)
 , delegate (dynamic_cast<VST3EditorDelegate*> (controller))
 , originalController (0)
+, editingEnabled (false)
 {
 	description = new UIDescription (_xmlFile);
 	viewName = _viewName;
@@ -361,6 +367,7 @@ VST3Editor::VST3Editor (UIDescription* desc, Steinberg::Vst::EditController* con
 , tooltipsEnabled (true)
 , delegate (dynamic_cast<VST3EditorDelegate*> (controller))
 , originalController (0)
+, editingEnabled (false)
 {
 	description = desc;
 	description->remember ();
@@ -674,8 +681,19 @@ CMouseEventResult VST3Editor::onMouseDown (CFrame* frame, const CPoint& where, c
 	CMouseEventResult result = kMouseEventNotHandled;
 	if (buttons.isRightButton ())
 	{
-		COptionMenu* controllerMenu = delegate ? delegate->createContextMenu (where, this) : 0;
+		COptionMenu* controllerMenu = (delegate && editingEnabled == false) ? delegate->createContextMenu (where, this) : 0;
 	#if VSTGUI_LIVE_EDITING
+		#if NEW_LIVE_EDITOR
+		if (editingEnabled == false)
+		{
+			if (controllerMenu == 0)
+				controllerMenu = new COptionMenu ();
+			else
+				controllerMenu->addSeparator ();
+			CMenuItem* item = controllerMenu->addEntry (new CCommandMenuItem ("Open UIDescription Editor", this, "File", "Open UIDescription Editor"));
+			item->setKey ("e", kControl);
+		}
+		#else
 		UIEditFrame* editFrame = dynamic_cast<UIEditFrame*> (frame);
 		if (editFrame)
 		{
@@ -685,6 +703,7 @@ CMouseEventResult VST3Editor::onMouseDown (CFrame* frame, const CPoint& where, c
 				controllerMenu->addSeparator ();
 			editFrame->addEditItemsToMenu (controllerMenu);
 		}
+		#endif
 	#endif
 	#if VST3_SUPPORTS_CONTEXTMENU
 		Steinberg::FUnknownPtr<Steinberg::Vst::IComponentHandler3> handler (getController ()->getComponentHandler ());
@@ -807,6 +826,11 @@ CView* VST3Editor::verifyView (CView* view, const UIAttributes& attributes, IUID
 void VST3Editor::recreateView ()
 {
 	doCreateView = false;
+#if 1
+	enableEditing (editingEnabled);
+#else
+#if NEW_LIVE_EDITOR
+#else
 	frame->remember ();
 	close ();
 
@@ -831,6 +855,8 @@ void VST3Editor::recreateView ()
 	init ();
 	frame->registerMouseObserver (this);
 	frame->invalid ();
+#endif
+#endif
 }
 
 #define kFrameEnableFocusDrawingAttr	"frame-enable-focus-drawing"
@@ -840,11 +866,31 @@ void VST3Editor::recreateView ()
 //-----------------------------------------------------------------------------
 bool PLUGIN_API VST3Editor::open (void* parent)
 {
+#if 1
+	frame = new CFrame (CRect (0, 0, 0, 0), this);
+	frame->setViewAddedRemovedObserver (this);
+	frame->setTransparency (true);
+	frame->registerMouseObserver (this);
+	frame->enableTooltips (tooltipsEnabled);
+
+	if (!enableEditing (false))
+	{
+		frame->forget ();
+		return false;
+	}
+
+	frame->open (parent);
+
+	if (delegate)
+		delegate->didOpen (this);
+	return true;
+#else
+
 	originalController = this;
 	CView* view = description->createView (viewName.c_str (), this);
 	if (view)
 	{
-	#if VSTGUI_LIVE_EDITING
+	#if VSTGUI_LIVE_EDITING && !NEW_LIVE_EDITOR
 		frame = new UIEditFrame (view->getViewSize (), parent, this, UIEditFrame::kNoEditMode, 0, description, viewName.c_str ());
 	#else
 		frame = new CFrame (view->getViewSize (), parent, this);
@@ -884,6 +930,7 @@ bool PLUGIN_API VST3Editor::open (void* parent)
 			delegate->didOpen (this);
 		return true;
 	}
+#endif
 	return false;
 }
 
@@ -920,12 +967,19 @@ Steinberg::tresult PLUGIN_API VST3Editor::onSize (Steinberg::ViewRect* newSize)
 //------------------------------------------------------------------------
 Steinberg::tresult PLUGIN_API VST3Editor::canResize ()
 {
+#if NEW_LIVE_EDITOR
+	return Steinberg::kResultTrue;
+#endif
 	return (minSize == maxSize) ? Steinberg::kResultFalse : Steinberg::kResultTrue;
 }
 
 //------------------------------------------------------------------------
 Steinberg::tresult PLUGIN_API VST3Editor::checkSizeConstraint (Steinberg::ViewRect* rect)
 {
+#if NEW_LIVE_EDITOR
+	if (editingEnabled)
+		return Steinberg::kResultTrue;
+#endif
 	CCoord width = rect->right - rect->left;
 	CCoord height = rect->bottom - rect->top;
 	if (width < minSize.x)
@@ -952,7 +1006,93 @@ CMessageResult VST3Editor::notify (CBaseObject* sender, IdStringPtr message)
 		if (doCreateView)
 			recreateView ();
  	}
-	#if VSTGUI_LIVE_EDITING
+	#if NEW_LIVE_EDITOR
+	else if (message == CCommandMenuItem::kMsgMenuItemValidate)
+	{
+		CCommandMenuItem* item = dynamic_cast<CCommandMenuItem*>(sender);
+		if (item)
+		{
+			if (strcmp (item->getCommandCategory(), "File") == 0)
+			{
+				if (strcmp (item->getCommandName(), "Save") == 0)
+				{
+					bool enable = false;
+					UIAttributes* attributes = description->getCustomAttributes ("VST3Editor", true);
+					if (attributes)
+					{
+						const std::string* filePath = attributes->getAttributeValue ("Path");
+						if (filePath)
+						{
+							enable = true;
+						}
+					}
+					item->setEnabled (enable);
+					return kMessageNotified;
+				}
+			}
+		}
+	}
+	else if (message == CCommandMenuItem::kMsgMenuItemSelected)
+	{
+		CCommandMenuItem* item = dynamic_cast<CCommandMenuItem*>(sender);
+		if (item)
+		{
+			if (strcmp (item->getCommandCategory(), "File") == 0)
+			{
+				if (strcmp (item->getCommandName(), "Open UIDescription Editor") == 0)
+				{
+					editingEnabled = true;
+					doCreateView = true;
+					return kMessageNotified;
+				}
+				else if (strcmp (item->getCommandName(), "Close UIDescription Editor") == 0)
+				{
+					editingEnabled = false;
+					doCreateView = true;
+					return kMessageNotified;
+				}
+				else if (strcmp (item->getCommandName(), "Save") == 0)
+				{
+					UIAttributes* attributes = description->getCustomAttributes ("VST3Editor", true);
+					if (attributes)
+					{
+						const std::string* filePath = attributes->getAttributeValue ("Path");
+						if (filePath)
+						{
+							description->save (filePath->c_str ());
+						}
+					}
+					return kMessageNotified;
+				}
+				else if (strcmp (item->getCommandName(), "Save As") == 0)
+				{
+					CNewFileSelector* fileSelector = CNewFileSelector::create (0, CNewFileSelector::kSelectSaveFile);
+					if (fileSelector)
+					{
+						fileSelector->setTitle ("Save UIDescription File");
+						fileSelector->setDefaultExtension (CFileExtension ("VSTGUI UI Description", "uidesc"));
+						if (fileSelector->runModal ())
+						{
+							UTF8StringPtr filePath = fileSelector->getSelectedFile (0);
+							if (filePath)
+							{
+								UIAttributes* attributes = description->getCustomAttributes ("VST3Editor", true);
+								if (attributes)
+								{
+									attributes->setAttribute ("Path", filePath);
+									description->save (filePath);
+								}
+							}
+						}
+						fileSelector->forget ();
+					}
+					return kMessageNotified;
+				}
+			}
+		}
+	}
+	#endif
+	#if VSTGUI_LIVE_EDITING && !NEW_LIVE_EDITOR
 	else if (message == UIEditFrame::kMsgShowOptionsMenu)
 	{
 		UIEditFrame* editFrame = dynamic_cast<UIEditFrame*> (frame);
@@ -1052,7 +1192,7 @@ CMessageResult VST3Editor::notify (CBaseObject* sender, IdStringPtr message)
  	return VSTGUIEditor::notify (sender, message); 
 }
 
-#if VSTGUI_LIVE_EDITING
+#if VSTGUI_LIVE_EDITING && !NEW_LIVE_EDITOR
 //------------------------------------------------------------------------
 void VST3Editor::syncParameterTags ()
 {
@@ -1355,5 +1495,102 @@ void VST3Editor::runTemplateSettingsDialog ()
 }
 
 #endif // VSTGUI_LIVE_EDITING
+
+//------------------------------------------------------------------------
+bool VST3Editor::enableEditing (bool state)
+{
+	if (getFrame ())
+	{
+		getFrame ()->removeAll ();
+
+	#if VSTGUI_LIVE_EDITING
+		if (state)
+		{
+			description->setController (this);
+			UIEditController* editController = new UIEditController (description);
+			CView* view = editController->createEditView ();
+			if (view)
+			{
+				frame->setSize (view->getWidth (), view->getHeight ());
+				rect.right = rect.left + (Steinberg::int32)frame->getWidth ();
+				rect.bottom = rect.top + (Steinberg::int32)frame->getHeight ();
+				plugFrame->resizeView (this, &rect);
+
+				frame->addView (view);
+				frame->enableTooltips (true);
+				CColor focusColor = kBlueCColor;
+				editController->getEditorDescription ().getColor ("focus", focusColor);
+				frame->setFocusColor (focusColor);
+				frame->setFocusDrawingEnabled (true);
+				frame->setFocusWidth (1);
+				
+				COptionMenu* fileMenu = editController->getMenuController ()->getFileMenu ();
+				if (fileMenu)
+				{
+					CMenuItem* item = fileMenu->addEntry (new CCommandMenuItem ("Save", this, "File", "Save"));
+					item->setKey ("s", kControl);
+					item = fileMenu->addEntry (new CCommandMenuItem ("Save As..", this, "File", "Save As"));
+					item->setKey ("s", kShift|kControl);
+					fileMenu->addSeparator ();
+					item = fileMenu->addEntry (new CCommandMenuItem ("Close Editor", this, "File", "Close UIDescription Editor"));
+					item->setKey ("e", kControl);
+				}
+				COptionMenu* editMenu = editController->getMenuController ()->getEditMenu ();
+				if (editMenu)
+				{
+					editMenu->addSeparator ();
+					editMenu->addEntry (new CCommandMenuItem ("Sync Parameter Tags", this, "Edit", "Sync Parameter Tags"));
+					// TODO: implement functions
+				}
+				editingEnabled = true;
+				return true;
+			}
+			editController->forget ();
+		}
+		else
+	#endif
+		{
+			editingEnabled = false;
+			CView* view = description->createView (viewName.c_str (), this);
+			if (view)
+			{
+				frame->setSize (view->getWidth (), view->getHeight ());
+				frame->addView (view);
+
+				rect.right = rect.left + (Steinberg::int32)frame->getWidth ();
+				rect.bottom = rect.top + (Steinberg::int32)frame->getHeight ();
+				plugFrame->resizeView (this, &rect);
+
+				frame->setFocusDrawingEnabled (false);
+
+				// focus drawing support
+				const UIAttributes* attributes = description->getCustomAttributes ("VST3Editor");
+				if (attributes)
+				{
+					const std::string* attr = attributes->getAttributeValue (kFrameEnableFocusDrawingAttr);
+					if (attr && *attr == "true")
+					{
+						frame->setFocusDrawingEnabled (true);
+						attr = attributes->getAttributeValue (kFrameFocusColorAttr);
+						if (attr)
+						{
+							CColor focusColor;
+							if (description->getColor (attr->c_str (), focusColor))
+								frame->setFocusColor (focusColor);
+						}
+						attr = attributes->getAttributeValue (kFrameFocusWidthAttr);
+						if (attr)
+						{
+							double focusWidth = strtod (attr->c_str (), 0);
+							frame->setFocusWidth (focusWidth);
+						}
+					}
+				}
+				return true;
+			}
+		}
+	}
+	return false;
+}
 
 } // namespace

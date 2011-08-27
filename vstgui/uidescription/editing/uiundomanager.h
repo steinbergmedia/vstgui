@@ -36,6 +36,9 @@
 #define __uiundomanager__
 
 #include "../../lib/vstguibase.h"
+
+#if VSTGUI_LIVE_EDITING
+
 #include "../../lib/idependency.h"
 #include <list>
 #include <deque>
@@ -73,5 +76,7 @@ protected:
 };
 
 } // namespace
+
+#endif // VSTGUI_LIVE_EDITING
 
 #endif // __uiundomanager__

@@ -2,7 +2,11 @@
 #define __uigridcontroller__
 
 #include "../uidescription.h"
+
+#if VSTGUI_LIVE_EDITING
+
 #include "uigrid.h"
+#include "../../lib/controls/ctextedit.h"
 
 namespace VSTGUI {
 
@@ -31,5 +35,7 @@ protected:
 };
 
 } // namespace
+
+#endif // VSTGUI_LIVE_EDITING
 
 #endif // __uigridcontroller__

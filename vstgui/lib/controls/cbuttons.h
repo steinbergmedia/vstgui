@@ -234,6 +234,7 @@ public:
 	bool getFocusPath (CGraphicsPath& outPath);
 	void setViewSize (const CRect& rect, bool invalid = true);
 	bool removed (CView* parent);
+	virtual bool sizeToFit ();
 	virtual CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons);
 	virtual CMouseEventResult onMouseUp (CPoint& where, const CButtonState& buttons);
 	virtual CMouseEventResult onMouseMoved (CPoint& where, const CButtonState& buttons);

@@ -59,6 +59,7 @@ protected:
 		kDontDrawFrameFlag,
 		kAutoDragScollingFlag,
 		kOverlayScrollbarsFlag,
+		kFollowFocusViewFlag,
 
 		kLastScrollViewStyleFlag
 	};
@@ -73,7 +74,8 @@ public:
 		kVerticalScrollbar 		= 1 << kVerticalScrollbarFlag,		///< add a vertical scrollbar
 		kDontDrawFrame			= 1 << kDontDrawFrameFlag,			///< don't draw frame
 		kAutoDragScrolling		= 1 << kAutoDragScollingFlag,		///< automatic scrolling for drag moves
-		kOverlayScrollbars		= 1 << kOverlayScrollbarsFlag		///< scrollbars are overlayed of the content
+		kOverlayScrollbars		= 1 << kOverlayScrollbarsFlag,		///< scrollbars are overlayed of the content
+		kFollowFocusView		= 1 << kFollowFocusViewFlag 		///< scroll to focus view when focus view changes
 	};
 
 	//-----------------------------------------------------------------------------
@@ -89,6 +91,7 @@ public:
 	virtual void setContainerSize (const CRect& cs, bool keepVisibleArea = false);	///< set the virtual size of this container
 	const CRect& getContainerSize () const { return containerSize; }
 	const CPoint& getScrollOffset () const;				///< get scroll offset
+	void resetScrollOffset ();
 
 	CScrollbar* getVerticalScrollbar () const { return vsb; }	///< get the vertical scrollbar
 	CScrollbar* getHorizontalScrollbar () const { return hsb; }	///< get the horizontal scrollbar

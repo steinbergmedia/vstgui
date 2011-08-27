@@ -1,3 +1,11 @@
+2011-08-27 arne
+
+	* fix CFrame::advanceNextFocusView() for modal views
+	* add round rect style for CParamDisplay
+	* add kFollowFocusView style for CScrollView
+	* add CTextButton::sizeToFit()
+	* new uidescription editor
+
 2011-08-22 arne
 
 	* new class CCommandMenuItem
