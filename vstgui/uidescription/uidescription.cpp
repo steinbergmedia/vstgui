@@ -736,6 +736,13 @@ int32_t UIDescription::getTagForName (UTF8StringPtr name)
 }
 
 //-----------------------------------------------------------------------------
+bool UIDescription::hasTagName (UTF8StringPtr name)
+{
+	UIControlTagNode* controlTagNode = dynamic_cast<UIControlTagNode*> (findChildNodeByNameAttribute (getBaseNode ("control-tags"), name));
+	return controlTagNode ? true : false;
+}
+
+//-----------------------------------------------------------------------------
 CControlListener* UIDescription::getControlListener (UTF8StringPtr name)
 {
 	if (controller)

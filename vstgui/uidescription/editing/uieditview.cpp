@@ -761,7 +761,7 @@ bool UIEditView::onDrop (CDragContainer* drag, const CPoint& where)
 				where2.offset (-containerOffset.x, -containerOffset.y);
 
 				UIViewFactory* viewFactory = dynamic_cast<UIViewFactory*> (description->getViewFactory ());
-				IActionOperation* action = new ViewCopyOperation (dragSelection, getSelection (), viewContainer, where2, viewFactory, description);
+				IAction* action = new ViewCopyOperation (dragSelection, getSelection (), viewContainer, where2, viewFactory, description);
 				getUndoManger()->pushAndPerform (action);
 			}
 			dragSelection->forget ();

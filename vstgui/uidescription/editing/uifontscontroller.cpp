@@ -15,7 +15,7 @@ namespace VSTGUI {
 class UIFontsDataSource : public UIBaseDataSource
 {
 public:
-	UIFontsDataSource (UIDescription* description, IActionOperator* actionOperator, IGenericStringListDataBrowserSourceSelectionChanged* delegate);
+	UIFontsDataSource (UIDescription* description, IActionPerformer* actionPerformer, IGenericStringListDataBrowserSourceSelectionChanged* delegate);
 	
 protected:
 	virtual void getNames (std::list<const std::string*>& names);
@@ -28,8 +28,8 @@ protected:
 };
 
 //----------------------------------------------------------------------------------------------------
-UIFontsDataSource::UIFontsDataSource (UIDescription* description, IActionOperator* actionOperator, IGenericStringListDataBrowserSourceSelectionChanged* delegate)
-: UIBaseDataSource (description, actionOperator, UIDescription::kMessageFontChanged, delegate)
+UIFontsDataSource::UIFontsDataSource (UIDescription* description, IActionPerformer* actionPerformer, IGenericStringListDataBrowserSourceSelectionChanged* delegate)
+: UIBaseDataSource (description, actionPerformer, UIDescription::kMessageFontChanged, delegate)
 {
 }
 
@@ -42,31 +42,31 @@ void UIFontsDataSource::getNames (std::list<const std::string*>& names)
 //----------------------------------------------------------------------------------------------------
 bool UIFontsDataSource::addItem (UTF8StringPtr name)
 {
-	actionOperator->performFontChange (name, kNormalFont);
+	actionPerformer->performFontChange (name, kNormalFont);
 	return true;
 }
 
 //----------------------------------------------------------------------------------------------------
 bool UIFontsDataSource::removeItem (UTF8StringPtr name)
 {
-	actionOperator->performFontChange (name, kNormalFont, true);
+	actionPerformer->performFontChange (name, kNormalFont, true);
 	return true;
 }
 
 //----------------------------------------------------------------------------------------------------
 bool UIFontsDataSource::performNameChange (UTF8StringPtr oldName, UTF8StringPtr newName)
 {
-	actionOperator->performFontNameChange (oldName, newName);
+	actionPerformer->performFontNameChange (oldName, newName);
 	return true;
 }
 
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
-UIFontsController::UIFontsController (IController* baseController, UIDescription* description, IActionOperator* actionOperator)
+UIFontsController::UIFontsController (IController* baseController, UIDescription* description, IActionPerformer* actionPerformer)
 : DelegationController (baseController)
 , editDescription (description)
-, actionOperator (actionOperator)
+, actionPerformer (actionPerformer)
 , dataSource (0)
 , fontMenu (0)
 , altTextEdit (0)
@@ -76,7 +76,7 @@ UIFontsController::UIFontsController (IController* baseController, UIDescription
 , strikethroughControl (0)
 , underlineControl (0)
 {
-	dataSource = new UIFontsDataSource (editDescription, actionOperator, this);
+	dataSource = new UIFontsDataSource (editDescription, actionPerformer, this);
 	UIEditController::setupDataSource (dataSource);
 }
 
@@ -219,7 +219,7 @@ void UIFontsController::valueChanged (CControl* pControl)
 				if (strikethroughControl && strikethroughControl->getValue () > 0)
 					style |= kStrikethroughFace;
 				OwningPointer<CFontDesc> font (new CFontDesc (menuItem->getTitle (), sizeTextEdit->getValue (), style));
-				actionOperator->performFontChange (selectedFont.c_str (), font);
+				actionPerformer->performFontChange (selectedFont.c_str (), font);
 			}
 			break;
 		}

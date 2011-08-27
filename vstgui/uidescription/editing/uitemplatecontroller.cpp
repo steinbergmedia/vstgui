@@ -76,7 +76,7 @@ public:
 class UITemplatesDataSource : public UINavigationDataSource
 {
 public:
-	UITemplatesDataSource (IGenericStringListDataBrowserSourceSelectionChanged* delegate, UIDescription* description);
+	UITemplatesDataSource (IGenericStringListDataBrowserSourceSelectionChanged* delegate, UIDescription* description, const std::string* templateName);
 	
 	CMouseEventResult dbOnMouseDown (const CPoint& where, const CButtonState& buttons, int32_t row, int32_t column, CDataBrowser* browser);
 	void dbCellTextChanged (int32_t row, int32_t column, UTF8StringPtr newText, CDataBrowser* browser);
@@ -84,6 +84,7 @@ public:
 	void dbAttached (CDataBrowser* browser);
 protected:
 	SharedPointer<UIDescription> description;
+	std::string firstSelectedTemplateName;
 };
 
 //----------------------------------------------------------------------------------------------------
@@ -212,6 +213,15 @@ CMessageResult UITemplateController::notify (CBaseObject* sender, IdStringPtr me
 		}
 		return kMessageNotified;
 	}
+	else if (message == UIDescription::kMessageBeforeSave)
+	{
+		UIAttributes* attr = editDescription->getCustomAttributes ("UITemplateController", true);
+		if (attr)
+		{
+			attr->setAttribute ("SelectedTemplate", selectedTemplateName ? selectedTemplateName->c_str () : "");
+		}
+		return kMessageNotified;
+	}
 	return kMessageUnknown;
 }
 
@@ -260,7 +270,9 @@ CView* UITemplateController::createView (const UIAttributes& attributes, IUIDesc
 			for (std::list<const std::string*>::const_iterator it = tmp.begin (); it != tmp.end (); it++)
 				templateNames.push_back ((*it)->c_str ());
 			
-			UITemplatesDataSource* dataSource = new UITemplatesDataSource (this, editDescription);
+			UIAttributes* attr = editDescription->getCustomAttributes ("UITemplateController", true);
+			const std::string* templateName = attr ? attr->getAttributeValue ("SelectedTemplate") : 0;
+			UITemplatesDataSource* dataSource = new UITemplatesDataSource (this, editDescription, templateName);
 			dataSource->setStringList (&templateNames);
 			UIEditController::setupDataSource (dataSource);
 			templateDataBrowser = new CDataBrowser (CRect (0, 0, 0, 0), 0, dataSource, CDataBrowser::kDrawRowLines|CScrollView::kHorizontalScrollbar | CScrollView::kVerticalScrollbar);
@@ -526,10 +538,12 @@ int32_t UIViewListDataSource::dbOnKeyDown (const VstKeyCode& key, CDataBrowser* 
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
-UITemplatesDataSource::UITemplatesDataSource (IGenericStringListDataBrowserSourceSelectionChanged* delegate, UIDescription* description)
+UITemplatesDataSource::UITemplatesDataSource (IGenericStringListDataBrowserSourceSelectionChanged* delegate, UIDescription* description, const std::string* templateName)
 : UINavigationDataSource (delegate)
 , description (description)
 {
+	if (templateName)
+		firstSelectedTemplateName = *templateName;
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -570,7 +584,25 @@ void UITemplatesDataSource::dbCellSetupTextEdit (int32_t row, int32_t column, CT
 void UITemplatesDataSource::dbAttached (CDataBrowser* browser)
 {
 	UINavigationDataSource::dbAttached (browser);
-	browser->setSelectedRow (0);
+	if (getStringList ())
+	{
+		if (firstSelectedTemplateName.empty ())
+		{
+			browser->setSelectedRow (0);
+		}
+		else
+		{
+			int32_t index = 0;
+			for (std::vector<std::string>::const_iterator it = getStringList ()->begin (); it != getStringList ()->end (); it++, index++)
+			{
+				if (getStringList()->at (index) == firstSelectedTemplateName)
+				{
+					browser->setSelectedRow (index);
+					break;
+				}
+			}
+		}
+	}
 }
 
 } // namespace

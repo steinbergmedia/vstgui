@@ -32,8 +32,8 @@
 // OF THE POSSIBILITY OF SUCH DAMAGE.
 //-----------------------------------------------------------------------------
 
-#ifndef __iactionoperation__
-#define __iactionoperation__
+#ifndef __iaction__
+#define __iaction__
 
 #include "../../lib/cview.h"
 
@@ -44,10 +44,10 @@
 namespace VSTGUI {
 
 //----------------------------------------------------------------------------------------------------
-class IActionOperation
+class IAction
 {
 public:
-	virtual ~IActionOperation () {}
+	virtual ~IAction () {}
 	
 	virtual UTF8StringPtr getName () = 0;
 	virtual void perform () = 0;
@@ -55,11 +55,11 @@ public:
 };
 
 //----------------------------------------------------------------------------------------------------
-class IActionOperator
+class IActionPerformer
 {
 public:
-	virtual ~IActionOperator () {}
-	virtual void performAction (IActionOperation* action) = 0;
+	virtual ~IActionPerformer () {}
+	virtual void performAction (IAction* action) = 0;
 
 	virtual void performColorChange (UTF8StringPtr colorName, const CColor& newColor, bool remove = false) = 0;
 	virtual void performTagChange (UTF8StringPtr tagName, int32_t tag, bool remove = false) = 0;
@@ -79,4 +79,4 @@ public:
 
 #endif // VSTGUI_LIVE_EDITING
 
-#endif // __iactionoperation__
+#endif // __iaction__

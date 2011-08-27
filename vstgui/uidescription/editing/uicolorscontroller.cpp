@@ -14,7 +14,7 @@ namespace VSTGUI {
 class UIColorsDataSource : public UIBaseDataSource, public IColorChooserDelegate
 {
 public:
-	UIColorsDataSource (UIDescription* description, IActionOperator* actionOperator);
+	UIColorsDataSource (UIDescription* description, IActionPerformer* actionPerformer);
 	
 	void setColorChooser (CColorChooser* chooser) { colorChooser = chooser; }
 protected:
@@ -33,8 +33,8 @@ protected:
 };
 
 //----------------------------------------------------------------------------------------------------
-UIColorsDataSource::UIColorsDataSource (UIDescription* description, IActionOperator* actionOperator)
-: UIBaseDataSource (description, actionOperator, UIDescription::kMessageColorChanged)
+UIColorsDataSource::UIColorsDataSource (UIDescription* description, IActionPerformer* actionPerformer)
+: UIBaseDataSource (description, actionPerformer, UIDescription::kMessageColorChanged)
 {
 }
 
@@ -47,14 +47,14 @@ void UIColorsDataSource::getNames (std::list<const std::string*>& names)
 //----------------------------------------------------------------------------------------------------
 bool UIColorsDataSource::addItem (UTF8StringPtr name)
 {
-	actionOperator->performColorChange (name, kWhiteCColor);
+	actionPerformer->performColorChange (name, kWhiteCColor);
 	return true;
 }
 
 //----------------------------------------------------------------------------------------------------
 bool UIColorsDataSource::removeItem (UTF8StringPtr name)
 {
-	actionOperator->performColorChange (name, kWhiteCColor, true);
+	actionPerformer->performColorChange (name, kWhiteCColor, true);
 	return true;
 }
 
@@ -78,7 +78,7 @@ void UIColorsDataSource::colorChanged (CColorChooser* chooser, const CColor& col
 	int32_t selectedRow = dataBrowser->getSelectedRow ();
 	if (selectedRow != CDataBrowser::kNoSelection)
 	{
-		actionOperator->performColorChange (names.at (selectedRow).c_str (), color);
+		actionPerformer->performColorChange (names.at (selectedRow).c_str (), color);
 		dataBrowser->setSelectedRow (selectedRow);
 	}
 }
@@ -100,20 +100,20 @@ void UIColorsDataSource::dbDrawCell (CDrawContext* context, const CRect& size, i
 //----------------------------------------------------------------------------------------------------
 bool UIColorsDataSource::performNameChange (UTF8StringPtr oldName, UTF8StringPtr newName)
 {
-	actionOperator->performColorNameChange (oldName, newName);
+	actionPerformer->performColorNameChange (oldName, newName);
 	return true;
 }
 
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
-UIColorsController::UIColorsController (IController* baseController, UIDescription* description, IActionOperator* actionOperator)
+UIColorsController::UIColorsController (IController* baseController, UIDescription* description, IActionPerformer* actionPerformer)
 : DelegationController (baseController)
 , editDescription (description)
-, actionOperator (actionOperator)
+, actionPerformer (actionPerformer)
 , dataSource (0)
 {
-	dataSource = new UIColorsDataSource (editDescription, actionOperator);
+	dataSource = new UIColorsDataSource (editDescription, actionPerformer);
 	UIEditController::setupDataSource (dataSource);
 }
 

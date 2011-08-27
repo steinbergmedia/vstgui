@@ -37,6 +37,7 @@
 #include "uidescription/uidescription.cpp"
 #include "uidescription/uiviewcreator.cpp"
 #include "uidescription/uiviewfactory.cpp"
+#include "uidescription/uiviewswitchcontainer.cpp"
 #include "uidescription/cstream.cpp"
 
 #include "uidescription/editing/uiactions.cpp"

@@ -845,23 +845,7 @@
 					>
 				</File>
 				<File
-					RelativePath="..\..\uidescription\editingcolordefs.h"
-					>
-				</File>
-				<File
 					RelativePath="..\..\uidescription\icontroller.h"
-					>
-				</File>
-				<File
-					RelativePath="..\..\uidescription\platformsupport.h"
-					>
-				</File>
-				<File
-					RelativePath="..\..\uidescription\uicolorchooserpanel.cpp"
-					>
-				</File>
-				<File
-					RelativePath="..\..\uidescription\uicolorchooserpanel.h"
 					>
 				</File>
 				<File
@@ -870,38 +854,6 @@
 				</File>
 				<File
 					RelativePath="..\..\uidescription\uidescription.h"
-					>
-				</File>
-				<File
-					RelativePath="..\..\uidescription\uidialog.cpp"
-					>
-				</File>
-				<File
-					RelativePath="..\..\uidescription\uidialog.h"
-					>
-				</File>
-				<File
-					RelativePath="..\..\uidescription\uieditframe.cpp"
-					>
-				</File>
-				<File
-					RelativePath="..\..\uidescription\uieditframe.h"
-					>
-				</File>
-				<File
-					RelativePath="..\..\uidescription\uifontchooserpanel.cpp"
-					>
-				</File>
-				<File
-					RelativePath="..\..\uidescription\uifontchooserpanel.h"
-					>
-				</File>
-				<File
-					RelativePath="..\..\uidescription\uipanelbase.cpp"
-					>
-				</File>
-				<File
-					RelativePath="..\..\uidescription\uipanelbase.h"
 					>
 				</File>
 				<File
@@ -921,31 +873,11 @@
 					>
 				</File>
 				<File
-					RelativePath="..\..\uidescription\uiviewhierarchybrowser.cpp"
-					>
-				</File>
-				<File
-					RelativePath="..\..\uidescription\uiviewhierarchybrowser.h"
-					>
-				</File>
-				<File
-					RelativePath="..\..\uidescription\uiviewinspector.cpp"
-					>
-				</File>
-				<File
-					RelativePath="..\..\uidescription\uiviewinspector.h"
-					>
-				</File>
-				<File
 					RelativePath="..\..\uidescription\uiviewswitchcontainer.cpp"
 					>
 				</File>
 				<File
 					RelativePath="..\..\uidescription\uiviewswitchcontainer.h"
-					>
-				</File>
-				<File
-					RelativePath="..\..\uidescription\winplatformsupport.cpp"
 					>
 				</File>
 				<File
@@ -1045,6 +977,14 @@
 					</File>
 					<File
 						RelativePath="..\..\uidescription\editing\uieditview.h"
+						>
+					</File>
+					<File
+						RelativePath="..\..\uidescription\editing\uifocussettingscontroller.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\uidescription\editing\uifocussettingscontroller.h"
 						>
 					</File>
 					<File

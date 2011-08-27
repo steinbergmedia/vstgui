@@ -135,7 +135,7 @@ CMessageResult UIEditMenuController::notify (CBaseObject* sender, IdStringPtr me
 				item->setEnabled (enable);
 				return kMessageNotified;
 			}
-			else if (strcmp (item->getCommandName (), "Add Template") == 0)
+			else if (strcmp (item->getCommandName (), "Add New Template") == 0)
 			{
 				std::list<const std::string*> containerViewNames;
 				UIViewFactory* factory = dynamic_cast<UIViewFactory*> (description->getViewFactory ());
@@ -148,7 +148,7 @@ CMessageResult UIEditMenuController::notify (CBaseObject* sender, IdStringPtr me
 				item->setSubmenu (submenu);
 				return kMessageNotified;
 			}
-			else if (strcmp (item->getCommandName (), "Remove Template") == 0)
+			else if (strcmp (item->getCommandName (), "Delete Template") == 0)
 			{
 				item->setSubmenu (0);
 				std::list<const std::string*> templateNames;
@@ -268,19 +268,19 @@ CMessageResult UIEditMenuController::notify (CBaseObject* sender, IdStringPtr me
 			}
 			else if (strcmp (item->getCommandName (), "Delete") == 0)
 			{
-				IActionOperation* action = new DeleteOperation (selection);
+				IAction* action = new DeleteOperation (selection);
 				undoManager->pushAndPerform (action);
 				return kMessageNotified;
 			}
 			else if (strcmp (item->getCommandName (), "Unembed Views") == 0)
 			{
-				IActionOperation* action = new UnembedViewOperation (selection, dynamic_cast<UIViewFactory*> (description->getViewFactory ()));
+				IAction* action = new UnembedViewOperation (selection, dynamic_cast<UIViewFactory*> (description->getViewFactory ()));
 				undoManager->pushAndPerform (action);
 				return kMessageNotified;
 			}
 			else if (strcmp (item->getCommandName (), "Size To Fit") == 0)
 			{
-				IActionOperation* action = new SizeToFitOperation (selection);
+				IAction* action = new SizeToFitOperation (selection);
 				undoManager->pushAndPerform (action);
 				return kMessageNotified;
 			}
@@ -324,14 +324,14 @@ CMessageResult UIEditMenuController::notify (CBaseObject* sender, IdStringPtr me
 			CViewContainer* newContainer = dynamic_cast<CViewContainer*> (viewFactory->createView (viewAttr, description));
 			if (newContainer)
 			{
-				IActionOperation* action = new EmbedViewOperation (selection, newContainer);
+				IAction* action = new EmbedViewOperation (selection, newContainer);
 				undoManager->pushAndPerform (action);	
 			}
 			return kMessageNotified;
 		}
 		else if (strcmp (item->getCommandCategory (), "Transform View Type") == 0)
 		{
-			IActionOperation* action = new TransformViewTypeOperation (selection, item->getCommandName (), description, dynamic_cast<UIViewFactory*> (description->getViewFactory ()));
+			IAction* action = new TransformViewTypeOperation (selection, item->getCommandName (), description, dynamic_cast<UIViewFactory*> (description->getViewFactory ()));
 			undoManager->pushAndPerform (action);
 			return kMessageNotified;
 		}

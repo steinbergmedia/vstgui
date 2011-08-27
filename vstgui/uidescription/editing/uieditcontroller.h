@@ -6,7 +6,7 @@
 #if VSTGUI_LIVE_EDITING
 
 #include "../uiviewfactory.h"
-#include "iactionoperation.h"
+#include "iaction.h"
 #include "../../lib/csplitview.h"
 #include "../../lib/cframe.h"
 
@@ -20,7 +20,7 @@ class UIGridController;
 class GenericStringListDataBrowserSource;
 
 //----------------------------------------------------------------------------------------------------
-class UIEditController : public CBaseObject, public IController, public ISplitViewController, public ISplitViewSeparatorDrawer, public IActionOperator, public IKeyboardHook
+class UIEditController : public CBaseObject, public IController, public ISplitViewController, public ISplitViewSeparatorDrawer, public IActionPerformer, public IKeyboardHook
 {
 public:
 	UIEditController (UIDescription* description);
@@ -58,8 +58,8 @@ protected:
 	// ISplitViewSeparatorDrawer
 	virtual void drawSplitViewSeparator (CDrawContext* context, const CRect& size, int32_t flags, int32_t index, CSplitView* splitView);
 
-	// IActionOperator
-	virtual void performAction (IActionOperation* action);
+	// IActionPerformer
+	virtual void performAction (IAction* action);
 	virtual void performColorChange (UTF8StringPtr colorName, const CColor& newColor, bool remove = false);
 	virtual void performTagChange (UTF8StringPtr tagName, int32_t tag, bool remove = false);
 	virtual void performBitmapChange (UTF8StringPtr bitmapName, UTF8StringPtr bitmapPath, bool remove = false);
