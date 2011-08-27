@@ -1,7 +1,11 @@
 #include "uieditmenucontroller.h"
+
+#if VSTGUI_LIVE_EDITING
+
 #include "uiactions.h"
 #include "uieditview.h"
 #include "../uiviewfactory.h"
+#include "../../lib/controls/coptionmenu.h"
 
 namespace VSTGUI {
 
@@ -449,3 +453,5 @@ void UIEditMenuController::valueChanged (CControl* control)
 }
 
 } // namespace
+
+#endif // VSTGUI_LIVE_EDITING

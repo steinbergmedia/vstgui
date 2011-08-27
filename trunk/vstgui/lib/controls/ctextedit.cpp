@@ -122,7 +122,18 @@ void CTextEdit::setText (UTF8StringPtr txt)
 	{
 		float val = getValue ();
 		if (textToValue (txt, val, textToValueUserData))
+		{
 			CTextLabel::setValue (val);
+			if (valueToString)
+			{
+				char string[256] = {0};
+				valueToString (getValue (), string, valueToStringUserData);
+				CTextLabel::setText (string);
+				if (platformControl)
+					platformControl->setText (getText ());
+				return;
+			}
+		}
 	}
 	CTextLabel::setText (txt);
 	if (platformControl)

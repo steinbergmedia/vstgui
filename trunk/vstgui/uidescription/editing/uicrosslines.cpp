@@ -1,5 +1,9 @@
 #include "uicrosslines.h"
+
+#if VSTGUI_LIVE_EDITING
+
 #include "../../lib/cview.h"
+#include "../../lib/cdrawcontext.h"
 #include "uiselection.h"
 
 namespace VSTGUI {
@@ -97,3 +101,5 @@ void UICrossLines::draw (CDrawContext* pContext)
 }
 
 }
+
+#endif // VSTGUI_LIVE_EDITING

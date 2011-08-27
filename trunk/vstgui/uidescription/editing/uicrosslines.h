@@ -3,6 +3,11 @@
 
 #include "../../lib/vstguibase.h"
 
+#if VSTGUI_LIVE_EDITING
+
+#include "../../lib/crect.h"
+#include "../../lib/ccolor.h"
+
 namespace VSTGUI {
 class CView;
 class UISelection;
@@ -39,5 +44,7 @@ protected:
 };
 
 } // namespace
+
+#endif // VSTGUI_LIVE_EDITING
 
 #endif // __uicrosslines__

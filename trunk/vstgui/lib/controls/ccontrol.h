@@ -114,7 +114,8 @@ enum CControlEnum
 	kNoTextStyle		= 1 << 11,
 	kNoDrawStyle		= 1 << 12,
 	kDoubleClickStyle	= 1 << 13,
-	kNoFrame			= 1 << 14
+	kNoFrame			= 1 << 14,
+	kRoundRectStyle		= 1 << 15
 };
 
 //-----------------------------------------------------------------------------

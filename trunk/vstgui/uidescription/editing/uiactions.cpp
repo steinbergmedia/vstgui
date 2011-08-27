@@ -33,6 +33,9 @@
 //-----------------------------------------------------------------------------
 
 #include "uiactions.h"
+
+#if VSTGUI_LIVE_EDITING
+
 #include "uieditview.h"
 #include "../uiviewfactory.h"
 #include "../uidescription.h"
@@ -149,6 +152,7 @@ UTF8StringPtr UnembedViewOperation::getName ()
 //----------------------------------------------------------------------------------------------------
 void UnembedViewOperation::perform ()
 {
+	IDependency::DeferChanges dc (selection);
 	selection->remove (containerView);
 	CRect containerViewSize = containerView->getViewSize ();
 	const_reverse_iterator it = rbegin ();
@@ -265,6 +269,7 @@ void EmbedViewOperation::perform ()
 	parent->addView (newContainer);
 	newContainer->remember ();
 	selection->changed (UISelection::kMsgSelectionViewChanged);
+	selection->changed (UISelection::kMsgSelectionChanged);
 }
 
 //-----------------------------------------------------------------------------
@@ -285,6 +290,7 @@ void EmbedViewOperation::undo ()
 	}
 	parent->removeView (newContainer);
 	selection->changed (UISelection::kMsgSelectionViewChanged);
+	selection->changed (UISelection::kMsgSelectionChanged);
 }
 
 //-----------------------------------------------------------------------------
@@ -1069,4 +1075,55 @@ void FontNameChangeAction::undo ()
 		description->changeFontName (newName.c_str(), oldName.c_str());
 }
 
+//----------------------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------
+HierarchyMoveViewOperation::HierarchyMoveViewOperation (CView* view, UISelection* selection, bool up)
+: view (view)
+, parent (0)
+, selection (selection)
+, up (up)
+{
+	parent = dynamic_cast<CViewContainer*> (view->getParentView ());
+}
+
+//----------------------------------------------------------------------------------------------------
+HierarchyMoveViewOperation::~HierarchyMoveViewOperation ()
+{
+}
+
+//----------------------------------------------------------------------------------------------------
+UTF8StringPtr HierarchyMoveViewOperation::getName ()
+{
+	return "change view hierarchy";
+}
+
+//----------------------------------------------------------------------------------------------------
+void HierarchyMoveViewOperation::perform ()
+{
+	if (!parent)
+		return;
+	int32_t currentIndex = 0;
+	ViewIterator it (parent);
+	while (*it && *it != view)
+	{
+		it++;
+		currentIndex++;
+	}
+	parent->changeViewZOrder (view, up ? currentIndex - 1 : currentIndex + 1);
+	if (selection)
+		selection->changed (UISelection::kMsgSelectionChanged);
+	parent->invalid ();
+}
+
+//----------------------------------------------------------------------------------------------------
+void HierarchyMoveViewOperation::undo ()
+{
+	up = !up;
+	perform ();
+	up = !up;
+}
+
 } // namespace
+
+#endif // VSTGUI_LIVE_EDITING

@@ -779,6 +779,24 @@ void CTextButton::setStyle (Style _style)
 }
 
 //------------------------------------------------------------------------
+bool CTextButton::sizeToFit ()
+{
+	if (title.empty ())
+		return false;
+	IFontPainter* painter = font ? font->getFontPainter () : 0;
+	if (painter)
+	{
+		CRect fitSize (getViewSize ());
+		fitSize.right = fitSize.left + (roundRadius + 1.) * 4.;
+		fitSize.right += painter->getStringWidth (0, title.c_str (), true);
+		setViewSize (fitSize);
+		setMouseableArea (fitSize);
+		return true;
+	}
+	return false;
+}
+
+//------------------------------------------------------------------------
 void CTextButton::draw (CDrawContext* context)
 {
 	bool highlight = value > 0.5 ? true : false;

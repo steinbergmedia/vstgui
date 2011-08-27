@@ -159,6 +159,37 @@ bool Parser::parse (IContentProvider* provider, IHandler* _handler)
 				#if DEBUG
 				XML_Size currentLineNumber = XML_GetCurrentLineNumber (PARSER);
 				DebugPrint ("XML Parser Error on line: %d\n", currentLineNumber);
+				DebugPrint ("%s\n", XML_ErrorString (XML_GetErrorCode (PARSER)));
+				int offset, size;
+				const char* inputContext = XML_GetInputContext (PARSER, &offset, &size);
+				if (inputContext)
+				{
+					int pos = offset;
+					while (offset > 0 && pos - offset < 20)
+					{
+						if (inputContext[offset] == '\n')
+						{
+							offset++;
+							break;
+						}
+						offset--;
+					}
+					for (int i = offset; i < size && i - offset < 40; i++)
+					{
+						if (inputContext[i] == '\n')
+							break;
+						if (inputContext[i] == '\t')
+							DebugPrint (" ");
+						else
+							DebugPrint ("%c", inputContext[i]);
+					}
+					DebugPrint ("\n");
+					for (int i = offset; i < pos; i++)
+					{
+						DebugPrint (" ");
+					}
+					DebugPrint ("^\n");
+				}
 				#endif
 				handler = 0;
 				return false;

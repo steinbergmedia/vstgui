@@ -10,6 +10,10 @@
 		F40329C413FE3AA800466973 /* uigridcontroller.h in Headers */ = {isa = PBXBuildFile; fileRef = F40329C313FE3AA800466973 /* uigridcontroller.h */; };
 		F40329C613FE3AB100466973 /* uigridcontroller.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F40329C513FE3AB100466973 /* uigridcontroller.cpp */; };
 		F40329C813FE499D00466973 /* doc.h in Headers */ = {isa = PBXBuildFile; fileRef = F40329C713FE499D00466973 /* doc.h */; };
+		F406E37F140426A800F550B7 /* uidialogcontroller.h in Headers */ = {isa = PBXBuildFile; fileRef = F406E37E140426A700F550B7 /* uidialogcontroller.h */; };
+		F406E381140426B100F550B7 /* uidialogcontroller.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F406E380140426B100F550B7 /* uidialogcontroller.cpp */; };
+		F41DA9321406860300EDAB4B /* uifocussettingscontroller.h in Headers */ = {isa = PBXBuildFile; fileRef = F41DA9311406860300EDAB4B /* uifocussettingscontroller.h */; };
+		F41DA9341406860B00EDAB4B /* uifocussettingscontroller.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F41DA9331406860B00EDAB4B /* uifocussettingscontroller.cpp */; };
 		F42E78C81334AB7900518C17 /* idependency.h in Headers */ = {isa = PBXBuildFile; fileRef = F42E78C71334AB7900518C17 /* idependency.h */; };
 		F452950713A211E6006EEF82 /* cocoaopenglview.h in Headers */ = {isa = PBXBuildFile; fileRef = F452950513A211E6006EEF82 /* cocoaopenglview.h */; };
 		F452950813A211E6006EEF82 /* cocoaopenglview.mm in Sources */ = {isa = PBXBuildFile; fileRef = F452950613A211E6006EEF82 /* cocoaopenglview.mm */; };
@@ -161,6 +165,8 @@
 		F4CA76C813F27E6200BB1842 /* uitemplatecontroller.h in Headers */ = {isa = PBXBuildFile; fileRef = F4CA76C713F27E6100BB1842 /* uitemplatecontroller.h */; };
 		F4CA76CA13F27E6700BB1842 /* uitemplatecontroller.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4CA76C913F27E6600BB1842 /* uitemplatecontroller.cpp */; };
 		F4CF26DE13EEA65D00C64EB7 /* icontroller.h in Headers */ = {isa = PBXBuildFile; fileRef = F4CF26DD13EEA65D00C64EB7 /* icontroller.h */; };
+		F4D23BB21405466200A5F888 /* uitemplatesettingscontroller.h in Headers */ = {isa = PBXBuildFile; fileRef = F4D23BB11405466200A5F888 /* uitemplatesettingscontroller.h */; };
+		F4D23BB41405466900A5F888 /* uitemplatesettingscontroller.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4D23BB31405466900A5F888 /* uitemplatesettingscontroller.cpp */; };
 		F4E3903A13080ECC00615042 /* cstream.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4E3901913080ECC00615042 /* cstream.cpp */; };
 		F4E3903B13080ECC00615042 /* cstream.h in Headers */ = {isa = PBXBuildFile; fileRef = F4E3901A13080ECC00615042 /* cstream.h */; };
 		F4E3903C13080ECC00615042 /* doc.h in Headers */ = {isa = PBXBuildFile; fileRef = F4E3901B13080ECC00615042 /* doc.h */; };
@@ -210,6 +216,10 @@
 		F40329C313FE3AA800466973 /* uigridcontroller.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = uigridcontroller.h; sourceTree = "<group>"; };
 		F40329C513FE3AB100466973 /* uigridcontroller.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = uigridcontroller.cpp; sourceTree = "<group>"; };
 		F40329C713FE499D00466973 /* doc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = doc.h; sourceTree = "<group>"; };
+		F406E37E140426A700F550B7 /* uidialogcontroller.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = uidialogcontroller.h; sourceTree = "<group>"; };
+		F406E380140426B100F550B7 /* uidialogcontroller.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = uidialogcontroller.cpp; sourceTree = "<group>"; };
+		F41DA9311406860300EDAB4B /* uifocussettingscontroller.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = uifocussettingscontroller.h; sourceTree = "<group>"; };
+		F41DA9331406860B00EDAB4B /* uifocussettingscontroller.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = uifocussettingscontroller.cpp; sourceTree = "<group>"; };
 		F42E78C71334AB7900518C17 /* idependency.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = idependency.h; sourceTree = "<group>"; };
 		F452950513A211E6006EEF82 /* cocoaopenglview.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = cocoaopenglview.h; sourceTree = "<group>"; };
 		F452950613A211E6006EEF82 /* cocoaopenglview.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = cocoaopenglview.mm; sourceTree = "<group>"; };
@@ -362,6 +372,8 @@
 		F4CA76C713F27E6100BB1842 /* uitemplatecontroller.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = uitemplatecontroller.h; sourceTree = "<group>"; };
 		F4CA76C913F27E6600BB1842 /* uitemplatecontroller.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = uitemplatecontroller.cpp; sourceTree = "<group>"; };
 		F4CF26DD13EEA65D00C64EB7 /* icontroller.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = icontroller.h; sourceTree = "<group>"; };
+		F4D23BB11405466200A5F888 /* uitemplatesettingscontroller.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = uitemplatesettingscontroller.h; sourceTree = "<group>"; };
+		F4D23BB31405466900A5F888 /* uitemplatesettingscontroller.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = uitemplatesettingscontroller.cpp; sourceTree = "<group>"; };
 		F4E3901913080ECC00615042 /* cstream.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = cstream.cpp; sourceTree = "<group>"; };
 		F4E3901A13080ECC00615042 /* cstream.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = cstream.h; sourceTree = "<group>"; };
 		F4E3901B13080ECC00615042 /* doc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = doc.h; sourceTree = "<group>"; };
@@ -437,12 +449,16 @@
 				F485F11613F97FF70001A913 /* uicolorscontroller.h */,
 				F4CA76BD13F1A1F700BB1842 /* uicrosslines.cpp */,
 				F4CA76BB13F1A1EF00BB1842 /* uicrosslines.h */,
+				F406E380140426B100F550B7 /* uidialogcontroller.cpp */,
+				F406E37E140426A700F550B7 /* uidialogcontroller.h */,
 				F4CA76C513F27A4900BB1842 /* uieditcontroller.cpp */,
 				F4CA76C313F27A4400BB1842 /* uieditcontroller.h */,
 				F48BCB4113F545350010DCC1 /* uieditmenucontroller.cpp */,
 				F48BCB3F13F545290010DCC1 /* uieditmenucontroller.h */,
 				F453B22813F19BC30067C1C2 /* uieditview.cpp */,
 				F453B22613F19BBC0067C1C2 /* uieditview.h */,
+				F41DA9331406860B00EDAB4B /* uifocussettingscontroller.cpp */,
+				F41DA9311406860300EDAB4B /* uifocussettingscontroller.h */,
 				F4A63DE714023EB300023102 /* uifontscontroller.cpp */,
 				F4A63DE514023EAD00023102 /* uifontscontroller.h */,
 				F4CA76BF13F1A5C300BB1842 /* uigrid.h */,
@@ -456,6 +472,8 @@
 				F485F11213F8F76C0001A913 /* uitagscontroller.h */,
 				F4CA76C913F27E6600BB1842 /* uitemplatecontroller.cpp */,
 				F4CA76C713F27E6100BB1842 /* uitemplatecontroller.h */,
+				F4D23BB31405466900A5F888 /* uitemplatesettingscontroller.cpp */,
+				F4D23BB11405466200A5F888 /* uitemplatesettingscontroller.h */,
 				F453B21E13F123700067C1C2 /* uiundomanager.cpp */,
 				F453B21C13F123550067C1C2 /* uiundomanager.h */,
 				F48BCB4513F569880010DCC1 /* uiviewcreatecontroller.cpp */,
@@ -824,6 +842,9 @@
 				F40329C413FE3AA800466973 /* uigridcontroller.h in Headers */,
 				F40329C813FE499D00466973 /* doc.h in Headers */,
 				F4A63DE614023EAE00023102 /* uifontscontroller.h in Headers */,
+				F406E37F140426A800F550B7 /* uidialogcontroller.h in Headers */,
+				F4D23BB21405466200A5F888 /* uitemplatesettingscontroller.h in Headers */,
+				F41DA9321406860300EDAB4B /* uifocussettingscontroller.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -968,6 +989,9 @@
 				F4FB92B113FBEC8F007D72DE /* uibitmapscontroller.cpp in Sources */,
 				F40329C613FE3AB100466973 /* uigridcontroller.cpp in Sources */,
 				F4A63DE814023EB400023102 /* uifontscontroller.cpp in Sources */,
+				F406E381140426B100F550B7 /* uidialogcontroller.cpp in Sources */,
+				F4D23BB41405466900A5F888 /* uitemplatesettingscontroller.cpp in Sources */,
+				F41DA9341406860B00EDAB4B /* uifocussettingscontroller.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

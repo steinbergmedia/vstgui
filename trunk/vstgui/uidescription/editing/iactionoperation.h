@@ -37,6 +37,10 @@
 
 #include "../../lib/cview.h"
 
+#if VSTGUI_LIVE_EDITING
+#include "../../lib/ccolor.h"
+#include "../../lib/cfont.h"
+
 namespace VSTGUI {
 
 //----------------------------------------------------------------------------------------------------
@@ -72,5 +76,7 @@ public:
 };
 
 } // namespace
+
+#endif // VSTGUI_LIVE_EDITING
 
 #endif // __iactionoperation__

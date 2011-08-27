@@ -33,6 +33,9 @@
 //-----------------------------------------------------------------------------
 
 #include "uiundomanager.h"
+
+#if VSTGUI_LIVE_EDITING
+
 #include "iactionoperation.h"
 #include <string>
 
@@ -223,5 +226,6 @@ void UIUndoManager::endGroupAction ()
 	}
 }
 
-
 } // namespace
+
+#endif // VSTGUI_LIVE_EDITING

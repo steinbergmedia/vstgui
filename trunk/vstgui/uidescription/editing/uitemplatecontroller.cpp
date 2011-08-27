@@ -1,11 +1,21 @@
 #include "uitemplatecontroller.h"
-#include "uieditcontroller.h"
-#include "uiviewfactory.h"
-#include "uiselection.h"
 
+#if VSTGUI_LIVE_EDITING
+
+#include "../uiviewfactory.h"
+#include "../../lib/controls/ctextedit.h"
+#include "uieditcontroller.h"
+#include "uiselection.h"
+#include "uiundomanager.h"
+#include "uiactions.h"
+#include <assert.h>
 /*
 	TODO: view z index editing via row drag and drop
 */
+
+#ifdef verify
+	#undef verify
+#endif
 
 namespace VSTGUI {
 
@@ -71,6 +81,7 @@ public:
 	CMouseEventResult dbOnMouseDown (const CPoint& where, const CButtonState& buttons, int32_t row, int32_t column, CDataBrowser* browser);
 	void dbCellTextChanged (int32_t row, int32_t column, UTF8StringPtr newText, CDataBrowser* browser);
 	void dbCellSetupTextEdit (int32_t row, int32_t column, CTextEdit* textEditControl, CDataBrowser* browser);
+	void dbAttached (CDataBrowser* browser);
 protected:
 	SharedPointer<UIDescription> description;
 };
@@ -79,7 +90,7 @@ protected:
 class UIViewListDataSource : public UINavigationDataSource
 {
 public:
-	UIViewListDataSource (CViewContainer* view, UIViewFactory* viewFactory, UISelection* selection, IGenericStringListDataBrowserSourceSelectionChanged* delegate);
+	UIViewListDataSource (CViewContainer* view, UIViewFactory* viewFactory, UISelection* selection, UIUndoManager* undoManager ,IGenericStringListDataBrowserSourceSelectionChanged* delegate);
 	~UIViewListDataSource ();
 
 	CViewContainer* getView () const { return view; }
@@ -94,11 +105,13 @@ protected:
 	CCoord calculateSubViewWidth (CViewContainer* view);
 	void dbSelectionChanged (CDataBrowser* browser);
 	CMouseEventResult dbOnMouseDown (const CPoint& where, const CButtonState& buttons, int32_t row, int32_t column, CDataBrowser* browser);
+	int32_t dbOnKeyDown (const VstKeyCode& key, CDataBrowser* browser);
 
 	CViewContainer* view;
-	UIViewFactory* viewFactory;
+	SharedPointer<UIViewFactory> viewFactory;
 	UIViewListDataSource* next;
-	UISelection* selection;
+	SharedPointer<UISelection> selection;
+	SharedPointer<UIUndoManager> undoManager;
 	CView* selectedView;
 	std::vector<std::string> names;
 	std::vector<CView*> subviews;
@@ -181,11 +194,13 @@ CMessageResult UITemplateController::notify (CBaseObject* sender, IdStringPtr me
 		GenericStringListDataBrowserSource* dataSource = dynamic_cast<GenericStringListDataBrowserSource*>(templateDataBrowser->getDataSource ());
 		if (dataSource)
 		{
-			int32_t rowToSelect = -1;
+			int32_t rowToSelect = templateDataBrowser->getSelectedRow ();
 			int32_t index = 0;
 			templateNames.clear ();
+			dataSource->setStringList (&templateNames);
 			std::list<const std::string*> tmp;
 			editDescription->collectTemplateViewNames (tmp);
+			tmp.sort (UIEditController::std__stringCompare);
 			for (std::list<const std::string*>::const_iterator it = tmp.begin (); it != tmp.end (); it++, index++)
 			{
 				templateNames.push_back ((*it)->c_str ());
@@ -218,7 +233,7 @@ void UITemplateController::setTemplateView (CViewContainer* view)
 			if (parentView)
 			{
 				UIViewFactory* viewFactory = dynamic_cast<UIViewFactory*> (editDescription->getViewFactory ());
-				mainViewDataSource = new UIViewListDataSource (templateView, viewFactory, selection, this);
+				mainViewDataSource = new UIViewListDataSource (templateView, viewFactory, selection, undoManager, this);
 				UIEditController::setupDataSource (mainViewDataSource);
 				CRect r (templateDataBrowser->getViewSize ());
 				r.offset (r.getWidth (), 0);
@@ -241,6 +256,7 @@ CView* UITemplateController::createView (const UIAttributes& attributes, IUIDesc
 			assert (templateDataBrowser == 0);
 			std::list<const std::string*> tmp;
 			editDescription->collectTemplateViewNames (tmp);
+			tmp.sort (UIEditController::std__stringCompare);
 			for (std::list<const std::string*>::const_iterator it = tmp.begin (); it != tmp.end (); it++)
 				templateNames.push_back ((*it)->c_str ());
 			
@@ -258,8 +274,6 @@ CView* UITemplateController::createView (const UIAttributes& attributes, IUIDesc
 //----------------------------------------------------------------------------------------------------
 CView* UITemplateController::verifyView (CView* view, const UIAttributes& attributes, IUIDescription* description)
 {
-	if (view == templateDataBrowser)
-		templateDataBrowser->setSelectedRow (0);
 	return DelegationController::verifyView (view, attributes, description);
 }
 
@@ -272,12 +286,13 @@ IController* UITemplateController::createSubController (UTF8StringPtr name, IUID
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
-UIViewListDataSource::UIViewListDataSource (CViewContainer* view, UIViewFactory* viewFactory, UISelection* selection, IGenericStringListDataBrowserSourceSelectionChanged* delegate)
+UIViewListDataSource::UIViewListDataSource (CViewContainer* view, UIViewFactory* viewFactory, UISelection* selection, UIUndoManager* undoManager, IGenericStringListDataBrowserSourceSelectionChanged* delegate)
 : UINavigationDataSource (delegate)
 , view (view)
 , viewFactory (viewFactory)
 , next (0)
 , selection (selection)
+, undoManager (undoManager)
 , selectedView (0)
 , inUpdate (false)
 {
@@ -294,7 +309,7 @@ UIViewListDataSource::~UIViewListDataSource ()
 //----------------------------------------------------------------------------------------------------
 CView* UIViewListDataSource::getSubview (int32_t index)
 {
-	if (index < subviews.size ())
+	if (index >= 0 && index < (int32_t)subviews.size ())
 		return subviews[index];
 	return 0;
 }
@@ -373,7 +388,7 @@ void UIViewListDataSource::dbSelectionChanged (CDataBrowser* browser)
 	CViewContainer* container = dynamic_cast<CViewContainer*>(subview);
 	if (container)
 	{
-		UIViewListDataSource* dataSource = new UIViewListDataSource (container, viewFactory, selection, delegate);
+		UIViewListDataSource* dataSource = new UIViewListDataSource (container, viewFactory, selection, undoManager, delegate);
 		UIEditController::setupDataSource (dataSource);
 		CRect r (browser->getViewSize ());
 		r.offset (r.getWidth (), 0);
@@ -467,6 +482,50 @@ CMessageResult UIViewListDataSource::notify (CBaseObject* sender, IdStringPtr me
 }
 
 //----------------------------------------------------------------------------------------------------
+int32_t UIViewListDataSource::dbOnKeyDown (const VstKeyCode& key, CDataBrowser* browser)
+{
+	if (key.virt != 0)
+	{
+		int32_t row = browser->getSelectedRow ();
+		CView* subview = getSubview (row);
+		if (subview)
+		{
+			switch (key.virt)
+			{
+				case VKEY_RETURN:
+				{
+					selection->setExclusive (subview);
+					return 1;
+				}
+				case VKEY_UP:
+				{
+					if (key.modifier == MODIFIER_CONTROL && row > 0)
+					{
+						undoManager->pushAndPerform (new HierarchyMoveViewOperation (subview, selection, true));
+						//browser->setSelectedRow (row-1, true);
+						return 1;
+					}
+					break;
+				}
+				case VKEY_DOWN:
+				{
+					if (key.modifier == MODIFIER_CONTROL && row < view->getNbViews ())
+					{
+						undoManager->pushAndPerform (new HierarchyMoveViewOperation (subview, selection, false));
+						//browser->setSelectedRow (row+1, true);
+						return 1;
+					}
+					break;
+				}
+			}
+		}
+	}
+	return UINavigationDataSource::dbOnKeyDown (key, browser);
+}
+
+//----------------------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------
 UITemplatesDataSource::UITemplatesDataSource (IGenericStringListDataBrowserSourceSelectionChanged* delegate, UIDescription* description)
 : UINavigationDataSource (delegate)
 , description (description)
@@ -507,4 +566,13 @@ void UITemplatesDataSource::dbCellSetupTextEdit (int32_t row, int32_t column, CT
 	textEditControl->setHoriAlign (kLeftText);
 }
 
+//----------------------------------------------------------------------------------------------------
+void UITemplatesDataSource::dbAttached (CDataBrowser* browser)
+{
+	UINavigationDataSource::dbAttached (browser);
+	browser->setSelectedRow (0);
+}
+
 } // namespace
+
+#endif // VSTGUI_LIVE_EDITING

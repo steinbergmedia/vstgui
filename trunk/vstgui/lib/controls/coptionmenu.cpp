@@ -538,6 +538,8 @@ bool COptionMenu::popup ()
 	if (!getFrame ())
 		return popupResult;
 
+	CBaseObjectGuard objGuard (this);
+
 	beforePopup ();
 
 	inPopup = true;

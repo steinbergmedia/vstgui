@@ -1,4 +1,7 @@
 #include "uieditcontroller.h"
+
+#if VSTGUI_LIVE_EDITING
+
 #include "uieditview.h"
 #include "uiattributescontroller.h"
 #include "uibitmapscontroller.h"
@@ -13,7 +16,13 @@
 #include "uisearchtextfield.h"
 #include "uiactions.h"
 #include "uiselection.h"
+#include "uidialogcontroller.h"
+#include "uitemplatesettingscontroller.h"
+#include "uifocussettingscontroller.h"
+#include "../../lib/controls/coptionmenu.h"
+
 #include <sstream>
+#include <assert.h>
 
 /*
 
@@ -24,14 +33,39 @@ Ideas & Problems:
 		        - this may has the problem that embedded template views won't get updated on switching templates
 
 */
+
 namespace VSTGUI {
 
 //----------------------------------------------------------------------------------------------------
 UIDescription& UIEditController::getEditorDescription ()
 {
-	static CResourceDescription editorResourceDesc ("neweditor.uidesc");
-	static UIDescription editorDesc (editorResourceDesc);
-	return editorDesc;
+	static UIDescription* gUIDescription = 0;
+	static bool once = true;
+	if (once)
+	{
+	#if WINDOWS
+		const int8_t pathSeparator = '\\';
+	#else
+		const int8_t pathSeparator = '/';
+	#endif
+		std::string descPath (__FILE__);
+		size_t sepPos = descPath.find_last_of (pathSeparator);
+		if (sepPos != std::string::npos)
+		{
+			descPath.erase (sepPos+1);
+			descPath += "uidescriptioneditor.uidesc";
+			CFileStream stream;
+			if (stream.open (descPath.c_str (), CFileStream::kReadMode))
+			{
+				static Xml::InputStreamContentProvider xmlProvider (stream);
+				static UIDescription editorDesc (&xmlProvider);
+				if (editorDesc.parse ())
+					gUIDescription = &editorDesc;
+			}
+		}
+		once = false;
+	}
+	return *gUIDescription;
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -154,6 +188,7 @@ public:
 	void setViewSize (const CRect& rect, bool invalid = true);
 	void addValue (UTF8StringPtr name);
 	CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons);
+	int32_t onKeyDown (VstKeyCode& keyCode);
 	void draw (CDrawContext* pContext);
 protected:
 	virtual void setMax (float val) {}
@@ -168,24 +203,20 @@ protected:
 };
 
 //----------------------------------------------------------------------------------------------------
-enum {
-	kMenuFileTag = 100,
-	kMenuEditTag = 101,
-	
-	kUndoMenuItemTag = 1,
-	kRedoMenuItemTag,
-};
-
+//----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
 UIEditController::UIEditController (UIDescription* description)
 : editDescription (description)
 , selection (new UISelection ())
 , undoManager (new UIUndoManager ())
-, gridController (new UIGridController (this, description))
 , editView (0)
 , templateController (0)
+, originalKeyboardHook (0)
+, dirty (false)
 {
+	gridController = new UIGridController (this, description);
 	description->addDependency (this);
+	undoManager->addDependency (this);
 	menuController = new UIEditMenuController (this, selection, undoManager, editDescription);
 }
 
@@ -196,6 +227,7 @@ UIEditController::~UIEditController ()
 	{
 		templateController->removeDependency (this);
 	}
+	undoManager->removeDependency (this);
 	editDescription->removeDependency (this);
 }
 
@@ -215,8 +247,6 @@ CView* UIEditController::createEditView ()
 				view->setViewSize (r);
 				view->setMouseableArea (r);
 			}
-			CVSTGUITimer* timer = new CVSTGUITimer (this);
-			timer->start ();
 			return view;
 		}
 	}
@@ -282,14 +312,26 @@ CView* UIEditController::verifyView (CView* view, const UIAttributes& attributes
 	{
 		splitViews.push_back (splitView);
 	}
-	const std::string* name = attributes.getAttributeValue ("custom-view-name");
-	if (name)
+	CControl* control = dynamic_cast<CControl*>(view);
+	if (control)
 	{
-		if (*name == "enableEditingControl")
+		if (control->getTag() == 666)
 		{
-			enableEditingControl = dynamic_cast<CControl*>(view);
-			enableEditingControl->setValue (1.);
-			enableEditingControl->setListener (this);
+			notSavedControl = control;
+			notSavedControl->setAlphaValue (dirty ? 1.f : 0.f);
+		}
+		else
+		{
+			const std::string* name = attributes.getAttributeValue ("custom-view-name");
+			if (name)
+			{
+				if (*name == "enableEditingControl")
+				{
+					enableEditingControl = control;
+					enableEditingControl->setValue (1.);
+					enableEditingControl->setListener (this);
+				}
+			}
 		}
 	}
 	return view;
@@ -363,11 +405,15 @@ CMessageResult UIEditController::notify (CBaseObject* sender, IdStringPtr messag
 				if (editView->getEditView () && undoManager->canUndo () && !editTemplateName.empty ())
 				{
 					// TODO: do show a warning that the undoManager will be cleared ?
+					CViewContainer* container = dynamic_cast<CViewContainer*>(editView->getEditView());
+					if (container)
+						resetScrollViewOffsets (container);
 					editDescription->updateViewDescription (editTemplateName.c_str (), editView->getEditView ());
+					setDirty (true);
 				}
 				if (name)
 				{
-					CView* view = editDescription->createView (name->c_str (), 0);
+					CView* view = editDescription->createView (name->c_str (), editDescription->getController ());
 					if (view)
 					{
 						editView->setEditView (view);
@@ -387,15 +433,18 @@ CMessageResult UIEditController::notify (CBaseObject* sender, IdStringPtr messag
 		}
 		return kMessageNotified;
 	}
-	else if (message == CVSTGUITimer::kMsgTimer)
+	else if (message == UIEditView::kMsgAttached)
 	{
-		assert (templateController);
 		assert (editView);
-		assert (editView->getEditView ());
-		templateController->setTemplateView (reinterpret_cast<CViewContainer*>(editView->getEditView ()));
-		sender->forget ();
-		selection->changed  (UISelection::kMsgSelectionChanged);
+		originalKeyboardHook = editView->getFrame()->getKeyboardHook ();
 		editView->getFrame ()->setKeyboardHook (this);
+		return kMessageNotified;
+	}
+	else if (message == UIEditView::kMsgRemoved)
+	{
+		editView->getFrame ()->setKeyboardHook (originalKeyboardHook);
+		originalKeyboardHook = 0;
+		notify (0, UIDescription::kMessageBeforeSave);
 		return kMessageNotified;
 	}
 	else if (message == UIDescription::kMessageBeforeSave)
@@ -403,9 +452,15 @@ CMessageResult UIEditController::notify (CBaseObject* sender, IdStringPtr messag
 		if (editView && editView->getEditView ())
 		{
 			if (undoManager->canUndo () && !editTemplateName.empty ())
+			{
+				CViewContainer* container = dynamic_cast<CViewContainer*>(editView->getEditView());
+				if (container)
+					resetScrollViewOffsets (container);
 				editDescription->updateViewDescription (editTemplateName.c_str (), editView->getEditView ());
+			}
 			for (std::list<SharedPointer<CSplitView> >::const_iterator it = splitViews.begin (); it != splitViews.end (); it++)
 				(*it)->storeViewSizes ();
+
 			// find the view of this controller
 			CViewContainer* container = dynamic_cast<CViewContainer*> (editView->getParentView ());
 			while (container && container != container->getFrame ())
@@ -417,11 +472,76 @@ CMessageResult UIEditController::notify (CBaseObject* sender, IdStringPtr messag
 				}
 				container = dynamic_cast<CViewContainer*> (container->getParentView ());
 			}
+			setDirty (false);
 		}
+		return kMessageNotified;
+	}
+	else if (message == CCommandMenuItem::kMsgMenuItemValidate)
+	{
+		CCommandMenuItem* item = dynamic_cast<CCommandMenuItem*>(sender);
+		if (strcmp (item->getCommandCategory (), "Edit") == 0)
+		{
+			if (strcmp (item->getCommandName (), "Template Settings...") == 0)
+			{
+				item->setEnabled (editTemplateName.empty () ? false : true);
+				return kMessageNotified;
+			}
+		}
+	}
+	else if (message == CCommandMenuItem::kMsgMenuItemSelected)
+	{
+		CCommandMenuItem* item = dynamic_cast<CCommandMenuItem*>(sender);
+		if (strcmp (item->getCommandCategory (), "Edit") == 0)
+		{
+			if (strcmp (item->getCommandName (), "Template Settings...") == 0)
+			{
+				if (undoManager->canUndo () && !editTemplateName.empty ())
+				{
+					CViewContainer* container = dynamic_cast<CViewContainer*>(editView->getEditView());
+					if (container)
+						resetScrollViewOffsets (container);
+					editDescription->updateViewDescription (editTemplateName.c_str (), editView->getEditView ());
+				}
+				UIDialogController* dc = new UIDialogController (this, editView->getFrame ());
+				UITemplateSettingsController* tsController = new UITemplateSettingsController (editTemplateName, editDescription);
+				dc->run ("template.settings", "Template Settings", "OK", "Cancel", tsController, &getEditorDescription ());
+				return kMessageNotified;
+			}
+			else if (strcmp (item->getCommandName (), "Focus Drawing Settings...") == 0)
+			{
+				UIDialogController* dc = new UIDialogController (this, editView->getFrame ());
+				UIFocusSettingsController* fsController = new UIFocusSettingsController (editDescription);
+				dc->run ("focus.settings", "Focus Drawing Settings", "OK", "Cancel", fsController, &getEditorDescription ());
+				return kMessageNotified;
+			}
+		}
+	}
+	else if (message == UIUndoManager::kMsgChanged)
+	{
+		if (undoManager->canUndo ())
+			setDirty (true);
 		return kMessageNotified;
 	}
 	
 	return kMessageUnknown;
+}
+
+//----------------------------------------------------------------------------------------------------
+void UIEditController::resetScrollViewOffsets (CViewContainer* view)
+{
+	ViewIterator it (view);
+	while (*it)
+	{
+		CScrollView* scrollView = dynamic_cast<CScrollView*>(*it);
+		if (scrollView)
+		{
+			scrollView->resetScrollOffset ();
+		}
+		CViewContainer* container = dynamic_cast<CViewContainer*>(*it);
+		if (container)
+			resetScrollViewOffsets (container);
+		it++;
+	}
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -532,6 +652,20 @@ void UIEditController::drawSplitViewSeparator (CDrawContext* context, const CRec
 }
 
 //----------------------------------------------------------------------------------------------------
+void UIEditController::setDirty (bool state)
+{
+	if (dirty != state)
+	{
+		dirty = state;
+		if (notSavedControl)
+		{
+			notSavedControl->invalid ();
+			notSavedControl->addAnimation ("AlphaValueAnimation", new Animation::AlphaValueAnimation (dirty ? 1.f : 0.f), new Animation::LinearTimingFunction (400));
+		}
+	}
+}
+
+//----------------------------------------------------------------------------------------------------
 void UIEditController::performAction (IActionOperation* action)
 {
 	undoManager->pushAndPerform (action);
@@ -554,6 +688,7 @@ void UIEditController::performColorChange (UTF8StringPtr colorName, const CColor
 		action->perform ();
 		delete action;
 	}
+	setDirty (true);
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -686,7 +821,7 @@ void UIEditControllerTextSwitch::addValue (UTF8StringPtr name)
 	Value v;
 	v.name = name;
 	values.push_back (v);
-	CControl::setMax (values.size ());
+	CControl::setMax ((float)values.size ());
 	updateValues ();
 }
 
@@ -707,7 +842,7 @@ CMouseEventResult UIEditControllerTextSwitch::onMouseDown (CPoint& where, const 
 		{
 			if ((*it).rect.pointInside (where))
 			{
-				setValue (newValue);
+				setValue ((float)newValue);
 				valueChanged ();
 				invalid ();
 				break;
@@ -715,6 +850,44 @@ CMouseEventResult UIEditControllerTextSwitch::onMouseDown (CPoint& where, const 
 		}
 	}
 	return kMouseDownEventHandledButDontNeedMovedOrUpEvents;
+}
+
+//----------------------------------------------------------------------------------------------------
+int32_t UIEditControllerTextSwitch::onKeyDown (VstKeyCode& keyCode)
+{
+	if (keyCode.modifier == 0 && keyCode.character == 0)
+	{
+		switch (keyCode.virt)
+		{
+			case VKEY_LEFT:
+			{
+				if (getValue () > getMin ())
+				{
+					beginEdit ();
+					setValue (getValue () - 1.f);
+					valueChanged ();
+					endEdit ();
+					invalid ();
+					return 1;
+				}
+				break;
+			}
+			case VKEY_RIGHT:
+			{
+				if (getValue () < getMax () - 1.f)
+				{
+					beginEdit ();
+					setValue (getValue () + 1.f);
+					valueChanged ();
+					endEdit ();
+					invalid ();
+					return 1;
+				}
+				break;
+			}
+		}
+	}
+	return -1;
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -784,3 +957,5 @@ void UIEditControllerTextSwitch::updateValues ()
 }
 
 } // namespace
+
+#endif // VSTGUI_LIVE_EDITING

@@ -173,16 +173,34 @@ bool CFrame::open (void* systemWin)
 	if (!systemWin || isAttached ())
 		return false;
 
-//	viewFlags |= kIsAttached;
-	attached (this);
-
-	pParentView = 0;
-
 	platformFrame = IPlatformFrame::createPlatformFrame (this, getViewSize (), systemWin);
 	if (!platformFrame)
 		return false;
 
+	attached (this);
+
+	pParentView = 0;
+
 	return true;
+}
+
+//-----------------------------------------------------------------------------
+bool CFrame::attached (CView* parent)
+{
+	if (isAttached ())
+		return false;
+	assert (parent == this);
+	if (CView::attached (parent))
+	{
+		pParentView = 0;
+
+		FOREACHSUBVIEW
+			pV->attached (this);
+		ENDFOREACHSUBVIEW
+		
+		return true;
+	}
+	return false;
 }
 
 //-----------------------------------------------------------------------------
@@ -928,7 +946,29 @@ bool CFrame::advanceNextFocusView (CView* oldFocus, bool reverse)
 		CViewContainer* container = dynamic_cast<CViewContainer*> (pModalView);
 		if (container)
 		{
-			return container->advanceNextFocusView (oldFocus, reverse);
+			if (oldFocus == 0 || container->isChild (oldFocus, true) == false)
+				return container->advanceNextFocusView (0, reverse);
+			else
+			{
+				CViewContainer* parentView = reinterpret_cast<CViewContainer*> (oldFocus->getParentView ());
+				if (parentView)
+				{
+					CView* tempOldFocus = oldFocus;
+					while (parentView != container)
+					{
+						if (parentView->advanceNextFocusView (tempOldFocus, reverse))
+							return true;
+						else
+						{
+							tempOldFocus = parentView;
+							parentView = reinterpret_cast<CViewContainer*> (parentView->getParentView ());
+						}
+					}
+					if (container->advanceNextFocusView (tempOldFocus, reverse))
+						return true;
+					return container->advanceNextFocusView (0, reverse);
+				}
+			}
 		}
 		else if (oldFocus != pModalView)
 		{

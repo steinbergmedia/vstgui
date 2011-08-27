@@ -43,6 +43,7 @@
 #include "../lib/vstkeycode.h"
 #include "../lib/cfont.h"
 #include "../lib/cdrawcontext.h"
+#include "editing/uiactions.h"
 #include <typeinfo>
 
 namespace VSTGUI {
@@ -75,57 +76,6 @@ protected:
 	UIViewHierarchyBrowser* parent;
 	UIDescription* description;
 	IActionOperator* actionOperator;
-};
-
-//-----------------------------------------------------------------------------
-class UIHierarchyMoveViewOperation : public IActionOperation
-{
-public:
-	UIHierarchyMoveViewOperation (CView* view, bool up)
-	: view (view)
-	, parent (0)
-	, up (up)
-	{
-		view->remember ();
-		parent = dynamic_cast<CViewContainer*> (view->getParentView ());
-		if (parent)
-			parent->remember ();
-	}
-
-	~UIHierarchyMoveViewOperation ()
-	{
-		view->forget ();
-		if (parent)
-			parent->forget ();
-	}
-
-	UTF8StringPtr getName () { return "change view hierarchy"; }
-
-	void perform ()
-	{
-		if (!parent)
-			return;
-		int32_t currentIndex = 0;
-		ViewIterator it (parent);
-		while (*it && *it != view)
-		{
-			it++;
-			currentIndex++;
-		}
-		parent->changeViewZOrder (view, up ? currentIndex - 1 : currentIndex + 1);
-		view->invalid ();
-	}
-	
-	void undo ()
-	{
-		up = !up;
-		perform ();
-		up = !up;
-	}
-protected:
-	CView* view;
-	CViewContainer* parent;
-	bool up;
 };
 
 //-----------------------------------------------------------------------------
@@ -269,7 +219,7 @@ void UIViewHierarchyData::doMoveOperation (int32_t row, bool up, CDataBrowser* b
 		if (!(row == 0 && up) && !(row == dbGetNumRows (browser)-1 && !up))
 		{
 			if (actionOperator)
-				actionOperator->performAction (new UIHierarchyMoveViewOperation (parent->getCurrentView ()->getView (row), up));
+				actionOperator->performAction (new HierarchyMoveViewOperation (parent->getCurrentView ()->getView (row), 0, up));
 			browser->setSelectedRow (row + (up ? -1 : 1), true);
 		}
 	}

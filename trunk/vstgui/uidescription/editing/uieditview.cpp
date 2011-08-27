@@ -1,14 +1,23 @@
 #include "uieditview.h"
+
+#if VSTGUI_LIVE_EDITING
+
 #include "uiundomanager.h"
 #include "uiactions.h"
 #include "uicrosslines.h"
 #include "uigrid.h"
 #include "uiselection.h"
-//#include "../editingcolordefs.h"
 #include "../uidescription.h"
 #include "../uiviewfactory.h"
+#include "../../lib/cvstguitimer.h"
+#include "../../lib/cframe.h"
+#include "../../lib/cdropsource.h"
+#include "../../lib/coffscreencontext.h"
 
 namespace VSTGUI {
+
+IdStringPtr UIEditView::kMsgAttached = "UIEditView::kMsgAttached";
+IdStringPtr UIEditView::kMsgRemoved = "UIEditView::kMsgRemoved";
 
 //----------------------------------------------------------------------------------------------------
 UIEditView::UIEditView (const CRect& size, UIDescription* uidescription)
@@ -25,7 +34,6 @@ UIEditView::UIEditView (const CRect& size, UIDescription* uidescription)
 , editing (true)
 , grid (0)
 {
-	setWantsFocus (true);
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -859,11 +867,45 @@ void UIEditView::onDragMove (CDragContainer* drag, const CPoint& where)
 //-----------------------------------------------------------------------------
 void UIEditView::looseFocus ()
 {
+	if (editing == false)
+		CViewContainer::looseFocus ();
 }
 
 //-----------------------------------------------------------------------------
 void UIEditView::takeFocus ()
 {
+	if (editing == false)
+		CViewContainer::takeFocus ();
+}
+
+//-----------------------------------------------------------------------------
+bool UIEditView::attached (CView* parent)
+{
+	if (CViewContainer::attached (parent))
+	{
+		IController* controller = getViewController (this, true);
+		if (controller)
+		{
+			CBaseObject* obj = dynamic_cast<CBaseObject*>(controller);
+			if (obj)
+				obj->notify (this, kMsgAttached);
+		}
+		return true;
+	}
+	return false;
+}
+
+//-----------------------------------------------------------------------------
+bool UIEditView::removed (CView* parent)
+{
+	IController* controller = getViewController (this, true);
+	if (controller)
+	{
+		CBaseObject* obj = dynamic_cast<CBaseObject*>(controller);
+		if (obj)
+			obj->notify (this, kMsgRemoved);
+	}
+	return CViewContainer::removed (parent);
 }
 
 //-----------------------------------------------------------------------------
@@ -876,3 +918,5 @@ void UIEditView::setupColors (IUIDescription* description)
 }
 
 } // namespace
+
+#endif // VSTGUI_LIVE_EDITING

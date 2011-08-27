@@ -854,6 +854,14 @@ public:
 			else
 				style &= ~CScrollView::kOverlayScrollbars;
 		}
+		attr = attributes.getAttributeValue ("follow-focus-view");
+		if (attr)
+		{
+			if (*attr == "true")
+				style |= CScrollView::kFollowFocusView;
+			else
+				style &= ~CScrollView::kFollowFocusView;
+		}
 		scrollView->setStyle (style);
 		attr = attributes.getAttributeValue ("scrollbar-width");
 		if (attr)
@@ -875,6 +883,7 @@ public:
 		attributeNames.push_back ("overlay-scrollbars");
 		attributeNames.push_back ("scrollbar-width");
 		attributeNames.push_back ("bordered");
+		attributeNames.push_back ("follow-focus-view");
 		return true;
 	}
 	AttrType getAttributeType (const std::string& attributeName) const
@@ -887,8 +896,9 @@ public:
 		if (attributeName == "vertical-scrollbar") return kBooleanType;
 		if (attributeName == "auto-drag-scrolling") return kBooleanType;
 		if (attributeName == "overlay-scrollbars") return kBooleanType;
-		if (attributeName == "bordered") return kBooleanType;
 		if (attributeName == "scrollbar-width") return kIntegerType;
+		if (attributeName == "bordered") return kBooleanType;
+		if (attributeName == "follow-focus-view") return kBooleanType;
 		return kUnknownType;
 	}
 	bool getAttributeValue (CView* view, const std::string& attributeName, std::string& stringValue, IUIDescription* desc) const
@@ -955,6 +965,11 @@ public:
 		if (attributeName == "overlay-scrollbars")
 		{
 			stringValue = sc->getStyle () & CScrollView::kOverlayScrollbars ? "true" : "false";
+			return true;
+		}
+		if (attributeName == "follow-focus-view")
+		{
+			stringValue = sc->getStyle () & CScrollView::kFollowFocusView ? "true" : "false";
 			return true;
 		}
 		return false;
@@ -1354,8 +1369,10 @@ public:
 		const std::string* styleNoTextAttr = attributes.getAttributeValue ("style-no-text");
 		const std::string* styleNoDrawAttr = attributes.getAttributeValue ("style-no-draw");
 		const std::string* styleShadowTextAttr = attributes.getAttributeValue ("style-shadow-text");
+		const std::string* styleRoundRectAttr = attributes.getAttributeValue ("style-round-rect");
 		const std::string* textAlignmentAttr = attributes.getAttributeValue ("text-alignment");
 		const std::string* textInsetAttr = attributes.getAttributeValue ("text-inset");
+		const std::string* roundRectRadiusAttr = attributes.getAttributeValue ("round-rect-radius");
 
 		CColor color;
 		if (fontAttr)
@@ -1416,6 +1433,11 @@ public:
 				align = kRightText;
 			display->setHoriAlign (align);
 		}
+		if (roundRectRadiusAttr)
+		{
+			CCoord radius = strtof (roundRectRadiusAttr->c_str (), 0);
+			display->setRoundRectRadius (radius);
+		}
 		int32_t style = display->getStyle ();
 		if (style3DInAttr)
 		{
@@ -1459,6 +1481,13 @@ public:
 			else
 				style &= ~kShadowText;
 		}
+		if (styleRoundRectAttr)
+		{
+			if (*styleRoundRectAttr == "true")
+				style |= kRoundRectStyle;
+			else
+				style &= ~kRoundRectStyle;
+		}
 		display->setStyle (style);
 		return true;
 	}
@@ -1476,6 +1505,8 @@ public:
 		attributeNames.push_back ("style-no-text");
 		attributeNames.push_back ("style-no-draw");
 		attributeNames.push_back ("style-shadow-text");
+		attributeNames.push_back ("style-round-rect");
+		attributeNames.push_back ("round-rect-radius");
 		attributeNames.push_back ("text-alignment");
 		attributeNames.push_back ("text-inset");
 		return true;
@@ -1494,6 +1525,8 @@ public:
 		else if (attributeName == "style-no-text") return kBooleanType;
 		else if (attributeName == "style-no-draw") return kBooleanType;
 		else if (attributeName == "style-shadow-text") return kBooleanType;
+		else if (attributeName == "style-round-rect") return kBooleanType;
+		else if (attributeName == "round-rect-radius") return kFloatType;
 		else if (attributeName == "text-alignment") return kStringType;
 		else if (attributeName == "text-inset") return kPointType;
 		return kUnknownType;
@@ -1577,6 +1610,18 @@ public:
 		else if (attributeName == "style-shadow-text")
 		{
 			stringValue = pd->getStyle () & kShadowText ? "true" : "false";
+			return true;
+		}
+		else if (attributeName == "style-round-rect")
+		{
+			stringValue = pd->getStyle () & kRoundRectStyle ? "true" : "false";
+			return true;
+		}
+		else if (attributeName == "round-rect-radius")
+		{
+			std::stringstream str;
+			str << pd->getRoundRectRadius ();
+			stringValue = str.str ();
 			return true;
 		}
 		else if (attributeName == "text-alignment")

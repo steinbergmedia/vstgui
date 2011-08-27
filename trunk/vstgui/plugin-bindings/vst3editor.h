@@ -41,6 +41,8 @@
 #include <string>
 #include <map>
 
+#define NEW_LIVE_EDITOR	VSTGUI_LIVE_EDITING
+
 namespace VSTGUI {
 class ParameterChangeListener;
 class VST3Editor;
@@ -88,7 +90,10 @@ protected:
 	ParameterChangeListener* getParameterChangeListener (int32_t tag);
 	void recreateView ();
 
-	#if VSTGUI_LIVE_EDITING
+	bool enableEditing (bool state);
+	bool editingEnabled;
+
+	#if VSTGUI_LIVE_EDITING && !NEW_LIVE_EDITOR
 	void runNewTemplateDialog (IdStringPtr baseViewName);
 	void runTemplateSettingsDialog ();
 	void syncParameterTags ();

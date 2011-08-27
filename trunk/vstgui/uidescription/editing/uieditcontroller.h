@@ -2,8 +2,13 @@
 #define __uieditcontroller__
 
 #include "../uidescription.h"
+
+#if VSTGUI_LIVE_EDITING
+
 #include "../uiviewfactory.h"
 #include "iactionoperation.h"
+#include "../../lib/csplitview.h"
+#include "../../lib/cframe.h"
 
 namespace VSTGUI {
 class UIEditView;
@@ -12,6 +17,7 @@ class UIUndoManager;
 class UITemplateController;
 class UIEditMenuController;
 class UIGridController;
+class GenericStringListDataBrowserSource;
 
 //----------------------------------------------------------------------------------------------------
 class UIEditController : public CBaseObject, public IController, public ISplitViewController, public ISplitViewSeparatorDrawer, public IActionOperator, public IKeyboardHook
@@ -21,6 +27,7 @@ public:
 
 	CView* createEditView ();
 	UIEditMenuController* getMenuController () const { return menuController; }
+	const std::string& getEditTemplateName () const { return editTemplateName; }
 
 	static UIDescription& getEditorDescription ();
 	static void setupDataSource (GenericStringListDataBrowserSource* source);
@@ -29,8 +36,11 @@ public:
 protected:
 	~UIEditController ();
 
+	static void resetScrollViewOffsets (CViewContainer* view);
+
 	UIAttributes* getSettings ();
 	int32_t getSplitViewIndex (CSplitView* splitView);
+	void setDirty (bool state);
 
 	virtual void valueChanged (CControl* pControl);
 	virtual CView* createView (const UIAttributes& attributes, IUIDescription* description);
@@ -73,11 +83,17 @@ protected:
 	SharedPointer<UITemplateController> templateController;
 	SharedPointer<UIEditMenuController> menuController;
 	SharedPointer<CControl> enableEditingControl;
+	SharedPointer<CControl> notSavedControl;
+	IKeyboardHook* originalKeyboardHook;
 	
 	std::string editTemplateName;
 	std::list<SharedPointer<CSplitView> > splitViews;
+	
+	bool dirty;
 };
 
 } // namespace
+
+#endif // VSTGUI_LIVE_EDITING
 
 #endif // __uieditcontroller__

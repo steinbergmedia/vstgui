@@ -1,4 +1,7 @@
 #include "uigridcontroller.h"
+
+#if VSTGUI_LIVE_EDITING
+
 #include <sstream>
 
 namespace VSTGUI {
@@ -61,7 +64,7 @@ CView* UIGridController::verifyView (CView* view, const UIAttributes& attributes
 				gridControls[0] = control;
 				gridControls[0]->setStringToValueProc (stringToValue);
 				gridControls[0]->setValueToStringProc (valueToString);
-				gridControls[0]->setValue (size.x);
+				gridControls[0]->setValue ((float)size.x);
 				break;
 			}
 			case kGridYTag:
@@ -69,7 +72,7 @@ CView* UIGridController::verifyView (CView* view, const UIAttributes& attributes
 				gridControls[1] = control;
 				gridControls[1]->setStringToValueProc (stringToValue);
 				gridControls[1]->setValueToStringProc (valueToString);
-				gridControls[1]->setValue (size.y);
+				gridControls[1]->setValue ((float)size.y);
 				break;
 			}
 		}
@@ -97,8 +100,10 @@ bool UIGridController::valueToString (float value, char utf8String[256], void* u
 bool UIGridController::stringToValue (UTF8StringPtr txt, float& result, void* userData)
 {
 	int32_t value = txt ? (int32_t)strtol (txt, 0, 10) : 0;
-	result = value;
+	result = (float)value;
 	return true;
 }
 
 } // namespace
+
+#endif // VSTGUI_LIVE_EDITING

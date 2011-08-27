@@ -1,5 +1,9 @@
 #include "uisearchtextfield.h"
 
+#if VSTGUI_LIVE_EDITING
+
+#include "../../lib/cframe.h"
+
 namespace VSTGUI {
 
 //----------------------------------------------------------------------------------------------------
@@ -13,7 +17,6 @@ CRect UISearchTextField::getClearMarkRect () const
 {
 	CRect r (getViewSize ());
 	r.left = r.right - getHeight ();
-	r.inset (getTextInset ().x, getTextInset ().y);
 	r.inset (2, 2);
 	return r;
 }
@@ -66,16 +69,14 @@ void UISearchTextField::drawClearMark (CDrawContext* context) const
 //----------------------------------------------------------------------------------------------------
 void UISearchTextField::draw (CDrawContext *pContext)
 {
+	drawBack (pContext);
+	drawClearMark (pContext);
+
 	if (platformControl)
 	{
-		drawBack (pContext);
-		drawClearMark (pContext);
 		setDirty (false);
 		return;
 	}
-
-	drawBack (pContext);
-	drawClearMark (pContext);
 
 	const char* string = getText ();
 	CColor origFontColor (fontColor);
@@ -123,4 +124,6 @@ CRect UISearchTextField::platformGetVisibleSize () const
 }
 
 
-}
+} // namespace
+
+#endif // VSTGUI_LIVE_EDITING

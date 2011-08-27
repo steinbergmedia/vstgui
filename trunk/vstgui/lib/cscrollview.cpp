@@ -558,6 +558,27 @@ void CScrollView::makeRectVisible (const CRect& rect)
 }
 
 //-----------------------------------------------------------------------------
+void CScrollView::resetScrollOffset ()
+{
+	if (vsb)
+	{
+		vsb->setValue (0);
+		vsb->bounceValue ();
+		vsb->onVisualChange ();
+		vsb->invalid ();
+		valueChanged (vsb);
+	}
+	if (hsb)
+	{
+		hsb->setValue (0);
+		hsb->bounceValue ();
+		hsb->onVisualChange ();
+		hsb->invalid ();
+		valueChanged (hsb);
+	}
+}
+
+//-----------------------------------------------------------------------------
 const CPoint& CScrollView::getScrollOffset () const
 {
 	return sc->getScrollOffset ();
@@ -700,7 +721,7 @@ bool CScrollView::onWheel (const CPoint &where, const CMouseWheelAxis &axis, con
 //-----------------------------------------------------------------------------
 CMessageResult CScrollView::notify (CBaseObject* sender, IdStringPtr message)
 {
-	if (message == kMsgNewFocusView)
+	if (message == kMsgNewFocusView && getStyle () & kFollowFocusView)
 	{
 		CView* focusView = (CView*)sender;
 		if (sc->isChild (focusView, true))

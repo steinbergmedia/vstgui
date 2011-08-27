@@ -1,4 +1,7 @@
 #include "uitagscontroller.h"
+
+#if VSTGUI_LIVE_EDITING
+
 #include "uieditcontroller.h"
 #include "uisearchtextfield.h"
 #include "uibasedatasource.h"
@@ -222,3 +225,5 @@ void UITagsController::valueChanged (CControl* pControl)
 }
 
 } // namespace
+
+#endif // VSTGUI_LIVE_EDITING
