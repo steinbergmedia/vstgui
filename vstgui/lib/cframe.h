@@ -155,6 +155,7 @@ public:
 	CViewContainer* getContainerAt (const CPoint& where, bool deep = true) const;
 
 	// CView
+	virtual bool attached (CView* parent);
 	void draw (CDrawContext* pContext);
 	void drawRect (CDrawContext* pContext, const CRect& updateRect);
 	CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons);

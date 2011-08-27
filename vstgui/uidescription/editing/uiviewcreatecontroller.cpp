@@ -1,8 +1,12 @@
 #include "uiviewcreatecontroller.h"
+
+#if VSTGUI_LIVE_EDITING
+
 #include "uieditcontroller.h"
 #include "uisearchtextfield.h"
 #include "uibasedatasource.h"
 #include "../uiviewfactory.h"
+#include "../../lib/cdropsource.h"
 #include "uiselection.h"
 
 namespace VSTGUI {
@@ -141,3 +145,5 @@ CMouseEventResult UIViewCreatorDataSource::dbOnMouseMoved (const CPoint& where, 
 }
 
 } // namespace
+
+#endif // VSTGUI_LIVE_EDITING

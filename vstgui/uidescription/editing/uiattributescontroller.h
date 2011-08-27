@@ -2,10 +2,15 @@
 #define __uiattributescontroller__
 
 #include "../uidescription.h"
+
+#if VSTGUI_LIVE_EDITING
+
 #include "uiselection.h"
 #include "uiundomanager.h"
+#include "../../lib/controls/ctextedit.h"
 
 namespace VSTGUI {
+class CRowColumnView;
 
 namespace UIAttributeControllers {
 class Controller;
@@ -52,5 +57,7 @@ protected:
 };
 
 } // namespace
+
+#endif // VSTGUI_LIVE_EDITING
 
 #endif // __uiattributescontroller__

@@ -1,12 +1,21 @@
 #include "uiattributescontroller.h"
+
+#if VSTGUI_LIVE_EDITING
+
 #include "uiactions.h"
 #include "uieditcontroller.h"
 #include "uisearchtextfield.h"
 #include "../uiviewfactory.h"
+#include "../../lib/controls/coptionmenu.h"
+#include "../../lib/coffscreencontext.h"
+#include "../../lib/crowcolumnview.h"
+#include <algorithm>
 
 namespace VSTGUI {
 
 namespace UIAttributeControllers {
+
+//----------------------------------------------------------------------------------------------------
 class Controller : public CBaseObject, public DelegationController
 {
 public:
@@ -29,6 +38,89 @@ protected:
 	}
 	std::string attrName;
 	bool differentValues;
+};
+
+//----------------------------------------------------------------------------------------------------
+class TextAlignmentController : public Controller
+{
+public:
+	TextAlignmentController (IController* baseController, const std::string& attrName)
+	: Controller (baseController, attrName) {}
+
+	CView* verifyView (CView* view, const UIAttributes& attributes, IUIDescription* description)
+	{
+		CControl* control = dynamic_cast<CControl*>(view);
+		if (control)
+		{
+			int32_t tag = control->getTag ();
+			if (tag >= kLeftTag && tag <= kRightTag)
+				controls[tag] = control;
+		}
+		return controller->verifyView (view, attributes, description);
+	}
+
+	void setValue (const std::string& value)
+	{
+		if (hasDifferentValues ())
+		{
+			for (int32_t i = kLeftTag; i <= kRightTag; i++)
+			{
+				controls[i]->setValue (0.f);
+				controls[i]->invalid ();
+			}
+		}
+		else
+		{
+			int32_t alignment = 0;
+			if (value == "center")
+				alignment = 1;
+			else if (value == "right")
+				alignment = 2;
+			for (int32_t i = kLeftTag; i <= kRightTag; i++)
+			{
+				controls[i]->setValue (i == alignment ? 1.f : 0.f);
+				controls[i]->invalid ();
+			}
+		}
+	}
+
+	void valueChanged (CControl* control)
+	{
+		if (control->getValue () == control->getMax ())
+		{
+			switch (control->getTag ())
+			{
+				case kLeftTag:
+				{
+					performValueChange ("left");
+					break;
+				}
+				case kCenterTag:
+				{
+					performValueChange ("center");
+					break;
+				}
+				case kRightTag:
+				{
+					performValueChange ("right");
+					break;
+				}
+			}
+		}
+		else
+		{
+			control->setValue (control->getMax ());
+		}
+	}
+
+protected:
+	enum {
+		kLeftTag = 0,
+		kCenterTag,
+		kRightTag
+	};
+
+	CControl* controls[3];
 };
 
 //----------------------------------------------------------------------------------------------------
@@ -55,10 +147,17 @@ public:
 	}
 	void setValue (const std::string& value)
 	{
-		if (value == "true")
-			control->setValue (control->getMax ());
+		if (hasDifferentValues())
+		{
+			control->setValue (control->getMin () + (control->getMax () - control->getMin ()) / 2.f);
+		}
 		else
-			control->setValue (control->getMin ());
+		{
+			if (value == "true")
+				control->setValue (control->getMax ());
+			else
+				control->setValue (control->getMin ());
+		}
 		control->invalid ();
 	}
 
@@ -154,7 +253,7 @@ public:
 		if (*entryName == label->getText ())
 		{
 			int32_t index = menu->getNbEntries () - 1;
-			menu->setValue (index);
+			menu->setValue ((float)index);
 			menu->setCurrent (index);
 		}
 	}
@@ -398,6 +497,11 @@ IController* UIAttributesController::createSubController (IdStringPtr name, IUID
 		{
 			return new UIAttributeControllers::FontController (this, *currentAttributeName, editDescription);
 		}
+		else if (strcmp (name, "TextAlignmentController") == 0)
+		{
+			return new UIAttributeControllers::TextAlignmentController (this, *currentAttributeName);
+		}
+		
 	}
 	return controller->createSubController (name, description);
 }
@@ -465,6 +569,8 @@ CView* UIAttributesController::createViewForAttribute (const std::string& attrNa
 	label->setHoriAlign (kRightText);
 	label->setFontColor (kBlackCColor);
 	label->setFont (kNormalFontSmall);
+	label->setAttribute (kCViewTooltipAttribute, (int32_t)attrName.size ()+1, attrName.c_str ());
+
 	result->addView (label);
 	
 	bool hasDifferentValues = false;
@@ -484,39 +590,48 @@ CView* UIAttributesController::createViewForAttribute (const std::string& attrNa
 
 	CRect r (middle+10, 1, width-5, height+1);
 	CView* valueView = 0;
-	CView* firstView = selection->first ();
-	IViewCreator::AttrType attrType = viewFactory->getAttributeType (firstView, attrName);
-	switch (attrType)
+	
+	if (attrName == "text-alignment")
 	{
-		case IViewCreator::kFontType:
+		valueView = UIEditController::getEditorDescription ().createView ("attributes.text.alignment", this);
+	}
+	
+	if (valueView == 0)
+	{
+		CView* firstView = selection->first ();
+		IViewCreator::AttrType attrType = viewFactory->getAttributeType (firstView, attrName);
+		switch (attrType)
 		{
-			valueView = UIEditController::getEditorDescription ().createView ("attributes.font", this);
-			break;
-		}
-		case IViewCreator::kBitmapType:
-		{
-			valueView = UIEditController::getEditorDescription ().createView ("attributes.bitmap", this);
-			break;
-		}
-		case IViewCreator::kTagType:
-		{
-			valueView = UIEditController::getEditorDescription ().createView ("attributes.tag", this);
-			break;
-		}
-		case IViewCreator::kColorType:
-		{
-			valueView = UIEditController::getEditorDescription ().createView ("attributes.color", this);
-			break;
-		}
-		case IViewCreator::kBooleanType:
-		{
-			valueView = UIEditController::getEditorDescription ().createView ("attributes.boolean", this);
-			break;
-		}
-		default:
-		{
-			valueView = UIEditController::getEditorDescription ().createView ("attributes.text", this);
-			break;
+			case IViewCreator::kFontType:
+			{
+				valueView = UIEditController::getEditorDescription ().createView ("attributes.font", this);
+				break;
+			}
+			case IViewCreator::kBitmapType:
+			{
+				valueView = UIEditController::getEditorDescription ().createView ("attributes.bitmap", this);
+				break;
+			}
+			case IViewCreator::kTagType:
+			{
+				valueView = UIEditController::getEditorDescription ().createView ("attributes.tag", this);
+				break;
+			}
+			case IViewCreator::kColorType:
+			{
+				valueView = UIEditController::getEditorDescription ().createView ("attributes.color", this);
+				break;
+			}
+			case IViewCreator::kBooleanType:
+			{
+				valueView = UIEditController::getEditorDescription ().createView ("attributes.boolean", this);
+				break;
+			}
+			default:
+			{
+				valueView = UIEditController::getEditorDescription ().createView ("attributes.text", this);
+				break;
+			}
 		}
 	}
 	if (valueView == 0) // fallcack if attributes.text template not defined
@@ -563,7 +678,7 @@ void UIAttributesController::rebuildAttributesView ()
 	attributeControllers.clear ();
 
 	std::string filter (filterString);
-	std::transform (filter.begin (), filter.end (), filter.begin (), std::tolower);
+	std::transform (filter.begin (), filter.end (), filter.begin (), ::tolower);
 
 	if (viewNameLabel)
 	{
@@ -617,7 +732,7 @@ void UIAttributesController::rebuildAttributesView ()
 				for (std::list<std::string>::reverse_iterator rit = temp.rbegin (); rit != temp.rend (); rit++)
 				{
 					std::string lowerCaseName (*rit);
-					std::transform (lowerCaseName.begin (), lowerCaseName.end (), lowerCaseName.begin (), std::tolower);
+					std::transform (lowerCaseName.begin (), lowerCaseName.end (), lowerCaseName.begin (), ::tolower);
 					if (lowerCaseName.find (filter) == std::string::npos)
 						toRemove.push_back (&(*rit));
 				}
@@ -660,3 +775,5 @@ void UIAttributesController::rebuildAttributesView ()
 }
 
 } // namespace
+
+#endif // VSTGUI_LIVE_EDITING

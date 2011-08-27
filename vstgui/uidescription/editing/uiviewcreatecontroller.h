@@ -2,7 +2,10 @@
 #define __uiviewcreatorcontroller__
 
 #include "../uidescription.h"
-#include <list>
+
+#if VSTGUI_LIVE_EDITING
+
+#include <vector>
 #include <string>
 
 namespace VSTGUI {
@@ -34,5 +37,7 @@ protected:
 };
 
 } // namespace
+
+#endif // VSTGUI_LIVE_EDITING
 
 #endif // __uiviewcreatorcontroller__

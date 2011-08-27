@@ -1,7 +1,11 @@
 #include "uicolorscontroller.h"
+
+#if VSTGUI_LIVE_EDITING
+
 #include "uieditcontroller.h"
 #include "uisearchtextfield.h"
 #include "uibasedatasource.h"
+#include "../../lib/controls/ccolorchooser.h"
 #include <sstream>
 
 namespace VSTGUI {
@@ -191,3 +195,5 @@ void UIColorsController::valueChanged (CControl* pControl)
 
 
 } // namespace
+
+#endif // VSTGUI_LIVE_EDITING

@@ -82,8 +82,11 @@ public:
 	virtual void setHoriAlign (CHoriTxtAlign hAlign);
 	CHoriTxtAlign getHoriAlign () const { return horiTxtAlign; }
 
-	virtual void setTextInset (const CPoint& p) { textInset = p; }
+	virtual void setTextInset (const CPoint& p);
 	CPoint getTextInset () const { return textInset; }
+
+	virtual void setRoundRectRadius (const CCoord& radius);
+	CCoord getRoundRectRadius () const { return roundRectRadius; }
 
 	virtual void setValueToStringProc (CParamDisplayValueToStringProc proc, void* userData = 0);
 
@@ -93,6 +96,7 @@ public:
 	//@}
 
 	virtual void draw (CDrawContext* pContext);
+	bool getFocusPath (CGraphicsPath& outPath);
 
 	CLASS_METHODS(CParamDisplay, CControl)
 protected:
@@ -113,6 +117,7 @@ protected:
 	CColor		frameColor;
 	CColor		shadowColor;
 	CPoint		textInset;
+	CCoord		roundRectRadius;
 	bool		bAntialias;
 };
 

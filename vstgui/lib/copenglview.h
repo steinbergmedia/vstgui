@@ -68,6 +68,7 @@ public:
 	virtual bool removed (CView* parent);
 	virtual bool attached (CView* parent);
 	virtual void invalidRect (const CRect& rect);
+	virtual void setVisible (bool state);
 
 	CLASS_METHODS_NOCOPY (COpenGLView, CView)
 protected:

@@ -209,6 +209,9 @@ public:
 	void setAttribute (UTF8StringPtr name, UTF8StringPtr value);
 	void removeAttribute (UTF8StringPtr name);
 
+	void setBooleanAttribute (UTF8StringPtr name, bool value);
+	bool getBooleanAttribute (UTF8StringPtr name, bool& value);
+
 	void setIntegerAttribute (UTF8StringPtr name, int32_t value);
 	bool getIntegerAttribute (UTF8StringPtr name, int32_t& value);
 

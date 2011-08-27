@@ -117,6 +117,40 @@ bool COpenGLView::removed (CView* parent)
 }
 
 //-----------------------------------------------------------------------------
+void COpenGLView::setVisible (bool state)
+{
+	if (state != isVisible ())
+	{
+		CView::setVisible (state);
+		if (isAttached ())
+		{
+			if (state && platformOpenGLView == 0)
+			{
+				IPlatformFrame* platformFrame = getFrame ()->getPlatformFrame ();
+				platformOpenGLView = platformFrame ? platformFrame->createPlatformOpenGLView () : 0;
+				if (platformOpenGLView)
+				{
+					if (platformOpenGLView->init (this, getPixelFormat ()))
+					{
+						updatePlatformOpenGLViewSize ();
+						return;
+					}
+					platformOpenGLView->forget ();
+					platformOpenGLView = 0;
+				}
+			}
+			else if (state == false && platformOpenGLView != 0)
+			{
+				platformOpenGLView->remove ();
+				platformOpenGLView->forget ();
+				platformOpenGLView = 0;
+			}
+			invalid ();
+		}
+	}
+}
+
+//-----------------------------------------------------------------------------
 void COpenGLView::invalidRect (const CRect& rect)
 {
 	if (platformOpenGLView)

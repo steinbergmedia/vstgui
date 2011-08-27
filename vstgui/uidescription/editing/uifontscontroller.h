@@ -2,13 +2,17 @@
 #define __uifontscontroller__
 
 #include "../uidescription.h"
+
+#if VSTGUI_LIVE_EDITING
+
 #include "uiselection.h"
 #include "uiundomanager.h"
 #include "iactionoperation.h"
+#include "../../lib/cdatabrowser.h"
 
 namespace VSTGUI {
 class UIFontsDataSource;
-
+class COptionMenu;
 //----------------------------------------------------------------------------------------------------
 class UIFontsController : public CBaseObject, public DelegationController, public IGenericStringListDataBrowserSourceSelectionChanged
 {
@@ -56,4 +60,7 @@ protected:
 };
 
 } // namespace
+
+#endif // VSTGUI_LIVE_EDITING
+
 #endif // __uifontscontroller__

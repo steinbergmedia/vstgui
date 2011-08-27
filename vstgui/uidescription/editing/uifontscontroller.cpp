@@ -1,7 +1,12 @@
 #include "uifontscontroller.h"
+
+#if VSTGUI_LIVE_EDITING
+
 #include "uieditcontroller.h"
 #include "uisearchtextfield.h"
 #include "uibasedatasource.h"
+#include "../../lib/controls/ccolorchooser.h"
+#include "../../lib/controls/coptionmenu.h"
 #include <sstream>
 
 namespace VSTGUI {
@@ -199,7 +204,7 @@ void UIFontsController::valueChanged (CControl* pControl)
 		case kFontStyleStrikethroughTag:
 		case kFontStyleUnderlineTag:
 		{
-			if (fontMenu == 0 || sizeTextEdit == 0)
+			if (fontMenu == 0 || sizeTextEdit == 0 || selectedFont.empty ())
 				break;
 			CMenuItem* menuItem = fontMenu->getCurrent ();
 			if (menuItem)
@@ -237,7 +242,7 @@ void UIFontsController::dbSelectionChanged (int32_t selectedRow, GenericStringLi
 			{
 				if (fontName == (*it)->getTitle ())
 				{
-					fontMenu->setValue (index);
+					fontMenu->setValue ((float)index);
 					break;
 				}
 			}
@@ -285,9 +290,11 @@ bool UIFontsController::valueToString (float value, char utf8String[256], void* 
 bool UIFontsController::stringToValue (UTF8StringPtr txt, float& result, void* userData)
 {
 	int32_t value = txt ? (int32_t)strtol (txt, 0, 10) : 0;
-	result = value;
+	result = (float)value;
 	return true;
 }
 
 
 } // namespace
+
+#endif // VSTGUI_LIVE_EDITING

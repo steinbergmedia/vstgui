@@ -2,10 +2,15 @@
 #define __uieditmenucontroller__
 
 #include "../uidescription.h"
+
+#if VSTGUI_LIVE_EDITING
+
 #include "uiselection.h"
 #include "uiundomanager.h"
 
 namespace VSTGUI {
+class COptionMenu;
+class CCommandMenuItem;
 
 namespace UIEditing {
 
@@ -38,6 +43,9 @@ static const MenuEntry editMenu[] = {
 	{ "Edit", "Add Template" , 0, 0},
 	{ "Edit", "Remove Template" , 0, 0},
 	{ "Edit", "Duplicate Template" , 0, 0},
+	menuSeparator,
+	{ "Edit", "Template Settings..." , 0, 0},
+	{ "Edit", "Focus Drawing Settings..." , 0, 0},
 	0
 };
 
@@ -80,5 +88,7 @@ protected:
 };
 
 } // namespace
+
+#endif // VSTGUI_LIVE_EDITING
 
 #endif // __uieditmenucontroller__

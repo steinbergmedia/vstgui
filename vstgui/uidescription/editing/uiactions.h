@@ -36,6 +36,9 @@
 #define __uiactions__
 
 #include "iactionoperation.h"
+
+#if VSTGUI_LIVE_EDITING
+
 #include "uiselection.h"
 #include "../uiviewfactory.h"
 #include <list>
@@ -46,6 +49,8 @@ namespace VSTGUI {
 class UIViewFactory;
 class IUIDescription;
 class UIDescription;
+class CViewContainer;
+class CView;
 
 //-----------------------------------------------------------------------------
 class SizeToFitOperation : public IActionOperation, protected std::list<CView*>
@@ -351,7 +356,27 @@ protected:
 	bool performOrUndo;
 };
 
+//-----------------------------------------------------------------------------
+class HierarchyMoveViewOperation : public IActionOperation
+{
+public:
+	HierarchyMoveViewOperation (CView* view, UISelection* selection, bool up);
+	~HierarchyMoveViewOperation ();
+
+	UTF8StringPtr getName ();
+
+	void perform ();
+	
+	void undo ();
+protected:
+	SharedPointer<CView> view;
+	SharedPointer<CViewContainer> parent;
+	UISelection* selection;
+	bool up;
+};
 
 } // namespace
+
+#endif // VSTGUI_LIVE_EDITING
 
 #endif // __uiactions__

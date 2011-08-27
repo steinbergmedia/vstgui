@@ -4,6 +4,8 @@
 
 #include "../../lib/cpoint.h"
 
+#if VSTGUI_LIVE_EDITING
+
 namespace VSTGUI {
 
 //----------------------------------------------------------------------------------------------------
@@ -27,5 +29,7 @@ protected:
 };
 
 } // namespace
+
+#endif // VSTGUI_LIVE_EDITING
 
 #endif // __uigrid__

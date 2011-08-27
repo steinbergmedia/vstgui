@@ -401,6 +401,14 @@
 					>
 				</File>
 				<File
+					RelativePath="..\..\lib\crowcolumnview.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\lib\crowcolumnview.h"
+					>
+				</File>
+				<File
 					RelativePath="..\..\lib\cscrollview.cpp"
 					>
 				</File>
@@ -841,6 +849,10 @@
 					>
 				</File>
 				<File
+					RelativePath="..\..\uidescription\icontroller.h"
+					>
+				</File>
+				<File
 					RelativePath="..\..\uidescription\platformsupport.h"
 					>
 				</File>
@@ -890,14 +902,6 @@
 				</File>
 				<File
 					RelativePath="..\..\uidescription\uipanelbase.h"
-					>
-				</File>
-				<File
-					RelativePath="..\..\uidescription\uiselection.cpp"
-					>
-				</File>
-				<File
-					RelativePath="..\..\uidescription\uiselection.h"
 					>
 				</File>
 				<File
@@ -952,6 +956,174 @@
 					RelativePath="..\..\uidescription\xmlparser.h"
 					>
 				</File>
+				<Filter
+					Name="editing"
+					>
+					<File
+						RelativePath="..\..\uidescription\editing\doc.h"
+						>
+					</File>
+					<File
+						RelativePath="..\..\uidescription\editing\iactionoperation.h"
+						>
+					</File>
+					<File
+						RelativePath="..\..\uidescription\editing\uiactions.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\uidescription\editing\uiactions.h"
+						>
+					</File>
+					<File
+						RelativePath="..\..\uidescription\editing\uiattributescontroller.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\uidescription\editing\uiattributescontroller.h"
+						>
+					</File>
+					<File
+						RelativePath="..\..\uidescription\editing\uibasedatasource.h"
+						>
+					</File>
+					<File
+						RelativePath="..\..\uidescription\editing\uibitmapscontroller.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\uidescription\editing\uibitmapscontroller.h"
+						>
+					</File>
+					<File
+						RelativePath="..\..\uidescription\editing\uicolorscontroller.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\uidescription\editing\uicolorscontroller.h"
+						>
+					</File>
+					<File
+						RelativePath="..\..\uidescription\editing\uicrosslines.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\uidescription\editing\uicrosslines.h"
+						>
+					</File>
+					<File
+						RelativePath="..\..\uidescription\editing\uidialogcontroller.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\uidescription\editing\uidialogcontroller.h"
+						>
+					</File>
+					<File
+						RelativePath="..\..\uidescription\editing\uieditcontroller.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\uidescription\editing\uieditcontroller.h"
+						>
+					</File>
+					<File
+						RelativePath="..\..\uidescription\editing\uieditmenucontroller.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\uidescription\editing\uieditmenucontroller.h"
+						>
+					</File>
+					<File
+						RelativePath="..\..\uidescription\editing\uieditordescription.h"
+						>
+					</File>
+					<File
+						RelativePath="..\..\uidescription\editing\uieditview.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\uidescription\editing\uieditview.h"
+						>
+					</File>
+					<File
+						RelativePath="..\..\uidescription\editing\uifontscontroller.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\uidescription\editing\uifontscontroller.h"
+						>
+					</File>
+					<File
+						RelativePath="..\..\uidescription\editing\uigrid.h"
+						>
+					</File>
+					<File
+						RelativePath="..\..\uidescription\editing\uigridcontroller.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\uidescription\editing\uigridcontroller.h"
+						>
+					</File>
+					<File
+						RelativePath="..\..\uidescription\editing\uisearchtextfield.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\uidescription\editing\uisearchtextfield.h"
+						>
+					</File>
+					<File
+						RelativePath="..\..\uidescription\editing\uiselection.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\uidescription\editing\uiselection.h"
+						>
+					</File>
+					<File
+						RelativePath="..\..\uidescription\editing\uitagscontroller.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\uidescription\editing\uitagscontroller.h"
+						>
+					</File>
+					<File
+						RelativePath="..\..\uidescription\editing\uitemplatecontroller.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\uidescription\editing\uitemplatecontroller.h"
+						>
+					</File>
+					<File
+						RelativePath="..\..\uidescription\editing\uitemplatesettingscontroller.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\uidescription\editing\uitemplatesettingscontroller.h"
+						>
+					</File>
+					<File
+						RelativePath="..\..\uidescription\editing\uiundomanager.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\uidescription\editing\uiundomanager.h"
+						>
+					</File>
+					<File
+						RelativePath="..\..\uidescription\editing\uiviewcreatecontroller.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\uidescription\editing\uiviewcreatecontroller.h"
+						>
+					</File>
+				</Filter>
 			</Filter>
 		</Filter>
 	</Files>
