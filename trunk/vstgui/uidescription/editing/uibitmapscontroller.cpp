@@ -45,7 +45,7 @@ public:
 class UIBitmapsDataSource : public UIBaseDataSource
 {
 public:
-	UIBitmapsDataSource (UIDescription* description, IActionOperator* actionOperator, IGenericStringListDataBrowserSourceSelectionChanged* delegate);
+	UIBitmapsDataSource (UIDescription* description, IActionPerformer* actionPerformer, IGenericStringListDataBrowserSourceSelectionChanged* delegate);
 	
 	CBitmap* getSelectedBitmap ();
 	UTF8StringPtr getSelectedBitmapName ();
@@ -60,8 +60,8 @@ protected:
 };
 
 //----------------------------------------------------------------------------------------------------
-UIBitmapsDataSource::UIBitmapsDataSource (UIDescription* description, IActionOperator* actionOperator, IGenericStringListDataBrowserSourceSelectionChanged* delegate)
-: UIBaseDataSource (description, actionOperator, UIDescription::kMessageBitmapChanged, delegate)
+UIBitmapsDataSource::UIBitmapsDataSource (UIDescription* description, IActionPerformer* actionPerformer, IGenericStringListDataBrowserSourceSelectionChanged* delegate)
+: UIBaseDataSource (description, actionPerformer, UIDescription::kMessageBitmapChanged, delegate)
 {
 }
 
@@ -74,21 +74,21 @@ void UIBitmapsDataSource::getNames (std::list<const std::string*>& names)
 //----------------------------------------------------------------------------------------------------
 bool UIBitmapsDataSource::addItem (UTF8StringPtr name)
 {
-	actionOperator->performBitmapChange (name, 0);
+	actionPerformer->performBitmapChange (name, 0);
 	return true;
 }
 
 //----------------------------------------------------------------------------------------------------
 bool UIBitmapsDataSource::removeItem (UTF8StringPtr name)
 {
-	actionOperator->performBitmapChange (name, 0, true);
+	actionPerformer->performBitmapChange (name, 0, true);
 	return true;
 }
 
 //----------------------------------------------------------------------------------------------------
 bool UIBitmapsDataSource::performNameChange (UTF8StringPtr oldName, UTF8StringPtr newName)
 {
-	actionOperator->performBitmapNameChange (oldName, newName);
+	actionPerformer->performBitmapNameChange (oldName, newName);
 	return true;
 }
 
@@ -113,13 +113,13 @@ UTF8StringPtr UIBitmapsDataSource::getSelectedBitmapName ()
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
-UIBitmapsController::UIBitmapsController (IController* baseController, UIDescription* description, IActionOperator* actionOperator)
+UIBitmapsController::UIBitmapsController (IController* baseController, UIDescription* description, IActionPerformer* actionPerformer)
 : DelegationController (baseController)
 , editDescription (description)
-, actionOperator (actionOperator)
+, actionPerformer (actionPerformer)
 , dataSource (0)
 {
-	dataSource = new UIBitmapsDataSource (editDescription, actionOperator, this);
+	dataSource = new UIBitmapsDataSource (editDescription, actionPerformer, this);
 	UIEditController::setupDataSource (dataSource);
 }
 
@@ -215,7 +215,7 @@ void UIBitmapsController::valueChanged (CControl* pControl)
 			{
 				CTextEdit* edit = dynamic_cast<CTextEdit*>(pControl);
 				if (edit)
-					actionOperator->performBitmapChange (dataSource->getSelectedBitmapName (), edit->getText ());
+					actionPerformer->performBitmapChange (dataSource->getSelectedBitmapName (), edit->getText ());
 			}
 			break;
 		}
@@ -226,7 +226,7 @@ void UIBitmapsController::valueChanged (CControl* pControl)
 			{
 				bool checked = pControl->getValue () == pControl->getMax ();
 				CRect offsets;
-				actionOperator->performBitmapNinePartTiledChange (dataSource->getSelectedBitmapName (), checked ? &offsets : 0);
+				actionPerformer->performBitmapNinePartTiledChange (dataSource->getSelectedBitmapName (), checked ? &offsets : 0);
 			}
 			break;
 		}
@@ -248,7 +248,7 @@ void UIBitmapsController::valueChanged (CControl* pControl)
 					r.right = ninePartRectEdit[2]->getValue ();
 				if (ninePartRectEdit[3])
 					r.bottom = ninePartRectEdit[3]->getValue ();
-				actionOperator->performBitmapNinePartTiledChange (dataSource->getSelectedBitmapName (), &r);
+				actionPerformer->performBitmapNinePartTiledChange (dataSource->getSelectedBitmapName (), &r);
 			}
 			break;
 		}		

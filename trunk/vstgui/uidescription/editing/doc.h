@@ -5,7 +5,6 @@ TODO:
 		- new feature for alternative font fallback
 		- finish edit menu
 			- cut, copy, paste, insert template
-		- subversion: uidescription folder cleanup (move stuff into editing subfolder)
 		- fix TODOs
 		- write Documentation
 

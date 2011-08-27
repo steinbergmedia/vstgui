@@ -60,12 +60,16 @@ WinDragContainer::WinDragContainer (IDataObject* platformDrag)
 	HRESULT hr = platformDrag->QueryGetData (&formatTEXTDrop);
 	if (hr != S_OK)
 	{
-		STGMEDIUM medium = {0};
-		hr = platformDrag->GetData (&formatHDrop, &medium);
+		hr = platformDrag->QueryGetData (&formatHDrop);
 		if (hr == S_OK)
 		{
-			nbItems = (int32_t)DragQueryFile ((HDROP)medium.hGlobal, 0xFFFFFFFFL, 0, 0);
-			isFileDrag = true;
+			STGMEDIUM medium = {0};
+			hr = platformDrag->GetData (&formatHDrop, &medium);
+			if (hr == S_OK)
+			{
+				nbItems = (int32_t)DragQueryFile ((HDROP)medium.hGlobal, 0xFFFFFFFFL, 0, 0);
+				isFileDrag = true;
+			}
 		}
 		else if (platformDrag->QueryGetData (&formatBinaryDrop) == S_OK)
 		{

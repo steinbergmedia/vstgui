@@ -35,7 +35,7 @@
 #ifndef __uiactions__
 #define __uiactions__
 
-#include "iactionoperation.h"
+#include "iaction.h"
 
 #if VSTGUI_LIVE_EDITING
 
@@ -53,7 +53,7 @@ class CViewContainer;
 class CView;
 
 //-----------------------------------------------------------------------------
-class SizeToFitOperation : public IActionOperation, protected std::list<CView*>
+class SizeToFitOperation : public IAction, protected std::list<CView*>
 {
 public:
 	SizeToFitOperation (UISelection* selection);
@@ -70,7 +70,7 @@ protected:
 };
 
 //-----------------------------------------------------------------------------
-class UnembedViewOperation : public IActionOperation, protected std::list<CView*>
+class UnembedViewOperation : public IAction, protected std::list<CView*>
 {
 public:
 	UnembedViewOperation (UISelection* selection, UIViewFactory* factory);
@@ -90,7 +90,7 @@ protected:
 };
 
 //-----------------------------------------------------------------------------
-class EmbedViewOperation : public IActionOperation, protected std::list<CView*>
+class EmbedViewOperation : public IAction, protected std::list<CView*>
 {
 public:
 	EmbedViewOperation (UISelection* selection, CViewContainer* newContainer);
@@ -107,7 +107,7 @@ protected:
 };
 
 //-----------------------------------------------------------------------------
-class ViewCopyOperation : public IActionOperation, protected std::list<CView*>
+class ViewCopyOperation : public IAction, protected std::list<CView*>
 {
 public:
 	ViewCopyOperation (UISelection* copySelection, UISelection* workingSelection, CViewContainer* parent, const CPoint& offset, UIViewFactory* viewFactory, IUIDescription* desc);
@@ -124,7 +124,7 @@ protected:
 };
 
 //-----------------------------------------------------------------------------
-class ViewSizeChangeOperation : public IActionOperation, protected std::map<CView*, CRect>
+class ViewSizeChangeOperation : public IAction, protected std::map<CView*, CRect>
 {
 public:
 	ViewSizeChangeOperation (UISelection* selection, bool sizing);
@@ -151,7 +151,7 @@ struct DeleteOperationViewAndNext
 };
 
 //----------------------------------------------------------------------------------------------------
-class DeleteOperation : public IActionOperation, protected std::multimap<CViewContainer*, DeleteOperationViewAndNext*>
+class DeleteOperation : public IAction, protected std::multimap<CViewContainer*, DeleteOperationViewAndNext*>
 {
 public:
 	DeleteOperation (UISelection* selection);
@@ -165,7 +165,7 @@ protected:
 };
 
 //-----------------------------------------------------------------------------
-class InsertViewOperation : public IActionOperation
+class InsertViewOperation : public IAction
 {
 public:
 	InsertViewOperation (CViewContainer* parent, CView* view, UISelection* selection);
@@ -181,7 +181,7 @@ protected:
 };
 
 //-----------------------------------------------------------------------------
-class TransformViewTypeOperation : public IActionOperation
+class TransformViewTypeOperation : public IAction
 {
 public:
 	TransformViewTypeOperation (UISelection* selection, IdStringPtr viewClassName, IUIDescription* desc, UIViewFactory* factory);
@@ -201,7 +201,7 @@ protected:
 };
 
 //-----------------------------------------------------------------------------
-class AttributeChangeAction : public IActionOperation, protected std::map<CView*, std::string>
+class AttributeChangeAction : public IAction, protected std::map<CView*, std::string>
 {
 public:
 	AttributeChangeAction (UIDescription* desc, UISelection* selection, const std::string& attrName, const std::string& attrValue);
@@ -220,7 +220,7 @@ protected:
 };
 
 //----------------------------------------------------------------------------------------------------
-class MultipleAttributeChangeAction : public IActionOperation, public std::map<SharedPointer<CView>, std::string>
+class MultipleAttributeChangeAction : public IAction, public std::map<SharedPointer<CView>, std::string>
 {
 public:
 	MultipleAttributeChangeAction (UIDescription* description, CView* baseView, IViewCreator::AttrType attrType, UTF8StringPtr oldValue, UTF8StringPtr newValue);
@@ -239,7 +239,7 @@ protected:
 };
 
 //----------------------------------------------------------------------------------------------------
-class TagChangeAction : public IActionOperation
+class TagChangeAction : public IAction
 {
 public:
 	TagChangeAction (UIDescription* description, UTF8StringPtr name, int32_t tag, bool remove, bool performOrUndo);
@@ -247,6 +247,8 @@ public:
 	virtual UTF8StringPtr getName ();
 	virtual void perform ();
 	virtual void undo ();
+	
+	bool newTag () const { return isNewTag; }
 protected:
 	SharedPointer<UIDescription> description;
 	std::string name;
@@ -254,10 +256,11 @@ protected:
 	int32_t originalTag;
 	bool remove;
 	bool performOrUndo;
+	bool isNewTag;
 };
 
 //----------------------------------------------------------------------------------------------------
-class TagNameChangeAction : public IActionOperation
+class TagNameChangeAction : public IAction
 {
 public:
 	TagNameChangeAction (UIDescription* description, UTF8StringPtr oldName, UTF8StringPtr newName, bool performOrUndo);
@@ -273,7 +276,7 @@ protected:
 };
 
 //----------------------------------------------------------------------------------------------------
-class ColorNameChangeAction : public IActionOperation
+class ColorNameChangeAction : public IAction
 {
 public:
 	ColorNameChangeAction (UIDescription* description, UTF8StringPtr oldName, UTF8StringPtr newName, bool performOrUndo);
@@ -289,7 +292,7 @@ protected:
 };
 
 //----------------------------------------------------------------------------------------------------
-class BitmapChangeAction : public IActionOperation
+class BitmapChangeAction : public IAction
 {
 public:
 	BitmapChangeAction (UIDescription* description, UTF8StringPtr name, UTF8StringPtr path, bool remove, bool performOrUndo);
@@ -307,7 +310,7 @@ protected:
 };
 
 //----------------------------------------------------------------------------------------------------
-class BitmapNameChangeAction : public IActionOperation
+class BitmapNameChangeAction : public IAction
 {
 public:
 	BitmapNameChangeAction (UIDescription* description, UTF8StringPtr oldName, UTF8StringPtr newName, bool performOrUndo);
@@ -323,7 +326,7 @@ protected:
 };
 
 //----------------------------------------------------------------------------------------------------
-class FontChangeAction : public IActionOperation
+class FontChangeAction : public IAction
 {
 public:
 	FontChangeAction (UIDescription* description, UTF8StringPtr name, CFontRef font, bool remove, bool performOrUndo);
@@ -341,7 +344,7 @@ protected:
 };
 
 //----------------------------------------------------------------------------------------------------
-class FontNameChangeAction : public IActionOperation
+class FontNameChangeAction : public IAction
 {
 public:
 	FontNameChangeAction (UIDescription* description, UTF8StringPtr oldName, UTF8StringPtr newName, bool performOrUndo);
@@ -357,7 +360,7 @@ protected:
 };
 
 //-----------------------------------------------------------------------------
-class HierarchyMoveViewOperation : public IActionOperation
+class HierarchyMoveViewOperation : public IAction
 {
 public:
 	HierarchyMoveViewOperation (CView* view, UISelection* selection, bool up);

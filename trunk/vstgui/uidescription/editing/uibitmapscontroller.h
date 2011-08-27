@@ -7,7 +7,7 @@
 
 #include "uiselection.h"
 #include "uiundomanager.h"
-#include "iactionoperation.h"
+#include "iaction.h"
 #include "../../lib/cdatabrowser.h"
 
 namespace VSTGUI {
@@ -17,7 +17,7 @@ class UIBitmapsDataSource;
 class UIBitmapsController : public CBaseObject, public DelegationController, public IGenericStringListDataBrowserSourceSelectionChanged
 {
 public:
-	UIBitmapsController (IController* baseController, UIDescription* description, IActionOperator* actionOperator);
+	UIBitmapsController (IController* baseController, UIDescription* description, IActionPerformer* actionPerformer);
 	~UIBitmapsController ();
 
 protected:
@@ -32,7 +32,7 @@ protected:
 	static bool stringToValue (UTF8StringPtr txt, float& result, void* userData);
 
 	SharedPointer<UIDescription> editDescription;
-	IActionOperator* actionOperator;
+	IActionPerformer* actionPerformer;
 	UIBitmapsDataSource* dataSource;
 	SharedPointer<CView> bitmapView;
 	SharedPointer<CTextEdit> bitmapPathEdit;

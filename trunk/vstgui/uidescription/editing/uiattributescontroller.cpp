@@ -395,7 +395,7 @@ UIAttributesController::~UIAttributesController ()
 //----------------------------------------------------------------------------------------------------
 void UIAttributesController::performAttributeChange (const std::string& name, const std::string& value)
 {
-	IActionOperation* action = new AttributeChangeAction (editDescription, selection, name, value);
+	IAction* action = new AttributeChangeAction (editDescription, selection, name, value);
 	undoManager->pushAndPerform (action);
 }
 

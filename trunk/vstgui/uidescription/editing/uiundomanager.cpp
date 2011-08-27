@@ -36,13 +36,13 @@
 
 #if VSTGUI_LIVE_EDITING
 
-#include "iactionoperation.h"
+#include "iaction.h"
 #include <string>
 
 namespace VSTGUI {
 
 //-----------------------------------------------------------------------------
-class UndoStackTop : public IActionOperation
+class UndoStackTop : public IAction
 {
 public:
 	UTF8StringPtr getName () { return 0; }
@@ -51,7 +51,7 @@ public:
 };
 
 //----------------------------------------------------------------------------------------------------
-class UIGroupAction : public IActionOperation, public std::list<IActionOperation*>
+class UIGroupAction : public IAction, public std::list<IAction*>
 {
 public:
 	UIGroupAction (UTF8StringPtr name) : name (name) {}
@@ -97,7 +97,7 @@ UIUndoManager::~UIUndoManager ()
 }
 
 //----------------------------------------------------------------------------------------------------
-void UIUndoManager::pushAndPerform (IActionOperation* action)
+void UIUndoManager::pushAndPerform (IAction* action)
 {
 	if (groupQueue.empty () == false)
 	{
@@ -195,7 +195,7 @@ void UIUndoManager::clear ()
 		delete (*it);
 		it++;
 	}
-	std::list<IActionOperation*>::clear ();
+	std::list<IAction*>::clear ();
 	push_back (new UndoStackTop);
 	position = end ();
 	changed (kMsgChanged);

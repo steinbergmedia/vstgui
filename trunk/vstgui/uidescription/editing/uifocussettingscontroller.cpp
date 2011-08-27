@@ -5,6 +5,7 @@
 #include "uidialogcontroller.h"
 #include "uieditcontroller.h"
 #include "../../lib/controls/ctextedit.h"
+#include "../../lib/controls/coptionmenu.h"
 #include <sstream>
 
 namespace VSTGUI {
@@ -127,7 +128,7 @@ bool UIFocusSettingsController::stringToValue (UTF8StringPtr txt, float& result,
 {
 	if (txt)
 	{
-		float value = strtod (txt, 0);
+		float value = (float)strtod (txt, 0);
 		result = value;
 		return true;
 	}

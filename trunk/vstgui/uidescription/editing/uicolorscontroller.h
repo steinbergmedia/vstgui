@@ -7,7 +7,7 @@
 
 #include "uiselection.h"
 #include "uiundomanager.h"
-#include "iactionoperation.h"
+#include "iaction.h"
 
 namespace VSTGUI {
 class UIColorsDataSource;
@@ -16,7 +16,7 @@ class UIColorsDataSource;
 class UIColorsController : public CBaseObject, public DelegationController
 {
 public:
-	UIColorsController (IController* baseController, UIDescription* description, IActionOperator* actionOperator);
+	UIColorsController (IController* baseController, UIDescription* description, IActionPerformer* actionPerformer);
 	~UIColorsController ();
 
 protected:
@@ -26,7 +26,7 @@ protected:
 	void valueChanged (CControl* pControl);
 
 	SharedPointer<UIDescription> editDescription;
-	IActionOperator* actionOperator;
+	IActionPerformer* actionPerformer;
 	UIColorsDataSource* dataSource;
 	
 	enum {

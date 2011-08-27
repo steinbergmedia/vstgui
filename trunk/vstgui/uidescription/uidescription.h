@@ -148,6 +148,8 @@ public:
 	void removeFont (UTF8StringPtr name);
 	void removeBitmap (UTF8StringPtr name);
 
+	bool hasTagName (UTF8StringPtr name);
+
 	void updateViewDescription (UTF8StringPtr name, CView* view);
 	bool getTemplateNameFromView (CView* view, std::string& templateName);
 	bool addNewTemplate (UTF8StringPtr name, UIAttributes* attr); // owns attributes

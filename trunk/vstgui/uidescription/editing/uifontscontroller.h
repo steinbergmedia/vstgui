@@ -7,7 +7,7 @@
 
 #include "uiselection.h"
 #include "uiundomanager.h"
-#include "iactionoperation.h"
+#include "iaction.h"
 #include "../../lib/cdatabrowser.h"
 
 namespace VSTGUI {
@@ -17,7 +17,7 @@ class COptionMenu;
 class UIFontsController : public CBaseObject, public DelegationController, public IGenericStringListDataBrowserSourceSelectionChanged
 {
 public:
-	UIFontsController (IController* baseController, UIDescription* description, IActionOperator* actionOperator);
+	UIFontsController (IController* baseController, UIDescription* description, IActionPerformer* actionPerformer);
 	~UIFontsController ();
 
 protected:
@@ -32,7 +32,7 @@ protected:
 	static bool stringToValue (UTF8StringPtr txt, float& result, void* userData);
 
 	SharedPointer<UIDescription> editDescription;
-	IActionOperator* actionOperator;
+	IActionPerformer* actionPerformer;
 	UIFontsDataSource* dataSource;
 
 	COptionMenu* fontMenu;
