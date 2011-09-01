@@ -69,7 +69,7 @@ CFrame::CFrame (const CRect &inSize, void* inSystemWindow, VSTGUIEditorInterface
 : CViewContainer (inSize, 0, 0)
 , pEditor (inEditor)
 , pMouseObservers (0)
-, pKeyboardHook (0)
+, pKeyboardHooks (0)
 , pViewAddedRemovedObserver (0)
 , pTooltips (0)
 , pAnimator (0)
@@ -88,7 +88,7 @@ CFrame::CFrame (const CRect& inSize, VSTGUIEditorInterface* inEditor)
 : CViewContainer (inSize, 0, 0)
 , pEditor (inEditor)
 , pMouseObservers (0)
-, pKeyboardHook (0)
+, pKeyboardHooks (0)
 , pViewAddedRemovedObserver (0)
 , pTooltips (0)
 , pAnimator (0)
@@ -104,6 +104,15 @@ CFrame::CFrame (const CRect& inSize, VSTGUIEditorInterface* inEditor)
 //-----------------------------------------------------------------------------
 CFrame::~CFrame ()
 {
+	clearMouseViews (CPoint (0, 0), 0, false);
+
+	setModalView (0);
+
+	setCursor (kCursorDefault);
+
+	pParentFrame = 0;
+	removeAll ();
+
 	if (pTooltips)
 	{
 		pTooltips->forget ();
@@ -122,14 +131,13 @@ CFrame::~CFrame ()
 		delete pMouseObservers;
 	}
 
-	clearMouseViews (CPoint (0, 0), 0, false);
-
-	setModalView (0);
-
-	setCursor (kCursorDefault);
-
-	pParentFrame = 0;
-	removeAll ();
+	if (pKeyboardHooks)
+	{
+	#if DEBUG
+		DebugPrint ("Warning: Keyboard Hooks are not cleaned up correctly.\n If you register a keyboard hook you must also unregister it !\n");
+	#endif
+		delete pKeyboardHooks;
+	}
 
 	if (platformFrame)
 		platformFrame->forget ();
@@ -523,8 +531,7 @@ int32_t CFrame::onKeyDown (VstKeyCode& keyCode)
 {
 	int32_t result = -1;
 
-	if (getKeyboardHook ())
-		result = getKeyboardHook ()->onKeyDown (keyCode, this);
+	result = keyboardHooksOnKeyDown (keyCode);
 
 	if (result == -1 && pFocusView)
 	{
@@ -560,8 +567,7 @@ int32_t CFrame::onKeyUp (VstKeyCode& keyCode)
 {
 	int32_t result = -1;
 
-	if (getKeyboardHook ())
-		result = getKeyboardHook ()->onKeyUp (keyCode, this);
+	result = keyboardHooksOnKeyUp (keyCode);
 
 	if (result == -1 && pFocusView)
 	{
@@ -614,6 +620,21 @@ CView::DragResult CFrame::doDrag (CDropSource* source, const CPoint& offset, CBi
 	if (platformFrame)
 		return platformFrame->doDrag (source, offset, dragBitmap);
 	return CView::kDragError;
+}
+
+//-----------------------------------------------------------------------------
+IDataPackage* CFrame::getClipboard ()
+{
+	if (platformFrame)
+		return platformFrame->getClipboard ();
+	return 0;
+}
+
+//-----------------------------------------------------------------------------
+void CFrame::setClipboard (IDataPackage* data)
+{
+	if (platformFrame)
+		platformFrame->setClipboard (data);
 }
 
 //-----------------------------------------------------------------------------
@@ -1185,6 +1206,62 @@ void CFrame::invalidRect (const CRect& rect)
 		return;
 	if (platformFrame)
 		platformFrame->invalidRect (rect);
+}
+
+//-----------------------------------------------------------------------------
+void CFrame::registerKeyboardHook (IKeyboardHook* hook)
+{
+	if (pKeyboardHooks == 0)
+		pKeyboardHooks = new std::list<IKeyboardHook*> ();
+	pKeyboardHooks->push_back (hook);
+}
+
+//-----------------------------------------------------------------------------
+void CFrame::unregisterKeyboardHook (IKeyboardHook* hook)
+{
+	if (pKeyboardHooks)
+	{
+		pKeyboardHooks->remove (hook);
+		if (pKeyboardHooks->empty ())
+		{
+			delete pKeyboardHooks;
+			pKeyboardHooks = 0;
+		}
+	}
+}
+
+//-----------------------------------------------------------------------------
+int32_t CFrame::keyboardHooksOnKeyDown (const VstKeyCode& key)
+{
+	if (pKeyboardHooks)
+	{
+		for (std::list<IKeyboardHook*>::reverse_iterator it = pKeyboardHooks->rbegin (); it != pKeyboardHooks->rend ();)
+		{
+			IKeyboardHook* hook = *it;
+			it++;
+			int32_t result = hook->onKeyDown (key, this);
+			if (result > 0)
+				return result;
+		}
+	}
+	return -1;
+}
+
+//-----------------------------------------------------------------------------
+int32_t CFrame::keyboardHooksOnKeyUp (const VstKeyCode& key)
+{
+	if (pKeyboardHooks)
+	{
+		for (std::list<IKeyboardHook*>::reverse_iterator it = pKeyboardHooks->rbegin (); it != pKeyboardHooks->rend ();)
+		{
+			IKeyboardHook* hook = *it;
+			it++;
+			int32_t result = hook->onKeyUp (key, this);
+			if (result > 0)
+				return result;
+		}
+	}
+	return -1;
 }
 
 //-----------------------------------------------------------------------------

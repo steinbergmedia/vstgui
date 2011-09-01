@@ -69,7 +69,11 @@ protected:
 	virtual void performFontNameChange (UTF8StringPtr oldName, UTF8StringPtr newName);
 	virtual void performBitmapNameChange (UTF8StringPtr oldName, UTF8StringPtr newName);
 	virtual void performBitmapNinePartTiledChange (UTF8StringPtr bitmapName, const CRect* offsets);
-	virtual void makeSelection (CView* view);
+	virtual void performAlternativeFontChange (UTF8StringPtr fontName, UTF8StringPtr newAlternativeFonts);
+
+	virtual void beginLiveColorChange (UTF8StringPtr colorName);
+	virtual void performLiveColorChange (UTF8StringPtr colorName, const CColor& newColor);
+	virtual void endLiveColorChange (UTF8StringPtr colorName);
 
 	// IKeyboardHook
 	virtual int32_t onKeyDown (const VstKeyCode& code, CFrame* frame);
@@ -84,7 +88,6 @@ protected:
 	SharedPointer<UIEditMenuController> menuController;
 	SharedPointer<CControl> enableEditingControl;
 	SharedPointer<CControl> notSavedControl;
-	IKeyboardHook* originalKeyboardHook;
 	
 	std::string editTemplateName;
 	std::list<SharedPointer<CSplitView> > splitViews;

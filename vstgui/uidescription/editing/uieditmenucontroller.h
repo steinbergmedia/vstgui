@@ -72,6 +72,8 @@ protected:
 	virtual CView* verifyView (CView* view, const UIAttributes& attributes, IUIDescription* description);
 	CControlListener* getControlListener (UTF8StringPtr name) { return this; }
 	static bool createUniqueTemplateName (std::list<const std::string*>& names, std::string& name, int32_t count = 0);
+	void controlBeginEdit (CControl* pControl);
+	void controlEndEdit (CControl* pControl);
 
 	SharedPointer<UISelection> selection;
 	SharedPointer<UIUndoManager> undoManager;
@@ -79,6 +81,8 @@ protected:
 
 	COptionMenu* fileMenu;
 	COptionMenu* editMenu;
+	CTextLabel* fileLabel;
+	CTextLabel* editLabel;
 	
 	enum {
 		kMenuFileTag = 100,

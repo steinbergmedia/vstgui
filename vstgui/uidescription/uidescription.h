@@ -148,7 +148,13 @@ public:
 	void removeFont (UTF8StringPtr name);
 	void removeBitmap (UTF8StringPtr name);
 
+	void changeAlternativeFontNames (UTF8StringPtr name, UTF8StringPtr alternativeFonts);
+	bool getAlternativeFontNames (UTF8StringPtr name, std::string& alternativeFonts);
+
+	bool hasColorName (UTF8StringPtr name);
 	bool hasTagName (UTF8StringPtr name);
+	bool hasFontName (UTF8StringPtr name);
+	bool hasBitmapName (UTF8StringPtr name);
 
 	void updateViewDescription (UTF8StringPtr name, CView* view);
 	bool getTemplateNameFromView (CView* view, std::string& templateName);
@@ -225,6 +231,9 @@ public:
 	
 	void setRectAttribute (UTF8StringPtr name, const CRect& r);
 	bool getRectAttribute (UTF8StringPtr name, CRect& r) const;
+	
+	void setAttributeArray (UTF8StringPtr name, const std::vector<std::string>& values);
+	bool getAttributeArray (UTF8StringPtr name, std::vector<std::string>& values);
 	
 	void removeAll () { clear (); }
 

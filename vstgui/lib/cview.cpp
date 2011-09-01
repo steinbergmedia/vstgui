@@ -269,6 +269,7 @@ void CView::setTransparency (bool state)
 		viewFlags |= kTransparencyEnabled;
 	else
 		viewFlags &= ~kTransparencyEnabled;
+	setDirty ();
 }
 
 //-----------------------------------------------------------------------------

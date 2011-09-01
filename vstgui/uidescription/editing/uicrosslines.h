@@ -28,11 +28,8 @@ public:
 	int32_t getStyle () const { return style; }
 
 	void update (UISelection* selection);
-
 	void update (const CPoint& point);
-
 	void invalid ();
-	
 	void draw (CDrawContext* pContext);
 protected:
 	CView* view;

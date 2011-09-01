@@ -41,6 +41,7 @@
 #import "lib/platform/mac/macfileselector.mm"
 #import "lib/platform/mac/macstring.mm"
 #import "lib/platform/mac/cfontmac.mm"
+#import "lib/platform/mac/macclipboard.mm"
 #import "lib/platform/mac/carbon/hiviewframe.cpp"
 #import "lib/platform/mac/carbon/hiviewoptionmenu.cpp"
 #import "lib/platform/mac/carbon/hiviewtextedit.cpp"

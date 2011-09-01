@@ -121,6 +121,19 @@ public:
 	void enableTooltips (bool state);										///< enable or disable tooltips
 
 	Animation::Animator* getAnimator ();									///< get animator for this frame
+
+	IDataPackage* getClipboard ();											///< get the clipboard data. data is owned by the caller
+	void setClipboard (IDataPackage* data);									///< set the clipboard data.
+
+	virtual IViewAddedRemovedObserver* getViewAddedRemovedObserver () const { return pViewAddedRemovedObserver; }
+	virtual void setViewAddedRemovedObserver (IViewAddedRemovedObserver* observer) { pViewAddedRemovedObserver = observer; }
+
+	void registerKeyboardHook (IKeyboardHook* hook);						///< register a keyboard hook
+	void unregisterKeyboardHook (IKeyboardHook* hook);						///< unregister a keyboard hook
+
+	void registerMouseObserver (IMouseObserver* observer);					///< register a mouse observer
+	void unregisterMouseObserver (IMouseObserver* observer);				///< unregister a mouse observer
+
 	//@}
 
 	//-----------------------------------------------------------------------------
@@ -170,13 +183,6 @@ public:
 	void setViewSize (const CRect& rect, bool invalid = true);
 
 	virtual VSTGUIEditorInterface* getEditor () const { return pEditor; }
-	virtual IKeyboardHook* getKeyboardHook () const { return pKeyboardHook; }
-	virtual void setKeyboardHook (IKeyboardHook* hook) { pKeyboardHook = hook; }
-	virtual IViewAddedRemovedObserver* getViewAddedRemovedObserver () const { return pViewAddedRemovedObserver; }
-	virtual void setViewAddedRemovedObserver (IViewAddedRemovedObserver* observer) { pViewAddedRemovedObserver = observer; }
-
-	void registerMouseObserver (IMouseObserver* observer);		///< registers a mouse observer
-	void unregisterMouseObserver (IMouseObserver* observer);	///< unregisters a mouse observer
 
 	#if DEBUG
 	virtual void dumpHierarchy ();
@@ -192,7 +198,6 @@ protected:
 	void removeFromMouseViews (CView* view);
 
 	VSTGUIEditorInterface*		pEditor;
-	IKeyboardHook*				pKeyboardHook;
 	IViewAddedRemovedObserver*	pViewAddedRemovedObserver;
 	CTooltipSupport*			pTooltips;
 	Animation::Animator*		pAnimator;
@@ -203,6 +208,11 @@ protected:
 	std::list<CView*> pMouseViews;
 
 	bool	bActive;
+
+	// keyboard hooks
+	std::list<IKeyboardHook*>* pKeyboardHooks;
+	int32_t keyboardHooksOnKeyDown (const VstKeyCode& key);
+	int32_t keyboardHooksOnKeyUp (const VstKeyCode& key);
 
 	// mouse observers
 	std::list<IMouseObserver*>* pMouseObservers;

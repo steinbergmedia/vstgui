@@ -17,6 +17,8 @@ UIEditMenuController::UIEditMenuController (IController* baseController, UISelec
 , description (description)
 , editMenu (0)
 , fileMenu (0)
+, editLabel (0)
+, fileLabel (0)
 {
 }
 
@@ -113,19 +115,15 @@ CMessageResult UIEditMenuController::notify (CBaseObject* sender, IdStringPtr me
 			{
 				// TODO: Implement
 				item->setEnabled (false);
-				return kMessageNotified;
 			}
 			else if (strcmp (item->getCommandName (), "Copy") == 0)
 			{
-				// TODO: Implement
 				item->setEnabled (false);
-				return kMessageNotified;
 			}
 			else if (strcmp (item->getCommandName (), "Paste") == 0)
 			{
 				// TODO: Implement
 				item->setEnabled (false);
-				return kMessageNotified;
 			}
 			else if (strcmp (item->getCommandName (), "Delete") == 0)
 			{
@@ -338,6 +336,12 @@ CMessageResult UIEditMenuController::notify (CBaseObject* sender, IdStringPtr me
 		CBaseObject* obj = dynamic_cast<CBaseObject*>(controller);
 		return obj ? obj->notify (sender, message) : kMessageNotified;
 	}
+	else if (message == CVSTGUITimer::kMsgTimer)
+	{
+		sender->forget ();
+		editLabel->setTransparency (true);
+		fileLabel->setTransparency (true);
+	}
 	return kMessageUnknown;
 }
 
@@ -383,15 +387,45 @@ CCommandMenuItem* UIEditMenuController::findKeyCommandItem (COptionMenu* menu, c
 //----------------------------------------------------------------------------------------------------
 int32_t UIEditMenuController::processKeyCommand (const VstKeyCode& key)
 {
-	CCommandMenuItem* item = editMenu ? findKeyCommandItem (editMenu, key) : 0;
+	COptionMenu* baseMenu = editMenu;
+	CCommandMenuItem* item = baseMenu ? findKeyCommandItem (baseMenu, key) : 0;
 	if (item == 0 && fileMenu)
-		item = findKeyCommandItem (fileMenu, key);
+	{
+		baseMenu = fileMenu;
+		item = findKeyCommandItem (baseMenu, key);
+	}
 	if (item && item->getTarget ())
 	{
 		item->getTarget ()->notify (item, CCommandMenuItem::kMsgMenuItemValidate);
 		if (item->isEnabled ())
 		{
+			CTextLabel* label = 0;
+			if (baseMenu)
+			{
+				switch (baseMenu->getTag ())
+				{
+					case kMenuFileTag:
+					{
+						label = fileLabel;
+						break;
+					}
+					case kMenuEditTag:
+					{
+						label = editLabel;
+						break;
+					}
+				}
+			}
+			if (label)
+			{
+				label->setTransparency (false);
+			}
 			item->getTarget ()->notify (item, CCommandMenuItem::kMsgMenuItemSelected);
+			if (label)
+			{
+				CVSTGUITimer* timer = new CVSTGUITimer (this, 90);
+				timer->start ();
+			}
 			return 1;
 		}
 	}
@@ -416,6 +450,26 @@ CView* UIEditMenuController::verifyView (CView* view, const UIAttributes& attrib
 			{
 				fileMenu = menu;
 				break;
+			}
+		}
+	}
+	else
+	{
+		CTextLabel* label = dynamic_cast<CTextLabel*>(view);
+		if (label)
+		{
+			switch (label->getTag ())
+			{
+				case kMenuEditTag:
+				{
+					editLabel = label;
+					break;
+				}
+				case kMenuFileTag:
+				{
+					fileLabel = label;
+					break;
+				}
 			}
 		}
 	}
@@ -450,6 +504,48 @@ void UIEditMenuController::valueChanged (CControl* control)
 			break;
 		}
 	}
+}
+
+//----------------------------------------------------------------------------------------------------
+void UIEditMenuController::controlBeginEdit (CControl* pControl)
+{
+	CTextLabel* label = 0;
+	switch (pControl->getTag ())
+	{
+		case kMenuFileTag:
+		{
+			label = fileLabel;
+			break;
+		}
+		case kMenuEditTag:
+		{
+			label = editLabel;
+			break;
+		}
+	}
+	if (label)
+		label->setTransparency (false);
+}
+
+//----------------------------------------------------------------------------------------------------
+void UIEditMenuController::controlEndEdit (CControl* pControl)
+{
+	CTextLabel* label = 0;
+	switch (pControl->getTag ())
+	{
+		case kMenuFileTag:
+		{
+			label = fileLabel;
+			break;
+		}
+		case kMenuEditTag:
+		{
+			label = editLabel;
+			break;
+		}
+	}
+	if (label)
+		label->setTransparency (true);
 }
 
 } // namespace

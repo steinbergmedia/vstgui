@@ -50,7 +50,7 @@ class CGraphicsPath;
 class CDrawContext;
 class COffscreenContext;
 class CDragContainer;
-class CDropSource;
+class IDataPackage;
 struct CRect;
 struct CPoint;
 
@@ -112,7 +112,10 @@ public:
 	
 	virtual COffscreenContext* createOffscreenContext (CCoord width, CCoord height) = 0; ///< create an offscreen draw device
 
-	virtual CView::DragResult doDrag (CDropSource* source, const CPoint& offset, CBitmap* dragBitmap) = 0; ///< start a drag operation
+	virtual CView::DragResult doDrag (IDataPackage* source, const CPoint& offset, CBitmap* dragBitmap) = 0; ///< start a drag operation
+
+	virtual void setClipboard (IDataPackage* data) = 0;	///< set clipboard data
+	virtual IDataPackage* getClipboard () = 0;			///< get clipboard data
 
 //-----------------------------------------------------------------------------
 protected:

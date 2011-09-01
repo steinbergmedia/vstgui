@@ -80,7 +80,9 @@ static bool process (CBitmap* bitmap, int32_t boxSize)
 				accessor->setColor (nc[0]);
 			}
 		}
+		delete [] nc;
 		accessor->forget ();
+		return true;
 	}
 	return false;
 }
@@ -127,7 +129,7 @@ void UIDialogController::run (UTF8StringPtr _templateName, UTF8StringPtr _dialog
 		dialogBackView = new CViewContainer (size);
 		dialogBackView->setTransparency (true);
 
-		COffscreenContext* offscreen = COffscreenContext::create(frame, size.getWidth (), size.getHeight ());
+		COffscreenContext* offscreen = COffscreenContext::create (frame, size.getWidth (), size.getHeight ());
 		if (offscreen)
 		{
 			size.originize ();
@@ -147,8 +149,7 @@ void UIDialogController::run (UTF8StringPtr _templateName, UTF8StringPtr _dialog
 		frame->addView (dialogBackView);
 		
 		frame->setModalView (view);
-		keyboardHook = frame->getKeyboardHook ();
-		frame->setKeyboardHook (this);
+		frame->registerKeyboardHook (this);
 		if (button1)
 			frame->setFocusView (button1);
 		setOpenGLViewsVisible (false);
@@ -180,7 +181,7 @@ void UIDialogController::valueChanged (CControl* control)
 		CView* modalView = frame->getModalView ();
 		frame->setModalView (0);
 		modalView->forget ();
-		frame->setKeyboardHook (keyboardHook);
+		frame->unregisterKeyboardHook (this);
 		if (dialogBackView)
 			frame->removeView (dialogBackView);
 		if (button1)
@@ -201,7 +202,6 @@ CControlListener* UIDialogController::getControlListener (UTF8StringPtr controlT
 //----------------------------------------------------------------------------------------------------
 CView* UIDialogController::verifyView (CView* view, const UIAttributes& attributes, IUIDescription* description)
 {
-	// TODO: buttons layout
 	CControl* control = dynamic_cast<CControl*>(view);
 	if (control)
 	{
@@ -320,12 +320,16 @@ int32_t UIDialogController::onKeyDown (const VstKeyCode& code, CFrame* frame)
 //----------------------------------------------------------------------------------------------------
 int32_t UIDialogController::onKeyUp (const VstKeyCode& code, CFrame* frame)
 {
+	CView* focusView = frame->getFocusView ();
+	if (focusView)
+		return focusView->onKeyUp (const_cast<VstKeyCode&> (code));
 	return -1;
 }
 
 //----------------------------------------------------------------------------------------------------
 void UIDialogController::collectOpenGLViews (CViewContainer* container)
 {
+#if VSTGUI_OPENGL_SUPPORT
 	ViewIterator it (container);
 	while (*it)
 	{
@@ -340,6 +344,7 @@ void UIDialogController::collectOpenGLViews (CViewContainer* container)
 		}
 		it++;
 	}
+#endif
 }
 
 //----------------------------------------------------------------------------------------------------

@@ -65,6 +65,8 @@ public:
 	void setIgnoreNextResignFirstResponder (bool state) { ignoreNextResignFirstResponder = state; }
 	bool getIgnoreNextResignFirstResponder () const { return ignoreNextResignFirstResponder; }
 
+	void initTrackingArea ();
+	void cursorUpdate ();
 	virtual void drawRect (NSRect* rect);
 
 	// IPlatformFrame
@@ -86,7 +88,9 @@ public:
 #endif
 	COffscreenContext* createOffscreenContext (CCoord width, CCoord height);
 	CGraphicsPath* createGraphicsPath ();
-	CView::DragResult doDrag (CDropSource* source, const CPoint& offset, CBitmap* dragBitmap);
+	CView::DragResult doDrag (IDataPackage* source, const CPoint& offset, CBitmap* dragBitmap);
+	void setClipboard (IDataPackage* data);
+	IDataPackage* getClipboard ();
 
 //-----------------------------------------------------------------------------
 protected:
@@ -98,6 +102,8 @@ protected:
 
 	CView::DragResult lastDragOperationResult;
 	bool ignoreNextResignFirstResponder;
+	bool trackingAreaInitialized;
+	CCursorType cursor;
 };
 
 } // namespace

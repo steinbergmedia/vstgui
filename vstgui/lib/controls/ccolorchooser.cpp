@@ -348,6 +348,10 @@ CColorChooserUISettings::CColorChooserUISettings ()
 }
 
 //-----------------------------------------------------------------------------
+IdStringPtr CColorChooser::kMsgBeginColorChange = "CColorChooser::kMsgBeginColorChange";
+IdStringPtr CColorChooser::kMsgEndColorChange = "CColorChooser::kMsgEndColorChange";
+
+//-----------------------------------------------------------------------------
 CColorChooser::CColorChooser (IColorChooserDelegate* delegate, const CColor& initialColor, const CColorChooserUISettings& settings)
 : CViewContainer (CRect (0, 0, 0, 0))
 , delegate (delegate)
@@ -592,6 +596,18 @@ void CColorChooser::valueChanged (CControl* control)
 	updateState ();
 	if (delegate)
 		delegate->colorChanged (this, color);
+}
+
+//-----------------------------------------------------------------------------
+void CColorChooser::controlBeginEdit (CControl* pControl)
+{
+	changed (kMsgBeginColorChange);
+}
+
+//-----------------------------------------------------------------------------
+void CColorChooser::controlEndEdit (CControl* pControl)
+{
+	changed (kMsgEndColorChange);
 }
 
 //-----------------------------------------------------------------------------

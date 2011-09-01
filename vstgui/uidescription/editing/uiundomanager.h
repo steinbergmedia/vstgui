@@ -66,6 +66,7 @@ public:
 
 	void startGroupAction (UTF8StringPtr name);
 	void endGroupAction ();
+	void cancelGroupAction ();
 
 	void clear ();
 	
