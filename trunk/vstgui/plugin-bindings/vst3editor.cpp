@@ -592,6 +592,28 @@ void VST3Editor::onViewRemoved (CFrame* frame, CView* view)
 	}
 }
 
+//-----------------------------------------------------------------------------
+int32_t VST3Editor::onKeyDown (const VstKeyCode& code, CFrame* frame)
+{
+#if VSTGUI_LIVE_EDITING
+	if (code.modifier == MODIFIER_CONTROL && frame->getModalView () == 0)
+	{
+		if (code.character == 'e')
+		{
+			enableEditing (!editingEnabled);
+			return 1;
+		}
+	}
+#endif
+	return -1;
+}
+
+//-----------------------------------------------------------------------------
+int32_t VST3Editor::onKeyUp (const VstKeyCode& code, CFrame* frame)
+{
+	return -1;
+}
+
 #if VST3_SUPPORTS_CONTEXTMENU
 /// @cond ignore
 namespace VST3EditorInternal {
@@ -820,6 +842,9 @@ bool PLUGIN_API VST3Editor::open (void* parent)
 	frame->setViewAddedRemovedObserver (this);
 	frame->setTransparency (true);
 	frame->registerMouseObserver (this);
+#if VSTGUI_LIVE_EDITING
+	frame->registerKeyboardHook (this);
+#endif
 	frame->enableTooltips (tooltipsEnabled);
 
 	if (!enableEditing (false))
@@ -850,6 +875,9 @@ void PLUGIN_API VST3Editor::close ()
 	paramChangeListeners.clear ();
 	if (frame)
 	{
+	#if VSTGUI_LIVE_EDITING
+		frame->unregisterKeyboardHook (this);
+	#endif
 		frame->unregisterMouseObserver (this);
 		frame->removeAll (true);
 		int32_t refCount = frame->getNbReference ();
@@ -975,25 +1003,28 @@ CMessageResult VST3Editor::notify (CBaseObject* sender, IdStringPtr message)
 				}
 				else if (strcmp (item->getCommandName (), "Save As") == 0)
 				{
-					CNewFileSelector* fileSelector = CNewFileSelector::create (0, CNewFileSelector::kSelectSaveFile);
-					if (fileSelector)
+					UIAttributes* attributes = description->getCustomAttributes ("VST3Editor", true);
+					if (attributes)
 					{
-						fileSelector->setTitle ("Save UIDescription File");
-						fileSelector->setDefaultExtension (CFileExtension ("VSTGUI UI Description", "uidesc"));
-						if (fileSelector->runModal ())
+						CNewFileSelector* fileSelector = CNewFileSelector::create (0, CNewFileSelector::kSelectSaveFile);
+						if (fileSelector)
 						{
-							UTF8StringPtr filePath = fileSelector->getSelectedFile (0);
+							fileSelector->setTitle ("Save UIDescription File");
+							fileSelector->setDefaultExtension (CFileExtension ("VSTGUI UI Description", "uidesc"));
+							const std::string* filePath = attributes->getAttributeValue ("Path");
 							if (filePath)
+								fileSelector->setInitialDirectory (filePath->c_str ());
+							if (fileSelector->runModal ())
 							{
-								UIAttributes* attributes = description->getCustomAttributes ("VST3Editor", true);
-								if (attributes)
+								UTF8StringPtr filePath = fileSelector->getSelectedFile (0);
+								if (filePath)
 								{
-									attributes->setAttribute ("Path", filePath);
-									description->save (filePath);
+										attributes->setAttribute ("Path", filePath);
+										description->save (filePath);
 								}
 							}
+							fileSelector->forget ();
 						}
-						fileSelector->forget ();
 					}
 					return kMessageNotified;
 				}
@@ -1041,6 +1072,7 @@ bool VST3Editor::enableEditing (bool state)
 	#if VSTGUI_LIVE_EDITING
 		if (state)
 		{
+			nonEditRect = frame->getViewSize ();
 			description->setController (this);
 			UIEditController* editController = new UIEditController (description);
 			CView* view = editController->createEditView ();
@@ -1075,7 +1107,6 @@ bool VST3Editor::enableEditing (bool state)
 				{
 					editMenu->addSeparator ();
 					editMenu->addEntry (new CCommandMenuItem ("Sync Parameter Tags", this, "Edit", "Sync Parameter Tags"));
-					// TODO: implement functions
 				}
 				editingEnabled = true;
 				return true;
@@ -1091,10 +1122,17 @@ bool VST3Editor::enableEditing (bool state)
 			{
 				frame->setSize (view->getWidth (), view->getHeight ());
 				frame->addView (view);
-
-				rect.right = rect.left + (Steinberg::int32)frame->getWidth ();
-				rect.bottom = rect.top + (Steinberg::int32)frame->getHeight ();
-				plugFrame->resizeView (this, &rect);
+				if (nonEditRect.isEmpty () == false)
+				{
+					rect.right = rect.left + (Steinberg::int32)nonEditRect.getWidth ();
+					rect.bottom = rect.top + (Steinberg::int32)nonEditRect.getHeight ();
+					plugFrame->resizeView (this, &rect);
+				}
+				else
+				{
+					checkSizeConstraint (&rect);
+					onSize (&rect);
+				}
 
 				frame->setFocusDrawingEnabled (false);
 

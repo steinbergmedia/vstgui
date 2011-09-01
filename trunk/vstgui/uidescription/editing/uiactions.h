@@ -248,7 +248,7 @@ public:
 	virtual void perform ();
 	virtual void undo ();
 	
-	bool newTag () const { return isNewTag; }
+	bool isAddTag () const { return isNewTag; }
 protected:
 	SharedPointer<UIDescription> description;
 	std::string name;
@@ -276,6 +276,27 @@ protected:
 };
 
 //----------------------------------------------------------------------------------------------------
+class ColorChangeAction : public IAction
+{
+public:
+	ColorChangeAction (UIDescription* description, UTF8StringPtr name, const CColor& color, bool remove, bool performOrUndo);
+
+	virtual UTF8StringPtr getName ();
+	virtual void perform ();
+	virtual void undo ();
+	
+	bool isAddColor () const { return isNewColor; }
+protected:
+	SharedPointer<UIDescription> description;
+	std::string name;
+	CColor newColor;
+	CColor oldColor;
+	bool remove;
+	bool performOrUndo;
+	bool isNewColor;
+};
+
+//----------------------------------------------------------------------------------------------------
 class ColorNameChangeAction : public IAction
 {
 public:
@@ -300,6 +321,8 @@ public:
 	virtual UTF8StringPtr getName ();
 	virtual void perform ();
 	virtual void undo ();
+	
+	bool isAddBitmap () const { return isNewBitmap; }
 protected:
 	SharedPointer<UIDescription> description;
 	std::string name;
@@ -307,6 +330,7 @@ protected:
 	std::string originalPath;
 	bool remove;
 	bool performOrUndo;
+	bool isNewBitmap;
 };
 
 //----------------------------------------------------------------------------------------------------
@@ -326,6 +350,24 @@ protected:
 };
 
 //----------------------------------------------------------------------------------------------------
+class NinePartTiledBitmapChangeAction : public IAction
+{
+public:
+	NinePartTiledBitmapChangeAction (UIDescription* description, UTF8StringPtr name, const CRect* rect, bool performOrUndo);
+	~NinePartTiledBitmapChangeAction ();
+	
+	virtual UTF8StringPtr getName ();
+	virtual void perform ();
+	virtual void undo ();
+protected:
+	SharedPointer<UIDescription> description;
+	std::string name;
+	CRect* oldRect;
+	CRect* newRect;
+	bool performOrUndo;
+};
+
+//----------------------------------------------------------------------------------------------------
 class FontChangeAction : public IAction
 {
 public:
@@ -334,9 +376,12 @@ public:
 	virtual UTF8StringPtr getName ();
 	virtual void perform ();
 	virtual void undo ();
+
+	bool isAddFont () const { return originalFont == 0; }
 protected:
 	SharedPointer<UIDescription> description;
 	std::string name;
+	std::string alternativeNames;
 	SharedPointer<CFontDesc> font;
 	SharedPointer<CFontDesc> originalFont;
 	bool remove;
@@ -360,6 +405,21 @@ protected:
 };
 
 //-----------------------------------------------------------------------------
+class AlternateFontChangeAction : public IAction
+{
+public:
+	AlternateFontChangeAction (UIDescription* description, UTF8StringPtr fontName, UTF8StringPtr newAlternateFontNames);
+	virtual UTF8StringPtr getName ();
+	virtual void perform ();
+	virtual void undo ();
+protected:
+	SharedPointer<UIDescription> description;
+	std::string fontName;
+	std::string newAlternateFontNames;
+	std::string oldAlternateFontNames;
+};
+
+//-----------------------------------------------------------------------------
 class HierarchyMoveViewOperation : public IAction
 {
 public:
@@ -367,15 +427,28 @@ public:
 	~HierarchyMoveViewOperation ();
 
 	UTF8StringPtr getName ();
-
 	void perform ();
-	
 	void undo ();
 protected:
 	SharedPointer<CView> view;
 	SharedPointer<CViewContainer> parent;
 	UISelection* selection;
 	bool up;
+};
+
+//-----------------------------------------------------------------------------
+class TemplateNameChangeAction : public IAction
+{
+public:
+	TemplateNameChangeAction (UIDescription* description, UTF8StringPtr oldName, UTF8StringPtr newName);
+
+	UTF8StringPtr getName ();
+	void perform ();
+	void undo ();
+protected:
+	SharedPointer<UIDescription> description;
+	std::string oldName;
+	std::string newName;
 };
 
 } // namespace

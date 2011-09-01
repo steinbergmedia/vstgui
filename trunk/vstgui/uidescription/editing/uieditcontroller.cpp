@@ -24,6 +24,7 @@
 #include "../../lib/animation/timingfunctions.h"
 
 #include <sstream>
+#include <algorithm>
 #include <assert.h>
 
 /*
@@ -95,7 +96,14 @@ void UIEditController::setupDataSource (GenericStringListDataBrowserSource* sour
 //-----------------------------------------------------------------------------
 bool UIEditController::std__stringCompare (const std::string* lhs, const std::string* rhs)
 {
-  return *lhs < *rhs;
+	for (std::string::const_iterator it = lhs->begin (), it2 = rhs->begin (); it != lhs->end () && it2 != rhs->end (); it++, it2++)
+	{
+		char c1 = tolower (*it);
+		char c2 = tolower (*it2);
+		if (c1 != c2)
+			return c1 < c2;
+	}
+	return true;
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -213,7 +221,6 @@ UIEditController::UIEditController (UIDescription* description)
 , undoManager (new UIUndoManager ())
 , editView (0)
 , templateController (0)
-, originalKeyboardHook (0)
 , dirty (false)
 {
 	gridController = new UIGridController (this, description);
@@ -390,6 +397,10 @@ void UIEditController::valueChanged (CControl* control)
 {
 	if (editView && control == enableEditingControl)
 	{
+		selection->empty ();
+		CViewContainer* container = editView->getEditView () ? dynamic_cast<CViewContainer*>(editView->getEditView ()) : 0;
+		if (container)
+			resetScrollViewOffsets (container);
 		editView->enableEditing (control->getValue () == control->getMax () ? true : false);
 	}
 }
@@ -438,14 +449,12 @@ CMessageResult UIEditController::notify (CBaseObject* sender, IdStringPtr messag
 	else if (message == UIEditView::kMsgAttached)
 	{
 		assert (editView);
-		originalKeyboardHook = editView->getFrame()->getKeyboardHook ();
-		editView->getFrame ()->setKeyboardHook (this);
+		editView->getFrame ()->registerKeyboardHook (this);
 		return kMessageNotified;
 	}
 	else if (message == UIEditView::kMsgRemoved)
 	{
-		editView->getFrame ()->setKeyboardHook (originalKeyboardHook);
-		originalKeyboardHook = 0;
+		editView->getFrame ()->unregisterKeyboardHook (this);
 		notify (0, UIDescription::kMessageBeforeSave);
 		return kMessageNotified;
 	}
@@ -488,6 +497,29 @@ CMessageResult UIEditController::notify (CBaseObject* sender, IdStringPtr messag
 				item->setEnabled (editTemplateName.empty () ? false : true);
 				return kMessageNotified;
 			}
+			else if (strcmp (item->getCommandName (), "Copy") == 0 || strcmp (item->getCommandName (), "Cut") == 0)
+			{
+				if (editView && selection->first () && selection->contains (editView->getEditView ()) == false)
+					item->setEnabled (true);
+				else
+					item->setEnabled (false);
+				return kMessageNotified;
+			}
+			else if (strcmp (item->getCommandName (), "Paste") == 0)
+			{
+				item->setEnabled (false);
+				if (editView && selection->first ())
+				{
+					IDataPackage* clipboard = editView->getFrame ()->getClipboard ();
+					if (clipboard)
+					{
+						if (clipboard->getDataType (0) == IDataPackage::kBinary)
+							item->setEnabled (true);
+						clipboard->forget ();
+					}
+				}
+				return kMessageNotified;
+			}
 		}
 	}
 	else if (message == CCommandMenuItem::kMsgMenuItemSelected)
@@ -495,7 +527,55 @@ CMessageResult UIEditController::notify (CBaseObject* sender, IdStringPtr messag
 		CCommandMenuItem* item = dynamic_cast<CCommandMenuItem*>(sender);
 		if (strcmp (item->getCommandCategory (), "Edit") == 0)
 		{
-			if (strcmp (item->getCommandName (), "Template Settings...") == 0)
+			if (strcmp (item->getCommandName (), "Copy") == 0 || strcmp (item->getCommandName (), "Cut") == 0)
+			{
+				CMemoryStream stream;
+				selection->store (stream, dynamic_cast<UIViewFactory*> (editDescription->getViewFactory ()), editDescription);
+				CDropSource* dataSource = new CDropSource (stream.getBuffer (), (int32_t)stream.tell (), IDataPackage::kBinary);
+				editView->getFrame ()->setClipboard (dataSource);
+				dataSource->forget ();
+				if (strcmp (item->getCommandName (), "Cut") == 0)
+				{
+					undoManager->pushAndPerform (new DeleteOperation (selection));
+				}
+				return kMessageNotified;
+			}
+			else if (strcmp (item->getCommandName (), "Paste") == 0)
+			{
+				IDataPackage* clipboard = editView->getFrame ()->getClipboard ();
+				if (clipboard)
+				{
+					if (clipboard->getDataType (0) == IDataPackage::kBinary)
+					{
+						const void* data;
+						IDataPackage::Type type;
+						int32_t size = clipboard->getData (0, data, type);
+						if (size > 0)
+						{
+							CPoint offset;
+							CViewContainer* container = dynamic_cast<CViewContainer*> (selection->first ());
+							if (container == 0)
+							{
+								container = dynamic_cast<CViewContainer*> (selection->first ()->getParentView ());
+								offset = selection->first ()->getViewSize ().getTopLeft ();
+								offset.offset (gridController->getSize ().x, gridController->getSize ().y);
+							}
+							UIViewFactory* viewFactory = dynamic_cast<UIViewFactory*> (editDescription->getViewFactory ());
+							CMemoryStream stream ((const int8_t*)data, size);
+							UISelection* copySelection = new UISelection ();
+							if (copySelection->restore (stream, viewFactory, editDescription))
+							{
+								IAction* action = new ViewCopyOperation (copySelection, selection, container, offset, viewFactory, editDescription);
+								undoManager->pushAndPerform (action);
+							}
+							copySelection->forget ();
+						}
+					}
+					clipboard->forget ();
+				}
+				return kMessageNotified;
+			}
+			else if (strcmp (item->getCommandName (), "Template Settings...") == 0)
 			{
 				if (undoManager->canUndo () && !editTemplateName.empty ())
 				{
@@ -549,7 +629,9 @@ void UIEditController::resetScrollViewOffsets (CViewContainer* view)
 //----------------------------------------------------------------------------------------------------
 int32_t UIEditController::onKeyDown (const VstKeyCode& code, CFrame* frame)
 {
-	return menuController->processKeyCommand (code);
+	if (frame->getModalView () == 0)
+		return menuController->processKeyCommand (code);
+	return -1;
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -659,7 +741,7 @@ void UIEditController::setDirty (bool state)
 	if (dirty != state)
 	{
 		dirty = state;
-		if (notSavedControl)
+		if (notSavedControl && notSavedControl->isAttached ())
 		{
 			notSavedControl->invalid ();
 			notSavedControl->addAnimation ("AlphaValueAnimation", new Animation::AlphaValueAnimation (dirty ? 1.f : 0.f), new Animation::LinearTimingFunction (400));
@@ -676,21 +758,14 @@ void UIEditController::performAction (IAction* action)
 //----------------------------------------------------------------------------------------------------
 void UIEditController::performColorChange (UTF8StringPtr colorName, const CColor& newColor, bool remove)
 {
-	// TODO: currently not on the undo stack
 	CView* view = editView ? editView->getEditView () : 0;
-	IAction* action = 0;
+	ColorChangeAction* action = new ColorChangeAction (editDescription, colorName, newColor, remove, true);
+	undoManager->startGroupAction (remove ? "Delete Color" : action->isAddColor () ? "Add New Color" : "Change Color");
+	undoManager->pushAndPerform (action);
 	if (view)
-		action = new MultipleAttributeChangeAction (editDescription, view, IViewCreator::kColorType, colorName, remove ? "" : colorName);
-	if (remove)
-		editDescription->removeColor (colorName);
-	else
-		editDescription->changeColor (colorName, newColor);
-	if (action)
-	{
-		action->perform ();
-		delete action;
-	}
-	setDirty (true);
+		undoManager->pushAndPerform (new MultipleAttributeChangeAction (editDescription, view, IViewCreator::kColorType, colorName, remove ? "" : colorName));
+	undoManager->pushAndPerform (new ColorChangeAction (editDescription, colorName, newColor, remove, false));
+	undoManager->endGroupAction ();
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -698,7 +773,7 @@ void UIEditController::performTagChange (UTF8StringPtr tagName, int32_t tag, boo
 {
 	CView* view = editView ? editView->getEditView () : 0;
 	TagChangeAction* action = new TagChangeAction (editDescription, tagName, tag, remove, true);
-	undoManager->startGroupAction (remove ? "Delete Tag" : action->newTag () ? "Add New Tag" : "Change Tag");
+	undoManager->startGroupAction (remove ? "Delete Tag" : action->isAddTag () ? "Add New Tag" : "Change Tag");
 	undoManager->pushAndPerform (action);
 	if (view)
 		undoManager->pushAndPerform (new MultipleAttributeChangeAction (editDescription, view, IViewCreator::kTagType, tagName, remove ? "" : tagName));
@@ -710,8 +785,9 @@ void UIEditController::performTagChange (UTF8StringPtr tagName, int32_t tag, boo
 void UIEditController::performBitmapChange (UTF8StringPtr bitmapName, UTF8StringPtr bitmapPath, bool remove)
 {
 	CView* view = editView ? editView->getEditView () : 0;
-	undoManager->startGroupAction (remove ? "Delete Bitmap" : "Change Bitmap");
-	undoManager->pushAndPerform (new BitmapChangeAction (editDescription, bitmapName, bitmapPath, remove, true));
+	BitmapChangeAction* action = new BitmapChangeAction (editDescription, bitmapName, bitmapPath, remove, true);
+	undoManager->startGroupAction (remove ? "Delete Bitmap" : action->isAddBitmap () ? "Add New Bitmap" :"Change Bitmap");
+	undoManager->pushAndPerform (action);
 	if (view)
 		undoManager->pushAndPerform (new MultipleAttributeChangeAction (editDescription, view, IViewCreator::kBitmapType, bitmapName, remove ? "" : bitmapName));
 	undoManager->pushAndPerform (new BitmapChangeAction (editDescription, bitmapName, bitmapPath, remove, false));
@@ -722,8 +798,9 @@ void UIEditController::performBitmapChange (UTF8StringPtr bitmapName, UTF8String
 void UIEditController::performFontChange (UTF8StringPtr fontName, CFontRef newFont, bool remove)
 {
 	CView* view = editView ? editView->getEditView () : 0;
-	undoManager->startGroupAction (remove ? "Delete Font" : "Change Font");
-	undoManager->pushAndPerform (new FontChangeAction (editDescription, fontName, newFont, remove, true));
+	FontChangeAction* action = new FontChangeAction (editDescription, fontName, newFont, remove, true);
+	undoManager->startGroupAction (remove ? "Delete Font" : action->isAddFont () ? "Add New Font" : "Change Font");
+	undoManager->pushAndPerform (action);
 	if (view)
 		undoManager->pushAndPerform (new MultipleAttributeChangeAction (editDescription, view, IViewCreator::kFontType, fontName, remove ? "" : fontName));
 	undoManager->pushAndPerform (new FontChangeAction (editDescription, fontName, newFont, remove, false));
@@ -733,7 +810,6 @@ void UIEditController::performFontChange (UTF8StringPtr fontName, CFontRef newFo
 //----------------------------------------------------------------------------------------------------
 void UIEditController::performColorNameChange (UTF8StringPtr oldName, UTF8StringPtr newName)
 {
-	 // TODO: if we create a new color, undo does not work yet
 	CView* view = editView ? editView->getEditView () : 0;
 	undoManager->startGroupAction ("Change Color Name");
 	undoManager->pushAndPerform (new ColorNameChangeAction (editDescription, oldName, newName, true));
@@ -746,7 +822,6 @@ void UIEditController::performColorNameChange (UTF8StringPtr oldName, UTF8String
 //----------------------------------------------------------------------------------------------------
 void UIEditController::performTagNameChange (UTF8StringPtr oldName, UTF8StringPtr newName)
 {
-	 // TODO: if we create a new tag, undo does not work yet
 	CView* view = editView ? editView->getEditView () : 0;
 	undoManager->startGroupAction ("Change Tag Name");
 	undoManager->pushAndPerform (new TagNameChangeAction (editDescription, oldName, newName, true));
@@ -759,7 +834,6 @@ void UIEditController::performTagNameChange (UTF8StringPtr oldName, UTF8StringPt
 //----------------------------------------------------------------------------------------------------
 void UIEditController::performFontNameChange (UTF8StringPtr oldName, UTF8StringPtr newName)
 {
-	 // TODO: if we create a new tag, undo does not work yet
 	CView* view = editView ? editView->getEditView () : 0;
 	undoManager->startGroupAction ("Change Font Name");
 	undoManager->pushAndPerform (new FontNameChangeAction (editDescription, oldName, newName, true));
@@ -772,7 +846,6 @@ void UIEditController::performFontNameChange (UTF8StringPtr oldName, UTF8StringP
 //----------------------------------------------------------------------------------------------------
 void UIEditController::performBitmapNameChange (UTF8StringPtr oldName, UTF8StringPtr newName)
 {
-	 // TODO: if we create a new tag, undo does not work yet
 	CView* view = editView ? editView->getEditView () : 0;
 	undoManager->startGroupAction ("Change Bitmap Name");
 	undoManager->pushAndPerform (new BitmapNameChangeAction (editDescription, oldName, newName, true));
@@ -785,17 +858,52 @@ void UIEditController::performBitmapNameChange (UTF8StringPtr oldName, UTF8Strin
 //----------------------------------------------------------------------------------------------------
 void UIEditController::performBitmapNinePartTiledChange (UTF8StringPtr bitmapName, const CRect* offsets)
 {
-	// TODO: undo/redo
-	CBitmap* bitmap = editDescription->getBitmap (bitmapName);
-	if (bitmap == 0)
-		return;
-
-	editDescription->changeBitmap (bitmapName, bitmap->getResourceDescription ().u.name, offsets);
+	CView* view = editView ? editView->getEditView () : 0;
+	undoManager->startGroupAction ("Change NinePartTiled Bitmap");
+	undoManager->pushAndPerform (new NinePartTiledBitmapChangeAction (editDescription, bitmapName, offsets, true));
+	if (view)
+		undoManager->pushAndPerform (new MultipleAttributeChangeAction (editDescription, view, IViewCreator::kBitmapType, bitmapName, bitmapName));
+	undoManager->pushAndPerform (new NinePartTiledBitmapChangeAction (editDescription, bitmapName, offsets, false));
+	undoManager->endGroupAction ();
 }
 
 //----------------------------------------------------------------------------------------------------
-void UIEditController::makeSelection (CView* view)
+void UIEditController::performAlternativeFontChange (UTF8StringPtr fontName, UTF8StringPtr newAlternativeFonts)
 {
+	undoManager->pushAndPerform (new AlternateFontChangeAction (editDescription, fontName, newAlternativeFonts));
+}
+
+//----------------------------------------------------------------------------------------------------
+void UIEditController::beginLiveColorChange (UTF8StringPtr colorName)
+{
+	undoManager->startGroupAction ("Change Color");
+	CColor color;
+	editDescription->getColor(colorName, color);
+	performColorChange (colorName, color, false);
+}
+
+//----------------------------------------------------------------------------------------------------
+void UIEditController::performLiveColorChange (UTF8StringPtr colorName, const CColor& newColor)
+{
+	IAction* action = new ColorChangeAction (editDescription, colorName, newColor, false, true);
+	action->perform ();
+	delete action;
+	CView* view = editView ? editView->getEditView () : 0;
+	if (view)
+	{	
+		action = new MultipleAttributeChangeAction (editDescription, view, IViewCreator::kColorType, colorName, colorName);
+		action->perform ();
+		delete action;
+	}
+}
+
+//----------------------------------------------------------------------------------------------------
+void UIEditController::endLiveColorChange (UTF8StringPtr colorName)
+{
+	CColor color;
+	editDescription->getColor(colorName, color);
+	performColorChange (colorName, color, false);
+	undoManager->endGroupAction ();
 }
 
 //----------------------------------------------------------------------------------------------------

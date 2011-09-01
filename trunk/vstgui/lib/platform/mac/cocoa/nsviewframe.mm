@@ -42,6 +42,7 @@
 #import "nsviewoptionmenu.h"
 #import "cocoaopenglview.h"
 #import "autoreleasepool.h"
+#import "macclipboard.h"
 #import "../cgdrawcontext.h"
 #import "../cgbitmap.h"
 #import "../quartzgraphicspath.h"
@@ -120,10 +121,7 @@ static id VSTGUI_NSView_Init (id self, SEL _cmd, void* _frame, NSView* parentVie
 
 		[parentView addSubview: self];
 
-		[self registerForDraggedTypes:[NSArray arrayWithObjects:NSStringPboardType, NSFilenamesPboardType, NSColorPboardType, @"net.sourceforge.vstgui.binary.drag", nil]];
-		
-		NSTrackingArea* trackingArea = [[[NSTrackingArea alloc] initWithRect:[self frame] options:NSTrackingMouseEnteredAndExited|NSTrackingMouseMoved|NSTrackingActiveInActiveApp|NSTrackingInVisibleRect owner:self userInfo:nil] autorelease];
-		[self addTrackingArea: trackingArea];
+		[self registerForDraggedTypes:[NSArray arrayWithObjects:NSStringPboardType, NSFilenamesPboardType, NSColorPboardType, [NSString stringWithCString:MacClipboard::getPasteboardBinaryType () encoding:NSASCIIStringEncoding], nil]];
 		
 		[self setFocusRingType:NSFocusRingTypeNone];
 	}
@@ -182,6 +180,18 @@ static BOOL VSTGUI_NSView_resignFirstResponder (id self, SEL _cmd)
 			frame->platformOnActivate (false);
 	}
 	return YES;
+}
+
+//------------------------------------------------------------------------------------
+static void VSTGUI_NSView_updateTrackingAreas (id self, SEL _cmd)
+{
+	__OBJC_SUPER(self)
+
+	NSViewFrame* viewFrame = getNSViewFrame (self);
+	if (viewFrame)
+		viewFrame->initTrackingArea ();
+		
+	objc_msgSendSuper (SUPER, @selector(updateTrackingAreas));
 }
 
 //------------------------------------------------------------------------------------
@@ -422,6 +432,16 @@ static void VSTGUI_NSView_mouseExited (id self, SEL _cmd, NSEvent* theEvent)
 }
 
 //------------------------------------------------------------------------------------
+static void VSTGUI_NSView_cursorUpdate (id self, SEL _cmd, NSEvent* theEvent)
+{
+	NSViewFrame* frame = getNSViewFrame(self);
+	if (frame)
+	{
+		frame->cursorUpdate ();
+	}
+}
+
+//------------------------------------------------------------------------------------
 static BOOL VSTGUI_NSView_acceptsFirstMouse (id self, SEL _cmd, NSEvent* event)
 {
 	return YES; // click through
@@ -500,12 +520,8 @@ static NSDragOperation VSTGUI_NSView_draggingEntered (id self, SEL _cmd, id send
 	CPoint where;
 	nsViewGetCurrentMouseLocation (self, where);
 
-#if MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_5
-	[[NSCursor operationNotAllowedCursor] set];
-#else
-	if ([NSCursor respondsToSelector:@selector(operationNotAllowedCursor)])
-		[[NSCursor performSelector:@selector(operationNotAllowedCursor)] set];
-#endif
+	getNSViewFrame (self)->setMouseCursor (kCursorNotAllowed);
+
 	_vstguiframe->platformOnDragEnter (gCocoaDragContainer, where);
 	
 	return NSDragOperationGeneric;
@@ -551,7 +567,7 @@ static BOOL VSTGUI_NSView_performDragOperation (id self, SEL _cmd, id sender)
 	CPoint where;
 	nsViewGetCurrentMouseLocation (self, where);
 	bool result = _vstguiframe->platformOnDrop (gCocoaDragContainer, where);
-	[[NSCursor arrowCursor] set];
+	getNSViewFrame (self)->setMouseCursor (kCursorDefault);
 	gCocoaDragContainer->forget ();
 	gCocoaDragContainer = 0;
 	return result;
@@ -621,6 +637,7 @@ void NSViewFrame::initClass ()
 		viewClass = generateUniqueClass (viewClassName, [NSView class]);
 		res = class_addMethod (viewClass, @selector(initWithNSViewFrame:parent:andSize:), IMP (VSTGUI_NSView_Init), "@@:@:^:^:^:");
 	//	res = class_addMethod (viewClass, @selector(dealloc), IMP (VSTGUI_NSView_Dealloc), "v@:@:");
+		res = class_addMethod (viewClass, @selector(updateTrackingAreas), IMP (VSTGUI_NSView_updateTrackingAreas), "v@:@:");
 		res = class_addMethod (viewClass, @selector(viewDidMoveToWindow), IMP (VSTGUI_NSView_viewDidMoveToWindow), "v@:@:");
 		res = class_addMethod (viewClass, @selector(windowKeyStateChanged:), IMP (VSTGUI_NSView_windowKeyStateChanged), "v@:@:^:");
 		res = class_addMethod (viewClass, @selector(isFlipped), IMP (VSTGUI_NSView_isFlipped), "B@:@:");
@@ -647,6 +664,7 @@ void NSViewFrame::initClass ()
 		res = class_addMethod (viewClass, @selector(scrollWheel:), IMP (VSTGUI_NSView_scrollWheel), "v@:@:^:");
 		res = class_addMethod (viewClass, @selector(mouseEntered:), IMP (VSTGUI_NSView_mouseEntered), "v@:@:^:");
 		res = class_addMethod (viewClass, @selector(mouseExited:), IMP (VSTGUI_NSView_mouseExited), "v@:@:^:");
+		res = class_addMethod (viewClass, @selector(cursorUpdate:), IMP (VSTGUI_NSView_cursorUpdate), "v@:@:^:");
 		res = class_addMethod (viewClass, @selector(acceptsFirstMouse:), IMP (VSTGUI_NSView_acceptsFirstMouse), "B@:@:^:");
 		res = class_addMethod (viewClass, @selector(performKeyEquivalent:), IMP (VSTGUI_NSView_performKeyEquivalent), "B@:@:^:");
 		res = class_addMethod (viewClass, @selector(keyDown:), IMP (VSTGUI_NSView_keyDown), "v@:@:^:");
@@ -674,6 +692,8 @@ NSViewFrame::NSViewFrame (IPlatformFrameCallback* frame, const CRect& size, NSVi
 , nsView (0)
 , tooltipWindow (0)
 , ignoreNextResignFirstResponder (false)
+, trackingAreaInitialized (false)
+, cursor (kCursorDefault)
 {
 	initClass ();
 	nsView = [[viewClass alloc] initWithNSViewFrame: this parent: parent andSize: &size];
@@ -687,6 +707,32 @@ NSViewFrame::~NSViewFrame ()
 	[nsView unregisterDraggedTypes]; // this is neccessary otherwise AppKit will crash if the plug-in is unloaded from the process
 	[nsView removeFromSuperview];
 	[nsView release];
+}
+
+//-----------------------------------------------------------------------------
+void NSViewFrame::initTrackingArea ()
+{
+	if (trackingAreaInitialized == false)
+	{
+		NSPoint p = [NSEvent mouseLocation];
+		p = [nsView convertPoint:[[nsView window] convertScreenToBase:p] fromView:nil];
+		NSTrackingAreaOptions options = NSTrackingMouseEnteredAndExited|NSTrackingMouseMoved|NSTrackingActiveInActiveApp|NSTrackingInVisibleRect;
+		if ([nsView hitTest:p])
+		{
+			options |= NSTrackingAssumeInside;
+			CPoint cp = pointFromNSPoint (p);
+			frame->platformOnMouseMoved (cp, 0);
+		}
+		NSTrackingArea* trackingArea = [[[NSTrackingArea alloc] initWithRect:[nsView frame] options:options owner:nsView userInfo:nil] autorelease];
+		[nsView addTrackingArea: trackingArea];
+		trackingAreaInitialized = true;
+	}
+}
+
+//-----------------------------------------------------------------------------
+void NSViewFrame::cursorUpdate ()
+{
+	setMouseCursor (cursor);
 }
 
 //-----------------------------------------------------------------------------
@@ -809,6 +855,7 @@ bool NSViewFrame::getCurrentMouseButtons (CButtonState& buttons) const
 //-----------------------------------------------------------------------------
 bool NSViewFrame::setMouseCursor (CCursorType type)
 {
+	cursor = type;
 	@try {
 	NSCursor* cur = 0;
 	switch (type)
@@ -934,7 +981,7 @@ CGraphicsPath* NSViewFrame::createGraphicsPath ()
 }
 
 //------------------------------------------------------------------------------------
-CView::DragResult NSViewFrame::doDrag (CDropSource* source, const CPoint& offset, CBitmap* dragBitmap)
+CView::DragResult NSViewFrame::doDrag (IDataPackage* source, const CPoint& offset, CBitmap* dragBitmap)
 {
 	lastDragOperationResult = CView::kDragError;
 	CGBitmap* cgBitmap = dragBitmap ? dynamic_cast<CGBitmap*> (dragBitmap->getPlatformBitmap ()) : 0;
@@ -967,18 +1014,18 @@ CView::DragResult NSViewFrame::doDrag (CDropSource* source, const CPoint& offset
 		}
 
 		
-		CDropSource::Type type = source->getEntryType (0);
+		IDataPackage::Type type = source->getDataType (0);
 		switch (type)
 		{
-			case CDropSource::kFilePath:
+			case IDataPackage::kFilePath:
 			{
 				NSMutableArray* files = [[[NSMutableArray alloc] init] autorelease];
 				// we allow more than one file
 				for (int32_t i = 0; i < source->getCount (); i++)
 				{
 					const void* buffer = 0;
-					int32_t bufferSize = source->getEntry (i, buffer, type);
-					if (type == CDropSource::kFilePath && bufferSize > 0 && ((const char*)buffer)[bufferSize-1] == 0)
+					int32_t bufferSize = source->getData (i, buffer, type);
+					if (type == IDataPackage::kFilePath && bufferSize > 0 && ((const char*)buffer)[bufferSize-1] == 0)
 					{
 						[files addObject:[NSString stringWithCString:(const char*)buffer encoding:NSUTF8StringEncoding]];
 					}
@@ -987,10 +1034,10 @@ CView::DragResult NSViewFrame::doDrag (CDropSource* source, const CPoint& offset
 				[nsPasteboard setPropertyList:files forType:NSFilenamesPboardType];
 				break;
 			}
-			case CDropSource::kText:
+			case IDataPackage::kText:
 			{
 				const void* buffer = 0;
-				int32_t bufferSize = source->getEntry (0, buffer, type);
+				int32_t bufferSize = source->getData (0, buffer, type);
 				if (bufferSize > 0 && ((const char*)buffer)[bufferSize-1] == 0)
 				{
 					[nsPasteboard declareTypes:[NSArray arrayWithObject:NSStringPboardType] owner:nil];
@@ -998,18 +1045,18 @@ CView::DragResult NSViewFrame::doDrag (CDropSource* source, const CPoint& offset
 				}
 				break;
 			}
-			case CDropSource::kBinary:
+			case IDataPackage::kBinary:
 			{
 				const void* buffer = 0;
-				int32_t bufferSize = source->getEntry (0, buffer, type);
+				int32_t bufferSize = source->getData (0, buffer, type);
 				if (bufferSize > 0)
 				{
-					[nsPasteboard declareTypes:[NSArray arrayWithObject:@"net.sourceforge.vstgui.binary.drag"] owner:nil];
-					[nsPasteboard setData:[NSData dataWithBytes:buffer length:bufferSize] forType:@"net.sourceforge.vstgui.binary.drag"];
+					[nsPasteboard declareTypes:[NSArray arrayWithObject:[NSString stringWithCString:MacClipboard::getPasteboardBinaryType () encoding:NSASCIIStringEncoding]] owner:nil];
+					[nsPasteboard setData:[NSData dataWithBytes:buffer length:bufferSize] forType:[NSString stringWithCString:MacClipboard::getPasteboardBinaryType () encoding:NSASCIIStringEncoding]];
 				}
 				break;
 			}
-			case CDropSource::kError:
+			case IDataPackage::kError:
 			{
 				return CView::kDragError;
 			}
@@ -1019,6 +1066,18 @@ CView::DragResult NSViewFrame::doDrag (CDropSource* source, const CPoint& offset
 		return lastDragOperationResult;
 	}
 	return CView::kDragError;
+}
+
+//-----------------------------------------------------------------------------
+void NSViewFrame::setClipboard (IDataPackage* data)
+{
+	MacClipboard::setClipboard (data);
+}
+
+//-----------------------------------------------------------------------------
+IDataPackage* NSViewFrame::getClipboard ()
+{
+	return MacClipboard::getClipboard ();
 }
 
 //-----------------------------------------------------------------------------

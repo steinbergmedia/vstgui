@@ -137,6 +137,8 @@ public:
 	UIFontNode (const UIFontNode& n);
 	CFontRef getFont ();
 	void setFont (CFontRef newFont);
+	void setAlternativeFontNames (UTF8StringPtr fontNames);
+	bool getAlternativeFontNames (std::string& fontNames);
 	CLASS_METHODS(UIFontNode, UINode)
 protected:
 	~UIFontNode ();
@@ -736,10 +738,31 @@ int32_t UIDescription::getTagForName (UTF8StringPtr name)
 }
 
 //-----------------------------------------------------------------------------
+bool UIDescription::hasColorName (UTF8StringPtr name)
+{
+	UIColorNode* node = dynamic_cast<UIColorNode*> (findChildNodeByNameAttribute (getBaseNode ("colors"), name));
+	return node ? true : false;
+}
+
+//-----------------------------------------------------------------------------
 bool UIDescription::hasTagName (UTF8StringPtr name)
 {
-	UIControlTagNode* controlTagNode = dynamic_cast<UIControlTagNode*> (findChildNodeByNameAttribute (getBaseNode ("control-tags"), name));
-	return controlTagNode ? true : false;
+	UIControlTagNode* node = dynamic_cast<UIControlTagNode*> (findChildNodeByNameAttribute (getBaseNode ("control-tags"), name));
+	return node ? true : false;
+}
+
+//-----------------------------------------------------------------------------
+bool UIDescription::hasFontName (UTF8StringPtr name)
+{
+	UIFontNode* node = dynamic_cast<UIFontNode*> (findChildNodeByNameAttribute (getBaseNode ("fonts"), name));
+	return node ? true : false;
+}
+
+//-----------------------------------------------------------------------------
+bool UIDescription::hasBitmapName (UTF8StringPtr name)
+{
+	UIBitmapNode* node = dynamic_cast<UIBitmapNode*> (findChildNodeByNameAttribute (getBaseNode ("bitmaps"), name));
+	return node ? true : false;
 }
 
 //-----------------------------------------------------------------------------
@@ -1102,6 +1125,29 @@ void UIDescription::removeBitmap (UTF8StringPtr name)
 		removeChildNode (node, name);
 		changed (kMessageBitmapChanged);
 	}
+}
+
+//-----------------------------------------------------------------------------
+void UIDescription::changeAlternativeFontNames (UTF8StringPtr name, UTF8StringPtr alternativeFonts)
+{
+	UIFontNode* node = dynamic_cast<UIFontNode*> (findChildNodeByNameAttribute (getBaseNode ("fonts"), name));
+	if (node)
+	{
+		node->setAlternativeFontNames (alternativeFonts);
+		changed (kMessageFontChanged);
+	}
+}
+
+//-----------------------------------------------------------------------------
+bool UIDescription::getAlternativeFontNames (UTF8StringPtr name, std::string& alternativeFonts)
+{
+	UIFontNode* node = dynamic_cast<UIFontNode*> (findChildNodeByNameAttribute (getBaseNode ("fonts"), name));
+	if (node)
+	{
+		if (node->getAlternativeFontNames (alternativeFonts))
+			return true;
+	}
+	return false;
 }
 
 //-----------------------------------------------------------------------------
@@ -1699,7 +1745,28 @@ CFontRef UIFontNode::getFont ()
 				fontStyle |= kUnderlineFace;
 			if (strikethroughAttr && *strikethroughAttr == "true")
 				fontStyle |= kStrikethroughFace;
-			font = new CFontDesc (nameAttr->c_str (), size, fontStyle);
+			if (attributes->hasAttribute ("alternative-font-names"))
+			{
+				std::list<std::string> fontNames;
+				if (IPlatformFont::getAllPlatformFontFamilies (fontNames))
+				{
+					if (std::find (fontNames.begin (), fontNames.end (), *nameAttr) == fontNames.end ())
+					{
+						std::vector<std::string> alternativeFontNames;
+						attributes->getAttributeArray ("alternative-font-names", alternativeFontNames);
+						for (std::vector<std::string>::const_iterator it = alternativeFontNames.begin (); it != alternativeFontNames.end (); it++)
+						{
+							if (std::find (fontNames.begin (), fontNames.end (), *it) != fontNames.end ())
+							{
+								font = new CFontDesc ((*it).c_str (), size, fontStyle);
+								break;
+							}
+						}
+					}
+				}
+			}
+			if (font == 0)
+				font = new CFontDesc (nameAttr->c_str (), size, fontStyle);
 		}
 	}
 	return font;
@@ -1714,6 +1781,9 @@ void UIFontNode::setFont (CFontRef newFont)
 	font->remember ();
 
 	std::string name (*attributes->getAttributeValue ("name"));
+	std::string alternativeNames;
+	getAlternativeFontNames (alternativeNames);
+
 	attributes->removeAll ();
 	attributes->setAttribute ("name", name.c_str ());
 	attributes->setAttribute ("font-name", newFont->getName ());
@@ -1728,6 +1798,33 @@ void UIFontNode::setFont (CFontRef newFont)
 		attributes->setAttribute ("underline", "true");
 	if (newFont->getStyle () & kStrikethroughFace)
 		attributes->setAttribute ("strike-through", "true");
+
+	setAlternativeFontNames (alternativeNames.c_str ());
+}
+
+//-----------------------------------------------------------------------------
+void UIFontNode::setAlternativeFontNames (UTF8StringPtr fontNames)
+{
+	if (fontNames && fontNames[0] != 0)
+	{
+		attributes->setAttribute("alternative-font-names", fontNames);
+	}
+	else
+	{
+		attributes->removeAttribute ("alternative-font-names");
+	}
+}
+
+//-----------------------------------------------------------------------------
+bool UIFontNode::getAlternativeFontNames (std::string& fontNames)
+{
+	const std::string* value = attributes->getAttributeValue ("alternative-font-names");
+	if (value)
+	{
+		fontNames = *value;
+		return true;
+	}
+	return false;
 }
 
 //-----------------------------------------------------------------------------
@@ -1834,6 +1931,7 @@ void UIAttributes::removeAttribute (UTF8StringPtr name)
 void UIAttributes::setDoubleAttribute (UTF8StringPtr name, double value)
 {
 	std::stringstream str;
+	str.precision (40);
 	str << value;
 	setAttribute (name, str.str ().c_str ());
 }
@@ -1980,6 +2078,36 @@ bool UIAttributes::getRectAttribute (UTF8StringPtr name, CRect& r) const
 				return true;
 			}
 		}
+	}
+	return false;
+}
+
+//-----------------------------------------------------------------------------
+void UIAttributes::setAttributeArray (UTF8StringPtr name, const std::vector<std::string>& values)
+{
+	std::string value;
+	size_t numValues = values.size ();
+	for (int32_t i = 0; i < numValues - 1; i++)
+	{
+		value += values[i];
+		value += ',';
+	}
+	value += values[numValues-1];
+}
+
+//-----------------------------------------------------------------------------
+bool UIAttributes::getAttributeArray (UTF8StringPtr name, std::vector<std::string>& values)
+{
+	const std::string* str = getAttributeValue (name);
+	if (str)
+	{
+		std::stringstream ss (*str);
+		std::string item;
+		while (std::getline (ss, item, ','))
+		{
+			values.push_back(item);
+		}
+		return true;
 	}
 	return false;
 }

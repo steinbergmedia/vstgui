@@ -9,9 +9,6 @@
 #include "uiundomanager.h"
 #include "uiactions.h"
 #include <assert.h>
-/*
-	TODO: view z index editing via row drag and drop
-*/
 
 #ifdef verify
 	#undef verify
@@ -76,7 +73,7 @@ public:
 class UITemplatesDataSource : public UINavigationDataSource
 {
 public:
-	UITemplatesDataSource (IGenericStringListDataBrowserSourceSelectionChanged* delegate, UIDescription* description, const std::string* templateName);
+	UITemplatesDataSource (IGenericStringListDataBrowserSourceSelectionChanged* delegate, UIDescription* description, UIUndoManager* undoManager, const std::string* templateName);
 	
 	CMouseEventResult dbOnMouseDown (const CPoint& where, const CButtonState& buttons, int32_t row, int32_t column, CDataBrowser* browser);
 	void dbCellTextChanged (int32_t row, int32_t column, UTF8StringPtr newText, CDataBrowser* browser);
@@ -84,6 +81,7 @@ public:
 	void dbAttached (CDataBrowser* browser);
 protected:
 	SharedPointer<UIDescription> description;
+	SharedPointer<UIUndoManager> undoManager;
 	std::string firstSelectedTemplateName;
 };
 
@@ -120,7 +118,8 @@ protected:
 };
 
 //----------------------------------------------------------------------------------------------------
-IdStringPtr UITemplateController::kMsgTemplateChanged = "UITemplateControllerTemplateChanged";
+IdStringPtr UITemplateController::kMsgTemplateChanged = "UITemplateController::kMsgTemplateChanged";
+IdStringPtr UITemplateController::kMsgTemplateNameChanged = "UITemplateController::kMsgTemplateNameChanged";
 
 //----------------------------------------------------------------------------------------------------
 UITemplateController::UITemplateController (IController* baseController, UIDescription* description, UISelection* selection, UIUndoManager* undoManager)
@@ -178,11 +177,25 @@ void UITemplateController::dbSelectionChanged (int32_t selectedRow, GenericStrin
 {
 	if (source->getStringList () == &templateNames)
 	{
+		std::string* newName = 0;
 		if (selectedRow == CDataBrowser::kNoSelection)
-			selectedTemplateName = 0;
+			newName = 0;
 		else
-			selectedTemplateName = &templateNames[selectedRow];
-		changed (kMsgTemplateChanged);
+			newName = &templateNames[selectedRow];
+
+		if ((newName == 0 && selectedTemplateName != 0)
+		 || (newName != 0 && selectedTemplateName == 0)
+		 || (newName != selectedTemplateName && *newName != *selectedTemplateName))
+		{
+			selectedTemplateName = newName;
+			UIAttributes* attr = editDescription->getCustomAttributes ("UITemplateController", true);
+			if (attr)
+			{
+				attr->setAttribute ("SelectedTemplate", selectedTemplateName ? selectedTemplateName->c_str () : "");
+			}
+
+			changed (kMsgTemplateChanged);
+		}
 		return;
 	}
 }
@@ -195,6 +208,7 @@ CMessageResult UITemplateController::notify (CBaseObject* sender, IdStringPtr me
 		GenericStringListDataBrowserSource* dataSource = dynamic_cast<GenericStringListDataBrowserSource*>(templateDataBrowser->getDataSource ());
 		if (dataSource)
 		{
+			DeferChanges dc (this);
 			int32_t rowToSelect = templateDataBrowser->getSelectedRow ();
 			int32_t index = 0;
 			templateNames.clear ();
@@ -210,15 +224,6 @@ CMessageResult UITemplateController::notify (CBaseObject* sender, IdStringPtr me
 			}
 			dataSource->setStringList (&templateNames);
 			templateDataBrowser->setSelectedRow (rowToSelect, true);
-		}
-		return kMessageNotified;
-	}
-	else if (message == UIDescription::kMessageBeforeSave)
-	{
-		UIAttributes* attr = editDescription->getCustomAttributes ("UITemplateController", true);
-		if (attr)
-		{
-			attr->setAttribute ("SelectedTemplate", selectedTemplateName ? selectedTemplateName->c_str () : "");
 		}
 		return kMessageNotified;
 	}
@@ -272,7 +277,7 @@ CView* UITemplateController::createView (const UIAttributes& attributes, IUIDesc
 			
 			UIAttributes* attr = editDescription->getCustomAttributes ("UITemplateController", true);
 			const std::string* templateName = attr ? attr->getAttributeValue ("SelectedTemplate") : 0;
-			UITemplatesDataSource* dataSource = new UITemplatesDataSource (this, editDescription, templateName);
+			UITemplatesDataSource* dataSource = new UITemplatesDataSource (this, editDescription, undoManager, templateName);
 			dataSource->setStringList (&templateNames);
 			UIEditController::setupDataSource (dataSource);
 			templateDataBrowser = new CDataBrowser (CRect (0, 0, 0, 0), 0, dataSource, CDataBrowser::kDrawRowLines|CScrollView::kHorizontalScrollbar | CScrollView::kVerticalScrollbar);
@@ -538,9 +543,10 @@ int32_t UIViewListDataSource::dbOnKeyDown (const VstKeyCode& key, CDataBrowser* 
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
-UITemplatesDataSource::UITemplatesDataSource (IGenericStringListDataBrowserSourceSelectionChanged* delegate, UIDescription* description, const std::string* templateName)
+UITemplatesDataSource::UITemplatesDataSource (IGenericStringListDataBrowserSourceSelectionChanged* delegate, UIDescription* description, UIUndoManager* undoManager, const std::string* templateName)
 : UINavigationDataSource (delegate)
 , description (description)
+, undoManager (undoManager)
 {
 	if (templateName)
 		firstSelectedTemplateName = *templateName;
@@ -554,21 +560,23 @@ CMouseEventResult UITemplatesDataSource::dbOnMouseDown (const CPoint& where, con
 		if (buttons.isDoubleClick ())
 		{
 			browser->beginTextEdit (row, column, getStringList ()->at (row).c_str ());
+			return kMouseDownEventHandledButDontNeedMovedOrUpEvents;
 		}
-		else
-		{
-			delegate->dbSelectionChanged (browser->getSelectedRow (), this);
-		}
+//		else
+//		{
+//			delegate->dbSelectionChanged (browser->getSelectedRow (), this);
+//		}
 	}
-	return kMouseDownEventHandledButDontNeedMovedOrUpEvents;
+	return UINavigationDataSource::dbOnMouseDown (where, buttons, row, column, browser);
 }
 
 //----------------------------------------------------------------------------------------------------
 void UITemplatesDataSource::dbCellTextChanged (int32_t row, int32_t column, UTF8StringPtr newText, CDataBrowser* browser)
 {
-	browser->setSelectedRow (CDataBrowser::kNoSelection);
-	description->changeTemplateName (getStringList ()->at (row).c_str (), newText);
-	browser->setSelectedRow (row, true);
+	undoManager->pushAndPerform (new TemplateNameChangeAction (description, getStringList ()->at (row).c_str (), newText));
+//	browser->setSelectedRow (CDataBrowser::kNoSelection);
+//	description->changeTemplateName (getStringList ()->at (row).c_str (), newText);
+//	browser->setSelectedRow (row, true);
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -588,7 +596,7 @@ void UITemplatesDataSource::dbAttached (CDataBrowser* browser)
 	{
 		if (firstSelectedTemplateName.empty ())
 		{
-			browser->setSelectedRow (0);
+			browser->setSelectedRow (0, true);
 		}
 		else
 		{
@@ -597,7 +605,7 @@ void UITemplatesDataSource::dbAttached (CDataBrowser* browser)
 			{
 				if (getStringList()->at (index) == firstSelectedTemplateName)
 				{
-					browser->setSelectedRow (index);
+					browser->setSelectedRow (index, true);
 					break;
 				}
 			}

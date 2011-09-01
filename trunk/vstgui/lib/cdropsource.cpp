@@ -79,13 +79,13 @@ bool CDropSource::add (const void* buffer, int32_t bufferSize, Type type)
 }
 
 //-----------------------------------------------------------------------------
-int32_t CDropSource::getCount () const
+int32_t CDropSource::getCount ()
 {
 	return (int32_t)entries.size ();
 }
 
 //-----------------------------------------------------------------------------
-int32_t CDropSource::getEntrySize (int32_t index) const
+int32_t CDropSource::getEntrySize (int32_t index)
 {
 	CDropEntry* entry = index < getCount () ? entries[index] : 0;
 	if (entry)
@@ -96,7 +96,7 @@ int32_t CDropSource::getEntrySize (int32_t index) const
 }
 
 //-----------------------------------------------------------------------------
-CDropSource::Type CDropSource::getEntryType (int32_t index) const
+CDropSource::Type CDropSource::getEntryType (int32_t index)
 {
 	CDropEntry* entry = index < getCount () ? entries[index] : 0;
 	if (entry)
@@ -107,7 +107,7 @@ CDropSource::Type CDropSource::getEntryType (int32_t index) const
 }
 
 //-----------------------------------------------------------------------------
-int32_t CDropSource::getEntry (int32_t index, const void*& buffer, Type& type) const
+int32_t CDropSource::getEntry (int32_t index, const void*& buffer, Type& type)
 {
 	CDropEntry* entry = index < getCount () ? entries[index] : 0;
 	if (entry)

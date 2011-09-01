@@ -226,6 +226,17 @@ void UIUndoManager::endGroupAction ()
 	}
 }
 
+//----------------------------------------------------------------------------------------------------
+void UIUndoManager::cancelGroupAction ()
+{
+	UIGroupAction* action = groupQueue.back ();
+	if (action)
+	{
+		groupQueue.pop_back ();
+		delete action;
+	}
+}
+
 } // namespace
 
 #endif // VSTGUI_LIVE_EDITING

@@ -70,7 +70,7 @@ public:
 //! @brief VST3 Editor with automatic parameter binding
 //! @ingroup new_in_4_0
 //-----------------------------------------------------------------------------
-class VST3Editor : public Steinberg::Vst::VSTGUIEditor, public Steinberg::Vst::IParameterFinder, public IController, public IViewAddedRemovedObserver, public IMouseObserver
+class VST3Editor : public Steinberg::Vst::VSTGUIEditor, public Steinberg::Vst::IParameterFinder, public IController, public IViewAddedRemovedObserver, public IMouseObserver, public IKeyboardHook
 {
 public:
 	VST3Editor (Steinberg::Vst::EditController* controller, UTF8StringPtr templateName, UTF8StringPtr xmlFile);
@@ -90,7 +90,6 @@ protected:
 
 	void syncParameterTags ();
 	bool enableEditing (bool state);
-	bool editingEnabled;
 
 	bool PLUGIN_API open (void* parent);
 	void PLUGIN_API close ();
@@ -128,6 +127,10 @@ protected:
 	CMouseEventResult onMouseMoved (CFrame* frame, const CPoint& where, const CButtonState& buttons) { return kMouseEventNotHandled; }
 	CMouseEventResult onMouseDown (CFrame* frame, const CPoint& where, const CButtonState& buttons);
 
+	// IKeyboardHook
+	int32_t onKeyDown (const VstKeyCode& code, CFrame* frame);
+	int32_t onKeyUp (const VstKeyCode& code, CFrame* frame);
+
 	UIDescription* description;
 	VST3EditorDelegate* delegate;
 	IController* originalController;
@@ -136,9 +139,11 @@ protected:
 	std::string xmlFile;
 	bool tooltipsEnabled;
 	bool doCreateView;
+	bool editingEnabled;
 	
 	CPoint minSize;
 	CPoint maxSize;
+	CRect nonEditRect;
 };
 
 } // namespace

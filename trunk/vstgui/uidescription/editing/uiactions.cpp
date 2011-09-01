@@ -903,6 +903,8 @@ void TagNameChangeAction::undo ()
 }
 
 //----------------------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------
 ColorNameChangeAction::ColorNameChangeAction (UIDescription* description, UTF8StringPtr oldName, UTF8StringPtr newName, bool performOrUndo)
 : description(description)
 , oldName (oldName)
@@ -932,6 +934,53 @@ void ColorNameChangeAction::undo ()
 }
 
 //----------------------------------------------------------------------------------------------------
+ColorChangeAction::ColorChangeAction (UIDescription* description, UTF8StringPtr name, const CColor& color, bool remove, bool performOrUndo)
+: description(description)
+, name (name)
+, newColor (color)
+, remove (remove)
+, performOrUndo (performOrUndo)
+, isNewColor (!description->hasColorName (name))
+{
+	if (!isNewColor)
+		description->getColor (name, oldColor);
+}
+
+//----------------------------------------------------------------------------------------------------
+UTF8StringPtr ColorChangeAction::getName ()
+{
+	return isNewColor ? "Add Color" : "Change Color";
+}
+
+//----------------------------------------------------------------------------------------------------
+void ColorChangeAction::perform ()
+{
+	if (performOrUndo)
+	{
+		if (remove)
+		{
+			description->removeColor (name.c_str ());
+		}
+		else
+		{
+			description->changeColor (name.c_str (), newColor);
+		}
+	}
+}
+
+//----------------------------------------------------------------------------------------------------
+void ColorChangeAction::undo ()
+{
+	if (performOrUndo == false)
+	{
+		if (isNewColor)
+			description->removeColor (name.c_str ());
+		else
+			description->changeColor (name.c_str (), oldColor);
+	}
+}
+
+//----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
 BitmapChangeAction::BitmapChangeAction (UIDescription* description, UTF8StringPtr name, UTF8StringPtr path, bool remove, bool performOrUndo)
@@ -940,6 +989,7 @@ BitmapChangeAction::BitmapChangeAction (UIDescription* description, UTF8StringPt
 , path (path ? path : "")
 , remove (remove)
 , performOrUndo (performOrUndo)
+, isNewBitmap (!description->hasBitmapName (name))
 {
 	CBitmap* bitmap = description->getBitmap (name);
 	if (bitmap)
@@ -972,7 +1022,12 @@ void BitmapChangeAction::perform ()
 void BitmapChangeAction::undo ()
 {
 	if (performOrUndo == false)
-		description->changeBitmap (name.c_str (), originalPath.c_str ());
+	{
+		if (isNewBitmap)
+			description->removeBitmap (name.c_str ());
+		else
+			description->changeBitmap (name.c_str (), originalPath.c_str ());
+	}
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -1007,6 +1062,71 @@ void BitmapNameChangeAction::undo ()
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
+NinePartTiledBitmapChangeAction::NinePartTiledBitmapChangeAction (UIDescription* description, UTF8StringPtr name, const CRect* rect, bool performOrUndo)
+: description (description)
+, name (name)
+, oldRect (0)
+, newRect (0)
+, performOrUndo (performOrUndo)
+{
+	if (rect)
+		newRect = new CRect (*rect);
+	CBitmap* bitmap = description->getBitmap (name);
+	if (bitmap)
+	{
+		CNinePartTiledBitmap* tiledBitmap = dynamic_cast<CNinePartTiledBitmap*>(bitmap);
+		if (tiledBitmap)
+		{
+			const CNinePartTiledBitmap::PartOffsets& offset = tiledBitmap->getPartOffsets ();
+			oldRect = new CRect;
+			oldRect->left = offset.left;
+			oldRect->top = offset.top;
+			oldRect->right = offset.right;
+			oldRect->bottom = offset.bottom;
+		}
+	}
+}
+
+//----------------------------------------------------------------------------------------------------
+NinePartTiledBitmapChangeAction::~NinePartTiledBitmapChangeAction ()
+{
+	if (newRect)
+		delete newRect;
+	if (oldRect)
+		delete oldRect;
+}
+
+//----------------------------------------------------------------------------------------------------
+UTF8StringPtr NinePartTiledBitmapChangeAction::getName ()
+{
+	return "Change NinePartTiledBitmap";
+}
+
+//----------------------------------------------------------------------------------------------------
+void NinePartTiledBitmapChangeAction::perform ()
+{
+	if (performOrUndo)
+	{
+		CBitmap* bitmap = description->getBitmap (name.c_str ());
+		if (bitmap)
+			description->changeBitmap (name.c_str (), bitmap->getResourceDescription ().u.name, newRect);
+	}
+}
+
+//----------------------------------------------------------------------------------------------------
+void NinePartTiledBitmapChangeAction::undo ()
+{
+	if (performOrUndo == false)
+	{
+		CBitmap* bitmap = description->getBitmap (name.c_str ());
+		if (bitmap)
+			description->changeBitmap (name.c_str (), bitmap->getResourceDescription ().u.name, oldRect);
+	}
+}
+
+//----------------------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------
 FontChangeAction::FontChangeAction (UIDescription* description, UTF8StringPtr name, CFontRef font, bool remove, bool performOrUndo)
 : description(description)
 , name (name)
@@ -1015,6 +1135,8 @@ FontChangeAction::FontChangeAction (UIDescription* description, UTF8StringPtr na
 , performOrUndo (performOrUndo)
 {
 	originalFont = description->getFont (name);
+	if (remove)
+		description->getAlternativeFontNames (name, alternativeNames);
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -1045,9 +1167,14 @@ void FontChangeAction::undo ()
 	if (performOrUndo == false)
 	{
 		if (originalFont)
+		{
 			description->changeFont (name.c_str (), originalFont);
+			description->changeAlternativeFontNames (name.c_str (), alternativeNames.c_str ());
+		}
 		else
-			description->removeFont(name.c_str ());
+		{
+			description->removeFont (name.c_str ());
+		}
 	}
 }
 
@@ -1078,6 +1205,35 @@ void FontNameChangeAction::undo ()
 {
 	if (performOrUndo == false)
 		description->changeFontName (newName.c_str(), oldName.c_str());
+}
+
+//----------------------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------
+AlternateFontChangeAction::AlternateFontChangeAction (UIDescription* description, UTF8StringPtr fontName, UTF8StringPtr newAlternateFontNames)
+: description (description)
+, fontName (fontName)
+, newAlternateFontNames (newAlternateFontNames ? newAlternateFontNames : "")
+{
+	description->getAlternativeFontNames (fontName, oldAlternateFontNames);
+}
+
+//----------------------------------------------------------------------------------------------------
+UTF8StringPtr AlternateFontChangeAction::getName ()
+{
+	return "Change Alternative Font Names";
+}
+
+//----------------------------------------------------------------------------------------------------
+void AlternateFontChangeAction::perform ()
+{
+	description->changeAlternativeFontNames (fontName.c_str (), newAlternateFontNames.c_str ());
+}
+
+//----------------------------------------------------------------------------------------------------
+void AlternateFontChangeAction::undo ()
+{
+	description->changeAlternativeFontNames (fontName.c_str (), oldAlternateFontNames.c_str ());
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -1127,6 +1283,34 @@ void HierarchyMoveViewOperation::undo ()
 	up = !up;
 	perform ();
 	up = !up;
+}
+
+//----------------------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------
+TemplateNameChangeAction::TemplateNameChangeAction (UIDescription* description, UTF8StringPtr oldName, UTF8StringPtr newName)
+: description (description)
+, oldName (oldName)
+, newName (newName)
+{
+}
+
+//----------------------------------------------------------------------------------------------------
+UTF8StringPtr TemplateNameChangeAction::getName ()
+{
+	return "Change Template Name";
+}
+
+//----------------------------------------------------------------------------------------------------
+void TemplateNameChangeAction::perform ()
+{
+	description->changeTemplateName (oldName.c_str (), newName.c_str ());
+}
+
+//----------------------------------------------------------------------------------------------------
+void TemplateNameChangeAction::undo ()
+{
+	description->changeTemplateName (newName.c_str (), oldName.c_str ());
 }
 
 } // namespace

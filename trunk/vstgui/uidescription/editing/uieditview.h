@@ -62,6 +62,7 @@ protected:
 	CMouseEventResult onMouseDown (CPoint &where, const CButtonState& buttons);
 	CMouseEventResult onMouseUp (CPoint &where, const CButtonState& buttons);
 	CMouseEventResult onMouseMoved (CPoint &where, const CButtonState& buttons);
+	CMouseEventResult onMouseExited (CPoint& where, const CButtonState& buttons);
 	CMessageResult notify (CBaseObject* sender, IdStringPtr message);
 
 

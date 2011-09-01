@@ -61,6 +61,7 @@ public:
 			if (selectedRow != CDataBrowser::kNoSelection)
 			{
 				removeItem (names.at (selectedRow).c_str ());
+				dbSelectionChanged (dataBrowser);
 				dataBrowser->setSelectedRow (selectedRow);
 				return true;
 			}
@@ -135,13 +136,13 @@ protected:
 	{
 		if (message == descriptionMessage)
 		{
-				int32_t selectedRow = dataBrowser ? dataBrowser->getSelectedRow () : CDataBrowser::kNoSelection;
-				std::string selectedName;
-				if (selectedRow != CDataBrowser::kNoSelection)
-					selectedName = names.at (selectedRow);
-				update ();
-				if (selectedRow != CDataBrowser::kNoSelection)
-					selectName (selectedName.c_str ());
+			int32_t selectedRow = dataBrowser ? dataBrowser->getSelectedRow () : CDataBrowser::kNoSelection;
+			std::string selectedName;
+			if (selectedRow != CDataBrowser::kNoSelection)
+				selectedName = names.at (selectedRow);
+			update ();
+			if (selectedRow != CDataBrowser::kNoSelection)
+				selectName (selectedName.c_str ());
 			return kMessageNotified;
 		}
 		else if (message == UIDescription::kMessageBeforeSave)
@@ -242,7 +243,7 @@ protected:
 
 	void dbCellTextChanged (int32_t row, int32_t column, UTF8StringPtr newText, CDataBrowser* browser)
 	{
-		if (names.at (row) != newText)
+		if (row < names.size () && names.at (row) != newText)
 		{
 			if (performNameChange (names.at (row).c_str (), newText))
 			{

@@ -28,6 +28,7 @@ public:
 	static void setupDataBrowser (CDataBrowser* orignalBrowser, CDataBrowser* dataBrowser);
 
 	static IdStringPtr kMsgTemplateChanged;
+	static IdStringPtr kMsgTemplateNameChanged;
 protected:
 	virtual void valueChanged (CControl* pControl) {}
 	virtual CView* createView (const UIAttributes& attributes, IUIDescription* description);

@@ -127,6 +127,8 @@ CView* UIFontsController::verifyView (CView* view, const UIAttributes& attribute
 						fontMenu->addEntry ((*it).c_str ());
 					}
 				}
+				fontMenu->setStyle (fontMenu->getStyle () | kNoTextStyle);
+				fontMenu->setMouseEnabled (false);
 				break;
 			}
 			case kFontAltTag:
@@ -197,7 +199,6 @@ void UIFontsController::valueChanged (CControl* pControl)
 			break;
 		}
 		case kFontMainTag:
-		case kFontAltTag:
 		case kFontSizeTag:
 		case kFontStyleBoldTag:
 		case kFontStyleItalicTag:
@@ -223,6 +224,11 @@ void UIFontsController::valueChanged (CControl* pControl)
 			}
 			break;
 		}
+		case kFontAltTag:
+		{
+			actionPerformer->performAlternativeFontChange (selectedFont.c_str (), altTextEdit->getText ());
+			break;
+		}
 	}
 }
 
@@ -246,6 +252,8 @@ void UIFontsController::dbSelectionChanged (int32_t selectedRow, GenericStringLi
 					break;
 				}
 			}
+			fontMenu->setStyle (fontMenu->getStyle () & ~kNoTextStyle);
+			fontMenu->setMouseEnabled (true);
 		}
 		if (sizeTextEdit)
 		{
@@ -272,6 +280,20 @@ void UIFontsController::dbSelectionChanged (int32_t selectedRow, GenericStringLi
 		{
 			strikethroughControl->setValue (font->getStyle () & kStrikethroughFace ? true : false);
 			strikethroughControl->invalid ();
+		}
+		if (altTextEdit)
+		{
+			std::string alternativeFonts;
+			editDescription->getAlternativeFontNames (selectedFont.c_str (), alternativeFonts);
+			altTextEdit->setText (alternativeFonts.c_str ());
+		}
+	}
+	else
+	{
+		if (fontMenu)
+		{
+			fontMenu->setStyle (fontMenu->getStyle () | kNoTextStyle);
+			fontMenu->setMouseEnabled (false);
 		}
 	}
 }

@@ -41,35 +41,56 @@
 namespace VSTGUI {
 
 //-----------------------------------------------------------------------------
+class IDataPackage : public CBaseObject
+{
+public:
+	enum Type {
+		kFilePath = 0,	///< File type (UTF-8 C-String)
+		kText,			///< Text type (UTF-8 C-String)
+		kBinary,		///< Binary type
+		
+		kError = -1
+	};
+
+	virtual int32_t getCount () = 0;
+	virtual int32_t getDataSize (int32_t index) = 0;
+	virtual Type getDataType (int32_t index) = 0;
+	virtual int32_t getData (int32_t index, const void*& buffer, Type& type) = 0;
+
+	//-------------------------------------------
+	CLASS_METHODS_NOCOPY(IDataPackage, CBaseObject)
+protected:
+	IDataPackage () {}
+};
+
+//-----------------------------------------------------------------------------
 // CDropSource Declaration
 //! @brief drop source
 //!
 //! @ingroup new_in_4_0
 //-----------------------------------------------------------------------------
-class CDropSource : public CBaseObject
+class CDropSource : public IDataPackage
 {
 public:
-	enum Type {
-		kFilePath = 0,	///< File type (UTF-8 C-String, must be null terminated and bufferSize must include it)
-		kText,		///< Text type (UTF-8 C-String, must be null terminated and bufferSize must include it)
-		kBinary,	///< Binary type
-		
-		kError = -1
-	};
-
 	CDropSource ();
 	CDropSource (const void* buffer, int32_t bufferSize, Type type);
 	~CDropSource ();
 	
 	bool add (const void* buffer, int32_t bufferSize, Type type);
 
-	int32_t getCount () const;
-	int32_t getEntrySize (int32_t index) const; 
-	Type getEntryType (int32_t index) const; 
-	int32_t getEntry (int32_t index, const void*& buffer, Type& type) const;
+	// IDataPackage
+	virtual int32_t getCount ();
+	virtual int32_t getDataSize (int32_t index) { return getEntrySize (index); }
+	virtual Type getDataType (int32_t index) { return getEntryType (index); }
+	virtual int32_t getData (int32_t index, const void*& buffer, Type& type) { return getEntry (index, buffer, type); }
+
+	// old interface
+	int32_t getEntrySize (int32_t index); 
+	Type getEntryType (int32_t index); 
+	int32_t getEntry (int32_t index, const void*& buffer, Type& type);
 	
 	//-------------------------------------------
-	CLASS_METHODS_NOCOPY(CDropSource, CBaseObject)
+	CLASS_METHODS_NOCOPY(CDropSource, IDataPackage)
 protected:
 	/// @cond ignore
 	struct CDropEntry {
