@@ -29,7 +29,7 @@ class OpenGLViewTestController : public UIDescriptionBaseController
 public:
 	Steinberg::tresult PLUGIN_API initialize (Steinberg::FUnknown* context);
 	Steinberg::IPlugView* PLUGIN_API createView (Steinberg::FIDString name);
-	CView* createCustomView (UTF8StringPtr name, const UIAttributes& attributes, IUIDescription* description, VST3Editor* editor);
+	IController* createSubController (const char* name, IUIDescription* description, VST3Editor* editor);
 
 	static Steinberg::FUnknown* createInstance (void*) { return (Steinberg::Vst::IEditController*)new OpenGLViewTestController; }
 	static Steinberg::FUID cid;

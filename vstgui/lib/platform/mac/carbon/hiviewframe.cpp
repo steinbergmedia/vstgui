@@ -45,6 +45,7 @@
 #include "../cgbitmap.h"
 #include "../macglobals.h"
 #include "../quartzgraphicspath.h"
+#include "../macclipboard.h"
 
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations" // we know that we use deprecated functions from Carbon, so we don't want to be warned
 
@@ -827,6 +828,19 @@ CView::DragResult HIViewFrame::doDrag (CDropSource* source, const CPoint& offset
 	}
 	return result;
 }
+
+//-----------------------------------------------------------------------------
+void HIViewFrame::setClipboard (IDataPackage* data)
+{
+	MacClipboard::setClipboard (data);
+}
+
+//-----------------------------------------------------------------------------
+IDataPackage* HIViewFrame::getClipboard ()
+{
+	return MacClipboard::getClipboard ();
+}
+
 
 #define ENABLE_LOGGING 0
 

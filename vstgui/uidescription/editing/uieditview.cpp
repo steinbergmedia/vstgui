@@ -646,6 +646,13 @@ CMouseEventResult UIEditView::onMouseMoved (CPoint &where, const CButtonState& b
 }
 
 //----------------------------------------------------------------------------------------------------
+CMouseEventResult UIEditView::onMouseExited (CPoint& where, const CButtonState& buttons)
+{
+	getFrame()->setCursor (kCursorDefault);
+	return kMouseEventHandled;
+}
+
+//----------------------------------------------------------------------------------------------------
 CBitmap* UIEditView::createBitmapFromSelection (UISelection* selection)
 {
 	CRect viewSize = getSelection ()->getBounds ();

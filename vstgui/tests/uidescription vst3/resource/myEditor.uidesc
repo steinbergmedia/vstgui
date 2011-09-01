@@ -84,7 +84,7 @@
 		<attributes SelectedRow="-1" name="UIColorsDataSource"/>
 		<attributes SelectedRow="0" name="UIBitmapsDataSource"/>
 		<attributes SelectedRow="1" name="UIFontsDataSource"/>
-		<attributes SelectedTemplate="view" name="UITemplateController"/>
+		<attributes SelectedTemplate="tab4" name="UITemplateController"/>
 	</custom>
 	<colors>
 		<color name="black" rgba="#000000ff"/>
@@ -159,19 +159,19 @@
 		</view>
 	</template>
 	<template background-color="black" class="CViewContainer" name="tab4" origin="0, 0" size="480, 260" transparent="true">
-		<view background-color="group frame color" class="CSplitView" orientation="horizontal" origin="20, 20" separator-width="7" size="440, 225" sub-controller="SplitViewController" transparent="false">
-			<view background-color="tab background" class="CViewContainer" origin="0, 0" size="83, 225" transparent="false"/>
-			<view background-color="black" bitmap="FrameBackground" class="CViewContainer" origin="90, 0" size="203, 225" transparent="false">
-				<view auto-drag-scrolling="false" autosize="left right top bottom " background-color="black" bordered="false" class="CScrollView" container-size="295, 195" horizontal-scrollbar="true" origin="0, 20" scrollbar-background-color="~ TransparentCColor" scrollbar-frame-color="~ TransparentCColor" scrollbar-scroller-color="default background" scrollbar-width="8" size="203, 203" transparent="true" vertical-scrollbar="false">
-					<view background-color="black" class="CSplitView" orientation="vertical" origin="0, 0" separator-width="7" size="295, 195" transparent="true">
-						<view background-color="group frame color" class="CViewContainer" origin="0, 0" size="295, 71" transparent="false"/>
-						<view background-color="group frame color" class="CViewContainer" origin="0, 78" size="295, 117" transparent="false"/>
+		<view background-color="group frame color" class="CSplitView" orientation="horizontal" origin="20, 20" resize-method="last" separator-width="7" size="440, 225" sub-controller="SplitViewController" transparent="false">
+			<view background-color="tab background" class="CViewContainer" origin="0, 0" size="74, 225" transparent="false"/>
+			<view background-color="black" bitmap="FrameBackground" class="CViewContainer" origin="81, 0" size="114, 225" transparent="false">
+				<view auto-drag-scrolling="false" autosize="left right top bottom " background-color="black" bordered="false" class="CScrollView" container-size="295, 195" follow-focus-view="false" horizontal-scrollbar="true" origin="0, 20" overlay-scrollbars="false" scrollbar-background-color="~ TransparentCColor" scrollbar-frame-color="~ TransparentCColor" scrollbar-scroller-color="default background" scrollbar-width="8" size="114, 203" transparent="true" vertical-scrollbar="false">
+					<view background-color="black" class="CSplitView" orientation="vertical" origin="0, 0" resize-method="last" separator-width="7" size="295, 195" transparent="true">
+						<view background-color="group frame color" class="CViewContainer" origin="0, 0" size="295, 74" transparent="false"/>
+						<view background-color="group frame color" class="CViewContainer" origin="0, 81" size="295, 114" transparent="false"/>
 					</view>
 				</view>
 			</view>
-			<view background-color="tab background" class="CViewContainer" origin="300, 0" size="140, 225" transparent="false"/>
+			<view background-color="tab background" class="CViewContainer" origin="202, 0" size="238, 225" transparent="false"/>
 		</view>
-		<view back-color="black" background-offset="0, 0" class="CTextLabel" default-value="0.5" font="~ NormalFont" font-antialias="true" font-color="white" frame-color="black" max-value="1" min-value="0" origin="0, 0" shadow-color="~ RedCColor" size="480, 20" style-3D-in="false" style-3D-out="false" style-no-draw="false" style-no-frame="false" style-no-text="false" style-shadow-text="false" text-alignment="center" text-inset="0, 0" title="CSplitView Test" transparent="true" wheel-inc-value="0.1"/>
+		<view back-color="black" background-offset="0, 0" class="CTextLabel" default-value="0.5" font="~ NormalFont" font-antialias="true" font-color="white" frame-color="black" max-value="1" min-value="0" origin="0, 0" round-rect-radius="6" shadow-color="~ RedCColor" size="480, 20" style-3D-in="false" style-3D-out="false" style-no-draw="false" style-no-frame="false" style-no-text="false" style-round-rect="false" style-shadow-text="false" text-alignment="center" text-inset="0, 0" title="CSplitView Test" transparent="true" wheel-inc-value="0.1"/>
 	</template>
 	<template background-color="black" class="CViewContainer" name="tab5" origin="0, 0" size="480, 260" transparent="true">
 		<view back-color="~ WhiteCColor" background-offset="0, 0" class="CTextLabel" default-value="0.5" font="~ NormalFontVeryBig" font-antialias="true" font-color="~ BlackCColor" frame-color="black" max-value="1" min-value="0" origin="15, 185" round-rect-radius="6" shadow-color="~ RedCColor" size="165, 30" style-3D-in="false" style-3D-out="false" style-no-draw="false" style-no-frame="false" style-no-text="false" style-round-rect="false" style-shadow-text="false" text-alignment="center" text-inset="0, 0" title="NormalFontVeryBig" transparent="false" wheel-inc-value="0.1"/>

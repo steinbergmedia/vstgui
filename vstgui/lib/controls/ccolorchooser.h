@@ -72,16 +72,21 @@ struct CColorChooserUISettings
 
 ///	@ingroup new_in_4_0
 //-----------------------------------------------------------------------------
-class CColorChooser : public CViewContainer, public CControlListener
+class CColorChooser : public CViewContainer, public CControlListener, public IDependency
 {
 public:
 	CColorChooser (IColorChooserDelegate* delegate = 0, const CColor& initialColor = kTransparentCColor, const CColorChooserUISettings& settings = CColorChooserUISettings ());
 	~CColorChooser ();
 
 	void setColor (const CColor& newColor);
+	
+	static IdStringPtr kMsgBeginColorChange;
+	static IdStringPtr kMsgEndColorChange;
 //-----------------------------------------------------------------------------
 protected:
 	void valueChanged (CControl* pControl);
+	void controlBeginEdit (CControl* pControl);
+	void controlEndEdit (CControl* pControl);
 	void updateState ();
 
 	/// @cond ignore

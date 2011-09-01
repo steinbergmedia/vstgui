@@ -124,6 +124,109 @@ protected:
 };
 
 //----------------------------------------------------------------------------------------------------
+class AutosizeController : public Controller
+{
+public:
+	AutosizeController (IController* baseController, UISelection* selection, const std::string& attrName)
+	: Controller (baseController, attrName), selection (selection) {}
+
+	CView* verifyView (CView* view, const UIAttributes& attributes, IUIDescription* description)
+	{
+		CControl* control = dynamic_cast<CControl*>(view);
+		if (control)
+		{
+			int32_t tag = control->getTag ();
+			if (tag >= kLeftTag && tag <= kColTag)
+				controls[tag] = control;
+			if (tag >= kRowTag && tag <= kColTag)
+			{
+				FOREACH_IN_SELECTION(selection, view)
+					if (dynamic_cast<CViewContainer*>(view) == 0)
+					{
+						controls[tag]->setVisible (false);
+						break;
+					}
+				FOREACH_IN_SELECTION_END
+			}
+		}
+		return controller->verifyView (view, attributes, description);
+	}
+
+	void setValue (const std::string& value)
+	{
+		if (hasDifferentValues ())
+		{
+			for (int32_t i = kLeftTag; i <= kColTag; i++)
+			{
+				controls[i]->setValue (0.f);
+				controls[i]->invalid ();
+			}
+		}
+		else
+		{
+			controls[kLeftTag]->setValue (value.find ("left") == std::string::npos ? controls[kLeftTag]->getMin () : controls[kLeftTag]->getMax ());
+			controls[kRightTag]->setValue (value.find ("right") == std::string::npos ? controls[kRightTag]->getMin () : controls[kRightTag]->getMax ());
+			controls[kTopTag]->setValue (value.find ("top") == std::string::npos ? controls[kTopTag]->getMin () : controls[kTopTag]->getMax ());
+			controls[kBottomTag]->setValue (value.find ("bottom") == std::string::npos ? controls[kBottomTag]->getMin () : controls[kBottomTag]->getMax ());
+			controls[kRowTag]->setValue (value.find ("row") == std::string::npos ? controls[kRowTag]->getMin () : controls[kRowTag]->getMax ());
+			controls[kColTag]->setValue (value.find ("column") == std::string::npos ? controls[kColTag]->getMin () : controls[kColTag]->getMax ());
+		}
+	}
+
+	void valueChanged (CControl* control)
+	{
+		std::string str;
+		if (controls[kLeftTag]->getValue () == controls[kLeftTag]->getMax ())
+			str = "left";
+		if (controls[kRightTag]->getValue () == controls[kRightTag]->getMax ())
+		{
+			if (str.empty () == false)
+				str += " ";
+			str += "right";
+		}
+		if (controls[kTopTag]->getValue () == controls[kTopTag]->getMax ())
+		{
+			if (str.empty () == false)
+				str += " ";
+			str += "top";
+		}
+		if (controls[kBottomTag]->getValue () == controls[kBottomTag]->getMax ())
+		{
+			if (str.empty () == false)
+				str += " ";
+			str += "bottom";
+		}
+		if (controls[kRowTag]->getValue () == controls[kRowTag]->getMax ())
+		{
+			if (str.empty () == false)
+				str += " ";
+			str += "row";
+		}
+		if (controls[kColTag]->getValue () == controls[kColTag]->getMax ())
+		{
+			if (str.empty () == false)
+				str += " ";
+			str += "column";
+		}
+		performValueChange (str.c_str ());
+	}
+
+
+protected:
+	enum {
+		kLeftTag = 0,
+		kTopTag,
+		kRightTag,
+		kBottomTag,
+		kRowTag,
+		kColTag,
+	};
+
+	CControl* controls[6];
+	SharedPointer<UISelection> selection;
+};
+
+//----------------------------------------------------------------------------------------------------
 class BooleanController : public Controller
 {
 public:
@@ -501,6 +604,10 @@ IController* UIAttributesController::createSubController (IdStringPtr name, IUID
 		{
 			return new UIAttributeControllers::TextAlignmentController (this, *currentAttributeName);
 		}
+		else if (strcmp (name, "AutosizeController") == 0)
+		{
+			return new UIAttributeControllers::AutosizeController (this, selection, *currentAttributeName);
+		}
 		
 	}
 	return controller->createSubController (name, description);
@@ -569,6 +676,7 @@ CView* UIAttributesController::createViewForAttribute (const std::string& attrNa
 	label->setHoriAlign (kRightText);
 	label->setFontColor (kBlackCColor);
 	label->setFont (kNormalFontSmall);
+	label->setAutosizeFlags (kAutosizeAll);
 	label->setAttribute (kCViewTooltipAttribute, (int32_t)attrName.size ()+1, attrName.c_str ());
 
 	result->addView (label);
@@ -594,6 +702,10 @@ CView* UIAttributesController::createViewForAttribute (const std::string& attrNa
 	if (attrName == "text-alignment")
 	{
 		valueView = UIEditController::getEditorDescription ().createView ("attributes.text.alignment", this);
+	}
+	else if (attrName == "autosize")
+	{
+		valueView = UIEditController::getEditorDescription ().createView ("attributes.view.autosize", this);
 	}
 	
 	if (valueView == 0)
@@ -659,9 +771,14 @@ CView* UIAttributesController::createViewForAttribute (const std::string& attrNa
 				attributeControllers.push_back (c);
 			}
 		}
+		r.setHeight (valueView->getHeight ());
 		valueView->setViewSize (r);
 		valueView->setMouseableArea (r);
 		result->addView (valueView);
+		r = result->getViewSize ();
+		r.setHeight (valueView->getHeight()+2);
+		result->setViewSize (r);
+		result->setMouseableArea (r);
 	}
 	return result;
 }

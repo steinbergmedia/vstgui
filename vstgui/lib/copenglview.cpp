@@ -68,12 +68,49 @@ void COpenGLView::updatePlatformOpenGLViewSize ()
 	}
 }
 
+//-----------------------------------------------------------------------------
+bool COpenGLView::createPlatformOpenGLView ()
+{
+	assert (platformOpenGLView == 0);
+	IPlatformFrame* platformFrame = getFrame ()->getPlatformFrame ();
+	platformOpenGLView = platformFrame ? platformFrame->createPlatformOpenGLView () : 0;
+	if (platformOpenGLView)
+	{
+		if (platformOpenGLView->init (this, getPixelFormat ()))
+		{
+			updatePlatformOpenGLViewSize ();
+			platformOpenGLViewCreated ();
+			platformOpenGLViewSizeChanged ();
+			return true;
+		}
+		platformOpenGLView->forget ();
+		platformOpenGLView = 0;
+	}
+	return false;
+}
+
+//-----------------------------------------------------------------------------
+bool COpenGLView::destroyPlatformOpenGLView ()
+{
+	if (platformOpenGLView)
+	{
+		platformOpenGLViewWillDestroy ();
+		platformOpenGLView->remove ();
+		platformOpenGLView->forget ();
+		platformOpenGLView = 0;
+		return true;
+	}
+	return false;
+}
+
 // CView
 //-----------------------------------------------------------------------------
 void COpenGLView::setViewSize (const CRect& rect, bool invalid)
 {
 	CView::setViewSize (rect, invalid);
 	updatePlatformOpenGLViewSize ();
+	if (platformOpenGLView)
+		platformOpenGLViewSizeChanged ();
 }
 
 //-----------------------------------------------------------------------------
@@ -81,6 +118,8 @@ void COpenGLView::parentSizeChanged ()
 {
 	CView::parentSizeChanged ();
 	updatePlatformOpenGLViewSize ();
+	if (platformOpenGLView)
+		platformOpenGLViewSizeChanged ();
 }
 
 //-----------------------------------------------------------------------------
@@ -88,18 +127,7 @@ bool COpenGLView::attached (CView* parent)
 {
 	if (CView::attached (parent))
 	{
-		IPlatformFrame* platformFrame = getFrame ()->getPlatformFrame ();
-		platformOpenGLView = platformFrame ? platformFrame->createPlatformOpenGLView () : 0;
-		if (platformOpenGLView)
-		{
-			if (platformOpenGLView->init (this, getPixelFormat ()))
-			{
-				updatePlatformOpenGLViewSize ();
-				return true;
-			}
-			platformOpenGLView->forget ();
-			platformOpenGLView = 0;
-		}
+		return createPlatformOpenGLView ();
 	}
 	return false;
 }
@@ -107,12 +135,7 @@ bool COpenGLView::attached (CView* parent)
 //-----------------------------------------------------------------------------
 bool COpenGLView::removed (CView* parent)
 {
-	if (platformOpenGLView)
-	{
-		platformOpenGLView->remove ();
-		platformOpenGLView->forget ();
-		platformOpenGLView = 0;
-	}
+	destroyPlatformOpenGLView ();
 	return CView::removed (parent);
 }
 
@@ -126,26 +149,12 @@ void COpenGLView::setVisible (bool state)
 		{
 			if (state && platformOpenGLView == 0)
 			{
-				IPlatformFrame* platformFrame = getFrame ()->getPlatformFrame ();
-				platformOpenGLView = platformFrame ? platformFrame->createPlatformOpenGLView () : 0;
-				if (platformOpenGLView)
-				{
-					if (platformOpenGLView->init (this, getPixelFormat ()))
-					{
-						updatePlatformOpenGLViewSize ();
-						return;
-					}
-					platformOpenGLView->forget ();
-					platformOpenGLView = 0;
-				}
+				createPlatformOpenGLView ();
 			}
 			else if (state == false && platformOpenGLView != 0)
 			{
-				platformOpenGLView->remove ();
-				platformOpenGLView->forget ();
-				platformOpenGLView = 0;
+				destroyPlatformOpenGLView ();
 			}
-			invalid ();
 		}
 	}
 }

@@ -71,8 +71,13 @@ public:
 	virtual void performFontNameChange (UTF8StringPtr oldName, UTF8StringPtr newName) = 0;
 	virtual void performBitmapNameChange (UTF8StringPtr oldName, UTF8StringPtr newName) = 0;
 
+	virtual void performAlternativeFontChange (UTF8StringPtr fontName, UTF8StringPtr newAlternativeFonts) = 0;
+
 	virtual void performBitmapNinePartTiledChange (UTF8StringPtr bitmapName, const CRect* offsets) = 0;
-	virtual void makeSelection (CView* view) = 0;
+
+	virtual void beginLiveColorChange (UTF8StringPtr colorName) = 0;
+	virtual void performLiveColorChange (UTF8StringPtr colorName, const CColor& newColor) = 0;
+	virtual void endLiveColorChange (UTF8StringPtr colorName) = 0;
 };
 
 } // namespace

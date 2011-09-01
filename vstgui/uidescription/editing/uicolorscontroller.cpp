@@ -15,9 +15,12 @@ class UIColorsDataSource : public UIBaseDataSource, public IColorChooserDelegate
 {
 public:
 	UIColorsDataSource (UIDescription* description, IActionPerformer* actionPerformer);
+	~UIColorsDataSource ();
 	
-	void setColorChooser (CColorChooser* chooser) { colorChooser = chooser; }
+	void setColorChooser (CColorChooser* chooser);
 protected:
+	CMessageResult notify (CBaseObject* sender, IdStringPtr message);
+	virtual void update ();
 	virtual void getNames (std::list<const std::string*>& names);
 	virtual bool addItem (UTF8StringPtr name);
 	virtual bool removeItem (UTF8StringPtr name);
@@ -36,6 +39,47 @@ protected:
 UIColorsDataSource::UIColorsDataSource (UIDescription* description, IActionPerformer* actionPerformer)
 : UIBaseDataSource (description, actionPerformer, UIDescription::kMessageColorChanged)
 {
+}
+
+//----------------------------------------------------------------------------------------------------
+UIColorsDataSource::~UIColorsDataSource ()
+{
+	if (colorChooser)
+		colorChooser->removeDependency (this);
+}
+
+//----------------------------------------------------------------------------------------------------
+void UIColorsDataSource::setColorChooser (CColorChooser* chooser)
+{
+	colorChooser = chooser;
+	if (colorChooser)
+		colorChooser->addDependency (this);
+}
+
+//----------------------------------------------------------------------------------------------------
+CMessageResult UIColorsDataSource::notify (CBaseObject* sender, IdStringPtr message)
+{
+	CMessageResult result = UIBaseDataSource::notify (sender, message);
+	if (result != kMessageNotified)
+	{
+		if (message == CColorChooser::kMsgBeginColorChange)
+		{
+			int32_t selectedRow = dataBrowser->getSelectedRow ();
+			if (selectedRow != CDataBrowser::kNoSelection)
+			{
+				actionPerformer->beginLiveColorChange (names.at (selectedRow).c_str ());
+			}
+		}
+		else if (message == CColorChooser::kMsgEndColorChange)
+		{
+			int32_t selectedRow = dataBrowser->getSelectedRow ();
+			if (selectedRow != CDataBrowser::kNoSelection)
+			{
+				actionPerformer->endLiveColorChange (names.at (selectedRow).c_str ());
+			}
+		}
+	}
+	return result;
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -59,13 +103,24 @@ bool UIColorsDataSource::removeItem (UTF8StringPtr name)
 }
 
 //----------------------------------------------------------------------------------------------------
+void UIColorsDataSource::update ()
+{
+	UIBaseDataSource::update ();
+	if (dataBrowser)
+	{
+		dbSelectionChanged (dataBrowser);
+		dataBrowser->invalid ();
+	}
+}
+
+//----------------------------------------------------------------------------------------------------
 void UIColorsDataSource::dbSelectionChanged (CDataBrowser* browser)
 {
 	int32_t selectedRow = dataBrowser->getSelectedRow ();
 	if (colorChooser && selectedRow != CDataBrowser::kNoSelection)
 	{
 		CColor color;
-		if (description->getColor(names.at (selectedRow).c_str (), color))
+		if (description->getColor (names.at (selectedRow).c_str (), color))
 		{
 			colorChooser->setColor (color);
 		}
@@ -78,7 +133,7 @@ void UIColorsDataSource::colorChanged (CColorChooser* chooser, const CColor& col
 	int32_t selectedRow = dataBrowser->getSelectedRow ();
 	if (selectedRow != CDataBrowser::kNoSelection)
 	{
-		actionPerformer->performColorChange (names.at (selectedRow).c_str (), color);
+		actionPerformer->performLiveColorChange (names.at (selectedRow).c_str (), color);
 		dataBrowser->setSelectedRow (selectedRow);
 	}
 }
@@ -86,6 +141,7 @@ void UIColorsDataSource::colorChanged (CColorChooser* chooser, const CColor& col
 //----------------------------------------------------------------------------------------------------
 void UIColorsDataSource::dbDrawCell (CDrawContext* context, const CRect& size, int32_t row, int32_t column, int32_t flags, CDataBrowser* browser)
 {
+	GenericStringListDataBrowserSource::dbDrawCell (context, size, row, column, flags, browser);
 	CColor color;
 	if (description->getColor(names.at (row).c_str (), color))
 	{
@@ -94,7 +150,6 @@ void UIColorsDataSource::dbDrawCell (CDrawContext* context, const CRect& size, i
 		r.left = r.right - r.getHeight ();
 		context->drawRect (r, kDrawFilled);
 	}
-	GenericStringListDataBrowserSource::dbDrawCell (context, size, row, column, flags, browser);
 }
 
 //----------------------------------------------------------------------------------------------------

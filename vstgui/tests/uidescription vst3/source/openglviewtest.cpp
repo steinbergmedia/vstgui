@@ -8,6 +8,7 @@
 
 #include "openglviewtest.h"
 #include "base/source/fobject.h"
+#include "base/source/fthread.h"
 
 #if MAC
 	#include <OpenGL/gl.h>
@@ -40,59 +41,95 @@ OpenGLViewTestProcessor::OpenGLViewTestProcessor ()
 class TestOpenGLView : public COpenGLView, public Animation::IAnimationTarget
 {
 public:
-	TestOpenGLView (const CRect& size) : COpenGLView (size) {xRotation = yRotation = zRotation = 0.f;}
-
-	bool attached (CView* parent)
+	TestOpenGLView (const CRect& size) : COpenGLView (size), useThread (false), thread (0)
 	{
-		if (COpenGLView::attached(parent))
-		{
-			updateViewPort ();
-			remember ();
-			addAnimation("XRotation", this, new Animation::RepeatTimingFunction (new Animation::LinearTimingFunction (4000), -1, false));
-			remember ();
-			addAnimation("YRotation", this, new Animation::RepeatTimingFunction (new Animation::LinearTimingFunction (6000), -1, false));
-			remember ();
-			addAnimation("ZRotation", this, new Animation::RepeatTimingFunction (new Animation::LinearTimingFunction (8000), -1, false));
-			return true;
-		}
-		return false;
 	}
 
-	bool removed (CView* parent)
+	void killThread ()
 	{
-		return COpenGLView::removed (parent);
+		if (thread)
+		{
+			thread->stop ();
+			thread->waitDead (-1);
+			delete thread;
+			thread = 0;
+		}
 	}
 	
-	void setViewSize (const CRect& rect, bool invalid = true)
+	void setThreaded (bool state)
 	{
-		COpenGLView::setViewSize (rect, invalid);
-		updateViewPort ();
+		if (isAttached ())
+		{
+			xRotation = yRotation = zRotation = 0.f;
+			if (state == true && thread == 0)
+			{
+				thread = new Thread (this);
+				thread->run ();
+			}
+			else if (state == false)
+			{
+				killThread ();
+				remember ();
+				addAnimation("XRotation", this, new Animation::RepeatTimingFunction (new Animation::LinearTimingFunction (4000), -1, false));
+				remember ();
+				addAnimation("YRotation", this, new Animation::RepeatTimingFunction (new Animation::LinearTimingFunction (6000), -1, false));
+				remember ();
+				addAnimation("ZRotation", this, new Animation::RepeatTimingFunction (new Animation::LinearTimingFunction (8000), -1, false));
+			}
+		}
+		useThread = state;
+	}
+
+	void platformOpenGLViewCreated ()
+	{
+		getPlatformOpenGLView ()->lockContext ();
+		getPlatformOpenGLView ()->makeContextCurrent ();
+
+		glEnable (GL_DEPTH_TEST);
+		glEnable (GL_BLEND);
+		glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+		glClearColor (0, 0, 0, 0);
+
+		getPlatformOpenGLView ()->unlockContext ();
+
+		setThreaded (useThread);
 	}
 	
-	void parentSizeChanged ()
+	void platformOpenGLViewWillDestroy ()
 	{
-		COpenGLView::parentSizeChanged ();
-		updateViewPort ();
+		killThread ();
+		removeAllAnimations ();
+	}
+	
+	void platformOpenGLViewSizeChanged ()
+	{
+		getPlatformOpenGLView ()->lockContext ();
+		getPlatformOpenGLView ()->makeContextCurrent ();
+
+		CRect r (getViewSize ());
+		glViewport (0, 0, r.getWidth (), r.getHeight ());
+
+		getPlatformOpenGLView ()->unlockContext ();
 	}
 
-	void updateViewPort ()
+	void drawOpenGLThreaded ()
 	{
-		if (platformOpenGLView)
-		{
-			platformOpenGLView->lockContext ();
-			platformOpenGLView->makeContextCurrent ();
+		xRotation += 1.f;
+		if (xRotation >= 360.f)
+			xRotation = 0.f;
+		yRotation += 1.f;
+		if (yRotation >= 360.f)
+			yRotation = 0.f;
+		zRotation += 1.f;
+		if (zRotation >= 360.f)
+			zRotation = 0.f;
+		getPlatformOpenGLView ()->lockContext ();
+		getPlatformOpenGLView ()->makeContextCurrent ();
 
-			glEnable (GL_DEPTH_TEST);
-			glEnable (GL_BLEND);
-			glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		drawOpenGL (getViewSize ());
 
-			CRect r (getViewSize ());
-			glViewport (0, 0, r.getWidth (), r.getHeight ());
-
-			glClearColor (0, 0, 0, 0);
-
-			platformOpenGLView->unlockContext ();
-		}
+		getPlatformOpenGLView ()->unlockContext ();
 	}
 	
 	void drawOpenGL (const CRect& updateRect)
@@ -143,19 +180,60 @@ public:
    
 		glFlush ();
 
-		platformOpenGLView->swapBuffers ();
+		getPlatformOpenGLView ()->swapBuffers ();
+	}
+
+	PixelFormat* getPixelFormat ()
+	{
+		static PixelFormat pixelFormat;
+		pixelFormat.flags = PixelFormat::kAccelerated | PixelFormat::kMultiSample;
+		pixelFormat.samples = 4;
+		return &pixelFormat;
 	}
 protected:
+	class Thread : public FThread
+	{
+	public:
+		Thread (TestOpenGLView* openGLView)
+		: FThread ("OpenGLDrawThread")
+		, openGLView (openGLView)
+		, cancelDrawLoop (false)
+		{
+		}
+		
+		uint32 entry ()
+		{
+			while (cancelDrawLoop == false)
+			{
+				openGLView->drawOpenGLThreaded ();
+				FThreadSleep (16);
+			}
+			return 0;
+		}
+
+		void stop ()
+		{
+			cancelDrawLoop = true;
+		}
+
+	protected:
+		TestOpenGLView* openGLView;
+		volatile bool cancelDrawLoop;
+	};
+
 	virtual void animationStart (CView* view, IdStringPtr name) {}
 	virtual void animationTick (CView* view, IdStringPtr name, float pos)
 	{
-		if (strcmp (name, "XRotation") == 0)
-			xRotation = pos * 360.f;
-		else if (strcmp (name, "ZRotation") == 0)
-			zRotation = pos * 360.f;
-		else if (strcmp (name, "YRotation") == 0)
-			yRotation = pos * 360.f;
-		invalid ();
+		if (thread == 0)
+		{
+			if (strcmp (name, "XRotation") == 0)
+				xRotation = pos * 360.f;
+			else if (strcmp (name, "ZRotation") == 0)
+				zRotation = pos * 360.f;
+			else if (strcmp (name, "YRotation") == 0)
+				yRotation = pos * 360.f;
+			invalid ();
+		}
 	}
 	
 	virtual void animationFinished (CView* view, IdStringPtr name, bool wasCanceled) {}
@@ -163,6 +241,48 @@ protected:
 	float xRotation;
 	float yRotation;
 	float zRotation;
+	
+	bool useThread;
+	Thread* thread;
+};
+
+//------------------------------------------------------------------------
+//------------------------------------------------------------------------
+//------------------------------------------------------------------------
+class OpenGLViewController : public DelegationController
+{
+public:
+	OpenGLViewController (IController* baseController)
+	: DelegationController (baseController)
+	, openGLView (0)
+	{}
+
+	CControlListener* getControlListener (UTF8StringPtr name)
+	{
+		if (strcmp (name, "threaded") == 0)
+			return this;
+		return controller->getControlListener (name);
+	}
+	
+	CView* createView (const UIAttributes& attributes, IUIDescription* description)
+	{
+		const std::string* name = attributes.getAttributeValue ("custom-view-name");
+		if (name && *name == "OpenGLView")
+		{
+			openGLView = new TestOpenGLView (CRect (0, 0, 0, 0));
+			return openGLView;
+		}
+		return controller->createView (attributes, description);
+	}
+	
+	void valueChanged (CControl* control)
+	{
+		if (openGLView)
+			openGLView->setThreaded (control->getValue () == control->getMax ());
+	}
+	
+protected:
+	TestOpenGLView* openGLView;
 };
 
 //------------------------------------------------------------------------
@@ -188,12 +308,10 @@ Steinberg::IPlugView* PLUGIN_API OpenGLViewTestController::createView (Steinberg
 }
 
 //------------------------------------------------------------------------
-CView* OpenGLViewTestController::createCustomView (UTF8StringPtr name, const UIAttributes& attributes, IUIDescription* description, VST3Editor* editor)
+IController* OpenGLViewTestController::createSubController (const char* name, IUIDescription* description, VST3Editor* editor)
 {
-	if (strcmp (name, "OpenGLView") == 0)
-	{
-		return new TestOpenGLView (CRect (0, 0, 0, 0));
-	}
+	if (strcmp (name, "OpenGLViewController") == 0)
+		return new OpenGLViewController (editor);
 	return 0;
 }
 

@@ -39,6 +39,7 @@
 #include "platform/iplatformopenglview.h"
 
 #if VSTGUI_OPENGL_SUPPORT
+
 namespace VSTGUI {
 
 /*
@@ -60,7 +61,7 @@ public:
 	~COpenGLView ();
 
 	// IOpenGLView	
-	virtual void drawOpenGL (const CRect& updateRect) = 0; ///< will be called when the view was marked invalid or the view was resized
+	virtual void drawOpenGL (const CRect& updateRect) = 0;	///< will be called when the view was marked invalid or the view was resized
 
 	// CView
 	virtual void setViewSize (const CRect& rect, bool invalid = true);
@@ -72,10 +73,22 @@ public:
 
 	CLASS_METHODS_NOCOPY (COpenGLView, CView)
 protected:
-	virtual PixelFormat* getPixelFormat () { return 0; }	///< subclasses should return a pixelformat here If they don't want to use the default one
+	//-----------------------------------------------------------------------------
+	/// @name COpenGLView Methods
+	//-----------------------------------------------------------------------------
+	//@{
+	virtual void platformOpenGLViewCreated () {}			///< will be called after the platform opengl view was created
+	virtual void platformOpenGLViewWillDestroy () {}		///< will be called before the platform opengl view will be destroyed
+	virtual void platformOpenGLViewSizeChanged () {}		///< will be called whenever the platform opengl view size has changed
+	virtual PixelFormat* getPixelFormat () { return 0; }	///< subclasses should return a pixelformat here if they don't want to use the default one
+	IPlatformOpenGLView* getPlatformOpenGLView () const { return platformOpenGLView; }
+	//@}
 
+private:
 	void updatePlatformOpenGLViewSize ();
-	
+	bool createPlatformOpenGLView ();
+	bool destroyPlatformOpenGLView ();
+
 	IPlatformOpenGLView* platformOpenGLView;
 };
 
