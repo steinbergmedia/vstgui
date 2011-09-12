@@ -426,7 +426,7 @@ bool CSplitView::addView (CView* pView, const CRect& mouseableArea, bool mouseEn
 //-----------------------------------------------------------------------------
 bool CSplitView::addView (CView* pView, CView* pBefore)
 {
-	return false;
+	return addView (pView);
 }
 
 //-----------------------------------------------------------------------------

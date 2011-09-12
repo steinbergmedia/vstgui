@@ -27,7 +27,7 @@ public:
 	CView* getEditView () const;
 
 	void setUndoManager (UIUndoManager* manager);
-	UIUndoManager* getUndoManger ();
+	UIUndoManager* getUndoManager ();
 
 	void setSelection (UISelection* selection);
 	UISelection* getSelection ();

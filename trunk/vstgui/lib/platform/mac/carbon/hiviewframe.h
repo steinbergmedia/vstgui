@@ -74,7 +74,7 @@ public:
 #endif
 	COffscreenContext* createOffscreenContext (CCoord width, CCoord height);
 	CGraphicsPath* createGraphicsPath ();
-	CView::DragResult doDrag (CDropSource* source, const CPoint& offset, CBitmap* dragBitmap);
+	CView::DragResult doDrag (IDataPackage* source, const CPoint& offset, CBitmap* dragBitmap);
 	void setClipboard (IDataPackage* data);
 	IDataPackage* getClipboard ();
 

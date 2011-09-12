@@ -61,8 +61,12 @@ public:
 };
 
 
-/** TODO: Doc 
-*/
+//-----------------------------------------------------------------------------
+// CRowColumnView Declaration
+/// @brief a view container which layouts its subview as rows or columns
+/// @ingroup containerviews
+/// @ingroup new_in_4_1
+//-----------------------------------------------------------------------------
 class CRowColumnView : public CAutoLayoutContainerView
 {
 public:

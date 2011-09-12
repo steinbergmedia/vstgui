@@ -174,12 +174,19 @@ class CBitmapPixelAccess : public CBaseObject
 {
 public:
 	bool operator++ ();								///< advance position
+	bool operator++ (int) { return ++(*this); }	///< advance position
+	bool operator-- ();								///< decrease position
+	bool operator-- (int) { return --(*this); }	///< decrease position
 	bool setPosition (uint32_t x, uint32_t y);		///< set current position
 	uint32_t getX () const { return x; }			///< return current x position
 	uint32_t getY () const { return y; }			///< return current y position
 	virtual void getColor (CColor& c) const = 0;	///< get color of current pixel
 	virtual void setColor (const CColor& c) = 0;	///< set color of current pixel
 
+	uint32_t getBitmapWidth () const { return (uint32_t)bitmap->getWidth (); }
+	uint32_t getBitmapHeight () const { return (uint32_t)bitmap->getHeight (); }
+
+	IPlatformBitmapPixelAccess* getPlatformBitmapPixelAccess () const { return pixelAccess; }
 	/** create an accessor.
 		can return 0 if platform implementation does not support this.
 		result needs to be forgotten before the CBitmap reflects the change to the pixels */

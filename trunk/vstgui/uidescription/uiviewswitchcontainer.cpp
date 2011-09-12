@@ -207,6 +207,7 @@ void UIDescriptionViewSwitchController::switchContainerRemoved ()
 		switchControl->removeDependency (this);
 		switchControl->forget ();
 		switchControl = 0;
+		currentIndex = -1;
 	}
 }
 

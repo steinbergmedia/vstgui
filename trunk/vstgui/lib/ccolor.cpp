@@ -69,7 +69,111 @@ inline const _Tp& max3 (const _Tp& v1, const _Tp& v2, const _Tp& v3)
 /// @endcond
 
 //-----------------------------------------------------------------------------
-void CColor::toHSV (double& hue, double& saturation, double& value)
+uint8_t CColor::getLightness () const
+{
+	return (max3<uint8_t> (red, green, blue) / 2) + (min3<uint8_t>(red, green, blue) / 2);
+}
+
+//-----------------------------------------------------------------------------
+void CColor::toHSL (double& hue, double& saturation, double& lightness) const
+{
+	double r = red / 255.;
+	double g = green / 255.;
+	double b = blue / 255.;
+	double M = max3<double> (r, g ,b);
+	double m = min3<double> (r, g ,b);
+	double C = M - m;
+	lightness = (M + m) / 2.;
+	if (C == 0.)
+	{
+		hue = saturation = 0.;
+		return;
+	}
+	if (M == r)
+	{
+		hue = fmod (((g-b) / C), 6.);
+	}
+	else if (M == g)
+	{
+		hue = ((b - r) / C) + 2.;
+	}
+	else if (M == b)
+	{
+		hue = ((r - g) / C) + 4.;
+	}
+	hue *= 60.;
+	if (hue < 0.0)
+		hue += 360.0;
+	if (lightness <= 0.5)
+		saturation = C / (2. * lightness);
+	else
+		saturation = C / (2. - 2. * lightness);
+}
+
+//-----------------------------------------------------------------------------
+void CColor::fromHSL (double& hue, double& saturation, double& lightness)
+{
+//	if (lightness == 0.)
+//	{
+//		red = green = blue = 0;
+//		return;
+//	}
+//	if (saturation == 0.)
+//	{
+//		red = green = blue = 255. * lightness;
+//		return;
+//	}
+	double C = (1. - fabs (2 * lightness - 1)) * saturation;
+	double H = hue / 60.;
+	double X = C * (1. - fabs (fmod (H, 2) - 1.));
+	double r,g,b;
+	if (H >= 0 && H < 1.)
+	{
+		r = C;
+		g = X;
+		b = 0.;
+	}
+	else if (H >= 1. && H < 2.)
+	{
+		r = X;
+		g = C;
+		b = 0.;
+	}
+	else if (H >= 2. && H < 3.)
+	{
+		r = 0.;
+		g = C;
+		b = X;
+	}
+	else if (H >= 3. && H < 4.)
+	{
+		r = 0.;
+		g = X;
+		b = C;
+	}
+	else if (H >= 4. && H < 5.)
+	{
+		r = X;
+		g = 0.;
+		b = C;
+	}
+	else if (H >= 5. && H < 6.)
+	{
+		r = C;
+		g = 0.;
+		b = X;
+	}
+	double m = lightness - (C / 2.);
+	r = (r + m) * 255;
+	g = (g + m ) * 255.;
+	b = (b + m ) * 255.;
+	red = (uint8_t)floor (r + 0.5);
+	green = (uint8_t)floor (g + 0.5);
+	blue = (uint8_t)floor (b + 0.5);
+}
+
+//-----------------------------------------------------------------------------
+void CColor::toHSV (double& hue, double& saturation, double& value) const
 {
 	double rgbMax = (max3<uint8_t> (red, green, blue)) / 255.;
 	value = rgbMax;
@@ -221,8 +325,8 @@ void CColor::fromHSV (double hue, double saturation, double value)
 #if 0 // MAC && DEBUG
 __attribute__((__constructor__)) void testHSVtoRGBAndBack ()
 {
-	CColor color = kBlueCColor;
-	CColor color2;
+	CColor color (10, 10, 255, 255);
+	CColor color2 = color;
 	double h,s,v;
 	color.toHSV (h,s,v);
 	double th,ts,tv;
@@ -231,6 +335,12 @@ __attribute__((__constructor__)) void testHSVtoRGBAndBack ()
 		color.fromHSV (i, s, v);
 		color.toHSV (th, ts, tv);
 		color2.fromHSV (th, ts, tv);
+		if (color != color2)
+		{
+			DebugPrint ("issue\n");
+		}
+		color.toHSL (th, ts, tv);
+		color2.fromHSL (th, ts, tv);
 		if (color != color2)
 		{
 			DebugPrint ("issue\n");

@@ -73,7 +73,10 @@ public:
 	IPlatformOpenGLView* createPlatformOpenGLView ();
 #endif
 	COffscreenContext* createOffscreenContext (CCoord width, CCoord height);
-	CView::DragResult doDrag (CDropSource* source, const CPoint& offset, CBitmap* dragBitmap);
+	CView::DragResult doDrag (IDataPackage* source, const CPoint& offset, CBitmap* dragBitmap);
+
+	void setClipboard (IDataPackage* data);
+	IDataPackage* getClipboard ();
 
 //-----------------------------------------------------------------------------
 protected:

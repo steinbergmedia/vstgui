@@ -70,7 +70,7 @@ static bool bSwapped_mouse_buttons = false;
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
-class CDropTarget : public IDropTarget
+class CDropTarget : public ::IDropTarget
 {	
 public:
 	CDropTarget (Win32Frame* pFrame);
@@ -117,7 +117,7 @@ public:
 class Win32DataObject : public CBaseObject, public ::IDataObject
 {
 public:
-	Win32DataObject (CDropSource* dropSource);
+	Win32DataObject (IDataPackage* dataPackage);
 	~Win32DataObject ();
 
 	// IUnknown
@@ -136,7 +136,7 @@ public:
 	STDMETHOD (DUnadvise) (DWORD connection);
 	STDMETHOD (EnumDAdvise) (IEnumSTATDATA** enumAdvise);
 private:
-	CDropSource* dropSource;
+	IDataPackage* dataPackage;
 };
 
 //-----------------------------------------------------------------------------
@@ -618,7 +618,7 @@ COffscreenContext* Win32Frame::createOffscreenContext (CCoord width, CCoord heig
 }
 
 //------------------------------------------------------------------------------------
-CView::DragResult Win32Frame::doDrag (CDropSource* source, const CPoint& offset, CBitmap* dragBitmap)
+CView::DragResult Win32Frame::doDrag (IDataPackage* source, const CPoint& offset, CBitmap* dragBitmap)
 {
 	CView::DragResult result = CView::kDragRefused;
 	Win32DataObject* dataObject = new Win32DataObject (source);
@@ -635,6 +635,19 @@ CView::DragResult Win32Frame::doDrag (CDropSource* source, const CPoint& offset,
 			result = CView::kDragCopied;
 	}
 	return result;
+}
+
+//-----------------------------------------------------------------------------
+void Win32Frame::setClipboard (IDataPackage* data)
+{
+	// TODO: Implementation
+}
+
+//-----------------------------------------------------------------------------
+IDataPackage* Win32Frame::getClipboard ()
+{
+	// TODO: Implementation
+	return 0;
 }
 
 //-----------------------------------------------------------------------------
@@ -1141,8 +1154,8 @@ STDMETHODIMP CDropTarget::Drop (IDataObject* dataObject, DWORD keyState, POINTL 
 //-----------------------------------------------------------------------------
 STDMETHODIMP Win32DropSource::QueryInterface (REFIID riid, void** object)
 {
-	if (riid == ::IID_IDropSource)                        
-	{                                                              
+	if (riid == ::IID_IDropSource)
+	{
 		AddRef ();                                                 
 		*object = (::IDropSource*)this;                               
 		return S_OK;                                          
@@ -1177,16 +1190,16 @@ STDMETHODIMP Win32DropSource::GiveFeedback (DWORD effect)
 //-----------------------------------------------------------------------------
 // DataObject
 //-----------------------------------------------------------------------------
-Win32DataObject::Win32DataObject (CDropSource* dropSource)
-: dropSource (dropSource)
+Win32DataObject::Win32DataObject (IDataPackage* dataPackage)
+: dataPackage (dataPackage)
 {
-	dropSource->remember ();
+	dataPackage->remember ();
 }
 
 //-----------------------------------------------------------------------------
 Win32DataObject::~Win32DataObject ()
 {
-	dropSource->forget ();
+	dataPackage->forget ();
 }
 
 //-----------------------------------------------------------------------------
@@ -1216,13 +1229,13 @@ STDMETHODIMP Win32DataObject::GetData (FORMATETC* format, STGMEDIUM* medium)
 
 	if (format->cfFormat == CF_TEXT || format->cfFormat == CF_UNICODETEXT)
 	{
-		for (int32_t i = 0; i < dropSource->getCount (); i++)
+		for (int32_t i = 0; i < dataPackage->getCount (); i++)
 		{
-			if (dropSource->getEntryType (i) == CDropSource::kText)
+			if (dataPackage->getDataType (i) == IDataPackage::kText)
 			{
 				const void* buffer;
-				CDropSource::Type type;
-				int32_t bufferSize = dropSource->getEntry (i, buffer, type);
+				IDataPackage::Type type;
+				int32_t bufferSize = dataPackage->getData (i, buffer, type);
 				UTF8StringHelper utf8String ((const char*)buffer);
 				SIZE_T size = 0;
 				const void* data = 0;
@@ -1256,20 +1269,20 @@ STDMETHODIMP Win32DataObject::GetData (FORMATETC* format, STGMEDIUM* medium)
 	else if (format->cfFormat == CF_HDROP)
 	{
 		HRESULT result = E_UNEXPECTED;
-		UTF8StringHelper** wideStringFileNames = (UTF8StringHelper**)malloc (sizeof (UTF8StringHelper*) * dropSource->getCount ());
-		memset (wideStringFileNames, 0, sizeof (UTF8StringHelper*) * dropSource->getCount ());
+		UTF8StringHelper** wideStringFileNames = (UTF8StringHelper**)malloc (sizeof (UTF8StringHelper*) * dataPackage->getCount ());
+		memset (wideStringFileNames, 0, sizeof (UTF8StringHelper*) * dataPackage->getCount ());
 		int32_t fileNamesIndex = 0;
 		int32_t bufferSizeNeeded = 0;
-		for (int32_t i = 0; i < dropSource->getCount (); i++)
+		for (int32_t i = 0; i < dataPackage->getCount (); i++)
 		{
-			if (dropSource->getEntryType (i) == CDropSource::kFilePath)
+			if (dataPackage->getDataType (i) == IDataPackage::kFilePath)
 			{
 				const void* buffer;
-				CDropSource::Type type;
-				int32_t bufferSize = dropSource->getEntry (i, buffer, type);
+				IDataPackage::Type type;
+				int32_t bufferSize = dataPackage->getData (i, buffer, type);
 
 				wideStringFileNames[fileNamesIndex] = new UTF8StringHelper ((UTF8StringPtr)buffer);
-				bufferSizeNeeded += wcslen (*wideStringFileNames[fileNamesIndex]) + 1;
+				bufferSizeNeeded += (int32_t)wcslen (*wideStringFileNames[fileNamesIndex]) + 1;
 				fileNamesIndex++;
 			}
 		}
@@ -1309,13 +1322,13 @@ STDMETHODIMP Win32DataObject::GetData (FORMATETC* format, STGMEDIUM* medium)
 	}
 	else if (format->cfFormat == CF_PRIVATEFIRST)
 	{
-		for (int32_t i = 0; i < dropSource->getCount (); i++)
+		for (int32_t i = 0; i < dataPackage->getCount (); i++)
 		{
-			if (dropSource->getEntryType (i) == CDropSource::kBinary)
+			if (dataPackage->getDataType (i) == IDataPackage::kBinary)
 			{
 				const void* buffer;
-				CDropSource::Type type;
-				int32_t bufferSize = dropSource->getEntry (i, buffer, type);
+				IDataPackage::Type type;
+				int32_t bufferSize = dataPackage->getData (i, buffer, type);
 
 				HGLOBAL	memoryHandle = GlobalAlloc (GMEM_MOVEABLE, bufferSize); 
 				void* memory = GlobalLock (memoryHandle);
@@ -1346,25 +1359,25 @@ STDMETHODIMP Win32DataObject::QueryGetData (FORMATETC *format)
 {
 	if (format->cfFormat == CF_TEXT || format->cfFormat == CF_UNICODETEXT)
 	{
-		for (int32_t i = 0; i < dropSource->getCount (); i++)
+		for (int32_t i = 0; i < dataPackage->getCount (); i++)
 		{
-			if (dropSource->getEntryType (i) == CDropSource::kText)
+			if (dataPackage->getDataType (i) == IDataPackage::kText)
 				return S_OK;
 		}
 	}
 	else if (format->cfFormat == CF_PRIVATEFIRST)
 	{
-		for (int32_t i = 0; i < dropSource->getCount (); i++)
+		for (int32_t i = 0; i < dataPackage->getCount (); i++)
 		{
-			if (dropSource->getEntryType (i) == CDropSource::kBinary)
+			if (dataPackage->getDataType (i) == IDataPackage::kBinary)
 				return S_OK;
 		}
 	}
 	else if (format->cfFormat == CF_HDROP)
 	{
-		for (int32_t i = 0; i < dropSource->getCount (); i++)
+		for (int32_t i = 0; i < dataPackage->getCount (); i++)
 		{
-			if (dropSource->getEntryType (i) == CDropSource::kFilePath)
+			if (dataPackage->getDataType (i) == IDataPackage::kFilePath)
 				return S_OK;
 		}
 	}

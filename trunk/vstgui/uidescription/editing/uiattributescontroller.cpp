@@ -31,6 +31,7 @@ protected:
 	CControlListener* getControlListener (UTF8StringPtr controlTagName) { return this; }
 	void performValueChange (UTF8StringPtr value)
 	{
+		hasDifferentValues (false);
 		std::string valueStr = value ? value : "";
 		UIAttributesController* attrController = dynamic_cast<UIAttributesController*> (controller);
 		if (attrController)
@@ -110,6 +111,7 @@ public:
 		else
 		{
 			control->setValue (control->getMax ());
+			control->invalid ();
 		}
 	}
 
@@ -159,7 +161,6 @@ public:
 			for (int32_t i = kLeftTag; i <= kColTag; i++)
 			{
 				controls[i]->setValue (0.f);
-				controls[i]->invalid ();
 			}
 		}
 		else
@@ -171,10 +172,28 @@ public:
 			controls[kRowTag]->setValue (value.find ("row") == std::string::npos ? controls[kRowTag]->getMin () : controls[kRowTag]->getMax ());
 			controls[kColTag]->setValue (value.find ("column") == std::string::npos ? controls[kColTag]->getMin () : controls[kColTag]->getMax ());
 		}
+		for (int32_t i = kLeftTag; i <= kColTag; i++)
+		{
+			controls[i]->invalid ();
+		}
 	}
 
 	void valueChanged (CControl* control)
 	{
+		if (control == controls[kRowTag])
+		{
+			if (control->getValue () == control->getMax ())
+			{
+				controls[kColTag]->setValue (control->getMin ());
+			}
+		}
+		else if (control == controls[kColTag])
+		{
+			if (control->getValue () == control->getMax ())
+			{
+				controls[kRowTag]->setValue (control->getMin ());
+			}
+		}
 		std::string str;
 		if (controls[kLeftTag]->getValue () == controls[kLeftTag]->getMax ())
 			str = "left";
@@ -294,7 +313,6 @@ public:
 		if (edit)
 		{
 			label->setFontColor (originalTextColor);
-			hasDifferentValues (false);
 			performValueChange (edit->getText ());
 		}
 	}
@@ -618,7 +636,11 @@ CMessageResult UIAttributesController::notify (CBaseObject* sender, IdStringPtr 
 {
 	if (message == UISelection::kMsgSelectionChanged)
 	{
-		rebuildAttributesView ();
+		if (timer == 0)
+		{
+			timer = new CVSTGUITimer (this, 10);
+			timer->start ();
+		}
 		return kMessageNotified;
 	}
 	else if (message == UISelection::kMsgSelectionViewChanged || message == UIUndoManager::kMsgChanged)
@@ -633,6 +655,12 @@ CMessageResult UIAttributesController::notify (CBaseObject* sender, IdStringPtr 
 			)
 	{
 		validateAttributeViews ();
+		return kMessageNotified;
+	}
+	else if (message == CVSTGUITimer::kMsgTimer)
+	{
+		rebuildAttributesView ();
+		timer = 0;
 		return kMessageNotified;
 	}
 	return kMessageUnknown;

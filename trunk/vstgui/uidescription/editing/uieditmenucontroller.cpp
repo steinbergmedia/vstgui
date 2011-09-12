@@ -6,15 +6,17 @@
 #include "uieditview.h"
 #include "../uiviewfactory.h"
 #include "../../lib/controls/coptionmenu.h"
+#include "../../lib/controls/ctextlabel.h"
 
 namespace VSTGUI {
 
 //----------------------------------------------------------------------------------------------------
-UIEditMenuController::UIEditMenuController (IController* baseController, UISelection* selection, UIUndoManager* undoManager, UIDescription* description)
+UIEditMenuController::UIEditMenuController (IController* baseController, UISelection* selection, UIUndoManager* undoManager, UIDescription* description, IActionPerformer* actionPerformer)
 : DelegationController (baseController)
 , selection (selection)
 , undoManager (undoManager)
 , description (description)
+, actionPerformer (actionPerformer)
 , editMenu (0)
 , fileMenu (0)
 , editLabel (0)
@@ -113,7 +115,6 @@ CMessageResult UIEditMenuController::notify (CBaseObject* sender, IdStringPtr me
 			}
 			else if (strcmp (item->getCommandName (), "Cut") == 0)
 			{
-				// TODO: Implement
 				item->setEnabled (false);
 			}
 			else if (strcmp (item->getCommandName (), "Copy") == 0)
@@ -122,7 +123,6 @@ CMessageResult UIEditMenuController::notify (CBaseObject* sender, IdStringPtr me
 			}
 			else if (strcmp (item->getCommandName (), "Paste") == 0)
 			{
-				// TODO: Implement
 				item->setEnabled (false);
 			}
 			else if (strcmp (item->getCommandName (), "Delete") == 0)
@@ -239,6 +239,26 @@ CMessageResult UIEditMenuController::notify (CBaseObject* sender, IdStringPtr me
 				}
 				return kMessageNotified;
 			}
+			else if (strcmp (item->getCommandName (), "Insert Template") == 0)
+			{
+				item->setSubmenu (0);
+				item->setEnabled (selection->total () == 1 && dynamic_cast<CViewContainer*> (selection->first ()));
+				if (item->isEnabled () == false)
+					return kMessageNotified;
+				std::list<const std::string*> templateNames;
+				description->collectTemplateViewNames (templateNames);
+				item->setEnabled (templateNames.empty () == false);
+				if (templateNames.empty () == false)
+				{
+					OwningPointer<COptionMenu> submenu = new COptionMenu ();
+					item->setSubmenu (submenu);
+					for (std::list<const std::string*>::const_iterator it = templateNames.begin (); it != templateNames.end (); it++)
+					{
+						submenu->addEntry (new CCommandMenuItem ((*it)->c_str (), this, "InsertTemplate", (*it)->c_str ()));
+					}
+				}
+				return kMessageNotified;
+			}
 		}
 		CBaseObject* obj = dynamic_cast<CBaseObject*>(controller);
 		return obj ? obj->notify (sender, message) : kMessageNotified;
@@ -290,16 +310,13 @@ CMessageResult UIEditMenuController::notify (CBaseObject* sender, IdStringPtr me
 			std::string templateName (item->getCommandName ());
 			if (createUniqueTemplateName (tmp, templateName))
 			{
-				UIAttributes* attr = new UIAttributes ();
-				attr->setAttribute ("class", item->getCommandName ());
-				attr->setAttribute ("size", "400,400");
-				description->addNewTemplate (templateName.c_str (), attr);
+				actionPerformer->performCreateNewTemplate (templateName.c_str (), item->getCommandName ());
 			}
 			return kMessageNotified;
 		}
 		else if (strcmp (item->getCommandCategory (), "RemoveTemplate") == 0)
 		{
-			description->removeTemplate (item->getCommandName ());
+			actionPerformer->performDeleteTemplate (item->getCommandName ());
 			return kMessageNotified;
 		}
 		else if (strcmp (item->getCommandCategory (), "DuplicateTemplate") == 0)
@@ -309,8 +326,7 @@ CMessageResult UIEditMenuController::notify (CBaseObject* sender, IdStringPtr me
 			std::string templateName (item->getCommandName ());
 			if (createUniqueTemplateName (tmp, templateName))
 			{
-				description->changed (UIDescription::kMessageBeforeSave);
-				description->duplicateTemplate (item->getCommandName (), templateName.c_str ());
+				actionPerformer->performDuplicateTemplate (item->getCommandName (), templateName.c_str ());
 			}
 			return kMessageNotified;
 		}
@@ -333,14 +349,27 @@ CMessageResult UIEditMenuController::notify (CBaseObject* sender, IdStringPtr me
 			undoManager->pushAndPerform (action);
 			return kMessageNotified;
 		}
+		else if (strcmp (item->getCommandCategory (), "InsertTemplate") == 0)
+		{
+			CViewContainer* parent = dynamic_cast<CViewContainer*> (selection->first ());
+			if (parent)
+			{
+				CView* view = description->createView (item->getCommandName (), description->getController ());
+				if (view)
+				{
+					undoManager->pushAndPerform (new InsertViewOperation (parent, view, selection));
+				}
+			}
+			return kMessageNotified;
+		}
 		CBaseObject* obj = dynamic_cast<CBaseObject*>(controller);
 		return obj ? obj->notify (sender, message) : kMessageNotified;
 	}
 	else if (message == CVSTGUITimer::kMsgTimer)
 	{
-		sender->forget ();
 		editLabel->setTransparency (true);
 		fileLabel->setTransparency (true);
+		highlightTimer = 0;
 	}
 	return kMessageUnknown;
 }
@@ -423,8 +452,8 @@ int32_t UIEditMenuController::processKeyCommand (const VstKeyCode& key)
 			item->getTarget ()->notify (item, CCommandMenuItem::kMsgMenuItemSelected);
 			if (label)
 			{
-				CVSTGUITimer* timer = new CVSTGUITimer (this, 90);
-				timer->start ();
+				highlightTimer = new CVSTGUITimer (this, 90);
+				highlightTimer->start ();
 			}
 			return 1;
 		}

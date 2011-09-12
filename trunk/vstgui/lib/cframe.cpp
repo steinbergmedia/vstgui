@@ -615,7 +615,7 @@ bool CFrame::onWheel (const CPoint &where, const float &distance, const CButtonS
 }
 
 //-----------------------------------------------------------------------------
-CView::DragResult CFrame::doDrag (CDropSource* source, const CPoint& offset, CBitmap* dragBitmap)
+CView::DragResult CFrame::doDrag (IDataPackage* source, const CPoint& offset, CBitmap* dragBitmap)
 {
 	if (platformFrame)
 		return platformFrame->doDrag (source, offset, dragBitmap);

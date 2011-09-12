@@ -37,6 +37,7 @@
 
 #include "lib/vstguibase.h"
 #include "lib/cbitmap.h"
+#include "lib/cbitmapfilter.h"
 #include "lib/ccolor.h"
 #include "lib/cdatabrowser.h"
 #include "lib/cdrawcontext.h"

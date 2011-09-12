@@ -113,24 +113,28 @@ void UITagsDataSource::dbCellTextChanged (int32_t row, int32_t column, UTF8Strin
 	}
 	else
 	{
-		int32_t newTag = (int32_t)strtol (newText, 0, 10);
-		actionPerformer->performTagChange (names.at (row).c_str (), newTag);
+		if (tags.at (row) != newText)
+		{
+			int32_t newTag = (int32_t)strtol (newText, 0, 10);
+			actionPerformer->performTagChange (names.at (row).c_str (), newTag);
+		}
 	}
 }
 
 //----------------------------------------------------------------------------------------------------
 void UITagsDataSource::dbCellSetupTextEdit (int32_t row, int32_t column, CTextEdit* textEditControl, CDataBrowser* browser)
 {
-	textEditControl->setBackColor (kWhiteCColor);
-	textEditControl->setFontColor (fontColor);
-	textEditControl->setFont (drawFont);
-	textEditControl->setHoriAlign (kLeftText);
+	UIBaseDataSource::dbCellSetupTextEdit (row, column, textEditControl, browser);
+	if (column == 1)
+		textEditControl->setHoriAlign (kRightText);
 }
 
 //----------------------------------------------------------------------------------------------------
 CCoord UITagsDataSource::dbGetCurrentColumnWidth (int32_t index, CDataBrowser* browser)
 {
 	CCoord width = browser->getWidth () - (browser->getScrollbarWidth () + ((browser->getStyle () & CScrollView::kDontDrawFrame) ? 0 : 2));
+	if (browser->getStyle () & CDataBrowser::kDrawColumnLines)
+		width -= 2;
 	if (index == 0)
 		return width * 0.7;
 	return width * 0.3;
@@ -143,9 +147,11 @@ void UITagsDataSource::dbDrawCell (CDrawContext* context, const CRect& size, int
 	{
 		stringList = &tags;
 		column = 0;
+		textAlignment = kRightText;
 	}
 	UIBaseDataSource::dbDrawCell (context, size, row, column, flags, browser);
 	stringList = &names;
+	textAlignment = kLeftText;
 }
 
 //----------------------------------------------------------------------------------------------------

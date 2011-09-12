@@ -856,6 +856,8 @@ GenericStringListDataBrowserSource::GenericStringListDataBrowserSource (const st
 , rowlineColor (kGreyCColor)
 , rowBackColor (kTransparentCColor)
 , rowAlternateBackColor (kTransparentCColor)
+, textInset (2., 0.)
+, textAlignment (kLeftText)
 , drawFont (kSystemFont)
 , dataBrowser (0)
 , delegate (delegate)
@@ -976,16 +978,15 @@ void GenericStringListDataBrowserSource::dbDrawCell (CDrawContext* context, cons
 			color.toHSV (hue, saturation, value);
 			saturation *= 0.5;
 			color.fromHSV (hue, saturation, value);
-//			color.alpha *= 0.33;
 		}
 		context->setFillColor (color);
 		context->drawRect (size, kDrawFilled);
 	}
 	CRect stringSize (size);
-	stringSize.inset (2., 0.);
+	stringSize.inset (textInset.x, textInset.y);
 	context->setFont (drawFont);
 	context->setFontColor (fontColor);
-	context->drawString ((*stringList)[row].c_str (), stringSize, kLeftText);
+	context->drawString ((*stringList)[row].c_str (), stringSize, textAlignment);
 }
 
 //-----------------------------------------------------------------------------

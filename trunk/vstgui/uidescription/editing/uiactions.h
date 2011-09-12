@@ -53,7 +53,18 @@ class CViewContainer;
 class CView;
 
 //-----------------------------------------------------------------------------
-class SizeToFitOperation : public IAction, protected std::list<CView*>
+template <class T>
+class BaseSelectionOperation : public IAction, protected std::list<T>
+{
+public:
+	BaseSelectionOperation (UISelection* selection) : selection (selection) {}
+
+protected:
+	SharedPointer<UISelection> selection;	
+};
+
+//-----------------------------------------------------------------------------
+class SizeToFitOperation : public BaseSelectionOperation<std::pair<SharedPointer<CView>, CRect> >
 {
 public:
 	SizeToFitOperation (UISelection* selection);
@@ -63,14 +74,10 @@ public:
 	
 	void perform ();
 	void undo ();
-
-protected:
-	UISelection* selection;
-	std::list<CRect> sizes;
 };
 
 //-----------------------------------------------------------------------------
-class UnembedViewOperation : public IAction, protected std::list<CView*>
+class UnembedViewOperation : public BaseSelectionOperation<SharedPointer<CView> >
 {
 public:
 	UnembedViewOperation (UISelection* selection, UIViewFactory* factory);
@@ -83,14 +90,14 @@ public:
 	void undo ();
 
 protected:
+	void collectSubviews (CViewContainer* container, bool deep);
 	UIViewFactory* factory;
-	UISelection* selection;
-	CViewContainer* containerView;
+	SharedPointer<CViewContainer> containerView;
 	CViewContainer* parent;
 };
 
 //-----------------------------------------------------------------------------
-class EmbedViewOperation : public IAction, protected std::list<CView*>
+class EmbedViewOperation : public BaseSelectionOperation<std::pair<SharedPointer<CView>, CRect> >
 {
 public:
 	EmbedViewOperation (UISelection* selection, CViewContainer* newContainer);
@@ -101,13 +108,12 @@ public:
 	void undo ();
 
 protected:
-	UISelection* selection;
-	CViewContainer* newContainer;
+	OwningPointer<CViewContainer> newContainer;
 	CViewContainer* parent;
 };
 
 //-----------------------------------------------------------------------------
-class ViewCopyOperation : public IAction, protected std::list<CView*>
+class ViewCopyOperation : public IAction, protected std::list<SharedPointer<CView> >
 {
 public:
 	ViewCopyOperation (UISelection* copySelection, UISelection* workingSelection, CViewContainer* parent, const CPoint& offset, UIViewFactory* viewFactory, IUIDescription* desc);
@@ -117,14 +123,14 @@ public:
 	void perform ();
 	void undo ();
 protected:
-	CViewContainer* parent;
-	UISelection* copySelection;
-	UISelection* workingSelection;
-	std::list<CView*> oldSelectedViews;
+	SharedPointer<CViewContainer> parent;
+	SharedPointer<UISelection> copySelection;
+	SharedPointer<UISelection> workingSelection;
+	std::list<SharedPointer<CView> > oldSelectedViews;
 };
 
 //-----------------------------------------------------------------------------
-class ViewSizeChangeOperation : public IAction, protected std::map<CView*, CRect>
+class ViewSizeChangeOperation : public BaseSelectionOperation<std::pair<SharedPointer<CView>, CRect> >
 {
 public:
 	ViewSizeChangeOperation (UISelection* selection, bool sizing);
@@ -135,8 +141,6 @@ public:
 	void perform ();
 	void undo ();
 protected:
-	UISelection* selection;
-
 	bool first;
 	bool sizing;
 };
@@ -146,12 +150,12 @@ struct DeleteOperationViewAndNext
 {
 	DeleteOperationViewAndNext (CView* view, CView* nextView) : view (view), nextView (nextView) {}
 	DeleteOperationViewAndNext (const DeleteOperationViewAndNext& copy) : view (copy.view), nextView (copy.nextView) {}
-	CView* view;
-	CView* nextView;
+	SharedPointer<CView> view;
+	SharedPointer<CView> nextView;
 };
 
 //----------------------------------------------------------------------------------------------------
-class DeleteOperation : public IAction, protected std::multimap<CViewContainer*, DeleteOperationViewAndNext*>
+class DeleteOperation : public IAction, protected std::multimap<SharedPointer<CViewContainer>, DeleteOperationViewAndNext*>
 {
 public:
 	DeleteOperation (UISelection* selection);
@@ -161,7 +165,7 @@ public:
 	void perform ();
 	void undo ();
 protected:
-	UISelection* selection;
+	SharedPointer<UISelection> selection;
 };
 
 //-----------------------------------------------------------------------------
@@ -175,16 +179,16 @@ public:
 	void perform ();
 	void undo ();
 protected:
-	CViewContainer* parent;
-	CView* view;
-	UISelection* selection;
+	SharedPointer<CViewContainer> parent;
+	SharedPointer<CView> view;
+	SharedPointer<UISelection> selection;
 };
 
 //-----------------------------------------------------------------------------
 class TransformViewTypeOperation : public IAction
 {
 public:
-	TransformViewTypeOperation (UISelection* selection, IdStringPtr viewClassName, IUIDescription* desc, UIViewFactory* factory);
+	TransformViewTypeOperation (UISelection* selection, IdStringPtr viewClassName, UIDescription* desc, UIViewFactory* factory);
 	~TransformViewTypeOperation ();
 
 	UTF8StringPtr getName ();
@@ -193,15 +197,17 @@ public:
 	void perform ();
 	void undo ();
 protected:
-	CView* view;
+	SharedPointer<CView> view;
 	CView* newView;
-	CView* beforeView;
-	CViewContainer* parent;
-	UISelection* selection;
+	SharedPointer<CView> beforeView;
+	SharedPointer<CViewContainer> parent;
+	SharedPointer<UISelection> selection;
+	SharedPointer<UIViewFactory> factory;
+	SharedPointer<UIDescription> description;
 };
 
 //-----------------------------------------------------------------------------
-class AttributeChangeAction : public IAction, protected std::map<CView*, std::string>
+class AttributeChangeAction : public IAction, protected std::map<SharedPointer<CView>, std::string>
 {
 public:
 	AttributeChangeAction (UIDescription* desc, UISelection* selection, const std::string& attrName, const std::string& attrValue);
@@ -212,8 +218,10 @@ public:
 	void perform ();
 	void undo ();
 protected:
+	void updateSelection ();
+	
 	UIDescription* desc;
-	UISelection* selection;
+	SharedPointer<UISelection> selection;
 	std::string attrName;
 	std::string attrValue;
 	std::string name;
@@ -223,7 +231,7 @@ protected:
 class MultipleAttributeChangeAction : public IAction, public std::map<SharedPointer<CView>, std::string>
 {
 public:
-	MultipleAttributeChangeAction (UIDescription* description, CView* baseView, IViewCreator::AttrType attrType, UTF8StringPtr oldValue, UTF8StringPtr newValue);
+	MultipleAttributeChangeAction (UIDescription* description, const std::list<CView*>& views, IViewCreator::AttrType attrType, UTF8StringPtr oldValue, UTF8StringPtr newValue);
 	virtual UTF8StringPtr getName () { return "multiple view attribute changes"; }
 	virtual void perform ();
 	virtual void undo ();
@@ -233,7 +241,6 @@ protected:
 	void collectViewsWithAttributeValue (UIViewFactory* viewFactory, IUIDescription* desc, CView* startView, IViewCreator::AttrType type, const std::string& value);
 
 	SharedPointer<UIDescription> description;
-	SharedPointer<CView> baseView;
 	std::string oldValue;
 	std::string newValue;
 };
@@ -432,7 +439,7 @@ public:
 protected:
 	SharedPointer<CView> view;
 	SharedPointer<CViewContainer> parent;
-	UISelection* selection;
+	SharedPointer<UISelection> selection;
 	bool up;
 };
 
@@ -440,15 +447,67 @@ protected:
 class TemplateNameChangeAction : public IAction
 {
 public:
-	TemplateNameChangeAction (UIDescription* description, UTF8StringPtr oldName, UTF8StringPtr newName);
+	TemplateNameChangeAction (UIDescription* description, IActionPerformer* actionPerformer, UTF8StringPtr oldName, UTF8StringPtr newName);
 
 	UTF8StringPtr getName ();
 	void perform ();
 	void undo ();
 protected:
 	SharedPointer<UIDescription> description;
+	IActionPerformer* actionPerformer;
 	std::string oldName;
 	std::string newName;
+};
+
+//-----------------------------------------------------------------------------
+class CreateNewTemplateAction : public IAction
+{
+public:
+	CreateNewTemplateAction (UIDescription* description, IActionPerformer* actionPerformer, UTF8StringPtr name, UTF8StringPtr baseViewClassName);
+
+	UTF8StringPtr getName ();
+	void perform ();
+	void undo ();
+protected:
+	SharedPointer<UIDescription> description;
+	IActionPerformer* actionPerformer;
+	SharedPointer<CView> view;
+	std::string name;
+	std::string baseViewClassName;
+};
+
+//-----------------------------------------------------------------------------
+class DuplicateTemplateAction : public IAction
+{
+public:
+	DuplicateTemplateAction (UIDescription* description, IActionPerformer* actionPerformer, UTF8StringPtr name, UTF8StringPtr dupName);
+
+	UTF8StringPtr getName ();
+	void perform ();
+	void undo ();
+protected:
+	SharedPointer<UIDescription> description;
+	IActionPerformer* actionPerformer;
+	SharedPointer<CView> view;
+	std::string name;
+	std::string dupName;
+};
+
+//-----------------------------------------------------------------------------
+class DeleteTemplateAction : public IAction
+{
+public:
+	DeleteTemplateAction (UIDescription* description, IActionPerformer* actionPerformer, CView* view, UTF8StringPtr name);
+
+	UTF8StringPtr getName ();
+	void perform ();
+	void undo ();
+protected:
+	SharedPointer<UIDescription> description;
+	IActionPerformer* actionPerformer;
+	SharedPointer<CView> view;
+	SharedPointer<UIAttributes> attributes;
+	std::string name;
 };
 
 } // namespace

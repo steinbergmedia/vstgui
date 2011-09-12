@@ -39,6 +39,7 @@
 
 #include "cscrollview.h"
 #include "cfont.h"
+#include "cdrawcontext.h"
 #include <vector>
 #include <string>
 
@@ -212,6 +213,8 @@ protected:
 	CColor rowlineColor;
 	CColor rowBackColor;
 	CColor rowAlternateBackColor;
+	CPoint textInset;
+	CHoriTxtAlign textAlignment;
 	CFontRef drawFont;
 	CDataBrowser* dataBrowser;
 	IGenericStringListDataBrowserSourceSelectionChanged* delegate;

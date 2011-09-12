@@ -44,7 +44,7 @@
 namespace VSTGUI {
 class CDrawContext;
 class CDragContainer;
-class CDropSource;
+class IDataPackage;
 class VSTGUIEditorInterface;
 class CBitmap;
 class CFrame;
@@ -246,7 +246,7 @@ public:
 		kDragCopied,
 		kDragError = -1
 	};
-	virtual DragResult doDrag (CDropSource* source, const CPoint& offset = CPoint (0, 0), CBitmap* dragBitmap = 0);	///< start a drag operation
+	virtual DragResult doDrag (IDataPackage* source, const CPoint& offset = CPoint (0, 0), CBitmap* dragBitmap = 0);	///< start a drag operation
 	virtual bool onDrop (CDragContainer* drag, const CPoint& where) { return false; }			///< called if a drag is dropped onto this view
 	virtual void onDragEnter (CDragContainer* drag, const CPoint& where) {}						///< called if a drag is entering this view
 	virtual void onDragLeave (CDragContainer* drag, const CPoint& where) {}						///< called if a drag is leaving this view
@@ -368,6 +368,7 @@ public:
 	CLASS_METHODS(CView, CBaseObject)
 protected:
 	~CView ();
+	
 	CRect  size;
 	CRect  mouseableArea;
 

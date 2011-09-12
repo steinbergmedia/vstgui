@@ -21,7 +21,7 @@ class UINavigationDataSource : public GenericStringListDataBrowserSource
 {
 public:
 	UINavigationDataSource (IGenericStringListDataBrowserSourceSelectionChanged* delegate)
-	: GenericStringListDataBrowserSource (0, delegate) {}
+	: GenericStringListDataBrowserSource (0, delegate) { textInset.x = 4.; }
 
 	int32_t dbOnKeyDown (const VstKeyCode& key, CDataBrowser* browser)
 	{
@@ -73,7 +73,7 @@ public:
 class UITemplatesDataSource : public UINavigationDataSource
 {
 public:
-	UITemplatesDataSource (IGenericStringListDataBrowserSourceSelectionChanged* delegate, UIDescription* description, UIUndoManager* undoManager, const std::string* templateName);
+	UITemplatesDataSource (IGenericStringListDataBrowserSourceSelectionChanged* delegate, UIDescription* description, IActionPerformer* actionPerformer, const std::string* templateName);
 	
 	CMouseEventResult dbOnMouseDown (const CPoint& where, const CButtonState& buttons, int32_t row, int32_t column, CDataBrowser* browser);
 	void dbCellTextChanged (int32_t row, int32_t column, UTF8StringPtr newText, CDataBrowser* browser);
@@ -81,7 +81,7 @@ public:
 	void dbAttached (CDataBrowser* browser);
 protected:
 	SharedPointer<UIDescription> description;
-	SharedPointer<UIUndoManager> undoManager;
+	IActionPerformer* actionPerformer;
 	std::string firstSelectedTemplateName;
 };
 
@@ -122,11 +122,12 @@ IdStringPtr UITemplateController::kMsgTemplateChanged = "UITemplateController::k
 IdStringPtr UITemplateController::kMsgTemplateNameChanged = "UITemplateController::kMsgTemplateNameChanged";
 
 //----------------------------------------------------------------------------------------------------
-UITemplateController::UITemplateController (IController* baseController, UIDescription* description, UISelection* selection, UIUndoManager* undoManager)
+UITemplateController::UITemplateController (IController* baseController, UIDescription* description, UISelection* selection, UIUndoManager* undoManager, IActionPerformer* actionPerformer)
 : DelegationController (baseController)
 , editDescription (description)
 , selection (selection)
 , undoManager (undoManager)
+, actionPerformer (actionPerformer)
 , templateView (0)
 , templateDataBrowser (0)
 , mainViewDataSource (0)
@@ -168,6 +169,23 @@ void UITemplateController::setupDataBrowser (CDataBrowser* orignalBrowser, CData
 			sb2->setScrollerColor (sb1->getScrollerColor ());
 			sb2->setBackgroundColor (sb1->getBackgroundColor ());
 			sb2->setFrameColor (sb1->getFrameColor ());
+		}
+	}
+}
+
+//----------------------------------------------------------------------------------------------------
+void UITemplateController::selectTemplate (UTF8StringPtr name)
+{
+	if (templateDataBrowser)
+	{
+		int32_t index = 0;
+		for (std::vector<std::string>::const_iterator it = templateNames.begin (); it != templateNames.end (); it++, index++)
+		{
+			if (*it == name)
+			{
+				templateDataBrowser->setSelectedRow (index, true);
+				break;
+			}
 		}
 	}
 }
@@ -277,7 +295,7 @@ CView* UITemplateController::createView (const UIAttributes& attributes, IUIDesc
 			
 			UIAttributes* attr = editDescription->getCustomAttributes ("UITemplateController", true);
 			const std::string* templateName = attr ? attr->getAttributeValue ("SelectedTemplate") : 0;
-			UITemplatesDataSource* dataSource = new UITemplatesDataSource (this, editDescription, undoManager, templateName);
+			UITemplatesDataSource* dataSource = new UITemplatesDataSource (this, editDescription, actionPerformer, templateName);
 			dataSource->setStringList (&templateNames);
 			UIEditController::setupDataSource (dataSource);
 			templateDataBrowser = new CDataBrowser (CRect (0, 0, 0, 0), 0, dataSource, CDataBrowser::kDrawRowLines|CScrollView::kHorizontalScrollbar | CScrollView::kVerticalScrollbar);
@@ -350,9 +368,9 @@ bool UIViewListDataSource::update (CViewContainer* vc)
 		}
 		it++;
 	}
-	if (names.empty () && view->getNbViews () > 0)
+	if (names.empty () && vc->getNbViews () > 0)
 	{
-		ViewIterator it (view);
+		ViewIterator it (vc);
 		while (*it)
 		{
 			CViewContainer* subview = dynamic_cast<CViewContainer*>(*it);
@@ -543,10 +561,10 @@ int32_t UIViewListDataSource::dbOnKeyDown (const VstKeyCode& key, CDataBrowser* 
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
-UITemplatesDataSource::UITemplatesDataSource (IGenericStringListDataBrowserSourceSelectionChanged* delegate, UIDescription* description, UIUndoManager* undoManager, const std::string* templateName)
+UITemplatesDataSource::UITemplatesDataSource (IGenericStringListDataBrowserSourceSelectionChanged* delegate, UIDescription* description, IActionPerformer* actionPerformer, const std::string* templateName)
 : UINavigationDataSource (delegate)
 , description (description)
-, undoManager (undoManager)
+, actionPerformer (actionPerformer)
 {
 	if (templateName)
 		firstSelectedTemplateName = *templateName;
@@ -562,10 +580,6 @@ CMouseEventResult UITemplatesDataSource::dbOnMouseDown (const CPoint& where, con
 			browser->beginTextEdit (row, column, getStringList ()->at (row).c_str ());
 			return kMouseDownEventHandledButDontNeedMovedOrUpEvents;
 		}
-//		else
-//		{
-//			delegate->dbSelectionChanged (browser->getSelectedRow (), this);
-//		}
 	}
 	return UINavigationDataSource::dbOnMouseDown (where, buttons, row, column, browser);
 }
@@ -573,10 +587,7 @@ CMouseEventResult UITemplatesDataSource::dbOnMouseDown (const CPoint& where, con
 //----------------------------------------------------------------------------------------------------
 void UITemplatesDataSource::dbCellTextChanged (int32_t row, int32_t column, UTF8StringPtr newText, CDataBrowser* browser)
 {
-	undoManager->pushAndPerform (new TemplateNameChangeAction (description, getStringList ()->at (row).c_str (), newText));
-//	browser->setSelectedRow (CDataBrowser::kNoSelection);
-//	description->changeTemplateName (getStringList ()->at (row).c_str (), newText);
-//	browser->setSelectedRow (row, true);
+	actionPerformer->performTemplateNameChange (getStringList ()->at (row).c_str (), newText);
 }
 
 //----------------------------------------------------------------------------------------------------
