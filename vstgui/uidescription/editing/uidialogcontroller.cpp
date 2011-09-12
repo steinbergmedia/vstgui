@@ -4,90 +4,12 @@
 
 #include "uieditcontroller.h"
 #include "../../lib/coffscreencontext.h"
+#include "../../lib/cbitmapfilter.h"
 #include "../../lib/controls/ctextlabel.h"
 #include "../../lib/controls/cbuttons.h"
 #include <cmath>
 
 namespace VSTGUI {
-
-namespace BoxBlur {
-
-//----------------------------------------------------------------------------------------------------
-static void calculateBlurColor (CColor& color, CColor* colors, int32_t numColors)
-{
-	int32_t red = 0;
-	int32_t green = 0;
-	int32_t blue = 0;
-	int32_t alpha = 0;
-	for (int32_t i = numColors-1; i >= 0; i--)
-	{
-		red += colors[i].red;
-		green += colors[i].green;
-		blue += colors[i].blue;
-		alpha += colors[i].alpha;
-		if (i+1 < numColors)
-			colors[i+1] = colors[i];
-	}
-	red /= numColors;
-	green /= numColors;
-	blue /= numColors;
-	alpha /= numColors;
-	color.red = (int8_t)red;
-	color.green = (int8_t)green;
-	color.blue = (int8_t)blue;
-	color.alpha = (int8_t)alpha;
-}
-
-//----------------------------------------------------------------------------------------------------
-static bool process (CBitmap* bitmap, int32_t boxSize)
-{
-	CBitmapPixelAccess* accessor = CBitmapPixelAccess::create (bitmap, false);
-	if (accessor)
-	{
-		int32_t x,y;
-		int32_t width = (int32_t)bitmap->getWidth();
-		int32_t height = (int32_t)bitmap->getHeight();
-		CColor* nc = new CColor[boxSize];
-		for (y = 0; y < height; y++)
-		{
-			accessor->setPosition (0, y);
-			accessor->getColor (nc[0]);
-			for (int32_t i = 1; i < boxSize; i++)
-				nc[i] = kTransparentCColor;
-			calculateBlurColor (nc[0], nc, boxSize);
-			accessor->setColor (nc[0]);
-			for (x = 1; x < width; x++)
-			{
-				accessor->setPosition (x, y);
-				accessor->getColor (nc[0]);
-				calculateBlurColor (nc[0], nc, boxSize);
-				accessor->setColor (nc[0]);
-			}
-		}
-		for (x = 0; x < width; x++)
-		{
-			accessor->setPosition (x, 0);
-			accessor->getColor (nc[0]);
-			for (int32_t i = 1; i < boxSize; i++)
-				nc[i] = kTransparentCColor;
-			calculateBlurColor (nc[0], nc, boxSize);
-			accessor->setColor (nc[0]);
-			for (y = 1; y < height; y++)
-			{
-				accessor->setPosition (x, y);
-				accessor->getColor (nc[0]);
-				calculateBlurColor (nc[0], nc, boxSize);
-				accessor->setColor (nc[0]);
-			}
-		}
-		delete [] nc;
-		accessor->forget ();
-		return true;
-	}
-	return false;
-}
-
-} // namespace
 
 //----------------------------------------------------------------------------------------------------
 IdStringPtr UIDialogController::kMsgDialogButton1Clicked = "UIDialogController::kMsgDialogButton1Clicked";
@@ -123,9 +45,9 @@ void UIDialogController::run (UTF8StringPtr _templateName, UTF8StringPtr _dialog
 		view->setViewSize (size);
 		view->setMouseableArea (size);
 
-		int32_t blurSize = 16;
+		const int32_t blurSize = 16;
 		size.inset (-blurSize*2, -blurSize*2);
-		size.offset (-5, -5);
+		size.offset (5, 5);
 		dialogBackView = new CViewContainer (size);
 		dialogBackView->setTransparency (true);
 
@@ -140,7 +62,7 @@ void UIDialogController::run (UTF8StringPtr _templateName, UTF8StringPtr _dialog
 			offscreen->endDraw ();
 			
 			CBitmap* bitmap = offscreen->getBitmap ();
-			BoxBlur::process (bitmap, blurSize);
+			BitmapFilter::BoxBlur::process (bitmap, blurSize);
 			dialogBackView->setBackground (bitmap);
 			
 			offscreen->forget ();
@@ -350,10 +272,12 @@ void UIDialogController::collectOpenGLViews (CViewContainer* container)
 //----------------------------------------------------------------------------------------------------
 void UIDialogController::setOpenGLViewsVisible (bool state)
 {
+#if VSTGUI_OPENGL_SUPPORT
 	for (std::list<SharedPointer<COpenGLView> >::const_iterator it = openglViews.begin(); it != openglViews.end (); it++)
 	{
 		(*it)->setVisible (state);
 	}
+#endif
 }
 
 } // namespace

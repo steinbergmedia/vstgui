@@ -49,11 +49,11 @@ class OutputStream;
 class InputStream;
 
 //----------------------------------------------------------------------------------------------------
-class UISelection : public CBaseObject, protected std::list<CView*>, public IDependency
+class UISelection : public CBaseObject, protected std::list<SharedPointer<CView> >, public IDependency
 //----------------------------------------------------------------------------------------------------
 {
 public:
-	typedef std::list<CView*>::const_iterator const_iterator;
+	typedef std::list<SharedPointer<CView> >::const_iterator const_iterator;
 	
 	enum {
 		kMultiSelectionStyle,
@@ -70,8 +70,8 @@ public:
 	void setExclusive (CView* view);
 	void empty ();
 
-	const_iterator begin () const { return std::list<CView*>::begin (); }
-	const_iterator end () const { return std::list<CView*>::end (); }
+	const_iterator begin () const { return std::list<SharedPointer<CView> >::begin (); }
+	const_iterator end () const { return std::list<SharedPointer<CView> >::end (); }
 
 	CView* first () const;
 

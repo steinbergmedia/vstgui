@@ -7,10 +7,13 @@
 
 #include "uiselection.h"
 #include "uiundomanager.h"
+#include "../../lib/cvstguitimer.h"
 
 namespace VSTGUI {
 class COptionMenu;
 class CCommandMenuItem;
+class IActionPerformer;
+class CTextLabel;
 
 namespace UIEditing {
 
@@ -39,6 +42,7 @@ static const MenuEntry editMenu[] = {
 	{ "Edit", "Unembed Views" , 0, 0 },
 	{ "Edit", "Embed Into" , 0, 0 },
 	{ "Edit", "Transform View Type" , 0, 0 },
+	{ "Edit", "Insert Template" , 0, 0 },
 	menuSeparator,
 	{ "Edit", "Add New Template" , 0, 0},
 	{ "Edit", "Delete Template" , 0, 0},
@@ -55,7 +59,7 @@ static const MenuEntry editMenu[] = {
 class UIEditMenuController : public CBaseObject, public DelegationController
 {
 public:
-	UIEditMenuController (IController* baseController, UISelection* selection, UIUndoManager* undoManager, UIDescription* description);
+	UIEditMenuController (IController* baseController, UISelection* selection, UIUndoManager* undoManager, UIDescription* description, IActionPerformer* actionPerformer);
 	~UIEditMenuController ();
 
 	COptionMenu* getFileMenu () const { return fileMenu; }
@@ -78,6 +82,8 @@ protected:
 	SharedPointer<UISelection> selection;
 	SharedPointer<UIUndoManager> undoManager;
 	SharedPointer<UIDescription> description;
+	OwningPointer<CVSTGUITimer> highlightTimer;
+	IActionPerformer* actionPerformer;
 
 	COptionMenu* fileMenu;
 	COptionMenu* editMenu;

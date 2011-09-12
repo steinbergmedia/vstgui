@@ -317,9 +317,28 @@ bool CBitmapPixelAccess::operator++ ()
 }
 
 //------------------------------------------------------------------------
+bool CBitmapPixelAccess::operator-- ()
+{
+	if (x > 0 && y > 0)
+	{
+		x--;
+		currentPos -= 4;
+		return true;
+	}
+	else if (y > 0)
+	{
+		y--;
+		x = 0;
+		currentPos = pixelAccess->getAddress () + y * pixelAccess->getBytesPerRow ();
+		return true;
+	}
+	return false;
+}
+
+//------------------------------------------------------------------------
 bool CBitmapPixelAccess::setPosition (uint32_t _x, uint32_t _y)
 {
-	if (_x >= maxX || _y >= maxY)
+	if (_x > maxX || _y > maxY)
 		return false;
 	x = _x;
 	y = _y;

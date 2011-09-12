@@ -233,7 +233,7 @@ void CMenuItem::setIsSeparator (bool state)
 
 //------------------------------------------------------------------------
 /*! @class CCommandMenuItem
-//------------------------------------------------------------------------
+
 	The CCommandMenuItem supports setting a category, name and a target. The target will get a @link CBaseObject::notify notify()@endlink call before the item is
 	displayed and after it was selected. @see CCommandMenuItem::kMsgMenuItemValidate and @see CCommandMenuItem::kMsgMenuItemSelected
 */

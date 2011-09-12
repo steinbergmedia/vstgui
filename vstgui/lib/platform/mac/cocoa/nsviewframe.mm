@@ -971,7 +971,10 @@ COffscreenContext* NSViewFrame::createOffscreenContext (CCoord width, CCoord hei
 	CGBitmap* bitmap = new CGBitmap (CPoint (width, height));
 	CGDrawContext* context = new CGDrawContext (bitmap);
 	bitmap->forget ();
-	return context;
+	if (context->getCGContext ())
+		return context;
+	context->forget ();
+	return 0;
 }
 
 //-----------------------------------------------------------------------------

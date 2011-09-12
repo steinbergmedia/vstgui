@@ -75,6 +75,14 @@ protected:
 	virtual void performLiveColorChange (UTF8StringPtr colorName, const CColor& newColor);
 	virtual void endLiveColorChange (UTF8StringPtr colorName);
 
+	virtual void performTemplateNameChange (UTF8StringPtr oldName, UTF8StringPtr newName);
+	virtual void performCreateNewTemplate (UTF8StringPtr name, UTF8StringPtr baseViewClassName);
+	virtual void performDeleteTemplate (UTF8StringPtr name);
+	virtual void performDuplicateTemplate (UTF8StringPtr name, UTF8StringPtr dupName);
+
+	virtual void onTemplateCreation (UTF8StringPtr name, CView* view);
+	virtual void onTemplateNameChange (UTF8StringPtr oldName, UTF8StringPtr newName);
+
 	// IKeyboardHook
 	virtual int32_t onKeyDown (const VstKeyCode& code, CFrame* frame);
 	virtual int32_t onKeyUp (const VstKeyCode& code, CFrame* frame);
@@ -88,11 +96,27 @@ protected:
 	SharedPointer<UIEditMenuController> menuController;
 	SharedPointer<CControl> enableEditingControl;
 	SharedPointer<CControl> notSavedControl;
+	SharedPointer<CControl> tabSwitchControl;
 	
 	std::string editTemplateName;
 	std::list<SharedPointer<CSplitView> > splitViews;
 	
 	bool dirty;
+	
+	struct Template {
+		std::string name;
+		SharedPointer<CView> view;
+
+		Template (const std::string& n, CView* v) : name (n), view (v) {}
+		Template (const Template& c) : name (c.name), view (c.view) {}
+		bool operator==(const std::string& n) { return name == n; }
+	};
+	void updateTemplate (UTF8StringPtr name);
+	void updateTemplate (const std::vector<Template>::const_iterator& it);
+	void onTemplatesChanged ();
+	void getTemplateViews (std::list<CView*>& views);
+
+	std::vector<Template> templates;
 };
 
 } // namespace

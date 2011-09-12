@@ -134,6 +134,7 @@ CView* UIFontsController::verifyView (CView* view, const UIAttributes& attribute
 			case kFontAltTag:
 			{
 				altTextEdit = dynamic_cast<CTextEdit*>(control);
+				control->setMouseEnabled (false);
 				break;
 			}
 			case kFontSizeTag:
@@ -141,29 +142,34 @@ CView* UIFontsController::verifyView (CView* view, const UIAttributes& attribute
 				sizeTextEdit = dynamic_cast<CTextEdit*>(control);
 				if (sizeTextEdit)
 				{
-					sizeTextEdit->setValueToStringProc (valueToString);
+					sizeTextEdit->setValueToStringProc (valueToString, sizeTextEdit);
 					sizeTextEdit->setStringToValueProc (stringToValue);
 				}
+				control->setMouseEnabled (false);
 				break;
 			}
 			case kFontStyleBoldTag:
 			{
 				boldControl = control;
+				control->setMouseEnabled (false);
 				break;
 			}
 			case kFontStyleItalicTag:
 			{
 				italicControl = control;
+				control->setMouseEnabled (false);
 				break;
 			}
 			case kFontStyleStrikethroughTag:
 			{
 				strikethroughControl = control;
+				control->setMouseEnabled (false);
 				break;
 			}
 			case kFontStyleUnderlineTag:
 			{
 				underlineControl = control;
+				control->setMouseEnabled (false);
 				break;
 			}
 		}
@@ -257,6 +263,7 @@ void UIFontsController::dbSelectionChanged (int32_t selectedRow, GenericStringLi
 		}
 		if (sizeTextEdit)
 		{
+			sizeTextEdit->setMouseEnabled (true);
 			std::stringstream str;
 			str << font->getSize ();
 			sizeTextEdit->setText (str.str ().c_str ());
@@ -265,27 +272,32 @@ void UIFontsController::dbSelectionChanged (int32_t selectedRow, GenericStringLi
 		{
 			boldControl->setValue (font->getStyle () & kBoldFace ? true : false);
 			boldControl->invalid ();
+			boldControl->setMouseEnabled (true);
 		}
 		if (italicControl)
 		{
 			italicControl->setValue (font->getStyle () & kItalicFace ? true : false);
 			italicControl->invalid ();
+			italicControl->setMouseEnabled (true);
 		}
 		if (underlineControl)
 		{
 			underlineControl->setValue (font->getStyle () & kUnderlineFace ? true : false);
 			underlineControl->invalid ();
+			underlineControl->setMouseEnabled (true);
 		}
 		if (strikethroughControl)
 		{
 			strikethroughControl->setValue (font->getStyle () & kStrikethroughFace ? true : false);
 			strikethroughControl->invalid ();
+			strikethroughControl->setMouseEnabled (true);
 		}
 		if (altTextEdit)
 		{
 			std::string alternativeFonts;
 			editDescription->getAlternativeFontNames (selectedFont.c_str (), alternativeFonts);
 			altTextEdit->setText (alternativeFonts.c_str ());
+			altTextEdit->setMouseEnabled (true);
 		}
 	}
 	else
@@ -295,12 +307,34 @@ void UIFontsController::dbSelectionChanged (int32_t selectedRow, GenericStringLi
 			fontMenu->setStyle (fontMenu->getStyle () | kNoTextStyle);
 			fontMenu->setMouseEnabled (false);
 		}
+		if (boldControl)
+			boldControl->setMouseEnabled (false);
+		if (italicControl)
+			italicControl->setMouseEnabled (false);
+		if (underlineControl)
+			underlineControl->setMouseEnabled (false);
+		if (strikethroughControl)
+			strikethroughControl->setMouseEnabled (false);
+		if (altTextEdit)
+		{
+			altTextEdit->setMouseEnabled (false);
+			altTextEdit->setText (0);
+		}
+		if (sizeTextEdit)
+		{
+			sizeTextEdit->setMouseEnabled (false);
+			sizeTextEdit->setText (0);
+		}
 	}
 }
 
 //----------------------------------------------------------------------------------------------------
 bool UIFontsController::valueToString (float value, char utf8String[256], void* userData)
 {
+	CTextEdit* edit = (CTextEdit*)userData;
+	if (edit && edit->getMouseEnabled () == false)
+		return true;
+		
 	int32_t intValue = (int32_t)value;
 	std::stringstream str;
 	str << intValue;

@@ -33,6 +33,7 @@
 //-----------------------------------------------------------------------------
 
 #include "lib/cbitmap.cpp"
+#include "lib/cbitmapfilter.cpp"
 #include "lib/ccolor.cpp"
 #include "lib/cdatabrowser.cpp"
 #include "lib/cdrawcontext.cpp"

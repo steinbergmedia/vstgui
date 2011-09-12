@@ -41,10 +41,9 @@
 #include "../lib/cdrawcontext.h"
 #include "../lib/platform/win32/win32support.h"
 #include "../lib/platform/mac/macglobals.h"
-#include <list>
 #include <sstream>
 #include <fstream>
-#include <vector>
+#include <algorithm>
 
 namespace VSTGUI {
 
@@ -1937,7 +1936,7 @@ void UIAttributes::setDoubleAttribute (UTF8StringPtr name, double value)
 }
 
 //-----------------------------------------------------------------------------
-bool UIAttributes::getDoubleAttribute (UTF8StringPtr name, double& value)
+bool UIAttributes::getDoubleAttribute (UTF8StringPtr name, double& value) const
 {
 	const std::string* str = getAttributeValue (name);
 	if (str)
@@ -1955,7 +1954,7 @@ void UIAttributes::setBooleanAttribute (UTF8StringPtr name, bool value)
 }
 
 //-----------------------------------------------------------------------------
-bool UIAttributes::getBooleanAttribute (UTF8StringPtr name, bool& value)
+bool UIAttributes::getBooleanAttribute (UTF8StringPtr name, bool& value) const
 {
 	const std::string* str = getAttributeValue (name);
 	if (str)
@@ -1983,7 +1982,7 @@ void UIAttributes::setIntegerAttribute (UTF8StringPtr name, int32_t value)
 }
 
 //-----------------------------------------------------------------------------
-bool UIAttributes::getIntegerAttribute (UTF8StringPtr name, int32_t& value)
+bool UIAttributes::getIntegerAttribute (UTF8StringPtr name, int32_t& value) const
 {
 	const std::string* str = getAttributeValue (name);
 	if (str)
@@ -2087,7 +2086,7 @@ void UIAttributes::setAttributeArray (UTF8StringPtr name, const std::vector<std:
 {
 	std::string value;
 	size_t numValues = values.size ();
-	for (int32_t i = 0; i < numValues - 1; i++)
+	for (size_t i = 0; i < numValues - 1; i++)
 	{
 		value += values[i];
 		value += ',';
@@ -2096,7 +2095,7 @@ void UIAttributes::setAttributeArray (UTF8StringPtr name, const std::vector<std:
 }
 
 //-----------------------------------------------------------------------------
-bool UIAttributes::getAttributeArray (UTF8StringPtr name, std::vector<std::string>& values)
+bool UIAttributes::getAttributeArray (UTF8StringPtr name, std::vector<std::string>& values) const
 {
 	const std::string* str = getAttributeValue (name);
 	if (str)

@@ -101,7 +101,7 @@ struct CColor
 	 * @param saturation normalized [0..1]
 	 * @param value normalized [0..1]
 	 */
-	void toHSV (double& hue, double& saturation, double& value);
+	void toHSV (double& hue, double& saturation, double& value) const;
 	/**
 	 * @brief convert from hue, saturation and value
 	 * @param hue in degree [0..360]
@@ -109,6 +109,26 @@ struct CColor
 	 * @param value normalized [0..1]
 	 */
 	void fromHSV (double hue, double saturation, double value);
+
+	/**
+	 * @brief convert to hue, saturation and lightness
+	 * @param hue in degree [0..360]
+	 * @param saturation normalized [0..1]
+	 * @param lightness normalized [0..1]
+	 */
+	void toHSL (double& hue, double& saturation, double& lightness) const;
+	/**
+	 * @brief convert from hue, saturation and lightness
+	 * @param hue in degree [0..360]
+	 * @param saturation normalized [0..1]
+	 * @param lightness normalized [0..1]
+	 */
+	void fromHSL (double& hue, double& saturation, double& lightness);
+	
+	/** get the luma of the color */
+	uint8_t getLuma () const { return (uint8_t)((float)red * 0.3f + (float)green * 0.59f + (float)blue * 0.11f); }
+	/** get the lightness of the color */
+	uint8_t getLightness () const;
 	//@}
 	
 	uint8_t red;		///< red component [0..255]

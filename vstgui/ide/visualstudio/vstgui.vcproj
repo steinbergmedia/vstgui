@@ -305,6 +305,14 @@
 					>
 				</File>
 				<File
+					RelativePath="..\..\lib\cbitmapfilter.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\lib\cbitmapfilter.h"
+					>
+				</File>
+				<File
 					RelativePath="..\..\lib\ccolor.cpp"
 					>
 				</File>
@@ -896,7 +904,7 @@
 						>
 					</File>
 					<File
-						RelativePath="..\..\uidescription\editing\iactionoperation.h"
+						RelativePath="..\..\uidescription\editing\iaction.h"
 						>
 					</File>
 					<File

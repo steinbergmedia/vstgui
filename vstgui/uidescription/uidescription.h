@@ -46,6 +46,7 @@
 #include <deque>
 #include <list>
 #include <string>
+#include <vector>
 
 namespace VSTGUI {
 
@@ -218,13 +219,13 @@ public:
 	void removeAttribute (UTF8StringPtr name);
 
 	void setBooleanAttribute (UTF8StringPtr name, bool value);
-	bool getBooleanAttribute (UTF8StringPtr name, bool& value);
+	bool getBooleanAttribute (UTF8StringPtr name, bool& value) const;
 
 	void setIntegerAttribute (UTF8StringPtr name, int32_t value);
-	bool getIntegerAttribute (UTF8StringPtr name, int32_t& value);
+	bool getIntegerAttribute (UTF8StringPtr name, int32_t& value) const;
 
 	void setDoubleAttribute (UTF8StringPtr name, double value);
-	bool getDoubleAttribute (UTF8StringPtr name, double& value);
+	bool getDoubleAttribute (UTF8StringPtr name, double& value) const;
 	
 	void setPointAttribute (UTF8StringPtr name, const CPoint& p);
 	bool getPointAttribute (UTF8StringPtr name, CPoint& p) const;
@@ -233,7 +234,7 @@ public:
 	bool getRectAttribute (UTF8StringPtr name, CRect& r) const;
 	
 	void setAttributeArray (UTF8StringPtr name, const std::vector<std::string>& values);
-	bool getAttributeArray (UTF8StringPtr name, std::vector<std::string>& values);
+	bool getAttributeArray (UTF8StringPtr name, std::vector<std::string>& values) const;
 	
 	void removeAll () { clear (); }
 

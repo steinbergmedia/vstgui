@@ -39,6 +39,7 @@
 #include "../cstream.h"
 #include "../../lib/cviewcontainer.h"
 #include <sstream>
+#include <algorithm>
 
 namespace VSTGUI {
 
@@ -72,7 +73,6 @@ void UISelection::add (CView* view)
 		empty ();
 	push_back (view);
 	changed (kMsgSelectionChanged);
-	view->remember ();
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -81,9 +81,8 @@ void UISelection::remove (CView* view)
 	if (contains (view))
 	{
 		changed (kMsgSelectionWillChange);
-		std::list<CView*>::remove (view);
+		std::list<SharedPointer<CView> >::remove (view);
 		changed (kMsgSelectionChanged);
-		view->forget ();
 	}
 }
 
@@ -92,7 +91,7 @@ void UISelection::setExclusive (CView* view)
 {
 	changed (kMsgSelectionWillChange);
 	DeferChanges dc (this);
-	empty ();
+	erase (std::list<SharedPointer<CView> >::begin (), std::list<SharedPointer<CView> >::end ());
 	add (view);
 }
 
@@ -100,27 +99,14 @@ void UISelection::setExclusive (CView* view)
 void UISelection::empty ()
 {
 	changed (kMsgSelectionWillChange);
-	const_iterator it = begin ();
-	while (it != end ())
-	{
-		(*it)->forget ();
-		it++;
-	}
-	erase (std::list<CView*>::begin (), std::list<CView*>::end ());
+	erase (std::list<SharedPointer<CView> >::begin (), std::list<SharedPointer<CView> >::end ());
 	changed (kMsgSelectionChanged);
 }
 
 //----------------------------------------------------------------------------------------------------
 bool UISelection::contains (CView* view) const
 {
-	const_iterator it = begin ();
-	while (it != end ())
-	{
-		if (*it == view)
-			return true;
-		it++;
-	}
-	return false;
+	return std::find (begin (), end (), view) != end ();
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -129,13 +115,8 @@ bool UISelection::containsParent (CView* view) const
 	CView* parent = view->getParentView ();
 	if (parent)
 	{
-		const_iterator it = begin ();
-		while (it != end ())
-		{
-			if (*it == parent)
-				return true;
-			it++;
-		}
+		if (contains (parent))
+			return true;
 		return containsParent (parent);
 	}
 	return false;

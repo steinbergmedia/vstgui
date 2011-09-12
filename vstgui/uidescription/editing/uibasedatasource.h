@@ -21,6 +21,7 @@ public:
 	: GenericStringListDataBrowserSource (0, delegate) , description (description), actionPerformer (actionPerformer), descriptionMessage (descriptionMessage)
 	{
 		description->addDependency (this);
+		textInset.x = 4;
 	}
 	
 	~UIBaseDataSource ()
@@ -108,6 +109,8 @@ protected:
 
 	virtual void update ()
 	{
+		if (textEditControl)
+			textEditControl->looseFocus ();
 		names.clear ();
 		std::list<const std::string*> tmpNames;
 		getNames (tmpNames);
@@ -243,7 +246,7 @@ protected:
 
 	void dbCellTextChanged (int32_t row, int32_t column, UTF8StringPtr newText, CDataBrowser* browser)
 	{
-		if (row < names.size () && names.at (row) != newText)
+		if (row < (int32_t)names.size () && names.at (row) != newText)
 		{
 			if (performNameChange (names.at (row).c_str (), newText))
 			{
@@ -251,18 +254,21 @@ protected:
 					selectName (names.at (row).c_str ());
 			}
 		}
+		textEditControl = 0;
 	}
 
-	void dbCellSetupTextEdit (int32_t row, int32_t column, CTextEdit* textEditControl, CDataBrowser* browser)
+	void dbCellSetupTextEdit (int32_t row, int32_t column, CTextEdit* control, CDataBrowser* browser)
 	{
+		textEditControl = control;
 		textEditControl->setBackColor (kWhiteCColor);
 		textEditControl->setFontColor (fontColor);
 		textEditControl->setFont (drawFont);
-		textEditControl->setHoriAlign (kLeftText);
+		textEditControl->setHoriAlign (textAlignment);
 	}
 
 	SharedPointer<UIDescription> description;
 	SharedPointer<UISearchTextField> searchField;
+	SharedPointer<CTextEdit> textEditControl;
 	IActionPerformer* actionPerformer;
 	IdStringPtr descriptionMessage;
 
