@@ -205,7 +205,7 @@ void CSlider::setViewSize (const CRect& rect, bool invalid)
 	if (style & kHorizontal)
 	{
 		minPos = rect.left - getViewSize ().left;
-		rangeHandle = rect.getWidth () - (widthOfSlider + offsetHandle.h*2);
+		rangeHandle = rect.getWidth () - (widthOfSlider + offsetHandle.h * 2);
 	}
 	else
 	{
@@ -561,6 +561,7 @@ void CSlider::setHandle (CBitmap *_pHandle)
 		pHandle->remember ();
 		widthOfSlider  = pHandle->getWidth ();
 		heightOfSlider = pHandle->getHeight ();
+		setViewSize (getViewSize (), true);
 	}
 }
 

@@ -731,7 +731,7 @@ CGraphicsPath* HIViewFrame::createGraphicsPath ()
 }
 
 //------------------------------------------------------------------------------------
-CView::DragResult HIViewFrame::doDrag (CDropSource* source, const CPoint& offset, CBitmap* dragBitmap)
+CView::DragResult HIViewFrame::doDrag (IDataPackage* source, const CPoint& offset, CBitmap* dragBitmap)
 {
 	CView::DragResult result = CView::kDragError;
 	PasteboardRef pb;
@@ -741,13 +741,13 @@ CView::DragResult HIViewFrame::doDrag (CDropSource* source, const CPoint& offset
 		for (int32_t i = 0; i < source->getCount (); i++)
 		{
 			const void* buffer = 0;
-			CDropSource::Type type;
-			int32_t bufferSize = source->getEntry (i, buffer, type);
+			IDataPackage::Type type;
+			int32_t bufferSize = source->getData (i, buffer, type);
 			if (bufferSize > 0)
 			{
 				switch (type)
 				{
-					case CDropSource::kFilePath:
+					case IDataPackage::kFilePath:
 					{
 						CFURLRef cfUrl = CFURLCreateFromFileSystemRepresentation (0, (const UInt8*)buffer, bufferSize, false);
 						if (cfUrl)
@@ -762,7 +762,7 @@ CView::DragResult HIViewFrame::doDrag (CDropSource* source, const CPoint& offset
 						}
 						break;
 					}
-					case CDropSource::kText:
+					case IDataPackage::kText:
 					{
 						CFStringRef stringRef = CFStringCreateWithCString (0, (const char*)buffer, kCFStringEncodingUTF8);
 						if (stringRef)
@@ -777,7 +777,7 @@ CView::DragResult HIViewFrame::doDrag (CDropSource* source, const CPoint& offset
 						}
 						break;
 					}
-					case CDropSource::kBinary:
+					case IDataPackage::kBinary:
 					{
 						CFDataRef dataRef = CFDataCreate (0, (const UInt8*)buffer, bufferSize);
 						if (dataRef)
@@ -787,6 +787,8 @@ CView::DragResult HIViewFrame::doDrag (CDropSource* source, const CPoint& offset
 						}
 						break;
 					}
+					case IDataPackage::kError:
+						break;
 				}
 			}
 		}

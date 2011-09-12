@@ -31,7 +31,7 @@ PROJECT_NAME           = VSTGUI
 # This could be handy for archiving the generated documentation or 
 # if some version control system is used.
 
-PROJECT_NUMBER         = 4.0
+PROJECT_NUMBER         = 4.1
 
 # Using the PROJECT_BRIEF tag one can provide an optional one line description 
 # for a project that appears at the top of each page and should give viewer 
@@ -915,7 +915,13 @@ HTML_STYLESHEET        = doxydocu.css
 # the files will be copied as-is; there are no commands or markers available.
 
 HTML_EXTRA_FILES       = screenshots/inspector_overview.png \
-                         screenshots/contextmenu.png
+                         screenshots/contextmenu.png \
+                         screenshots/ui_editor.png \
+                         screenshots/ui_editor_bitmaps_browser.png \
+                         screenshots/ui_editor_colors_browser.png \
+                         screenshots/ui_editor_fonts_browser.png \
+                         screenshots/ui_editor_tags_browser.png \
+                         screenshots/ui_editor_views_browser.png
 
 # The HTML_COLORSTYLE_HUE tag controls the color of the HTML output. 
 # Doxygen will adjust the colors in the stylesheet and background images 

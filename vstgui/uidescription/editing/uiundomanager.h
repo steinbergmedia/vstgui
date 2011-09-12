@@ -69,10 +69,14 @@ public:
 	void cancelGroupAction ();
 
 	void clear ();
+
+	void markSavePosition ();
+	bool isSavePosition () const;
 	
 	static IdStringPtr kMsgChanged;
 protected:
 	iterator position;
+	iterator savePosition;
 	std::deque<UIGroupAction*> groupQueue;
 };
 

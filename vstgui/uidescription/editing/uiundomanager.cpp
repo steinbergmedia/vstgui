@@ -86,6 +86,7 @@ UIUndoManager::UIUndoManager ()
 {
 	push_back (new UndoStackTop);
 	position = end ();
+	savePosition = begin ();
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -110,10 +111,14 @@ void UIUndoManager::pushAndPerform (IAction* action)
 		iterator oldStack = position;
 		while (position != end ())
 		{
+			if (position == savePosition)
+				savePosition = begin ();
 			delete (*position);
 			position++;
 		}
 		erase (oldStack, end ());
+		if (savePosition == begin ())
+			savePosition = end ();
 	}
 	push_back (action);
 	position = end ();
@@ -198,6 +203,7 @@ void UIUndoManager::clear ()
 	std::list<IAction*>::clear ();
 	push_back (new UndoStackTop);
 	position = end ();
+	savePosition = begin ();
 	changed (kMsgChanged);
 }
 
@@ -236,6 +242,19 @@ void UIUndoManager::cancelGroupAction ()
 		delete action;
 	}
 }
+
+//----------------------------------------------------------------------------------------------------
+void UIUndoManager::markSavePosition ()
+{
+	savePosition = position;
+}
+
+//----------------------------------------------------------------------------------------------------
+bool UIUndoManager::isSavePosition () const
+{
+	return savePosition == position;
+}
+	
 
 } // namespace
 

@@ -46,45 +46,33 @@ namespace VSTGUI {
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
 SizeToFitOperation::SizeToFitOperation (UISelection* selection)
-: selection (selection)
+: BaseSelectionOperation (selection)
 {
-	selection->remember ();
 	FOREACH_IN_SELECTION(selection, view)
-		push_back (view);
-		view->remember ();
-		sizes.push_back (view->getViewSize ());
+		push_back (std::make_pair (view, view->getViewSize ()));
 	FOREACH_IN_SELECTION_END
 }
 
 //----------------------------------------------------------------------------------------------------
 SizeToFitOperation::~SizeToFitOperation ()
 {
-	iterator it = begin ();
-	while (it != end ())
-	{
-		(*it)->forget ();
-		it++;
-	}
-	selection->forget ();
 }
 
 //----------------------------------------------------------------------------------------------------
 UTF8StringPtr SizeToFitOperation::getName ()
 {
-	return "size to fit";
+	return "Size To Fit";
 }
 
 //----------------------------------------------------------------------------------------------------
 void SizeToFitOperation::perform ()
 {
-	selection->empty ();
 	const_iterator it = begin ();
 	while (it != end ())
 	{
-		(*it)->invalid ();
-		(*it)->sizeToFit ();
-		(*it)->invalid ();
-		selection->add (*it);
+		(*it).first->invalid ();
+		(*it).first->sizeToFit ();
+		(*it).first->invalid ();
 		it++;
 	}
 }
@@ -92,19 +80,14 @@ void SizeToFitOperation::perform ()
 //----------------------------------------------------------------------------------------------------
 void SizeToFitOperation::undo ()
 {
-	selection->empty ();
 	const_iterator it = begin ();
-	std::list<CRect>::const_iterator it2 = sizes.begin ();
 	while (it != end ())
 	{
-		(*it)->invalid ();
-		CRect r (*it2);
-		(*it)->setViewSize (r);
-		(*it)->setMouseableArea (r);
-		(*it)->invalid ();
-		selection->add (*it);
+		(*it).first->invalid ();
+		(*it).first->setViewSize ((*it).second);
+		(*it).first->setMouseableArea ((*it).second);
+		(*it).first->invalid ();
 		it++;
-		it2++;
 	}
 }
 
@@ -112,40 +95,43 @@ void SizeToFitOperation::undo ()
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
 UnembedViewOperation::UnembedViewOperation (UISelection* selection, UIViewFactory* factory)
-: selection (selection)
+: BaseSelectionOperation (selection)
 , factory (factory)
 {
 	containerView = dynamic_cast<CViewContainer*> (selection->first ());
-	ViewIterator it (containerView);
-	while (*it)
-	{
-		if (factory->getViewName (*it))
-		{
-			push_back (*it);
-			(*it)->remember ();
-		}
-		++it;
-	}
-	containerView->remember ();
+	collectSubviews (containerView, true);
 	parent = dynamic_cast<CViewContainer*> (containerView->getParentView ());
 }
 
 //----------------------------------------------------------------------------------------------------
 UnembedViewOperation::~UnembedViewOperation ()
 {
-	const_iterator it = begin ();
-	while (it != end ())
+}
+
+//----------------------------------------------------------------------------------------------------
+void UnembedViewOperation::collectSubviews (CViewContainer* container, bool deep)
+{
+	ViewIterator it (container);
+	while (*it)
 	{
-		(*it)->forget ();
-		it++;
+		if (factory->getViewName (*it))
+		{
+			push_back (*it);
+		}
+		else if (deep)
+		{
+			CViewContainer* c = dynamic_cast<CViewContainer*>(*it);
+			if (c)
+				collectSubviews (c, false);
+		}
+		++it;
 	}
-	containerView->forget ();
 }
 
 //----------------------------------------------------------------------------------------------------
 UTF8StringPtr UnembedViewOperation::getName ()
 {
-	return "unembed views";
+	return "Unembed Views";
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -196,16 +182,14 @@ void UnembedViewOperation::undo ()
 
 //-----------------------------------------------------------------------------
 EmbedViewOperation::EmbedViewOperation (UISelection* selection, CViewContainer* newContainer)
-: selection (selection)
+: BaseSelectionOperation (selection)
 , newContainer (newContainer)
 {
-	selection->remember ();
 	parent = dynamic_cast<CViewContainer*> (selection->first ()->getParentView ());
 	FOREACH_IN_SELECTION(selection, view)
 		if (view->getParentView () == parent)
 		{
-			push_back (view);
-			view->remember ();
+			push_back (std::make_pair (view, view->getViewSize ()));
 		}
 	FOREACH_IN_SELECTION_END
 
@@ -213,7 +197,7 @@ EmbedViewOperation::EmbedViewOperation (UISelection* selection, CViewContainer* 
 	const_iterator it = begin ();
 	while (it != end ())
 	{
-		CView* view = (*it);
+		CView* view = (*it).first;
 		CRect viewSize = view->getViewSize ();
 		if (viewSize.left < r.left)
 			r.left = viewSize.left;
@@ -233,20 +217,12 @@ EmbedViewOperation::EmbedViewOperation (UISelection* selection, CViewContainer* 
 //-----------------------------------------------------------------------------
 EmbedViewOperation::~EmbedViewOperation ()
 {
-	const_iterator it = begin ();
-	while (it != end ())
-	{
-		(*it)->forget ();
-		it++;
-	}
-	newContainer->forget ();
-	selection->forget ();
 }
 
 //-----------------------------------------------------------------------------
 UTF8StringPtr EmbedViewOperation::getName ()
 {
-	return "embed views";
+	return "Embed Views";
 }
 
 //-----------------------------------------------------------------------------
@@ -256,7 +232,7 @@ void EmbedViewOperation::perform ()
 	const_iterator it = begin ();
 	while (it != end ())
 	{
-		CView* view = (*it);
+		CView* view = (*it).first;
 		parent->removeView (view, false);
 		CRect r = view->getViewSize ();
 		r.offset (-parentRect.left, -parentRect.top);
@@ -267,29 +243,27 @@ void EmbedViewOperation::perform ()
 	}
 	parent->addView (newContainer);
 	newContainer->remember ();
-	selection->changed (UISelection::kMsgSelectionViewChanged);
-	selection->changed (UISelection::kMsgSelectionChanged);
+	selection->setExclusive (newContainer);
 }
 
 //-----------------------------------------------------------------------------
 void EmbedViewOperation::undo ()
 {
+	selection->empty ();
 	CRect parentRect = newContainer->getViewSize ();
 	const_reverse_iterator it = rbegin ();
 	while (it != rend ())
 	{
-		CView* view = (*it);
+		CView* view = (*it).first;
 		newContainer->removeView (view, false);
-		CRect r = view->getViewSize ();
-		r.offset (parentRect.left, parentRect.top);
+		CRect r = (*it).second;
 		view->setViewSize (r);
 		view->setMouseableArea (r);
 		parent->addView (view);
+		selection->add (view);
 		it++;
 	}
 	parent->removeView (newContainer);
-	selection->changed (UISelection::kMsgSelectionViewChanged);
-	selection->changed (UISelection::kMsgSelectionChanged);
 }
 
 //-----------------------------------------------------------------------------
@@ -300,9 +274,6 @@ ViewCopyOperation::ViewCopyOperation (UISelection* copySelection, UISelection* w
 , copySelection (copySelection)
 , workingSelection (workingSelection)
 {
-	parent->remember ();
-	copySelection->remember ();
-	workingSelection->remember ();
 	CRect selectionBounds = copySelection->getBounds ();
 	FOREACH_IN_SELECTION(copySelection, view)
 		if (!copySelection->containsParent (view))
@@ -315,7 +286,6 @@ ViewCopyOperation::ViewCopyOperation (UISelection* copySelection, UISelection* w
 			view->setViewSize (newSize);
 			view->setMouseableArea (newSize);
 			push_back (view);
-			view->remember ();
 		}
 	FOREACH_IN_SELECTION_END
 
@@ -327,23 +297,14 @@ ViewCopyOperation::ViewCopyOperation (UISelection* copySelection, UISelection* w
 //-----------------------------------------------------------------------------
 ViewCopyOperation::~ViewCopyOperation ()
 {
-	const_iterator it = begin ();
-	while (it != end ())
-	{
-		(*it)->forget ();
-		it++;
-	}
-	parent->forget ();
-	copySelection->forget ();
-	workingSelection->forget ();
 }
 
 //-----------------------------------------------------------------------------
 UTF8StringPtr ViewCopyOperation::getName () 
 {
 	if (size () > 0)
-		return "copy views";
-	return "copy view";
+		return "Copy Views";
+	return "Copy View";
 }
 
 //-----------------------------------------------------------------------------
@@ -385,35 +346,26 @@ void ViewCopyOperation::undo ()
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 ViewSizeChangeOperation::ViewSizeChangeOperation (UISelection* selection, bool sizing)
-: first (true)
+: BaseSelectionOperation (selection)
+, first (true)
 , sizing (sizing)
-, selection (selection)
 {
-	selection->remember ();
 	FOREACH_IN_SELECTION(selection, view)
-		insert (std::make_pair (view, view->getViewSize ()));
-		view->remember ();
+		push_back (std::make_pair (view, view->getViewSize ()));
 	FOREACH_IN_SELECTION_END
 }
 
 //-----------------------------------------------------------------------------
 ViewSizeChangeOperation::~ViewSizeChangeOperation ()
 {
-	const_iterator it = begin ();
-	while (it != end ())
-	{
-		(*it).first->forget ();
-		it++;
-	}
-	selection->forget ();
 }
 
 //-----------------------------------------------------------------------------
 UTF8StringPtr ViewSizeChangeOperation::getName ()
 {
 	if (size () > 1)
-		return sizing ? "resize views" : "move views";
-	return sizing ? "resize view" : "move view";
+		return sizing ? "Resize Views" : "Move Views";
+	return sizing ? "Resize View" : "Move View";
 }
 
 //-----------------------------------------------------------------------------
@@ -430,7 +382,7 @@ void ViewSizeChangeOperation::perform ()
 //-----------------------------------------------------------------------------
 void ViewSizeChangeOperation::undo ()
 {
-	selection->changed (UISelection::kMsgSelectionWillChange);
+	selection->empty ();
 	iterator it = begin ();
 	while (it != end ())
 	{
@@ -440,9 +392,9 @@ void ViewSizeChangeOperation::undo ()
 		(*it).first->setViewSize (size);
 		(*it).first->setMouseableArea (size);
 		(*it).first->invalid ();
+		selection->add ((*it).first);
 		it++;
 	}
-	selection->changed (UISelection::kMsgSelectionChanged);
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -451,7 +403,6 @@ void ViewSizeChangeOperation::undo ()
 DeleteOperation::DeleteOperation (UISelection* selection)
 : selection (selection)
 {
-	selection->remember ();
 	FOREACH_IN_SELECTION(selection, view)
 		CViewContainer* container = dynamic_cast<CViewContainer*> (view->getParentView ());
 		if (dynamic_cast<UIEditView*>(container) == 0)
@@ -468,10 +419,6 @@ DeleteOperation::DeleteOperation (UISelection* selection)
 				++it;
 			}
 			insert (std::make_pair (container, new DeleteOperationViewAndNext (view, nextView)));
-			container->remember ();
-			view->remember ();
-			if (nextView)
-				nextView->remember ();
 		}
 	FOREACH_IN_SELECTION_END
 }
@@ -479,43 +426,33 @@ DeleteOperation::DeleteOperation (UISelection* selection)
 //----------------------------------------------------------------------------------------------------
 DeleteOperation::~DeleteOperation ()
 {
-	const_iterator it = begin ();
-	while (it != end ())
-	{
-		(*it).first->forget ();
-		(*it).second->view->forget ();
-		if ((*it).second->nextView)
-			(*it).second->nextView->forget ();
-		delete (*it).second;
-		it++;
-	}
-	selection->forget ();
 }
 
 //----------------------------------------------------------------------------------------------------
 UTF8StringPtr DeleteOperation::getName ()
 {
 	if (size () > 1)
-		return "delete views";
-	return "delete view";
+		return "Delete Views";
+	return "Delete View";
 }
 
 //----------------------------------------------------------------------------------------------------
 void DeleteOperation::perform ()
 {
+	selection->empty ();
 	const_iterator it = begin ();
 	while (it != end ())
 	{
 		(*it).first->removeView ((*it).second->view);
 		it++;
 	}
-	selection->empty ();
 }
 
 //----------------------------------------------------------------------------------------------------
 void DeleteOperation::undo ()
 {
 	selection->empty ();
+	IDependency::DeferChanges dc (selection);
 	const_iterator it = begin ();
 	while (it != end ())
 	{
@@ -537,23 +474,17 @@ InsertViewOperation::InsertViewOperation (CViewContainer* parent, CView* view, U
 , view (view)
 , selection (selection)
 {
-	parent->remember ();
-	view->remember ();
-	selection->remember ();
 }
 
 //-----------------------------------------------------------------------------
 InsertViewOperation::~InsertViewOperation ()
 {
-	parent->forget ();
-	view->forget ();
-	selection->forget ();
 }
 
 //-----------------------------------------------------------------------------
 UTF8StringPtr InsertViewOperation::getName ()
 {
-	return "insert new subview";
+	return "Insert New Subview";
 }
 
 //-----------------------------------------------------------------------------
@@ -575,12 +506,14 @@ void InsertViewOperation::undo ()
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
-TransformViewTypeOperation::TransformViewTypeOperation (UISelection* selection, IdStringPtr viewClassName, IUIDescription* desc, UIViewFactory* factory)
+TransformViewTypeOperation::TransformViewTypeOperation (UISelection* selection, IdStringPtr viewClassName, UIDescription* desc, UIViewFactory* factory)
 : view (selection->first ())
 , newView (0)
 , beforeView (0)
 , parent (dynamic_cast<CViewContainer*> (view->getParentView ()))
 , selection (selection)
+, factory (factory)
+, description (desc)
 {
 	UIAttributes attr;
 	if (factory->getAttributesForView (view, desc, attr))
@@ -598,13 +531,11 @@ TransformViewTypeOperation::TransformViewTypeOperation (UISelection* selection, 
 			++it;
 		}
 	}
-	view->remember ();
 }
 
 //-----------------------------------------------------------------------------
 TransformViewTypeOperation::~TransformViewTypeOperation ()
 {
-	view->forget ();
 	if (newView)
 		newView->forget ();
 }
@@ -612,7 +543,7 @@ TransformViewTypeOperation::~TransformViewTypeOperation ()
 //-----------------------------------------------------------------------------
 UTF8StringPtr TransformViewTypeOperation::getName ()
 {
-	return "transform view type";
+	return "Transform View Type";
 }
 
 //-----------------------------------------------------------------------------
@@ -620,13 +551,26 @@ void TransformViewTypeOperation::exchangeSubViews (CViewContainer* src, CViewCon
 {
 	if (src && dst)
 	{
-		ReverseViewIterator it (src);
+		std::list<CView*> temp;
+
+		ViewIterator it (src);
 		while (*it)
 		{
 			CView* view = *it;
+			if (factory->getViewName (view))
+			{
+				temp.push_back (view);
+			}
+			else if (dynamic_cast<CViewContainer*>(view) != 0)
+			{
+				exchangeSubViews (reinterpret_cast<CViewContainer*>(view), dst);
+			}
 			++it;
-			src->removeView (view, false);
-			dst->addView (view, dst->getView (0));
+		}
+		for (std::list<CView*>::const_iterator it = temp.begin (); it != temp.end (); it++)
+		{
+			src->removeView (*it, false);
+			dst->addView (*it);
 		}
 	}
 }
@@ -642,7 +586,7 @@ void TransformViewTypeOperation::perform ()
 			parent->addView (newView, beforeView);
 		else
 			parent->addView (newView);
-		exchangeSubViews (dynamic_cast<CViewContainer*> (view), dynamic_cast<CViewContainer*> (newView));
+		exchangeSubViews (dynamic_cast<CViewContainer*> ((CView*)view), dynamic_cast<CViewContainer*> (newView));
 		selection->setExclusive (newView);
 	}
 }
@@ -658,7 +602,7 @@ void TransformViewTypeOperation::undo ()
 			parent->addView (view, beforeView);
 		else
 			parent->addView (view);
-		exchangeSubViews (dynamic_cast<CViewContainer*> (newView), dynamic_cast<CViewContainer*> (view));
+		exchangeSubViews (dynamic_cast<CViewContainer*> (newView), dynamic_cast<CViewContainer*> ((CView*)view));
 		selection->setExclusive (view);
 	}
 }
@@ -677,28 +621,36 @@ AttributeChangeAction::AttributeChangeAction (UIDescription* desc, UISelection* 
 	FOREACH_IN_SELECTION(selection, view)
 		viewFactory->getAttributeValue (view, attrName, attrOldValue, desc);
 		insert (std::make_pair (view, attrOldValue));
-		view->remember ();
 	FOREACH_IN_SELECTION_END
 	name = "'" + attrName + "' change";
-	selection->remember ();
 }
 
 //-----------------------------------------------------------------------------
 AttributeChangeAction::~AttributeChangeAction ()
 {
-	const_iterator it = begin ();
-	while (it != end ())
-	{
-		(*it).first->forget ();
-		it++;
-	}
-	selection->forget ();
 }
 
 //-----------------------------------------------------------------------------
 UTF8StringPtr AttributeChangeAction::getName ()
 {
 	return name.c_str ();
+}
+
+//-----------------------------------------------------------------------------
+void AttributeChangeAction::updateSelection ()
+{
+	for (const_iterator it = begin (); it != end (); it++)
+	{
+		if (selection->contains ((*it).first) == false)
+		{
+			IDependency::DeferChanges dc (selection);
+			selection->empty ();
+			for (const_iterator it2 = begin (); it2 != end (); it2++)
+				selection->add ((*it2).first);
+			break;
+		}
+	}
+	selection->changed (UISelection::kMsgSelectionViewChanged);
 }
 
 //-----------------------------------------------------------------------------
@@ -715,7 +667,7 @@ void AttributeChangeAction::perform ()
 		(*it).first->invalid ();	// and afterwards also
 		it++;
 	}
-	selection->changed (UISelection::kMsgSelectionViewChanged);
+	updateSelection ();
 }
 
 //-----------------------------------------------------------------------------
@@ -732,20 +684,20 @@ void AttributeChangeAction::undo ()
 		(*it).first->invalid ();	// and afterwards also
 		it++;
 	}
-	selection->changed (UISelection::kMsgSelectionViewChanged);
+	updateSelection ();
 }
 
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
-MultipleAttributeChangeAction::MultipleAttributeChangeAction (UIDescription* description, CView* baseView, IViewCreator::AttrType attrType, UTF8StringPtr oldValue, UTF8StringPtr newValue)
+MultipleAttributeChangeAction::MultipleAttributeChangeAction (UIDescription* description, const std::list<CView*>& views, IViewCreator::AttrType attrType, UTF8StringPtr oldValue, UTF8StringPtr newValue)
 : description (description)
-, baseView (baseView)
 , oldValue (oldValue)
 , newValue (newValue)
 {
 	UIViewFactory* viewFactory = dynamic_cast<UIViewFactory*>(description->getViewFactory ());
-	collectViewsWithAttributeValue (viewFactory, description, baseView, attrType, oldValue);
+	for (std::list<CView*>::const_iterator it = views.begin (); it != views.end (); it++)
+		collectViewsWithAttributeValue (viewFactory, description, *it, attrType, oldValue);
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -842,7 +794,7 @@ TagChangeAction::TagChangeAction (UIDescription* description, UTF8StringPtr name
 //----------------------------------------------------------------------------------------------------
 UTF8StringPtr TagChangeAction::getName ()
 {
-	return "";
+	return isNewTag ? "Add Tag" : "Change Tag";
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -916,7 +868,7 @@ ColorNameChangeAction::ColorNameChangeAction (UIDescription* description, UTF8St
 //----------------------------------------------------------------------------------------------------
 UTF8StringPtr ColorNameChangeAction::getName ()
 {
-	return "Change Tag Name";
+	return "Change Color Name";
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -999,7 +951,7 @@ BitmapChangeAction::BitmapChangeAction (UIDescription* description, UTF8StringPt
 //----------------------------------------------------------------------------------------------------
 UTF8StringPtr BitmapChangeAction::getName ()
 {
-	return "";
+	return isNewBitmap ? "Add New Bitmap" : "Change Bitmap";
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -1142,7 +1094,7 @@ FontChangeAction::FontChangeAction (UIDescription* description, UTF8StringPtr na
 //----------------------------------------------------------------------------------------------------
 UTF8StringPtr FontChangeAction::getName ()
 {
-	return "";
+	return originalFont ? "Change Font" : "Add New Font";
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -1256,7 +1208,7 @@ HierarchyMoveViewOperation::~HierarchyMoveViewOperation ()
 //----------------------------------------------------------------------------------------------------
 UTF8StringPtr HierarchyMoveViewOperation::getName ()
 {
-	return "change view hierarchy";
+	return "Change View Hierarchy";
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -1272,8 +1224,7 @@ void HierarchyMoveViewOperation::perform ()
 		currentIndex++;
 	}
 	parent->changeViewZOrder (view, up ? currentIndex - 1 : currentIndex + 1);
-	if (selection)
-		selection->changed (UISelection::kMsgSelectionChanged);
+	selection->changed (UISelection::kMsgSelectionChanged);
 	parent->invalid ();
 }
 
@@ -1288,8 +1239,9 @@ void HierarchyMoveViewOperation::undo ()
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
-TemplateNameChangeAction::TemplateNameChangeAction (UIDescription* description, UTF8StringPtr oldName, UTF8StringPtr newName)
+TemplateNameChangeAction::TemplateNameChangeAction (UIDescription* description, IActionPerformer* actionPerformer, UTF8StringPtr oldName, UTF8StringPtr newName)
 : description (description)
+, actionPerformer (actionPerformer)
 , oldName (oldName)
 , newName (newName)
 {
@@ -1304,13 +1256,117 @@ UTF8StringPtr TemplateNameChangeAction::getName ()
 //----------------------------------------------------------------------------------------------------
 void TemplateNameChangeAction::perform ()
 {
+	actionPerformer->onTemplateNameChange (oldName.c_str (), newName.c_str ());
 	description->changeTemplateName (oldName.c_str (), newName.c_str ());
 }
 
 //----------------------------------------------------------------------------------------------------
 void TemplateNameChangeAction::undo ()
 {
+	actionPerformer->onTemplateNameChange (newName.c_str (), oldName.c_str ());
 	description->changeTemplateName (newName.c_str (), oldName.c_str ());
+}
+
+//----------------------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------
+CreateNewTemplateAction::CreateNewTemplateAction (UIDescription* description, IActionPerformer* actionPerformer, UTF8StringPtr name, UTF8StringPtr baseViewClassName)
+: description (description)
+, actionPerformer (actionPerformer)
+, name (name)
+, baseViewClassName (baseViewClassName)
+{
+}
+
+//----------------------------------------------------------------------------------------------------
+UTF8StringPtr CreateNewTemplateAction::getName ()
+{
+	return "Create New Template";
+}
+
+//----------------------------------------------------------------------------------------------------
+void CreateNewTemplateAction::perform ()
+{
+	IDependency::DeferChanges dc (description);
+	UIAttributes* attr = new UIAttributes ();
+	attr->setAttribute ("class", baseViewClassName.c_str ());
+	attr->setAttribute ("size", "400,400");
+	description->addNewTemplate (name.c_str (), attr);
+	if (view == 0)
+		view = description->createView (name.c_str (), description->getController ());
+	actionPerformer->onTemplateCreation (name.c_str (), view);
+}
+
+//----------------------------------------------------------------------------------------------------
+void CreateNewTemplateAction::undo ()
+{
+	description->removeTemplate (name.c_str ());
+}
+
+//----------------------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------
+DuplicateTemplateAction::DuplicateTemplateAction (UIDescription* description, IActionPerformer* actionPerformer, UTF8StringPtr name, UTF8StringPtr dupName)
+: description (description)
+, actionPerformer (actionPerformer)
+, name (name)
+, dupName (dupName)
+{
+}
+
+//----------------------------------------------------------------------------------------------------
+UTF8StringPtr DuplicateTemplateAction::getName ()
+{
+	return "Duplicate Template";
+}
+
+//----------------------------------------------------------------------------------------------------
+void DuplicateTemplateAction::perform ()
+{
+	IDependency::DeferChanges dc (description);
+	description->duplicateTemplate (name.c_str (), dupName.c_str ());
+	if (view == 0)
+		view = description->createView (dupName.c_str (), description->getController ());
+	actionPerformer->onTemplateCreation (dupName.c_str (), view);
+}
+
+//----------------------------------------------------------------------------------------------------
+void DuplicateTemplateAction::undo ()
+{
+	description->removeTemplate (dupName.c_str ());
+}
+
+//----------------------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------
+DeleteTemplateAction::DeleteTemplateAction (UIDescription* description, IActionPerformer* actionPerformer, CView* view, UTF8StringPtr name)
+: description (description)
+, actionPerformer (actionPerformer)
+, view (view)
+, name (name)
+{
+	attributes = const_cast<UIAttributes*> (description->getViewAttributes (name));
+}
+
+//----------------------------------------------------------------------------------------------------
+UTF8StringPtr DeleteTemplateAction::getName ()
+{
+	return "Delete Template";
+}
+
+//----------------------------------------------------------------------------------------------------
+void DeleteTemplateAction::perform ()
+{
+	attributes->remember ();
+	description->removeTemplate (name.c_str ());
+}
+
+//----------------------------------------------------------------------------------------------------
+void DeleteTemplateAction::undo ()
+{
+	IDependency::DeferChanges dc (description);
+	description->addNewTemplate (name.c_str (), attributes);
+	actionPerformer->onTemplateCreation (name.c_str (), view);
 }
 
 } // namespace

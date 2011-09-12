@@ -1,11 +1,11 @@
 /**
-@page page_news_and_changes New stuff and changes from earlier versions of VSTGUI
+@page page_news_and_changes New stuff in VSTGUI 4
 
 - @ref version4_introduction @n
 - @ref new_stuff @n
-- @ref changes_for_3_6 @n
-- @ref old_new_stuff @n
+- @ref code_changes @n
 - @ref cocoa_support @n
+- @subpage page_previous_new_stuff
 
 @section version4_introduction Introduction
 
@@ -14,6 +14,15 @@ The result is that code written for any earlier version of VSTGUI is not always 
 It's recommended to start new projects with version 4 while old projects should stay with version 3.6.
 
 @section new_stuff New Stuff
+
+@subsection version4_1 Version 4.1
+
+- @ref page_uidescription_editor @n
+- VSTGUI::COpenGLView
+- VSTGUI::CRowColumnView
+- VSTGUI::BitmapFilter
+
+@subsection version4_0 Version 4.0
 
 - VST3 Support : Complete inline VST3 Editor support. See @ref page_vst3_inline_editing @n
 - UIDescription : Building user interfaces via XML description files. See @ref uidescription @n
@@ -24,7 +33,9 @@ It's recommended to start new projects with version 4 while old projects should 
 - New notable classes : VSTGUI::CCheckBox, VSTGUI::CGraphicsPath, VSTGUI::CNinePartTiledBitmap, VSTGUI::IFocusDrawing
 - Direct2D drawing on Windows (Windows Vista or Windows 7)
 
-@section changes_for_3_6 Changes for existing VSTGUI 3.6 code
+@section code_changes Changes for existing VSTGUI code
+
+@subsection code_changes_3_6_to_4_0 VSTGUI 3.6 -> VSTGUI 4.0
 
 - the variable types were changed to use C99 style types (int32_t, etc), you must do this for all your derivated VSTGUI classes too
 - the buttons parameter has changed from long to CButtonState
@@ -47,8 +58,15 @@ It's recommended to start new projects with version 4 while old projects should 
 	- CViewContainer::drawBackgroundRect (CDrawContext* pContext, CRect& _updateRect)
 	- CViewContainer::addView (CView* pView, CRect& mouseableArea, bool mouseEnabled = true)
 
-@section old_new_stuff Stuff that was new in VSTGUI 3.0 - VSTGUI 3.6
+@section cocoa_support Cocoa notes
 
+- To get cocoa support your minimum required Mac OS X version is 10.5.
+- In 32 bit Cocoa and Carbon are available. You can switch between them with CFrame::setCocoaMode(bool state). You must do this before creating the CFrame.
+- In 64 bit only Cocoa is available.
+- The pSystemWindow pointer in the CFrame constructor must be a NSView not a NSWindow.
+
+@page page_previous_new_stuff Previous New Stuff
+ 
 @section new_mouse_methods New mouse methods
 
 In earlier versions there were only one method in CView for handling mouse events (VSTGUI::CView::mouse). 
@@ -125,13 +143,6 @@ For custom views you need to change the following methods because their paramete
 
 please see the "Migrating from 2.3.rtf" file in the Documentation folder.
 
-@section cocoa_support Cocoa notes
-
-- To get cocoa support your minimum required Mac OS X version is 10.5.
-- In 32 bit Cocoa and Carbon are available. You can switch between them with CFrame::setCocoaMode(bool state). You must do this before creating the CFrame.
-- In 64 bit only Cocoa is available.
-- The pSystemWindow pointer in the CFrame constructor must be a NSView not a NSWindow.
-
 */
 
 //------------------------------------------------------------------------
@@ -141,6 +152,10 @@ please see the "Migrating from 2.3.rtf" file in the Documentation folder.
  */
 //------------------------------------------------------------------------
 /*! @defgroup new_in_4_0 Version 4.0
+ *	@ingroup new_in
+ */
+//------------------------------------------------------------------------
+/*! @defgroup new_in_4_1 Version 4.1
  *	@ingroup new_in
  */
 //------------------------------------------------------------------------

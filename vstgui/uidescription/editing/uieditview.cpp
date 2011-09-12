@@ -62,7 +62,7 @@ void UIEditView::setUndoManager (UIUndoManager* manager)
 }
 
 //----------------------------------------------------------------------------------------------------
-UIUndoManager* UIEditView::getUndoManger ()
+UIUndoManager* UIEditView::getUndoManager ()
 {
 	if (undoManger == 0)
 		undoManger = OwningPointer<UIUndoManager> (new UIUndoManager ());
@@ -105,8 +105,6 @@ void UIEditView::setEditView (CView* view)
 {
 	if (view != getView (0))
 	{
-		getUndoManger ()->clear ();
-		getSelection ()->empty ();
 		invalid ();
 		removeAll ();
 		CRect vs (getViewSize ());
@@ -526,7 +524,7 @@ CMouseEventResult UIEditView::onMouseUp (CPoint &where, const CButtonState& butt
 		invalidSelection ();
 		if (moveSizeOperation)
 		{
-			getUndoManger ()->pushAndPerform (moveSizeOperation);
+			getUndoManager ()->pushAndPerform (moveSizeOperation);
 			moveSizeOperation = 0;
 		}
 		return kMouseEventHandled;
@@ -769,7 +767,7 @@ bool UIEditView::onDrop (CDragContainer* drag, const CPoint& where)
 
 				UIViewFactory* viewFactory = dynamic_cast<UIViewFactory*> (description->getViewFactory ());
 				IAction* action = new ViewCopyOperation (dragSelection, getSelection (), viewContainer, where2, viewFactory, description);
-				getUndoManger()->pushAndPerform (action);
+				getUndoManager()->pushAndPerform (action);
 			}
 			dragSelection->forget ();
 			dragSelection = 0;

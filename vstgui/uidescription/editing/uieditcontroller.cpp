@@ -22,6 +22,7 @@
 #include "../../lib/controls/coptionmenu.h"
 #include "../../lib/animation/animations.h"
 #include "../../lib/animation/timingfunctions.h"
+#include "../../lib/cdropsource.h"
 
 #include <sstream>
 #include <algorithm>
@@ -226,16 +227,17 @@ UIEditController::UIEditController (UIDescription* description)
 	gridController = new UIGridController (this, description);
 	description->addDependency (this);
 	undoManager->addDependency (this);
-	menuController = new UIEditMenuController (this, selection, undoManager, editDescription);
+	menuController = new UIEditMenuController (this, selection, undoManager, editDescription, this);
+	onTemplatesChanged ();
 }
 
 //----------------------------------------------------------------------------------------------------
 UIEditController::~UIEditController ()
 {
+	if (tabSwitchControl)
+		tabSwitchControl->removeDependency (this);
 	if (templateController)
-	{
 		templateController->removeDependency (this);
-	}
 	undoManager->removeDependency (this);
 	editDescription->removeDependency (this);
 }
@@ -302,6 +304,11 @@ CView* UIEditController::createView (const UIAttributes& attributes, IUIDescript
 			textSwitch->addValue ("Colors");
 			textSwitch->addValue ("Bitmaps");
 			textSwitch->addValue ("Fonts");
+			tabSwitchControl = textSwitch;
+			tabSwitchControl->addDependency (this);
+			int32_t value = 0;
+			getSettings ()->getIntegerAttribute ("TabSwitchValue", value);
+			textSwitch->setValue ((float)value);
 			return textSwitch;
 		}
 		
@@ -352,7 +359,7 @@ IController* UIEditController::createSubController (UTF8StringPtr name, IUIDescr
 	if (strcmp (name, "TemplatesController") == 0)
 	{
 		assert (templateController == 0);
-		templateController = new UITemplateController (this, editDescription, selection, undoManager);
+		templateController = new UITemplateController (this, editDescription, selection, undoManager, this);
 		templateController->addDependency (this);
 		return templateController;
 	}
@@ -408,42 +415,59 @@ void UIEditController::valueChanged (CControl* control)
 //----------------------------------------------------------------------------------------------------
 CMessageResult UIEditController::notify (CBaseObject* sender, IdStringPtr message)
 {
-	if (message == UITemplateController::kMsgTemplateChanged)
+	if (message == CControl::kMessageValueChanged)
+	{
+		if (tabSwitchControl == dynamic_cast<CControl*> (sender))
+		{
+			getSettings ()->setIntegerAttribute ("TabSwitchValue", (int32_t)tabSwitchControl->getValue ());
+		}
+		return kMessageNotified;
+	}
+	else if (message == UITemplateController::kMsgTemplateChanged)
 	{
 		if (editView && templateController)
 		{
 			const std::string* name = templateController->getSelectedTemplateName ();
 			if ((name && *name != editTemplateName) || name == 0)
 			{
-				if (editView->getEditView () && undoManager->canUndo () && !editTemplateName.empty ())
-				{
-					// TODO: do show a warning that the undoManager will be cleared ?
-					CViewContainer* container = dynamic_cast<CViewContainer*>(editView->getEditView());
-					if (container)
-						resetScrollViewOffsets (container);
-					editDescription->updateViewDescription (editTemplateName.c_str (), editView->getEditView ());
-					setDirty (true);
-				}
+				if (undoManager->canUndo () && !editTemplateName.empty ())
+					updateTemplate (editTemplateName.c_str ());
 				if (name)
 				{
-					CView* view = editDescription->createView (name->c_str (), editDescription->getController ());
-					if (view)
+					for (std::vector<Template>::const_iterator it = templates.begin (); it != templates.end (); it++)
 					{
-						editView->setEditView (view);
-						templateController->setTemplateView (reinterpret_cast<CViewContainer*> (view));
-						editTemplateName = *templateController->getSelectedTemplateName ();
+						if (*name == (*it).name)
+						{
+							CView* view = (*it).view;
+							editView->setEditView (view);
+							templateController->setTemplateView (reinterpret_cast<CViewContainer*> (view));
+							editTemplateName = *templateController->getSelectedTemplateName ();
+							view->remember ();
+							break;
+						}
 					}
 				}
 				else
 				{
+					selection->empty ();
 					editView->setEditView (0);
 					templateController->setTemplateView (0);
 					editTemplateName = "";
 				}
 			}
 			if (editView->getEditView ())
-				selection->setExclusive (editView->getEditView ());
+			{
+				if (!(selection->first () && dynamic_cast<CViewContainer*> (editView->getEditView ())->isChild(selection->first (), true)))
+					selection->setExclusive (editView->getEditView ());
+			}
+			else
+				selection->empty ();
 		}
+		return kMessageNotified;
+	}
+	else if (message == UIDescription::kMessageTemplateChanged)
+	{
+		onTemplatesChanged ();
 		return kMessageNotified;
 	}
 	else if (message == UIEditView::kMsgAttached)
@@ -462,12 +486,10 @@ CMessageResult UIEditController::notify (CBaseObject* sender, IdStringPtr messag
 	{
 		if (editView && editView->getEditView ())
 		{
-			if (undoManager->canUndo () && !editTemplateName.empty ())
+			if (undoManager->canUndo ())
 			{
-				CViewContainer* container = dynamic_cast<CViewContainer*>(editView->getEditView());
-				if (container)
-					resetScrollViewOffsets (container);
-				editDescription->updateViewDescription (editTemplateName.c_str (), editView->getEditView ());
+				for (std::vector<Template>::const_iterator it = templates.begin (); it != templates.end (); it++)
+					updateTemplate (it);
 			}
 			for (std::list<SharedPointer<CSplitView> >::const_iterator it = splitViews.begin (); it != splitViews.end (); it++)
 				(*it)->storeViewSizes ();
@@ -483,6 +505,7 @@ CMessageResult UIEditController::notify (CBaseObject* sender, IdStringPtr messag
 				}
 				container = dynamic_cast<CViewContainer*> (container->getParentView ());
 			}
+			undoManager->markSavePosition ();
 			setDirty (false);
 		}
 		return kMessageNotified;
@@ -579,10 +602,7 @@ CMessageResult UIEditController::notify (CBaseObject* sender, IdStringPtr messag
 			{
 				if (undoManager->canUndo () && !editTemplateName.empty ())
 				{
-					CViewContainer* container = dynamic_cast<CViewContainer*>(editView->getEditView());
-					if (container)
-						resetScrollViewOffsets (container);
-					editDescription->updateViewDescription (editTemplateName.c_str (), editView->getEditView ());
+					updateTemplate (editTemplateName.c_str ());
 				}
 				UIDialogController* dc = new UIDialogController (this, editView->getFrame ());
 				UITemplateSettingsController* tsController = new UITemplateSettingsController (editTemplateName, editDescription);
@@ -600,8 +620,29 @@ CMessageResult UIEditController::notify (CBaseObject* sender, IdStringPtr messag
 	}
 	else if (message == UIUndoManager::kMsgChanged)
 	{
-		if (undoManager->canUndo ())
-			setDirty (true);
+		setDirty (!undoManager->isSavePosition ());
+		CView* view = selection->first ();
+		if (view)
+		{
+			CViewContainer* templateView = dynamic_cast<CViewContainer*> (editView->getEditView ());
+			if (templateView)
+			{
+				if (view == templateView || templateView->isChild (view, true))
+				{
+					return kMessageNotified;
+				}
+			}
+			for (std::vector<Template>::const_iterator it = templates.begin (); it != templates.end (); it++)
+			{
+				CViewContainer* container = dynamic_cast<CViewContainer*>((CView*)(*it).view);
+				if (container && (view == container || container->isChild (view, true)))
+				{
+					templateController->selectTemplate ((*it).name.c_str ());
+					return kMessageNotified;
+				}
+			}
+			selection->empty ();
+		}
 		return kMessageNotified;
 	}
 	
@@ -756,14 +797,22 @@ void UIEditController::performAction (IAction* action)
 }
 
 //----------------------------------------------------------------------------------------------------
+void UIEditController::getTemplateViews (std::list<CView*>& views)
+{
+	for (std::vector<Template>::const_iterator it = templates.begin (); it != templates.end (); it++)
+		views.push_back ((*it).view);
+}
+
+//----------------------------------------------------------------------------------------------------
 void UIEditController::performColorChange (UTF8StringPtr colorName, const CColor& newColor, bool remove)
 {
-	CView* view = editView ? editView->getEditView () : 0;
+	std::list<CView*> views;
+	getTemplateViews (views);
+
 	ColorChangeAction* action = new ColorChangeAction (editDescription, colorName, newColor, remove, true);
 	undoManager->startGroupAction (remove ? "Delete Color" : action->isAddColor () ? "Add New Color" : "Change Color");
 	undoManager->pushAndPerform (action);
-	if (view)
-		undoManager->pushAndPerform (new MultipleAttributeChangeAction (editDescription, view, IViewCreator::kColorType, colorName, remove ? "" : colorName));
+	undoManager->pushAndPerform (new MultipleAttributeChangeAction (editDescription, views, IViewCreator::kColorType, colorName, remove ? "" : colorName));
 	undoManager->pushAndPerform (new ColorChangeAction (editDescription, colorName, newColor, remove, false));
 	undoManager->endGroupAction ();
 }
@@ -771,12 +820,13 @@ void UIEditController::performColorChange (UTF8StringPtr colorName, const CColor
 //----------------------------------------------------------------------------------------------------
 void UIEditController::performTagChange (UTF8StringPtr tagName, int32_t tag, bool remove)
 {
-	CView* view = editView ? editView->getEditView () : 0;
+	std::list<CView*> views;
+	getTemplateViews (views);
+
 	TagChangeAction* action = new TagChangeAction (editDescription, tagName, tag, remove, true);
 	undoManager->startGroupAction (remove ? "Delete Tag" : action->isAddTag () ? "Add New Tag" : "Change Tag");
 	undoManager->pushAndPerform (action);
-	if (view)
-		undoManager->pushAndPerform (new MultipleAttributeChangeAction (editDescription, view, IViewCreator::kTagType, tagName, remove ? "" : tagName));
+	undoManager->pushAndPerform (new MultipleAttributeChangeAction (editDescription, views, IViewCreator::kTagType, tagName, remove ? "" : tagName));
 	undoManager->pushAndPerform (new TagChangeAction (editDescription, tagName, tag, remove, false));
 	undoManager->endGroupAction ();
 }
@@ -784,12 +834,13 @@ void UIEditController::performTagChange (UTF8StringPtr tagName, int32_t tag, boo
 //----------------------------------------------------------------------------------------------------
 void UIEditController::performBitmapChange (UTF8StringPtr bitmapName, UTF8StringPtr bitmapPath, bool remove)
 {
-	CView* view = editView ? editView->getEditView () : 0;
+	std::list<CView*> views;
+	getTemplateViews (views);
+
 	BitmapChangeAction* action = new BitmapChangeAction (editDescription, bitmapName, bitmapPath, remove, true);
 	undoManager->startGroupAction (remove ? "Delete Bitmap" : action->isAddBitmap () ? "Add New Bitmap" :"Change Bitmap");
 	undoManager->pushAndPerform (action);
-	if (view)
-		undoManager->pushAndPerform (new MultipleAttributeChangeAction (editDescription, view, IViewCreator::kBitmapType, bitmapName, remove ? "" : bitmapName));
+	undoManager->pushAndPerform (new MultipleAttributeChangeAction (editDescription, views, IViewCreator::kBitmapType, bitmapName, remove ? "" : bitmapName));
 	undoManager->pushAndPerform (new BitmapChangeAction (editDescription, bitmapName, bitmapPath, remove, false));
 	undoManager->endGroupAction ();
 }
@@ -797,12 +848,13 @@ void UIEditController::performBitmapChange (UTF8StringPtr bitmapName, UTF8String
 //----------------------------------------------------------------------------------------------------
 void UIEditController::performFontChange (UTF8StringPtr fontName, CFontRef newFont, bool remove)
 {
-	CView* view = editView ? editView->getEditView () : 0;
+	std::list<CView*> views;
+	getTemplateViews (views);
+
 	FontChangeAction* action = new FontChangeAction (editDescription, fontName, newFont, remove, true);
 	undoManager->startGroupAction (remove ? "Delete Font" : action->isAddFont () ? "Add New Font" : "Change Font");
 	undoManager->pushAndPerform (action);
-	if (view)
-		undoManager->pushAndPerform (new MultipleAttributeChangeAction (editDescription, view, IViewCreator::kFontType, fontName, remove ? "" : fontName));
+	undoManager->pushAndPerform (new MultipleAttributeChangeAction (editDescription, views, IViewCreator::kFontType, fontName, remove ? "" : fontName));
 	undoManager->pushAndPerform (new FontChangeAction (editDescription, fontName, newFont, remove, false));
 	undoManager->endGroupAction ();
 }
@@ -810,11 +862,12 @@ void UIEditController::performFontChange (UTF8StringPtr fontName, CFontRef newFo
 //----------------------------------------------------------------------------------------------------
 void UIEditController::performColorNameChange (UTF8StringPtr oldName, UTF8StringPtr newName)
 {
-	CView* view = editView ? editView->getEditView () : 0;
+	std::list<CView*> views;
+	getTemplateViews (views);
+
 	undoManager->startGroupAction ("Change Color Name");
 	undoManager->pushAndPerform (new ColorNameChangeAction (editDescription, oldName, newName, true));
-	if (view)
-		undoManager->pushAndPerform (new MultipleAttributeChangeAction (editDescription, view, IViewCreator::kColorType, oldName, newName));
+	undoManager->pushAndPerform (new MultipleAttributeChangeAction (editDescription, views, IViewCreator::kColorType, oldName, newName));
 	undoManager->pushAndPerform (new ColorNameChangeAction (editDescription, oldName, newName, false));
 	undoManager->endGroupAction ();
 }
@@ -822,11 +875,12 @@ void UIEditController::performColorNameChange (UTF8StringPtr oldName, UTF8String
 //----------------------------------------------------------------------------------------------------
 void UIEditController::performTagNameChange (UTF8StringPtr oldName, UTF8StringPtr newName)
 {
-	CView* view = editView ? editView->getEditView () : 0;
+	std::list<CView*> views;
+	getTemplateViews (views);
+
 	undoManager->startGroupAction ("Change Tag Name");
 	undoManager->pushAndPerform (new TagNameChangeAction (editDescription, oldName, newName, true));
-	if (view)
-		undoManager->pushAndPerform (new MultipleAttributeChangeAction (editDescription, view, IViewCreator::kTagType, oldName, newName));
+	undoManager->pushAndPerform (new MultipleAttributeChangeAction (editDescription, views, IViewCreator::kTagType, oldName, newName));
 	undoManager->pushAndPerform (new TagNameChangeAction (editDescription, oldName, newName, false));
 	undoManager->endGroupAction ();
 }
@@ -834,11 +888,12 @@ void UIEditController::performTagNameChange (UTF8StringPtr oldName, UTF8StringPt
 //----------------------------------------------------------------------------------------------------
 void UIEditController::performFontNameChange (UTF8StringPtr oldName, UTF8StringPtr newName)
 {
-	CView* view = editView ? editView->getEditView () : 0;
+	std::list<CView*> views;
+	getTemplateViews (views);
+
 	undoManager->startGroupAction ("Change Font Name");
 	undoManager->pushAndPerform (new FontNameChangeAction (editDescription, oldName, newName, true));
-	if (view)
-		undoManager->pushAndPerform (new MultipleAttributeChangeAction (editDescription, view, IViewCreator::kFontType, oldName, newName));
+	undoManager->pushAndPerform (new MultipleAttributeChangeAction (editDescription, views, IViewCreator::kFontType, oldName, newName));
 	undoManager->pushAndPerform (new FontNameChangeAction (editDescription, oldName, newName, false));
 	undoManager->endGroupAction ();
 }
@@ -846,11 +901,12 @@ void UIEditController::performFontNameChange (UTF8StringPtr oldName, UTF8StringP
 //----------------------------------------------------------------------------------------------------
 void UIEditController::performBitmapNameChange (UTF8StringPtr oldName, UTF8StringPtr newName)
 {
-	CView* view = editView ? editView->getEditView () : 0;
+	std::list<CView*> views;
+	getTemplateViews (views);
+
 	undoManager->startGroupAction ("Change Bitmap Name");
 	undoManager->pushAndPerform (new BitmapNameChangeAction (editDescription, oldName, newName, true));
-	if (view)
-		undoManager->pushAndPerform (new MultipleAttributeChangeAction (editDescription, view, IViewCreator::kBitmapType, oldName, newName));
+	undoManager->pushAndPerform (new MultipleAttributeChangeAction (editDescription, views, IViewCreator::kBitmapType, oldName, newName));
 	undoManager->pushAndPerform (new BitmapNameChangeAction (editDescription, oldName, newName, false));
 	undoManager->endGroupAction ();
 }
@@ -858,11 +914,12 @@ void UIEditController::performBitmapNameChange (UTF8StringPtr oldName, UTF8Strin
 //----------------------------------------------------------------------------------------------------
 void UIEditController::performBitmapNinePartTiledChange (UTF8StringPtr bitmapName, const CRect* offsets)
 {
-	CView* view = editView ? editView->getEditView () : 0;
+	std::list<CView*> views;
+	getTemplateViews (views);
+
 	undoManager->startGroupAction ("Change NinePartTiled Bitmap");
 	undoManager->pushAndPerform (new NinePartTiledBitmapChangeAction (editDescription, bitmapName, offsets, true));
-	if (view)
-		undoManager->pushAndPerform (new MultipleAttributeChangeAction (editDescription, view, IViewCreator::kBitmapType, bitmapName, bitmapName));
+	undoManager->pushAndPerform (new MultipleAttributeChangeAction (editDescription, views, IViewCreator::kBitmapType, bitmapName, bitmapName));
 	undoManager->pushAndPerform (new NinePartTiledBitmapChangeAction (editDescription, bitmapName, offsets, false));
 	undoManager->endGroupAction ();
 }
@@ -888,22 +945,121 @@ void UIEditController::performLiveColorChange (UTF8StringPtr colorName, const CC
 	IAction* action = new ColorChangeAction (editDescription, colorName, newColor, false, true);
 	action->perform ();
 	delete action;
-	CView* view = editView ? editView->getEditView () : 0;
-	if (view)
-	{	
-		action = new MultipleAttributeChangeAction (editDescription, view, IViewCreator::kColorType, colorName, colorName);
-		action->perform ();
-		delete action;
-	}
+
+	std::list<CView*> views;
+	getTemplateViews (views);
+
+	action = new MultipleAttributeChangeAction (editDescription, views, IViewCreator::kColorType, colorName, colorName);
+	action->perform ();
+	delete action;
 }
 
 //----------------------------------------------------------------------------------------------------
 void UIEditController::endLiveColorChange (UTF8StringPtr colorName)
 {
+	IDependency::DeferChanges dc (editDescription);
 	CColor color;
-	editDescription->getColor(colorName, color);
+	editDescription->getColor (colorName, color);
 	performColorChange (colorName, color, false);
 	undoManager->endGroupAction ();
+}
+
+//----------------------------------------------------------------------------------------------------
+void UIEditController::performTemplateNameChange (UTF8StringPtr oldName, UTF8StringPtr newName)
+{
+	undoManager->pushAndPerform (new TemplateNameChangeAction (editDescription, this, oldName, newName));
+}
+
+//----------------------------------------------------------------------------------------------------
+void UIEditController::performCreateNewTemplate (UTF8StringPtr name, UTF8StringPtr baseViewClassName)
+{
+	undoManager->pushAndPerform (new CreateNewTemplateAction (editDescription, this, name, baseViewClassName));
+}
+
+//----------------------------------------------------------------------------------------------------
+void UIEditController::performDeleteTemplate (UTF8StringPtr name)
+{
+	std::vector<Template>::iterator it = std::find (templates.begin (), templates.end (), name);
+	if (it != templates.end ())
+		undoManager->pushAndPerform (new DeleteTemplateAction (editDescription, this, (*it).view, (*it).name.c_str ()));
+}
+
+//----------------------------------------------------------------------------------------------------
+void UIEditController::performDuplicateTemplate (UTF8StringPtr name, UTF8StringPtr dupName)
+{
+	editDescription->changed (UIDescription::kMessageBeforeSave);
+	undoManager->pushAndPerform (new DuplicateTemplateAction (editDescription, this, name, dupName));
+}
+
+//----------------------------------------------------------------------------------------------------
+void UIEditController::onTemplateCreation (UTF8StringPtr name, CView* view)
+{
+	templates.push_back (Template (name, view));
+	selection->setExclusive (view);
+}
+
+//----------------------------------------------------------------------------------------------------
+void UIEditController::onTemplateNameChange (UTF8StringPtr oldName, UTF8StringPtr newName)
+{
+	std::vector<Template>::iterator it = std::find (templates.begin (), templates.end (), oldName);
+	if (it != templates.end ())
+	{
+		(*it).name = newName;
+	}
+}
+
+//----------------------------------------------------------------------------------------------------
+void UIEditController::updateTemplate (const std::vector<Template>::const_iterator& it)
+{
+	if (it != templates.end ())
+	{
+		CView* view = (*it).view;
+		CViewContainer* container = dynamic_cast<CViewContainer*>(view);
+		if (container)
+			resetScrollViewOffsets (container);
+		editDescription->updateViewDescription ((*it).name.c_str (), view);
+	}
+}
+
+//----------------------------------------------------------------------------------------------------
+void UIEditController::updateTemplate (UTF8StringPtr name)
+{
+	std::vector<Template>::const_iterator it = std::find (templates.begin (), templates.end (), name);
+	updateTemplate (it);
+}
+
+//----------------------------------------------------------------------------------------------------
+void UIEditController::onTemplatesChanged ()
+{
+	std::list<const std::string*> templateNames;
+	editDescription->collectTemplateViewNames (templateNames);
+	for (std::list<const std::string*>::const_iterator it = templateNames.begin (); it != templateNames.end (); it++)
+	{
+		if (std::find (templates.begin (), templates.end (), *(*it)) == templates.end ())
+		{
+			CView* view = editDescription->createView ((*it)->c_str (), editDescription->getController ());
+			templates.push_back (Template (*(*it), view));
+			view->forget ();
+		}
+	}
+	for (std::vector<Template>::reverse_iterator it = templates.rbegin (); it != templates.rend ();)
+	{
+		Template& t = (*it);
+		it++;
+		bool found = false;
+		for (std::list<const std::string*>::const_iterator it2 = templateNames.begin (); it2 != templateNames.end (); it2++)
+		{
+			if (t.name == *(*it2))
+			{
+				found = true;
+				break;
+			}
+		}
+		if (!found)
+		{
+			templates.erase (it.base ()+1); 
+		}
+	}
 }
 
 //----------------------------------------------------------------------------------------------------

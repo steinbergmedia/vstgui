@@ -7,6 +7,7 @@
 
 #include "uiselection.h"
 #include "uiundomanager.h"
+#include "iaction.h"
 #include "../../lib/cdatabrowser.h"
 #include <vector>
 #include <list>
@@ -18,11 +19,12 @@ class UIViewListDataSource;
 class UITemplateController : public CBaseObject, public DelegationController, public IGenericStringListDataBrowserSourceSelectionChanged, public IDependency
 {
 public:
-	UITemplateController (IController* baseController, UIDescription* description, UISelection* selection, UIUndoManager* undoManager);
+	UITemplateController (IController* baseController, UIDescription* description, UISelection* selection, UIUndoManager* undoManager, IActionPerformer* actionPerformer);
 	~UITemplateController ();
 
 	const std::string* getSelectedTemplateName () const { return selectedTemplateName; }
 
+	void selectTemplate (UTF8StringPtr name);
 	void setTemplateView (CViewContainer* view);
 	
 	static void setupDataBrowser (CDataBrowser* orignalBrowser, CDataBrowser* dataBrowser);
@@ -42,6 +44,7 @@ protected:
 	SharedPointer<UIDescription> editDescription;
 	SharedPointer<UISelection> selection;
 	SharedPointer<UIUndoManager> undoManager;
+	IActionPerformer* actionPerformer;
 	CViewContainer* templateView;
 	CDataBrowser* templateDataBrowser;
 	UIViewListDataSource* mainViewDataSource;

@@ -11,6 +11,7 @@
 
 namespace VSTGUI {
 class UIColorsDataSource;
+class UIColor;
 
 //----------------------------------------------------------------------------------------------------
 class UIColorsController : public CBaseObject, public DelegationController
@@ -24,10 +25,12 @@ protected:
 	CView* verifyView (CView* view, const UIAttributes& attributes, IUIDescription* description);
 	CControlListener* getControlListener (UTF8StringPtr name);
 	void valueChanged (CControl* pControl);
+	IController* createSubController (IdStringPtr name, IUIDescription* description);
 
 	SharedPointer<UIDescription> editDescription;
 	IActionPerformer* actionPerformer;
 	UIColorsDataSource* dataSource;
+	OwningPointer<UIColor> color;
 	
 	enum {
 		kAddTag = 0,

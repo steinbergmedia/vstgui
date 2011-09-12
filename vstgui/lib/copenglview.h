@@ -54,6 +54,10 @@ TODO: Documentation
 
 */
 //-----------------------------------------------------------------------------
+// COpenGLView Declaration
+/// @brief a subview which uses OpenGL for drawing
+/// @ingroup new_in_4_1
+//-----------------------------------------------------------------------------
 class COpenGLView : public CView, public IOpenGLView
 {
 public:

@@ -8,6 +8,7 @@
 #include "uiselection.h"
 #include "uiundomanager.h"
 #include "../../lib/controls/ctextedit.h"
+#include "../../lib/cvstguitimer.h"
 
 namespace VSTGUI {
 class CRowColumnView;
@@ -39,6 +40,7 @@ protected:
 	SharedPointer<UISelection> selection;
 	SharedPointer<UIUndoManager> undoManager;
 	SharedPointer<UIDescription> editDescription;
+	OwningPointer<CVSTGUITimer> timer;
 
 	std::list<UIAttributeControllers::Controller*> attributeControllers;
 

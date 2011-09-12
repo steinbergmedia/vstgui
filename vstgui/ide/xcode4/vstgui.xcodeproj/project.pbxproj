@@ -166,6 +166,8 @@
 		F4CA76C613F27A4900BB1842 /* uieditcontroller.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4CA76C513F27A4900BB1842 /* uieditcontroller.cpp */; };
 		F4CA76C813F27E6200BB1842 /* uitemplatecontroller.h in Headers */ = {isa = PBXBuildFile; fileRef = F4CA76C713F27E6100BB1842 /* uitemplatecontroller.h */; };
 		F4CA76CA13F27E6700BB1842 /* uitemplatecontroller.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4CA76C913F27E6600BB1842 /* uitemplatecontroller.cpp */; };
+		F4CE1BE0141138ED00CF75B6 /* cbitmapfilter.h in Headers */ = {isa = PBXBuildFile; fileRef = F4CE1BDF141138EC00CF75B6 /* cbitmapfilter.h */; };
+		F4CE1BE2141138F700CF75B6 /* cbitmapfilter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4CE1BE1141138F700CF75B6 /* cbitmapfilter.cpp */; };
 		F4CF26DE13EEA65D00C64EB7 /* icontroller.h in Headers */ = {isa = PBXBuildFile; fileRef = F4CF26DD13EEA65D00C64EB7 /* icontroller.h */; };
 		F4D23BB21405466200A5F888 /* uitemplatesettingscontroller.h in Headers */ = {isa = PBXBuildFile; fileRef = F4D23BB11405466200A5F888 /* uitemplatesettingscontroller.h */; };
 		F4D23BB41405466900A5F888 /* uitemplatesettingscontroller.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4D23BB31405466900A5F888 /* uitemplatesettingscontroller.cpp */; };
@@ -358,6 +360,8 @@
 		F4CA76C513F27A4900BB1842 /* uieditcontroller.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = uieditcontroller.cpp; sourceTree = "<group>"; };
 		F4CA76C713F27E6100BB1842 /* uitemplatecontroller.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = uitemplatecontroller.h; sourceTree = "<group>"; };
 		F4CA76C913F27E6600BB1842 /* uitemplatecontroller.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = uitemplatecontroller.cpp; sourceTree = "<group>"; };
+		F4CE1BDF141138EC00CF75B6 /* cbitmapfilter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = cbitmapfilter.h; sourceTree = "<group>"; };
+		F4CE1BE1141138F700CF75B6 /* cbitmapfilter.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = cbitmapfilter.cpp; sourceTree = "<group>"; };
 		F4CF26DD13EEA65D00C64EB7 /* icontroller.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = icontroller.h; sourceTree = "<group>"; };
 		F4D23BB11405466200A5F888 /* uitemplatesettingscontroller.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = uitemplatesettingscontroller.h; sourceTree = "<group>"; };
 		F4D23BB31405466900A5F888 /* uitemplatesettingscontroller.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = uitemplatesettingscontroller.cpp; sourceTree = "<group>"; };
@@ -480,6 +484,8 @@
 				F497F12613080AD600F0A613 /* animation */,
 				F497F0C213080A1C00F0A613 /* cbitmap.cpp */,
 				F497F0C313080A1C00F0A613 /* cbitmap.h */,
+				F4CE1BE1141138F700CF75B6 /* cbitmapfilter.cpp */,
+				F4CE1BDF141138EC00CF75B6 /* cbitmapfilter.h */,
 				F497F0C413080A1C00F0A613 /* ccolor.cpp */,
 				F497F0C513080A1C00F0A613 /* ccolor.h */,
 				F497F0C613080A1C00F0A613 /* cdatabrowser.cpp */,
@@ -792,6 +798,7 @@
 				F4D23BB21405466200A5F888 /* uitemplatesettingscontroller.h in Headers */,
 				F41DA9321406860300EDAB4B /* uifocussettingscontroller.h in Headers */,
 				F40B7834140E105800E2BF16 /* macclipboard.h in Headers */,
+				F4CE1BE0141138ED00CF75B6 /* cbitmapfilter.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -932,6 +939,7 @@
 				F4D23BB41405466900A5F888 /* uitemplatesettingscontroller.cpp in Sources */,
 				F41DA9341406860B00EDAB4B /* uifocussettingscontroller.cpp in Sources */,
 				F40B7836140E106600E2BF16 /* macclipboard.mm in Sources */,
+				F4CE1BE2141138F700CF75B6 /* cbitmapfilter.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -51,6 +51,7 @@
 	#include "pluginterfaces/vst/ivstcontextmenu.h"
 #endif
 
+/// @cond ignore
 namespace Steinberg {
 
 //-----------------------------------------------------------------------------
@@ -76,6 +77,7 @@ protected:
 };
 
 } // namespace Steinberg
+/// @endcond ignore
 
 namespace VSTGUI {
 
@@ -1038,6 +1040,7 @@ CMessageResult VST3Editor::notify (CBaseObject* sender, IdStringPtr message)
 //------------------------------------------------------------------------
 void VST3Editor::syncParameterTags ()
 {
+#if VSTGUI_LIVE_EDITING
 	CView* view = getFrame ()->getView (0);
 	if (view)
 	{
@@ -1060,6 +1063,7 @@ void VST3Editor::syncParameterTags ()
 			}
 		}
 	}
+#endif
 }
 
 //------------------------------------------------------------------------

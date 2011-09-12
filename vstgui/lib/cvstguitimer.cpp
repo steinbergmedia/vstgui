@@ -79,7 +79,7 @@ bool CVSTGUITimer::start ()
 			CFRunLoopAddTimer (CFRunLoopGetCurrent (), (CFRunLoopTimerRef)platformTimer, kCFRunLoopCommonModes);
 
 		#elif WINDOWS
-		platformTimer = (void*)SetTimer ((HWND)NULL, (UINT_PTR)this, fireTime, TimerProc);
+		platformTimer = (void*)SetTimer ((HWND)NULL, (UINT_PTR)0, fireTime, TimerProc);
 		if (platformTimer)
 			gTimerList.push_back (this);
 		#endif

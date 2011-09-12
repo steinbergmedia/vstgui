@@ -6,6 +6,7 @@
 #include "uisearchtextfield.h"
 #include "uieditcontroller.h"
 #include "../../lib/controls/ccolorchooser.h"
+#include "../../lib/cbitmapfilter.h"
 
 namespace VSTGUI {
 //----------------------------------------------------------------------------------------------------
@@ -163,11 +164,11 @@ CView* UIBitmapsController::verifyView (CView* view, const UIAttributes& attribu
 	{
 		switch (textEdit->getTag ())
 		{
-			case kBitmapPathTag: bitmapPathEdit = textEdit; break;
-			case kNinePartTiledLeftTag: ninePartRectEdit[0] = textEdit; textEdit->setValueToStringProc (valueToString); textEdit->setStringToValueProc (stringToValue); break;
-			case kNinePartTiledTopTag: ninePartRectEdit[1] = textEdit; textEdit->setValueToStringProc (valueToString); textEdit->setStringToValueProc (stringToValue); break;
-			case kNinePartTiledRightTag: ninePartRectEdit[2] = textEdit; textEdit->setValueToStringProc (valueToString); textEdit->setStringToValueProc (stringToValue); break;
-			case kNinePartTiledBottomTag: ninePartRectEdit[3] = textEdit; textEdit->setValueToStringProc (valueToString); textEdit->setStringToValueProc (stringToValue); break;
+			case kBitmapPathTag: bitmapPathEdit = textEdit; textEdit->setMouseEnabled (false); break;
+			case kNinePartTiledLeftTag: ninePartRectEdit[0] = textEdit; textEdit->setValueToStringProc (valueToString); textEdit->setStringToValueProc (stringToValue); textEdit->setMouseEnabled (false); break;
+			case kNinePartTiledTopTag: ninePartRectEdit[1] = textEdit; textEdit->setValueToStringProc (valueToString); textEdit->setStringToValueProc (stringToValue); textEdit->setMouseEnabled (false); break;
+			case kNinePartTiledRightTag: ninePartRectEdit[2] = textEdit; textEdit->setValueToStringProc (valueToString); textEdit->setStringToValueProc (stringToValue); textEdit->setMouseEnabled (false); break;
+			case kNinePartTiledBottomTag: ninePartRectEdit[3] = textEdit; textEdit->setValueToStringProc (valueToString); textEdit->setStringToValueProc (stringToValue); textEdit->setMouseEnabled (false); break;
 		}
 	}
 	else
@@ -176,6 +177,7 @@ CView* UIBitmapsController::verifyView (CView* view, const UIAttributes& attribu
 		if (control && control->getTag () == kNinePartTiledTag)
 		{
 			ninePartTiled = control;
+			ninePartTiled->setMouseEnabled (false);
 		}
 	}
 	return DelegationController::verifyView (view, attributes, description);
@@ -263,15 +265,20 @@ void UIBitmapsController::dbSelectionChanged (int32_t selectedRow, GenericString
 		CBitmap* bitmap = dataSource->getSelectedBitmap ();
 		if (bitmapView)
 		{
-			bitmapView->setBackground (bitmap);
+			CCoord width = bitmap ? bitmap->getWidth () : 0;
+			CCoord height = bitmap ? bitmap->getHeight () : 0;
 			CRect r (bitmapView->getViewSize ());
-			r.setWidth (bitmap ? bitmap->getWidth () : 0);
-			r.setHeight (bitmap ? bitmap->getHeight () : 0);
+			r.setWidth (width);
+			r.setHeight (height);
 			bitmapView->setViewSize (r);
+			bitmapView->setBackground (bitmap);
+			if (bitmapView->getParentView ())
+				bitmapView->getParentView ()->invalid ();
 		}
 		if (bitmapPathEdit)
 		{
 			bitmapPathEdit->setText (bitmap ? bitmap->getResourceDescription ().u.name : 0);
+			bitmapPathEdit->setMouseEnabled (bitmap ? true : false);
 		}
 		CNinePartTiledBitmap* nptb = bitmap ? dynamic_cast<CNinePartTiledBitmap*>(bitmap) : 0;
 		if (nptb)
@@ -280,27 +287,32 @@ void UIBitmapsController::dbSelectionChanged (int32_t selectedRow, GenericString
 			{
 				ninePartTiled->setValue (ninePartTiled->getMax ());
 				ninePartTiled->invalid ();
+				ninePartTiled->setMouseEnabled (true);
 			}
 			const CNinePartTiledBitmap::PartOffsets offsets = nptb->getPartOffsets ();
 			if (ninePartRectEdit[0])
 			{
 				ninePartRectEdit[0]->setValue ((float)offsets.left);
 				ninePartRectEdit[0]->invalid ();
+				ninePartRectEdit[0]->setMouseEnabled (true);
 			}
 			if (ninePartRectEdit[1])
 			{
 				ninePartRectEdit[1]->setValue ((float)offsets.top);
 				ninePartRectEdit[1]->invalid ();
+				ninePartRectEdit[1]->setMouseEnabled (true);
 			}
 			if (ninePartRectEdit[2])
 			{
 				ninePartRectEdit[2]->setValue ((float)offsets.right);
 				ninePartRectEdit[2]->invalid ();
+				ninePartRectEdit[2]->setMouseEnabled (true);
 			}
 			if (ninePartRectEdit[3])
 			{
 				ninePartRectEdit[3]->setValue ((float)offsets.bottom);
 				ninePartRectEdit[3]->invalid ();
+				ninePartRectEdit[3]->setMouseEnabled (true);
 			}
 		}
 		else
@@ -309,11 +321,15 @@ void UIBitmapsController::dbSelectionChanged (int32_t selectedRow, GenericString
 			{
 				ninePartTiled->setValue (ninePartTiled->getMin ());
 				ninePartTiled->invalid ();
+				ninePartTiled->setMouseEnabled (bitmap ? true : false);
 			}
 			for (int32_t i = 0; i < 4; i++)
 			{
 				if (ninePartRectEdit[i])
+				{
 					ninePartRectEdit[i]->setText (0);
+					ninePartRectEdit[i]->setMouseEnabled (false);
+				}
 			}
 		}
 	}
