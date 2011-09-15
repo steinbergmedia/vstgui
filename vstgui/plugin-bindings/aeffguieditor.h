@@ -42,11 +42,11 @@
 #endif
 
 #ifndef __audioeffectx__
-#include "audioeffectx.h"
+#include "public.sdk/source/vst2.x/audioeffectx.h"
 #endif
 
 #ifndef __vstgui__
-#include "vstgui.h"
+#include "../vstgui.h"
 #endif
 
 //-----------------------------------------------------------------------------

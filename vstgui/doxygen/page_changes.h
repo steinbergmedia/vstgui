@@ -21,6 +21,7 @@ It's recommended to start new projects with version 4 while old projects should 
 - VSTGUI::COpenGLView
 - VSTGUI::CRowColumnView
 - VSTGUI::BitmapFilter
+- More @link VSTGUI::CScrollView::CScrollViewStyle VSTGUI::CScrollView styles @endlink
 
 @subsection version4_0 Version 4.0
 

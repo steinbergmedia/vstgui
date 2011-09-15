@@ -32,5 +32,4 @@
 // OF THE POSSIBILITY OF SUCH DAMAGE.
 //-----------------------------------------------------------------------------
 
-//#import "uidescription/macplatformsupport.mm"
 #import "vstgui_uidescription.cpp"

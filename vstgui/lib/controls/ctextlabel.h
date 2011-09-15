@@ -36,6 +36,7 @@
 #define __ctextlabel__
 
 #include "cparamdisplay.h"
+#include <string>
 
 namespace VSTGUI {
 
@@ -56,16 +57,29 @@ public:
 	//@{
 	virtual void setText (UTF8StringPtr txt);	///< set text
 	virtual UTF8StringPtr getText () const;		///< read only access to text
+
+	enum TextTruncateMode {
+		kTruncateNone = 0,
+		kTruncateHead,
+		kTruncateTail
+	};
+	
+	virtual void setTextTruncateMode (int32_t mode);
+	int32_t getTextTruncateMode () const { return textTruncateMode; }
 	//@}
 	
 	virtual	void draw (CDrawContext* pContext);
 	virtual bool sizeToFit ();
+	virtual void setViewSize (const CRect& rect, bool invalid = true);
 
 	CLASS_METHODS(CTextLabel, CParamDisplay)
 protected:
 	~CTextLabel ();
 	void freeText ();
+	void calculateTruncatedText ();
+	int32_t textTruncateMode;
 	UTF8StringBuffer text;
+	std::string truncatedText;
 };
 
 } // namespace

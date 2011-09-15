@@ -39,6 +39,18 @@ public:
 };
 
 //----------------------------------------------------------------------------------------------------
+/// @brief Replace Color Bitmap Filter
+/// @ingroup new_in_4_1
+//----------------------------------------------------------------------------------------------------
+class ReplaceColor
+{
+public:
+	/** replaces pixels with color to newcolor */
+	static bool process (CBitmap* bitmap, const CColor& color, const CColor& newColor);
+	static CBitmapPixelAccess& process (CBitmapPixelAccess& accessor, const CColor& color, const CColor& newColor);
+};
+
+//----------------------------------------------------------------------------------------------------
 /// @brief Copy Bitmap Filter
 /// @ingroup new_in_4_1
 //----------------------------------------------------------------------------------------------------

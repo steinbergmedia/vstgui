@@ -116,7 +116,7 @@ CMessageResult UIColorSlider::notify (CBaseObject* sender, IdStringPtr message)
 void UIColorSlider::updateBackground ()
 {
 	setBackground (0);
-	COffscreenContext* context = COffscreenContext::create (getFrame (), getWidth (), getHeight ());
+	COffscreenContext* context = COffscreenContext::create (getFrame (), floor (getWidth () + 0.5), floor (getHeight () + 0.5));
 	if (context)
 	{
 		CCoord width = getWidth ();
@@ -124,7 +124,7 @@ void UIColorSlider::updateBackground ()
 		context->setDrawMode (kAliasing);
 		CCoord widthPerColor = width / 256.;
 		CRect r;
-		r.setHeight (getHeight ());
+		r.setHeight (floor (getHeight () + 0.5));
 		for (int32_t i = 0; i < 256; i++)
 		{
 			CCoord x = floor (widthPerColor * i + 0.5);
@@ -449,22 +449,22 @@ void UIColorChooserController::valueChanged (CControl* pControl)
 		case kRedTag:
 		{
 			color->r = pControl->getValue ();
-			color->updateHSL ();
 			color->red = (uint8_t)color->r;
+			color->updateHSL ();
 			break;
 		}
 		case kGreenTag:
 		{
 			color->g = (uint8_t)pControl->getValue ();
-			color->updateHSL ();
 			color->green = (uint8_t)color->g;
+			color->updateHSL ();
 			break;
 		}
 		case kBlueTag:
 		{
 			color->b = (uint8_t)pControl->getValue ();
-			color->updateHSL ();
 			color->blue = (uint8_t)color->b;
+			color->updateHSL ();
 			break;
 		}
 		case kAlphaTag:
@@ -496,6 +496,7 @@ protected:
 	virtual UTF8StringPtr getDefaultsName () { return "UIColorsDataSource"; }
 
 	void dbDrawCell (CDrawContext* context, const CRect& size, int32_t row, int32_t column, int32_t flags, CDataBrowser* browser);
+	void dbCellSetupTextEdit (int32_t row, int32_t column, CTextEdit* control, CDataBrowser* browser);
 	void dbSelectionChanged (CDataBrowser* browser);
 
 	SharedPointer<UIColor> color;
@@ -624,6 +625,16 @@ void UIColorsDataSource::dbDrawCell (CDrawContext* context, const CRect& size, i
 		context->drawRect (r, kDrawFilledAndStroked);
 	}
 }
+
+//----------------------------------------------------------------------------------------------------
+void UIColorsDataSource::dbCellSetupTextEdit (int32_t row, int32_t column, CTextEdit* control, CDataBrowser* browser)
+{
+	UIBaseDataSource::dbCellSetupTextEdit(row, column, control, browser);
+	CRect r (control->getViewSize ());
+	r.right -= r.getHeight ();
+	control->setViewSize (r);
+}
+
 
 //----------------------------------------------------------------------------------------------------
 bool UIColorsDataSource::performNameChange (UTF8StringPtr oldName, UTF8StringPtr newName)

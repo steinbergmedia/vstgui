@@ -4,6 +4,7 @@
 
 #include "uiactions.h"
 #include "uieditview.h"
+#include "uieditcontroller.h"
 #include "../uiviewfactory.h"
 #include "../../lib/controls/coptionmenu.h"
 #include "../../lib/controls/ctextlabel.h"
@@ -138,6 +139,7 @@ CMessageResult UIEditMenuController::notify (CBaseObject* sender, IdStringPtr me
 				std::list<const std::string*> containerViewNames;
 				UIViewFactory* factory = dynamic_cast<UIViewFactory*> (description->getViewFactory ());
 				factory->collectRegisteredViewNames (containerViewNames, "CViewContainer");
+				containerViewNames.sort (UIEditController::std__stringCompare);
 				OwningPointer<COptionMenu> submenu = new COptionMenu ();
 				for (std::list<const std::string*>::const_iterator it = containerViewNames.begin (); it != containerViewNames.end (); it++)
 				{
@@ -154,6 +156,7 @@ CMessageResult UIEditMenuController::notify (CBaseObject* sender, IdStringPtr me
 				item->setEnabled (templateNames.empty () == false);
 				if (templateNames.empty () == false)
 				{
+					templateNames.sort (UIEditController::std__stringCompare);
 					OwningPointer<COptionMenu> submenu = new COptionMenu ();
 					item->setSubmenu (submenu);
 					for (std::list<const std::string*>::const_iterator it = templateNames.begin (); it != templateNames.end (); it++)
@@ -171,6 +174,7 @@ CMessageResult UIEditMenuController::notify (CBaseObject* sender, IdStringPtr me
 				item->setEnabled (templateNames.empty () == false);
 				if (templateNames.empty () == false)
 				{
+					templateNames.sort (UIEditController::std__stringCompare);
 					OwningPointer<COptionMenu> submenu = new COptionMenu ();
 					item->setSubmenu (submenu);
 					for (std::list<const std::string*>::const_iterator it = templateNames.begin (); it != templateNames.end (); it++)
@@ -198,6 +202,7 @@ CMessageResult UIEditMenuController::notify (CBaseObject* sender, IdStringPtr me
 				item->setSubmenu (submenu);
 				std::list<const std::string*> containerViewNames;
 				UIViewFactory* factory = dynamic_cast<UIViewFactory*> (description->getViewFactory ());
+				containerViewNames.sort (UIEditController::std__stringCompare);
 				factory->collectRegisteredViewNames (containerViewNames, "CViewContainer");
 				for (std::list<const std::string*>::const_iterator it = containerViewNames.begin (); it != containerViewNames.end (); it++)
 				{
@@ -225,14 +230,22 @@ CMessageResult UIEditMenuController::notify (CBaseObject* sender, IdStringPtr me
 			else if (strcmp (item->getCommandName (), "Transform View Type") == 0)
 			{
 				item->setSubmenu (0);
-				item->setEnabled(selection->total () == 1);
-				if (item->isEnabled () == false)
+				bool enabled = false;
+				if (selection->total () == 1)
+				{
+					CViewContainer* container = dynamic_cast<CViewContainer*>(selection->first());
+					if (container == 0 || (container && dynamic_cast<UIEditView*>(container->getParentView ()) == 0))
+						enabled = true;
+				}
+				item->setEnabled (enabled);
+				if (enabled == false)
 					return kMessageNotified;
 				OwningPointer<COptionMenu> submenu = new COptionMenu ();
 				item->setSubmenu (submenu);
 				std::list<const std::string*> containerViewNames;
 				UIViewFactory* factory = dynamic_cast<UIViewFactory*> (description->getViewFactory ());
 				factory->collectRegisteredViewNames (containerViewNames);
+				containerViewNames.sort (UIEditController::std__stringCompare);
 				for (std::list<const std::string*>::const_iterator it = containerViewNames.begin (); it != containerViewNames.end (); it++)
 				{
 					submenu->addEntry (new CCommandMenuItem ((*it)->c_str (), this, "Transform View Type", (*it)->c_str ()));
@@ -250,6 +263,7 @@ CMessageResult UIEditMenuController::notify (CBaseObject* sender, IdStringPtr me
 				item->setEnabled (templateNames.empty () == false);
 				if (templateNames.empty () == false)
 				{
+					templateNames.sort (UIEditController::std__stringCompare);
 					OwningPointer<COptionMenu> submenu = new COptionMenu ();
 					item->setSubmenu (submenu);
 					for (std::list<const std::string*>::const_iterator it = templateNames.begin (); it != templateNames.end (); it++)

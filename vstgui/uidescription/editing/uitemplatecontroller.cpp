@@ -332,13 +332,13 @@ UIViewListDataSource::UIViewListDataSource (CViewContainer* view, UIViewFactory*
 , inUpdate (false)
 {
 	update (view);
-	selection->addDependency (this);
+	undoManager->addDependency (this);
 }
 
 //----------------------------------------------------------------------------------------------------
 UIViewListDataSource::~UIViewListDataSource ()
 {
-	selection->removeDependency (this);
+	undoManager->removeDependency (this);
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -354,7 +354,6 @@ bool UIViewListDataSource::update (CViewContainer* vc)
 {
 	inUpdate = true;
 	names.clear ();
-	setStringList (&names);
 	subviews.clear ();
 	ViewIterator it (vc);
 	while (*it)
@@ -490,7 +489,7 @@ CMouseEventResult UIViewListDataSource::dbOnMouseDown (const CPoint& where, cons
 //----------------------------------------------------------------------------------------------------
 CMessageResult UIViewListDataSource::notify (CBaseObject* sender, IdStringPtr message)
 {
-	if (message == UISelection::kMsgSelectionChanged)
+	if (message == UIUndoManager::kMsgChanged)
 	{
 		update (view);
 		if (selectedView)
@@ -597,6 +596,7 @@ void UITemplatesDataSource::dbCellSetupTextEdit (int32_t row, int32_t column, CT
 	textEditControl->setFontColor (fontColor);
 	textEditControl->setFont (drawFont);
 	textEditControl->setHoriAlign (kLeftText);
+	textEditControl->setTextInset (textInset);
 }
 
 //----------------------------------------------------------------------------------------------------

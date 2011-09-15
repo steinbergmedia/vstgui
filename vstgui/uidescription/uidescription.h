@@ -106,7 +106,8 @@ public:
 	~UIDescription ();
 
 	virtual bool parse ();
-	virtual bool save (UTF8StringPtr filename);
+	virtual bool save (UTF8StringPtr filename, bool writeWindowsResourceFile = true);
+	virtual bool saveWindowsRCFile (UTF8StringPtr filename);
 
 	UTF8StringPtr getXmFileName () const { return xmlFile.u.name; }
 	
