@@ -862,6 +862,14 @@ public:
 			else
 				style &= ~CScrollView::kFollowFocusView;
 		}
+		attr = attributes.getAttributeValue ("auto-hide-scrollbars");
+		if (attr)
+		{
+			if (*attr == "true")
+				style |= CScrollView::kAutoHideScrollbars;
+			else
+				style &= ~CScrollView::kAutoHideScrollbars;
+		}
 		scrollView->setStyle (style);
 		attr = attributes.getAttributeValue ("scrollbar-width");
 		if (attr)
@@ -879,6 +887,7 @@ public:
 		attributeNames.push_back ("scrollbar-scroller-color");
 		attributeNames.push_back ("horizontal-scrollbar");
 		attributeNames.push_back ("vertical-scrollbar");
+		attributeNames.push_back ("auto-hide-scrollbars");
 		attributeNames.push_back ("auto-drag-scrolling");
 		attributeNames.push_back ("overlay-scrollbars");
 		attributeNames.push_back ("scrollbar-width");
@@ -894,6 +903,7 @@ public:
 		if (attributeName == "scrollbar-scroller-color") return kColorType;
 		if (attributeName == "horizontal-scrollbar") return kBooleanType;
 		if (attributeName == "vertical-scrollbar") return kBooleanType;
+		if (attributeName == "auto-hide-scrollbars") return kBooleanType;
 		if (attributeName == "auto-drag-scrolling") return kBooleanType;
 		if (attributeName == "overlay-scrollbars") return kBooleanType;
 		if (attributeName == "scrollbar-width") return kIntegerType;
@@ -952,6 +962,11 @@ public:
 			stringValue = sc->getStyle () & CScrollView::kVerticalScrollbar ? "true" : "false";
 			return true;
 		}
+		if (attributeName == "auto-hide-scrollbars")
+		{
+			stringValue = sc->getStyle () & CScrollView::kAutoHideScrollbars ? "true" : "false";
+			return true;
+		}
 		if (attributeName == "auto-drag-scrolling")
 		{
 			stringValue = sc->getStyle () & CScrollView::kAutoDragScrolling ? "true" : "false";
@@ -981,11 +996,20 @@ CScrollViewCreator __CScrollViewCreator;
 //-----------------------------------------------------------------------------
 class CControlCreator : public IViewCreator
 {
+protected:
+	class DummyControl : public CControl
+	{
+	public:
+		DummyControl () : CControl (CRect (0, 0, 0, 0)) {}
+		void draw (CDrawContext* pContext) { CView::draw (pContext); }
+		
+		CLASS_METHODS(DummyControl, CControl)
+	};
 public:
 	CControlCreator () { UIViewFactory::registerViewCreator (*this); }
 	IdStringPtr getViewName () const { return "CControl"; }
 	IdStringPtr getBaseViewName () const { return "CView"; }
-	CView* create (const UIAttributes& attributes, IUIDescription* description) const { return 0; }
+	CView* create (const UIAttributes& attributes, IUIDescription* description) const { return new DummyControl (); }
 	bool apply (CView* view, const UIAttributes& attributes, IUIDescription* description) const
 	{
 		CControl* control = dynamic_cast<CControl*> (view);
@@ -2961,6 +2985,7 @@ public:
 			if (parseSize (*attr, p))
 			{
 				CRect size = splashScreen->getSplashRect ();
+				size.originize ();
 				size.offset (p.x, p.y);
 				splashScreen->setSplashRect (size);
 			}

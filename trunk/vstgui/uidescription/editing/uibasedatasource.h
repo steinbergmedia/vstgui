@@ -264,6 +264,7 @@ protected:
 		textEditControl->setFontColor (fontColor);
 		textEditControl->setFont (drawFont);
 		textEditControl->setHoriAlign (textAlignment);
+		textEditControl->setTextInset (textInset);
 	}
 
 	SharedPointer<UIDescription> description;

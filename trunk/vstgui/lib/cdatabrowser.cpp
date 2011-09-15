@@ -930,7 +930,7 @@ int32_t GenericStringListDataBrowserSource::dbGetNumRows (CDataBrowser* browser)
 //-----------------------------------------------------------------------------
 CCoord GenericStringListDataBrowserSource::dbGetCurrentColumnWidth (int32_t index, CDataBrowser* browser)
 {
-	return browser->getWidth () - ((browser->getStyle() & CScrollView::kOverlayScrollbars) ? 0 : browser->getScrollbarWidth ());
+	return browser->getWidth () - ((browser->getStyle () & CScrollView::kOverlayScrollbars || (browser->getActiveScrollbars () & CScrollView::kVerticalScrollbar) == 0) ? 0 : browser->getScrollbarWidth ());
 }
 
 //-----------------------------------------------------------------------------

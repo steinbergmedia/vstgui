@@ -42,7 +42,7 @@
 #import "nsviewoptionmenu.h"
 #import "cocoaopenglview.h"
 #import "autoreleasepool.h"
-#import "macclipboard.h"
+#import "../macclipboard.h"
 #import "../cgdrawcontext.h"
 #import "../cgbitmap.h"
 #import "../quartzgraphicspath.h"

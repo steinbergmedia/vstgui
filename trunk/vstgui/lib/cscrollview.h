@@ -60,6 +60,7 @@ protected:
 		kAutoDragScollingFlag,
 		kOverlayScrollbarsFlag,
 		kFollowFocusViewFlag,
+		kAutoHideScrollbarsFlag,
 
 		kLastScrollViewStyleFlag
 	};
@@ -68,6 +69,7 @@ public:
 	CScrollView (const CRect& size, const CRect& containerSize, CFrame* pParent, int32_t style, CCoord scrollbarWidth = 16, CBitmap* pBackground = 0);
 	CScrollView (const CScrollView& scrollView);
 
+	/** Scroll View Style Flags */
 	enum CScrollViewStyle
 	{
 		kHorizontalScrollbar	= 1 << kHorizontalScrollbarFlag,	///< add a horizontal scrollbar
@@ -75,7 +77,8 @@ public:
 		kDontDrawFrame			= 1 << kDontDrawFrameFlag,			///< don't draw frame
 		kAutoDragScrolling		= 1 << kAutoDragScollingFlag,		///< automatic scrolling for drag moves
 		kOverlayScrollbars		= 1 << kOverlayScrollbarsFlag,		///< scrollbars are overlayed of the content
-		kFollowFocusView		= 1 << kFollowFocusViewFlag 		///< scroll to focus view when focus view changes
+		kFollowFocusView		= 1 << kFollowFocusViewFlag, 		///< scroll to focus view when focus view changes
+		kAutoHideScrollbars		= 1 << kAutoHideScrollbarsFlag		///< automatically hides the scrollbar if the container size is smaller than the size of the scrollview
 	};
 
 	//-----------------------------------------------------------------------------
@@ -84,6 +87,8 @@ public:
 	//@{
 	int32_t getStyle () const { return style; }
 	void setStyle (int32_t newStyle);
+	
+	int32_t getActiveScrollbars () const { return activeScrollbarStyle; }
 
 	CCoord getScrollbarWidth () const { return scrollbarWidth; }
 	void setScrollbarWidth (CCoord width);
@@ -129,6 +134,7 @@ protected:
 	CRect containerSize;
 	CCoord scrollbarWidth;
 	int32_t style;
+	int32_t activeScrollbarStyle;
 
 	enum {
 		kHSBTag,

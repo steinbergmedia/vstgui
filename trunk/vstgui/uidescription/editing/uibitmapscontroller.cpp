@@ -18,7 +18,7 @@ public:
 	void draw (CDrawContext* context)
 	{
 		CView::draw (context);
-		if (getBackground())
+		if (getBackground ())
 		{
 			CNinePartTiledBitmap* bitmap = dynamic_cast<CNinePartTiledBitmap*>(getBackground ());
 			if (bitmap)
@@ -38,6 +38,21 @@ public:
 				context->moveTo (CPoint (r.right - offsets.right, r.top));
 				context->lineTo (CPoint (r.right - offsets.right, r.bottom));
 			}
+		}
+	}
+
+	void setBackground (CBitmap *background)
+	{
+		CView::setBackground (background);
+		CCoord width = background ? background->getWidth () : 0;
+		CCoord height = background ? background->getHeight () : 0;
+		CRect r (getViewSize ());
+		r.setWidth (width);
+		r.setHeight(height);
+		if (getViewSize () != r)
+		{
+			setViewSize (r);
+			setMouseableArea (r);
 		}
 	}
 };
@@ -265,12 +280,12 @@ void UIBitmapsController::dbSelectionChanged (int32_t selectedRow, GenericString
 		CBitmap* bitmap = dataSource->getSelectedBitmap ();
 		if (bitmapView)
 		{
-			CCoord width = bitmap ? bitmap->getWidth () : 0;
-			CCoord height = bitmap ? bitmap->getHeight () : 0;
-			CRect r (bitmapView->getViewSize ());
-			r.setWidth (width);
-			r.setHeight (height);
-			bitmapView->setViewSize (r);
+//			CCoord width = bitmap ? bitmap->getWidth () : 0;
+//			CCoord height = bitmap ? bitmap->getHeight () : 0;
+//			CRect r (bitmapView->getViewSize ());
+//			r.setWidth (width);
+//			r.setHeight (height);
+//			bitmapView->setViewSize (r);
 			bitmapView->setBackground (bitmap);
 			if (bitmapView->getParentView ())
 				bitmapView->getParentView ()->invalid ();

@@ -671,7 +671,10 @@ void UIEditController::resetScrollViewOffsets (CViewContainer* view)
 int32_t UIEditController::onKeyDown (const VstKeyCode& code, CFrame* frame)
 {
 	if (frame->getModalView () == 0)
-		return menuController->processKeyCommand (code);
+	{
+		if (!(frame->getFocusView () && dynamic_cast<CTextEdit*> (frame->getFocusView())))
+			return menuController->processKeyCommand (code);
+	}
 	return -1;
 }
 

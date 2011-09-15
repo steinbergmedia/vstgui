@@ -53,6 +53,7 @@ namespace VSTGUI {
 CTextLabel::CTextLabel (const CRect& size, UTF8StringPtr txt, CBitmap* background, const int32_t style)
 : CParamDisplay (size, background, style)
 , text (0)
+, textTruncateMode (kTruncateNone)
 {
 	setText (txt);
 }
@@ -61,6 +62,7 @@ CTextLabel::CTextLabel (const CRect& size, UTF8StringPtr txt, CBitmap* backgroun
 CTextLabel::CTextLabel (const CTextLabel& v)
 : CParamDisplay (v)
 , text (0)
+, textTruncateMode (v.textTruncateMode)
 {
 	setText (v.getText ());
 }
@@ -99,6 +101,54 @@ void CTextLabel::setText (UTF8StringPtr txt)
 }
 
 //------------------------------------------------------------------------
+void CTextLabel::setTextTruncateMode (int32_t mode)
+{
+	if (textTruncateMode != mode)
+	{
+		textTruncateMode = mode;
+		calculateTruncatedText ();
+	}
+}
+
+//------------------------------------------------------------------------
+void CTextLabel::calculateTruncatedText ()
+{
+	removeAttribute (kCViewTooltipAttribute);
+	truncatedText.clear ();
+	if (textTruncateMode == kTruncateNone || text == 0 || text[0] == 0 || fontID == 0 || fontID->getPlatformFont () == 0 || fontID->getPlatformFont ()->getPainter () == 0)
+		return;
+	IFontPainter* painter = fontID->getPlatformFont ()->getPainter ();
+	CCoord width = painter->getStringWidth (0, text, true);
+	width += textInset.x * 2;
+	if (width > getWidth ())
+	{
+		if (textTruncateMode == kTruncateTail)
+		{
+			truncatedText = text;
+			truncatedText += "..";
+			while (width > getWidth () && truncatedText.size () > 2)
+			{
+				truncatedText.erase (truncatedText.size () - 3, 1);
+				width = painter->getStringWidth (0, truncatedText.c_str (), true);
+				width += textInset.x * 2;
+			}
+		}
+		else if (textTruncateMode == kTruncateHead)
+		{
+			truncatedText = "..";
+			truncatedText += text;
+			while (width > getWidth () && truncatedText.size () > 2)
+			{
+				truncatedText.erase (2, 1);
+				width = painter->getStringWidth (0, truncatedText.c_str (), true);
+				width += textInset.x * 2;
+			}
+		}
+		setAttribute (kCViewTooltipAttribute, (int32_t)strlen (text)+1, text);
+	}
+}
+
+//------------------------------------------------------------------------
 UTF8StringPtr CTextLabel::getText () const
 {
 	return text;
@@ -108,7 +158,7 @@ UTF8StringPtr CTextLabel::getText () const
 void CTextLabel::draw (CDrawContext *pContext)
 {
 	drawBack (pContext);
-	drawText (pContext, text);
+	drawText (pContext, truncatedText.empty () ? text : truncatedText.c_str ());
 	setDirty (false);
 }
 
@@ -128,6 +178,16 @@ bool CTextLabel::sizeToFit ()
 		return true;
 	}
 	return false;
+}
+
+//------------------------------------------------------------------------
+void CTextLabel::setViewSize (const CRect& rect, bool invalid)
+{
+	CParamDisplay::setViewSize (rect, invalid);
+	if (textTruncateMode != kTruncateNone)
+	{
+		calculateTruncatedText ();
+	}
 }
 
 } // namespace
