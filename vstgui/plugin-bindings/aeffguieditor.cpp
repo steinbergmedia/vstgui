@@ -39,7 +39,7 @@
 #endif
 
 #ifndef __audioeffectx__
-#include "audioeffectx.h"
+#include "public.sdk/source/vst2.x/audioeffectx.h"
 #endif
 
 #define kIdleRate    100 // host idle rate in ms
@@ -234,7 +234,7 @@ bool AEffGUIEditor::getRect (ERect **ppErect)
 bool AEffGUIEditor::beforeSizeChange (const CRect& newSize, const CRect& oldSize)
 {
 	AudioEffectX* eX = (AudioEffectX*)effect;
-	if (eX && eX->canHostDo ("sizeWindow"))
+	if (eX && eX->canHostDo ((char*)"sizeWindow"))
 	{
 		if (eX->sizeWindow ((VstInt32)newSize.getWidth (), (VstInt32)newSize.getHeight ()))
 		{

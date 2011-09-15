@@ -379,6 +379,14 @@ public:
 		}
 	}
 
+	void setValue (const std::string& value)
+	{
+		TextController::setValue (value);
+		if (label)
+		{
+			label->setHoriAlign (hasDifferentValues () ? kCenterText : kLeftText);
+		}
+	}
 	CMessageResult notify (CBaseObject* sender, IdStringPtr message)
 	{
 		if (sender == menu && message == COptionMenu::kMsgBeforePopup)
@@ -443,6 +451,56 @@ public:
 			}
 		}
 	}
+	
+	void setValue (const std::string& value)
+	{
+		MenuController::setValue (value);
+		if (colorView)
+		{
+			if (hasDifferentValues ())
+			{
+				colorView->color = kTransparentCColor;
+			}
+			else
+			{
+				CColor color;
+				if (description->getColor (value.c_str (), color))
+				{
+					colorView->color = color;
+				}
+				else
+				{
+					colorView->color = kTransparentCColor;
+				}
+			}
+			colorView->invalid ();
+		}
+	}
+
+	CView* createView (const UIAttributes& attributes, IUIDescription* description)
+	{
+		const std::string* attr = attributes.getAttributeValue ("custom-view-name");
+		if (attr && *attr == "ColorView")
+		{
+			colorView = new ColorView ();
+			return colorView;
+		}
+		return 0;
+	}
+protected:
+	class ColorView : public CView
+	{
+	public:
+		ColorView () : CView (CRect (0, 0, 0, 0)) ,color (kTransparentCColor) {}
+		void draw (CDrawContext* context)
+		{
+			context->setFillColor (color);
+			context->setDrawMode (kAliasing);
+			context->drawRect (getViewSize (), kDrawFilled);
+		}
+		CColor color;
+	};
+	SharedPointer<ColorView> colorView;
 };
 
 //----------------------------------------------------------------------------------------------------
@@ -700,12 +758,12 @@ CView* UIAttributesController::createViewForAttribute (const std::string& attrNa
 
 	CCoord middle = width/2;
 	CTextLabel* label = new CTextLabel (CRect (5, 1, middle - 10, height+1), attrName.c_str ());
+	label->setTextTruncateMode (CTextLabel::kTruncateHead);
 	label->setTransparency (true);
 	label->setHoriAlign (kRightText);
 	label->setFontColor (kBlackCColor);
 	label->setFont (kNormalFontSmall);
 	label->setAutosizeFlags (kAutosizeAll);
-	label->setAttribute (kCViewTooltipAttribute, (int32_t)attrName.size ()+1, attrName.c_str ());
 
 	result->addView (label);
 	

@@ -137,6 +137,39 @@ bool Grayscale::process (CBitmap* bitmap)
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
+CBitmapPixelAccess& ReplaceColor::process (CBitmapPixelAccess& accessor, const CColor& color, const CColor& newColor)
+{
+	accessor.setPosition (0, 0);
+	CColor c;
+	uint32_t width = accessor.getBitmapWidth ();
+	uint32_t height = accessor.getBitmapHeight ();
+	for (uint32_t y = 0; y < height; y++)
+	{
+		for (uint32_t x = 0; x < width; x++, accessor++)
+		{
+			accessor.getColor (c);
+			if (c == color)
+				accessor.setColor (newColor);
+		}
+	}
+	return accessor;
+}
+
+//----------------------------------------------------------------------------------------------------
+bool ReplaceColor::process (CBitmap* bitmap, const CColor& color, const CColor& newColor)
+{
+	OwningPointer<CBitmapPixelAccess> accessor = CBitmapPixelAccess::create (bitmap, false);
+	if (accessor)
+	{
+		process (*accessor, color, newColor);
+		return true;
+	}
+	return false;
+}
+
+//----------------------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------
 CBitmap* Copy::process (CBitmap* bitmap)
 {
 	CBitmap* copyBitmap = new CBitmap (bitmap->getWidth (), bitmap->getHeight ());

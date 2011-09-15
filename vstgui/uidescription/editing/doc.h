@@ -8,14 +8,12 @@ TODO:
 	Nice To Have:
 		- better selection mouse handling in UIEditView
 		- grid handling improvements (like custom magnetic lines)
-		- write Windows .rc file
 		- more custom attribute editing
 		- view z-index editing via drag&drop
 		- inline text editing for CLabel/CTextEdit/CCheckbox
+		- focus color change when editing disabled
 		
-	Bugs:
-		- Transform template views does not refresh the template + hierarchy browser
-		- Changing a bitmap to a nineparttiled bitmap does not change the views which uses that bitmap (needs verification)
+	Known Bugs:
 
 */
 

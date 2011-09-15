@@ -132,7 +132,7 @@ void UITagsDataSource::dbCellSetupTextEdit (int32_t row, int32_t column, CTextEd
 //----------------------------------------------------------------------------------------------------
 CCoord UITagsDataSource::dbGetCurrentColumnWidth (int32_t index, CDataBrowser* browser)
 {
-	CCoord width = browser->getWidth () - (browser->getScrollbarWidth () + ((browser->getStyle () & CScrollView::kDontDrawFrame) ? 0 : 2));
+	CCoord width = browser->getWidth () - ((browser->getActiveScrollbars () & CScrollView::kVerticalScrollbar) == 0 ? 0 : browser->getScrollbarWidth () + ((browser->getStyle () & CScrollView::kDontDrawFrame) ? 0 : 2));
 	if (browser->getStyle () & CDataBrowser::kDrawColumnLines)
 		width -= 2;
 	if (index == 0)

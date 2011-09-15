@@ -196,7 +196,10 @@ bool CGBitmap::loadFromImageSource (CGImageSourceRef source)
 		{
 			CGContextRef context = createCGContext ();
 			if (context)
+			{
+				dirty = true;
 				CFRelease (context);
+			}
 		}
 	#endif
 		CFRelease (properties);

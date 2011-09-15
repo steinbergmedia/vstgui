@@ -484,13 +484,55 @@ void UIDescription::setBitmapCreator (IBitmapCreator* creator)
 }
 
 //-----------------------------------------------------------------------------
-bool UIDescription::save (UTF8StringPtr filename)
+bool UIDescription::saveWindowsRCFile (UTF8StringPtr filename)
+{
+	bool result = false;
+	UINode* bitmapNodes = getBaseNode ("bitmaps");
+	if (bitmapNodes && bitmapNodes->getChildren().total() > 0)
+	{
+		CFileStream stream;
+		if (stream.open (filename, CFileStream::kWriteMode|CFileStream::kTruncateMode))
+		{
+			for (UIDescList::iterator it = bitmapNodes->getChildren ().begin (); it != bitmapNodes->getChildren ().end (); it++)
+			{
+				UIAttributes* attr = (*it)->getAttributes ();
+				if (attr)
+				{
+					const std::string* path = attr->getAttributeValue ("path");
+					if (path && !path->empty ())
+					{
+						stream << *path;
+						stream << "\t PNG \"";
+						stream << *path;
+						stream << "\"\r";
+					}
+				}
+			}
+			result = true;
+		}
+	}
+	return result;
+}
+
+//-----------------------------------------------------------------------------
+bool UIDescription::save (UTF8StringPtr filename, bool writeWindowsResourceFile)
 {
 	bool result = false;
 	CFileStream stream;
 	if (stream.open (filename, CFileStream::kWriteMode|CFileStream::kTruncateMode))
 	{
 		result = saveToStream (stream);
+	}
+	if (result && writeWindowsResourceFile)
+	{
+		std::string rcFileName (filename);
+		size_t extPos = rcFileName.find_last_of ('.');
+		if (extPos != std::string::npos)
+		{
+			rcFileName.erase (extPos+1);
+			rcFileName += "rc";
+			saveWindowsRCFile (rcFileName.c_str ());
+		}
 	}
 	return result;
 }

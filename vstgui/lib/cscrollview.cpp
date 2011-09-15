@@ -303,6 +303,7 @@ CScrollView::CScrollView (const CRect &size, const CRect &containerSize, CFrame*
 , containerSize (containerSize)
 , scrollbarWidth (scrollbarWidth)
 , style (style)
+, activeScrollbarStyle (0)
 {
 	recalculateSubViews ();
 }
@@ -312,16 +313,17 @@ CScrollView::CScrollView (const CScrollView& v)
 : CViewContainer (v)
 , containerSize (v.containerSize)
 , style (v.style)
+, activeScrollbarStyle (v.activeScrollbarStyle)
 , scrollbarWidth (v.scrollbarWidth)
 {
 	CViewContainer::removeAll ();
-	if (style & kHorizontalScrollbar && v.hsb)
+	if (activeScrollbarStyle & kHorizontalScrollbar && v.hsb)
 	{
 		hsb = (CScrollbar*)v.hsb->newCopy ();
 		hsb->setListener (this);
 		CViewContainer::addView (hsb);
 	}
-	if (style & kVerticalScrollbar && v.vsb)
+	if (activeScrollbarStyle & kVerticalScrollbar && v.vsb)
 	{
 		vsb = (CScrollbar*)v.vsb->newCopy ();
 		vsb->setListener (this);
@@ -345,12 +347,42 @@ void CScrollView::recalculateSubViews ()
 		scsize.left++; scsize.top++;
 		scsize.right-=1; scsize.bottom--;
 	}
-	if (style & kHorizontalScrollbar)
+	if (style & kAutoHideScrollbars)
+	{
+		activeScrollbarStyle = 0;
+		CRect r (scsize);
+		if (style & kHorizontalScrollbar)
+		{
+			if (style & kVerticalScrollbar && r.getHeight () < containerSize.getHeight ())
+			{
+				activeScrollbarStyle |= kVerticalScrollbar;
+				if (!(style & kOverlayScrollbars))
+					r.right -= scrollbarWidth;
+			}
+			activeScrollbarStyle |= containerSize.getWidth () <= r.getWidth () ? 0 : kHorizontalScrollbar;
+			if (!(style & kOverlayScrollbars))
+				r.bottom -= scrollbarWidth;
+			if (activeScrollbarStyle == kHorizontalScrollbar && style & kVerticalScrollbar && r.getHeight () < containerSize.getHeight ())
+			{
+				activeScrollbarStyle |= kVerticalScrollbar;
+			}
+		}
+		else if (style & kVerticalScrollbar)
+		{
+			activeScrollbarStyle |= containerSize.getHeight () <= r.getHeight () ? 0 : kVerticalScrollbar;
+		}
+	}
+	else
+	{
+		activeScrollbarStyle = (style & kHorizontalScrollbar) | (style & kVerticalScrollbar);
+	}
+	
+	if (activeScrollbarStyle & kHorizontalScrollbar)
 	{
 		CRect sbr (getViewSize ());
 		sbr.originize ();
 		sbr.top = sbr.bottom - scrollbarWidth;
-		if (style & kVerticalScrollbar)
+		if (activeScrollbarStyle & kVerticalScrollbar)
 		{
 			sbr.right -= (scrollbarWidth - 1);
 		}
@@ -374,12 +406,12 @@ void CScrollView::recalculateSubViews ()
 	{
 		hsb->setVisible (false);
 	}
-	if (style & kVerticalScrollbar)
+	if (activeScrollbarStyle & kVerticalScrollbar)
 	{
 		CRect sbr (getViewSize ());
 		sbr.originize ();
 		sbr.left = sbr.right - scrollbarWidth;
-		if (style & kHorizontalScrollbar)
+		if (activeScrollbarStyle & kHorizontalScrollbar)
 		{
 			sbr.bottom -= (scrollbarWidth - 1);
 		}
@@ -464,6 +496,8 @@ void CScrollView::setContainerSize (const CRect& cs, bool keepVisibleArea)
 	{
 		sc->setContainerSize (cs);
 	}
+	if (style & kAutoHideScrollbars)
+		recalculateSubViews ();
 	if (vsb)
 	{
 		CRect oldScrollSize = vsb->getScrollSize (oldScrollSize);
