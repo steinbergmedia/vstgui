@@ -36,6 +36,7 @@
 #define __cstring__
 
 #include "vstguibase.h"
+#include <string>
 
 namespace VSTGUI {
 
@@ -63,6 +64,92 @@ public:
 protected:
 	UTF8StringPtr utf8String;
 	IPlatformString* platformString;
+};
+
+//---------------------------------------------------------------------------------------------------------------------
+class UTF8CharacterIterator
+{
+public:
+	UTF8CharacterIterator (const std::string& str) : str (str), currentPos (0) { begin (); }
+	
+	uint8_t* next ()
+	{
+		if (currentPos)
+		{
+			if (currentPos == back ())
+			{}
+			else if (*currentPos <= 0x7F) // simple ASCII character
+				currentPos++;
+			else
+			{
+				uint8_t characterLength = getByteLength ();
+				if (characterLength)
+					currentPos += characterLength;
+				else
+					currentPos = end (); // error, not an allowed UTF-8 character at this position
+			}
+		}
+		return currentPos;
+	}
+	
+	uint8_t* previous ()
+	{
+		while (currentPos)
+		{
+			--currentPos;
+			if (currentPos < front ())
+			{
+				currentPos = begin ();
+				break;
+			}
+			else
+			{
+				if (*currentPos <= 0x7f || (*currentPos >= 0xC0 && *currentPos <= 0xFD))
+					break;
+			}
+		}
+		return currentPos;
+	}
+	
+	uint8_t getByteLength () const
+	{
+		if (currentPos && currentPos != back ())
+		{
+			if (*currentPos <= 0x7F)
+				return 1;
+			else
+			{
+				if (*currentPos >= 0xC0 && *currentPos <= 0xFD)
+				{
+					if ((*currentPos & 0xF8) == 0xF8)
+						return 5;
+					else if ((*currentPos & 0xF0) == 0xF0)
+						return 4;
+					else if ((*currentPos & 0xE0) == 0xE0)
+						return 3;
+					else if ((*currentPos & 0xC0) == 0xC0)
+						return 2;
+				}
+			}
+		}
+		return 0;
+	}
+
+	uint8_t* begin () { currentPos = ((uint8_t*)str.c_str ()); return currentPos;}
+	uint8_t* end () { currentPos = ((uint8_t*)str.c_str ()) + str.size (); return currentPos; }
+
+	const uint8_t* front () const { return (const uint8_t*)str.c_str (); }
+	const uint8_t* back () const { return (const uint8_t*)str.c_str () + str.size (); }
+
+	const uint8_t* operator++() { return next (); }
+	const uint8_t* operator--() { return previous (); }
+	bool operator==(uint8_t i) { if (currentPos) return *currentPos == i; return false; }
+	operator uint8_t* () const { return (uint8_t*)currentPos; }
+
+protected:
+	const std::string& str;
+	uint8_t* currentPos;
+	
 };
 
 } // namespace

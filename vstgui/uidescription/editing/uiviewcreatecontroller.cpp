@@ -131,10 +131,11 @@ CMouseEventResult UIViewCreatorDataSource::dbOnMouseMoved (const CPoint& where, 
 			}
 			UISelection selection;
 			selection.add (view);
-			CMemoryStream stream;
+			CMemoryStream stream (1024, 1024, false);
 			if (selection.store (stream, factory, description))
 			{
-				CDropSource* dropSource = new CDropSource (stream.getBuffer (), (int32_t)stream.tell (), CDropSource::kBinary);
+				stream.end ();
+				CDropSource* dropSource = new CDropSource (stream.getBuffer (), (int32_t)stream.tell (), CDropSource::kText);
 				browser->doDrag (dropSource);
 				dropSource->forget ();
 			}

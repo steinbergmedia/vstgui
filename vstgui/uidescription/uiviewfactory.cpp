@@ -267,6 +267,18 @@ IViewCreator::AttrType UIViewFactory::getAttributeType (CView* view, const std::
 }
 
 //-----------------------------------------------------------------------------
+bool UIViewFactory::getPossibleAttributeListValues (CView* view, const std::string& attributeName, std::list<const std::string*>& values) const
+{
+	ViewCreatorRegistry& registry = getCreatorRegistry ();
+	ViewCreatorRegistry::const_iterator iter = registry.find (getViewName (view));
+	while (iter != registry.end () && (*iter).second->getPossibleListValues (attributeName, values) == false && (*iter).second->getBaseViewName ())
+	{
+		iter = registry.find ((*iter).second->getBaseViewName ());
+	}
+	return !values.empty ();
+}
+
+//-----------------------------------------------------------------------------
 bool UIViewFactory::getAttributesForView (CView* view, IUIDescription* desc, UIAttributes& attr) const
 {
 	bool result = false;

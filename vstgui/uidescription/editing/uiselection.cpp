@@ -188,111 +188,43 @@ void UISelection::moveBy (const CPoint& p)
 }
 
 //----------------------------------------------------------------------------------------------------
-bool UISelection::storeAttributesForView (OutputStream& stream, UIViewFactory* viewFactory, IUIDescription* uiDescription, CView* view)
-{
-	UIAttributes attr;
-	if (viewFactory->getAttributesForView (view, uiDescription, attr))
-	{
-		if (!(stream << (int32_t)'view')) return false;
-		if (!attr.store (stream))
-			return false;
-		CViewContainer* container = dynamic_cast<CViewContainer*> (view);
-		if (container)
-		{
-			int32_t subViews = container->getNbViews ();
-			if (!(stream << (int32_t)subViews)) return false;
-			ViewIterator it (container);
-			while (*it)
-			{
-				storeAttributesForView (stream, viewFactory, uiDescription, *it);
-				++it;
-			}
-		}
-		else
-			if (!(stream << (int32_t)0)) return false;
-		return true;
-	}
-	return false;
-}
-
-//----------------------------------------------------------------------------------------------------
-CView* UISelection::createView (InputStream& stream, UIViewFactory* viewFactory, IUIDescription* uiDescription)
-{
-	int32_t identifier;
-	if (!(stream >> identifier)) return 0;
-	if (identifier != 'view') return 0;
-	UIAttributes attr;
-	if (!attr.restore (stream)) return 0;
-	CView* view = 0; 
-	if (uiDescription->getController ())
-		view = uiDescription->getController ()->createView (attr, uiDescription);
-	if (view == 0)
-		view = viewFactory->createView (attr, uiDescription);
-	if (view && uiDescription->getController ())
-		view = uiDescription->getController ()->verifyView (view, attr, uiDescription);
-	int32_t subViews;
-	if (!(stream >> subViews)) return view;
-	CViewContainer* container = view ? dynamic_cast<CViewContainer*> (view) : 0;
-	for (int32_t i = 0; i < subViews; i++)
-	{
-		CView* subView = createView (stream, viewFactory, uiDescription);
-		if (subView)
-		{
-			if (container)
-				container->addView (subView);
-			else
-				subView->forget ();
-		}
-	}
-	return view;
-}
-
-//----------------------------------------------------------------------------------------------------
 bool UISelection::store (OutputStream& stream, UIViewFactory* viewFactory, IUIDescription* uiDescription)
 {
-	if (!(stream << (int32_t)'CSEL')) return false;
-	FOREACH_IN_SELECTION(this, view)
-		if (!containsParent (view))
-		{
-			if (!(stream << (int32_t)'selv')) return false;
-			if (!storeAttributesForView (stream, viewFactory, uiDescription, view))
-				return false;
-		}
-	FOREACH_IN_SELECTION_END
-	if (!(stream << (int32_t)'ende')) return false;
-	if (!(stream << dragOffset.x)) return false;
-	if (!(stream << dragOffset.y)) return false;
-	return true;
+	UIDescription* desc = dynamic_cast<UIDescription*>(uiDescription);
+	if (desc)
+	{
+		std::list<CView*> views;
+		FOREACH_IN_SELECTION(this, view)
+			if (!containsParent (view))
+			{
+				views.push_back (view);
+			}
+		FOREACH_IN_SELECTION_END
+		
+		OwningPointer<UIAttributes> attr = new UIAttributes ();
+		attr->setPointAttribute ("selection-drag-offset", dragOffset);
+		return desc->storeViews (views, stream, attr);
+	}
+	return false;
 }
 
 //----------------------------------------------------------------------------------------------------
 bool UISelection::restore (InputStream& stream, UIViewFactory* viewFactory, IUIDescription* uiDescription)
 {
 	empty ();
-	int32_t identifier = 0;
-	if (!(stream >> identifier)) return false;
-	if (identifier == 'CSEL')
+	UIDescription* desc = dynamic_cast<UIDescription*>(uiDescription);
+	if (desc)
 	{
-		while (true)
+		UIAttributes* attr = 0;
+		if (desc->restoreViews (stream, *this, &attr))
 		{
-			if (!(stream >> identifier)) return false;
-			if (identifier == 'ende')
-				break;
-			if (identifier == 'selv')
+			if (attr)
 			{
-				CView* view = createView (stream, viewFactory, uiDescription);
-				if (view)
-				{
-					add (view);
-					view->forget ();
-				}
+				attr->getPointAttribute ("selection-drag-offset", dragOffset);
+				attr->forget ();
 			}
-			else
-				return false;
+			return true;
 		}
-		if (!(stream >> dragOffset.x)) return false;
-		if (!(stream >> dragOffset.y)) return false;
-		return true;
 	}
 	return false;
 }

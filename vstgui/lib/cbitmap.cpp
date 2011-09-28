@@ -107,7 +107,11 @@ CBitmap::~CBitmap ()
 //-----------------------------------------------------------------------------
 void CBitmap::draw (CDrawContext* context, const CRect& rect, const CPoint& offset, float alpha)
 {
-	context->drawBitmap (this, rect, offset, alpha);
+	CRect clipRect;
+	context->getClipRect (clipRect);
+	clipRect.bound (rect);
+	if (!clipRect.isEmpty ())
+		context->drawBitmap (this, rect, offset, alpha);
 }
 
 //-----------------------------------------------------------------------------

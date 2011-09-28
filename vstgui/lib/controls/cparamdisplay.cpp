@@ -98,7 +98,7 @@ void CParamDisplay::setStyle (int32_t val)
 	if (style != val)
 	{
 		style = val;
-		setDirty ();
+		drawStyleChanged ();
 	}
 }
 
@@ -263,11 +263,11 @@ void CParamDisplay::drawText (CDrawContext *pContext, UTF8StringPtr string)
 //------------------------------------------------------------------------
 void CParamDisplay::setFont (CFontRef fontID)
 {
-	setDirty ();
 	if (this->fontID)
 		this->fontID->forget ();
 	this->fontID = fontID;
 	fontID->remember ();
+	drawStyleChanged ();
 }
 
 //------------------------------------------------------------------------
@@ -275,8 +275,10 @@ void CParamDisplay::setFontColor (CColor color)
 {
 	// to force the redraw
 	if (fontColor != color)
-		setDirty ();
-	fontColor = color;
+	{
+		fontColor = color;
+		drawStyleChanged ();
+	}
 }
 
 //------------------------------------------------------------------------
@@ -284,8 +286,10 @@ void CParamDisplay::setBackColor (CColor color)
 {
 	// to force the redraw
 	if (backColor != color)
-		setDirty ();
-	backColor = color;
+	{
+		backColor = color;
+		drawStyleChanged ();
+	}
 }
 
 //------------------------------------------------------------------------
@@ -293,8 +297,10 @@ void CParamDisplay::setFrameColor (CColor color)
 {
 	// to force the redraw
 	if (frameColor != color)
-		setDirty ();
-	frameColor = color;
+	{
+		frameColor = color;
+		drawStyleChanged ();
+	}
 }
 
 //------------------------------------------------------------------------
@@ -302,8 +308,10 @@ void CParamDisplay::setShadowColor (CColor color)
 {
 	// to force the redraw
 	if (shadowColor != color)
-		setDirty ();
-	shadowColor = color;
+	{
+		shadowColor = color;
+		drawStyleChanged ();
+	}
 }
 
 //------------------------------------------------------------------------
@@ -311,24 +319,36 @@ void CParamDisplay::setHoriAlign (CHoriTxtAlign hAlign)
 {
 	// to force the redraw
 	if (horiTxtAlign != hAlign)
-		setDirty ();
-	horiTxtAlign = hAlign;
+	{
+		horiTxtAlign = hAlign;
+		drawStyleChanged ();
+	}
 }
 
 //------------------------------------------------------------------------
 void CParamDisplay::setTextInset (const CPoint& p)
 {
 	if (textInset != p)
-		setDirty ();
-	textInset = p;
+	{
+		textInset = p;
+		drawStyleChanged ();
+	}
 }
 
 //------------------------------------------------------------------------
 void CParamDisplay::setRoundRectRadius (const CCoord& radius)
 {
 	if (roundRectRadius != radius)
-		setDirty ();
-	roundRectRadius = radius;
+	{
+		roundRectRadius = radius;
+		drawStyleChanged ();
+	}
+}
+
+//------------------------------------------------------------------------
+void CParamDisplay::drawStyleChanged ()
+{
+	setDirty ();
 }
 
 } // namespace

@@ -294,6 +294,11 @@ public:
 	TextController (IController* baseController, const std::string& attrName)
 	: Controller (baseController, attrName), label (0) {}
 
+	~TextController ()
+	{
+		label->removeDependency (this);
+	}
+	
 	CView* verifyView (CView* view, const UIAttributes& attributes, IUIDescription* description)
 	{
 		if (label == 0)
@@ -303,6 +308,7 @@ public:
 			{
 				label = edit;
 				originalTextColor = label->getFontColor ();
+				label->addDependency (this);
 			}
 		}
 		return controller->verifyView (view, attributes, description);
@@ -334,8 +340,30 @@ public:
 		}
 	}
 
+	virtual void valueDisplayTruncated (UTF8StringPtr txt)
+	{
+		if (label)
+		{
+			if (txt && *txt != 0)
+				label->setAttribute (kCViewTooltipAttribute, (int32_t)strlen (label->getText ())+1, label->getText ());
+			else
+				label->removeAttribute (kCViewTooltipAttribute);
+		}
+		
+	}
+
+	CMessageResult notify (CBaseObject* sender, IdStringPtr message)
+	{
+		if (message == CTextLabel::kMsgTruncatedTextChanged)
+		{
+			UTF8StringPtr txt = label->getTruncatedText ();
+			valueDisplayTruncated (txt);
+			return kMessageNotified;
+		}
+		return kMessageUnknown;
+	}
 protected:
-	CTextLabel* label;
+	SharedPointer<CTextLabel> label;
 	CColor originalTextColor;
 };
 
@@ -343,8 +371,8 @@ protected:
 class MenuController : public TextController
 {
 public:
-	MenuController (IController* baseController, const std::string& attrName, UIDescription* description)
-	: TextController (baseController, attrName), description (description) {}
+	MenuController (IController* baseController, const std::string& attrName, UIDescription* description, bool addNoneItem = true, bool sortItems = true)
+	: TextController (baseController, attrName), description (description), addNoneItem (addNoneItem), sortItems (sortItems) {}
 
 	~MenuController ()
 	{
@@ -382,21 +410,20 @@ public:
 	void setValue (const std::string& value)
 	{
 		TextController::setValue (value);
-		if (label)
-		{
-			label->setHoriAlign (hasDifferentValues () ? kCenterText : kLeftText);
-		}
 	}
+
 	CMessageResult notify (CBaseObject* sender, IdStringPtr message)
 	{
 		if (sender == menu && message == COptionMenu::kMsgBeforePopup)
 		{
 			menu->removeAllEntry ();
-			menu->addEntry (new CCommandMenuItem ("None", 100, this));
+			if (addNoneItem)
+				menu->addEntry (new CCommandMenuItem ("None", 100, this));
 			std::list<const std::string*> names;
 			collectMenuItemNames (names);
-			names.sort (UIEditController::std__stringCompare);
-			if (!names.empty ())
+			if (sortItems)
+				names.sort (UIEditController::std__stringCompare);
+			if (addNoneItem && !names.empty ())
 				menu->addSeparator ();
 			for (std::list<const std::string*>::const_iterator it = names.begin (); it != names.end (); it++)
 			{
@@ -413,12 +440,27 @@ public:
 			}
 			return kMessageNotified;
 		}
-		return kMessageUnknown;
+		return TextController::notify (sender, message);
 	}
-	
+
+	virtual void valueDisplayTruncated (UTF8StringPtr txt)
+	{
+		if (label && menu)
+		{
+			if (txt && *txt != 0)
+				menu->setAttribute (kCViewTooltipAttribute, (int32_t)strlen (label->getText ())+1, label->getText ());
+			else
+				menu->removeAttribute (kCViewTooltipAttribute);
+		}
+		
+	}
+
 protected:
 	SharedPointer<UIDescription> description;
 	SharedPointer<COptionMenu> menu;
+	
+	bool addNoneItem;
+	bool sortItems;
 };
 
 //----------------------------------------------------------------------------------------------------
@@ -544,6 +586,27 @@ public:
 	}
 	
 };
+
+//----------------------------------------------------------------------------------------------------
+class ListController : public MenuController
+{
+public:
+	ListController (IController* baseController, const std::string& attrName, UIDescription* description, UISelection* selection)
+	: MenuController (baseController, attrName, description, false, false), selection (selection) {}
+
+	virtual void collectMenuItemNames (std::list<const std::string*>& names)
+	{
+		UIViewFactory* viewFactory = dynamic_cast<UIViewFactory*>(description->getViewFactory ());
+		if (viewFactory)
+		{
+			viewFactory->getPossibleAttributeListValues (selection->first (), attrName, names);
+		}
+	}
+	
+protected:
+	SharedPointer<UISelection> selection;
+};
+
 
 } // namespace
 
@@ -675,6 +738,10 @@ IController* UIAttributesController::createSubController (IdStringPtr name, IUID
 		else if (strcmp (name, "FontController") == 0)
 		{
 			return new UIAttributeControllers::FontController (this, *currentAttributeName, editDescription);
+		}
+		else if (strcmp (name, "ListController") == 0)
+		{
+			return new UIAttributeControllers::ListController (this, *currentAttributeName, editDescription, selection);
 		}
 		else if (strcmp (name, "TextAlignmentController") == 0)
 		{
@@ -823,6 +890,11 @@ CView* UIAttributesController::createViewForAttribute (const std::string& attrNa
 			case IViewCreator::kBooleanType:
 			{
 				valueView = UIEditController::getEditorDescription ().createView ("attributes.boolean", this);
+				break;
+			}
+			case IViewCreator::kListType:
+			{
+				valueView = UIEditController::getEditorDescription ().createView ("attributes.list", this);
 				break;
 			}
 			default:

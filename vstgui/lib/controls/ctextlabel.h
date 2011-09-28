@@ -66,11 +66,15 @@ public:
 	
 	virtual void setTextTruncateMode (int32_t mode);
 	int32_t getTextTruncateMode () const { return textTruncateMode; }
+	UTF8StringPtr getTruncatedText () const { return truncatedText.c_str (); }
 	//@}
+
+	static IdStringPtr kMsgTruncatedTextChanged;
 	
 	virtual	void draw (CDrawContext* pContext);
 	virtual bool sizeToFit ();
 	virtual void setViewSize (const CRect& rect, bool invalid = true);
+	virtual void drawStyleChanged ();
 
 	CLASS_METHODS(CTextLabel, CParamDisplay)
 protected:

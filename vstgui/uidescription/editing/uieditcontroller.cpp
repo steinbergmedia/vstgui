@@ -552,9 +552,9 @@ CMessageResult UIEditController::notify (CBaseObject* sender, IdStringPtr messag
 		{
 			if (strcmp (item->getCommandName (), "Copy") == 0 || strcmp (item->getCommandName (), "Cut") == 0)
 			{
-				CMemoryStream stream;
+				CMemoryStream stream (1024, 1024, false);
 				selection->store (stream, dynamic_cast<UIViewFactory*> (editDescription->getViewFactory ()), editDescription);
-				CDropSource* dataSource = new CDropSource (stream.getBuffer (), (int32_t)stream.tell (), IDataPackage::kBinary);
+				CDropSource* dataSource = new CDropSource (stream.getBuffer (), (int32_t)stream.tell (), IDataPackage::kText);
 				editView->getFrame ()->setClipboard (dataSource);
 				dataSource->forget ();
 				if (strcmp (item->getCommandName (), "Cut") == 0)
@@ -568,7 +568,7 @@ CMessageResult UIEditController::notify (CBaseObject* sender, IdStringPtr messag
 				IDataPackage* clipboard = editView->getFrame ()->getClipboard ();
 				if (clipboard)
 				{
-					if (clipboard->getDataType (0) == IDataPackage::kBinary)
+					if (clipboard->getDataType (0) == IDataPackage::kText)
 					{
 						const void* data;
 						IDataPackage::Type type;
@@ -584,7 +584,7 @@ CMessageResult UIEditController::notify (CBaseObject* sender, IdStringPtr messag
 								offset.offset (gridController->getSize ().x, gridController->getSize ().y);
 							}
 							UIViewFactory* viewFactory = dynamic_cast<UIViewFactory*> (editDescription->getViewFactory ());
-							CMemoryStream stream ((const int8_t*)data, size);
+							CMemoryStream stream ((const int8_t*)data, size, false);
 							UISelection* copySelection = new UISelection ();
 							if (copySelection->restore (stream, viewFactory, editDescription))
 							{
@@ -672,8 +672,13 @@ int32_t UIEditController::onKeyDown (const VstKeyCode& code, CFrame* frame)
 {
 	if (frame->getModalView () == 0)
 	{
-		if (!(frame->getFocusView () && dynamic_cast<CTextEdit*> (frame->getFocusView())))
-			return menuController->processKeyCommand (code);
+		if (frame->getFocusView ())
+		{
+			CTextEdit* edit = dynamic_cast<CTextEdit*>(frame->getFocusView ());
+			if (edit && edit->getPlatformTextEdit ())
+				return -1;
+		}
+		return menuController->processKeyCommand (code);
 	}
 	return -1;
 }

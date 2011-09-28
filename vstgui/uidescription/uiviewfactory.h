@@ -62,7 +62,8 @@ public:
 		kBitmapType,
 		kPointType,
 		kRectType,
-		kTagType
+		kTagType,
+		kListType,
 	};
 
 	virtual IdStringPtr getViewName () const = 0;
@@ -72,6 +73,8 @@ public:
 	virtual bool getAttributeNames (std::list<std::string>& attributeNames) const = 0;
 	virtual AttrType getAttributeType (const std::string& attributeName) const = 0;
 	virtual bool getAttributeValue (CView* view, const std::string& attributeName, std::string& stringValue, IUIDescription* desc) const = 0;
+	// list type support
+	virtual bool getPossibleListValues (const std::string& attributeName, std::list<const std::string*>& values) const { return false; }
 };
 
 //-----------------------------------------------------------------------------
@@ -96,6 +99,8 @@ public:
 	IViewCreator::AttrType getAttributeType (CView* view, const std::string& attributeName) const;
 	void collectRegisteredViewNames (std::list<const std::string*>& viewNames, IdStringPtr baseClassNameFilter = 0) const;
 	bool getAttributesForView (CView* view, IUIDescription* desc, UIAttributes& attr) const;
+	// list type support
+	bool getPossibleAttributeListValues (CView* view, const std::string& attributeName, std::list<const std::string*>& values) const;
 	#endif
 
 	IdStringPtr getViewName (CView* view) const;

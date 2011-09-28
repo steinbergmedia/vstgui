@@ -233,6 +233,7 @@ public:
 
 	virtual void autoComputeHeightOfOneImage ();
 protected:
+	IMultiBitmapControl () : heightOfOneImage (0), subPixmaps (0) {}
 	CCoord heightOfOneImage;
 	int32_t subPixmaps;
 };

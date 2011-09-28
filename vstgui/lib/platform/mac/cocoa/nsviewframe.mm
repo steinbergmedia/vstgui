@@ -1041,10 +1041,10 @@ CView::DragResult NSViewFrame::doDrag (IDataPackage* source, const CPoint& offse
 			{
 				const void* buffer = 0;
 				int32_t bufferSize = source->getData (0, buffer, type);
-				if (bufferSize > 0 && ((const char*)buffer)[bufferSize-1] == 0)
+				if (bufferSize > 0)
 				{
 					[nsPasteboard declareTypes:[NSArray arrayWithObject:NSStringPboardType] owner:nil];
-					[nsPasteboard setString:[NSString stringWithCString:(const char*)buffer encoding:NSUTF8StringEncoding] forType:NSStringPboardType];
+					[nsPasteboard setString:[[[NSString alloc] initWithBytes:buffer length:bufferSize encoding:NSUTF8StringEncoding] autorelease] forType:NSStringPboardType];
 				}
 				break;
 			}

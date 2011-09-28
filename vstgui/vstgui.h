@@ -52,6 +52,7 @@
 #include "lib/crect.h"
 #include "lib/crowcolumnview.h"
 #include "lib/cscrollview.h"
+#include "lib/cshadowviewcontainer.h"
 #include "lib/csplitview.h"
 #include "lib/cstring.h"
 #include "lib/ctabview.h"

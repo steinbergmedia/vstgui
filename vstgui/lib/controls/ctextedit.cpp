@@ -150,9 +150,7 @@ void CTextEdit::draw (CDrawContext *pContext)
 		return;
 	}
 
-	drawBack (pContext);
-	drawText (pContext, text);
-	setDirty (false);
+	CTextLabel::draw (pContext);
 }
 
 //------------------------------------------------------------------------
@@ -184,12 +182,14 @@ int32_t CTextEdit::onKeyDown (VstKeyCode& keyCode)
 		{
 			bWasReturnPressed = false;
 			platformControl->setText (text);
+			getFrame ()->setFocusView (0);
 			looseFocus ();
 			return 1;
 		}
 		else if (keyCode.virt == VKEY_RETURN)
 		{
 			bWasReturnPressed = true;
+			getFrame ()->setFocusView (0);
 			looseFocus ();
 			return 1;
 		}
@@ -249,7 +249,7 @@ void CTextEdit::parentSizeChanged ()
 //------------------------------------------------------------------------
 void CTextEdit::setViewSize (const CRect& newSize, bool invalid)
 {
-	CView::setViewSize (newSize, invalid);
+	CTextLabel::setViewSize (newSize, invalid);
 	if (platformControl)
 		platformControl->updateSize ();
 }

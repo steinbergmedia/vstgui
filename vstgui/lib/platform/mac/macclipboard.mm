@@ -165,7 +165,7 @@ void setClipboard (IDataPackage* dataSource)
 					case IDataPackage::kText:
 					{
 						[pb declareTypes:[NSArray arrayWithObject:NSStringPboardType] owner:nil];
-						[pb setString:[NSString stringWithCString:(const char*)data encoding:NSUTF8StringEncoding] forType:NSStringPboardType];
+						[pb setString:[[[NSString alloc] initWithBytes:data length:length encoding:NSUTF8StringEncoding] autorelease] forType:NSStringPboardType];
 						return;
 					}
 					case IDataPackage::kFilePath:

@@ -425,6 +425,14 @@
 					>
 				</File>
 				<File
+					RelativePath="..\..\lib\cshadowviewcontainer.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\lib\cshadowviewcontainer.h"
+					>
+				</File>
+				<File
 					RelativePath="..\..\lib\csplitview.cpp"
 					>
 				</File>

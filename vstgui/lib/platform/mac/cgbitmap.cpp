@@ -220,7 +220,7 @@ CGImageRef CGBitmap::getCGImage ()
 		CFRelease (options);
 		imageSource = 0;
 	}
-	if (dirty && bits)
+	if ((dirty || image == 0) && bits)
 	{
 		freeCGImage ();
 
