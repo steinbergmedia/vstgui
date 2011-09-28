@@ -1,3 +1,10 @@
+2011-09-28 arne
+
+	* add CShadowViewContainer
+	* fix CSlider vertical drawing (when not using Bitmaps)
+	* add CTextLabel truncate text mode
+	* add UTF8CharacterIterator class for iterating UTF8 strings character by character
+
 2011-09-15 arne
 
 	* add kAutoHideScrollbars style to CScrollView
