@@ -216,7 +216,7 @@ void CControl::bounceValue ()
 //-----------------------------------------------------------------------------
 bool CControl::checkDefaultValue (CButtonState button)
 {
-	if (button.isLeftButton () && button.getModifierState () & kDefaultValueModifier)
+	if (button.isLeftButton () && button.getModifierState () == kDefaultValueModifier)
 	{
 		float defValue = getDefaultValue ();
 		if (defValue != getValue ())

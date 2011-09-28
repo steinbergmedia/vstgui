@@ -11,9 +11,10 @@ TODO:
 		- more custom attribute editing
 		- view z-index editing via drag&drop
 		- inline text editing for CLabel/CTextEdit/CCheckbox
-		- focus color change when editing disabled
 		
 	Known Bugs:
+		- sometimes the attribute editor is not editable (dont know why yet)
+		- setting autosize of template seems not to work
 
 */
 

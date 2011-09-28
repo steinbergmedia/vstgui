@@ -48,6 +48,7 @@
 #include "lib/crect.cpp"
 #include "lib/crowcolumnview.cpp"
 #include "lib/cscrollview.cpp"
+#include "lib/cshadowviewcontainer.cpp"
 #include "lib/csplitview.cpp"
 #include "lib/cstring.cpp"
 #include "lib/ctabview.cpp"

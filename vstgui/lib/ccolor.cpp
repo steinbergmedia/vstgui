@@ -123,6 +123,10 @@ void CColor::fromHSL (double& hue, double& saturation, double& lightness)
 //		red = green = blue = 255. * lightness;
 //		return;
 //	}
+	while (hue > 360.)
+		hue -= 360.;
+	while (hue < 0.)
+		hue += 360.;
 	double C = (1. - fabs (2 * lightness - 1)) * saturation;
 	double H = hue / 60.;
 	double X = C * (1. - fabs (fmod (H, 2) - 1.));

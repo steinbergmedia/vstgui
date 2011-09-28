@@ -92,10 +92,8 @@ public:
 	static IdStringPtr kMsgSelectionViewChanged;
 
 	bool store (OutputStream& stream, UIViewFactory* viewFactory, IUIDescription* uiDescription);
-	bool restore (InputStream& str, UIViewFactory* viewFactory, IUIDescription* uiDescription);
+	bool restore (InputStream& stream, UIViewFactory* viewFactory, IUIDescription* uiDescription);
 protected:
-	static bool storeAttributesForView (OutputStream& stream, UIViewFactory* viewFactory, IUIDescription* uiDescription, CView* view);
-	static CView* createView (InputStream& stream, UIViewFactory* viewFactory, IUIDescription* uiDescription);
 
 	std::list<CBaseObject*> dependencies;
 	int32_t style;

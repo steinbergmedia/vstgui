@@ -39,7 +39,6 @@ protected:
 	UIDescription* dialogDescription;
 	SharedPointer<CControl> button1;
 	SharedPointer<CControl> button2;
-	CViewContainer* dialogBackView;
 	CPoint sizeDiff;
 	std::string templateName;
 	std::string dialogTitle;

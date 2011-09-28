@@ -16,6 +16,8 @@
 		F40B7836140E106600E2BF16 /* macclipboard.mm in Sources */ = {isa = PBXBuildFile; fileRef = F40B7835140E106600E2BF16 /* macclipboard.mm */; };
 		F41DA9321406860300EDAB4B /* uifocussettingscontroller.h in Headers */ = {isa = PBXBuildFile; fileRef = F41DA9311406860300EDAB4B /* uifocussettingscontroller.h */; };
 		F41DA9341406860B00EDAB4B /* uifocussettingscontroller.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F41DA9331406860B00EDAB4B /* uifocussettingscontroller.cpp */; };
+		F42E1F8814239E42005E0BD7 /* cshadowviewcontainer.h in Headers */ = {isa = PBXBuildFile; fileRef = F42E1F8714239E42005E0BD7 /* cshadowviewcontainer.h */; };
+		F42E1F8A14239E48005E0BD7 /* cshadowviewcontainer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F42E1F8914239E48005E0BD7 /* cshadowviewcontainer.cpp */; };
 		F42E78C81334AB7900518C17 /* idependency.h in Headers */ = {isa = PBXBuildFile; fileRef = F42E78C71334AB7900518C17 /* idependency.h */; };
 		F452950713A211E6006EEF82 /* cocoaopenglview.h in Headers */ = {isa = PBXBuildFile; fileRef = F452950513A211E6006EEF82 /* cocoaopenglview.h */; };
 		F452950813A211E6006EEF82 /* cocoaopenglview.mm in Sources */ = {isa = PBXBuildFile; fileRef = F452950613A211E6006EEF82 /* cocoaopenglview.mm */; };
@@ -209,6 +211,8 @@
 		F40B7835140E106600E2BF16 /* macclipboard.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = macclipboard.mm; sourceTree = "<group>"; };
 		F41DA9311406860300EDAB4B /* uifocussettingscontroller.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = uifocussettingscontroller.h; sourceTree = "<group>"; };
 		F41DA9331406860B00EDAB4B /* uifocussettingscontroller.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = uifocussettingscontroller.cpp; sourceTree = "<group>"; };
+		F42E1F8714239E42005E0BD7 /* cshadowviewcontainer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = cshadowviewcontainer.h; sourceTree = "<group>"; };
+		F42E1F8914239E48005E0BD7 /* cshadowviewcontainer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = cshadowviewcontainer.cpp; sourceTree = "<group>"; };
 		F42E78C71334AB7900518C17 /* idependency.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = idependency.h; sourceTree = "<group>"; };
 		F452950513A211E6006EEF82 /* cocoaopenglview.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = cocoaopenglview.h; sourceTree = "<group>"; };
 		F452950613A211E6006EEF82 /* cocoaopenglview.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = cocoaopenglview.mm; sourceTree = "<group>"; };
@@ -514,6 +518,8 @@
 				F4F52DFE13E2B36500B3DB2F /* crowcolumnview.h */,
 				F497F0DB13080A1C00F0A613 /* cscrollview.cpp */,
 				F497F0DC13080A1C00F0A613 /* cscrollview.h */,
+				F42E1F8914239E48005E0BD7 /* cshadowviewcontainer.cpp */,
+				F42E1F8714239E42005E0BD7 /* cshadowviewcontainer.h */,
 				F45BD677131817CD00C46C02 /* csplitview.cpp */,
 				F45BD678131817CD00C46C02 /* csplitview.h */,
 				F4FC1AA31328CB310066E2F8 /* cstring.cpp */,
@@ -799,6 +805,7 @@
 				F41DA9321406860300EDAB4B /* uifocussettingscontroller.h in Headers */,
 				F40B7834140E105800E2BF16 /* macclipboard.h in Headers */,
 				F4CE1BE0141138ED00CF75B6 /* cbitmapfilter.h in Headers */,
+				F42E1F8814239E42005E0BD7 /* cshadowviewcontainer.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -940,6 +947,7 @@
 				F41DA9341406860B00EDAB4B /* uifocussettingscontroller.cpp in Sources */,
 				F40B7836140E106600E2BF16 /* macclipboard.mm in Sources */,
 				F4CE1BE2141138F700CF75B6 /* cbitmapfilter.cpp in Sources */,
+				F42E1F8A14239E48005E0BD7 /* cshadowviewcontainer.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

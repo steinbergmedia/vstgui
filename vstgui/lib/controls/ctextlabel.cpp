@@ -33,8 +33,11 @@
 //-----------------------------------------------------------------------------
 
 #include "ctextlabel.h"
+#include "../cstring.h"
 
 namespace VSTGUI {
+
+IdStringPtr CTextLabel::kMsgTruncatedTextChanged = "CTextLabel::kMsgTruncatedTextChanged";
 
 //------------------------------------------------------------------------
 // CTextLabel
@@ -97,6 +100,8 @@ void CTextLabel::setText (UTF8StringPtr txt)
 		text = (UTF8StringBuffer)malloc (1);
 		text[0] = 0;
 	}
+	if (textTruncateMode != kTruncateNone)
+		calculateTruncatedText ();
 	setDirty (true);
 }
 
@@ -113,39 +118,58 @@ void CTextLabel::setTextTruncateMode (int32_t mode)
 //------------------------------------------------------------------------
 void CTextLabel::calculateTruncatedText ()
 {
-	removeAttribute (kCViewTooltipAttribute);
+	std::string tmp (truncatedText);
 	truncatedText.clear ();
-	if (textTruncateMode == kTruncateNone || text == 0 || text[0] == 0 || fontID == 0 || fontID->getPlatformFont () == 0 || fontID->getPlatformFont ()->getPainter () == 0)
-		return;
-	IFontPainter* painter = fontID->getPlatformFont ()->getPainter ();
-	CCoord width = painter->getStringWidth (0, text, true);
-	width += textInset.x * 2;
-	if (width > getWidth ())
+	if (!(textTruncateMode == kTruncateNone || text == 0 || text[0] == 0 || fontID == 0 || fontID->getPlatformFont () == 0 || fontID->getPlatformFont ()->getPainter () == 0))
 	{
-		if (textTruncateMode == kTruncateTail)
+		IFontPainter* painter = fontID->getPlatformFont ()->getPainter ();
+		CCoord width = painter->getStringWidth (0, text, true);
+		width += textInset.x * 2;
+		if (width > getWidth ())
 		{
-			truncatedText = text;
-			truncatedText += "..";
-			while (width > getWidth () && truncatedText.size () > 2)
+			if (textTruncateMode == kTruncateTail)
 			{
-				truncatedText.erase (truncatedText.size () - 3, 1);
-				width = painter->getStringWidth (0, truncatedText.c_str (), true);
-				width += textInset.x * 2;
+				truncatedText = text;
+				truncatedText += "..";
+				while (width > getWidth () && truncatedText.size () > 2)
+				{
+					UTF8CharacterIterator it (truncatedText);
+					it.end ();
+					for (int32_t i = 0; i < 3; i++, --it)
+					{
+						if (it == it.front ())
+						{
+							break;
+						}
+					}
+					truncatedText.erase (truncatedText.size () - (2 + it.getByteLength ()), it.getByteLength ());
+					width = painter->getStringWidth (0, truncatedText.c_str (), true);
+					width += textInset.x * 2;
+				}
+			}
+			else if (textTruncateMode == kTruncateHead)
+			{
+				truncatedText = "..";
+				truncatedText += text;
+				while (width > getWidth () && truncatedText.size () > 2)
+				{
+					UTF8CharacterIterator it (truncatedText);
+					for (int32_t i = 0; i < 2; i++, ++it)
+					{
+						if (it == it.back ())
+						{
+							break;
+						}
+					}
+					truncatedText.erase (2, it.getByteLength ());
+					width = painter->getStringWidth (0, truncatedText.c_str (), true);
+					width += textInset.x * 2;
+				}
 			}
 		}
-		else if (textTruncateMode == kTruncateHead)
-		{
-			truncatedText = "..";
-			truncatedText += text;
-			while (width > getWidth () && truncatedText.size () > 2)
-			{
-				truncatedText.erase (2, 1);
-				width = painter->getStringWidth (0, truncatedText.c_str (), true);
-				width += textInset.x * 2;
-			}
-		}
-		setAttribute (kCViewTooltipAttribute, (int32_t)strlen (text)+1, text);
 	}
+	if (tmp != truncatedText)
+		changed (kMsgTruncatedTextChanged);
 }
 
 //------------------------------------------------------------------------
@@ -183,11 +207,22 @@ bool CTextLabel::sizeToFit ()
 //------------------------------------------------------------------------
 void CTextLabel::setViewSize (const CRect& rect, bool invalid)
 {
+	CRect current (getViewSize ());
 	CParamDisplay::setViewSize (rect, invalid);
+	if (textTruncateMode != kTruncateNone && current.getWidth () != getWidth ())
+	{
+		calculateTruncatedText ();
+	}
+}
+
+//------------------------------------------------------------------------
+void CTextLabel::drawStyleChanged ()
+{
 	if (textTruncateMode != kTruncateNone)
 	{
 		calculateTruncatedText ();
 	}
+	CParamDisplay::drawStyleChanged ();
 }
 
 } // namespace

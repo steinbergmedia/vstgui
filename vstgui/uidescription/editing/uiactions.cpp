@@ -46,7 +46,7 @@ namespace VSTGUI {
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
 SizeToFitOperation::SizeToFitOperation (UISelection* selection)
-: BaseSelectionOperation (selection)
+: BaseSelectionOperation<std::pair<SharedPointer<CView>, CRect> > (selection)
 {
 	FOREACH_IN_SELECTION(selection, view)
 		push_back (std::make_pair (view, view->getViewSize ()));
@@ -95,7 +95,7 @@ void SizeToFitOperation::undo ()
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
 UnembedViewOperation::UnembedViewOperation (UISelection* selection, UIViewFactory* factory)
-: BaseSelectionOperation (selection)
+: BaseSelectionOperation<SharedPointer<CView> > (selection)
 , factory (factory)
 {
 	containerView = dynamic_cast<CViewContainer*> (selection->first ());
@@ -182,7 +182,7 @@ void UnembedViewOperation::undo ()
 
 //-----------------------------------------------------------------------------
 EmbedViewOperation::EmbedViewOperation (UISelection* selection, CViewContainer* newContainer)
-: BaseSelectionOperation (selection)
+: BaseSelectionOperation<std::pair<SharedPointer<CView>, CRect> > (selection)
 , newContainer (newContainer)
 {
 	parent = dynamic_cast<CViewContainer*> (selection->first ()->getParentView ());
@@ -346,7 +346,7 @@ void ViewCopyOperation::undo ()
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 ViewSizeChangeOperation::ViewSizeChangeOperation (UISelection* selection, bool sizing)
-: BaseSelectionOperation (selection)
+: BaseSelectionOperation<std::pair<SharedPointer<CView>, CRect> > (selection)
 , first (true)
 , sizing (sizing)
 {

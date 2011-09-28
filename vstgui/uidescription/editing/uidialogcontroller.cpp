@@ -19,7 +19,6 @@ IdStringPtr UIDialogController::kMsgDialogButton2Clicked = "UIDialogController::
 UIDialogController::UIDialogController (IController* baseController, CFrame* frame)
 : DelegationController (baseController)
 , frame (frame)
-, dialogBackView (0)
 {
 }
 
@@ -42,34 +41,10 @@ void UIDialogController::run (UTF8StringPtr _templateName, UTF8StringPtr _dialog
 		size.bottom += sizeDiff.y;
 		CRect frameSize = frame->getViewSize ();
 		size.centerInside (frameSize);
+		size.makeIntegral ();
 		view->setViewSize (size);
 		view->setMouseableArea (size);
 
-		const int32_t blurSize = 16;
-		size.inset (-blurSize*2, -blurSize*2);
-		size.offset (5, 5);
-		dialogBackView = new CViewContainer (size);
-		dialogBackView->setTransparency (true);
-
-		COffscreenContext* offscreen = COffscreenContext::create (frame, size.getWidth (), size.getHeight ());
-		if (offscreen)
-		{
-			size.originize ();
-			size.inset (blurSize*2, blurSize*2);
-			offscreen->beginDraw ();
-			offscreen->setFillColor (CColor (0, 0, 0, 50));
-			offscreen->drawRect (size, kDrawFilled);
-			offscreen->endDraw ();
-			
-			CBitmap* bitmap = offscreen->getBitmap ();
-			BitmapFilter::BoxBlur::process (bitmap, blurSize);
-			dialogBackView->setBackground (bitmap);
-			
-			offscreen->forget ();
-		}
-		
-		frame->addView (dialogBackView);
-		
 		frame->setModalView (view);
 		frame->registerKeyboardHook (this);
 		if (button1)
@@ -104,8 +79,6 @@ void UIDialogController::valueChanged (CControl* control)
 		frame->setModalView (0);
 		modalView->forget ();
 		frame->unregisterKeyboardHook (this);
-		if (dialogBackView)
-			frame->removeView (dialogBackView);
 		if (button1)
 			button1->setListener (0);
 		if (button2)

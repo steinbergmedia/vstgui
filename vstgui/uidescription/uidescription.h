@@ -109,6 +109,9 @@ public:
 	virtual bool save (UTF8StringPtr filename, bool writeWindowsResourceFile = true);
 	virtual bool saveWindowsRCFile (UTF8StringPtr filename);
 
+	bool storeViews (const std::list<CView*> views, OutputStream& stream, UIAttributes* customData = 0) const;
+	bool restoreViews (InputStream& stream, std::list<SharedPointer<CView> >& views, UIAttributes** customData = 0);
+
 	UTF8StringPtr getXmFileName () const { return xmlFile.u.name; }
 	
 	CView* createView (UTF8StringPtr name, IController* controller);
@@ -159,7 +162,7 @@ public:
 	bool hasBitmapName (UTF8StringPtr name);
 
 	void updateViewDescription (UTF8StringPtr name, CView* view);
-	bool getTemplateNameFromView (CView* view, std::string& templateName);
+	bool getTemplateNameFromView (CView* view, std::string& templateName) const;
 	bool addNewTemplate (UTF8StringPtr name, UIAttributes* attr); // owns attributes
 	bool removeTemplate (UTF8StringPtr name);
 	bool changeTemplateName (UTF8StringPtr name, UTF8StringPtr newName);
@@ -183,6 +186,7 @@ protected:
 	CView* createViewFromNode (UINode* node);
 	UINode* getBaseNode (UTF8StringPtr name) const;
 	UINode* findChildNodeByNameAttribute (UINode* node, UTF8StringPtr nameAttribute) const;
+	UINode* findNodeForView (CView* view) const;
 	bool updateAttributesForView (UINode* node, CView* view, bool deep = true);
 
 	void addDefaultNodes ();
@@ -205,6 +209,8 @@ protected:
 	std::deque<IController*> subControllerStack;
 
 	std::deque<UINode*> nodeStack;
+	
+	bool restoreViewsMode;
 };
  
 //-----------------------------------------------------------------------------

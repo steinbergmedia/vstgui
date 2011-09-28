@@ -184,7 +184,12 @@ static BOOL VSTGUI_NSTextField_DoCommandBySelector (id self, SEL _cmd, NSControl
 	IPlatformTextEditCallback* tec = te->getTextEdit ();
 	if (commandSelector == @selector (insertNewline:))
 	{
-		tec->platformLooseFocus (true);
+		VstKeyCode keyCode = {0};
+		keyCode.virt = VKEY_RETURN;
+		if (!tec->platformOnKeyDown (keyCode))
+		{
+			tec->platformLooseFocus (true);
+		}
 		return YES;
 	}
 	else if (commandSelector == @selector (insertTab:))
