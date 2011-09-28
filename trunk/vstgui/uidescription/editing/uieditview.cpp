@@ -186,7 +186,15 @@ void UIEditView::draw (CDrawContext *pContext)
 //----------------------------------------------------------------------------------------------------
 void UIEditView::drawRect (CDrawContext *pContext, const CRect& updateRect)
 {
+	// disable focus drawing
+	bool focusDrawing = getFrame ()->focusDrawingEnabled ();
+	if (!editing && focusDrawing)
+		getFrame ()->setFocusDrawingEnabled (false);
+
 	CViewContainer::drawRect (pContext, updateRect);
+
+	if (!editing && focusDrawing)
+		getFrame ()->setFocusDrawingEnabled (focusDrawing);
 
 	CRect oldClip = pContext->getClipRect (oldClip);
 	CRect newClip (updateRect);
@@ -698,12 +706,13 @@ void UIEditView::startDrag (CPoint& where)
 	getSelection ()->setDragOffset (CPoint (offset.x, offset.y));
 
 	UIViewFactory* viewFactory = dynamic_cast<UIViewFactory*> (description->getViewFactory ());
-	CMemoryStream stream;
+	CMemoryStream stream (1024, 1024, false);
 	if (!getSelection ()->store (stream, viewFactory, description))
 		return;
-	
+	stream.end ();
+
 	offset.offset (getViewSize ().left, getViewSize ().top);
-	CDropSource dropSource (stream.getBuffer (), (int32_t)stream.tell (), CDropSource::kBinary);
+	CDropSource dropSource (stream.getBuffer (), (int32_t)stream.tell (), CDropSource::kText);
 	doDrag (&dropSource, offset, bitmap);
 	if (bitmap)
 		bitmap->forget ();
@@ -719,7 +728,7 @@ UISelection* UIEditView::getSelectionOutOfDrag (CDragContainer* drag)
 	if (controller)
 		description->setController (controller);
 	UIViewFactory* viewFactory = dynamic_cast<UIViewFactory*> (description->getViewFactory ());
-	CMemoryStream stream (dragData, size);
+	CMemoryStream stream (dragData, size, false);
 	UISelection* newSelection = new UISelection;
 	if (newSelection->restore (stream, viewFactory, description))
 	{

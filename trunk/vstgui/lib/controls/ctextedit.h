@@ -80,6 +80,8 @@ public:
 
 	bool bWasReturnPressed;
 
+	IPlatformTextEdit* getPlatformTextEdit () const { return platformControl; }
+
 	CLASS_METHODS(CTextEdit, CParamDisplay)
 protected:
 	~CTextEdit ();

@@ -105,6 +105,8 @@ protected:
 	virtual void drawText (CDrawContext* pContext, UTF8StringPtr string);
 	virtual void drawText (CDrawContext* pContext, UTF8StringPtr string, const CRect& size);
 
+	virtual void drawStyleChanged ();
+
 	CParamDisplayValueToStringProc valueToString;
 	void* valueToStringUserData;
 	

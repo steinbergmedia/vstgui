@@ -44,6 +44,7 @@
 #include <sstream>
 #include <fstream>
 #include <algorithm>
+#include <assert.h>
 
 namespace VSTGUI {
 
@@ -76,8 +77,10 @@ class UIDescList;
 class UINode : public CBaseObject
 {
 public:
-	UINode (const std::string& name, UIAttributes* attributes);
+	UINode (const std::string& name, UIAttributes* attributes = 0);
+	UINode (const std::string& name, UIDescList* children, UIAttributes* attributes = 0);
 	UINode (const UINode& n);
+	~UINode ();
 
 	const std::string& getName () const { return name; }
 	UIAttributes* getAttributes () const { return attributes; }
@@ -93,7 +96,6 @@ public:
 	
 	CLASS_METHODS(UINode, CBaseObject)
 protected:
-	~UINode ();
 	std::string name;
 	UIAttributes* attributes;
 	UIDescList* children;
@@ -183,6 +185,8 @@ public:
 	iterator end () const { return std::list<UINode*>::end (); }
 	riterator rbegin () const { return std::list<UINode*>::rbegin (); }
 	riterator rend () const { return std::list<UINode*>::rend (); }
+	
+	bool empty () const { return std::list<UINode*>::empty (); }
 protected:
 	bool ownsObjects;
 };
@@ -192,6 +196,7 @@ class UIDescWriter
 {
 public:
 	bool write (OutputStream& stream, UINode* rootNode);
+	bool write (OutputStream& stream, std::list<UINode*> nodeList);
 protected:
 	static void encodeAttributeString (std::string& str);
 
@@ -206,6 +211,19 @@ bool UIDescWriter::write (OutputStream& stream, UINode* rootNode)
 	intendLevel = 0;
 	stream << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
 	return writeNode (rootNode, stream);
+}
+
+//-----------------------------------------------------------------------------
+bool UIDescWriter::write (OutputStream& stream, std::list<UINode*> nodeList)
+{
+	intendLevel = 0;
+	stream << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
+	for (std::list<UINode*>::const_iterator it = nodeList.begin (); it != nodeList.end (); it++)
+	{
+		if (!writeNode (*it, stream))
+			return false;
+	}
+	return true;
 }
 
 //-----------------------------------------------------------------------------
@@ -345,6 +363,7 @@ UIDescription::UIDescription (const CResourceDescription& xmlFile, IViewFactory*
 , viewFactory (_viewFactory)
 , xmlContentProvider (0)
 , bitmapCreator (0)
+, restoreViewsMode (false)
 {
 	if (viewFactory == 0)
 		viewFactory = getGenericViewFactory ();
@@ -357,6 +376,7 @@ UIDescription::UIDescription (Xml::IContentProvider* xmlContentProvider, IViewFa
 , viewFactory (_viewFactory)
 , xmlContentProvider (xmlContentProvider)
 , bitmapCreator (0)
+, restoreViewsMode (false)
 {
 	if (viewFactory == 0)
 		viewFactory = getGenericViewFactory ();
@@ -547,6 +567,160 @@ bool UIDescription::saveToStream (OutputStream& stream)
 }
 
 //-----------------------------------------------------------------------------
+UINode* UIDescription::findNodeForView (CView* view) const
+{
+	CView* parentView = view;
+	std::string templateName;
+	while (parentView && getTemplateNameFromView (parentView, templateName) == false)
+		parentView = parentView->getParentView ();
+	if (parentView)
+	{
+		UINode* node = 0;
+		UIDescList::iterator it = nodes->getChildren ().begin ();
+		while (it != nodes->getChildren ().end ())
+		{
+			if ((*it)->getName () == "template")
+			{
+				const std::string* nodeName = (*it)->getAttributes ()->getAttributeValue ("name");
+				if (*nodeName == templateName)
+				{
+					node = *it;
+					break;
+				}
+			}
+			it++;
+		}
+		if (node)
+		{
+			while (view != parentView)
+			{
+				if (view == parentView)
+					return node;
+				CViewContainer* container = dynamic_cast<CViewContainer*> (parentView);
+				assert (container != 0);
+				UIDescList::iterator nodeIterator = node->getChildren ().begin ();
+				CViewContainer* childContainer = 0;
+				ViewIterator it (container);
+				while (*it && nodeIterator != node->getChildren ().end ())
+				{
+					if (*it == view)
+					{
+						node = *nodeIterator;
+						parentView = view;
+						break;
+					}
+					childContainer = dynamic_cast<CViewContainer*>(*it);
+					if (childContainer && childContainer->isChild (view, true))
+					{
+						break;
+					}
+					childContainer = 0;
+					nodeIterator++;
+					it++;
+				}
+				if (childContainer)
+				{
+					node = *nodeIterator;
+					parentView = childContainer;
+				}
+				else
+				{
+					break;
+				}
+			}
+			if (view == parentView)
+				return node;
+		}
+	}
+	return 0;
+}
+
+//-----------------------------------------------------------------------------
+bool UIDescription::storeViews (const std::list<CView*> views, OutputStream& stream, UIAttributes* customData) const
+{
+	UIDescList nodeList (false);
+	for (std::list<CView*>::const_iterator it = views.begin (); it != views.end (); it++)
+	{
+		UINode* node = findNodeForView (*it);
+		if (node)
+		{
+			nodeList.add (node);
+		}
+		else
+		{
+		#if VSTGUI_LIVE_EDITING
+			UIAttributes* attr = new UIAttributes;
+			UIViewFactory* factory = dynamic_cast<UIViewFactory*> (viewFactory);
+			if (factory)
+			{
+				if (factory->getAttributesForView (*it, const_cast<UIDescription*> (this), *attr) == false)
+					return false;
+				UINode* node = new UINode ("view", attr);
+				nodeList.add (node);
+				node->forget ();
+			}
+		#endif
+		}
+	}
+	if (!nodeList.empty ())
+	{
+		if (customData)
+		{
+			UINode* customNode = new UINode ("custom", customData);
+			nodeList.add (customNode);
+			customNode->forget ();
+			customData->remember ();
+		}
+		UINode baseNode ("vstgui-ui-description-view-list", &nodeList);
+		UIDescWriter writer;
+		return writer.write (stream, &baseNode);
+	}
+	return false;
+}
+
+//-----------------------------------------------------------------------------
+bool UIDescription::restoreViews (InputStream& stream, std::list<SharedPointer<CView> >& views, UIAttributes** customData)
+{
+	UINode* baseNode = 0;
+	if (nodes)
+	{
+		ScopePointer<UINode> sp (&nodes, baseNode);
+		Xml::InputStreamContentProvider contentProvider (stream);
+		Xml::Parser parser;
+		if (parser.parse (&contentProvider, this))
+		{
+			baseNode = nodes;
+		}
+	}
+	if (baseNode)
+	{
+		UIDescList& children = baseNode->getChildren ();
+		for (UIDescList::iterator it = children.begin (); it != children.end (); it++)
+		{
+			if ((*it)->getName() == "custom")
+			{
+				if (customData)
+				{
+					*customData = (*it)->getAttributes ();
+					(*customData)->remember ();
+				}
+			}
+			else
+			{
+				CView* view = createViewFromNode (*it);
+				if (view)
+				{
+					views.push_back (view);
+					view->forget ();
+				}
+			}
+		}
+		baseNode->forget ();
+	}
+	return views.empty () == false;
+}
+
+//-----------------------------------------------------------------------------
 CView* UIDescription::createViewFromNode (UINode* node)
 {
 	const std::string* templateName = node->getAttributes ()->getAttributeValue ("template");
@@ -689,7 +863,7 @@ CView* UIDescription::createView (UTF8StringPtr name, IController* _controller)
 }
 
 //-----------------------------------------------------------------------------
-bool UIDescription::getTemplateNameFromView (CView* view, std::string& templateName)
+bool UIDescription::getTemplateNameFromView (CView* view, std::string& templateName) const
 {
 	bool result = false;
 	int32_t attrSize = 0;
@@ -1343,7 +1517,7 @@ bool UIDescription::updateAttributesForView (UINode* node, CView* view, bool dee
 			{
 				// check if subview is created via UIDescription
 				// if it is, it's just added to this node
-				UINode* subNode = new UINode ("view", 0);
+				UINode* subNode = new UINode ("view");
 				if (updateAttributesForView (subNode, subView))
 				{
 					node->getChildren ().add (subNode);
@@ -1392,7 +1566,7 @@ void UIDescription::updateViewDescription (UTF8StringPtr name, CView* view)
 		}
 		if (node == 0)
 		{
-			node = new UINode ("template", 0);
+			node = new UINode ("template");
 		}
 		node->getChildren ().removeAll ();
 		updateAttributesForView (node, view);
@@ -1508,44 +1682,55 @@ void UIDescription::startXmlElement (Xml::Parser* parser, IdStringPtr elementNam
 	{
 		UINode* parent = nodeStack.back ();
 		UINode* newNode = 0;
-		if (parent == nodes)
+		if (restoreViewsMode)
 		{
-			// only allowed second level elements
-			if (name == "bitmaps" || name == "fonts" || name == "colors" || name == "template" || name == "control-tags" || name == "custom")
-				newNode = new UINode (name, new UIAttributes (elementAttributes));
-			else
+			if (name != "view" && name != "custom")
+			{
 				parser->stop ();
-		}
-		else if (parent->getName () == "bitmaps")
-		{
-			if (name == "bitmap")
-				newNode = new UIBitmapNode (name, new UIAttributes (elementAttributes));
-			else
-				parser->stop ();
-		}
-		else if (parent->getName () == "fonts")
-		{
-			if (name == "font")
-				newNode = new UIFontNode (name, new UIAttributes (elementAttributes));
-			else
-				parser->stop ();
-		}
-		else if (parent->getName () == "colors")
-		{
-			if (name == "color")
-				newNode = new UIColorNode (name, new UIAttributes (elementAttributes));
-			else
-				parser->stop ();
-		}
-		else if (parent->getName () == "control-tags")
-		{
-			if (name == "control-tag")
-				newNode = new UIControlTagNode (name, new UIAttributes (elementAttributes));
-			else
-				parser->stop ();
+			}
+			newNode = new UINode (name, new UIAttributes (elementAttributes));
 		}
 		else
-			newNode = new UINode (name, new UIAttributes (elementAttributes));
+		{
+			if (parent == nodes)
+			{
+				// only allowed second level elements
+				if (name == "bitmaps" || name == "fonts" || name == "colors" || name == "template" || name == "control-tags" || name == "custom")
+					newNode = new UINode (name, new UIAttributes (elementAttributes));
+				else
+					parser->stop ();
+			}
+			else if (parent->getName () == "bitmaps")
+			{
+				if (name == "bitmap")
+					newNode = new UIBitmapNode (name, new UIAttributes (elementAttributes));
+				else
+					parser->stop ();
+			}
+			else if (parent->getName () == "fonts")
+			{
+				if (name == "font")
+					newNode = new UIFontNode (name, new UIAttributes (elementAttributes));
+				else
+					parser->stop ();
+			}
+			else if (parent->getName () == "colors")
+			{
+				if (name == "color")
+					newNode = new UIColorNode (name, new UIAttributes (elementAttributes));
+				else
+					parser->stop ();
+			}
+			else if (parent->getName () == "control-tags")
+			{
+				if (name == "control-tag")
+					newNode = new UIControlTagNode (name, new UIAttributes (elementAttributes));
+				else
+					parser->stop ();
+			}
+			else
+				newNode = new UINode (name, new UIAttributes (elementAttributes));
+		}
 		if (newNode)
 		{
 			parent->getChildren ().add (newNode);
@@ -1557,11 +1742,20 @@ void UIDescription::startXmlElement (Xml::Parser* parser, IdStringPtr elementNam
 		nodes = new UINode (name, new UIAttributes (elementAttributes));
 		nodeStack.push_back (nodes);
 	}
+	else if (name == "vstgui-ui-description-view-list")
+	{
+		assert (nodes == 0);
+		nodes = new UINode (name, new UIAttributes (elementAttributes));
+		nodeStack.push_back (nodes);
+		restoreViewsMode = true;
+	}
 }
 
 //-----------------------------------------------------------------------------
 void UIDescription::endXmlElement (Xml::Parser* parser, IdStringPtr name)
 {
+	if (nodeStack.back () == nodes)
+		restoreViewsMode = false;
 	nodeStack.pop_back ();
 }
 
@@ -1584,6 +1778,19 @@ UINode::UINode (const std::string& _name, UIAttributes* _attributes)
 , children (new UIDescList)
 , flags (0)
 {
+	if (attributes == 0)
+		attributes = new UIAttributes ();
+}
+
+//-----------------------------------------------------------------------------
+UINode::UINode (const std::string& _name, UIDescList* _children, UIAttributes* _attributes)
+: name (_name)
+, children (_children)
+, attributes (_attributes)
+, flags (0)
+{
+	assert (children != 0);
+	children->remember ();
 	if (attributes == 0)
 		attributes = new UIAttributes ();
 }

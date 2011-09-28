@@ -8,7 +8,7 @@ namespace VSTGUI {
 
 //----------------------------------------------------------------------------------------------------
 UISearchTextField::UISearchTextField (const CRect& size, CControlListener* listener, int32_t tag, UTF8StringPtr txt, CBitmap* background, const int32_t style)
-: CTextEdit (size, listener, tag, txt, background, style)
+: CTextEdit (size, listener, tag, 0, background, style)
 {
 }
 

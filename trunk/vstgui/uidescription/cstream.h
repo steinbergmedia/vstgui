@@ -135,6 +135,8 @@ public:
 
 	virtual bool operator<< (const std::string& str);
 	virtual bool operator>> (std::string& string);
+	
+	bool end (); // write a zero byte if binaryMode is false
 protected:
 	bool resize (int32_t newSize);
 

@@ -282,23 +282,44 @@ void CSlider::draw (CDrawContext *pContext)
 		if (drawStyle & kDrawValue)
 		{
 			CRect r (getViewSize ());
-			r.inset (1., 1.);
+			if (drawStyle & kDrawFrame)
+				r.inset (1., 1.);
 			float drawValue = getValueNormalized ();
 			if (drawStyle & kDrawValueFromCenter)
 			{
 				if (drawStyle & kDrawInverted)
 					drawValue = 1.f - drawValue;
-				CCoord width = r.getWidth ();
-				r.right = r.left + r.getWidth () * drawValue;
-				r.left += width / 2.;
-				r.normalize ();
+				if (getStyle () & kHorizontal)
+				{
+					CCoord width = r.getWidth ();
+					r.right = r.left + r.getWidth () * drawValue;
+					r.left += width / 2.;
+					r.normalize ();
+				}
+				else
+				{
+					CCoord height = r.getHeight ();
+					r.bottom = r.top + r.getHeight () * drawValue;
+					r.top += height / 2.;
+					r.normalize ();
+				}
 			}
 			else
 			{
-				if (drawStyle & kDrawInverted)
-					r.left = r.right - r.getWidth () * drawValue;
+				if (getStyle () & kHorizontal)
+				{
+					if (drawStyle & kDrawInverted)
+						r.left = r.right - r.getWidth () * drawValue;
+					else
+						r.right = r.left + r.getWidth () * drawValue;
+				}
 				else
-					r.right = r.left + r.getWidth () * drawValue;
+				{
+					if (drawStyle & kDrawInverted)
+						r.bottom = r.top + r.getHeight () * drawValue;
+					else
+						r.top = r.bottom - r.getHeight () * drawValue;
+				}
 			}
 			pContext->setFillColor (valueColor);
 			pContext->drawRect (r, kDrawFilled);

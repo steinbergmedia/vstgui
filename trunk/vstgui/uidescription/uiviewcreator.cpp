@@ -346,6 +346,7 @@ public:
 		const std::string* originAttr = attributes.getAttributeValue ("origin");
 		const std::string* sizeAttr = attributes.getAttributeValue ("size");
 		const std::string* transparentAttr = attributes.getAttributeValue ("transparent");
+		const std::string* mouseEnabledAttr = attributes.getAttributeValue ("mouse-enabled");
 		const std::string* bitmapAttr = attributes.getAttributeValue ("bitmap");
 		const std::string* autosizeAttr = attributes.getAttributeValue ("autosize");
 		const std::string* tooltipAttr = attributes.getAttributeValue ("tooltip");
@@ -385,6 +386,9 @@ public:
 		if (transparentAttr)
 			view->setTransparency (*transparentAttr == "true");
 
+		if (mouseEnabledAttr)
+			view->setMouseEnabled (*mouseEnabledAttr == "true");
+
 		if (autosizeAttr)
 		{
 			int32_t autosize = kAutosizeNone;
@@ -422,6 +426,7 @@ public:
 		attributeNames.push_back ("origin");
 		attributeNames.push_back ("size");
 		attributeNames.push_back ("transparent");
+		attributeNames.push_back ("mouse-enabled");
 		attributeNames.push_back ("bitmap");
 		attributeNames.push_back ("autosize");
 		attributeNames.push_back ("tooltip");
@@ -434,6 +439,7 @@ public:
 		if (attributeName == "origin") return kPointType;
 		else if (attributeName == "size") return kPointType;
 		else if (attributeName == "transparent") return kBooleanType;
+		else if (attributeName == "mouse-enabled") return kBooleanType;
 		else if (attributeName == "bitmap") return kBitmapType;
 		else if (attributeName == "autosize") return kStringType;
 		else if (attributeName == "tooltip") return kStringType;
@@ -458,6 +464,11 @@ public:
 			stringValue = view->getTransparency () ? "true" : "false";
 			return true;
 		}
+		else if (attributeName == "mouse-enabled")
+		{
+			stringValue = view->getMouseEnabled () ? "true" : "false";
+			return true;
+		}
 		else if (attributeName == "bitmap")
 		{
 			CBitmap* bitmap = view->getBackground ();
@@ -472,7 +483,7 @@ public:
 			std::stringstream stream;
 			int32_t autosize = view->getAutosizeFlags ();
 			if (autosize == 0)
-				return false;
+				return true;
 			if (autosize & kAutosizeLeft)
 				stream << "left ";
 			if (autosize & kAutosizeRight)
@@ -691,7 +702,7 @@ public:
 		if (attributeName == "row-style") return kBooleanType;
 		if (attributeName == "spacing") return kIntegerType;
 		if (attributeName == "margin") return kRectType;
-		if (attributeName == "equal-size-layout") return kStringType;
+		if (attributeName == "equal-size-layout") return kListType;
 		if (attributeName == "animate-view-resizing") return kBooleanType;
 		if (attributeName == "view-resize-animation-time") return kIntegerType;
 		return kUnknownType;
@@ -748,6 +759,23 @@ public:
 				case CRowColumnView::kCenterEqualy: stringValue = "center"; break;
 				case CRowColumnView::kRightBottomEqualy: stringValue = "right-bottom"; break;
 			}
+			return true;
+		}
+		return false;
+	}
+	bool getPossibleListValues (const std::string& attributeName, std::list<const std::string*>& values) const
+	{
+		if (attributeName == "equal-size-layout")
+		{
+			static std::string kLeftTop = "left-top";
+			static std::string kStretch = "stretch";
+			static std::string kCenter = "center";
+			static std::string kRightBottom = "right-bottom";
+	
+			values.push_back (&kLeftTop);
+			values.push_back (&kStretch);
+			values.push_back (&kCenter);
+			values.push_back (&kRightBottom);
 			return true;
 		}
 		return false;
@@ -1738,27 +1766,39 @@ public:
 	CTextLabelCreator () { UIViewFactory::registerViewCreator (*this); }
 	IdStringPtr getViewName () const { return "CTextLabel"; }
 	IdStringPtr getBaseViewName () const { return "CParamDisplay"; }
-	CView* create (const UIAttributes& attributes, IUIDescription* description) const { return new CTextLabel (CRect (0, 0, 0, 0)); }
+	CView* create (const UIAttributes& attributes, IUIDescription* description) const { return new CTextLabel (CRect (0, 0, 100, 20)); }
 	bool apply (CView* view, const UIAttributes& attributes, IUIDescription* description) const
 	{
 		CTextLabel* label = dynamic_cast<CTextLabel*> (view);
 		if (!label)
 			return false;
 
-		const std::string* titleAttr = attributes.getAttributeValue ("title");
-		if (titleAttr)
-			label->setText (titleAttr->c_str ());
+		const std::string* attr = attributes.getAttributeValue ("title");
+		if (attr)
+			label->setText (attr->c_str ());
+		attr = attributes.getAttributeValue ("truncate-mode");
+		if (attr)
+		{
+			if (*attr == "head")
+				label->setTextTruncateMode (CTextLabel::kTruncateHead);
+			else if (*attr == "tail")
+				label->setTextTruncateMode (CTextLabel::kTruncateTail);
+			else
+				label->setTextTruncateMode (CTextLabel::kTruncateNone);
+		}
 
 		return true;
 	}
 	bool getAttributeNames (std::list<std::string>& attributeNames) const
 	{
 		attributeNames.push_back ("title");
+		attributeNames.push_back ("truncate-mode");
 		return true;
 	}
 	AttrType getAttributeType (const std::string& attributeName) const
 	{
 		if (attributeName == "title") return kStringType;
+		if (attributeName == "truncate-mode") return kListType;
 		return kUnknownType;
 	}
 	bool getAttributeValue (CView* view, const std::string& attributeName, std::string& stringValue, IUIDescription* desc) const
@@ -1770,6 +1810,31 @@ public:
 		{
 			UTF8StringPtr title = label->getText ();
 			stringValue = title ? title : "";
+			return true;
+		}
+		else if (attributeName == "truncate-mode")
+		{
+			switch (label->getTextTruncateMode ())
+			{
+				case CTextLabel::kTruncateHead: stringValue = "head"; break;
+				case CTextLabel::kTruncateTail: stringValue = "tail"; break;
+				case CTextLabel::kTruncateNone: stringValue = ""; break;
+			}
+			return true;
+		}
+		return false;
+	}
+	bool getPossibleListValues (const std::string& attributeName, std::list<const std::string*>& values) const
+	{
+		if (attributeName == "truncate-mode")
+		{
+			static std::string kNone = "none";
+			static std::string kHead = "head";
+			static std::string kTail = "tail";
+	
+			values.push_back (&kNone);
+			values.push_back (&kHead);
+			values.push_back (&kTail);
 			return true;
 		}
 		return false;
@@ -1785,7 +1850,7 @@ public:
 	CTextEditCreator () { UIViewFactory::registerViewCreator (*this); }
 	IdStringPtr getViewName () const { return "CTextEdit"; }
 	IdStringPtr getBaseViewName () const { return "CTextLabel"; }
-	CView* create (const UIAttributes& attributes, IUIDescription* description) const { return new CTextEdit (CRect (0, 0, 0, 0), 0, -1); }
+	CView* create (const UIAttributes& attributes, IUIDescription* description) const { return new CTextEdit (CRect (0, 0, 100, 20), 0, -1); }
 	bool apply (CView* view, const UIAttributes& attributes, IUIDescription* description) const
 	{
 		CTextEdit* label = dynamic_cast<CTextEdit*> (view);
@@ -2725,7 +2790,7 @@ public:
 		if (attributeName == "handle-offset") return kPointType;
 		if (attributeName == "bitmap-offset") return kPointType;
 		if (attributeName == "zoom-factor") return kFloatType;
-		if (attributeName == "orientation") return kStringType;
+		if (attributeName == "orientation") return kListType;
 		if (attributeName == "reverse-orientation") return kBooleanType;
 		if (attributeName == "draw-frame") return kBooleanType;
 		if (attributeName == "draw-back") return kBooleanType;
@@ -2857,6 +2922,19 @@ public:
 
 		return false;
 	}
+	bool getPossibleListValues (const std::string& attributeName, std::list<const std::string*>& values) const
+	{
+		if (attributeName == "orientation")
+		{
+			static std::string kHorizontal = "horizontal";
+			static std::string kVertical = "vertical";
+	
+			values.push_back (&kHorizontal);
+			values.push_back (&kVertical);
+			return true;
+		}
+		return false;
+	}
 
 };
 CSliderCreator __gCSliderCreator;
@@ -2912,7 +2990,7 @@ public:
 	{
 		if (attributeName == "off-bitmap") return kBitmapType;
 		if (attributeName == "num-led") return kIntegerType;
-		if (attributeName == "orientation") return kStringType;
+		if (attributeName == "orientation") return kListType;
 		if (attributeName == "decrease-step-value") return kFloatType;
 		return kUnknownType;
 	}
@@ -2950,6 +3028,19 @@ public:
 			std::stringstream stream;
 			stream << vuMeter->getDecreaseStepValue ();
 			stringValue = stream.str ();
+			return true;
+		}
+		return false;
+	}
+	bool getPossibleListValues (const std::string& attributeName, std::list<const std::string*>& values) const
+	{
+		if (attributeName == "orientation")
+		{
+			static std::string kHorizontal = "horizontal";
+			static std::string kVertical = "vertical";
+	
+			values.push_back (&kHorizontal);
+			values.push_back (&kVertical);
 			return true;
 		}
 		return false;
@@ -3232,8 +3323,8 @@ public:
 	}
 	AttrType getAttributeType (const std::string& attributeName) const
 	{
-		if (attributeName == "orientation") return kStringType;
-		if (attributeName == "resize-method") return kStringType;
+		if (attributeName == "orientation") return kListType;
+		if (attributeName == "resize-method") return kListType;
 		if (attributeName == "separator-width") return kIntegerType;
 		return kUnknownType;
 	}
@@ -3244,6 +3335,7 @@ public:
 			return false;
 		if (attributeName == "separator-width")
 		{
+//			std::basic_ostream<char>
 			std::stringstream stream;
 			stream << (int32_t)splitView->getSeparatorWidth ();
 			stringValue = stream.str ();
@@ -3282,9 +3374,106 @@ public:
 		}
 		return false;
 	}
+	bool getPossibleListValues (const std::string& attributeName, std::list<const std::string*>& values) const
+	{
+		if (attributeName == "orientation")
+		{
+			static std::string kHorizontal = "horizontal";
+			static std::string kVertical = "vertical";
+	
+			values.push_back (&kHorizontal);
+			values.push_back (&kVertical);
+			return true;
+		}
+		else if (attributeName == "resize-method")
+		{
+			static std::string kFirst = "first";
+			static std::string kSecond = "second";
+			static std::string kLast = "last";
+			static std::string kAll = "all";
+	
+			values.push_back (&kFirst);
+			values.push_back (&kSecond);
+			values.push_back (&kLast);
+			values.push_back (&kAll);
+			return true;
+		}
+		return false;
+	}
 
 };
 CSplitViewCreator __gCSplitViewCreator;
+
+//-----------------------------------------------------------------------------
+class CShadowViewContainerCreator : public IViewCreator
+{
+public:
+	CShadowViewContainerCreator () { UIViewFactory::registerViewCreator (*this); }
+	IdStringPtr getViewName () const { return "CShadowViewContainer"; }
+	IdStringPtr getBaseViewName () const { return "CViewContainer"; }
+	CView* create (const UIAttributes& attributes, IUIDescription* description) const 
+	{
+		return new CShadowViewContainer (CRect (0, 0, 200, 200));
+	}
+
+	bool apply (CView* view, const UIAttributes& attributes, IUIDescription* description) const
+	{
+		CShadowViewContainer* shadowView = dynamic_cast<CShadowViewContainer*> (view);
+		if (!shadowView)
+			return false;
+		double d;
+		if (attributes.getDoubleAttribute ("shadow-intensity", d))
+			shadowView->setShadowIntensity ((float)d);
+		int32_t i;
+		if (attributes.getIntegerAttribute ("shadow-blur-size", i))
+			shadowView->setShadowBlurSize (i);
+		CPoint p;
+		if (attributes.getPointAttribute("shadow-offset", p))
+			shadowView->setShadowOffset (p);
+		return true;
+	}
+	bool getAttributeNames (std::list<std::string>& attributeNames) const
+	{
+		attributeNames.push_back ("shadow-intensity");
+		attributeNames.push_back ("shadow-offset");
+		attributeNames.push_back ("shadow-blur-size");
+		return true;
+	}
+	AttrType getAttributeType (const std::string& attributeName) const
+	{
+		if (attributeName == "shadow-intensity") return kFloatType;
+		if (attributeName == "shadow-offset") return kPointType;
+		if (attributeName == "shadow-blur-size") return kIntegerType;
+		return kUnknownType;
+	}
+	bool getAttributeValue (CView* view, const std::string& attributeName, std::string& stringValue, IUIDescription* desc) const
+	{
+		CShadowViewContainer* shadowView = dynamic_cast<CShadowViewContainer*> (view);
+		if (!shadowView)
+			return false;
+		if (attributeName == "shadow-intensity")
+		{
+			std::stringstream str;
+			str << shadowView->getShadowIntensity ();
+			stringValue = str.str ().c_str ();
+			return true;
+		}
+		else if (attributeName == "shadow-blur-size")
+		{
+			std::stringstream str;
+			str << shadowView->getShadowBlurSize ();
+			stringValue = str.str ().c_str ();
+			return true;
+		}
+		else if (attributeName == "shadow-offset")
+		{
+			pointToString (shadowView->getShadowOffset (), stringValue);
+			return true;
+		}
+		return false;
+	}
+};
+CShadowViewContainerCreator __gCShadowViewContainerCreator;
 
 }} // namespace
 
