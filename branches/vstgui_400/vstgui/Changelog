@@ -1,3 +1,9 @@
+2011-10-02 arne
+
+	* fix wrong pixel format on intel Mac OS X
+	* fix performance issue drawing bitmaps with empty clip rect
+	* fix escape key does not end text edit on Windows
+
 2011-08-24 arne
 
 	* fix bug: control listeners don't get right button click
