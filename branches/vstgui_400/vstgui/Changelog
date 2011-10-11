@@ -1,3 +1,7 @@
+2011-10-11 arne
+
+	* fix mouse wheel on Mac OS X 10.7 when "natural" scroll direction system setting is used.
+
 2011-10-05 arne
 
 	* fix possible crash in IDependency::changed() when dependent object removes itself in this call
