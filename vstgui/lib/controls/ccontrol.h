@@ -138,9 +138,9 @@ public:
 	virtual void setValueNormalized (float val);
 	virtual float getValueNormalized () const;
 
-	virtual void setMin (float val) { vmin = val; }
+	virtual void setMin (float val) { vmin = val; bounceValue (); }
 	virtual float getMin () const { return vmin; }
-	virtual void setMax (float val) { vmax = val; }
+	virtual void setMax (float val) { vmax = val; bounceValue (); }
 	virtual float getMax () const { return vmax; }
 
 	virtual void setOldValue (float val) { oldValue = val; }

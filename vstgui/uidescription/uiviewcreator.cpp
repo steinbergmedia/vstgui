@@ -348,6 +348,7 @@ public:
 		const std::string* transparentAttr = attributes.getAttributeValue ("transparent");
 		const std::string* mouseEnabledAttr = attributes.getAttributeValue ("mouse-enabled");
 		const std::string* bitmapAttr = attributes.getAttributeValue ("bitmap");
+		const std::string* disabledBitmapAttr = attributes.getAttributeValue ("disabled-bitmap");
 		const std::string* autosizeAttr = attributes.getAttributeValue ("autosize");
 		const std::string* tooltipAttr = attributes.getAttributeValue ("tooltip");
 		const std::string* customViewAttr = attributes.getAttributeValue ("custom-view-name");
@@ -381,6 +382,12 @@ public:
 		{
 			CBitmap* bitmap = description->getBitmap (bitmapAttr->c_str ());
 			view->setBackground (bitmap);
+		}
+		
+		if (disabledBitmapAttr)
+		{
+			CBitmap* bitmap = description->getBitmap (disabledBitmapAttr->c_str ());
+			view->setDisabledBackground (bitmap);
 		}
 		
 		if (transparentAttr)
@@ -428,6 +435,7 @@ public:
 		attributeNames.push_back ("transparent");
 		attributeNames.push_back ("mouse-enabled");
 		attributeNames.push_back ("bitmap");
+		attributeNames.push_back ("disabled-bitmap");
 		attributeNames.push_back ("autosize");
 		attributeNames.push_back ("tooltip");
 		attributeNames.push_back ("custom-view-name");
@@ -441,6 +449,7 @@ public:
 		else if (attributeName == "transparent") return kBooleanType;
 		else if (attributeName == "mouse-enabled") return kBooleanType;
 		else if (attributeName == "bitmap") return kBitmapType;
+		else if (attributeName == "disabled-bitmap") return kBitmapType;
 		else if (attributeName == "autosize") return kStringType;
 		else if (attributeName == "tooltip") return kStringType;
 		else if (attributeName == "custom-view-name") return kStringType;
@@ -472,6 +481,15 @@ public:
 		else if (attributeName == "bitmap")
 		{
 			CBitmap* bitmap = view->getBackground ();
+			if (bitmap)
+				bitmapToString (bitmap, stringValue, desc);
+			else
+				stringValue = "";
+			return true;
+		}
+		else if (attributeName == "disabled-bitmap")
+		{
+			CBitmap* bitmap = view->getDisabledBackground ();
 			if (bitmap)
 				bitmapToString (bitmap, stringValue, desc);
 			else
@@ -600,26 +618,42 @@ public:
 		CViewContainer* viewContainer = dynamic_cast<CViewContainer*> (view);
 		if (viewContainer == 0)
 			return false;
-		const std::string* backColorAttr = attributes.getAttributeValue ("background-color");
-		if (backColorAttr)
+		const std::string* attr = attributes.getAttributeValue ("background-color");
+		if (attr)
 		{
 			CColor backColor;
-			if (description->getColor (backColorAttr->c_str (), backColor))
+			if (description->getColor (attr->c_str (), backColor))
 			{
-				rememberAttributeValueString (view, "background-color", *backColorAttr);
+				rememberAttributeValueString (view, "background-color", *attr);
 				viewContainer->setBackgroundColor (backColor);
 			}
+		}
+		attr = attributes.getAttributeValue ("background-color-draw-style");
+		if (attr)
+		{
+			CDrawStyle drawStyle = kDrawFilledAndStroked;
+			if (*attr == "stroked")
+			{
+				drawStyle = kDrawStroked;
+			}
+			else if (*attr == "filled")
+			{
+				drawStyle = kDrawFilled;
+			}
+			viewContainer->setBackgroundColorDrawStyle (drawStyle);
 		}
 		return true;
 	}
 	bool getAttributeNames (std::list<std::string>& attributeNames) const
 	{
 		attributeNames.push_back ("background-color");
+		attributeNames.push_back ("background-color-draw-style");
 		return true;
 	}
 	AttrType getAttributeType (const std::string& attributeName) const
 	{
 		if (attributeName == "background-color") return kColorType;
+		if (attributeName == "background-color-draw-style") return kListType;
 		return kUnknownType;
 	}
 	bool getAttributeValue (CView* view, const std::string& attributeName, std::string& stringValue, IUIDescription* desc) const
@@ -631,6 +665,31 @@ public:
 		{
 			if (!getRememberedAttributeValueString (view, "background-color", stringValue))
 				colorToString (vc->getBackgroundColor (), stringValue, desc);
+			return true;
+		}
+		if (attributeName == "background-color-draw-style")
+		{
+			switch (vc->getBackgroundColorDrawStyle ())
+			{
+				case kDrawStroked: stringValue = "stroked"; break;
+				case kDrawFilledAndStroked: stringValue = "filled and stroked"; break;
+				case kDrawFilled: stringValue = "filled"; break;
+			}
+			return true;
+		}
+		return false;
+	}
+
+	bool getPossibleListValues (const std::string& attributeName, std::list<const std::string*>& values) const
+	{
+		if (attributeName == "background-color-draw-style")
+		{
+			static std::string kStroked = "stroked";
+			static std::string kFilledAndStroked = "filled and stroked";
+			static std::string kFilled = "filled";
+			values.push_back (&kStroked);
+			values.push_back (&kFilledAndStroked);
+			values.push_back (&kFilled);
 			return true;
 		}
 		return false;
@@ -1425,6 +1484,7 @@ public:
 		const std::string* textAlignmentAttr = attributes.getAttributeValue ("text-alignment");
 		const std::string* textInsetAttr = attributes.getAttributeValue ("text-inset");
 		const std::string* roundRectRadiusAttr = attributes.getAttributeValue ("round-rect-radius");
+		const std::string* precisionAttr = attributes.getAttributeValue ("value-precision");
 
 		CColor color;
 		if (fontAttr)
@@ -1541,6 +1601,11 @@ public:
 				style &= ~kRoundRectStyle;
 		}
 		display->setStyle (style);
+		if (precisionAttr)
+		{
+			uint8_t precision = (uint8_t)strtol (precisionAttr->c_str (), 0, 10);
+			display->setPrecision (precision);
+		}
 		return true;
 	}
 	bool getAttributeNames (std::list<std::string>& attributeNames) const
@@ -1561,6 +1626,7 @@ public:
 		attributeNames.push_back ("round-rect-radius");
 		attributeNames.push_back ("text-alignment");
 		attributeNames.push_back ("text-inset");
+		attributeNames.push_back ("value-precision");
 		return true;
 	}
 	AttrType getAttributeType (const std::string& attributeName) const
@@ -1581,6 +1647,7 @@ public:
 		else if (attributeName == "round-rect-radius") return kFloatType;
 		else if (attributeName == "text-alignment") return kStringType;
 		else if (attributeName == "text-inset") return kPointType;
+		else if (attributeName == "value-precision") return kIntegerType;
 		return kUnknownType;
 	}
 	bool getAttributeValue (CView* view, const std::string& attributeName, std::string& stringValue, IUIDescription* desc) const
@@ -1685,6 +1752,13 @@ public:
 				case kRightText: stringValue = "right"; break;
 				case kCenterText: stringValue = "center"; break;
 			}
+			return true;
+		}
+		else if (attributeName == "value-precision")
+		{
+			std::stringstream str;
+			str << (uint32_t)pd->getPrecision ();
+			stringValue = str.str ();
 			return true;
 		}
 		return false;

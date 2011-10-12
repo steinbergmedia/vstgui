@@ -105,8 +105,12 @@ inline void IDependency::changed (IdStringPtr message)
 	else if (dependents.empty () == false)
 	{
 		CBaseObject* This = dynamic_cast<CBaseObject*> (this);
-		for (std::list<CBaseObject*>::const_iterator it = dependents.begin (); it != dependents.end (); it++)
-			(*it)->notify (This, message);
+		for (std::list<CBaseObject*>::const_iterator it = dependents.begin (); it != dependents.end ();)
+		{
+			CBaseObject* obj = (*it);
+			it++;
+			obj->notify (This, message);
+		}
 	}
 }
 

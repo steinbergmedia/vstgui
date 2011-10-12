@@ -103,9 +103,9 @@ void CMovieButton::draw (CDrawContext *pContext)
 	else
 		where.v = 0;
 
-	if (pBackground)
+	if (getDrawBackground ())
 	{
-		pBackground->draw (pContext, getViewSize (), where);
+		getDrawBackground ()->draw (pContext, getViewSize (), where);
 	}
 	buttonState = value;
 
@@ -169,10 +169,10 @@ int32_t CMovieButton::onKeyDown (VstKeyCode& keyCode)
 //-----------------------------------------------------------------------------------------------
 bool CMovieButton::sizeToFit ()
 {
-	if (pBackground)
+	if (getDrawBackground ())
 	{
 		CRect vs (getViewSize ());
-		vs.setWidth (pBackground->getWidth ());
+		vs.setWidth (getDrawBackground ()->getWidth ());
 		vs.setHeight (getHeightOfOneImage ());
 		setViewSize (vs);
 		setMouseableArea (vs);

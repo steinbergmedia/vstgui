@@ -106,6 +106,7 @@ public:
 
 	void layoutViews ();
 	bool sizeToFit ();
+	CMessageResult notify (CBaseObject* sender, IdStringPtr message);
 
 	CLASS_METHODS(CRowColumnView, CAutoLayoutContainerView)
 protected:
@@ -118,6 +119,7 @@ protected:
 	CCoord spacing;
 	CRect margin;
 	bool animateViewResizing;
+	bool layoutGuard;
 	uint32_t viewResizeAnimationTime;
 };
 

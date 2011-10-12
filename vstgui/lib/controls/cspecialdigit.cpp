@@ -153,9 +153,9 @@ void CSpecialDigit::draw (CDrawContext *pContext)
 		
 		// where = src from bitmap
 		where.v = (CCoord)j * height;
-		if (pBackground)
+		if (getDrawBackground ())
 		{
-			pBackground->draw (pContext, rectDest, where);
+			getDrawBackground ()->draw (pContext, rectDest, where);
 		}
 	}
 		

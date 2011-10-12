@@ -117,10 +117,10 @@ protected:
 		~Animation ();
 
 		std::string name;
-		CView* view;
+		SharedPointer<CView> view;
 		IAnimationTarget* target;
 		ITimingFunction* timingFunction;
-		CBaseObject* notificationObject;
+		SharedPointer<CBaseObject> notificationObject;
 		uint32_t startTime;
 		float lastPos;
 		bool done;
@@ -128,8 +128,8 @@ protected:
 
 	void removeAnimation (Animation* a);
 
-	std::list<Animation*> animations;
-	std::list<Animation*> toRemove;
+	std::list<SharedPointer<Animation> > animations;
+	std::list<SharedPointer<Animation> > toRemove;
 	bool inTimer;
 	/// @endcond
 };

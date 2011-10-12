@@ -189,10 +189,17 @@ CView* UIBitmapsController::verifyView (CView* view, const UIAttributes& attribu
 	else
 	{
 		CControl* control = dynamic_cast<CControl*>(view);
-		if (control && control->getTag () == kNinePartTiledTag)
+		if (control)
 		{
-			ninePartTiled = control;
-			ninePartTiled->setMouseEnabled (false);
+			switch (control->getTag ())
+			{
+				case kNinePartTiledTag:
+				{
+					ninePartTiled = control;
+					control->setMouseEnabled (false);
+					break;
+				}
+			}
 		}
 	}
 	return DelegationController::verifyView (view, attributes, description);
@@ -227,23 +234,23 @@ void UIBitmapsController::valueChanged (CControl* pControl)
 		}
 		case kBitmapPathTag:
 		{
-			CBitmap* bitmap = dataSource->getSelectedBitmap ();
-			if (bitmap)
+			UTF8StringPtr bitmapName = dataSource->getSelectedBitmapName ();
+			if (bitmapName)
 			{
 				CTextEdit* edit = dynamic_cast<CTextEdit*>(pControl);
 				if (edit)
-					actionPerformer->performBitmapChange (dataSource->getSelectedBitmapName (), edit->getText ());
+					actionPerformer->performBitmapChange (bitmapName, edit->getText ());
 			}
 			break;
 		}
 		case kNinePartTiledTag:
 		{
-			CBitmap* bitmap = dataSource->getSelectedBitmap ();
-			if (bitmap)
+			UTF8StringPtr bitmapName = dataSource->getSelectedBitmapName ();
+			if (bitmapName)
 			{
 				bool checked = pControl->getValue () == pControl->getMax ();
 				CRect offsets;
-				actionPerformer->performBitmapNinePartTiledChange (dataSource->getSelectedBitmapName (), checked ? &offsets : 0);
+				actionPerformer->performBitmapNinePartTiledChange (bitmapName, checked ? &offsets : 0);
 			}
 			break;
 		}
@@ -268,7 +275,7 @@ void UIBitmapsController::valueChanged (CControl* pControl)
 				actionPerformer->performBitmapNinePartTiledChange (dataSource->getSelectedBitmapName (), &r);
 			}
 			break;
-		}		
+		}
 	}
 }
 
@@ -278,14 +285,9 @@ void UIBitmapsController::dbSelectionChanged (int32_t selectedRow, GenericString
 	if (dataSource)
 	{
 		CBitmap* bitmap = dataSource->getSelectedBitmap ();
+		UTF8StringPtr selectedBitmapName = dataSource->getSelectedBitmapName ();
 		if (bitmapView)
 		{
-//			CCoord width = bitmap ? bitmap->getWidth () : 0;
-//			CCoord height = bitmap ? bitmap->getHeight () : 0;
-//			CRect r (bitmapView->getViewSize ());
-//			r.setWidth (width);
-//			r.setHeight (height);
-//			bitmapView->setViewSize (r);
 			bitmapView->setBackground (bitmap);
 			if (bitmapView->getParentView ())
 				bitmapView->getParentView ()->invalid ();
@@ -293,7 +295,7 @@ void UIBitmapsController::dbSelectionChanged (int32_t selectedRow, GenericString
 		if (bitmapPathEdit)
 		{
 			bitmapPathEdit->setText (bitmap ? bitmap->getResourceDescription ().u.name : 0);
-			bitmapPathEdit->setMouseEnabled (bitmap ? true : false);
+			bitmapPathEdit->setMouseEnabled (selectedBitmapName ? true : false);
 		}
 		CNinePartTiledBitmap* nptb = bitmap ? dynamic_cast<CNinePartTiledBitmap*>(bitmap) : 0;
 		if (nptb)
@@ -336,7 +338,7 @@ void UIBitmapsController::dbSelectionChanged (int32_t selectedRow, GenericString
 			{
 				ninePartTiled->setValue (ninePartTiled->getMin ());
 				ninePartTiled->invalid ();
-				ninePartTiled->setMouseEnabled (bitmap ? true : false);
+				ninePartTiled->setMouseEnabled (selectedBitmapName ? true : false);
 			}
 			for (int32_t i = 0; i < 4; i++)
 			{

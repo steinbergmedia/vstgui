@@ -188,7 +188,7 @@ bool CMemoryStream::operator<< (const std::string& str)
 		if (!(*(OutputStream*)this << (int32_t)'str ')) return false;
 		if (!(*(OutputStream*)this << (int32_t)str.length ())) return false;
 	}
-	return writeRaw (str.c_str (), (int32_t)str.length ()) == str.length ();
+	return writeRaw (str.c_str (), (int32_t)str.length ()) == (int32_t)str.length ();
 }
 
 //-----------------------------------------------------------------------------
@@ -330,7 +330,7 @@ bool CFileStream::operator>> (std::string& string)
 //-----------------------------------------------------------------------------
 bool CFileStream::operator<< (const std::string& str)
 {
-	if (writeRaw (str.c_str (), (int32_t)str.size ()) == str.size ())
+	if (writeRaw (str.c_str (), (int32_t)str.size ()) == (int32_t)str.size ())
 	{
 		if (openMode & kBinaryMode)
 		{

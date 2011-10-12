@@ -347,7 +347,7 @@ public:
 		#ifdef __BIG_ENDIAN__
 		return kRGBA;
 		#else
-		return kABGR;
+		return kARGB;
 		#endif
 	}
 	

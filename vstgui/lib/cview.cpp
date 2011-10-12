@@ -220,8 +220,6 @@ CView::CView (const CView& v)
 , autosizeFlags (v.autosizeFlags)
 , alphaValue (v.alphaValue)
 {
-	if (pBackground)
-		pBackground->remember ();
 	for (CViewAttributeIterator it = attributes.begin (); it != attributes.end (); it++)
 		setAttribute (it->first, it->second->getSize (), it->second->getData ());
 }
@@ -230,8 +228,6 @@ CView::CView (const CView& v)
 CView::~CView ()
 {
 	assert (isAttached () == false);
-	if (pBackground)
-		pBackground->forget ();
 
 	IController* controller = 0;
 	int32_t size = sizeof (IController*);
@@ -256,20 +252,31 @@ CView::~CView ()
 //-----------------------------------------------------------------------------
 void CView::setMouseEnabled (bool state)
 {
-	if (state)
-		viewFlags |= kMouseEnabled;
-	else
-		viewFlags &= ~kMouseEnabled;
+	if (getMouseEnabled () != state)
+	{
+		if (state)
+			viewFlags |= kMouseEnabled;
+		else
+			viewFlags &= ~kMouseEnabled;
+
+		if (pDisabledBackground)
+		{
+			setDirty (true);
+		}
+	}
 }
 
 //-----------------------------------------------------------------------------
 void CView::setTransparency (bool state)
 {
-	if (state)
-		viewFlags |= kTransparencyEnabled;
-	else
-		viewFlags &= ~kTransparencyEnabled;
-	setDirty ();
+	if (getTransparency() != state)
+	{
+		if (state)
+			viewFlags |= kTransparencyEnabled;
+		else
+			viewFlags &= ~kTransparencyEnabled;
+		setDirty (true);
+	}
 }
 
 //-----------------------------------------------------------------------------
@@ -435,9 +442,9 @@ void CView::invalidRect (const CRect& rect)
  */
 void CView::draw (CDrawContext* pContext)
 {
-	if (pBackground)
+	if (getDrawBackground ())
 	{
-		pBackground->draw (pContext, size);
+		getDrawBackground ()->draw (pContext, size);
 	}
 	setDirty (false);
 }
@@ -603,12 +610,20 @@ VSTGUIEditorInterface* CView::getEditor () const
  */
 void CView::setBackground (CBitmap* background)
 {
-	if (pBackground)
-		pBackground->forget ();
 	pBackground = background;
-	if (pBackground)
-		pBackground->remember ();
-	setDirty (true);
+	if (getMouseEnabled () == true)
+		setDirty (true);
+}
+
+//-----------------------------------------------------------------------------
+/**
+ * @param background new disabled background bitmap
+ */
+void CView::setDisabledBackground (CBitmap* background)
+{
+	pDisabledBackground = background;
+	if (getMouseEnabled () == false)
+		setDirty (true);
 }
 
 //-----------------------------------------------------------------------------

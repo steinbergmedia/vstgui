@@ -42,6 +42,7 @@
 #include "../../lib/cfont.h"
 
 namespace VSTGUI {
+class UIAttributes;
 
 //----------------------------------------------------------------------------------------------------
 class IAction
@@ -74,6 +75,7 @@ public:
 	virtual void performAlternativeFontChange (UTF8StringPtr fontName, UTF8StringPtr newAlternativeFonts) = 0;
 
 	virtual void performBitmapNinePartTiledChange (UTF8StringPtr bitmapName, const CRect* offsets) = 0;
+	virtual void performBitmapFiltersChange (UTF8StringPtr bitmapName, const std::list<SharedPointer<UIAttributes> >& filterDescription) = 0;
 
 	virtual void beginLiveColorChange (UTF8StringPtr colorName) = 0;
 	virtual void performLiveColorChange (UTF8StringPtr colorName, const CColor& newColor) = 0;

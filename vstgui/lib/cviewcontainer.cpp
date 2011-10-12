@@ -83,6 +83,7 @@ CViewContainer::CViewContainer (const CRect &rect, CFrame* pParent, CBitmap* pBa
 , pLastView (0)
 , currentDragView (0)
 , mouseDownView (0)
+, backgroundColorDrawStyle (kDrawFilledAndStroked)
 {
 	backgroundOffset (0, 0);
 	setBackground (pBackground);
@@ -97,6 +98,7 @@ CViewContainer::CViewContainer (const CViewContainer& v)
 , pLastView (0)
 , backgroundColor (v.backgroundColor)
 , backgroundOffset (v.backgroundOffset)
+, backgroundColorDrawStyle (v.backgroundColorDrawStyle)
 , currentDragView (0)
 , mouseDownView (0)
 {
@@ -272,8 +274,21 @@ bool CViewContainer::sizeToFit ()
  */
 void CViewContainer::setBackgroundColor (const CColor& color)
 {
-	backgroundColor = color;
-	setDirty (true);
+	if (color != backgroundColor)
+	{
+		backgroundColor = color;
+		setDirty (true);
+	}
+}
+
+//------------------------------------------------------------------------------
+void CViewContainer::setBackgroundColorDrawStyle (CDrawStyle style)
+{
+	if (backgroundColorDrawStyle != style)
+	{
+		backgroundColorDrawStyle = style;
+		setDirty (true);
+	}
 }
 
 //------------------------------------------------------------------------------
@@ -691,7 +706,7 @@ void CViewContainer::draw (CDrawContext* pContext)
  */
 void CViewContainer::drawBackgroundRect (CDrawContext* pContext, const CRect& _updateRect)
 {
-	if (pBackground)
+	if (getDrawBackground ())
 	{
 		CRect oldClip;
 		pContext->getClipRect (oldClip);
@@ -699,7 +714,7 @@ void CViewContainer::drawBackgroundRect (CDrawContext* pContext, const CRect& _u
 		newClip.bound (oldClip);
 		pContext->setClipRect (newClip);
 		CRect tr (0, 0, getViewSize ().getWidth (), getViewSize ().getHeight ());
-		pBackground->draw (pContext, tr, backgroundOffset);
+		getDrawBackground ()->draw (pContext, tr, backgroundOffset);
 		pContext->setClipRect (oldClip);
 	}
 	else if ((backgroundColor.alpha != 255 && getTransparency ()) || !getTransparency ())
@@ -709,9 +724,18 @@ void CViewContainer::drawBackgroundRect (CDrawContext* pContext, const CRect& _u
 		pContext->setFillColor (backgroundColor);
 		pContext->setFrameColor (backgroundColor);
 		pContext->setLineStyle (kLineSolid);
-		CRect r (getViewSize ());
-		r.offset (-r.left, -r.top);
-		pContext->drawRect (r, kDrawFilledAndStroked);
+		CRect r;
+		if (backgroundColorDrawStyle == kDrawFilled || (backgroundColorDrawStyle == kDrawFilledAndStroked && backgroundColor.alpha == 255))
+		{
+			r = _updateRect;
+			r.inset (-1, -1);
+		}
+		else
+		{
+			r = getViewSize ();
+			r.offset (-r.left, -r.top);
+		}
+		pContext->drawRect (r, backgroundColorDrawStyle);
 	}
 }
 

@@ -48,17 +48,14 @@ void UICrossLines::update (const CPoint& point)
 //----------------------------------------------------------------------------------------------------
 void UICrossLines::invalid ()
 {
-	if (!currentRect.isEmpty ())
+	CRect frameRect = view->getViewSize (frameRect);
+	view->invalid ();
+	view->invalidRect (CRect (currentRect.left-3, frameRect.top, currentRect.left+3, frameRect.bottom));
+	view->invalidRect (CRect (frameRect.left, currentRect.top-3, frameRect.right, currentRect.top+3));
+	if (style == kSelectionStyle)
 	{
-		CRect frameRect = view->getViewSize (frameRect);
-		view->invalid ();
-		view->invalidRect (CRect (currentRect.left-3, frameRect.top, currentRect.left+3, frameRect.bottom));
-		view->invalidRect (CRect (frameRect.left, currentRect.top-3, frameRect.right, currentRect.top+3));
-		if (style == kSelectionStyle)
-		{
-			view->invalidRect (CRect (currentRect.right-3, frameRect.top, currentRect.right+3, frameRect.bottom));
-			view->invalidRect (CRect (frameRect.left, currentRect.bottom-3, frameRect.right, currentRect.bottom+3));
-		}
+		view->invalidRect (CRect (currentRect.right-3, frameRect.top, currentRect.right+3, frameRect.bottom));
+		view->invalidRect (CRect (frameRect.left, currentRect.bottom-3, frameRect.right, currentRect.bottom+3));
 	}
 }
 
@@ -69,7 +66,7 @@ void UICrossLines::draw (CDrawContext* pContext)
 	size.originize ();
 	CRect selectionSize (currentRect);
 
-	pContext->setFrameColor (background); // uidCrossLinesBackground
+	pContext->setFrameColor (background);
 	pContext->setLineWidth (3);
 	pContext->setLineStyle (kLineSolid);
 	pContext->setDrawMode (kAliasing);
@@ -84,7 +81,7 @@ void UICrossLines::draw (CDrawContext* pContext)
 		pContext->moveTo (CPoint (selectionSize.right-1, size.top));
 		pContext->lineTo (CPoint (selectionSize.right-1, size.bottom));
 	}
-	pContext->setFrameColor (foreground); // uidCrossLinesForeground
+	pContext->setFrameColor (foreground);
 	pContext->setLineWidth (1);
 	pContext->setLineStyle (kLineOnOffDash);
 	pContext->moveTo (CPoint (size.left, selectionSize.top+1));
