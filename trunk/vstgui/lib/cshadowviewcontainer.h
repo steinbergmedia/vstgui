@@ -6,12 +6,21 @@
 namespace VSTGUI {
 
 //-----------------------------------------------------------------------------
+// CShadowViewContainer Declaration
+//! @brief a view container which draws a shadow for it's subviews
+/// @ingroup containerviews
+/// @ingroup new_in_4_1
+//-----------------------------------------------------------------------------
 class CShadowViewContainer : public CViewContainer
 {
 public:
 	CShadowViewContainer (const CRect& size);
 	CShadowViewContainer (const CShadowViewContainer& copy);
 
+	//-----------------------------------------------------------------------------
+	/// @name CShadowViewContainer Methods
+	//-----------------------------------------------------------------------------
+	//@{
 	virtual void setShadowOffset (const CPoint& offset);
 	const CPoint& getShadowOffset () const { return shadowOffset; }
 	
@@ -22,6 +31,7 @@ public:
 	uint32_t getShadowBlurSize () const { return shadowBlurSize; }
 
 	void invalidateShadow ();
+	//@}
 
 	// override
 	void drawRect (CDrawContext* pContext, const CRect& updateRect);

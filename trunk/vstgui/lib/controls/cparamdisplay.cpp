@@ -52,6 +52,7 @@ CParamDisplay::CParamDisplay (const CRect& size, CBitmap* background, const int3
 , valueToStringUserData (0)
 , horiTxtAlign (kCenterText)
 , style (style)
+, valuePrecision (2)
 , roundRectRadius (6.)
 , bAntialias (true)
 {
@@ -73,6 +74,7 @@ CParamDisplay::CParamDisplay (const CParamDisplay& v)
 , valueToStringUserData (v.valueToStringUserData)
 , horiTxtAlign (v.horiTxtAlign)
 , style (v.style)
+, valuePrecision (v.valuePrecision)
 , fontID (v.fontID)
 , fontColor (v.fontColor)
 , backColor (v.backColor)
@@ -98,6 +100,16 @@ void CParamDisplay::setStyle (int32_t val)
 	if (style != val)
 	{
 		style = val;
+		drawStyleChanged ();
+	}
+}
+
+//------------------------------------------------------------------------
+void CParamDisplay::setPrecision (uint8_t precision)
+{
+	if (valuePrecision != precision)
+	{
+		valuePrecision = precision;
 		drawStyleChanged ();
 	}
 }
@@ -142,7 +154,11 @@ void CParamDisplay::draw (CDrawContext *pContext)
 	if (valueToString)
 		converted = valueToString (value, string, valueToStringUserData);
 	if (!converted)
-		sprintf (string, "%2.2f", value);
+	{
+		char precisionStr[10];
+		sprintf (precisionStr, "%%.%hhuf", valuePrecision);
+		sprintf (string, precisionStr, value);
+	}
 
 	drawBack (pContext);
 	drawText (pContext, string);
@@ -157,9 +173,9 @@ void CParamDisplay::drawBack (CDrawContext* pContext, CBitmap* newBack)
 	{
 		newBack->draw (pContext, getViewSize (), backOffset);
 	}
-	else if (pBackground)
+	else if (getDrawBackground ())
 	{
-		pBackground->draw (pContext, getViewSize (), backOffset);
+		getDrawBackground ()->draw (pContext, getViewSize (), backOffset);
 	}
 	else
 	{

@@ -98,9 +98,9 @@ void CMovieBitmap::draw (CDrawContext *pContext)
 
 	where.v += heightOfOneImage * (int32_t)(getValueNormalized () * (getNumSubPixmaps () - 1) + 0.5);
 
-	if (pBackground)
+	if (getDrawBackground ())
 	{
-		pBackground->draw (pContext, getViewSize (), where);
+		getDrawBackground ()->draw (pContext, getViewSize (), where);
 	}
 	setDirty (false);
 }
@@ -108,10 +108,10 @@ void CMovieBitmap::draw (CDrawContext *pContext)
 //-----------------------------------------------------------------------------------------------
 bool CMovieBitmap::sizeToFit ()
 {
-	if (pBackground)
+	if (getDrawBackground ())
 	{
 		CRect vs (getViewSize ());
-		vs.setWidth (pBackground->getWidth ());
+		vs.setWidth (getDrawBackground ()->getWidth ());
 		vs.setHeight (getHeightOfOneImage ());
 		setViewSize (vs);
 		setMouseableArea (vs);

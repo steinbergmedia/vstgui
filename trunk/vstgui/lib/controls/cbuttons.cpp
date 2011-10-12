@@ -80,16 +80,16 @@ COnOffButton::~COnOffButton ()
 //------------------------------------------------------------------------
 void COnOffButton::draw (CDrawContext *pContext)
 {
-	if (pBackground)
+	if (getDrawBackground ())
 	{
 		CCoord off;
 
 		if (value == getMax ())
-			off = pBackground->getHeight () / 2;
+			off = getDrawBackground ()->getHeight () / 2;
 		else
 			off = 0;
 
-		pBackground->draw (pContext, getViewSize (), CPoint (0, off));
+		getDrawBackground ()->draw (pContext, getViewSize (), CPoint (0, off));
 	}
 	setDirty (false);
 }
@@ -127,11 +127,11 @@ int32_t COnOffButton::onKeyDown (VstKeyCode& keyCode)
 //------------------------------------------------------------------------
 bool COnOffButton::sizeToFit ()
 {
-	if (pBackground)
+	if (getDrawBackground ())
 	{
 		CRect vs (getViewSize ());
-		vs.setWidth (pBackground->getWidth ());
-		vs.setHeight (pBackground->getHeight () / 2.);
+		vs.setWidth (getDrawBackground ()->getWidth ());
+		vs.setHeight (getDrawBackground ()->getHeight () / 2.);
 		setViewSize (vs, true);
 		setMouseableArea (vs);
 		return true;
@@ -207,9 +207,9 @@ void CKickButton::draw (CDrawContext *pContext)
 	if (value == getMax ())
 		where.v += heightOfOneImage;
 
-	if (pBackground)
+	if (getDrawBackground ())
 	{
-		pBackground->draw (pContext, getViewSize (), where);
+		getDrawBackground ()->draw (pContext, getViewSize (), where);
 	}
 	setDirty (false);
 }
@@ -289,11 +289,11 @@ int32_t CKickButton::onKeyUp (VstKeyCode& keyCode)
 //------------------------------------------------------------------------
 bool CKickButton::sizeToFit ()
 {
-	if (pBackground)
+	if (getDrawBackground ())
 	{
 		CRect vs (getViewSize ());
 		vs.setHeight (heightOfOneImage);
-		vs.setWidth (pBackground->getWidth ());
+		vs.setWidth (getDrawBackground ()->getWidth ());
 		setViewSize (vs, true);
 		setMouseableArea (vs);
 		return true;
@@ -444,10 +444,10 @@ bool CCheckBox::sizeToFit ()
 	if (painter)
 	{
 		CRect fitSize (getViewSize ());
-		if (pBackground)
+		if (getDrawBackground ())
 		{
-			fitSize.setWidth (pBackground->getWidth ());
-			fitSize.setHeight (pBackground->getHeight () / 6);
+			fitSize.setWidth (getDrawBackground ()->getWidth ());
+			fitSize.setHeight (getDrawBackground ()->getHeight () / 6);
 		}
 		else
 		{
@@ -467,12 +467,12 @@ void CCheckBox::draw (CDrawContext* context)
 {
 	float norm = getValueNormalized ();
 	CRect checkBoxSize (getViewSize ());
-	if (pBackground)
+	if (getDrawBackground ())
 	{
 		CPoint off;
 
-		checkBoxSize.setWidth (pBackground->getWidth ());
-		checkBoxSize.setHeight (pBackground->getHeight () / 6);
+		checkBoxSize.setWidth (getDrawBackground ()->getWidth ());
+		checkBoxSize.setHeight (getDrawBackground ()->getHeight () / 6);
 
 		if (norm == 0.5)
 			off.y = checkBoxSize.getHeight ();
@@ -481,9 +481,9 @@ void CCheckBox::draw (CDrawContext* context)
 		else
 			off.y = 0;
 		if (hilight)
-			off.y += pBackground->getHeight () / 2;
+			off.y += getDrawBackground ()->getHeight () / 2;
 
-		pBackground->draw (context, checkBoxSize, off);
+		getDrawBackground ()->draw (context, checkBoxSize, off);
 	}
 	else
 	{
@@ -564,10 +564,10 @@ bool CCheckBox::getFocusPath (CGraphicsPath& outPath)
 	{
 		CCoord focusWidth = getFrame ()->getFocusWidth ();
 		CRect checkBoxSize (getViewSize ());
-		if (pBackground)
+		if (getDrawBackground ())
 		{
-			checkBoxSize.setWidth (pBackground->getWidth ());
-			checkBoxSize.setHeight (pBackground->getHeight () / 6);
+			checkBoxSize.setWidth (getDrawBackground ()->getWidth ());
+			checkBoxSize.setHeight (getDrawBackground ()->getHeight () / 6);
 		}
 		else
 		{

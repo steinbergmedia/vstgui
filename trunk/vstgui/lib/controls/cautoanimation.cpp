@@ -87,6 +87,8 @@ CAutoAnimation::CAutoAnimation (const CRect& size, CControlListener* listener, i
 	setNumSubPixmaps (subPixmaps);
 	setHeightOfOneImage (heightOfOneImage);
 	totalHeightOfBitmap = heightOfOneImage * getNumSubPixmaps ();
+	setMin (0.f);
+	setMax (totalHeightOfBitmap - (heightOfOneImage + 1));
 }
 
 //------------------------------------------------------------------------
@@ -113,9 +115,9 @@ void CAutoAnimation::draw (CDrawContext *pContext)
 		where.v = (int32_t)value + offset.v;
 		where.h = offset.h;
 		
-		if (pBackground)
+		if (getDrawBackground ())
 		{
-			pBackground->draw (pContext, getViewSize (), where);
+			getDrawBackground ()->draw (pContext, getViewSize (), where);
 		}
 	}
 	setDirty (false);

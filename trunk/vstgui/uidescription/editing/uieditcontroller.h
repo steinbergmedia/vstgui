@@ -69,6 +69,7 @@ protected:
 	virtual void performFontNameChange (UTF8StringPtr oldName, UTF8StringPtr newName);
 	virtual void performBitmapNameChange (UTF8StringPtr oldName, UTF8StringPtr newName);
 	virtual void performBitmapNinePartTiledChange (UTF8StringPtr bitmapName, const CRect* offsets);
+	virtual void performBitmapFiltersChange (UTF8StringPtr bitmapName, const std::list<SharedPointer<UIAttributes> >& filterDescription);
 	virtual void performAlternativeFontChange (UTF8StringPtr fontName, UTF8StringPtr newAlternativeFonts);
 
 	virtual void beginLiveColorChange (UTF8StringPtr colorName);

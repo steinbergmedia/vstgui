@@ -71,7 +71,7 @@ CMessageResult CShadowViewContainer::notify (CBaseObject* sender, IdStringPtr me
 //-----------------------------------------------------------------------------
 void CShadowViewContainer::drawRect (CDrawContext* pContext, const CRect& updateRect)
 {
-	if (shadowInvalid && getWidth () > 0.f && getHeight () > 0.f)
+	if (shadowInvalid && getWidth () > 0. && getHeight () > 0.)
 	{
 		OwningPointer<COffscreenContext> offscreenContext = COffscreenContext::create (getFrame (), getWidth (), getHeight ());
 		if (offscreenContext)
@@ -81,33 +81,44 @@ void CShadowViewContainer::drawRect (CDrawContext* pContext, const CRect& update
 			CViewContainer::draw (offscreenContext);
 			offscreenContext->endDraw ();
 			CBitmap* bitmap = offscreenContext->getBitmap ();
-			OwningPointer<CBitmap> background = new CBitmap (getWidth (), getHeight ());
-			if (bitmap && background)
+			
+			if (bitmap)
 			{
-				CBitmapPixelAccess* bitmapAccessor = CBitmapPixelAccess::create (bitmap);
-				CBitmapPixelAccess* backgroundAccessor = CBitmapPixelAccess::create (background);
-				if (bitmapAccessor && backgroundAccessor)
+				OwningPointer<BitmapFilter::IFilter> setColorFilter = BitmapFilter::Factory::getInstance().createFilter (BitmapFilter::Standard::kSetColor);
+				if (setColorFilter)
 				{
-					CColor c;
-					do
+					setColorFilter->setProperty (BitmapFilter::Standard::Property::kInputBitmap, bitmap);
+					setColorFilter->setProperty (BitmapFilter::Standard::Property::kInputColor, kBlackCColor);
+					setColorFilter->setProperty (BitmapFilter::Standard::Property::kIgnoreAlphaColorValue, (int32_t)1);
+					if (setColorFilter->run ())
 					{
-						bitmapAccessor->getColor (c);
-						c.red = c.green = c.blue = 0;
-						backgroundAccessor->setColor (c);
-					} while ((*backgroundAccessor)++ && (*bitmapAccessor)++);
-					BitmapFilter::BoxBlur::process (*backgroundAccessor, shadowBlurSize);
-					setBackground (background);
-					shadowInvalid = false;
-
-					CCoord save[4];
-					modifyDrawContext (save, pContext);
-					CRect clientRect (getViewSize ());
-					clientRect.originize ();
-					drawBackgroundRect (pContext, clientRect);
-					restoreDrawContext (pContext, save);
-					bitmap->draw (pContext, getViewSize ());
-					setDirty (false);
+						SharedPointer<CBaseObject> background = setColorFilter->getProperty(BitmapFilter::Standard::Property::kOutputBitmap).getObject ();
+						if (background)
+						{
+							OwningPointer<BitmapFilter::IFilter> boxBlurFilter = BitmapFilter::Factory::getInstance().createFilter (BitmapFilter::Standard::kBoxBlur);
+							if (boxBlurFilter)
+							{
+								boxBlurFilter->setProperty (BitmapFilter::Standard::Property::kInputBitmap, (CBaseObject*)background);
+								boxBlurFilter->setProperty (BitmapFilter::Standard::Property::kRadius, (int32_t)shadowBlurSize);
+								if (boxBlurFilter->run (true))
+								{
+									CBaseObject* b = background;
+									setBackground (dynamic_cast<CBitmap*> (b));
+									shadowInvalid = false;
+								}
+							}
+						}
+					}
 				}
+
+				CCoord save[4];
+				modifyDrawContext (save, pContext);
+				CRect clientRect (getViewSize ());
+				clientRect.originize ();
+				drawBackgroundRect (pContext, clientRect);
+				restoreDrawContext (pContext, save);
+				bitmap->draw (pContext, getViewSize ());
+				setDirty (false);
 			}
 		}
 	}

@@ -45,7 +45,7 @@ namespace VSTGUI {
 /*
 TODO: Documentation
 
-	To setup OpenGL for a normal 2D matrix use this in drawOpenGL(..):
+	To setup OpenGL for a normal 2D matrix use this to setup the OpenGL context:
 
 	CRect r (getViewSize ());
 	glViewport (0, 0, r.getWidth (), r.getHeight ());

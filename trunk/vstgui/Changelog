@@ -1,3 +1,9 @@
+2011-10-08 arne
+
+	* add pDisabledBackground bitmap to CView and made pBackground a private member to support drawing a different bitmap if the mouse is enabled or disabled
+	* refactored bitmap filters to use a factory
+	* more uidescription editor
+
 2011-09-28 arne
 
 	* add CShadowViewContainer

@@ -126,11 +126,11 @@ void CKnob::setViewSize (const CRect &rect, bool invalid)
 //------------------------------------------------------------------------
 bool CKnob::sizeToFit ()
 {
-	if (pBackground)
+	if (getDrawBackground ())
 	{
 		CRect vs (getViewSize ());
-		vs.setWidth (pBackground->getWidth ());
-		vs.setHeight (pBackground->getHeight ());
+		vs.setWidth (getDrawBackground ()->getWidth ());
+		vs.setHeight (getDrawBackground ()->getHeight ());
 		setViewSize (vs);
 		setMouseableArea (vs);
 		return true;
@@ -141,9 +141,9 @@ bool CKnob::sizeToFit ()
 //------------------------------------------------------------------------
 void CKnob::draw (CDrawContext *pContext)
 {
-	if (pBackground)
+	if (getDrawBackground ())
 	{
-		pBackground->draw (pContext, getViewSize (), offset);
+		getDrawBackground ()->draw (pContext, getViewSize (), offset);
 	}
 	drawHandle (pContext);
 	setDirty (false);
@@ -663,10 +663,10 @@ CAnimKnob::~CAnimKnob ()
 //-----------------------------------------------------------------------------------------------
 bool CAnimKnob::sizeToFit ()
 {
-	if (pBackground)
+	if (getDrawBackground ())
 	{
 		CRect vs (getViewSize ());
-		vs.setWidth (pBackground->getWidth ());
+		vs.setWidth (getDrawBackground ()->getWidth ());
 		vs.setHeight (getHeightOfOneImage ());
 		setViewSize (vs);
 		setMouseableArea (vs);
@@ -679,8 +679,8 @@ bool CAnimKnob::sizeToFit ()
 void CAnimKnob::setHeightOfOneImage (const CCoord& height)
 {
 	IMultiBitmapControl::setHeightOfOneImage (height);
-	if (pBackground && heightOfOneImage)
-		setNumSubPixmaps ((int32_t)(pBackground->getHeight () / heightOfOneImage));
+	if (getDrawBackground () && heightOfOneImage)
+		setNumSubPixmaps ((int32_t)(getDrawBackground ()->getHeight () / heightOfOneImage));
 }
 
 //-----------------------------------------------------------------------------------------------
@@ -696,7 +696,7 @@ void CAnimKnob::setBackground (CBitmap *background)
 //------------------------------------------------------------------------
 void CAnimKnob::draw (CDrawContext *pContext)
 {
-	if (pBackground)
+	if (getDrawBackground ())
 	{
 		CPoint where (0, 0);
 		if (value >= 0.f && heightOfOneImage > 0.) 
@@ -709,7 +709,7 @@ void CAnimKnob::draw (CDrawContext *pContext)
 			where.v -= (int32_t)where.v % (int32_t)heightOfOneImage;
 		}
 
-		pBackground->draw (pContext, getViewSize (), where);
+		getDrawBackground ()->draw (pContext, getViewSize (), where);
 	}
 	setDirty (false);
 }

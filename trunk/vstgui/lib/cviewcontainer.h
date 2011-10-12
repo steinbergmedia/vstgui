@@ -37,6 +37,7 @@
 
 #include "cview.h"
 #include "ccolor.h"
+#include "cdrawcontext.h"
 #include <list>
 
 namespace VSTGUI {
@@ -91,6 +92,9 @@ public:
 	virtual void setBackgroundOffset (const CPoint& p) { backgroundOffset = p; }	///< set the offset of the background bitmap
 	virtual const CPoint& getBackgroundOffset () const { return backgroundOffset; }	///< get the offset of the background bitmap
 	virtual void drawBackgroundRect (CDrawContext* pContext, const CRect& _updateRect);	///< draw the background
+	
+	virtual void setBackgroundColorDrawStyle (CDrawStyle style);
+	CDrawStyle getBackgroundColorDrawStyle () const { return backgroundColorDrawStyle; }
 	//@}
 
 	void modifyDrawContext (CCoord save[4], CDrawContext* pContext);
@@ -157,6 +161,7 @@ protected:
 
 	CCView  *pFirstView;
 	CCView  *pLastView;
+	CDrawStyle backgroundColorDrawStyle;
 	CColor backgroundColor;
 	CPoint backgroundOffset;
 	CRect lastDrawnFocus;

@@ -239,15 +239,6 @@ Animator::Animator ()
 Animator::~Animator ()
 {
 	Timer::removeAnimator (this);
-	if (animations.empty () == false)
-	{
-		std::list<Animation*>::iterator it = animations.begin ();
-		while (it != animations.end ())
-		{
-			Animation* animation = *it++;
-			animation->forget ();
-		}
-	}
 }
 
 //-----------------------------------------------------------------------------
@@ -256,7 +247,9 @@ void Animator::addAnimation (CView* view, IdStringPtr name, IAnimationTarget* ta
 	if (animations.empty ())
 		Timer::addAnimator (this);
 	removeAnimation (view, name); // cancel animation with same view and name
-	animations.push_back (new Animation (view, name, target, timingFunction, notificationObject));
+	Animation* anim = new Animation (view, name, target, timingFunction, notificationObject);
+	animations.push_back (anim);
+	anim->forget ();
 	#if DEBUG_LOG
 	DebugPrint ("new animation added: %p - %s\n", view, name);
 	#endif
@@ -265,7 +258,7 @@ void Animator::addAnimation (CView* view, IdStringPtr name, IAnimationTarget* ta
 //-----------------------------------------------------------------------------
 void Animator::removeAnimation (CView* view, IdStringPtr name)
 {
-	std::list<Animation*>::iterator it = animations.begin ();
+	std::list<SharedPointer<Animation> >::iterator it = animations.begin ();
 	while (it != animations.end ())
 	{
 		Animation* animation = *it++;
@@ -288,7 +281,7 @@ void Animator::removeAnimation (CView* view, IdStringPtr name)
 //-----------------------------------------------------------------------------
 void Animator::removeAnimations (CView* view)
 {
-	std::list<Animation*>::iterator it = animations.begin ();
+	std::list<SharedPointer<Animation> >::iterator it = animations.begin ();
 	while (it != animations.end ())
 	{
 		Animation* animation = *it++;
@@ -314,7 +307,6 @@ void Animator::removeAnimation (Animation* a)
 	}
 	else
 	{
-		a->forget ();
 		animations.remove (a);
 	}
 }
@@ -327,7 +319,7 @@ CMessageResult Animator::notify (CBaseObject* sender, IdStringPtr message)
 		CBaseObjectGuard selfGuard (this);
 		inTimer = true;
 		uint32_t currentTicks = IPlatformFrame::getTicks ();
-		std::list<Animation*>::iterator it = animations.begin ();
+		std::list<SharedPointer<Animation> >::iterator it = animations.begin ();
 		while (it != animations.end ())
 		{
 			Animation* a = *it++;
@@ -358,7 +350,7 @@ CMessageResult Animator::notify (CBaseObject* sender, IdStringPtr message)
 			}
 		}
 		inTimer = false;
-		std::list<Animation*>::const_iterator cit = toRemove.begin ();
+		std::list<SharedPointer<Animation> >::const_iterator cit = toRemove.begin ();
 		while (cit != toRemove.end ())
 		{
 			Animation* a = *cit++;
@@ -385,9 +377,6 @@ Animator::Animation::Animation (CView* view, const std::string& name, IAnimation
 , lastPos (-1)
 , done (false)
 {
-	view->remember ();
-	if (notificationObject)
-		notificationObject->remember ();
 }
 
 //-----------------------------------------------------------------------------
@@ -397,7 +386,6 @@ Animator::Animation::~Animation ()
 	{
 		FinishedMessage fmsg (view, name, target);
 		notificationObject->notify (&fmsg, kMsgAnimationFinished);
-		notificationObject->forget ();
 	}
 	CBaseObject* obj = dynamic_cast<CBaseObject*> (target);
 	if (obj)
@@ -409,7 +397,6 @@ Animator::Animation::~Animation ()
 		obj->forget ();
 	else
 		delete timingFunction;
-	view->forget ();
 }
 
 }} // namespaces

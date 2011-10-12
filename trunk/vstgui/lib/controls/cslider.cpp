@@ -222,11 +222,11 @@ void CSlider::setViewSize (const CRect& rect, bool invalid)
 //------------------------------------------------------------------------
 bool CSlider::sizeToFit ()
 {
-	if (pBackground)
+	if (getDrawBackground ())
 	{
 		CRect vs (getViewSize ());
-		vs.setWidth (pBackground->getWidth ());
-		vs.setHeight (pBackground->getHeight ());
+		vs.setWidth (getDrawBackground ()->getWidth ());
+		vs.setHeight (getDrawBackground ()->getHeight ());
 		setViewSize (vs, true);
 		setMouseableArea (vs);
 		return true;
@@ -257,11 +257,11 @@ void CSlider::draw (CDrawContext *pContext)
 	CDrawContext* drawContext = pContext;
 
 	// draw background
-	if (pBackground)
+	if (getDrawBackground ())
 	{
 		CRect rect (0, 0, widthControl, heightControl);
 		rect.offset (getViewSize ().left, getViewSize ().top);
-		pBackground->draw (drawContext, rect, offset);
+		getDrawBackground ()->draw (drawContext, rect, offset);
 	}
 	
 	if (drawStyle != 0)

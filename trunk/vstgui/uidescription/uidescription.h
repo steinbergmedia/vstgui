@@ -147,6 +147,9 @@ public:
 	void changeTag (UTF8StringPtr name, int32_t tag);
 	void changeFont (UTF8StringPtr name, CFontRef newFont);
 	void changeBitmap (UTF8StringPtr name, UTF8StringPtr newName, const CRect* nineparttiledOffset = 0);
+
+	void changeBitmapFilters (UTF8StringPtr bitmapName, const std::list<SharedPointer<UIAttributes> >& filters);
+	void collectBitmapFilters (UTF8StringPtr bitmapName, std::list<SharedPointer<UIAttributes> >& filters) const;
 	
 	void removeColor (UTF8StringPtr name);
 	void removeTag (UTF8StringPtr name);

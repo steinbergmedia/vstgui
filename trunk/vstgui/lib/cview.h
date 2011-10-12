@@ -257,8 +257,8 @@ public:
 	/// @name Keyboard Methods
 	//-----------------------------------------------------------------------------
 	//@{
-	virtual int32_t onKeyDown (VstKeyCode& keyCode);												///< called if a key down event occurs and this view has focus
-	virtual int32_t onKeyUp (VstKeyCode& keyCode);													///< called if a key up event occurs and this view has focus
+	virtual int32_t onKeyDown (VstKeyCode& keyCode);											///< called if a key down event occurs and this view has focus
+	virtual int32_t onKeyUp (VstKeyCode& keyCode);												///< called if a key up event occurs and this view has focus
 	//@}
 
 	//-----------------------------------------------------------------------------
@@ -274,7 +274,7 @@ public:
 	virtual void parentSizeChanged () {}														///< notification that one of the views parent has changed its size
 	virtual CPoint& frameToLocal (CPoint& point) const;											///< conversion from frame coordinates to local view coordinates
 	virtual CPoint& localToFrame (CPoint& point) const;											///< conversion from local view coordinates to frame coordinates
-	virtual void setAutosizeFlags (int32_t flags) { autosizeFlags = flags; }						///< set autosize flags
+	virtual void setAutosizeFlags (int32_t flags) { autosizeFlags = flags; }					///< set autosize flags
 	virtual int32_t getAutosizeFlags () const { return autosizeFlags; }							///< get autosize flags
 	virtual bool sizeToFit () { return false; }													///< resize view to optimal size
 	//@}
@@ -296,15 +296,20 @@ public:
 	bool getAttributeSize (const CViewAttributeID id, int32_t& outSize) const;									///< get the size of an attribute
 	bool getAttribute (const CViewAttributeID id, const int32_t inSize, void* outData, int32_t& outSize) const;	///< get an attribute
 	bool setAttribute (const CViewAttributeID id, const int32_t inSize, const void* inData);					///< set an attribute
-	bool removeAttribute (const CViewAttributeID id);														///< remove an attribute
+	bool removeAttribute (const CViewAttributeID id);															///< remove an attribute
 	//@}
 
 	//-----------------------------------------------------------------------------
 	/// @name Background Methods
 	//-----------------------------------------------------------------------------
 	//@{
-	virtual void setBackground (CBitmap *background);											///< set the background image of this view
-	virtual CBitmap* getBackground () const { return pBackground; }								///< get the background image of this view
+	virtual void setBackground (CBitmap* background);											///< set the background image of this view
+	CBitmap* getBackground () const { return pBackground; }										///< get the background image of this view
+
+	virtual void setDisabledBackground (CBitmap* background);									///< set background image used when the mouse is not enabled
+	CBitmap* getDisabledBackground () const { return pDisabledBackground; }						///< get background image used when the mouse is not enabled
+
+	CBitmap* getDrawBackground () const { return (pDisabledBackground ? (getMouseEnabled () ? pBackground : pDisabledBackground): pBackground); }
 	//@}
 
 	//-----------------------------------------------------------------------------
@@ -353,7 +358,7 @@ public:
 	//@{
 	virtual void onIdle () {}																	///< called on idle when view wants idle
 	void setWantsIdle (bool state);																///< enable/disable onIdle() callback
-	bool wantsIdle () const { return (viewFlags & kWantsIdle) ? true : false; }									///< returns if the view wants idle callback or not
+	bool wantsIdle () const { return (viewFlags & kWantsIdle) ? true : false; }					///< returns if the view wants idle callback or not
 	static int32_t idleRate;																	///< global idle rate in Hz, defaults to 30 Hz
 	//@}
 
@@ -390,8 +395,10 @@ protected:
 	int32_t autosizeFlags;
 	
 	float alphaValue;
-	
-	CBitmap* pBackground;
+
+private:
+	SharedPointer<CBitmap> pBackground;
+	SharedPointer<CBitmap> pDisabledBackground;
 
 	std::map<CViewAttributeID, CViewAttributeEntry*> attributes;
 

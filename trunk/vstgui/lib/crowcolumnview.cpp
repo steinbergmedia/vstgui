@@ -46,6 +46,7 @@ CRowColumnView::CRowColumnView (const CRect& size, Style style, LayoutStyle layo
 , spacing (spacing)
 , margin (margin)
 , animateViewResizing (false)
+, layoutGuard (false)
 , viewResizeAnimationTime (200)
 {
 }
@@ -187,7 +188,12 @@ void CRowColumnView::layoutViewsEqualSize ()
 //--------------------------------------------------------------------------------
 void CRowColumnView::layoutViews ()
 {
-	layoutViewsEqualSize ();
+	if (layoutGuard == false)
+	{
+		layoutGuard = true;
+		layoutViewsEqualSize ();
+		layoutGuard = false;
+	}
 }
 
 //--------------------------------------------------------------------------------
@@ -234,6 +240,16 @@ bool CRowColumnView::sizeToFit ()
 	return false;
 }
 
+//--------------------------------------------------------------------------------
+CMessageResult CRowColumnView::notify (CBaseObject* sender, IdStringPtr message)
+{
+	if (message == kMsgViewSizeChanged)
+	{
+		if (isAttached ())
+			layoutViews ();
+	}
+	return CViewContainer::notify (sender, message);
+}
 
 //--------------------------------------------------------------------------------
 //--------------------------------------------------------------------------------

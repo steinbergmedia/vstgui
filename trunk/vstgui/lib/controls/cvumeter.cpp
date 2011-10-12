@@ -101,11 +101,11 @@ void CVuMeter::setViewSize (const CRect& newSize, bool invalid)
 //------------------------------------------------------------------------
 bool CVuMeter::sizeToFit ()
 {
-	if (pBackground)
+	if (getDrawBackground ())
 	{
 		CRect vs (getViewSize ());
-		vs.setWidth (pBackground->getWidth ());
-		vs.setHeight (pBackground->getHeight ());
+		vs.setWidth (getDrawBackground ()->getWidth ());
+		vs.setHeight (getDrawBackground ()->getHeight ());
 		setViewSize (vs);
 		setMouseableArea (vs);
 		return true;

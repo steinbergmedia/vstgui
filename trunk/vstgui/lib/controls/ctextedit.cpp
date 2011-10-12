@@ -110,7 +110,11 @@ void CTextEdit::setValue (float val)
 	if (valueToString)
 		converted = valueToString (getValue (), string, valueToStringUserData);
 	if (!converted)
-		sprintf (string, "%2.2f", getValue ());
+	{
+		char precisionStr[10];
+		sprintf (precisionStr, "%%.%hhuf", valuePrecision);
+		sprintf (string, precisionStr, getValue ());
+	}
 
 	setText (string);
 }
