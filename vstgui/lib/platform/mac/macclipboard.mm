@@ -2,6 +2,7 @@
 #import "../../cdropsource.h"
 #import <Cocoa/Cocoa.h>
 #import <vector>
+#import <string>
 
 namespace VSTGUI {
 namespace MacClipboard {
@@ -92,7 +93,7 @@ int32_t Pasteboard::getDataSize (int32_t index)
 	{
 		return (int32_t)[[dataArray objectAtIndex:index] length];
 	}
-	if (index < strings.size ())
+	if (index < (int32_t)strings.size ())
 	{
 		return (int32_t)strings[index].length ();
 	}
@@ -104,7 +105,7 @@ Pasteboard::Type Pasteboard::getDataType (int32_t index)
 {
 	if (dataArray)
 		return kBinary;
-	else if (index < strings.size ())
+	else if (index < (int32_t)strings.size ())
 	{
 		if (stringsAreFiles)
 			return kFilePath;
@@ -122,7 +123,7 @@ int32_t Pasteboard::getData (int32_t index, const void*& buffer, Pasteboard::Typ
 		type = kBinary;
 		return (int32_t)[[dataArray objectAtIndex:index] length];
 	}
-	if (index < strings.size ())
+	if (index < (int32_t)strings.size ())
 	{
 		buffer = strings[index].c_str ();
 		type = stringsAreFiles ? kFilePath : kText;
@@ -158,8 +159,8 @@ void setClipboard (IDataPackage* dataSource)
 				{
 					case IDataPackage::kBinary:
 					{
-						[pb declareTypes:[NSArray arrayWithObject:@"net.sourceforge.vstgui.binary.drag"] owner:nil];
-						[pb setData:[NSData dataWithBytes:data length:length] forType:@"net.sourceforge.vstgui.binary.drag"];
+						[pb declareTypes:[NSArray arrayWithObject:[NSString stringWithCString:MacClipboard::getPasteboardBinaryType () encoding:NSASCIIStringEncoding]] owner:nil];
+						[pb setData:[NSData dataWithBytes:data length:length] forType:[NSString stringWithCString:MacClipboard::getPasteboardBinaryType () encoding:NSASCIIStringEncoding]];
 						return;
 					}
 					case IDataPackage::kText:

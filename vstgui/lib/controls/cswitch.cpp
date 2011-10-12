@@ -109,13 +109,13 @@ CVerticalSwitch::~CVerticalSwitch ()
 //------------------------------------------------------------------------
 void CVerticalSwitch::draw (CDrawContext *pContext)
 {
-	if (pBackground)
+	if (getDrawBackground ())
 	{
 		float norm = (value - getMin ()) / (getMax () - getMin ());
 		// source position in bitmap
 		CPoint where (0, heightOfOneImage * ((int32_t)(norm * (getNumSubPixmaps () - 1) + 0.5f)));
 
-		pBackground->draw (pContext, getViewSize (), where);
+		getDrawBackground ()->draw (pContext, getViewSize (), where);
 	}
 	setDirty (false);
 }
@@ -201,10 +201,10 @@ int32_t CVerticalSwitch::onKeyDown (VstKeyCode& keyCode)
 //-----------------------------------------------------------------------------------------------
 bool CVerticalSwitch::sizeToFit ()
 {
-	if (pBackground)
+	if (getDrawBackground ())
 	{
 		CRect vs (getViewSize ());
-		vs.setWidth (pBackground->getWidth ());
+		vs.setWidth (getDrawBackground ()->getWidth ());
 		vs.setHeight (getHeightOfOneImage ());
 		setViewSize (vs);
 		setMouseableArea (vs);
@@ -280,13 +280,13 @@ CHorizontalSwitch::~CHorizontalSwitch ()
 //------------------------------------------------------------------------
 void CHorizontalSwitch::draw (CDrawContext *pContext)
 {
-	if (pBackground)
+	if (getDrawBackground ())
 	{
 		float norm = (value - getMin ()) / (getMax () - getMin ());
 		// source position in bitmap
 		CPoint where (0, heightOfOneImage * ((int32_t)(norm * (getNumSubPixmaps () - 1) + 0.5f)));
 
-		pBackground->draw (pContext, getViewSize (), where);
+		getDrawBackground ()->draw (pContext, getViewSize (), where);
 	}
 	setDirty (false);
 }
@@ -297,7 +297,7 @@ CMouseEventResult CHorizontalSwitch::onMouseDown (CPoint& where, const CButtonSt
 	if (!(buttons & kLButton))
 		return kMouseEventNotHandled;
 
-	coef = (double)pBackground->getWidth () / (double)getNumSubPixmaps ();
+	coef = (double)getDrawBackground ()->getWidth () / (double)getNumSubPixmaps ();
 
 	beginEdit ();
 
@@ -373,10 +373,10 @@ int32_t CHorizontalSwitch::onKeyDown (VstKeyCode& keyCode)
 //-----------------------------------------------------------------------------------------------
 bool CHorizontalSwitch::sizeToFit ()
 {
-	if (pBackground)
+	if (getDrawBackground ())
 	{
 		CRect vs (getViewSize ());
-		vs.setWidth (pBackground->getWidth ());
+		vs.setWidth (getDrawBackground ()->getWidth ());
 		vs.setHeight (getHeightOfOneImage ());
 		setViewSize (vs);
 		setMouseableArea (vs);
@@ -472,9 +472,9 @@ void CRockerSwitch::draw (CDrawContext *pContext)
 	else if (value == (getMax () - getMin ()) / 2.f + getMin ())
 		where.v += heightOfOneImage;
 
-	if (pBackground)
+	if (getDrawBackground ())
 	{
-		pBackground->draw (pContext, getViewSize (), where);
+		getDrawBackground ()->draw (pContext, getViewSize (), where);
 	}
 	setDirty (false);
 }
@@ -626,10 +626,10 @@ CMessageResult CRockerSwitch::notify (CBaseObject* sender, IdStringPtr message)
 //-----------------------------------------------------------------------------------------------
 bool CRockerSwitch::sizeToFit ()
 {
-	if (pBackground)
+	if (getDrawBackground ())
 	{
 		CRect vs (getViewSize ());
-		vs.setWidth (pBackground->getWidth ());
+		vs.setWidth (getDrawBackground ()->getWidth ());
 		vs.setHeight (getHeightOfOneImage ());
 		setViewSize (vs);
 		setMouseableArea (vs);

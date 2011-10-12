@@ -93,6 +93,8 @@ public:
 	virtual void setStyle (int32_t val);
 	int32_t getStyle () const { return style; }
 
+	virtual void setPrecision (uint8_t precision);
+	uint8_t getPrecision () const { return valuePrecision; }
 	//@}
 
 	virtual void draw (CDrawContext* pContext);
@@ -112,6 +114,7 @@ protected:
 	
 	CHoriTxtAlign horiTxtAlign;
 	int32_t		style;
+	uint8_t		valuePrecision;
 
 	CFontRef	fontID;
 	CColor		fontColor;

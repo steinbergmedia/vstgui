@@ -39,6 +39,7 @@
 #include "../lib/cfont.h"
 #include "../lib/cframe.h"
 #include "../lib/cdrawcontext.h"
+#include "../lib/cbitmapfilter.h"
 #include "../lib/platform/win32/win32support.h"
 #include "../lib/platform/mac/macglobals.h"
 #include <sstream>
@@ -124,10 +125,14 @@ public:
 	CBitmap* getBitmap ();
 	void setBitmap (UTF8StringPtr bitmapName);
 	void setNinePartTiledOffset (const CRect* offsets);
+	void invalidBitmap ();
+	bool getFilterProcessed () const { return filterProcessed; }
+	void setFilterProcessed () { filterProcessed = true; }
 	CLASS_METHODS(UIBitmapNode, UINode)
 protected:
 	~UIBitmapNode ();
 	CBitmap* bitmap;
+	bool filterProcessed;
 };
 
 //-----------------------------------------------------------------------------
@@ -1004,6 +1009,93 @@ CBitmap* UIDescription::getBitmap (UTF8StringPtr name)
 				platformBitmap->forget ();
 			}
 		}
+		if (bitmap && bitmapNode->getFilterProcessed () == false)
+		{
+			std::list<OwningPointer<BitmapFilter::IFilter> > filters;
+			for (UIDescList::iterator it = bitmapNode->getChildren ().begin (); it != bitmapNode->getChildren ().end (); it++)
+			{
+				const std::string* filterName = 0;
+				if ((*it)->getName () == "filter" && (filterName = (*it)->getAttributes ()->getAttributeValue ("name")))
+				{
+					BitmapFilter::IFilter* filter = BitmapFilter::Factory::getInstance().createFilter (filterName->c_str ());
+					if (filter == 0)
+						continue;
+					filters.push_back (filter);
+					for (UIDescList::iterator it2 = (*it)->getChildren ().begin (); it2 != (*it)->getChildren ().end (); it2++)
+					{
+						if ((*it2)->getName () != "property")
+							continue;
+						const std::string* name = (*it2)->getAttributes ()->getAttributeValue ("name");
+						if (name == 0)
+							continue;
+						switch (filter->getProperty (name->c_str ()).getType ())
+						{
+							case BitmapFilter::Property::kInteger:
+							{
+								int32_t intValue;
+								if ((*it2)->getAttributes ()->getIntegerAttribute ("value", intValue))
+									filter->setProperty (name->c_str (), intValue);
+								break;
+							}
+							case BitmapFilter::Property::kFloat:
+							{
+								double floatValue;
+								if ((*it2)->getAttributes ()->getDoubleAttribute ("value", floatValue))
+									filter->setProperty (name->c_str (), floatValue);
+								break;
+							}
+							case BitmapFilter::Property::kPoint:
+							{
+								CPoint pointValue;
+								if ((*it2)->getAttributes ()->getPointAttribute ("value", pointValue))
+									filter->setProperty (name->c_str (), pointValue);
+								break;
+							}
+							case BitmapFilter::Property::kRect:
+							{
+								CRect rectValue;
+								if ((*it2)->getAttributes ()->getRectAttribute ("value", rectValue))
+									filter->setProperty (name->c_str (), rectValue);
+								break;
+							}
+							case BitmapFilter::Property::kColor:
+							{
+								const std::string* colorString = (*it2)->getAttributes()->getAttributeValue ("value");
+								if (colorString)
+								{
+									CColor color;
+									if (getColor (colorString->c_str (), color))
+										filter->setProperty(name->c_str (), color);
+								}
+								break;
+							}
+							case BitmapFilter::Property::kTransformMatrix:
+							{
+								// TODO
+								break;
+							}
+							case BitmapFilter::Property::kObject: // objects can not be stored/restored
+							case BitmapFilter::Property::kNotFound:
+								break;
+						}
+					}
+				}
+			}
+			for (std::list<OwningPointer<BitmapFilter::IFilter> >::const_iterator it = filters.begin (); it != filters.end (); it++)
+			{
+				(*it)->setProperty(BitmapFilter::Standard::Property::kInputBitmap, bitmap);
+				if ((*it)->run ())
+				{
+					CBaseObject* obj = (*it)->getProperty(BitmapFilter::Standard::Property::kOutputBitmap).getObject ();
+					CBitmap* outputBitmap = dynamic_cast<CBitmap*>(obj);
+					if (outputBitmap)
+					{
+						bitmap->setPlatformBitmap (outputBitmap->getPlatformBitmap ());
+					}
+				}
+			}
+			bitmapNode->setFilterProcessed ();
+		}
 		return bitmap;
 	}
 	return 0;
@@ -1276,6 +1368,70 @@ void UIDescription::changeBitmap (UTF8StringPtr name, UTF8StringPtr newName, con
 			node->setBitmap (newName);
 			bitmapsNode->getChildren ().add (node);
 			changed (kMessageBitmapChanged);
+		}
+	}
+}
+
+//-----------------------------------------------------------------------------
+void UIDescription::changeBitmapFilters (UTF8StringPtr bitmapName, const std::list<SharedPointer<UIAttributes> >& filters)
+{
+	UIBitmapNode* bitmapNode = dynamic_cast<UIBitmapNode*> (findChildNodeByNameAttribute (getBaseNode ("bitmaps"), bitmapName));
+	if (bitmapNode)
+	{
+		bitmapNode->getChildren().removeAll ();
+		for (std::list<SharedPointer<UIAttributes> >::const_iterator it = filters.begin (); it != filters.end (); it++)
+		{
+			const std::string* filterName = (*it)->getAttributeValue ("name");
+			if (filterName == 0)
+				continue;
+			UINode* filterNode = new UINode ("filter");
+			filterNode->getAttributes ()->setAttribute ("name", filterName->c_str ());
+			for (UIAttributes::const_iterator it2 = (*it)->begin (); it2 != (*it)->end (); it2++)
+			{
+				if ((*it2).first == "name")
+					continue;
+				UINode* propertyNode = new UINode ("property");
+				propertyNode->getAttributes ()->setAttribute("name", (*it2).first.c_str ());
+				propertyNode->getAttributes ()->setAttribute("value", (*it2).second.c_str ());
+				filterNode->getChildren ().add (propertyNode);
+			}
+			bitmapNode->getChildren ().add (filterNode);
+		}
+		bitmapNode->invalidBitmap ();
+		changed (kMessageBitmapChanged);
+	}
+}
+
+//-----------------------------------------------------------------------------
+void UIDescription::collectBitmapFilters (UTF8StringPtr bitmapName, std::list<SharedPointer<UIAttributes> >& filters) const
+{
+	UIBitmapNode* bitmapNode = dynamic_cast<UIBitmapNode*> (findChildNodeByNameAttribute (getBaseNode ("bitmaps"), bitmapName));
+	if (bitmapNode)
+	{
+		for (UIDescList::iterator it = bitmapNode->getChildren ().begin (); it != bitmapNode->getChildren ().end (); it++)
+		{
+			if ((*it)->getName () == "filter")
+			{
+				const std::string* filterName = (*it)->getAttributes ()->getAttributeValue ("name");
+				if (filterName == 0)
+					continue;
+				UIAttributes* attributes = new UIAttributes ();
+				attributes->setAttribute ("name", filterName->c_str ());
+				for (UIDescList::iterator it2 = (*it)->getChildren ().begin (); it2 != (*it)->getChildren ().end (); it2++)
+				{
+					if ((*it2)->getName () == "property")
+					{
+						const std::string* name = (*it2)->getAttributes ()->getAttributeValue ("name");
+						const std::string* value = (*it2)->getAttributes ()->getAttributeValue ("value");
+						if (name && value)
+						{
+							attributes->setAttribute (name->c_str (), value->c_str ());
+						}
+					}
+				}
+				filters.push_back (attributes);
+				attributes->forget ();
+			}
 		}
 	}
 }
@@ -1872,6 +2028,7 @@ void UIControlTagNode::setTag (int32_t newTag)
 UIBitmapNode::UIBitmapNode (const std::string& name, UIAttributes* attributes)
 : UINode (name, attributes)
 , bitmap (0)
+, filterProcessed (false)
 {
 }
 
@@ -1879,6 +2036,7 @@ UIBitmapNode::UIBitmapNode (const std::string& name, UIAttributes* attributes)
 UIBitmapNode::UIBitmapNode (const UIBitmapNode& n)
 : UINode (n)
 , bitmap (n.bitmap)
+, filterProcessed (n.filterProcessed)
 {
 	if (bitmap)
 		bitmap->remember ();
@@ -1905,7 +2063,9 @@ CBitmap* UIBitmapNode::getBitmap ()
 				bitmap = new CNinePartTiledBitmap (CResourceDescription (path->c_str ()), CNinePartTiledBitmap::PartOffsets (offsets.left, offsets.top, offsets.right, offsets.bottom));
 			}
 			else
+			{
 				bitmap = new CBitmap (CResourceDescription (path->c_str ()));
+			}
 		}
 	}
 	return bitmap;
@@ -1941,6 +2101,15 @@ void UIBitmapNode::setNinePartTiledOffset (const CRect* offsets)
 		attributes->setRectAttribute ("nineparttiled-offsets", *offsets);
 	else
 		attributes->removeAttribute ("nineparttiled-offsets");
+}
+
+//-----------------------------------------------------------------------------
+void UIBitmapNode::invalidBitmap ()
+{
+	if (bitmap)
+		bitmap->forget ();
+	bitmap = 0;
+	filterProcessed = false;
 }
 
 //-----------------------------------------------------------------------------

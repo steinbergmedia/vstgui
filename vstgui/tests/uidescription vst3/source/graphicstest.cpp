@@ -410,7 +410,7 @@ void GraphicsView::animationTick (CView* view, const char* name, float pos)
 	}
 	else if (strcmp (name, "Saturation") == 0)
 	{
-		if (Bitmap::hueSaturateValue (pBackground, 20., 0.01, 0.005))
+		if (Bitmap::hueSaturateValue (getBackground (), 20., 0.01, 0.005))
 			invalid ();
 	}
 }

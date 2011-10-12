@@ -933,6 +933,20 @@ void UIEditController::performBitmapNinePartTiledChange (UTF8StringPtr bitmapNam
 }
 
 //----------------------------------------------------------------------------------------------------
+void UIEditController::performBitmapFiltersChange (UTF8StringPtr bitmapName, const std::list<SharedPointer<UIAttributes> >& filterDescription)
+{
+	std::list<CView*> views;
+	getTemplateViews (views);
+
+	undoManager->startGroupAction ("Change Bitmap Filter");
+	undoManager->pushAndPerform (new BitmapFilterChangeAction(editDescription, bitmapName, filterDescription, true));
+	undoManager->pushAndPerform (new MultipleAttributeChangeAction (editDescription, views, IViewCreator::kBitmapType, bitmapName, bitmapName));
+	undoManager->pushAndPerform (new BitmapFilterChangeAction(editDescription, bitmapName, filterDescription, false));
+	undoManager->endGroupAction ();
+}
+
+
+//----------------------------------------------------------------------------------------------------
 void UIEditController::performAlternativeFontChange (UTF8StringPtr fontName, UTF8StringPtr newAlternativeFonts)
 {
 	undoManager->pushAndPerform (new AlternateFontChangeAction (editDescription, fontName, newAlternativeFonts));

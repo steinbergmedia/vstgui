@@ -1079,6 +1079,47 @@ void NinePartTiledBitmapChangeAction::undo ()
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
+BitmapFilterChangeAction::BitmapFilterChangeAction (UIDescription* description, UTF8StringPtr bitmapName, const std::list<SharedPointer<UIAttributes> >& attributes, bool performOrUndo)
+: description (description)
+, bitmapName (bitmapName)
+, newAttributes (attributes)
+, performOrUndo (performOrUndo)
+{
+	description->collectBitmapFilters (bitmapName, oldAttributes);
+}
+
+//----------------------------------------------------------------------------------------------------
+BitmapFilterChangeAction::~BitmapFilterChangeAction ()
+{
+}
+
+//----------------------------------------------------------------------------------------------------
+UTF8StringPtr BitmapFilterChangeAction::getName ()
+{
+	return "Change Bitmap Filter";
+}
+
+//----------------------------------------------------------------------------------------------------
+void BitmapFilterChangeAction::perform ()
+{
+	if (performOrUndo)
+	{
+		description->changeBitmapFilters (bitmapName.c_str (), newAttributes);
+	}
+}
+
+//----------------------------------------------------------------------------------------------------
+void BitmapFilterChangeAction::undo ()
+{
+	if (performOrUndo == false)
+	{
+		description->changeBitmapFilters (bitmapName.c_str (), oldAttributes);
+	}
+}
+
+//----------------------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------
 FontChangeAction::FontChangeAction (UIDescription* description, UTF8StringPtr name, CFontRef font, bool remove, bool performOrUndo)
 : description(description)
 , name (name)

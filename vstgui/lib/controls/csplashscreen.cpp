@@ -50,8 +50,8 @@ public:
 
 	void draw (CDrawContext *pContext)
 	{
-		if (pBackground)
-			pBackground->draw (pContext, getViewSize (), offset);
+		if (getDrawBackground ())
+			getDrawBackground ()->draw (pContext, getViewSize (), offset);
 		setDirty (false);
 	}
 

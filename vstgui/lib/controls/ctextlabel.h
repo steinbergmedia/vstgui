@@ -59,17 +59,17 @@ public:
 	virtual UTF8StringPtr getText () const;		///< read only access to text
 
 	enum TextTruncateMode {
-		kTruncateNone = 0,
-		kTruncateHead,
-		kTruncateTail
+		kTruncateNone = 0,						///< no characters will be removed
+		kTruncateHead,							///< characters will be removed from the beginning of the text
+		kTruncateTail							///< characters will be removed from the end of the text
 	};
 	
-	virtual void setTextTruncateMode (int32_t mode);
-	int32_t getTextTruncateMode () const { return textTruncateMode; }
-	UTF8StringPtr getTruncatedText () const { return truncatedText.c_str (); }
+	virtual void setTextTruncateMode (TextTruncateMode mode);					///< set text truncate mode
+	TextTruncateMode getTextTruncateMode () const { return textTruncateMode; }	///< get text truncate mode
+	UTF8StringPtr getTruncatedText () const { return truncatedText.c_str (); }	///< get the truncated text
 	//@}
 
-	static IdStringPtr kMsgTruncatedTextChanged;
+	static IdStringPtr kMsgTruncatedTextChanged;								///< message which is send to dependent objects when the truncated text changes
 	
 	virtual	void draw (CDrawContext* pContext);
 	virtual bool sizeToFit ();
@@ -81,7 +81,7 @@ protected:
 	~CTextLabel ();
 	void freeText ();
 	void calculateTruncatedText ();
-	int32_t textTruncateMode;
+	TextTruncateMode textTruncateMode;
 	UTF8StringBuffer text;
 	std::string truncatedText;
 };

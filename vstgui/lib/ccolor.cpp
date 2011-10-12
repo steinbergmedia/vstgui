@@ -113,16 +113,6 @@ void CColor::toHSL (double& hue, double& saturation, double& lightness) const
 //-----------------------------------------------------------------------------
 void CColor::fromHSL (double& hue, double& saturation, double& lightness)
 {
-//	if (lightness == 0.)
-//	{
-//		red = green = blue = 0;
-//		return;
-//	}
-//	if (saturation == 0.)
-//	{
-//		red = green = blue = 255. * lightness;
-//		return;
-//	}
 	while (hue > 360.)
 		hue -= 360.;
 	while (hue < 0.)

@@ -375,6 +375,24 @@ protected:
 };
 
 //----------------------------------------------------------------------------------------------------
+class BitmapFilterChangeAction : public IAction
+{
+public:
+	BitmapFilterChangeAction (UIDescription* description, UTF8StringPtr bitmapName, const std::list<SharedPointer<UIAttributes> >& attributes, bool performOrUndo);
+	~BitmapFilterChangeAction ();
+	
+	virtual UTF8StringPtr getName ();
+	virtual void perform ();
+	virtual void undo ();
+protected:
+	SharedPointer<UIDescription> description;
+	std::string bitmapName;
+	std::list<SharedPointer<UIAttributes> > newAttributes;
+	std::list<SharedPointer<UIAttributes> > oldAttributes;
+	bool performOrUndo;
+};
+
+//----------------------------------------------------------------------------------------------------
 class FontChangeAction : public IAction
 {
 public:

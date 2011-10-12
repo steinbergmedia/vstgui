@@ -20,6 +20,7 @@ It's recommended to start new projects with version 4 while old projects should 
 - @ref page_uidescription_editor @n
 - VSTGUI::COpenGLView
 - VSTGUI::CRowColumnView
+- VSTGUI::CShadowViewContainer
 - VSTGUI::BitmapFilter
 - More @link VSTGUI::CScrollView::CScrollViewStyle VSTGUI::CScrollView styles @endlink
 
@@ -35,6 +36,10 @@ It's recommended to start new projects with version 4 while old projects should 
 - Direct2D drawing on Windows (Windows Vista or Windows 7)
 
 @section code_changes Changes for existing VSTGUI code
+
+@subsection code_changes_4_0_to_4_1 VSTGUI 4.0 -> VSTGUI 4.1
+
+- the pBackground member of CView is now private. You must replace all read access with getDrawBackground () or getBackground () and all write access with setBackground ()
 
 @subsection code_changes_3_6_to_4_0 VSTGUI 3.6 -> VSTGUI 4.0
 

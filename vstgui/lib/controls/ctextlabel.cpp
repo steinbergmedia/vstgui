@@ -106,7 +106,7 @@ void CTextLabel::setText (UTF8StringPtr txt)
 }
 
 //------------------------------------------------------------------------
-void CTextLabel::setTextTruncateMode (int32_t mode)
+void CTextLabel::setTextTruncateMode (TextTruncateMode mode)
 {
 	if (textTruncateMode != mode)
 	{

@@ -819,12 +819,13 @@ CView* UIAttributesController::createViewForAttribute (const std::string& attrNa
 {
 	const CCoord height = 18;
 	const CCoord width = 160;
+	const CCoord margin = 2;
 	CViewContainer* result = new CViewContainer (CRect (0, 0, width, height+2), 0);
 	result->setAutosizeFlags (kAutosizeLeft|kAutosizeRight|kAutosizeColumn);
 	result->setTransparency (true);
 
 	CCoord middle = width/2;
-	CTextLabel* label = new CTextLabel (CRect (5, 1, middle - 10, height+1), attrName.c_str ());
+	CTextLabel* label = new CTextLabel (CRect (5, 1, middle - margin, height+1), attrName.c_str ());
 	label->setTextTruncateMode (CTextLabel::kTruncateHead);
 	label->setTransparency (true);
 	label->setHoriAlign (kRightText);
@@ -849,7 +850,7 @@ CView* UIAttributesController::createViewForAttribute (const std::string& attrNa
 		first = false;
 	FOREACH_IN_SELECTION_END
 
-	CRect r (middle+10, 1, width-5, height+1);
+	CRect r (middle+margin, 1, width-5, height+1);
 	CView* valueView = 0;
 	
 	if (attrName == "text-alignment")
@@ -978,7 +979,7 @@ void UIAttributesController::rebuildAttributesView ()
 		std::list<std::string> temp;
 		if (viewFactory->getAttributeNamesForView (view, temp))
 		{
-			std::list<const std::string*> toRemove;
+			std::list<std::string> toRemove;
 			if (attrNames.empty ())
 				attrNames = temp;
 			else
@@ -998,7 +999,10 @@ void UIAttributesController::rebuildAttributesView ()
 						it2++;
 					}
 					if (!found)
-						toRemove.push_back (&(*it));
+					{
+						toRemove.push_back ((*it));
+						temp.remove (*it);
+					}
 					it++;
 				}
 			}
@@ -1009,12 +1013,12 @@ void UIAttributesController::rebuildAttributesView ()
 					std::string lowerCaseName (*rit);
 					std::transform (lowerCaseName.begin (), lowerCaseName.end (), lowerCaseName.begin (), ::tolower);
 					if (lowerCaseName.find (filter) == std::string::npos)
-						toRemove.push_back (&(*rit));
+						toRemove.push_back (*rit);
 				}
 			}
-			for (std::list<const std::string*>::const_iterator it = toRemove.begin (); it != toRemove.end (); it++)
+			for (std::list<std::string>::const_iterator it = toRemove.begin (); it != toRemove.end (); it++)
 			{
-				attrNames.remove (*(*it));
+				attrNames.remove ((*it));
 			}
 		}
 	FOREACH_IN_SELECTION_END
@@ -1045,6 +1049,7 @@ void UIAttributesController::rebuildAttributesView ()
 		}
 		currentAttributeName = 0;
 		attributeView->sizeToFit ();
+		attributeView->setMouseableArea (attributeView->getViewSize ());
 	}
 	attributeView->invalid ();
 }
