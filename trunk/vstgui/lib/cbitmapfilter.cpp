@@ -251,7 +251,7 @@ bool FilterBase::setProperty (IdStringPtr name, const Property& property)
 	const_iterator it = find (name);
 	if (it != end () && it->second.getType () == property.getType ())
 	{
-		at (name) = property;
+		(*this)[name] = property;
 		return true;
 	}
 	return false;
