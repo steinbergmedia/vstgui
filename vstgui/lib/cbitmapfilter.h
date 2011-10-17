@@ -34,7 +34,7 @@ public:
 		kTransformMatrix
 	};
 	
-	Property (Type type);
+	Property (Type type = kNotFound);
 	Property (int32_t intValue);
 	Property (double floatValue);
 	Property (CBaseObject* objectValue);
