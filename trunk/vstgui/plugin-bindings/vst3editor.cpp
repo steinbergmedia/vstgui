@@ -1058,7 +1058,9 @@ void VST3Editor::syncParameterTags ()
 				{
 					Steinberg::String paramTitle (info.title);
 					paramTitle.toMultiByte (Steinberg::kCP_Utf8);
-					actionPerformer->performTagChange (paramTitle, info.id);
+					Steinberg::String paramIDStr;
+					paramIDStr.printInt64 (info.id);
+					actionPerformer->performTagChange (paramTitle, paramIDStr);
 				}
 			}
 		}

@@ -37,6 +37,7 @@
 #include "uiviewcreator.h"
 #include "cstream.h"
 #include "../lib/cfont.h"
+#include "../lib/cstring.h"
 #include "../lib/cframe.h"
 #include "../lib/cdrawcontext.h"
 #include "../lib/cbitmapfilter.h"
@@ -104,6 +105,29 @@ protected:
 };
 
 //-----------------------------------------------------------------------------
+class UIVariableNode : public UINode
+{
+public:
+	UIVariableNode (const std::string& name, UIAttributes* attributes);
+	UIVariableNode (const UIVariableNode& n);
+	
+	enum Type {
+		kNumber,
+		kString,
+		kUnknown
+	};
+	
+	Type getType () const;
+	double getNumber () const;
+	const std::string& getString () const;
+
+	CLASS_METHODS(UIVariableNode, UINode)
+protected:
+	Type type;
+	double number;
+};
+
+//-----------------------------------------------------------------------------
 class UIControlTagNode : public UINode
 {
 public:
@@ -111,6 +135,10 @@ public:
 	UIControlTagNode (const UIControlTagNode& n);
 	int32_t getTag ();
 	void setTag (int32_t newTag);
+	
+	const std::string* getTagString () const;
+	void setTagString (const std::string& str);
+	
 	CLASS_METHODS(UIControlTagNode, UINode)
 protected:
 	int32_t tag;
@@ -946,12 +974,26 @@ UINode* UIDescription::findChildNodeByNameAttribute (UINode* node, UTF8StringPtr
 }
 
 //-----------------------------------------------------------------------------
-int32_t UIDescription::getTagForName (UTF8StringPtr name)
+int32_t UIDescription::getTagForName (UTF8StringPtr name) const
 {
 	int32_t tag = -1;
 	UIControlTagNode* controlTagNode = dynamic_cast<UIControlTagNode*> (findChildNodeByNameAttribute (getBaseNode ("control-tags"), name));
 	if (controlTagNode)
+	{
 		tag = controlTagNode->getTag ();
+		if (tag == -1)
+		{
+			const std::string* tagStr = controlTagNode->getTagString ();
+			if (tagStr)
+			{
+				double value;
+				if (calculateStringValue (tagStr->c_str (), value))
+				{
+					tag = (int32_t)value;
+				}
+			}
+		}
+	}
 	if (controller)
 		tag = controller->getTagForName (name, tag);
 	return tag;
@@ -1204,10 +1246,20 @@ UTF8StringPtr UIDescription::lookupControlTagName (const int32_t tag) const
 		while (it != children.end ())
 		{
 			UIControlTagNode* node = dynamic_cast<UIControlTagNode*>(*it);
-			if (node && node->getTag () == tag)
+			if (node)
 			{
-				const std::string* tagName = node->getAttributes ()->getAttributeValue ("name");
-				return tagName ? tagName->c_str () : 0;
+				int32_t nodeTag = node->getTag ();
+				if (nodeTag == -1 && node->getTagString ())
+				{
+					double v;
+					if (calculateStringValue (node->getTagString ()->c_str (), v))
+						nodeTag = (int32_t)v;
+				}
+				if (nodeTag == tag)
+				{
+					const std::string* tagName = node->getAttributes ()->getAttributeValue ("name");
+					return tagName ? tagName->c_str () : 0;
+				}
 			}
 			it++;
 		}
@@ -1831,6 +1883,378 @@ UIAttributes* UIDescription::getCustomAttributes (UTF8StringPtr name, bool creat
 }
 
 //-----------------------------------------------------------------------------
+bool UIDescription::getControlTagString (UTF8StringPtr tagName, std::string& tagString) const
+{
+	UIControlTagNode* controlTagNode = dynamic_cast<UIControlTagNode*> (findChildNodeByNameAttribute (getBaseNode ("control-tags"), tagName));
+	if (controlTagNode)
+	{
+		const std::string* tagStr = controlTagNode->getTagString ();
+		if (tagStr)
+		{
+			tagString = *tagStr;
+			return true;
+		}		
+	}
+	return false;
+}
+
+//-----------------------------------------------------------------------------
+bool UIDescription::changeControlTagString  (UTF8StringPtr tagName, const std::string& newTagString, bool create)
+{
+	UIControlTagNode* controlTagNode = dynamic_cast<UIControlTagNode*> (findChildNodeByNameAttribute (getBaseNode ("control-tags"), tagName));
+	if (controlTagNode)
+	{
+		if (create)
+			return false;
+		controlTagNode->setTagString (newTagString);
+		changed (kMessageTagChanged);
+		return true;
+	}
+	if (create)
+	{
+		UINode* tagsNode = getBaseNode ("control-tags");
+		if (tagsNode)
+		{
+			UIAttributes* attr = new UIAttributes;
+			attr->setAttribute ("name", tagName);
+			UIControlTagNode* node = new UIControlTagNode ("control-tag", attr);
+			node->setTagString(newTagString);
+			tagsNode->getChildren ().add (node);
+			changed (kMessageTagChanged);
+			return true;
+		}
+	}
+	return false;	
+}
+
+//-----------------------------------------------------------------------------
+bool UIDescription::getVariable (UTF8StringPtr name, double& value) const
+{
+	UIVariableNode* node = dynamic_cast<UIVariableNode*> (findChildNodeByNameAttribute (getBaseNode ("variables"), name));
+	if (node)
+	{
+		if (node->getType () == UIVariableNode::kNumber)
+		{
+			value = node->getNumber ();
+			return true;
+		}
+		if (node->getType () == UIVariableNode::kString)
+		{
+			double v;
+			if (calculateStringValue (node->getString ().c_str (), v))
+			{
+				value = v;
+				return true;
+			}
+		}
+	}
+	return false;
+}
+
+namespace UIDescriptionPrivate {
+
+//-----------------------------------------------------------------------------
+class StringToken : public std::string
+{
+public:
+	enum Type {
+		kString,
+		kAdd,
+		kSubtract,
+		kMulitply,
+		kDivide,
+		kOpenParenthesis,
+		kCloseParenthesis,
+		kResult
+	};
+	
+	StringToken (const std::string& str) : std::string (str), type (kString), result (0) {}
+	StringToken (const StringToken& token) : std::string (token), type (token.type), result (token.result) {}
+	StringToken (Type type, double value = 0) : type (type), result (value) {}
+	
+	Type type;
+	double result;
+};
+
+//-----------------------------------------------------------------------------
+static bool tokenizeString (std::string& str, std::list<StringToken>& tokens)
+{
+	UTF8CharacterIterator iterator (str);
+	uint8_t* tokenStart = iterator;
+	do {
+		if (iterator.getByteLength () == 1)
+		{
+			uint8_t character = *iterator;
+			if (isspace (character))
+			{
+				if (tokenStart != iterator)
+				{
+					std::string token ((const char*)tokenStart, iterator - tokenStart);
+					tokens.push_back (token);
+				}
+				tokenStart = iterator + 1;
+			}
+			else
+			{
+				switch (character)
+				{
+					case '+':
+					{
+						if (tokenStart != iterator)
+						{
+							std::string token ((const char*)tokenStart, iterator - tokenStart);
+							tokens.push_back (token);
+						}
+						tokens.push_back (StringToken (StringToken::kAdd));
+						tokenStart = iterator + 1;
+						break;
+					}
+					case '-':
+					{
+						if (tokenStart != iterator)
+						{
+							std::string token ((const char*)tokenStart, iterator - tokenStart);
+							tokens.push_back (token);
+						}
+						tokens.push_back (StringToken (StringToken::kSubtract));
+						tokenStart = iterator + 1;
+						break;
+					}
+					case '*':
+					{
+						if (tokenStart != iterator)
+						{
+							std::string token ((const char*)tokenStart, iterator - tokenStart);
+							tokens.push_back (token);
+						}
+						tokens.push_back (StringToken (StringToken::kMulitply));
+						tokenStart = iterator + 1;
+						break;
+					}
+					case '/':
+					{
+						if (tokenStart != iterator)
+						{
+							std::string token ((const char*)tokenStart, iterator - tokenStart);
+							tokens.push_back (token);
+						}
+						tokens.push_back (StringToken (StringToken::kDivide));
+						tokenStart = iterator + 1;
+						break;
+					}
+					case '(':
+					{
+						if (tokenStart != iterator)
+						{
+							std::string token ((const char*)tokenStart, iterator - tokenStart);
+							tokens.push_back (token);
+						}
+						tokens.push_back (StringToken (StringToken::kOpenParenthesis));
+						tokenStart = iterator + 1;
+						break;
+					}
+					case ')':
+					{
+						if (tokenStart != iterator)
+						{
+							std::string token ((const char*)tokenStart, iterator - tokenStart);
+							tokens.push_back (token);
+						}
+						tokens.push_back (StringToken (StringToken::kCloseParenthesis));
+						tokenStart = iterator + 1;
+						break;
+					}
+				}
+			}
+		}
+	} while (iterator.next () != iterator.back ());
+	if (tokenStart != iterator)
+	{
+		std::string token ((const char*)tokenStart, iterator - tokenStart);
+		tokens.push_back (token);
+	}
+	return true;	
+}
+
+//-----------------------------------------------------------------------------
+static bool computeTokens (std::list<StringToken>& tokens, double& result)
+{
+	int32_t openCount = 0;
+	std::list<UIDescriptionPrivate::StringToken>::iterator openPosition = tokens.end ();
+	// first check parentheses
+	for (std::list<UIDescriptionPrivate::StringToken>::iterator it = tokens.begin (); it != tokens.end (); it++)
+	{
+		if ((*it).type == StringToken::kOpenParenthesis)
+		{
+			openCount++;
+			if (openCount == 1)
+				openPosition = it;
+		}
+		else if ((*it).type == StringToken::kCloseParenthesis)
+		{
+			openCount--;
+			if (openCount == 0)
+			{
+				std::list<StringToken> tmp (++openPosition, it);
+				double value = 0;
+				if (computeTokens (tmp, value))
+				{
+					it++;
+					openPosition--;
+					tokens.erase (openPosition, it);
+					tokens.insert (it, StringToken (StringToken::kResult, value));
+				}
+				else
+					return false;
+			}
+		}
+	}
+	// now multiply and divide
+	std::list<UIDescriptionPrivate::StringToken>::iterator prevToken = tokens.begin ();
+	for (std::list<UIDescriptionPrivate::StringToken>::iterator it = tokens.begin (); it != tokens.end (); it++)
+	{
+		if (prevToken != it)
+		{
+			if ((*it).type == StringToken::kMulitply)
+			{
+				if ((*prevToken).type == StringToken::kResult)
+				{
+					it++;
+					if ((*it).type == StringToken::kResult)
+					{
+						double value = (*prevToken).result * (*it).result;
+						it++;
+						tokens.erase (prevToken, it);
+						tokens.insert (it, StringToken (StringToken::kResult, value));
+						it--;
+						prevToken = it;
+					}
+					else
+					{
+						return false;
+					}
+				}
+				else
+				{
+					return false;
+				}
+			}
+			else if ((*it).type == StringToken::kDivide)
+			{
+				if ((*prevToken).type == StringToken::kResult)
+				{
+					it++;
+					if ((*it).type == StringToken::kResult)
+					{
+						double value = (*prevToken).result / (*it).result;
+						it++;
+						tokens.erase (prevToken, it);
+						tokens.insert (it, StringToken (StringToken::kResult, value));
+						it--;
+						prevToken = it;
+					}
+					else
+					{
+						return false;
+					}
+				}
+				else
+				{
+					return false;
+				}
+			}
+			else
+			{
+				prevToken = it;
+			}
+		}
+	}
+	// now add and subtract
+	int32_t lastType = -1;
+	for (std::list<UIDescriptionPrivate::StringToken>::const_iterator it = tokens.begin (); it != tokens.end (); it++)
+	{
+		if ((*it).type == UIDescriptionPrivate::StringToken::kResult)
+		{
+			double value = (*it).result;
+			if (lastType == -1)
+				result = value;
+			else if (lastType == StringToken::kAdd)
+				result += value;
+			else if (lastType == StringToken::kSubtract)
+				result -= value;
+			else
+			{
+			#if DEBUG
+				DebugPrint ("Wrong Expression: %d\n", (*it).type);
+			#endif
+				return false;
+			}
+		}
+		else if (!(lastType == -1 || lastType == UIDescriptionPrivate::StringToken::kResult))
+		{
+		#if DEBUG
+			DebugPrint ("Wrong Expression: %d\n", (*it).type);
+		#endif
+			return false;
+		}
+		lastType = (*it).type;
+		
+	}	
+	return true;	
+}
+
+} // namespace UIDescriptionPrivate
+
+//-----------------------------------------------------------------------------
+bool UIDescription::calculateStringValue (UTF8StringPtr _str, double& result) const
+{
+	char* endPtr = 0;
+	result = strtod (_str, &endPtr);
+	if (endPtr == _str + strlen (_str))
+		return true;
+	std::string str (_str);
+	std::list<UIDescriptionPrivate::StringToken> tokens;
+	if (!UIDescriptionPrivate::tokenizeString (str, tokens))
+		return false;
+	// first make substituation
+	for (std::list<UIDescriptionPrivate::StringToken>::iterator it = tokens.begin (); it != tokens.end (); it++)
+	{
+		if ((*it).type == UIDescriptionPrivate::StringToken::kString)
+		{
+			const char* tokenStr = (*it).c_str ();
+			double value = strtod (tokenStr, &endPtr);
+			if (endPtr != tokenStr + (*it).length ())
+			{
+				// if it is not pure numeric try to substitute the string with a control tag or variable
+				size_t pos;
+				if ((pos = (*it).find ("tag.")) == 0)
+				{
+					value = getTagForName ((*it).c_str () + 4);
+				}
+				else if ((pos = (*it).find ("var.")) == 0)
+				{
+					double v;
+					if (getVariable ((*it).c_str () + 4, v))
+					{
+						value = v;
+					}
+					else
+						return false;
+				}
+				else
+				{
+					return false;
+				}
+			}
+			(*it).result = value;
+			(*it).type = UIDescriptionPrivate::StringToken::kResult;
+		}
+	}
+	result = 0;
+	return UIDescriptionPrivate::computeTokens (tokens, result);
+}
+
+//-----------------------------------------------------------------------------
 void UIDescription::startXmlElement (Xml::Parser* parser, IdStringPtr elementName, UTF8StringPtr* elementAttributes)
 {
 	std::string name (elementName);
@@ -1851,7 +2275,7 @@ void UIDescription::startXmlElement (Xml::Parser* parser, IdStringPtr elementNam
 			if (parent == nodes)
 			{
 				// only allowed second level elements
-				if (name == "bitmaps" || name == "fonts" || name == "colors" || name == "template" || name == "control-tags" || name == "custom")
+				if (name == "bitmaps" || name == "fonts" || name == "colors" || name == "template" || name == "control-tags" || name == "custom" || name == "variables")
 					newNode = new UINode (name, new UIAttributes (elementAttributes));
 				else
 					parser->stop ();
@@ -1881,6 +2305,13 @@ void UIDescription::startXmlElement (Xml::Parser* parser, IdStringPtr elementNam
 			{
 				if (name == "control-tag")
 					newNode = new UIControlTagNode (name, new UIAttributes (elementAttributes));
+				else
+					parser->stop ();
+			}
+			else if (parent->getName () == "variables")
+			{
+				if (name == "var")
+					newNode = new UIVariableNode (name, new UIAttributes (elementAttributes));
 				else
 					parser->stop ();
 			}
@@ -1977,6 +2408,75 @@ bool UINode::hasChildren () const
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
+UIVariableNode::UIVariableNode (const std::string& name, UIAttributes* attributes)
+: UINode (name, attributes)
+, number (0)
+, type (kUnknown)
+{
+	const std::string* typeStr = attributes->getAttributeValue ("type");
+	const std::string* valueStr = attributes->getAttributeValue ("value");
+	if (typeStr)
+	{
+		if (*typeStr == "number")
+			type = kNumber;
+		else if (*typeStr == "string")
+			type = kString;
+	}
+	if (valueStr)
+	{
+		const char* strPtr = valueStr->c_str ();
+		if (type == kUnknown)
+		{
+			char* endPtr = 0;
+			double numberCheck = strtod (strPtr, &endPtr);
+			if (endPtr != strPtr)
+			{
+				number = numberCheck;
+				type = kNumber;
+			}
+			else
+				type = kString;
+		}
+		else if (type == kNumber)
+		{
+			number = strtod (strPtr, 0);
+		}
+	}
+}
+
+//-----------------------------------------------------------------------------
+UIVariableNode::UIVariableNode (const UIVariableNode& n)
+: UINode (n)
+, type (n.type)
+, number (n.number)
+{
+}
+
+//-----------------------------------------------------------------------------
+UIVariableNode::Type UIVariableNode::getType () const
+{
+	return type;
+}
+
+//-----------------------------------------------------------------------------
+double UIVariableNode::getNumber () const
+{
+	return number;
+}
+
+//-----------------------------------------------------------------------------
+const std::string& UIVariableNode::getString () const
+{
+	const std::string* value = attributes->getAttributeValue ("value");
+	if (value)
+		return *value;
+	static std::string kEmpty;
+	return kEmpty;
+}
+
+//-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
 UIControlTagNode::UIControlTagNode (const std::string& name, UIAttributes* attributes)
 : UINode (name, attributes)
 , tag (-1)
@@ -2007,7 +2507,12 @@ int32_t UIControlTagNode::getTag ()
 				tag = ((((int32_t)c1) << 24) | (((int32_t)c2) << 16) | (((int32_t)c3) << 8) | (((int32_t)c4) << 0));
 			}
 			else
-				tag = (int32_t)strtol (tagStr->c_str (), 0, 10);
+			{
+				char* endPtr = 0;
+				tag = (int32_t)strtol (tagStr->c_str (), &endPtr, 10);
+				if (endPtr != tagStr->c_str () + tagStr->length ())
+					tag = -1;
+			}
 		}
 	}
 	return tag;
@@ -2020,6 +2525,18 @@ void UIControlTagNode::setTag (int32_t newTag)
 	std::stringstream str;
 	str << tag;
 	attributes->setAttribute ("tag", str.str ().c_str ());
+}
+
+//-----------------------------------------------------------------------------
+const std::string* UIControlTagNode::getTagString () const
+{
+	return attributes->getAttributeValue ("tag");
+}
+
+//-----------------------------------------------------------------------------
+void UIControlTagNode::setTagString (const std::string& str)
+{
+	attributes->setAttribute ("tag", str.c_str ());
 }
 
 //-----------------------------------------------------------------------------
