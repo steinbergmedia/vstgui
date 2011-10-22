@@ -176,6 +176,7 @@ Win32Frame::Win32Frame (IPlatformFrameCallback* frame, const CRect& size, HWND p
 , tooltipWindow (0)
 , backBuffer (0)
 , deviceContext (0)
+, inPaint (false)
 , mouseInside (false)
 , updateRegionList (0)
 , updateRegionListSize (0)
@@ -511,8 +512,13 @@ bool Win32Frame::setMouseCursor (CCursorType type)
 //-----------------------------------------------------------------------------
 bool Win32Frame::invalidRect (const CRect& rect)
 {
-	RECT r = {(LONG)rect.left, (LONG)rect.top, (LONG)ceil (rect.right), (LONG)ceil (rect.bottom)};
-	InvalidateRect (windowHandle, &r, true);
+	if (inPaint)
+		return false;
+	if (!rect.isEmpty ())
+	{
+		RECT r = {(LONG)rect.left, (LONG)rect.top, (LONG)ceil (rect.right), (LONG)ceil (rect.bottom)};
+		InvalidateRect (windowHandle, &r, true);
+	}
 	return true;
 }
 
@@ -660,6 +666,8 @@ void Win32Frame::paint (HWND hwnd)
 		return;
 	}
 
+	inPaint = true;
+	
 	PAINTSTRUCT ps;
 	HDC hdc = BeginPaint (hwnd, &ps);
 
@@ -677,7 +685,6 @@ void Win32Frame::paint (HWND hwnd)
 
 			CDrawContext* drawContext = backBuffer ? backBuffer : deviceContext;
 			drawContext->beginDraw ();
-			#if 1
 			DWORD len = GetRegionData (rgn, 0, NULL);
 			if (len)
 			{
@@ -691,16 +698,11 @@ void Win32Frame::paint (HWND hwnd)
 				GetRegionData (rgn, len, updateRegionList);
 				if (updateRegionList->rdh.nCount > 0)
 				{
-#if 0
-					char str[1024];
-					sprintf (str, "WM_PAINT[%d]\n", updateRegionList->rdh.nCount);
-					DebugPrint (str);
-#endif
-
 					RECT* rp = (RECT*)updateRegionList->Buffer;
 					for (uint32_t i = 0; i < updateRegionList->rdh.nCount; i++)
 					{
 						CRect ur (rp->left, rp->top, rp->right, rp->bottom);
+						paintRect = ur;
 						drawContext->clearRect (ur);
 						getFrame ()->platformDrawRect (drawContext, ur);
 						rp++;
@@ -711,12 +713,6 @@ void Win32Frame::paint (HWND hwnd)
 					getFrame ()->platformDrawRect (drawContext, updateRect);
 				}
 			}
-			#else
-
-			drawContext->clearRect (updateRect);
-			getFrame ()->platformDrawRect (drawContext, updateRect);
-
-			#endif
 			drawContext->endDraw ();
 			if (backBuffer)
 			{
@@ -730,6 +726,8 @@ void Win32Frame::paint (HWND hwnd)
 
 	EndPaint (hwnd, &ps);
 	DeleteObject (rgn);
+	
+	inPaint = false;
 }
 
 static unsigned char translateWinVirtualKey (WPARAM winVKey)

@@ -17,7 +17,7 @@ namespace VSTGUI {
 class UIColor : public CColor, public CBaseObject, public IDependency
 {
 public:
-	UIColor () : CColor (kTransparentCColor) {}
+	UIColor () : CColor (kTransparentCColor), hue (0), saturation (0), lightness (0) {}
 
 	UIColor& operator= (const CColor& c)
 	{
