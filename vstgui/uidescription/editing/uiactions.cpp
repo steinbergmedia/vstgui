@@ -780,15 +780,15 @@ void MultipleAttributeChangeAction::undo ()
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
-TagChangeAction::TagChangeAction (UIDescription* description, UTF8StringPtr name, int32_t tag, bool remove, bool performOrUndo)
+TagChangeAction::TagChangeAction (UIDescription* description, UTF8StringPtr name, UTF8StringPtr newTagString, bool remove, bool performOrUndo)
 : description(description)
 , name (name)
-, tag (tag)
+, newTag (newTagString)
 , remove (remove)
 , performOrUndo (performOrUndo)
 , isNewTag (!description->hasTagName (name))
 {
-	originalTag = description->getTagForName (name);
+	description->getControlTagString (name, originalTag);
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -808,7 +808,7 @@ void TagChangeAction::perform ()
 		}
 		else
 		{
-			description->changeTag (name.c_str (), tag);
+			description->changeControlTagString (name.c_str (), newTag, isNewTag);
 		}
 	}
 }
@@ -821,7 +821,7 @@ void TagChangeAction::undo ()
 		if (isNewTag)
 			description->removeTag (name.c_str ());
 		else
-			description->changeTag (name.c_str (), originalTag);
+			description->changeControlTagString (name.c_str (), originalTag);
 	}
 }
 

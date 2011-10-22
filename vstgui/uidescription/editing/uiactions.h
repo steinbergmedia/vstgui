@@ -249,7 +249,7 @@ protected:
 class TagChangeAction : public IAction
 {
 public:
-	TagChangeAction (UIDescription* description, UTF8StringPtr name, int32_t tag, bool remove, bool performOrUndo);
+	TagChangeAction (UIDescription* description, UTF8StringPtr name, UTF8StringPtr newTagString, bool remove, bool performOrUndo);
 
 	virtual UTF8StringPtr getName ();
 	virtual void perform ();
@@ -259,8 +259,8 @@ public:
 protected:
 	SharedPointer<UIDescription> description;
 	std::string name;
-	int32_t tag;
-	int32_t originalTag;
+	std::string newTag;
+	std::string originalTag;
 	bool remove;
 	bool performOrUndo;
 	bool isNewTag;

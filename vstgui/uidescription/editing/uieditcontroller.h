@@ -61,7 +61,7 @@ protected:
 	// IActionPerformer
 	virtual void performAction (IAction* action);
 	virtual void performColorChange (UTF8StringPtr colorName, const CColor& newColor, bool remove = false);
-	virtual void performTagChange (UTF8StringPtr tagName, int32_t tag, bool remove = false);
+	virtual void performTagChange (UTF8StringPtr tagName, UTF8StringPtr tagString, bool remove = false);
 	virtual void performBitmapChange (UTF8StringPtr bitmapName, UTF8StringPtr bitmapPath, bool remove = false);
 	virtual void performFontChange (UTF8StringPtr fontName, CFontRef newFont, bool remove = false);
 	virtual void performColorNameChange (UTF8StringPtr oldName, UTF8StringPtr newName);

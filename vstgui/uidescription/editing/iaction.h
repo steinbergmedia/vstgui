@@ -63,7 +63,7 @@ public:
 	virtual void performAction (IAction* action) = 0;
 
 	virtual void performColorChange (UTF8StringPtr colorName, const CColor& newColor, bool remove = false) = 0;
-	virtual void performTagChange (UTF8StringPtr tagName, int32_t tag, bool remove = false) = 0;
+	virtual void performTagChange (UTF8StringPtr tagName, UTF8StringPtr tagString, bool remove = false) = 0;
 	virtual void performBitmapChange (UTF8StringPtr bitmapName, UTF8StringPtr bitmapPath, bool remove = false) = 0;
 	virtual void performFontChange (UTF8StringPtr fontName, CFontRef newFont, bool remove = false) = 0;
 
