@@ -348,8 +348,8 @@ public:
 	bool run (bool replace)
 	{
 		CBitmap* inputBitmap = getInputBitmap ();
-		int64_t radius = getProperty (Property::kRadius).getInteger ();
-		if (inputBitmap == 0 || radius < 2)
+		uint32_t radius = (uint32_t)getProperty (Property::kRadius).getInteger ();
+		if (inputBitmap == 0 || radius < 2 || radius == ULONG_MAX)
 			return false;
 		if (replace)
 		{
@@ -373,12 +373,12 @@ public:
 		return false;
 	}
 
-	void run (CBitmapPixelAccess& inputAccessor, CBitmapPixelAccess& outputAccessor, int64_t radius)
+	void run (CBitmapPixelAccess& inputAccessor, CBitmapPixelAccess& outputAccessor, uint32_t radius)
 	{
 		uint32_t x,y,x1,y1;
 		uint32_t width = inputAccessor.getBitmapWidth ();
 		uint32_t height = inputAccessor.getBitmapHeight ();
-		CColor* nc = new CColor[radius];
+		CColor* nc = new CColor[(size_t)radius];
 		for (y = 0; y < height; y++)
 		{
 			for (uint32_t i = 1; i < radius; i++)
@@ -424,13 +424,13 @@ public:
 		delete [] nc;
 	}
 
-	void calculate (CColor& color, CColor* colors, int64_t numColors)
+	void calculate (CColor& color, CColor* colors, uint32_t numColors)
 	{
 		int32_t red = 0;
 		int32_t green = 0;
 		int32_t blue = 0;
 		int32_t alpha = 0;
-		for (int64_t i = numColors-1; i >= 0; i--)
+		for (int64_t i = (int64_t)numColors-1; i >= 0; i--)
 		{
 			red += colors[i].red;
 			green += colors[i].green;
@@ -629,7 +629,7 @@ public:
 	bool run (bool replace)
 	{
 		inputColor = getProperty (Property::kInputColor).getColor ();
-		ignoreAlpha = (bool)getProperty (Property::kIgnoreAlphaColorValue).getInteger ();
+		ignoreAlpha = getProperty (Property::kIgnoreAlphaColorValue).getInteger () > 0;
 		return SimpleFilter::run (replace);
 	}
 };
