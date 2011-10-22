@@ -141,6 +141,7 @@ CMouseEventResult UIViewCreatorDataSource::dbOnMouseMoved (const CPoint& where, 
 			}
 			view->forget ();
 		}
+		mouseDownRow = -1;
 	}
 	return kMouseEventNotHandled;
 }

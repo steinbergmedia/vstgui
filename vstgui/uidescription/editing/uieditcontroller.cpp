@@ -536,7 +536,7 @@ CMessageResult UIEditController::notify (CBaseObject* sender, IdStringPtr messag
 					IDataPackage* clipboard = editView->getFrame ()->getClipboard ();
 					if (clipboard)
 					{
-						if (clipboard->getDataType (0) == IDataPackage::kBinary)
+						if (clipboard->getDataType (0) == IDataPackage::kText)
 							item->setEnabled (true);
 						clipboard->forget ();
 					}
@@ -826,16 +826,16 @@ void UIEditController::performColorChange (UTF8StringPtr colorName, const CColor
 }
 
 //----------------------------------------------------------------------------------------------------
-void UIEditController::performTagChange (UTF8StringPtr tagName, int32_t tag, bool remove)
+void UIEditController::performTagChange (UTF8StringPtr tagName, UTF8StringPtr tagStr, bool remove)
 {
 	std::list<CView*> views;
 	getTemplateViews (views);
 
-	TagChangeAction* action = new TagChangeAction (editDescription, tagName, tag, remove, true);
+	TagChangeAction* action = new TagChangeAction (editDescription, tagName, tagStr, remove, true);
 	undoManager->startGroupAction (remove ? "Delete Tag" : action->isAddTag () ? "Add New Tag" : "Change Tag");
 	undoManager->pushAndPerform (action);
 	undoManager->pushAndPerform (new MultipleAttributeChangeAction (editDescription, views, IViewCreator::kTagType, tagName, remove ? "" : tagName));
-	undoManager->pushAndPerform (new TagChangeAction (editDescription, tagName, tag, remove, false));
+	undoManager->pushAndPerform (new TagChangeAction (editDescription, tagName, tagStr, remove, false));
 	undoManager->endGroupAction ();
 }
 

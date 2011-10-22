@@ -23,7 +23,7 @@ class IUIDescription;
 class IController : public CControlListener
 {
 public:
-	virtual int32_t getTagForName (UTF8StringPtr name, int32_t registeredTag) { return registeredTag; };
+	virtual int32_t getTagForName (UTF8StringPtr name, int32_t registeredTag) const { return registeredTag; };
 	virtual CControlListener* getControlListener (UTF8StringPtr controlTagName) { return this; }
 	virtual CView* createView (const UIAttributes& attributes, IUIDescription* description) { return 0; }
 	virtual CView* verifyView (CView* view, const UIAttributes& attributes, IUIDescription* description) { return view; }

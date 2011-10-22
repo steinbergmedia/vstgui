@@ -55,14 +55,14 @@ void UITagsDataSource::getNames (std::list<const std::string*>& names)
 //----------------------------------------------------------------------------------------------------
 bool UITagsDataSource::addItem (UTF8StringPtr name)
 {
-	actionPerformer->performTagChange (name, -2);
+	actionPerformer->performTagChange (name, "-2");
 	return true;
 }
 
 //----------------------------------------------------------------------------------------------------
 bool UITagsDataSource::removeItem (UTF8StringPtr name)
 {
-	actionPerformer->performTagChange (name, -1, true);
+	actionPerformer->performTagChange (name, 0, true);
 	return true;
 }
 
@@ -86,10 +86,9 @@ void UITagsDataSource::update ()
 	tags.clear ();
 	for (std::vector<std::string>::const_iterator it = names.begin (); it != names.end (); it++)
 	{
-		int32_t tag = description->getTagForName ((*it).c_str ());
-		std::stringstream str;
-		str << tag;
-		tags.push_back (str.str ());
+		std::string tagString;
+		description->getControlTagString ((*it).c_str (), tagString);
+		tags.push_back (tagString);
 	}
 }
 
@@ -115,8 +114,7 @@ void UITagsDataSource::dbCellTextChanged (int32_t row, int32_t column, UTF8Strin
 	{
 		if (tags.at (row) != newText)
 		{
-			int32_t newTag = (int32_t)strtol (newText, 0, 10);
-			actionPerformer->performTagChange (names.at (row).c_str (), newTag);
+			actionPerformer->performTagChange (names.at (row).c_str (), newText);
 		}
 	}
 }
@@ -135,9 +133,7 @@ CCoord UITagsDataSource::dbGetCurrentColumnWidth (int32_t index, CDataBrowser* b
 	CCoord width = browser->getWidth () - ((browser->getActiveScrollbars () & CScrollView::kVerticalScrollbar) == 0 ? 0 : browser->getScrollbarWidth () + ((browser->getStyle () & CScrollView::kDontDrawFrame) ? 0 : 2));
 	if (browser->getStyle () & CDataBrowser::kDrawColumnLines)
 		width -= 2;
-	if (index == 0)
-		return width * 0.7;
-	return width * 0.3;
+	return width * 0.5;
 }
 
 //----------------------------------------------------------------------------------------------------

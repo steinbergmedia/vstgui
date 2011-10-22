@@ -84,7 +84,7 @@ public:
 	virtual CBitmap* getBitmap (UTF8StringPtr name) = 0;
 	virtual CFontRef getFont (UTF8StringPtr name) = 0;
 	virtual bool getColor (UTF8StringPtr name, CColor& color) = 0;
-	virtual int32_t getTagForName (UTF8StringPtr name) = 0;
+	virtual int32_t getTagForName (UTF8StringPtr name) const = 0;
 	virtual CControlListener* getControlListener (UTF8StringPtr name) = 0;
 	virtual IController* getController () const = 0;
 
@@ -122,7 +122,7 @@ public:
 	CBitmap* getBitmap (UTF8StringPtr name);
 	CFontRef getFont (UTF8StringPtr name);
 	bool getColor (UTF8StringPtr name, CColor& color);
-	int32_t getTagForName (UTF8StringPtr name);
+	int32_t getTagForName (UTF8StringPtr name) const;
 	CControlListener* getControlListener (UTF8StringPtr name);
 	IController* getController () const { return controller; }
 	IViewFactory* getViewFactory () const { return viewFactory; }
@@ -174,6 +174,12 @@ public:
 	bool setCustomAttributes (UTF8StringPtr name, UIAttributes* attr); //owns attributes
 	UIAttributes* getCustomAttributes (UTF8StringPtr name, bool create = false);
 
+	bool getControlTagString (UTF8StringPtr tagName, std::string& tagString) const;
+	bool changeControlTagString  (UTF8StringPtr tagName, const std::string& newTagString, bool create = false);
+
+	bool getVariable (UTF8StringPtr name, double& value) const;
+	bool calculateStringValue (UTF8StringPtr str, double& result) const;
+	
 	void setBitmapCreator (IBitmapCreator* bitmapCreator);
 	
 	static bool parseColor (const std::string& colorString, CColor& color);
@@ -285,7 +291,7 @@ public:
 	void controlTagWillChange (VSTGUI::CControl* pControl) { controller->controlTagWillChange (pControl); }
 	void controlTagDidChange (VSTGUI::CControl* pControl) { controller->controlTagDidChange (pControl); }
 	// IController
-	int32_t getTagForName (UTF8StringPtr name, int32_t registeredTag) { return controller->getTagForName (name, registeredTag); }
+	int32_t getTagForName (UTF8StringPtr name, int32_t registeredTag) const { return controller->getTagForName (name, registeredTag); }
 	CControlListener* getControlListener (UTF8StringPtr name) { return controller->getControlListener (name); }
 	CView* createView (const UIAttributes& attributes, IUIDescription* description) { return controller->createView (attributes, description); }
 	CView* verifyView (CView* view, const UIAttributes& attributes, IUIDescription* description) { return controller->verifyView (view, attributes, description); }
