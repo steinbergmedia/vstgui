@@ -95,6 +95,8 @@ protected:
 	COffscreenContext* backBuffer;
 	CDrawContext* deviceContext;
 
+	CRect paintRect;
+	bool inPaint;
 	bool mouseInside;
 
 	RGNDATA* updateRegionList;

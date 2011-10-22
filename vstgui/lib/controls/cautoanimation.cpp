@@ -88,7 +88,7 @@ CAutoAnimation::CAutoAnimation (const CRect& size, CControlListener* listener, i
 	setHeightOfOneImage (heightOfOneImage);
 	totalHeightOfBitmap = heightOfOneImage * getNumSubPixmaps ();
 	setMin (0.f);
-	setMax (totalHeightOfBitmap - (heightOfOneImage + 1));
+	setMax ((float)(totalHeightOfBitmap - (heightOfOneImage + 1.)));
 }
 
 //------------------------------------------------------------------------
