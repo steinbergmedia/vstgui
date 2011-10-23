@@ -144,7 +144,6 @@ public:
 	void changeBitmapName (UTF8StringPtr oldName, UTF8StringPtr newName);
 
 	void changeColor (UTF8StringPtr name, const CColor& newColor);
-	void changeTag (UTF8StringPtr name, int32_t tag);
 	void changeFont (UTF8StringPtr name, CFontRef newFont);
 	void changeBitmap (UTF8StringPtr name, UTF8StringPtr newName, const CRect* nineparttiledOffset = 0);
 

@@ -990,6 +990,7 @@ int32_t UIDescription::getTagForName (UTF8StringPtr name) const
 				if (calculateStringValue (tagStr->c_str (), value))
 				{
 					tag = (int32_t)value;
+					controlTagNode->setTag (tag);
 				}
 			}
 		}
@@ -1336,33 +1337,6 @@ void UIDescription::changeColor (UTF8StringPtr name, const CColor& newColor)
 			UIColorNode* node = new UIColorNode ("color", attr);
 			colorsNode->getChildren ().add (node);
 			changed (kMessageColorChanged);
-		}
-	}
-}
-
-//-----------------------------------------------------------------------------
-void UIDescription::changeTag (UTF8StringPtr name, int32_t tag)
-{
-	UIControlTagNode* node = dynamic_cast<UIControlTagNode*> (findChildNodeByNameAttribute (getBaseNode ("control-tags"), name));
-	if (node)
-	{
-		if (!node->noExport ())
-		{
-			node->setTag (tag);
-			changed (kMessageTagChanged);
-		}
-	}
-	else
-	{
-		UINode* tagsNode = getBaseNode ("control-tags");
-		if (tagsNode)
-		{
-			UIAttributes* attr = new UIAttributes;
-			attr->setAttribute ("name", name);
-			UIControlTagNode* node = new UIControlTagNode ("control-tag", attr);
-			node->setTag (tag);
-			tagsNode->getChildren ().add (node);
-			changed (kMessageTagChanged);
 		}
 	}
 }
@@ -2522,9 +2496,6 @@ int32_t UIControlTagNode::getTag ()
 void UIControlTagNode::setTag (int32_t newTag)
 {
 	tag = newTag;
-	std::stringstream str;
-	str << tag;
-	attributes->setAttribute ("tag", str.str ().c_str ());
 }
 
 //-----------------------------------------------------------------------------
@@ -2537,6 +2508,7 @@ const std::string* UIControlTagNode::getTagString () const
 void UIControlTagNode::setTagString (const std::string& str)
 {
 	attributes->setAttribute ("tag", str.c_str ());
+	tag = -1;
 }
 
 //-----------------------------------------------------------------------------
