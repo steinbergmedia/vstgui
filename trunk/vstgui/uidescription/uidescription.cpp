@@ -2073,10 +2073,15 @@ static bool computeTokens (std::list<StringToken>& tokens, double& result)
 				double value = 0;
 				if (computeTokens (tmp, value))
 				{
-					it++;
 					openPosition--;
+					it++;
 					tokens.erase (openPosition, it);
 					tokens.insert (it, StringToken (StringToken::kResult, value));
+					if (it == tokens.end ())
+					{
+						break;
+					}
+
 				}
 				else
 					return false;
@@ -2189,7 +2194,12 @@ bool UIDescription::calculateStringValue (UTF8StringPtr _str, double& result) co
 	std::string str (_str);
 	std::list<UIDescriptionPrivate::StringToken> tokens;
 	if (!UIDescriptionPrivate::tokenizeString (str, tokens))
+	{
+	#if DEBUG
+		DebugPrint("TokenizeString failed :%s\n", _str);
+	#endif
 		return false;
+	}
 	// first make substituation
 	for (std::list<UIDescriptionPrivate::StringToken>::iterator it = tokens.begin (); it != tokens.end (); it++)
 	{
@@ -2204,6 +2214,13 @@ bool UIDescription::calculateStringValue (UTF8StringPtr _str, double& result) co
 				if ((pos = (*it).find ("tag.")) == 0)
 				{
 					value = getTagForName ((*it).c_str () + 4);
+					if (value == -1)
+					{
+					#if DEBUG
+						DebugPrint("Tag not found :%s\n", tokenStr);
+					#endif
+						return false;
+					}
 				}
 				else if ((pos = (*it).find ("var.")) == 0)
 				{
@@ -2213,10 +2230,18 @@ bool UIDescription::calculateStringValue (UTF8StringPtr _str, double& result) co
 						value = v;
 					}
 					else
+					{
+					#if DEBUG
+						DebugPrint("Variable not found :%s\n", tokenStr);
+					#endif
 						return false;
+					}
 				}
 				else
 				{
+				#if DEBUG
+					DebugPrint("Substitution failed :%s\n", tokenStr);
+				#endif
 					return false;
 				}
 			}
@@ -2403,7 +2428,7 @@ UIVariableNode::UIVariableNode (const std::string& name, UIAttributes* attribute
 		{
 			char* endPtr = 0;
 			double numberCheck = strtod (strPtr, &endPtr);
-			if (endPtr != strPtr)
+			if (endPtr == strPtr + strlen (strPtr))
 			{
 				number = numberCheck;
 				type = kNumber;
