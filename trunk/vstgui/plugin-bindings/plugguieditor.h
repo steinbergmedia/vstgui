@@ -37,9 +37,7 @@
 #ifndef __plugguieditor__
 #define __plugguieditor__
 
-#ifndef __vstgui__
-#include "vstgui.h"
-#endif
+#include "../vstgui.h"
 
 //----------------------------------------------------------------------
 struct ERect

@@ -75,6 +75,13 @@ HIDDEN inline NSViewFrame* getNSViewFrame (id obj)
 static Class viewClass = 0;
 static CocoaDragContainer* gCocoaDragContainer = 0;
 
+#ifndef __MAC_10_7
+//------------------------------------------------------------------------------------
+@interface NSEvent (VSTGUI_NSEvent_Private)
+- (BOOL)isDirectionInvertedFromDevice;
+@end
+#endif
+
 //------------------------------------------------------------------------------------
 @interface NSObject (VSTGUI_NSView)
 - (id) initWithNSViewFrame: (NSViewFrame*) frame parent: (NSView*) parent andSize: (const CRect*) size;
@@ -388,11 +395,23 @@ static void VSTGUI_NSView_scrollWheel (id self, SEL _cmd, NSEvent* theEvent)
 	NSPoint nsPoint = [theEvent locationInWindow];
 	nsPoint = [self convertPoint:nsPoint fromView:nil];
 	mapModifiers (modifiers, buttons);
+	float distanceX = [theEvent deltaX];
+	float distanceY = [theEvent deltaY];
+	if ([theEvent respondsToSelector:@selector(isDirectionInvertedFromDevice)])
+	{
+		BOOL inverted = [theEvent isDirectionInvertedFromDevice];
+		if (inverted)
+		{
+			distanceX *= -1;
+			distanceY *= -1;
+			buttons |= kMouseWheelInverted;
+		}
+	}
 	CPoint p = pointFromNSPoint (nsPoint);
-	if ([theEvent deltaX])
-		_vstguiframe->platformOnMouseWheel (p, kMouseWheelAxisX, [theEvent deltaX], buttons);
-	if ([theEvent deltaY])
-		_vstguiframe->platformOnMouseWheel (p, kMouseWheelAxisY, [theEvent deltaY], buttons);
+	if (distanceX)
+		_vstguiframe->platformOnMouseWheel (p, kMouseWheelAxisX, distanceX, buttons);
+	if (distanceY)
+		_vstguiframe->platformOnMouseWheel (p, kMouseWheelAxisY, distanceY, buttons);
 }
 
 //------------------------------------------------------------------------------------

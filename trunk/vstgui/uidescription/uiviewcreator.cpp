@@ -2247,7 +2247,6 @@ public:
 		const std::string* coronaOutlineAttr = attributes.getAttributeValue ("corona-outline");
 
 		float fvalue = 0.f;
-		int32_t ivalue = 0;
 		CColor color;
 		if (angleStartAttr)
 		{

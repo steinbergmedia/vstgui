@@ -135,16 +135,17 @@ extern const CViewAttributeID kCViewControllerAttribute;		// 'ictr' ///< see @re
 //----------------------------
 enum CButton
 {
-	kLButton		= 1 << 1,		///< left mouse button
-	kMButton		= 1 << 2,		///< middle mouse button
-	kRButton		= 1 << 3,		///< right mouse button
-	kShift			= 1 << 4,		///< shift modifier
-	kControl		= 1 << 5,		///< control modifier (Command Key on Mac OS X and Control Key on Windows)
-	kAlt			= 1 << 6,		///< alt modifier
-	kApple			= 1 << 7,		///< apple modifier (Mac OS X only. Is the Control key)
-	kButton4		= 1 << 8,		///< 4th mouse button
-	kButton5		= 1 << 9,		///< 5th mouse button
-	kDoubleClick	= 1 << 10		///< mouse button is double click
+	kLButton			= 1 << 1,	///< left mouse button
+	kMButton			= 1 << 2,	///< middle mouse button
+	kRButton			= 1 << 3,	///< right mouse button
+	kShift				= 1 << 4,	///< shift modifier
+	kControl			= 1 << 5,	///< control modifier (Command Key on Mac OS X and Control Key on Windows)
+	kAlt				= 1 << 6,	///< alt modifier
+	kApple				= 1 << 7,	///< apple modifier (Mac OS X only. Is the Control key)
+	kButton4			= 1 << 8,	///< 4th mouse button
+	kButton5			= 1 << 9,	///< 5th mouse button
+	kDoubleClick		= 1 << 10,	///< mouse button is double click
+	kMouseWheelInverted	= 1 << 11	///< system mouse wheel setting is inverted (Only valid for onMouseWheel methods). The distance value is already transformed back to non inverted. But for scroll views we need to know if we need to invert it back.
 };
 
 //-----------------------------------------------------------------------------
