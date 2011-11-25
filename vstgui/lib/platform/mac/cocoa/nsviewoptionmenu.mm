@@ -274,7 +274,10 @@ PlatformOptionMenuResult NSViewOptionMenu::popup (COptionMenu* optionMenu)
 	cellFrameRect.size.width = optionMenu->getViewSize ().getWidth ();
 	cellFrameRect.size.height = optionMenu->getViewSize ().getHeight ();
 	if (!(optionMenu->getStyle () & kPopupStyle))
-		[nsMenu insertItemWithTitle:@"" action:nil keyEquivalent:@"" atIndex:0];
+	{
+		NSMenuItem* item = [nsMenu insertItemWithTitle:@"" action:nil keyEquivalent:@"" atIndex:0];
+		[item setTag:-1];
+	}
 	if (!multipleCheck && optionMenu->getStyle () & kCheckStyle)
 		[[nsMenu itemWithTag:(NSInteger)optionMenu->getValue ()] setState:NSOnState];
 

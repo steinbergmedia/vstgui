@@ -1,3 +1,30 @@
+2011-11-25 arne
+
+	* merge changes from vstgui_400 :
+	
+	2011-10-11 arne
+
+		* fix mouse wheel on Mac OS X 10.7 when "natural" scroll direction system setting is used.
+
+	2011-10-05 arne
+
+		* fix possible crash in IDependency::changed() when dependent object removes itself in this call
+
+	2011-10-02 arne
+
+		* fix wrong pixel format on intel Mac OS X
+		* fix performance issue drawing bitmaps with empty clip rect
+		* fix escape key does not end text edit on Windows
+
+	2011-08-24 arne
+
+		* fix bug: control listeners don't get right button click
+
+	2011-07-16 arne
+
+		* implement missing kSelectDirectory in CNewFileSelector for Windows XP
+		* fix issue with COptionMenu and check style for first item for non kPopupStyle on Cocoa
+
 2011-10-08 arne
 
 	* add pDisabledBackground bitmap to CView and made pBackground a private member to support drawing a different bitmap if the mouse is enabled or disabled

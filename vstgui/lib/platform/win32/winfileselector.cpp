@@ -379,6 +379,38 @@ bool XPFileSelector::runModalInternal ()
 	}
 #endif
 
+	if (style == kSelectDirectory)
+	{
+		UTF8StringHelper titleW (title);
+		BROWSEINFO bi = {};
+		TCHAR szDisplayName[MAX_PATH]; 
+		szDisplayName[0] = 0;  
+		bi.hwndOwner = NULL; 
+		bi.pidlRoot = NULL; 
+		bi.pszDisplayName = szDisplayName; 
+		bi.lpszTitle = titleW.getWideString ();
+		bi.ulFlags = BIF_RETURNONLYFSDIRS;
+		bi.lParam = NULL; 
+		bi.iImage = 0;  
+
+		LPITEMIDLIST pidl = SHBrowseForFolder (&bi);
+		TCHAR szPathName[MAX_PATH]; 
+		if (NULL != pidl)
+		{
+			if (SHGetPathFromIDList(pidl,szPathName))
+			{
+				char szPathNameC_[MAX_PATH];
+				char *szPathNameC= szPathNameC_;
+				WideCharToMultiByte (CP_ACP, WC_COMPOSITECHECK|WC_DEFAULTCHAR, szPathName, -1, szPathNameC, MAX_PATH, NULL, NULL); 
+				char* resultPath = (char*)malloc (strlen (szPathNameC) + 1);
+				strcpy (resultPath, szPathNameC);
+				result.push_back (resultPath);
+				return true;
+			}
+		}
+		return false;
+	}
+
 	OPENFILENAME ofn = {0};
 	ofn.lStructSize  = sizeof (OPENFILENAME);
 	ofn.hwndOwner= (HWND)(frame->getPlatformFrame ()->getPlatformRepresentation ());

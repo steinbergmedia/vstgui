@@ -949,7 +949,7 @@ CMouseEventResult CViewContainer::onMouseDown (CPoint &where, const CButtonState
 		if (pV && pV->isVisible () && pV->getMouseEnabled () && pV->hitTest (where2, buttons))
 		{
 			CControl* control = dynamic_cast<CControl*> (pV);
-			if (control && control->getListener () && buttons & (kAlt | kShift | kControl | kApple))
+			if (control && control->getListener () && buttons & (kAlt | kShift | kControl | kApple | kRButton))
 			{
 				if (control->getListener ()->controlModifierClicked ((CControl*)pV, buttons) != 0)
 					return kMouseEventHandled;
