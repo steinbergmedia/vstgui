@@ -46,9 +46,13 @@
 #include <assert.h>
 #include <algorithm>
 
-#define VST3_SUPPORTS_CONTEXTMENU	(defined(kVstVersionMajor) && defined(kVstVersionMinor) && (kVstVersionMajor > 3 || (kVstVersionMajor == 3 && kVstVersionMinor > 1)))
+#if defined (kVstVersionMajor) && defined (kVstVersionMinor)
+#define VST3_SUPPORTS_CONTEXTMENU (kVstVersionMajor > 3 || (kVstVersionMajor == 3 && kVstVersionMinor > 1))
 #if VST3_SUPPORTS_CONTEXTMENU
 	#include "pluginterfaces/vst/ivstcontextmenu.h"
+#endif
+#else
+#define VST3_SUPPORTS_CONTEXTMENU  0
 #endif
 
 /// @cond ignore
@@ -632,7 +636,7 @@ public:
 		item->forget ();
 	}
 
-	Steinberg::tresult executeMenuItem (Steinberg::int32 tag)
+	Steinberg::tresult PLUGIN_API executeMenuItem (Steinberg::int32 tag)
 	{
 		if (item->getTarget ())
 			item->getTarget ()->notify (item, CCommandMenuItem::kMsgMenuItemSelected);
@@ -784,7 +788,7 @@ Steinberg::tresult PLUGIN_API VST3Editor::findParameter (Steinberg::int32 xPos, 
 //-----------------------------------------------------------------------------
 IController* VST3Editor::createSubController (UTF8StringPtr name, IUIDescription* description)
 {
-	return delegate->createSubController (name, description, this);
+	return delegate ? delegate->createSubController (name, description, this) : 0;
 }
 
 //-----------------------------------------------------------------------------
@@ -1008,7 +1012,7 @@ CMessageResult VST3Editor::notify (CBaseObject* sender, IdStringPtr message)
 					UIAttributes* attributes = description->getCustomAttributes ("VST3Editor", true);
 					if (attributes)
 					{
-						CNewFileSelector* fileSelector = CNewFileSelector::create (0, CNewFileSelector::kSelectSaveFile);
+						CNewFileSelector* fileSelector = CNewFileSelector::create (frame, CNewFileSelector::kSelectSaveFile);
 						if (fileSelector)
 						{
 							fileSelector->setTitle ("Save UIDescription File");
@@ -1021,8 +1025,8 @@ CMessageResult VST3Editor::notify (CBaseObject* sender, IdStringPtr message)
 								UTF8StringPtr filePath = fileSelector->getSelectedFile (0);
 								if (filePath)
 								{
-										attributes->setAttribute ("Path", filePath);
-										description->save (filePath);
+									attributes->setAttribute ("Path", filePath);
+									description->save (filePath);
 								}
 							}
 							fileSelector->forget ();

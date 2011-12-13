@@ -71,7 +71,7 @@ It's recommended to start new projects with version 4 while old projects should 
 - In 64 bit only Cocoa is available.
 - The pSystemWindow pointer in the CFrame constructor must be a NSView not a NSWindow.
 
-@page page_previous_new_stuff Previous New Stuff
+@page page_previous_new_stuff New Stuff in VSTGUI 3.6 and earlier
  
 @section new_mouse_methods New mouse methods
 
