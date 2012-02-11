@@ -1,3 +1,10 @@
+2012-02-11 arne
+
+	* fix most warnings when building with Clang
+	* fix a few memory leaks in the Cocoa sources
+	* fix a bug calculating a color from HSL
+	* move the ViewIterator template into the CViewContainer class to get rid of the friend declaration
+	
 2011-12-13 arne
 
 	* fix saving UIDescription on Windows

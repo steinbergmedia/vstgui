@@ -48,6 +48,12 @@ struct VstKeyCode;
 
 #define HIDDEN __attribute__((__visibility__("hidden")))
 
+#if DEBUG
+#define VSTGUI_CHECK_YES(x) { BOOL res = x; assert (res == YES); }
+#else
+#define VSTGUI_CHECK_YES(x) x;
+#endif
+
 //------------------------------------------------------------------------------------
 inline HIDDEN id get_Objc_Value (id obj, const char* name)
 {

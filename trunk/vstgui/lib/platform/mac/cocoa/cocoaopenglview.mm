@@ -307,7 +307,6 @@ void CocoaOpenGLView::initClass ()
 	if (openGLViewClass)
 		return;
 
-	BOOL res;
 	AutoreleasePool ap ();
 
 	const char* nsRectEncoded = @encode(NSRect);
@@ -318,18 +317,18 @@ void CocoaOpenGLView::initClass ()
 	if (openGLViewClass)
 	{
 		sprintf (funcSig, "@@:@:%s:@:^:", nsRectEncoded);
-		res = class_addMethod (openGLViewClass, @selector(initWithFrame:pixelFormat:callback:), IMP (VSTGUI_NSOpenGLView_Init), funcSig);
-		res = class_addMethod (openGLViewClass, @selector(dealloc), IMP (VSTGUI_NSOpenGLView_Dealloc), "v@:@:");
-		res = class_addMethod (openGLViewClass, @selector(update), IMP (VSTGUI_NSOpenGLView_Update_Reshape), "v@:@:");
-		res = class_addMethod (openGLViewClass, @selector(reshape), IMP (VSTGUI_NSOpenGLView_Update_Reshape), "v@:@:");
-		res = class_addMethod (openGLViewClass, @selector(isFlipped), IMP (VSTGUI_NSOpenGLView_isFlipped), "B@:@:");
+		VSTGUI_CHECK_YES(class_addMethod (openGLViewClass, @selector(initWithFrame:pixelFormat:callback:), IMP (VSTGUI_NSOpenGLView_Init), funcSig))
+		VSTGUI_CHECK_YES(class_addMethod (openGLViewClass, @selector(dealloc), IMP (VSTGUI_NSOpenGLView_Dealloc), "v@:@:"))
+		VSTGUI_CHECK_YES(class_addMethod (openGLViewClass, @selector(update), IMP (VSTGUI_NSOpenGLView_Update_Reshape), "v@:@:"))
+		VSTGUI_CHECK_YES(class_addMethod (openGLViewClass, @selector(reshape), IMP (VSTGUI_NSOpenGLView_Update_Reshape), "v@:@:"))
+		VSTGUI_CHECK_YES(class_addMethod (openGLViewClass, @selector(isFlipped), IMP (VSTGUI_NSOpenGLView_isFlipped), "B@:@:"))
 		sprintf (funcSig, "v@:@:%s:", nsRectEncoded);
-		res = class_addMethod (openGLViewClass, @selector(drawRect:), IMP (VSTGUI_NSOpenGLView_drawRect), funcSig);
-		res = class_addMethod (openGLViewClass, @selector(mouseMoved:), IMP (VSTGUI_NSOpenGLView_mouseXXX), "v@:@:^:");
-		res = class_addMethod (openGLViewClass, @selector(rightMouseDown:), IMP (VSTGUI_NSOpenGLView_mouseXXX), "v@:@:^:");
-		res = class_addMethod (openGLViewClass, @selector(rightMouseUp:), IMP (VSTGUI_NSOpenGLView_mouseXXX), "v@:@:^:");
+		VSTGUI_CHECK_YES(class_addMethod (openGLViewClass, @selector(drawRect:), IMP (VSTGUI_NSOpenGLView_drawRect), funcSig))
+		VSTGUI_CHECK_YES(class_addMethod (openGLViewClass, @selector(mouseMoved:), IMP (VSTGUI_NSOpenGLView_mouseXXX), "v@:@:^:"))
+		VSTGUI_CHECK_YES(class_addMethod (openGLViewClass, @selector(rightMouseDown:), IMP (VSTGUI_NSOpenGLView_mouseXXX), "v@:@:^:"))
+		VSTGUI_CHECK_YES(class_addMethod (openGLViewClass, @selector(rightMouseUp:), IMP (VSTGUI_NSOpenGLView_mouseXXX), "v@:@:^:"))
 
-		res = class_addIvar (openGLViewClass, "cocoaOpenGLView", sizeof (void*), (uint8_t)log2(sizeof(void*)), @encode(void*));
+		VSTGUI_CHECK_YES(class_addIvar (openGLViewClass, "cocoaOpenGLView", sizeof (void*), (uint8_t)log2(sizeof(void*)), @encode(void*)))
 
 		objc_registerClassPair (openGLViewClass);
 	}

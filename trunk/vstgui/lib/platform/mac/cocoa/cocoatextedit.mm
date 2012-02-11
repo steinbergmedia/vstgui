@@ -45,6 +45,10 @@ using namespace VSTGUI;
 
 static Class textFieldClass = 0;
 
+@interface NSObject (VSTGUI_NSTextField_Private)
+-(id)initWithTextEdit:(id)textEit;
+@end
+
 //------------------------------------------------------------------------------------
 //------------------------------------------------------------------------------------
 //------------------------------------------------------------------------------------
@@ -241,12 +245,12 @@ void CocoaTextEdit::initClass ()
 		AutoreleasePool ap ();
 		NSMutableString* textFieldClassName = [[[NSMutableString alloc] initWithString:@"VSTGUI_NSTextField"] autorelease];
 		textFieldClass = generateUniqueClass (textFieldClassName, [NSTextField class]);
-		BOOL res = class_addMethod (textFieldClass, @selector(initWithTextEdit:), IMP (VSTGUI_NSTextField_Init), "@@:@:^:");
-		res = class_addMethod (textFieldClass, @selector(syncSize), IMP (VSTGUI_NSTextField_SyncSize), "v@:@:");
-		res = class_addMethod (textFieldClass, @selector(removeFromSuperview), IMP (VSTGUI_NSTextField_RemoveFromSuperview), "v@:@:");
-		res = class_addMethod (textFieldClass, @selector(control:textView:doCommandBySelector:), IMP (VSTGUI_NSTextField_DoCommandBySelector), "B@:@:@:@::");
-		res = class_addMethod (textFieldClass, @selector(textDidChange:), IMP (VSTGUI_NSTextField_TextDidChange), "v@:@:@@:");
-		res = class_addIvar (textFieldClass, "_textEdit", sizeof (void*), (uint8_t)log2(sizeof(void*)), @encode(void*));
+		VSTGUI_CHECK_YES(class_addMethod (textFieldClass, @selector(initWithTextEdit:), IMP (VSTGUI_NSTextField_Init), "@@:@:^:"))
+		VSTGUI_CHECK_YES(class_addMethod (textFieldClass, @selector(syncSize), IMP (VSTGUI_NSTextField_SyncSize), "v@:@:"))
+		VSTGUI_CHECK_YES(class_addMethod (textFieldClass, @selector(removeFromSuperview), IMP (VSTGUI_NSTextField_RemoveFromSuperview), "v@:@:"))
+		VSTGUI_CHECK_YES(class_addMethod (textFieldClass, @selector(control:textView:doCommandBySelector:), IMP (VSTGUI_NSTextField_DoCommandBySelector), "B@:@:@:@::"))
+		VSTGUI_CHECK_YES(class_addMethod (textFieldClass, @selector(textDidChange:), IMP (VSTGUI_NSTextField_TextDidChange), "v@:@:@@:"))
+		VSTGUI_CHECK_YES(class_addIvar (textFieldClass, "_textEdit", sizeof (void*), (uint8_t)log2(sizeof(void*)), @encode(void*)))
 		objc_registerClassPair (textFieldClass);
 	}
 }
@@ -258,7 +262,7 @@ CocoaTextEdit::CocoaTextEdit (NSView* parent, IPlatformTextEditCallback* textEdi
 , parent (parent)
 {
 	initClass ();
-	platformControl = [[textFieldClass alloc] performSelector:@selector (initWithTextEdit:) withObject:(id)this];
+	platformControl = [[textFieldClass alloc] initWithTextEdit:(id)this];
 }
 
 //-----------------------------------------------------------------------------
