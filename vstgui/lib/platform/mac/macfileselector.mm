@@ -51,6 +51,11 @@ static Class fileSelectorDelegateClass = 0;
 static id VSTGUI_FileSelector_Delegate_Init (id self, SEL _cmd, void* fileSelector);
 static void VSTGUI_FileSelector_Delegate_Dealloc (id self, SEL _cmd);
 static void VSTGUI_FileSelector_Delegate_OpenPanelDidEnd (id self, SEL _cmd, NSOpenPanel* openPanel, int32_t returnCode, void* contextInfo);
+
+@interface NSObject (VSTGUI_FileSelector_Private)
+-(id)initWithFileSelector:(id)fileSelector;
+@end
+
 #endif
 
 namespace VSTGUI {
@@ -91,10 +96,10 @@ void CocoaFileSelector::initClass ()
 	{
 		NSMutableString* fileSelectorDelegateClassName = [[[NSMutableString alloc] initWithString:@"VSTGUI_FileSelector_Delegate"] autorelease];
 		fileSelectorDelegateClass = generateUniqueClass (fileSelectorDelegateClassName, [NSObject class]);
-		BOOL res = class_addMethod (fileSelectorDelegateClass, @selector(initWithFileSelector:), IMP (VSTGUI_FileSelector_Delegate_Init), "@@:@:^:");
-		res = class_addMethod (fileSelectorDelegateClass, @selector(dealloc), IMP (VSTGUI_FileSelector_Delegate_Dealloc), "v@:@:");
-		res = class_addMethod (fileSelectorDelegateClass, @selector(openPanelDidEnd:returnCode:contextInfo:), IMP (VSTGUI_FileSelector_Delegate_OpenPanelDidEnd), "v@:@:@:I:@:");
-		res = class_addIvar (fileSelectorDelegateClass, "_fileSelector", sizeof (void*), (uint8_t)log2(sizeof(void*)), @encode(void*));
+		VSTGUI_CHECK_YES(class_addMethod (fileSelectorDelegateClass, @selector(initWithFileSelector:), IMP (VSTGUI_FileSelector_Delegate_Init), "@@:@:^:"))
+		VSTGUI_CHECK_YES(class_addMethod (fileSelectorDelegateClass, @selector(dealloc), IMP (VSTGUI_FileSelector_Delegate_Dealloc), "v@:@:"))
+		VSTGUI_CHECK_YES(class_addMethod (fileSelectorDelegateClass, @selector(openPanelDidEnd:returnCode:contextInfo:), IMP (VSTGUI_FileSelector_Delegate_OpenPanelDidEnd), "v@:@:@:I:@:"))
+		VSTGUI_CHECK_YES(class_addIvar (fileSelectorDelegateClass, "_fileSelector", sizeof (void*), (uint8_t)log2(sizeof(void*)), @encode(void*)))
 		objc_registerClassPair (fileSelectorDelegateClass);
 	}
 	#endif
@@ -190,18 +195,18 @@ bool CocoaFileSelector::runInternal (CBaseObject* _delegate)
 		{
 			NSString* uti = 0;
 			if ((*it).getMimeType ())
-				uti = (NSString*)UTTypeCreatePreferredIdentifierForTag (kUTTagClassMIMEType, (CFStringRef)[NSString stringWithCString: (*it).getMimeType () encoding:NSUTF8StringEncoding], NULL);
+				uti = (NSString*)UTTypeCreatePreferredIdentifierForTag (kUTTagClassMIMEType, (CFStringRef)[NSString stringWithCString: (*it).getMimeType () encoding:NSUTF8StringEncoding], kUTTypeData);
 			if (uti == 0 && (*it).getMacType ())
 			{
 				NSString* osType = (NSString*)UTCreateStringForOSType ((*it).getMacType ());
 				if (osType)
 				{
-					uti = (NSString*)UTTypeCreatePreferredIdentifierForTag (kUTTagClassOSType, (CFStringRef)osType, NULL);
+					uti = (NSString*)UTTypeCreatePreferredIdentifierForTag (kUTTagClassOSType, (CFStringRef)osType, kUTTypeData);
 					[osType release];
 				}
 			}
 			if (uti == 0 && (*it).getExtension ())
-				uti = (NSString*)UTTypeCreatePreferredIdentifierForTag (kUTTagClassFilenameExtension, (CFStringRef)[NSString stringWithCString: (*it).getExtension () encoding:NSUTF8StringEncoding], NULL);
+				uti = (NSString*)UTTypeCreatePreferredIdentifierForTag (kUTTagClassFilenameExtension, (CFStringRef)[NSString stringWithCString: (*it).getExtension () encoding:NSUTF8StringEncoding], kUTTypeData);
 			if (uti)
 			{
 				[typesArray addObject:uti];
@@ -235,7 +240,7 @@ bool CocoaFileSelector::runInternal (CBaseObject* _delegate)
 		#if MAC_COCOA
 		if (parentWindow)
 		{
-			id fsdelegate = [[fileSelectorDelegateClass alloc] performSelector:@selector(initWithFileSelector:) withObject: (id)this];
+			id fsdelegate = [[fileSelectorDelegateClass alloc] initWithFileSelector:(id)this];
 			[openPanel beginSheetForDirectory:initialPath ? [NSString stringWithCString:initialPath encoding:NSUTF8StringEncoding] : nil file:nil types:typesArray modalForWindow:parentWindow modalDelegate:fsdelegate didEndSelector:@selector(openPanelDidEnd:returnCode:contextInfo:) contextInfo:nil];
 		}
 		else
@@ -251,7 +256,7 @@ bool CocoaFileSelector::runInternal (CBaseObject* _delegate)
 		#if MAC_COCOA
 		if (parentWindow)
 		{
-			id fsdelegate = [[fileSelectorDelegateClass alloc] performSelector:@selector(initWithFileSelector:) withObject: (id)this];
+			id fsdelegate = [[fileSelectorDelegateClass alloc] initWithFileSelector:(id)this];
 			[savePanel beginSheetForDirectory:initialPath ? [NSString stringWithCString:initialPath encoding:NSUTF8StringEncoding] : nil file:defaultSaveName ? [NSString stringWithCString:defaultSaveName encoding:NSUTF8StringEncoding] : nil modalForWindow:parentWindow modalDelegate:fsdelegate didEndSelector:@selector(openPanelDidEnd:returnCode:contextInfo:) contextInfo:nil];
 		}
 		else

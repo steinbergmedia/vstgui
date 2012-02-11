@@ -47,7 +47,7 @@ namespace VSTGUI {
 // CCView Implementation
 /// @cond ignore
 //-----------------------------------------------------------------------------
-CCView::CCView (CView* pView)
+CViewContainer::CCView::CCView (CView* pView)
 : pView (pView)
 , pNext (0)
 , pPrevious (0)
@@ -57,7 +57,7 @@ CCView::CCView (CView* pView)
 }
 
 //-----------------------------------------------------------------------------
-CCView::~CCView ()
+CViewContainer::CCView::~CCView ()
 { 
 	pView->forget (); 
 }

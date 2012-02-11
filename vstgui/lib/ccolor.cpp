@@ -151,7 +151,7 @@ void CColor::fromHSL (double& hue, double& saturation, double& lightness)
 		g = 0.;
 		b = C;
 	}
-	else if (H >= 5. && H < 6.)
+	else if (H >= 5. && H <= 6.)
 	{
 		r = C;
 		g = 0.;

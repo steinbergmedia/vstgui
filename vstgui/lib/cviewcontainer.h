@@ -42,7 +42,6 @@
 
 namespace VSTGUI {
 class CCView;
-template<bool reverse> class CViewIterator;
 
 #if VSTGUI_ENABLE_DEPRECATED_METHODS
 extern IdStringPtr kMsgCheckIfViewContainer;	///< Message to check if View is a CViewContainer	@deprecated use dynamic_cast
@@ -145,6 +144,71 @@ public:
 	virtual void dumpHierarchy ();
 	#endif
 
+protected:
+	/// @cond ignore
+	//-----------------------------------------------------------------------------
+	// CCView Declaration
+	//-----------------------------------------------------------------------------
+	class CCView
+	{
+	public:
+		CCView (CView* pView);
+		~CCView ();
+		
+		CView    *pView;
+		CCView   *pNext;
+		CCView   *pPrevious;
+	};
+	/// @endcond
+public:
+
+	//-----------------------------------------------------------------------------
+	template<bool reverse>
+	class Iterator
+	{
+	public:
+		Iterator<reverse> (CViewContainer* container) : current (reverse ? container->pLastView : container->pFirstView) {}
+		Iterator<reverse> (const Iterator& vi) : current (vi.current) {}
+		
+		Iterator<reverse>& operator++ ()
+		{
+			if (current)
+				current = reverse ? current->pPrevious : current->pNext;
+			return *this;
+		}
+		
+		Iterator<reverse> operator++ (int)
+		{
+			Iterator<reverse> old (*this);
+			if (current)
+				current = reverse ? current->pPrevious : current->pNext;
+			return old;
+		}
+		
+		Iterator<reverse>& operator-- ()
+		{
+			if (current)
+				current = reverse ? current->pNext : current->pPrevious;
+			return *this;
+		}
+		
+		Iterator<reverse> operator-- (int)
+		{
+			Iterator<reverse> old (*this);
+			if (current)
+				current = reverse ? current->pNext : current->pPrevious;
+			return old;
+		}
+		
+		CView* operator* () const
+		{
+			return current ? current->pView : 0;
+		}
+		
+	protected:
+		CCView* current;
+	};
+	
 	//-------------------------------------------
 protected:
 	~CViewContainer ();
@@ -156,11 +220,11 @@ protected:
 		kAutosizeSubviews = 1 << (CView::kLastCViewFlag + 1)
 	};
 
-	friend class CViewIterator<true>;
-	friend class CViewIterator<false>;
-
+	/// @cond ignore
 	CCView  *pFirstView;
 	CCView  *pLastView;
+	/// @endcond
+
 	CDrawStyle backgroundColorDrawStyle;
 	CColor backgroundColor;
 	CPoint backgroundOffset;
@@ -171,20 +235,6 @@ protected:
 };
 
 /// @cond ignore
-//-----------------------------------------------------------------------------
-// CCView Declaration
-//-----------------------------------------------------------------------------
-class CCView
-{
-public:
-	CCView (CView* pView);
-	~CCView ();
-
-	CView    *pView;
-	CCView   *pNext;
-	CCView   *pPrevious;
-};
-
 #ifndef FOREACHSUBVIEW
 	#define FOREACHSUBVIEW for (CCView* pSv = pFirstView; pSv; pSv = pSv->pNext) {CView* pV = pSv->pView;
 #endif
@@ -197,55 +247,8 @@ public:
 
 /// @endcond
 
-//-----------------------------------------------------------------------------
-template<bool reverse>
-class CViewIterator
-{
-public:
-	CViewIterator<reverse> (CViewContainer* container) : current (reverse ? container->pLastView : container->pFirstView) {}
-	CViewIterator<reverse> (const CViewIterator& vi) : current (vi.current) {}
-
-	CViewIterator<reverse>& operator++ ()
-	{
-		if (current)
-			current = reverse ? current->pPrevious : current->pNext;
-		return *this;
-	}
-
-	CViewIterator<reverse> operator++ (int)
-	{
-		CViewIterator<reverse> old (*this);
-		if (current)
-			current = reverse ? current->pPrevious : current->pNext;
-		return old;
-	}
-
-	CViewIterator<reverse>& operator-- ()
-	{
-		if (current)
-			current = reverse ? current->pNext : current->pPrevious;
-		return *this;
-	}
-	
-	CViewIterator<reverse> operator-- (int)
-	{
-		CViewIterator<reverse> old (*this);
-		if (current)
-			current = reverse ? current->pNext : current->pPrevious;
-		return old;
-	}
-	
-	CView* operator* () const
-	{
-		return current ? current->pView : 0;
-	}
-
-protected:
-	CCView* current;
-};
-
-typedef CViewIterator<false> ViewIterator;
-typedef CViewIterator<true> ReverseViewIterator;
+typedef CViewContainer::Iterator<false> ViewIterator;
+typedef CViewContainer::Iterator<true> ReverseViewIterator;
 
 } // namespace
 
