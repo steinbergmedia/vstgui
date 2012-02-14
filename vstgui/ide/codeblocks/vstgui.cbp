@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<CodeBlocks_project_file>
+	<FileVersion major="1" minor="6" />
+	<Project>
+		<Option title="vstgui" />
+		<Option compiler="gcc" />
+		<Build>
+			<Target title="Debug">
+				<Option output="libvstgui" prefix_auto="1" extension_auto="1" />
+				<Option working_dir="" />
+				<Option object_output="obj/Debug/" />
+				<Option type="2" />
+				<Option compiler="gcc" />
+				<Option createDefFile="1" />
+				<Compiler>
+					<Add option="-Wall" />
+					<Add option="-g" />
+					<Add option="-DDEVELOPMENT=1" />
+				</Compiler>
+			</Target>
+			<Target title="Release">
+				<Option output="libvstgui" prefix_auto="1" extension_auto="1" />
+				<Option working_dir="" />
+				<Option object_output="obj/Release/" />
+				<Option type="2" />
+				<Option compiler="gcc" />
+				<Option createDefFile="1" />
+				<Compiler>
+					<Add option="-O2" />
+					<Add option="-Wall" />
+					<Add option="-DRELEASE=1" />
+				</Compiler>
+				<Linker>
+					<Add option="-s" />
+				</Linker>
+			</Target>
+		</Build>
+		<Unit filename="../../lib/animation/animations.cpp" />
+		<Unit filename="../../lib/animation/animations.h" />
+		<Unit filename="../../lib/animation/animator.cpp" />
+		<Unit filename="../../lib/animation/animator.h" />
+		<Unit filename="../../lib/animation/timingfunctions.cpp" />
+		<Unit filename="../../lib/animation/timingfunctions.h" />
+		<Unit filename="../../lib/cbitmap.cpp" />
+		<Unit filename="../../lib/cbitmap.h" />
+		<Unit filename="../../lib/cbitmapfilter.cpp" />
+		<Unit filename="../../lib/cbitmapfilter.h" />
+		<Unit filename="../../lib/ccolor.cpp" />
+		<Unit filename="../../lib/ccolor.h" />
+		<Unit filename="../../lib/cdatabrowser.cpp" />
+		<Unit filename="../../lib/cdatabrowser.h" />
+		<Unit filename="../../lib/cdrawcontext.cpp" />
+		<Unit filename="../../lib/cdrawcontext.h" />
+		<Unit filename="../../lib/cdropsource.cpp" />
+		<Unit filename="../../lib/cdropsource.h" />
+		<Unit filename="../../lib/cfileselector.cpp" />
+		<Unit filename="../../lib/cfileselector.h" />
+		<Unit filename="../../lib/cfont.cpp" />
+		<Unit filename="../../lib/cfont.h" />
+		<Unit filename="../../lib/cframe.cpp" />
+		<Unit filename="../../lib/cframe.h" />
+		<Unit filename="../../lib/cgraphicspath.cpp" />
+		<Unit filename="../../lib/cgraphicspath.h" />
+		<Unit filename="../../lib/coffscreencontext.cpp" />
+		<Unit filename="../../lib/coffscreencontext.h" />
+		<Unit filename="../../lib/controls/cautoanimation.cpp" />
+		<Unit filename="../../lib/controls/cautoanimation.h" />
+		<Unit filename="../../lib/controls/cbuttons.cpp" />
+		<Unit filename="../../lib/controls/cbuttons.h" />
+		<Unit filename="../../lib/controls/ccolorchooser.cpp" />
+		<Unit filename="../../lib/controls/ccolorchooser.h" />
+		<Unit filename="../../lib/controls/ccontrol.cpp" />
+		<Unit filename="../../lib/controls/ccontrol.h" />
+		<Unit filename="../../lib/controls/cfontchooser.cpp" />
+		<Unit filename="../../lib/controls/cfontchooser.h" />
+		<Unit filename="../../lib/controls/cknob.cpp" />
+		<Unit filename="../../lib/controls/cknob.h" />
+		<Unit filename="../../lib/controls/cmoviebitmap.cpp" />
+		<Unit filename="../../lib/controls/cmoviebitmap.h" />
+		<Unit filename="../../lib/controls/cmoviebutton.cpp" />
+		<Unit filename="../../lib/controls/cmoviebutton.h" />
+		<Unit filename="../../lib/controls/coptionmenu.cpp" />
+		<Unit filename="../../lib/controls/coptionmenu.h" />
+		<Unit filename="../../lib/controls/cparamdisplay.cpp" />
+		<Unit filename="../../lib/controls/cparamdisplay.h" />
+		<Unit filename="../../lib/controls/cslider.cpp" />
+		<Unit filename="../../lib/controls/cslider.h" />
+		<Unit filename="../../lib/controls/cspecialdigit.cpp" />
+		<Unit filename="../../lib/controls/cspecialdigit.h" />
+		<Unit filename="../../lib/controls/csplashscreen.cpp" />
+		<Unit filename="../../lib/controls/csplashscreen.h" />
+		<Unit filename="../../lib/controls/cswitch.cpp" />
+		<Unit filename="../../lib/controls/cswitch.h" />
+		<Unit filename="../../lib/controls/ctextedit.cpp" />
+		<Unit filename="../../lib/controls/ctextedit.h" />
+		<Unit filename="../../lib/controls/ctextlabel.cpp" />
+		<Unit filename="../../lib/controls/ctextlabel.h" />
+		<Unit filename="../../lib/controls/cvumeter.cpp" />
+		<Unit filename="../../lib/controls/cvumeter.h" />
+		<Unit filename="../../lib/copenglview.cpp" />
+		<Unit filename="../../lib/copenglview.h" />
+		<Unit filename="../../lib/cpoint.cpp" />
+		<Unit filename="../../lib/cpoint.h" />
+		<Unit filename="../../lib/crect.cpp" />
+		<Unit filename="../../lib/crect.h" />
+		<Unit filename="../../lib/crowcolumnview.cpp" />
+		<Unit filename="../../lib/crowcolumnview.h" />
+		<Unit filename="../../lib/cscrollview.cpp" />
+		<Unit filename="../../lib/cscrollview.h" />
+		<Unit filename="../../lib/cshadowviewcontainer.cpp" />
+		<Unit filename="../../lib/cshadowviewcontainer.h" />
+		<Unit filename="../../lib/csplitview.cpp" />
+		<Unit filename="../../lib/csplitview.h" />
+		<Unit filename="../../lib/cstring.cpp" />
+		<Unit filename="../../lib/cstring.h" />
+		<Unit filename="../../lib/ctabview.cpp" />
+		<Unit filename="../../lib/ctabview.h" />
+		<Unit filename="../../lib/ctooltipsupport.cpp" />
+		<Unit filename="../../lib/ctooltipsupport.h" />
+		<Unit filename="../../lib/cview.cpp" />
+		<Unit filename="../../lib/cview.h" />
+		<Unit filename="../../lib/cviewcontainer.cpp" />
+		<Unit filename="../../lib/cviewcontainer.h" />
+		<Unit filename="../../lib/cvstguitimer.cpp" />
+		<Unit filename="../../lib/cvstguitimer.h" />
+		<Unit filename="../../lib/idependency.h" />
+		<Unit filename="../../lib/ifocusdrawing.h" />
+		<Unit filename="../../lib/vstguibase.h" />
+		<Unit filename="../../lib/vstguidebug.cpp" />
+		<Unit filename="../../lib/vstguidebug.h" />
+		<Unit filename="../../lib/vstkeycode.h" />
+		<Extensions>
+			<code_completion />
+			<envvars />
+			<debugger />
+		</Extensions>
+	</Project>
+</CodeBlocks_project_file>
