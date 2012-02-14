@@ -169,7 +169,7 @@ const CGraphicsTransform& Property::getTransform () const
 namespace Standard {
 	static void registerStandardFilters (Factory& factory);
 }
-	
+
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
@@ -349,7 +349,7 @@ public:
 	{
 		CBitmap* inputBitmap = getInputBitmap ();
 		uint32_t radius = (uint32_t)getProperty (Property::kRadius).getInteger ();
-		if (inputBitmap == 0 || radius < 2 || radius == ULONG_MAX)
+		if (inputBitmap == 0 || radius < 2 || radius == UINT_MAX)
 			return false;
 		if (replace)
 		{
@@ -460,12 +460,12 @@ public:
 		registerProperty (Property::kInputBitmap, BitmapFilter::Property (BitmapFilter::Property::kObject));
 		registerProperty (Property::kOutputRect, CRect (0, 0, 10, 10));
 	}
-	
+
 	static IFilter* CreateFunction (IdStringPtr _name)
 	{
 		return new ScaleBiliniear ();
 	}
-	
+
 	bool run (bool replace)
 	{
 		if (replace)
@@ -480,7 +480,7 @@ public:
 		if (outputBitmap == 0)
 			return false;
 
-		OwningPointer<CBitmapPixelAccess> inputAccessor = CBitmapPixelAccess::create (inputBitmap);		
+		OwningPointer<CBitmapPixelAccess> inputAccessor = CBitmapPixelAccess::create (inputBitmap);
 		OwningPointer<CBitmapPixelAccess> outputAccessor = CBitmapPixelAccess::create (outputBitmap);
 		if (inputAccessor == 0 || outputAccessor == 0)
 			return false;
@@ -492,24 +492,24 @@ public:
 	{
 		originalBitmap.setPosition (0, 0);
 		copyBitmap.setPosition (0, 0);
-		
+
 		int32_t origWidth = (int32_t)originalBitmap.getBitmapWidth ();
 		int32_t origHeight = (int32_t)originalBitmap.getBitmapHeight ();
 		int32_t newWidth = (int32_t)copyBitmap.getBitmapWidth ();
 		int32_t newHeight = (int32_t)copyBitmap.getBitmapHeight ();
-		
+
 		float xRatio = ((float)(origWidth-1)) / (float)newWidth;
 		float yRatio = ((float)(origHeight-1)) / (float)newHeight;
 		float xDiff, yDiff, r, g, b, a;
 		uint32_t x, y;
 		CColor color[4];
 		CColor result;
-		
+
 		for (int32_t i = 0; i < newHeight; i++)
 		{
 			y = (int32_t)(yRatio * i);
 			yDiff = (yRatio * i) - y;
-			
+
 			for (int32_t j = 0; j < newWidth; j++, copyBitmap++)
 			{
 				x = (int32_t)(xRatio * j);
@@ -544,14 +544,14 @@ class SimpleFilter : public FilterBase
 {
 public:
 	typedef void (*ProcessFunction) (CColor& color, FilterBase* self);
-	
+
 	SimpleFilter (UTF8StringPtr description, ProcessFunction function)
 	: FilterBase (description)
 	, processFunction (function)
 	{
 		registerProperty (Property::kInputBitmap, BitmapFilter::Property (BitmapFilter::Property::kObject));
 	}
-	
+
 	bool run (bool replace)
 	{
 		CBitmap* inputBitmap = getInputBitmap ();
@@ -609,12 +609,12 @@ public:
 		registerProperty (Property::kIgnoreAlphaColorValue, BitmapFilter::Property ((int32_t)1));
 		registerProperty (Property::kInputColor, BitmapFilter::Property (kWhiteCColor));
 	}
-	
+
 	static IFilter* CreateFunction (IdStringPtr _name)
 	{
 		return new SetColor ();
 	}
-	
+
 	static void processSetColor (CColor& color, FilterBase* obj)
 	{
 		SetColor* filter = static_cast<SetColor*> (obj);
@@ -622,7 +622,7 @@ public:
 			filter->inputColor.alpha = color.alpha;
 		color = filter->inputColor;
 	}
-	
+
 	bool ignoreAlpha;
 	CColor inputColor;
 
@@ -644,7 +644,7 @@ public:
 	: SimpleFilter ("", processGrayscale)
 	{
 	}
-	
+
 	static IFilter* CreateFunction (IdStringPtr name)
 	{
 		return new Grayscale ();
@@ -654,7 +654,7 @@ public:
 	{
 		color.red = color.green = color.blue = color.getLuma ();
 	}
-	
+
 };
 
 //----------------------------------------------------------------------------------------------------
@@ -669,19 +669,19 @@ public:
 		registerProperty (Property::kInputColor, BitmapFilter::Property (kWhiteCColor));
 		registerProperty (Property::kOutputColor, BitmapFilter::Property (kTransparentCColor));
 	}
-	
+
 	static IFilter* CreateFunction (IdStringPtr name)
 	{
 		return new ReplaceColor ();
 	}
-	
+
 	static void processReplace (CColor& color, FilterBase* obj)
 	{
 		ReplaceColor* filter = static_cast<ReplaceColor*> (obj);
 		if (color == filter->inputColor)
 			color = filter->outputColor;
 	}
-	
+
 	CColor inputColor;
 	CColor outputColor;
 
