@@ -5,15 +5,23 @@
 #include "uibasedatasource.h"
 #include "uisearchtextfield.h"
 #include "uieditcontroller.h"
-#include "../../lib/controls/ccolorchooser.h"
+#include "uidialogcontroller.h"
 #include "../../lib/cbitmapfilter.h"
+#include "../../lib/controls/ccolorchooser.h"
+#include "../../lib/controls/ctextedit.h"
 
 namespace VSTGUI {
 //----------------------------------------------------------------------------------------------------
 class UIBitmapView : public CView
 {
 public:
-	UIBitmapView () : CView (CRect (0, 0, 0, 0)) {}
+	UIBitmapView (CBitmap* bitmap = 0)
+	: CView (CRect (0, 0, 0, 0))
+	, zoom (1.)
+	, fastZooming (true)
+	{
+		setBackground (bitmap);
+	}
 	
 	void draw (CDrawContext* context)
 	{
@@ -23,12 +31,26 @@ public:
 			CNinePartTiledBitmap* bitmap = dynamic_cast<CNinePartTiledBitmap*>(getBackground ());
 			if (bitmap)
 			{
+				static const CCoord kDefaultOnOffDashLength2[] = {2, 2};
+				const CLineStyle kLineOnOffDash2 (CLineStyle::kLineCapButt, CLineStyle::kLineJoinMiter, 0, 2, kDefaultOnOffDashLength2);
+
 				const CNinePartTiledBitmap::PartOffsets offsets = bitmap->getPartOffsets ();
 				CRect r (getViewSize ());
 				context->setDrawMode (kAliasing);
+				context->setFrameColor (kBlueCColor);
+				context->setLineWidth (1);
+				context->setLineStyle (kLineSolid);
+				context->moveTo (CPoint (r.left, r.top + offsets.top));
+				context->lineTo (CPoint (r.right, r.top + offsets.top));
+				context->moveTo (CPoint (r.left, r.bottom - offsets.bottom));
+				context->lineTo (CPoint (r.right, r.bottom - offsets.bottom));
+				context->moveTo (CPoint (r.left + offsets.left, r.top));
+				context->lineTo (CPoint (r.left + offsets.left, r.bottom));
+				context->moveTo (CPoint (r.right - offsets.right, r.top));
+				context->lineTo (CPoint (r.right - offsets.right, r.bottom));
 				context->setFrameColor (kRedCColor);
 				context->setLineWidth (1);
-				context->setLineStyle (kLineOnOffDash);
+				context->setLineStyle (kLineOnOffDash2);
 				context->moveTo (CPoint (r.left, r.top + offsets.top));
 				context->lineTo (CPoint (r.right, r.top + offsets.top));
 				context->moveTo (CPoint (r.left, r.bottom - offsets.bottom));
@@ -41,20 +63,97 @@ public:
 		}
 	}
 
-	void setBackground (CBitmap *background)
+	void enableFastZooming (bool state)
 	{
-		CView::setBackground (background);
-		CCoord width = background ? background->getWidth () : 0;
-		CCoord height = background ? background->getHeight () : 0;
+//		if (state != fastZooming)
+//		{
+//			fastZooming = state;
+//			if (state == false)
+//			{
+//				CCoord z = zoom;
+//				zoom -= 1;
+//				setZoom (z);
+//			}
+//		}
+	}
+
+	void setZoom (CCoord factor)
+	{
+		if (factor <= 0. || factor == zoom)
+			return;
+		if (unzoomedBitmap)
+		{
+			if (factor == 1.)
+			{
+				setBitmapToShow (unzoomedBitmap);
+			}
+			else
+			{
+				OwningPointer<BitmapFilter::IFilter> filter = BitmapFilter::Factory::getInstance ().createFilter (fastZooming ? BitmapFilter::Standard::kScaleLinear : BitmapFilter::Standard::kScaleBilinear);
+				if (filter)
+				{
+					filter->setProperty (BitmapFilter::Standard::Property::kInputBitmap, unzoomedBitmap.cast<CBaseObject> ());
+					CRect r;
+					r.setWidth (unzoomedBitmap->getWidth () * factor);
+					r.setHeight (unzoomedBitmap->getHeight () * factor);
+					filter->setProperty (BitmapFilter::Standard::Property::kOutputRect, r);
+					if (filter->run ())
+					{
+						BitmapFilter::Property prop = filter->getProperty (BitmapFilter::Standard::Property::kOutputBitmap);
+						CBitmap* bitmap = dynamic_cast<CBitmap*> (prop.getObject ());
+						if (bitmap)
+						{
+							if (CNinePartTiledBitmap* nptb = unzoomedBitmap.cast<CNinePartTiledBitmap> ())
+							{
+								CNinePartTiledBitmap::PartOffsets offsets = nptb->getPartOffsets ();
+								offsets.left *= factor;
+								offsets.right *= factor;
+								offsets.top *= factor;
+								offsets.bottom *= factor;
+								OwningPointer<CNinePartTiledBitmap> newBitmap = new CNinePartTiledBitmap (bitmap->getPlatformBitmap(), offsets);
+								setBitmapToShow (newBitmap);
+							}
+							else
+								setBitmapToShow (bitmap);
+						}
+					}
+				}
+			}
+		}
+		zoom = factor;
+	}
+
+	void setBitmapToShow (CBitmap* bitmap)
+	{
+		CView::setBackground (bitmap);
+		CCoord width = bitmap ? bitmap->getWidth () : 0;
+		CCoord height = bitmap ? bitmap->getHeight () : 0;
 		CRect r (getViewSize ());
-		r.setWidth (width);
-		r.setHeight(height);
+		r.setWidth (width+1);
+		r.setHeight(height+1);
 		if (getViewSize () != r)
 		{
 			setViewSize (r);
 			setMouseableArea (r);
 		}
 	}
+
+	void setBackground (CBitmap *background)
+	{
+		unzoomedBitmap = background;
+		if (zoom != 1.)
+		{
+			CCoord toZoom = zoom;
+			zoom = toZoom+1;
+			setZoom (toZoom);
+		}
+		else
+			setBitmapToShow (background);
+	}
+protected:
+	CCoord zoom;
+	bool fastZooming;
+	SharedPointer<CBitmap> unzoomedBitmap;
 };
 
 //----------------------------------------------------------------------------------------------------
@@ -129,6 +228,325 @@ UTF8StringPtr UIBitmapsDataSource::getSelectedBitmapName ()
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
+class UIBitmapSettingsController : public CBaseObject, public IController
+{
+public:
+	UIBitmapSettingsController (CBitmap* bitmap, const std::string& bitmapName, UIDescription* description, IActionPerformer* actionPerformer);
+	~UIBitmapSettingsController ();
+
+	CMessageResult notify (CBaseObject* sender, IdStringPtr message);
+	CView* verifyView (CView* view, const UIAttributes& attributes, IUIDescription* description);
+	CView* createView (const UIAttributes& attributes, IUIDescription* description);
+	void valueChanged (CControl* pControl);
+	void controlBeginEdit (CControl* pControl);
+	void controlEndEdit (CControl* pControl);
+protected:
+	void updateNinePartTiledControls ();
+	static bool stringToValue (UTF8StringPtr txt, float& result, void* userData);
+	static bool valueToString (float value, char utf8String[256], void* userData);
+
+	IActionPerformer* actionPerformer;
+	SharedPointer<UIDescription> editDescription;
+	SharedPointer<CBitmap> bitmap;
+	SharedPointer<UIBitmapView> bitmapView;
+	std::string bitmapName;
+	CRect origOffsets;
+
+	enum {
+		kBitmapPathTag,
+		kBitmapWidthTag,
+		kBitmapHeightTag,
+		kNinePartTiledTag,
+		kNinePartTiledLeftTag,
+		kNinePartTiledTopTag,
+		kNinePartTiledRightTag,
+		kNinePartTiledBottomTag,
+		kZoomTag,
+		kZoomTextTag,
+		kNumTags
+	};
+	CControl* controls[kNumTags];
+};
+
+//----------------------------------------------------------------------------------------------------
+UIBitmapSettingsController::UIBitmapSettingsController (CBitmap* bitmap, const std::string& bitmapName, UIDescription* description, IActionPerformer* actionPerformer)
+: bitmap (bitmap)
+, bitmapName (bitmapName)
+, editDescription (description)
+, actionPerformer (actionPerformer)
+, origOffsets (10, 10, 10, 10)
+{
+	for (int32_t i = 0; i < kNumTags; i++)
+		controls[i] = 0;
+}
+
+//----------------------------------------------------------------------------------------------------
+UIBitmapSettingsController::~UIBitmapSettingsController ()
+{
+}
+
+//----------------------------------------------------------------------------------------------------
+void UIBitmapSettingsController::updateNinePartTiledControls ()
+{
+	CNinePartTiledBitmap* nptb = bitmap.cast<CNinePartTiledBitmap> ();
+	if (nptb)
+	{
+		controls[kNinePartTiledTag]->setValueNormalized (1);
+		const CNinePartTiledBitmap::PartOffsets offsets = nptb->getPartOffsets ();
+		controls[kNinePartTiledLeftTag]->setValue ((float)offsets.left);
+		controls[kNinePartTiledTopTag]->setValue ((float)offsets.top);
+		controls[kNinePartTiledRightTag]->setValue ((float)offsets.right);
+		controls[kNinePartTiledBottomTag]->setValue ((float)offsets.bottom);
+	}
+	else
+	{
+		controls[kNinePartTiledTag]->setValueNormalized (0.);
+		for (int32_t i = kNinePartTiledLeftTag; i <= kNinePartTiledBottomTag; i++)
+		{
+			CTextLabel* label = dynamic_cast<CTextLabel*>(controls[i]);
+			if (label)
+				label->setText ("");
+		}
+	}
+	for (int32_t i = kNinePartTiledLeftTag; i <= kNinePartTiledBottomTag; i++)
+	{
+		controls[i]->setMouseEnabled (nptb ? true : false);
+	}
+}
+
+//----------------------------------------------------------------------------------------------------
+void UIBitmapSettingsController::valueChanged (CControl* control)
+{
+	switch (control->getTag ())
+	{
+		case kBitmapPathTag:
+		{
+			CTextEdit* edit = dynamic_cast<CTextEdit*>(control);
+			if (edit)
+			{
+				actionPerformer->performBitmapChange (bitmapName.c_str (), edit->getText ());
+				bitmap = editDescription->getBitmap (bitmapName.c_str ());
+				bitmapView->setBackground (bitmap);
+				updateNinePartTiledControls ();
+			}
+			break;
+		}
+		case kNinePartTiledTag:
+		{
+			CNinePartTiledBitmap* nptb = bitmap.cast<CNinePartTiledBitmap> ();
+			if (nptb)
+			{
+				origOffsets.left = nptb->getPartOffsets ().left;
+				origOffsets.top = nptb->getPartOffsets ().top;
+				origOffsets.right = nptb->getPartOffsets ().right;
+				origOffsets.bottom = nptb->getPartOffsets ().bottom;
+			}
+			bool checked = control->getValue () == control->getMax ();
+			actionPerformer->performBitmapNinePartTiledChange (bitmapName.c_str (), checked ? &origOffsets : 0);
+			bitmap = editDescription->getBitmap (bitmapName.c_str ());
+			bitmapView->setBackground (bitmap);
+			updateNinePartTiledControls ();
+			break;
+		}
+		case kNinePartTiledLeftTag:
+		case kNinePartTiledTopTag:
+		case kNinePartTiledRightTag:
+		case kNinePartTiledBottomTag:
+		{
+			CRect r;
+			r.left = controls[kNinePartTiledLeftTag]->getValue ();
+			r.top = controls[kNinePartTiledTopTag]->getValue ();
+			r.right = controls[kNinePartTiledRightTag]->getValue ();
+			r.bottom = controls[kNinePartTiledBottomTag]->getValue ();
+			actionPerformer->performBitmapNinePartTiledChange (bitmapName.c_str (), &r);
+			bitmap = editDescription->getBitmap (bitmapName.c_str ());
+			bitmapView->setBackground (bitmap);
+			updateNinePartTiledControls ();
+			break;
+		}
+		case kZoomTag:
+		{
+			CCoord zoom = floor (control->getValue () / 10. + 0.5);
+			control->setValue ((float)zoom * 10.f);
+			controls[kZoomTextTag]->setValue ((float)zoom * 10.f);
+			bitmapView->setZoom (zoom / 10.);
+			controls[kZoomTextTag]->invalid ();
+			control->invalid ();
+			break;
+		}
+	}
+}
+
+//----------------------------------------------------------------------------------------------------
+void UIBitmapSettingsController::controlBeginEdit (CControl* control)
+{
+	if (control->getTag () == kZoomTag)
+	{
+		bitmapView->enableFastZooming (true);
+	}
+}
+
+//----------------------------------------------------------------------------------------------------
+void UIBitmapSettingsController::controlEndEdit (CControl* control)
+{
+	if (control->getTag () == kZoomTag)
+	{
+		bitmapView->enableFastZooming (false);
+	}
+}
+
+//----------------------------------------------------------------------------------------------------
+CMessageResult UIBitmapSettingsController::notify (CBaseObject* sender, IdStringPtr message)
+{
+	if (message == UIDialogController::kMsgDialogButton1Clicked)
+	{
+		return kMessageNotified;
+	}
+	else if (message == UIDialogController::kMsgDialogShow)
+	{
+		bitmapView->setBackground (bitmap);
+		updateNinePartTiledControls ();
+		return kMessageNotified;
+	}
+	return kMessageUnknown;
+}
+
+//----------------------------------------------------------------------------------------------------
+CView* UIBitmapSettingsController::verifyView (CView* view, const UIAttributes& attributes, IUIDescription* description)
+{
+	CControl* control = dynamic_cast<CControl*>(view);
+	if (control && control->getTag () >= 0 && control->getTag () < kNumTags)
+	{
+		controls[control->getTag ()] = control;
+		switch (control->getTag ())
+		{
+			case kBitmapPathTag:
+			{
+				CTextEdit* bitmapPathEdit = dynamic_cast<CTextEdit*> (control);
+				if (bitmapPathEdit)
+					bitmapPathEdit->setText (bitmap->getResourceDescription ().u.name);
+				break;
+			}
+			case kBitmapWidthTag:
+			{
+				CTextLabel* label = dynamic_cast<CTextLabel*>(control);
+				if (label)
+				{
+					label->setPrecision (0);
+					label->setMax ((float)bitmap->getWidth ());
+					label->setValue ((float)bitmap->getWidth ());
+					label->sizeToFit ();
+				}
+				break;
+			}
+			case kBitmapHeightTag:
+			{
+				CTextLabel* label = dynamic_cast<CTextLabel*>(control);
+				if (label)
+				{
+					label->setPrecision (0);
+					label->setMax ((float)bitmap->getHeight ());
+					label->setValue ((float)bitmap->getHeight ());
+					label->sizeToFit ();
+					if (controls[kBitmapWidthTag])
+					{
+						CRect r = control->getViewSize ();
+						if (controls[kBitmapWidthTag]->getWidth () > r.getWidth ())
+						{
+							r.setWidth (controls[kBitmapWidthTag]->getWidth ());
+							control->setViewSize (r);
+						}
+						else
+						{
+							r = controls[kBitmapWidthTag]->getViewSize ();
+							r.setWidth (control->getWidth ());
+							controls[kBitmapWidthTag]->setViewSize (r);
+						}
+					}
+				}
+				break;
+			}
+			case kNinePartTiledLeftTag:
+			case kNinePartTiledRightTag:
+			{
+				CTextEdit* textEdit = dynamic_cast<CTextEdit*>(control);
+				if (textEdit)
+				{
+					textEdit->setPrecision (0);
+					textEdit->setStringToValueProc (stringToValue);
+				}
+				control->setMax ((float)bitmap->getWidth ());
+				break;
+			}
+			case kNinePartTiledTopTag:
+			case kNinePartTiledBottomTag:
+			{
+				CTextEdit* textEdit = dynamic_cast<CTextEdit*>(control);
+				if (textEdit)
+				{
+					textEdit->setPrecision (0);
+					textEdit->setStringToValueProc (stringToValue);
+				}
+				control->setMax ((float)bitmap->getHeight ());
+				break;
+			}
+			case kZoomTag:
+			{
+				control->setValue (100);
+				break;
+			}
+			case kZoomTextTag:
+			{
+				CTextLabel* label = dynamic_cast<CTextLabel*>(control);
+				if (label)
+				{
+					label->setValueToStringProc (valueToString);
+				}
+				control->setValue (100);
+			}
+		}
+	}
+	return view;
+}
+
+//----------------------------------------------------------------------------------------------------
+CView* UIBitmapSettingsController::createView (const UIAttributes& attributes, IUIDescription* description)
+{
+	const std::string* name = attributes.getAttributeValue ("custom-view-name");
+	if (name)
+	{
+		if (*name == "BitmapView")
+		{
+			bitmapView = new UIBitmapView ();
+			return bitmapView;
+		}
+	}
+	return 0;
+}
+
+//----------------------------------------------------------------------------------------------------
+bool UIBitmapSettingsController::valueToString (float value, char utf8String[256], void* userData)
+{
+	int32_t intValue = (int32_t)value;
+	std::stringstream str;
+	str << intValue;
+	str << "%";
+	strcpy (utf8String, str.str ().c_str ());
+	return true;
+}
+
+
+//----------------------------------------------------------------------------------------------------
+bool UIBitmapSettingsController::stringToValue (UTF8StringPtr txt, float& result, void* userData)
+{
+	int32_t value = txt ? (int32_t)strtol (txt, 0, 10) : 0;
+	result = (float)value;
+	return true;
+}
+
+//----------------------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------
 UIBitmapsController::UIBitmapsController (IController* baseController, UIDescription* description, IActionPerformer* actionPerformer)
 : DelegationController (baseController)
 , editDescription (description)
@@ -143,6 +561,14 @@ UIBitmapsController::UIBitmapsController (IController* baseController, UIDescrip
 UIBitmapsController::~UIBitmapsController ()
 {
 	dataSource->forget ();
+}
+
+//----------------------------------------------------------------------------------------------------
+void UIBitmapsController::showSettingsDialog ()
+{
+	UIDialogController* dc = new UIDialogController (this, bitmapPathEdit->getFrame ());
+	UIBitmapSettingsController* fsController = new UIBitmapSettingsController (dataSource->getSelectedBitmap (), dataSource->getSelectedBitmapName (), editDescription, actionPerformer);
+	dc->run ("bitmap.settings", "Bitmap Settings", "Close", 0, fsController, &UIEditController::getEditorDescription ());
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -179,26 +605,23 @@ CView* UIBitmapsController::verifyView (CView* view, const UIAttributes& attribu
 	{
 		switch (textEdit->getTag ())
 		{
-			case kBitmapPathTag: bitmapPathEdit = textEdit; textEdit->setMouseEnabled (false); break;
-			case kNinePartTiledLeftTag: ninePartRectEdit[0] = textEdit; textEdit->setValueToStringProc (valueToString); textEdit->setStringToValueProc (stringToValue); textEdit->setMouseEnabled (false); break;
-			case kNinePartTiledTopTag: ninePartRectEdit[1] = textEdit; textEdit->setValueToStringProc (valueToString); textEdit->setStringToValueProc (stringToValue); textEdit->setMouseEnabled (false); break;
-			case kNinePartTiledRightTag: ninePartRectEdit[2] = textEdit; textEdit->setValueToStringProc (valueToString); textEdit->setStringToValueProc (stringToValue); textEdit->setMouseEnabled (false); break;
-			case kNinePartTiledBottomTag: ninePartRectEdit[3] = textEdit; textEdit->setValueToStringProc (valueToString); textEdit->setStringToValueProc (stringToValue); textEdit->setMouseEnabled (false); break;
+			case kBitmapPathTag:
+			{
+				bitmapPathEdit = textEdit;
+				textEdit->setMouseEnabled (false);
+				break;
+			}
 		}
 	}
 	else
 	{
-		CControl* control = dynamic_cast<CControl*>(view);
+		CControl* control = dynamic_cast<CControl*> (view);
 		if (control)
 		{
-			switch (control->getTag ())
+			if (control->getTag () == kSettingsTag)
 			{
-				case kNinePartTiledTag:
-				{
-					ninePartTiled = control;
-					control->setMouseEnabled (false);
-					break;
-				}
+				settingButton = control;
+				settingButton->setMouseEnabled (false);
 			}
 		}
 	}
@@ -243,36 +666,11 @@ void UIBitmapsController::valueChanged (CControl* pControl)
 			}
 			break;
 		}
-		case kNinePartTiledTag:
+		case kSettingsTag:
 		{
-			UTF8StringPtr bitmapName = dataSource->getSelectedBitmapName ();
-			if (bitmapName)
+			if (pControl->getValue () == pControl->getMax ())
 			{
-				bool checked = pControl->getValue () == pControl->getMax ();
-				CRect offsets;
-				actionPerformer->performBitmapNinePartTiledChange (bitmapName, checked ? &offsets : 0);
-			}
-			break;
-		}
-		case kNinePartTiledLeftTag:
-		case kNinePartTiledTopTag:
-		case kNinePartTiledRightTag:
-		case kNinePartTiledBottomTag:
-		{
-			CBitmap* b = dataSource->getSelectedBitmap ();
-			CNinePartTiledBitmap* bitmap = b ? dynamic_cast<CNinePartTiledBitmap*>(b) : 0;
-			if (bitmap)
-			{
-				CRect r;
-				if (ninePartRectEdit[0])
-					r.left = ninePartRectEdit[0]->getValue ();
-				if (ninePartRectEdit[1])
-					r.top = ninePartRectEdit[1]->getValue ();
-				if (ninePartRectEdit[2])
-					r.right = ninePartRectEdit[2]->getValue ();
-				if (ninePartRectEdit[3])
-					r.bottom = ninePartRectEdit[3]->getValue ();
-				actionPerformer->performBitmapNinePartTiledChange (dataSource->getSelectedBitmapName (), &r);
+				showSettingsDialog ();
 			}
 			break;
 		}
@@ -297,57 +695,9 @@ void UIBitmapsController::dbSelectionChanged (int32_t selectedRow, GenericString
 			bitmapPathEdit->setText (bitmap ? bitmap->getResourceDescription ().u.name : 0);
 			bitmapPathEdit->setMouseEnabled (selectedBitmapName ? true : false);
 		}
-		CNinePartTiledBitmap* nptb = bitmap ? dynamic_cast<CNinePartTiledBitmap*>(bitmap) : 0;
-		if (nptb)
+		if (settingButton)
 		{
-			if (ninePartTiled)
-			{
-				ninePartTiled->setValue (ninePartTiled->getMax ());
-				ninePartTiled->invalid ();
-				ninePartTiled->setMouseEnabled (true);
-			}
-			const CNinePartTiledBitmap::PartOffsets offsets = nptb->getPartOffsets ();
-			if (ninePartRectEdit[0])
-			{
-				ninePartRectEdit[0]->setValue ((float)offsets.left);
-				ninePartRectEdit[0]->invalid ();
-				ninePartRectEdit[0]->setMouseEnabled (true);
-			}
-			if (ninePartRectEdit[1])
-			{
-				ninePartRectEdit[1]->setValue ((float)offsets.top);
-				ninePartRectEdit[1]->invalid ();
-				ninePartRectEdit[1]->setMouseEnabled (true);
-			}
-			if (ninePartRectEdit[2])
-			{
-				ninePartRectEdit[2]->setValue ((float)offsets.right);
-				ninePartRectEdit[2]->invalid ();
-				ninePartRectEdit[2]->setMouseEnabled (true);
-			}
-			if (ninePartRectEdit[3])
-			{
-				ninePartRectEdit[3]->setValue ((float)offsets.bottom);
-				ninePartRectEdit[3]->invalid ();
-				ninePartRectEdit[3]->setMouseEnabled (true);
-			}
-		}
-		else
-		{
-			if (ninePartTiled)
-			{
-				ninePartTiled->setValue (ninePartTiled->getMin ());
-				ninePartTiled->invalid ();
-				ninePartTiled->setMouseEnabled (selectedBitmapName ? true : false);
-			}
-			for (int32_t i = 0; i < 4; i++)
-			{
-				if (ninePartRectEdit[i])
-				{
-					ninePartRectEdit[i]->setText (0);
-					ninePartRectEdit[i]->setMouseEnabled (false);
-				}
-			}
+			settingButton->setMouseEnabled (selectedBitmapName ? true : false);
 		}
 	}
 }

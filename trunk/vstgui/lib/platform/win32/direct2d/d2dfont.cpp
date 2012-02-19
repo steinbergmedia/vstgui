@@ -96,7 +96,7 @@ IDWriteTextLayout* D2DFont::createTextLayout (const CString& string)
 	const WinString* winString = dynamic_cast<const WinString*> (string.getPlatformString ());
 	IDWriteTextLayout* textLayout = 0;
 	if (winString)
-		getDWriteFactory ()->CreateTextLayout (winString->getWideString (), wcslen (winString->getWideString ()), textFormat, 10000, 1000, &textLayout);
+		getDWriteFactory ()->CreateTextLayout (winString->getWideString (), (UINT32)wcslen (winString->getWideString ()), textFormat, 10000, 1000, &textLayout);
 	return textLayout;
 }
 

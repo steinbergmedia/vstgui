@@ -33,6 +33,7 @@
 //-----------------------------------------------------------------------------
 
 #include "cgbitmap.h"
+#include "../../cbitmap.h"
 
 #if MAC
 #include "macglobals.h"
@@ -70,6 +71,63 @@ IPlatformBitmap* IPlatformBitmap::createFromPath (UTF8StringPtr absolutePath)
 		CFRelease (url);
 	}
 	return bitmap;
+}
+
+//-----------------------------------------------------------------------------
+IPlatformBitmap* IPlatformBitmap::createFromMemory (const void* ptr, uint32_t memSize)
+{
+	CGBitmap* bitmap = 0;
+	CFDataRef data = CFDataCreate (0, (const UInt8*)ptr, memSize);
+	if (data)
+	{
+		CGImageSourceRef source = CGImageSourceCreateWithData (data, NULL);
+		if (source)
+		{
+			bitmap = new CGBitmap ();
+			bool result = bitmap->loadFromImageSource (source);
+			if (result == false)
+			{
+				bitmap->forget ();
+				bitmap = 0;
+			}
+			CFRelease (source);
+		}
+		CFRelease (data);
+	}
+	return bitmap;
+}
+
+//-----------------------------------------------------------------------------
+bool IPlatformBitmap::createMemoryPNGRepresentation (IPlatformBitmap* bitmap, void** ptr, uint32_t& size)
+{
+	bool result = false;
+	CGBitmap* cgBitmap = dynamic_cast<CGBitmap*> (bitmap);
+	if (cgBitmap)
+	{
+		CGImageRef image = cgBitmap->getCGImage ();
+		if (image)
+		{
+			CFMutableDataRef data = CFDataCreateMutable (NULL, 0);
+			if (data)
+			{
+				CGImageDestinationRef dest = CGImageDestinationCreateWithData (data, kUTTypePNG, 1, 0);
+				if (dest)
+				{
+					CGImageDestinationAddImage (dest, image, 0);
+					if (CGImageDestinationFinalize (dest))
+					{
+						size = (uint32_t)CFDataGetLength (data);
+						*ptr = malloc (size);
+						CFDataGetBytes (data, CFRangeMake (0, size), (UInt8*)*ptr);
+						result = true;
+					}
+					CFRelease (dest);
+				}
+				CFRelease (data);
+			}
+		}
+	}
+	return result;
 }
 
 //-----------------------------------------------------------------------------
@@ -126,6 +184,8 @@ bool CGBitmap::load (const CResourceDescription& desc)
 		if (cfStr)
 		{
 			CFURLRef url = NULL;
+			if (filename[0] == '/')
+				url = CFURLCreateFromFileSystemRepresentation (0, (const UInt8*)filename, strlen (filename), false);
 			int32_t i = 0;
 			while (url == NULL)
 			{
@@ -170,9 +230,12 @@ bool CGBitmap::loadFromImageSource (CGImageSourceRef source)
 	imageSource = source;
 	if (imageSource)
 	{
+		CFRetain (imageSource);
 		CFDictionaryRef properties = CGImageSourceCopyPropertiesAtIndex (imageSource, 0, 0);
 		if (properties == 0)
+		{
 			return false;
+		}
 		CFNumberRef value = (CFNumberRef)CFDictionaryGetValue (properties, kCGImagePropertyPixelHeight);
 		if (value)
 		{
@@ -192,7 +255,7 @@ bool CGBitmap::loadFromImageSource (CGImageSourceRef source)
 		// workaround a bug in Mac OS X 10.6 (32 bit), where PNG bitmaps were decoded all the time when drawn.
 		// we fix this by copying the pixels of the bitmap into our own buffer.
 		CFStringRef imageType = CGImageSourceGetType (imageSource);
-		if (imageType && CFStringCompare (imageType, CFSTR("public.png"), 0) == kCFCompareEqualTo)
+		if (imageType && CFStringCompare (imageType, kUTTypePNG, 0) == kCFCompareEqualTo)
 		{
 			CGContextRef context = createCGContext ();
 			if (context)

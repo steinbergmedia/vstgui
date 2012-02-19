@@ -106,7 +106,13 @@ public:
 	~UIDescription ();
 
 	virtual bool parse ();
-	virtual bool save (UTF8StringPtr filename, bool writeWindowsResourceFile = true);
+
+	enum SaveFlags {
+		kWriteWindowsResourceFile	= 1 << 0,
+		kWriteImagesIntoXMLFile		= 1 << 1
+	};
+
+	virtual bool save (UTF8StringPtr filename, int32_t flags = kWriteWindowsResourceFile);
 	virtual bool saveWindowsRCFile (UTF8StringPtr filename);
 
 	bool storeViews (const std::list<CView*> views, OutputStream& stream, UIAttributes* customData = 0) const;
@@ -199,7 +205,7 @@ protected:
 
 	void addDefaultNodes ();
 
-	bool saveToStream (OutputStream& stream);
+	bool saveToStream (OutputStream& stream, int32_t flags);
 
 	// Xml::IHandler
 	void startXmlElement (Xml::Parser* parser, IdStringPtr elementName, UTF8StringPtr* elementAttributes);

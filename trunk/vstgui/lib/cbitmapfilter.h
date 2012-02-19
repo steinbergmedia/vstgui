@@ -169,11 +169,23 @@ namespace Standard {
 	 */
 	static const IdStringPtr kScaleBilinear = "Scale Biliniear";
 
+	/** Scale Linear Filter Name.
+	 
+		Creates a linear scaled bitmap of the input bitmap.
+		Does not work inplace.
+
+		Properties:
+		- Property::kInputBitmap
+		- Property::kOutputRect
+		- Property::kOutputBitmap
+	 */
+	static const IdStringPtr kScaleLinear = "Scale Linear";
+
 	/** @brief Standard Bitmap Property Names */
 	namespace Property {
 	
-		static const IdStringPtr kInputBitmap = "InputBitmap"; ///< [Property::kObject]
-		static const IdStringPtr kOutputBitmap = "OutputBitmap"; ///< [Property::kObject]
+		static const IdStringPtr kInputBitmap = "InputBitmap"; ///< [Property::kObject - CBitmap]
+		static const IdStringPtr kOutputBitmap = "OutputBitmap"; ///< [Property::kObject - CBitmap]
 		static const IdStringPtr kRadius = "Radius"; //< [Property::kInteger]
 		static const IdStringPtr kInputColor = "InputColor"; ///< [Property::kColor]
 		static const IdStringPtr kOutputColor = "OutputColor"; ///< [Property::kColor]

@@ -40,7 +40,7 @@
 
 namespace VSTGUI {
 
-#if MAC_CARBON && MAC_COCOA
+#if MAC_CARBON && MAC_COCOA && VSTGUI_ENABLE_DEPRECATED_METHODS
 	static bool createNSViewMode = false;
 #endif
 
@@ -59,6 +59,7 @@ On Mac OS X it is a HIView or NSView.\n
 On Windows it's a WS_CHILD Window.
 
 */
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
 //-----------------------------------------------------------------------------
 /**
  * @param inSize size of frame
@@ -82,6 +83,7 @@ CFrame::CFrame (const CRect &inSize, void* inSystemWindow, VSTGUIEditorInterface
 	pParentFrame = this;
 	open (inSystemWindow);
 }
+#endif
 
 //-----------------------------------------------------------------------------
 CFrame::CFrame (const CRect& inSize, VSTGUIEditorInterface* inEditor)
@@ -145,7 +147,7 @@ CFrame::~CFrame ()
 	viewFlags &= ~kIsAttached;
 }
 
-#if MAC_COCOA && MAC_CARBON
+#if MAC_COCOA && MAC_CARBON && VSTGUI_ENABLE_DEPRECATED_METHODS
 //-----------------------------------------------------------------------------
 void CFrame::setCocoaMode (bool state)
 {
@@ -176,12 +178,12 @@ void CFrame::close ()
 }
 
 //-----------------------------------------------------------------------------
-bool CFrame::open (void* systemWin)
+bool CFrame::open (void* systemWin, PlatformType systemWindowType)
 {
 	if (!systemWin || isAttached ())
 		return false;
 
-	platformFrame = IPlatformFrame::createPlatformFrame (this, getViewSize (), systemWin);
+	platformFrame = IPlatformFrame::createPlatformFrame (this, getViewSize (), systemWin, systemWindowType);
 	if (!platformFrame)
 		return false;
 

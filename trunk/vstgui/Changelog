@@ -1,3 +1,11 @@
+2012-02-19 arne
+
+	* add option to include bitmap data into uidesc file
+	* add 2 new platform functions to IPlatformBitmap: createFromMemory(..) and createMemoryPNGRepresentation (..)
+	* the CFrame object should now be created with the constructor CFrame (size, editor) and afterwards opened with 
+	  the native parent object and a type description of the parent. The old constructor is now deprecated.
+	* add new Bitmap Filter : ScaleLinear
+
 2012-02-11 arne
 
 	* fix most warnings when building with Clang

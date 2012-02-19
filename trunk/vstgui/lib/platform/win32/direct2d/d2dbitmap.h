@@ -66,6 +66,7 @@ public:
 
 	IWICBitmapSource* getSource () const { return source; }
 	IWICBitmap* getBitmap ();
+	bool createMemoryPNGRepresentation (void** ptr, uint32_t& size);
 //-----------------------------------------------------------------------------
 protected:
 	void replaceBitmapSource (IWICBitmapSource* newSourceBitmap);

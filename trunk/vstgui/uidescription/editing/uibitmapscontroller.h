@@ -28,6 +28,8 @@ protected:
 
 	void dbSelectionChanged (int32_t selectedRow, GenericStringListDataBrowserSource* source);
 
+	void showSettingsDialog ();
+
 	static bool valueToString (float value, char utf8String[256], void* userData);
 	static bool stringToValue (UTF8StringPtr txt, float& result, void* userData);
 
@@ -36,19 +38,14 @@ protected:
 	UIBitmapsDataSource* dataSource;
 	SharedPointer<CView> bitmapView;
 	SharedPointer<CTextEdit> bitmapPathEdit;
-	SharedPointer<CControl> ninePartTiled;
-	SharedPointer<CTextEdit> ninePartRectEdit[4];
+	SharedPointer<CControl> settingButton;
 	
 	enum {
 		kAddTag = 0,
 		kRemoveTag,
 		kSearchTag,
 		kBitmapPathTag,
-		kNinePartTiledTag,
-		kNinePartTiledLeftTag,
-		kNinePartTiledTopTag,
-		kNinePartTiledRightTag,
-		kNinePartTiledBottomTag,
+		kSettingsTag,
 	};
 };
 

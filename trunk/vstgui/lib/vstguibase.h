@@ -48,9 +48,7 @@
 //-----------------------------------------------------------------------------
 // Platform definitions
 //-----------------------------------------------------------------------------
-#if WIN32
-	#define WINDOWS 1
-#elif __APPLE_CC__
+#if __APPLE_CC__
 	#include <stdint.h>
 	#include <AvailabilityMacros.h>
 	#ifndef MAC_OS_X_VERSION_10_5
@@ -71,11 +69,7 @@
 			#define __CF_USE_FRAMEWORK_INCLUDES__ 1
 		#endif
 	#endif
-#else
-	#include <stdint.h>
-#endif
-
-#if WINDOWS
+#elif WIN32 || WINDOWS
 	#include <sdkddkver.h>
 	#if _WIN32_WINNT < 0x600
 		#error unsupported Platform SDK you need at least the Vista Platform SDK to compile VSTGUI
@@ -91,6 +85,11 @@
 	typedef unsigned long		uint32_t;
 	typedef __int64				int64_t;
 	typedef unsigned __int64	uint64_t;
+	#ifndef WINDOWS
+		#define WINDOWS 1
+	#endif
+#else
+	#include <stdint.h>
 #endif
 
 #ifdef UNICODE
@@ -255,6 +254,8 @@ public:
 
 	inline operator I* ()  const { return ptr; }      // act as I*
 	inline I* operator->() const { return ptr; }      // act as I*
+	
+	template<class T> T* cast () const { return dynamic_cast<T*> (ptr); }
 //------------------------------------------------------------------------
 protected:
 	I* ptr;

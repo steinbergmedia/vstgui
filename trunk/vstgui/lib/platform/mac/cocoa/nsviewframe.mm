@@ -1102,10 +1102,14 @@ IDataPackage* NSViewFrame::getClipboard ()
 }
 
 //-----------------------------------------------------------------------------
-IPlatformFrame* IPlatformFrame::createPlatformFrame (IPlatformFrameCallback* frame, const CRect& size, void* parent)
+IPlatformFrame* IPlatformFrame::createPlatformFrame (IPlatformFrameCallback* frame, const CRect& size, void* parent, PlatformType platformType)
 {
 	#if MAC_CARBON
-	if (CFrame::getCocoaMode () == false)
+	if ((platformType == kWindowRef || platformType == kDefaultNative)
+	#if VSTGUI_ENABLE_DEPRECATED_METHODS
+	 || CFrame::getCocoaMode () == false
+	#endif
+	)
 		return new HIViewFrame (frame, size, (WindowRef)parent);
 	#endif
 	return new NSViewFrame (frame, size, (NSView*)parent);

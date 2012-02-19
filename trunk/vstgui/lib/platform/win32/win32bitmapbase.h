@@ -24,6 +24,7 @@ class Win32BitmapBase : public IPlatformBitmap
 public:
 	virtual HBITMAP createHBitmap () = 0;
 	virtual bool loadFromStream (IStream* stream) = 0;
+	virtual bool createMemoryPNGRepresentation (void** ptr, uint32_t& size) = 0;
 };
 
 } // namespace

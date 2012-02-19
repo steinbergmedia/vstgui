@@ -36,6 +36,7 @@
 #include "uiviewfactory.h"
 #include "uiviewcreator.h"
 #include "cstream.h"
+#include "base64codec.h"
 #include "../lib/cfont.h"
 #include "../lib/cstring.h"
 #include "../lib/cframe.h"
@@ -85,6 +86,9 @@ public:
 	~UINode ();
 
 	const std::string& getName () const { return name; }
+	std::stringstream& getData () { return data; }
+	const std::stringstream& getData () const { return data; }
+
 	UIAttributes* getAttributes () const { return attributes; }
 	UIDescList& getChildren () const { return *children; }
 	bool hasChildren () const;
@@ -95,10 +99,13 @@ public:
 	
 	bool noExport () const { return flags & kNoExport; }
 	void noExport (bool state) { if (state) flags |= kNoExport; else flags &= ~kNoExport; }
+
+	bool operator== (const UINode& n) const { return name == n.name; }
 	
 	CLASS_METHODS(UINode, CBaseObject)
 protected:
 	std::string name;
+	std::stringstream data;
 	UIAttributes* attributes;
 	UIDescList* children;
 	int32_t flags;
@@ -156,6 +163,8 @@ public:
 	void invalidBitmap ();
 	bool getFilterProcessed () const { return filterProcessed; }
 	void setFilterProcessed () { filterProcessed = true; }
+	
+	void createXMLData ();
 	CLASS_METHODS(UIBitmapNode, UINode)
 protected:
 	~UIBitmapNode ();
@@ -219,6 +228,16 @@ public:
 	riterator rbegin () const { return std::list<UINode*>::rbegin (); }
 	riterator rend () const { return std::list<UINode*>::rend (); }
 	
+	iterator get (const std::string& nodeName)
+	{
+		for (iterator it = begin (); it != end (); it++)
+		{
+			if (*(*it) == nodeName)
+				return it;
+		}
+		return end ();
+	}
+
 	bool empty () const { return std::list<UINode*>::empty (); }
 protected:
 	bool ownsObjects;
@@ -234,6 +253,7 @@ protected:
 	static void encodeAttributeString (std::string& str);
 
 	bool writeNode (UINode* node, OutputStream& stream);
+	bool writeNodeData (std::stringstream& str, OutputStream& stream);
 	bool writeAttributes (UIAttributes* attr, OutputStream& stream);
 	int32_t intendLevel;
 };
@@ -300,6 +320,28 @@ bool UIDescWriter::writeAttributes (UIAttributes* attr, OutputStream& stream)
 }
 
 //-----------------------------------------------------------------------------
+bool UIDescWriter::writeNodeData (std::stringstream& str, OutputStream& stream)
+{
+	for (int32_t i = 0; i < intendLevel; i++) stream << "\t";
+	str.seekg (0);
+	uint32_t i = 0;
+	while (str.tellg () < str.tellp ())
+	{
+		int8_t byte;
+		str >> byte;
+		stream << byte;
+		if (i++ > 80)
+		{
+			stream << "\n";
+			i = 0;
+			for (int32_t i = 0; i < intendLevel; i++) stream << "\t";
+		}
+	}
+	stream << "\n";
+	return true;
+}
+
+//-----------------------------------------------------------------------------
 bool UIDescWriter::writeNode (UINode* node, OutputStream& stream)
 {
 	bool result = true;
@@ -316,6 +358,8 @@ bool UIDescWriter::writeNode (UINode* node, OutputStream& stream)
 		{
 			stream << ">\n";
 			intendLevel++;
+			if (node->getData ().str ().length () > 0)
+				result = writeNodeData (node->getData (), stream);
 			UIDescList::iterator it = children.begin ();
 			while (it != children.end ())
 			{
@@ -323,6 +367,17 @@ bool UIDescWriter::writeNode (UINode* node, OutputStream& stream)
 					return false;
 				it++;
 			}
+			intendLevel--;
+			for (int32_t i = 0; i < intendLevel; i++) stream << "\t";
+			stream << "</";
+			stream << node->getName ();
+			stream << ">\n";
+		}
+		else if (node->getData ().str ().length () > 0)
+		{
+			stream << ">\n";
+			intendLevel++;
+			result = writeNodeData (node->getData (), stream);
 			intendLevel--;
 			for (int32_t i = 0; i < intendLevel; i++) stream << "\t";
 			stream << "</";
@@ -411,6 +466,7 @@ UIDescription::UIDescription (Xml::IContentProvider* xmlContentProvider, IViewFa
 , bitmapCreator (0)
 , restoreViewsMode (false)
 {
+	memset (&xmlFile, 0, sizeof (CResourceDescription));
 	if (viewFactory == 0)
 		viewFactory = getGenericViewFactory ();
 }
@@ -568,15 +624,15 @@ bool UIDescription::saveWindowsRCFile (UTF8StringPtr filename)
 }
 
 //-----------------------------------------------------------------------------
-bool UIDescription::save (UTF8StringPtr filename, bool writeWindowsResourceFile)
+bool UIDescription::save (UTF8StringPtr filename, int32_t flags)
 {
 	bool result = false;
 	CFileStream stream;
 	if (stream.open (filename, CFileStream::kWriteMode|CFileStream::kTruncateMode))
 	{
-		result = saveToStream (stream);
+		result = saveToStream (stream, flags);
 	}
-	if (result && writeWindowsResourceFile)
+	if (result && flags & kWriteWindowsResourceFile)
 	{
 		std::string rcFileName (filename);
 		size_t extPos = rcFileName.find_last_of ('.');
@@ -591,9 +647,24 @@ bool UIDescription::save (UTF8StringPtr filename, bool writeWindowsResourceFile)
 }
 
 //-----------------------------------------------------------------------------
-bool UIDescription::saveToStream (OutputStream& stream)
+bool UIDescription::saveToStream (OutputStream& stream, int32_t flags)
 {
 	changed (kMessageBeforeSave);
+	if (flags & kWriteImagesIntoXMLFile)
+	{
+		UINode* bitmapNodes = getBaseNode ("bitmaps");
+		if (bitmapNodes)
+		{
+			for (UIDescList::iterator it = bitmapNodes->getChildren ().begin (); it != bitmapNodes->getChildren ().end (); it++)
+			{
+				UIBitmapNode* bitmapNode = dynamic_cast<UIBitmapNode*> (*it);
+				if (bitmapNode)
+				{
+					bitmapNode->createXMLData ();
+				}
+			}
+		}
+	}
 	nodes->getAttributes ()->setAttribute ("version", "1");
 	UIDescWriter writer;
 	return writer.write (stream, nodes);
@@ -1126,10 +1197,10 @@ CBitmap* UIDescription::getBitmap (UTF8StringPtr name)
 			}
 			for (std::list<OwningPointer<BitmapFilter::IFilter> >::const_iterator it = filters.begin (); it != filters.end (); it++)
 			{
-				(*it)->setProperty(BitmapFilter::Standard::Property::kInputBitmap, bitmap);
+				(*it)->setProperty (BitmapFilter::Standard::Property::kInputBitmap, bitmap);
 				if ((*it)->run ())
 				{
-					CBaseObject* obj = (*it)->getProperty(BitmapFilter::Standard::Property::kOutputBitmap).getObject ();
+					CBaseObject* obj = (*it)->getProperty (BitmapFilter::Standard::Property::kOutputBitmap).getObject ();
 					CBitmap* outputBitmap = dynamic_cast<CBitmap*>(obj);
 					if (outputBitmap)
 					{
@@ -2348,6 +2419,16 @@ void UIDescription::endXmlElement (Xml::Parser* parser, IdStringPtr name)
 //-----------------------------------------------------------------------------
 void UIDescription::xmlCharData (Xml::Parser* parser, const int8_t* data, int32_t length)
 {
+	if (nodeStack.back () != 0)
+	{
+		std::stringstream& sstream = nodeStack.back ()->getData ();
+		for (int32_t i = 0; i < length; i++)
+		{
+			if (data[i] == '\t' || data[i] == '\n' || data[i] == '\r')
+				continue;
+			sstream << (char)data[i];
+		}
+	}
 }
 
 //-----------------------------------------------------------------------------
@@ -2364,6 +2445,7 @@ UINode::UINode (const std::string& _name, UIAttributes* _attributes)
 , children (new UIDescList)
 , flags (0)
 {
+	data.clear ();
 	if (attributes == 0)
 		attributes = new UIAttributes ();
 }
@@ -2376,6 +2458,7 @@ UINode::UINode (const std::string& _name, UIDescList* _children, UIAttributes* _
 , flags (0)
 {
 	assert (children != 0);
+	data.clear ();
 	children->remember ();
 	if (attributes == 0)
 		attributes = new UIAttributes ();
@@ -2388,6 +2471,8 @@ UINode::UINode (const UINode& n)
 , attributes (new UIAttributes (*n.attributes))
 , children (new UIDescList (*n.children))
 {
+	data.clear ();
+	data << n.getData ().str ();
 }
 
 //-----------------------------------------------------------------------------
@@ -2564,6 +2649,36 @@ UIBitmapNode::~UIBitmapNode ()
 }
 
 //-----------------------------------------------------------------------------
+void UIBitmapNode::createXMLData ()
+{
+	CBitmap* bitmap = getBitmap ();
+	if (bitmap)
+	{
+		IPlatformBitmap* platformBitmap = bitmap->getPlatformBitmap ();
+		if (platformBitmap)
+		{
+			void* data;
+			uint32_t dataSize;
+			if (IPlatformBitmap::createMemoryPNGRepresentation (platformBitmap, &data, dataSize))
+			{
+				Base64Codec bd;
+				if (bd.init (data, dataSize))
+				{
+					UIDescList::iterator data = getChildren ().get ("data");
+					if (data != getChildren ().end ())
+						getChildren ().remove (*data);
+					UINode* dataNode = new UINode ("data");
+					dataNode->getAttributes ()->setAttribute ("encoding", "base64");
+					dataNode->getData ().write ((const char*)bd.getData (), bd.getDataSize ());
+					getChildren ().add (dataNode);
+				}
+				free (data);
+			}
+		}
+	}
+}
+
+//-----------------------------------------------------------------------------
 CBitmap* UIBitmapNode::getBitmap ()
 {
 	if (bitmap == 0)
@@ -2579,6 +2694,26 @@ CBitmap* UIBitmapNode::getBitmap ()
 			else
 			{
 				bitmap = new CBitmap (CResourceDescription (path->c_str ()));
+			}
+		}
+		if (bitmap && bitmap->getPlatformBitmap () == 0)
+		{
+			UIDescList::iterator data = getChildren ().get ("data");
+			if (data != getChildren ().end () && (*data)->getData ().str ().length () > 0)
+			{
+				const std::string* codec = (*data)->getAttributes ()->getAttributeValue ("encoding");
+				if (codec && *codec == "base64")
+				{
+					Base64Codec bd;
+					if (bd.init ((*data)->getData ().str ()))
+					{
+						OwningPointer<IPlatformBitmap> platformBitmap = IPlatformBitmap::createFromMemory (bd.getData (), bd.getDataSize ());
+						if (platformBitmap)
+						{
+							bitmap->setPlatformBitmap (platformBitmap);
+						}
+					}
+				}
 			}
 		}
 	}

@@ -22,6 +22,7 @@ public:
 
 	static IdStringPtr kMsgDialogButton1Clicked;
 	static IdStringPtr kMsgDialogButton2Clicked;
+	static IdStringPtr kMsgDialogShow;
 protected:
 	void valueChanged (CControl* pControl);
 	CControlListener* getControlListener (UTF8StringPtr controlTagName);
