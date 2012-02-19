@@ -54,6 +54,14 @@ class IDataPackage;
 struct CRect;
 struct CPoint;
 
+enum PlatformType {
+	kHWND,
+	kWindowRef,
+	kNSView,
+	
+	kDefaultNative = -1
+};
+
 //-----------------------------------------------------------------------------
 // Callback interface from IPlatformFrame implementations
 //-----------------------------------------------------------------------------
@@ -85,7 +93,7 @@ public:
 class IPlatformFrame : public CBaseObject
 {
 public:
-	static IPlatformFrame* createPlatformFrame (IPlatformFrameCallback* frame, const CRect& size, void* parent);	///< create platform representation
+	static IPlatformFrame* createPlatformFrame (IPlatformFrameCallback* frame, const CRect& size, void* parent, PlatformType parentType);	///< create platform representation
 	static uint32_t getTicks ();
 
 	virtual bool getGlobalPosition (CPoint& pos) const = 0;	///< get the top left position in global coordinates

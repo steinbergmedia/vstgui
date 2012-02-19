@@ -102,6 +102,58 @@ IWICBitmap* D2DBitmap::getBitmap ()
 }
 
 //-----------------------------------------------------------------------------
+bool D2DBitmap::createMemoryPNGRepresentation (void** ptr, uint32_t& size)
+{
+	bool result = false;
+	IWICBitmapEncoder* encoder = 0;
+	if (SUCCEEDED (WICGlobal::getFactory ()->CreateEncoder (GUID_ContainerFormatPng, NULL, &encoder)))
+	{
+		IStream* stream = 0;
+		if (SUCCEEDED (CreateStreamOnHGlobal (NULL, TRUE, &stream)))
+		{
+			if (SUCCEEDED (encoder->Initialize (stream, WICBitmapEncoderNoCache)))
+			{
+				IWICBitmapFrameEncode* frame = 0;
+				if (SUCCEEDED (encoder->CreateNewFrame (&frame, NULL)))
+				{
+					if (SUCCEEDED (frame->Initialize (NULL)))
+					{
+						if (SUCCEEDED (frame->WriteSource (this->getSource (), NULL)))
+						{
+							if (SUCCEEDED (frame->Commit ()))
+							{
+								if (SUCCEEDED (encoder->Commit ()))
+								{
+									HGLOBAL hGlobal;
+									if (SUCCEEDED (GetHGlobalFromStream (stream, &hGlobal)))
+									{
+										void* globalAddress = GlobalLock (hGlobal);
+										SIZE_T globalSize = GlobalSize (hGlobal);
+										if (globalSize && globalAddress)
+										{
+											*ptr = malloc (globalSize);
+											size = (uint32_t)globalSize;
+											memcpy (*ptr, globalAddress, globalSize);
+											result = true;
+										}
+										GlobalUnlock (hGlobal);
+									}
+								}
+							}
+						}
+					}
+					frame->Release ();
+				}
+			}
+
+			stream->Release ();
+		}
+		encoder->Release ();
+	}
+	return result;
+}
+
+//-----------------------------------------------------------------------------
 bool D2DBitmap::loadFromStream (IStream* iStream)
 {
 	bool result = false;

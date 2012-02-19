@@ -60,6 +60,7 @@ public:
 	Gdiplus::Bitmap* getBitmap () const { return bitmap; }
 	HBITMAP createHBitmap ();
 	bool loadFromStream (IStream* stream);
+	bool createMemoryPNGRepresentation (void** ptr, uint32_t& size);
 
 //-----------------------------------------------------------------------------
 protected:

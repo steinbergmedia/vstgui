@@ -38,6 +38,7 @@
 
 #import "cocoahelpers.h"
 #import "nsviewframe.h"
+#import "../../../cbitmap.h"
 #import "../../../controls/coptionmenu.h"
 #import "../cgbitmap.h"
 

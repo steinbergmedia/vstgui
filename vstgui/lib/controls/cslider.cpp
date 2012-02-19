@@ -267,6 +267,8 @@ void CSlider::draw (CDrawContext *pContext)
 	if (drawStyle != 0)
 	{
 		pContext->setDrawMode (kAliasing);
+		pContext->setLineStyle (kLineSolid);
+		pContext->setLineWidth (1.);
 		if (drawStyle & kDrawFrame || drawStyle & kDrawBack)
 		{
 			pContext->setFrameColor (frameColor);

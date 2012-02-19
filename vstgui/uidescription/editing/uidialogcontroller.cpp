@@ -14,6 +14,7 @@ namespace VSTGUI {
 //----------------------------------------------------------------------------------------------------
 IdStringPtr UIDialogController::kMsgDialogButton1Clicked = "UIDialogController::kMsgDialogButton1Clicked";
 IdStringPtr UIDialogController::kMsgDialogButton2Clicked = "UIDialogController::kMsgDialogButton2Clicked";
+IdStringPtr UIDialogController::kMsgDialogShow = "UIDialogController::kMsgDialogShow";
 
 //----------------------------------------------------------------------------------------------------
 UIDialogController::UIDialogController (IController* baseController, CFrame* frame)
@@ -50,6 +51,7 @@ void UIDialogController::run (UTF8StringPtr _templateName, UTF8StringPtr _dialog
 		if (button1)
 			frame->setFocusView (button1);
 		setOpenGLViewsVisible (false);
+		dialogController->notify (this, kMsgDialogShow);
 	}
 	else
 	{
@@ -141,11 +143,11 @@ CView* UIDialogController::verifyView (CView* view, const UIAttributes& attribut
 	{
 		if (*name == "view")
 		{
-			CBaseObject* obj = dialogController;
-			CView* subView = dialogDescription->createView (templateName.c_str (), dynamic_cast<IController*>(obj));
+			IController* controller = dialogController.cast<IController> ();
+			CView* subView = dialogDescription->createView (templateName.c_str (), controller);
 			if (subView)
 			{
-				subView->setAttribute (kCViewControllerAttribute, sizeof (CBaseObject*), &obj);
+				subView->setAttribute (kCViewControllerAttribute, sizeof (IController*), &controller);
 				sizeDiff.x = subView->getWidth () - view->getWidth ();
 				sizeDiff.y = subView->getHeight () - view->getHeight ();
 				CRect size = view->getViewSize ();

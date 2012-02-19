@@ -39,6 +39,7 @@
 #include "win32support.h"
 #include "win32frame.h"
 #include <shobjidl.h>
+#include <shlobj.h>
 #include <Commdlg.h>
 #include <string>
 

@@ -80,6 +80,13 @@ bool GdiplusBitmap::loadFromStream (IStream* stream)
 }
 
 //-----------------------------------------------------------------------------
+bool GdiplusBitmap::createMemoryPNGRepresentation (void** ptr, uint32_t& size)
+{
+	// TODO: Implementation
+	return false;
+}
+
+//-----------------------------------------------------------------------------
 bool GdiplusBitmap::load (const CResourceDescription& desc)
 {
 	if (bitmap == 0)

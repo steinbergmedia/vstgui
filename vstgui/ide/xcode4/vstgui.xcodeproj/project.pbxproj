@@ -7,198 +7,94 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		F40329C413FE3AA800466973 /* uigridcontroller.h in Headers */ = {isa = PBXBuildFile; fileRef = F40329C313FE3AA800466973 /* uigridcontroller.h */; };
 		F40329C613FE3AB100466973 /* uigridcontroller.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F40329C513FE3AB100466973 /* uigridcontroller.cpp */; };
-		F40329C813FE499D00466973 /* doc.h in Headers */ = {isa = PBXBuildFile; fileRef = F40329C713FE499D00466973 /* doc.h */; };
-		F406E37F140426A800F550B7 /* uidialogcontroller.h in Headers */ = {isa = PBXBuildFile; fileRef = F406E37E140426A700F550B7 /* uidialogcontroller.h */; };
 		F406E381140426B100F550B7 /* uidialogcontroller.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F406E380140426B100F550B7 /* uidialogcontroller.cpp */; };
-		F40B7834140E105800E2BF16 /* macclipboard.h in Headers */ = {isa = PBXBuildFile; fileRef = F40B7833140E105800E2BF16 /* macclipboard.h */; };
 		F40B7836140E106600E2BF16 /* macclipboard.mm in Sources */ = {isa = PBXBuildFile; fileRef = F40B7835140E106600E2BF16 /* macclipboard.mm */; };
-		F41DA9321406860300EDAB4B /* uifocussettingscontroller.h in Headers */ = {isa = PBXBuildFile; fileRef = F41DA9311406860300EDAB4B /* uifocussettingscontroller.h */; };
 		F41DA9341406860B00EDAB4B /* uifocussettingscontroller.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F41DA9331406860B00EDAB4B /* uifocussettingscontroller.cpp */; };
-		F42E1F8814239E42005E0BD7 /* cshadowviewcontainer.h in Headers */ = {isa = PBXBuildFile; fileRef = F42E1F8714239E42005E0BD7 /* cshadowviewcontainer.h */; };
 		F42E1F8A14239E48005E0BD7 /* cshadowviewcontainer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F42E1F8914239E48005E0BD7 /* cshadowviewcontainer.cpp */; };
-		F42E78C81334AB7900518C17 /* idependency.h in Headers */ = {isa = PBXBuildFile; fileRef = F42E78C71334AB7900518C17 /* idependency.h */; };
-		F452950713A211E6006EEF82 /* cocoaopenglview.h in Headers */ = {isa = PBXBuildFile; fileRef = F452950513A211E6006EEF82 /* cocoaopenglview.h */; };
 		F452950813A211E6006EEF82 /* cocoaopenglview.mm in Sources */ = {isa = PBXBuildFile; fileRef = F452950613A211E6006EEF82 /* cocoaopenglview.mm */; };
-		F452950A13A2127D006EEF82 /* iplatformopenglview.h in Headers */ = {isa = PBXBuildFile; fileRef = F452950913A2127D006EEF82 /* iplatformopenglview.h */; };
 		F452950D13A2166A006EEF82 /* copenglview.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F452950B13A2166A006EEF82 /* copenglview.cpp */; };
-		F452950E13A2166A006EEF82 /* copenglview.h in Headers */ = {isa = PBXBuildFile; fileRef = F452950C13A2166A006EEF82 /* copenglview.h */; };
-		F453B21D13F123550067C1C2 /* uiundomanager.h in Headers */ = {isa = PBXBuildFile; fileRef = F453B21C13F123550067C1C2 /* uiundomanager.h */; };
 		F453B21F13F123700067C1C2 /* uiundomanager.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F453B21E13F123700067C1C2 /* uiundomanager.cpp */; };
-		F453B22113F124090067C1C2 /* iaction.h in Headers */ = {isa = PBXBuildFile; fileRef = F453B22013F124090067C1C2 /* iaction.h */; };
-		F453B22313F1299B0067C1C2 /* uiactions.h in Headers */ = {isa = PBXBuildFile; fileRef = F453B22213F1299B0067C1C2 /* uiactions.h */; };
 		F453B22513F129A20067C1C2 /* uiactions.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F453B22413F129A20067C1C2 /* uiactions.cpp */; };
-		F453B22713F19BBC0067C1C2 /* uieditview.h in Headers */ = {isa = PBXBuildFile; fileRef = F453B22613F19BBC0067C1C2 /* uieditview.h */; };
 		F453B22913F19BC40067C1C2 /* uieditview.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F453B22813F19BC30067C1C2 /* uieditview.cpp */; };
 		F45BD679131817CD00C46C02 /* csplitview.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F45BD677131817CD00C46C02 /* csplitview.cpp */; };
-		F45BD67A131817CD00C46C02 /* csplitview.h in Headers */ = {isa = PBXBuildFile; fileRef = F45BD678131817CD00C46C02 /* csplitview.h */; };
-		F485F11313F8F76C0001A913 /* uitagscontroller.h in Headers */ = {isa = PBXBuildFile; fileRef = F485F11213F8F76C0001A913 /* uitagscontroller.h */; };
 		F485F11513F8F7770001A913 /* uitagscontroller.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F485F11413F8F7770001A913 /* uitagscontroller.cpp */; };
-		F485F11713F97FF80001A913 /* uicolorscontroller.h in Headers */ = {isa = PBXBuildFile; fileRef = F485F11613F97FF70001A913 /* uicolorscontroller.h */; };
 		F485F11913F97FFE0001A913 /* uicolorscontroller.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F485F11813F97FFD0001A913 /* uicolorscontroller.cpp */; };
-		F48BCB4013F545290010DCC1 /* uieditmenucontroller.h in Headers */ = {isa = PBXBuildFile; fileRef = F48BCB3F13F545290010DCC1 /* uieditmenucontroller.h */; };
 		F48BCB4213F545350010DCC1 /* uieditmenucontroller.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F48BCB4113F545350010DCC1 /* uieditmenucontroller.cpp */; };
-		F48BCB4413F569820010DCC1 /* uiviewcreatecontroller.h in Headers */ = {isa = PBXBuildFile; fileRef = F48BCB4313F569820010DCC1 /* uiviewcreatecontroller.h */; };
 		F48BCB4613F569890010DCC1 /* uiviewcreatecontroller.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F48BCB4513F569880010DCC1 /* uiviewcreatecontroller.cpp */; };
-		F48BCB4813F580310010DCC1 /* uisearchtextfield.h in Headers */ = {isa = PBXBuildFile; fileRef = F48BCB4713F580300010DCC1 /* uisearchtextfield.h */; };
 		F48BCB4A13F5803B0010DCC1 /* uisearchtextfield.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F48BCB4913F5803A0010DCC1 /* uisearchtextfield.cpp */; };
-		F48BCB4C13F69BB20010DCC1 /* uiattributescontroller.h in Headers */ = {isa = PBXBuildFile; fileRef = F48BCB4B13F69BB10010DCC1 /* uiattributescontroller.h */; };
 		F48BCB4E13F69BB90010DCC1 /* uiattributescontroller.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F48BCB4D13F69BB80010DCC1 /* uiattributescontroller.cpp */; };
 		F497F0EC13080A1C00F0A613 /* cbitmap.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F497F0C213080A1C00F0A613 /* cbitmap.cpp */; };
-		F497F0ED13080A1C00F0A613 /* cbitmap.h in Headers */ = {isa = PBXBuildFile; fileRef = F497F0C313080A1C00F0A613 /* cbitmap.h */; };
 		F497F0EE13080A1C00F0A613 /* ccolor.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F497F0C413080A1C00F0A613 /* ccolor.cpp */; };
-		F497F0EF13080A1C00F0A613 /* ccolor.h in Headers */ = {isa = PBXBuildFile; fileRef = F497F0C513080A1C00F0A613 /* ccolor.h */; };
 		F497F0F013080A1C00F0A613 /* cdatabrowser.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F497F0C613080A1C00F0A613 /* cdatabrowser.cpp */; };
-		F497F0F113080A1C00F0A613 /* cdatabrowser.h in Headers */ = {isa = PBXBuildFile; fileRef = F497F0C713080A1C00F0A613 /* cdatabrowser.h */; };
 		F497F0F213080A1C00F0A613 /* cdrawcontext.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F497F0C813080A1C00F0A613 /* cdrawcontext.cpp */; };
-		F497F0F313080A1C00F0A613 /* cdrawcontext.h in Headers */ = {isa = PBXBuildFile; fileRef = F497F0C913080A1C00F0A613 /* cdrawcontext.h */; };
 		F497F0F413080A1C00F0A613 /* cdropsource.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F497F0CA13080A1C00F0A613 /* cdropsource.cpp */; };
-		F497F0F513080A1C00F0A613 /* cdropsource.h in Headers */ = {isa = PBXBuildFile; fileRef = F497F0CB13080A1C00F0A613 /* cdropsource.h */; };
 		F497F0F613080A1C00F0A613 /* cfileselector.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F497F0CC13080A1C00F0A613 /* cfileselector.cpp */; };
-		F497F0F713080A1C00F0A613 /* cfileselector.h in Headers */ = {isa = PBXBuildFile; fileRef = F497F0CD13080A1C00F0A613 /* cfileselector.h */; };
 		F497F0F813080A1C00F0A613 /* cfont.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F497F0CE13080A1C00F0A613 /* cfont.cpp */; };
-		F497F0F913080A1C00F0A613 /* cfont.h in Headers */ = {isa = PBXBuildFile; fileRef = F497F0CF13080A1C00F0A613 /* cfont.h */; };
 		F497F0FA13080A1C00F0A613 /* cframe.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F497F0D013080A1C00F0A613 /* cframe.cpp */; };
-		F497F0FB13080A1C00F0A613 /* cframe.h in Headers */ = {isa = PBXBuildFile; fileRef = F497F0D113080A1C00F0A613 /* cframe.h */; };
 		F497F0FC13080A1C00F0A613 /* cgraphicspath.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F497F0D213080A1C00F0A613 /* cgraphicspath.cpp */; };
-		F497F0FD13080A1C00F0A613 /* cgraphicspath.h in Headers */ = {isa = PBXBuildFile; fileRef = F497F0D313080A1C00F0A613 /* cgraphicspath.h */; };
 		F497F0FE13080A1C00F0A613 /* coffscreencontext.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F497F0D413080A1C00F0A613 /* coffscreencontext.cpp */; };
-		F497F0FF13080A1C00F0A613 /* coffscreencontext.h in Headers */ = {isa = PBXBuildFile; fileRef = F497F0D513080A1C00F0A613 /* coffscreencontext.h */; };
 		F497F10013080A1C00F0A613 /* cpoint.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F497F0D713080A1C00F0A613 /* cpoint.cpp */; };
-		F497F10113080A1C00F0A613 /* cpoint.h in Headers */ = {isa = PBXBuildFile; fileRef = F497F0D813080A1C00F0A613 /* cpoint.h */; };
 		F497F10213080A1C00F0A613 /* crect.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F497F0D913080A1C00F0A613 /* crect.cpp */; };
-		F497F10313080A1C00F0A613 /* crect.h in Headers */ = {isa = PBXBuildFile; fileRef = F497F0DA13080A1C00F0A613 /* crect.h */; };
 		F497F10413080A1C00F0A613 /* cscrollview.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F497F0DB13080A1C00F0A613 /* cscrollview.cpp */; };
-		F497F10513080A1C00F0A613 /* cscrollview.h in Headers */ = {isa = PBXBuildFile; fileRef = F497F0DC13080A1C00F0A613 /* cscrollview.h */; };
 		F497F10613080A1C00F0A613 /* ctabview.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F497F0DD13080A1C00F0A613 /* ctabview.cpp */; };
-		F497F10713080A1C00F0A613 /* ctabview.h in Headers */ = {isa = PBXBuildFile; fileRef = F497F0DE13080A1C00F0A613 /* ctabview.h */; };
 		F497F10813080A1C00F0A613 /* ctooltipsupport.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F497F0DF13080A1C00F0A613 /* ctooltipsupport.cpp */; };
-		F497F10913080A1C00F0A613 /* ctooltipsupport.h in Headers */ = {isa = PBXBuildFile; fileRef = F497F0E013080A1C00F0A613 /* ctooltipsupport.h */; };
 		F497F10A13080A1C00F0A613 /* cview.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F497F0E113080A1C00F0A613 /* cview.cpp */; };
-		F497F10B13080A1C00F0A613 /* cview.h in Headers */ = {isa = PBXBuildFile; fileRef = F497F0E213080A1C00F0A613 /* cview.h */; };
 		F497F10C13080A1C00F0A613 /* cviewcontainer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F497F0E313080A1C00F0A613 /* cviewcontainer.cpp */; };
-		F497F10D13080A1C00F0A613 /* cviewcontainer.h in Headers */ = {isa = PBXBuildFile; fileRef = F497F0E413080A1C00F0A613 /* cviewcontainer.h */; };
 		F497F10E13080A1C00F0A613 /* cvstguitimer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F497F0E513080A1C00F0A613 /* cvstguitimer.cpp */; };
-		F497F10F13080A1C00F0A613 /* cvstguitimer.h in Headers */ = {isa = PBXBuildFile; fileRef = F497F0E613080A1C00F0A613 /* cvstguitimer.h */; };
-		F497F11013080A1C00F0A613 /* ifocusdrawing.h in Headers */ = {isa = PBXBuildFile; fileRef = F497F0E713080A1C00F0A613 /* ifocusdrawing.h */; };
-		F497F11113080A1C00F0A613 /* vstguibase.h in Headers */ = {isa = PBXBuildFile; fileRef = F497F0E813080A1C00F0A613 /* vstguibase.h */; };
 		F497F11213080A1C00F0A613 /* vstguidebug.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F497F0E913080A1C00F0A613 /* vstguidebug.cpp */; };
-		F497F11313080A1C00F0A613 /* vstguidebug.h in Headers */ = {isa = PBXBuildFile; fileRef = F497F0EA13080A1C00F0A613 /* vstguidebug.h */; };
-		F497F11413080A1C00F0A613 /* vstkeycode.h in Headers */ = {isa = PBXBuildFile; fileRef = F497F0EB13080A1C00F0A613 /* vstkeycode.h */; };
 		F497F12013080AD100F0A613 /* animations.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F497F11A13080AD100F0A613 /* animations.cpp */; };
-		F497F12113080AD100F0A613 /* animations.h in Headers */ = {isa = PBXBuildFile; fileRef = F497F11B13080AD100F0A613 /* animations.h */; };
 		F497F12213080AD100F0A613 /* animator.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F497F11C13080AD100F0A613 /* animator.cpp */; };
-		F497F12313080AD100F0A613 /* animator.h in Headers */ = {isa = PBXBuildFile; fileRef = F497F11D13080AD100F0A613 /* animator.h */; };
 		F497F12413080AD100F0A613 /* timingfunctions.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F497F11E13080AD100F0A613 /* timingfunctions.cpp */; };
-		F497F12513080AD100F0A613 /* timingfunctions.h in Headers */ = {isa = PBXBuildFile; fileRef = F497F11F13080AD100F0A613 /* timingfunctions.h */; };
 		F497F14913080AE500F0A613 /* cautoanimation.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F497F12713080AE400F0A613 /* cautoanimation.cpp */; };
-		F497F14A13080AE500F0A613 /* cautoanimation.h in Headers */ = {isa = PBXBuildFile; fileRef = F497F12813080AE500F0A613 /* cautoanimation.h */; };
 		F497F14B13080AE500F0A613 /* cbuttons.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F497F12913080AE500F0A613 /* cbuttons.cpp */; };
-		F497F14C13080AE500F0A613 /* cbuttons.h in Headers */ = {isa = PBXBuildFile; fileRef = F497F12A13080AE500F0A613 /* cbuttons.h */; };
 		F497F14D13080AE500F0A613 /* ccolorchooser.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F497F12B13080AE500F0A613 /* ccolorchooser.cpp */; };
-		F497F14E13080AE500F0A613 /* ccolorchooser.h in Headers */ = {isa = PBXBuildFile; fileRef = F497F12C13080AE500F0A613 /* ccolorchooser.h */; };
 		F497F14F13080AE500F0A613 /* ccontrol.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F497F12D13080AE500F0A613 /* ccontrol.cpp */; };
-		F497F15013080AE500F0A613 /* ccontrol.h in Headers */ = {isa = PBXBuildFile; fileRef = F497F12E13080AE500F0A613 /* ccontrol.h */; };
 		F497F15113080AE500F0A613 /* cfontchooser.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F497F12F13080AE500F0A613 /* cfontchooser.cpp */; };
-		F497F15213080AE500F0A613 /* cfontchooser.h in Headers */ = {isa = PBXBuildFile; fileRef = F497F13013080AE500F0A613 /* cfontchooser.h */; };
 		F497F15313080AE500F0A613 /* cknob.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F497F13113080AE500F0A613 /* cknob.cpp */; };
-		F497F15413080AE500F0A613 /* cknob.h in Headers */ = {isa = PBXBuildFile; fileRef = F497F13213080AE500F0A613 /* cknob.h */; };
 		F497F15513080AE500F0A613 /* cmoviebitmap.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F497F13313080AE500F0A613 /* cmoviebitmap.cpp */; };
-		F497F15613080AE500F0A613 /* cmoviebitmap.h in Headers */ = {isa = PBXBuildFile; fileRef = F497F13413080AE500F0A613 /* cmoviebitmap.h */; };
 		F497F15713080AE500F0A613 /* cmoviebutton.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F497F13513080AE500F0A613 /* cmoviebutton.cpp */; };
-		F497F15813080AE500F0A613 /* cmoviebutton.h in Headers */ = {isa = PBXBuildFile; fileRef = F497F13613080AE500F0A613 /* cmoviebutton.h */; };
 		F497F15913080AE500F0A613 /* coptionmenu.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F497F13713080AE500F0A613 /* coptionmenu.cpp */; };
-		F497F15A13080AE500F0A613 /* coptionmenu.h in Headers */ = {isa = PBXBuildFile; fileRef = F497F13813080AE500F0A613 /* coptionmenu.h */; };
 		F497F15B13080AE500F0A613 /* cparamdisplay.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F497F13913080AE500F0A613 /* cparamdisplay.cpp */; };
-		F497F15C13080AE500F0A613 /* cparamdisplay.h in Headers */ = {isa = PBXBuildFile; fileRef = F497F13A13080AE500F0A613 /* cparamdisplay.h */; };
 		F497F15D13080AE500F0A613 /* cslider.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F497F13B13080AE500F0A613 /* cslider.cpp */; };
-		F497F15E13080AE500F0A613 /* cslider.h in Headers */ = {isa = PBXBuildFile; fileRef = F497F13C13080AE500F0A613 /* cslider.h */; };
 		F497F15F13080AE500F0A613 /* cspecialdigit.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F497F13D13080AE500F0A613 /* cspecialdigit.cpp */; };
-		F497F16013080AE500F0A613 /* cspecialdigit.h in Headers */ = {isa = PBXBuildFile; fileRef = F497F13E13080AE500F0A613 /* cspecialdigit.h */; };
 		F497F16113080AE500F0A613 /* csplashscreen.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F497F13F13080AE500F0A613 /* csplashscreen.cpp */; };
-		F497F16213080AE500F0A613 /* csplashscreen.h in Headers */ = {isa = PBXBuildFile; fileRef = F497F14013080AE500F0A613 /* csplashscreen.h */; };
 		F497F16313080AE500F0A613 /* cswitch.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F497F14113080AE500F0A613 /* cswitch.cpp */; };
-		F497F16413080AE500F0A613 /* cswitch.h in Headers */ = {isa = PBXBuildFile; fileRef = F497F14213080AE500F0A613 /* cswitch.h */; };
 		F497F16513080AE500F0A613 /* ctextedit.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F497F14313080AE500F0A613 /* ctextedit.cpp */; };
-		F497F16613080AE500F0A613 /* ctextedit.h in Headers */ = {isa = PBXBuildFile; fileRef = F497F14413080AE500F0A613 /* ctextedit.h */; };
 		F497F16713080AE500F0A613 /* ctextlabel.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F497F14513080AE500F0A613 /* ctextlabel.cpp */; };
-		F497F16813080AE500F0A613 /* ctextlabel.h in Headers */ = {isa = PBXBuildFile; fileRef = F497F14613080AE500F0A613 /* ctextlabel.h */; };
 		F497F16913080AE500F0A613 /* cvumeter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F497F14713080AE500F0A613 /* cvumeter.cpp */; };
-		F497F16A13080AE500F0A613 /* cvumeter.h in Headers */ = {isa = PBXBuildFile; fileRef = F497F14813080AE500F0A613 /* cvumeter.h */; };
-		F497F17013080B0200F0A613 /* iplatformbitmap.h in Headers */ = {isa = PBXBuildFile; fileRef = F497F16C13080B0200F0A613 /* iplatformbitmap.h */; };
-		F497F17113080B0200F0A613 /* iplatformframe.h in Headers */ = {isa = PBXBuildFile; fileRef = F497F16D13080B0200F0A613 /* iplatformframe.h */; };
-		F497F17213080B0200F0A613 /* iplatformoptionmenu.h in Headers */ = {isa = PBXBuildFile; fileRef = F497F16E13080B0200F0A613 /* iplatformoptionmenu.h */; };
-		F497F17313080B0200F0A613 /* iplatformtextedit.h in Headers */ = {isa = PBXBuildFile; fileRef = F497F16F13080B0200F0A613 /* iplatformtextedit.h */; };
-		F497F18013080B1C00F0A613 /* cfontmac.h in Headers */ = {isa = PBXBuildFile; fileRef = F497F17513080B1C00F0A613 /* cfontmac.h */; };
 		F497F18113080B1C00F0A613 /* cfontmac.mm in Sources */ = {isa = PBXBuildFile; fileRef = F497F17613080B1C00F0A613 /* cfontmac.mm */; };
 		F497F18213080B1C00F0A613 /* cgbitmap.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F497F17713080B1C00F0A613 /* cgbitmap.cpp */; };
-		F497F18313080B1C00F0A613 /* cgbitmap.h in Headers */ = {isa = PBXBuildFile; fileRef = F497F17813080B1C00F0A613 /* cgbitmap.h */; };
 		F497F18413080B1C00F0A613 /* cgdrawcontext.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F497F17913080B1C00F0A613 /* cgdrawcontext.cpp */; };
-		F497F18513080B1C00F0A613 /* cgdrawcontext.h in Headers */ = {isa = PBXBuildFile; fileRef = F497F17A13080B1C00F0A613 /* cgdrawcontext.h */; };
 		F497F18613080B1C00F0A613 /* macfileselector.mm in Sources */ = {isa = PBXBuildFile; fileRef = F497F17B13080B1C00F0A613 /* macfileselector.mm */; };
 		F497F18713080B1C00F0A613 /* macglobals.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F497F17C13080B1C00F0A613 /* macglobals.cpp */; };
-		F497F18813080B1C00F0A613 /* macglobals.h in Headers */ = {isa = PBXBuildFile; fileRef = F497F17D13080B1C00F0A613 /* macglobals.h */; };
 		F497F18913080B1C00F0A613 /* quartzgraphicspath.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F497F17E13080B1C00F0A613 /* quartzgraphicspath.cpp */; };
-		F497F18A13080B1C00F0A613 /* quartzgraphicspath.h in Headers */ = {isa = PBXBuildFile; fileRef = F497F17F13080B1C00F0A613 /* quartzgraphicspath.h */; };
 		F497F19213080B2A00F0A613 /* hiviewframe.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F497F18C13080B2A00F0A613 /* hiviewframe.cpp */; };
-		F497F19313080B2A00F0A613 /* hiviewframe.h in Headers */ = {isa = PBXBuildFile; fileRef = F497F18D13080B2A00F0A613 /* hiviewframe.h */; };
 		F497F19413080B2A00F0A613 /* hiviewoptionmenu.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F497F18E13080B2A00F0A613 /* hiviewoptionmenu.cpp */; };
-		F497F19513080B2A00F0A613 /* hiviewoptionmenu.h in Headers */ = {isa = PBXBuildFile; fileRef = F497F18F13080B2A00F0A613 /* hiviewoptionmenu.h */; };
 		F497F19613080B2A00F0A613 /* hiviewtextedit.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F497F19013080B2A00F0A613 /* hiviewtextedit.cpp */; };
-		F497F19713080B2A00F0A613 /* hiviewtextedit.h in Headers */ = {isa = PBXBuildFile; fileRef = F497F19113080B2A00F0A613 /* hiviewtextedit.h */; };
-		F497F1A713080B4800F0A613 /* autoreleasepool.h in Headers */ = {isa = PBXBuildFile; fileRef = F497F19913080B4800F0A613 /* autoreleasepool.h */; };
 		F497F1A813080B4800F0A613 /* autoreleasepool.mm in Sources */ = {isa = PBXBuildFile; fileRef = F497F19A13080B4800F0A613 /* autoreleasepool.mm */; };
-		F497F1A913080B4800F0A613 /* cocoadragcontainer.h in Headers */ = {isa = PBXBuildFile; fileRef = F497F19B13080B4800F0A613 /* cocoadragcontainer.h */; };
 		F497F1AA13080B4800F0A613 /* cocoadragcontainer.mm in Sources */ = {isa = PBXBuildFile; fileRef = F497F19C13080B4800F0A613 /* cocoadragcontainer.mm */; };
-		F497F1AB13080B4800F0A613 /* cocoahelpers.h in Headers */ = {isa = PBXBuildFile; fileRef = F497F19D13080B4800F0A613 /* cocoahelpers.h */; };
 		F497F1AC13080B4800F0A613 /* cocoahelpers.mm in Sources */ = {isa = PBXBuildFile; fileRef = F497F19E13080B4800F0A613 /* cocoahelpers.mm */; };
-		F497F1AD13080B4800F0A613 /* cocoatextedit.h in Headers */ = {isa = PBXBuildFile; fileRef = F497F19F13080B4800F0A613 /* cocoatextedit.h */; };
 		F497F1AE13080B4800F0A613 /* cocoatextedit.mm in Sources */ = {isa = PBXBuildFile; fileRef = F497F1A013080B4800F0A613 /* cocoatextedit.mm */; };
-		F497F1B113080B4800F0A613 /* nsviewframe.h in Headers */ = {isa = PBXBuildFile; fileRef = F497F1A313080B4800F0A613 /* nsviewframe.h */; };
 		F497F1B213080B4800F0A613 /* nsviewframe.mm in Sources */ = {isa = PBXBuildFile; fileRef = F497F1A413080B4800F0A613 /* nsviewframe.mm */; };
-		F497F1B313080B4800F0A613 /* nsviewoptionmenu.h in Headers */ = {isa = PBXBuildFile; fileRef = F497F1A513080B4800F0A613 /* nsviewoptionmenu.h */; };
 		F497F1B413080B4800F0A613 /* nsviewoptionmenu.mm in Sources */ = {isa = PBXBuildFile; fileRef = F497F1A613080B4800F0A613 /* nsviewoptionmenu.mm */; };
-		F4A63DE614023EAE00023102 /* uifontscontroller.h in Headers */ = {isa = PBXBuildFile; fileRef = F4A63DE514023EAD00023102 /* uifontscontroller.h */; };
 		F4A63DE814023EB400023102 /* uifontscontroller.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4A63DE714023EB300023102 /* uifontscontroller.cpp */; };
-		F4CA76BC13F1A1EF00BB1842 /* uicrosslines.h in Headers */ = {isa = PBXBuildFile; fileRef = F4CA76BB13F1A1EF00BB1842 /* uicrosslines.h */; };
 		F4CA76BE13F1A1F700BB1842 /* uicrosslines.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4CA76BD13F1A1F700BB1842 /* uicrosslines.cpp */; };
-		F4CA76C013F1A5C300BB1842 /* uigrid.h in Headers */ = {isa = PBXBuildFile; fileRef = F4CA76BF13F1A5C300BB1842 /* uigrid.h */; };
-		F4CA76C413F27A4500BB1842 /* uieditcontroller.h in Headers */ = {isa = PBXBuildFile; fileRef = F4CA76C313F27A4400BB1842 /* uieditcontroller.h */; };
 		F4CA76C613F27A4900BB1842 /* uieditcontroller.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4CA76C513F27A4900BB1842 /* uieditcontroller.cpp */; };
-		F4CA76C813F27E6200BB1842 /* uitemplatecontroller.h in Headers */ = {isa = PBXBuildFile; fileRef = F4CA76C713F27E6100BB1842 /* uitemplatecontroller.h */; };
 		F4CA76CA13F27E6700BB1842 /* uitemplatecontroller.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4CA76C913F27E6600BB1842 /* uitemplatecontroller.cpp */; };
-		F4CE1BE0141138ED00CF75B6 /* cbitmapfilter.h in Headers */ = {isa = PBXBuildFile; fileRef = F4CE1BDF141138EC00CF75B6 /* cbitmapfilter.h */; };
 		F4CE1BE2141138F700CF75B6 /* cbitmapfilter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4CE1BE1141138F700CF75B6 /* cbitmapfilter.cpp */; };
-		F4CF26DE13EEA65D00C64EB7 /* icontroller.h in Headers */ = {isa = PBXBuildFile; fileRef = F4CF26DD13EEA65D00C64EB7 /* icontroller.h */; };
-		F4D23BB21405466200A5F888 /* uitemplatesettingscontroller.h in Headers */ = {isa = PBXBuildFile; fileRef = F4D23BB11405466200A5F888 /* uitemplatesettingscontroller.h */; };
 		F4D23BB41405466900A5F888 /* uitemplatesettingscontroller.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4D23BB31405466900A5F888 /* uitemplatesettingscontroller.cpp */; };
 		F4E3903A13080ECC00615042 /* cstream.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4E3901913080ECC00615042 /* cstream.cpp */; };
-		F4E3903B13080ECC00615042 /* cstream.h in Headers */ = {isa = PBXBuildFile; fileRef = F4E3901A13080ECC00615042 /* cstream.h */; };
-		F4E3903C13080ECC00615042 /* doc.h in Headers */ = {isa = PBXBuildFile; fileRef = F4E3901B13080ECC00615042 /* doc.h */; };
 		F4E3904213080ECC00615042 /* uidescription.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4E3902113080ECC00615042 /* uidescription.cpp */; };
-		F4E3904313080ECC00615042 /* uidescription.h in Headers */ = {isa = PBXBuildFile; fileRef = F4E3902213080ECC00615042 /* uidescription.h */; };
 		F4E3904C13080ECC00615042 /* uiselection.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4E3902B13080ECC00615042 /* uiselection.cpp */; };
-		F4E3904D13080ECC00615042 /* uiselection.h in Headers */ = {isa = PBXBuildFile; fileRef = F4E3902C13080ECC00615042 /* uiselection.h */; };
 		F4E3904E13080ECC00615042 /* uiviewcreator.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4E3902D13080ECC00615042 /* uiviewcreator.cpp */; };
-		F4E3904F13080ECC00615042 /* uiviewcreator.h in Headers */ = {isa = PBXBuildFile; fileRef = F4E3902E13080ECC00615042 /* uiviewcreator.h */; };
 		F4E3905013080ECC00615042 /* uiviewfactory.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4E3902F13080ECC00615042 /* uiviewfactory.cpp */; };
-		F4E3905113080ECC00615042 /* uiviewfactory.h in Headers */ = {isa = PBXBuildFile; fileRef = F4E3903013080ECC00615042 /* uiviewfactory.h */; };
 		F4E3905613080ECC00615042 /* uiviewswitchcontainer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4E3903513080ECC00615042 /* uiviewswitchcontainer.cpp */; };
-		F4E3905713080ECC00615042 /* uiviewswitchcontainer.h in Headers */ = {isa = PBXBuildFile; fileRef = F4E3903613080ECC00615042 /* uiviewswitchcontainer.h */; };
 		F4E3905913080ECC00615042 /* xmlparser.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4E3903813080ECC00615042 /* xmlparser.cpp */; };
-		F4E3905A13080ECC00615042 /* xmlparser.h in Headers */ = {isa = PBXBuildFile; fileRef = F4E3903913080ECC00615042 /* xmlparser.h */; };
-		F4E3905C1308155200615042 /* vstgui.h in Headers */ = {isa = PBXBuildFile; fileRef = F4E3905B1308155200615042 /* vstgui.h */; };
 		F4F52DFF13E2B36500B3DB2F /* crowcolumnview.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4F52DFD13E2B36500B3DB2F /* crowcolumnview.cpp */; };
-		F4F52E0013E2B36500B3DB2F /* crowcolumnview.h in Headers */ = {isa = PBXBuildFile; fileRef = F4F52DFE13E2B36500B3DB2F /* crowcolumnview.h */; };
-		F4FB92AD13FBD130007D72DE /* uibasedatasource.h in Headers */ = {isa = PBXBuildFile; fileRef = F4FB92AC13FBD12F007D72DE /* uibasedatasource.h */; };
-		F4FB92AF13FBEC89007D72DE /* uibitmapscontroller.h in Headers */ = {isa = PBXBuildFile; fileRef = F4FB92AE13FBEC89007D72DE /* uibitmapscontroller.h */; };
 		F4FB92B113FBEC8F007D72DE /* uibitmapscontroller.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4FB92B013FBEC8F007D72DE /* uibitmapscontroller.cpp */; };
-		F4FC1A9D1328C7B40066E2F8 /* iplatformstring.h in Headers */ = {isa = PBXBuildFile; fileRef = F4FC1A9C1328C7B40066E2F8 /* iplatformstring.h */; };
 		F4FC1AA11328C8C40066E2F8 /* macstring.mm in Sources */ = {isa = PBXBuildFile; fileRef = F4FC1A9F1328C8C40066E2F8 /* macstring.mm */; };
-		F4FC1AA21328C8C40066E2F8 /* macstring.h in Headers */ = {isa = PBXBuildFile; fileRef = F4FC1AA01328C8C40066E2F8 /* macstring.h */; };
 		F4FC1AA51328CB320066E2F8 /* cstring.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4FC1AA31328CB310066E2F8 /* cstring.cpp */; };
-		F4FC1AA61328CB320066E2F8 /* cstring.h in Headers */ = {isa = PBXBuildFile; fileRef = F4FC1AA41328CB310066E2F8 /* cstring.h */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -228,6 +124,7 @@
 		F453B22813F19BC30067C1C2 /* uieditview.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = uieditview.cpp; sourceTree = "<group>"; };
 		F45BD677131817CD00C46C02 /* csplitview.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = csplitview.cpp; sourceTree = "<group>"; };
 		F45BD678131817CD00C46C02 /* csplitview.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = csplitview.h; sourceTree = "<group>"; };
+		F47CE2BE14EE5315001B25B9 /* base64codec.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = base64codec.h; sourceTree = "<group>"; };
 		F485F11213F8F76C0001A913 /* uitagscontroller.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = uitagscontroller.h; sourceTree = "<group>"; };
 		F485F11413F8F7770001A913 /* uitagscontroller.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = uitagscontroller.cpp; sourceTree = "<group>"; };
 		F485F11613F97FF70001A913 /* uicolorscontroller.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = uicolorscontroller.h; sourceTree = "<group>"; };
@@ -676,6 +573,7 @@
 			isa = PBXGroup;
 			children = (
 				F453B21B13F122500067C1C2 /* editing */,
+				F47CE2BE14EE5315001B25B9 /* base64codec.h */,
 				F4E3901913080ECC00615042 /* cstream.cpp */,
 				F4E3901A13080ECC00615042 /* cstream.h */,
 				F4E3901B13080ECC00615042 /* doc.h */,
@@ -702,110 +600,6 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				F497F0ED13080A1C00F0A613 /* cbitmap.h in Headers */,
-				F497F0EF13080A1C00F0A613 /* ccolor.h in Headers */,
-				F497F0F113080A1C00F0A613 /* cdatabrowser.h in Headers */,
-				F497F0F313080A1C00F0A613 /* cdrawcontext.h in Headers */,
-				F497F0F513080A1C00F0A613 /* cdropsource.h in Headers */,
-				F497F0F713080A1C00F0A613 /* cfileselector.h in Headers */,
-				F497F0F913080A1C00F0A613 /* cfont.h in Headers */,
-				F497F0FB13080A1C00F0A613 /* cframe.h in Headers */,
-				F497F0FD13080A1C00F0A613 /* cgraphicspath.h in Headers */,
-				F497F0FF13080A1C00F0A613 /* coffscreencontext.h in Headers */,
-				F497F10113080A1C00F0A613 /* cpoint.h in Headers */,
-				F497F10313080A1C00F0A613 /* crect.h in Headers */,
-				F497F10513080A1C00F0A613 /* cscrollview.h in Headers */,
-				F497F10713080A1C00F0A613 /* ctabview.h in Headers */,
-				F497F10913080A1C00F0A613 /* ctooltipsupport.h in Headers */,
-				F497F10B13080A1C00F0A613 /* cview.h in Headers */,
-				F497F10D13080A1C00F0A613 /* cviewcontainer.h in Headers */,
-				F497F10F13080A1C00F0A613 /* cvstguitimer.h in Headers */,
-				F497F11013080A1C00F0A613 /* ifocusdrawing.h in Headers */,
-				F497F11113080A1C00F0A613 /* vstguibase.h in Headers */,
-				F497F11313080A1C00F0A613 /* vstguidebug.h in Headers */,
-				F497F11413080A1C00F0A613 /* vstkeycode.h in Headers */,
-				F497F12113080AD100F0A613 /* animations.h in Headers */,
-				F497F12313080AD100F0A613 /* animator.h in Headers */,
-				F497F12513080AD100F0A613 /* timingfunctions.h in Headers */,
-				F497F14A13080AE500F0A613 /* cautoanimation.h in Headers */,
-				F497F14C13080AE500F0A613 /* cbuttons.h in Headers */,
-				F497F14E13080AE500F0A613 /* ccolorchooser.h in Headers */,
-				F497F15013080AE500F0A613 /* ccontrol.h in Headers */,
-				F497F15213080AE500F0A613 /* cfontchooser.h in Headers */,
-				F497F15413080AE500F0A613 /* cknob.h in Headers */,
-				F497F15613080AE500F0A613 /* cmoviebitmap.h in Headers */,
-				F497F15813080AE500F0A613 /* cmoviebutton.h in Headers */,
-				F497F15A13080AE500F0A613 /* coptionmenu.h in Headers */,
-				F497F15C13080AE500F0A613 /* cparamdisplay.h in Headers */,
-				F497F15E13080AE500F0A613 /* cslider.h in Headers */,
-				F497F16013080AE500F0A613 /* cspecialdigit.h in Headers */,
-				F497F16213080AE500F0A613 /* csplashscreen.h in Headers */,
-				F497F16413080AE500F0A613 /* cswitch.h in Headers */,
-				F497F16613080AE500F0A613 /* ctextedit.h in Headers */,
-				F497F16813080AE500F0A613 /* ctextlabel.h in Headers */,
-				F497F16A13080AE500F0A613 /* cvumeter.h in Headers */,
-				F497F17013080B0200F0A613 /* iplatformbitmap.h in Headers */,
-				F497F17113080B0200F0A613 /* iplatformframe.h in Headers */,
-				F497F17213080B0200F0A613 /* iplatformoptionmenu.h in Headers */,
-				F497F17313080B0200F0A613 /* iplatformtextedit.h in Headers */,
-				F497F18013080B1C00F0A613 /* cfontmac.h in Headers */,
-				F497F18313080B1C00F0A613 /* cgbitmap.h in Headers */,
-				F497F18513080B1C00F0A613 /* cgdrawcontext.h in Headers */,
-				F497F18813080B1C00F0A613 /* macglobals.h in Headers */,
-				F497F18A13080B1C00F0A613 /* quartzgraphicspath.h in Headers */,
-				F497F19313080B2A00F0A613 /* hiviewframe.h in Headers */,
-				F497F19513080B2A00F0A613 /* hiviewoptionmenu.h in Headers */,
-				F497F19713080B2A00F0A613 /* hiviewtextedit.h in Headers */,
-				F497F1A713080B4800F0A613 /* autoreleasepool.h in Headers */,
-				F497F1A913080B4800F0A613 /* cocoadragcontainer.h in Headers */,
-				F497F1AB13080B4800F0A613 /* cocoahelpers.h in Headers */,
-				F497F1AD13080B4800F0A613 /* cocoatextedit.h in Headers */,
-				F497F1B113080B4800F0A613 /* nsviewframe.h in Headers */,
-				F497F1B313080B4800F0A613 /* nsviewoptionmenu.h in Headers */,
-				F4E3903B13080ECC00615042 /* cstream.h in Headers */,
-				F4E3903C13080ECC00615042 /* doc.h in Headers */,
-				F4E3904313080ECC00615042 /* uidescription.h in Headers */,
-				F4E3904D13080ECC00615042 /* uiselection.h in Headers */,
-				F4E3904F13080ECC00615042 /* uiviewcreator.h in Headers */,
-				F4E3905113080ECC00615042 /* uiviewfactory.h in Headers */,
-				F4E3905713080ECC00615042 /* uiviewswitchcontainer.h in Headers */,
-				F4E3905A13080ECC00615042 /* xmlparser.h in Headers */,
-				F4E3905C1308155200615042 /* vstgui.h in Headers */,
-				F45BD67A131817CD00C46C02 /* csplitview.h in Headers */,
-				F4FC1A9D1328C7B40066E2F8 /* iplatformstring.h in Headers */,
-				F4FC1AA21328C8C40066E2F8 /* macstring.h in Headers */,
-				F4FC1AA61328CB320066E2F8 /* cstring.h in Headers */,
-				F42E78C81334AB7900518C17 /* idependency.h in Headers */,
-				F452950713A211E6006EEF82 /* cocoaopenglview.h in Headers */,
-				F452950A13A2127D006EEF82 /* iplatformopenglview.h in Headers */,
-				F452950E13A2166A006EEF82 /* copenglview.h in Headers */,
-				F4F52E0013E2B36500B3DB2F /* crowcolumnview.h in Headers */,
-				F4CF26DE13EEA65D00C64EB7 /* icontroller.h in Headers */,
-				F453B21D13F123550067C1C2 /* uiundomanager.h in Headers */,
-				F453B22113F124090067C1C2 /* iaction.h in Headers */,
-				F453B22313F1299B0067C1C2 /* uiactions.h in Headers */,
-				F453B22713F19BBC0067C1C2 /* uieditview.h in Headers */,
-				F4CA76BC13F1A1EF00BB1842 /* uicrosslines.h in Headers */,
-				F4CA76C013F1A5C300BB1842 /* uigrid.h in Headers */,
-				F4CA76C413F27A4500BB1842 /* uieditcontroller.h in Headers */,
-				F4CA76C813F27E6200BB1842 /* uitemplatecontroller.h in Headers */,
-				F48BCB4013F545290010DCC1 /* uieditmenucontroller.h in Headers */,
-				F48BCB4413F569820010DCC1 /* uiviewcreatecontroller.h in Headers */,
-				F48BCB4813F580310010DCC1 /* uisearchtextfield.h in Headers */,
-				F48BCB4C13F69BB20010DCC1 /* uiattributescontroller.h in Headers */,
-				F485F11313F8F76C0001A913 /* uitagscontroller.h in Headers */,
-				F485F11713F97FF80001A913 /* uicolorscontroller.h in Headers */,
-				F4FB92AD13FBD130007D72DE /* uibasedatasource.h in Headers */,
-				F4FB92AF13FBEC89007D72DE /* uibitmapscontroller.h in Headers */,
-				F40329C413FE3AA800466973 /* uigridcontroller.h in Headers */,
-				F40329C813FE499D00466973 /* doc.h in Headers */,
-				F4A63DE614023EAE00023102 /* uifontscontroller.h in Headers */,
-				F406E37F140426A800F550B7 /* uidialogcontroller.h in Headers */,
-				F4D23BB21405466200A5F888 /* uitemplatesettingscontroller.h in Headers */,
-				F41DA9321406860300EDAB4B /* uifocussettingscontroller.h in Headers */,
-				F40B7834140E105800E2BF16 /* macclipboard.h in Headers */,
-				F4CE1BE0141138ED00CF75B6 /* cbitmapfilter.h in Headers */,
-				F42E1F8814239E42005E0BD7 /* cshadowviewcontainer.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

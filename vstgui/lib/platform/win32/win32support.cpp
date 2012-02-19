@@ -222,6 +222,48 @@ IPlatformBitmap* IPlatformBitmap::createFromPath (UTF8StringPtr absolutePath)
 }
 
 //-----------------------------------------------------------------------------
+IPlatformBitmap* IPlatformBitmap::createFromMemory (const void* ptr, uint32_t memSize)
+{
+	// TODO: check that this implementation actually works
+	IStream* stream = SHCreateMemStream ((const BYTE*)ptr, memSize);
+	if (stream)
+	{
+#if VSTGUI_DIRECT2D_SUPPORT
+		if (getD2DFactory ())
+		{
+			D2DBitmap* result = new D2DBitmap ();
+			if (result->loadFromStream (stream))
+			{
+				stream->Release ();
+				return result;
+			}
+			stream->Release ();
+			result->forget ();
+			return 0;
+		}
+#endif
+		GdiplusBitmap* bitmap = new GdiplusBitmap ();
+		if (bitmap->loadFromStream (stream))
+		{
+			stream->Release ();
+			return bitmap;
+		}
+		bitmap->forget ();
+		stream->Release ();
+	}
+	return 0;
+}
+
+//-----------------------------------------------------------------------------
+bool IPlatformBitmap::createMemoryPNGRepresentation (IPlatformBitmap* bitmap, void** ptr, uint32_t& size)
+{
+	Win32BitmapBase* bitmapBase = dynamic_cast<Win32BitmapBase*> (bitmap);
+	if (bitmapBase)
+		return bitmapBase->createMemoryPNGRepresentation (ptr, size);
+	return false;
+}
+
+//-----------------------------------------------------------------------------
 IPlatformFont* IPlatformFont::create (const char* name, const CCoord& size, const int32_t& style)
 {
 #if VSTGUI_DIRECT2D_SUPPORT

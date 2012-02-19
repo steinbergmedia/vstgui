@@ -140,7 +140,7 @@ private:
 };
 
 //-----------------------------------------------------------------------------
-IPlatformFrame* IPlatformFrame::createPlatformFrame (IPlatformFrameCallback* frame, const CRect& size, void* parent)
+IPlatformFrame* IPlatformFrame::createPlatformFrame (IPlatformFrameCallback* frame, const CRect& size, void* parent, PlatformType parentType)
 {
 	return new Win32Frame (frame, size, (HWND)parent);
 }

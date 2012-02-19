@@ -277,6 +277,8 @@ CBitmapPixelAccess::CBitmapPixelAccess ()
 : bitmap (0)
 , pixelAccess (0)
 , currentPos (0)
+, address (0)
+, bytesPerRow (0)
 , maxX (0)
 , maxY (0)
 , x (0)
@@ -296,58 +298,10 @@ void CBitmapPixelAccess::init (CBitmap* _bitmap, IPlatformBitmapPixelAccess* _pi
 {
 	bitmap = _bitmap;
 	pixelAccess = _pixelAccess;
-	currentPos = pixelAccess->getAddress ();
+	address = currentPos = pixelAccess->getAddress ();
+	bytesPerRow = pixelAccess->getBytesPerRow ();
 	maxX = (uint32_t)(bitmap->getWidth ())-1;
 	maxY = (uint32_t)(bitmap->getHeight ())-1;
-}
-
-//------------------------------------------------------------------------
-bool CBitmapPixelAccess::operator++ ()
-{
-	if (x < maxX)
-	{
-		x++;
-		currentPos += 4;
-		return true;
-	}
-	else if (y < maxY)
-	{
-		y++;
-		x = 0;
-		currentPos = pixelAccess->getAddress () + y * pixelAccess->getBytesPerRow ();
-		return true;
-	}
-	return false;
-}
-
-//------------------------------------------------------------------------
-bool CBitmapPixelAccess::operator-- ()
-{
-	if (x > 0 && y > 0)
-	{
-		x--;
-		currentPos -= 4;
-		return true;
-	}
-	else if (y > 0)
-	{
-		y--;
-		x = 0;
-		currentPos = pixelAccess->getAddress () + y * pixelAccess->getBytesPerRow ();
-		return true;
-	}
-	return false;
-}
-
-//------------------------------------------------------------------------
-bool CBitmapPixelAccess::setPosition (uint32_t _x, uint32_t _y)
-{
-	if (_x > maxX || _y > maxY)
-		return false;
-	x = _x;
-	y = _y;
-	currentPos = pixelAccess->getAddress () + y * pixelAccess->getBytesPerRow () + x * 4;
-	return true;
 }
 
 /// @cond ignore

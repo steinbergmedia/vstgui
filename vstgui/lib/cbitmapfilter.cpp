@@ -451,21 +451,16 @@ public:
 };
 
 //----------------------------------------------------------------------------------------------------
-class ScaleBiliniear : public FilterBase
+class ScaleBase : public FilterBase
 {
 public:
-	ScaleBiliniear ()
+	ScaleBase ()
 	: FilterBase ("")
 	{
 		registerProperty (Property::kInputBitmap, BitmapFilter::Property (BitmapFilter::Property::kObject));
 		registerProperty (Property::kOutputRect, CRect (0, 0, 10, 10));
 	}
-
-	static IFilter* CreateFunction (IdStringPtr _name)
-	{
-		return new ScaleBiliniear ();
-	}
-
+	
 	bool run (bool replace)
 	{
 		if (replace)
@@ -479,13 +474,83 @@ public:
 		OwningPointer<CBitmap> outputBitmap = new CBitmap (outSize.getWidth (), outSize.getHeight ());
 		if (outputBitmap == 0)
 			return false;
-
+		
 		OwningPointer<CBitmapPixelAccess> inputAccessor = CBitmapPixelAccess::create (inputBitmap);
 		OwningPointer<CBitmapPixelAccess> outputAccessor = CBitmapPixelAccess::create (outputBitmap);
 		if (inputAccessor == 0 || outputAccessor == 0)
 			return false;
 		process (*inputAccessor, *outputAccessor);
 		return registerProperty (Property::kOutputBitmap, BitmapFilter::Property (outputBitmap));
+	}
+	
+	virtual void process (CBitmapPixelAccess& originalBitmap, CBitmapPixelAccess& copyBitmap) = 0;
+	
+};
+
+//----------------------------------------------------------------------------------------------------
+class ScaleLinear : public ScaleBase
+{
+public:	
+	static IFilter* CreateFunction (IdStringPtr _name)
+	{
+		return new ScaleLinear ();
+	}
+	
+	void process (CBitmapPixelAccess& originalBitmap, CBitmapPixelAccess& copyBitmap)
+	{
+		originalBitmap.setPosition (0, 0);
+		copyBitmap.setPosition (0, 0);
+		
+		int32_t origWidth = (int32_t)originalBitmap.getBitmapWidth ();
+		int32_t origHeight = (int32_t)originalBitmap.getBitmapHeight ();
+		int32_t newWidth = (int32_t)copyBitmap.getBitmapWidth ();
+		int32_t newHeight = (int32_t)copyBitmap.getBitmapHeight ();
+		
+		float xRatio = (float)origWidth / (float)newWidth;
+		float yRatio = (float)origHeight / (float)newHeight;
+
+		uint8_t* origAddress = originalBitmap.getPlatformBitmapPixelAccess ()->getAddress ();
+		uint8_t* copyAddress = copyBitmap.getPlatformBitmapPixelAccess ()->getAddress ();
+		uint32_t origBytesPerRow = originalBitmap.getPlatformBitmapPixelAccess ()->getBytesPerRow ();
+		uint32_t copyBytesPerRow = copyBitmap.getPlatformBitmapPixelAccess ()->getBytesPerRow ();
+
+		CColor c;
+		int32_t ix;
+		int32_t iy = -1;
+		int32_t* origPixel;
+		float origY = 0;
+		float origX = 0;
+		for (int32_t y = 0; y < newHeight; y++, origY += yRatio)
+		{
+			int32_t* copyPixel = (int32_t*)(copyAddress + y * copyBytesPerRow);
+			if (iy != (int32_t)origY)
+				iy = (int32_t)origY;
+			ix = -1;
+			origX = 0;
+			for (int32_t x = 0; x < newWidth; x++, origX += xRatio, copyPixel++)
+			{
+				if (ix != (int32_t)origX)
+				{
+					ix = (int32_t)origX;
+					origPixel = (int32_t*)(origAddress + iy * origBytesPerRow + ix * 4);
+				}
+				*copyPixel = *origPixel;
+			}
+		}
+	}
+};
+
+//----------------------------------------------------------------------------------------------------
+class ScaleBiliniear : public ScaleBase
+{
+public:
+	ScaleBiliniear ()
+	{
+	}
+
+	static IFilter* CreateFunction (IdStringPtr _name)
+	{
+		return new ScaleBiliniear ();
 	}
 
 	void process (CBitmapPixelAccess& originalBitmap, CBitmapPixelAccess& copyBitmap)
@@ -704,6 +769,7 @@ void registerStandardFilters (Factory& factory)
 	factory.registerFilter (kGrayscale, Grayscale::CreateFunction);
 	factory.registerFilter (kReplaceColor, ReplaceColor::CreateFunction);
 	factory.registerFilter (kScaleBilinear, ScaleBiliniear::CreateFunction);
+	factory.registerFilter (kScaleLinear, ScaleLinear::CreateFunction);
 }
 
 } // namespace Standard

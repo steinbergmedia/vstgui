@@ -70,14 +70,14 @@ extern IdStringPtr kMsgOldFocusView;			///< Message send to all parents of the o
 class CFrame : public CViewContainer, public IPlatformFrameCallback 
 {
 public:
-	CFrame (const CRect& size, void* pSystemWindow, VSTGUIEditorInterface* pEditor);
+	VSTGUI_DEPRECATED(CFrame (const CRect& size, void* pSystemWindow, VSTGUIEditorInterface* pEditor);)
 	CFrame (const CRect& size, VSTGUIEditorInterface* pEditor);
 
 	//-----------------------------------------------------------------------------
 	/// @name CFrame Methods
 	//-----------------------------------------------------------------------------
 	//@{
-	virtual bool open (void* pSystemWindow);
+	virtual bool open (void* pSystemWindow, PlatformType systemWindowType = kDefaultNative);
 	virtual void close ();							///< closes the frame and calls forget
 
 	virtual void idle ();
@@ -156,8 +156,8 @@ public:
 	void invalidRect (const CRect& rect);
 
 	#if MAC_COCOA && MAC_CARBON
-	static void setCocoaMode (bool state);
-	static bool getCocoaMode ();
+	VSTGUI_DEPRECATED(static void setCocoaMode (bool state);)
+	VSTGUI_DEPRECATED(static bool getCocoaMode ();)
 	#endif
 
 	IPlatformFrame* getPlatformFrame () const { return platformFrame; }
