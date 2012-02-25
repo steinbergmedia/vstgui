@@ -88,8 +88,12 @@
 	#ifndef WINDOWS
 		#define WINDOWS 1
 	#endif
-#else
+#else // GCC/Clang based builds on non Windows and non Mac
 	#include <stdint.h>
+	#include <limits.h>
+	#pragma GCC diagnostic ignored "-Wreorder"
+	#pragma GCC diagnostic ignored "-Wmultichar"
+	#pragma GCC diagnostic ignored "-Woverloaded-virtual"
 #endif
 
 #ifdef UNICODE
@@ -105,17 +109,17 @@
 // Deprecation setting
 //----------------------------------------------------
 #ifndef VSTGUI_ENABLE_DEPRECATED_METHODS
-#define VSTGUI_ENABLE_DEPRECATED_METHODS 1
+	#define VSTGUI_ENABLE_DEPRECATED_METHODS 1
 #endif
 
 #ifndef DEPRECATED_ATTRIBUTE
-#define DEPRECATED_ATTRIBUTE
+	#define DEPRECATED_ATTRIBUTE
 #endif
 
 #if VSTGUI_ENABLE_DEPRECATED_METHODS
-#define VSTGUI_DEPRECATED(x)	DEPRECATED_ATTRIBUTE	x
+	#define VSTGUI_DEPRECATED(x)	DEPRECATED_ATTRIBUTE	x
 #else
-#define VSTGUI_DEPRECATED(x)
+	#define VSTGUI_DEPRECATED(x)
 #endif
 
 //----------------------------------------------------
@@ -250,11 +254,11 @@ public:
 	inline ~SharedPointer ();
 
 	inline I* operator=(I* ptr);
-	inline SharedPointer& operator=(const SharedPointer& );
+	inline SharedPointer<I>& operator=(const SharedPointer<I>& );
 
 	inline operator I* ()  const { return ptr; }      // act as I*
 	inline I* operator->() const { return ptr; }      // act as I*
-	
+
 	template<class T> T* cast () const { return dynamic_cast<T*> (ptr); }
 //------------------------------------------------------------------------
 protected:
