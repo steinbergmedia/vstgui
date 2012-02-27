@@ -756,6 +756,7 @@ void NSViewFrame::cursorUpdate ()
 //-----------------------------------------------------------------------------
 void NSViewFrame::drawRect (NSRect* rect)
 {
+	inDraw = true;
 	NSGraphicsContext* nsContext = [NSGraphicsContext currentContext];
 	
 	CGDrawContext drawContext ((CGContextRef)[nsContext graphicsPort], rectFromNSRect ([nsView bounds]));
@@ -768,6 +769,7 @@ void NSViewFrame::drawRect (NSRect* rect)
 		frame->platformDrawRect (&drawContext, rectFromNSRect (dirtyRects[i]));
 	}
 	drawContext.endDraw ();
+	inDraw = false;
 }
 
 // IPlatformFrame
@@ -908,6 +910,8 @@ bool NSViewFrame::setMouseCursor (CCursorType type)
 //-----------------------------------------------------------------------------
 bool NSViewFrame::invalidRect (const CRect& rect)
 {
+	if (inDraw)
+		return false;
 	NSRect r = nsRectFromCRect (rect);
 	[nsView setNeedsDisplayInRect:r];
 	return true;

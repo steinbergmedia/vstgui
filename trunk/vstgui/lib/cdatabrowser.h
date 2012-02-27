@@ -58,6 +58,8 @@ class GenericStringListDataBrowserSource;
 class IDataBrowser
 {
 public:
+	/** @name Setup */
+	///	@{
 	virtual int32_t dbGetNumRows (CDataBrowser* browser) = 0;	///< return number of rows for CDataBrowser browser
 	virtual int32_t dbGetNumColumns (CDataBrowser* browser) = 0;	///< return number of columns for CDataBrowser browser
 	virtual bool dbGetColumnDescription (int32_t index, CCoord& minWidth, CCoord& maxWidth, CDataBrowser* browser) { return false; }
@@ -65,22 +67,47 @@ public:
 	virtual void dbSetCurrentColumnWidth (int32_t index, const CCoord& width, CDataBrowser* browser) {}	///< the width of a column has changed
 	virtual CCoord dbGetRowHeight (CDataBrowser* browser) = 0;	///< return height of one row
 	virtual bool dbGetLineWidthAndColor (CCoord& width, CColor& color, CDataBrowser* browser) { return false; } ///< return the line width and color
+	virtual void dbAttached (CDataBrowser* browser) {}	///< databrowser view was attached to a parent
+	virtual void dbRemoved (CDataBrowser* browser) {}		///< databrowser view will be removed from its parent
+	///	@}
 
+	/** @name Drawing */
+	///	@{
 	virtual void dbDrawHeader (CDrawContext* context, const CRect& size, int32_t column, int32_t flags, CDataBrowser* browser) = 0;	///< draw the db header
 	virtual void dbDrawCell (CDrawContext* context, const CRect& size, int32_t row, int32_t column, int32_t flags, CDataBrowser* browser) = 0;	///< draw a db cell
+	///	@}
 
+	/** @name Mouse Handling */
+	///	@{
 	virtual CMouseEventResult dbOnMouseDown (const CPoint& where, const CButtonState& buttons, int32_t row, int32_t column, CDataBrowser* browser) { return kMouseDownEventHandledButDontNeedMovedOrUpEvents; } ///< mouse button was pressed on a cell
 	virtual CMouseEventResult dbOnMouseMoved (const CPoint& where, const CButtonState& buttons, int32_t row, int32_t column, CDataBrowser* browser) { return kMouseEventNotHandled; } ///< mouse was moved over a cell
 	virtual CMouseEventResult dbOnMouseUp (const CPoint& where, const CButtonState& buttons, int32_t row, int32_t column, CDataBrowser* browser) { return kMouseEventNotHandled; } ///< mouse button was released on a cell
+	///	@}
 
+	/** @name Drag'n Drop Handling */
+	///	@{
+	virtual void dbOnDragEnterBrowser (CDragContainer* drag, CDataBrowser* browser) {}
+	virtual void dbOnDragExitBrowser (CDragContainer* drag, CDataBrowser* browser) {}
+	virtual void dbOnDragEnterCell (int32_t row, int32_t column, CDragContainer* drag, CDataBrowser* browser) {}
+	virtual void dbOnDragExitCell (int32_t row, int32_t column, CDragContainer* drag, CDataBrowser* browser) {}
+	virtual bool dbOnDropInCell (int32_t row, int32_t column, CDragContainer* drag, CDataBrowser* browser) { return false; }
+	///	@}
+
+	/** @name Selection  */
+	///	@{
 	virtual void dbSelectionChanged (CDataBrowser* browser) {}	///< the selection of the db changed
-	virtual void dbAttached (CDataBrowser* browser) {}	///< databrowser view was attached to a parent
-	virtual void dbRemoved (CDataBrowser* browser) {}		///< databrowser view will be removed from its parent
+	///	@}
 
+	/** @name Cell Text Editing */
+	///	@{
 	virtual void dbCellTextChanged (int32_t row, int32_t column, UTF8StringPtr newText, CDataBrowser* browser) {} ///< the text of the cell changed beginTextEdit was called for
 	virtual void dbCellSetupTextEdit (int32_t row, int32_t column, CTextEdit* textEditControl, CDataBrowser* browser) {} ///< beginTextEdit calls this, so you can setup the textedit control
+	//@}
 
+	/** @name Keyboard Handling */
+	///	@{
 	virtual int32_t dbOnKeyDown (const VstKeyCode& key, CDataBrowser* browser) { return -1; }
+	///	@}
 
 	enum {
 		kRowSelected = 1 << 1

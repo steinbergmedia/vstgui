@@ -82,4 +82,11 @@ or
 
 to your Visual Studio or Xcode project and add a search path to the parent of the root folder of vstgui.
 
+On Mac OS X, you need to link to the following Frameworks:
+
+- Accelerate
+- Carbon
+- Cocoa
+- OpenGL
+
 */

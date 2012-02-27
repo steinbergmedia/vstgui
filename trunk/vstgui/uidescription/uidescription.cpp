@@ -576,6 +576,19 @@ bool UIDescription::parse ()
 				return true;
 			}
 		}
+		else if (xmlFile.type == CResourceDescription::kStringType)
+		{
+			CFileStream fileStream;
+			if (fileStream.open (xmlFile.u.name, CFileStream::kReadMode))
+			{
+				Xml::InputStreamContentProvider contentProvider (fileStream);
+				if (parser.parse (&contentProvider, this))
+				{
+					addDefaultNodes ();
+					return true;
+				}
+			}
+		}
 	}
 	return false;
 }

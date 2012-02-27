@@ -1,3 +1,9 @@
+2012-02-27 arne
+
+	* add drag'n drop handling to CDataBrowser
+	* fix a rare drawing issue with scrollbars in a scrollview
+	* make sure that a call to invalid won't invalidate while in the drawing callback
+
 2012-02-19 arne
 
 	* add option to include bitmap data into uidesc file
