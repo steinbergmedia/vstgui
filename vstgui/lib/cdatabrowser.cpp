@@ -59,13 +59,18 @@ public:
 	CMouseEventResult onMouseMoved (CPoint &where, const CButtonState& buttons);
 	CMouseEventResult onMouseUp (CPoint &where, const CButtonState& buttons);
 	CMouseEventResult onMouseExited (CPoint &where, const CButtonState& buttons);
+
+	bool onDrop (CDragContainer* drag, const CPoint& where);
+	void onDragEnter (CDragContainer* drag, const CPoint& where);
+	void onDragLeave (CDragContainer* drag, const CPoint& where);
+	void onDragMove (CDragContainer* drag, const CPoint& where);
 	
 	int32_t onKeyDown (VstKeyCode& keyCode);
 
 	CRect getRowBounds (int32_t row);
 	void invalidateRow (int32_t row);
 
-	bool getCell (CPoint& where, int32_t& row, int32_t& column);
+	bool getCell (const CPoint& where, int32_t& row, int32_t& column);
 
 	bool drawFocusOnTop ();
 	bool getFocusPath (CGraphicsPath& outPath);
@@ -718,7 +723,7 @@ void CDataBrowserView::drawRect (CDrawContext* context, const CRect& updateRect)
 }
 
 //-----------------------------------------------------------------------------------------------
-bool CDataBrowserView::getCell (CPoint& where, int32_t& row, int32_t& column)
+bool CDataBrowserView::getCell (const CPoint& where, int32_t& row, int32_t& column)
 {
 	CCoord lineWidth = 0;
 	if (browser->getStyle () & CDataBrowser::kDrawRowLines || browser->getStyle () & CDataBrowser::kDrawColumnLines)
@@ -799,6 +804,83 @@ CMouseEventResult CDataBrowserView::onMouseUp (CPoint &where, const CButtonState
 CMouseEventResult CDataBrowserView::onMouseExited (CPoint &where, const CButtonState& buttons)
 {
 	return db->dbOnMouseMoved (where, buttons, -1, -1, browser);
+}
+
+//-----------------------------------------------------------------------------------------------
+bool CDataBrowserView::onDrop (CDragContainer* drag, const CPoint& where)
+{
+	bool result = false;
+	int32_t rowNum = -1;
+	int32_t colNum = -1;
+	if (getCell (where, rowNum, colNum))
+	{
+		result = db->dbOnDropInCell (rowNum, colNum, drag, browser);
+	}	
+	return result;
+}
+
+//-----------------------------------------------------------------------------------------------
+static const CViewAttributeID kDataBrowserViewDragRow = 'vddr';
+static const CViewAttributeID kDataBrowserViewDragColumn = 'vddc';
+
+//-----------------------------------------------------------------------------------------------
+void CDataBrowserView::onDragEnter (CDragContainer* drag, const CPoint& where)
+{
+	db->dbOnDragEnterBrowser (drag, browser);
+	int32_t rowNum = -1;
+	int32_t colNum = -1;
+	if (getCell (where, rowNum, colNum))
+	{
+		db->dbOnDragEnterCell (rowNum, colNum, drag, browser);
+		setAttribute (kDataBrowserViewDragRow, sizeof (int32_t), &rowNum);
+		setAttribute (kDataBrowserViewDragColumn, sizeof (int32_t), &colNum);
+	}
+}
+
+//-----------------------------------------------------------------------------------------------
+void CDataBrowserView::onDragLeave (CDragContainer* drag, const CPoint& where)
+{
+	int32_t size;
+	int32_t oldRowNum = -1;
+	int32_t oldColNum = -1;
+	getAttribute (kDataBrowserViewDragRow, sizeof (int32_t), &oldRowNum, size);
+	getAttribute (kDataBrowserViewDragColumn, sizeof (int32_t), &oldColNum, size);
+	if (oldRowNum != -1 && oldColNum != -1)
+	{
+		db->dbOnDragExitCell (oldRowNum, oldColNum, drag, browser);
+		removeAttribute (kDataBrowserViewDragRow);
+		removeAttribute (kDataBrowserViewDragColumn);
+	}
+	db->dbOnDragExitBrowser (drag, browser);
+}
+
+//-----------------------------------------------------------------------------------------------
+void CDataBrowserView::onDragMove (CDragContainer* drag, const CPoint& where)
+{
+	int32_t size;
+	int32_t oldRowNum = -1;
+	int32_t oldColNum = -1;
+	getAttribute (kDataBrowserViewDragRow, sizeof (int32_t), &oldRowNum, size);
+	getAttribute (kDataBrowserViewDragColumn, sizeof (int32_t), &oldColNum, size);
+	int32_t rowNum = -1;
+	int32_t colNum = -1;
+	if (getCell (where, rowNum, colNum))
+	{
+		if (oldRowNum != rowNum || oldColNum != colNum)
+		{
+			if (oldRowNum != -1 && oldColNum != -1)
+				db->dbOnDragExitCell (oldRowNum, oldColNum, drag, browser);
+			db->dbOnDragEnterCell (rowNum, colNum, drag, browser);
+			setAttribute (kDataBrowserViewDragRow, sizeof (int32_t), &rowNum);
+			setAttribute (kDataBrowserViewDragColumn, sizeof (int32_t), &colNum);
+		}
+	}
+	else if (oldRowNum != -1 && oldColNum != -1)
+	{
+		db->dbOnDragExitCell (oldRowNum, oldColNum, drag, browser);
+		removeAttribute (kDataBrowserViewDragRow);
+		removeAttribute (kDataBrowserViewDragColumn);
+	}
 }
 
 //-----------------------------------------------------------------------------------------------

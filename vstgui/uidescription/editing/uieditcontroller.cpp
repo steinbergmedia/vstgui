@@ -47,16 +47,9 @@ UIDescription& UIEditController::getEditorDescription ()
 	static bool once = true;
 	if (once)
 	{
-		const int8_t pathSeparator = '/';
 		std::string descPath (__FILE__);
-		size_t found = descPath.find_first_of ("\\");
-		while (found != std::string::npos)
-		{
-			descPath[found] = pathSeparator;
-			found = descPath.find_first_of ("\\", found + 1);
-		}
-
-		size_t sepPos = descPath.find_last_of (pathSeparator);
+		unixfyPath (descPath);
+		size_t sepPos = descPath.find_last_of (unixPathSeparator);
 		if (sepPos != std::string::npos)
 		{
 			descPath.erase (sepPos+1);

@@ -166,7 +166,7 @@ bool RepeatTimingFunction::isDone (uint32_t milliseconds)
 		runCounter++;
 		if (autoReverse)
 			isReverse = !isReverse;
-		if ((int64_t)runCounter >= repeatCount)
+		if ((uint64_t)runCounter >= (uint64_t)repeatCount)
 			return true;
 	}
 	return false;

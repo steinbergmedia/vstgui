@@ -103,6 +103,7 @@ protected:
 	CView::DragResult lastDragOperationResult;
 	bool ignoreNextResignFirstResponder;
 	bool trackingAreaInitialized;
+	bool inDraw;
 	CCursorType cursor;
 };
 

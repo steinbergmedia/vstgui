@@ -37,6 +37,7 @@
 
 #include "../lib/vstguibase.h"
 #include "../lib/cbitmap.h"
+#include <algorithm>
 #include <string>
 
 namespace VSTGUI {
@@ -179,6 +180,17 @@ protected:
 	FILE* stream;
 	int32_t openMode;
 };
+
+static const int8_t unixPathSeparator = '/';
+static const int8_t windowsPathSeparator = '\\';
+/**
+	Helper function to transform all Windows path separators to unix ones
+ */
+static void unixfyPath (std::string& path)
+{
+	std::replace (path.begin (), path.end (), windowsPathSeparator, unixPathSeparator);
+}
+
 
 /**
 	Resource input stream

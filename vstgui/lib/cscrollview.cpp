@@ -384,6 +384,8 @@ void CScrollView::recalculateSubViews ()
 		sbr.top = sbr.bottom - scrollbarWidth;
 		if (activeScrollbarStyle & kVerticalScrollbar)
 		{
+			if (hsb && (vsb && vsb->isVisible () == false))
+				hsb->invalid ();
 			sbr.right -= (scrollbarWidth - 1);
 		}
 		if (hsb)
@@ -413,6 +415,8 @@ void CScrollView::recalculateSubViews ()
 		sbr.left = sbr.right - scrollbarWidth;
 		if (activeScrollbarStyle & kHorizontalScrollbar)
 		{
+			if (vsb && (hsb  && hsb->isVisible () == false))
+				vsb->invalid ();
 			sbr.bottom -= (scrollbarWidth - 1);
 		}
 		if (vsb)
@@ -1065,7 +1069,7 @@ bool CScrollbar::onWheel (const CPoint &where, const CMouseWheelAxis &axis, cons
 	if (!getMouseEnabled ())
 		return false;
 
-	if (buttons != 0 && buttons != kShift)
+	if (buttons != 0 && !(buttons & (kShift|kMouseWheelInverted)))
 		return false;
 
 	if (direction == kHorizontal && axis == kMouseWheelAxisY)

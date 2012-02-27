@@ -375,7 +375,7 @@ bool CResourceInputStream::open (const CResourceDescription& res)
 	if (res.type == CResourceDescription::kStringType && res.u.name[0] == '/')
 	{
 		// it's an absolute path, we can use it as is
-		platformHandle = fopen (res.u.name, "rb");
+//		platformHandle = fopen (res.u.name, "rb");
 	}
 	if (platformHandle == 0 && getBundleRef ())
 	{

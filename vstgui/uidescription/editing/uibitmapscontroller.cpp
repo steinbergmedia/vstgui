@@ -7,6 +7,7 @@
 #include "uieditcontroller.h"
 #include "uidialogcontroller.h"
 #include "../../lib/cbitmapfilter.h"
+#include "../../lib/cfileselector.h"
 #include "../../lib/controls/ccolorchooser.h"
 #include "../../lib/controls/ctextedit.h"
 
@@ -164,6 +165,8 @@ public:
 	
 	CBitmap* getSelectedBitmap ();
 	UTF8StringPtr getSelectedBitmapName ();
+
+	virtual bool add ();
 protected:
 	virtual void getNames (std::list<const std::string*>& names);
 	virtual bool addItem (UTF8StringPtr name);
@@ -171,13 +174,96 @@ protected:
 	virtual bool performNameChange (UTF8StringPtr oldName, UTF8StringPtr newName);
 	virtual UTF8StringPtr getDefaultsName () { return "UIBitmapsDataSource"; }
 
+	bool addBitmap (UTF8StringPtr path, std::string& outName);
+
+	void dbOnDragEnterBrowser (CDragContainer* drag, CDataBrowser* browser);
+	void dbOnDragExitBrowser (CDragContainer* drag, CDataBrowser* browser);
+	void dbOnDragEnterCell (int32_t row, int32_t column, CDragContainer* drag, CDataBrowser* browser);
+	void dbOnDragExitCell (int32_t row, int32_t column, CDragContainer* drag, CDataBrowser* browser);
+	bool dbOnDropInCell (int32_t row, int32_t column, CDragContainer* drag, CDataBrowser* browser);
+
 	SharedPointer<CColorChooser> colorChooser;
+	bool dragContainsBitmaps;
 };
 
 //----------------------------------------------------------------------------------------------------
 UIBitmapsDataSource::UIBitmapsDataSource (UIDescription* description, IActionPerformer* actionPerformer, IGenericStringListDataBrowserSourceSelectionChanged* delegate)
 : UIBaseDataSource (description, actionPerformer, UIDescription::kMessageBitmapChanged, delegate)
+, dragContainsBitmaps (false)
 {
+}
+
+//----------------------------------------------------------------------------------------------------
+void UIBitmapsDataSource::dbOnDragEnterBrowser (CDragContainer* drag, CDataBrowser* browser)
+{
+	int32_t type;
+	int32_t size;
+	UTF8StringPtr path = (UTF8StringPtr)drag->first (size, type);
+	while (path && type == CDragContainer::kFile)
+	{
+		const char* ext = strrchr (path, '.');
+		if (ext)
+		{
+			std::string extStr (ext);
+			std::transform (extStr.begin (), extStr.end (), extStr.begin (), ::tolower);
+			if (extStr == ".png" || extStr == ".bmp" || extStr == ".jpg" || extStr == ".jpeg")
+			{
+				dragContainsBitmaps = true;
+				break;
+			}
+		}
+		path = (UTF8StringPtr)drag->next (size, type);
+	}
+	if (dragContainsBitmaps)
+		browser->getFrame ()->setCursor (kCursorCopy);
+}
+
+//----------------------------------------------------------------------------------------------------
+void UIBitmapsDataSource::dbOnDragExitBrowser (CDragContainer* drag, CDataBrowser* browser)
+{
+	if (dragContainsBitmaps)
+		browser->getFrame ()->setCursor (kCursorNotAllowed);
+}
+
+//----------------------------------------------------------------------------------------------------
+void UIBitmapsDataSource::dbOnDragEnterCell (int32_t row, int32_t column, CDragContainer* drag, CDataBrowser* browser)
+{
+	DebugPrint ("enter cell: %d-%d\n", row, column);
+}
+
+//----------------------------------------------------------------------------------------------------
+void UIBitmapsDataSource::dbOnDragExitCell (int32_t row, int32_t column, CDragContainer* drag, CDataBrowser* browser)
+{
+	DebugPrint ("exit cell: %d-%d\n", row, column);
+}
+
+//----------------------------------------------------------------------------------------------------
+bool UIBitmapsDataSource::dbOnDropInCell (int32_t row, int32_t column, CDragContainer* drag, CDataBrowser* browser)
+{
+	if (dragContainsBitmaps)
+	{
+		int32_t type;
+		int32_t size;
+		UTF8StringPtr path = (UTF8StringPtr)drag->first (size, type);
+		while (path && type == CDragContainer::kFile)
+		{
+			const char* ext = strrchr (path, '.');
+			if (ext)
+			{
+				std::string extStr (ext);
+				std::transform (extStr.begin (), extStr.end (), extStr.begin (), ::tolower);
+				if (extStr == ".png" || extStr == ".bmp" || extStr == ".jpg" || extStr == ".jpeg")
+				{
+					std::string name;
+					addBitmap (path, name);
+				}
+			}
+			path = (UTF8StringPtr)drag->next (size, type);
+		}
+		dragContainsBitmaps = false;
+		return true;
+	}
+	return false;
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -223,6 +309,72 @@ UTF8StringPtr UIBitmapsDataSource::getSelectedBitmapName ()
 	if (selectedRow != CDataBrowser::kNoSelection && selectedRow < (int32_t)names.size ())
 		return names.at (selectedRow).c_str ();
 	return 0;
+}
+
+//----------------------------------------------------------------------------------------------------
+bool UIBitmapsDataSource::addBitmap (UTF8StringPtr path, std::string& outName)
+{
+	bool result = false;
+	outName = path;
+	unixfyPath (outName);
+	size_t index = outName.find_last_of (unixPathSeparator);
+	outName.erase (0, index+1);
+	index = outName.find_last_of ('.');
+	outName.erase (index);
+	if (createUniqueName (outName))
+	{
+		std::string pathStr (path);
+		UTF8StringPtr descPath = description->getXmFileName ();
+		if (descPath && descPath[0] != 0)
+		{
+			std::string descPathStr (descPath);
+			unixfyPath (descPathStr);
+			index = descPathStr.find_last_of (unixPathSeparator);
+			descPathStr.erase (index);
+			if ((index = pathStr.find_first_of (descPathStr)) == 0)
+			{
+				pathStr.erase (0, descPathStr.length () + 1);
+			}
+		}
+		actionPerformer->performBitmapChange (outName.c_str (), pathStr.c_str ());
+		result = true;
+	}
+	return result;
+}
+
+//----------------------------------------------------------------------------------------------------
+bool UIBitmapsDataSource::add ()
+{
+	bool result = false;
+	OwningPointer<CNewFileSelector> fs = CNewFileSelector::create (dataBrowser->getFrame ());
+	if (fs)
+	{
+		fs->addFileExtension (CFileExtension ("PNG", "PNG"));
+		fs->addFileExtension (CFileExtension ("BMP", "BMP"));
+		fs->addFileExtension (CFileExtension ("JPG", "JPG"));
+		fs->addFileExtension (CFileExtension ("JPEG", "JPEG"));
+		fs->setAllowMultiFileSelection (true);
+		if (fs->runModal ())
+		{
+			int32_t numFiles = fs->getNumSelectedFiles();
+			for (int32_t i = 0; i < numFiles; i++)
+			{
+				UTF8StringPtr path = fs->getSelectedFile (i);
+				if (path)
+				{
+					std::string newName;
+					if (addBitmap (path, newName) && i == numFiles - 1)
+					{
+						int32_t row = selectName (newName.c_str ());
+						if (row != -1)
+							dbOnMouseDown (CPoint (0, 0), CButtonState (kLButton|kDoubleClick), row, 0, dataBrowser);
+						result = true;
+					}
+				}
+			}
+		}
+	}
+	return result;
 }
 
 //----------------------------------------------------------------------------------------------------
