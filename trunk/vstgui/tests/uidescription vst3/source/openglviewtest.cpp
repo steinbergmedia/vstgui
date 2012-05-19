@@ -104,32 +104,38 @@ public:
 	
 	void platformOpenGLViewSizeChanged ()
 	{
-		getPlatformOpenGLView ()->lockContext ();
-		getPlatformOpenGLView ()->makeContextCurrent ();
+		if (getPlatformOpenGLView ())
+		{
+			getPlatformOpenGLView ()->lockContext ();
+			getPlatformOpenGLView ()->makeContextCurrent ();
 
-		CRect r (getViewSize ());
-		glViewport (0, 0, r.getWidth (), r.getHeight ());
+			CRect r (getViewSize ());
+			glViewport (0, 0, r.getWidth (), r.getHeight ());
 
-		getPlatformOpenGLView ()->unlockContext ();
+			getPlatformOpenGLView ()->unlockContext ();
+		}
 	}
 
 	void drawOpenGLThreaded ()
 	{
-		xRotation += 1.f;
-		if (xRotation >= 360.f)
-			xRotation = 0.f;
-		yRotation += 1.f;
-		if (yRotation >= 360.f)
-			yRotation = 0.f;
-		zRotation += 1.f;
-		if (zRotation >= 360.f)
-			zRotation = 0.f;
-		getPlatformOpenGLView ()->lockContext ();
-		getPlatformOpenGLView ()->makeContextCurrent ();
+		if (getPlatformOpenGLView ())
+		{
+			xRotation += 1.f;
+			if (xRotation >= 360.f)
+				xRotation = 0.f;
+			yRotation += 1.f;
+			if (yRotation >= 360.f)
+				yRotation = 0.f;
+			zRotation += 1.f;
+			if (zRotation >= 360.f)
+				zRotation = 0.f;
+			getPlatformOpenGLView ()->lockContext ();
+			getPlatformOpenGLView ()->makeContextCurrent ();
 
-		drawOpenGL (getViewSize ());
+			drawOpenGL (getViewSize ());
 
-		getPlatformOpenGLView ()->unlockContext ();
+			getPlatformOpenGLView ()->unlockContext ();
+		}
 	}
 	
 	void drawOpenGL (const CRect& updateRect)

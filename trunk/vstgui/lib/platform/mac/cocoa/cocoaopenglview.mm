@@ -140,7 +140,7 @@ void CocoaOpenGLView::remove ()
 {
 	if (platformView)
 	{
-		AutoreleasePool ap ();
+		AutoreleasePool ap;
 		[platformView removeFromSuperview];
 		[platformView release];
 		platformView = nil;
@@ -307,7 +307,7 @@ void CocoaOpenGLView::initClass ()
 	if (openGLViewClass)
 		return;
 
-	AutoreleasePool ap ();
+	AutoreleasePool ap;
 
 	const char* nsRectEncoded = @encode(NSRect);
 	char funcSig[100];

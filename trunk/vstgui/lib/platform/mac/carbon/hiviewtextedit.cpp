@@ -33,14 +33,14 @@
 //-----------------------------------------------------------------------------
 
 #include "hiviewtextedit.h"
+#include "hiviewframe.h"
+#include "../cfontmac.h"
 
 #if MAC_CARBON
 
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations" // we know that we use deprecated functions from Carbon, so we don't want to be warned
 
 namespace VSTGUI {
-
-extern bool isWindowComposited (WindowRef window);
 
 //-----------------------------------------------------------------------------
 HIViewTextEdit::HIViewTextEdit (HIViewRef parent, IPlatformTextEditCallback* textEdit)
@@ -106,9 +106,13 @@ HIViewTextEdit::HIViewTextEdit (HIViewRef parent, IPlatformTextEditCallback* tex
 			default: fontStyle.just = teCenter; break;
 		}
 		fontStyle.size = fontID->getSize ();
+	#if MAC_OS_X_VERSION_MAX_ALLOWED <= MAC_OS_X_VERSION_10_6
 		Str255 fontName;
-		CopyCStringToPascal (fontID->getName (), fontName); 
+		CopyCStringToPascal (fontID->getName (), fontName);
 		GetFNum (fontName, &fontStyle.font);
+	#else
+		#warning Mac OS X 10.7 Carbon incompatibility. It looks like it's not possible to set the font family for a text control anymore
+	#endif
 		SetControlData (textControl, kControlEditTextPart, kControlFontStyleTag, sizeof (fontStyle), &fontStyle);
 		HIViewSetVisible (textControl, true);
 		HIViewAdvanceFocus (textControl, 0);

@@ -1,3 +1,8 @@
+2012-05-17 arne
+
+	* add compatibility to compile VSTGUI with Xcode 4.x and Mac OS X SDK 10.7
+		- This looses the possibility to set the font family for the native text edit field with Carbon
+
 2012-02-27 arne
 
 	* add drag'n drop handling to CDataBrowser

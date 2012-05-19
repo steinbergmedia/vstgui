@@ -644,7 +644,7 @@ void NSViewFrame::initClass ()
 {
 	if (viewClass == 0)
 	{
-		AutoreleasePool ap ();
+		AutoreleasePool ap;
 
 		const char* nsPointEncoded = @encode(NSPoint);
 		const char* nsUIntegerEncoded = @encode(NSUInteger);
@@ -1111,7 +1111,7 @@ IPlatformFrame* IPlatformFrame::createPlatformFrame (IPlatformFrameCallback* fra
 	#if MAC_CARBON
 	if ((platformType == kWindowRef || platformType == kDefaultNative)
 	#if VSTGUI_ENABLE_DEPRECATED_METHODS
-	 || CFrame::getCocoaMode () == false
+	 || (platformType != kNSView && CFrame::getCocoaMode () == false)
 	#endif
 	)
 		return new HIViewFrame (frame, size, (WindowRef)parent);

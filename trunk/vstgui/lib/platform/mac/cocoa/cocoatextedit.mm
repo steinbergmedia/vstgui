@@ -242,7 +242,7 @@ void CocoaTextEdit::initClass ()
 {
 	if (textFieldClass == 0)
 	{
-		AutoreleasePool ap ();
+		AutoreleasePool ap;
 		NSMutableString* textFieldClassName = [[[NSMutableString alloc] initWithString:@"VSTGUI_NSTextField"] autorelease];
 		textFieldClass = generateUniqueClass (textFieldClassName, [NSTextField class]);
 		VSTGUI_CHECK_YES(class_addMethod (textFieldClass, @selector(initWithTextEdit:), IMP (VSTGUI_NSTextField_Init), "@@:@:^:"))

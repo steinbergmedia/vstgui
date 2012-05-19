@@ -73,7 +73,7 @@ bool isWindowComposited (WindowRef window)
 }
 
 //-----------------------------------------------------------------------------
-void CRect2Rect (const CRect &_cr, Rect &rr)
+static void CRect2Rect (const CRect &_cr, Rect &rr)
 {
 	CRect cr (_cr);
 	cr.normalize ();
@@ -84,7 +84,7 @@ void CRect2Rect (const CRect &_cr, Rect &rr)
 }
 
 //-----------------------------------------------------------------------------
-void Rect2CRect (Rect &rr, CRect &cr)
+static void Rect2CRect (Rect &rr, CRect &cr)
 {
 	cr.left   = rr.left;
 	cr.right  = rr.right;
@@ -482,6 +482,8 @@ bool HIViewFrame::setSize (const CRect& newSize)
 {
 	HIRect frameRect;
 	HIViewGetFrame (controlRef, &frameRect);
+
+#if MAC_OS_X_VERSION_MAX_ALLOWED <= MAC_OS_X_VERSION_10_6
 	// keep old values
 	CCoord oldWidth  = frameRect.size.width;
 	CCoord oldHeight = frameRect.size.height;
@@ -496,6 +498,8 @@ bool HIViewFrame::setSize (const CRect& newSize)
 									(short)((bounds.bottom - bounds.top) - oldHeight + newSize.getHeight ()), true);
 		}
 	}
+#endif
+
 	if (controlRef)
 	{
 		HIRect frameRect;
@@ -521,6 +525,7 @@ bool HIViewFrame::getSize (CRect& size) const
 		size.setHeight ((CCoord)hiRect.size.height);
 		return true;
 	}
+#if MAC_OS_X_VERSION_MAX_ALLOWED <= MAC_OS_X_VERSION_10_6
 	Rect bounds;
 	GetPortBounds (GetWindowPort (window), &bounds);
 
@@ -529,11 +534,15 @@ bool HIViewFrame::getSize (CRect& size) const
 	size.right  = bounds.right;
 	size.bottom = bounds.bottom;
 	return true;
+#else
+	return false;
+#endif
 }
 
 //-----------------------------------------------------------------------------
 bool HIViewFrame::getCurrentMousePosition (CPoint& mousePosition) const
 {
+#if MAC_OS_X_VERSION_MAX_ALLOWED <= MAC_OS_X_VERSION_10_6
 	// no up-to-date API call available for this, so use old QuickDraw
 	Point p;
 	CGrafPtr savedPort;
@@ -542,11 +551,20 @@ bool HIViewFrame::getCurrentMousePosition (CPoint& mousePosition) const
 	if (portChanged)
 		QDSwapPort (savedPort, NULL);
 	mousePosition (p.h, p.v);
+#endif
 
 	HIPoint location;
 	HIViewRef fromView = NULL;
 	HIViewFindByID (HIViewGetRoot (window), kHIViewWindowContentID, &fromView);
+
+#if MAC_OS_X_VERSION_MAX_ALLOWED > MAC_OS_X_VERSION_10_6
+	HIGetMousePosition (kHICoordSpaceView, fromView, &location);
+	location.x = floor (location.x + 0.5);
+	location.y = floor (location.y + 0.5);
+#else
 	location = CGPointMake (mousePosition.x, mousePosition.y);
+#endif
+
 	HIPointConvert (&location, kHICoordSpaceView, fromView, kHICoordSpaceView, controlRef);
 	mousePosition.x = (CCoord)location.x;
 	mousePosition.y = (CCoord)location.y;
@@ -808,8 +826,7 @@ CView::DragResult HIViewFrame::doDrag (IDataPackage* source, const CPoint& offse
 					SetDragImageWithCGImage (drag, cgImage, &imageOffset, 0);
 				}
 
-				RgnHandle region = NewRgn ();
-				if (TrackDrag (drag, &eventRecord, region) == noErr)
+				if (TrackDrag (drag, &eventRecord, NULL) == noErr)
 				{
 					DragActions action;
 					if (GetDragDropAction (drag, &action) == noErr)
@@ -822,7 +839,6 @@ CView::DragResult HIViewFrame::doDrag (IDataPackage* source, const CPoint& offse
 							result = CView::kDragCopied;
 					}
 				}
-				DisposeRgn (region);
 			}
 			DisposeDrag (drag);
 		}
@@ -1017,6 +1033,7 @@ static short keyTable[] = {
 };
 
 /// @cond ignore
+#if MAC_OS_X_VERSION_MAX_ALLOWED <= MAC_OS_X_VERSION_10_6
 class VSTGUIDrawRectsHelper
 {
 public:
@@ -1042,6 +1059,30 @@ static OSStatus VSTGUIDrawRectsProc (UInt16 message, RgnHandle rgn, const Rect* 
 	}
 	return noErr;
 }
+#else
+struct CFrameAndCDrawContext {
+	CFrame* frame;
+	CDrawContext* context;
+	
+	CFrameAndCDrawContext (CFrame* f, CDrawContext* c) : frame (f), context (c) {}
+};
+
+static OSStatus HIShapeEnumerateProc (int inMessage, HIShapeRef inShape, const CGRect *inRect, void *inRefcon)
+{
+	if (inMessage == kHIShapeEnumerateRect)
+	{
+		CFrameAndCDrawContext* tmp = (CFrameAndCDrawContext*)inRefcon;
+		CRect r (inRect->origin.x, inRect->origin.y);
+		r.setWidth (inRect->size.width);
+		r.setHeight (inRect->size.height);
+		tmp->context->saveGlobalState ();
+		tmp->frame->drawRect (tmp->context, r);
+		tmp->context->restoreGlobalState ();
+	}
+	return noErr;
+}
+
+#endif
 /// @endcond
 
 #ifndef kHIViewFeatureGetsFocusOnClick
@@ -1121,20 +1162,32 @@ pascal OSStatus HIViewFrame::carbonEventHandler (EventHandlerCallRef inHandlerCa
 					OSStatus res = GetEventParameter (inEvent, kEventParamCGContextRef, typeCGContextRef, NULL, sizeof (cgcontext), NULL, &cgcontext);
 					if (res != noErr)
 						break;
-					CFrame* cframe = dynamic_cast<CFrame*> (frame);
 					context = new CGDrawContext (cgcontext, dirtyRect);
 					context->beginDraw ();
 
+				#if MAC_OS_X_VERSION_MAX_ALLOWED <= MAC_OS_X_VERSION_10_6
 					RgnHandle dirtyRegion;
 					if (GetEventParameter (inEvent, kEventParamRgnHandle, typeQDRgnHandle, NULL, sizeof (RgnHandle), NULL, &dirtyRegion) == noErr)
 					{
+						CFrame* cframe = dynamic_cast<CFrame*> (frame);
 						VSTGUIDrawRectsHelper helper (cframe, context, isWindowComposited (window));
 						RegionToRectsUPP upp = NewRegionToRectsUPP (VSTGUIDrawRectsProc);
 						QDRegionToRects (dirtyRegion, kQDParseRegionFromTopLeft, upp, &helper);
 						DisposeRegionToRectsUPP (upp);
 					}
 					else
+				#else
+					HIShapeRef shapeRef;
+					if (GetEventParameter (inEvent, kEventParamShape, typeHIShapeRef, NULL, sizeof (HIShapeRef), NULL, &shapeRef) == noErr)
+					{
+						CFrame* cframe = dynamic_cast<CFrame*> (frame);
+						CFrameAndCDrawContext tmp (cframe, context);
+						HIShapeEnumerate (shapeRef, kHIShapeParseFromTopLeft, HIShapeEnumerateProc, &tmp);
+					}
+				#endif
+					{
 						frame->platformDrawRect (context, dirtyRect);
+					}
 					context->endDraw ();
 					context->forget ();
 					result = noErr;

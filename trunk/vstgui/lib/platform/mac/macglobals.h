@@ -47,6 +47,7 @@ namespace VSTGUI {
 extern void* gBundleRef;
 inline CFBundleRef getBundleRef () { return (CFBundleRef)gBundleRef; }
 extern CGColorSpaceRef GetGenericRGBColorSpace ();
+extern CGColorSpaceRef GetMainDisplayColorSpace ();
 
 } // namespace
 

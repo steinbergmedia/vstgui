@@ -63,14 +63,25 @@ public:
 	GenericMacColorSpace ()
 	{
 		#if MAC_COCOA
-		colorspace = CGColorSpaceCreateWithName (kCGColorSpaceGenericRGB);
+		rgbColorspace = CGColorSpaceCreateWithName (kCGColorSpaceGenericRGB);
 		#else
 		CreateGenericRGBColorSpace ();
 		#endif
+		CreateMainDisplayColorSpace ();
 	}
 	
-	~GenericMacColorSpace () { CGColorSpaceRelease (colorspace); }
+	~GenericMacColorSpace ()
+	{
+		CGColorSpaceRelease (rgbColorspace);
+		CGColorSpaceRelease (mainDisplayColorSpace);
+	}
 
+	static GenericMacColorSpace& instance ()
+	{
+		static GenericMacColorSpace gInstance;
+		return gInstance;
+	}
+	
 	#if !MAC_COCOA
 	//-----------------------------------------------------------------------------
 	CMProfileRef OpenGenericProfile(void)
@@ -96,24 +107,45 @@ public:
 	
 		if (genericRGBProfile)
 		{
-			colorspace = CGColorSpaceCreateWithPlatformColorSpace (genericRGBProfile);
+			rgbColorspace = CGColorSpaceCreateWithPlatformColorSpace (genericRGBProfile);
 			
 			// we opened the profile so it is up to us to close it
 			CMCloseProfile (genericRGBProfile); 
 		}
-		if (colorspace == NULL)
-			colorspace = CGColorSpaceCreateDeviceRGB ();
+		if (rgbColorspace == NULL)
+			rgbColorspace = CGColorSpaceCreateDeviceRGB ();
 	}
 	#endif
 
-	CGColorSpaceRef colorspace;
+	void CreateMainDisplayColorSpace ()
+	{
+		CMProfileRef sysprof = NULL;
+
+		// Get the Systems Profile for the main display
+		if (CMGetSystemProfile (&sysprof) == noErr)
+		{
+			// Create a colorspace with the systems profile
+			mainDisplayColorSpace = CGColorSpaceCreateWithPlatformColorSpace (sysprof);
+
+			// Close the profile
+			CMCloseProfile (sysprof);
+		}
+	}
+
+	CGColorSpaceRef rgbColorspace;
+	CGColorSpaceRef mainDisplayColorSpace;
 };
 
 //-----------------------------------------------------------------------------
 CGColorSpaceRef GetGenericRGBColorSpace ()
 {
-	static GenericMacColorSpace gGenericMacColorSpace;
-	return gGenericMacColorSpace.colorspace;
+	return GenericMacColorSpace::instance ().rgbColorspace;
+}
+
+//-----------------------------------------------------------------------------
+CGColorSpaceRef GetMainDisplayColorSpace ()
+{
+	return GenericMacColorSpace::instance ().mainDisplayColorSpace;
 }
 
 } // namespace
