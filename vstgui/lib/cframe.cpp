@@ -787,6 +787,9 @@ bool CFrame::getSize (CRect& outSize) const
  */
 bool CFrame::setModalView (CView* pView)
 {
+	if (pView == 0 && pModalView == 0)
+		return true;
+
 	// If there is a modal view or the view 
 	if ((pView && pModalView) || (pView && pView->isAttached ()))
 		return false;

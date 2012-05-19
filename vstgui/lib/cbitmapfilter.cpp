@@ -517,7 +517,7 @@ public:
 		CColor c;
 		int32_t ix;
 		int32_t iy = -1;
-		int32_t* origPixel;
+		int32_t* origPixel = 0;
 		float origY = 0;
 		float origX = 0;
 		for (int32_t y = 0; y < newHeight; y++, origY += yRatio)
@@ -529,7 +529,7 @@ public:
 			origX = 0;
 			for (int32_t x = 0; x < newWidth; x++, origX += xRatio, copyPixel++)
 			{
-				if (ix != (int32_t)origX)
+				if (ix != (int32_t)origX || origPixel == 0)
 				{
 					ix = (int32_t)origX;
 					origPixel = (int32_t*)(origAddress + iy * origBytesPerRow + ix * 4);

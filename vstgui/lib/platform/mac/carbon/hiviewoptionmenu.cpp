@@ -38,6 +38,7 @@
 
 #include "../../../controls/coptionmenu.h"
 #include "../../../cframe.h"
+#include "../../../cbitmap.h"
 #include "../cgbitmap.h"
 
 namespace VSTGUI {

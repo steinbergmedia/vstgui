@@ -842,7 +842,7 @@ void VST3Editor::recreateView ()
 #define kFrameFocusWidthAttr			"frame-focus-width"
 
 //-----------------------------------------------------------------------------
-bool PLUGIN_API VST3Editor::open (void* parent)
+bool PLUGIN_API VST3Editor::open (void* parent, const PlatformType& type)
 {
 	frame = new CFrame (CRect (0, 0, 0, 0), this);
 	frame->setViewAddedRemovedObserver (this);
@@ -859,7 +859,7 @@ bool PLUGIN_API VST3Editor::open (void* parent)
 		return false;
 	}
 
-	frame->open (parent);
+	frame->open (parent, type);
 
 	if (delegate)
 		delegate->didOpen (this);

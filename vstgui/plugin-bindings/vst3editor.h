@@ -91,7 +91,7 @@ protected:
 	void syncParameterTags ();
 	bool enableEditing (bool state);
 
-	bool PLUGIN_API open (void* parent);
+	bool PLUGIN_API open (void* parent, const PlatformType& type);
 	void PLUGIN_API close ();
 
 	void beginEdit (int32_t index);

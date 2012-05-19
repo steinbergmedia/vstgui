@@ -43,6 +43,8 @@
 
 namespace VSTGUI {
 
+extern bool isWindowComposited (WindowRef window);
+
 //-----------------------------------------------------------------------------
 class HIViewFrame : public IPlatformFrame
 {
