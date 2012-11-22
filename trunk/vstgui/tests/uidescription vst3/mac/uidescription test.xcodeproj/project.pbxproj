@@ -54,6 +54,13 @@
 			remoteGlobalIDString = F497F0AC1308094300F0A613;
 			remoteInfo = vstgui;
 		};
+		F481925B165D3C050035058F /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = F40DCF9913119C240084A8AE /* vstgui.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = F4F953F616510E61006EE1D1;
+			remoteInfo = "vstgui c++11";
+		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
@@ -175,6 +182,7 @@
 			isa = PBXGroup;
 			children = (
 				F40DCF9E13119C240084A8AE /* libvstgui.a */,
+				F481925C165D3C050035058F /* libvstgui c++11.a */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -280,6 +288,13 @@
 			fileType = archive.ar;
 			path = libvstgui.a;
 			remoteRef = F40DCF9D13119C240084A8AE /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		F481925C165D3C050035058F /* libvstgui c++11.a */ = {
+			isa = PBXReferenceProxy;
+			fileType = archive.ar;
+			path = "libvstgui c++11.a";
+			remoteRef = F481925B165D3C050035058F /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
 /* End PBXReferenceProxy section */

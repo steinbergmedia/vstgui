@@ -867,39 +867,6 @@ public:
 				scrollView->setContainerSize (r);
 			}
 		}
-		CColor color;
-		CScrollbar* vscrollbar = scrollView->getVerticalScrollbar ();
-		CScrollbar* hscrollbar = scrollView->getHorizontalScrollbar ();
-		attr = attributes.getAttributeValue ("scrollbar-background-color");
-		if (attr)
-		{
-			if (description->getColor (attr->c_str (), color))
-			{
-				rememberAttributeValueString (view, "scrollbar-background-color", *attr);
-				if (vscrollbar) vscrollbar->setBackgroundColor (color);
-				if (hscrollbar) hscrollbar->setBackgroundColor (color);
-			}
-		}
-		attr = attributes.getAttributeValue ("scrollbar-frame-color");
-		if (attr)
-		{
-			if (description->getColor (attr->c_str (), color))
-			{
-				rememberAttributeValueString (view, "scrollbar-frame-color", *attr);
-				if (vscrollbar) vscrollbar->setFrameColor (color);
-				if (hscrollbar) hscrollbar->setFrameColor (color);
-			}
-		}
-		attr = attributes.getAttributeValue ("scrollbar-scroller-color");
-		if (attr)
-		{
-			if (description->getColor (attr->c_str (), color))
-			{
-				rememberAttributeValueString (view, "scrollbar-scroller-color", *attr);
-				if (vscrollbar) vscrollbar->setScrollerColor (color);
-				if (hscrollbar) hscrollbar->setScrollerColor (color);
-			}
-		}
 		int32_t style = scrollView->getStyle ();
 		attr = attributes.getAttributeValue ("horizontal-scrollbar");
 		if (attr)
@@ -958,6 +925,39 @@ public:
 				style &= ~CScrollView::kAutoHideScrollbars;
 		}
 		scrollView->setStyle (style);
+		CColor color;
+		CScrollbar* vscrollbar = scrollView->getVerticalScrollbar ();
+		CScrollbar* hscrollbar = scrollView->getHorizontalScrollbar ();
+		attr = attributes.getAttributeValue ("scrollbar-background-color");
+		if (attr)
+		{
+			if (description->getColor (attr->c_str (), color))
+			{
+				rememberAttributeValueString (view, "scrollbar-background-color", *attr);
+				if (vscrollbar) vscrollbar->setBackgroundColor (color);
+				if (hscrollbar) hscrollbar->setBackgroundColor (color);
+			}
+		}
+		attr = attributes.getAttributeValue ("scrollbar-frame-color");
+		if (attr)
+		{
+			if (description->getColor (attr->c_str (), color))
+			{
+				rememberAttributeValueString (view, "scrollbar-frame-color", *attr);
+				if (vscrollbar) vscrollbar->setFrameColor (color);
+				if (hscrollbar) hscrollbar->setFrameColor (color);
+			}
+		}
+		attr = attributes.getAttributeValue ("scrollbar-scroller-color");
+		if (attr)
+		{
+			if (description->getColor (attr->c_str (), color))
+			{
+				rememberAttributeValueString (view, "scrollbar-scroller-color", *attr);
+				if (vscrollbar) vscrollbar->setScrollerColor (color);
+				if (hscrollbar) hscrollbar->setScrollerColor (color);
+			}
+		}
 		attr = attributes.getAttributeValue ("scrollbar-width");
 		if (attr)
 		{

@@ -81,6 +81,10 @@ protected:
 	~CTextLabel ();
 	void freeText ();
 	void calculateTruncatedText ();
+
+	bool onWheel (const CPoint& where, const float& distance, const CButtonState& buttons) { return false; }
+	bool onWheel (const CPoint& where, const CMouseWheelAxis& axis, const float& distance, const CButtonState& buttons) { return false; }
+
 	TextTruncateMode textTruncateMode;
 	UTF8StringBuffer text;
 	std::string truncatedText;

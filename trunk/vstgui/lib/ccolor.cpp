@@ -111,7 +111,7 @@ void CColor::toHSL (double& hue, double& saturation, double& lightness) const
 }
 
 //-----------------------------------------------------------------------------
-void CColor::fromHSL (double& hue, double& saturation, double& lightness)
+void CColor::fromHSL (double hue, double saturation, double lightness)
 {
 	while (hue > 360.)
 		hue -= 360.;

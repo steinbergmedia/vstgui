@@ -199,7 +199,7 @@ void CRowColumnView::layoutViews ()
 //--------------------------------------------------------------------------------
 bool CRowColumnView::sizeToFit ()
 {
-	if (pFirstView)
+	if (children.size () > 0)
 	{
 		CRect viewSize = getViewSize ();
 		CPoint maxSize;

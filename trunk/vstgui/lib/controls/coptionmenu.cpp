@@ -436,12 +436,6 @@ COptionMenu::COptionMenu (const COptionMenu& v)
 	if (bgWhenClick)
 		bgWhenClick->remember ();
 
-	CMenuItemIterator it = menuItems->begin ();
-	while (it != menuItems->end ())
-	{
-		(*it)->remember ();
-		it++;
-	}
 	setWantsFocus (true);
 }
 
@@ -523,7 +517,7 @@ void COptionMenu::beforePopup ()
 	changed (kMsgBeforePopup);
 	for (CMenuItemIterator it = menuItems->begin (); it != menuItems->end (); it++)
 	{
-		CCommandMenuItem* commandItem = dynamic_cast<CCommandMenuItem*>(*it);
+		CCommandMenuItem* commandItem = (*it).cast<CCommandMenuItem> ();
 		if (commandItem && commandItem->getTarget ())
 			commandItem->getTarget ()->notify (commandItem, CCommandMenuItem::kMsgMenuItemValidate);
 		if ((*it)->getSubmenu ())
@@ -612,12 +606,12 @@ void COptionMenu::setPrefixNumbers (int32_t preCount)
 //-----------------------------------------------------------------------------
 CMenuItem* COptionMenu::addEntry (CMenuItem* item, int32_t index)
 {
-	if (index == -1)
+	if (index <= 0 || index > getNbEntries ())
 		menuItems->push_back (item);
 	else
 	{
 		CMenuItemIterator it = menuItems->begin ();
-		for (int32_t i = 0; i < index && it != menuItems->end (); i++, it++);
+		std::advance (it, index);
 		menuItems->insert (it, item);
 	}
 	return item;
@@ -655,11 +649,11 @@ CMenuItem* COptionMenu::getCurrent () const
 //-----------------------------------------------------------------------------
 CMenuItem* COptionMenu::getEntry (int32_t index) const
 {
-	if (menuItems->empty())
+	if (index < 0 || menuItems->empty () || index > getNbEntries ())
 		return 0;
 	
 	CMenuItemIterator it = menuItems->begin ();
-	for (int32_t i = 0; i < index && it != menuItems->end (); i++, it++);
+	std::advance (it, index);
 	if (it == menuItems->end ())
 		return 0;
 	return (*it);
@@ -743,7 +737,6 @@ bool COptionMenu::removeEntry (int32_t index)
 	if (item)
 	{
 		menuItems->remove (item);
-		item->forget ();
 		return true;
 	}
 	return false;
@@ -752,10 +745,6 @@ bool COptionMenu::removeEntry (int32_t index)
 //------------------------------------------------------------------------
 bool COptionMenu::removeAllEntry ()
 {
-	for (CMenuItemIterator it = menuItems->begin(); it != menuItems->end(); ++it)
-	{
-		(*it)->forget();
-	}
 	menuItems->clear ();
 	return true;
 }

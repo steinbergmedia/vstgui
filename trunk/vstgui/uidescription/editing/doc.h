@@ -214,6 +214,8 @@ With the + button you add a new tag and with the - button you remove the selecte
 <img src="ui_editor_colors_browser.png" style="float:right"/>
 @subsubsection the_editor_view_palette_globals_colors Colors
 
+TODO: New Screenshot
+
 Here you define custom colors.
 
 With the + button you add a new color and with the - button you remove the selected color.
@@ -223,6 +225,8 @@ With the + button you add a new color and with the - button you remove the selec
 
 <img src="ui_editor_bitmaps_browser.png" style="float:right"/>
 @subsubsection the_editor_view_palette_globals_bitmaps Bitmaps
+
+TODO: New Screenshot
 
 Here you define your bitmaps.
 

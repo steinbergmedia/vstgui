@@ -39,6 +39,7 @@
 
 #if MAC
 
+#include "../../ccolor.h"
 #include <ApplicationServices/ApplicationServices.h>
 
 namespace VSTGUI {
@@ -60,6 +61,7 @@ protected:
 
 	void drawString (CDrawContext* context, const CString& string, const CPoint& p, bool antialias = true);
 	CCoord getStringWidth (CDrawContext* context, const CString& string, bool antialias = true);
+	CFDictionaryRef getStringAttributes (const CGColorRef color = 0);
 
 	double getAscent () const;
 	double getDescent () const;
@@ -71,6 +73,8 @@ protected:
 	CTFontRef fontRef;
 	int32_t style;
 	bool underlineStyle;
+	CColor lastColor;
+	CFMutableDictionaryRef stringAttributes;
 };
 
 #else // VSTGUI_USES_CORE_TEXT

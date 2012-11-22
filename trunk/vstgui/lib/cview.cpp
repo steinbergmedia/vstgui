@@ -113,6 +113,25 @@ public:
 			memcpy (data, _data, size);
 		}
 	}
+
+#if VSTGUI_RVALUE_REF_SUPPORT
+	CViewAttributeEntry (CViewAttributeEntry&& me)
+	: size (0)
+	, data (0)
+	{
+		*this = std::move (me);
+	}
+
+	CViewAttributeEntry& operator=(CViewAttributeEntry&& me)
+	{
+		size = me.size;
+		data = me.data;
+		me.size = 0;
+		me.data = nullptr;
+		return *this;
+	}
+#endif
+
 protected:
 	int32_t size;
 	void* data;
@@ -637,9 +656,9 @@ const CViewAttributeID kCViewControllerAttribute = 'ictr';
  * @param outSize on return the size of the attribute
  * @return true if attribute exists. outSize is valid then.
  */
-bool CView::getAttributeSize (const CViewAttributeID id, int32_t& outSize) const
+bool CView::getAttributeSize (const CViewAttributeID aId, int32_t& outSize) const
 {
-	CViewAttributeConstIterator it = attributes.find (id);
+	CViewAttributeConstIterator it = attributes.find (aId);
 	if (it != attributes.end ())
 	{
 		outSize = it->second->getSize ();
@@ -656,9 +675,9 @@ bool CView::getAttributeSize (const CViewAttributeID id, int32_t& outSize) const
  * @param outSize the size in bytes which was copied into outData
  * @return true if attribute exists and outData was big enough. outSize and outData is valid then.
  */
-bool CView::getAttribute (const CViewAttributeID id, const int32_t inSize, void* outData, int32_t& outSize) const
+bool CView::getAttribute (const CViewAttributeID aId, const int32_t inSize, void* outData, int32_t& outSize) const
 {
-	CViewAttributeConstIterator it = attributes.find (id);
+	CViewAttributeConstIterator it = attributes.find (aId);
 	if (it != attributes.end ())
 	{
 		if (inSize >= it->second->getSize ())
@@ -680,26 +699,26 @@ bool CView::getAttribute (const CViewAttributeID id, const int32_t inSize, void*
  * @param inData a pointer to the data
  * @return true if attribute was set
  */
-bool CView::setAttribute (const CViewAttributeID id, const int32_t inSize, const void* inData)
+bool CView::setAttribute (const CViewAttributeID aId, const int32_t inSize, const void* inData)
 {
 	if (inData == 0 || inSize <= 0)
 		return false;
-	CViewAttributeConstIterator it = attributes.find (id);
+	CViewAttributeConstIterator it = attributes.find (aId);
 	if (it != attributes.end ())
 		it->second->updateData (inSize, inData);
 	else
-		attributes.insert (std::make_pair<CViewAttributeID, CViewAttributeEntry*> (id, new CViewAttributeEntry (inSize, inData)));
+		attributes.insert (std::pair<CViewAttributeID, CViewAttributeEntry*> (aId, new CViewAttributeEntry (inSize, inData)));
 	return true;
 }
 
 //-----------------------------------------------------------------------------
-bool CView::removeAttribute (const CViewAttributeID id)
+bool CView::removeAttribute (const CViewAttributeID aId)
 {
-	CViewAttributeConstIterator it = attributes.find (id);
+	CViewAttributeConstIterator it = attributes.find (aId);
 	if (it != attributes.end ())
 	{
 		delete it->second;
-		attributes.erase (id);
+		attributes.erase (aId);
 		return true;
 	}
 	return false;

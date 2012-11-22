@@ -37,13 +37,14 @@
 namespace VSTGUI {
 
 //-----------------------------------------------------------------------------
-CFileExtension::CFileExtension (UTF8StringPtr inDescription, UTF8StringPtr inExtension, UTF8StringPtr inMimeType, int32_t inMacType)
+CFileExtension::CFileExtension (UTF8StringPtr inDescription, UTF8StringPtr inExtension, UTF8StringPtr inMimeType, int32_t inMacType, UTF8StringPtr inUti)
 : description (0)
 , extension (0)
 , mimeType (0)
+, uti (0)
 , macType (inMacType)
 {
-	init (inDescription, inExtension, inMimeType);
+	init (inDescription, inExtension, inMimeType, inUti);
 }
 
 //-----------------------------------------------------------------------------
@@ -51,9 +52,10 @@ CFileExtension::CFileExtension (const CFileExtension& ext)
 : description (0)
 , extension (0)
 , mimeType (0)
+, uti (0)
 , macType (ext.macType)
 {
-	init (ext.description, ext.extension, ext.mimeType);
+	init (ext.description, ext.extension, ext.mimeType, ext.uti);
 }
 
 //-----------------------------------------------------------------------------
@@ -65,10 +67,36 @@ CFileExtension::~CFileExtension ()
 		free (extension);
 	if (mimeType)
 		free (mimeType);
+	if (uti)
+		free (uti);
+}
+
+#if VSTGUI_RVALUE_REF_SUPPORT
+//-----------------------------------------------------------------------------
+CFileExtension::CFileExtension (CFileExtension&& ext)
+{
+	*this = std::move (ext);
 }
 
 //-----------------------------------------------------------------------------
-void CFileExtension::init (UTF8StringPtr inDescription, UTF8StringPtr inExtension, UTF8StringPtr inMimeType)
+CFileExtension& CFileExtension::operator=(CFileExtension&& ext)
+{
+	description = ext.description;
+	extension = ext.extension;
+	mimeType = ext.mimeType;
+	uti = ext.uti;
+	macType = ext.macType;
+	ext.description = nullptr;
+	ext.extension = nullptr;
+	ext.mimeType = nullptr;
+	ext.uti = nullptr;
+	ext.macType = 0;
+	return *this;
+}
+#endif
+
+//-----------------------------------------------------------------------------
+void CFileExtension::init (UTF8StringPtr inDescription, UTF8StringPtr inExtension, UTF8StringPtr inMimeType, UTF8StringPtr inUti)
 {
 	if (inDescription)
 	{
@@ -84,6 +112,11 @@ void CFileExtension::init (UTF8StringPtr inDescription, UTF8StringPtr inExtensio
 	{
 		mimeType = (UTF8StringBuffer)malloc (strlen (inMimeType) + 1);
 		strcpy (mimeType, inMimeType);
+	}
+	if (inUti)
+	{
+		uti = (UTF8StringBuffer)malloc (strlen (inUti) + 1);
+		strcpy (uti, inUti);
 	}
 	if (description == 0 && extension)
 	{
@@ -101,6 +134,8 @@ bool CFileExtension::operator== (const CFileExtension& ext) const
 		result = (strcmp (extension, ext.extension) == 0);
 	if (!result && mimeType && ext.mimeType)
 		result = (strcmp (mimeType, ext.mimeType) == 0);
+	if (!result && uti && ext.uti)
+		result = (strcmp (uti, ext.uti) == 0);
 	if (!result && macType != 0 && ext.macType != 0)
 		result = (macType == ext.macType);
 	return result;
@@ -244,6 +279,14 @@ void CNewFileSelector::addFileExtension (const CFileExtension& extension)
 {
 	extensions.push_back (extension);
 }
+
+#if VSTGUI_RVALUE_REF_SUPPORT
+//-----------------------------------------------------------------------------
+void CNewFileSelector::addFileExtension (CFileExtension&& extension)
+{
+	extensions.push_back (std::move (extension));
+}
+#endif
 
 //-----------------------------------------------------------------------------
 int32_t CNewFileSelector::getNumSelectedFiles () const

@@ -137,19 +137,6 @@ public:
 		if (display)
 			display->setValueToStringProc (valueToString, this);
 
-		COptionMenu* optMenu = dynamic_cast<COptionMenu*> (control);
-		if (optMenu && parameter && parameter->getInfo ().stepCount > 0)
-		{
-			optMenu->removeAllEntry ();
-			for (Steinberg::int32 i = 0; i <= parameter->getInfo ().stepCount; i++)
-			{
-				Steinberg::Vst::String128 utf16Str;
-				editController->getParamStringByValue (getParameterID (), (Steinberg::Vst::ParamValue)i / (Steinberg::Vst::ParamValue)parameter->getInfo ().stepCount, utf16Str);
-				Steinberg::String utf8Str (utf16Str);
-				utf8Str.toMultiByte (Steinberg::kCP_Utf8);
-				optMenu->addEntry (utf8Str);
-			}
-		}
 		if (parameter)
 			parameter->deferUpdate ();
 		else
@@ -272,18 +259,46 @@ protected:
 		{
 			(*it)->setMouseEnabled (mouseEnabled);
 			(*it)->setDefaultValue ((float)defaultValue);
-			if (isStepCount)
+			CTextLabel* label = dynamic_cast<CTextLabel*>(*it);
+			if (label)
 			{
-				(*it)->setMin (minValue);
-				(*it)->setMax (maxValue);
-				COptionMenu* optMenu = dynamic_cast<COptionMenu*> (*it);
-				if (optMenu)
-					(*it)->setValue ((float)value - minValue);
-				else
-					(*it)->setValue ((float)value);
+				Steinberg::Vst::ParamValue normValue = value;
+				if (isStepCount)
+				{
+					normValue = parameter->toNormalized (value);
+				}
+				Steinberg::Vst::String128 utf16Str;
+				editController->getParamStringByValue (getParameterID (), normValue, utf16Str);
+				Steinberg::String utf8Str (utf16Str);
+				utf8Str.toMultiByte (Steinberg::kCP_Utf8);
+				label->setText (utf8Str);
 			}
 			else
-				(*it)->setValueNormalized ((float)value);
+			{
+				if (isStepCount)
+				{
+					(*it)->setMin (minValue);
+					(*it)->setMax (maxValue);
+					COptionMenu* optMenu = dynamic_cast<COptionMenu*> (*it);
+					if (optMenu)
+					{
+						optMenu->removeAllEntry ();
+						for (Steinberg::int32 i = 0; i <= parameter->getInfo ().stepCount; i++)
+						{
+							Steinberg::Vst::String128 utf16Str;
+							editController->getParamStringByValue (getParameterID (), (Steinberg::Vst::ParamValue)i / (Steinberg::Vst::ParamValue)parameter->getInfo ().stepCount, utf16Str);
+							Steinberg::String utf8Str (utf16Str);
+							utf8Str.toMultiByte (Steinberg::kCP_Utf8);
+							optMenu->addEntry (utf8Str);
+						}
+						(*it)->setValue ((float)value - minValue);
+					}
+					else
+						(*it)->setValue ((float)value);
+				}
+				else
+					(*it)->setValueNormalized ((float)value);
+			}
 			(*it)->invalid ();
 			it++;
 		}
@@ -654,7 +669,7 @@ static void addCOptionMenuEntriesToIContextMenu (VST3Editor* editor, COptionMenu
 {
 	for (CConstMenuItemIterator it = menu->getItems ()->begin (); it != menu->getItems ()->end ();it++)
 	{
-		CCommandMenuItem* commandItem = dynamic_cast<CCommandMenuItem*>(*it);
+		CCommandMenuItem* commandItem = (*it).cast<CCommandMenuItem>();
 		if (commandItem && commandItem->getTarget ())
 			commandItem->getTarget ()->notify (commandItem, CCommandMenuItem::kMsgMenuItemValidate);
 

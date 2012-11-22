@@ -83,7 +83,7 @@ public:
 		else if (color1Start > 1) color1Start = 1;
 		if (color2Start < 0) color2Start = 0;
 		else if (color2Start > 1) color2Start = 1;
-		CGFloat locations[] = { color1Start, color2Start };
+		CGFloat locations[] = { static_cast<CGFloat>(color1Start), static_cast<CGFloat>(color2Start) };
 		
 		gradient = CGGradientCreateWithColors (0, colorArray, locations);
 

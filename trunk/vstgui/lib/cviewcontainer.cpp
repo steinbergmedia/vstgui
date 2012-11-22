@@ -43,25 +43,9 @@
 
 namespace VSTGUI {
 
-//-----------------------------------------------------------------------------
-// CCView Implementation
-/// @cond ignore
-//-----------------------------------------------------------------------------
-CViewContainer::CCView::CCView (CView* pView)
-: pView (pView)
-, pNext (0)
-, pPrevious (0)
-{
-	assert (pView);
-	pView->remember ();
-}
-
-//-----------------------------------------------------------------------------
-CViewContainer::CCView::~CCView ()
-{ 
-	pView->forget (); 
-}
-/// @endcond
+#ifndef FOREACHSUBVIEW_REVERSE
+	#define FOREACHSUBVIEW_REVERSE(reverse) CViewConstIterator it; CViewConstReverseIterator rit; if (reverse) rit = children.rbegin (); else it = children.begin (); while (reverse ? rit != children.rend () : it != children.end ()) { CView* pV; if (reverse) {	pV = (*rit); rit++; } else { pV = (*it); it++; } {
+#endif
 
 #if VSTGUI_ENABLE_DEPRECATED_METHODS
 IdStringPtr kMsgCheckIfViewContainer	= "kMsgCheckIfViewContainer";
@@ -79,8 +63,6 @@ IdStringPtr kMsgLooseFocus = "LooseFocus";
  */
 CViewContainer::CViewContainer (const CRect &rect, CFrame* pParent, CBitmap* pBackground)
 : CView (rect)
-, pFirstView (0)
-, pLastView (0)
 , currentDragView (0)
 , mouseDownView (0)
 , backgroundColorDrawStyle (kDrawFilledAndStroked)
@@ -94,8 +76,6 @@ CViewContainer::CViewContainer (const CRect &rect, CFrame* pParent, CBitmap* pBa
 //-----------------------------------------------------------------------------
 CViewContainer::CViewContainer (const CViewContainer& v)
 : CView (v)
-, pFirstView (0)
-, pLastView (0)
 , backgroundColor (v.backgroundColor)
 , backgroundOffset (v.backgroundOffset)
 , backgroundColorDrawStyle (v.backgroundColorDrawStyle)
@@ -332,21 +312,8 @@ bool CViewContainer::addView (CView* pView)
 	if (pView->isAttached ())
 		return false;
 
-	CCView* pSv = new CCView (pView);
-	
-	CCView* pV = pFirstView;
-	if (!pV)
-	{
-		pLastView = pFirstView = pSv;
-	}
-	else
-	{
-		while (pV->pNext)
-			pV = pV->pNext;
-		pV->pNext = pSv;
-		pSv->pPrevious = pV;
-		pLastView = pSv;
-	}
+	children.push_back (pView);
+
 	if (isAttached ())
 	{
 		pView->attached (this);
@@ -369,32 +336,16 @@ bool CViewContainer::addView (CView *pView, CView* pBefore)
 	if (pView->isAttached ())
 		return false;
 
-	CCView* pSv = new CCView (pView);
-
-	CCView* pV = pFirstView;
-	if (!pV)
+	if (pBefore)
 	{
-		pLastView = pFirstView = pSv;
+		std::list<SharedPointer<CView> >::iterator it = std::find (children.begin (), children.end (), pBefore);
+		children.insert (it, pView);
 	}
 	else
 	{
-		while (pV->pNext && pV->pView != pBefore)
-		{
-			pV = pV->pNext;
-		}
-		pSv->pNext = pV;
-		if (pV)
-		{
-			pSv->pPrevious = pV->pPrevious;
-			pV->pPrevious = pSv;
-			if (pSv->pPrevious == 0)
-				pFirstView = pSv;
-			else
-				pSv->pPrevious->pNext = pSv;
-		}
-		else
-			pLastView = pSv;
+		children.push_back (pView);
 	}
+
 	if (isAttached ())
 	{
 		pView->attached (this);
@@ -434,24 +385,18 @@ bool CViewContainer::removeAll (bool withForget)
 	if (mouseDownView)
 		mouseDownView = 0;
 	currentDragView = 0;
-	CCView *pV = pFirstView;
-	while (pV)
+	ViewIterator it (this);
+	while (*it)
 	{
-		CCView* pNext = pV->pNext;
-		if (pV->pView)
-		{
-			if (isAttached ())
-				pV->pView->removed (this);
-			if (withForget)
-				pV->pView->forget ();
-		}
-
-		delete pV;
-
-		pV = pNext;
+		CView* view = *it;
+		if (isAttached ())
+			view->removed (this);
+		if (withForget)
+			view->forget ();
+		it++;
 	}
-	pFirstView = 0;
-	pLastView = 0;
+	children.erase (children.begin (), children.end ());
+
 	return true;
 }
 
@@ -463,46 +408,18 @@ bool CViewContainer::removeAll (bool withForget)
  */
 bool CViewContainer::removeView (CView *pView, bool withForget)
 {
-	if (pView == mouseDownView)
-		mouseDownView = 0;
-	if (pView == currentDragView)
-		currentDragView = 0;
-	CCView *pV = pFirstView;
-	while (pV)
+	if (isChild (pView, false))
 	{
-		if (pView == pV->pView)
-		{
-			CCView* pNext = pV->pNext;
-			CCView* pPrevious = pV->pPrevious;
-			if (pV->pView)
-			{
-				pV->pView->invalid ();
-				if (isAttached ())
-					pV->pView->removed (this);
-				if (withForget)
-					pV->pView->forget ();
-			}
-			delete pV;
-			if (pPrevious)
-			{
-				pPrevious->pNext = pNext;
-				if (pNext)
-					pNext->pPrevious = pPrevious;
-				else
-					pLastView = pPrevious;
-			}
-			else
-			{
-				pFirstView = pNext;
-				if (pNext)
-					pNext->pPrevious = 0;
-				else
-					pLastView = 0;	
-			}
-			return true;
-		}
-		else
-			pV = pV->pNext;
+		if (pView == mouseDownView)
+			mouseDownView = 0;
+		if (pView == currentDragView)
+			currentDragView = 0;
+		if (isAttached ())
+			pView->removed (this);
+		if (withForget)
+			pView->forget ();
+		children.remove (pView);
+		return true;
 	}
 	return false;
 }
@@ -522,17 +439,25 @@ bool CViewContainer::isChild (CView *pView, bool deep) const
 {
 	bool found = false;
 
-	CCView* pV = pFirstView;
-	while (pV && !found)
+	if (deep)
 	{
-		if (pView == pV->pView)
+		CViewConstIterator it = children.begin ();
+		while (!found && it != children.end ())
 		{
-			found = true;
-			break;
+			CView* v = (*it);
+			if (pView == v)
+			{
+				found = true;
+				break;
+			}
+			if (dynamic_cast<CViewContainer*>(v))
+				found = reinterpret_cast<CViewContainer*>(v)->isChild (pView, true);
+			it++;
 		}
-		if (deep && dynamic_cast<CViewContainer*> (pV->pView))
-			found = reinterpret_cast<CViewContainer*> (pV->pView)->isChild (pView, true);
-		pV = pV->pNext;
+	}
+	else
+	{
+		found = std::find (children.begin (), children.end (), pView) != children.end ();
 	}
 	return found;
 }
@@ -540,7 +465,7 @@ bool CViewContainer::isChild (CView *pView, bool deep) const
 //-----------------------------------------------------------------------------
 bool CViewContainer::hasChildren () const
 {
-	return pFirstView != 0;
+	return children.size () > 0;
 }
 
 //-----------------------------------------------------------------------------
@@ -549,10 +474,7 @@ bool CViewContainer::hasChildren () const
  */
 int32_t CViewContainer::getNbViews () const
 {
-	int32_t nb = 0;
-	for (CCView* pSv = pFirstView; pSv; pSv = pSv->pNext)
-		nb++;
-	return nb;
+	return static_cast<int32_t> (children.size ());
 }
 
 //-----------------------------------------------------------------------------
@@ -579,59 +501,15 @@ CView* CViewContainer::getView (int32_t index) const
  */
 bool CViewContainer::changeViewZOrder (CView* view, int32_t newIndex)
 {
-	if (pFirstView == pLastView)
-		return false;
-
-	CCView* ccView = 0;
-	for (CCView* pSv = pFirstView; pSv; pSv = pSv->pNext)
+	if (newIndex >= 0 && newIndex < getNbViews ())
 	{
-		if (pSv->pView == view)
+		std::list<SharedPointer<CView> >::iterator it = std::find (children.begin (), children.end (), view);
+		if (it != children.end ())
 		{
-			ccView = pSv;
-			break;
-		}
-	}
-	if (ccView)
-	{
-		CCView* pNext = ccView->pNext;
-		CCView* pPrevious = ccView->pPrevious;
-		if (pPrevious)
-			pPrevious->pNext = pNext;
-		else
-			pFirstView = pNext;
-		if (pNext)
-			pNext->pPrevious = pPrevious;
-		else
-			pLastView = pPrevious;
-		
-		CCView* ccView2 = 0;
-		for (CCView* pSv = pFirstView; pSv; pSv = pSv->pNext, newIndex--)
-		{
-			if (newIndex == 0)
-			{
-				ccView2 = pSv;
-				break;
-			}
-		}
-		if (ccView2 == 0)
-		{
-			pLastView->pNext = ccView;
-			ccView->pPrevious = pLastView;
-			ccView->pNext = 0;
-			pLastView = ccView;
-			return true;
-		}
-		else
-		{
-			pPrevious = ccView2->pPrevious;
-			ccView->pPrevious = pPrevious;
-			ccView->pNext = ccView2;
-			ccView2->pPrevious = ccView;
-			if (pPrevious)
-				pPrevious->pNext = ccView;
-			else
-				pFirstView = ccView;
-			return true;
+			children.erase (it);
+			it = children.begin ();
+			std::advance (it, newIndex);
+			return children.insert (it, view) != children.end ();
 		}
 	}
 	return false;
@@ -1017,7 +895,7 @@ bool CViewContainer::onWheel (const CPoint &where, const CMouseWheelAxis &axis, 
 		// convert to relativ pos
 		CPoint where2 (where);
 		where2.offset (-getViewSize ().left, -getViewSize ().top);
-		if (pV && pV->isVisible () && where2.isInside (pV->getMouseableArea ()))
+		if (pV && pV->isVisible () && pV->getMouseEnabled () && where2.isInside (pV->getMouseableArea ()))
 		{
 			if (pV->onWheel (where2, axis, distance, buttons))
 				return true;

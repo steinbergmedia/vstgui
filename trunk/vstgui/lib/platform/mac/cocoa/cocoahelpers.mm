@@ -43,7 +43,7 @@
 HIDDEN Class generateUniqueClass (NSMutableString* className, Class baseClass)
 {
 	NSString* _className = [NSString stringWithString:className];
-	NSInteger iteration = 0;
+	int32_t iteration = 0;
 	id cl = nil;
 	while ((cl = objc_lookUpClass ([className UTF8String])) != nil)
 	{

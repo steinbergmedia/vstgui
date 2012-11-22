@@ -88,8 +88,11 @@ static CTFontRef CoreTextCreateTraitsVariant (CTFontRef fontRef, CTFontSymbolicT
 CoreTextFont::CoreTextFont (UTF8StringPtr name, const CCoord& size, const int32_t& style)
 : fontRef (0)
 , style (style)
+, underlineStyle (false)
+, lastColor (MakeCColor (0,0,0,0))
+, stringAttributes (0)
 {
-	CFStringRef fontNameRef = CFStringCreateWithCString (0, name, kCFStringEncodingUTF8);
+	CFStringRef fontNameRef = CFStringCreateWithCString (kCFAllocatorDefault, name, kCFStringEncodingUTF8);
 	if (fontNameRef)
 	{
 		fontRef = CTFontCreateWithName (fontNameRef, size, 0);
@@ -104,6 +107,8 @@ CoreTextFont::CoreTextFont (UTF8StringPtr name, const CCoord& size, const int32_
 //-----------------------------------------------------------------------------
 CoreTextFont::~CoreTextFont ()
 {
+	if (stringAttributes)
+		CFRelease (stringAttributes);
 	CFRelease (fontRef);
 }
 
@@ -132,6 +137,21 @@ double CoreTextFont::getCapHeight () const
 }
 
 //-----------------------------------------------------------------------------
+CFDictionaryRef CoreTextFont::getStringAttributes (const CGColorRef color)
+{
+	if (stringAttributes == 0)
+	{
+		stringAttributes = CFDictionaryCreateMutable (kCFAllocatorDefault, 2, &kCFTypeDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks);
+		CFDictionarySetValue (stringAttributes, kCTFontAttributeName, fontRef);
+	}
+	if (color)
+	{
+		CFDictionarySetValue (stringAttributes, kCTForegroundColorAttributeName, color);
+	}
+	return stringAttributes;
+}
+
+//-----------------------------------------------------------------------------
 void CoreTextFont::drawString (CDrawContext* context, const CString& string, const CPoint& point, bool antialias)
 {
 	const MacString* macString = dynamic_cast<const MacString*> (string.getPlatformString ());
@@ -139,12 +159,13 @@ void CoreTextFont::drawString (CDrawContext* context, const CString& string, con
 	if (utf8Str)
 	{
 		CColor fontColor = context->getFontColor ();
-		CGColorRef cgColorRef = CGColorCreateGenericRGB (fontColor.red/255.f, fontColor.green/255.f, fontColor.blue/255.f, fontColor.alpha/255.f);
-		CFStringRef keys[] = { kCTFontAttributeName, kCTForegroundColorAttributeName };
-		CFTypeRef values[] = { fontRef, cgColorRef };
-		CFDictionaryRef attributes = CFDictionaryCreate (kCFAllocatorDefault, (const void**)&keys,(const void**)&values, sizeof(keys) / sizeof(keys[0]), &kCFTypeDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks);
-		CFAttributedStringRef attrStr = CFAttributedStringCreate (0, utf8Str, attributes);
-		CFRelease (attributes);
+		CGColorRef cgColorRef = 0;
+		if (fontColor != lastColor)
+		{
+			cgColorRef = CGColorCreateGenericRGB (fontColor.red/255.f, fontColor.green/255.f, fontColor.blue/255.f, fontColor.alpha/255.f);
+			lastColor = fontColor;
+		}
+		CFAttributedStringRef attrStr = CFAttributedStringCreate (kCFAllocatorDefault, utf8Str, getStringAttributes (cgColorRef));
 		if (attrStr)
 		{
 			CTLineRef line = CTLineCreateWithAttributedString (attrStr);
@@ -160,6 +181,8 @@ void CoreTextFont::drawString (CDrawContext* context, const CString& string, con
 					CTLineDraw (line, cgContext);
 					if (style & kUnderlineFace)
 					{
+						if (cgColorRef == 0)
+							cgColorRef = CGColorCreateGenericRGB (fontColor.red/255.f, fontColor.green/255.f, fontColor.blue/255.f, fontColor.alpha/255.f);
 						CGFloat underlineOffset = CTFontGetUnderlinePosition (fontRef) - 1.;
 						CGFloat underlineThickness = CTFontGetUnderlineThickness (fontRef);
 						CGContextSetStrokeColorWithColor (cgContext, cgColorRef);
@@ -188,7 +211,8 @@ void CoreTextFont::drawString (CDrawContext* context, const CString& string, con
 			}
 			CFRelease (attrStr);
 		}
-		CFRelease (cgColorRef);
+		if (cgColorRef)
+			CFRelease (cgColorRef);
 	}
 }
 
@@ -200,11 +224,7 @@ CCoord CoreTextFont::getStringWidth (CDrawContext* context, const CString& strin
 	CFStringRef utf8Str = macString ? macString->getCFString () : 0;
 	if (utf8Str)
 	{
-		CFStringRef keys[] = { kCTFontAttributeName };
-		CFTypeRef values[] = { fontRef };
-		CFDictionaryRef attributes = CFDictionaryCreate(kCFAllocatorDefault, (const void**)&keys,(const void**)&values, sizeof(keys) / sizeof(keys[0]), &kCFTypeDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks);
-		CFAttributedStringRef attrStr = CFAttributedStringCreate (0, utf8Str, attributes);
-		CFRelease (attributes);
+		CFAttributedStringRef attrStr = CFAttributedStringCreate (kCFAllocatorDefault, utf8Str, getStringAttributes ());
 		if (attrStr)
 		{
 			CTLineRef line = CTLineCreateWithAttributedString (attrStr);

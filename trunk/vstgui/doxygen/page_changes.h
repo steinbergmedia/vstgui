@@ -18,7 +18,7 @@ It's recommended to start new projects with version 4 while old projects should 
 @subsection version4_1 Version 4.1
 
 - @ref page_uidescription_editor @n
-- VSTGUI::COpenGLView
+- VSTGUI::COpenGLView (only Windows & Mac Cocoa)
 - VSTGUI::CRowColumnView
 - VSTGUI::CShadowViewContainer
 - VSTGUI::BitmapFilter

@@ -69,6 +69,15 @@
 			#define __CF_USE_FRAMEWORK_INCLUDES__ 1
 		#endif
 	#endif
+	#ifdef __has_feature
+		#define VSTGUI_RVALUE_REF_SUPPORT __has_feature (cxx_rvalue_references)
+		#if VSTGUI_RVALUE_REF_SUPPORT
+			#include <type_traits>
+		#endif
+	#else
+		#define VSTGUI_RVALUE_REF_SUPPORT 0
+	#endif
+
 #elif WIN32 || WINDOWS
 	#include <sdkddkver.h>
 	#if _WIN32_WINNT < 0x600
@@ -94,6 +103,10 @@
 	#pragma GCC diagnostic ignored "-Wreorder"
 	#pragma GCC diagnostic ignored "-Wmultichar"
 	#pragma GCC diagnostic ignored "-Woverloaded-virtual"
+#endif
+
+#ifndef VSTGUI_RVALUE_REF_SUPPORT
+	#define VSTGUI_RVALUE_REF_SUPPORT 0
 #endif
 
 #ifdef UNICODE
@@ -260,6 +273,11 @@ public:
 	inline I* operator->() const { return ptr; }      // act as I*
 
 	template<class T> T* cast () const { return dynamic_cast<T*> (ptr); }
+
+#if VSTGUI_RVALUE_REF_SUPPORT
+	inline SharedPointer (SharedPointer<I>&& mp);
+	inline SharedPointer<I>& operator=(SharedPointer<I>&& mp);
+#endif
 //------------------------------------------------------------------------
 protected:
 	I* ptr;
@@ -296,6 +314,24 @@ inline SharedPointer<I>::~SharedPointer ()
 	if (ptr)
 		ptr->forget ();
 }
+
+#if VSTGUI_RVALUE_REF_SUPPORT
+//------------------------------------------------------------------------
+template <class I>
+inline SharedPointer<I>::SharedPointer (SharedPointer<I>&& mp)
+{
+	*this = std::move (mp);
+}
+
+//------------------------------------------------------------------------
+template <class I>
+inline SharedPointer<I>& SharedPointer<I>::operator=(SharedPointer<I>&& mp)
+{
+	ptr = mp.ptr;
+	mp.ptr = nullptr;
+	return *this;
+}
+#endif
 
 //------------------------------------------------------------------------
 template <class I>

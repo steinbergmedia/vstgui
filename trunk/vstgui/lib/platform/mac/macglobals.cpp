@@ -119,6 +119,7 @@ public:
 
 	void CreateMainDisplayColorSpace ()
 	{
+		// TODO: Replace with ColorSyncProfileRef
 		CMProfileRef sysprof = NULL;
 
 		// Get the Systems Profile for the main display

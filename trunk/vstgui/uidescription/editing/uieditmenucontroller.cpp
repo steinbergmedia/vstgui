@@ -400,7 +400,7 @@ CCommandMenuItem* UIEditMenuController::findKeyCommandItem (COptionMenu* menu, c
 			if (result)
 				return result;
 		}
-		CCommandMenuItem* result = dynamic_cast<CCommandMenuItem*>(*it);
+		CCommandMenuItem* result = (*it).cast<CCommandMenuItem>();
 		if (result)
 		{
 			int32_t modifier = 0;

@@ -211,6 +211,7 @@ void CocoaOpenGLView::swapBuffers ()
 		if (context)
 		{
 			[context flushBuffer];
+			[NSOpenGLContext clearCurrentContext];
 		}
 	}
 }

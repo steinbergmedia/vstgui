@@ -1128,11 +1128,26 @@ void CScrollbar::drawScroller (CDrawContext* pContext, const CRect& size)
 		drawer->drawScrollbarScroller (pContext, r, direction, this);
 	else
 	{
-		pContext->setDrawMode (kAliasing);
 		pContext->setLineWidth (1);
 		pContext->setFillColor (scrollerColor);
 		pContext->setFrameColor (frameColor);
-		pContext->drawRect (r, kDrawFilledAndStroked);
+
+		CCoord wideness = (direction == kVertical ? getWidth() : getHeight()) / 2 - 2;
+		OwningPointer<CGraphicsPath> path = wideness > 2 ? pContext->createGraphicsPath () : 0;
+		if (path)
+		{
+			if (wideness > 4)
+				wideness = 4;
+			pContext->setDrawMode (kAntiAliasing);
+			path->addRoundRect (r, wideness);
+			pContext->drawGraphicsPath (path, CDrawContext::kPathFilled);
+			pContext->drawGraphicsPath (path, CDrawContext::kPathStroked);
+		}
+		else
+		{
+			pContext->setDrawMode (kAliasing);
+			pContext->drawRect (r, kDrawFilledAndStroked);
+		}
 	}
 }
 

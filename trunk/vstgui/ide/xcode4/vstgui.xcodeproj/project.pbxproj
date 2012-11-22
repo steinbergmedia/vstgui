@@ -92,6 +92,93 @@
 		F4E3905613080ECC00615042 /* uiviewswitchcontainer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4E3903513080ECC00615042 /* uiviewswitchcontainer.cpp */; };
 		F4E3905913080ECC00615042 /* xmlparser.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4E3903813080ECC00615042 /* xmlparser.cpp */; };
 		F4F52DFF13E2B36500B3DB2F /* crowcolumnview.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4F52DFD13E2B36500B3DB2F /* crowcolumnview.cpp */; };
+		F4F953FA16510F40006EE1D1 /* animations.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F497F11A13080AD100F0A613 /* animations.cpp */; };
+		F4F953FB16510F40006EE1D1 /* animator.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F497F11C13080AD100F0A613 /* animator.cpp */; };
+		F4F953FC16510F40006EE1D1 /* timingfunctions.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F497F11E13080AD100F0A613 /* timingfunctions.cpp */; };
+		F4F953FD16510F40006EE1D1 /* cautoanimation.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F497F12713080AE400F0A613 /* cautoanimation.cpp */; };
+		F4F953FE16510F40006EE1D1 /* cbuttons.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F497F12913080AE500F0A613 /* cbuttons.cpp */; };
+		F4F953FF16510F40006EE1D1 /* ccolorchooser.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F497F12B13080AE500F0A613 /* ccolorchooser.cpp */; };
+		F4F9540016510F40006EE1D1 /* ccontrol.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F497F12D13080AE500F0A613 /* ccontrol.cpp */; };
+		F4F9540116510F40006EE1D1 /* cfontchooser.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F497F12F13080AE500F0A613 /* cfontchooser.cpp */; };
+		F4F9540216510F40006EE1D1 /* cknob.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F497F13113080AE500F0A613 /* cknob.cpp */; };
+		F4F9540316510F40006EE1D1 /* cmoviebitmap.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F497F13313080AE500F0A613 /* cmoviebitmap.cpp */; };
+		F4F9540416510F40006EE1D1 /* cmoviebutton.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F497F13513080AE500F0A613 /* cmoviebutton.cpp */; };
+		F4F9540516510F40006EE1D1 /* coptionmenu.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F497F13713080AE500F0A613 /* coptionmenu.cpp */; };
+		F4F9540616510F40006EE1D1 /* cparamdisplay.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F497F13913080AE500F0A613 /* cparamdisplay.cpp */; };
+		F4F9540716510F40006EE1D1 /* cslider.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F497F13B13080AE500F0A613 /* cslider.cpp */; };
+		F4F9540816510F40006EE1D1 /* cspecialdigit.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F497F13D13080AE500F0A613 /* cspecialdigit.cpp */; };
+		F4F9540916510F40006EE1D1 /* csplashscreen.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F497F13F13080AE500F0A613 /* csplashscreen.cpp */; };
+		F4F9540A16510F40006EE1D1 /* cswitch.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F497F14113080AE500F0A613 /* cswitch.cpp */; };
+		F4F9540B16510F40006EE1D1 /* ctextedit.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F497F14313080AE500F0A613 /* ctextedit.cpp */; };
+		F4F9540C16510F40006EE1D1 /* ctextlabel.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F497F14513080AE500F0A613 /* ctextlabel.cpp */; };
+		F4F9540D16510F40006EE1D1 /* cvumeter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F497F14713080AE500F0A613 /* cvumeter.cpp */; };
+		F4F9540E16510F40006EE1D1 /* hiviewframe.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F497F18C13080B2A00F0A613 /* hiviewframe.cpp */; };
+		F4F9540F16510F40006EE1D1 /* hiviewoptionmenu.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F497F18E13080B2A00F0A613 /* hiviewoptionmenu.cpp */; };
+		F4F9541016510F40006EE1D1 /* hiviewtextedit.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F497F19013080B2A00F0A613 /* hiviewtextedit.cpp */; };
+		F4F9541116510F40006EE1D1 /* autoreleasepool.mm in Sources */ = {isa = PBXBuildFile; fileRef = F497F19A13080B4800F0A613 /* autoreleasepool.mm */; };
+		F4F9541216510F40006EE1D1 /* cocoadragcontainer.mm in Sources */ = {isa = PBXBuildFile; fileRef = F497F19C13080B4800F0A613 /* cocoadragcontainer.mm */; };
+		F4F9541316510F40006EE1D1 /* cocoahelpers.mm in Sources */ = {isa = PBXBuildFile; fileRef = F497F19E13080B4800F0A613 /* cocoahelpers.mm */; };
+		F4F9541416510F40006EE1D1 /* cocoatextedit.mm in Sources */ = {isa = PBXBuildFile; fileRef = F497F1A013080B4800F0A613 /* cocoatextedit.mm */; };
+		F4F9541516510F40006EE1D1 /* cocoaopenglview.mm in Sources */ = {isa = PBXBuildFile; fileRef = F452950613A211E6006EEF82 /* cocoaopenglview.mm */; };
+		F4F9541616510F40006EE1D1 /* nsviewframe.mm in Sources */ = {isa = PBXBuildFile; fileRef = F497F1A413080B4800F0A613 /* nsviewframe.mm */; };
+		F4F9541716510F40006EE1D1 /* nsviewoptionmenu.mm in Sources */ = {isa = PBXBuildFile; fileRef = F497F1A613080B4800F0A613 /* nsviewoptionmenu.mm */; };
+		F4F9541816510F40006EE1D1 /* cfontmac.mm in Sources */ = {isa = PBXBuildFile; fileRef = F497F17613080B1C00F0A613 /* cfontmac.mm */; };
+		F4F9541916510F40006EE1D1 /* cgbitmap.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F497F17713080B1C00F0A613 /* cgbitmap.cpp */; };
+		F4F9541A16510F40006EE1D1 /* cgdrawcontext.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F497F17913080B1C00F0A613 /* cgdrawcontext.cpp */; };
+		F4F9541B16510F40006EE1D1 /* macclipboard.mm in Sources */ = {isa = PBXBuildFile; fileRef = F40B7835140E106600E2BF16 /* macclipboard.mm */; };
+		F4F9541C16510F40006EE1D1 /* macfileselector.mm in Sources */ = {isa = PBXBuildFile; fileRef = F497F17B13080B1C00F0A613 /* macfileselector.mm */; };
+		F4F9541D16510F40006EE1D1 /* macglobals.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F497F17C13080B1C00F0A613 /* macglobals.cpp */; };
+		F4F9541E16510F40006EE1D1 /* macstring.mm in Sources */ = {isa = PBXBuildFile; fileRef = F4FC1A9F1328C8C40066E2F8 /* macstring.mm */; };
+		F4F9541F16510F40006EE1D1 /* quartzgraphicspath.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F497F17E13080B1C00F0A613 /* quartzgraphicspath.cpp */; };
+		F4F9542016510F40006EE1D1 /* cbitmap.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F497F0C213080A1C00F0A613 /* cbitmap.cpp */; };
+		F4F9542116510F40006EE1D1 /* cbitmapfilter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4CE1BE1141138F700CF75B6 /* cbitmapfilter.cpp */; };
+		F4F9542216510F40006EE1D1 /* ccolor.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F497F0C413080A1C00F0A613 /* ccolor.cpp */; };
+		F4F9542316510F40006EE1D1 /* cdatabrowser.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F497F0C613080A1C00F0A613 /* cdatabrowser.cpp */; };
+		F4F9542416510F40006EE1D1 /* cdrawcontext.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F497F0C813080A1C00F0A613 /* cdrawcontext.cpp */; };
+		F4F9542516510F40006EE1D1 /* cdropsource.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F497F0CA13080A1C00F0A613 /* cdropsource.cpp */; };
+		F4F9542616510F40006EE1D1 /* cfileselector.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F497F0CC13080A1C00F0A613 /* cfileselector.cpp */; };
+		F4F9542716510F40006EE1D1 /* cfont.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F497F0CE13080A1C00F0A613 /* cfont.cpp */; };
+		F4F9542816510F40006EE1D1 /* cframe.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F497F0D013080A1C00F0A613 /* cframe.cpp */; };
+		F4F9542916510F40006EE1D1 /* cgraphicspath.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F497F0D213080A1C00F0A613 /* cgraphicspath.cpp */; };
+		F4F9542A16510F40006EE1D1 /* coffscreencontext.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F497F0D413080A1C00F0A613 /* coffscreencontext.cpp */; };
+		F4F9542B16510F40006EE1D1 /* copenglview.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F452950B13A2166A006EEF82 /* copenglview.cpp */; };
+		F4F9542C16510F40006EE1D1 /* cpoint.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F497F0D713080A1C00F0A613 /* cpoint.cpp */; };
+		F4F9542D16510F40006EE1D1 /* crect.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F497F0D913080A1C00F0A613 /* crect.cpp */; };
+		F4F9542E16510F40006EE1D1 /* crowcolumnview.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4F52DFD13E2B36500B3DB2F /* crowcolumnview.cpp */; };
+		F4F9542F16510F40006EE1D1 /* cscrollview.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F497F0DB13080A1C00F0A613 /* cscrollview.cpp */; };
+		F4F9543016510F40006EE1D1 /* cshadowviewcontainer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F42E1F8914239E48005E0BD7 /* cshadowviewcontainer.cpp */; };
+		F4F9543116510F40006EE1D1 /* csplitview.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F45BD677131817CD00C46C02 /* csplitview.cpp */; };
+		F4F9543216510F40006EE1D1 /* cstring.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4FC1AA31328CB310066E2F8 /* cstring.cpp */; };
+		F4F9543316510F40006EE1D1 /* ctabview.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F497F0DD13080A1C00F0A613 /* ctabview.cpp */; };
+		F4F9543416510F40006EE1D1 /* ctooltipsupport.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F497F0DF13080A1C00F0A613 /* ctooltipsupport.cpp */; };
+		F4F9543516510F40006EE1D1 /* cview.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F497F0E113080A1C00F0A613 /* cview.cpp */; };
+		F4F9543616510F40006EE1D1 /* cviewcontainer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F497F0E313080A1C00F0A613 /* cviewcontainer.cpp */; };
+		F4F9543716510F40006EE1D1 /* cvstguitimer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F497F0E513080A1C00F0A613 /* cvstguitimer.cpp */; };
+		F4F9543816510F40006EE1D1 /* vstguidebug.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F497F0E913080A1C00F0A613 /* vstguidebug.cpp */; };
+		F4F9543916510F40006EE1D1 /* uiactions.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F453B22413F129A20067C1C2 /* uiactions.cpp */; };
+		F4F9543A16510F40006EE1D1 /* uiattributescontroller.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F48BCB4D13F69BB80010DCC1 /* uiattributescontroller.cpp */; };
+		F4F9543B16510F40006EE1D1 /* uibitmapscontroller.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4FB92B013FBEC8F007D72DE /* uibitmapscontroller.cpp */; };
+		F4F9543C16510F40006EE1D1 /* uicolorscontroller.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F485F11813F97FFD0001A913 /* uicolorscontroller.cpp */; };
+		F4F9543D16510F40006EE1D1 /* uicrosslines.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4CA76BD13F1A1F700BB1842 /* uicrosslines.cpp */; };
+		F4F9543E16510F40006EE1D1 /* uidialogcontroller.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F406E380140426B100F550B7 /* uidialogcontroller.cpp */; };
+		F4F9543F16510F40006EE1D1 /* uieditcontroller.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4CA76C513F27A4900BB1842 /* uieditcontroller.cpp */; };
+		F4F9544016510F40006EE1D1 /* uieditmenucontroller.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F48BCB4113F545350010DCC1 /* uieditmenucontroller.cpp */; };
+		F4F9544116510F40006EE1D1 /* uieditview.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F453B22813F19BC30067C1C2 /* uieditview.cpp */; };
+		F4F9544216510F40006EE1D1 /* uifocussettingscontroller.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F41DA9331406860B00EDAB4B /* uifocussettingscontroller.cpp */; };
+		F4F9544316510F40006EE1D1 /* uifontscontroller.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4A63DE714023EB300023102 /* uifontscontroller.cpp */; };
+		F4F9544416510F40006EE1D1 /* uigridcontroller.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F40329C513FE3AB100466973 /* uigridcontroller.cpp */; };
+		F4F9544516510F40006EE1D1 /* uisearchtextfield.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F48BCB4913F5803A0010DCC1 /* uisearchtextfield.cpp */; };
+		F4F9544616510F40006EE1D1 /* uiselection.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4E3902B13080ECC00615042 /* uiselection.cpp */; };
+		F4F9544716510F40006EE1D1 /* uitagscontroller.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F485F11413F8F7770001A913 /* uitagscontroller.cpp */; };
+		F4F9544816510F40006EE1D1 /* uitemplatecontroller.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4CA76C913F27E6600BB1842 /* uitemplatecontroller.cpp */; };
+		F4F9544916510F40006EE1D1 /* uitemplatesettingscontroller.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4D23BB31405466900A5F888 /* uitemplatesettingscontroller.cpp */; };
+		F4F9544A16510F40006EE1D1 /* uiundomanager.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F453B21E13F123700067C1C2 /* uiundomanager.cpp */; };
+		F4F9544B16510F40006EE1D1 /* uiviewcreatecontroller.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F48BCB4513F569880010DCC1 /* uiviewcreatecontroller.cpp */; };
+		F4F9544C16510F40006EE1D1 /* cstream.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4E3901913080ECC00615042 /* cstream.cpp */; };
+		F4F9544D16510F40006EE1D1 /* uidescription.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4E3902113080ECC00615042 /* uidescription.cpp */; };
+		F4F9544E16510F40006EE1D1 /* uiviewcreator.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4E3902D13080ECC00615042 /* uiviewcreator.cpp */; };
+		F4F9544F16510F40006EE1D1 /* uiviewfactory.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4E3902F13080ECC00615042 /* uiviewfactory.cpp */; };
+		F4F9545016510F40006EE1D1 /* uiviewswitchcontainer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4E3903513080ECC00615042 /* uiviewswitchcontainer.cpp */; };
 		F4FB92B113FBEC8F007D72DE /* uibitmapscontroller.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4FB92B013FBEC8F007D72DE /* uibitmapscontroller.cpp */; };
 		F4FC1AA11328C8C40066E2F8 /* macstring.mm in Sources */ = {isa = PBXBuildFile; fileRef = F4FC1A9F1328C8C40066E2F8 /* macstring.mm */; };
 		F4FC1AA51328CB320066E2F8 /* cstring.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4FC1AA31328CB310066E2F8 /* cstring.cpp */; };
@@ -287,6 +374,7 @@
 		F4E3906013081BCD00615042 /* doxygen */ = {isa = PBXFileReference; lastKnownFileType = folder; name = doxygen; path = ../../doxygen; sourceTree = "<group>"; };
 		F4F52DFD13E2B36500B3DB2F /* crowcolumnview.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = crowcolumnview.cpp; sourceTree = "<group>"; };
 		F4F52DFE13E2B36500B3DB2F /* crowcolumnview.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = crowcolumnview.h; sourceTree = "<group>"; };
+		F4F953F616510E61006EE1D1 /* libvstgui c++11.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libvstgui c++11.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		F4FB92AC13FBD12F007D72DE /* uibasedatasource.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = uibasedatasource.h; sourceTree = "<group>"; };
 		F4FB92AE13FBEC89007D72DE /* uibitmapscontroller.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = uibitmapscontroller.h; sourceTree = "<group>"; };
 		F4FB92B013FBEC8F007D72DE /* uibitmapscontroller.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = uibitmapscontroller.cpp; sourceTree = "<group>"; };
@@ -299,6 +387,13 @@
 
 /* Begin PBXFrameworksBuildPhase section */
 		F497F0AA1308094300F0A613 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		F4F953F316510E61006EE1D1 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -373,6 +468,7 @@
 			isa = PBXGroup;
 			children = (
 				F497F0AD1308094300F0A613 /* libvstgui.a */,
+				F4F953F616510E61006EE1D1 /* libvstgui c++11.a */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -603,6 +699,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		F4F953F416510E61006EE1D1 /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXHeadersBuildPhase section */
 
 /* Begin PBXNativeTarget section */
@@ -621,6 +724,23 @@
 			name = vstgui;
 			productName = vstgui;
 			productReference = F497F0AD1308094300F0A613 /* libvstgui.a */;
+			productType = "com.apple.product-type.library.static";
+		};
+		F4F953F516510E61006EE1D1 /* vstgui c++11 */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = F4F953F916510E61006EE1D1 /* Build configuration list for PBXNativeTarget "vstgui c++11" */;
+			buildPhases = (
+				F4F953F216510E61006EE1D1 /* Sources */,
+				F4F953F316510E61006EE1D1 /* Frameworks */,
+				F4F953F416510E61006EE1D1 /* Headers */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = "vstgui c++11";
+			productName = "vstgui c++11";
+			productReference = F4F953F616510E61006EE1D1 /* libvstgui c++11.a */;
 			productType = "com.apple.product-type.library.static";
 		};
 /* End PBXNativeTarget section */
@@ -645,6 +765,7 @@
 			projectRoot = "";
 			targets = (
 				F497F0AC1308094300F0A613 /* vstgui */,
+				F4F953F516510E61006EE1D1 /* vstgui c++11 */,
 			);
 		};
 /* End PBXProject section */
@@ -745,6 +866,100 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		F4F953F216510E61006EE1D1 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				F4F953FA16510F40006EE1D1 /* animations.cpp in Sources */,
+				F4F953FB16510F40006EE1D1 /* animator.cpp in Sources */,
+				F4F953FC16510F40006EE1D1 /* timingfunctions.cpp in Sources */,
+				F4F953FD16510F40006EE1D1 /* cautoanimation.cpp in Sources */,
+				F4F953FE16510F40006EE1D1 /* cbuttons.cpp in Sources */,
+				F4F953FF16510F40006EE1D1 /* ccolorchooser.cpp in Sources */,
+				F4F9540016510F40006EE1D1 /* ccontrol.cpp in Sources */,
+				F4F9540116510F40006EE1D1 /* cfontchooser.cpp in Sources */,
+				F4F9540216510F40006EE1D1 /* cknob.cpp in Sources */,
+				F4F9540316510F40006EE1D1 /* cmoviebitmap.cpp in Sources */,
+				F4F9540416510F40006EE1D1 /* cmoviebutton.cpp in Sources */,
+				F4F9540516510F40006EE1D1 /* coptionmenu.cpp in Sources */,
+				F4F9540616510F40006EE1D1 /* cparamdisplay.cpp in Sources */,
+				F4F9540716510F40006EE1D1 /* cslider.cpp in Sources */,
+				F4F9540816510F40006EE1D1 /* cspecialdigit.cpp in Sources */,
+				F4F9540916510F40006EE1D1 /* csplashscreen.cpp in Sources */,
+				F4F9540A16510F40006EE1D1 /* cswitch.cpp in Sources */,
+				F4F9540B16510F40006EE1D1 /* ctextedit.cpp in Sources */,
+				F4F9540C16510F40006EE1D1 /* ctextlabel.cpp in Sources */,
+				F4F9540D16510F40006EE1D1 /* cvumeter.cpp in Sources */,
+				F4F9540E16510F40006EE1D1 /* hiviewframe.cpp in Sources */,
+				F4F9540F16510F40006EE1D1 /* hiviewoptionmenu.cpp in Sources */,
+				F4F9541016510F40006EE1D1 /* hiviewtextedit.cpp in Sources */,
+				F4F9541116510F40006EE1D1 /* autoreleasepool.mm in Sources */,
+				F4F9541216510F40006EE1D1 /* cocoadragcontainer.mm in Sources */,
+				F4F9541316510F40006EE1D1 /* cocoahelpers.mm in Sources */,
+				F4F9541416510F40006EE1D1 /* cocoatextedit.mm in Sources */,
+				F4F9541516510F40006EE1D1 /* cocoaopenglview.mm in Sources */,
+				F4F9541616510F40006EE1D1 /* nsviewframe.mm in Sources */,
+				F4F9541716510F40006EE1D1 /* nsviewoptionmenu.mm in Sources */,
+				F4F9541816510F40006EE1D1 /* cfontmac.mm in Sources */,
+				F4F9541916510F40006EE1D1 /* cgbitmap.cpp in Sources */,
+				F4F9541A16510F40006EE1D1 /* cgdrawcontext.cpp in Sources */,
+				F4F9541B16510F40006EE1D1 /* macclipboard.mm in Sources */,
+				F4F9541C16510F40006EE1D1 /* macfileselector.mm in Sources */,
+				F4F9541D16510F40006EE1D1 /* macglobals.cpp in Sources */,
+				F4F9541E16510F40006EE1D1 /* macstring.mm in Sources */,
+				F4F9541F16510F40006EE1D1 /* quartzgraphicspath.cpp in Sources */,
+				F4F9542016510F40006EE1D1 /* cbitmap.cpp in Sources */,
+				F4F9542116510F40006EE1D1 /* cbitmapfilter.cpp in Sources */,
+				F4F9542216510F40006EE1D1 /* ccolor.cpp in Sources */,
+				F4F9542316510F40006EE1D1 /* cdatabrowser.cpp in Sources */,
+				F4F9542416510F40006EE1D1 /* cdrawcontext.cpp in Sources */,
+				F4F9542516510F40006EE1D1 /* cdropsource.cpp in Sources */,
+				F4F9542616510F40006EE1D1 /* cfileselector.cpp in Sources */,
+				F4F9542716510F40006EE1D1 /* cfont.cpp in Sources */,
+				F4F9542816510F40006EE1D1 /* cframe.cpp in Sources */,
+				F4F9542916510F40006EE1D1 /* cgraphicspath.cpp in Sources */,
+				F4F9542A16510F40006EE1D1 /* coffscreencontext.cpp in Sources */,
+				F4F9542B16510F40006EE1D1 /* copenglview.cpp in Sources */,
+				F4F9542C16510F40006EE1D1 /* cpoint.cpp in Sources */,
+				F4F9542D16510F40006EE1D1 /* crect.cpp in Sources */,
+				F4F9542E16510F40006EE1D1 /* crowcolumnview.cpp in Sources */,
+				F4F9542F16510F40006EE1D1 /* cscrollview.cpp in Sources */,
+				F4F9543016510F40006EE1D1 /* cshadowviewcontainer.cpp in Sources */,
+				F4F9543116510F40006EE1D1 /* csplitview.cpp in Sources */,
+				F4F9543216510F40006EE1D1 /* cstring.cpp in Sources */,
+				F4F9543316510F40006EE1D1 /* ctabview.cpp in Sources */,
+				F4F9543416510F40006EE1D1 /* ctooltipsupport.cpp in Sources */,
+				F4F9543516510F40006EE1D1 /* cview.cpp in Sources */,
+				F4F9543616510F40006EE1D1 /* cviewcontainer.cpp in Sources */,
+				F4F9543716510F40006EE1D1 /* cvstguitimer.cpp in Sources */,
+				F4F9543816510F40006EE1D1 /* vstguidebug.cpp in Sources */,
+				F4F9543916510F40006EE1D1 /* uiactions.cpp in Sources */,
+				F4F9543A16510F40006EE1D1 /* uiattributescontroller.cpp in Sources */,
+				F4F9543B16510F40006EE1D1 /* uibitmapscontroller.cpp in Sources */,
+				F4F9543C16510F40006EE1D1 /* uicolorscontroller.cpp in Sources */,
+				F4F9543D16510F40006EE1D1 /* uicrosslines.cpp in Sources */,
+				F4F9543E16510F40006EE1D1 /* uidialogcontroller.cpp in Sources */,
+				F4F9543F16510F40006EE1D1 /* uieditcontroller.cpp in Sources */,
+				F4F9544016510F40006EE1D1 /* uieditmenucontroller.cpp in Sources */,
+				F4F9544116510F40006EE1D1 /* uieditview.cpp in Sources */,
+				F4F9544216510F40006EE1D1 /* uifocussettingscontroller.cpp in Sources */,
+				F4F9544316510F40006EE1D1 /* uifontscontroller.cpp in Sources */,
+				F4F9544416510F40006EE1D1 /* uigridcontroller.cpp in Sources */,
+				F4F9544516510F40006EE1D1 /* uisearchtextfield.cpp in Sources */,
+				F4F9544616510F40006EE1D1 /* uiselection.cpp in Sources */,
+				F4F9544716510F40006EE1D1 /* uitagscontroller.cpp in Sources */,
+				F4F9544816510F40006EE1D1 /* uitemplatecontroller.cpp in Sources */,
+				F4F9544916510F40006EE1D1 /* uitemplatesettingscontroller.cpp in Sources */,
+				F4F9544A16510F40006EE1D1 /* uiundomanager.cpp in Sources */,
+				F4F9544B16510F40006EE1D1 /* uiviewcreatecontroller.cpp in Sources */,
+				F4F9544C16510F40006EE1D1 /* cstream.cpp in Sources */,
+				F4F9544D16510F40006EE1D1 /* uidescription.cpp in Sources */,
+				F4F9544E16510F40006EE1D1 /* uiviewcreator.cpp in Sources */,
+				F4F9544F16510F40006EE1D1 /* uiviewfactory.cpp in Sources */,
+				F4F9545016510F40006EE1D1 /* uiviewswitchcontainer.cpp in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin XCBuildConfiguration section */
@@ -772,7 +987,6 @@
 				MACOSX_DEPLOYMENT_TARGET = 10.5;
 				ONLY_ACTIVE_ARCH = YES;
 				OTHER_CPLUSPLUSFLAGS = "$(OTHER_CFLAGS)";
-				SDKROOT = "";
 				SHARED_PRECOMPS_DIR = "$(PROJECT_TEMP_DIR)/$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)/SharedPrecompiledHeaders";
 			};
 			name = Debug;
@@ -796,7 +1010,6 @@
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				MACOSX_DEPLOYMENT_TARGET = 10.5;
 				OTHER_CPLUSPLUSFLAGS = "$(OTHER_CFLAGS)";
-				SDKROOT = "";
 				SHARED_PRECOMPS_DIR = "$(PROJECT_TEMP_DIR)/$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)/SharedPrecompiledHeaders";
 			};
 			name = Release;
@@ -816,6 +1029,42 @@
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				EXECUTABLE_PREFIX = lib;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Release;
+		};
+		F4F953F716510E61006EE1D1 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_CXX_LANGUAGE_STANDARD = "c++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				EXECUTABLE_PREFIX = lib;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.7;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Debug;
+		};
+		F4F953F816510E61006EE1D1 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_CXX_LANGUAGE_STANDARD = "c++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				EXECUTABLE_PREFIX = lib;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.7;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Release;
@@ -840,6 +1089,14 @@
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
+		};
+		F4F953F916510E61006EE1D1 /* Build configuration list for PBXNativeTarget "vstgui c++11" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				F4F953F716510E61006EE1D1 /* Debug */,
+				F4F953F816510E61006EE1D1 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
 		};
 /* End XCConfigurationList section */
 	};

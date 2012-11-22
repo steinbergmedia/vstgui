@@ -143,15 +143,15 @@ protected:
 };
 
 //-----------------------------------------------------------------------------
-class CMenuItemList : public std::list<CMenuItem*>
+class CMenuItemList : public std::list<OwningPointer<CMenuItem> >
 {
 public:
 	CMenuItemList () {}
-	CMenuItemList (const CMenuItemList& inList) : std::list<CMenuItem*> (inList) {}
+	CMenuItemList (const CMenuItemList& inList) : std::list<OwningPointer<CMenuItem> > (inList) {}
 };
 
-typedef std::list<CMenuItem*>::iterator CMenuItemIterator;
-typedef std::list<CMenuItem*>::const_iterator CConstMenuItemIterator;
+typedef std::list<OwningPointer<CMenuItem> >::iterator CMenuItemIterator;
+typedef std::list<OwningPointer<CMenuItem> >::const_iterator CConstMenuItemIterator;
 
 
 //-----------------------------------------------------------------------------

@@ -48,24 +48,31 @@ namespace VSTGUI {
 class CFileExtension : public CBaseObject
 {
 public:
-	CFileExtension (UTF8StringPtr description, UTF8StringPtr extension, UTF8StringPtr mimeType = 0, int32_t macType = 0);
+	CFileExtension (UTF8StringPtr description, UTF8StringPtr extension, UTF8StringPtr mimeType = 0, int32_t macType = 0, UTF8StringPtr uti = 0);
 	CFileExtension (const CFileExtension& ext);
 	~CFileExtension ();
 
 	UTF8StringPtr getDescription () const { return description; }
 	UTF8StringPtr getExtension () const { return extension; }
 	UTF8StringPtr getMimeType () const { return mimeType; }
+	UTF8StringPtr getUTI () const { return uti; }
 	int32_t getMacType () const { return macType; }
 
 	bool operator== (const CFileExtension& ext) const;
 //-----------------------------------------------------------------------------
 	CLASS_METHODS(CFileExtension, CBaseObject)
+//-----------------------------------------------------------------------------
+#if VSTGUI_RVALUE_REF_SUPPORT
+	CFileExtension (CFileExtension&& ext);
+	CFileExtension& operator=(CFileExtension&& ext);
+#endif
 protected:
-	void init (UTF8StringPtr description, UTF8StringPtr extension, UTF8StringPtr mimeType);
+	void init (UTF8StringPtr description, UTF8StringPtr extension, UTF8StringPtr mimeType, UTF8StringPtr uti);
 	
 	UTF8StringBuffer description;
 	UTF8StringBuffer extension;
 	UTF8StringBuffer mimeType;
+	UTF8StringBuffer uti;
 	int32_t macType;
 };
 
@@ -131,19 +138,22 @@ public:
 	/// @name CFileSelector setup
 	//-----------------------------------------------------------------------------
 	//@{
-	void setTitle (UTF8StringPtr title);							///< set title of file selector
+	void setTitle (UTF8StringPtr title);						///< set title of file selector
 	void setInitialDirectory (UTF8StringPtr path);				///< set initial directory (UTF8 string)
-	void setDefaultSaveName (UTF8StringPtr name);					///< set initial save name (UTF8 string)
+	void setDefaultSaveName (UTF8StringPtr name);				///< set initial save name (UTF8 string)
 	void setDefaultExtension (const CFileExtension& extension);	///< set default file extension
 	void setAllowMultiFileSelection (bool state);				///< set allow multi file selection (only valid for kSelectFile selector style)
 	void addFileExtension (const CFileExtension& extension);	///< add a file extension
+#if VSTGUI_RVALUE_REF_SUPPORT
+	void addFileExtension (CFileExtension&& extension);			///< add a file extension
+#endif
 	//@}
 
 	//-----------------------------------------------------------------------------
 	/// @name CFileSelector result
 	//-----------------------------------------------------------------------------
 	//@{
-	int32_t getNumSelectedFiles () const;							///< get number of selected files
+	int32_t getNumSelectedFiles () const;						///< get number of selected files
 	UTF8StringPtr getSelectedFile (uint32_t index) const;		///< get selected file. Result is only valid as long as the instance of CNewFileSelector is valid.
 	//@}
 

@@ -101,7 +101,7 @@ HIDDEN inline NSRect nsRectFromCRect (const VSTGUI::CRect& rect)
 //------------------------------------------------------------------------------------
 HIDDEN inline NSPoint nsPointFromCPoint (const VSTGUI::CPoint& point)
 {
-	NSPoint p = { point.x, point.y };
+	NSPoint p = { static_cast<CGFloat>(point.x), static_cast<CGFloat>(point.y) };
 	return p;
 }
 

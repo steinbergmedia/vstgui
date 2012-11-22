@@ -650,7 +650,7 @@ bool HIViewFrame::invalidRect (const CRect& rect)
 {
 	if (isWindowComposited (window))
 	{
-		HIRect r = { {rect.left, rect.top}, {rect.getWidth (), rect.getHeight ()} };
+		HIRect r = { {static_cast<CGFloat>(rect.left), static_cast<CGFloat>(rect.top)}, {static_cast<CGFloat>(rect.getWidth ()), static_cast<CGFloat>(rect.getHeight ())} };
 		HIViewSetNeedsDisplayInRect (controlRef, &r, true);
 	}
 	else
@@ -822,7 +822,7 @@ CView::DragResult HIViewFrame::doDrag (IDataPackage* source, const CPoint& offse
 				CGImageRef cgImage = cgBitmap ? cgBitmap->getCGImage () : 0;
 				if (cgImage)
 				{
-					HIPoint imageOffset = { offset.x, offset.y };
+					HIPoint imageOffset = { static_cast<CGFloat>(offset.x), static_cast<CGFloat>(offset.y) };
 					SetDragImageWithCGImage (drag, cgImage, &imageOffset, 0);
 				}
 
