@@ -85,11 +85,11 @@ public:
 	virtual void invalidRect (const CRect& rect) = 0;
 	virtual void viewSizeChanged (const CRect& visibleSize) = 0; ///< visibleSize is cframe relative
 
-	virtual bool makeContextCurrent () = 0;
-	virtual bool lockContext () = 0;
-	virtual bool unlockContext () = 0;
+	virtual bool makeContextCurrent () = 0;	///< make OpenGL context active
+	virtual bool lockContext () = 0;		///< lock changes to context
+	virtual bool unlockContext () = 0;		///< unlock changes to context
 
-	virtual void swapBuffers () = 0;
+	virtual void swapBuffers () = 0;		///< swap buffers and clear active OpenGL context
 };
 
 } // namespace

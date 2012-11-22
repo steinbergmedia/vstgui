@@ -490,6 +490,7 @@ void CCheckBox::draw (CDrawContext* context)
 		checkBoxSize.setHeight (getFontCapHeight (font) + 2);
 		checkBoxSize.setWidth (checkBoxSize.getHeight ());
 		checkBoxSize.offset (1, ceil ((getViewSize ().getHeight () - checkBoxSize.getHeight ()) / 2));
+		checkBoxSize.makeIntegral ();
 		context->setLineWidth (1);
 		context->setLineStyle (kLineSolid);
 		context->setDrawMode (kAliasing);

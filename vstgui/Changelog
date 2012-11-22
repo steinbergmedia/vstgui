@@ -1,3 +1,19 @@
+2012-11-22 arne
+
+	* fix issues when compiling in c++11 mode
+	* implement page up/down key handling in CDataBrowser
+	* change scrollbar look to use round borders
+	* mouse wheel messages are now only dispatched to mouse enabled views
+	* make sure CTextLabel does not handle the mouse wheel message
+	* small optimization for drawing strings on Mac
+	* fix issue that the OpenGL view does not draw on Windows when used on another thread than the main thread
+	* fix issue where the VST3Editor does not update the option menu when bound to a vst 3 parameter
+	* implement binding a vst 3 parameter to a CTextLabel in VST3Editor
+	* replace custom linked list for child views in CViewContainer by a std::list
+	* add UTI to CFileExtension
+	* fix CCheckBox drawing on Windows when coordinates are not rounded to whole integers
+	* fix tooltip timer not stopped when tooltip window was hidden on Cocoa
+
 2012-05-17 arne
 
 	* add compatibility to compile VSTGUI with Xcode 4.x and Mac OS X SDK 10.7

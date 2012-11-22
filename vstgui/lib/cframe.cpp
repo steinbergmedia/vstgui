@@ -600,12 +600,8 @@ bool CFrame::onWheel (const CPoint &where, const CMouseWheelAxis &axis, const fl
 
 	if (mouseDownView == 0)
 	{
-		CView* view = getViewAt (where);
-		if (view)
-		{
-			result = view->onWheel (where, axis, distance, buttons);
-			checkMouseViews (where, buttons);
-		}
+		result = CViewContainer::onWheel (where, axis, distance, buttons);
+		checkMouseViews (where, buttons);
 	}
 	return result;
 }

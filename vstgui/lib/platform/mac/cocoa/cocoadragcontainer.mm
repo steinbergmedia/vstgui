@@ -145,7 +145,7 @@ void* CocoaDragContainer::next (int32_t& size, int32_t& type)
 			int32_t green = [nsColor greenComponent] * 255.;
 			int32_t blue = [nsColor blueComponent] * 255.;
 			int32_t alpha = [nsColor alphaComponent] * 255.;
-			char* data = (char*)malloc (9 * sizeof (int8_t));
+			char* data = (char*)malloc (9 * sizeof (char));
 			sprintf (data, "#%x%x%x%x", red, green, blue, alpha);
 			size = (int32_t)strlen (data);
 			type = CDragContainer::kUnicodeText;

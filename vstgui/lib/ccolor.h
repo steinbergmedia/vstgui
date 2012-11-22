@@ -123,7 +123,7 @@ struct CColor
 	 * @param saturation normalized [0..1]
 	 * @param lightness normalized [0..1]
 	 */
-	void fromHSL (double& hue, double& saturation, double& lightness);
+	void fromHSL (double hue, double saturation, double lightness);
 	
 	/** get the luma of the color */
 	uint8_t getLuma () const { return (uint8_t)((float)red * 0.3f + (float)green * 0.59f + (float)blue * 0.11f); }

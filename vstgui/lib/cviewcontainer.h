@@ -144,71 +144,69 @@ public:
 	virtual void dumpHierarchy ();
 	#endif
 
-protected:
-	/// @cond ignore
 	//-----------------------------------------------------------------------------
-	// CCView Declaration
-	//-----------------------------------------------------------------------------
-	class CCView
-	{
-	public:
-		CCView (CView* pView);
-		~CCView ();
-		
-		CView    *pView;
-		CCView   *pNext;
-		CCView   *pPrevious;
-	};
-	/// @endcond
-public:
+	typedef std::list<SharedPointer<CView> >::const_iterator CViewConstIterator;
+	typedef std::list<SharedPointer<CView> >::const_reverse_iterator CViewConstReverseIterator;
 
 	//-----------------------------------------------------------------------------
 	template<bool reverse>
 	class Iterator
 	{
 	public:
-		Iterator<reverse> (CViewContainer* container) : current (reverse ? container->pLastView : container->pFirstView) {}
-		Iterator<reverse> (const Iterator& vi) : current (vi.current) {}
+		Iterator<reverse> (const CViewContainer* container) : children (container->children) { if (reverse) riterator = children.rbegin (); else iterator = children.begin (); }
+		Iterator<reverse> (const Iterator& vi) : children (vi.children), iterator (vi.iterator), riterator (vi.riterator) {}
 		
 		Iterator<reverse>& operator++ ()
 		{
-			if (current)
-				current = reverse ? current->pPrevious : current->pNext;
+			if (reverse)
+				riterator++;
+			else
+				iterator++;
 			return *this;
 		}
 		
 		Iterator<reverse> operator++ (int)
 		{
 			Iterator<reverse> old (*this);
-			if (current)
-				current = reverse ? current->pPrevious : current->pNext;
+			if (reverse)
+				riterator++;
+			else
+				iterator++;
 			return old;
 		}
 		
 		Iterator<reverse>& operator-- ()
 		{
-			if (current)
-				current = reverse ? current->pNext : current->pPrevious;
+			if (reverse)
+				riterator--;
+			else
+				iterator--;
 			return *this;
 		}
 		
 		Iterator<reverse> operator-- (int)
 		{
 			Iterator<reverse> old (*this);
-			if (current)
-				current = reverse ? current->pNext : current->pPrevious;
+			if (reverse)
+				riterator--;
+			else
+				iterator--;
 			return old;
 		}
 		
 		CView* operator* () const
 		{
-			return current ? current->pView : 0;
+			if (reverse)
+				return riterator != children.rend () ? *riterator : 0;
+			return iterator != children.end () ? *iterator : 0;
 		}
 		
 	protected:
-		CCView* current;
+		const std::list<SharedPointer<CView> >& children;
+		CViewConstIterator iterator;
+		CViewConstReverseIterator riterator;
 	};
-	
+
 	//-------------------------------------------
 protected:
 	~CViewContainer ();
@@ -221,8 +219,7 @@ protected:
 	};
 
 	/// @cond ignore
-	CCView  *pFirstView;
-	CCView  *pLastView;
+	std::list<SharedPointer<CView> > children;
 	/// @endcond
 
 	CDrawStyle backgroundColorDrawStyle;
@@ -236,15 +233,11 @@ protected:
 
 /// @cond ignore
 #ifndef FOREACHSUBVIEW
-	#define FOREACHSUBVIEW for (CCView* pSv = pFirstView; pSv; pSv = pSv->pNext) {CView* pV = pSv->pView;
-#endif
-#ifndef FOREACHSUBVIEW_REVERSE
-	#define FOREACHSUBVIEW_REVERSE(reverse) for (CCView* pSv = reverse ? pLastView : pFirstView; pSv; pSv = reverse ? pSv->pPrevious : pSv->pNext) {CView* pV = pSv->pView;
+	#define FOREACHSUBVIEW CViewConstIterator it = children.begin (); while (it != children.end ()) { CView* pV = (*it); it++; {
 #endif
 #ifndef ENDFOREACHSUBVIEW
-	#define ENDFOREACHSUBVIEW }
+	#define ENDFOREACHSUBVIEW } }
 #endif
-
 /// @endcond
 
 typedef CViewContainer::Iterator<false> ViewIterator;

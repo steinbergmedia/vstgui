@@ -194,7 +194,9 @@ bool CocoaFileSelector::runInternal (CBaseObject* _delegate)
 		while (it != extensions.end ())
 		{
 			NSString* uti = 0;
-			if ((*it).getMimeType ())
+			if ((*it).getUTI ())
+				uti = [[NSString stringWithCString: (*it).getUTI () encoding:NSUTF8StringEncoding] retain];
+			if (uti == 0 && (*it).getMimeType ())
 				uti = (NSString*)UTTypeCreatePreferredIdentifierForTag (kUTTagClassMIMEType, (CFStringRef)[NSString stringWithCString: (*it).getMimeType () encoding:NSUTF8StringEncoding], kUTTypeData);
 			if (uti == 0 && (*it).getMacType ())
 			{

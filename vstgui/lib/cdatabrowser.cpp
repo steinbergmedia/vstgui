@@ -711,13 +711,21 @@ void CDataBrowserView::drawRect (CDrawContext* context, const CRect& updateRect)
 		context->setLineWidth (lineWidth);
 		context->setLineStyle (kLineSolid);
 		context->setFrameColor (lineColor);
+		CPoint* points = new CPoint [numRows*2];
+		uint32_t numPoints = 0;
 		CRect rr (getViewSize ().left, getViewSize ().top, getViewSize ().right, getViewSize ().top + rowHeight);
 		for (int32_t row = 0; row < numRows; row++)
 		{
-			context->moveTo (CPoint (rr.left, rr.bottom));
-			context->lineTo (CPoint (rr.right, rr.bottom));
+			if (rr.rectOverlap(updateRect))
+			{
+				points[numPoints*2] = CPoint (rr.left, rr.bottom);
+				points[numPoints*2+1] = CPoint (rr.right, rr.bottom);
+				numPoints++;
+			}
 			rr.offset (0, rowHeight);
 		}
+		context->drawLines (points, numPoints);
+		delete [] points;
 	}
 	setDirty (false);
 }
@@ -889,18 +897,28 @@ int32_t CDataBrowserView::onKeyDown (VstKeyCode& keyCode)
 	int32_t res = db->dbOnKeyDown (keyCode, browser);
 	if (res != -1)
 		return res;
-	if (keyCode.virt == VKEY_UP || keyCode.virt == VKEY_DOWN)
+	if (keyCode.virt == VKEY_UP || keyCode.virt == VKEY_DOWN || keyCode.virt == VKEY_PAGEUP || keyCode.virt == VKEY_PAGEDOWN)
 	{
 		int32_t numRows = db->dbGetNumRows (browser);
 		int32_t selRow = browser->getSelectedRow ();
-		if ((selRow > 0 && keyCode.virt == VKEY_UP) || (selRow < numRows-1 && keyCode.virt == VKEY_DOWN))
+		int32_t changeRow;
+		if (keyCode.virt == VKEY_UP)
+			changeRow = -1;
+		else if (keyCode.virt == VKEY_DOWN)
+			changeRow = 1;
+		else if (keyCode.virt == VKEY_PAGEUP)
+			changeRow = (int32_t) (-browser->getHeight () / db->dbGetRowHeight (browser));
+		else if (keyCode.virt == VKEY_PAGEDOWN)
+			changeRow = (int32_t) (browser->getHeight () / db->dbGetRowHeight (browser));
+		int32_t newSelRow = selRow + changeRow;
+		newSelRow = std::min<int32_t> (newSelRow, numRows);
+		newSelRow = std::max<int32_t> (newSelRow, 0);
+		if (newSelRow != selRow)
 		{
 			invalidateRow (selRow);
-			selRow += keyCode.virt == VKEY_UP ? -1 : 1;
-			invalidateRow (selRow);
-			browser->setSelectedRow (selRow, true);
-			CRect rect = getRowBounds (selRow);
-			
+			invalidateRow (newSelRow);
+			browser->setSelectedRow (newSelRow, true);
+			CRect rect = getRowBounds (newSelRow);
 			browser->makeRectVisible (rect);
 		}
 		return 1;

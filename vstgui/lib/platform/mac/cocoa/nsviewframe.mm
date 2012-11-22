@@ -1013,7 +1013,7 @@ CView::DragResult NSViewFrame::doDrag (IDataPackage* source, const CPoint& offse
 	CGImageRef cgImage = cgBitmap ? cgBitmap->getCGImage () : 0;
 	if (nsView)
 	{
-		NSPoint bitmapOffset = { offset.x, offset.y };
+		NSPoint bitmapOffset = { static_cast<CGFloat>(offset.x), static_cast<CGFloat>(offset.y) };
 		NSPasteboard* nsPasteboard = [NSPasteboard pasteboardWithName:NSDragPboard];
 		NSImage* nsImage = nil;
 		NSEvent* event = [NSApp currentEvent];
@@ -1206,7 +1206,7 @@ void CocoaTooltipWindow::hide ()
 {
 	if (timer == 0)
 	{
-		timer = new CVSTGUITimer (this, 10);
+		timer = new CVSTGUITimer (this, 17);
 		timer->start ();
 		notify (timer, CVSTGUITimer::kMsgTimer);
 	}
@@ -1221,6 +1221,8 @@ CMessageResult CocoaTooltipWindow::notify (CBaseObject* sender, IdStringPtr mess
 		if (newAlpha <= 0)
 		{
 			[window orderOut:nil];
+			timer->forget ();
+			timer = 0;
 		}
 		else
 			[window setAlphaValue:newAlpha];
