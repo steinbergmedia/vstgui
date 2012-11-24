@@ -282,7 +282,7 @@ PlatformOptionMenuResult NSViewOptionMenu::popup (COptionMenu* optionMenu)
 	NSMenu* nsMenu = [[menuClass alloc] initWithOptionMenu:(id)optionMenu];
 	CPoint p (optionMenu->getViewSize ().left, optionMenu->getViewSize ().top);
 	optionMenu->localToFrame (p);
-	NSRect cellFrameRect = {0};
+	NSRect cellFrameRect = {{0}};
 	cellFrameRect.origin = nsPointFromCPoint (p);
 	cellFrameRect.size.width = optionMenu->getViewSize ().getWidth ();
 	cellFrameRect.size.height = optionMenu->getViewSize ().getHeight ();

@@ -98,21 +98,21 @@ public:
 	//@}
 
 	// overrides
-	virtual void draw (CDrawContext*);
+	virtual void draw (CDrawContext*) VSTGUI_OVERRIDE_VMETHOD;
 
-	virtual CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons);
-	virtual CMouseEventResult onMouseUp (CPoint& where, const CButtonState& buttons);
-	virtual CMouseEventResult onMouseMoved (CPoint& where, const CButtonState& buttons);
+	virtual CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons) VSTGUI_OVERRIDE_VMETHOD;
+	virtual CMouseEventResult onMouseUp (CPoint& where, const CButtonState& buttons) VSTGUI_OVERRIDE_VMETHOD;
+	virtual CMouseEventResult onMouseMoved (CPoint& where, const CButtonState& buttons) VSTGUI_OVERRIDE_VMETHOD;
 
-	virtual bool onWheel (const CPoint& where, const float& distance, const CButtonState& buttons);
-	virtual int32_t onKeyDown (VstKeyCode& keyCode);
+	virtual bool onWheel (const CPoint& where, const float& distance, const CButtonState& buttons) VSTGUI_OVERRIDE_VMETHOD;
+	virtual int32_t onKeyDown (VstKeyCode& keyCode) VSTGUI_OVERRIDE_VMETHOD;
 
-	virtual bool sizeToFit ();
+	virtual bool sizeToFit () VSTGUI_OVERRIDE_VMETHOD;
 
 	CLASS_METHODS(CSlider, CControl)
 protected:
 	~CSlider ();
-	void setViewSize (const CRect& rect, bool invalid);
+	void setViewSize (const CRect& rect, bool invalid) VSTGUI_OVERRIDE_VMETHOD;
 	
 	CPoint   offset; 
 	CPoint   offsetHandle;

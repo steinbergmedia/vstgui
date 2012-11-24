@@ -50,7 +50,7 @@ public:
 	CSpecialDigit (const CRect& size, CControlListener* listener, int32_t tag, int32_t dwPos, int32_t iNumbers, int32_t* xpos, int32_t* ypos, int32_t width, int32_t height, CBitmap* background);
 	CSpecialDigit (const CSpecialDigit& digit);
 	
-	virtual void  draw (CDrawContext*);
+	virtual void  draw (CDrawContext*) VSTGUI_OVERRIDE_VMETHOD;
 
 	CLASS_METHODS(CSpecialDigit, CControl)
 protected:

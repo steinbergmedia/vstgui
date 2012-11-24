@@ -97,8 +97,8 @@ public:
 	uint8_t getPrecision () const { return valuePrecision; }
 	//@}
 
-	virtual void draw (CDrawContext* pContext);
-	bool getFocusPath (CGraphicsPath& outPath);
+	virtual void draw (CDrawContext* pContext) VSTGUI_OVERRIDE_VMETHOD;
+	bool getFocusPath (CGraphicsPath& outPath) VSTGUI_OVERRIDE_VMETHOD;
 
 	CLASS_METHODS(CParamDisplay, CControl)
 protected:

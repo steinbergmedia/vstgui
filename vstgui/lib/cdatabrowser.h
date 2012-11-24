@@ -164,17 +164,17 @@ public:
 	IDataBrowser* getDataSource () const { return db; }										///< get data source object
 	//@}
 
-	void setAutosizeFlags (int32_t flags);
-	void setViewSize (const CRect& size, bool invalid);
+	void setAutosizeFlags (int32_t flags) VSTGUI_OVERRIDE_VMETHOD;
+	void setViewSize (const CRect& size, bool invalid) VSTGUI_OVERRIDE_VMETHOD;
 
-	int32_t onKeyDown (VstKeyCode& keyCode);
-	CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons);
+	int32_t onKeyDown (VstKeyCode& keyCode) VSTGUI_OVERRIDE_VMETHOD;
+	CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons) VSTGUI_OVERRIDE_VMETHOD;
 protected:
 	~CDataBrowser ();
-	void valueChanged (CControl *pControl);
-	CMessageResult notify (CBaseObject* sender, IdStringPtr message);
-	bool attached (CView *parent);
-	bool removed (CView* parent);
+	void valueChanged (CControl *pControl) VSTGUI_OVERRIDE_VMETHOD;
+	CMessageResult notify (CBaseObject* sender, IdStringPtr message) VSTGUI_OVERRIDE_VMETHOD;
+	bool attached (CView *parent) VSTGUI_OVERRIDE_VMETHOD;
+	bool removed (CView* parent) VSTGUI_OVERRIDE_VMETHOD;
 
 	IDataBrowser* db;
 	CDataBrowserView* dbView;

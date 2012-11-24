@@ -103,17 +103,17 @@ public:
 	//@}
 
 	// overrides
-	virtual void draw (CDrawContext* pContext);
-	virtual bool onWheel (const CPoint& where, const float& distance, const CButtonState& buttons);
-	virtual int32_t onKeyDown (VstKeyCode& keyCode);
-	virtual void setViewSize (const CRect &rect, bool invalid = true);
-	virtual bool sizeToFit ();
-	virtual void setMin (float val);
-	virtual void setMax (float val);
+	virtual void draw (CDrawContext* pContext) VSTGUI_OVERRIDE_VMETHOD;
+	virtual bool onWheel (const CPoint& where, const float& distance, const CButtonState& buttons) VSTGUI_OVERRIDE_VMETHOD;
+	virtual int32_t onKeyDown (VstKeyCode& keyCode) VSTGUI_OVERRIDE_VMETHOD;
+	virtual void setViewSize (const CRect &rect, bool invalid = true) VSTGUI_OVERRIDE_VMETHOD;
+	virtual bool sizeToFit () VSTGUI_OVERRIDE_VMETHOD;
+	virtual void setMin (float val) VSTGUI_OVERRIDE_VMETHOD;
+	virtual void setMax (float val) VSTGUI_OVERRIDE_VMETHOD;
 
-	virtual CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons);
-	virtual CMouseEventResult onMouseUp (CPoint& where, const CButtonState& buttons);
-	virtual CMouseEventResult onMouseMoved (CPoint& where, const CButtonState& buttons);
+	virtual CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons) VSTGUI_OVERRIDE_VMETHOD;
+	virtual CMouseEventResult onMouseUp (CPoint& where, const CButtonState& buttons) VSTGUI_OVERRIDE_VMETHOD;
+	virtual CMouseEventResult onMouseMoved (CPoint& where, const CButtonState& buttons) VSTGUI_OVERRIDE_VMETHOD;
 
 	CLASS_METHODS(CKnob, CControl)
 protected:
@@ -165,11 +165,11 @@ public:
 	//@}
 
 	// overrides
-	virtual void draw (CDrawContext* pContext);
-	virtual bool sizeToFit ();
-	void setHeightOfOneImage (const CCoord& height);
-	void setBackground (CBitmap *background);
-	void setNumSubPixmaps (int32_t numSubPixmaps) { IMultiBitmapControl::setNumSubPixmaps (numSubPixmaps); invalid (); }
+	virtual void draw (CDrawContext* pContext) VSTGUI_OVERRIDE_VMETHOD;
+	virtual bool sizeToFit () VSTGUI_OVERRIDE_VMETHOD;
+	void setHeightOfOneImage (const CCoord& height) VSTGUI_OVERRIDE_VMETHOD;
+	void setBackground (CBitmap *background) VSTGUI_OVERRIDE_VMETHOD;
+	void setNumSubPixmaps (int32_t numSubPixmaps) VSTGUI_OVERRIDE_VMETHOD { IMultiBitmapControl::setNumSubPixmaps (numSubPixmaps); invalid (); }
 
 	CLASS_METHODS(CAnimKnob, CKnob)
 protected:

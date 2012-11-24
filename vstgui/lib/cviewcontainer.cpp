@@ -1075,7 +1075,7 @@ bool CViewContainer::isDirty () const
  * @param deep search deep
  * @return view at position p
  */
-CView* CViewContainer::getViewAt (const CPoint& p, bool deep) const
+CView* CViewContainer::getViewAt (const CPoint& p, bool deep, bool mustbeMouseEnabled) const
 {
 	CPoint where (p);
 
@@ -1088,7 +1088,12 @@ CView* CViewContainer::getViewAt (const CPoint& p, bool deep) const
 			if (deep)
 			{
 				if (dynamic_cast<CViewContainer*> (pV))
-					return reinterpret_cast<CViewContainer*> (pV)->getViewAt (where, deep);
+					return reinterpret_cast<CViewContainer*> (pV)->getViewAt (where, deep, mustbeMouseEnabled);
+			}
+			if (mustbeMouseEnabled)
+			{
+				if (pV->getMouseEnabled() == false)
+					continue;
 			}
 			return pV;
 		}
@@ -1104,7 +1109,7 @@ CView* CViewContainer::getViewAt (const CPoint& p, bool deep) const
  * @param deep search deep
  * @return success
  */
-bool CViewContainer::getViewsAt (const CPoint& p, std::list<CView*>& views, bool deep) const
+bool CViewContainer::getViewsAt (const CPoint& p, std::list<SharedPointer<CView> >& views, bool deep) const
 {
 	bool result = false;
 

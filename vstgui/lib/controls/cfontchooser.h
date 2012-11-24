@@ -102,10 +102,10 @@ public:
 	void setFont (CFontRef font);
 	
 protected:
-	void dbSelectionChanged (int32_t selectedRow, GenericStringListDataBrowserSource* source);
-	void valueChanged (CControl* pControl);
-	bool attached (CView* parent);
-	int32_t onKeyDown (VstKeyCode& keyCode);
+	void dbSelectionChanged (int32_t selectedRow, GenericStringListDataBrowserSource* source) VSTGUI_OVERRIDE_VMETHOD;
+	void valueChanged (CControl* pControl) VSTGUI_OVERRIDE_VMETHOD;
+	bool attached (CView* parent) VSTGUI_OVERRIDE_VMETHOD;
+	int32_t onKeyDown (VstKeyCode& keyCode) VSTGUI_OVERRIDE_VMETHOD;
 
 	IFontChooserDelegate* delegate;
 	CDataBrowser* fontBrowser;

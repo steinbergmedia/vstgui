@@ -50,7 +50,7 @@ static const MenuEntry editMenu[] = {
 	menuSeparator,
 	{ "Edit", "Template Settings..." , 0, 0},
 	{ "Edit", "Focus Drawing Settings..." , 0, 0},
-	0
+	{0}
 };
 
 } // namespace UIEditing
@@ -67,17 +67,17 @@ public:
 
 	int32_t processKeyCommand (const VstKeyCode& key);
 
-	CMessageResult notify (CBaseObject* sender, IdStringPtr message);
-	virtual void valueChanged (CControl* pControl);
+	CMessageResult notify (CBaseObject* sender, IdStringPtr message) VSTGUI_OVERRIDE_VMETHOD;
+	virtual void valueChanged (CControl* pControl) VSTGUI_OVERRIDE_VMETHOD;
 protected:
 	CCommandMenuItem* findKeyCommandItem (COptionMenu* menu, const VstKeyCode& key);
 	void createEditMenu (COptionMenu* menu);
 
-	virtual CView* verifyView (CView* view, const UIAttributes& attributes, IUIDescription* description);
-	CControlListener* getControlListener (UTF8StringPtr name) { return this; }
+	virtual CView* verifyView (CView* view, const UIAttributes& attributes, IUIDescription* description) VSTGUI_OVERRIDE_VMETHOD;
+	CControlListener* getControlListener (UTF8StringPtr name) VSTGUI_OVERRIDE_VMETHOD { return this; }
 	static bool createUniqueTemplateName (std::list<const std::string*>& names, std::string& name, int32_t count = 0);
-	void controlBeginEdit (CControl* pControl);
-	void controlEndEdit (CControl* pControl);
+	void controlBeginEdit (CControl* pControl) VSTGUI_OVERRIDE_VMETHOD;
+	void controlEndEdit (CControl* pControl) VSTGUI_OVERRIDE_VMETHOD;
 
 	SharedPointer<UISelection> selection;
 	SharedPointer<UIUndoManager> undoManager;

@@ -49,13 +49,13 @@ public:
 
 	virtual void layoutViews () = 0;
 
-	bool attached (CView* parent);
-	void setViewSize (const CRect& rect, bool invalid = true);
-	bool addView (CView* pView);
-	bool addView (CView* pView, const CRect& mouseableArea, bool mouseEnabled = true);
-	bool addView (CView* pView, CView* pBefore);
-	bool removeView (CView* pView, bool withForget = true);
-	bool changeViewZOrder (CView* view, int32_t newIndex);
+	bool attached (CView* parent) VSTGUI_OVERRIDE_VMETHOD;
+	void setViewSize (const CRect& rect, bool invalid = true) VSTGUI_OVERRIDE_VMETHOD;
+	bool addView (CView* pView) VSTGUI_OVERRIDE_VMETHOD;
+	bool addView (CView* pView, const CRect& mouseableArea, bool mouseEnabled = true) VSTGUI_OVERRIDE_VMETHOD;
+	bool addView (CView* pView, CView* pBefore) VSTGUI_OVERRIDE_VMETHOD;
+	bool removeView (CView* pView, bool withForget = true) VSTGUI_OVERRIDE_VMETHOD;
+	bool changeViewZOrder (CView* view, int32_t newIndex) VSTGUI_OVERRIDE_VMETHOD;
 
 	CLASS_METHODS_VIRTUAL(CAutoLayoutContainerView, CViewContainer)
 };
@@ -104,9 +104,9 @@ public:
 	LayoutStyle getLayoutStyle () const { return layoutStyle; }
 	void setLayoutStyle (LayoutStyle style);
 
-	void layoutViews ();
-	bool sizeToFit ();
-	CMessageResult notify (CBaseObject* sender, IdStringPtr message);
+	void layoutViews () VSTGUI_OVERRIDE_VMETHOD;
+	bool sizeToFit () VSTGUI_OVERRIDE_VMETHOD;
+	CMessageResult notify (CBaseObject* sender, IdStringPtr message) VSTGUI_OVERRIDE_VMETHOD;
 
 	CLASS_METHODS(CRowColumnView, CAutoLayoutContainerView)
 protected:

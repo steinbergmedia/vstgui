@@ -58,8 +58,8 @@ public:
 //-----------------------------------------------------------------------------
 	CLASS_METHODS (UIViewSwitchContainer, CViewContainer)
 protected:
-	bool attached (CView* parent);
-	bool removed (CView* parent);
+	bool attached (CView* parent) VSTGUI_OVERRIDE_VMETHOD;
+	bool removed (CView* parent) VSTGUI_OVERRIDE_VMETHOD;
 
 	IViewSwitchController* controller;
 	int32_t currentViewIndex;
@@ -89,11 +89,11 @@ class UIDescriptionViewSwitchController : public CBaseObject, public IViewSwitch
 public:
 	UIDescriptionViewSwitchController (UIViewSwitchContainer* viewSwitch, UIDescription* uiDescription, IController* uiController);
 
-	CView* createViewForIndex (int32_t index);
-	void switchContainerAttached ();
-	void switchContainerRemoved ();
+	CView* createViewForIndex (int32_t index) VSTGUI_OVERRIDE_VMETHOD;
+	void switchContainerAttached () VSTGUI_OVERRIDE_VMETHOD;
+	void switchContainerRemoved () VSTGUI_OVERRIDE_VMETHOD;
 
-	CMessageResult notify (CBaseObject* sender, IdStringPtr message);
+	CMessageResult notify (CBaseObject* sender, IdStringPtr message) VSTGUI_OVERRIDE_VMETHOD;
 
 	void setTemplateNames (UTF8StringPtr templateNames); // comma separated
 	void getTemplateNames (std::string& str); // comma separated

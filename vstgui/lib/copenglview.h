@@ -68,12 +68,12 @@ public:
 	virtual void drawOpenGL (const CRect& updateRect) = 0;	///< will be called when the view was marked invalid or the view was resized
 
 	// CView
-	virtual void setViewSize (const CRect& rect, bool invalid = true);
-	virtual void parentSizeChanged ();
-	virtual bool removed (CView* parent);
-	virtual bool attached (CView* parent);
-	virtual void invalidRect (const CRect& rect);
-	virtual void setVisible (bool state);
+	virtual void setViewSize (const CRect& rect, bool invalid = true) VSTGUI_OVERRIDE_VMETHOD;
+	virtual void parentSizeChanged () VSTGUI_OVERRIDE_VMETHOD;
+	virtual bool removed (CView* parent) VSTGUI_OVERRIDE_VMETHOD;
+	virtual bool attached (CView* parent) VSTGUI_OVERRIDE_VMETHOD;
+	virtual void invalidRect (const CRect& rect) VSTGUI_OVERRIDE_VMETHOD;
+	virtual void setVisible (bool state) VSTGUI_OVERRIDE_VMETHOD;
 
 	CLASS_METHODS_NOCOPY (COpenGLView, CView)
 protected:

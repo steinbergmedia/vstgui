@@ -125,18 +125,18 @@ public:
 
 	void setController (IController* controller);
 
-	CBitmap* getBitmap (UTF8StringPtr name);
-	CFontRef getFont (UTF8StringPtr name);
-	bool getColor (UTF8StringPtr name, CColor& color);
-	int32_t getTagForName (UTF8StringPtr name) const;
-	CControlListener* getControlListener (UTF8StringPtr name);
-	IController* getController () const { return controller; }
+	CBitmap* getBitmap (UTF8StringPtr name) VSTGUI_OVERRIDE_VMETHOD;
+	CFontRef getFont (UTF8StringPtr name) VSTGUI_OVERRIDE_VMETHOD;
+	bool getColor (UTF8StringPtr name, CColor& color) VSTGUI_OVERRIDE_VMETHOD;
+	int32_t getTagForName (UTF8StringPtr name) const VSTGUI_OVERRIDE_VMETHOD;
+	CControlListener* getControlListener (UTF8StringPtr name) VSTGUI_OVERRIDE_VMETHOD;
+	IController* getController () const VSTGUI_OVERRIDE_VMETHOD { return controller; }
 	IViewFactory* getViewFactory () const { return viewFactory; }
 	
-	UTF8StringPtr lookupColorName (const CColor& color) const;
-	UTF8StringPtr lookupFontName (const CFontRef font) const;
-	UTF8StringPtr lookupBitmapName (const CBitmap* bitmap) const;
-	UTF8StringPtr lookupControlTagName (const int32_t tag) const;
+	UTF8StringPtr lookupColorName (const CColor& color) const VSTGUI_OVERRIDE_VMETHOD;
+	UTF8StringPtr lookupFontName (const CFontRef font) const VSTGUI_OVERRIDE_VMETHOD;
+	UTF8StringPtr lookupBitmapName (const CBitmap* bitmap) const VSTGUI_OVERRIDE_VMETHOD;
+	UTF8StringPtr lookupControlTagName (const int32_t tag) const VSTGUI_OVERRIDE_VMETHOD;
 	
 	void collectTemplateViewNames (std::list<const std::string*>& names) const;
 	void collectColorNames (std::list<const std::string*>& names) const;
@@ -208,10 +208,10 @@ protected:
 	bool saveToStream (OutputStream& stream, int32_t flags);
 
 	// Xml::IHandler
-	void startXmlElement (Xml::Parser* parser, IdStringPtr elementName, UTF8StringPtr* elementAttributes);
-	void endXmlElement (Xml::Parser* parser, IdStringPtr name);
-	void xmlCharData (Xml::Parser* parser, const int8_t* data, int32_t length);
-	void xmlComment (Xml::Parser* parser, IdStringPtr comment);
+	void startXmlElement (Xml::Parser* parser, IdStringPtr elementName, UTF8StringPtr* elementAttributes) VSTGUI_OVERRIDE_VMETHOD;
+	void endXmlElement (Xml::Parser* parser, IdStringPtr name) VSTGUI_OVERRIDE_VMETHOD;
+	void xmlCharData (Xml::Parser* parser, const int8_t* data, int32_t length) VSTGUI_OVERRIDE_VMETHOD;
+	void xmlComment (Xml::Parser* parser, IdStringPtr comment) VSTGUI_OVERRIDE_VMETHOD;
 
 	CResourceDescription xmlFile;
 	UINode* nodes;
@@ -289,18 +289,18 @@ public:
 	DelegationController (IController* controller) : controller (controller) {}
 
 	// CControlListener
-	void valueChanged (CControl* pControl) { controller->valueChanged (pControl); }
-	int32_t controlModifierClicked (CControl* pControl, CButtonState button) { return controller->controlModifierClicked (pControl, button); }
-	void controlBeginEdit (CControl* pControl) { controller->controlBeginEdit (pControl); }
-	void controlEndEdit (CControl* pControl) { controller->controlEndEdit (pControl); }
-	void controlTagWillChange (VSTGUI::CControl* pControl) { controller->controlTagWillChange (pControl); }
-	void controlTagDidChange (VSTGUI::CControl* pControl) { controller->controlTagDidChange (pControl); }
+	void valueChanged (CControl* pControl) VSTGUI_OVERRIDE_VMETHOD { controller->valueChanged (pControl); }
+	int32_t controlModifierClicked (CControl* pControl, CButtonState button) VSTGUI_OVERRIDE_VMETHOD { return controller->controlModifierClicked (pControl, button); }
+	void controlBeginEdit (CControl* pControl) VSTGUI_OVERRIDE_VMETHOD { controller->controlBeginEdit (pControl); }
+	void controlEndEdit (CControl* pControl) VSTGUI_OVERRIDE_VMETHOD { controller->controlEndEdit (pControl); }
+	void controlTagWillChange (VSTGUI::CControl* pControl) VSTGUI_OVERRIDE_VMETHOD { controller->controlTagWillChange (pControl); }
+	void controlTagDidChange (VSTGUI::CControl* pControl) VSTGUI_OVERRIDE_VMETHOD { controller->controlTagDidChange (pControl); }
 	// IController
-	int32_t getTagForName (UTF8StringPtr name, int32_t registeredTag) const { return controller->getTagForName (name, registeredTag); }
-	CControlListener* getControlListener (UTF8StringPtr name) { return controller->getControlListener (name); }
-	CView* createView (const UIAttributes& attributes, IUIDescription* description) { return controller->createView (attributes, description); }
-	CView* verifyView (CView* view, const UIAttributes& attributes, IUIDescription* description) { return controller->verifyView (view, attributes, description); }
-	IController* createSubController (IdStringPtr name, IUIDescription* description) { return controller->createSubController (name, description); }
+	int32_t getTagForName (UTF8StringPtr name, int32_t registeredTag) const VSTGUI_OVERRIDE_VMETHOD { return controller->getTagForName (name, registeredTag); }
+	CControlListener* getControlListener (UTF8StringPtr name) VSTGUI_OVERRIDE_VMETHOD { return controller->getControlListener (name); }
+	CView* createView (const UIAttributes& attributes, IUIDescription* description) VSTGUI_OVERRIDE_VMETHOD { return controller->createView (attributes, description); }
+	CView* verifyView (CView* view, const UIAttributes& attributes, IUIDescription* description) VSTGUI_OVERRIDE_VMETHOD { return controller->verifyView (view, attributes, description); }
+	IController* createSubController (IdStringPtr name, IUIDescription* description) VSTGUI_OVERRIDE_VMETHOD { return controller->createSubController (name, description); }
 protected:
 	IController* controller;
 };

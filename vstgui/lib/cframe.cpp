@@ -323,7 +323,7 @@ void CFrame::checkMouseViews (const CPoint& where, const CButtonState& buttons)
 	if (mouseDownView)
 		return;
 	CPoint lp;
-	CView* mouseView = getViewAt (where, true);
+	CView* mouseView = getViewAt (where, true, true);
 	if (mouseView == 0)
 		mouseView = getContainerAt (where, true);
 	CView* currentMouseView = pMouseViews.empty () == false ? pMouseViews.back () : 0;
@@ -499,7 +499,7 @@ CMouseEventResult CFrame::onMouseMoved (CPoint &where, const CButtonState& butto
 		if (result == kMouseEventNotHandled)
 		{
 			CButtonState buttons2 = (buttons & (kShift | kControl | kAlt | kApple));
-			std::list<CView*>::reverse_iterator it = pMouseViews.rbegin ();
+			std::list<CView*>::const_reverse_iterator it = pMouseViews.rbegin ();
 			while (it != pMouseViews.rend ())
 			{
 				p = where;
@@ -1052,7 +1052,7 @@ bool CFrame::removeAll (bool withForget)
 }
 
 //-----------------------------------------------------------------------------
-CView* CFrame::getViewAt (const CPoint& where, bool deep) const
+CView* CFrame::getViewAt (const CPoint& where, bool deep, bool mustbeMouseEnabled) const
 {
 	if (pModalView)
 	{
@@ -1063,14 +1063,14 @@ CView* CFrame::getViewAt (const CPoint& where, bool deep) const
 				CViewContainer* container = dynamic_cast<CViewContainer*> (pModalView);
 				if (container)
 				{
-					return container->getViewAt (where, deep);
+					return container->getViewAt (where, deep, mustbeMouseEnabled);
 				}
 			}
 			return pModalView;
 		}
 		return 0;
 	}
-	return CViewContainer::getViewAt (where, deep);
+	return CViewContainer::getViewAt (where, deep, mustbeMouseEnabled);
 }
 
 //-----------------------------------------------------------------------------

@@ -204,18 +204,18 @@ public:
 	//@}
 
 	// overrides
-	virtual void setValue (float val);
-	virtual void setMin (float val) {}
-	virtual float getMin () const { return 0; }
-	virtual void setMax (float val) {}
-	virtual float getMax () const { return (float)(menuItems->size () - 1); }
+	virtual void setValue (float val) VSTGUI_OVERRIDE_VMETHOD;
+	virtual void setMin (float val) VSTGUI_OVERRIDE_VMETHOD {}
+	virtual float getMin () const VSTGUI_OVERRIDE_VMETHOD { return 0; }
+	virtual void setMax (float val) VSTGUI_OVERRIDE_VMETHOD {}
+	virtual float getMax () const VSTGUI_OVERRIDE_VMETHOD { return (float)(menuItems->size () - 1); }
 
-	virtual	void draw (CDrawContext* pContext);
-	virtual CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons);
-	virtual int32_t onKeyDown (VstKeyCode& keyCode);
+	virtual	void draw (CDrawContext* pContext) VSTGUI_OVERRIDE_VMETHOD;
+	virtual CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons) VSTGUI_OVERRIDE_VMETHOD;
+	virtual int32_t onKeyDown (VstKeyCode& keyCode) VSTGUI_OVERRIDE_VMETHOD;
 
-	virtual	void takeFocus ();
-	virtual	void looseFocus ();
+	virtual	void takeFocus () VSTGUI_OVERRIDE_VMETHOD;
+	virtual	void looseFocus () VSTGUI_OVERRIDE_VMETHOD;
 
 	static IdStringPtr kMsgBeforePopup;
 	

@@ -201,7 +201,7 @@ protected:
 	IPlatformBitmapPixelAccess* pixelAccess;
 	uint8_t* currentPos;
 	uint8_t* address;
-	int32_t bytesPerRow;
+	uint32_t bytesPerRow;
 	uint32_t maxX;
 	uint32_t maxY;
 	uint32_t x;

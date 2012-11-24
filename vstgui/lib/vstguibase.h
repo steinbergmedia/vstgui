@@ -74,6 +74,9 @@
 		#if VSTGUI_RVALUE_REF_SUPPORT
 			#include <type_traits>
 		#endif
+		#if __has_feature (cxx_override_control)
+			#define VSTGUI_OVERRIDE_VMETHOD	override
+		#endif
 	#else
 		#define VSTGUI_RVALUE_REF_SUPPORT 0
 	#endif
@@ -107,6 +110,10 @@
 
 #ifndef VSTGUI_RVALUE_REF_SUPPORT
 	#define VSTGUI_RVALUE_REF_SUPPORT 0
+#endif
+
+#ifndef VSTGUI_OVERRIDE_VMETHOD
+	#define VSTGUI_OVERRIDE_VMETHOD
 #endif
 
 #ifdef UNICODE

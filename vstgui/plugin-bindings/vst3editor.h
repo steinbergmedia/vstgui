@@ -91,45 +91,45 @@ protected:
 	void syncParameterTags ();
 	bool enableEditing (bool state);
 
-	bool PLUGIN_API open (void* parent, const PlatformType& type);
-	void PLUGIN_API close ();
+	bool PLUGIN_API open (void* parent, const PlatformType& type) VSTGUI_OVERRIDE_VMETHOD;
+	void PLUGIN_API close () VSTGUI_OVERRIDE_VMETHOD;
 
-	void beginEdit (int32_t index);
-	void endEdit (int32_t index);
+	void beginEdit (int32_t index) VSTGUI_OVERRIDE_VMETHOD;
+	void endEdit (int32_t index) VSTGUI_OVERRIDE_VMETHOD;
 
-	CView* createView (const UIAttributes& attributes, IUIDescription* description);
-	CView* verifyView (CView* view, const UIAttributes& attributes, IUIDescription* description);
-	IController* createSubController (UTF8StringPtr name, IUIDescription* description);
+	CView* createView (const UIAttributes& attributes, IUIDescription* description) VSTGUI_OVERRIDE_VMETHOD;
+	CView* verifyView (CView* view, const UIAttributes& attributes, IUIDescription* description) VSTGUI_OVERRIDE_VMETHOD;
+	IController* createSubController (UTF8StringPtr name, IUIDescription* description) VSTGUI_OVERRIDE_VMETHOD;
 
-	CMessageResult notify (CBaseObject* sender, IdStringPtr message);
+	CMessageResult notify (CBaseObject* sender, IdStringPtr message) VSTGUI_OVERRIDE_VMETHOD;
 
-	Steinberg::tresult PLUGIN_API onSize (Steinberg::ViewRect* newSize);
-	Steinberg::tresult PLUGIN_API canResize ();
-	Steinberg::tresult PLUGIN_API checkSizeConstraint (Steinberg::ViewRect* rect);
+	Steinberg::tresult PLUGIN_API onSize (Steinberg::ViewRect* newSize) VSTGUI_OVERRIDE_VMETHOD;
+	Steinberg::tresult PLUGIN_API canResize () VSTGUI_OVERRIDE_VMETHOD;
+	Steinberg::tresult PLUGIN_API checkSizeConstraint (Steinberg::ViewRect* rect) VSTGUI_OVERRIDE_VMETHOD;
 
 	// IParameterFinder
-	Steinberg::tresult PLUGIN_API findParameter (Steinberg::int32 xPos, Steinberg::int32 yPos, Steinberg::Vst::ParamID& resultTag);
+	Steinberg::tresult PLUGIN_API findParameter (Steinberg::int32 xPos, Steinberg::int32 yPos, Steinberg::Vst::ParamID& resultTag) VSTGUI_OVERRIDE_VMETHOD;
 
 	// CControlListener
-	virtual void valueChanged (CControl* pControl);
-	virtual void controlBeginEdit (CControl* pControl);
-	virtual void controlEndEdit (CControl* pControl);
-	virtual void controlTagWillChange (CControl* pControl);
-	virtual void controlTagDidChange (CControl* pControl);
+	virtual void valueChanged (CControl* pControl) VSTGUI_OVERRIDE_VMETHOD;
+	virtual void controlBeginEdit (CControl* pControl) VSTGUI_OVERRIDE_VMETHOD;
+	virtual void controlEndEdit (CControl* pControl) VSTGUI_OVERRIDE_VMETHOD;
+	virtual void controlTagWillChange (CControl* pControl) VSTGUI_OVERRIDE_VMETHOD;
+	virtual void controlTagDidChange (CControl* pControl) VSTGUI_OVERRIDE_VMETHOD;
 
 	// IViewAddedRemovedObserver
-	void onViewAdded (CFrame* frame, CView* view);
-	void onViewRemoved (CFrame* frame, CView* view);
+	void onViewAdded (CFrame* frame, CView* view) VSTGUI_OVERRIDE_VMETHOD;
+	void onViewRemoved (CFrame* frame, CView* view) VSTGUI_OVERRIDE_VMETHOD;
 
 	// IMouseObserver
-	void onMouseEntered (CView* view, CFrame* frame) {}
-	void onMouseExited (CView* view, CFrame* frame) {}
-	CMouseEventResult onMouseMoved (CFrame* frame, const CPoint& where, const CButtonState& buttons) { return kMouseEventNotHandled; }
-	CMouseEventResult onMouseDown (CFrame* frame, const CPoint& where, const CButtonState& buttons);
+	void onMouseEntered (CView* view, CFrame* frame) VSTGUI_OVERRIDE_VMETHOD {}
+	void onMouseExited (CView* view, CFrame* frame) VSTGUI_OVERRIDE_VMETHOD {}
+	CMouseEventResult onMouseMoved (CFrame* frame, const CPoint& where, const CButtonState& buttons) VSTGUI_OVERRIDE_VMETHOD { return kMouseEventNotHandled; }
+	CMouseEventResult onMouseDown (CFrame* frame, const CPoint& where, const CButtonState& buttons) VSTGUI_OVERRIDE_VMETHOD;
 
 	// IKeyboardHook
-	int32_t onKeyDown (const VstKeyCode& code, CFrame* frame);
-	int32_t onKeyUp (const VstKeyCode& code, CFrame* frame);
+	int32_t onKeyDown (const VstKeyCode& code, CFrame* frame) VSTGUI_OVERRIDE_VMETHOD;
+	int32_t onKeyUp (const VstKeyCode& code, CFrame* frame) VSTGUI_OVERRIDE_VMETHOD;
 
 	UIDescription* description;
 	VST3EditorDelegate* delegate;

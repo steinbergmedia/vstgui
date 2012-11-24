@@ -30,12 +30,12 @@ protected:
 	void rebuildAttributesView ();
 	void validateAttributeViews ();
 
-	void valueChanged (CControl* pControl);
-	CView* verifyView (CView* view, const UIAttributes& attributes, IUIDescription* description);
-	IController* createSubController (IdStringPtr name, IUIDescription* description);
-	CControlListener* getControlListener (UTF8StringPtr name);
+	void valueChanged (CControl* pControl) VSTGUI_OVERRIDE_VMETHOD;
+	CView* verifyView (CView* view, const UIAttributes& attributes, IUIDescription* description) VSTGUI_OVERRIDE_VMETHOD;
+	IController* createSubController (IdStringPtr name, IUIDescription* description) VSTGUI_OVERRIDE_VMETHOD;
+	CControlListener* getControlListener (UTF8StringPtr name) VSTGUI_OVERRIDE_VMETHOD;
 
-	CMessageResult notify (CBaseObject* sender, IdStringPtr message);
+	CMessageResult notify (CBaseObject* sender, IdStringPtr message) VSTGUI_OVERRIDE_VMETHOD;
 
 	SharedPointer<UISelection> selection;
 	SharedPointer<UIUndoManager> undoManager;

@@ -105,21 +105,21 @@ public:
 	//@}
 
 	// overwrite
-	bool addView (CView* pView);
-	bool addView (CView* pView, const CRect& mouseableArea, bool mouseEnabled = true);
-	bool addView (CView* pView, CView* pBefore);
-	bool removeView (CView* pView, bool withForget = true);
-	bool removeAll (bool withForget = true);
-	int32_t getNbViews () const;
-	CView* getView (int32_t index) const;
-	void drawBackgroundRect (CDrawContext* pContext, const CRect& _updateRect);
-	bool onWheel (const CPoint& where, const CMouseWheelAxis& axis, const float& distance, const CButtonState& buttons);
-	void valueChanged (CControl* pControl);
-	void setTransparency (bool val);
-	void setBackgroundColor (const CColor& color);
-	void setViewSize (const CRect& rect, bool invalid = true);
-	void setAutosizeFlags (int32_t flags);
-	CMessageResult notify (CBaseObject* sender, IdStringPtr message);
+	bool addView (CView* pView) VSTGUI_OVERRIDE_VMETHOD;
+	bool addView (CView* pView, const CRect& mouseableArea, bool mouseEnabled = true) VSTGUI_OVERRIDE_VMETHOD;
+	bool addView (CView* pView, CView* pBefore) VSTGUI_OVERRIDE_VMETHOD;
+	bool removeView (CView* pView, bool withForget = true) VSTGUI_OVERRIDE_VMETHOD;
+	bool removeAll (bool withForget = true) VSTGUI_OVERRIDE_VMETHOD;
+	int32_t getNbViews () const VSTGUI_OVERRIDE_VMETHOD;
+	CView* getView (int32_t index) const VSTGUI_OVERRIDE_VMETHOD;
+	void drawBackgroundRect (CDrawContext* pContext, const CRect& _updateRect) VSTGUI_OVERRIDE_VMETHOD;
+	bool onWheel (const CPoint& where, const CMouseWheelAxis& axis, const float& distance, const CButtonState& buttons) VSTGUI_OVERRIDE_VMETHOD;
+	void valueChanged (CControl* pControl) VSTGUI_OVERRIDE_VMETHOD;
+	void setTransparency (bool val) VSTGUI_OVERRIDE_VMETHOD;
+	void setBackgroundColor (const CColor& color) VSTGUI_OVERRIDE_VMETHOD;
+	void setViewSize (const CRect& rect, bool invalid = true) VSTGUI_OVERRIDE_VMETHOD;
+	void setAutosizeFlags (int32_t flags) VSTGUI_OVERRIDE_VMETHOD;
+	CMessageResult notify (CBaseObject* sender, IdStringPtr message) VSTGUI_OVERRIDE_VMETHOD;
 
 	CLASS_METHODS(CScrollView, CViewContainer)
 //-----------------------------------------------------------------------------
@@ -187,16 +187,16 @@ public:
 	//@}
 
 	// overwrite
-	void draw (CDrawContext* pContext);
-	bool onWheel (const CPoint& where, const CMouseWheelAxis& axis, const float& distance, const CButtonState& buttons);
-	CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons);
-	CMouseEventResult onMouseUp (CPoint& where, const CButtonState& buttons);
-	CMouseEventResult onMouseMoved (CPoint& where, const CButtonState& buttons);
-	CMessageResult notify (CBaseObject* sender, IdStringPtr message);
-	void setViewSize (const CRect& newSize, bool invalid);
+	void draw (CDrawContext* pContext) VSTGUI_OVERRIDE_VMETHOD;
+	bool onWheel (const CPoint& where, const CMouseWheelAxis& axis, const float& distance, const CButtonState& buttons) VSTGUI_OVERRIDE_VMETHOD;
+	CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons) VSTGUI_OVERRIDE_VMETHOD;
+	CMouseEventResult onMouseUp (CPoint& where, const CButtonState& buttons) VSTGUI_OVERRIDE_VMETHOD;
+	CMouseEventResult onMouseMoved (CPoint& where, const CButtonState& buttons) VSTGUI_OVERRIDE_VMETHOD;
+	CMessageResult notify (CBaseObject* sender, IdStringPtr message) VSTGUI_OVERRIDE_VMETHOD;
+	void setViewSize (const CRect& newSize, bool invalid) VSTGUI_OVERRIDE_VMETHOD;
 
-	virtual CMouseEventResult onMouseEntered (CPoint& where, const CButtonState& buttons);
-	virtual CMouseEventResult onMouseExited (CPoint& where, const CButtonState& buttons);
+	virtual CMouseEventResult onMouseEntered (CPoint& where, const CButtonState& buttons) VSTGUI_OVERRIDE_VMETHOD;
+	virtual CMouseEventResult onMouseExited (CPoint& where, const CButtonState& buttons) VSTGUI_OVERRIDE_VMETHOD;
 
 	CLASS_METHODS(CScrollbar, CControl)
 //-----------------------------------------------------------------------------

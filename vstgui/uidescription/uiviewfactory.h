@@ -88,8 +88,8 @@ public:
 	~UIViewFactory ();
 
 	// IViewFactory
-	CView* createView (const UIAttributes& attributes, IUIDescription* description);
-	bool applyAttributeValues (CView* view, const UIAttributes& attributes, IUIDescription* desc) const;
+	CView* createView (const UIAttributes& attributes, IUIDescription* description) VSTGUI_OVERRIDE_VMETHOD;
+	bool applyAttributeValues (CView* view, const UIAttributes& attributes, IUIDescription* desc) const VSTGUI_OVERRIDE_VMETHOD;
 	
 	static void registerViewCreator (const IViewCreator& viewCreator);
 
