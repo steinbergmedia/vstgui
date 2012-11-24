@@ -36,6 +36,7 @@
 #include "coffscreencontext.h"
 #include "ctooltipsupport.h"
 #include "animation/animator.h"
+#include "controls/ctextedit.h"
 #include <assert.h>
 
 namespace VSTGUI {
@@ -437,7 +438,7 @@ CMouseEventResult CFrame::onMouseDown (CPoint &where, const CButtonState& button
 {
 	// reset views
 	mouseDownView = 0;
-	if (pFocusView && pFocusView->isTypeOf ("CTextEdit"))
+	if (pFocusView && dynamic_cast<CTextEdit*> (pFocusView))
 		setFocusView (0);
 
 	if (pTooltips)
