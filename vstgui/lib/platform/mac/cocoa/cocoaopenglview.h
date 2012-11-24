@@ -57,17 +57,17 @@ public:
 	CocoaOpenGLView (NSView* parent);
 	~CocoaOpenGLView ();
 
-	virtual bool init (IOpenGLView* view, PixelFormat* pixelFormat = 0);
-	virtual void remove ();
+	virtual bool init (IOpenGLView* view, PixelFormat* pixelFormat = 0) VSTGUI_OVERRIDE_VMETHOD;
+	virtual void remove () VSTGUI_OVERRIDE_VMETHOD;
 
-	virtual void invalidRect (const CRect& rect);
-	virtual void viewSizeChanged (const CRect& visibleSize); ///< visibleSize is cframe relative
+	virtual void invalidRect (const CRect& rect) VSTGUI_OVERRIDE_VMETHOD;
+	virtual void viewSizeChanged (const CRect& visibleSize) VSTGUI_OVERRIDE_VMETHOD;
 
-	virtual bool makeContextCurrent ();
-	virtual bool lockContext ();
-	virtual bool unlockContext ();
+	virtual bool makeContextCurrent () VSTGUI_OVERRIDE_VMETHOD;
+	virtual bool lockContext () VSTGUI_OVERRIDE_VMETHOD;
+	virtual bool unlockContext () VSTGUI_OVERRIDE_VMETHOD;
 
-	virtual void swapBuffers ();
+	virtual void swapBuffers () VSTGUI_OVERRIDE_VMETHOD;
 	
 	void doDraw (const CRect& r);
 protected:

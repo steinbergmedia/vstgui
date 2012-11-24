@@ -70,26 +70,25 @@ public:
 	virtual void drawRect (NSRect* rect);
 
 	// IPlatformFrame
-	bool getGlobalPosition (CPoint& pos) const;
-	bool setSize (const CRect& newSize);
-	bool getSize (CRect& size) const;
-	bool getCurrentMousePosition (CPoint& mousePosition) const;
-	bool getCurrentMouseButtons (CButtonState& buttons) const;
-	bool setMouseCursor (CCursorType type);
-	bool invalidRect (const CRect& rect);
-	bool scrollRect (const CRect& src, const CPoint& distance);
-	bool showTooltip (const CRect& rect, const char* utf8Text);
-	bool hideTooltip ();
-	void* getPlatformRepresentation () const { return nsView; }
-	IPlatformTextEdit* createPlatformTextEdit (IPlatformTextEditCallback* textEdit);
-	IPlatformOptionMenu* createPlatformOptionMenu ();
+	bool getGlobalPosition (CPoint& pos) const VSTGUI_OVERRIDE_VMETHOD;
+	bool setSize (const CRect& newSize) VSTGUI_OVERRIDE_VMETHOD;
+	bool getSize (CRect& size) const VSTGUI_OVERRIDE_VMETHOD;
+	bool getCurrentMousePosition (CPoint& mousePosition) const VSTGUI_OVERRIDE_VMETHOD;
+	bool getCurrentMouseButtons (CButtonState& buttons) const VSTGUI_OVERRIDE_VMETHOD;
+	bool setMouseCursor (CCursorType type) VSTGUI_OVERRIDE_VMETHOD;
+	bool invalidRect (const CRect& rect) VSTGUI_OVERRIDE_VMETHOD;
+	bool scrollRect (const CRect& src, const CPoint& distance) VSTGUI_OVERRIDE_VMETHOD;
+	bool showTooltip (const CRect& rect, const char* utf8Text) VSTGUI_OVERRIDE_VMETHOD;
+	bool hideTooltip () VSTGUI_OVERRIDE_VMETHOD;
+	void* getPlatformRepresentation () const VSTGUI_OVERRIDE_VMETHOD { return nsView; }
+	IPlatformTextEdit* createPlatformTextEdit (IPlatformTextEditCallback* textEdit) VSTGUI_OVERRIDE_VMETHOD;
+	IPlatformOptionMenu* createPlatformOptionMenu () VSTGUI_OVERRIDE_VMETHOD;
 #if VSTGUI_OPENGL_SUPPORT
-	IPlatformOpenGLView* createPlatformOpenGLView ();
+	IPlatformOpenGLView* createPlatformOpenGLView () VSTGUI_OVERRIDE_VMETHOD;
 #endif
-	COffscreenContext* createOffscreenContext (CCoord width, CCoord height);
-	CGraphicsPath* createGraphicsPath ();
-	CView::DragResult doDrag (IDataPackage* source, const CPoint& offset, CBitmap* dragBitmap);
-	void setClipboard (IDataPackage* data);
+	COffscreenContext* createOffscreenContext (CCoord width, CCoord height) VSTGUI_OVERRIDE_VMETHOD;
+	CView::DragResult doDrag (IDataPackage* source, const CPoint& offset, CBitmap* dragBitmap) VSTGUI_OVERRIDE_VMETHOD;
+	void setClipboard (IDataPackage* data) VSTGUI_OVERRIDE_VMETHOD;
 	IDataPackage* getClipboard ();
 
 //-----------------------------------------------------------------------------

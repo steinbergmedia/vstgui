@@ -59,16 +59,16 @@ public:
 protected:
 	~CoreTextFont ();
 
-	void drawString (CDrawContext* context, const CString& string, const CPoint& p, bool antialias = true);
-	CCoord getStringWidth (CDrawContext* context, const CString& string, bool antialias = true);
+	void drawString (CDrawContext* context, const CString& string, const CPoint& p, bool antialias = true) VSTGUI_OVERRIDE_VMETHOD;
+	CCoord getStringWidth (CDrawContext* context, const CString& string, bool antialias = true) VSTGUI_OVERRIDE_VMETHOD;
 	CFDictionaryRef getStringAttributes (const CGColorRef color = 0);
 
-	double getAscent () const;
-	double getDescent () const;
-	double getLeading () const;
-	double getCapHeight () const;
+	double getAscent () const VSTGUI_OVERRIDE_VMETHOD;
+	double getDescent () const VSTGUI_OVERRIDE_VMETHOD;
+	double getLeading () const VSTGUI_OVERRIDE_VMETHOD;
+	double getCapHeight () const VSTGUI_OVERRIDE_VMETHOD;
 
-	IFontPainter* getPainter () { return this; }
+	IFontPainter* getPainter () VSTGUI_OVERRIDE_VMETHOD { return this; }
 
 	CTFontRef fontRef;
 	int32_t style;
@@ -89,15 +89,15 @@ public:
 protected:
 	~ATSUFont ();
 
-	void drawString (CDrawContext* context, const CString& string, const CPoint& p, bool antialias = true);
-	CCoord getStringWidth (CDrawContext* context, const CString& string, bool antialias = true);
+	void drawString (CDrawContext* context, const CString& string, const CPoint& p, bool antialias = true) VSTGUI_OVERRIDE_VMETHOD;
+	CCoord getStringWidth (CDrawContext* context, const CString& string, bool antialias = true) VSTGUI_OVERRIDE_VMETHOD;
 
-	double getAscent () const { return -1.; }
-	double getDescent () const { return -1.; }
-	double getLeading () const { return -1.; }
-	double getCapHeight () const { return -1.; }
+	double getAscent () VSTGUI_OVERRIDE_VMETHOD const { return -1.; }
+	double getDescent () VSTGUI_OVERRIDE_VMETHOD const { return -1.; }
+	double getLeading () VSTGUI_OVERRIDE_VMETHOD const { return -1.; }
+	double getCapHeight () VSTGUI_OVERRIDE_VMETHOD const { return -1.; }
 
-	IFontPainter* getPainter () { return this; }
+	IFontPainter* getPainter () VSTGUI_OVERRIDE_VMETHOD { return this; }
 
 	ATSUStyle atsuStyle;
 };

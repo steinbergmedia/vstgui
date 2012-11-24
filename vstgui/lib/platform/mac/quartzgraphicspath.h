@@ -51,12 +51,12 @@ public:
 	~QuartzGraphicsPath ();
 
 	CGPathRef getCGPathRef ();
-	void dirty ();
+	void dirty () VSTGUI_OVERRIDE_VMETHOD;
 
-	CPoint getCurrentPosition ();
-	CRect getBoundingBox ();
+	CPoint getCurrentPosition () VSTGUI_OVERRIDE_VMETHOD;
+	CRect getBoundingBox () VSTGUI_OVERRIDE_VMETHOD;
 
-	CGradient* createGradient (double color1Start, double color2Start, const CColor& color1, const CColor& color2);
+	CGradient* createGradient (double color1Start, double color2Start, const CColor& color1, const CColor& color2) VSTGUI_OVERRIDE_VMETHOD;
 
 	static CGAffineTransform createCGAfflineTransform (const CGraphicsTransform& t);
 

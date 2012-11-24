@@ -54,10 +54,10 @@ public:
 	CocoaDragContainer (NSPasteboard* platformDrag);
 	~CocoaDragContainer ();
 	
-	void* first (int32_t& size, int32_t& type);
-	void* next (int32_t& size, int32_t& type);
-	int32_t getType (int32_t idx) const;
-	int32_t getCount () const { return nbItems; }
+	void* first (int32_t& size, int32_t& type) VSTGUI_OVERRIDE_VMETHOD;
+	void* next (int32_t& size, int32_t& type) VSTGUI_OVERRIDE_VMETHOD;
+	int32_t getType (int32_t idx) const VSTGUI_OVERRIDE_VMETHOD;
+	int32_t getCount () const VSTGUI_OVERRIDE_VMETHOD { return nbItems; }
 
 //------------------------------------------------------------------------------------
 protected:

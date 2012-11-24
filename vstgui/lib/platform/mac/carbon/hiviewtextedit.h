@@ -50,9 +50,9 @@ public:
 	HIViewTextEdit (HIViewRef parent, IPlatformTextEditCallback* textEdit);
 	~HIViewTextEdit ();
 	
-	UTF8StringPtr getText ();
-	bool setText (UTF8StringPtr text);
-	bool updateSize ();
+	UTF8StringPtr getText () VSTGUI_OVERRIDE_VMETHOD;
+	bool setText (UTF8StringPtr text) VSTGUI_OVERRIDE_VMETHOD;
+	bool updateSize () VSTGUI_OVERRIDE_VMETHOD;
 
 	HIViewRef getPlatformControl () const { return platformControl; }
 //-----------------------------------------------------------------------------

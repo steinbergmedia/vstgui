@@ -999,12 +999,6 @@ COffscreenContext* NSViewFrame::createOffscreenContext (CCoord width, CCoord hei
 	return 0;
 }
 
-//-----------------------------------------------------------------------------
-CGraphicsPath* NSViewFrame::createGraphicsPath ()
-{
-	return new QuartzGraphicsPath;
-}
-
 //------------------------------------------------------------------------------------
 CView::DragResult NSViewFrame::doDrag (IDataPackage* source, const CPoint& offset, CBitmap* dragBitmap)
 {
