@@ -98,6 +98,9 @@
 	#ifndef WINDOWS
 		#define WINDOWS 1
 	#endif
+	#if _MSC_VER >=	1700
+		#define VSTGUI_OVERRIDE_VMETHOD	override
+	#endif
 #else // GCC/Clang based builds on non Windows and non Mac
 	#include <stdint.h>
 	#include <limits.h>
