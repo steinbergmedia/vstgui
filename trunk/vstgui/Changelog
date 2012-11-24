@@ -3,6 +3,7 @@
 	* add new argument to CViewContainer::getViewAt () to allow to get only the mouse enabled view at that position
 	* changed CViewContainer::getViewsAt () result container to std::list<SharedPointer<CView> >
 	* add c++11 override keyword with VSTGUI_OVERRIDE_VMETHOD
+	* remove last usage of isTypeOf() and add VSTGUI_ENABLE_OLD_CLASS_TYPE_INFO macro which enables the old class type info mechanism (defaults to be enabled). If turned off generated code size is smaller.
 
 2012-11-22 arne
 
