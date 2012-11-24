@@ -119,7 +119,14 @@ public:
 
 	void CreateMainDisplayColorSpace ()
 	{
-		// TODO: Replace with ColorSyncProfileRef
+	#if MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_7
+		ColorSyncProfileRef csProfileRef = ColorSyncProfileCreateWithDisplayID (0);
+		if (csProfileRef)
+		{
+			mainDisplayColorSpace = CGColorSpaceCreateWithPlatformColorSpace (csProfileRef);
+			CFRelease (csProfileRef);
+		}
+	#else
 		CMProfileRef sysprof = NULL;
 
 		// Get the Systems Profile for the main display
@@ -131,6 +138,7 @@ public:
 			// Close the profile
 			CMCloseProfile (sysprof);
 		}
+	#endif
 	}
 
 	CGColorSpaceRef rgbColorspace;
