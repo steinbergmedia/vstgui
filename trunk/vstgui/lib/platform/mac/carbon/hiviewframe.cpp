@@ -742,12 +742,6 @@ COffscreenContext* HIViewFrame::createOffscreenContext (CCoord width, CCoord hei
 	return context;
 }
 
-//-----------------------------------------------------------------------------
-CGraphicsPath* HIViewFrame::createGraphicsPath ()
-{
-	return new QuartzGraphicsPath;
-}
-
 //------------------------------------------------------------------------------------
 CView::DragResult HIViewFrame::doDrag (IDataPackage* source, const CPoint& offset, CBitmap* dragBitmap)
 {

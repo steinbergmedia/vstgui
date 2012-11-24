@@ -73,9 +73,9 @@ public:
 protected:
 	static void initClass ();
 	
-	bool runInternal (CBaseObject* delegate);
-	bool runModalInternal ();
-	void cancelInternal ();
+	bool runInternal (CBaseObject* delegate) VSTGUI_OVERRIDE_VMETHOD;
+	bool runModalInternal () VSTGUI_OVERRIDE_VMETHOD;
+	void cancelInternal () VSTGUI_OVERRIDE_VMETHOD;
 
 	Style style;
 	CBaseObject* delegate;

@@ -51,9 +51,9 @@ public:
 	CGBitmap ();
 	~CGBitmap ();
 	
-	bool load (const CResourceDescription& desc);
-	const CPoint& getSize () const { return size; }
-	IPlatformBitmapPixelAccess* lockPixels (bool alphaPremultiplied);
+	bool load (const CResourceDescription& desc) VSTGUI_OVERRIDE_VMETHOD;
+	const CPoint& getSize () const VSTGUI_OVERRIDE_VMETHOD { return size; }
+	IPlatformBitmapPixelAccess* lockPixels (bool alphaPremultiplied) VSTGUI_OVERRIDE_VMETHOD;
 
 	CGImageRef getCGImage ();
 	CGContextRef createCGContext ();
