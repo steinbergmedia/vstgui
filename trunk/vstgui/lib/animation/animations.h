@@ -54,9 +54,9 @@ class AlphaValueAnimation : public IAnimationTarget, public CBaseObject
 public:
 	AlphaValueAnimation (float endValue, bool forceEndValueOnFinish = false);
 
-	void animationStart (CView* view, IdStringPtr name);
-	void animationTick (CView* view, IdStringPtr name, float pos);
-	void animationFinished (CView* view, IdStringPtr name, bool wasCanceled);
+	void animationStart (CView* view, IdStringPtr name) VSTGUI_OVERRIDE_VMETHOD;
+	void animationTick (CView* view, IdStringPtr name, float pos) VSTGUI_OVERRIDE_VMETHOD;
+	void animationFinished (CView* view, IdStringPtr name, bool wasCanceled) VSTGUI_OVERRIDE_VMETHOD;
 protected:
 	float startValue;
 	float endValue;
@@ -73,9 +73,9 @@ class ViewSizeAnimation : public IAnimationTarget, public CBaseObject
 public:
 	ViewSizeAnimation (const CRect& newRect, bool forceEndValueOnFinish = false);
 
-	void animationStart (CView* view, IdStringPtr name);
-	void animationTick (CView* view, IdStringPtr name, float pos);
-	void animationFinished (CView* view, IdStringPtr name, bool wasCanceled);
+	void animationStart (CView* view, IdStringPtr name) VSTGUI_OVERRIDE_VMETHOD;
+	void animationTick (CView* view, IdStringPtr name, float pos) VSTGUI_OVERRIDE_VMETHOD;
+	void animationFinished (CView* view, IdStringPtr name, bool wasCanceled) VSTGUI_OVERRIDE_VMETHOD;
 protected:
 	CRect startRect;
 	CRect newRect;
@@ -102,9 +102,9 @@ public:
 	ExchangeViewAnimation (CView* oldView, CView* newView, AnimationStyle style = kAlphaValueFade);
 	~ExchangeViewAnimation ();
 
-	void animationStart (CView* view, IdStringPtr name);
-	void animationTick (CView* view, IdStringPtr name, float pos);
-	void animationFinished (CView* view, IdStringPtr name, bool wasCanceled);
+	void animationStart (CView* view, IdStringPtr name) VSTGUI_OVERRIDE_VMETHOD;
+	void animationTick (CView* view, IdStringPtr name, float pos) VSTGUI_OVERRIDE_VMETHOD;
+	void animationFinished (CView* view, IdStringPtr name, bool wasCanceled) VSTGUI_OVERRIDE_VMETHOD;
 protected:
 	CView* newView;
 	CView* viewToRemove;
@@ -123,9 +123,9 @@ class ControlValueAnimation : public IAnimationTarget, public CBaseObject
 public:
 	ControlValueAnimation (float endValue, bool forceEndValueOnFinish = false);
 
-	void animationStart (CView* view, IdStringPtr name);
-	void animationTick (CView* view, IdStringPtr name, float pos);
-	void animationFinished (CView* view, IdStringPtr name, bool wasCanceled);
+	void animationStart (CView* view, IdStringPtr name) VSTGUI_OVERRIDE_VMETHOD;
+	void animationTick (CView* view, IdStringPtr name, float pos) VSTGUI_OVERRIDE_VMETHOD;
+	void animationFinished (CView* view, IdStringPtr name, bool wasCanceled) VSTGUI_OVERRIDE_VMETHOD;
 protected:
 	float startValue;
 	float endValue;

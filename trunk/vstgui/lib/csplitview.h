@@ -86,15 +86,15 @@ public:
 	//@}
 	
 	// overrides
-	virtual bool addView (CView* pView);
-	virtual bool addView (CView* pView, const CRect& mouseableArea, bool mouseEnabled = true);
-	virtual bool addView (CView* pView, CView* pBefore);
-	virtual bool removeView (CView* pView, bool withForget = true);
-	virtual bool removeAll (bool withForget = true);
-	virtual void setViewSize (const CRect& rect, bool invalid = true);
-	virtual bool sizeToFit ();
-	virtual bool removed (CView* parent);
-	virtual bool attached (CView* parent);
+	virtual bool addView (CView* pView) VSTGUI_OVERRIDE_VMETHOD;
+	virtual bool addView (CView* pView, const CRect& mouseableArea, bool mouseEnabled = true) VSTGUI_OVERRIDE_VMETHOD;
+	virtual bool addView (CView* pView, CView* pBefore) VSTGUI_OVERRIDE_VMETHOD;
+	virtual bool removeView (CView* pView, bool withForget = true) VSTGUI_OVERRIDE_VMETHOD;
+	virtual bool removeAll (bool withForget = true) VSTGUI_OVERRIDE_VMETHOD;
+	virtual void setViewSize (const CRect& rect, bool invalid = true) VSTGUI_OVERRIDE_VMETHOD;
+	virtual bool sizeToFit () VSTGUI_OVERRIDE_VMETHOD;
+	virtual bool removed (CView* parent) VSTGUI_OVERRIDE_VMETHOD;
+	virtual bool attached (CView* parent) VSTGUI_OVERRIDE_VMETHOD;
 
 	bool requestNewSeparatorSize (CSplitViewSeparatorView* separatorView, const CRect& newSize);
 //-----------------------------------------------------------------------------

@@ -51,8 +51,8 @@ public:
 	CSplashScreen (const CRect& size, CControlListener* listener, int32_t tag, CView* splashView);
 	CSplashScreen (const CSplashScreen& splashScreen);
 
-	virtual void draw (CDrawContext*);
-	virtual bool hitTest (const CPoint& where, const CButtonState& buttons = -1);
+	virtual void draw (CDrawContext*) VSTGUI_OVERRIDE_VMETHOD;
+	virtual bool hitTest (const CPoint& where, const CButtonState& buttons = -1) VSTGUI_OVERRIDE_VMETHOD;
 
 	//-----------------------------------------------------------------------------
 	/// @name CSplashScreen Methods
@@ -64,7 +64,7 @@ public:
 	virtual CRect& getDisplayArea (CRect& rect) const { rect = toDisplay; return rect; }	///< get the area in which the splash will be displayed
 	//@}
 
-	virtual CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons);
+	virtual CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons) VSTGUI_OVERRIDE_VMETHOD;
 
 	CLASS_METHODS(CSplashScreen, CControl)
 protected:
@@ -109,11 +109,11 @@ public:
 	virtual bool createAnimation (int32_t animationIndex, int32_t animationTime, CView* splashView, bool removeViewAnimation);
 	//@}
 
-	virtual void unSplash ();
-	virtual void draw (CDrawContext*);
-	virtual CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons);
-	virtual bool sizeToFit ();
-	virtual CMessageResult notify (CBaseObject* sender, IdStringPtr message);
+	virtual void unSplash () VSTGUI_OVERRIDE_VMETHOD;
+	virtual void draw (CDrawContext*) VSTGUI_OVERRIDE_VMETHOD;
+	virtual CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons) VSTGUI_OVERRIDE_VMETHOD;
+	virtual bool sizeToFit () VSTGUI_OVERRIDE_VMETHOD;
+	virtual CMessageResult notify (CBaseObject* sender, IdStringPtr message) VSTGUI_OVERRIDE_VMETHOD;
 
 protected:
 	~CAnimationSplashScreen ();

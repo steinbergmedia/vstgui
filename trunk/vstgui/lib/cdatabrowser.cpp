@@ -53,27 +53,27 @@ class CDataBrowserView : public CView, public IFocusDrawing
 public:
 	CDataBrowserView (const CRect& size, IDataBrowser* db, CDataBrowser* browser);
 
-	void draw (CDrawContext* context);
-	void drawRect (CDrawContext* context, const CRect& updateRect);
-	CMouseEventResult onMouseDown (CPoint &where, const CButtonState& buttons);
-	CMouseEventResult onMouseMoved (CPoint &where, const CButtonState& buttons);
-	CMouseEventResult onMouseUp (CPoint &where, const CButtonState& buttons);
-	CMouseEventResult onMouseExited (CPoint &where, const CButtonState& buttons);
+	void draw (CDrawContext* context) VSTGUI_OVERRIDE_VMETHOD;
+	void drawRect (CDrawContext* context, const CRect& updateRect) VSTGUI_OVERRIDE_VMETHOD;
+	CMouseEventResult onMouseDown (CPoint &where, const CButtonState& buttons) VSTGUI_OVERRIDE_VMETHOD;
+	CMouseEventResult onMouseMoved (CPoint &where, const CButtonState& buttons) VSTGUI_OVERRIDE_VMETHOD;
+	CMouseEventResult onMouseUp (CPoint &where, const CButtonState& buttons) VSTGUI_OVERRIDE_VMETHOD;
+	CMouseEventResult onMouseExited (CPoint &where, const CButtonState& buttons) VSTGUI_OVERRIDE_VMETHOD;
 
-	bool onDrop (CDragContainer* drag, const CPoint& where);
-	void onDragEnter (CDragContainer* drag, const CPoint& where);
-	void onDragLeave (CDragContainer* drag, const CPoint& where);
-	void onDragMove (CDragContainer* drag, const CPoint& where);
+	bool onDrop (CDragContainer* drag, const CPoint& where) VSTGUI_OVERRIDE_VMETHOD;
+	void onDragEnter (CDragContainer* drag, const CPoint& where) VSTGUI_OVERRIDE_VMETHOD;
+	void onDragLeave (CDragContainer* drag, const CPoint& where) VSTGUI_OVERRIDE_VMETHOD;
+	void onDragMove (CDragContainer* drag, const CPoint& where) VSTGUI_OVERRIDE_VMETHOD;
 	
-	int32_t onKeyDown (VstKeyCode& keyCode);
+	int32_t onKeyDown (VstKeyCode& keyCode) VSTGUI_OVERRIDE_VMETHOD;
 
 	CRect getRowBounds (int32_t row);
 	void invalidateRow (int32_t row);
 
 	bool getCell (const CPoint& where, int32_t& row, int32_t& column);
 
-	bool drawFocusOnTop ();
-	bool getFocusPath (CGraphicsPath& outPath);
+	bool drawFocusOnTop () VSTGUI_OVERRIDE_VMETHOD;
+	bool getFocusPath (CGraphicsPath& outPath) VSTGUI_OVERRIDE_VMETHOD;
 protected:
 
 	IDataBrowser* db;
@@ -87,12 +87,12 @@ class CDataBrowserHeader : public CView
 public:
 	CDataBrowserHeader (const CRect& size, IDataBrowser* db, CDataBrowser* browser);
 
-	void draw (CDrawContext* context);
-	void drawRect (CDrawContext* context, const CRect& updateRect);
-	CMouseEventResult onMouseDown (CPoint &where, const CButtonState& buttons);
-	CMouseEventResult onMouseMoved (CPoint &where, const CButtonState& buttons);
-	CMouseEventResult onMouseUp (CPoint &where, const CButtonState& buttons);
-	CMouseEventResult onMouseExited (CPoint &where, const CButtonState& buttons);
+	void draw (CDrawContext* context) VSTGUI_OVERRIDE_VMETHOD;
+	void drawRect (CDrawContext* context, const CRect& updateRect) VSTGUI_OVERRIDE_VMETHOD;
+	CMouseEventResult onMouseDown (CPoint &where, const CButtonState& buttons) VSTGUI_OVERRIDE_VMETHOD;
+	CMouseEventResult onMouseMoved (CPoint &where, const CButtonState& buttons) VSTGUI_OVERRIDE_VMETHOD;
+	CMouseEventResult onMouseUp (CPoint &where, const CButtonState& buttons) VSTGUI_OVERRIDE_VMETHOD;
+	CMouseEventResult onMouseExited (CPoint &where, const CButtonState& buttons) VSTGUI_OVERRIDE_VMETHOD;
 
 protected:
 	int32_t getColumnAtPoint (CPoint& where);

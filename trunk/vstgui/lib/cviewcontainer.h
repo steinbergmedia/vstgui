@@ -73,9 +73,9 @@ public:
 	virtual bool hasChildren () const;						///< check if container has child views
 	virtual int32_t getNbViews () const;			///< get the number of child views
 	virtual CView* getView (int32_t index) const;	///< get the child view at index
-	virtual CView* getViewAt (const CPoint& where, bool deep = false) const;	///< get the view at point where
+	virtual CView* getViewAt (const CPoint& where, bool deep = false, bool mustbeMouseEnabled = false) const;	///< get the view at point where
 	virtual CViewContainer* getContainerAt (const CPoint& where, bool deep = true) const;		///< get the container at point where
-	virtual bool getViewsAt (const CPoint& where, std::list<CView*>& views, bool deep = true) const;	///< get all views at point where, top->down
+	virtual bool getViewsAt (const CPoint& where, std::list<SharedPointer<CView> >& views, bool deep = true) const;	///< get all views at point where, top->down
 	virtual bool changeViewZOrder (CView* view, int32_t newIndex);	///< change view z order position
 
 	virtual void setAutosizingEnabled (bool state);					///< enable or disable autosizing subviews. Per default this is enabled.
@@ -100,42 +100,42 @@ public:
 	void restoreDrawContext (CDrawContext* pContext, CCoord save[4]);
 
 	virtual bool advanceNextFocusView (CView* oldFocus, bool reverse = false);
+	virtual bool invalidateDirtyViews ();
+	virtual CRect getVisibleSize (const CRect rect) const;
 
 	// CView
-	virtual void draw (CDrawContext* pContext);
-	virtual void drawRect (CDrawContext* pContext, const CRect& updateRect);
-	virtual CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons);
-	virtual CMouseEventResult onMouseUp (CPoint& where, const CButtonState& buttons);
-	virtual CMouseEventResult onMouseMoved (CPoint& where, const CButtonState& buttons);
-	virtual bool onWheel (const CPoint& where, const float& distance, const CButtonState& buttons);
-	virtual bool onWheel (const CPoint& where, const CMouseWheelAxis& axis, const float& distance, const CButtonState& buttons);
-	virtual bool hitTest (const CPoint& where, const CButtonState& buttons = -1);
-	virtual CMessageResult notify (CBaseObject* sender, IdStringPtr message);
+	virtual void draw (CDrawContext* pContext) VSTGUI_OVERRIDE_VMETHOD;
+	virtual void drawRect (CDrawContext* pContext, const CRect& updateRect) VSTGUI_OVERRIDE_VMETHOD;
+	virtual CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons) VSTGUI_OVERRIDE_VMETHOD;
+	virtual CMouseEventResult onMouseUp (CPoint& where, const CButtonState& buttons) VSTGUI_OVERRIDE_VMETHOD;
+	virtual CMouseEventResult onMouseMoved (CPoint& where, const CButtonState& buttons) VSTGUI_OVERRIDE_VMETHOD;
+	virtual bool onWheel (const CPoint& where, const float& distance, const CButtonState& buttons) VSTGUI_OVERRIDE_VMETHOD;
+	virtual bool onWheel (const CPoint& where, const CMouseWheelAxis& axis, const float& distance, const CButtonState& buttons) VSTGUI_OVERRIDE_VMETHOD;
+	virtual bool hitTest (const CPoint& where, const CButtonState& buttons = -1) VSTGUI_OVERRIDE_VMETHOD;
+	virtual CMessageResult notify (CBaseObject* sender, IdStringPtr message) VSTGUI_OVERRIDE_VMETHOD;
 
-	virtual bool onDrop (CDragContainer* drag, const CPoint& where);
-	virtual void onDragEnter (CDragContainer* drag, const CPoint& where);
-	virtual void onDragLeave (CDragContainer* drag, const CPoint& where);
-	virtual void onDragMove (CDragContainer* drag, const CPoint& where);
+	virtual bool onDrop (CDragContainer* drag, const CPoint& where) VSTGUI_OVERRIDE_VMETHOD;
+	virtual void onDragEnter (CDragContainer* drag, const CPoint& where) VSTGUI_OVERRIDE_VMETHOD;
+	virtual void onDragLeave (CDragContainer* drag, const CPoint& where) VSTGUI_OVERRIDE_VMETHOD;
+	virtual void onDragMove (CDragContainer* drag, const CPoint& where) VSTGUI_OVERRIDE_VMETHOD;
 
-	virtual void looseFocus ();
-	virtual void takeFocus ();
+	virtual void looseFocus () VSTGUI_OVERRIDE_VMETHOD;
+	virtual void takeFocus () VSTGUI_OVERRIDE_VMETHOD;
 
-	virtual bool isDirty () const;
+	virtual bool isDirty () const VSTGUI_OVERRIDE_VMETHOD;
 
-	virtual void invalid ();
-	virtual void invalidRect (const CRect& rect);
-	virtual bool invalidateDirtyViews ();
+	virtual void invalid () VSTGUI_OVERRIDE_VMETHOD;
+	virtual void invalidRect (const CRect& rect) VSTGUI_OVERRIDE_VMETHOD;
 	
-	virtual void setViewSize (const CRect& rect, bool invalid = true);
-	virtual void parentSizeChanged ();
-	virtual CRect getVisibleSize (const CRect rect) const;
-	virtual bool sizeToFit ();
+	virtual void setViewSize (const CRect& rect, bool invalid = true) VSTGUI_OVERRIDE_VMETHOD;
+	virtual void parentSizeChanged () VSTGUI_OVERRIDE_VMETHOD;
+	virtual bool sizeToFit () VSTGUI_OVERRIDE_VMETHOD;
 
-	virtual bool removed (CView* parent);
-	virtual bool attached (CView* parent);
+	virtual bool removed (CView* parent) VSTGUI_OVERRIDE_VMETHOD;
+	virtual bool attached (CView* parent) VSTGUI_OVERRIDE_VMETHOD;
 		
-	virtual CPoint& frameToLocal (CPoint& point) const;
-	virtual CPoint& localToFrame (CPoint& point) const;
+	virtual CPoint& frameToLocal (CPoint& point) const VSTGUI_OVERRIDE_VMETHOD;
+	virtual CPoint& localToFrame (CPoint& point) const VSTGUI_OVERRIDE_VMETHOD;
 
 	CLASS_METHODS(CViewContainer, CView)
 

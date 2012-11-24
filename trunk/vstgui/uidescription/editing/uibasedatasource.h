@@ -135,7 +135,7 @@ protected:
 		setStringList (&names);
 	}
 	
-	CMessageResult notify (CBaseObject* sender, IdStringPtr message)
+	CMessageResult notify (CBaseObject* sender, IdStringPtr message) VSTGUI_OVERRIDE_VMETHOD
 	{
 		if (message == descriptionMessage)
 		{
@@ -195,7 +195,7 @@ protected:
 		}
 	}
 
-	void dbAttached (CDataBrowser* browser)
+	void dbAttached (CDataBrowser* browser) VSTGUI_OVERRIDE_VMETHOD
 	{
 		GenericStringListDataBrowserSource::dbAttached (browser);
 		update ();
@@ -204,13 +204,13 @@ protected:
 			searchField->setText (filterString.c_str ());
 	}
 
-	void dbRemoved (CDataBrowser* browser)
+	void dbRemoved (CDataBrowser* browser) VSTGUI_OVERRIDE_VMETHOD
 	{
 		saveDefaults ();
 		GenericStringListDataBrowserSource::dbRemoved (browser);
 	}
 
-	void valueChanged (CControl* control)
+	void valueChanged (CControl* control) VSTGUI_OVERRIDE_VMETHOD
 	{
 		CTextEdit* edit = dynamic_cast<CTextEdit*>(control);
 		if (edit)
@@ -235,7 +235,7 @@ protected:
 		return true;
 	}
 
-	CMouseEventResult dbOnMouseDown (const CPoint& where, const CButtonState& buttons, int32_t row, int32_t column, CDataBrowser* browser)
+	CMouseEventResult dbOnMouseDown (const CPoint& where, const CButtonState& buttons, int32_t row, int32_t column, CDataBrowser* browser) VSTGUI_OVERRIDE_VMETHOD
 	{
 		if (buttons.isLeftButton () && buttons.isDoubleClick ())
 		{
@@ -244,7 +244,7 @@ protected:
 		return kMouseDownEventHandledButDontNeedMovedOrUpEvents;
 	}
 
-	void dbCellTextChanged (int32_t row, int32_t column, UTF8StringPtr newText, CDataBrowser* browser)
+	void dbCellTextChanged (int32_t row, int32_t column, UTF8StringPtr newText, CDataBrowser* browser) VSTGUI_OVERRIDE_VMETHOD
 	{
 		if (row < (int32_t)names.size () && names.at (row) != newText)
 		{
@@ -257,7 +257,7 @@ protected:
 		textEditControl = 0;
 	}
 
-	void dbCellSetupTextEdit (int32_t row, int32_t column, CTextEdit* control, CDataBrowser* browser)
+	void dbCellSetupTextEdit (int32_t row, int32_t column, CTextEdit* control, CDataBrowser* browser) VSTGUI_OVERRIDE_VMETHOD
 	{
 		textEditControl = control;
 		textEditControl->setBackColor (kWhiteCColor);

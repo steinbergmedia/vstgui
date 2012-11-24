@@ -105,7 +105,7 @@ public:
 
 	virtual void   setFocusView (CView* pView);
 	virtual CView* getFocusView () const { return pFocusView; }
-	virtual bool advanceNextFocusView (CView* oldFocus, bool reverse = false);
+	virtual bool advanceNextFocusView (CView* oldFocus, bool reverse = false) VSTGUI_OVERRIDE_VMETHOD;
 
 	virtual void onViewAdded (CView* pView);
 	virtual void onViewRemoved (CView* pView);
@@ -152,8 +152,8 @@ public:
 	virtual CCoord getFocusWidth () const;							///< get focus draw width
 	//@}
 
-	void invalid () { invalidRect (getViewSize ()); setDirty (false); }
-	void invalidRect (const CRect& rect);
+	void invalid () VSTGUI_OVERRIDE_VMETHOD { invalidRect (getViewSize ()); setDirty (false); }
+	void invalidRect (const CRect& rect) VSTGUI_OVERRIDE_VMETHOD;
 
 	#if MAC_COCOA && MAC_CARBON
 	VSTGUI_DEPRECATED(static void setCocoaMode (bool state);)		///< \deprecated see PlatformType
@@ -162,25 +162,25 @@ public:
 
 	IPlatformFrame* getPlatformFrame () const { return platformFrame; }
 
-	bool removeView (CView* pView, bool withForget = true);
-	bool removeAll (bool withForget = true);
-	CView* getViewAt (const CPoint& where, bool deep = false) const;
-	CViewContainer* getContainerAt (const CPoint& where, bool deep = true) const;
+	bool removeView (CView* pView, bool withForget = true) VSTGUI_OVERRIDE_VMETHOD;
+	bool removeAll (bool withForget = true) VSTGUI_OVERRIDE_VMETHOD;
+	CView* getViewAt (const CPoint& where, bool deep = false, bool mustbeMouseEnabled = false) const VSTGUI_OVERRIDE_VMETHOD;
+	CViewContainer* getContainerAt (const CPoint& where, bool deep = true) const VSTGUI_OVERRIDE_VMETHOD;
 
 	// CView
-	virtual bool attached (CView* parent);
-	void draw (CDrawContext* pContext);
-	void drawRect (CDrawContext* pContext, const CRect& updateRect);
-	CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons);
-	CMouseEventResult onMouseUp (CPoint& where, const CButtonState& buttons);
-	CMouseEventResult onMouseMoved (CPoint& where, const CButtonState& buttons);
-	CMouseEventResult onMouseExited (CPoint& where, const CButtonState& buttons);
-	bool onWheel (const CPoint& where, const float& distance, const CButtonState& buttons);
-	bool onWheel (const CPoint& where, const CMouseWheelAxis& axis, const float& distance, const CButtonState& buttons);
-	int32_t onKeyDown (VstKeyCode& keyCode);
-	int32_t onKeyUp (VstKeyCode& keyCode);
-	DragResult doDrag (IDataPackage* source, const CPoint& offset, CBitmap* dragBitmap);
-	void setViewSize (const CRect& rect, bool invalid = true);
+	virtual bool attached (CView* parent) VSTGUI_OVERRIDE_VMETHOD;
+	void draw (CDrawContext* pContext) VSTGUI_OVERRIDE_VMETHOD;
+	void drawRect (CDrawContext* pContext, const CRect& updateRect) VSTGUI_OVERRIDE_VMETHOD;
+	CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons) VSTGUI_OVERRIDE_VMETHOD;
+	CMouseEventResult onMouseUp (CPoint& where, const CButtonState& buttons) VSTGUI_OVERRIDE_VMETHOD;
+	CMouseEventResult onMouseMoved (CPoint& where, const CButtonState& buttons) VSTGUI_OVERRIDE_VMETHOD;
+	CMouseEventResult onMouseExited (CPoint& where, const CButtonState& buttons) VSTGUI_OVERRIDE_VMETHOD;
+	bool onWheel (const CPoint& where, const float& distance, const CButtonState& buttons) VSTGUI_OVERRIDE_VMETHOD;
+	bool onWheel (const CPoint& where, const CMouseWheelAxis& axis, const float& distance, const CButtonState& buttons) VSTGUI_OVERRIDE_VMETHOD;
+	int32_t onKeyDown (VstKeyCode& keyCode) VSTGUI_OVERRIDE_VMETHOD;
+	int32_t onKeyUp (VstKeyCode& keyCode) VSTGUI_OVERRIDE_VMETHOD;
+	DragResult doDrag (IDataPackage* source, const CPoint& offset, CBitmap* dragBitmap) VSTGUI_OVERRIDE_VMETHOD;
+	void setViewSize (const CRect& rect, bool invalid = true) VSTGUI_OVERRIDE_VMETHOD;
 
 	virtual VSTGUIEditorInterface* getEditor () const { return pEditor; }
 

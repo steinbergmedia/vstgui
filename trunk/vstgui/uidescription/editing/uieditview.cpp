@@ -254,9 +254,9 @@ void UIEditView::drawRect (CDrawContext *pContext, const CRect& updateRect)
 }
 
 //----------------------------------------------------------------------------------------------------
-CView* UIEditView::getViewAt (const CPoint& p, bool deep) const
+CView* UIEditView::getViewAt (const CPoint& p, bool deep, bool mustbeMouseEnabled) const
 {
-	CView* view = CViewContainer::getViewAt (p, deep);
+	CView* view = CViewContainer::getViewAt (p, deep, mustbeMouseEnabled);
 	if (editing)
 	{
 		UIViewFactory* factory = dynamic_cast<UIViewFactory*> (description->getViewFactory ());

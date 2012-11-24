@@ -79,10 +79,10 @@ public:
 	bool add (const void* buffer, int32_t bufferSize, Type type);
 
 	// IDataPackage
-	virtual int32_t getCount ();
-	virtual int32_t getDataSize (int32_t index) { return getEntrySize (index); }
-	virtual Type getDataType (int32_t index) { return getEntryType (index); }
-	virtual int32_t getData (int32_t index, const void*& buffer, Type& type) { return getEntry (index, buffer, type); }
+	virtual int32_t getCount () VSTGUI_OVERRIDE_VMETHOD;
+	virtual int32_t getDataSize (int32_t index) VSTGUI_OVERRIDE_VMETHOD { return getEntrySize (index); }
+	virtual Type getDataType (int32_t index) VSTGUI_OVERRIDE_VMETHOD { return getEntryType (index); }
+	virtual int32_t getData (int32_t index, const void*& buffer, Type& type) VSTGUI_OVERRIDE_VMETHOD { return getEntry (index, buffer, type); }
 
 	// old interface
 	int32_t getEntrySize (int32_t index);

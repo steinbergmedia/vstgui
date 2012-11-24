@@ -65,18 +65,18 @@ public:
 	//@}
 
 	// overrides
-	virtual void setText (UTF8StringPtr txt);
-	virtual void setValue (float val);
+	virtual void setText (UTF8StringPtr txt) VSTGUI_OVERRIDE_VMETHOD;
+	virtual void setValue (float val) VSTGUI_OVERRIDE_VMETHOD;
 
-	virtual	void draw (CDrawContext* pContext);
-	virtual CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons);
-	virtual int32_t onKeyDown (VstKeyCode& keyCode);
+	virtual	void draw (CDrawContext* pContext) VSTGUI_OVERRIDE_VMETHOD;
+	virtual CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons) VSTGUI_OVERRIDE_VMETHOD;
+	virtual int32_t onKeyDown (VstKeyCode& keyCode) VSTGUI_OVERRIDE_VMETHOD;
 
-	virtual	void takeFocus ();
-	virtual	void looseFocus ();
+	virtual	void takeFocus () VSTGUI_OVERRIDE_VMETHOD;
+	virtual	void looseFocus () VSTGUI_OVERRIDE_VMETHOD;
 
-	virtual void setViewSize (const CRect& newSize, bool invalid = true);
-	virtual void parentSizeChanged ();
+	virtual void setViewSize (const CRect& newSize, bool invalid = true) VSTGUI_OVERRIDE_VMETHOD;
+	virtual void parentSizeChanged () VSTGUI_OVERRIDE_VMETHOD;
 
 	bool bWasReturnPressed;
 

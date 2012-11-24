@@ -1,3 +1,9 @@
+2012-11-24 arne
+
+	* add new argument to CViewContainer::getViewAt () to allow to get only the mouse enabled view at that position
+	* changed CViewContainer::getViewsAt () result container to std::list<SharedPointer<CView> >
+	* add c++11 override keyword with VSTGUI_OVERRIDE_VMETHOD
+
 2012-11-22 arne
 
 	* fix issues when compiling in c++11 mode

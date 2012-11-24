@@ -88,10 +88,10 @@ public:
 	virtual void setTabViewInsets (const CPoint& inset);
 	//@}
 
-	virtual void drawBackgroundRect (CDrawContext *pContext, const CRect& _updateRect);
-	virtual void valueChanged (CControl *pControl);
-	virtual void setViewSize (const CRect &rect, bool invalid = true);
-	virtual void setAutosizeFlags (int32_t flags);
+	virtual void drawBackgroundRect (CDrawContext *pContext, const CRect& _updateRect) VSTGUI_OVERRIDE_VMETHOD;
+	virtual void valueChanged (CControl *pControl) VSTGUI_OVERRIDE_VMETHOD;
+	virtual void setViewSize (const CRect &rect, bool invalid = true) VSTGUI_OVERRIDE_VMETHOD;
+	virtual void setAutosizeFlags (int32_t flags) VSTGUI_OVERRIDE_VMETHOD;
 //-----------------------------------------------------------------------------
 	CLASS_METHODS (CTabView, CViewContainer)
 protected:

@@ -34,15 +34,15 @@ public:
 	//@}
 
 	// override
-	void drawRect (CDrawContext* pContext, const CRect& updateRect);
-	void drawBackgroundRect (CDrawContext* pContext, const CRect& _updateRect);
-	void setViewSize (const CRect& rect, bool invalid = true);
-	bool addView (CView* pView);
-	bool addView (CView* pView, const CRect& mouseableArea, bool mouseEnabled = true);
-	bool addView (CView* pView, CView* pBefore);
-	bool removeView (CView* pView, bool withForget = true);
-	bool changeViewZOrder (CView* view, int32_t newIndex);
-	CMessageResult notify (CBaseObject* sender, IdStringPtr message);
+	void drawRect (CDrawContext* pContext, const CRect& updateRect) VSTGUI_OVERRIDE_VMETHOD;
+	void drawBackgroundRect (CDrawContext* pContext, const CRect& _updateRect) VSTGUI_OVERRIDE_VMETHOD;
+	void setViewSize (const CRect& rect, bool invalid = true) VSTGUI_OVERRIDE_VMETHOD;
+	bool addView (CView* pView) VSTGUI_OVERRIDE_VMETHOD;
+	bool addView (CView* pView, const CRect& mouseableArea, bool mouseEnabled = true) VSTGUI_OVERRIDE_VMETHOD;
+	bool addView (CView* pView, CView* pBefore) VSTGUI_OVERRIDE_VMETHOD;
+	bool removeView (CView* pView, bool withForget = true) VSTGUI_OVERRIDE_VMETHOD;
+	bool changeViewZOrder (CView* view, int32_t newIndex) VSTGUI_OVERRIDE_VMETHOD;
+	CMessageResult notify (CBaseObject* sender, IdStringPtr message) VSTGUI_OVERRIDE_VMETHOD;
 
 	CLASS_METHODS(CShadowViewContainer, CViewContainer)
 protected:

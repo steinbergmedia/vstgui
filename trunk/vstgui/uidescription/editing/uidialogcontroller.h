@@ -24,16 +24,16 @@ public:
 	static IdStringPtr kMsgDialogButton2Clicked;
 	static IdStringPtr kMsgDialogShow;
 protected:
-	void valueChanged (CControl* pControl);
-	CControlListener* getControlListener (UTF8StringPtr controlTagName);
-	CView* verifyView (CView* view, const UIAttributes& attributes, IUIDescription* description);
+	void valueChanged (CControl* pControl) VSTGUI_OVERRIDE_VMETHOD;
+	CControlListener* getControlListener (UTF8StringPtr controlTagName) VSTGUI_OVERRIDE_VMETHOD;
+	CView* verifyView (CView* view, const UIAttributes& attributes, IUIDescription* description) VSTGUI_OVERRIDE_VMETHOD;
 
 	void layoutButtons ();
 	void collectOpenGLViews (CViewContainer* container);
 	void setOpenGLViewsVisible (bool state);
 
-	int32_t onKeyDown (const VstKeyCode& code, CFrame* frame);
-	int32_t onKeyUp (const VstKeyCode& code, CFrame* frame);
+	int32_t onKeyDown (const VstKeyCode& code, CFrame* frame) VSTGUI_OVERRIDE_VMETHOD;
+	int32_t onKeyUp (const VstKeyCode& code, CFrame* frame) VSTGUI_OVERRIDE_VMETHOD;
 
 	CFrame* frame;
 	SharedPointer<CBaseObject> dialogController;

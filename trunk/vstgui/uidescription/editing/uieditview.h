@@ -59,32 +59,32 @@ protected:
 
 	void invalidSelection ();
 	MouseSizeMode selectionHitTest (const CPoint& where, CView** resultView);
-	CMouseEventResult onMouseDown (CPoint &where, const CButtonState& buttons);
-	CMouseEventResult onMouseUp (CPoint &where, const CButtonState& buttons);
-	CMouseEventResult onMouseMoved (CPoint &where, const CButtonState& buttons);
-	CMouseEventResult onMouseExited (CPoint& where, const CButtonState& buttons);
-	CMessageResult notify (CBaseObject* sender, IdStringPtr message);
+	CMouseEventResult onMouseDown (CPoint &where, const CButtonState& buttons) VSTGUI_OVERRIDE_VMETHOD;
+	CMouseEventResult onMouseUp (CPoint &where, const CButtonState& buttons) VSTGUI_OVERRIDE_VMETHOD;
+	CMouseEventResult onMouseMoved (CPoint &where, const CButtonState& buttons) VSTGUI_OVERRIDE_VMETHOD;
+	CMouseEventResult onMouseExited (CPoint& where, const CButtonState& buttons) VSTGUI_OVERRIDE_VMETHOD;
+	CMessageResult notify (CBaseObject* sender, IdStringPtr message) VSTGUI_OVERRIDE_VMETHOD;
 
 
 	CBitmap* createBitmapFromSelection (UISelection* selection);
 	void startDrag (CPoint& where);
 	UISelection* getSelectionOutOfDrag (CDragContainer* drag);
-	bool onDrop (CDragContainer* drag, const CPoint& where);
-	void onDragEnter (CDragContainer* drag, const CPoint& where);
-	void onDragLeave (CDragContainer* drag, const CPoint& where);
-	void onDragMove (CDragContainer* drag, const CPoint& where);
+	bool onDrop (CDragContainer* drag, const CPoint& where) VSTGUI_OVERRIDE_VMETHOD;
+	void onDragEnter (CDragContainer* drag, const CPoint& where) VSTGUI_OVERRIDE_VMETHOD;
+	void onDragLeave (CDragContainer* drag, const CPoint& where) VSTGUI_OVERRIDE_VMETHOD;
+	void onDragMove (CDragContainer* drag, const CPoint& where) VSTGUI_OVERRIDE_VMETHOD;
 
-	void draw (CDrawContext *pContext);
-	void drawRect (CDrawContext *pContext, const CRect& updateRect);
-	CView* getViewAt (const CPoint& p, bool deep) const;
-	CViewContainer* getContainerAt (const CPoint& p, bool deep) const;
-	bool advanceNextFocusView (CView* oldFocus, bool reverse);
-	bool onWheel (const CPoint &where, const CMouseWheelAxis &axis, const float &distance, const CButtonState &buttons);
+	void draw (CDrawContext *pContext) VSTGUI_OVERRIDE_VMETHOD;
+	void drawRect (CDrawContext *pContext, const CRect& updateRect) VSTGUI_OVERRIDE_VMETHOD;
+	CView* getViewAt (const CPoint& p, bool deep, bool mustbeMouseEnabled = false) const VSTGUI_OVERRIDE_VMETHOD;
+	CViewContainer* getContainerAt (const CPoint& p, bool deep) const VSTGUI_OVERRIDE_VMETHOD;
+	bool advanceNextFocusView (CView* oldFocus, bool reverse) VSTGUI_OVERRIDE_VMETHOD;
+	bool onWheel (const CPoint &where, const CMouseWheelAxis &axis, const float &distance, const CButtonState &buttons) VSTGUI_OVERRIDE_VMETHOD;
 
-	void looseFocus ();
-	void takeFocus ();
-	bool removed (CView* parent);
-	bool attached (CView* parent);
+	void looseFocus () VSTGUI_OVERRIDE_VMETHOD;
+	void takeFocus () VSTGUI_OVERRIDE_VMETHOD;
+	bool removed (CView* parent) VSTGUI_OVERRIDE_VMETHOD;
+	bool attached (CView* parent) VSTGUI_OVERRIDE_VMETHOD;
 
 	bool editing;
 	MouseEditMode mouseEditMode;

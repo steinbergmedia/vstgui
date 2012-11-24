@@ -761,14 +761,14 @@ CMouseEventResult VST3Editor::onMouseDown (CFrame* frame, const CPoint& where, c
 //-----------------------------------------------------------------------------
 Steinberg::tresult PLUGIN_API VST3Editor::findParameter (Steinberg::int32 xPos, Steinberg::int32 yPos, Steinberg::Vst::ParamID& resultTag)
 {
-	std::list<CView*> views;
+	std::list<SharedPointer<CView> > views;
 	if (frame && frame->getViewsAt (CPoint (xPos, yPos), views))
 	{
 		CControl* control = 0;
-		std::list<CView*>::const_iterator it = views.begin ();
+		std::list<SharedPointer<CView> >::const_iterator it = views.begin ();
 		while (it != views.end ())
 		{
-			control = dynamic_cast<CControl*> (*it);
+			control = (*it).cast<CControl>();
 			if (control)
 			{
 				if (control->getMouseEnabled () && control->getTag () != -1)

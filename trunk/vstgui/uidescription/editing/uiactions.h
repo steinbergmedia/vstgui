@@ -70,10 +70,10 @@ public:
 	SizeToFitOperation (UISelection* selection);
 	~SizeToFitOperation ();
 
-	UTF8StringPtr getName ();
+	UTF8StringPtr getName () VSTGUI_OVERRIDE_VMETHOD;
 	
-	void perform ();
-	void undo ();
+	void perform () VSTGUI_OVERRIDE_VMETHOD;
+	void undo () VSTGUI_OVERRIDE_VMETHOD;
 };
 
 //-----------------------------------------------------------------------------
@@ -84,10 +84,10 @@ public:
 	
 	~UnembedViewOperation ();
 
-	UTF8StringPtr getName ();
+	UTF8StringPtr getName () VSTGUI_OVERRIDE_VMETHOD;
 
-	void perform ();
-	void undo ();
+	void perform () VSTGUI_OVERRIDE_VMETHOD;
+	void undo () VSTGUI_OVERRIDE_VMETHOD;
 
 protected:
 	void collectSubviews (CViewContainer* container, bool deep);
@@ -103,9 +103,9 @@ public:
 	EmbedViewOperation (UISelection* selection, CViewContainer* newContainer);
 	~EmbedViewOperation ();
 	
-	UTF8StringPtr getName ();
-	void perform ();
-	void undo ();
+	UTF8StringPtr getName () VSTGUI_OVERRIDE_VMETHOD;
+	void perform () VSTGUI_OVERRIDE_VMETHOD;
+	void undo () VSTGUI_OVERRIDE_VMETHOD;
 
 protected:
 	OwningPointer<CViewContainer> newContainer;
@@ -119,9 +119,9 @@ public:
 	ViewCopyOperation (UISelection* copySelection, UISelection* workingSelection, CViewContainer* parent, const CPoint& offset, UIViewFactory* viewFactory, IUIDescription* desc);
 	~ViewCopyOperation ();
 	
-	UTF8StringPtr getName ();
-	void perform ();
-	void undo ();
+	UTF8StringPtr getName () VSTGUI_OVERRIDE_VMETHOD;
+	void perform () VSTGUI_OVERRIDE_VMETHOD;
+	void undo () VSTGUI_OVERRIDE_VMETHOD;
 protected:
 	SharedPointer<CViewContainer> parent;
 	SharedPointer<UISelection> copySelection;
@@ -137,9 +137,9 @@ public:
 
 	~ViewSizeChangeOperation ();
 	
-	UTF8StringPtr getName ();
-	void perform ();
-	void undo ();
+	UTF8StringPtr getName () VSTGUI_OVERRIDE_VMETHOD;
+	void perform () VSTGUI_OVERRIDE_VMETHOD;
+	void undo () VSTGUI_OVERRIDE_VMETHOD;
 protected:
 	bool first;
 	bool sizing;
@@ -161,9 +161,9 @@ public:
 	DeleteOperation (UISelection* selection);
 	~DeleteOperation ();
 	
-	UTF8StringPtr getName ();
-	void perform ();
-	void undo ();
+	UTF8StringPtr getName () VSTGUI_OVERRIDE_VMETHOD;
+	void perform () VSTGUI_OVERRIDE_VMETHOD;
+	void undo () VSTGUI_OVERRIDE_VMETHOD;
 protected:
 	SharedPointer<UISelection> selection;
 };
@@ -175,9 +175,9 @@ public:
 	InsertViewOperation (CViewContainer* parent, CView* view, UISelection* selection);
 	~InsertViewOperation ();
 
-	UTF8StringPtr getName ();
-	void perform ();
-	void undo ();
+	UTF8StringPtr getName () VSTGUI_OVERRIDE_VMETHOD;
+	void perform () VSTGUI_OVERRIDE_VMETHOD;
+	void undo () VSTGUI_OVERRIDE_VMETHOD;
 protected:
 	SharedPointer<CViewContainer> parent;
 	SharedPointer<CView> view;
@@ -191,11 +191,11 @@ public:
 	TransformViewTypeOperation (UISelection* selection, IdStringPtr viewClassName, UIDescription* desc, UIViewFactory* factory);
 	~TransformViewTypeOperation ();
 
-	UTF8StringPtr getName ();
+	UTF8StringPtr getName () VSTGUI_OVERRIDE_VMETHOD;
 
 	void exchangeSubViews (CViewContainer* src, CViewContainer* dst);
-	void perform ();
-	void undo ();
+	void perform () VSTGUI_OVERRIDE_VMETHOD;
+	void undo () VSTGUI_OVERRIDE_VMETHOD;
 protected:
 	SharedPointer<CView> view;
 	CView* newView;
@@ -214,9 +214,9 @@ public:
 
 	~AttributeChangeAction ();
 
-	UTF8StringPtr getName ();
-	void perform ();
-	void undo ();
+	UTF8StringPtr getName () VSTGUI_OVERRIDE_VMETHOD;
+	void perform () VSTGUI_OVERRIDE_VMETHOD;
+	void undo () VSTGUI_OVERRIDE_VMETHOD;
 protected:
 	void updateSelection ();
 	
@@ -232,9 +232,9 @@ class MultipleAttributeChangeAction : public IAction, public std::map<SharedPoin
 {
 public:
 	MultipleAttributeChangeAction (UIDescription* description, const std::list<CView*>& views, IViewCreator::AttrType attrType, UTF8StringPtr oldValue, UTF8StringPtr newValue);
-	virtual UTF8StringPtr getName () { return "multiple view attribute changes"; }
-	virtual void perform ();
-	virtual void undo ();
+	virtual UTF8StringPtr getName () VSTGUI_OVERRIDE_VMETHOD { return "multiple view attribute changes"; }
+	virtual void perform () VSTGUI_OVERRIDE_VMETHOD;
+	virtual void undo () VSTGUI_OVERRIDE_VMETHOD;
 protected:
 	void setAttributeValue (UTF8StringPtr value);
 	static void collectAllSubViews (CView* view, std::list<CView*>& views);
@@ -251,9 +251,9 @@ class TagChangeAction : public IAction
 public:
 	TagChangeAction (UIDescription* description, UTF8StringPtr name, UTF8StringPtr newTagString, bool remove, bool performOrUndo);
 
-	virtual UTF8StringPtr getName ();
-	virtual void perform ();
-	virtual void undo ();
+	virtual UTF8StringPtr getName () VSTGUI_OVERRIDE_VMETHOD;
+	virtual void perform () VSTGUI_OVERRIDE_VMETHOD;
+	virtual void undo () VSTGUI_OVERRIDE_VMETHOD;
 	
 	bool isAddTag () const { return isNewTag; }
 protected:
@@ -272,9 +272,9 @@ class TagNameChangeAction : public IAction
 public:
 	TagNameChangeAction (UIDescription* description, UTF8StringPtr oldName, UTF8StringPtr newName, bool performOrUndo);
 
-	virtual UTF8StringPtr getName ();
-	virtual void perform ();
-	virtual void undo ();
+	virtual UTF8StringPtr getName () VSTGUI_OVERRIDE_VMETHOD;
+	virtual void perform () VSTGUI_OVERRIDE_VMETHOD;
+	virtual void undo () VSTGUI_OVERRIDE_VMETHOD;
 protected:
 	SharedPointer<UIDescription> description;
 	std::string oldName;
@@ -288,9 +288,9 @@ class ColorChangeAction : public IAction
 public:
 	ColorChangeAction (UIDescription* description, UTF8StringPtr name, const CColor& color, bool remove, bool performOrUndo);
 
-	virtual UTF8StringPtr getName ();
-	virtual void perform ();
-	virtual void undo ();
+	virtual UTF8StringPtr getName () VSTGUI_OVERRIDE_VMETHOD;
+	virtual void perform () VSTGUI_OVERRIDE_VMETHOD;
+	virtual void undo () VSTGUI_OVERRIDE_VMETHOD;
 	
 	bool isAddColor () const { return isNewColor; }
 protected:
@@ -309,9 +309,9 @@ class ColorNameChangeAction : public IAction
 public:
 	ColorNameChangeAction (UIDescription* description, UTF8StringPtr oldName, UTF8StringPtr newName, bool performOrUndo);
 
-	virtual UTF8StringPtr getName ();
-	virtual void perform ();
-	virtual void undo ();
+	virtual UTF8StringPtr getName () VSTGUI_OVERRIDE_VMETHOD;
+	virtual void perform () VSTGUI_OVERRIDE_VMETHOD;
+	virtual void undo () VSTGUI_OVERRIDE_VMETHOD;
 protected:
 	SharedPointer<UIDescription> description;
 	std::string oldName;
@@ -325,9 +325,9 @@ class BitmapChangeAction : public IAction
 public:
 	BitmapChangeAction (UIDescription* description, UTF8StringPtr name, UTF8StringPtr path, bool remove, bool performOrUndo);
 
-	virtual UTF8StringPtr getName ();
-	virtual void perform ();
-	virtual void undo ();
+	virtual UTF8StringPtr getName () VSTGUI_OVERRIDE_VMETHOD;
+	virtual void perform () VSTGUI_OVERRIDE_VMETHOD;
+	virtual void undo () VSTGUI_OVERRIDE_VMETHOD;
 	
 	bool isAddBitmap () const { return isNewBitmap; }
 protected:
@@ -346,9 +346,9 @@ class BitmapNameChangeAction : public IAction
 public:
 	BitmapNameChangeAction (UIDescription* description, UTF8StringPtr oldName, UTF8StringPtr newName, bool performOrUndo);
 
-	virtual UTF8StringPtr getName ();
-	virtual void perform ();
-	virtual void undo ();
+	virtual UTF8StringPtr getName () VSTGUI_OVERRIDE_VMETHOD;
+	virtual void perform () VSTGUI_OVERRIDE_VMETHOD;
+	virtual void undo () VSTGUI_OVERRIDE_VMETHOD;
 protected:
 	SharedPointer<UIDescription> description;
 	std::string oldName;
@@ -363,9 +363,9 @@ public:
 	NinePartTiledBitmapChangeAction (UIDescription* description, UTF8StringPtr name, const CRect* rect, bool performOrUndo);
 	~NinePartTiledBitmapChangeAction ();
 	
-	virtual UTF8StringPtr getName ();
-	virtual void perform ();
-	virtual void undo ();
+	virtual UTF8StringPtr getName () VSTGUI_OVERRIDE_VMETHOD;
+	virtual void perform () VSTGUI_OVERRIDE_VMETHOD;
+	virtual void undo () VSTGUI_OVERRIDE_VMETHOD;
 protected:
 	SharedPointer<UIDescription> description;
 	std::string name;
@@ -381,9 +381,9 @@ public:
 	BitmapFilterChangeAction (UIDescription* description, UTF8StringPtr bitmapName, const std::list<SharedPointer<UIAttributes> >& attributes, bool performOrUndo);
 	~BitmapFilterChangeAction ();
 	
-	virtual UTF8StringPtr getName ();
-	virtual void perform ();
-	virtual void undo ();
+	virtual UTF8StringPtr getName () VSTGUI_OVERRIDE_VMETHOD;
+	virtual void perform () VSTGUI_OVERRIDE_VMETHOD;
+	virtual void undo () VSTGUI_OVERRIDE_VMETHOD;
 protected:
 	SharedPointer<UIDescription> description;
 	std::string bitmapName;
@@ -398,9 +398,9 @@ class FontChangeAction : public IAction
 public:
 	FontChangeAction (UIDescription* description, UTF8StringPtr name, CFontRef font, bool remove, bool performOrUndo);
 
-	virtual UTF8StringPtr getName ();
-	virtual void perform ();
-	virtual void undo ();
+	virtual UTF8StringPtr getName () VSTGUI_OVERRIDE_VMETHOD;
+	virtual void perform () VSTGUI_OVERRIDE_VMETHOD;
+	virtual void undo () VSTGUI_OVERRIDE_VMETHOD;
 
 	bool isAddFont () const { return originalFont == 0; }
 protected:
@@ -419,9 +419,9 @@ class FontNameChangeAction : public IAction
 public:
 	FontNameChangeAction (UIDescription* description, UTF8StringPtr oldName, UTF8StringPtr newName, bool performOrUndo);
 
-	virtual UTF8StringPtr getName ();
-	virtual void perform ();
-	virtual void undo ();
+	virtual UTF8StringPtr getName () VSTGUI_OVERRIDE_VMETHOD;
+	virtual void perform () VSTGUI_OVERRIDE_VMETHOD;
+	virtual void undo () VSTGUI_OVERRIDE_VMETHOD;
 protected:
 	SharedPointer<UIDescription> description;
 	std::string oldName;
@@ -434,9 +434,9 @@ class AlternateFontChangeAction : public IAction
 {
 public:
 	AlternateFontChangeAction (UIDescription* description, UTF8StringPtr fontName, UTF8StringPtr newAlternateFontNames);
-	virtual UTF8StringPtr getName ();
-	virtual void perform ();
-	virtual void undo ();
+	virtual UTF8StringPtr getName () VSTGUI_OVERRIDE_VMETHOD;
+	virtual void perform () VSTGUI_OVERRIDE_VMETHOD;
+	virtual void undo () VSTGUI_OVERRIDE_VMETHOD;
 protected:
 	SharedPointer<UIDescription> description;
 	std::string fontName;
@@ -451,9 +451,9 @@ public:
 	HierarchyMoveViewOperation (CView* view, UISelection* selection, bool up);
 	~HierarchyMoveViewOperation ();
 
-	UTF8StringPtr getName ();
-	void perform ();
-	void undo ();
+	UTF8StringPtr getName () VSTGUI_OVERRIDE_VMETHOD;
+	void perform () VSTGUI_OVERRIDE_VMETHOD;
+	void undo () VSTGUI_OVERRIDE_VMETHOD;
 protected:
 	SharedPointer<CView> view;
 	SharedPointer<CViewContainer> parent;
@@ -467,9 +467,9 @@ class TemplateNameChangeAction : public IAction
 public:
 	TemplateNameChangeAction (UIDescription* description, IActionPerformer* actionPerformer, UTF8StringPtr oldName, UTF8StringPtr newName);
 
-	UTF8StringPtr getName ();
-	void perform ();
-	void undo ();
+	UTF8StringPtr getName () VSTGUI_OVERRIDE_VMETHOD;
+	void perform () VSTGUI_OVERRIDE_VMETHOD;
+	void undo () VSTGUI_OVERRIDE_VMETHOD;
 protected:
 	SharedPointer<UIDescription> description;
 	IActionPerformer* actionPerformer;
@@ -483,9 +483,9 @@ class CreateNewTemplateAction : public IAction
 public:
 	CreateNewTemplateAction (UIDescription* description, IActionPerformer* actionPerformer, UTF8StringPtr name, UTF8StringPtr baseViewClassName);
 
-	UTF8StringPtr getName ();
-	void perform ();
-	void undo ();
+	UTF8StringPtr getName () VSTGUI_OVERRIDE_VMETHOD;
+	void perform () VSTGUI_OVERRIDE_VMETHOD;
+	void undo () VSTGUI_OVERRIDE_VMETHOD;
 protected:
 	SharedPointer<UIDescription> description;
 	IActionPerformer* actionPerformer;
@@ -500,9 +500,9 @@ class DuplicateTemplateAction : public IAction
 public:
 	DuplicateTemplateAction (UIDescription* description, IActionPerformer* actionPerformer, UTF8StringPtr name, UTF8StringPtr dupName);
 
-	UTF8StringPtr getName ();
-	void perform ();
-	void undo ();
+	UTF8StringPtr getName () VSTGUI_OVERRIDE_VMETHOD;
+	void perform () VSTGUI_OVERRIDE_VMETHOD;
+	void undo () VSTGUI_OVERRIDE_VMETHOD;
 protected:
 	SharedPointer<UIDescription> description;
 	IActionPerformer* actionPerformer;
@@ -517,9 +517,9 @@ class DeleteTemplateAction : public IAction
 public:
 	DeleteTemplateAction (UIDescription* description, IActionPerformer* actionPerformer, CView* view, UTF8StringPtr name);
 
-	UTF8StringPtr getName ();
-	void perform ();
-	void undo ();
+	UTF8StringPtr getName () VSTGUI_OVERRIDE_VMETHOD;
+	void perform () VSTGUI_OVERRIDE_VMETHOD;
+	void undo () VSTGUI_OVERRIDE_VMETHOD;
 protected:
 	SharedPointer<UIDescription> description;
 	IActionPerformer* actionPerformer;
