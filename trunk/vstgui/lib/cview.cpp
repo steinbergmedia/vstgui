@@ -67,7 +67,7 @@ namespace VSTGUI {
 				while (it != gViewList.end ())
 				{
 					CView* view = (*it);
-					DebugPrint ("%s\n", view->getClassName ());
+					DebugPrint ("%s\n", typeid(view).name ());
 					it++;
 				}
 			}
