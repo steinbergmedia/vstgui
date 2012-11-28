@@ -139,7 +139,7 @@ ExchangeViewAnimation::ExchangeViewAnimation (CView* oldView, CView* newView, An
 
 	viewToRemove->remember ();
 	newView->remember ();
-	CViewContainer* parent = reinterpret_cast<CViewContainer*> (viewToRemove->getParentView ());
+	CViewContainer* parent = static_cast<CViewContainer*> (viewToRemove->getParentView ());
 	if (parent)
 		parent->addView (newView);
 
@@ -158,7 +158,7 @@ ExchangeViewAnimation::~ExchangeViewAnimation ()
 void ExchangeViewAnimation::animationStart (CView* view, IdStringPtr name)
 {
 	#if DEBUG
-	CViewContainer* parent = reinterpret_cast<CViewContainer*> (viewToRemove->getParentView ());
+	CViewContainer* parent = static_cast<CViewContainer*> (viewToRemove->getParentView ());
 	assert (view == parent);
 	#endif
 	if (style == kAlphaValueFade)
@@ -248,7 +248,7 @@ void ExchangeViewAnimation::animationFinished (CView* view, IdStringPtr name, bo
 	}
 	if (viewToRemove->getParentView ())
 	{
-		reinterpret_cast<CViewContainer*> (viewToRemove->getParentView ())->removeView (viewToRemove);
+		static_cast<CViewContainer*> (viewToRemove->getParentView ())->removeView (viewToRemove);
 	}
 }
 

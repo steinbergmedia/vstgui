@@ -484,6 +484,59 @@ void VST3Editor::enableTooltips (bool state)
 }
 
 //-----------------------------------------------------------------------------
+bool VST3Editor::setEditorSizeConstrains (const CPoint& newMinimumSize, const CPoint& newMaximumSize)
+{
+	if (newMinimumSize.x <= newMaximumSize.x && newMinimumSize.y <= newMaximumSize.y)
+	{
+		minSize = newMinimumSize;
+		maxSize = newMaximumSize;
+		if (frame)
+		{
+			CRect currentSize, newSize;
+			frame->getSize (currentSize);
+			newSize = currentSize;
+			CCoord width = currentSize.getWidth ();
+			CCoord height = currentSize.getHeight ();
+			if (width > maxSize.x)
+				currentSize.setWidth (maxSize.x);
+			else if (width < minSize.x)
+				currentSize.setWidth (minSize.x);
+			if (height > maxSize.y)
+				currentSize.setHeight (maxSize.y);
+			else if (height < minSize.y)
+				currentSize.setHeight (minSize.y);
+			if (newSize != currentSize)
+				requestResize (CPoint (newSize.getWidth (), newSize.getHeight ()));
+		}
+		
+		return true;
+	}
+	return false;
+}
+
+//-----------------------------------------------------------------------------
+bool VST3Editor::requestResize (const CPoint& newSize)
+{
+	CCoord width = newSize.x;
+	CCoord height = newSize.y;
+	if (width >= minSize.x && width <= maxSize.x && height >= minSize.y && height <= maxSize.y)
+	{
+		Steinberg::ViewRect vr;
+		vr.right = width;
+		vr.bottom = height;
+		return plugFrame->resizeView (this, &vr) == Steinberg::kResultTrue ? true : false;
+	}
+	return false;
+}
+
+//-----------------------------------------------------------------------------
+void VST3Editor::getEditorSizeConstrains (CPoint& minimumSize, CPoint& maximumSize)
+{
+	minimumSize = minSize;
+	maximumSize = maxSize;
+}
+
+//-----------------------------------------------------------------------------
 ParameterChangeListener* VST3Editor::getParameterChangeListener (int32_t tag)
 {
 	if (tag != -1)
@@ -917,10 +970,8 @@ Steinberg::tresult PLUGIN_API VST3Editor::onSize (Steinberg::ViewRect* newSize)
 //------------------------------------------------------------------------
 Steinberg::tresult PLUGIN_API VST3Editor::canResize ()
 {
-#if VSTGUI_LIVE_EDITING
+	// always return true as this can change dynamicaly
 	return Steinberg::kResultTrue;
-#endif
-	return (minSize == maxSize) ? Steinberg::kResultFalse : Steinberg::kResultTrue;
 }
 
 //------------------------------------------------------------------------

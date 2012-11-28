@@ -581,7 +581,7 @@ void CView::setViewSize (const CRect& newSize, bool invalid)
 CRect CView::getVisibleSize () const
 {
 	if (pParentView)
-		return reinterpret_cast<CViewContainer*>(pParentView)->getVisibleSize (size);
+		return static_cast<CViewContainer*>(pParentView)->getVisibleSize (size);
 	else if (pParentFrame)
 		return pParentFrame->getVisibleSize (size);
 	return CRect (0, 0, 0, 0);

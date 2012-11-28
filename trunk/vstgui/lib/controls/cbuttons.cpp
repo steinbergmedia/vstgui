@@ -240,7 +240,7 @@ CMouseEventResult CKickButton::onMouseUp (CPoint& where, const CButtonState& but
 //------------------------------------------------------------------------
 CMouseEventResult CKickButton::onMouseMoved (CPoint& where, const CButtonState& buttons)
 {
-	if (buttons & kLButton)
+	if (isEditing ())
 	{
 		if (where.h >= getViewSize ().left && where.v >= getViewSize ().top  &&
 			where.h <= getViewSize ().right && where.v <= getViewSize ().bottom)
@@ -598,7 +598,7 @@ CMouseEventResult CCheckBox::onMouseDown (CPoint& where, const CButtonState& but
 //------------------------------------------------------------------------
 CMouseEventResult CCheckBox::onMouseMoved (CPoint& where, const CButtonState& buttons)
 {
-	if (buttons.isLeftButton ())
+	if (isEditing ())
 	{
 		bool wasHilighted = hilight;
 		if (where.isInside (getViewSize ()))
@@ -885,25 +885,28 @@ CMouseEventResult CTextButton::onMouseDown (CPoint& where, const CButtonState& b
 //------------------------------------------------------------------------
 CMouseEventResult CTextButton::onMouseUp (CPoint& where, const CButtonState& buttons)
 {
-	if (value != fEntryState)
+	if (isEditing ())
 	{
-		valueChanged ();
-		if (style == kKickStyle)
+		if (value != fEntryState)
 		{
-			value = getMin ();  // set button to UNSELECTED state
 			valueChanged ();
+			if (style == kKickStyle)
+			{
+				value = getMin ();  // set button to UNSELECTED state
+				valueChanged ();
+			}
+			if (isDirty ())
+				invalid ();
 		}
-		if (isDirty ())
-			invalid ();
+		endEdit ();
 	}
-	endEdit ();
 	return kMouseEventHandled;
 }
 
 //------------------------------------------------------------------------
 CMouseEventResult CTextButton::onMouseMoved (CPoint& where, const CButtonState& buttons)
 {
-	if (buttons & kLButton)
+	if (isEditing ())
 	{
 		if (where.h >= getViewSize ().left && where.v >= getViewSize ().top  &&
 			where.h <= getViewSize ().right && where.v <= getViewSize ().bottom)

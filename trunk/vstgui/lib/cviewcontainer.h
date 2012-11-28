@@ -145,8 +145,8 @@ public:
 	#endif
 
 	//-----------------------------------------------------------------------------
-	typedef std::list<SharedPointer<CView> >::const_iterator CViewConstIterator;
-	typedef std::list<SharedPointer<CView> >::const_reverse_iterator CViewConstReverseIterator;
+	typedef std::list<SharedPointer<CView> >::const_iterator ChildViewConstIterator;
+	typedef std::list<SharedPointer<CView> >::const_reverse_iterator ChildViewConstReverseIterator;
 
 	//-----------------------------------------------------------------------------
 	template<bool reverse>
@@ -203,10 +203,33 @@ public:
 		
 	protected:
 		const std::list<SharedPointer<CView> >& children;
-		CViewConstIterator iterator;
-		CViewConstReverseIterator riterator;
+		ChildViewConstIterator iterator;
+		ChildViewConstReverseIterator riterator;
 	};
 
+	/** find child views of type T */
+	template<class T>
+	uint32_t findViewTypes (std::list<SharedPointer<T> >& result, bool deep = false) const
+	{
+		ChildViewConstIterator it = children.begin ();
+		while (it != children.end ())
+		{
+			T* tObj = (*it).cast<T> ();
+			if (tObj)
+			{
+				result.push_back (tObj);
+			}
+			else if (deep)
+			{
+				if (CViewContainer* container = (*it).cast<CViewContainer> ())
+				{
+					container->findViewTypes<T> (result);
+				}
+			}
+			it++;
+		}
+		return result.size ();
+	}
 	//-------------------------------------------
 protected:
 	~CViewContainer ();
@@ -233,7 +256,7 @@ protected:
 
 /// @cond ignore
 #ifndef FOREACHSUBVIEW
-	#define FOREACHSUBVIEW CViewConstIterator it = children.begin (); while (it != children.end ()) { CView* pV = (*it); it++; {
+	#define FOREACHSUBVIEW ChildViewConstIterator it = children.begin (); while (it != children.end ()) { CView* pV = (*it); it++; {
 #endif
 #ifndef ENDFOREACHSUBVIEW
 	#define ENDFOREACHSUBVIEW } }

@@ -79,6 +79,10 @@ public:
 	bool exchangeView (UTF8StringPtr templateName);
 	void enableTooltips (bool state);
 
+	bool setEditorSizeConstrains (const CPoint& newMinimumSize, const CPoint& newMaximumSize);
+	void getEditorSizeConstrains (CPoint& minimumSize, CPoint& maximumSize);
+	bool requestResize (const CPoint& newSize);
+
 //-----------------------------------------------------------------------------
 	DELEGATE_REFCOUNT(Steinberg::Vst::VSTGUIEditor)
 	Steinberg::tresult PLUGIN_API queryInterface (const ::Steinberg::TUID iid, void** obj);

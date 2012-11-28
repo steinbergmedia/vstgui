@@ -163,6 +163,7 @@ public:
 
 	virtual void beginEdit ();
 	virtual void endEdit ();
+	bool isEditing () const { return editing; }
 
 	virtual CControlListener* getListener () const { return listener; }	///< get main listener
 	virtual void setListener (CControlListener* l) { listener = l; } ///< set main listener
@@ -213,6 +214,7 @@ protected:
 	float vmin;
 	float vmax;
 	float wheelInc;
+	bool editing;
 
 	CPoint	backOffset;
 };

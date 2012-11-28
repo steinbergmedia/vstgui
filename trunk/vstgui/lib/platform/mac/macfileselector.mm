@@ -179,7 +179,7 @@ bool CocoaFileSelector::runInternal (CBaseObject* _delegate)
 		#if MAC_COCOA
 		if (frame && frame->getPlatformFrame ())
 		{
-			NSViewFrame* nsViewFrame = reinterpret_cast<NSViewFrame*> (frame->getPlatformFrame ());
+			NSViewFrame* nsViewFrame = static_cast<NSViewFrame*> (frame->getPlatformFrame ());
 			parentWindow = nsViewFrame ? [(nsViewFrame->getPlatformControl ()) window] : 0;
 		}
 		#endif

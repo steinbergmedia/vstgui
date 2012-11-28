@@ -362,7 +362,7 @@ void CFrame::checkMouseViews (const CPoint& where, const CButtonState& buttons)
 	std::list<CView*>::reverse_iterator it = pMouseViews.rbegin ();
 	while (it != pMouseViews.rend ())
 	{
-		vc = reinterpret_cast<CViewContainer*> ((*it));
+		vc = static_cast<CViewContainer*> ((*it));
 		if (vc == mouseView)
 			return;
 		if (vc->isChild (mouseView, true) == false)
@@ -385,7 +385,7 @@ void CFrame::checkMouseViews (const CPoint& where, const CButtonState& buttons)
 	{
 		std::list<CView*>::iterator it2 = pMouseViews.end ();
 		it2--;
-		while ((vc = reinterpret_cast<CViewContainer*> (mouseView->getParentView ())) != *it2)
+		while ((vc = static_cast<CViewContainer*> (mouseView->getParentView ())) != *it2)
 		{
 			pMouseViews.insert (it2, vc);
 			vc->remember ();
@@ -412,7 +412,7 @@ void CFrame::checkMouseViews (const CPoint& where, const CButtonState& buttons)
 		assert (pMouseViews.empty ());
 		pMouseViews.push_back (mouseView);
 		mouseView->remember ();
-		while ((vc = reinterpret_cast<CViewContainer*> (mouseView->getParentView ())) != this)
+		while ((vc = static_cast<CViewContainer*> (mouseView->getParentView ())) != this)
 		{
 			pMouseViews.push_front (vc);
 			vc->remember ();
@@ -973,7 +973,7 @@ bool CFrame::advanceNextFocusView (CView* oldFocus, bool reverse)
 				return container->advanceNextFocusView (0, reverse);
 			else
 			{
-				CViewContainer* parentView = reinterpret_cast<CViewContainer*> (oldFocus->getParentView ());
+				CViewContainer* parentView = static_cast<CViewContainer*> (oldFocus->getParentView ());
 				if (parentView)
 				{
 					CView* tempOldFocus = oldFocus;
@@ -984,7 +984,7 @@ bool CFrame::advanceNextFocusView (CView* oldFocus, bool reverse)
 						else
 						{
 							tempOldFocus = parentView;
-							parentView = reinterpret_cast<CViewContainer*> (parentView->getParentView ());
+							parentView = static_cast<CViewContainer*> (parentView->getParentView ());
 						}
 					}
 					if (container->advanceNextFocusView (tempOldFocus, reverse))
@@ -1016,7 +1016,7 @@ bool CFrame::advanceNextFocusView (CView* oldFocus, bool reverse)
 			return false;
 		}
 	}
-	CViewContainer* parentView = reinterpret_cast<CViewContainer*> (oldFocus->getParentView ());
+	CViewContainer* parentView = static_cast<CViewContainer*> (oldFocus->getParentView ());
 	if (parentView)
 	{
 		CView* tempOldFocus = oldFocus;
@@ -1027,7 +1027,7 @@ bool CFrame::advanceNextFocusView (CView* oldFocus, bool reverse)
 			else
 			{
 				tempOldFocus = parentView;
-				parentView = reinterpret_cast<CViewContainer*> (parentView->getParentView ());
+				parentView = static_cast<CViewContainer*> (parentView->getParentView ());
 			}
 		}
 	}

@@ -34,6 +34,7 @@
 
 #include "ccontrol.h"
 #include "../cframe.h"
+#include <assert.h>
 
 namespace VSTGUI {
 
@@ -59,6 +60,7 @@ CControl::CControl (const CRect& size, CControlListener* listener, int32_t tag, 
 , vmin (0)
 , vmax (1.f)
 , wheelInc (0.1f)
+, editing (false)
 {
 	setTransparency (false);
 	setMouseEnabled (true);
@@ -78,6 +80,7 @@ CControl::CControl (const CControl& c)
 , vmin (c.vmin)
 , vmax (c.vmax)
 , wheelInc (c.wheelInc)
+, editing (false)
 {
 }
 
@@ -113,22 +116,32 @@ void CControl::doIdleStuff ()
 void CControl::beginEdit ()
 {
 	// begin of edit parameter
-	if (listener)
-		listener->controlBeginEdit (this);
-	changed (kMessageBeginEdit);
-	if (getFrame ())
-		getFrame ()->beginEdit (tag);
+	assert(editing == false);
+	if (!editing)
+	{
+		editing = true;
+		if (listener)
+			listener->controlBeginEdit (this);
+		changed (kMessageBeginEdit);
+		if (getFrame ())
+			getFrame ()->beginEdit (tag);
+	}
 }
 
 //------------------------------------------------------------------------
 void CControl::endEdit ()
 {
 	// end of edit parameter
-	if (getFrame ())
-		getFrame ()->endEdit (tag);
-	if (listener)
-		listener->controlEndEdit (this);
-	changed (kMessageEndEdit);
+	assert(editing == true);
+	if (editing)
+	{
+		editing = false;
+		if (getFrame ())
+			getFrame ()->endEdit (tag);
+		if (listener)
+			listener->controlEndEdit (this);
+		changed (kMessageEndEdit);
+	}
 }
 
 //------------------------------------------------------------------------

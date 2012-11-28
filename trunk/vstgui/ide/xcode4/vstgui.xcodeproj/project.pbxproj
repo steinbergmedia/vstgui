@@ -78,6 +78,7 @@
 		F497F1AE13080B4800F0A613 /* cocoatextedit.mm in Sources */ = {isa = PBXBuildFile; fileRef = F497F1A013080B4800F0A613 /* cocoatextedit.mm */; };
 		F497F1B213080B4800F0A613 /* nsviewframe.mm in Sources */ = {isa = PBXBuildFile; fileRef = F497F1A413080B4800F0A613 /* nsviewframe.mm */; };
 		F497F1B413080B4800F0A613 /* nsviewoptionmenu.mm in Sources */ = {isa = PBXBuildFile; fileRef = F497F1A613080B4800F0A613 /* nsviewoptionmenu.mm */; };
+		F49B43FE1666081900461790 /* xmlparser.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4E3903813080ECC00615042 /* xmlparser.cpp */; };
 		F4A63DE814023EB400023102 /* uifontscontroller.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4A63DE714023EB300023102 /* uifontscontroller.cpp */; };
 		F4CA76BE13F1A1F700BB1842 /* uicrosslines.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4CA76BD13F1A1F700BB1842 /* uicrosslines.cpp */; };
 		F4CA76C613F27A4900BB1842 /* uieditcontroller.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4CA76C513F27A4900BB1842 /* uieditcontroller.cpp */; };
@@ -957,6 +958,7 @@
 				F4F9544E16510F40006EE1D1 /* uiviewcreator.cpp in Sources */,
 				F4F9544F16510F40006EE1D1 /* uiviewfactory.cpp in Sources */,
 				F4F9545016510F40006EE1D1 /* uiviewswitchcontainer.cpp in Sources */,
+				F49B43FE1666081900461790 /* xmlparser.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

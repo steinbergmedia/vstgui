@@ -794,7 +794,7 @@ CMessageResult UIAttributesController::notify (CBaseObject* sender, IdStringPtr 
 //----------------------------------------------------------------------------------------------------
 void UIAttributesController::validateAttributeViews ()
 {
-	UIViewFactory* viewFactory = reinterpret_cast<UIViewFactory*> (editDescription->getViewFactory ());
+	UIViewFactory* viewFactory = static_cast<UIViewFactory*> (editDescription->getViewFactory ());
 
 	for (std::list<UIAttributeControllers::Controller*>::const_iterator it = attributeControllers.begin (); it != attributeControllers.end (); it++)
 	{
@@ -837,7 +837,7 @@ CView* UIAttributesController::createViewForAttribute (const std::string& attrNa
 	
 	bool hasDifferentValues = false;
 
-	UIViewFactory* viewFactory = reinterpret_cast<UIViewFactory*> (editDescription->getViewFactory ());
+	UIViewFactory* viewFactory = static_cast<UIViewFactory*> (editDescription->getViewFactory ());
 
 	std::string attrValue;
 	bool first = true;
