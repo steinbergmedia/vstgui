@@ -207,23 +207,23 @@ public:
 		ChildViewConstReverseIterator riterator;
 	};
 
-	/** find child views of type T */
-	template<class T>
-	uint32_t findViewTypes (std::list<SharedPointer<T> >& result, bool deep = false) const
+	/** get child views of type T */
+	template<class ViewClass, class ContainerClass = std::list<SharedPointer<ViewClass> > >
+	uint32_t getChildViewsOfType (ContainerClass& result, bool deep = false) const
 	{
 		ChildViewConstIterator it = children.begin ();
 		while (it != children.end ())
 		{
-			T* tObj = (*it).cast<T> ();
-			if (tObj)
+			ViewClass* vObj = (*it).cast<ViewClass> ();
+			if (vObj)
 			{
-				result.push_back (tObj);
+				result.push_back (vObj);
 			}
-			else if (deep)
+			if (deep)
 			{
 				if (CViewContainer* container = (*it).cast<CViewContainer> ())
 				{
-					container->findViewTypes<T> (result);
+					container->getChildViewsOfType<ViewClass, ContainerClass> (result);
 				}
 			}
 			it++;
