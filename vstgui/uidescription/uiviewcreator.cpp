@@ -1971,7 +1971,7 @@ public:
 	CTextButtonCreator () { UIViewFactory::registerViewCreator (*this); }
 	IdStringPtr getViewName () const { return "CTextButton"; }
 	IdStringPtr getBaseViewName () const { return "CControl"; }
-	CView* create (const UIAttributes& attributes, IUIDescription* description) const { return new CTextButton (CRect (0, 0, 100, 20), 0, -1, "Title"); }
+	CView* create (const UIAttributes& attributes, IUIDescription* description) const { return new CTextButton (CRect (0, 0, 100, 20), 0, -1, ""); }
 	bool apply (CView* view, const UIAttributes& attributes, IUIDescription* description) const
 	{
 		CTextButton* button = dynamic_cast<CTextButton*> (view);

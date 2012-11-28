@@ -1,3 +1,10 @@
+2012-11-28 arne
+
+	* replaced all occurrences of reinterpret_cast with proper replacements
+	* changed drawing order of CDataBrowser, now it paints row by row not column by column
+	* add a new template method to CViewContainer to find children by class type
+	* remember edit state in CControl so that sub classes can ask if they are currently in edit mode (between beginEdit() and endEdit())
+	
 2012-11-24 arne
 
 	* add new argument to CViewContainer::getViewAt () to allow to get only the mouse enabled view at that position

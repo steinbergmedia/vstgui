@@ -436,7 +436,7 @@ CMessageResult UIEditController::notify (CBaseObject* sender, IdStringPtr messag
 						{
 							CView* view = (*it).view;
 							editView->setEditView (view);
-							templateController->setTemplateView (reinterpret_cast<CViewContainer*> (view));
+							templateController->setTemplateView (static_cast<CViewContainer*> (view));
 							editTemplateName = *templateController->getSelectedTemplateName ();
 							view->remember ();
 							break;

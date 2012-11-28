@@ -166,6 +166,7 @@ public:
 
 	void setAutosizeFlags (int32_t flags) VSTGUI_OVERRIDE_VMETHOD;
 	void setViewSize (const CRect& size, bool invalid) VSTGUI_OVERRIDE_VMETHOD;
+	void setWantsFocus (bool state) VSTGUI_OVERRIDE_VMETHOD;
 
 	int32_t onKeyDown (VstKeyCode& keyCode) VSTGUI_OVERRIDE_VMETHOD;
 	CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons) VSTGUI_OVERRIDE_VMETHOD;

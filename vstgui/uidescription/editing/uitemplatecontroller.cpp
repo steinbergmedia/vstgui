@@ -262,7 +262,7 @@ void UITemplateController::setTemplateView (CViewContainer* view)
 		}
 		if (templateView && templateDataBrowser)
 		{
-			CViewContainer* parentView = reinterpret_cast<CViewContainer*>(templateDataBrowser->getParentView ());
+			CViewContainer* parentView = static_cast<CViewContainer*>(templateDataBrowser->getParentView ());
 			if (parentView)
 			{
 				UIViewFactory* viewFactory = dynamic_cast<UIViewFactory*> (editDescription->getViewFactory ());
@@ -428,7 +428,7 @@ void UIViewListDataSource::dbSelectionChanged (CDataBrowser* browser)
 		r.offset (r.getWidth (), 0);
 		CDataBrowser* newDataBrowser = new CDataBrowser (r, 0, dataSource);
 		UITemplateController::setupDataBrowser (browser, newDataBrowser);
-		CViewContainer* parentView = reinterpret_cast<CViewContainer*>(browser->getParentView ());
+		CViewContainer* parentView = static_cast<CViewContainer*>(browser->getParentView ());
 		parentView->addView (newDataBrowser);
 		next = dataSource;
 		dataSource->forget ();
@@ -452,7 +452,7 @@ void UIViewListDataSource::remove ()
 	}
 	if (dataBrowser)
 	{
-		CViewContainer* parentView = reinterpret_cast<CViewContainer*>(dataBrowser->getParentView ());
+		CViewContainer* parentView = static_cast<CViewContainer*>(dataBrowser->getParentView ());
 		CScrollView* scrollView = dynamic_cast<CScrollView*>(parentView->getParentView ());
 		parentView->removeView (dataBrowser);
 		if (scrollView)

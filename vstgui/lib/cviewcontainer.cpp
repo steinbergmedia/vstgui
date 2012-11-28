@@ -44,7 +44,7 @@
 namespace VSTGUI {
 
 #ifndef FOREACHSUBVIEW_REVERSE
-	#define FOREACHSUBVIEW_REVERSE(reverse) CViewConstIterator it; CViewConstReverseIterator rit; if (reverse) rit = children.rbegin (); else it = children.begin (); while (reverse ? rit != children.rend () : it != children.end ()) { CView* pV; if (reverse) {	pV = (*rit); rit++; } else { pV = (*it); it++; } {
+	#define FOREACHSUBVIEW_REVERSE(reverse) ChildViewConstIterator it; ChildViewConstReverseIterator rit; if (reverse) rit = children.rbegin (); else it = children.begin (); while (reverse ? rit != children.rend () : it != children.end ()) { CView* pV; if (reverse) {	pV = (*rit); rit++; } else { pV = (*it); it++; } {
 #endif
 
 #if VSTGUI_ENABLE_DEPRECATED_METHODS
@@ -82,10 +82,10 @@ CViewContainer::CViewContainer (const CViewContainer& v)
 , currentDragView (0)
 , mouseDownView (0)
 {
-	ViewIterator it (const_cast<CViewContainer*> (&v));
+	ViewIterator it (&v);
 	while (*it)
 	{
-		addView ((CView*)(*it)->newCopy ());
+		addView (static_cast<CView*>((*it)->newCopy ()));
 		++it;
 	}
 }
@@ -207,7 +207,7 @@ CRect CViewContainer::getVisibleSize (const CRect rect) const
 	if (pParentFrame == this)
 	{}
 	else if (pParentView)
-		result = reinterpret_cast<CViewContainer*> (pParentView)->getVisibleSize (result);
+		result = static_cast<CViewContainer*> (pParentView)->getVisibleSize (result);
 	else if (pParentFrame)
 		result = pParentFrame->getVisibleSize (result);
 	result.offset (-getViewSize ().left, -getViewSize ().top);
@@ -338,7 +338,7 @@ bool CViewContainer::addView (CView *pView, CView* pBefore)
 
 	if (pBefore)
 	{
-		std::list<SharedPointer<CView> >::iterator it = std::find (children.begin (), children.end (), pBefore);
+		ChildViewConstIterator it = std::find (children.begin (), children.end (), pBefore);
 		children.insert (it, pView);
 	}
 	else
@@ -441,7 +441,7 @@ bool CViewContainer::isChild (CView *pView, bool deep) const
 
 	if (deep)
 	{
-		CViewConstIterator it = children.begin ();
+		ChildViewConstIterator it = children.begin ();
 		while (!found && it != children.end ())
 		{
 			CView* v = (*it);
@@ -450,8 +450,8 @@ bool CViewContainer::isChild (CView *pView, bool deep) const
 				found = true;
 				break;
 			}
-			if (dynamic_cast<CViewContainer*>(v))
-				found = reinterpret_cast<CViewContainer*>(v)->isChild (pView, true);
+			if (CViewContainer* container = dynamic_cast<CViewContainer*>(v))
+				found = container->isChild (pView, true);
 			it++;
 		}
 	}
@@ -503,7 +503,7 @@ bool CViewContainer::changeViewZOrder (CView* view, int32_t newIndex)
 {
 	if (newIndex >= 0 && newIndex < getNbViews ())
 	{
-		std::list<SharedPointer<CView> >::iterator it = std::find (children.begin (), children.end (), view);
+		ChildViewConstIterator it = std::find (children.begin (), children.end (), view);
 		if (it != children.end ())
 		{
 			children.erase (it);
@@ -531,8 +531,8 @@ bool CViewContainer::invalidateDirtyViews ()
 	FOREACHSUBVIEW
 		if (pV->isDirty () && pV->isVisible ())
 		{
-			if (dynamic_cast<CViewContainer*> (pV))
-				reinterpret_cast<CViewContainer*> (pV)->invalidateDirtyViews ();
+			if (CViewContainer* container = dynamic_cast<CViewContainer*> (pV))
+				container->invalidateDirtyViews ();
 			else
 				pV->invalid ();
 		}
@@ -878,7 +878,8 @@ CMouseEventResult CViewContainer::onMouseMoved (CPoint &where, const CButtonStat
 		// convert to relativ pos
 		CPoint where2 (where);
 		where2.offset (-getViewSize ().left, -getViewSize ().top);
-		if (mouseDownView->onMouseMoved (where2, buttons) != kMouseEventHandled)
+		CMouseEventResult mouseResult = mouseDownView->onMouseMoved (where2, buttons);
+		if (mouseResult != kMouseEventHandled && mouseResult != kMouseEventNotImplemented)
 		{
 			mouseDownView = 0;
 			return kMouseEventNotHandled;
@@ -1038,9 +1039,9 @@ bool CViewContainer::advanceNextFocusView (CView* oldFocus, bool reverse)
 				getFrame ()->setFocusView (pV);
 				return true;
 			}
-			else if (dynamic_cast<CViewContainer*> (pV))
+			else if (CViewContainer* container = dynamic_cast<CViewContainer*> (pV))
 			{
-				if (reinterpret_cast<CViewContainer*> (pV)->advanceNextFocusView (0, reverse))
+				if (container->advanceNextFocusView (0, reverse))
 					return true;
 			}
 		}
@@ -1087,8 +1088,8 @@ CView* CViewContainer::getViewAt (const CPoint& p, bool deep, bool mustbeMouseEn
 		{
 			if (deep)
 			{
-				if (dynamic_cast<CViewContainer*> (pV))
-					return reinterpret_cast<CViewContainer*> (pV)->getViewAt (where, deep, mustbeMouseEnabled);
+				if (CViewContainer* container = dynamic_cast<CViewContainer*> (pV))
+					return container->getViewAt (where, deep, mustbeMouseEnabled);
 			}
 			if (mustbeMouseEnabled)
 			{
@@ -1121,8 +1122,11 @@ bool CViewContainer::getViewsAt (const CPoint& p, std::list<SharedPointer<CView>
 	FOREACHSUBVIEW_REVERSE(true)
 		if (pV && pV->isVisible () && where.isInside (pV->getMouseableArea ()))
 		{
-			if (deep && dynamic_cast<CViewContainer*> (pV))
-				reinterpret_cast<CViewContainer*> (pV)->getViewsAt (where, views);
+			if (deep)
+			{
+				if (CViewContainer* container = dynamic_cast<CViewContainer*> (pV))
+					container->getViewsAt (where, views);
+			}
 			views.push_back (pV);
 			result = true;
 		}
@@ -1147,8 +1151,11 @@ CViewContainer* CViewContainer::getContainerAt (const CPoint& p, bool deep) cons
 	FOREACHSUBVIEW_REVERSE(true)
 		if (pV && pV->isVisible () && where.isInside (pV->getMouseableArea ()))
 		{
-			if (deep && dynamic_cast<CViewContainer*> (pV))
-				return reinterpret_cast<CViewContainer*> (pV)->getContainerAt (where, deep);
+			if (deep)
+			{
+				if (CViewContainer* container = dynamic_cast<CViewContainer*> (pV))
+					return container->getContainerAt (where, deep);
+			}
 			break;
 		}
 	ENDFOREACHSUBVIEW
@@ -1242,8 +1249,8 @@ void CViewContainer::dumpHierarchy ()
 			DebugPrint ("\t");
 		pV->dumpInfo ();
 		DebugPrint ("\n");
-		if (dynamic_cast<CViewContainer*> (pV))
-			reinterpret_cast<CViewContainer*> (pV)->dumpHierarchy ();
+		if (CViewContainer* container = dynamic_cast<CViewContainer*> (pV))
+			container->dumpHierarchy ();
 	ENDFOREACHSUBVIEW
 	_debugDumpLevel--;
 }

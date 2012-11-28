@@ -113,7 +113,7 @@ CRect UISearchTextField::platformGetVisibleSize () const
 	CRect cmr = getClearMarkRect ();
 	rect.right = cmr.left;
 	if (pParentView)
-		rect = reinterpret_cast<CViewContainer*>(pParentView)->getVisibleSize (rect);
+		rect = static_cast<CViewContainer*>(pParentView)->getVisibleSize (rect);
 	else if (pParentFrame)
 		rect = pParentFrame->getVisibleSize (rect);
 

@@ -157,6 +157,15 @@ void CDataBrowser::setViewSize (const CRect& size, bool invalid)
 }
 
 //-----------------------------------------------------------------------------------------------
+void CDataBrowser::setWantsFocus (bool state)
+{
+	if (dbView)
+	{
+		dbView->setWantsFocus (state);
+	}
+}
+
+//-----------------------------------------------------------------------------------------------
 bool CDataBrowser::attached (CView *parent)
 {
 	bool result = CScrollView::attached (parent);
@@ -668,63 +677,70 @@ void CDataBrowserView::drawRect (CDrawContext* context, const CRect& updateRect)
 	int32_t numRows = db->dbGetNumRows (browser);
 	int32_t numColumns = db->dbGetNumColumns (browser);
 
-	CRect r (getViewSize ().left, getViewSize ().top, 0, 0);
-	for (int32_t col = 0; col < numColumns; col++)
+	CRect r (getViewSize ());
+	r.setHeight (rowHeight - lineWidth);
+	for (int32_t row = 0; row < numRows; row++)
 	{
-		CCoord columnWidth = db->dbGetCurrentColumnWidth (col, browser);
-		r.setWidth (columnWidth);
-		r.setHeight (getViewSize ().getHeight ());
 		CRect testRect (r);
 		testRect.bound (updateRect);
-		if (testRect.isEmpty ())
+		if (testRect.isEmpty () == false)
 		{
-			r.offset (columnWidth, 0);
-			if (browser->getStyle () & CDataBrowser::kDrawColumnLines)
-				r.offset (lineWidth, 0);
-			continue;
+			for (int32_t col = 0; col < numColumns; col++)
+			{
+				CCoord columnWidth = db->dbGetCurrentColumnWidth (col, browser);
+				r.setWidth (columnWidth);
+				testRect = r;
+				testRect.bound (updateRect);
+				if (testRect.isEmpty () == false)
+				{
+					db->dbDrawCell (context, r, row, col, browser->getSelectedRow () == row ? IDataBrowser::kRowSelected : 0, browser);
+				}
+				r.offset (columnWidth, 0);
+				if (browser->getStyle () & CDataBrowser::kDrawColumnLines)
+					r.offset (lineWidth, 0);
+			}
 		}
-		r.setHeight (rowHeight);
-		for (int32_t row = 0; row < numRows; row++)
-		{
-			CRect testRect2 (r);
-			testRect2.bound (updateRect);
-			if (!testRect2.isEmpty ())
-				db->dbDrawCell (context, r, row, col, browser->getSelectedRow () == row ? IDataBrowser::kRowSelected : 0, browser);
-			r.offset (0, rowHeight);
-		}
-		r.offset (columnWidth, 0);
+		r.offset (0, rowHeight);
+		r.left = getViewSize ().left;
+		r.setWidth (getWidth ());
+	}
+	if (browser->getStyle () & CDataBrowser::kDrawColumnLines || browser->getStyle () & CDataBrowser::kDrawRowLines)
+	{
+		CPoint* points = new CPoint [numRows*2 + numColumns*2];
+		uint32_t numPoints = 0;
+
+		CPoint p1;
+		CPoint p2;
 		if (browser->getStyle () & CDataBrowser::kDrawColumnLines)
 		{
-			context->setDrawMode (kAliasing);
-			context->setLineWidth (lineWidth);
-			context->setFrameColor (lineColor);
-			context->setLineStyle (kLineSolid);
-			context->moveTo (CPoint (r.left + lineWidth/2, getViewSize ().top));
-			context->lineTo (CPoint (r.left + lineWidth/2, getViewSize ().bottom));
-			r.offset (lineWidth, 0);
+			p1 (getViewSize ().left - lineWidth, getViewSize ().top);
+			p2 (getViewSize ().left - lineWidth, getViewSize ().bottom);
+			for (int32_t col = 0; col < numColumns - 1; col++)
+			{
+				p1.x = p2.x = p1.x + db->dbGetCurrentColumnWidth (col, browser) + lineWidth;
+				points[numPoints++] = p1;
+				points[numPoints++] = p2;
+			}
 		}
-		r.top = getViewSize ().top;
-	}
-	if (browser->getStyle () & CDataBrowser::kDrawRowLines)
-	{
+		if (browser->getStyle () & CDataBrowser::kDrawRowLines)
+		{
+			p1 (getViewSize ().left, getViewSize ().top);
+			p2 (getViewSize ().right, getViewSize ().top);
+			for (int32_t row = 0; row < numRows - 1; row++)
+			{
+				p1.y = p2.y = p1.y + rowHeight;
+				if (p1.y >= updateRect.top && p1.y <= updateRect.bottom)
+				{
+					points[numPoints++] = p1;
+					points[numPoints++] = p2;
+				}
+			}
+		}
 		context->setDrawMode (kAliasing);
 		context->setLineWidth (lineWidth);
-		context->setLineStyle (kLineSolid);
 		context->setFrameColor (lineColor);
-		CPoint* points = new CPoint [numRows*2];
-		uint32_t numPoints = 0;
-		CRect rr (getViewSize ().left, getViewSize ().top, getViewSize ().right, getViewSize ().top + rowHeight);
-		for (int32_t row = 0; row < numRows; row++)
-		{
-			if (rr.rectOverlap(updateRect))
-			{
-				points[numPoints*2] = CPoint (rr.left, rr.bottom);
-				points[numPoints*2+1] = CPoint (rr.right, rr.bottom);
-				numPoints++;
-			}
-			rr.offset (0, rowHeight);
-		}
-		context->drawLines (points, numPoints);
+		context->setLineStyle (kLineSolid);
+		context->drawLines (points, numPoints/2);
 		delete [] points;
 	}
 	setDirty (false);

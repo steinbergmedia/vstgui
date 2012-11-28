@@ -561,9 +561,9 @@ void TransformViewTypeOperation::exchangeSubViews (CViewContainer* src, CViewCon
 			{
 				temp.push_back (view);
 			}
-			else if (dynamic_cast<CViewContainer*>(view) != 0)
+			else if (CViewContainer* container = dynamic_cast<CViewContainer*>(view))
 			{
-				exchangeSubViews (reinterpret_cast<CViewContainer*>(view), dst);
+				exchangeSubViews (container, dst);
 			}
 			++it;
 		}

@@ -212,7 +212,7 @@ public:
 	UIDescList (const UIDescList& l) : ownsObjects (l.ownsObjects)
 	{
 		for (const_iterator it = l.begin (); it != l.end (); it++)
-			add (reinterpret_cast<UINode*>((*it)->newCopy ()));
+			add (static_cast<UINode*>((*it)->newCopy ()));
 	}
 	
 	~UIDescList () { removeAll (); }
@@ -1899,7 +1899,7 @@ bool UIDescription::duplicateTemplate (UTF8StringPtr name, UTF8StringPtr duplica
 	UINode* templateNode = findChildNodeByNameAttribute (nodes, name);
 	if (templateNode)
 	{
-		UINode* duplicate = reinterpret_cast<UINode*> (templateNode->newCopy ());
+		UINode* duplicate = static_cast<UINode*> (templateNode->newCopy ());
 		if (duplicate)
 		{
 			duplicate->getAttributes()->setAttribute ("name", duplicateName);

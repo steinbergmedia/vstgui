@@ -139,6 +139,7 @@ static id VSTGUI_NSView_Init (id self, SEL _cmd, void* _frame, NSView* parentVie
 static BOOL VSTGUI_NSView_isFlipped (id self, SEL _cmd) { return YES; }
 static BOOL VSTGUI_NSView_acceptsFirstResponder (id self, SEL _cmd) { return YES; }
 static BOOL VSTGUI_NSView_canBecomeKeyView (id self, SEL _cmd) { return YES; }
+static BOOL VSTGUI_NSView_wantsDefaultClipping (id self, SEL _cmd) { return NO; }
 
 //------------------------------------------------------------------------------------
 static void VSTGUI_NSView_makeSubViewFirstResponder (id self, SEL _cmd, NSResponder* newFirstResponder)
@@ -663,6 +664,7 @@ void NSViewFrame::initClass ()
 		VSTGUI_CHECK_YES(class_addMethod (viewClass, @selector(becomeFirstResponder), IMP (VSTGUI_NSView_becomeFirstResponder), "B@:@:"))
 		VSTGUI_CHECK_YES(class_addMethod (viewClass, @selector(resignFirstResponder), IMP (VSTGUI_NSView_resignFirstResponder), "B@:@:"))
 		VSTGUI_CHECK_YES(class_addMethod (viewClass, @selector(canBecomeKeyView), IMP (VSTGUI_NSView_canBecomeKeyView), "B@:@:"))
+		VSTGUI_CHECK_YES(class_addMethod (viewClass, @selector(wantsDefaultClipping), IMP (VSTGUI_NSView_wantsDefaultClipping), "B@:@:"))
 		VSTGUI_CHECK_YES(class_addMethod (viewClass, @selector(isOpaque), IMP (VSTGUI_NSView_isOpaque), "B@:@:"))
 		sprintf (funcSig, "v@:@:%s:", nsRectEncoded);
 		VSTGUI_CHECK_YES(class_addMethod (viewClass, @selector(drawRect:), IMP (VSTGUI_NSView_drawRect), funcSig))
