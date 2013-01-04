@@ -293,7 +293,7 @@ CGImageRef CGBitmap::getCGImage ()
 
 		CGDataProviderRef provider = CGDataProviderCreateWithData (NULL, bits, byteCount, NULL);
 		CGBitmapInfo alphaInfo = kCGImageAlphaPremultipliedFirst | kCGBitmapByteOrder32Big;
-		image = CGImageCreate (size.x, size.y, 8, bitDepth, rowBytes, GetGenericRGBColorSpace (), alphaInfo, provider, NULL, false, kCGRenderingIntentDefault);
+		image = CGImageCreate (size.x, size.y, 8, bitDepth, rowBytes, GetCGColorSpace (), alphaInfo, provider, NULL, false, kCGRenderingIntentDefault);
 		CGDataProviderRelease (provider);
 		dirty = false;
 	}
@@ -329,7 +329,7 @@ CGContextRef CGBitmap::createCGContext ()
 						size.y,
 						8,
 						getBytesPerRow (),
-						GetGenericRGBColorSpace (),
+						GetCGColorSpace (),
 						bitmapInfo);
 		CGContextTranslateCTM (context, 0, (CGFloat)size.y);
 		CGContextScaleCTM (context, 1, -1);

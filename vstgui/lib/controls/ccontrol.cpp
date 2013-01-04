@@ -36,6 +36,8 @@
 #include "../cframe.h"
 #include <assert.h>
 
+#define VSTGUI_CCONTROL_LOG_EDITING DEBUG
+
 namespace VSTGUI {
 
 IdStringPtr CControl::kMessageTagWillChange = "kMessageTagWillChange";
@@ -60,7 +62,7 @@ CControl::CControl (const CRect& size, CControlListener* listener, int32_t tag, 
 , vmin (0)
 , vmax (1.f)
 , wheelInc (0.1f)
-, editing (false)
+, editing (0)
 {
 	setTransparency (false);
 	setMouseEnabled (true);
@@ -80,7 +82,7 @@ CControl::CControl (const CControl& c)
 , vmin (c.vmin)
 , vmax (c.vmax)
 , wheelInc (c.wheelInc)
-, editing (false)
+, editing (0)
 {
 }
 
@@ -116,32 +118,36 @@ void CControl::doIdleStuff ()
 void CControl::beginEdit ()
 {
 	// begin of edit parameter
-	assert(editing == false);
-	if (!editing)
+	editing++;
+	if (editing == 1)
 	{
-		editing = true;
 		if (listener)
 			listener->controlBeginEdit (this);
 		changed (kMessageBeginEdit);
 		if (getFrame ())
 			getFrame ()->beginEdit (tag);
 	}
+#if VSTGUI_CCONTROL_LOG_EDITING
+	DebugPrint("beginEdit [%d] - %d\n", tag, editing);
+#endif
 }
 
 //------------------------------------------------------------------------
 void CControl::endEdit ()
 {
-	// end of edit parameter
-	assert(editing == true);
-	if (editing)
+	editing--;
+	assert(editing >= 0);
+	if (editing == 0)
 	{
-		editing = false;
 		if (getFrame ())
 			getFrame ()->endEdit (tag);
 		if (listener)
 			listener->controlEndEdit (this);
 		changed (kMessageEndEdit);
 	}
+#if VSTGUI_CCONTROL_LOG_EDITING
+	DebugPrint("endEdit [%d] - %d\n", tag, editing);
+#endif
 }
 
 //------------------------------------------------------------------------

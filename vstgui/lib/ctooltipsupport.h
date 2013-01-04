@@ -60,7 +60,7 @@ public:
 	CLASS_METHODS_NOCOPY(CTooltipSupport, CBaseObject)
 protected:
 	~CTooltipSupport ();
-	void showTooltip ();
+	bool showTooltip ();
 
 	enum {
 		kHidden,
@@ -75,7 +75,7 @@ protected:
 
 	CVSTGUITimer* timer;
 	CFrame* frame;
-	CView* currentView;
+	SharedPointer<CView> currentView;
 
 	int32_t delay;
 	int32_t state;

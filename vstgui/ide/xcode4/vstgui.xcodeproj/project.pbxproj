@@ -10,6 +10,10 @@
 		F40329C613FE3AB100466973 /* uigridcontroller.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F40329C513FE3AB100466973 /* uigridcontroller.cpp */; };
 		F406E381140426B100F550B7 /* uidialogcontroller.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F406E380140426B100F550B7 /* uidialogcontroller.cpp */; };
 		F40B7836140E106600E2BF16 /* macclipboard.mm in Sources */ = {isa = PBXBuildFile; fileRef = F40B7835140E106600E2BF16 /* macclipboard.mm */; };
+		F40E63FD16821A6300426847 /* cgradientview.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F40E63FB16821A6300426847 /* cgradientview.cpp */; };
+		F40E63FE16821A6300426847 /* cgradientview.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F40E63FB16821A6300426847 /* cgradientview.cpp */; };
+		F40E63FF16821A6300426847 /* cgradientview.h in Headers */ = {isa = PBXBuildFile; fileRef = F40E63FC16821A6300426847 /* cgradientview.h */; };
+		F40E640016821A6300426847 /* cgradientview.h in Headers */ = {isa = PBXBuildFile; fileRef = F40E63FC16821A6300426847 /* cgradientview.h */; };
 		F41DA9341406860B00EDAB4B /* uifocussettingscontroller.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F41DA9331406860B00EDAB4B /* uifocussettingscontroller.cpp */; };
 		F42E1F8A14239E48005E0BD7 /* cshadowviewcontainer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F42E1F8914239E48005E0BD7 /* cshadowviewcontainer.cpp */; };
 		F452950813A211E6006EEF82 /* cocoaopenglview.mm in Sources */ = {isa = PBXBuildFile; fileRef = F452950613A211E6006EEF82 /* cocoaopenglview.mm */; };
@@ -193,6 +197,8 @@
 		F406E380140426B100F550B7 /* uidialogcontroller.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = uidialogcontroller.cpp; sourceTree = "<group>"; };
 		F40B7833140E105800E2BF16 /* macclipboard.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = macclipboard.h; sourceTree = "<group>"; };
 		F40B7835140E106600E2BF16 /* macclipboard.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = macclipboard.mm; sourceTree = "<group>"; };
+		F40E63FB16821A6300426847 /* cgradientview.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = cgradientview.cpp; sourceTree = "<group>"; };
+		F40E63FC16821A6300426847 /* cgradientview.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = cgradientview.h; sourceTree = "<group>"; };
 		F41DA9311406860300EDAB4B /* uifocussettingscontroller.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = uifocussettingscontroller.h; sourceTree = "<group>"; };
 		F41DA9331406860B00EDAB4B /* uifocussettingscontroller.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = uifocussettingscontroller.cpp; sourceTree = "<group>"; };
 		F42E1F8714239E42005E0BD7 /* cshadowviewcontainer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = cshadowviewcontainer.h; sourceTree = "<group>"; };
@@ -498,6 +504,8 @@
 				F497F0CF13080A1C00F0A613 /* cfont.h */,
 				F497F0D013080A1C00F0A613 /* cframe.cpp */,
 				F497F0D113080A1C00F0A613 /* cframe.h */,
+				F40E63FB16821A6300426847 /* cgradientview.cpp */,
+				F40E63FC16821A6300426847 /* cgradientview.h */,
 				F497F0D213080A1C00F0A613 /* cgraphicspath.cpp */,
 				F497F0D313080A1C00F0A613 /* cgraphicspath.h */,
 				F497F0D413080A1C00F0A613 /* coffscreencontext.cpp */,
@@ -697,6 +705,7 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F40E63FF16821A6300426847 /* cgradientview.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -704,6 +713,7 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F40E640016821A6300426847 /* cgradientview.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -864,6 +874,7 @@
 				F40B7836140E106600E2BF16 /* macclipboard.mm in Sources */,
 				F4CE1BE2141138F700CF75B6 /* cbitmapfilter.cpp in Sources */,
 				F42E1F8A14239E48005E0BD7 /* cshadowviewcontainer.cpp in Sources */,
+				F40E63FD16821A6300426847 /* cgradientview.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -959,6 +970,7 @@
 				F4F9544F16510F40006EE1D1 /* uiviewfactory.cpp in Sources */,
 				F4F9545016510F40006EE1D1 /* uiviewswitchcontainer.cpp in Sources */,
 				F49B43FE1666081900461790 /* xmlparser.cpp in Sources */,
+				F40E63FE16821A6300426847 /* cgradientview.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

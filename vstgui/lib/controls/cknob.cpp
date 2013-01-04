@@ -324,7 +324,7 @@ CMouseEventResult CKnob::onMouseUp (CPoint& where, const CButtonState& buttons)
 //------------------------------------------------------------------------
 CMouseEventResult CKnob::onMouseMoved (CPoint& where, const CButtonState& buttons)
 {
-	if (buttons.isLeftButton ())
+	if (isEditing ())
 	{
 		float middle = (getMax () - getMin ()) * 0.5f;
 

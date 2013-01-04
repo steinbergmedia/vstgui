@@ -170,7 +170,9 @@
 				<view background-color="background" background-color-draw-style="filled and stroked" class="CViewContainer" mouse-enabled="true" origin="0, 232" size="170, 243" transparent="true">
 					<view autosize="left right top " class="CView" custom-view-name="ShadingViewVertical" mouse-enabled="true" origin="0, 0" size="170, 20" transparent="false"/>
 					<view autosize="left right top " back-color="db.selection" background-offset="0, 0" class="CParamDisplay" control-tag="textswitch" custom-view-name="UIEditControllerTextSwitch" default-value="0.5" font="control.font" font-antialias="true" font-color="~ BlackCColor" frame-color="control.frame" max-value="1" min-value="0" mouse-enabled="true" origin="1, 1" round-rect-radius="6" shadow-color="~ RedCColor" size="168, 18" style-3D-in="false" style-3D-out="false" style-no-draw="false" style-no-frame="false" style-no-text="false" style-round-rect="false" style-shadow-text="false" text-alignment="center" text-inset="2, 2" transparent="false" value-precision="2" wheel-inc-value="0.1"/>
-					<view autosize="left right top bottom " background-color="db.font" background-color-draw-style="filled and stroked" class="UIViewSwitchContainer" mouse-enabled="true" origin="0, 20" size="170, 224" template-names="viewcreation,tagediting,colorediting,bitmapediting,fontediting" template-switch-control="textswitch" transparent="true"/>
+					<view autosize="left right top bottom " background-color="db.font" background-color-draw-style="filled and stroked" class="UIViewSwitchContainer" mouse-enabled="true" origin="0, 20" size="170, 224" template-names="viewcreation,tagediting,colorediting,bitmapediting,fontediting" template-switch-control="textswitch" transparent="true">
+						<view autosize="left right top bottom " background-color="background" background-color-draw-style="filled and stroked" class="CViewContainer" mouse-enabled="true" origin="0, 0" size="170, 224" sub-controller="ViewCreatorController" template="viewcreation" transparent="false"/>
+					</view>
 				</view>
 			</view>
 		</view>
@@ -220,7 +222,7 @@
 		<attributes FilterString="bitmaps.settings." SelectedRow="8" name="UITagsDataSource"/>
 		<attributes SelectedRow="5" name="UIFontsDataSource"/>
 		<attributes SelectedRow="-1" name="UIBitmapsDataSource"/>
-		<attributes SelectedTemplate="bitmapediting" name="UITemplateController"/>
+		<attributes SelectedTemplate="view" name="UITemplateController"/>
 		<attributes name="FocusDrawing"/>
 	</custom>
 	<template autosize="left right top bottom " background-color="background" background-color-draw-style="filled and stroked" class="CViewContainer" mouse-enabled="true" name="bitmapediting" origin="0, 0" size="170, 223" sub-controller="BitmapEditController" transparent="false">

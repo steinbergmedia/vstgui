@@ -165,6 +165,7 @@ public:
 	void setFilterProcessed () { filterProcessed = true; }
 	
 	void createXMLData ();
+	void removeXMLData ();
 	CLASS_METHODS(UIBitmapNode, UINode)
 protected:
 	~UIBitmapNode ();
@@ -663,18 +664,19 @@ bool UIDescription::save (UTF8StringPtr filename, int32_t flags)
 bool UIDescription::saveToStream (OutputStream& stream, int32_t flags)
 {
 	changed (kMessageBeforeSave);
-	if (flags & kWriteImagesIntoXMLFile)
+	UINode* bitmapNodes = getBaseNode ("bitmaps");
+	if (bitmapNodes)
 	{
-		UINode* bitmapNodes = getBaseNode ("bitmaps");
-		if (bitmapNodes)
+		for (UIDescList::iterator it = bitmapNodes->getChildren ().begin (); it != bitmapNodes->getChildren ().end (); it++)
 		{
-			for (UIDescList::iterator it = bitmapNodes->getChildren ().begin (); it != bitmapNodes->getChildren ().end (); it++)
+			UIBitmapNode* bitmapNode = dynamic_cast<UIBitmapNode*> (*it);
+			if (bitmapNode)
 			{
-				UIBitmapNode* bitmapNode = dynamic_cast<UIBitmapNode*> (*it);
-				if (bitmapNode)
-				{
+				if (flags & kWriteImagesIntoXMLFile)
 					bitmapNode->createXMLData ();
-				}
+				else
+					bitmapNode->removeXMLData ();
+				
 			}
 		}
 	}
@@ -2689,6 +2691,14 @@ void UIBitmapNode::createXMLData ()
 			}
 		}
 	}
+}
+
+//-----------------------------------------------------------------------------
+void UIBitmapNode::removeXMLData ()
+{
+	UIDescList::iterator data = getChildren ().get ("data");
+	if (data != getChildren ().end ())
+		getChildren ().remove (*data);
 }
 
 //-----------------------------------------------------------------------------

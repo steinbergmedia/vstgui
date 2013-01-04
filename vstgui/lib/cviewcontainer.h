@@ -101,7 +101,7 @@ public:
 
 	virtual bool advanceNextFocusView (CView* oldFocus, bool reverse = false);
 	virtual bool invalidateDirtyViews ();
-	virtual CRect getVisibleSize (const CRect rect) const;
+	virtual CRect getVisibleSize (const CRect& rect) const;
 
 	// CView
 	virtual void draw (CDrawContext* pContext) VSTGUI_OVERRIDE_VMETHOD;
@@ -136,13 +136,6 @@ public:
 		
 	virtual CPoint& frameToLocal (CPoint& point) const VSTGUI_OVERRIDE_VMETHOD;
 	virtual CPoint& localToFrame (CPoint& point) const VSTGUI_OVERRIDE_VMETHOD;
-
-	CLASS_METHODS(CViewContainer, CView)
-
-	#if DEBUG
-	virtual void dumpInfo ();
-	virtual void dumpHierarchy ();
-	#endif
 
 	//-----------------------------------------------------------------------------
 	typedef std::list<SharedPointer<CView> >::const_iterator ChildViewConstIterator;
@@ -230,7 +223,15 @@ public:
 		}
 		return result.size ();
 	}
+
 	//-------------------------------------------
+	CLASS_METHODS(CViewContainer, CView)
+
+	#if DEBUG
+	virtual void dumpInfo ();
+	virtual void dumpHierarchy ();
+	#endif
+
 protected:
 	~CViewContainer ();
 	virtual bool checkUpdateRect (CView* view, const CRect& rect);

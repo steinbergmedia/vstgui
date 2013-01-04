@@ -320,6 +320,9 @@ bool UIBitmapsDataSource::addBitmap (UTF8StringPtr path, std::string& outName)
 	size_t index = outName.find_last_of (unixPathSeparator);
 	outName.erase (0, index+1);
 	index = outName.find_last_of ('.');
+	if (index == std::string::npos)
+		return false;
+
 	outName.erase (index);
 	if (createUniqueName (outName))
 	{
@@ -330,10 +333,13 @@ bool UIBitmapsDataSource::addBitmap (UTF8StringPtr path, std::string& outName)
 			std::string descPathStr (descPath);
 			unixfyPath (descPathStr);
 			index = descPathStr.find_last_of (unixPathSeparator);
-			descPathStr.erase (index);
-			if ((index = pathStr.find_first_of (descPathStr)) == 0)
+			if (index != std::string::npos)
 			{
-				pathStr.erase (0, descPathStr.length () + 1);
+				descPathStr.erase (index);
+				if ((index = pathStr.find_first_of (descPathStr)) == 0)
+				{
+					pathStr.erase (0, descPathStr.length () + 1);
+				}
 			}
 		}
 		actionPerformer->performBitmapChange (outName.c_str (), pathStr.c_str ());

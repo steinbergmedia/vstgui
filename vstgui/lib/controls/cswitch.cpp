@@ -149,7 +149,7 @@ CMouseEventResult CVerticalSwitch::onMouseUp (CPoint& where, const CButtonState&
 //------------------------------------------------------------------------
 CMouseEventResult CVerticalSwitch::onMouseMoved (CPoint& where, const CButtonState& buttons)
 {
-	if (buttons & kLButton)
+	if (isEditing ())
 	{
 		float norm = (int32_t)((where.v - getViewSize ().top) / coef) / (float)(getNumSubPixmaps () - 1);
 		value = getMin () + norm * (getMax () - getMin ());
@@ -320,7 +320,7 @@ CMouseEventResult CHorizontalSwitch::onMouseUp (CPoint& where, const CButtonStat
 //------------------------------------------------------------------------
 CMouseEventResult CHorizontalSwitch::onMouseMoved (CPoint& where, const CButtonState& buttons)
 {
-	if (buttons & kLButton)
+	if (isEditing ())
 	{
 		float norm = (int32_t)((where.h - getViewSize ().left) / coef) / (float)(getNumSubPixmaps () - 1);
 		value = getMin () + norm * (getMax () - getMin ());
@@ -502,7 +502,7 @@ CMouseEventResult CRockerSwitch::onMouseUp (CPoint& where, const CButtonState& b
 //------------------------------------------------------------------------
 CMouseEventResult CRockerSwitch::onMouseMoved (CPoint& where, const CButtonState& buttons)
 {
-	if (buttons & kLButton)
+	if (isEditing ())
 	{
 		CCoord  width_2  = getViewSize ().width () / 2;
 		CCoord  height_2 = getViewSize ().height () / 2;

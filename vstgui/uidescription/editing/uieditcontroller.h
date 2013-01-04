@@ -28,17 +28,18 @@ public:
 	CView* createEditView ();
 	UIEditMenuController* getMenuController () const { return menuController; }
 	const std::string& getEditTemplateName () const { return editTemplateName; }
+	UIAttributes* getSettings ();
 
 	static UIDescription& getEditorDescription ();
 	static void setupDataSource (GenericStringListDataBrowserSource* source);
 	static bool std__stringCompare (const std::string* lhs, const std::string* rhs);
-
+	static const UTF8StringPtr kEncodeBitmapsSettingsKey;
+	static const UTF8StringPtr kWriteWindowsRCFileSettingsKey;
 protected:
 	~UIEditController ();
 
 	static void resetScrollViewOffsets (CViewContainer* view);
 
-	UIAttributes* getSettings ();
 	int32_t getSplitViewIndex (CSplitView* splitView);
 	void setDirty (bool state);
 
@@ -110,7 +111,13 @@ protected:
 
 		Template (const std::string& n, CView* v) : name (n), view (v) {}
 		Template (const Template& c) : name (c.name), view (c.view) {}
+		bool operator==(const Template& t) { return name == t.name && view == t.view; }
 		bool operator==(const std::string& n) { return name == n; }
+		Template& operator=(const Template& t) { name = t.name; view = t.view; return *this; }
+	#if VSTGUI_RVALUE_REF_SUPPORT
+		Template (Template&& t) { *this = std::move (t); }
+		Template& operator=(Template&& t) { name = std::move (t.name); view = std::move (t.view); return *this; }
+	#endif
 	};
 	void updateTemplate (UTF8StringPtr name);
 	void updateTemplate (const std::vector<Template>::const_iterator& it);

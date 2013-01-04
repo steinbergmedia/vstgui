@@ -214,7 +214,7 @@ protected:
 	float vmin;
 	float vmax;
 	float wheelInc;
-	bool editing;
+	int32_t editing;
 
 	CPoint	backOffset;
 };

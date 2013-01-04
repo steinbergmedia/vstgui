@@ -606,7 +606,7 @@ void COptionMenu::setPrefixNumbers (int32_t preCount)
 //-----------------------------------------------------------------------------
 CMenuItem* COptionMenu::addEntry (CMenuItem* item, int32_t index)
 {
-	if (index <= 0 || index > getNbEntries ())
+	if (index < 0 || index > getNbEntries ())
 		menuItems->push_back (item);
 	else
 	{

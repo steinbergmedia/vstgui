@@ -45,6 +45,7 @@
 #include "lib/cfileselector.h"
 #include "lib/cfont.h"
 #include "lib/cframe.h"
+#include "lib/cgradientview.h"
 #include "lib/cgraphicspath.h"
 #include "lib/coffscreencontext.h"
 #include "lib/copenglview.h"

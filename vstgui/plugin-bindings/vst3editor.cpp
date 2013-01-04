@@ -1068,7 +1068,23 @@ CMessageResult VST3Editor::notify (CBaseObject* sender, IdStringPtr message)
 						const std::string* filePath = attributes->getAttributeValue ("Path");
 						if (filePath)
 						{
-							description->save (filePath->c_str ());
+							int32_t flags = 0;
+							// check save options from UIEditController
+							UIEditController* editController = dynamic_cast<UIEditController*> (getViewController (frame->getView (0)));
+							if (editController)
+							{
+								attributes = editController->getSettings ();
+								bool val;
+								if (attributes->getBooleanAttribute (UIEditController::kEncodeBitmapsSettingsKey, val) && val == true)
+								{
+									flags |= UIDescription::kWriteImagesIntoXMLFile;
+								}
+								if (attributes->getBooleanAttribute (UIEditController::kWriteWindowsRCFileSettingsKey, val) && val == true)
+								{
+									flags |= UIDescription::kWriteWindowsResourceFile;
+								}
+							}
+							description->save (filePath->c_str (), flags);
 						}
 					}
 					return kMessageNotified;
@@ -1155,11 +1171,12 @@ bool VST3Editor::enableEditing (bool state)
 			if (view)
 			{
 				frame->setSize (view->getWidth (), view->getHeight ());
-				rect.right = rect.left + (Steinberg::int32)frame->getWidth ();
-				rect.bottom = rect.top + (Steinberg::int32)frame->getHeight ();
+				frame->addView (view);
+
+				rect.right = rect.left + (Steinberg::int32)view->getWidth ();
+				rect.bottom = rect.top + (Steinberg::int32)view->getHeight ();
 				plugFrame->resizeView (this, &rect);
 
-				frame->addView (view);
 				frame->enableTooltips (true);
 				CColor focusColor = kBlueCColor;
 				editController->getEditorDescription ().getColor ("focus", focusColor);
@@ -1170,12 +1187,12 @@ bool VST3Editor::enableEditing (bool state)
 				COptionMenu* fileMenu = editController->getMenuController ()->getFileMenu ();
 				if (fileMenu)
 				{
-					CMenuItem* item = fileMenu->addEntry (new CCommandMenuItem ("Save", this, "File", "Save"));
+					CMenuItem* item = fileMenu->addEntry (new CCommandMenuItem ("Save", this, "File", "Save"), 0);
 					item->setKey ("s", kControl);
-					item = fileMenu->addEntry (new CCommandMenuItem ("Save As..", this, "File", "Save As"));
+					item = fileMenu->addEntry (new CCommandMenuItem ("Save As..", this, "File", "Save As"), 1);
 					item->setKey ("s", kShift|kControl);
-					fileMenu->addSeparator ();
-					item = fileMenu->addEntry (new CCommandMenuItem ("Close Editor", this, "File", "Close UIDescription Editor"));
+					fileMenu->addSeparator (2);
+					item = fileMenu->addEntry (new CCommandMenuItem ("Close Editor", this, "File", "Close UIDescription Editor"), 3);
 					item->setKey ("e", kControl);
 				}
 				COptionMenu* editMenu = editController->getMenuController ()->getEditMenu ();

@@ -425,12 +425,11 @@ CMouseEventResult CSlider::onMouseDown (CPoint& where, const CButtonState& butto
 	oldVal    = getMin ()-1;
 	oldButton = buttons;
 
-	beginEdit ();
 	if (checkDefaultValue (buttons))
 	{
-		endEdit ();
 		return kMouseDownEventHandledButDontNeedMovedOrUpEvents;
 	}
+	beginEdit ();
 	if (buttons & kZoomModifier)
 		return kMouseEventHandled;
 	return onMouseMoved (where, buttons);
@@ -447,37 +446,40 @@ CMouseEventResult CSlider::onMouseUp (CPoint& where, const CButtonState& buttons
 //------------------------------------------------------------------------
 CMouseEventResult CSlider::onMouseMoved (CPoint& where, const CButtonState& buttons)
 {
-	if (oldButton != 0 && buttons & kLButton)
+	if (isEditing ())
 	{
-		if (oldVal == getMin () - 1)
-			oldVal = (value - getMin ()) / (getMax () - getMin ());
-			
-		if ((oldButton != buttons) && (buttons & kZoomModifier))
+		if (buttons & kLButton)
 		{
-			oldVal = (value - getMin ()) / (getMax () - getMin ());
-			oldButton = buttons;
-		}
-		else if (!(buttons & kZoomModifier))
-			oldVal = (value - getMin ()) / (getMax () - getMin ());
+			if (oldVal == getMin () - 1)
+				oldVal = (value - getMin ()) / (getMax () - getMin ());
+				
+			if ((oldButton != buttons) && (buttons & kZoomModifier))
+			{
+				oldVal = (value - getMin ()) / (getMax () - getMin ());
+				oldButton = buttons;
+			}
+			else if (!(buttons & kZoomModifier))
+				oldVal = (value - getMin ()) / (getMax () - getMin ());
 
-		float normValue;
-		if (style & kHorizontal)
-			normValue = (float)(where.h - delta) / (float)rangeHandle;
-		else
-			normValue = (float)(where.v - delta) / (float)rangeHandle;
+			float normValue;
+			if (style & kHorizontal)
+				normValue = (float)(where.h - delta) / (float)rangeHandle;
+			else
+				normValue = (float)(where.v - delta) / (float)rangeHandle;
 
-		if (style & kRight || style & kBottom)
-			normValue = 1.f - normValue;
+			if (style & kRight || style & kBottom)
+				normValue = 1.f - normValue;
 
-		if (buttons & kZoomModifier)
-			normValue = oldVal + ((normValue - oldVal) / zoomFactor);
+			if (buttons & kZoomModifier)
+				normValue = oldVal + ((normValue - oldVal) / zoomFactor);
 
-		setValueNormalized (normValue);
-    	    
-		if (isDirty ())
-		{
-			valueChanged ();
-			invalid ();
+			setValueNormalized (normValue);
+				
+			if (isDirty ())
+			{
+				valueChanged ();
+				invalid ();
+			}
 		}
 		return kMouseEventHandled;
 	}
