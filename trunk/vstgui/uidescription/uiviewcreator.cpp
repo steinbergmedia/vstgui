@@ -3548,6 +3548,171 @@ public:
 };
 CShadowViewContainerCreator __gCShadowViewContainerCreator;
 
+//-----------------------------------------------------------------------------
+class CGradientViewCreator : public IViewCreator
+{
+public:
+	CGradientViewCreator () { UIViewFactory::registerViewCreator (*this); }
+	IdStringPtr getViewName () const { return "CGradientView"; }
+	IdStringPtr getBaseViewName () const { return "CView"; }
+	CView* create (const UIAttributes& attributes, IUIDescription* description) const { return new CGradientView (CRect (0, 0, 100, 100)); }
+	bool apply (CView* view, const UIAttributes& attributes, IUIDescription* description) const
+	{
+		CGradientView* gv = dynamic_cast<CGradientView*> (view);
+		if (gv == 0)
+			return false;
+		CColor color;
+		const std::string* attr = attributes.getAttributeValue ("frame-color");
+		if (attr)
+		{
+			if (description->getColor (attr->c_str (), color))
+			{
+				rememberAttributeValueString (view, "frame-color", *attr);
+				gv->setFrameColor (color);
+			}
+		}
+		attr = attributes.getAttributeValue ("gradient-start-color");
+		if (attr)
+		{
+			if (description->getColor (attr->c_str (), color))
+			{
+				rememberAttributeValueString (view, "gradient-start-color", *attr);
+				gv->setGradientStartColor (color);
+			}
+		}
+		attr = attributes.getAttributeValue ("gradient-end-color");
+		if (attr)
+		{
+			if (description->getColor (attr->c_str (), color))
+			{
+				rememberAttributeValueString (view, "gradient-end-color", *attr);
+				gv->setGradientEndColor (color);
+			}
+		}
+		double d;
+		if (attributes.getDoubleAttribute ("gradient-angle", d))
+		{
+			gv->setGradientAngle (d);
+		}
+		if (attributes.getDoubleAttribute ("gradient-start-color-offset", d))
+		{
+			gv->setGradientStartColorOffset (d);
+		}
+		if (attributes.getDoubleAttribute ("gradient-end-color-offset", d))
+		{
+			gv->setGradientEndColorOffset (d);
+		}
+		if (attributes.getDoubleAttribute ("round-rect-radius", d))
+		{
+			gv->setRoundRectRadius (d);
+		}
+		if (attributes.getDoubleAttribute ("frame-width", d))
+		{
+			gv->setFrameWidth (d);
+		}
+		bool b;
+		if (attributes.getBooleanAttribute ("draw-antialiased", b))
+		{
+			gv->setDrawAntialiased (b);
+		}
+		return true;
+	}
+	bool getAttributeNames (std::list<std::string>& attributeNames) const
+	{
+		attributeNames.push_back ("frame-color");
+		attributeNames.push_back ("gradient-start-color");
+		attributeNames.push_back ("gradient-end-color");
+		attributeNames.push_back ("gradient-angle");
+		attributeNames.push_back ("gradient-start-color-offset");
+		attributeNames.push_back ("gradient-end-color-offset");
+		attributeNames.push_back ("round-rect-radius");
+		attributeNames.push_back ("frame-width");
+		attributeNames.push_back ("draw-antialiased");
+		return true;
+	}
+	AttrType getAttributeType (const std::string& attributeName) const
+	{
+		if (attributeName == "frame-color") return kColorType;
+		if (attributeName == "gradient-start-color") return kColorType;
+		if (attributeName == "gradient-end-color") return kColorType;
+		if (attributeName == "gradient-angle") return kFloatType;
+		if (attributeName == "gradient-start-color-offset") return kFloatType;
+		if (attributeName == "gradient-end-color-offset") return kFloatType;
+		if (attributeName == "round-rect-radius") return kFloatType;
+		if (attributeName == "frame-width") return kFloatType;
+		if (attributeName == "draw-antialiased") return kBooleanType;
+		return kUnknownType;
+	}
+	bool getAttributeValue (CView* view, const std::string& attributeName, std::string& stringValue, IUIDescription* desc) const
+	{
+		CGradientView* gv = dynamic_cast<CGradientView*> (view);
+		if (gv == 0)
+			return false;
+		if (attributeName == "frame-color")
+		{
+			if (!getRememberedAttributeValueString (view, "frame-color", stringValue))
+				colorToString (gv->getFrameColor (), stringValue, desc);
+			return true;
+		}
+		if (attributeName == "gradient-start-color")
+		{
+			if (!getRememberedAttributeValueString (view, "gradient-start-color", stringValue))
+				colorToString (gv->getGradientStartColor (), stringValue, desc);
+			return true;
+		}
+		if (attributeName == "gradient-end-color")
+		{
+			if (!getRememberedAttributeValueString (view, "gradient-end-color", stringValue))
+				colorToString (gv->getGradientEndColor (), stringValue, desc);
+			return true;
+		}
+		if (attributeName == "gradient-angle")
+		{
+			std::stringstream str;
+			str << gv->getGradientAngle ();
+			stringValue = str.str ().c_str ();
+			return true;
+		}
+		if (attributeName == "gradient-start-color-offset")
+		{
+			std::stringstream str;
+			str << gv->getGradientStartColorOffset ();
+			stringValue = str.str ().c_str ();
+			return true;
+		}
+		if (attributeName == "gradient-end-color-offset")
+		{
+			std::stringstream str;
+			str << gv->getGradientEndColorOffset ();
+			stringValue = str.str ().c_str ();
+			return true;
+		}
+		if (attributeName == "round-rect-radius")
+		{
+			std::stringstream str;
+			str << gv->getRoundRectRadius ();
+			stringValue = str.str ().c_str ();
+			return true;
+		}
+		if (attributeName == "frame-width")
+		{
+			std::stringstream str;
+			str << gv->getFrameWidth ();
+			stringValue = str.str ().c_str ();
+			return true;
+		}
+		if (attributeName == "draw-antialiased")
+		{
+			stringValue = gv->getDrawAntialised () ? "true" : "false";
+			return true;
+		}
+		return false;
+	}
+
+};
+CGradientViewCreator __gCGradientViewCreator;
+
+
 }} // namespace
 
 /**

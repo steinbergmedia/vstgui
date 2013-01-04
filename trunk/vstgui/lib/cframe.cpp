@@ -792,7 +792,10 @@ bool CFrame::setModalView (CView* pView)
 		return false;
 
 	if (pModalView)
+	{
+		invalidRect (pModalView->getViewSize ());
 		removeView (pModalView, false);
+	}
 	
 	pModalView = pView;
 

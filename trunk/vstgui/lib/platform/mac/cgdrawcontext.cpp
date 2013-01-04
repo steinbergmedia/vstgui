@@ -73,8 +73,8 @@ void CGDrawContext::init ()
 {
 	CGContextSaveGState (cgContext);
 	CGContextSetShouldAntialias (cgContext, false);
-	CGContextSetFillColorSpace (cgContext, GetGenericRGBColorSpace ());
-	CGContextSetStrokeColorSpace (cgContext, GetGenericRGBColorSpace ()); 
+	CGContextSetFillColorSpace (cgContext, GetCGColorSpace ());
+	CGContextSetStrokeColorSpace (cgContext, GetCGColorSpace ()); 
 	CGContextSaveGState (cgContext);
 	CGAffineTransform cgCTM = CGAffineTransformMake (1.0, 0.0, 0.0, -1.0, 0.0, 0.0);
 	CGContextSetTextMatrix (cgContext, cgCTM);
@@ -179,7 +179,7 @@ void CGDrawContext::fillLinearGradient (CGraphicsPath* _path, const CGradient& g
 		else
 			CGContextClip (cgContext);
 
-		CGContextDrawLinearGradient (cgContext, *cgGradient, CGPointMake (startPoint.x, startPoint.y), CGPointMake (endPoint.x, endPoint.y), 0);
+		CGContextDrawLinearGradient (cgContext, *cgGradient, CGPointMake (startPoint.x, startPoint.y), CGPointMake (endPoint.x, endPoint.y), kCGGradientDrawsBeforeStartLocation | kCGGradientDrawsAfterEndLocation);
 		
 		releaseCGContext (cgContext);
 	}

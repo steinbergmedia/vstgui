@@ -722,7 +722,7 @@ void MultipleAttributeChangeAction::collectViewsWithAttributeValue (UIViewFactor
 					{
 						if (typeValue == value)
 						{
-							insert (std::make_pair (view, (*namesIt)));
+							push_back (std::make_pair (view, (*namesIt)));
 						}
 					}
 				}

@@ -1,3 +1,12 @@
+2013-01-04 arne
+
+	* fix a few issues introduces due to calling beginEdit() and endEdit() only once in CControl
+	* [quartz] use global color space for Gradient colors, so that these colors are identical to the colors when drawing strokres or fills
+	* changed method signature CViewContainer::getVisibleSize() to take a const rect reference
+	* fix rare crash in CTooltipSupport
+	* fix a redraw issue which may happens when removing a modal view
+	* add CGradientView (experimental, Direct2D and GDI+ drawing needs check)
+
 2012-11-28 arne
 
 	* replaced all occurrences of reinterpret_cast with proper replacements

@@ -39,6 +39,8 @@
 #include "../iplatformframe.h"
 #include <mach/mach_time.h>
 
+#define USE_MAIN_DISPLAY_COLORSPACE	1
+
 namespace VSTGUI {
 
 //-----------------------------------------------------------------------------
@@ -62,18 +64,20 @@ class GenericMacColorSpace
 public:
 	GenericMacColorSpace ()
 	{
+	#if USE_MAIN_DISPLAY_COLORSPACE
+		colorspace = CreateMainDisplayColorSpace ();
+	#else
 		#if MAC_COCOA
-		rgbColorspace = CGColorSpaceCreateWithName (kCGColorSpaceGenericRGB);
+		colorspace = CGColorSpaceCreateWithName (kCGColorSpaceGenericRGB);
 		#else
-		CreateGenericRGBColorSpace ();
+		colorspace = CreateGenericRGBColorSpace ();
 		#endif
-		CreateMainDisplayColorSpace ();
+	#endif
 	}
 	
 	~GenericMacColorSpace ()
 	{
-		CGColorSpaceRelease (rgbColorspace);
-		CGColorSpaceRelease (mainDisplayColorSpace);
+		CGColorSpaceRelease (colorspace);
 	}
 
 	static GenericMacColorSpace& instance ()
@@ -82,7 +86,7 @@ public:
 		return gInstance;
 	}
 	
-	#if !MAC_COCOA
+#if !MAC_COCOA && !USE_MAIN_DISPLAY_COLORSPACE
 	//-----------------------------------------------------------------------------
 	CMProfileRef OpenGenericProfile(void)
 	{
@@ -101,30 +105,34 @@ public:
 	}
 
 	//-----------------------------------------------------------------------------
-	void CreateGenericRGBColorSpace(void)
+	static CGColorSpaceRef CreateGenericRGBColorSpace (void)
 	{
+		CGColorSpaceRef colorspace = 0;
 		CMProfileRef genericRGBProfile = OpenGenericProfile ();
 	
 		if (genericRGBProfile)
 		{
-			rgbColorspace = CGColorSpaceCreateWithPlatformColorSpace (genericRGBProfile);
+			colorspace = CGColorSpaceCreateWithPlatformColorSpace (genericRGBProfile);
 			
 			// we opened the profile so it is up to us to close it
 			CMCloseProfile (genericRGBProfile); 
 		}
-		if (rgbColorspace == NULL)
-			rgbColorspace = CGColorSpaceCreateDeviceRGB ();
+		if (colorspace == NULL)
+			colorspace = CGColorSpaceCreateDeviceRGB ();
+		return colorspace;
 	}
-	#endif
+#endif
 
-	void CreateMainDisplayColorSpace ()
+#if USE_MAIN_DISPLAY_COLORSPACE
+	static CGColorSpaceRef CreateMainDisplayColorSpace ()
 	{
 	#if MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_7
 		ColorSyncProfileRef csProfileRef = ColorSyncProfileCreateWithDisplayID (0);
 		if (csProfileRef)
 		{
-			mainDisplayColorSpace = CGColorSpaceCreateWithPlatformColorSpace (csProfileRef);
+			CGColorSpaceRef colorSpace = CGColorSpaceCreateWithPlatformColorSpace (csProfileRef);
 			CFRelease (csProfileRef);
+			return colorSpace;
 		}
 	#else
 		CMProfileRef sysprof = NULL;
@@ -133,28 +141,24 @@ public:
 		if (CMGetSystemProfile (&sysprof) == noErr)
 		{
 			// Create a colorspace with the systems profile
-			mainDisplayColorSpace = CGColorSpaceCreateWithPlatformColorSpace (sysprof);
+			CGColorSpaceRef colorSpace = CGColorSpaceCreateWithPlatformColorSpace (sysprof);
 
 			// Close the profile
 			CMCloseProfile (sysprof);
+			return colorSpace;
 		}
 	#endif
+		return 0;
 	}
+#endif
 
-	CGColorSpaceRef rgbColorspace;
-	CGColorSpaceRef mainDisplayColorSpace;
+	CGColorSpaceRef colorspace;
 };
 
 //-----------------------------------------------------------------------------
-CGColorSpaceRef GetGenericRGBColorSpace ()
+CGColorSpaceRef GetCGColorSpace ()
 {
-	return GenericMacColorSpace::instance ().rgbColorspace;
-}
-
-//-----------------------------------------------------------------------------
-CGColorSpaceRef GetMainDisplayColorSpace ()
-{
-	return GenericMacColorSpace::instance ().mainDisplayColorSpace;
+	return GenericMacColorSpace::instance ().colorspace;
 }
 
 } // namespace

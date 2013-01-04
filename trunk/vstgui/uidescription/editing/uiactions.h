@@ -228,7 +228,7 @@ protected:
 };
 
 //----------------------------------------------------------------------------------------------------
-class MultipleAttributeChangeAction : public IAction, public std::map<SharedPointer<CView>, std::string>
+class MultipleAttributeChangeAction : public IAction, public std::vector<std::pair<SharedPointer<CView>, std::string> >
 {
 public:
 	MultipleAttributeChangeAction (UIDescription* description, const std::list<CView*>& views, IViewCreator::AttrType attrType, UTF8StringPtr oldValue, UTF8StringPtr newValue);

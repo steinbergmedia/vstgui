@@ -199,7 +199,7 @@ void CViewContainer::setViewSize (const CRect &rect, bool invalid)
  * @param rect size to get visible size of
  * @return visible size of rect
  */
-CRect CViewContainer::getVisibleSize (const CRect rect) const
+CRect CViewContainer::getVisibleSize (const CRect& rect) const
 {
 	CRect result (rect);
 	result.offset (getViewSize ().left, getViewSize ().top);
@@ -338,7 +338,7 @@ bool CViewContainer::addView (CView *pView, CView* pBefore)
 
 	if (pBefore)
 	{
-		ChildViewConstIterator it = std::find (children.begin (), children.end (), pBefore);
+		std::list<SharedPointer<CView> >::iterator it = std::find (children.begin (), children.end (), pBefore);
 		children.insert (it, pView);
 	}
 	else
@@ -503,7 +503,7 @@ bool CViewContainer::changeViewZOrder (CView* view, int32_t newIndex)
 {
 	if (newIndex >= 0 && newIndex < getNbViews ())
 	{
-		ChildViewConstIterator it = std::find (children.begin (), children.end (), view);
+		std::list<SharedPointer<CView> >::iterator it = std::find (children.begin (), children.end (), view);
 		if (it != children.end ())
 		{
 			children.erase (it);

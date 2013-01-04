@@ -39,6 +39,7 @@
 
 #if MAC
 
+#include "macglobals.h"
 #include <ApplicationServices/ApplicationServices.h>
 
 namespace VSTGUI {
@@ -74,8 +75,10 @@ public:
 	: CGradient (_color1Start, _color2Start, _color1, _color2)
 	, gradient (0)
 	{
-		CGColorRef cgColor1 = CGColorCreateGenericRGB (color1.red/255.f, color1.green/255.f, color1.blue/255.f, color1.alpha/255.f);
-		CGColorRef cgColor2 = CGColorCreateGenericRGB (color2.red/255.f, color2.green/255.f, color2.blue/255.f, color2.alpha/255.f);
+		CGFloat color1Components[] = {color1.red/255.f, color1.green/255.f, color1.blue/255.f, color1.alpha/255.f};
+		CGColorRef cgColor1 = CGColorCreate (GetCGColorSpace (), color1Components);
+		CGFloat color2Components[] = {color2.red/255.f, color2.green/255.f, color2.blue/255.f, color2.alpha/255.f};
+		CGColorRef cgColor2 = CGColorCreate (GetCGColorSpace (), color2Components);
 		const void* colors[] = { cgColor1, cgColor2 };
 		CFArrayRef colorArray = CFArrayCreate (0, colors, 2, &kCFTypeArrayCallBacks);
 
@@ -85,7 +88,7 @@ public:
 		else if (color2Start > 1) color2Start = 1;
 		CGFloat locations[] = { static_cast<CGFloat>(color1Start), static_cast<CGFloat>(color2Start) };
 		
-		gradient = CGGradientCreateWithColors (0, colorArray, locations);
+		gradient = CGGradientCreateWithColors (GetCGColorSpace (), colorArray, locations);
 
 		CFRelease (cgColor1);
 		CFRelease (cgColor2);

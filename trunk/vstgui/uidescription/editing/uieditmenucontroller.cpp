@@ -31,6 +31,36 @@ UIEditMenuController::~UIEditMenuController ()
 }
 
 //----------------------------------------------------------------------------------------------------
+void UIEditMenuController::createFileMenu (COptionMenu* menu)
+{
+	int32_t index = 0;
+	while (UIEditing::fileMenu[index].category != 0)
+	{
+		if (UIEditing::fileMenu[index].category == UIEditing::menuSeparator.category)
+		{
+			menu->addSeparator ();
+		}
+		else
+		{
+			CMenuItem* item = menu->addEntry (new CCommandMenuItem (UIEditing::fileMenu[index].name, this, UIEditing::fileMenu[index].category, UIEditing::fileMenu[index].name));
+			if (UIEditing::fileMenu[index].key)
+			{
+				item->setKey (UIEditing::fileMenu[index].key, UIEditing::fileMenu[index].modifier);
+			}
+			if (UIEditing::fileMenu[index].menuFlags)
+			{
+				if (UIEditing::fileMenu[index].menuFlags & CMenuItem::kTitle)
+				{
+					item->setIsTitle (true);
+				}
+			}
+		}
+		index++;
+	}
+	menu->setStyle (menu->getStyle () | kMultipleCheckStyle);
+}
+
+//----------------------------------------------------------------------------------------------------
 void UIEditMenuController::createEditMenu (COptionMenu* menu)
 {
 	int32_t index = 0;
@@ -80,6 +110,7 @@ CMessageResult UIEditMenuController::notify (CBaseObject* sender, IdStringPtr me
 	if (message == CCommandMenuItem::kMsgMenuItemValidate)
 	{
 		CCommandMenuItem* item = dynamic_cast<CCommandMenuItem*> (sender);
+		item->setChecked (false);
 		if (strcmp (item->getCommandCategory (), "Edit") == 0)
 		{
 			if (strcmp (item->getCommandName (), "Undo") == 0)
@@ -491,6 +522,7 @@ CView* UIEditMenuController::verifyView (CView* view, const UIAttributes& attrib
 			}
 			case kMenuFileTag:
 			{
+				createFileMenu (menu);
 				fileMenu = menu;
 				break;
 			}

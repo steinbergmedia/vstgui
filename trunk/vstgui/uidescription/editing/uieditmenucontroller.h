@@ -8,9 +8,9 @@
 #include "uiselection.h"
 #include "uiundomanager.h"
 #include "../../lib/cvstguitimer.h"
+#include "../../lib/controls/coptionmenu.h"
 
 namespace VSTGUI {
-class COptionMenu;
 class CCommandMenuItem;
 class IActionPerformer;
 class CTextLabel;
@@ -23,33 +23,43 @@ struct MenuEntry {
 	UTF8StringPtr name;
 	UTF8StringPtr key;
 	int32_t modifier;
+	int32_t menuFlags;
 };
 
 //----------------------------------------------------------------------------------------------------
-static const MenuEntry menuSeparator = { "Separator", 0, 0, 0 };
+static const MenuEntry menuSeparator = { "Separator", 0, 0, 0, 0 };
 
 //----------------------------------------------------------------------------------------------------
 static const MenuEntry editMenu[] = {
-	{ "Edit", "Undo" , "z", kControl },
-	{ "Edit", "Redo" , "z", kControl|kShift},
+	{ "Edit", "Undo" , "z", kControl, 0 },
+	{ "Edit", "Redo" , "z", kControl|kShift, 0 },
 	menuSeparator,
-	{ "Edit", "Cut" , "x", kControl },
-	{ "Edit", "Copy" , "c", kControl },
-	{ "Edit", "Paste" , "v", kControl },
-	{ "Edit", "Delete" , "\b", kControl},
+	{ "Edit", "Cut" , "x", kControl, 0 },
+	{ "Edit", "Copy" , "c", kControl, 0 },
+	{ "Edit", "Paste" , "v", kControl, 0 },
+	{ "Edit", "Delete" , "\b", kControl, 0},
 	menuSeparator,
-	{ "Edit", "Size To Fit" , 0, 0 },
-	{ "Edit", "Unembed Views" , 0, 0 },
-	{ "Edit", "Embed Into" , 0, 0 },
-	{ "Edit", "Transform View Type" , 0, 0 },
-	{ "Edit", "Insert Template" , 0, 0 },
+	{ "Edit", "Size To Fit" , 0, 0, 0 },
+	{ "Edit", "Unembed Views" , 0, 0, 0 },
+	{ "Edit", "Embed Into" , 0, 0, 0 },
+	{ "Edit", "Transform View Type" , 0, 0, 0 },
+	{ "Edit", "Insert Template" , 0, 0, 0 },
 	menuSeparator,
-	{ "Edit", "Add New Template" , 0, 0},
-	{ "Edit", "Delete Template" , 0, 0},
-	{ "Edit", "Duplicate Template" , 0, 0},
+	{ "Edit", "Add New Template" , 0, 0, 0 },
+	{ "Edit", "Delete Template" , 0, 0, 0 },
+	{ "Edit", "Duplicate Template" , 0, 0, 0 },
 	menuSeparator,
-	{ "Edit", "Template Settings..." , 0, 0},
-	{ "Edit", "Focus Drawing Settings..." , 0, 0},
+	{ "Edit", "Template Settings..." , 0, 0, 0 },
+	{ "Edit", "Focus Drawing Settings..." , 0, 0, 0 },
+	{0}
+};
+
+//----------------------------------------------------------------------------------------------------
+static const MenuEntry fileMenu[] = {
+	menuSeparator,
+	{ "File", "Save Options" , 0, 0, CMenuItem::kTitle },
+	{ "File", "Encode Bitmaps in XML" , 0, 0, 0 },
+	{ "File", "Write Windows RC File on Save" , 0, 0, 0 },
 	{0}
 };
 
@@ -72,6 +82,7 @@ public:
 protected:
 	CCommandMenuItem* findKeyCommandItem (COptionMenu* menu, const VstKeyCode& key);
 	void createEditMenu (COptionMenu* menu);
+	void createFileMenu (COptionMenu* menu);
 
 	virtual CView* verifyView (CView* view, const UIAttributes& attributes, IUIDescription* description) VSTGUI_OVERRIDE_VMETHOD;
 	CControlListener* getControlListener (UTF8StringPtr name) VSTGUI_OVERRIDE_VMETHOD { return this; }

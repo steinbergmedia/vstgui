@@ -231,10 +231,15 @@ void CTooltipSupport::hideTooltip ()
 }
 
 //------------------------------------------------------------------------
-void CTooltipSupport::showTooltip ()
+bool CTooltipSupport::showTooltip ()
 {
 	if (currentView)
 	{
+		if (currentView->isAttached () == false)
+		{
+			currentView = 0;
+			return false;
+		}
 		CRect r (currentView->getVisibleSize ());
 		CPoint p;
 		currentView->localToFrame (p);
@@ -255,8 +260,10 @@ void CTooltipSupport::showTooltip ()
 			#if DEBUGLOG
 			DebugPrint ("CTooltipSupport::showTooltip (%s)\n", currentView->getClassName ());
 			#endif
+			return true;
 		}
 	}
+	return false;
 }
 
 //------------------------------------------------------------------------
@@ -271,8 +278,15 @@ CMessageResult CTooltipSupport::notify (CBaseObject* sender, IdStringPtr msg)
 		}
 		else if (state == kShowing)
 		{
-			showTooltip ();
-			timer->setFireTime (100);
+			if (showTooltip ())
+			{
+				timer->setFireTime (100);
+			}
+			else
+			{
+				state = kHidden;
+				timer->stop ();
+			}
 		}
 		else if (state == kForceVisible)
 		{

@@ -132,7 +132,7 @@ CMouseEventResult CMovieButton::onMouseUp (CPoint& where, const CButtonState& bu
 //------------------------------------------------------------------------
 CMouseEventResult CMovieButton::onMouseMoved (CPoint& where, const CButtonState& buttons)
 {
-	if (buttons & kLButton)
+	if (isEditing ())
 	{
 		if (where.h >= getViewSize ().left &&
 				where.v >= getViewSize ().top  &&

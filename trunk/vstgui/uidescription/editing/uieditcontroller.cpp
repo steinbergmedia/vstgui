@@ -103,6 +103,9 @@ bool UIEditController::std__stringCompare (const std::string* lhs, const std::st
 	return true;
 }
 
+const UTF8StringPtr UIEditController::kEncodeBitmapsSettingsKey = "EncodeBitmaps";
+const UTF8StringPtr UIEditController::kWriteWindowsRCFileSettingsKey = "WriteRCFile";
+
 //----------------------------------------------------------------------------------------------------
 class UIEditControllerShadingView : public CView
 {
@@ -540,6 +543,29 @@ CMessageResult UIEditController::notify (CBaseObject* sender, IdStringPtr messag
 				return kMessageNotified;
 			}
 		}
+		else if (strcmp (item->getCommandCategory (), "File") == 0)
+		{
+			if (strcmp (item->getCommandName (), "Encode Bitmaps in XML") == 0)
+			{
+				UIAttributes* attr = getSettings ();
+				bool encodeBitmaps = false;
+				if (attr && attr->getBooleanAttribute (kEncodeBitmapsSettingsKey, encodeBitmaps))
+				{
+					item->setChecked (encodeBitmaps);
+				}
+				return kMessageNotified;
+			}
+			else if (strcmp (item->getCommandName (), "Write Windows RC File on Save") == 0)
+			{
+				UIAttributes* attr = getSettings ();
+				bool encodeBitmaps = false;
+				if (attr && attr->getBooleanAttribute (kWriteWindowsRCFileSettingsKey, encodeBitmaps))
+				{
+					item->setChecked (encodeBitmaps);
+				}
+				return kMessageNotified;
+			}
+		}
 	}
 	else if (message == CCommandMenuItem::kMsgMenuItemSelected)
 	{
@@ -610,6 +636,31 @@ CMessageResult UIEditController::notify (CBaseObject* sender, IdStringPtr messag
 				UIDialogController* dc = new UIDialogController (this, editView->getFrame ());
 				UIFocusSettingsController* fsController = new UIFocusSettingsController (editDescription);
 				dc->run ("focus.settings", "Focus Drawing Settings", "OK", "Cancel", fsController, &getEditorDescription ());
+				return kMessageNotified;
+			}
+		}
+		else if (strcmp (item->getCommandCategory (), "File") == 0)
+		{
+			if (strcmp (item->getCommandName (), "Encode Bitmaps in XML") == 0)
+			{
+				UIAttributes* attr = getSettings ();
+				bool val = false;
+				if (attr)
+				{
+					attr->getBooleanAttribute (kEncodeBitmapsSettingsKey, val);
+					attr->setBooleanAttribute (kEncodeBitmapsSettingsKey, !val);
+				}
+				return kMessageNotified;
+			}
+			else if (strcmp (item->getCommandName (), "Write Windows RC File on Save") == 0)
+			{
+				UIAttributes* attr = getSettings ();
+				bool val = false;
+				if (attr)
+				{
+					attr->getBooleanAttribute (kWriteWindowsRCFileSettingsKey, val);
+					attr->setBooleanAttribute (kWriteWindowsRCFileSettingsKey, !val);
+				}
 				return kMessageNotified;
 			}
 		}
@@ -1055,11 +1106,11 @@ void UIEditController::onTemplatesChanged ()
 	{
 		if (std::find (templates.begin (), templates.end (), *(*it)) == templates.end ())
 		{
-			CView* view = editDescription->createView ((*it)->c_str (), editDescription->getController ());
+			OwningPointer<CView> view = editDescription->createView ((*it)->c_str (), editDescription->getController ());
 			templates.push_back (Template (*(*it), view));
-			view->forget ();
 		}
 	}
+	std::vector<Template*> toErase;
 	for (std::vector<Template>::reverse_iterator it = templates.rbegin (); it != templates.rend ();)
 	{
 		Template& t = (*it);
@@ -1075,8 +1126,13 @@ void UIEditController::onTemplatesChanged ()
 		}
 		if (!found)
 		{
-			templates.erase (it.base ()+1); 
+			toErase.push_back (&t);
 		}
+	}
+	for (std::vector<Template*>::iterator it = toErase.begin (); it != toErase.end (); it++)
+	{
+		Template* t = (*it);
+		templates.erase (std::find (templates.begin (), templates.end (), *t));
 	}
 }
 
