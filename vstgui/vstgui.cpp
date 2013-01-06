@@ -41,6 +41,7 @@
 #include "lib/cfileselector.cpp"
 #include "lib/cfont.cpp"
 #include "lib/cframe.cpp"
+#include "lib/cgradientview.cpp"
 #include "lib/cgraphicspath.cpp"
 #include "lib/coffscreencontext.cpp"
 #include "lib/copenglview.cpp"
