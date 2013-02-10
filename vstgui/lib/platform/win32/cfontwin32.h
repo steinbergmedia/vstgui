@@ -51,20 +51,20 @@ class GdiPlusFont : public IPlatformFont, public IFontPainter
 public:
 	GdiPlusFont (const char* name, const CCoord& size, const int32_t& style);
 
-	Gdiplus::Font* getFont () const { return font; }
+	Gdiplus::Font* getFont () const VSTGUI_OVERRIDE_VMETHOD { return font; }
 
 protected:
 	~GdiPlusFont ();
 	
-	double getAscent () const;
-	double getDescent () const;
-	double getLeading () const;
-	double getCapHeight () const;
+	double getAscent () const VSTGUI_OVERRIDE_VMETHOD;
+	double getDescent () const VSTGUI_OVERRIDE_VMETHOD;
+	double getLeading () const VSTGUI_OVERRIDE_VMETHOD;
+	double getCapHeight () const VSTGUI_OVERRIDE_VMETHOD;
 
-	IFontPainter* getPainter () { return this; }
+	IFontPainter* getPainter () VSTGUI_OVERRIDE_VMETHOD { return this; }
 
-	void drawString (CDrawContext* context, const CString& string, const CPoint& p, bool antialias = true);
-	CCoord getStringWidth (CDrawContext* context, const CString& string, bool antialias = true);
+	void drawString (CDrawContext* context, const CString& string, const CPoint& p, bool antialias = true) VSTGUI_OVERRIDE_VMETHOD;
+	CCoord getStringWidth (CDrawContext* context, const CString& string, bool antialias = true) VSTGUI_OVERRIDE_VMETHOD;
 
 	Gdiplus::Font* font;
 	INT gdiStyle;

@@ -90,6 +90,24 @@ Property::~Property ()
 	}
 }
 
+#if VSTGUI_RVALUE_REF_SUPPORT
+//----------------------------------------------------------------------------------------------------
+Property::Property (Property&& p)
+{
+	*this = std::move (p);
+}
+
+//----------------------------------------------------------------------------------------------------
+Property& Property::operator=(Property&& p)
+{
+	type = p.type;
+	value = p.value;
+	p.value = 0;
+	p.type = kNotFound;
+	return *this;
+}
+#endif
+
 //----------------------------------------------------------------------------------------------------
 Property& Property::operator=(const Property& p)
 {
@@ -397,7 +415,10 @@ public:
 					nc[0] = kTransparentCColor;
 				calculate (nc[0], nc, radius);
 				outputAccessor.setPosition (x, y);
-				outputAccessor.setColor (nc[0]);
+				if (nc[0].alpha == 0)
+					outputAccessor.setColor (CColor (0, 0, 0, 0));
+				else
+					outputAccessor.setColor (nc[0]);
 			}
 		}
 		for (x = 0; x < width; x++)
@@ -418,13 +439,17 @@ public:
 					nc[0] = kTransparentCColor;
 				calculate (nc[0], nc, radius);
 				outputAccessor.setPosition (x, y);
-				outputAccessor.setColor (nc[0]);
+				if (nc[0].alpha == 0)
+					outputAccessor.setColor (CColor (0, 0, 0, 0));
+				else
+					outputAccessor.setColor (nc[0]);
 			}
 		}
 		delete [] nc;
 	}
 
-	void calculate (CColor& color, CColor* colors, uint32_t numColors)
+private:
+	inline void calculate (CColor& color, CColor* colors, uint32_t numColors)
 	{
 		int32_t red = 0;
 		int32_t green = 0;

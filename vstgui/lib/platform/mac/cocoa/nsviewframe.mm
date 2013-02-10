@@ -37,7 +37,6 @@
 #if MAC_COCOA
 
 #import "cocoahelpers.h"
-#import "cocoadragcontainer.h"
 #import "cocoatextedit.h"
 #import "nsviewoptionmenu.h"
 #import "cocoaopenglview.h"
@@ -47,7 +46,7 @@
 #import "../cgbitmap.h"
 #import "../quartzgraphicspath.h"
 #import "../../../cvstguitimer.h"
-#import "../../../cdropsource.h"
+#import "../../../idatapackage.h"
 
 #if MAC_CARBON
 	#import "../carbon/hiviewframe.h"
@@ -73,7 +72,7 @@ HIDDEN inline NSViewFrame* getNSViewFrame (id obj)
 }
 
 static Class viewClass = 0;
-static CocoaDragContainer* gCocoaDragContainer = 0;
+static IDataPackage* gCocoaDragContainer = 0;
 
 #ifndef __MAC_10_7
 //------------------------------------------------------------------------------------
@@ -535,7 +534,7 @@ static NSDragOperation VSTGUI_NSView_draggingEntered (id self, SEL _cmd, id send
 
     NSPasteboard *pboard = [sender draggingPasteboard];
 
-	gCocoaDragContainer = new CocoaDragContainer (pboard);
+	gCocoaDragContainer = MacClipboard::createDragDataPackage (pboard);
 
 	CPoint where;
 	nsViewGetCurrentMouseLocation (self, where);
@@ -1098,7 +1097,7 @@ void NSViewFrame::setClipboard (IDataPackage* data)
 //-----------------------------------------------------------------------------
 IDataPackage* NSViewFrame::getClipboard ()
 {
-	return MacClipboard::getClipboard ();
+	return MacClipboard::createClipboardDataPackage ();
 }
 
 //-----------------------------------------------------------------------------

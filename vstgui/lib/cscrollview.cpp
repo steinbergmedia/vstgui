@@ -62,7 +62,7 @@ public:
 
 	bool isDirty () const;
 
-	void onDragMove (CDragContainer* drag, const CPoint& where);
+	void onDragMove (IDataPackage* drag, const CPoint& where);
 	void setAutoDragScroll (bool state) { autoDragScroll = state; }
 
 	bool attached (CView* parent);
@@ -225,7 +225,7 @@ bool CScrollContainer::getScrollValue (const CPoint& where, float& x, float& y)
 }
 
 //-----------------------------------------------------------------------------
-void CScrollContainer::onDragMove (CDragContainer* drag, const CPoint& where)
+void CScrollContainer::onDragMove (IDataPackage* drag, const CPoint& where)
 {
 	if (autoDragScroll)
 	{
@@ -451,7 +451,7 @@ void CScrollView::recalculateSubViews ()
 		sc->setViewSize (scsize, true);
 		sc->setMouseableArea (scsize);
 	}
-	if (sc && style & kOverlayScrollbars)
+	if (style & kOverlayScrollbars)
 		CViewContainer::changeViewZOrder (sc, 0);
 	sc->setAutoDragScroll (style & kAutoDragScrolling ? true : false);
 }
@@ -509,7 +509,7 @@ void CScrollView::setContainerSize (const CRect& cs, bool keepVisibleArea)
 		vsb->setScrollSize (cs);
 		if (cs.getHeight () <= getViewSize ().getHeight ())
 			vsb->setValue (0);
-		else if (keepVisibleArea && oldScrollSize.getHeight () != cs.getHeight ())
+		else if (sc && keepVisibleArea && oldScrollSize.getHeight () != cs.getHeight ())
 		{
 			CRect vSize = sc->getViewSize (vSize);
 			float newValue = (float)(oldValue * ((float)(oldScrollSize.getHeight () - vSize.getHeight ()) / ((float)cs.getHeight () - vSize.getHeight ())));
@@ -528,7 +528,7 @@ void CScrollView::setContainerSize (const CRect& cs, bool keepVisibleArea)
 		hsb->setScrollSize (cs);
 		if (cs.getWidth () <= getViewSize ().getWidth ())
 			hsb->setValue (0);
-		else if (keepVisibleArea && oldScrollSize.getWidth () != cs.getWidth ())
+		else if (sc && keepVisibleArea && oldScrollSize.getWidth () != cs.getWidth ())
 		{
 			CRect vSize = sc->getViewSize (vSize);
 			float newValue = (float)(oldValue * ((float)(oldScrollSize.getWidth () - vSize.getWidth ()) / ((float)cs.getWidth () - vSize.getWidth ())));

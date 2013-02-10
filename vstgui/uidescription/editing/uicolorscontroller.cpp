@@ -7,6 +7,7 @@
 #include "uibasedatasource.h"
 #include "../../lib/controls/cslider.h"
 #include "../../lib/coffscreencontext.h"
+#include "../../lib/idatapackage.h"
 #include <sstream>
 
 namespace VSTGUI {
@@ -488,19 +489,28 @@ public:
 	
 protected:
 	CMessageResult notify (CBaseObject* sender, IdStringPtr message);
-	virtual void update ();
-	virtual void getNames (std::list<const std::string*>& names);
-	virtual bool addItem (UTF8StringPtr name);
-	virtual bool removeItem (UTF8StringPtr name);
-	virtual bool performNameChange (UTF8StringPtr oldName, UTF8StringPtr newName);
-	virtual UTF8StringPtr getDefaultsName () { return "UIColorsDataSource"; }
+	virtual void update () VSTGUI_OVERRIDE_VMETHOD;
+	virtual void getNames (std::list<const std::string*>& names) VSTGUI_OVERRIDE_VMETHOD;
+	virtual bool addItem (UTF8StringPtr name) VSTGUI_OVERRIDE_VMETHOD;
+	virtual bool removeItem (UTF8StringPtr name) VSTGUI_OVERRIDE_VMETHOD;
+	virtual bool performNameChange (UTF8StringPtr oldName, UTF8StringPtr newName) VSTGUI_OVERRIDE_VMETHOD;
+	virtual UTF8StringPtr getDefaultsName () VSTGUI_OVERRIDE_VMETHOD { return "UIColorsDataSource"; }
 
-	void dbDrawCell (CDrawContext* context, const CRect& size, int32_t row, int32_t column, int32_t flags, CDataBrowser* browser);
-	void dbCellSetupTextEdit (int32_t row, int32_t column, CTextEdit* control, CDataBrowser* browser);
-	void dbSelectionChanged (CDataBrowser* browser);
+	void dbDrawCell (CDrawContext* context, const CRect& size, int32_t row, int32_t column, int32_t flags, CDataBrowser* browser) VSTGUI_OVERRIDE_VMETHOD;
+	void dbCellSetupTextEdit (int32_t row, int32_t column, CTextEdit* control, CDataBrowser* browser) VSTGUI_OVERRIDE_VMETHOD;
+	void dbSelectionChanged (CDataBrowser* browser) VSTGUI_OVERRIDE_VMETHOD;
+
+	void dbOnDragEnterBrowser (IDataPackage* drag, CDataBrowser* browser) VSTGUI_OVERRIDE_VMETHOD;
+	void dbOnDragExitBrowser (IDataPackage* drag, CDataBrowser* browser) VSTGUI_OVERRIDE_VMETHOD;
+	void dbOnDragEnterCell (int32_t row, int32_t column, const CPoint& where, IDataPackage* drag, CDataBrowser* browser) VSTGUI_OVERRIDE_VMETHOD;
+	void dbOnDragMoveInCell (int32_t row, int32_t column, const CPoint& where, IDataPackage* drag, CDataBrowser* browser) VSTGUI_OVERRIDE_VMETHOD;
+	void dbOnDragExitCell (int32_t row, int32_t column, IDataPackage* drag, CDataBrowser* browser) VSTGUI_OVERRIDE_VMETHOD;
+	bool dbOnDropInCell (int32_t row, int32_t column, const CPoint& where, IDataPackage* drag, CDataBrowser* browser) VSTGUI_OVERRIDE_VMETHOD;
 
 	SharedPointer<UIColor> color;
 	bool editing;
+	std::string colorString;
+	int32_t dragRow;
 };
 
 //----------------------------------------------------------------------------------------------------
@@ -508,6 +518,7 @@ UIColorsDataSource::UIColorsDataSource (UIDescription* description, IActionPerfo
 : UIBaseDataSource (description, actionPerformer, UIDescription::kMessageColorChanged)
 , color (color)
 , editing (false)
+, dragRow (-1)
 {
 	color->addDependency (this);
 }
@@ -612,10 +623,10 @@ void UIColorsDataSource::dbDrawCell (CDrawContext* context, const CRect& size, i
 {
 	GenericStringListDataBrowserSource::dbDrawCell (context, size, row, column, flags, browser);
 	CColor color;
-	if (description->getColor(names.at (row).c_str (), color))
+	if (description->getColor (names.at (row).c_str (), color))
 	{
 		context->setFillColor (color);
-		context->setFrameColor (kBlackCColor);
+		context->setFrameColor (dragRow == row ? kRedCColor : kBlackCColor);
 		context->setLineWidth (1);
 		context->setLineStyle (kLineSolid);
 		context->setDrawMode (kAliasing);
@@ -641,6 +652,96 @@ bool UIColorsDataSource::performNameChange (UTF8StringPtr oldName, UTF8StringPtr
 {
 	actionPerformer->performColorNameChange (oldName, newName);
 	return true;
+}
+
+//----------------------------------------------------------------------------------------------------
+void UIColorsDataSource::dbOnDragEnterBrowser (IDataPackage* drag, CDataBrowser* browser)
+{
+	IDataPackage::Type type;
+	const void* item;
+	if (drag->getData (0, item, type) > 0 && type == IDataPackage::kText)
+	{
+		std::string tmp (static_cast<const char*>(item));
+		if (tmp.length () == 9 && tmp[0] == '#')
+		{
+			colorString = tmp;
+			browser->getFrame ()->setCursor (kCursorCopy);
+		}
+	}
+}
+
+//----------------------------------------------------------------------------------------------------
+void UIColorsDataSource::dbOnDragExitBrowser (IDataPackage* drag, CDataBrowser* browser)
+{
+	if (colorString.length () > 0)
+	{
+		colorString = "";
+		browser->getFrame ()->setCursor (kCursorNotAllowed);
+	}
+}
+
+//----------------------------------------------------------------------------------------------------
+void UIColorsDataSource::dbOnDragEnterCell (int32_t row, int32_t column, const CPoint& where, IDataPackage* drag, CDataBrowser* browser)
+{
+	if (colorString.length () > 0 && row >= 0)
+	{
+		browser->getFrame()->setCursor (kCursorDefault);
+		dragRow = row;
+		browser->invalidateRow (dragRow);
+	}
+}
+
+//----------------------------------------------------------------------------------------------------
+void UIColorsDataSource::dbOnDragMoveInCell (int32_t row, int32_t column, const CPoint& where, IDataPackage* drag, CDataBrowser* browser)
+{
+	if (dragRow == dbGetNumRows (browser))
+	{
+		
+	}
+}
+
+//----------------------------------------------------------------------------------------------------
+void UIColorsDataSource::dbOnDragExitCell (int32_t row, int32_t column, IDataPackage* drag, CDataBrowser* browser)
+{
+	if (colorString.length () > 0)
+	{
+		browser->getFrame()->setCursor (kCursorCopy);
+		if (dragRow >= 0)
+			browser->invalidateRow (dragRow);
+		dragRow = -1;
+	}
+}
+
+//----------------------------------------------------------------------------------------------------
+bool UIColorsDataSource::dbOnDropInCell (int32_t row, int32_t column, const CPoint& where, IDataPackage* drag, CDataBrowser* browser)
+{
+	if (colorString.length () > 0)
+	{
+		CColor dragColor;
+		std::string rv (colorString.substr (1, 2));
+		std::string gv (colorString.substr (3, 2));
+		std::string bv (colorString.substr (5, 2));
+		std::string av (colorString.substr (7, 2));
+		dragColor.red = (uint8_t)strtol (rv.c_str (), 0, 16);
+		dragColor.green = (uint8_t)strtol (gv.c_str (), 0, 16);
+		dragColor.blue = (uint8_t)strtol (bv.c_str (), 0, 16);
+		dragColor.alpha = (uint8_t)strtol (av.c_str (), 0, 16);
+		
+		if (row >= 0)
+		{
+			actionPerformer->performColorChange (names[row].c_str (), dragColor);
+		}
+		else
+		{
+			std::string newName (filterString.empty () ? "New" : filterString);
+			if (createUniqueName (newName))
+			{
+				actionPerformer->performColorChange (newName.c_str (), dragColor);
+			}
+		}
+		return true;
+	}
+	return false;
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -671,24 +772,9 @@ CView* UIColorsController::createView (const UIAttributes& attributes, IUIDescri
 	{
 		if (*name == "ColorsBrowser")
 		{
-			CDataBrowser* dataBrowser = new CDataBrowser (CRect (0, 0, 0, 0), 0, dataSource, CDataBrowser::kDrawRowLines|CScrollView::kHorizontalScrollbar | CScrollView::kVerticalScrollbar);
+			CDataBrowser* dataBrowser = new CDataBrowser (CRect (0, 0, 0, 0), 0, dataSource, CDataBrowser::kDrawRowLines|CScrollView::kHorizontalScrollbar|CScrollView::kVerticalScrollbar);
 			return dataBrowser;
 		}
-		#if 0
-		else if (*name == "ColorChooser")
-		{
-			CColorChooserUISettings ui;
-			ui.font = description->getFont("colorchooser.font");
-			ui.fontColor = kBlackCColor;
-			ui.margin = CPoint (2, 2);
-			ui.checkerBoardBack = true;
-			ui.checkerBoardColor1 = kWhiteCColor;
-			ui.checkerBoardColor2 = kGreyCColor;
-			CColorChooser* colorChooser = new CColorChooser (dataSource, kWhiteCColor, ui);
-			dataSource->setColorChooser (colorChooser);
-			return colorChooser;
-		}
-		#endif
 	}
 	return DelegationController::createView (attributes, description);
 }

@@ -50,168 +50,138 @@ FORMATETC WinDragContainer::formatBinaryDrop	= {CF_PRIVATEFIRST, 0, DVASPECT_CON
 WinDragContainer::WinDragContainer (IDataObject* platformDrag)
 : platformDrag (platformDrag)
 , nbItems (0)
-, iterator (0)
-, lastItem (0)
-, isFileDrag (false)
+, stringsAreFiles (false)
+, data (0)
+, dataSize (0)
 {
 	if (!platformDrag)
 		return;
 
+	STGMEDIUM medium = {0};
 	HRESULT hr = platformDrag->QueryGetData (&formatTEXTDrop);
-	if (hr != S_OK)
-	{
-		hr = platformDrag->QueryGetData (&formatHDrop);
-		if (hr == S_OK)
-		{
-			STGMEDIUM medium = {0};
-			hr = platformDrag->GetData (&formatHDrop, &medium);
-			if (hr == S_OK)
-			{
-				nbItems = (int32_t)DragQueryFile ((HDROP)medium.hGlobal, 0xFFFFFFFFL, 0, 0);
-				isFileDrag = true;
-			}
-		}
-		else if (platformDrag->QueryGetData (&formatBinaryDrop) == S_OK)
-		{
-			nbItems = 1;
-		}
-	}
-	else
-		nbItems = 1;
-	
-}
-
-//-----------------------------------------------------------------------------
-WinDragContainer::~WinDragContainer ()
-{
-	if (lastItem)
-	{
-		free (lastItem);
-		lastItem = 0;
-	}
-}
-
-//-----------------------------------------------------------------------------
-int32_t WinDragContainer::getType (int32_t idx) const
-{
-	if (platformDrag == 0 || nbItems < idx)
-		return kError;
-
-	if (idx > 0 && !isFileDrag)
-		return kError;
-
-	HRESULT hr = platformDrag->QueryGetData (&formatTEXTDrop);
-	if (hr == S_OK)
-		return kText;
-	STGMEDIUM medium;
-	hr = platformDrag->GetData (&formatHDrop, &medium);
-	if (hr == S_OK)
-		return kFile;
-	hr = platformDrag->QueryGetData (&formatBinaryDrop);
-	if (hr == S_OK)
-		return kUnknown;
-	return kUnknown;
-}
-
-//-----------------------------------------------------------------------------
-void* WinDragContainer::first (int32_t& size, int32_t& type)
-{
-	iterator = 0;
-	return next (size, type);
-}
-
-//-----------------------------------------------------------------------------
-void* WinDragContainer::next (int32_t& size, int32_t& type)
-{
-	if (platformDrag == 0)
-	{
-		type = kError;
-		return 0;
-	}
-	if (lastItem)
-	{
-		free (lastItem);
-		lastItem = 0;
-	}
-	size = 0;
-	type = kUnknown;
-
-	void* hDrop = 0;
-	STGMEDIUM medium;
-
-	HRESULT hr;
-	if (isFileDrag)
-	{
-		hr = platformDrag->GetData (&formatHDrop, &medium);
-		if (hr == S_OK)
-		{
-			hDrop = medium.hGlobal;
-		}
-	}
-	else
+	if (hr == S_OK) // text
 	{
 		hr = platformDrag->GetData (&formatTEXTDrop, &medium);
 		if (hr == S_OK)
-		{
-			hDrop = medium.hGlobal;
-			type = kUnicodeText;
-		}
-		else if (platformDrag->GetData (&formatBinaryDrop, &medium) == S_OK)
-		{
-			hDrop = medium.hGlobal;
-		}
-	}
-
-	if (hDrop)
-	{
-		if (isFileDrag)
-		{
-			TCHAR fileDropped[1024];
-
-			int32_t nbRealItems = 0;
-			if (DragQueryFile ((HDROP)hDrop, iterator++, fileDropped, sizeof (fileDropped))) 
-			{
-				// resolve link
-				checkResolveLink (fileDropped, fileDropped);
-				UTF8StringHelper path (fileDropped);
-				lastItem = malloc (strlen (path)+1);
-				strcpy ((char*)lastItem, path);
-				size = (int32_t)strlen ((const char*)lastItem);
-				type = kFile;
-				return lastItem;
-			}
-		}
-		else if (iterator++ == 0)
-		//---TEXT----------------------------
 		{
 			void* data = GlobalLock (medium.hGlobal);
 			int32_t dataSize = (int32_t)GlobalSize (medium.hGlobal);
 			if (data && dataSize)
 			{
-				if (type == kUnicodeText)
-				{
-					UTF8StringHelper wideString ((const WCHAR*)data);
-					size = (int32_t)strlen (wideString.getUTF8String ());
-					lastItem = malloc (size+1);
-					strcpy ((char*)lastItem, wideString.getUTF8String ());
-				}
-				else
-				{
-					lastItem = malloc (dataSize);
-					memcpy (lastItem, data, dataSize);
-					size = dataSize;
-				}
+				UTF8StringHelper wideString ((const WCHAR*)data);
+				strings.push_back (std::string (wideString));
+				nbItems = 1;
 			}
-
 			GlobalUnlock (medium.hGlobal);
 			if (medium.pUnkForRelease)
 				medium.pUnkForRelease->Release ();
 			else
 				GlobalFree (medium.hGlobal);
-			return lastItem;
 		}
 	}
-	return NULL;
+	else if (hr != S_OK)
+	{
+		hr = platformDrag->QueryGetData (&formatHDrop);
+		if (hr == S_OK)
+		{
+			hr = platformDrag->GetData (&formatHDrop, &medium);
+			if (hr == S_OK)
+			{
+				nbItems = (int32_t)DragQueryFile ((HDROP)medium.hGlobal, 0xFFFFFFFFL, 0, 0);
+				stringsAreFiles = true;
+
+				TCHAR fileDropped[1024];
+				for (int32_t index = 0; index < nbItems; index++)
+				{
+					if (DragQueryFile ((HDROP)medium.hGlobal, index, fileDropped, sizeof (fileDropped))) 
+					{
+						// resolve link
+						checkResolveLink (fileDropped, fileDropped);
+						UTF8StringHelper path (fileDropped);
+						strings.push_back (std::string (path));
+					}
+				}
+			}
+		}
+		else if (platformDrag->QueryGetData (&formatBinaryDrop) == S_OK)
+		{
+			if (platformDrag->GetData (&formatBinaryDrop, &medium) == S_OK)
+			{
+				void* data = GlobalLock (medium.hGlobal);
+				dataSize = (int32_t)GlobalSize (medium.hGlobal);
+				if (data && dataSize)
+				{
+					data = malloc (dataSize);
+					memcpy (data, data, dataSize);
+					nbItems = 1;
+				}
+				GlobalUnlock (medium.hGlobal);
+				if (medium.pUnkForRelease)
+					medium.pUnkForRelease->Release ();
+				else
+					GlobalFree (medium.hGlobal);
+			}
+		}
+	}
+}
+
+//-----------------------------------------------------------------------------
+WinDragContainer::~WinDragContainer ()
+{
+	if (data)
+	{
+		free (data);
+	}
+}
+
+//-----------------------------------------------------------------------------
+int32_t WinDragContainer::getCount ()
+{
+	return nbItems;
+}
+
+//-----------------------------------------------------------------------------
+int32_t WinDragContainer::getDataSize (int32_t index)
+{
+	if (index < nbItems)
+	{
+		if (data)
+			return dataSize;
+		return (int32_t)strings[index].length ();
+	}
+	return 0;
+}
+
+//-----------------------------------------------------------------------------
+WinDragContainer::Type WinDragContainer::getDataType (int32_t index)
+{
+	if (index < nbItems)
+	{
+		if (data)
+			return kBinary;
+		if (stringsAreFiles)
+			return kFilePath;
+		return kText;
+	}
+	return kError;
+}
+
+//-----------------------------------------------------------------------------
+int32_t WinDragContainer::getData (int32_t index, const void*& buffer, Type& type)
+{
+	if (index < nbItems)
+	{
+		if (data)
+		{
+			buffer = data;
+			type = kBinary;
+			return dataSize;
+		}
+		buffer = strings[index].c_str ();
+		type = stringsAreFiles ? kFilePath : kText;
+		return (int32_t)strings[index].length ();
+	}
+	return 0;
 }
 
 //-----------------------------------------------------------------------------

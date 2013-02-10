@@ -81,7 +81,7 @@ public:
 	virtual void close ();							///< closes the frame and calls forget
 
 	virtual void idle ();
-	virtual void doIdleStuff ();
+	VSTGUI_DEPRECATED(virtual void doIdleStuff ();)
 
 	virtual uint32_t getTicks () const;				///< get the current time (in ms)
 	virtual int32_t getKnobMode () const;			///< get hosts knob mode
@@ -229,10 +229,10 @@ protected:
 	CMouseEventResult platformOnMouseUp (CPoint& where, const CButtonState& buttons);
 	CMouseEventResult platformOnMouseExited (CPoint& where, const CButtonState& buttons);
 	bool platformOnMouseWheel (const CPoint& where, const CMouseWheelAxis& axis, const float& distance, const CButtonState& buttons);
-	bool platformOnDrop (CDragContainer* drag, const CPoint& where);
-	void platformOnDragEnter (CDragContainer* drag, const CPoint& where);
-	void platformOnDragLeave (CDragContainer* drag, const CPoint& where);
-	void platformOnDragMove (CDragContainer* drag, const CPoint& where);
+	bool platformOnDrop (IDataPackage* drag, const CPoint& where);
+	void platformOnDragEnter (IDataPackage* drag, const CPoint& where);
+	void platformOnDragLeave (IDataPackage* drag, const CPoint& where);
+	void platformOnDragMove (IDataPackage* drag, const CPoint& where);
 	bool platformOnKeyDown (VstKeyCode& keyCode);
 	bool platformOnKeyUp (VstKeyCode& keyCode);
 	void platformOnActivate (bool state);

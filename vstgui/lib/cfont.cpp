@@ -124,8 +124,7 @@ IPlatformFont* CFontDesc::getPlatformFont ()
 //-----------------------------------------------------------------------------
 IFontPainter* CFontDesc::getFontPainter ()
 {
-	IPlatformFont
-* pf = getPlatformFont ();
+	IPlatformFont* pf = getPlatformFont ();
 	if (pf)
 		return pf->getPainter ();
 	return 0;

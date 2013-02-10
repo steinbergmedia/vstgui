@@ -1110,29 +1110,23 @@ void UIEditController::onTemplatesChanged ()
 			templates.push_back (Template (*(*it), view));
 		}
 	}
-	std::vector<Template*> toErase;
-	for (std::vector<Template>::reverse_iterator it = templates.rbegin (); it != templates.rend ();)
+	for (std::vector<Template>::iterator it = templates.begin (); it != templates.end ();)
 	{
 		Template& t = (*it);
-		it++;
 		bool found = false;
 		for (std::list<const std::string*>::const_iterator it2 = templateNames.begin (); it2 != templateNames.end (); it2++)
 		{
 			if (t.name == *(*it2))
 			{
 				found = true;
+				it++;
 				break;
 			}
 		}
 		if (!found)
 		{
-			toErase.push_back (&t);
+			it = templates.erase (it);
 		}
-	}
-	for (std::vector<Template*>::iterator it = toErase.begin (); it != toErase.end (); it++)
-	{
-		Template* t = (*it);
-		templates.erase (std::find (templates.begin (), templates.end (), *t));
 	}
 }
 

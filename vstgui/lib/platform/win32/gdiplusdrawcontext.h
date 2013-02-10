@@ -60,35 +60,35 @@ public:
 	Gdiplus::SolidBrush* getFontBrush () const { return pFontBrush; }
 
 	// CDrawContext
-	void moveTo (const CPoint &point);
-	void lineTo (const CPoint &point);
-	void drawLines (const CPoint* points, const int32_t& numberOfLines);
-	void drawPolygon (const CPoint *pPoints, int32_t numberOfPoints, const CDrawStyle drawStyle = kDrawStroked);
-	void drawRect (const CRect &rect, const CDrawStyle drawStyle = kDrawStroked);
-	void drawArc (const CRect &rect, const float startAngle1, const float endAngle2, const CDrawStyle drawStyle = kDrawStroked);
-	void drawEllipse (const CRect &rect, const CDrawStyle drawStyle = kDrawStroked);
-	void drawPoint (const CPoint &point, const CColor& color);
-	void drawBitmap (CBitmap* bitmap, const CRect& dest, const CPoint& offset = CPoint (0, 0), float alpha = 1.f);
-	void clearRect (const CRect& rect);
-	void setLineStyle (const CLineStyle& style);
-	void setLineWidth (CCoord width);
-	void setDrawMode (CDrawMode mode);
-	void setClipRect (const CRect &clip);
-	void resetClipRect ();
-	void setFillColor  (const CColor& color);
-	void setFrameColor (const CColor& color);
-	void setFontColor (const CColor& color);
-	void setGlobalAlpha (float newAlpha);
-	void saveGlobalState ();
-	void restoreGlobalState ();
-	CGraphicsPath* createGraphicsPath ();
-	void drawGraphicsPath (CGraphicsPath* path, PathDrawMode mode = kPathFilled, CGraphicsTransform* transformation = 0);
-	void fillLinearGradient (CGraphicsPath* path, const CGradient& gradient, const CPoint& startPoint, const CPoint& endPoint, bool evenOdd = false, CGraphicsTransform* transformation = 0);
+	void moveTo (const CPoint &point) VSTGUI_OVERRIDE_VMETHOD;
+	void lineTo (const CPoint &point) VSTGUI_OVERRIDE_VMETHOD;
+	void drawLines (const CPoint* points, const int32_t& numberOfLines) VSTGUI_OVERRIDE_VMETHOD;
+	void drawPolygon (const CPoint *pPoints, int32_t numberOfPoints, const CDrawStyle drawStyle = kDrawStroked) VSTGUI_OVERRIDE_VMETHOD;
+	void drawRect (const CRect &rect, const CDrawStyle drawStyle = kDrawStroked) VSTGUI_OVERRIDE_VMETHOD;
+	void drawArc (const CRect &rect, const float startAngle1, const float endAngle2, const CDrawStyle drawStyle = kDrawStroked) VSTGUI_OVERRIDE_VMETHOD;
+	void drawEllipse (const CRect &rect, const CDrawStyle drawStyle = kDrawStroked) VSTGUI_OVERRIDE_VMETHOD;
+	void drawPoint (const CPoint &point, const CColor& color) VSTGUI_OVERRIDE_VMETHOD;
+	void drawBitmap (CBitmap* bitmap, const CRect& dest, const CPoint& offset = CPoint (0, 0), float alpha = 1.f) VSTGUI_OVERRIDE_VMETHOD;
+	void clearRect (const CRect& rect) VSTGUI_OVERRIDE_VMETHOD;
+	void setLineStyle (const CLineStyle& style) VSTGUI_OVERRIDE_VMETHOD;
+	void setLineWidth (CCoord width) VSTGUI_OVERRIDE_VMETHOD;
+	void setDrawMode (CDrawMode mode) VSTGUI_OVERRIDE_VMETHOD;
+	void setClipRect (const CRect &clip) VSTGUI_OVERRIDE_VMETHOD;
+	void resetClipRect () VSTGUI_OVERRIDE_VMETHOD;
+	void setFillColor  (const CColor& color) VSTGUI_OVERRIDE_VMETHOD;
+	void setFrameColor (const CColor& color) VSTGUI_OVERRIDE_VMETHOD;
+	void setFontColor (const CColor& color) VSTGUI_OVERRIDE_VMETHOD;
+	void setGlobalAlpha (float newAlpha) VSTGUI_OVERRIDE_VMETHOD;
+	void saveGlobalState () VSTGUI_OVERRIDE_VMETHOD;
+	void restoreGlobalState () VSTGUI_OVERRIDE_VMETHOD;
+	CGraphicsPath* createGraphicsPath () VSTGUI_OVERRIDE_VMETHOD;
+	void drawGraphicsPath (CGraphicsPath* path, PathDrawMode mode = kPathFilled, CGraphicsTransform* transformation = 0) VSTGUI_OVERRIDE_VMETHOD;
+	void fillLinearGradient (CGraphicsPath* path, const CGradient& gradient, const CPoint& startPoint, const CPoint& endPoint, bool evenOdd = false, CGraphicsTransform* transformation = 0) VSTGUI_OVERRIDE_VMETHOD;
 
-	void endDraw ();
+	void endDraw () VSTGUI_OVERRIDE_VMETHOD;
 //-----------------------------------------------------------------------------
 protected:
-	void init ();
+	void init () VSTGUI_OVERRIDE_VMETHOD;
 
 	HWND window;
 	Gdiplus::Graphics	*pGraphics;

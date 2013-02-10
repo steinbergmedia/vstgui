@@ -87,19 +87,23 @@
 	#if defined (_WIN32_WINNT_WIN7) && !defined (VSTGUI_DIRECT2D_SUPPORT)
 		#define VSTGUI_DIRECT2D_SUPPORT	1
 	#endif
-	typedef char				int8_t;
-	typedef unsigned char		uint8_t;
-	typedef short				int16_t;
-	typedef unsigned short		uint16_t;
-	typedef long				int32_t;
-	typedef unsigned long		uint32_t;
-	typedef __int64				int64_t;
-	typedef unsigned __int64	uint64_t;
-	#ifndef WINDOWS
-		#define WINDOWS 1
-	#endif
 	#if _MSC_VER >=	1700
 		#define VSTGUI_OVERRIDE_VMETHOD	override
+		#define VSTGUI_RVALUE_REF_SUPPORT 1
+		#include <type_traits>
+		#include <stdint.h>
+	#else
+		typedef char				int8_t;
+		typedef unsigned char		uint8_t;
+		typedef short				int16_t;
+		typedef unsigned short		uint16_t;
+		typedef long				int32_t;
+		typedef unsigned long		uint32_t;
+		typedef __int64				int64_t;
+		typedef unsigned __int64	uint64_t;
+	#endif
+	#ifndef WINDOWS
+		#define WINDOWS 1
 	#endif
 #else // GCC/Clang based builds on non Windows and non Mac
 	#include <stdint.h>

@@ -68,11 +68,11 @@ protected:
 
 	CBitmap* createBitmapFromSelection (UISelection* selection);
 	void startDrag (CPoint& where);
-	UISelection* getSelectionOutOfDrag (CDragContainer* drag);
-	bool onDrop (CDragContainer* drag, const CPoint& where) VSTGUI_OVERRIDE_VMETHOD;
-	void onDragEnter (CDragContainer* drag, const CPoint& where) VSTGUI_OVERRIDE_VMETHOD;
-	void onDragLeave (CDragContainer* drag, const CPoint& where) VSTGUI_OVERRIDE_VMETHOD;
-	void onDragMove (CDragContainer* drag, const CPoint& where) VSTGUI_OVERRIDE_VMETHOD;
+	UISelection* getSelectionOutOfDrag (IDataPackage* drag);
+	bool onDrop (IDataPackage* drag, const CPoint& where) VSTGUI_OVERRIDE_VMETHOD;
+	void onDragEnter (IDataPackage* drag, const CPoint& where) VSTGUI_OVERRIDE_VMETHOD;
+	void onDragLeave (IDataPackage* drag, const CPoint& where) VSTGUI_OVERRIDE_VMETHOD;
+	void onDragMove (IDataPackage* drag, const CPoint& where) VSTGUI_OVERRIDE_VMETHOD;
 
 	void draw (CDrawContext *pContext) VSTGUI_OVERRIDE_VMETHOD;
 	void drawRect (CDrawContext *pContext, const CRect& updateRect) VSTGUI_OVERRIDE_VMETHOD;

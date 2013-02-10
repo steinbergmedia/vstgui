@@ -130,7 +130,7 @@ CMenuItem::CMenuItem (const CMenuItem& item)
 	setIcon (item.getIcon ());
 	setKey (item.getKeycode (), item.getKeyModifiers ());
 	setTag (item.getTag ());
-	*submenu = *item.getSubmenu ();
+	setSubmenu (item.getSubmenu ());
 }
 
 //------------------------------------------------------------------------

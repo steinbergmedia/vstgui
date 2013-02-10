@@ -77,7 +77,6 @@
 		F497F19413080B2A00F0A613 /* hiviewoptionmenu.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F497F18E13080B2A00F0A613 /* hiviewoptionmenu.cpp */; };
 		F497F19613080B2A00F0A613 /* hiviewtextedit.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F497F19013080B2A00F0A613 /* hiviewtextedit.cpp */; };
 		F497F1A813080B4800F0A613 /* autoreleasepool.mm in Sources */ = {isa = PBXBuildFile; fileRef = F497F19A13080B4800F0A613 /* autoreleasepool.mm */; };
-		F497F1AA13080B4800F0A613 /* cocoadragcontainer.mm in Sources */ = {isa = PBXBuildFile; fileRef = F497F19C13080B4800F0A613 /* cocoadragcontainer.mm */; };
 		F497F1AC13080B4800F0A613 /* cocoahelpers.mm in Sources */ = {isa = PBXBuildFile; fileRef = F497F19E13080B4800F0A613 /* cocoahelpers.mm */; };
 		F497F1AE13080B4800F0A613 /* cocoatextedit.mm in Sources */ = {isa = PBXBuildFile; fileRef = F497F1A013080B4800F0A613 /* cocoatextedit.mm */; };
 		F497F1B213080B4800F0A613 /* nsviewframe.mm in Sources */ = {isa = PBXBuildFile; fileRef = F497F1A413080B4800F0A613 /* nsviewframe.mm */; };
@@ -121,7 +120,6 @@
 		F4F9540F16510F40006EE1D1 /* hiviewoptionmenu.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F497F18E13080B2A00F0A613 /* hiviewoptionmenu.cpp */; };
 		F4F9541016510F40006EE1D1 /* hiviewtextedit.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F497F19013080B2A00F0A613 /* hiviewtextedit.cpp */; };
 		F4F9541116510F40006EE1D1 /* autoreleasepool.mm in Sources */ = {isa = PBXBuildFile; fileRef = F497F19A13080B4800F0A613 /* autoreleasepool.mm */; };
-		F4F9541216510F40006EE1D1 /* cocoadragcontainer.mm in Sources */ = {isa = PBXBuildFile; fileRef = F497F19C13080B4800F0A613 /* cocoadragcontainer.mm */; };
 		F4F9541316510F40006EE1D1 /* cocoahelpers.mm in Sources */ = {isa = PBXBuildFile; fileRef = F497F19E13080B4800F0A613 /* cocoahelpers.mm */; };
 		F4F9541416510F40006EE1D1 /* cocoatextedit.mm in Sources */ = {isa = PBXBuildFile; fileRef = F497F1A013080B4800F0A613 /* cocoatextedit.mm */; };
 		F4F9541516510F40006EE1D1 /* cocoaopenglview.mm in Sources */ = {isa = PBXBuildFile; fileRef = F452950613A211E6006EEF82 /* cocoaopenglview.mm */; };
@@ -336,8 +334,6 @@
 		F497F19113080B2A00F0A613 /* hiviewtextedit.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = hiviewtextedit.h; sourceTree = "<group>"; };
 		F497F19913080B4800F0A613 /* autoreleasepool.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = autoreleasepool.h; sourceTree = "<group>"; };
 		F497F19A13080B4800F0A613 /* autoreleasepool.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = autoreleasepool.mm; sourceTree = "<group>"; };
-		F497F19B13080B4800F0A613 /* cocoadragcontainer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = cocoadragcontainer.h; sourceTree = "<group>"; };
-		F497F19C13080B4800F0A613 /* cocoadragcontainer.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = cocoadragcontainer.mm; sourceTree = "<group>"; };
 		F497F19D13080B4800F0A613 /* cocoahelpers.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = cocoahelpers.h; sourceTree = "<group>"; };
 		F497F19E13080B4800F0A613 /* cocoahelpers.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = cocoahelpers.mm; sourceTree = "<group>"; };
 		F497F19F13080B4800F0A613 /* cocoatextedit.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = cocoatextedit.h; sourceTree = "<group>"; };
@@ -360,6 +356,7 @@
 		F4CF26DD13EEA65D00C64EB7 /* icontroller.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = icontroller.h; sourceTree = "<group>"; };
 		F4D23BB11405466200A5F888 /* uitemplatesettingscontroller.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = uitemplatesettingscontroller.h; sourceTree = "<group>"; };
 		F4D23BB31405466900A5F888 /* uitemplatesettingscontroller.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = uitemplatesettingscontroller.cpp; sourceTree = "<group>"; };
+		F4E0115E16C7A1B300973B7C /* idatapackage.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = idatapackage.h; sourceTree = "<group>"; };
 		F4E3901913080ECC00615042 /* cstream.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = cstream.cpp; sourceTree = "<group>"; };
 		F4E3901A13080ECC00615042 /* cstream.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = cstream.h; sourceTree = "<group>"; };
 		F4E3901B13080ECC00615042 /* doc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = doc.h; sourceTree = "<group>"; };
@@ -536,6 +533,7 @@
 				F497F0E413080A1C00F0A613 /* cviewcontainer.h */,
 				F497F0E513080A1C00F0A613 /* cvstguitimer.cpp */,
 				F497F0E613080A1C00F0A613 /* cvstguitimer.h */,
+				F4E0115E16C7A1B300973B7C /* idatapackage.h */,
 				F42E78C71334AB7900518C17 /* idependency.h */,
 				F497F0E713080A1C00F0A613 /* ifocusdrawing.h */,
 				F497F0E813080A1C00F0A613 /* vstguibase.h */,
@@ -658,8 +656,6 @@
 			children = (
 				F497F19A13080B4800F0A613 /* autoreleasepool.mm */,
 				F497F19913080B4800F0A613 /* autoreleasepool.h */,
-				F497F19C13080B4800F0A613 /* cocoadragcontainer.mm */,
-				F497F19B13080B4800F0A613 /* cocoadragcontainer.h */,
 				F497F19E13080B4800F0A613 /* cocoahelpers.mm */,
 				F497F19D13080B4800F0A613 /* cocoahelpers.h */,
 				F497F1A013080B4800F0A613 /* cocoatextedit.mm */,
@@ -760,7 +756,7 @@
 		F497F0A41308094300F0A613 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0420;
+				LastUpgradeCheck = 0460;
 				ORGANIZATIONNAME = "Steinberg Media Technologies AG";
 			};
 			buildConfigurationList = F497F0A71308094300F0A613 /* Build configuration list for PBXProject "vstgui" */;
@@ -835,7 +831,6 @@
 				F497F19413080B2A00F0A613 /* hiviewoptionmenu.cpp in Sources */,
 				F497F19613080B2A00F0A613 /* hiviewtextedit.cpp in Sources */,
 				F497F1A813080B4800F0A613 /* autoreleasepool.mm in Sources */,
-				F497F1AA13080B4800F0A613 /* cocoadragcontainer.mm in Sources */,
 				F497F1AC13080B4800F0A613 /* cocoahelpers.mm in Sources */,
 				F497F1AE13080B4800F0A613 /* cocoatextedit.mm in Sources */,
 				F497F1B213080B4800F0A613 /* nsviewframe.mm in Sources */,
@@ -906,7 +901,6 @@
 				F4F9540F16510F40006EE1D1 /* hiviewoptionmenu.cpp in Sources */,
 				F4F9541016510F40006EE1D1 /* hiviewtextedit.cpp in Sources */,
 				F4F9541116510F40006EE1D1 /* autoreleasepool.mm in Sources */,
-				F4F9541216510F40006EE1D1 /* cocoadragcontainer.mm in Sources */,
 				F4F9541316510F40006EE1D1 /* cocoahelpers.mm in Sources */,
 				F4F9541416510F40006EE1D1 /* cocoatextedit.mm in Sources */,
 				F4F9541516510F40006EE1D1 /* cocoaopenglview.mm in Sources */,
@@ -1056,7 +1050,9 @@
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				CLANG_CXX_LANGUAGE_STANDARD = "c++0x";
 				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_WARN_CXX0X_EXTENSIONS = NO;
 				EXECUTABLE_PREFIX = lib;
+				GCC_C_LANGUAGE_STANDARD = c11;
 				MACOSX_DEPLOYMENT_TARGET = 10.7;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
@@ -1068,7 +1064,9 @@
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				CLANG_CXX_LANGUAGE_STANDARD = "c++0x";
 				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_WARN_CXX0X_EXTENSIONS = NO;
 				EXECUTABLE_PREFIX = lib;
+				GCC_C_LANGUAGE_STANDARD = c11;
 				MACOSX_DEPLOYMENT_TARGET = 10.7;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};

@@ -8,6 +8,7 @@
 #include "uidialogcontroller.h"
 #include "../../lib/cbitmapfilter.h"
 #include "../../lib/cfileselector.h"
+#include "../../lib/idatapackage.h"
 #include "../../lib/controls/ccolorchooser.h"
 #include "../../lib/controls/ctextedit.h"
 
@@ -176,11 +177,11 @@ protected:
 
 	bool addBitmap (UTF8StringPtr path, std::string& outName);
 
-	void dbOnDragEnterBrowser (CDragContainer* drag, CDataBrowser* browser);
-	void dbOnDragExitBrowser (CDragContainer* drag, CDataBrowser* browser);
-	void dbOnDragEnterCell (int32_t row, int32_t column, CDragContainer* drag, CDataBrowser* browser);
-	void dbOnDragExitCell (int32_t row, int32_t column, CDragContainer* drag, CDataBrowser* browser);
-	bool dbOnDropInCell (int32_t row, int32_t column, CDragContainer* drag, CDataBrowser* browser);
+	void dbOnDragEnterBrowser (IDataPackage* drag, CDataBrowser* browser) VSTGUI_OVERRIDE_VMETHOD;
+	void dbOnDragExitBrowser (IDataPackage* drag, CDataBrowser* browser) VSTGUI_OVERRIDE_VMETHOD;
+	void dbOnDragEnterCell (int32_t row, int32_t column, const CPoint& where, IDataPackage* drag, CDataBrowser* browser) VSTGUI_OVERRIDE_VMETHOD;
+	void dbOnDragExitCell (int32_t row, int32_t column, IDataPackage* drag, CDataBrowser* browser) VSTGUI_OVERRIDE_VMETHOD;
+	bool dbOnDropInCell (int32_t row, int32_t column, const CPoint& where, IDataPackage* drag, CDataBrowser* browser) VSTGUI_OVERRIDE_VMETHOD;
 
 	SharedPointer<CColorChooser> colorChooser;
 	bool dragContainsBitmaps;
@@ -194,71 +195,80 @@ UIBitmapsDataSource::UIBitmapsDataSource (UIDescription* description, IActionPer
 }
 
 //----------------------------------------------------------------------------------------------------
-void UIBitmapsDataSource::dbOnDragEnterBrowser (CDragContainer* drag, CDataBrowser* browser)
+void UIBitmapsDataSource::dbOnDragEnterBrowser (IDataPackage* drag, CDataBrowser* browser)
 {
-	int32_t type;
-	int32_t size;
-	UTF8StringPtr path = (UTF8StringPtr)drag->first (size, type);
-	while (path && type == CDragContainer::kFile)
+	int32_t index = 0;
+	IDataPackage::Type type;
+	const void* item = 0;
+	while (drag->getData (index, item, type) > 0)
 	{
-		const char* ext = strrchr (path, '.');
-		if (ext)
+		if (type == IDataPackage::kFilePath)
 		{
-			std::string extStr (ext);
-			std::transform (extStr.begin (), extStr.end (), extStr.begin (), ::tolower);
-			if (extStr == ".png" || extStr == ".bmp" || extStr == ".jpg" || extStr == ".jpeg")
-			{
-				dragContainsBitmaps = true;
-				break;
-			}
-		}
-		path = (UTF8StringPtr)drag->next (size, type);
-	}
-	if (dragContainsBitmaps)
-		browser->getFrame ()->setCursor (kCursorCopy);
-}
-
-//----------------------------------------------------------------------------------------------------
-void UIBitmapsDataSource::dbOnDragExitBrowser (CDragContainer* drag, CDataBrowser* browser)
-{
-	if (dragContainsBitmaps)
-		browser->getFrame ()->setCursor (kCursorNotAllowed);
-}
-
-//----------------------------------------------------------------------------------------------------
-void UIBitmapsDataSource::dbOnDragEnterCell (int32_t row, int32_t column, CDragContainer* drag, CDataBrowser* browser)
-{
-	DebugPrint ("enter cell: %d-%d\n", row, column);
-}
-
-//----------------------------------------------------------------------------------------------------
-void UIBitmapsDataSource::dbOnDragExitCell (int32_t row, int32_t column, CDragContainer* drag, CDataBrowser* browser)
-{
-	DebugPrint ("exit cell: %d-%d\n", row, column);
-}
-
-//----------------------------------------------------------------------------------------------------
-bool UIBitmapsDataSource::dbOnDropInCell (int32_t row, int32_t column, CDragContainer* drag, CDataBrowser* browser)
-{
-	if (dragContainsBitmaps)
-	{
-		int32_t type;
-		int32_t size;
-		UTF8StringPtr path = (UTF8StringPtr)drag->first (size, type);
-		while (path && type == CDragContainer::kFile)
-		{
-			const char* ext = strrchr (path, '.');
+			const char* ext = strrchr (static_cast<const char*> (item), '.');
 			if (ext)
 			{
 				std::string extStr (ext);
 				std::transform (extStr.begin (), extStr.end (), extStr.begin (), ::tolower);
 				if (extStr == ".png" || extStr == ".bmp" || extStr == ".jpg" || extStr == ".jpeg")
 				{
-					std::string name;
-					addBitmap (path, name);
+					dragContainsBitmaps = true;
+					break;
 				}
 			}
-			path = (UTF8StringPtr)drag->next (size, type);
+		}
+		index++;
+	}
+	if (dragContainsBitmaps)
+		browser->getFrame ()->setCursor (kCursorCopy);
+}
+
+//----------------------------------------------------------------------------------------------------
+void UIBitmapsDataSource::dbOnDragExitBrowser (IDataPackage* drag, CDataBrowser* browser)
+{
+	if (dragContainsBitmaps)
+		browser->getFrame ()->setCursor (kCursorNotAllowed);
+}
+
+//----------------------------------------------------------------------------------------------------
+void UIBitmapsDataSource::dbOnDragEnterCell (int32_t row, int32_t column, const CPoint& where, IDataPackage* drag, CDataBrowser* browser)
+{
+#if DEBUG
+	DebugPrint ("enter cell: %d-%d\n", row, column);
+#endif
+}
+
+//----------------------------------------------------------------------------------------------------
+void UIBitmapsDataSource::dbOnDragExitCell (int32_t row, int32_t column, IDataPackage* drag, CDataBrowser* browser)
+{
+#if DEBUG
+	DebugPrint ("exit cell: %d-%d\n", row, column);
+#endif
+}
+
+//----------------------------------------------------------------------------------------------------
+bool UIBitmapsDataSource::dbOnDropInCell (int32_t row, int32_t column, const CPoint& where, IDataPackage* drag, CDataBrowser* browser)
+{
+	if (dragContainsBitmaps)
+	{
+		int32_t index = 0;
+		IDataPackage::Type type;
+		const void* item = 0;
+		while (drag->getData (index, item, type) > 0)
+		{
+			if (type == IDataPackage::kFilePath)
+			{
+				const char* ext = strrchr (static_cast<const char*> (item), '.');
+				if (ext)
+				{
+					std::string extStr (ext);
+					std::transform (extStr.begin (), extStr.end (), extStr.begin (), ::tolower);
+					if (extStr == ".png" || extStr == ".bmp" || extStr == ".jpg" || extStr == ".jpeg")
+					{
+						std::string name;
+						addBitmap (static_cast<UTF8StringPtr> (item), name);
+					}
+				}
+			}
 		}
 		dragContainsBitmaps = false;
 		return true;

@@ -172,7 +172,7 @@ void CoreTextFont::drawString (CDrawContext* context, const CString& string, con
 			if (line)
 			{
 				CGDrawContext* cgDrawContext = dynamic_cast<CGDrawContext*> (context);
-				CGContextRef cgContext = cgDrawContext ? cgDrawContext->beginCGContext (true) : 0;
+				CGContextRef cgContext = cgDrawContext ? cgDrawContext->beginCGContext (true, context->getDrawMode () == kAliasing) : 0;
 				if (cgContext)
 				{
 					CGContextSetShouldAntialias (cgContext, antialias);

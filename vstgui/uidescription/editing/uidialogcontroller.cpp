@@ -7,6 +7,9 @@
 #include "../../lib/cbitmapfilter.h"
 #include "../../lib/controls/ctextlabel.h"
 #include "../../lib/controls/cbuttons.h"
+#include "../../lib/animation/animations.h"
+#include "../../lib/animation/animator.h"
+#include "../../lib/animation/timingfunctions.h"
 #include <cmath>
 
 namespace VSTGUI {
@@ -45,6 +48,7 @@ void UIDialogController::run (UTF8StringPtr _templateName, UTF8StringPtr _dialog
 		size.makeIntegral ();
 		view->setViewSize (size);
 		view->setMouseableArea (size);
+		view->setAlphaValue (0.f);
 
 		frame->setModalView (view);
 		frame->registerKeyboardHook (this);
@@ -52,11 +56,33 @@ void UIDialogController::run (UTF8StringPtr _templateName, UTF8StringPtr _dialog
 			frame->setFocusView (button1);
 		setOpenGLViewsVisible (false);
 		dialogController->notify (this, kMsgDialogShow);
+
+		view->addAnimation ("AlphaAnimation", new Animation::AlphaValueAnimation (1.f), new Animation::LinearTimingFunction (160));
 	}
 	else
 	{
 		forget ();
 	}
+}
+
+//----------------------------------------------------------------------------------------------------
+CMessageResult UIDialogController::notify (CBaseObject* sender, IdStringPtr message)
+{
+	if (message == Animation::kMsgAnimationFinished)
+	{
+		Animation::FinishedMessage* msg = dynamic_cast<Animation::FinishedMessage*>(sender);
+		
+		frame->setModalView (0);
+		msg->getView ()->forget ();
+		frame->unregisterKeyboardHook (this);
+		if (button1)
+			button1->setListener (0);
+		if (button2)
+			button2->setListener (0);
+		setOpenGLViewsVisible (true);
+		forget ();
+	}
+	return kMessageUnknown;
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -78,15 +104,7 @@ void UIDialogController::valueChanged (CControl* control)
 			}
 		}
 		CView* modalView = frame->getModalView ();
-		frame->setModalView (0);
-		modalView->forget ();
-		frame->unregisterKeyboardHook (this);
-		if (button1)
-			button1->setListener (0);
-		if (button2)
-			button2->setListener (0);
-		setOpenGLViewsVisible (true);
-		forget ();
+		modalView->addAnimation ("AlphaAnimation", new Animation::AlphaValueAnimation (0.f), new Animation::LinearTimingFunction (160), this);
 	}
 }
 

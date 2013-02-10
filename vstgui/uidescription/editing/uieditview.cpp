@@ -14,6 +14,7 @@
 #include "../../lib/cscrollview.h"
 #include "../../lib/cdropsource.h"
 #include "../../lib/coffscreencontext.h"
+#include "../../lib/idatapackage.h"
 
 namespace VSTGUI {
 
@@ -840,30 +841,33 @@ void UIEditView::startDrag (CPoint& where)
 }
 
 //----------------------------------------------------------------------------------------------------
-UISelection* UIEditView::getSelectionOutOfDrag (CDragContainer* drag)
+UISelection* UIEditView::getSelectionOutOfDrag (IDataPackage* drag)
 {
-	int32_t size, type;
-	const int8_t* dragData = (const int8_t*)drag->first (size, type);
-
-	IController* controller = getEditor () ? dynamic_cast<IController*> (getEditor ()) : 0;
-	if (controller)
-		description->setController (controller);
-	UIViewFactory* viewFactory = dynamic_cast<UIViewFactory*> (description->getViewFactory ());
-	CMemoryStream stream (dragData, size, false);
-	UISelection* newSelection = new UISelection;
-	if (newSelection->restore (stream, viewFactory, description))
+	
+	IDataPackage::Type type;
+	const void* dragData;
+	int32_t size;
+	if ((size = drag->getData (0, dragData, type)) > 0 && type == IDataPackage::kText)
 	{
+		IController* controller = getEditor () ? dynamic_cast<IController*> (getEditor ()) : 0;
+		if (controller)
+			description->setController (controller);
+		UIViewFactory* viewFactory = dynamic_cast<UIViewFactory*> (description->getViewFactory ());
+		CMemoryStream stream (static_cast<const int8_t*> (dragData), size, false);
+		UISelection* newSelection = new UISelection;
+		if (newSelection->restore (stream, viewFactory, description))
+		{
+			description->setController (0);
+			return newSelection;
+		}
 		description->setController (0);
-		return newSelection;
+		newSelection->forget ();
 	}
-	description->setController (0);
-	newSelection->forget ();
-
 	return 0;
 }
 
 //----------------------------------------------------------------------------------------------------
-bool UIEditView::onDrop (CDragContainer* drag, const CPoint& where)
+bool UIEditView::onDrop (IDataPackage* drag, const CPoint& where)
 {
 	if (editing)
 	{
@@ -908,7 +912,7 @@ bool UIEditView::onDrop (CDragContainer* drag, const CPoint& where)
 }
 
 //----------------------------------------------------------------------------------------------------
-void UIEditView::onDragEnter (CDragContainer* drag, const CPoint& where)
+void UIEditView::onDragEnter (IDataPackage* drag, const CPoint& where)
 {
 	if (editing)
 	{
@@ -940,7 +944,7 @@ void UIEditView::onDragEnter (CDragContainer* drag, const CPoint& where)
 }
 
 //----------------------------------------------------------------------------------------------------
-void UIEditView::onDragLeave (CDragContainer* drag, const CPoint& where)
+void UIEditView::onDragLeave (IDataPackage* drag, const CPoint& where)
 {
 	if (dragSelection)
 	{
@@ -966,7 +970,7 @@ void UIEditView::onDragLeave (CDragContainer* drag, const CPoint& where)
 }
 
 //----------------------------------------------------------------------------------------------------
-void UIEditView::onDragMove (CDragContainer* drag, const CPoint& where)
+void UIEditView::onDragMove (IDataPackage* drag, const CPoint& where)
 {
 	if (editing)
 	{

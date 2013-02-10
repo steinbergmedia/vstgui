@@ -37,6 +37,7 @@
 #include "ctextlabel.h"
 #include "../cdrawcontext.h"
 #include "../cframe.h"
+#include "../idatapackage.h"
 #include <string>
 
 namespace VSTGUI {
@@ -187,12 +188,11 @@ public:
 	}
 
 	// we accept strings which look like : '#ff3355' (rgb) and '#ff3355bb' (rgba)
-	static bool dragContainerHasColor (CDragContainer* dragContainer, CColor* color)
+	static bool dragContainerHasColor (IDataPackage* drag, CColor* color)
 	{
-		int32_t size = 0; 
-		int32_t type = 0;
-		void* item = dragContainer->first (size, type);
-		if (type == CDragContainer::kUnicodeText)
+		IDataPackage::Type type;
+		const void* item;
+		if (drag->getData (0, item, type) > 0 && type == IDataPackage::kText)
 		{
 			UTF8StringPtr text = static_cast<UTF8StringPtr> (item);
 			std::string colorString (text);
@@ -235,7 +235,7 @@ public:
 		return false;
 	}
 
-	bool onDrop (CDragContainer* drag, const CPoint& where) VSTGUI_OVERRIDE_VMETHOD
+	bool onDrop (IDataPackage* drag, const CPoint& where) VSTGUI_OVERRIDE_VMETHOD
 	{
 		CColor color;
 		if (dragContainerHasColor (drag, &color))
@@ -247,7 +247,7 @@ public:
 		return false;
 	}
 	
-	void onDragEnter (CDragContainer* drag, const CPoint& where) VSTGUI_OVERRIDE_VMETHOD
+	void onDragEnter (IDataPackage* drag, const CPoint& where) VSTGUI_OVERRIDE_VMETHOD
 	{
 		if (dragContainerHasColor (drag, 0))
 			getFrame ()->setCursor (kCursorCopy);
@@ -255,7 +255,7 @@ public:
 			getFrame ()->setCursor (kCursorNotAllowed);
 	}
 	
-	void onDragLeave (CDragContainer* drag, const CPoint& where) VSTGUI_OVERRIDE_VMETHOD
+	void onDragLeave (IDataPackage* drag, const CPoint& where) VSTGUI_OVERRIDE_VMETHOD
 	{
 		getFrame ()->setCursor (kCursorNotAllowed);
 	}

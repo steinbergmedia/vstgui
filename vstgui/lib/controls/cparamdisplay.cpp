@@ -221,24 +221,49 @@ void CParamDisplay::drawBack (CDrawContext* pContext, CBitmap* newBack)
 	{
 		CRect r (getViewSize ());
 		r.right--; r.top++;
+		pContext->setDrawMode (kAliasing);
 		pContext->setLineWidth (1);
 		pContext->setLineStyle (kLineSolid);
 		if (style & k3DIn)
 			pContext->setFrameColor (backColor);
 		else
 			pContext->setFrameColor (frameColor);
+
 		CPoint p;
-		pContext->moveTo (p (r.left, r.bottom));
-		pContext->lineTo (p (r.left, r.top));
-		pContext->lineTo (p (r.right, r.top));
+		OwningPointer<CGraphicsPath> path = pContext->createGraphicsPath ();
+		if (path)
+		{
+			path->beginSubpath (p (r.left, r.bottom));
+			path->addLine (p (r.left, r.top));
+			path->addLine (p (r.right, r.top));
+			pContext->drawGraphicsPath (path, CDrawContext::kPathStroked);
+		}
+		else
+		{
+			pContext->moveTo (p (r.left, r.bottom));
+			pContext->lineTo (p (r.left, r.top));
+			pContext->lineTo (p (r.right, r.top));
+		}
 
 		if (style & k3DIn)
 			pContext->setFrameColor (frameColor);
 		else
 			pContext->setFrameColor (backColor);
-		pContext->moveTo (p (r.right, r.top));
-		pContext->lineTo (p (r.right, r.bottom));
-		pContext->lineTo (p (r.left, r.bottom));
+
+		path = pContext->createGraphicsPath ();
+		if (path)
+		{
+			path->beginSubpath (p (r.right, r.top));
+			path->addLine (p (r.right, r.bottom));
+			path->addLine (p (r.left, r.bottom));
+			pContext->drawGraphicsPath (path, CDrawContext::kPathStroked);
+		}
+		else
+		{
+			pContext->moveTo (p (r.right, r.top));
+			pContext->lineTo (p (r.right, r.bottom));
+			pContext->lineTo (p (r.left, r.bottom));
+		}
 	}
 }
 

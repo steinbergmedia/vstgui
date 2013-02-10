@@ -1,8 +1,8 @@
 //-----------------------------------------------------------------------------
 // VST Plug-Ins SDK
-// VSTGUI: Graphical User Interface Framework for VST plugins : 
+// VSTGUI: Graphical User Interface Framework not only for VST plugins : 
 //
-// Version 4.0
+// Version 4.2
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
@@ -32,45 +32,38 @@
 // OF THE POSSIBILITY OF SUCH DAMAGE.
 //-----------------------------------------------------------------------------
 
-#ifndef __cocoadragcontainer__
-#define __cocoadragcontainer__
+#ifndef __idatapackage__
+#define __idatapackage__
 
-#include "../../../cframe.h"
-
-#if MAC_COCOA
-
-#ifdef __OBJC__
-@class NSPasteboard;
-#else
-struct NSPasteboard;
-#endif
+#include "vstguibase.h"
 
 namespace VSTGUI {
 
-//------------------------------------------------------------------------------------
-class CocoaDragContainer : public CDragContainer
+//-----------------------------------------------------------------------------
+///	@brief interface for drag&drop and clipboard data
+//-----------------------------------------------------------------------------
+class IDataPackage : public CBaseObject
 {
 public:
-	CocoaDragContainer (NSPasteboard* platformDrag);
-	~CocoaDragContainer ();
-	
-	void* first (int32_t& size, int32_t& type) VSTGUI_OVERRIDE_VMETHOD;
-	void* next (int32_t& size, int32_t& type) VSTGUI_OVERRIDE_VMETHOD;
-	int32_t getType (int32_t idx) const VSTGUI_OVERRIDE_VMETHOD;
-	int32_t getCount () const VSTGUI_OVERRIDE_VMETHOD { return nbItems; }
+	enum Type {
+		kFilePath = 0,	///< File type (UTF-8 C-String)
+		kText,			///< Text type (UTF-8 C-String)
+		kBinary,		///< Binary type
 
-//------------------------------------------------------------------------------------
+		kError = -1
+	};
+
+	virtual int32_t getCount () = 0;
+	virtual int32_t getDataSize (int32_t index) = 0;
+	virtual Type getDataType (int32_t index) = 0;
+	virtual int32_t getData (int32_t index, const void*& buffer, Type& type) = 0;
+
+	//-------------------------------------------
+	CLASS_METHODS_NOCOPY(IDataPackage, CBaseObject)
 protected:
-	NSPasteboard* pb;
-
-	int32_t nbItems;
-	
-	int32_t iterator;
-	void* lastItem;
+	IDataPackage () {}
 };
 
-} // namespace
+}
 
-#endif // COCOA
-
-#endif // __cocoadragcontainer__
+#endif // __idatapackage__

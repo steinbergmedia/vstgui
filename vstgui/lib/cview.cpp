@@ -37,6 +37,7 @@
 #include "cbitmap.h"
 #include "cframe.h"
 #include "cvstguitimer.h"
+#include "idatapackage.h"
 #include "animation/animator.h"
 #include "../uidescription/icontroller.h"
 #include <assert.h>
@@ -767,5 +768,91 @@ void CView::dumpInfo ()
 }
 #endif
 
+//-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
+CDragContainerHelper::CDragContainerHelper (IDataPackage* drag)
+: drag (drag)
+, index (0)
+{
+	
+}
+
+//-----------------------------------------------------------------------------
+void* CDragContainerHelper::first (int32_t& outSize, int32_t& outType)
+{
+	index = 0;
+	return next (outSize, outType);
+}
+
+//-----------------------------------------------------------------------------
+void* CDragContainerHelper::next (int32_t& outSize, int32_t& outType)
+{
+	IDataPackage::Type type;
+	const void* data = 0;
+	outSize = drag->getData (index, data, type);
+	switch (type)
+	{
+		case IDataPackage::kFilePath:
+		{
+			outType = kFile;
+			break;
+		}
+		case IDataPackage::kText:
+		{
+			outType = kUnicodeText;
+			break;
+		}
+		case IDataPackage::kBinary:
+		{
+			outType = kUnknown;
+			break;
+		}
+		case IDataPackage::kError:
+		{
+			outType = kError;
+			break;
+		}
+	}
+	index++;
+	return const_cast<void*>(data);
+}
+
+//-----------------------------------------------------------------------------
+int32_t CDragContainerHelper::getType (int32_t idx) const
+{
+	int32_t outType;
+	IDataPackage::Type type = drag->getDataType (idx);
+	switch (type)
+	{
+		case IDataPackage::kFilePath:
+		{
+			outType = kFile;
+			break;
+		}
+		case IDataPackage::kText:
+		{
+			outType = kUnicodeText;
+			break;
+		}
+		case IDataPackage::kBinary:
+		{
+			outType = kUnknown;
+			break;
+		}
+		case IDataPackage::kError:
+		{
+			outType = kError;
+			break;
+		}
+	}
+	return outType;
+}
+
+//-----------------------------------------------------------------------------
+int32_t CDragContainerHelper::getCount () const
+{
+	return drag->getCount ();
+}
 
 } // namespace

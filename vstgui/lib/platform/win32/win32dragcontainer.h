@@ -35,25 +35,26 @@
 #ifndef __win32dragcontainer__
 #define __win32dragcontainer__
 
-#include "../../cview.h"
+#include "../../idatapackage.h"
 
 #if WINDOWS
 
 #include <windows.h>
+#include <vector>
+#include <string>
 
 namespace VSTGUI {
 
-class WinDragContainer : public CDragContainer
+class WinDragContainer : public IDataPackage
 {
 public:
 	WinDragContainer (IDataObject* platformDrag);
 	~WinDragContainer ();
 
-	virtual void* first (int32_t& size, int32_t& type);		///< returns pointer on a char array if type is known
-	virtual void* next (int32_t& size, int32_t& type);		///< returns pointer on a char array if type is known
-	
-	virtual int32_t getType (int32_t idx) const;
-	virtual int32_t getCount () const { return nbItems; }
+	int32_t getCount ();
+	int32_t getDataSize (int32_t index);
+	Type getDataType (int32_t index);
+	int32_t getData (int32_t index, const void*& buffer, Type& type);
 
 protected:
 	static bool checkResolveLink (const TCHAR* nativePath, TCHAR* resolved);
@@ -63,10 +64,10 @@ protected:
 
 	IDataObject* platformDrag;
 	int32_t nbItems;
-	bool isFileDrag;
-	
-	int32_t iterator;
-	void* lastItem;
+	bool stringsAreFiles;
+	std::vector<std::string> strings;
+	void* data;
+	int32_t dataSize;
 };
 
 } // namespace

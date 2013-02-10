@@ -28,6 +28,10 @@ UIEditMenuController::UIEditMenuController (IController* baseController, UISelec
 //----------------------------------------------------------------------------------------------------
 UIEditMenuController::~UIEditMenuController ()
 {
+	if (highlightTimer)
+	{
+		highlightTimer = 0;
+	}
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -39,6 +43,36 @@ void UIEditMenuController::createFileMenu (COptionMenu* menu)
 		if (UIEditing::fileMenu[index].category == UIEditing::menuSeparator.category)
 		{
 			menu->addSeparator ();
+		}
+		else if (UIEditing::fileMenu[index].menuFlags & UIEditing::MenuEntry::kSubMenu)
+		{
+			COptionMenu* subMenu = new COptionMenu ();
+			subMenu->setStyle (kMultipleCheckStyle|kCheckStyle);
+			menu->addEntry (new CMenuItem (UIEditing::fileMenu[index].name, subMenu));
+			index++;
+			while (!(UIEditing::fileMenu[index].menuFlags & UIEditing::MenuEntry::kSubMenu))
+			{
+				if (UIEditing::fileMenu[index].category == UIEditing::menuSeparator.category)
+				{
+					subMenu->addSeparator ();
+				}
+				else
+				{
+					CMenuItem* item = subMenu->addEntry (new CCommandMenuItem (UIEditing::fileMenu[index].name, this, UIEditing::fileMenu[index].category, UIEditing::fileMenu[index].name));
+					if (UIEditing::fileMenu[index].key)
+					{
+						item->setKey (UIEditing::fileMenu[index].key, UIEditing::fileMenu[index].modifier);
+					}
+					if (UIEditing::fileMenu[index].menuFlags)
+					{
+						if (UIEditing::fileMenu[index].menuFlags & CMenuItem::kTitle)
+						{
+							item->setIsTitle (true);
+						}
+					}
+				}
+				index++;
+			}
 		}
 		else
 		{

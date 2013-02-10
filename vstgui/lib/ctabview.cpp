@@ -90,7 +90,7 @@ public:
 		return kMouseDownEventHandledButDontNeedMovedOrUpEvents;
 	}
 
-	virtual void onDragEnter (CDragContainer* drag, const CPoint& where) VSTGUI_OVERRIDE_VMETHOD
+	virtual void onDragEnter (IDataPackage* drag, const CPoint& where) VSTGUI_OVERRIDE_VMETHOD
 	{
 		if (value == 0.f)
 		{
@@ -365,14 +365,14 @@ bool CTabView::selectTab (int32_t index)
 //-----------------------------------------------------------------------------
 void CTabView::setCurrentChild (CTabChildView* childView)
 {
-	if (childView == currentChild)
-	{
-		if (currentChild->button)
-			currentChild->button->setValue (1.f);
-		return;
-	}
 	if (currentChild)
 	{
+		if (childView == currentChild)
+		{
+			if (currentChild->button)
+				currentChild->button->setValue (1.f);
+			return;
+		}
 		if (currentChild->button)
 			currentChild->button->setValue (0.f);
 		removeView (currentChild->view, false);

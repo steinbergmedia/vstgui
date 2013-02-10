@@ -369,6 +369,14 @@
 					>
 				</File>
 				<File
+					RelativePath="..\..\lib\cgradientview.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\lib\cgradientview.h"
+					>
+				</File>
+				<File
 					RelativePath="..\..\lib\cgraphicspath.cpp"
 					>
 				</File>
@@ -486,6 +494,10 @@
 				</File>
 				<File
 					RelativePath="..\..\lib\cvstguitimer.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\lib\idatapackage.h"
 					>
 				</File>
 				<File

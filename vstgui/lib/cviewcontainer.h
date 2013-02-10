@@ -114,10 +114,10 @@ public:
 	virtual bool hitTest (const CPoint& where, const CButtonState& buttons = -1) VSTGUI_OVERRIDE_VMETHOD;
 	virtual CMessageResult notify (CBaseObject* sender, IdStringPtr message) VSTGUI_OVERRIDE_VMETHOD;
 
-	virtual bool onDrop (CDragContainer* drag, const CPoint& where) VSTGUI_OVERRIDE_VMETHOD;
-	virtual void onDragEnter (CDragContainer* drag, const CPoint& where) VSTGUI_OVERRIDE_VMETHOD;
-	virtual void onDragLeave (CDragContainer* drag, const CPoint& where) VSTGUI_OVERRIDE_VMETHOD;
-	virtual void onDragMove (CDragContainer* drag, const CPoint& where) VSTGUI_OVERRIDE_VMETHOD;
+	virtual bool onDrop (IDataPackage* drag, const CPoint& where) VSTGUI_OVERRIDE_VMETHOD;
+	virtual void onDragEnter (IDataPackage* drag, const CPoint& where) VSTGUI_OVERRIDE_VMETHOD;
+	virtual void onDragLeave (IDataPackage* drag, const CPoint& where) VSTGUI_OVERRIDE_VMETHOD;
+	virtual void onDragMove (IDataPackage* drag, const CPoint& where) VSTGUI_OVERRIDE_VMETHOD;
 
 	virtual void looseFocus () VSTGUI_OVERRIDE_VMETHOD;
 	virtual void takeFocus () VSTGUI_OVERRIDE_VMETHOD;
@@ -200,8 +200,8 @@ public:
 		ChildViewConstReverseIterator riterator;
 	};
 
-	/** get child views of type T */
-	template<class ViewClass, class ContainerClass = std::list<SharedPointer<ViewClass> > >
+	/** get child views of type ViewClass. ContainerClass must be a stdc++ container */
+	template<class ViewClass, class ContainerClass>
 	uint32_t getChildViewsOfType (ContainerClass& result, bool deep = false) const
 	{
 		ChildViewConstIterator it = children.begin ();

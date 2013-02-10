@@ -1,8 +1,13 @@
 #import "macclipboard.h"
+#import "macglobals.h"
 #import "../../cdropsource.h"
 #import <Cocoa/Cocoa.h>
 #import <vector>
 #import <string>
+
+#if MAC_CARBON
+#import <Carbon/Carbon.h>
+#endif
 
 namespace VSTGUI {
 namespace MacClipboard {
@@ -14,10 +19,10 @@ public:
 	Pasteboard (NSPasteboard* pb);
 	~Pasteboard ();
 
-	int32_t getCount ();
-	int32_t getDataSize (int32_t index);
-	Type getDataType (int32_t index);
-	int32_t getData (int32_t index, const void*& buffer, Type& type);
+	int32_t getCount () VSTGUI_OVERRIDE_VMETHOD;
+	int32_t getDataSize (int32_t index) VSTGUI_OVERRIDE_VMETHOD;
+	Type getDataType (int32_t index) VSTGUI_OVERRIDE_VMETHOD;
+	int32_t getData (int32_t index, const void*& buffer, Type& type) VSTGUI_OVERRIDE_VMETHOD;
 protected:
 	NSPasteboard* pb;
 	int32_t nbItems;
@@ -58,6 +63,21 @@ Pasteboard::Pasteboard (NSPasteboard* pb)
 				NSString* str = [fileNames objectAtIndex:i];
 				if (str)
 					strings.push_back ([str UTF8String]);
+			}
+		}
+		else if ([pb availableTypeFromArray:[NSArray arrayWithObject:NSColorPboardType]])
+		{
+			NSColor* nsColor = [NSColor colorFromPasteboard:pb];
+			if (nsColor)
+			{
+				nsColor = [nsColor colorUsingColorSpace:[[[NSColorSpace alloc] initWithCGColorSpace:GetCGColorSpace ()] autorelease]];
+				int32_t red = [nsColor redComponent] * 255.;
+				int32_t green = [nsColor greenComponent] * 255.;
+				int32_t blue = [nsColor blueComponent] * 255.;
+				int32_t alpha = [nsColor alphaComponent] * 255.;
+				char str[10];
+				sprintf (str, "#%02x%02x%02x%02x", red, green, blue, alpha);
+				strings.push_back (str);
 			}
 		}
 		else
@@ -135,10 +155,33 @@ int32_t Pasteboard::getData (int32_t index, const void*& buffer, Pasteboard::Typ
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
-IDataPackage* getClipboard ()
+IDataPackage* createClipboardDataPackage ()
 {
 	return new Pasteboard ([NSPasteboard generalPasteboard]);
 }
+
+//-----------------------------------------------------------------------------
+IDataPackage* createDragDataPackage (NSPasteboard* pasteboard)
+{
+	return new Pasteboard (pasteboard);
+}
+
+#if MAC_CARBON
+IDataPackage* createCarbonDragDataPackage (DragRef drag)
+{
+	PasteboardRef pr;
+	if (GetDragPasteboard (drag, &pr) == noErr)
+	{
+		CFStringRef pasteboardName;
+		if (PasteboardCopyName (pr, &pasteboardName) == noErr)
+		{
+			[(NSString*)pasteboardName autorelease];
+			return new Pasteboard ([NSPasteboard pasteboardWithName:(NSString*)pasteboardName]);
+		}
+	}
+	return 0;
+}
+#endif
 
 //-----------------------------------------------------------------------------
 void setClipboard (IDataPackage* dataSource)
