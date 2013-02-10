@@ -173,7 +173,7 @@ MenuRef HIViewOptionMenu::createMenu (COptionMenu* menu)
 				}
 				if (item->getKeycode ())
 				{
-					SetItemCmd (menuRef, i, item->getKeycode ()[0]);
+					SetItemCmd (menuRef, i, toupper (item->getKeycode ()[0]));
 					UInt8 keyModifiers = 0;
 					int32_t itemModifiers = item->getKeyModifiers ();
 					if (itemModifiers & kShift)

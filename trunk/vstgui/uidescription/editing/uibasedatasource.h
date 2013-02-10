@@ -239,7 +239,7 @@ protected:
 	{
 		if (buttons.isLeftButton () && buttons.isDoubleClick ())
 		{
-			browser->beginTextEdit (row, column, names.at (row).c_str ());
+			browser->beginTextEdit (CDataBrowser::Cell (row, column), names.at (row).c_str ());
 		}
 		return kMouseDownEventHandledButDontNeedMovedOrUpEvents;
 	}

@@ -221,12 +221,14 @@ void CocoaOpenGLView::viewSizeChanged (const CRect& visibleSize)
 {
 	if (platformView)
 	{
+		lockContext ();
 		NSRect r = nsRectFromCRect (visibleSize);
 		[platformView setFrame:r];
 		if ([platformView superview] == nil)
 		{
 			[parent addSubview:platformView];
 		}
+		unlockContext ();
 	}
 }
 

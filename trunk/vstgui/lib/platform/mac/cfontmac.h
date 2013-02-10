@@ -92,10 +92,10 @@ protected:
 	void drawString (CDrawContext* context, const CString& string, const CPoint& p, bool antialias = true) VSTGUI_OVERRIDE_VMETHOD;
 	CCoord getStringWidth (CDrawContext* context, const CString& string, bool antialias = true) VSTGUI_OVERRIDE_VMETHOD;
 
-	double getAscent () VSTGUI_OVERRIDE_VMETHOD const { return -1.; }
-	double getDescent () VSTGUI_OVERRIDE_VMETHOD const { return -1.; }
-	double getLeading () VSTGUI_OVERRIDE_VMETHOD const { return -1.; }
-	double getCapHeight () VSTGUI_OVERRIDE_VMETHOD const { return -1.; }
+	double getAscent () const VSTGUI_OVERRIDE_VMETHOD { return -1.; }
+	double getDescent () const VSTGUI_OVERRIDE_VMETHOD { return -1.; }
+	double getLeading () const VSTGUI_OVERRIDE_VMETHOD { return -1.; }
+	double getCapHeight () const VSTGUI_OVERRIDE_VMETHOD { return -1.; }
 
 	IFontPainter* getPainter () VSTGUI_OVERRIDE_VMETHOD { return this; }
 

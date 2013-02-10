@@ -45,6 +45,10 @@ public:
 	Property (const Property& p);
 	~Property ();
 
+#if VSTGUI_RVALUE_REF_SUPPORT
+	Property (Property&& p);
+	Property& operator=(Property&& p);
+#endif
 	Type getType () const { return type; }
 
 	int32_t getInteger () const;

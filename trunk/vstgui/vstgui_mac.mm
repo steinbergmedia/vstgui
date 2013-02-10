@@ -46,7 +46,6 @@
 #import "lib/platform/mac/carbon/hiviewoptionmenu.cpp"
 #import "lib/platform/mac/carbon/hiviewtextedit.cpp"
 #import "lib/platform/mac/cocoa/autoreleasepool.mm"
-#import "lib/platform/mac/cocoa/cocoadragcontainer.mm"
 #import "lib/platform/mac/cocoa/cocoahelpers.mm"
 #import "lib/platform/mac/cocoa/cocoaopenglview.mm"
 #import "lib/platform/mac/cocoa/cocoatextedit.mm"

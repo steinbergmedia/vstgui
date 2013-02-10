@@ -139,7 +139,7 @@ public:
 	const PartOffsets& getPartOffsets () const { return offsets; }
 	//@}
 
-	virtual void draw (CDrawContext* context, const CRect& rect, const CPoint& offset = CPoint (0, 0), float alpha = 1.f);
+	virtual void draw (CDrawContext* context, const CRect& rect, const CPoint& offset = CPoint (0, 0), float alpha = 1.f) VSTGUI_OVERRIDE_VMETHOD;
 
 //-----------------------------------------------------------------------------
 	CLASS_METHODS_NOCOPY(CNinePartTiledBitmap, CBitmap)

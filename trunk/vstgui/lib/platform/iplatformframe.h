@@ -49,7 +49,6 @@ class IPlatformOpenGLView;
 class CGraphicsPath;
 class CDrawContext;
 class COffscreenContext;
-class CDragContainer;
 class IDataPackage;
 struct CRect;
 struct CPoint;
@@ -76,10 +75,10 @@ public:
 	virtual CMouseEventResult platformOnMouseExited (CPoint& where, const CButtonState& buttons) = 0;
 	virtual bool platformOnMouseWheel (const CPoint &where, const CMouseWheelAxis &axis, const float &distance, const CButtonState &buttons) = 0;
 
-	virtual bool platformOnDrop (CDragContainer* drag, const CPoint& where) = 0;
-	virtual void platformOnDragEnter (CDragContainer* drag, const CPoint& where) = 0;
-	virtual void platformOnDragLeave (CDragContainer* drag, const CPoint& where) = 0;
-	virtual void platformOnDragMove (CDragContainer* drag, const CPoint& where) = 0;
+	virtual bool platformOnDrop (IDataPackage* drag, const CPoint& where) = 0;
+	virtual void platformOnDragEnter (IDataPackage* drag, const CPoint& where) = 0;
+	virtual void platformOnDragLeave (IDataPackage* drag, const CPoint& where) = 0;
+	virtual void platformOnDragMove (IDataPackage* drag, const CPoint& where) = 0;
 
 	virtual bool platformOnKeyDown (VstKeyCode& keyCode) = 0;
 	virtual bool platformOnKeyUp (VstKeyCode& keyCode) = 0;

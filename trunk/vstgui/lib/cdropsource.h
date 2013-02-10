@@ -36,32 +36,10 @@
 #define __cdropsource__
 
 #include "vstguibase.h"
+#include "idatapackage.h"
 #include <vector>
 
 namespace VSTGUI {
-
-//-----------------------------------------------------------------------------
-class IDataPackage : public CBaseObject
-{
-public:
-	enum Type {
-		kFilePath = 0,	///< File type (UTF-8 C-String)
-		kText,			///< Text type (UTF-8 C-String)
-		kBinary,		///< Binary type
-
-		kError = -1
-	};
-
-	virtual int32_t getCount () = 0;
-	virtual int32_t getDataSize (int32_t index) = 0;
-	virtual Type getDataType (int32_t index) = 0;
-	virtual int32_t getData (int32_t index, const void*& buffer, Type& type) = 0;
-
-	//-------------------------------------------
-	CLASS_METHODS_NOCOPY(IDataPackage, CBaseObject)
-protected:
-	IDataPackage () {}
-};
 
 //-----------------------------------------------------------------------------
 // CDropSource Declaration
@@ -85,9 +63,9 @@ public:
 	virtual int32_t getData (int32_t index, const void*& buffer, Type& type) VSTGUI_OVERRIDE_VMETHOD { return getEntry (index, buffer, type); }
 
 	// old interface
-	int32_t getEntrySize (int32_t index);
-	Type getEntryType (int32_t index);
-	int32_t getEntry (int32_t index, const void*& buffer, Type& type);
+	int32_t getEntrySize (int32_t index); ///< \deprecated
+	Type getEntryType (int32_t index); ///< \deprecated
+	int32_t getEntry (int32_t index, const void*& buffer, Type& type); ///< \deprecated
 
 	//-------------------------------------------
 	CLASS_METHODS_NOCOPY(CDropSource, IDataPackage)

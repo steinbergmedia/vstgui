@@ -1191,8 +1191,7 @@ bool VST3Editor::enableEditing (bool state)
 					item->setKey ("s", kControl);
 					item = fileMenu->addEntry (new CCommandMenuItem ("Save As..", this, "File", "Save As"), 1);
 					item->setKey ("s", kShift|kControl);
-					fileMenu->addSeparator (2);
-					item = fileMenu->addEntry (new CCommandMenuItem ("Close Editor", this, "File", "Close UIDescription Editor"), 3);
+					item = fileMenu->addEntry (new CCommandMenuItem ("Close Editor", this, "File", "Close UIDescription Editor"));
 					item->setKey ("e", kControl);
 				}
 				COptionMenu* editMenu = editController->getMenuController ()->getEditMenu ();

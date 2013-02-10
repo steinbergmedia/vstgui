@@ -50,7 +50,7 @@ public:
 	WinString (UTF8StringPtr utf8String);
 	~WinString ();
 	
-	void setUTF8String (UTF8StringPtr utf8String);
+	void setUTF8String (UTF8StringPtr utf8String) VSTGUI_OVERRIDE_VMETHOD;
 
 	const WCHAR* getWideString () const { return wideString; }
 //-----------------------------------------------------------------------------

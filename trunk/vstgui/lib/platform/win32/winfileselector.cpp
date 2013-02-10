@@ -123,9 +123,9 @@ public:
 	VistaFileSelector (CFrame* frame, Style style);
 	~VistaFileSelector ();
 
-	virtual bool runInternal (CBaseObject* delegate);
-	virtual void cancelInternal ();
-	virtual bool runModalInternal ();
+	virtual bool runInternal (CBaseObject* delegate) VSTGUI_OVERRIDE_VMETHOD;
+	virtual void cancelInternal () VSTGUI_OVERRIDE_VMETHOD;
+	virtual bool runModalInternal () VSTGUI_OVERRIDE_VMETHOD;
 protected:
 	Style style;
 	IFileDialog* fileDialog;
@@ -137,9 +137,9 @@ class XPFileSelector : public CNewFileSelector
 public:
 	XPFileSelector (CFrame* frame, Style style);
 
-	virtual bool runInternal (CBaseObject* delegate);
-	virtual void cancelInternal ();
-	virtual bool runModalInternal ();
+	virtual bool runInternal (CBaseObject* delegate) VSTGUI_OVERRIDE_VMETHOD;
+	virtual void cancelInternal () VSTGUI_OVERRIDE_VMETHOD;
+	virtual bool runModalInternal () VSTGUI_OVERRIDE_VMETHOD;
 protected:
 	Style style;
 };

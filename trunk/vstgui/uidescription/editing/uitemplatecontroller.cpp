@@ -21,7 +21,7 @@ class UINavigationDataSource : public GenericStringListDataBrowserSource
 {
 public:
 	UINavigationDataSource (IGenericStringListDataBrowserSourceSelectionChanged* delegate)
-	: GenericStringListDataBrowserSource (0, delegate) { textInset.x = 4.; }
+	: GenericStringListDataBrowserSource (0, delegate) { textInset.x = 4.; headerBackgroundColor = kTransparentCColor; }
 
 	int32_t dbOnKeyDown (const VstKeyCode& key, CDataBrowser* browser)
 	{
@@ -67,6 +67,40 @@ public:
 		}
 		return GenericStringListDataBrowserSource::dbOnKeyDown (key, browser);
 	}
+	virtual UTF8StringPtr getHeaderTitle () const = 0;
+	void dbDrawHeader (CDrawContext* context, const CRect& size, int32_t column, int32_t flags, CDataBrowser* browser)
+	{
+		context->setDrawMode (kAliasing);
+		context->setLineWidth (1);
+		if (headerBackgroundColor == kTransparentCColor)
+		{
+			double h,s,l;
+			rowAlternateBackColor.toHSL (h, s, l);
+			l /= 2.;
+			headerBackgroundColor.fromHSL (h, s, l);
+			headerBackgroundColor.alpha = rowAlternateBackColor.alpha;
+		}
+		context->setFillColor (headerBackgroundColor);
+		context->drawRect (size, kDrawFilled);
+		context->setFrameColor (rowlineColor);
+		context->moveTo (CPoint (size.left, size.bottom));
+		context->lineTo (CPoint (size.right, size.bottom));
+		if (getHeaderTitle ())
+		{
+			if (headerFont == 0)
+			{
+				headerFont = new CFontDesc (*drawFont);
+				headerFont->setStyle (kBoldFace);
+				headerFont->setSize (headerFont->getSize ()-1);
+			}
+			context->setFont (headerFont);
+			context->setFontColor (fontColor);
+			context->drawString (getHeaderTitle (), size, kCenterText);
+		}
+	}
+protected:
+	CColor headerBackgroundColor;
+	OwningPointer<CFontDesc> headerFont;
 };
 
 //----------------------------------------------------------------------------------------------------
@@ -80,6 +114,7 @@ public:
 	void dbCellSetupTextEdit (int32_t row, int32_t column, CTextEdit* textEditControl, CDataBrowser* browser);
 	void dbAttached (CDataBrowser* browser);
 protected:
+	UTF8StringPtr getHeaderTitle () const { return "Templates"; }
 	SharedPointer<UIDescription> description;
 	IActionPerformer* actionPerformer;
 	std::string firstSelectedTemplateName;
@@ -98,6 +133,18 @@ public:
 	bool update (CViewContainer* vc);
 	void remove ();
 protected:
+	UTF8StringPtr getHeaderTitle () const
+	{
+		UTF8StringPtr name = 0;
+		if (view)
+		{
+			name = viewFactory->getViewName (view);
+			if (name == 0 && view->getParentView ())
+				name = viewFactory->getViewName (view->getParentView ());
+		}
+		return name;
+	}
+	
 	void verify ();
 	CMessageResult notify (CBaseObject* sender, IdStringPtr message);
 
@@ -223,7 +270,7 @@ CMessageResult UITemplateController::notify (CBaseObject* sender, IdStringPtr me
 {
 	if (templateDataBrowser && message == UIDescription::kMessageTemplateChanged)
 	{
-		GenericStringListDataBrowserSource* dataSource = dynamic_cast<GenericStringListDataBrowserSource*>(templateDataBrowser->getDataSource ());
+		GenericStringListDataBrowserSource* dataSource = dynamic_cast<GenericStringListDataBrowserSource*>(templateDataBrowser->getDelegate ());
 		if (dataSource)
 		{
 			DeferChanges dc (this);
@@ -298,7 +345,7 @@ CView* UITemplateController::createView (const UIAttributes& attributes, IUIDesc
 			UITemplatesDataSource* dataSource = new UITemplatesDataSource (this, editDescription, actionPerformer, templateName);
 			dataSource->setStringList (&templateNames);
 			UIEditController::setupDataSource (dataSource);
-			templateDataBrowser = new CDataBrowser (CRect (0, 0, 0, 0), 0, dataSource, CDataBrowser::kDrawRowLines|CScrollView::kHorizontalScrollbar | CScrollView::kVerticalScrollbar);
+			templateDataBrowser = new CDataBrowser (CRect (0, 0, 0, 0), 0, dataSource, CDataBrowser::kDrawRowLines|CScrollView::kAutoHideScrollbars|CScrollView::kHorizontalScrollbar|CScrollView::kVerticalScrollbar|CDataBrowser::kDrawHeader);
 			dataSource->forget ();
 			return templateDataBrowser;
 		}
@@ -576,7 +623,7 @@ CMouseEventResult UITemplatesDataSource::dbOnMouseDown (const CPoint& where, con
 	{
 		if (buttons.isDoubleClick ())
 		{
-			browser->beginTextEdit (row, column, getStringList ()->at (row).c_str ());
+			browser->beginTextEdit (CDataBrowser::Cell (row, column), getStringList ()->at (row).c_str ());
 			return kMouseDownEventHandledButDontNeedMovedOrUpEvents;
 		}
 	}

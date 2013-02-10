@@ -52,10 +52,10 @@ class CDataBrowserHeader;
 class GenericStringListDataBrowserSource;
 
 //-----------------------------------------------------------------------------
-// IDataBrowser Declaration
+// IDataBrowserDelegate Declaration
 //! @brief DataBrowser Interface
 //-----------------------------------------------------------------------------------------------
-class IDataBrowser
+class IDataBrowserDelegate
 {
 public:
 	/** @name Setup */
@@ -86,11 +86,12 @@ public:
 
 	/** @name Drag'n Drop Handling */
 	///	@{
-	virtual void dbOnDragEnterBrowser (CDragContainer* drag, CDataBrowser* browser) {}
-	virtual void dbOnDragExitBrowser (CDragContainer* drag, CDataBrowser* browser) {}
-	virtual void dbOnDragEnterCell (int32_t row, int32_t column, CDragContainer* drag, CDataBrowser* browser) {}
-	virtual void dbOnDragExitCell (int32_t row, int32_t column, CDragContainer* drag, CDataBrowser* browser) {}
-	virtual bool dbOnDropInCell (int32_t row, int32_t column, CDragContainer* drag, CDataBrowser* browser) { return false; }
+	virtual void dbOnDragEnterBrowser (IDataPackage* drag, CDataBrowser* browser) {}
+	virtual void dbOnDragExitBrowser (IDataPackage* drag, CDataBrowser* browser) {}
+	virtual void dbOnDragEnterCell (int32_t row, int32_t column, const CPoint& where, IDataPackage* drag, CDataBrowser* browser) {}
+	virtual void dbOnDragMoveInCell (int32_t row, int32_t column, const CPoint& where, IDataPackage* drag, CDataBrowser* browser) {}
+	virtual void dbOnDragExitCell (int32_t row, int32_t column, IDataPackage* drag, CDataBrowser* browser) {}
+	virtual bool dbOnDropInCell (int32_t row, int32_t column, const CPoint& where, IDataPackage* drag, CDataBrowser* browser) { return false; }
 	///	@}
 
 	/** @name Selection  */
@@ -114,6 +115,10 @@ public:
 	};
 };
 
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
+typedef IDataBrowserDelegate IDataBrowser;	///< \deprecated
+#endif
+
 //-----------------------------------------------------------------------------
 // CDataBrowser Declaration
 //! @brief DataBrowser view
@@ -126,43 +131,67 @@ protected:
 	{
 		kDrawRowLinesFlag = kLastScrollViewStyleFlag,
 		kDrawColumnLinesFlag,
-		kDrawHeaderFlag
+		kDrawHeaderFlag,
+		kMultiSelectionStyleFlag
 	};
 	
 public:
-	CDataBrowser (const CRect& size, CFrame* pParent, IDataBrowser* db, int32_t style = 0, CCoord scrollbarWidth = 16, CBitmap* pBackground = 0);
+	CDataBrowser (const CRect& size, CFrame* pParent, IDataBrowserDelegate* db, int32_t style = 0, CCoord scrollbarWidth = 16, CBitmap* pBackground = 0);
 
 	enum CDataBrowserStyle 
 	{
 		// see CScrollView for more styles
 		kDrawRowLines			= 1 << kDrawRowLinesFlag,
 		kDrawColumnLines		= 1 << kDrawColumnLinesFlag,
-		kDrawHeader				= 1 << kDrawHeaderFlag
+		kDrawHeader				= 1 << kDrawHeaderFlag,
+		kMultiSelectionStyle	= 1 << kMultiSelectionStyleFlag
 	};
-	
-	enum 
+
+	enum
 	{
 		kNoSelection	= -1
 	};
+
+	/// @brief CDataBrowser Cell position description
+	struct Cell {
+		int32_t row;
+		int32_t column;
+		
+		Cell (int32_t row = -1, int32_t column = -1) : row (row), column (column) {}
+		bool isValid () const { return row > -1 && column > -1; }
+	};
+
+	typedef std::vector<int32_t> Selection;
 
 	//-----------------------------------------------------------------------------
 	/// @name CDataBrowser Methods
 	//-----------------------------------------------------------------------------
 	//@{
 	virtual void recalculateLayout (bool rememberSelection = false);						///< trigger recalculation, call if numRows or numColumns changed
-	virtual void invalidate (int32_t row, int32_t column);									///< invalidates an individual cell
+	virtual void invalidate (const Cell& cell);												///< invalidates an individual cell
 	virtual void invalidateRow (int32_t row);												///< invalidates a complete row
 	virtual void makeRowVisible (int32_t row);												///< scrolls the scrollview so that row is visible
 
-	virtual CRect getCellBounds (int32_t row, int32_t column);								///< get bounds of a cell
+	virtual CRect getCellBounds (const Cell& cell);											///< get bounds of a cell
+	virtual Cell getCellAt (const CPoint& where) const;										///< get the cell at position where
 
-	virtual int32_t getSelectedRow () const { return selectedRow; }							///< get selected row
+	virtual int32_t getSelectedRow () const;												///< get first selected row
 	virtual void setSelectedRow (int32_t row, bool makeVisible = false);					///< set the exclusive selected row
 
-	virtual void beginTextEdit (int32_t row, int32_t column, UTF8StringPtr initialText);	///< starts a text edit for a cell
+	const Selection& getSelection () const { return selection; }							///< get all selected rows
+	virtual void selectRow (int32_t row);													///< add row to selection
+	virtual void unselectRow (int32_t row);													///< remove row from selection
+	virtual void unselectAll ();															///< empty selection
 
-	IDataBrowser* getDataSource () const { return db; }										///< get data source object
+	virtual void beginTextEdit (const Cell& cell, UTF8StringPtr initialText);				///< starts a text edit for a cell
+
+	IDataBrowserDelegate* getDelegate () const { return db; }								///< get delegate object
 	//@}
+
+	VSTGUI_DEPRECATED (inline IDataBrowserDelegate* getDataSource () const { return getDelegate (); })	///< \deprecated, use CDataBrowser::getDelegate ()
+	VSTGUI_DEPRECATED (inline CRect getCellBounds (int32_t row, int32_t column) { return getCellBounds (CDataBrowser::Cell (row, column)); }) ///< \deprecated, use CDataBrowser::getCellBounds (const Cell& cell)
+	VSTGUI_DEPRECATED (inline void invalidate (int32_t row, int32_t column) { invalidate (CDataBrowser::Cell (row, column)); }) ///< \deprecated, use CDataBrowser::invalidate (const Cell& cell)
+	VSTGUI_DEPRECATED (inline void beginTextEdit (int32_t row, int32_t column, UTF8StringPtr initialText) { beginTextEdit (CDataBrowser::Cell (row, column), initialText); }) ///< \deprecated, use CDataBrowser::beginTextEdit (const Cell& cell, UTF8StringPtr initialText)
 
 	void setAutosizeFlags (int32_t flags) VSTGUI_OVERRIDE_VMETHOD;
 	void setViewSize (const CRect& size, bool invalid) VSTGUI_OVERRIDE_VMETHOD;
@@ -177,11 +206,14 @@ protected:
 	bool attached (CView *parent) VSTGUI_OVERRIDE_VMETHOD;
 	bool removed (CView* parent) VSTGUI_OVERRIDE_VMETHOD;
 
-	IDataBrowser* db;
+	void recalculateSubViews () VSTGUI_OVERRIDE_VMETHOD;
+	void validateSelection ();
+
+	IDataBrowserDelegate* db;
 	CDataBrowserView* dbView;
 	CDataBrowserHeader* dbHeader;
 	CViewContainer* dbHeaderContainer;
-	int32_t selectedRow;
+	Selection selection;
 };
 
 //-----------------------------------------------------------------------------
@@ -195,7 +227,7 @@ public:
 // GenericStringListDataBrowserSource Declaration
 //! @brief Generic string list data browser source
 //-----------------------------------------------------------------------------------------------
-class GenericStringListDataBrowserSource : public IDataBrowser, public CBaseObject
+class GenericStringListDataBrowserSource : public IDataBrowserDelegate, public CBaseObject
 {
 public:
 	GenericStringListDataBrowserSource (const std::vector<std::string>* stringList, IGenericStringListDataBrowserSourceSelectionChanged* delegate = 0);
@@ -207,32 +239,32 @@ public:
 	void setupUI (const CColor& selectionColor, const CColor& fontColor, const CColor& rowlineColor, const CColor& rowBackColor, const CColor& rowAlteranteBackColor, CFontRef font = 0, int32_t rowHeight = -1);
 
 protected:
-	int32_t dbGetNumRows (CDataBrowser* browser);
-	int32_t dbGetNumColumns (CDataBrowser* browser) { return 1; }
-	bool dbGetColumnDescription (int32_t index, CCoord& minWidth, CCoord& maxWidth, CDataBrowser* browser) { return false; }
-	CCoord dbGetCurrentColumnWidth (int32_t index, CDataBrowser* browser);
-	void dbSetCurrentColumnWidth (int32_t index, const CCoord& width, CDataBrowser* browser) {}
-	CCoord dbGetRowHeight (CDataBrowser* browser);
-	bool dbGetLineWidthAndColor (CCoord& width, CColor& color, CDataBrowser* browser);
+	int32_t dbGetNumRows (CDataBrowser* browser) VSTGUI_OVERRIDE_VMETHOD;
+	int32_t dbGetNumColumns (CDataBrowser* browser) VSTGUI_OVERRIDE_VMETHOD { return 1; }
+	bool dbGetColumnDescription (int32_t index, CCoord& minWidth, CCoord& maxWidth, CDataBrowser* browser)  VSTGUI_OVERRIDE_VMETHOD{ return false; }
+	CCoord dbGetCurrentColumnWidth (int32_t index, CDataBrowser* browser) VSTGUI_OVERRIDE_VMETHOD;
+	void dbSetCurrentColumnWidth (int32_t index, const CCoord& width, CDataBrowser* browser) VSTGUI_OVERRIDE_VMETHOD {}
+	CCoord dbGetRowHeight (CDataBrowser* browser) VSTGUI_OVERRIDE_VMETHOD;
+	bool dbGetLineWidthAndColor (CCoord& width, CColor& color, CDataBrowser* browser) VSTGUI_OVERRIDE_VMETHOD;
 
-	void dbDrawHeader (CDrawContext* context, const CRect& size, int32_t column, int32_t flags, CDataBrowser* browser);
-	void dbDrawCell (CDrawContext* context, const CRect& size, int32_t row, int32_t column, int32_t flags, CDataBrowser* browser);
+	void dbDrawHeader (CDrawContext* context, const CRect& size, int32_t column, int32_t flags, CDataBrowser* browser) VSTGUI_OVERRIDE_VMETHOD;
+	void dbDrawCell (CDrawContext* context, const CRect& size, int32_t row, int32_t column, int32_t flags, CDataBrowser* browser) VSTGUI_OVERRIDE_VMETHOD;
 
-	CMouseEventResult dbOnMouseDown (const CPoint& where, const CButtonState& buttons, int32_t row, int32_t column, CDataBrowser* browser) { return kMouseDownEventHandledButDontNeedMovedOrUpEvents; }
-	CMouseEventResult dbOnMouseMoved (const CPoint& where, const CButtonState& buttons, int32_t row, int32_t column, CDataBrowser* browser) { return kMouseEventNotHandled; }
-	CMouseEventResult dbOnMouseUp (const CPoint& where, const CButtonState& buttons, int32_t row, int32_t column, CDataBrowser* browser) { return kMouseEventNotHandled; }
+	CMouseEventResult dbOnMouseDown (const CPoint& where, const CButtonState& buttons, int32_t row, int32_t column, CDataBrowser* browser) VSTGUI_OVERRIDE_VMETHOD { return kMouseDownEventHandledButDontNeedMovedOrUpEvents; }
+	CMouseEventResult dbOnMouseMoved (const CPoint& where, const CButtonState& buttons, int32_t row, int32_t column, CDataBrowser* browser) VSTGUI_OVERRIDE_VMETHOD { return kMouseEventNotHandled; }
+	CMouseEventResult dbOnMouseUp (const CPoint& where, const CButtonState& buttons, int32_t row, int32_t column, CDataBrowser* browser) VSTGUI_OVERRIDE_VMETHOD { return kMouseEventNotHandled; }
 
-	void dbSelectionChanged (CDataBrowser* browser);
+	void dbSelectionChanged (CDataBrowser* browser) VSTGUI_OVERRIDE_VMETHOD;
 
-	void dbCellTextChanged (int32_t row, int32_t column, UTF8StringPtr newText, CDataBrowser* browser) {}
-	void dbCellSetupTextEdit (int32_t row, int32_t column, CTextEdit* textEditControl, CDataBrowser* browser) {}
+	void dbCellTextChanged (int32_t row, int32_t column, UTF8StringPtr newText, CDataBrowser* browser) VSTGUI_OVERRIDE_VMETHOD {}
+	void dbCellSetupTextEdit (int32_t row, int32_t column, CTextEdit* textEditControl, CDataBrowser* browser) VSTGUI_OVERRIDE_VMETHOD {}
 
-	int32_t dbOnKeyDown (const VstKeyCode& key, CDataBrowser* browser);
+	int32_t dbOnKeyDown (const VstKeyCode& key, CDataBrowser* browser) VSTGUI_OVERRIDE_VMETHOD;
 
-	void dbAttached (CDataBrowser* browser);
-	void dbRemoved (CDataBrowser* browser);
+	void dbAttached (CDataBrowser* browser) VSTGUI_OVERRIDE_VMETHOD;
+	void dbRemoved (CDataBrowser* browser) VSTGUI_OVERRIDE_VMETHOD;
 
-	CMessageResult notify (CBaseObject* sender, IdStringPtr message);
+	CMessageResult notify (CBaseObject* sender, IdStringPtr message) VSTGUI_OVERRIDE_VMETHOD;
 
 	const std::vector<std::string>* stringList;
 	int32_t rowHeight;

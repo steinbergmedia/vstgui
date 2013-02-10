@@ -1,3 +1,14 @@
+2013-02-10 arne
+
+	* add multi selection style to CDataBrowser
+	* introduce CDataBrowser::Cell position description and change some methods which deals with cells to use it. 
+	* rename IDataBrowser to IDataBrowserDelegate
+	* changed drag method signatures of IDataBrowserDelegate to include cell mouse position
+	* fix some aliasing drawing issues with Quartz caused by non integral coordinates
+	* CGradientView check with Direct2D (still needs check with GDI+)
+	* mark CFrame::doIdleStuff and CControl::doIdleStuff deprecated as it is not used anymore
+	* replace CDragContainer with IDataPackage. Add CDragContainerHelper class to make porting code easier
+
 2013-01-04 arne
 
 	* fix a few issues introduces due to calling beginEdit() and endEdit() only once in CControl

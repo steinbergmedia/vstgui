@@ -24,6 +24,11 @@ struct MenuEntry {
 	UTF8StringPtr key;
 	int32_t modifier;
 	int32_t menuFlags;
+	
+	enum {
+		kSubMenu	= 0xF + (1 << 0),
+		kSubMenuEnd	= 0xF + (1 << 1),
+	};
 };
 
 //----------------------------------------------------------------------------------------------------
@@ -56,10 +61,11 @@ static const MenuEntry editMenu[] = {
 
 //----------------------------------------------------------------------------------------------------
 static const MenuEntry fileMenu[] = {
-	menuSeparator,
-	{ "File", "Save Options" , 0, 0, CMenuItem::kTitle },
+	{ "File", "Save Options" , 0, 0, MenuEntry::kSubMenu },
 	{ "File", "Encode Bitmaps in XML" , 0, 0, 0 },
 	{ "File", "Write Windows RC File on Save" , 0, 0, 0 },
+	{ 0, 0 , 0, 0, MenuEntry::kSubMenuEnd },
+	menuSeparator,
 	{0}
 };
 
@@ -98,8 +104,8 @@ protected:
 
 	COptionMenu* fileMenu;
 	COptionMenu* editMenu;
-	CTextLabel* fileLabel;
-	CTextLabel* editLabel;
+	SharedPointer<CTextLabel> fileLabel;
+	SharedPointer<CTextLabel> editLabel;
 	
 	enum {
 		kMenuFileTag = 100,

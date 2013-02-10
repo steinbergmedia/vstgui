@@ -39,6 +39,7 @@
 #include "ifocusdrawing.h"
 #include "controls/ccontrol.h"
 
+#include <algorithm>
 #include <assert.h>
 
 namespace VSTGUI {
@@ -385,18 +386,17 @@ bool CViewContainer::removeAll (bool withForget)
 	if (mouseDownView)
 		mouseDownView = 0;
 	currentDragView = 0;
-	ViewIterator it (this);
-	while (*it)
+	
+	std::list<SharedPointer<CView> >::iterator it = children.begin ();
+	while (it != children.end ())
 	{
 		CView* view = *it;
 		if (isAttached ())
 			view->removed (this);
 		if (withForget)
 			view->forget ();
-		it++;
+		it = children.erase (it);
 	}
-	children.erase (children.begin (), children.end ());
-
 	return true;
 }
 
@@ -408,8 +408,10 @@ bool CViewContainer::removeAll (bool withForget)
  */
 bool CViewContainer::removeView (CView *pView, bool withForget)
 {
-	if (isChild (pView, false))
+	std::list<SharedPointer<CView> >::iterator it = std::find (children.begin (), children.end (), pView);
+	if (it != children.end ())
 	{
+		pView->invalid ();
 		if (pView == mouseDownView)
 			mouseDownView = 0;
 		if (pView == currentDragView)
@@ -418,7 +420,7 @@ bool CViewContainer::removeView (CView *pView, bool withForget)
 			pView->removed (this);
 		if (withForget)
 			pView->forget ();
-		children.remove (pView);
+		children.erase (it);
 		return true;
 	}
 	return false;
@@ -484,12 +486,13 @@ int32_t CViewContainer::getNbViews () const
  */
 CView* CViewContainer::getView (int32_t index) const
 {
-	int32_t nb = 0;
-	FOREACHSUBVIEW
-		if (nb == index)
-			return pV;
-		nb++;
-	ENDFOREACHSUBVIEW
+	if (index >= 0)
+	{
+		ChildViewConstIterator it = children.begin ();
+		std::advance (it, index);
+		if (it != children.end ())
+			return *it;
+	}
 	return 0;
 }
 
@@ -914,7 +917,7 @@ bool CViewContainer::onWheel (const CPoint &where, const float &distance, const 
 }
 
 //-----------------------------------------------------------------------------
-bool CViewContainer::onDrop (CDragContainer* drag, const CPoint& where)
+bool CViewContainer::onDrop (IDataPackage* drag, const CPoint& where)
 {
 	if (!pParentFrame)
 		return false;
@@ -925,7 +928,7 @@ bool CViewContainer::onDrop (CDragContainer* drag, const CPoint& where)
 	CPoint where2 (where);
 	where2.offset (-getViewSize ().left, -getViewSize ().top);
 
-	CView* view = getViewAt (where);
+	CView* view = getViewAt (where, false, true);
 	if (view != currentDragView)
 	{
 		if (currentDragView)
@@ -943,7 +946,7 @@ bool CViewContainer::onDrop (CDragContainer* drag, const CPoint& where)
 }
 
 //-----------------------------------------------------------------------------
-void CViewContainer::onDragEnter (CDragContainer* drag, const CPoint& where)
+void CViewContainer::onDragEnter (IDataPackage* drag, const CPoint& where)
 {
 	if (!pParentFrame)
 		return;
@@ -954,14 +957,14 @@ void CViewContainer::onDragEnter (CDragContainer* drag, const CPoint& where)
 
 	if (currentDragView)
 		currentDragView->onDragLeave (drag, where2);
-	CView* view = getViewAt (where);
+	CView* view = getViewAt (where, false, true);
 	currentDragView = view;
 	if (view)
 		view->onDragEnter (drag, where2);
 }
 
 //-----------------------------------------------------------------------------
-void CViewContainer::onDragLeave (CDragContainer* drag, const CPoint& where)
+void CViewContainer::onDragLeave (IDataPackage* drag, const CPoint& where)
 {
 	if (!pParentFrame)
 		return;
@@ -976,7 +979,7 @@ void CViewContainer::onDragLeave (CDragContainer* drag, const CPoint& where)
 }
 
 //-----------------------------------------------------------------------------
-void CViewContainer::onDragMove (CDragContainer* drag, const CPoint& where)
+void CViewContainer::onDragMove (IDataPackage* drag, const CPoint& where)
 {
 	if (!pParentFrame)
 		return;
@@ -985,7 +988,7 @@ void CViewContainer::onDragMove (CDragContainer* drag, const CPoint& where)
 	CPoint where2 (where);
 	where2.offset (-getViewSize ().left, -getViewSize ().top);
 
-	CView* view = getViewAt (where);
+	CView* view = getViewAt (where, false, true);
 	if (view != currentDragView)
 	{
 		if (currentDragView)

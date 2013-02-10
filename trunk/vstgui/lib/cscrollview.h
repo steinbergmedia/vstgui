@@ -125,7 +125,7 @@ public:
 //-----------------------------------------------------------------------------
 protected:
 	~CScrollView ();
-	void recalculateSubViews ();
+	virtual void recalculateSubViews ();
 
 	CScrollContainer* sc;
 	CScrollbar* vsb;

@@ -95,7 +95,7 @@ protected:
 	OwningPointer<UIGridController> gridController;
 	UIEditView* editView;
 	SharedPointer<UITemplateController> templateController;
-	SharedPointer<UIEditMenuController> menuController;
+	OwningPointer<UIEditMenuController> menuController;
 	SharedPointer<CControl> enableEditingControl;
 	SharedPointer<CControl> notSavedControl;
 	SharedPointer<CControl> tabSwitchControl;

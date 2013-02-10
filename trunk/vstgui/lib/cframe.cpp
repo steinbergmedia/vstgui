@@ -644,12 +644,14 @@ void CFrame::idle ()
 	invalidateDirtyViews ();
 }
 
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
 //-----------------------------------------------------------------------------
 void CFrame::doIdleStuff ()
 {
 	if (pEditor)
 		pEditor->doIdleStuff ();
 }
+#endif
 
 //-----------------------------------------------------------------------------
 Animation::Animator* CFrame::getAnimator ()
@@ -793,7 +795,6 @@ bool CFrame::setModalView (CView* pView)
 
 	if (pModalView)
 	{
-		invalidRect (pModalView->getViewSize ());
 		removeView (pModalView, false);
 	}
 	
@@ -1400,28 +1401,28 @@ bool CFrame::platformOnMouseWheel (const CPoint &where, const CMouseWheelAxis &a
 }
 
 //-----------------------------------------------------------------------------
-bool CFrame::platformOnDrop (CDragContainer* drag, const CPoint& where)
+bool CFrame::platformOnDrop (IDataPackage* drag, const CPoint& where)
 {
 	CBaseObjectGuard bog (this);
 	return onDrop (drag, where);
 }
 
 //-----------------------------------------------------------------------------
-void CFrame::platformOnDragEnter (CDragContainer* drag, const CPoint& where)
+void CFrame::platformOnDragEnter (IDataPackage* drag, const CPoint& where)
 {
 	CBaseObjectGuard bog (this);
 	return onDragEnter (drag, where);
 }
 
 //-----------------------------------------------------------------------------
-void CFrame::platformOnDragLeave (CDragContainer* drag, const CPoint& where)
+void CFrame::platformOnDragLeave (IDataPackage* drag, const CPoint& where)
 {
 	CBaseObjectGuard bog (this);
 	return onDragLeave (drag, where);
 }
 
 //-----------------------------------------------------------------------------
-void CFrame::platformOnDragMove (CDragContainer* drag, const CPoint& where)
+void CFrame::platformOnDragMove (IDataPackage* drag, const CPoint& where)
 {
 	CBaseObjectGuard bog (this);
 	return onDragMove (drag, where);

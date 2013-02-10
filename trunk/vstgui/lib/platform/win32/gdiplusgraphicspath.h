@@ -54,10 +54,10 @@ public:
 
 	Gdiplus::GraphicsPath* getGraphicsPath ();
 
-	CGradient* createGradient (double color1Start, double color2Start, const CColor& color1, const CColor& color2);
-	void dirty ();
-	CPoint getCurrentPosition ();
-	CRect getBoundingBox ();
+	CGradient* createGradient (double color1Start, double color2Start, const CColor& color1, const CColor& color2) VSTGUI_OVERRIDE_VMETHOD;
+	void dirty () VSTGUI_OVERRIDE_VMETHOD;
+	CPoint getCurrentPosition () VSTGUI_OVERRIDE_VMETHOD;
+	CRect getBoundingBox () VSTGUI_OVERRIDE_VMETHOD;
 protected:
 	Gdiplus::GraphicsPath* platformPath;
 };

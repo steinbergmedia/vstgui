@@ -115,7 +115,7 @@ void CGDrawContext::drawGraphicsPath (CGraphicsPath* _path, PathDrawMode mode, C
 	if (path == 0)
 		return;
 
-	CGContextRef cgContext = beginCGContext (true);
+	CGContextRef cgContext = beginCGContext (true, currentState.drawMode == kAliasing);
 	if (cgContext)
 	{
 		if (t)
@@ -160,7 +160,7 @@ void CGDrawContext::fillLinearGradient (CGraphicsPath* _path, const CGradient& g
 	if (cgGradient == 0)
 		return;
 
-	CGContextRef cgContext = beginCGContext (true);
+	CGContextRef cgContext = beginCGContext (true, currentState.drawMode == kAliasing);
 	if (cgContext)
 	{
 		if (t)
@@ -259,7 +259,7 @@ void CGDrawContext::resetClipRect ()
 //-----------------------------------------------------------------------------
 void CGDrawContext::lineTo (const CPoint& point)
 {
-	CGContextRef context = beginCGContext (true);
+	CGContextRef context = beginCGContext (true, currentState.drawMode == kAliasing);
 	if (context)
 	{
 		applyLineStyle (context);
@@ -279,7 +279,7 @@ void CGDrawContext::lineTo (const CPoint& point)
 //-----------------------------------------------------------------------------
 void CGDrawContext::drawLines (const CPoint* points, const int32_t& numLines)
 {
-	CGContextRef context = beginCGContext (true);
+	CGContextRef context = beginCGContext (true, currentState.drawMode == kAliasing);
 	if (context) 
 	{
 		applyLineStyle (context);
@@ -305,7 +305,7 @@ void CGDrawContext::drawLines (const CPoint* points, const int32_t& numLines)
 //-----------------------------------------------------------------------------
 void CGDrawContext::drawPolygon (const CPoint* pPoints, int32_t numberOfPoints, const CDrawStyle drawStyle)
 {
-	CGContextRef context = beginCGContext (true);
+	CGContextRef context = beginCGContext (true, currentState.drawMode == kAliasing);
 	{
 		CGPathDrawingMode m;
 		switch (drawStyle)
@@ -328,7 +328,7 @@ void CGDrawContext::drawPolygon (const CPoint* pPoints, int32_t numberOfPoints, 
 //-----------------------------------------------------------------------------
 void CGDrawContext::drawRect (const CRect &rect, const CDrawStyle drawStyle)
 {
-	CGContextRef context = beginCGContext (true);
+	CGContextRef context = beginCGContext (true, currentState.drawMode == kAliasing);
 	{
 		CGPathDrawingMode m;
 		switch (drawStyle)
@@ -360,7 +360,7 @@ void CGDrawContext::drawRect (const CRect &rect, const CDrawStyle drawStyle)
 //-----------------------------------------------------------------------------
 void CGDrawContext::drawEllipse (const CRect &rect, const CDrawStyle drawStyle)
 {
-	CGContextRef context = beginCGContext (true);
+	CGContextRef context = beginCGContext (true, currentState.drawMode == kAliasing);
 	{
 		CGPathDrawingMode m;
 		switch (drawStyle)
@@ -421,7 +421,7 @@ void CGDrawContext::drawPoint (const CPoint &point, const CColor& color)
 //-----------------------------------------------------------------------------
 void CGDrawContext::drawArc (const CRect &rect, const float _startAngle, const float _endAngle, const CDrawStyle drawStyle) // in degree
 {
-	CGContextRef context = beginCGContext (true);
+	CGContextRef context = beginCGContext (true, currentState.drawMode == kAliasing);
 	{
 		CGPathDrawingMode m;
 		switch (drawStyle)
@@ -484,7 +484,7 @@ void CGDrawContext::drawBitmap (CBitmap* bitmap, const CRect& inRect, const CPoi
 //-----------------------------------------------------------------------------
 void CGDrawContext::clearRect (const CRect& rect)
 {
-	CGContextRef context = beginCGContext (true);
+	CGContextRef context = beginCGContext (true, currentState.drawMode == kAliasing);
 	if (context)
 	{
 		CGRect cgRect = CGRectMake (rect.left, rect.top, rect.width (), rect.height ());
@@ -535,7 +535,7 @@ CGContextRef CGDrawContext::beginCGContext (bool swapYAxis, bool integralOffset)
 		CGContextClipToRect (cgContext, cgClipRect);
 
 		if (integralOffset)
-			CGContextTranslateCTM (cgContext, ceil (currentState.offset.x), ceil (currentState.offset.y));
+			CGContextTranslateCTM (cgContext, round (currentState.offset.x), round (currentState.offset.y));
 		else
 			CGContextTranslateCTM (cgContext, currentState.offset.x, currentState.offset.y);
 

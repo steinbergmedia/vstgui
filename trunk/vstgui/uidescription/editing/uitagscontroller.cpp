@@ -98,7 +98,7 @@ CMouseEventResult UITagsDataSource::dbOnMouseDown (const CPoint& where, const CB
 	if (buttons.isLeftButton () && buttons.isDoubleClick ())
 	{
 		UTF8StringPtr value = column == 0 ? names.at (row).c_str () : tags.at (row).c_str ();
-		browser->beginTextEdit (row, column, value);
+		browser->beginTextEdit (CDataBrowser::Cell (row, column), value);
 	}
 	return kMouseDownEventHandledButDontNeedMovedOrUpEvents;
 }

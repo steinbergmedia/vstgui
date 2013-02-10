@@ -53,7 +53,7 @@ namespace VSTGUI {
 
 #if !MAC_COCOA
 //-----------------------------------------------------------------------------
-IPlatformFrame* IPlatformFrame::createPlatformFrame (IPlatformFrameCallback* frame, const CRect& size, void* parent)
+IPlatformFrame* IPlatformFrame::createPlatformFrame (IPlatformFrameCallback* frame, const CRect& size, void* parent, PlatformType parentType)
 {
 	return new HIViewFrame (frame, size, (WindowRef)parent);
 }
@@ -92,6 +92,27 @@ static void Rect2CRect (Rect &rr, CRect &cr)
 	cr.bottom = rr.bottom;
 }
 
+static IDataPackage* gDragContainer = 0;
+
+//-----------------------------------------------------------------------------
+static CPoint GetMacDragMouse (HIViewFrame* frame, DragRef drag)
+{
+	HIViewRef view = frame->getPlatformControl ();
+	CPoint where;
+	Point r;
+	if (GetDragMouse (drag, NULL, &r) == noErr)
+	{
+		HIPoint location;
+		location = CGPointMake ((CGFloat)r.h, (CGFloat)r.v);
+		HIPointConvert (&location, kHICoordSpaceScreenPixel, NULL, kHICoordSpaceView, view);
+		where.x = (CCoord)location.x;
+		where.y = (CCoord)location.y;
+	}
+	return where;
+}
+
+
+#if 0
 //-----------------------------------------------------------------------------
 // MacDragContainer Declaration
 //-----------------------------------------------------------------------------
@@ -325,6 +346,7 @@ void* MacDragContainer::next (int32_t& size, int32_t& type)
 	}
 	return NULL;
 }
+#endif
 
 static bool addViewToContentView = true;
 //-----------------------------------------------------------------------------
@@ -850,7 +872,7 @@ void HIViewFrame::setClipboard (IDataPackage* data)
 //-----------------------------------------------------------------------------
 IDataPackage* HIViewFrame::getClipboard ()
 {
-	return MacClipboard::getClipboard ();
+	return MacClipboard::createClipboardDataPackage ();
 }
 
 
@@ -1275,16 +1297,12 @@ pascal OSStatus HIViewFrame::carbonEventHandler (EventHandlerCallRef inHandlerCa
 				}
 				case kEventControlDragEnter:
 				{
-					#if MAC_OLD_DRAG
-					gEventDragWorks = true;
-					#endif
-
 					DragRef dragRef;
 					if (GetEventParameter (inEvent, kEventParamDragRef, typeDragRef, NULL, sizeof (DragRef), NULL, &dragRef) == noErr)
 					{
-						gDragContainer = new MacDragContainer (dragRef);
+						gDragContainer = MacClipboard::createCarbonDragDataPackage (dragRef);
 						
-						CPoint where = GetMacDragMouse (hiviewframe);
+						CPoint where = GetMacDragMouse (hiviewframe, dragRef);
 						hiviewframe->setMouseCursor (kCursorNotAllowed);
 						frame->platformOnDragEnter (gDragContainer, where);
 
@@ -1296,9 +1314,10 @@ pascal OSStatus HIViewFrame::carbonEventHandler (EventHandlerCallRef inHandlerCa
 				}
 				case kEventControlDragWithin:
 				{
-					if (gDragContainer)
+					DragRef dragRef;
+					if (gDragContainer && GetEventParameter (inEvent, kEventParamDragRef, typeDragRef, NULL, sizeof (DragRef), NULL, &dragRef) == noErr)
 					{
-						CPoint where = GetMacDragMouse (hiviewframe);
+						CPoint where = GetMacDragMouse (hiviewframe, dragRef);
 						frame->platformOnDragMove (gDragContainer, where);
 					}
 					result = noErr;
@@ -1306,9 +1325,10 @@ pascal OSStatus HIViewFrame::carbonEventHandler (EventHandlerCallRef inHandlerCa
 				}
 				case kEventControlDragLeave:
 				{
-					if (gDragContainer)
+					DragRef dragRef;
+					if (gDragContainer && GetEventParameter (inEvent, kEventParamDragRef, typeDragRef, NULL, sizeof (DragRef), NULL, &dragRef) == noErr)
 					{
-						CPoint where = GetMacDragMouse (hiviewframe);
+						CPoint where = GetMacDragMouse (hiviewframe, dragRef);
 						frame->platformOnDragLeave (gDragContainer, where);
 						hiviewframe->setMouseCursor (kCursorDefault);
 					}
@@ -1317,9 +1337,10 @@ pascal OSStatus HIViewFrame::carbonEventHandler (EventHandlerCallRef inHandlerCa
 				}
 				case kEventControlDragReceive:
 				{
-					if (gDragContainer)
+					DragRef dragRef;
+					if (gDragContainer && GetEventParameter (inEvent, kEventParamDragRef, typeDragRef, NULL, sizeof (DragRef), NULL, &dragRef) == noErr)
 					{
-						CPoint where = GetMacDragMouse (hiviewframe);
+						CPoint where = GetMacDragMouse (hiviewframe, dragRef);
 						frame->platformOnDrop (gDragContainer, where);
 						hiviewframe->setMouseCursor (kCursorDefault);
 						gDragContainer->forget ();

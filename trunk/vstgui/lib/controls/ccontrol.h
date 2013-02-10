@@ -163,7 +163,7 @@ public:
 
 	virtual void beginEdit ();
 	virtual void endEdit ();
-	bool isEditing () const { return editing; }
+	bool isEditing () const { return editing > 0; }
 
 	virtual CControlListener* getListener () const { return listener; }	///< get main listener
 	virtual void setListener (CControlListener* l) { listener = l; } ///< set main listener
@@ -180,7 +180,7 @@ public:
 	virtual void setWheelInc (float val) { wheelInc = val; }
 	virtual float getWheelInc () const { return wheelInc; }
 
-	virtual void doIdleStuff ();
+	VSTGUI_DEPRECATED(virtual void doIdleStuff ();)
 	//@}
 
 	// overrides

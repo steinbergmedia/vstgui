@@ -385,6 +385,15 @@ tresult PLUGIN_API UIDescriptionTestController::initialize (FUnknown* context)
 		slp->appendString (USTRING("On-Off Round Cap"));
 		slp->appendString (USTRING("On-Off Square Cap"));
 		uiParameters.addParameter (slp);
+		
+		slp = new StringListParameter (USTRING("KnobStepCountTestParameter"), 20002);
+		slp->appendString (USTRING("1"));
+		slp->appendString (USTRING("2"));
+		slp->appendString (USTRING("3"));
+		slp->appendString (USTRING("4"));
+		slp->appendString (USTRING("5"));
+		slp->appendString (USTRING("6"));
+		uiParameters.addParameter (slp);
 	}
 	return res;
 }

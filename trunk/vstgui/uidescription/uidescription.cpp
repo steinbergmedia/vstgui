@@ -701,7 +701,7 @@ UINode* UIDescription::findNodeForView (CView* view) const
 			if ((*it)->getName () == "template")
 			{
 				const std::string* nodeName = (*it)->getAttributes ()->getAttributeValue ("name");
-				if (*nodeName == templateName)
+				if (nodeName && *nodeName == templateName)
 				{
 					node = *it;
 					break;
@@ -967,7 +967,7 @@ CView* UIDescription::createView (UTF8StringPtr name, IController* _controller)
 			if ((*it)->getName () == "template")
 			{
 				const std::string* nodeName = (*it)->getAttributes ()->getAttributeValue ("name");
-				if (*nodeName == name)
+				if (nodeName && *nodeName == name)
 				{
 					CView* view = createViewFromNode (*it);
 					if (view)
@@ -1010,7 +1010,7 @@ const UIAttributes* UIDescription::getViewAttributes (UTF8StringPtr name)
 			if ((*it)->getName () == "template")
 			{
 				const std::string* nodeName = (*it)->getAttributes ()->getAttributeValue ("name");
-				if (*nodeName == name)
+				if (nodeName && *nodeName == name)
 					return (*it)->getAttributes ();
 			}
 			it++;
@@ -1289,7 +1289,7 @@ UTF8StringPtr UIDescription::lookupFontName (const CFontRef font) const
 		while (it != children.end ())
 		{
 			UIFontNode* node = dynamic_cast<UIFontNode*>(*it);
-			if (node && *node->getFont () == *font)
+			if (node && node->getFont () && *node->getFont () == *font)
 			{
 				const std::string* fontName = node->getAttributes ()->getAttributeValue ("name");
 				return fontName ? fontName->c_str () : 0;
@@ -1556,7 +1556,7 @@ static void removeChildNode (UINode* baseNode, UTF8StringPtr nodeName)
 	while (it != children.end ())
 	{
 		const std::string* name = (*it)->getAttributes ()->getAttributeValue ("name");
-		if (*name == nodeName)
+		if (name && *name == nodeName)
 		{
 			if (!(*it)->noExport ())
 				children.remove (*it);

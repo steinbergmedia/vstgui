@@ -247,11 +247,11 @@ public:
 		kDragCopied,
 		kDragError = -1
 	};
-	virtual DragResult doDrag (IDataPackage* source, const CPoint& offset = CPoint (0, 0), CBitmap* dragBitmap = 0);	///< start a drag operation
-	virtual bool onDrop (CDragContainer* drag, const CPoint& where) { return false; }			///< called if a drag is dropped onto this view
-	virtual void onDragEnter (CDragContainer* drag, const CPoint& where) {}						///< called if a drag is entering this view
-	virtual void onDragLeave (CDragContainer* drag, const CPoint& where) {}						///< called if a drag is leaving this view
-	virtual void onDragMove (CDragContainer* drag, const CPoint& where) {}						///< called if a drag is moved inside this view
+	virtual DragResult doDrag (IDataPackage* source, const CPoint& offset = CPoint (0, 0), CBitmap* dragBitmap = 0);	///< start a drag operation. See CDropSource to create the source data package
+	virtual bool onDrop (IDataPackage* drag, const CPoint& where) { return false; }				///< called if a drag is dropped onto this view
+	virtual void onDragEnter (IDataPackage* drag, const CPoint& where) {}						///< called if a drag is entering this view
+	virtual void onDragLeave (IDataPackage* drag, const CPoint& where) {}						///< called if a drag is leaving this view
+	virtual void onDragMove (IDataPackage* drag, const CPoint& where) {}						///< called if a drag is moved inside this view
 	//@}
 
 	//-----------------------------------------------------------------------------
@@ -418,28 +418,32 @@ public:
 };
 
 //-----------------------------------------------------------------------------
-// CDragContainer Declaration
-//! @brief drag container
+///	@brief Helper class to port old code which used CDragContainer
+///	@ingroup new_in_4_2
 //-----------------------------------------------------------------------------
-class CDragContainer : public CBaseObject
+class CDragContainerHelper
 {
 public:
-	virtual void* first (int32_t& size, int32_t& type) = 0;		///< returns pointer on a char array if type is known
-	virtual void* next (int32_t& size, int32_t& type) = 0;		///< returns pointer on a char array if type is known
-	
-	virtual int32_t getType (int32_t idx) const = 0;
-	virtual int32_t getCount () const = 0;
+	CDragContainerHelper (IDataPackage* drag);
 
+	void* first (int32_t& size, int32_t& type);
+	void* next (int32_t& size, int32_t& type);
+	
+	int32_t getType (int32_t idx) const;
+	int32_t getCount () const;
+	
 	enum CDragType {
 		kFile = 0,								///< File (MacOSX = UTF8 String)
 		kText,									///< ASCII Text
 		kUnicodeText,							///< UTF8 Text
-
+		
 		kUnknown = -1,
 		kError = -2
 	};
-	//-------------------------------------------
-	CLASS_METHODS_NOCOPY(CDragContainer, CBaseObject)
+protected:
+	
+	IDataPackage* drag;
+	int32_t index;
 };
 
 } // namespace

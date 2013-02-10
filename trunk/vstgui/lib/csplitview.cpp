@@ -809,9 +809,8 @@ CMouseEventResult CSplitViewSeparatorView::onMouseMoved (CPoint& where, const CB
 			CSplitView* splitView = static_cast<CSplitView*> (getParentView ());
 			splitView->requestNewSeparatorSize (this, newSize);
 		}
-		return kMouseEventHandled;
 	}
-	return kMouseEventNotHandled;
+	return kMouseEventHandled;
 }
 
 //-----------------------------------------------------------------------------
