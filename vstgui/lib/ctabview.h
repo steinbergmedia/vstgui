@@ -65,8 +65,11 @@ public:
 		kAlignBottom = kAlignRight
 	};
 
-	CTabView (const CRect& size, CFrame* parent, CBitmap* tabBitmap, CBitmap* background = 0, TabPosition tabPosition = kPositionTop, int32_t style = 0);
-	CTabView (const CRect& size, CFrame* parent, const CRect& tabSize, CBitmap* background = 0, TabPosition tabPosition = kPositionTop, int32_t style = 0);
+	CTabView (const CRect& size, CBitmap* tabBitmap, CBitmap* background = 0, TabPosition tabPosition = kPositionTop, int32_t style = 0);
+	CTabView (const CRect& size, const CRect& tabSize, CBitmap* background = 0, TabPosition tabPosition = kPositionTop, int32_t style = 0);
+
+	VSTGUI_DEPRECATED(CTabView (const CRect& size, CFrame* parent, CBitmap* tabBitmap, CBitmap* background = 0, TabPosition tabPosition = kPositionTop, int32_t style = 0);)
+	VSTGUI_DEPRECATED(CTabView (const CRect& size, CFrame* parent, const CRect& tabSize, CBitmap* background = 0, TabPosition tabPosition = kPositionTop, int32_t style = 0);)
 	
 	//-----------------------------------------------------------------------------
 	/// @name Tab View Functions

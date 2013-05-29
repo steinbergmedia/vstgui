@@ -114,7 +114,6 @@ protected:
 		names.clear ();
 		std::list<const std::string*> tmpNames;
 		getNames (tmpNames);
-		tmpNames.sort (UIEditController::std__stringCompare);
 
 		std::string filter = filterString;
 		std::transform (filter.begin (), filter.end (), filter.begin (), ::tolower);

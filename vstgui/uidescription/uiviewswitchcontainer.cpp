@@ -42,9 +42,10 @@ namespace VSTGUI {
 
 //-----------------------------------------------------------------------------
 UIViewSwitchContainer::UIViewSwitchContainer (const CRect& size)
-: CViewContainer (size, 0)
+: CViewContainer (size)
 , controller (0)
 , currentViewIndex (0)
+, animationTime (120)
 {
 }
 
@@ -81,27 +82,36 @@ void UIViewSwitchContainer::setCurrentViewIndex (int32_t viewIndex)
 				view->setViewSize (vs);
 				view->setMouseableArea (vs);
 			}
-			#if 1
-			if (getFrame ())
-				getFrame ()->getAnimator ()->removeAnimation (this, "UIViewSwitchContainer::setCurrentViewIndex");
-			CView* oldView = getView (0);
-			if (isAttached () && oldView && getFrame ())
+			if (animationTime)
 			{
-				getFrame ()->getAnimator ()->addAnimation (this, "UIViewSwitchContainer::setCurrentViewIndex", new Animation::ExchangeViewAnimation (oldView, view, Animation::ExchangeViewAnimation::kAlphaValueFade), new Animation::LinearTimingFunction (120));
+				if (getFrame ())
+					getFrame ()->getAnimator ()->removeAnimation (this, "UIViewSwitchContainer::setCurrentViewIndex");
+				CView* oldView = getView (0);
+				if (isAttached () && oldView && getFrame ())
+				{
+					getFrame ()->getAnimator ()->addAnimation (this, "UIViewSwitchContainer::setCurrentViewIndex", new Animation::ExchangeViewAnimation (oldView, view, Animation::ExchangeViewAnimation::kAlphaValueFade), new Animation::LinearTimingFunction (animationTime));
+				}
+				else
+				{
+					removeAll ();
+					addView (view);
+				}
 			}
 			else
 			{
-				removeAll ();
-				addView (view);
+				CViewContainer::removeAll ();
+				CViewContainer::addView (view);
 			}
-			#else
-			CViewContainer::removeAll ();
-			CViewContainer::addView (view);
-			#endif
 			currentViewIndex = viewIndex;
 			invalid ();
 		}
 	}
+}
+
+//-----------------------------------------------------------------------------
+void UIViewSwitchContainer::setAnimationTime (int32_t ms)
+{
+	animationTime = ms;
 }
 
 //-----------------------------------------------------------------------------

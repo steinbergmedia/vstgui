@@ -253,7 +253,7 @@ bool UIBitmapsDataSource::dbOnDropInCell (int32_t row, int32_t column, const CPo
 		int32_t index = 0;
 		IDataPackage::Type type;
 		const void* item = 0;
-		while (drag->getData (index, item, type) > 0)
+		while (drag->getData (index++, item, type) > 0)
 		{
 			if (type == IDataPackage::kFilePath)
 			{
@@ -346,7 +346,7 @@ bool UIBitmapsDataSource::addBitmap (UTF8StringPtr path, std::string& outName)
 			if (index != std::string::npos)
 			{
 				descPathStr.erase (index);
-				if ((index = pathStr.find_first_of (descPathStr)) == 0)
+				if ((index = pathStr.find (descPathStr)) == 0)
 				{
 					pathStr.erase (0, descPathStr.length () + 1);
 				}
@@ -747,7 +747,7 @@ CView* UIBitmapsController::createView (const UIAttributes& attributes, IUIDescr
 	{
 		if (*name == "BitmapsBrowser")
 		{
-			CDataBrowser* dataBrowser = new CDataBrowser (CRect (0, 0, 0, 0), 0, dataSource, CDataBrowser::kDrawRowLines|CScrollView::kHorizontalScrollbar | CScrollView::kVerticalScrollbar);
+			CDataBrowser* dataBrowser = new CDataBrowser (CRect (0, 0, 0, 0), dataSource, CDataBrowser::kDrawRowLines|CScrollView::kHorizontalScrollbar | CScrollView::kVerticalScrollbar);
 			return dataBrowser;
 		}
 		else if (*name == "BitmapView")

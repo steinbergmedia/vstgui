@@ -49,7 +49,7 @@ class CScrollContainer : public CViewContainer
 //-----------------------------------------------------------------------------
 {
 public:
-	CScrollContainer (const CRect &size, const CRect &containerSize, CFrame *pParent, CBitmap *pBackground = 0);
+	CScrollContainer (const CRect &size, const CRect &containerSize);
 	CScrollContainer (const CScrollContainer& v);
 	~CScrollContainer ();
 
@@ -82,8 +82,8 @@ protected:
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
-CScrollContainer::CScrollContainer (const CRect &size, const CRect &containerSize, CFrame *pParent, CBitmap *pBackground)
-: CViewContainer (size, pParent, pBackground)
+CScrollContainer::CScrollContainer (const CRect &size, const CRect &containerSize)
+: CViewContainer (size)
 , containerSize (containerSize)
 , offset (CPoint (0, 0))
 , autoDragScroll (false)
@@ -189,7 +189,7 @@ bool CScrollContainer::isDirty () const
 	FOREACHSUBVIEW
 		if (pV->isDirty () && pV->isVisible ())
 		{
-			CRect r = pV->getVisibleSize ();
+			CRect r = pV->getVisibleViewSize ();
 			if (r.getWidth () > 0 && r.getHeight () > 0)
 				return true;
 			else
@@ -295,6 +295,23 @@ CMessageResult CScrollContainer::notify (CBaseObject* sender, IdStringPtr messag
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
+CScrollView::CScrollView (const CRect &size, const CRect &containerSize, int32_t style, CCoord scrollbarWidth, CBitmap* pBackground)
+: CViewContainer (size)
+, sc (0)
+, vsb (0)
+, hsb (0)
+, containerSize (containerSize)
+, scrollbarWidth (scrollbarWidth)
+, style (style)
+, activeScrollbarStyle (0)
+{
+	if (pBackground)
+		setBackground(pBackground);
+	recalculateSubViews ();
+}
+
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
+//-----------------------------------------------------------------------------
 CScrollView::CScrollView (const CRect &size, const CRect &containerSize, CFrame* pParent, int32_t style, CCoord scrollbarWidth, CBitmap* pBackground)
 : CViewContainer (size, pParent, pBackground)
 , sc (0)
@@ -307,6 +324,7 @@ CScrollView::CScrollView (const CRect &size, const CRect &containerSize, CFrame*
 {
 	recalculateSubViews ();
 }
+#endif
 
 //-----------------------------------------------------------------------------
 CScrollView::CScrollView (const CScrollView& v)
@@ -442,7 +460,7 @@ void CScrollView::recalculateSubViews ()
 
 	if (!sc)
 	{
-		sc = new CScrollContainer (scsize, containerSize, getFrame ());
+		sc = new CScrollContainer (scsize, containerSize);
 		sc->setAutosizeFlags (kAutosizeAll);
 		CViewContainer::addView (sc);
 	}

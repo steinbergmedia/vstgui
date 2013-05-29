@@ -122,7 +122,7 @@ void D2DFont::drawString (CDrawContext* context, const CString& string, const CP
 					DWRITE_TEXT_RANGE range = { 0, -1 };
 					textLayout->SetStrikethrough (true, range);
 				}
-				renderTarget->SetTextAntialiasMode (antialias ? D2D1_TEXT_ANTIALIAS_MODE_GRAYSCALE : D2D1_TEXT_ANTIALIAS_MODE_ALIASED);
+				renderTarget->SetTextAntialiasMode (antialias ? D2D1_TEXT_ANTIALIAS_MODE_CLEARTYPE : D2D1_TEXT_ANTIALIAS_MODE_ALIASED);
 				CRect clipRect;
 				D2DDrawContext::D2DApplyClip ac (d2dContext);
 				D2D1_POINT_2F origin = {(FLOAT)(p.x + context->getOffset ().x), (FLOAT)(p.y + context->getOffset ().y + 1.) - textFormat->GetFontSize ()};

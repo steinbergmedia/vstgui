@@ -115,7 +115,7 @@ void CGDrawContext::drawGraphicsPath (CGraphicsPath* _path, PathDrawMode mode, C
 	if (path == 0)
 		return;
 
-	CGContextRef cgContext = beginCGContext (true, currentState.drawMode == kAliasing);
+	CGContextRef cgContext = beginCGContext (true, currentState.drawMode.integralMode ());
 	if (cgContext)
 	{
 		if (t)
@@ -160,7 +160,7 @@ void CGDrawContext::fillLinearGradient (CGraphicsPath* _path, const CGradient& g
 	if (cgGradient == 0)
 		return;
 
-	CGContextRef cgContext = beginCGContext (true, currentState.drawMode == kAliasing);
+	CGContextRef cgContext = beginCGContext (true, currentState.drawMode.integralMode ());
 	if (cgContext)
 	{
 		if (t)
@@ -236,10 +236,8 @@ void CGDrawContext::setLineWidth (CCoord width)
 //-----------------------------------------------------------------------------
 void CGDrawContext::setDrawMode (CDrawMode mode)
 {
-	if (currentState.drawMode == mode)
-		return;
-
-	CGContextSetShouldAntialias (cgContext, mode == kAntiAliasing ? true : false);
+	if (cgContext)
+		CGContextSetShouldAntialias (cgContext, mode == kAntiAliasing ? true : false);
 
 	CDrawContext::setDrawMode (mode);
 }
@@ -259,7 +257,7 @@ void CGDrawContext::resetClipRect ()
 //-----------------------------------------------------------------------------
 void CGDrawContext::lineTo (const CPoint& point)
 {
-	CGContextRef context = beginCGContext (true, currentState.drawMode == kAliasing);
+	CGContextRef context = beginCGContext (true, currentState.drawMode.integralMode ());
 	if (context)
 	{
 		applyLineStyle (context);
@@ -268,8 +266,16 @@ void CGDrawContext::lineTo (const CPoint& point)
 			CGContextTranslateCTM (context, 0.5f, -0.5f);
 
 		CGContextBeginPath (context);
-		CGContextMoveToPoint (context, currentState.penLoc.h, currentState.penLoc.v);
-		CGContextAddLineToPoint (context, point.h, point.v);
+		if (currentState.drawMode.integralMode ())
+		{
+			CGContextMoveToPoint (context, round (currentState.penLoc.h), round (currentState.penLoc.v));
+			CGContextAddLineToPoint (context, round (point.h), round (point.v));
+		}
+		else
+		{
+			CGContextMoveToPoint (context, currentState.penLoc.h, currentState.penLoc.v);
+			CGContextAddLineToPoint (context, point.h, point.v);
+		}
 		CGContextDrawPath (context, kCGPathStroke);
 		releaseCGContext (context);
 	}
@@ -279,7 +285,7 @@ void CGDrawContext::lineTo (const CPoint& point)
 //-----------------------------------------------------------------------------
 void CGDrawContext::drawLines (const CPoint* points, const int32_t& numLines)
 {
-	CGContextRef context = beginCGContext (true, currentState.drawMode == kAliasing);
+	CGContextRef context = beginCGContext (true, currentState.drawMode.integralMode ());
 	if (context) 
 	{
 		applyLineStyle (context);
@@ -290,10 +296,20 @@ void CGDrawContext::drawLines (const CPoint* points, const int32_t& numLines)
 		CGPoint* cgPoints = new CGPoint[numLines*2];
 		for (int32_t i = 0; i < numLines * 2; i += 2)
 		{
-			cgPoints[i].x = points[i].x;
-			cgPoints[i+1].x = points[i+1].x;
-			cgPoints[i].y = points[i].y;
-			cgPoints[i+1].y = points[i+1].y;
+			if (currentState.drawMode.integralMode ())
+			{
+				cgPoints[i].x = round (points[i].x);
+				cgPoints[i+1].x = round (points[i+1].x);
+				cgPoints[i].y = round (points[i].y);
+				cgPoints[i+1].y = round (points[i+1].y);
+			}
+			else
+			{
+				cgPoints[i].x = points[i].x;
+				cgPoints[i+1].x = points[i+1].x;
+				cgPoints[i].y = points[i].y;
+				cgPoints[i+1].y = points[i+1].y;
+			}
 		}
 		CGContextStrokeLineSegments (context, cgPoints, numLines*2);
 		delete [] cgPoints;
@@ -305,7 +321,8 @@ void CGDrawContext::drawLines (const CPoint* points, const int32_t& numLines)
 //-----------------------------------------------------------------------------
 void CGDrawContext::drawPolygon (const CPoint* pPoints, int32_t numberOfPoints, const CDrawStyle drawStyle)
 {
-	CGContextRef context = beginCGContext (true, currentState.drawMode == kAliasing);
+	CGContextRef context = beginCGContext (true, currentState.drawMode.integralMode ());
+	if (context)
 	{
 		CGPathDrawingMode m;
 		switch (drawStyle)
@@ -328,7 +345,8 @@ void CGDrawContext::drawPolygon (const CPoint* pPoints, int32_t numberOfPoints, 
 //-----------------------------------------------------------------------------
 void CGDrawContext::drawRect (const CRect &rect, const CDrawStyle drawStyle)
 {
-	CGContextRef context = beginCGContext (true, currentState.drawMode == kAliasing);
+	CGContextRef context = beginCGContext (true, currentState.drawMode.integralMode ());
+	if (context)
 	{
 		CGPathDrawingMode m;
 		switch (drawStyle)
@@ -339,18 +357,21 @@ void CGDrawContext::drawRect (const CRect &rect, const CDrawStyle drawStyle)
 		}
 		applyLineStyle (context);
 
-		CGRect r = CGRectMake (rect.left, rect.top+1, rect.width () - 1, rect.height () - 1);
+		CGRect r;
+		if (currentState.drawMode.integralMode ())
+		{
+			r = CGRectMake (round (rect.left), round (rect.top + 1), round (rect.width () - 1), round (rect.height () - 1));
+		}
+		else
+		{
+			r = CGRectMake (rect.left, rect.top + 1, rect.width () - 1, rect.height () - 1);
+		}
 
 		if ((((int32_t)currentState.frameWidth) % 2))
 			CGContextTranslateCTM (context, 0.5f, -0.5f);
 
 		CGContextBeginPath (context);
-		CGContextMoveToPoint (context, r.origin.x, r.origin.y);
-		CGContextAddLineToPoint (context, r.origin.x + r.size.width, r.origin.y);
-		CGContextAddLineToPoint (context, r.origin.x + r.size.width, r.origin.y + r.size.height);
-		CGContextAddLineToPoint (context, r.origin.x, r.origin.y + r.size.height);
-		CGContextClosePath (context);
-
+		CGContextAddRect (context, r);
 		CGContextDrawPath (context, m);
 
 		releaseCGContext (context);
@@ -360,7 +381,8 @@ void CGDrawContext::drawRect (const CRect &rect, const CDrawStyle drawStyle)
 //-----------------------------------------------------------------------------
 void CGDrawContext::drawEllipse (const CRect &rect, const CDrawStyle drawStyle)
 {
-	CGContextRef context = beginCGContext (true, currentState.drawMode == kAliasing);
+	CGContextRef context = beginCGContext (true, currentState.drawMode.integralMode ());
+	if (context)
 	{
 		CGPathDrawingMode m;
 		switch (drawStyle)
@@ -421,7 +443,8 @@ void CGDrawContext::drawPoint (const CPoint &point, const CColor& color)
 //-----------------------------------------------------------------------------
 void CGDrawContext::drawArc (const CRect &rect, const float _startAngle, const float _endAngle, const CDrawStyle drawStyle) // in degree
 {
-	CGContextRef context = beginCGContext (true, currentState.drawMode == kAliasing);
+	CGContextRef context = beginCGContext (true, currentState.drawMode.integralMode ());
+	if (context)
 	{
 		CGPathDrawingMode m;
 		switch (drawStyle)
@@ -484,10 +507,14 @@ void CGDrawContext::drawBitmap (CBitmap* bitmap, const CRect& inRect, const CPoi
 //-----------------------------------------------------------------------------
 void CGDrawContext::clearRect (const CRect& rect)
 {
-	CGContextRef context = beginCGContext (true, currentState.drawMode == kAliasing);
+	CGContextRef context = beginCGContext (true, currentState.drawMode.integralMode ());
 	if (context)
 	{
-		CGRect cgRect = CGRectMake (rect.left, rect.top, rect.width (), rect.height ());
+		CGRect cgRect;
+		if (currentState.drawMode.integralMode ())
+			cgRect = CGRectMake (round (rect.left), round (rect.top), round (rect.width ()), round (rect.height ()));
+		else
+			cgRect = CGRectMake (rect.left, rect.top, rect.width (), rect.height ());
 		CGContextClearRect (context, cgRect);
 		releaseCGContext (context);
 	}
@@ -507,8 +534,9 @@ void CGDrawContext::setFrameColor (const CColor& color)
 {
 	if (currentState.frameColor == color)
 		return;
-		
-	CGContextSetRGBStrokeColor (cgContext, color.red/255.f, color.green/255.f, color.blue/255.f, color.alpha/255.f);
+	
+	if (cgContext)
+		CGContextSetRGBStrokeColor (cgContext, color.red/255.f, color.green/255.f, color.blue/255.f, color.alpha/255.f);
 
 	CDrawContext::setFrameColor (color);
 }
@@ -519,7 +547,8 @@ void CGDrawContext::setFillColor (const CColor& color)
 	if (currentState.fillColor == color)
 		return;
 
-	CGContextSetRGBFillColor (cgContext, color.red/255.f, color.green/255.f, color.blue/255.f, color.alpha/255.f);
+	if (cgContext)
+		CGContextSetRGBFillColor (cgContext, color.red/255.f, color.green/255.f, color.blue/255.f, color.alpha/255.f);
 
 	CDrawContext::setFillColor (color);
 }

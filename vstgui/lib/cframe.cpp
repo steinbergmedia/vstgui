@@ -88,7 +88,7 @@ CFrame::CFrame (const CRect &inSize, void* inSystemWindow, VSTGUIEditorInterface
 
 //-----------------------------------------------------------------------------
 CFrame::CFrame (const CRect& inSize, VSTGUIEditorInterface* inEditor)
-: CViewContainer (inSize, 0, 0)
+: CViewContainer (inSize)
 , pEditor (inEditor)
 , pMouseObservers (0)
 , pKeyboardHooks (0)
@@ -1327,6 +1327,8 @@ CMouseEventResult CFrame::callMouseObserverMouseDown (const CPoint& where, const
 			CMouseEventResult result2 = (*it)->onMouseDown (this, where, buttons);
 			if (result2 == kMouseEventHandled)
 				result = kMouseEventHandled;
+			if (pMouseObservers == 0)
+				return kMouseEventHandled;
 		}
 	}
 	return result;

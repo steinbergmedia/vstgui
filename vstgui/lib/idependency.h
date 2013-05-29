@@ -39,6 +39,7 @@
 #include "vstguidebug.h"
 #include <list>
 #include <set>
+#include <algorithm>
 
 namespace VSTGUI {
 
@@ -78,6 +79,9 @@ protected:
 	IDependency ();
 	virtual ~IDependency ();
 
+	static void rememberObject (CBaseObject* obj) { obj->remember (); }
+	static void forgetObject (CBaseObject* obj) { obj->forget (); }
+
 	int32_t deferChangeCount;
 	std::set<IdStringPtr> deferedChanges;
 	std::list<CBaseObject*> dependents;
@@ -105,12 +109,14 @@ inline void IDependency::changed (IdStringPtr message)
 	else if (dependents.empty () == false)
 	{
 		CBaseObject* This = dynamic_cast<CBaseObject*> (this);
-		for (std::list<CBaseObject*>::const_iterator it = dependents.begin (); it != dependents.end ();)
+		std::list<CBaseObject*> localList (dependents);
+		std::for_each (localList.begin (), localList.end (), rememberObject);
+		for (std::list<CBaseObject*>::const_iterator it = localList.begin (); it != localList.end (); it++)
 		{
 			CBaseObject* obj = (*it);
-			it++;
 			obj->notify (This, message);
 		}
+		std::for_each (localList.begin (), localList.end (), forgetObject);
 	}
 }
 

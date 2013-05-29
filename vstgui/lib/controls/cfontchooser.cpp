@@ -130,7 +130,7 @@ CFontChooser::CFontChooser (IFontChooserDelegate* delegate, CFontRef initialFont
 	GenericStringListDataBrowserSource* dbSource = new GenericStringListDataBrowserSource (&fontNames, this);
 	dbSource->setupUI (uiDef.selectionColor, uiDef.fontColor, uiDef.rowlineColor, uiDef.rowBackColor, uiDef.rowAlternateBackColor, uiDef.font, uiDef.rowHeight);
 	int32_t dbStyle = CDataBrowser::kDrawRowLines | CScrollView::kVerticalScrollbar | CScrollView::kDontDrawFrame | CScrollView::kOverlayScrollbars;
-	fontBrowser = new CDataBrowser (CRect (0, 0, 200, 500), 0, dbSource, dbStyle, uiDef.scrollbarWidth);
+	fontBrowser = new CDataBrowser (CRect (0, 0, 200, 500), dbSource, dbStyle, uiDef.scrollbarWidth);
 	dbSource->forget ();
 	fontBrowser->setAutosizeFlags (kAutosizeLeft | kAutosizeTop | kAutosizeBottom);
 	fontBrowser->setTransparency (true);

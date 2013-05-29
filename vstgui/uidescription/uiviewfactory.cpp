@@ -344,6 +344,7 @@ void UIViewFactory::registerViewCreator (const IViewCreator& viewCreator)
 	}
 #endif
 	registry.insert (std::make_pair (viewCreator.getViewName (), &viewCreator));
+//	std::sort (registry.begin (), registry.end ());
 }
 
 } // namespace

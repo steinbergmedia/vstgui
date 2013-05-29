@@ -56,7 +56,8 @@ extern IdStringPtr kMsgLooseFocus;				///< Message of a view loosing focus (only
 class CViewContainer : public CView
 {
 public:
-	CViewContainer (const CRect& size, CFrame* pParent = 0, CBitmap* pBackground = 0);
+	CViewContainer (const CRect& size);
+	VSTGUI_DEPRECATED(CViewContainer (const CRect& size, CFrame* pParent, CBitmap* pBackground = 0);)
 	CViewContainer (const CViewContainer& viewContainer);
 
 	//-----------------------------------------------------------------------------

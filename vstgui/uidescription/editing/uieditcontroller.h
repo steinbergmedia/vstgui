@@ -85,6 +85,9 @@ protected:
 	virtual void onTemplateCreation (UTF8StringPtr name, CView* view) VSTGUI_OVERRIDE_VMETHOD;
 	virtual void onTemplateNameChange (UTF8StringPtr oldName, UTF8StringPtr newName) VSTGUI_OVERRIDE_VMETHOD;
 
+	virtual void beginGroupAction (UTF8StringPtr name) VSTGUI_OVERRIDE_VMETHOD;
+	virtual void finishGroupAction () VSTGUI_OVERRIDE_VMETHOD;
+
 	// IKeyboardHook
 	virtual int32_t onKeyDown (const VstKeyCode& code, CFrame* frame) VSTGUI_OVERRIDE_VMETHOD;
 	virtual int32_t onKeyUp (const VstKeyCode& code, CFrame* frame) VSTGUI_OVERRIDE_VMETHOD;

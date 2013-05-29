@@ -820,7 +820,7 @@ CView* UIAttributesController::createViewForAttribute (const std::string& attrNa
 	const CCoord height = 18;
 	const CCoord width = 160;
 	const CCoord margin = 2;
-	CViewContainer* result = new CViewContainer (CRect (0, 0, width, height+2), 0);
+	CViewContainer* result = new CViewContainer (CRect (0, 0, width, height+2));
 	result->setAutosizeFlags (kAutosizeLeft|kAutosizeRight|kAutosizeColumn);
 	result->setTransparency (true);
 

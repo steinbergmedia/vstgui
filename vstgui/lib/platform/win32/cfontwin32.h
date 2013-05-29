@@ -51,7 +51,7 @@ class GdiPlusFont : public IPlatformFont, public IFontPainter
 public:
 	GdiPlusFont (const char* name, const CCoord& size, const int32_t& style);
 
-	Gdiplus::Font* getFont () const VSTGUI_OVERRIDE_VMETHOD { return font; }
+	Gdiplus::Font* getFont () const { return font; }
 
 protected:
 	~GdiPlusFont ();

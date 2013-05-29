@@ -87,7 +87,7 @@
 	#if defined (_WIN32_WINNT_WIN7) && !defined (VSTGUI_DIRECT2D_SUPPORT)
 		#define VSTGUI_DIRECT2D_SUPPORT	1
 	#endif
-	#if _MSC_VER >=	1700
+	#if _MSC_VER >=	1600
 		#define VSTGUI_OVERRIDE_VMETHOD	override
 		#define VSTGUI_RVALUE_REF_SUPPORT 1
 		#include <type_traits>
@@ -397,7 +397,7 @@ public:
 	inline OwningPointer (I* p) : SharedPointer<I> (p, false) {}
 	inline OwningPointer (const SharedPointer<I>& p) : SharedPointer<I> (p) {}
 	inline OwningPointer (const OwningPointer<I>& p) : SharedPointer<I> (p) {}
-	inline OwningPointer () {}
+	inline OwningPointer () : SharedPointer<I> () {}
 	inline I* operator=(I* _ptr)
 	{
 		if (_ptr != this->ptr)

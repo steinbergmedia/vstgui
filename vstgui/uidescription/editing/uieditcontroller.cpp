@@ -574,6 +574,8 @@ CMessageResult UIEditController::notify (CBaseObject* sender, IdStringPtr messag
 		{
 			if (strcmp (item->getCommandName (), "Copy") == 0 || strcmp (item->getCommandName (), "Cut") == 0)
 			{
+				if (!editTemplateName.empty ())
+					updateTemplate (editTemplateName.c_str ());
 				CMemoryStream stream (1024, 1024, false);
 				selection->store (stream, dynamic_cast<UIViewFactory*> (editDescription->getViewFactory ()), editDescription);
 				CDropSource* dataSource = new CDropSource (stream.getBuffer (), (int32_t)stream.tell (), IDataPackage::kText);
@@ -612,6 +614,8 @@ CMessageResult UIEditController::notify (CBaseObject* sender, IdStringPtr messag
 							{
 								IAction* action = new ViewCopyOperation (copySelection, selection, container, offset, viewFactory, editDescription);
 								undoManager->pushAndPerform (action);
+								if (!editTemplateName.empty ())
+									updateTemplate (editTemplateName.c_str ());
 							}
 							copySelection->forget ();
 						}
@@ -849,6 +853,18 @@ void UIEditController::setDirty (bool state)
 void UIEditController::performAction (IAction* action)
 {
 	undoManager->pushAndPerform (action);
+}
+
+//----------------------------------------------------------------------------------------------------
+void UIEditController::beginGroupAction (UTF8StringPtr name)
+{
+	undoManager->startGroupAction (name);
+}
+
+//----------------------------------------------------------------------------------------------------
+void UIEditController::finishGroupAction ()
+{
+	undoManager->endGroupAction ();
 }
 
 //----------------------------------------------------------------------------------------------------

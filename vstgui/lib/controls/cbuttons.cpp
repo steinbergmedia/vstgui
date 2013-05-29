@@ -654,6 +654,9 @@ CTextButton::CTextButton (const CRect& size, CControlListener* listener, int32_t
 , _path (0)
 , frameWidth (1.)
 , roundRadius (6.)
+, textMargin (0.)
+, iconPosition (kLeft)
+, horiTxtAlign (kCenterText)
 , style (style)
 {
 	setFont (kSystemFont);
@@ -780,6 +783,58 @@ void CTextButton::setStyle (Style _style)
 }
 
 //------------------------------------------------------------------------
+void CTextButton::setIcon (CBitmap* bitmap)
+{
+	if (icon != bitmap)
+	{
+		icon = bitmap;
+		invalid ();
+	}
+}
+
+//------------------------------------------------------------------------
+void CTextButton::setIconHighlighted (CBitmap* bitmap)
+{
+	if (iconHighlighted != bitmap)
+	{
+		iconHighlighted = bitmap;
+		invalid ();
+	}
+}
+
+//------------------------------------------------------------------------
+void CTextButton::setIconPosition (IconPosition pos)
+{
+	if (iconPosition != pos)
+	{
+		iconPosition = pos;
+		invalid ();
+	}
+}
+
+//------------------------------------------------------------------------
+void CTextButton::setTextMargin (CCoord margin)
+{
+	if (textMargin != margin)
+	{
+		textMargin = margin;
+		invalid ();
+	}
+}
+
+//------------------------------------------------------------------------
+void CTextButton::setTextAlignment (CHoriTxtAlign hAlign)
+{
+	// to force the redraw
+	if (horiTxtAlign != hAlign)
+	{
+		horiTxtAlign = hAlign;
+		invalid ();
+	}
+}
+
+
+//------------------------------------------------------------------------
 bool CTextButton::sizeToFit ()
 {
 	if (title.empty ())
@@ -827,12 +882,91 @@ void CTextButton::draw (CDrawContext* context)
 	}
 	else
 	{
-		context->setFillColor (value > 0.5 ? gradientStartColorHighlighted : gradientStartColor);
+		context->setFillColor (highlight ? gradientStartColorHighlighted : gradientStartColor);
 		context->drawRect (getViewSize (), kDrawFilledAndStroked);
 	}
-	context->setFont (font);
-	context->setFontColor (value > 0.5 ? textColorHighlighted : textColor);
-	context->drawString (title.c_str (), getViewSize ());
+	CRect titleRect = getViewSize ();
+	titleRect.inset (frameWidth / 2., frameWidth / 2.);
+
+	CBitmap* iconToDraw = highlight ? (iconHighlighted ? iconHighlighted : icon) : (icon ? icon : iconHighlighted);
+	if (iconToDraw)
+	{
+		CRect iconRect (0, 0, iconToDraw->getWidth (), iconToDraw->getHeight ());
+		iconRect.offset (titleRect.left, titleRect.top);
+		switch (iconPosition)
+		{
+			case kLeft:
+			{
+				iconRect.offset (textMargin, titleRect.getHeight () / 2. - iconRect.getHeight () / 2.);
+				titleRect.left = iconRect.right;
+				titleRect.right -= textMargin;
+				if (getTextAlignment () == kLeftText)
+					titleRect.left += textMargin;
+				break;
+			}
+			case kRight:
+			{
+				iconRect.offset (titleRect.getWidth () - (textMargin + iconRect.getWidth ()), titleRect.getHeight () / 2. - iconRect.getHeight () / 2.);
+				titleRect.right = iconRect.left;
+				titleRect.left += textMargin;
+				if (getTextAlignment () == kRightText)
+					titleRect.right -= textMargin;
+				break;
+			}
+			case kCenterAbove:
+			{
+				iconRect.offset (titleRect.getWidth () / 2. - iconRect.getWidth () / 2., 0);
+				if (title.size () > 0)
+				{
+					iconRect.offset (0, titleRect.getHeight () / 2. - (iconRect.getHeight () / 2. + (textMargin + font->getSize ()) / 2.));
+					titleRect.top = iconRect.bottom + textMargin;
+					titleRect.setHeight (font->getSize ());
+					if (getTextAlignment () == kLeftText)
+						titleRect.left += textMargin;
+					else if (getTextAlignment () == kRightText)
+						titleRect.right -= textMargin;
+				}
+				else
+				{
+					iconRect.offset (0, titleRect.getHeight () / 2. - iconRect.getHeight () / 2.);
+				}
+				break;
+			}
+			case kCenterBelow:
+			{
+				iconRect.offset (titleRect.getWidth () / 2. - iconRect.getWidth () / 2., 0);
+				if (title.size () > 0)
+				{
+					iconRect.offset (0, titleRect.getHeight () / 2. - (iconRect.getHeight () / 2.) + (textMargin + font->getSize ()) / 2.);
+					titleRect.top = iconRect.top - (textMargin + font->getSize ());
+					titleRect.setHeight (font->getSize ());
+					if (getTextAlignment () == kLeftText)
+						titleRect.left += textMargin;
+					else if (getTextAlignment () == kRightText)
+						titleRect.right -= textMargin;
+				}
+				else
+				{
+					iconRect.offset (0, titleRect.getHeight () / 2. - iconRect.getHeight () / 2.);
+				}
+				break;
+			}
+		}
+		context->drawBitmap (iconToDraw, iconRect);
+	}
+	else
+	{
+		if (getTextAlignment () == kLeftText)
+			titleRect.left += textMargin;
+		else if (getTextAlignment () == kRightText)
+			titleRect.right -= textMargin;
+	}
+	if (title.size () > 0)
+	{
+		context->setFont (font);
+		context->setFontColor (highlight ? textColorHighlighted : textColor);
+		context->drawString (title.c_str (), titleRect, horiTxtAlign);
+	}
 	setDirty (false);
 }
 

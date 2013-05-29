@@ -54,6 +54,7 @@ CParamDisplay::CParamDisplay (const CRect& size, CBitmap* background, const int3
 , style (style)
 , valuePrecision (2)
 , roundRectRadius (6.)
+, frameWidth (1.)
 , bAntialias (true)
 {
 	backOffset (0, 0);
@@ -82,6 +83,7 @@ CParamDisplay::CParamDisplay (const CParamDisplay& v)
 , shadowColor (v.shadowColor)
 , textInset (v.textInset)
 , roundRectRadius (v.roundRectRadius)
+, frameWidth (v.frameWidth)
 , bAntialias (v.bAntialias)
 {
 	fontID->remember ();
@@ -124,21 +126,28 @@ void CParamDisplay::setValueToStringProc (CParamDisplayValueToStringProc proc, v
 //------------------------------------------------------------------------
 bool CParamDisplay::getFocusPath (CGraphicsPath& outPath)
 {
-	if (style & kRoundRectStyle)
+	if (wantsFocus ())
 	{
-		if (wantsFocus ())
+		CCoord focusWidth = getFrame ()->getFocusWidth ();
+		if (style & kRoundRectStyle)
 		{
 			CRect r (getViewSize ());
-			CCoord focusWidth = getFrame ()->getFocusWidth ();
 			r.inset (-focusWidth, -focusWidth);
 			outPath.addRoundRect (r, roundRectRadius);
 			outPath.closeSubpath ();
 			r = getViewSize ();
 			outPath.addRoundRect (r, roundRectRadius);
 		}
-		return true;
+		else
+		{
+			CRect frameRect = getViewSize ();
+			frameRect.inset (frameWidth/2., frameWidth/2.);
+			outPath.addRect (frameRect);
+			frameRect.inset (-focusWidth, -focusWidth);
+			outPath.addRect (frameRect);
+		}
 	}
-	return CControl::getFocusPath (outPath);
+	return true;
 }
 
 //------------------------------------------------------------------------
@@ -185,7 +194,7 @@ void CParamDisplay::drawBack (CDrawContext* pContext, CBitmap* newBack)
 			if (style & kRoundRectStyle)
 			{
 				CRect pathRect = getViewSize ();
-				pathRect.inset (0.5, 0.5);
+				pathRect.inset (frameWidth/2., frameWidth/2.);
 				CGraphicsPath* path = pContext->createRoundRectGraphicsPath (pathRect, roundRectRadius);
 				if (path)
 				{
@@ -194,7 +203,7 @@ void CParamDisplay::drawBack (CDrawContext* pContext, CBitmap* newBack)
 					if (!(style & (k3DIn|k3DOut|kNoFrame)))
 					{
 						pContext->setLineStyle (kLineSolid);
-						pContext->setLineWidth (1);
+						pContext->setLineWidth (frameWidth);
 						pContext->setFrameColor (frameColor);
 						pContext->drawGraphicsPath (path, CDrawContext::kPathStroked);
 					}
@@ -204,14 +213,36 @@ void CParamDisplay::drawBack (CDrawContext* pContext, CBitmap* newBack)
 			else
 			{
 				pContext->setDrawMode (kAliasing);
-				pContext->drawRect (getViewSize (), kDrawFilled);
-		
-				if (!(style & (k3DIn|k3DOut|kNoFrame))) 
+				OwningPointer<CGraphicsPath> path = pContext->createGraphicsPath ();
+				if (path)
 				{
-					pContext->setLineStyle (kLineSolid);
-					pContext->setLineWidth (1);
-					pContext->setFrameColor (frameColor);
-					pContext->drawRect (getViewSize ());
+					CRect frameRect = getViewSize ();
+					if (!(style & (k3DIn|k3DOut|kNoFrame)))
+						frameRect.inset (frameWidth/2., frameWidth/2.);
+					path->addRect (frameRect);
+					pContext->drawGraphicsPath (path, CDrawContext::kPathFilled);
+					if (!(style & (k3DIn|k3DOut|kNoFrame)))
+					{
+						pContext->setLineStyle (kLineSolid);
+						pContext->setLineWidth (frameWidth);
+						pContext->setFrameColor (frameColor);
+						pContext->drawGraphicsPath (path, CDrawContext::kPathStroked);
+					}
+				}
+				else
+				{
+					pContext->drawRect (getViewSize (), kDrawFilled);
+			
+					if (!(style & (k3DIn|k3DOut|kNoFrame))) 
+					{
+						CRect frameRect = getViewSize ();
+						frameRect.inset (frameWidth/2., frameWidth/2.);
+
+						pContext->setLineStyle (kLineSolid);
+						pContext->setLineWidth (frameWidth);
+						pContext->setFrameColor (frameColor);
+						pContext->drawRect (frameRect);
+					}
 				}
 			}
 		}
@@ -222,7 +253,7 @@ void CParamDisplay::drawBack (CDrawContext* pContext, CBitmap* newBack)
 		CRect r (getViewSize ());
 		r.right--; r.top++;
 		pContext->setDrawMode (kAliasing);
-		pContext->setLineWidth (1);
+		pContext->setLineWidth (frameWidth);
 		pContext->setLineStyle (kLineSolid);
 		if (style & k3DIn)
 			pContext->setFrameColor (backColor);
@@ -382,6 +413,16 @@ void CParamDisplay::setRoundRectRadius (const CCoord& radius)
 	if (roundRectRadius != radius)
 	{
 		roundRectRadius = radius;
+		drawStyleChanged ();
+	}
+}
+
+//------------------------------------------------------------------------
+void CParamDisplay::setFrameWidth (const CCoord& width)
+{
+	if (frameWidth != width)
+	{
+		frameWidth = width;
 		drawStyleChanged ();
 	}
 }

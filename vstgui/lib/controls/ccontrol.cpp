@@ -268,7 +268,7 @@ bool CControl::getFocusPath (CGraphicsPath& outPath)
 	if (wantsFocus ())
 	{
 		CCoord focusWidth = getFrame ()->getFocusWidth ();
-		CRect r (getVisibleSize ());
+		CRect r (getVisibleViewSize ());
 		if (!r.isEmpty ())
 		{
 			outPath.addRect (r);

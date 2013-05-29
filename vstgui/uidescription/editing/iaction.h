@@ -87,6 +87,9 @@ public:
 	virtual void performDuplicateTemplate (UTF8StringPtr name, UTF8StringPtr dupName) = 0;
 	virtual void onTemplateCreation (UTF8StringPtr name, CView* view) = 0;
 	virtual void onTemplateNameChange (UTF8StringPtr oldName, UTF8StringPtr newName) = 0;
+
+	virtual void beginGroupAction (UTF8StringPtr name) = 0;
+	virtual void finishGroupAction () = 0;
 };
 
 } // namespace
