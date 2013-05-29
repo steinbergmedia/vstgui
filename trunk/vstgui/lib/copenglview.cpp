@@ -59,7 +59,7 @@ void COpenGLView::updatePlatformOpenGLViewSize ()
 {
 	if (platformOpenGLView)
 	{
-		CRect visibleSize (getVisibleSize ());
+		CRect visibleSize (getVisibleViewSize ());
 		CPoint offset;
 		localToFrame (offset);
 		visibleSize.offset (offset.x, offset.y);
@@ -78,6 +78,7 @@ bool COpenGLView::createPlatformOpenGLView ()
 	{
 		if (platformOpenGLView->init (this, getPixelFormat ()))
 		{
+			platformOpenGLView->makeContextCurrent ();
 			updatePlatformOpenGLViewSize ();
 			platformOpenGLViewCreated ();
 			platformOpenGLViewSizeChanged ();
@@ -110,7 +111,12 @@ void COpenGLView::setViewSize (const CRect& rect, bool invalid)
 	CView::setViewSize (rect, invalid);
 	updatePlatformOpenGLViewSize ();
 	if (platformOpenGLView)
+	{
+		platformOpenGLView->lockContext ();
+		platformOpenGLView->makeContextCurrent ();
 		platformOpenGLViewSizeChanged ();
+		platformOpenGLView->unlockContext ();
+	}
 }
 
 //-----------------------------------------------------------------------------
@@ -119,7 +125,12 @@ void COpenGLView::parentSizeChanged ()
 	CView::parentSizeChanged ();
 	updatePlatformOpenGLViewSize ();
 	if (platformOpenGLView)
+	{
+		platformOpenGLView->lockContext ();
+		platformOpenGLView->makeContextCurrent ();
 		platformOpenGLViewSizeChanged ();
+		platformOpenGLView->unlockContext ();
+	}
 }
 
 //-----------------------------------------------------------------------------
@@ -164,7 +175,9 @@ void COpenGLView::invalidRect (const CRect& rect)
 {
 	if (platformOpenGLView)
 	{
-		platformOpenGLView->invalidRect (rect);
+		CRect r (rect);
+		r.offset (-getViewSize ().left, -getViewSize ().top);
+		platformOpenGLView->invalidRect (r);
 	}
 	else
 	{

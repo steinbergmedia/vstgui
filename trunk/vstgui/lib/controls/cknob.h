@@ -110,6 +110,8 @@ public:
 	virtual bool sizeToFit () VSTGUI_OVERRIDE_VMETHOD;
 	virtual void setMin (float val) VSTGUI_OVERRIDE_VMETHOD;
 	virtual void setMax (float val) VSTGUI_OVERRIDE_VMETHOD;
+	virtual bool getFocusPath (CGraphicsPath& outPath) VSTGUI_OVERRIDE_VMETHOD;
+	virtual bool drawFocusOnTop () VSTGUI_OVERRIDE_VMETHOD;
 
 	virtual CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons) VSTGUI_OVERRIDE_VMETHOD;
 	virtual CMouseEventResult onMouseUp (CPoint& where, const CButtonState& buttons) VSTGUI_OVERRIDE_VMETHOD;

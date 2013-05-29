@@ -139,6 +139,33 @@ bool CKnob::sizeToFit ()
 }
 
 //------------------------------------------------------------------------
+bool CKnob::drawFocusOnTop ()
+{
+	if (drawStyle & kCoronaDrawing && wantsFocus ())
+	{
+		return false;
+	}
+	return CControl::drawFocusOnTop ();
+}
+
+//------------------------------------------------------------------------
+bool CKnob::getFocusPath (CGraphicsPath &outPath)
+{
+	if (drawStyle & kCoronaDrawing && wantsFocus ())
+	{
+//		CCoord focusWidth = getFrame ()->getFocusWidth ();
+		CRect corona (getViewSize ());
+		corona.inset (coronaInset, coronaInset);
+		corona.inset (handleLineWidth/2., handleLineWidth/2.);
+		outPath.addEllipse (corona);
+//		corona.inset (-focusWidth, -focusWidth);
+//		outPath.addEllipse (corona);
+		return true;
+	}
+	return CControl::getFocusPath (outPath);
+}
+
+//------------------------------------------------------------------------
 void CKnob::draw (CDrawContext *pContext)
 {
 	if (getDrawBackground ())

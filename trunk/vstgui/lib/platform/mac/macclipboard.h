@@ -1,6 +1,8 @@
 #ifndef __macclipboard__
 #define __macclipboard__
 
+#include "../../vstguibase.h"
+
 #ifdef __OBJC__
 @class NSPasteboard;
 #else

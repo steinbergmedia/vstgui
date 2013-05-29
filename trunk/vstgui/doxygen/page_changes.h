@@ -15,6 +15,13 @@ It's recommended to start new projects with version 4 while old projects should 
 
 @section new_stuff New Stuff
 
+@subsection version4_2 Version 4.2
+
+- VSTGUI::CGradientView
+- VSTGUI::CDataBrowser now supports multi row selections
+- support compiling in c++11 mode with clang and visual studio
+- VSTGUI_OVERRIDE_VMETHOD is now used throughout the vstgui sources to indicate methods which are expecting to override a virtual method of its base classes. (c++11 only)
+
 @subsection version4_1 Version 4.1
 
 - @ref page_uidescription_editor @n
@@ -36,6 +43,12 @@ It's recommended to start new projects with version 4 while old projects should 
 - Direct2D drawing on Windows (Windows Vista or Windows 7)
 
 @section code_changes Changes for existing VSTGUI code
+
+@subsection code_changes_4_1_to_4_2 VSTGUI 4.1 -> VSTGUI 4.2
+
+- the class CDragContainer is replaced by IDataPackage. The class CDragContainerHelper is a helper class you can use to quickly get your code up and running again.
+- the class IDataBrowser is renamed to IDataBrowserDelegate and the drag and drop methods have changed
+- CView::getVisibleSize () was renamed to CView::getVisibleViewSize ()
 
 @subsection code_changes_4_0_to_4_1 VSTGUI 4.0 -> VSTGUI 4.1
 

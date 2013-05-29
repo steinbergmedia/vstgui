@@ -88,6 +88,9 @@ public:
 	virtual void setRoundRectRadius (const CCoord& radius);
 	CCoord getRoundRectRadius () const { return roundRectRadius; }
 
+	virtual void setFrameWidth (const CCoord& width);
+	CCoord getFrameWidth () const { return frameWidth; }
+
 	virtual void setValueToStringProc (CParamDisplayValueToStringProc proc, void* userData = 0);
 
 	virtual void setStyle (int32_t val);
@@ -123,6 +126,7 @@ protected:
 	CColor		shadowColor;
 	CPoint		textInset;
 	CCoord		roundRectRadius;
+	CCoord		frameWidth;
 	bool		bAntialias;
 };
 

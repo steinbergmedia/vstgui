@@ -48,14 +48,14 @@ class CDefaultSplashScreenView : public CControl
 public:
 	CDefaultSplashScreenView (const CRect& size, CControlListener* listener, CBitmap* bitmap, const CPoint& offset) : CControl (size, listener), offset (offset) { setBackground (bitmap); }
 
-	void draw (CDrawContext *pContext)
+	void draw (CDrawContext *pContext) VSTGUI_OVERRIDE_VMETHOD
 	{
 		if (getDrawBackground ())
 			getDrawBackground ()->draw (pContext, getViewSize (), offset);
 		setDirty (false);
 	}
 
-	CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons)
+	CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons) VSTGUI_OVERRIDE_VMETHOD
 	{
 		if (buttons.isLeftButton ())
 		{

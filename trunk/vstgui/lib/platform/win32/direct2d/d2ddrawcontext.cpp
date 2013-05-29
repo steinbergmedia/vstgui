@@ -331,6 +331,7 @@ void D2DDrawContext::drawBitmap (CBitmap* bitmap, const CRect& dest, const CPoin
 				D2DApplyClip clip (this);
 				CRect d (dest);
 				d.offset (currentState.offset.x, currentState.offset.y);
+				d.makeIntegral ();
 				CRect source (dest);
 				source.offset (-source.left, -source.top);
 				source.offset (offset.x, offset.y);
@@ -352,14 +353,21 @@ void D2DDrawContext::moveTo (const CPoint &point)
 //-----------------------------------------------------------------------------
 void D2DDrawContext::lineTo (const CPoint &point)
 {
+	CPoint penLocation (currentState.penLoc);
 	CPoint p (point);
 	p.offset (currentState.offset.x, currentState.offset.y);
+	if (currentState.drawMode.integralMode ())
+	{
+		p.makeIntegral ();
+		penLocation.makeIntegral ();
+	}
+
 	if (renderTarget)
 	{
 		D2DApplyClip clip (this);
 		if ((((int32_t)currentState.frameWidth) % 2))
-			renderTarget->SetTransform (D2D1::Matrix3x2F::Translation (0.f, 0.5f));
-		renderTarget->DrawLine (makeD2DPoint (currentState.penLoc), makeD2DPoint (p), strokeBrush, (FLOAT)currentState.frameWidth, strokeStyle);
+			renderTarget->SetTransform (D2D1::Matrix3x2F::Translation (0.5f, 0.5f));
+		renderTarget->DrawLine (makeD2DPoint (penLocation), makeD2DPoint (p), strokeBrush, (FLOAT)currentState.frameWidth, strokeStyle);
 		renderTarget->SetTransform (D2D1::Matrix3x2F::Identity ());
 	}
 	currentState.penLoc = p;
@@ -407,6 +415,10 @@ void D2DDrawContext::drawRect (const CRect &_rect, const CDrawStyle drawStyle)
 		CRect rect (_rect);
 		rect.offset (currentState.offset.x, currentState.offset.y);
 		rect.normalize ();
+		if (currentState.drawMode.integralMode ())
+		{
+			rect.makeIntegral ();
+		}
 		D2DApplyClip clip (this);
 		if (drawStyle == kDrawFilled || drawStyle == kDrawFilledAndStroked)
 		{
@@ -536,14 +548,15 @@ void D2DDrawContext::setLineWidth (CCoord width)
 //-----------------------------------------------------------------------------
 void D2DDrawContext::setDrawMode (CDrawMode mode)
 {
-	if (currentState.drawMode == mode)
-		return;
-	if (renderTarget)
+	if (currentState.drawMode != mode)
 	{
-		if (mode == kAntiAliasing)
-			renderTarget->SetAntialiasMode (D2D1_ANTIALIAS_MODE_PER_PRIMITIVE);
-		else
-			renderTarget->SetAntialiasMode (D2D1_ANTIALIAS_MODE_ALIASED);
+		if (renderTarget)
+		{
+			if (mode == kAntiAliasing)
+				renderTarget->SetAntialiasMode (D2D1_ANTIALIAS_MODE_PER_PRIMITIVE);
+			else
+				renderTarget->SetAntialiasMode (D2D1_ANTIALIAS_MODE_ALIASED);
+		}
 	}
 	COffscreenContext::setDrawMode (mode);
 }

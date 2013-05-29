@@ -88,14 +88,38 @@ extern const CLineStyle kLineSolid;
 extern const CLineStyle kLineOnOffDash;
 
 //-----------
-// @brief Draw Mode
+// @brief Draw Mode Flags
 //-----------
-enum CDrawMode
+enum CDrawModeFlags
 {
 	kAliasing = 0,					///< aliased drawing
-	kAntiAliasing,					///< antialised drawing
+	kAntiAliasing = 1,				///< antialised drawing
 	kCopyMode = kAliasing,			///< \deprecated use kAliasing
-	kAntialias = kAntiAliasing		///< \deprecated use kAntiAliasing
+	kAntialias = kAntiAliasing,		///< \deprecated use kAntiAliasing
+	
+	kIntegralMode = 0xF0000000		///< round coordinates to intragral values
+};
+
+//-----------
+// @brief Draw Mode
+//-----------
+class CDrawMode
+{
+public:
+	CDrawMode (int32_t mode = kAliasing) : mode (mode) {}
+	CDrawMode (const CDrawMode& m) : mode (m.mode) {}
+
+	int32_t modeIgnoringIntegralMode () const { return (mode & ~kIntegralMode); }
+
+	bool integralMode () const { return mode & kIntegralMode ? true : false; }
+
+	CDrawMode& operator= (int32_t m) { mode = m; return *this; }
+
+	int32_t operator() () const { return mode; }
+	bool operator== (const CDrawMode& m) const { return modeIgnoringIntegralMode () == m.modeIgnoringIntegralMode (); }
+	bool operator!= (const CDrawMode& m) const { return modeIgnoringIntegralMode () != m.modeIgnoringIntegralMode (); }
+private:
+	int32_t mode;
 };
 
 //----------------------------

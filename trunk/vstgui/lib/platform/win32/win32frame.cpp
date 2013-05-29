@@ -800,6 +800,7 @@ LONG_PTR WINAPI Win32Frame::WindowProc (HWND hwnd, UINT message, WPARAM wParam, 
 	Win32Frame* win32Frame = (Win32Frame*)(LONG_PTR)GetWindowLongPtr (hwnd, GWLP_USERDATA);
 	if (win32Frame)
 	{
+		SharedPointer<Win32Frame> lifeGuard (win32Frame);
 		IPlatformFrameCallback* pFrame = win32Frame->getFrame ();
 		bool doubleClick = false;
 
@@ -897,7 +898,7 @@ LONG_PTR WINAPI Win32Frame::WindowProc (HWND hwnd, UINT message, WPARAM wParam, 
 					buttons |= kDoubleClick;
 				SetFocus (win32Frame->getPlatformWindow ());
 				CPoint where ((CCoord)((int)(short)LOWORD(lParam)), (CCoord)((int)(short)HIWORD(lParam)));
-				if (pFrame->platformOnMouseDown (where, buttons) == kMouseEventHandled)
+				if (pFrame->platformOnMouseDown (where, buttons) == kMouseEventHandled && win32Frame->getPlatformWindow ())
 					SetCapture (win32Frame->getPlatformWindow ());
 				return 0;
 			}
@@ -1008,7 +1009,7 @@ LONG_PTR WINAPI Win32Frame::WindowProc (HWND hwnd, UINT message, WPARAM wParam, 
 			case WM_DESTROY:
 			{
 				#if DEBUG
-				DebugPrint ("This should never get called. We are the owner of the window and we are responsible of destroying it.\n");
+				DebugPrint ("This sometimes happens, only when we are currently processing a mouse down event and via a callback into the host the window gets destroyed. Otherwise this should never get called. We are the owner of the window and we are responsible of destroying it.\n");
 				#endif
 				win32Frame->windowHandle = 0;
 				break;

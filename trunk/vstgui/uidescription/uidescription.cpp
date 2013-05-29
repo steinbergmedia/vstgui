@@ -102,6 +102,8 @@ public:
 
 	bool operator== (const UINode& n) const { return name == n.name; }
 	
+	void sortChildren ();
+
 	CLASS_METHODS(UINode, CBaseObject)
 protected:
 	std::string name;
@@ -202,12 +204,14 @@ protected:
 	CColor color;
 };
 
+typedef std::vector<UINode*> UIDescListContainerType;
+
 //-----------------------------------------------------------------------------
-class UIDescList : public CBaseObject, protected std::list<UINode*>
+class UIDescList : public CBaseObject, protected UIDescListContainerType
 {
 public:
-	typedef std::list<UINode*>::const_reverse_iterator	riterator;
-	typedef std::list<UINode*>::const_iterator		iterator;
+	typedef UIDescListContainerType::const_reverse_iterator	riterator;
+	typedef UIDescListContainerType::const_iterator		iterator;
 	
 	UIDescList (bool ownsObjects = true) : ownsObjects (ownsObjects) {}
 	UIDescList (const UIDescList& l) : ownsObjects (l.ownsObjects)
@@ -218,16 +222,33 @@ public:
 	
 	~UIDescList () { removeAll (); }
 
-	void add (UINode* obj) { if (!ownsObjects) obj->remember (); std::list<UINode*>::push_back (obj); }
-	void remove (UINode* obj) { std::list<UINode*>::remove (obj); obj->forget (); }
+	void add (UINode* obj) { if (!ownsObjects) obj->remember (); UIDescListContainerType::push_back (obj); }
+	void remove (UINode* obj)
+	{
+		UIDescListContainerType::iterator pos = std::find (UIDescListContainerType::begin (), UIDescListContainerType::end (), obj);
+		if (pos != UIDescListContainerType::end ())
+		{
+			UIDescListContainerType::erase (pos);
+			obj->forget ();
+		}
+	}
 
 	int32_t total () { return (int32_t)size (); }
-	void removeAll () { riterator it = rbegin (); while (it != rend ()) remove (*it); }
+	void removeAll ()
+	{
+		riterator it = rbegin ();
+		while (it != rend ())
+		{
+			(*it)->forget ();
+			it++;
+		}
+		clear ();
+	}
 
-	iterator begin () const { return std::list<UINode*>::begin (); }
-	iterator end () const { return std::list<UINode*>::end (); }
-	riterator rbegin () const { return std::list<UINode*>::rbegin (); }
-	riterator rend () const { return std::list<UINode*>::rend (); }
+	iterator begin () const { return UIDescListContainerType::begin (); }
+	iterator end () const { return UIDescListContainerType::end (); }
+	riterator rbegin () const { return UIDescListContainerType::rbegin (); }
+	riterator rend () const { return UIDescListContainerType::rend (); }
 	
 	iterator get (const std::string& nodeName)
 	{
@@ -239,8 +260,23 @@ public:
 		return end ();
 	}
 
-	bool empty () const { return std::list<UINode*>::empty (); }
+	bool empty () const { return UIDescListContainerType::empty (); }
+	
+	void sort ()
+	{
+		std::sort (UIDescListContainerType::begin (), UIDescListContainerType::end (), nodeCompare);
+	}
 protected:
+	static bool nodeCompare (UINode* n1, UINode* n2)
+	{
+		const std::string* str1 = n1->getAttributes ()->getAttributeValue ("name");
+		const std::string* str2 = n2->getAttributes ()->getAttributeValue ("name");
+		if (str1 && str2)
+			return *str1 < *str2;
+		else if (str1)
+			return true;
+		return false;
+	}
 	bool ownsObjects;
 };
 
@@ -1357,10 +1393,12 @@ UTF8StringPtr UIDescription::lookupControlTagName (const int32_t tag) const
 //-----------------------------------------------------------------------------
 void UIDescription::changeColorName (UTF8StringPtr oldName, UTF8StringPtr newName)
 {
-	UIColorNode* node = dynamic_cast<UIColorNode*> (findChildNodeByNameAttribute (getBaseNode ("colors"), oldName));
+	UINode* colorNodes = getBaseNode ("colors");
+	UIColorNode* node = dynamic_cast<UIColorNode*> (findChildNodeByNameAttribute (colorNodes, oldName));
 	if (node)
 	{
 		node->getAttributes ()->setAttribute ("name", newName);
+		colorNodes->sortChildren ();
 		changed (kMessageColorChanged);
 	}
 }
@@ -1368,10 +1406,12 @@ void UIDescription::changeColorName (UTF8StringPtr oldName, UTF8StringPtr newNam
 //-----------------------------------------------------------------------------
 void UIDescription::changeTagName (UTF8StringPtr oldName, UTF8StringPtr newName)
 {
-	UIControlTagNode* node = dynamic_cast<UIControlTagNode*> (findChildNodeByNameAttribute (getBaseNode ("control-tags"), oldName));
+	UINode* controlTags = getBaseNode ("control-tags");
+	UIControlTagNode* node = dynamic_cast<UIControlTagNode*> (findChildNodeByNameAttribute (controlTags, oldName));
 	if (node)
 	{
 		node->getAttributes ()->setAttribute ("name", newName);
+		controlTags->sortChildren ();
 		changed (kMessageTagChanged);
 	}
 }
@@ -1379,10 +1419,12 @@ void UIDescription::changeTagName (UTF8StringPtr oldName, UTF8StringPtr newName)
 //-----------------------------------------------------------------------------
 void UIDescription::changeFontName (UTF8StringPtr oldName, UTF8StringPtr newName)
 {
-	UIFontNode* node = dynamic_cast<UIFontNode*> (findChildNodeByNameAttribute (getBaseNode ("fonts"), oldName));
+	UINode* fontNodes = getBaseNode ("fonts");
+	UIFontNode* node = dynamic_cast<UIFontNode*> (findChildNodeByNameAttribute (fontNodes, oldName));
 	if (node)
 	{
 		node->getAttributes ()->setAttribute ("name", newName);
+		fontNodes->sortChildren ();
 		changed (kMessageFontChanged);
 	}
 }
@@ -1390,10 +1432,12 @@ void UIDescription::changeFontName (UTF8StringPtr oldName, UTF8StringPtr newName
 //-----------------------------------------------------------------------------
 void UIDescription::changeBitmapName (UTF8StringPtr oldName, UTF8StringPtr newName)
 {
-	UIBitmapNode* node = dynamic_cast<UIBitmapNode*> (findChildNodeByNameAttribute (getBaseNode ("bitmaps"), oldName));
+	UINode* bitmapNodes = getBaseNode ("bitmaps");
+	UIBitmapNode* node = dynamic_cast<UIBitmapNode*> (findChildNodeByNameAttribute (bitmapNodes, oldName));
 	if (node)
 	{
 		node->getAttributes ()->setAttribute ("name", newName);
+		bitmapNodes->sortChildren ();
 		changed (kMessageBitmapChanged);
 	}
 }
@@ -1401,7 +1445,8 @@ void UIDescription::changeBitmapName (UTF8StringPtr oldName, UTF8StringPtr newNa
 //-----------------------------------------------------------------------------
 void UIDescription::changeColor (UTF8StringPtr name, const CColor& newColor)
 {
-	UIColorNode* node = dynamic_cast<UIColorNode*> (findChildNodeByNameAttribute (getBaseNode ("colors"), name));
+	UINode* colorsNode = getBaseNode ("colors");
+	UIColorNode* node = dynamic_cast<UIColorNode*> (findChildNodeByNameAttribute (colorsNode, name));
 	if (node)
 	{
 		if (!node->noExport ())
@@ -1412,7 +1457,6 @@ void UIDescription::changeColor (UTF8StringPtr name, const CColor& newColor)
 	}
 	else
 	{
-		UINode* colorsNode = getBaseNode ("colors");
 		if (colorsNode)
 		{
 			UIAttributes* attr = new UIAttributes;
@@ -1422,6 +1466,7 @@ void UIDescription::changeColor (UTF8StringPtr name, const CColor& newColor)
 			attr->setAttribute ("rgba", colorStr.c_str ());
 			UIColorNode* node = new UIColorNode ("color", attr);
 			colorsNode->getChildren ().add (node);
+			colorsNode->sortChildren ();
 			changed (kMessageColorChanged);
 		}
 	}
@@ -1430,7 +1475,8 @@ void UIDescription::changeColor (UTF8StringPtr name, const CColor& newColor)
 //-----------------------------------------------------------------------------
 void UIDescription::changeFont (UTF8StringPtr name, CFontRef newFont)
 {
-	UIFontNode* node = dynamic_cast<UIFontNode*> (findChildNodeByNameAttribute (getBaseNode ("fonts"), name));
+	UINode* fontsNode = getBaseNode ("fonts");
+	UIFontNode* node = dynamic_cast<UIFontNode*> (findChildNodeByNameAttribute (fontsNode, name));
 	if (node)
 	{
 		if (!node->noExport ())
@@ -1441,7 +1487,6 @@ void UIDescription::changeFont (UTF8StringPtr name, CFontRef newFont)
 	}
 	else
 	{
-		UINode* fontsNode = getBaseNode ("fonts");
 		if (fontsNode)
 		{
 			UIAttributes* attr = new UIAttributes;
@@ -1449,6 +1494,7 @@ void UIDescription::changeFont (UTF8StringPtr name, CFontRef newFont)
 			UIFontNode* node = new UIFontNode ("font", attr);
 			node->setFont (newFont);
 			fontsNode->getChildren ().add (node);
+			fontsNode->sortChildren ();
 			changed (kMessageFontChanged);
 		}
 	}
@@ -1457,7 +1503,8 @@ void UIDescription::changeFont (UTF8StringPtr name, CFontRef newFont)
 //-----------------------------------------------------------------------------
 void UIDescription::changeBitmap (UTF8StringPtr name, UTF8StringPtr newName, const CRect* nineparttiledOffset)
 {
-	UIBitmapNode* node = dynamic_cast<UIBitmapNode*> (findChildNodeByNameAttribute (getBaseNode ("bitmaps"), name));
+	UINode* bitmapsNode = getBaseNode ("bitmaps");
+	UIBitmapNode* node = dynamic_cast<UIBitmapNode*> (findChildNodeByNameAttribute (bitmapsNode, name));
 	if (node)
 	{
 		if (!node->noExport ())
@@ -1469,7 +1516,6 @@ void UIDescription::changeBitmap (UTF8StringPtr name, UTF8StringPtr newName, con
 	}
 	else
 	{
-		UINode* bitmapsNode = getBaseNode ("bitmaps");
 		if (bitmapsNode)
 		{
 			UIAttributes* attr = new UIAttributes;
@@ -1479,6 +1525,7 @@ void UIDescription::changeBitmap (UTF8StringPtr name, UTF8StringPtr newName, con
 				node->setNinePartTiledOffset (nineparttiledOffset);
 			node->setBitmap (newName);
 			bitmapsNode->getChildren ().add (node);
+			bitmapsNode->sortChildren ();
 			changed (kMessageBitmapChanged);
 		}
 	}
@@ -1961,7 +2008,8 @@ bool UIDescription::getControlTagString (UTF8StringPtr tagName, std::string& tag
 //-----------------------------------------------------------------------------
 bool UIDescription::changeControlTagString  (UTF8StringPtr tagName, const std::string& newTagString, bool create)
 {
-	UIControlTagNode* controlTagNode = dynamic_cast<UIControlTagNode*> (findChildNodeByNameAttribute (getBaseNode ("control-tags"), tagName));
+	UINode* tagsNode = getBaseNode ("control-tags");
+	UIControlTagNode* controlTagNode = dynamic_cast<UIControlTagNode*> (findChildNodeByNameAttribute (tagsNode, tagName));
 	if (controlTagNode)
 	{
 		if (create)
@@ -1972,7 +2020,6 @@ bool UIDescription::changeControlTagString  (UTF8StringPtr tagName, const std::s
 	}
 	if (create)
 	{
-		UINode* tagsNode = getBaseNode ("control-tags");
 		if (tagsNode)
 		{
 			UIAttributes* attr = new UIAttributes;
@@ -1980,6 +2027,7 @@ bool UIDescription::changeControlTagString  (UTF8StringPtr tagName, const std::s
 			UIControlTagNode* node = new UIControlTagNode ("control-tag", attr);
 			node->setTagString(newTagString);
 			tagsNode->getChildren ().add (node);
+			tagsNode->sortChildren ();
 			changed (kMessageTagChanged);
 			return true;
 		}
@@ -2502,6 +2550,12 @@ UINode::~UINode ()
 bool UINode::hasChildren () const
 {
 	return children->total () > 0;
+}
+
+//-----------------------------------------------------------------------------
+void UINode::sortChildren ()
+{
+	children->sort ();
 }
 
 //-----------------------------------------------------------------------------

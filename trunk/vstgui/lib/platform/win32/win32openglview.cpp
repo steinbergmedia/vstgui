@@ -134,6 +134,7 @@ LONG_PTR WINAPI Win32OpenGLView::WindowProc (HWND hwnd, UINT message, WPARAM wPa
 //-----------------------------------------------------------------------------
 bool Win32OpenGLView::setupPixelFormt ()
 {
+	// TODO: support for custom PixelFormat
 	if (deviceContext)
 	{
 		PIXELFORMATDESCRIPTOR pfd = { 
@@ -244,7 +245,9 @@ void Win32OpenGLView::viewSizeChanged (const CRect& visibleSize)
 {
 	if (windowHandle)
 	{
+		lockContext ();
 		SetWindowPos (windowHandle, HWND_TOP, (int)visibleSize.left, (int)visibleSize.top, (int)visibleSize.getWidth (), (int)visibleSize.getHeight (), SWP_NOCOPYBITS|SWP_DEFERERASE);
+		unlockContext ();
 	}
 }
 

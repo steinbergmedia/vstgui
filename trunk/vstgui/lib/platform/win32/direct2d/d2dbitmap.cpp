@@ -75,6 +75,12 @@ D2DBitmap::D2DBitmap (const CPoint& size)
 	{
 		source = bitmap;
 	}
+	else
+	{
+	#if DEBUG
+		DebugPrint ("Could not create Bitmap with size : %d, %d\n", (int)size.x, (int)size.y);
+	#endif
+	}
 }
 
 //-----------------------------------------------------------------------------
@@ -88,6 +94,9 @@ D2DBitmap::~D2DBitmap ()
 //-----------------------------------------------------------------------------
 IWICBitmap* D2DBitmap::getBitmap ()
 {
+	if (getSource () == 0)
+		return 0;
+
 	IWICBitmap* icBitmap = 0;
 	if (!SUCCEEDED (getSource ()->QueryInterface (IID_IWICBitmap, (void**)&icBitmap)))
 	{
@@ -104,6 +113,9 @@ IWICBitmap* D2DBitmap::getBitmap ()
 //-----------------------------------------------------------------------------
 bool D2DBitmap::createMemoryPNGRepresentation (void** ptr, uint32_t& size)
 {
+	if (getSource () == 0)
+		return false;
+
 	bool result = false;
 	IWICBitmapEncoder* encoder = 0;
 	if (SUCCEEDED (WICGlobal::getFactory ()->CreateEncoder (GUID_ContainerFormatPng, NULL, &encoder)))
@@ -215,6 +227,9 @@ bool D2DBitmap::load (const CResourceDescription& resourceDesc)
 //-----------------------------------------------------------------------------
 HBITMAP D2DBitmap::createHBitmap ()
 {
+	if (getSource () == 0)
+		return 0;
+
 	BITMAPINFO pbmi = {0};
 	pbmi.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
 	pbmi.bmiHeader.biPlanes = 1;
@@ -251,6 +266,8 @@ void D2DBitmap::replaceBitmapSource (IWICBitmapSource* newSourceBitmap)
 //-----------------------------------------------------------------------------
 IPlatformBitmapPixelAccess* D2DBitmap::lockPixels (bool alphaPremultiplied)
 {
+	if (getSource () == 0)
+		return 0;
 	PixelAccess* pixelAccess = new PixelAccess;
 	if (pixelAccess->init (this, alphaPremultiplied))
 		return pixelAccess;
@@ -419,6 +436,8 @@ void D2DBitmapCache::removeRenderTarget (ID2D1RenderTarget* renderTarget)
 //-----------------------------------------------------------------------------
 ID2D1Bitmap* D2DBitmapCache::createBitmap (D2DBitmap* bitmap, ID2D1RenderTarget* renderTarget)
 {
+	if (bitmap->getSource () == 0)
+		return 0;
 	ID2D1Bitmap* d2d1Bitmap = 0; 
 	renderTarget->CreateBitmapFromWicBitmap (bitmap->getSource (), &d2d1Bitmap);
 	return d2d1Bitmap;

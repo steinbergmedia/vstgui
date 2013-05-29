@@ -35,7 +35,7 @@
 #include "csplitview.h"
 #include "cframe.h"
 #include "cdrawcontext.h"
-#include "../uidescription/uidescription.h"
+#include "../uidescription/icontroller.h"
 #include <list>
 
 namespace VSTGUI {
@@ -47,16 +47,16 @@ class CSplitViewSeparatorView : public CView
 public:
 	CSplitViewSeparatorView (const CRect& size, CSplitView::Style style, int32_t index);
 
-	void draw (CDrawContext *pContext);
+	void draw (CDrawContext *pContext) VSTGUI_OVERRIDE_VMETHOD;
 
-	CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons);
-	CMouseEventResult onMouseUp (CPoint& where, const CButtonState& buttons);
-	CMouseEventResult onMouseMoved (CPoint& where, const CButtonState& buttons);
+	CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons) VSTGUI_OVERRIDE_VMETHOD;
+	CMouseEventResult onMouseUp (CPoint& where, const CButtonState& buttons) VSTGUI_OVERRIDE_VMETHOD;
+	CMouseEventResult onMouseMoved (CPoint& where, const CButtonState& buttons) VSTGUI_OVERRIDE_VMETHOD;
 
-	CMouseEventResult onMouseEntered (CPoint& where, const CButtonState& buttons);
-	CMouseEventResult onMouseExited (CPoint& where, const CButtonState& buttons);
+	CMouseEventResult onMouseEntered (CPoint& where, const CButtonState& buttons) VSTGUI_OVERRIDE_VMETHOD;
+	CMouseEventResult onMouseExited (CPoint& where, const CButtonState& buttons) VSTGUI_OVERRIDE_VMETHOD;
 
-	bool removed (CView* parent);
+	bool removed (CView* parent) VSTGUI_OVERRIDE_VMETHOD;
 protected:
 	CPoint lastMousePos;
 	CRect startSize;
@@ -83,7 +83,7 @@ static ISplitViewController* getSplitViewController (const CView* view)
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 CSplitView::CSplitView (const CRect& size, Style style, CCoord separatorWidth, ISplitViewSeparatorDrawer* separatorDrawer)
-: CViewContainer (size, 0)
+: CViewContainer (size)
 , style (style)
 , resizeMethod (kResizeLastView)
 , separatorWidth (separatorWidth)

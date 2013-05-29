@@ -204,7 +204,6 @@ CMessageResult UIEditMenuController::notify (CBaseObject* sender, IdStringPtr me
 				std::list<const std::string*> containerViewNames;
 				UIViewFactory* factory = dynamic_cast<UIViewFactory*> (description->getViewFactory ());
 				factory->collectRegisteredViewNames (containerViewNames, "CViewContainer");
-				containerViewNames.sort (UIEditController::std__stringCompare);
 				OwningPointer<COptionMenu> submenu = new COptionMenu ();
 				for (std::list<const std::string*>::const_iterator it = containerViewNames.begin (); it != containerViewNames.end (); it++)
 				{
@@ -267,7 +266,6 @@ CMessageResult UIEditMenuController::notify (CBaseObject* sender, IdStringPtr me
 				item->setSubmenu (submenu);
 				std::list<const std::string*> containerViewNames;
 				UIViewFactory* factory = dynamic_cast<UIViewFactory*> (description->getViewFactory ());
-				containerViewNames.sort (UIEditController::std__stringCompare);
 				factory->collectRegisteredViewNames (containerViewNames, "CViewContainer");
 				for (std::list<const std::string*>::const_iterator it = containerViewNames.begin (); it != containerViewNames.end (); it++)
 				{
@@ -310,7 +308,6 @@ CMessageResult UIEditMenuController::notify (CBaseObject* sender, IdStringPtr me
 				std::list<const std::string*> containerViewNames;
 				UIViewFactory* factory = dynamic_cast<UIViewFactory*> (description->getViewFactory ());
 				factory->collectRegisteredViewNames (containerViewNames);
-				containerViewNames.sort (UIEditController::std__stringCompare);
 				for (std::list<const std::string*>::const_iterator it = containerViewNames.begin (); it != containerViewNames.end (); it++)
 				{
 					submenu->addEntry (new CCommandMenuItem ((*it)->c_str (), this, "Transform View Type", (*it)->c_str ()));

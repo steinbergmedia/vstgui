@@ -317,7 +317,7 @@ void UITemplateController::setTemplateView (CViewContainer* view)
 				UIEditController::setupDataSource (mainViewDataSource);
 				CRect r (templateDataBrowser->getViewSize ());
 				r.offset (r.getWidth (), 0);
-				CDataBrowser* browser = new CDataBrowser (r, 0, mainViewDataSource);
+				CDataBrowser* browser = new CDataBrowser (r, mainViewDataSource);
 				setupDataBrowser (templateDataBrowser, browser);
 				parentView->addView (browser);
 			}
@@ -345,7 +345,7 @@ CView* UITemplateController::createView (const UIAttributes& attributes, IUIDesc
 			UITemplatesDataSource* dataSource = new UITemplatesDataSource (this, editDescription, actionPerformer, templateName);
 			dataSource->setStringList (&templateNames);
 			UIEditController::setupDataSource (dataSource);
-			templateDataBrowser = new CDataBrowser (CRect (0, 0, 0, 0), 0, dataSource, CDataBrowser::kDrawRowLines|CScrollView::kAutoHideScrollbars|CScrollView::kHorizontalScrollbar|CScrollView::kVerticalScrollbar|CDataBrowser::kDrawHeader);
+			templateDataBrowser = new CDataBrowser (CRect (0, 0, 0, 0), dataSource, CDataBrowser::kDrawRowLines|CScrollView::kAutoHideScrollbars|CScrollView::kHorizontalScrollbar|CScrollView::kVerticalScrollbar|CDataBrowser::kDrawHeader);
 			dataSource->forget ();
 			return templateDataBrowser;
 		}
@@ -473,7 +473,7 @@ void UIViewListDataSource::dbSelectionChanged (CDataBrowser* browser)
 		UIEditController::setupDataSource (dataSource);
 		CRect r (browser->getViewSize ());
 		r.offset (r.getWidth (), 0);
-		CDataBrowser* newDataBrowser = new CDataBrowser (r, 0, dataSource);
+		CDataBrowser* newDataBrowser = new CDataBrowser (r, dataSource);
 		UITemplateController::setupDataBrowser (browser, newDataBrowser);
 		CViewContainer* parentView = static_cast<CViewContainer*>(browser->getParentView ());
 		parentView->addView (newDataBrowser);
@@ -633,7 +633,8 @@ CMouseEventResult UITemplatesDataSource::dbOnMouseDown (const CPoint& where, con
 //----------------------------------------------------------------------------------------------------
 void UITemplatesDataSource::dbCellTextChanged (int32_t row, int32_t column, UTF8StringPtr newText, CDataBrowser* browser)
 {
-	actionPerformer->performTemplateNameChange (getStringList ()->at (row).c_str (), newText);
+	if (getStringList ()->at (row) != newText)
+		actionPerformer->performTemplateNameChange (getStringList ()->at (row).c_str (), newText);
 }
 
 //----------------------------------------------------------------------------------------------------

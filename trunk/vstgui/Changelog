@@ -1,3 +1,17 @@
+2013-05-29 arne
+
+	* fix crash in IDependecy::changed when a dependent is removed while iterating the depentents list
+	* add icon drawing to CTextButton
+	* change CDrawMode to be a class and add kIntegralMode to draw exactly at integer coordinates
+		this is a better fix than the previous aliasing drawing fix for quartz
+	* always draw bitmaps on integer coordinates with Direct2D
+	* add better focus path for CKnob when drawing with the corona style
+	* add frameWidth to CParamDisplay
+	* fix a crash when the CFrame object is destroyed when in mouse down
+	* changed CView::getVisibleSize() to CView::getVisibleViewSize() to silent compiler warning
+	* created constructor methods for view containers without CFrame argument (which was not used anymore). Moved the old ones into deprecated.
+	* add first unit tests
+
 2013-02-10 arne
 
 	* add multi selection style to CDataBrowser

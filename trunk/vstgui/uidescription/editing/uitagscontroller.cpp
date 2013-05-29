@@ -178,7 +178,7 @@ CView* UITagsController::createView (const UIAttributes& attributes, IUIDescript
 		{
 			dataSource = new UITagsDataSource (editDescription, actionPerformer);
 			UIEditController::setupDataSource (dataSource);
-			return new CDataBrowser (CRect (0, 0, 0, 0), 0, dataSource, CDataBrowser::kDrawColumnLines|CDataBrowser::kDrawRowLines|CScrollView::kHorizontalScrollbar | CScrollView::kVerticalScrollbar);
+			return new CDataBrowser (CRect (0, 0, 0, 0), dataSource, CDataBrowser::kDrawColumnLines|CDataBrowser::kDrawRowLines|CScrollView::kHorizontalScrollbar | CScrollView::kVerticalScrollbar);
 		}
 	}
 	return DelegationController::createView (attributes, description);

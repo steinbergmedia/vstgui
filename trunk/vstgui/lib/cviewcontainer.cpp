@@ -59,6 +59,22 @@ IdStringPtr kMsgLooseFocus = "LooseFocus";
 /**
  * CViewContainer constructor.
  * @param rect the size of the container
+ */
+CViewContainer::CViewContainer (const CRect &rect)
+: CView (rect)
+, currentDragView (0)
+, mouseDownView (0)
+, backgroundColorDrawStyle (kDrawFilledAndStroked)
+{
+	backgroundOffset (0, 0);
+	backgroundColor = kBlackCColor;
+	setAutosizingEnabled (true);
+}
+
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
+/**
+ * CViewContainer constructor.
+ * @param rect the size of the container
  * @param pParent (unused)
  * @param pBackground the background bitmap, can be NULL
  */
@@ -73,6 +89,7 @@ CViewContainer::CViewContainer (const CRect &rect, CFrame* pParent, CBitmap* pBa
 	backgroundColor = kBlackCColor;
 	setAutosizingEnabled (true);
 }
+#endif
 
 //-----------------------------------------------------------------------------
 CViewContainer::CViewContainer (const CViewContainer& v)
@@ -753,7 +770,7 @@ void CViewContainer::drawRect (CDrawContext* pContext, const CRect& updateRect)
 			else
 			{
 				CCoord focusWidth = getFrame ()->getFocusWidth ();
-				CRect r (_focusView->getVisibleSize ());
+				CRect r (_focusView->getVisibleViewSize ());
 				if (!r.isEmpty ())
 				{
 					focusPath->addRect (r);
@@ -1025,30 +1042,33 @@ void CViewContainer::takeFocus ()
  */
 bool CViewContainer::advanceNextFocusView (CView* oldFocus, bool reverse)
 {
-	bool foundOld = false;
-	FOREACHSUBVIEW_REVERSE(reverse)
-		if (oldFocus && !foundOld)
-		{
-			if (oldFocus == pV)
+	if (getFrame ())
+	{
+		bool foundOld = false;
+		FOREACHSUBVIEW_REVERSE(reverse)
+			if (oldFocus && !foundOld)
 			{
-				foundOld = true;
-				continue;
+				if (oldFocus == pV)
+				{
+					foundOld = true;
+					continue;
+				}
 			}
-		}
-		else
-		{
-			if (pV->wantsFocus () && pV->getMouseEnabled () && pV->isVisible ())
+			else
 			{
-				getFrame ()->setFocusView (pV);
-				return true;
-			}
-			else if (CViewContainer* container = dynamic_cast<CViewContainer*> (pV))
-			{
-				if (container->advanceNextFocusView (0, reverse))
+				if (pV->wantsFocus () && pV->getMouseEnabled () && pV->isVisible ())
+				{
+					getFrame ()->setFocusView (pV);
 					return true;
+				}
+				else if (CViewContainer* container = dynamic_cast<CViewContainer*> (pV))
+				{
+					if (container->advanceNextFocusView (0, reverse))
+						return true;
+				}
 			}
-		}
-	ENDFOREACHSUBVIEW
+		ENDFOREACHSUBVIEW
+	}
 	return false;
 }
 

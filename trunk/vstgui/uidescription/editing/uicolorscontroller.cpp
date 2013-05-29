@@ -772,7 +772,7 @@ CView* UIColorsController::createView (const UIAttributes& attributes, IUIDescri
 	{
 		if (*name == "ColorsBrowser")
 		{
-			CDataBrowser* dataBrowser = new CDataBrowser (CRect (0, 0, 0, 0), 0, dataSource, CDataBrowser::kDrawRowLines|CScrollView::kHorizontalScrollbar|CScrollView::kVerticalScrollbar);
+			CDataBrowser* dataBrowser = new CDataBrowser (CRect (0, 0, 0, 0), dataSource, CDataBrowser::kDrawRowLines|CScrollView::kHorizontalScrollbar|CScrollView::kVerticalScrollbar);
 			return dataBrowser;
 		}
 	}

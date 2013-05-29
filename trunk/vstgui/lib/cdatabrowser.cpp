@@ -115,6 +115,32 @@ protected:
  * @param scrollbarWidth width of scrollbars
  * @param pBackground background bitmap
  */
+CDataBrowser::CDataBrowser (const CRect& size, IDataBrowserDelegate* db, int32_t style, CCoord scrollbarWidth, CBitmap* pBackground)
+: CScrollView (size, CRect (0, 0, 0, 0), style, scrollbarWidth, pBackground)
+, db (db)
+, dbView (0)
+, dbHeader (0)
+, dbHeaderContainer (0)
+{
+	setTransparency (true);
+	dbView = new CDataBrowserView (CRect (0, 0, 0, 0), db, this);
+	dbView->setAutosizeFlags (kAutosizeLeft|kAutosizeRight|kAutosizeBottom);
+	addView (dbView);
+	CBaseObject* obj = dynamic_cast<CBaseObject*>(db);
+	if (obj)
+		obj->remember ();
+}
+
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
+//-----------------------------------------------------------------------------------------------
+/**
+ * @param size size of data browser
+ * @param pParent frame
+ * @param db data browser interface. If db is inheritated from CBaseObject it will be remembered and released if data browser is destroyed
+ * @param style data browser and scroll view style see #CDataBrowserStyle and #CScrollViewStyle
+ * @param scrollbarWidth width of scrollbars
+ * @param pBackground background bitmap
+ */
 CDataBrowser::CDataBrowser (const CRect& size, CFrame* pParent, IDataBrowserDelegate* db, int32_t style, CCoord scrollbarWidth, CBitmap* pBackground)
 : CScrollView (size, CRect (0, 0, 0, 0), pParent, style, scrollbarWidth, pBackground)
 , db (db)
@@ -130,6 +156,7 @@ CDataBrowser::CDataBrowser (const CRect& size, CFrame* pParent, IDataBrowserDele
 	if (obj)
 		obj->remember ();
 }
+#endif
 
 //-----------------------------------------------------------------------------------------------
 CDataBrowser::~CDataBrowser ()
@@ -294,7 +321,7 @@ void CDataBrowser::recalculateLayout (bool rememberSelection)
 			if (!(style & kDontDrawFrame))
 				hcs.left = hcs.top = 1;
 			hcs.setWidth (getViewSize ().getWidth () - ((style & kDontDrawFrame) ? 0 : 2));
-			dbHeaderContainer = new CViewContainer (hcs, getFrame ());
+			dbHeaderContainer = new CViewContainer (hcs);
 			dbHeaderContainer->setAutosizeFlags (kAutosizeLeft|kAutosizeRight|kAutosizeTop);
 			dbHeaderContainer->setTransparency (true);
 			headerSize.offset (-headerSize.left, -headerSize.top);
@@ -862,7 +889,7 @@ void CDataBrowserView::drawRect (CDrawContext* context, const CRect& updateRect)
 				}
 			}
 		}
-		context->setDrawMode (kAliasing);
+		context->setDrawMode (kAliasing | kIntegralMode);
 		context->setLineWidth (lineWidth);
 		context->setFrameColor (lineColor);
 		context->setLineStyle (kLineSolid);
@@ -1119,7 +1146,7 @@ bool CDataBrowserView::drawFocusOnTop ()
 //-----------------------------------------------------------------------------------------------
 bool CDataBrowserView::getFocusPath (CGraphicsPath& outPath)
 {
-	CRect r = getVisibleSize ();
+	CRect r = getVisibleViewSize ();
 	outPath.addRect (r);
 	CCoord focusWidth = getFrame ()->getFocusWidth ();
 	r.inset (focusWidth, focusWidth);
@@ -1250,7 +1277,7 @@ void GenericStringListDataBrowserSource::dbDrawHeader (CDrawContext* context, co
 //-----------------------------------------------------------------------------
 void GenericStringListDataBrowserSource::dbDrawCell (CDrawContext* context, const CRect& size, int32_t row, int32_t column, int32_t flags, CDataBrowser* browser)
 {
-	context->setDrawMode (kAliasing);
+	context->setDrawMode (kAliasing | kIntegralMode);
 	context->setLineWidth (1.);
 	context->setFillColor (row % 2 ? rowBackColor : rowAlternateBackColor);
 	context->drawRect (size, kDrawFilled);

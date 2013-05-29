@@ -955,9 +955,15 @@ void PLUGIN_API VST3Editor::close ()
 		frame->unregisterMouseObserver (this);
 		frame->removeAll (true);
 		int32_t refCount = frame->getNbReference ();
-		frame->forget ();
 		if (refCount == 1)
+		{
+			frame->close ();
 			frame = 0;
+		}
+		else
+		{
+			frame->forget ();
+		}
 	}
 }
 
@@ -1136,6 +1142,22 @@ void VST3Editor::syncParameterTags ()
 		{
 			UIDescription::DeferChanges dc (description);
 			Steinberg::Vst::EditController* editController = getController ();
+
+			actionPerformer->beginGroupAction ("Sync Parameter Tags");
+
+			std::map<Steinberg::Vst::UnitID, Steinberg::Vst::UnitInfo> units;
+			Steinberg::FUnknownPtr<Steinberg::Vst::IUnitInfo> ec2 (editController->unknownCast ());
+			if (ec2)
+			{
+				Steinberg::int32 unitCount = ec2->getUnitCount ();
+				Steinberg::Vst::UnitInfo info;
+				for (int32_t i = 0; i < unitCount; i++)
+				{
+					ec2->getUnitInfo (i, info);
+					units.insert (std::pair<Steinberg::Vst::UnitID, Steinberg::Vst::UnitInfo> (info.id, info));
+				}
+			}
+
 			int32_t paramCount = editController->getParameterCount ();
 			for (int32_t i = 0; i < paramCount; i++)
 			{
@@ -1143,12 +1165,35 @@ void VST3Editor::syncParameterTags ()
 				if (editController->getParameterInfo (i, info) == Steinberg::kResultTrue)
 				{
 					Steinberg::String paramTitle (info.title);
+					if (info.unitId != Steinberg::Vst::kRootUnitId)
+					{
+						std::map<Steinberg::Vst::UnitID, Steinberg::Vst::UnitInfo>::const_iterator it = units.find (info.unitId);
+						if (it != units.end ())
+						{
+							paramTitle.insertAt (0, "::");
+							paramTitle.insertAt (0, it->second.name);
+						}
+					}
+					else if (units.size () > 0)
+					{
+						paramTitle.insertAt (0, "::");
+						paramTitle.insertAt (0, "Root");
+					}
 					paramTitle.toMultiByte (Steinberg::kCP_Utf8);
+					paramTitle.removeChars (' ');
 					Steinberg::String paramIDStr;
 					paramIDStr.printInt64 (info.id);
-					actionPerformer->performTagChange (paramTitle, paramIDStr);
+					if (UTF8StringPtr tagName = description->lookupControlTagName (info.id))
+					{
+						actionPerformer->performTagNameChange (tagName, paramTitle);
+					}
+					else
+					{
+						actionPerformer->performTagChange (paramTitle, paramIDStr);
+					}
 				}
 			}
+			actionPerformer->finishGroupAction ();
 		}
 	}
 #endif

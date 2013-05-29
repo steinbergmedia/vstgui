@@ -38,6 +38,8 @@
 #include "ccontrol.h"
 #include "../cfont.h"
 #include "../ccolor.h"
+#include "../cbitmap.h"
+#include "../cdrawcontext.h"
 
 namespace VSTGUI {
 
@@ -227,6 +229,28 @@ public:
 	
 	virtual void setStyle (Style style);
 	Style getStyle () const { return style; }
+
+	enum IconPosition {
+		kLeft,			///< icon left, text centered in the area next to the icon
+		kCenterAbove,	///< icon centered above the text, text centered
+		kCenterBelow,	///< icon centered below the text, text centered
+		kRight			///< icon right, text centered in the area next to the icon
+	};
+	
+	virtual void setIcon (CBitmap* bitmap);
+	CBitmap* getIcon () const { return icon; }
+	
+	virtual void setIconHighlighted (CBitmap* bitmap);
+	CBitmap* getIconHighlighted () const { return iconHighlighted; }
+
+	virtual void setIconPosition (IconPosition pos);
+	IconPosition getIconPosition () const { return iconPosition; }
+	
+	virtual void setTextMargin (CCoord margin);
+	CCoord getTextMargin () const { return textMargin; }
+
+	virtual void setTextAlignment (CHoriTxtAlign hAlign);
+	CHoriTxtAlign getTextAlignment () const { return horiTxtAlign; }
 	//@}
 
 	// overrides
@@ -248,6 +272,8 @@ protected:
 
 	CFontRef font;
 	CGraphicsPath* _path;
+	SharedPointer<CBitmap> icon;
+	SharedPointer<CBitmap> iconHighlighted;
 	
 	CColor textColor;
 	CColor gradientStartColor;
@@ -261,7 +287,10 @@ protected:
 
 	CCoord frameWidth;
 	CCoord roundRadius;
+	CCoord textMargin;
 	
+	CHoriTxtAlign horiTxtAlign;
+	IconPosition iconPosition;
 	Style style;
 	std::string title;
 private:

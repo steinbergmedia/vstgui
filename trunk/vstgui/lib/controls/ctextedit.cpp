@@ -214,7 +214,7 @@ CRect CTextEdit::platformGetSize () const
 //------------------------------------------------------------------------
 CRect CTextEdit::platformGetVisibleSize () const
 {
-	CRect rect = getVisibleSize ();
+	CRect rect = getVisibleViewSize ();
 	CPoint p (0, 0);
 	localToFrame (p);
 	rect.offset (p.x, p.y);

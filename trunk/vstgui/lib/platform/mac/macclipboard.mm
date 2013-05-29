@@ -167,6 +167,7 @@ IDataPackage* createDragDataPackage (NSPasteboard* pasteboard)
 }
 
 #if MAC_CARBON
+//-----------------------------------------------------------------------------
 IDataPackage* createCarbonDragDataPackage (DragRef drag)
 {
 	PasteboardRef pr;

@@ -56,7 +56,7 @@ CView* UIViewCreatorController::createView (const UIAttributes& attributes, IUID
 			UIViewFactory* factory = dynamic_cast<UIViewFactory*> (description->getViewFactory ());
 			dataSource = new UIViewCreatorDataSource (factory, description);
 			UIEditController::setupDataSource (dataSource);
-			CDataBrowser* dataBrowser = new CDataBrowser (CRect (0, 0, 0, 0), 0, dataSource, CDataBrowser::kDrawRowLines|CScrollView::kHorizontalScrollbar | CScrollView::kVerticalScrollbar);
+			CDataBrowser* dataBrowser = new CDataBrowser (CRect (0, 0, 0, 0), dataSource, CDataBrowser::kDrawRowLines|CScrollView::kHorizontalScrollbar | CScrollView::kVerticalScrollbar);
 			return dataBrowser;
 		}
 	}

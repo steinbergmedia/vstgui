@@ -55,6 +55,9 @@ public:
 	void setCurrentViewIndex (int32_t viewIndex);
 	int32_t getCurrentViewIndex () const { return currentViewIndex; }
 
+	void setAnimationTime (int32_t ms);
+	int32_t getAnimationTime () const { return animationTime; }
+
 //-----------------------------------------------------------------------------
 	CLASS_METHODS (UIViewSwitchContainer, CViewContainer)
 protected:
@@ -63,6 +66,7 @@ protected:
 
 	IViewSwitchController* controller;
 	int32_t currentViewIndex;
+	int32_t animationTime;
 };
 
 //-----------------------------------------------------------------------------

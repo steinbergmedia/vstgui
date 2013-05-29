@@ -351,6 +351,12 @@ namespace Standard {
 class BoxBlur : public FilterBase
 {
 public:
+	static IFilter* CreateFunction (IdStringPtr _name)
+	{
+		return new BoxBlur ();
+	}
+
+private:
 	BoxBlur ()
 	: FilterBase ("A Box Blur Filter")
 	{
@@ -358,12 +364,7 @@ public:
 		registerProperty (Property::kRadius, BitmapFilter::Property ((int32_t)2));
 	}
 
-	static IFilter* CreateFunction (IdStringPtr _name)
-	{
-		return new BoxBlur ();
-	}
-
-	bool run (bool replace)
+	bool run (bool replace) VSTGUI_OVERRIDE_VMETHOD
 	{
 		CBitmap* inputBitmap = getInputBitmap ();
 		uint32_t radius = (uint32_t)getProperty (Property::kRadius).getInteger ();
@@ -478,19 +479,20 @@ private:
 //----------------------------------------------------------------------------------------------------
 class ScaleBase : public FilterBase
 {
-public:
-	ScaleBase ()
-	: FilterBase ("")
+protected:
+	ScaleBase (UTF8StringPtr description = "")
+	: FilterBase (description)
 	{
 		registerProperty (Property::kInputBitmap, BitmapFilter::Property (BitmapFilter::Property::kObject));
 		registerProperty (Property::kOutputRect, CRect (0, 0, 10, 10));
 	}
 	
-	bool run (bool replace)
+	bool run (bool replace) VSTGUI_OVERRIDE_VMETHOD
 	{
 		if (replace)
 			return false;
 		CRect outSize = getProperty (Property::kOutputRect).getRect ();
+		outSize.makeIntegral ();
 		if (outSize.getWidth () <= 0 || outSize.getHeight () <= 0)
 			return false;
 		CBitmap* inputBitmap = getInputBitmap ();
@@ -520,7 +522,10 @@ public:
 	{
 		return new ScaleLinear ();
 	}
-	
+
+private:
+	ScaleLinear () : ScaleBase ("A Linear Scale Filter") {}
+
 	void process (CBitmapPixelAccess& originalBitmap, CBitmapPixelAccess& copyBitmap)
 	{
 		originalBitmap.setPosition (0, 0);
@@ -569,14 +574,13 @@ public:
 class ScaleBiliniear : public ScaleBase
 {
 public:
-	ScaleBiliniear ()
-	{
-	}
-
 	static IFilter* CreateFunction (IdStringPtr _name)
 	{
 		return new ScaleBiliniear ();
 	}
+
+private:
+	ScaleBiliniear () : ScaleBase ("A Biliniear Scale Filter") {}
 
 	void process (CBitmapPixelAccess& originalBitmap, CBitmapPixelAccess& copyBitmap)
 	{
@@ -632,7 +636,7 @@ public:
 //----------------------------------------------------------------------------------------------------
 class SimpleFilter : public FilterBase
 {
-public:
+protected:
 	typedef void (*ProcessFunction) (CColor& color, FilterBase* self);
 
 	SimpleFilter (UTF8StringPtr description, ProcessFunction function)
@@ -642,7 +646,7 @@ public:
 		registerProperty (Property::kInputBitmap, BitmapFilter::Property (BitmapFilter::Property::kObject));
 	}
 
-	bool run (bool replace)
+	bool run (bool replace) VSTGUI_OVERRIDE_VMETHOD
 	{
 		CBitmap* inputBitmap = getInputBitmap ();
 		if (inputBitmap == 0)
@@ -693,16 +697,17 @@ public:
 class SetColor : public SimpleFilter
 {
 public:
-	SetColor ()
-	: SimpleFilter ("", processSetColor)
-	{
-		registerProperty (Property::kIgnoreAlphaColorValue, BitmapFilter::Property ((int32_t)1));
-		registerProperty (Property::kInputColor, BitmapFilter::Property (kWhiteCColor));
-	}
-
 	static IFilter* CreateFunction (IdStringPtr _name)
 	{
 		return new SetColor ();
+	}
+
+private:
+	SetColor ()
+	: SimpleFilter ("A Set Color Filter", processSetColor)
+	{
+		registerProperty (Property::kIgnoreAlphaColorValue, BitmapFilter::Property ((int32_t)1));
+		registerProperty (Property::kInputColor, BitmapFilter::Property (kWhiteCColor));
 	}
 
 	static void processSetColor (CColor& color, FilterBase* obj)
@@ -716,7 +721,7 @@ public:
 	bool ignoreAlpha;
 	CColor inputColor;
 
-	bool run (bool replace)
+	bool run (bool replace) VSTGUI_OVERRIDE_VMETHOD
 	{
 		inputColor = getProperty (Property::kInputColor).getColor ();
 		ignoreAlpha = getProperty (Property::kIgnoreAlphaColorValue).getInteger () > 0;
@@ -730,14 +735,15 @@ public:
 class Grayscale : public SimpleFilter
 {
 public:
-	Grayscale ()
-	: SimpleFilter ("", processGrayscale)
-	{
-	}
-
 	static IFilter* CreateFunction (IdStringPtr name)
 	{
 		return new Grayscale ();
+	}
+
+private:
+	Grayscale ()
+	: SimpleFilter ("A Grayscale Filter", processGrayscale)
+	{
 	}
 
 	static void processGrayscale (CColor& color, FilterBase* obj)
@@ -753,16 +759,17 @@ public:
 class ReplaceColor : public SimpleFilter
 {
 public:
-	ReplaceColor ()
-	: SimpleFilter ("", processReplace)
-	{
-		registerProperty (Property::kInputColor, BitmapFilter::Property (kWhiteCColor));
-		registerProperty (Property::kOutputColor, BitmapFilter::Property (kTransparentCColor));
-	}
-
 	static IFilter* CreateFunction (IdStringPtr name)
 	{
 		return new ReplaceColor ();
+	}
+
+private:
+	ReplaceColor ()
+	: SimpleFilter ("A Replace Color Filter", processReplace)
+	{
+		registerProperty (Property::kInputColor, BitmapFilter::Property (kWhiteCColor));
+		registerProperty (Property::kOutputColor, BitmapFilter::Property (kTransparentCColor));
 	}
 
 	static void processReplace (CColor& color, FilterBase* obj)
@@ -775,7 +782,7 @@ public:
 	CColor inputColor;
 	CColor outputColor;
 
-	bool run (bool replace)
+	bool run (bool replace) VSTGUI_OVERRIDE_VMETHOD
 	{
 		inputColor = getProperty (Property::kInputColor).getColor ();
 		outputColor = getProperty (Property::kOutputColor).getColor ();

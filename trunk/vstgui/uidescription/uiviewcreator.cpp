@@ -612,7 +612,7 @@ public:
 	CViewContainerCreator () { UIViewFactory::registerViewCreator (*this); }
 	IdStringPtr getViewName () const { return "CViewContainer"; }
 	IdStringPtr getBaseViewName () const { return "CView"; }
-	CView* create (const UIAttributes& attributes, IUIDescription* description) const { return new CViewContainer (CRect (0, 0, 100, 100), 0); }
+	CView* create (const UIAttributes& attributes, IUIDescription* description) const { return new CViewContainer (CRect (0, 0, 100, 100)); }
 	bool apply (CView* view, const UIAttributes& attributes, IUIDescription* description) const
 	{
 		CViewContainer* viewContainer = dynamic_cast<CViewContainer*> (view);
@@ -850,7 +850,7 @@ public:
 	CScrollViewCreator () { UIViewFactory::registerViewCreator (*this); }
 	IdStringPtr getViewName () const { return "CScrollView"; }
 	IdStringPtr getBaseViewName () const { return "CViewContainer"; }
-	CView* create (const UIAttributes& attributes, IUIDescription* description) const { return new CScrollView (CRect (0, 0, 100, 100), CRect (0, 0, 200, 200), 0, CScrollView::kHorizontalScrollbar|CScrollView::kVerticalScrollbar); }
+	CView* create (const UIAttributes& attributes, IUIDescription* description) const { return new CScrollView (CRect (0, 0, 100, 100), CRect (0, 0, 200, 200), CScrollView::kHorizontalScrollbar|CScrollView::kVerticalScrollbar); }
 	bool apply (CView* view, const UIAttributes& attributes, IUIDescription* description) const
 	{
 		CScrollView* scrollView = dynamic_cast<CScrollView*> (view);
@@ -1484,6 +1484,7 @@ public:
 		const std::string* textAlignmentAttr = attributes.getAttributeValue ("text-alignment");
 		const std::string* textInsetAttr = attributes.getAttributeValue ("text-inset");
 		const std::string* roundRectRadiusAttr = attributes.getAttributeValue ("round-rect-radius");
+		const std::string* frameWidthAttr = attributes.getAttributeValue ("frame-width");
 		const std::string* precisionAttr = attributes.getAttributeValue ("value-precision");
 
 		CColor color;
@@ -1550,6 +1551,11 @@ public:
 			CCoord radius = strtof (roundRectRadiusAttr->c_str (), 0);
 			display->setRoundRectRadius (radius);
 		}
+		if (frameWidthAttr)
+		{
+			CCoord width = strtof (frameWidthAttr->c_str (), 0);
+			display->setFrameWidth (width);
+		}
 		int32_t style = display->getStyle ();
 		if (style3DInAttr)
 		{
@@ -1615,6 +1621,11 @@ public:
 		attributeNames.push_back ("back-color");
 		attributeNames.push_back ("frame-color");
 		attributeNames.push_back ("shadow-color");
+		attributeNames.push_back ("round-rect-radius");
+		attributeNames.push_back ("frame-width");
+		attributeNames.push_back ("text-alignment");
+		attributeNames.push_back ("text-inset");
+		attributeNames.push_back ("value-precision");
 		attributeNames.push_back ("font-antialias");
 		attributeNames.push_back ("style-3D-in");
 		attributeNames.push_back ("style-3D-out");
@@ -1623,10 +1634,6 @@ public:
 		attributeNames.push_back ("style-no-draw");
 		attributeNames.push_back ("style-shadow-text");
 		attributeNames.push_back ("style-round-rect");
-		attributeNames.push_back ("round-rect-radius");
-		attributeNames.push_back ("text-alignment");
-		attributeNames.push_back ("text-inset");
-		attributeNames.push_back ("value-precision");
 		return true;
 	}
 	AttrType getAttributeType (const std::string& attributeName) const
@@ -1645,6 +1652,7 @@ public:
 		else if (attributeName == "style-shadow-text") return kBooleanType;
 		else if (attributeName == "style-round-rect") return kBooleanType;
 		else if (attributeName == "round-rect-radius") return kFloatType;
+		else if (attributeName == "frame-width") return kFloatType;
 		else if (attributeName == "text-alignment") return kStringType;
 		else if (attributeName == "text-inset") return kPointType;
 		else if (attributeName == "value-precision") return kIntegerType;
@@ -1740,6 +1748,13 @@ public:
 		{
 			std::stringstream str;
 			str << pd->getRoundRectRadius ();
+			stringValue = str.str ();
+			return true;
+		}
+		else if (attributeName == "frame-width")
+		{
+			std::stringstream str;
+			str << pd->getFrameWidth ();
 			stringValue = str.str ();
 			return true;
 		}
@@ -2083,10 +2098,60 @@ public:
 		{
 			button->setStyle (*attr == "true" ? CTextButton::kKickStyle : CTextButton::kOnOffStyle);
 		}
+		attr = attributes.getAttributeValue ("icon");
+		if (attr)
+		{
+			CBitmap* bitmap = description->getBitmap (attr->c_str ());
+			button->setIcon (bitmap);
+		}
+		attr = attributes.getAttributeValue ("icon-highlighted");
+		if (attr)
+		{
+			CBitmap* bitmap = description->getBitmap (attr->c_str ());
+			button->setIconHighlighted (bitmap);
+		}
+		attr = attributes.getAttributeValue ("icon-position");
+		if (attr)
+		{
+			CTextButton::IconPosition pos = CTextButton::kLeft;
+			if (*attr == "left")
+			{
+				pos = CTextButton::kLeft;
+			}
+			else if (*attr == "right")
+			{
+				pos = CTextButton::kRight;
+			}
+			else if (*attr == "center above text")
+			{
+				pos = CTextButton::kCenterAbove;
+			}
+			else if (*attr == "center below text")
+			{
+				pos = CTextButton::kCenterBelow;
+			}
+			button->setIconPosition (pos);
+		}
+		double margin;
+		if (attributes.getDoubleAttribute ("icon-text-margin", margin))
+		{
+			button->setTextMargin (margin);
+		}
+		attr = attributes.getAttributeValue ("text-alignment");
+		if (attr)
+		{
+			CHoriTxtAlign align = kCenterText;
+			if (*attr == "left")
+				align = kLeftText;
+			else if (*attr == "right")
+				align = kRightText;
+			button->setTextAlignment (align);
+		}
 		return true;
 	}
 	bool getAttributeNames (std::list<std::string>& attributeNames) const
 	{
+		attributeNames.push_back ("kick-style");
 		attributeNames.push_back ("title");
 		attributeNames.push_back ("font");
 		attributeNames.push_back ("text-color");
@@ -2097,9 +2162,13 @@ public:
 		attributeNames.push_back ("gradient-end-color-highlighted");
 		attributeNames.push_back ("frame-color");
 		attributeNames.push_back ("frame-color-highlighted");
-		attributeNames.push_back ("frame-width");
 		attributeNames.push_back ("round-radius");
-		attributeNames.push_back ("kick-style");
+		attributeNames.push_back ("frame-width");
+		attributeNames.push_back ("icon-text-margin");
+		attributeNames.push_back ("text-alignment");
+		attributeNames.push_back ("icon");
+		attributeNames.push_back ("icon-highlighted");
+		attributeNames.push_back ("icon-position");
 		return true;
 	}
 	AttrType getAttributeType (const std::string& attributeName) const
@@ -2117,7 +2186,33 @@ public:
 		if (attributeName == "frame-width") return kFloatType;
 		if (attributeName == "round-radius") return kFloatType;
 		if (attributeName == "kick-style") return kBooleanType;
+		if (attributeName == "icon") return kBitmapType;
+		if (attributeName == "icon-highlighted") return kBitmapType;
+		if (attributeName == "icon-position") return kListType;
+		if (attributeName == "icon-text-margin") return kFloatType;
+		if (attributeName == "text-alignment") return kStringType;
 		return kUnknownType;
+	}
+	bool getPossibleListValues (const std::string& attributeName, std::list<const std::string*>& values) const
+	{
+		if (attributeName == "icon-position")
+		{
+			static std::string positions[] = {
+				"left",
+				"center above text",
+				"center below text",
+				"right",
+				""
+			};
+			int32_t index = 0;
+			while (positions[index].size () > 0)
+			{
+				values.push_back(&positions[index]);
+				index++;
+			}
+			return true;
+		}
+		return false;
 	}
 	bool getAttributeValue (CView* view, const std::string& attributeName, std::string& stringValue, IUIDescription* desc) const
 	{
@@ -2207,6 +2302,67 @@ public:
 		else if (attributeName == "kick-style")
 		{
 			stringValue = button->getStyle() == CTextButton::kKickStyle ? "true" : "false";
+			return true;
+		}
+		else if (attributeName == "icon")
+		{
+			CBitmap* bitmap = button->getIcon ();
+			if (bitmap)
+			{
+				return bitmapToString (bitmap, stringValue, desc);
+			}
+		}
+		else if (attributeName == "icon-highlighted")
+		{
+			CBitmap* bitmap = button->getIconHighlighted ();
+			if (bitmap)
+			{
+				return bitmapToString (bitmap, stringValue, desc);
+			}
+		}
+		else if (attributeName == "icon-position")
+		{
+			switch (button->getIconPosition ())
+			{
+				case CTextButton::kLeft:
+				{
+					stringValue = "left";
+					break;
+				}
+				case CTextButton::kRight:
+				{
+					stringValue = "right";
+					break;
+				}
+				case CTextButton::kCenterAbove:
+				{
+					stringValue = "center above text";
+					break;
+				}
+				case CTextButton::kCenterBelow:
+				{
+					stringValue = "center below text";
+					break;
+				}
+			}
+			return true;
+		}
+		else if (attributeName == "icon-text-margin")
+		{
+			std::stringstream str;
+			str << button->getTextMargin ();
+			stringValue = str.str ();
+			return true;
+		}
+		else if (attributeName == "text-alignment")
+		{
+			CHoriTxtAlign align = button->getTextAlignment ();
+			switch (align)
+			{
+				case kLeftText: stringValue = "left"; break;
+				case kRightText: stringValue = "right"; break;
+				case kCenterText: stringValue = "center"; break;
+			}
 			return true;
 		}
 		return false;
@@ -3282,18 +3438,25 @@ public:
 				controller->setSwitchControlTag (tag);
 			}
 		}
+		int32_t animationTime;
+		if (attributes.getIntegerAttribute ("animation-time", animationTime))
+		{
+			viewSwitch->setAnimationTime (animationTime);
+		}
 		return true;
 	}
 	bool getAttributeNames (std::list<std::string>& attributeNames) const
 	{
 		attributeNames.push_back ("template-names");
 		attributeNames.push_back ("template-switch-control");
+		attributeNames.push_back ("animation-time");
 		return true;
 	}
 	AttrType getAttributeType (const std::string& attributeName) const
 	{
 		if (attributeName == "template-names") return kStringType;
 		if (attributeName == "template-switch-control") return kTagType;
+		if (attributeName == "animation-time") return kIntegerType;
 		return kUnknownType;
 	}
 	bool getAttributeValue (CView* view, const std::string& attributeName, std::string& stringValue, IUIDescription* desc) const
@@ -3310,7 +3473,7 @@ public:
 				return true;
 			}
 		}
-		if (attributeName == "template-switch-control")
+		else if (attributeName == "template-switch-control")
 		{
 			UIDescriptionViewSwitchController* controller = dynamic_cast<UIDescriptionViewSwitchController*> (viewSwitch->getController ());
 			if (controller)
@@ -3325,6 +3488,13 @@ public:
 				}
 				return true;
 			}
+		}
+		else if (attributeName == "animation-time")
+		{
+			std::stringstream stream;
+			stream << (int32_t)viewSwitch->getAnimationTime ();
+			stringValue = stream.str ();
+			return true;
 		}
 		return false;
 	}

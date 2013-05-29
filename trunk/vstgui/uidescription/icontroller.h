@@ -30,6 +30,22 @@ public:
 	virtual IController* createSubController (UTF8StringPtr name, IUIDescription* description) { return 0; }
 };
 
+//-----------------------------------------------------------------------------
+/* helper method to get the controller of a view */
+inline IController* getViewController (const CView* view, bool deep = false)
+{
+	IController* controller = 0;
+	int32_t size = sizeof (IController*);
+	if (view->getAttribute (kCViewControllerAttribute, sizeof (IController*), &controller, size) == false && deep)
+	{
+		if (view->getParentView () && view->getParentView () != view)
+		{
+			return getViewController (view->getParentView (), deep);
+		}
+	}
+	return controller;
+}
+
 } // namespace
 
 #endif // __icontroller__
