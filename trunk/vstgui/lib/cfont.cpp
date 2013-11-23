@@ -2,11 +2,11 @@
 // VST Plug-Ins SDK
 // VSTGUI: Graphical User Interface Framework not only for VST plugins :
 //
-// Version 4.0
+// Version 4.2
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
-// (c) 2011, Steinberg Media Technologies, All Rights Reserved
+// (c) 2013, Steinberg Media Technologies, All Rights Reserved
 //-----------------------------------------------------------------------------
 // Redistribution and use in source and binary forms, with or without modification,
 // are permitted provided that the following conditions are met:
@@ -22,7 +22,7 @@
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
 // ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-// WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A  PARTICULAR PURPOSE ARE DISCLAIMED.
+// WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
 // IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
 // INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
 // BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
@@ -40,6 +40,16 @@ namespace VSTGUI {
 // Global Fonts
 //-----------------------------------------------------------------------------
 #if MAC
+	#if TARGET_OS_IPHONE
+	static CFontDesc gSystemFont ("Helvetica", 12);
+	static CFontDesc gNormalFontVeryBig ("ArialMT", 18);
+	static CFontDesc gNormalFontBig ("ArialMT", 14);
+	static CFontDesc gNormalFont ("ArialMT", 12);
+	static CFontDesc gNormalFontSmall ("ArialMT", 11);
+	static CFontDesc gNormalFontSmaller ("ArialMT", 10);
+	static CFontDesc gNormalFontVerySmall ("ArialMT", 9);
+	static CFontDesc gSymbolFont ("Symbol", 12);
+	#else
 	static CFontDesc gSystemFont ("Lucida Grande", 12);
 	static CFontDesc gNormalFontVeryBig ("Arial", 18);
 	static CFontDesc gNormalFontBig ("Arial", 14);
@@ -48,6 +58,7 @@ namespace VSTGUI {
 	static CFontDesc gNormalFontSmaller ("Arial", 10);
 	static CFontDesc gNormalFontVerySmall ("Arial", 9);
 	static CFontDesc gSymbolFont ("Symbol", 12);
+	#endif
 
 #elif WINDOWS
 	static CFontDesc gSystemFont ("Arial", 12);

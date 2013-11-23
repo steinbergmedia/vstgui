@@ -1,12 +1,12 @@
 //-----------------------------------------------------------------------------
 // VST Plug-Ins SDK
-// VSTGUI: Graphical User Interface Framework not only for VST plugins : 
+// VSTGUI: Graphical User Interface Framework for VST plugins
 //
-// Version 4.0
+// Version 4.2
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
-// (c) 2011, Steinberg Media Technologies, All Rights Reserved
+// (c) 2013, Steinberg Media Technologies, All Rights Reserved
 //-----------------------------------------------------------------------------
 // Redistribution and use in source and binary forms, with or without modification,
 // are permitted provided that the following conditions are met:
@@ -22,7 +22,7 @@
 // 
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
 // ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED 
-// WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A  PARTICULAR PURPOSE ARE DISCLAIMED. 
+// WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. 
 // IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, 
 // INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, 
 // BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, 
@@ -697,6 +697,33 @@ public:
 
 };
 CViewContainerCreator __CViewContainerCreator;
+
+//-----------------------------------------------------------------------------
+class CLayeredViewContainerCreator : public IViewCreator
+{
+public:
+	CLayeredViewContainerCreator () { UIViewFactory::registerViewCreator (*this); }
+	IdStringPtr getViewName () const { return "CLayeredViewContainer"; }
+	IdStringPtr getBaseViewName () const { return "CViewContainer"; }
+	CView* create (const UIAttributes& attributes, IUIDescription* description) const { return new CLayeredViewContainer (CRect (0, 0, 100, 100)); }
+	bool apply (CView* view, const UIAttributes& attributes, IUIDescription* description) const
+	{
+		return true;
+	}
+	bool getAttributeNames (std::list<std::string>& attributeNames) const
+	{
+		return true;
+	}
+	AttrType getAttributeType (const std::string& attributeName) const
+	{
+		return kUnknownType;
+	}
+	bool getAttributeValue (CView* view, const std::string& attributeName, std::string& stringValue, IUIDescription* desc) const
+	{
+		return false;
+	}
+};
+CLayeredViewContainerCreator __CLayeredViewContainerCreator;
 
 //-----------------------------------------------------------------------------
 class CRowColumnViewCreator : public IViewCreator
@@ -2839,7 +2866,7 @@ public:
 			return false;
 
 		const std::string* transparentHandleAttr = attributes.getAttributeValue ("transparent-handle");
-		const std::string* freeClickAttr = attributes.getAttributeValue ("free-click");
+		const std::string* modeAttr = attributes.getAttributeValue ("mode");
 		const std::string* handleBitmapAttr = attributes.getAttributeValue ("handle-bitmap");
 		const std::string* handleOffsetAttr = attributes.getAttributeValue ("handle-offset");
 		const std::string* bitmapOffsetAttr = attributes.getAttributeValue ("bitmap-offset");
@@ -2855,11 +2882,26 @@ public:
 		const std::string* drawBackColorAttr = attributes.getAttributeValue ("draw-back-color");
 		const std::string* drawValueColorAttr = attributes.getAttributeValue ("draw-value-color");
 
+		// support old attribute name and convert it
+		const std::string* freeClickAttr = attributes.getAttributeValue ("free-click");
+		if (freeClickAttr)
+		{
+			slider->setMode (*freeClickAttr == "true" ? CSlider::kFreeClickMode : CSlider::kTouchMode);
+		}
+
+
 		CPoint p;
 		if (transparentHandleAttr)
 			slider->setDrawTransparentHandle (*transparentHandleAttr == "true");
-		if (freeClickAttr)
-			slider->setFreeClick (*freeClickAttr == "true");
+		if (modeAttr)
+		{
+			if (*modeAttr == "touch")
+				slider->setMode (CSlider::kTouchMode);
+			else if (*modeAttr == "relative touch")
+				slider->setMode (CSlider::kRelativeTouchMode);
+			else if (*modeAttr == "free click")
+				slider->setMode (CSlider::kFreeClickMode);
+		}
 		if (handleBitmapAttr && *handleBitmapAttr != "")
 		{
 			CBitmap* bitmap = description->getBitmap (handleBitmapAttr->c_str ());
@@ -2994,7 +3036,7 @@ public:
 	bool getAttributeNames (std::list<std::string>& attributeNames) const
 	{
 		attributeNames.push_back ("transparent-handle");
-		attributeNames.push_back ("free-click");
+		attributeNames.push_back ("mode");
 		attributeNames.push_back ("handle-bitmap");
 		attributeNames.push_back ("handle-offset");
 		attributeNames.push_back ("bitmap-offset");
@@ -3014,7 +3056,7 @@ public:
 	AttrType getAttributeType (const std::string& attributeName) const
 	{
 		if (attributeName == "transparent-handle") return kBooleanType;
-		if (attributeName == "free-click") return kBooleanType;
+		if (attributeName == "mode") return kListType;
 		if (attributeName == "handle-bitmap") return kBitmapType;
 		if (attributeName == "handle-offset") return kPointType;
 		if (attributeName == "bitmap-offset") return kPointType;
@@ -3041,9 +3083,17 @@ public:
 			stringValue = slider->getDrawTransparentHandle () ? "true" : "false";
 			return true;
 		}
-		else if (attributeName == "free-click")
+		else if (attributeName == "mode")
 		{
-			stringValue = slider->getFreeClick () ? "true" : "false";
+			switch (slider->getMode ())
+			{
+				case CSlider::kTouchMode:
+					stringValue = "touch"; break;
+				case CSlider::kRelativeTouchMode:
+					stringValue = "relative touch"; break;
+				case CSlider::kFreeClickMode:
+					stringValue = "free click"; break;
+			}
 			return true;
 		}
 		else if (attributeName == "handle-bitmap")
@@ -3160,6 +3210,17 @@ public:
 	
 			values.push_back (&kHorizontal);
 			values.push_back (&kVertical);
+			return true;
+		}
+		if (attributeName == "mode")
+		{
+			static std::string kTouch = "touch";
+			static std::string kRelativeTouch = "relative touch";
+			static std::string kFreeClick = "free click";
+			
+			values.push_back (&kTouch);
+			values.push_back (&kRelativeTouch);
+			values.push_back (&kFreeClick);
 			return true;
 		}
 		return false;
@@ -3881,6 +3942,33 @@ public:
 
 };
 CGradientViewCreator __gCGradientViewCreator;
+
+//-----------------------------------------------------------------------------
+class CXYPadCreator : public IViewCreator
+{
+public:
+	CXYPadCreator () { UIViewFactory::registerViewCreator (*this); }
+	IdStringPtr getViewName () const { return "CXYPad"; }
+	IdStringPtr getBaseViewName () const { return "CParamDisplay"; }
+	CView* create (const UIAttributes& attributes, IUIDescription* description) const { return new CXYPad (CRect (0, 0, 100, 20)); }
+	bool apply (CView* view, const UIAttributes& attributes, IUIDescription* description) const
+	{
+		return true;
+	}
+	bool getAttributeNames (std::list<std::string>& attributeNames) const
+	{
+		return true;
+	}
+	AttrType getAttributeType (const std::string& attributeName) const
+	{
+		return kUnknownType;
+	}
+	bool getAttributeValue (CView* view, const std::string& attributeName, std::string& stringValue, IUIDescription* desc) const
+	{
+		return false;
+	}
+};
+CXYPadCreator __gCXYPadCreator;
 
 
 }} // namespace

@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		F40E268A1813FEC4001CAC0D /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F40E26891813FEC4001CAC0D /* QuartzCore.framework */; };
 		F41CA1C8112E99F000D425D7 /* animationtest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F41CA1C7112E99F000D425D7 /* animationtest.cpp */; };
 		F41CA21F112E9E6B00D425D7 /* AnimationTest.uidesc in Resources */ = {isa = PBXBuildFile; fileRef = F41CA21E112E9E6B00D425D7 /* AnimationTest.uidesc */; };
 		F42731DE1125507F00BE2194 /* factory.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F42731DD1125507F00BE2194 /* factory.cpp */; };
@@ -47,6 +48,20 @@
 			remoteGlobalIDString = F497F0AD1308094300F0A613;
 			remoteInfo = vstgui;
 		};
+		F40E268E1813FEC4001CAC0D /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = F40DCF9913119C240084A8AE /* vstgui.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = F4CC1E811709F2EC008F07FD;
+			remoteInfo = unittests;
+		};
+		F40E26901813FEC4001CAC0D /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = F40DCF9913119C240084A8AE /* vstgui.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = F4E9C69317A8266200F42EF8;
+			remoteInfo = "vstgui-ios";
+		};
 		F464566D137FFD7400209366 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = F40DCF9913119C240084A8AE /* vstgui.xcodeproj */;
@@ -67,6 +82,7 @@
 		508817D409F0C9AD0071BF1A /* uidescription test.vst3 */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "uidescription test.vst3"; sourceTree = BUILT_PRODUCTS_DIR; };
 		508817D609F0C9AD0071BF1A /* uidescription test-Info.plist */ = {isa = PBXFileReference; explicitFileType = text.plist.xml; path = "uidescription test-Info.plist"; sourceTree = "<group>"; };
 		F40DCF9913119C240084A8AE /* vstgui.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = vstgui.xcodeproj; path = ../../../ide/xcode4/vstgui.xcodeproj; sourceTree = "<group>"; };
+		F40E26891813FEC4001CAC0D /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
 		F41CA1C6112E99F000D425D7 /* animationtest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = animationtest.h; path = ../source/animationtest.h; sourceTree = SOURCE_ROOT; };
 		F41CA1C7112E99F000D425D7 /* animationtest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = animationtest.cpp; path = ../source/animationtest.cpp; sourceTree = SOURCE_ROOT; };
 		F41CA21E112E9E6B00D425D7 /* AnimationTest.uidesc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; name = AnimationTest.uidesc; path = ../resource/AnimationTest.uidesc; sourceTree = SOURCE_ROOT; };
@@ -113,6 +129,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F40E268A1813FEC4001CAC0D /* QuartzCore.framework in Frameworks */,
 				F4CF0E1B13B5E17A0027351A /* OpenGL.framework in Frameworks */,
 				F4D7874A1380432A00B06ADC /* libvstgui.a in Frameworks */,
 				F440754A10BE6D00003C59F6 /* Carbon.framework in Frameworks */,
@@ -169,6 +186,7 @@
 		5088180609F0CDD00071BF1A /* External Frameworks and Libraries */ = {
 			isa = PBXGroup;
 			children = (
+				F40E26891813FEC4001CAC0D /* QuartzCore.framework */,
 				F4D787491380432A00B06ADC /* libvstgui.a */,
 				F4CF0E1A13B5E17A0027351A /* OpenGL.framework */,
 				F440754910BE6D00003C59F6 /* Carbon.framework */,
@@ -183,6 +201,8 @@
 			children = (
 				F40DCF9E13119C240084A8AE /* libvstgui.a */,
 				F481925C165D3C050035058F /* libvstgui c++11.a */,
+				F40E268F1813FEC4001CAC0D /* unittests */,
+				F40E26911813FEC4001CAC0D /* libvstgui-ios.a */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -288,6 +308,20 @@
 			fileType = archive.ar;
 			path = libvstgui.a;
 			remoteRef = F40DCF9D13119C240084A8AE /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		F40E268F1813FEC4001CAC0D /* unittests */ = {
+			isa = PBXReferenceProxy;
+			fileType = "compiled.mach-o.executable";
+			path = unittests;
+			remoteRef = F40E268E1813FEC4001CAC0D /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		F40E26911813FEC4001CAC0D /* libvstgui-ios.a */ = {
+			isa = PBXReferenceProxy;
+			fileType = archive.ar;
+			path = "libvstgui-ios.a";
+			remoteRef = F40E26901813FEC4001CAC0D /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
 		F481925C165D3C050035058F /* libvstgui c++11.a */ = {

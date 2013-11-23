@@ -1,12 +1,12 @@
 //-----------------------------------------------------------------------------
 // VST Plug-Ins SDK
-// VSTGUI: Graphical User Interface Framework for VST plugins : 
+// VSTGUI: Graphical User Interface Framework for VST plugins
 //
-// Version 4.0
+// Version 4.2
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
-// (c) 2011, Steinberg Media Technologies, All Rights Reserved
+// (c) 2013, Steinberg Media Technologies, All Rights Reserved
 //-----------------------------------------------------------------------------
 // Redistribution and use in source and binary forms, with or without modification,
 // are permitted provided that the following conditions are met:
@@ -22,7 +22,7 @@
 // 
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
 // ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED 
-// WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A  PARTICULAR PURPOSE ARE DISCLAIMED. 
+// WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. 
 // IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, 
 // INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, 
 // BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, 
@@ -69,11 +69,7 @@ QuartzGraphicsPath::~QuartzGraphicsPath ()
 //-----------------------------------------------------------------------------
 CGradient* QuartzGraphicsPath::createGradient (double color1Start, double color2Start, const CColor& color1, const CColor& color2)
 {
-#if MAC_OS_X_VERSION_MIN_REQUIRED > MAC_OS_X_VERSION_10_4
 	return new QuartzGradient (color1Start, color2Start, color1, color2);
-#else
-	return 0;
-#endif
 }
 
 //-----------------------------------------------------------------------------
@@ -152,6 +148,21 @@ void QuartzGraphicsPath::dirty ()
 		CFRelease (path);
 		path = 0;
 	}
+}
+
+//-----------------------------------------------------------------------------
+bool QuartzGraphicsPath::hitTest (const CPoint& p, bool evenOddFilled, CGraphicsTransform* transform)
+{
+	CGPathRef cgPath = getCGPathRef ();
+	if (cgPath)
+	{
+		CGPoint cgPoint = CGPointMake (p.x, p.y);
+		CGAffineTransform cgTransform;
+		if (transform)
+			cgTransform = createCGAfflineTransform (*transform);
+		return CGPathContainsPoint (cgPath, transform ? &cgTransform : 0, cgPoint, evenOddFilled);
+	}
+	return false;
 }
 
 //-----------------------------------------------------------------------------

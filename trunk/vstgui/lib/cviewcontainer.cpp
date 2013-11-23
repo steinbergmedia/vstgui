@@ -1,12 +1,12 @@
 //-----------------------------------------------------------------------------
 // VST Plug-Ins SDK
-// VSTGUI: Graphical User Interface Framework for VST plugins : 
+// VSTGUI: Graphical User Interface Framework for VST plugins
 //
-// Version 4.0
+// Version 4.2
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
-// (c) 2011, Steinberg Media Technologies, All Rights Reserved
+// (c) 2013, Steinberg Media Technologies, All Rights Reserved
 //-----------------------------------------------------------------------------
 // Redistribution and use in source and binary forms, with or without modification,
 // are permitted provided that the following conditions are met:
@@ -22,7 +22,7 @@
 // 
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
 // ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED 
-// WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A  PARTICULAR PURPOSE ARE DISCLAIMED. 
+// WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. 
 // IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, 
 // INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, 
 // BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, 
@@ -910,6 +910,17 @@ CMouseEventResult CViewContainer::onMouseMoved (CPoint &where, const CButtonStat
 }
 
 //-----------------------------------------------------------------------------
+CMouseEventResult CViewContainer::onMouseCancel ()
+{
+	if (mouseDownView)
+	{
+		CBaseObjectGuard crg (mouseDownView);
+		return mouseDownView->onMouseCancel ();
+	}
+	return kMouseEventHandled;
+}
+
+//-----------------------------------------------------------------------------
 bool CViewContainer::onWheel (const CPoint &where, const CMouseWheelAxis &axis, const float &distance, const CButtonState &buttons)
 {
 	FOREACHSUBVIEW_REVERSE(true)
@@ -1017,6 +1028,80 @@ void CViewContainer::onDragMove (IDataPackage* drag, const CPoint& where)
 	else if (currentDragView)
 		currentDragView->onDragMove (drag, where2);
 }
+
+#if VSTGUI_TOUCH_EVENT_HANDLING
+//-----------------------------------------------------------------------------
+void CViewContainer::onTouchEvent (ITouchEvent& event)
+{
+	ReverseViewIterator it (this);
+	while (*it)
+	{
+		CView* view = *it;
+		CBaseObjectGuard guard (view);
+		if (view->wantsMultiTouchEvents ())
+		{
+			for (const auto& e : event)
+			{
+				if (e.second.state == ITouchEvent::kBegan && e.second.target == 0)
+				{
+					CButtonState buttons (kLButton + (e.second.tapCount > 1 ? kDoubleClick : 0));
+					CPoint where (e.second.location);
+					frameToLocal (where);
+					if (view->hitTest (where, buttons))
+					{
+						view->onTouchEvent (event);
+						break;
+					}
+				}
+			}
+		}
+		it++;
+	}
+}
+
+//-----------------------------------------------------------------------------
+void CViewContainer::findSingleTouchEventTarget (ITouchEvent::Touch& event)
+{
+	assert(event.target == 0);
+	assert(event.state == ITouchEvent::kBegan);
+
+	CButtonState buttons (kLButton + (event.tapCount > 1 ? kDoubleClick : 0));
+	CPoint where (event.location);
+	frameToLocal (where);
+	ReverseViewIterator it (this);
+	while (*it)
+	{
+		CView* view = *it;
+		CBaseObjectGuard guard (view);
+		if (view->getMouseEnabled () && view->isVisible () && view->hitTest (where, buttons))
+		{
+			CViewContainer* container = dynamic_cast<CViewContainer*>(view);
+			if (container)
+			{
+				container->findSingleTouchEventTarget (event);
+				if (event.target != 0)
+					return;
+			}
+			else
+			{
+				CMouseEventResult result = view->onMouseDown (where, buttons);
+				if (result == kMouseEventHandled)
+				{
+					event.target = view;
+					event.targetIsSingleTouch = true;
+					return;
+				}
+				else if (result == kMouseDownEventHandledButDontNeedMovedOrUpEvents)
+				{
+					return;
+				}
+			}
+		}
+		it++;
+	}
+}
+
+#endif
 
 //-----------------------------------------------------------------------------
 void CViewContainer::looseFocus ()

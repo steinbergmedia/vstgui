@@ -1,12 +1,12 @@
 //-----------------------------------------------------------------------------
 // VST Plug-Ins SDK
-// VSTGUI: Graphical User Interface Framework for VST plugins : 
+// VSTGUI: Graphical User Interface Framework for VST plugins
 //
-// Version 4.0
+// Version 4.2
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
-// (c) 2011, Steinberg Media Technologies, All Rights Reserved
+// (c) 2013, Steinberg Media Technologies, All Rights Reserved
 //-----------------------------------------------------------------------------
 // Redistribution and use in source and binary forms, with or without modification,
 // are permitted provided that the following conditions are met:
@@ -22,7 +22,7 @@
 // 
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
 // ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED 
-// WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A  PARTICULAR PURPOSE ARE DISCLAIMED. 
+// WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. 
 // IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, 
 // INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, 
 // BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, 
@@ -46,17 +46,23 @@ class IPlatformTextEdit;
 class IPlatformTextEditCallback;
 class IPlatformOptionMenu;
 class IPlatformOpenGLView;
+class IPlatformViewLayer;
+class IPlatformViewLayerDelegate;
 class CGraphicsPath;
 class CDrawContext;
 class COffscreenContext;
 class IDataPackage;
 struct CRect;
 struct CPoint;
+#if VSTGUI_TOUCH_EVENT_HANDLING
+class ITouchEvent;
+#endif
 
 enum PlatformType {
 	kHWND,
 	kWindowRef,
 	kNSView,
+	kUIView,
 	
 	kDefaultNative = -1
 };
@@ -85,6 +91,9 @@ public:
 
 	virtual void platformOnActivate (bool state) = 0;
 
+#if VSTGUI_TOUCH_EVENT_HANDLING
+	virtual void platformOnTouchEvent (ITouchEvent& event) = 0;
+#endif
 //------------------------------------------------------------------------------------
 };
 
@@ -116,6 +125,8 @@ public:
 #if VSTGUI_OPENGL_SUPPORT
 	virtual IPlatformOpenGLView* createPlatformOpenGLView () = 0; ///< create a native opengl sub view
 #endif // VSTGUI_OPENGL_SUPPORT
+	
+	virtual IPlatformViewLayer* createPlatformViewLayer (IPlatformViewLayerDelegate* drawDelegate, IPlatformViewLayer* parentLayer = 0) = 0; ///< create a native view layer, may return 0 if not supported
 	
 	virtual COffscreenContext* createOffscreenContext (CCoord width, CCoord height) = 0; ///< create an offscreen draw device
 

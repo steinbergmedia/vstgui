@@ -1,12 +1,12 @@
 //-----------------------------------------------------------------------------
 // VST Plug-Ins SDK
-// VSTGUI: Graphical User Interface Framework not only for VST plugins : 
+// VSTGUI: Graphical User Interface Framework for VST plugins
 //
-// Version 4.0
+// Version 4.2
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
-// (c) 2011, Steinberg Media Technologies, All Rights Reserved
+// (c) 2013, Steinberg Media Technologies, All Rights Reserved
 //-----------------------------------------------------------------------------
 // Redistribution and use in source and binary forms, with or without modification,
 // are permitted provided that the following conditions are met:
@@ -22,7 +22,7 @@
 // 
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
 // ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED 
-// WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A  PARTICULAR PURPOSE ARE DISCLAIMED. 
+// WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. 
 // IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, 
 // INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, 
 // BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, 
@@ -83,8 +83,10 @@ protected:
 	static void forgetObject (CBaseObject* obj) { obj->forget (); }
 
 	int32_t deferChangeCount;
-	std::set<IdStringPtr> deferedChanges;
-	std::list<CBaseObject*> dependents;
+	typedef std::set<IdStringPtr> DeferedChangesSet;
+	DeferedChangesSet deferedChanges;
+	typedef std::list<CBaseObject*> DependentList;
+	DependentList dependents;
 };
 
 //----------------------------------------------------------------------------------------------------
@@ -109,9 +111,9 @@ inline void IDependency::changed (IdStringPtr message)
 	else if (dependents.empty () == false)
 	{
 		CBaseObject* This = dynamic_cast<CBaseObject*> (this);
-		std::list<CBaseObject*> localList (dependents);
+		DependentList localList (dependents);
 		std::for_each (localList.begin (), localList.end (), rememberObject);
-		for (std::list<CBaseObject*>::const_iterator it = localList.begin (); it != localList.end (); it++)
+		for (DependentList::const_iterator it = localList.begin (); it != localList.end (); it++)
 		{
 			CBaseObject* obj = (*it);
 			obj->notify (This, message);
@@ -129,7 +131,7 @@ inline void IDependency::deferChanges (bool state)
 	}
 	else if (--deferChangeCount == 0)
 	{
-		for (std::set<IdStringPtr>::const_iterator it = deferedChanges.begin (); it != deferedChanges.end (); it++)
+		for (DeferedChangesSet::const_iterator it = deferedChanges.begin (); it != deferedChanges.end (); it++)
 			changed (*it);
 		deferedChanges.clear ();
 	}

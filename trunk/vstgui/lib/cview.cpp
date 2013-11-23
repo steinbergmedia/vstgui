@@ -2,11 +2,11 @@
 // VST Plug-Ins SDK
 // VSTGUI: Graphical User Interface Framework for VST plugins :
 //
-// Version 4.0
+// Version 4.2
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
-// (c) 2011, Steinberg Media Technologies, All Rights Reserved
+// (c) 2013, Steinberg Media Technologies, All Rights Reserved
 //-----------------------------------------------------------------------------
 // Redistribution and use in source and binary forms, with or without modification,
 // are permitted provided that the following conditions are met:
@@ -22,7 +22,7 @@
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
 // ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-// WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A  PARTICULAR PURPOSE ARE DISCLAIMED.
+// WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
 // IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
 // INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
 // BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
@@ -418,6 +418,38 @@ CMouseEventResult CView::onMouseMoved (CPoint &where, const CButtonState& button
 }
 
 //-----------------------------------------------------------------------------
+CMouseEventResult CView::onMouseCancel ()
+{
+	return kMouseEventNotImplemented;
+}
+
+//-----------------------------------------------------------------------------
+/**
+ * @param path the path to use for hit testing. The path will be translated by this views origin, so that the path must not be set again, if the view is moved. Otherwise when the size of the view changes, the path must also be set again.
+ */
+void CView::setHitTestPath (CGraphicsPath* path)
+{
+	pHitTestPath = path;
+}
+
+//-----------------------------------------------------------------------------
+/**
+ * @param where location
+ * @param buttons button and modifier state
+ * @return true if point hits this view
+ */
+bool CView::hitTest (const CPoint& where, const CButtonState& buttons)
+{
+	if (pHitTestPath)
+	{
+		CPoint p (where);
+		p.offset (-getViewSize ().left, -getViewSize ().top);
+		return pHitTestPath->hitTest (p);
+	}
+	return where.isInside (mouseableArea);
+}
+
+//-----------------------------------------------------------------------------
 /**
  * @param point location
  * @return converted point
@@ -653,7 +685,7 @@ const CViewAttributeID kCViewControllerAttribute = 'ictr';
 
 //-----------------------------------------------------------------------------
 /**
- * @param id the ID of the Attribute
+ * @param aId the ID of the Attribute
  * @param outSize on return the size of the attribute
  * @return true if attribute exists. outSize is valid then.
  */
@@ -670,7 +702,7 @@ bool CView::getAttributeSize (const CViewAttributeID aId, int32_t& outSize) cons
 
 //-----------------------------------------------------------------------------
 /**
- * @param id the ID of the Attribute
+ * @param aId the ID of the Attribute
  * @param inSize the size of the outData pointer
  * @param outData a pointer where to copy the attribute data
  * @param outSize the size in bytes which was copied into outData
@@ -695,7 +727,7 @@ bool CView::getAttribute (const CViewAttributeID aId, const int32_t inSize, void
 //-----------------------------------------------------------------------------
 /**
  * copies data into the attribute. If it does not exist, creates a new attribute.
- * @param id the ID of the Attribute
+ * @param aId the ID of the Attribute
  * @param inSize the size of the outData pointer
  * @param inData a pointer to the data
  * @return true if attribute was set

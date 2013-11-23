@@ -1,12 +1,12 @@
 //-----------------------------------------------------------------------------
 // VST Plug-Ins SDK
-// VSTGUI: Graphical User Interface Framework for VST plugins : 
+// VSTGUI: Graphical User Interface Framework for VST plugins
 //
-// Version 4.0
+// Version 4.2
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
-// (c) 2011, Steinberg Media Technologies, All Rights Reserved
+// (c) 2013, Steinberg Media Technologies, All Rights Reserved
 //-----------------------------------------------------------------------------
 // Redistribution and use in source and binary forms, with or without modification,
 // are permitted provided that the following conditions are met:
@@ -22,7 +22,7 @@
 // 
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
 // ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED 
-// WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A  PARTICULAR PURPOSE ARE DISCLAIMED. 
+// WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. 
 // IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, 
 // INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, 
 // BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, 
@@ -51,14 +51,19 @@ public:
 	CSlider (const CRect& rect, CControlListener* listener, int32_t tag, const CPoint& offsetHandle, int32_t rangeHandle, CBitmap* handle, CBitmap* background, const CPoint& offset = CPoint (0, 0), const int32_t style = kLeft|kHorizontal);
 	CSlider (const CSlider& slider);
 
+	enum Mode {
+		kTouchMode,
+		kRelativeTouchMode,
+		kFreeClickMode,
+	};
 	//-----------------------------------------------------------------------------
 	/// @name CSlider Methods
 	//-----------------------------------------------------------------------------
 	//@{
 	virtual void setDrawTransparentHandle (bool val) { bDrawTransparentEnabled = val; }
 	virtual bool getDrawTransparentHandle () const { return bDrawTransparentEnabled; }
-	virtual void setFreeClick (bool val) { bFreeClick = val; }
-	virtual bool getFreeClick () const { return bFreeClick; }
+	virtual void setMode (Mode newMode) { mode = newMode; }
+	virtual Mode getMode () const { return mode; }
 	virtual void setOffsetHandle (const CPoint& val);
 	virtual CPoint getOffsetHandle () const { return offsetHandle; }
 	virtual void setOffset (const CPoint& val) { offset = val; }
@@ -72,6 +77,9 @@ public:
 
 	virtual void  setZoomFactor (float val) { zoomFactor = val; }
 	virtual float getZoomFactor () const { return zoomFactor; }
+
+	VSTGUI_DEPRECATED(virtual void setFreeClick (bool val) { setMode (val ? kFreeClickMode : kTouchMode); })
+	VSTGUI_DEPRECATED(virtual bool getFreeClick () const { return getMode () == kFreeClickMode; })
 	//@}
 
 	//-----------------------------------------------------------------------------
@@ -103,23 +111,29 @@ public:
 	virtual CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons) VSTGUI_OVERRIDE_VMETHOD;
 	virtual CMouseEventResult onMouseUp (CPoint& where, const CButtonState& buttons) VSTGUI_OVERRIDE_VMETHOD;
 	virtual CMouseEventResult onMouseMoved (CPoint& where, const CButtonState& buttons) VSTGUI_OVERRIDE_VMETHOD;
+	virtual CMouseEventResult onMouseCancel () VSTGUI_OVERRIDE_VMETHOD;
 
 	virtual bool onWheel (const CPoint& where, const float& distance, const CButtonState& buttons) VSTGUI_OVERRIDE_VMETHOD;
 	virtual int32_t onKeyDown (VstKeyCode& keyCode) VSTGUI_OVERRIDE_VMETHOD;
 
 	virtual bool sizeToFit () VSTGUI_OVERRIDE_VMETHOD;
 
+	static bool kAlwaysUseZoomFactor;
+
 	CLASS_METHODS(CSlider, CControl)
 protected:
 	~CSlider ();
 	void setViewSize (const CRect& rect, bool invalid) VSTGUI_OVERRIDE_VMETHOD;
 	
-	CPoint   offset; 
-	CPoint   offsetHandle;
+	float calculateDelta (const CPoint& where, CRect* handleRect = 0) const;
+	
+	CPoint	offset;
+	CPoint	offsetHandle;
 
 	CBitmap* pHandle;
 
 	int32_t	style;
+	Mode mode;
 
 	CCoord	widthOfSlider;
 	CCoord	heightOfSlider;
@@ -131,17 +145,18 @@ protected:
 	CCoord	heightControl;
 	float	zoomFactor;
 
-	bool     bDrawTransparentEnabled;
-	bool     bFreeClick;
+	bool	bDrawTransparentEnabled;
 
-	int32_t    drawStyle;
+	int32_t	drawStyle;
 	CColor  frameColor;
 	CColor  backColor;
 	CColor  valueColor;
 private:
-	CCoord   delta;
-	float    oldVal;
-	CButtonState     oldButton; 
+	CCoord	delta;
+	float	oldVal;
+	float	startVal;
+	CButtonState oldButton;
+	CPoint mouseStartPoint;
 };
 
 //-----------------------------------------------------------------------------

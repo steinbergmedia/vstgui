@@ -1,12 +1,12 @@
 //-----------------------------------------------------------------------------
 // VST Plug-Ins SDK
-// VSTGUI: Graphical User Interface Framework not only for VST plugins : 
+// VSTGUI: Graphical User Interface Framework for VST plugins
 //
-// Version 4.0
+// Version 4.2
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
-// (c) 2011, Steinberg Media Technologies, All Rights Reserved
+// (c) 2013, Steinberg Media Technologies, All Rights Reserved
 //-----------------------------------------------------------------------------
 // Redistribution and use in source and binary forms, with or without modification,
 // are permitted provided that the following conditions are met:
@@ -22,7 +22,7 @@
 // 
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
 // ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED 
-// WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A  PARTICULAR PURPOSE ARE DISCLAIMED. 
+// WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. 
 // IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, 
 // INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, 
 // BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, 
@@ -38,7 +38,10 @@
 #if MAC
 #import "macstring.h"
 #import "cgdrawcontext.h"
+#import "macglobals.h"
+#if !TARGET_OS_IPHONE
 #import <Cocoa/Cocoa.h>
+#endif
 
 namespace VSTGUI {
 
@@ -62,6 +65,9 @@ IPlatformFont* IPlatformFont::create (UTF8StringPtr name, const CCoord& size, co
 //-----------------------------------------------------------------------------
 bool IPlatformFont::getAllPlatformFontFamilies (std::list<std::string>& fontFamilyNames)
 {
+#if TARGET_OS_IPHONE
+	return false;
+#else
 	NSArray* fonts = [[NSFontManager sharedFontManager] availableFontFamilies];
 	for (uint32_t i = 0; i < [fonts count]; i++)
 	{
@@ -69,9 +75,22 @@ bool IPlatformFont::getAllPlatformFontFamilies (std::list<std::string>& fontFami
 		fontFamilyNames.push_back (std::string ([font UTF8String]));
 	}
 	return true;
+#endif
 }
 
 #if VSTGUI_USES_CORE_TEXT
+//-----------------------------------------------------------------------------
+static CGColorRef createCGColorFromCColor (const CColor& c)
+{
+	CGFloat compontents[] = {
+		(CGFloat)c.red / (CGFloat)255.,
+		(CGFloat)c.green / (CGFloat)255.,
+		(CGFloat)c.blue / (CGFloat)255.,
+		(CGFloat)c.alpha / (CGFloat)255.
+	};
+	return CGColorCreate (GetCGColorSpace (), compontents);
+}
+
 //-----------------------------------------------------------------------------
 static CTFontRef CoreTextCreateTraitsVariant (CTFontRef fontRef, CTFontSymbolicTraits trait)
 {
@@ -162,7 +181,7 @@ void CoreTextFont::drawString (CDrawContext* context, const CString& string, con
 		CGColorRef cgColorRef = 0;
 		if (fontColor != lastColor)
 		{
-			cgColorRef = CGColorCreateGenericRGB (fontColor.red/255.f, fontColor.green/255.f, fontColor.blue/255.f, fontColor.alpha/255.f);
+			cgColorRef = createCGColorFromCColor (fontColor);
 			lastColor = fontColor;
 		}
 		CFAttributedStringRef attrStr = CFAttributedStringCreate (kCFAllocatorDefault, utf8Str, getStringAttributes (cgColorRef));
@@ -182,7 +201,7 @@ void CoreTextFont::drawString (CDrawContext* context, const CString& string, con
 					if (style & kUnderlineFace)
 					{
 						if (cgColorRef == 0)
-							cgColorRef = CGColorCreateGenericRGB (fontColor.red/255.f, fontColor.green/255.f, fontColor.blue/255.f, fontColor.alpha/255.f);
+							cgColorRef = createCGColorFromCColor (fontColor);
 						CGFloat underlineOffset = CTFontGetUnderlinePosition (fontRef) - 1.;
 						CGFloat underlineThickness = CTFontGetUnderlineThickness (fontRef);
 						CGContextSetStrokeColorWithColor (cgContext, cgColorRef);

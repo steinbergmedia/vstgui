@@ -62,10 +62,14 @@ Currently VSTGUI compiles on
 - XP SP 2 (32 and 64 bit)
 - Vista (32 and 64 bit)
 - 7 (32 and 64 bit)
+- 8 (32 and 64 bit)
 \par Apple Mac OS X (with gcc 4.0/4.2 or Clang 2.0)
-- 10.4 (32 bit)
-- 10.5 (32 and 64 bit)
 - 10.6 (32 and 64 bit)
+- 10.7 (32 and 64 bit)
+- 10.8 (32 and 64 bit)
+- 10.9 (32 and 64 bit)
+\par Apple iOS
+- 7.0 (32 and 64 bit)
 
 \sa
 <a href="http://vstgui.sf.net" target=_blank> VSTGUI @ Sourceforge </a>
@@ -88,5 +92,6 @@ On Mac OS X, you need to link to the following Frameworks:
 - Carbon
 - Cocoa
 - OpenGL
+- QuartzCore
 
 */

@@ -1,12 +1,12 @@
 //-----------------------------------------------------------------------------
 // VST Plug-Ins SDK
-// VSTGUI: Graphical User Interface Framework for VST plugins : 
+// VSTGUI: Graphical User Interface Framework for VST plugins
 //
-// Version 4.0
+// Version 4.2
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
-// (c) 2011, Steinberg Media Technologies, All Rights Reserved
+// (c) 2013, Steinberg Media Technologies, All Rights Reserved
 //-----------------------------------------------------------------------------
 // Redistribution and use in source and binary forms, with or without modification,
 // are permitted provided that the following conditions are met:
@@ -22,7 +22,7 @@
 // 
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
 // ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED 
-// WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A  PARTICULAR PURPOSE ARE DISCLAIMED. 
+// WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. 
 // IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, 
 // INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, 
 // BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, 
@@ -38,6 +38,8 @@
 #include <cmath>
 
 namespace VSTGUI {
+
+bool CSlider::kAlwaysUseZoomFactor = false;
 
 //------------------------------------------------------------------------
 // CSlider
@@ -68,7 +70,7 @@ CSlider::CSlider (const CRect &rect, CControlListener* listener, int32_t tag, in
 , pHandle (handle)
 , style (style)
 , minPos (iMinPos)
-, bFreeClick (true)
+, mode (kFreeClickMode)
 , drawStyle (0)
 {
 	setDrawTransparentHandle (true);
@@ -126,8 +128,8 @@ CSlider::CSlider (const CRect &rect, CControlListener* listener, int32_t tag, co
 , offset (offset)
 , pHandle (handle) 
 , style (style)
+, mode (kFreeClickMode)
 , minPos (0)
-, bFreeClick (true)
 , drawStyle (0)
 {
 	setDrawTransparentHandle (true);
@@ -175,8 +177,8 @@ CSlider::CSlider (const CSlider& v)
 , heightControl (v.heightControl)
 , zoomFactor (v.zoomFactor)
 , bDrawTransparentEnabled (v.bDrawTransparentEnabled)
-, bFreeClick (v.bFreeClick)
 , drawStyle (v.drawStyle)
+, mode (v.mode)
 , backColor (v.backColor)
 , frameColor (v.frameColor)
 , valueColor (v.valueColor)
@@ -368,71 +370,94 @@ void CSlider::draw (CDrawContext *pContext)
 }
 
 //------------------------------------------------------------------------
-CMouseEventResult CSlider::onMouseDown (CPoint& where, const CButtonState& buttons)
+float CSlider::calculateDelta (const CPoint& where, CRect* handleRect) const
 {
-	if (!(buttons & kLButton))
-		return kMouseEventNotHandled;
-
+	CCoord result;
 	if (style & kHorizontal)
-		delta = getViewSize ().left + offsetHandle.h;
+		result = getViewSize ().left + offsetHandle.h;
 	else
-		delta = getViewSize ().top + offsetHandle.v;
-	if (!bFreeClick)
+		result = getViewSize ().top + offsetHandle.v;
+	if (getMode () != kFreeClickMode)
 	{
 		float normValue = getValueNormalized ();
 		if (style & kRight || style & kBottom)
 			normValue = 1.f - normValue;
 		CCoord actualPos;
 		CRect rect;
+		
+		actualPos = result + (int32_t)(normValue * rangeHandle);
 
 		if (style & kHorizontal)
 		{
-			actualPos = offsetHandle.h + (int32_t)(normValue * rangeHandle) + getViewSize ().left;
-
-			rect.left   = actualPos;
-			rect.top    = getViewSize ().top  + offsetHandle.v;
-			rect.right  = rect.left + widthOfSlider;
-			rect.bottom = rect.top  + heightOfSlider;
-
-			if (!where.isInside (rect))
-				return kMouseEventNotHandled;
-			else
-				delta += where.h - actualPos;
+			if (handleRect)
+			{
+				handleRect->left   = actualPos;
+				handleRect->top    = getViewSize ().top  + offsetHandle.v;
+				handleRect->right  = handleRect->left + widthOfSlider;
+				handleRect->bottom = handleRect->top  + heightOfSlider;
+			}
+			result += where.h - actualPos;
 		}
 		else
 		{
-			actualPos = offsetHandle.v + (int32_t)(normValue * rangeHandle) + getViewSize ().top;
-		
-			rect.left   = getViewSize ().left  + offsetHandle.h;
-			rect.top    = actualPos;
-			rect.right  = rect.left + widthOfSlider;
-			rect.bottom = rect.top  + heightOfSlider;
-
-			if (!where.isInside (rect))
-				return kMouseEventNotHandled;
-			else
-				delta += where.v - actualPos;
+			if (handleRect)
+			{
+				handleRect->left   = getViewSize ().left  + offsetHandle.h;
+				handleRect->top    = actualPos;
+				handleRect->right  = handleRect->left + widthOfSlider;
+				handleRect->bottom = handleRect->top  + heightOfSlider;
+			}
+			result += where.v - actualPos;
 		}
-	} 
+	}
 	else
 	{
 		if (style & kHorizontal)
-			delta += widthOfSlider / 2 - 1;
+			result += widthOfSlider / 2 - 1;
 		else
-			delta += heightOfSlider / 2 - 1;
+			result += heightOfSlider / 2 - 1;
 	}
-	
-	oldVal    = getMin ()-1;
+	return (float)result;
+}
+
+//------------------------------------------------------------------------
+CMouseEventResult CSlider::onMouseDown (CPoint& where, const CButtonState& buttons)
+{
+	if (!(buttons & kLButton))
+		return kMouseEventNotHandled;
+
+	CRect handleRect;
+	delta = calculateDelta (where, getMode () != kFreeClickMode ? &handleRect : 0);
+	if (getMode () == kTouchMode && !where.isInside (handleRect))
+		return kMouseEventNotHandled;
+
+	oldVal    = getMin () - 1;
 	oldButton = buttons;
 
-	if (checkDefaultValue (buttons))
+	if ((getMode () == kRelativeTouchMode && where.isInside (handleRect)) || getMode () != kRelativeTouchMode)
 	{
-		return kMouseDownEventHandledButDontNeedMovedOrUpEvents;
+		if (checkDefaultValue (buttons))
+		{
+			return kMouseDownEventHandledButDontNeedMovedOrUpEvents;
+		}
 	}
+	startVal = getValue ();
 	beginEdit ();
+	mouseStartPoint = where;
 	if (buttons & kZoomModifier)
 		return kMouseEventHandled;
 	return onMouseMoved (where, buttons);
+}
+
+//------------------------------------------------------------------------
+CMouseEventResult CSlider::onMouseCancel ()
+{
+	value = startVal;
+	if (isDirty ())
+		valueChanged ();
+	oldButton = 0;
+	endEdit ();
+	return kMouseEventHandled;
 }
 
 //------------------------------------------------------------------------
@@ -444,22 +469,42 @@ CMouseEventResult CSlider::onMouseUp (CPoint& where, const CButtonState& buttons
 }
 
 //------------------------------------------------------------------------
-CMouseEventResult CSlider::onMouseMoved (CPoint& where, const CButtonState& buttons)
+CMouseEventResult CSlider::onMouseMoved (CPoint& where, const CButtonState& _buttons)
 {
 	if (isEditing ())
 	{
+		CButtonState buttons (_buttons);
+		if (kAlwaysUseZoomFactor)
+			buttons |= kZoomModifier;
 		if (buttons & kLButton)
 		{
+			if (kAlwaysUseZoomFactor)
+			{
+				CCoord distance = fabs ((style & kHorizontal) ? where.v - mouseStartPoint.v : where.h - mouseStartPoint.h);
+				float newZoomFactor = 1.f;
+				if (distance > ((style & kHorizontal) ? getHeight () : getWidth ()))
+				{
+					newZoomFactor = (float)(distance / ((style & kHorizontal) ? getHeight () : getWidth ()));
+					newZoomFactor = static_cast<int32_t>(newZoomFactor * 10.f) / 10.f;
+				}
+				if (zoomFactor != newZoomFactor)
+				{
+					zoomFactor = newZoomFactor;
+					oldVal = (value - getMin ()) / getRange ();
+					delta = calculateDelta (where);
+				}
+			}
+			
 			if (oldVal == getMin () - 1)
-				oldVal = (value - getMin ()) / (getMax () - getMin ());
+				oldVal = (value - getMin ()) / getRange ();
 				
 			if ((oldButton != buttons) && (buttons & kZoomModifier))
 			{
-				oldVal = (value - getMin ()) / (getMax () - getMin ());
+				oldVal = (value - getMin ()) / getRange ();
 				oldButton = buttons;
 			}
 			else if (!(buttons & kZoomModifier))
-				oldVal = (value - getMin ()) / (getMax () - getMin ());
+				oldVal = (value - getMin ()) / getRange ();
 
 			float normValue;
 			if (style & kHorizontal)
@@ -489,9 +534,9 @@ CMouseEventResult CSlider::onMouseMoved (CPoint& where, const CButtonState& butt
 //------------------------------------------------------------------------
 static bool styleIsInverseStyle (int32_t style)
 {
-	if (style & kVertical && style & kTop)
+	if ((style & kVertical) && (style & kTop))
 		return true;
-	if (style & kHorizontal && style & kRight)
+	if ((style & kHorizontal) && (style & kRight))
 		return true;
 	return false;
 }

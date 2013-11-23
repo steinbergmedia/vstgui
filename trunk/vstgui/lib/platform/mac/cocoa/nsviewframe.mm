@@ -1,12 +1,12 @@
 //-----------------------------------------------------------------------------
 // VST Plug-Ins SDK
-// VSTGUI: Graphical User Interface Framework for VST plugins : 
+// VSTGUI: Graphical User Interface Framework for VST plugins
 //
-// Version 4.0
+// Version 4.2
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
-// (c) 2011, Steinberg Media Technologies, All Rights Reserved
+// (c) 2013, Steinberg Media Technologies, All Rights Reserved
 //-----------------------------------------------------------------------------
 // Redistribution and use in source and binary forms, with or without modification,
 // are permitted provided that the following conditions are met:
@@ -22,7 +22,7 @@
 // 
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
 // ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED 
-// WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A  PARTICULAR PURPOSE ARE DISCLAIMED. 
+// WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. 
 // IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, 
 // INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, 
 // BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, 
@@ -45,6 +45,7 @@
 #import "../cgdrawcontext.h"
 #import "../cgbitmap.h"
 #import "../quartzgraphicspath.h"
+#import "../caviewlayer.h"
 #import "../../../cvstguitimer.h"
 #import "../../../idatapackage.h"
 
@@ -987,6 +988,20 @@ IPlatformOpenGLView* NSViewFrame::createPlatformOpenGLView ()
 	return new CocoaOpenGLView (nsView);
 }
 #endif
+
+//-----------------------------------------------------------------------------
+IPlatformViewLayer* NSViewFrame::createPlatformViewLayer (IPlatformViewLayerDelegate* drawDelegate, IPlatformViewLayer* parentLayer)
+{
+	CAViewLayer* parentViewLayer = dynamic_cast<CAViewLayer*> (parentLayer);
+	if (parentViewLayer == 0 || parentViewLayer->getLayer () == 0)
+	{
+		[nsView setWantsLayer:YES];
+		nsView.layer.actions = nil;
+	}
+	CAViewLayer* layer = new CAViewLayer (parentViewLayer ? parentViewLayer->getLayer () : [nsView layer]);
+	layer->init (drawDelegate);
+	return layer;
+}
 
 //-----------------------------------------------------------------------------
 COffscreenContext* NSViewFrame::createOffscreenContext (CCoord width, CCoord height)

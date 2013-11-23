@@ -1,12 +1,12 @@
 //-----------------------------------------------------------------------------
 // VST Plug-Ins SDK
-// VSTGUI: Graphical User Interface Framework for VST plugins : 
+// VSTGUI: Graphical User Interface Framework for VST plugins
 //
-// Version 4.0
+// Version 4.2
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
-// (c) 2011, Steinberg Media Technologies, All Rights Reserved
+// (c) 2013, Steinberg Media Technologies, All Rights Reserved
 //-----------------------------------------------------------------------------
 // Redistribution and use in source and binary forms, with or without modification,
 // are permitted provided that the following conditions are met:
@@ -22,7 +22,7 @@
 // 
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
 // ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED 
-// WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A  PARTICULAR PURPOSE ARE DISCLAIMED. 
+// WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. 
 // IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, 
 // INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, 
 // BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, 
@@ -35,9 +35,11 @@
 #include "cframe.h"
 #include "coffscreencontext.h"
 #include "ctooltipsupport.h"
+#include "itouchevent.h"
 #include "animation/animator.h"
 #include "controls/ctextedit.h"
 #include <assert.h>
+#include <vector>
 
 namespace VSTGUI {
 
@@ -272,7 +274,7 @@ void CFrame::drawRect (CDrawContext* pContext, const CRect& updateRect)
 void CFrame::clearMouseViews (const CPoint& where, const CButtonState& buttons, bool callMouseExit)
 {
 	CPoint lp;
-	std::list<CView*>::reverse_iterator it = pMouseViews.rbegin ();
+	ViewList::reverse_iterator it = pMouseViews.rbegin ();
 	while (it != pMouseViews.rend ())
 	{
 		if (callMouseExit)
@@ -299,7 +301,7 @@ void CFrame::clearMouseViews (const CPoint& where, const CButtonState& buttons, 
 void CFrame::removeFromMouseViews (CView* view)
 {
 	bool found = false;
-	std::list<CView*>::iterator it = pMouseViews.begin ();
+	ViewList::iterator it = pMouseViews.begin ();
 	while (it != pMouseViews.end ())
 	{
 		if (found || (*it) == view)
@@ -359,7 +361,7 @@ void CFrame::checkMouseViews (const CPoint& where, const CButtonState& buttons)
 		currentMouseView->forget ();
 		pMouseViews.remove (currentMouseView);
 	}
-	std::list<CView*>::reverse_iterator it = pMouseViews.rbegin ();
+	ViewList::reverse_iterator it = pMouseViews.rbegin ();
 	while (it != pMouseViews.rend ())
 	{
 		vc = static_cast<CViewContainer*> ((*it));
@@ -383,7 +385,7 @@ void CFrame::checkMouseViews (const CPoint& where, const CButtonState& buttons)
 	vc = pMouseViews.empty () == false ? dynamic_cast<CViewContainer*> (pMouseViews.back ()) : 0;
 	if (vc)
 	{
-		std::list<CView*>::iterator it2 = pMouseViews.end ();
+		ViewList::iterator it2 = pMouseViews.end ();
 		it2--;
 		while ((vc = static_cast<CViewContainer*> (mouseView->getParentView ())) != *it2)
 		{
@@ -418,7 +420,7 @@ void CFrame::checkMouseViews (const CPoint& where, const CButtonState& buttons)
 			vc->remember ();
 			mouseView = vc;
 		}
-		std::list<CView*>::iterator it2 = pMouseViews.begin ();
+		ViewList::iterator it2 = pMouseViews.begin ();
 		while (it2 != pMouseViews.end ())
 		{
 			lp = where;
@@ -500,7 +502,7 @@ CMouseEventResult CFrame::onMouseMoved (CPoint &where, const CButtonState& butto
 		if (result == kMouseEventNotHandled)
 		{
 			CButtonState buttons2 = (buttons & (kShift | kControl | kAlt | kApple));
-			std::list<CView*>::const_reverse_iterator it = pMouseViews.rbegin ();
+			ViewList::const_reverse_iterator it = pMouseViews.rbegin ();
 			while (it != pMouseViews.rend ())
 			{
 				p = where;
@@ -1450,6 +1452,88 @@ void CFrame::platformOnActivate (bool state)
 	if (pParentFrame)
 		onActivate (state);
 }
+
+#if VSTGUI_TOUCH_EVENT_HANDLING
+//-----------------------------------------------------------------------------
+void CFrame::platformOnTouchEvent (ITouchEvent& event)
+{
+	std::vector<CView*> targetDispatched;
+	bool hasBeganTouch = false;
+	for (const auto& e : event)
+	{
+		CView* target = e.second.target;
+		if (target)
+		{
+			if (e.second.targetIsSingleTouch)
+			{
+				CButtonState buttons (kLButton);
+				CPoint where (e.second.location);
+				target->frameToLocal (where);
+				switch (e.second.state)
+				{
+					case ITouchEvent::kMoved:
+					{
+						CMouseEventResult result = target->onMouseMoved (where, buttons);
+						if (result == kMouseMoveEventHandledButDontNeedMoreEvents)
+						{
+							event.unsetTouchTarget(e.first, target);
+							if (target->hitTest (where, buttons) == false)
+							{
+								// when the touch goes out of the target and it tells us to
+								const_cast<ITouchEvent::Touch&> (e.second).state = ITouchEvent::kBegan;
+								hasBeganTouch = true;
+							}
+						}
+						break;
+					}
+					case ITouchEvent::kCanceled:
+					{
+						if (target->onMouseCancel () != kMouseEventHandled)
+							target->onMouseUp (where, buttons);
+						event.unsetTouchTarget (e.first, target);
+						break;
+					}
+					case ITouchEvent::kEnded:
+					{
+						target->onMouseUp (where, buttons);
+						event.unsetTouchTarget (e.first, target);
+						break;
+					}
+					default:
+					{
+						// do nothing
+						break;
+					}
+				}
+			}
+			else
+			{
+				if (std::find (targetDispatched.begin (), targetDispatched.end (), target) == targetDispatched.end ())
+				{
+					target->onTouchEvent (event);
+					targetDispatched.push_back (target);
+				}
+			}
+		}
+		else if (e.second.state == ITouchEvent::kBegan)
+		{
+			hasBeganTouch = true;
+		}
+	}
+	if (hasBeganTouch)
+	{
+		for (const auto& e : event)
+		{
+			if (e.second.target == 0 && e.second.state == ITouchEvent::kBegan)
+			{
+				findSingleTouchEventTarget (const_cast<ITouchEvent::Touch&> (e.second));
+			}
+		}
+		onTouchEvent (event);
+	}
+}
+
+#endif
 
 } // namespace
 

@@ -5,6 +5,7 @@
 - @ref new_stuff @n
 - @ref code_changes @n
 - @ref cocoa_support @n
+- @ref ios_support @n
 - @subpage page_previous_new_stuff
 
 @section version4_introduction Introduction
@@ -17,6 +18,8 @@ It's recommended to start new projects with version 4 while old projects should 
 
 @subsection version4_2 Version 4.2
 
+- iOS Support with Multi Touch handling. See @ref ios_support
+- support drawing an icon on a VSTGUI::CTextButton
 - VSTGUI::CGradientView
 - VSTGUI::CDataBrowser now supports multi row selections
 - support compiling in c++11 mode with clang and visual studio
@@ -83,6 +86,14 @@ It's recommended to start new projects with version 4 while old projects should 
 - In 32 bit Cocoa and Carbon are available. You can switch between them with CFrame::setCocoaMode(bool state). You must do this before creating the CFrame.
 - In 64 bit only Cocoa is available.
 - The pSystemWindow pointer in the CFrame constructor must be a NSView not a NSWindow.
+
+@section ios_support iOS support notes
+
+- VSTGUI supports iOS 7 and later
+- Currently COptionMenu and COpenGLView are not supported
+- CScrollView is not supported yet
+- Support for a single MultiTouch View is not yet tested and the API may change in the future
+- Bitmaps are currently drawn stretched on retina displays
 
 @page page_previous_new_stuff New Stuff in VSTGUI 3.6 and earlier
  
