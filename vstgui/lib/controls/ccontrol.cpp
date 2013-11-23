@@ -1,12 +1,12 @@
 //-----------------------------------------------------------------------------
 // VST Plug-Ins SDK
-// VSTGUI: Graphical User Interface Framework for VST plugins : 
+// VSTGUI: Graphical User Interface Framework for VST plugins
 //
-// Version 4.0
+// Version 4.2
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
-// (c) 2011, Steinberg Media Technologies, All Rights Reserved
+// (c) 2013, Steinberg Media Technologies, All Rights Reserved
 //-----------------------------------------------------------------------------
 // Redistribution and use in source and binary forms, with or without modification,
 // are permitted provided that the following conditions are met:
@@ -22,7 +22,7 @@
 // 
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
 // ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED 
-// WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A  PARTICULAR PURPOSE ARE DISCLAIMED. 
+// WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. 
 // IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, 
 // INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, 
 // BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, 
@@ -173,13 +173,13 @@ void CControl::setValueNormalized (float val)
 		val = 1.f;
 	else if (val < 0.f)
 		val = 0.f;
-	setValue ((getMax () - getMin ()) * val + getMin ());
+	setValue (getRange () * val + getMin ());
 }
 
 //------------------------------------------------------------------------
 float CControl::getValueNormalized () const
 {
-	return (value - getMin ()) / (getMax () - getMin ());
+	return (value - getMin ()) / getRange ();
 }
 
 //------------------------------------------------------------------------
@@ -237,7 +237,11 @@ void CControl::bounceValue ()
 //-----------------------------------------------------------------------------
 bool CControl::checkDefaultValue (CButtonState button)
 {
+#if TARGET_OS_IPHONE
+	if (button.isDoubleClick ())
+#else
 	if (button.isLeftButton () && button.getModifierState () == kDefaultValueModifier)
+#endif
 	{
 		float defValue = getDefaultValue ();
 		if (defValue != getValue ())

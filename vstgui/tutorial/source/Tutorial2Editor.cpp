@@ -1,11 +1,11 @@
 //-----------------------------------------------------------------------------------
-// VSTGUI: Graphical User Interface Framework for VST plugins : 
+// VSTGUI: Graphical User Interface Framework for VST plugins
 //
 // Version 3.5
 //
 //-----------------------------------------------------------------------------------
 // VSTGUI LICENSE
-// © 2008, Steinberg Media Technologies, All Rights Reserved
+// (c) 2013, Steinberg Media Technologies, All Rights Reserved
 //-----------------------------------------------------------------------------------
 // Redistribution and use in source and binary forms, with or without modification,
 // are permitted provided that the following conditions are met:
@@ -21,7 +21,7 @@
 // 
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
 // ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED 
-// WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A  PARTICULAR PURPOSE ARE DISCLAIMED. 
+// WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. 
 // IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, 
 // INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, 
 // BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, 
@@ -32,7 +32,7 @@
 //-----------------------------------------------------------------------------------
 
 //-----------------------------------------------------------------------------------
-//-- This is an advanced version of the first tutorial. It shows you how to inherite
+//-- This is an advanced version of the first tutorial. It shows you how to inherit
 //-- from CKnob and alter it's drawing by changing the handle bitmap if the mouse is
 //-- over the control or if the knob is being tracked.
 //-----------------------------------------------------------------------------------
@@ -41,7 +41,7 @@
 
 //-----------------------------------------------------------------------------------
 //-- This is the custom CKnob
-//-- It takes another bitmap as parameter in its constructor which is the highlited handle
+//-- It takes another bitmap as parameter in its constructor which is the highlighted handle
 //-----------------------------------------------------------------------------------
 class MyKnob : public CKnob
 {

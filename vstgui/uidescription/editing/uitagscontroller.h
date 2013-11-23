@@ -32,7 +32,7 @@ protected:
 	enum {
 		kAddTag = 0,
 		kRemoveTag,
-		kSearchTag,
+		kSearchTag
 	};
 };
 

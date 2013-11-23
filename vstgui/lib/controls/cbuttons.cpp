@@ -1,12 +1,12 @@
 //-----------------------------------------------------------------------------
 // VST Plug-Ins SDK
-// VSTGUI: Graphical User Interface Framework for VST plugins : 
+// VSTGUI: Graphical User Interface Framework for VST plugins
 //
-// Version 4.0
+// Version 4.2
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
-// (c) 2011, Steinberg Media Technologies, All Rights Reserved
+// (c) 2013, Steinberg Media Technologies, All Rights Reserved
 //-----------------------------------------------------------------------------
 // Redistribution and use in source and binary forms, with or without modification,
 // are permitted provided that the following conditions are met:
@@ -22,7 +22,7 @@
 // 
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
 // ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED 
-// WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A  PARTICULAR PURPOSE ARE DISCLAIMED. 
+// WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. 
 // IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, 
 // INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, 
 // BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, 
@@ -100,13 +100,37 @@ CMouseEventResult COnOffButton::onMouseDown (CPoint& where, const CButtonState& 
 	if (!(buttons & kLButton))
 		return kMouseEventNotHandled;
 
-	value = (value == getMax ()) ? getMin () : getMax ();
-	invalid ();
 	beginEdit ();
-	valueChanged ();
-	endEdit ();
+	return kMouseEventHandled;
+}
 
-	return kMouseDownEventHandledButDontNeedMovedOrUpEvents;
+//------------------------------------------------------------------------
+CMouseEventResult COnOffButton::onMouseMoved (CPoint& where, const CButtonState& buttons)
+{
+	return kMouseEventHandled;
+}
+
+//------------------------------------------------------------------------
+CMouseEventResult COnOffButton::onMouseUp (CPoint& where, const CButtonState& buttons)
+{
+	if (isEditing ())
+	{
+		if (where.isInside (getViewSize ()))
+		{
+			value = (value == getMax ()) ? getMin () : getMax ();
+			invalid ();
+			valueChanged ();
+		}
+		endEdit ();
+	}
+	return kMouseEventHandled;
+}
+
+//------------------------------------------------------------------------
+CMouseEventResult COnOffButton::onMouseCancel ()
+{
+	endEdit ();
+	return kMouseEventHandled;
 }
 
 //------------------------------------------------------------------------
@@ -225,11 +249,21 @@ CMouseEventResult CKickButton::onMouseDown (CPoint& where, const CButtonState& b
 }
 
 //------------------------------------------------------------------------
+CMouseEventResult CKickButton::onMouseCancel ()
+{
+	value = getMin ();
+	if (isDirty ())
+		invalid ();
+	endEdit ();
+	return kMouseEventHandled;
+}
+
+//------------------------------------------------------------------------
 CMouseEventResult CKickButton::onMouseUp (CPoint& where, const CButtonState& buttons)
 {
 	if (value)
 		valueChanged ();
-	value = getMin ();  // set button to UNSELECTED state
+	value = getMin ();
 	valueChanged ();
 	if (isDirty ())
 		invalid ();
@@ -610,6 +644,17 @@ CMouseEventResult CCheckBox::onMouseMoved (CPoint& where, const CButtonState& bu
 		return kMouseEventHandled;
 	}
 	return kMouseEventNotHandled;
+}
+
+//------------------------------------------------------------------------
+CMouseEventResult CCheckBox::onMouseCancel ()
+{
+	hilight = false;
+	value = previousValue;
+	if (isDirty ())
+		invalid ();
+	endEdit ();
+	return kMouseEventHandled;
 }
 
 //------------------------------------------------------------------------
@@ -1014,6 +1059,16 @@ CMouseEventResult CTextButton::onMouseDown (CPoint& where, const CButtonState& b
 	fEntryState = value;
 	beginEdit ();
 	return onMouseMoved (where, buttons);
+}
+
+//------------------------------------------------------------------------
+CMouseEventResult CTextButton::onMouseCancel ()
+{
+	value = fEntryState;
+	if (isDirty ())
+		invalid ();
+	endEdit ();
+	return kMouseEventHandled;
 }
 
 //------------------------------------------------------------------------

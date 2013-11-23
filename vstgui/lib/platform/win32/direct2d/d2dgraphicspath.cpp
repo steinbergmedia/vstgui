@@ -1,12 +1,12 @@
 //-----------------------------------------------------------------------------
 // VST Plug-Ins SDK
-// VSTGUI: Graphical User Interface Framework for VST plugins : 
+// VSTGUI: Graphical User Interface Framework for VST plugins
 //
-// Version 4.0
+// Version 4.2
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
-// (c) 2011, Steinberg Media Technologies, All Rights Reserved
+// (c) 2013, Steinberg Media Technologies, All Rights Reserved
 //-----------------------------------------------------------------------------
 // Redistribution and use in source and binary forms, with or without modification,
 // are permitted provided that the following conditions are met:
@@ -22,7 +22,7 @@
 // 
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
 // ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED 
-// WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A  PARTICULAR PURPOSE ARE DISCLAIMED. 
+// WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. 
 // IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, 
 // INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, 
 // BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, 
@@ -77,9 +77,38 @@ CGradient* D2DGraphicsPath::createGradient (double color1Start, double color2Sta
 //-----------------------------------------------------------------------------
 CPoint D2DGraphicsPath::getCurrentPosition ()
 {
+	// TODO: D2DGraphicsPath::getCurrentPosition
 	CPoint p;
-	// TODO:
+#if DEBUG
+	DebugPrint ("D2DGraphicsPath::getCurrentPosition not implemented\n");
+#endif
 	return p;
+}
+
+//-----------------------------------------------------------------------------
+bool D2DGraphicsPath::hitTest (const CPoint& p, bool evenOddFilled, CGraphicsTransform* transform)
+{
+	ID2D1PathGeometry* _path = getPath (evenOddFilled ? D2D1_FILL_MODE_ALTERNATE : D2D1_FILL_MODE_WINDING);
+	if (_path)
+	{
+		D2D1::Matrix3x2F matrix = D2D1::Matrix3x2F::Identity ();
+		if (transform)
+		{
+			matrix._11 = (FLOAT)transform->m11;
+			matrix._12 = (FLOAT)transform->m12;
+			matrix._21 = (FLOAT)transform->m21;
+			matrix._22 = (FLOAT)transform->m22;
+			matrix._31 = (FLOAT)transform->dx;
+			matrix._32 = (FLOAT)transform->dy;
+			
+		}
+		BOOL result;
+		if (SUCCEEDED (_path->FillContainsPoint (makeD2DPoint (p), matrix, &result)))
+		{
+			return result ? true : false;
+		}
+	}
+	return false;
 }
 
 //-----------------------------------------------------------------------------
@@ -135,7 +164,7 @@ ID2D1PathGeometry* D2DGraphicsPath::getPath (int32_t fillMode)
 
 		bool figureOpen = false;
 		CPoint lastPos;
-		for (std::list<Element>::const_iterator it = elements.begin (); it != elements.end (); it++)
+		for (ElementList::const_iterator it = elements.begin (); it != elements.end (); it++)
 		{
 			Element e = (*it);
 			switch (e.type)

@@ -1,12 +1,12 @@
 //-----------------------------------------------------------------------------
 // VST Plug-Ins SDK
-// VSTGUI: Graphical User Interface Framework for VST plugins : 
+// VSTGUI: Graphical User Interface Framework for VST plugins
 //
-// Version 4.0
+// Version 4.2
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
-// (c) 2011, Steinberg Media Technologies, All Rights Reserved
+// (c) 2013, Steinberg Media Technologies, All Rights Reserved
 //-----------------------------------------------------------------------------
 // Redistribution and use in source and binary forms, with or without modification,
 // are permitted provided that the following conditions are met:
@@ -22,7 +22,7 @@
 // 
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
 // ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED 
-// WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A  PARTICULAR PURPOSE ARE DISCLAIMED. 
+// WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. 
 // IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, 
 // INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, 
 // BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, 
@@ -39,7 +39,15 @@
 
 #if MAC
 
-#include <ApplicationServices/ApplicationServices.h>
+#include "../../crect.h"
+#include "../../cpoint.h"
+
+#if TARGET_OS_IPHONE
+	#include <CoreFoundation/CoreFoundation.h>
+	#include <CoreGraphics/CoreGraphics.h>
+#else
+	#include <ApplicationServices/ApplicationServices.h>
+#endif
 
 namespace VSTGUI {
 
@@ -47,6 +55,24 @@ namespace VSTGUI {
 extern void* gBundleRef;
 inline CFBundleRef getBundleRef () { return (CFBundleRef)gBundleRef; }
 extern CGColorSpaceRef GetCGColorSpace ();
+
+//-----------------------------------------------------------------------------
+inline CRect CRectFromCGRect (const CGRect& r)
+{
+	return CRect (CPoint (r.origin.x, r.origin.y), CPoint (r.size.width, r.size.height));
+}
+
+//-----------------------------------------------------------------------------
+inline CGRect CGRectFromCRect (const CRect& r)
+{
+	return CGRectMake (r.left, r.top, r.getWidth (), r.getHeight ());
+}
+
+//-----------------------------------------------------------------------------
+inline CPoint CPointFromCGPoint (const CGPoint& p)
+{
+	return CPoint (p.x, p.y);
+}
 
 } // namespace
 

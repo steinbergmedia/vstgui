@@ -1,12 +1,12 @@
 //-----------------------------------------------------------------------------
 // VST Plug-Ins SDK
-// VSTGUI: Graphical User Interface Framework for VST plugins : 
+// VSTGUI: Graphical User Interface Framework for VST plugins
 //
-// Version 4.0
+// Version 4.2
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
-// (c) 2011, Steinberg Media Technologies, All Rights Reserved
+// (c) 2013, Steinberg Media Technologies, All Rights Reserved
 //-----------------------------------------------------------------------------
 // Redistribution and use in source and binary forms, with or without modification,
 // are permitted provided that the following conditions are met:
@@ -22,7 +22,7 @@
 // 
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
 // ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED 
-// WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A  PARTICULAR PURPOSE ARE DISCLAIMED. 
+// WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. 
 // IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, 
 // INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, 
 // BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, 
@@ -43,12 +43,16 @@
 
 namespace VSTGUI {
 class CDrawContext;
+class CGraphicsPath;
 class CDragContainer;
 class IDataPackage;
 class VSTGUIEditorInterface;
 class CBitmap;
 class CFrame;
 class CViewAttributeEntry;
+#if VSTGUI_TOUCH_EVENT_HANDLING
+class ITouchEvent;
+#endif
 
 namespace Animation {
 	class IAnimationTarget;
@@ -72,7 +76,8 @@ enum CMouseEventResult
 	kMouseEventNotImplemented = 0,
 	kMouseEventHandled,
 	kMouseEventNotHandled,
-	kMouseDownEventHandledButDontNeedMovedOrUpEvents
+	kMouseDownEventHandledButDontNeedMovedOrUpEvents,
+	kMouseMoveEventHandledButDontNeedMoreEvents
 };
 
 //----------------------------
@@ -220,11 +225,13 @@ public:
 	virtual CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons);											///< called when a mouse down event occurs
 	virtual CMouseEventResult onMouseUp (CPoint& where, const CButtonState& buttons);											///< called when a mouse up event occurs
 	virtual CMouseEventResult onMouseMoved (CPoint& where, const CButtonState& buttons);										///< called when a mouse move event occurs
+	virtual CMouseEventResult onMouseCancel ();																					///< called when mouse tracking should be canceled
 
 	virtual CMouseEventResult onMouseEntered (CPoint& where, const CButtonState& buttons) {return kMouseEventNotImplemented;}	///< called when the mouse enters this view
 	virtual CMouseEventResult onMouseExited (CPoint& where, const CButtonState& buttons) {return kMouseEventNotImplemented;}	///< called when the mouse leaves this view
-	
-	virtual bool hitTest (const CPoint& where, const CButtonState& buttons = -1) { return where.isInside (mouseableArea); }		///< check if where hits this view
+
+	void setHitTestPath (CGraphicsPath* path);
+	virtual bool hitTest (const CPoint& where, const CButtonState& buttons = -1);												///< check if where hits this view
 
 	virtual bool onWheel (const CPoint& where, const float& distance, const CButtonState& buttons);									///< called if a mouse wheel event is happening over this view
 	virtual bool onWheel (const CPoint& where, const CMouseWheelAxis& axis, const float& distance, const CButtonState& buttons);	///< called if a mouse wheel event is happening over this view
@@ -236,6 +243,16 @@ public:
 	virtual CRect& getMouseableArea (CRect& rect) const { rect = mouseableArea; return rect;}	///< get the area in which the view reacts to the mouse
 	virtual const CRect& getMouseableArea () const { return mouseableArea; }					///< read only access to the mouseable area
 	//@}
+
+#if VSTGUI_TOUCH_EVENT_HANDLING
+	//-----------------------------------------------------------------------------
+	/// @name Touch Event Handling Methods
+	//-----------------------------------------------------------------------------
+	//@{
+	virtual void onTouchEvent (ITouchEvent& event) {}
+	virtual bool wantsMultiTouchEvents () const { return false; }
+	//@}
+#endif
 
 	//-----------------------------------------------------------------------------
 	/// @name Drag & Drop Methods
@@ -374,6 +391,8 @@ public:
 	CLASS_METHODS(CView, CBaseObject)
 protected:
 	~CView ();
+
+	CGraphicsPath* getHitTestPath () const { return pHitTestPath; }
 	
 	CRect  size;
 	CRect  mouseableArea;
@@ -400,6 +419,7 @@ protected:
 private:
 	SharedPointer<CBitmap> pBackground;
 	SharedPointer<CBitmap> pDisabledBackground;
+	SharedPointer<CGraphicsPath> pHitTestPath;
 
 	std::map<CViewAttributeID, CViewAttributeEntry*> attributes;
 

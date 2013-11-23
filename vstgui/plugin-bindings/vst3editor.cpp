@@ -1,12 +1,12 @@
 //-----------------------------------------------------------------------------
 // VST Plug-Ins SDK
-// VSTGUI: Graphical User Interface Framework not only for VST plugins : 
+// VSTGUI: Graphical User Interface Framework for VST plugins
 //
-// Version 4.0
+// Version 4.2
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
-// (c) 2011, Steinberg Media Technologies, All Rights Reserved
+// (c) 2013, Steinberg Media Technologies, All Rights Reserved
 //-----------------------------------------------------------------------------
 // Redistribution and use in source and binary forms, with or without modification,
 // are permitted provided that the following conditions are met:
@@ -22,7 +22,7 @@
 // 
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
 // ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED 
-// WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A  PARTICULAR PURPOSE ARE DISCLAIMED. 
+// WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. 
 // IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, 
 // INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, 
 // BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, 
@@ -110,12 +110,9 @@ public:
 			parameter->removeDependent (this);
 			parameter->release ();
 		}
-		std::list<CControl*>::iterator it = controls.begin ();
-		while (it != controls.end ())
-		{
-			(*it)->forget ();
-			it++;
-		}
+		VSTGUI_RANGE_BASED_FOR_LOOP(ControlList, controls, CControl*, c)
+			c->forget ();
+		VSTGUI_RANGE_BASED_FOR_LOOP_END
 	}
 
 	void addControl (CControl* control)
@@ -145,17 +142,14 @@ public:
 	
 	void removeControl (CControl* control)
 	{
-		std::list<CControl*>::iterator it = controls.begin ();
-		while (it != controls.end ())
-		{
-			if ((*it) == control)
+		VSTGUI_RANGE_BASED_FOR_LOOP(ControlList, controls, CControl*, c)
+			if (c == control)
 			{
 				controls.remove (control);
 				control->forget ();
 				return;
 			}
-			it++;
-		}
+		VSTGUI_RANGE_BASED_FOR_LOOP_END
 	}
 	
 	bool containsControl (CControl* control)
@@ -254,12 +248,10 @@ protected:
 				maxValue = (float)parameter->toPlain ((Steinberg::Vst::ParamValue)maxValue);
 			}
 		}
-		std::list<CControl*>::iterator it = controls.begin ();
-		while (it != controls.end ())
-		{
-			(*it)->setMouseEnabled (mouseEnabled);
-			(*it)->setDefaultValue ((float)defaultValue);
-			CTextLabel* label = dynamic_cast<CTextLabel*>(*it);
+		VSTGUI_RANGE_BASED_FOR_LOOP(ControlList, controls, CControl*, c)
+			c->setMouseEnabled (mouseEnabled);
+			c->setDefaultValue ((float)defaultValue);
+			CTextLabel* label = dynamic_cast<CTextLabel*>(c);
 			if (label)
 			{
 				Steinberg::Vst::ParamValue normValue = value;
@@ -277,9 +269,9 @@ protected:
 			{
 				if (isStepCount)
 				{
-					(*it)->setMin (minValue);
-					(*it)->setMax (maxValue);
-					COptionMenu* optMenu = dynamic_cast<COptionMenu*> (*it);
+					c->setMin (minValue);
+					c->setMax (maxValue);
+					COptionMenu* optMenu = dynamic_cast<COptionMenu*>(c);
 					if (optMenu)
 					{
 						optMenu->removeAllEntry ();
@@ -291,21 +283,22 @@ protected:
 							utf8Str.toMultiByte (Steinberg::kCP_Utf8);
 							optMenu->addEntry (utf8Str);
 						}
-						(*it)->setValue ((float)value - minValue);
+						c->setValue ((float)value - minValue);
 					}
 					else
-						(*it)->setValue ((float)value);
+						c->setValue ((float)value);
 				}
 				else
-					(*it)->setValueNormalized ((float)value);
+					c->setValueNormalized ((float)value);
 			}
-			(*it)->invalid ();
-			it++;
-		}
+			c->invalid ();
+		VSTGUI_RANGE_BASED_FOR_LOOP_END
 	}
 	Steinberg::Vst::EditController* editController;
 	Steinberg::Vst::Parameter* parameter;
-	std::list<CControl*> controls;
+	
+	typedef std::list<CControl*> ControlList;
+	ControlList controls;
 };
 
 //-----------------------------------------------------------------------------
@@ -541,7 +534,7 @@ ParameterChangeListener* VST3Editor::getParameterChangeListener (int32_t tag)
 {
 	if (tag != -1)
 	{
-		std::map<int32_t, ParameterChangeListener*>::iterator it = paramChangeListeners.find (tag);
+		ParameterChangeListenerMap::iterator it = paramChangeListeners.find (tag);
 		if (it != paramChangeListeners.end ())
 		{
 			return it->second;
@@ -940,7 +933,7 @@ void PLUGIN_API VST3Editor::close ()
 	if (delegate)
 		delegate->willClose (this);
 
-	std::map<int32_t, ParameterChangeListener*>::iterator it = paramChangeListeners.begin ();
+	ParameterChangeListenerMap::iterator it = paramChangeListeners.begin ();
 	while (it != paramChangeListeners.end ())
 	{
 		it->second->release ();
@@ -1093,6 +1086,7 @@ CMessageResult VST3Editor::notify (CBaseObject* sender, IdStringPtr message)
 							description->save (filePath->c_str (), flags);
 						}
 					}
+					item->setChecked (false);
 					return kMessageNotified;
 				}
 				else if (strcmp (item->getCommandName (), "Save As") == 0)
@@ -1120,6 +1114,7 @@ CMessageResult VST3Editor::notify (CBaseObject* sender, IdStringPtr message)
 							fileSelector->forget ();
 						}
 					}
+					item->setChecked (false);
 					return kMessageNotified;
 				}
 			}

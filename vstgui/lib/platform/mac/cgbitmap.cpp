@@ -1,12 +1,12 @@
 //-----------------------------------------------------------------------------
 // VST Plug-Ins SDK
-// VSTGUI: Graphical User Interface Framework for VST plugins : 
+// VSTGUI: Graphical User Interface Framework for VST plugins
 //
-// Version 4.0
+// Version 4.2
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
-// (c) 2011, Steinberg Media Technologies, All Rights Reserved
+// (c) 2013, Steinberg Media Technologies, All Rights Reserved
 //-----------------------------------------------------------------------------
 // Redistribution and use in source and binary forms, with or without modification,
 // are permitted provided that the following conditions are met:
@@ -22,7 +22,7 @@
 // 
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
 // ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED 
-// WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A  PARTICULAR PURPOSE ARE DISCLAIMED. 
+// WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. 
 // IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, 
 // INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, 
 // BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, 
@@ -38,6 +38,9 @@
 #if MAC
 #include "macglobals.h"
 #include <Accelerate/Accelerate.h>
+#if TARGET_OS_IPHONE
+	#include <MobileCoreServices/MobileCoreServices.h>
+#endif
 
 namespace VSTGUI {
 
@@ -101,6 +104,7 @@ IPlatformBitmap* IPlatformBitmap::createFromMemory (const void* ptr, uint32_t me
 bool IPlatformBitmap::createMemoryPNGRepresentation (IPlatformBitmap* bitmap, void** ptr, uint32_t& size)
 {
 	bool result = false;
+#if !TARGET_OS_IPHONE
 	CGBitmap* cgBitmap = dynamic_cast<CGBitmap*> (bitmap);
 	if (cgBitmap)
 	{
@@ -127,6 +131,7 @@ bool IPlatformBitmap::createMemoryPNGRepresentation (IPlatformBitmap* bitmap, vo
 			}
 		}
 	}
+#endif
 	return result;
 }
 
@@ -134,6 +139,7 @@ bool IPlatformBitmap::createMemoryPNGRepresentation (IPlatformBitmap* bitmap, vo
 CGBitmap::CGBitmap (const CPoint& inSize)
 : image (0)
 , imageSource (0)
+, layer (0)
 , bits (0)
 , dirty (false)
 , bytesPerRow (0)
@@ -143,9 +149,24 @@ CGBitmap::CGBitmap (const CPoint& inSize)
 }
 
 //-----------------------------------------------------------------------------
+CGBitmap::CGBitmap (CGImageRef image)
+: image (image)
+, imageSource (0)
+, layer (0)
+, bits (0)
+, dirty (false)
+, bytesPerRow (0)
+{
+	CGImageRetain (image);
+	size.x = CGImageGetWidth (image);
+	size.y = CGImageGetHeight (image);
+}
+
+//-----------------------------------------------------------------------------
 CGBitmap::CGBitmap ()
 : image (0)
 , imageSource (0)
+, layer (0)
 , bits (0)
 , dirty (false)
 , bytesPerRow (0)
@@ -157,6 +178,8 @@ CGBitmap::~CGBitmap ()
 {
 	if (image)
 		CGImageRelease (image);
+	if (layer)
+		CFRelease (layer);
 	if (imageSource)
 		CFRelease (imageSource);
 	if (bits)
@@ -222,7 +245,7 @@ bool CGBitmap::load (const CResourceDescription& desc)
 //-----------------------------------------------------------------------------
 static CFStringRef kCGImageSourceShouldPreferRGB32 = CFSTR("kCGImageSourceShouldPreferRGB32");
 
-#define VSTGUI_QUARTZ_WORKAROUND_PNG_DECODE_ON_DRAW_BUG __i386__
+#define VSTGUI_QUARTZ_WORKAROUND_PNG_DECODE_ON_DRAW_BUG __i386__ || TARGET_OS_IPHONE
 
 //-----------------------------------------------------------------------------
 bool CGBitmap::loadFromImageSource (CGImageSourceRef source)
@@ -292,8 +315,8 @@ CGImageRef CGBitmap::getCGImage ()
 		size_t bitDepth = 32;
 
 		CGDataProviderRef provider = CGDataProviderCreateWithData (NULL, bits, byteCount, NULL);
-		CGBitmapInfo alphaInfo = kCGImageAlphaPremultipliedFirst | kCGBitmapByteOrder32Big;
-		image = CGImageCreate (size.x, size.y, 8, bitDepth, rowBytes, GetCGColorSpace (), alphaInfo, provider, NULL, false, kCGRenderingIntentDefault);
+		CGBitmapInfo bitmapInfo = kCGImageAlphaPremultipliedFirst | kCGBitmapByteOrder32Big;
+		image = CGImageCreate (size.x, size.y, 8, bitDepth, rowBytes, GetCGColorSpace (), bitmapInfo, provider, NULL, false, kCGRenderingIntentDefault);
 		CGDataProviderRelease (provider);
 		dirty = false;
 	}
@@ -338,6 +361,21 @@ CGContextRef CGBitmap::createCGContext ()
 }
 
 //-----------------------------------------------------------------------------
+CGLayerRef CGBitmap::createCGLayer (CGContextRef context)
+{
+	if (layer && !dirty)
+		return layer;
+	CGImageRef image = getCGImage ();
+	layer = image ? CGLayerCreateWithContext (context, CGSizeMake (size.x, size.y), 0) : 0;
+	if (layer)
+	{
+		CGContextRef layerContext = CGLayerGetContext (layer);
+		CGContextDrawImage (layerContext, CGRectMake (0, 0, size.x, size.y), image);
+	}
+	return layer;
+}
+
+//-----------------------------------------------------------------------------
 void CGBitmap::allocBits ()
 {
 	if (bits == 0)
@@ -356,6 +394,9 @@ void CGBitmap::freeCGImage ()
 	if (image)
 		CFRelease (image);
 	image = 0;
+	if (layer)
+		CFRelease (layer);
+	layer = 0;
 }
 
 //-----------------------------------------------------------------------------

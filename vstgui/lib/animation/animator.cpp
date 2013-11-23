@@ -1,12 +1,12 @@
 //-----------------------------------------------------------------------------
 // VST Plug-Ins SDK
-// VSTGUI: Graphical User Interface Framework for VST plugins : 
+// VSTGUI: Graphical User Interface Framework for VST plugins
 //
-// Version 4.0
+// Version 4.2
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
-// (c) 2011, Steinberg Media Technologies, All Rights Reserved
+// (c) 2013, Steinberg Media Technologies, All Rights Reserved
 //-----------------------------------------------------------------------------
 // Redistribution and use in source and binary forms, with or without modification,
 // are permitted provided that the following conditions are met:
@@ -22,7 +22,7 @@
 // 
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
 // ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED 
-// WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A  PARTICULAR PURPOSE ARE DISCLAIMED. 
+// WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. 
 // IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, 
 // INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, 
 // BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, 
@@ -199,7 +199,7 @@ protected:
 			#if DEBUG_LOG
 			DebugPrint ("Current Animators : %d\n", animators.size ());
 			#endif
-			std::list<Animator*>::iterator it = animators.begin ();
+			AnimatorList::iterator it = animators.begin ();
 			while (it != animators.end ())
 			{
 				Animator* animator = *it++;
@@ -219,8 +219,10 @@ protected:
 	}
 
 	CVSTGUITimer* timer;
-	std::list<Animator*>animators;
-	std::list<Animator*>toRemove;
+	
+	typedef std::list<Animator*> AnimatorList;
+	AnimatorList animators;
+	AnimatorList toRemove;
 	bool inTimer;
 	static Timer* gInstance;
 };
@@ -258,7 +260,7 @@ void Animator::addAnimation (CView* view, IdStringPtr name, IAnimationTarget* ta
 //-----------------------------------------------------------------------------
 void Animator::removeAnimation (CView* view, IdStringPtr name)
 {
-	std::list<SharedPointer<Animation> >::iterator it = animations.begin ();
+	AnimationList::iterator it = animations.begin ();
 	while (it != animations.end ())
 	{
 		Animation* animation = *it++;
@@ -281,7 +283,7 @@ void Animator::removeAnimation (CView* view, IdStringPtr name)
 //-----------------------------------------------------------------------------
 void Animator::removeAnimations (CView* view)
 {
-	std::list<SharedPointer<Animation> >::iterator it = animations.begin ();
+	AnimationList::iterator it = animations.begin ();
 	while (it != animations.end ())
 	{
 		Animation* animation = *it++;
@@ -319,7 +321,7 @@ CMessageResult Animator::notify (CBaseObject* sender, IdStringPtr message)
 		CBaseObjectGuard selfGuard (this);
 		inTimer = true;
 		uint32_t currentTicks = IPlatformFrame::getTicks ();
-		std::list<SharedPointer<Animation> >::iterator it = animations.begin ();
+		AnimationList::iterator it = animations.begin ();
 		while (it != animations.end ())
 		{
 			Animation* a = *it++;
@@ -327,7 +329,7 @@ CMessageResult Animator::notify (CBaseObject* sender, IdStringPtr message)
 			if (a->startTime == 0)
 			{
 				#if DEBUG_LOG
-				DebugPrint ("animation start: %p - %s\n", a->view, a->name.c_str ());
+				DebugPrint ("animation start: %p - %s\n", a->view.cast<CView>(), a->name.c_str ());
 				#endif
 				a->target->animationStart (a->view, a->name.c_str ());
 				a->startTime = currentTicks;
@@ -344,13 +346,13 @@ CMessageResult Animator::notify (CBaseObject* sender, IdStringPtr message)
 				a->done = true;
 				a->target->animationFinished (a->view, a->name.c_str (), false);
 				#if DEBUG_LOG
-				DebugPrint ("animation finished: %p - %s\n", a->view, a->name.c_str ());
+				DebugPrint ("animation finished: %p - %s\n", a->view.cast<CView>(), a->name.c_str ());
 				#endif
 				removeAnimation (a);
 			}
 		}
 		inTimer = false;
-		std::list<SharedPointer<Animation> >::const_iterator cit = toRemove.begin ();
+		AnimationList::const_iterator cit = toRemove.begin ();
 		while (cit != toRemove.end ())
 		{
 			Animation* a = *cit++;

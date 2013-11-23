@@ -1,12 +1,12 @@
 //-----------------------------------------------------------------------------
 // VST Plug-Ins SDK
-// VSTGUI: Graphical User Interface Framework not only for VST plugins :
+// VSTGUI: Graphical User Interface Framework for VST plugins :
 //
-// Version 4.0
+// Version 4.2
 //
 //-----------------------------------------------------------------------------
 // VSTGUI LICENSE
-// (c) 2011, Steinberg Media Technologies, All Rights Reserved
+// (c) 2013, Steinberg Media Technologies, All Rights Reserved
 //-----------------------------------------------------------------------------
 // Redistribution and use in source and binary forms, with or without modification,
 // are permitted provided that the following conditions are met:
@@ -22,7 +22,7 @@
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
 // ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-// WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A  PARTICULAR PURPOSE ARE DISCLAIMED.
+// WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
 // IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
 // INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
 // BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
@@ -51,26 +51,39 @@
 #if __APPLE_CC__
 	#include <stdint.h>
 	#include <AvailabilityMacros.h>
-	#ifndef MAC_OS_X_VERSION_10_5
-		#define MAC_OS_X_VERSION_10_5 1050
-	#endif
-	#ifndef MAC_COCOA
-		#define MAC_COCOA (MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_5)
-	#endif
-	#ifndef MAC
-		#define MAC 1
-	#endif
-	#if !__LP64__ && !defined (MAC_CARBON)
-		#define MAC_CARBON 1
-		#ifndef TARGET_API_MAC_CARBON
-			#define TARGET_API_MAC_CARBON 1
+	#include <TargetConditionals.h>
+	#if TARGET_OS_IPHONE
+		#ifndef MAC
+			#define MAC 1
 		#endif
-		#ifndef __CF_USE_FRAMEWORK_INCLUDES__
-			#define __CF_USE_FRAMEWORK_INCLUDES__ 1
+		#ifndef MAC_COCOA
+			#define MAC_COCOA 1
+		#endif
+		#define VSTGUI_OPENGL_SUPPORT 0	// there's an implementation, but not yet tested, so this is zero
+		#define VSTGUI_TOUCH_EVENT_HANDLING 1
+	#else
+		#ifndef MAC_OS_X_VERSION_10_5
+			#define MAC_OS_X_VERSION_10_5 1050
+		#endif
+		#ifndef MAC_COCOA
+			#define MAC_COCOA (MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_5)
+		#endif
+		#ifndef MAC
+			#define MAC 1
+		#endif
+		#if !__LP64__ && !defined (MAC_CARBON)
+			#define MAC_CARBON 1
+			#ifndef TARGET_API_MAC_CARBON
+				#define TARGET_API_MAC_CARBON 1
+			#endif
+			#ifndef __CF_USE_FRAMEWORK_INCLUDES__
+				#define __CF_USE_FRAMEWORK_INCLUDES__ 1
+			#endif
 		#endif
 	#endif
 	#ifdef __has_feature
 		#define VSTGUI_RVALUE_REF_SUPPORT __has_feature (cxx_rvalue_references)
+		#define VSTGUI_RANGE_BASED_FOR_LOOP_SUPPORT __has_feature (cxx_range_for)
 		#if VSTGUI_RVALUE_REF_SUPPORT
 			#include <type_traits>
 		#endif
@@ -129,11 +142,29 @@
 	#define VSTGUI_OVERRIDE_VMETHOD
 #endif
 
+#ifndef VSTGUI_RANGE_BASED_FOR_LOOP_SUPPORT
+	#define VSTGUI_RANGE_BASED_FOR_LOOP_SUPPORT 0
+#endif
+
+//----------------------------------------------------
+// Helper Macro for range based for loops
+//----------------------------------------------------
+#if VSTGUI_RANGE_BASED_FOR_LOOP_SUPPORT
+	#define VSTGUI_RANGE_BASED_FOR_LOOP(ContainerType, container, varType, varName) for (auto& varName : container) {
+#else
+	#define VSTGUI_RANGE_BASED_FOR_LOOP(ContainerType, container, varType, varName) for (ContainerType::iterator it = container.begin (); it != container.end (); it++) { varType varName = (*it);
+#endif
+#define VSTGUI_RANGE_BASED_FOR_LOOP_END }
+
 //----------------------------------------------------
 // Feature setting
 //----------------------------------------------------
 #ifndef VSTGUI_OPENGL_SUPPORT
 	#define VSTGUI_OPENGL_SUPPORT 1
+#endif
+
+#ifndef VSTGUI_TOUCH_EVENT_HANDLING
+	#define VSTGUI_TOUCH_EVENT_HANDLING 0
 #endif
 
 #ifndef VSTGUI_ENABLE_OLD_CLASS_TYPE_INFO

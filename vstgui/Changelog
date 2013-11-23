@@ -1,3 +1,39 @@
+2013-10-21 arne
+
+	* removed support for Mac OS X 10.4
+	* add CLayeredViewContainer + platform implementation for iOS and OSX (QuartzCore is now required)
+	* CGraphicsPath::hitTest implementation for D2D and GDI+
+	
+2013-10-18 arne
+
+	* add relative touch mode to CSlider
+
+2013-10-15 yvan
+
+	* remove warning for missing casting (double to float)
+	* change #include <Windows.h> to #include <windows.h>
+	
+2013-10-14 arne
+
+	* add onMouseCancel () to CView to support touch canceling and maybe later ESC-Key canceling of mouse tracking
+	* implement onMouseCancel() on a few of controls
+
+2013-10-04 arne
+
+	* add path hit testing support into CView
+	* add hitTest method to CGraphicsPath (Quartz implementation only currently)
+	* add CSlider::kAlwaysUseZoomFactor to make the zoom modifier mode the default
+
+2013-09-10 arne
+
+	* add iOS CTextEdit support
+	* add experimental COpenGLView support for iOS (currently not enabled)
+
+2013-08-06 arne
+
+	* add iOS support (without CTextEdit and COptionMenu support for now)
+	* add multi-touch support (iOS implementation only for now)
+
 2013-05-29 arne
 
 	* fix crash in IDependecy::changed when a dependent is removed while iterating the depentents list
