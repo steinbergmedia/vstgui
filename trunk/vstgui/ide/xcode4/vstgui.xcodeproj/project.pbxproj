@@ -93,7 +93,6 @@
 		F4462D731756479A00E6835D /* macclipboard.mm in Sources */ = {isa = PBXBuildFile; fileRef = F40B7835140E106600E2BF16 /* macclipboard.mm */; };
 		F4462D741756479A00E6835D /* macfileselector.mm in Sources */ = {isa = PBXBuildFile; fileRef = F497F17B13080B1C00F0A613 /* macfileselector.mm */; };
 		F4462D751756479A00E6835D /* macstring.mm in Sources */ = {isa = PBXBuildFile; fileRef = F4FC1A9F1328C8C40066E2F8 /* macstring.mm */; };
-		F4462D7717564B4700E6835D /* libprofile_rt.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = F4462D7617564B4700E6835D /* libprofile_rt.dylib */; };
 		F452950813A211E6006EEF82 /* cocoaopenglview.mm in Sources */ = {isa = PBXBuildFile; fileRef = F452950613A211E6006EEF82 /* cocoaopenglview.mm */; };
 		F452950D13A2166A006EEF82 /* copenglview.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F452950B13A2166A006EEF82 /* copenglview.cpp */; };
 		F453B21F13F123700067C1C2 /* uiundomanager.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F453B21E13F123700067C1C2 /* uiundomanager.cpp */; };
@@ -619,7 +618,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				F4462D7717564B4700E6835D /* libprofile_rt.dylib in Frameworks */,
 				F4CC1E96170A0A40008F07FD /* Accelerate.framework in Frameworks */,
 				F4CC1E97170A0A40008F07FD /* OpenGL.framework in Frameworks */,
 				F4CC1E93170A0A27008F07FD /* Carbon.framework in Frameworks */,
