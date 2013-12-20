@@ -316,49 +316,4 @@ void CColor::fromHSV (double hue, double saturation, double value)
 	blue = (uint8_t) floor (b * 255. + 0.5);
 }
 
-#if 0 // MAC && DEBUG
-__attribute__((__constructor__)) void testHSVtoRGBAndBack ()
-{
-	CColor color (10, 10, 255, 255);
-	CColor color2 = color;
-	double h,s,v;
-	color.toHSV (h,s,v);
-	double th,ts,tv;
-	for (double i = 0; i < 360; i+= 0.01)
-	{
-		color.fromHSV (i, s, v);
-		color.toHSV (th, ts, tv);
-		color2.fromHSV (th, ts, tv);
-		if (color != color2)
-		{
-			DebugPrint ("issue\n");
-		}
-		color.toHSL (th, ts, tv);
-		color2.fromHSL (th, ts, tv);
-		if (color != color2)
-		{
-			DebugPrint ("issue\n");
-		}
-	}
-	for (double i = 0.; i < 1.; i += 0.0001)
-	{
-		color.fromHSV (h, i, v);
-		color.toHSV (th, ts, tv);
-		color2.fromHSV (th, ts, tv);
-		if (color != color2)
-		{
-			DebugPrint ("issue\n");
-		}
-		color.fromHSV (h, s, i);
-		color.toHSV (th, ts, tv);
-		color2.fromHSV (th, ts, tv);
-		if (color != color2)
-		{
-			DebugPrint ("issue\n");
-		}
-	}
-}
-
-#endif
-
 } // namespace

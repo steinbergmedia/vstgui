@@ -71,6 +71,12 @@ CGDrawContext::CGDrawContext (CGBitmap* _bitmap)
 //-----------------------------------------------------------------------------
 void CGDrawContext::init ()
 {
+#if 0
+	// Get the scale for the context to check if it is for a Retina display
+	CGRect userRect = CGRectMake (0, 0, 100, 100);
+	CGRect deviceRect = CGContextConvertRectToDeviceSpace (cgContext, userRect);
+	CGFloat scale = deviceRect.size.height / userRect.size.height;
+#endif
 	CGContextSaveGState (cgContext);
 	CGContextSetShouldAntialias (cgContext, false);
 	CGContextSetFillColorSpace (cgContext, GetCGColorSpace ());

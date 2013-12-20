@@ -47,6 +47,8 @@ IPlatformString* IPlatformString::createWithUTF8String (UTF8StringPtr utf8String
 //-----------------------------------------------------------------------------
 MacString::MacString (UTF8StringPtr utf8String)
 : cfString (0)
+, ctLine (NULL)
+, ctLineFontRef (NULL)
 {
 	if (utf8String)
 		cfString = CFStringCreateWithCString (0, utf8String, kCFStringEncodingUTF8);
@@ -55,6 +57,8 @@ MacString::MacString (UTF8StringPtr utf8String)
 //-----------------------------------------------------------------------------
 MacString::~MacString ()
 {
+	if (ctLine)
+		CFRelease (ctLine);
 	if (cfString)
 		CFRelease (cfString);
 }
@@ -64,10 +68,26 @@ void MacString::setUTF8String (UTF8StringPtr utf8String)
 {
 	if (cfString)
 		CFRelease (cfString);
+
+	if (ctLine)
+		CFRelease (ctLine);
+	ctLine = NULL;
+	ctLineFontRef = 0;
+
 	if (utf8String)
 		cfString = CFStringCreateWithCString (0, utf8String, kCFStringEncodingUTF8);
 	else
 		cfString = 0;
+}
+
+//-----------------------------------------------------------------------------
+void MacString::setCTLine (CTLineRef line, const void* fontRef, const CColor& color)
+{
+	ctLine = line;
+	if (ctLine)
+		CFRetain (ctLine);
+	ctLineFontRef = fontRef;
+	ctLineColor = color;
 }
 
 } // namespace

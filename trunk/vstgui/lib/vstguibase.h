@@ -63,10 +63,16 @@
 		#define VSTGUI_TOUCH_EVENT_HANDLING 1
 	#else
 		#ifndef MAC_OS_X_VERSION_10_5
-			#define MAC_OS_X_VERSION_10_5 1050
+			#error unsupported Mac OS X SDK
+		#endif
+		#ifndef MAC_OS_X_VERSION_10_6
+			#define MAC_OS_X_VERSION_10_6 1060
+		#endif
+		#ifndef MAC_OS_X_VERSION_10_7
+			#define MAC_OS_X_VERSION_10_7 1070
 		#endif
 		#ifndef MAC_COCOA
-			#define MAC_COCOA (MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_5)
+			#define MAC_COCOA 1
 		#endif
 		#ifndef MAC
 			#define MAC 1
