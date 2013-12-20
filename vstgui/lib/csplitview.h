@@ -83,6 +83,8 @@ public:
 
 	ISplitViewSeparatorDrawer* getDrawer ();
 	void storeViewSizes ();
+	
+	bool addViewToSeparator (int32_t sepIndex, CView* view);
 	//@}
 	
 	// overrides

@@ -40,8 +40,8 @@
 #import "macglobals.h"
 #import <QuartzCore/QuartzCore.h>
 
-#if __has_feature(objc_arc) && __clang_major__ >= 3
-#define ARC_ENABLED 1
+#if __clang && __clang_major__ >= 3 && __has_feature(objc_arc)
+	#define ARC_ENABLED 1
 #endif // __has_feature(objc_arc)
 
 #if TARGET_OS_IPHONE
@@ -136,7 +136,7 @@ static void VSTGUI_CALayer_DrawInContext (id self, SEL _cmd, CGContextRef ctx)
 	if (_viewLayerDelegate)
 	{
 		CGRect dirtyRect = CGContextGetClipBoundingBox (ctx);
-		VSTGUI::CGDrawContext drawContext (ctx, VSTGUI::CRectFromCGRect (NSRectToCGRect ([self bounds])));
+		VSTGUI::CGDrawContext drawContext (ctx, VSTGUI::CRectFromCGRect ([(CALayer*)self bounds]));
 		_viewLayerDelegate->drawViewLayer (&drawContext, VSTGUI::CRectFromCGRect (dirtyRect));
 	}
 }

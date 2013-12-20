@@ -47,10 +47,8 @@
 #endif
 
 namespace VSTGUI {
+class MacString;
 
-#define VSTGUI_USES_CORE_TEXT	(MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_5 || TARGET_OS_IPHONE)
-
-#if VSTGUI_USES_CORE_TEXT
 //-----------------------------------------------------------------------------
 class CoreTextFont : public IPlatformFont, public IFontPainter
 {
@@ -67,6 +65,8 @@ protected:
 	CCoord getStringWidth (CDrawContext* context, const CString& string, bool antialias = true) VSTGUI_OVERRIDE_VMETHOD;
 	CFDictionaryRef getStringAttributes (const CGColorRef color = 0);
 
+	CTLineRef createCTLine (CDrawContext* context, MacString* macString);
+
 	double getAscent () const VSTGUI_OVERRIDE_VMETHOD;
 	double getDescent () const VSTGUI_OVERRIDE_VMETHOD;
 	double getLeading () const VSTGUI_OVERRIDE_VMETHOD;
@@ -80,33 +80,6 @@ protected:
 	CColor lastColor;
 	CFMutableDictionaryRef stringAttributes;
 };
-
-#else // VSTGUI_USES_CORE_TEXT
-//-----------------------------------------------------------------------------
-class ATSUFont : public IPlatformFont, public IFontPainter
-{
-public:
-	ATSUFont (UTF8StringPtr name, const CCoord& size, const int32_t& style);
-
-	ATSUStyle getATSUStyle () const { return atsuStyle; }
-
-protected:
-	~ATSUFont ();
-
-	void drawString (CDrawContext* context, const CString& string, const CPoint& p, bool antialias = true) VSTGUI_OVERRIDE_VMETHOD;
-	CCoord getStringWidth (CDrawContext* context, const CString& string, bool antialias = true) VSTGUI_OVERRIDE_VMETHOD;
-
-	double getAscent () const VSTGUI_OVERRIDE_VMETHOD { return -1.; }
-	double getDescent () const VSTGUI_OVERRIDE_VMETHOD { return -1.; }
-	double getLeading () const VSTGUI_OVERRIDE_VMETHOD { return -1.; }
-	double getCapHeight () const VSTGUI_OVERRIDE_VMETHOD { return -1.; }
-
-	IFontPainter* getPainter () VSTGUI_OVERRIDE_VMETHOD { return this; }
-
-	ATSUStyle atsuStyle;
-};
-
-#endif
 
 } // namespace
 

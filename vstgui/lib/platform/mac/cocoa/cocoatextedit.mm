@@ -78,7 +78,6 @@ static id VSTGUI_NSTextField_Init (id self, SEL _cmd, void* textEdit)
 		}
 		OBJC_SET_VALUE (self, _textEdit, textEdit);
 
-		#if VSTGUI_USES_CORE_TEXT
 		CoreTextFont* ctf = dynamic_cast<CoreTextFont*> (tec->platformGetFont ()->getPlatformFont ());
 		if (ctf)
 		{
@@ -91,7 +90,6 @@ static id VSTGUI_NSTextField_Init (id self, SEL _cmd, void* textEdit)
 				CFRelease (fontDesc);
 			}
 		}
-		#endif
 		
 		NSString* text = [NSString stringWithCString:tec->platformGetText () encoding:NSUTF8StringEncoding];
 

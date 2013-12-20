@@ -1,3 +1,12 @@
+2013-12-20 arne
+
+	* removed ATSUI font handling as CoreText is supported since 10.5
+	* optimize string drawing on Mac OS X by caching the CoreText Line between calls to getStringWidth and drawString
+	* add support for adding a custom view to the split view separator
+	* fix compiling with the Mac OS X 10.6 SDK
+
+== VSTGUI 4.2 Release ==
+
 2013-10-21 arne
 
 	* removed support for Mac OS X 10.4

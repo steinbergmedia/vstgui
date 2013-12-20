@@ -173,7 +173,7 @@ public:
 
 			CRect size (_size);
 			size.makeIntegral ();
-			context->setDrawMode (kAliasing);
+			context->setDrawMode (kAliasing | kIntegralMode);
 			context->setLineStyle (kLineSolid);
 			context->setLineWidth (1.);
 			context->setFrameColor (lineColor);
@@ -360,6 +360,17 @@ CView* UIEditController::verifyView (CView* view, const UIAttributes& attributes
 	if (splitView)
 	{
 		splitViews.push_back (splitView);
+		if (splitViews.size () == 1)
+		{
+			CTextLabel* label = new CTextLabel (CRect (0, 0, splitView->getWidth (), splitView->getSeparatorWidth ()), "Templates / View Hierarchy");
+			label->setTransparency (true);
+			label->setMouseEnabled (false);
+			CFontRef font = description->getFont ("control.font");
+			label->setFont (font);
+			label->setFontColor (kBlackCColor);
+			label->setAutosizeFlags (kAutosizeAll);
+			splitView->addViewToSeparator (0, label);
+		}
 	}
 	CControl* control = dynamic_cast<CControl*>(view);
 	if (control)
@@ -527,6 +538,7 @@ CMessageResult UIEditController::notify (CBaseObject* sender, IdStringPtr messag
 			for (std::list<SharedPointer<CSplitView> >::const_iterator it = splitViews.begin (); it != splitViews.end (); it++)
 				(*it)->storeViewSizes ();
 
+			getSettings ()->setIntegerAttribute ("Version", 1);
 			// find the view of this controller
 			CViewContainer* container = dynamic_cast<CViewContainer*> (editView->getParentView ());
 			while (container && container != container->getFrame ())
@@ -834,6 +846,10 @@ bool UIEditController::storeViewSize (int32_t index, const CCoord& size, CSplitV
 //----------------------------------------------------------------------------------------------------
 bool UIEditController::restoreViewSize (int32_t index, CCoord& size, CSplitView* splitView)
 {
+	int32_t version = 0;
+	getSettings ()->getIntegerAttribute ("Version", version);
+	if (version == 0)
+		return false;
 	int32_t si = getSplitViewIndex (splitView);
 	if (si >= 0)
 	{
@@ -878,7 +894,7 @@ void UIEditController::setDirty (bool state)
 		if (notSavedControl && notSavedControl->isAttached ())
 		{
 			notSavedControl->invalid ();
-			notSavedControl->addAnimation ("AlphaValueAnimation", new Animation::AlphaValueAnimation (dirty ? 1.f : 0.f), new Animation::LinearTimingFunction (400));
+			notSavedControl->addAnimation ("AlphaValueAnimation", new Animation::AlphaValueAnimation (dirty ? 1.f : 0.f), new Animation::LinearTimingFunction (80));
 		}
 	}
 }

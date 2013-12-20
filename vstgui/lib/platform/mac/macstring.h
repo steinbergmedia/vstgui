@@ -38,8 +38,8 @@
 #include "../iplatformstring.h"
 
 #if MAC
-
 #include <CoreFoundation/CoreFoundation.h>
+#include "cfontmac.h"
 
 namespace VSTGUI {
 
@@ -54,9 +54,17 @@ public:
 
 	CFStringRef getCFString () const { return cfString; }
 
+	CTLineRef getCTLine () const { return ctLine; }
+	const void* getCTLineFontRef () const { return ctLineFontRef; }
+	const CColor& getCTLineColor () const { return ctLineColor; }
+
+	void setCTLine (CTLineRef line, const void* fontRef, const CColor& color);
 //-----------------------------------------------------------------------------
 protected:
 	CFStringRef cfString;
+	CTLineRef ctLine;
+	const void* ctLineFontRef;
+	CColor ctLineColor;
 };
 
 } // namespace
