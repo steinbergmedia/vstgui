@@ -40,9 +40,11 @@
 #import "macglobals.h"
 #import <QuartzCore/QuartzCore.h>
 
-#if __clang && __clang_major__ >= 3 && __has_feature(objc_arc)
-	#define ARC_ENABLED 1
-#endif // __has_feature(objc_arc)
+#if __clang__ 
+	#if __clang_major__ >= 3 && __has_feature(objc_arc)
+		#define ARC_ENABLED 1
+	#endif // __has_feature(objc_arc)
+#endif // __clang__
 
 #if TARGET_OS_IPHONE
 //-----------------------------------------------------------------------------
