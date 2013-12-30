@@ -51,6 +51,7 @@ CGradientView::CGradientView (const CRect& size)
 , frameWidth (1.)
 , drawAntialiased (true)
 , radialRadius (1.)
+, radialCenter (CPoint (0.5, 0.5))
 {
 }
 
@@ -226,8 +227,10 @@ void CGradientView::draw (CDrawContext* context)
 		else
 		{
 			CPoint center (radialCenter);
+			center.h *= getViewSize ().getWidth ();
+			center.v *= getViewSize ().getHeight ();
 			center.offset (getViewSize ().left, getViewSize ().top);
-			context->fillRadialGradient (path, *gradient, center, radialRadius);
+			context->fillRadialGradient (path, *gradient, center, radialRadius * std::max (getViewSize ().getWidth (), getViewSize ().getHeight ()));
 		}
 		
 		if (frameColor.alpha != 0 && frameWidth > 0.)
