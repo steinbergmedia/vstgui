@@ -42,6 +42,7 @@
 #include <list>
 
 struct ID2D1PathGeometry;
+struct D2D1_GRADIENT_STOP;
 
 namespace VSTGUI {
 
@@ -63,6 +64,16 @@ public:
 protected:
 	ID2D1PathGeometry* path;
 	int32_t currentPathFillMode;
+};
+
+//-----------------------------------------------------------------------------
+class D2DGradient : public CGradient
+{
+public:
+	D2DGradient (double color1Start, double color2Start, const CColor& color1, const CColor& color2)
+	: CGradient (color1Start, color2Start, color1, color2) {}
+
+	const ColorStopVector& getColorStops () const { return colorStops; }
 };
 
 } // namespace

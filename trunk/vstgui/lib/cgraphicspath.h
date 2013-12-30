@@ -39,6 +39,8 @@
 #include "cpoint.h"
 #include "ccolor.h"
 #include <list>
+#include <vector>
+#include <algorithm>
 
 namespace VSTGUI {
 class CGradient;
@@ -247,25 +249,33 @@ protected:
 class CGradient : public CBaseObject
 {
 public:
+	typedef std::pair<double, CColor> ColorStop;
+	typedef std::vector<ColorStop> ColorStopVector;
 	//-----------------------------------------------------------------------------
 	/// @name Member Access
 	//-----------------------------------------------------------------------------
 	//@{
-	double getColor1Start () const { return color1Start; }
-	double getColor2Start () const { return color2Start; }
-	const CColor& getColor1 () const { return color1; }
-	const CColor& getColor2 () const { return color2; }
+	
+	virtual void addColorStop (double start, const CColor& color)
+	{
+		struct {
+			bool operator () (const ColorStop& a, const ColorStop& b) { return a.first < b.first; }
+		} Compare;
+		colorStops.push_back (std::make_pair (start, color));
+		std::sort (colorStops.begin (), colorStops.end (), Compare);
+	}
+
 	//@}
 //-----------------------------------------------------------------------------
 	CLASS_METHODS_NOCOPY(CGradient, CBaseObject)
 protected:
 	CGradient (double color1Start, double color2Start, const CColor& color1, const CColor& color2)
-	: color1Start (color1Start), color2Start (color2Start), color1 (color1), color2 (color2) {}
+	{
+		addColorStop (color1Start, color1);
+		addColorStop (color2Start, color2);
+	}
 	
-	double color1Start;
-	double color2Start;
-	CColor color1;
-	CColor color2;
+	ColorStopVector colorStops;
 };
 
 } // namespace

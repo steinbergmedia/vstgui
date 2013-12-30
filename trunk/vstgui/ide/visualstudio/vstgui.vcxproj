@@ -158,6 +158,7 @@
     <ClCompile Include="..\..\lib\cframe.cpp" />
     <ClCompile Include="..\..\lib\cgradientview.cpp" />
     <ClCompile Include="..\..\lib\cgraphicspath.cpp" />
+    <ClCompile Include="..\..\lib\clayeredviewcontainer.cpp" />
     <ClCompile Include="..\..\lib\coffscreencontext.cpp" />
     <ClCompile Include="..\..\lib\copenglview.cpp" />
     <ClCompile Include="..\..\lib\cpoint.cpp" />
@@ -247,6 +248,7 @@
     <ClInclude Include="..\..\lib\cframe.h" />
     <ClInclude Include="..\..\lib\cgradientview.h" />
     <ClInclude Include="..\..\lib\cgraphicspath.h" />
+    <ClInclude Include="..\..\lib\clayeredviewcontainer.h" />
     <ClInclude Include="..\..\lib\coffscreencontext.h" />
     <ClInclude Include="..\..\lib\copenglview.h" />
     <ClInclude Include="..\..\lib\cpoint.h" />

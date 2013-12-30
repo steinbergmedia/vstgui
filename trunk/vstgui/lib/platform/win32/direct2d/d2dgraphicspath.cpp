@@ -42,15 +42,6 @@
 namespace VSTGUI {
 
 //-----------------------------------------------------------------------------
-class D2DGradient : public CGradient
-{
-public:
-	D2DGradient (double color1Start, double color2Start, const CColor& color1, const CColor& color2)
-	: CGradient (color1Start, color2Start, color1, color2) {}
-};
-
-
-//-----------------------------------------------------------------------------
 D2DGraphicsPath::D2DGraphicsPath ()
 : path (0)
 , currentPathFillMode (-1)

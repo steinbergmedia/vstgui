@@ -3846,10 +3846,32 @@ public:
 		{
 			gv->setDrawAntialiased (b);
 		}
+		attr = attributes.getAttributeValue ("gradient-style");
+		if (attr)
+		{
+			if (*attr == "radial")
+			{
+				gv->setGradientStyle(CGradientView::kRadialGradient);
+			}
+			else
+			{
+				gv->setGradientStyle(CGradientView::kLinearGradient);
+			}
+		}
+		CPoint p;
+		if (attributes.getPointAttribute ("radial-center", p))
+		{
+			gv->setRadialCenter (p);
+		}
+		if (attributes.getDoubleAttribute("radial-radius", d))
+		{
+			gv->setRadialRadius (d);
+		}
 		return true;
 	}
 	bool getAttributeNames (std::list<std::string>& attributeNames) const
 	{
+		attributeNames.push_back ("gradient-style");
 		attributeNames.push_back ("frame-color");
 		attributeNames.push_back ("gradient-start-color");
 		attributeNames.push_back ("gradient-end-color");
@@ -3859,10 +3881,13 @@ public:
 		attributeNames.push_back ("round-rect-radius");
 		attributeNames.push_back ("frame-width");
 		attributeNames.push_back ("draw-antialiased");
+		attributeNames.push_back ("radial-center");
+		attributeNames.push_back ("radial-radius");
 		return true;
 	}
 	AttrType getAttributeType (const std::string& attributeName) const
 	{
+		if (attributeName == "gradient-style") return kListType;
 		if (attributeName == "frame-color") return kColorType;
 		if (attributeName == "gradient-start-color") return kColorType;
 		if (attributeName == "gradient-end-color") return kColorType;
@@ -3872,6 +3897,8 @@ public:
 		if (attributeName == "round-rect-radius") return kFloatType;
 		if (attributeName == "frame-width") return kFloatType;
 		if (attributeName == "draw-antialiased") return kBooleanType;
+		if (attributeName == "radial-center") return kPointType;
+		if (attributeName == "radial-radius") return kFloatType;
 		return kUnknownType;
 	}
 	bool getAttributeValue (CView* view, const std::string& attributeName, std::string& stringValue, IUIDescription* desc) const
@@ -3935,6 +3962,35 @@ public:
 		if (attributeName == "draw-antialiased")
 		{
 			stringValue = gv->getDrawAntialised () ? "true" : "false";
+			return true;
+		}
+		if (attributeName == "gradient-style")
+		{
+			stringValue = gv->getGradientStyle() == CGradientView::kLinearGradient ? "linear" : "radial";
+			return true;
+		}
+		if (attributeName == "radial-radius")
+		{
+			std::stringstream str;
+			str << gv->getRadialRadius ();
+			stringValue = str.str ().c_str ();
+			return true;
+		}
+		if (attributeName == "radial-center")
+		{
+			pointToString (gv->getRadialCenter (), stringValue);
+			return true;
+		}
+		return false;
+	}
+	bool getPossibleListValues (const std::string& attributeName, std::list<const std::string*>& values) const
+	{
+		if (attributeName == "gradient-style")
+		{
+			static std::string kLinear = "linear";
+			static std::string kRadial = "radial";
+			values.push_back (&kLinear);
+			values.push_back (&kRadial);
 			return true;
 		}
 		return false;

@@ -153,8 +153,12 @@ void GdiplusDrawContext::drawGraphicsPath (CGraphicsPath* _path, PathDrawMode mo
 //-----------------------------------------------------------------------------
 void GdiplusDrawContext::fillLinearGradient (CGraphicsPath* _path, const CGradient& gradient, const CPoint& startPoint, const CPoint& endPoint, bool evenOdd, CGraphicsTransform* t)
 {
+#if DEBUG
+	DebugPrint ("WARNING: GdiplusDrawContext::fillLinearGradient is not working as expected ! FIXME");
+#endif
 	GdiplusGraphicsPath* gdiPlusPath = dynamic_cast<GdiplusGraphicsPath*> (_path);
-	if (gdiPlusPath && pGraphics)
+	const GdiplusGradient* gdiPlusGradient = dynamic_cast<const GdiplusGradient*> (&gradient);
+	if (gdiPlusPath && pGraphics && gdiPlusGradient)
 	{
 		Gdiplus::GraphicsState state = pGraphics->Save ();
 		pGraphics->TranslateTransform ((Gdiplus::REAL)getOffset ().x, (Gdiplus::REAL)getOffset ().y);
@@ -168,22 +172,88 @@ void GdiplusDrawContext::fillLinearGradient (CGraphicsPath* _path, const CGradie
 			path->Transform (&matrix);
 		}
 
-		CColor startColor (gradient.getColor1 ());
-		startColor.alpha = (int8_t)(float)(startColor.alpha * currentState.globalAlpha);
-		CColor endColor (gradient.getColor2 ());
-		endColor.alpha = (int8_t)(float)(endColor.alpha * currentState.globalAlpha);
-		Gdiplus::PointF c1p ((Gdiplus::REAL)(startPoint.x-getOffset ().x), (Gdiplus::REAL)(startPoint.y-getOffset ().y));
-		Gdiplus::PointF c2p ((Gdiplus::REAL)(endPoint.x-getOffset ().x), (Gdiplus::REAL)(endPoint.y-getOffset ().y));
-		Gdiplus::LinearGradientBrush brush (c1p, c2p, createGdiPlusColor (startColor), createGdiPlusColor (endColor));
-		Gdiplus::REAL blendFactors[] = { 0.f, 0.f, 1.f, 1.f };
-		Gdiplus::REAL blendPositions [] = { 0.f, (Gdiplus::REAL)gradient.getColor1Start (), (Gdiplus::REAL)gradient.getColor2Start (), 1.f };
-		brush.SetBlend (blendFactors, blendPositions, 4);
+		Gdiplus::Color* colors = new Gdiplus::Color [gdiPlusGradient->getColorStops ().size ()];
+		Gdiplus::REAL* positions = new Gdiplus::REAL [gdiPlusGradient->getColorStops ().size ()];
+		uint32_t index = 0;
+		for (CGradient::ColorStopVector::const_iterator it = gdiPlusGradient->getColorStops ().begin (); it != gdiPlusGradient->getColorStops ().end (); ++it, ++index)
+		{
+			CColor color = it->second;
+			color.alpha = (int8_t)((float)color.alpha * currentState.globalAlpha);
+			colors[index] = createGdiPlusColor (color);
+			positions[index] = (Gdiplus::REAL)it->first;
+		}
+
+		Gdiplus::PointF c1p ((Gdiplus::REAL)(startPoint.x), (Gdiplus::REAL)(startPoint.y));
+		Gdiplus::PointF c2p ((Gdiplus::REAL)(endPoint.x), (Gdiplus::REAL)(endPoint.y));
+		Gdiplus::LinearGradientBrush brush (c1p, c2p, colors[0], colors[gdiPlusGradient->getColorStops ().size () - 1]);
+		brush.SetInterpolationColors (colors, positions, gdiPlusGradient->getColorStops ().size ());
 		path->SetFillMode (evenOdd ? Gdiplus::FillModeAlternate : Gdiplus::FillModeWinding);
 
 		pGraphics->FillPath (&brush, path);
 		pGraphics->Restore (state);
 		if (path != gdiPlusPath->getGraphicsPath ())
 			delete path;
+		delete [] colors;
+		delete [] positions;
+	}
+}
+
+//-----------------------------------------------------------------------------
+void GdiplusDrawContext::fillRadialGradient (CGraphicsPath* _path, const CGradient& gradient, const CPoint& center, CCoord radius, const CPoint& originOffset, bool evenOdd, CGraphicsTransform* t)
+{
+#if DEBUG
+	DebugPrint ("WARNING: GdiplusDrawContext::fillRadialGradient is not working as expected ! FIXME");
+#endif
+	GdiplusGraphicsPath* gdiPlusPath = dynamic_cast<GdiplusGraphicsPath*> (_path);
+	const GdiplusGradient* gdiPlusGradient = dynamic_cast<const GdiplusGradient*> (&gradient);
+	if (gdiPlusPath && pGraphics && gdiPlusGradient)
+	{
+		Gdiplus::GraphicsState state = pGraphics->Save ();
+		pGraphics->TranslateTransform ((Gdiplus::REAL)getOffset ().x, (Gdiplus::REAL)getOffset ().y);
+
+		Gdiplus::GraphicsPath* path = gdiPlusPath->getGraphicsPath ();
+
+		if (t)
+		{
+			Gdiplus::Matrix matrix ((Gdiplus::REAL)t->m11, (Gdiplus::REAL)t->m12, (Gdiplus::REAL)t->m21, (Gdiplus::REAL)t->m22, (Gdiplus::REAL)t->dx, (Gdiplus::REAL)t->dy);
+			path = path->Clone ();
+			path->Transform (&matrix);
+		}
+
+		path->SetFillMode (evenOdd ? Gdiplus::FillModeAlternate : Gdiplus::FillModeWinding);
+		Gdiplus::PointF c1p ((Gdiplus::REAL)(center.x + originOffset.x), (Gdiplus::REAL)(center.y + originOffset.y));
+
+		CRect boundingBox = gdiPlusPath->getBoundingBox ();
+		Gdiplus::GraphicsPath brushPath;
+		brushPath.AddEllipse ((Gdiplus::REAL)boundingBox.left, (Gdiplus::REAL)boundingBox.top, (Gdiplus::REAL)boundingBox.getWidth (), (Gdiplus::REAL)boundingBox.getHeight ());
+		Gdiplus::Matrix graphicsMatrix;
+		pGraphics->GetTransform (&graphicsMatrix);
+		brushPath.Transform (&graphicsMatrix);
+
+		Gdiplus::PathGradientBrush brush (&brushPath);
+		// set center
+		brush.SetCenterPoint (c1p);
+		// set the colors
+		Gdiplus::Color* colors = new Gdiplus::Color [gdiPlusGradient->getColorStops ().size ()];
+		Gdiplus::REAL* positions = new Gdiplus::REAL [gdiPlusGradient->getColorStops ().size ()];
+		uint32_t index = 0;
+		for (CGradient::ColorStopVector::const_iterator it = gdiPlusGradient->getColorStops ().begin (); it != gdiPlusGradient->getColorStops ().end (); ++it, ++index)
+		{
+			CColor color = it->second;
+			color.alpha = (int8_t)((float)color.alpha * currentState.globalAlpha);
+			colors[index] = createGdiPlusColor (color);
+			positions[index] = (Gdiplus::REAL)it->first;
+		}
+		brush.SetCenterColor (colors[0]);
+		INT count = gdiPlusGradient->getColorStops ().size () - 1;
+		brush.SetSurroundColors (colors+1, &count);
+
+		pGraphics->FillPath (&brush, path);
+		pGraphics->Restore (state);
+		if (path != gdiPlusPath->getGraphicsPath ())
+			delete path;
+		delete [] colors;
+		delete [] positions;
 	}
 }
 

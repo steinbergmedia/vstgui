@@ -1,3 +1,10 @@
+2013-12-30 arne
+
+	* change CGradient to support more than only a start and end color
+	* add CDrawContext::fillRadialGradient method
+	* added a debug message when the gradient draw methods are used with GDI+ as they produce different results than the Direct2D and Quartz implementations
+	* fix fractional mouse wheel messages on Windows
+
 2013-12-20 arne
 
 	* removed ATSUI font handling as CoreText is supported since 10.5

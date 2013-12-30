@@ -820,7 +820,7 @@ LONG_PTR WINAPI Win32Frame::WindowProc (HWND hwnd, UINT message, WPARAM wParam, 
 				RECT rctWnd;
 				GetWindowRect (hwnd, &rctWnd);
 				where.offset ((CCoord)-rctWnd.left, (CCoord)-rctWnd.top);
-				pFrame->platformOnMouseWheel (where, kMouseWheelAxisY, (float)(zDelta / WHEEL_DELTA), buttons);
+				pFrame->platformOnMouseWheel (where, kMouseWheelAxisY, ((float)zDelta / WHEEL_DELTA), buttons);
 				break;
 			}
 			case WM_MOUSEHWHEEL:	// new since vista
@@ -837,7 +837,7 @@ LONG_PTR WINAPI Win32Frame::WindowProc (HWND hwnd, UINT message, WPARAM wParam, 
 				RECT rctWnd;
 				GetWindowRect (hwnd, &rctWnd);
 				where.offset ((CCoord)-rctWnd.left, (CCoord)-rctWnd.top);
-				pFrame->platformOnMouseWheel (where, kMouseWheelAxisX, (float)(-zDelta / WHEEL_DELTA), buttons);
+				pFrame->platformOnMouseWheel (where, kMouseWheelAxisX, ((float)-zDelta / WHEEL_DELTA), buttons);
 				break;
 			}
 			case WM_CTLCOLOREDIT:

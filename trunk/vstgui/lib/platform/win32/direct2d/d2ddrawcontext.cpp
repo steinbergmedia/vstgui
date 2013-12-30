@@ -243,13 +243,30 @@ void D2DDrawContext::drawGraphicsPath (CGraphicsPath* _path, PathDrawMode mode, 
 }
 
 //-----------------------------------------------------------------------------
+ID2D1GradientStopCollection* D2DDrawContext::createGradientStopCollection (const D2DGradient* d2dGradient) const
+{
+	ID2D1GradientStopCollection* collection = 0;
+	D2D1_GRADIENT_STOP* gradientStops = new D2D1_GRADIENT_STOP [d2dGradient->getColorStops ().size ()];
+	uint32_t index = 0;
+	for (CGradient::ColorStopVector::const_iterator it = d2dGradient->getColorStops ().begin (); it != d2dGradient->getColorStops ().end (); ++it, ++index)
+	{
+		gradientStops[index].position = (FLOAT)it->first;
+		gradientStops[index].color = D2D1::ColorF (it->second.red/255.f, it->second.green/255.f, it->second.blue/255.f, it->second.alpha/255.f * currentState.globalAlpha);
+	}
+	getRenderTarget ()->CreateGradientStopCollection (gradientStops, d2dGradient->getColorStops ().size (), &collection);
+	delete [] gradientStops;
+	return collection;
+}
+
+//-----------------------------------------------------------------------------
 void D2DDrawContext::fillLinearGradient (CGraphicsPath* _path, const CGradient& gradient, const CPoint& startPoint, const CPoint& endPoint, bool evenOdd, CGraphicsTransform* t)
 {
 	if (renderTarget == 0)
 		return;
 
 	D2DGraphicsPath* d2dPath = dynamic_cast<D2DGraphicsPath*> (_path);
-	if (d2dPath == 0)
+	const D2DGradient* d2dGradient = dynamic_cast<const D2DGradient*> (&gradient);
+	if (d2dPath == 0 || d2dGradient == 0)
 		return;
 
 	ID2D1PathGeometry* path = d2dPath->getPath (evenOdd ? D2D1_FILL_MODE_ALTERNATE : D2D1_FILL_MODE_WINDING);
@@ -277,14 +294,8 @@ void D2DDrawContext::fillLinearGradient (CGraphicsPath* _path, const CGradient& 
 			geometry->AddRef ();
 		}
 
-		ID2D1GradientStopCollection* collection = 0;
-		D2D1_GRADIENT_STOP gradientStops[2];
-		gradientStops[0].position = (FLOAT)gradient.getColor1Start ();
-		gradientStops[1].position = (FLOAT)gradient.getColor2Start ();
-		gradientStops[0].color = D2D1::ColorF (gradient.getColor1 ().red/255.f, gradient.getColor1 ().green/255.f, gradient.getColor1 ().blue/255.f, gradient.getColor1 ().alpha/255.f * currentState.globalAlpha);
-		gradientStops[1].color = D2D1::ColorF (gradient.getColor2 ().red/255.f, gradient.getColor2 ().green/255.f, gradient.getColor2 ().blue/255.f, gradient.getColor2 ().alpha/255.f * currentState.globalAlpha);
-
-		if (SUCCEEDED (getRenderTarget ()->CreateGradientStopCollection (gradientStops, 2, &collection)))
+		ID2D1GradientStopCollection* collection = createGradientStopCollection (d2dGradient);
+		if (collection)
 		{
 			ID2D1LinearGradientBrush* brush = 0;
 			D2D1_LINEAR_GRADIENT_BRUSH_PROPERTIES properties;
@@ -299,7 +310,65 @@ void D2DDrawContext::fillLinearGradient (CGraphicsPath* _path, const CGradient& 
 			}
 			collection->Release ();
 		}
+		geometry->Release ();
+	}
+}
 
+//-----------------------------------------------------------------------------
+void D2DDrawContext::fillRadialGradient (CGraphicsPath* _path, const CGradient& gradient, const CPoint& center, CCoord radius, const CPoint& originOffset, bool evenOdd, CGraphicsTransform* t)
+{
+	if (renderTarget == 0)
+		return;
+
+	D2DGraphicsPath* d2dPath = dynamic_cast<D2DGraphicsPath*> (_path);
+	const D2DGradient* d2dGradient = dynamic_cast<const D2DGradient*> (&gradient);
+	if (d2dPath == 0 || d2dGradient == 0)
+		return;
+
+	ID2D1PathGeometry* path = d2dPath->getPath (evenOdd ? D2D1_FILL_MODE_ALTERNATE : D2D1_FILL_MODE_WINDING);
+	if (path)
+	{
+		D2DApplyClip ac (this);
+
+		ID2D1Geometry* geometry = 0;
+		if (t)
+		{
+			ID2D1TransformedGeometry* tg = 0;
+			D2D1_MATRIX_3X2_F matrix;
+			matrix._11 = (FLOAT)t->m11;
+			matrix._12 = (FLOAT)t->m12;
+			matrix._21 = (FLOAT)t->m21;
+			matrix._22 = (FLOAT)t->m22;
+			matrix._31 = (FLOAT)t->dx;
+			matrix._32 = (FLOAT)t->dy;
+			getD2DFactory ()->CreateTransformedGeometry (path, matrix, &tg);
+			geometry = tg;
+		}
+		else
+		{
+			geometry = path;
+			geometry->AddRef ();
+		}
+		ID2D1GradientStopCollection* collection = createGradientStopCollection (d2dGradient);
+		if (collection)
+		{
+			// brush properties
+			ID2D1RadialGradientBrush* brush = 0;
+			D2D1_RADIAL_GRADIENT_BRUSH_PROPERTIES properties;
+			properties.center = makeD2DPoint (center);
+			properties.gradientOriginOffset = makeD2DPoint (originOffset);
+			properties.radiusX = (FLOAT)radius;
+			properties.radiusY = (FLOAT)radius;
+
+			if (SUCCEEDED (getRenderTarget ()->CreateRadialGradientBrush (properties, collection, &brush)))
+			{
+				getRenderTarget ()->SetTransform (D2D1::Matrix3x2F::Translation ((FLOAT)getOffset ().x, (FLOAT)getOffset ().y));
+				getRenderTarget ()->FillGeometry (geometry, brush);
+				getRenderTarget ()->SetTransform (D2D1::Matrix3x2F::Identity ());
+				brush->Release ();
+			}
+			collection->Release ();
+		}
 		geometry->Release ();
 	}
 }
@@ -366,7 +435,7 @@ void D2DDrawContext::lineTo (const CPoint &point)
 	{
 		D2DApplyClip clip (this);
 		if ((((int32_t)currentState.frameWidth) % 2))
-			renderTarget->SetTransform (D2D1::Matrix3x2F::Translation (0.5f, 0.5f));
+			renderTarget->SetTransform (D2D1::Matrix3x2F::Translation (0.f, -0.5f));
 		renderTarget->DrawLine (makeD2DPoint (penLocation), makeD2DPoint (p), strokeBrush, (FLOAT)currentState.frameWidth, strokeStyle);
 		renderTarget->SetTransform (D2D1::Matrix3x2F::Identity ());
 	}

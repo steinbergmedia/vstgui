@@ -221,6 +221,20 @@ bool D2DBitmap::load (const CResourceDescription& resourceDesc)
 		result = loadFromStream (resourceStream);
 	}
 	resourceStream->Release ();
+
+#if DEBUG
+	if (result == false && resourceDesc.type == CResourceDescription::kStringType)
+	{
+		// In DEBUG mode we allow to load the bitmap from a path so that the WYSIWYG editor is usable
+		UTF8StringHelper path (resourceDesc.u.name);
+		IStream* stream = 0;
+		if (SUCCEEDED (SHCreateStreamOnFileEx (path, STGM_READ|STGM_SHARE_DENY_WRITE, 0, false, 0, &stream)))
+		{
+			result = loadFromStream (stream);
+			stream->Release ();
+		}
+	}
+#endif
 	return result;
 }
 
@@ -370,10 +384,10 @@ void D2DBitmap::PixelAccess::unpremultiplyAlpha (BYTE* ptr, UINT bytesPerRow, co
 //-----------------------------------------------------------------------------
 ID2D1Bitmap* D2DBitmapCache::getBitmap (D2DBitmap* bitmap, ID2D1RenderTarget* renderTarget)
 {
-	std::map<D2DBitmap*, std::map<ID2D1RenderTarget*, ID2D1Bitmap*> >::iterator it = cache.find (bitmap);
+	BitmapCache::iterator it = cache.find (bitmap);
 	if (it != cache.end ())
 	{
-		std::map<ID2D1RenderTarget*, ID2D1Bitmap*>::iterator it2 = it->second.find (renderTarget);
+		RenderTargetBitmapMap::iterator it2 = it->second.find (renderTarget);
 		if (it2 != it->second.end ())
 		{
 			return it2->second;
@@ -383,7 +397,7 @@ ID2D1Bitmap* D2DBitmapCache::getBitmap (D2DBitmap* bitmap, ID2D1RenderTarget* re
 			it->second.insert (std::make_pair (renderTarget, b));
 		return b;
 	}
-	std::pair<std::map<D2DBitmap*, std::map<ID2D1RenderTarget*, ID2D1Bitmap*> >::iterator, bool> insertSuccess = cache.insert (std::make_pair (bitmap, std::map<ID2D1RenderTarget*, ID2D1Bitmap*> ()));
+	std::pair<BitmapCache::iterator, bool> insertSuccess = cache.insert (std::make_pair (bitmap, RenderTargetBitmapMap ()));
 	if (insertSuccess.second == true)
 	{
 		ID2D1Bitmap* b = createBitmap (bitmap, renderTarget);
@@ -399,10 +413,10 @@ ID2D1Bitmap* D2DBitmapCache::getBitmap (D2DBitmap* bitmap, ID2D1RenderTarget* re
 //-----------------------------------------------------------------------------
 void D2DBitmapCache::removeBitmap (D2DBitmap* bitmap)
 {
-	std::map<D2DBitmap*, std::map<ID2D1RenderTarget*, ID2D1Bitmap*> >::iterator it = cache.find (bitmap);
+	BitmapCache::iterator it = cache.find (bitmap);
 	if (it != cache.end ())
 	{
-		std::map<ID2D1RenderTarget*, ID2D1Bitmap*>::iterator it2 = it->second.begin ();
+		RenderTargetBitmapMap::iterator it2 = it->second.begin ();
 		while (it2 != it->second.end ())
 		{
 			it2->second->Release ();
@@ -415,10 +429,10 @@ void D2DBitmapCache::removeBitmap (D2DBitmap* bitmap)
 //-----------------------------------------------------------------------------
 void D2DBitmapCache::removeRenderTarget (ID2D1RenderTarget* renderTarget)
 {
-	std::map<D2DBitmap*, std::map<ID2D1RenderTarget*, ID2D1Bitmap*> >::iterator it = cache.begin ();
+	BitmapCache::iterator it = cache.begin ();
 	while (it != cache.end ())
 	{
-		std::map<ID2D1RenderTarget*, ID2D1Bitmap*>::iterator it2 = it->second.begin ();
+		RenderTargetBitmapMap::iterator it2 = it->second.begin ();
 		while (it2 != it->second.end ())
 		{
 			if (it2->first == renderTarget)
@@ -447,7 +461,10 @@ ID2D1Bitmap* D2DBitmapCache::createBitmap (D2DBitmap* bitmap, ID2D1RenderTarget*
 D2DBitmapCache::~D2DBitmapCache ()
 {
 #if DEBUG
-	assert (cache.size () == 0);
+	for (BitmapCache::const_iterator it = cache.begin (); it != cache.end (); it++)
+	{
+		assert (it->second.size () == 0);
+	}
 #endif
 }
 
