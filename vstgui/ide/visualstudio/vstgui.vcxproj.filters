@@ -292,6 +292,9 @@
     <ClCompile Include="..\..\uidescription\editing\uiviewcreatecontroller.cpp">
       <Filter>Source Files\uidescription\editing</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\lib\clayeredviewcontainer.cpp">
+      <Filter>Source Files\lib</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\lib\cbitmap.h">
@@ -607,6 +610,9 @@
       <Filter>Source Files\uidescription\editing</Filter>
     </ClInclude>
     <ClInclude Include="..\..\lib\idatapackage.h">
+      <Filter>Source Files\lib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\lib\clayeredviewcontainer.h">
       <Filter>Source Files\lib</Filter>
     </ClInclude>
   </ItemGroup>

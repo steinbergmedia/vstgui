@@ -44,6 +44,7 @@
 #include <d2d1.h>
 
 namespace VSTGUI {
+class D2DGradient;
 
 //-----------------------------------------------------------------------------
 class D2DDrawContext : public COffscreenContext
@@ -84,6 +85,7 @@ public:
 	CGraphicsPath* createGraphicsPath () VSTGUI_OVERRIDE_VMETHOD;
 	void drawGraphicsPath (CGraphicsPath* path, PathDrawMode mode = kPathFilled, CGraphicsTransform* transformation = 0) VSTGUI_OVERRIDE_VMETHOD;
 	void fillLinearGradient (CGraphicsPath* path, const CGradient& gradient, const CPoint& startPoint, const CPoint& endPoint, bool evenOdd = false, CGraphicsTransform* transformation = 0) VSTGUI_OVERRIDE_VMETHOD;
+	void fillRadialGradient (CGraphicsPath* path, const CGradient& gradient, const CPoint& center, CCoord radius, const CPoint& originOffset = CPoint (0, 0), bool evenOdd = false, CGraphicsTransform* transformation = 0) VSTGUI_OVERRIDE_VMETHOD;
 
 	void beginDraw () VSTGUI_OVERRIDE_VMETHOD;
 	void endDraw () VSTGUI_OVERRIDE_VMETHOD;
@@ -103,6 +105,7 @@ protected:
 	void init () VSTGUI_OVERRIDE_VMETHOD;
 	void createRenderTarget ();
 	void releaseRenderTarget ();
+	ID2D1GradientStopCollection* createGradientStopCollection (const D2DGradient* gradient) const;
 
 	HWND window;
 	ID2D1RenderTarget* renderTarget;

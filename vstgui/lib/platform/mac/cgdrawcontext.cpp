@@ -192,6 +192,42 @@ void CGDrawContext::fillLinearGradient (CGraphicsPath* _path, const CGradient& g
 }
 
 //-----------------------------------------------------------------------------
+void CGDrawContext::fillRadialGradient (CGraphicsPath* _path, const CGradient& gradient, const CPoint& center, CCoord radius, const CPoint& originOffset, bool evenOdd, CGraphicsTransform* t)
+{
+	QuartzGraphicsPath* path = dynamic_cast<QuartzGraphicsPath*> (_path);
+	if (path == 0)
+		return;
+
+	const QuartzGradient* cgGradient = dynamic_cast<const QuartzGradient*> (&gradient);
+	if (cgGradient == 0)
+		return;
+
+	CGContextRef cgContext = beginCGContext (true, currentState.drawMode.integralMode ());
+	if (cgContext)
+	{
+		if (t)
+		{
+			CGContextSaveGState (cgContext);
+			CGAffineTransform transform = QuartzGraphicsPath::createCGAfflineTransform (*t);
+			CGContextConcatCTM (cgContext, transform);
+			CGContextAddPath (cgContext, path->getCGPathRef ());
+			CGContextRestoreGState (cgContext);
+		}
+		else
+			CGContextAddPath (cgContext, path->getCGPathRef ());
+
+		if (evenOdd)
+			CGContextEOClip (cgContext);
+		else
+			CGContextClip (cgContext);
+
+		CGContextDrawRadialGradient (cgContext, *cgGradient, CGPointMake (center.x + originOffset.x, center.y + originOffset.y), 0, CGPointMake (center.x, center.y), radius, kCGGradientDrawsBeforeStartLocation | kCGGradientDrawsAfterEndLocation);
+		
+		releaseCGContext (cgContext);
+	}
+}
+
+//-----------------------------------------------------------------------------
 void CGDrawContext::saveGlobalState ()
 {
 	CGContextSaveGState (cgContext);

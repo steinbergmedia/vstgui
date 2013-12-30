@@ -40,6 +40,7 @@ namespace VSTGUI {
 //-----------------------------------------------------------------------------
 CGradientView::CGradientView (const CRect& size)
 : CView (size)
+, gradientStyle (kLinearGradient)
 , frameColor (kBlackCColor)
 , gradientStartColor (kBlueCColor)
 , gradientEndColor (kCyanCColor)
@@ -49,14 +50,24 @@ CGradientView::CGradientView (const CRect& size)
 , roundRectRadius (5.)
 , frameWidth (1.)
 , drawAntialiased (true)
+, radialRadius (1.)
 {
-	
 }
 
 //-----------------------------------------------------------------------------
 CGradientView::~CGradientView ()
 {
 	
+}
+
+//-----------------------------------------------------------------------------
+void CGradientView::setGradientStyle (GradientStyle style)
+{
+	if (gradientStyle != style)
+	{
+		gradientStyle = style;
+		invalid ();
+	}
 }
 
 //-----------------------------------------------------------------------------
@@ -156,6 +167,26 @@ void CGradientView::setDrawAntialiased (bool state)
 }
 
 //-----------------------------------------------------------------------------
+void CGradientView::setRadialCenter (const CPoint& center)
+{
+	if (radialCenter != center)
+	{
+		radialCenter = center;
+		invalid ();
+	}
+}
+
+//-----------------------------------------------------------------------------
+void CGradientView::setRadialRadius (CCoord radius)
+{
+	if (radialRadius != radius)
+	{
+		radialRadius = radius;
+		invalid ();
+	}
+}
+
+//-----------------------------------------------------------------------------
 void CGradientView::setViewSize (const CRect& rect, bool invalid)
 {
 	if (rect != getViewSize ())
@@ -182,13 +213,22 @@ void CGradientView::draw (CDrawContext* context)
 	{
 		context->setDrawMode (drawAntialiased ? kAntiAliasing : kAliasing);
 
-		CPoint colorStartPoint (0, 0);
-		colorStartPoint.x = getViewSize ().left + getViewSize ().getWidth () / 2 + cos (radians (gradientAngle-90)) * getViewSize ().getWidth () / 2;
-		colorStartPoint.y = getViewSize ().top + getViewSize ().getHeight () / 2 + sin (radians (gradientAngle-90)) * getViewSize ().getHeight () / 2;
-		CPoint colorEndPoint (0, getViewSize ().getHeight ());
-		colorEndPoint.x = getViewSize ().left + getViewSize ().getWidth () / 2 + cos (radians (gradientAngle+90)) * getViewSize ().getWidth () / 2;
-		colorEndPoint.y = getViewSize ().top + getViewSize ().getHeight () / 2 + sin (radians (gradientAngle+90)) * getViewSize ().getHeight () / 2;
-		context->fillLinearGradient (path, *gradient, colorStartPoint, colorEndPoint, false);
+		if (gradientStyle == kLinearGradient)
+		{
+			CPoint colorStartPoint (0, 0);
+			colorStartPoint.x = getViewSize ().left + getViewSize ().getWidth () / 2 + cos (radians (gradientAngle-90)) * getViewSize ().getWidth () / 2;
+			colorStartPoint.y = getViewSize ().top + getViewSize ().getHeight () / 2 + sin (radians (gradientAngle-90)) * getViewSize ().getHeight () / 2;
+			CPoint colorEndPoint (0, getViewSize ().getHeight ());
+			colorEndPoint.x = getViewSize ().left + getViewSize ().getWidth () / 2 + cos (radians (gradientAngle+90)) * getViewSize ().getWidth () / 2;
+			colorEndPoint.y = getViewSize ().top + getViewSize ().getHeight () / 2 + sin (radians (gradientAngle+90)) * getViewSize ().getHeight () / 2;
+			context->fillLinearGradient (path, *gradient, colorStartPoint, colorEndPoint, false);
+		}
+		else
+		{
+			CPoint center (radialCenter);
+			center.offset (getViewSize ().left, getViewSize ().top);
+			context->fillRadialGradient (path, *gradient, center, radialRadius);
+		}
 		
 		if (frameColor.alpha != 0 && frameWidth > 0.)
 		{

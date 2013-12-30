@@ -55,6 +55,12 @@ public:
 	/// @name Gradient Style Methods
 	//-----------------------------------------------------------------------------
 	//@{
+	enum GradientStyle {
+		kLinearGradient,
+		kRadialGradient
+	};
+	
+	void setGradientStyle (GradientStyle style);
 	void setFrameColor (const CColor& newColor);
 	void setGradientStartColor (const CColor& newColor);
 	void setGradientEndColor (const CColor& newColor);
@@ -64,7 +70,10 @@ public:
 	void setRoundRectRadius (CCoord radius);
 	void setFrameWidth (CCoord width);
 	void setDrawAntialiased (bool state);
-	
+	void setRadialCenter (const CPoint& center);
+	void setRadialRadius (CCoord radius);
+
+	GradientStyle getGradientStyle () const { return gradientStyle; }
 	const CColor& getFrameColor () const { return frameColor; }
 	const CColor& getGradientStartColor () const { return gradientStartColor; }
 	const CColor& getGradientEndColor () const { return gradientEndColor; }
@@ -74,12 +83,15 @@ public:
 	CCoord getRoundRectRadius () const { return roundRectRadius; }
 	CCoord getFrameWidth () const { return frameWidth; }
 	bool getDrawAntialised () const { return drawAntialiased; }
+	const CPoint& getRadialCenter () const { return radialCenter; }
+	CCoord getRadialRadius () const { return radialRadius; }
 	//@}
 
 	// override
 	virtual void setViewSize (const CRect& rect, bool invalid = true) VSTGUI_OVERRIDE_VMETHOD;
 	void draw (CDrawContext* context) VSTGUI_OVERRIDE_VMETHOD;
 protected:
+	GradientStyle gradientStyle;
 	CColor frameColor;
 	CColor gradientStartColor;
 	CColor gradientEndColor;
@@ -88,6 +100,8 @@ protected:
 	double gradientEndColorOffset;
 	CCoord roundRectRadius;
 	CCoord frameWidth;
+	CCoord radialRadius;
+	CPoint radialCenter;
 	bool drawAntialiased;
 
 	OwningPointer<CGraphicsPath> path;

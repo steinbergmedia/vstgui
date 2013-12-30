@@ -74,12 +74,12 @@ Ideas & Problems:
 
 namespace VSTGUI {
 
+static UIDescription* gUIDescription = 0;
+
 //----------------------------------------------------------------------------------------------------
 UIDescription& UIEditController::getEditorDescription ()
 {
-	static UIDescription* gUIDescription = 0;
-	static bool once = true;
-	if (once)
+	if (gUIDescription == 0)
 	{
 		std::string descPath (__FILE__);
 		unixfyPath (descPath);
@@ -92,12 +92,13 @@ UIDescription& UIEditController::getEditorDescription ()
 			if (stream.open (descPath.c_str (), CFileStream::kReadMode))
 			{
 				static Xml::InputStreamContentProvider xmlProvider (stream);
-				static UIDescription editorDesc (&xmlProvider);
-				if (editorDesc.parse ())
-					gUIDescription = &editorDesc;
+				UIDescription* editorDesc = new UIDescription (&xmlProvider);
+				if (editorDesc->parse ())
+					gUIDescription = editorDesc;
+				else
+					editorDesc->forget ();
 			}
 		}
-		once = false;
 	}
 	return *gUIDescription;
 }
@@ -262,6 +263,7 @@ UIEditController::UIEditController (UIDescription* description)
 	undoManager->addDependency (this);
 	menuController = new UIEditMenuController (this, selection, undoManager, editDescription, this);
 	onTemplatesChanged ();
+	getEditorDescription ().remember ();
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -273,6 +275,13 @@ UIEditController::~UIEditController ()
 		templateController->removeDependency (this);
 	undoManager->removeDependency (this);
 	editDescription->removeDependency (this);
+	int32_t refCount = gUIDescription->getNbReference ();
+	gUIDescription->forget ();
+	if (refCount == 2)
+	{
+		gUIDescription->forget ();
+		gUIDescription = 0;
+	}
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -1296,7 +1305,7 @@ void UIEditControllerTextSwitch::draw (CDrawContext* pContext)
 {
 	CRect valueRect (values.at ((int32_t)getValue ()).rect);
 
-	pContext->setDrawMode (kAliasing);
+	pContext->setDrawMode (kAliasing|kIntegralMode);
 	if (!getTransparency ())
 	{
 		pContext->setFillColor (backColor);

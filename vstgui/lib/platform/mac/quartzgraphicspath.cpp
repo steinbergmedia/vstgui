@@ -198,6 +198,70 @@ CRect QuartzGraphicsPath::getBoundingBox ()
 	return r;
 }
 
+//-----------------------------------------------------------------------------
+QuartzGradient::QuartzGradient (double _color1Start, double _color2Start, const CColor& _color1, const CColor& _color2)
+: CGradient (_color1Start, _color2Start, _color1, _color2)
+, gradient (0)
+{
+}
+
+//-----------------------------------------------------------------------------
+QuartzGradient::~QuartzGradient ()
+{
+	releaseCGGradient ();
+}
+
+//-----------------------------------------------------------------------------
+void QuartzGradient::addColorStop (double start, const CColor& color)
+{
+	CGradient::addColorStop (start, color);
+	releaseCGGradient ();
+}
+
+//-----------------------------------------------------------------------------
+void QuartzGradient::createCGGradient ()
+{
+	CGFloat* locations = new CGFloat [colorStops.size ()];
+	CFMutableArrayRef colors = CFArrayCreateMutable (kCFAllocatorDefault, colorStops.size (), &kCFTypeArrayCallBacks);
+
+	uint32_t index = 0;
+	for (ColorStopVector::const_iterator it = colorStops.begin (); it != colorStops.end (); ++it, ++index)
+	{
+		locations[index] = it->first;
+		CColor color = it->second;
+		CGFloat colorComponents[] = {color.red / 255.f, color.green / 255.f, color.blue / 255.f, color.alpha / 255.f};
+		CGColorRef cgColor = CGColorCreate (GetCGColorSpace (), colorComponents);
+		CFArrayAppendValue (colors, cgColor);
+		CFRelease (cgColor);
+	}
+
+	gradient = CGGradientCreateWithColors (GetCGColorSpace (), colors, locations);
+	
+	CFRelease (colors);
+	delete [] locations;
+}
+
+//-----------------------------------------------------------------------------
+void QuartzGradient::releaseCGGradient ()
+{
+	if (gradient)
+	{
+		CFRelease (gradient);
+		gradient = 0;
+	}
+}
+
+//-----------------------------------------------------------------------------
+QuartzGradient::operator CGGradientRef () const
+{
+	if (gradient == 0)
+	{
+		QuartzGradient* This = const_cast<QuartzGradient*>(this);
+		This->createCGGradient ();
+	}
+	return gradient;
+}
+
 } // namespace
 
 
