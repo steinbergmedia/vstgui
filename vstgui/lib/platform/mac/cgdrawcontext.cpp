@@ -39,6 +39,7 @@
 #include "macglobals.h"
 #include "cgbitmap.h"
 #include "quartzgraphicspath.h"
+#include "cfontmac.h"
 
 #ifndef CGFLOAT_DEFINED
 	#define CGFLOAT_DEFINED
@@ -113,6 +114,13 @@ void CGDrawContext::endDraw ()
 CGraphicsPath* CGDrawContext::createGraphicsPath ()
 {
 	return new QuartzGraphicsPath;
+}
+
+//-----------------------------------------------------------------------------
+CGraphicsPath* CGDrawContext::createTextPath (const CFontRef font, UTF8StringPtr text)
+{
+	const CoreTextFont* ctFont = dynamic_cast<const CoreTextFont*>(font->getPlatformFont ());
+	return ctFont ? new QuartzGraphicsPath (ctFont, text) : 0;
 }
 
 //-----------------------------------------------------------------------------

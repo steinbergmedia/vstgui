@@ -48,12 +48,14 @@
 #endif
 
 namespace VSTGUI {
+class CoreTextFont;
 
 //------------------------------------------------------------------------------------
 class QuartzGraphicsPath : public CGraphicsPath
 {
 public:
 	QuartzGraphicsPath ();
+	QuartzGraphicsPath (const CoreTextFont* font, UTF8StringPtr text);
 	~QuartzGraphicsPath ();
 
 	CGPathRef getCGPathRef ();

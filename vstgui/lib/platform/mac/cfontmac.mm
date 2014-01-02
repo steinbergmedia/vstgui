@@ -61,7 +61,12 @@ bool IPlatformFont::getAllPlatformFontFamilies (std::list<std::string>& fontFami
 #if TARGET_OS_IPHONE
 	return false;
 #else
+
+#if MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_6
+	NSArray* fonts = (NSArray*)CTFontManagerCopyAvailableFontFamilyNames ();
+#else
 	NSArray* fonts = [[NSFontManager sharedFontManager] availableFontFamilies];
+#endif
 	for (uint32_t i = 0; i < [fonts count]; i++)
 	{
 		NSString* font = [fonts objectAtIndex:i];
@@ -116,7 +121,13 @@ CoreTextFont::CoreTextFont (UTF8StringPtr name, const CCoord& size, const int32_
 	CFStringRef fontNameRef = CFStringCreateWithCString (kCFAllocatorDefault, name, kCFStringEncodingUTF8);
 	if (fontNameRef)
 	{
-		fontRef = CTFontCreateWithName (fontNameRef, size, 0);
+		CFMutableDictionaryRef attributes = CFDictionaryCreateMutable (kCFAllocatorDefault, 1, &kCFTypeDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks);
+		CFDictionaryAddValue (attributes, kCTFontFamilyNameAttribute, fontNameRef);
+		CTFontDescriptorRef descriptor = CTFontDescriptorCreateWithAttributes (attributes);
+		fontRef = CTFontCreateWithFontDescriptor (descriptor, size, 0);
+		CFRelease (attributes);
+		CFRelease (descriptor);
+
 		if (style & kBoldFace)
 			fontRef = CoreTextCreateTraitsVariant (fontRef, kCTFontBoldTrait);
 		if (style & kItalicFace)
@@ -178,7 +189,7 @@ CTLineRef CoreTextFont::createCTLine (CDrawContext* context, MacString* macStrin
 	CColor fontColor = context ? context->getFontColor () : kBlackCColor;
 	if (context)
 	{
-		if (macString->getCTLineFontRef() == this && macString->getCTLineColor() == fontColor)
+		if (macString->getCTLineFontRef () == this && macString->getCTLineColor () == fontColor)
 		{
 			CTLineRef line = macString->getCTLine ();
 			CFRetain (line);

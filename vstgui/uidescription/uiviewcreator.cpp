@@ -1639,6 +1639,11 @@ public:
 			uint8_t precision = (uint8_t)strtol (precisionAttr->c_str (), 0, 10);
 			display->setPrecision (precision);
 		}
+		double textRotation;
+		if (attributes.getDoubleAttribute ("text-rotation", textRotation))
+		{
+			display->setTextRotation (textRotation);
+		}
 		return true;
 	}
 	bool getAttributeNames (std::list<std::string>& attributeNames) const
@@ -1661,6 +1666,7 @@ public:
 		attributeNames.push_back ("style-no-draw");
 		attributeNames.push_back ("style-shadow-text");
 		attributeNames.push_back ("style-round-rect");
+		attributeNames.push_back ("text-rotation");
 		return true;
 	}
 	AttrType getAttributeType (const std::string& attributeName) const
@@ -1683,6 +1689,7 @@ public:
 		else if (attributeName == "text-alignment") return kStringType;
 		else if (attributeName == "text-inset") return kPointType;
 		else if (attributeName == "value-precision") return kIntegerType;
+		else if (attributeName == "text-rotation") return kFloatType;
 		return kUnknownType;
 	}
 	bool getAttributeValue (CView* view, const std::string& attributeName, std::string& stringValue, IUIDescription* desc) const
@@ -1800,6 +1807,13 @@ public:
 		{
 			std::stringstream str;
 			str << (uint32_t)pd->getPrecision ();
+			stringValue = str.str ();
+			return true;
+		}
+		else if (attributeName == "text-rotation")
+		{
+			std::stringstream str;
+			str << pd->getTextRotation ();
 			stringValue = str.str ();
 			return true;
 		}

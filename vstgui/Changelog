@@ -1,3 +1,9 @@
+2014-01-02 arne
+
+	* add CDrawContext::createTextPath(..) and Quartz implementation
+	* add text rotation to CParamDisplay
+	* fix console output message about font creation on OS X 10.9
+
 2013-12-30 arne
 
 	* change CGradient to support more than only a start and end color
