@@ -91,7 +91,7 @@ UIDescription& UIEditController::getEditorDescription ()
 			CFileStream stream;
 			if (stream.open (descPath.c_str (), CFileStream::kReadMode))
 			{
-				static Xml::InputStreamContentProvider xmlProvider (stream);
+				Xml::InputStreamContentProvider xmlProvider (stream);
 				UIDescription* editorDesc = new UIDescription (&xmlProvider);
 				if (editorDesc->parse ())
 					gUIDescription = editorDesc;
@@ -162,13 +162,14 @@ public:
 		CGraphicsPath* path = context->createGraphicsPath ();
 		if (path)
 		{
-			static CColor lineColor, shadingTopColor, shadingBottomColor;
+			static CColor lineColor, shadingTopColor, shadingBottomColor, shadingMiddleColor;
 			static bool once = true;
 			if (once)
 			{
-				UIEditController::getEditorDescription ().getColor ("shading.frame", lineColor);
-				UIEditController::getEditorDescription ().getColor ("shading.top", shadingTopColor);
-				UIEditController::getEditorDescription ().getColor ("shading.bottom", shadingBottomColor);
+				UIEditController::getEditorDescription ().getColor ("shading.light.frame", lineColor);
+				UIEditController::getEditorDescription ().getColor ("shading.light.top", shadingTopColor);
+				UIEditController::getEditorDescription ().getColor ("shading.light.bottom", shadingBottomColor);
+				UIEditController::getEditorDescription ().getColor ("shading.light.middle", shadingMiddleColor);
 				once = false;
 			}
 
@@ -182,6 +183,7 @@ public:
 			CGradient* shading = path->createGradient (0., 1., shadingTopColor, shadingBottomColor);
 			if (shading)
 			{
+				shading->addColorStop (0.5, shadingMiddleColor);
 				path->addRect (size);
 				if (horizontal)
 				{
