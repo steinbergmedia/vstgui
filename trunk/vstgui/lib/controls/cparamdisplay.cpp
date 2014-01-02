@@ -361,7 +361,19 @@ void CParamDisplay::drawText (CDrawContext* pContext, UTF8StringPtr string, cons
 			rotationPathCache->update (pContext, fontID, string);
 			if (rotationPathCache->getPath ())
 			{
+				pContext->setDrawMode (bAntialias ? kAntiAliasing : kAliasing);
 				CRect boundingBox = rotationPathCache->getPath ()->getBoundingBox ();
+				if (style & kShadowText)
+				{
+					CGraphicsTransform t;
+					t.translate (size.left + 1, size.top + 1);
+					t.translate (size.getWidth () / 2., size.getHeight () / 2.);
+					t.rotate (textRotation);
+					t.translate (-boundingBox.getWidth () / 2., -boundingBox.getHeight () / 2.);
+					
+					pContext->setFillColor (shadowColor);
+					pContext->drawGraphicsPath (rotationPathCache->getPath (), CDrawContext::kPathFilled, &t);
+				}
 				CGraphicsTransform t;
 				t.translate (size.left, size.top);
 				t.translate (size.getWidth () / 2., size.getHeight () / 2.);
@@ -369,7 +381,6 @@ void CParamDisplay::drawText (CDrawContext* pContext, UTF8StringPtr string, cons
 				t.translate (-boundingBox.getWidth () / 2., -boundingBox.getHeight () / 2.);
 
 				pContext->setFillColor (fontColor);
-				pContext->setDrawMode (kAntiAliasing);
 				pContext->drawGraphicsPath (rotationPathCache->getPath (), CDrawContext::kPathFilled, &t);
 			}
 		}
