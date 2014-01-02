@@ -68,7 +68,7 @@ QuartzGraphicsPath::QuartzGraphicsPath (const CoreTextFont* font, UTF8StringPtr 
     CFStringRef str = CFStringCreateWithCString (kCFAllocatorDefault, text, kCFStringEncodingUTF8);
 	const void* keys [] = {kCTFontAttributeName};
 	const void* values [] = {font->getFontRef ()};
-	CFDictionaryRef dict = CFDictionaryCreate (kCFAllocatorDefault, keys, values, 2, &kCFCopyStringDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks);
+	CFDictionaryRef dict = CFDictionaryCreate (kCFAllocatorDefault, keys, values, 1, &kCFCopyStringDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks);
     CFAttributedStringRef attrString = CFAttributedStringCreate (kCFAllocatorDefault, str, dict);
 	CFRelease (dict);
 	CFRelease (str);
