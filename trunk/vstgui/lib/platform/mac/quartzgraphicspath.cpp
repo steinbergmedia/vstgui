@@ -82,9 +82,8 @@ QuartzGraphicsPath::QuartzGraphicsPath (const CoreTextFont* font, UTF8StringPtr 
 		{
 			CTRunRef run = (CTRunRef)CFArrayGetValueAtIndex (runArray, runIndex);
 			CTFontRef runFont = (CTFontRef)CFDictionaryGetValue (CTRunGetAttributes (run), kCTFontAttributeName);
-			CFRange glyphRange = CFRangeMake (0, 1);
 			CFIndex glyphCount = CTRunGetGlyphCount (run);
-			for (CFIndex runGlyphIndex = 0; runGlyphIndex < glyphCount; ++runGlyphIndex, ++glyphRange.location)
+			for (CFRange glyphRange = CFRangeMake (0, 1); glyphRange.location < glyphCount; ++glyphRange.location)
 			{
 				CGGlyph glyph;
 				CGPoint position;
