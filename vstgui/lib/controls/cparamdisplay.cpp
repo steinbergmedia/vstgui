@@ -366,8 +366,7 @@ void CParamDisplay::drawText (CDrawContext* pContext, UTF8StringPtr string, cons
 				if (style & kShadowText)
 				{
 					CGraphicsTransform t;
-					t.translate (size.left + 1, size.top + 1);
-					t.translate (size.getWidth () / 2., size.getHeight () / 2.);
+					t.translate (size.left + 1. + size.getWidth () / 2., size.top + 1. + size.getHeight () / 2.);
 					t.rotate (textRotation);
 					t.translate (-boundingBox.getWidth () / 2., -boundingBox.getHeight () / 2.);
 					
@@ -375,8 +374,7 @@ void CParamDisplay::drawText (CDrawContext* pContext, UTF8StringPtr string, cons
 					pContext->drawGraphicsPath (rotationPathCache->getPath (), CDrawContext::kPathFilled, &t);
 				}
 				CGraphicsTransform t;
-				t.translate (size.left, size.top);
-				t.translate (size.getWidth () / 2., size.getHeight () / 2.);
+				t.translate (size.left + size.getWidth () / 2., size.top + size.getHeight () / 2.);
 				t.rotate (textRotation);
 				t.translate (-boundingBox.getWidth () / 2., -boundingBox.getHeight () / 2.);
 

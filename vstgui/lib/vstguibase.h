@@ -99,6 +99,7 @@
 	#endif
 
 #elif WIN32 || WINDOWS
+	#define NOMINMAX
 	#include <sdkddkver.h>
 	#if _WIN32_WINNT < 0x600
 		#error unsupported Platform SDK you need at least the Vista Platform SDK to compile VSTGUI
@@ -124,6 +125,9 @@
 	#ifndef WINDOWS
 		#define WINDOWS 1
 	#endif
+	#include <algorithm>
+	using std::min;
+	using std::max;
 #else // GCC/Clang based builds on non Windows and non Mac
 	#include <stdint.h>
 	#include <limits.h>
