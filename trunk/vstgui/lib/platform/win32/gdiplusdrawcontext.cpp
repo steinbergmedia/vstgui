@@ -118,6 +118,12 @@ CGraphicsPath* GdiplusDrawContext::createGraphicsPath ()
 }
 
 //-----------------------------------------------------------------------------
+CGraphicsPath* GdiplusDrawContext::createTextPath (const CFontRef font, UTF8StringPtr text)
+{
+	return 0;
+}
+
+//-----------------------------------------------------------------------------
 void GdiplusDrawContext::drawGraphicsPath (CGraphicsPath* _path, PathDrawMode mode, CGraphicsTransform* t)
 {
 	GdiplusGraphicsPath* gdiPlusPath = dynamic_cast<GdiplusGraphicsPath*> (_path);

@@ -67,6 +67,7 @@ public:
 	// overrides
 	virtual void setText (UTF8StringPtr txt) VSTGUI_OVERRIDE_VMETHOD;
 	virtual void setValue (float val) VSTGUI_OVERRIDE_VMETHOD;
+	virtual void setTextRotation (double angle) VSTGUI_OVERRIDE_VMETHOD { return; } ///< not supported
 
 	virtual	void draw (CDrawContext* pContext) VSTGUI_OVERRIDE_VMETHOD;
 	virtual CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons) VSTGUI_OVERRIDE_VMETHOD;

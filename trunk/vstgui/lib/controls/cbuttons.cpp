@@ -584,6 +584,7 @@ void CCheckBox::draw (CDrawContext* context)
 		
 		context->setFont (font);
 		context->setFontColor (fontColor);
+		context->setDrawMode (kAntiAliasing);
 		
 		context->drawString (title, p, true);
 	}

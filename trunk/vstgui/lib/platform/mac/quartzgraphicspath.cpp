@@ -61,6 +61,50 @@ QuartzGraphicsPath::QuartzGraphicsPath ()
 }
 
 //-----------------------------------------------------------------------------
+QuartzGraphicsPath::QuartzGraphicsPath (const CoreTextFont* font, UTF8StringPtr text)
+{
+	path = CGPathCreateMutable ();
+	
+    CFStringRef str = CFStringCreateWithCString (kCFAllocatorDefault, text, kCFStringEncodingUTF8);
+	const void* keys [] = {kCTFontAttributeName};
+	const void* values [] = {font->getFontRef ()};
+	CFDictionaryRef dict = CFDictionaryCreate (kCFAllocatorDefault, keys, values, 2, &kCFCopyStringDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks);
+    CFAttributedStringRef attrString = CFAttributedStringCreate (kCFAllocatorDefault, str, dict);
+	CFRelease (dict);
+	CFRelease (str);
+
+    CTLineRef line = CTLineCreateWithAttributedString (attrString);
+	if (line != 0)
+	{
+		CCoord capHeight = font->getCapHeight ();
+		CFArrayRef runArray = CTLineGetGlyphRuns (line);
+		for (CFIndex runIndex = 0; runIndex < CFArrayGetCount (runArray); runIndex++)
+		{
+			CTRunRef run = (CTRunRef)CFArrayGetValueAtIndex (runArray, runIndex);
+			CTFontRef runFont = (CTFontRef)CFDictionaryGetValue (CTRunGetAttributes (run), kCTFontAttributeName);
+			CFRange glyphRange = CFRangeMake (0, 1);
+			CFIndex glyphCount = CTRunGetGlyphCount (run);
+			for (CFIndex runGlyphIndex = 0; runGlyphIndex < glyphCount; ++runGlyphIndex, ++glyphRange.location)
+			{
+				CGGlyph glyph;
+				CGPoint position;
+				CTRunGetGlyphs (run, glyphRange, &glyph);
+				CTRunGetPositions (run, glyphRange, &position);
+				
+				CGPathRef letter = CTFontCreatePathForGlyph (runFont, glyph, NULL);
+				CGAffineTransform t = CGAffineTransformMakeTranslation (position.x, position.y);
+				t = CGAffineTransformScale (t, 1, -1);
+				t = CGAffineTransformTranslate (t, 0, -capHeight);
+				CGPathAddPath (path, &t, letter);
+				CGPathRelease (letter);
+			}
+		}
+	}
+	CFRelease (attrString);
+	CFRelease (line);
+}
+
+//-----------------------------------------------------------------------------
 QuartzGraphicsPath::~QuartzGraphicsPath ()
 {
 	dirty ();

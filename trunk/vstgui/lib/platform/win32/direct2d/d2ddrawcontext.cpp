@@ -195,6 +195,12 @@ CGraphicsPath* D2DDrawContext::createGraphicsPath ()
 }
 
 //-----------------------------------------------------------------------------
+CGraphicsPath* D2DDrawContext::createTextPath (const CFontRef font, UTF8StringPtr text)
+{
+	return 0;
+}
+
+//-----------------------------------------------------------------------------
 void D2DDrawContext::drawGraphicsPath (CGraphicsPath* _path, PathDrawMode mode, CGraphicsTransform* t)
 {
 	if (renderTarget == 0)

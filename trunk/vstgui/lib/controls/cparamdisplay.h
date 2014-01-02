@@ -42,6 +42,7 @@
 
 namespace VSTGUI {
 class CParamDisplay;
+class CParamDisplayRotationPathCache;
 
 //-----------------------------------------------------------------------------
 typedef bool (*CParamDisplayValueToStringProc) (float value, char utf8String[256], void* userData);
@@ -85,6 +86,9 @@ public:
 	virtual void setTextInset (const CPoint& p);
 	CPoint getTextInset () const { return textInset; }
 
+	virtual void setTextRotation (double angle);
+	double getTextRotation () const { return textRotation; }
+
 	virtual void setRoundRectRadius (const CCoord& radius);
 	CCoord getRoundRectRadius () const { return roundRectRadius; }
 
@@ -100,8 +104,9 @@ public:
 	uint8_t getPrecision () const { return valuePrecision; }
 	//@}
 
-	virtual void draw (CDrawContext* pContext) VSTGUI_OVERRIDE_VMETHOD;
+	void draw (CDrawContext* pContext) VSTGUI_OVERRIDE_VMETHOD;
 	bool getFocusPath (CGraphicsPath& outPath) VSTGUI_OVERRIDE_VMETHOD;
+	bool removed (CView* parent) VSTGUI_OVERRIDE_VMETHOD;
 
 	CLASS_METHODS(CParamDisplay, CControl)
 protected:
@@ -112,6 +117,7 @@ protected:
 
 	virtual void drawStyleChanged ();
 
+	CParamDisplayRotationPathCache* rotationPathCache;
 	CParamDisplayValueToStringProc valueToString;
 	void* valueToStringUserData;
 	
@@ -127,6 +133,7 @@ protected:
 	CPoint		textInset;
 	CCoord		roundRectRadius;
 	CCoord		frameWidth;
+	double		textRotation;
 	bool		bAntialias;
 };
 

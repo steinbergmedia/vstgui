@@ -259,6 +259,8 @@ public:
 	//-----------------------------------------------------------------------------
 	//@{
 	virtual CGraphicsPath* createGraphicsPath () = 0;	///< create a graphics path object, you need to forget it after usage
+	virtual CGraphicsPath* createTextPath (const CFontRef font, UTF8StringPtr text) = 0; ///< create a graphics path from a text
+
 	CGraphicsPath* createRoundRectGraphicsPath (const CRect& size, CCoord radius);	///< create a rect with round corners as graphics path, you need to forget it after usage
 
 	enum PathDrawMode

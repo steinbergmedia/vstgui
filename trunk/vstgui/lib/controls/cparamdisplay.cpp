@@ -35,8 +35,35 @@
 #include "cparamdisplay.h"
 #include "../cbitmap.h"
 #include "../cframe.h"
+#include <string>
 
 namespace VSTGUI {
+
+//------------------------------------------------------------------------
+class CParamDisplayRotationPathCache
+{
+public:
+	CParamDisplayRotationPathCache () {}
+	
+	void update (CDrawContext* context, CFontDesc* font, UTF8StringPtr str);
+	
+	CGraphicsPath* getPath () const { return path; }
+protected:
+	OwningPointer<CGraphicsPath> path;
+	SharedPointer<CFontDesc> font;
+	std::string pathText;
+};
+
+//------------------------------------------------------------------------
+void CParamDisplayRotationPathCache::update (CDrawContext* context, CFontDesc* _font, UTF8StringPtr str)
+{
+	if (path == 0 || font != _font || pathText != str)
+	{
+		font = _font;
+		pathText = str;
+		path = context->createTextPath (font, str);
+	}
+}
 
 //------------------------------------------------------------------------
 // CParamDisplay
@@ -48,6 +75,7 @@ The text-value is centered in the given rect.
 */
 CParamDisplay::CParamDisplay (const CRect& size, CBitmap* background, const int32_t style)
 : CControl (size, 0, -1, background)
+, rotationPathCache (0)
 , valueToString (0)
 , valueToStringUserData (0)
 , horiTxtAlign (kCenterText)
@@ -55,6 +83,7 @@ CParamDisplay::CParamDisplay (const CRect& size, CBitmap* background, const int3
 , valuePrecision (2)
 , roundRectRadius (6.)
 , frameWidth (1.)
+, textRotation (0.)
 , bAntialias (true)
 {
 	backOffset (0, 0);
@@ -71,6 +100,7 @@ CParamDisplay::CParamDisplay (const CRect& size, CBitmap* background, const int3
 //------------------------------------------------------------------------
 CParamDisplay::CParamDisplay (const CParamDisplay& v)
 : CControl (v)
+, rotationPathCache (0)
 , valueToString (v.valueToString)
 , valueToStringUserData (v.valueToStringUserData)
 , horiTxtAlign (v.horiTxtAlign)
@@ -84,6 +114,7 @@ CParamDisplay::CParamDisplay (const CParamDisplay& v)
 , textInset (v.textInset)
 , roundRectRadius (v.roundRectRadius)
 , frameWidth (v.frameWidth)
+, textRotation (v.textRotation)
 , bAntialias (v.bAntialias)
 {
 	fontID->remember ();
@@ -94,6 +125,17 @@ CParamDisplay::~CParamDisplay ()
 {
 	if (fontID)
 		fontID->forget ();
+}
+
+//------------------------------------------------------------------------
+bool CParamDisplay::removed (CView* parent)
+{
+	if (rotationPathCache)
+	{
+		delete rotationPathCache;
+		rotationPathCache = 0;
+	}
+	return CControl::removed (parent);
 }
 
 //------------------------------------------------------------------------
@@ -310,19 +352,42 @@ void CParamDisplay::drawText (CDrawContext* pContext, UTF8StringPtr string, cons
 		CRect newClip (textRect);
 		newClip.bound (oldClip);
 		pContext->setClipRect (newClip);
-		pContext->setFont (fontID);
-	
-		// draw darker text (as shadow)
-		if (style & kShadowText) 
+		
+		if (textRotation != 0.)
 		{
-			CRect newSize (textRect);
-			newSize.offset (1, 1);
-			pContext->setFontColor (shadowColor);
-			pContext->drawString (string, newSize, horiTxtAlign, bAntialias);
+			// currently we ignore the text alignemnt it's always centered
+			if (rotationPathCache == 0)
+				rotationPathCache = new CParamDisplayRotationPathCache;
+			rotationPathCache->update (pContext, fontID, string);
+			if (rotationPathCache->getPath ())
+			{
+				CRect boundingBox = rotationPathCache->getPath ()->getBoundingBox ();
+				CGraphicsTransform t;
+				t.translate (size.left, size.top);
+				t.translate (size.getWidth () / 2., size.getHeight () / 2.);
+				t.rotate (textRotation);
+				t.translate (-boundingBox.getWidth () / 2., -boundingBox.getHeight () / 2.);
+
+				pContext->setFillColor (fontColor);
+				pContext->setDrawMode (kAntiAliasing);
+				pContext->drawGraphicsPath (rotationPathCache->getPath (), CDrawContext::kPathFilled, &t);
+			}
 		}
-		pContext->setFontColor (fontColor);
-		pContext->drawString (string, textRect, horiTxtAlign, bAntialias);
-		pContext->setClipRect (oldClip);
+		else
+		{
+			pContext->setFont (fontID);
+			// draw darker text (as shadow)
+			if (style & kShadowText) 
+			{
+				CRect newSize (textRect);
+				newSize.offset (1, 1);
+				pContext->setFontColor (shadowColor);
+				pContext->drawString (string, newSize, horiTxtAlign, bAntialias);
+			}
+			pContext->setFontColor (fontColor);
+			pContext->drawString (string, textRect, horiTxtAlign, bAntialias);
+			pContext->setClipRect (oldClip);
+		}
 	}
 }
 
@@ -403,6 +468,25 @@ void CParamDisplay::setTextInset (const CPoint& p)
 	if (textInset != p)
 	{
 		textInset = p;
+		drawStyleChanged ();
+	}
+}
+
+//------------------------------------------------------------------------
+void CParamDisplay::setTextRotation (double angle)
+{
+	while (angle < 0.)
+		angle += 360.;
+	while (angle > 360.)
+		angle -= 360.;
+	if (textRotation != angle)
+	{
+		textRotation = angle;
+		if (textRotation == 0. && rotationPathCache)
+		{
+			delete rotationPathCache;
+			rotationPathCache = 0;
+		}
 		drawStyleChanged ();
 	}
 }

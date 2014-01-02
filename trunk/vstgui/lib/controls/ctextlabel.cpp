@@ -120,6 +120,8 @@ void CTextLabel::calculateTruncatedText ()
 {
 	std::string tmp (truncatedText);
 	truncatedText.clear ();
+	if (textRotation != 0.) // currently truncation is only supported when not rotated
+		return;
 	if (!(textTruncateMode == kTruncateNone || text == 0 || text[0] == 0 || fontID == 0 || fontID->getPlatformFont () == 0 || fontID->getPlatformFont ()->getPainter () == 0))
 	{
 		IFontPainter* painter = fontID->getPlatformFont ()->getPainter ();

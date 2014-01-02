@@ -55,7 +55,15 @@ class CoreTextFont : public IPlatformFont, public IFontPainter
 public:
 	CoreTextFont (UTF8StringPtr name, const CCoord& size, const int32_t& style);
 
+	double getAscent () const VSTGUI_OVERRIDE_VMETHOD;
+	double getDescent () const VSTGUI_OVERRIDE_VMETHOD;
+	double getLeading () const VSTGUI_OVERRIDE_VMETHOD;
+	double getCapHeight () const VSTGUI_OVERRIDE_VMETHOD;
+	
+	IFontPainter* getPainter () VSTGUI_OVERRIDE_VMETHOD { return this; }
+	
 	CTFontRef getFontRef () const { return fontRef; }
+	CGFloat getSize () const { return CTFontGetSize (fontRef); }
 
 //------------------------------------------------------------------------------------
 protected:
@@ -66,13 +74,6 @@ protected:
 	CFDictionaryRef getStringAttributes (const CGColorRef color = 0);
 
 	CTLineRef createCTLine (CDrawContext* context, MacString* macString);
-
-	double getAscent () const VSTGUI_OVERRIDE_VMETHOD;
-	double getDescent () const VSTGUI_OVERRIDE_VMETHOD;
-	double getLeading () const VSTGUI_OVERRIDE_VMETHOD;
-	double getCapHeight () const VSTGUI_OVERRIDE_VMETHOD;
-
-	IFontPainter* getPainter () VSTGUI_OVERRIDE_VMETHOD { return this; }
 
 	CTFontRef fontRef;
 	int32_t style;
