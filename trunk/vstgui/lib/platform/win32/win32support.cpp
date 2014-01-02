@@ -353,7 +353,7 @@ bool ResourceStream::open (const CResourceDescription& resourceDesc, const char*
 //-----------------------------------------------------------------------------
 HRESULT STDMETHODCALLTYPE ResourceStream::Read (void *pv, ULONG cb, ULONG *pcbRead)
 {
-	int readSize = min (resSize - streamPos, cb);
+	int readSize = std::min<int> (resSize - streamPos, cb);
 	if (readSize > 0)
 	{
 		memcpy (pv, ((uint8_t*)resData+streamPos), readSize);
