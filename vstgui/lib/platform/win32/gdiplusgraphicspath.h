@@ -45,12 +45,14 @@ class LinearGradientBrush;
 }
 
 namespace VSTGUI {
+class GdiPlusFont;
 
 //-----------------------------------------------------------------------------
 class GdiplusGraphicsPath : public CGraphicsPath
 {
 public:
 	GdiplusGraphicsPath ();
+	GdiplusGraphicsPath (const GdiPlusFont* font, UTF8StringPtr text);
 	~GdiplusGraphicsPath ();
 
 	Gdiplus::GraphicsPath* getGraphicsPath ();

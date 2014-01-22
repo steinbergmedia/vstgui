@@ -50,6 +50,19 @@ GdiplusGraphicsPath::GdiplusGraphicsPath ()
 }
 
 //-----------------------------------------------------------------------------
+GdiplusGraphicsPath::GdiplusGraphicsPath (const GdiPlusFont* font, UTF8StringPtr text)
+{
+	platformPath = new Gdiplus::GraphicsPath ();
+
+	Gdiplus::Font* gdiFont = font->getFont ();
+	Gdiplus::FontFamily fontFamily;
+	gdiFont->GetFamily (&fontFamily);
+	UTF8StringHelper stringHelper (text);
+	const WCHAR* wchar = stringHelper.getWideString ();
+	platformPath->AddString (wchar, -1, &fontFamily, gdiFont->GetStyle (), gdiFont->GetSize (), Gdiplus::PointF (0.0f, 0.0f), NULL);
+}
+
+//-----------------------------------------------------------------------------
 GdiplusGraphicsPath::~GdiplusGraphicsPath ()
 {
 	if (platformPath)
