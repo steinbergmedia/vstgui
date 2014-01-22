@@ -39,6 +39,7 @@
 #include <cmath>
 #include "gdiplusbitmap.h"
 #include "gdiplusgraphicspath.h"
+#include "cfontwin32.h"
 
 namespace VSTGUI {
 
@@ -120,7 +121,8 @@ CGraphicsPath* GdiplusDrawContext::createGraphicsPath ()
 //-----------------------------------------------------------------------------
 CGraphicsPath* GdiplusDrawContext::createTextPath (const CFontRef font, UTF8StringPtr text)
 {
-	return 0;
+	const GdiPlusFont* ctFont = dynamic_cast<const GdiPlusFont*>(font->getPlatformFont ());
+	return ctFont ? new GdiplusGraphicsPath (ctFont, text) : 0;
 }
 
 //-----------------------------------------------------------------------------
