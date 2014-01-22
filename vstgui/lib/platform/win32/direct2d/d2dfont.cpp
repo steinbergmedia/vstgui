@@ -91,7 +91,7 @@ D2DFont::~D2DFont ()
 }
 
 //-----------------------------------------------------------------------------
-IDWriteTextLayout* D2DFont::createTextLayout (const CString& string)
+IDWriteTextLayout* D2DFont::createTextLayout (const CString& string) const
 {
 	const WinString* winString = dynamic_cast<const WinString*> (string.getPlatformString ());
 	IDWriteTextLayout* textLayout = 0;

@@ -45,12 +45,14 @@ struct ID2D1PathGeometry;
 struct D2D1_GRADIENT_STOP;
 
 namespace VSTGUI {
+class D2DFont;
 
 //-----------------------------------------------------------------------------
 class D2DGraphicsPath : public CGraphicsPath
 {
 public:
 	D2DGraphicsPath ();
+	D2DGraphicsPath (const D2DFont* font, UTF8StringPtr text);
 	~D2DGraphicsPath ();
 	
 	ID2D1PathGeometry* getPath (int32_t fillMode = 0);

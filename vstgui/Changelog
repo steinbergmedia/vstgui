@@ -1,3 +1,7 @@
+2014-01-22 arne
+
+	* CDrawContext::createTextPath(..) implementation for Direct2D and GDI+
+
 2014-01-02 arne
 
 	* add CDrawContext::createTextPath(..) and Quartz implementation
