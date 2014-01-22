@@ -38,14 +38,184 @@
 
 #include "../win32support.h"
 #include "d2ddrawcontext.h"
+#include "d2dfont.h"
 
 namespace VSTGUI {
+
+class D2DPathTextRenderer : public IDWriteTextRenderer
+{
+public:
+	D2DPathTextRenderer (ID2D1GeometrySink* sink) : sink (sink)
+	{
+	}
+
+	HRESULT STDMETHODCALLTYPE DrawGlyphRun (
+		void* clientDrawingContext,
+		FLOAT baselineOriginX,
+		FLOAT baselineOriginY,
+		DWRITE_MEASURING_MODE measuringMode,
+		DWRITE_GLYPH_RUN const* glyphRun,
+		DWRITE_GLYPH_RUN_DESCRIPTION const* glyphRunDescription,
+		IUnknown* clientDrawingEffect
+		)
+	{
+		return glyphRun->fontFace->GetGlyphRunOutline (
+				glyphRun->fontEmSize,
+				glyphRun->glyphIndices,
+				glyphRun->glyphAdvances,
+				glyphRun->glyphOffsets,
+				glyphRun->glyphCount,
+				glyphRun->isSideways,
+				glyphRun->bidiLevel%2,
+				sink
+			);
+	}
+
+	HRESULT STDMETHODCALLTYPE DrawUnderline (
+		void* clientDrawingContext,
+		FLOAT baselineOriginX,
+		FLOAT baselineOriginY,
+		DWRITE_UNDERLINE const* underline,
+		IUnknown* clientDrawingEffect
+		)
+	{
+		return S_FALSE;
+	}
+
+	HRESULT STDMETHODCALLTYPE DrawStrikethrough (
+		void* clientDrawingContext,
+		FLOAT baselineOriginX,
+		FLOAT baselineOriginY,
+		DWRITE_STRIKETHROUGH const* strikethrough,
+		IUnknown* clientDrawingEffect
+		)
+	{
+		return S_FALSE;
+	}
+
+	HRESULT STDMETHODCALLTYPE DrawInlineObject (
+		void* clientDrawingContext,
+		FLOAT originX,
+		FLOAT originY,
+		IDWriteInlineObject* inlineObject,
+		BOOL isSideways,
+		BOOL isRightToLeft,
+		IUnknown* clientDrawingEffect
+		)
+	{
+		return S_FALSE;
+	}
+
+	HRESULT STDMETHODCALLTYPE IsPixelSnappingDisabled (
+		__maybenull void* clientDrawingContext,
+		__out BOOL* isDisabled
+		)
+	{
+		return S_FALSE;
+	}
+
+	HRESULT STDMETHODCALLTYPE GetCurrentTransform (
+		__maybenull void* clientDrawingContext,
+		__out DWRITE_MATRIX* transform
+		)
+	{
+		const DWRITE_MATRIX identityTransform =
+		{
+			1, 0,
+			0, 1,
+			0, 0
+		};
+		if (transform)
+			*transform = identityTransform;
+		return S_OK;
+	}
+
+	HRESULT STDMETHODCALLTYPE GetPixelsPerDip (
+		__maybenull void* clientDrawingContext,
+		__out FLOAT* pixelsPerDip
+		)
+	{
+		if (pixelsPerDip)
+			*pixelsPerDip = 96;
+		return S_OK;
+	}
+
+	HRESULT STDMETHODCALLTYPE QueryInterface(REFIID iid, void ** ppvObject)
+	{
+		if (iid == __uuidof(IUnknown)
+			|| iid == __uuidof(IDWriteTextRenderer))
+		{
+			*ppvObject = static_cast<IDWriteTextRenderer*>(this);
+			AddRef();
+			return S_OK;
+		} else
+			return E_NOINTERFACE;
+	}
+    ULONG STDMETHODCALLTYPE AddRef(void) { return 1; }
+    ULONG STDMETHODCALLTYPE Release(void) { return 1; }
+
+private:
+	ID2D1GeometrySink* sink;
+};
+
 
 //-----------------------------------------------------------------------------
 D2DGraphicsPath::D2DGraphicsPath ()
 : path (0)
 , currentPathFillMode (-1)
 {
+}
+
+//-----------------------------------------------------------------------------
+D2DGraphicsPath::D2DGraphicsPath (const D2DFont* font, UTF8StringPtr text)
+{
+	getD2DFactory ()->CreatePathGeometry (&path);
+	if (path == 0)
+		return;
+
+	CString string (text);
+	IDWriteTextLayout* layout = font->createTextLayout (string);
+	if (layout == 0)
+		return;
+	
+	ID2D1PathGeometry* textPath = 0;
+	getD2DFactory ()->CreatePathGeometry (&textPath);
+	if (textPath == 0)
+	{
+		layout->Release ();
+		return;
+	}
+	
+	ID2D1GeometrySink* sink = 0;
+	if (!SUCCEEDED (textPath->Open (&sink)))
+	{
+		textPath->Release ();
+		layout->Release ();
+		return;
+	}
+	
+	D2DPathTextRenderer renderer (sink);
+	layout->Draw (0, &renderer, 0, 0);
+	
+	sink->Close ();
+	sink->Release ();
+	layout->Release ();
+	
+	if (!SUCCEEDED (path->Open (&sink)))
+	{
+		textPath->Release ();
+		return;
+	}
+	
+	D2D1_RECT_F bounds = {};
+	if (SUCCEEDED (textPath->GetBounds (0, &bounds)))
+	{
+		textPath->Simplify (D2D1_GEOMETRY_SIMPLIFICATION_OPTION_CUBICS_AND_LINES, D2D1::Matrix3x2F::Translation (0, -bounds.top), sink);
+	}
+	
+	textPath->Release ();
+	sink->Close ();
+	sink->Release ();
 }
 
 //-----------------------------------------------------------------------------
@@ -134,7 +304,7 @@ void D2DGraphicsPath::dirty ()
 //-----------------------------------------------------------------------------
 ID2D1PathGeometry* D2DGraphicsPath::getPath (int32_t fillMode)
 {
-	if (path == 0 || fillMode != currentPathFillMode)
+	if (!elements.empty () && (path == 0 || fillMode != currentPathFillMode))
 	{
 		dirty ();
 		if (!SUCCEEDED (getD2DFactory ()->CreatePathGeometry (&path)))

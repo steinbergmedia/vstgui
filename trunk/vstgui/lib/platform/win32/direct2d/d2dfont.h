@@ -50,6 +50,8 @@ class D2DFont : public IPlatformFont, public IFontPainter
 public:
 	D2DFont (const char* name, const CCoord& size, const int32_t& style);
 
+	IDWriteTextLayout* createTextLayout (const CString& string) const;
+
 protected:
 	~D2DFont ();
 	
@@ -62,8 +64,6 @@ protected:
 
 	void drawString (CDrawContext* context, const CString& string, const CPoint& p, bool antialias = true) VSTGUI_OVERRIDE_VMETHOD;
 	CCoord getStringWidth (CDrawContext* context, const CString& string, bool antialias = true) VSTGUI_OVERRIDE_VMETHOD;
-
-	IDWriteTextLayout* createTextLayout (const CString& string);
 
 	IDWriteTextFormat* textFormat;
 	double ascent;
