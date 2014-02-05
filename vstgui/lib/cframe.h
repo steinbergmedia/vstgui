@@ -212,12 +212,14 @@ protected:
 	bool	bActive;
 
 	// keyboard hooks
-	std::list<IKeyboardHook*>* pKeyboardHooks;
+	typedef std::list<IKeyboardHook*> KeyboardHookList;
+	KeyboardHookList* pKeyboardHooks;
 	int32_t keyboardHooksOnKeyDown (const VstKeyCode& key);
 	int32_t keyboardHooksOnKeyUp (const VstKeyCode& key);
 
 	// mouse observers
-	std::list<IMouseObserver*>* pMouseObservers;
+	typedef std::list<IMouseObserver*> MouseObserverList;
+	MouseObserverList* pMouseObservers;
 	void callMouseObserverMouseEntered (CView* view);
 	void callMouseObserverMouseExited (CView* view);
 	CMouseEventResult callMouseObserverMouseDown (const CPoint& where, const CButtonState& buttons);

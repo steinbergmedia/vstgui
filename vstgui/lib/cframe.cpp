@@ -1220,7 +1220,7 @@ void CFrame::invalidRect (const CRect& rect)
 void CFrame::registerKeyboardHook (IKeyboardHook* hook)
 {
 	if (pKeyboardHooks == 0)
-		pKeyboardHooks = new std::list<IKeyboardHook*> ();
+		pKeyboardHooks = new KeyboardHookList ();
 	pKeyboardHooks->push_back (hook);
 }
 
@@ -1243,7 +1243,7 @@ int32_t CFrame::keyboardHooksOnKeyDown (const VstKeyCode& key)
 {
 	if (pKeyboardHooks)
 	{
-		for (std::list<IKeyboardHook*>::reverse_iterator it = pKeyboardHooks->rbegin (); it != pKeyboardHooks->rend ();)
+		for (KeyboardHookList::reverse_iterator it = pKeyboardHooks->rbegin (); it != pKeyboardHooks->rend ();)
 		{
 			IKeyboardHook* hook = *it;
 			it++;
@@ -1260,7 +1260,7 @@ int32_t CFrame::keyboardHooksOnKeyUp (const VstKeyCode& key)
 {
 	if (pKeyboardHooks)
 	{
-		for (std::list<IKeyboardHook*>::reverse_iterator it = pKeyboardHooks->rbegin (); it != pKeyboardHooks->rend ();)
+		for (KeyboardHookList::reverse_iterator it = pKeyboardHooks->rbegin (); it != pKeyboardHooks->rend ();)
 		{
 			IKeyboardHook* hook = *it;
 			it++;
@@ -1276,7 +1276,7 @@ int32_t CFrame::keyboardHooksOnKeyUp (const VstKeyCode& key)
 void CFrame::registerMouseObserver (IMouseObserver* observer)
 {
 	if (pMouseObservers == 0)
-		pMouseObservers = new std::list<IMouseObserver*>;
+		pMouseObservers = new MouseObserverList ();
 	pMouseObservers->push_back (observer);
 }
 
@@ -1299,7 +1299,7 @@ void CFrame::callMouseObserverMouseEntered (CView* view)
 {
 	if (pMouseObservers)
 	{
-		for (std::list<IMouseObserver*>::const_iterator it = pMouseObservers->begin (); it != pMouseObservers->end (); it++)
+		for (MouseObserverList::const_iterator it = pMouseObservers->begin (); it != pMouseObservers->end (); it++)
 		{
 			(*it)->onMouseEntered (view, this);
 		}
@@ -1311,7 +1311,7 @@ void CFrame::callMouseObserverMouseExited (CView* view)
 {
 	if (pMouseObservers)
 	{
-		for (std::list<IMouseObserver*>::const_iterator it = pMouseObservers->begin (); it != pMouseObservers->end (); it++)
+		for (MouseObserverList::const_iterator it = pMouseObservers->begin (); it != pMouseObservers->end (); it++)
 		{
 			(*it)->onMouseExited (view, this);
 		}
@@ -1324,7 +1324,7 @@ CMouseEventResult CFrame::callMouseObserverMouseDown (const CPoint& where, const
 	CMouseEventResult result = kMouseEventNotHandled;
 	if (pMouseObservers)
 	{
-		for (std::list<IMouseObserver*>::const_iterator it = pMouseObservers->begin (); it != pMouseObservers->end (); it++)
+		for (MouseObserverList::const_iterator it = pMouseObservers->begin (); it != pMouseObservers->end (); it++)
 		{
 			CMouseEventResult result2 = (*it)->onMouseDown (this, where, buttons);
 			if (result2 == kMouseEventHandled)
@@ -1342,7 +1342,7 @@ CMouseEventResult CFrame::callMouseObserverMouseMoved (const CPoint& where, cons
 	CMouseEventResult result = kMouseEventNotHandled;
 	if (pMouseObservers)
 	{
-		for (std::list<IMouseObserver*>::const_iterator it = pMouseObservers->begin (); it != pMouseObservers->end (); it++)
+		for (MouseObserverList::const_iterator it = pMouseObservers->begin (); it != pMouseObservers->end (); it++)
 		{
 			CMouseEventResult result2 = (*it)->onMouseMoved (this, where, buttons);
 			if (result2 == kMouseEventHandled)

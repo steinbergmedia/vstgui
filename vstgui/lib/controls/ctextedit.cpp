@@ -280,6 +280,7 @@ void CTextEdit::takeFocus ()
 #if TARGET_OS_IPHONE
 	getFrame ()->setFocusView (this);
 #endif
+	CTextLabel::takeFocus ();
 }
 
 //------------------------------------------------------------------------
@@ -303,6 +304,7 @@ void CTextEdit::looseFocus ()
 			break;
 		receiver = receiver->getParentView ();
 	}
+	CTextLabel::looseFocus ();
 }
 
 //------------------------------------------------------------------------

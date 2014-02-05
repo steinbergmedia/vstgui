@@ -40,6 +40,7 @@
 #if VSTGUI_LIVE_EDITING
 
 #include "../../lib/cframe.h"
+#include "../../lib/iviewlistener.h"
 #include "../../lib/copenglview.h"
 #include <string>
 #include <list>
@@ -47,10 +48,11 @@
 namespace VSTGUI {
 
 //----------------------------------------------------------------------------------------------------
-class UIDialogController : public CBaseObject, public DelegationController, public IKeyboardHook
+class UIDialogController : public CBaseObject, public DelegationController, public IKeyboardHook, public IViewListenerAdapter
 {
 public:
 	UIDialogController (IController* baseController, CFrame* frame);
+	~UIDialogController ();
 	
 	void run (UTF8StringPtr templateName, UTF8StringPtr dialogTitle, UTF8StringPtr button1, UTF8StringPtr button2, IController* controller, UIDescription* description);
 
@@ -62,7 +64,11 @@ protected:
 	CControlListener* getControlListener (UTF8StringPtr controlTagName) VSTGUI_OVERRIDE_VMETHOD;
 	CView* verifyView (CView* view, const UIAttributes& attributes, IUIDescription* description) VSTGUI_OVERRIDE_VMETHOD;
 	CMessageResult notify (CBaseObject* sender, IdStringPtr message) VSTGUI_OVERRIDE_VMETHOD;
+
+	void viewSizeChanged (CView* view, const CRect& oldSize) VSTGUI_OVERRIDE_VMETHOD;
+	void viewRemoved (CView* view) VSTGUI_OVERRIDE_VMETHOD;
 	
+	void close ();
 	void layoutButtons ();
 	void collectOpenGLViews (CViewContainer* container);
 	void setOpenGLViewsVisible (bool state);

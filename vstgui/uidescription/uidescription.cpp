@@ -3047,7 +3047,7 @@ bool UIAttributes::hasAttribute (UTF8StringPtr name) const
 //-----------------------------------------------------------------------------
 const std::string* UIAttributes::getAttributeValue (UTF8StringPtr name) const
 {
-	std::map<std::string, std::string>::const_iterator iter = find (name);
+	const_iterator iter = find (name);
 	if (iter != end ())
 		return &iter->second;
 	return 0;
@@ -3056,7 +3056,7 @@ const std::string* UIAttributes::getAttributeValue (UTF8StringPtr name) const
 //-----------------------------------------------------------------------------
 void UIAttributes::setAttribute (UTF8StringPtr name, UTF8StringPtr value)
 {
-	std::map<std::string, std::string>::iterator iter = find (name);
+	iterator iter = find (name);
 	if (iter != end ())
 		erase (iter);
 	insert (std::make_pair (name, value));
@@ -3065,7 +3065,7 @@ void UIAttributes::setAttribute (UTF8StringPtr name, UTF8StringPtr value)
 //-----------------------------------------------------------------------------
 void UIAttributes::removeAttribute (UTF8StringPtr name)
 {
-	std::map<std::string, std::string>::iterator iter = find (name);
+	iterator iter = find (name);
 	if (iter != end ())
 		erase (iter);
 }

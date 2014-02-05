@@ -219,7 +219,9 @@ void CAViewLayer::invalidRect (const CRect& size)
 //-----------------------------------------------------------------------------
 void CAViewLayer::setSize (const CRect& size)
 {
-	layer.frame = CGRectFromCRect (size);
+	CRect r (size);
+	r.makeIntegral ();
+	layer.frame = CGRectFromCRect (r);
 }
 
 } // namespace

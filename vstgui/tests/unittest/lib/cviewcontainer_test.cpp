@@ -147,6 +147,14 @@ TESTCASE(CViewContainerTest,
 		EXPECT(view->getViewSize ().bottom == 500)
 	);
 
+	TEST(SizeToFit,
+		CRect r (10, 10, 20, 20);
+		CView* view = new CView (r);
+		container->addView (view);
+		container->sizeToFit ();
+		EXPECT(container->getViewSize ().right == 30)
+		EXPECT(container->getViewSize ().bottom == 30)
+	);
 ); // TESTCASE
 
 } // namespaces

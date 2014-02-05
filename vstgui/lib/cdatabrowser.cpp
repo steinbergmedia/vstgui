@@ -1159,7 +1159,7 @@ bool CDataBrowserView::getFocusPath (CGraphicsPath& outPath)
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
-GenericStringListDataBrowserSource::GenericStringListDataBrowserSource (const std::vector<std::string>* stringList, IGenericStringListDataBrowserSourceSelectionChanged* delegate)
+GenericStringListDataBrowserSource::GenericStringListDataBrowserSource (const StringVector* stringList, IGenericStringListDataBrowserSourceSelectionChanged* delegate)
 : stringList (stringList)
 , rowHeight (-1)
 , fontColor (kWhiteCColor)
@@ -1198,7 +1198,7 @@ void GenericStringListDataBrowserSource::dbRemoved (CDataBrowser* browser)
 }
 
 //-----------------------------------------------------------------------------
-void GenericStringListDataBrowserSource::setStringList (const std::vector<std::string>* stringList)
+void GenericStringListDataBrowserSource::setStringList (const StringVector* stringList)
 {
 	this->stringList = stringList;
 	if (dataBrowser)
@@ -1324,7 +1324,7 @@ int32_t GenericStringListDataBrowserSource::dbOnKeyDown (const VstKeyCode& _key,
 			timer->start ();
 		}
 		keyDownFindString += toupper (key.character);
-		std::vector<std::string>::const_iterator it = stringList->begin ();
+		StringVector::const_iterator it = stringList->begin ();
 		int32_t row = 0;
 		while (it != stringList->end ())
 		{

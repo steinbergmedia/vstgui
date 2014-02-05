@@ -32,7 +32,7 @@ protected:
 	void dbCellTextChanged (int32_t row, int32_t column, UTF8StringPtr newText, CDataBrowser* browser);
 	void dbCellSetupTextEdit (int32_t row, int32_t column, CTextEdit* textEditControl, CDataBrowser* browser);
 
-	std::vector<std::string> tags;
+	StringVector tags;
 };
 
 //----------------------------------------------------------------------------------------------------
@@ -84,7 +84,7 @@ void UITagsDataSource::update ()
 {
 	UIBaseDataSource::update ();
 	tags.clear ();
-	for (std::vector<std::string>::const_iterator it = names.begin (); it != names.end (); it++)
+	for (StringVector::const_iterator it = names.begin (); it != names.end (); it++)
 	{
 		std::string tagString;
 		description->getControlTagString ((*it).c_str (), tagString);

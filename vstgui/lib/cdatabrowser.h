@@ -231,11 +231,13 @@ public:
 class GenericStringListDataBrowserSource : public IDataBrowserDelegate, public CBaseObject
 {
 public:
-	GenericStringListDataBrowserSource (const std::vector<std::string>* stringList, IGenericStringListDataBrowserSourceSelectionChanged* delegate = 0);
+	typedef std::vector<std::string> StringVector;
+
+	GenericStringListDataBrowserSource (const StringVector* stringList, IGenericStringListDataBrowserSourceSelectionChanged* delegate = 0);
 	~GenericStringListDataBrowserSource ();
 
-	void setStringList (const std::vector<std::string>* stringList);
-	const std::vector<std::string>* getStringList () const { return stringList; }
+	void setStringList (const StringVector* stringList);
+	const StringVector* getStringList () const { return stringList; }
 
 	void setupUI (const CColor& selectionColor, const CColor& fontColor, const CColor& rowlineColor, const CColor& rowBackColor, const CColor& rowAlteranteBackColor, CFontRef font = 0, int32_t rowHeight = -1);
 
@@ -267,7 +269,7 @@ protected:
 
 	CMessageResult notify (CBaseObject* sender, IdStringPtr message) VSTGUI_OVERRIDE_VMETHOD;
 
-	const std::vector<std::string>* stringList;
+	const StringVector* stringList;
 	int32_t rowHeight;
 	CColor fontColor;
 	CColor selectionColor;

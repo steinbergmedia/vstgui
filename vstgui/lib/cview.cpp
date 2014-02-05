@@ -38,6 +38,7 @@
 #include "cframe.h"
 #include "cvstguitimer.h"
 #include "idatapackage.h"
+#include "iviewlistener.h"
 #include "animation/animator.h"
 #include "../uidescription/icontroller.h"
 #include <assert.h>
@@ -77,8 +78,6 @@ namespace VSTGUI {
 
 #endif // DEBUG
 
-typedef std::map<CViewAttributeID, CViewAttributeEntry*>::const_iterator CViewAttributeConstIterator;
-typedef std::map<CViewAttributeID, CViewAttributeEntry*>::iterator CViewAttributeIterator;
 //-----------------------------------------------------------------------------
 class CViewAttributeEntry
 {
@@ -240,7 +239,7 @@ CView::CView (const CView& v)
 , autosizeFlags (v.autosizeFlags)
 , alphaValue (v.alphaValue)
 {
-	for (CViewAttributeIterator it = attributes.begin (); it != attributes.end (); it++)
+	for (ViewAttributes::iterator it = attributes.begin (); it != attributes.end (); it++)
 		setAttribute (it->first, it->second->getSize (), it->second->getData ());
 }
 
@@ -248,6 +247,7 @@ CView::CView (const CView& v)
 CView::~CView ()
 {
 	assert (isAttached () == false);
+	assert (viewListeners.empty ());
 
 	IController* controller = 0;
 	int32_t size = sizeof (IController*);
@@ -260,7 +260,7 @@ CView::~CView ()
 			delete controller;
 	}
 
-	for (CViewAttributeIterator it = attributes.begin (); it != attributes.end (); it++)
+	for (ViewAttributes::iterator it = attributes.begin (); it != attributes.end (); it++)
 		delete it->second;
 
 	#if VSTGUI_CHECK_VIEW_RELEASING
@@ -362,6 +362,9 @@ bool CView::attached (CView* parent)
 		pParentFrame->onViewAdded (this);
 	if (wantsIdle ())
 		IdleViewUpdater::add (this);
+	VSTGUI_RANGE_BASED_FOR_LOOP (ViewListenerVector, viewListeners, IViewListener*, listener)
+		listener->viewAttached (this);
+	VSTGUI_RANGE_BASED_FOR_LOOP_END
 	return true;
 }
 
@@ -381,6 +384,9 @@ bool CView::removed (CView* parent)
 	pParentView = 0;
 	pParentFrame = 0;
 	viewFlags &= ~kIsAttached;
+	VSTGUI_RANGE_BASED_FOR_LOOP (ViewListenerVector, viewListeners, IViewListener*, listener)
+		listener->viewRemoved (this);
+	VSTGUI_RANGE_BASED_FOR_LOOP_END
 	return true;
 }
 
@@ -584,11 +590,19 @@ CMessageResult CView::notify (CBaseObject* sender, IdStringPtr message)
 
 //------------------------------------------------------------------------------
 void CView::looseFocus ()
-{}
+{
+	VSTGUI_RANGE_BASED_FOR_LOOP (ViewListenerVector, viewListeners, IViewListener*, listener)
+		listener->viewLostFocus (this);
+	VSTGUI_RANGE_BASED_FOR_LOOP_END
+}
 
 //------------------------------------------------------------------------------
 void CView::takeFocus ()
-{}
+{
+	VSTGUI_RANGE_BASED_FOR_LOOP (ViewListenerVector, viewListeners, IViewListener*, listener)
+		listener->viewTookFocus (this);
+	VSTGUI_RANGE_BASED_FOR_LOOP_END
+}
 
 //------------------------------------------------------------------------------
 /**
@@ -599,11 +613,15 @@ void CView::setViewSize (const CRect& newSize, bool invalid)
 {
 	if (size != newSize)
 	{
+		CRect oldSize = size;
 		size = newSize;
 		if (invalid)
 			setDirty ();
 		if (getParentView ())
 			getParentView ()->notify (this, kMsgViewSizeChanged);
+		VSTGUI_RANGE_BASED_FOR_LOOP (ViewListenerVector, viewListeners, IViewListener*, listener)
+			listener->viewSizeChanged (this, oldSize);
+		VSTGUI_RANGE_BASED_FOR_LOOP_END
 	}
 }
 
@@ -691,7 +709,7 @@ const CViewAttributeID kCViewControllerAttribute = 'ictr';
  */
 bool CView::getAttributeSize (const CViewAttributeID aId, int32_t& outSize) const
 {
-	CViewAttributeConstIterator it = attributes.find (aId);
+	ViewAttributes::const_iterator it = attributes.find (aId);
 	if (it != attributes.end ())
 	{
 		outSize = it->second->getSize ();
@@ -710,7 +728,7 @@ bool CView::getAttributeSize (const CViewAttributeID aId, int32_t& outSize) cons
  */
 bool CView::getAttribute (const CViewAttributeID aId, const int32_t inSize, void* outData, int32_t& outSize) const
 {
-	CViewAttributeConstIterator it = attributes.find (aId);
+	ViewAttributes::const_iterator it = attributes.find (aId);
 	if (it != attributes.end ())
 	{
 		if (inSize >= it->second->getSize ())
@@ -736,7 +754,7 @@ bool CView::setAttribute (const CViewAttributeID aId, const int32_t inSize, cons
 {
 	if (inData == 0 || inSize <= 0)
 		return false;
-	CViewAttributeConstIterator it = attributes.find (aId);
+	ViewAttributes::const_iterator it = attributes.find (aId);
 	if (it != attributes.end ())
 		it->second->updateData (inSize, inData);
 	else
@@ -747,7 +765,7 @@ bool CView::setAttribute (const CViewAttributeID aId, const int32_t inSize, cons
 //-----------------------------------------------------------------------------
 bool CView::removeAttribute (const CViewAttributeID aId)
 {
-	CViewAttributeConstIterator it = attributes.find (aId);
+	ViewAttributes::const_iterator it = attributes.find (aId);
 	if (it != attributes.end ())
 	{
 		delete it->second;
@@ -799,6 +817,21 @@ void CView::dumpInfo ()
 		DebugPrint (" (Mouseable Area: left:%4d, top:%4d, width:%4d, height:%4d ", mouseRect.left, mouseRect.top, mouseRect.getWidth (), mouseRect.getHeight ());
 }
 #endif
+
+//-----------------------------------------------------------------------------
+void CView::registerViewListener (IViewListener* listener)
+{
+	viewListeners.push_back (listener);
+}
+
+//-----------------------------------------------------------------------------
+void CView::unregisterViewListener (IViewListener* listener)
+{
+	ViewListenerVector::iterator pos = std::find (viewListeners.begin (), viewListeners.end (), listener);
+	if (pos != viewListeners.end ())
+		viewListeners.erase (pos);
+}
+
 
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------

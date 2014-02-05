@@ -584,7 +584,7 @@ void CCheckBox::draw (CDrawContext* context)
 		
 		context->setFont (font);
 		context->setFontColor (fontColor);
-		context->setDrawMode (kAntiAliasing);
+		context->setDrawMode (kAntiAliasing|kIntegralMode);
 		
 		context->drawString (title, p, true);
 	}
@@ -901,7 +901,7 @@ bool CTextButton::sizeToFit ()
 void CTextButton::draw (CDrawContext* context)
 {
 	bool highlight = value > 0.5 ? true : false;
-	context->setDrawMode (kAntiAliasing);
+	context->setDrawMode (kAntiAliasing|kIntegralMode);
 	context->setLineWidth (frameWidth);
 	context->setLineStyle (CLineStyle (CLineStyle::kLineCapRound, CLineStyle::kLineJoinRound));
 	context->setFrameColor (highlight ? frameColorHighlighted : frameColor);

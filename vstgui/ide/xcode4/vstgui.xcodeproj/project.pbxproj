@@ -568,6 +568,7 @@
 		F4CF26DD13EEA65D00C64EB7 /* icontroller.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = icontroller.h; sourceTree = "<group>"; };
 		F4D23BB11405466200A5F888 /* uitemplatesettingscontroller.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = uitemplatesettingscontroller.h; sourceTree = "<group>"; };
 		F4D23BB31405466900A5F888 /* uitemplatesettingscontroller.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = uitemplatesettingscontroller.cpp; sourceTree = "<group>"; };
+		F4DF261118A23B0300DE6ADF /* iviewlistener.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = iviewlistener.h; sourceTree = "<group>"; };
 		F4E0115E16C7A1B300973B7C /* idatapackage.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = idatapackage.h; sourceTree = "<group>"; };
 		F4E3901913080ECC00615042 /* cstream.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = cstream.cpp; sourceTree = "<group>"; };
 		F4E3901A13080ECC00615042 /* cstream.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = cstream.h; sourceTree = "<group>"; };
@@ -800,6 +801,7 @@
 				F42E78C71334AB7900518C17 /* idependency.h */,
 				F497F0E713080A1C00F0A613 /* ifocusdrawing.h */,
 				F440F8CC17A8FF7600616683 /* itouchevent.h */,
+				F4DF261118A23B0300DE6ADF /* iviewlistener.h */,
 				F497F0E813080A1C00F0A613 /* vstguibase.h */,
 				F497F0E913080A1C00F0A613 /* vstguidebug.cpp */,
 				F497F0EA13080A1C00F0A613 /* vstguidebug.h */,
@@ -1616,7 +1618,10 @@
 					"ENABLE_UNIT_TESTS=1",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 10.7;
-				OTHER_LDFLAGS = "-L$(DT_TOOLCHAIN_DIR)/usr/lib/";
+				OTHER_CFLAGS = (
+					"-ftest-coverage",
+					"-fprofile-arcs",
+				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Debug;
@@ -1638,7 +1643,10 @@
 					"ENABLE_UNIT_TESTS=1",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 10.7;
-				OTHER_LDFLAGS = "-L$(DT_TOOLCHAIN_DIR)/usr/lib/";
+				OTHER_CFLAGS = (
+					"-ftest-coverage",
+					"-fprofile-arcs",
+				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Release;
