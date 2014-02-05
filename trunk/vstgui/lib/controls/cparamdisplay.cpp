@@ -240,7 +240,7 @@ void CParamDisplay::drawBack (CDrawContext* pContext, CBitmap* newBack)
 				CGraphicsPath* path = pContext->createRoundRectGraphicsPath (pathRect, roundRectRadius);
 				if (path)
 				{
-					pContext->setDrawMode (kAntiAliasing);
+					pContext->setDrawMode (kAntiAliasing|kIntegralMode);
 					pContext->drawGraphicsPath (path, CDrawContext::kPathFilled);
 					if (!(style & (k3DIn|k3DOut|kNoFrame)))
 					{
@@ -254,7 +254,7 @@ void CParamDisplay::drawBack (CDrawContext* pContext, CBitmap* newBack)
 			}
 			else
 			{
-				pContext->setDrawMode (kAliasing);
+				pContext->setDrawMode (kAliasing|kIntegralMode);
 				OwningPointer<CGraphicsPath> path = pContext->createGraphicsPath ();
 				if (path)
 				{
@@ -294,7 +294,7 @@ void CParamDisplay::drawBack (CDrawContext* pContext, CBitmap* newBack)
 	{
 		CRect r (getViewSize ());
 		r.right--; r.top++;
-		pContext->setDrawMode (kAliasing);
+		pContext->setDrawMode (kAliasing|kIntegralMode);
 		pContext->setLineWidth (frameWidth);
 		pContext->setLineStyle (kLineSolid);
 		if (style & k3DIn)
@@ -384,6 +384,7 @@ void CParamDisplay::drawText (CDrawContext* pContext, UTF8StringPtr string, cons
 		}
 		else
 		{
+			pContext->setDrawMode (kAntiAliasing|kIntegralMode);
 			pContext->setFont (fontID);
 			// draw darker text (as shadow)
 			if (style & kShadowText) 

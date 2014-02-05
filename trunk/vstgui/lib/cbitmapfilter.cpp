@@ -254,7 +254,7 @@ IdStringPtr Factory::getFilterName (uint32_t index) const
 //----------------------------------------------------------------------------------------------------
 IFilter* Factory::createFilter (IdStringPtr name) const
 {
-	for (std::vector<std::pair<std::string, IFilter::CreateFunction> >::const_iterator it = filters.begin (); it != filters.end (); it++)
+	for (FilterVector::const_iterator it = filters.begin (); it != filters.end (); it++)
 	{
 		if ((*it).first == name)
 			return (*it).second (name);
@@ -272,7 +272,7 @@ bool Factory::registerFilter (IdStringPtr name, IFilter::CreateFunction createFu
 //----------------------------------------------------------------------------------------------------
 bool Factory::unregisterFilter (IdStringPtr name, IFilter::CreateFunction createFunction)
 {
-	for (std::vector<std::pair<std::string, IFilter::CreateFunction> >::iterator it = filters.begin (); it != filters.end (); it++)
+	for (FilterVector::iterator it = filters.begin (); it != filters.end (); it++)
 	{
 		if ((*it).first == name)
 		{

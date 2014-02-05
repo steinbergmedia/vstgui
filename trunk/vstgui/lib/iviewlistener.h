@@ -1,6 +1,6 @@
 //-----------------------------------------------------------------------------
 // VST Plug-Ins SDK
-// VSTGUI: Graphical User Interface Framework for VST plugins :
+// VSTGUI: Graphical User Interface Framework not only for VST plugins :
 //
 // Version 4.2
 //
@@ -32,55 +32,43 @@
 // OF THE POSSIBILITY OF SUCH DAMAGE.
 //-----------------------------------------------------------------------------
 
-#ifndef __cdropsource__
-#define __cdropsource__
-
-#include "vstguibase.h"
-#include "idatapackage.h"
-#include <vector>
+#ifndef __iviewlistener__
+#define __iviewlistener__
 
 namespace VSTGUI {
 
+class CView;
+struct CRect;
+
 //-----------------------------------------------------------------------------
-// CDropSource Declaration
-//! @brief drop source
-//!
-//! @ingroup new_in_4_0
+/// @brief View Listener Interface
 //-----------------------------------------------------------------------------
-class CDropSource : public IDataPackage
+class IViewListener
 {
 public:
-	CDropSource ();
-	CDropSource (const void* buffer, int32_t bufferSize, Type type);
-	~CDropSource ();
-
-	bool add (const void* buffer, int32_t bufferSize, Type type);
-
-	// IDataPackage
-	virtual int32_t getCount () VSTGUI_OVERRIDE_VMETHOD;
-	virtual int32_t getDataSize (int32_t index) VSTGUI_OVERRIDE_VMETHOD { return getEntrySize (index); }
-	virtual Type getDataType (int32_t index) VSTGUI_OVERRIDE_VMETHOD { return getEntryType (index); }
-	virtual int32_t getData (int32_t index, const void*& buffer, Type& type) VSTGUI_OVERRIDE_VMETHOD { return getEntry (index, buffer, type); }
-
-	// old interface
-	int32_t getEntrySize (int32_t index); ///< \deprecated
-	Type getEntryType (int32_t index); ///< \deprecated
-	int32_t getEntry (int32_t index, const void*& buffer, Type& type); ///< \deprecated
-
-	//-------------------------------------------
-	CLASS_METHODS_NOCOPY(CDropSource, IDataPackage)
-protected:
-	/// @cond ignore
-	struct CDropEntry {
-		void* buffer;
-		int32_t bufferSize;
-		Type type;
-	};
-	/// @endcond
-	typedef std::vector<CDropEntry*> DropEntryVector;
-	DropEntryVector entries;
+	virtual void viewSizeChanged (CView* view, const CRect& oldSize) = 0;
+	virtual void viewAttached (CView* view) = 0;
+	virtual void viewRemoved (CView* view) = 0;
+	virtual void viewLostFocus (CView* view) = 0;
+	virtual void viewTookFocus (CView* view) = 0;
 };
 
-} // namespace
+//-----------------------------------------------------------------------------
+/// @brief View Listener Interface Adapter
+//-----------------------------------------------------------------------------
+class IViewListenerAdapter : public IViewListener
+{
+public:
+	virtual ~IViewListenerAdapter () {}
 
-#endif // __cdropsource__
+	void viewSizeChanged (CView* view, const CRect& oldSize) VSTGUI_OVERRIDE_VMETHOD {}
+	void viewAttached (CView* view) VSTGUI_OVERRIDE_VMETHOD {}
+	void viewRemoved (CView* view) VSTGUI_OVERRIDE_VMETHOD {}
+	void viewLostFocus (CView* view) VSTGUI_OVERRIDE_VMETHOD {}
+	void viewTookFocus (CView* view) VSTGUI_OVERRIDE_VMETHOD {}
+};
+
+}
+
+
+#endif // __iviewlistener__

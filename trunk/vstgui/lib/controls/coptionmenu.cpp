@@ -852,6 +852,7 @@ void COptionMenu::looseFocus ()
 			break;
 		receiver = receiver->getParentView ();
 	}
+	CParamDisplay::looseFocus ();
 }
 
 } // namespace

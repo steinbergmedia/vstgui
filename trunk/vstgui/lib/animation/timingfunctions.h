@@ -98,7 +98,8 @@ public:
 protected:
 	float getPosition (uint32_t milliseconds) VSTGUI_OVERRIDE_VMETHOD;
 
-	std::map<uint32_t, float> points;
+	typedef std::map<uint32_t, float> PointMap;
+	PointMap points;
 };
 
 //-----------------------------------------------------------------------------

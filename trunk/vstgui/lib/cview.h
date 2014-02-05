@@ -40,12 +40,14 @@
 #include "crect.h"
 #include "vstkeycode.h"
 #include <map>
+#include <vector>
 
 namespace VSTGUI {
 class CDrawContext;
 class CGraphicsPath;
 class CDragContainer;
 class IDataPackage;
+class IViewListener;
 class VSTGUIEditorInterface;
 class CBitmap;
 class CFrame;
@@ -380,6 +382,9 @@ public:
 	static int32_t idleRate;																	///< global idle rate in Hz, defaults to 30 Hz
 	//@}
 
+	void registerViewListener (IViewListener* listener);
+	void unregisterViewListener (IViewListener* listener);
+	
 	#if DEBUG
 	virtual void dumpInfo ();
 	#endif
@@ -421,7 +426,11 @@ private:
 	SharedPointer<CBitmap> pDisabledBackground;
 	SharedPointer<CGraphicsPath> pHitTestPath;
 
-	std::map<CViewAttributeID, CViewAttributeEntry*> attributes;
+	typedef std::map<CViewAttributeID, CViewAttributeEntry*> ViewAttributes;
+	ViewAttributes attributes;
+
+	typedef std::vector<IViewListener*> ViewListenerVector;
+	ViewListenerVector viewListeners;
 
 #if DEBUG
 public:

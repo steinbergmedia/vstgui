@@ -1,3 +1,7 @@
+2014-02-05 arne
+
+	* add IViewListener interface/adapter
+	
 2014-01-22 arne
 
 	* CDrawContext::createTextPath(..) implementation for Direct2D and GDI+

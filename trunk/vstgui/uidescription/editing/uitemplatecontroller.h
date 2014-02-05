@@ -82,7 +82,8 @@ protected:
 	CViewContainer* templateView;
 	CDataBrowser* templateDataBrowser;
 	UIViewListDataSource* mainViewDataSource;
-	std::vector<std::string> templateNames;
+	typedef std::vector<std::string> StringVector;
+	StringVector templateNames;
 	std::string* selectedTemplateName;
 };
 

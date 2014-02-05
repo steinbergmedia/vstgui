@@ -193,7 +193,7 @@ protected:
 	SharedPointer<UISelection> selection;
 	SharedPointer<UIUndoManager> undoManager;
 	CView* selectedView;
-	std::vector<std::string> names;
+	StringVector names;
 	std::vector<CView*> subviews;
 	bool inUpdate;
 };
@@ -260,7 +260,7 @@ void UITemplateController::selectTemplate (UTF8StringPtr name)
 	if (templateDataBrowser)
 	{
 		int32_t index = 0;
-		for (std::vector<std::string>::const_iterator it = templateNames.begin (); it != templateNames.end (); it++, index++)
+		for (StringVector::const_iterator it = templateNames.begin (); it != templateNames.end (); it++, index++)
 		{
 			if (*it == name)
 			{
@@ -694,7 +694,7 @@ void UITemplatesDataSource::dbAttached (CDataBrowser* browser)
 		else
 		{
 			int32_t index = 0;
-			for (std::vector<std::string>::const_iterator it = getStringList ()->begin (); it != getStringList ()->end (); it++, index++)
+			for (StringVector::const_iterator it = getStringList ()->begin (); it != getStringList ()->end (); it++, index++)
 			{
 				if (getStringList()->at (index) == firstSelectedTemplateName)
 				{

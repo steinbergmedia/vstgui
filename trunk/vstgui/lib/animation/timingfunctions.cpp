@@ -106,7 +106,7 @@ float InterpolationTimingFunction::getPosition (uint32_t milliseconds)
 {
 	uint32_t prevTime = getLength ();
 	float prevPos = points[prevTime];
-	std::map<uint32_t, float>::reverse_iterator it = points.rbegin ();
+	PointMap::reverse_iterator it = points.rbegin ();
 	while (it != points.rend ())
 	{
 		uint32_t time = it->first;

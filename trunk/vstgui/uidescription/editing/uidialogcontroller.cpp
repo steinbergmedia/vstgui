@@ -61,6 +61,12 @@ UIDialogController::UIDialogController (IController* baseController, CFrame* fra
 }
 
 //----------------------------------------------------------------------------------------------------
+UIDialogController::~UIDialogController ()
+{
+	
+}
+
+//----------------------------------------------------------------------------------------------------
 void UIDialogController::run (UTF8StringPtr _templateName, UTF8StringPtr _dialogTitle, UTF8StringPtr _button1, UTF8StringPtr _button2, IController* _dialogController, UIDescription* _description)
 {
 	collectOpenGLViews (frame);
@@ -86,6 +92,8 @@ void UIDialogController::run (UTF8StringPtr _templateName, UTF8StringPtr _dialog
 
 		frame->setModalView (view);
 		frame->registerKeyboardHook (this);
+		frame->registerViewListener (this);
+		view->registerViewListener (this);
 		if (button1)
 			frame->setFocusView (button1);
 		setOpenGLViewsVisible (false);
@@ -104,19 +112,54 @@ CMessageResult UIDialogController::notify (CBaseObject* sender, IdStringPtr mess
 {
 	if (message == Animation::kMsgAnimationFinished)
 	{
-		Animation::FinishedMessage* msg = dynamic_cast<Animation::FinishedMessage*>(sender);
-		
-		frame->setModalView (0);
-		msg->getView ()->forget ();
-		frame->unregisterKeyboardHook (this);
-		if (button1)
-			button1->setListener (0);
-		if (button2)
-			button2->setListener (0);
-		setOpenGLViewsVisible (true);
-		forget ();
+		close ();
+		return kMessageNotified;
 	}
 	return kMessageUnknown;
+}
+
+//----------------------------------------------------------------------------------------------------
+void UIDialogController::close ()
+{
+	frame->unregisterKeyboardHook (this);
+	frame->unregisterViewListener (this);
+	if (button1)
+		button1->setListener (0);
+	if (button2)
+		button2->setListener (0);
+	setOpenGLViewsVisible (true);
+
+	CView* dialog = frame->getModalView ();
+	if (dialog)
+	{
+		dialog->unregisterViewListener (this);
+		frame->setModalView (0);
+		dialog->forget ();
+	}
+	forget ();
+}
+
+//----------------------------------------------------------------------------------------------------
+void UIDialogController::viewSizeChanged (CView* view, const CRect& oldSize)
+{
+	if (view == frame)
+	{
+		CView* dialog = frame->getModalView ();
+		CRect viewSize = dialog->getViewSize ();
+		viewSize.centerInside (frame->getViewSize ());
+		dialog->setViewSize (viewSize);
+		dialog->setMouseableArea (viewSize);
+	}
+}
+
+//----------------------------------------------------------------------------------------------------
+void UIDialogController::viewRemoved (CView* view)
+{
+	if (view != frame)
+	{
+		view->unregisterViewListener (this);
+		close ();
+	}
 }
 
 //----------------------------------------------------------------------------------------------------

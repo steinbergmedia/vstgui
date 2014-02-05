@@ -51,6 +51,8 @@ namespace VSTGUI {
 class UIBaseDataSource : public GenericStringListDataBrowserSource, public CControlListener
 {
 public:
+	typedef std::vector<std::string> StringVector;
+
 	UIBaseDataSource (UIDescription* description, IActionPerformer* actionPerformer, IdStringPtr descriptionMessage, IGenericStringListDataBrowserSourceSelectionChanged* delegate = 0)
 	: GenericStringListDataBrowserSource (0, delegate) , description (description), actionPerformer (actionPerformer), descriptionMessage (descriptionMessage)
 	{
@@ -122,7 +124,7 @@ public:
 	virtual int32_t selectName (UTF8StringPtr name)
 	{
 		int32_t index = 0;
-		for (std::vector<std::string>::const_iterator it = names.begin (); it != names.end (); it++, index++)
+		for (StringVector::const_iterator it = names.begin (); it != names.end (); it++, index++)
 		{
 			if (*it == name)
 			{
@@ -259,7 +261,7 @@ protected:
 			str << ' ';
 			str << count;
 		}
-		for (std::vector<std::string>::const_iterator it = names.begin (); it != names.end (); it++)
+		for (StringVector::const_iterator it = names.begin (); it != names.end (); it++)
 		{
 			if (*it == str.str ())
 				return createUniqueName (name, count+1);
@@ -306,7 +308,7 @@ protected:
 	IActionPerformer* actionPerformer;
 	IdStringPtr descriptionMessage;
 
-	std::vector<std::string> names;
+	StringVector names;
 	std::string filterString;
 };
 
