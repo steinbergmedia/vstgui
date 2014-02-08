@@ -39,6 +39,7 @@
 #include "../uiviewfactory.h"
 #include "../uiattributes.h"
 #include "../../lib/controls/ctextedit.h"
+#include "../../lib/controls/coptionmenu.h"
 #include "uieditcontroller.h"
 #include "uiselection.h"
 #include "uiundomanager.h"
@@ -660,6 +661,33 @@ CMouseEventResult UITemplatesDataSource::dbOnMouseDown (const CPoint& where, con
 		{
 			browser->beginTextEdit (CDataBrowser::Cell (row, column), getStringList ()->at (row).c_str ());
 			return kMouseDownEventHandledButDontNeedMovedOrUpEvents;
+		}
+	}
+	else if (buttons.isRightButton ())
+	{
+		COptionMenu menu;
+		menu.addEntry ("Duplicate");
+		menu.addEntry ("Delete");
+		CPoint p (where);
+		browser->CView::localToFrame (p);
+		if (menu.popup (browser->getFrame(), p))
+		{
+			switch (menu.getLastResult ())
+			{
+				case 0:
+				{
+					// TODO: Unify with UIEditMenuController::createUniqueTemplateName
+					std::string newName (getStringList ()->at (row).c_str ());
+					newName += " Copy";
+					actionPerformer->performDuplicateTemplate (getStringList ()->at (row).c_str (), newName.c_str ());
+					break;
+				}
+				case 1:
+				{
+					actionPerformer->performDeleteTemplate (getStringList ()->at (row).c_str ());
+					break;
+				}
+			}
 		}
 	}
 	return UINavigationDataSource::dbOnMouseDown (where, buttons, row, column, browser);

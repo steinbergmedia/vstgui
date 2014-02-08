@@ -45,7 +45,6 @@
 
 namespace VSTGUI {
 
-class UIDescList;
 class UINode;
 class UIAttributes;
 class IViewFactory;
