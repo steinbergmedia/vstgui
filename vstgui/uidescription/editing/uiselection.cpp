@@ -36,7 +36,9 @@
 
 #include "uiselection.h"
 #include "../uiviewfactory.h"
+#include "../uidescription.h"
 #include "../cstream.h"
+#include "../uiattributes.h"
 #include "../../lib/cviewcontainer.h"
 #include <sstream>
 #include <algorithm>

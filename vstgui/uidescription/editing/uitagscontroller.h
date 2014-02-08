@@ -8,6 +8,7 @@
 #include "uiselection.h"
 #include "uiundomanager.h"
 #include "iaction.h"
+#include "../delegationcontroller.h"
 
 namespace VSTGUI {
 class UITagsDataSource;

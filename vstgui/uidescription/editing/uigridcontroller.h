@@ -40,6 +40,7 @@
 #if VSTGUI_LIVE_EDITING
 
 #include "uigrid.h"
+#include "../delegationcontroller.h"
 #include "../../lib/controls/ctextedit.h"
 
 namespace VSTGUI {

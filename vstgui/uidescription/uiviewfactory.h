@@ -36,11 +36,13 @@
 #define __uiviewfactory__
 
 #include "../lib/cview.h"
-#include "uidescription.h"
+#include "iuidescription.h"
+#include "iviewfactory.h"
 #include <string>
 #include <list>
 
 namespace VSTGUI {
+class UIAttributes;
 
 //-----------------------------------------------------------------------------
 /// @brief View creator interface

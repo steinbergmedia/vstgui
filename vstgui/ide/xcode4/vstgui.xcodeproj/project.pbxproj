@@ -109,6 +109,12 @@
 		F47883AD180469580054ED06 /* clayeredviewcontainer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F47883A9180469580054ED06 /* clayeredviewcontainer.cpp */; };
 		F47883AE180469580054ED06 /* clayeredviewcontainer.h in Headers */ = {isa = PBXBuildFile; fileRef = F47883AA180469580054ED06 /* clayeredviewcontainer.h */; };
 		F47883AF180469580054ED06 /* clayeredviewcontainer.h in Headers */ = {isa = PBXBuildFile; fileRef = F47883AA180469580054ED06 /* clayeredviewcontainer.h */; };
+		F47D201818A6648C00487CDB /* uiattributes.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F47D201618A6648C00487CDB /* uiattributes.cpp */; };
+		F47D201918A6648C00487CDB /* uiattributes.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F47D201618A6648C00487CDB /* uiattributes.cpp */; };
+		F47D201A18A6648C00487CDB /* uiattributes.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F47D201618A6648C00487CDB /* uiattributes.cpp */; };
+		F47D201B18A6648C00487CDB /* uiattributes.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F47D201618A6648C00487CDB /* uiattributes.cpp */; };
+		F47D201C18A6648C00487CDB /* uiattributes.h in Headers */ = {isa = PBXBuildFile; fileRef = F47D201718A6648C00487CDB /* uiattributes.h */; };
+		F47D201D18A6648C00487CDB /* uiattributes.h in Headers */ = {isa = PBXBuildFile; fileRef = F47D201718A6648C00487CDB /* uiattributes.h */; };
 		F485F11513F8F7770001A913 /* uitagscontroller.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F485F11413F8F7770001A913 /* uitagscontroller.cpp */; };
 		F485F11913F97FFE0001A913 /* uicolorscontroller.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F485F11813F97FFD0001A913 /* uicolorscontroller.cpp */; };
 		F48BCB4213F545350010DCC1 /* uieditmenucontroller.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F48BCB4113F545350010DCC1 /* uieditmenucontroller.cpp */; };
@@ -419,6 +425,11 @@
 		F47883A9180469580054ED06 /* clayeredviewcontainer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = clayeredviewcontainer.cpp; sourceTree = "<group>"; };
 		F47883AA180469580054ED06 /* clayeredviewcontainer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = clayeredviewcontainer.h; sourceTree = "<group>"; };
 		F47CE2BE14EE5315001B25B9 /* base64codec.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = base64codec.h; sourceTree = "<group>"; };
+		F47D201518A6633000487CDB /* iuidescription.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = iuidescription.h; sourceTree = "<group>"; };
+		F47D201618A6648C00487CDB /* uiattributes.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = uiattributes.cpp; sourceTree = "<group>"; };
+		F47D201718A6648C00487CDB /* uiattributes.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = uiattributes.h; sourceTree = "<group>"; };
+		F47D201E18A6677700487CDB /* iviewfactory.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = iviewfactory.h; sourceTree = "<group>"; };
+		F47D201F18A66A2600487CDB /* delegationcontroller.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = delegationcontroller.h; sourceTree = "<group>"; };
 		F485F11213F8F76C0001A913 /* uitagscontroller.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = uitagscontroller.h; sourceTree = "<group>"; };
 		F485F11413F8F7770001A913 /* uitagscontroller.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = uitagscontroller.cpp; sourceTree = "<group>"; };
 		F485F11613F97FF70001A913 /* uicolorscontroller.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = uicolorscontroller.h; sourceTree = "<group>"; };
@@ -993,8 +1004,13 @@
 				F47CE2BE14EE5315001B25B9 /* base64codec.h */,
 				F4E3901913080ECC00615042 /* cstream.cpp */,
 				F4E3901A13080ECC00615042 /* cstream.h */,
+				F47D201F18A66A2600487CDB /* delegationcontroller.h */,
 				F4E3901B13080ECC00615042 /* doc.h */,
 				F4CF26DD13EEA65D00C64EB7 /* icontroller.h */,
+				F47D201518A6633000487CDB /* iuidescription.h */,
+				F47D201E18A6677700487CDB /* iviewfactory.h */,
+				F47D201618A6648C00487CDB /* uiattributes.cpp */,
+				F47D201718A6648C00487CDB /* uiattributes.h */,
 				F4E3902113080ECC00615042 /* uidescription.cpp */,
 				F4E3902213080ECC00615042 /* uidescription.h */,
 				F4E3902D13080ECC00615042 /* uiviewcreator.cpp */,
@@ -1032,6 +1048,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				F47883AE180469580054ED06 /* clayeredviewcontainer.h in Headers */,
+				F47D201C18A6648C00487CDB /* uiattributes.h in Headers */,
 				F42D5F6617B016F900B85FE8 /* cxypad.h in Headers */,
 				F40E63FF16821A6300426847 /* cgradientview.h in Headers */,
 				F440F8D017A8FF7600616683 /* itouchevent.h in Headers */,
@@ -1044,6 +1061,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				F47883AF180469580054ED06 /* clayeredviewcontainer.h in Headers */,
+				F47D201D18A6648C00487CDB /* uiattributes.h in Headers */,
 				F42D5F6717B016F900B85FE8 /* cxypad.h in Headers */,
 				F40E640016821A6300426847 /* cgradientview.h in Headers */,
 				F440F8D117A8FF7600616683 /* itouchevent.h in Headers */,
@@ -1230,6 +1248,7 @@
 				F497F16913080AE500F0A613 /* cvumeter.cpp in Sources */,
 				F497F18113080B1C00F0A613 /* cfontmac.mm in Sources */,
 				F497F18213080B1C00F0A613 /* cgbitmap.cpp in Sources */,
+				F47D201818A6648C00487CDB /* uiattributes.cpp in Sources */,
 				F497F18413080B1C00F0A613 /* cgdrawcontext.cpp in Sources */,
 				F497F18613080B1C00F0A613 /* macfileselector.mm in Sources */,
 				F497F18713080B1C00F0A613 /* macglobals.cpp in Sources */,
@@ -1294,6 +1313,7 @@
 				F4462D371756474E00E6835D /* animations.cpp in Sources */,
 				F4462D381756474E00E6835D /* animator.cpp in Sources */,
 				F4462D391756474E00E6835D /* timingfunctions.cpp in Sources */,
+				F47D201B18A6648C00487CDB /* uiattributes.cpp in Sources */,
 				F4462D3A1756474E00E6835D /* cautoanimation.cpp in Sources */,
 				F4462D3B1756474E00E6835D /* cbuttons.cpp in Sources */,
 				F4462D3C1756474E00E6835D /* ccolorchooser.cpp in Sources */,
@@ -1385,6 +1405,7 @@
 				F4E9C6B317A826D400F42EF8 /* cvumeter.cpp in Sources */,
 				F4E9C6B417A826E300F42EF8 /* cbitmap.cpp in Sources */,
 				F4E9C6B517A826E300F42EF8 /* cbitmapfilter.cpp in Sources */,
+				F47D201A18A6648C00487CDB /* uiattributes.cpp in Sources */,
 				F4E9C6B617A826E300F42EF8 /* ccolor.cpp in Sources */,
 				F4E9C6B717A826E300F42EF8 /* cdatabrowser.cpp in Sources */,
 				F434EEC917DF02C400FC7603 /* uiopenglview.mm in Sources */,
@@ -1475,6 +1496,7 @@
 				F4F9542116510F40006EE1D1 /* cbitmapfilter.cpp in Sources */,
 				F4F9542216510F40006EE1D1 /* ccolor.cpp in Sources */,
 				F4F9542316510F40006EE1D1 /* cdatabrowser.cpp in Sources */,
+				F47D201918A6648C00487CDB /* uiattributes.cpp in Sources */,
 				F4F9542416510F40006EE1D1 /* cdrawcontext.cpp in Sources */,
 				F4F9542516510F40006EE1D1 /* cdropsource.cpp in Sources */,
 				F4F9542616510F40006EE1D1 /* cfileselector.cpp in Sources */,

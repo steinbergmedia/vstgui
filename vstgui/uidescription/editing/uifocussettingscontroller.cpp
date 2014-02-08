@@ -38,6 +38,7 @@
 
 #include "uidialogcontroller.h"
 #include "uieditcontroller.h"
+#include "../uiattributes.h"
 #include "../../lib/controls/ctextedit.h"
 #include "../../lib/controls/coptionmenu.h"
 #include <sstream>

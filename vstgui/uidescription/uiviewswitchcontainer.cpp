@@ -34,6 +34,7 @@
 
 #include "uiviewswitchcontainer.h"
 #include "uiviewcreator.h"
+#include "uidescription.h"
 #include "../lib/cframe.h"
 #include "../lib/animation/animations.h"
 #include "../lib/animation/timingfunctions.h"

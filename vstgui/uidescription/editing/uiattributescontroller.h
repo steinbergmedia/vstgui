@@ -40,6 +40,7 @@
 #if VSTGUI_LIVE_EDITING
 
 #include "uiselection.h"
+#include "delegationcontroller.h"
 #include "uiundomanager.h"
 #include "../../lib/controls/ctextedit.h"
 #include "../../lib/cvstguitimer.h"

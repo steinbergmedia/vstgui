@@ -41,6 +41,7 @@
 
 #include "uiselection.h"
 #include "uiundomanager.h"
+#include "../delegationcontroller.h"
 #include "../../lib/cvstguitimer.h"
 #include "../../lib/controls/coptionmenu.h"
 

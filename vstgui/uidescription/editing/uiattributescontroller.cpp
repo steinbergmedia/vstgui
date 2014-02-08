@@ -40,6 +40,7 @@
 #include "uieditcontroller.h"
 #include "uisearchtextfield.h"
 #include "../uiviewfactory.h"
+#include "../uiattributes.h"
 #include "../../lib/controls/coptionmenu.h"
 #include "../../lib/coffscreencontext.h"
 #include "../../lib/crowcolumnview.h"

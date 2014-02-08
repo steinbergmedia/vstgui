@@ -39,6 +39,7 @@
 
 #if VSTGUI_LIVE_EDITING
 
+#include "../delegationcontroller.h"
 #include "../../lib/cframe.h"
 #include "../../lib/iviewlistener.h"
 #include "../../lib/copenglview.h"
