@@ -37,6 +37,7 @@
 #if VSTGUI_LIVE_EDITING
 
 #include "uieditcontroller.h"
+#include "../uiattributes.h"
 #include "../../lib/coffscreencontext.h"
 #include "../../lib/cbitmapfilter.h"
 #include "../../lib/controls/ctextlabel.h"

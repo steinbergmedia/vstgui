@@ -1,6 +1,6 @@
 //-----------------------------------------------------------------------------
 // VST Plug-Ins SDK
-// VSTGUI: Graphical User Interface Framework not only for VST plugins
+// VSTGUI: Graphical User Interface Framework for VST plugins
 //
 // Version 4.2
 //
@@ -32,47 +32,56 @@
 // OF THE POSSIBILITY OF SUCH DAMAGE.
 //-----------------------------------------------------------------------------
 
-#ifndef __uiviewcreatorcontroller__
-#define __uiviewcreatorcontroller__
+#ifndef __uiattributes__
+#define __uiattributes__
 
-#include "../uidescription.h"
+#include "../lib/vstguibase.h"
 
-#if VSTGUI_LIVE_EDITING
-
-#include "../delegationcontroller.h"
+#include <map>
 #include <vector>
-#include <string>
 
 namespace VSTGUI {
-class UIViewCreatorDataSource;
+class CPoint;
+class CRect;
+class OutputStream;
+class InputStream;
 
-//----------------------------------------------------------------------------------------------------
-class UIViewCreatorController : public CBaseObject, public DelegationController
+//-----------------------------------------------------------------------------
+class UIAttributes : public CBaseObject, public std::map<std::string,std::string>
 {
 public:
-	UIViewCreatorController (IController* baseController, UIDescription* description);
-	~UIViewCreatorController ();
-protected:
-	void valueChanged (CControl* pControl) VSTGUI_OVERRIDE_VMETHOD;
-	CView* createView (const UIAttributes& attributes, IUIDescription* description) VSTGUI_OVERRIDE_VMETHOD;
-	CView* verifyView (CView* view, const UIAttributes& attributes, IUIDescription* description) VSTGUI_OVERRIDE_VMETHOD;
-	CControlListener* getControlListener (UTF8StringPtr name) VSTGUI_OVERRIDE_VMETHOD;
+	UIAttributes (UTF8StringPtr* attributes = 0);
+	~UIAttributes ();
 
-	void setupDataSource (UTF8StringPtr filter = 0);
-	
-	UIViewCreatorDataSource* dataSource;
-	SharedPointer<UIDescription> description;
-	std::vector<std::string> filteredViewNames;
-	std::vector<std::string> allViewNames;
-	
-	enum {
-		kSearchFieldTag = 100
-	};
+	bool hasAttribute (UTF8StringPtr name) const;
+	const std::string* getAttributeValue (UTF8StringPtr name) const;
+	void setAttribute (UTF8StringPtr name, UTF8StringPtr value);
+	void removeAttribute (UTF8StringPtr name);
 
+	void setBooleanAttribute (UTF8StringPtr name, bool value);
+	bool getBooleanAttribute (UTF8StringPtr name, bool& value) const;
+
+	void setIntegerAttribute (UTF8StringPtr name, int32_t value);
+	bool getIntegerAttribute (UTF8StringPtr name, int32_t& value) const;
+
+	void setDoubleAttribute (UTF8StringPtr name, double value);
+	bool getDoubleAttribute (UTF8StringPtr name, double& value) const;
+	
+	void setPointAttribute (UTF8StringPtr name, const CPoint& p);
+	bool getPointAttribute (UTF8StringPtr name, CPoint& p) const;
+	
+	void setRectAttribute (UTF8StringPtr name, const CRect& r);
+	bool getRectAttribute (UTF8StringPtr name, CRect& r) const;
+	
+	void setAttributeArray (UTF8StringPtr name, const std::vector<std::string>& values);
+	bool getAttributeArray (UTF8StringPtr name, std::vector<std::string>& values) const;
+	
+	void removeAll () { clear (); }
+
+	bool store (OutputStream& stream);
+	bool restore (InputStream& stream);
 };
 
-} // namespace
+}
 
-#endif // VSTGUI_LIVE_EDITING
-
-#endif // __uiviewcreatorcontroller__
+#endif // __uiattributes__

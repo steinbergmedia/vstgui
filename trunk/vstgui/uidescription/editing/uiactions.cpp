@@ -39,6 +39,7 @@
 #include "uieditview.h"
 #include "../uiviewfactory.h"
 #include "../uidescription.h"
+#include "../uiattributes.h"
 
 namespace VSTGUI {
 

@@ -53,6 +53,7 @@
 #include "uidialogcontroller.h"
 #include "uitemplatesettingscontroller.h"
 #include "uifocussettingscontroller.h"
+#include "../uiattributes.h"
 #include "../../lib/controls/coptionmenu.h"
 #include "../../lib/animation/animations.h"
 #include "../../lib/animation/timingfunctions.h"

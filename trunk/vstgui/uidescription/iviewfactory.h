@@ -1,6 +1,6 @@
 //-----------------------------------------------------------------------------
 // VST Plug-Ins SDK
-// VSTGUI: Graphical User Interface Framework not only for VST plugins
+// VSTGUI: Graphical User Interface Framework for VST plugins
 //
 // Version 4.2
 //
@@ -32,47 +32,25 @@
 // OF THE POSSIBILITY OF SUCH DAMAGE.
 //-----------------------------------------------------------------------------
 
-#ifndef __uiviewcreatorcontroller__
-#define __uiviewcreatorcontroller__
-
-#include "../uidescription.h"
-
-#if VSTGUI_LIVE_EDITING
-
-#include "../delegationcontroller.h"
-#include <vector>
-#include <string>
+#ifndef __iviewfactory__
+#define __iviewfactory__
 
 namespace VSTGUI {
-class UIViewCreatorDataSource;
+class CView;
+class UIAttributes;
+class IUIDescription;
 
-//----------------------------------------------------------------------------------------------------
-class UIViewCreatorController : public CBaseObject, public DelegationController
+//-----------------------------------------------------------------------------
+class IViewFactory
 {
 public:
-	UIViewCreatorController (IController* baseController, UIDescription* description);
-	~UIViewCreatorController ();
-protected:
-	void valueChanged (CControl* pControl) VSTGUI_OVERRIDE_VMETHOD;
-	CView* createView (const UIAttributes& attributes, IUIDescription* description) VSTGUI_OVERRIDE_VMETHOD;
-	CView* verifyView (CView* view, const UIAttributes& attributes, IUIDescription* description) VSTGUI_OVERRIDE_VMETHOD;
-	CControlListener* getControlListener (UTF8StringPtr name) VSTGUI_OVERRIDE_VMETHOD;
-
-	void setupDataSource (UTF8StringPtr filter = 0);
+	virtual ~IViewFactory () {}
 	
-	UIViewCreatorDataSource* dataSource;
-	SharedPointer<UIDescription> description;
-	std::vector<std::string> filteredViewNames;
-	std::vector<std::string> allViewNames;
-	
-	enum {
-		kSearchFieldTag = 100
-	};
-
+	virtual CView* createView (const UIAttributes& attributes, IUIDescription* description) = 0;
+	virtual bool applyAttributeValues (CView* view, const UIAttributes& attributes, IUIDescription* desc) const = 0;
 };
 
-} // namespace
+} // namespace VSTGUI
 
-#endif // VSTGUI_LIVE_EDITING
 
-#endif // __uiviewcreatorcontroller__
+#endif // __iviewfactory__

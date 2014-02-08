@@ -1,6 +1,6 @@
 //-----------------------------------------------------------------------------
 // VST Plug-Ins SDK
-// VSTGUI: Graphical User Interface Framework not only for VST plugins
+// VSTGUI: Graphical User Interface Framework for VST plugins
 //
 // Version 4.2
 //
@@ -32,47 +32,39 @@
 // OF THE POSSIBILITY OF SUCH DAMAGE.
 //-----------------------------------------------------------------------------
 
-#ifndef __uiviewcreatorcontroller__
-#define __uiviewcreatorcontroller__
+#ifndef __iuidescription__
+#define __iuidescription__
 
-#include "../uidescription.h"
+#include "../lib/cfont.h"
 
-#if VSTGUI_LIVE_EDITING
-
-#include "../delegationcontroller.h"
-#include <vector>
-#include <string>
+class CControlListener;
 
 namespace VSTGUI {
-class UIViewCreatorDataSource;
 
-//----------------------------------------------------------------------------------------------------
-class UIViewCreatorController : public CBaseObject, public DelegationController
+class IController;
+class CBitmap;
+class CColor;
+
+//-----------------------------------------------------------------------------
+class IUIDescription
 {
 public:
-	UIViewCreatorController (IController* baseController, UIDescription* description);
-	~UIViewCreatorController ();
-protected:
-	void valueChanged (CControl* pControl) VSTGUI_OVERRIDE_VMETHOD;
-	CView* createView (const UIAttributes& attributes, IUIDescription* description) VSTGUI_OVERRIDE_VMETHOD;
-	CView* verifyView (CView* view, const UIAttributes& attributes, IUIDescription* description) VSTGUI_OVERRIDE_VMETHOD;
-	CControlListener* getControlListener (UTF8StringPtr name) VSTGUI_OVERRIDE_VMETHOD;
+	virtual ~IUIDescription () {}
 
-	void setupDataSource (UTF8StringPtr filter = 0);
-	
-	UIViewCreatorDataSource* dataSource;
-	SharedPointer<UIDescription> description;
-	std::vector<std::string> filteredViewNames;
-	std::vector<std::string> allViewNames;
-	
-	enum {
-		kSearchFieldTag = 100
-	};
+	virtual CBitmap* getBitmap (UTF8StringPtr name) = 0;
+	virtual CFontRef getFont (UTF8StringPtr name) = 0;
+	virtual bool getColor (UTF8StringPtr name, CColor& color) = 0;
+	virtual int32_t getTagForName (UTF8StringPtr name) const = 0;
+	virtual CControlListener* getControlListener (UTF8StringPtr name) = 0;
+	virtual IController* getController () const = 0;
 
+	virtual UTF8StringPtr lookupColorName (const CColor& color) const = 0;
+	virtual UTF8StringPtr lookupFontName (const CFontRef font) const = 0;
+	virtual UTF8StringPtr lookupBitmapName (const CBitmap* bitmap) const = 0;
+	virtual UTF8StringPtr lookupControlTagName (const int32_t tag) const = 0;
 };
 
-} // namespace
 
-#endif // VSTGUI_LIVE_EDITING
+} // namespace VSTGUI
 
-#endif // __uiviewcreatorcontroller__
+#endif // __iuidescription__

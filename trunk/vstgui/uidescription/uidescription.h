@@ -35,18 +35,13 @@
 #ifndef __uidescription__
 #define __uidescription__
 
-#include "../lib/controls/ccontrol.h"
-#include "../lib/ccolor.h"
-#include "../lib/cfont.h"
-#include "../lib/cbitmap.h"
 #include "../lib/idependency.h"
+#include "iuidescription.h"
 #include "icontroller.h"
 #include "xmlparser.h"
-#include <map>
 #include <deque>
 #include <list>
 #include <string>
-#include <vector>
 
 namespace VSTGUI {
 
@@ -58,41 +53,6 @@ class IUIDescription;
 class IBitmapCreator;
 class InputStream;
 class OutputStream;
-
-#if 0
-//-----------------------------------------------------------------------------
-/// @brief extension to CControlListener used by UIDescription
-/// @ingroup new_in_4_0
-//-----------------------------------------------------------------------------
-class IController : public CControlListener
-{
-public:
-	virtual int32_t getTagForName (UTF8StringPtr name, int32_t registeredTag) { return registeredTag; };
-	virtual CControlListener* getControlListener (UTF8StringPtr controlTagName) { return this; }
-	virtual CView* createView (const UIAttributes& attributes, IUIDescription* description) { return 0; }
-	virtual CView* verifyView (CView* view, const UIAttributes& attributes, IUIDescription* description) { return view; }
-	virtual IController* createSubController (IdStringPtr name, IUIDescription* description) { return 0; }
-};
-#endif
-
-//-----------------------------------------------------------------------------
-class IUIDescription
-{
-public:
-	virtual ~IUIDescription () {}
-
-	virtual CBitmap* getBitmap (UTF8StringPtr name) = 0;
-	virtual CFontRef getFont (UTF8StringPtr name) = 0;
-	virtual bool getColor (UTF8StringPtr name, CColor& color) = 0;
-	virtual int32_t getTagForName (UTF8StringPtr name) const = 0;
-	virtual CControlListener* getControlListener (UTF8StringPtr name) = 0;
-	virtual IController* getController () const = 0;
-
-	virtual UTF8StringPtr lookupColorName (const CColor& color) const = 0;
-	virtual UTF8StringPtr lookupFontName (const CFontRef font) const = 0;
-	virtual UTF8StringPtr lookupBitmapName (const CBitmap* bitmap) const = 0;
-	virtual UTF8StringPtr lookupControlTagName (const int32_t tag) const = 0;
-};
 
 //-----------------------------------------------------------------------------
 /// @brief XML description parser and view creator
@@ -202,6 +162,10 @@ protected:
 	UINode* findChildNodeByNameAttribute (UINode* node, UTF8StringPtr nameAttribute) const;
 	UINode* findNodeForView (CView* view) const;
 	bool updateAttributesForView (UINode* node, CView* view, bool deep = true);
+	void removeNode (UTF8StringPtr name, IdStringPtr mainNodeName, IdStringPtr changeMsg);
+	template<typename NodeType, typename ObjType, typename CompareFunction> UTF8StringPtr lookupName (const ObjType& obj, IdStringPtr mainNodeName, CompareFunction compare) const;
+	template<typename NodeType> void changeNodeName (UTF8StringPtr oldName, UTF8StringPtr newName, IdStringPtr mainNodeName, IdStringPtr changeMsg);
+	template<typename NodeType> void collectNamesFromNode (IdStringPtr mainNodeName, std::list<const std::string*>& names) const;
 
 	void addDefaultNodes ();
 
@@ -228,81 +192,12 @@ protected:
 };
  
 //-----------------------------------------------------------------------------
-class UIAttributes : public CBaseObject, public std::map<std::string,std::string>
-{
-public:
-	UIAttributes (UTF8StringPtr* attributes = 0);
-	~UIAttributes ();
-
-	bool hasAttribute (UTF8StringPtr name) const;
-	const std::string* getAttributeValue (UTF8StringPtr name) const;
-	void setAttribute (UTF8StringPtr name, UTF8StringPtr value);
-	void removeAttribute (UTF8StringPtr name);
-
-	void setBooleanAttribute (UTF8StringPtr name, bool value);
-	bool getBooleanAttribute (UTF8StringPtr name, bool& value) const;
-
-	void setIntegerAttribute (UTF8StringPtr name, int32_t value);
-	bool getIntegerAttribute (UTF8StringPtr name, int32_t& value) const;
-
-	void setDoubleAttribute (UTF8StringPtr name, double value);
-	bool getDoubleAttribute (UTF8StringPtr name, double& value) const;
-	
-	void setPointAttribute (UTF8StringPtr name, const CPoint& p);
-	bool getPointAttribute (UTF8StringPtr name, CPoint& p) const;
-	
-	void setRectAttribute (UTF8StringPtr name, const CRect& r);
-	bool getRectAttribute (UTF8StringPtr name, CRect& r) const;
-	
-	void setAttributeArray (UTF8StringPtr name, const std::vector<std::string>& values);
-	bool getAttributeArray (UTF8StringPtr name, std::vector<std::string>& values) const;
-	
-	void removeAll () { clear (); }
-
-	bool store (OutputStream& stream);
-	bool restore (InputStream& stream);
-};
-
-//-----------------------------------------------------------------------------
-class IViewFactory
-{
-public:
-	virtual ~IViewFactory () {}
-	
-	virtual CView* createView (const UIAttributes& attributes, IUIDescription* description) = 0;
-	virtual bool applyAttributeValues (CView* view, const UIAttributes& attributes, IUIDescription* desc) const = 0;
-};
-
-//-----------------------------------------------------------------------------
 class IBitmapCreator
 {
 public:
 	virtual ~IBitmapCreator () {}
 	
 	virtual IPlatformBitmap* createBitmap (const UIAttributes& attributes) = 0;
-};
-
-//-----------------------------------------------------------------------------
-class DelegationController : public IController
-{
-public:
-	DelegationController (IController* controller) : controller (controller) {}
-
-	// CControlListener
-	void valueChanged (CControl* pControl) VSTGUI_OVERRIDE_VMETHOD { controller->valueChanged (pControl); }
-	int32_t controlModifierClicked (CControl* pControl, CButtonState button) VSTGUI_OVERRIDE_VMETHOD { return controller->controlModifierClicked (pControl, button); }
-	void controlBeginEdit (CControl* pControl) VSTGUI_OVERRIDE_VMETHOD { controller->controlBeginEdit (pControl); }
-	void controlEndEdit (CControl* pControl) VSTGUI_OVERRIDE_VMETHOD { controller->controlEndEdit (pControl); }
-	void controlTagWillChange (VSTGUI::CControl* pControl) VSTGUI_OVERRIDE_VMETHOD { controller->controlTagWillChange (pControl); }
-	void controlTagDidChange (VSTGUI::CControl* pControl) VSTGUI_OVERRIDE_VMETHOD { controller->controlTagDidChange (pControl); }
-	// IController
-	int32_t getTagForName (UTF8StringPtr name, int32_t registeredTag) const VSTGUI_OVERRIDE_VMETHOD { return controller->getTagForName (name, registeredTag); }
-	CControlListener* getControlListener (UTF8StringPtr name) VSTGUI_OVERRIDE_VMETHOD { return controller->getControlListener (name); }
-	CView* createView (const UIAttributes& attributes, IUIDescription* description) VSTGUI_OVERRIDE_VMETHOD { return controller->createView (attributes, description); }
-	CView* verifyView (CView* view, const UIAttributes& attributes, IUIDescription* description) VSTGUI_OVERRIDE_VMETHOD { return controller->verifyView (view, attributes, description); }
-	IController* createSubController (IdStringPtr name, IUIDescription* description) VSTGUI_OVERRIDE_VMETHOD { return controller->createSubController (name, description); }
-protected:
-	IController* controller;
 };
 
 } // namespace

@@ -39,6 +39,7 @@
 
 #if VSTGUI_LIVE_EDITING
 
+#include "../delegationcontroller.h"
 #include "uiselection.h"
 #include "uiundomanager.h"
 #include "iaction.h"

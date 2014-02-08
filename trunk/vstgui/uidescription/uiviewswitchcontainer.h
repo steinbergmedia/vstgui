@@ -41,6 +41,8 @@
 
 namespace VSTGUI {
 class IViewSwitchController;
+class UIDescription;
+class CControl;
 
 //-----------------------------------------------------------------------------
 class UIViewSwitchContainer : public CViewContainer

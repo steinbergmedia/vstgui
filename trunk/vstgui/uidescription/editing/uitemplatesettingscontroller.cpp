@@ -37,6 +37,7 @@
 #if VSTGUI_LIVE_EDITING
 
 #include "uidialogcontroller.h"
+#include "../uiattributes.h"
 #include "../../lib/controls/ctextedit.h"
 #include <sstream>
 

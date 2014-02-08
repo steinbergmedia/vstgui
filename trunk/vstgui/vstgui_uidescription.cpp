@@ -34,6 +34,7 @@
 
 #include "vstgui_uidescription.h"
 
+#include "uidescription/uiattributes.cpp"
 #include "uidescription/uidescription.cpp"
 #include "uidescription/uiviewcreator.cpp"
 #include "uidescription/uiviewfactory.cpp"

@@ -37,6 +37,7 @@
 #if VSTGUI_LIVE_EDITING
 
 #include "../uiviewfactory.h"
+#include "../uiattributes.h"
 #include "../../lib/controls/ctextedit.h"
 #include "uieditcontroller.h"
 #include "uiselection.h"

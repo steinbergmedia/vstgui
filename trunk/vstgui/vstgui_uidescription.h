@@ -39,5 +39,7 @@
 #include "uidescription/uidescription.h"
 #include "uidescription/uiviewcreator.h"
 #include "uidescription/uiviewfactory.h"
+#include "uidescription/uiattributes.h"
+#include "uidescription/delegationcontroller.h"
 
 #endif

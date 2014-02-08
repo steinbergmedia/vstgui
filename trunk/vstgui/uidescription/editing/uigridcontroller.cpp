@@ -36,6 +36,7 @@
 
 #if VSTGUI_LIVE_EDITING
 
+#include "../uiattributes.h"
 #include <sstream>
 
 namespace VSTGUI {

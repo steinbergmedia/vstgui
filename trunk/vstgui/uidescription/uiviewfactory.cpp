@@ -33,6 +33,7 @@
 //-----------------------------------------------------------------------------
 
 #include "uiviewfactory.h"
+#include "uiattributes.h"
 #include <map>
 
 namespace VSTGUI {

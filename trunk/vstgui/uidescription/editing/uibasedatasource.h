@@ -35,10 +35,11 @@
 #ifndef __uibasedatasource__
 #define __uibasedatasource__
 
-#include "../uidescription.h"
+#include "../iuidescription.h"
 
 #if VSTGUI_LIVE_EDITING
 
+#include "../uiattributes.h"
 #include "../../lib/cdatabrowser.h"
 #include "uieditcontroller.h"
 #include "uisearchtextfield.h"

@@ -42,6 +42,7 @@
 #include "uiselection.h"
 #include "uiundomanager.h"
 #include "iaction.h"
+#include "../delegationcontroller.h"
 #include "../../lib/cdatabrowser.h"
 #include <vector>
 #include <list>
