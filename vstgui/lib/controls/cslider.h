@@ -54,7 +54,7 @@ public:
 	enum Mode {
 		kTouchMode,
 		kRelativeTouchMode,
-		kFreeClickMode,
+		kFreeClickMode
 	};
 	//-----------------------------------------------------------------------------
 	/// @name CSlider Methods

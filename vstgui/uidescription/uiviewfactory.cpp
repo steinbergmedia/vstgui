@@ -166,9 +166,9 @@ CView* UIViewFactory::createViewByName (const std::string* className, const UIAt
 	}
 	else
 	{
-		#if DEBUG
+	#if DEBUG
 		DebugPrint ("UIViewFactory::createView(..): Could not find view of class: %s\n", className->c_str ());
-		#endif
+	#endif
 	}
 	return 0;
 }
@@ -326,8 +326,7 @@ void UIViewFactory::collectRegisteredViewNames (std::list<const std::string*>& v
 				continue;
 			}
 		}
-//		if ((*iter).first != "CControl")
-			viewNames.push_back (&(*iter).first);
+		viewNames.push_back (&(*iter).first);
 		iter++;
 	}
 }
@@ -345,7 +344,6 @@ void UIViewFactory::registerViewCreator (const IViewCreator& viewCreator)
 	}
 #endif
 	registry.insert (std::make_pair (viewCreator.getViewName (), &viewCreator));
-//	std::sort (registry.begin (), registry.end ());
 }
 
 } // namespace

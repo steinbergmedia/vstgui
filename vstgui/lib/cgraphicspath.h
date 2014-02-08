@@ -258,17 +258,18 @@ public:
 	
 	virtual void addColorStop (double start, const CColor& color)
 	{
-		struct {
-			bool operator () (const ColorStop& a, const ColorStop& b) { return a.first < b.first; }
-		} Compare;
 		colorStops.push_back (std::make_pair (start, color));
-		std::sort (colorStops.begin (), colorStops.end (), Compare);
+		std::sort (colorStops.begin (), colorStops.end (), CompareColorStopStart ());
 	}
 
 	//@}
 //-----------------------------------------------------------------------------
 	CLASS_METHODS_NOCOPY(CGradient, CBaseObject)
 protected:
+	struct CompareColorStopStart {
+		bool operator () (const ColorStop& a, const ColorStop& b) const { return a.first < b.first; }
+	};
+
 	CGradient (double color1Start, double color2Start, const CColor& color1, const CColor& color2)
 	{
 		addColorStop (color1Start, color1);

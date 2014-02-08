@@ -374,7 +374,7 @@ CView* UIEditController::verifyView (CView* view, const UIAttributes& attributes
 		splitViews.push_back (splitView);
 		if (splitViews.size () == 1)
 		{
-			CTextLabel* label = new CTextLabel (CRect (0, 0, splitView->getWidth (), splitView->getSeparatorWidth ()), "Templates / View Hierarchy");
+			CTextLabel* label = new CTextLabel (CRect (0, 0, splitView->getWidth (), splitView->getSeparatorWidth ()), "Templates | View Hierarchy");
 			label->setTransparency (true);
 			label->setMouseEnabled (false);
 			CFontRef font = description->getFont ("control.font");
