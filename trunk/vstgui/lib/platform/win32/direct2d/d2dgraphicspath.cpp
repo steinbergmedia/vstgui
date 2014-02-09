@@ -39,6 +39,7 @@
 #include "../win32support.h"
 #include "d2ddrawcontext.h"
 #include "d2dfont.h"
+#include <dwrite.h>
 
 namespace VSTGUI {
 

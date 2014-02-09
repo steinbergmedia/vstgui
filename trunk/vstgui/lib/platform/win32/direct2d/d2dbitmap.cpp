@@ -39,6 +39,7 @@
 #include "../win32support.h"
 #include <wincodec.h>
 #include <d2d1.h>
+#include <Shlwapi.h>
 #include <assert.h>
 
 #pragma comment (lib,"windowscodecs.lib") // this bumps client requirement to XP SP2, maybe we should use LoadLibrary

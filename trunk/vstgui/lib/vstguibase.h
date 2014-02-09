@@ -110,6 +110,9 @@
 	#if _MSC_VER >=	1600
 		#define VSTGUI_OVERRIDE_VMETHOD	override
 		#define VSTGUI_RVALUE_REF_SUPPORT 1
+		#if _MSC_VER >= 1800
+			#define VSTGUI_RANGE_BASED_FOR_LOOP_SUPPORT 1
+		#endif
 		#include <type_traits>
 		#include <stdint.h>
 	#else

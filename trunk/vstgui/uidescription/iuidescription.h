@@ -43,7 +43,7 @@ namespace VSTGUI {
 
 class IController;
 class CBitmap;
-class CColor;
+struct CColor;
 
 //-----------------------------------------------------------------------------
 class IUIDescription
