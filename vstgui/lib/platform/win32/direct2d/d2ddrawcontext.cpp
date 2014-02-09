@@ -39,6 +39,7 @@
 #include "../win32support.h"
 #include "d2dbitmap.h"
 #include "d2dgraphicspath.h"
+#include "d2dfont.h"
 
 namespace VSTGUI {
 
@@ -260,7 +261,7 @@ ID2D1GradientStopCollection* D2DDrawContext::createGradientStopCollection (const
 		gradientStops[index].position = (FLOAT)it->first;
 		gradientStops[index].color = D2D1::ColorF (it->second.red/255.f, it->second.green/255.f, it->second.blue/255.f, it->second.alpha/255.f * currentState.globalAlpha);
 	}
-	getRenderTarget ()->CreateGradientStopCollection (gradientStops, d2dGradient->getColorStops ().size (), &collection);
+	getRenderTarget ()->CreateGradientStopCollection (gradientStops, static_cast<UINT32> (d2dGradient->getColorStops ().size ()), &collection);
 	delete [] gradientStops;
 	return collection;
 }

@@ -194,7 +194,7 @@ void GdiplusDrawContext::fillLinearGradient (CGraphicsPath* _path, const CGradie
 		Gdiplus::PointF c1p ((Gdiplus::REAL)(startPoint.x), (Gdiplus::REAL)(startPoint.y));
 		Gdiplus::PointF c2p ((Gdiplus::REAL)(endPoint.x), (Gdiplus::REAL)(endPoint.y));
 		Gdiplus::LinearGradientBrush brush (c1p, c2p, colors[0], colors[gdiPlusGradient->getColorStops ().size () - 1]);
-		brush.SetInterpolationColors (colors, positions, gdiPlusGradient->getColorStops ().size ());
+		brush.SetInterpolationColors (colors, positions, static_cast<INT> (gdiPlusGradient->getColorStops ().size ()));
 		path->SetFillMode (evenOdd ? Gdiplus::FillModeAlternate : Gdiplus::FillModeWinding);
 
 		pGraphics->FillPath (&brush, path);
@@ -253,7 +253,7 @@ void GdiplusDrawContext::fillRadialGradient (CGraphicsPath* _path, const CGradie
 			positions[index] = (Gdiplus::REAL)it->first;
 		}
 		brush.SetCenterColor (colors[0]);
-		INT count = gdiPlusGradient->getColorStops ().size () - 1;
+		INT count = static_cast<INT> (gdiPlusGradient->getColorStops ().size ()) - 1;
 		brush.SetSurroundColors (colors+1, &count);
 
 		pGraphics->FillPath (&brush, path);

@@ -41,8 +41,8 @@
 #include <vector>
 
 namespace VSTGUI {
-class CPoint;
-class CRect;
+struct CPoint;
+struct CRect;
 class OutputStream;
 class InputStream;
 
