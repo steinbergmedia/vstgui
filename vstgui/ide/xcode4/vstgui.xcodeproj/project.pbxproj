@@ -93,6 +93,8 @@
 		F4462D731756479A00E6835D /* macclipboard.mm in Sources */ = {isa = PBXBuildFile; fileRef = F40B7835140E106600E2BF16 /* macclipboard.mm */; };
 		F4462D741756479A00E6835D /* macfileselector.mm in Sources */ = {isa = PBXBuildFile; fileRef = F497F17B13080B1C00F0A613 /* macfileselector.mm */; };
 		F4462D751756479A00E6835D /* macstring.mm in Sources */ = {isa = PBXBuildFile; fileRef = F4FC1A9F1328C8C40066E2F8 /* macstring.mm */; };
+		F44DC9F118A7C0780029125A /* cstream.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4E3901913080ECC00615042 /* cstream.cpp */; };
+		F44DC9F318A7C12F0029125A /* base64codec.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F44DC9F218A7C12F0029125A /* base64codec.cpp */; };
 		F452950813A211E6006EEF82 /* cocoaopenglview.mm in Sources */ = {isa = PBXBuildFile; fileRef = F452950613A211E6006EEF82 /* cocoaopenglview.mm */; };
 		F452950D13A2166A006EEF82 /* copenglview.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F452950B13A2166A006EEF82 /* copenglview.cpp */; };
 		F453B21F13F123700067C1C2 /* uiundomanager.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F453B21E13F123700067C1C2 /* uiundomanager.cpp */; };
@@ -405,6 +407,7 @@
 		F4462D34175646EE00E6835D /* vstgui_win32.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = vstgui_win32.cpp; path = ../../vstgui_win32.cpp; sourceTree = "<group>"; };
 		F4462D35175646EE00E6835D /* vstgui.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = vstgui.cpp; path = ../../vstgui.cpp; sourceTree = "<group>"; };
 		F4462D7617564B4700E6835D /* libprofile_rt.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libprofile_rt.dylib; path = /usr/lib/libprofile_rt.dylib; sourceTree = "<absolute>"; };
+		F44DC9F218A7C12F0029125A /* base64codec.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = base64codec.cpp; path = ../../tests/unittest/lib/base64codec.cpp; sourceTree = "<group>"; };
 		F452950513A211E6006EEF82 /* cocoaopenglview.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = cocoaopenglview.h; sourceTree = "<group>"; };
 		F452950613A211E6006EEF82 /* cocoaopenglview.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = cocoaopenglview.mm; sourceTree = "<group>"; };
 		F452950913A2127D006EEF82 /* iplatformopenglview.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = iplatformopenglview.h; sourceTree = "<group>"; };
@@ -978,6 +981,7 @@
 				F4282B001710699700A79F13 /* crect_test.cpp */,
 				F4462D2B17563BD900E6835D /* ccolor_test.cpp */,
 				F4462D2D1756444800E6835D /* idependency_test.cpp */,
+				F44DC9F218A7C12F0029125A /* base64codec.cpp */,
 			);
 			name = lib;
 			sourceTree = "<group>";
@@ -1096,8 +1100,8 @@
 				F4CC1E7D1709F2EC008F07FD /* Sources */,
 				F4CC1E7E1709F2EC008F07FD /* Frameworks */,
 				F4CC1E7F1709F2EC008F07FD /* CopyFiles */,
-				F4282B0417106C6500A79F13 /* ShellScript */,
-				F4462D7D17564E5100E6835D /* ShellScript */,
+				F4282B0417106C6500A79F13 /* Run Tests */,
+				F4462D7D17564E5100E6835D /* Create Codecoverage */,
 			);
 			buildRules = (
 			);
@@ -1172,13 +1176,14 @@
 /* End PBXProject section */
 
 /* Begin PBXShellScriptBuildPhase section */
-		F4282B0417106C6500A79F13 /* ShellScript */ = {
+		F4282B0417106C6500A79F13 /* Run Tests */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 			);
 			inputPaths = (
 			);
+			name = "Run Tests";
 			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -1186,18 +1191,20 @@
 			shellScript = "exec $BUILT_PRODUCTS_DIR/$EXECUTABLE_NAME\n";
 			showEnvVarsInLog = 0;
 		};
-		F4462D7D17564E5100E6835D /* ShellScript */ = {
+		F4462D7D17564E5100E6835D /* Create Codecoverage */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 			);
 			inputPaths = (
 			);
+			name = "Create Codecoverage";
 			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "cd $PROJECT_DIR/../../tests/unittest/lcov/\n./lcov --capture --directory $OBJECT_FILE_DIR_normal/$NATIVE_ARCH_ACTUAL/ --output-file vstgui-coverage.info\n./genhtml vstgui-coverage.info --output-directory out\n\n";
+			shellScript = "#cd $PROJECT_DIR/../../tests/unittest/lcov/\n#./lcov --capture --directory $OBJECT_FILE_DIR_normal/$NATIVE_ARCH_ACTUAL/ --output-file vstgui-coverage.info\n#./genhtml vstgui-coverage.info --output-directory out\n\n";
+			showEnvVarsInLog = 0;
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -1316,6 +1323,7 @@
 				F47D201B18A6648C00487CDB /* uiattributes.cpp in Sources */,
 				F4462D3A1756474E00E6835D /* cautoanimation.cpp in Sources */,
 				F4462D3B1756474E00E6835D /* cbuttons.cpp in Sources */,
+				F44DC9F318A7C12F0029125A /* base64codec.cpp in Sources */,
 				F4462D3C1756474E00E6835D /* ccolorchooser.cpp in Sources */,
 				F4462D3D1756474E00E6835D /* ccontrol.cpp in Sources */,
 				F4462D3E1756474E00E6835D /* cfontchooser.cpp in Sources */,
@@ -1349,6 +1357,7 @@
 				F4462D591756475900E6835D /* crect.cpp in Sources */,
 				F4462D5A1756475900E6835D /* crowcolumnview.cpp in Sources */,
 				F4462D5B1756475900E6835D /* cscrollview.cpp in Sources */,
+				F44DC9F118A7C0780029125A /* cstream.cpp in Sources */,
 				F4462D5C1756475900E6835D /* cshadowviewcontainer.cpp in Sources */,
 				F4462D5D1756475900E6835D /* csplitview.cpp in Sources */,
 				F4462D5E1756475900E6835D /* cstring.cpp in Sources */,
@@ -1630,20 +1639,14 @@
 				CLANG_CXX_LANGUAGE_STANDARD = "c++0x";
 				CLANG_CXX_LIBRARY = "libc++";
 				CLANG_WARN_CXX0X_EXTENSIONS = NO;
-				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEBUG_INFORMATION_FORMAT = dwarf;
 				GCC_C_LANGUAGE_STANDARD = c11;
-				GCC_GENERATE_TEST_COVERAGE_FILES = YES;
-				GCC_INSTRUMENT_PROGRAM_FLOW_ARCS = YES;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"DEBUG=1",
 					"$(inherited)",
 					"ENABLE_UNIT_TESTS=1",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 10.7;
-				OTHER_CFLAGS = (
-					"-ftest-coverage",
-					"-fprofile-arcs",
-				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Debug;
@@ -1655,20 +1658,14 @@
 				CLANG_CXX_LANGUAGE_STANDARD = "c++0x";
 				CLANG_CXX_LIBRARY = "libc++";
 				CLANG_WARN_CXX0X_EXTENSIONS = NO;
-				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEBUG_INFORMATION_FORMAT = dwarf;
 				GCC_C_LANGUAGE_STANDARD = c11;
-				GCC_GENERATE_TEST_COVERAGE_FILES = YES;
-				GCC_INSTRUMENT_PROGRAM_FLOW_ARCS = YES;
 				GCC_OPTIMIZATION_LEVEL = 3;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					NDEBUG,
 					"ENABLE_UNIT_TESTS=1",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 10.7;
-				OTHER_CFLAGS = (
-					"-ftest-coverage",
-					"-fprofile-arcs",
-				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Release;
