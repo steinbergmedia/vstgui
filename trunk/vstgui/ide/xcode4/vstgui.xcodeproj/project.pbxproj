@@ -420,6 +420,7 @@
 		F453B22413F129A20067C1C2 /* uiactions.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = uiactions.cpp; sourceTree = "<group>"; };
 		F453B22613F19BBC0067C1C2 /* uieditview.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = uieditview.h; sourceTree = "<group>"; };
 		F453B22813F19BC30067C1C2 /* uieditview.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = uieditview.cpp; sourceTree = "<group>"; };
+		F4550AAD18AF7CD300472548 /* iviewcreator.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = iviewcreator.h; sourceTree = "<group>"; };
 		F45BD677131817CD00C46C02 /* csplitview.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = csplitview.cpp; sourceTree = "<group>"; };
 		F45BD678131817CD00C46C02 /* csplitview.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = csplitview.h; sourceTree = "<group>"; };
 		F47883A1180457E70054ED06 /* iplatformviewlayer.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = iplatformviewlayer.h; sourceTree = "<group>"; };
@@ -1012,6 +1013,7 @@
 				F4E3901B13080ECC00615042 /* doc.h */,
 				F4CF26DD13EEA65D00C64EB7 /* icontroller.h */,
 				F47D201518A6633000487CDB /* iuidescription.h */,
+				F4550AAD18AF7CD300472548 /* iviewcreator.h */,
 				F47D201E18A6677700487CDB /* iviewfactory.h */,
 				F47D201618A6648C00487CDB /* uiattributes.cpp */,
 				F47D201718A6648C00487CDB /* uiattributes.h */,

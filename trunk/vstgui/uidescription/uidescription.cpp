@@ -275,10 +275,10 @@ public:
 	
 	void sort ()
 	{
-		std::sort (UIDescListContainerType::begin (), UIDescListContainerType::end (), nodeCompare);
+		std::sort (UIDescListContainerType::begin (), UIDescListContainerType::end (), *this);
 	}
-protected:
-	static bool nodeCompare (UINode* n1, UINode* n2)
+
+	bool operator () (const UINode* n1, const UINode* n2) const
 	{
 		const std::string* str1 = n1->getAttributes ()->getAttributeValue ("name");
 		const std::string* str2 = n2->getAttributes ()->getAttributeValue ("name");
@@ -288,6 +288,8 @@ protected:
 			return true;
 		return false;
 	}
+	
+protected:
 	bool ownsObjects;
 };
 

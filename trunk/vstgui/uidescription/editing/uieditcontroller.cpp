@@ -481,50 +481,30 @@ CMessageResult UIEditController::notify (CBaseObject* sender, IdStringPtr messag
 	}
 	else if (message == UITemplateController::kMsgTemplateChanged)
 	{
-		if (editView && templateController)
-		{
-			const std::string* name = templateController->getSelectedTemplateName ();
-			if ((name && *name != editTemplateName) || name == 0)
-			{
-				if (undoManager->canUndo () && !editTemplateName.empty ())
-					updateTemplate (editTemplateName.c_str ());
-				if (name)
-				{
-					for (std::vector<Template>::const_iterator it = templates.begin (); it != templates.end (); it++)
-					{
-						if (*name == (*it).name)
-						{
-							CView* view = (*it).view;
-							editView->setEditView (view);
-							templateController->setTemplateView (static_cast<CViewContainer*> (view));
-							editTemplateName = *templateController->getSelectedTemplateName ();
-							view->remember ();
-							break;
-						}
-					}
-				}
-				else
-				{
-					selection->empty ();
-					editView->setEditView (0);
-					templateController->setTemplateView (0);
-					editTemplateName = "";
-				}
-			}
-			if (editView->getEditView ())
-			{
-				if (!(selection->first () && dynamic_cast<CViewContainer*> (editView->getEditView ())->isChild(selection->first (), true)))
-					selection->setExclusive (editView->getEditView ());
-			}
-			else
-				selection->empty ();
-		}
+		onTemplateSelectionChanged ();
 		return kMessageNotified;
 	}
 	else if (message == UIDescription::kMessageTemplateChanged)
 	{
 		onTemplatesChanged ();
 		return kMessageNotified;
+	}
+	else if (message == UIUndoManager::kMsgChanged)
+	{
+		onUndoManagerChanged ();
+		return kMessageNotified;
+	}
+	else if (message == CCommandMenuItem::kMsgMenuItemValidate)
+	{
+		CCommandMenuItem* item = dynamic_cast<CCommandMenuItem*>(sender);
+		if (item)
+			return validateMenuItem (item);
+	}
+	else if (message == CCommandMenuItem::kMsgMenuItemSelected)
+	{
+		CCommandMenuItem* item = dynamic_cast<CCommandMenuItem*>(sender);
+		if (item)
+			return onMenuItemSelection (item);
 	}
 	else if (message == UIEditView::kMsgAttached)
 	{
@@ -540,222 +520,302 @@ CMessageResult UIEditController::notify (CBaseObject* sender, IdStringPtr messag
 	}
 	else if (message == UIDescription::kMessageBeforeSave)
 	{
-		if (editView && editView->getEditView ())
-		{
-			if (undoManager->canUndo ())
-			{
-				for (std::vector<Template>::const_iterator it = templates.begin (); it != templates.end (); it++)
-					updateTemplate (it);
-			}
-			for (std::list<SharedPointer<CSplitView> >::const_iterator it = splitViews.begin (); it != splitViews.end (); it++)
-				(*it)->storeViewSizes ();
-
-			getSettings ()->setIntegerAttribute ("Version", 1);
-			// find the view of this controller
-			CViewContainer* container = dynamic_cast<CViewContainer*> (editView->getParentView ());
-			while (container && container != container->getFrame ())
-			{
-				if (getViewController (container, false) == this)
-				{
-					getSettings ()->setRectAttribute ("EditorSize", container->getViewSize ());
-					break;
-				}
-				container = dynamic_cast<CViewContainer*> (container->getParentView ());
-			}
-			undoManager->markSavePosition ();
-			setDirty (false);
-		}
+		beforeSave ();
 		return kMessageNotified;
 	}
-	else if (message == CCommandMenuItem::kMsgMenuItemValidate)
+	
+	return kMessageUnknown;
+}
+
+//----------------------------------------------------------------------------------------------------
+void UIEditController::beforeSave ()
+{
+	if (editView && editView->getEditView ())
 	{
-		CCommandMenuItem* item = dynamic_cast<CCommandMenuItem*>(sender);
-		if (strcmp (item->getCommandCategory (), "Edit") == 0)
+		if (undoManager->canUndo ())
 		{
-			if (strcmp (item->getCommandName (), "Template Settings...") == 0)
+			for (std::vector<Template>::const_iterator it = templates.begin (); it != templates.end (); it++)
+				updateTemplate (it);
+		}
+		for (std::list<SharedPointer<CSplitView> >::const_iterator it = splitViews.begin (); it != splitViews.end (); it++)
+			(*it)->storeViewSizes ();
+		
+		getSettings ()->setIntegerAttribute ("Version", 1);
+		// find the view of this controller
+		CViewContainer* container = dynamic_cast<CViewContainer*> (editView->getParentView ());
+		while (container && container != container->getFrame ())
+		{
+			if (getViewController (container, false) == this)
 			{
-				item->setEnabled (editTemplateName.empty () ? false : true);
-				return kMessageNotified;
+				getSettings ()->setRectAttribute ("EditorSize", container->getViewSize ());
+				break;
 			}
-			else if (strcmp (item->getCommandName (), "Copy") == 0 || strcmp (item->getCommandName (), "Cut") == 0)
+			container = dynamic_cast<CViewContainer*> (container->getParentView ());
+		}
+		undoManager->markSavePosition ();
+		setDirty (false);
+	}
+}
+
+//----------------------------------------------------------------------------------------------------
+void UIEditController::onTemplateSelectionChanged ()
+{
+	if (editView && templateController)
+	{
+		const std::string* name = templateController->getSelectedTemplateName ();
+		if ((name && *name != editTemplateName) || name == 0)
+		{
+			if (undoManager->canUndo () && !editTemplateName.empty ())
+				updateTemplate (editTemplateName.c_str ());
+			if (name)
 			{
-				if (editView && selection->first () && selection->contains (editView->getEditView ()) == false)
-					item->setEnabled (true);
-				else
-					item->setEnabled (false);
-				return kMessageNotified;
-			}
-			else if (strcmp (item->getCommandName (), "Paste") == 0)
-			{
-				item->setEnabled (false);
-				if (editView && selection->first ())
+				for (std::vector<Template>::const_iterator it = templates.begin (); it != templates.end (); it++)
 				{
-					IDataPackage* clipboard = editView->getFrame ()->getClipboard ();
-					if (clipboard)
+					if (*name == (*it).name)
 					{
-						if (clipboard->getDataType (0) == IDataPackage::kText)
-							item->setEnabled (true);
-						clipboard->forget ();
+						CView* view = (*it).view;
+						editView->setEditView (view);
+						templateController->setTemplateView (static_cast<CViewContainer*> (view));
+						editTemplateName = *templateController->getSelectedTemplateName ();
+						view->remember ();
+						break;
 					}
 				}
-				return kMessageNotified;
+			}
+			else
+			{
+				selection->empty ();
+				editView->setEditView (0);
+				templateController->setTemplateView (0);
+				editTemplateName = "";
 			}
 		}
-		else if (strcmp (item->getCommandCategory (), "File") == 0)
+		if (editView->getEditView ())
 		{
-			if (strcmp (item->getCommandName (), "Encode Bitmaps in XML") == 0)
+			if (!(selection->first () && dynamic_cast<CViewContainer*> (editView->getEditView ())->isChild(selection->first (), true)))
+				selection->setExclusive (editView->getEditView ());
+		}
+		else
+			selection->empty ();
+	}
+}
+
+//----------------------------------------------------------------------------------------------------
+void UIEditController::doCopy (bool cut)
+{
+	if (!editTemplateName.empty ())
+		updateTemplate (editTemplateName.c_str ());
+	CMemoryStream stream (1024, 1024, false);
+	selection->store (stream, dynamic_cast<UIViewFactory*> (editDescription->getViewFactory ()), editDescription);
+	CDropSource* dataSource = new CDropSource (stream.getBuffer (), (int32_t)stream.tell (), IDataPackage::kText);
+	editView->getFrame ()->setClipboard (dataSource);
+	dataSource->forget ();
+	if (cut)
+		undoManager->pushAndPerform (new DeleteOperation (selection));
+}
+
+//----------------------------------------------------------------------------------------------------
+void UIEditController::doPaste ()
+{
+	IDataPackage* clipboard = editView->getFrame ()->getClipboard ();
+	if (clipboard)
+	{
+		if (clipboard->getDataType (0) == IDataPackage::kText)
+		{
+			const void* data;
+			IDataPackage::Type type;
+			int32_t size = clipboard->getData (0, data, type);
+			if (size > 0)
 			{
-				UIAttributes* attr = getSettings ();
-				bool encodeBitmaps = false;
-				if (attr && attr->getBooleanAttribute (kEncodeBitmapsSettingsKey, encodeBitmaps))
+				CPoint offset;
+				CViewContainer* container = dynamic_cast<CViewContainer*> (selection->first ());
+				if (container == 0)
 				{
-					item->setChecked (encodeBitmaps);
+					container = dynamic_cast<CViewContainer*> (selection->first ()->getParentView ());
+					offset = selection->first ()->getViewSize ().getTopLeft ();
+					offset.offset (gridController->getSize ().x, gridController->getSize ().y);
 				}
-				return kMessageNotified;
-			}
-			else if (strcmp (item->getCommandName (), "Write Windows RC File on Save") == 0)
-			{
-				UIAttributes* attr = getSettings ();
-				bool encodeBitmaps = false;
-				if (attr && attr->getBooleanAttribute (kWriteWindowsRCFileSettingsKey, encodeBitmaps))
+				UIViewFactory* viewFactory = dynamic_cast<UIViewFactory*> (editDescription->getViewFactory ());
+				CMemoryStream stream ((const int8_t*)data, size, false);
+				UISelection* copySelection = new UISelection ();
+				if (copySelection->restore (stream, viewFactory, editDescription))
 				{
-					item->setChecked (encodeBitmaps);
+					IAction* action = new ViewCopyOperation (copySelection, selection, container, offset, viewFactory, editDescription);
+					undoManager->pushAndPerform (action);
+					if (!editTemplateName.empty ())
+						updateTemplate (editTemplateName.c_str ());
 				}
-				return kMessageNotified;
+				copySelection->forget ();
 			}
+		}
+		clipboard->forget ();
+	}
+}
+
+//----------------------------------------------------------------------------------------------------
+void UIEditController::showTemplateSettings ()
+{
+	if (undoManager->canUndo () && !editTemplateName.empty ())
+	{
+		updateTemplate (editTemplateName.c_str ());
+	}
+	UIDialogController* dc = new UIDialogController (this, editView->getFrame ());
+	UITemplateSettingsController* tsController = new UITemplateSettingsController (editTemplateName, editDescription);
+	dc->run ("template.settings", "Template Settings", "OK", "Cancel", tsController, &getEditorDescription ());
+}
+
+//----------------------------------------------------------------------------------------------------
+void UIEditController::showFocusSettings ()
+{
+	UIDialogController* dc = new UIDialogController (this, editView->getFrame ());
+	UIFocusSettingsController* fsController = new UIFocusSettingsController (editDescription);
+	dc->run ("focus.settings", "Focus Drawing Settings", "OK", "Cancel", fsController, &getEditorDescription ());
+}
+
+//----------------------------------------------------------------------------------------------------
+static void toggleBoolAttribute (UIAttributes* attributes, UTF8StringPtr key)
+{
+	if (attributes)
+	{
+		bool val = false;
+		attributes->getBooleanAttribute (key, val);
+		attributes->setBooleanAttribute (key, !val);
+	}
+}
+
+//----------------------------------------------------------------------------------------------------
+CMessageResult UIEditController::onMenuItemSelection (CCommandMenuItem* item)
+{
+	if (strcmp (item->getCommandCategory (), "Edit") == 0)
+	{
+		if (strcmp (item->getCommandName (), "Copy") == 0)
+		{
+			doCopy (false);
+			return kMessageNotified;
+		}
+		else if (strcmp (item->getCommandName (), "Cut") == 0)
+		{
+			doCopy (true);
+			return kMessageNotified;
+		}
+		else if (strcmp (item->getCommandName (), "Paste") == 0)
+		{
+			doPaste ();
+			return kMessageNotified;
+		}
+		else if (strcmp (item->getCommandName (), "Template Settings...") == 0)
+		{
+			showTemplateSettings ();
+			return kMessageNotified;
+		}
+		else if (strcmp (item->getCommandName (), "Focus Drawing Settings...") == 0)
+		{
+			showFocusSettings ();
+			return kMessageNotified;
 		}
 	}
-	else if (message == CCommandMenuItem::kMsgMenuItemSelected)
+	else if (strcmp (item->getCommandCategory (), "File") == 0)
 	{
-		CCommandMenuItem* item = dynamic_cast<CCommandMenuItem*>(sender);
-		if (strcmp (item->getCommandCategory (), "Edit") == 0)
+		if (strcmp (item->getCommandName (), "Encode Bitmaps in XML") == 0)
 		{
-			if (strcmp (item->getCommandName (), "Copy") == 0 || strcmp (item->getCommandName (), "Cut") == 0)
-			{
-				if (!editTemplateName.empty ())
-					updateTemplate (editTemplateName.c_str ());
-				CMemoryStream stream (1024, 1024, false);
-				selection->store (stream, dynamic_cast<UIViewFactory*> (editDescription->getViewFactory ()), editDescription);
-				CDropSource* dataSource = new CDropSource (stream.getBuffer (), (int32_t)stream.tell (), IDataPackage::kText);
-				editView->getFrame ()->setClipboard (dataSource);
-				dataSource->forget ();
-				if (strcmp (item->getCommandName (), "Cut") == 0)
-				{
-					undoManager->pushAndPerform (new DeleteOperation (selection));
-				}
-				return kMessageNotified;
-			}
-			else if (strcmp (item->getCommandName (), "Paste") == 0)
+			toggleBoolAttribute (getSettings (), kEncodeBitmapsSettingsKey);
+			return kMessageNotified;
+		}
+		else if (strcmp (item->getCommandName (), "Write Windows RC File on Save") == 0)
+		{
+			toggleBoolAttribute (getSettings (), kWriteWindowsRCFileSettingsKey);
+			return kMessageNotified;
+		}
+	}
+	return kMessageUnknown;
+}
+
+//----------------------------------------------------------------------------------------------------
+CMessageResult UIEditController::validateMenuItem (CCommandMenuItem* item)
+{
+	if (strcmp (item->getCommandCategory (), "Edit") == 0)
+	{
+		if (strcmp (item->getCommandName (), "Template Settings...") == 0)
+		{
+			item->setEnabled (editTemplateName.empty () ? false : true);
+			return kMessageNotified;
+		}
+		else if (strcmp (item->getCommandName (), "Copy") == 0 || strcmp (item->getCommandName (), "Cut") == 0)
+		{
+			if (editView && selection->first () && selection->contains (editView->getEditView ()) == false)
+				item->setEnabled (true);
+			else
+				item->setEnabled (false);
+			return kMessageNotified;
+		}
+		else if (strcmp (item->getCommandName (), "Paste") == 0)
+		{
+			item->setEnabled (false);
+			if (editView && selection->first ())
 			{
 				IDataPackage* clipboard = editView->getFrame ()->getClipboard ();
 				if (clipboard)
 				{
 					if (clipboard->getDataType (0) == IDataPackage::kText)
-					{
-						const void* data;
-						IDataPackage::Type type;
-						int32_t size = clipboard->getData (0, data, type);
-						if (size > 0)
-						{
-							CPoint offset;
-							CViewContainer* container = dynamic_cast<CViewContainer*> (selection->first ());
-							if (container == 0)
-							{
-								container = dynamic_cast<CViewContainer*> (selection->first ()->getParentView ());
-								offset = selection->first ()->getViewSize ().getTopLeft ();
-								offset.offset (gridController->getSize ().x, gridController->getSize ().y);
-							}
-							UIViewFactory* viewFactory = dynamic_cast<UIViewFactory*> (editDescription->getViewFactory ());
-							CMemoryStream stream ((const int8_t*)data, size, false);
-							UISelection* copySelection = new UISelection ();
-							if (copySelection->restore (stream, viewFactory, editDescription))
-							{
-								IAction* action = new ViewCopyOperation (copySelection, selection, container, offset, viewFactory, editDescription);
-								undoManager->pushAndPerform (action);
-								if (!editTemplateName.empty ())
-									updateTemplate (editTemplateName.c_str ());
-							}
-							copySelection->forget ();
-						}
-					}
+						item->setEnabled (true);
 					clipboard->forget ();
 				}
-				return kMessageNotified;
 			}
-			else if (strcmp (item->getCommandName (), "Template Settings...") == 0)
-			{
-				if (undoManager->canUndo () && !editTemplateName.empty ())
-				{
-					updateTemplate (editTemplateName.c_str ());
-				}
-				UIDialogController* dc = new UIDialogController (this, editView->getFrame ());
-				UITemplateSettingsController* tsController = new UITemplateSettingsController (editTemplateName, editDescription);
-				dc->run ("template.settings", "Template Settings", "OK", "Cancel", tsController, &getEditorDescription ());
-				return kMessageNotified;
-			}
-			else if (strcmp (item->getCommandName (), "Focus Drawing Settings...") == 0)
-			{
-				UIDialogController* dc = new UIDialogController (this, editView->getFrame ());
-				UIFocusSettingsController* fsController = new UIFocusSettingsController (editDescription);
-				dc->run ("focus.settings", "Focus Drawing Settings", "OK", "Cancel", fsController, &getEditorDescription ());
-				return kMessageNotified;
-			}
-		}
-		else if (strcmp (item->getCommandCategory (), "File") == 0)
-		{
-			if (strcmp (item->getCommandName (), "Encode Bitmaps in XML") == 0)
-			{
-				UIAttributes* attr = getSettings ();
-				bool val = false;
-				if (attr)
-				{
-					attr->getBooleanAttribute (kEncodeBitmapsSettingsKey, val);
-					attr->setBooleanAttribute (kEncodeBitmapsSettingsKey, !val);
-				}
-				return kMessageNotified;
-			}
-			else if (strcmp (item->getCommandName (), "Write Windows RC File on Save") == 0)
-			{
-				UIAttributes* attr = getSettings ();
-				bool val = false;
-				if (attr)
-				{
-					attr->getBooleanAttribute (kWriteWindowsRCFileSettingsKey, val);
-					attr->setBooleanAttribute (kWriteWindowsRCFileSettingsKey, !val);
-				}
-				return kMessageNotified;
-			}
+			return kMessageNotified;
 		}
 	}
-	else if (message == UIUndoManager::kMsgChanged)
+	else if (strcmp (item->getCommandCategory (), "File") == 0)
 	{
-		setDirty (!undoManager->isSavePosition ());
-		CView* view = selection->first ();
-		if (view)
+		if (strcmp (item->getCommandName (), "Encode Bitmaps in XML") == 0)
 		{
-			CViewContainer* templateView = dynamic_cast<CViewContainer*> (editView->getEditView ());
-			if (templateView)
+			UIAttributes* attr = getSettings ();
+			bool encodeBitmaps = false;
+			if (attr && attr->getBooleanAttribute (kEncodeBitmapsSettingsKey, encodeBitmaps))
 			{
-				if (view == templateView || templateView->isChild (view, true))
-				{
-					return kMessageNotified;
-				}
+				item->setChecked (encodeBitmaps);
 			}
-			for (std::vector<Template>::const_iterator it = templates.begin (); it != templates.end (); it++)
-			{
-				CViewContainer* container = dynamic_cast<CViewContainer*>((CView*)(*it).view);
-				if (container && (view == container || container->isChild (view, true)))
-				{
-					templateController->selectTemplate ((*it).name.c_str ());
-					return kMessageNotified;
-				}
-			}
-			selection->empty ();
+			return kMessageNotified;
 		}
-		return kMessageNotified;
+		else if (strcmp (item->getCommandName (), "Write Windows RC File on Save") == 0)
+		{
+			UIAttributes* attr = getSettings ();
+			bool encodeBitmaps = false;
+			if (attr && attr->getBooleanAttribute (kWriteWindowsRCFileSettingsKey, encodeBitmaps))
+			{
+				item->setChecked (encodeBitmaps);
+			}
+			return kMessageNotified;
+		}
 	}
-	
 	return kMessageUnknown;
+}
+
+//----------------------------------------------------------------------------------------------------
+void UIEditController::onUndoManagerChanged ()
+{
+	setDirty (!undoManager->isSavePosition ());
+	CView* view = selection->first ();
+	if (view)
+	{
+		CViewContainer* templateView = dynamic_cast<CViewContainer*> (editView->getEditView ());
+		if (templateView)
+		{
+			if (view == templateView || templateView->isChild (view, true))
+			{
+				return;
+			}
+		}
+		for (std::vector<Template>::const_iterator it = templates.begin (); it != templates.end (); it++)
+		{
+			CViewContainer* container = dynamic_cast<CViewContainer*>((CView*)(*it).view);
+			if (container && (view == container || container->isChild (view, true)))
+			{
+				templateController->selectTemplate ((*it).name.c_str ());
+				return;
+			}
+		}
+		selection->empty ();
+	}
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -930,7 +990,7 @@ void UIEditController::finishGroupAction ()
 }
 
 //----------------------------------------------------------------------------------------------------
-void UIEditController::getTemplateViews (std::list<CView*>& views)
+void UIEditController::getTemplateViews (std::list<CView*>& views) const
 {
 	for (std::vector<Template>::const_iterator it = templates.begin (); it != templates.end (); it++)
 		views.push_back ((*it).view);
@@ -993,55 +1053,40 @@ void UIEditController::performFontChange (UTF8StringPtr fontName, CFontRef newFo
 }
 
 //----------------------------------------------------------------------------------------------------
-void UIEditController::performColorNameChange (UTF8StringPtr oldName, UTF8StringPtr newName)
+template<typename NameChangeAction, IViewCreator::AttrType attrType> void UIEditController::performNameChange (UTF8StringPtr oldName, UTF8StringPtr newName, IdStringPtr groupActionName)
 {
 	std::list<CView*> views;
 	getTemplateViews (views);
 
-	undoManager->startGroupAction ("Change Color Name");
-	undoManager->pushAndPerform (new ColorNameChangeAction (editDescription, oldName, newName, true));
-	undoManager->pushAndPerform (new MultipleAttributeChangeAction (editDescription, views, IViewCreator::kColorType, oldName, newName));
-	undoManager->pushAndPerform (new ColorNameChangeAction (editDescription, oldName, newName, false));
+	undoManager->startGroupAction (groupActionName);
+	undoManager->pushAndPerform (new NameChangeAction (editDescription, oldName, newName, true));
+	undoManager->pushAndPerform (new MultipleAttributeChangeAction (editDescription, views, attrType, oldName, newName));
+	undoManager->pushAndPerform (new NameChangeAction (editDescription, oldName, newName, false));
 	undoManager->endGroupAction ();
+}
+
+//----------------------------------------------------------------------------------------------------
+void UIEditController::performColorNameChange (UTF8StringPtr oldName, UTF8StringPtr newName)
+{
+	performNameChange<ColorNameChangeAction, IViewCreator::kColorType> (oldName, newName, "Change Color Name");
 }
 
 //----------------------------------------------------------------------------------------------------
 void UIEditController::performTagNameChange (UTF8StringPtr oldName, UTF8StringPtr newName)
 {
-	std::list<CView*> views;
-	getTemplateViews (views);
-
-	undoManager->startGroupAction ("Change Tag Name");
-	undoManager->pushAndPerform (new TagNameChangeAction (editDescription, oldName, newName, true));
-	undoManager->pushAndPerform (new MultipleAttributeChangeAction (editDescription, views, IViewCreator::kTagType, oldName, newName));
-	undoManager->pushAndPerform (new TagNameChangeAction (editDescription, oldName, newName, false));
-	undoManager->endGroupAction ();
+	performNameChange<TagNameChangeAction, IViewCreator::kTagType> (oldName, newName, "Change Tag Name");
 }
 
 //----------------------------------------------------------------------------------------------------
 void UIEditController::performFontNameChange (UTF8StringPtr oldName, UTF8StringPtr newName)
 {
-	std::list<CView*> views;
-	getTemplateViews (views);
-
-	undoManager->startGroupAction ("Change Font Name");
-	undoManager->pushAndPerform (new FontNameChangeAction (editDescription, oldName, newName, true));
-	undoManager->pushAndPerform (new MultipleAttributeChangeAction (editDescription, views, IViewCreator::kFontType, oldName, newName));
-	undoManager->pushAndPerform (new FontNameChangeAction (editDescription, oldName, newName, false));
-	undoManager->endGroupAction ();
+	performNameChange<FontNameChangeAction, IViewCreator::kFontType> (oldName, newName, "Change Font Name");
 }
 
 //----------------------------------------------------------------------------------------------------
 void UIEditController::performBitmapNameChange (UTF8StringPtr oldName, UTF8StringPtr newName)
 {
-	std::list<CView*> views;
-	getTemplateViews (views);
-
-	undoManager->startGroupAction ("Change Bitmap Name");
-	undoManager->pushAndPerform (new BitmapNameChangeAction (editDescription, oldName, newName, true));
-	undoManager->pushAndPerform (new MultipleAttributeChangeAction (editDescription, views, IViewCreator::kBitmapType, oldName, newName));
-	undoManager->pushAndPerform (new BitmapNameChangeAction (editDescription, oldName, newName, false));
-	undoManager->endGroupAction ();
+	performNameChange<BitmapNameChangeAction, IViewCreator::kBitmapType> (oldName, newName, "Change Bitmap Name");
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -1064,9 +1109,9 @@ void UIEditController::performBitmapFiltersChange (UTF8StringPtr bitmapName, con
 	getTemplateViews (views);
 
 	undoManager->startGroupAction ("Change Bitmap Filter");
-	undoManager->pushAndPerform (new BitmapFilterChangeAction(editDescription, bitmapName, filterDescription, true));
+	undoManager->pushAndPerform (new BitmapFilterChangeAction (editDescription, bitmapName, filterDescription, true));
 	undoManager->pushAndPerform (new MultipleAttributeChangeAction (editDescription, views, IViewCreator::kBitmapType, bitmapName, bitmapName));
-	undoManager->pushAndPerform (new BitmapFilterChangeAction(editDescription, bitmapName, filterDescription, false));
+	undoManager->pushAndPerform (new BitmapFilterChangeAction (editDescription, bitmapName, filterDescription, false));
 	undoManager->endGroupAction ();
 }
 

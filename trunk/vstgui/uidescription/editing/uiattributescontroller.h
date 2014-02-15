@@ -41,6 +41,7 @@
 
 #include "uiselection.h"
 #include "../delegationcontroller.h"
+#include "../iviewcreator.h"
 #include "uiundomanager.h"
 #include "../../lib/controls/ctextedit.h"
 #include "../../lib/cvstguitimer.h"
@@ -64,6 +65,7 @@ protected:
 	CView* createViewForAttribute (const std::string& attrName);
 	void rebuildAttributesView ();
 	void validateAttributeViews ();
+	CView* createValueViewForAttributeType (IViewCreator::AttrType attrType);
 
 	void valueChanged (CControl* pControl) VSTGUI_OVERRIDE_VMETHOD;
 	CView* verifyView (CView* view, const UIAttributes& attributes, IUIDescription* description) VSTGUI_OVERRIDE_VMETHOD;

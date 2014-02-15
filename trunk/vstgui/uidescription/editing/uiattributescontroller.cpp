@@ -850,6 +850,29 @@ void UIAttributesController::validateAttributeViews ()
 }
 
 //----------------------------------------------------------------------------------------------------
+CView* UIAttributesController::createValueViewForAttributeType (IViewCreator::AttrType attrType)
+{
+	switch (attrType)
+	{
+		case IViewCreator::kFontType:
+			return UIEditController::getEditorDescription ().createView ("attributes.font", this);
+		case IViewCreator::kBitmapType:
+			return UIEditController::getEditorDescription ().createView ("attributes.bitmap", this);
+		case IViewCreator::kTagType:
+			return UIEditController::getEditorDescription ().createView ("attributes.tag", this);
+		case IViewCreator::kColorType:
+			return UIEditController::getEditorDescription ().createView ("attributes.color", this);
+		case IViewCreator::kBooleanType:
+			return UIEditController::getEditorDescription ().createView ("attributes.boolean", this);
+		case IViewCreator::kListType:
+			return UIEditController::getEditorDescription ().createView ("attributes.list", this);
+		default:
+			return UIEditController::getEditorDescription ().createView ("attributes.text", this);
+	}
+	return 0;
+}
+
+//----------------------------------------------------------------------------------------------------
 CView* UIAttributesController::createViewForAttribute (const std::string& attrName)
 {
 	const CCoord height = 18;
@@ -901,44 +924,7 @@ CView* UIAttributesController::createViewForAttribute (const std::string& attrNa
 	{
 		CView* firstView = selection->first ();
 		IViewCreator::AttrType attrType = viewFactory->getAttributeType (firstView, attrName);
-		switch (attrType)
-		{
-			case IViewCreator::kFontType:
-			{
-				valueView = UIEditController::getEditorDescription ().createView ("attributes.font", this);
-				break;
-			}
-			case IViewCreator::kBitmapType:
-			{
-				valueView = UIEditController::getEditorDescription ().createView ("attributes.bitmap", this);
-				break;
-			}
-			case IViewCreator::kTagType:
-			{
-				valueView = UIEditController::getEditorDescription ().createView ("attributes.tag", this);
-				break;
-			}
-			case IViewCreator::kColorType:
-			{
-				valueView = UIEditController::getEditorDescription ().createView ("attributes.color", this);
-				break;
-			}
-			case IViewCreator::kBooleanType:
-			{
-				valueView = UIEditController::getEditorDescription ().createView ("attributes.boolean", this);
-				break;
-			}
-			case IViewCreator::kListType:
-			{
-				valueView = UIEditController::getEditorDescription ().createView ("attributes.list", this);
-				break;
-			}
-			default:
-			{
-				valueView = UIEditController::getEditorDescription ().createView ("attributes.text", this);
-				break;
-			}
-		}
+		valueView = createValueViewForAttributeType (attrType);
 	}
 	if (valueView == 0) // fallcack if attributes.text template not defined
 	{

@@ -33,7 +33,7 @@
 //-----------------------------------------------------------------------------
 
 #include "uiviewswitchcontainer.h"
-#include "uiviewcreator.h"
+#include "iviewcreator.h"
 #include "uidescription.h"
 #include "../lib/cframe.h"
 #include "../lib/animation/animations.h"
