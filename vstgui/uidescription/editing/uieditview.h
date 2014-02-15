@@ -99,6 +99,8 @@ protected:
 	CMouseEventResult onMouseExited (CPoint& where, const CButtonState& buttons) VSTGUI_OVERRIDE_VMETHOD;
 	CMessageResult notify (CBaseObject* sender, IdStringPtr message) VSTGUI_OVERRIDE_VMETHOD;
 
+	void doDragEditingMove (CPoint& where);
+	void doSizeEditingMove (CPoint& where);
 
 	CBitmap* createBitmapFromSelection (UISelection* selection);
 	void startDrag (CPoint& where);

@@ -352,8 +352,6 @@ void UIEditView::invalidSelection ()
 	invalidRect (r);
 }
 
-#define NEW_MOUSE_HANDLING 1
-
 //----------------------------------------------------------------------------------------------------
 UIEditView::MouseSizeMode UIEditView::selectionHitTest (const CPoint& where, CView** resultView)
 {
@@ -401,10 +399,6 @@ UIEditView::MouseSizeMode UIEditView::selectionHitTest (const CPoint& where, CVi
 			r3.left = r3.right - kSizingRectSize;
 			if (r3.pointInside (where))
 				return kSizeModeRight;
-		#if !NEW_MOUSE_HANDLING
-			if (resultView)
-				*resultView = 0;
-		#endif
 			return kSizeModeNone;
 		}
 	FOREACH_IN_SELECTION_END
@@ -420,7 +414,6 @@ CMouseEventResult UIEditView::onMouseDown (CPoint &where, const CButtonState& bu
 	{
 		if (buttons & kLButton)
 		{
-		#if NEW_MOUSE_HANDLING
 			CView* selectionHitView = 0;
 			CPoint where2 (where);
 			where2.offset (-getViewSize ().left, -getViewSize ().top);
@@ -428,111 +421,39 @@ CMouseEventResult UIEditView::onMouseDown (CPoint &where, const CButtonState& bu
 			CView* mouseHitView = getViewAt (where, true);
 			if (mouseHitView == 0)
 				mouseHitView = getContainerAt (where, true);
-			if (selectionHitView || mouseHitView)
-			{
-				if (getSelection ()->contains (mouseHitView))
-				{
-					if (buttons & kControl)
-					{
-						getSelection ()->remove (mouseHitView);
-						onMouseMoved (where, CButtonState (buttons.getModifierState ()));
-						return kMouseEventHandled;
-					}
-					selectionHitView = mouseHitView;
-				}
-				else if (mouseHitView && sizeMode == kSizeModeNone)
-				{
-					if (buttons & kControl || buttons & kShift)
-					{
-						getSelection ()->add (mouseHitView);
-						selectionHitView = mouseHitView;
-						onMouseMoved (where, CButtonState (buttons.getModifierState ()));
-					}
-					else if (selectionHitView == 0 || selectionHitView == getView (0))
-					{
-						getSelection ()->setExclusive (mouseHitView);
-						selectionHitView = mouseHitView;
-						onMouseMoved (where, CButtonState (buttons.getModifierState ()));
-					}
-				}
-				if (selectionHitView)
-				{
-					if (buttons & kAlt && !getSelection ()->contains (getView (0)))
-					{
-						mouseEditMode = kDragEditing;
-						invalidSelection ();
-						startDrag (where);
-						mouseEditMode = kNoEditing;
-						invalidSelection ();
-						return kMouseDownEventHandledButDontNeedMovedOrUpEvents;
-					}
-					if (sizeMode == kSizeModeNone)
-					{
-						if (getSelection ()->contains (getView (0)))
-						{
-							return kMouseEventHandled;
-						}
-						mouseEditMode = kDragEditing;
-						mouseStartPoint = where2;
-						if (grid)
-							grid->process (mouseStartPoint);
-						if (editTimer)
-							editTimer->forget ();
-						editTimer = new CVSTGUITimer (this, 500);
-						editTimer->start ();
-						return kMouseEventHandled;
-					}
-					else
-					{
-						// TODO: multiple view resizing (width or height only)
-						getSelection ()->setExclusive (selectionHitView);
-						mouseEditMode = kSizeEditing;
-						mouseStartPoint = where2;
-						if (grid)
-							grid->process (mouseStartPoint);
-						mouseSizeMode = sizeMode;
-						if (true)
-						{
-							int32_t crossLineMode = 0;
-							switch (sizeMode)
-							{
-								case kSizeModeLeft:
-								case kSizeModeRight:
-								case kSizeModeTop:
-								case kSizeModeBottom: crossLineMode = UICrossLines::kSelectionStyle; break;
-								default : crossLineMode = UICrossLines::kDragStyle; break;
-							}
-							lines = new UICrossLines (this, crossLineMode, crosslineBackgroundColor, crosslineForegroundColor);
-							if (crossLineMode == UICrossLines::kSelectionStyle)
-								lines->update (selection);
-							else
-								lines->update (CPoint (mouseStartPoint.x, mouseStartPoint.y));
-						}
-						return kMouseEventHandled;
-					}
-				}
-			}
-			else
+			if (selectionHitView == 0 && mouseHitView == 0)
 			{
 				getSelection ()->empty ();
+				return kMouseEventHandled;
 			}
-			
-		#else
-			CView* view = getViewAt (where, true);
-			if (!view)
+			if (getSelection ()->contains (mouseHitView))
 			{
-				view = getContainerAt (where, true);
-				if (view == this)
-					view = 0;
+				if (buttons & kControl)
+				{
+					getSelection ()->remove (mouseHitView);
+					onMouseMoved (where, CButtonState (buttons.getModifierState ()));
+					return kMouseEventHandled;
+				}
+				selectionHitView = mouseHitView;
 			}
-			if (view)
+			else if (mouseHitView && sizeMode == kSizeModeNone)
 			{
-				CPoint where2 (where);
-				where2.offset (-getViewSize ().left, -getViewSize ().top);
-				CView* mouseHitView = 0;
-				MouseSizeMode sizeMode = selectionHitTest (where2, &mouseHitView);
-				// first check copying
-				if (buttons & kAlt && mouseHitView && getSelection ()->contains (mouseHitView) && !getSelection ()->contains(getView (0)))
+				if (buttons & kControl || buttons & kShift)
+				{
+					getSelection ()->add (mouseHitView);
+					selectionHitView = mouseHitView;
+					onMouseMoved (where, CButtonState (buttons.getModifierState ()));
+				}
+				else if (selectionHitView == 0 || selectionHitView == getView (0))
+				{
+					getSelection ()->setExclusive (mouseHitView);
+					selectionHitView = mouseHitView;
+					onMouseMoved (where, CButtonState (buttons.getModifierState ()));
+				}
+			}
+			if (selectionHitView)
+			{
+				if (buttons & kAlt && !getSelection ()->contains (getView (0)))
 				{
 					mouseEditMode = kDragEditing;
 					invalidSelection ();
@@ -543,94 +464,49 @@ CMouseEventResult UIEditView::onMouseDown (CPoint &where, const CButtonState& bu
 				}
 				if (sizeMode == kSizeModeNone)
 				{
-					// first alter selection
-					if (getSelection ()->contains (view))
+					if (getSelection ()->contains (getView (0)))
 					{
-						if (buttons & kControl)
-						{
-							getSelection ()->remove (view);
-							return kMouseEventHandled;
-						}
+						return kMouseEventHandled;
 					}
-					else
-					{
-						if (buttons & kControl || buttons & kShift)
-						{
-							getSelection ()->add (view);
-						}
-						else
-						{
-							getSelection ()->setExclusive (view);
-						}
-					}
-					mouseHitView = view;
+					mouseEditMode = kDragEditing;
+					mouseStartPoint = where2;
+					if (grid)
+						grid->process (mouseStartPoint);
+					if (editTimer)
+						editTimer->forget ();
+					editTimer = new CVSTGUITimer (this, 500);
+					editTimer->start ();
+					return kMouseEventHandled;
 				}
-				if (mouseHitView && getSelection ()->total () > 0)
+				else
 				{
-					if (!(buttons & kLButton) || !editing)
-						return kMouseEventHandled;
-					if (mouseHitView == 0)
-						return kMouseEventHandled;
-					if (sizeMode == kSizeModeNone)
+					// TODO: multiple view resizing (width or height only)
+					getSelection ()->setExclusive (selectionHitView);
+					mouseEditMode = kSizeEditing;
+					mouseStartPoint = where2;
+					if (grid)
+						grid->process (mouseStartPoint);
+					mouseSizeMode = sizeMode;
+					if (true)
 					{
-						if (getSelection ()->contains (getView (0)))
-							return kMouseEventNotHandled;
-						if (buttons & kAlt)
+						int32_t crossLineMode = 0;
+						switch (sizeMode)
 						{
-							mouseEditMode = kDragEditing;
-							invalidSelection ();
-							startDrag (where);
-							mouseEditMode = kNoEditing;
-							invalidSelection ();
-							return kMouseDownEventHandledButDontNeedMovedOrUpEvents;
+							case kSizeModeLeft:
+							case kSizeModeRight:
+							case kSizeModeTop:
+							case kSizeModeBottom: crossLineMode = UICrossLines::kSelectionStyle; break;
+							default : crossLineMode = UICrossLines::kDragStyle; break;
 						}
+						lines = new UICrossLines (this, crossLineMode, crosslineBackgroundColor, crosslineForegroundColor);
+						if (crossLineMode == UICrossLines::kSelectionStyle)
+							lines->update (selection);
 						else
-						{
-							mouseEditMode = kDragEditing;
-							mouseStartPoint = where2;
-							if (grid)
-								grid->process (mouseStartPoint);
-							if (editTimer)
-								editTimer->forget ();
-							editTimer = new CVSTGUITimer (this, 500);
-							editTimer->start ();
-						}
-						return kMouseEventHandled;
+							lines->update (CPoint (mouseStartPoint.x, mouseStartPoint.y));
 					}
-					else
-					{
-						getSelection ()->setExclusive (mouseHitView);
-						mouseEditMode = kSizeEditing;
-						mouseStartPoint = where2;
-						if (grid)
-							grid->process (mouseStartPoint);
-						mouseSizeMode = sizeMode;
-						if (true)
-						{
-							int32_t crossLineMode = 0;
-							switch (sizeMode)
-							{
-								case kSizeModeLeft:
-								case kSizeModeRight:
-								case kSizeModeTop:
-								case kSizeModeBottom: crossLineMode = UICrossLines::kSelectionStyle; break;
-								default : crossLineMode = UICrossLines::kDragStyle; break;
-							}
-							lines = new UICrossLines (this, crossLineMode, crosslineBackgroundColor, crosslineForegroundColor);
-							if (crossLineMode == UICrossLines::kSelectionStyle)
-								lines->update (selection);
-							else
-								lines->update (CPoint (mouseStartPoint.x, mouseStartPoint.y));
-						}
-						return kMouseEventHandled;
-					}
+					return kMouseEventHandled;
 				}
 			}
-			else
-			{
-				getSelection ()->empty ();
-			}
-		#endif
 		}
 		return kMouseEventHandled;
 	}
@@ -680,6 +556,84 @@ CMouseEventResult UIEditView::onMouseUp (CPoint &where, const CButtonState& butt
 }
 
 //----------------------------------------------------------------------------------------------------
+void UIEditView::doDragEditingMove (CPoint& where)
+{
+	if (grid)
+		grid->process (where);
+	CPoint diff (where.x - mouseStartPoint.x, where.y - mouseStartPoint.y);
+	if (diff.x || diff.y)
+	{
+		invalidSelection ();
+		if (!moveSizeOperation)
+			moveSizeOperation = new ViewSizeChangeOperation (selection, false);
+		getSelection ()->moveBy (diff);
+		mouseStartPoint = where;
+		invalidSelection ();
+		if (editTimer)
+		{
+			editTimer->forget ();
+			editTimer = 0;
+			if (true)
+			{
+				lines = new UICrossLines (this, UICrossLines::kSelectionStyle, crosslineBackgroundColor, crosslineForegroundColor);
+				lines->update (selection);
+			}
+			getFrame ()->setCursor (kCursorHand);
+		}
+		if (lines)
+			lines->update (selection);
+	}
+}
+
+//----------------------------------------------------------------------------------------------------
+void UIEditView::doSizeEditingMove (CPoint& where)
+{
+	if (!moveSizeOperation)
+		moveSizeOperation = new ViewSizeChangeOperation (selection, true);
+	if (grid)
+	{
+		where.offset (grid->getSize ().x / 2., grid->getSize ().y / 2.);
+		grid->process (where);
+	}
+	mouseStartPoint = where;
+	CView* view = getSelection ()->first ();
+	CRect viewSize (view->getViewSize ());
+	localToFrame (where);
+	view->getParentView ()->frameToLocal (where);
+	switch (mouseSizeMode)
+	{
+		case kSizeModeLeft: viewSize.left = where.x; break;
+		case kSizeModeRight: viewSize.right = where.x; break;
+		case kSizeModeTop: if (where.y <= viewSize.bottom) viewSize.top = where.y; break;
+		case kSizeModeBottom: viewSize.bottom = where.y; break;
+		case kSizeModeTopLeft: viewSize.left = where.x; viewSize.top = where.y; break;
+		case kSizeModeTopRight: viewSize.right = where.x; viewSize.top = where.y; break;
+		case kSizeModeBottomRight: viewSize.right = where.x; viewSize.bottom = where.y; break;
+		case kSizeModeBottomLeft: viewSize.left = where.x; viewSize.bottom = where.y; break;
+		default: break;
+	}
+	if (viewSize.left > viewSize.right)
+		viewSize.right = viewSize.left;
+	if (viewSize.top > viewSize.bottom)
+		viewSize.bottom = viewSize.top;
+	if (viewSize != view->getViewSize ())
+	{
+		invalidSelection ();
+		view->setViewSize (viewSize);
+		view->setMouseableArea (viewSize);
+		invalidSelection ();
+	}
+	if (lines)
+	{
+		if (lines->getStyle () == UICrossLines::kSelectionStyle)
+			lines->update (selection);
+		else
+			lines->update (mouseStartPoint);
+	}
+	getSelection ()->changed (UISelection::kMsgSelectionViewChanged);
+}
+
+//----------------------------------------------------------------------------------------------------
 CMouseEventResult UIEditView::onMouseMoved (CPoint &where, const CButtonState& buttons)
 {
 	if (editing)
@@ -692,77 +646,11 @@ CMouseEventResult UIEditView::onMouseMoved (CPoint &where, const CButtonState& b
 			{
 				if (mouseEditMode == kDragEditing)
 				{
-					if (grid)
-						grid->process (where2);
-					CPoint diff (where2.x - mouseStartPoint.x, where2.y - mouseStartPoint.y);
-					if (diff.x || diff.y)
-					{
-						invalidSelection ();
-						if (!moveSizeOperation)
-							moveSizeOperation = new ViewSizeChangeOperation (selection, false);
-						getSelection ()->moveBy (diff);
-						mouseStartPoint = where2;
-						invalidSelection ();
-						if (editTimer)
-						{
-							editTimer->forget ();
-							editTimer = 0;
-							if (true)
-							{
-								lines = new UICrossLines (this, UICrossLines::kSelectionStyle, crosslineBackgroundColor, crosslineForegroundColor);
-								lines->update (selection);
-							}
-							getFrame ()->setCursor (kCursorHand);
-						}
-						if (lines)
-							lines->update (selection);
-					}
+					doDragEditingMove (where2);
 				}
 				else if (mouseEditMode == kSizeEditing)
 				{
-					if (!moveSizeOperation)
-						moveSizeOperation = new ViewSizeChangeOperation (selection, true);
-					if (grid)
-					{
-						where2.offset (grid->getSize ().x / 2., grid->getSize ().y / 2.);
-						grid->process (where2);
-					}
-					mouseStartPoint = where2;
-					CView* view = getSelection ()->first ();
-					CRect viewSize (view->getViewSize ());
-					localToFrame (where2);
-					view->getParentView ()->frameToLocal (where2);
-					switch (mouseSizeMode)
-					{
-						case kSizeModeLeft: viewSize.left = where2.x; break;
-						case kSizeModeRight: viewSize.right = where2.x; break;
-						case kSizeModeTop: if (where2.y <= viewSize.bottom) viewSize.top = where2.y; break;
-						case kSizeModeBottom: viewSize.bottom = where2.y; break;
-						case kSizeModeTopLeft: viewSize.left = where2.x; viewSize.top = where2.y; break;
-						case kSizeModeTopRight: viewSize.right = where2.x; viewSize.top = where2.y; break;
-						case kSizeModeBottomRight: viewSize.right = where2.x; viewSize.bottom = where2.y; break;
-						case kSizeModeBottomLeft: viewSize.left = where2.x; viewSize.bottom = where2.y; break;
-						default: break;
-					}
-					if (viewSize.left > viewSize.right)
-						viewSize.right = viewSize.left;
-					if (viewSize.top > viewSize.bottom)
-						viewSize.bottom = viewSize.top;
-					if (viewSize != view->getViewSize ())
-					{
-						invalidSelection ();
-						view->setViewSize (viewSize);
-						view->setMouseableArea (viewSize);
-						invalidSelection ();
-					}
-					if (lines)
-					{
-						if (lines->getStyle () == UICrossLines::kSelectionStyle)
-							lines->update (selection);
-						else
-							lines->update (mouseStartPoint);
-					}
-					getSelection ()->changed (UISelection::kMsgSelectionViewChanged);
+					doSizeEditingMove (where2);
 				}
 			}
 			CScrollView* scrollView = dynamic_cast<CScrollView*>(getParentView ()->getParentView ());

@@ -39,7 +39,7 @@
 
 #if VSTGUI_LIVE_EDITING
 
-#include "../uiviewfactory.h"
+#include "../iviewcreator.h"
 #include "iaction.h"
 #include "../../lib/csplitview.h"
 #include "../../lib/cframe.h"
@@ -52,6 +52,7 @@ class UITemplateController;
 class UIEditMenuController;
 class UIGridController;
 class GenericStringListDataBrowserSource;
+class CCommandMenuItem;
 
 //----------------------------------------------------------------------------------------------------
 class UIEditController : public CBaseObject, public IController, public ISplitViewController, public ISplitViewSeparatorDrawer, public IActionPerformer, public IKeyboardHook
@@ -159,9 +160,21 @@ protected:
 	void updateTemplate (UTF8StringPtr name);
 	void updateTemplate (const std::vector<Template>::const_iterator& it);
 	void onTemplatesChanged ();
-	void getTemplateViews (std::list<CView*>& views);
+	void getTemplateViews (std::list<CView*>& views) const;
 
 	std::vector<Template> templates;
+private:
+	void beforeSave ();
+	void onTemplateSelectionChanged ();
+	CMessageResult validateMenuItem (CCommandMenuItem* item);
+	CMessageResult onMenuItemSelection (CCommandMenuItem* item);
+	void doCopy (bool cut = false);
+	void doPaste ();
+	void showTemplateSettings ();
+	void showFocusSettings ();
+	
+	void onUndoManagerChanged ();
+	template<typename NameChangeAction, IViewCreator::AttrType attrType> void performNameChange (UTF8StringPtr oldName, UTF8StringPtr newName, IdStringPtr groupActionName);
 };
 
 } // namespace

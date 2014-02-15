@@ -256,7 +256,7 @@ public:
 };
 */
 
-#include "uiviewfactory.h"
+#include "iviewfactory.h"
 #include "uiviewcreator.h"
 #include "uiviewswitchcontainer.h"
 #include "uiattributes.h"
