@@ -104,8 +104,8 @@
 				G99a0KZw92l7zH2hzhddmd3mPXS9LX18T5L6J5+ZP782wDmYODQ9vPvVrRGx0ew3P8eCxocnTN83Ta5+WJ
 				v6Nr0yszA79XF4rvtT/fzZhfhF5yX5Zdzys8/nvnisCMOqI2/VYnX9W+Wa7dra95J17fXRH/E/2X/WbBhv
 				DG8Gb/k/0ldRYSt7AIROH14/vtnc/CwGAOEUAD+zNzfXL2xu/rwID5kjANwN/vt/ly1mPLyrL4I5BoDO5K
-				2/dv77+R+iUNEtFj7HywAAADpJREFUGBmdj0EKADAMwhT2/y+7duDdWSg9xVQC0Oz3UKo4HKtIRgkj4jK1
-				cenI5M98a+PrmPazbXteMysTA3aVaLcAAAAASUVORK5CYII=
+				2/dv77+R+iUNEtFj7HywAAACtJREFUGBljZGBg+A/E9AOMSFYRazOyHiTtRDJBuom1iUgjCSiDuZdUWxkB
+				dsIEA+s486kAAAAASUVORK5CYII=
 			</data>
 		</bitmap>
 		<bitmap name="text-align-left" path="resources/text-align-left.png">
@@ -549,11 +549,12 @@
 		<color name="db.row.line" rgba="#d5d5d5ff"/>
 		<color name="db.selection" rgba="#81b9ffff"/>
 		<color name="dialog.back" rgba="#cececefa"/>
+		<color name="dialog.back2" rgba="#b4b4b4fa"/>
 		<color name="editView.backgrund" rgba="#f2f2f2ff"/>
-		<color name="editView.crosslines.background" rgba="#ffffff64"/>
-		<color name="editView.crosslines.foreground" rgba="#000000ff"/>
+		<color name="editView.crosslines.background" rgba="#ffffff96"/>
+		<color name="editView.crosslines.foreground" rgba="#00000096"/>
 		<color name="editView.view.highlight" rgba="#ffffff96"/>
-		<color name="editView.view.selection" rgba="#ff0000ff"/>
+		<color name="editView.view.selection" rgba="#ff0000c8"/>
 		<color name="focus" rgba="#b4d5ffff"/>
 		<color name="groupframe" rgba="#00000008"/>
 		<color name="scrollbar.background" rgba="#fafafaff"/>
@@ -746,7 +747,7 @@
 		<attributes Size="5, 5" name="UIGridController"/>
 		<attributes SelectedRow="16" name="UIViewCreatorDataSource"/>
 		<attributes UIAttributesController="orig" name="UIAttributesController"/>
-		<attributes FilterString="shading." SelectedRow="2" name="UIColorsDataSource"/>
+		<attributes FilterString="line" SelectedRow="1" name="UIColorsDataSource"/>
 		<attributes FilterString="bitmaps.settings." SelectedRow="8" name="UITagsDataSource"/>
 		<attributes SelectedRow="5" name="UIFontsDataSource"/>
 		<attributes SelectedRow="0" name="UIBitmapsDataSource"/>
@@ -858,15 +859,17 @@
 		<view autosize="left right top bottom " back-color="~ WhiteCColor" background-offset="0, 0" class="CTextLabel" control-tag="attributes.label" default-value="0.5" font="db.font" font-antialias="true" font-color="~ BlackCColor" frame-color="control.frame" frame-width="1" max-value="1" min-value="0" mouse-enabled="true" origin="1, 1" round-rect-radius="6" shadow-color="~ RedCColor" size="398, 16" style-3D-in="false" style-3D-out="false" style-no-draw="false" style-no-frame="false" style-no-text="false" style-round-rect="false" style-shadow-text="false" text-alignment="center" text-inset="4, 0" text-rotation="0" transparent="false" truncate-mode="tail" value-precision="2" wheel-inc-value="0.1"/>
 		<view autosize="left right top bottom " back-color="db.font" background-offset="0, 0" class="COptionMenu" control-tag="attributes.optionmenu" default-value="0.5" font="~ NormalFont" font-antialias="true" font-color="db.background" frame-color="db.font" frame-width="1" max-value="1.84467e+19" menu-check-style="true" menu-popup-style="true" min-value="0" mouse-enabled="true" origin="1, 1" round-rect-radius="6" shadow-color="~ RedCColor" size="398, 16" style-3D-in="false" style-3D-out="false" style-no-draw="true" style-no-frame="false" style-no-text="true" style-round-rect="false" style-shadow-text="false" text-alignment="center" text-inset="0, 0" text-rotation="0" transparent="true" value-precision="2" wheel-inc-value="0.1"/>
 	</template>
-	<template background-color="db.font" background-color-draw-style="filled and stroked" bitmap="0" class="CShadowViewContainer" mouse-enabled="true" name="dialog" origin="0, 0" shadow-blur-size="14" shadow-intensity="0.5" shadow-offset="-3, -5" size="440, 435" transparent="false">
-		<view autosize="left right top bottom " background-color="~ TransparentCColor" background-color-draw-style="filled and stroked" class="CViewContainer" mouse-enabled="true" origin="20, 20" size="400, 395" transparent="false">
-			<view autosize="left right top bottom " back-color="dialog.back" background-offset="0, 0" class="CTextLabel" default-value="0.5" font="~ NormalFont" font-antialias="true" font-color="db.background" frame-color="control.frame" frame-width="1" max-value="1" min-value="0" mouse-enabled="true" origin="0, 0" round-rect-radius="6" shadow-color="editView.view.selection" size="400, 395" style-3D-in="false" style-3D-out="false" style-no-draw="false" style-no-frame="false" style-no-text="false" style-round-rect="true" style-shadow-text="false" text-alignment="center" text-inset="0, 0" text-rotation="0" transparent="false" value-precision="2" wheel-inc-value="0.1"/>
-			<view autosize="left right bottom " background-color="db.font" background-color-draw-style="filled and stroked" class="CViewContainer" custom-view-name="buttons" mouse-enabled="true" origin="10, 365" size="380, 25" transparent="true">
-				<view autosize="right bottom " background-offset="0, 0" class="CTextButton" control-tag="dialog.button.2" default-value="0.5" font="control.font" frame-color="control.frame" frame-color-highlighted="control.frame" frame-width="1" gradient-end-color="textbutton.gradient.end" gradient-end-color-highlighted="textbutton.gradient.end.highlighted" gradient-start-color="textbutton.gradient.start" gradient-start-color-highlighted="textbutton.gradient.end" icon-position="left" icon-text-margin="0" kick-style="true" max-value="1" min-value="0" mouse-enabled="true" origin="165, 5" round-radius="4" size="100, 16" text-alignment="center" text-color="textbutton.text" text-color-highlighted="textbutton.text.highlighted" title="Button 2" transparent="false" wheel-inc-value="0.1"/>
-				<view autosize="right bottom " background-offset="0, 0" class="CTextButton" control-tag="dialog.button.1" default-value="0.5" font="control.font" frame-color="control.frame" frame-color-highlighted="control.frame" frame-width="1" gradient-end-color="textbutton.gradient.end" gradient-end-color-highlighted="textbutton.gradient.end.highlighted" gradient-start-color="textbutton.gradient.start" gradient-start-color-highlighted="textbutton.gradient.end" icon-position="left" icon-text-margin="0" kick-style="true" max-value="1" min-value="0" mouse-enabled="true" origin="275, 5" round-radius="4" size="100, 16" text-alignment="center" text-color="textbutton.text" text-color-highlighted="textbutton.text.highlighted" title="Button 1" transparent="false" wheel-inc-value="0.1"/>
+	<template background-color="~ TransparentCColor" background-color-draw-style="filled and stroked" class="CLayeredViewContainer" mouse-enabled="true" name="dialog" origin="0, 0" size="440, 435" transparent="true">
+		<view autosize="left right top bottom " background-color="db.font" background-color-draw-style="filled and stroked" bitmap="0" class="CShadowViewContainer" mouse-enabled="true" origin="0, 0" shadow-blur-size="14" shadow-intensity="0.5" shadow-offset="-3, -5" size="440, 435" transparent="false">
+			<view autosize="left right top bottom " background-color="~ TransparentCColor" background-color-draw-style="filled and stroked" class="CViewContainer" mouse-enabled="true" origin="20, 20" size="400, 395" transparent="false">
+				<view autosize="left right top bottom " class="CGradientView" draw-antialiased="true" frame-color="control.frame" frame-width="1" gradient-angle="0" gradient-end-color="dialog.back2" gradient-end-color-offset="0" gradient-start-color="dialog.back" gradient-start-color-offset="0" gradient-style="linear" mouse-enabled="true" origin="0, 0" radial-center="0.5, 0.5" radial-radius="1" round-rect-radius="6" size="400, 395" transparent="false"/>
+				<view autosize="left right bottom " background-color="db.font" background-color-draw-style="filled and stroked" class="CViewContainer" custom-view-name="buttons" mouse-enabled="true" origin="10, 365" size="380, 25" transparent="true">
+					<view autosize="right bottom " background-offset="0, 0" class="CTextButton" control-tag="dialog.button.2" default-value="0.5" font="control.font" frame-color="control.frame" frame-color-highlighted="control.frame" frame-width="1" gradient-end-color="textbutton.gradient.end" gradient-end-color-highlighted="textbutton.gradient.end.highlighted" gradient-start-color="textbutton.gradient.start" gradient-start-color-highlighted="textbutton.gradient.end" icon-position="left" icon-text-margin="0" kick-style="true" max-value="1" min-value="0" mouse-enabled="true" origin="165, 5" round-radius="4" size="100, 16" text-alignment="center" text-color="textbutton.text" text-color-highlighted="textbutton.text.highlighted" title="Button 2" transparent="false" wheel-inc-value="0.1"/>
+					<view autosize="right bottom " background-offset="0, 0" class="CTextButton" control-tag="dialog.button.1" default-value="0.5" font="control.font" frame-color="control.frame" frame-color-highlighted="control.frame" frame-width="1" gradient-end-color="textbutton.gradient.end" gradient-end-color-highlighted="textbutton.gradient.end.highlighted" gradient-start-color="textbutton.gradient.start" gradient-start-color-highlighted="textbutton.gradient.end" icon-position="left" icon-text-margin="0" kick-style="true" max-value="1" min-value="0" mouse-enabled="true" origin="275, 5" round-radius="4" size="100, 16" text-alignment="center" text-color="textbutton.text" text-color-highlighted="textbutton.text.highlighted" title="Button 1" transparent="false" wheel-inc-value="0.1"/>
+				</view>
+				<view background-color="groupframe" background-color-draw-style="filled and stroked" class="CViewContainer" custom-view-name="view" mouse-enabled="true" origin="10, 30" size="380, 330" transparent="false"/>
+				<view autosize="left right top " back-color="background" background-offset="0, 0" class="CTextLabel" control-tag="dialog.title" default-value="0.5" font="title.font" font-antialias="true" font-color="~ BlackCColor" frame-color="control.frame" frame-width="1" max-value="1" min-value="0" mouse-enabled="true" origin="0, 0" round-rect-radius="6" shadow-color="~ GreyCColor" size="400, 30" style-3D-in="false" style-3D-out="false" style-no-draw="false" style-no-frame="true" style-no-text="false" style-round-rect="false" style-shadow-text="false" text-alignment="center" text-inset="0, 0" text-rotation="0" title="Dialog Title" transparent="true" value-precision="2" wheel-inc-value="0.1"/>
 			</view>
-			<view background-color="groupframe" background-color-draw-style="filled and stroked" class="CViewContainer" custom-view-name="view" mouse-enabled="true" origin="10, 30" size="380, 330" transparent="false"/>
-			<view autosize="left right top " back-color="background" background-offset="0, 0" class="CTextLabel" control-tag="dialog.title" default-value="0.5" font="title.font" font-antialias="true" font-color="~ BlackCColor" frame-color="control.frame" frame-width="1" max-value="1" min-value="0" mouse-enabled="true" origin="0, 0" round-rect-radius="6" shadow-color="~ GreyCColor" size="400, 30" style-3D-in="false" style-3D-out="false" style-no-draw="false" style-no-frame="true" style-no-text="false" style-round-rect="false" style-shadow-text="false" text-alignment="center" text-inset="0, 0" text-rotation="0" title="Dialog Title" transparent="true" value-precision="2" wheel-inc-value="0.1"/>
 		</view>
 	</template>
 	<template autosize="left right top bottom " background-color="~ TransparentCColor" background-color-draw-style="filled and stroked" class="CViewContainer" mouse-enabled="true" name="bitmap.settings" origin="0, 0" size="415, 355" transparent="false">

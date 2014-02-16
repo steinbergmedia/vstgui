@@ -1194,15 +1194,15 @@ CView* CViewContainer::getViewAt (const CPoint& p, bool deep, bool mustbeMouseEn
 	FOREACHSUBVIEW_REVERSE(true)
 		if (pV && pV->isVisible () && where.isInside (pV->getMouseableArea ()))
 		{
-			if (deep)
-			{
-				if (CViewContainer* container = dynamic_cast<CViewContainer*> (pV))
-					return container->getViewAt (where, deep, mustbeMouseEnabled);
-			}
 			if (mustbeMouseEnabled)
 			{
 				if (pV->getMouseEnabled() == false)
 					continue;
+			}
+			if (deep)
+			{
+				if (CViewContainer* container = dynamic_cast<CViewContainer*> (pV))
+					return container->getViewAt (where, deep, mustbeMouseEnabled);
 			}
 			return pV;
 		}
@@ -1249,7 +1249,7 @@ bool CViewContainer::getViewsAt (const CPoint& p, std::list<SharedPointer<CView>
  * @param deep search deep
  * @return view container at position p
  */
-CViewContainer* CViewContainer::getContainerAt (const CPoint& p, bool deep) const
+CViewContainer* CViewContainer::getContainerAt (const CPoint& p, bool deep, bool mustbeMouseEnabled) const
 {
 	CPoint where (p);
 
@@ -1259,6 +1259,11 @@ CViewContainer* CViewContainer::getContainerAt (const CPoint& p, bool deep) cons
 	FOREACHSUBVIEW_REVERSE(true)
 		if (pV && pV->isVisible () && where.isInside (pV->getMouseableArea ()))
 		{
+			if (mustbeMouseEnabled)
+			{
+				if (pV->getMouseEnabled() == false)
+					continue;
+			}
 			if (deep)
 			{
 				if (CViewContainer* container = dynamic_cast<CViewContainer*> (pV))

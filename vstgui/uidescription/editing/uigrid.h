@@ -39,6 +39,8 @@
 
 #if VSTGUI_LIVE_EDITING
 
+#include <cmath>
+
 namespace VSTGUI {
 
 //----------------------------------------------------------------------------------------------------
@@ -49,9 +51,11 @@ public:
 	
 	virtual void process (CPoint& p)
 	{
-		int32_t x = (int32_t) (p.x / size.x);
+		p.x -= size.x / 2.;
+		p.y -= size.y / 2.;
+		int32_t x = (int32_t) std::floor (p.x / size.x + 0.5);
 		p.x = x * size.x;
-		int32_t y = (int32_t) (p.y / size.y);
+		int32_t y = (int32_t) std::floor (p.y / size.y + 0.5);
 		p.y = y * size.y;
 	}
 

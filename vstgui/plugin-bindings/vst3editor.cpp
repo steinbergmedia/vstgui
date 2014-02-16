@@ -37,6 +37,7 @@
 #include "../uidescription/editing/uieditcontroller.h"
 #include "../uidescription/editing/uieditmenucontroller.h"
 #include "../uidescription/uiviewfactory.h"
+#include "../uidescription/uiattributes.h"
 #include "base/source/updatehandler.h"
 #include "base/source/fstring.h"
 #include "base/source/timer.h"

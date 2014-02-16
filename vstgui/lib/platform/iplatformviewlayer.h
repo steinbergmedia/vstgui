@@ -56,6 +56,8 @@ public:
 
 	virtual void invalidRect (const CRect& size) = 0; ///< size must be zero based
 	virtual void setSize (const CRect& size) = 0; ///< size is relative to platformParent
+	virtual void setZIndex (uint32_t zIndex) = 0;
+	virtual void setAlpha (float alpha) = 0;
 };
 
 }

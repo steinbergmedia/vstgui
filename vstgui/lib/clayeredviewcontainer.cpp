@@ -41,6 +41,7 @@ namespace VSTGUI {
 CLayeredViewContainer::CLayeredViewContainer (const CRect& r)
 : CViewContainer (r)
 , parentLayerView (0)
+, zIndex (0)
 {
 }
 
@@ -51,18 +52,25 @@ CLayeredViewContainer::~CLayeredViewContainer ()
 }
 
 //-----------------------------------------------------------------------------
+void CLayeredViewContainer::setZIndex (uint32_t _zIndex)
+{
+	if (_zIndex != zIndex)
+	{
+		zIndex = _zIndex;
+		if (layer)
+			layer->setZIndex (zIndex);
+	}
+}
+
+//-----------------------------------------------------------------------------
 void CLayeredViewContainer::updateLayerSize ()
 {
-	CRect r (getViewSize ());
-	r.originize ();
+	CRect r (getVisibleViewSize ());
 	CPoint p;
-	localToFrame (p);
+	getParentView ()->localToFrame (p);
 	if (parentLayerView)
 	{
 		parentLayerView->frameToLocal (p);
-	}
-	else
-	{
 	}
 	r.offset (p.x, p.y);
 	layer->setSize (r);
@@ -100,13 +108,25 @@ bool CLayeredViewContainer::attached (CView* parent)
 		}
 		layer = pParentFrame->getPlatformFrame ()->createPlatformViewLayer (this, parentLayerView ? parentLayerView->layer : 0);
 		if (layer)
+		{
+			layer->setZIndex (zIndex);
+			layer->setAlpha (getAlphaValue ());
 			updateLayerSize ();
+		}
 	}
 	parent = pParentView;
 	pParentView = 0;
 	pParentFrame = 0;
 
 	return CViewContainer::attached (parent);
+}
+
+//-----------------------------------------------------------------------------
+void CLayeredViewContainer::invalid ()
+{
+	CRect r = getViewSize ();
+	r.originize ();
+	invalidRect (r);
 }
 
 //-----------------------------------------------------------------------------
@@ -138,6 +158,18 @@ void CLayeredViewContainer::setViewSize (const CRect& rect, bool invalid)
 	{
 		updateLayerSize ();
 	}
+}
+
+//-----------------------------------------------------------------------------
+void CLayeredViewContainer::setAlphaValue (float alpha)
+{
+	if (layer)
+	{
+		alphaValue = alpha;
+		layer->setAlpha (alpha);
+	}
+	else
+		CViewContainer::setAlphaValue (alpha);
 }
 
 //-----------------------------------------------------------------------------

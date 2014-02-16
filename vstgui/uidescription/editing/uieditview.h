@@ -48,6 +48,8 @@ class UICrossLines;
 class IAction;
 class UIGrid;
 class CVSTGUITimer;
+class CLayeredViewContainer;
+class UIHighlightView;
 
 //----------------------------------------------------------------------------------------------------
 class UIEditView : public CViewContainer
@@ -113,7 +115,7 @@ protected:
 	void draw (CDrawContext *pContext) VSTGUI_OVERRIDE_VMETHOD;
 	void drawRect (CDrawContext *pContext, const CRect& updateRect) VSTGUI_OVERRIDE_VMETHOD;
 	CView* getViewAt (const CPoint& p, bool deep, bool mustbeMouseEnabled = false) const VSTGUI_OVERRIDE_VMETHOD;
-	CViewContainer* getContainerAt (const CPoint& p, bool deep) const VSTGUI_OVERRIDE_VMETHOD;
+	CViewContainer* getContainerAt (const CPoint& p, bool deep, bool mustbeMouseEnabled = false) const VSTGUI_OVERRIDE_VMETHOD;
 	bool advanceNextFocusView (CView* oldFocus, bool reverse) VSTGUI_OVERRIDE_VMETHOD;
 	bool onWheel (const CPoint &where, const CMouseWheelAxis &axis, const float &distance, const CButtonState &buttons) VSTGUI_OVERRIDE_VMETHOD;
 
@@ -133,7 +135,8 @@ protected:
 	UIDescription* description;
 	SharedPointer<UIGrid> grid;
 	
-	CView* highlightView;
+	UIHighlightView* highlightView;
+	CLayeredViewContainer* overlayView;
 	UICrossLines* lines;
 	IAction* moveSizeOperation;
 	CVSTGUITimer* editTimer;

@@ -326,6 +326,7 @@ void ViewCopyOperation::perform ()
 //-----------------------------------------------------------------------------
 void ViewCopyOperation::undo ()
 {
+	workingSelection->empty ();
 	const_iterator it = begin ();
 	while (it != end ())
 	{
@@ -333,7 +334,6 @@ void ViewCopyOperation::undo ()
 		parent->removeView (*it, true);
 		it++;
 	}
-	workingSelection->empty ();
 	it = oldSelectedViews.begin ();
 	while (it != oldSelectedViews.end ())
 	{

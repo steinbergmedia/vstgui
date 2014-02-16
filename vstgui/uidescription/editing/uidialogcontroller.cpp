@@ -40,6 +40,7 @@
 #include "../uiattributes.h"
 #include "../../lib/coffscreencontext.h"
 #include "../../lib/cbitmapfilter.h"
+#include "../../lib/clayeredviewcontainer.h"
 #include "../../lib/controls/ctextlabel.h"
 #include "../../lib/controls/cbuttons.h"
 #include "../../lib/animation/animations.h"
@@ -81,6 +82,10 @@ void UIDialogController::run (UTF8StringPtr _templateName, UTF8StringPtr _dialog
 	CView* view = UIEditController::getEditorDescription ().createView ("dialog", this);
 	if (view)
 	{
+		CLayeredViewContainer* layeredView = dynamic_cast<CLayeredViewContainer*>(view);
+		if (layeredView)
+			layeredView->setZIndex (10);
+
 		CRect size = view->getViewSize ();
 		size.right += sizeDiff.x;
 		size.bottom += sizeDiff.y;

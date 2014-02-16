@@ -35,6 +35,8 @@
 #include "openglviewtest.h"
 #include "base/source/fobject.h"
 #include "base/source/fthread.h"
+#include "vstgui/uidescription/delegationcontroller.h"
+#include "vstgui/uidescription/uiattributes.h"
 
 #if MAC
 	#include <OpenGL/gl.h>

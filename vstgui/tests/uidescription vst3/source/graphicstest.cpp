@@ -34,6 +34,7 @@
 
 #include "graphicstest.h"
 #include "vstgui/lib/animation/animations.h"
+#include "vstgui/uidescription/delegationcontroller.h"
 #include "bitmapsaturator.h"
 
 using namespace Steinberg;
