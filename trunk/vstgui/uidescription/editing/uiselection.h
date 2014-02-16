@@ -54,6 +54,7 @@ class UISelection : public CBaseObject, protected std::list<SharedPointer<CView>
 {
 public:
 	typedef std::list<SharedPointer<CView> >::const_iterator const_iterator;
+	typedef std::list<SharedPointer<CView> >::const_reverse_iterator const_reverse_iterator;
 	
 	enum {
 		kMultiSelectionStyle,
@@ -72,6 +73,8 @@ public:
 
 	const_iterator begin () const { return std::list<SharedPointer<CView> >::begin (); }
 	const_iterator end () const { return std::list<SharedPointer<CView> >::end (); }
+	const_reverse_iterator rbegin () const { return std::list<SharedPointer<CView> >::rbegin (); }
+	const_reverse_iterator rend () const { return std::list<SharedPointer<CView> >::rend (); }
 
 	CView* first () const;
 
@@ -83,12 +86,14 @@ public:
 	static CRect getGlobalViewCoordinates (CView* view);
 
 	void moveBy (const CPoint& p);
+	void invalidRects () const;
 
 	void setDragOffset (const CPoint& p) { dragOffset = p; }
 	const CPoint& getDragOffset () const { return dragOffset; }
 	
 	static IdStringPtr kMsgSelectionWillChange;
 	static IdStringPtr kMsgSelectionChanged;
+	static IdStringPtr kMsgSelectionViewWillChange;
 	static IdStringPtr kMsgSelectionViewChanged;
 
 	bool store (OutputStream& stream, UIViewFactory* viewFactory, IUIDescription* uiDescription);
@@ -106,6 +111,14 @@ protected:
 	{ \
 	UISelection::const_iterator __it = __selection->begin (); \
 	while (__it != __selection->end ()) \
+	{ \
+		CView* view = (*__it);
+
+//----------------------------------------------------------------------------------------------------
+#define FOREACH_IN_SELECTION_REVERSE(__selection, view) \
+	{ \
+	UISelection::const_reverse_iterator __it = __selection->rbegin (); \
+	while (__it != __selection->rend ()) \
 	{ \
 		CView* view = (*__it);
 

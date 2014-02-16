@@ -41,6 +41,8 @@
 
 #include "../../lib/crect.h"
 #include "../../lib/ccolor.h"
+#include "../../lib/cview.h"
+#include "../../lib/iviewlistener.h"
 
 namespace VSTGUI {
 class CView;
@@ -48,7 +50,7 @@ class UISelection;
 class CDrawContext;
 
 //----------------------------------------------------------------------------------------------------
-class UICrossLines
+class UICrossLines : public CView, public IViewListenerAdapter
 {
 public:
 	enum {
@@ -56,7 +58,7 @@ public:
 		kDragStyle
 	};
 	
-	UICrossLines (CView* view, int32_t style, const CColor& background = kWhiteCColor, const CColor& foreground = kBlackCColor);
+	UICrossLines (CView* editView, int32_t style, const CColor& background = kWhiteCColor, const CColor& foreground = kBlackCColor);
 	~UICrossLines ();
 
 	int32_t getStyle () const { return style; }
@@ -66,7 +68,10 @@ public:
 	void invalid ();
 	void draw (CDrawContext* pContext);
 protected:
-	CView* view;
+	void drawLines (CDrawContext* pContext, const CRect& size, const CRect& selectionSize);
+	void viewSizeChanged (CView* view, const CRect& oldSize) VSTGUI_OVERRIDE_VMETHOD;
+
+	CView* editView;
 	CRect currentRect;
 	int32_t style;
 	

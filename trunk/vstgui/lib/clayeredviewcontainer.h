@@ -55,20 +55,24 @@ public:
 	~CLayeredViewContainer ();
 	
 	IPlatformViewLayer* getPlatformLayer () const { return layer; }
+	void setZIndex (uint32_t zIndex);
 	
 	bool removed (CView* parent) VSTGUI_OVERRIDE_VMETHOD;
 	bool attached (CView* parent) VSTGUI_OVERRIDE_VMETHOD;
+	void invalid () VSTGUI_OVERRIDE_VMETHOD;
 	void invalidRect (const CRect& rect) VSTGUI_OVERRIDE_VMETHOD;
 	void parentSizeChanged () VSTGUI_OVERRIDE_VMETHOD;
 	void setViewSize (const CRect& rect, bool invalid = true) VSTGUI_OVERRIDE_VMETHOD;
+	void setAlphaValue (float alpha) VSTGUI_OVERRIDE_VMETHOD;
 //-----------------------------------------------------------------------------
 protected:
 	void drawRect (CDrawContext* pContext, const CRect& updateRect) VSTGUI_OVERRIDE_VMETHOD;
 	void drawViewLayer (CDrawContext* context, const CRect& dirtyRect) VSTGUI_OVERRIDE_VMETHOD;
-
 	void updateLayerSize ();
+
 	OwningPointer<IPlatformViewLayer>layer;
 	CLayeredViewContainer* parentLayerView;
+	uint32_t zIndex;
 };
 
 } // namespace

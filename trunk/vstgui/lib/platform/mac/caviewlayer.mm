@@ -224,6 +224,20 @@ void CAViewLayer::setSize (const CRect& size)
 	layer.frame = CGRectFromCRect (r);
 }
 
+//-----------------------------------------------------------------------------
+void CAViewLayer::setZIndex (uint32_t zIndex)
+{
+	if (layer)
+		layer.zPosition = static_cast<CGFloat>(zIndex);
+}
+
+//-----------------------------------------------------------------------------
+void CAViewLayer::setAlpha (float alpha)
+{
+	if (layer)
+		layer.opacity = alpha;
+}
+
 } // namespace
 
 #endif // MAC_COCOA

@@ -328,7 +328,7 @@ void CFrame::checkMouseViews (const CPoint& where, const CButtonState& buttons)
 	CPoint lp;
 	CView* mouseView = getViewAt (where, true, true);
 	if (mouseView == 0)
-		mouseView = getContainerAt (where, true);
+		mouseView = getContainerAt (where, true, true);
 	CView* currentMouseView = pMouseViews.empty () == false ? pMouseViews.back () : 0;
 	if (currentMouseView == mouseView)
 		return; // no change
@@ -1081,7 +1081,7 @@ CView* CFrame::getViewAt (const CPoint& where, bool deep, bool mustbeMouseEnable
 }
 
 //-----------------------------------------------------------------------------
-CViewContainer* CFrame::getContainerAt (const CPoint& where, bool deep) const
+CViewContainer* CFrame::getContainerAt (const CPoint& where, bool deep, bool mustbeMouseEnabled) const
 {
 	if (pModalView)
 	{
@@ -1091,13 +1091,13 @@ CViewContainer* CFrame::getContainerAt (const CPoint& where, bool deep) const
 			if (container)
 			{
 				if (deep)
-					return container->getContainerAt (where, deep);
+					return container->getContainerAt (where, deep, mustbeMouseEnabled);
 				return container;
 			}
 		}
 		return 0;
 	}
-	return CViewContainer::getContainerAt (where, deep);
+	return CViewContainer::getContainerAt (where, deep, mustbeMouseEnabled);
 }
 
 //-----------------------------------------------------------------------------

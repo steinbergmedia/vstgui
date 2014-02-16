@@ -33,6 +33,7 @@
 //-----------------------------------------------------------------------------
 
 #include "uidescription test.h"
+#include "vstgui/uidescription/delegationcontroller.h"
 #include "pluginterfaces/base/ibstream.h"
 #include "pluginterfaces/vst/ivstparameterchanges.h"
 #include <cmath>

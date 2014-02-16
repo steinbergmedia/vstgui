@@ -60,6 +60,7 @@ UISelection::~UISelection ()
 IdStringPtr UISelection::kMsgSelectionWillChange = "kMsgSelectionWillChange";
 IdStringPtr UISelection::kMsgSelectionChanged = "kMsgSelectionChanged";
 IdStringPtr UISelection::kMsgSelectionViewChanged = "kMsgSelectionViewChanged";
+IdStringPtr UISelection::kMsgSelectionViewWillChange = "kMsgSelectionViewWillChange";
 
 //----------------------------------------------------------------------------------------------------
 void UISelection::setStyle (int32_t _style)
@@ -174,6 +175,7 @@ CRect UISelection::getGlobalViewCoordinates (CView* view)
 //----------------------------------------------------------------------------------------------------
 void UISelection::moveBy (const CPoint& p)
 {
+	changed (kMsgSelectionViewWillChange);
 	const_iterator it = begin ();
 	while (it != end ())
 	{
@@ -187,6 +189,20 @@ void UISelection::moveBy (const CPoint& p)
 		it++;
 	}
 	changed (kMsgSelectionViewChanged);
+}
+
+//----------------------------------------------------------------------------------------------------
+void UISelection::invalidRects () const
+{
+	const_iterator it = begin ();
+	while (it != end ())
+	{
+		if (!containsParent ((*it)))
+		{
+			(*it)->invalid ();
+		}
+		it++;
+	}
 }
 
 //----------------------------------------------------------------------------------------------------

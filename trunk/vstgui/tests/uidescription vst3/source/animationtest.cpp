@@ -35,6 +35,7 @@
 #include "animationtest.h"
 #include "base/source/fobject.h"
 #include "vstgui/lib/animation/animations.h"
+#include "vstgui/uidescription/delegationcontroller.h"
 
 using namespace Steinberg;
 using namespace Steinberg::Vst;
