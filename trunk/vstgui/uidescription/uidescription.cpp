@@ -86,12 +86,46 @@ namespace MainNodeNames {
 	static const IdStringPtr kCustom = "custom";
 }
 
-class UIDescList;
+class UINode;
+
+typedef std::vector<UINode*> UIDescListContainerType;
+//-----------------------------------------------------------------------------
+class UIDescList : public CBaseObject, private UIDescListContainerType
+{
+public:
+	using UIDescListContainerType::begin;
+	using UIDescListContainerType::end;
+	using UIDescListContainerType::rbegin;
+	using UIDescListContainerType::rend;
+	using UIDescListContainerType::iterator;
+	using UIDescListContainerType::const_iterator;
+	using UIDescListContainerType::const_reverse_iterator;
+	using UIDescListContainerType::empty;
+	using UIDescListContainerType::size;
+	
+	UIDescList (bool ownsObjects = true);
+	virtual ~UIDescList ();
+
+	virtual void add (UINode* obj);
+	virtual void remove (UINode* obj);
+	virtual void removeAll ();
+	virtual UINode* findChildNode (const std::string& nodeName) const;
+	virtual UINode* findChildNodeWithAttributeValue (const char* attributeName, const char* attributeValue) const;
+
+	virtual void nodeAttributeChanged (UINode* child, const char* attributeName, const char* oldAttributeValue) {}
+
+	void sort ();
+protected:
+	UIDescList (const UIDescList&) {assert(false);}
+
+	bool ownsObjects;
+};
+
 //-----------------------------------------------------------------------------
 class UINode : public CBaseObject
 {
 public:
-	UINode (const std::string& name, UIAttributes* attributes = 0);
+	UINode (const std::string& name, UIAttributes* attributes = 0, bool needsFastChildNameAttributeLookup = false);
 	UINode (const std::string& name, UIDescList* children, UIAttributes* attributes = 0);
 	~UINode ();
 
@@ -102,6 +136,7 @@ public:
 	UIAttributes* getAttributes () const { return attributes; }
 	UIDescList& getChildren () const { return *children; }
 	bool hasChildren () const;
+	void childAttributeChanged (UINode* child, const char* attributeName, const char* oldAttributeValue);
 
 	enum {
 		kNoExport = 1 << 0
@@ -200,83 +235,145 @@ protected:
 	CColor color;
 };
 
-typedef std::vector<UINode*> UIDescListContainerType;
+//-----------------------------------------------------------------------------
+class UIDescListWithFastFindAttributeNameChild : public UIDescList
+{
+private:
+	typedef std::map<std::string, UINode*> ChildMap;
+public:
+	UIDescListWithFastFindAttributeNameChild () {}
+	
+	virtual void add (UINode* obj)
+	{
+		UIDescList::add (obj);
+		const std::string* nameAttributeValue = obj->getAttributes ()->getAttributeValue ("name");
+		if (nameAttributeValue)
+			childMap.insert (std::make_pair (*nameAttributeValue, obj));
+	}
+	virtual void remove (UINode* obj)
+	{
+		const std::string* nameAttributeValue = obj->getAttributes ()->getAttributeValue ("name");
+		if (nameAttributeValue)
+		{
+			ChildMap::const_iterator it = childMap.find (*nameAttributeValue);
+			if (it != childMap.end ())
+				childMap.erase (it);
+		}
+		UIDescList::remove (obj);
+	}
+	virtual void removeAll ()
+	{
+		childMap.clear ();
+		UIDescList::removeAll ();
+	}
+	virtual UINode* findChildNodeWithAttributeValue (const char* attributeName, const char* attributeValue) const
+	{
+		if (std::string ("name") != attributeName)
+			return UIDescList::findChildNodeWithAttributeValue (attributeName, attributeValue);
+		ChildMap::const_iterator it = childMap.find (attributeValue);
+		if (it != childMap.end ())
+			return it->second;
+		return 0;
+	}
+	void nodeAttributeChanged (UINode* node, const char* attributeName, const char* oldAttributeValue)
+	{
+		if (std::string ("name") != attributeName)
+			return;
+		ChildMap::const_iterator it = childMap.find (oldAttributeValue);
+		if (it != childMap.end ())
+			childMap.erase (it);
+		const std::string* nameAttributeValue = node->getAttributes ()->getAttributeValue ("name");
+		if (nameAttributeValue)
+			childMap.insert (std::make_pair (*nameAttributeValue, node));
+	}
+private:
+	ChildMap childMap;
+};
+
 
 //-----------------------------------------------------------------------------
-class UIDescList : public CBaseObject, protected UIDescListContainerType
+UIDescList::UIDescList (bool ownsObjects)
+: ownsObjects (ownsObjects)
 {
-public:
-	using UIDescListContainerType::begin;
-	using UIDescListContainerType::end;
-	using UIDescListContainerType::rbegin;
-	using UIDescListContainerType::rend;
-	using UIDescListContainerType::iterator;
-	using UIDescListContainerType::const_iterator;
-	using UIDescListContainerType::const_reverse_iterator;
-	using UIDescListContainerType::empty;
-	
-	UIDescList (bool ownsObjects = true) : ownsObjects (ownsObjects) {}
-	
-	~UIDescList () { removeAll (); }
+}
 
-	void add (UINode* obj) { if (!ownsObjects) obj->remember (); UIDescListContainerType::push_back (obj); }
-	void remove (UINode* obj)
+//-----------------------------------------------------------------------------
+UIDescList::~UIDescList ()
+{
+	removeAll ();
+}
+
+//-----------------------------------------------------------------------------
+void UIDescList::add (UINode* obj)
+{
+	if (!ownsObjects)
+		obj->remember ();
+	UIDescListContainerType::push_back (obj);
+}
+
+//-----------------------------------------------------------------------------
+void UIDescList::remove (UINode* obj)
+{
+	UIDescListContainerType::iterator pos = std::find (UIDescListContainerType::begin (), UIDescListContainerType::end (), obj);
+	if (pos != UIDescListContainerType::end ())
 	{
-		UIDescListContainerType::iterator pos = std::find (UIDescListContainerType::begin (), UIDescListContainerType::end (), obj);
-		if (pos != UIDescListContainerType::end ())
+		UIDescListContainerType::erase (pos);
+		obj->forget ();
+	}
+}
+
+//-----------------------------------------------------------------------------
+void UIDescList::removeAll ()
+{
+	const_reverse_iterator it = rbegin ();
+	while (it != rend ())
+	{
+		(*it)->forget ();
+		it++;
+	}
+	clear ();
+}
+
+//-----------------------------------------------------------------------------
+UINode* UIDescList::findChildNode (const std::string& nodeName) const
+{
+	for (const_iterator it = begin (); it != end (); it++)
+	{
+		if (*(*it) == nodeName)
+			return *it;
+	}
+	return 0;
+}
+
+//-----------------------------------------------------------------------------
+UINode* UIDescList::findChildNodeWithAttributeValue (const char* attributeName, const char* attributeValue) const
+{
+	for (const_iterator it = begin (); it != end (); it++)
+	{
+		const std::string* attributeValuePtr = (*it)->getAttributes ()->getAttributeValue (attributeName);
+		if (attributeValuePtr && *attributeValuePtr == attributeValue)
+			return *it;
+	}
+	return 0;
+}
+
+//-----------------------------------------------------------------------------
+void UIDescList::sort ()
+{
+	struct Compare {
+		bool operator () (const UINode* n1, const UINode* n2) const
 		{
-			UIDescListContainerType::erase (pos);
-			obj->forget ();
+			const std::string* str1 = n1->getAttributes ()->getAttributeValue ("name");
+			const std::string* str2 = n2->getAttributes ()->getAttributeValue ("name");
+			if (str1 && str2)
+				return *str1 < *str2;
+			else if (str1)
+				return true;
+			return false;
 		}
-	}
-
-	int32_t total () const { return (int32_t)size (); }
-	void removeAll ()
-	{
-		const_reverse_iterator it = rbegin ();
-		while (it != rend ())
-		{
-			(*it)->forget ();
-			it++;
-		}
-		clear ();
-	}
-
-	const_iterator get (const std::string& nodeName) const
-	{
-		for (const_iterator it = begin (); it != end (); it++)
-		{
-			if (*(*it) == nodeName)
-				return it;
-		}
-		return end ();
-	}
-
-	void sort ()
-	{
-		struct Compare {
-			bool operator () (const UINode* n1, const UINode* n2) const
-			{
-				const std::string* str1 = n1->getAttributes ()->getAttributeValue ("name");
-				const std::string* str2 = n2->getAttributes ()->getAttributeValue ("name");
-				if (str1 && str2)
-					return *str1 < *str2;
-				else if (str1)
-					return true;
-				return false;
-			}
-		};
-		std::sort (begin (), end (), Compare ());
-	}
-	
-protected:
-	UIDescList (const UIDescList& l) : ownsObjects (l.ownsObjects)
-	{
-		for (const_iterator it = l.begin (); it != l.end (); it++)
-			add (static_cast<UINode*>((*it)->newCopy ()));
-	}
-	bool ownsObjects;
-};
+	};
+	std::sort (begin (), end (), Compare ());
+}
 
 //-----------------------------------------------------------------------------
 class UIDescWriter
@@ -389,7 +486,7 @@ bool UIDescWriter::writeNode (UINode* node, OutputStream& stream)
 	if (result)
 	{
 		UIDescList& children = node->getChildren ();
-		if (children.total () > 0)
+		if (!children.empty ())
 		{
 			stream << ">\n";
 			intendLevel++;
@@ -645,7 +742,7 @@ bool UIDescription::saveWindowsRCFile (UTF8StringPtr filename)
 {
 	bool result = false;
 	UINode* bitmapNodes = getBaseNode (MainNodeNames::kBitmap);
-	if (bitmapNodes && bitmapNodes->getChildren().total() > 0)
+	if (bitmapNodes && !bitmapNodes->getChildren().empty ())
 	{
 		CFileStream stream;
 		if (stream.open (filename, CFileStream::kWriteMode|CFileStream::kTruncateMode))
@@ -1058,16 +1155,11 @@ UINode* UIDescription::getBaseNode (UTF8StringPtr name) const
 {
 	if (nodes)
 	{
-		UIDescList::iterator it = nodes->getChildren ().begin ();
-		while (it != nodes->getChildren ().end ())
-		{
-			if ((*it)->getName () == name)
-			{
-				return *it;
-			}
-			it++;
-		}
-		UINode* node = new UINode (name, new UIAttributes);
+		UINode* node = nodes->getChildren ().findChildNode (name);
+		if (node)
+			return node;
+
+		node = new UINode (name, new UIAttributes);
 		nodes->getChildren ().add (node);
 		return node;
 	}
@@ -1078,18 +1170,7 @@ UINode* UIDescription::getBaseNode (UTF8StringPtr name) const
 UINode* UIDescription::findChildNodeByNameAttribute (UINode* node, UTF8StringPtr nameAttribute) const
 {
 	if (node)
-	{
-		UIDescList::iterator it = node->getChildren ().begin ();
-		while (it != node->getChildren ().end ())
-		{
-			const std::string* nameAttr = (*it)->getAttributes ()->getAttributeValue ("name");
-			if (nameAttr && *nameAttr == nameAttribute)
-			{
-				return *it;
-			}
-			it++;
-		}
-	}
+		return node->getChildren().findChildNodeWithAttributeValue ("name", nameAttribute);
 	return 0;
 }
 
@@ -1372,6 +1453,7 @@ template<typename NodeType> void UIDescription::changeNodeName (UTF8StringPtr ol
 	if (node)
 	{
 		node->getAttributes ()->setAttribute ("name", newName);
+		mainNode->childAttributeChanged (node, "name", oldName);
 		mainNode->sortChildren ();
 		changed (changeMsg);
 	}
@@ -1748,7 +1830,7 @@ bool UIDescription::updateAttributesForView (UINode* node, CView* view, bool dee
 				else
 				{
 					// if it is not, we check if it has children. This can happen per example for a CScrollView for its container view.
-					if (subNode->getChildren ().total () > 0)
+					if (!subNode->getChildren ().empty ())
 					{
 						for (UIDescList::iterator it = subNode->getChildren ().begin (); it != subNode->getChildren ().end (); it++)
 						{
@@ -2318,7 +2400,9 @@ void UIDescription::startXmlElement (Xml::Parser* parser, IdStringPtr elementNam
 			if (parent == nodes)
 			{
 				// only allowed second level elements
-				if (name == MainNodeNames::kBitmap || name == MainNodeNames::kFont || name == MainNodeNames::kColor || name == MainNodeNames::kTemplate || name == MainNodeNames::kControlTag || name == MainNodeNames::kCustom || name == MainNodeNames::kVariable)
+				if (name == MainNodeNames::kControlTag)
+					newNode = new UINode (name, new UIAttributes (elementAttributes), true);
+				else if (name == MainNodeNames::kBitmap || name == MainNodeNames::kFont || name == MainNodeNames::kColor || name == MainNodeNames::kTemplate || name == MainNodeNames::kControlTag || name == MainNodeNames::kCustom || name == MainNodeNames::kVariable)
 					newNode = new UINode (name, new UIAttributes (elementAttributes));
 				else
 					parser->stop ();
@@ -2412,10 +2496,10 @@ void UIDescription::xmlComment (Xml::Parser* parser, IdStringPtr comment)
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
-UINode::UINode (const std::string& _name, UIAttributes* _attributes)
+UINode::UINode (const std::string& _name, UIAttributes* _attributes, bool needsFastChildNameAttributeLookup)
 : name (_name)
 , attributes (_attributes)
-, children (new UIDescList)
+, children (needsFastChildNameAttributeLookup ? new UIDescListWithFastFindAttributeNameChild: new UIDescList)
 , flags (0)
 {
 	data.clear ();
@@ -2448,7 +2532,13 @@ UINode::~UINode ()
 //-----------------------------------------------------------------------------
 bool UINode::hasChildren () const
 {
-	return children->total () > 0;
+	return !children->empty ();
+}
+
+//-----------------------------------------------------------------------------
+void UINode::childAttributeChanged (UINode* child, const char* attributeName, const char* oldAttributeValue)
+{
+	children->nodeAttributeChanged (child, attributeName, oldAttributeValue);
 }
 
 //-----------------------------------------------------------------------------
@@ -2607,9 +2697,9 @@ void UIBitmapNode::createXMLData ()
 				Base64Codec bd;
 				if (bd.init (data, dataSize))
 				{
-					UIDescList::const_iterator data = getChildren ().get ("data");
-					if (data != getChildren ().end ())
-						getChildren ().remove (*data);
+					UINode* node = getChildren ().findChildNode ("data");
+					if (node)
+						getChildren ().remove (node);
 					UINode* dataNode = new UINode ("data");
 					dataNode->getAttributes ()->setAttribute ("encoding", "base64");
 					dataNode->getData ().write ((const char*)bd.getData (), bd.getDataSize ());
@@ -2624,9 +2714,9 @@ void UIBitmapNode::createXMLData ()
 //-----------------------------------------------------------------------------
 void UIBitmapNode::removeXMLData ()
 {
-	UIDescList::const_iterator data = getChildren ().get ("data");
-	if (data != getChildren ().end ())
-		getChildren ().remove (*data);
+	UINode* node = getChildren ().findChildNode ("data");
+	if (node)
+		getChildren ().remove (node);
 }
 
 //-----------------------------------------------------------------------------
@@ -2649,14 +2739,14 @@ CBitmap* UIBitmapNode::getBitmap ()
 		}
 		if (bitmap && bitmap->getPlatformBitmap () == 0)
 		{
-			UIDescList::const_iterator data = getChildren ().get ("data");
-			if (data != getChildren ().end () && (*data)->getData ().str ().length () > 0)
+			UINode* node = getChildren ().findChildNode ("data");
+			if (node && node->getData ().str ().length () > 0)
 			{
-				const std::string* codec = (*data)->getAttributes ()->getAttributeValue ("encoding");
+				const std::string* codec = node->getAttributes ()->getAttributeValue ("encoding");
 				if (codec && *codec == "base64")
 				{
 					Base64Codec bd;
-					if (bd.init ((*data)->getData ().str ()))
+					if (bd.init (node->getData ().str ()))
 					{
 						OwningPointer<IPlatformBitmap> platformBitmap = IPlatformBitmap::createFromMemory (bd.getData (), bd.getDataSize ());
 						if (platformBitmap)
