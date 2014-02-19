@@ -97,7 +97,7 @@ void UICrossLines::update (const CPoint& point)
 	currentRect.setHeight (1);
 	CPoint p;
 	editView->localToFrame (p);
-	getParentView()->frameToLocal (p);
+	getParentView ()->frameToLocal (p);
 	currentRect.offset (p.x, p.y);
 	invalid ();
 }

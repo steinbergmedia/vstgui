@@ -553,7 +553,7 @@
 		<color name="editView.backgrund" rgba="#f2f2f2ff"/>
 		<color name="editView.crosslines.background" rgba="#ffffff96"/>
 		<color name="editView.crosslines.foreground" rgba="#00000096"/>
-		<color name="editView.view.highlight" rgba="#ffffff96"/>
+		<color name="editView.view.highlight" rgba="#ffffff5a"/>
 		<color name="editView.view.selection" rgba="#ff0000c8"/>
 		<color name="focus" rgba="#b4d5ffff"/>
 		<color name="groupframe" rgba="#00000008"/>
@@ -747,8 +747,8 @@
 		<attributes Size="5, 5" name="UIGridController"/>
 		<attributes SelectedRow="16" name="UIViewCreatorDataSource"/>
 		<attributes UIAttributesController="orig" name="UIAttributesController"/>
-		<attributes FilterString="line" SelectedRow="1" name="UIColorsDataSource"/>
-		<attributes FilterString="bitmaps.settings." SelectedRow="8" name="UITagsDataSource"/>
+		<attributes FilterString="high" SelectedRow="1" name="UIColorsDataSource"/>
+		<attributes SelectedRow="77" name="UITagsDataSource"/>
 		<attributes SelectedRow="5" name="UIFontsDataSource"/>
 		<attributes SelectedRow="0" name="UIBitmapsDataSource"/>
 		<attributes SelectedTemplate="dialog" name="UITemplateController"/>
