@@ -323,7 +323,7 @@ void GraphicsView::draw (CDrawContext *pContext)
 		t.scale (1.3, 1.3);
 		drawPath->addPath (*path[path2Index], &t);
 
-		pContext->setDrawMode (kAntialias);
+		pContext->setDrawMode (kAntiAliasing);
 		pContext->setLineWidth (getWidth () / 100.);
 		pContext->setFrameColor (kRedCColor);
 		pContext->setFillColor (kBlueCColor);
