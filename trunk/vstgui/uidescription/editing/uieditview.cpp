@@ -207,7 +207,8 @@ private:
 	
 	CViewContainer* editView;
 	CView* highlightView;
-	CColor viewHighlightColor;
+	CColor strokeColor;
+	CColor fillColor;
 };
 
 //----------------------------------------------------------------------------------------------------
@@ -215,12 +216,18 @@ UIHighlightView::UIHighlightView (CViewContainer* editView, const CColor& viewHi
 : CView (CRect (0, 0, 0, 0))
 , editView (editView)
 , highlightView (0)
-, viewHighlightColor (viewHighlightColor)
+, strokeColor (viewHighlightColor)
 {
 	setMouseEnabled (false);
 	viewSizeChanged (editView, CRect (0, 0, 0, 0));
 	editView->getParentView ()->registerViewListener (this);
 	editView->registerViewListener (this);
+	
+	double h,s,l;
+	strokeColor.toHSL (h, s, l);
+	l /= 2.;
+	fillColor.fromHSL (h, s, l);
+	fillColor.alpha = strokeColor.alpha;
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -263,11 +270,11 @@ void UIHighlightView::draw (CDrawContext* pContext)
 	frameToLocal (p);
 	r.offset (p.x, p.y);
 	r.inset (2, 2);
-	pContext->setFrameColor (viewHighlightColor);
+	pContext->setFillColor (fillColor);
+	pContext->setFrameColor (strokeColor);
 	pContext->setLineStyle (kLineSolid);
 	pContext->setLineWidth (3);
-	pContext->drawRect (r);
-	
+	pContext->drawRect (r, kDrawFilledAndStroked);
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -955,7 +962,7 @@ void UIEditView::startDrag (CPoint& where)
 
 	CRect selectionBounds = getSelection ()->getBounds ();
 	CPoint p;
-	frameToLocal (p);
+	getParentView ()->frameToLocal (p);
 	selectionBounds.offset (p.x, p.y);
 
 	CPoint offset;
@@ -970,7 +977,6 @@ void UIEditView::startDrag (CPoint& where)
 		return;
 	stream.end ();
 
-	offset.offset (getViewSize ().left, getViewSize ().top);
 	CDropSource dropSource (stream.getBuffer (), (int32_t)stream.tell (), CDropSource::kText);
 	doDrag (&dropSource, offset, bitmap);
 	if (bitmap)
@@ -1055,22 +1061,13 @@ void UIEditView::onDragEnter (IDataPackage* drag, const CPoint& where)
 		dragSelection = getSelectionOutOfDrag (drag);
 		if (dragSelection)
 		{
-			CPoint where2 (where);
-			where2.offset (dragSelection->getDragOffset ().x, dragSelection->getDragOffset ().y);
-			where2.offset (-getViewSize ().left, -getViewSize ().top);
-			if (grid)
-			{
-				where2.offset (grid->getSize ().x / 2., grid->getSize ().y / 2.);
-				grid->process (where2);
-			}
 			if (!lines)
 			{
 				lines = new UICrossLines (this, UICrossLines::kDragStyle, crosslineBackgroundColor, crosslineForegroundColor);
 				overlayView->addView (lines);
-				lines->update (where2);
 			}
-			highlightView->setHighlightView (getContainerAt (where2, true));
 			getFrame ()->setCursor (kCursorCopy);
+			onDragMove (drag, where);
 		}
 		else
 		{
@@ -1125,7 +1122,12 @@ void UIEditView::onDragMove (IDataPackage* drag, const CPoint& where)
 				}
 				lines->update (where2);
 				if (highlightView)
-					 highlightView->setHighlightView (getContainerAt (where2, true));
+				{
+					CRect visibleRect = getVisibleViewSize ();
+					where2.offset (getViewSize ().left, getViewSize ().top);
+					where2.offset (-visibleRect.left, -visibleRect.top);
+					highlightView->setHighlightView (getContainerAt (where2, true));
+				}
 			}
 		}
 	}
