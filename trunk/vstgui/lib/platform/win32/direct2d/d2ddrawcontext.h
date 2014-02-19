@@ -108,6 +108,11 @@ protected:
 	void releaseRenderTarget ();
 	ID2D1GradientStopCollection* createGradientStopCollection (const D2DGradient* gradient) const;
 
+	void setFillColorInternal (const CColor& color);
+	void setFrameColorInternal (const CColor& color);
+	void setFontColorInternal (const CColor& color);
+	void setLineStyleInternal (const CLineStyle& style);
+
 	HWND window;
 	ID2D1RenderTarget* renderTarget;
 	ID2D1SolidColorBrush* fillBrush;

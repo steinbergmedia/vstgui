@@ -572,6 +572,13 @@ void D2DDrawContext::setLineStyle (const CLineStyle& style)
 {
 	if (strokeStyle && currentState.lineStyle == style)
 		return;
+	setLineStyleInternal (style);
+	COffscreenContext::setLineStyle (style);
+}
+
+//-----------------------------------------------------------------------------
+void D2DDrawContext::setLineStyleInternal (const CLineStyle& style)
+{
 	if (strokeStyle)
 	{
 		strokeStyle->Release ();
@@ -606,7 +613,6 @@ void D2DDrawContext::setLineStyle (const CLineStyle& style)
 		properties.dashStyle = D2D1_DASH_STYLE_SOLID;
 		getD2DFactory ()->CreateStrokeStyle (properties, 0, 0, &strokeStyle);
 	}
-	COffscreenContext::setLineStyle (style);
 }
 
 //-----------------------------------------------------------------------------
@@ -614,11 +620,6 @@ void D2DDrawContext::setLineWidth (CCoord width)
 {
 	if (currentState.frameWidth == width)
 		return;
-	if (strokeStyle)
-	{
-		strokeStyle->Release ();
-		strokeStyle = 0;
-	}
 	COffscreenContext::setLineWidth (width);
 }
 
@@ -655,6 +656,31 @@ void D2DDrawContext::setFillColor (const CColor& color)
 {
 	if (currentState.fillColor == color)
 		return;
+	setFillColorInternal (color);
+	COffscreenContext::setFillColor (color);
+}
+
+//-----------------------------------------------------------------------------
+void D2DDrawContext::setFrameColor (const CColor& color)
+{
+	if (currentState.frameColor == color)
+		return;
+	setFrameColorInternal (color);
+	COffscreenContext::setFrameColor (color);
+}
+
+//-----------------------------------------------------------------------------
+void D2DDrawContext::setFontColor (const CColor& color)
+{
+	if (currentState.fontColor == color)
+		return;
+	setFontColorInternal (color);
+	COffscreenContext::setFontColor (color);
+}
+
+//-----------------------------------------------------------------------------
+void D2DDrawContext::setFillColorInternal (const CColor& color)
+{
 	if (fillBrush)
 	{
 		fillBrush->Release ();
@@ -665,14 +691,11 @@ void D2DDrawContext::setFillColor (const CColor& color)
 		D2D1_COLOR_F d2Color = {color.red/255.f, color.green/255.f, color.blue/255.f, (color.alpha/255.f) * currentState.globalAlpha};
 		renderTarget->CreateSolidColorBrush (d2Color, &fillBrush);
 	}
-	COffscreenContext::setFillColor (color);
 }
 
 //-----------------------------------------------------------------------------
-void D2DDrawContext::setFrameColor (const CColor& color)
+void D2DDrawContext::setFrameColorInternal (const CColor& color)
 {
-	if (currentState.frameColor == color)
-		return;
 	if (strokeBrush)
 	{
 		strokeBrush->Release ();
@@ -683,14 +706,11 @@ void D2DDrawContext::setFrameColor (const CColor& color)
 		D2D1_COLOR_F d2Color = {color.red/255.f, color.green/255.f, color.blue/255.f, (color.alpha/255.f) * currentState.globalAlpha};
 		renderTarget->CreateSolidColorBrush (d2Color, &strokeBrush);
 	}
-	COffscreenContext::setFrameColor (color);
 }
 
 //-----------------------------------------------------------------------------
-void D2DDrawContext::setFontColor (const CColor& color)
+void D2DDrawContext::setFontColorInternal (const CColor& color)
 {
-	if (currentState.fontColor == color)
-		return;
 	if (fontBrush)
 	{
 		fontBrush->Release ();
@@ -701,7 +721,6 @@ void D2DDrawContext::setFontColor (const CColor& color)
 		D2D1_COLOR_F d2Color = {color.red/255.f, color.green/255.f, color.blue/255.f, (color.alpha/255.f) * currentState.globalAlpha};
 		renderTarget->CreateSolidColorBrush (d2Color, &fontBrush);
 	}
-	COffscreenContext::setFontColor (color);
 }
 
 //-----------------------------------------------------------------------------
@@ -710,15 +729,9 @@ void D2DDrawContext::setGlobalAlpha (float newAlpha)
 	if (currentState.globalAlpha == newAlpha)
 		return;
 	COffscreenContext::setGlobalAlpha (newAlpha);
-	CColor color (currentState.frameColor);
-	currentState.frameColor = kTransparentCColor;
-	setFrameColor (color);
-	color = currentState.fillColor;
-	currentState.fillColor = kTransparentCColor;
-	setFillColor (color);
-	color = currentState.fontColor;
-	currentState.fontColor = kTransparentCColor;
-	setFontColor (color);
+	setFrameColorInternal (currentState.frameColor);
+	setFillColorInternal (currentState.fillColor);
+	setFontColorInternal (currentState.fontColor);
 }
 
 //-----------------------------------------------------------------------------
@@ -730,7 +743,37 @@ void D2DDrawContext::saveGlobalState ()
 //-----------------------------------------------------------------------------
 void D2DDrawContext::restoreGlobalState ()
 {
+	CColor prevFillColor = currentState.fillColor;
+	CColor prevFrameColor = currentState.frameColor;
+	CColor prevFontColor = currentState.fontColor;
+	CLineStyle prevLineStye = currentState.lineStyle;
+	float prevAlpha = currentState.globalAlpha;
 	COffscreenContext::restoreGlobalState ();
+	if (prevAlpha != currentState.globalAlpha)
+	{
+		float prevAlpha = currentState.globalAlpha;
+		currentState.globalAlpha = -1.f;
+		setGlobalAlpha (prevAlpha);
+	}
+	else
+	{
+		if (prevFillColor != currentState.fillColor)
+		{
+			setFillColorInternal (currentState.fillColor);
+		}
+		if (prevFrameColor != currentState.fillColor)
+		{
+			setFrameColorInternal (currentState.frameColor);
+		}
+		if (prevFontColor != currentState.fillColor)
+		{
+			setFontColorInternal (currentState.fontColor);
+		}
+		if (prevLineStye != currentState.lineStyle)
+		{
+			setLineStyleInternal (currentState.lineStyle);
+		}
+	}
 }
 
 } // namespace

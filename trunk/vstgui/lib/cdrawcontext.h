@@ -75,6 +75,7 @@ public:
 	const CCoord* getDashLengths () const { return dashLengths; }
 
 	bool operator== (const CLineStyle& cls) const;
+	bool operator!= (const CLineStyle& cls) const { return !(*this == cls); }
 	CLineStyle& operator= (const CLineStyle& cls);
 protected:
 	LineCap cap;
@@ -94,9 +95,12 @@ enum CDrawModeFlags
 {
 	kAliasing = 0,					///< aliased drawing
 	kAntiAliasing = 1,				///< antialised drawing
+
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
 	kCopyMode = kAliasing,			///< \deprecated use kAliasing
 	kAntialias = kAntiAliasing,		///< \deprecated use kAntiAliasing
-	
+#endif
+
 	kIntegralMode = 0xF0000000		///< round coordinates to intragral values
 };
 
@@ -218,7 +222,7 @@ public:
 	virtual void setFontColor (const CColor& color);	///< set current font color
 	CColor getFontColor () const { return currentState.fontColor; }	///< get current font color
 	virtual void setFont (const CFontRef font, const CCoord& size = 0, const int32_t& style = -1); ///< set current font
-	const CFontRef&  getFont () const { return currentState.font; }	///< get current font
+	const CFontRef getFont () const { return currentState.font; }	///< get current font
 	//@}
 	
 	//-----------------------------------------------------------------------------
@@ -291,7 +295,7 @@ protected:
 	/// @cond ignore
 	struct CDrawContextState
 	{
-		CFontRef font;
+		SharedPointer<CFontDesc> font;
 		CColor frameColor;
 		CColor fillColor;
 		CColor fontColor;
@@ -302,6 +306,10 @@ protected:
 		CLineStyle lineStyle;
 		CDrawMode drawMode;
 		float globalAlpha;
+
+		CDrawContextState ();
+		CDrawContextState (const CDrawContextState& state);
+		CDrawContextState& operator= (const CDrawContextState& state);
 	};
 	/// @endcond
 
@@ -309,7 +317,7 @@ protected:
 	CRect surfaceRect;
 
 	CDrawContextState currentState;
-	std::stack<CDrawContextState*> globalStatesStack;
+	std::stack<CDrawContextState> globalStatesStack;
 };
 
 #ifndef M_PI
