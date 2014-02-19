@@ -38,18 +38,46 @@
 namespace VSTGUI {
 
 //-----------------------------------------------------------------------------
+CDrawContext::CDrawContextState::CDrawContextState ()
+{
+	font = 0;
+	fontColor = kTransparentCColor;
+	frameWidth = 0;
+	frameColor = kTransparentCColor;
+	fillColor = kTransparentCColor;
+	lineStyle = kLineOnOffDash;
+	drawMode = kAntiAliasing;
+	globalAlpha = 1;
+}
+
+//-----------------------------------------------------------------------------
+CDrawContext::CDrawContextState::CDrawContextState (const CDrawContextState& state)
+{
+	*this = state;
+}
+
+//-----------------------------------------------------------------------------
+CDrawContext::CDrawContextState& CDrawContext::CDrawContextState::operator= (const CDrawContextState& state)
+{
+	font = state.font;
+	frameColor = state.frameColor;
+	fillColor = state.fillColor;
+	fontColor = state.fontColor;
+	frameWidth = state.frameWidth;
+	offset = state.offset;
+	penLoc = state.penLoc;
+	clipRect = state.clipRect;
+	lineStyle = state.lineStyle;
+	drawMode = state.drawMode;
+	globalAlpha = state.globalAlpha;
+	return *this;
+}
+
+//-----------------------------------------------------------------------------
 CDrawContext::CDrawContext (const CRect& surfaceRect)
 : drawStringHelper (0)
 , surfaceRect (surfaceRect)
 {
-	currentState.font = 0;
-	currentState.fontColor = kTransparentCColor;
-	currentState.frameWidth = 0;
-	currentState.frameColor = kTransparentCColor;
-	currentState.fillColor = kTransparentCColor;
-	currentState.lineStyle = kLineOnOffDash;
-	currentState.drawMode = kAntiAliasing;
-	currentState.globalAlpha = 1;
 }
 
 //-----------------------------------------------------------------------------
@@ -59,16 +87,6 @@ CDrawContext::~CDrawContext ()
 	if (!globalStatesStack.empty ())
 		DebugPrint ("Global state stack not empty. Save and restore global state must be called in sequence !\n");
 	#endif
-	while (!globalStatesStack.empty ())
-	{
-		CDrawContextState* state = globalStatesStack.top ();
-		globalStatesStack.pop ();
-		if (state->font)
-			state->font->forget ();
-		delete state;
-	}
-	if (currentState.font)
-		currentState.font->forget ();
 	if (drawStringHelper)
 		drawStringHelper->forget ();
 }
@@ -90,11 +108,7 @@ void CDrawContext::init ()
 //-----------------------------------------------------------------------------
 void CDrawContext::saveGlobalState ()
 {
-	CDrawContextState* state = new CDrawContextState ();
-	*state = currentState;
-	globalStatesStack.push (state);
-	if (state->font)
-		state->font->remember ();
+	globalStatesStack.push (currentState);
 }
 
 //-----------------------------------------------------------------------------
@@ -102,12 +116,8 @@ void CDrawContext::restoreGlobalState ()
 {
 	if (!globalStatesStack.empty ())
 	{
-		if (currentState.font)
-			currentState.font->forget ();
-		CDrawContextState* state = globalStatesStack.top ();
-		currentState = *state;
+		currentState = globalStatesStack.top ();
 		globalStatesStack.pop ();
-		delete state;
 	}
 	else
 	{
@@ -185,11 +195,10 @@ void CDrawContext::setFont (const CFontRef newFont, const CCoord& size, const in
 {
 	if (newFont == 0)
 		return;
-	if (currentState.font)
-		currentState.font->forget ();
 	if ((size > 0 && newFont->getSize () != size) || (style != -1 && newFont->getStyle () != style))
 	{
-		currentState.font = (CFontRef)newFont->newCopy ();
+		OwningPointer<CFontDesc> font = (CFontRef)newFont->newCopy ();
+		currentState.font = font;
 		if (size > 0)
 			currentState.font->setSize (size);
 		if (style != -1)
@@ -198,7 +207,6 @@ void CDrawContext::setFont (const CFontRef newFont, const CCoord& size, const in
 	else
 	{
 		currentState.font = newFont;
-		currentState.font->remember ();
 	}
 }
 
