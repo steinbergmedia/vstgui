@@ -157,6 +157,13 @@ protected:
 };
 
 //-----------------------------------------------------------------------------
+class UICommentNode : public UINode
+{
+public:
+	UICommentNode (const std::string& comment);
+};
+
+//-----------------------------------------------------------------------------
 class UIVariableNode : public UINode
 {
 public:
@@ -385,6 +392,7 @@ protected:
 	static void encodeAttributeString (std::string& str);
 
 	bool writeNode (UINode* node, OutputStream& stream);
+	bool writeComment (UICommentNode* node, OutputStream& stream);
 	bool writeNodeData (std::stringstream& str, OutputStream& stream);
 	bool writeAttributes (UIAttributes* attr, OutputStream& stream);
 	int32_t intendLevel;
@@ -474,12 +482,25 @@ bool UIDescWriter::writeNodeData (std::stringstream& str, OutputStream& stream)
 }
 
 //-----------------------------------------------------------------------------
+bool UIDescWriter::writeComment (UICommentNode* node, OutputStream& stream)
+{
+	stream << "<!--";
+	stream << node->getData ().str ();
+	stream << "-->\n";
+	return true;
+}
+
+//-----------------------------------------------------------------------------
 bool UIDescWriter::writeNode (UINode* node, OutputStream& stream)
 {
 	bool result = true;
 	if (node->noExport ())
 		return result;
 	for (int32_t i = 0; i < intendLevel; i++) stream << "\t";
+	if (UICommentNode* commentNode = dynamic_cast<UICommentNode*> (node))
+	{
+		return writeComment (commentNode, stream);
+	}
 	stream << "<";
 	stream << node->getName ();
 	result = writeAttributes (node->getAttributes (), stream);
@@ -2476,21 +2497,39 @@ void UIDescription::endXmlElement (Xml::Parser* parser, IdStringPtr name)
 //-----------------------------------------------------------------------------
 void UIDescription::xmlCharData (Xml::Parser* parser, const int8_t* data, int32_t length)
 {
-	if (nodeStack.back () != 0)
+	if (nodeStack.size () == 0)
+		return;
+	std::stringstream& sstream = nodeStack.back ()->getData ();
+	for (int32_t i = 0; i < length; i++)
 	{
-		std::stringstream& sstream = nodeStack.back ()->getData ();
-		for (int32_t i = 0; i < length; i++)
-		{
-			if (data[i] == '\t' || data[i] == '\n' || data[i] == '\r')
-				continue;
-			sstream << (char)data[i];
-		}
+		if (data[i] == '\t' || data[i] == '\n' || data[i] == '\r' || data[i] == 0x20)
+			continue;
+		sstream << (char)data[i];
 	}
 }
 
 //-----------------------------------------------------------------------------
 void UIDescription::xmlComment (Xml::Parser* parser, IdStringPtr comment)
 {
+#if VSTGUI_LIVE_EDITING
+	if (nodeStack.size () == 0)
+	{
+	#if DEBUG
+		DebugPrint ("*** WARNING : Comment outside of root tag will be removed on save !\nComment: %s\n", comment);
+	#endif
+		return;
+	}
+	UINode* parent = nodeStack.back ();
+	if (parent && comment)
+	{
+		std::string commentStr (comment);
+		if (commentStr.length () > 0)
+		{
+			UICommentNode* commentNode = new UICommentNode (comment);
+			parent->getChildren ().add (commentNode);
+		}
+	}
+#endif
 }
 
 //-----------------------------------------------------------------------------
@@ -2545,6 +2584,15 @@ void UINode::childAttributeChanged (UINode* child, const char* attributeName, co
 void UINode::sortChildren ()
 {
 	children->sort ();
+}
+
+//-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
+UICommentNode::UICommentNode (const std::string& comment)
+: UINode ("comment")
+{
+	data << comment;
 }
 
 //-----------------------------------------------------------------------------
