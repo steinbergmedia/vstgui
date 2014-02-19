@@ -47,11 +47,16 @@ class OutputStream;
 class InputStream;
 
 //-----------------------------------------------------------------------------
-class UIAttributes : public CBaseObject, public std::map<std::string,std::string>
+class UIAttributes : public CBaseObject, private std::map<std::string,std::string>
 {
 public:
 	UIAttributes (UTF8StringPtr* attributes = 0);
 	~UIAttributes ();
+
+	using std::map<std::string,std::string>::begin;
+	using std::map<std::string,std::string>::end;
+	using std::map<std::string,std::string>::iterator;
+	using std::map<std::string,std::string>::const_iterator;
 
 	bool hasAttribute (UTF8StringPtr name) const;
 	const std::string* getAttributeValue (UTF8StringPtr name) const;
