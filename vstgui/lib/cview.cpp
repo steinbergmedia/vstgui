@@ -270,6 +270,14 @@ CView::~CView ()
 }
 
 //-----------------------------------------------------------------------------
+void CView::beforeDelete ()
+{
+	VSTGUI_RANGE_BASED_FOR_LOOP (ViewListenerVector, viewListeners, IViewListener*, listener)
+		listener->viewWillDelete (this);
+	VSTGUI_RANGE_BASED_FOR_LOOP_END
+}
+
+//-----------------------------------------------------------------------------
 void CView::setMouseEnabled (bool state)
 {
 	if (getMouseEnabled () != state)

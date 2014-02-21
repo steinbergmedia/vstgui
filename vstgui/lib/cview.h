@@ -391,6 +391,7 @@ public:
 
 	// overwrites
 	CMessageResult notify (CBaseObject* sender, IdStringPtr message) VSTGUI_OVERRIDE_VMETHOD;
+	void beforeDelete () VSTGUI_OVERRIDE_VMETHOD;
 
 	//-------------------------------------------
 	CLASS_METHODS(CView, CBaseObject)

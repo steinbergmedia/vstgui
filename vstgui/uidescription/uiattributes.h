@@ -46,17 +46,19 @@ struct CRect;
 class OutputStream;
 class InputStream;
 
+typedef std::map<std::string,std::string> UIAttributesMap;
+
 //-----------------------------------------------------------------------------
-class UIAttributes : public CBaseObject, private std::map<std::string,std::string>
+class UIAttributes : public CBaseObject, private UIAttributesMap
 {
 public:
 	UIAttributes (UTF8StringPtr* attributes = 0);
 	~UIAttributes ();
 
-	using std::map<std::string,std::string>::begin;
-	using std::map<std::string,std::string>::end;
-	using std::map<std::string,std::string>::iterator;
-	using std::map<std::string,std::string>::const_iterator;
+	using UIAttributesMap::begin;
+	using UIAttributesMap::end;
+	using UIAttributesMap::iterator;
+	using UIAttributesMap::const_iterator;
 
 	bool hasAttribute (UTF8StringPtr name) const;
 	const std::string* getAttributeValue (UTF8StringPtr name) const;

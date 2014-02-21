@@ -57,6 +57,8 @@ extern IdStringPtr kMsgLooseFocus;				///< Message of a view loosing focus (only
 class CViewContainer : public CView
 {
 public:
+	typedef std::list<SharedPointer<CView> > ViewList;
+
 	CViewContainer (const CRect& size);
 	VSTGUI_DEPRECATED(CViewContainer (const CRect& size, CFrame* pParent, CBitmap* pBackground = 0);)
 	CViewContainer (const CViewContainer& viewContainer);
@@ -147,8 +149,8 @@ public:
 	virtual CPoint& localToFrame (CPoint& point) const VSTGUI_OVERRIDE_VMETHOD;
 
 	//-----------------------------------------------------------------------------
-	typedef std::list<SharedPointer<CView> >::const_iterator ChildViewConstIterator;
-	typedef std::list<SharedPointer<CView> >::const_reverse_iterator ChildViewConstReverseIterator;
+	typedef ViewList::const_iterator ChildViewConstIterator;
+	typedef ViewList::const_reverse_iterator ChildViewConstReverseIterator;
 
 	//-----------------------------------------------------------------------------
 	template<bool reverse>
@@ -204,7 +206,7 @@ public:
 		}
 		
 	protected:
-		const std::list<SharedPointer<CView> >& children;
+		const ViewList& children;
 		ChildViewConstIterator iterator;
 		ChildViewConstReverseIterator riterator;
 	};
@@ -252,7 +254,7 @@ protected:
 	};
 
 	/// @cond ignore
-	std::list<SharedPointer<CView> > children;
+	ViewList children;
 	/// @endcond
 
 	CDrawStyle backgroundColorDrawStyle;

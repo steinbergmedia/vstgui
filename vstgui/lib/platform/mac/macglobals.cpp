@@ -38,6 +38,13 @@
 #include "../../cframe.h"
 #include "../iplatformframe.h"
 #include <mach/mach_time.h>
+#ifdef _LIBCPP_VERSION
+#include <unordered_map>
+using std::unordered_map;
+#else
+#include <tr1/unordered_map>
+using std::tr1::unordered_map;
+#endif
 
 #define USE_MAIN_DISPLAY_COLORSPACE	1
 
@@ -56,6 +63,59 @@ uint32_t IPlatformFrame::getTicks ()
 	uint64_t absTime = mach_absolute_time ();
 	double d = (absTime / timebaseInfo.denom) * timebaseInfo.numer;	// nano seconds
 	return static_cast<uint32_t> (d / 1000000);
+}
+
+//-----------------------------------------------------------------------------
+struct ColorHash
+{
+	size_t operator () (const CColor& c) const
+	{
+		size_t v1 = c.red | (c.green << 8) | (c.blue << 16) | (c.alpha << 24);
+		return v1;
+	}
+};
+
+typedef unordered_map<CColor, CGColorRef, ColorHash> CGColorMap;
+
+//-----------------------------------------------------------------------------
+class CGColorMapImpl
+{
+public:
+	~CGColorMapImpl ()
+	{
+		for (CGColorMap::const_iterator it = map.begin (), end = map.end (); it != end; ++it)
+			CFRelease (it->second);
+	}
+	
+	CGColorMap map;
+};
+
+//-----------------------------------------------------------------------------
+static CGColorMap& getColorMap ()
+{
+	static CGColorMapImpl colorMap;
+	return colorMap.map;
+}
+
+//-----------------------------------------------------------------------------
+CGColorRef getCGColor (const CColor& color)
+{
+	CGColorMap& colorMap = getColorMap ();
+	CGColorMap::const_iterator it = colorMap.find (color);
+	if (it != colorMap.end ())
+	{
+		CGColorRef result = it->second;
+		return result;
+	}
+	const CGFloat components[] = {
+		static_cast<CGFloat> (color.red / 255.),
+		static_cast<CGFloat> (color.green / 255.),
+		static_cast<CGFloat> (color.blue / 255.),
+		static_cast<CGFloat> (color.alpha / 255.)
+	};
+	CGColorRef result = CGColorCreate (GetCGColorSpace (), components);
+	colorMap.insert (std::make_pair (color, result));
+	return result;
 }
 
 //-----------------------------------------------------------------------------

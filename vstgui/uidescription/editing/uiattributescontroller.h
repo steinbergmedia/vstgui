@@ -62,10 +62,13 @@ public:
 	
 	void performAttributeChange (const std::string& name, const std::string& value);
 protected:
+	typedef std::list<std::string> StringList;
+
 	CView* createViewForAttribute (const std::string& attrName);
 	void rebuildAttributesView ();
 	void validateAttributeViews ();
 	CView* createValueViewForAttributeType (IViewCreator::AttrType attrType);
+	void getConsolidatedAttributeNames (StringList& result, const std::string& filter);
 
 	void valueChanged (CControl* pControl) VSTGUI_OVERRIDE_VMETHOD;
 	CView* verifyView (CView* view, const UIAttributes& attributes, IUIDescription* description) VSTGUI_OVERRIDE_VMETHOD;
@@ -79,7 +82,8 @@ protected:
 	SharedPointer<UIDescription> editDescription;
 	OwningPointer<CVSTGUITimer> timer;
 
-	std::list<UIAttributeControllers::Controller*> attributeControllers;
+	typedef std::list<UIAttributeControllers::Controller*> UIAttributeControllerList;
+	UIAttributeControllerList attributeControllers;
 
 	enum {
 		kSearchFieldTag = 100,

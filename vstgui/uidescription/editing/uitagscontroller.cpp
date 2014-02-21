@@ -17,20 +17,20 @@ public:
 	~UITagsDataSource ();
 
 protected:
-	virtual void getNames (std::list<const std::string*>& names);
-	virtual bool addItem (UTF8StringPtr name);
-	virtual bool removeItem (UTF8StringPtr name);
-	virtual bool performNameChange (UTF8StringPtr oldName, UTF8StringPtr newName);
-	virtual UTF8StringPtr getDefaultsName ();
+	void getNames (std::list<const std::string*>& names) VSTGUI_OVERRIDE_VMETHOD;
+	bool addItem (UTF8StringPtr name) VSTGUI_OVERRIDE_VMETHOD;
+	bool removeItem (UTF8StringPtr name) VSTGUI_OVERRIDE_VMETHOD;
+	bool performNameChange (UTF8StringPtr oldName, UTF8StringPtr newName) VSTGUI_OVERRIDE_VMETHOD;
+	UTF8StringPtr getDefaultsName () VSTGUI_OVERRIDE_VMETHOD;
 
 	void update ();
 	
-	int32_t dbGetNumColumns (CDataBrowser* browser) { return 2; }
-	CCoord dbGetCurrentColumnWidth (int32_t index, CDataBrowser* browser);
-	void dbDrawCell (CDrawContext* context, const CRect& size, int32_t row, int32_t column, int32_t flags, CDataBrowser* browser);
-	CMouseEventResult dbOnMouseDown (const CPoint& where, const CButtonState& buttons, int32_t row, int32_t column, CDataBrowser* browser);
-	void dbCellTextChanged (int32_t row, int32_t column, UTF8StringPtr newText, CDataBrowser* browser);
-	void dbCellSetupTextEdit (int32_t row, int32_t column, CTextEdit* textEditControl, CDataBrowser* browser);
+	int32_t dbGetNumColumns (CDataBrowser* browser) VSTGUI_OVERRIDE_VMETHOD { return 2; }
+	CCoord dbGetCurrentColumnWidth (int32_t index, CDataBrowser* browser) VSTGUI_OVERRIDE_VMETHOD;
+	void dbDrawCell (CDrawContext* context, const CRect& size, int32_t row, int32_t column, int32_t flags, CDataBrowser* browser) VSTGUI_OVERRIDE_VMETHOD;
+	CMouseEventResult dbOnMouseDown (const CPoint& where, const CButtonState& buttons, int32_t row, int32_t column, CDataBrowser* browser) VSTGUI_OVERRIDE_VMETHOD;
+	void dbCellTextChanged (int32_t row, int32_t column, UTF8StringPtr newText, CDataBrowser* browser) VSTGUI_OVERRIDE_VMETHOD;
+	void dbCellSetupTextEdit (int32_t row, int32_t column, CTextEdit* textEditControl, CDataBrowser* browser) VSTGUI_OVERRIDE_VMETHOD;
 
 	StringVector tags;
 };

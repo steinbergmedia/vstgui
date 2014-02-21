@@ -50,11 +50,13 @@
 #endif
 
 namespace VSTGUI {
+struct CColor;
 
 // TODO: This needs to be done a nicer fashion
 extern void* gBundleRef;
 inline CFBundleRef getBundleRef () { return (CFBundleRef)gBundleRef; }
 extern CGColorSpaceRef GetCGColorSpace ();
+extern CGColorRef getCGColor (const CColor& color);
 
 //-----------------------------------------------------------------------------
 inline CRect CRectFromCGRect (const CGRect& r)

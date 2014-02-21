@@ -302,6 +302,8 @@ protected:
 	ControlList controls;
 };
 
+namespace VST3EditorInternal {
+
 //-----------------------------------------------------------------------------
 static bool parseSize (const std::string& str, CPoint& point)
 {
@@ -330,6 +332,8 @@ static void releaseSubController (IController* subController)
 			delete subController;
 	}
 }
+
+} // namespace VST3EditorInternal
 
 //-----------------------------------------------------------------------------
 /*! @class VST3Editor
@@ -414,7 +418,7 @@ void VST3Editor::init ()
 			if (sizeStr)
 			{
 				CPoint p;
-				if (parseSize (*sizeStr, p))
+				if (VST3EditorInternal::parseSize (*sizeStr, p))
 				{
 					rect.right = (Steinberg::int32)p.x;
 					rect.bottom = (Steinberg::int32)p.y;
@@ -423,9 +427,9 @@ void VST3Editor::init ()
 				}
 			}
 			if (minSizeStr)
-				parseSize (*minSizeStr, minSize);
+				VST3EditorInternal::parseSize (*minSizeStr, minSize);
 			if (maxSizeStr)
-				parseSize (*maxSizeStr, maxSize);
+				VST3EditorInternal::parseSize (*maxSizeStr, maxSize);
 		}
 		#if DEBUG
 		else
@@ -655,7 +659,7 @@ void VST3Editor::onViewRemoved (CFrame* frame, CView* view)
 	IController* controller = getViewController (view);
 	if (controller)
 	{
-		releaseSubController (controller);
+		VST3EditorInternal::releaseSubController (controller);
 		view->removeAttribute (kCViewControllerAttribute);
 	}
 }
@@ -1062,59 +1066,13 @@ CMessageResult VST3Editor::notify (CBaseObject* sender, IdStringPtr message)
 				}
 				else if (strcmp (item->getCommandName (), "Save") == 0)
 				{
-					UIAttributes* attributes = description->getCustomAttributes ("VST3Editor", true);
-					if (attributes)
-					{
-						const std::string* filePath = attributes->getAttributeValue ("Path");
-						if (filePath)
-						{
-							int32_t flags = 0;
-							// check save options from UIEditController
-							UIEditController* editController = dynamic_cast<UIEditController*> (getViewController (frame->getView (0)));
-							if (editController)
-							{
-								attributes = editController->getSettings ();
-								bool val;
-								if (attributes->getBooleanAttribute (UIEditController::kEncodeBitmapsSettingsKey, val) && val == true)
-								{
-									flags |= UIDescription::kWriteImagesIntoXMLFile;
-								}
-								if (attributes->getBooleanAttribute (UIEditController::kWriteWindowsRCFileSettingsKey, val) && val == true)
-								{
-									flags |= UIDescription::kWriteWindowsResourceFile;
-								}
-							}
-							description->save (filePath->c_str (), flags);
-						}
-					}
+					save (false);
 					item->setChecked (false);
 					return kMessageNotified;
 				}
 				else if (strcmp (item->getCommandName (), "Save As") == 0)
 				{
-					UIAttributes* attributes = description->getCustomAttributes ("VST3Editor", true);
-					if (attributes)
-					{
-						CNewFileSelector* fileSelector = CNewFileSelector::create (frame, CNewFileSelector::kSelectSaveFile);
-						if (fileSelector)
-						{
-							fileSelector->setTitle ("Save UIDescription File");
-							fileSelector->setDefaultExtension (CFileExtension ("VSTGUI UI Description", "uidesc"));
-							const std::string* filePath = attributes->getAttributeValue ("Path");
-							if (filePath)
-								fileSelector->setInitialDirectory (filePath->c_str ());
-							if (fileSelector->runModal ())
-							{
-								UTF8StringPtr filePath = fileSelector->getSelectedFile (0);
-								if (filePath)
-								{
-									attributes->setAttribute ("Path", filePath);
-									description->save (filePath);
-								}
-							}
-							fileSelector->forget ();
-						}
-					}
+					save (true);
 					item->setChecked (false);
 					return kMessageNotified;
 				}
@@ -1123,6 +1081,67 @@ CMessageResult VST3Editor::notify (CBaseObject* sender, IdStringPtr message)
 	}
 	#endif
  	return VSTGUIEditor::notify (sender, message); 
+}
+
+namespace VST3EditorInternal {
+//------------------------------------------------------------------------
+static int32_t getUIDescriptionSaveOptions (CFrame* frame)
+{
+	int32_t flags = 0;
+	UIEditController* editController = dynamic_cast<UIEditController*> (getViewController (frame->getView (0)));
+	if (editController)
+	{
+		UIAttributes* attributes = editController->getSettings ();
+		bool val;
+		if (attributes->getBooleanAttribute (UIEditController::kEncodeBitmapsSettingsKey, val) && val == true)
+		{
+			flags |= UIDescription::kWriteImagesIntoXMLFile;
+		}
+		if (attributes->getBooleanAttribute (UIEditController::kWriteWindowsRCFileSettingsKey, val) && val == true)
+		{
+			flags |= UIDescription::kWriteWindowsResourceFile;
+		}
+	}
+	return flags;
+}
+} // namespace VST3EditorInternal
+
+//------------------------------------------------------------------------
+void VST3Editor::save (bool saveAs)
+{
+	UIAttributes* attributes = description->getCustomAttributes ("VST3Editor", true);
+	assert(attributes);
+	std::string savePath;
+	if (saveAs)
+	{
+		CNewFileSelector* fileSelector = CNewFileSelector::create (frame, CNewFileSelector::kSelectSaveFile);
+		if (fileSelector == 0)
+			return;
+		fileSelector->setTitle ("Save UIDescription File");
+		fileSelector->setDefaultExtension (CFileExtension ("VSTGUI UI Description", "uidesc"));
+		const std::string* filePath = attributes->getAttributeValue ("Path");
+		if (filePath)
+			fileSelector->setInitialDirectory (filePath->c_str ());
+		if (fileSelector->runModal ())
+		{
+			UTF8StringPtr filePath = fileSelector->getSelectedFile (0);
+			if (filePath)
+			{
+				attributes->setAttribute ("Path", filePath);
+				savePath = filePath;
+			}
+		}
+		fileSelector->forget ();
+	}
+	else
+	{
+		const std::string* filePath = attributes->getAttributeValue ("Path");
+		if (filePath)
+			savePath = *filePath;
+	}
+	if (savePath.empty ())
+		return;
+	description->save (savePath.c_str (), VST3EditorInternal::getUIDescriptionSaveOptions (frame));
 }
 
 //------------------------------------------------------------------------

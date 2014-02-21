@@ -51,6 +51,7 @@ public:
 	virtual void viewRemoved (CView* view) = 0;
 	virtual void viewLostFocus (CView* view) = 0;
 	virtual void viewTookFocus (CView* view) = 0;
+	virtual void viewWillDelete (CView* view) = 0;
 };
 
 //-----------------------------------------------------------------------------
@@ -66,6 +67,7 @@ public:
 	void viewRemoved (CView* view) VSTGUI_OVERRIDE_VMETHOD {}
 	void viewLostFocus (CView* view) VSTGUI_OVERRIDE_VMETHOD {}
 	void viewTookFocus (CView* view) VSTGUI_OVERRIDE_VMETHOD {}
+	void viewWillDelete (CView* view) VSTGUI_OVERRIDE_VMETHOD {}
 };
 
 }
