@@ -63,7 +63,7 @@ public:
 	virtual void hasDifferentValues (bool state) { differentValues = state; }
 	bool hasDifferentValues () const { return differentValues; }
 protected:
-	CControlListener* getControlListener (UTF8StringPtr controlTagName) { return this; }
+	CControlListener* getControlListener (UTF8StringPtr controlTagName) VSTGUI_OVERRIDE_VMETHOD { return this; }
 	void performValueChange (UTF8StringPtr value)
 	{
 		hasDifferentValues (false);
@@ -83,7 +83,7 @@ public:
 	TextAlignmentController (IController* baseController, const std::string& attrName)
 	: Controller (baseController, attrName) {}
 
-	CView* verifyView (CView* view, const UIAttributes& attributes, IUIDescription* description)
+	CView* verifyView (CView* view, const UIAttributes& attributes, IUIDescription* description) VSTGUI_OVERRIDE_VMETHOD
 	{
 		CControl* control = dynamic_cast<CControl*>(view);
 		if (control)
@@ -95,7 +95,7 @@ public:
 		return controller->verifyView (view, attributes, description);
 	}
 
-	void setValue (const std::string& value)
+	void setValue (const std::string& value) VSTGUI_OVERRIDE_VMETHOD
 	{
 		if (hasDifferentValues ())
 		{
@@ -120,7 +120,7 @@ public:
 		}
 	}
 
-	void valueChanged (CControl* control)
+	void valueChanged (CControl* control) VSTGUI_OVERRIDE_VMETHOD
 	{
 		if (control->getValue () == control->getMax ())
 		{
@@ -167,7 +167,7 @@ public:
 	AutosizeController (IController* baseController, UISelection* selection, const std::string& attrName)
 	: Controller (baseController, attrName), selection (selection) {}
 
-	CView* verifyView (CView* view, const UIAttributes& attributes, IUIDescription* description)
+	CView* verifyView (CView* view, const UIAttributes& attributes, IUIDescription* description) VSTGUI_OVERRIDE_VMETHOD
 	{
 		CControl* control = dynamic_cast<CControl*>(view);
 		if (control)
@@ -189,7 +189,7 @@ public:
 		return controller->verifyView (view, attributes, description);
 	}
 
-	void setValue (const std::string& value)
+	void setValue (const std::string& value) VSTGUI_OVERRIDE_VMETHOD
 	{
 		if (hasDifferentValues ())
 		{
@@ -213,7 +213,7 @@ public:
 		}
 	}
 
-	void valueChanged (CControl* control)
+	void valueChanged (CControl* control) VSTGUI_OVERRIDE_VMETHOD
 	{
 		if (control == controls[kRowTag])
 		{
@@ -287,7 +287,7 @@ public:
 	BooleanController (IController* baseController, const std::string& attrName)
 	: Controller (baseController, attrName), control (0) {}
 
-	CView* verifyView (CView* view, const UIAttributes& attributes, IUIDescription* description)
+	CView* verifyView (CView* view, const UIAttributes& attributes, IUIDescription* description) VSTGUI_OVERRIDE_VMETHOD
 	{
 		if (control == 0)
 		{
@@ -295,14 +295,14 @@ public:
 		}
 		return controller->verifyView (view, attributes, description);
 	}
-	void valueChanged (CControl* pControl)
+	void valueChanged (CControl* pControl) VSTGUI_OVERRIDE_VMETHOD
 	{
 		if (pControl->getValue () == control->getMax ())
 			performValueChange ("true");
 		else
 			performValueChange ("false");
 	}
-	void setValue (const std::string& value)
+	void setValue (const std::string& value) VSTGUI_OVERRIDE_VMETHOD
 	{
 		if (hasDifferentValues())
 		{
@@ -334,7 +334,7 @@ public:
 		label->removeDependency (this);
 	}
 	
-	CView* verifyView (CView* view, const UIAttributes& attributes, IUIDescription* description)
+	CView* verifyView (CView* view, const UIAttributes& attributes, IUIDescription* description) VSTGUI_OVERRIDE_VMETHOD
 	{
 		if (label == 0)
 		{
@@ -348,7 +348,8 @@ public:
 		}
 		return controller->verifyView (view, attributes, description);
 	}
-	void valueChanged (CControl* pControl)
+	
+	void valueChanged (CControl* pControl) VSTGUI_OVERRIDE_VMETHOD
 	{
 		CTextLabel* edit = dynamic_cast<CTextLabel*>(pControl);
 		if (edit)
@@ -357,7 +358,8 @@ public:
 			performValueChange (edit->getText ());
 		}
 	}
-	void setValue (const std::string& value)
+	
+	void setValue (const std::string& value) VSTGUI_OVERRIDE_VMETHOD
 	{
 		if (label)
 		{
@@ -387,7 +389,7 @@ public:
 		
 	}
 
-	CMessageResult notify (CBaseObject* sender, IdStringPtr message)
+	CMessageResult notify (CBaseObject* sender, IdStringPtr message) VSTGUI_OVERRIDE_VMETHOD
 	{
 		if (message == CTextLabel::kMsgTruncatedTextChanged)
 		{
@@ -415,7 +417,7 @@ public:
 			menu->removeDependency (this);
 	}
 	
-	CView* verifyView (CView* view, const UIAttributes& attributes, IUIDescription* description)
+	CView* verifyView (CView* view, const UIAttributes& attributes, IUIDescription* description) VSTGUI_OVERRIDE_VMETHOD
 	{
 		if (menu == 0)
 		{
@@ -442,12 +444,12 @@ public:
 		}
 	}
 
-	void setValue (const std::string& value)
+	void setValue (const std::string& value) VSTGUI_OVERRIDE_VMETHOD
 	{
 		TextController::setValue (value);
 	}
 
-	CMessageResult notify (CBaseObject* sender, IdStringPtr message)
+	CMessageResult notify (CBaseObject* sender, IdStringPtr message) VSTGUI_OVERRIDE_VMETHOD
 	{
 		if (sender == menu && message == COptionMenu::kMsgBeforePopup)
 		{
@@ -478,7 +480,7 @@ public:
 		return TextController::notify (sender, message);
 	}
 
-	virtual void valueDisplayTruncated (UTF8StringPtr txt)
+	void valueDisplayTruncated (UTF8StringPtr txt) VSTGUI_OVERRIDE_VMETHOD
 	{
 		if (label && menu)
 		{
@@ -505,12 +507,12 @@ public:
 	ColorController (IController* baseController, const std::string& attrName, UIDescription* description)
 	: MenuController (baseController, attrName, description) {}
 
-	virtual void collectMenuItemNames (std::list<const std::string*>& names)
+	void collectMenuItemNames (std::list<const std::string*>& names) VSTGUI_OVERRIDE_VMETHOD
 	{
 		description->collectColorNames (names);
 	}
 	
-	virtual void validateMenuEntry (CCommandMenuItem* item)
+	void validateMenuEntry (CCommandMenuItem* item) VSTGUI_OVERRIDE_VMETHOD
 	{
 		const CCoord size = 15;
 		CColor color;
@@ -529,7 +531,7 @@ public:
 		}
 	}
 	
-	void setValue (const std::string& value)
+	void setValue (const std::string& value) VSTGUI_OVERRIDE_VMETHOD
 	{
 		MenuController::setValue (value);
 		if (colorView)
@@ -554,7 +556,7 @@ public:
 		}
 	}
 
-	CView* createView (const UIAttributes& attributes, IUIDescription* description)
+	CView* createView (const UIAttributes& attributes, IUIDescription* description) VSTGUI_OVERRIDE_VMETHOD
 	{
 		const std::string* attr = attributes.getAttributeValue ("custom-view-name");
 		if (attr && *attr == "ColorView")
@@ -569,7 +571,7 @@ protected:
 	{
 	public:
 		ColorView () : CView (CRect (0, 0, 0, 0)) ,color (kTransparentCColor) {}
-		void draw (CDrawContext* context)
+		void draw (CDrawContext* context) VSTGUI_OVERRIDE_VMETHOD
 		{
 			context->setFillColor (color);
 			context->setDrawMode (kAliasing);
@@ -587,7 +589,7 @@ public:
 	TagController (IController* baseController, const std::string& attrName, UIDescription* description)
 	: MenuController (baseController, attrName, description) {}
 
-	virtual void collectMenuItemNames (std::list<const std::string*>& names)
+	void collectMenuItemNames (std::list<const std::string*>& names) VSTGUI_OVERRIDE_VMETHOD
 	{
 		description->collectControlTagNames (names);
 	}
@@ -601,7 +603,7 @@ public:
 	BitmapController (IController* baseController, const std::string& attrName, UIDescription* description)
 	: MenuController (baseController, attrName, description) {}
 
-	virtual void collectMenuItemNames (std::list<const std::string*>& names)
+	void collectMenuItemNames (std::list<const std::string*>& names) VSTGUI_OVERRIDE_VMETHOD
 	{
 		description->collectBitmapNames (names);
 	}
@@ -615,7 +617,7 @@ public:
 	FontController (IController* baseController, const std::string& attrName, UIDescription* description)
 	: MenuController (baseController, attrName, description) {}
 
-	virtual void collectMenuItemNames (std::list<const std::string*>& names)
+	void collectMenuItemNames (std::list<const std::string*>& names) VSTGUI_OVERRIDE_VMETHOD
 	{
 		description->collectFontNames (names);
 	}
@@ -629,7 +631,7 @@ public:
 	ListController (IController* baseController, const std::string& attrName, UIDescription* description, UISelection* selection)
 	: MenuController (baseController, attrName, description, false, false), selection (selection) {}
 
-	virtual void collectMenuItemNames (std::list<const std::string*>& names)
+	void collectMenuItemNames (std::list<const std::string*>& names) VSTGUI_OVERRIDE_VMETHOD
 	{
 		UIViewFactory* viewFactory = dynamic_cast<UIViewFactory*>(description->getViewFactory ());
 		if (viewFactory)
@@ -786,7 +788,6 @@ IController* UIAttributesController::createSubController (IdStringPtr name, IUID
 		{
 			return new UIAttributeControllers::AutosizeController (this, selection, *currentAttributeName);
 		}
-		
 	}
 	return controller->createSubController (name, description);
 }
@@ -831,7 +832,7 @@ void UIAttributesController::validateAttributeViews ()
 {
 	UIViewFactory* viewFactory = static_cast<UIViewFactory*> (editDescription->getViewFactory ());
 
-	for (std::list<UIAttributeControllers::Controller*>::const_iterator it = attributeControllers.begin (); it != attributeControllers.end (); it++)
+	for (UIAttributeControllerList::const_iterator it = attributeControllers.begin (); it != attributeControllers.end (); it++)
 	{
 		std::string attrValue;
 		bool first = true;
@@ -964,6 +965,50 @@ CView* UIAttributesController::createViewForAttribute (const std::string& attrNa
 }
 
 //----------------------------------------------------------------------------------------------------
+void UIAttributesController::getConsolidatedAttributeNames (StringList& attrNames, const std::string& filter)
+{
+	UIViewFactory* viewFactory = dynamic_cast<UIViewFactory*> (editDescription->getViewFactory ());
+	assert (viewFactory);
+	FOREACH_IN_SELECTION(selection, view)
+		StringList temp;
+		if (viewFactory->getAttributeNamesForView (view, temp))
+		{
+			StringList toRemove;
+			if (attrNames.empty ())
+				attrNames = temp;
+			else
+			{
+				StringList::const_iterator it = attrNames.begin ();
+				while (it != attrNames.end ())
+				{
+					bool found = std::find (temp.begin (), temp.end (), *it) != temp.end ();
+					if (!found)
+					{
+						toRemove.push_back ((*it));
+						temp.remove (*it);
+					}
+					it++;
+				}
+			}
+			if (!filter.empty ())
+			{
+				for (StringList::reverse_iterator rit = temp.rbegin (); rit != temp.rend (); rit++)
+				{
+					std::string lowerCaseName (*rit);
+					std::transform (lowerCaseName.begin (), lowerCaseName.end (), lowerCaseName.begin (), ::tolower);
+					if (lowerCaseName.find (filter) == std::string::npos)
+						toRemove.push_back (*rit);
+				}
+			}
+			for (StringList::const_iterator it = toRemove.begin (); it != toRemove.end (); it++)
+			{
+				attrNames.remove ((*it));
+			}
+		}
+	FOREACH_IN_SELECTION_END
+}
+
+//----------------------------------------------------------------------------------------------------
 void UIAttributesController::rebuildAttributesView ()
 {
 	UIViewFactory* viewFactory = dynamic_cast<UIViewFactory*> (editDescription->getViewFactory ());
@@ -995,54 +1040,10 @@ void UIAttributesController::rebuildAttributesView ()
 			viewNameLabel->setText ("No Selection");
 		}
 	}
-	std::list<std::string> attrNames;
-	FOREACH_IN_SELECTION(selection, view)
-		std::list<std::string> temp;
-		if (viewFactory->getAttributeNamesForView (view, temp))
-		{
-			std::list<std::string> toRemove;
-			if (attrNames.empty ())
-				attrNames = temp;
-			else
-			{
-				std::list<std::string>::const_iterator it = attrNames.begin ();
-				while (it != attrNames.end ())
-				{
-					bool found = false;
-					std::list<std::string>::const_iterator it2 = temp.begin ();
-					while (it2 != temp.end ())
-					{
-						if ((*it) == (*it2))
-						{
-							found = true;
-							break;
-						}
-						it2++;
-					}
-					if (!found)
-					{
-						toRemove.push_back ((*it));
-						temp.remove (*it);
-					}
-					it++;
-				}
-			}
-			if (!filter.empty ())
-			{
-				for (std::list<std::string>::reverse_iterator rit = temp.rbegin (); rit != temp.rend (); rit++)
-				{
-					std::string lowerCaseName (*rit);
-					std::transform (lowerCaseName.begin (), lowerCaseName.end (), lowerCaseName.begin (), ::tolower);
-					if (lowerCaseName.find (filter) == std::string::npos)
-						toRemove.push_back (*rit);
-				}
-			}
-			for (std::list<std::string>::const_iterator it = toRemove.begin (); it != toRemove.end (); it++)
-			{
-				attrNames.remove ((*it));
-			}
-		}
-	FOREACH_IN_SELECTION_END
+
+
+	StringList attrNames;
+	getConsolidatedAttributeNames (attrNames, filter);
 	if (attrNames.empty ())
 	{
 		CRect r (attributeView->getViewSize ());
@@ -1052,8 +1053,8 @@ void UIAttributesController::rebuildAttributesView ()
 	}
 	else
 	{
-		CCoord width = attributeView->getWidth () - (attributeView->getMargin().left + attributeView->getMargin().right);
-		std::list<std::string>::const_iterator it = attrNames.begin ();
+		CCoord width = attributeView->getWidth () - (attributeView->getMargin ().left + attributeView->getMargin ().right);
+		StringList::const_iterator it = attrNames.begin ();
 		while (it != attrNames.end ())
 		{
 			currentAttributeName = &(*it);

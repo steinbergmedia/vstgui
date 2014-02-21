@@ -272,10 +272,7 @@ void QuartzGradient::createCGGradient ()
 	{
 		locations[index] = it->first;
 		CColor color = it->second;
-		CGFloat colorComponents[] = {color.red / 255.f, color.green / 255.f, color.blue / 255.f, color.alpha / 255.f};
-		CGColorRef cgColor = CGColorCreate (GetCGColorSpace (), colorComponents);
-		CFArrayAppendValue (colors, cgColor);
-		CFRelease (cgColor);
+		CFArrayAppendValue (colors, getCGColor (color));
 	}
 
 	gradient = CGGradientCreateWithColors (GetCGColorSpace (), colors, locations);

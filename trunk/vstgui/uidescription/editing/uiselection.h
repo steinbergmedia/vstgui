@@ -48,13 +48,18 @@ class IUIDescription;
 class OutputStream;
 class InputStream;
 
+typedef std::list<SharedPointer<CView> > UISelectionViewList;
 //----------------------------------------------------------------------------------------------------
-class UISelection : public CBaseObject, protected std::list<SharedPointer<CView> >, public IDependency
+class UISelection : public CBaseObject, protected UISelectionViewList, public IDependency
 //----------------------------------------------------------------------------------------------------
 {
 public:
-	typedef std::list<SharedPointer<CView> >::const_iterator const_iterator;
-	typedef std::list<SharedPointer<CView> >::const_reverse_iterator const_reverse_iterator;
+	using UISelectionViewList::const_iterator;
+	using UISelectionViewList::const_reverse_iterator;
+	using UISelectionViewList::begin;
+	using UISelectionViewList::end;
+	using UISelectionViewList::rbegin;
+	using UISelectionViewList::rend;
 	
 	enum {
 		kMultiSelectionStyle,
@@ -70,11 +75,6 @@ public:
 	void remove (CView* view);
 	void setExclusive (CView* view);
 	void empty ();
-
-	const_iterator begin () const { return std::list<SharedPointer<CView> >::begin (); }
-	const_iterator end () const { return std::list<SharedPointer<CView> >::end (); }
-	const_reverse_iterator rbegin () const { return std::list<SharedPointer<CView> >::rbegin (); }
-	const_reverse_iterator rend () const { return std::list<SharedPointer<CView> >::rend (); }
 
 	CView* first () const;
 

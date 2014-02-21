@@ -52,11 +52,11 @@ public:
 	UIFontsDataSource (UIDescription* description, IActionPerformer* actionPerformer, IGenericStringListDataBrowserSourceSelectionChanged* delegate);
 	
 protected:
-	virtual void getNames (std::list<const std::string*>& names);
-	virtual bool addItem (UTF8StringPtr name);
-	virtual bool removeItem (UTF8StringPtr name);
-	virtual bool performNameChange (UTF8StringPtr oldName, UTF8StringPtr newName);
-	virtual UTF8StringPtr getDefaultsName () { return "UIFontsDataSource"; }
+	void getNames (std::list<const std::string*>& names) VSTGUI_OVERRIDE_VMETHOD;
+	bool addItem (UTF8StringPtr name) VSTGUI_OVERRIDE_VMETHOD;
+	bool removeItem (UTF8StringPtr name) VSTGUI_OVERRIDE_VMETHOD;
+	bool performNameChange (UTF8StringPtr oldName, UTF8StringPtr newName) VSTGUI_OVERRIDE_VMETHOD;
+	UTF8StringPtr getDefaultsName () VSTGUI_OVERRIDE_VMETHOD { return "UIFontsDataSource"; }
 
 	SharedPointer<CColorChooser> colorChooser;
 };

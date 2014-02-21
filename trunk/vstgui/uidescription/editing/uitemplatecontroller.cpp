@@ -59,7 +59,7 @@ public:
 	UINavigationDataSource (IGenericStringListDataBrowserSourceSelectionChanged* delegate)
 	: GenericStringListDataBrowserSource (0, delegate) { textInset.x = 4.; headerBackgroundColor = kTransparentCColor; }
 
-	int32_t dbOnKeyDown (const VstKeyCode& key, CDataBrowser* browser)
+	int32_t dbOnKeyDown (const VstKeyCode& key, CDataBrowser* browser) VSTGUI_OVERRIDE_VMETHOD
 	{
 		if (dynamic_cast<CTextEdit*> (browser->getFrame ()->getFocusView ()))
 			return -1;
@@ -104,7 +104,7 @@ public:
 		return GenericStringListDataBrowserSource::dbOnKeyDown (key, browser);
 	}
 	virtual UTF8StringPtr getHeaderTitle () const = 0;
-	void dbDrawHeader (CDrawContext* context, const CRect& size, int32_t column, int32_t flags, CDataBrowser* browser)
+	void dbDrawHeader (CDrawContext* context, const CRect& size, int32_t column, int32_t flags, CDataBrowser* browser) VSTGUI_OVERRIDE_VMETHOD
 	{
 		context->setDrawMode (kAliasing);
 		context->setLineWidth (1);
@@ -145,12 +145,12 @@ class UITemplatesDataSource : public UINavigationDataSource
 public:
 	UITemplatesDataSource (IGenericStringListDataBrowserSourceSelectionChanged* delegate, UIDescription* description, IActionPerformer* actionPerformer, const std::string* templateName);
 	
-	CMouseEventResult dbOnMouseDown (const CPoint& where, const CButtonState& buttons, int32_t row, int32_t column, CDataBrowser* browser);
-	void dbCellTextChanged (int32_t row, int32_t column, UTF8StringPtr newText, CDataBrowser* browser);
-	void dbCellSetupTextEdit (int32_t row, int32_t column, CTextEdit* textEditControl, CDataBrowser* browser);
-	void dbAttached (CDataBrowser* browser);
+	CMouseEventResult dbOnMouseDown (const CPoint& where, const CButtonState& buttons, int32_t row, int32_t column, CDataBrowser* browser) VSTGUI_OVERRIDE_VMETHOD;
+	void dbCellTextChanged (int32_t row, int32_t column, UTF8StringPtr newText, CDataBrowser* browser) VSTGUI_OVERRIDE_VMETHOD;
+	void dbCellSetupTextEdit (int32_t row, int32_t column, CTextEdit* textEditControl, CDataBrowser* browser) VSTGUI_OVERRIDE_VMETHOD;
+	void dbAttached (CDataBrowser* browser) VSTGUI_OVERRIDE_VMETHOD;
 protected:
-	UTF8StringPtr getHeaderTitle () const { return "Templates"; }
+	UTF8StringPtr getHeaderTitle () const VSTGUI_OVERRIDE_VMETHOD { return "Templates"; }
 	SharedPointer<UIDescription> description;
 	IActionPerformer* actionPerformer;
 	std::string firstSelectedTemplateName;
@@ -169,7 +169,7 @@ public:
 	bool update (CViewContainer* vc);
 	void remove ();
 protected:
-	UTF8StringPtr getHeaderTitle () const
+	UTF8StringPtr getHeaderTitle () const VSTGUI_OVERRIDE_VMETHOD
 	{
 		UTF8StringPtr name = 0;
 		if (view)
@@ -182,12 +182,12 @@ protected:
 	}
 	
 	void verify ();
-	CMessageResult notify (CBaseObject* sender, IdStringPtr message);
+	CMessageResult notify (CBaseObject* sender, IdStringPtr message) VSTGUI_OVERRIDE_VMETHOD;
 
 	CCoord calculateSubViewWidth (CViewContainer* view);
-	void dbSelectionChanged (CDataBrowser* browser);
-	CMouseEventResult dbOnMouseDown (const CPoint& where, const CButtonState& buttons, int32_t row, int32_t column, CDataBrowser* browser);
-	int32_t dbOnKeyDown (const VstKeyCode& key, CDataBrowser* browser);
+	void dbSelectionChanged (CDataBrowser* browser) VSTGUI_OVERRIDE_VMETHOD;
+	CMouseEventResult dbOnMouseDown (const CPoint& where, const CButtonState& buttons, int32_t row, int32_t column, CDataBrowser* browser) VSTGUI_OVERRIDE_VMETHOD;
+	int32_t dbOnKeyDown (const VstKeyCode& key, CDataBrowser* browser) VSTGUI_OVERRIDE_VMETHOD;
 
 	CViewContainer* view;
 	SharedPointer<UIViewFactory> viewFactory;

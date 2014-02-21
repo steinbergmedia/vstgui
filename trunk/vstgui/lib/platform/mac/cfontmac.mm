@@ -77,18 +77,6 @@ bool IPlatformFont::getAllPlatformFontFamilies (std::list<std::string>& fontFami
 }
 
 //-----------------------------------------------------------------------------
-static CGColorRef createCGColorFromCColor (const CColor& c)
-{
-	CGFloat compontents[] = {
-		(CGFloat)c.red / (CGFloat)255.,
-		(CGFloat)c.green / (CGFloat)255.,
-		(CGFloat)c.blue / (CGFloat)255.,
-		(CGFloat)c.alpha / (CGFloat)255.
-	};
-	return CGColorCreate (GetCGColorSpace (), compontents);
-}
-
-//-----------------------------------------------------------------------------
 static CTFontRef CoreTextCreateTraitsVariant (CTFontRef fontRef, CTFontSymbolicTraits trait)
 {
 	CTFontRef traitsFontRef = CTFontCreateCopyWithSymbolicTraits (fontRef, CTFontGetSize (fontRef), NULL, trait, trait);
@@ -200,12 +188,10 @@ CTLineRef CoreTextFont::createCTLine (CDrawContext* context, MacString* macStrin
 	CGColorRef cgColorRef = 0;
 	if (fontColor != lastColor)
 	{
-		cgColorRef = createCGColorFromCColor (fontColor);
+		cgColorRef = getCGColor (fontColor);
 		lastColor = fontColor;
 	}
 	CFAttributedStringRef attrStr = CFAttributedStringCreate (kCFAllocatorDefault, cfStr, getStringAttributes (cgColorRef));
-	if (cgColorRef)
-		CFRelease (cgColorRef);
 	if (attrStr)
 	{
 		CTLineRef line = CTLineCreateWithAttributedString (attrStr);
@@ -234,15 +220,13 @@ void CoreTextFont::drawString (CDrawContext* context, const CString& string, con
 		CGContextRef cgContext = cgDrawContext ? cgDrawContext->beginCGContext (true, context->getDrawMode ().integralMode ()) : 0;
 		if (cgContext)
 		{
-			CGColorRef cgColorRef = 0;
 			CGContextSetShouldAntialias (cgContext, antialias);
 			CGContextSetShouldSmoothFonts (cgContext, true);
 			CGContextSetTextPosition (cgContext, point.x, point.y);
 			CTLineDraw (line, cgContext);
 			if (style & kUnderlineFace)
 			{
-				if (cgColorRef == 0)
-					cgColorRef = createCGColorFromCColor (context->getFontColor ());
+				CGColorRef cgColorRef = getCGColor (context->getFontColor ());
 				CGFloat underlineOffset = CTFontGetUnderlinePosition (fontRef) - 1.;
 				CGFloat underlineThickness = CTFontGetUnderlineThickness (fontRef);
 				CGContextSetStrokeColorWithColor (cgContext, cgColorRef);
@@ -255,8 +239,7 @@ void CoreTextFont::drawString (CDrawContext* context, const CString& string, con
 			}
 			if (style & kStrikethroughFace)
 			{
-				if (cgColorRef == 0)
-					cgColorRef = createCGColorFromCColor (context->getFontColor ());
+				CGColorRef cgColorRef = getCGColor (context->getFontColor ());
 				CGFloat underlineThickness = CTFontGetUnderlineThickness (fontRef);
 				CGFloat offset = CTFontGetXHeight (fontRef) * 0.5;
 				CGContextSetStrokeColorWithColor (cgContext, cgColorRef);
@@ -268,8 +251,6 @@ void CoreTextFont::drawString (CDrawContext* context, const CString& string, con
 				CGContextDrawPath (cgContext, kCGPathStroke);
 			}	
 			cgDrawContext->releaseCGContext (cgContext);
-			if (cgColorRef)
-				CFRelease (cgColorRef);
 		}
 		CFRelease (line);
 	}

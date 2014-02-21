@@ -356,7 +356,7 @@ bool CViewContainer::addView (CView *pView, CView* pBefore)
 
 	if (pBefore)
 	{
-		std::list<SharedPointer<CView> >::iterator it = std::find (children.begin (), children.end (), pBefore);
+		ViewList::iterator it = std::find (children.begin (), children.end (), pBefore);
 		children.insert (it, pView);
 	}
 	else
@@ -404,7 +404,7 @@ bool CViewContainer::removeAll (bool withForget)
 		mouseDownView = 0;
 	currentDragView = 0;
 	
-	std::list<SharedPointer<CView> >::iterator it = children.begin ();
+	ViewList::iterator it = children.begin ();
 	while (it != children.end ())
 	{
 		CView* view = *it;
@@ -425,7 +425,7 @@ bool CViewContainer::removeAll (bool withForget)
  */
 bool CViewContainer::removeView (CView *pView, bool withForget)
 {
-	std::list<SharedPointer<CView> >::iterator it = std::find (children.begin (), children.end (), pView);
+	ViewList::iterator it = std::find (children.begin (), children.end (), pView);
 	if (it != children.end ())
 	{
 		pView->invalid ();
@@ -523,7 +523,7 @@ bool CViewContainer::changeViewZOrder (CView* view, int32_t newIndex)
 {
 	if (newIndex >= 0 && newIndex < getNbViews ())
 	{
-		std::list<SharedPointer<CView> >::iterator it = std::find (children.begin (), children.end (), view);
+		ViewList::iterator it = std::find (children.begin (), children.end (), view);
 		if (it != children.end ())
 		{
 			children.erase (it);

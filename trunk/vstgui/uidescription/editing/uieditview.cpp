@@ -53,8 +53,54 @@
 
 namespace VSTGUI {
 
+namespace UIEditViewInternal {
+	
 //----------------------------------------------------------------------------------------------------
-class UISelectionView : public CView, public IViewListenerAdapter
+class UIEditViewOverlay : public CView, public IViewListenerAdapter
+//----------------------------------------------------------------------------------------------------
+{
+public:
+	UIEditViewOverlay (CViewContainer* editView);
+	~UIEditViewOverlay ();
+	
+	void viewSizeChanged (CView* view, const CRect& oldSize) VSTGUI_OVERRIDE_VMETHOD;
+protected:
+	CViewContainer* editView;
+};
+
+//----------------------------------------------------------------------------------------------------
+UIEditViewOverlay::UIEditViewOverlay (CViewContainer* editView)
+: CView (CRect (0, 0, 0, 0))
+, editView (editView)
+{
+	setMouseEnabled (false);
+	viewSizeChanged (editView, CRect (0, 0, 0, 0));
+	editView->getParentView ()->registerViewListener (this);
+	editView->registerViewListener (this);
+}
+
+//----------------------------------------------------------------------------------------------------
+UIEditViewOverlay::~UIEditViewOverlay ()
+{
+	editView->getParentView ()->unregisterViewListener (this);
+	editView->unregisterViewListener (this);
+}
+
+//----------------------------------------------------------------------------------------------------
+void UIEditViewOverlay::viewSizeChanged (CView* view, const CRect& oldSize)
+{
+	invalid ();
+	CRect r = editView->getVisibleViewSize ();
+	r.originize ();
+	CPoint p;
+	editView->getParentView ()->localToFrame (p);
+	r.offset (p.x, p.y);
+	setViewSize (r);
+	invalid ();
+}
+
+//----------------------------------------------------------------------------------------------------
+class UISelectionView : public UIEditViewOverlay
 //----------------------------------------------------------------------------------------------------
 {
 public:
@@ -65,9 +111,7 @@ private:
 	void draw (CDrawContext* pContext);
 	void drawResizeHandle (const CPoint& p, CDrawContext* pContext);
 	CMessageResult notify (CBaseObject* sender, IdStringPtr message) VSTGUI_OVERRIDE_VMETHOD;
-	void viewSizeChanged (CView* view, const CRect& oldSize) VSTGUI_OVERRIDE_VMETHOD;
 	
-	CViewContainer* editView;
 	SharedPointer<UISelection> selection;
 	CColor selectionColor;
 	CCoord handleInset;
@@ -75,16 +119,11 @@ private:
 
 //----------------------------------------------------------------------------------------------------
 UISelectionView::UISelectionView (CViewContainer* editView, UISelection* selection, const CColor& selectionColor, CCoord handleSize)
-: CView (CRect (0, 0, 0, 0))
-, editView (editView)
+: UIEditViewOverlay (editView)
 , selection (selection)
 , selectionColor (selectionColor)
 , handleInset (handleSize / 2.)
 {
-	setMouseEnabled (false);
-	viewSizeChanged (editView, CRect (0, 0, 0, 0));
-	editView->getParentView ()->registerViewListener (this);
-	editView->registerViewListener (this);
 	selection->addDependency (this);
 }
 
@@ -92,8 +131,6 @@ UISelectionView::UISelectionView (CViewContainer* editView, UISelection* selecti
 UISelectionView::~UISelectionView ()
 {
 	selection->removeDependency (this);
-	editView->getParentView ()->unregisterViewListener (this);
-	editView->unregisterViewListener (this);
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -179,33 +216,17 @@ CMessageResult UISelectionView::notify (CBaseObject* sender, IdStringPtr message
 }
 
 //----------------------------------------------------------------------------------------------------
-void UISelectionView::viewSizeChanged (CView* view, const CRect& oldSize)
-{
-	invalid ();
-	CRect r = editView->getVisibleViewSize ();
-	r.originize ();
-	CPoint p;
-	editView->getParentView ()->localToFrame (p);
-	r.offset (p.x, p.y);
-	setViewSize (r);
-	invalid ();
-}
-
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
-//----------------------------------------------------------------------------------------------------
-class UIHighlightView : public CView, public IViewListenerAdapter
+class UIHighlightView : public UIEditViewOverlay
 {
 public:
 	UIHighlightView (CViewContainer* editView, const CColor& viewHighlightColor);
-	~UIHighlightView ();
 
 	void setHighlightView (CView* view);
 private:
-	void draw (CDrawContext* pContext);
-	void viewSizeChanged (CView* view, const CRect& oldSize) VSTGUI_OVERRIDE_VMETHOD;
-	
-	CViewContainer* editView;
+	void draw (CDrawContext* pContext) VSTGUI_OVERRIDE_VMETHOD;
+
 	CView* highlightView;
 	CColor strokeColor;
 	CColor fillColor;
@@ -213,41 +234,15 @@ private:
 
 //----------------------------------------------------------------------------------------------------
 UIHighlightView::UIHighlightView (CViewContainer* editView, const CColor& viewHighlightColor)
-: CView (CRect (0, 0, 0, 0))
-, editView (editView)
+: UIEditViewOverlay (editView)
 , highlightView (0)
 , strokeColor (viewHighlightColor)
 {
-	setMouseEnabled (false);
-	viewSizeChanged (editView, CRect (0, 0, 0, 0));
-	editView->getParentView ()->registerViewListener (this);
-	editView->registerViewListener (this);
-	
 	double h,s,l;
 	strokeColor.toHSL (h, s, l);
 	l /= 2.;
 	fillColor.fromHSL (h, s, l);
 	fillColor.alpha = strokeColor.alpha;
-}
-
-//----------------------------------------------------------------------------------------------------
-UIHighlightView::~UIHighlightView ()
-{
-	editView->getParentView ()->unregisterViewListener (this);
-	editView->unregisterViewListener (this);
-}
-
-//----------------------------------------------------------------------------------------------------
-void UIHighlightView::viewSizeChanged (CView* view, const CRect& oldSize)
-{
-	invalid ();
-	CRect r = editView->getVisibleViewSize ();
-	r.originize ();
-	CPoint p;
-	editView->getParentView ()->localToFrame (p);
-	r.offset (p.x, p.y);
-	setViewSize (r);
-	invalid ();
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -276,6 +271,8 @@ void UIHighlightView::draw (CDrawContext* pContext)
 	pContext->setLineWidth (3);
 	pContext->drawRect (r, kDrawFilledAndStroked);
 }
+
+} // namespace UIEditViewInternal
 
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
@@ -335,9 +332,9 @@ void UIEditView::enableEditing (bool state)
 			overlayView->setZIndex (1);
 			parent->addView (overlayView);
 			
-			highlightView = new UIHighlightView (this, viewHighlightColor);
+			highlightView = new UIEditViewInternal::UIHighlightView (this, viewHighlightColor);
 			overlayView->addView (highlightView);
-			UISelectionView* selectionView = new UISelectionView (this, getSelection (), viewSelectionColor, kResizeHandleSize);
+			UIEditViewInternal::UISelectionView* selectionView = new UIEditViewInternal::UISelectionView (this, getSelection (), viewSelectionColor, kResizeHandleSize);
 			overlayView->addView (selectionView);
 		}
 		else
@@ -571,6 +568,8 @@ void UIEditView::invalidSelection ()
 	getSelection ()->invalidRects ();
 }
 
+namespace UIEditViewInternal {
+
 //----------------------------------------------------------------------------------------------------
 static bool pointInResizeHandleRect (const CPoint& where, const CPoint& handle)
 {
@@ -578,6 +577,8 @@ static bool pointInResizeHandleRect (const CPoint& where, const CPoint& handle)
 	r.inset (-kResizeHandleSize/2., -kResizeHandleSize/2.);
 	return r.pointInside (where);
 }
+
+} // namespace UIEditViewInternal
 
 //----------------------------------------------------------------------------------------------------
 UIEditView::MouseSizeMode UIEditView::selectionHitTest (const CPoint& where, CView** resultView)
@@ -595,29 +596,29 @@ UIEditView::MouseSizeMode UIEditView::selectionHitTest (const CPoint& where, CVi
 			if (resultView)
 				*resultView = view;
 			r.inset (kResizeHandleSize, kResizeHandleSize);
-			if (pointInResizeHandleRect (where, r.getBottomRight ()))
+			if (UIEditViewInternal::pointInResizeHandleRect (where, r.getBottomRight ()))
 				return kSizeModeBottomRight;
 			if (!isMainView)
 			{
-				if (pointInResizeHandleRect (where, r.getBottomLeft ()))
+				if (UIEditViewInternal::pointInResizeHandleRect (where, r.getBottomLeft ()))
 					return kSizeModeBottomLeft;
-				if (pointInResizeHandleRect (where, r.getTopLeft ()))
+				if (UIEditViewInternal::pointInResizeHandleRect (where, r.getTopLeft ()))
 					return kSizeModeTopLeft;
-				if (pointInResizeHandleRect (where, r.getTopRight ()))
+				if (UIEditViewInternal::pointInResizeHandleRect (where, r.getTopRight ()))
 					return kSizeModeTopRight;
 				CPoint hp (r.getTopLeft ());
 				hp.y += r.getHeight () /2.;
-				if (pointInResizeHandleRect (where, hp))
+				if (UIEditViewInternal::pointInResizeHandleRect (where, hp))
 					return kSizeModeLeft;
 				hp.x += r.getWidth ();
-				if (pointInResizeHandleRect (where, hp))
+				if (UIEditViewInternal::pointInResizeHandleRect (where, hp))
 					return kSizeModeRight;
 				hp = r.getTopLeft ();
 				hp.x += r.getWidth () / 2.;
-				if (pointInResizeHandleRect (where, hp))
+				if (UIEditViewInternal::pointInResizeHandleRect (where, hp))
 					return kSizeModeTop;
 				hp.y += r.getHeight ();
-				if (pointInResizeHandleRect (where, hp))
+				if (UIEditViewInternal::pointInResizeHandleRect (where, hp))
 					return kSizeModeBottom;
 				if (r.pointInside (where))
 					return kSizeModeNone;

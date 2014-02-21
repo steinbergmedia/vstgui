@@ -104,6 +104,7 @@ public:
 	using UIDescListContainerType::size;
 	
 	UIDescList (bool ownsObjects = true);
+	UIDescList (const UIDescList& descList);
 	virtual ~UIDescList ();
 
 	virtual void add (UINode* obj);
@@ -115,9 +116,9 @@ public:
 	virtual void nodeAttributeChanged (UINode* child, const char* attributeName, const char* oldAttributeValue) {}
 
 	void sort ();
+	
+	CLASS_METHODS(UIDescList, CBaseObject)
 protected:
-	UIDescList (const UIDescList&) {assert(false);}
-
 	bool ownsObjects;
 };
 
@@ -127,6 +128,7 @@ class UINode : public CBaseObject
 public:
 	UINode (const std::string& name, UIAttributes* attributes = 0, bool needsFastChildNameAttributeLookup = false);
 	UINode (const std::string& name, UIDescList* children, UIAttributes* attributes = 0);
+	UINode (const UINode& n);
 	~UINode ();
 
 	const std::string& getName () const { return name; }
@@ -148,6 +150,8 @@ public:
 	bool operator== (const UINode& n) const { return name == n.name; }
 	
 	void sortChildren ();
+
+	CLASS_METHODS(UINode, CBaseObject)
 protected:
 	std::string name;
 	std::stringstream data;
@@ -161,6 +165,8 @@ class UICommentNode : public UINode
 {
 public:
 	UICommentNode (const std::string& comment);
+	UICommentNode (const UICommentNode& n);
+	CLASS_METHODS(UICommentNode, UINode)
 };
 
 //-----------------------------------------------------------------------------
@@ -168,6 +174,7 @@ class UIVariableNode : public UINode
 {
 public:
 	UIVariableNode (const std::string& name, UIAttributes* attributes);
+	UIVariableNode (const UIVariableNode& n);
 	
 	enum Type {
 		kNumber,
@@ -178,6 +185,8 @@ public:
 	Type getType () const;
 	double getNumber () const;
 	const std::string& getString () const;
+
+	CLASS_METHODS(UIVariableNode, UINode)
 protected:
 	Type type;
 	double number;
@@ -188,11 +197,14 @@ class UIControlTagNode : public UINode
 {
 public:
 	UIControlTagNode (const std::string& name, UIAttributes* attributes);
+	UIControlTagNode (const UIControlTagNode& n);
 	int32_t getTag ();
 	void setTag (int32_t newTag);
 	
 	const std::string* getTagString () const;
 	void setTagString (const std::string& str);
+	
+	CLASS_METHODS(UIControlTagNode, UINode)
 protected:
 	int32_t tag;
 };
@@ -202,6 +214,7 @@ class UIBitmapNode : public UINode
 {
 public:
 	UIBitmapNode (const std::string& name, UIAttributes* attributes);
+	UIBitmapNode (const UIBitmapNode& n);
 	CBitmap* getBitmap ();
 	void setBitmap (UTF8StringPtr bitmapName);
 	void setNinePartTiledOffset (const CRect* offsets);
@@ -211,6 +224,7 @@ public:
 	
 	void createXMLData ();
 	void removeXMLData ();
+	CLASS_METHODS(UIBitmapNode, UINode)
 protected:
 	~UIBitmapNode ();
 	CBitmap* bitmap;
@@ -222,10 +236,12 @@ class UIFontNode : public UINode
 {
 public:
 	UIFontNode (const std::string& name, UIAttributes* attributes);
+	UIFontNode (const UIFontNode& n);
 	CFontRef getFont ();
 	void setFont (CFontRef newFont);
 	void setAlternativeFontNames (UTF8StringPtr fontNames);
 	bool getAlternativeFontNames (std::string& fontNames);
+	CLASS_METHODS(UIFontNode, UINode)
 protected:
 	~UIFontNode ();
 	CFontRef font;
@@ -236,8 +252,10 @@ class UIColorNode : public UINode
 {
 public:
 	UIColorNode (const std::string& name, UIAttributes* attributes);
+	UIColorNode (const UIColorNode& n);
 	const CColor& getColor () const { return color; }
 	void setColor (const CColor& newColor);
+	CLASS_METHODS(UIColorNode, UINode)
 protected:
 	CColor color;
 };
@@ -250,30 +268,33 @@ private:
 public:
 	UIDescListWithFastFindAttributeNameChild () {}
 	
-	virtual void add (UINode* obj)
+	void add (UINode* obj) VSTGUI_OVERRIDE_VMETHOD
 	{
 		UIDescList::add (obj);
 		const std::string* nameAttributeValue = obj->getAttributes ()->getAttributeValue ("name");
 		if (nameAttributeValue)
 			childMap.insert (std::make_pair (*nameAttributeValue, obj));
 	}
-	virtual void remove (UINode* obj)
+
+	void remove (UINode* obj) VSTGUI_OVERRIDE_VMETHOD
 	{
 		const std::string* nameAttributeValue = obj->getAttributes ()->getAttributeValue ("name");
 		if (nameAttributeValue)
 		{
-			ChildMap::const_iterator it = childMap.find (*nameAttributeValue);
+			ChildMap::iterator it = childMap.find (*nameAttributeValue);
 			if (it != childMap.end ())
 				childMap.erase (it);
 		}
 		UIDescList::remove (obj);
 	}
-	virtual void removeAll ()
+
+	void removeAll () VSTGUI_OVERRIDE_VMETHOD
 	{
 		childMap.clear ();
 		UIDescList::removeAll ();
 	}
-	virtual UINode* findChildNodeWithAttributeValue (const char* attributeName, const char* attributeValue) const
+
+	UINode* findChildNodeWithAttributeValue (const char* attributeName, const char* attributeValue) const VSTGUI_OVERRIDE_VMETHOD
 	{
 		if (std::string ("name") != attributeName)
 			return UIDescList::findChildNodeWithAttributeValue (attributeName, attributeValue);
@@ -282,11 +303,12 @@ public:
 			return it->second;
 		return 0;
 	}
-	void nodeAttributeChanged (UINode* node, const char* attributeName, const char* oldAttributeValue)
+
+	void nodeAttributeChanged (UINode* node, const char* attributeName, const char* oldAttributeValue) VSTGUI_OVERRIDE_VMETHOD
 	{
 		if (std::string ("name") != attributeName)
 			return;
-		ChildMap::const_iterator it = childMap.find (oldAttributeValue);
+		ChildMap::iterator it = childMap.find (oldAttributeValue);
 		if (it != childMap.end ())
 			childMap.erase (it);
 		const std::string* nameAttributeValue = node->getAttributes ()->getAttributeValue ("name");
@@ -302,6 +324,13 @@ private:
 UIDescList::UIDescList (bool ownsObjects)
 : ownsObjects (ownsObjects)
 {
+}
+
+//-----------------------------------------------------------------------------
+UIDescList::UIDescList (const UIDescList& descList)
+{
+	for (const_iterator it = descList.begin (); it != descList.end (); it++)
+		add (static_cast<UINode*>((*it)->newCopy ()));
 }
 
 //-----------------------------------------------------------------------------
@@ -2561,6 +2590,17 @@ UINode::UINode (const std::string& _name, UIDescList* _children, UIAttributes* _
 }
 
 //-----------------------------------------------------------------------------
+UINode::UINode (const UINode& n)
+: name (n.name)
+, flags (n.flags)
+, attributes (new UIAttributes (*n.attributes))
+, children (new UIDescList (*n.children))
+{
+	data.clear ();
+	data << n.getData ().str ();
+}
+
+//-----------------------------------------------------------------------------
 UINode::~UINode ()
 {
 	if (attributes)
@@ -2593,6 +2633,12 @@ UICommentNode::UICommentNode (const std::string& comment)
 : UINode ("comment")
 {
 	data << comment;
+}
+
+//-----------------------------------------------------------------------------
+UICommentNode::UICommentNode (const UICommentNode& n)
+: UINode (n)
+{
 }
 
 //-----------------------------------------------------------------------------
@@ -2635,6 +2681,14 @@ UIVariableNode::UIVariableNode (const std::string& name, UIAttributes* attribute
 }
 
 //-----------------------------------------------------------------------------
+UIVariableNode::UIVariableNode (const UIVariableNode& n)
+: UINode (n)
+, type (n.type)
+, number (n.number)
+{
+}
+
+//-----------------------------------------------------------------------------
 UIVariableNode::Type UIVariableNode::getType () const
 {
 	return type;
@@ -2662,6 +2716,13 @@ const std::string& UIVariableNode::getString () const
 UIControlTagNode::UIControlTagNode (const std::string& name, UIAttributes* attributes)
 : UINode (name, attributes)
 , tag (-1)
+{
+}
+
+//-----------------------------------------------------------------------------
+UIControlTagNode::UIControlTagNode (const UIControlTagNode& n)
+: UINode (n)
+, tag (n.tag)
 {
 }
 
@@ -2720,6 +2781,16 @@ UIBitmapNode::UIBitmapNode (const std::string& name, UIAttributes* attributes)
 , bitmap (0)
 , filterProcessed (false)
 {
+}
+
+//-----------------------------------------------------------------------------
+UIBitmapNode::UIBitmapNode (const UIBitmapNode& n)
+: UINode (n)
+, bitmap (n.bitmap)
+, filterProcessed (n.filterProcessed)
+{
+	if (bitmap)
+		bitmap->remember ();
 }
 
 //-----------------------------------------------------------------------------
@@ -2860,6 +2931,15 @@ UIFontNode::UIFontNode (const std::string& name, UIAttributes* attributes)
 }
 
 //-----------------------------------------------------------------------------
+UIFontNode::UIFontNode (const UIFontNode& n)
+: UINode (n)
+, font (n.font)
+{
+	if (font)
+		font->remember ();
+}
+
+//-----------------------------------------------------------------------------
 UIFontNode::~UIFontNode ()
 {
 	if (font)
@@ -2996,6 +3076,13 @@ UIColorNode::UIColorNode (const std::string& name, UIAttributes* attributes)
 		UIDescription::parseColor (*rgb, color);
 	if (rgba)
 		UIDescription::parseColor (*rgba, color);
+}
+
+//-----------------------------------------------------------------------------
+UIColorNode::UIColorNode (const UIColorNode& n)
+: UINode (n)
+, color (n.color)
+{
 }
 
 //-----------------------------------------------------------------------------

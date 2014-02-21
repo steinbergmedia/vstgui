@@ -49,7 +49,9 @@ class IAction;
 class UIGrid;
 class CVSTGUITimer;
 class CLayeredViewContainer;
-class UIHighlightView;
+namespace UIEditViewInternal {
+	class UIHighlightView;
+} // namespace UIEditViewInternal
 
 //----------------------------------------------------------------------------------------------------
 class UIEditView : public CViewContainer
@@ -135,7 +137,7 @@ protected:
 	UIDescription* description;
 	SharedPointer<UIGrid> grid;
 	
-	UIHighlightView* highlightView;
+	UIEditViewInternal::UIHighlightView* highlightView;
 	CLayeredViewContainer* overlayView;
 	UICrossLines* lines;
 	IAction* moveSizeOperation;

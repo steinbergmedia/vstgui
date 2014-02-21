@@ -601,7 +601,7 @@ void CGDrawContext::setFrameColor (const CColor& color)
 		return;
 	
 	if (cgContext)
-		CGContextSetRGBStrokeColor (cgContext, color.red/255.f, color.green/255.f, color.blue/255.f, color.alpha/255.f);
+		CGContextSetStrokeColorWithColor (cgContext, getCGColor (color));
 
 	CDrawContext::setFrameColor (color);
 }
@@ -613,7 +613,7 @@ void CGDrawContext::setFillColor (const CColor& color)
 		return;
 
 	if (cgContext)
-		CGContextSetRGBFillColor (cgContext, color.red/255.f, color.green/255.f, color.blue/255.f, color.alpha/255.f);
+		CGContextSetFillColorWithColor (cgContext, getCGColor (color));
 
 	CDrawContext::setFillColor (color);
 }
@@ -625,7 +625,10 @@ CGContextRef CGDrawContext::beginCGContext (bool swapYAxis, bool integralOffset)
 	{
 		CGContextSaveGState (cgContext);
 
-		CGRect cgClipRect = CGRectMake (currentState.clipRect.left, currentState.clipRect.top, currentState.clipRect.width (), currentState.clipRect.height ());
+		CRect clipRect (currentState.clipRect);
+		clipRect.makeIntegral ();
+
+		CGRect cgClipRect = CGRectMake (clipRect.left, clipRect.top, clipRect.width (), clipRect.height ());
 		CGContextClipToRect (cgContext, cgClipRect);
 
 		if (integralOffset)

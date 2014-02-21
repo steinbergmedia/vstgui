@@ -93,6 +93,7 @@ protected:
 	void recreateView ();
 
 	void syncParameterTags ();
+	void save (bool saveAs = false);
 	bool enableEditing (bool state);
 
 	bool PLUGIN_API open (void* parent, const PlatformType& type) VSTGUI_OVERRIDE_VMETHOD;

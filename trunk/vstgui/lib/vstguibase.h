@@ -295,7 +295,7 @@ public:
 	/// @name Reference Counting Methods
 	//-----------------------------------------------------------------------------
 	//@{
-	virtual void forget () { nbReference--; if (nbReference == 0) delete this; }	///< decrease refcount and delete object if refcount == 0
+	virtual void forget () { nbReference--; if (nbReference == 0) { beforeDelete (); delete this; } }	///< decrease refcount and delete object if refcount == 0
 	virtual void remember () { nbReference++; }										///< increase refcount
 	virtual int32_t getNbReference () const { return nbReference; }					///< get refcount
 	//@}
@@ -306,6 +306,8 @@ public:
 	//@{
 	virtual CMessageResult notify (CBaseObject* sender, IdStringPtr message) { return kMessageUnknown; }
 	//@}
+
+	virtual void beforeDelete () {}
 
 	/// @cond ignore
 #if VSTGUI_ENABLE_OLD_CLASS_TYPE_INFO

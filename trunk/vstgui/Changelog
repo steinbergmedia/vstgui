@@ -1,3 +1,8 @@
+2014-02-21 arne
+
+	* add CBaseObject::beforeDelete() virtual method, which will be called directly before the object is deleted.
+	* add IViewListener::viewWillDelete () method
+	
 2014-02-19 arne
 
 	* fix CDrawContext::restoreGlobalState on Direct2D

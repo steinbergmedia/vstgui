@@ -140,6 +140,7 @@ static BOOL VSTGUI_NSView_isFlipped (id self, SEL _cmd) { return YES; }
 static BOOL VSTGUI_NSView_acceptsFirstResponder (id self, SEL _cmd) { return YES; }
 static BOOL VSTGUI_NSView_canBecomeKeyView (id self, SEL _cmd) { return YES; }
 static BOOL VSTGUI_NSView_wantsDefaultClipping (id self, SEL _cmd) { return NO; }
+static NSFocusRingType VSTGUI_NSView_focusRingType (id self) { return NSFocusRingTypeNone; }
 
 //------------------------------------------------------------------------------------
 static void VSTGUI_NSView_makeSubViewFirstResponder (id self, SEL _cmd, NSResponder* newFirstResponder)
@@ -690,6 +691,8 @@ void NSViewFrame::initClass ()
 		VSTGUI_CHECK_YES(class_addMethod (viewClass, @selector(keyDown:), IMP (VSTGUI_NSView_keyDown), "v@:@:^:"))
 		VSTGUI_CHECK_YES(class_addMethod (viewClass, @selector(keyUp:), IMP (VSTGUI_NSView_keyUp), "v@:@:^:"))
 
+		sprintf (funcSig, "%s@:@:", @encode(NSFocusRingType));
+		VSTGUI_CHECK_YES(class_addMethod (viewClass, @selector(focusRingType), IMP (VSTGUI_NSView_focusRingType), funcSig))
 		VSTGUI_CHECK_YES(class_addMethod (viewClass, @selector(makeSubViewFirstResponder:), IMP (VSTGUI_NSView_makeSubViewFirstResponder), "v@:@:^:"))
 
 		sprintf (funcSig, "%s@:@:^:", nsUIntegerEncoded);
