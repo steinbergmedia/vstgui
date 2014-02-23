@@ -40,10 +40,11 @@
 #include <mach/mach_time.h>
 #ifdef _LIBCPP_VERSION
 #include <unordered_map>
-using std::unordered_map;
 #else
 #include <tr1/unordered_map>
-using std::tr1::unordered_map;
+namespace std {
+	using tr1::unordered_map;
+}
 #endif
 
 #define USE_MAIN_DISPLAY_COLORSPACE	1
@@ -75,7 +76,7 @@ struct ColorHash
 	}
 };
 
-typedef unordered_map<CColor, CGColorRef, ColorHash> CGColorMap;
+typedef std::unordered_map<CColor, CGColorRef, ColorHash> CGColorMap;
 
 //-----------------------------------------------------------------------------
 class CGColorMapImpl

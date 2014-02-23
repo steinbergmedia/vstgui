@@ -39,11 +39,30 @@
 #import "macstring.h"
 #import "cgdrawcontext.h"
 #import "macglobals.h"
-#if !TARGET_OS_IPHONE
+#if TARGET_OS_IPHONE
+#import <UIKit/UIKit.h>
+#else
 #import <Cocoa/Cocoa.h>
 #endif
 
 namespace VSTGUI {
+
+//-----------------------------------------------------------------------------
+struct CTVersionCheck
+{
+	CTVersionCheck ()
+	{
+		version = CTGetCoreTextVersion ();
+	}
+	uint32_t version;
+};
+
+//-----------------------------------------------------------------------------
+static uint32_t getCTVersion ()
+{
+	static CTVersionCheck gInstance;
+	return gInstance.version;
+}
 
 //-----------------------------------------------------------------------------
 IPlatformFont* IPlatformFont::create (UTF8StringPtr name, const CCoord& size, const int32_t& style)
@@ -59,10 +78,8 @@ IPlatformFont* IPlatformFont::create (UTF8StringPtr name, const CCoord& size, co
 bool IPlatformFont::getAllPlatformFontFamilies (std::list<std::string>& fontFamilyNames)
 {
 #if TARGET_OS_IPHONE
-	return false;
-#else
-
-#if MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_6
+	NSArray* fonts = [UIFont familyNames];
+#elif MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_6
 	NSArray* fonts = (NSArray*)CTFontManagerCopyAvailableFontFamilyNames ();
 #else
 	NSArray* fonts = [[NSFontManager sharedFontManager] availableFontFamilies];
@@ -73,7 +90,6 @@ bool IPlatformFont::getAllPlatformFontFamilies (std::list<std::string>& fontFami
 		fontFamilyNames.push_back (std::string ([font UTF8String]));
 	}
 	return true;
-#endif
 }
 
 //-----------------------------------------------------------------------------
@@ -109,12 +125,19 @@ CoreTextFont::CoreTextFont (UTF8StringPtr name, const CCoord& size, const int32_
 	CFStringRef fontNameRef = CFStringCreateWithCString (kCFAllocatorDefault, name, kCFStringEncodingUTF8);
 	if (fontNameRef)
 	{
-		CFMutableDictionaryRef attributes = CFDictionaryCreateMutable (kCFAllocatorDefault, 1, &kCFTypeDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks);
-		CFDictionaryAddValue (attributes, kCTFontFamilyNameAttribute, fontNameRef);
-		CTFontDescriptorRef descriptor = CTFontDescriptorCreateWithAttributes (attributes);
-		fontRef = CTFontCreateWithFontDescriptor (descriptor, size, 0);
-		CFRelease (attributes);
-		CFRelease (descriptor);
+		if (getCTVersion () >= 0x00060000)
+		{
+			CFMutableDictionaryRef attributes = CFDictionaryCreateMutable (kCFAllocatorDefault, 1, &kCFTypeDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks);
+			CFDictionaryAddValue (attributes, kCTFontFamilyNameAttribute, fontNameRef);
+			CTFontDescriptorRef descriptor = CTFontDescriptorCreateWithAttributes (attributes);
+			fontRef = CTFontCreateWithFontDescriptor (descriptor, size, 0);
+			CFRelease (attributes);
+			CFRelease (descriptor);
+		}
+		else
+		{
+			fontRef = CTFontCreateWithName (fontNameRef, size, 0);
+		}
 
 		if (style & kBoldFace)
 			fontRef = CoreTextCreateTraitsVariant (fontRef, kCTFontBoldTrait);
@@ -185,6 +208,14 @@ CTLineRef CoreTextFont::createCTLine (CDrawContext* context, MacString* macStrin
 		}
 	}
 	CFStringRef cfStr = macString->getCFString ();
+	if (cfStr == 0)
+	{
+	#if DEBUG
+		DebugPrint ("Empty CFStringRef in MacString. This is unexpected !\n");
+	#endif
+		return NULL;
+	}
+
 	CGColorRef cgColorRef = 0;
 	if (fontColor != lastColor)
 	{
