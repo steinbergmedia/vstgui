@@ -137,9 +137,27 @@ static void VSTGUI_CALayer_DrawInContext (id self, SEL _cmd, CGContextRef ctx)
 	VSTGUI::IPlatformViewLayerDelegate* _viewLayerDelegate = (VSTGUI::IPlatformViewLayerDelegate*)OBJC_GET_VALUE(self, _viewLayerDelegate);
 	if (_viewLayerDelegate)
 	{
+	#if VISUALIZE_LAYER
+		CGContextClearRect (ctx, [self bounds]);
+	#endif
 		CGRect dirtyRect = CGContextGetClipBoundingBox (ctx);
+		if ([self contentsAreFlipped] == [self isGeometryFlipped])
+		{
+			CGContextScaleCTM (ctx, 1, -1);
+			CGContextTranslateCTM (ctx, 0, -[self bounds].size.height);
+			dirtyRect.origin.y = (-dirtyRect.origin.y - dirtyRect.size.height) + [self bounds].size.height;
+		}
+		CGContextSaveGState (ctx);
 		VSTGUI::CGDrawContext drawContext (ctx, VSTGUI::CRectFromCGRect ([(CALayer*)self bounds]));
 		_viewLayerDelegate->drawViewLayer (&drawContext, VSTGUI::CRectFromCGRect (dirtyRect));
+		CGContextRestoreGState (ctx);
+
+	#if VISUALIZE_LAYER
+		CGContextSetRGBFillColor (ctx, 1., 0., 0., 0.3);
+		CGContextFillRect (ctx, [self bounds]);
+		CGContextSetRGBFillColor (ctx, 0., 1., 0., 0.3);
+		CGContextFillRect (ctx, dirtyRect);
+	#endif
 	}
 }
 
@@ -212,7 +230,12 @@ void CAViewLayer::invalidRect (const CRect& size)
 {
 	if (layer)
 	{
-		[layer setNeedsDisplayInRect:CGRectFromCRect (size)];
+		CGRect r = CGRectFromCRect (size);
+		if (layer.contentsAreFlipped == layer.isGeometryFlipped)
+		{
+			r.origin.y = (-r.origin.y - r.size.height) + layer.frame.size.height;
+		}
+		[layer setNeedsDisplayInRect:r];
 	}
 }
 
@@ -221,7 +244,13 @@ void CAViewLayer::setSize (const CRect& size)
 {
 	CRect r (size);
 	r.makeIntegral ();
-	layer.frame = CGRectFromCRect (r);
+    CGRect cgRect = CGRectFromCRect (r);
+    if (layer.contentsAreFlipped == layer.isGeometryFlipped)
+    {
+        CGRect parentSize = layer.superlayer.frame;
+		cgRect.origin.y = (-cgRect.origin.y - cgRect.size.height) + parentSize.size.height;
+    }
+	layer.frame = cgRect;
 }
 
 //-----------------------------------------------------------------------------

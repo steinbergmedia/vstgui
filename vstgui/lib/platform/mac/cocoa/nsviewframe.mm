@@ -1001,7 +1001,8 @@ IPlatformViewLayer* NSViewFrame::createPlatformViewLayer (IPlatformViewLayerDele
 		[nsView setWantsLayer:YES];
 		nsView.layer.actions = nil;
 	}
-	CAViewLayer* layer = new CAViewLayer (parentViewLayer ? parentViewLayer->getLayer () : [nsView layer]);
+    CALayer* caParentLayer = parentViewLayer ? parentViewLayer->getLayer () : [nsView layer];
+	CAViewLayer* layer = new CAViewLayer (caParentLayer);
 	layer->init (drawDelegate);
 	return layer;
 }
