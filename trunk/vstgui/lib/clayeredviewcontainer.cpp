@@ -147,7 +147,10 @@ void CLayeredViewContainer::parentSizeChanged ()
 {
 	CViewContainer::parentSizeChanged ();
 	if (layer)
+	{
 		updateLayerSize ();
+		invalid ();
+	}
 }
 
 //-----------------------------------------------------------------------------
@@ -183,7 +186,8 @@ void CLayeredViewContainer::drawRect (CDrawContext* pContext, const CRect& updat
 void CLayeredViewContainer::drawViewLayer (CDrawContext* context, const CRect& _dirtyRect)
 {
 	CRect dirtyRect (_dirtyRect);
-	CPoint p (getViewSize ().left, getViewSize ().top);
+	CRect visibleSize = getVisibleViewSize ();
+	CPoint p (visibleSize.left, visibleSize.top);
 	dirtyRect.offset (p.x, p.y);
 	p.x *= -1.;
 	p.y *= -1.;

@@ -63,16 +63,6 @@
 #include <algorithm>
 #include <assert.h>
 
-/*
-
-Ideas & Problems:
-----------------
-	- Problem: Undo Manager is cleared when template switched
-		- Idea: instead of creating the template views when switching, create all template views at start and update it only when saving
-		        - this may has the problem that embedded template views won't get updated on switching templates
-
-*/
-
 namespace VSTGUI {
 
 static UIDescription* gUIDescription = 0;

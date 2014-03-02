@@ -68,6 +68,7 @@ UTF8StringPtr SizeToFitOperation::getName ()
 //----------------------------------------------------------------------------------------------------
 void SizeToFitOperation::perform ()
 {
+	selection->changed (UISelection::kMsgSelectionViewWillChange);
 	const_iterator it = begin ();
 	while (it != end ())
 	{
@@ -76,11 +77,13 @@ void SizeToFitOperation::perform ()
 		(*it).first->invalid ();
 		it++;
 	}
+	selection->changed (UISelection::kMsgSelectionViewChanged);
 }
 
 //----------------------------------------------------------------------------------------------------
 void SizeToFitOperation::undo ()
 {
+	selection->changed (UISelection::kMsgSelectionViewWillChange);
 	const_iterator it = begin ();
 	while (it != end ())
 	{
@@ -90,6 +93,7 @@ void SizeToFitOperation::undo ()
 		(*it).first->invalid ();
 		it++;
 	}
+	selection->changed (UISelection::kMsgSelectionViewChanged);
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -640,6 +644,7 @@ UTF8StringPtr AttributeChangeAction::getName ()
 //-----------------------------------------------------------------------------
 void AttributeChangeAction::updateSelection ()
 {
+	selection->changed (UISelection::kMsgSelectionWillChange);
 	for (const_iterator it = begin (); it != end (); it++)
 	{
 		if (selection->contains ((*it).first) == false)
@@ -651,7 +656,7 @@ void AttributeChangeAction::updateSelection ()
 			break;
 		}
 	}
-	selection->changed (UISelection::kMsgSelectionViewChanged);
+	selection->changed (UISelection::kMsgSelectionChanged);
 }
 
 //-----------------------------------------------------------------------------
@@ -660,6 +665,7 @@ void AttributeChangeAction::perform ()
 	UIViewFactory* viewFactory = dynamic_cast<UIViewFactory*> (desc->getViewFactory ());
 	UIAttributes attr;
 	attr.setAttribute (attrName.c_str (), attrValue.c_str ());
+	selection->changed (UISelection::kMsgSelectionViewWillChange);
 	const_iterator it = begin ();
 	while (it != end ())
 	{
@@ -668,6 +674,7 @@ void AttributeChangeAction::perform ()
 		(*it).first->invalid ();	// and afterwards also
 		it++;
 	}
+	selection->changed (UISelection::kMsgSelectionViewChanged);
 	updateSelection ();
 }
 
@@ -675,6 +682,7 @@ void AttributeChangeAction::perform ()
 void AttributeChangeAction::undo ()
 {
 	UIViewFactory* viewFactory = dynamic_cast<UIViewFactory*> (desc->getViewFactory ());
+	selection->changed (UISelection::kMsgSelectionViewWillChange);
 	const_iterator it = begin ();
 	while (it != end ())
 	{
@@ -685,6 +693,7 @@ void AttributeChangeAction::undo ()
 		(*it).first->invalid ();	// and afterwards also
 		it++;
 	}
+	selection->changed (UISelection::kMsgSelectionViewChanged);
 	updateSelection ();
 }
 
