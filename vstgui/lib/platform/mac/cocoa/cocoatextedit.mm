@@ -66,10 +66,10 @@ static id VSTGUI_NSTextField_Init (id self, SEL _cmd, void* textEdit)
 
 		CPoint textInset = tec->platformGetTextInset ();
 
-		editFrameRect.origin.x = textInset.x/2.;
+		editFrameRect.origin.x = textInset.x/2. - 1.;
 		editFrameRect.origin.y = textInset.y/2.;
 		editFrameRect.size.width -= textInset.x/2.;
-		editFrameRect.size.height -= textInset.y/2.;
+		editFrameRect.size.height -= textInset.y/2. - 1.;
 		self = objc_msgSendSuper (SUPER, @selector(initWithFrame:), editFrameRect);
 		if (!self)
 		{
@@ -130,6 +130,19 @@ static id VSTGUI_NSTextField_Init (id self, SEL _cmd, void* textEdit)
 			[frameView performSelector:@selector(makeSubViewFirstResponder:) withObject:self];
 		else
 			[[self window] makeFirstResponder: self];
+
+		if ([frameView wantsLayer])
+		{
+			double maxZPosition = -1.;
+			for (CALayer* layer in frameView.layer.sublayers)
+			{
+				double zPosition = layer.zPosition;
+				if (zPosition > maxZPosition)
+					maxZPosition = zPosition;
+			}
+			[containerView layer].zPosition = maxZPosition + 1;
+		}
+		
 	}
 	return self;
 }
@@ -143,6 +156,7 @@ static void VSTGUI_NSTextField_SyncSize (id self, SEL _cmd)
 	IPlatformTextEditCallback* tec = te->getTextEdit ();
 	NSView* containerView = [self superview];
 	CRect rect (tec->platformGetVisibleSize ());
+	rect.makeIntegral ();
 
 	[containerView setFrame:nsRectFromCRect (rect)];
 
