@@ -53,26 +53,25 @@ public:
 	~UIViewFactory ();
 
 	// IViewFactory
-	CView* createView (const UIAttributes& attributes, IUIDescription* description) VSTGUI_OVERRIDE_VMETHOD;
-	bool applyAttributeValues (CView* view, const UIAttributes& attributes, IUIDescription* desc) const VSTGUI_OVERRIDE_VMETHOD;
+	CView* createView (const UIAttributes& attributes, const IUIDescription* description) const VSTGUI_OVERRIDE_VMETHOD;
+	bool applyAttributeValues (CView* view, const UIAttributes& attributes, const IUIDescription* desc) const VSTGUI_OVERRIDE_VMETHOD;
+	IdStringPtr getViewName (CView* view) const VSTGUI_OVERRIDE_VMETHOD;
+	bool applyCustomViewAttributeValues (CView* customView, IdStringPtr baseViewName, const UIAttributes& attributes, const IUIDescription* desc) const VSTGUI_OVERRIDE_VMETHOD;
 	
 	static void registerViewCreator (const IViewCreator& viewCreator);
 
 	#if VSTGUI_LIVE_EDITING
 	bool getAttributeNamesForView (CView* view, std::list<std::string>& attributeNames) const;
-	bool getAttributeValue (CView* view, const std::string& attributeName, std::string& stringValue, IUIDescription* desc) const;
+	bool getAttributeValue (CView* view, const std::string& attributeName, std::string& stringValue, const IUIDescription* desc) const;
 	IViewCreator::AttrType getAttributeType (CView* view, const std::string& attributeName) const;
 	void collectRegisteredViewNames (std::list<const std::string*>& viewNames, IdStringPtr baseClassNameFilter = 0) const;
-	bool getAttributesForView (CView* view, IUIDescription* desc, UIAttributes& attr) const;
+	bool getAttributesForView (CView* view, const IUIDescription* desc, UIAttributes& attr) const;
 	// list type support
 	bool getPossibleAttributeListValues (CView* view, const std::string& attributeName, std::list<const std::string*>& values) const;
 	#endif
 
-	IdStringPtr getViewName (CView* view) const;
-	bool applyCustomViewAttributeValues (CView* customView, IdStringPtr baseViewName, const UIAttributes& attributes, IUIDescription* desc) const;
-
 protected:
-	CView* createViewByName (const std::string* className, const UIAttributes& attributes, IUIDescription* description);
+	CView* createViewByName (const std::string* className, const UIAttributes& attributes, const IUIDescription* description) const;
 };
 
 } // namespace

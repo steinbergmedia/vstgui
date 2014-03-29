@@ -36,6 +36,7 @@
 #define __crect__
 
 #include "vstguibase.h"
+#include <cmath>
 
 namespace VSTGUI {
 
@@ -123,7 +124,22 @@ struct CRect
 		return true;
 	}
 
-	void bound (const CRect& rect);
+	void bound (const CRect& rect)
+	{
+		if (left < rect.left)
+			left = rect.left;
+		if (top < rect.top)
+			top = rect.top;
+		if (right > rect.right)
+			right = rect.right;
+		if (bottom > rect.bottom)
+			bottom = rect.bottom;
+		if (bottom < top)
+			bottom = top;
+		if (right < left)
+			right = left;
+	}
+
 	void unite (const CRect& rect);
 
 	void normalize ()
@@ -148,7 +164,14 @@ struct CRect
 	}
 
 	void centerInside (const CRect& r); ///< moves this rect to the center of r
-	void makeIntegral ();
+
+	void makeIntegral ()
+	{
+		left = std::floor (left + 0.5);
+		right = std::floor (right + 0.5);
+		top = std::floor (top + 0.5);
+		bottom = std::floor (bottom + 0.5);
+	}
 
 	CCoord left;
 	CCoord top;

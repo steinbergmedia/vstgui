@@ -39,7 +39,7 @@
 #include "cpoint.h"
 #include "ccolor.h"
 #include <list>
-#include <vector>
+#include <map>
 #include <algorithm>
 
 namespace VSTGUI {
@@ -74,7 +74,7 @@ struct CGraphicsTransform
 	
 	void rotate (double angle);
 
-	void transform (CCoord& x, CCoord& y)
+	void transform (CCoord& x, CCoord& y) const
 	{
 		CCoord x2 = m11*x + m12*y + dx;
 		CCoord y2 = m21*x + m22*y + dy;
@@ -82,19 +82,19 @@ struct CGraphicsTransform
 		y = y2;
 	}
 		
-	void transform (CCoord& left, CCoord& right, CCoord& top, CCoord& bottom)
+	void transform (CCoord& left, CCoord& right, CCoord& top, CCoord& bottom) const
 	{
 		transform (left, top);
 		transform (right, bottom);
 	}
 	
-	CPoint& transform (CPoint& p)
+	CPoint& transform (CPoint& p) const
 	{
 		transform (p.x, p.y);
 		return p;
 	}
 
-	CRect& transform (CRect& r)
+	CRect& transform (CRect& r) const
 	{
 		transform (r.left, r.right, r.top, r.bottom);
 		return r;
@@ -249,8 +249,7 @@ protected:
 class CGradient : public CBaseObject
 {
 public:
-	typedef std::pair<double, CColor> ColorStop;
-	typedef std::vector<ColorStop> ColorStopVector;
+	typedef std::multimap<double, CColor> ColorStopMap;
 	//-----------------------------------------------------------------------------
 	/// @name Member Access
 	//-----------------------------------------------------------------------------
@@ -258,25 +257,20 @@ public:
 	
 	virtual void addColorStop (double start, const CColor& color)
 	{
-		colorStops.push_back (std::make_pair (start, color));
-		std::sort (colorStops.begin (), colorStops.end (), CompareColorStopStart ());
+		colorStops.insert (std::make_pair (start, color));
 	}
 
 	//@}
 //-----------------------------------------------------------------------------
 	CLASS_METHODS_NOCOPY(CGradient, CBaseObject)
 protected:
-	struct CompareColorStopStart {
-		bool operator () (const ColorStop& a, const ColorStop& b) const { return a.first < b.first; }
-	};
-
 	CGradient (double color1Start, double color2Start, const CColor& color1, const CColor& color2)
 	{
 		addColorStop (color1Start, color1);
 		addColorStop (color2Start, color2);
 	}
 	
-	ColorStopVector colorStops;
+	ColorStopMap colorStops;
 };
 
 } // namespace

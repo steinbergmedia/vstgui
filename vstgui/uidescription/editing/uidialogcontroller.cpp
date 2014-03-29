@@ -198,7 +198,7 @@ CControlListener* UIDialogController::getControlListener (UTF8StringPtr controlT
 }
 
 //----------------------------------------------------------------------------------------------------
-CView* UIDialogController::verifyView (CView* view, const UIAttributes& attributes, IUIDescription* description)
+CView* UIDialogController::verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description)
 {
 	CControl* control = dynamic_cast<CControl*>(view);
 	if (control)

@@ -54,10 +54,10 @@ public:
 class SubControllerTestController : public UIDescriptionBaseController
 {
 public:
-	Steinberg::tresult PLUGIN_API initialize (Steinberg::FUnknown* context);
-	Steinberg::IPlugView* PLUGIN_API createView (Steinberg::FIDString name);
+	Steinberg::tresult PLUGIN_API initialize (Steinberg::FUnknown* context) VSTGUI_OVERRIDE_VMETHOD;
+	Steinberg::IPlugView* PLUGIN_API createView (Steinberg::FIDString name) VSTGUI_OVERRIDE_VMETHOD;
 
-	IController* createSubController (const char* name, IUIDescription* description, VST3Editor* editor);
+	IController* createSubController (const char* name, const IUIDescription* description, VST3Editor* editor) VSTGUI_OVERRIDE_VMETHOD;
 
 	static Steinberg::FUnknown* createInstance (void*) { return (Steinberg::Vst::IEditController*)new SubControllerTestController; }
 	static Steinberg::FUID cid;

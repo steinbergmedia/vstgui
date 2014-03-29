@@ -45,6 +45,10 @@
 
 #endif
 
+#if VSTGUI_HAS_FUNCTIONAL
+#include <functional>
+#endif
+
 namespace VSTGUI {
 
 //-----------------------------------------------------------------------------
@@ -54,7 +58,12 @@ namespace VSTGUI {
 class CVSTGUITimer : public CBaseObject
 {
 public:
-	CVSTGUITimer (CBaseObject* timerObject, int32_t fireTime = 100);
+#if VSTGUI_HAS_FUNCTIONAL
+	typedef std::function<void(CVSTGUITimer*)> CallbackFunc;
+
+	CVSTGUITimer (CallbackFunc&& callback, int32_t fireTime = 100, bool doStart = true);
+#endif
+	CVSTGUITimer (CBaseObject* timerObject, int32_t fireTime = 100, bool doStart = false);
 	
 	virtual bool start ();							///< starts the timer
 	virtual bool stop ();							///< stops the timer, returns wheather timer was running or not
@@ -68,16 +77,23 @@ public:
 	CLASS_METHODS_NOCOPY(CVSTGUITimer, CBaseObject)
 protected:
 	~CVSTGUITimer ();
+	
+	void fire ();
+	
 	int32_t fireTime;
+#if VSTGUI_HAS_FUNCTIONAL
+	CallbackFunc callbackFunc;
+#else
 	CBaseObject* timerObject;
+#endif
 
 	void* platformTimer;
 
-	#if MAC
+#if MAC
 	static void timerCallback (CFRunLoopTimerRef timer, void *info);
-	#elif WINDOWS
+#elif WINDOWS
 	static VOID CALLBACK TimerProc (HWND hwnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTime);
-	#endif
+#endif
 };
 
 } // namespace

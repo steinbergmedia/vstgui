@@ -72,7 +72,7 @@ public:
 	
 	void setGrid (UIGrid* grid);
 
-	void setupColors (IUIDescription* description);
+	void setupColors (const IUIDescription* description);
 	
 	static IdStringPtr kMsgAttached;
 	static IdStringPtr kMsgRemoved;

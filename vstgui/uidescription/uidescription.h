@@ -79,18 +79,18 @@ public:
 
 	UTF8StringPtr getXmFileName () const { return xmlFile.u.name; }
 	
-	CView* createView (UTF8StringPtr name, IController* controller);
-	const UIAttributes* getViewAttributes (UTF8StringPtr name);
+	CView* createView (UTF8StringPtr name, IController* controller) const;
+	const UIAttributes* getViewAttributes (UTF8StringPtr name) const;
 
-	void setController (IController* controller);
+	void setController (IController* controller) const;
 
-	CBitmap* getBitmap (UTF8StringPtr name) VSTGUI_OVERRIDE_VMETHOD;
-	CFontRef getFont (UTF8StringPtr name) VSTGUI_OVERRIDE_VMETHOD;
-	bool getColor (UTF8StringPtr name, CColor& color) VSTGUI_OVERRIDE_VMETHOD;
+	CBitmap* getBitmap (UTF8StringPtr name) const VSTGUI_OVERRIDE_VMETHOD;
+	CFontRef getFont (UTF8StringPtr name) const VSTGUI_OVERRIDE_VMETHOD;
+	bool getColor (UTF8StringPtr name, CColor& color) const VSTGUI_OVERRIDE_VMETHOD;
 	int32_t getTagForName (UTF8StringPtr name) const VSTGUI_OVERRIDE_VMETHOD;
-	CControlListener* getControlListener (UTF8StringPtr name) VSTGUI_OVERRIDE_VMETHOD;
+	CControlListener* getControlListener (UTF8StringPtr name) const VSTGUI_OVERRIDE_VMETHOD;
 	IController* getController () const VSTGUI_OVERRIDE_VMETHOD { return controller; }
-	IViewFactory* getViewFactory () const { return viewFactory; }
+	const IViewFactory* getViewFactory () const VSTGUI_OVERRIDE_VMETHOD { return viewFactory; }
 	
 	UTF8StringPtr lookupColorName (const CColor& color) const VSTGUI_OVERRIDE_VMETHOD;
 	UTF8StringPtr lookupFontName (const CFontRef font) const VSTGUI_OVERRIDE_VMETHOD;
@@ -121,12 +121,12 @@ public:
 	void removeBitmap (UTF8StringPtr name);
 
 	void changeAlternativeFontNames (UTF8StringPtr name, UTF8StringPtr alternativeFonts);
-	bool getAlternativeFontNames (UTF8StringPtr name, std::string& alternativeFonts);
+	bool getAlternativeFontNames (UTF8StringPtr name, std::string& alternativeFonts) const;
 
-	bool hasColorName (UTF8StringPtr name);
-	bool hasTagName (UTF8StringPtr name);
-	bool hasFontName (UTF8StringPtr name);
-	bool hasBitmapName (UTF8StringPtr name);
+	bool hasColorName (UTF8StringPtr name) const;
+	bool hasTagName (UTF8StringPtr name) const;
+	bool hasFontName (UTF8StringPtr name) const;
+	bool hasBitmapName (UTF8StringPtr name) const;
 
 	void updateViewDescription (UTF8StringPtr name, CView* view);
 	bool getTemplateNameFromView (CView* view, std::string& templateName) const;
@@ -156,7 +156,7 @@ public:
 	static IdStringPtr kMessageTemplateChanged;
 	static IdStringPtr kMessageBeforeSave;
 protected:
-	CView* createViewFromNode (UINode* node);
+	CView* createViewFromNode (UINode* node) const;
 	UINode* getBaseNode (UTF8StringPtr name) const;
 	UINode* findChildNodeByNameAttribute (UINode* node, UTF8StringPtr nameAttribute) const;
 	UINode* findNodeForView (CView* view) const;
@@ -178,12 +178,12 @@ protected:
 
 	CResourceDescription xmlFile;
 	UINode* nodes;
-	IController* controller;
+	mutable IController* controller;
 	IViewFactory* viewFactory;
 	Xml::IContentProvider* xmlContentProvider;
 	IBitmapCreator* bitmapCreator;
 
-	std::deque<IController*> subControllerStack;
+	mutable std::deque<IController*> subControllerStack;
 
 	std::deque<UINode*> nodeStack;
 	

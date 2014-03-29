@@ -49,7 +49,7 @@ namespace VSTGUI {
 class UIViewCreatorDataSource : public UIBaseDataSource
 {
 public:
-	UIViewCreatorDataSource (UIViewFactory* factory, UIDescription* description);
+	UIViewCreatorDataSource (const UIViewFactory* factory, UIDescription* description);
 
 	CMouseEventResult dbOnMouseDown (const CPoint& where, const CButtonState& buttons, int32_t row, int32_t column, CDataBrowser* browser) VSTGUI_OVERRIDE_VMETHOD;
 	CMouseEventResult dbOnMouseMoved (const CPoint& where, const CButtonState& buttons, int32_t row, int32_t column, CDataBrowser* browser) VSTGUI_OVERRIDE_VMETHOD;
@@ -60,7 +60,7 @@ public:
 	bool performNameChange (UTF8StringPtr oldName, UTF8StringPtr newName) VSTGUI_OVERRIDE_VMETHOD { return false; }
 	UTF8StringPtr getDefaultsName () VSTGUI_OVERRIDE_VMETHOD { return "UIViewCreatorDataSource"; }
 protected:
-	UIViewFactory* factory;
+	const UIViewFactory* factory;
 	int32_t mouseDownRow;
 };
 
@@ -80,14 +80,14 @@ UIViewCreatorController::~UIViewCreatorController ()
 }
 
 //----------------------------------------------------------------------------------------------------
-CView* UIViewCreatorController::createView (const UIAttributes& attributes, IUIDescription* _description)
+CView* UIViewCreatorController::createView (const UIAttributes& attributes, const IUIDescription* _description)
 {
 	const std::string* name = attributes.getAttributeValue ("custom-view-name");
 	if (name)
 	{
 		if (*name == "ViewDataBrowser")
 		{
-			UIViewFactory* factory = dynamic_cast<UIViewFactory*> (description->getViewFactory ());
+			const UIViewFactory* factory = dynamic_cast<const UIViewFactory*> (description->getViewFactory ());
 			dataSource = new UIViewCreatorDataSource (factory, description);
 			UIEditController::setupDataSource (dataSource);
 			CDataBrowser* dataBrowser = new CDataBrowser (CRect (0, 0, 0, 0), dataSource, CDataBrowser::kDrawRowLines|CScrollView::kHorizontalScrollbar | CScrollView::kVerticalScrollbar);
@@ -98,7 +98,7 @@ CView* UIViewCreatorController::createView (const UIAttributes& attributes, IUID
 }
 
 //----------------------------------------------------------------------------------------------------
-CView* UIViewCreatorController::verifyView (CView* view, const UIAttributes& attributes, IUIDescription* description)
+CView* UIViewCreatorController::verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description)
 {
 	UISearchTextField* searchField = dynamic_cast<UISearchTextField*>(view);
 	if (searchField && searchField->getTag () == kSearchFieldTag)
@@ -124,7 +124,7 @@ void UIViewCreatorController::valueChanged (CControl* control)
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
-UIViewCreatorDataSource::UIViewCreatorDataSource (UIViewFactory* factory, UIDescription* description)
+UIViewCreatorDataSource::UIViewCreatorDataSource (const UIViewFactory* factory, UIDescription* description)
 : UIBaseDataSource (description, 0, 0)
 , factory (factory)
 {
@@ -166,7 +166,7 @@ CMouseEventResult UIViewCreatorDataSource::dbOnMouseMoved (const CPoint& where, 
 			UISelection selection;
 			selection.add (view);
 			CMemoryStream stream (1024, 1024, false);
-			if (selection.store (stream, factory, description))
+			if (selection.store (stream, description))
 			{
 				stream.end ();
 				CDropSource* dropSource = new CDropSource (stream.getBuffer (), (int32_t)stream.tell (), CDropSource::kText);

@@ -35,6 +35,8 @@
 #ifndef __iviewfactory__
 #define __iviewfactory__
 
+#include "../lib/vstguibase.h"
+
 namespace VSTGUI {
 class CView;
 class UIAttributes;
@@ -46,8 +48,10 @@ class IViewFactory
 public:
 	virtual ~IViewFactory () {}
 	
-	virtual CView* createView (const UIAttributes& attributes, IUIDescription* description) = 0;
-	virtual bool applyAttributeValues (CView* view, const UIAttributes& attributes, IUIDescription* desc) const = 0;
+	virtual CView* createView (const UIAttributes& attributes, const IUIDescription* description) const = 0;
+	virtual bool applyAttributeValues (CView* view, const UIAttributes& attributes, const IUIDescription* desc) const = 0;
+	virtual IdStringPtr getViewName (CView* view) const = 0;
+	virtual bool applyCustomViewAttributeValues (CView* customView, IdStringPtr baseViewName, const UIAttributes& attributes, const IUIDescription* desc) const = 0;
 };
 
 } // namespace VSTGUI

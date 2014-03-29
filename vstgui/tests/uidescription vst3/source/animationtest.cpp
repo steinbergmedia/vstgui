@@ -63,9 +63,9 @@ public:
 	TestAnimationController (IController* controller, Parameter* switchParameter);
 	~TestAnimationController ();
 
-	CView* verifyView (CView* view, const UIAttributes& attributes, IUIDescription* description);
+	CView* verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description) VSTGUI_OVERRIDE_VMETHOD;
 	
-	void PLUGIN_API update (FUnknown* changedUnknown, int32 message);
+	void PLUGIN_API update (FUnknown* changedUnknown, int32 message) VSTGUI_OVERRIDE_VMETHOD;
 	OBJ_METHODS(TestAnimationController, FObject)
 protected:
 	Parameter* switchParameter;
@@ -78,8 +78,8 @@ class ScaleView : public CViewContainer
 {
 public:
 	ScaleView ();
-	CMouseEventResult onMouseEntered (CPoint &where, const CButtonState& buttons);
-	CMouseEventResult onMouseExited (CPoint &where, const CButtonState& buttons);
+	CMouseEventResult onMouseEntered (CPoint &where, const CButtonState& buttons) VSTGUI_OVERRIDE_VMETHOD;
+	CMouseEventResult onMouseExited (CPoint &where, const CButtonState& buttons) VSTGUI_OVERRIDE_VMETHOD;
 protected:
 	CRect origRect;
 };
@@ -110,7 +110,7 @@ IPlugView* PLUGIN_API AnimationTestController::createView (FIDString name)
 }
 
 //------------------------------------------------------------------------
-IController* AnimationTestController::createSubController (const char* name, IUIDescription* description, VST3Editor* editor)
+IController* AnimationTestController::createSubController (const char* name, const IUIDescription* description, VST3Editor* editor)
 {
 	if (ConstString (name) == "AnimationController")
 	{
@@ -120,7 +120,7 @@ IController* AnimationTestController::createSubController (const char* name, IUI
 }
 
 //------------------------------------------------------------------------
-CView* AnimationTestController::createCustomView (const char* name, const UIAttributes& attributes, IUIDescription* description, VST3Editor* editor)
+CView* AnimationTestController::createCustomView (const char* name, const UIAttributes& attributes, const IUIDescription* description, VST3Editor* editor)
 {
 	if (strcmp (name, "ScaleView") == 0)
 	{
@@ -147,7 +147,7 @@ TestAnimationController::~TestAnimationController ()
 }
 
 //------------------------------------------------------------------------
-CView* TestAnimationController::verifyView (CView* view, const UIAttributes& attributes, IUIDescription* description)
+CView* TestAnimationController::verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description)
 {
 	view = DelegationController::verifyView (view, attributes, description);
 	if (view)

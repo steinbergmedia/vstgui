@@ -1511,7 +1511,7 @@ pascal OSStatus HIViewFrame::carbonEventHandler (EventHandlerCallRef inHandlerCa
 							vstKeyCode.modifier |= MODIFIER_ALTERNATE;
 						if (modifiers & controlKey)
 							vstKeyCode.modifier |= MODIFIER_COMMAND;
-						if (frame->platformOnKeyDown (vstKeyCode) != -1)
+						if (frame->platformOnKeyDown (vstKeyCode))
 							result = noErr;
 						
 						break;

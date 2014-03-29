@@ -1218,7 +1218,7 @@ void CocoaTooltipWindow::set (NSViewFrame* nsViewFrame, const CRect& rect, const
 //------------------------------------------------------------------------------------
 void CocoaTooltipWindow::hide ()
 {
-	if (timer == 0)
+	if (timer == 0 && [window isVisible])
 	{
 		timer = new CVSTGUITimer (this, 17);
 		timer->start ();

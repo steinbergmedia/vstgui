@@ -249,13 +249,13 @@ public:
 	~UIColorChooserController ();
 	
 protected:
-	CMessageResult notify (CBaseObject* sender, IdStringPtr message);
-	CView* createView (const UIAttributes& attributes, IUIDescription* description);
-	CView* verifyView (CView* view, const UIAttributes& attributes, IUIDescription* description);
-	CControlListener* getControlListener (UTF8StringPtr name);
-	void valueChanged (CControl* pControl);
-	void controlBeginEdit (CControl* pControl);
-	void controlEndEdit (CControl* pControl);
+	CMessageResult notify (CBaseObject* sender, IdStringPtr message) VSTGUI_OVERRIDE_VMETHOD;
+	CView* createView (const UIAttributes& attributes, const IUIDescription* description) VSTGUI_OVERRIDE_VMETHOD;
+	CView* verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description) VSTGUI_OVERRIDE_VMETHOD;
+	CControlListener* getControlListener (UTF8StringPtr name) VSTGUI_OVERRIDE_VMETHOD;
+	void valueChanged (CControl* pControl) VSTGUI_OVERRIDE_VMETHOD;
+	void controlBeginEdit (CControl* pControl) VSTGUI_OVERRIDE_VMETHOD;
+	void controlEndEdit (CControl* pControl) VSTGUI_OVERRIDE_VMETHOD;
 
 	static bool valueToString (float value, char utf8String[256], void* userData);
 	static bool stringToValue (UTF8StringPtr txt, float& result, void* userData);
@@ -398,7 +398,7 @@ bool UIColorChooserController::stringToValue (UTF8StringPtr txt, float& result, 
 }
 
 //----------------------------------------------------------------------------------------------------
-CView* UIColorChooserController::createView (const UIAttributes& attributes, IUIDescription* description)
+CView* UIColorChooserController::createView (const UIAttributes& attributes, const IUIDescription* description)
 {
 	const std::string* name = attributes.getAttributeValue ("custom-view-name");
 	if (name)
@@ -418,7 +418,7 @@ CView* UIColorChooserController::createView (const UIAttributes& attributes, IUI
 }
 
 //----------------------------------------------------------------------------------------------------
-CView* UIColorChooserController::verifyView (CView* view, const UIAttributes& attributes, IUIDescription* description)
+CView* UIColorChooserController::verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description)
 {
 	CControl* control = dynamic_cast<CControl*>(view);
 	if (control && control->getTag () >= 0)
@@ -799,7 +799,7 @@ UIColorsController::~UIColorsController ()
 }
 
 //----------------------------------------------------------------------------------------------------
-CView* UIColorsController::createView (const UIAttributes& attributes, IUIDescription* description)
+CView* UIColorsController::createView (const UIAttributes& attributes, const IUIDescription* description)
 {
 	const std::string* name = attributes.getAttributeValue ("custom-view-name");
 	if (name)
@@ -814,7 +814,7 @@ CView* UIColorsController::createView (const UIAttributes& attributes, IUIDescri
 }
 
 //----------------------------------------------------------------------------------------------------
-CView* UIColorsController::verifyView (CView* view, const UIAttributes& attributes, IUIDescription* description)
+CView* UIColorsController::verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description)
 {
 	UISearchTextField* searchField = dynamic_cast<UISearchTextField*>(view);
 	if (searchField && searchField->getTag () == kSearchTag)
@@ -856,7 +856,7 @@ void UIColorsController::valueChanged (CControl* pControl)
 }
 
 //----------------------------------------------------------------------------------------------------
-IController* UIColorsController::createSubController (IdStringPtr name, IUIDescription* description)
+IController* UIColorsController::createSubController (IdStringPtr name, const IUIDescription* description)
 {
 	if (strcmp (name, "ColorChooserController") == 0)
 		return new UIColorChooserController (this, color);

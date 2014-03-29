@@ -436,12 +436,12 @@ public:
 	UIBitmapSettingsController (CBitmap* bitmap, const std::string& bitmapName, UIDescription* description, IActionPerformer* actionPerformer);
 	~UIBitmapSettingsController ();
 
-	CMessageResult notify (CBaseObject* sender, IdStringPtr message);
-	CView* verifyView (CView* view, const UIAttributes& attributes, IUIDescription* description);
-	CView* createView (const UIAttributes& attributes, IUIDescription* description);
-	void valueChanged (CControl* pControl);
-	void controlBeginEdit (CControl* pControl);
-	void controlEndEdit (CControl* pControl);
+	CMessageResult notify (CBaseObject* sender, IdStringPtr message) VSTGUI_OVERRIDE_VMETHOD;
+	CView* verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description) VSTGUI_OVERRIDE_VMETHOD;
+	CView* createView (const UIAttributes& attributes, const IUIDescription* description) VSTGUI_OVERRIDE_VMETHOD;
+	void valueChanged (CControl* pControl) VSTGUI_OVERRIDE_VMETHOD;
+	void controlBeginEdit (CControl* pControl) VSTGUI_OVERRIDE_VMETHOD;
+	void controlEndEdit (CControl* pControl) VSTGUI_OVERRIDE_VMETHOD;
 protected:
 	void updateNinePartTiledControls ();
 	static bool stringToValue (UTF8StringPtr txt, float& result, void* userData);
@@ -614,7 +614,7 @@ CMessageResult UIBitmapSettingsController::notify (CBaseObject* sender, IdString
 }
 
 //----------------------------------------------------------------------------------------------------
-CView* UIBitmapSettingsController::verifyView (CView* view, const UIAttributes& attributes, IUIDescription* description)
+CView* UIBitmapSettingsController::verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description)
 {
 	CControl* control = dynamic_cast<CControl*>(view);
 	if (control && control->getTag () >= 0 && control->getTag () < kNumTags)
@@ -712,7 +712,7 @@ CView* UIBitmapSettingsController::verifyView (CView* view, const UIAttributes& 
 }
 
 //----------------------------------------------------------------------------------------------------
-CView* UIBitmapSettingsController::createView (const UIAttributes& attributes, IUIDescription* description)
+CView* UIBitmapSettingsController::createView (const UIAttributes& attributes, const IUIDescription* description)
 {
 	const std::string* name = attributes.getAttributeValue ("custom-view-name");
 	if (name)
@@ -774,7 +774,7 @@ void UIBitmapsController::showSettingsDialog ()
 }
 
 //----------------------------------------------------------------------------------------------------
-CView* UIBitmapsController::createView (const UIAttributes& attributes, IUIDescription* description)
+CView* UIBitmapsController::createView (const UIAttributes& attributes, const IUIDescription* description)
 {
 	const std::string* name = attributes.getAttributeValue ("custom-view-name");
 	if (name)
@@ -794,7 +794,7 @@ CView* UIBitmapsController::createView (const UIAttributes& attributes, IUIDescr
 }
 
 //----------------------------------------------------------------------------------------------------
-CView* UIBitmapsController::verifyView (CView* view, const UIAttributes& attributes, IUIDescription* description)
+CView* UIBitmapsController::verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description)
 {
 	UISearchTextField* searchField = dynamic_cast<UISearchTextField*>(view);
 	if (searchField && searchField->getTag () == kSearchTag)

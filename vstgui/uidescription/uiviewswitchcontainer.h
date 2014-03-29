@@ -93,7 +93,7 @@ protected:
 class UIDescriptionViewSwitchController : public CBaseObject, public IViewSwitchController
 {
 public:
-	UIDescriptionViewSwitchController (UIViewSwitchContainer* viewSwitch, UIDescription* uiDescription, IController* uiController);
+	UIDescriptionViewSwitchController (UIViewSwitchContainer* viewSwitch, const UIDescription* uiDescription, IController* uiController);
 
 	CView* createViewForIndex (int32_t index) VSTGUI_OVERRIDE_VMETHOD;
 	void switchContainerAttached () VSTGUI_OVERRIDE_VMETHOD;
@@ -107,7 +107,7 @@ public:
 	void setSwitchControlTag (int32_t tag) { switchControlTag = tag; }
 	int32_t getSwitchControlTag () const { return switchControlTag; }
 protected:
-	UIDescription* uiDescription;
+	const UIDescription* uiDescription;
 	IController* uiController;
 	int32_t switchControlTag;
 	int32_t currentIndex;

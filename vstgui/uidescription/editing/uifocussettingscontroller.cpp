@@ -87,7 +87,7 @@ CMessageResult UIFocusSettingsController::notify (CBaseObject* sender, IdStringP
 }
 
 //----------------------------------------------------------------------------------------------------
-CView* UIFocusSettingsController::verifyView (CView* view, const UIAttributes& attributes, IUIDescription* description)
+CView* UIFocusSettingsController::verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description)
 {
 	CControl* control = dynamic_cast<CControl*>(view);
 	if (control)

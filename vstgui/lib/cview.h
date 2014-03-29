@@ -45,7 +45,6 @@
 namespace VSTGUI {
 class CDrawContext;
 class CGraphicsPath;
-class CDragContainer;
 class IDataPackage;
 class IViewListener;
 class VSTGUIEditorInterface;

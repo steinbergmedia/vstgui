@@ -51,9 +51,17 @@ class IController : public CControlListener
 public:
 	virtual int32_t getTagForName (UTF8StringPtr name, int32_t registeredTag) const { return registeredTag; };
 	virtual CControlListener* getControlListener (UTF8StringPtr controlTagName) { return this; }
-	virtual CView* createView (const UIAttributes& attributes, IUIDescription* description) { return 0; }
-	virtual CView* verifyView (CView* view, const UIAttributes& attributes, IUIDescription* description) { return view; }
-	virtual IController* createSubController (UTF8StringPtr name, IUIDescription* description) { return 0; }
+	virtual CView* createView (const UIAttributes& attributes, const IUIDescription* description) { return 0; }
+	virtual CView* verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description) { return view; }
+	virtual IController* createSubController (UTF8StringPtr name, const IUIDescription* description) { return 0; }
+
+#if DEBUG
+	// the method arguments have changed for the above methods so here are definitions that will generate a compiler error
+	// if someone has not updated its methods
+	virtual int32_t createView (const UIAttributes& attributes, IUIDescription* description) VSTGUI_FINAL_VMETHOD { return 0; }
+	virtual int32_t verifyView (CView* view, const UIAttributes& attributes, IUIDescription* description) VSTGUI_FINAL_VMETHOD { return 0; }
+	virtual int32_t createSubController (UTF8StringPtr name, IUIDescription* description) VSTGUI_FINAL_VMETHOD { return 0;}
+#endif
 };
 
 //-----------------------------------------------------------------------------

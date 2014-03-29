@@ -71,6 +71,9 @@
 		#ifndef MAC_OS_X_VERSION_10_7
 			#define MAC_OS_X_VERSION_10_7 1070
 		#endif
+		#ifndef MAC_OS_X_VERSION_10_8
+			#define MAC_OS_X_VERSION_10_8 1080
+		#endif
 		#ifndef MAC_COCOA
 			#define MAC_COCOA 1
 		#endif
@@ -97,6 +100,12 @@
 			#define VSTGUI_OVERRIDE_VMETHOD	override
 		#endif
 	#endif
+	#if __cplusplus >= 201103L
+		#define VSTGUI_FINAL_VMETHOD final
+		#ifdef _LIBCPP_VERSION
+			#define VSTGUI_HAS_FUNCTIONAL 1
+		#endif
+	#endif
 
 #elif WIN32 || WINDOWS
 	#define NOMINMAX
@@ -109,9 +118,11 @@
 	#endif
 	#if _MSC_VER >=	1600
 		#define VSTGUI_OVERRIDE_VMETHOD	override
+		#define VSTGUI_FINAL_VMETHOD final
 		#define VSTGUI_RVALUE_REF_SUPPORT 1
 		#if _MSC_VER >= 1800
 			#define VSTGUI_RANGE_BASED_FOR_LOOP_SUPPORT 1
+			#define VSTGUI_HAS_FUNCTIONAL 1
 		#endif
 		#include <type_traits>
 		#include <stdint.h>
@@ -155,8 +166,16 @@
 	#define VSTGUI_OVERRIDE_VMETHOD
 #endif
 
+#ifndef VSTGUI_FINAL_VMETHOD
+	#define VSTGUI_FINAL_VMETHOD
+#endif
+
 #ifndef VSTGUI_RANGE_BASED_FOR_LOOP_SUPPORT
 	#define VSTGUI_RANGE_BASED_FOR_LOOP_SUPPORT 0
+#endif
+
+#ifndef VSTGUI_HAS_FUNCTIONAL
+	#define VSTGUI_HAS_FUNCTIONAL 0
 #endif
 
 //----------------------------------------------------
@@ -165,7 +184,7 @@
 #if VSTGUI_RANGE_BASED_FOR_LOOP_SUPPORT
 	#define VSTGUI_RANGE_BASED_FOR_LOOP(ContainerType, container, varType, varName) for (auto& varName : container) {
 #else
-	#define VSTGUI_RANGE_BASED_FOR_LOOP(ContainerType, container, varType, varName) for (ContainerType::iterator it = container.begin (); it != container.end (); it++) { varType varName = (*it);
+	#define VSTGUI_RANGE_BASED_FOR_LOOP(ContainerType, container, varType, varName) for (ContainerType::iterator it = container.begin (), end = container.end (); it != end; ++it) { varType varName = (*it);
 #endif
 #define VSTGUI_RANGE_BASED_FOR_LOOP_END }
 

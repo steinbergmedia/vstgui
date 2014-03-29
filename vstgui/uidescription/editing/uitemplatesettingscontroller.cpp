@@ -109,7 +109,7 @@ CMessageResult UITemplateSettingsController::notify (CBaseObject* sender, IdStri
 }
 
 //----------------------------------------------------------------------------------------------------
-CView* UITemplateSettingsController::verifyView (CView* view, const UIAttributes& attributes, IUIDescription* description)
+CView* UITemplateSettingsController::verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description)
 {
 	CTextEdit* control = dynamic_cast<CTextEdit*>(view);
 	if (control)

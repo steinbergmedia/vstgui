@@ -71,7 +71,7 @@ protected:
 	virtual void setMin (float val) VSTGUI_OVERRIDE_VMETHOD { }
 	virtual void setMax (float val) VSTGUI_OVERRIDE_VMETHOD { }
 
-	void bounceValues (float& x, float& y);
+	void boundValues (float& x, float& y);
 	
 	CPoint mouseChangeStartPoint;
 	CPoint lastMouseChangePoint;

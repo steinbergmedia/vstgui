@@ -56,15 +56,15 @@ public:
 	void setPathOne (int32_t index);
 	void setPathTwo (int32_t index);
 	
-	void draw (CDrawContext *pContext);
+	void draw (CDrawContext *pContext) VSTGUI_OVERRIDE_VMETHOD;
 
-	bool attached (CView* parent);
-	bool removed (CView* parent);
+	bool attached (CView* parent) VSTGUI_OVERRIDE_VMETHOD;
+	bool removed (CView* parent) VSTGUI_OVERRIDE_VMETHOD;
 
 	// IAnimationTarget
-	void animationStart (CView* view, const char* name);
-	void animationTick (CView* view, const char* name, float pos);
-	void animationFinished (CView* view, const char* name, bool wasCanceled);
+	void animationStart (CView* view, const char* name) VSTGUI_OVERRIDE_VMETHOD;
+	void animationTick (CView* view, const char* name, float pos) VSTGUI_OVERRIDE_VMETHOD;
+	void animationFinished (CView* view, const char* name, bool wasCanceled) VSTGUI_OVERRIDE_VMETHOD;
 	
 	enum {
 		kStarPath,
@@ -96,13 +96,13 @@ class FadeViewContainer : public CViewContainer
 public:
 	FadeViewContainer () : CViewContainer (CRect (0, 0, 0, 0)) { setAlphaValue (0.3f); }
 	
-	CMouseEventResult onMouseEntered (CPoint &where, const CButtonState& buttons)
+	CMouseEventResult onMouseEntered (CPoint &where, const CButtonState& buttons) VSTGUI_OVERRIDE_VMETHOD
 	{
 		addAnimation ("AlphaAnimation", new Animation::AlphaValueAnimation (1.f), new Animation::LinearTimingFunction (100));
 		return kMouseEventHandled;
 	}
 
-	CMouseEventResult onMouseExited (CPoint &where, const CButtonState& buttons)
+	CMouseEventResult onMouseExited (CPoint &where, const CButtonState& buttons) VSTGUI_OVERRIDE_VMETHOD
 	{
 		addAnimation ("AlphaAnimation", new Animation::AlphaValueAnimation (0.3f), new Animation::LinearTimingFunction (100));
 		return kMouseEventHandled;
@@ -116,11 +116,11 @@ public:
 	GraphicsViewController (IController* controller) : DelegationController (controller), graphicsView (0) {}
 	~GraphicsViewController ();
 
-	CView* verifyView (CView* view, const UIAttributes& attributes, IUIDescription* description);
-	CControlListener* getControlListener (const char* controlTagName);
-	void valueChanged (CControl* pControl);
+	CView* verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description) VSTGUI_OVERRIDE_VMETHOD;
+	CControlListener* getControlListener (const char* controlTagName) VSTGUI_OVERRIDE_VMETHOD;
+	void valueChanged (CControl* pControl) VSTGUI_OVERRIDE_VMETHOD;
 
-	CMessageResult notify (CBaseObject* object, IdStringPtr message);
+	CMessageResult notify (CBaseObject* object, IdStringPtr message) VSTGUI_OVERRIDE_VMETHOD;
 protected:
 	GraphicsView* graphicsView;
 	std::list<CControl*> controls;
@@ -162,7 +162,7 @@ IPlugView* PLUGIN_API GraphicsTestController::createView (FIDString name)
 }
 
 //------------------------------------------------------------------------
-CView* GraphicsTestController::createCustomView (const char* name, const UIAttributes& attributes, IUIDescription* description, VST3Editor* editor)
+CView* GraphicsTestController::createCustomView (const char* name, const UIAttributes& attributes, const IUIDescription* description, VST3Editor* editor)
 {
 	if (strcmp (name, "GraphicsView") == 0)
 	{
@@ -176,7 +176,7 @@ CView* GraphicsTestController::createCustomView (const char* name, const UIAttri
 }
 
 //------------------------------------------------------------------------
-IController* GraphicsTestController::createSubController (const char* name, IUIDescription* description, VST3Editor* editor)
+IController* GraphicsTestController::createSubController (const char* name, const IUIDescription* description, VST3Editor* editor)
 {
 	if (strcmp (name, "GraphicsViewController") == 0)
 		return new GraphicsViewController (editor);
@@ -193,7 +193,7 @@ GraphicsViewController::~GraphicsViewController ()
 }
 
 //------------------------------------------------------------------------
-CView* GraphicsViewController::verifyView (CView* view, const UIAttributes& attributes, IUIDescription* description)
+CView* GraphicsViewController::verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description)
 {
 	if (graphicsView == 0)
 		graphicsView = dynamic_cast<GraphicsView*> (view);

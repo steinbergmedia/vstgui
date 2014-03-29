@@ -79,9 +79,9 @@ protected:
 	void setDirty (bool state);
 
 	virtual void valueChanged (CControl* pControl) VSTGUI_OVERRIDE_VMETHOD;
-	virtual CView* createView (const UIAttributes& attributes, IUIDescription* description) VSTGUI_OVERRIDE_VMETHOD;
-	virtual CView* verifyView (CView* view, const UIAttributes& attributes, IUIDescription* description) VSTGUI_OVERRIDE_VMETHOD;
-	virtual IController* createSubController (UTF8StringPtr name, IUIDescription* description) VSTGUI_OVERRIDE_VMETHOD;
+	virtual CView* createView (const UIAttributes& attributes, const IUIDescription* description) VSTGUI_OVERRIDE_VMETHOD;
+	virtual CView* verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description) VSTGUI_OVERRIDE_VMETHOD;
+	virtual IController* createSubController (UTF8StringPtr name, const IUIDescription* description) VSTGUI_OVERRIDE_VMETHOD;
 
 	CMessageResult notify (CBaseObject* sender, IdStringPtr message) VSTGUI_OVERRIDE_VMETHOD;
 

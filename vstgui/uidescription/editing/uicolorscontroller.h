@@ -56,11 +56,11 @@ public:
 	~UIColorsController ();
 
 protected:
-	CView* createView (const UIAttributes& attributes, IUIDescription* description) VSTGUI_OVERRIDE_VMETHOD;
-	CView* verifyView (CView* view, const UIAttributes& attributes, IUIDescription* description) VSTGUI_OVERRIDE_VMETHOD;
+	CView* createView (const UIAttributes& attributes, const IUIDescription* description) VSTGUI_OVERRIDE_VMETHOD;
+	CView* verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description) VSTGUI_OVERRIDE_VMETHOD;
 	CControlListener* getControlListener (UTF8StringPtr name) VSTGUI_OVERRIDE_VMETHOD;
 	void valueChanged (CControl* pControl) VSTGUI_OVERRIDE_VMETHOD;
-	IController* createSubController (IdStringPtr name, IUIDescription* description) VSTGUI_OVERRIDE_VMETHOD;
+	IController* createSubController (IdStringPtr name, const IUIDescription* description) VSTGUI_OVERRIDE_VMETHOD;
 
 	SharedPointer<UIDescription> editDescription;
 	IActionPerformer* actionPerformer;

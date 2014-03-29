@@ -120,14 +120,15 @@ public:
 
 	CMessageResult notify (CBaseObject* sender, IdStringPtr message) VSTGUI_OVERRIDE_VMETHOD;
 	virtual void valueChanged (CControl* pControl) VSTGUI_OVERRIDE_VMETHOD;
+
+	static bool createUniqueTemplateName (std::list<const std::string*>& names, std::string& name);
 protected:
 	CCommandMenuItem* findKeyCommandItem (COptionMenu* menu, const VstKeyCode& key);
 	void createEditMenu (COptionMenu* menu);
 	void createFileMenu (COptionMenu* menu);
 
-	virtual CView* verifyView (CView* view, const UIAttributes& attributes, IUIDescription* description) VSTGUI_OVERRIDE_VMETHOD;
+	virtual CView* verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description) VSTGUI_OVERRIDE_VMETHOD;
 	CControlListener* getControlListener (UTF8StringPtr name) VSTGUI_OVERRIDE_VMETHOD { return this; }
-	static bool createUniqueTemplateName (std::list<const std::string*>& names, std::string& name, int32_t count = 0);
 	void controlBeginEdit (CControl* pControl) VSTGUI_OVERRIDE_VMETHOD;
 	void controlEndEdit (CControl* pControl) VSTGUI_OVERRIDE_VMETHOD;
 

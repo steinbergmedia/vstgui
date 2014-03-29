@@ -133,7 +133,13 @@ public:
 		}
 		CParamDisplay* display = dynamic_cast<CParamDisplay*> (control);
 		if (display)
+	#if VSTGUI_HAS_FUNCTIONAL
+			display->setValueToStringFunction([this](float value, char utf8String[256], CParamDisplay* display) {
+				return convertValueToString (value, utf8String);
+			});
+	#else
 			display->setValueToStringProc (valueToString, this);
+	#endif
 
 		if (parameter)
 			parameter->deferUpdate ();
@@ -222,11 +228,13 @@ protected:
 		return false;
 	}
 
+#if !VSTGUI_HAS_FUNCTIONAL
 	static bool valueToString (float value, char utf8String[256], void* userData)
 	{
 		ParameterChangeListener* This = (ParameterChangeListener*)userData;
 		return This->convertValueToString (value, utf8String);
 	}
+#endif
 
 	void updateControlValue (Steinberg::Vst::ParamValue value)
 	{
@@ -528,18 +536,18 @@ bool VST3Editor::requestResize (const CPoint& newSize)
 }
 
 //-----------------------------------------------------------------------------
-void VST3Editor::getEditorSizeConstrains (CPoint& minimumSize, CPoint& maximumSize)
+void VST3Editor::getEditorSizeConstrains (CPoint& minimumSize, CPoint& maximumSize) const
 {
 	minimumSize = minSize;
 	maximumSize = maxSize;
 }
 
 //-----------------------------------------------------------------------------
-ParameterChangeListener* VST3Editor::getParameterChangeListener (int32_t tag)
+ParameterChangeListener* VST3Editor::getParameterChangeListener (int32_t tag) const
 {
 	if (tag != -1)
 	{
-		ParameterChangeListenerMap::iterator it = paramChangeListeners.find (tag);
+		ParameterChangeListenerMap::const_iterator it = paramChangeListeners.find (tag);
 		if (it != paramChangeListeners.end ())
 		{
 			return it->second;
@@ -704,8 +712,7 @@ public:
 
 	Steinberg::tresult PLUGIN_API executeMenuItem (Steinberg::int32 tag)
 	{
-		if (item->getTarget ())
-			item->getTarget ()->notify (item, CCommandMenuItem::kMsgMenuItemSelected);
+		item->execute ();
 		return Steinberg::kResultTrue;
 	}
 	
@@ -718,11 +725,11 @@ protected:
 //-----------------------------------------------------------------------------
 static void addCOptionMenuEntriesToIContextMenu (VST3Editor* editor, COptionMenu* menu, Steinberg::Vst::IContextMenu* contextMenu)
 {
-	for (CConstMenuItemIterator it = menu->getItems ()->begin (); it != menu->getItems ()->end ();it++)
+	for (CConstMenuItemIterator it = menu->getItems ()->begin (), end = menu->getItems ()->end (); it != end; ++it)
 	{
 		CCommandMenuItem* commandItem = (*it).cast<CCommandMenuItem>();
-		if (commandItem && commandItem->getTarget ())
-			commandItem->getTarget ()->notify (commandItem, CCommandMenuItem::kMsgMenuItemValidate);
+		if (commandItem)
+			commandItem->validate ();
 
 		Steinberg::Vst::IContextMenu::Item item = {};
 		Steinberg::String title ((*it)->getTitle ());
@@ -779,6 +786,22 @@ CMouseEventResult VST3Editor::onMouseDown (CFrame* frame, const CPoint& where, c
 			item->setKey ("e", kControl);
 		}
 	#endif
+		CViewContainer::ViewList views;
+		if (editingEnabled == false && frame->getViewsAt (where, views, true))
+		{
+			VSTGUI_RANGE_BASED_FOR_LOOP(CViewContainer::ViewList, views, SharedPointer<CView>, view)
+				IContextMenuController* contextMenuController = dynamic_cast<IContextMenuController*> (getViewController (view));
+				if (contextMenuController == 0)
+					continue;
+				if (controllerMenu == 0)
+					controllerMenu = new COptionMenu ();
+				else
+					controllerMenu->addSeparator ();
+				CPoint p (where);
+				view->frameToLocal (p);
+				contextMenuController->appendContextMenuItems (*controllerMenu, p);
+			VSTGUI_RANGE_BASED_FOR_LOOP_END
+		}
 	#if VST3_SUPPORTS_CONTEXTMENU
 		Steinberg::FUnknownPtr<Steinberg::Vst::IComponentHandler3> handler (getController ()->getComponentHandler ());
 		Steinberg::Vst::ParamID paramID;
@@ -852,13 +875,13 @@ Steinberg::tresult PLUGIN_API VST3Editor::findParameter (Steinberg::int32 xPos, 
 }
 
 //-----------------------------------------------------------------------------
-IController* VST3Editor::createSubController (UTF8StringPtr name, IUIDescription* description)
+IController* VST3Editor::createSubController (UTF8StringPtr name, const IUIDescription* description)
 {
 	return delegate ? delegate->createSubController (name, description, this) : 0;
 }
 
 //-----------------------------------------------------------------------------
-CView* VST3Editor::createView (const UIAttributes& attributes, IUIDescription* description)
+CView* VST3Editor::createView (const UIAttributes& attributes, const IUIDescription* description)
 {
 	if (delegate)
 	{
@@ -873,7 +896,7 @@ CView* VST3Editor::createView (const UIAttributes& attributes, IUIDescription* d
 }
 
 //-----------------------------------------------------------------------------
-CView* VST3Editor::verifyView (CView* view, const UIAttributes& attributes, IUIDescription* description)
+CView* VST3Editor::verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description)
 {
 	CControl* control = dynamic_cast<CControl*> (view);
 	if (control && control->getTag () != -1 && control->getListener () == this)
@@ -938,12 +961,9 @@ void PLUGIN_API VST3Editor::close ()
 	if (delegate)
 		delegate->willClose (this);
 
-	ParameterChangeListenerMap::iterator it = paramChangeListeners.begin ();
-	while (it != paramChangeListeners.end ())
-	{
+	for (ParameterChangeListenerMap::const_iterator it = paramChangeListeners.begin (), end = paramChangeListeners.end (); it != end; ++it)
 		it->second->release ();
-		it++;
-	}
+
 	paramChangeListeners.clear ();
 	if (frame)
 	{

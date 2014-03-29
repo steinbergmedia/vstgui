@@ -206,7 +206,7 @@ void UISelection::invalidRects () const
 }
 
 //----------------------------------------------------------------------------------------------------
-bool UISelection::store (OutputStream& stream, UIViewFactory* viewFactory, IUIDescription* uiDescription)
+bool UISelection::store (OutputStream& stream, IUIDescription* uiDescription)
 {
 	UIDescription* desc = dynamic_cast<UIDescription*>(uiDescription);
 	if (desc)
@@ -227,7 +227,7 @@ bool UISelection::store (OutputStream& stream, UIViewFactory* viewFactory, IUIDe
 }
 
 //----------------------------------------------------------------------------------------------------
-bool UISelection::restore (InputStream& stream, UIViewFactory* viewFactory, IUIDescription* uiDescription)
+bool UISelection::restore (InputStream& stream, IUIDescription* uiDescription)
 {
 	empty ();
 	UIDescription* desc = dynamic_cast<UIDescription*>(uiDescription);

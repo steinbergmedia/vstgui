@@ -295,6 +295,10 @@ CCommandMenuItem::CCommandMenuItem (const CCommandMenuItem& item)
 , target (0)
 , commandCategory (0)
 , commandName (0)
+#if VSTGUI_HAS_FUNCTIONAL
+, selectedFunc (item.selectedFunc)
+, validateFunc (item.validateFunc)
+#endif
 {
 	setTarget (item.target);
 	setCommandCategory (item.commandCategory);
@@ -357,6 +361,37 @@ void CCommandMenuItem::setTarget (CBaseObject* _target)
 	target = _target;
 	if (_target)
 		target->remember ();
+}
+
+#if VSTGUI_HAS_FUNCTIONAL
+//------------------------------------------------------------------------
+void CCommandMenuItem::setActions (SelectedCallbackFunction&& selected, ValidateCallbackFunction&& validate)
+{
+	selectedFunc = std::move (selected);
+	validateFunc = std::move (validate);
+}
+#endif
+
+//------------------------------------------------------------------------
+void CCommandMenuItem::execute ()
+{
+#if VSTGUI_HAS_FUNCTIONAL
+	if (selectedFunc)
+		selectedFunc (this);
+#endif
+	if (getTarget ())
+		getTarget ()->notify (this, CCommandMenuItem::kMsgMenuItemSelected);
+}
+
+//------------------------------------------------------------------------
+void CCommandMenuItem::validate ()
+{
+#if VSTGUI_HAS_FUNCTIONAL
+	if (validateFunc)
+		validateFunc (this);
+#endif
+	if (getTarget ())
+		getTarget ()->notify (this, CCommandMenuItem::kMsgMenuItemValidate);
 }
 
 //------------------------------------------------------------------------
@@ -518,8 +553,8 @@ void COptionMenu::beforePopup ()
 	for (CMenuItemIterator it = menuItems->begin (); it != menuItems->end (); it++)
 	{
 		CCommandMenuItem* commandItem = (*it).cast<CCommandMenuItem> ();
-		if (commandItem && commandItem->getTarget ())
-			commandItem->getTarget ()->notify (commandItem, CCommandMenuItem::kMsgMenuItemValidate);
+		if (commandItem)
+			commandItem->validate ();
 		if ((*it)->getSubmenu ())
 			(*it)->getSubmenu ()->beforePopup ();
 	}
@@ -557,10 +592,8 @@ bool COptionMenu::popup ()
 			invalid ();
 			popupResult = true;
 			CCommandMenuItem* commandItem = dynamic_cast<CCommandMenuItem*>(lastMenu->getEntry (lastResult));
-			if (commandItem && commandItem->getTarget ())
-			{
-				commandItem->getTarget ()->notify (commandItem, CCommandMenuItem::kMsgMenuItemSelected);
-			}
+			if (commandItem)
+				commandItem->execute ();
 		}
 		platformMenu->forget ();
 	}

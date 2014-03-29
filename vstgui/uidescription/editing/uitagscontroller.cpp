@@ -23,7 +23,7 @@ protected:
 	bool performNameChange (UTF8StringPtr oldName, UTF8StringPtr newName) VSTGUI_OVERRIDE_VMETHOD;
 	UTF8StringPtr getDefaultsName () VSTGUI_OVERRIDE_VMETHOD;
 
-	void update ();
+	void update () VSTGUI_OVERRIDE_VMETHOD;
 	
 	int32_t dbGetNumColumns (CDataBrowser* browser) VSTGUI_OVERRIDE_VMETHOD { return 2; }
 	CCoord dbGetCurrentColumnWidth (int32_t index, CDataBrowser* browser) VSTGUI_OVERRIDE_VMETHOD;
@@ -132,8 +132,10 @@ CCoord UITagsDataSource::dbGetCurrentColumnWidth (int32_t index, CDataBrowser* b
 {
 	CCoord width = browser->getWidth () - ((browser->getActiveScrollbars () & CScrollView::kVerticalScrollbar) == 0 ? 0 : browser->getScrollbarWidth () + ((browser->getStyle () & CScrollView::kDontDrawFrame) ? 0 : 2));
 	if (browser->getStyle () & CDataBrowser::kDrawColumnLines)
-		width -= 2;
-	return width * 0.5;
+		width -= 1;
+	if (index == 0)
+		return width * 0.5;
+	return std::floor (width - width * 0.5 + 0.5);
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -169,7 +171,7 @@ UITagsController::~UITagsController ()
 }
 
 //----------------------------------------------------------------------------------------------------
-CView* UITagsController::createView (const UIAttributes& attributes, IUIDescription* description)
+CView* UITagsController::createView (const UIAttributes& attributes, const IUIDescription* description)
 {
 	const std::string* name = attributes.getAttributeValue ("custom-view-name");
 	if (name)
@@ -185,7 +187,7 @@ CView* UITagsController::createView (const UIAttributes& attributes, IUIDescript
 }
 
 //----------------------------------------------------------------------------------------------------
-CView* UITagsController::verifyView (CView* view, const UIAttributes& attributes, IUIDescription* description)
+CView* UITagsController::verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description)
 {
 	UISearchTextField* searchField = dynamic_cast<UISearchTextField*>(view);
 	if (searchField && searchField->getTag () == kSearchTag)

@@ -300,7 +300,7 @@ CView* UIEditController::createEditView ()
 }
 
 //----------------------------------------------------------------------------------------------------
-CView* UIEditController::createView (const UIAttributes& attributes, IUIDescription* description)
+CView* UIEditController::createView (const UIAttributes& attributes, const IUIDescription* description)
 {
 	const std::string* name = attributes.getAttributeValue ("custom-view-name");
 	if (name)
@@ -352,7 +352,7 @@ CView* UIEditController::createView (const UIAttributes& attributes, IUIDescript
 }
 
 //----------------------------------------------------------------------------------------------------
-CView* UIEditController::verifyView (CView* view, const UIAttributes& attributes, IUIDescription* description)
+CView* UIEditController::verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description)
 {
 	if (view == editView)
 	{
@@ -400,7 +400,7 @@ CView* UIEditController::verifyView (CView* view, const UIAttributes& attributes
 }
 
 //----------------------------------------------------------------------------------------------------
-IController* UIEditController::createSubController (UTF8StringPtr name, IUIDescription* description)
+IController* UIEditController::createSubController (UTF8StringPtr name, const IUIDescription* description)
 {
 	if (strcmp (name, "TemplatesController") == 0)
 	{
@@ -596,7 +596,7 @@ void UIEditController::doCopy (bool cut)
 	if (!editTemplateName.empty ())
 		updateTemplate (editTemplateName.c_str ());
 	CMemoryStream stream (1024, 1024, false);
-	selection->store (stream, dynamic_cast<UIViewFactory*> (editDescription->getViewFactory ()), editDescription);
+	selection->store (stream, editDescription);
 	CDropSource* dataSource = new CDropSource (stream.getBuffer (), (int32_t)stream.tell (), IDataPackage::kText);
 	editView->getFrame ()->setClipboard (dataSource);
 	dataSource->forget ();
@@ -625,12 +625,11 @@ void UIEditController::doPaste ()
 					offset = selection->first ()->getViewSize ().getTopLeft ();
 					offset.offset (gridController->getSize ().x, gridController->getSize ().y);
 				}
-				UIViewFactory* viewFactory = dynamic_cast<UIViewFactory*> (editDescription->getViewFactory ());
 				CMemoryStream stream ((const int8_t*)data, size, false);
 				UISelection* copySelection = new UISelection ();
-				if (copySelection->restore (stream, viewFactory, editDescription))
+				if (copySelection->restore (stream, editDescription))
 				{
-					IAction* action = new ViewCopyOperation (copySelection, selection, container, offset, viewFactory, editDescription);
+					IAction* action = new ViewCopyOperation (copySelection, selection, container, offset, editDescription);
 					undoManager->pushAndPerform (action);
 					if (!editTemplateName.empty ())
 						updateTemplate (editTemplateName.c_str ());

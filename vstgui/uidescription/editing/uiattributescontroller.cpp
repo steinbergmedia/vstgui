@@ -83,7 +83,7 @@ public:
 	TextAlignmentController (IController* baseController, const std::string& attrName)
 	: Controller (baseController, attrName) {}
 
-	CView* verifyView (CView* view, const UIAttributes& attributes, IUIDescription* description) VSTGUI_OVERRIDE_VMETHOD
+	CView* verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description) VSTGUI_OVERRIDE_VMETHOD
 	{
 		CControl* control = dynamic_cast<CControl*>(view);
 		if (control)
@@ -167,7 +167,7 @@ public:
 	AutosizeController (IController* baseController, UISelection* selection, const std::string& attrName)
 	: Controller (baseController, attrName), selection (selection) {}
 
-	CView* verifyView (CView* view, const UIAttributes& attributes, IUIDescription* description) VSTGUI_OVERRIDE_VMETHOD
+	CView* verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description) VSTGUI_OVERRIDE_VMETHOD
 	{
 		CControl* control = dynamic_cast<CControl*>(view);
 		if (control)
@@ -287,7 +287,7 @@ public:
 	BooleanController (IController* baseController, const std::string& attrName)
 	: Controller (baseController, attrName), control (0) {}
 
-	CView* verifyView (CView* view, const UIAttributes& attributes, IUIDescription* description) VSTGUI_OVERRIDE_VMETHOD
+	CView* verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description) VSTGUI_OVERRIDE_VMETHOD
 	{
 		if (control == 0)
 		{
@@ -334,7 +334,7 @@ public:
 		label->removeDependency (this);
 	}
 	
-	CView* verifyView (CView* view, const UIAttributes& attributes, IUIDescription* description) VSTGUI_OVERRIDE_VMETHOD
+	CView* verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description) VSTGUI_OVERRIDE_VMETHOD
 	{
 		if (label == 0)
 		{
@@ -417,7 +417,7 @@ public:
 			menu->removeDependency (this);
 	}
 	
-	CView* verifyView (CView* view, const UIAttributes& attributes, IUIDescription* description) VSTGUI_OVERRIDE_VMETHOD
+	CView* verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description) VSTGUI_OVERRIDE_VMETHOD
 	{
 		if (menu == 0)
 		{
@@ -556,7 +556,7 @@ public:
 		}
 	}
 
-	CView* createView (const UIAttributes& attributes, IUIDescription* description) VSTGUI_OVERRIDE_VMETHOD
+	CView* createView (const UIAttributes& attributes, const IUIDescription* description) VSTGUI_OVERRIDE_VMETHOD
 	{
 		const std::string* attr = attributes.getAttributeValue ("custom-view-name");
 		if (attr && *attr == "ColorView")
@@ -633,7 +633,7 @@ public:
 
 	void collectMenuItemNames (std::list<const std::string*>& names) VSTGUI_OVERRIDE_VMETHOD
 	{
-		UIViewFactory* viewFactory = dynamic_cast<UIViewFactory*>(description->getViewFactory ());
+		const UIViewFactory* viewFactory = dynamic_cast<const UIViewFactory*>(description->getViewFactory ());
 		if (viewFactory)
 		{
 			viewFactory->getPossibleAttributeListValues (selection->first (), attrName, names);
@@ -702,7 +702,7 @@ void UIAttributesController::valueChanged (CControl* control)
 }
 
 //----------------------------------------------------------------------------------------------------
-CView* UIAttributesController::verifyView (CView* view, const UIAttributes& attributes, IUIDescription* description)
+CView* UIAttributesController::verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description)
 {
 	if (attributeView == 0)
 	{
@@ -748,7 +748,7 @@ CControlListener* UIAttributesController::getControlListener (UTF8StringPtr name
 }
 
 //----------------------------------------------------------------------------------------------------
-IController* UIAttributesController::createSubController (IdStringPtr name, IUIDescription* description)
+IController* UIAttributesController::createSubController (IdStringPtr name, const IUIDescription* description)
 {
 	if (currentAttributeName)
 	{
@@ -830,7 +830,7 @@ CMessageResult UIAttributesController::notify (CBaseObject* sender, IdStringPtr 
 //----------------------------------------------------------------------------------------------------
 void UIAttributesController::validateAttributeViews ()
 {
-	UIViewFactory* viewFactory = static_cast<UIViewFactory*> (editDescription->getViewFactory ());
+	const UIViewFactory* viewFactory = static_cast<const UIViewFactory*> (editDescription->getViewFactory ());
 
 	for (UIAttributeControllerList::const_iterator it = attributeControllers.begin (); it != attributeControllers.end (); it++)
 	{
@@ -896,7 +896,7 @@ CView* UIAttributesController::createViewForAttribute (const std::string& attrNa
 	
 	bool hasDifferentValues = false;
 
-	UIViewFactory* viewFactory = static_cast<UIViewFactory*> (editDescription->getViewFactory ());
+	const UIViewFactory* viewFactory = static_cast<const UIViewFactory*> (editDescription->getViewFactory ());
 
 	std::string attrValue;
 	bool first = true;
@@ -967,7 +967,7 @@ CView* UIAttributesController::createViewForAttribute (const std::string& attrNa
 //----------------------------------------------------------------------------------------------------
 void UIAttributesController::getConsolidatedAttributeNames (StringList& attrNames, const std::string& filter)
 {
-	UIViewFactory* viewFactory = dynamic_cast<UIViewFactory*> (editDescription->getViewFactory ());
+	const UIViewFactory* viewFactory = dynamic_cast<const UIViewFactory*> (editDescription->getViewFactory ());
 	assert (viewFactory);
 	FOREACH_IN_SELECTION(selection, view)
 		StringList temp;
@@ -1011,7 +1011,7 @@ void UIAttributesController::getConsolidatedAttributeNames (StringList& attrName
 //----------------------------------------------------------------------------------------------------
 void UIAttributesController::rebuildAttributesView ()
 {
-	UIViewFactory* viewFactory = dynamic_cast<UIViewFactory*> (editDescription->getViewFactory ());
+	const IViewFactory* viewFactory = editDescription->getViewFactory ();
 	if (attributeView == 0 || viewFactory == 0)
 		return;
 

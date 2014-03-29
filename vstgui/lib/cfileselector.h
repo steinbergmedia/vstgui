@@ -38,6 +38,9 @@
 #include "cframe.h"
 #include <list>
 #include <vector>
+#if VSTGUI_HAS_FUNCTIONAL
+#include <functional>
+#endif
 
 namespace VSTGUI {
 
@@ -129,6 +132,10 @@ public:
 	//@{
 	static CNewFileSelector* create (CFrame* parent = 0, Style style = kSelectFile); ///< create a new instance
 
+#if VSTGUI_HAS_FUNCTIONAL
+	typedef std::function<void(CNewFileSelector*)> CallbackFunc;
+	bool run (CallbackFunc&& callback);
+#endif
 	bool run (CBaseObject* delegate);	///< the delegate will get a kSelectEndMessage throu the notify method where the sender is this CNewFileSelector object
 	void cancel ();						///< cancel running the file selector
 	bool runModal ();					///< run as modal dialog

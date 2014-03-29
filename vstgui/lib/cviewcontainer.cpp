@@ -1218,7 +1218,7 @@ CView* CViewContainer::getViewAt (const CPoint& p, bool deep, bool mustbeMouseEn
  * @param deep search deep
  * @return success
  */
-bool CViewContainer::getViewsAt (const CPoint& p, std::list<SharedPointer<CView> >& views, bool deep) const
+bool CViewContainer::getViewsAt (const CPoint& p, ViewList& views, bool deep) const
 {
 	bool result = false;
 

@@ -70,13 +70,21 @@ public:
 
 	virtual IdStringPtr getViewName () const = 0;
 	virtual IdStringPtr getBaseViewName () const = 0;
-	virtual CView* create (const UIAttributes& attributes, IUIDescription* description) const = 0;
-	virtual bool apply (CView* view, const UIAttributes& attributes, IUIDescription* description) const = 0;
+	virtual CView* create (const UIAttributes& attributes, const IUIDescription* description) const = 0;
+	virtual bool apply (CView* view, const UIAttributes& attributes, const IUIDescription* description) const = 0;
 	virtual bool getAttributeNames (std::list<std::string>& attributeNames) const = 0;
 	virtual AttrType getAttributeType (const std::string& attributeName) const = 0;
-	virtual bool getAttributeValue (CView* view, const std::string& attributeName, std::string& stringValue, IUIDescription* desc) const = 0;
+	virtual bool getAttributeValue (CView* view, const std::string& attributeName, std::string& stringValue, const IUIDescription* desc) const = 0;
 	// list type support
 	virtual bool getPossibleListValues (const std::string& attributeName, std::list<const std::string*>& values) const { return false; }
+
+#if DEBUG
+	// the method arguments have changed for the above methods so here are definitions that will generate a compiler error
+	// if someone has not updated its methods
+	virtual int32_t create (const UIAttributes& attributes, IUIDescription* description) const VSTGUI_FINAL_VMETHOD { return 0; }
+	virtual void* apply (CView* view, const UIAttributes& attributes, IUIDescription* description) const VSTGUI_FINAL_VMETHOD { return 0; }
+	virtual void* getAttributeValue (CView* view, const std::string& attributeName, std::string& stringValue, IUIDescription* desc) const VSTGUI_FINAL_VMETHOD { return 0; }
+#endif
 };
 
 } // namespace

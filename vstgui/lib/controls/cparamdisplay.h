@@ -39,6 +39,9 @@
 #include "../cfont.h"
 #include "../ccolor.h"
 #include "../cdrawcontext.h"
+#if VSTGUI_HAS_FUNCTIONAL
+#include <functional>
+#endif
 
 namespace VSTGUI {
 class CParamDisplay;
@@ -95,13 +98,19 @@ public:
 	virtual void setFrameWidth (const CCoord& width);
 	CCoord getFrameWidth () const { return frameWidth; }
 
-	virtual void setValueToStringProc (CParamDisplayValueToStringProc proc, void* userData = 0);
+	virtual void setValueToStringProc (CParamDisplayValueToStringProc proc, void* userData = 0); ///< deprecated use setValueToStringFunction instead if you use c++11
+#if VSTGUI_HAS_FUNCTIONAL
+	typedef std::function<bool(float value, char utf8String[256], CParamDisplay* display)> ValueToStringFunction;
+	
+	void setValueToStringFunction (ValueToStringFunction&& valueToStringFunc);
+#endif
 
 	virtual void setStyle (int32_t val);
 	int32_t getStyle () const { return style; }
 
 	virtual void setPrecision (uint8_t precision);
 	uint8_t getPrecision () const { return valuePrecision; }
+
 	//@}
 
 	void draw (CDrawContext* pContext) VSTGUI_OVERRIDE_VMETHOD;
@@ -118,9 +127,13 @@ protected:
 	virtual void drawStyleChanged ();
 
 	CParamDisplayRotationPathCache* rotationPathCache;
+#if VSTGUI_HAS_FUNCTIONAL
+	ValueToStringFunction valueToStringFunction;
+#else
 	CParamDisplayValueToStringProc valueToString;
 	void* valueToStringUserData;
-	
+#endif
+
 	CHoriTxtAlign horiTxtAlign;
 	int32_t		style;
 	uint8_t		valuePrecision;

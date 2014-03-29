@@ -48,8 +48,8 @@ namespace UIViewCreator {
 
 extern bool parseSize (const std::string& str, CPoint& point);
 extern bool pointToString (const CPoint& p, std::string& string);
-extern bool bitmapToString (CBitmap* bitmap, std::string& string, IUIDescription* desc);
-extern bool colorToString (const CColor& color, std::string& string, IUIDescription* desc);
+extern bool bitmapToString (CBitmap* bitmap, std::string& string, const IUIDescription* desc);
+extern bool colorToString (const CColor& color, std::string& string, const IUIDescription* desc);
 
 extern void rememberAttributeValueString (CView* view, IdStringPtr attrName, const std::string& value);
 extern bool getRememberedAttributeValueString (CView* view, IdStringPtr attrName, std::string& value);
