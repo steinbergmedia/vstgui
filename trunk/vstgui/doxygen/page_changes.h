@@ -16,6 +16,12 @@ It's recommended to start new projects with version 4 while old projects should 
 
 @section new_stuff New Stuff
 
+@subsection version4_3 Version 4.3
+
+- support for creating a graphics path from a string
+- add support for adding a custom view to the split view separator
+- use c++11 callback functions for VSTGUI::CFileSelector::run(), VSTGUI::CVSTGUITimer, VSTGUI::CParamDisplay::setValueToStringFunction, VSTGUI::CTextEdit::setStringToValueFunction and VSTGUI::CCommandMenuItem::setActions
+
 @subsection version4_2 Version 4.2
 
 - iOS Support with Multi Touch handling. See @ref ios_support
@@ -46,6 +52,10 @@ It's recommended to start new projects with version 4 while old projects should 
 - Direct2D drawing on Windows (Windows Vista or Windows 7)
 
 @section code_changes Changes for existing VSTGUI code
+
+@subsection code_changes_4_2_to_4_3 VSTGUI 4.2 -> VSTGUI 4.3
+
+- the interfaces for VSTGUI::IController and VSTGUI::IViewCreator have changed and if you have inherited from them you need to change your implementations accordingly.
 
 @subsection code_changes_4_1_to_4_2 VSTGUI 4.1 -> VSTGUI 4.2
 
@@ -190,6 +200,10 @@ please see the "Migrating from 2.3.rtf" file in the Documentation folder.
  */
 //------------------------------------------------------------------------
 /*! @defgroup new_in_4_2 Version 4.2
+ *	@ingroup new_in
+ */
+//------------------------------------------------------------------------
+/*! @defgroup new_in_4_3 Version 4.3
  *	@ingroup new_in
  */
 //------------------------------------------------------------------------

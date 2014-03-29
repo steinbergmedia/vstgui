@@ -51,7 +51,7 @@ public:
 	~UIFocusSettingsController ();
 
 	CMessageResult notify (CBaseObject* sender, IdStringPtr message) VSTGUI_OVERRIDE_VMETHOD;
-	CView* verifyView (CView* view, const UIAttributes& attributes, IUIDescription* description) VSTGUI_OVERRIDE_VMETHOD;
+	CView* verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description) VSTGUI_OVERRIDE_VMETHOD;
 	void valueChanged (CControl* control) VSTGUI_OVERRIDE_VMETHOD;
 protected:
 	static bool valueToString (float value, char utf8String[256], void* userData);

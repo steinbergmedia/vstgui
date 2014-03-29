@@ -361,19 +361,15 @@ void UIDescList::remove (UINode* obj)
 //-----------------------------------------------------------------------------
 void UIDescList::removeAll ()
 {
-	const_reverse_iterator it = rbegin ();
-	while (it != rend ())
-	{
+	for (const_reverse_iterator it = rbegin (), end = rend (); it != end; ++it)
 		(*it)->forget ();
-		it++;
-	}
 	clear ();
 }
 
 //-----------------------------------------------------------------------------
 UINode* UIDescList::findChildNode (const std::string& nodeName) const
 {
-	for (const_iterator it = begin (); it != end (); it++)
+	for (const_iterator it = begin (), itEnd = end (); it != itEnd; ++it)
 	{
 		if (*(*it) == nodeName)
 			return *it;
@@ -384,7 +380,7 @@ UINode* UIDescList::findChildNode (const std::string& nodeName) const
 //-----------------------------------------------------------------------------
 UINode* UIDescList::findChildNodeWithAttributeValue (const char* attributeName, const char* attributeValue) const
 {
-	for (const_iterator it = begin (); it != end (); it++)
+	for (const_iterator it = begin (), itEnd = end (); it != itEnd; ++it)
 	{
 		const std::string* attributeValuePtr = (*it)->getAttributes ()->getAttributeValue (attributeName);
 		if (attributeValuePtr && *attributeValuePtr == attributeValue)
@@ -393,22 +389,25 @@ UINode* UIDescList::findChildNodeWithAttributeValue (const char* attributeName, 
 	return 0;
 }
 
+namespace UIDescListPrivate {
+struct Compare {
+	bool operator () (const UINode* n1, const UINode* n2) const
+	{
+		const std::string* str1 = n1->getAttributes ()->getAttributeValue ("name");
+		const std::string* str2 = n2->getAttributes ()->getAttributeValue ("name");
+		if (str1 && str2)
+			return *str1 < *str2;
+		else if (str1)
+			return true;
+		return false;
+	}
+};
+}
+
 //-----------------------------------------------------------------------------
 void UIDescList::sort ()
 {
-	struct Compare {
-		bool operator () (const UINode* n1, const UINode* n2) const
-		{
-			const std::string* str1 = n1->getAttributes ()->getAttributeValue ("name");
-			const std::string* str2 = n2->getAttributes ()->getAttributeValue ("name");
-			if (str1 && str2)
-				return *str1 < *str2;
-			else if (str1)
-				return true;
-			return false;
-		}
-	};
-	std::sort (begin (), end (), Compare ());
+	std::sort (begin (), end (), UIDescListPrivate::Compare ());
 }
 
 //-----------------------------------------------------------------------------
@@ -470,8 +469,7 @@ void UIDescWriter::encodeAttributeString (std::string& str)
 bool UIDescWriter::writeAttributes (UIAttributes* attr, OutputStream& stream)
 {
 	bool result = true;
-	UIAttributes::iterator it = attr->begin ();
-	while (it != attr->end ())
+	for (UIAttributes::iterator it = attr->begin (), end = attr->end (); it != end; ++it)
 	{
 		if ((*it).second.length () > 0)
 		{
@@ -483,7 +481,6 @@ bool UIDescWriter::writeAttributes (UIAttributes* attr, OutputStream& stream)
 			stream << value;
 			stream << "\"";
 		}
-		it++;
 	}
 	return result;
 }
@@ -542,12 +539,10 @@ bool UIDescWriter::writeNode (UINode* node, OutputStream& stream)
 			intendLevel++;
 			if (node->getData ().str ().length () > 0)
 				result = writeNodeData (node->getData (), stream);
-			UIDescList::iterator it = children.begin ();
-			while (it != children.end ())
+			for (UIDescList::iterator it = children.begin (), end = children.end (); it != end; ++it)
 			{
 				if (!writeNode (*it, stream))
 					return false;
-				it++;
 			}
 			intendLevel--;
 			for (int32_t i = 0; i < intendLevel; i++) stream << "\t";
@@ -776,7 +771,7 @@ bool UIDescription::parse ()
 }
 
 //-----------------------------------------------------------------------------
-void UIDescription::setController (IController* inController)
+void UIDescription::setController (IController* inController) const
 {
 	controller = inController;
 }
@@ -876,8 +871,7 @@ UINode* UIDescription::findNodeForView (CView* view) const
 	if (parentView)
 	{
 		UINode* node = 0;
-		UIDescList::iterator it = nodes->getChildren ().begin ();
-		while (it != nodes->getChildren ().end ())
+		for (UIDescList::iterator it = nodes->getChildren ().begin (), end = nodes->getChildren ().end (); it != end; ++it)
 		{
 			if ((*it)->getName () == MainNodeNames::kTemplate)
 			{
@@ -888,7 +882,6 @@ UINode* UIDescription::findNodeForView (CView* view) const
 					break;
 				}
 			}
-			it++;
 		}
 		if (node)
 		{
@@ -1021,7 +1014,7 @@ bool UIDescription::restoreViews (InputStream& stream, std::list<SharedPointer<C
 }
 
 //-----------------------------------------------------------------------------
-CView* UIDescription::createViewFromNode (UINode* node)
+CView* UIDescription::createViewFromNode (UINode* node) const
 {
 	const std::string* templateName = node->getAttributes ()->getAttributeValue (MainNodeNames::kTemplate);
 	if (templateName)
@@ -1074,8 +1067,7 @@ CView* UIDescription::createViewFromNode (UINode* node)
 	if (result && node->hasChildren ())
 	{
 		CViewContainer* viewContainer = dynamic_cast<CViewContainer*> (result);
-		UIDescList::iterator it = node->getChildren ().begin ();
-		while (it != node->getChildren ().end ())
+		for (UIDescList::iterator it = node->getChildren ().begin (), end = node->getChildren ().end (); it != end; ++it)
 		{
 			if (viewContainer)
 			{
@@ -1110,7 +1102,6 @@ CView* UIDescription::createViewFromNode (UINode* node)
 						result->setAttribute (attrId, (int32_t)attrValue->size ()+1, attrValue->c_str ());
 				}
 			}
-			it++;
 		}
 	}
 	if (result && controller)
@@ -1137,13 +1128,12 @@ CView* UIDescription::createViewFromNode (UINode* node)
 CViewAttributeID UIDescription::kTemplateNameAttributeID = 'uitl';
 
 //-----------------------------------------------------------------------------
-CView* UIDescription::createView (UTF8StringPtr name, IController* _controller)
+CView* UIDescription::createView (UTF8StringPtr name, IController* _controller) const
 {
 	ScopePointer<IController> sp (&controller, _controller);
 	if (nodes)
 	{
-		UIDescList::iterator it = nodes->getChildren ().begin ();
-		while (it != nodes->getChildren ().end ())
+		for (UIDescList::iterator it = nodes->getChildren ().begin (), end = nodes->getChildren().end (); it != end; ++it)
 		{
 			if ((*it)->getName () == MainNodeNames::kTemplate)
 			{
@@ -1156,7 +1146,6 @@ CView* UIDescription::createView (UTF8StringPtr name, IController* _controller)
 					return view;
 				}
 			}
-			it++;
 		}
 	}
 	return 0;
@@ -1181,12 +1170,11 @@ bool UIDescription::getTemplateNameFromView (CView* view, std::string& templateN
 }
 
 //-----------------------------------------------------------------------------
-const UIAttributes* UIDescription::getViewAttributes (UTF8StringPtr name)
+const UIAttributes* UIDescription::getViewAttributes (UTF8StringPtr name) const
 {
 	if (nodes)
 	{
-		UIDescList::iterator it = nodes->getChildren ().begin ();
-		while (it != nodes->getChildren ().end ())
+		for (UIDescList::iterator it = nodes->getChildren ().begin (), end = nodes->getChildren().end (); it != end; ++it)
 		{
 			if ((*it)->getName () == MainNodeNames::kTemplate)
 			{
@@ -1194,7 +1182,6 @@ const UIAttributes* UIDescription::getViewAttributes (UTF8StringPtr name)
 				if (nodeName && *nodeName == name)
 					return (*it)->getAttributes ();
 			}
-			it++;
 		}
 	}
 	return 0;
@@ -1252,35 +1239,35 @@ int32_t UIDescription::getTagForName (UTF8StringPtr name) const
 }
 
 //-----------------------------------------------------------------------------
-bool UIDescription::hasColorName (UTF8StringPtr name)
+bool UIDescription::hasColorName (UTF8StringPtr name) const
 {
 	UIColorNode* node = dynamic_cast<UIColorNode*> (findChildNodeByNameAttribute (getBaseNode (MainNodeNames::kColor), name));
 	return node ? true : false;
 }
 
 //-----------------------------------------------------------------------------
-bool UIDescription::hasTagName (UTF8StringPtr name)
+bool UIDescription::hasTagName (UTF8StringPtr name) const
 {
 	UIControlTagNode* node = dynamic_cast<UIControlTagNode*> (findChildNodeByNameAttribute (getBaseNode (MainNodeNames::kControlTag), name));
 	return node ? true : false;
 }
 
 //-----------------------------------------------------------------------------
-bool UIDescription::hasFontName (UTF8StringPtr name)
+bool UIDescription::hasFontName (UTF8StringPtr name) const
 {
 	UIFontNode* node = dynamic_cast<UIFontNode*> (findChildNodeByNameAttribute (getBaseNode (MainNodeNames::kFont), name));
 	return node ? true : false;
 }
 
 //-----------------------------------------------------------------------------
-bool UIDescription::hasBitmapName (UTF8StringPtr name)
+bool UIDescription::hasBitmapName (UTF8StringPtr name) const
 {
 	UIBitmapNode* node = dynamic_cast<UIBitmapNode*> (findChildNodeByNameAttribute (getBaseNode (MainNodeNames::kBitmap), name));
 	return node ? true : false;
 }
 
 //-----------------------------------------------------------------------------
-CControlListener* UIDescription::getControlListener (UTF8StringPtr name)
+CControlListener* UIDescription::getControlListener (UTF8StringPtr name) const
 {
 	if (controller)
 		return controller->getControlListener (name);
@@ -1288,7 +1275,7 @@ CControlListener* UIDescription::getControlListener (UTF8StringPtr name)
 }
 
 //-----------------------------------------------------------------------------
-CBitmap* UIDescription::getBitmap (UTF8StringPtr name)
+CBitmap* UIDescription::getBitmap (UTF8StringPtr name) const
 {
 	UIBitmapNode* bitmapNode = dynamic_cast<UIBitmapNode*> (findChildNodeByNameAttribute (getBaseNode (MainNodeNames::kBitmap), name));
 	if (bitmapNode)
@@ -1396,7 +1383,7 @@ CBitmap* UIDescription::getBitmap (UTF8StringPtr name)
 }
 
 //-----------------------------------------------------------------------------
-CFontRef UIDescription::getFont (UTF8StringPtr name)
+CFontRef UIDescription::getFont (UTF8StringPtr name) const
 {
 	UIFontNode* fontNode = dynamic_cast<UIFontNode*> (findChildNodeByNameAttribute (getBaseNode (MainNodeNames::kFont), name));
 	if (fontNode)
@@ -1407,7 +1394,7 @@ CFontRef UIDescription::getFont (UTF8StringPtr name)
 }
 
 //-----------------------------------------------------------------------------
-bool UIDescription::getColor (UTF8StringPtr name, CColor& color)
+bool UIDescription::getColor (UTF8StringPtr name, CColor& color) const
 {
 	UIColorNode* colorNode = dynamic_cast<UIColorNode*> (findChildNodeByNameAttribute (getBaseNode (MainNodeNames::kColor), name));
 	if (colorNode)
@@ -1429,8 +1416,7 @@ template<typename NodeType, typename ObjType, typename CompareFunction> UTF8Stri
 	if (baseNode)
 	{
 		UIDescList& children = baseNode->getChildren ();
-		UIDescList::iterator it = children.begin ();
-		while (it != children.end ())
+		for (UIDescList::iterator it = children.begin (), end = children.end (); it != end; ++it)
 		{
 			NodeType* node = dynamic_cast<NodeType*>(*it);
 			if (node && compare (this, node, obj))
@@ -1438,7 +1424,6 @@ template<typename NodeType, typename ObjType, typename CompareFunction> UTF8Stri
 				const std::string* name = node->getAttributes ()->getAttributeValue ("name");
 				return name ? name->c_str () : 0;
 			}
-			it++;
 		}
 	}
 	return 0;
@@ -1690,8 +1675,7 @@ void UIDescription::collectBitmapFilters (UTF8StringPtr bitmapName, std::list<Sh
 static void removeChildNode (UINode* baseNode, UTF8StringPtr nodeName)
 {
 	UIDescList& children = baseNode->getChildren ();
-	UIDescList::iterator it = children.begin ();
-	while (it != children.end ())
+	for (UIDescList::iterator it = children.begin (), end = children.end (); it != end; ++it)
 	{
 		const std::string* name = (*it)->getAttributes ()->getAttributeValue ("name");
 		if (name && *name == nodeName)
@@ -1700,7 +1684,6 @@ static void removeChildNode (UINode* baseNode, UTF8StringPtr nodeName)
 				children.remove (*it);
 			return;
 		}
-		it++;
 	}
 }
 
@@ -1751,7 +1734,7 @@ void UIDescription::changeAlternativeFontNames (UTF8StringPtr name, UTF8StringPt
 }
 
 //-----------------------------------------------------------------------------
-bool UIDescription::getAlternativeFontNames (UTF8StringPtr name, std::string& alternativeFonts)
+bool UIDescription::getAlternativeFontNames (UTF8StringPtr name, std::string& alternativeFonts) const
 {
 	UIFontNode* node = dynamic_cast<UIFontNode*> (findChildNodeByNameAttribute (getBaseNode (MainNodeNames::kFont), name));
 	if (node)
@@ -1765,8 +1748,7 @@ bool UIDescription::getAlternativeFontNames (UTF8StringPtr name, std::string& al
 //-----------------------------------------------------------------------------
 void UIDescription::collectTemplateViewNames (std::list<const std::string*>& names) const
 {
-	UIDescList::iterator it = nodes->getChildren ().begin ();
-	while (it != nodes->getChildren ().end ())
+	for (UIDescList::iterator it = nodes->getChildren ().begin (), end = nodes->getChildren ().end (); it != end; ++it)
 	{
 		if ((*it)->getName () == MainNodeNames::kTemplate)
 		{
@@ -1774,7 +1756,6 @@ void UIDescription::collectTemplateViewNames (std::list<const std::string*>& nam
 			if (nodeName)
 				names.push_back (nodeName);
 		}
-		it++;
 	}
 }
 
@@ -1785,8 +1766,7 @@ template<typename NodeType> void UIDescription::collectNamesFromNode (IdStringPt
 	if (node)
 	{
 		UIDescList& children = node->getChildren ();
-		UIDescList::iterator it = children.begin ();
-		while (it != children.end ())
+		for (UIDescList::iterator it = children.begin (), end = children.end (); it != end; ++it)
 		{
 			NodeType* node = dynamic_cast<NodeType*>(*it);
 			if (node)
@@ -1795,7 +1775,6 @@ template<typename NodeType> void UIDescription::collectNamesFromNode (IdStringPt
 				if (name)
 					names.push_back (name);
 			}
-			it++;
 		}
 	}
 }
@@ -1834,13 +1813,11 @@ bool UIDescription::updateAttributesForView (UINode* node, CView* view, bool dee
 	CViewContainer* container = dynamic_cast<CViewContainer*> (view);
 	if (factory->getAttributeNamesForView (view, attributeNames))
 	{
-		std::list<std::string>::const_iterator it = attributeNames.begin ();
-		while (it != attributeNames.end ())
+		for (std::list<std::string>::const_iterator it = attributeNames.begin (), end = attributeNames.end (); it != end; ++it)
 		{
 			std::string value;
 			if (factory->getAttributeValue (view, (*it), value, this))
 				node->getAttributes ()->setAttribute ((*it).c_str (), value.c_str ());
-			it++;
 		}
 		node->getAttributes ()->setAttribute ("class", factory->getViewName (view));
 		result = true;
@@ -1906,8 +1883,7 @@ void UIDescription::updateViewDescription (UTF8StringPtr name, CView* view)
 	if (factory && nodes)
 	{
 		UINode* node = 0;
-		UIDescList::iterator it = nodes->getChildren ().begin ();
-		while (it != nodes->getChildren ().end () && node == 0)
+		for (UIDescList::iterator it = nodes->getChildren ().begin (), end = nodes->getChildren ().end (); it != end && node == 0; ++it)
 		{
 			if ((*it)->getName () == MainNodeNames::kTemplate)
 			{
@@ -1917,7 +1893,6 @@ void UIDescription::updateViewDescription (UTF8StringPtr name, CView* view)
 					node = (*it);
 				}
 			}
-			it++;
 		}
 		if (node == 0)
 		{

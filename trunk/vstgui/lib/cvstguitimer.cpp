@@ -53,12 +53,33 @@ namespace VSTGUI {
 IdStringPtr CVSTGUITimer::kMsgTimer = "timer fired";
 
 //-----------------------------------------------------------------------------
-CVSTGUITimer::CVSTGUITimer (CBaseObject* timerObject, int32_t fireTime)
+CVSTGUITimer::CVSTGUITimer (CBaseObject* timerObject, int32_t fireTime, bool doStart)
 : fireTime (fireTime)
+#if !VSTGUI_HAS_FUNCTIONAL
 , timerObject (timerObject)
+#endif
 , platformTimer (0)
 {
+#if VSTGUI_HAS_FUNCTIONAL
+	callbackFunc = [timerObject](CVSTGUITimer* timer) {
+		timerObject->notify (timer, kMsgTimer);
+	};
+#endif
+	if (doStart)
+		start ();
 }
+
+#if VSTGUI_HAS_FUNCTIONAL
+//-----------------------------------------------------------------------------
+CVSTGUITimer::CVSTGUITimer (CallbackFunc&& callback, int32_t fireTime, bool doStart)
+: fireTime (fireTime)
+, platformTimer (0)
+, callbackFunc (std::move (callback))
+{
+	if (doStart)
+		start ();
+}
+#endif
 
 //-----------------------------------------------------------------------------
 CVSTGUITimer::~CVSTGUITimer ()
@@ -76,7 +97,13 @@ bool CVSTGUITimer::start ()
 		timerContext.info = this;
 		platformTimer = CFRunLoopTimerCreate (kCFAllocatorDefault, CFAbsoluteTimeGetCurrent () + fireTime * 0.001f, fireTime * 0.001f, 0, 0, timerCallback, &timerContext);
 		if (platformTimer)
+		{
+		#if MAC_OS_X_VERSION_MAX_ALLOWED > MAC_OS_X_VERSION_10_8
+			if (CFRunLoopTimerSetTolerance)
+				CFRunLoopTimerSetTolerance ((CFRunLoopTimerRef)platformTimer, fireTime * 0.0001f);
+		#endif
 			CFRunLoopAddTimer (CFRunLoopGetCurrent (), (CFRunLoopTimerRef)platformTimer, kCFRunLoopCommonModes);
+		}
 
 		#elif WINDOWS
 		platformTimer = (void*)SetTimer ((HWND)NULL, (UINT_PTR)0, fireTime, TimerProc);
@@ -136,13 +163,24 @@ bool CVSTGUITimer::setFireTime (int32_t newFireTime)
 	return false;
 }
 
+//-----------------------------------------------------------------------------
+void CVSTGUITimer::fire ()
+{
+#if VSTGUI_HAS_FUNCTIONAL
+	if (callbackFunc)
+		callbackFunc (this);
+#else
+	if (timerObject)
+		timerObject->notify (this, kMsgTimer);
+#endif
+}
+
 #if MAC
 //-----------------------------------------------------------------------------
 void CVSTGUITimer::timerCallback (CFRunLoopTimerRef t, void *info)
 {
 	CVSTGUITimer* timer = (CVSTGUITimer*)info;
-	if (timer->timerObject)
-		timer->timerObject->notify (timer, kMsgTimer);
+	timer->fire ();
 }
 
 #elif WINDOWS
@@ -154,7 +192,7 @@ VOID CALLBACK CVSTGUITimer::TimerProc (HWND hwnd, UINT uMsg, UINT_PTR idEvent, D
 	{
 		if ((UINT_PTR)((*it)->platformTimer) == idEvent)
 		{
-			(*it)->timerObject->notify ((*it), kMsgTimer);
+			(*it)->fire ();
 			break;
 		}
 		it++;

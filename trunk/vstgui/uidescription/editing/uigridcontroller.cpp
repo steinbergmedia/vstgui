@@ -87,7 +87,7 @@ void UIGridController::valueChanged (CControl* control)
 }
 
 //----------------------------------------------------------------------------------------------------
-CView* UIGridController::verifyView (CView* view, const UIAttributes& attributes, IUIDescription* description)
+CView* UIGridController::verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description)
 {
 	CTextEdit* control = dynamic_cast<CTextEdit*>(view);
 	if (control)

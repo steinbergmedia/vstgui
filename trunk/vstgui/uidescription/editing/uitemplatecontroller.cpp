@@ -44,6 +44,7 @@
 #include "uiselection.h"
 #include "uiundomanager.h"
 #include "uiactions.h"
+#include "uieditmenucontroller.h"
 #include <assert.h>
 
 #ifdef verify
@@ -160,7 +161,7 @@ protected:
 class UIViewListDataSource : public UINavigationDataSource
 {
 public:
-	UIViewListDataSource (CViewContainer* view, UIViewFactory* viewFactory, UISelection* selection, UIUndoManager* undoManager ,IGenericStringListDataBrowserSourceSelectionChanged* delegate);
+	UIViewListDataSource (CViewContainer* view, const IViewFactory* viewFactory, UISelection* selection, UIUndoManager* undoManager ,IGenericStringListDataBrowserSourceSelectionChanged* delegate);
 	~UIViewListDataSource ();
 
 	CViewContainer* getView () const { return view; }
@@ -190,7 +191,7 @@ protected:
 	int32_t dbOnKeyDown (const VstKeyCode& key, CDataBrowser* browser) VSTGUI_OVERRIDE_VMETHOD;
 
 	CViewContainer* view;
-	SharedPointer<UIViewFactory> viewFactory;
+	const IViewFactory* viewFactory;
 	UIViewListDataSource* next;
 	SharedPointer<UISelection> selection;
 	SharedPointer<UIUndoManager> undoManager;
@@ -348,7 +349,7 @@ void UITemplateController::setTemplateView (CViewContainer* view)
 			CViewContainer* parentView = static_cast<CViewContainer*>(templateDataBrowser->getParentView ());
 			if (parentView)
 			{
-				UIViewFactory* viewFactory = dynamic_cast<UIViewFactory*> (editDescription->getViewFactory ());
+				const IViewFactory* viewFactory = editDescription->getViewFactory ();
 				mainViewDataSource = new UIViewListDataSource (templateView, viewFactory, selection, undoManager, this);
 				UIEditController::setupDataSource (mainViewDataSource);
 				CRect r (templateDataBrowser->getViewSize ());
@@ -362,7 +363,7 @@ void UITemplateController::setTemplateView (CViewContainer* view)
 }
 
 //----------------------------------------------------------------------------------------------------
-CView* UITemplateController::createView (const UIAttributes& attributes, IUIDescription* description)
+CView* UITemplateController::createView (const UIAttributes& attributes, const IUIDescription* description)
 {
 	const std::string* name = attributes.getAttributeValue ("custom-view-name");
 	if (name)
@@ -390,13 +391,13 @@ CView* UITemplateController::createView (const UIAttributes& attributes, IUIDesc
 }
 
 //----------------------------------------------------------------------------------------------------
-CView* UITemplateController::verifyView (CView* view, const UIAttributes& attributes, IUIDescription* description)
+CView* UITemplateController::verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description)
 {
 	return DelegationController::verifyView (view, attributes, description);
 }
 
 //----------------------------------------------------------------------------------------------------
-IController* UITemplateController::createSubController (UTF8StringPtr name, IUIDescription* description)
+IController* UITemplateController::createSubController (UTF8StringPtr name, const IUIDescription* description)
 {
 	return DelegationController::createSubController (name, description);
 }
@@ -404,7 +405,7 @@ IController* UITemplateController::createSubController (UTF8StringPtr name, IUID
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
-UIViewListDataSource::UIViewListDataSource (CViewContainer* view, UIViewFactory* viewFactory, UISelection* selection, UIUndoManager* undoManager, IGenericStringListDataBrowserSourceSelectionChanged* delegate)
+UIViewListDataSource::UIViewListDataSource (CViewContainer* view, const IViewFactory* viewFactory, UISelection* selection, UIUndoManager* undoManager, IGenericStringListDataBrowserSourceSelectionChanged* delegate)
 : UINavigationDataSource (delegate)
 , view (view)
 , viewFactory (viewFactory)
@@ -676,9 +677,10 @@ CMouseEventResult UITemplatesDataSource::dbOnMouseDown (const CPoint& where, con
 			{
 				case 0:
 				{
-					// TODO: Unify with UIEditMenuController::createUniqueTemplateName
+					std::list<const std::string*> tmp;
+					description->collectTemplateViewNames (tmp);
 					std::string newName (getStringList ()->at (row).c_str ());
-					newName += " Copy";
+					UIEditMenuController::createUniqueTemplateName (tmp, newName);
 					actionPerformer->performDuplicateTemplate (getStringList ()->at (row).c_str (), newName.c_str ());
 					break;
 				}

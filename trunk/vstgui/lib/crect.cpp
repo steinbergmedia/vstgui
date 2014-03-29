@@ -34,7 +34,6 @@
 
 #include "crect.h"
 #include "cpoint.h"
-#include <cmath>
 
 namespace VSTGUI {
 
@@ -55,23 +54,6 @@ bool CRect::isEmpty () const
 }
 
 //-----------------------------------------------------------------------------
-void CRect::bound (const CRect& rect)
-{
-	if (left < rect.left)
-		left = rect.left;
-	if (top < rect.top)
-		top = rect.top;
-	if (right > rect.right)
-		right = rect.right;
-	if (bottom > rect.bottom)
-		bottom = rect.bottom;
-	if (bottom < top)
-		bottom = top;
-	if (right < left)
-		right = left;
-}
-
-//-----------------------------------------------------------------------------
 void CRect::unite (const CRect& rect)
 {
 	if (left > rect.left)
@@ -82,15 +64,6 @@ void CRect::unite (const CRect& rect)
 		top = rect.top;
 	if (bottom < rect.bottom)
 		bottom = rect.bottom;
-}
-
-//-----------------------------------------------------------------------------
-void CRect::makeIntegral ()
-{
-	left = floor (left + 0.5);
-	right = floor (right + 0.5);
-	top = floor (top + 0.5);
-	bottom = floor (bottom + 0.5);
 }
 
 //-----------------------------------------------------------------------------

@@ -42,6 +42,7 @@ class CControlListener;
 namespace VSTGUI {
 
 class IController;
+class IViewFactory;
 class CBitmap;
 struct CColor;
 
@@ -51,17 +52,19 @@ class IUIDescription
 public:
 	virtual ~IUIDescription () {}
 
-	virtual CBitmap* getBitmap (UTF8StringPtr name) = 0;
-	virtual CFontRef getFont (UTF8StringPtr name) = 0;
-	virtual bool getColor (UTF8StringPtr name, CColor& color) = 0;
+	virtual CBitmap* getBitmap (UTF8StringPtr name) const = 0;
+	virtual CFontRef getFont (UTF8StringPtr name) const = 0;
+	virtual bool getColor (UTF8StringPtr name, CColor& color) const = 0;
 	virtual int32_t getTagForName (UTF8StringPtr name) const = 0;
-	virtual CControlListener* getControlListener (UTF8StringPtr name) = 0;
+	virtual CControlListener* getControlListener (UTF8StringPtr name) const = 0;
 	virtual IController* getController () const = 0;
 
 	virtual UTF8StringPtr lookupColorName (const CColor& color) const = 0;
 	virtual UTF8StringPtr lookupFontName (const CFontRef font) const = 0;
 	virtual UTF8StringPtr lookupBitmapName (const CBitmap* bitmap) const = 0;
 	virtual UTF8StringPtr lookupControlTagName (const int32_t tag) const = 0;
+
+	virtual const IViewFactory* getViewFactory () const = 0;
 };
 
 

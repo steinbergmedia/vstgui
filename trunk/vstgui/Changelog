@@ -1,3 +1,8 @@
+2014-03-29 arne
+
+	* add c++11 lambda alternatives for callbacks in CFileSelector::run(), CVSTGUITimer, CParamDisplay::setValueToStringFunction, CTextEdit::setStringToValueFunction and CCommandMenuItem::setActions
+	* some changes to UIDescritpion interfaces to use more const methods
+	
 2014-02-21 arne
 
 	* add CBaseObject::beforeDelete() virtual method, which will be called directly before the object is deleted.

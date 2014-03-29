@@ -256,7 +256,7 @@ ID2D1GradientStopCollection* D2DDrawContext::createGradientStopCollection (const
 	ID2D1GradientStopCollection* collection = 0;
 	D2D1_GRADIENT_STOP* gradientStops = new D2D1_GRADIENT_STOP [d2dGradient->getColorStops ().size ()];
 	uint32_t index = 0;
-	for (CGradient::ColorStopVector::const_iterator it = d2dGradient->getColorStops ().begin (); it != d2dGradient->getColorStops ().end (); ++it, ++index)
+	for (CGradient::ColorStopMap::const_iterator it = d2dGradient->getColorStops ().begin (); it != d2dGradient->getColorStops ().end (); ++it, ++index)
 	{
 		gradientStops[index].position = (FLOAT)it->first;
 		gradientStops[index].color = D2D1::ColorF (it->second.red/255.f, it->second.green/255.f, it->second.blue/255.f, it->second.alpha/255.f * currentState.globalAlpha);

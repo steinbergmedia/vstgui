@@ -60,8 +60,8 @@ class PeakParameter : public Parameter
 public:
 	PeakParameter (int32 flags, int32 id, const TChar* title);
 
-	virtual void toString (ParamValue normValue, String128 string) const;
-	virtual bool fromString (const TChar* string, ParamValue& normValue) const;
+	void toString (ParamValue normValue, String128 string) const VSTGUI_OVERRIDE_VMETHOD;
+	bool fromString (const TChar* string, ParamValue& normValue) const VSTGUI_OVERRIDE_VMETHOD;
 };
 
 //------------------------------------------------------------------------
@@ -166,7 +166,7 @@ class RemoveModalViewAnimation : public Animation::AlphaValueAnimation
 public:
 	RemoveModalViewAnimation (float endValue, bool forceEndValueOnFinish = false) : Animation::AlphaValueAnimation (endValue, forceEndValueOnFinish) {}
 
-	void animationFinished (CView* view, IdStringPtr name, bool wasCanceled)
+	void animationFinished (CView* view, IdStringPtr name, bool wasCanceled) VSTGUI_OVERRIDE_VMETHOD
 	{
 		Animation::AlphaValueAnimation::animationFinished (view, name, wasCanceled);
 		if (view == view->getFrame ()->getModalView ())
@@ -183,10 +183,10 @@ public:
 class ModalViewController : public DelegationController
 {
 public:
-	ModalViewController (IController* controller, UIDescription* desc) : DelegationController (controller), desc (desc) {}
+	ModalViewController (IController* controller, const UIDescription* desc) : DelegationController (controller), desc (desc) {}
 
-	CControlListener* getControlListener (const char* controlTagName) { return this; }
-	void valueChanged (CControl* pControl)
+	CControlListener* getControlListener (const char* controlTagName) VSTGUI_OVERRIDE_VMETHOD { return this; }
+	void valueChanged (CControl* pControl) VSTGUI_OVERRIDE_VMETHOD
 	{
 		if (pControl->getValue ())
 		{
@@ -223,7 +223,7 @@ public:
 	}
 
 protected:
-	UIDescription* desc;
+	const UIDescription* desc;
 };
 
 //------------------------------------------------------------------------
@@ -249,7 +249,7 @@ public:
 			path->forget ();
 	}
 	
-	bool getSplitViewSizeConstraint (int32_t index, CCoord& minWidth, CCoord& maxWidth, CSplitView* splitView)
+	bool getSplitViewSizeConstraint (int32_t index, CCoord& minWidth, CCoord& maxWidth, CSplitView* splitView) VSTGUI_OVERRIDE_VMETHOD
 	{
 		if (index == 0)
 		{
@@ -267,12 +267,12 @@ public:
 		return true;
 	}
 	
-	ISplitViewSeparatorDrawer* getSplitViewSeparatorDrawer (CSplitView* splitView)
+	ISplitViewSeparatorDrawer* getSplitViewSeparatorDrawer (CSplitView* splitView) VSTGUI_OVERRIDE_VMETHOD
 	{
 		return this;
 	}
 
-	bool storeViewSize (int32_t index, const CCoord& size, CSplitView* splitView)
+	bool storeViewSize (int32_t index, const CCoord& size, CSplitView* splitView) VSTGUI_OVERRIDE_VMETHOD
 	{
 		if (index < 3)
 		{
@@ -282,7 +282,7 @@ public:
 		return false;
 	}
 	
-	bool restoreViewSize (int32_t index, CCoord& size, CSplitView* splitView)
+	bool restoreViewSize (int32_t index, CCoord& size, CSplitView* splitView) VSTGUI_OVERRIDE_VMETHOD
 	{
 		if (index < 3 && viewSizes[index] != -1.)
 		{
@@ -292,7 +292,7 @@ public:
 		return false;
 	}
 
-	virtual void drawSplitViewSeparator (CDrawContext* context, const CRect& size, int32_t flags, int32_t index, CSplitView* splitView)
+	void drawSplitViewSeparator (CDrawContext* context, const CRect& size, int32_t flags, int32_t index, CSplitView* splitView) VSTGUI_OVERRIDE_VMETHOD
 	{
 		if (path == 0)
 		{
@@ -359,7 +359,7 @@ public:
 		
 	}
 
-	void draw (CDrawContext* context)
+	void draw (CDrawContext* context) VSTGUI_OVERRIDE_VMETHOD
 	{
 		CGraphicsPath* path = context->createGraphicsPath ();
 		if (path)
@@ -440,7 +440,7 @@ class UIDescriptionTestControllerMenuHandler : public CBaseObject
 public:
 	UIDescriptionTestControllerMenuHandler (Parameter* param) : param (param) {}
 
-	CMessageResult notify (CBaseObject* sender, IdStringPtr message)
+	CMessageResult notify (CBaseObject* sender, IdStringPtr message) VSTGUI_OVERRIDE_VMETHOD
 	{
 		if (message == CCommandMenuItem::kMsgMenuItemSelected)
 		{
@@ -486,11 +486,11 @@ COptionMenu* UIDescriptionTestController::createContextMenu (const CPoint& pos, 
 }
 
 //------------------------------------------------------------------------
-IController* UIDescriptionTestController::createSubController (const char* name, IUIDescription* description, VST3Editor* editor)
+IController* UIDescriptionTestController::createSubController (const char* name, const IUIDescription* description, VST3Editor* editor)
 {
 	if (strcmp (name, "ModalViewController") == 0)
 	{
-		return new ModalViewController (editor, dynamic_cast<UIDescription*> (description));
+		return new ModalViewController (editor, dynamic_cast<const UIDescription*> (description));
 	}
 	if (strcmp (name, "SplitViewController") == 0)
 	{
@@ -503,7 +503,7 @@ IController* UIDescriptionTestController::createSubController (const char* name,
 }
 
 //------------------------------------------------------------------------
-CView* UIDescriptionTestController::createCustomView (UTF8StringPtr name, const UIAttributes& attributes, IUIDescription* description, VST3Editor* editor)
+CView* UIDescriptionTestController::createCustomView (UTF8StringPtr name, const UIAttributes& attributes, const IUIDescription* description, VST3Editor* editor)
 {
 	if (strcmp (name, "LineStyleTestView") == 0)
 	{

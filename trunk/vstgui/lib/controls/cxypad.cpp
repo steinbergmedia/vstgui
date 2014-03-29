@@ -107,7 +107,7 @@ CMouseEventResult CXYPad::onMouseMoved (CPoint& where, const CButtonState& butto
 		x = (float)(where.x / width);
 		y = (float)(where.y / height);
 
-		bounceValues (x, y);
+		boundValues (x, y);
 		setValue (calculateValue (x, y));
 		if (listener && isDirty ())
 			listener->valueChanged (this);
@@ -119,15 +119,15 @@ CMouseEventResult CXYPad::onMouseMoved (CPoint& where, const CButtonState& butto
 }
 
 //------------------------------------------------------------------------
-void CXYPad::bounceValues (float& x, float& y)
+void CXYPad::boundValues (float& x, float& y)
 {
 	if (x < 0.f)
 		x = 0.f;
-	if (x > 1.f)
+	else if (x > 1.f)
 		x = 1.f;
 	if (y < 0.f)
 		y = 0.f;
-	if (y > 1.f)
+	else if (y > 1.f)
 		y = 1.f;
 }
 

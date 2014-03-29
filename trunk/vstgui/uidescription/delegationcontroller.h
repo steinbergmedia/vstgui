@@ -55,9 +55,9 @@ public:
 	// IController
 	int32_t getTagForName (UTF8StringPtr name, int32_t registeredTag) const VSTGUI_OVERRIDE_VMETHOD { return controller->getTagForName (name, registeredTag); }
 	CControlListener* getControlListener (UTF8StringPtr name) VSTGUI_OVERRIDE_VMETHOD { return controller->getControlListener (name); }
-	CView* createView (const UIAttributes& attributes, IUIDescription* description) VSTGUI_OVERRIDE_VMETHOD { return controller->createView (attributes, description); }
-	CView* verifyView (CView* view, const UIAttributes& attributes, IUIDescription* description) VSTGUI_OVERRIDE_VMETHOD { return controller->verifyView (view, attributes, description); }
-	IController* createSubController (IdStringPtr name, IUIDescription* description) VSTGUI_OVERRIDE_VMETHOD { return controller->createSubController (name, description); }
+	CView* createView (const UIAttributes& attributes, const IUIDescription* description) VSTGUI_OVERRIDE_VMETHOD { return controller->createView (attributes, description); }
+	CView* verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description) VSTGUI_OVERRIDE_VMETHOD { return controller->verifyView (view, attributes, description); }
+	IController* createSubController (IdStringPtr name, const IUIDescription* description) VSTGUI_OVERRIDE_VMETHOD { return controller->createSubController (name, description); }
 protected:
 	IController* controller;
 };

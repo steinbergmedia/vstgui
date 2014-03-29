@@ -54,7 +54,7 @@ class VST3EditorDelegate
 public:
 	virtual ~VST3EditorDelegate () {}
 	
-	virtual CView* createCustomView (UTF8StringPtr name, const UIAttributes& attributes, IUIDescription* description, VST3Editor* editor) { return 0; } ///< create a custom view
+	virtual CView* createCustomView (UTF8StringPtr name, const UIAttributes& attributes, const IUIDescription* description, VST3Editor* editor) { return 0; } ///< create a custom view
 	virtual bool findParameter (const CPoint& pos, Steinberg::Vst::ParamID& paramID, VST3Editor* editor) { return false; } ///< find a parameter
 	virtual bool isPrivateParameter (const Steinberg::Vst::ParamID paramID) { return false; } ///< check if parameter ID is private and should not be exposed to the host
 	virtual void didOpen (VST3Editor* editor) {}	///< called after the editor was opened
@@ -63,7 +63,21 @@ public:
 
 	/** called when a sub controller should be created.
 	    The controller is now owned by the editor, which will call forget() if it is a CBaseObject, release() if it is a Steinberg::FObject or it will be simply deleted if the frame gets closed. */
-	virtual IController* createSubController (UTF8StringPtr name, IUIDescription* description, VST3Editor* editor) { return 0; } ///< create a sub controller
+	virtual IController* createSubController (UTF8StringPtr name, const IUIDescription* description, VST3Editor* editor) { return 0; } ///< create a sub controller
+};
+
+//-----------------------------------------------------------------------------
+//! @brief extension of VSTGUI::IController
+//!			The VST3Editor checks all controllers of the views under the mouse on a right click if they have
+//!			this interface implemented and calls the appendContextMenuItems before showing the context menu to the user
+//! @ingroup new_in_4_3
+//-----------------------------------------------------------------------------
+class IContextMenuController
+{
+public:
+	virtual ~IContextMenuController () {}
+	
+	virtual void appendContextMenuItems (COptionMenu& contextMenu, const CPoint& where) = 0;
 };
 
 //-----------------------------------------------------------------------------
@@ -80,7 +94,7 @@ public:
 	void enableTooltips (bool state);
 
 	bool setEditorSizeConstrains (const CPoint& newMinimumSize, const CPoint& newMaximumSize);
-	void getEditorSizeConstrains (CPoint& minimumSize, CPoint& maximumSize);
+	void getEditorSizeConstrains (CPoint& minimumSize, CPoint& maximumSize) const;
 	bool requestResize (const CPoint& newSize);
 
 //-----------------------------------------------------------------------------
@@ -89,7 +103,7 @@ public:
 protected:
 	~VST3Editor ();
 	void init ();
-	ParameterChangeListener* getParameterChangeListener (int32_t tag);
+	ParameterChangeListener* getParameterChangeListener (int32_t tag) const;
 	void recreateView ();
 
 	void syncParameterTags ();
@@ -102,9 +116,9 @@ protected:
 	void beginEdit (int32_t index) VSTGUI_OVERRIDE_VMETHOD;
 	void endEdit (int32_t index) VSTGUI_OVERRIDE_VMETHOD;
 
-	CView* createView (const UIAttributes& attributes, IUIDescription* description) VSTGUI_OVERRIDE_VMETHOD;
-	CView* verifyView (CView* view, const UIAttributes& attributes, IUIDescription* description) VSTGUI_OVERRIDE_VMETHOD;
-	IController* createSubController (UTF8StringPtr name, IUIDescription* description) VSTGUI_OVERRIDE_VMETHOD;
+	CView* createView (const UIAttributes& attributes, const IUIDescription* description) VSTGUI_OVERRIDE_VMETHOD;
+	CView* verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description) VSTGUI_OVERRIDE_VMETHOD;
+	IController* createSubController (UTF8StringPtr name, const IUIDescription* description) VSTGUI_OVERRIDE_VMETHOD;
 
 	CMessageResult notify (CBaseObject* sender, IdStringPtr message) VSTGUI_OVERRIDE_VMETHOD;
 

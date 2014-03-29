@@ -199,6 +199,36 @@ bool CNewFileSelector::runModal ()
 	return runModalInternal ();
 }
 
+#if VSTGUI_HAS_FUNCTIONAL
+//-----------------------------------------------------------------------------
+class CNewFileSelectorCallback : public CBaseObject
+{
+public:
+	CNewFileSelectorCallback (CNewFileSelector::CallbackFunc&& callback) : callbackFunc (std::move (callback)) {}
+	~CNewFileSelectorCallback () {}
+private:
+	CMessageResult notify (CBaseObject* sender, IdStringPtr message)
+	{
+		if (message == CNewFileSelector::kSelectEndMessage)
+		{
+			callbackFunc (dynamic_cast<CNewFileSelector*> (sender));
+			return kMessageNotified;
+		}
+		return kMessageUnknown;
+	}
+	
+	CNewFileSelector::CallbackFunc callbackFunc;
+};
+
+//-----------------------------------------------------------------------------
+bool CNewFileSelector::run (CallbackFunc&& callback)
+{
+	OwningPointer<CNewFileSelectorCallback> fsCallback = new CNewFileSelectorCallback (std::move (callback));
+	return runInternal (fsCallback);
+}
+
+#endif
+
 //-----------------------------------------------------------------------------
 void CNewFileSelector::setTitle (UTF8StringPtr inTitle)
 {

@@ -268,7 +268,7 @@ void QuartzGradient::createCGGradient ()
 	CFMutableArrayRef colors = CFArrayCreateMutable (kCFAllocatorDefault, colorStops.size (), &kCFTypeArrayCallBacks);
 
 	uint32_t index = 0;
-	for (ColorStopVector::const_iterator it = colorStops.begin (); it != colorStops.end (); ++it, ++index)
+	for (ColorStopMap::const_iterator it = colorStops.begin (); it != colorStops.end (); ++it, ++index)
 	{
 		locations[index] = it->first;
 		CColor color = it->second;

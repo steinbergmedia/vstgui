@@ -99,7 +99,7 @@ void SizeToFitOperation::undo ()
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
-UnembedViewOperation::UnembedViewOperation (UISelection* selection, UIViewFactory* factory)
+UnembedViewOperation::UnembedViewOperation (UISelection* selection, const IViewFactory* factory)
 : BaseSelectionOperation<SharedPointer<CView> > (selection)
 , factory (factory)
 {
@@ -274,7 +274,7 @@ void EmbedViewOperation::undo ()
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
-ViewCopyOperation::ViewCopyOperation (UISelection* copySelection, UISelection* workingSelection, CViewContainer* parent, const CPoint& offset, UIViewFactory* viewFactory, IUIDescription* desc)
+ViewCopyOperation::ViewCopyOperation (UISelection* copySelection, UISelection* workingSelection, CViewContainer* parent, const CPoint& offset, IUIDescription* desc)
 : parent (parent)
 , copySelection (copySelection)
 , workingSelection (workingSelection)
@@ -511,7 +511,7 @@ void InsertViewOperation::undo ()
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
-TransformViewTypeOperation::TransformViewTypeOperation (UISelection* selection, IdStringPtr viewClassName, UIDescription* desc, UIViewFactory* factory)
+TransformViewTypeOperation::TransformViewTypeOperation (UISelection* selection, IdStringPtr viewClassName, UIDescription* desc, const UIViewFactory* factory)
 : view (selection->first ())
 , newView (0)
 , beforeView (0)
@@ -561,12 +561,12 @@ void TransformViewTypeOperation::exchangeSubViews (CViewContainer* src, CViewCon
 		ViewIterator it (src);
 		while (*it)
 		{
-			CView* view = *it;
-			if (factory->getViewName (view))
+			CView* childView = *it;
+			if (factory->getViewName (childView))
 			{
-				temp.push_back (view);
+				temp.push_back (childView);
 			}
-			else if (CViewContainer* container = dynamic_cast<CViewContainer*>(view))
+			else if (CViewContainer* container = dynamic_cast<CViewContainer*>(childView))
 			{
 				exchangeSubViews (container, dst);
 			}
@@ -591,7 +591,7 @@ void TransformViewTypeOperation::perform ()
 			parent->addView (newView, beforeView);
 		else
 			parent->addView (newView);
-		exchangeSubViews (dynamic_cast<CViewContainer*> ((CView*)view), dynamic_cast<CViewContainer*> (newView));
+		exchangeSubViews (view.cast<CViewContainer> (), dynamic_cast<CViewContainer*> (newView));
 		selection->setExclusive (newView);
 	}
 }
@@ -607,7 +607,7 @@ void TransformViewTypeOperation::undo ()
 			parent->addView (view, beforeView);
 		else
 			parent->addView (view);
-		exchangeSubViews (dynamic_cast<CViewContainer*> (newView), dynamic_cast<CViewContainer*> ((CView*)view));
+		exchangeSubViews (dynamic_cast<CViewContainer*> (newView), view.cast<CViewContainer> ());
 		selection->setExclusive (view);
 	}
 }
@@ -621,7 +621,7 @@ AttributeChangeAction::AttributeChangeAction (UIDescription* desc, UISelection* 
 , attrValue (attrValue)
 , selection (selection)
 {
-	UIViewFactory* viewFactory = dynamic_cast<UIViewFactory*> (desc->getViewFactory ());
+	const UIViewFactory* viewFactory = dynamic_cast<const UIViewFactory*> (desc->getViewFactory ());
 	std::string attrOldValue;
 	FOREACH_IN_SELECTION(selection, view)
 		viewFactory->getAttributeValue (view, attrName, attrOldValue, desc);
@@ -662,7 +662,7 @@ void AttributeChangeAction::updateSelection ()
 //-----------------------------------------------------------------------------
 void AttributeChangeAction::perform ()
 {
-	UIViewFactory* viewFactory = dynamic_cast<UIViewFactory*> (desc->getViewFactory ());
+	const IViewFactory* viewFactory = desc->getViewFactory ();
 	UIAttributes attr;
 	attr.setAttribute (attrName.c_str (), attrValue.c_str ());
 	selection->changed (UISelection::kMsgSelectionViewWillChange);
@@ -681,7 +681,7 @@ void AttributeChangeAction::perform ()
 //-----------------------------------------------------------------------------
 void AttributeChangeAction::undo ()
 {
-	UIViewFactory* viewFactory = dynamic_cast<UIViewFactory*> (desc->getViewFactory ());
+	const IViewFactory* viewFactory = desc->getViewFactory ();
 	selection->changed (UISelection::kMsgSelectionViewWillChange);
 	const_iterator it = begin ();
 	while (it != end ())
@@ -705,13 +705,13 @@ MultipleAttributeChangeAction::MultipleAttributeChangeAction (UIDescription* des
 , oldValue (oldValue)
 , newValue (newValue)
 {
-	UIViewFactory* viewFactory = dynamic_cast<UIViewFactory*>(description->getViewFactory ());
+	const UIViewFactory* viewFactory = dynamic_cast<const UIViewFactory*>(description->getViewFactory ());
 	for (std::list<CView*>::const_iterator it = views.begin (); it != views.end (); it++)
 		collectViewsWithAttributeValue (viewFactory, description, *it, attrType, oldValue);
 }
 
 //----------------------------------------------------------------------------------------------------
-void MultipleAttributeChangeAction::collectViewsWithAttributeValue (UIViewFactory* viewFactory, IUIDescription* desc, CView* startView, IViewCreator::AttrType type, const std::string& value)
+void MultipleAttributeChangeAction::collectViewsWithAttributeValue (const UIViewFactory* viewFactory, IUIDescription* desc, CView* startView, IViewCreator::AttrType type, const std::string& value)
 {
 	std::list<CView*> views;
 	collectAllSubViews (startView, views);
@@ -762,7 +762,7 @@ void MultipleAttributeChangeAction::collectAllSubViews (CView* view, std::list<C
 //----------------------------------------------------------------------------------------------------
 void MultipleAttributeChangeAction::setAttributeValue (UTF8StringPtr value)
 {
-	UIViewFactory* viewFactory = dynamic_cast<UIViewFactory*>(description->getViewFactory ());
+	const IViewFactory* viewFactory = description->getViewFactory ();
 	const_iterator it = begin ();
 	while (it != end ())
 	{

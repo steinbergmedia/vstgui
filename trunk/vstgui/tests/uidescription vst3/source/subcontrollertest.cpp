@@ -68,9 +68,9 @@ public:
 	TestSubController (IController* controller, Parameter* switchParameter);
 	~TestSubController ();
 
-	CView* verifyView (CView* view, const UIAttributes& attributes, IUIDescription* description);
+	CView* verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description) VSTGUI_OVERRIDE_VMETHOD;
 	
-	void PLUGIN_API update (FUnknown* changedUnknown, int32 message);
+	void PLUGIN_API update (FUnknown* changedUnknown, int32 message) VSTGUI_OVERRIDE_VMETHOD;
 	OBJ_METHODS(TestSubController, FObject)
 protected:
 	Parameter* switchParameter;
@@ -112,7 +112,7 @@ IPlugView* PLUGIN_API SubControllerTestController::createView (FIDString name)
 }
 
 //------------------------------------------------------------------------
-IController* SubControllerTestController::createSubController (const char* name, IUIDescription* description, VST3Editor* editor)
+IController* SubControllerTestController::createSubController (const char* name, const IUIDescription* description, VST3Editor* editor)
 {
 	if (ConstString (name) == "FilterController")
 	{
@@ -138,7 +138,7 @@ TestSubController::~TestSubController ()
 }
 
 //------------------------------------------------------------------------
-CView* TestSubController::verifyView (CView* view, const UIAttributes& attributes, IUIDescription* description)
+CView* TestSubController::verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description)
 {
 	view = DelegationController::verifyView (view, attributes, description);
 	if (view)

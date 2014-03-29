@@ -121,7 +121,7 @@ UIFontsController::~UIFontsController ()
 }
 
 //----------------------------------------------------------------------------------------------------
-CView* UIFontsController::createView (const UIAttributes& attributes, IUIDescription* description)
+CView* UIFontsController::createView (const UIAttributes& attributes, const IUIDescription* description)
 {
 	const std::string* name = attributes.getAttributeValue ("custom-view-name");
 	if (name)
@@ -136,7 +136,7 @@ CView* UIFontsController::createView (const UIAttributes& attributes, IUIDescrip
 }
 
 //----------------------------------------------------------------------------------------------------
-CView* UIFontsController::verifyView (CView* view, const UIAttributes& attributes, IUIDescription* description)
+CView* UIFontsController::verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description)
 {
 	UISearchTextField* searchField = dynamic_cast<UISearchTextField*>(view);
 	if (searchField && searchField->getTag () == kSearchTag)

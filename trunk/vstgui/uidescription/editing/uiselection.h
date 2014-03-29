@@ -96,8 +96,8 @@ public:
 	static IdStringPtr kMsgSelectionViewWillChange;
 	static IdStringPtr kMsgSelectionViewChanged;
 
-	bool store (OutputStream& stream, UIViewFactory* viewFactory, IUIDescription* uiDescription);
-	bool restore (InputStream& stream, UIViewFactory* viewFactory, IUIDescription* uiDescription);
+	bool store (OutputStream& stream, IUIDescription* uiDescription);
+	bool restore (InputStream& stream, IUIDescription* uiDescription);
 protected:
 
 	std::list<CBaseObject*> dependencies;

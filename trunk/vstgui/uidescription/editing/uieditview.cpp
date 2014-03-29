@@ -516,7 +516,7 @@ CView* UIEditView::getViewAt (const CPoint& p, bool deep, bool mustbeMouseEnable
 	CView* view = CViewContainer::getViewAt (p, deep, mustbeMouseEnabled);
 	if (editing)
 	{
-		UIViewFactory* factory = dynamic_cast<UIViewFactory*> (description->getViewFactory ());
+		const IViewFactory* factory = description->getViewFactory ();
 		if (factory)
 		{
 			while (view && factory->getViewName (view) == 0)
@@ -534,7 +534,7 @@ CViewContainer* UIEditView::getContainerAt (const CPoint& p, bool deep, bool mus
 	CViewContainer* view = CViewContainer::getContainerAt (p, deep, mustbeMouseEnabled);
 	if (editing)
 	{
-		UIViewFactory* factory = dynamic_cast<UIViewFactory*> (description->getViewFactory ());
+		const IViewFactory* factory = description->getViewFactory ();
 		if (factory)
 		{
 			while (view && factory->getViewName (view) == 0)
@@ -943,7 +943,16 @@ CBitmap* UIEditView::createBitmapFromSelection (UISelection* selection)
 			view->getParentView ()->localToFrame (p);
 			context->setOffset (CPoint (-viewSize.left + p.x, -viewSize.top + p.y));
 			context->setClipRect (view->getViewSize ());
-			view->drawRect (context, view->getViewSize ());
+			if (IPlatformViewLayerDelegate* layer = dynamic_cast<IPlatformViewLayerDelegate*>(view))
+			{
+				CRect r (view->getViewSize ());
+				r.originize ();
+				layer->drawViewLayer (context, r);
+			}
+			else
+			{
+				view->drawRect (context, view->getViewSize ());
+			}
 		}
 	FOREACH_IN_SELECTION_END
 
@@ -972,9 +981,12 @@ void UIEditView::startDrag (CPoint& where)
 
 	getSelection ()->setDragOffset (CPoint (offset.x, offset.y));
 
-	UIViewFactory* viewFactory = dynamic_cast<UIViewFactory*> (description->getViewFactory ());
+	std::string templateName;
+	if (description->getTemplateNameFromView (getEditView (), templateName))
+		description->updateViewDescription (templateName.c_str (), getEditView ());
+
 	CMemoryStream stream (1024, 1024, false);
-	if (!getSelection ()->store (stream, viewFactory, description))
+	if (!getSelection ()->store (stream, description))
 		return;
 	stream.end ();
 
@@ -996,10 +1008,9 @@ UISelection* UIEditView::getSelectionOutOfDrag (IDataPackage* drag)
 		IController* controller = getEditor () ? dynamic_cast<IController*> (getEditor ()) : 0;
 		if (controller)
 			description->setController (controller);
-		UIViewFactory* viewFactory = dynamic_cast<UIViewFactory*> (description->getViewFactory ());
 		CMemoryStream stream (static_cast<const int8_t*> (dragData), size, false);
 		UISelection* newSelection = new UISelection;
-		if (newSelection->restore (stream, viewFactory, description))
+		if (newSelection->restore (stream, description))
 		{
 			description->setController (0);
 			return newSelection;
@@ -1042,8 +1053,7 @@ bool UIEditView::onDrop (IDataPackage* drag, const CPoint& where)
 				frameToLocal (containerOffset);
 				where2.offset (-containerOffset.x, -containerOffset.y);
 
-				UIViewFactory* viewFactory = dynamic_cast<UIViewFactory*> (description->getViewFactory ());
-				IAction* action = new ViewCopyOperation (dragSelection, getSelection (), viewContainer, where2, viewFactory, description);
+				IAction* action = new ViewCopyOperation (dragSelection, getSelection (), viewContainer, where2, description);
 				getUndoManager()->pushAndPerform (action);
 			}
 			dragSelection->forget ();
@@ -1188,7 +1198,7 @@ bool UIEditView::removed (CView* parent)
 }
 
 //-----------------------------------------------------------------------------
-void UIEditView::setupColors (IUIDescription* description)
+void UIEditView::setupColors (const IUIDescription* description)
 {
 	description->getColor ("editView.crosslines.background", crosslineBackgroundColor);
 	description->getColor ("editView.crosslines.foreground", crosslineForegroundColor);

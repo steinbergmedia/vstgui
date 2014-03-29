@@ -76,8 +76,10 @@ The text-value is centered in the given rect.
 CParamDisplay::CParamDisplay (const CRect& size, CBitmap* background, const int32_t style)
 : CControl (size, 0, -1, background)
 , rotationPathCache (0)
+#if !VSTGUI_HAS_FUNCTIONAL
 , valueToString (0)
 , valueToStringUserData (0)
+#endif
 , horiTxtAlign (kCenterText)
 , style (style)
 , valuePrecision (2)
@@ -101,8 +103,12 @@ CParamDisplay::CParamDisplay (const CRect& size, CBitmap* background, const int3
 CParamDisplay::CParamDisplay (const CParamDisplay& v)
 : CControl (v)
 , rotationPathCache (0)
+#if VSTGUI_HAS_FUNCTIONAL
+, valueToStringFunction (v.valueToStringFunction)
+#else
 , valueToString (v.valueToString)
 , valueToStringUserData (v.valueToStringUserData)
+#endif
 , horiTxtAlign (v.horiTxtAlign)
 , style (v.style)
 , valuePrecision (v.valuePrecision)
@@ -161,9 +167,23 @@ void CParamDisplay::setPrecision (uint8_t precision)
 //------------------------------------------------------------------------
 void CParamDisplay::setValueToStringProc (CParamDisplayValueToStringProc proc, void* userData)
 {
+#if VSTGUI_HAS_FUNCTIONAL
+	setValueToStringFunction ([proc, userData] (float value, char utf8String[256], CParamDisplay* display) {
+		return proc (value, utf8String, userData);
+	});
+#else
 	valueToString = proc;
 	valueToStringUserData = userData;
+#endif
 }
+
+#if VSTGUI_HAS_FUNCTIONAL
+//------------------------------------------------------------------------
+void CParamDisplay::setValueToStringFunction (ValueToStringFunction&& valueToStringFunc)
+{
+	valueToStringFunction = std::move (valueToStringFunc);
+}
+#endif
 
 //------------------------------------------------------------------------
 bool CParamDisplay::getFocusPath (CGraphicsPath& outPath)
@@ -202,8 +222,13 @@ void CParamDisplay::draw (CDrawContext *pContext)
 	string[0] = 0;
 
 	bool converted = false;
+#if VSTGUI_HAS_FUNCTIONAL
+	if (valueToStringFunction)
+		converted = valueToStringFunction (value, string, this);
+#else
 	if (valueToString)
 		converted = valueToString (value, string, valueToStringUserData);
+#endif
 	if (!converted)
 	{
 		char precisionStr[10];

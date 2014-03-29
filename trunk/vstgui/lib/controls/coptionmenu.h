@@ -37,6 +37,9 @@
 
 #include "cparamdisplay.h"
 #include <list>
+#if VSTGUI_HAS_FUNCTIONAL
+#include <functional>
+#endif
 
 #include "../platform/iplatformoptionmenu.h"
 
@@ -132,26 +135,33 @@ public:
 
 	void setTarget (CBaseObject* target);
 	CBaseObject* getTarget () const { return target; }
+
+#if VSTGUI_HAS_FUNCTIONAL
+	typedef std::function<void(CCommandMenuItem* item)> ValidateCallbackFunction;
+	typedef std::function<void(CCommandMenuItem* item)> SelectedCallbackFunction;
+
+	void setActions (SelectedCallbackFunction&& selected, ValidateCallbackFunction&& validate = [](CCommandMenuItem*){});
+#endif
 	//@}
+
+	void execute ();
+	void validate ();
 
 	static IdStringPtr kMsgMenuItemValidate;	///< message send to the target before the item is shown
 	static IdStringPtr kMsgMenuItemSelected;	///< message send to the target when this item was selected
 protected:
+#if VSTGUI_HAS_FUNCTIONAL
+	ValidateCallbackFunction validateFunc;
+	SelectedCallbackFunction selectedFunc;
+#endif
 	CBaseObject* target;
 	char* commandCategory;
 	char* commandName;
 };
 
-//-----------------------------------------------------------------------------
-class CMenuItemList : public std::list<OwningPointer<CMenuItem> >
-{
-public:
-	CMenuItemList () {}
-	CMenuItemList (const CMenuItemList& inList) : std::list<OwningPointer<CMenuItem> > (inList) {}
-};
-
-typedef std::list<OwningPointer<CMenuItem> >::iterator CMenuItemIterator;
-typedef std::list<OwningPointer<CMenuItem> >::const_iterator CConstMenuItemIterator;
+typedef std::list<OwningPointer<CMenuItem> > CMenuItemList;
+typedef CMenuItemList::iterator CMenuItemIterator;
+typedef CMenuItemList::const_iterator CConstMenuItemIterator;
 
 
 //-----------------------------------------------------------------------------

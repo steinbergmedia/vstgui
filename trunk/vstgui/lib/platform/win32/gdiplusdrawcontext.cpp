@@ -183,7 +183,7 @@ void GdiplusDrawContext::fillLinearGradient (CGraphicsPath* _path, const CGradie
 		Gdiplus::Color* colors = new Gdiplus::Color [gdiPlusGradient->getColorStops ().size ()];
 		Gdiplus::REAL* positions = new Gdiplus::REAL [gdiPlusGradient->getColorStops ().size ()];
 		uint32_t index = 0;
-		for (CGradient::ColorStopVector::const_iterator it = gdiPlusGradient->getColorStops ().begin (); it != gdiPlusGradient->getColorStops ().end (); ++it, ++index)
+		for (CGradient::ColorStopMap::const_iterator it = gdiPlusGradient->getColorStops ().begin (); it != gdiPlusGradient->getColorStops ().end (); ++it, ++index)
 		{
 			CColor color = it->second;
 			color.alpha = (int8_t)((float)color.alpha * currentState.globalAlpha);
@@ -245,7 +245,7 @@ void GdiplusDrawContext::fillRadialGradient (CGraphicsPath* _path, const CGradie
 		Gdiplus::Color* colors = new Gdiplus::Color [gdiPlusGradient->getColorStops ().size ()];
 		Gdiplus::REAL* positions = new Gdiplus::REAL [gdiPlusGradient->getColorStops ().size ()];
 		uint32_t index = 0;
-		for (CGradient::ColorStopVector::const_iterator it = gdiPlusGradient->getColorStops ().begin (); it != gdiPlusGradient->getColorStops ().end (); ++it, ++index)
+		for (CGradient::ColorStopMap::const_iterator it = gdiPlusGradient->getColorStops ().begin (); it != gdiPlusGradient->getColorStops ().end (); ++it, ++index)
 		{
 			CColor color = it->second;
 			color.alpha = (int8_t)((float)color.alpha * currentState.globalAlpha);

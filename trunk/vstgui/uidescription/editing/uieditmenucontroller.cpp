@@ -43,6 +43,7 @@
 #include "../uiattributes.h"
 #include "../../lib/controls/coptionmenu.h"
 #include "../../lib/controls/ctextlabel.h"
+#include <cctype>
 
 namespace VSTGUI {
 
@@ -152,24 +153,33 @@ void UIEditMenuController::createEditMenu (COptionMenu* menu)
 }
 
 //----------------------------------------------------------------------------------------------------
-bool UIEditMenuController::createUniqueTemplateName (std::list<const std::string*>& names, std::string& name, int32_t count)
+bool UIEditMenuController::createUniqueTemplateName (std::list<const std::string*>& names, std::string& name)
 {
-	std::string str (name);
-	if (count != 0)
+	for (std::list<const std::string*>::const_iterator it = names.begin (); it != names.end (); ++it)
 	{
-		char number[10];
-		sprintf(number, "%d", count);
-		str += ' ';
-		str += number;
-	}
-	for (std::list<const std::string*>::const_iterator it = names.begin (); it != names.end (); it++)
-	{
-		if (*(*it) == str)
+		if (*(*it) == name)
 		{
-			return createUniqueTemplateName (names, name, count + 1);
+			int32_t count = 0;
+			size_t pos = name.find_last_not_of ("0123456789");
+			if (pos != std::string::npos && pos != name.length () - 1)
+			{
+				std::string numberStr = name.substr (pos);
+				count = static_cast<int32_t> (strtol (numberStr.c_str (), NULL, 10)) + 1;
+				name.erase (pos+1);
+			}
+			else
+			{
+				count = 1;
+			}
+			while (name.length () && std::isspace (name[name.length ()-1]))
+				name.erase (name.length ()-1);
+			char number[10];
+			sprintf (number, "%d", count);
+			name += ' ';
+			name += number;
+			return createUniqueTemplateName (names, name);
 		}
 	}
-	name = str;
 	return true;
 }
 
@@ -237,7 +247,7 @@ CMessageResult UIEditMenuController::notify (CBaseObject* sender, IdStringPtr me
 			else if (strcmp (item->getCommandName (), "Add New Template") == 0)
 			{
 				std::list<const std::string*> containerViewNames;
-				UIViewFactory* factory = dynamic_cast<UIViewFactory*> (description->getViewFactory ());
+				const UIViewFactory* factory = dynamic_cast<const UIViewFactory*> (description->getViewFactory ());
 				factory->collectRegisteredViewNames (containerViewNames, "CViewContainer");
 				OwningPointer<COptionMenu> submenu = new COptionMenu ();
 				for (std::list<const std::string*>::const_iterator it = containerViewNames.begin (); it != containerViewNames.end (); it++)
@@ -300,7 +310,7 @@ CMessageResult UIEditMenuController::notify (CBaseObject* sender, IdStringPtr me
 				OwningPointer<COptionMenu> submenu = new COptionMenu ();
 				item->setSubmenu (submenu);
 				std::list<const std::string*> containerViewNames;
-				UIViewFactory* factory = dynamic_cast<UIViewFactory*> (description->getViewFactory ());
+				const UIViewFactory* factory = dynamic_cast<const UIViewFactory*> (description->getViewFactory ());
 				factory->collectRegisteredViewNames (containerViewNames, "CViewContainer");
 				for (std::list<const std::string*>::const_iterator it = containerViewNames.begin (); it != containerViewNames.end (); it++)
 				{
@@ -341,7 +351,7 @@ CMessageResult UIEditMenuController::notify (CBaseObject* sender, IdStringPtr me
 				OwningPointer<COptionMenu> submenu = new COptionMenu ();
 				item->setSubmenu (submenu);
 				std::list<const std::string*> containerViewNames;
-				UIViewFactory* factory = dynamic_cast<UIViewFactory*> (description->getViewFactory ());
+				const UIViewFactory* factory = dynamic_cast<const UIViewFactory*> (description->getViewFactory ());
 				factory->collectRegisteredViewNames (containerViewNames);
 				for (std::list<const std::string*>::const_iterator it = containerViewNames.begin (); it != containerViewNames.end (); it++)
 				{
@@ -403,7 +413,7 @@ CMessageResult UIEditMenuController::notify (CBaseObject* sender, IdStringPtr me
 			}
 			else if (strcmp (item->getCommandName (), "Unembed Views") == 0)
 			{
-				IAction* action = new UnembedViewOperation (selection, dynamic_cast<UIViewFactory*> (description->getViewFactory ()));
+				IAction* action = new UnembedViewOperation (selection, description->getViewFactory ());
 				undoManager->pushAndPerform (action);
 				return kMessageNotified;
 			}
@@ -443,7 +453,7 @@ CMessageResult UIEditMenuController::notify (CBaseObject* sender, IdStringPtr me
 		}
 		else if (strcmp (item->getCommandCategory (), "Embed") == 0)
 		{
-			UIViewFactory* viewFactory = dynamic_cast<UIViewFactory*> (description->getViewFactory ());
+			const IViewFactory* viewFactory = description->getViewFactory ();
 			UIAttributes viewAttr;
 			viewAttr.setAttribute ("class", item->getCommandName ());
 			CViewContainer* newContainer = dynamic_cast<CViewContainer*> (viewFactory->createView (viewAttr, description));
@@ -456,7 +466,7 @@ CMessageResult UIEditMenuController::notify (CBaseObject* sender, IdStringPtr me
 		}
 		else if (strcmp (item->getCommandCategory (), "Transform View Type") == 0)
 		{
-			IAction* action = new TransformViewTypeOperation (selection, item->getCommandName (), description, dynamic_cast<UIViewFactory*> (description->getViewFactory ()));
+			IAction* action = new TransformViewTypeOperation (selection, item->getCommandName (), description, dynamic_cast<const UIViewFactory*> (description->getViewFactory ()));
 			undoManager->pushAndPerform (action);
 			return kMessageNotified;
 		}
@@ -488,7 +498,7 @@ CMessageResult UIEditMenuController::notify (CBaseObject* sender, IdStringPtr me
 //----------------------------------------------------------------------------------------------------
 CCommandMenuItem* UIEditMenuController::findKeyCommandItem (COptionMenu* menu, const VstKeyCode& key)
 {
-	for (CConstMenuItemIterator it = menu->getItems ()->begin (); it != menu->getItems ()->end (); it++)
+	for (CConstMenuItemIterator it = menu->getItems ()->begin (), end = menu->getItems ()->end (); it != end; ++it)
 	{
 		COptionMenu* subMenu = (*it)->getSubmenu ();
 		if (subMenu)
@@ -563,8 +573,7 @@ int32_t UIEditMenuController::processKeyCommand (const VstKeyCode& key)
 			item->getTarget ()->notify (item, CCommandMenuItem::kMsgMenuItemSelected);
 			if (label)
 			{
-				highlightTimer = new CVSTGUITimer (this, 90);
-				highlightTimer->start ();
+				highlightTimer = new CVSTGUITimer (this, 90, true);
 			}
 			return 1;
 		}
@@ -573,7 +582,7 @@ int32_t UIEditMenuController::processKeyCommand (const VstKeyCode& key)
 }
 
 //----------------------------------------------------------------------------------------------------
-CView* UIEditMenuController::verifyView (CView* view, const UIAttributes& attributes, IUIDescription* description)
+CView* UIEditMenuController::verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description)
 {
 	COptionMenu* menu = dynamic_cast<COptionMenu*>(view);
 	if (menu)

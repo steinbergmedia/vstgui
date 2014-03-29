@@ -80,7 +80,7 @@ public:
 class UnembedViewOperation : public BaseSelectionOperation<SharedPointer<CView> >
 {
 public:
-	UnembedViewOperation (UISelection* selection, UIViewFactory* factory);
+	UnembedViewOperation (UISelection* selection, const IViewFactory* factory);
 	
 	~UnembedViewOperation ();
 
@@ -91,7 +91,7 @@ public:
 
 protected:
 	void collectSubviews (CViewContainer* container, bool deep);
-	UIViewFactory* factory;
+	const IViewFactory* factory;
 	SharedPointer<CViewContainer> containerView;
 	CViewContainer* parent;
 };
@@ -116,7 +116,7 @@ protected:
 class ViewCopyOperation : public IAction, protected std::list<SharedPointer<CView> >
 {
 public:
-	ViewCopyOperation (UISelection* copySelection, UISelection* workingSelection, CViewContainer* parent, const CPoint& offset, UIViewFactory* viewFactory, IUIDescription* desc);
+	ViewCopyOperation (UISelection* copySelection, UISelection* workingSelection, CViewContainer* parent, const CPoint& offset, IUIDescription* desc);
 	~ViewCopyOperation ();
 	
 	UTF8StringPtr getName () VSTGUI_OVERRIDE_VMETHOD;
@@ -188,7 +188,7 @@ protected:
 class TransformViewTypeOperation : public IAction
 {
 public:
-	TransformViewTypeOperation (UISelection* selection, IdStringPtr viewClassName, UIDescription* desc, UIViewFactory* factory);
+	TransformViewTypeOperation (UISelection* selection, IdStringPtr viewClassName, UIDescription* desc, const UIViewFactory* factory);
 	~TransformViewTypeOperation ();
 
 	UTF8StringPtr getName () VSTGUI_OVERRIDE_VMETHOD;
@@ -202,7 +202,7 @@ protected:
 	SharedPointer<CView> beforeView;
 	SharedPointer<CViewContainer> parent;
 	SharedPointer<UISelection> selection;
-	SharedPointer<UIViewFactory> factory;
+	const UIViewFactory* factory;
 	SharedPointer<UIDescription> description;
 };
 
@@ -238,7 +238,7 @@ public:
 protected:
 	void setAttributeValue (UTF8StringPtr value);
 	static void collectAllSubViews (CView* view, std::list<CView*>& views);
-	void collectViewsWithAttributeValue (UIViewFactory* viewFactory, IUIDescription* desc, CView* startView, IViewCreator::AttrType type, const std::string& value);
+	void collectViewsWithAttributeValue (const UIViewFactory* viewFactory, IUIDescription* desc, CView* startView, IViewCreator::AttrType type, const std::string& value);
 
 	SharedPointer<UIDescription> description;
 	std::string oldValue;
