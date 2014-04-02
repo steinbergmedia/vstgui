@@ -37,8 +37,9 @@
 
 #include "../lib/vstguibase.h"
 
-#include <map>
+#include <string>
 #include <vector>
+#include "../lib/platform/std_unorderedmap.h"
 
 namespace VSTGUI {
 struct CPoint;
@@ -46,7 +47,7 @@ struct CRect;
 class OutputStream;
 class InputStream;
 
-typedef std::map<std::string,std::string> UIAttributesMap;
+typedef std::unordered_map<std::string,std::string> UIAttributesMap;
 
 //-----------------------------------------------------------------------------
 class UIAttributes : public CBaseObject, private UIAttributesMap

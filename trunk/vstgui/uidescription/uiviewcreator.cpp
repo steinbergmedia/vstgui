@@ -567,47 +567,6 @@ public:
 CViewCreator __gCViewCreator;
 
 //-----------------------------------------------------------------------------
-static uint32_t DJBHash (const std::string& str)
-{
-   uint32_t hash = 5381;
-   for (std::size_t i = 0; i < str.length (); i++)
-   {
-      hash = ((hash << 5) + hash) + str[i];
-   }
-   return hash;
-}
-
-//-----------------------------------------------------------------------------
-void rememberAttributeValueString (CView* view, IdStringPtr attrName, const std::string& value)
-{
-	#if VSTGUI_LIVE_EDITING
-	uint32_t hash = DJBHash (attrName);
-	view->setAttribute (hash, (int32_t)value.size () + 1, value.c_str ());
-	#endif
-}
-
-//-----------------------------------------------------------------------------
-bool getRememberedAttributeValueString (CView* view, IdStringPtr attrName, std::string& value)
-{
-	bool result = false;
-	#if VSTGUI_LIVE_EDITING
-	uint32_t hash = DJBHash (attrName);
-	int32_t attrSize = 0;
-	if (view->getAttributeSize (hash, attrSize))
-	{
-		char* temp = new char[attrSize];
-		if (view->getAttribute (hash, attrSize, temp, attrSize))
-		{
-			value = temp;
-			result = true;
-		}
-		delete [] temp;
-	}
-	#endif
-	return result;
-}
-
-//-----------------------------------------------------------------------------
 class CViewContainerCreator : public IViewCreator
 {
 public:
@@ -626,7 +585,6 @@ public:
 			CColor backColor;
 			if (description->getColor (attr->c_str (), backColor))
 			{
-				rememberAttributeValueString (view, "background-color", *attr);
 				viewContainer->setBackgroundColor (backColor);
 			}
 		}
@@ -665,8 +623,7 @@ public:
 			return false;
 		if (attributeName == "background-color")
 		{
-			if (!getRememberedAttributeValueString (view, "background-color", stringValue))
-				colorToString (vc->getBackgroundColor (), stringValue, desc);
+			colorToString (vc->getBackgroundColor (), stringValue, desc);
 			return true;
 		}
 		if (attributeName == "background-color-draw-style")
@@ -962,7 +919,6 @@ public:
 		{
 			if (description->getColor (attr->c_str (), color))
 			{
-				rememberAttributeValueString (view, "scrollbar-background-color", *attr);
 				if (vscrollbar) vscrollbar->setBackgroundColor (color);
 				if (hscrollbar) hscrollbar->setBackgroundColor (color);
 			}
@@ -972,7 +928,6 @@ public:
 		{
 			if (description->getColor (attr->c_str (), color))
 			{
-				rememberAttributeValueString (view, "scrollbar-frame-color", *attr);
 				if (vscrollbar) vscrollbar->setFrameColor (color);
 				if (hscrollbar) hscrollbar->setFrameColor (color);
 			}
@@ -982,7 +937,6 @@ public:
 		{
 			if (description->getColor (attr->c_str (), color))
 			{
-				rememberAttributeValueString (view, "scrollbar-scroller-color", *attr);
 				if (vscrollbar) vscrollbar->setScrollerColor (color);
 				if (hscrollbar) hscrollbar->setScrollerColor (color);
 			}
@@ -1051,20 +1005,17 @@ public:
 		{
 			if (attributeName == "scrollbar-background-color")
 			{
-				if (!getRememberedAttributeValueString (view, "scrollbar-background-color", stringValue))
-					colorToString (scrollbar->getBackgroundColor (), stringValue, desc);
+				colorToString (scrollbar->getBackgroundColor (), stringValue, desc);
 				return true;
 			}
 			if (attributeName == "scrollbar-frame-color")
 			{
-				if (!getRememberedAttributeValueString (view, "scrollbar-frame-color", stringValue))
-					colorToString (scrollbar->getFrameColor (), stringValue, desc);
+				colorToString (scrollbar->getFrameColor (), stringValue, desc);
 				return true;
 			}
 			if (attributeName == "scrollbar-scroller-color")
 			{
-				if (!getRememberedAttributeValueString (view, "scrollbar-scroller-color", stringValue))
-					colorToString (scrollbar->getScrollerColor (), stringValue, desc);
+				colorToString (scrollbar->getScrollerColor (), stringValue, desc);
 				return true;
 			}
 		}
@@ -1167,7 +1118,6 @@ public:
 		}
 		if (controlTagAttr)
 		{
-			rememberAttributeValueString (view, "control-tag", *controlTagAttr);
 			if (controlTagAttr->length () == 0)
 			{
 				control->setTag (-1);
@@ -1226,8 +1176,6 @@ public:
 		{
 			if (control->getTag () != -1)
 			{
-				if (getRememberedAttributeValueString (view, "control-tag", stringValue))
-					return true;
 				UTF8StringPtr controlTag = desc->lookupControlTagName (control->getTag ());
 				if (controlTag)
 				{
@@ -1323,7 +1271,6 @@ public:
 			CFontRef font = description->getFont (attr->c_str ());
 			if (font)
 			{
-				rememberAttributeValueString (view, "font", *attr);
 				checkbox->setFont (font);
 			}
 		}
@@ -1334,7 +1281,6 @@ public:
 		{
 			if (description->getColor (attr->c_str (), color))
 			{
-				rememberAttributeValueString (view, "font-color", *attr);
 				checkbox->setFontColor (color);
 			}
 		}
@@ -1344,7 +1290,6 @@ public:
 		{
 			if (description->getColor (attr->c_str (), color))
 			{
-				rememberAttributeValueString (view, "boxframe-color", *attr);
 				checkbox->setBoxFrameColor (color);
 			}
 		}
@@ -1354,7 +1299,6 @@ public:
 		{
 			if (description->getColor (attr->c_str (), color))
 			{
-				rememberAttributeValueString (view, "boxfill-color", *attr);
 				checkbox->setBoxFillColor (color);
 			}
 		}
@@ -1364,7 +1308,6 @@ public:
 		{
 			if (description->getColor (attr->c_str (), color))
 			{
-				rememberAttributeValueString (view, "checkmark-color", *attr);
 				checkbox->setCheckMarkColor (color);
 			}
 		}
@@ -1427,8 +1370,6 @@ public:
 		}
 		else if (attributeName == "font")
 		{
-			if (getRememberedAttributeValueString (view, "font", stringValue))
-				return true;
 			UTF8StringPtr fontName = desc->lookupFontName (checkbox->getFont ());
 			if (fontName)
 			{
@@ -1439,26 +1380,22 @@ public:
 		}
 		else if (attributeName == "font-color")
 		{
-			if (!getRememberedAttributeValueString (view, "font-color", stringValue))
-				colorToString (checkbox->getFontColor (), stringValue, desc);
+			colorToString (checkbox->getFontColor (), stringValue, desc);
 			return true;
 		}
 		else if (attributeName == "boxframe-color")
 		{
-			if (!getRememberedAttributeValueString (view, "boxframe-color", stringValue))
-				colorToString (checkbox->getBoxFrameColor (), stringValue, desc);
+			colorToString (checkbox->getBoxFrameColor (), stringValue, desc);
 			return true;
 		}
 		else if (attributeName == "boxfill-color")
 		{
-			if (!getRememberedAttributeValueString (view, "boxfill-color", stringValue))
-				colorToString (checkbox->getBoxFillColor (), stringValue, desc);
+			colorToString (checkbox->getBoxFillColor (), stringValue, desc);
 			return true;
 		}
 		else if (attributeName == "checkmark-color")
 		{
-			if (!getRememberedAttributeValueString (view, "checkmark-color", stringValue))
-				colorToString (checkbox->getCheckMarkColor (), stringValue, desc);
+			colorToString (checkbox->getCheckMarkColor (), stringValue, desc);
 			return true;
 		}
 		else if (attributeName == "autosize-to-fit")
@@ -1522,7 +1459,6 @@ public:
 			CFontRef font = description->getFont (fontAttr->c_str ());
 			if (font)
 			{
-				rememberAttributeValueString (view, "font", *fontAttr);
 				display->setFont (font);
 			}
 		}
@@ -1530,7 +1466,6 @@ public:
 		{
 			if (description->getColor (fontColorAttr->c_str (), color))
 			{
-				rememberAttributeValueString (view, "font-color", *fontColorAttr);
 				display->setFontColor (color);
 			}
 		}
@@ -1538,7 +1473,6 @@ public:
 		{
 			if (description->getColor (backColorAttr->c_str (), color))
 			{
-				rememberAttributeValueString (view, "back-color", *backColorAttr);
 				display->setBackColor (color);
 			}
 		}
@@ -1546,7 +1480,6 @@ public:
 		{
 			if (description->getColor (frameColorAttr->c_str (), color))
 			{
-				rememberAttributeValueString (view, "frame-color", *frameColorAttr);
 				display->setFrameColor (color);
 			}
 		}
@@ -1554,7 +1487,6 @@ public:
 		{
 			if (description->getColor (shadowColorAttr->c_str (), color))
 			{
-				rememberAttributeValueString (view, "shadow-color", *shadowColorAttr);
 				display->setShadowColor (color);
 			}
 		}
@@ -1701,8 +1633,6 @@ public:
 			return false;
 		if (attributeName == "font")
 		{
-			if (getRememberedAttributeValueString (view, "font", stringValue))
-				return true;
 			UTF8StringPtr fontName = desc->lookupFontName (pd->getFont ());
 			if (fontName)
 			{
@@ -1713,26 +1643,22 @@ public:
 		}
 		else if (attributeName == "font-color")
 		{
-			if (!getRememberedAttributeValueString (view, "font-color", stringValue))
-				colorToString (pd->getFontColor (), stringValue, desc);
+			colorToString (pd->getFontColor (), stringValue, desc);
 			return true;
 		}
 		else if (attributeName == "back-color")
 		{
-			if (!getRememberedAttributeValueString (view, "back-color", stringValue))
-				colorToString (pd->getBackColor (), stringValue, desc);
+			colorToString (pd->getBackColor (), stringValue, desc);
 			return true;
 		}
 		else if (attributeName == "frame-color")
 		{
-			if (!getRememberedAttributeValueString (view, "frame-color", stringValue))
-				colorToString (pd->getFrameColor (), stringValue, desc);
+			colorToString (pd->getFrameColor (), stringValue, desc);
 			return true;
 		}
 		else if (attributeName == "shadow-color")
 		{
-			if (!getRememberedAttributeValueString (view, "shadow-color", stringValue))
-				colorToString (pd->getShadowColor (), stringValue, desc);
+			colorToString (pd->getShadowColor (), stringValue, desc);
 			return true;
 		}
 		else if (attributeName == "text-inset")
@@ -1993,16 +1919,29 @@ public:
 		if (attr)
 			label->setImmediateTextChange (*attr == "true" ? true : false);
 
+		int32_t style = label->getStyle ();
+		attr = attributes.getAttributeValue ("style-doubleclick");
+		if (attr)
+		{
+			if (*attr == "true")
+				style |= kDoubleClickStyle;
+			else
+				style &= ~kDoubleClickStyle;
+		}
+		label->setStyle (style);
+
 		return true;
 	}
 	bool getAttributeNames (std::list<std::string>& attributeNames) const VSTGUI_OVERRIDE_VMETHOD
 	{
 		attributeNames.push_back ("immediate-text-change");
+		attributeNames.push_back ("style-doubleclick");
 		return true;
 	}
 	AttrType getAttributeType (const std::string& attributeName) const VSTGUI_OVERRIDE_VMETHOD
 	{
 		if (attributeName == "immediate-text-change") return kBooleanType;
+		if (attributeName == "style-doubleclick") return kBooleanType;
 		return kUnknownType;
 	}
 	bool getAttributeValue (CView* view, const std::string& attributeName, std::string& stringValue, const IUIDescription* desc) const VSTGUI_OVERRIDE_VMETHOD
@@ -2013,6 +1952,11 @@ public:
 		if (attributeName == "immediate-text-change")
 		{
 			stringValue = label->getImmediateTextChange () ? "true" : "false";
+			return true;
+		}
+		if (attributeName == "style-doubleclick")
+		{
+			stringValue = label->getStyle () & kDoubleClickStyle ? "true" : "false";
 			return true;
 		}
 		
@@ -2046,7 +1990,6 @@ public:
 			CFontRef font = description->getFont (attr->c_str ());
 			if (font)
 			{
-				rememberAttributeValueString (view, "font", *attr);
 				button->setFont (font);
 			}
 		}
@@ -2057,7 +2000,6 @@ public:
 		{
 			if (description->getColor (attr->c_str (), color))
 			{
-				rememberAttributeValueString (view, "text-color", *attr);
 				button->setTextColor (color);
 			}
 		}
@@ -2066,7 +2008,6 @@ public:
 		{
 			if (description->getColor (attr->c_str (), color))
 			{
-				rememberAttributeValueString (view, "text-color-highlighted", *attr);
 				button->setTextColorHighlighted (color);
 			}
 		}
@@ -2075,7 +2016,6 @@ public:
 		{
 			if (description->getColor (attr->c_str (), color))
 			{
-				rememberAttributeValueString (view, "gradient-start-color", *attr);
 				button->setGradientStartColor (color);
 			}
 		}
@@ -2084,7 +2024,6 @@ public:
 		{
 			if (description->getColor (attr->c_str (), color))
 			{
-				rememberAttributeValueString (view, "gradient-start-color-highlighted", *attr);
 				button->setGradientStartColorHighlighted (color);
 			}
 		}
@@ -2093,7 +2032,6 @@ public:
 		{
 			if (description->getColor (attr->c_str (), color))
 			{
-				rememberAttributeValueString (view, "gradient-end-color", *attr);
 				button->setGradientEndColor (color);
 			}
 		}
@@ -2102,7 +2040,6 @@ public:
 		{
 			if (description->getColor (attr->c_str (), color))
 			{
-				rememberAttributeValueString (view, "gradient-end-color-highlighted", *attr);
 				button->setGradientEndColorHighlighted (color);
 			}
 		}
@@ -2111,7 +2048,6 @@ public:
 		{
 			if (description->getColor (attr->c_str (), color))
 			{
-				rememberAttributeValueString (view, "frame-color", *attr);
 				button->setFrameColor (color);
 			}
 		}
@@ -2120,7 +2056,6 @@ public:
 		{
 			if (description->getColor (attr->c_str (), color))
 			{
-				rememberAttributeValueString (view, "frame-color-highlighted", *attr);
 				button->setFrameColorHighlighted (color);
 			}
 		}
@@ -2270,8 +2205,6 @@ public:
 		}
 		else if (attributeName == "font")
 		{
-			if (getRememberedAttributeValueString (view, "font", stringValue))
-				return true;
 			UTF8StringPtr fontName = desc->lookupFontName (button->getFont ());
 			if (fontName)
 			{
@@ -2282,50 +2215,42 @@ public:
 		}
 		else if (attributeName == "text-color")
 		{
-			if (!getRememberedAttributeValueString (view, "text-color", stringValue))
-				colorToString (button->getTextColor (), stringValue, desc);
+			colorToString (button->getTextColor (), stringValue, desc);
 			return true;
 		}
 		else if (attributeName == "text-color-highlighted")
 		{
-			if (!getRememberedAttributeValueString (view, "text-color-highlighted", stringValue))
-				colorToString (button->getTextColorHighlighted (), stringValue, desc);
+			colorToString (button->getTextColorHighlighted (), stringValue, desc);
 			return true;
 		}
 		else if (attributeName == "gradient-start-color")
 		{
-			if (!getRememberedAttributeValueString (view, "gradient-start-color", stringValue))
-				colorToString (button->getGradientStartColor (), stringValue, desc);
+			colorToString (button->getGradientStartColor (), stringValue, desc);
 			return true;
 		}
 		else if (attributeName == "gradient-start-color-highlighted")
 		{
-			if (!getRememberedAttributeValueString (view, "gradient-start-color-highlighted", stringValue))
-				colorToString (button->getGradientStartColorHighlighted (), stringValue, desc);
+			colorToString (button->getGradientStartColorHighlighted (), stringValue, desc);
 			return true;
 		}
 		else if (attributeName == "gradient-end-color")
 		{
-			if (!getRememberedAttributeValueString (view, "gradient-end-color", stringValue))
-				colorToString (button->getGradientEndColor (), stringValue, desc);
+			colorToString (button->getGradientEndColor (), stringValue, desc);
 			return true;
 		}
 		else if (attributeName == "gradient-end-color-highlighted")
 		{
-			if (!getRememberedAttributeValueString (view, "gradient-end-color-highlighted", stringValue))
-				colorToString (button->getGradientEndColorHighlighted (), stringValue, desc);
+			colorToString (button->getGradientEndColorHighlighted (), stringValue, desc);
 			return true;
 		}
 		else if (attributeName == "frame-color")
 		{
-			if (!getRememberedAttributeValueString (view, "frame-color", stringValue))
-				colorToString (button->getFrameColor (), stringValue, desc);
+			colorToString (button->getFrameColor (), stringValue, desc);
 			return true;
 		}
 		else if (attributeName == "frame-color-highlighted")
 		{
-			if (!getRememberedAttributeValueString (view, "frame-color-highlighted", stringValue))
-				colorToString (button->getFrameColorHighlighted (), stringValue, desc);
+			colorToString (button->getFrameColorHighlighted (), stringValue, desc);
 			return true;
 		}
 		else if (attributeName == "frame-width")
@@ -2485,7 +2410,6 @@ public:
 		{
 			if (description->getColor (coronaColorAttr->c_str (), color))
 			{
-				rememberAttributeValueString (view, "corona-color", *coronaColorAttr);
 				knob->setCoronaColor (color);
 			}
 		}
@@ -2493,7 +2417,6 @@ public:
 		{
 			if (description->getColor (handleShadowColorAttr->c_str (), color))
 			{
-				rememberAttributeValueString (view, "handle-shadow-color", *handleShadowColorAttr);
 				knob->setColorShadowHandle (color);
 			}
 		}
@@ -2501,7 +2424,6 @@ public:
 		{
 			if (description->getColor (handleColorAttr->c_str (), color))
 			{
-				rememberAttributeValueString (view, "handle-color", *handleColorAttr);
 				knob->setColorHandle (color);
 			}
 		}
@@ -2647,20 +2569,17 @@ public:
 		}
 		else if (attributeName == "corona-color")
 		{
-			if (!getRememberedAttributeValueString (view, "corona-color", stringValue))
-				colorToString (knob->getCoronaColor (), stringValue, desc);
+			colorToString (knob->getCoronaColor (), stringValue, desc);
 			return true;
 		}
 		else if (attributeName == "handle-shadow-color")
 		{
-			if (!getRememberedAttributeValueString (view, "handle-shadow-color", stringValue))
-				colorToString (knob->getColorShadowHandle (), stringValue, desc);
+			colorToString (knob->getColorShadowHandle (), stringValue, desc);
 			return true;
 		}
 		else if (attributeName == "handle-color")
 		{
-			if (!getRememberedAttributeValueString (view, "handle-color", stringValue))
-				colorToString (knob->getColorHandle (), stringValue, desc);
+			colorToString (knob->getColorHandle (), stringValue, desc);
 			return true;
 		}
 		else if (attributeName == "handle-bitmap")
@@ -3027,7 +2946,6 @@ public:
 		{
 			if (description->getColor (drawFrameColorAttr->c_str (), color))
 			{
-				rememberAttributeValueString (view, "draw-frame-color", *drawFrameColorAttr);
 				slider->setFrameColor (color);
 			}
 		}
@@ -3035,7 +2953,6 @@ public:
 		{
 			if (description->getColor (drawBackColorAttr->c_str (), color))
 			{
-				rememberAttributeValueString (view, "draw-back-color", *drawBackColorAttr);
 				slider->setBackColor (color);
 			}
 		}
@@ -3043,7 +2960,6 @@ public:
 		{
 			if (description->getColor (drawValueColorAttr->c_str (), color))
 			{
-				rememberAttributeValueString (view, "draw-value-color", *drawValueColorAttr);
 				slider->setValueColor (color);
 			}
 		}
@@ -3198,20 +3114,17 @@ public:
 		}
 		else if (attributeName == "draw-frame-color")
 		{
-			if (!getRememberedAttributeValueString (view, "draw-frame-color", stringValue))
-				colorToString (slider->getFrameColor (), stringValue, desc);
+			colorToString (slider->getFrameColor (), stringValue, desc);
 			return true;
 		}
 		else if (attributeName == "draw-back-color")
 		{
-			if (!getRememberedAttributeValueString (view, "draw-back-color", stringValue))
-				colorToString (slider->getBackColor (), stringValue, desc);
+			colorToString (slider->getBackColor (), stringValue, desc);
 			return true;
 		}
 		else if (attributeName == "draw-value-color")
 		{
-			if (!getRememberedAttributeValueString (view, "draw-value-color", stringValue))
-				colorToString (slider->getValueColor (), stringValue, desc);
+			colorToString (slider->getValueColor (), stringValue, desc);
 			return true;
 		}
 
@@ -3507,7 +3420,6 @@ public:
 		attr = attributes.getAttributeValue ("template-switch-control");
 		if (attr)
 		{
-			rememberAttributeValueString (view, "template-switch-control", *attr);
 			UIDescriptionViewSwitchController* controller = dynamic_cast<UIDescriptionViewSwitchController*> (viewSwitch->getController ());
 			if (controller)
 			{
@@ -3555,8 +3467,6 @@ public:
 			UIDescriptionViewSwitchController* controller = dynamic_cast<UIDescriptionViewSwitchController*> (viewSwitch->getController ());
 			if (controller)
 			{
-				if (getRememberedAttributeValueString (view, "template-switch-control", stringValue))
-					return true;
 				UTF8StringPtr controlTag = desc->lookupControlTagName (controller->getSwitchControlTag ());
 				if (controlTag)
 				{
@@ -3655,7 +3565,6 @@ public:
 			return false;
 		if (attributeName == "separator-width")
 		{
-//			std::basic_ostream<char>
 			std::stringstream stream;
 			stream << (int32_t)splitView->getSeparatorWidth ();
 			stringValue = stream.str ();
@@ -3814,7 +3723,6 @@ public:
 		{
 			if (description->getColor (attr->c_str (), color))
 			{
-				rememberAttributeValueString (view, "frame-color", *attr);
 				gv->setFrameColor (color);
 			}
 		}
@@ -3823,7 +3731,6 @@ public:
 		{
 			if (description->getColor (attr->c_str (), color))
 			{
-				rememberAttributeValueString (view, "gradient-start-color", *attr);
 				gv->setGradientStartColor (color);
 			}
 		}
@@ -3832,7 +3739,6 @@ public:
 		{
 			if (description->getColor (attr->c_str (), color))
 			{
-				rememberAttributeValueString (view, "gradient-end-color", *attr);
 				gv->setGradientEndColor (color);
 			}
 		}
@@ -3924,20 +3830,17 @@ public:
 			return false;
 		if (attributeName == "frame-color")
 		{
-			if (!getRememberedAttributeValueString (view, "frame-color", stringValue))
-				colorToString (gv->getFrameColor (), stringValue, desc);
+			colorToString (gv->getFrameColor (), stringValue, desc);
 			return true;
 		}
 		if (attributeName == "gradient-start-color")
 		{
-			if (!getRememberedAttributeValueString (view, "gradient-start-color", stringValue))
-				colorToString (gv->getGradientStartColor (), stringValue, desc);
+			colorToString (gv->getGradientStartColor (), stringValue, desc);
 			return true;
 		}
 		if (attributeName == "gradient-end-color")
 		{
-			if (!getRememberedAttributeValueString (view, "gradient-end-color", stringValue))
-				colorToString (gv->getGradientEndColor (), stringValue, desc);
+			colorToString (gv->getGradientEndColor (), stringValue, desc);
 			return true;
 		}
 		if (attributeName == "gradient-angle")

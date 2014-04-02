@@ -779,6 +779,44 @@ CMouseEventResult UIEditView::onMouseUp (CPoint &where, const CButtonState& butt
 	return CViewContainer::onMouseUp (where, buttons);
 }
 
+//-----------------------------------------------------------------------------
+void UIEditView::doKeyMove (const CPoint& delta)
+{
+	if (delta.x || delta.y)
+	{
+		if (!moveSizeOperation)
+			moveSizeOperation = new ViewSizeChangeOperation (selection, false);
+		getSelection ()->moveBy (delta);
+		if (moveSizeOperation)
+		{
+			getUndoManager ()->pushAndPerform (moveSizeOperation);
+			moveSizeOperation = 0;
+		}
+	}
+}
+
+//-----------------------------------------------------------------------------
+void UIEditView::doKeySize (const CPoint& delta)
+{
+	if (delta.x || delta.y)
+	{
+		if (!moveSizeOperation)
+			moveSizeOperation = new ViewSizeChangeOperation (selection, true);
+		getSelection ()->changed (UISelection::kMsgSelectionViewWillChange);
+		FOREACH_IN_SELECTION (selection, view)
+			CRect viewSize = view->getViewSize ();
+			CPoint bottomRight = viewSize.getBottomRight ();
+			bottomRight += delta;
+			viewSize.setBottomRight (bottomRight);
+			view->setViewSize (viewSize);
+			view->setMouseableArea (viewSize);
+		FOREACH_IN_SELECTION_END
+		getSelection ()->changed (UISelection::kMsgSelectionViewChanged);
+		getUndoManager ()->pushAndPerform (moveSizeOperation);
+		moveSizeOperation = 0;
+	}
+}
+
 //----------------------------------------------------------------------------------------------------
 void UIEditView::doDragEditingMove (CPoint& where)
 {

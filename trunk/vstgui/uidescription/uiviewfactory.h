@@ -71,7 +71,16 @@ public:
 	#endif
 
 protected:
+	void evaluateAttributesAndRemember (CView* view, const UIAttributes& attributes, UIAttributes& evaluatedAttributes, const IUIDescription* description) const;
 	CView* createViewByName (const std::string* className, const UIAttributes& attributes, const IUIDescription* description) const;
+
+#if VSTGUI_LIVE_EDITING
+	static size_t createHash (const std::string& str);
+	static void rememberAttribute (CView* view, IdStringPtr attrName, const std::string& value);
+	static bool getRememberedAttribute (CView* view, IdStringPtr attrName, std::string& value);
+#endif
+	
+	static CViewAttributeID kViewNameAttribute;
 };
 
 } // namespace

@@ -98,9 +98,9 @@ QuartzGraphicsPath::QuartzGraphicsPath (const CoreTextFont* font, UTF8StringPtr 
 				CGPathRelease (letter);
 			}
 		}
+		CFRelease (line);
 	}
 	CFRelease (attrString);
-	CFRelease (line);
 }
 
 //-----------------------------------------------------------------------------

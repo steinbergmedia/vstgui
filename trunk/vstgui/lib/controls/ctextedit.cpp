@@ -304,28 +304,31 @@ void CTextEdit::setViewSize (const CRect& newSize, bool invalid)
 }
 
 //------------------------------------------------------------------------
-void CTextEdit::takeFocus ()
+void CTextEdit::createPlatformTextEdit ()
 {
 	if (platformControl)
 		return;
-#if TARGET_OS_IPHONE
- 	if (getFrame ()->getFocusView () == this)
-		return;
-#endif
+	
 	bWasReturnPressed = false;
-
-	// calculate offset for CViewContainers
-	CRect rect (getViewSize ());
-	CPoint p (0, 0);
-	localToFrame (p);
-	rect.offset (p.x, p.y);
-
 	platformControl = getFrame ()->getPlatformFrame ()->createPlatformTextEdit (this);
+}
 
-#if TARGET_OS_IPHONE
-	getFrame ()->setFocusView (this);
-#endif
+//------------------------------------------------------------------------
+bool CTextEdit::wantsFocus () const
+{
+	if (getStyle () & kDoubleClickStyle && !platformControl)
+		return false;
+	return CTextLabel::wantsFocus ();
+}
+
+//------------------------------------------------------------------------
+void CTextEdit::takeFocus ()
+{
+	createPlatformTextEdit ();
+	if (getFrame()->getFocusView () != this)
+		getFrame()->setFocusView (this);
 	CTextLabel::takeFocus ();
+	return;
 }
 
 //------------------------------------------------------------------------

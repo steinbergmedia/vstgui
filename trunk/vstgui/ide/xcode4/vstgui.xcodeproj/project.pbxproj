@@ -423,6 +423,7 @@
 		F4550AAD18AF7CD300472548 /* iviewcreator.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = iviewcreator.h; sourceTree = "<group>"; };
 		F45BD677131817CD00C46C02 /* csplitview.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = csplitview.cpp; sourceTree = "<group>"; };
 		F45BD678131817CD00C46C02 /* csplitview.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = csplitview.h; sourceTree = "<group>"; };
+		F476BEA518EC2E7500230A63 /* std_unorderedmap.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = std_unorderedmap.h; sourceTree = "<group>"; };
 		F47883A1180457E70054ED06 /* iplatformviewlayer.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = iplatformviewlayer.h; sourceTree = "<group>"; };
 		F47883A218045A300054ED06 /* caviewlayer.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = caviewlayer.mm; sourceTree = "<group>"; };
 		F47883A318045A300054ED06 /* caviewlayer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = caviewlayer.h; sourceTree = "<group>"; };
@@ -894,6 +895,7 @@
 				F4FC1A9C1328C7B40066E2F8 /* iplatformstring.h */,
 				F497F16F13080B0200F0A613 /* iplatformtextedit.h */,
 				F47883A1180457E70054ED06 /* iplatformviewlayer.h */,
+				F476BEA518EC2E7500230A63 /* std_unorderedmap.h */,
 			);
 			path = platform;
 			sourceTree = "<group>";

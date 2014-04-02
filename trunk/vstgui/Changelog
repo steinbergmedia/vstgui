@@ -1,3 +1,8 @@
+2014-04-02
+
+	* fix double click style for CTextEdit
+	* UIDescription: add variable substitution for all attributes when creating views (thanks to Wolfram Franke for the inital version)
+
 2014-03-29 arne
 
 	* add c++11 lambda alternatives for callbacks in CFileSelector::run(), CVSTGUITimer, CParamDisplay::setValueToStringFunction, CTextEdit::setStringToValueFunction and CCommandMenuItem::setActions

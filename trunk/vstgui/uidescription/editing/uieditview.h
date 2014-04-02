@@ -64,6 +64,9 @@ public:
 	void setEditView (CView* view);
 	CView* getEditView () const;
 
+	void doKeyMove (const CPoint& delta);
+	void doKeySize (const CPoint& delta);
+
 	void setUndoManager (UIUndoManager* manager);
 	UIUndoManager* getUndoManager ();
 

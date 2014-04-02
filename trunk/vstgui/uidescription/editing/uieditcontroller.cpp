@@ -836,6 +836,26 @@ int32_t UIEditController::onKeyDown (const VstKeyCode& code, CFrame* frame)
 			if (edit && edit->getPlatformTextEdit ())
 				return -1;
 		}
+		if (!(code.modifier & MODIFIER_COMMAND))
+		{
+			switch (code.virt)
+			{
+				case VKEY_LEFT:
+				case VKEY_UP:
+				case VKEY_RIGHT:
+				case VKEY_DOWN:
+				{
+					CCoord factor = (code.modifier & MODIFIER_SHIFT) ? 1.f : gridController->getSize ().x;
+					CPoint diff (code.virt == VKEY_LEFT ? -factor : code.virt == VKEY_RIGHT ? factor : 0.f,
+								 code.virt == VKEY_UP ? -factor : code.virt == VKEY_DOWN ? factor : 0.f);
+					if (code.modifier & MODIFIER_ALTERNATE)
+						editView->doKeySize (diff);
+					else
+						editView->doKeyMove (diff);
+					return 1;
+				}
+			}
+		}
 		return menuController->processKeyCommand (code);
 	}
 	return -1;
