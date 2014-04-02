@@ -43,7 +43,7 @@
 // VSTGUI Version
 //-----------------------------------------------------------------------------
 #define VSTGUI_VERSION_MAJOR  4
-#define VSTGUI_VERSION_MINOR  2
+#define VSTGUI_VERSION_MINOR  3
 
 //-----------------------------------------------------------------------------
 // Platform definitions
@@ -113,6 +113,7 @@
 	#if _WIN32_WINNT < 0x600
 		#error unsupported Platform SDK you need at least the Vista Platform SDK to compile VSTGUI
 	#endif
+
 	#if defined (_WIN32_WINNT_WIN7) && !defined (VSTGUI_DIRECT2D_SUPPORT)
 		#define VSTGUI_DIRECT2D_SUPPORT	1
 	#endif

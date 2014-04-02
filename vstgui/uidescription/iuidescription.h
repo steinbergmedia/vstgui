@@ -64,6 +64,9 @@ public:
 	virtual UTF8StringPtr lookupBitmapName (const CBitmap* bitmap) const = 0;
 	virtual UTF8StringPtr lookupControlTagName (const int32_t tag) const = 0;
 
+	virtual bool getVariable (UTF8StringPtr name, double& value) const = 0;
+	virtual bool getVariable (UTF8StringPtr name, std::string& value) const = 0;
+
 	virtual const IViewFactory* getViewFactory () const = 0;
 };
 

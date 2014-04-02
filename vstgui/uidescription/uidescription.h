@@ -96,7 +96,10 @@ public:
 	UTF8StringPtr lookupFontName (const CFontRef font) const VSTGUI_OVERRIDE_VMETHOD;
 	UTF8StringPtr lookupBitmapName (const CBitmap* bitmap) const VSTGUI_OVERRIDE_VMETHOD;
 	UTF8StringPtr lookupControlTagName (const int32_t tag) const VSTGUI_OVERRIDE_VMETHOD;
-	
+
+	bool getVariable (UTF8StringPtr name, double& value) const VSTGUI_OVERRIDE_VMETHOD;
+	bool getVariable (UTF8StringPtr name, std::string& value) const VSTGUI_OVERRIDE_VMETHOD;
+
 	void collectTemplateViewNames (std::list<const std::string*>& names) const;
 	void collectColorNames (std::list<const std::string*>& names) const;
 	void collectFontNames (std::list<const std::string*>& names) const;
@@ -141,7 +144,6 @@ public:
 	bool getControlTagString (UTF8StringPtr tagName, std::string& tagString) const;
 	bool changeControlTagString  (UTF8StringPtr tagName, const std::string& newTagString, bool create = false);
 
-	bool getVariable (UTF8StringPtr name, double& value) const;
 	bool calculateStringValue (UTF8StringPtr str, double& result) const;
 	
 	void setBitmapCreator (IBitmapCreator* bitmapCreator);

@@ -83,6 +83,7 @@ public:
 
 	virtual	void takeFocus () VSTGUI_OVERRIDE_VMETHOD;
 	virtual	void looseFocus () VSTGUI_OVERRIDE_VMETHOD;
+	virtual bool wantsFocus () const VSTGUI_OVERRIDE_VMETHOD;		///< check if view supports focus
 
 	virtual void setViewSize (const CRect& newSize, bool invalid = true) VSTGUI_OVERRIDE_VMETHOD;
 	virtual void parentSizeChanged () VSTGUI_OVERRIDE_VMETHOD;
@@ -95,6 +96,7 @@ public:
 protected:
 	~CTextEdit ();
 
+	void createPlatformTextEdit ();
 	void updateText (IPlatformTextEdit* pte);
 
 	CColor platformGetBackColor () const { return getBackColor (); }

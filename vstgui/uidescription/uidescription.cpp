@@ -2074,6 +2074,18 @@ bool UIDescription::getVariable (UTF8StringPtr name, double& value) const
 	return false;
 }
 
+//-----------------------------------------------------------------------------
+bool UIDescription::getVariable (UTF8StringPtr name, std::string& value) const
+{
+	UIVariableNode* node = dynamic_cast<UIVariableNode*> (findChildNodeByNameAttribute (getBaseNode (MainNodeNames::kVariable), name));
+	if (node)
+	{
+		value = node->getString ();
+		return true;
+	}
+	return false;
+}
+
 namespace UIDescriptionPrivate {
 
 //-----------------------------------------------------------------------------
