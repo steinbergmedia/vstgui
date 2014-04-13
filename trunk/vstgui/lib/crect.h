@@ -113,7 +113,14 @@ struct CRect
 
 	bool pointInside (const CPoint& where) const;	///< Checks if point is inside this rect
 
-	bool isEmpty () const;
+	bool isEmpty () const
+	{
+		if (right <= left)
+			return true;
+		if (bottom <= top)
+			return true;
+		return false;
+	}
 
 	bool rectOverlap (const CRect& rect) const
 	{

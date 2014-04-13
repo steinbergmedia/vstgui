@@ -670,7 +670,7 @@ void CGDrawContext::applyLineStyle (CGContextRef context)
 	if (currentState.lineStyle.getDashCount () > 0)
 	{
 		CGFloat* dashLengths = new CGFloat [currentState.lineStyle.getDashCount ()];
-		for (int32_t i = 0; i < currentState.lineStyle.getDashCount (); i++)
+		for (uint32_t i = 0; i < currentState.lineStyle.getDashCount (); i++)
 		{
 			dashLengths[i] = currentState.frameWidth * currentState.lineStyle.getDashLengths ()[i];
 		}

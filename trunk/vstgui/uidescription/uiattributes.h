@@ -61,32 +61,36 @@ public:
 	using UIAttributesMap::iterator;
 	using UIAttributesMap::const_iterator;
 
-	bool hasAttribute (UTF8StringPtr name) const;
-	const std::string* getAttributeValue (UTF8StringPtr name) const;
-	void setAttribute (UTF8StringPtr name, UTF8StringPtr value);
-	void removeAttribute (UTF8StringPtr name);
+	bool hasAttribute (const std::string& name) const;
+	const std::string* getAttributeValue (const std::string& name) const;
+	void setAttribute (const std::string& name, const std::string& value);
+#if VSTGUI_RVALUE_REF_SUPPORT
+	void setAttribute (const std::string& name, std::string&& value);
+	void setAttribute (std::string&& name, std::string&& value);
+#endif
+	void removeAttribute (const std::string& name);
 
-	void setBooleanAttribute (UTF8StringPtr name, bool value);
-	bool getBooleanAttribute (UTF8StringPtr name, bool& value) const;
+	void setBooleanAttribute (const std::string& name, bool value);
+	bool getBooleanAttribute (const std::string& name, bool& value) const;
 
-	void setIntegerAttribute (UTF8StringPtr name, int32_t value);
-	bool getIntegerAttribute (UTF8StringPtr name, int32_t& value) const;
+	void setIntegerAttribute (const std::string& name, int32_t value);
+	bool getIntegerAttribute (const std::string& name, int32_t& value) const;
 
-	void setDoubleAttribute (UTF8StringPtr name, double value);
-	bool getDoubleAttribute (UTF8StringPtr name, double& value) const;
+	void setDoubleAttribute (const std::string& name, double value);
+	bool getDoubleAttribute (const std::string& name, double& value) const;
 	
-	void setPointAttribute (UTF8StringPtr name, const CPoint& p);
-	bool getPointAttribute (UTF8StringPtr name, CPoint& p) const;
+	void setPointAttribute (const std::string& name, const CPoint& p);
+	bool getPointAttribute (const std::string& name, CPoint& p) const;
 	
-	void setRectAttribute (UTF8StringPtr name, const CRect& r);
-	bool getRectAttribute (UTF8StringPtr name, CRect& r) const;
+	void setRectAttribute (const std::string& name, const CRect& r);
+	bool getRectAttribute (const std::string& name, CRect& r) const;
 	
-	void setAttributeArray (UTF8StringPtr name, const std::vector<std::string>& values);
-	bool getAttributeArray (UTF8StringPtr name, std::vector<std::string>& values) const;
+	void setAttributeArray (const std::string& name, const std::vector<std::string>& values);
+	bool getAttributeArray (const std::string& name, std::vector<std::string>& values) const;
 	
 	void removeAll () { clear (); }
 
-	bool store (OutputStream& stream);
+	bool store (OutputStream& stream) const;
 	bool restore (InputStream& stream);
 };
 

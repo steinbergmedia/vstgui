@@ -42,6 +42,7 @@
 #include "ccolor.h"
 #include <cmath>
 #include <stack>
+#include <vector>
 
 namespace VSTGUI {
 
@@ -51,6 +52,8 @@ namespace VSTGUI {
 class CLineStyle
 {
 public:
+	typedef std::vector<CCoord> CoordVector;
+
 	enum LineCap
 	{
 		kLineCapButt = 0,
@@ -65,24 +68,37 @@ public:
 		kLineJoinBevel
 	};
 
-	CLineStyle (LineCap cap = kLineCapButt, LineJoin join = kLineJoinMiter, CCoord dashPhase = 0., int32_t dashCount = 0, const CCoord* dashLengths = 0);
+	CLineStyle (LineCap cap = kLineCapButt, LineJoin join = kLineJoinMiter, CCoord dashPhase = 0., uint32_t dashCount = 0, const CCoord* dashLengths = 0);
+	CLineStyle (LineCap cap, LineJoin join, CCoord dashPhase, const CoordVector& dashLengths);
+	CLineStyle (const CLineStyle& lineStyle);
 	~CLineStyle ();
 
+#if VSTGUI_RVALUE_REF_SUPPORT
+	CLineStyle (LineCap cap, LineJoin join, CCoord dashPhase, CoordVector&& dashLengths) noexcept;
+	CLineStyle (CLineStyle&& cls) noexcept;
+	CLineStyle& operator= (CLineStyle&& cls) noexcept;
+#endif
+	
 	LineCap getLineCap () const { return cap; }
 	LineJoin getLineJoin () const { return join; }
 	CCoord getDashPhase () const { return dashPhase; }
-	int32_t getDashCount () const { return dashCount; }
-	const CCoord* getDashLengths () const { return dashLengths; }
+	uint32_t getDashCount () const { return static_cast<uint32_t> (dashLengths.size ()); }
+	const CCoord* getDashLengths () const { return &dashLengths[0]; }
+	CoordVector& getDashLengths () { return dashLengths; }
+
+	void setLineCap (LineCap newCap) { cap = newCap; }
+	void setLineJoin (LineJoin newJoin) { join = newJoin; }
+	void setDashPhase (CCoord phase) { dashPhase = phase; }
 
 	bool operator== (const CLineStyle& cls) const;
 	bool operator!= (const CLineStyle& cls) const { return !(*this == cls); }
 	CLineStyle& operator= (const CLineStyle& cls);
+
 protected:
 	LineCap cap;
 	LineJoin join;
 	CCoord dashPhase;
-	int32_t dashCount;
-	CCoord* dashLengths;
+	CoordVector dashLengths;
 };
 
 extern const CLineStyle kLineSolid;
@@ -310,6 +326,10 @@ protected:
 		CDrawContextState ();
 		CDrawContextState (const CDrawContextState& state);
 		CDrawContextState& operator= (const CDrawContextState& state);
+	#if VSTGUI_RVALUE_REF_SUPPORT
+		CDrawContextState (CDrawContextState&& state) noexcept;
+		CDrawContextState& operator= (CDrawContextState&& state) noexcept;
+	#endif
 	};
 	/// @endcond
 

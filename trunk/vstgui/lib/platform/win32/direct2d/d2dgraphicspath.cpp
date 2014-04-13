@@ -328,7 +328,7 @@ ID2D1PathGeometry* D2DGraphicsPath::getPath (int32_t fillMode)
 		CPoint lastPos;
 		for (ElementList::const_iterator it = elements.begin (); it != elements.end (); it++)
 		{
-			Element e = (*it);
+			const Element& e = (*it);
 			switch (e.type)
 			{
 				case Element::kArc:

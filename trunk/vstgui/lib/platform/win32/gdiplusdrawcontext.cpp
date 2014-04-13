@@ -547,7 +547,7 @@ void GdiplusDrawContext::setLineStyle (const CLineStyle& style)
 		else
 		{
 			Gdiplus::REAL* dashes = new Gdiplus::REAL [style.getDashCount ()];
-			for (int32_t i = 0; i < style.getDashCount (); i++)
+			for (uint32_t i = 0; i < style.getDashCount (); i++)
 				dashes[i] = (Gdiplus::REAL)style.getDashLengths ()[i];
 			pPen->SetDashPattern (dashes, style.getDashCount ());
 			delete [] dashes; 

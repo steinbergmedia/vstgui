@@ -58,49 +58,94 @@ struct MenuEntry {
 	UTF8StringPtr name;
 	UTF8StringPtr key;
 	int32_t modifier;
+	int32_t virtualKey;
 	int32_t menuFlags;
 	
 	enum {
-		kSubMenu	= 0xF + (1 << 0),
-		kSubMenuEnd	= 0xF + (1 << 1)
+		kSubMenu			= (1 << 0),
+		kSubMenuEnd			= (1 << 1),
+		kSubMenuCheckStyle	= (1 << 2),
+		kMenuItemIsTitle	= (1 << 3)
 	};
 };
 
 //----------------------------------------------------------------------------------------------------
-static const MenuEntry menuSeparator = { "Separator", 0, 0, 0, 0 };
+static const MenuEntry kMenuSeparator = { "Separator", 0, 0, 0, 0 };
+static const MenuEntry kSubMenuEnd = { 0, 0 , 0, 0, 0, MenuEntry::kSubMenuEnd };
 
 //----------------------------------------------------------------------------------------------------
 static const MenuEntry editMenu[] = {
-	{ "Edit", "Undo" , "z", kControl, 0 },
-	{ "Edit", "Redo" , "z", kControl|kShift, 0 },
-	menuSeparator,
-	{ "Edit", "Cut" , "x", kControl, 0 },
-	{ "Edit", "Copy" , "c", kControl, 0 },
-	{ "Edit", "Paste" , "v", kControl, 0 },
-	{ "Edit", "Delete" , "\b", kControl, 0},
-	menuSeparator,
+	{ "Edit", "Undo" , "z", kControl },
+	{ "Edit", "Redo" , "z", kControl|kShift },
+	kMenuSeparator,
+	{ "Edit", "Cut" , "x", kControl },
+	{ "Edit", "Copy" , "c", kControl },
+	{ "Edit", "Paste" , "v", kControl },
+	{ "Edit", "Delete" , 0, kControl, VKEY_BACK },
+	kMenuSeparator,
+	{ "Edit", "Selection" , 0, 0, 0, MenuEntry::kSubMenu},
+	
+	{ "Selection", "Move" , 0, 0, 0, MenuEntry::kSubMenu},
+	{ "", "By Grid" , 0, 0, 0, MenuEntry::kMenuItemIsTitle},
+	kMenuSeparator,
+	{ "SelectionMoveByGrid", "Move Up" , 0, kControl, VKEY_UP },
+	{ "SelectionMoveByGrid", "Move Down" , 0, kControl, VKEY_DOWN },
+	{ "SelectionMoveByGrid", "Move Left" , 0, kControl, VKEY_LEFT },
+	{ "SelectionMoveByGrid", "Move Right" , 0, kControl, VKEY_RIGHT },
+	kMenuSeparator,
+	{ "", "By Pixel" , 0, 0, 0, MenuEntry::kMenuItemIsTitle},
+	kMenuSeparator,
+	{ "SelectionMoveByPixel", "Move Up" , 0, kControl|kShift, VKEY_UP },
+	{ "SelectionMoveByPixel", "Move Down" , 0, kControl|kShift, VKEY_DOWN },
+	{ "SelectionMoveByPixel", "Move Left" , 0, kControl|kShift, VKEY_LEFT },
+	{ "SelectionMoveByPixel", "Move Right" , 0, kControl|kShift, VKEY_RIGHT },
+	kSubMenuEnd,
+	
+	{ "Selection", "Size" , 0, 0, 0, MenuEntry::kSubMenu},
+	{ "", "By Grid" , 0, 0, 0, MenuEntry::kMenuItemIsTitle},
+	kMenuSeparator,
+	{ "SelectionSizeByGrid", "Increase Size Width" , 0, kControl|kAlt, VKEY_RIGHT },
+	{ "SelectionSizeByGrid", "Increase Size Height" , 0, kControl|kAlt, VKEY_DOWN },
+	{ "SelectionSizeByGrid", "Decrease Size Width" , 0, kControl|kAlt, VKEY_LEFT },
+	{ "SelectionSizeByGrid", "Decrease Size Height" , 0, kControl|kAlt, VKEY_UP },
+	kMenuSeparator,
+	{ "", "By Pixel" , 0, 0, 0, MenuEntry::kMenuItemIsTitle},
+	kMenuSeparator,
+	{ "SelectionSizeByPixel", "Increase Size Width" , 0, kControl|kAlt|kShift, VKEY_RIGHT },
+	{ "SelectionSizeByPixel", "Increase Size Height" , 0, kControl|kAlt|kShift, VKEY_DOWN },
+	{ "SelectionSizeByPixel", "Decrease Size Width" , 0, kControl|kAlt|kShift, VKEY_LEFT },
+	{ "SelectionSizeByPixel", "Decrease Size Height" , 0, kControl|kAlt|kShift, VKEY_UP },
+	kSubMenuEnd,
+
+	{ "Selection", "Z-Order" , 0, 0, 0, MenuEntry::kSubMenu},
+	{ "SelectionZOrder", "Lower" , 0, kAlt, VKEY_UP },
+	{ "SelectionZOrder", "Raise" , 0, kAlt, VKEY_DOWN },
+	kSubMenuEnd,
+	
+	kSubMenuEnd,
+	kMenuSeparator,
 	{ "Edit", "Size To Fit" , 0, 0, 0 },
 	{ "Edit", "Unembed Views" , 0, 0, 0 },
 	{ "Edit", "Embed Into" , 0, 0, 0 },
 	{ "Edit", "Transform View Type" , 0, 0, 0 },
 	{ "Edit", "Insert Template" , 0, 0, 0 },
-	menuSeparator,
+	kMenuSeparator,
 	{ "Edit", "Add New Template" , 0, 0, 0 },
 	{ "Edit", "Delete Template" , 0, 0, 0 },
 	{ "Edit", "Duplicate Template" , 0, 0, 0 },
-	menuSeparator,
-	{ "Edit", "Template Settings..." , 0, 0, 0 },
+	kMenuSeparator,
+	{ "Edit", "Template Settings..." , 0, kControl, VKEY_ENTER },
 	{ "Edit", "Focus Drawing Settings..." , 0, 0, 0 },
 	{0}
 };
 
 //----------------------------------------------------------------------------------------------------
 static const MenuEntry fileMenu[] = {
-	{ "File", "Save Options" , 0, 0, MenuEntry::kSubMenu },
+	{ "File", "Save Options" , 0, 0, 0, MenuEntry::kSubMenu|MenuEntry::kSubMenuCheckStyle },
 	{ "File", "Encode Bitmaps in XML" , 0, 0, 0 },
 	{ "File", "Write Windows RC File on Save" , 0, 0, 0 },
-	{ 0, 0 , 0, 0, MenuEntry::kSubMenuEnd },
-	menuSeparator,
+	kSubMenuEnd,
+	kMenuSeparator,
 	{0}
 };
 

@@ -48,6 +48,7 @@
 
 namespace VSTGUI {
 class CRowColumnView;
+class UIViewFactory;
 
 namespace UIAttributeControllers {
 class Controller;
@@ -60,6 +61,8 @@ public:
 	UIAttributesController (IController* baseController, UISelection* selection, UIUndoManager* undoManager, UIDescription* description);
 	~UIAttributesController ();
 	
+	void beginLiveAttributeChange (const std::string& name, const std::string& currentValue);
+	void endLiveAttributeChange ();
 	void performAttributeChange (const std::string& name, const std::string& value);
 protected:
 	typedef std::list<std::string> StringList;
@@ -67,7 +70,7 @@ protected:
 	CView* createViewForAttribute (const std::string& attrName);
 	void rebuildAttributesView ();
 	void validateAttributeViews ();
-	CView* createValueViewForAttributeType (IViewCreator::AttrType attrType);
+	CView* createValueViewForAttributeType (const UIViewFactory* viewFactory, CView* view, const std::string& attrName, IViewCreator::AttrType attrType);
 	void getConsolidatedAttributeNames (StringList& result, const std::string& filter);
 
 	void valueChanged (CControl* pControl) VSTGUI_OVERRIDE_VMETHOD;
@@ -81,6 +84,7 @@ protected:
 	SharedPointer<UIUndoManager> undoManager;
 	SharedPointer<UIDescription> editDescription;
 	OwningPointer<CVSTGUITimer> timer;
+	IAction* liveAction;
 
 	typedef std::list<UIAttributeControllers::Controller*> UIAttributeControllerList;
 	UIAttributeControllerList attributeControllers;

@@ -863,14 +863,14 @@ void CScrollbar::calculateScrollerLength ()
 	CCoord newScrollerLength;
 	if (direction == kHorizontal)
 	{
-		float factor = (float)getViewSize ().width () / (float)scrollSize.width ();
+		double factor = scrollSize.width () > 0. ? getViewSize ().width () / scrollSize.width () : 0.;
 		if (factor >= 1.f)
 			factor = 0;
 		newScrollerLength = (CCoord) (getViewSize ().width () * factor);
 	}
 	else
 	{
-		float factor = (float)getViewSize ().height () / (float)scrollSize.height ();
+		double factor = scrollSize.height () > 0 ? getViewSize ().height () / scrollSize.height () : 0.;
 		if (factor >= 1.f)
 			factor = 0;
 		newScrollerLength = (CCoord) (getViewSize ().height () * factor);

@@ -115,14 +115,14 @@ public:
 	}
 
 #if VSTGUI_RVALUE_REF_SUPPORT
-	CViewAttributeEntry (CViewAttributeEntry&& me)
+	CViewAttributeEntry (CViewAttributeEntry&& me) noexcept
 	: size (0)
 	, data (0)
 	{
 		*this = std::move (me);
 	}
 
-	CViewAttributeEntry& operator=(CViewAttributeEntry&& me)
+	CViewAttributeEntry& operator=(CViewAttributeEntry&& me) noexcept
 	{
 		size = me.size;
 		data = me.data;
@@ -260,7 +260,7 @@ CView::~CView ()
 			delete controller;
 	}
 
-	for (ViewAttributes::iterator it = attributes.begin (); it != attributes.end (); it++)
+	for (ViewAttributes::iterator it = attributes.begin (), end = attributes.end (); it != end; ++it)
 		delete it->second;
 
 	#if VSTGUI_CHECK_VIEW_RELEASING

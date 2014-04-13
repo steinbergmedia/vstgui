@@ -81,6 +81,8 @@ protected:
 //----------------------------------------------------------------------------------------------------
 IdStringPtr UIUndoManager::kMsgChanged = "UIUndoManagerChanged";
 
+static void deleteUndoManagerAction (IAction* action) { delete action; }
+
 //----------------------------------------------------------------------------------------------------
 UIUndoManager::UIUndoManager ()
 {
@@ -92,9 +94,7 @@ UIUndoManager::UIUndoManager ()
 //----------------------------------------------------------------------------------------------------
 UIUndoManager::~UIUndoManager ()
 {
-	clear ();
-	position--;
-	delete (*position);
+	std::for_each (begin (), end (), deleteUndoManagerAction);
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -194,12 +194,7 @@ UTF8StringPtr UIUndoManager::getRedoName ()
 //----------------------------------------------------------------------------------------------------
 void UIUndoManager::clear ()
 {
-	reverse_iterator it = rbegin ();
-	while (it != rend ())
-	{
-		delete (*it);
-		it++;
-	}
+	std::for_each (begin (), end (), deleteUndoManagerAction);
 	std::list<IAction*>::clear ();
 	push_back (new UndoStackTop);
 	position = end ();

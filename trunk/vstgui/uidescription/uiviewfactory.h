@@ -68,6 +68,7 @@ public:
 	bool getAttributesForView (CView* view, const IUIDescription* desc, UIAttributes& attr) const;
 	// list type support
 	bool getPossibleAttributeListValues (CView* view, const std::string& attributeName, std::list<const std::string*>& values) const;
+	bool getAttributeValueRange (CView* view, const std::string& attributeName, double& minValue, double& maxValue) const;
 	#endif
 
 protected:

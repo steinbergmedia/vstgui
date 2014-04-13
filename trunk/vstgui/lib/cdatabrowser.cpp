@@ -353,7 +353,7 @@ void CDataBrowser::recalculateLayout (bool rememberSelection)
 	dbView->setMouseableArea (newContainerSize);
 
 	CControl* scrollbar = getVerticalScrollbar ();
-	if (scrollbar)
+	if (scrollbar && newContainerSize.getHeight () > 0.)
 	{
 		float wheelInc = (float) (rowHeight / newContainerSize.getHeight ());
 		scrollbar->setWheelInc (wheelInc);
@@ -1108,6 +1108,8 @@ int32_t CDataBrowserView::onKeyDown (VstKeyCode& keyCode)
 	int32_t res = db->dbOnKeyDown (keyCode, browser);
 	if (res != -1)
 		return res;
+	if (keyCode.modifier != 0)
+		return -1;
 	if (keyCode.virt == VKEY_UP || keyCode.virt == VKEY_DOWN || keyCode.virt == VKEY_PAGEUP || keyCode.virt == VKEY_PAGEDOWN)
 	{
 		int32_t numRows = db->dbGetNumRows (browser);

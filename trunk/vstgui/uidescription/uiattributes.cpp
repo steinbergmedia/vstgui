@@ -63,7 +63,7 @@ UIAttributes::~UIAttributes ()
 }
 
 //-----------------------------------------------------------------------------
-bool UIAttributes::hasAttribute (UTF8StringPtr name) const
+bool UIAttributes::hasAttribute (const std::string& name) const
 {
 	if (getAttributeValue (name) != 0)
 		return true;
@@ -71,7 +71,7 @@ bool UIAttributes::hasAttribute (UTF8StringPtr name) const
 }
 
 //-----------------------------------------------------------------------------
-const std::string* UIAttributes::getAttributeValue (UTF8StringPtr name) const
+const std::string* UIAttributes::getAttributeValue (const std::string& name) const
 {
 	const_iterator iter = find (name);
 	if (iter != end ())
@@ -80,7 +80,7 @@ const std::string* UIAttributes::getAttributeValue (UTF8StringPtr name) const
 }
 
 //-----------------------------------------------------------------------------
-void UIAttributes::setAttribute (UTF8StringPtr name, UTF8StringPtr value)
+void UIAttributes::setAttribute (const std::string& name, const std::string& value)
 {
 	iterator iter = find (name);
 	if (iter != end ())
@@ -88,8 +88,28 @@ void UIAttributes::setAttribute (UTF8StringPtr name, UTF8StringPtr value)
 	insert (std::make_pair (name, value));
 }
 
+#if VSTGUI_RVALUE_REF_SUPPORT
 //-----------------------------------------------------------------------------
-void UIAttributes::removeAttribute (UTF8StringPtr name)
+void UIAttributes::setAttribute (const std::string& name, std::string&& value)
+{
+	iterator iter = find (name);
+	if (iter != end ())
+		erase (iter);
+	insert (std::make_pair (name, std::move (value)));
+}
+
+//-----------------------------------------------------------------------------
+void UIAttributes::setAttribute (std::string&& name, std::string&& value)
+{
+	iterator iter = find (name);
+	if (iter != end ())
+		erase (iter);
+	insert (std::make_pair (std::move (name), std::move (value)));
+}
+#endif
+
+//-----------------------------------------------------------------------------
+void UIAttributes::removeAttribute (const std::string& name)
 {
 	iterator iter = find (name);
 	if (iter != end ())
@@ -97,16 +117,16 @@ void UIAttributes::removeAttribute (UTF8StringPtr name)
 }
 
 //-----------------------------------------------------------------------------
-void UIAttributes::setDoubleAttribute (UTF8StringPtr name, double value)
+void UIAttributes::setDoubleAttribute (const std::string& name, double value)
 {
 	std::stringstream str;
 	str.precision (40);
 	str << value;
-	setAttribute (name, str.str ().c_str ());
+	setAttribute (name, str.str ());
 }
 
 //-----------------------------------------------------------------------------
-bool UIAttributes::getDoubleAttribute (UTF8StringPtr name, double& value) const
+bool UIAttributes::getDoubleAttribute (const std::string& name, double& value) const
 {
 	const std::string* str = getAttributeValue (name);
 	if (str)
@@ -118,13 +138,13 @@ bool UIAttributes::getDoubleAttribute (UTF8StringPtr name, double& value) const
 }
 
 //-----------------------------------------------------------------------------
-void UIAttributes::setBooleanAttribute (UTF8StringPtr name, bool value)
+void UIAttributes::setBooleanAttribute (const std::string& name, bool value)
 {
 	setAttribute (name, value ? "true" : "false");
 }
 
 //-----------------------------------------------------------------------------
-bool UIAttributes::getBooleanAttribute (UTF8StringPtr name, bool& value) const
+bool UIAttributes::getBooleanAttribute (const std::string& name, bool& value) const
 {
 	const std::string* str = getAttributeValue (name);
 	if (str)
@@ -144,15 +164,15 @@ bool UIAttributes::getBooleanAttribute (UTF8StringPtr name, bool& value) const
 }
 
 //-----------------------------------------------------------------------------
-void UIAttributes::setIntegerAttribute (UTF8StringPtr name, int32_t value)
+void UIAttributes::setIntegerAttribute (const std::string& name, int32_t value)
 {
 	std::stringstream str;
 	str << value;
-	setAttribute (name, str.str ().c_str ());
+	setAttribute (name, str.str ());
 }
 
 //-----------------------------------------------------------------------------
-bool UIAttributes::getIntegerAttribute (UTF8StringPtr name, int32_t& value) const
+bool UIAttributes::getIntegerAttribute (const std::string& name, int32_t& value) const
 {
 	const std::string* str = getAttributeValue (name);
 	if (str)
@@ -164,17 +184,17 @@ bool UIAttributes::getIntegerAttribute (UTF8StringPtr name, int32_t& value) cons
 }
 
 //-----------------------------------------------------------------------------
-void UIAttributes::setPointAttribute (UTF8StringPtr name, const CPoint& p)
+void UIAttributes::setPointAttribute (const std::string& name, const CPoint& p)
 {
 	std::stringstream str;
 	str << p.x;
 	str << ", ";
 	str << p.y;
-	setAttribute (name, str.str ().c_str ());
+	setAttribute (name, str.str ());
 }
 
 //-----------------------------------------------------------------------------
-bool UIAttributes::getPointAttribute (UTF8StringPtr name, CPoint& p) const
+bool UIAttributes::getPointAttribute (const std::string& name, CPoint& p) const
 {
 	const std::string* str = getAttributeValue (name);
 	if (str)
@@ -205,7 +225,7 @@ bool UIAttributes::getPointAttribute (UTF8StringPtr name, CPoint& p) const
 }
 
 //-----------------------------------------------------------------------------
-void UIAttributes::setRectAttribute (UTF8StringPtr name, const CRect& r)
+void UIAttributes::setRectAttribute (const std::string& name, const CRect& r)
 {
 	std::stringstream str;
 	str << r.left;
@@ -215,11 +235,11 @@ void UIAttributes::setRectAttribute (UTF8StringPtr name, const CRect& r)
 	str << r.right;
 	str << ", ";
 	str << r.bottom;
-	setAttribute (name, str.str ().c_str ());
+	setAttribute (name, str.str ());
 }
 
 //-----------------------------------------------------------------------------
-bool UIAttributes::getRectAttribute (UTF8StringPtr name, CRect& r) const
+bool UIAttributes::getRectAttribute (const std::string& name, CRect& r) const
 {
 	const std::string* str = getAttributeValue (name);
 	if (str)
@@ -252,7 +272,7 @@ bool UIAttributes::getRectAttribute (UTF8StringPtr name, CRect& r) const
 }
 
 //-----------------------------------------------------------------------------
-void UIAttributes::setAttributeArray (UTF8StringPtr name, const std::vector<std::string>& values)
+void UIAttributes::setAttributeArray (const std::string& name, const std::vector<std::string>& values)
 {
 	std::string value;
 	size_t numValues = values.size ();
@@ -262,10 +282,11 @@ void UIAttributes::setAttributeArray (UTF8StringPtr name, const std::vector<std:
 		value += ',';
 	}
 	value += values[numValues-1];
+	setAttribute (name, value);
 }
 
 //-----------------------------------------------------------------------------
-bool UIAttributes::getAttributeArray (UTF8StringPtr name, std::vector<std::string>& values) const
+bool UIAttributes::getAttributeArray (const std::string& name, std::vector<std::string>& values) const
 {
 	const std::string* str = getAttributeValue (name);
 	if (str)
@@ -274,7 +295,7 @@ bool UIAttributes::getAttributeArray (UTF8StringPtr name, std::vector<std::strin
 		std::string item;
 		while (std::getline (ss, item, ','))
 		{
-			values.push_back(item);
+			values.push_back (item);
 		}
 		return true;
 	}
@@ -282,11 +303,11 @@ bool UIAttributes::getAttributeArray (UTF8StringPtr name, std::vector<std::strin
 }
 
 //-----------------------------------------------------------------------------
-bool UIAttributes::store (OutputStream& stream)
+bool UIAttributes::store (OutputStream& stream) const
 {
 	if (!(stream << (int32_t)'UIAT')) return false;
 	if (!(stream << (uint32_t)size ())) return false;
-	iterator it = begin ();
+	const_iterator it = begin ();
 	while (it != end ())
 	{
 		if (!(stream << (*it).first)) return false;
@@ -310,7 +331,7 @@ bool UIAttributes::restore (InputStream& stream)
 			std::string key, value;
 			if (!(stream >> key)) return false;
 			if (!(stream >> value)) return false;
-			setAttribute (key.c_str (), value.c_str ());
+			setAttribute (key, value);
 		}
 		return true;
 	}

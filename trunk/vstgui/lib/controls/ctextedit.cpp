@@ -324,6 +324,8 @@ bool CTextEdit::wantsFocus () const
 //------------------------------------------------------------------------
 void CTextEdit::takeFocus ()
 {
+	if (!getFrame ())
+		return;
 	createPlatformTextEdit ();
 	if (getFrame()->getFocusView () != this)
 		getFrame()->setFocusView (this);

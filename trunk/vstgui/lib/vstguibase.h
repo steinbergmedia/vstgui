@@ -105,9 +105,11 @@
 		#ifdef _LIBCPP_VERSION
 			#define VSTGUI_HAS_FUNCTIONAL 1
 		#endif
+	#else
+		#define noexcept
 	#endif
 
-#elif WIN32 || WINDOWS
+#elif WIN32 || WINDOWS || defined(_WIN32)
 	#define NOMINMAX
 	#include <sdkddkver.h>
 	#if _WIN32_WINNT < 0x600
@@ -140,15 +142,12 @@
 	#ifndef WINDOWS
 		#define WINDOWS 1
 	#endif
+	#define noexcept		// currently not supported by any VS compiler
 	#include <algorithm>
 	using std::min;
 	using std::max;
-#else // GCC/Clang based builds on non Windows and non Mac
-	#include <stdint.h>
-	#include <limits.h>
-	#pragma GCC diagnostic ignored "-Wreorder"
-	#pragma GCC diagnostic ignored "-Wmultichar"
-	#pragma GCC diagnostic ignored "-Woverloaded-virtual"
+#else
+	#error unsupported compiler
 #endif
 
 #ifdef UNICODE
@@ -183,9 +182,9 @@
 // Helper Macro for range based for loops
 //----------------------------------------------------
 #if VSTGUI_RANGE_BASED_FOR_LOOP_SUPPORT
-	#define VSTGUI_RANGE_BASED_FOR_LOOP(ContainerType, container, varType, varName) for (auto& varName : container) {
+	#define VSTGUI_RANGE_BASED_FOR_LOOP(ContainerType, container, varType, varName) for (const auto& varName : container) {
 #else
-	#define VSTGUI_RANGE_BASED_FOR_LOOP(ContainerType, container, varType, varName) for (ContainerType::iterator it = container.begin (), end = container.end (); it != end; ++it) { varType varName = (*it);
+	#define VSTGUI_RANGE_BASED_FOR_LOOP(ContainerType, container, varType, varName) for (ContainerType::const_iterator it = (container).begin (), end = (container).end (); it != end; ++it) { varType varName = (*it);
 #endif
 #define VSTGUI_RANGE_BASED_FOR_LOOP_END }
 
@@ -373,8 +372,8 @@ public:
 	template<class T> T* cast () const { return dynamic_cast<T*> (ptr); }
 
 #if VSTGUI_RVALUE_REF_SUPPORT
-	inline SharedPointer (SharedPointer<I>&& mp);
-	inline SharedPointer<I>& operator=(SharedPointer<I>&& mp);
+	inline SharedPointer (SharedPointer<I>&& mp) noexcept;
+	inline SharedPointer<I>& operator=(SharedPointer<I>&& mp) noexcept;
 #endif
 //------------------------------------------------------------------------
 protected:
@@ -416,14 +415,14 @@ inline SharedPointer<I>::~SharedPointer ()
 #if VSTGUI_RVALUE_REF_SUPPORT
 //------------------------------------------------------------------------
 template <class I>
-inline SharedPointer<I>::SharedPointer (SharedPointer<I>&& mp)
+inline SharedPointer<I>::SharedPointer (SharedPointer<I>&& mp) noexcept
 {
 	*this = std::move (mp);
 }
 
 //------------------------------------------------------------------------
 template <class I>
-inline SharedPointer<I>& SharedPointer<I>::operator=(SharedPointer<I>&& mp)
+inline SharedPointer<I>& SharedPointer<I>::operator=(SharedPointer<I>&& mp) noexcept
 {
 	ptr = mp.ptr;
 	mp.ptr = nullptr;

@@ -282,6 +282,9 @@ void CSplitView::resizeLastView (CPoint diff)
 void CSplitView::resizeViewsEqual (CPoint diff)
 {
 	int32_t numViews = getNbViews ();
+	if (numViews == 0)
+		return;
+
 	int32_t numSeparators = numViews / 2;
 	numViews -= numSeparators;
 

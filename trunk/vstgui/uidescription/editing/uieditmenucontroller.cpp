@@ -71,55 +71,39 @@ UIEditMenuController::~UIEditMenuController ()
 }
 
 //----------------------------------------------------------------------------------------------------
-void UIEditMenuController::createFileMenu (COptionMenu* menu)
+static void addEntriesToMenu (const UIEditing::MenuEntry* entries, COptionMenu* menu, CBaseObject* menuItemTarget, int32_t& index)
 {
-	int32_t index = 0;
-	while (UIEditing::fileMenu[index].category != 0)
+	while (entries[index].category != 0)
 	{
-		if (UIEditing::fileMenu[index].category == UIEditing::menuSeparator.category)
+		if (entries[index].menuFlags & UIEditing::MenuEntry::kSubMenuEnd)
 		{
-			menu->addSeparator ();
+			break;
 		}
-		else if (UIEditing::fileMenu[index].menuFlags & UIEditing::MenuEntry::kSubMenu)
+		if (entries[index].category == UIEditing::kMenuSeparator.category)
+			menu->addSeparator ();
+		else if (entries[index].menuFlags & UIEditing::MenuEntry::kSubMenu)
 		{
-			COptionMenu* subMenu = new COptionMenu ();
-			subMenu->setStyle (kMultipleCheckStyle|kCheckStyle);
-			menu->addEntry (new CMenuItem (UIEditing::fileMenu[index].name, subMenu));
+			OwningPointer<COptionMenu> subMenu = new COptionMenu ();
+			if (entries[index].menuFlags & UIEditing::MenuEntry::kSubMenuCheckStyle)
+				subMenu->setStyle (kMultipleCheckStyle|kCheckStyle);
+			menu->addEntry (new CMenuItem (entries[index].name, subMenu));
 			index++;
-			while (!(UIEditing::fileMenu[index].menuFlags & UIEditing::MenuEntry::kSubMenu))
-			{
-				if (UIEditing::fileMenu[index].category == UIEditing::menuSeparator.category)
-				{
-					subMenu->addSeparator ();
-				}
-				else
-				{
-					CMenuItem* item = subMenu->addEntry (new CCommandMenuItem (UIEditing::fileMenu[index].name, this, UIEditing::fileMenu[index].category, UIEditing::fileMenu[index].name));
-					if (UIEditing::fileMenu[index].key)
-					{
-						item->setKey (UIEditing::fileMenu[index].key, UIEditing::fileMenu[index].modifier);
-					}
-					if (UIEditing::fileMenu[index].menuFlags)
-					{
-						if (UIEditing::fileMenu[index].menuFlags & CMenuItem::kTitle)
-						{
-							item->setIsTitle (true);
-						}
-					}
-				}
-				index++;
-			}
+			addEntriesToMenu(entries, subMenu, menuItemTarget, index);
 		}
 		else
 		{
-			CMenuItem* item = menu->addEntry (new CCommandMenuItem (UIEditing::fileMenu[index].name, this, UIEditing::fileMenu[index].category, UIEditing::fileMenu[index].name));
-			if (UIEditing::fileMenu[index].key)
+			CMenuItem* item = menu->addEntry (new CCommandMenuItem (entries[index].name, menuItemTarget, entries[index].category, entries[index].name));
+			if (entries[index].key)
 			{
-				item->setKey (UIEditing::fileMenu[index].key, UIEditing::fileMenu[index].modifier);
+				item->setKey (entries[index].key, entries[index].modifier);
 			}
-			if (UIEditing::fileMenu[index].menuFlags)
+			else if (entries[index].virtualKey)
 			{
-				if (UIEditing::fileMenu[index].menuFlags & CMenuItem::kTitle)
+				item->setVirtualKey (entries[index].virtualKey, entries[index].modifier);
+			}
+			if (entries[index].menuFlags)
+			{
+				if (entries[index].menuFlags & UIEditing::MenuEntry::kMenuItemIsTitle)
 				{
 					item->setIsTitle (true);
 				}
@@ -127,29 +111,20 @@ void UIEditMenuController::createFileMenu (COptionMenu* menu)
 		}
 		index++;
 	}
-	menu->setStyle (menu->getStyle () | kMultipleCheckStyle);
+}
+
+//----------------------------------------------------------------------------------------------------
+void UIEditMenuController::createFileMenu (COptionMenu* menu)
+{
+	int32_t index = 0;
+	addEntriesToMenu (UIEditing::fileMenu, menu, this, index);
 }
 
 //----------------------------------------------------------------------------------------------------
 void UIEditMenuController::createEditMenu (COptionMenu* menu)
 {
 	int32_t index = 0;
-	while (UIEditing::editMenu[index].category != 0)
-	{
-		if (UIEditing::editMenu[index].category == UIEditing::menuSeparator.category)
-		{
-			menu->addSeparator ();
-		}
-		else
-		{
-			CMenuItem* item = menu->addEntry (new CCommandMenuItem (UIEditing::editMenu[index].name, this, UIEditing::editMenu[index].category, UIEditing::editMenu[index].name));
-			if (UIEditing::editMenu[index].key)
-			{
-				item->setKey (UIEditing::editMenu[index].key, UIEditing::editMenu[index].modifier);
-			}
-		}
-		index++;
-	}
+	addEntriesToMenu (UIEditing::editMenu, menu, this, index);
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -189,10 +164,12 @@ CMessageResult UIEditMenuController::notify (CBaseObject* sender, IdStringPtr me
 	if (message == CCommandMenuItem::kMsgMenuItemValidate)
 	{
 		CCommandMenuItem* item = dynamic_cast<CCommandMenuItem*> (sender);
+		UTF8StringView cmdCategory (item->getCommandCategory ());
+		UTF8StringView cmdName (item->getCommandName ());
 		item->setChecked (false);
-		if (strcmp (item->getCommandCategory (), "Edit") == 0)
+		if (cmdCategory == "Edit")
 		{
-			if (strcmp (item->getCommandName (), "Undo") == 0)
+			if (cmdName == "Undo")
 			{
 				if (undoManager->canUndo ())
 				{
@@ -208,7 +185,7 @@ CMessageResult UIEditMenuController::notify (CBaseObject* sender, IdStringPtr me
 				}
 				return kMessageNotified;
 			}
-			else if (strcmp (item->getCommandName (), "Redo") == 0)
+			else if (cmdName == "Redo")
 			{
 				if (undoManager->canRedo ())
 				{
@@ -224,19 +201,19 @@ CMessageResult UIEditMenuController::notify (CBaseObject* sender, IdStringPtr me
 				}
 				return kMessageNotified;
 			}
-			else if (strcmp (item->getCommandName (), "Cut") == 0)
+			else if (cmdName == "Cut")
 			{
 				item->setEnabled (false);
 			}
-			else if (strcmp (item->getCommandName (), "Copy") == 0)
+			else if (cmdName == "Copy")
 			{
 				item->setEnabled (false);
 			}
-			else if (strcmp (item->getCommandName (), "Paste") == 0)
+			else if (cmdName == "Paste")
 			{
 				item->setEnabled (false);
 			}
-			else if (strcmp (item->getCommandName (), "Delete") == 0)
+			else if (cmdName == "Delete")
 			{
 				CView* view = selection->first ();
 				int32_t selectionCount = selection->total ();
@@ -244,7 +221,7 @@ CMessageResult UIEditMenuController::notify (CBaseObject* sender, IdStringPtr me
 				item->setEnabled (enable);
 				return kMessageNotified;
 			}
-			else if (strcmp (item->getCommandName (), "Add New Template") == 0)
+			else if (cmdName == "Add New Template")
 			{
 				std::list<const std::string*> containerViewNames;
 				const UIViewFactory* factory = dynamic_cast<const UIViewFactory*> (description->getViewFactory ());
@@ -257,7 +234,7 @@ CMessageResult UIEditMenuController::notify (CBaseObject* sender, IdStringPtr me
 				item->setSubmenu (submenu);
 				return kMessageNotified;
 			}
-			else if (strcmp (item->getCommandName (), "Delete Template") == 0)
+			else if (cmdName == "Delete Template")
 			{
 				item->setSubmenu (0);
 				std::list<const std::string*> templateNames;
@@ -275,7 +252,7 @@ CMessageResult UIEditMenuController::notify (CBaseObject* sender, IdStringPtr me
 				}
 				return kMessageNotified;
 			}
-			else if (strcmp (item->getCommandName (), "Duplicate Template") == 0)
+			else if (cmdName == "Duplicate Template")
 			{
 				item->setSubmenu (0);
 				std::list<const std::string*> templateNames;
@@ -293,7 +270,7 @@ CMessageResult UIEditMenuController::notify (CBaseObject* sender, IdStringPtr me
 				}
 				return kMessageNotified;
 			}
-			else if (strcmp (item->getCommandName (), "Embed Into") == 0)
+			else if (cmdName == "Embed Into")
 			{
 				item->setSubmenu (0);
 				bool enable = selection->total () > 0;
@@ -318,7 +295,7 @@ CMessageResult UIEditMenuController::notify (CBaseObject* sender, IdStringPtr me
 				}
 				return kMessageNotified;
 			}
-			else if (strcmp (item->getCommandName (), "Unembed Views") == 0)
+			else if (cmdName == "Unembed Views")
 			{
 				bool enabled = false;
 				if (selection->total () == 1)
@@ -330,12 +307,12 @@ CMessageResult UIEditMenuController::notify (CBaseObject* sender, IdStringPtr me
 				item->setEnabled (enabled);
 				return kMessageNotified;
 			}
-			else if (strcmp (item->getCommandName (), "Size To Fit") == 0)
+			else if (cmdName == "Size To Fit")
 			{
 				item->setEnabled (selection->total() > 0 ? true : false);
 				return kMessageNotified;
 			}
-			else if (strcmp (item->getCommandName (), "Transform View Type") == 0)
+			else if (cmdName == "Transform View Type")
 			{
 				item->setSubmenu (0);
 				bool enabled = false;
@@ -359,7 +336,7 @@ CMessageResult UIEditMenuController::notify (CBaseObject* sender, IdStringPtr me
 				}
 				return kMessageNotified;
 			}
-			else if (strcmp (item->getCommandName (), "Insert Template") == 0)
+			else if (cmdName == "Insert Template")
 			{
 				item->setSubmenu (0);
 				item->setEnabled (selection->total () == 1 && dynamic_cast<CViewContainer*> (selection->first ()));
@@ -387,9 +364,11 @@ CMessageResult UIEditMenuController::notify (CBaseObject* sender, IdStringPtr me
 	else if (message == CCommandMenuItem::kMsgMenuItemSelected)
 	{
 		CCommandMenuItem* item = dynamic_cast<CCommandMenuItem*> (sender);
-		if (strcmp (item->getCommandCategory (), "Edit") == 0)
+		UTF8StringView cmdCategory (item->getCommandCategory ());
+		UTF8StringView cmdName (item->getCommandName ());
+		if (cmdCategory == "Edit")
 		{
-			if (strcmp (item->getCommandName (), "Undo") == 0)
+			if (cmdName == "Undo")
 			{
 				if (undoManager->canUndo ())
 				{
@@ -397,7 +376,7 @@ CMessageResult UIEditMenuController::notify (CBaseObject* sender, IdStringPtr me
 				}
 				return kMessageNotified;
 			}
-			else if (strcmp (item->getCommandName (), "Redo") == 0)
+			else if (cmdName == "Redo")
 			{
 				if (undoManager->canRedo ())
 				{
@@ -405,26 +384,26 @@ CMessageResult UIEditMenuController::notify (CBaseObject* sender, IdStringPtr me
 				}
 				return kMessageNotified;
 			}
-			else if (strcmp (item->getCommandName (), "Delete") == 0)
+			else if (cmdName == "Delete")
 			{
 				IAction* action = new DeleteOperation (selection);
 				undoManager->pushAndPerform (action);
 				return kMessageNotified;
 			}
-			else if (strcmp (item->getCommandName (), "Unembed Views") == 0)
+			else if (cmdName == "Unembed Views")
 			{
 				IAction* action = new UnembedViewOperation (selection, description->getViewFactory ());
 				undoManager->pushAndPerform (action);
 				return kMessageNotified;
 			}
-			else if (strcmp (item->getCommandName (), "Size To Fit") == 0)
+			else if (cmdName == "Size To Fit")
 			{
 				IAction* action = new SizeToFitOperation (selection);
 				undoManager->pushAndPerform (action);
 				return kMessageNotified;
 			}
 		}
-		else if (strcmp (item->getCommandCategory (), "AddTemplate") == 0)
+		else if (cmdCategory == "AddTemplate")
 		{
 			std::list<const std::string*> tmp;
 			description->collectTemplateViewNames (tmp);
@@ -435,12 +414,12 @@ CMessageResult UIEditMenuController::notify (CBaseObject* sender, IdStringPtr me
 			}
 			return kMessageNotified;
 		}
-		else if (strcmp (item->getCommandCategory (), "RemoveTemplate") == 0)
+		else if (cmdCategory == "RemoveTemplate")
 		{
 			actionPerformer->performDeleteTemplate (item->getCommandName ());
 			return kMessageNotified;
 		}
-		else if (strcmp (item->getCommandCategory (), "DuplicateTemplate") == 0)
+		else if (cmdCategory == "DuplicateTemplate")
 		{
 			std::list<const std::string*> tmp;
 			description->collectTemplateViewNames (tmp);
@@ -451,7 +430,7 @@ CMessageResult UIEditMenuController::notify (CBaseObject* sender, IdStringPtr me
 			}
 			return kMessageNotified;
 		}
-		else if (strcmp (item->getCommandCategory (), "Embed") == 0)
+		else if (cmdCategory == "Embed")
 		{
 			const IViewFactory* viewFactory = description->getViewFactory ();
 			UIAttributes viewAttr;
@@ -464,13 +443,13 @@ CMessageResult UIEditMenuController::notify (CBaseObject* sender, IdStringPtr me
 			}
 			return kMessageNotified;
 		}
-		else if (strcmp (item->getCommandCategory (), "Transform View Type") == 0)
+		else if (cmdCategory == "Transform View Type")
 		{
 			IAction* action = new TransformViewTypeOperation (selection, item->getCommandName (), description, dynamic_cast<const UIViewFactory*> (description->getViewFactory ()));
 			undoManager->pushAndPerform (action);
 			return kMessageNotified;
 		}
-		else if (strcmp (item->getCommandCategory (), "InsertTemplate") == 0)
+		else if (cmdCategory == "InsertTemplate")
 		{
 			CViewContainer* parent = dynamic_cast<CViewContainer*> (selection->first ());
 			if (parent)
@@ -519,14 +498,11 @@ CCommandMenuItem* UIEditMenuController::findKeyCommandItem (COptionMenu* menu, c
 				modifier |= kControl;
 			if (key.modifier & MODIFIER_COMMAND)
 				modifier |= kApple;
-			if (result->getKeyModifiers () == modifier && result->getKeycode ())
+			if (result->getKeyModifiers () == modifier)
 			{
-				if (key.virt)
-				{
-					if (key.virt == VKEY_BACK && result->getKeycode ()[0] == '\b')
-						return result;
-				}
-				else if (result->getKeycode ()[0] == key.character)
+				if (key.virt && key.virt == result->getVirtualKeyCode ())
+					return result;
+				else if (result->getKeycode () && result->getKeycode ()[0] == key.character)
 					return result;
 			}
 		}

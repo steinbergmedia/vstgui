@@ -75,8 +75,10 @@ public:
 	virtual bool getAttributeNames (std::list<std::string>& attributeNames) const = 0;
 	virtual AttrType getAttributeType (const std::string& attributeName) const = 0;
 	virtual bool getAttributeValue (CView* view, const std::string& attributeName, std::string& stringValue, const IUIDescription* desc) const = 0;
-	// list type support
+	// optional list type support
 	virtual bool getPossibleListValues (const std::string& attributeName, std::list<const std::string*>& values) const { return false; }
+	// optional value range
+	virtual bool getAttributeValueRange (const std::string& attributeName, double& minValue, double &maxValue) const { return false; }
 
 #if DEBUG
 	// the method arguments have changed for the above methods so here are definitions that will generate a compiler error

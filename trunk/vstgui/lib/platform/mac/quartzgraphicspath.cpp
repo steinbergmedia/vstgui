@@ -121,9 +121,9 @@ CGPathRef QuartzGraphicsPath::getCGPathRef ()
 	if (path == 0)
 	{
 		path = CGPathCreateMutable ();
-		for (std::list<Element>::const_iterator it = elements.begin (); it != elements.end (); it++)
+		for (ElementList::const_iterator it = elements.begin (); it != elements.end (); it++)
 		{
-			Element e = (*it);
+			const Element& e = (*it);
 			switch (e.type)
 			{
 				case Element::kArc:

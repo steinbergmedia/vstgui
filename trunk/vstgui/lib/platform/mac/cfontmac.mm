@@ -80,7 +80,7 @@ bool IPlatformFont::getAllPlatformFontFamilies (std::list<std::string>& fontFami
 #if TARGET_OS_IPHONE
 	NSArray* fonts = [UIFont familyNames];
 #elif MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_6
-	NSArray* fonts = (NSArray*)CTFontManagerCopyAvailableFontFamilyNames ();
+	NSArray* fonts = [(NSArray*)CTFontManagerCopyAvailableFontFamilyNames () autorelease];
 #else
 	NSArray* fonts = [[NSFontManager sharedFontManager] availableFontFamilies];
 #endif

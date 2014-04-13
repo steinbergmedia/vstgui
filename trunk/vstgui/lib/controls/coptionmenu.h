@@ -36,7 +36,7 @@
 #define __coptionmenu__
 
 #include "cparamdisplay.h"
-#include <list>
+#include <vector>
 #if VSTGUI_HAS_FUNCTIONAL
 #include <functional>
 #endif
@@ -73,6 +73,7 @@ public:
 	virtual void setTitle (UTF8StringPtr title);							///< set title of menu item
 	virtual void setSubmenu (COptionMenu* submenu);							///< set submenu of menu item
 	virtual void setKey (UTF8StringPtr keyCode, int32_t keyModifiers = 0);	///< set keycode and key modifiers of menu item
+	virtual void setVirtualKey (int32_t virtualKeyCode, int32_t keyModifiers = 0);///< set virtual keycode and key modifiers of menu item
 	virtual void setEnabled (bool state = true);							///< set menu item enabled state
 	virtual void setChecked (bool state = true);							///< set menu item checked state
 	virtual void setIsTitle (bool state = true);							///< set menu item title state
@@ -87,7 +88,8 @@ public:
 
 	UTF8StringPtr getTitle () const { return title; }						///< returns the title of the item
 	int32_t getKeyModifiers () const { return keyModifiers; }				///< returns the key modifiers of the item
-	UTF8StringPtr getKeycode () const { return keycode; }					///< returns the keycode of the item
+	UTF8StringPtr getKeycode () const { return keyCode; }					///< returns the keycode of the item
+	int32_t getVirtualKeyCode () const { return virtualKeyCode; }			///< returns the virtual keycode of the item
 	COptionMenu* getSubmenu () const { return submenu; }					///< returns the submenu of the item
 	CBitmap* getIcon () const { return icon; }								///< returns the icon of the item
 	int32_t getTag () const { return tag; }									///< returns the tag of the item
@@ -98,11 +100,12 @@ protected:
 	~CMenuItem ();
 
 	UTF8StringBuffer title;
-	UTF8StringBuffer keycode;
+	UTF8StringBuffer keyCode;
 	COptionMenu* submenu;
 	CBitmap* icon;
 	int32_t flags;
 	int32_t keyModifiers;
+	int32_t virtualKeyCode;
 	int32_t tag;
 };
 
@@ -159,7 +162,7 @@ protected:
 	char* commandName;
 };
 
-typedef std::list<OwningPointer<CMenuItem> > CMenuItemList;
+typedef std::vector<OwningPointer<CMenuItem> > CMenuItemList;
 typedef CMenuItemList::iterator CMenuItemIterator;
 typedef CMenuItemList::const_iterator CConstMenuItemIterator;
 

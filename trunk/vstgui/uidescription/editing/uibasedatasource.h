@@ -200,7 +200,7 @@ protected:
 			UIAttributes* attributes = description->getCustomAttributes (name, true);
 			if (attributes)
 			{
-				attributes->setAttribute ("FilterString", filterString.c_str ());
+				attributes->setAttribute ("FilterString", filterString);
 				if (dataBrowser)
 				{
 					int32_t selectedRow = dataBrowser->getSelectedRow ();

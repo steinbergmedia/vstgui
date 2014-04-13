@@ -94,7 +94,7 @@ Gdiplus::GraphicsPath* GdiplusGraphicsPath::getGraphicsPath ()
 		Gdiplus::PointF pos;
 		for (ElementList::const_iterator it = elements.begin (); it != elements.end (); it++)
 		{
-			Element e = (*it);
+			const Element& e = (*it);
 			switch (e.type)
 			{
 				case Element::kArc:
