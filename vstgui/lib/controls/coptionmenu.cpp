@@ -59,8 +59,9 @@ Defines an item of a VSTGUI::COptionMenu
 CMenuItem::CMenuItem (UTF8StringPtr inTitle, UTF8StringPtr inKeycode, int32_t inKeyModifiers, CBitmap* inIcon, int32_t inFlags)
 : title (0)
 , flags (inFlags)
-, keycode (0)
+, keyCode (0)
 , keyModifiers (0)
+, virtualKeyCode (0)
 , submenu (0)
 , icon (0)
 , tag (-1)
@@ -81,8 +82,9 @@ CMenuItem::CMenuItem (UTF8StringPtr inTitle, UTF8StringPtr inKeycode, int32_t in
 CMenuItem::CMenuItem (UTF8StringPtr inTitle, COptionMenu* inSubmenu, CBitmap* inIcon)
 : title (0)
 , flags (0)
-, keycode (0)
+, keyCode (0)
 , keyModifiers (0)
+, virtualKeyCode (0)
 , submenu (0)
 , icon (0)
 , tag (-1)
@@ -102,8 +104,9 @@ CMenuItem::CMenuItem (UTF8StringPtr inTitle, COptionMenu* inSubmenu, CBitmap* in
 CMenuItem::CMenuItem (UTF8StringPtr inTitle, int32_t inTag)
 : title (0)
 , flags (0)
-, keycode (0)
+, keyCode (0)
 , keyModifiers (0)
+, virtualKeyCode (0)
 , submenu (0)
 , icon (0)
 , tag (-1)
@@ -121,14 +124,18 @@ CMenuItem::CMenuItem (UTF8StringPtr inTitle, int32_t inTag)
 CMenuItem::CMenuItem (const CMenuItem& item)
 : title (0)
 , flags (item.flags)
-, keycode (0)
+, keyCode (0)
 , keyModifiers (0)
+, virtualKeyCode (0)
 , submenu (0)
 , icon (0)
 {
 	setTitle (item.getTitle ());
 	setIcon (item.getIcon ());
-	setKey (item.getKeycode (), item.getKeyModifiers ());
+	if (item.getVirtualKeyCode ())
+		setVirtualKey (item.getVirtualKeyCode (), item.getKeyModifiers ());
+	else
+		setKey (item.getKeycode (), item.getKeyModifiers ());
 	setTag (item.getTag ());
 	setSubmenu (item.getSubmenu ());
 }
@@ -158,15 +165,23 @@ void CMenuItem::setTitle (UTF8StringPtr inTitle)
 //------------------------------------------------------------------------
 void CMenuItem::setKey (UTF8StringPtr inKeycode, int32_t inKeyModifiers)
 {
-	if (keycode)
-		free (keycode);
-	keycode = 0;
+	if (keyCode)
+		free (keyCode);
+	keyCode = 0;
 	if (inKeycode)
 	{
-		keycode = (UTF8StringBuffer)malloc (strlen (inKeycode) + 1);
-		strcpy (keycode, inKeycode);
+		keyCode = (UTF8StringBuffer)malloc (strlen (inKeycode) + 1);
+		strcpy (keyCode, inKeycode);
 	}
 	keyModifiers = inKeyModifiers;
+	virtualKeyCode = 0;
+}
+
+//------------------------------------------------------------------------
+void CMenuItem::setVirtualKey (int32_t inVirtualKeyCode, int32_t inKeyModifiers)
+{
+	setKey (0, inKeyModifiers);
+	virtualKeyCode = inVirtualKeyCode;
 }
 
 //------------------------------------------------------------------------
@@ -643,9 +658,7 @@ CMenuItem* COptionMenu::addEntry (CMenuItem* item, int32_t index)
 		menuItems->push_back (item);
 	else
 	{
-		CMenuItemIterator it = menuItems->begin ();
-		std::advance (it, index);
-		menuItems->insert (it, item);
+		menuItems->insert (menuItems->begin () + index, item);
 	}
 	return item;
 }
@@ -685,11 +698,7 @@ CMenuItem* COptionMenu::getEntry (int32_t index) const
 	if (index < 0 || menuItems->empty () || index > getNbEntries ())
 		return 0;
 	
-	CMenuItemIterator it = menuItems->begin ();
-	std::advance (it, index);
-	if (it == menuItems->end ())
-		return 0;
-	return (*it);
+	return (*menuItems)[index];
 }
 
 //-----------------------------------------------------------------------------
@@ -766,13 +775,10 @@ bool COptionMenu::setCurrent (int32_t index, bool countSeparator)
 //------------------------------------------------------------------------
 bool COptionMenu::removeEntry (int32_t index)
 {
-	CMenuItem* item = getEntry (index);
-	if (item)
-	{
-		menuItems->remove (item);
-		return true;
-	}
-	return false;
+	if (index < 0 || menuItems->empty () || index > getNbEntries ())
+		return false;
+	menuItems->erase (menuItems->begin () + index);
+	return true;
 }
 
 //------------------------------------------------------------------------

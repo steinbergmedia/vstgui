@@ -166,6 +166,7 @@ bool CVSTGUITimer::setFireTime (int32_t newFireTime)
 //-----------------------------------------------------------------------------
 void CVSTGUITimer::fire ()
 {
+	CBaseObjectGuard guard (this);
 #if VSTGUI_HAS_FUNCTIONAL
 	if (callbackFunc)
 		callbackFunc (this);

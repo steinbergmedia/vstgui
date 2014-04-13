@@ -44,16 +44,6 @@ bool CRect::pointInside (const CPoint& where) const
 }
 
 //-----------------------------------------------------------------------------
-bool CRect::isEmpty () const 
-{
-	if (right <= left)
-		return true;
-	if (bottom <= top)
-		return true;
-	return false;
-}
-
-//-----------------------------------------------------------------------------
 void CRect::unite (const CRect& rect)
 {
 	if (left > rect.left)

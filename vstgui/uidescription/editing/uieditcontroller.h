@@ -133,7 +133,7 @@ protected:
 	OwningPointer<UIGridController> gridController;
 	UIEditView* editView;
 	SharedPointer<UITemplateController> templateController;
-	OwningPointer<UIEditMenuController> menuController;
+	SharedPointer<UIEditMenuController> menuController;
 	SharedPointer<CControl> enableEditingControl;
 	SharedPointer<CControl> notSavedControl;
 	SharedPointer<CControl> tabSwitchControl;
@@ -153,8 +153,8 @@ protected:
 		bool operator==(const std::string& n) { return name == n; }
 		Template& operator=(const Template& t) { name = t.name; view = t.view; return *this; }
 	#if VSTGUI_RVALUE_REF_SUPPORT
-		Template (Template&& t) { *this = std::move (t); }
-		Template& operator=(Template&& t) { name = std::move (t.name); view = std::move (t.view); return *this; }
+		Template (Template&& t) noexcept { *this = std::move (t); }
+		Template& operator=(Template&& t) noexcept { name = std::move (t.name); view = std::move (t.view); return *this; }
 	#endif
 	};
 	void updateTemplate (UTF8StringPtr name);
@@ -172,6 +172,9 @@ private:
 	void doPaste ();
 	void showTemplateSettings ();
 	void showFocusSettings ();
+	bool doSelectionMove (const std::string& commandName, bool useGrid) const;
+	bool doSelectionSize (const std::string& commandName, bool useGrid) const;
+	bool doZOrderAction (bool lower);
 	
 	void onUndoManagerChanged ();
 	template<typename NameChangeAction, IViewCreator::AttrType attrType> void performNameChange (UTF8StringPtr oldName, UTF8StringPtr newName, IdStringPtr groupActionName);

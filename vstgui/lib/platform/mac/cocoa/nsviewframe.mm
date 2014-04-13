@@ -998,6 +998,7 @@ IPlatformViewLayer* NSViewFrame::createPlatformViewLayer (IPlatformViewLayerDele
 	CAViewLayer* parentViewLayer = dynamic_cast<CAViewLayer*> (parentLayer);
 	if (parentViewLayer == 0 || parentViewLayer->getLayer () == 0)
 	{
+		// after this is called, 'Quartz Debug' will not work as before. So when using 'Quartz Debug' comment the following two lines.
 		[nsView setWantsLayer:YES];
 		nsView.layer.actions = nil;
 	}

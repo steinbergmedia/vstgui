@@ -644,7 +644,6 @@ UTF8StringPtr AttributeChangeAction::getName ()
 //-----------------------------------------------------------------------------
 void AttributeChangeAction::updateSelection ()
 {
-	selection->changed (UISelection::kMsgSelectionWillChange);
 	for (const_iterator it = begin (); it != end (); it++)
 	{
 		if (selection->contains ((*it).first) == false)
@@ -656,7 +655,6 @@ void AttributeChangeAction::updateSelection ()
 			break;
 		}
 	}
-	selection->changed (UISelection::kMsgSelectionChanged);
 }
 
 //-----------------------------------------------------------------------------
@@ -664,7 +662,7 @@ void AttributeChangeAction::perform ()
 {
 	const IViewFactory* viewFactory = desc->getViewFactory ();
 	UIAttributes attr;
-	attr.setAttribute (attrName.c_str (), attrValue.c_str ());
+	attr.setAttribute (attrName, attrValue);
 	selection->changed (UISelection::kMsgSelectionViewWillChange);
 	const_iterator it = begin ();
 	while (it != end ())
@@ -687,7 +685,7 @@ void AttributeChangeAction::undo ()
 	while (it != end ())
 	{
 		UIAttributes attr;
-		attr.setAttribute (attrName.c_str (), (*it).second.c_str ());
+		attr.setAttribute (attrName, (*it).second);
 		(*it).first->invalid ();	// we need to invalid before changing anything as the size may change
 		viewFactory->applyAttributeValues ((*it).first, attr, desc);
 		(*it).first->invalid ();	// and afterwards also
@@ -768,7 +766,7 @@ void MultipleAttributeChangeAction::setAttributeValue (UTF8StringPtr value)
 	{
 		CView* view = (*it).first;
 		UIAttributes newAttr;
-		newAttr.setAttribute ((*it).second.c_str (), value);
+		newAttr.setAttribute ((*it).second, value);
 		viewFactory->applyAttributeValues (view, newAttr, description);
 		view->invalid ();
 		it++;
@@ -1340,7 +1338,7 @@ void CreateNewTemplateAction::perform ()
 {
 	IDependency::DeferChanges dc (description);
 	UIAttributes* attr = new UIAttributes ();
-	attr->setAttribute ("class", baseViewClassName.c_str ());
+	attr->setAttribute ("class", baseViewClassName);
 	attr->setAttribute ("size", "400,400");
 	description->addNewTemplate (name.c_str (), attr);
 	if (view == 0)

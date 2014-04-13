@@ -42,8 +42,11 @@
 #include "../uiviewfactory.h"
 #include "../uiattributes.h"
 #include "../../lib/controls/coptionmenu.h"
+#include "../../lib/controls/cslider.h"
 #include "../../lib/coffscreencontext.h"
 #include "../../lib/crowcolumnview.h"
+#include "../../lib/iviewlistener.h"
+#include <sstream>
 #include <algorithm>
 
 namespace VSTGUI {
@@ -64,11 +67,12 @@ public:
 	bool hasDifferentValues () const { return differentValues; }
 protected:
 	CControlListener* getControlListener (UTF8StringPtr controlTagName) VSTGUI_OVERRIDE_VMETHOD { return this; }
+	UIAttributesController* getAttributesController () const { return dynamic_cast<UIAttributesController*> (controller); }
 	void performValueChange (UTF8StringPtr value)
 	{
 		hasDifferentValues (false);
 		std::string valueStr = value ? value : "";
-		UIAttributesController* attrController = dynamic_cast<UIAttributesController*> (controller);
+		UIAttributesController* attrController = getAttributesController ();
 		if (attrController)
 			attrController->performAttributeChange (attrName, valueStr);
 	}
@@ -323,84 +327,148 @@ protected:
 };
 
 //----------------------------------------------------------------------------------------------------
-class TextController : public Controller
+class TextController : public Controller, public IViewListenerAdapter
 {
 public:
 	TextController (IController* baseController, const std::string& attrName)
-	: Controller (baseController, attrName), label (0) {}
+	: Controller (baseController, attrName) {}
 
 	~TextController ()
 	{
-		label->removeDependency (this);
+		if (textLabel)
+		{
+			textLabel->unregisterViewListener (this);
+			textLabel->removeDependency (this);
+		}
+		if (slider)
+			slider->removeDependency (this);
 	}
 	
 	CView* verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description) VSTGUI_OVERRIDE_VMETHOD
 	{
-		if (label == 0)
+		if (textLabel == 0)
 		{
 			CTextLabel* edit = dynamic_cast<CTextLabel*>(view);
 			if (edit)
 			{
-				label = edit;
-				originalTextColor = label->getFontColor ();
-				label->addDependency (this);
+				textLabel = edit;
+				originalTextColor = textLabel->getFontColor ();
+				textLabel->addDependency (this);
+				textLabel->registerViewListener (this);
+			}
+		}
+		if (slider == 0)
+		{
+			CSlider* sliderView = dynamic_cast<CSlider*>(view);
+			if (sliderView)
+			{
+				slider = sliderView;
+				slider->addDependency (this);
 			}
 		}
 		return controller->verifyView (view, attributes, description);
 	}
 	
+	void controlBeginEdit (VSTGUI::CControl* pControl)
+	{
+		if (pControl == slider)
+		{
+			std::stringstream sstream;
+			sstream << slider->getValue ();
+			getAttributesController ()->beginLiveAttributeChange (attrName, sstream.str ());
+		}
+		Controller::controlBeginEdit (pControl);
+	}
+	
+	void controlEndEdit (VSTGUI::CControl* pControl)
+	{
+		if (pControl == slider)
+		{
+			getAttributesController ()->endLiveAttributeChange ();
+		}
+		Controller::controlEndEdit (pControl);
+	}
+	
 	void valueChanged (CControl* pControl) VSTGUI_OVERRIDE_VMETHOD
 	{
-		CTextLabel* edit = dynamic_cast<CTextLabel*>(pControl);
-		if (edit)
+		if (textLabel == pControl)
 		{
-			label->setFontColor (originalTextColor);
-			performValueChange (edit->getText ());
+			textLabel->setFontColor (originalTextColor);
+			performValueChange (textLabel->getText ());
+		}
+		else if (slider == pControl)
+		{
+			std::stringstream sstream;
+			sstream << slider->getValue ();
+			performValueChange (sstream.str ().c_str ());
 		}
 	}
 	
 	void setValue (const std::string& value) VSTGUI_OVERRIDE_VMETHOD
 	{
-		if (label)
+		if (textLabel)
 		{
 			if (hasDifferentValues ())
 			{
 				CColor newColor (originalTextColor);
 				newColor.alpha /= 2;
-				label->setFontColor (newColor);
-				label->setText ("Multiple Values");
+				textLabel->setFontColor (newColor);
+				textLabel->setText ("Multiple Values");
 			}
 			else
 			{
-				label->setText (value.c_str ());
+				textLabel->setText (value.c_str ());
 			}
+		}
+		if (slider)
+		{
+			float floatValue = strtof (value.c_str (), 0);
+			slider->setValue (floatValue);
+			slider->invalid ();
 		}
 	}
 
 	virtual void valueDisplayTruncated (UTF8StringPtr txt)
 	{
-		if (label)
+		if (textLabel)
 		{
 			if (txt && *txt != 0)
-				label->setAttribute (kCViewTooltipAttribute, (int32_t)strlen (label->getText ())+1, label->getText ());
+				textLabel->setAttribute (kCViewTooltipAttribute, (int32_t)strlen (textLabel->getText ())+1, textLabel->getText ());
 			else
-				label->removeAttribute (kCViewTooltipAttribute);
+				textLabel->removeAttribute (kCViewTooltipAttribute);
 		}
 		
 	}
 
+	void viewLostFocus (CView* view) VSTGUI_OVERRIDE_VMETHOD
+	{
+	#if VSTGUI_HAS_FUNCTIONAL
+		if (view == textLabel)
+		{
+			SharedPointer<CTextEdit> textEdit = textLabel.cast<CTextEdit> ();
+			if (textEdit && textEdit->bWasReturnPressed)
+			{
+				Call::later([textEdit] () {
+					textEdit->takeFocus();
+				});
+			}
+		}
+	#endif
+	}
+	
 	CMessageResult notify (CBaseObject* sender, IdStringPtr message) VSTGUI_OVERRIDE_VMETHOD
 	{
 		if (message == CTextLabel::kMsgTruncatedTextChanged)
 		{
-			UTF8StringPtr txt = label->getTruncatedText ();
+			UTF8StringPtr txt = textLabel->getTruncatedText ();
 			valueDisplayTruncated (txt);
 			return kMessageNotified;
 		}
 		return kMessageUnknown;
 	}
 protected:
-	SharedPointer<CTextLabel> label;
+	SharedPointer<CTextLabel> textLabel;
+	SharedPointer<CSlider> slider;
 	CColor originalTextColor;
 };
 
@@ -428,7 +496,8 @@ public:
 		return TextController::verifyView (view, attributes, description);
 	}
 
-	virtual void collectMenuItemNames (std::list<const std::string*>& names) = 0;
+	typedef std::list<const std::string*> StringPtrList;
+	virtual void collectMenuItemNames (StringPtrList& names) = 0;
 	virtual void validateMenuEntry (CCommandMenuItem* item) {}
 
 	virtual void addMenuEntry (const std::string* entryName)
@@ -436,7 +505,7 @@ public:
 		CCommandMenuItem* item = new CCommandMenuItem (entryName->c_str (), this);
 		validateMenuEntry (item);
 		menu->addEntry (item);
-		if (*entryName == label->getText ())
+		if (*entryName == textLabel->getText ())
 		{
 			int32_t index = menu->getNbEntries () - 1;
 			menu->setValue ((float)index);
@@ -456,16 +525,15 @@ public:
 			menu->removeAllEntry ();
 			if (addNoneItem)
 				menu->addEntry (new CCommandMenuItem ("None", 100, this));
-			std::list<const std::string*> names;
+			StringPtrList names;
 			collectMenuItemNames (names);
 			if (sortItems)
 				names.sort (UIEditController::std__stringCompare);
 			if (addNoneItem && !names.empty ())
 				menu->addSeparator ();
-			for (std::list<const std::string*>::const_iterator it = names.begin (); it != names.end (); it++)
-			{
-				addMenuEntry (*it);
-			}
+			VSTGUI_RANGE_BASED_FOR_LOOP(StringPtrList, names, std::string*, name)
+				addMenuEntry (name);
+			VSTGUI_RANGE_BASED_FOR_LOOP_END
 			return kMessageNotified;
 		}
 		else if (message == CCommandMenuItem::kMsgMenuItemSelected)
@@ -482,10 +550,10 @@ public:
 
 	void valueDisplayTruncated (UTF8StringPtr txt) VSTGUI_OVERRIDE_VMETHOD
 	{
-		if (label && menu)
+		if (textLabel && menu)
 		{
 			if (txt && *txt != 0)
-				menu->setAttribute (kCViewTooltipAttribute, (int32_t)strlen (label->getText ())+1, label->getText ());
+				menu->setAttribute (kCViewTooltipAttribute, (int32_t)strlen (textLabel->getText ())+1, textLabel->getText ());
 			else
 				menu->removeAttribute (kCViewTooltipAttribute);
 		}
@@ -507,7 +575,7 @@ public:
 	ColorController (IController* baseController, const std::string& attrName, UIDescription* description)
 	: MenuController (baseController, attrName, description) {}
 
-	void collectMenuItemNames (std::list<const std::string*>& names) VSTGUI_OVERRIDE_VMETHOD
+	void collectMenuItemNames (StringPtrList& names) VSTGUI_OVERRIDE_VMETHOD
 	{
 		description->collectColorNames (names);
 	}
@@ -587,9 +655,9 @@ class TagController : public MenuController
 {
 public:
 	TagController (IController* baseController, const std::string& attrName, UIDescription* description)
-	: MenuController (baseController, attrName, description) {}
+	: MenuController (baseController, attrName, description, true, false) {}
 
-	void collectMenuItemNames (std::list<const std::string*>& names) VSTGUI_OVERRIDE_VMETHOD
+	void collectMenuItemNames (StringPtrList& names) VSTGUI_OVERRIDE_VMETHOD
 	{
 		description->collectControlTagNames (names);
 	}
@@ -603,7 +671,7 @@ public:
 	BitmapController (IController* baseController, const std::string& attrName, UIDescription* description)
 	: MenuController (baseController, attrName, description) {}
 
-	void collectMenuItemNames (std::list<const std::string*>& names) VSTGUI_OVERRIDE_VMETHOD
+	void collectMenuItemNames (StringPtrList& names) VSTGUI_OVERRIDE_VMETHOD
 	{
 		description->collectBitmapNames (names);
 	}
@@ -617,7 +685,7 @@ public:
 	FontController (IController* baseController, const std::string& attrName, UIDescription* description)
 	: MenuController (baseController, attrName, description) {}
 
-	void collectMenuItemNames (std::list<const std::string*>& names) VSTGUI_OVERRIDE_VMETHOD
+	void collectMenuItemNames (StringPtrList& names) VSTGUI_OVERRIDE_VMETHOD
 	{
 		description->collectFontNames (names);
 	}
@@ -631,7 +699,7 @@ public:
 	ListController (IController* baseController, const std::string& attrName, UIDescription* description, UISelection* selection)
 	: MenuController (baseController, attrName, description, false, false), selection (selection) {}
 
-	void collectMenuItemNames (std::list<const std::string*>& names) VSTGUI_OVERRIDE_VMETHOD
+	void collectMenuItemNames (StringPtrList& names) VSTGUI_OVERRIDE_VMETHOD
 	{
 		const UIViewFactory* viewFactory = dynamic_cast<const UIViewFactory*>(description->getViewFactory ());
 		if (viewFactory)
@@ -657,6 +725,7 @@ UIAttributesController::UIAttributesController (IController* baseController, UIS
 , attributeView (0)
 , viewNameLabel (0)
 , currentAttributeName (0)
+, liveAction (0)
 {
 	selection->addDependency (this);
 	undoManager->addDependency (this);
@@ -672,10 +741,37 @@ UIAttributesController::~UIAttributesController ()
 }
 
 //----------------------------------------------------------------------------------------------------
+void UIAttributesController::beginLiveAttributeChange (const std::string& name, const std::string& currentValue)
+{
+	liveAction = new AttributeChangeAction (editDescription, selection, name, currentValue);
+	undoManager->startGroupAction (liveAction->getName ());
+	undoManager->pushAndPerform (new AttributeChangeAction (editDescription, selection, name, currentValue));
+}
+
+//----------------------------------------------------------------------------------------------------
+void UIAttributesController::endLiveAttributeChange ()
+{
+	if (liveAction)
+	{
+		liveAction->undo ();
+		undoManager->pushAndPerform (liveAction);
+		liveAction = 0;
+		undoManager->endGroupAction ();
+	}
+}
+
+//----------------------------------------------------------------------------------------------------
 void UIAttributesController::performAttributeChange (const std::string& name, const std::string& value)
 {
 	IAction* action = new AttributeChangeAction (editDescription, selection, name, value);
-	undoManager->pushAndPerform (action);
+	if (liveAction)
+	{
+		delete liveAction;
+		liveAction = action;
+		action->perform ();
+	}
+	else
+		undoManager->pushAndPerform (action);
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -693,7 +789,7 @@ void UIAttributesController::valueChanged (CControl* control)
 				UIAttributes* attributes = editDescription->getCustomAttributes ("UIAttributesController", true);
 				if (attributes)
 				{
-					attributes->setAttribute("UIAttributesController", filterString.c_str ());
+					attributes->setAttribute("UIAttributesController", filterString);
 				}
 			}
 			break;
@@ -851,7 +947,7 @@ void UIAttributesController::validateAttributeViews ()
 }
 
 //----------------------------------------------------------------------------------------------------
-CView* UIAttributesController::createValueViewForAttributeType (IViewCreator::AttrType attrType)
+CView* UIAttributesController::createValueViewForAttributeType (const UIViewFactory* viewFactory, CView* view, const std::string& attrName, IViewCreator::AttrType attrType)
 {
 	switch (attrType)
 	{
@@ -867,6 +963,29 @@ CView* UIAttributesController::createValueViewForAttributeType (IViewCreator::At
 			return UIEditController::getEditorDescription ().createView ("attributes.boolean", this);
 		case IViewCreator::kListType:
 			return UIEditController::getEditorDescription ().createView ("attributes.list", this);
+		case IViewCreator::kFloatType:
+		case IViewCreator::kIntegerType:
+		{
+			double minValue, maxValue;
+			if (viewFactory->getAttributeValueRange (view, attrName, minValue, maxValue))
+			{
+				CView* view = UIEditController::getEditorDescription ().createView ("attributes.number", this);
+				if (view)
+				{
+					CViewContainer* container = dynamic_cast<CViewContainer*>(view);
+					if (container)
+					{
+						std::vector<CSlider*> sliders;
+						if (container->getChildViewsOfType<CSlider> (sliders) == 1)
+						{
+							sliders[0]->setMin(minValue);
+							sliders[0]->setMax(maxValue);
+						}
+					}
+					return view;
+				}
+			}
+		}
 		default:
 			return UIEditController::getEditorDescription ().createView ("attributes.text", this);
 	}
@@ -925,7 +1044,7 @@ CView* UIAttributesController::createViewForAttribute (const std::string& attrNa
 	{
 		CView* firstView = selection->first ();
 		IViewCreator::AttrType attrType = viewFactory->getAttributeType (firstView, attrName);
-		valueView = createValueViewForAttributeType (attrType);
+		valueView = createValueViewForAttributeType (viewFactory, firstView, attrName, attrType);
 	}
 	if (valueView == 0) // fallcack if attributes.text template not defined
 	{

@@ -153,7 +153,7 @@ CMouseEventResult UIViewCreatorDataSource::dbOnMouseMoved (const CPoint& where, 
 	if (mouseDownRow >= 0 && buttons.isLeftButton ())
 	{
 		UIAttributes viewAttr;
-		viewAttr.setAttribute ("class", getStringList ()->at (mouseDownRow).c_str ());
+		viewAttr.setAttribute ("class", getStringList ()->at (mouseDownRow));
 		CView* view = factory->createView (viewAttr, description);
 		if (view)
 		{

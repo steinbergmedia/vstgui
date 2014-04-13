@@ -114,14 +114,16 @@ namespace VSTGUI {
 	@endcode
 */
 
+typedef std::map<std::string, const IViewCreator*> ViewCreatorRegistryMap;
+
 //-----------------------------------------------------------------------------
-class ViewCreatorRegistry : public std::map<std::string,const IViewCreator*>
+class ViewCreatorRegistry : public ViewCreatorRegistryMap
 {
 public:
 	const_iterator find (IdStringPtr name)
 	{
 		if (name)
-			return std::map<std::string,const IViewCreator*>::find (name);
+			return ViewCreatorRegistryMap::find (name);
 		return end ();
 	}
 };
@@ -241,36 +243,35 @@ IdStringPtr UIViewFactory::getViewName (CView* view) const
 //-----------------------------------------------------------------------------
 void UIViewFactory::evaluateAttributesAndRemember (CView* view, const UIAttributes& attributes, UIAttributes& evaluatedAttributes, const IUIDescription* description) const
 {
-	std::string value;
 	std::string evaluatedValue;
-	for (UIAttributesMap::const_iterator it = attributes.begin (), end = attributes.end (); it != end; ++it)
-	{
-		value = it->second;
+	typedef std::pair<std::string, std::string> StringPair;
+	VSTGUI_RANGE_BASED_FOR_LOOP (UIAttributesMap, attributes, StringPair, attr)
+		const std::string& value = attr.second;
 		if (description->getVariable (value.c_str (), evaluatedValue))
 		{
 		#if VSTGUI_LIVE_EDITING
-			rememberAttribute (view, it->first.c_str (), value.c_str ());
+			rememberAttribute (view, attr.first.c_str (), value.c_str ());
 		#endif
-			evaluatedAttributes.setAttribute (it->first.c_str (), evaluatedValue.c_str ());
+			evaluatedAttributes.setAttribute (attr.first, evaluatedValue);
 		}
 		else
 		{
 		#if VSTGUI_LIVE_EDITING
-			IViewCreator::AttrType type = getAttributeType (view, it->first);
+			IViewCreator::AttrType type = getAttributeType (view, attr.first);
 			switch (type)
 			{
 				case IViewCreator::kColorType:
 				case IViewCreator::kTagType:
 				case IViewCreator::kFontType:
-					rememberAttribute (view, it->first.c_str (), value.c_str ());
+					rememberAttribute (view, attr.first.c_str (), value.c_str ());
 					break;
 				default:
 					break;
 			}
 		#endif
-			evaluatedAttributes.setAttribute (it->first.c_str (), value.c_str ());
+			evaluatedAttributes.setAttribute (attr.first, value);
 		}
-	}
+	VSTGUI_RANGE_BASED_FOR_LOOP_END
 }
 
 #if VSTGUI_LIVE_EDITING
@@ -330,6 +331,19 @@ bool UIViewFactory::getPossibleAttributeListValues (CView* view, const std::stri
 }
 
 //-----------------------------------------------------------------------------
+bool UIViewFactory::getAttributeValueRange (CView* view, const std::string& attributeName, double& minValue, double& maxValue) const
+{
+	minValue = maxValue = -1.;
+	ViewCreatorRegistry& registry = getCreatorRegistry ();
+	ViewCreatorRegistry::const_iterator iter = registry.find (getViewName (view));
+	while (iter != registry.end () && (*iter).second->getAttributeValueRange (attributeName, minValue, maxValue) == false && (*iter).second->getBaseViewName ())
+	{
+		iter = registry.find ((*iter).second->getBaseViewName ());
+	}
+	return minValue != maxValue && minValue != -1.;
+}
+
+//-----------------------------------------------------------------------------
 bool UIViewFactory::getAttributesForView (CView* view, const IUIDescription* desc, UIAttributes& attr) const
 {
 	bool result = false;
@@ -340,8 +354,8 @@ bool UIViewFactory::getAttributesForView (CView* view, const IUIDescription* des
 		while (it != attrNames.end ())
 		{
 			std::string value;
-			if (getAttributeValue (view, (*it), value, desc))
-				attr.setAttribute ((*it).c_str (), value.c_str ());
+			if (getAttributeValue (view, *it, value, desc))
+				attr.setAttribute (*it, value);
 			it++;
 		}
 		attr.setAttribute ("class", getViewName (view));
@@ -385,7 +399,7 @@ void UIViewFactory::collectRegisteredViewNames (std::list<const std::string*>& v
 size_t UIViewFactory::createHash (const std::string& str)
 {
 #if VSTGUI_HAS_FUNCTIONAL
-	std::hash<std::string> hashFunc;
+	static std::hash<std::string> hashFunc;
 	return hashFunc (str);
 #else
 	size_t hash = 5381;

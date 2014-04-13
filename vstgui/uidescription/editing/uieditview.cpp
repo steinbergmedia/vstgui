@@ -784,6 +784,8 @@ void UIEditView::doKeyMove (const CPoint& delta)
 {
 	if (delta.x || delta.y)
 	{
+		if (getSelection ()->contains (getEditView ()))
+			return;
 		if (!moveSizeOperation)
 			moveSizeOperation = new ViewSizeChangeOperation (selection, false);
 		getSelection ()->moveBy (delta);

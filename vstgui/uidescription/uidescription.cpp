@@ -45,6 +45,7 @@
 #include "../lib/cbitmapfilter.h"
 #include "../lib/platform/win32/win32support.h"
 #include "../lib/platform/mac/macglobals.h"
+#include "../lib/platform/std_unorderedmap.h"
 #include <sstream>
 #include <fstream>
 #include <algorithm>
@@ -111,9 +112,9 @@ public:
 	virtual void remove (UINode* obj);
 	virtual void removeAll ();
 	virtual UINode* findChildNode (const std::string& nodeName) const;
-	virtual UINode* findChildNodeWithAttributeValue (const char* attributeName, const char* attributeValue) const;
+	virtual UINode* findChildNodeWithAttributeValue (const std::string& attributeName, const std::string& attributeValue) const;
 
-	virtual void nodeAttributeChanged (UINode* child, const char* attributeName, const char* oldAttributeValue) {}
+	virtual void nodeAttributeChanged (UINode* child, const std::string& attributeName, const std::string& oldAttributeValue) {}
 
 	void sort ();
 	
@@ -264,7 +265,7 @@ protected:
 class UIDescListWithFastFindAttributeNameChild : public UIDescList
 {
 private:
-	typedef std::map<std::string, UINode*> ChildMap;
+	typedef std::unordered_map<std::string, UINode*> ChildMap;
 public:
 	UIDescListWithFastFindAttributeNameChild () {}
 	
@@ -294,9 +295,9 @@ public:
 		UIDescList::removeAll ();
 	}
 
-	UINode* findChildNodeWithAttributeValue (const char* attributeName, const char* attributeValue) const VSTGUI_OVERRIDE_VMETHOD
+	UINode* findChildNodeWithAttributeValue (const std::string& attributeName, const std::string& attributeValue) const VSTGUI_OVERRIDE_VMETHOD
 	{
-		if (std::string ("name") != attributeName)
+		if (attributeName != "name")
 			return UIDescList::findChildNodeWithAttributeValue (attributeName, attributeValue);
 		ChildMap::const_iterator it = childMap.find (attributeValue);
 		if (it != childMap.end ())
@@ -304,9 +305,9 @@ public:
 		return 0;
 	}
 
-	void nodeAttributeChanged (UINode* node, const char* attributeName, const char* oldAttributeValue) VSTGUI_OVERRIDE_VMETHOD
+	void nodeAttributeChanged (UINode* node, const std::string& attributeName, const std::string& oldAttributeValue) VSTGUI_OVERRIDE_VMETHOD
 	{
-		if (std::string ("name") != attributeName)
+		if (attributeName != "name")
 			return;
 		ChildMap::iterator it = childMap.find (oldAttributeValue);
 		if (it != childMap.end ())
@@ -369,23 +370,21 @@ void UIDescList::removeAll ()
 //-----------------------------------------------------------------------------
 UINode* UIDescList::findChildNode (const std::string& nodeName) const
 {
-	for (const_iterator it = begin (), itEnd = end (); it != itEnd; ++it)
-	{
-		if (*(*it) == nodeName)
-			return *it;
-	}
+	VSTGUI_RANGE_BASED_FOR_LOOP (UIDescList, *this, UINode*, node)
+		if (node->getName () == nodeName)
+			return node;
+	VSTGUI_RANGE_BASED_FOR_LOOP_END
 	return 0;
 }
 
 //-----------------------------------------------------------------------------
-UINode* UIDescList::findChildNodeWithAttributeValue (const char* attributeName, const char* attributeValue) const
+UINode* UIDescList::findChildNodeWithAttributeValue (const std::string& attributeName, const std::string& attributeValue) const
 {
-	for (const_iterator it = begin (), itEnd = end (); it != itEnd; ++it)
-	{
-		const std::string* attributeValuePtr = (*it)->getAttributes ()->getAttributeValue (attributeName);
+	VSTGUI_RANGE_BASED_FOR_LOOP (UIDescList, *this, UINode*, node)
+		const std::string* attributeValuePtr = node->getAttributes ()->getAttributeValue (attributeName);
 		if (attributeValuePtr && *attributeValuePtr == attributeValue)
-			return *it;
-	}
+			return node;
+	VSTGUI_RANGE_BASED_FOR_LOOP_END
 	return 0;
 }
 
@@ -718,7 +717,7 @@ void UIDescription::addDefaultNodes ()
 			attr->setAttribute ("name", defaultColors[i].name);
 			std::string colorStr;
 			UIViewCreator::colorToString (defaultColors[i].color, colorStr, 0);
-			attr->setAttribute ("rgba", colorStr.c_str ());
+			attr->setAttribute ("rgba", colorStr);
 			UIColorNode* node = new UIColorNode ("color", attr);
 			node->noExport (true);
 			colorsNode->getChildren ().add (node);
@@ -871,18 +870,17 @@ UINode* UIDescription::findNodeForView (CView* view) const
 	if (parentView)
 	{
 		UINode* node = 0;
-		for (UIDescList::iterator it = nodes->getChildren ().begin (), end = nodes->getChildren ().end (); it != end; ++it)
-		{
-			if ((*it)->getName () == MainNodeNames::kTemplate)
+		VSTGUI_RANGE_BASED_FOR_LOOP (UIDescList, nodes->getChildren (), UINode*, itNode)
+			if (itNode->getName () == MainNodeNames::kTemplate)
 			{
-				const std::string* nodeName = (*it)->getAttributes ()->getAttributeValue ("name");
+				const std::string* nodeName = itNode->getAttributes ()->getAttributeValue ("name");
 				if (nodeName && *nodeName == templateName)
 				{
-					node = *it;
+					node = itNode;
 					break;
 				}
 			}
-		}
+		VSTGUI_RANGE_BASED_FOR_LOOP_END
 		if (node)
 		{
 			while (view != parentView)
@@ -1042,13 +1040,9 @@ CView* UIDescription::createViewFromNode (UINode* node) const
 		result = controller->createView (*node->getAttributes (), this);
 		if (result && viewFactory)
 		{
-			UIViewFactory* _viewFactory = dynamic_cast<UIViewFactory*> (viewFactory);
-			if (_viewFactory)
-			{
-				const std::string* viewClass = node->getAttributes ()->getAttributeValue ("class");
-				if (viewClass)
-					_viewFactory->applyCustomViewAttributeValues (result, viewClass->c_str (), *node->getAttributes (), this);
-			}
+			const std::string* viewClass = node->getAttributes ()->getAttributeValue ("class");
+			if (viewClass)
+				viewFactory->applyCustomViewAttributeValues (result, viewClass->c_str (), *node->getAttributes (), this);
 		}
 	}
 	if (result == 0 && viewFactory)
@@ -1057,23 +1051,18 @@ CView* UIDescription::createViewFromNode (UINode* node) const
 		if (result == 0)
 		{
 			result = new CViewContainer (CRect (0, 0, 0, 0));
-			UIViewFactory* _viewFactory = dynamic_cast<UIViewFactory*> (viewFactory);
-			if (_viewFactory)
-			{
-				_viewFactory->applyCustomViewAttributeValues (result, "CViewContainer", *node->getAttributes (), this);
-			}
+			viewFactory->applyCustomViewAttributeValues (result, "CViewContainer", *node->getAttributes (), this);
 		}
 	}
 	if (result && node->hasChildren ())
 	{
 		CViewContainer* viewContainer = dynamic_cast<CViewContainer*> (result);
-		for (UIDescList::iterator it = node->getChildren ().begin (), end = node->getChildren ().end (); it != end; ++it)
-		{
+		VSTGUI_RANGE_BASED_FOR_LOOP (UIDescList, node->getChildren (), UINode*, itNode)
 			if (viewContainer)
 			{
-				if ((*it)->getName () == "view")
+				if (itNode->getName () == "view")
 				{
-					CView* childView = createViewFromNode (*it);
+					CView* childView = createViewFromNode (itNode);
 					if (childView)
 					{
 						if (!viewContainer->addView (childView))
@@ -1081,10 +1070,10 @@ CView* UIDescription::createViewFromNode (UINode* node) const
 					}
 				}
 			}
-			if ((*it)->getName () == "attribute")
+			if (itNode->getName () == "attribute")
 			{
-				const std::string* attrName = (*it)->getAttributes ()->getAttributeValue ("id");
-				const std::string* attrValue = (*it)->getAttributes ()->getAttributeValue ("value");
+				const std::string* attrName = itNode->getAttributes ()->getAttributeValue ("id");
+				const std::string* attrValue = itNode->getAttributes ()->getAttributeValue ("value");
 				if (attrName && attrValue)
 				{
 					CViewAttributeID attrId = 0;
@@ -1102,7 +1091,7 @@ CView* UIDescription::createViewFromNode (UINode* node) const
 						result->setAttribute (attrId, (int32_t)attrValue->size ()+1, attrValue->c_str ());
 				}
 			}
-		}
+		VSTGUI_RANGE_BASED_FOR_LOOP_END
 	}
 	if (result && controller)
 		result = controller->verifyView (result, *node->getAttributes (), this);
@@ -1133,20 +1122,19 @@ CView* UIDescription::createView (UTF8StringPtr name, IController* _controller) 
 	ScopePointer<IController> sp (&controller, _controller);
 	if (nodes)
 	{
-		for (UIDescList::iterator it = nodes->getChildren ().begin (), end = nodes->getChildren().end (); it != end; ++it)
-		{
-			if ((*it)->getName () == MainNodeNames::kTemplate)
+		VSTGUI_RANGE_BASED_FOR_LOOP (UIDescList, nodes->getChildren (), UINode*, itNode)
+			if (itNode->getName () == MainNodeNames::kTemplate)
 			{
-				const std::string* nodeName = (*it)->getAttributes ()->getAttributeValue ("name");
+				const std::string* nodeName = itNode->getAttributes ()->getAttributeValue ("name");
 				if (nodeName && *nodeName == name)
 				{
-					CView* view = createViewFromNode (*it);
+					CView* view = createViewFromNode (itNode);
 					if (view)
 						view->setAttribute (kTemplateNameAttributeID, (int32_t)strlen (name)+1, name);
 					return view;
 				}
 			}
-		}
+		VSTGUI_RANGE_BASED_FOR_LOOP_END
 	}
 	return 0;
 }
@@ -1174,15 +1162,14 @@ const UIAttributes* UIDescription::getViewAttributes (UTF8StringPtr name) const
 {
 	if (nodes)
 	{
-		for (UIDescList::iterator it = nodes->getChildren ().begin (), end = nodes->getChildren().end (); it != end; ++it)
-		{
-			if ((*it)->getName () == MainNodeNames::kTemplate)
+		VSTGUI_RANGE_BASED_FOR_LOOP (UIDescList, nodes->getChildren (), UINode*, itNode)
+			if (itNode->getName () == MainNodeNames::kTemplate)
 			{
-				const std::string* nodeName = (*it)->getAttributes ()->getAttributeValue ("name");
+				const std::string* nodeName = itNode->getAttributes ()->getAttributeValue ("name");
 				if (nodeName && *nodeName == name)
-					return (*it)->getAttributes ();
+					return itNode->getAttributes ();
 			}
-		}
+		VSTGUI_RANGE_BASED_FOR_LOOP_END
 	}
 	return 0;
 }
@@ -1196,7 +1183,7 @@ UINode* UIDescription::getBaseNode (UTF8StringPtr name) const
 		if (node)
 			return node;
 
-		node = new UINode (name, new UIAttributes);
+		node = new UINode (name);
 		nodes->getChildren ().add (node);
 		return node;
 	}
@@ -1416,15 +1403,14 @@ template<typename NodeType, typename ObjType, typename CompareFunction> UTF8Stri
 	if (baseNode)
 	{
 		UIDescList& children = baseNode->getChildren ();
-		for (UIDescList::iterator it = children.begin (), end = children.end (); it != end; ++it)
-		{
-			NodeType* node = dynamic_cast<NodeType*>(*it);
+		VSTGUI_RANGE_BASED_FOR_LOOP (UIDescList, children, UINode*, itNode)
+			NodeType* node = dynamic_cast<NodeType*>(itNode);
 			if (node && compare (this, node, obj))
 			{
 				const std::string* name = node->getAttributes ()->getAttributeValue ("name");
 				return name ? name->c_str () : 0;
 			}
-		}
+		VSTGUI_RANGE_BASED_FOR_LOOP_END
 	}
 	return 0;
 }
@@ -1539,7 +1525,7 @@ void UIDescription::changeColor (UTF8StringPtr name, const CColor& newColor)
 			attr->setAttribute ("name", name);
 			std::string colorStr;
 			UIViewCreator::colorToString (newColor, colorStr, 0);
-			attr->setAttribute ("rgba", colorStr.c_str ());
+			attr->setAttribute ("rgba", colorStr);
 			UIColorNode* node = new UIColorNode ("color", attr);
 			colorsNode->getChildren ().add (node);
 			colorsNode->sortChildren ();
@@ -1620,14 +1606,14 @@ void UIDescription::changeBitmapFilters (UTF8StringPtr bitmapName, const std::li
 			if (filterName == 0)
 				continue;
 			UINode* filterNode = new UINode ("filter");
-			filterNode->getAttributes ()->setAttribute ("name", filterName->c_str ());
+			filterNode->getAttributes ()->setAttribute ("name", *filterName);
 			for (UIAttributes::const_iterator it2 = (*it)->begin (); it2 != (*it)->end (); it2++)
 			{
 				if ((*it2).first == "name")
 					continue;
 				UINode* propertyNode = new UINode ("property");
-				propertyNode->getAttributes ()->setAttribute("name", (*it2).first.c_str ());
-				propertyNode->getAttributes ()->setAttribute("value", (*it2).second.c_str ());
+				propertyNode->getAttributes ()->setAttribute("name", (*it2).first);
+				propertyNode->getAttributes ()->setAttribute("value", (*it2).second);
 				filterNode->getChildren ().add (propertyNode);
 			}
 			bitmapNode->getChildren ().add (filterNode);
@@ -1651,7 +1637,7 @@ void UIDescription::collectBitmapFilters (UTF8StringPtr bitmapName, std::list<Sh
 				if (filterName == 0)
 					continue;
 				UIAttributes* attributes = new UIAttributes ();
-				attributes->setAttribute ("name", filterName->c_str ());
+				attributes->setAttribute ("name", *filterName);
 				for (UIDescList::iterator it2 = (*it)->getChildren ().begin (); it2 != (*it)->getChildren ().end (); it2++)
 				{
 					if ((*it2)->getName () == "property")
@@ -1660,7 +1646,7 @@ void UIDescription::collectBitmapFilters (UTF8StringPtr bitmapName, std::list<Sh
 						const std::string* value = (*it2)->getAttributes ()->getAttributeValue ("value");
 						if (name && value)
 						{
-							attributes->setAttribute (name->c_str (), value->c_str ());
+							attributes->setAttribute (*name, *value);
 						}
 					}
 				}
@@ -1675,16 +1661,15 @@ void UIDescription::collectBitmapFilters (UTF8StringPtr bitmapName, std::list<Sh
 static void removeChildNode (UINode* baseNode, UTF8StringPtr nodeName)
 {
 	UIDescList& children = baseNode->getChildren ();
-	for (UIDescList::iterator it = children.begin (), end = children.end (); it != end; ++it)
-	{
-		const std::string* name = (*it)->getAttributes ()->getAttributeValue ("name");
+	VSTGUI_RANGE_BASED_FOR_LOOP (UIDescList, children, UINode*, itNode)
+		const std::string* name = itNode->getAttributes ()->getAttributeValue ("name");
 		if (name && *name == nodeName)
 		{
-			if (!(*it)->noExport ())
-				children.remove (*it);
+			if (!itNode->noExport ())
+				children.remove (itNode);
 			return;
 		}
-	}
+	VSTGUI_RANGE_BASED_FOR_LOOP_END
 }
 
 //-----------------------------------------------------------------------------
@@ -1748,15 +1733,14 @@ bool UIDescription::getAlternativeFontNames (UTF8StringPtr name, std::string& al
 //-----------------------------------------------------------------------------
 void UIDescription::collectTemplateViewNames (std::list<const std::string*>& names) const
 {
-	for (UIDescList::iterator it = nodes->getChildren ().begin (), end = nodes->getChildren ().end (); it != end; ++it)
-	{
-		if ((*it)->getName () == MainNodeNames::kTemplate)
+	VSTGUI_RANGE_BASED_FOR_LOOP (UIDescList, nodes->getChildren (), UINode*, itNode)
+		if (itNode->getName () == MainNodeNames::kTemplate)
 		{
-			const std::string* nodeName = (*it)->getAttributes ()->getAttributeValue ("name");
+			const std::string* nodeName = itNode->getAttributes ()->getAttributeValue ("name");
 			if (nodeName)
 				names.push_back (nodeName);
 		}
-	}
+	VSTGUI_RANGE_BASED_FOR_LOOP_END
 }
 
 //-----------------------------------------------------------------------------
@@ -1766,16 +1750,15 @@ template<typename NodeType> void UIDescription::collectNamesFromNode (IdStringPt
 	if (node)
 	{
 		UIDescList& children = node->getChildren ();
-		for (UIDescList::iterator it = children.begin (), end = children.end (); it != end; ++it)
-		{
-			NodeType* node = dynamic_cast<NodeType*>(*it);
+		VSTGUI_RANGE_BASED_FOR_LOOP (UIDescList, children, UINode*, itNode)
+			NodeType* node = dynamic_cast<NodeType*>(itNode);
 			if (node)
 			{
 				const std::string* name = node->getAttributes ()->getAttributeValue ("name");
 				if (name)
 					names.push_back (name);
 			}
-		}
+		VSTGUI_RANGE_BASED_FOR_LOOP_END
 	}
 }
 
@@ -1817,7 +1800,7 @@ bool UIDescription::updateAttributesForView (UINode* node, CView* view, bool dee
 		{
 			std::string value;
 			if (factory->getAttributeValue (view, (*it), value, this))
-				node->getAttributes ()->setAttribute ((*it).c_str (), value.c_str ());
+				node->getAttributes ()->setAttribute ((*it), value);
 		}
 		node->getAttributes ()->setAttribute ("class", factory->getViewName (view));
 		result = true;
@@ -1832,7 +1815,7 @@ bool UIDescription::updateAttributesForView (UINode* node, CView* view, bool dee
 			if (getTemplateNameFromView (subView, subTemplateName))
 			{
 				UIAttributes* attr = new UIAttributes;
-				attr->setAttribute (MainNodeNames::kTemplate, subTemplateName.c_str ());
+				attr->setAttribute (MainNodeNames::kTemplate, subTemplateName);
 				UINode* subNode = new UINode ("view", attr);
 				node->getChildren ().add (subNode);
 				updateAttributesForView (subNode, subView, false);
@@ -1910,7 +1893,7 @@ bool UIDescription::addNewTemplate (UTF8StringPtr name, UIAttributes* attr)
 #if VSTGUI_LIVE_EDITING
 	if (!nodes)
 	{
-		nodes = new UINode ("vstgui-ui-description", new UIAttributes);
+		nodes = new UINode ("vstgui-ui-description");
 		addDefaultNodes ();
 	}
 	UINode* templateNode = findChildNodeByNameAttribute (nodes, name);
@@ -2437,9 +2420,9 @@ void UIDescription::startXmlElement (Xml::Parser* parser, IdStringPtr elementNam
 			if (parent == nodes)
 			{
 				// only allowed second level elements
-				if (name == MainNodeNames::kControlTag)
+				if (name == MainNodeNames::kControlTag || name == MainNodeNames::kColor || name == MainNodeNames::kBitmap)
 					newNode = new UINode (name, new UIAttributes (elementAttributes), true);
-				else if (name == MainNodeNames::kBitmap || name == MainNodeNames::kFont || name == MainNodeNames::kColor || name == MainNodeNames::kTemplate || name == MainNodeNames::kControlTag || name == MainNodeNames::kCustom || name == MainNodeNames::kVariable)
+				else if (name == MainNodeNames::kFont || name == MainNodeNames::kTemplate || name == MainNodeNames::kControlTag || name == MainNodeNames::kCustom || name == MainNodeNames::kVariable)
 					newNode = new UINode (name, new UIAttributes (elementAttributes));
 				else
 					parser->stop ();
@@ -2756,7 +2739,7 @@ const std::string* UIControlTagNode::getTagString () const
 //-----------------------------------------------------------------------------
 void UIControlTagNode::setTagString (const std::string& str)
 {
-	attributes->setAttribute ("tag", str.c_str ());
+	attributes->setAttribute ("tag", str);
 	tag = -1;
 }
 
@@ -2871,7 +2854,7 @@ CBitmap* UIBitmapNode::getBitmap ()
 void UIBitmapNode::setBitmap (UTF8StringPtr bitmapName)
 {
 	std::string attrValue (bitmapName);
-	attributes->setAttribute ("path", attrValue.c_str ());
+	attributes->setAttribute ("path", attrValue);
 	if (bitmap)
 		bitmap->forget ();
 	bitmap = 0;
@@ -2998,11 +2981,11 @@ void UIFontNode::setFont (CFontRef newFont)
 	getAlternativeFontNames (alternativeNames);
 
 	attributes->removeAll ();
-	attributes->setAttribute ("name", name.c_str ());
+	attributes->setAttribute ("name", name);
 	attributes->setAttribute ("font-name", newFont->getName ());
 	std::stringstream str;
 	str << newFont->getSize ();
-	attributes->setAttribute ("size", str.str ().c_str ());
+	attributes->setAttribute ("size", str.str ());
 	if (newFont->getStyle () & kBoldFace)
 		attributes->setAttribute ("bold", "true");
 	if (newFont->getStyle () & kItalicFace)
@@ -3077,11 +3060,11 @@ void UIColorNode::setColor (const CColor& newColor)
 {
 	std::string name (*attributes->getAttributeValue ("name"));
 	attributes->removeAll ();
-	attributes->setAttribute ("name", name.c_str ());
+	attributes->setAttribute ("name", name);
 
 	std::string colorString;
 	UIViewCreator::colorToString (newColor, colorString, 0);
-	attributes->setAttribute ("rgba", colorString.c_str ());
+	attributes->setAttribute ("rgba", colorString);
 	color = newColor;
 }
 

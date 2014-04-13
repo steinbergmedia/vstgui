@@ -38,7 +38,7 @@
 #include "crect.h"
 #include "cpoint.h"
 #include "ccolor.h"
-#include <list>
+#include <vector>
 #include <map>
 #include <algorithm>
 
@@ -238,7 +238,7 @@ protected:
 	inline void CPoint2Point (const CPoint& point, CGraphicsPath::Point& p) {p.x = point.x;p.y = point.y;}
 	/// @endcond
 
-	typedef std::list<Element> ElementList;
+	typedef std::vector<Element> ElementList;
 	ElementList elements;
 };
 

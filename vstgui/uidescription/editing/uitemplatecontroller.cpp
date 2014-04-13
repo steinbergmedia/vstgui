@@ -293,7 +293,7 @@ void UITemplateController::dbSelectionChanged (int32_t selectedRow, GenericStrin
 			UIAttributes* attr = editDescription->getCustomAttributes ("UITemplateController", true);
 			if (attr)
 			{
-				attr->setAttribute ("SelectedTemplate", selectedTemplateName ? selectedTemplateName->c_str () : "");
+				attr->setAttribute ("SelectedTemplate", selectedTemplateName ? *selectedTemplateName : "");
 			}
 
 			changed (kMsgTemplateChanged);
@@ -614,26 +614,6 @@ int32_t UIViewListDataSource::dbOnKeyDown (const VstKeyCode& key, CDataBrowser* 
 				{
 					selection->setExclusive (subview);
 					return 1;
-				}
-				case VKEY_UP:
-				{
-					if (key.modifier == MODIFIER_CONTROL && row > 0)
-					{
-						undoManager->pushAndPerform (new HierarchyMoveViewOperation (subview, selection, true));
-						//browser->setSelectedRow (row-1, true);
-						return 1;
-					}
-					break;
-				}
-				case VKEY_DOWN:
-				{
-					if (key.modifier == MODIFIER_CONTROL && row < view->getNbViews ())
-					{
-						undoManager->pushAndPerform (new HierarchyMoveViewOperation (subview, selection, false));
-						//browser->setSelectedRow (row+1, true);
-						return 1;
-					}
-					break;
 				}
 			}
 		}

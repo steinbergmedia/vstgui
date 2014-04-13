@@ -73,6 +73,31 @@ CDrawContext::CDrawContextState& CDrawContext::CDrawContextState::operator= (con
 	return *this;
 }
 
+#if VSTGUI_RVALUE_REF_SUPPORT
+//-----------------------------------------------------------------------------
+CDrawContext::CDrawContextState::CDrawContextState (CDrawContextState&& state) noexcept
+{
+	*this = std::move (state);
+}
+
+//-----------------------------------------------------------------------------
+CDrawContext::CDrawContextState& CDrawContext::CDrawContextState::operator= (CDrawContextState&& state) noexcept
+{
+	font = std::move (state.font);
+	frameColor = std::move (state.frameColor);
+	fillColor = std::move (state.fillColor);
+	fontColor = std::move (state.fontColor);
+	frameWidth = std::move (state.frameWidth);
+	offset = std::move (state.offset);
+	penLoc = std::move (state.penLoc);
+	clipRect = std::move (state.clipRect);
+	lineStyle = std::move (state.lineStyle);
+	drawMode = std::move (state.drawMode);
+	globalAlpha = std::move (state.globalAlpha);
+	return *this;
+}
+#endif
+
 //-----------------------------------------------------------------------------
 CDrawContext::CDrawContext (const CRect& surfaceRect)
 : drawStringHelper (0)
@@ -116,7 +141,11 @@ void CDrawContext::restoreGlobalState ()
 {
 	if (!globalStatesStack.empty ())
 	{
+	#if VSTGUI_RVALUE_REF_SUPPORT
+		currentState = std::move (globalStatesStack.top ());
+	#else
 		currentState = globalStatesStack.top ();
+	#endif
 		globalStatesStack.pop ();
 	}
 	else
@@ -323,42 +352,71 @@ CGraphicsPath* CDrawContext::createRoundRectGraphicsPath (const CRect& size, CCo
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
-CLineStyle::CLineStyle (LineCap _cap, LineJoin _join, CCoord _dashPhase, int32_t _dashCount, const CCoord* _dashLengths)
+CLineStyle::CLineStyle (LineCap _cap, LineJoin _join, CCoord _dashPhase, uint32_t _dashCount, const CCoord* _dashLengths)
 : cap (_cap)
 , join (_join)
 , dashPhase (_dashPhase)
-, dashCount (0)
-, dashLengths (0)
 {
 	if (_dashCount && _dashLengths)
 	{
-		dashCount = _dashCount;
-		dashLengths = new CCoord[dashCount];
-		for (int32_t i = 0; i < dashCount; i++)
-			dashLengths[i] = _dashLengths[i];
+		for (uint32_t i = 0; i < _dashCount; i++)
+			dashLengths.push_back (_dashLengths[i]);
 	}
+}
+
+//-----------------------------------------------------------------------------
+CLineStyle::CLineStyle (LineCap _cap, LineJoin _join, CCoord _dashPhase, const CoordVector& _dashLengths)
+: cap (_cap)
+, join (_join)
+, dashPhase (_dashPhase)
+, dashLengths (_dashLengths)
+{
+}
+
+//-----------------------------------------------------------------------------
+CLineStyle::CLineStyle (const CLineStyle& lineStyle)
+{
+	*this = lineStyle;
 }
 
 //-----------------------------------------------------------------------------
 CLineStyle::~CLineStyle ()
 {
-	if (dashLengths)
-		delete [] dashLengths;
 }
+
+#if VSTGUI_RVALUE_REF_SUPPORT
+//-----------------------------------------------------------------------------
+CLineStyle::CLineStyle (LineCap _cap, LineJoin _join, CCoord _dashPhase, CoordVector&& _dashLengths) noexcept
+: cap (_cap)
+, join (_join)
+, dashPhase (_dashPhase)
+, dashLengths (std::move (_dashLengths))
+{
+}
+
+//-----------------------------------------------------------------------------
+CLineStyle::CLineStyle (CLineStyle&& cls) noexcept
+{
+	*this = std::move (cls);
+}
+
+//-----------------------------------------------------------------------------
+CLineStyle& CLineStyle::operator= (CLineStyle&& cls) noexcept
+{
+	dashLengths.clear ();
+	cap = cls.cap;
+	join = cls.join;
+	dashPhase = cls.dashPhase;
+	dashLengths = std::move (cls.dashLengths);
+	return *this;
+}
+#endif
 
 //-----------------------------------------------------------------------------
 bool CLineStyle::operator== (const CLineStyle& cls) const
 {
-	if (cap == cls.cap && join == cls.join && dashPhase == cls.dashPhase && dashCount == cls.dashCount)
+	if (cap == cls.cap && join == cls.join && dashPhase == cls.dashPhase && dashLengths == cls.dashLengths)
 	{
-		if (dashCount)
-		{
-			for (int32_t i = 0; i < dashCount; i++)
-			{
-				if (dashLengths[i] != cls.dashLengths[i])
-					return false;
-			}
-		}
 		return true;
 	}
 	return false;
@@ -367,22 +425,11 @@ bool CLineStyle::operator== (const CLineStyle& cls) const
 //-----------------------------------------------------------------------------
 CLineStyle& CLineStyle::operator= (const CLineStyle& cls)
 {
-	if (dashLengths)
-	{
-		delete [] dashLengths;
-		dashLengths = 0;
-	}
+	dashLengths.clear ();
 	cap = cls.cap;
 	join = cls.join;
 	dashPhase = cls.dashPhase;
-	dashCount = 0;
-	if (cls.dashCount && cls.dashLengths)
-	{
-		dashCount = cls.dashCount;
-		dashLengths = new CCoord[dashCount];
-		for (int32_t i = 0; i < dashCount; i++)
-			dashLengths[i] = cls.dashLengths[i];
-	}
+	dashLengths = cls.dashLengths;
 	return *this;
 }
 

@@ -80,8 +80,8 @@ public:
 	~Property ();
 
 #if VSTGUI_RVALUE_REF_SUPPORT
-	Property (Property&& p);
-	Property& operator=(Property&& p);
+	Property (Property&& p) noexcept;
+	Property& operator=(Property&& p) noexcept;
 #endif
 	Type getType () const { return type; }
 

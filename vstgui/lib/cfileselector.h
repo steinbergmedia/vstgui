@@ -66,8 +66,8 @@ public:
 	CLASS_METHODS(CFileExtension, CBaseObject)
 //-----------------------------------------------------------------------------
 #if VSTGUI_RVALUE_REF_SUPPORT
-	CFileExtension (CFileExtension&& ext);
-	CFileExtension& operator=(CFileExtension&& ext);
+	CFileExtension (CFileExtension&& ext) noexcept;
+	CFileExtension& operator=(CFileExtension&& ext) noexcept;
 #endif
 protected:
 	void init (UTF8StringPtr description, UTF8StringPtr extension, UTF8StringPtr mimeType, UTF8StringPtr uti);

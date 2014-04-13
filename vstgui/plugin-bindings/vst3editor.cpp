@@ -1324,12 +1324,12 @@ bool VST3Editor::enableEditing (bool state)
 							attr = oldAttributes->getAttributeValue (kFrameFocusColorAttr);
 							if (attr)
 							{
-								attributes->setAttribute ("color", attr->c_str ());
+								attributes->setAttribute ("color", *attr);
 							}
 							attr = oldAttributes->getAttributeValue (kFrameFocusWidthAttr);
 							if (attr)
 							{
-								attributes->setAttribute ("width", attr->c_str ());
+								attributes->setAttribute ("width", *attr);
 							}
 						}
 						oldAttributes->removeAttribute (kFrameFocusColorAttr);

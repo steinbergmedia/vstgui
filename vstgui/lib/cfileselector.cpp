@@ -73,13 +73,13 @@ CFileExtension::~CFileExtension ()
 
 #if VSTGUI_RVALUE_REF_SUPPORT
 //-----------------------------------------------------------------------------
-CFileExtension::CFileExtension (CFileExtension&& ext)
+CFileExtension::CFileExtension (CFileExtension&& ext) noexcept
 {
 	*this = std::move (ext);
 }
 
 //-----------------------------------------------------------------------------
-CFileExtension& CFileExtension::operator=(CFileExtension&& ext)
+CFileExtension& CFileExtension::operator=(CFileExtension&& ext) noexcept
 {
 	description = ext.description;
 	extension = ext.extension;

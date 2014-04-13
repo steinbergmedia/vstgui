@@ -69,6 +69,7 @@ public:
 	CLASS_METHODS(CSplashScreen, CControl)
 protected:
 	~CSplashScreen ();
+	using CControl::valueChanged;
 	void valueChanged (CControl *pControl);
 
 	CRect	toDisplay;

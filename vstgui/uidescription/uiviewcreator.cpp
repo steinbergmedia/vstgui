@@ -336,6 +336,79 @@ bool colorToString (const CColor& color, std::string& string, const IUIDescripti
 }
 
 //-----------------------------------------------------------------------------
+static bool stringToColor (const std::string* value, CColor& color, const IUIDescription* desc)
+{
+	return value ? desc->getColor (value->c_str (), color) : false;
+}
+
+//-----------------------------------------------------------------------------
+static bool stringToBitmap (const std::string* value, CBitmap*& bitmap, const IUIDescription* desc)
+{
+	if (value)
+	{
+		if (*value == "")
+			bitmap = 0;
+		else
+			bitmap = desc->getBitmap (value->c_str ());
+		return true;
+	}
+	return false;
+}
+
+//-----------------------------------------------------------------------------
+static void applyStyleMask (const std::string* value, int32_t mask, int32_t& style) noexcept
+{
+	if (value)
+	{
+		if (*value == "true")
+			style |= mask;
+		else
+			style &= ~mask;
+	}
+}
+
+//-----------------------------------------------------------------------------
+template<typename T> std::string numberToString (T value)
+{
+	std::stringstream str;
+	str << value;
+	return str.str ();
+}
+
+
+//-----------------------------------------------------------------------------
+// attributes used in more than one view creator
+//-----------------------------------------------------------------------------
+static const std::string kAttrTitle = "title";
+static const std::string kAttrFont = "font";
+static const std::string kAttrFontColor = "font-color";
+static const std::string kAttrFrameColor = "frame-color";
+static const std::string kAttrTextAlignment = "text-alignment";
+static const std::string kAttrRoundRectRadius = "round-rect-radius";
+static const std::string kAttrFrameWidth = "frame-width";
+static const std::string kAttrGradientStartColor = "gradient-start-color";
+static const std::string kAttrGradientEndColor = "gradient-end-color";
+static const std::string kAttrZoomFactor = "zoom-factor";
+static const std::string kAttrHandleBitmap = "handle-bitmap";
+static const std::string kAttrOrientation = "orientation";
+static const std::string kAttrAnimationTime = "animation-time";
+
+//-----------------------------------------------------------------------------
+// CViewCreator attributes
+//-----------------------------------------------------------------------------
+static const std::string kAttrOrigin = "origin";
+static const std::string kAttrSize = "size";
+static const std::string kAttrTransparent = "transparent";
+static const std::string kAttrMouseEnabled = "mouse-enabled";
+static const std::string kAttrBitmap = "bitmap";
+static const std::string kAttrDisabledBitmap = "disabled-bitmap";
+static const std::string kAttrAutosize = "autosize";
+static const std::string kAttrTooltip = "tooltip";
+static const std::string kAttrCustomViewName = "custom-view-name";
+static const std::string kAttrSubController = "sub-controller";
+static const std::string kAttrOpacity = "opacity";
+
+//-----------------------------------------------------------------------------
 class CViewCreator : public IViewCreator
 {
 public:
@@ -345,59 +418,38 @@ public:
 	CView* create (const UIAttributes& attributes, const IUIDescription* description) const VSTGUI_OVERRIDE_VMETHOD { return new CView (CRect (0, 0, 0, 0)); }
 	bool apply (CView* view, const UIAttributes& attributes, const IUIDescription* description) const VSTGUI_OVERRIDE_VMETHOD
 	{
-		const std::string* originAttr = attributes.getAttributeValue ("origin");
-		const std::string* sizeAttr = attributes.getAttributeValue ("size");
-		const std::string* transparentAttr = attributes.getAttributeValue ("transparent");
-		const std::string* mouseEnabledAttr = attributes.getAttributeValue ("mouse-enabled");
-		const std::string* bitmapAttr = attributes.getAttributeValue ("bitmap");
-		const std::string* disabledBitmapAttr = attributes.getAttributeValue ("disabled-bitmap");
-		const std::string* autosizeAttr = attributes.getAttributeValue ("autosize");
-		const std::string* tooltipAttr = attributes.getAttributeValue ("tooltip");
-		const std::string* customViewAttr = attributes.getAttributeValue ("custom-view-name");
-		const std::string* subControllerAttr = attributes.getAttributeValue ("sub-controller");
-		
 		CPoint p;
 		CRect size;
-		if (originAttr)
+		if (attributes.getPointAttribute (kAttrOrigin, p))
 		{
-			if (parseSize (*originAttr, p))
-			{
-				CRect origViewSize = view->getViewSize ();
-				size.setTopLeft (p);
-				size.setWidth (origViewSize.getWidth ());
-				size.setHeight (origViewSize.getHeight ());
-				view->setViewSize (size, false);
-				view->setMouseableArea (size);
-			}
+			CRect origViewSize = view->getViewSize ();
+			size.setTopLeft (p);
+			size.setWidth (origViewSize.getWidth ());
+			size.setHeight (origViewSize.getHeight ());
+			view->setViewSize (size, false);
+			view->setMouseableArea (size);
 		}
-		if (sizeAttr)
+		if (attributes.getPointAttribute (kAttrSize, p))
 		{
-			if (parseSize (*sizeAttr, p))
-			{
-				size = view->getViewSize ();
-				size.setSize (p);
-				view->setViewSize (size, false);
-				view->setMouseableArea (size);
-			}
+			size = view->getViewSize ();
+			size.setSize (p);
+			view->setViewSize (size, false);
+			view->setMouseableArea (size);
 		}
-		if (bitmapAttr)
-		{
-			CBitmap* bitmap = description->getBitmap (bitmapAttr->c_str ());
+
+		CBitmap* bitmap;
+		if (stringToBitmap (attributes.getAttributeValue (kAttrBitmap), bitmap, description))
 			view->setBackground (bitmap);
-		}
-		
-		if (disabledBitmapAttr)
-		{
-			CBitmap* bitmap = description->getBitmap (disabledBitmapAttr->c_str ());
+		if (stringToBitmap (attributes.getAttributeValue (kAttrDisabledBitmap), bitmap, description))
 			view->setDisabledBackground (bitmap);
-		}
 		
-		if (transparentAttr)
-			view->setTransparency (*transparentAttr == "true");
+		bool b;
+		if (attributes.getBooleanAttribute (kAttrTransparent, b))
+			view->setTransparency (b);
+		if (attributes.getBooleanAttribute (kAttrMouseEnabled, b))
+			view->setMouseEnabled (b);
 
-		if (mouseEnabledAttr)
-			view->setMouseEnabled (*mouseEnabledAttr == "true");
-
+		const std::string* autosizeAttr = attributes.getAttributeValue (kAttrAutosize);
 		if (autosizeAttr)
 		{
 			int32_t autosize = kAutosizeNone;
@@ -415,6 +467,7 @@ public:
 				autosize |= kAutosizeColumn;
 			view->setAutosizeFlags (autosize);
 		}
+		const std::string* tooltipAttr = attributes.getAttributeValue (kAttrTooltip);
 		if (tooltipAttr)
 		{
 			if (tooltipAttr->size () > 0)
@@ -422,65 +475,79 @@ public:
 			else
 				view->removeAttribute (kCViewTooltipAttribute);
 		}
+
+		const std::string* customViewAttr = attributes.getAttributeValue (kAttrCustomViewName);
 		if (customViewAttr)
 			view->setAttribute ('uicv', (int32_t)customViewAttr->size ()+1, customViewAttr->c_str ());
 
+		const std::string* subControllerAttr = attributes.getAttributeValue (kAttrSubController);
 		if (subControllerAttr)
 			view->setAttribute ('uisc', (int32_t)subControllerAttr->size ()+1, subControllerAttr->c_str ());
+
+		double opacity;
+		if (attributes.getDoubleAttribute (kAttrOpacity, opacity))
+			view->setAlphaValue (static_cast<float>(opacity));
 
 		return true;
 	}
 	bool getAttributeNames (std::list<std::string>& attributeNames) const VSTGUI_OVERRIDE_VMETHOD
 	{
-		attributeNames.push_back ("origin");
-		attributeNames.push_back ("size");
-		attributeNames.push_back ("transparent");
-		attributeNames.push_back ("mouse-enabled");
-		attributeNames.push_back ("bitmap");
-		attributeNames.push_back ("disabled-bitmap");
-		attributeNames.push_back ("autosize");
-		attributeNames.push_back ("tooltip");
-		attributeNames.push_back ("custom-view-name");
-		attributeNames.push_back ("sub-controller");
+		attributeNames.push_back (kAttrOrigin);
+		attributeNames.push_back (kAttrSize);
+		attributeNames.push_back (kAttrOpacity);
+		attributeNames.push_back (kAttrTransparent);
+		attributeNames.push_back (kAttrMouseEnabled);
+		attributeNames.push_back (kAttrBitmap);
+		attributeNames.push_back (kAttrDisabledBitmap);
+		attributeNames.push_back (kAttrAutosize);
+		attributeNames.push_back (kAttrTooltip);
+		attributeNames.push_back (kAttrCustomViewName);
+		attributeNames.push_back (kAttrSubController);
 		return true;
 	}
 	AttrType getAttributeType (const std::string& attributeName) const VSTGUI_OVERRIDE_VMETHOD
 	{
-		if (attributeName == "origin") return kPointType;
-		else if (attributeName == "size") return kPointType;
-		else if (attributeName == "transparent") return kBooleanType;
-		else if (attributeName == "mouse-enabled") return kBooleanType;
-		else if (attributeName == "bitmap") return kBitmapType;
-		else if (attributeName == "disabled-bitmap") return kBitmapType;
-		else if (attributeName == "autosize") return kStringType;
-		else if (attributeName == "tooltip") return kStringType;
-		else if (attributeName == "custom-view-name") return kStringType;
-		else if (attributeName == "sub-controller") return kStringType;
+		if (attributeName == kAttrOrigin) return kPointType;
+		else if (attributeName == kAttrSize) return kPointType;
+		else if (attributeName == kAttrOpacity) return kFloatType;
+		else if (attributeName == kAttrTransparent) return kBooleanType;
+		else if (attributeName == kAttrMouseEnabled) return kBooleanType;
+		else if (attributeName == kAttrBitmap) return kBitmapType;
+		else if (attributeName == kAttrDisabledBitmap) return kBitmapType;
+		else if (attributeName == kAttrAutosize) return kStringType;
+		else if (attributeName == kAttrTooltip) return kStringType;
+		else if (attributeName == kAttrCustomViewName) return kStringType;
+		else if (attributeName == kAttrSubController) return kStringType;
 		return kUnknownType;
 	}
 	bool getAttributeValue (CView* view, const std::string& attributeName, std::string& stringValue, const IUIDescription* desc) const VSTGUI_OVERRIDE_VMETHOD
 	{
-		if (attributeName == "origin")
+		if (attributeName == kAttrOrigin)
 		{
 			pointToString (view->getViewSize ().getTopLeft (), stringValue);
 			return true;
 		}
-		else if (attributeName == "size")
+		else if (attributeName == kAttrSize)
 		{
 			pointToString (view->getViewSize ().getSize (), stringValue);
 			return true;
 		}
-		else if (attributeName == "transparent")
+		else if (attributeName == kAttrOpacity)
+		{
+			stringValue = numberToString (view->getAlphaValue ());
+			return true;
+		}
+		else if (attributeName == kAttrTransparent)
 		{
 			stringValue = view->getTransparency () ? "true" : "false";
 			return true;
 		}
-		else if (attributeName == "mouse-enabled")
+		else if (attributeName == kAttrMouseEnabled)
 		{
 			stringValue = view->getMouseEnabled () ? "true" : "false";
 			return true;
 		}
-		else if (attributeName == "bitmap")
+		else if (attributeName == kAttrBitmap)
 		{
 			CBitmap* bitmap = view->getBackground ();
 			if (bitmap)
@@ -489,7 +556,7 @@ public:
 				stringValue = "";
 			return true;
 		}
-		else if (attributeName == "disabled-bitmap")
+		else if (attributeName == kAttrDisabledBitmap)
 		{
 			CBitmap* bitmap = view->getDisabledBackground ();
 			if (bitmap)
@@ -498,7 +565,7 @@ public:
 				stringValue = "";
 			return true;
 		}
-		else if (attributeName == "autosize")
+		else if (attributeName == kAttrAutosize)
 		{
 			std::stringstream stream;
 			int32_t autosize = view->getAutosizeFlags ();
@@ -519,52 +586,54 @@ public:
 			stringValue = stream.str ();
 			return true;
 		}
-		else if (attributeName == "tooltip")
+		else if (attributeName == kAttrTooltip)
 		{
-			char* tooltip = 0;
-			int32_t tooltipSize = 0;
-			if (view->getAttributeSize (kCViewTooltipAttribute, tooltipSize))
-			{
-				tooltip = (char*)malloc (tooltipSize + 1);
-				memset (tooltip, 0, tooltipSize+1);
-				if (view->getAttribute (kCViewTooltipAttribute, tooltipSize, tooltip, tooltipSize))
-					stringValue = tooltip;
-				free (tooltip);
-				return true;
-			}
+			return getViewAttributeString (view, kCViewTooltipAttribute, stringValue);
 		}
-		else if (attributeName == "custom-view-name")
+		else if (attributeName == kAttrCustomViewName)
 		{
-			char* customViewName = 0;
-			int32_t customViewNameSize = 0;
-			if (view->getAttributeSize ('uicv', customViewNameSize))
-			{
-				customViewName = (char*)malloc (customViewNameSize + 1);
-				memset (customViewName, 0, customViewNameSize+1);
-				if (view->getAttribute ('uicv', customViewNameSize, customViewName, customViewNameSize))
-					stringValue = customViewName;
-				free (customViewName);
-				return true;
-			}
+			return getViewAttributeString (view, 'uicv', stringValue);
 		}
-		else if (attributeName == "sub-controller")
+		else if (attributeName == kAttrSubController)
 		{
-			char* subControllerName = 0;
-			int32_t subControllerNameSize = 0;
-			if (view->getAttributeSize ('uisc', subControllerNameSize))
-			{
-				subControllerName = (char*)malloc (subControllerNameSize + 1);
-				memset (subControllerName, 0, subControllerNameSize+1);
-				if (view->getAttribute ('uisc', subControllerNameSize, subControllerName, subControllerNameSize))
-					stringValue = subControllerName;
-				free (subControllerName);
-				return true;
-			}
+			return getViewAttributeString (view, 'uisc', stringValue);
+		}
+		return false;
+	}
+	bool getAttributeValueRange (const std::string& attributeName, double& minValue, double &maxValue) const VSTGUI_OVERRIDE_VMETHOD
+	{
+		if (attributeName == kAttrOpacity)
+		{
+			minValue = 0.;
+			maxValue = 1.;
+			return true;
+		}
+		return false;
+	}
+private:
+	static bool getViewAttributeString (CView* view, const CViewAttributeID attrID, std::string& value)
+	{
+		int32_t attrSize = 0;
+		if (view->getAttributeSize (attrID, attrSize))
+		{
+			char* cstr = new char [attrSize+1];
+			if (view->getAttribute (attrID, attrSize, cstr, attrSize))
+				value = cstr;
+			else
+				value = "";
+			delete [] cstr;
+			return true;
 		}
 		return false;
 	}
 };
 CViewCreator __gCViewCreator;
+
+//-----------------------------------------------------------------------------
+// CViewContainerCreator attributes
+//-----------------------------------------------------------------------------
+static const std::string kAttrBackgroundColor = "background-color";
+static const std::string kAttrBackgroundColorDrawStyle = "background-color-draw-style";
 
 //-----------------------------------------------------------------------------
 class CViewContainerCreator : public IViewCreator
@@ -579,16 +648,10 @@ public:
 		CViewContainer* viewContainer = dynamic_cast<CViewContainer*> (view);
 		if (viewContainer == 0)
 			return false;
-		const std::string* attr = attributes.getAttributeValue ("background-color");
-		if (attr)
-		{
-			CColor backColor;
-			if (description->getColor (attr->c_str (), backColor))
-			{
-				viewContainer->setBackgroundColor (backColor);
-			}
-		}
-		attr = attributes.getAttributeValue ("background-color-draw-style");
+		CColor backColor;
+		if (stringToColor (attributes.getAttributeValue (kAttrBackgroundColor), backColor, description))
+			viewContainer->setBackgroundColor (backColor);
+		const std::string* attr = attributes.getAttributeValue (kAttrBackgroundColorDrawStyle);
 		if (attr)
 		{
 			CDrawStyle drawStyle = kDrawFilledAndStroked;
@@ -606,14 +669,14 @@ public:
 	}
 	bool getAttributeNames (std::list<std::string>& attributeNames) const VSTGUI_OVERRIDE_VMETHOD
 	{
-		attributeNames.push_back ("background-color");
-		attributeNames.push_back ("background-color-draw-style");
+		attributeNames.push_back (kAttrBackgroundColor);
+		attributeNames.push_back (kAttrBackgroundColorDrawStyle);
 		return true;
 	}
 	AttrType getAttributeType (const std::string& attributeName) const VSTGUI_OVERRIDE_VMETHOD
 	{
-		if (attributeName == "background-color") return kColorType;
-		if (attributeName == "background-color-draw-style") return kListType;
+		if (attributeName == kAttrBackgroundColor) return kColorType;
+		if (attributeName == kAttrBackgroundColorDrawStyle) return kListType;
 		return kUnknownType;
 	}
 	bool getAttributeValue (CView* view, const std::string& attributeName, std::string& stringValue, const IUIDescription* desc) const VSTGUI_OVERRIDE_VMETHOD
@@ -621,12 +684,12 @@ public:
 		CViewContainer* vc = dynamic_cast<CViewContainer*> (view);
 		if (vc == 0)
 			return false;
-		if (attributeName == "background-color")
+		if (attributeName == kAttrBackgroundColor)
 		{
 			colorToString (vc->getBackgroundColor (), stringValue, desc);
 			return true;
 		}
-		if (attributeName == "background-color-draw-style")
+		if (attributeName == kAttrBackgroundColorDrawStyle)
 		{
 			switch (vc->getBackgroundColorDrawStyle ())
 			{
@@ -641,7 +704,7 @@ public:
 
 	bool getPossibleListValues (const std::string& attributeName, std::list<const std::string*>& values) const VSTGUI_OVERRIDE_VMETHOD
 	{
-		if (attributeName == "background-color-draw-style")
+		if (attributeName == kAttrBackgroundColorDrawStyle)
 		{
 			static std::string kStroked = "stroked";
 			static std::string kFilledAndStroked = "filled and stroked";
@@ -685,6 +748,16 @@ public:
 CLayeredViewContainerCreator __CLayeredViewContainerCreator;
 
 //-----------------------------------------------------------------------------
+// CRowColumnViewCreator attributes
+//-----------------------------------------------------------------------------
+static const std::string kAttrRowStyle = "row-style";
+static const std::string kAttrSpacing = "spacing";
+static const std::string kAttrMargin = "margin";
+static const std::string kAttrAnimateViewResizing = "animate-view-resizing";
+static const std::string kAttrEqualSizeLayout = "equal-size-layout";
+static const std::string kAttrViewResizeAnimationTime = "view-resize-animation-time";
+
+//-----------------------------------------------------------------------------
 class CRowColumnViewCreator : public IViewCreator
 {
 public:
@@ -697,22 +770,22 @@ public:
 		CRowColumnView* rcv = dynamic_cast<CRowColumnView*> (view);
 		if (rcv == 0)
 			return false;
-		const std::string* attr = attributes.getAttributeValue ("row-style");
+		const std::string* attr = attributes.getAttributeValue (kAttrRowStyle);
 		if (attr)
 			rcv->setStyle (*attr == "true" ? CRowColumnView::kRowStyle : CRowColumnView::kColumnStyle);
-		attr = attributes.getAttributeValue ("spacing");
+		attr = attributes.getAttributeValue (kAttrSpacing);
 		if (attr)
 		{
 			CCoord spacing = strtof (attr->c_str (), 0);
 			rcv->setSpacing (spacing);
 		}
 		CRect margin;
-		if (attributes.getRectAttribute ("margin", margin))
+		if (attributes.getRectAttribute (kAttrMargin, margin))
 			rcv->setMargin (margin);
-		attr = attributes.getAttributeValue ("animate-view-resizing");
+		attr = attributes.getAttributeValue (kAttrAnimateViewResizing);
 		if (attr)
 			rcv->setAnimateViewResizing (*attr == "true" ? true : false);
-		attr = attributes.getAttributeValue ("equal-size-layout");
+		attr = attributes.getAttributeValue (kAttrEqualSizeLayout);
 		if (attr)
 		{
 			if (*attr == "stretch")
@@ -724,7 +797,7 @@ public:
 			else
 				rcv->setLayoutStyle (CRowColumnView::kLeftTopEqualy);
 		}
-		attr = attributes.getAttributeValue ("view-resize-animation-time");
+		attr = attributes.getAttributeValue (kAttrViewResizeAnimationTime);
 		if (attr)
 		{
 			uint32_t time = (uint32_t)strtol (attr->c_str(), 0, 10);
@@ -734,22 +807,22 @@ public:
 	}
 	bool getAttributeNames (std::list<std::string>& attributeNames) const VSTGUI_OVERRIDE_VMETHOD
 	{
-		attributeNames.push_back ("row-style");
-		attributeNames.push_back ("spacing");
-		attributeNames.push_back ("margin");
-		attributeNames.push_back ("equal-size-layout");
-		attributeNames.push_back ("animate-view-resizing");
-		attributeNames.push_back ("view-resize-animation-time");
+		attributeNames.push_back (kAttrRowStyle);
+		attributeNames.push_back (kAttrSpacing);
+		attributeNames.push_back (kAttrMargin);
+		attributeNames.push_back (kAttrEqualSizeLayout);
+		attributeNames.push_back (kAttrAnimateViewResizing);
+		attributeNames.push_back (kAttrViewResizeAnimationTime);
 		return true;
 	}
 	AttrType getAttributeType (const std::string& attributeName) const VSTGUI_OVERRIDE_VMETHOD
 	{
-		if (attributeName == "row-style") return kBooleanType;
-		if (attributeName == "spacing") return kIntegerType;
-		if (attributeName == "margin") return kRectType;
-		if (attributeName == "equal-size-layout") return kListType;
-		if (attributeName == "animate-view-resizing") return kBooleanType;
-		if (attributeName == "view-resize-animation-time") return kIntegerType;
+		if (attributeName == kAttrRowStyle) return kBooleanType;
+		if (attributeName == kAttrSpacing) return kIntegerType;
+		if (attributeName == kAttrMargin) return kRectType;
+		if (attributeName == kAttrEqualSizeLayout) return kListType;
+		if (attributeName == kAttrAnimateViewResizing) return kBooleanType;
+		if (attributeName == kAttrViewResizeAnimationTime) return kIntegerType;
 		return kUnknownType;
 	}
 	bool getAttributeValue (CView* view, const std::string& attributeName, std::string& stringValue, const IUIDescription* desc) const VSTGUI_OVERRIDE_VMETHOD
@@ -757,31 +830,27 @@ public:
 		CRowColumnView* rcv = dynamic_cast<CRowColumnView*> (view);
 		if (rcv == 0)
 			return false;
-		if (attributeName == "row-style")
+		if (attributeName == kAttrRowStyle)
 		{
 			stringValue = rcv->getStyle () == CRowColumnView::kRowStyle ? "true" : "false";
 			return true;
 		}
-		if (attributeName == "animate-view-resizing")
+		if (attributeName == kAttrAnimateViewResizing)
 		{
 			stringValue = rcv->isAnimateViewResizing () ? "true" : "false";
 			return true;
 		}
-		if (attributeName == "spacing")
+		if (attributeName == kAttrSpacing)
 		{
-			std::stringstream str;
-			str << (int32_t)rcv->getSpacing ();
-			stringValue = str.str ();
+			stringValue = numberToString ((int32_t)rcv->getSpacing ());
 			return true;
 		}
-		if (attributeName == "view-resize-animation-time")
+		if (attributeName == kAttrViewResizeAnimationTime)
 		{
-			std::stringstream str;
-			str << rcv->getViewResizeAnimationTime ();
-			stringValue = str.str ();
+			stringValue = numberToString (rcv->getViewResizeAnimationTime ());
 			return true;
 		}
-		if (attributeName == "margin")
+		if (attributeName == kAttrMargin)
 		{
 			const CRect& margin = rcv->getMargin ();
 			std::stringstream str;
@@ -795,7 +864,7 @@ public:
 			stringValue = str.str ();
 			return true;
 		}
-		if (attributeName == "equal-size-layout")
+		if (attributeName == kAttrEqualSizeLayout)
 		{
 			switch (rcv->getLayoutStyle ())
 			{
@@ -810,7 +879,7 @@ public:
 	}
 	bool getPossibleListValues (const std::string& attributeName, std::list<const std::string*>& values) const VSTGUI_OVERRIDE_VMETHOD
 	{
-		if (attributeName == "equal-size-layout")
+		if (attributeName == kAttrEqualSizeLayout)
 		{
 			static std::string kLeftTop = "left-top";
 			static std::string kStretch = "stretch";
@@ -830,6 +899,22 @@ public:
 CRowColumnViewCreator __CRowColumnViewCreator;
 
 //-----------------------------------------------------------------------------
+// CScrollViewCreator attributes
+//-----------------------------------------------------------------------------
+static const std::string kAttrContainerSize = "container-size";
+static const std::string kAttrHorizontalScrollbar = "horizontal-scrollbar";
+static const std::string kAttrVerticalScrollbar = "vertical-scrollbar";
+static const std::string kAttrAutoDragScrolling = "auto-drag-scrolling";
+static const std::string kAttrBordered = "bordered";
+static const std::string kAttrOverlayScrollbars = "overlay-scrollbars";
+static const std::string kAttrFollowFocusView = "follow-focus-view";
+static const std::string kAttrAutoHideScrollbars = "auto-hide-scrollbars";
+static const std::string kAttrScrollbarBackgroundColor = "scrollbar-background-color";
+static const std::string kAttrScrollbarFrameColor = "scrollbar-frame-color";
+static const std::string kAttrScrollbarScrollerColor = "scrollbar-scroller-color";
+static const std::string kAttrScrollbarWidth = "scrollbar-width";
+
+//-----------------------------------------------------------------------------
 class CScrollViewCreator : public IViewCreator
 {
 public:
@@ -842,43 +927,20 @@ public:
 		CScrollView* scrollView = dynamic_cast<CScrollView*> (view);
 		if (scrollView == 0)
 			return false;
-		const std::string* attr = attributes.getAttributeValue ("container-size");
-		if (attr)
+		
+		CPoint p;
+		if (attributes.getPointAttribute (kAttrContainerSize, p))
 		{
-			CPoint p;
-			if (parseSize (*attr, p))
-			{
-				CRect r;
-				r.setSize (p);
-				scrollView->setContainerSize (r);
-			}
+			CRect r;
+			r.setSize (p);
+			scrollView->setContainerSize (r);
 		}
+
 		int32_t style = scrollView->getStyle ();
-		attr = attributes.getAttributeValue ("horizontal-scrollbar");
-		if (attr)
-		{
-			if (*attr == "true")
-				style |= CScrollView::kHorizontalScrollbar;
-			else
-				style &= ~CScrollView::kHorizontalScrollbar;
-		}
-		attr = attributes.getAttributeValue ("vertical-scrollbar");
-		if (attr)
-		{
-			if (*attr == "true")
-				style |= CScrollView::kVerticalScrollbar;
-			else
-				style &= ~CScrollView::kVerticalScrollbar;
-		}
-		attr = attributes.getAttributeValue ("auto-drag-scrolling");
-		if (attr)
-		{
-			if (*attr == "true")
-				style |= CScrollView::kAutoDragScrolling;
-			else
-				style &= ~CScrollView::kAutoDragScrolling;
-		}
-		attr = attributes.getAttributeValue ("bordered");
+		applyStyleMask (attributes.getAttributeValue (kAttrHorizontalScrollbar), CScrollView::kHorizontalScrollbar, style);
+		applyStyleMask (attributes.getAttributeValue (kAttrVerticalScrollbar), CScrollView::kVerticalScrollbar, style);
+		applyStyleMask (attributes.getAttributeValue (kAttrAutoDragScrolling), CScrollView::kAutoDragScrolling, style);
+		const std::string* attr = attributes.getAttributeValue (kAttrBordered);
 		if (attr)
 		{
 			if (*attr == "true")
@@ -886,99 +948,63 @@ public:
 			else
 				style |= CScrollView::kDontDrawFrame;
 		}
-		attr = attributes.getAttributeValue ("overlay-scrollbars");
-		if (attr)
-		{
-			if (*attr == "true")
-				style |= CScrollView::kOverlayScrollbars;
-			else
-				style &= ~CScrollView::kOverlayScrollbars;
-		}
-		attr = attributes.getAttributeValue ("follow-focus-view");
-		if (attr)
-		{
-			if (*attr == "true")
-				style |= CScrollView::kFollowFocusView;
-			else
-				style &= ~CScrollView::kFollowFocusView;
-		}
-		attr = attributes.getAttributeValue ("auto-hide-scrollbars");
-		if (attr)
-		{
-			if (*attr == "true")
-				style |= CScrollView::kAutoHideScrollbars;
-			else
-				style &= ~CScrollView::kAutoHideScrollbars;
-		}
+		applyStyleMask (attributes.getAttributeValue (kAttrOverlayScrollbars), CScrollView::kOverlayScrollbars, style);
+		applyStyleMask (attributes.getAttributeValue (kAttrFollowFocusView), CScrollView::kFollowFocusView, style);
+		applyStyleMask (attributes.getAttributeValue (kAttrAutoHideScrollbars), CScrollView::kAutoHideScrollbars, style);
 		scrollView->setStyle (style);
 		CColor color;
 		CScrollbar* vscrollbar = scrollView->getVerticalScrollbar ();
 		CScrollbar* hscrollbar = scrollView->getHorizontalScrollbar ();
-		attr = attributes.getAttributeValue ("scrollbar-background-color");
-		if (attr)
+		if (stringToColor (attributes.getAttributeValue (kAttrScrollbarBackgroundColor), color, description))
 		{
-			if (description->getColor (attr->c_str (), color))
-			{
-				if (vscrollbar) vscrollbar->setBackgroundColor (color);
-				if (hscrollbar) hscrollbar->setBackgroundColor (color);
-			}
+			if (vscrollbar) vscrollbar->setBackgroundColor (color);
+			if (hscrollbar) hscrollbar->setBackgroundColor (color);
 		}
-		attr = attributes.getAttributeValue ("scrollbar-frame-color");
-		if (attr)
+		if (stringToColor (attributes.getAttributeValue (kAttrScrollbarFrameColor), color, description))
 		{
-			if (description->getColor (attr->c_str (), color))
-			{
-				if (vscrollbar) vscrollbar->setFrameColor (color);
-				if (hscrollbar) hscrollbar->setFrameColor (color);
-			}
+			if (vscrollbar) vscrollbar->setFrameColor (color);
+			if (hscrollbar) hscrollbar->setFrameColor (color);
 		}
-		attr = attributes.getAttributeValue ("scrollbar-scroller-color");
-		if (attr)
+		if (stringToColor (attributes.getAttributeValue (kAttrScrollbarScrollerColor), color, description))
 		{
-			if (description->getColor (attr->c_str (), color))
-			{
-				if (vscrollbar) vscrollbar->setScrollerColor (color);
-				if (hscrollbar) hscrollbar->setScrollerColor (color);
-			}
+			if (vscrollbar) vscrollbar->setScrollerColor (color);
+			if (hscrollbar) hscrollbar->setScrollerColor (color);
 		}
-		attr = attributes.getAttributeValue ("scrollbar-width");
-		if (attr)
-		{
-			CCoord width = strtof (attr->c_str (), 0);
+		CCoord width;
+		if (attributes.getDoubleAttribute (kAttrScrollbarWidth, width))
 			scrollView->setScrollbarWidth (width);
-		}
 		return true;
 	}
 	bool getAttributeNames (std::list<std::string>& attributeNames) const VSTGUI_OVERRIDE_VMETHOD
 	{
-		attributeNames.push_back ("container-size");
-		attributeNames.push_back ("scrollbar-background-color");
-		attributeNames.push_back ("scrollbar-frame-color");
-		attributeNames.push_back ("scrollbar-scroller-color");
-		attributeNames.push_back ("horizontal-scrollbar");
-		attributeNames.push_back ("vertical-scrollbar");
-		attributeNames.push_back ("auto-hide-scrollbars");
-		attributeNames.push_back ("auto-drag-scrolling");
-		attributeNames.push_back ("overlay-scrollbars");
-		attributeNames.push_back ("scrollbar-width");
-		attributeNames.push_back ("bordered");
-		attributeNames.push_back ("follow-focus-view");
+		attributeNames.push_back (kAttrContainerSize);
+		attributeNames.push_back (kAttrScrollbarBackgroundColor);
+		attributeNames.push_back (kAttrScrollbarFrameColor);
+		attributeNames.push_back (kAttrScrollbarScrollerColor);
+		attributeNames.push_back (kAttrHorizontalScrollbar);
+		attributeNames.push_back (kAttrVerticalScrollbar);
+		attributeNames.push_back (kAttrAutoHideScrollbars);
+		attributeNames.push_back (kAttrAutoDragScrolling);
+		attributeNames.push_back (kAttrOverlayScrollbars);
+		attributeNames.push_back (kAttrScrollbarWidth);
+		attributeNames.push_back (kAttrBordered);
+		attributeNames.push_back (kAttrFollowFocusView);
 		return true;
 	}
 	AttrType getAttributeType (const std::string& attributeName) const VSTGUI_OVERRIDE_VMETHOD
 	{
-		if (attributeName == "container-size") return kPointType;
-		if (attributeName == "scrollbar-background-color") return kColorType;
-		if (attributeName == "scrollbar-frame-color") return kColorType;
-		if (attributeName == "scrollbar-scroller-color") return kColorType;
-		if (attributeName == "horizontal-scrollbar") return kBooleanType;
-		if (attributeName == "vertical-scrollbar") return kBooleanType;
-		if (attributeName == "auto-hide-scrollbars") return kBooleanType;
-		if (attributeName == "auto-drag-scrolling") return kBooleanType;
-		if (attributeName == "overlay-scrollbars") return kBooleanType;
-		if (attributeName == "scrollbar-width") return kIntegerType;
-		if (attributeName == "bordered") return kBooleanType;
-		if (attributeName == "follow-focus-view") return kBooleanType;
+		if (attributeName == kAttrContainerSize) return kPointType;
+		if (attributeName == kAttrScrollbarBackgroundColor) return kColorType;
+		if (attributeName == kAttrScrollbarFrameColor) return kColorType;
+		if (attributeName == kAttrScrollbarScrollerColor) return kColorType;
+		if (attributeName == kAttrHorizontalScrollbar) return kBooleanType;
+		if (attributeName == kAttrVerticalScrollbar) return kBooleanType;
+		if (attributeName == kAttrAutoHideScrollbars) return kBooleanType;
+		if (attributeName == kAttrAutoDragScrolling) return kBooleanType;
+		if (attributeName == kAttrOverlayScrollbars) return kBooleanType;
+		if (attributeName == kAttrScrollbarWidth) return kIntegerType;
+		if (attributeName == kAttrBordered) return kBooleanType;
+		if (attributeName == kAttrFollowFocusView) return kBooleanType;
 		return kUnknownType;
 	}
 	bool getAttributeValue (CView* view, const std::string& attributeName, std::string& stringValue, const IUIDescription* desc) const VSTGUI_OVERRIDE_VMETHOD
@@ -986,16 +1012,14 @@ public:
 		CScrollView* sc = dynamic_cast<CScrollView*> (view);
 		if (sc == 0)
 			return false;
-		if (attributeName == "container-size")
+		if (attributeName == kAttrContainerSize)
 		{
 			pointToString (sc->getContainerSize ().getSize (), stringValue);
 			return true;
 		}
-		if (attributeName == "scrollbar-width")
+		if (attributeName == kAttrScrollbarWidth)
 		{
-			std::stringstream str;
-			str << sc->getScrollbarWidth ();
-			stringValue = str.str ();
+			stringValue = numberToString (sc->getScrollbarWidth ());
 			return true;
 		}
 		CScrollbar* scrollbar = sc->getVerticalScrollbar ();
@@ -1003,53 +1027,53 @@ public:
 			scrollbar = sc->getHorizontalScrollbar ();
 		if (scrollbar)
 		{
-			if (attributeName == "scrollbar-background-color")
+			if (attributeName == kAttrScrollbarBackgroundColor)
 			{
 				colorToString (scrollbar->getBackgroundColor (), stringValue, desc);
 				return true;
 			}
-			if (attributeName == "scrollbar-frame-color")
+			if (attributeName == kAttrScrollbarFrameColor)
 			{
 				colorToString (scrollbar->getFrameColor (), stringValue, desc);
 				return true;
 			}
-			if (attributeName == "scrollbar-scroller-color")
+			if (attributeName == kAttrScrollbarScrollerColor)
 			{
 				colorToString (scrollbar->getScrollerColor (), stringValue, desc);
 				return true;
 			}
 		}
-		if (attributeName == "horizontal-scrollbar")
+		if (attributeName == kAttrHorizontalScrollbar)
 		{
 			stringValue = sc->getStyle () & CScrollView::kHorizontalScrollbar ? "true" : "false";
 			return true;
 		}
-		if (attributeName == "vertical-scrollbar")
+		if (attributeName == kAttrVerticalScrollbar)
 		{
 			stringValue = sc->getStyle () & CScrollView::kVerticalScrollbar ? "true" : "false";
 			return true;
 		}
-		if (attributeName == "auto-hide-scrollbars")
+		if (attributeName == kAttrAutoHideScrollbars)
 		{
 			stringValue = sc->getStyle () & CScrollView::kAutoHideScrollbars ? "true" : "false";
 			return true;
 		}
-		if (attributeName == "auto-drag-scrolling")
+		if (attributeName == kAttrAutoDragScrolling)
 		{
 			stringValue = sc->getStyle () & CScrollView::kAutoDragScrolling ? "true" : "false";
 			return true;
 		}
-		if (attributeName == "bordered")
+		if (attributeName == kAttrBordered)
 		{
 			stringValue = sc->getStyle () & CScrollView::kDontDrawFrame ? "false" : "true";
 			return true;
 		}
-		if (attributeName == "overlay-scrollbars")
+		if (attributeName == kAttrOverlayScrollbars)
 		{
 			stringValue = sc->getStyle () & CScrollView::kOverlayScrollbars ? "true" : "false";
 			return true;
 		}
-		if (attributeName == "follow-focus-view")
+		if (attributeName == kAttrFollowFocusView)
 		{
 			stringValue = sc->getStyle () & CScrollView::kFollowFocusView ? "true" : "false";
 			return true;
@@ -1059,6 +1083,16 @@ public:
 
 };
 CScrollViewCreator __CScrollViewCreator;
+
+//-----------------------------------------------------------------------------
+// CControlCreator attributes
+//-----------------------------------------------------------------------------
+static const std::string kAttrControlTag = "control-tag";
+static const std::string kAttrDefaultValue = "default-value";
+static const std::string kAttrMinValue = "min-value";
+static const std::string kAttrMaxValue = "max-value";
+static const std::string kAttrWheelIncValue = "wheel-inc-value";
+static const std::string kAttrBackgroundOffset = "background-offset";
 
 //-----------------------------------------------------------------------------
 class CControlCreator : public IViewCreator
@@ -1082,40 +1116,22 @@ public:
 		CControl* control = dynamic_cast<CControl*> (view);
 		if (control == 0)
 			return false;
-		const std::string* controlTagAttr = attributes.getAttributeValue ("control-tag");
-		const std::string* defaultValueAttr = attributes.getAttributeValue ("default-value");
-		const std::string* minValueAttr = attributes.getAttributeValue ("min-value");
-		const std::string* maxValueAttr = attributes.getAttributeValue ("max-value");
-		const std::string* wheelIncValueAttr = attributes.getAttributeValue ("wheel-inc-value");
-		const std::string* backOffsetAttr = attributes.getAttributeValue ("background-offset");
 		
-		float value = 0.f;
-		if (defaultValueAttr)
-		{
-			value = strtof (defaultValueAttr->c_str (), 0);
-			control->setDefaultValue (value);
-		}
-		if (minValueAttr)
-		{
-			value = strtof (minValueAttr->c_str (), 0);
-			control->setMin (value);
-		}
-		if (maxValueAttr)
-		{
-			value = strtof (maxValueAttr->c_str (), 0);
-			control->setMax (value);
-		}
-		if (wheelIncValueAttr)
-		{
-			value = strtof (wheelIncValueAttr->c_str (), 0);
-			control->setWheelInc (value);
-		}
-		if (backOffsetAttr)
-		{
-			CPoint p;
-			if (parseSize (*backOffsetAttr, p))
-				control->setBackOffset (p);
-		}
+		double value;
+		if (attributes.getDoubleAttribute (kAttrDefaultValue, value))
+			control->setDefaultValue (static_cast<float> (value));
+		if (attributes.getDoubleAttribute (kAttrMinValue, value))
+			control->setMin (static_cast<float> (value));
+		if (attributes.getDoubleAttribute (kAttrMaxValue, value))
+			control->setMax (static_cast<float> (value));
+		if (attributes.getDoubleAttribute (kAttrWheelIncValue, value))
+			control->setWheelInc (static_cast<float> (value));
+
+		CPoint p;
+		if (attributes.getPointAttribute (kAttrBackgroundOffset, p))
+			control->setBackOffset (p);
+
+		const std::string* controlTagAttr = attributes.getAttributeValue (kAttrControlTag);
 		if (controlTagAttr)
 		{
 			if (controlTagAttr->length () == 0)
@@ -1148,22 +1164,22 @@ public:
 	}
 	bool getAttributeNames (std::list<std::string>& attributeNames) const VSTGUI_OVERRIDE_VMETHOD
 	{
-		attributeNames.push_back ("control-tag");
-		attributeNames.push_back ("default-value");
-		attributeNames.push_back ("min-value");
-		attributeNames.push_back ("max-value");
-		attributeNames.push_back ("wheel-inc-value");
-		attributeNames.push_back ("background-offset");
+		attributeNames.push_back (kAttrControlTag);
+		attributeNames.push_back (kAttrDefaultValue);
+		attributeNames.push_back (kAttrMinValue);
+		attributeNames.push_back (kAttrMaxValue);
+		attributeNames.push_back (kAttrWheelIncValue);
+		attributeNames.push_back (kAttrBackgroundOffset);
 		return true;
 	}
 	AttrType getAttributeType (const std::string& attributeName) const VSTGUI_OVERRIDE_VMETHOD
 	{
-		if (attributeName == "control-tag") return kTagType;
-		else if (attributeName == "default-value") return kFloatType;
-		else if (attributeName == "min-value") return kFloatType;
-		else if (attributeName == "max-value") return kFloatType;
-		else if (attributeName == "wheel-inc-value") return kFloatType;
-		else if (attributeName == "background-offset") return kPointType;
+		if (attributeName == kAttrControlTag) return kTagType;
+		else if (attributeName == kAttrDefaultValue) return kFloatType;
+		else if (attributeName == kAttrMinValue) return kFloatType;
+		else if (attributeName == kAttrMaxValue) return kFloatType;
+		else if (attributeName == kAttrWheelIncValue) return kFloatType;
+		else if (attributeName == kAttrBackgroundOffset) return kPointType;
 		return kUnknownType;
 	}
 	bool getAttributeValue (CView* view, const std::string& attributeName, std::string& stringValue, const IUIDescription* desc) const VSTGUI_OVERRIDE_VMETHOD
@@ -1171,8 +1187,7 @@ public:
 		CControl* control = dynamic_cast<CControl*> (view);
 		if (control == 0)
 			return false;
-		std::stringstream stream;
-		if (attributeName == "control-tag")
+		if (attributeName == kAttrControlTag)
 		{
 			if (control->getTag () != -1)
 			{
@@ -1184,31 +1199,27 @@ public:
 				}
 			}
 		}
-		else if (attributeName == "default-value")
+		else if (attributeName == kAttrDefaultValue)
 		{
-			stream << control->getDefaultValue ();
-			stringValue = stream.str ();
+			stringValue = numberToString (control->getDefaultValue ());
 			return true;
 		}
-		else if (attributeName == "min-value")
+		else if (attributeName == kAttrMinValue)
 		{
-			stream << control->getMin ();
-			stringValue = stream.str ();
+			stringValue = numberToString (control->getMin ());
 			return true;
 		}
-		else if (attributeName == "max-value")
+		else if (attributeName == kAttrMaxValue)
 		{
-			stream << control->getMax ();
-			stringValue = stream.str ();
+			stringValue = numberToString (control->getMax ());
 			return true;
 		}
-		else if (attributeName == "wheel-inc-value")
+		else if (attributeName == kAttrWheelIncValue)
 		{
-			stream << control->getWheelInc ();
-			stringValue = stream.str ();
+			stringValue = numberToString (control->getWheelInc ());
 			return true;
 		}
-		else if (attributeName == "background-offset")
+		else if (attributeName == kAttrBackgroundOffset)
 		{
 			pointToString (control->getBackOffset (), stringValue);
 			return true;
@@ -1248,6 +1259,15 @@ public:
 COnOffButtonCreator __gCOnOffButtonCreator;
 
 //-----------------------------------------------------------------------------
+// CCheckBoxCreator attributes
+//-----------------------------------------------------------------------------
+static const std::string kAttrBoxframeColor = "boxframe-color";
+static const std::string kAttrBoxfillColor = "boxfill-color";
+static const std::string kAttrCheckmarkColor = "checkmark-color";
+static const std::string kAttrDrawCrossbox = "draw-crossbox";
+static const std::string kAttrAutosizeToFit = "autosize-to-fit";
+
+//-----------------------------------------------------------------------------
 class CCheckBoxCreator : public IViewCreator
 {
 public:
@@ -1261,11 +1281,11 @@ public:
 		if (!checkbox)
 			return false;
 		
-		const std::string* attr = attributes.getAttributeValue ("title");
+		const std::string* attr = attributes.getAttributeValue (kAttrTitle);
 		if (attr)
 			checkbox->setTitle (attr->c_str ());
 
-		attr = attributes.getAttributeValue ("font");
+		attr = attributes.getAttributeValue (kAttrFont);
 		if (attr)
 		{
 			CFontRef font = description->getFont (attr->c_str ());
@@ -1276,58 +1296,21 @@ public:
 		}
 
 		CColor color;
-		attr = attributes.getAttributeValue ("font-color");
-		if (attr)
-		{
-			if (description->getColor (attr->c_str (), color))
-			{
-				checkbox->setFontColor (color);
-			}
-		}
+		if (stringToColor (attributes.getAttributeValue (kAttrFontColor), color, description))
+			checkbox->setFontColor (color);
 
-		attr = attributes.getAttributeValue ("boxframe-color");
-		if (attr)
-		{
-			if (description->getColor (attr->c_str (), color))
-			{
-				checkbox->setBoxFrameColor (color);
-			}
-		}
+		if (stringToColor (attributes.getAttributeValue (kAttrBoxframeColor), color, description))
+			checkbox->setBoxFrameColor (color);
 
-		attr = attributes.getAttributeValue ("boxfill-color");
-		if (attr)
-		{
-			if (description->getColor (attr->c_str (), color))
-			{
-				checkbox->setBoxFillColor (color);
-			}
-		}
+		if (stringToColor (attributes.getAttributeValue (kAttrBoxfillColor), color, description))
+			checkbox->setBoxFillColor (color);
 
-		attr = attributes.getAttributeValue ("checkmark-color");
-		if (attr)
-		{
-			if (description->getColor (attr->c_str (), color))
-			{
-				checkbox->setCheckMarkColor (color);
-			}
-		}
+		if (stringToColor (attributes.getAttributeValue (kAttrCheckmarkColor), color, description))
+			checkbox->setCheckMarkColor (color);
+
 		int32_t style = checkbox->getStyle ();
-		attr = attributes.getAttributeValue ("draw-crossbox");
-		if (attr)
-		{
-			if (*attr == "true")
-				style |= CCheckBox::kDrawCrossBox;
-			else
-				style &= ~CCheckBox::kDrawCrossBox;
-		}
-		attr = attributes.getAttributeValue ("autosize-to-fit");
-		if (attr)
-		{
-			if (*attr == "true")
-				style |= CCheckBox::kAutoSizeToFit;
-			else
-				style &= ~CCheckBox::kAutoSizeToFit;
-		}
+		applyStyleMask (attributes.getAttributeValue (kAttrDrawCrossbox), CCheckBox::kDrawCrossBox, style);
+		applyStyleMask (attributes.getAttributeValue (kAttrAutosizeToFit), CCheckBox::kAutoSizeToFit, style);
 		checkbox->setStyle (style);
 		
 		return true;
@@ -1335,26 +1318,26 @@ public:
 
 	bool getAttributeNames (std::list<std::string>& attributeNames) const VSTGUI_OVERRIDE_VMETHOD
 	{
-		attributeNames.push_back ("title");
-		attributeNames.push_back ("font");
-		attributeNames.push_back ("font-color");
-		attributeNames.push_back ("boxframe-color");
-		attributeNames.push_back ("boxfill-color");
-		attributeNames.push_back ("checkmark-color");
-		attributeNames.push_back ("autosize-to-fit");
-		attributeNames.push_back ("draw-crossbox");
+		attributeNames.push_back (kAttrTitle);
+		attributeNames.push_back (kAttrFont);
+		attributeNames.push_back (kAttrFontColor);
+		attributeNames.push_back (kAttrBoxframeColor);
+		attributeNames.push_back (kAttrBoxfillColor);
+		attributeNames.push_back (kAttrCheckmarkColor);
+		attributeNames.push_back (kAttrAutosizeToFit);
+		attributeNames.push_back (kAttrDrawCrossbox);
 		return true;
 	}
 	AttrType getAttributeType (const std::string& attributeName) const VSTGUI_OVERRIDE_VMETHOD
 	{
-		if (attributeName == "title") return kStringType;
-		else if (attributeName == "font") return kFontType;
-		else if (attributeName == "font-color") return kColorType;
-		else if (attributeName == "boxframe-color") return kColorType;
-		else if (attributeName == "boxfill-color") return kColorType;
-		else if (attributeName == "checkmark-color") return kColorType;
-		else if (attributeName == "autosize-to-fit") return kBooleanType;
-		else if (attributeName == "draw-crossbox") return kBooleanType;
+		if (attributeName == kAttrTitle) return kStringType;
+		else if (attributeName == kAttrFont) return kFontType;
+		else if (attributeName == kAttrFontColor) return kColorType;
+		else if (attributeName == kAttrBoxframeColor) return kColorType;
+		else if (attributeName == kAttrBoxfillColor) return kColorType;
+		else if (attributeName == kAttrCheckmarkColor) return kColorType;
+		else if (attributeName == kAttrAutosizeToFit) return kBooleanType;
+		else if (attributeName == kAttrDrawCrossbox) return kBooleanType;
 		return kUnknownType;
 	}
 	bool getAttributeValue (CView* view, const std::string& attributeName, std::string& stringValue, const IUIDescription* desc) const VSTGUI_OVERRIDE_VMETHOD
@@ -1363,12 +1346,12 @@ public:
 		if (!checkbox)
 			return false;
 		
-		if (attributeName == "title")
+		if (attributeName == kAttrTitle)
 		{
 			stringValue = checkbox->getTitle () ? checkbox->getTitle () : "";
 			return true;
 		}
-		else if (attributeName == "font")
+		else if (attributeName == kAttrFont)
 		{
 			UTF8StringPtr fontName = desc->lookupFontName (checkbox->getFont ());
 			if (fontName)
@@ -1378,27 +1361,27 @@ public:
 			}
 			return false;
 		}
-		else if (attributeName == "font-color")
+		else if (attributeName == kAttrFontColor)
 		{
 			colorToString (checkbox->getFontColor (), stringValue, desc);
 			return true;
 		}
-		else if (attributeName == "boxframe-color")
+		else if (attributeName == kAttrBoxframeColor)
 		{
 			colorToString (checkbox->getBoxFrameColor (), stringValue, desc);
 			return true;
 		}
-		else if (attributeName == "boxfill-color")
+		else if (attributeName == kAttrBoxfillColor)
 		{
 			colorToString (checkbox->getBoxFillColor (), stringValue, desc);
 			return true;
 		}
-		else if (attributeName == "checkmark-color")
+		else if (attributeName == kAttrCheckmarkColor)
 		{
 			colorToString (checkbox->getCheckMarkColor (), stringValue, desc);
 			return true;
 		}
-		else if (attributeName == "autosize-to-fit")
+		else if (attributeName == kAttrAutosizeToFit)
 		{
 			if (checkbox->getStyle () & CCheckBox::kAutoSizeToFit)
 				stringValue = "true";
@@ -1406,7 +1389,7 @@ public:
 				stringValue = "false";
 			return true;
 		}
-		else if (attributeName == "draw-crossbox")
+		else if (attributeName == kAttrDrawCrossbox)
 		{
 			if (checkbox->getStyle () & CCheckBox::kDrawCrossBox)
 				stringValue = "true";
@@ -1419,6 +1402,23 @@ public:
 
 };
 CCheckBoxCreator __gCCheckBoxCreator;
+
+//-----------------------------------------------------------------------------
+// CParamDisplayCreator attributes
+//-----------------------------------------------------------------------------
+static const std::string kAttrBackColor = "back-color";
+static const std::string kAttrShadowColor = "shadow-color";
+static const std::string kAttrFontAntialias = "font-antialias";
+static const std::string kAttrStyle3DIn = "style-3D-in";
+static const std::string kAttrStyle3DOut = "style-3D-out";
+static const std::string kAttrStyleNoFrame = "style-no-frame";
+static const std::string kAttrStyleNoText = "style-no-text";
+static const std::string kAttrStyleNoDraw = "style-no-draw";
+static const std::string kAttrStyleShadowText = "style-shadow-text";
+static const std::string kAttrStyleRoundRect = "style-round-rect";
+static const std::string kAttrTextInset = "text-inset";
+static const std::string kAttrValuePrecision = "value-precision";
+static const std::string kAttrTextRotation = "text-rotation";
 
 //-----------------------------------------------------------------------------
 class CParamDisplayCreator : public IViewCreator
@@ -1434,26 +1434,7 @@ public:
 		if (!display)
 			return false;
 		
-		const std::string* fontAttr = attributes.getAttributeValue ("font");
-		const std::string* fontColorAttr = attributes.getAttributeValue ("font-color");
-		const std::string* backColorAttr = attributes.getAttributeValue ("back-color");
-		const std::string* frameColorAttr = attributes.getAttributeValue ("frame-color");
-		const std::string* shadowColorAttr = attributes.getAttributeValue ("shadow-color");
-		const std::string* antialiasAttr = attributes.getAttributeValue ("font-antialias");
-		const std::string* style3DInAttr = attributes.getAttributeValue ("style-3D-in");
-		const std::string* style3DOutAttr = attributes.getAttributeValue ("style-3D-out");
-		const std::string* styleNoFrameAttr = attributes.getAttributeValue ("style-no-frame");
-		const std::string* styleNoTextAttr = attributes.getAttributeValue ("style-no-text");
-		const std::string* styleNoDrawAttr = attributes.getAttributeValue ("style-no-draw");
-		const std::string* styleShadowTextAttr = attributes.getAttributeValue ("style-shadow-text");
-		const std::string* styleRoundRectAttr = attributes.getAttributeValue ("style-round-rect");
-		const std::string* textAlignmentAttr = attributes.getAttributeValue ("text-alignment");
-		const std::string* textInsetAttr = attributes.getAttributeValue ("text-inset");
-		const std::string* roundRectRadiusAttr = attributes.getAttributeValue ("round-rect-radius");
-		const std::string* frameWidthAttr = attributes.getAttributeValue ("frame-width");
-		const std::string* precisionAttr = attributes.getAttributeValue ("value-precision");
-
-		CColor color;
+		const std::string* fontAttr = attributes.getAttributeValue (kAttrFont);
 		if (fontAttr)
 		{
 			CFontRef font = description->getFont (fontAttr->c_str ());
@@ -1462,42 +1443,25 @@ public:
 				display->setFont (font);
 			}
 		}
-		if (fontColorAttr)
-		{
-			if (description->getColor (fontColorAttr->c_str (), color))
-			{
-				display->setFontColor (color);
-			}
-		}
-		if (backColorAttr)
-		{
-			if (description->getColor (backColorAttr->c_str (), color))
-			{
-				display->setBackColor (color);
-			}
-		}
-		if (frameColorAttr)
-		{
-			if (description->getColor (frameColorAttr->c_str (), color))
-			{
-				display->setFrameColor (color);
-			}
-		}
-		if (shadowColorAttr)
-		{
-			if (description->getColor (shadowColorAttr->c_str (), color))
-			{
-				display->setShadowColor (color);
-			}
-		}
-		if (textInsetAttr)
-		{
-			CPoint p;
-			if (parseSize (*textInsetAttr, p))
-				display->setTextInset (p);
-		}
-		if (antialiasAttr)
-			display->setAntialias (*antialiasAttr == "true");
+
+		CColor color;
+		if (stringToColor (attributes.getAttributeValue (kAttrFontColor), color, description))
+			display->setFontColor (color);
+		if (stringToColor (attributes.getAttributeValue (kAttrBackColor), color, description))
+			display->setBackColor (color);
+		if (stringToColor (attributes.getAttributeValue (kAttrFrameColor), color, description))
+			display->setFrameColor (color);
+		if (stringToColor (attributes.getAttributeValue (kAttrShadowColor), color, description))
+			display->setShadowColor (color);
+
+		CPoint p;
+		if (attributes.getPointAttribute (kAttrTextInset, p))
+			display->setTextInset (p);
+		bool b;
+		if (attributes.getBooleanAttribute(kAttrFontAntialias, b))
+			display->setAntialias (b);
+
+		const std::string* textAlignmentAttr = attributes.getAttributeValue (kAttrTextAlignment);
 		if (textAlignmentAttr)
 		{
 			CHoriTxtAlign align = kCenterText;
@@ -1507,123 +1471,77 @@ public:
 				align = kRightText;
 			display->setHoriAlign (align);
 		}
-		if (roundRectRadiusAttr)
-		{
-			CCoord radius = strtof (roundRectRadiusAttr->c_str (), 0);
-			display->setRoundRectRadius (radius);
-		}
-		if (frameWidthAttr)
-		{
-			CCoord width = strtof (frameWidthAttr->c_str (), 0);
-			display->setFrameWidth (width);
-		}
+		double d;
+		if (attributes.getDoubleAttribute(kAttrRoundRectRadius, d))
+			display->setRoundRectRadius (d);
+		if (attributes.getDoubleAttribute(kAttrFrameWidth, d))
+			display->setFrameWidth (d);
+		if (attributes.getDoubleAttribute (kAttrTextRotation, d))
+			display->setTextRotation (d);
+
 		int32_t style = display->getStyle ();
-		if (style3DInAttr)
-		{
-			if (*style3DInAttr == "true")
-				style |= k3DIn;
-			else
-				style &= ~k3DIn;
-		}
-		if (style3DOutAttr)
-		{
-			if (*style3DOutAttr == "true")
-				style |= k3DOut;
-			else
-				style &= ~k3DOut;
-		}
-		if (styleNoFrameAttr)
-		{
-			if (*styleNoFrameAttr == "true")
-				style |= kNoFrame;
-			else
-				style &= ~kNoFrame;
-		}
-		if (styleNoTextAttr)
-		{
-			if (*styleNoTextAttr == "true")
-				style |= kNoTextStyle;
-			else
-				style &= ~kNoTextStyle;
-		}
-		if (styleNoDrawAttr)
-		{
-			if (*styleNoDrawAttr == "true")
-				style |= kNoDrawStyle;
-			else
-				style &= ~kNoDrawStyle;
-		}
-		if (styleShadowTextAttr)
-		{
-			if (*styleShadowTextAttr == "true")
-				style |= kShadowText;
-			else
-				style &= ~kShadowText;
-		}
-		if (styleRoundRectAttr)
-		{
-			if (*styleRoundRectAttr == "true")
-				style |= kRoundRectStyle;
-			else
-				style &= ~kRoundRectStyle;
-		}
+		applyStyleMask (attributes.getAttributeValue (kAttrStyle3DIn), k3DIn, style);
+		applyStyleMask (attributes.getAttributeValue (kAttrStyle3DOut), k3DOut, style);
+		applyStyleMask (attributes.getAttributeValue (kAttrStyleNoFrame), kNoFrame, style);
+		applyStyleMask (attributes.getAttributeValue (kAttrStyleNoDraw), kNoDrawStyle, style);
+		applyStyleMask (attributes.getAttributeValue (kAttrStyleNoText), kNoTextStyle, style);
+		applyStyleMask (attributes.getAttributeValue (kAttrStyleShadowText), kShadowText, style);
+		applyStyleMask (attributes.getAttributeValue (kAttrStyleRoundRect), kRoundRectStyle, style);
 		display->setStyle (style);
+
+		const std::string* precisionAttr = attributes.getAttributeValue (kAttrValuePrecision);
 		if (precisionAttr)
 		{
 			uint8_t precision = (uint8_t)strtol (precisionAttr->c_str (), 0, 10);
 			display->setPrecision (precision);
 		}
-		double textRotation;
-		if (attributes.getDoubleAttribute ("text-rotation", textRotation))
-		{
-			display->setTextRotation (textRotation);
-		}
+
 		return true;
 	}
 	bool getAttributeNames (std::list<std::string>& attributeNames) const VSTGUI_OVERRIDE_VMETHOD
 	{
-		attributeNames.push_back ("font");
-		attributeNames.push_back ("font-color");
-		attributeNames.push_back ("back-color");
-		attributeNames.push_back ("frame-color");
-		attributeNames.push_back ("shadow-color");
-		attributeNames.push_back ("round-rect-radius");
-		attributeNames.push_back ("frame-width");
-		attributeNames.push_back ("text-alignment");
-		attributeNames.push_back ("text-inset");
-		attributeNames.push_back ("value-precision");
-		attributeNames.push_back ("font-antialias");
-		attributeNames.push_back ("style-3D-in");
-		attributeNames.push_back ("style-3D-out");
-		attributeNames.push_back ("style-no-frame");
-		attributeNames.push_back ("style-no-text");
-		attributeNames.push_back ("style-no-draw");
-		attributeNames.push_back ("style-shadow-text");
-		attributeNames.push_back ("style-round-rect");
-		attributeNames.push_back ("text-rotation");
+		attributeNames.push_back (kAttrFont);
+		attributeNames.push_back (kAttrFontColor);
+		attributeNames.push_back (kAttrBackColor);
+		attributeNames.push_back (kAttrFrameColor);
+		attributeNames.push_back (kAttrShadowColor);
+		attributeNames.push_back (kAttrRoundRectRadius);
+		attributeNames.push_back (kAttrFrameWidth);
+		attributeNames.push_back (kAttrTextAlignment);
+		attributeNames.push_back (kAttrTextInset);
+		attributeNames.push_back (kAttrValuePrecision);
+		attributeNames.push_back (kAttrFontAntialias);
+		attributeNames.push_back (kAttrStyle3DIn);
+		attributeNames.push_back (kAttrStyle3DOut);
+		attributeNames.push_back (kAttrStyleNoFrame);
+		attributeNames.push_back (kAttrStyleNoText);
+		attributeNames.push_back (kAttrStyleNoDraw);
+		attributeNames.push_back (kAttrStyleShadowText);
+		attributeNames.push_back (kAttrStyleRoundRect);
+		attributeNames.push_back (kAttrTextRotation);
 		return true;
 	}
 	AttrType getAttributeType (const std::string& attributeName) const VSTGUI_OVERRIDE_VMETHOD
 	{
-		if (attributeName == "font") return kFontType;
-		else if (attributeName == "font-color") return kColorType;
-		else if (attributeName == "back-color") return kColorType;
-		else if (attributeName == "frame-color") return kColorType;
-		else if (attributeName == "shadow-color") return kColorType;
-		else if (attributeName == "font-antialias") return kBooleanType;
-		else if (attributeName == "style-3D-in")return kBooleanType;
-		else if (attributeName == "style-3D-out") return kBooleanType;
-		else if (attributeName == "style-no-frame") return kBooleanType;
-		else if (attributeName == "style-no-text") return kBooleanType;
-		else if (attributeName == "style-no-draw") return kBooleanType;
-		else if (attributeName == "style-shadow-text") return kBooleanType;
-		else if (attributeName == "style-round-rect") return kBooleanType;
-		else if (attributeName == "round-rect-radius") return kFloatType;
-		else if (attributeName == "frame-width") return kFloatType;
-		else if (attributeName == "text-alignment") return kStringType;
-		else if (attributeName == "text-inset") return kPointType;
-		else if (attributeName == "value-precision") return kIntegerType;
-		else if (attributeName == "text-rotation") return kFloatType;
+		if (attributeName == kAttrFont) return kFontType;
+		else if (attributeName == kAttrFontColor) return kColorType;
+		else if (attributeName == kAttrBackColor) return kColorType;
+		else if (attributeName == kAttrFrameColor) return kColorType;
+		else if (attributeName == kAttrShadowColor) return kColorType;
+		else if (attributeName == kAttrFontAntialias) return kBooleanType;
+		else if (attributeName == kAttrStyle3DIn)return kBooleanType;
+		else if (attributeName == kAttrStyle3DOut) return kBooleanType;
+		else if (attributeName == kAttrStyleNoFrame) return kBooleanType;
+		else if (attributeName == kAttrStyleNoText) return kBooleanType;
+		else if (attributeName == kAttrStyleNoDraw) return kBooleanType;
+		else if (attributeName == kAttrStyleShadowText) return kBooleanType;
+		else if (attributeName == kAttrStyleRoundRect) return kBooleanType;
+		else if (attributeName == kAttrRoundRectRadius) return kFloatType;
+		else if (attributeName == kAttrFrameWidth) return kFloatType;
+		else if (attributeName == kAttrTextAlignment) return kStringType;
+		else if (attributeName == kAttrTextInset) return kPointType;
+		else if (attributeName == kAttrValuePrecision) return kIntegerType;
+		else if (attributeName == kAttrTextRotation) return kFloatType;
 		return kUnknownType;
 	}
 	bool getAttributeValue (CView* view, const std::string& attributeName, std::string& stringValue, const IUIDescription* desc) const VSTGUI_OVERRIDE_VMETHOD
@@ -1631,7 +1549,7 @@ public:
 		CParamDisplay* pd = dynamic_cast<CParamDisplay*> (view);
 		if (pd == 0)
 			return false;
-		if (attributeName == "font")
+		if (attributeName == kAttrFont)
 		{
 			UTF8StringPtr fontName = desc->lookupFontName (pd->getFont ());
 			if (fontName)
@@ -1641,86 +1559,82 @@ public:
 			}
 			return false;
 		}
-		else if (attributeName == "font-color")
+		else if (attributeName == kAttrFontColor)
 		{
 			colorToString (pd->getFontColor (), stringValue, desc);
 			return true;
 		}
-		else if (attributeName == "back-color")
+		else if (attributeName == kAttrBackColor)
 		{
 			colorToString (pd->getBackColor (), stringValue, desc);
 			return true;
 		}
-		else if (attributeName == "frame-color")
+		else if (attributeName == kAttrFrameColor)
 		{
 			colorToString (pd->getFrameColor (), stringValue, desc);
 			return true;
 		}
-		else if (attributeName == "shadow-color")
+		else if (attributeName == kAttrShadowColor)
 		{
 			colorToString (pd->getShadowColor (), stringValue, desc);
 			return true;
 		}
-		else if (attributeName == "text-inset")
+		else if (attributeName == kAttrTextInset)
 		{
 			pointToString (pd->getTextInset (), stringValue);
 			return true;
 		}
-		else if (attributeName == "font-antialias")
+		else if (attributeName == kAttrFontAntialias)
 		{
 			stringValue = pd->getAntialias () ? "true" : "false";
 			return true;
 		}
-		else if (attributeName == "style-3D-in")
+		else if (attributeName == kAttrStyle3DIn)
 		{
 			stringValue = pd->getStyle () & k3DIn ? "true" : "false";
 			return true;
 		}
-		else if (attributeName == "style-3D-out")
+		else if (attributeName == kAttrStyle3DOut)
 		{
 			stringValue = pd->getStyle () & k3DOut ? "true" : "false";
 			return true;
 		}
-		else if (attributeName == "style-no-frame")
+		else if (attributeName == kAttrStyleNoFrame)
 		{
 			stringValue = pd->getStyle () & kNoFrame ? "true" : "false";
 			return true;
 		}
-		else if (attributeName == "style-no-text")
+		else if (attributeName == kAttrStyleNoText)
 		{
 			stringValue = pd->getStyle () & kNoTextStyle ? "true" : "false";
 			return true;
 		}
-		else if (attributeName == "style-no-draw")
+		else if (attributeName == kAttrStyleNoDraw)
 		{
 			stringValue = pd->getStyle () & kNoDrawStyle ? "true" : "false";
 			return true;
 		}
-		else if (attributeName == "style-shadow-text")
+		else if (attributeName == kAttrStyleShadowText)
 		{
 			stringValue = pd->getStyle () & kShadowText ? "true" : "false";
 			return true;
 		}
-		else if (attributeName == "style-round-rect")
+		else if (attributeName == kAttrStyleRoundRect)
 		{
 			stringValue = pd->getStyle () & kRoundRectStyle ? "true" : "false";
 			return true;
 		}
-		else if (attributeName == "round-rect-radius")
+		else if (attributeName == kAttrRoundRectRadius)
 		{
-			std::stringstream str;
-			str << pd->getRoundRectRadius ();
-			stringValue = str.str ();
+			stringValue = numberToString (pd->getRoundRectRadius ());
 			return true;
 		}
-		else if (attributeName == "frame-width")
+		else if (attributeName == kAttrFrameWidth)
 		{
-			std::stringstream str;
-			str << pd->getFrameWidth ();
-			stringValue = str.str ();
+			stringValue = numberToString (pd->getFrameWidth ());
 			return true;
 		}
-		else if (attributeName == "text-alignment")
+		else if (attributeName == kAttrTextAlignment)
 		{
 			CHoriTxtAlign align = pd->getHoriAlign ();
 			switch (align)
@@ -1731,18 +1645,24 @@ public:
 			}
 			return true;
 		}
-		else if (attributeName == "value-precision")
+		else if (attributeName == kAttrValuePrecision)
 		{
-			std::stringstream str;
-			str << (uint32_t)pd->getPrecision ();
-			stringValue = str.str ();
+			stringValue = numberToString ((uint32_t)pd->getPrecision ());
 			return true;
 		}
-		else if (attributeName == "text-rotation")
+		else if (attributeName == kAttrTextRotation)
 		{
-			std::stringstream str;
-			str << pd->getTextRotation ();
-			stringValue = str.str ();
+			stringValue = numberToString (pd->getTextRotation ());
+			return true;
+		}
+		return false;
+	}
+	bool getAttributeValueRange (const std::string& attributeName, double& minValue, double &maxValue) const VSTGUI_OVERRIDE_VMETHOD
+	{
+		if (attributeName == kAttrTextRotation)
+		{
+			minValue = 0.;
+			maxValue = 360.;
 			return true;
 		}
 		return false;
@@ -1750,6 +1670,12 @@ public:
 
 };
 CParamDisplayCreator __gCParamDisplayCreator;
+
+//-----------------------------------------------------------------------------
+// COptionMenuCreator attributes
+//-----------------------------------------------------------------------------
+static const std::string kAttrMenuPopupStyle = "menu-popup-style";
+static const std::string kAttrMenuCheckStyle = "menu-check-style";
 
 //-----------------------------------------------------------------------------
 class COptionMenuCreator : public IViewCreator
@@ -1765,35 +1691,23 @@ public:
 		if (!menu)
 			return false;
 
-		const std::string* attr = attributes.getAttributeValue ("menu-popup-style");
-		if (attr)
-		{
-			if (*attr == "true")
-				menu->setStyle (menu->getStyle () | kPopupStyle);
-			else
-				menu->setStyle (menu->getStyle () & ~kPopupStyle);
-		}
-		attr = attributes.getAttributeValue ("menu-check-style");
-		if (attr)
-		{
-			if (*attr == "true")
-				menu->setStyle (menu->getStyle () | kCheckStyle);
-			else
-				menu->setStyle (menu->getStyle () & ~kCheckStyle);
-		}
+		int32_t style = menu->getStyle ();
+		applyStyleMask (attributes.getAttributeValue (kAttrMenuPopupStyle), kPopupStyle, style);
+		applyStyleMask (attributes.getAttributeValue (kAttrMenuCheckStyle), kCheckStyle, style);
+		menu->setStyle (style);
 
 		return true;
 	}
 	bool getAttributeNames (std::list<std::string>& attributeNames) const VSTGUI_OVERRIDE_VMETHOD
 	{
-		attributeNames.push_back ("menu-popup-style");
-		attributeNames.push_back ("menu-check-style");
+		attributeNames.push_back (kAttrMenuPopupStyle);
+		attributeNames.push_back (kAttrMenuCheckStyle);
 		return true;
 	}
 	AttrType getAttributeType (const std::string& attributeName) const VSTGUI_OVERRIDE_VMETHOD
 	{
-		if (attributeName == "menu-popup-style") return kBooleanType;
-		if (attributeName == "menu-check-style") return kBooleanType;
+		if (attributeName == kAttrMenuPopupStyle) return kBooleanType;
+		if (attributeName == kAttrMenuCheckStyle) return kBooleanType;
 		return kUnknownType;
 	}
 	bool getAttributeValue (CView* view, const std::string& attributeName, std::string& stringValue, const IUIDescription* desc) const VSTGUI_OVERRIDE_VMETHOD
@@ -1801,12 +1715,12 @@ public:
 		COptionMenu* menu = dynamic_cast<COptionMenu*> (view);
 		if (!menu)
 			return false;
-		if (attributeName == "menu-popup-style")
+		if (attributeName == kAttrMenuPopupStyle)
 		{
 			stringValue = (menu->getStyle () & kPopupStyle) ? "true" : "false";
 			return true;
 		}
-		if (attributeName == "menu-check-style")
+		if (attributeName == kAttrMenuCheckStyle)
 		{
 			stringValue = (menu->getStyle () & kCheckStyle) ? "true" : "false";
 			return true;
@@ -1816,6 +1730,11 @@ public:
 
 };
 COptionMenuCreator __gCOptionMenuCreator;
+
+//-----------------------------------------------------------------------------
+// CTextLabelCreator attributes
+//-----------------------------------------------------------------------------
+static const std::string kAttrTruncateMode = "truncate-mode";
 
 //-----------------------------------------------------------------------------
 class CTextLabelCreator : public IViewCreator
@@ -1831,10 +1750,10 @@ public:
 		if (!label)
 			return false;
 
-		const std::string* attr = attributes.getAttributeValue ("title");
+		const std::string* attr = attributes.getAttributeValue (kAttrTitle);
 		if (attr)
 			label->setText (attr->c_str ());
-		attr = attributes.getAttributeValue ("truncate-mode");
+		attr = attributes.getAttributeValue (kAttrTruncateMode);
 		if (attr)
 		{
 			if (*attr == "head")
@@ -1849,14 +1768,14 @@ public:
 	}
 	bool getAttributeNames (std::list<std::string>& attributeNames) const VSTGUI_OVERRIDE_VMETHOD
 	{
-		attributeNames.push_back ("title");
-		attributeNames.push_back ("truncate-mode");
+		attributeNames.push_back (kAttrTitle);
+		attributeNames.push_back (kAttrTruncateMode);
 		return true;
 	}
 	AttrType getAttributeType (const std::string& attributeName) const VSTGUI_OVERRIDE_VMETHOD
 	{
-		if (attributeName == "title") return kStringType;
-		if (attributeName == "truncate-mode") return kListType;
+		if (attributeName == kAttrTitle) return kStringType;
+		if (attributeName == kAttrTruncateMode) return kListType;
 		return kUnknownType;
 	}
 	bool getAttributeValue (CView* view, const std::string& attributeName, std::string& stringValue, const IUIDescription* desc) const VSTGUI_OVERRIDE_VMETHOD
@@ -1864,13 +1783,13 @@ public:
 		CTextLabel* label = dynamic_cast<CTextLabel*> (view);
 		if (!label)
 			return false;
-		if (attributeName == "title")
+		if (attributeName == kAttrTitle)
 		{
 			UTF8StringPtr title = label->getText ();
 			stringValue = title ? title : "";
 			return true;
 		}
-		else if (attributeName == "truncate-mode")
+		else if (attributeName == kAttrTruncateMode)
 		{
 			switch (label->getTextTruncateMode ())
 			{
@@ -1884,7 +1803,7 @@ public:
 	}
 	bool getPossibleListValues (const std::string& attributeName, std::list<const std::string*>& values) const VSTGUI_OVERRIDE_VMETHOD
 	{
-		if (attributeName == "truncate-mode")
+		if (attributeName == kAttrTruncateMode)
 		{
 			static std::string kNone = "none";
 			static std::string kHead = "head";
@@ -1902,6 +1821,12 @@ public:
 CTextLabelCreator __gCTextLabelCreator;
 
 //-----------------------------------------------------------------------------
+// CTextEditCreator attributes
+//-----------------------------------------------------------------------------
+static const std::string kAttrImmediateTextChange = "immediate-text-change";
+static const std::string kAttrStyleDoubleClick = "style-doubleclick";
+
+//-----------------------------------------------------------------------------
 class CTextEditCreator : public IViewCreator
 {
 public:
@@ -1915,33 +1840,26 @@ public:
 		if (!label)
 			return false;
 
-		const std::string* attr = attributes.getAttributeValue ("immediate-text-change");
-		if (attr)
-			label->setImmediateTextChange (*attr == "true" ? true : false);
+		bool b;
+		if (attributes.getBooleanAttribute(kAttrImmediateTextChange, b))
+			label->setImmediateTextChange (b);
 
 		int32_t style = label->getStyle ();
-		attr = attributes.getAttributeValue ("style-doubleclick");
-		if (attr)
-		{
-			if (*attr == "true")
-				style |= kDoubleClickStyle;
-			else
-				style &= ~kDoubleClickStyle;
-		}
+		applyStyleMask (attributes.getAttributeValue (kAttrStyleDoubleClick), kDoubleClickStyle, style);
 		label->setStyle (style);
 
 		return true;
 	}
 	bool getAttributeNames (std::list<std::string>& attributeNames) const VSTGUI_OVERRIDE_VMETHOD
 	{
-		attributeNames.push_back ("immediate-text-change");
-		attributeNames.push_back ("style-doubleclick");
+		attributeNames.push_back (kAttrImmediateTextChange);
+		attributeNames.push_back (kAttrStyleDoubleClick);
 		return true;
 	}
 	AttrType getAttributeType (const std::string& attributeName) const VSTGUI_OVERRIDE_VMETHOD
 	{
-		if (attributeName == "immediate-text-change") return kBooleanType;
-		if (attributeName == "style-doubleclick") return kBooleanType;
+		if (attributeName == kAttrImmediateTextChange) return kBooleanType;
+		if (attributeName == kAttrStyleDoubleClick) return kBooleanType;
 		return kUnknownType;
 	}
 	bool getAttributeValue (CView* view, const std::string& attributeName, std::string& stringValue, const IUIDescription* desc) const VSTGUI_OVERRIDE_VMETHOD
@@ -1949,12 +1867,12 @@ public:
 		CTextEdit* label = dynamic_cast<CTextEdit*> (view);
 		if (!label)
 			return false;
-		if (attributeName == "immediate-text-change")
+		if (attributeName == kAttrImmediateTextChange)
 		{
 			stringValue = label->getImmediateTextChange () ? "true" : "false";
 			return true;
 		}
-		if (attributeName == "style-doubleclick")
+		if (attributeName == kAttrStyleDoubleClick)
 		{
 			stringValue = label->getStyle () & kDoubleClickStyle ? "true" : "false";
 			return true;
@@ -1965,6 +1883,21 @@ public:
 
 };
 CTextEditCreator __gCTextEditCreator;
+
+//-----------------------------------------------------------------------------
+// CTextButtonCreator attributes
+//-----------------------------------------------------------------------------
+static const std::string kAttrTextColor = "text-color";
+static const std::string kAttrTextColorHighlighted = "text-color-highlighted";
+static const std::string kAttrGradientStartColorHighlighted = "gradient-start-color-highlighted";
+static const std::string kAttrGradientEndColorHighlighted = "gradient-end-color-highlighted";
+static const std::string kAttrFrameColorHighlighted = "frame-color-highlighted";
+static const std::string kAttrRoundRadius = "round-radius";
+static const std::string kAttrKickStyle = "kick-style";
+static const std::string kAttrIcon = "icon";
+static const std::string kAttrIconHighlighted = "icon-highlighted";
+static const std::string kAttrIconPosition = "icon-position";
+static const std::string kAttrIconTextMargin = "icon-text-margin";
 
 //-----------------------------------------------------------------------------
 class CTextButtonCreator : public IViewCreator
@@ -1980,11 +1913,11 @@ public:
 		if (!button)
 			return false;
 
-		const std::string* attr = attributes.getAttributeValue ("title");
+		const std::string* attr = attributes.getAttributeValue (kAttrTitle);
 		if (attr)
 			button->setTitle (attr->c_str ());
 
-		attr = attributes.getAttributeValue ("font");
+		attr = attributes.getAttributeValue (kAttrFont);
 		if (attr)
 		{
 			CFontRef font = description->getFont (attr->c_str ());
@@ -1995,100 +1928,44 @@ public:
 		}
 
 		CColor color;
-		attr = attributes.getAttributeValue ("text-color");
-		if (attr)
-		{
-			if (description->getColor (attr->c_str (), color))
-			{
-				button->setTextColor (color);
-			}
-		}
-		attr = attributes.getAttributeValue ("text-color-highlighted");
-		if (attr)
-		{
-			if (description->getColor (attr->c_str (), color))
-			{
-				button->setTextColorHighlighted (color);
-			}
-		}
-		attr = attributes.getAttributeValue ("gradient-start-color");
-		if (attr)
-		{
-			if (description->getColor (attr->c_str (), color))
-			{
-				button->setGradientStartColor (color);
-			}
-		}
-		attr = attributes.getAttributeValue ("gradient-start-color-highlighted");
-		if (attr)
-		{
-			if (description->getColor (attr->c_str (), color))
-			{
-				button->setGradientStartColorHighlighted (color);
-			}
-		}
-		attr = attributes.getAttributeValue ("gradient-end-color");
-		if (attr)
-		{
-			if (description->getColor (attr->c_str (), color))
-			{
-				button->setGradientEndColor (color);
-			}
-		}
-		attr = attributes.getAttributeValue ("gradient-end-color-highlighted");
-		if (attr)
-		{
-			if (description->getColor (attr->c_str (), color))
-			{
-				button->setGradientEndColorHighlighted (color);
-			}
-		}
-		attr = attributes.getAttributeValue ("frame-color");
-		if (attr)
-		{
-			if (description->getColor (attr->c_str (), color))
-			{
-				button->setFrameColor (color);
-			}
-		}
-		attr = attributes.getAttributeValue ("frame-color-highlighted");
-		if (attr)
-		{
-			if (description->getColor (attr->c_str (), color))
-			{
-				button->setFrameColorHighlighted (color);
-			}
-		}
-		attr = attributes.getAttributeValue ("frame-width");
-		if (attr)
-		{
-			CCoord width = strtof (attr->c_str (), 0);
-			button->setFrameWidth (width);
-		}
-		attr = attributes.getAttributeValue ("round-radius");
-		if (attr)
-		{
-			CCoord width = strtof (attr->c_str (), 0);
-			button->setRoundRadius (width);
-		}
-		attr = attributes.getAttributeValue ("kick-style");
+		if (stringToColor (attributes.getAttributeValue (kAttrTextColor), color, description))
+			button->setTextColor (color);
+		if (stringToColor (attributes.getAttributeValue (kAttrTextColorHighlighted), color, description))
+			button->setTextColorHighlighted (color);
+		if (stringToColor (attributes.getAttributeValue (kAttrGradientStartColor), color, description))
+			button->setGradientStartColor (color);
+		if (stringToColor (attributes.getAttributeValue (kAttrGradientStartColorHighlighted), color, description))
+			button->setGradientStartColorHighlighted (color);
+		if (stringToColor (attributes.getAttributeValue (kAttrGradientEndColor), color, description))
+			button->setGradientEndColor (color);
+		if (stringToColor (attributes.getAttributeValue (kAttrGradientEndColorHighlighted), color, description))
+			button->setGradientEndColorHighlighted (color);
+		if (stringToColor (attributes.getAttributeValue (kAttrFrameColor), color, description))
+			button->setFrameColor (color);
+		if (stringToColor (attributes.getAttributeValue (kAttrFrameColorHighlighted), color, description))
+			button->setFrameColorHighlighted (color);
+
+		double d;
+		if (attributes.getDoubleAttribute (kAttrFrameWidth, d))
+			button->setFrameWidth (d);
+		if (attributes.getDoubleAttribute (kAttrRoundRadius, d))
+			button->setRoundRadius (d);
+		if (attributes.getDoubleAttribute (kAttrIconTextMargin, d))
+			button->setTextMargin (d);
+		
+		attr = attributes.getAttributeValue (kAttrKickStyle);
 		if (attr)
 		{
 			button->setStyle (*attr == "true" ? CTextButton::kKickStyle : CTextButton::kOnOffStyle);
 		}
-		attr = attributes.getAttributeValue ("icon");
-		if (attr)
-		{
-			CBitmap* bitmap = description->getBitmap (attr->c_str ());
+
+		CBitmap* bitmap;
+		if (stringToBitmap (attributes.getAttributeValue (kAttrIcon), bitmap, description))
 			button->setIcon (bitmap);
-		}
-		attr = attributes.getAttributeValue ("icon-highlighted");
-		if (attr)
-		{
-			CBitmap* bitmap = description->getBitmap (attr->c_str ());
+		if (stringToBitmap (attributes.getAttributeValue (kAttrIconHighlighted), bitmap, description))
 			button->setIconHighlighted (bitmap);
-		}
-		attr = attributes.getAttributeValue ("icon-position");
+
+		attr = attributes.getAttributeValue (kAttrIconPosition);
 		if (attr)
 		{
 			CTextButton::IconPosition pos = CTextButton::kLeft;
@@ -2110,12 +1987,7 @@ public:
 			}
 			button->setIconPosition (pos);
 		}
-		double margin;
-		if (attributes.getDoubleAttribute ("icon-text-margin", margin))
-		{
-			button->setTextMargin (margin);
-		}
-		attr = attributes.getAttributeValue ("text-alignment");
+		attr = attributes.getAttributeValue (kAttrTextAlignment);
 		if (attr)
 		{
 			CHoriTxtAlign align = kCenterText;
@@ -2129,51 +2001,51 @@ public:
 	}
 	bool getAttributeNames (std::list<std::string>& attributeNames) const VSTGUI_OVERRIDE_VMETHOD
 	{
-		attributeNames.push_back ("kick-style");
-		attributeNames.push_back ("title");
-		attributeNames.push_back ("font");
-		attributeNames.push_back ("text-color");
-		attributeNames.push_back ("text-color-highlighted");
-		attributeNames.push_back ("gradient-start-color");
-		attributeNames.push_back ("gradient-start-color-highlighted");
-		attributeNames.push_back ("gradient-end-color");
-		attributeNames.push_back ("gradient-end-color-highlighted");
-		attributeNames.push_back ("frame-color");
-		attributeNames.push_back ("frame-color-highlighted");
-		attributeNames.push_back ("round-radius");
-		attributeNames.push_back ("frame-width");
-		attributeNames.push_back ("icon-text-margin");
-		attributeNames.push_back ("text-alignment");
-		attributeNames.push_back ("icon");
-		attributeNames.push_back ("icon-highlighted");
-		attributeNames.push_back ("icon-position");
+		attributeNames.push_back (kAttrKickStyle);
+		attributeNames.push_back (kAttrTitle);
+		attributeNames.push_back (kAttrFont);
+		attributeNames.push_back (kAttrTextColor);
+		attributeNames.push_back (kAttrTextColorHighlighted);
+		attributeNames.push_back (kAttrGradientStartColor);
+		attributeNames.push_back (kAttrGradientStartColorHighlighted);
+		attributeNames.push_back (kAttrGradientEndColor);
+		attributeNames.push_back (kAttrGradientEndColorHighlighted);
+		attributeNames.push_back (kAttrFrameColor);
+		attributeNames.push_back (kAttrFrameColorHighlighted);
+		attributeNames.push_back (kAttrRoundRadius);
+		attributeNames.push_back (kAttrFrameWidth);
+		attributeNames.push_back (kAttrIconTextMargin);
+		attributeNames.push_back (kAttrTextAlignment);
+		attributeNames.push_back (kAttrIcon);
+		attributeNames.push_back (kAttrIconHighlighted);
+		attributeNames.push_back (kAttrIconPosition);
 		return true;
 	}
 	AttrType getAttributeType (const std::string& attributeName) const VSTGUI_OVERRIDE_VMETHOD
 	{
-		if (attributeName == "title") return kStringType;
-		if (attributeName == "font") return kFontType;
-		if (attributeName == "text-color") return kColorType;
-		if (attributeName == "text-color-highlighted") return kColorType;
-		if (attributeName == "gradient-start-color") return kColorType;
-		if (attributeName == "gradient-start-color-highlighted") return kColorType;
-		if (attributeName == "gradient-end-color") return kColorType;
-		if (attributeName == "gradient-end-color-highlighted") return kColorType;
-		if (attributeName == "frame-color") return kColorType;
-		if (attributeName == "frame-color-highlighted") return kColorType;
-		if (attributeName == "frame-width") return kFloatType;
-		if (attributeName == "round-radius") return kFloatType;
-		if (attributeName == "kick-style") return kBooleanType;
-		if (attributeName == "icon") return kBitmapType;
-		if (attributeName == "icon-highlighted") return kBitmapType;
-		if (attributeName == "icon-position") return kListType;
-		if (attributeName == "icon-text-margin") return kFloatType;
-		if (attributeName == "text-alignment") return kStringType;
+		if (attributeName == kAttrTitle) return kStringType;
+		if (attributeName == kAttrFont) return kFontType;
+		if (attributeName == kAttrTextColor) return kColorType;
+		if (attributeName == kAttrTextColorHighlighted) return kColorType;
+		if (attributeName == kAttrGradientStartColor) return kColorType;
+		if (attributeName == kAttrGradientStartColorHighlighted) return kColorType;
+		if (attributeName == kAttrGradientEndColor) return kColorType;
+		if (attributeName == kAttrGradientEndColorHighlighted) return kColorType;
+		if (attributeName == kAttrFrameColor) return kColorType;
+		if (attributeName == kAttrFrameColorHighlighted) return kColorType;
+		if (attributeName == kAttrFrameWidth) return kFloatType;
+		if (attributeName == kAttrRoundRadius) return kFloatType;
+		if (attributeName == kAttrKickStyle) return kBooleanType;
+		if (attributeName == kAttrIcon) return kBitmapType;
+		if (attributeName == kAttrIconHighlighted) return kBitmapType;
+		if (attributeName == kAttrIconPosition) return kListType;
+		if (attributeName == kAttrIconTextMargin) return kFloatType;
+		if (attributeName == kAttrTextAlignment) return kStringType;
 		return kUnknownType;
 	}
 	bool getPossibleListValues (const std::string& attributeName, std::list<const std::string*>& values) const VSTGUI_OVERRIDE_VMETHOD
 	{
-		if (attributeName == "icon-position")
+		if (attributeName == kAttrIconPosition)
 		{
 			static std::string positions[] = {
 				"left",
@@ -2197,13 +2069,13 @@ public:
 		CTextButton* button = dynamic_cast<CTextButton*> (view);
 		if (!button)
 			return false;
-		if (attributeName == "title")
+		if (attributeName == kAttrTitle)
 		{
 			UTF8StringPtr title = button->getTitle ();
 			stringValue = title ? title : "";
 			return true;
 		}
-		else if (attributeName == "font")
+		else if (attributeName == kAttrFont)
 		{
 			UTF8StringPtr fontName = desc->lookupFontName (button->getFont ());
 			if (fontName)
@@ -2213,66 +2085,62 @@ public:
 			}
 			return false;
 		}
-		else if (attributeName == "text-color")
+		else if (attributeName == kAttrTextColor)
 		{
 			colorToString (button->getTextColor (), stringValue, desc);
 			return true;
 		}
-		else if (attributeName == "text-color-highlighted")
+		else if (attributeName == kAttrTextColorHighlighted)
 		{
 			colorToString (button->getTextColorHighlighted (), stringValue, desc);
 			return true;
 		}
-		else if (attributeName == "gradient-start-color")
+		else if (attributeName == kAttrGradientStartColor)
 		{
 			colorToString (button->getGradientStartColor (), stringValue, desc);
 			return true;
 		}
-		else if (attributeName == "gradient-start-color-highlighted")
+		else if (attributeName == kAttrGradientStartColorHighlighted)
 		{
 			colorToString (button->getGradientStartColorHighlighted (), stringValue, desc);
 			return true;
 		}
-		else if (attributeName == "gradient-end-color")
+		else if (attributeName == kAttrGradientEndColor)
 		{
 			colorToString (button->getGradientEndColor (), stringValue, desc);
 			return true;
 		}
-		else if (attributeName == "gradient-end-color-highlighted")
+		else if (attributeName == kAttrGradientEndColorHighlighted)
 		{
 			colorToString (button->getGradientEndColorHighlighted (), stringValue, desc);
 			return true;
 		}
-		else if (attributeName == "frame-color")
+		else if (attributeName == kAttrFrameColor)
 		{
 			colorToString (button->getFrameColor (), stringValue, desc);
 			return true;
 		}
-		else if (attributeName == "frame-color-highlighted")
+		else if (attributeName == kAttrFrameColorHighlighted)
 		{
 			colorToString (button->getFrameColorHighlighted (), stringValue, desc);
 			return true;
 		}
-		else if (attributeName == "frame-width")
+		else if (attributeName == kAttrFrameWidth)
 		{
-			std::stringstream str;
-			str << button->getFrameWidth ();
-			stringValue = str.str ();
+			stringValue = numberToString (button->getFrameWidth ());
 			return true;
 		}
-		else if (attributeName == "round-radius")
+		else if (attributeName == kAttrRoundRadius)
 		{
-			std::stringstream str;
-			str << button->getRoundRadius ();
-			stringValue = str.str ();
+			stringValue = numberToString (button->getRoundRadius ());
 			return true;
 		}
-		else if (attributeName == "kick-style")
+		else if (attributeName == kAttrKickStyle)
 		{
 			stringValue = button->getStyle() == CTextButton::kKickStyle ? "true" : "false";
 			return true;
 		}
-		else if (attributeName == "icon")
+		else if (attributeName == kAttrIcon)
 		{
 			CBitmap* bitmap = button->getIcon ();
 			if (bitmap)
@@ -2280,7 +2148,7 @@ public:
 				return bitmapToString (bitmap, stringValue, desc);
 			}
 		}
-		else if (attributeName == "icon-highlighted")
+		else if (attributeName == kAttrIconHighlighted)
 		{
 			CBitmap* bitmap = button->getIconHighlighted ();
 			if (bitmap)
@@ -2288,7 +2156,7 @@ public:
 				return bitmapToString (bitmap, stringValue, desc);
 			}
 		}
-		else if (attributeName == "icon-position")
+		else if (attributeName == kAttrIconPosition)
 		{
 			switch (button->getIconPosition ())
 			{
@@ -2315,14 +2183,12 @@ public:
 			}
 			return true;
 		}
-		else if (attributeName == "icon-text-margin")
+		else if (attributeName == kAttrIconTextMargin)
 		{
-			std::stringstream str;
-			str << button->getTextMargin ();
-			stringValue = str.str ();
+			stringValue = numberToString (button->getTextMargin ());
 			return true;
 		}
-		else if (attributeName == "text-alignment")
+		else if (attributeName == kAttrTextAlignment)
 		{
 			CHoriTxtAlign align = button->getTextAlignment ();
 			switch (align)
@@ -2340,6 +2206,24 @@ public:
 CTextButtonCreator __gCTextButtonCreator;
 
 //-----------------------------------------------------------------------------
+// CKnobCreator attributes
+//-----------------------------------------------------------------------------
+static const std::string kAttrAngleStart = "angle-start";
+static const std::string kAttrAngleRange = "angle-range";
+static const std::string kAttrValueInset = "value-inset";
+static const std::string kAttrCoronaInset = "corona-inset";
+static const std::string kAttrCoronaColor = "corona-color";
+static const std::string kAttrCoronaDrawing = "corona-drawing";
+static const std::string kAttrCoronaOutline = "corona-outline";
+static const std::string kAttrCoronaInverted = "corona-inverted";
+static const std::string kAttrCoronaFromCenter = "corona-from-center";
+static const std::string kAttrCoronaDashDot = "corona-dash-dot";
+static const std::string kAttrHandleColor = "handle-color";
+static const std::string kAttrHandleShadowColor = "handle-shadow-color";
+static const std::string kAttrHandleLineWidth = "handle-line-width";
+static const std::string kAttrCircleDrawing = "circle-drawing";
+
+//-----------------------------------------------------------------------------
 class CKnobCreator : public IViewCreator
 {
 public:
@@ -2353,170 +2237,88 @@ public:
 		if (!knob)
 			return false;
 
-		const std::string* angleStartAttr = attributes.getAttributeValue ("angle-start");
-		const std::string* angleRangeAttr = attributes.getAttributeValue ("angle-range");
-		const std::string* insetValueAttr = attributes.getAttributeValue ("value-inset");
-		const std::string* coronaInsetAttr = attributes.getAttributeValue ("corona-inset");
-		const std::string* zoomFactorAttr = attributes.getAttributeValue ("zoom-factor");
-		const std::string* coronaColorAttr = attributes.getAttributeValue ("corona-color");
-		const std::string* handleShadowColorAttr = attributes.getAttributeValue ("handle-shadow-color");
-		const std::string* handleColorAttr = attributes.getAttributeValue ("handle-color");
-		const std::string* handleBitmapAttr = attributes.getAttributeValue ("handle-bitmap");
-		const std::string* handleLineWidthAttr = attributes.getAttributeValue ("handle-line-width");
-		const std::string* circleDrawingAttr = attributes.getAttributeValue ("circle-drawing");
-		const std::string* coronaDrawingAttr = attributes.getAttributeValue ("corona-drawing");
-		const std::string* coronaFromCenterAttr = attributes.getAttributeValue ("corona-from-center");
-		const std::string* coronaInvertedAttr = attributes.getAttributeValue ("corona-inverted");
-		const std::string* coronaDashDotAttr = attributes.getAttributeValue ("corona-dash-dot");
-		const std::string* coronaOutlineAttr = attributes.getAttributeValue ("corona-outline");
+		double d;
+		if (attributes.getDoubleAttribute (kAttrAngleStart, d))
+		{
+			// convert from degree
+			d = d / 180.f * (float)kPI;
+			knob->setStartAngle (static_cast<float>(d));
+		}
+		if (attributes.getDoubleAttribute (kAttrAngleRange, d))
+		{
+			// convert from degree
+			d = d / 180.f * (float)kPI;
+			knob->setRangeAngle (static_cast<float>(d));
+		}
+		if (attributes.getDoubleAttribute (kAttrValueInset, d))
+			knob->setInsetValue (d);
+		if (attributes.getDoubleAttribute (kAttrCoronaInset, d))
+			knob->setCoronaInset (d);
+		if (attributes.getDoubleAttribute (kAttrZoomFactor, d))
+			knob->setZoomFactor (static_cast<float>(d));
+		if (attributes.getDoubleAttribute (kAttrHandleLineWidth, d))
+			knob->setHandleLineWidth (d);
 
-		float fvalue = 0.f;
 		CColor color;
-		if (angleStartAttr)
-		{
-			fvalue = strtof (angleStartAttr->c_str (), 0);
-			// convert from degree
-			fvalue = fvalue / 180.f * (float)kPI;
-			knob->setStartAngle (fvalue);
-		}
-		if (angleRangeAttr)
-		{
-			fvalue = strtof (angleRangeAttr->c_str (), 0);
-			// convert from degree
-			fvalue = fvalue / 180.f * (float)kPI;
-			knob->setRangeAngle (fvalue);
-		}
-		if (insetValueAttr)
-		{
-			fvalue = strtof (insetValueAttr->c_str (), 0);
-			knob->setInsetValue (fvalue);
-		}
-		if (coronaInsetAttr)
-		{
-			fvalue = strtof (coronaInsetAttr->c_str (), 0);
-			knob->setCoronaInset (fvalue);
-		}
-		if (zoomFactorAttr)
-		{
-			fvalue = strtof (zoomFactorAttr->c_str (), 0);
-			knob->setZoomFactor (fvalue);
-		}
-		if (handleLineWidthAttr)
-		{
-			fvalue = strtof (handleLineWidthAttr->c_str (), 0);
-			knob->setHandleLineWidth (fvalue);
-		}
-		if (coronaColorAttr)
-		{
-			if (description->getColor (coronaColorAttr->c_str (), color))
-			{
-				knob->setCoronaColor (color);
-			}
-		}
-		if (handleShadowColorAttr)
-		{
-			if (description->getColor (handleShadowColorAttr->c_str (), color))
-			{
-				knob->setColorShadowHandle (color);
-			}
-		}
-		if (handleColorAttr)
-		{
-			if (description->getColor (handleColorAttr->c_str (), color))
-			{
-				knob->setColorHandle (color);
-			}
-		}
-		if (handleBitmapAttr && *handleBitmapAttr != "")
-		{
-			CBitmap* bitmap = description->getBitmap (handleBitmapAttr->c_str ());
-			if (bitmap)
-				knob->setHandleBitmap (bitmap);
-		}
+		if (stringToColor (attributes.getAttributeValue (kAttrCoronaColor), color, description))
+			knob->setCoronaColor (color);
+		if (stringToColor (attributes.getAttributeValue (kAttrHandleShadowColor), color, description))
+			knob->setColorShadowHandle (color);
+		if (stringToColor (attributes.getAttributeValue (kAttrHandleColor), color, description))
+			knob->setColorHandle (color);
+
+		CBitmap* bitmap;
+		if (stringToBitmap (attributes.getAttributeValue (kAttrHandleBitmap), bitmap, description))
+			knob->setHandleBitmap (bitmap);
+
 		int32_t drawStyle = knob->getDrawStyle ();
-		if (circleDrawingAttr)
-		{
-			if (*circleDrawingAttr == "true")
-				drawStyle |= CKnob::kHandleCircleDrawing;
-			else
-				drawStyle &= ~CKnob::kHandleCircleDrawing;
-		}
-		if (coronaDrawingAttr)
-		{
-			if (*coronaDrawingAttr == "true")
-				drawStyle |= CKnob::kCoronaDrawing;
-			else
-				drawStyle &= ~CKnob::kCoronaDrawing;
-		}
-		if (coronaFromCenterAttr)
-		{
-			if (*coronaFromCenterAttr == "true")
-				drawStyle |= CKnob::kCoronaFromCenter;
-			else
-				drawStyle &= ~CKnob::kCoronaFromCenter;
-		}
-		if (coronaInvertedAttr)
-		{
-			if (*coronaInvertedAttr == "true")
-				drawStyle |= CKnob::kCoronaInverted;
-			else
-				drawStyle &= ~CKnob::kCoronaInverted;
-		}
-		if (coronaDashDotAttr)
-		{
-			if (*coronaDashDotAttr == "true")
-				drawStyle |= CKnob::kCoronaLineDashDot;
-			else
-				drawStyle &= ~CKnob::kCoronaLineDashDot;
-		}
-		if (coronaOutlineAttr)
-		{
-			if (*coronaOutlineAttr == "true")
-				drawStyle |= CKnob::kCoronaOutline;
-			else
-				drawStyle &= ~CKnob::kCoronaOutline;
-		}
+		applyStyleMask (attributes.getAttributeValue (kAttrCircleDrawing), CKnob::kHandleCircleDrawing, drawStyle);
+		applyStyleMask (attributes.getAttributeValue (kAttrCoronaDrawing), CKnob::kCoronaDrawing, drawStyle);
+		applyStyleMask (attributes.getAttributeValue (kAttrCoronaFromCenter), CKnob::kCoronaFromCenter, drawStyle);
+		applyStyleMask (attributes.getAttributeValue (kAttrCoronaInverted), CKnob::kCoronaInverted, drawStyle);
+		applyStyleMask (attributes.getAttributeValue (kAttrCoronaDashDot), CKnob::kCoronaLineDashDot, drawStyle);
+		applyStyleMask (attributes.getAttributeValue (kAttrCoronaOutline), CKnob::kCoronaOutline, drawStyle);
 		knob->setDrawStyle (drawStyle);
 		return true;
 	}
 	bool getAttributeNames (std::list<std::string>& attributeNames) const VSTGUI_OVERRIDE_VMETHOD
 	{
-		attributeNames.push_back ("angle-start");
-		attributeNames.push_back ("angle-range");
-		attributeNames.push_back ("value-inset");
-		attributeNames.push_back ("zoom-factor");
-		attributeNames.push_back ("circle-drawing");
-		attributeNames.push_back ("corona-drawing");
-		attributeNames.push_back ("corona-outline");
-		attributeNames.push_back ("corona-from-center");
-		attributeNames.push_back ("corona-inverted");
-		attributeNames.push_back ("corona-dash-dot");
-		attributeNames.push_back ("corona-inset");
-		attributeNames.push_back ("corona-color");
-		attributeNames.push_back ("handle-shadow-color");
-		attributeNames.push_back ("handle-color");
-		attributeNames.push_back ("handle-line-width");
-		attributeNames.push_back ("handle-bitmap");
+		attributeNames.push_back (kAttrAngleStart);
+		attributeNames.push_back (kAttrAngleRange);
+		attributeNames.push_back (kAttrValueInset);
+		attributeNames.push_back (kAttrZoomFactor);
+		attributeNames.push_back (kAttrCircleDrawing);
+		attributeNames.push_back (kAttrCoronaDrawing);
+		attributeNames.push_back (kAttrCoronaOutline);
+		attributeNames.push_back (kAttrCoronaFromCenter);
+		attributeNames.push_back (kAttrCoronaInverted);
+		attributeNames.push_back (kAttrCoronaDashDot);
+		attributeNames.push_back (kAttrCoronaInset);
+		attributeNames.push_back (kAttrCoronaColor);
+		attributeNames.push_back (kAttrHandleShadowColor);
+		attributeNames.push_back (kAttrHandleColor);
+		attributeNames.push_back (kAttrHandleLineWidth);
+		attributeNames.push_back (kAttrHandleBitmap);
 		return true;
 	}
 	AttrType getAttributeType (const std::string& attributeName) const VSTGUI_OVERRIDE_VMETHOD
 	{
-		if (attributeName == "angle-start") return kFloatType;
-		else if (attributeName == "angle-range") return kFloatType;
-		else if (attributeName == "value-inset") return kFloatType;
-		else if (attributeName == "zoom-factor") return kFloatType;
-		else if (attributeName == "circle-drawing") return kBooleanType;
-		else if (attributeName == "corona-drawing") return kBooleanType;
-		else if (attributeName == "corona-outline") return kBooleanType;
-		else if (attributeName == "corona-from-center") return kBooleanType;
-		else if (attributeName == "corona-inverted") return kBooleanType;
-		else if (attributeName == "corona-dash-dot") return kBooleanType;
-		else if (attributeName == "corona-inset") return kFloatType;
-		else if (attributeName == "corona-color") return kColorType;
-		else if (attributeName == "handle-shadow-color") return kColorType;
-		else if (attributeName == "handle-color") return kColorType;
-		else if (attributeName == "handle-line-width") return kFloatType;
-		else if (attributeName == "handle-bitmap") return kBitmapType;
+		if (attributeName == kAttrAngleStart) return kFloatType;
+		else if (attributeName == kAttrAngleRange) return kFloatType;
+		else if (attributeName == kAttrValueInset) return kFloatType;
+		else if (attributeName == kAttrZoomFactor) return kFloatType;
+		else if (attributeName == kAttrCircleDrawing) return kBooleanType;
+		else if (attributeName == kAttrCoronaDrawing) return kBooleanType;
+		else if (attributeName == kAttrCoronaOutline) return kBooleanType;
+		else if (attributeName == kAttrCoronaFromCenter) return kBooleanType;
+		else if (attributeName == kAttrCoronaInverted) return kBooleanType;
+		else if (attributeName == kAttrCoronaDashDot) return kBooleanType;
+		else if (attributeName == kAttrCoronaInset) return kFloatType;
+		else if (attributeName == kAttrCoronaColor) return kColorType;
+		else if (attributeName == kAttrHandleShadowColor) return kColorType;
+		else if (attributeName == kAttrHandleColor) return kColorType;
+		else if (attributeName == kAttrHandleLineWidth) return kFloatType;
+		else if (attributeName == kAttrHandleBitmap) return kBitmapType;
 		return kUnknownType;
 	}
 	bool getAttributeValue (CView* view, const std::string& attributeName, std::string& stringValue, const IUIDescription* desc) const VSTGUI_OVERRIDE_VMETHOD
@@ -2525,64 +2327,52 @@ public:
 		if (!knob)
 			return false;
 
-		if (attributeName == "angle-start")
+		if (attributeName == kAttrAngleStart)
 		{
-			std::stringstream stream;
-			stream << (knob->getStartAngle () / kPI * 180.);
-			stringValue = stream.str ();
+			stringValue = numberToString ((knob->getStartAngle () / kPI * 180.));
 			return true;
 		}
-		else if (attributeName == "angle-range")
+		else if (attributeName == kAttrAngleRange)
 		{
-			std::stringstream stream;
-			stream << (knob->getRangeAngle () / kPI * 180.);
-			stringValue = stream.str ();
+			stringValue = numberToString ((knob->getRangeAngle () / kPI * 180.));
 			return true;
 		}
-		else if (attributeName == "value-inset")
+		else if (attributeName == kAttrValueInset)
 		{
-			std::stringstream stream;
-			stream << knob->getInsetValue ();
-			stringValue = stream.str ();
+			stringValue = numberToString (knob->getInsetValue ());
 			return true;
 		}
-		else if (attributeName == "corona-inset")
+		else if (attributeName == kAttrCoronaInset)
 		{
-			std::stringstream stream;
-			stream << knob->getCoronaInset ();
-			stringValue = stream.str ();
+			stringValue = numberToString (knob->getCoronaInset ());
 			return true;
 		}
-		else if (attributeName == "zoom-factor")
+		else if (attributeName == kAttrZoomFactor)
 		{
-			std::stringstream stream;
-			stream << knob->getZoomFactor ();
-			stringValue = stream.str ();
+			stringValue = numberToString (knob->getZoomFactor ());
 			return true;
 		}
-		else if (attributeName == "handle-line-width")
+		else if (attributeName == kAttrHandleLineWidth)
 		{
-			std::stringstream stream;
-			stream << knob->getHandleLineWidth ();
-			stringValue = stream.str ();
+			stringValue = numberToString (knob->getHandleLineWidth ());
 			return true;
 		}
-		else if (attributeName == "corona-color")
+		else if (attributeName == kAttrCoronaColor)
 		{
 			colorToString (knob->getCoronaColor (), stringValue, desc);
 			return true;
 		}
-		else if (attributeName == "handle-shadow-color")
+		else if (attributeName == kAttrHandleShadowColor)
 		{
 			colorToString (knob->getColorShadowHandle (), stringValue, desc);
 			return true;
 		}
-		else if (attributeName == "handle-color")
+		else if (attributeName == kAttrHandleColor)
 		{
 			colorToString (knob->getColorHandle (), stringValue, desc);
 			return true;
 		}
-		else if (attributeName == "handle-bitmap")
+		else if (attributeName == kAttrHandleBitmap)
 		{
 			CBitmap* bitmap = knob->getHandleBitmap ();
 			if (bitmap)
@@ -2590,7 +2380,7 @@ public:
 				return bitmapToString (bitmap, stringValue, desc);
 			}
 		}
-		else if (attributeName == "circle-drawing")
+		else if (attributeName == kAttrCircleDrawing)
 		{
 			if (knob->getDrawStyle () & CKnob::kHandleCircleDrawing)
 				stringValue = "true";
@@ -2598,7 +2388,7 @@ public:
 				stringValue = "false";
 			return true;
 		}
-		else if (attributeName == "corona-drawing")
+		else if (attributeName == kAttrCoronaDrawing)
 		{
 			if (knob->getDrawStyle () & CKnob::kCoronaDrawing)
 				stringValue = "true";
@@ -2606,7 +2396,7 @@ public:
 				stringValue = "false";
 			return true;
 		}
-		else if (attributeName == "corona-from-center")
+		else if (attributeName == kAttrCoronaFromCenter)
 		{
 			if (knob->getDrawStyle () & CKnob::kCoronaFromCenter)
 				stringValue = "true";
@@ -2614,7 +2404,7 @@ public:
 				stringValue = "false";
 			return true;
 		}
-		else if (attributeName == "corona-inverted")
+		else if (attributeName == kAttrCoronaInverted)
 		{
 			if (knob->getDrawStyle () & CKnob::kCoronaInverted)
 				stringValue = "true";
@@ -2622,7 +2412,7 @@ public:
 				stringValue = "false";
 			return true;
 		}
-		else if (attributeName == "corona-dash-dot")
+		else if (attributeName == kAttrCoronaDashDot)
 		{
 			if (knob->getDrawStyle () & CKnob::kCoronaLineDashDot)
 				stringValue = "true";
@@ -2630,7 +2420,7 @@ public:
 				stringValue = "false";
 			return true;
 		}
-		else if (attributeName == "corona-outline")
+		else if (attributeName == kAttrCoronaOutline)
 		{
 			if (knob->getDrawStyle () & CKnob::kCoronaOutline)
 				stringValue = "true";
@@ -2645,6 +2435,12 @@ public:
 CKnobCreator __CKnobCreator;
 
 //-----------------------------------------------------------------------------
+// IMultiBitmapControlCreator attributes
+//-----------------------------------------------------------------------------
+static const std::string kAttrHeightOfOneImage = "height-of-one-image";
+static const std::string kAttrSubPixmaps = "sub-pixmaps";
+
+//-----------------------------------------------------------------------------
 class IMultiBitmapControlCreator : public IViewCreator
 {
 public:
@@ -2654,34 +2450,26 @@ public:
 		if (!multiBitmapControl)
 			return false;
 
-		const std::string* hightOfOneImageAttr = attributes.getAttributeValue ("height-of-one-image");
-		if (hightOfOneImageAttr)
-		{
-			CCoord height = (CCoord)strtol (hightOfOneImageAttr->c_str (), 0, 10);
-			multiBitmapControl->setHeightOfOneImage (height);
-		}
+		int32_t value;
+		if (attributes.getIntegerAttribute (kAttrHeightOfOneImage, value))
+			multiBitmapControl->setHeightOfOneImage (value);
 		else
-		{
 			multiBitmapControl->autoComputeHeightOfOneImage ();
-		}
-		const std::string* attr = attributes.getAttributeValue ("sub-pixmaps");
-		if (attr)
-		{
-			int32_t value = (int32_t)strtol (attr->c_str (), 0, 10);
+
+		if (attributes.getIntegerAttribute (kAttrSubPixmaps, value))
 			multiBitmapControl->setNumSubPixmaps (value);
-		}
 		return true;
 	}
 	bool getAttributeNames (std::list<std::string>& attributeNames) const VSTGUI_OVERRIDE_VMETHOD
 	{
-		attributeNames.push_back ("height-of-one-image");
-		attributeNames.push_back ("sub-pixmaps");
+		attributeNames.push_back (kAttrHeightOfOneImage);
+		attributeNames.push_back (kAttrSubPixmaps);
 		return true;
 	}
 	AttrType getAttributeType (const std::string& attributeName) const VSTGUI_OVERRIDE_VMETHOD
 	{
-		if (attributeName == "height-of-one-image") return kIntegerType;
-		if (attributeName == "sub-pixmaps") return kIntegerType;
+		if (attributeName == kAttrHeightOfOneImage) return kIntegerType;
+		if (attributeName == kAttrSubPixmaps) return kIntegerType;
 		return kUnknownType;
 	}
 	bool getAttributeValue (CView* view, const std::string& attributeName, std::string& stringValue, const IUIDescription* desc) const VSTGUI_OVERRIDE_VMETHOD
@@ -2690,18 +2478,14 @@ public:
 		if (!multiBitmapControl)
 			return false;
 
-		if (attributeName == "height-of-one-image")
+		if (attributeName == kAttrHeightOfOneImage)
 		{
-			std::stringstream stream;
-			stream << multiBitmapControl->getHeightOfOneImage ();
-			stringValue = stream.str ();
+			stringValue = numberToString ((int32_t)multiBitmapControl->getHeightOfOneImage ());
 			return true;
 		}
-		if (attributeName == "sub-pixmaps")
+		if (attributeName == kAttrSubPixmaps)
 		{
-			std::stringstream stream;
-			stream << multiBitmapControl->getNumSubPixmaps ();
-			stringValue = stream.str ();
+			stringValue = numberToString (multiBitmapControl->getNumSubPixmaps ());
 			return true;
 		}
 		return false;
@@ -2787,6 +2571,23 @@ public:
 CKickButtonCreator __gCKickButtonCreator;
 
 //-----------------------------------------------------------------------------
+// CSliderCreator attributes
+//-----------------------------------------------------------------------------
+static const std::string kAttrTransparentHandle = "transparent-handle";
+static const std::string kAttrMode = "mode";
+static const std::string kAttrHandleOffset = "handle-offset";
+static const std::string kAttrBitmapOffset = "bitmap-offset";
+static const std::string kAttrReverseOrientation = "reverse-orientation";
+static const std::string kAttrDrawFrame = "draw-frame";
+static const std::string kAttrDrawBack = "draw-back";
+static const std::string kAttrDrawValue = "draw-value";
+static const std::string kAttrDrawValueInverted = "draw-value-inverted";
+static const std::string kAttrDrawValueFromCenter = "draw-value-from-center";
+static const std::string kAttrDrawFrameColor = "draw-frame-color";
+static const std::string kAttrDrawBackColor = "draw-back-color";
+static const std::string kAttrDrawValueColor = "draw-value-color";
+
+//-----------------------------------------------------------------------------
 class CSliderCreator : public IViewCreator
 {
 public:
@@ -2800,23 +2601,6 @@ public:
 		if (!slider)
 			return false;
 
-		const std::string* transparentHandleAttr = attributes.getAttributeValue ("transparent-handle");
-		const std::string* modeAttr = attributes.getAttributeValue ("mode");
-		const std::string* handleBitmapAttr = attributes.getAttributeValue ("handle-bitmap");
-		const std::string* handleOffsetAttr = attributes.getAttributeValue ("handle-offset");
-		const std::string* bitmapOffsetAttr = attributes.getAttributeValue ("bitmap-offset");
-		const std::string* zoomFactorAttr = attributes.getAttributeValue ("zoom-factor");
-		const std::string* orientationAttr = attributes.getAttributeValue ("orientation");
-		const std::string* reverseOrientationAttr = attributes.getAttributeValue ("reverse-orientation");
-		const std::string* drawFrameAttr = attributes.getAttributeValue ("draw-frame");
-		const std::string* drawBackAttr = attributes.getAttributeValue ("draw-back");
-		const std::string* drawValueAttr = attributes.getAttributeValue ("draw-value");
-		const std::string* drawValueFromCenterAttr = attributes.getAttributeValue ("draw-value-from-center");
-		const std::string* drawValueInvertedAttr = attributes.getAttributeValue ("draw-value-inverted");
-		const std::string* drawFrameColorAttr = attributes.getAttributeValue ("draw-frame-color");
-		const std::string* drawBackColorAttr = attributes.getAttributeValue ("draw-back-color");
-		const std::string* drawValueColorAttr = attributes.getAttributeValue ("draw-value-color");
-
 		// support old attribute name and convert it
 		const std::string* freeClickAttr = attributes.getAttributeValue ("free-click");
 		if (freeClickAttr)
@@ -2824,10 +2608,11 @@ public:
 			slider->setMode (*freeClickAttr == "true" ? CSlider::kFreeClickMode : CSlider::kTouchMode);
 		}
 
-
-		CPoint p;
+		const std::string* transparentHandleAttr = attributes.getAttributeValue (kAttrTransparentHandle);
 		if (transparentHandleAttr)
 			slider->setDrawTransparentHandle (*transparentHandleAttr == "true");
+
+		const std::string* modeAttr = attributes.getAttributeValue (kAttrMode);
 		if (modeAttr)
 		{
 			if (*modeAttr == "touch")
@@ -2837,27 +2622,21 @@ public:
 			else if (*modeAttr == "free click")
 				slider->setMode (CSlider::kFreeClickMode);
 		}
-		if (handleBitmapAttr && *handleBitmapAttr != "")
-		{
-			CBitmap* bitmap = description->getBitmap (handleBitmapAttr->c_str ());
-			if (bitmap)
-				slider->setHandle (bitmap);
-		}
-		if (handleOffsetAttr)
-		{
-			if (parseSize (*handleOffsetAttr, p))
-				slider->setOffsetHandle (p);
-		}
-		if (bitmapOffsetAttr)
-		{
-			if (parseSize (*bitmapOffsetAttr, p))
-				slider->setOffset (p);
-		}
-		if (zoomFactorAttr)
-		{
-			float zoomFactor = strtof (zoomFactorAttr->c_str (), 0);
-			slider->setZoomFactor (zoomFactor);
-		}
+		CBitmap* bitmap;
+		if (stringToBitmap (attributes.getAttributeValue (kAttrHandleBitmap), bitmap, description))
+			slider->setHandle (bitmap);
+
+		CPoint p;
+		if (attributes.getPointAttribute (kAttrHandleOffset, p))
+			slider->setOffsetHandle (p);
+		if (attributes.getPointAttribute (kAttrBitmapOffset, p))
+			slider->setOffset (p);
+
+		double d;
+		if (attributes.getDoubleAttribute (kAttrZoomFactor, d))
+			slider->setZoomFactor (static_cast<float>(d));
+
+		const std::string* orientationAttr = attributes.getAttributeValue (kAttrOrientation);
 		if (orientationAttr)
 		{
 			int32_t style = slider->getStyle ();
@@ -2873,6 +2652,7 @@ public:
 			}
 			slider->setStyle (style);
 		}
+		const std::string* reverseOrientationAttr = attributes.getAttributeValue (kAttrReverseOrientation);
 		if (reverseOrientationAttr)
 		{
 			int32_t style = slider->getStyle ();
@@ -2904,105 +2684,62 @@ public:
 			}
 			slider->setStyle (style);
 		}
+
 		int32_t drawStyle = slider->getDrawStyle ();
-		if (drawFrameAttr)
-		{
-			if (*drawFrameAttr == "true")
-				drawStyle |= CSlider::kDrawFrame;
-			else
-				drawStyle &= ~CSlider::kDrawFrame;
-		}
-		if (drawBackAttr)
-		{
-			if (*drawBackAttr == "true")
-				drawStyle |= CSlider::kDrawBack;
-			else
-				drawStyle &= ~CSlider::kDrawBack;
-		}
-		if (drawValueAttr)
-		{
-			if (*drawValueAttr == "true")
-				drawStyle |= CSlider::kDrawValue;
-			else
-				drawStyle &= ~CSlider::kDrawValue;
-		}
-		if (drawValueFromCenterAttr)
-		{
-			if (*drawValueFromCenterAttr == "true")
-				drawStyle |= CSlider::kDrawValueFromCenter;
-			else
-				drawStyle &= ~CSlider::kDrawValueFromCenter;
-		}
-		if (drawValueInvertedAttr)
-		{
-			if (*drawValueInvertedAttr == "true")
-				drawStyle |= CSlider::kDrawInverted;
-			else
-				drawStyle &= ~CSlider::kDrawInverted;
-		}
+		applyStyleMask (attributes.getAttributeValue (kAttrDrawFrame), CSlider::kDrawFrame, drawStyle);
+		applyStyleMask (attributes.getAttributeValue (kAttrDrawBack), CSlider::kDrawBack, drawStyle);
+		applyStyleMask (attributes.getAttributeValue (kAttrDrawValue), CSlider::kDrawValue, drawStyle);
+		applyStyleMask (attributes.getAttributeValue (kAttrDrawValueFromCenter), CSlider::kDrawValueFromCenter, drawStyle);
+		applyStyleMask (attributes.getAttributeValue (kAttrDrawValueInverted), CSlider::kDrawInverted, drawStyle);
 		slider->setDrawStyle (drawStyle);
+
 		CColor color;
-		if (drawFrameColorAttr)
-		{
-			if (description->getColor (drawFrameColorAttr->c_str (), color))
-			{
-				slider->setFrameColor (color);
-			}
-		}
-		if (drawBackColorAttr)
-		{
-			if (description->getColor (drawBackColorAttr->c_str (), color))
-			{
-				slider->setBackColor (color);
-			}
-		}
-		if (drawValueColorAttr)
-		{
-			if (description->getColor (drawValueColorAttr->c_str (), color))
-			{
-				slider->setValueColor (color);
-			}
-		}
+		if (stringToColor (attributes.getAttributeValue (kAttrDrawFrameColor), color, description))
+			slider->setFrameColor (color);
+		if (stringToColor (attributes.getAttributeValue (kAttrDrawBackColor), color, description))
+			slider->setBackColor (color);
+		if (stringToColor (attributes.getAttributeValue (kAttrDrawValueColor), color, description))
+			slider->setValueColor (color);
 		return true;
 	}
 	bool getAttributeNames (std::list<std::string>& attributeNames) const VSTGUI_OVERRIDE_VMETHOD
 	{
-		attributeNames.push_back ("transparent-handle");
-		attributeNames.push_back ("mode");
-		attributeNames.push_back ("handle-bitmap");
-		attributeNames.push_back ("handle-offset");
-		attributeNames.push_back ("bitmap-offset");
-		attributeNames.push_back ("zoom-factor");
-		attributeNames.push_back ("orientation");
-		attributeNames.push_back ("reverse-orientation");
-		attributeNames.push_back ("draw-frame");
-		attributeNames.push_back ("draw-back");
-		attributeNames.push_back ("draw-value");
-		attributeNames.push_back ("draw-value-from-center");
-		attributeNames.push_back ("draw-value-inverted");
-		attributeNames.push_back ("draw-frame-color");
-		attributeNames.push_back ("draw-back-color");
-		attributeNames.push_back ("draw-value-color");
+		attributeNames.push_back (kAttrTransparentHandle);
+		attributeNames.push_back (kAttrMode);
+		attributeNames.push_back (kAttrHandleBitmap);
+		attributeNames.push_back (kAttrHandleOffset);
+		attributeNames.push_back (kAttrBitmapOffset);
+		attributeNames.push_back (kAttrZoomFactor);
+		attributeNames.push_back (kAttrOrientation);
+		attributeNames.push_back (kAttrReverseOrientation);
+		attributeNames.push_back (kAttrDrawFrame);
+		attributeNames.push_back (kAttrDrawBack);
+		attributeNames.push_back (kAttrDrawValue);
+		attributeNames.push_back (kAttrDrawValueFromCenter);
+		attributeNames.push_back (kAttrDrawValueInverted);
+		attributeNames.push_back (kAttrDrawFrameColor);
+		attributeNames.push_back (kAttrDrawBackColor);
+		attributeNames.push_back (kAttrDrawValueColor);
 		return true;
 	}
 	AttrType getAttributeType (const std::string& attributeName) const VSTGUI_OVERRIDE_VMETHOD
 	{
-		if (attributeName == "transparent-handle") return kBooleanType;
-		if (attributeName == "mode") return kListType;
-		if (attributeName == "handle-bitmap") return kBitmapType;
-		if (attributeName == "handle-offset") return kPointType;
-		if (attributeName == "bitmap-offset") return kPointType;
-		if (attributeName == "zoom-factor") return kFloatType;
-		if (attributeName == "orientation") return kListType;
-		if (attributeName == "reverse-orientation") return kBooleanType;
-		if (attributeName == "draw-frame") return kBooleanType;
-		if (attributeName == "draw-back") return kBooleanType;
-		if (attributeName == "draw-value") return kBooleanType;
-		if (attributeName == "draw-value-from-center") return kBooleanType;
-		if (attributeName == "draw-value-inverted") return kBooleanType;
-		if (attributeName == "draw-frame-color") return kColorType;
-		if (attributeName == "draw-back-color") return kColorType;
-		if (attributeName == "draw-value-color") return kColorType;
+		if (attributeName == kAttrTransparentHandle) return kBooleanType;
+		if (attributeName == kAttrMode) return kListType;
+		if (attributeName == kAttrHandleBitmap) return kBitmapType;
+		if (attributeName == kAttrHandleOffset) return kPointType;
+		if (attributeName == kAttrBitmapOffset) return kPointType;
+		if (attributeName == kAttrZoomFactor) return kFloatType;
+		if (attributeName == kAttrOrientation) return kListType;
+		if (attributeName == kAttrReverseOrientation) return kBooleanType;
+		if (attributeName == kAttrDrawFrame) return kBooleanType;
+		if (attributeName == kAttrDrawBack) return kBooleanType;
+		if (attributeName == kAttrDrawValue) return kBooleanType;
+		if (attributeName == kAttrDrawValueFromCenter) return kBooleanType;
+		if (attributeName == kAttrDrawValueInverted) return kBooleanType;
+		if (attributeName == kAttrDrawFrameColor) return kColorType;
+		if (attributeName == kAttrDrawBackColor) return kColorType;
+		if (attributeName == kAttrDrawValueColor) return kColorType;
 		return kUnknownType;
 	}
 	bool getAttributeValue (CView* view, const std::string& attributeName, std::string& stringValue, const IUIDescription* desc) const VSTGUI_OVERRIDE_VMETHOD
@@ -3010,12 +2747,12 @@ public:
 		CSlider* slider = dynamic_cast<CSlider*> (view);
 		if (!slider)
 			return false;
-		if (attributeName == "transparent-handle")
+		if (attributeName == kAttrTransparentHandle)
 		{
 			stringValue = slider->getDrawTransparentHandle () ? "true" : "false";
 			return true;
 		}
-		else if (attributeName == "mode")
+		else if (attributeName == kAttrMode)
 		{
 			switch (slider->getMode ())
 			{
@@ -3028,7 +2765,7 @@ public:
 			}
 			return true;
 		}
-		else if (attributeName == "handle-bitmap")
+		else if (attributeName == kAttrHandleBitmap)
 		{
 			CBitmap* bitmap = slider->getHandle ();
 			if (bitmap)
@@ -3037,24 +2774,22 @@ public:
 			}
 			return true;
 		}
-		else if (attributeName == "handle-offset")
+		else if (attributeName == kAttrHandleOffset)
 		{
 			pointToString (slider->getOffsetHandle (), stringValue);
 			return true;
 		}
-		else if (attributeName == "bitmap-offset")
+		else if (attributeName == kAttrBitmapOffset)
 		{
 			pointToString (slider->getBackOffset (), stringValue);
 			return true;
 		}
-		else if (attributeName == "zoom-factor")
+		else if (attributeName == kAttrZoomFactor)
 		{
-			std::stringstream stream;
-			stream << slider->getZoomFactor ();
-			stringValue = stream.str ();
+			stringValue = numberToString (slider->getZoomFactor ());
 			return true;
 		}
-		else if (attributeName == "orientation")
+		else if (attributeName == kAttrOrientation)
 		{
 			if (slider->getStyle () & kVertical)
 				stringValue = "vertical";
@@ -3062,7 +2797,7 @@ public:
 				stringValue = "horizontal";
 			return true;
 		}
-		else if (attributeName == "reverse-orientation")
+		else if (attributeName == kAttrReverseOrientation)
 		{
 			int32_t style = slider->getStyle ();
 			stringValue = "false";
@@ -3072,7 +2807,7 @@ public:
 				stringValue = "false";
 			return true;
 		}
-		else if (attributeName == "draw-frame")
+		else if (attributeName == kAttrDrawFrame)
 		{
 			if (slider->getDrawStyle () & CSlider::kDrawFrame)
 				stringValue = "true";
@@ -3080,7 +2815,7 @@ public:
 				stringValue = "false";
 			return true;
 		}
-		else if (attributeName == "draw-back")
+		else if (attributeName == kAttrDrawBack)
 		{
 			if (slider->getDrawStyle () & CSlider::kDrawBack)
 				stringValue = "true";
@@ -3088,7 +2823,7 @@ public:
 				stringValue = "false";
 			return true;
 		}
-		else if (attributeName == "draw-value")
+		else if (attributeName == kAttrDrawValue)
 		{
 			if (slider->getDrawStyle () & CSlider::kDrawValue)
 				stringValue = "true";
@@ -3096,7 +2831,7 @@ public:
 				stringValue = "false";
 			return true;
 		}
-		else if (attributeName == "draw-value-from-center")
+		else if (attributeName == kAttrDrawValueFromCenter)
 		{
 			if (slider->getDrawStyle () & CSlider::kDrawValueFromCenter)
 				stringValue = "true";
@@ -3104,7 +2839,7 @@ public:
 				stringValue = "false";
 			return true;
 		}
-		else if (attributeName == "draw-value-inverted")
+		else if (attributeName == kAttrDrawValueInverted)
 		{
 			if (slider->getDrawStyle () & CSlider::kDrawInverted)
 				stringValue = "true";
@@ -3112,17 +2847,17 @@ public:
 				stringValue = "false";
 			return true;
 		}
-		else if (attributeName == "draw-frame-color")
+		else if (attributeName == kAttrDrawFrameColor)
 		{
 			colorToString (slider->getFrameColor (), stringValue, desc);
 			return true;
 		}
-		else if (attributeName == "draw-back-color")
+		else if (attributeName == kAttrDrawBackColor)
 		{
 			colorToString (slider->getBackColor (), stringValue, desc);
 			return true;
 		}
-		else if (attributeName == "draw-value-color")
+		else if (attributeName == kAttrDrawValueColor)
 		{
 			colorToString (slider->getValueColor (), stringValue, desc);
 			return true;
@@ -3132,7 +2867,7 @@ public:
 	}
 	bool getPossibleListValues (const std::string& attributeName, std::list<const std::string*>& values) const VSTGUI_OVERRIDE_VMETHOD
 	{
-		if (attributeName == "orientation")
+		if (attributeName == kAttrOrientation)
 		{
 			static std::string kHorizontal = "horizontal";
 			static std::string kVertical = "vertical";
@@ -3141,7 +2876,7 @@ public:
 			values.push_back (&kVertical);
 			return true;
 		}
-		if (attributeName == "mode")
+		if (attributeName == kAttrMode)
 		{
 			static std::string kTouch = "touch";
 			static std::string kRelativeTouch = "relative touch";
@@ -3159,6 +2894,13 @@ public:
 CSliderCreator __gCSliderCreator;
 
 //-----------------------------------------------------------------------------
+// CVuMeterCreator attributes
+//-----------------------------------------------------------------------------
+static const std::string kAttrOffBitmap = "off-bitmap";
+static const std::string kAttrNumLed = "num-led";
+static const std::string kAttrDecreaseStepValue = "decrease-step-value";
+
+//-----------------------------------------------------------------------------
 class CVuMeterCreator : public IViewCreator
 {
 public:
@@ -3172,45 +2914,37 @@ public:
 		if (!vuMeter)
 			return false;
 
-		const std::string* attr = attributes.getAttributeValue ("off-bitmap");
-		if (attr && *attr != "")
-		{
-			CBitmap* bitmap = description->getBitmap (attr->c_str ());
+		CBitmap* bitmap;
+		if (stringToBitmap (attributes.getAttributeValue (kAttrOffBitmap), bitmap, description))
 			vuMeter->setOffBitmap (bitmap);
-		}
-		attr = attributes.getAttributeValue ("orientation");
+
+		const std::string* attr = attributes.getAttributeValue (kAttrOrientation);
 		if (attr)
-		{
 			vuMeter->setStyle (*attr == "vertical" ? kVertical : kHorizontal);
-		}
-		attr = attributes.getAttributeValue ("num-led");
-		if (attr)
-		{
-			int32_t numLed = (int32_t)strtol (attr->c_str (), 0, 10);
+		
+		int32_t numLed;
+		if (attributes.getIntegerAttribute(kAttrNumLed, numLed))
 			vuMeter->setNbLed (numLed);
-		}
-		attr = attributes.getAttributeValue ("decrease-step-value");
-		if (attr)
-		{
-			float value = strtof (attr->c_str (), 0);
-			vuMeter->setDecreaseStepValue (value);
-		}
+
+		double value;
+		if (attributes.getDoubleAttribute(kAttrDecreaseStepValue, value))
+			vuMeter->setDecreaseStepValue (static_cast<float>(value));
 		return true;
 	}
 	bool getAttributeNames (std::list<std::string>& attributeNames) const VSTGUI_OVERRIDE_VMETHOD
 	{
-		attributeNames.push_back ("off-bitmap");
-		attributeNames.push_back ("num-led");
-		attributeNames.push_back ("orientation");
-		attributeNames.push_back ("decrease-step-value");
+		attributeNames.push_back (kAttrOffBitmap);
+		attributeNames.push_back (kAttrNumLed);
+		attributeNames.push_back (kAttrOrientation);
+		attributeNames.push_back (kAttrDecreaseStepValue);
 		return true;
 	}
 	AttrType getAttributeType (const std::string& attributeName) const VSTGUI_OVERRIDE_VMETHOD
 	{
-		if (attributeName == "off-bitmap") return kBitmapType;
-		if (attributeName == "num-led") return kIntegerType;
-		if (attributeName == "orientation") return kListType;
-		if (attributeName == "decrease-step-value") return kFloatType;
+		if (attributeName == kAttrOffBitmap) return kBitmapType;
+		if (attributeName == kAttrNumLed) return kIntegerType;
+		if (attributeName == kAttrOrientation) return kListType;
+		if (attributeName == kAttrDecreaseStepValue) return kFloatType;
 		return kUnknownType;
 	}
 	bool getAttributeValue (CView* view, const std::string& attributeName, std::string& stringValue, const IUIDescription* desc) const VSTGUI_OVERRIDE_VMETHOD
@@ -3218,7 +2952,7 @@ public:
 		CVuMeter* vuMeter = dynamic_cast<CVuMeter*> (view);
 		if (!vuMeter)
 			return false;
-		if (attributeName == "off-bitmap")
+		if (attributeName == kAttrOffBitmap)
 		{
 			CBitmap* bitmap = vuMeter->getOffBitmap ();
 			if (bitmap)
@@ -3227,7 +2961,7 @@ public:
 			}
 			return true;
 		}
-		else if (attributeName == "orientation")
+		else if (attributeName == kAttrOrientation)
 		{
 			if (vuMeter->getStyle () & kVertical)
 				stringValue = "vertical";
@@ -3235,25 +2969,21 @@ public:
 				stringValue = "horizontal";
 			return true;
 		}
-		else if (attributeName == "num-led")
+		else if (attributeName == kAttrNumLed)
 		{
-			std::stringstream stream;
-			stream << vuMeter->getNbLed ();
-			stringValue = stream.str ();
+			stringValue = numberToString (vuMeter->getNbLed ());
 			return true;
 		}
-		else if (attributeName == "decrease-step-value")
+		else if (attributeName == kAttrDecreaseStepValue)
 		{
-			std::stringstream stream;
-			stream << vuMeter->getDecreaseStepValue ();
-			stringValue = stream.str ();
+			stringValue = numberToString (vuMeter->getDecreaseStepValue ());
 			return true;
 		}
 		return false;
 	}
 	bool getPossibleListValues (const std::string& attributeName, std::list<const std::string*>& values) const VSTGUI_OVERRIDE_VMETHOD
 	{
-		if (attributeName == "orientation")
+		if (attributeName == kAttrOrientation)
 		{
 			static std::string kHorizontal = "horizontal";
 			static std::string kVertical = "vertical";
@@ -3269,6 +2999,14 @@ public:
 CVuMeterCreator __gCVuMeterCreator;
 
 //-----------------------------------------------------------------------------
+// CAnimationSplashScreenCreator attributes
+//-----------------------------------------------------------------------------
+static const std::string kAttrSplashBitmap = "splash-bitmap";
+static const std::string kAttrSplashOrigin = "splash-origin";
+static const std::string kAttrSplashSize = "splash-size";
+static const std::string kAttrAnimationIndex = "animation-index";
+
+//-----------------------------------------------------------------------------
 class CAnimationSplashScreenCreator : public IViewCreator
 {
 public:
@@ -3282,66 +3020,49 @@ public:
 		if (!splashScreen)
 			return false;
 
-		const std::string* attr = attributes.getAttributeValue ("splash-bitmap");
-		if (attr && *attr != "")
-		{
-			CBitmap* bitmap = description->getBitmap (attr->c_str ());
+		CBitmap* bitmap;
+		if (stringToBitmap (attributes.getAttributeValue (kAttrSplashBitmap), bitmap, description))
 			splashScreen->setSplashBitmap (bitmap);
-		}
-		attr = attributes.getAttributeValue ("splash-origin");
+
 		CPoint p;
-		if (attr)
+		if (attributes.getPointAttribute (kAttrSplashOrigin, p))
 		{
-			if (parseSize (*attr, p))
-			{
-				CRect size = splashScreen->getSplashRect ();
-				size.originize ();
-				size.offset (p.x, p.y);
-				splashScreen->setSplashRect (size);
-			}
+			CRect size = splashScreen->getSplashRect ();
+			size.originize ();
+			size.offset (p.x, p.y);
+			splashScreen->setSplashRect (size);
 		}
-		attr = attributes.getAttributeValue ("splash-size");
-		if (attr)
+		if (attributes.getPointAttribute (kAttrSplashSize, p))
 		{
-			if (parseSize (*attr, p))
-			{
-				CRect size = splashScreen->getSplashRect ();
-				size.setWidth (p.x);
-				size.setHeight (p.y);
-				splashScreen->setSplashRect (size);
-			}
+			CRect size = splashScreen->getSplashRect ();
+			size.setWidth (p.x);
+			size.setHeight (p.y);
+			splashScreen->setSplashRect (size);
 		}
-		attr = attributes.getAttributeValue ("animation-index");
-		if (attr)
-		{
-			int32_t index = (int32_t)strtol (attr->c_str (), 0, 10);
-			splashScreen->setAnimationIndex (index);
-		}
-		attr = attributes.getAttributeValue ("animation-time");
-		if (attr)
-		{
-			int32_t time = (int32_t)strtol (attr->c_str (), 0, 10);
-			splashScreen->setAnimationTime (time);
-		}
+		int32_t value;
+		if (attributes.getIntegerAttribute (kAttrAnimationIndex, value))
+			splashScreen->setAnimationIndex (value);
+		if (attributes.getIntegerAttribute (kAttrAnimationTime, value))
+			splashScreen->setAnimationTime (value);
 
 		return true;
 	}
 	bool getAttributeNames (std::list<std::string>& attributeNames) const VSTGUI_OVERRIDE_VMETHOD
 	{
-		attributeNames.push_back ("splash-bitmap");
-		attributeNames.push_back ("splash-origin");
-		attributeNames.push_back ("splash-size");
-		attributeNames.push_back ("animation-index");
-		attributeNames.push_back ("animation-time");
+		attributeNames.push_back (kAttrSplashBitmap);
+		attributeNames.push_back (kAttrSplashOrigin);
+		attributeNames.push_back (kAttrSplashSize);
+		attributeNames.push_back (kAttrAnimationIndex);
+		attributeNames.push_back (kAttrAnimationTime);
 		return true;
 	}
 	AttrType getAttributeType (const std::string& attributeName) const VSTGUI_OVERRIDE_VMETHOD
 	{
-		if (attributeName == "splash-bitmap") return kBitmapType;
-		if (attributeName == "splash-origin") return kRectType;
-		if (attributeName == "splash-size") return kRectType;
-		if (attributeName == "animation-index") return kIntegerType;
-		if (attributeName == "animation-time") return kIntegerType;
+		if (attributeName == kAttrSplashBitmap) return kBitmapType;
+		if (attributeName == kAttrSplashOrigin) return kRectType;
+		if (attributeName == kAttrSplashSize) return kRectType;
+		if (attributeName == kAttrAnimationIndex) return kIntegerType;
+		if (attributeName == kAttrAnimationTime) return kIntegerType;
 		return kUnknownType;
 	}
 	bool getAttributeValue (CView* view, const std::string& attributeName, std::string& stringValue, const IUIDescription* desc) const VSTGUI_OVERRIDE_VMETHOD
@@ -3350,7 +3071,7 @@ public:
 		if (!splashScreen)
 			return false;
 
-		if (attributeName == "splash-bitmap")
+		if (attributeName == kAttrSplashBitmap)
 		{
 			CBitmap* bitmap = splashScreen->getSplashBitmap ();
 			if (bitmap)
@@ -3359,28 +3080,24 @@ public:
 				stringValue = "";
 			return true;
 		}
-		else if (attributeName == "splash-origin")
+		else if (attributeName == kAttrSplashOrigin)
 		{
 			pointToString (splashScreen->getSplashRect ().getTopLeft (), stringValue);
 			return true;
 		}
-		else if (attributeName == "splash-size")
+		else if (attributeName == kAttrSplashSize)
 		{
 			pointToString (splashScreen->getSplashRect ().getSize (), stringValue);
 			return true;
 		}
-		else if (attributeName == "animation-index")
+		else if (attributeName == kAttrAnimationIndex)
 		{
-			std::stringstream stream;
-			stream << splashScreen->getAnimationIndex ();
-			stringValue = stream.str ();
+			stringValue = numberToString (splashScreen->getAnimationIndex ());
 			return true;
 		}
-		else if (attributeName == "animation-time")
+		else if (attributeName == kAttrAnimationTime)
 		{
-			std::stringstream stream;
-			stream << splashScreen->getAnimationTime ();
-			stringValue = stream.str ();
+			stringValue = numberToString (splashScreen->getAnimationTime ());
 			return true;
 		}
 		return false;
@@ -3388,6 +3105,12 @@ public:
 
 };
 CAnimationSplashScreenCreator __gCAnimationSplashScreenCreator;
+
+//-----------------------------------------------------------------------------
+// UIViewSwitchContainerCreator attributes
+//-----------------------------------------------------------------------------
+static const std::string kAttrTemplateNames = "template-names";
+static const std::string kAttrTemplateSwitchControl = "template-switch-control";
 
 //-----------------------------------------------------------------------------
 class UIViewSwitchContainerCreator : public IViewCreator
@@ -3408,7 +3131,7 @@ public:
 		UIViewSwitchContainer* viewSwitch = dynamic_cast<UIViewSwitchContainer*> (view);
 		if (!viewSwitch)
 			return false;
-		const std::string* attr = attributes.getAttributeValue ("template-names");
+		const std::string* attr = attributes.getAttributeValue (kAttrTemplateNames);
 		if (attr)
 		{
 			UIDescriptionViewSwitchController* controller = dynamic_cast<UIDescriptionViewSwitchController*> (viewSwitch->getController ());
@@ -3417,7 +3140,7 @@ public:
 				controller->setTemplateNames (attr->c_str ());
 			}
 		}
-		attr = attributes.getAttributeValue ("template-switch-control");
+		attr = attributes.getAttributeValue (kAttrTemplateSwitchControl);
 		if (attr)
 		{
 			UIDescriptionViewSwitchController* controller = dynamic_cast<UIDescriptionViewSwitchController*> (viewSwitch->getController ());
@@ -3428,7 +3151,7 @@ public:
 			}
 		}
 		int32_t animationTime;
-		if (attributes.getIntegerAttribute ("animation-time", animationTime))
+		if (attributes.getIntegerAttribute (kAttrAnimationTime, animationTime))
 		{
 			viewSwitch->setAnimationTime (animationTime);
 		}
@@ -3436,16 +3159,16 @@ public:
 	}
 	bool getAttributeNames (std::list<std::string>& attributeNames) const VSTGUI_OVERRIDE_VMETHOD
 	{
-		attributeNames.push_back ("template-names");
-		attributeNames.push_back ("template-switch-control");
-		attributeNames.push_back ("animation-time");
+		attributeNames.push_back (kAttrTemplateNames);
+		attributeNames.push_back (kAttrTemplateSwitchControl);
+		attributeNames.push_back (kAttrAnimationTime);
 		return true;
 	}
 	AttrType getAttributeType (const std::string& attributeName) const VSTGUI_OVERRIDE_VMETHOD
 	{
-		if (attributeName == "template-names") return kStringType;
-		if (attributeName == "template-switch-control") return kTagType;
-		if (attributeName == "animation-time") return kIntegerType;
+		if (attributeName == kAttrTemplateNames) return kStringType;
+		if (attributeName == kAttrTemplateSwitchControl) return kTagType;
+		if (attributeName == kAttrAnimationTime) return kIntegerType;
 		return kUnknownType;
 	}
 	bool getAttributeValue (CView* view, const std::string& attributeName, std::string& stringValue, const IUIDescription* desc) const VSTGUI_OVERRIDE_VMETHOD
@@ -3453,7 +3176,7 @@ public:
 		UIViewSwitchContainer* viewSwitch = dynamic_cast<UIViewSwitchContainer*> (view);
 		if (!viewSwitch)
 			return false;
-		if (attributeName == "template-names")
+		if (attributeName == kAttrTemplateNames)
 		{
 			UIDescriptionViewSwitchController* controller = dynamic_cast<UIDescriptionViewSwitchController*> (viewSwitch->getController ());
 			if (controller)
@@ -3462,7 +3185,7 @@ public:
 				return true;
 			}
 		}
-		else if (attributeName == "template-switch-control")
+		else if (attributeName == kAttrTemplateSwitchControl)
 		{
 			UIDescriptionViewSwitchController* controller = dynamic_cast<UIDescriptionViewSwitchController*> (viewSwitch->getController ());
 			if (controller)
@@ -3476,17 +3199,21 @@ public:
 				return true;
 			}
 		}
-		else if (attributeName == "animation-time")
+		else if (attributeName == kAttrAnimationTime)
 		{
-			std::stringstream stream;
-			stream << (int32_t)viewSwitch->getAnimationTime ();
-			stringValue = stream.str ();
+			stringValue = numberToString ((int32_t)viewSwitch->getAnimationTime ());
 			return true;
 		}
 		return false;
 	}
 };
 UIViewSwitchContainerCreator __gUIViewSwitchContainerCreator;
+
+//-----------------------------------------------------------------------------
+// CSplitViewCreator attributes
+//-----------------------------------------------------------------------------
+static const std::string kAttrSeparatorWidth = "separator-width";
+static const std::string kAttrResizeMethod = "resize-method";
 
 //-----------------------------------------------------------------------------
 class CSplitViewCreator : public IViewCreator
@@ -3503,13 +3230,10 @@ public:
 		if (!splitView)
 			return false;
 
-		const std::string* attr = attributes.getAttributeValue ("separator-width");
-		if (attr)
-		{
-			int32_t width = (int32_t)strtol (attr->c_str (), 0, 10);
+		int32_t width;
+		if (attributes.getIntegerAttribute (kAttrSeparatorWidth, width))
 			splitView->setSeparatorWidth (width);
-		}
-		attr = attributes.getAttributeValue ("orientation");
+		const std::string* attr = attributes.getAttributeValue (kAttrOrientation);
 		if (attr)
 		{
 			if (*attr == "horizontal")
@@ -3521,7 +3245,7 @@ public:
 				splitView->setStyle (CSplitView::kVertical);
 			}
 		}
-		attr = attributes.getAttributeValue ("resize-method");
+		attr = attributes.getAttributeValue (kAttrResizeMethod);
 		if (attr)
 		{
 			if (*attr == "first")
@@ -3546,16 +3270,16 @@ public:
 	}
 	bool getAttributeNames (std::list<std::string>& attributeNames) const VSTGUI_OVERRIDE_VMETHOD
 	{
-		attributeNames.push_back ("orientation");
-		attributeNames.push_back ("resize-method");
-		attributeNames.push_back ("separator-width");
+		attributeNames.push_back (kAttrOrientation);
+		attributeNames.push_back (kAttrResizeMethod);
+		attributeNames.push_back (kAttrSeparatorWidth);
 		return true;
 	}
 	AttrType getAttributeType (const std::string& attributeName) const VSTGUI_OVERRIDE_VMETHOD
 	{
-		if (attributeName == "orientation") return kListType;
-		if (attributeName == "resize-method") return kListType;
-		if (attributeName == "separator-width") return kIntegerType;
+		if (attributeName == kAttrOrientation) return kListType;
+		if (attributeName == kAttrResizeMethod) return kListType;
+		if (attributeName == kAttrSeparatorWidth) return kIntegerType;
 		return kUnknownType;
 	}
 	bool getAttributeValue (CView* view, const std::string& attributeName, std::string& stringValue, const IUIDescription* desc) const VSTGUI_OVERRIDE_VMETHOD
@@ -3563,19 +3287,17 @@ public:
 		CSplitView* splitView = dynamic_cast<CSplitView*> (view);
 		if (!splitView)
 			return false;
-		if (attributeName == "separator-width")
+		if (attributeName == kAttrSeparatorWidth)
 		{
-			std::stringstream stream;
-			stream << (int32_t)splitView->getSeparatorWidth ();
-			stringValue = stream.str ();
+			stringValue = numberToString ((int32_t)splitView->getSeparatorWidth ());
 			return true;
 		}
-		if (attributeName == "orientation")
+		if (attributeName == kAttrOrientation)
 		{
 			stringValue = splitView->getStyle () == CSplitView::kHorizontal ? "horizontal" : "vertical";
 			return true;
 		}
-		if (attributeName == "resize-method")
+		if (attributeName == kAttrResizeMethod)
 		{
 			switch (splitView->getResizeMethod ())
 			{
@@ -3605,7 +3327,7 @@ public:
 	}
 	bool getPossibleListValues (const std::string& attributeName, std::list<const std::string*>& values) const VSTGUI_OVERRIDE_VMETHOD
 	{
-		if (attributeName == "orientation")
+		if (attributeName == kAttrOrientation)
 		{
 			static std::string kHorizontal = "horizontal";
 			static std::string kVertical = "vertical";
@@ -3614,7 +3336,7 @@ public:
 			values.push_back (&kVertical);
 			return true;
 		}
-		else if (attributeName == "resize-method")
+		else if (attributeName == kAttrResizeMethod)
 		{
 			static std::string kFirst = "first";
 			static std::string kSecond = "second";
@@ -3634,6 +3356,13 @@ public:
 CSplitViewCreator __gCSplitViewCreator;
 
 //-----------------------------------------------------------------------------
+// CShadowViewContainerCreator attributes
+//-----------------------------------------------------------------------------
+static const std::string kAttrShadowIntensity = "shadow-intensity";
+static const std::string kAttrShadowBlurSize = "shadow-blur-size";
+static const std::string kAttrShadowOffset = "shadow-offset";
+
+//-----------------------------------------------------------------------------
 class CShadowViewContainerCreator : public IViewCreator
 {
 public:
@@ -3651,28 +3380,28 @@ public:
 		if (!shadowView)
 			return false;
 		double d;
-		if (attributes.getDoubleAttribute ("shadow-intensity", d))
+		if (attributes.getDoubleAttribute (kAttrShadowIntensity, d))
 			shadowView->setShadowIntensity ((float)d);
 		int32_t i;
-		if (attributes.getIntegerAttribute ("shadow-blur-size", i))
+		if (attributes.getIntegerAttribute (kAttrShadowBlurSize, i))
 			shadowView->setShadowBlurSize (i);
 		CPoint p;
-		if (attributes.getPointAttribute("shadow-offset", p))
+		if (attributes.getPointAttribute (kAttrShadowOffset, p))
 			shadowView->setShadowOffset (p);
 		return true;
 	}
 	bool getAttributeNames (std::list<std::string>& attributeNames) const VSTGUI_OVERRIDE_VMETHOD
 	{
-		attributeNames.push_back ("shadow-intensity");
-		attributeNames.push_back ("shadow-offset");
-		attributeNames.push_back ("shadow-blur-size");
+		attributeNames.push_back (kAttrShadowIntensity);
+		attributeNames.push_back (kAttrShadowOffset);
+		attributeNames.push_back (kAttrShadowBlurSize);
 		return true;
 	}
 	AttrType getAttributeType (const std::string& attributeName) const VSTGUI_OVERRIDE_VMETHOD
 	{
-		if (attributeName == "shadow-intensity") return kFloatType;
-		if (attributeName == "shadow-offset") return kPointType;
-		if (attributeName == "shadow-blur-size") return kIntegerType;
+		if (attributeName == kAttrShadowIntensity) return kFloatType;
+		if (attributeName == kAttrShadowOffset) return kPointType;
+		if (attributeName == kAttrShadowBlurSize) return kIntegerType;
 		return kUnknownType;
 	}
 	bool getAttributeValue (CView* view, const std::string& attributeName, std::string& stringValue, const IUIDescription* desc) const VSTGUI_OVERRIDE_VMETHOD
@@ -3680,21 +3409,17 @@ public:
 		CShadowViewContainer* shadowView = dynamic_cast<CShadowViewContainer*> (view);
 		if (!shadowView)
 			return false;
-		if (attributeName == "shadow-intensity")
+		if (attributeName == kAttrShadowIntensity)
 		{
-			std::stringstream str;
-			str << shadowView->getShadowIntensity ();
-			stringValue = str.str ().c_str ();
+			stringValue = numberToString (shadowView->getShadowIntensity ());
 			return true;
 		}
-		else if (attributeName == "shadow-blur-size")
+		else if (attributeName == kAttrShadowBlurSize)
 		{
-			std::stringstream str;
-			str << shadowView->getShadowBlurSize ();
-			stringValue = str.str ().c_str ();
+			stringValue = numberToString (shadowView->getShadowBlurSize ());
 			return true;
 		}
-		else if (attributeName == "shadow-offset")
+		else if (attributeName == kAttrShadowOffset)
 		{
 			pointToString (shadowView->getShadowOffset (), stringValue);
 			return true;
@@ -3703,6 +3428,17 @@ public:
 	}
 };
 CShadowViewContainerCreator __gCShadowViewContainerCreator;
+
+//-----------------------------------------------------------------------------
+// CGradientViewCreator attributes
+//-----------------------------------------------------------------------------
+static const std::string kAttrGradientAngle = "gradient-angle";
+static const std::string kAttrGradientStyle = "gradient-style";
+static const std::string kAttrGradientStartColorOffset = "gradient-start-color-offset";
+static const std::string kAttrGradientEndColorOffset = "gradient-end-color-offset";
+static const std::string kAttrDrawAntialiased = "draw-antialiased";
+static const std::string kAttrRadialCenter = "radial-center";
+static const std::string kAttrRadialRadius = "radial-radius";
 
 //-----------------------------------------------------------------------------
 class CGradientViewCreator : public IViewCreator
@@ -3718,109 +3454,74 @@ public:
 		if (gv == 0)
 			return false;
 		CColor color;
-		const std::string* attr = attributes.getAttributeValue ("frame-color");
-		if (attr)
-		{
-			if (description->getColor (attr->c_str (), color))
-			{
-				gv->setFrameColor (color);
-			}
-		}
-		attr = attributes.getAttributeValue ("gradient-start-color");
-		if (attr)
-		{
-			if (description->getColor (attr->c_str (), color))
-			{
-				gv->setGradientStartColor (color);
-			}
-		}
-		attr = attributes.getAttributeValue ("gradient-end-color");
-		if (attr)
-		{
-			if (description->getColor (attr->c_str (), color))
-			{
-				gv->setGradientEndColor (color);
-			}
-		}
+		if (stringToColor (attributes.getAttributeValue (kAttrFrameColor), color, description))
+			gv->setFrameColor (color);
+		if (stringToColor (attributes.getAttributeValue (kAttrGradientStartColor), color, description))
+			gv->setGradientStartColor (color);
+		if (stringToColor (attributes.getAttributeValue (kAttrGradientEndColor), color, description))
+			gv->setGradientEndColor (color);
+
 		double d;
-		if (attributes.getDoubleAttribute ("gradient-angle", d))
-		{
+		if (attributes.getDoubleAttribute (kAttrGradientAngle, d))
 			gv->setGradientAngle (d);
-		}
-		if (attributes.getDoubleAttribute ("gradient-start-color-offset", d))
-		{
+		if (attributes.getDoubleAttribute (kAttrGradientStartColorOffset, d))
 			gv->setGradientStartColorOffset (d);
-		}
-		if (attributes.getDoubleAttribute ("gradient-end-color-offset", d))
-		{
+		if (attributes.getDoubleAttribute (kAttrGradientEndColorOffset, d))
 			gv->setGradientEndColorOffset (d);
-		}
-		if (attributes.getDoubleAttribute ("round-rect-radius", d))
-		{
+		if (attributes.getDoubleAttribute (kAttrRoundRectRadius, d))
 			gv->setRoundRectRadius (d);
-		}
-		if (attributes.getDoubleAttribute ("frame-width", d))
-		{
+		if (attributes.getDoubleAttribute (kAttrFrameWidth, d))
 			gv->setFrameWidth (d);
-		}
+
 		bool b;
-		if (attributes.getBooleanAttribute ("draw-antialiased", b))
-		{
+		if (attributes.getBooleanAttribute (kAttrDrawAntialiased, b))
 			gv->setDrawAntialiased (b);
-		}
-		attr = attributes.getAttributeValue ("gradient-style");
+
+		const std::string* attr = attributes.getAttributeValue (kAttrGradientStyle);
 		if (attr)
 		{
 			if (*attr == "radial")
-			{
 				gv->setGradientStyle(CGradientView::kRadialGradient);
-			}
 			else
-			{
 				gv->setGradientStyle(CGradientView::kLinearGradient);
-			}
 		}
 		CPoint p;
-		if (attributes.getPointAttribute ("radial-center", p))
-		{
+		if (attributes.getPointAttribute (kAttrRadialCenter, p))
 			gv->setRadialCenter (p);
-		}
-		if (attributes.getDoubleAttribute("radial-radius", d))
-		{
+		if (attributes.getDoubleAttribute (kAttrRadialRadius, d))
 			gv->setRadialRadius (d);
-		}
 		return true;
 	}
 	bool getAttributeNames (std::list<std::string>& attributeNames) const VSTGUI_OVERRIDE_VMETHOD
 	{
-		attributeNames.push_back ("gradient-style");
-		attributeNames.push_back ("frame-color");
-		attributeNames.push_back ("gradient-start-color");
-		attributeNames.push_back ("gradient-end-color");
-		attributeNames.push_back ("gradient-angle");
-		attributeNames.push_back ("gradient-start-color-offset");
-		attributeNames.push_back ("gradient-end-color-offset");
-		attributeNames.push_back ("round-rect-radius");
-		attributeNames.push_back ("frame-width");
-		attributeNames.push_back ("draw-antialiased");
-		attributeNames.push_back ("radial-center");
-		attributeNames.push_back ("radial-radius");
+		attributeNames.push_back (kAttrGradientStyle);
+		attributeNames.push_back (kAttrFrameColor);
+		attributeNames.push_back (kAttrGradientStartColor);
+		attributeNames.push_back (kAttrGradientEndColor);
+		attributeNames.push_back (kAttrGradientAngle);
+		attributeNames.push_back (kAttrGradientStartColorOffset);
+		attributeNames.push_back (kAttrGradientEndColorOffset);
+		attributeNames.push_back (kAttrRoundRectRadius);
+		attributeNames.push_back (kAttrFrameWidth);
+		attributeNames.push_back (kAttrDrawAntialiased);
+		attributeNames.push_back (kAttrRadialCenter);
+		attributeNames.push_back (kAttrRadialRadius);
 		return true;
 	}
 	AttrType getAttributeType (const std::string& attributeName) const VSTGUI_OVERRIDE_VMETHOD
 	{
-		if (attributeName == "gradient-style") return kListType;
-		if (attributeName == "frame-color") return kColorType;
-		if (attributeName == "gradient-start-color") return kColorType;
-		if (attributeName == "gradient-end-color") return kColorType;
-		if (attributeName == "gradient-angle") return kFloatType;
-		if (attributeName == "gradient-start-color-offset") return kFloatType;
-		if (attributeName == "gradient-end-color-offset") return kFloatType;
-		if (attributeName == "round-rect-radius") return kFloatType;
-		if (attributeName == "frame-width") return kFloatType;
-		if (attributeName == "draw-antialiased") return kBooleanType;
-		if (attributeName == "radial-center") return kPointType;
-		if (attributeName == "radial-radius") return kFloatType;
+		if (attributeName == kAttrGradientStyle) return kListType;
+		if (attributeName == kAttrFrameColor) return kColorType;
+		if (attributeName == kAttrGradientStartColor) return kColorType;
+		if (attributeName == kAttrGradientEndColor) return kColorType;
+		if (attributeName == kAttrGradientAngle) return kFloatType;
+		if (attributeName == kAttrGradientStartColorOffset) return kFloatType;
+		if (attributeName == kAttrGradientEndColorOffset) return kFloatType;
+		if (attributeName == kAttrRoundRectRadius) return kFloatType;
+		if (attributeName == kAttrFrameWidth) return kFloatType;
+		if (attributeName == kAttrDrawAntialiased) return kBooleanType;
+		if (attributeName == kAttrRadialCenter) return kPointType;
+		if (attributeName == kAttrRadialRadius) return kFloatType;
 		return kUnknownType;
 	}
 	bool getAttributeValue (CView* view, const std::string& attributeName, std::string& stringValue, const IUIDescription* desc) const VSTGUI_OVERRIDE_VMETHOD
@@ -3828,74 +3529,62 @@ public:
 		CGradientView* gv = dynamic_cast<CGradientView*> (view);
 		if (gv == 0)
 			return false;
-		if (attributeName == "frame-color")
+		if (attributeName == kAttrFrameColor)
 		{
 			colorToString (gv->getFrameColor (), stringValue, desc);
 			return true;
 		}
-		if (attributeName == "gradient-start-color")
+		if (attributeName == kAttrGradientStartColor)
 		{
 			colorToString (gv->getGradientStartColor (), stringValue, desc);
 			return true;
 		}
-		if (attributeName == "gradient-end-color")
+		if (attributeName == kAttrGradientEndColor)
 		{
 			colorToString (gv->getGradientEndColor (), stringValue, desc);
 			return true;
 		}
-		if (attributeName == "gradient-angle")
+		if (attributeName == kAttrGradientAngle)
 		{
-			std::stringstream str;
-			str << gv->getGradientAngle ();
-			stringValue = str.str ().c_str ();
+			stringValue = numberToString (gv->getGradientAngle ());
 			return true;
 		}
-		if (attributeName == "gradient-start-color-offset")
+		if (attributeName == kAttrGradientStartColorOffset)
 		{
-			std::stringstream str;
-			str << gv->getGradientStartColorOffset ();
-			stringValue = str.str ().c_str ();
+			stringValue = numberToString (gv->getGradientStartColorOffset ());
 			return true;
 		}
-		if (attributeName == "gradient-end-color-offset")
+		if (attributeName == kAttrGradientEndColorOffset)
 		{
-			std::stringstream str;
-			str << gv->getGradientEndColorOffset ();
-			stringValue = str.str ().c_str ();
+			stringValue = numberToString (gv->getGradientEndColorOffset ());
 			return true;
 		}
-		if (attributeName == "round-rect-radius")
+		if (attributeName == kAttrRoundRectRadius)
 		{
-			std::stringstream str;
-			str << gv->getRoundRectRadius ();
-			stringValue = str.str ().c_str ();
+			stringValue = numberToString (gv->getRoundRectRadius ());
 			return true;
 		}
-		if (attributeName == "frame-width")
+		if (attributeName == kAttrFrameWidth)
 		{
-			std::stringstream str;
-			str << gv->getFrameWidth ();
-			stringValue = str.str ().c_str ();
+			stringValue = numberToString (gv->getFrameWidth ());
 			return true;
 		}
-		if (attributeName == "draw-antialiased")
+		if (attributeName == kAttrDrawAntialiased)
 		{
 			stringValue = gv->getDrawAntialised () ? "true" : "false";
 			return true;
 		}
-		if (attributeName == "gradient-style")
+		if (attributeName == kAttrGradientStyle)
 		{
 			stringValue = gv->getGradientStyle() == CGradientView::kLinearGradient ? "linear" : "radial";
 			return true;
 		}
-		if (attributeName == "radial-radius")
+		if (attributeName == kAttrRadialRadius)
 		{
-			std::stringstream str;
-			str << gv->getRadialRadius ();
-			stringValue = str.str ().c_str ();
+			stringValue = numberToString (gv->getRadialRadius ());
 			return true;
 		}
-		if (attributeName == "radial-center")
+		if (attributeName == kAttrRadialCenter)
 		{
 			pointToString (gv->getRadialCenter (), stringValue);
 			return true;
@@ -3904,7 +3593,7 @@ public:
 	}
 	bool getPossibleListValues (const std::string& attributeName, std::list<const std::string*>& values) const VSTGUI_OVERRIDE_VMETHOD
 	{
-		if (attributeName == "gradient-style")
+		if (attributeName == kAttrGradientStyle)
 		{
 			static std::string kLinear = "linear";
 			static std::string kRadial = "radial";

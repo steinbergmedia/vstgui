@@ -126,13 +126,13 @@ Property::~Property ()
 
 #if VSTGUI_RVALUE_REF_SUPPORT
 //----------------------------------------------------------------------------------------------------
-Property::Property (Property&& p)
+Property::Property (Property&& p) noexcept
 {
 	*this = std::move (p);
 }
 
 //----------------------------------------------------------------------------------------------------
-Property& Property::operator=(Property&& p)
+Property& Property::operator=(Property&& p) noexcept
 {
 	type = p.type;
 	value = p.value;

@@ -66,11 +66,50 @@ protected:
 	IPlatformString* platformString;
 };
 
-//---------------------------------------------------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
+/** @brief a view on an UTF-8 String
+	
+	It does not copy the string.
+	It's allowed to put null pointers into it.
+	A null pointer is treaded different than an empty string.
+*/
+//-----------------------------------------------------------------------------
+class UTF8StringView
+{
+public:
+	UTF8StringView (const UTF8StringPtr string) : str (string) {}
+	
+	/** calculates the bytes used by this string, including null-character */
+	uint64_t calculateByteCount () const;
+
+	/** calculates the number of UTF-8 characters in the string */
+	uint64_t calculateCharacterCount () const;
+
+	/** checks this string if it contains a sub string */
+	bool contains (const UTF8StringPtr subString) const;
+
+	bool operator== (const UTF8StringPtr otherString) const;
+	bool operator!= (const UTF8StringPtr otherString) const;
+	const UTF8StringPtr operator() () const;
+//-----------------------------------------------------------------------------
+private:
+	UTF8StringView () : str (0) {}
+	const UTF8StringPtr str;
+};
+
+//-----------------------------------------------------------------------------
 class UTF8CharacterIterator
 {
 public:
-	UTF8CharacterIterator (const std::string& str) : str (str), currentPos (0) { begin (); }
+	UTF8CharacterIterator (const UTF8StringPtr utf8Str) : startPos ((uint8_t*)utf8Str), currentPos (0), strLen (std::strlen (utf8Str))
+	{
+		begin ();
+	}
+
+	UTF8CharacterIterator (const std::string& stdStr) : startPos ((uint8_t*)stdStr.c_str ()), currentPos (0), strLen (stdStr.size ())
+	{
+		begin ();
+	}
 	
 	uint8_t* next ()
 	{
@@ -135,11 +174,11 @@ public:
 		return 0;
 	}
 
-	uint8_t* begin () { currentPos = ((uint8_t*)str.c_str ()); return currentPos;}
-	uint8_t* end () { currentPos = ((uint8_t*)str.c_str ()) + str.size (); return currentPos; }
+	uint8_t* begin () { currentPos = startPos; return currentPos;}
+	uint8_t* end () { currentPos = startPos + strLen; return currentPos; }
 
-	const uint8_t* front () const { return (const uint8_t*)str.c_str (); }
-	const uint8_t* back () const { return (const uint8_t*)str.c_str () + str.size (); }
+	const uint8_t* front () const { return startPos; }
+	const uint8_t* back () const { return startPos + strLen; }
 
 	const uint8_t* operator++() { return next (); }
 	const uint8_t* operator--() { return previous (); }
@@ -147,10 +186,58 @@ public:
 	operator uint8_t* () const { return (uint8_t*)currentPos; }
 
 protected:
-	const std::string& str;
 	uint8_t* currentPos;
-	
+	uint8_t* startPos;
+	size_t strLen;
 };
+
+//-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
+inline uint64_t UTF8StringView::calculateCharacterCount () const
+{
+	uint64_t count = 0;
+	if (str == 0)
+		return count;
+	
+	UTF8CharacterIterator it (str);
+	while (it != it.back ())
+		count++;
+	return count;
+}
+
+//-----------------------------------------------------------------------------
+inline uint64_t UTF8StringView::calculateByteCount () const
+{
+	return str ? std::strlen (str) + 1 : 0;
+}
+
+//-----------------------------------------------------------------------------
+inline bool UTF8StringView::contains (const UTF8StringPtr subString) const
+{
+	return (!str || !subString || std::strstr (str, subString) == 0) ? false : true;
+}
+
+//-----------------------------------------------------------------------------
+inline bool UTF8StringView::operator== (const UTF8StringPtr otherString) const
+{
+	if (str == otherString) return true;
+	return (str && otherString) ? (std::strcmp (str, otherString) == 0) : false;
+}
+
+//-----------------------------------------------------------------------------
+inline bool UTF8StringView::operator!= (const UTF8StringPtr otherString) const
+{
+	return !(*this == otherString);
+}
+
+//-----------------------------------------------------------------------------
+inline const UTF8StringPtr UTF8StringView::operator() () const
+{
+	return str;
+}
+
+	
 
 } // namespace
 

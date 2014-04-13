@@ -93,7 +93,7 @@ WinDragContainer::WinDragContainer (IDataObject* platformDrag)
 				TCHAR fileDropped[1024];
 				for (int32_t index = 0; index < nbItems; index++)
 				{
-					if (DragQueryFile ((HDROP)medium.hGlobal, index, fileDropped, sizeof (fileDropped))) 
+					if (DragQueryFile ((HDROP)medium.hGlobal, index, fileDropped, sizeof (fileDropped) / 2)) 
 					{
 						// resolve link
 						checkResolveLink (fileDropped, fileDropped);
@@ -107,12 +107,12 @@ WinDragContainer::WinDragContainer (IDataObject* platformDrag)
 		{
 			if (platformDrag->GetData (&formatBinaryDrop, &medium) == S_OK)
 			{
-				void* data = GlobalLock (medium.hGlobal);
+				const void* blob = GlobalLock (medium.hGlobal);
 				dataSize = (int32_t)GlobalSize (medium.hGlobal);
-				if (data && dataSize)
+				if (blob && dataSize)
 				{
 					data = malloc (dataSize);
-					memcpy (data, data, dataSize);
+					memcpy (data, blob, dataSize);
 					nbItems = 1;
 				}
 				GlobalUnlock (medium.hGlobal);
@@ -194,7 +194,6 @@ bool WinDragContainer::checkResolveLink (const TCHAR* nativePath, TCHAR* resolve
 		IPersistFile* ppf;
 		WIN32_FIND_DATA wfd;
 		HRESULT hres;
-		WORD wsz[2048];
 		
 		// Get a pointer to the IShellLink interface.
 		hres = CoCreateInstance (CLSID_ShellLink, NULL, CLSCTX_INPROC_SERVER,
@@ -206,7 +205,7 @@ bool WinDragContainer::checkResolveLink (const TCHAR* nativePath, TCHAR* resolve
 			if (SUCCEEDED (hres))
 			{
 				// Load the shell link.
-				hres = ppf->Load ((LPWSTR)wsz, STGM_READ);
+				hres = ppf->Load (nativePath, STGM_READ);
 				if (SUCCEEDED (hres))
 				{					
 					hres = psl->Resolve (0, MAKELONG (SLR_ANY_MATCH | SLR_NO_UI, 500));

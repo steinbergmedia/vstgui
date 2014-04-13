@@ -155,6 +155,72 @@ HIDDEN VstKeyCode CreateVstKeyCodeFromNSEvent (NSEvent* theEvent)
 }
 
 //------------------------------------------------------------------------------------
+HIDDEN NSString* GetVirtualKeyCodeString (int32_t virtualKeyCode)
+{
+	unichar character = 0;
+	switch (virtualKeyCode)
+	{
+		case VKEY_BACK: character = NSDeleteCharacter; break;
+		case VKEY_TAB: character = NSTabCharacter; break;
+		case VKEY_CLEAR: character = NSClearLineFunctionKey; break;
+		case VKEY_RETURN: character = NSCarriageReturnCharacter; break;
+		case VKEY_PAUSE: character = NSPauseFunctionKey; break;
+		case VKEY_ESCAPE: character = 0x1b; break;
+		case VKEY_SPACE: character = ' '; break;
+		case VKEY_NEXT: character = NSNextFunctionKey; break;
+		case VKEY_END: character = NSEndFunctionKey; break;
+		case VKEY_HOME: character = NSHomeFunctionKey; break;
+		case VKEY_LEFT: character = NSLeftArrowFunctionKey; break;
+		case VKEY_UP: character = NSUpArrowFunctionKey; break;
+		case VKEY_RIGHT: character = NSRightArrowFunctionKey; break;
+		case VKEY_DOWN: character = NSDownArrowFunctionKey; break;
+		case VKEY_PAGEUP: character = NSPageUpFunctionKey; break;
+		case VKEY_PAGEDOWN: character = NSPageDownFunctionKey; break;
+		case VKEY_SELECT: character = NSSelectFunctionKey; break;
+		case VKEY_PRINT: character = NSPrintFunctionKey; break;
+		case VKEY_ENTER: character = NSEnterCharacter; break;
+		case VKEY_SNAPSHOT: break;
+		case VKEY_INSERT: character = NSInsertFunctionKey; break;
+		case VKEY_DELETE: character = NSDeleteFunctionKey; break;
+		case VKEY_HELP: character = NSHelpFunctionKey; break;
+		case VKEY_NUMPAD0: break;
+		case VKEY_NUMPAD1: break;
+		case VKEY_NUMPAD2: break;
+		case VKEY_NUMPAD3: break;
+		case VKEY_NUMPAD4: break;
+		case VKEY_NUMPAD5: break;
+		case VKEY_NUMPAD6: break;
+		case VKEY_NUMPAD7: break;
+		case VKEY_NUMPAD8: break;
+		case VKEY_NUMPAD9: break;
+		case VKEY_MULTIPLY: break;
+		case VKEY_ADD: break;
+		case VKEY_SEPARATOR: break;
+		case VKEY_SUBTRACT: break;
+		case VKEY_DECIMAL: break;
+		case VKEY_DIVIDE: break;
+		case VKEY_F1: character = NSF1FunctionKey; break;
+		case VKEY_F2: character = NSF2FunctionKey; break;
+		case VKEY_F3: character = NSF3FunctionKey; break;
+		case VKEY_F4: character = NSF4FunctionKey; break;
+		case VKEY_F5: character = NSF5FunctionKey; break;
+		case VKEY_F6: character = NSF6FunctionKey; break;
+		case VKEY_F7: character = NSF7FunctionKey; break;
+		case VKEY_F8: character = NSF8FunctionKey; break;
+		case VKEY_F9: character = NSF9FunctionKey; break;
+		case VKEY_F10: character = NSF10FunctionKey; break;
+		case VKEY_F11: character = NSF11FunctionKey; break;
+		case VKEY_F12: character = NSF12FunctionKey; break;
+		case VKEY_NUMLOCK: break;
+		case VKEY_SCROLL: break;
+		case VKEY_EQUALS: break;
+	}
+	if (character != 0)
+		return [NSString stringWithFormat:@"%C", character];
+	return nil;
+}
+
+//------------------------------------------------------------------------------------
 HIDDEN int32_t eventButton (NSEvent* theEvent)
 {
 	if ([theEvent type] == NSMouseMoved)

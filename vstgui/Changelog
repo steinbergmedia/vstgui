@@ -1,4 +1,12 @@
-2014-04-02
+2014-04-13 arne
+
+	* fix a few issues found with -fsanitize=undefined-trap
+	* some refactorings
+	* add virtual key code to CMenuItem
+	* add UTF8StringView helper class
+	* fix CDataBrowser selection change via key input (modifier was not checked)
+	
+2014-04-02 arne
 
 	* fix double click style for CTextEdit
 	* UIDescription: add variable substitution for all attributes when creating views (thanks to Wolfram Franke for the inital version)

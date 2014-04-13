@@ -402,42 +402,43 @@ CView* UIEditController::verifyView (CView* view, const UIAttributes& attributes
 //----------------------------------------------------------------------------------------------------
 IController* UIEditController::createSubController (UTF8StringPtr name, const IUIDescription* description)
 {
-	if (strcmp (name, "TemplatesController") == 0)
+	UTF8StringView subControllerName (name);
+	if (subControllerName == "TemplatesController")
 	{
 		assert (templateController == 0);
 		templateController = new UITemplateController (this, editDescription, selection, undoManager, this);
 		templateController->addDependency (this);
 		return templateController;
 	}
-	else if (strcmp (name, "MenuController") == 0)
+	else if (subControllerName == "MenuController")
 	{
 		return menuController;
 	}
-	else if (strcmp (name, "ViewCreatorController") == 0)
+	else if (subControllerName == "ViewCreatorController")
 	{
 		return new UIViewCreatorController (this, editDescription);
 	}
-	else if (strcmp (name, "AttributesController") == 0)
+	else if (subControllerName == "AttributesController")
 	{
 		return new UIAttributesController (this, selection, undoManager, editDescription);
 	}
-	else if (strcmp (name, "TagEditController") == 0)
+	else if (subControllerName == "TagEditController")
 	{
 		return new UITagsController (this, editDescription, this);
 	}
-	else if (strcmp (name, "ColorEditController") == 0)
+	else if (subControllerName == "ColorEditController")
 	{
 		return new UIColorsController (this, editDescription, this);
 	}
-	else if (strcmp (name, "BitmapEditController") == 0)
+	else if (subControllerName == "BitmapEditController")
 	{
 		return new UIBitmapsController (this, editDescription, this);
 	}
-	else if (strcmp (name, "FontEditController") == 0)
+	else if (subControllerName == "FontEditController")
 	{
 		return new UIFontsController (this, editDescription, this);
 	}
-	else if (strcmp (name, "GridController") == 0)
+	else if (subControllerName == "GridController")
 	{
 		gridController->remember ();
 		return gridController;
@@ -675,46 +676,76 @@ static void toggleBoolAttribute (UIAttributes* attributes, UTF8StringPtr key)
 //----------------------------------------------------------------------------------------------------
 CMessageResult UIEditController::onMenuItemSelection (CCommandMenuItem* item)
 {
-	if (strcmp (item->getCommandCategory (), "Edit") == 0)
+	UTF8StringView cmdCategory (item->getCommandCategory ());
+	UTF8StringView cmdName (item->getCommandName ());
+
+	if (cmdCategory == "Edit")
 	{
-		if (strcmp (item->getCommandName (), "Copy") == 0)
+		if (cmdName == "Copy")
 		{
 			doCopy (false);
 			return kMessageNotified;
 		}
-		else if (strcmp (item->getCommandName (), "Cut") == 0)
+		else if (cmdName == "Cut")
 		{
 			doCopy (true);
 			return kMessageNotified;
 		}
-		else if (strcmp (item->getCommandName (), "Paste") == 0)
+		else if (cmdName == "Paste")
 		{
 			doPaste ();
 			return kMessageNotified;
 		}
-		else if (strcmp (item->getCommandName (), "Template Settings...") == 0)
+		else if (cmdName == "Template Settings...")
 		{
 			showTemplateSettings ();
 			return kMessageNotified;
 		}
-		else if (strcmp (item->getCommandName (), "Focus Drawing Settings...") == 0)
+		else if (cmdName == "Focus Drawing Settings...")
 		{
 			showFocusSettings ();
 			return kMessageNotified;
 		}
 	}
-	else if (strcmp (item->getCommandCategory (), "File") == 0)
+	else if (cmdCategory == "File")
 	{
-		if (strcmp (item->getCommandName (), "Encode Bitmaps in XML") == 0)
+		if (cmdName == "Encode Bitmaps in XML")
 		{
 			toggleBoolAttribute (getSettings (), kEncodeBitmapsSettingsKey);
 			return kMessageNotified;
 		}
-		else if (strcmp (item->getCommandName (), "Write Windows RC File on Save") == 0)
+		else if (cmdName == "Write Windows RC File on Save")
 		{
 			toggleBoolAttribute (getSettings (), kWriteWindowsRCFileSettingsKey);
 			return kMessageNotified;
 		}
+	}
+	else if (cmdCategory == "SelectionMoveByGrid")
+	{
+		if (doSelectionMove (item->getCommandName (), true))
+			return kMessageNotified;
+	}
+	else if (cmdCategory == "SelectionSizeByGrid")
+	{
+		if (doSelectionSize (item->getCommandName (), true))
+			return kMessageNotified;
+	}
+	else if (cmdCategory == "SelectionMoveByPixel")
+	{
+		if (doSelectionMove (item->getCommandName (), false))
+			return kMessageNotified;
+	}
+	else if (cmdCategory == "SelectionSizeByPixel")
+	{
+		if (doSelectionSize (item->getCommandName (), false))
+			return kMessageNotified;
+	}
+	else if (cmdCategory == "SelectionZOrder")
+	{
+		bool lower = cmdName == "Lower" ? true : false;
+		if (doZOrderAction (lower))
+			return kMessageNotified;
+		
 	}
 	return kMessageUnknown;
 }
@@ -722,14 +753,17 @@ CMessageResult UIEditController::onMenuItemSelection (CCommandMenuItem* item)
 //----------------------------------------------------------------------------------------------------
 CMessageResult UIEditController::validateMenuItem (CCommandMenuItem* item)
 {
-	if (strcmp (item->getCommandCategory (), "Edit") == 0)
+	UTF8StringView cmdCategory (item->getCommandCategory ());
+	UTF8StringView cmdName (item->getCommandName ());
+	
+	if (cmdCategory == "Edit")
 	{
-		if (strcmp (item->getCommandName (), "Template Settings...") == 0)
+		if (cmdName == "Template Settings...")
 		{
 			item->setEnabled (editTemplateName.empty () ? false : true);
 			return kMessageNotified;
 		}
-		else if (strcmp (item->getCommandName (), "Copy") == 0 || strcmp (item->getCommandName (), "Cut") == 0)
+		else if (cmdName == "Copy" || cmdName == "Cut")
 		{
 			if (editView && selection->first () && selection->contains (editView->getEditView ()) == false)
 				item->setEnabled (true);
@@ -737,7 +771,7 @@ CMessageResult UIEditController::validateMenuItem (CCommandMenuItem* item)
 				item->setEnabled (false);
 			return kMessageNotified;
 		}
-		else if (strcmp (item->getCommandName (), "Paste") == 0)
+		else if (cmdName == "Paste")
 		{
 			item->setEnabled (false);
 			if (editView && selection->first ())
@@ -753,9 +787,9 @@ CMessageResult UIEditController::validateMenuItem (CCommandMenuItem* item)
 			return kMessageNotified;
 		}
 	}
-	else if (strcmp (item->getCommandCategory (), "File") == 0)
+	else if (cmdCategory == "File")
 	{
-		if (strcmp (item->getCommandName (), "Encode Bitmaps in XML") == 0)
+		if (cmdName == "Encode Bitmaps in XML")
 		{
 			UIAttributes* attr = getSettings ();
 			bool encodeBitmaps = false;
@@ -765,7 +799,7 @@ CMessageResult UIEditController::validateMenuItem (CCommandMenuItem* item)
 			}
 			return kMessageNotified;
 		}
-		else if (strcmp (item->getCommandName (), "Write Windows RC File on Save") == 0)
+		else if (cmdName == "Write Windows RC File on Save")
 		{
 			UIAttributes* attr = getSettings ();
 			bool encodeBitmaps = false;
@@ -776,7 +810,101 @@ CMessageResult UIEditController::validateMenuItem (CCommandMenuItem* item)
 			return kMessageNotified;
 		}
 	}
+	else if (cmdCategory == "SelectionMoveByGrid"
+			 || cmdCategory == "SelectionSizeByGrid"
+			 || cmdCategory == "SelectionMoveByPixel"
+			 || cmdCategory == "SelectionSizeByPixel"
+		)
+	{
+		bool enableItem = selection->first () ? true : false;
+		if (enableItem && cmdCategory.contains ("Size") == false)
+		{
+			if (selection->contains (editView->getEditView ()))
+				enableItem = false;
+		}
+		item->setEnabled (enableItem);
+		return kMessageNotified;
+	}
+	else if (cmdCategory == "SelectionZOrder")
+	{
+		bool enableItem = selection->total () == 1;
+		if (enableItem)
+		{
+			bool lower = cmdName == "Lower" ? true : false;
+			CView* view = selection->first ();
+			CViewContainer* parent = dynamic_cast<CViewContainer*>(view->getParentView ());
+			if (parent)
+			{
+				if (lower)
+				{
+					ViewIterator it (parent);
+					if (*it == view)
+						enableItem = false;
+				}
+				else
+				{
+					ReverseViewIterator it (parent);
+					if (*it == view)
+						enableItem = false;
+				}
+			}
+		}
+		item->setEnabled (enableItem);
+		return kMessageNotified;
+	}
 	return kMessageUnknown;
+}
+
+//----------------------------------------------------------------------------------------------------
+bool UIEditController::doSelectionMove (const std::string& commandName, bool useGrid) const
+{
+	CPoint diff;
+	if (commandName == "Move Up")
+		diff.y = -(useGrid ? gridController->getSize ().y : 1);
+	else if (commandName == "Move Down")
+		diff.y = (useGrid ? gridController->getSize ().y : 1);
+	else if (commandName == "Move Left")
+		diff.x = -(useGrid ? gridController->getSize ().x : 1);
+	else if (commandName == "Move Right")
+		diff.x = (useGrid ? gridController->getSize ().x : 1);
+	if (diff.x != 0 || diff.y != 0)
+	{
+		editView->doKeyMove (diff);
+		return true;
+	}
+	return false;
+}
+
+//----------------------------------------------------------------------------------------------------
+bool UIEditController::doSelectionSize (const std::string& commandName, bool useGrid) const
+{
+	CPoint diff;
+	if (commandName == "Increase Size Width")
+		diff.x = (useGrid ? gridController->getSize ().x : 1);
+	else if (commandName == "Increase Size Height")
+		diff.y = (useGrid ? gridController->getSize ().y : 1);
+	else if (commandName == "Decrease Size Width")
+		diff.x = -(useGrid ? gridController->getSize ().x : 1);
+	else if (commandName == "Decrease Size Height")
+		diff.y = -(useGrid ? gridController->getSize ().y : 1);
+	if (diff.x != 0 || diff.y != 0)
+	{
+		editView->doKeySize (diff);
+		return true;
+	}
+	return false;
+}
+
+//----------------------------------------------------------------------------------------------------
+bool UIEditController::doZOrderAction (bool lower)
+{
+	if (selection->total () == 1)
+	{
+		CView* view = selection->first ();
+		undoManager->pushAndPerform (new HierarchyMoveViewOperation (view, selection, lower));
+		return true;
+	}
+	return false;
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -835,26 +963,6 @@ int32_t UIEditController::onKeyDown (const VstKeyCode& code, CFrame* frame)
 			CTextEdit* edit = dynamic_cast<CTextEdit*>(frame->getFocusView ());
 			if (edit && edit->getPlatformTextEdit ())
 				return -1;
-		}
-		if (!(code.modifier & MODIFIER_COMMAND))
-		{
-			switch (code.virt)
-			{
-				case VKEY_LEFT:
-				case VKEY_UP:
-				case VKEY_RIGHT:
-				case VKEY_DOWN:
-				{
-					CCoord factor = (code.modifier & MODIFIER_SHIFT) ? 1.f : gridController->getSize ().x;
-					CPoint diff (code.virt == VKEY_LEFT ? -factor : code.virt == VKEY_RIGHT ? factor : 0.f,
-								 code.virt == VKEY_UP ? -factor : code.virt == VKEY_DOWN ? factor : 0.f);
-					if (code.modifier & MODIFIER_ALTERNATE)
-						editView->doKeySize (diff);
-					else
-						editView->doKeyMove (diff);
-					return 1;
-				}
-			}
 		}
 		return menuController->processKeyCommand (code);
 	}
@@ -918,7 +1026,7 @@ bool UIEditController::storeViewSize (int32_t index, const CCoord& size, CSplitV
 			value = size / splitView->getWidth ();
 		else
 			value = size / splitView->getHeight ();
-		getSettings ()->setDoubleAttribute (str.str ().c_str (), value);
+		getSettings ()->setDoubleAttribute (str.str (), value);
 		return true;
 	}
 	return false;

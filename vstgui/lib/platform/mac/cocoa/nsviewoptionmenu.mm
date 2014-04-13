@@ -124,9 +124,18 @@ static id VSTGUI_NSMenu_Init (id self, SEL _cmd, void* _menu)
 					[nsItem setState:NSOnState];
 				else
 					[nsItem setState:NSOffState];
+				NSString* keyEquivalent = nil;
 				if (item->getKeycode ())
 				{
-					[nsItem setKeyEquivalent:[NSString stringWithCString:item->getKeycode () encoding:NSUTF8StringEncoding]];
+					keyEquivalent = [NSString stringWithCString:item->getKeycode () encoding:NSUTF8StringEncoding];
+				}
+				else if (item->getVirtualKeyCode ())
+				{
+					keyEquivalent = GetVirtualKeyCodeString (item->getVirtualKeyCode ());
+				}
+				if (keyEquivalent)
+				{
+					[nsItem setKeyEquivalent:keyEquivalent];
 					uint32_t keyModifiers = 0;
 					if (item->getKeyModifiers () & kControl)
 						keyModifiers |= NSCommandKeyMask;

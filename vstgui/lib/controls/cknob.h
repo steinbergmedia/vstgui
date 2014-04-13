@@ -121,6 +121,10 @@ public:
 protected:
 	~CKnob ();
 	virtual void drawHandle (CDrawContext* pContext);
+	virtual void drawCoronaOutline (CDrawContext* pContext) const;
+	virtual void drawCorona (CDrawContext* pContext) const;
+	virtual void drawHandleAsCircle (CDrawContext* pContext) const;
+	virtual void drawHandleAsLine (CDrawContext* pContext) const;
 	void compute ();
 
 	CPoint offset;

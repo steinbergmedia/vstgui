@@ -158,13 +158,10 @@ bool CKnob::getFocusPath (CGraphicsPath &outPath)
 {
 	if (drawStyle & kCoronaDrawing && wantsFocus ())
 	{
-//		CCoord focusWidth = getFrame ()->getFocusWidth ();
 		CRect corona (getViewSize ());
 		corona.inset (coronaInset, coronaInset);
 		corona.inset (handleLineWidth/2., handleLineWidth/2.);
 		outPath.addEllipse (corona);
-//		corona.inset (-focusWidth, -focusWidth);
-//		outPath.addEllipse (corona);
 		return true;
 	}
 	return CControl::getFocusPath (outPath);
@@ -177,8 +174,125 @@ void CKnob::draw (CDrawContext *pContext)
 	{
 		getDrawBackground ()->draw (pContext, getViewSize (), offset);
 	}
-	drawHandle (pContext);
+	if (pHandle)
+		drawHandle (pContext);
+	else
+	{
+		if (drawStyle & kCoronaOutline)
+			drawCoronaOutline (pContext);
+		if (drawStyle & kCoronaDrawing)
+			drawCorona (pContext);
+		if (drawStyle & kHandleCircleDrawing)
+			drawHandleAsCircle (pContext);
+		else
+			drawHandleAsLine (pContext);
+	}
 	setDirty (false);
+}
+
+//------------------------------------------------------------------------
+void CKnob::drawCoronaOutline (CDrawContext* pContext) const
+{
+	OwningPointer<CGraphicsPath> path = pContext->createGraphicsPath ();
+	if (path == 0)
+		return;
+	CRect corona (getViewSize ());
+	corona.inset (coronaInset, coronaInset);
+	double rangeDegree = (rangeAngle / kPI * 180.);
+	double startDegree = (startAngle / kPI * 180.);
+	path->addArc (corona, startDegree, startDegree + rangeDegree, rangeDegree > 0);
+	pContext->setFrameColor (colorShadowHandle);
+	CLineStyle lineStyle (kLineSolid);
+	lineStyle.setLineCap (CLineStyle::kLineCapRound);
+	pContext->setLineStyle (lineStyle);
+	pContext->setLineWidth (handleLineWidth+2.);
+	pContext->setDrawMode (kAntiAliasing);
+	pContext->drawGraphicsPath (path, CDrawContext::kPathStroked);
+}
+
+//------------------------------------------------------------------------
+void CKnob::drawCorona (CDrawContext* pContext) const
+{
+	OwningPointer<CGraphicsPath> path = pContext->createGraphicsPath ();
+	if (path == 0)
+		return;
+	float coronaValue = getValueNormalized ();
+	if (drawStyle & kCoronaInverted)
+		coronaValue = 1.f - coronaValue;
+	CRect corona (getViewSize ());
+	corona.inset (coronaInset, coronaInset);
+	double rangeDegree = rangeAngle / kPI * 180.;
+	if (drawStyle & kCoronaFromCenter)
+	{
+		double startDegree = 270.;
+		double dd = rangeDegree * (coronaValue - 0.5);
+		path->addArc (corona, startDegree, startDegree + dd, dd > 0.0);
+	}
+	else
+	{
+		if (drawStyle & kCoronaInverted)
+		{
+			double startDegree = (startAngle / kPI * 180.)  + rangeDegree;
+			rangeDegree *= coronaValue;
+			path->addArc (corona, startDegree, startDegree - rangeDegree, rangeDegree <= 0.0);
+		}
+		else
+		{
+			double startDegree = (startAngle / kPI * 180.);
+			rangeDegree *= coronaValue;
+			path->addArc (corona, startDegree, startDegree + rangeDegree, rangeDegree >= 0.0);
+		}
+	}
+	pContext->setFrameColor (coronaColor);
+	CLineStyle lineStyle (drawStyle & kCoronaLineDashDot ? kLineOnOffDash : kLineSolid);
+	lineStyle.setLineCap (CLineStyle::kLineCapRound);
+	if (drawStyle & kCoronaLineDashDot)
+		lineStyle.getDashLengths ()[1] = 2;
+	pContext->setLineStyle (lineStyle);
+	pContext->setLineWidth (handleLineWidth);
+	pContext->setDrawMode (kAntiAliasing);
+	pContext->drawGraphicsPath (path, CDrawContext::kPathStroked);
+}
+
+//------------------------------------------------------------------------
+void CKnob::drawHandleAsCircle (CDrawContext* pContext) const
+{
+	CPoint where;
+	valueToPoint (where);
+
+	where.offset (getViewSize ().left, getViewSize ().top);
+	CRect r (where.x - 0.5, where.y - 0.5, where.x + 0.5, where.y + 0.5);
+	r.inset (-handleLineWidth, -handleLineWidth);
+	pContext->setDrawMode (kAntiAliasing);
+	pContext->setFrameColor (colorShadowHandle);
+	pContext->setFillColor (colorHandle);
+	pContext->setLineWidth (0.5);
+	pContext->setLineStyle (kLineSolid);
+	pContext->setDrawMode (kAntiAliasing);
+	pContext->drawEllipse (r, kDrawFilledAndStroked);
+}
+
+//------------------------------------------------------------------------
+void CKnob::drawHandleAsLine (CDrawContext* pContext) const
+{
+	CPoint where;
+	valueToPoint (where);
+
+	CPoint origin (getViewSize ().width () / 2, getViewSize ().height () / 2);
+	where.offset (getViewSize ().left - 1, getViewSize ().top);
+	origin.offset (getViewSize ().left - 1, getViewSize ().top);
+	pContext->setFrameColor (colorShadowHandle);
+	pContext->setLineWidth (handleLineWidth);
+	pContext->setLineStyle (CLineStyle (CLineStyle::kLineCapRound));
+	pContext->setDrawMode (kAntiAliasing);
+	pContext->moveTo (where);
+	pContext->lineTo (origin);
+	
+	where.offset (1, -1);
+	origin.offset (1, -1);
+	pContext->setFrameColor (colorHandle);
+	pContext->moveTo (where);
+	pContext->lineTo (origin);
 }
 
 //------------------------------------------------------------------------
@@ -187,108 +301,16 @@ void CKnob::drawHandle (CDrawContext *pContext)
 	CPoint where;
 	valueToPoint (where);
 
-	if (pHandle)
-	{
-		CCoord width  = pHandle->getWidth ();
-		CCoord height = pHandle->getHeight ();
-		where.offset (getViewSize ().left - width / 2, getViewSize ().top - height / 2);
+	CCoord width  = pHandle->getWidth ();
+	CCoord height = pHandle->getHeight ();
+	where.offset (getViewSize ().left - width / 2, getViewSize ().top - height / 2);
 
-		where.x = floor (where.x);
-		where.y = floor (where.y);
+	where.x = floor (where.x);
+	where.y = floor (where.y);
 
-		CRect handleSize (0, 0, width, height);
-		handleSize.offset (where.h, where.v);
-		pHandle->draw (pContext, handleSize);
-	}
-	else
-	{
-		pContext->setDrawMode (kAntiAliasing);
-		if (drawStyle & kCoronaOutline)
-		{
-			CGraphicsPath* path = pContext->createGraphicsPath ();
-			if (path)
-			{
-				CRect corona (getViewSize ());
-				corona.inset (coronaInset, coronaInset);
-				double rangeDegree = (rangeAngle / kPI * 180.);
-				double startDegree = (startAngle / kPI * 180.);
-				path->addArc (corona, startDegree, startDegree + rangeDegree, rangeDegree > 0);
-				pContext->setFrameColor (colorShadowHandle);
-				pContext->setLineStyle (kLineSolid);
-				pContext->setLineWidth (handleLineWidth+2.);
-				pContext->drawGraphicsPath (path, CDrawContext::kPathStroked);
-				path->forget ();
-			}
-		}
-		if (drawStyle & kCoronaDrawing)
-		{
-			CGraphicsPath* path = pContext->createGraphicsPath ();
-			if (path)
-			{
-				float coronaValue = getValueNormalized ();
-				if (drawStyle & kCoronaInverted)
-					coronaValue = 1.f - coronaValue;
-				CRect corona (getViewSize ());
-				corona.inset (coronaInset, coronaInset);
-				double rangeDegree = rangeAngle / kPI * 180.;
-				if (drawStyle & kCoronaFromCenter)
-				{
-					double startDegree = 270.;
-					double dd = rangeDegree * (coronaValue - 0.5);
-					path->addArc (corona, startDegree, startDegree + dd, dd > 0.0);
-				}
-				else
-				{
-					if (drawStyle & kCoronaInverted)
-					{
-						double startDegree = (startAngle / kPI * 180.)  + rangeDegree;
-						rangeDegree *= coronaValue;
-						path->addArc (corona, startDegree, startDegree - rangeDegree, rangeDegree <= 0.0);
-					}
-					else
-					{
-						double startDegree = (startAngle / kPI * 180.);
-						rangeDegree *= coronaValue;
-						path->addArc (corona, startDegree, startDegree + rangeDegree, rangeDegree >= 0.0);
-					}
-				}
-				pContext->setFrameColor (coronaColor);
-				pContext->setLineStyle (drawStyle & kCoronaLineDashDot ? kLineOnOffDash : kLineSolid);
-				pContext->setLineWidth (handleLineWidth);
-				pContext->drawGraphicsPath (path, CDrawContext::kPathStroked);
-				path->forget ();
-			}
-		}
-		if (drawStyle & kHandleCircleDrawing)
-		{
-			where.offset (getViewSize ().left, getViewSize ().top);
-			CRect r (where.x - 0.5, where.y - 0.5, where.x + 0.5, where.y + 0.5);
-			r.inset (-handleLineWidth, -handleLineWidth);
-			pContext->setDrawMode (kAntiAliasing);
-			pContext->setFrameColor (colorShadowHandle);
-			pContext->setFillColor (colorHandle);
-			pContext->setLineWidth (0.5);
-			pContext->setLineStyle (kLineSolid);
-			pContext->drawEllipse (r, kDrawFilledAndStroked);
-		}
-		else  // Line handle drawing.
-		{
-			CPoint origin (getViewSize ().width () / 2, getViewSize ().height () / 2);
-			where.offset (getViewSize ().left - 1, getViewSize ().top);
-			origin.offset (getViewSize ().left - 1, getViewSize ().top);
-			pContext->setFrameColor (colorShadowHandle);
-			pContext->setLineWidth (handleLineWidth);
-			pContext->setLineStyle (CLineStyle (CLineStyle::kLineCapRound));
-			pContext->moveTo (where);
-			pContext->lineTo (origin);
-
-			where.offset (1, -1);
-			origin.offset (1, -1);
-			pContext->setFrameColor (colorHandle);
-			pContext->moveTo (where);
-			pContext->lineTo (origin);
-		}
-	}
+	CRect handleSize (0, 0, width, height);
+	handleSize.offset (where.h, where.v);
+	pHandle->draw (pContext, handleSize);
 }
 
 //------------------------------------------------------------------------

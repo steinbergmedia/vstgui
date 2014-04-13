@@ -603,7 +603,7 @@ void D2DDrawContext::setLineStyleInternal (const CLineStyle& style)
 	{
 		properties.dashStyle = D2D1_DASH_STYLE_CUSTOM;
 		FLOAT* lengths = new FLOAT[style.getDashCount ()];
-		for (int32_t i = 0; i < style.getDashCount (); i++)
+		for (uint32_t i = 0; i < style.getDashCount (); i++)
 			lengths[i] = (FLOAT)style.getDashLengths ()[i];
 		getD2DFactory ()->CreateStrokeStyle (properties, lengths, style.getDashCount (), &strokeStyle);
 		delete [] lengths;
