@@ -302,9 +302,10 @@ IPlatformOptionMenu* UIViewFrame::createPlatformOptionMenu ()
 }
 
 //-----------------------------------------------------------------------------
-COffscreenContext* UIViewFrame::createOffscreenContext (CCoord width, CCoord height)
+COffscreenContext* UIViewFrame::createOffscreenContext (CCoord width, CCoord height, double scaleFactor)
 {
-	CGBitmap* bitmap = new CGBitmap (CPoint (width, height));
+	CGBitmap* bitmap = new CGBitmap (CPoint (width * scaleFactor, height * scaleFactor));
+	bitmap->setScaleFactor (scaleFactor);
 	CGDrawContext* context = new CGDrawContext (bitmap);
 	bitmap->forget ();
 	if (context->getCGContext ())

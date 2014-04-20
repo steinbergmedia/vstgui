@@ -756,12 +756,16 @@ IPlatformOptionMenu* HIViewFrame::createPlatformOptionMenu ()
 }
 
 //-----------------------------------------------------------------------------
-COffscreenContext* HIViewFrame::createOffscreenContext (CCoord width, CCoord height)
+COffscreenContext* HIViewFrame::createOffscreenContext (CCoord width, CCoord height, double scaleFactor)
 {
-	CGBitmap* bitmap = new CGBitmap (CPoint (width, height));
+	CGBitmap* bitmap = new CGBitmap (CPoint (width * scaleFactor, height * scaleFactor));
+	bitmap->setScaleFactor (scaleFactor);
 	CGDrawContext* context = new CGDrawContext (bitmap);
 	bitmap->forget ();
-	return context;
+	if (context->getCGContext ())
+		return context;
+	context->forget ();
+	return 0;
 }
 
 //------------------------------------------------------------------------------------
@@ -772,7 +776,7 @@ CView::DragResult HIViewFrame::doDrag (IDataPackage* source, const CPoint& offse
 	if (PasteboardCreate (kPasteboardUniqueName, &pb) == noErr)
 	{
 		PasteboardClear (pb);
-		for (int32_t i = 0; i < source->getCount (); i++)
+		for (uint32_t i = 0; i < source->getCount (); i++)
 		{
 			const void* buffer = 0;
 			IDataPackage::Type type;
