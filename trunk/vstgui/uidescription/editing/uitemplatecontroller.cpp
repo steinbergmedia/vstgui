@@ -120,8 +120,7 @@ public:
 		context->setFillColor (headerBackgroundColor);
 		context->drawRect (size, kDrawFilled);
 		context->setFrameColor (rowlineColor);
-		context->moveTo (CPoint (size.left, size.bottom));
-		context->lineTo (CPoint (size.right, size.bottom));
+		context->drawLine (std::make_pair (CPoint (size.left, size.bottom), CPoint (size.right, size.bottom)));
 		if (getHeaderTitle ())
 		{
 			if (headerFont == 0)

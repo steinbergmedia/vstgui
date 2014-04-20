@@ -143,6 +143,11 @@
 		#define WINDOWS 1
 	#endif
 	#define noexcept		// currently not supported by any VS compiler
+	#define DEPRECATED_ATTRIBUTE __declspec(deprecated)
+	#pragma warning(3 : 4189) // local variable is initialized but not referenced
+	#pragma warning(3 : 4702) // unreachable code
+	#pragma warning(3 : 4995) // deprecated
+	#pragma warning(3 : 4431) // missing type specifier - int assumed. Note: C no longer supports default-int
 	#include <algorithm>
 	using std::min;
 	using std::max;
@@ -452,6 +457,10 @@ inline SharedPointer<I>& SharedPointer<I>::operator=(const SharedPointer<I>& _pt
 	operator= (_ptr.ptr);
 	return *this;
 }
+
+//------------------------------------------------------------------------
+template <class I>
+SharedPointer<I> owned (I* p) { return SharedPointer<I> (p, false); }
 
 //------------------------------------------------------------------------
 template <class I>

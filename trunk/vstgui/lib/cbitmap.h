@@ -183,8 +183,8 @@ public:
 	virtual void getColor (CColor& c) const = 0;	///< get color of current pixel
 	virtual void setColor (const CColor& c) = 0;	///< set color of current pixel
 
-	inline uint32_t getBitmapWidth () const { return (uint32_t)bitmap->getWidth (); }
-	inline uint32_t getBitmapHeight () const { return (uint32_t)bitmap->getHeight (); }
+	inline uint32_t getBitmapWidth () const { return (uint32_t)bitmap->getPlatformBitmap ()->getSize ().x; }
+	inline uint32_t getBitmapHeight () const { return (uint32_t)bitmap->getPlatformBitmap ()->getSize ().y; }
 
 	inline IPlatformBitmapPixelAccess* getPlatformBitmapPixelAccess () const { return pixelAccess; }
 	/** create an accessor.

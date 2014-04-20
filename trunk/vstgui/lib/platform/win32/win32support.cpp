@@ -87,6 +87,7 @@ public:
 		d2d1Dll = LoadLibraryA ("d2d1.dll");
 		if (d2d1Dll)
 		{
+			HRESULT hr = S_OK;
 			D2D1CreateFactoryProc _D2D1CreateFactory = (D2D1CreateFactoryProc)GetProcAddress (d2d1Dll, "D2D1CreateFactory");
 			if (_D2D1CreateFactory)
 			{
@@ -96,7 +97,7 @@ public:
 				debugOptions.debugLevel = D2D1_DEBUG_LEVEL_INFORMATION;
 				options = &debugOptions;
 			#endif
-				HRESULT hr = _D2D1CreateFactory (D2D1_FACTORY_TYPE_MULTI_THREADED, __uuidof(ID2D1Factory), options, (void**)&factory);
+				hr = _D2D1CreateFactory (D2D1_FACTORY_TYPE_MULTI_THREADED, __uuidof(ID2D1Factory), options, (void**)&factory);
 			}
 			dwriteDll = LoadLibraryA ("dwrite.dll");
 			if (dwriteDll)
@@ -104,7 +105,7 @@ public:
 				DWriteCreateFactoryProc _DWriteCreateFactory = (DWriteCreateFactoryProc)GetProcAddress (dwriteDll, "DWriteCreateFactory");
 				if (_DWriteCreateFactory)
 				{
-					HRESULT hr = _DWriteCreateFactory (DWRITE_FACTORY_TYPE_SHARED, __uuidof(IDWriteFactory), (void**)&writeFactory);
+					hr = _DWriteCreateFactory (DWRITE_FACTORY_TYPE_SHARED, __uuidof(IDWriteFactory), (void**)&writeFactory);
 				}
 			}	
 		}

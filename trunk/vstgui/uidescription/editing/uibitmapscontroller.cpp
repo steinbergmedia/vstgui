@@ -76,25 +76,20 @@ public:
 				context->setFrameColor (kBlueCColor);
 				context->setLineWidth (1);
 				context->setLineStyle (kLineSolid);
-				context->moveTo (CPoint (r.left, r.top + offsets.top));
-				context->lineTo (CPoint (r.right, r.top + offsets.top));
-				context->moveTo (CPoint (r.left, r.bottom - offsets.bottom));
-				context->lineTo (CPoint (r.right, r.bottom - offsets.bottom));
-				context->moveTo (CPoint (r.left + offsets.left, r.top));
-				context->lineTo (CPoint (r.left + offsets.left, r.bottom));
-				context->moveTo (CPoint (r.right - offsets.right, r.top));
-				context->lineTo (CPoint (r.right - offsets.right, r.bottom));
+				
+				context->drawLine (std::make_pair (CPoint (r.left, r.top + offsets.top), CPoint (r.right, r.top + offsets.top)));
+				context->drawLine (std::make_pair (CPoint (r.left, r.bottom - offsets.bottom), CPoint (r.right, r.bottom - offsets.bottom)));
+				context->drawLine (std::make_pair (CPoint (r.left + offsets.left, r.top), CPoint (r.left + offsets.left, r.bottom)));
+				context->drawLine (std::make_pair (CPoint (r.right - offsets.right, r.top), CPoint (r.right - offsets.right, r.bottom)));
+
 				context->setFrameColor (kRedCColor);
 				context->setLineWidth (1);
 				context->setLineStyle (kLineOnOffDash2);
-				context->moveTo (CPoint (r.left, r.top + offsets.top));
-				context->lineTo (CPoint (r.right, r.top + offsets.top));
-				context->moveTo (CPoint (r.left, r.bottom - offsets.bottom));
-				context->lineTo (CPoint (r.right, r.bottom - offsets.bottom));
-				context->moveTo (CPoint (r.left + offsets.left, r.top));
-				context->lineTo (CPoint (r.left + offsets.left, r.bottom));
-				context->moveTo (CPoint (r.right - offsets.right, r.top));
-				context->lineTo (CPoint (r.right - offsets.right, r.bottom));
+
+				context->drawLine (std::make_pair (CPoint (r.left, r.top + offsets.top), CPoint (r.right, r.top + offsets.top)));
+				context->drawLine (std::make_pair (CPoint (r.left, r.bottom - offsets.bottom), CPoint (r.right, r.bottom - offsets.bottom)));
+				context->drawLine (std::make_pair (CPoint (r.left + offsets.left, r.top), CPoint (r.left + offsets.left, r.bottom)));
+				context->drawLine (std::make_pair (CPoint (r.right - offsets.right, r.top), CPoint (r.right - offsets.right, r.bottom)));
 			}
 		}
 	}

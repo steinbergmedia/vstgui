@@ -224,12 +224,12 @@ CKickButton::~CKickButton ()
 //------------------------------------------------------------------------
 void CKickButton::draw (CDrawContext *pContext)
 {
-	CPoint where (offset.h, offset.v);
+	CPoint where (offset.x, offset.y);
 
 	bounceValue ();
 
 	if (value == getMax ())
-		where.v += heightOfOneImage;
+		where.y += heightOfOneImage;
 
 	if (getDrawBackground ())
 	{
@@ -276,8 +276,8 @@ CMouseEventResult CKickButton::onMouseMoved (CPoint& where, const CButtonState& 
 {
 	if (isEditing ())
 	{
-		if (where.h >= getViewSize ().left && where.v >= getViewSize ().top  &&
-			where.h <= getViewSize ().right && where.v <= getViewSize ().bottom)
+		if (where.x >= getViewSize ().left && where.y >= getViewSize ().top  &&
+			where.x <= getViewSize ().right && where.y <= getViewSize ().bottom)
 			value = getMax ();
 		else
 			value = getMin ();
@@ -526,7 +526,7 @@ void CCheckBox::draw (CDrawContext* context)
 		checkBoxSize.offset (1, ceil ((getViewSize ().getHeight () - checkBoxSize.getHeight ()) / 2));
 		context->setLineWidth (1);
 		context->setLineStyle (kLineSolid);
-		context->setDrawMode (kAliasing|kIntegralMode);
+		context->setDrawMode (kAntiAliasing|kIntegralMode);
 		context->setFrameColor (boxFrameColor);
 		context->setFillColor (boxFillColor);
 		context->drawRect (checkBoxSize, kDrawFilledAndStroked);
@@ -551,28 +551,24 @@ void CCheckBox::draw (CDrawContext* context)
 		{
 			if (norm == 0.5f)
 			{
-				context->moveTo (CPoint (checkBoxSize.left + cbInset, checkBoxSize.top + checkBoxSize.getHeight () / 2));
-				context->lineTo (CPoint (checkBoxSize.right - cbInset, checkBoxSize.top + checkBoxSize.getHeight () / 2));
+				context->drawLine (std::make_pair (CPoint (checkBoxSize.left + cbInset, checkBoxSize.top + checkBoxSize.getHeight () / 2), CPoint (checkBoxSize.right - cbInset, checkBoxSize.top + checkBoxSize.getHeight () / 2)));
 			}
 			else if (norm > 0.5f)
 			{
-				context->moveTo (CPoint (checkBoxSize.left + cbInset, checkBoxSize.top + cbInset));
-				context->lineTo (CPoint (checkBoxSize.right - cbInset, checkBoxSize.bottom - cbInset));
-				context->moveTo (CPoint (checkBoxSize.left + cbInset, checkBoxSize.bottom - cbInset));
-				context->lineTo (CPoint (checkBoxSize.right - cbInset, checkBoxSize.top + cbInset));
+				context->drawLine (std::make_pair (CPoint (checkBoxSize.left + cbInset, checkBoxSize.top + cbInset), CPoint (checkBoxSize.right - cbInset, checkBoxSize.bottom - cbInset)));
+				context->drawLine (std::make_pair (CPoint (checkBoxSize.left + cbInset, checkBoxSize.bottom - cbInset), CPoint (checkBoxSize.right - cbInset, checkBoxSize.top + cbInset)));
 			}
 		}
 		else
 		{
-			context->moveTo (CPoint (checkBoxSize.left + cbInset, checkBoxSize.top + checkBoxSize.getHeight () / 2));
 			if (norm == 0.5f)
 			{
-				context->lineTo (CPoint (checkBoxSize.right - cbInset, checkBoxSize.top + checkBoxSize.getHeight () / 2));
+				context->drawLine (std::make_pair (CPoint (checkBoxSize.left + cbInset, checkBoxSize.top + checkBoxSize.getHeight () / 2), CPoint (checkBoxSize.right - cbInset, checkBoxSize.top + checkBoxSize.getHeight () / 2)));
 			}
 			else if (norm > 0.5f)
 			{
-				context->lineTo (CPoint (checkBoxSize.left + checkBoxSize.getWidth () / 2, checkBoxSize.bottom - cbInset));
-				context->lineTo (CPoint (checkBoxSize.right + 1, checkBoxSize.top - 1));
+				context->drawLine (std::make_pair (CPoint (checkBoxSize.left + cbInset, checkBoxSize.top + checkBoxSize.getHeight () / 2), CPoint (checkBoxSize.left + checkBoxSize.getWidth () / 2, checkBoxSize.bottom - cbInset)));
+				context->drawLine (std::make_pair (CPoint (checkBoxSize.left + checkBoxSize.getWidth () / 2, checkBoxSize.bottom - cbInset), CPoint (checkBoxSize.right + 1, checkBoxSize.top - 1)));
 			}
 		}
 	}
@@ -1097,8 +1093,8 @@ CMouseEventResult CTextButton::onMouseMoved (CPoint& where, const CButtonState& 
 {
 	if (isEditing ())
 	{
-		if (where.h >= getViewSize ().left && where.v >= getViewSize ().top  &&
-			where.h <= getViewSize ().right && where.v <= getViewSize ().bottom)
+		if (where.x >= getViewSize ().left && where.y >= getViewSize ().top  &&
+			where.x <= getViewSize ().right && where.y <= getViewSize ().bottom)
 			value = fEntryState == getMin () ? getMax () : getMin ();
 		else
 			value = fEntryState == getMin () ? getMin () : getMax ();

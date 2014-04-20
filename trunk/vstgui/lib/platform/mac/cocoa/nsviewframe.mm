@@ -212,10 +212,19 @@ static void VSTGUI_NSView_viewDidMoveToWindow (id self, SEL _cmd)
 	{
 		[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(windowKeyStateChanged:) name:NSWindowDidBecomeKeyNotification object:window];
 		[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(windowKeyStateChanged:) name:NSWindowDidResignKeyNotification object:window];
+		[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(windowDidChangeBackingProperties:) name:NSWindowDidChangeBackingPropertiesNotification object:window];
 		IPlatformFrameCallback* frame = getFrame (self);
 		if (frame)
 			frame->platformOnActivate ([window isKeyWindow] ? true : false);
 	}
+}
+
+//------------------------------------------------------------------------------------
+static void VSTGUI_NSView_windowDidChangeBackingProperties (id self, SEL _cmd, NSNotification* notification)
+{
+	IPlatformFrameCallback* frame = getFrame (self);
+	if (frame)
+		frame->platformScaleFactorChanged ();
 }
 
 //------------------------------------------------------------------------------------
@@ -660,6 +669,7 @@ void NSViewFrame::initClass ()
 		VSTGUI_CHECK_YES(class_addMethod (viewClass, @selector(updateTrackingAreas), IMP (VSTGUI_NSView_updateTrackingAreas), "v@:@:"))
 		VSTGUI_CHECK_YES(class_addMethod (viewClass, @selector(viewDidMoveToWindow), IMP (VSTGUI_NSView_viewDidMoveToWindow), "v@:@:"))
 		VSTGUI_CHECK_YES(class_addMethod (viewClass, @selector(windowKeyStateChanged:), IMP (VSTGUI_NSView_windowKeyStateChanged), "v@:@:^:"))
+		VSTGUI_CHECK_YES(class_addMethod (viewClass, @selector(windowDidChangeBackingProperties:), IMP (VSTGUI_NSView_windowDidChangeBackingProperties), "v@:@:^:"))
 		VSTGUI_CHECK_YES(class_addMethod (viewClass, @selector(isFlipped), IMP (VSTGUI_NSView_isFlipped), "B@:@:"))
 		VSTGUI_CHECK_YES(class_addMethod (viewClass, @selector(acceptsFirstResponder), IMP (VSTGUI_NSView_acceptsFirstResponder), "B@:@:"))
 		VSTGUI_CHECK_YES(class_addMethod (viewClass, @selector(becomeFirstResponder), IMP (VSTGUI_NSView_becomeFirstResponder), "B@:@:"))
@@ -781,8 +791,8 @@ void NSViewFrame::drawRect (NSRect* rect)
 //-----------------------------------------------------------------------------
 bool NSViewFrame::getGlobalPosition (CPoint& pos) const
 {
-	NSPoint p = [nsView convertPoint:[nsView bounds].origin toView:nil]; // window coordinates
-	p = [[nsView window] convertBaseToScreen:p];	// screen coordinates, 0,0 is bottom left
+	NSPoint p = [nsView bounds].origin;
+	convertPointToGlobal (nsView, p);
 	NSScreen* mainScreen = [[NSScreen screens] objectAtIndex:0];
 	NSRect screenRect = [mainScreen frame];
 	p.y = screenRect.size.height - (p.y + screenRect.origin.y);
@@ -1009,9 +1019,10 @@ IPlatformViewLayer* NSViewFrame::createPlatformViewLayer (IPlatformViewLayerDele
 }
 
 //-----------------------------------------------------------------------------
-COffscreenContext* NSViewFrame::createOffscreenContext (CCoord width, CCoord height)
+COffscreenContext* NSViewFrame::createOffscreenContext (CCoord width, CCoord height, double scaleFactor)
 {
-	CGBitmap* bitmap = new CGBitmap (CPoint (width, height));
+	CGBitmap* bitmap = new CGBitmap (CPoint (width * scaleFactor, height * scaleFactor));
+	bitmap->setScaleFactor (scaleFactor);
 	CGDrawContext* context = new CGDrawContext (bitmap);
 	bitmap->forget ();
 	if (context->getCGContext ())
@@ -1061,10 +1072,10 @@ CView::DragResult NSViewFrame::doDrag (IDataPackage* source, const CPoint& offse
 			{
 				NSMutableArray* files = [[[NSMutableArray alloc] init] autorelease];
 				// we allow more than one file
-				for (int32_t i = 0; i < source->getCount (); i++)
+				for (uint32_t i = 0; i < source->getCount (); i++)
 				{
 					const void* buffer = 0;
-					int32_t bufferSize = source->getData (i, buffer, type);
+					uint32_t bufferSize = source->getData (i, buffer, type);
 					if (type == IDataPackage::kFilePath && bufferSize > 0 && ((const char*)buffer)[bufferSize-1] == 0)
 					{
 						[files addObject:[NSString stringWithCString:(const char*)buffer encoding:NSUTF8StringEncoding]];
@@ -1205,8 +1216,7 @@ void CocoaTooltipWindow::set (NSViewFrame* nsViewFrame, const CRect& rect, const
 	p.x = rect.left;
 	p.y = rect.bottom;
 	NSPoint nsp = nsPointFromCPoint (p);
-	nsp = [nsView convertPoint:nsp toView:nil];
-	nsp = [[nsView window] convertBaseToScreen:nsp];
+	convertPointToGlobal (nsView, nsp);
 	nsp.y -= (textSize.height + 4);
 	nsp.x += (rect.getWidth () - textSize.width) / 2;
 	

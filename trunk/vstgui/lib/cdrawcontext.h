@@ -40,6 +40,7 @@
 #include "crect.h"
 #include "cfont.h"
 #include "ccolor.h"
+#include "cgraphicstransform.h"
 #include <cmath>
 #include <stack>
 #include <vector>
@@ -176,14 +177,34 @@ class CDrawContext : public CBaseObject
 {
 public:
 	//-----------------------------------------------------------------------------
+	/** Add a transform to all draw routines. Must be used as stack object. */
+	//-----------------------------------------------------------------------------
+	struct Transform
+	{
+		Transform (CDrawContext& context, const CGraphicsTransform& transformation);
+		~Transform ();
+		
+	private:
+		CDrawContext& context;
+	};
+	
+	//-----------------------------------------------------------------------------
 	/// @name Draw primitives
 	//-----------------------------------------------------------------------------
 	//@{
-	virtual void moveTo (const CPoint &point);	///< move line position to point
-	virtual void lineTo (const CPoint &point) = 0;	///< draw a line from current position to point
-	void getLoc (CPoint &where) const { where = currentState.penLoc; }
-	virtual void drawLines (const CPoint* points, const int32_t& numberOfLines) = 0;	///< draw multiple lines at once
-	virtual void drawPolygon (const CPoint* pPoints, int32_t numberOfPoints, const CDrawStyle drawStyle = kDrawStroked) = 0; ///< draw a polygon
+	VSTGUI_DEPRECATED(void moveTo (const CPoint &point);)	///< \deprecated use drawLine
+	VSTGUI_DEPRECATED(void lineTo (const CPoint &point);)	///< \deprecated use drawLine
+	VSTGUI_DEPRECATED(void getLoc (CPoint &where) const { where = currentState.penLoc; })
+	VSTGUI_DEPRECATED(void drawLines (const CPoint* points, const int32_t& numberOfLines);) ///< \deprecated use drawLines (const LineList&)
+	VSTGUI_DEPRECATED(void drawPolygon (const CPoint* pPoints, int32_t numberOfPoints, const CDrawStyle drawStyle = kDrawStroked)); ///< \deprecated use drawPolygon (const PointList&)
+
+	typedef std::pair<CPoint, CPoint> LinePair;
+	typedef std::vector<LinePair> LineList;
+	typedef std::vector<CPoint> PointList;
+	
+	virtual void drawLine (const LinePair& line) = 0;	///< draw a line
+	virtual void drawLines (const LineList& lines) = 0;	///< draw multiple lines at once
+	virtual void drawPolygon (const PointList& polygonPointList, const CDrawStyle drawStyle = kDrawStroked) = 0; ///< draw a polygon
 	virtual void drawRect (const CRect &rect, const CDrawStyle drawStyle = kDrawStroked) = 0;	///< draw a rect
 	virtual void drawArc (const CRect &rect, const float startAngle1, const float endAngle2, const CDrawStyle drawStyle = kDrawStroked) = 0;	///< draw an arc, angles are in degree
 	virtual void drawEllipse (const CRect &rect, const CDrawStyle drawStyle = kDrawStroked) = 0;	///< draw an ellipse
@@ -295,6 +316,8 @@ public:
 	virtual void fillRadialGradient (CGraphicsPath* path, const CGradient& gradient, const CPoint& center, CCoord radius, const CPoint& originOffset = CPoint (0,0), bool evenOdd = false, CGraphicsTransform* transformation = 0) = 0;
 	//@}
 
+	virtual double getScaleFactor () const { return 1.; }
+
 	virtual void beginDraw () {}
 	virtual void endDraw () {}
 
@@ -304,6 +327,10 @@ protected:
 	~CDrawContext ();
 
 	virtual void init ();
+
+	void pushTransform (const CGraphicsTransform& transformation);
+	void popTransform ();
+	const CGraphicsTransform& getCurrentTransform () const;
 
 	const CString& getDrawString (UTF8StringPtr string);
 	void clearDrawString ();
@@ -338,13 +365,10 @@ protected:
 
 	CDrawContextState currentState;
 	std::stack<CDrawContextState> globalStatesStack;
+
+private:
+	std::stack<CGraphicsTransform> transformStack;
 };
-
-#ifndef M_PI
-#define M_PI        3.14159265358979323846264338327950288
-#endif
-
-static inline double radians (double degrees) { return degrees * M_PI / 180; }
 
 } // namespace
 

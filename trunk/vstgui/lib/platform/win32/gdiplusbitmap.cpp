@@ -69,7 +69,6 @@ bool GdiplusBitmap::loadFromStream (IStream* stream)
 {
 	if (bitmap)
 		return false;
-	bool result = false;
 	bitmap = Gdiplus::Bitmap::FromStream (stream, TRUE);
 	if (bitmap)
 	{

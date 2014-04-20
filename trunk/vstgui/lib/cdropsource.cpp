@@ -37,86 +37,113 @@
 namespace VSTGUI {
 
 //-----------------------------------------------------------------------------
+CDropSource::CDropEntry::CDropEntry (const void* inBuffer, uint32_t inBufferSize, Type inType)
+: buffer (0)
+, bufferSize (inBufferSize)
+, type (inType)
+{
+	buffer = malloc (bufferSize);
+	if (buffer)
+		memcpy (buffer, inBuffer, bufferSize);
+}
+
+//-----------------------------------------------------------------------------
+CDropSource::CDropEntry::CDropEntry (const CDropEntry& entry)
+: buffer (0)
+, bufferSize (entry.bufferSize)
+, type (entry.type)
+{
+	buffer = malloc (bufferSize);
+	if (buffer)
+		memcpy (buffer, entry.buffer, bufferSize);
+}
+
+#if VSTGUI_RVALUE_REF_SUPPORT
+//-----------------------------------------------------------------------------
+CDropSource::CDropEntry::CDropEntry (CDropEntry&& entry) noexcept
+{
+	buffer = entry.buffer;
+	bufferSize = entry.bufferSize;
+	type = entry.type;
+	entry.buffer = nullptr;
+	entry.bufferSize = 0;
+	entry.type = kError;
+}
+
+#endif
+//-----------------------------------------------------------------------------
+CDropSource::CDropEntry::~CDropEntry ()
+{
+	if (buffer)
+		free (buffer);
+}
+
+//-----------------------------------------------------------------------------
 CDropSource::CDropSource ()
 {
 }
 
 //-----------------------------------------------------------------------------
-CDropSource::CDropSource (const void* buffer, int32_t bufferSize, Type type)
+CDropSource::CDropSource (const void* buffer, uint32_t bufferSize, Type type)
 {
 	add (buffer, bufferSize, type);
 }
 
 //-----------------------------------------------------------------------------
-CDropSource::~CDropSource ()
+bool CDropSource::add (const void* buffer, uint32_t bufferSize, Type type)
 {
-	for (int32_t i = getCount ()-1; i >= 0; i--)
-	{
-		CDropEntry* entry = entries[i];
-		free (entry->buffer);
-		delete entry;
-	}
+	if (entries.size () == entries.max_size ())
+		return false;
+	entries.push_back (CDropEntry (buffer, bufferSize, type));
+	return true;
 }
 
 //-----------------------------------------------------------------------------
-bool CDropSource::add (const void* buffer, int32_t bufferSize, Type type)
+uint32_t CDropSource::getCount () const
 {
-	if (bufferSize > 0)
-	{
-		CDropEntry* entry = new CDropEntry;
-		entry->buffer = malloc (bufferSize);
-		if (entry->buffer)
-		{
-			memcpy (entry->buffer, buffer, bufferSize);
-			entry->bufferSize = bufferSize;
-			entry->type = type;
-			entries.push_back (entry);
-			return true;
-		}
-		delete entry;
-	}
-	return false;
+	return static_cast<uint32_t> (entries.size ());
 }
 
 //-----------------------------------------------------------------------------
-int32_t CDropSource::getCount ()
+uint32_t CDropSource::getDataSize (uint32_t index) const
 {
-	return (int32_t)entries.size ();
+	return index < getCount () ? entries[index].bufferSize : 0;
 }
 
 //-----------------------------------------------------------------------------
-int32_t CDropSource::getEntrySize (int32_t index)
+CDropSource::Type CDropSource::getDataType (uint32_t index) const
 {
-	CDropEntry* entry = index < getCount () ? entries[index] : 0;
-	if (entry)
-	{
-		return entry->bufferSize;
-	}
-	return -1;
+	return index < getCount () ? entries[index].type : kError;
 }
 
 //-----------------------------------------------------------------------------
-CDropSource::Type CDropSource::getEntryType (int32_t index)
+uint32_t CDropSource::getData (uint32_t index, const void*& buffer, Type& type) const
 {
-	CDropEntry* entry = index < getCount () ? entries[index] : 0;
-	if (entry)
-	{
-		return entry->type;
-	}
-	return kError;
+	if (index >= getCount ())
+		return 0;
+	buffer = entries[index].buffer;
+	type = entries[index].type;
+	return entries[index].bufferSize;
+}
+
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
+//-----------------------------------------------------------------------------
+int32_t CDropSource::getEntrySize (int32_t index) const
+{
+	return getDataSize (index);
 }
 
 //-----------------------------------------------------------------------------
-int32_t CDropSource::getEntry (int32_t index, const void*& buffer, Type& type)
+CDropSource::Type CDropSource::getEntryType (int32_t index) const
 {
-	CDropEntry* entry = index < getCount () ? entries[index] : 0;
-	if (entry)
-	{
-		buffer = entry->buffer;
-		type = entry->type;
-		return entry->bufferSize;
-	}
-	return -1;
+	return getDataType (index);
 }
+
+//-----------------------------------------------------------------------------
+int32_t CDropSource::getEntry (int32_t index, const void*& buffer, Type& type) const
+{
+	return getData (index, buffer, type);
+}
+#endif // VSTGUI_ENABLE_DEPRECATED_METHODS
 
 } // namespace

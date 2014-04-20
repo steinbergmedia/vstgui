@@ -44,16 +44,32 @@
 namespace VSTGUI {
 
 //-----------------------------------------------------------------------------
+static D2D1_MATRIX_3X2_F convert (const CGraphicsTransform& t)
+{
+	D2D1_MATRIX_3X2_F matrix;
+	matrix._11 = static_cast<FLOAT> (t.m11);
+	matrix._12 = static_cast<FLOAT> (t.m12);
+	matrix._21 = static_cast<FLOAT> (t.m21);
+	matrix._22 = static_cast<FLOAT> (t.m22);
+	matrix._31 = static_cast<FLOAT> (t.dx);
+	matrix._32 = static_cast<FLOAT> (t.dy);
+	return matrix;
+}
+
+//-----------------------------------------------------------------------------
 D2DDrawContext::D2DApplyClip::D2DApplyClip (D2DDrawContext* drawContext)
 : drawContext (drawContext)
 {
 	drawContext->getRenderTarget ()->PushAxisAlignedClip (makeD2DRect (drawContext->currentState.clipRect), D2D1_ANTIALIAS_MODE_PER_PRIMITIVE);
+	if (drawContext->getCurrentTransform ().isInvariant () == false)
+		drawContext->getRenderTarget ()->SetTransform (convert (drawContext->getCurrentTransform ()));
 }
 
 //-----------------------------------------------------------------------------
 D2DDrawContext::D2DApplyClip::~D2DApplyClip ()
 {
 	drawContext->getRenderTarget ()->PopAxisAlignedClip ();
+	drawContext->getRenderTarget ()->SetTransform (D2D1::Matrix3x2F::Identity ());
 }
 
 //-----------------------------------------------------------------------------
@@ -116,9 +132,10 @@ void D2DDrawContext::createRenderTarget ()
 		{
 			D2D1_RENDER_TARGET_TYPE targetType = D2D1_RENDER_TARGET_TYPE_SOFTWARE;
 			D2D1_PIXEL_FORMAT pixelFormat = D2D1::PixelFormat (DXGI_FORMAT_UNKNOWN, D2D1_ALPHA_MODE_PREMULTIPLIED);
-			HRESULT hr = getD2DFactory ()->CreateWicBitmapRenderTarget (d2dBitmap->getBitmap (), D2D1::RenderTargetProperties (targetType, pixelFormat), &renderTarget);
+			getD2DFactory ()->CreateWicBitmapRenderTarget (d2dBitmap->getBitmap (), D2D1::RenderTargetProperties (targetType, pixelFormat), &renderTarget);
 		}
 	}
+	assert (renderTarget);
 	init ();
 }
 
@@ -221,14 +238,7 @@ void D2DDrawContext::drawGraphicsPath (CGraphicsPath* _path, PathDrawMode mode, 
 		if (t)
 		{
 			ID2D1TransformedGeometry* tg = 0;
-			D2D1_MATRIX_3X2_F matrix;
-			matrix._11 = (FLOAT)t->m11;
-			matrix._12 = (FLOAT)t->m12;
-			matrix._21 = (FLOAT)t->m21;
-			matrix._22 = (FLOAT)t->m22;
-			matrix._31 = (FLOAT)t->dx;
-			matrix._32 = (FLOAT)t->dy;
-			getD2DFactory ()->CreateTransformedGeometry (path, matrix, &tg);
+			getD2DFactory ()->CreateTransformedGeometry (path, convert (*t), &tg);
 			geometry = tg;
 		}
 		else
@@ -286,14 +296,7 @@ void D2DDrawContext::fillLinearGradient (CGraphicsPath* _path, const CGradient& 
 		if (t)
 		{
 			ID2D1TransformedGeometry* tg = 0;
-			D2D1_MATRIX_3X2_F matrix;
-			matrix._11 = (FLOAT)t->m11;
-			matrix._12 = (FLOAT)t->m12;
-			matrix._21 = (FLOAT)t->m21;
-			matrix._22 = (FLOAT)t->m22;
-			matrix._31 = (FLOAT)t->dx;
-			matrix._32 = (FLOAT)t->dy;
-			getD2DFactory ()->CreateTransformedGeometry (path, matrix, &tg);
+			getD2DFactory ()->CreateTransformedGeometry (path, convert (*t), &tg);
 			geometry = tg;
 		}
 		else
@@ -342,14 +345,7 @@ void D2DDrawContext::fillRadialGradient (CGraphicsPath* _path, const CGradient& 
 		if (t)
 		{
 			ID2D1TransformedGeometry* tg = 0;
-			D2D1_MATRIX_3X2_F matrix;
-			matrix._11 = (FLOAT)t->m11;
-			matrix._12 = (FLOAT)t->m12;
-			matrix._21 = (FLOAT)t->m21;
-			matrix._22 = (FLOAT)t->m22;
-			matrix._31 = (FLOAT)t->dx;
-			matrix._32 = (FLOAT)t->dy;
-			getD2DFactory ()->CreateTransformedGeometry (path, matrix, &tg);
+			getD2DFactory ()->CreateTransformedGeometry (path, convert (*t), &tg);
 			geometry = tg;
 		}
 		else
@@ -420,58 +416,51 @@ void D2DDrawContext::drawBitmap (CBitmap* bitmap, const CRect& dest, const CPoin
 }
 
 //-----------------------------------------------------------------------------
-void D2DDrawContext::moveTo (const CPoint &point)
+void D2DDrawContext::drawLine (const LinePair& line)
 {
-	CPoint p (point);
-	p.offset (currentState.offset.x, currentState.offset.y);
-	COffscreenContext::moveTo (p);
-}
-
-//-----------------------------------------------------------------------------
-void D2DDrawContext::lineTo (const CPoint &point)
-{
-	CPoint penLocation (currentState.penLoc);
-	CPoint p (point);
-	p.offset (currentState.offset.x, currentState.offset.y);
-	if (currentState.drawMode.integralMode ())
-	{
-		p.makeIntegral ();
-		penLocation.makeIntegral ();
-	}
-
 	if (renderTarget)
 	{
+		CPoint penLocation (line.first);
+		penLocation.offset (currentState.offset.x, currentState.offset.y);
+		CPoint p (line.second);
+		p.offset (currentState.offset.x, currentState.offset.y);
+		if (currentState.drawMode.integralMode ())
+		{
+			p.makeIntegral ();
+			penLocation.makeIntegral ();
+		}
+
 		D2DApplyClip clip (this);
 		if ((((int32_t)currentState.frameWidth) % 2))
 			renderTarget->SetTransform (D2D1::Matrix3x2F::Translation (0.f, -0.5f));
 		renderTarget->DrawLine (makeD2DPoint (penLocation), makeD2DPoint (p), strokeBrush, (FLOAT)currentState.frameWidth, strokeStyle);
 		renderTarget->SetTransform (D2D1::Matrix3x2F::Identity ());
 	}
-	currentState.penLoc = p;
 }
 
 //-----------------------------------------------------------------------------
-void D2DDrawContext::drawLines (const CPoint* points, const int32_t& numberOfLines)
+void D2DDrawContext::drawLines (const LineList& lines)
 {
-	for (int32_t i = 0; i < numberOfLines * 2; i+=2)
-	{
-		moveTo (points[i]);
-		lineTo (points[i+1]);
-	}
+	if (lines.size () == 0)
+		return;
+	VSTGUI_RANGE_BASED_FOR_LOOP(LineList, lines, LinePair, line)
+		drawLine (line);
+	VSTGUI_RANGE_BASED_FOR_LOOP_END
 }
 
 //-----------------------------------------------------------------------------
-void D2DDrawContext::drawPolygon (const CPoint *pPoints, int32_t numberOfPoints, const CDrawStyle drawStyle)
+void D2DDrawContext::drawPolygon (const PointList& polygonPointList, const CDrawStyle drawStyle)
 {
+	if (polygonPointList.size () == 0)
+		return;
 	if (renderTarget)
 	{
 		D2DApplyClip clip (this);
 		D2DGraphicsPath path;
-		path.beginSubpath (pPoints[0]);
-		path.addLine (pPoints[1]);
-		for (int32_t i = 2; i < numberOfPoints; i++)
+		path.beginSubpath (polygonPointList[0]);
+		for (uint32_t i = 1; i < polygonPointList.size (); ++i)
 		{
-			path.addLine (pPoints[i]);
+			path.addLine (polygonPointList[i]);
 		}
 		if (drawStyle == kDrawFilled || drawStyle == kDrawFilledAndStroked)
 		{

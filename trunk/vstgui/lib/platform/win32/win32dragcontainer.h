@@ -51,10 +51,10 @@ public:
 	WinDragContainer (IDataObject* platformDrag);
 	~WinDragContainer ();
 
-	int32_t getCount ();
-	int32_t getDataSize (int32_t index);
-	Type getDataType (int32_t index);
-	int32_t getData (int32_t index, const void*& buffer, Type& type);
+	uint32_t getCount () const VSTGUI_OVERRIDE_VMETHOD;
+	uint32_t getDataSize (uint32_t index) const VSTGUI_OVERRIDE_VMETHOD;
+	Type getDataType (uint32_t index) const VSTGUI_OVERRIDE_VMETHOD;
+	uint32_t getData (uint32_t index, const void*& buffer, Type& type) const VSTGUI_OVERRIDE_VMETHOD;
 
 protected:
 	static bool checkResolveLink (const TCHAR* nativePath, TCHAR* resolved);
@@ -63,11 +63,11 @@ protected:
 	static FORMATETC formatBinaryDrop;
 
 	IDataObject* platformDrag;
-	int32_t nbItems;
+	uint32_t nbItems;
 	bool stringsAreFiles;
 	std::vector<std::string> strings;
 	void* data;
-	int32_t dataSize;
+	uint32_t dataSize;
 };
 
 } // namespace

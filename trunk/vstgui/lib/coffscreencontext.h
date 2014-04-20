@@ -94,7 +94,7 @@ if (cachedBitmap)
 class COffscreenContext : public CDrawContext
 {
 public:
-	static COffscreenContext* create (CFrame* frame, CCoord width, CCoord height);
+	static COffscreenContext* create (CFrame* frame, CCoord width, CCoord height, double scaleFactor = 1.);
 
 	//-----------------------------------------------------------------------------
 	/// @name COffscreenContext Methods

@@ -152,7 +152,8 @@ CoreTextFont::~CoreTextFont ()
 {
 	if (stringAttributes)
 		CFRelease (stringAttributes);
-	CFRelease (fontRef);
+	if (fontRef)
+		CFRelease (fontRef);
 }
 
 //-----------------------------------------------------------------------------

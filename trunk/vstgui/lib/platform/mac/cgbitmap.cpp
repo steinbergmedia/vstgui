@@ -143,6 +143,7 @@ CGBitmap::CGBitmap (const CPoint& inSize)
 , bits (0)
 , dirty (false)
 , bytesPerRow (0)
+, scaleFactor (1.)
 {
 	size = inSize;
 	allocBits ();
@@ -156,6 +157,7 @@ CGBitmap::CGBitmap (CGImageRef image)
 , bits (0)
 , dirty (false)
 , bytesPerRow (0)
+, scaleFactor (1.)
 {
 	CGImageRetain (image);
 	size.x = CGImageGetWidth (image);
@@ -170,6 +172,7 @@ CGBitmap::CGBitmap ()
 , bits (0)
 , dirty (false)
 , bytesPerRow (0)
+, scaleFactor (1.)
 {
 }
 

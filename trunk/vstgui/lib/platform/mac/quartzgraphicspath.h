@@ -83,7 +83,7 @@ public:
 
 	operator CGGradientRef () const;
 
-	void addColorStop (double start, const CColor& color) VSTGUI_OVERRIDE_VMETHOD;
+	void addColorStop (const std::pair<double, CColor>& colorStop) VSTGUI_OVERRIDE_VMETHOD;
 
 protected:
 	void createCGGradient ();

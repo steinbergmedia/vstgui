@@ -186,12 +186,8 @@ CView* UIViewFactory::createView (const UIAttributes& attributes, const IUIDescr
 	const std::string* className = attributes.getAttributeValue ("class");
 	if (className)
 		return createViewByName (className, attributes, description);
-	else
-	{
-		std::string viewContainerName ("CViewContainer");
-		return createViewByName (&viewContainerName, attributes, description);
-	}
-	return 0;
+	std::string viewContainerName ("CViewContainer");
+	return createViewByName (&viewContainerName, attributes, description);
 }
 
 //-----------------------------------------------------------------------------

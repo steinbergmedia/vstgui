@@ -60,10 +60,9 @@ public:
 	Gdiplus::SolidBrush* getFontBrush () const { return pFontBrush; }
 
 	// CDrawContext
-	void moveTo (const CPoint &point) VSTGUI_OVERRIDE_VMETHOD;
-	void lineTo (const CPoint &point) VSTGUI_OVERRIDE_VMETHOD;
-	void drawLines (const CPoint* points, const int32_t& numberOfLines) VSTGUI_OVERRIDE_VMETHOD;
-	void drawPolygon (const CPoint *pPoints, int32_t numberOfPoints, const CDrawStyle drawStyle = kDrawStroked) VSTGUI_OVERRIDE_VMETHOD;
+	void drawLine (const LinePair& line) VSTGUI_OVERRIDE_VMETHOD;
+	void drawLines (const LineList& lines) VSTGUI_OVERRIDE_VMETHOD;
+	void drawPolygon (const PointList& polygonPointList, const CDrawStyle drawStyle = kDrawStroked) VSTGUI_OVERRIDE_VMETHOD;
 	void drawRect (const CRect &rect, const CDrawStyle drawStyle = kDrawStroked) VSTGUI_OVERRIDE_VMETHOD;
 	void drawArc (const CRect &rect, const float startAngle1, const float endAngle2, const CDrawStyle drawStyle = kDrawStroked) VSTGUI_OVERRIDE_VMETHOD;
 	void drawEllipse (const CRect &rect, const CDrawStyle drawStyle = kDrawStroked) VSTGUI_OVERRIDE_VMETHOD;

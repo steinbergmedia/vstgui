@@ -266,63 +266,58 @@ void GdiplusDrawContext::fillRadialGradient (CGraphicsPath* _path, const CGradie
 }
 
 //-----------------------------------------------------------------------------
-void GdiplusDrawContext::moveTo (const CPoint &point)
+void GdiplusDrawContext::drawLine (const LinePair& line)
 {
-	CPoint p (point);
-	p.offset (currentState.offset.x, currentState.offset.y);
-	COffscreenContext::moveTo (p);
-}
-
-//-----------------------------------------------------------------------------
-void GdiplusDrawContext::lineTo (const CPoint &point)
-{
-	CPoint p (point);
-	p.offset (currentState.offset.x, currentState.offset.y);
+	CPoint p1 (line.first);
+	p1.offset (currentState.offset.x, currentState.offset.y);
+	CPoint p2 (line.second);
+	p2.offset (currentState.offset.x, currentState.offset.y);
 	if (pGraphics && pPen)
 	{
 		pGraphics->TranslateTransform (0.5f, 0.5f);
-		pGraphics->DrawLine (pPen, (Gdiplus::REAL)currentState.penLoc.h, (Gdiplus::REAL)currentState.penLoc.v, (Gdiplus::REAL)p.h, (Gdiplus::REAL)p.v);
+		pGraphics->DrawLine (pPen, (Gdiplus::REAL)p1.x, (Gdiplus::REAL)p1.y, (Gdiplus::REAL)p2.x, (Gdiplus::REAL)p2.y);
 		pGraphics->TranslateTransform (-0.5f, -0.5f);
 	}
-	currentState.penLoc = p;
 }
 
 //-----------------------------------------------------------------------------
-void GdiplusDrawContext::drawLines (const CPoint* points, const int32_t& numberOfLines)
+void GdiplusDrawContext::drawLines (const LineList& lines)
 {
-	for (int32_t i = 0; i < numberOfLines * 2; i+=2)
-	{
-		moveTo (points[i]);
-		lineTo (points[i+1]);
-	}
+	if (lines.size () == 0)
+		return;
+	VSTGUI_RANGE_BASED_FOR_LOOP(LineList, lines, LinePair, line)
+		drawLine (line);
+	VSTGUI_RANGE_BASED_FOR_LOOP_END
 }
 
 //-----------------------------------------------------------------------------
-void GdiplusDrawContext::drawPolygon (const CPoint *pPoints, int32_t numberOfPoints, const CDrawStyle drawStyle)
+void GdiplusDrawContext::drawPolygon (const PointList& polygonPointList, const CDrawStyle drawStyle)
 {
+	if (polygonPointList.size () == 0)
+		return;
 	Gdiplus::PointF points[30];
 	Gdiplus::PointF* polyPoints;
 	bool allocated = false;
-	if (numberOfPoints > 30)
+	if (polygonPointList.size () > 30)
 	{
-		polyPoints = new Gdiplus::PointF[numberOfPoints];
+		polyPoints = new Gdiplus::PointF[polygonPointList.size ()];
 		allocated = true;
 	}
 	else
 		polyPoints = points;
 	
-	for (int32_t i = 0; i < numberOfPoints; i++)
+	for (int32_t i = 0; i < polygonPointList.size (); i++)
 	{
-		polyPoints[i].X = (Gdiplus::REAL)(pPoints[i].h + currentState.offset.h);
-		polyPoints[i].Y = (Gdiplus::REAL)(pPoints[i].v + currentState.offset.v);
+		polyPoints[i].X = (Gdiplus::REAL)(polygonPointList[i].h + currentState.offset.h);
+		polyPoints[i].Y = (Gdiplus::REAL)(polygonPointList[i].v + currentState.offset.v);
 	}
 
 	if (drawStyle == kDrawFilled || drawStyle == kDrawFilledAndStroked)
-		pGraphics->FillPolygon (pBrush, polyPoints, numberOfPoints);
+		pGraphics->FillPolygon (pBrush, polyPoints, static_cast<INT> (polygonPointList.size ()));
 	if (drawStyle == kDrawFilledAndStroked || drawStyle == kDrawStroked)
 	{
 		pGraphics->TranslateTransform (0.5f, 0.5f);
-		pGraphics->DrawPolygon (pPen, polyPoints, numberOfPoints);
+		pGraphics->DrawPolygon (pPen, polyPoints, static_cast<INT> (polygonPointList.size ()));
 		pGraphics->TranslateTransform (-0.5f, -0.5f);
 	}
 

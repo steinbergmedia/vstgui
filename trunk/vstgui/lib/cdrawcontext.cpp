@@ -34,6 +34,7 @@
 
 #include "cdrawcontext.h"
 #include "cgraphicspath.h"
+#include <cassert>
 
 namespace VSTGUI {
 
@@ -99,10 +100,24 @@ CDrawContext::CDrawContextState& CDrawContext::CDrawContextState::operator= (CDr
 #endif
 
 //-----------------------------------------------------------------------------
+CDrawContext::Transform::Transform (CDrawContext& context, const CGraphicsTransform& transformation)
+: context (context)
+{
+	context.pushTransform (transformation);
+}
+
+//-----------------------------------------------------------------------------
+CDrawContext::Transform::~Transform ()
+{
+	context.popTransform ();
+}
+
+//-----------------------------------------------------------------------------
 CDrawContext::CDrawContext (const CRect& surfaceRect)
 : drawStringHelper (0)
 , surfaceRect (surfaceRect)
 {
+	transformStack.push (CGraphicsTransform ());
 }
 
 //-----------------------------------------------------------------------------
@@ -156,11 +171,43 @@ void CDrawContext::restoreGlobalState ()
 	}
 }
 
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
 //-----------------------------------------------------------------------------
 void CDrawContext::moveTo (const CPoint& point)
 {
 	currentState.penLoc = point;
 }
+
+//-----------------------------------------------------------------------------
+void CDrawContext::lineTo (const CPoint &point)
+{
+	drawLine (std::make_pair (currentState.penLoc, point));
+	currentState.penLoc = point;
+}
+
+//-----------------------------------------------------------------------------
+void CDrawContext::drawLines (const CPoint* points, const int32_t& numberOfLines)
+{
+	LineList list (numberOfLines);
+	for (int32_t i = 0; i < numberOfLines * 2; i += 2)
+	{
+		list.push_back (std::make_pair (points[i], points[i+1]));
+	}
+	drawLines (list);
+}
+
+//-----------------------------------------------------------------------------
+void CDrawContext::drawPolygon (const CPoint* pPoints, int32_t numberOfPoints, const CDrawStyle drawStyle)
+{
+	PointList list (numberOfPoints);
+	for (int32_t i = 0; i < numberOfPoints; i++)
+	{
+		list.push_back (pPoints[i]);
+	}
+	drawPolygon (list, drawStyle);
+}
+
+#endif
 
 //-----------------------------------------------------------------------------
 void CDrawContext::setLineStyle (const CLineStyle& style)
@@ -347,6 +394,28 @@ CGraphicsPath* CDrawContext::createRoundRectGraphicsPath (const CRect& size, CCo
 		path->addRoundRect (size, radius);
 	}
 	return path;
+}
+
+//-----------------------------------------------------------------------------
+void CDrawContext::pushTransform (const CGraphicsTransform& transformation)
+{
+	assert (transformStack.size () > 0);
+	const CGraphicsTransform& currentTransform = transformStack.top ();
+	CGraphicsTransform newTransform = currentTransform * transformation;
+	transformStack.push (newTransform);
+}
+
+//-----------------------------------------------------------------------------
+void CDrawContext::popTransform ()
+{
+	assert (transformStack.size () > 1);
+	transformStack.pop ();
+}
+
+//-----------------------------------------------------------------------------
+const CGraphicsTransform& CDrawContext::getCurrentTransform () const
+{
+	return transformStack.top ();
 }
 
 //-----------------------------------------------------------------------------

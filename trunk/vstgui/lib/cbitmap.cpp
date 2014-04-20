@@ -118,7 +118,7 @@ void CBitmap::draw (CDrawContext* context, const CRect& rect, const CPoint& offs
 CCoord CBitmap::getWidth () const
 {
 	if (platformBitmap)
-		return platformBitmap->getSize ().x;
+		return platformBitmap->getSize ().x / platformBitmap->getScaleFactor ();
 	return 0;
 }
 
@@ -126,7 +126,7 @@ CCoord CBitmap::getWidth () const
 CCoord CBitmap::getHeight () const
 {
 	if (platformBitmap)
-		return platformBitmap->getSize ().y;
+		return platformBitmap->getSize ().y / platformBitmap->getScaleFactor ();
 	return 0;
 }
 
@@ -300,8 +300,8 @@ void CBitmapPixelAccess::init (CBitmap* _bitmap, IPlatformBitmapPixelAccess* _pi
 	pixelAccess = _pixelAccess;
 	address = currentPos = pixelAccess->getAddress ();
 	bytesPerRow = pixelAccess->getBytesPerRow ();
-	maxX = (uint32_t)(bitmap->getWidth ())-1;
-	maxY = (uint32_t)(bitmap->getHeight ())-1;
+	maxX = (uint32_t)(bitmap->getPlatformBitmap ()->getSize ().x)-1;
+	maxY = (uint32_t)(bitmap->getPlatformBitmap ()->getSize ().y)-1;
 }
 
 /// @cond ignore
@@ -312,14 +312,14 @@ template <int32_t redPosition, int32_t greenPosition, int32_t bluePosition, int3
 class CBitmapPixelAccessOrder : public CBitmapPixelAccess
 {
 public:
-	void getColor (CColor& c) const
+	void getColor (CColor& c) const VSTGUI_OVERRIDE_VMETHOD
 	{
 		c.red = currentPos[redPosition];
 		c.green = currentPos[greenPosition];
 		c.blue = currentPos[bluePosition];
 		c.alpha = currentPos[alphaPosition];
 	}
-	void setColor (const CColor& c)
+	void setColor (const CColor& c) VSTGUI_OVERRIDE_VMETHOD
 	{
 		currentPos[redPosition] = c.red;
 		currentPos[greenPosition] = c.green;

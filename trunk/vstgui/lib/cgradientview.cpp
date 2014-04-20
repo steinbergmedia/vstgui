@@ -227,8 +227,8 @@ void CGradientView::draw (CDrawContext* context)
 		else
 		{
 			CPoint center (radialCenter);
-			center.h *= getViewSize ().getWidth ();
-			center.v *= getViewSize ().getHeight ();
+			center.x *= getViewSize ().getWidth ();
+			center.y *= getViewSize ().getHeight ();
 			center.offset (getViewSize ().left, getViewSize ().top);
 			context->fillRadialGradient (path, *gradient, center, radialRadius * std::max (getViewSize ().getWidth (), getViewSize ().getHeight ()));
 		}

@@ -35,6 +35,7 @@
 #include "cshadowviewcontainer.h"
 #include "coffscreencontext.h"
 #include "cbitmapfilter.h"
+#include "cframe.h"
 
 namespace VSTGUI {
 
@@ -54,6 +55,30 @@ CShadowViewContainer::CShadowViewContainer (const CShadowViewContainer& copy)
 , shadowIntensity (copy.shadowIntensity)
 , shadowBlurSize (copy.shadowBlurSize)
 {
+}
+
+//-----------------------------------------------------------------------------
+bool CShadowViewContainer::removed (CView* parent)
+{
+	getFrame ()->unregisterScaleFactorChangedListeneer (this);
+	return CViewContainer::removed (parent);
+}
+
+//-----------------------------------------------------------------------------
+bool CShadowViewContainer::attached (CView* parent)
+{
+	if (CViewContainer::attached (parent))
+	{
+		getFrame ()->registerScaleFactorChangedListeneer (this);
+		return true;
+	}
+	return false;
+}
+
+//-----------------------------------------------------------------------------
+void CShadowViewContainer::onScaleFactorChanged (CFrame* frame)
+{
+	invalidateShadow ();
 }
 
 //-----------------------------------------------------------------------------
@@ -84,7 +109,6 @@ void CShadowViewContainer::setShadowBlurSize (uint32_t size)
 	{
 		shadowBlurSize = size;
 		invalidateShadow ();
-		invalid ();
 	}
 }
 
@@ -92,6 +116,7 @@ void CShadowViewContainer::setShadowBlurSize (uint32_t size)
 void CShadowViewContainer::invalidateShadow ()
 {
 	shadowInvalid = true;
+	invalid ();
 }
 
 //-----------------------------------------------------------------------------
@@ -107,7 +132,11 @@ void CShadowViewContainer::drawRect (CDrawContext* pContext, const CRect& update
 {
 	if (shadowInvalid && getWidth () > 0. && getHeight () > 0.)
 	{
-		OwningPointer<COffscreenContext> offscreenContext = COffscreenContext::create (getFrame (), getWidth (), getHeight ());
+		const double scaleFactor = pContext->getScaleFactor ();
+		CCoord width = getWidth ();
+		CCoord height = getHeight ();
+		
+		SharedPointer<COffscreenContext> offscreenContext = owned (COffscreenContext::create (getFrame (), width, height, scaleFactor));
 		if (offscreenContext)
 		{
 			offscreenContext->beginDraw ();
@@ -115,43 +144,31 @@ void CShadowViewContainer::drawRect (CDrawContext* pContext, const CRect& update
 			CViewContainer::draw (offscreenContext);
 			offscreenContext->endDraw ();
 			CBitmap* bitmap = offscreenContext->getBitmap ();
-			
 			if (bitmap)
 			{
-				OwningPointer<BitmapFilter::IFilter> setColorFilter = BitmapFilter::Factory::getInstance ().createFilter (BitmapFilter::Standard::kSetColor);
+				setBackground (bitmap);
+				SharedPointer<BitmapFilter::IFilter> setColorFilter = owned (BitmapFilter::Factory::getInstance ().createFilter (BitmapFilter::Standard::kSetColor));
 				if (setColorFilter)
 				{
 					setColorFilter->setProperty (BitmapFilter::Standard::Property::kInputBitmap, bitmap);
 					setColorFilter->setProperty (BitmapFilter::Standard::Property::kInputColor, kBlackCColor);
 					setColorFilter->setProperty (BitmapFilter::Standard::Property::kIgnoreAlphaColorValue, (int32_t)1);
-					if (setColorFilter->run ())
+					if (setColorFilter->run (true))
 					{
-						SharedPointer<CBaseObject> background = setColorFilter->getProperty (BitmapFilter::Standard::Property::kOutputBitmap).getObject ();
-						if (background)
+						SharedPointer<BitmapFilter::IFilter> boxBlurFilter = owned (BitmapFilter::Factory::getInstance ().createFilter (BitmapFilter::Standard::kBoxBlur));
+						if (boxBlurFilter)
 						{
-							OwningPointer<BitmapFilter::IFilter> boxBlurFilter = BitmapFilter::Factory::getInstance ().createFilter (BitmapFilter::Standard::kBoxBlur);
-							if (boxBlurFilter)
+							boxBlurFilter->setProperty (BitmapFilter::Standard::Property::kInputBitmap, bitmap);
+							boxBlurFilter->setProperty (BitmapFilter::Standard::Property::kRadius, (int32_t)shadowBlurSize);
+							if (boxBlurFilter->run (true))
 							{
-								boxBlurFilter->setProperty (BitmapFilter::Standard::Property::kInputBitmap, (CBaseObject*)background);
-								boxBlurFilter->setProperty (BitmapFilter::Standard::Property::kRadius, (int32_t)shadowBlurSize);
-								if (boxBlurFilter->run (true))
-								{
-									setBackground (background.cast<CBitmap> ());
-									shadowInvalid = false;
-								}
+								shadowInvalid = false;
 							}
 						}
 					}
 				}
 
-				CCoord save[4];
-				modifyDrawContext (save, pContext);
-				CRect clientRect (getViewSize ());
-				clientRect.originize ();
-				drawBackgroundRect (pContext, clientRect);
-				restoreDrawContext (pContext, save);
-				bitmap->draw (pContext, getViewSize ());
-				setDirty (false);
+				CViewContainer::drawRect (pContext, updateRect);
 			}
 		}
 	}

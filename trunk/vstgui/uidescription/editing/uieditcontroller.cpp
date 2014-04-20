@@ -150,7 +150,7 @@ public:
 
 	static void drawGradient (CDrawContext* context, const CRect& _size, bool horizontal, bool drawTopLine = true, bool drawBottomLine = true)
 	{
-		CGraphicsPath* path = context->createGraphicsPath ();
+		SharedPointer<CGraphicsPath> path = owned (context->createGraphicsPath ());
 		if (path)
 		{
 			static CColor lineColor, shadingTopColor, shadingBottomColor, shadingMiddleColor;
@@ -165,13 +165,12 @@ public:
 			}
 
 			CRect size (_size);
-			size.makeIntegral ();
-			context->setDrawMode (kAliasing | kIntegralMode);
+			context->setDrawMode (kAliasing);
 			context->setLineStyle (kLineSolid);
 			context->setLineWidth (1.);
 			context->setFrameColor (lineColor);
 
-			CGradient* shading = path->createGradient (0., 1., shadingTopColor, shadingBottomColor);
+			SharedPointer<CGradient> shading = owned (path->createGradient (0., 1., shadingTopColor, shadingBottomColor));
 			if (shading)
 			{
 				shading->addColorStop (0.5, shadingMiddleColor);
@@ -179,34 +178,22 @@ public:
 				if (horizontal)
 				{
 					context->fillLinearGradient (path, *shading, CPoint (size.left, size.top), CPoint (size.right, size.top));
-					CPoint p (size.left, size.top);
-					context->moveTo (p);
-					p.y = size.bottom;
+					context->setDrawMode (kAntiAliasing|kIntegralMode);
 					if (drawBottomLine)
-						context->lineTo (p);
-					p.x = size.right-1;
-					context->moveTo (p);
-					p.y = size.top;
+						context->drawLine (std::make_pair (CPoint (size.left, size.top), CPoint (size.left, size.bottom)));
 					if (drawTopLine)
-						context->lineTo (p);
+						context->drawLine (std::make_pair (CPoint (size.right-1, size.bottom), CPoint (size.right-1, size.top)));
 				}
 				else
 				{
 					context->fillLinearGradient (path, *shading, CPoint (size.left, size.top), CPoint (size.left, size.bottom));
-					CPoint p (size.left, size.top+1);
-					context->moveTo (p);
-					p.x = size.right;
+					context->setDrawMode (kAntiAliasing|kIntegralMode);
 					if (drawTopLine)
-						context->lineTo (p);
-					p.y = size.bottom;
-					context->moveTo (p);
-					p.x = size.left;
+						context->drawLine (std::make_pair (CPoint (size.left, size.top+1), CPoint (size.right, size.top+1)));
 					if (drawBottomLine)
-						context->lineTo (p);
+						context->drawLine (std::make_pair (CPoint (size.right, size.bottom), CPoint (size.left, size.bottom)));
 				}
-				shading->forget ();
 			}
-			path->forget ();
 		}
 	}
 
@@ -1494,18 +1481,17 @@ void UIEditControllerTextSwitch::draw (CDrawContext* pContext)
 			pContext->setFrameColor (backColor);
 		else
 			pContext->setFrameColor (frameColor);
-		CPoint p;
-		pContext->moveTo (p (r.left, r.bottom));
-		pContext->lineTo (p (r.left, r.top));
-		pContext->lineTo (p (r.right, r.top));
+		
+		pContext->drawLine (std::make_pair (CPoint (r.left, r.bottom), CPoint (r.left, r.top)));
+		pContext->drawLine (std::make_pair (CPoint (r.left, r.top), CPoint (r.right, r.top)));
 
 		if (style & k3DIn)
 			pContext->setFrameColor (frameColor);
 		else
 			pContext->setFrameColor (backColor);
-		pContext->moveTo (p (r.right, r.top));
-		pContext->lineTo (p (r.right, r.bottom));
-		pContext->lineTo (p (r.left, r.bottom));
+
+		pContext->drawLine (std::make_pair (CPoint (r.right, r.top), CPoint (r.right, r.bottom)));
+		pContext->drawLine (std::make_pair (CPoint (r.right, r.bottom), CPoint (r.left, r.bottom)));
 	}
 	
 	for (std::vector<Value>::const_iterator it = values.begin (); it != values.end (); it++)

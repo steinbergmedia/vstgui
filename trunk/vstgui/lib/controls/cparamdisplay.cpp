@@ -40,32 +40,6 @@
 namespace VSTGUI {
 
 //------------------------------------------------------------------------
-class CParamDisplayRotationPathCache
-{
-public:
-	CParamDisplayRotationPathCache () {}
-	
-	void update (CDrawContext* context, CFontDesc* font, UTF8StringPtr str);
-	
-	CGraphicsPath* getPath () const { return path; }
-protected:
-	OwningPointer<CGraphicsPath> path;
-	SharedPointer<CFontDesc> font;
-	std::string pathText;
-};
-
-//------------------------------------------------------------------------
-void CParamDisplayRotationPathCache::update (CDrawContext* context, CFontDesc* _font, UTF8StringPtr str)
-{
-	if (path == 0 || font != _font || pathText != str)
-	{
-		font = _font;
-		pathText = str;
-		path = context->createTextPath (font, str);
-	}
-}
-
-//------------------------------------------------------------------------
 // CParamDisplay
 //------------------------------------------------------------------------
 /*! @class CParamDisplay
@@ -75,7 +49,6 @@ The text-value is centered in the given rect.
 */
 CParamDisplay::CParamDisplay (const CRect& size, CBitmap* background, const int32_t style)
 : CControl (size, 0, -1, background)
-, rotationPathCache (0)
 #if !VSTGUI_HAS_FUNCTIONAL
 , valueToString (0)
 , valueToStringUserData (0)
@@ -102,7 +75,6 @@ CParamDisplay::CParamDisplay (const CRect& size, CBitmap* background, const int3
 //------------------------------------------------------------------------
 CParamDisplay::CParamDisplay (const CParamDisplay& v)
 : CControl (v)
-, rotationPathCache (0)
 #if VSTGUI_HAS_FUNCTIONAL
 , valueToStringFunction (v.valueToStringFunction)
 #else
@@ -136,11 +108,6 @@ CParamDisplay::~CParamDisplay ()
 //------------------------------------------------------------------------
 bool CParamDisplay::removed (CView* parent)
 {
-	if (rotationPathCache)
-	{
-		delete rotationPathCache;
-		rotationPathCache = 0;
-	}
 	return CControl::removed (parent);
 }
 
@@ -279,7 +246,7 @@ void CParamDisplay::drawBack (CDrawContext* pContext, CBitmap* newBack)
 			}
 			else
 			{
-				pContext->setDrawMode (kAliasing|kIntegralMode);
+				pContext->setDrawMode (kAntiAliasing|kIntegralMode);
 				OwningPointer<CGraphicsPath> path = pContext->createGraphicsPath ();
 				if (path)
 				{
@@ -338,9 +305,8 @@ void CParamDisplay::drawBack (CDrawContext* pContext, CBitmap* newBack)
 		}
 		else
 		{
-			pContext->moveTo (p (r.left, r.bottom));
-			pContext->lineTo (p (r.left, r.top));
-			pContext->lineTo (p (r.right, r.top));
+			pContext->drawLine (std::make_pair (CPoint (r.left, r.bottom), CPoint (r.left, r.top)));
+			pContext->drawLine (std::make_pair (CPoint (r.left, r.top), CPoint (r.right, r.top)));
 		}
 
 		if (style & k3DIn)
@@ -358,9 +324,8 @@ void CParamDisplay::drawBack (CDrawContext* pContext, CBitmap* newBack)
 		}
 		else
 		{
-			pContext->moveTo (p (r.right, r.top));
-			pContext->lineTo (p (r.right, r.bottom));
-			pContext->lineTo (p (r.left, r.bottom));
+			pContext->drawLine (std::make_pair (CPoint (r.right, r.top), CPoint (r.right, r.bottom)));
+			pContext->drawLine (std::make_pair (CPoint (r.right, r.bottom), CPoint (r.left, r.bottom)));
 		}
 	}
 }
@@ -378,51 +343,26 @@ void CParamDisplay::drawText (CDrawContext* pContext, UTF8StringPtr string, cons
 		newClip.bound (oldClip);
 		pContext->setClipRect (newClip);
 		
-		if (textRotation != 0.)
-		{
-			// currently we ignore the text alignemnt it's always centered
-			if (rotationPathCache == 0)
-				rotationPathCache = new CParamDisplayRotationPathCache;
-			rotationPathCache->update (pContext, fontID, string);
-			if (rotationPathCache->getPath ())
-			{
-				pContext->setDrawMode (bAntialias ? kAntiAliasing : kAliasing);
-				CRect boundingBox = rotationPathCache->getPath ()->getBoundingBox ();
-				if (style & kShadowText)
-				{
-					CGraphicsTransform t;
-					t.translate (size.left + 1. + size.getWidth () / 2., size.top + 1. + size.getHeight () / 2.);
-					t.rotate (textRotation);
-					t.translate (-boundingBox.getWidth () / 2., -boundingBox.getHeight () / 2.);
-					
-					pContext->setFillColor (shadowColor);
-					pContext->drawGraphicsPath (rotationPathCache->getPath (), CDrawContext::kPathFilled, &t);
-				}
-				CGraphicsTransform t;
-				t.translate (size.left + size.getWidth () / 2., size.top + size.getHeight () / 2.);
-				t.rotate (textRotation);
-				t.translate (-boundingBox.getWidth () / 2., -boundingBox.getHeight () / 2.);
+		pContext->setDrawMode (kAntiAliasing|kIntegralMode);
+		pContext->setFont (fontID);
 
-				pContext->setFillColor (fontColor);
-				pContext->drawGraphicsPath (rotationPathCache->getPath (), CDrawContext::kPathFilled, &t);
-			}
-		}
-		else
+		CPoint center (textRect.getCenter ());
+		center.offset (pContext->getOffset ().x, pContext->getOffset ().y);
+		CGraphicsTransform transform;
+		transform.rotate (textRotation, center);
+		CDrawContext::Transform ctxTransform (*pContext, transform);
+		
+		// draw darker text (as shadow)
+		if (style & kShadowText) 
 		{
-			pContext->setDrawMode (kAntiAliasing|kIntegralMode);
-			pContext->setFont (fontID);
-			// draw darker text (as shadow)
-			if (style & kShadowText) 
-			{
-				CRect newSize (textRect);
-				newSize.offset (1, 1);
-				pContext->setFontColor (shadowColor);
-				pContext->drawString (string, newSize, horiTxtAlign, bAntialias);
-			}
-			pContext->setFontColor (fontColor);
-			pContext->drawString (string, textRect, horiTxtAlign, bAntialias);
-			pContext->setClipRect (oldClip);
+			CRect newSize (textRect);
+			newSize.offset (1, 1);
+			pContext->setFontColor (shadowColor);
+			pContext->drawString (string, newSize, horiTxtAlign, bAntialias);
 		}
+		pContext->setFontColor (fontColor);
+		pContext->drawString (string, textRect, horiTxtAlign, bAntialias);
+		pContext->setClipRect (oldClip);
 	}
 }
 
@@ -517,11 +457,6 @@ void CParamDisplay::setTextRotation (double angle)
 	if (textRotation != angle)
 	{
 		textRotation = angle;
-		if (textRotation == 0. && rotationPathCache)
-		{
-			delete rotationPathCache;
-			rotationPathCache = 0;
-		}
 		drawStyleChanged ();
 	}
 }

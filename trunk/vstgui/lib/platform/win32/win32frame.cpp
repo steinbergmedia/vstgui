@@ -360,21 +360,6 @@ bool Win32Frame::getGlobalPosition (CPoint& pos) const
 	pos.x = r.left;
 	pos.y = r.top;
 	return true;
-	HWND wnd = getOuterWindow ();
-	HWND wndParent = GetParent (wnd);
-
-	RECT  rctTempWnd;
-	GetWindowRect (wnd, &rctTempWnd);
-
-	POINT point;
-	point.x = rctTempWnd.left;
-	point.y = rctTempWnd.top;
-
-	MapWindowPoints (HWND_DESKTOP, wndParent, &point, 1);
-	
-	pos.x = (CCoord)point.x;
-	pos.y = (CCoord)point.y;
-	return true;
 }
 
 //-----------------------------------------------------------------------------
@@ -606,7 +591,7 @@ IPlatformOpenGLView* Win32Frame::createPlatformOpenGLView ()
 #endif
 
 //-----------------------------------------------------------------------------
-COffscreenContext* Win32Frame::createOffscreenContext (CCoord width, CCoord height)
+COffscreenContext* Win32Frame::createOffscreenContext (CCoord width, CCoord height, double scaleFactor)
 {
 #if VSTGUI_DIRECT2D_SUPPORT
 	if (getD2DFactory ())
@@ -1228,13 +1213,13 @@ STDMETHODIMP Win32DataObject::GetData (FORMATETC* format, STGMEDIUM* medium)
 
 	if (format->cfFormat == CF_TEXT || format->cfFormat == CF_UNICODETEXT)
 	{
-		for (int32_t i = 0; i < dataPackage->getCount (); i++)
+		for (uint32_t i = 0; i < dataPackage->getCount (); i++)
 		{
 			if (dataPackage->getDataType (i) == IDataPackage::kText)
 			{
 				const void* buffer;
 				IDataPackage::Type type;
-				int32_t bufferSize = dataPackage->getData (i, buffer, type);
+				uint32_t bufferSize = dataPackage->getData (i, buffer, type);
 				UTF8StringHelper utf8String ((const char*)buffer);
 				SIZE_T size = 0;
 				const void* data = 0;
@@ -1270,18 +1255,18 @@ STDMETHODIMP Win32DataObject::GetData (FORMATETC* format, STGMEDIUM* medium)
 		HRESULT result = E_UNEXPECTED;
 		UTF8StringHelper** wideStringFileNames = (UTF8StringHelper**)malloc (sizeof (UTF8StringHelper*) * dataPackage->getCount ());
 		memset (wideStringFileNames, 0, sizeof (UTF8StringHelper*) * dataPackage->getCount ());
-		int32_t fileNamesIndex = 0;
-		int32_t bufferSizeNeeded = 0;
-		for (int32_t i = 0; i < dataPackage->getCount (); i++)
+		uint32_t fileNamesIndex = 0;
+		uint32_t bufferSizeNeeded = 0;
+		for (uint32_t i = 0; i < dataPackage->getCount (); i++)
 		{
 			if (dataPackage->getDataType (i) == IDataPackage::kFilePath)
 			{
 				const void* buffer;
 				IDataPackage::Type type;
-				int32_t bufferSize = dataPackage->getData (i, buffer, type);
+				dataPackage->getData (i, buffer, type);
 
 				wideStringFileNames[fileNamesIndex] = new UTF8StringHelper ((UTF8StringPtr)buffer);
-				bufferSizeNeeded += (int32_t)wcslen (*wideStringFileNames[fileNamesIndex]) + 1;
+				bufferSizeNeeded += static_cast<uint32_t> (wcslen (*wideStringFileNames[fileNamesIndex])) + 1;
 				fileNamesIndex++;
 			}
 		}
@@ -1299,7 +1284,7 @@ STDMETHODIMP Win32DataObject::GetData (FORMATETC* format, STGMEDIUM* medium)
 			dropFiles->fNC    = FALSE;
 			dropFiles->fWide  = TRUE;
 			int8_t* memAddr = ((int8_t*)memory) + sizeof (DROPFILES);
-			for (int32_t i = 0; i < fileNamesIndex; i++)
+			for (uint32_t i = 0; i < fileNamesIndex; i++)
 			{
 				size_t len = (wcslen (wideStringFileNames[i]->getWideString ()) + 1) * 2;
 				memcpy (memAddr, wideStringFileNames[i]->getWideString (), len);
@@ -1314,20 +1299,20 @@ STDMETHODIMP Win32DataObject::GetData (FORMATETC* format, STGMEDIUM* medium)
 			medium->tymed = TYMED_HGLOBAL;
 			result = S_OK;
 		}
-		for (int32_t i = 0; i < fileNamesIndex; i++)
+		for (uint32_t i = 0; i < fileNamesIndex; i++)
 			delete wideStringFileNames[i];
 		free (wideStringFileNames);
 		return result;
 	}
 	else if (format->cfFormat == CF_PRIVATEFIRST)
 	{
-		for (int32_t i = 0; i < dataPackage->getCount (); i++)
+		for (uint32_t i = 0; i < dataPackage->getCount (); i++)
 		{
 			if (dataPackage->getDataType (i) == IDataPackage::kBinary)
 			{
 				const void* buffer;
 				IDataPackage::Type type;
-				int32_t bufferSize = dataPackage->getData (i, buffer, type);
+				uint32_t bufferSize = dataPackage->getData (i, buffer, type);
 
 				HGLOBAL	memoryHandle = GlobalAlloc (GMEM_MOVEABLE, bufferSize); 
 				void* memory = GlobalLock (memoryHandle);
@@ -1358,7 +1343,7 @@ STDMETHODIMP Win32DataObject::QueryGetData (FORMATETC *format)
 {
 	if (format->cfFormat == CF_TEXT || format->cfFormat == CF_UNICODETEXT)
 	{
-		for (int32_t i = 0; i < dataPackage->getCount (); i++)
+		for (uint32_t i = 0; i < dataPackage->getCount (); i++)
 		{
 			if (dataPackage->getDataType (i) == IDataPackage::kText)
 				return S_OK;
@@ -1366,7 +1351,7 @@ STDMETHODIMP Win32DataObject::QueryGetData (FORMATETC *format)
 	}
 	else if (format->cfFormat == CF_PRIVATEFIRST)
 	{
-		for (int32_t i = 0; i < dataPackage->getCount (); i++)
+		for (uint32_t i = 0; i < dataPackage->getCount (); i++)
 		{
 			if (dataPackage->getDataType (i) == IDataPackage::kBinary)
 				return S_OK;
@@ -1374,7 +1359,7 @@ STDMETHODIMP Win32DataObject::QueryGetData (FORMATETC *format)
 	}
 	else if (format->cfFormat == CF_HDROP)
 	{
-		for (int32_t i = 0; i < dataPackage->getCount (); i++)
+		for (uint32_t i = 0; i < dataPackage->getCount (); i++)
 		{
 			if (dataPackage->getDataType (i) == IDataPackage::kFilePath)
 				return S_OK;

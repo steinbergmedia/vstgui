@@ -3426,6 +3426,22 @@ public:
 		}
 		return false;
 	}
+	bool getAttributeValueRange (const std::string& attributeName, double& minValue, double &maxValue) const
+	{
+		if (attributeName == kAttrShadowBlurSize)
+		{
+			minValue = 1;
+			maxValue = 40;
+			return true;
+		}
+		else if (attributeName == kAttrShadowIntensity)
+		{
+			minValue = 0;
+			maxValue = 1;
+			return true;
+		}
+		return false;
+	}
 };
 CShadowViewContainerCreator __gCShadowViewContainerCreator;
 

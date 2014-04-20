@@ -45,25 +45,30 @@ namespace VSTGUI {
 //-----------------------------------------------------------------------------
 struct CPoint
 {
-	CPoint (CCoord h = 0, CCoord v = 0) : h (h), v (v) {}
-	CPoint& operator () (CCoord h, CCoord v) { this->h = h; this->v = v; return *this; }
+	CPoint (CCoord x = 0, CCoord y = 0) : x (x), y (y) {}
+	CPoint& operator () (CCoord x, CCoord y) { this->x = x; this->y = y; return *this; }
 
-	bool isInside (const CRect& r) const { return h >= r.left && h <= r.right && v >= r.top && v <= r.bottom; } 
+	bool isInside (const CRect& r) const { return x >= r.left && x <= r.right && y >= r.top && y <= r.bottom; }
 
-	bool operator != (const CPoint &other) const { return (h != other.h || v != other.v); }
-	bool operator == (const CPoint &other) const { return (h == other.h && v == other.v); }
+	bool operator != (const CPoint &other) const { return (x != other.x || y != other.y); }
+	bool operator == (const CPoint &other) const { return (x == other.x && y == other.y); }
 
 	CPoint& operator += (const CPoint& other) { x += other.x; y += other.y; return *this; }
 	CPoint& operator -= (const CPoint& other) { x -= other.x; y -= other.y; return *this; }
 	CPoint operator + (const CPoint& other) const { return CPoint (x + other.x, y + other.y); }
 	CPoint operator - (const CPoint& other) const { return CPoint (x - other.x, y - other.y); }
 
-	CPoint& offset (const CCoord h, const CCoord v) { *this += CPoint (h, v); return *this; }
+	CPoint& offset (const CCoord x, const CCoord y) { *this += CPoint (x, y); return *this; }
 
 	void makeIntegral ();
 
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
 	union { CCoord h; CCoord x;};
 	union { CCoord v; CCoord y;};
+#else
+	CCoord x;
+	CCoord y;
+#endif
 };
 
 } // namespace

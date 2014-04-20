@@ -67,13 +67,13 @@ void COffscreenContext::copyFrom (CDrawContext *pContext, CRect destRect, CPoint
 }
 
 //-----------------------------------------------------------------------------
-COffscreenContext* COffscreenContext::create (CFrame* frame, CCoord width, CCoord height)
+COffscreenContext* COffscreenContext::create (CFrame* frame, CCoord width, CCoord height, double scaleFactor)
 {
 	if (width >= 1. && height >= 1.)
 	{
 		IPlatformFrame* pf = frame ? frame->getPlatformFrame () : 0;
 		if (pf)
-			return pf->createOffscreenContext (width, height);
+			return pf->createOffscreenContext (width, height, scaleFactor);
 	}
 	return 0;
 }

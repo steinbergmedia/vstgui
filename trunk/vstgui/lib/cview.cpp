@@ -52,7 +52,8 @@ namespace VSTGUI {
 /// @cond ignore
 #define VSTGUI_CHECK_VIEW_RELEASING	DEBUG
 #if VSTGUI_CHECK_VIEW_RELEASING
-	std::list<CView*>gViewList;
+	typedef std::list<CView*> ViewList;
+	static ViewList gViewList;
 	int32_t gNbCView = 0;
 
 	//-----------------------------------------------------------------------------
@@ -65,13 +66,9 @@ namespace VSTGUI {
 			if (gNbCView > 0)
 			{
 				DebugPrint ("Warning: There are %d unreleased CView objects.\n", gNbCView);
-				std::list<CView*>::iterator it = gViewList.begin ();
-				while (it != gViewList.end ())
-				{
-					CView* view = (*it);
+				VSTGUI_RANGE_BASED_FOR_LOOP(ViewList, gViewList, CView*, view)
 					DebugPrint ("%s\n", typeid(view).name ());
-					it++;
-				}
+				VSTGUI_RANGE_BASED_FOR_LOOP_END
 			}
 		}
 	};

@@ -461,7 +461,10 @@ bool XPFileSelector::runModalInternal ()
 	BOOL resultCode = (style == kSelectSaveFile) ? GetSaveFileName (&ofn) : GetOpenFileName (&ofn);
 	if (resultCode == 0)
 	{
+#if DEBUG
 		DWORD errcode = CommDlgExtendedError ();
+		DebugPrint ("%d\n", errcode);
+#endif
 		return false;
 	}
 

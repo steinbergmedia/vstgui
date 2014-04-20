@@ -98,7 +98,7 @@ public:
 	virtual void setFrameWidth (const CCoord& width);
 	CCoord getFrameWidth () const { return frameWidth; }
 
-	virtual void setValueToStringProc (CParamDisplayValueToStringProc proc, void* userData = 0); ///< deprecated use setValueToStringFunction instead if you use c++11
+	VSTGUI_DEPRECATED(virtual void setValueToStringProc (CParamDisplayValueToStringProc proc, void* userData = 0);) ///< deprecated use setValueToStringFunction instead if you use c++11
 #if VSTGUI_HAS_FUNCTIONAL
 	typedef std::function<bool(float value, char utf8String[256], CParamDisplay* display)> ValueToStringFunction;
 	
@@ -126,7 +126,6 @@ protected:
 
 	virtual void drawStyleChanged ();
 
-	CParamDisplayRotationPathCache* rotationPathCache;
 #if VSTGUI_HAS_FUNCTIONAL
 	ValueToStringFunction valueToStringFunction;
 #else

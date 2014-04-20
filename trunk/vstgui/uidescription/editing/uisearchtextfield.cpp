@@ -81,6 +81,10 @@ void UISearchTextField::drawClearMark (CDrawContext* context) const
 	if (getText () == 0 || strlen (getText ()) == 0)
 		return;
 
+	SharedPointer<CGraphicsPath> path = owned (context->createGraphicsPath ());
+	if (path == 0)
+		return;
+
 	CRect r = getClearMarkRect ();
 	CColor color (fontColor);
 	color.alpha /= 2;
@@ -94,10 +98,11 @@ void UISearchTextField::drawClearMark (CDrawContext* context) const
 	context->setFrameColor (color);
 	context->setLineWidth (2.);
 	r.inset (r.getWidth () / (M_PI * 2.) + 1, r.getHeight () / (M_PI * 2.) + 1);
-	context->moveTo (r.getTopLeft ());
-	context->lineTo (r.getBottomRight ());
-	context->moveTo (r.getBottomLeft ());
-	context->lineTo (r.getTopRight ());
+	path->beginSubpath (r.getTopLeft ());
+	path->addLine (r.getBottomRight ());
+	path->beginSubpath (r.getBottomLeft ());
+	path->addLine (r.getTopRight ());
+	context->drawGraphicsPath (path, CDrawContext::kPathStroked);
 }
 
 //----------------------------------------------------------------------------------------------------

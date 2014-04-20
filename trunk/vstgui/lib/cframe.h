@@ -44,6 +44,7 @@ class VSTGUIEditorInterface;
 class IMouseObserver;
 class IKeyboardHook;
 class IViewAddedRemovedObserver;
+class IScaleFactorChangedListener;
 class CTooltipSupport;
 namespace Animation {
 	class Animator;
@@ -134,6 +135,8 @@ public:
 	void registerMouseObserver (IMouseObserver* observer);					///< register a mouse observer
 	void unregisterMouseObserver (IMouseObserver* observer);				///< unregister a mouse observer
 
+	void registerScaleFactorChangedListeneer (IScaleFactorChangedListener* listener);
+	void unregisterScaleFactorChangedListeneer (IScaleFactorChangedListener* listener);
 	//@}
 
 	//-----------------------------------------------------------------------------
@@ -225,23 +228,28 @@ protected:
 	CMouseEventResult callMouseObserverMouseDown (const CPoint& where, const CButtonState& buttons);
 	CMouseEventResult callMouseObserverMouseMoved (const CPoint& where, const CButtonState& buttons);
 
+	// scale factor changed listener
+	typedef std::list<IScaleFactorChangedListener*> ScaleFactorChangedListenerList;
+	ScaleFactorChangedListenerList *pScaleFactorChangedListenerList;
+
 	// platform frame
 	IPlatformFrame* platformFrame;
-	bool platformDrawRect (CDrawContext* context, const CRect& rect);
-	CMouseEventResult platformOnMouseDown (CPoint& where, const CButtonState& buttons);
-	CMouseEventResult platformOnMouseMoved (CPoint& where, const CButtonState& buttons);
-	CMouseEventResult platformOnMouseUp (CPoint& where, const CButtonState& buttons);
-	CMouseEventResult platformOnMouseExited (CPoint& where, const CButtonState& buttons);
-	bool platformOnMouseWheel (const CPoint& where, const CMouseWheelAxis& axis, const float& distance, const CButtonState& buttons);
-	bool platformOnDrop (IDataPackage* drag, const CPoint& where);
-	void platformOnDragEnter (IDataPackage* drag, const CPoint& where);
-	void platformOnDragLeave (IDataPackage* drag, const CPoint& where);
-	void platformOnDragMove (IDataPackage* drag, const CPoint& where);
-	bool platformOnKeyDown (VstKeyCode& keyCode);
-	bool platformOnKeyUp (VstKeyCode& keyCode);
-	void platformOnActivate (bool state);
+	bool platformDrawRect (CDrawContext* context, const CRect& rect) VSTGUI_OVERRIDE_VMETHOD;
+	CMouseEventResult platformOnMouseDown (CPoint& where, const CButtonState& buttons) VSTGUI_OVERRIDE_VMETHOD;
+	CMouseEventResult platformOnMouseMoved (CPoint& where, const CButtonState& buttons) VSTGUI_OVERRIDE_VMETHOD;
+	CMouseEventResult platformOnMouseUp (CPoint& where, const CButtonState& buttons) VSTGUI_OVERRIDE_VMETHOD;
+	CMouseEventResult platformOnMouseExited (CPoint& where, const CButtonState& buttons) VSTGUI_OVERRIDE_VMETHOD;
+	bool platformOnMouseWheel (const CPoint& where, const CMouseWheelAxis& axis, const float& distance, const CButtonState& buttons) VSTGUI_OVERRIDE_VMETHOD;
+	bool platformOnDrop (IDataPackage* drag, const CPoint& where) VSTGUI_OVERRIDE_VMETHOD;
+	void platformOnDragEnter (IDataPackage* drag, const CPoint& where) VSTGUI_OVERRIDE_VMETHOD;
+	void platformOnDragLeave (IDataPackage* drag, const CPoint& where) VSTGUI_OVERRIDE_VMETHOD;
+	void platformOnDragMove (IDataPackage* drag, const CPoint& where) VSTGUI_OVERRIDE_VMETHOD;
+	bool platformOnKeyDown (VstKeyCode& keyCode) VSTGUI_OVERRIDE_VMETHOD;
+	bool platformOnKeyUp (VstKeyCode& keyCode) VSTGUI_OVERRIDE_VMETHOD;
+	void platformOnActivate (bool state) VSTGUI_OVERRIDE_VMETHOD;
+	void platformScaleFactorChanged () VSTGUI_OVERRIDE_VMETHOD;
 #if VSTGUI_TOUCH_EVENT_HANDLING
-	void platformOnTouchEvent (ITouchEvent& event);
+	void platformOnTouchEvent (ITouchEvent& event) VSTGUI_OVERRIDE_VMETHOD;
 #endif
 };
 

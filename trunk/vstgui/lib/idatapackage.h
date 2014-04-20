@@ -53,10 +53,10 @@ public:
 		kError = -1
 	};
 
-	virtual int32_t getCount () = 0;
-	virtual int32_t getDataSize (int32_t index) = 0;
-	virtual Type getDataType (int32_t index) = 0;
-	virtual int32_t getData (int32_t index, const void*& buffer, Type& type) = 0;
+	virtual uint32_t getCount () const = 0;
+	virtual uint32_t getDataSize (uint32_t index) const = 0;
+	virtual Type getDataType (uint32_t index) const = 0;
+	virtual uint32_t getData (uint32_t index, const void*& buffer, Type& type) const = 0;
 
 	//-------------------------------------------
 	CLASS_METHODS_NOCOPY(IDataPackage, CBaseObject)

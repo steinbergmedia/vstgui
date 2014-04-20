@@ -232,7 +232,7 @@ public:
 			}
 			it++;
 		}
-		return result.size ();
+		return static_cast<uint32_t> (result.size ());
 	}
 
 	//-------------------------------------------

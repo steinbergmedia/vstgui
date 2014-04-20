@@ -82,8 +82,8 @@ public:
 		context->drawRect (backgroundRect, kDrawFilledAndStroked);
 		if (style & kHorizontal)
 		{
-			backgroundRect.left += offsetHandle.h + widthOfSlider / 2;
-			backgroundRect.right -= offsetHandle.h + widthOfSlider / 2;
+			backgroundRect.left += offsetHandle.x + widthOfSlider / 2;
+			backgroundRect.right -= offsetHandle.x + widthOfSlider / 2;
 			backgroundRect.top += heightControl/2 - 2;
 			backgroundRect.bottom -= heightControl/2 - 2;
 		}
@@ -91,8 +91,8 @@ public:
 		{
 			backgroundRect.left += widthControl/2 - 2;
 			backgroundRect.right -= widthControl/2 - 2;
-			backgroundRect.top += offsetHandle.v + heightOfSlider / 2;
-			backgroundRect.bottom -= offsetHandle.v + heightOfSlider / 2;
+			backgroundRect.top += offsetHandle.y + heightOfSlider / 2;
+			backgroundRect.bottom -= offsetHandle.y + heightOfSlider / 2;
 		}
 		context->setFillColor (bandColor);
 		context->drawRect (backgroundRect, kDrawFilled);
@@ -105,10 +105,10 @@ public:
 		CRect rectNew;
 		if (style & kHorizontal)
 		{
-			rectNew.top    = offsetHandle.v;
+			rectNew.top    = offsetHandle.y;
 			rectNew.bottom = rectNew.top + heightOfSlider;	
 
-			rectNew.left   = offsetHandle.h + (int32_t)(fValue * rangeHandle);
+			rectNew.left   = offsetHandle.x + (int32_t)(fValue * rangeHandle);
 			rectNew.left   = (rectNew.left < minTmp) ? minTmp : rectNew.left;
 
 			rectNew.right  = rectNew.left + widthOfSlider;
@@ -116,10 +116,10 @@ public:
 		}
 		else
 		{
-			rectNew.left   = offsetHandle.h;
+			rectNew.left   = offsetHandle.x;
 			rectNew.right  = rectNew.left + widthOfSlider;	
 
-			rectNew.top    = offsetHandle.v + (int32_t)(fValue * rangeHandle);
+			rectNew.top    = offsetHandle.y + (int32_t)(fValue * rangeHandle);
 			rectNew.top    = (rectNew.top < minTmp) ? minTmp : rectNew.top;
 
 			rectNew.bottom = rectNew.top + heightOfSlider;

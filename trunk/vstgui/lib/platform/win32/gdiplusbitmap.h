@@ -56,6 +56,8 @@ public:
 	bool load (const CResourceDescription& desc) VSTGUI_OVERRIDE_VMETHOD;
 	const CPoint& getSize () const VSTGUI_OVERRIDE_VMETHOD { return size; }
 	IPlatformBitmapPixelAccess* lockPixels (bool alphaPremultiplied) VSTGUI_OVERRIDE_VMETHOD;
+	void setScaleFactor (double factor) VSTGUI_OVERRIDE_VMETHOD {}
+	double getScaleFactor () const VSTGUI_OVERRIDE_VMETHOD { return 1.; }
 
 	Gdiplus::Bitmap* getBitmap () const { return bitmap; }
 	HBITMAP createHBitmap ();

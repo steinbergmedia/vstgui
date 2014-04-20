@@ -138,7 +138,7 @@ void CSpecialDigit::draw (CDrawContext *pContext)
 		dwValue -= (one_digit[i] * j);
 	}
 	
-	where.h = 0;
+	where.x = 0;
 	for (i = 0; i < iNumbers; i++)
 	{	
 		j = one_digit[i];
@@ -152,7 +152,7 @@ void CSpecialDigit::draw (CDrawContext *pContext)
 		rectDest.bottom = rectDest.top  + height;		
 		
 		// where = src from bitmap
-		where.v = (CCoord)j * height;
+		where.y = (CCoord)j * height;
 		if (getDrawBackground ())
 		{
 			getDrawBackground ()->draw (pContext, rectDest, where);

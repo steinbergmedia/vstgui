@@ -91,6 +91,8 @@ public:
 
 	virtual void platformOnActivate (bool state) = 0;
 
+	virtual void platformScaleFactorChanged () = 0;
+
 #if VSTGUI_TOUCH_EVENT_HANDLING
 	virtual void platformOnTouchEvent (ITouchEvent& event) = 0;
 #endif
@@ -128,7 +130,7 @@ public:
 	
 	virtual IPlatformViewLayer* createPlatformViewLayer (IPlatformViewLayerDelegate* drawDelegate, IPlatformViewLayer* parentLayer = 0) = 0; ///< create a native view layer, may return 0 if not supported
 	
-	virtual COffscreenContext* createOffscreenContext (CCoord width, CCoord height) = 0; ///< create an offscreen draw device
+	virtual COffscreenContext* createOffscreenContext (CCoord width, CCoord height, double scaleFactor = 1.) = 0; ///< create an offscreen draw device
 
 	virtual CView::DragResult doDrag (IDataPackage* source, const CPoint& offset, CBitmap* dragBitmap) = 0; ///< start a drag operation
 
