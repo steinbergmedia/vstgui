@@ -169,7 +169,6 @@ bool D2DBitmap::createMemoryPNGRepresentation (void** ptr, uint32_t& size)
 //-----------------------------------------------------------------------------
 bool D2DBitmap::loadFromStream (IStream* iStream)
 {
-	bool result = false;
 	IWICBitmapDecoder* decoder = 0;
 	IWICStream* stream = 0;
 	if (SUCCEEDED (WICGlobal::getFactory ()->CreateStream (&stream)))
@@ -482,7 +481,8 @@ D2DBitmapCache* D2DBitmapCache::instance ()
 WICGlobal::WICGlobal ()
 : factory (0)
 {
-	HRESULT hr = CoCreateInstance (CLSID_WICImagingFactory, NULL, CLSCTX_INPROC_SERVER, IID_IWICImagingFactory, (void**)&factory);
+	CoCreateInstance (CLSID_WICImagingFactory, NULL, CLSCTX_INPROC_SERVER, IID_IWICImagingFactory, (void**)&factory);
+	assert (factory);
 }
 
 //-----------------------------------------------------------------------------

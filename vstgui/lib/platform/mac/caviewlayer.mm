@@ -203,6 +203,7 @@ CAViewLayer::CAViewLayer (CALayer* parent)
 #else
 	layer = [VSTGUI_CALayer new];
 #endif
+	[layer setContentsScale:parent.contentsScale];
 	[parent addSublayer:layer];
 }
 

@@ -360,8 +360,8 @@ void CTextEdit::looseFocus ()
 //------------------------------------------------------------------------
 void CTextEdit::updateText (IPlatformTextEdit* pte)
 {
-	const char* newText = pte->getText ();
-	if (strcmp (newText, getText ()) != 0)
+	UTF8StringView newText (pte->getText ());
+	if (newText != getText ())
 	{
 		beginEdit ();
 

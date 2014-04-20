@@ -40,7 +40,7 @@ namespace VSTGUI {
 //-----------------------------------------------------------------------------
 bool CRect::pointInside (const CPoint& where) const
 {
-	return where.h >= left && where.h < right && where.v >= top && where.v < bottom;
+	return where.x >= left && where.x < right && where.y >= top && where.y < bottom;
 }
 
 //-----------------------------------------------------------------------------
@@ -87,29 +87,29 @@ CPoint CRect::getBottomRight () const
 //-----------------------------------------------------------------------------
 void CRect::setTopLeft (const CPoint& inPoint)
 {
-	left = inPoint.h;
-	top = inPoint.v;
+	left = inPoint.x;
+	top = inPoint.y;
 }
 
 //-----------------------------------------------------------------------------
 void CRect::setTopRight (const CPoint& inPoint)
 {
-	right = inPoint.h;
-	top = inPoint.v;
+	right = inPoint.x;
+	top = inPoint.y;
 }
 
 //-----------------------------------------------------------------------------
 void CRect::setBottomLeft (const CPoint& inPoint)
 {
-	left = inPoint.h;
-	bottom = inPoint.v;
+	left = inPoint.x;
+	bottom = inPoint.y;
 }
 
 //-----------------------------------------------------------------------------
 void CRect::setBottomRight (const CPoint& inPoint)
 {
-	right = inPoint.h;
-	bottom = inPoint.v;
+	right = inPoint.x;
+	bottom = inPoint.y;
 }
 
 //-----------------------------------------------------------------------------

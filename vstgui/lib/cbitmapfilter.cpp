@@ -136,7 +136,7 @@ Property& Property::operator=(Property&& p) noexcept
 {
 	type = p.type;
 	value = p.value;
-	p.value = 0;
+	p.value = nullptr;
 	p.type = kNotFound;
 	return *this;
 }
@@ -401,22 +401,28 @@ private:
 	bool run (bool replace) VSTGUI_OVERRIDE_VMETHOD
 	{
 		CBitmap* inputBitmap = getInputBitmap ();
-		uint32_t radius = (uint32_t)getProperty (Property::kRadius).getInteger ();
-		if (inputBitmap == 0 || radius < 2 || radius == UINT_MAX)
+		uint32_t radius = static_cast<uint32_t>(static_cast<double>(getProperty (Property::kRadius).getInteger ()) * inputBitmap->getPlatformBitmap ()->getScaleFactor ());
+		if (inputBitmap == 0 || radius == UINT_MAX)
 			return false;
+		if (radius < 2)
+		{
+			if (replace)
+				return true;
+			return false; // TODO: We should just copy the input bitmap to the output bitmap
+		}
 		if (replace)
 		{
-			OwningPointer<CBitmapPixelAccess> inputAccessor = CBitmapPixelAccess::create (inputBitmap);
+			SharedPointer<CBitmapPixelAccess> inputAccessor = owned (CBitmapPixelAccess::create (inputBitmap));
 			if (inputAccessor == 0)
 				return false;
 			run (*inputAccessor, *inputAccessor, radius);
 			return registerProperty (Property::kOutputBitmap, BitmapFilter::Property (inputBitmap));
 		}
-		OwningPointer<CBitmap> outputBitmap = new CBitmap (inputBitmap->getWidth (), inputBitmap->getHeight ());
+		SharedPointer<CBitmap> outputBitmap = owned (new CBitmap (inputBitmap->getWidth (), inputBitmap->getHeight ()));
 		if (outputBitmap)
 		{
-			OwningPointer<CBitmapPixelAccess> inputAccessor = CBitmapPixelAccess::create (inputBitmap);
-			OwningPointer<CBitmapPixelAccess> outputAccessor = CBitmapPixelAccess::create (outputBitmap);
+			SharedPointer<CBitmapPixelAccess> inputAccessor = owned (CBitmapPixelAccess::create (inputBitmap));
+			SharedPointer<CBitmapPixelAccess> outputAccessor = owned (CBitmapPixelAccess::create (outputBitmap));
 			if (inputAccessor == 0 || outputAccessor == 0)
 				return false;
 
@@ -426,88 +432,100 @@ private:
 		return false;
 	}
 
-	void run (CBitmapPixelAccess& inputAccessor, CBitmapPixelAccess& outputAccessor, uint32_t radius)
+	inline void calculate (CColor* colors, uint32_t numColors)
 	{
-		uint32_t x,y,x1,y1;
-		uint32_t width = inputAccessor.getBitmapWidth ();
-		uint32_t height = inputAccessor.getBitmapHeight ();
-		CColor* nc = new CColor[(size_t)radius];
-		for (y = 0; y < height; y++)
-		{
-			for (uint32_t i = 1; i < radius; i++)
-				nc[i] = kTransparentCColor;
-			for (x1 = 0; x1 < radius / 2; x1++)
-			{
-				inputAccessor.setPosition (x1, y);
-				inputAccessor.getColor (nc[0]);
-				calculate(nc[0], nc, radius);
-			}
-			for (x = 0; x < width; x++, x1++)
-			{
-				if (inputAccessor.setPosition (x1, y))
-					inputAccessor.getColor (nc[0]);
-				else
-					nc[0] = kTransparentCColor;
-				calculate (nc[0], nc, radius);
-				outputAccessor.setPosition (x, y);
-				if (nc[0].alpha == 0)
-					outputAccessor.setColor (CColor (0, 0, 0, 0));
-				else
-					outputAccessor.setColor (nc[0]);
-			}
-		}
-		for (x = 0; x < width; x++)
-		{
-			for (uint32_t i = 1; i < radius; i++)
-				nc[i] = kTransparentCColor;
-			for (y1 = 0; y1 < radius / 2; y1++)
-			{
-				inputAccessor.setPosition (x, y1);
-				inputAccessor.getColor (nc[0]);
-				calculate(nc[0], nc, radius);
-			}
-			for (y = 0; y < height; y++, y1++)
-			{
-				if (inputAccessor.setPosition (x, y1))
-					inputAccessor.getColor (nc[0]);
-				else
-					nc[0] = kTransparentCColor;
-				calculate (nc[0], nc, radius);
-				outputAccessor.setPosition (x, y);
-				if (nc[0].alpha == 0)
-					outputAccessor.setColor (CColor (0, 0, 0, 0));
-				else
-					outputAccessor.setColor (nc[0]);
-			}
-		}
-		delete [] nc;
-	}
-
-private:
-	inline void calculate (CColor& color, CColor* colors, uint32_t numColors)
-	{
-		int32_t red = 0;
-		int32_t green = 0;
-		int32_t blue = 0;
-		int32_t alpha = 0;
-		for (int64_t i = (int64_t)numColors-1; i >= 0; i--)
+		uint32_t lastColor = numColors - 1;
+		int32_t red = colors[lastColor].red;
+		int32_t green = colors[lastColor].green;
+		int32_t blue = colors[lastColor].blue;
+		int32_t alpha = colors[lastColor].alpha;
+		for (int64_t i = (int64_t)numColors-2; i >= 0; i--)
 		{
 			red += colors[i].red;
 			green += colors[i].green;
 			blue += colors[i].blue;
 			alpha += colors[i].alpha;
-			if (i+1 < numColors)
-				colors[i+1] = colors[i];
+			colors[i+1] = colors[i];
 		}
-		red /= numColors;
-		green /= numColors;
-		blue /= numColors;
-		alpha /= numColors;
-		color.red = (uint8_t)red;
-		color.green = (uint8_t)green;
-		color.blue = (uint8_t)blue;
-		color.alpha = (uint8_t)alpha;
+		colors[0].alpha = (uint8_t)(alpha / numColors);
+		if (colors[0].alpha == 0)
+		{
+			colors[0].red = colors[0].green = colors[0].blue = 0;
+		}
+		else
+		{
+			colors[0].red = (uint8_t)(red / numColors);
+			colors[0].green = (uint8_t)(green / numColors);
+			colors[0].blue = (uint8_t)(blue / numColors);
+		}
 	}
+
+	void run (CBitmapPixelAccess& inputAccessor, CBitmapPixelAccess& outputAccessor, uint32_t radius)
+	{
+		const uint32_t halfRadius = radius / 2;
+		const uint32_t width = inputAccessor.getBitmapWidth ();
+		const uint32_t height = inputAccessor.getBitmapHeight ();
+		uint32_t x,y,x1,y1;
+		CColor stackColors[20];
+		CColor* nc;
+		if (radius > 19)
+			nc = new CColor[(size_t)radius];
+		else
+			nc = stackColors;
+		for (y = 0; y < height; y++)
+		{
+			memset (nc, 0, sizeof(CColor) * (size_t)radius);
+			for (x1 = 0; x1 < radius / 2; x1++)
+			{
+				inputAccessor.setPosition (x1, y);
+				inputAccessor.getColor (nc[0]);
+				calculate (nc, radius);
+			}
+			for (x = 0; x < width - halfRadius; x++, x1++)
+			{
+				inputAccessor.setPosition (x1, y);
+				inputAccessor.getColor (nc[0]);
+				calculate (nc, radius);
+				outputAccessor.setPosition (x, y);
+				outputAccessor.setColor (nc[0]);
+			}
+			for (;x < width; x++, x1++)
+			{
+				nc[0] = nc[1];
+				calculate (nc, radius);
+				outputAccessor.setPosition (x, y);
+				outputAccessor.setColor (nc[0]);
+			}
+		}
+		for (x = 0; x < width; x++)
+		{
+			memset (nc, 0, sizeof(CColor) * (size_t)radius);
+			for (y1 = 0; y1 < radius / 2; y1++)
+			{
+				inputAccessor.setPosition (x, y1);
+				inputAccessor.getColor (nc[0]);
+				calculate (nc, radius);
+			}
+			for (y = 0; y < height - halfRadius; y++, y1++)
+			{
+				inputAccessor.setPosition (x, y1);
+				inputAccessor.getColor (nc[0]);
+				calculate (nc, radius);
+				outputAccessor.setPosition (x, y);
+				outputAccessor.setColor (nc[0]);
+			}
+			for (; y < height; y++, y1++)
+			{
+				nc[0] = nc[1];
+				calculate (nc, radius);
+				outputAccessor.setPosition (x, y);
+				outputAccessor.setColor (nc[0]);
+			}
+		}
+		if (radius > 19)
+			delete [] nc;
+	}
+
 };
 
 //----------------------------------------------------------------------------------------------------
@@ -532,12 +550,12 @@ protected:
 		CBitmap* inputBitmap = getInputBitmap ();
 		if (inputBitmap == 0)
 			return false;
-		OwningPointer<CBitmap> outputBitmap = new CBitmap (outSize.getWidth (), outSize.getHeight ());
+		SharedPointer<CBitmap> outputBitmap = owned (new CBitmap (outSize.getWidth (), outSize.getHeight ()));
 		if (outputBitmap == 0)
 			return false;
 		
-		OwningPointer<CBitmapPixelAccess> inputAccessor = CBitmapPixelAccess::create (inputBitmap);
-		OwningPointer<CBitmapPixelAccess> outputAccessor = CBitmapPixelAccess::create (outputBitmap);
+		SharedPointer<CBitmapPixelAccess> inputAccessor = owned (CBitmapPixelAccess::create (inputBitmap));
+		SharedPointer<CBitmapPixelAccess> outputAccessor = owned (CBitmapPixelAccess::create (outputBitmap));
 		if (inputAccessor == 0 || outputAccessor == 0)
 			return false;
 		process (*inputAccessor, *outputAccessor);
@@ -560,7 +578,7 @@ public:
 private:
 	ScaleLinear () : ScaleBase ("A Linear Scale Filter") {}
 
-	void process (CBitmapPixelAccess& originalBitmap, CBitmapPixelAccess& copyBitmap)
+	void process (CBitmapPixelAccess& originalBitmap, CBitmapPixelAccess& copyBitmap) VSTGUI_OVERRIDE_VMETHOD
 	{
 		originalBitmap.setPosition (0, 0);
 		copyBitmap.setPosition (0, 0);
@@ -616,7 +634,7 @@ public:
 private:
 	ScaleBiliniear () : ScaleBase ("A Biliniear Scale Filter") {}
 
-	void process (CBitmapPixelAccess& originalBitmap, CBitmapPixelAccess& copyBitmap)
+	void process (CBitmapPixelAccess& originalBitmap, CBitmapPixelAccess& copyBitmap) VSTGUI_OVERRIDE_VMETHOD
 	{
 		originalBitmap.setPosition (0, 0);
 		copyBitmap.setPosition (0, 0);
@@ -668,12 +686,13 @@ private:
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
+typedef void (*SimpleFilterProcessFunction) (CColor& color, FilterBase* self);
+
+template<typename SimpleFilterProcessFunction>
 class SimpleFilter : public FilterBase
 {
 protected:
-	typedef void (*ProcessFunction) (CColor& color, FilterBase* self);
-
-	SimpleFilter (UTF8StringPtr description, ProcessFunction function)
+	SimpleFilter (UTF8StringPtr description, SimpleFilterProcessFunction function)
 	: FilterBase (description)
 	, processFunction (function)
 	{
@@ -682,24 +701,27 @@ protected:
 
 	bool run (bool replace) VSTGUI_OVERRIDE_VMETHOD
 	{
-		CBitmap* inputBitmap = getInputBitmap ();
+		SharedPointer<CBitmap> inputBitmap = getInputBitmap ();
 		if (inputBitmap == 0)
 			return false;
-		OwningPointer<CBitmapPixelAccess> inputAccessor = CBitmapPixelAccess::create (inputBitmap);
+		SharedPointer<CBitmapPixelAccess> inputAccessor = owned (CBitmapPixelAccess::create (inputBitmap));
 		if (inputAccessor == 0)
 			return false;
-		SharedPointer<CBitmap> outputBitmap = inputBitmap;
-		SharedPointer<CBitmapPixelAccess> outputAccessor = inputAccessor;
+		SharedPointer<CBitmap> outputBitmap;
+		SharedPointer<CBitmapPixelAccess> outputAccessor;
 		if (replace == false)
 		{
-			outputBitmap = new CBitmap (inputBitmap->getWidth (), inputBitmap->getHeight ());
+			outputBitmap = owned (new CBitmap (inputBitmap->getWidth (), inputBitmap->getHeight ()));
 			if (outputBitmap == 0)
 				return false;
-			outputBitmap->forget (); // ownership by shared pointer
-			outputAccessor = CBitmapPixelAccess::create (outputBitmap);
+			outputAccessor = owned (CBitmapPixelAccess::create (outputBitmap));
 			if (outputAccessor == 0)
 				return false;
-			outputAccessor->forget (); // ownership by shared pointer
+		}
+		else
+		{
+			outputBitmap = inputBitmap;
+			outputAccessor = inputAccessor;
 		}
 		run (*inputAccessor, *outputAccessor);
 		return registerProperty (Property::kOutputBitmap, BitmapFilter::Property (outputBitmap));
@@ -722,13 +744,13 @@ protected:
 		}
 	}
 
-	ProcessFunction processFunction;
+	SimpleFilterProcessFunction processFunction;
 };
 
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
-class SetColor : public SimpleFilter
+class SetColor : public SimpleFilter<SimpleFilterProcessFunction>
 {
 public:
 	static IFilter* CreateFunction (IdStringPtr _name)
@@ -766,7 +788,7 @@ private:
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
-class Grayscale : public SimpleFilter
+class Grayscale : public SimpleFilter<SimpleFilterProcessFunction>
 {
 public:
 	static IFilter* CreateFunction (IdStringPtr name)
@@ -790,7 +812,7 @@ private:
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
-class ReplaceColor : public SimpleFilter
+class ReplaceColor : public SimpleFilter<SimpleFilterProcessFunction>
 {
 public:
 	static IFilter* CreateFunction (IdStringPtr name)
@@ -820,7 +842,7 @@ private:
 	{
 		inputColor = getProperty (Property::kInputColor).getColor ();
 		outputColor = getProperty (Property::kOutputColor).getColor ();
-		return SimpleFilter::run (replace);
+		return SimpleFilter<SimpleFilterProcessFunction>::run (replace);
 	}
 
 };

@@ -39,7 +39,7 @@
 #import "../../../cpoint.h"
 #import "../../../ccolor.h"
 
-#if MAC_COCOA
+#if MAC_COCOA && defined (__OBJC__)
 
 #import <objc/runtime.h>
 #import <objc/message.h>
@@ -85,6 +85,7 @@ extern HIDDEN Class generateUniqueClass (NSMutableString* className, Class baseC
 extern HIDDEN VstKeyCode CreateVstKeyCodeFromNSEvent (NSEvent* theEvent);
 extern HIDDEN NSString* GetVirtualKeyCodeString (int32_t virtualKeyCode);
 extern HIDDEN int32_t eventButton (NSEvent* theEvent);
+extern HIDDEN void convertPointToGlobal (NSView* view, NSPoint& p);
 
 //------------------------------------------------------------------------------------
 // Helpers

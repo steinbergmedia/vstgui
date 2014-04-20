@@ -53,13 +53,13 @@ public:
 	Pasteboard (NSPasteboard* pb);
 	~Pasteboard ();
 
-	int32_t getCount () VSTGUI_OVERRIDE_VMETHOD;
-	int32_t getDataSize (int32_t index) VSTGUI_OVERRIDE_VMETHOD;
-	Type getDataType (int32_t index) VSTGUI_OVERRIDE_VMETHOD;
-	int32_t getData (int32_t index, const void*& buffer, Type& type) VSTGUI_OVERRIDE_VMETHOD;
+	uint32_t getCount () const VSTGUI_OVERRIDE_VMETHOD;
+	uint32_t getDataSize (uint32_t index) const VSTGUI_OVERRIDE_VMETHOD;
+	Type getDataType (uint32_t index) const VSTGUI_OVERRIDE_VMETHOD;
+	uint32_t getData (uint32_t index, const void*& buffer, Type& type) const VSTGUI_OVERRIDE_VMETHOD;
 protected:
 	NSPasteboard* pb;
-	int32_t nbItems;
+	uint32_t nbItems;
 	bool stringsAreFiles;
 	std::vector<std::string> strings;
 	NSMutableArray* dataArray;
@@ -91,8 +91,8 @@ Pasteboard::Pasteboard (NSPasteboard* pb)
 		{
 			stringsAreFiles = true;
 			NSArray* fileNames = [pb propertyListForType:hasFilenames];
-			nbItems = (int32_t)[fileNames count];
-			for (int32_t i = 0; i < nbItems; i++)
+			nbItems = static_cast<uint32_t> ([fileNames count]);
+			for (uint32_t i = 0; i < nbItems; i++)
 			{
 				NSString* str = [fileNames objectAtIndex:i];
 				if (str)
@@ -118,7 +118,7 @@ Pasteboard::Pasteboard (NSPasteboard* pb)
 		{
 			nbItems = (int32_t)[[pb types] count];
 			dataArray = [[NSMutableArray alloc] initWithCapacity:nbItems];
-			for (int32_t i = 0; i < nbItems; i++)
+			for (uint32_t i = 0; i < nbItems; i++)
 			{
 				NSData* nsData = [pb dataForType:[[pb types] objectAtIndex:i]];
 				[dataArray addObject:nsData];
@@ -135,31 +135,31 @@ Pasteboard::~Pasteboard ()
 }
 
 //-----------------------------------------------------------------------------
-int32_t Pasteboard::getCount ()
+uint32_t Pasteboard::getCount () const
 {
 	return nbItems;
 }
 
 //-----------------------------------------------------------------------------
-int32_t Pasteboard::getDataSize (int32_t index)
+uint32_t Pasteboard::getDataSize (uint32_t index) const
 {
 	if (dataArray)
 	{
-		return (int32_t)[[dataArray objectAtIndex:index] length];
+		return static_cast<uint32_t> ([[dataArray objectAtIndex:index] length]);
 	}
-	if (index < (int32_t)strings.size ())
+	if (index < strings.size ())
 	{
-		return (int32_t)strings[index].length ();
+		return static_cast<uint32_t> (strings[index].length ());
 	}
 	return 0;
 }
 
 //-----------------------------------------------------------------------------
-Pasteboard::Type Pasteboard::getDataType (int32_t index)
+Pasteboard::Type Pasteboard::getDataType (uint32_t index) const
 {
 	if (dataArray)
 		return kBinary;
-	else if (index < (int32_t)strings.size ())
+	else if (index < strings.size ())
 	{
 		if (stringsAreFiles)
 			return kFilePath;
@@ -169,7 +169,7 @@ Pasteboard::Type Pasteboard::getDataType (int32_t index)
 }
 
 //-----------------------------------------------------------------------------
-int32_t Pasteboard::getData (int32_t index, const void*& buffer, Pasteboard::Type& type)
+uint32_t Pasteboard::getData (uint32_t index, const void*& buffer, Pasteboard::Type& type) const
 {
 	if (dataArray)
 	{
@@ -177,7 +177,7 @@ int32_t Pasteboard::getData (int32_t index, const void*& buffer, Pasteboard::Typ
 		type = kBinary;
 		return (int32_t)[[dataArray objectAtIndex:index] length];
 	}
-	if (index < (int32_t)strings.size ())
+	if (index < strings.size ())
 	{
 		buffer = strings[index].c_str ();
 		type = stringsAreFiles ? kFilePath : kText;

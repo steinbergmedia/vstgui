@@ -361,6 +361,7 @@ public:
 
 	void draw (CDrawContext* context) VSTGUI_OVERRIDE_VMETHOD
 	{
+		context->moveTo (CPoint (0, 0));
 		CGraphicsPath* path = context->createGraphicsPath ();
 		if (path)
 		{

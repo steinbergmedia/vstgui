@@ -255,9 +255,9 @@ QuartzGradient::~QuartzGradient ()
 }
 
 //-----------------------------------------------------------------------------
-void QuartzGradient::addColorStop (double start, const CColor& color)
+void QuartzGradient::addColorStop (const std::pair<double, CColor>& colorStop)
 {
-	CGradient::addColorStop (start, color);
+	CGradient::addColorStop (colorStop);
 	releaseCGGradient ();
 }
 

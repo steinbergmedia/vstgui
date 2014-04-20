@@ -112,8 +112,8 @@ void CAutoAnimation::draw (CDrawContext *pContext)
 	if (isWindowOpened ())
 	{	
 		CPoint where;
-		where.v = (int32_t)value + offset.v;
-		where.h = offset.h;
+		where.y = (int32_t)value + offset.y;
+		where.x = offset.x;
 		
 		if (getDrawBackground ())
 		{

@@ -65,7 +65,7 @@ WinDragContainer::WinDragContainer (IDataObject* platformDrag)
 		if (hr == S_OK)
 		{
 			void* data = GlobalLock (medium.hGlobal);
-			int32_t dataSize = (int32_t)GlobalSize (medium.hGlobal);
+			uint32_t dataSize = static_cast<uint32_t> (GlobalSize (medium.hGlobal));
 			if (data && dataSize)
 			{
 				UTF8StringHelper wideString ((const WCHAR*)data);
@@ -87,11 +87,11 @@ WinDragContainer::WinDragContainer (IDataObject* platformDrag)
 			hr = platformDrag->GetData (&formatHDrop, &medium);
 			if (hr == S_OK)
 			{
-				nbItems = (int32_t)DragQueryFile ((HDROP)medium.hGlobal, 0xFFFFFFFFL, 0, 0);
+				nbItems = DragQueryFile ((HDROP)medium.hGlobal, 0xFFFFFFFFL, 0, 0);
 				stringsAreFiles = true;
 
 				TCHAR fileDropped[1024];
-				for (int32_t index = 0; index < nbItems; index++)
+				for (uint32_t index = 0; index < nbItems; index++)
 				{
 					if (DragQueryFile ((HDROP)medium.hGlobal, index, fileDropped, sizeof (fileDropped) / 2)) 
 					{
@@ -108,7 +108,7 @@ WinDragContainer::WinDragContainer (IDataObject* platformDrag)
 			if (platformDrag->GetData (&formatBinaryDrop, &medium) == S_OK)
 			{
 				const void* blob = GlobalLock (medium.hGlobal);
-				dataSize = (int32_t)GlobalSize (medium.hGlobal);
+				dataSize = static_cast<uint32_t> (GlobalSize (medium.hGlobal));
 				if (blob && dataSize)
 				{
 					data = malloc (dataSize);
@@ -135,25 +135,25 @@ WinDragContainer::~WinDragContainer ()
 }
 
 //-----------------------------------------------------------------------------
-int32_t WinDragContainer::getCount ()
+uint32_t WinDragContainer::getCount () const
 {
 	return nbItems;
 }
 
 //-----------------------------------------------------------------------------
-int32_t WinDragContainer::getDataSize (int32_t index)
+uint32_t WinDragContainer::getDataSize (uint32_t index) const
 {
 	if (index < nbItems)
 	{
 		if (data)
 			return dataSize;
-		return (int32_t)strings[index].length ();
+		return static_cast<uint32_t> (strings[index].length ());
 	}
 	return 0;
 }
 
 //-----------------------------------------------------------------------------
-WinDragContainer::Type WinDragContainer::getDataType (int32_t index)
+WinDragContainer::Type WinDragContainer::getDataType (uint32_t index) const
 {
 	if (index < nbItems)
 	{
@@ -167,7 +167,7 @@ WinDragContainer::Type WinDragContainer::getDataType (int32_t index)
 }
 
 //-----------------------------------------------------------------------------
-int32_t WinDragContainer::getData (int32_t index, const void*& buffer, Type& type)
+uint32_t WinDragContainer::getData (uint32_t index, const void*& buffer, Type& type) const
 {
 	if (index < nbItems)
 	{

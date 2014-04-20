@@ -285,14 +285,12 @@ void CKnob::drawHandleAsLine (CDrawContext* pContext) const
 	pContext->setLineWidth (handleLineWidth);
 	pContext->setLineStyle (CLineStyle (CLineStyle::kLineCapRound));
 	pContext->setDrawMode (kAntiAliasing);
-	pContext->moveTo (where);
-	pContext->lineTo (origin);
+	pContext->drawLine (std::make_pair (where, origin));
 	
 	where.offset (1, -1);
 	origin.offset (1, -1);
 	pContext->setFrameColor (colorHandle);
-	pContext->moveTo (where);
-	pContext->lineTo (origin);
+	pContext->drawLine (std::make_pair (where, origin));
 }
 
 //------------------------------------------------------------------------
@@ -309,7 +307,7 @@ void CKnob::drawHandle (CDrawContext *pContext)
 	where.y = floor (where.y);
 
 	CRect handleSize (0, 0, width, height);
-	handleSize.offset (where.h, where.v);
+	handleSize.offset (where.x, where.y);
 	pHandle->draw (pContext, handleSize);
 }
 
@@ -387,7 +385,7 @@ CMouseEventResult CKnob::onMouseMoved (CPoint& where, const CButtonState& button
 			lastPoint = where;
 			if (modeLinear)
 			{
-				CCoord diff = (firstPoint.v - where.v) + (where.h - firstPoint.h);
+				CCoord diff = (firstPoint.y - where.y) + (where.x - firstPoint.x);
 				if (buttons != oldButton)
 				{
 					range = kCKnobRange;
@@ -519,8 +517,8 @@ void CKnob::valueToPoint (CPoint &point) const
 	double xradius = c.x - inset;
 	double yradius = c.y - inset;
 
-	point.h = (CCoord)(c.x + cosf(alpha) * xradius + 0.5f);
-	point.v = (CCoord)(c.y + sinf (alpha) * yradius + 0.5f);
+	point.x = (CCoord)(c.x + cosf(alpha) * xradius + 0.5f);
+	point.y = (CCoord)(c.y + sinf (alpha) * yradius + 0.5f);
 }
 
 //------------------------------------------------------------------------
@@ -757,10 +755,10 @@ void CAnimKnob::draw (CDrawContext *pContext)
 		{
 			CCoord tmp = heightOfOneImage * (getNumSubPixmaps () - 1);
 			if (bInverseBitmap)
-				where.v = floor ((1. - value) * tmp);
+				where.y = floor ((1. - value) * tmp);
 			else
-				where.v = floor (value * tmp);
-			where.v -= (int32_t)where.v % (int32_t)heightOfOneImage;
+				where.y = floor (value * tmp);
+			where.y -= (int32_t)where.y % (int32_t)heightOfOneImage;
 		}
 
 		getDrawBackground ()->draw (pContext, getViewSize (), where);

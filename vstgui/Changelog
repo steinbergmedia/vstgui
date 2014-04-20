@@ -1,3 +1,11 @@
+2014-04-20 arne
+
+	* add initial Mac OS X Retina Display support
+	* add CDrawContext::Transform to transform any of the CDrawContext draw commands
+	* add CDrawContext::drawLine and mark the old methods (moveTo, lineTo) as deprecated
+	* add CDrawContext::drawLines which takes a vector of point pairs and mark the old method as deprecated
+	* add CDrawContext::drawPolygon which takes a vector of points and mark the old method as deprecated
+
 2014-04-13 arne
 
 	* fix a few issues found with -fsanitize=undefined-trap

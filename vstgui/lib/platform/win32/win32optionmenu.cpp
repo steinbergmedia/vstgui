@@ -167,7 +167,6 @@ HMENU Win32OptionMenu::createMenu (COptionMenu* _menu, int32_t& offsetIdx)
 	SetMenuInfo (menu, &mi);
 
 	int flags = 0;
-	int32_t idxSubmenu = 0;
 	int32_t offset = offsetIdx;
 	int32_t nbEntries = _menu->getNbEntries ();
 	offsetIdx += nbEntries;

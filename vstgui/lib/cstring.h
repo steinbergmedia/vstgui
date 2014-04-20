@@ -90,7 +90,7 @@ public:
 
 	bool operator== (const UTF8StringPtr otherString) const;
 	bool operator!= (const UTF8StringPtr otherString) const;
-	const UTF8StringPtr operator() () const;
+	operator const UTF8StringPtr () const;
 //-----------------------------------------------------------------------------
 private:
 	UTF8StringView () : str (0) {}
@@ -101,12 +101,18 @@ private:
 class UTF8CharacterIterator
 {
 public:
-	UTF8CharacterIterator (const UTF8StringPtr utf8Str) : startPos ((uint8_t*)utf8Str), currentPos (0), strLen (std::strlen (utf8Str))
+	UTF8CharacterIterator (const UTF8StringPtr utf8Str)
+	: startPos ((uint8_t*)utf8Str)
+	, currentPos (0)
+	, strLen (std::strlen (utf8Str))
 	{
 		begin ();
 	}
 
-	UTF8CharacterIterator (const std::string& stdStr) : startPos ((uint8_t*)stdStr.c_str ()), currentPos (0), strLen (stdStr.size ())
+	UTF8CharacterIterator (const std::string& stdStr)
+	: startPos ((uint8_t*)stdStr.c_str ())
+	, currentPos (0)
+	, strLen (stdStr.size ())
 	{
 		begin ();
 	}
@@ -232,12 +238,10 @@ inline bool UTF8StringView::operator!= (const UTF8StringPtr otherString) const
 }
 
 //-----------------------------------------------------------------------------
-inline const UTF8StringPtr UTF8StringView::operator() () const
+inline UTF8StringView::operator const UTF8StringPtr () const
 {
 	return str;
 }
-
-	
 
 } // namespace
 

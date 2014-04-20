@@ -207,12 +207,12 @@ void CSlider::setViewSize (const CRect& rect, bool invalid)
 	if (style & kHorizontal)
 	{
 		minPos = rect.left - getViewSize ().left;
-		rangeHandle = rect.getWidth () - (widthOfSlider + offsetHandle.h * 2);
+		rangeHandle = rect.getWidth () - (widthOfSlider + offsetHandle.x * 2);
 	}
 	else
 	{
 		minPos = rect.top - getViewSize ().top;
-		rangeHandle = rect.getHeight () - (heightOfSlider + offsetHandle.v * 2);
+		rangeHandle = rect.getHeight () - (heightOfSlider + offsetHandle.y * 2);
 	}
 	
 	widthControl  = rect.width ();
@@ -243,12 +243,12 @@ void CSlider::setOffsetHandle (const CPoint &val)
 
 	if (style & kHorizontal)
 	{
-		minTmp = offsetHandle.h + minPos;
+		minTmp = offsetHandle.x + minPos;
 		maxTmp = minTmp + rangeHandle + widthOfSlider;
 	}
 	else
 	{
-		minTmp = offsetHandle.v + minPos;
+		minTmp = offsetHandle.y + minPos;
 		maxTmp = minTmp + rangeHandle + heightOfSlider;
 	}
 }
@@ -340,10 +340,10 @@ void CSlider::draw (CDrawContext *pContext)
 		CRect rectNew;
 		if (style & kHorizontal)
 		{
-			rectNew.top    = offsetHandle.v;
+			rectNew.top    = offsetHandle.y;
 			rectNew.bottom = rectNew.top + heightOfSlider;	
 
-			rectNew.left   = offsetHandle.h + floor (normValue * rangeHandle);
+			rectNew.left   = offsetHandle.x + floor (normValue * rangeHandle);
 			rectNew.left   = (rectNew.left < minTmp) ? minTmp : rectNew.left;
 
 			rectNew.right  = rectNew.left + widthOfSlider;
@@ -351,10 +351,10 @@ void CSlider::draw (CDrawContext *pContext)
 		}
 		else
 		{
-			rectNew.left   = offsetHandle.h;
+			rectNew.left   = offsetHandle.x;
 			rectNew.right  = rectNew.left + widthOfSlider;	
 
-			rectNew.top    = offsetHandle.v + floor (normValue * rangeHandle);
+			rectNew.top    = offsetHandle.y + floor (normValue * rangeHandle);
 			rectNew.top    = (rectNew.top < minTmp) ? minTmp : rectNew.top;
 
 			rectNew.bottom = rectNew.top + heightOfSlider;
@@ -374,9 +374,9 @@ float CSlider::calculateDelta (const CPoint& where, CRect* handleRect) const
 {
 	CCoord result;
 	if (style & kHorizontal)
-		result = getViewSize ().left + offsetHandle.h;
+		result = getViewSize ().left + offsetHandle.x;
 	else
-		result = getViewSize ().top + offsetHandle.v;
+		result = getViewSize ().top + offsetHandle.y;
 	if (getMode () != kFreeClickMode)
 	{
 		float normValue = getValueNormalized ();
@@ -392,22 +392,22 @@ float CSlider::calculateDelta (const CPoint& where, CRect* handleRect) const
 			if (handleRect)
 			{
 				handleRect->left   = actualPos;
-				handleRect->top    = getViewSize ().top  + offsetHandle.v;
+				handleRect->top    = getViewSize ().top  + offsetHandle.y;
 				handleRect->right  = handleRect->left + widthOfSlider;
 				handleRect->bottom = handleRect->top  + heightOfSlider;
 			}
-			result += where.h - actualPos;
+			result += where.x - actualPos;
 		}
 		else
 		{
 			if (handleRect)
 			{
-				handleRect->left   = getViewSize ().left  + offsetHandle.h;
+				handleRect->left   = getViewSize ().left  + offsetHandle.x;
 				handleRect->top    = actualPos;
 				handleRect->right  = handleRect->left + widthOfSlider;
 				handleRect->bottom = handleRect->top  + heightOfSlider;
 			}
-			result += where.v - actualPos;
+			result += where.y - actualPos;
 		}
 	}
 	else
@@ -480,7 +480,7 @@ CMouseEventResult CSlider::onMouseMoved (CPoint& where, const CButtonState& _but
 		{
 			if (kAlwaysUseZoomFactor)
 			{
-				CCoord distance = fabs ((style & kHorizontal) ? where.v - mouseStartPoint.v : where.h - mouseStartPoint.h);
+				CCoord distance = fabs ((style & kHorizontal) ? where.y - mouseStartPoint.y : where.x - mouseStartPoint.x);
 				float newZoomFactor = 1.f;
 				if (distance > ((style & kHorizontal) ? getHeight () : getWidth ()))
 				{
@@ -508,9 +508,9 @@ CMouseEventResult CSlider::onMouseMoved (CPoint& where, const CButtonState& _but
 
 			float normValue;
 			if (style & kHorizontal)
-				normValue = (float)(where.h - delta) / (float)rangeHandle;
+				normValue = (float)(where.x - delta) / (float)rangeHandle;
 			else
-				normValue = (float)(where.v - delta) / (float)rangeHandle;
+				normValue = (float)(where.y - delta) / (float)rangeHandle;
 
 			if (style & kRight || style & kBottom)
 				normValue = 1.f - normValue;

@@ -35,8 +35,7 @@
 #ifndef __cgraphicspath__
 #define __cgraphicspath__
 
-#include "crect.h"
-#include "cpoint.h"
+#include "cgraphicstransform.h"
 #include "ccolor.h"
 #include <vector>
 #include <map>
@@ -44,75 +43,6 @@
 
 namespace VSTGUI {
 class CGradient;
-
-//-----------------------------------------------------------------------------
-/// @brief Graphics Transform Matrix
-/// @ingroup new_in_4_0
-//-----------------------------------------------------------------------------
-struct CGraphicsTransform
-{
-	double m11;
-	double m12;
-	double m21;
-	double m22;
-	double dx;
-	double dy;
-	
-	CGraphicsTransform (double _m11 = 1., double _m12 = 0., double _m21 = 0., double _m22 = 1., double _dx = 0., double _dy = 0.)
-	: m11 (_m11), m12 (_m12), m21 (_m21), m22 (_m22), dx (_dx), dy (_dy)
-	{}
-	
-	void translate (double x, double y)
-	{
-		*this = CGraphicsTransform (1, 0, 0, 1, x, y) * this;
-	}
-	
-	void scale (double x, double y)
-	{
-		*this = CGraphicsTransform (x, 0., 0., y, 0., 0.) * this;
-	}
-	
-	void rotate (double angle);
-
-	void transform (CCoord& x, CCoord& y) const
-	{
-		CCoord x2 = m11*x + m12*y + dx;
-		CCoord y2 = m21*x + m22*y + dy;
-		x = x2;
-		y = y2;
-	}
-		
-	void transform (CCoord& left, CCoord& right, CCoord& top, CCoord& bottom) const
-	{
-		transform (left, top);
-		transform (right, bottom);
-	}
-	
-	CPoint& transform (CPoint& p) const
-	{
-		transform (p.x, p.y);
-		return p;
-	}
-
-	CRect& transform (CRect& r) const
-	{
-		transform (r.left, r.right, r.top, r.bottom);
-		return r;
-	}
-
-	CGraphicsTransform operator* (const CGraphicsTransform& t) const
-	{
-		CGraphicsTransform result;
-		result.m11 = (m11 * t.m11) + (m12 * t.m21);
-		result.m21 = (m21 * t.m11) + (m22 * t.m21);
-		result.dx = (dx * t.m11) + (dy * t.m21) + t.dx;
-		result.m12 = (m11 * t.m12) + (m12 * t.m22);
-		result.m22 = (m21 * t.m12) + (m22 * t.m22);
-		result.dy = (dx * t.m12) + (dy * t.m22) + t.dy;
-		return result;
-	}
-	CGraphicsTransform operator* (const CGraphicsTransform* t) const { return *this * *t; }
-};
 
 //-----------------------------------------------------------------------------
 ///	@brief Graphics Path Object
@@ -234,8 +164,8 @@ protected:
 		} instruction;
 	};
 
-	inline void CRect2Rect (const CRect& rect, CGraphicsPath::Rect& r) {r.left = rect.left;r.right = rect.right;r.top = rect.top;r.bottom = rect.bottom;}
-	inline void CPoint2Point (const CPoint& point, CGraphicsPath::Point& p) {p.x = point.x;p.y = point.y;}
+	inline void CRect2Rect (const CRect& rect, CGraphicsPath::Rect& r) const {r.left = rect.left;r.right = rect.right;r.top = rect.top;r.bottom = rect.bottom;}
+	inline void CPoint2Point (const CPoint& point, CGraphicsPath::Point& p) const {p.x = point.x;p.y = point.y;}
 	/// @endcond
 
 	typedef std::vector<Element> ElementList;
@@ -255,11 +185,16 @@ public:
 	//-----------------------------------------------------------------------------
 	//@{
 	
-	virtual void addColorStop (double start, const CColor& color)
+	void addColorStop (double start, const CColor& color)
 	{
-		colorStops.insert (std::make_pair (start, color));
+		addColorStop (std::make_pair (start, color));
 	}
-
+	
+	virtual void addColorStop (const std::pair<double, CColor>& colorStop)
+	{
+		colorStops.insert (colorStop);
+	}
+	
 	//@}
 //-----------------------------------------------------------------------------
 	CLASS_METHODS_NOCOPY(CGradient, CBaseObject)

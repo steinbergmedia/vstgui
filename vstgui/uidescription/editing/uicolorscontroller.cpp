@@ -103,8 +103,8 @@ public:
 protected:
 	void draw (CDrawContext* context)
 	{
-		if (getHandle () == 0)
-			updateBackground ();
+		if (getHandle () == 0 || getBackground () == 0)
+			updateBackground (context);
 		CSlider::draw (context);
 	}
 	void setViewSize (const CRect& rect, bool invalid = true)
@@ -112,10 +112,13 @@ protected:
 		bool different = rect != getViewSize ();
 		CSlider::setViewSize (rect, invalid);
 		if (different)
-			updateBackground ();
+		{
+			setHandle (0);
+			setBackground (0);
+		}
 	}
 	CMessageResult notify (CBaseObject* sender, IdStringPtr message);
-	void updateBackground ();
+	void updateBackground (CDrawContext* context);
 
 	SharedPointer<UIColor> color;
 	int32_t style;
@@ -141,32 +144,35 @@ CMessageResult UIColorSlider::notify (CBaseObject* sender, IdStringPtr message)
 {
 	if (message == UIColor::kMsgChanged || message == UIColor::kMsgEditChange)
 	{
-		updateBackground ();
+		setBackground (0);
 		return kMessageNotified;
 	}
 	return CSlider::notify (sender, message);
 }
 
 //----------------------------------------------------------------------------------------------------
-void UIColorSlider::updateBackground ()
+void UIColorSlider::updateBackground (CDrawContext* context)
 {
-	setBackground (0);
-	COffscreenContext* context = COffscreenContext::create (getFrame (), floor (getWidth () + 0.5), floor (getHeight () + 0.5));
-	if (context)
+	SharedPointer<COffscreenContext> offscreen = owned (COffscreenContext::create (getFrame (), getWidth (), getHeight ()));
+	if (offscreen)
 	{
+		double kNumPoints = 256.;
+		if (style == kHue || style == kSaturation || style == kLightness)
+			kNumPoints = 512;
 		CCoord width = getWidth ();
-		context->beginDraw ();
-		context->setDrawMode (kAliasing);
-		CCoord widthPerColor = width / 256.;
+		offscreen->beginDraw ();
+		offscreen->setDrawMode (kAliasing);
+		CCoord widthPerColor = width / kNumPoints;
 		CRect r;
-		r.setHeight (floor (getHeight () + 0.5));
-		for (int32_t i = 0; i < 256; i++)
+		r.setHeight (getHeight ());
+		r.setWidth (widthPerColor < 2. ? 2. : std::ceil (widthPerColor));
+		r.offset (-r.getWidth (), 0);
+		for (int32_t i = 0; i < kNumPoints; i++)
 		{
-			CCoord x = floor (widthPerColor * i + 0.5);
+			CCoord x = std::ceil (widthPerColor * i);
 			if (x > r.right)
 			{
-				r.left = r.right;
-				r.setWidth (widthPerColor < 2. ? 2. : ceil (widthPerColor));
+				r.offset (r.getWidth (), 0);
 				CColor c = *color;
 				switch (style)
 				{
@@ -192,50 +198,47 @@ void UIColorSlider::updateBackground ()
 					}
 					case kHue:
 					{
-						double hue = ((double)i / 256.) * 360.;
+						double hue = ((double)i / kNumPoints) * 360.;
 						c.fromHSL (hue, color->saturation, color->lightness);
 						break;
 					}
 					case kSaturation:
 					{
-						double sat = ((double)i / 256.);
+						double sat = ((double)i / kNumPoints);
 						c.fromHSL (color->hue, sat, color->lightness);
 						break;
 					}
 					case kLightness:
 					{
-						double light = ((double)i / 256.);
+						double light = ((double)i / kNumPoints);
 						c.fromHSL (color->hue, color->saturation, light);
 						break;
 					}
 				}
-				context->setFillColor (c);
-				context->drawRect (r, kDrawFilled);
+				offscreen->setFillColor (c);
+				offscreen->drawRect (r, kDrawFilled);
 			}
 		}
-		context->endDraw ();
-		setBackground (context->getBitmap());
-		context->forget ();
+		offscreen->endDraw ();
+		setBackground (offscreen->getBitmap ());
 	}
 	if (getHandle () == 0)
 	{
-		context = COffscreenContext::create (getFrame (), 7, getHeight ());
-		if (context)
+		offscreen = owned (COffscreenContext::create (getFrame (), 7, getHeight (), context->getScaleFactor ()));
+		if (offscreen)
 		{
-			context->beginDraw ();
-			context->setFrameColor (kBlackCColor);
-			context->setLineWidth (1);
-			context->setDrawMode (kAliasing);
+			offscreen->beginDraw ();
+			offscreen->setFrameColor (kBlackCColor);
+			offscreen->setLineWidth (1);
+			offscreen->setDrawMode (kAliasing);
 			CRect r (0, 0, 7, getHeight ());
-			context->drawRect (r, kDrawStroked);
+			offscreen->drawRect (r, kDrawStroked);
 			r.inset (1, 1);
-			context->setFrameColor (kWhiteCColor);
-			context->drawRect (r, kDrawStroked);
-			context->endDraw ();
-			setHandle (context->getBitmap ());
-			context->forget ();
+			offscreen->setFrameColor (kWhiteCColor);
+			offscreen->drawRect (r, kDrawStroked);
+			offscreen->endDraw ();
+			setHandle (offscreen->getBitmap ());
 		}
-		
 	}
 }
 

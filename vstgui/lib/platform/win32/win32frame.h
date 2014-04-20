@@ -73,7 +73,7 @@ public:
 	IPlatformOpenGLView* createPlatformOpenGLView () VSTGUI_OVERRIDE_VMETHOD;
 #endif
 	IPlatformViewLayer* createPlatformViewLayer (IPlatformViewLayerDelegate* drawDelegate, IPlatformViewLayer* parentLayer = 0) VSTGUI_OVERRIDE_VMETHOD { return 0; } // not yet supported
-	COffscreenContext* createOffscreenContext (CCoord width, CCoord height) VSTGUI_OVERRIDE_VMETHOD;
+	COffscreenContext* createOffscreenContext (CCoord width, CCoord height, double scaleFactor = 1.) VSTGUI_OVERRIDE_VMETHOD;
 	CView::DragResult doDrag (IDataPackage* source, const CPoint& offset, CBitmap* dragBitmap) VSTGUI_OVERRIDE_VMETHOD;
 
 	void setClipboard (IDataPackage* data) VSTGUI_OVERRIDE_VMETHOD;

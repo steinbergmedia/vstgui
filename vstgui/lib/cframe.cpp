@@ -36,6 +36,7 @@
 #include "coffscreencontext.h"
 #include "ctooltipsupport.h"
 #include "itouchevent.h"
+#include "iscalefactorchangedlistener.h"
 #include "animation/animator.h"
 #include "controls/ctextedit.h"
 #include <assert.h>
@@ -75,6 +76,7 @@ CFrame::CFrame (const CRect &inSize, void* inSystemWindow, VSTGUIEditorInterface
 , pMouseObservers (0)
 , pKeyboardHooks (0)
 , pViewAddedRemovedObserver (0)
+, pScaleFactorChangedListenerList (0)
 , pTooltips (0)
 , pAnimator (0)
 , pModalView (0)
@@ -95,6 +97,7 @@ CFrame::CFrame (const CRect& inSize, VSTGUIEditorInterface* inEditor)
 , pMouseObservers (0)
 , pKeyboardHooks (0)
 , pViewAddedRemovedObserver (0)
+, pScaleFactorChangedListenerList (0)
 , pTooltips (0)
 , pAnimator (0)
 , pModalView (0)
@@ -128,6 +131,15 @@ CFrame::~CFrame ()
 		pAnimator->forget ();
 		pAnimator = 0;
 	}
+
+	if (pScaleFactorChangedListenerList)
+	{
+#if DEBUG
+		DebugPrint ("Warning: Scale Factor Changed Listeners are not cleaned up correctly.\n If you register a change listener you must also unregister it !\n");
+#endif
+		delete pScaleFactorChangedListenerList;
+	}
+	
 	if (pMouseObservers)
 	{
 	#if DEBUG
@@ -1273,6 +1285,28 @@ int32_t CFrame::keyboardHooksOnKeyUp (const VstKeyCode& key)
 }
 
 //-----------------------------------------------------------------------------
+void CFrame::registerScaleFactorChangedListeneer (IScaleFactorChangedListener* listener)
+{
+	if (pScaleFactorChangedListenerList == 0)
+		pScaleFactorChangedListenerList = new ScaleFactorChangedListenerList ();
+	pScaleFactorChangedListenerList->push_back (listener);
+}
+
+//-----------------------------------------------------------------------------
+void CFrame::unregisterScaleFactorChangedListeneer (IScaleFactorChangedListener* listener)
+{
+	if (pScaleFactorChangedListenerList)
+	{
+		pScaleFactorChangedListenerList->remove (listener);
+		if (pScaleFactorChangedListenerList->empty ())
+		{
+			delete pScaleFactorChangedListenerList;
+			pScaleFactorChangedListenerList = 0;
+		}
+	}
+}
+
+//-----------------------------------------------------------------------------
 void CFrame::registerMouseObserver (IMouseObserver* observer)
 {
 	if (pMouseObservers == 0)
@@ -1299,7 +1333,7 @@ void CFrame::callMouseObserverMouseEntered (CView* view)
 {
 	if (pMouseObservers)
 	{
-		for (MouseObserverList::const_iterator it = pMouseObservers->begin (); it != pMouseObservers->end (); it++)
+		for (MouseObserverList::const_iterator it = pMouseObservers->begin (), end = pMouseObservers->end (); it != end; it++)
 		{
 			(*it)->onMouseEntered (view, this);
 		}
@@ -1311,7 +1345,7 @@ void CFrame::callMouseObserverMouseExited (CView* view)
 {
 	if (pMouseObservers)
 	{
-		for (MouseObserverList::const_iterator it = pMouseObservers->begin (); it != pMouseObservers->end (); it++)
+		for (MouseObserverList::const_iterator it = pMouseObservers->begin (), end = pMouseObservers->end (); it != end; it++)
 		{
 			(*it)->onMouseExited (view, this);
 		}
@@ -1324,7 +1358,7 @@ CMouseEventResult CFrame::callMouseObserverMouseDown (const CPoint& where, const
 	CMouseEventResult result = kMouseEventNotHandled;
 	if (pMouseObservers)
 	{
-		for (MouseObserverList::const_iterator it = pMouseObservers->begin (); it != pMouseObservers->end (); it++)
+		for (MouseObserverList::const_iterator it = pMouseObservers->begin (), end = pMouseObservers->end (); it != end; it++)
 		{
 			CMouseEventResult result2 = (*it)->onMouseDown (this, where, buttons);
 			if (result2 == kMouseEventHandled)
@@ -1342,7 +1376,7 @@ CMouseEventResult CFrame::callMouseObserverMouseMoved (const CPoint& where, cons
 	CMouseEventResult result = kMouseEventNotHandled;
 	if (pMouseObservers)
 	{
-		for (MouseObserverList::const_iterator it = pMouseObservers->begin (); it != pMouseObservers->end (); it++)
+		for (MouseObserverList::const_iterator it = pMouseObservers->begin (), end = pMouseObservers->end (); it != end; it++)
 		{
 			CMouseEventResult result2 = (*it)->onMouseMoved (this, where, buttons);
 			if (result2 == kMouseEventHandled)
@@ -1451,6 +1485,17 @@ void CFrame::platformOnActivate (bool state)
 {
 	if (pParentFrame)
 		onActivate (state);
+}
+
+//-----------------------------------------------------------------------------
+void CFrame::platformScaleFactorChanged ()
+{
+	if (pScaleFactorChangedListenerList == 0)
+		return;
+	for (ScaleFactorChangedListenerList::const_iterator it = pScaleFactorChangedListenerList->begin (), end = pScaleFactorChangedListenerList->end (); it != end; it++)
+	{
+		(*it)->onScaleFactorChanged (this);
+	}
 }
 
 #if VSTGUI_TOUCH_EVENT_HANDLING

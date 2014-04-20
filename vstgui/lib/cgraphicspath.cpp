@@ -38,13 +38,6 @@
 namespace VSTGUI {
 
 //-----------------------------------------------------------------------------
-void CGraphicsTransform::rotate (double angle)
-{
-	angle = radians (angle);
-	*this = CGraphicsTransform (cos (angle), sin (angle), -sin (angle), cos (angle), 0, 0) * this;
-}
-	
-//-----------------------------------------------------------------------------
 void CGraphicsPath::addRoundRect (const CRect& size, CCoord radius)
 {
 	CRect rect2 (size);

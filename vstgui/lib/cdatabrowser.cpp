@@ -859,9 +859,8 @@ void CDataBrowserView::drawRect (CDrawContext* context, const CRect& updateRect)
 	}
 	if (browser->getStyle () & CDataBrowser::kDrawColumnLines || browser->getStyle () & CDataBrowser::kDrawRowLines)
 	{
-		CPoint* points = new CPoint [numRows*2 + numColumns*2];
-		uint32_t numPoints = 0;
-
+		CDrawContext::LineList lines;
+		
 		CPoint p1;
 		CPoint p2;
 		if (browser->getStyle () & CDataBrowser::kDrawColumnLines)
@@ -871,8 +870,7 @@ void CDataBrowserView::drawRect (CDrawContext* context, const CRect& updateRect)
 			for (int32_t col = 0; col < numColumns - 1; col++)
 			{
 				p1.x = p2.x = p1.x + db->dbGetCurrentColumnWidth (col, browser) + lineWidth;
-				points[numPoints++] = p1;
-				points[numPoints++] = p2;
+				lines.push_back (std::make_pair (p1, p2));
 			}
 		}
 		if (browser->getStyle () & CDataBrowser::kDrawRowLines)
@@ -884,17 +882,18 @@ void CDataBrowserView::drawRect (CDrawContext* context, const CRect& updateRect)
 				p1.y = p2.y = p1.y + rowHeight;
 				if (p1.y >= updateRect.top && p1.y <= updateRect.bottom)
 				{
-					points[numPoints++] = p1;
-					points[numPoints++] = p2;
+					lines.push_back (std::make_pair (p1, p2));
 				}
 			}
 		}
-		context->setDrawMode (kAliasing | kIntegralMode);
-		context->setLineWidth (lineWidth);
-		context->setFrameColor (lineColor);
-		context->setLineStyle (kLineSolid);
-		context->drawLines (points, numPoints/2);
-		delete [] points;
+		if (lines.size ())
+		{
+			context->setDrawMode (kAliasing | kIntegralMode);
+			context->setLineWidth (lineWidth);
+			context->setFrameColor (lineColor);
+			context->setLineStyle (kLineSolid);
+			context->drawLines (lines);
+		}
 	}
 	setDirty (false);
 }

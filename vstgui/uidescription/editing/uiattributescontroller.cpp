@@ -46,6 +46,7 @@
 #include "../../lib/coffscreencontext.h"
 #include "../../lib/crowcolumnview.h"
 #include "../../lib/iviewlistener.h"
+#include "../../lib/cstring.h"
 #include <sstream>
 #include <algorithm>
 
@@ -531,7 +532,7 @@ public:
 				names.sort (UIEditController::std__stringCompare);
 			if (addNoneItem && !names.empty ())
 				menu->addSeparator ();
-			VSTGUI_RANGE_BASED_FOR_LOOP(StringPtrList, names, std::string*, name)
+			VSTGUI_RANGE_BASED_FOR_LOOP(StringPtrList, names, const std::string*, name)
 				addMenuEntry (name);
 			VSTGUI_RANGE_BASED_FOR_LOOP_END
 			return kMessageNotified;
@@ -844,43 +845,44 @@ CControlListener* UIAttributesController::getControlListener (UTF8StringPtr name
 }
 
 //----------------------------------------------------------------------------------------------------
-IController* UIAttributesController::createSubController (IdStringPtr name, const IUIDescription* description)
+IController* UIAttributesController::createSubController (IdStringPtr _name, const IUIDescription* description)
 {
+	UTF8StringView name (_name);
 	if (currentAttributeName)
 	{
-		if (strcmp (name, "TextController") == 0)
+		if (name == "TextController")
 		{
 			return new UIAttributeControllers::TextController (this, *currentAttributeName);
 		}
-		else if (strcmp (name, "BooleanController") == 0)
+		else if (name == "BooleanController")
 		{
 			return new UIAttributeControllers::BooleanController (this, *currentAttributeName);
 		}
-		else if (strcmp (name, "ColorController") == 0)
+		else if (name == "ColorController")
 		{
 			return new UIAttributeControllers::ColorController (this, *currentAttributeName, editDescription);
 		}
-		else if (strcmp (name, "TagController") == 0)
+		else if (name == "TagController")
 		{
 			return new UIAttributeControllers::TagController (this, *currentAttributeName, editDescription);
 		}
-		else if (strcmp (name, "BitmapController") == 0)
+		else if (name == "BitmapController")
 		{
 			return new UIAttributeControllers::BitmapController (this, *currentAttributeName, editDescription);
 		}
-		else if (strcmp (name, "FontController") == 0)
+		else if (name == "FontController")
 		{
 			return new UIAttributeControllers::FontController (this, *currentAttributeName, editDescription);
 		}
-		else if (strcmp (name, "ListController") == 0)
+		else if (name == "ListController")
 		{
 			return new UIAttributeControllers::ListController (this, *currentAttributeName, editDescription, selection);
 		}
-		else if (strcmp (name, "TextAlignmentController") == 0)
+		else if (name == "TextAlignmentController")
 		{
 			return new UIAttributeControllers::TextAlignmentController (this, *currentAttributeName);
 		}
-		else if (strcmp (name, "AutosizeController") == 0)
+		else if (name == "AutosizeController")
 		{
 			return new UIAttributeControllers::AutosizeController (this, selection, *currentAttributeName);
 		}
@@ -978,8 +980,8 @@ CView* UIAttributesController::createValueViewForAttributeType (const UIViewFact
 						std::vector<CSlider*> sliders;
 						if (container->getChildViewsOfType<CSlider> (sliders) == 1)
 						{
-							sliders[0]->setMin(minValue);
-							sliders[0]->setMax(maxValue);
+							sliders[0]->setMin (static_cast<float> (minValue));
+							sliders[0]->setMax (static_cast<float> (maxValue));
 						}
 					}
 					return view;
@@ -987,9 +989,9 @@ CView* UIAttributesController::createValueViewForAttributeType (const UIViewFact
 			}
 		}
 		default:
-			return UIEditController::getEditorDescription ().createView ("attributes.text", this);
+			break;
 	}
-	return 0;
+	return UIEditController::getEditorDescription ().createView ("attributes.text", this);
 }
 
 //----------------------------------------------------------------------------------------------------

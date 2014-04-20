@@ -60,6 +60,8 @@ public:
 	bool load (const CResourceDescription& desc) VSTGUI_OVERRIDE_VMETHOD;
 	const CPoint& getSize () const VSTGUI_OVERRIDE_VMETHOD { return size; }
 	IPlatformBitmapPixelAccess* lockPixels (bool alphaPremultiplied) VSTGUI_OVERRIDE_VMETHOD;
+	void setScaleFactor (double factor) VSTGUI_OVERRIDE_VMETHOD { scaleFactor = factor; }
+	double getScaleFactor () const VSTGUI_OVERRIDE_VMETHOD { return scaleFactor; }
 
 	CGImageRef getCGImage ();
 	CGContextRef createCGContext ();
@@ -85,6 +87,7 @@ protected:
 	void* bits;
 	bool dirty;
 	int32_t bytesPerRow;
+	double scaleFactor;
 };
 
 } // namespace

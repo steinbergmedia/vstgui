@@ -237,4 +237,15 @@ HIDDEN int32_t eventButton (NSEvent* theEvent)
 	return buttons;
 }
 
+//-----------------------------------------------------------------------------
+HIDDEN void convertPointToGlobal (NSView* view, NSPoint& p)
+{
+	p = [view convertPoint:p fromView:nil];
+	NSRect r = {};
+	r.origin = p;
+	r = [[view window] convertRectToScreen:r];
+	p = r.origin;
+}
+
+
 #endif // MAC_COCOA

@@ -1,6 +1,6 @@
 //-----------------------------------------------------------------------------
 // VST Plug-Ins SDK
-// VSTGUI: Graphical User Interface Framework for VST plugins :
+// VSTGUI: Graphical User Interface Framework not only for VST plugins :
 //
 // Version 4.2
 //
@@ -32,61 +32,18 @@
 // OF THE POSSIBILITY OF SUCH DAMAGE.
 //-----------------------------------------------------------------------------
 
-#ifndef __cdropsource__
-#define __cdropsource__
-
-#include "vstguibase.h"
-#include "idatapackage.h"
-#include <vector>
+#ifndef __iscalefactorchangedlistener__
+#define __iscalefactorchangedlistener__
 
 namespace VSTGUI {
+class CFrame;
 
-//-----------------------------------------------------------------------------
-// CDropSource Declaration
-//! @brief drop source
-//!
-//! @ingroup new_in_4_0
-//-----------------------------------------------------------------------------
-class CDropSource : public IDataPackage
+class IScaleFactorChangedListener
 {
 public:
-	CDropSource ();
-	CDropSource (const void* buffer, uint32_t bufferSize, Type type);
-
-	bool add (const void* buffer, uint32_t bufferSize, Type type);
-
-	// IDataPackage
-	virtual uint32_t getCount () const VSTGUI_FINAL_VMETHOD;
-	virtual uint32_t getDataSize (uint32_t index) const VSTGUI_FINAL_VMETHOD;
-	virtual Type getDataType (uint32_t index) const VSTGUI_FINAL_VMETHOD;
-	virtual uint32_t getData (uint32_t index, const void*& buffer, Type& type) const VSTGUI_FINAL_VMETHOD;
-
-	// old interface
-	VSTGUI_DEPRECATED(int32_t getEntrySize (int32_t index) const;) ///< \deprecated
-	VSTGUI_DEPRECATED(Type getEntryType (int32_t index) const;) ///< \deprecated
-	VSTGUI_DEPRECATED(int32_t getEntry (int32_t index, const void*& buffer, Type& type) const;) ///< \deprecated
-
-	//-------------------------------------------
-	CLASS_METHODS_NOCOPY(CDropSource, IDataPackage)
-protected:
-	/// @cond ignore
-	struct CDropEntry {
-		void* buffer;
-		uint32_t bufferSize;
-		Type type;
-		
-		CDropEntry (const void* buffer, uint32_t bufferSize, Type type);
-		CDropEntry (const CDropEntry& entry);
-	#if VSTGUI_RVALUE_REF_SUPPORT
-		CDropEntry (CDropEntry&& entry) noexcept;
-	#endif
-		~CDropEntry ();
-	};
-	/// @endcond
-	typedef std::vector<CDropEntry> DropEntryVector;
-	DropEntryVector entries;
+	virtual void onScaleFactorChanged (CFrame* frame) = 0;
 };
 
 } // namespace
 
-#endif // __cdropsource__
+#endif // __iscalefactorchangedlistener__

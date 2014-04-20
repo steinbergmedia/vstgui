@@ -151,7 +151,7 @@ CMouseEventResult CVerticalSwitch::onMouseMoved (CPoint& where, const CButtonSta
 {
 	if (isEditing ())
 	{
-		float norm = (int32_t)((where.v - getViewSize ().top) / coef) / (float)(getNumSubPixmaps () - 1);
+		float norm = (int32_t)((where.y - getViewSize ().top) / coef) / (float)(getNumSubPixmaps () - 1);
 		value = getMin () + norm * (getMax () - getMin ());
 		if (value > getMax ())
 			value = getMax ();
@@ -322,7 +322,7 @@ CMouseEventResult CHorizontalSwitch::onMouseMoved (CPoint& where, const CButtonS
 {
 	if (isEditing ())
 	{
-		float norm = (int32_t)((where.h - getViewSize ().left) / coef) / (float)(getNumSubPixmaps () - 1);
+		float norm = (int32_t)((where.x - getViewSize ().left) / coef) / (float)(getNumSubPixmaps () - 1);
 		value = getMin () + norm * (getMax () - getMin ());
 		if (value > getMax ())
 			value = getMax ();
@@ -465,12 +465,12 @@ CRockerSwitch::~CRockerSwitch ()
 //------------------------------------------------------------------------
 void CRockerSwitch::draw (CDrawContext *pContext)
 {
-	CPoint where (offset.h, offset.v);
+	CPoint where (offset.x, offset.y);
 
 	if (value == getMax ())
-		where.v += 2 * heightOfOneImage;
+		where.y += 2 * heightOfOneImage;
 	else if (value == (getMax () - getMin ()) / 2.f + getMin ())
-		where.v += heightOfOneImage;
+		where.y += heightOfOneImage;
 
 	if (getDrawBackground ())
 	{
@@ -509,22 +509,22 @@ CMouseEventResult CRockerSwitch::onMouseMoved (CPoint& where, const CButtonState
 
 		if (style & kHorizontal) 
 		{
-			if (where.h >= getViewSize ().left && where.v >= getViewSize ().top  &&
-				where.h <= (getViewSize ().left + width_2) && where.v <= getViewSize ().bottom)
+			if (where.x >= getViewSize ().left && where.y >= getViewSize ().top  &&
+				where.x <= (getViewSize ().left + width_2) && where.y <= getViewSize ().bottom)
 				value = getMin ();
-			else if (where.h >= (getViewSize ().left + width_2) && where.v >= getViewSize ().top  &&
-				where.h <= getViewSize ().right && where.v <= getViewSize ().bottom)
+			else if (where.x >= (getViewSize ().left + width_2) && where.y >= getViewSize ().top  &&
+				where.x <= getViewSize ().right && where.y <= getViewSize ().bottom)
 				value = getMax ();
 			else
 				value = fEntryState;
 		}
 		else
 		{
-			if (where.h >= getViewSize ().left && where.v >= getViewSize ().top  &&
-				where.h <= getViewSize ().right && where.v <= (getViewSize ().top + height_2))
+			if (where.x >= getViewSize ().left && where.y >= getViewSize ().top  &&
+				where.x <= getViewSize ().right && where.y <= (getViewSize ().top + height_2))
 				value = getMin ();
-			else if (where.h >= getViewSize ().left && where.v >= (getViewSize ().top + height_2) &&
-				where.h <= getViewSize ().right && where.v <= getViewSize ().bottom)
+			else if (where.x >= getViewSize ().left && where.y >= (getViewSize ().top + height_2) &&
+				where.x <= getViewSize ().right && where.y <= getViewSize ().bottom)
 				value = getMax ();
 			else
 				value = fEntryState;

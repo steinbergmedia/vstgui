@@ -36,6 +36,7 @@
 #define __cshadowviewcontainer__
 
 #include "cviewcontainer.h"
+#include "iscalefactorchangedlistener.h"
 
 namespace VSTGUI {
 
@@ -45,7 +46,7 @@ namespace VSTGUI {
 /// @ingroup containerviews
 /// @ingroup new_in_4_1
 //-----------------------------------------------------------------------------
-class CShadowViewContainer : public CViewContainer
+class CShadowViewContainer : public CViewContainer, public IScaleFactorChangedListener
 {
 public:
 	CShadowViewContainer (const CRect& size);
@@ -68,6 +69,8 @@ public:
 	//@}
 
 	// override
+	bool removed (CView* parent) VSTGUI_OVERRIDE_VMETHOD;
+	bool attached (CView* parent) VSTGUI_OVERRIDE_VMETHOD;
 	void drawRect (CDrawContext* pContext, const CRect& updateRect) VSTGUI_OVERRIDE_VMETHOD;
 	void drawBackgroundRect (CDrawContext* pContext, const CRect& _updateRect) VSTGUI_OVERRIDE_VMETHOD;
 	void setViewSize (const CRect& rect, bool invalid = true) VSTGUI_OVERRIDE_VMETHOD;
@@ -78,8 +81,11 @@ public:
 	bool changeViewZOrder (CView* view, int32_t newIndex) VSTGUI_OVERRIDE_VMETHOD;
 	CMessageResult notify (CBaseObject* sender, IdStringPtr message) VSTGUI_OVERRIDE_VMETHOD;
 
+	void onScaleFactorChanged (CFrame* frame) VSTGUI_OVERRIDE_VMETHOD;
+
 	CLASS_METHODS(CShadowViewContainer, CViewContainer)
 protected:
+
 	bool shadowInvalid;
 	CPoint shadowOffset;
 	float shadowIntensity;
