@@ -2873,8 +2873,8 @@ CBitmap* UIBitmapNode::getBitmap ()
 			size_t pos = pathStr.find_last_of (".");
 			if (pos != std::string::npos)
 				pathStr.erase (pos);
-			pos = pathStr.find_last_of("@2x");
-			if (pos == pathStr.length () - 1)
+			pos = pathStr.rfind ("@2x");
+			if (pos == pathStr.length () - 3)
 			{
 				bitmap->getPlatformBitmap ()->setScaleFactor (2.);
 				attributes->setDoubleAttribute ("scale-factor", 2.);
