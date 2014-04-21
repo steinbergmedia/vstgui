@@ -34,7 +34,7 @@
 
 #include "ccontrol.h"
 #include "../cframe.h"
-#include <assert.h>
+#include <cassert>
 
 #define VSTGUI_CCONTROL_LOG_EDITING DEBUG
 

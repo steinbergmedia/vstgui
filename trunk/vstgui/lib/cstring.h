@@ -85,9 +85,12 @@ public:
 	/** calculates the number of UTF-8 characters in the string */
 	uint64_t calculateCharacterCount () const;
 
-	/** checks this string if it contains a sub string */
+	/** checks this string if it contains a subString */
 	bool contains (const UTF8StringPtr subString) const;
 
+	/** checks this string if it ends with endString */
+	bool endsWith (const UTF8StringPtr endString) const;
+	
 	bool operator== (const UTF8StringPtr otherString) const;
 	bool operator!= (const UTF8StringPtr otherString) const;
 	operator const UTF8StringPtr () const;
@@ -222,6 +225,17 @@ inline uint64_t UTF8StringView::calculateByteCount () const
 inline bool UTF8StringView::contains (const UTF8StringPtr subString) const
 {
 	return (!str || !subString || std::strstr (str, subString) == 0) ? false : true;
+}
+
+//-----------------------------------------------------------------------------
+inline bool UTF8StringView::endsWith (const UTF8StringPtr _endString) const
+{
+	UTF8StringView endString (_endString);
+	uint64_t endStringLen = endString.calculateByteCount ();
+	uint64_t thisLen = calculateByteCount ();
+	if (endStringLen > thisLen)
+		return false;
+	return strcmp (str + (thisLen - endStringLen), _endString) == 0;
 }
 
 //-----------------------------------------------------------------------------

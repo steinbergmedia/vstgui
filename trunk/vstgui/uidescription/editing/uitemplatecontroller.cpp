@@ -45,7 +45,7 @@
 #include "uiundomanager.h"
 #include "uiactions.h"
 #include "uieditmenucontroller.h"
-#include <assert.h>
+#include <cassert>
 
 #ifdef verify
 	#undef verify

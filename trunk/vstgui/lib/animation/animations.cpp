@@ -36,7 +36,7 @@
 #include "../cview.h"
 #include "../cframe.h"
 #include "../controls/ccontrol.h"
-#include <assert.h>
+#include <cassert>
 #include <cmath>
 
 namespace VSTGUI {

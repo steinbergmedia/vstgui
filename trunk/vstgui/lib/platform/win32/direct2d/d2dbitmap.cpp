@@ -40,9 +40,9 @@
 #include <wincodec.h>
 #include <d2d1.h>
 #include <Shlwapi.h>
-#include <assert.h>
+#include <cassert>
 
-#pragma comment (lib,"windowscodecs.lib") // this bumps client requirement to XP SP2, maybe we should use LoadLibrary
+#pragma comment (lib,"windowscodecs.lib")
 
 namespace VSTGUI {
 

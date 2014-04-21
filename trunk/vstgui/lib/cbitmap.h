@@ -39,8 +39,8 @@
 #include "cpoint.h"
 #include "crect.h"
 #include "ccolor.h"
-
 #include "platform/iplatformbitmap.h"
+#include <vector>
 
 namespace VSTGUI {
 class CDrawContext;
@@ -95,8 +95,11 @@ public:
 
 	const CResourceDescription& getResourceDescription () const { return resourceDesc; }
 
-	IPlatformBitmap* getPlatformBitmap () const { return platformBitmap; }
+	IPlatformBitmap* getPlatformBitmap () const { return bitmaps.empty () ? 0 : bitmaps[0]; }
 	void setPlatformBitmap (IPlatformBitmap* bitmap);
+
+	bool addBitmap (IPlatformBitmap* platformBitmap);
+	IPlatformBitmap* getBestPlatformBitmapForScaleFactor (double scaleFactor) const;
 	//@}
 
 //-----------------------------------------------------------------------------
@@ -105,7 +108,9 @@ protected:
 	CBitmap ();
 
 	CResourceDescription resourceDesc;
-	IPlatformBitmap* platformBitmap;
+	typedef SharedPointer<IPlatformBitmap> BitmapPointer;
+	typedef std::vector<BitmapPointer> BitmapVector;
+	BitmapVector bitmaps;
 };
 
 //-----------------------------------------------------------------------------

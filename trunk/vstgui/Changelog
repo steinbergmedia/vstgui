@@ -1,3 +1,7 @@
+2014-04-21 arne
+
+	* add support for drawing high resolution bitmaps on Retina Displays
+
 2014-04-20 arne
 
 	* add initial Mac OS X Retina Display support

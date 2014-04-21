@@ -34,6 +34,7 @@
 
 #include "cbitmap.h"
 #include "cdrawcontext.h"
+#include <cassert>
 
 namespace VSTGUI {
 
@@ -64,44 +65,36 @@ CBitmap* bitmap2 = new CBitmap ("RealFileName.png"); // string
 */
 //-----------------------------------------------------------------------------
 CBitmap::CBitmap ()
-: platformBitmap (0)
 {
 }
 
 //-----------------------------------------------------------------------------
 CBitmap::CBitmap (const CResourceDescription& desc)
-: platformBitmap (0)
-, resourceDesc (desc)
+: resourceDesc (desc)
 {
-	platformBitmap = IPlatformBitmap::create ();
-	if (platformBitmap && !platformBitmap->load (desc))
+	SharedPointer<IPlatformBitmap> platformBitmap = owned (IPlatformBitmap::create ());
+	if (platformBitmap && platformBitmap->load (desc))
 	{
-		platformBitmap->forget ();
-		platformBitmap = 0;
+		bitmaps.push_back (platformBitmap);
 	}
 }
 
 //-----------------------------------------------------------------------------
 CBitmap::CBitmap (CCoord width, CCoord height)
-: platformBitmap (0)
 {
 	CPoint p (width, height);
-	platformBitmap = IPlatformBitmap::create (&p);
+	bitmaps.push_back (owned (IPlatformBitmap::create (&p)));
 }
 
 //-----------------------------------------------------------------------------
 CBitmap::CBitmap (IPlatformBitmap* platformBitmap)
-: platformBitmap (platformBitmap)
 {
-	if (platformBitmap)
-		platformBitmap->remember ();
+	bitmaps.push_back (platformBitmap);
 }
 
 //-----------------------------------------------------------------------------
 CBitmap::~CBitmap ()
 {
-	if (platformBitmap)
-		platformBitmap->forget ();
 }
 
 //-----------------------------------------------------------------------------
@@ -117,27 +110,61 @@ void CBitmap::draw (CDrawContext* context, const CRect& rect, const CPoint& offs
 //-----------------------------------------------------------------------------
 CCoord CBitmap::getWidth () const
 {
-	if (platformBitmap)
-		return platformBitmap->getSize ().x / platformBitmap->getScaleFactor ();
+	if (getPlatformBitmap ())
+		return getPlatformBitmap ()->getSize ().x / getPlatformBitmap ()->getScaleFactor ();
 	return 0;
 }
 
 //-----------------------------------------------------------------------------
 CCoord CBitmap::getHeight () const
 {
-	if (platformBitmap)
-		return platformBitmap->getSize ().y / platformBitmap->getScaleFactor ();
+	if (getPlatformBitmap ())
+		return getPlatformBitmap ()->getSize ().y / getPlatformBitmap ()->getScaleFactor ();
 	return 0;
 }
 
 //-----------------------------------------------------------------------------
 void CBitmap::setPlatformBitmap (IPlatformBitmap* bitmap)
 {
-	if (platformBitmap)
-		platformBitmap->forget ();
-	platformBitmap = bitmap;
-	if (platformBitmap)
-		platformBitmap->remember ();
+	if (bitmaps.empty ())
+		bitmaps.push_back (bitmap);
+	else
+		bitmaps[0] = bitmap;
+}
+
+//-----------------------------------------------------------------------------
+bool CBitmap::addBitmap (IPlatformBitmap* platformBitmap)
+{
+	double scaleFactor = platformBitmap->getScaleFactor ();
+	CPoint size (getWidth (), getHeight ());
+	CPoint bitmapSize = platformBitmap->getSize ();
+	bitmapSize.x /= scaleFactor;
+	bitmapSize.y /= scaleFactor;
+	if (size != bitmapSize)
+	{
+		assert (size == bitmapSize);
+		return false;
+	}
+	VSTGUI_RANGE_BASED_FOR_LOOP (BitmapVector, bitmaps, BitmapPointer, bitmap)
+		if (bitmap->getScaleFactor () == scaleFactor || bitmap == platformBitmap)
+		{
+			assert (bitmap->getScaleFactor () != scaleFactor && bitmap != platformBitmap);
+			return false;
+		}
+	VSTGUI_RANGE_BASED_FOR_LOOP_END
+	bitmaps.push_back (platformBitmap);
+	return true;
+}
+
+//-----------------------------------------------------------------------------
+IPlatformBitmap* CBitmap::getBestPlatformBitmapForScaleFactor (double scaleFactor) const
+{
+	VSTGUI_RANGE_BASED_FOR_LOOP (BitmapVector, bitmaps, BitmapPointer, bitmap)
+		if (bitmap->getScaleFactor () == scaleFactor)
+			return bitmap;
+	VSTGUI_RANGE_BASED_FOR_LOOP_END
+
+	return getPlatformBitmap ();
 }
 
 //-----------------------------------------------------------------------------

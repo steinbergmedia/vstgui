@@ -576,7 +576,8 @@ void CGDrawContext::drawBitmap (CBitmap* bitmap, const CRect& inRect, const CPoi
 {
 	if (bitmap == 0 || alpha == 0.f)
 		return;
-	CGBitmap* cgBitmap = bitmap->getPlatformBitmap () ? dynamic_cast<CGBitmap*> (bitmap->getPlatformBitmap ()) : 0;
+	IPlatformBitmap* platformBitmap = bitmap->getBestPlatformBitmapForScaleFactor (scaleFactor);
+	CGBitmap* cgBitmap = platformBitmap ? dynamic_cast<CGBitmap*> (platformBitmap) : 0;
 	CGImageRef image = cgBitmap ? cgBitmap->getCGImage () : 0;
 	if (image)
 	{

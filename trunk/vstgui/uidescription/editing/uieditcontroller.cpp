@@ -61,7 +61,7 @@
 
 #include <sstream>
 #include <algorithm>
-#include <assert.h>
+#include <cassert>
 
 namespace VSTGUI {
 

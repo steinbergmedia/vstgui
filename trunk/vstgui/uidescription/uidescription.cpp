@@ -49,7 +49,7 @@
 #include <sstream>
 #include <fstream>
 #include <algorithm>
-#include <assert.h>
+#include <cassert>
 
 namespace VSTGUI {
 
@@ -222,6 +222,8 @@ public:
 	void invalidBitmap ();
 	bool getFilterProcessed () const { return filterProcessed; }
 	void setFilterProcessed () { filterProcessed = true; }
+	bool getScaledBitmapsAdded () const { return scaledBitmapsAdded; }
+	void setScaledBitmapsAdded () { scaledBitmapsAdded = true; }
 	
 	void createXMLData ();
 	void removeXMLData ();
@@ -230,6 +232,7 @@ protected:
 	~UIBitmapNode ();
 	CBitmap* bitmap;
 	bool filterProcessed;
+	bool scaledBitmapsAdded;
 };
 
 //-----------------------------------------------------------------------------
@@ -1194,7 +1197,7 @@ UINode* UIDescription::getBaseNode (UTF8StringPtr name) const
 UINode* UIDescription::findChildNodeByNameAttribute (UINode* node, UTF8StringPtr nameAttribute) const
 {
 	if (node)
-		return node->getChildren().findChildNodeWithAttributeValue ("name", nameAttribute);
+		return node->getChildren ().findChildNodeWithAttributeValue ("name", nameAttribute);
 	return 0;
 }
 
@@ -1363,6 +1366,19 @@ CBitmap* UIDescription::getBitmap (UTF8StringPtr name) const
 				}
 			}
 			bitmapNode->setFilterProcessed ();
+		}
+		if (bitmapNode->getScaledBitmapsAdded () == false)
+		{
+			UTF8StringView nameStr (name);
+			if (nameStr.endsWith ("@2x") == false)
+			{
+				std::string scaledBitmapName (name);
+				scaledBitmapName += "@2x";
+				CBitmap* scaledBitmap = getBitmap (scaledBitmapName.c_str ());
+				if (scaledBitmap && scaledBitmap->getPlatformBitmap ())
+					bitmap->addBitmap (scaledBitmap->getPlatformBitmap ());
+			}
+			bitmapNode->setScaledBitmapsAdded ();
 		}
 		return bitmap;
 	}
@@ -2750,6 +2766,7 @@ UIBitmapNode::UIBitmapNode (const std::string& name, UIAttributes* attributes)
 : UINode (name, attributes)
 , bitmap (0)
 , filterProcessed (false)
+, scaledBitmapsAdded (false)
 {
 }
 
@@ -2758,6 +2775,7 @@ UIBitmapNode::UIBitmapNode (const UIBitmapNode& n)
 : UINode (n)
 , bitmap (n.bitmap)
 , filterProcessed (n.filterProcessed)
+, scaledBitmapsAdded (n.scaledBitmapsAdded)
 {
 	if (bitmap)
 		bitmap->remember ();
@@ -2840,10 +2858,26 @@ CBitmap* UIBitmapNode::getBitmap ()
 						OwningPointer<IPlatformBitmap> platformBitmap = IPlatformBitmap::createFromMemory (bd.getData (), bd.getDataSize ());
 						if (platformBitmap)
 						{
+							double scaleFactor = 1.;
+							if (attributes->getDoubleAttribute ("scale-factor", scaleFactor))
+								platformBitmap->setScaleFactor (scaleFactor);
 							bitmap->setPlatformBitmap (platformBitmap);
 						}
 					}
 				}
+			}
+		}
+		if (bitmap && path && bitmap->getPlatformBitmap () && bitmap->getPlatformBitmap ()->getScaleFactor () == 1.)
+		{
+			std::string pathStr (*path);
+			size_t pos = pathStr.find_last_of (".");
+			if (pos != std::string::npos)
+				pathStr.erase (pos);
+			pos = pathStr.find_last_of("@2x");
+			if (pos == pathStr.length () - 1)
+			{
+				bitmap->getPlatformBitmap ()->setScaleFactor (2.);
+				attributes->setDoubleAttribute ("scale-factor", 2.);
 			}
 		}
 	}

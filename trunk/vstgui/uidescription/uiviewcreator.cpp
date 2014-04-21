@@ -721,6 +721,11 @@ public:
 CViewContainerCreator __CViewContainerCreator;
 
 //-----------------------------------------------------------------------------
+// CLayeredViewContainerCreator attributes
+//-----------------------------------------------------------------------------
+static const std::string kAttrZIndex = "z-index";
+
+//-----------------------------------------------------------------------------
 class CLayeredViewContainerCreator : public IViewCreator
 {
 public:
@@ -730,18 +735,34 @@ public:
 	CView* create (const UIAttributes& attributes, const IUIDescription* description) const VSTGUI_OVERRIDE_VMETHOD { return new CLayeredViewContainer (CRect (0, 0, 100, 100)); }
 	bool apply (CView* view, const UIAttributes& attributes, const IUIDescription* description) const VSTGUI_OVERRIDE_VMETHOD
 	{
+		CLayeredViewContainer* lvc = dynamic_cast<CLayeredViewContainer*>(view);
+		if (lvc == 0)
+			return false;
+		int32_t zIndex;
+		if (attributes.getIntegerAttribute (kAttrZIndex, zIndex))
+			lvc->setZIndex (static_cast<uint32_t>(zIndex));
 		return true;
 	}
 	bool getAttributeNames (std::list<std::string>& attributeNames) const VSTGUI_OVERRIDE_VMETHOD
 	{
+		attributeNames.push_back (kAttrZIndex);
 		return true;
 	}
 	AttrType getAttributeType (const std::string& attributeName) const VSTGUI_OVERRIDE_VMETHOD
 	{
+		if (attributeName == kAttrZIndex) return kIntegerType;
 		return kUnknownType;
 	}
 	bool getAttributeValue (CView* view, const std::string& attributeName, std::string& stringValue, const IUIDescription* desc) const VSTGUI_OVERRIDE_VMETHOD
 	{
+		CLayeredViewContainer* lvc = dynamic_cast<CLayeredViewContainer*>(view);
+		if (lvc == 0)
+			return false;
+		if (attributeName == kAttrZIndex)
+		{
+			stringValue = numberToString (static_cast<int32_t>(lvc->getZIndex ()));
+			return true;
+		}
 		return false;
 	}
 };

@@ -41,7 +41,7 @@
 #include "iviewlistener.h"
 #include "animation/animator.h"
 #include "../uidescription/icontroller.h"
-#include <assert.h>
+#include <cassert>
 #if DEBUG
 #include <list>
 #include <typeinfo>
