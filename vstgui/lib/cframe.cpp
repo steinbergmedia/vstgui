@@ -39,7 +39,7 @@
 #include "iscalefactorchangedlistener.h"
 #include "animation/animator.h"
 #include "controls/ctextedit.h"
-#include <assert.h>
+#include <cassert>
 #include <vector>
 
 namespace VSTGUI {

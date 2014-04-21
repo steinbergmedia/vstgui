@@ -35,7 +35,7 @@
 #include "copenglview.h"
 #include "platform/iplatformframe.h"
 #include "cframe.h"
-#include <assert.h>
+#include <cassert>
 
 #if VSTGUI_OPENGL_SUPPORT
 

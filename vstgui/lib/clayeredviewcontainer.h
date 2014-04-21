@@ -55,7 +55,9 @@ public:
 	~CLayeredViewContainer ();
 	
 	IPlatformViewLayer* getPlatformLayer () const { return layer; }
+
 	void setZIndex (uint32_t zIndex);
+	uint32_t getZIndex () const { return zIndex; }
 	
 	bool removed (CView* parent) VSTGUI_OVERRIDE_VMETHOD;
 	bool attached (CView* parent) VSTGUI_OVERRIDE_VMETHOD;

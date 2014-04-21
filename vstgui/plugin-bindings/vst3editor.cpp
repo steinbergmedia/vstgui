@@ -44,7 +44,7 @@
 #include "pluginterfaces/base/keycodes.h"
 #include <list>
 #include <sstream>
-#include <assert.h>
+#include <cassert>
 #include <algorithm>
 
 #if defined (kVstVersionMajor) && defined (kVstVersionMinor)
