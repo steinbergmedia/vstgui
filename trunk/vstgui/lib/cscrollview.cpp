@@ -875,8 +875,8 @@ void CScrollbar::calculateScrollerLength ()
 			factor = 0;
 		newScrollerLength = (CCoord) (getViewSize ().height () * factor);
 	}
-	if (newScrollerLength < 8)
-		newScrollerLength = 8;
+	if (newScrollerLength < 8. && newScrollerLength > 0.)
+		newScrollerLength = 8.;
 	if (newScrollerLength != scrollerLength)
 	{
 		scrollerLength = newScrollerLength;
