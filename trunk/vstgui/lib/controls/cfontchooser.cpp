@@ -91,11 +91,13 @@ protected:
 	CFontRef font;
 };
 
+#if !VSTGUI_HAS_FUNCTIONAL
 static bool stringToValue (UTF8StringPtr txt, float& result, void* userData)
 {
 	result = (float)strtod (txt, 0);
 	return true;
 }
+#endif
 
 enum {
 	kFontChooserSizeTag,
@@ -164,7 +166,11 @@ CFontChooser::CFontChooser (IFontChooserDelegate* delegate, CFontRef initialFont
 	sizeEdit->setMin (6);
 	sizeEdit->setValue (2000);
 	sizeEdit->sizeToFit ();
+#if VSTGUI_HAS_FUNCTIONAL
+	sizeEdit->setStringToValueFunction ([] (UTF8StringPtr txt, float& result, CTextEdit* textEdit) { result = (float)strtod (txt, 0); return true; });
+#else
 	sizeEdit->setStringToValueProc (CFontChooserInternal::stringToValue, 0);
+#endif
 	addView (sizeEdit);
 	controlRect.offset (0, 20);
 	boldBox = new CCheckBox (controlRect, this, CFontChooserInternal::kFontChooserBoldTag, "Bold");

@@ -44,19 +44,6 @@ bool CRect::pointInside (const CPoint& where) const
 }
 
 //-----------------------------------------------------------------------------
-void CRect::unite (const CRect& rect)
-{
-	if (left > rect.left)
-		left = rect.left;
-	if (right < rect.right)
-		right = rect.right;
-	if (top > rect.top)
-		top = rect.top;
-	if (bottom < rect.bottom)
-		bottom = rect.bottom;
-}
-
-//-----------------------------------------------------------------------------
 CPoint CRect::getTopLeft () const
 {
 	CPoint myPoint (left, top);

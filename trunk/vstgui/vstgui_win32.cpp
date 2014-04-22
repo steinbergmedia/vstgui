@@ -32,7 +32,7 @@
 // OF THE POSSIBILITY OF SUCH DAMAGE.
 //-----------------------------------------------------------------------------
 
-#pragma warning (disable : 4996) // deprecated insecure calls (strcpy, memset etc)
+#define _CRT_SECURE_NO_WARNINGS
 
 #include "vstgui.cpp"
 

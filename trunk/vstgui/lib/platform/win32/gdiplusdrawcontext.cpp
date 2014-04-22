@@ -306,10 +306,10 @@ void GdiplusDrawContext::drawPolygon (const PointList& polygonPointList, const C
 	else
 		polyPoints = points;
 	
-	for (int32_t i = 0; i < polygonPointList.size (); i++)
+	for (uint32_t i = 0; i < polygonPointList.size (); i++)
 	{
-		polyPoints[i].X = (Gdiplus::REAL)(polygonPointList[i].h + currentState.offset.h);
-		polyPoints[i].Y = (Gdiplus::REAL)(polygonPointList[i].v + currentState.offset.v);
+		polyPoints[i].X = (Gdiplus::REAL)(polygonPointList[i].x + currentState.offset.x);
+		polyPoints[i].Y = (Gdiplus::REAL)(polygonPointList[i].y + currentState.offset.y);
 	}
 
 	if (drawStyle == kDrawFilled || drawStyle == kDrawFilledAndStroked)
@@ -395,9 +395,8 @@ void GdiplusDrawContext::drawPoint (const CPoint &point, const CColor& color)
 	setLineWidth (1);
 	setFrameColor (color);
 	CPoint point2 (point);
-	point2.h++;
-	moveTo (point);
-	lineTo (point2);
+	point2.x++;
+	drawLine (std::make_pair (point, point2));
 	restoreGlobalState ();
 }
 
@@ -429,8 +428,8 @@ void GdiplusDrawContext::drawBitmap (CBitmap* cbitmap, const CRect& dest, const 
 				Gdiplus::ColorAdjustTypeBitmap);
 #if 1
 			Gdiplus::Rect	myDestRect(
-				(INT)dest.left + (INT)currentState.offset.h,
-				(INT)dest.top + (INT)currentState.offset.v,
+				(INT)dest.left + (INT)currentState.offset.x,
+				(INT)dest.top + (INT)currentState.offset.y,
 				(INT)dest.getWidth (),
 				(INT)dest.getHeight ());
 			pGraphics->DrawImage (
@@ -485,8 +484,8 @@ void GdiplusDrawContext::drawBitmap (CBitmap* cbitmap, const CRect& dest, const 
 		else
 		{
 			Gdiplus::Rect	myDestRect(
-				(INT)dest.left + (INT)currentState.offset.h,
-				(INT)dest.top + (INT)currentState.offset.v,
+				(INT)dest.left + (INT)currentState.offset.x,
+				(INT)dest.top + (INT)currentState.offset.y,
 				(INT)dest.getWidth (),
 				(INT)dest.getHeight ());
 			pGraphics->DrawImage (

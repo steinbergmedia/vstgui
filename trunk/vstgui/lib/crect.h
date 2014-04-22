@@ -47,43 +47,22 @@ struct CPoint;
 //-----------------------------------------------------------------------------
 struct CRect
 {
-	CRect (CCoord left = 0, CCoord top = 0, CCoord right = 0, CCoord bottom = 0)
-	: left (left), top (top), right (right), bottom (bottom) {}
+	inline CRect (CCoord left = 0, CCoord top = 0, CCoord right = 0, CCoord bottom = 0);
+	inline CRect (const CRect& r);
+	inline CRect (const CPoint& origin, const CPoint& size);
 
-	CRect (const CRect& r)
-	: left (r.left), top (r.top), right (r.right), bottom (r.bottom) {}
-
-	CRect (const CPoint& origin, const CPoint& size) { setTopLeft (origin); setSize (size); }
-
-	CRect& operator () (CCoord left, CCoord top, CCoord right, CCoord bottom)
-	{
-		if (left < right)
-			this->left = left, this->right = right;
-		else
-			this->left = right, this->right = left;
-		if (top < bottom)
-			this->top = top, this->bottom = bottom;
-		else
-			this->top = bottom, this->bottom = top;
-		return *this;
-	}
-
-	bool operator != (const CRect& other) const
-		{ return (left != other.left || right != other.right ||
-					top != other.top || bottom != other.bottom); }
-
-	bool operator == (const CRect& other) const
-		{ return (left == other.left && right == other.right &&
-					top == other.top && bottom == other.bottom); }
+	inline CRect& operator () (CCoord left, CCoord top, CCoord right, CCoord bottom);
+	inline bool operator != (const CRect& other) const;
+	inline bool operator == (const CRect& other) const;
 	
-	inline CCoord width () const  { return getWidth (); }
-	inline CCoord height () const { return getHeight (); }
+	VSTGUI_DEPRECATED (inline CCoord width () const;)
+	VSTGUI_DEPRECATED (inline CCoord height () const;)
 
-	inline CCoord getWidth () const  { return right - left; }
-	inline CCoord getHeight () const { return bottom - top; }
+	inline CCoord getWidth () const;
+	inline CCoord getHeight () const;
 
-	inline void setWidth (CCoord width) { right = left + width; }
-	inline void setHeight (CCoord height) { bottom = top + height; }
+	inline void setWidth (CCoord width);
+	inline void setHeight (CCoord height);
 
 	CPoint getTopLeft () const;
 	CPoint getTopRight () const;
@@ -99,92 +78,194 @@ struct CRect
 	CPoint getSize () const;
 	void setSize (const CPoint& size);
 
-	CRect& offset (CCoord x, CCoord y)
-		{ left += x; right += x; top += y; bottom += y; return *this; }
-
-	CRect& inset (CCoord deltaX, CCoord deltaY)
-		{ left += deltaX; right -= deltaX; top += deltaY; bottom -= deltaY;
-    	return *this; }
-
-	CRect& moveTo (CCoord x, CCoord y)
-		{ CCoord vDiff = y - top; CCoord hDiff = x - left; 
-		top += vDiff; bottom += vDiff; left += hDiff; right += hDiff;
-		return *this; }
+	inline CRect& offset (CCoord x, CCoord y);
+	inline CRect& inset (CCoord deltaX, CCoord deltaY);
+	inline CRect& moveTo (CCoord x, CCoord y);
 
 	bool pointInside (const CPoint& where) const;	///< Checks if point is inside this rect
-
-	bool isEmpty () const
-	{
-		if (right <= left)
-			return true;
-		if (bottom <= top)
-			return true;
-		return false;
-	}
-
-	bool rectOverlap (const CRect& rect) const
-	{
-		if (right < rect.left) return false;
-		if (left > rect.right) return false;
-		if (bottom < rect.top) return false;
-		if (top > rect.bottom) return false;
-		return true;
-	}
-
-	void bound (const CRect& rect)
-	{
-		if (left < rect.left)
-			left = rect.left;
-		if (top < rect.top)
-			top = rect.top;
-		if (right > rect.right)
-			right = rect.right;
-		if (bottom > rect.bottom)
-			bottom = rect.bottom;
-		if (bottom < top)
-			bottom = top;
-		if (right < left)
-			right = left;
-	}
-
-	void unite (const CRect& rect);
-
-	void normalize ()
-	{
-		if (left > right)
-		{
-			CCoord tmp = left;
-			left = right;
-			right = tmp;
-		}
-		if (top > bottom)
-		{
-			CCoord tmp = top;
-			top = bottom;
-			bottom = tmp;
-		}
-	}
-
-	void originize ()
-	{
-		offset (-left, -top);
-	}
-
+	inline bool isEmpty () const;
+	inline bool rectOverlap (const CRect& rect) const;
+	inline void bound (const CRect& rect);
+	inline void unite (const CRect& rect);
+	inline void normalize ();
+	inline void originize ();
 	void centerInside (const CRect& r); ///< moves this rect to the center of r
-
-	void makeIntegral ()
-	{
-		left = std::floor (left + 0.5);
-		right = std::floor (right + 0.5);
-		top = std::floor (top + 0.5);
-		bottom = std::floor (bottom + 0.5);
-	}
+	inline void makeIntegral ();
 
 	CCoord left;
 	CCoord top;
 	CCoord right;
 	CCoord bottom;
 };
+
+//------------------------------------------------------------------------
+inline CRect::CRect (CCoord left, CCoord top, CCoord right, CCoord bottom)
+: left (left), top (top), right (right), bottom (bottom)
+{}
+
+//------------------------------------------------------------------------
+inline CRect::CRect (const CRect& r)
+: left (r.left), top (r.top), right (r.right), bottom (r.bottom)
+{}
+
+//------------------------------------------------------------------------
+inline CRect::CRect (const CPoint& origin, const CPoint& size)
+{
+	setTopLeft (origin);
+	setSize (size);
+}
+
+//------------------------------------------------------------------------
+CRect& CRect::operator () (CCoord left, CCoord top, CCoord right, CCoord bottom)
+{
+	if (left < right)
+		this->left = left, this->right = right;
+	else
+		this->left = right, this->right = left;
+	if (top < bottom)
+		this->top = top, this->bottom = bottom;
+	else
+		this->top = bottom, this->bottom = top;
+	return *this;
+}
+
+//------------------------------------------------------------------------
+bool CRect::operator != (const CRect& other) const
+{
+	return (left != other.left || right != other.right ||
+			top != other.top || bottom != other.bottom);
+}
+
+//------------------------------------------------------------------------
+bool CRect::operator == (const CRect& other) const
+{
+	return (left == other.left && right == other.right &&
+			top == other.top && bottom == other.bottom);
+}
+
+//------------------------------------------------------------------------
+inline CCoord CRect::getWidth () const  { return right - left; }
+
+//------------------------------------------------------------------------
+inline CCoord CRect::getHeight () const { return bottom - top; }
+
+//------------------------------------------------------------------------
+inline void CRect::setWidth (CCoord width) { right = left + width; }
+
+//------------------------------------------------------------------------
+inline void CRect::setHeight (CCoord height) { bottom = top + height; }
+
+//------------------------------------------------------------------------
+inline CRect& CRect::offset (CCoord x, CCoord y)
+{
+	left += x; right += x; top += y; bottom += y; return *this;
+}
+
+//------------------------------------------------------------------------
+inline CRect& CRect::inset (CCoord deltaX, CCoord deltaY)
+{
+	left += deltaX; right -= deltaX; top += deltaY; bottom -= deltaY;
+	return *this;
+}
+
+//------------------------------------------------------------------------
+inline CRect& CRect::moveTo (CCoord x, CCoord y)
+{
+	CCoord vDiff = y - top; CCoord hDiff = x - left;
+	top += vDiff; bottom += vDiff; left += hDiff; right += hDiff;
+	return *this;
+}
+
+//------------------------------------------------------------------------
+inline bool CRect::isEmpty () const
+{
+	if (right <= left)
+		return true;
+	if (bottom <= top)
+		return true;
+	return false;
+}
+
+//------------------------------------------------------------------------
+inline bool CRect::rectOverlap (const CRect& rect) const
+{
+	if (right < rect.left) return false;
+	if (left > rect.right) return false;
+	if (bottom < rect.top) return false;
+	if (top > rect.bottom) return false;
+	return true;
+}
+
+//------------------------------------------------------------------------
+inline void CRect::bound (const CRect& rect)
+{
+	if (left < rect.left)
+		left = rect.left;
+	if (top < rect.top)
+		top = rect.top;
+	if (right > rect.right)
+		right = rect.right;
+	if (bottom > rect.bottom)
+		bottom = rect.bottom;
+	if (bottom < top)
+		bottom = top;
+	if (right < left)
+		right = left;
+}
+
+//------------------------------------------------------------------------
+inline void CRect::normalize ()
+{
+	if (left > right)
+	{
+		CCoord tmp = left;
+		left = right;
+		right = tmp;
+	}
+	if (top > bottom)
+	{
+		CCoord tmp = top;
+		top = bottom;
+		bottom = tmp;
+	}
+}
+
+//------------------------------------------------------------------------
+inline void CRect::originize ()
+{
+	offset (-left, -top);
+}
+
+//-----------------------------------------------------------------------------
+inline void CRect::unite (const CRect& rect)
+{
+	if (left > rect.left)
+		left = rect.left;
+	if (right < rect.right)
+		right = rect.right;
+	if (top > rect.top)
+		top = rect.top;
+	if (bottom < rect.bottom)
+		bottom = rect.bottom;
+}
+
+//------------------------------------------------------------------------
+inline void CRect::makeIntegral ()
+{
+	left = std::floor (left + 0.5);
+	right = std::floor (right + 0.5);
+	top = std::floor (top + 0.5);
+	bottom = std::floor (bottom + 0.5);
+}
+
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
+//------------------------------------------------------------------------
+inline CCoord CRect::width () const  { return getWidth (); }
+
+//------------------------------------------------------------------------
+inline CCoord CRect::height () const { return getHeight (); }
+
+#endif
 
 } // namespace
 

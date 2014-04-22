@@ -61,7 +61,7 @@ CAutoAnimation::CAutoAnimation (const CRect& size, CControlListener* listener, i
 , offset (offset)
 , bWindowOpened (false)
 {
-	heightOfOneImage = size.height ();
+	heightOfOneImage = size.getHeight ();
 	setNumSubPixmaps (background ? (int32_t)(background->getHeight () / heightOfOneImage) : 0);
 
 	totalHeightOfBitmap = heightOfOneImage * getNumSubPixmaps ();

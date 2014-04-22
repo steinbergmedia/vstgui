@@ -196,7 +196,7 @@ Win32Frame::Win32Frame (IPlatformFrameCallback* frame, const CRect& size, HWND p
 	#endif
 	windowHandle = CreateWindowEx (style, gClassName, TEXT("Window"),
 									WS_CHILD | WS_VISIBLE | WS_CLIPCHILDREN | WS_CLIPSIBLINGS, 
-									0, 0, (int)size.width (), (int)size.height (), 
+									0, 0, (int)size.getWidth (), (int)size.getHeight (), 
 									parentWindow, NULL, GetInstance (), NULL);
 
 	if (windowHandle)
@@ -210,7 +210,7 @@ Win32Frame::Win32Frame (IPlatformFrameCallback* frame, const CRect& size, HWND p
 Win32Frame::~Win32Frame ()
 {
 	if (updateRegionList)
-		free (updateRegionList);
+		std::free (updateRegionList);
 	if (deviceContext)
 		deviceContext->forget ();
 	if (tooltipWindow)
@@ -676,9 +676,9 @@ void Win32Frame::paint (HWND hwnd)
 				if (len > updateRegionListSize)
 				{
 					if (updateRegionList)
-						free (updateRegionList);
+						std::free (updateRegionList);
 					updateRegionListSize = len;
-					updateRegionList = (RGNDATA*) malloc (updateRegionListSize);
+					updateRegionList = (RGNDATA*) std::malloc (updateRegionListSize);
 				}
 				GetRegionData (rgn, len, updateRegionList);
 				if (updateRegionList->rdh.nCount > 0)
@@ -1253,7 +1253,7 @@ STDMETHODIMP Win32DataObject::GetData (FORMATETC* format, STGMEDIUM* medium)
 	else if (format->cfFormat == CF_HDROP)
 	{
 		HRESULT result = E_UNEXPECTED;
-		UTF8StringHelper** wideStringFileNames = (UTF8StringHelper**)malloc (sizeof (UTF8StringHelper*) * dataPackage->getCount ());
+		UTF8StringHelper** wideStringFileNames = (UTF8StringHelper**)std::malloc (sizeof (UTF8StringHelper*) * dataPackage->getCount ());
 		memset (wideStringFileNames, 0, sizeof (UTF8StringHelper*) * dataPackage->getCount ());
 		uint32_t fileNamesIndex = 0;
 		uint32_t bufferSizeNeeded = 0;
@@ -1301,7 +1301,7 @@ STDMETHODIMP Win32DataObject::GetData (FORMATETC* format, STGMEDIUM* medium)
 		}
 		for (uint32_t i = 0; i < fileNamesIndex; i++)
 			delete wideStringFileNames[i];
-		free (wideStringFileNames);
+		std::free (wideStringFileNames);
 		return result;
 	}
 	else if (format->cfFormat == CF_PRIVATEFIRST)

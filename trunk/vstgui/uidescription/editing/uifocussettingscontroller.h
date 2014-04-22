@@ -39,6 +39,7 @@
 
 #if VSTGUI_LIVE_EDITING
 
+#include "../../lib/controls/ctextedit.h"
 #include <string>
 
 namespace VSTGUI {
@@ -54,8 +55,8 @@ public:
 	CView* verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description) VSTGUI_OVERRIDE_VMETHOD;
 	void valueChanged (CControl* control) VSTGUI_OVERRIDE_VMETHOD;
 protected:
-	static bool valueToString (float value, char utf8String[256], void* userData);
-	static bool stringToValue (UTF8StringPtr txt, float& result, void* userData);
+	static bool valueToString (float value, char utf8String[256], CParamDisplay::ValueToStringUserData* userData);
+	static bool stringToValue (UTF8StringPtr txt, float& result, CTextEdit::StringToValueUserData* userData);
 
 	SharedPointer<UIDescription> editDescription;
 	UIAttributes* settings;

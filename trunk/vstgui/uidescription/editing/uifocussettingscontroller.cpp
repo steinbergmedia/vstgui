@@ -130,8 +130,13 @@ CView* UIFocusSettingsController::verifyView (CView* view, const UIAttributes& a
 				CTextEdit* edit = dynamic_cast<CTextEdit*>(control);
 				if (edit)
 				{
+				#if VSTGUI_HAS_FUNCTIONAL
+					edit->setStringToValueFunction (stringToValue);
+					edit->setValueToStringFunction (valueToString);
+				#else
 					edit->setStringToValueProc (stringToValue);
 					edit->setValueToStringProc (valueToString);
+				#endif
 				}
 				double current = 1.;
 				settings->getDoubleAttribute ("width", current);
@@ -149,17 +154,17 @@ void UIFocusSettingsController::valueChanged (CControl* control)
 }
 
 //----------------------------------------------------------------------------------------------------
-bool UIFocusSettingsController::valueToString (float value, char utf8String[256], void* userData)
+bool UIFocusSettingsController::valueToString (float value, char utf8String[256], CParamDisplay::ValueToStringUserData* userData)
 {
 	int32_t intValue = (int32_t)value;
 	std::stringstream str;
 	str << (value == intValue ? intValue : value);
-	strcpy (utf8String, str.str ().c_str ());
+	std::strcpy (utf8String, str.str ().c_str ());
 	return true;
 }
 
 //----------------------------------------------------------------------------------------------------
-bool UIFocusSettingsController::stringToValue (UTF8StringPtr txt, float& result, void* userData)
+bool UIFocusSettingsController::stringToValue (UTF8StringPtr txt, float& result, CTextEdit::StringToValueUserData* userData)
 {
 	if (txt)
 	{

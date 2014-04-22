@@ -157,7 +157,7 @@ public:
 		CMProfileRef cmProfile;
 			
 		loc.locType = cmPathBasedProfile;
-		strcpy (loc.u.pathLoc.path, kGenericRGBProfilePathStr);
+		std::strcpy (loc.u.pathLoc.path, kGenericRGBProfilePathStr);
 	
 		if (CMOpenProfile (&cmProfile, &loc) != noErr)
 			cmProfile = NULL;

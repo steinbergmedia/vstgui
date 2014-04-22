@@ -67,6 +67,14 @@ protected:
 };
 
 //-----------------------------------------------------------------------------
+namespace String {
+	/** Allocates a new UTF8StringBuffer with enough size for string and copy the string into it. Returns nullptr if string is a nullptr. */
+	UTF8StringBuffer newWithString (UTF8StringPtr string);
+	/** Frees an UTF8StringBuffer. If buffer is a nullptr it does nothing. */
+	void free (UTF8StringBuffer buffer);
+}
+
+//-----------------------------------------------------------------------------
 /** @brief a view on an UTF-8 String
 	
 	It does not copy the string.
@@ -80,16 +88,16 @@ public:
 	UTF8StringView (const UTF8StringPtr string) : str (string) {}
 	
 	/** calculates the bytes used by this string, including null-character */
-	uint64_t calculateByteCount () const;
+	size_t calculateByteCount () const;
 
 	/** calculates the number of UTF-8 characters in the string */
-	uint64_t calculateCharacterCount () const;
+	size_t calculateCharacterCount () const;
 
 	/** checks this string if it contains a subString */
 	bool contains (const UTF8StringPtr subString) const;
 
 	/** checks this string if it ends with endString */
-	bool endsWith (const UTF8StringPtr endString) const;
+	bool endsWith (const UTF8StringView& endString) const;
 	
 	bool operator== (const UTF8StringPtr otherString) const;
 	bool operator!= (const UTF8StringPtr otherString) const;
@@ -203,20 +211,23 @@ protected:
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
-inline uint64_t UTF8StringView::calculateCharacterCount () const
+inline size_t UTF8StringView::calculateCharacterCount () const
 {
-	uint64_t count = 0;
+	size_t count = 0;
 	if (str == 0)
 		return count;
 	
 	UTF8CharacterIterator it (str);
 	while (it != it.back ())
+	{
 		count++;
+		++it;
+	}
 	return count;
 }
 
 //-----------------------------------------------------------------------------
-inline uint64_t UTF8StringView::calculateByteCount () const
+inline size_t UTF8StringView::calculateByteCount () const
 {
 	return str ? std::strlen (str) + 1 : 0;
 }
@@ -228,14 +239,13 @@ inline bool UTF8StringView::contains (const UTF8StringPtr subString) const
 }
 
 //-----------------------------------------------------------------------------
-inline bool UTF8StringView::endsWith (const UTF8StringPtr _endString) const
+inline bool UTF8StringView::endsWith (const UTF8StringView& endString) const
 {
-	UTF8StringView endString (_endString);
 	uint64_t endStringLen = endString.calculateByteCount ();
 	uint64_t thisLen = calculateByteCount ();
 	if (endStringLen > thisLen)
 		return false;
-	return strcmp (str + (thisLen - endStringLen), _endString) == 0;
+	return endString == UTF8StringView (str + (thisLen - endStringLen));
 }
 
 //-----------------------------------------------------------------------------

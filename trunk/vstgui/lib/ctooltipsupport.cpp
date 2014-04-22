@@ -83,11 +83,11 @@ static UTF8StringBuffer getTooltipFromView (CView* view)
 	int32_t tooltipSize = 0;
 	if (view->getAttributeSize (kCViewTooltipAttribute, tooltipSize))
 	{
-		tooltip = (UTF8StringBuffer)malloc (tooltipSize + 1);
+		tooltip = (UTF8StringBuffer)std::malloc (tooltipSize + 1);
 		memset (tooltip, 0, tooltipSize+1);
 		if (!view->getAttribute (kCViewTooltipAttribute, tooltipSize, tooltip, tooltipSize))
 		{
-			free (tooltip);
+			std::free (tooltip);
 			tooltip = 0;
 		}
 	}
@@ -255,7 +255,7 @@ bool CTooltipSupport::showTooltip ()
 			if (platformFrame)
 				platformFrame->showTooltip (r, tooltip);
 
-			free (tooltip);
+			std::free (tooltip);
 
 			#if DEBUGLOG
 			DebugPrint ("CTooltipSupport::showTooltip (%s)\n", currentView->getClassName ());

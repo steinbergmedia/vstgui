@@ -184,7 +184,7 @@ HMENU Win32OptionMenu::createMenu (COptionMenu* _menu, int32_t& offsetIdx)
 			char* titleWithPrefixNumbers = 0;
 			if (_menu->getPrefixNumbers ())
 			{
-				titleWithPrefixNumbers = (char*)malloc (strlen (item->getTitle ()) + 50);
+				titleWithPrefixNumbers = (char*)std::malloc (strlen (item->getTitle ()) + 50);
 				switch (_menu->getPrefixNumbers ())
 				{
 					case 2:
@@ -252,7 +252,7 @@ HMENU Win32OptionMenu::createMenu (COptionMenu* _menu, int32_t& offsetIdx)
 				}
 			}
 			if (titleWithPrefixNumbers)
-				free (titleWithPrefixNumbers);
+				std::free (titleWithPrefixNumbers);
 		}
 		inc++;
 		it++;

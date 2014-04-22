@@ -468,11 +468,11 @@ void CGDrawContext::drawRect (const CRect &rect, const CDrawStyle drawStyle)
 		if (currentState.drawMode.integralMode ())
 		{
 			CRect ir = CGDrawContextInternal::makeRectIntegral (rect, scaleFactor);
-			r = CGRectMake (ir.left, ir.top + 1, ir.width () - 1, ir.height () - 1);
+			r = CGRectMake (ir.left, ir.top + 1, ir.getWidth () - 1, ir.getHeight () - 1);
 		}
 		else
 		{
-			r = CGRectMake (rect.left, rect.top + 1, rect.width () - 1, rect.height () - 1);
+			r = CGRectMake (rect.left, rect.top + 1, rect.getWidth () - 1, rect.getHeight () - 1);
 		}
 
 		if ((((int32_t)currentState.frameWidth) % 2))
@@ -501,13 +501,13 @@ void CGDrawContext::drawEllipse (const CRect &rect, const CDrawStyle drawStyle)
 		}
 		applyLineStyle (context);
 
-		if (rect.width () != rect.height ())
+		if (rect.getWidth () != rect.getHeight ())
 		{
 			CGContextSaveGState (context);
 
 			CGContextBeginPath (context);
 
-			CGRect cgRect = CGRectMake (rect.left, rect.top, rect.width (), rect.height ());
+			CGRect cgRect = CGRectFromCRect (rect);
 			CGPoint center = CGPointMake (CGRectGetMidX (cgRect), CGRectGetMidY (cgRect));
 			CGFloat a = CGRectGetWidth (cgRect) / 2.;
 			CGFloat b = CGRectGetHeight (cgRect) / 2.;
@@ -523,7 +523,7 @@ void CGDrawContext::drawEllipse (const CRect &rect, const CDrawStyle drawStyle)
 		}
 		else
 		{
-			CGFloat radius = rect.width () * 0.5;
+			CGFloat radius = rect.getWidth () * 0.5;
 			CGContextBeginPath (context);
 			CGContextAddArc (context, rect.left + radius, rect.top + radius, radius, radians (0), radians (360), 0);
 			CGContextClosePath (context);
@@ -563,9 +563,9 @@ void CGDrawContext::drawArc (const CRect &rect, const float _startAngle, const f
 		applyLineStyle (context);
 
 		CGContextBeginPath (context);
-		CGDrawContextInternal::addOvalToPath (context, CPoint (rect.left + rect.width () / 2, rect.top + rect.height () / 2), rect.width () / 2, rect.height () / 2, -_startAngle, -_endAngle);
+		CGDrawContextInternal::addOvalToPath (context, CPoint (rect.left + rect.getWidth () / 2., rect.top + rect.getHeight () / 2.), rect.getWidth () / 2., rect.getHeight () / 2., -_startAngle, -_endAngle);
 		if (drawStyle == kDrawFilled || kDrawFilledAndStroked)
-			CGContextAddLineToPoint (context, rect.left + rect.width () / 2, rect.top + rect.height () / 2);
+			CGContextAddLineToPoint (context, rect.left + rect.getWidth () / 2., rect.top + rect.getHeight () / 2.);
 		CGContextDrawPath (context, m);
 		releaseCGContext (context);
 	}
@@ -599,9 +599,9 @@ void CGDrawContext::drawBitmap (CBitmap* bitmap, const CRect& inRect, const CPoi
 			
 			CGRect clipRect2;
 			clipRect2.origin.x = rect.left;
-			clipRect2.origin.y = -(rect.top) - rect.height ();
-			clipRect2.size.width = rect.width (); 
-			clipRect2.size.height = rect.height ();
+			clipRect2.origin.y = -(rect.top) - rect.getHeight ();
+			clipRect2.size.width = rect.getWidth ();
+			clipRect2.size.height = rect.getHeight ();
 		
 			const double bitmapScaleFactor = cgBitmap->getScaleFactor ();
 			if (bitmapScaleFactor != 1.)
@@ -651,10 +651,10 @@ void CGDrawContext::clearRect (const CRect& rect)
 		if (currentState.drawMode.integralMode ())
 		{
 			CRect ir = CGDrawContextInternal::makeRectIntegral (rect, scaleFactor);
-			cgRect = CGRectMake (ir.left, ir.top, ir.width (), ir.height ());
+			cgRect = CGRectFromCRect (ir);
 		}
 		else
-			cgRect = CGRectMake (rect.left, rect.top, rect.width (), rect.height ());
+			cgRect = CGRectFromCRect (rect);
 		CGContextClearRect (context, cgRect);
 		releaseCGContext (context);
 	}
@@ -702,7 +702,7 @@ CGContextRef CGDrawContext::beginCGContext (bool swapYAxis, bool integralOffset)
 
 		CRect clipRect = CGDrawContextInternal::makeRectIntegral (currentState.clipRect, scaleFactor);
 
-		CGRect cgClipRect = CGRectMake (clipRect.left, clipRect.top, clipRect.width (), clipRect.height ());
+		CGRect cgClipRect = CGRectFromCRect (clipRect);
 		CGContextClipToRect (cgContext, cgClipRect);
 
 		if (getCurrentTransform ().isInvariant () == false)

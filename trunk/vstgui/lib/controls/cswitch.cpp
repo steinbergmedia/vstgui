@@ -62,7 +62,7 @@ CVerticalSwitch::CVerticalSwitch (const CRect& size, CControlListener* listener,
 : CControl (size, listener, tag, background)
 , offset (offset)
 {
-	heightOfOneImage = size.height ();
+	heightOfOneImage = size.getHeight ();
 	setNumSubPixmaps (background ? (int32_t)(background->getHeight () / heightOfOneImage) : 0);
 
 	setDefaultValue (0.f);
@@ -233,7 +233,7 @@ CHorizontalSwitch::CHorizontalSwitch (const CRect& size, CControlListener* liste
 : CControl (size, listener, tag, background)
 , offset (offset)
 {
-	heightOfOneImage = size.width ();
+	heightOfOneImage = size.getWidth ();
 	setNumSubPixmaps (background ? (int32_t)(background->getWidth () / heightOfOneImage) : 0);
 
 	setDefaultValue (0.f);
@@ -411,7 +411,7 @@ CRockerSwitch::CRockerSwitch (const CRect& size, CControlListener* listener, int
 , resetValueTimer (0)
 {
 	setNumSubPixmaps (3);
-	setHeightOfOneImage (size.height ());
+	setHeightOfOneImage (size.getHeight ());
 	setWantsFocus (true);
 	setMin (-1.f);
 	setMax (1.f);
@@ -504,8 +504,8 @@ CMouseEventResult CRockerSwitch::onMouseMoved (CPoint& where, const CButtonState
 {
 	if (isEditing ())
 	{
-		CCoord  width_2  = getViewSize ().width () / 2;
-		CCoord  height_2 = getViewSize ().height () / 2;
+		CCoord  width_2  = getViewSize ().getWidth () / 2;
+		CCoord  height_2 = getViewSize ().getHeight () / 2;
 
 		if (style & kHorizontal) 
 		{

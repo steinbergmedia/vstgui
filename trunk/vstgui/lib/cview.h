@@ -284,8 +284,8 @@ public:
 	/// @name View Size Methods
 	//-----------------------------------------------------------------------------
 	//@{
-	CCoord getHeight () const { return size.height (); }										///< get the height of the view
-	CCoord getWidth ()  const { return size.width (); }											///< get the width of the view
+	CCoord getHeight () const { return size.getHeight (); }										///< get the height of the view
+	CCoord getWidth ()  const { return size.getWidth (); }											///< get the width of the view
 	virtual void setViewSize (const CRect& rect, bool invalid = true);							///< set views size
 	CRect& getViewSize (CRect& rect) const { rect = size; return rect; }						///< returns the current view size
 	const CRect& getViewSize () const { return size; }											///< read only access to view size

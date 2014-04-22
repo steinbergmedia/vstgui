@@ -49,6 +49,7 @@
 #include "../../lib/cstring.h"
 #include <sstream>
 #include <algorithm>
+#include <cassert>
 
 namespace VSTGUI {
 

@@ -60,7 +60,7 @@ WinString::WinString (UTF8StringPtr utf8String)
 WinString::~WinString ()
 {
 	if (wideString)
-		free (wideString);
+		std::free (wideString);
 }
 
 //-----------------------------------------------------------------------------
@@ -72,9 +72,9 @@ void WinString::setUTF8String (UTF8StringPtr utf8String)
 		if ((numChars+1)*2 > wideStringBufferSize)
 		{
 			if (wideString)
-				free (wideString);
+				std::free (wideString);
 			wideStringBufferSize = std::max<int> ((numChars+1)*2, kMinWinStringBufferSize);
-			wideString = (WCHAR*)malloc (wideStringBufferSize);
+			wideString = (WCHAR*)std::malloc (wideStringBufferSize);
 		}
 		if (MultiByteToWideChar (CP_UTF8, 0, utf8String, -1, wideString, numChars) == 0)
 		{

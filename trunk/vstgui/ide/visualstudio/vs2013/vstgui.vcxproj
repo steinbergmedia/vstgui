@@ -253,6 +253,7 @@
     <ClInclude Include="..\..\..\lib\cframe.h" />
     <ClInclude Include="..\..\..\lib\cgradientview.h" />
     <ClInclude Include="..\..\..\lib\cgraphicspath.h" />
+    <ClInclude Include="..\..\..\lib\cgraphicstransform.h" />
     <ClInclude Include="..\..\..\lib\clayeredviewcontainer.h" />
     <ClInclude Include="..\..\..\lib\coffscreencontext.h" />
     <ClInclude Include="..\..\..\lib\copenglview.h" />
@@ -271,6 +272,7 @@
     <ClInclude Include="..\..\..\lib\idatapackage.h" />
     <ClInclude Include="..\..\..\lib\idependency.h" />
     <ClInclude Include="..\..\..\lib\ifocusdrawing.h" />
+    <ClInclude Include="..\..\..\lib\iscalefactorchangedlistener.h" />
     <ClInclude Include="..\..\..\lib\itouchevent.h" />
     <ClInclude Include="..\..\..\lib\iviewlistener.h" />
     <ClInclude Include="..\..\..\lib\vstguibase.h" />

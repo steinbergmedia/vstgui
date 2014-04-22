@@ -77,7 +77,7 @@ CMemoryStream::CMemoryStream (const int8_t* inBuffer, int32_t bufferSize, bool b
 CMemoryStream::~CMemoryStream ()
 {
 	if (ownsBuffer && buffer)
-		free (buffer);
+		std::free (buffer);
 }
 
 //-----------------------------------------------------------------------------
@@ -93,11 +93,11 @@ bool CMemoryStream::resize (int32_t inSize)
 	while (newSize < inSize)
 		newSize += delta;
 
-	int8_t* newBuffer = (int8_t*)malloc (newSize);
+	int8_t* newBuffer = (int8_t*)std::malloc (newSize);
 	if (newBuffer && buffer)
 		memcpy (newBuffer, buffer, size);
 	if (buffer)
-		free (buffer);
+		std::free (buffer);
 	buffer = newBuffer;
 	size = newSize;
 	
@@ -158,11 +158,11 @@ bool CMemoryStream::operator>> (std::string& string)
 		{
 			int32_t length;
 			if (!(*(InputStream*)this >> length)) return false;
-			int8_t* buffer = (int8_t*)malloc (length);
+			int8_t* buffer = (int8_t*)std::malloc (length);
 			int32_t read = readRaw (buffer, length);
 			if (read == length)
 				string.assign ((const char*)buffer, length);
-			free (buffer);
+			std::free (buffer);
 			return read == length;
 		}
 	}

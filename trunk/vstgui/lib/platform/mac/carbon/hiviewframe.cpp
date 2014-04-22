@@ -181,7 +181,7 @@ MacDragContainer::~MacDragContainer ()
 {
 	if (lastItem)
 	{
-		free (lastItem);
+		std::free (lastItem);
 		lastItem = 0;
 	}
 }
@@ -245,7 +245,7 @@ void* MacDragContainer::next (int32_t& size, int32_t& type)
 	}
 	if (lastItem)
 	{
-		free (lastItem);
+		std::free (lastItem);
 		lastItem = 0;
 	}
 	size = 0;
@@ -276,7 +276,7 @@ void* MacDragContainer::next (int32_t& size, int32_t& type)
 						{
 							type = CDragContainer::kUnknown;
 							size = flavorDataSize;
-							lastItem = malloc (size);
+							lastItem = std::malloc (size);
 							memcpy (lastItem, data, size);
 						}
 						else if (CFStringCompare (osTypeFlavorType, CFSTR("utxt"), 0) == kCFCompareEqualTo)
@@ -285,7 +285,7 @@ void* MacDragContainer::next (int32_t& size, int32_t& type)
 							if (utf16String)
 							{
 								CFIndex maxSize = CFStringGetMaximumSizeForEncoding (flavorDataSize/2, kCFStringEncodingUTF8);
-								lastItem = malloc (maxSize+1);
+								lastItem = std::malloc (maxSize+1);
 								if (CFStringGetCString (utf16String, (char*)lastItem, maxSize, kCFStringEncodingUTF8))
 								{
 									type = CDragContainer::kUnicodeText;
@@ -293,7 +293,7 @@ void* MacDragContainer::next (int32_t& size, int32_t& type)
 								}
 								else
 								{
-									free (lastItem);
+									std::free (lastItem);
 									lastItem = 0;
 								}
 								CFRelease (utf16String);
@@ -303,7 +303,7 @@ void* MacDragContainer::next (int32_t& size, int32_t& type)
 						{
 							type = CDragContainer::kFile;
 							CFURLRef url = CFURLCreateWithBytes (NULL, data, flavorDataSize, kCFStringEncodingUTF8, NULL);
-							lastItem = malloc (PATH_MAX);
+							lastItem = std::malloc (PATH_MAX);
 							CFURLGetFileSystemRepresentation (url, false, (UInt8*)lastItem, PATH_MAX);
 							CFRelease (url);
 							size = strlen ((const char*)lastItem);
@@ -312,7 +312,7 @@ void* MacDragContainer::next (int32_t& size, int32_t& type)
 						{
 							type = CDragContainer::kUnicodeText;
 							size = flavorDataSize;
-							lastItem = malloc (flavorDataSize + 1);
+							lastItem = std::malloc (flavorDataSize + 1);
 							((char*)lastItem)[flavorDataSize] = 0;
 							memcpy (lastItem, data, flavorDataSize);
 						}
@@ -320,7 +320,7 @@ void* MacDragContainer::next (int32_t& size, int32_t& type)
 						{
 							type = CDragContainer::kText;
 							size = flavorDataSize;
-							lastItem = malloc (flavorDataSize + 1);
+							lastItem = std::malloc (flavorDataSize + 1);
 							((char*)lastItem)[flavorDataSize] = 0;
 							memcpy (lastItem, data, flavorDataSize);
 						}
@@ -328,7 +328,7 @@ void* MacDragContainer::next (int32_t& size, int32_t& type)
 						{
 							type = CDragContainer::kText;
 							size = flavorDataSize;
-							lastItem = malloc (flavorDataSize + 1);
+							lastItem = std::malloc (flavorDataSize + 1);
 							((char*)lastItem)[flavorDataSize] = 0;
 							memcpy (lastItem, data, flavorDataSize);
 						}

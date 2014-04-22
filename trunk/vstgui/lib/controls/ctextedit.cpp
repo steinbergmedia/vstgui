@@ -94,6 +94,7 @@ CTextEdit::~CTextEdit ()
 		looseFocus ();
 }
 
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
 //------------------------------------------------------------------------
 void CTextEdit::setStringToValueProc (CTextEditStringToValueProc proc, void* userData)
 {
@@ -106,8 +107,15 @@ void CTextEdit::setStringToValueProc (CTextEditStringToValueProc proc, void* use
 	textToValueUserData = userData;
 #endif
 }
+#endif
 
 #if VSTGUI_HAS_FUNCTIONAL
+//------------------------------------------------------------------------
+void CTextEdit::setStringToValueFunction (const StringToValueFunction& stringToValueFunc)
+{
+	stringToValueFunction = stringToValueFunc;
+}
+
 //------------------------------------------------------------------------
 void CTextEdit::setStringToValueFunction (StringToValueFunction&& stringToValueFunc)
 {

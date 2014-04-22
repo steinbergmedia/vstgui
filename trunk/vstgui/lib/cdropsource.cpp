@@ -42,7 +42,7 @@ CDropSource::CDropEntry::CDropEntry (const void* inBuffer, uint32_t inBufferSize
 , bufferSize (inBufferSize)
 , type (inType)
 {
-	buffer = malloc (bufferSize);
+	buffer = std::malloc (bufferSize);
 	if (buffer)
 		memcpy (buffer, inBuffer, bufferSize);
 }
@@ -53,7 +53,7 @@ CDropSource::CDropEntry::CDropEntry (const CDropEntry& entry)
 , bufferSize (entry.bufferSize)
 , type (entry.type)
 {
-	buffer = malloc (bufferSize);
+	buffer = std::malloc (bufferSize);
 	if (buffer)
 		memcpy (buffer, entry.buffer, bufferSize);
 }
@@ -75,7 +75,7 @@ CDropSource::CDropEntry::CDropEntry (CDropEntry&& entry) noexcept
 CDropSource::CDropEntry::~CDropEntry ()
 {
 	if (buffer)
-		free (buffer);
+		std::free (buffer);
 }
 
 //-----------------------------------------------------------------------------

@@ -36,12 +36,14 @@
 
 #if DEBUG
 
+#include "cstring.h"
+
 #if WINDOWS
 	#include "platform/win32/win32support.h"
 #endif
 
-#include <stdarg.h>
-#include <stdio.h>
+#include <cstdarg>
+#include <cstdio>
 
 namespace VSTGUI {
 
@@ -49,11 +51,7 @@ namespace VSTGUI {
 TimeWatch::TimeWatch (UTF8StringPtr name, bool startNow)
 : startTime (0)
 {
-	if (name)
-	{
-		this->name = (UTF8StringBuffer) malloc (strlen (name) + 1);
-		strcpy (this->name, name);
-	}
+	this->name = String::newWithString (name);
 	if (startNow)
 		start ();
 }
@@ -62,14 +60,13 @@ TimeWatch::TimeWatch (UTF8StringPtr name, bool startNow)
 TimeWatch::~TimeWatch ()
 {
 	stop ();
-	if (name)
-		free (name);
+	String::free (name);
 }
 
 //-----------------------------------------------------------------------------
 void TimeWatch::start ()
 {
-	startTime = clock ();
+	startTime = std::clock ();
 }
 
 //-----------------------------------------------------------------------------
@@ -77,7 +74,7 @@ void TimeWatch::stop ()
 {
 	if (startTime > 0)
 	{
-		clock_t stopTime = clock ();
+		clock_t stopTime = std::clock ();
 		DebugPrint ("%s took %d\n", name, stopTime - startTime);
 		startTime = 0;
 	}
@@ -87,16 +84,16 @@ void TimeWatch::stop ()
 void DebugPrint (const char *format, ...)
 {
 	char string[300];
-	va_list marker;
+	std::va_list marker;
 	va_start (marker, format);
-	vsprintf (string, format, marker);
+	std::vsprintf (string, format, marker);
 	if (!string)
-		strcpy (string, "Empty string\n");
+		std::strcpy (string, "Empty string\n");
 	#if WINDOWS
 	UTF8StringHelper debugString (string);
 	OutputDebugString (debugString);
 	#else
-	fprintf (stderr, "%s", string);
+	std::fprintf (stderr, "%s", string);
 	#endif
 }
 

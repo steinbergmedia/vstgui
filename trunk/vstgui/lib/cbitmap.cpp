@@ -261,10 +261,10 @@ void CNinePartTiledBitmap::calcPartRects(const CRect& inBitmapRect, const PartOf
 //-----------------------------------------------------------------------------
 void CNinePartTiledBitmap::drawPart (CDrawContext* inContext, const CRect& inSourceRect, const CRect& inDestRect, float inAlpha)
 {
-	if (	(inSourceRect.width()	<= 0)
-		||	(inSourceRect.height()	<= 0)
-		||	(inDestRect.width()		<= 0)
-		||	(inDestRect.height()	<= 0))
+	if (	(inSourceRect.getWidth ()	<= 0)
+		||	(inSourceRect.getHeight ()	<= 0)
+		||	(inDestRect.getWidth ()		<= 0)
+		||	(inDestRect.getHeight ()	<= 0))
 		return;
 	
 	CCoord	myLeft;
@@ -272,25 +272,25 @@ void CNinePartTiledBitmap::drawPart (CDrawContext* inContext, const CRect& inSou
 	CPoint	mySourceOffset (inSourceRect.left, inSourceRect.top);
 	CRect	myPartRect;
 	
-	for (myTop = inDestRect.top; myTop < inDestRect.bottom; myTop += inSourceRect.height ())
+	for (myTop = inDestRect.top; myTop < inDestRect.bottom; myTop += inSourceRect.getHeight ())
 	{
 		myPartRect.top		= myTop;
-		myPartRect.bottom	= myTop + inSourceRect.height ();
+		myPartRect.bottom	= myTop + inSourceRect.getHeight ();
 		if (myPartRect.bottom > inDestRect.bottom)
 			myPartRect.bottom = inDestRect.bottom;
 		// The following should never be true, I guess
-		if (myPartRect.height () > inSourceRect.height ())
-			myPartRect.setHeight (inSourceRect.height ());
+		if (myPartRect.getHeight () > inSourceRect.getHeight ())
+			myPartRect.setHeight (inSourceRect.getHeight ());
 		
-		for (myLeft = inDestRect.left; myLeft < inDestRect.right; myLeft += inSourceRect.width ())
+		for (myLeft = inDestRect.left; myLeft < inDestRect.right; myLeft += inSourceRect.getWidth ())
 		{
 			myPartRect.left		= myLeft;
-			myPartRect.right	= myLeft + inSourceRect.width ();
+			myPartRect.right	= myLeft + inSourceRect.getWidth ();
 			if (myPartRect.right > inDestRect.right)
 				myPartRect.right = inDestRect.right;
 			// The following should never be true, I guess
-			if (myPartRect.width () > inSourceRect.width ())
-				myPartRect.setWidth (inSourceRect.width ());
+			if (myPartRect.getWidth () > inSourceRect.getWidth ())
+				myPartRect.setWidth (inSourceRect.getWidth ());
 			
 			CBitmap::draw (inContext, myPartRect, mySourceOffset, inAlpha);
 		}

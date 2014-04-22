@@ -176,8 +176,13 @@ CView* UIFontsController::verifyView (CView* view, const UIAttributes& attribute
 				sizeTextEdit = dynamic_cast<CTextEdit*>(control);
 				if (sizeTextEdit)
 				{
+				#if VSTGUI_HAS_FUNCTIONAL
+					sizeTextEdit->setValueToStringFunction (valueToString);
+					sizeTextEdit->setStringToValueFunction (stringToValue);
+				#else
 					sizeTextEdit->setValueToStringProc (valueToString, sizeTextEdit);
 					sizeTextEdit->setStringToValueProc (stringToValue);
+				#endif
 				}
 				control->setMouseEnabled (false);
 				break;
@@ -363,21 +368,21 @@ void UIFontsController::dbSelectionChanged (int32_t selectedRow, GenericStringLi
 }
 
 //----------------------------------------------------------------------------------------------------
-bool UIFontsController::valueToString (float value, char utf8String[256], void* userData)
+bool UIFontsController::valueToString (float value, char utf8String[256], CParamDisplay::ValueToStringUserData* userData)
 {
-	CTextEdit* edit = (CTextEdit*)userData;
+	CTextEdit* edit = static_cast<CTextEdit*> (userData);
 	if (edit && edit->getMouseEnabled () == false)
 		return true;
 		
 	int32_t intValue = (int32_t)value;
 	std::stringstream str;
 	str << intValue;
-	strcpy (utf8String, str.str ().c_str ());
+	std::strcpy (utf8String, str.str ().c_str ());
 	return true;
 }
 
 //----------------------------------------------------------------------------------------------------
-bool UIFontsController::stringToValue (UTF8StringPtr txt, float& result, void* userData)
+bool UIFontsController::stringToValue (UTF8StringPtr txt, float& result, CTextEdit::StringToValueUserData* userData)
 {
 	int32_t value = txt ? (int32_t)strtol (txt, 0, 10) : 0;
 	result = (float)value;

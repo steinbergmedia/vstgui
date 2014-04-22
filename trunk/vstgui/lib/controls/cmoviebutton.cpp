@@ -53,7 +53,7 @@ namespace VSTGUI {
 CMovieButton::CMovieButton (const CRect& size, CControlListener* listener, int32_t tag, CBitmap* background, const CPoint &offset)
 : CControl (size, listener, tag, background), offset (offset), buttonState (value)
 {
-	heightOfOneImage = size.height ();
+	heightOfOneImage = size.getHeight ();
 	setWantsFocus (true);
 }
 

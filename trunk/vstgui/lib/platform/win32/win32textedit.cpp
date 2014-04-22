@@ -70,11 +70,11 @@ Win32TextEdit::Win32TextEdit (HWND parent, IPlatformTextEditCallback* textEdit)
 	LOGFONT logfont = {0};
 
 	CCoord fontH = fontID->getSize ();
-	if (fontH > rect.height ())
-		fontH = rect.height () - 3;
-	if (fontH < rect.height ())
+	if (fontH > rect.getHeight ())
+		fontH = rect.getHeight () - 3;
+	if (fontH < rect.getHeight ())
 	{
-		CCoord adjust = (rect.height () - (fontH + 3)) / (CCoord)2;
+		CCoord adjust = (rect.getHeight () - (fontH + 3)) / (CCoord)2;
 		rect.top += adjust;
 		rect.bottom -= adjust;
 	}
@@ -87,7 +87,7 @@ Win32TextEdit::Win32TextEdit (HWND parent, IPlatformTextEditCallback* textEdit)
 	wstyle |= WS_CHILD | WS_VISIBLE | ES_AUTOHSCROLL;
 	platformControl = CreateWindowEx (wxStyle,
 		TEXT("EDIT"), stringHelper, wstyle,
-		(int)rect.left, (int)rect.top, (int)rect.width (), (int)rect.height (),
+		(int)rect.left, (int)rect.top, (int)rect.getWidth (), (int)rect.getHeight (),
 		parent, NULL, GetInstance (), 0);
 
 	logfont.lfWeight = FW_NORMAL;

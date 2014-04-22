@@ -32,7 +32,7 @@
 // OF THE POSSIBILITY OF SUCH DAMAGE.
 //-----------------------------------------------------------------------------
 
-#include <stdlib.h>
+#include <cstdlib>
 
 /// @cond ignore
 

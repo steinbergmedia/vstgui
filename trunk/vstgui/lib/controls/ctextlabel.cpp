@@ -79,27 +79,17 @@ CTextLabel::~CTextLabel ()
 //------------------------------------------------------------------------
 void CTextLabel::freeText ()
 {
-	if (text)
-		free (text);
+	String::free (text);
 	text = 0;
 }
 
 //------------------------------------------------------------------------
 void CTextLabel::setText (UTF8StringPtr txt)
 {
-	if (text && txt && strcmp (text, txt) == 0)
+	if (txt && text && UTF8StringView (txt) == text)
 		return;
 	freeText ();
-	if (txt)
-	{
-		text = (UTF8StringBuffer)malloc (strlen (txt)+1);
-		strcpy (text, txt);
-	}
-	else
-	{
-		text = (UTF8StringBuffer)malloc (1);
-		text[0] = 0;
-	}
+	text = String::newWithString (txt ? txt : "");
 	if (textTruncateMode != kTruncateNone)
 		calculateTruncatedText ();
 	setDirty (true);

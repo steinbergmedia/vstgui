@@ -35,9 +35,9 @@
 #ifndef __vstguibase__
 #define __vstguibase__
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
+#include <cstdlib>
+#include <cstdio>
+#include <string>
 
 //-----------------------------------------------------------------------------
 // VSTGUI Version
@@ -247,27 +247,27 @@
 	#if DEBUG
 		#define CLASS_METHODS(name, parent)             \
 			virtual bool isTypeOf (IdStringPtr s) const \
-				{ return (!strcmp (s, (#name))) ? true : parent::isTypeOf (s); }\
+				{ return (!std::strcmp (s, (#name))) ? true : parent::isTypeOf (s); }\
 			virtual IdStringPtr getClassName () const { return (#name); } \
 			virtual CBaseObject* newCopy () const { return new name (*this); }
 		#define CLASS_METHODS_NOCOPY(name, parent)             \
 			virtual bool isTypeOf (IdStringPtr s) const \
-				{ return (!strcmp (s, (#name))) ? true : parent::isTypeOf (s); }\
+				{ return (!std::strcmp (s, (#name))) ? true : parent::isTypeOf (s); }\
 			virtual IdStringPtr getClassName () const { return (#name); } \
 			virtual CBaseObject* newCopy () const { return 0; }
 	#else
 		#define CLASS_METHODS(name, parent)             \
 			virtual bool isTypeOf (IdStringPtr s) const \
-				{ return (!strcmp (s, (#name))) ? true : parent::isTypeOf (s); } \
+				{ return (!std::strcmp (s, (#name))) ? true : parent::isTypeOf (s); } \
 			virtual CBaseObject* newCopy () const { return (CBaseObject*)new name (*this); }
 		#define CLASS_METHODS_NOCOPY(name, parent)             \
 			virtual bool isTypeOf (IdStringPtr s) const \
-				{ return (!strcmp (s, (#name))) ? true : parent::isTypeOf (s); } \
+				{ return (!std::strcmp (s, (#name))) ? true : parent::isTypeOf (s); } \
 			virtual CBaseObject* newCopy () const { return 0; }
 	#endif // DEBUG
 	#define CLASS_METHODS_VIRTUAL(name, parent)             \
 		virtual bool isTypeOf (IdStringPtr s) const \
-			{ return (!strcmp (s, (#name))) ? true : parent::isTypeOf (s); } \
+			{ return (!std::strcmp (s, (#name))) ? true : parent::isTypeOf (s); } \
 		virtual CBaseObject* newCopy () const = 0;
 #else
 	#define CLASS_METHODS(name, parent) CBaseObject* newCopy () const VSTGUI_OVERRIDE_VMETHOD { return new name (*this); }
@@ -335,7 +335,7 @@ public:
 
 	/// @cond ignore
 #if VSTGUI_ENABLE_OLD_CLASS_TYPE_INFO
-	virtual bool isTypeOf (IdStringPtr s) const { return (!strcmp (s, "CBaseObject")); }
+	virtual bool isTypeOf (IdStringPtr s) const { return (!std::strcmp (s, "CBaseObject")); }
 	#if DEBUG
 	virtual IdStringPtr getClassName () const { return "CBaseObject"; }
 	#endif

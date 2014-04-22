@@ -2812,7 +2812,7 @@ void UIBitmapNode::createXMLData ()
 					dataNode->getData ().write ((const char*)bd.getData (), bd.getDataSize ());
 					getChildren ().add (dataNode);
 				}
-				free (data);
+				std::free (data);
 			}
 		}
 	}

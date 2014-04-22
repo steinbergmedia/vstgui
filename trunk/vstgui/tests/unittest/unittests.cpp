@@ -104,7 +104,7 @@ void Context::print (const char* fmt, ...)
 	if (vasprintf (&str, fmt, args) >= 0 && str != 0)
 	{
 		printRaw (str);
-		free (str);
+		std::free (str);
 	}
 #endif
 }

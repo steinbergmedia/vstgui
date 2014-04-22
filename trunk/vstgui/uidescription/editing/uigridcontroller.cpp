@@ -97,16 +97,26 @@ CView* UIGridController::verifyView (CView* view, const UIAttributes& attributes
 			case kGridXTag:
 			{
 				gridControls[0] = control;
+			#if VSTGUI_HAS_FUNCTIONAL
+				gridControls[0]->setStringToValueFunction (stringToValue);
+				gridControls[0]->setValueToStringFunction (valueToString);
+			#else
 				gridControls[0]->setStringToValueProc (stringToValue);
 				gridControls[0]->setValueToStringProc (valueToString);
+			#endif
 				gridControls[0]->setValue ((float)size.x);
 				break;
 			}
 			case kGridYTag:
 			{
 				gridControls[1] = control;
+			#if VSTGUI_HAS_FUNCTIONAL
+				gridControls[1]->setStringToValueFunction (stringToValue);
+				gridControls[1]->setValueToStringFunction (valueToString);
+			#else
 				gridControls[1]->setStringToValueProc (stringToValue);
 				gridControls[1]->setValueToStringProc (valueToString);
+			#endif
 				gridControls[1]->setValue ((float)size.y);
 				break;
 			}
@@ -122,17 +132,17 @@ CControlListener* UIGridController::getControlListener (UTF8StringPtr name)
 }
 
 //----------------------------------------------------------------------------------------------------
-bool UIGridController::valueToString (float value, char utf8String[256], void* userData)
+bool UIGridController::valueToString (float value, char utf8String[256], CParamDisplay::ValueToStringUserData* userData)
 {
 	int32_t intValue = (int32_t)value;
 	std::stringstream str;
 	str << intValue;
-	strcpy (utf8String, str.str ().c_str ());
+	std::strcpy (utf8String, str.str ().c_str ());
 	return true;
 }
 
 //----------------------------------------------------------------------------------------------------
-bool UIGridController::stringToValue (UTF8StringPtr txt, float& result, void* userData)
+bool UIGridController::stringToValue (UTF8StringPtr txt, float& result, CTextEdit::StringToValueUserData* userData)
 {
 	int32_t value = txt ? (int32_t)strtol (txt, 0, 10) : 0;
 	result = (float)value;

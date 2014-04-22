@@ -87,8 +87,8 @@ CSlider::CSlider (const CRect &rect, CControlListener* listener, int32_t tag, in
 		heightOfSlider = 1;
 	}
 
-	widthControl  = getViewSize ().width ();
-	heightControl = getViewSize ().height ();
+	widthControl  = getViewSize ().getWidth ();
+	heightControl = getViewSize ().getHeight ();
 
 	if (style & kHorizontal)
 	{
@@ -146,8 +146,8 @@ CSlider::CSlider (const CRect &rect, CControlListener* listener, int32_t tag, co
 		heightOfSlider = 1;
 	}
 
-	widthControl  = getViewSize ().width ();
-	heightControl = getViewSize ().height ();
+	widthControl  = getViewSize ().getWidth ();
+	heightControl = getViewSize ().getHeight ();
 	if (style & kHorizontal)
 		rangeHandle = _rangeHandle - widthOfSlider;
 	else
@@ -215,8 +215,8 @@ void CSlider::setViewSize (const CRect& rect, bool invalid)
 		rangeHandle = rect.getHeight () - (heightOfSlider + offsetHandle.y * 2);
 	}
 	
-	widthControl  = rect.width ();
-	heightControl = rect.height ();
+	widthControl  = rect.getWidth ();
+	heightControl = rect.getHeight ();
 
 	setOffsetHandle (offsetHandle);
 }

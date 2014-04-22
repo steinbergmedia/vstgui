@@ -278,7 +278,7 @@ void CKnob::drawHandleAsLine (CDrawContext* pContext) const
 	CPoint where;
 	valueToPoint (where);
 
-	CPoint origin (getViewSize ().width () / 2, getViewSize ().height () / 2);
+	CPoint origin (getViewSize ().getWidth () / 2, getViewSize ().getHeight () / 2);
 	where.offset (getViewSize ().left - 1, getViewSize ().top);
 	origin.offset (getViewSize ().left - 1, getViewSize ().top);
 	pContext->setFrameColor (colorShadowHandle);
@@ -513,11 +513,11 @@ void CKnob::valueToPoint (CPoint &point) const
 	float alpha = (value - getMin()) / (getMax() - getMin());
 	alpha = startAngle + alpha*rangeAngle;
 
-	CPoint c(size.width()/2, size.height()/2);
+	CPoint c(size.getWidth () / 2., size.getHeight () / 2.);
 	double xradius = c.x - inset;
 	double yradius = c.y - inset;
 
-	point.x = (CCoord)(c.x + cosf(alpha) * xradius + 0.5f);
+	point.x = (CCoord)(c.x + cosf (alpha) * xradius + 0.5f);
 	point.y = (CCoord)(c.y + sinf (alpha) * yradius + 0.5f);
 }
 
@@ -528,7 +528,7 @@ float CKnob::valueFromPoint (CPoint &point) const
 	double d = rangeAngle * 0.5;
 	double a = startAngle + d;
 
-	CPoint c (size.width () / 2., size.height () / 2.);
+	CPoint c (size.getWidth () / 2., size.getHeight () / 2.);
 	double xradius = c.x - inset;
 	double yradius = c.y - inset;
 
@@ -673,7 +673,7 @@ CAnimKnob::CAnimKnob (const CRect& size, CControlListener* listener, int32_t tag
 : CKnob (size, listener, tag, background, 0, offset)
 , bInverseBitmap (false)
 {
-	heightOfOneImage = size.height ();
+	heightOfOneImage = size.getHeight ();
 	setNumSubPixmaps (background ? (int32_t)(background->getHeight () / heightOfOneImage) : 0);
 	inset = 0;
 }
@@ -740,7 +740,7 @@ void CAnimKnob::setBackground (CBitmap *background)
 {
 	CKnob::setBackground (background);
 	if (heightOfOneImage == 0)
-		heightOfOneImage = getViewSize ().height ();
+		heightOfOneImage = getViewSize ().getHeight ();
 	if (background && heightOfOneImage)
 		setNumSubPixmaps ((int32_t)(background->getHeight () / heightOfOneImage));
 }

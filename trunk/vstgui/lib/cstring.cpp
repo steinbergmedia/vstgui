@@ -59,4 +59,25 @@ void CString::setUTF8String (UTF8StringPtr string)
 		platformString->setUTF8String (string);
 }
 
+namespace String {
+
+//-----------------------------------------------------------------------------
+UTF8StringBuffer newWithString (UTF8StringPtr string)
+{
+	if (string == 0)
+		return 0;
+	UTF8StringBuffer buffer = (UTF8StringBuffer)std::malloc (UTF8StringView (string).calculateByteCount ());
+	std::strcpy (buffer, string);
+	return buffer;
+}
+
+//-----------------------------------------------------------------------------
+void free (UTF8StringBuffer buffer)
+{
+	if (buffer)
+		std::free (buffer);
+}
+
+} // StringCreate
+
 } // namespace

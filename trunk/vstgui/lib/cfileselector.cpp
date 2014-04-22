@@ -33,6 +33,7 @@
 //-----------------------------------------------------------------------------
 
 #include "cfileselector.h"
+#include <algorithm>
 
 namespace VSTGUI {
 
@@ -61,14 +62,10 @@ CFileExtension::CFileExtension (const CFileExtension& ext)
 //-----------------------------------------------------------------------------
 CFileExtension::~CFileExtension ()
 {
-	if (description)
-		free (description);
-	if (extension)
-		free (extension);
-	if (mimeType)
-		free (mimeType);
-	if (uti)
-		free (uti);
+	String::free (description);
+	String::free (extension);
+	String::free (mimeType);
+	String::free (uti);
 }
 
 #if VSTGUI_RVALUE_REF_SUPPORT
@@ -98,26 +95,11 @@ CFileExtension& CFileExtension::operator=(CFileExtension&& ext) noexcept
 //-----------------------------------------------------------------------------
 void CFileExtension::init (UTF8StringPtr inDescription, UTF8StringPtr inExtension, UTF8StringPtr inMimeType, UTF8StringPtr inUti)
 {
-	if (inDescription)
-	{
-		description = (UTF8StringBuffer)malloc (strlen (inDescription) + 1);
-		strcpy (description, inDescription);
-	}
-	if (inExtension)
-	{
-		extension = (UTF8StringBuffer)malloc (strlen (inExtension) + 1);
-		strcpy (extension, inExtension);
-	}
-	if (inMimeType)
-	{
-		mimeType = (UTF8StringBuffer)malloc (strlen (inMimeType) + 1);
-		strcpy (mimeType, inMimeType);
-	}
-	if (inUti)
-	{
-		uti = (UTF8StringBuffer)malloc (strlen (inUti) + 1);
-		strcpy (uti, inUti);
-	}
+	description = String::newWithString (inDescription);
+	extension = String::newWithString (inExtension);
+	mimeType = String::newWithString (inMimeType);
+	uti = String::newWithString (inUti);
+
 	if (description == 0 && extension)
 	{
 		// TODO: query system for file type description
@@ -131,11 +113,11 @@ bool CFileExtension::operator== (const CFileExtension& ext) const
 {
 	bool result = false;
 	if (extension && ext.extension)
-		result = (strcmp (extension, ext.extension) == 0);
+		result = (std::strcmp (extension, ext.extension) == 0);
 	if (!result && mimeType && ext.mimeType)
-		result = (strcmp (mimeType, ext.mimeType) == 0);
+		result = (std::strcmp (mimeType, ext.mimeType) == 0);
 	if (!result && uti && ext.uti)
-		result = (strcmp (uti, ext.uti) == 0);
+		result = (std::strcmp (uti, ext.uti) == 0);
 	if (!result && macType != 0 && ext.macType != 0)
 		result = (macType == ext.macType);
 	return result;
@@ -170,8 +152,7 @@ CNewFileSelector::~CNewFileSelector ()
 	setTitle (0);
 	setInitialDirectory (0);
 	setDefaultSaveName (0);
-	for (size_t i = 0; i < result.size (); i++)
-		free (result[i]);
+	std::for_each (result.begin (), result.end (), String::free);
 }
 
 //-----------------------------------------------------------------------------
@@ -232,40 +213,22 @@ bool CNewFileSelector::run (CallbackFunc&& callback)
 //-----------------------------------------------------------------------------
 void CNewFileSelector::setTitle (UTF8StringPtr inTitle)
 {
-	if (title)
-		free (title);
-	title = 0;
-	if (inTitle)
-	{
-		title = (UTF8StringBuffer)malloc (strlen (inTitle) + 1);
-		strcpy (title, inTitle);
-	}
+	String::free (title);
+	title = String::newWithString (inTitle);
 }
 
 //-----------------------------------------------------------------------------
 void CNewFileSelector::setInitialDirectory (UTF8StringPtr path)
 {
-	if (initialPath)
-		free (initialPath);
-	initialPath = 0;
-	if (path)
-	{
-		initialPath = (UTF8StringBuffer)malloc (strlen (path) + 1);
-		strcpy (initialPath, path);
-	}
+	String::free (initialPath);
+	initialPath = String::newWithString (path);
 }
 
 //-----------------------------------------------------------------------------
 void CNewFileSelector::setDefaultSaveName (UTF8StringPtr name)
 {
-	if (defaultSaveName)
-		free (defaultSaveName);
-	defaultSaveName = 0;
-	if (name)
-	{
-		defaultSaveName = (UTF8StringBuffer)malloc (strlen (name) + 1);
-		strcpy (defaultSaveName, name);
-	}
+	String::free (defaultSaveName);
+	defaultSaveName = String::newWithString (name);
 }
 
 //-----------------------------------------------------------------------------

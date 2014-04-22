@@ -52,11 +52,7 @@ public:
 	: COnOffButton (size, listener, tag, background)
 	, name (0)
 	{
-		if (inName)
-		{
-			name = (UTF8StringBuffer)malloc (strlen (inName) + 1);
-			strcpy (name, inName);
-		}
+		name = String::newWithString (inName);
 		activeTextColor = kBlackCColor;
 		inactiveTextColor (90, 90, 90, 255);
 		textFont = kSystemFont; textFont->remember ();
@@ -66,8 +62,7 @@ public:
 	{
 		if (textFont)
 			textFont->forget ();
-		if (name)
-			free (name);
+		String::free (name);
 	}	
 
 	virtual void draw (CDrawContext *pContext) VSTGUI_OVERRIDE_VMETHOD
@@ -178,7 +173,7 @@ CTabView::CTabView (const CRect& size, const CRect& tabSize, CBitmap* background
 #if VSTGUI_ENABLE_DEPRECATED_METHODS
 //-----------------------------------------------------------------------------
 CTabView::CTabView (const CRect& size, CFrame* parent, CBitmap* tabBitmap, CBitmap* background, TabPosition tabPosition, int32_t style)
-: CViewContainer (size, parent, background)
+: CViewContainer (size)
 , numberOfChilds (0)
 , tabPosition (tabPosition)
 , style (style)
@@ -188,6 +183,7 @@ CTabView::CTabView (const CRect& size, CFrame* parent, CBitmap* tabBitmap, CBitm
 , lastChild (0)
 , currentChild (0)
 {
+	setBackground (background);
 	if (tabBitmap)
 	{
 		tabBitmap->remember ();
@@ -199,7 +195,7 @@ CTabView::CTabView (const CRect& size, CFrame* parent, CBitmap* tabBitmap, CBitm
 
 //-----------------------------------------------------------------------------
 CTabView::CTabView (const CRect& size, CFrame* parent, const CRect& tabSize, CBitmap* background, TabPosition tabPosition, int32_t style)
-: CViewContainer (size, parent, background)
+: CViewContainer (size)
 , numberOfChilds (0)
 , currentTab (-1)
 , tabPosition (tabPosition)
@@ -210,6 +206,7 @@ CTabView::CTabView (const CRect& size, CFrame* parent, const CRect& tabSize, CBi
 , lastChild (0)
 , currentChild (0)
 {
+	setBackground (background);
 	setTransparency (true);
 }
 #endif
