@@ -125,32 +125,52 @@ CView* UITemplateSettingsController::verifyView (CView* view, const UIAttributes
 			case kMinWidthTag:
 			{
 				controls[kMinWidthTag] = control;
+			#if VSTGUI_HAS_FUNCTIONAL
+				control->setStringToValueFunction (stringToValue);
+				control->setValueToStringFunction (valueToString);
+			#else
 				control->setStringToValueProc (stringToValue);
 				control->setValueToStringProc (valueToString);
+			#endif
 				control->setValue ((float)minSize.x);
 				break;
 			}
 			case kMinHeightTag:
 			{
 				controls[kMinHeightTag] = control;
+			#if VSTGUI_HAS_FUNCTIONAL
+				control->setStringToValueFunction (stringToValue);
+				control->setValueToStringFunction (valueToString);
+			#else
 				control->setStringToValueProc (stringToValue);
 				control->setValueToStringProc (valueToString);
+			#endif
 				control->setValue ((float)minSize.y);
 				break;
 			}
 			case kMaxWidthTag:
 			{
 				controls[kMaxWidthTag] = control;
+			#if VSTGUI_HAS_FUNCTIONAL
+				control->setStringToValueFunction (stringToValue);
+				control->setValueToStringFunction (valueToString);
+			#else
 				control->setStringToValueProc (stringToValue);
 				control->setValueToStringProc (valueToString);
+			#endif
 				control->setValue ((float)maxSize.x);
 				break;
 			}
 			case kMaxHeightTag:
 			{
 				controls[kMaxHeightTag] = control;
+			#if VSTGUI_HAS_FUNCTIONAL
+				control->setStringToValueFunction (stringToValue);
+				control->setValueToStringFunction (valueToString);
+			#else
 				control->setStringToValueProc (stringToValue);
 				control->setValueToStringProc (valueToString);
+			#endif
 				control->setValue ((float)maxSize.y);
 				break;
 			}
@@ -244,17 +264,17 @@ void UITemplateSettingsController::valueChanged (CControl* control)
 }
 
 //----------------------------------------------------------------------------------------------------
-bool UITemplateSettingsController::valueToString (float value, char utf8String[256], void* userData)
+bool UITemplateSettingsController::valueToString (float value, char utf8String[256], CParamDisplay::ValueToStringUserData* userData)
 {
 	int32_t intValue = (int32_t)value;
 	std::stringstream str;
 	str << intValue;
-	strcpy (utf8String, str.str ().c_str ());
+	std::strcpy (utf8String, str.str ().c_str ());
 	return true;
 }
 
 //----------------------------------------------------------------------------------------------------
-bool UITemplateSettingsController::stringToValue (UTF8StringPtr txt, float& result, void* userData)
+bool UITemplateSettingsController::stringToValue (UTF8StringPtr txt, float& result, CTextEdit::StringToValueUserData* userData)
 {
 	int32_t value = txt ? (int32_t)strtol (txt, 0, 10) : 0;
 	result = (float)value;

@@ -36,7 +36,7 @@
 #define __base64codec__
 
 #include <string>
-#include <stdlib.h>
+#include <cstdlib>
 
 namespace VSTGUI {
 
@@ -49,7 +49,7 @@ public:
 	~Base64Codec ()
 	{
 		if (data)
-			free (data);
+			std::free (data);
 	}
 
 	bool init (const std::string& base64String)
@@ -58,7 +58,7 @@ public:
 			return false;
 		uint32_t strLen = (uint32_t)base64String.length ();
 		uint8_t* strPtr = (uint8_t*)base64String.c_str ();
-		data = (int8_t*)malloc ((strLen * 3 / 4) + 3);
+		data = (int8_t*)std::malloc ((strLen * 3 / 4) + 3);
 		uint8_t input[4];
 		uint32_t i;
 		for (i = 0; i <= strLen - 4; i += 4)
@@ -86,7 +86,7 @@ public:
 	{
 		if (data)
 			return false;
-		data = (int8_t*)malloc ((binaryDataSize * 4) / 3 + 4);
+		data = (int8_t*)std::malloc ((binaryDataSize * 4) / 3 + 4);
 		uint8_t* ptr = (uint8_t*)binaryData;
 		uint8_t input[3];
 		uint32_t i;

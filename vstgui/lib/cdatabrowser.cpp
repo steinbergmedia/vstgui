@@ -142,7 +142,7 @@ CDataBrowser::CDataBrowser (const CRect& size, IDataBrowserDelegate* db, int32_t
  * @param pBackground background bitmap
  */
 CDataBrowser::CDataBrowser (const CRect& size, CFrame* pParent, IDataBrowserDelegate* db, int32_t style, CCoord scrollbarWidth, CBitmap* pBackground)
-: CScrollView (size, CRect (0, 0, 0, 0), pParent, style, scrollbarWidth, pBackground)
+: CScrollView (size, CRect (0, 0, 0, 0), style, scrollbarWidth, pBackground)
 , db (db)
 , dbView (0)
 , dbHeader (0)

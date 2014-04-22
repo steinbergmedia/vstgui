@@ -39,7 +39,7 @@
 
 #if DEBUG
 
-#include <time.h>
+#include <ctime>
 
 namespace VSTGUI {
 
@@ -58,7 +58,7 @@ public:
 
 protected:
 	UTF8StringBuffer name;
-	clock_t startTime;
+	std::clock_t startTime;
 };
 
 } // namespace

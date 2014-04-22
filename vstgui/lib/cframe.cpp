@@ -71,7 +71,7 @@ On Windows it's a WS_CHILD Window.
  * @param inEditor editor
  */
 CFrame::CFrame (const CRect &inSize, void* inSystemWindow, VSTGUIEditorInterface* inEditor)
-: CViewContainer (inSize, 0, 0)
+: CViewContainer (inSize)
 , pEditor (inEditor)
 , pMouseObservers (0)
 , pKeyboardHooks (0)
@@ -749,7 +749,7 @@ void CFrame::setViewSize (const CRect& rect, bool invalid)
  */
 bool CFrame::setSize (CCoord width, CCoord height)
 {
-	if ((width == getViewSize ().width ()) && (height == getViewSize ().height ()))
+	if ((width == getViewSize ().getWidth ()) && (height == getViewSize ().getHeight ()))
 		return false;
 
 	CRect newSize (getViewSize ());

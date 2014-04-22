@@ -81,7 +81,7 @@ PeakParameter::PeakParameter (int32 flags, int32 id, const TChar* title)
 //------------------------------------------------------------------------
 void PeakParameter::toString (ParamValue normValue, String128 string) const
 {
-	String str;
+	Steinberg::String str;
 	if (normValue > 0.0001)
 	{
 		str.printf ("%.3f", 20 * log10f ((float)normValue));
@@ -472,7 +472,7 @@ COptionMenu* UIDescriptionTestController::createContextMenu (const CPoint& pos, 
 		{
 			String128 valueString;
 			tabParameter->toString (tabParameter->toNormalized (i), valueString);
-			String str (valueString);
+			Steinberg::String str (valueString);
 			str.toMultiByte (kCP_Utf8);
 			CMenuItem* item = menu->addEntry (new CCommandMenuItem (str.text8 (), i, menuHandler));
 			if (tabParameter->getNormalized () == tabParameter->toNormalized (i))

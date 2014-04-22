@@ -44,6 +44,7 @@
 #include "iaction.h"
 #include "../delegationcontroller.h"
 #include "../../lib/cdatabrowser.h"
+#include "../../lib/controls/ctextedit.h"
 
 namespace VSTGUI {
 class UIFontsDataSource;
@@ -63,8 +64,8 @@ protected:
 
 	void dbSelectionChanged (int32_t selectedRow, GenericStringListDataBrowserSource* source) VSTGUI_OVERRIDE_VMETHOD;
 
-	static bool valueToString (float value, char utf8String[256], void* userData);
-	static bool stringToValue (UTF8StringPtr txt, float& result, void* userData);
+	static bool valueToString (float value, char utf8String[256], CParamDisplay::ValueToStringUserData* userData);
+	static bool stringToValue (UTF8StringPtr txt, float& result, CTextEdit::StringToValueUserData* userData);
 
 	SharedPointer<UIDescription> editDescription;
 	IActionPerformer* actionPerformer;

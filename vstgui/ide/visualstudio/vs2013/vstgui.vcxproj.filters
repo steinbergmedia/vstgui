@@ -636,5 +636,11 @@
     <ClInclude Include="..\..\..\lib\iviewlistener.h">
       <Filter>Source Files\lib</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\lib\cgraphicstransform.h">
+      <Filter>Source Files\lib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\lib\iscalefactorchangedlistener.h">
+      <Filter>Source Files\lib</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

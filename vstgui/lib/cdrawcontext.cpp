@@ -364,9 +364,9 @@ void CDrawContext::drawString (UTF8StringPtr _string, const CRect& _rect, const 
 		capHeight = platformFont->getCapHeight ();
 	
 	if (capHeight > 0.)
-		rect.bottom -= (rect.height ()/2 - capHeight / 2);
+		rect.bottom -= (rect.getHeight ()/2 - capHeight / 2);
 	else
-		rect.bottom -= (rect.height ()/2 - currentState.font->getSize () / 2) + 1;
+		rect.bottom -= (rect.getHeight ()/2 - currentState.font->getSize () / 2) + 1;
 	if (hAlign != kLeftText)
 	{
 		CCoord stringWidth = painter->getStringWidth (this, string, antialias);

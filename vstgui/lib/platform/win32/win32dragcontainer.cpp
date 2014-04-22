@@ -111,7 +111,7 @@ WinDragContainer::WinDragContainer (IDataObject* platformDrag)
 				dataSize = static_cast<uint32_t> (GlobalSize (medium.hGlobal));
 				if (blob && dataSize)
 				{
-					data = malloc (dataSize);
+					data = std::malloc (dataSize);
 					memcpy (data, blob, dataSize);
 					nbItems = 1;
 				}
@@ -130,7 +130,7 @@ WinDragContainer::~WinDragContainer ()
 {
 	if (data)
 	{
-		free (data);
+		std::free (data);
 	}
 }
 

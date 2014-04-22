@@ -131,6 +131,7 @@ void CParamDisplay::setPrecision (uint8_t precision)
 	}
 }
 
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
 //------------------------------------------------------------------------
 void CParamDisplay::setValueToStringProc (CParamDisplayValueToStringProc proc, void* userData)
 {
@@ -143,8 +144,15 @@ void CParamDisplay::setValueToStringProc (CParamDisplayValueToStringProc proc, v
 	valueToStringUserData = userData;
 #endif
 }
+#endif
 
 #if VSTGUI_HAS_FUNCTIONAL
+//------------------------------------------------------------------------
+void CParamDisplay::setValueToStringFunction (const ValueToStringFunction& valueToStringFunc)
+{
+	valueToStringFunction = valueToStringFunc;
+}
+
 //------------------------------------------------------------------------
 void CParamDisplay::setValueToStringFunction (ValueToStringFunction&& valueToStringFunc)
 {
@@ -333,7 +341,7 @@ void CParamDisplay::drawBack (CDrawContext* pContext, CBitmap* newBack)
 //------------------------------------------------------------------------
 void CParamDisplay::drawText (CDrawContext* pContext, UTF8StringPtr string, const CRect& size)
 {
-	if (!(style & kNoTextStyle) && string && strlen (string))
+	if (!(style & kNoTextStyle) && UTF8StringView (string).calculateByteCount () > 1)
 	{
 		CRect textRect (size);
 		textRect.inset (textInset.x, textInset.y);

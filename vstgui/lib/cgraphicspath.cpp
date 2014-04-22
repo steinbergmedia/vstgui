@@ -48,11 +48,11 @@ void CGraphicsPath::addRoundRect (const CRect& size, CCoord radius)
 	const CCoord bottom = rect2.bottom;
 
 	beginSubpath (CPoint (right-radius, top));
-	addArc (CRect (right-2*radius, top, right, top+2*radius), 270., 360., true);
-	addArc (CRect (right-2*radius, bottom-2*radius, right, bottom), 0., 90., true);
-	addArc (CRect (left, bottom-2*radius, left+2*radius, bottom), 90., 180., true);
-	addArc (CRect (left, top, left+2*radius, top+2*radius), 180., 270., true);
-	closeSubpath();
+	addArc (CRect (right - 2.0 * radius, top, right, top + 2.0 * radius), 270., 360., true);
+	addArc (CRect (right - 2.0 * radius, bottom - 2.0 *radius, right, bottom), 0., 90., true);
+	addArc (CRect (left, bottom - 2.0 * radius, left + 2.0 * radius, bottom), 90., 180., true);
+	addArc (CRect (left, top, left + 2.0 * radius, top + 2.0 * radius), 180., 270., true);
+	closeSubpath ();
 }
 
 //-----------------------------------------------------------------------------

@@ -260,8 +260,8 @@ protected:
 	void controlBeginEdit (CControl* pControl) VSTGUI_OVERRIDE_VMETHOD;
 	void controlEndEdit (CControl* pControl) VSTGUI_OVERRIDE_VMETHOD;
 
-	static bool valueToString (float value, char utf8String[256], void* userData);
-	static bool stringToValue (UTF8StringPtr txt, float& result, void* userData);
+	static bool valueToString (float value, char utf8String[256], CParamDisplay::ValueToStringUserData* userData);
+	static bool stringToValue (UTF8StringPtr txt, float& result, CTextEdit::StringToValueUserData* userData);
 
 	SharedPointer<UIColor> color;
 	std::list<SharedPointer<CControl> > controls;
@@ -347,7 +347,7 @@ CMessageResult UIColorChooserController::notify (CBaseObject* sender, IdStringPt
 }
 
 //----------------------------------------------------------------------------------------------------
-bool UIColorChooserController::valueToString (float value, char utf8String[256], void* userData)
+bool UIColorChooserController::valueToString (float value, char utf8String[256], CParamDisplay::ValueToStringUserData* userData)
 {
 	CParamDisplay* display = static_cast<CParamDisplay*>(userData);
 	std::stringstream str;
@@ -377,7 +377,7 @@ bool UIColorChooserController::valueToString (float value, char utf8String[256],
 }
 
 //----------------------------------------------------------------------------------------------------
-bool UIColorChooserController::stringToValue (UTF8StringPtr txt, float& result, void* userData)
+bool UIColorChooserController::stringToValue (UTF8StringPtr txt, float& result, CTextEdit::StringToValueUserData* userData)
 {
 	char* endptr = 0;
 	result = (float)strtod (txt, &endptr);
@@ -430,8 +430,13 @@ CView* UIColorChooserController::verifyView (CView* view, const UIAttributes& at
 		CTextEdit* textEdit = dynamic_cast<CTextEdit*> (control);
 		if (textEdit)
 		{
+		#if VSTGUI_HAS_FUNCTIONAL
+			textEdit->setValueToStringFunction (valueToString);
+			textEdit->setStringToValueFunction (stringToValue);
+		#else
 			textEdit->setValueToStringProc (valueToString, textEdit);
 			textEdit->setStringToValueProc (stringToValue, textEdit);
+		#endif
 		}
 	}
 	return view;
@@ -861,7 +866,7 @@ void UIColorsController::valueChanged (CControl* pControl)
 //----------------------------------------------------------------------------------------------------
 IController* UIColorsController::createSubController (IdStringPtr name, const IUIDescription* description)
 {
-	if (strcmp (name, "ColorChooserController") == 0)
+	if (std::strcmp (name, "ColorChooserController") == 0)
 		return new UIColorChooserController (this, color);
 	return controller->createSubController (name, description);
 }

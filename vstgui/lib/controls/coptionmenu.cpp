@@ -152,27 +152,15 @@ CMenuItem::~CMenuItem ()
 //------------------------------------------------------------------------
 void CMenuItem::setTitle (UTF8StringPtr inTitle)
 {
-	if (title)
-		free (title);
-	title = 0;
-	if (inTitle)
-	{
-		title = (UTF8StringBuffer)malloc (strlen (inTitle) + 1);
-		strcpy (title, inTitle);
-	}
+	String::free (title);
+	title = String::newWithString (inTitle);
 }
 
 //------------------------------------------------------------------------
 void CMenuItem::setKey (UTF8StringPtr inKeycode, int32_t inKeyModifiers)
 {
-	if (keyCode)
-		free (keyCode);
-	keyCode = 0;
-	if (inKeycode)
-	{
-		keyCode = (UTF8StringBuffer)malloc (strlen (inKeycode) + 1);
-		strcpy (keyCode, inKeycode);
-	}
+	String::free (keyCode);
+	keyCode = String::newWithString (inKeycode);
 	keyModifiers = inKeyModifiers;
 	virtualKeyCode = 0;
 }
@@ -331,41 +319,27 @@ CCommandMenuItem::~CCommandMenuItem ()
 //------------------------------------------------------------------------
 void CCommandMenuItem::setCommandCategory (IdStringPtr category)
 {
-	if (commandCategory)
-		free (commandCategory);
-	commandCategory = 0;
-	if (category)
-	{
-		size_t length = strlen (category);
-		commandCategory = (char*)malloc (length + 1);
-		strcpy (commandCategory, category);
-	}
+	String::free (commandCategory);
+	commandCategory = String::newWithString (category);
 }
 
 //------------------------------------------------------------------------
 bool CCommandMenuItem::isCommandCategory (IdStringPtr category) const
 {
-	return commandCategory ? (strcmp (commandCategory, category) == 0) : (commandCategory == category);
+	return UTF8StringView (commandCategory) == category;
 }
 
 //------------------------------------------------------------------------
 void CCommandMenuItem::setCommandName (IdStringPtr name)
 {
-	if (commandName)
-		free (commandName);
-	commandName = 0;
-	if (name)
-	{
-		size_t length = strlen (name);
-		commandName = (char*)malloc (length + 1);
-		strcpy (commandName, name);
-	}
+	String::free (commandName);
+	commandName = String::newWithString (name);
 }
 
 //------------------------------------------------------------------------
 bool CCommandMenuItem::isCommandName (IdStringPtr name) const
 {
-	return commandName ? (strcmp (commandName, name) == 0) : (commandName == name);
+	return UTF8StringView (commandName) == name;
 }
 
 //------------------------------------------------------------------------
@@ -673,7 +647,7 @@ CMenuItem* COptionMenu::addEntry (COptionMenu* submenu, UTF8StringPtr title)
 //-----------------------------------------------------------------------------
 CMenuItem* COptionMenu::addEntry (UTF8StringPtr title, int32_t index, int32_t itemFlags)
 {
-	if (title && strcmp (title, "-") == 0)
+	if (UTF8StringView (title) == "-")
 		return addSeparator (index);
 	CMenuItem* item = new CMenuItem (title, 0, 0, 0, itemFlags);
 	return addEntry (item, index);

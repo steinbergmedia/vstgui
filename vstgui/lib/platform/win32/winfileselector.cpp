@@ -64,8 +64,8 @@ static COMDLG_FILTERSPEC* buildExtensionFilter (std::list<CFileExtension>& exten
 		{
 			UTF8StringHelper desc ((*it).getDescription ());
 			UTF8StringHelper ext ((*it).getExtension ());
-			WCHAR* wDesc = (WCHAR*)malloc ((wcslen (desc)+1) * sizeof (WCHAR));
-			WCHAR* wSpec = (WCHAR*)malloc ((wcslen (ext)+3) * sizeof (WCHAR));
+			WCHAR* wDesc = (WCHAR*)std::malloc ((wcslen (desc)+1) * sizeof (WCHAR));
+			WCHAR* wSpec = (WCHAR*)std::malloc ((wcslen (ext)+3) * sizeof (WCHAR));
 			memcpy (wDesc, desc.getWideString (), (wcslen (desc)+1) * sizeof (WCHAR));
 			memcpy (wSpec+2, ext.getWideString (), (wcslen (ext)+1) * sizeof (WCHAR));
 			wSpec[0] = 0x002a; // *
@@ -79,9 +79,9 @@ static COMDLG_FILTERSPEC* buildExtensionFilter (std::list<CFileExtension>& exten
 		}
 		if (extensions.size () > 1)
 		{
-			WCHAR* wAllName = (WCHAR*)malloc ((wcslen (kAllSupportedFileTypesString)+1) * sizeof (WCHAR));
+			WCHAR* wAllName = (WCHAR*)std::malloc ((wcslen (kAllSupportedFileTypesString)+1) * sizeof (WCHAR));
 			wcscpy (wAllName, kAllSupportedFileTypesString);
-			WCHAR* wAllSpec = (WCHAR*)malloc (allExtensionCharCount * sizeof (WCHAR));
+			WCHAR* wAllSpec = (WCHAR*)std::malloc (allExtensionCharCount * sizeof (WCHAR));
 			wAllSpec[0] = 0;
 			for (int32_t j = 1; j < i; j++)
 			{
@@ -108,8 +108,8 @@ static void freeExtensionFilter (COMDLG_FILTERSPEC* filters)
 		int32_t i = 0;
 		while (filters[i].pszName)
 		{
-			free ((void*)filters[i].pszName);
-			free ((void*)filters[i].pszSpec);
+			std::free ((void*)filters[i].pszName);
+			std::free ((void*)filters[i].pszSpec);
 			i++;
 		}
 		delete [] filters;
@@ -308,8 +308,7 @@ bool VistaFileSelector::runModalInternal ()
 							if (SUCCEEDED (hr))
 							{
 								UTF8StringHelper str (filesysPath);
-								char* resultPath = (char*)malloc (strlen (str) + 1);
-								strcpy (resultPath, str);
+								UTF8StringBuffer resultPath = String::newWithString (str);
 								result.push_back (resultPath);
 							}
 							item->Release ();
@@ -331,8 +330,7 @@ bool VistaFileSelector::runModalInternal ()
 				if (SUCCEEDED (hr))
 				{
 					UTF8StringHelper str (filesysPath);
-					char* resultPath = (char*)malloc (strlen (str) + 1);
-					strcpy (resultPath, str);
+					UTF8StringBuffer resultPath = String::newWithString (str);
 					result.push_back (resultPath);
 				}
 				item->Release ();
@@ -403,8 +401,7 @@ bool XPFileSelector::runModalInternal ()
 				char szPathNameC_[MAX_PATH];
 				char *szPathNameC= szPathNameC_;
 				WideCharToMultiByte (CP_ACP, WC_COMPOSITECHECK|WC_DEFAULTCHAR, szPathName, -1, szPathNameC, MAX_PATH, NULL, NULL); 
-				char* resultPath = (char*)malloc (strlen (szPathNameC) + 1);
-				strcpy (resultPath, szPathNameC);
+				UTF8StringBuffer resultPath = String::newWithString (szPathNameC);
 				result.push_back (resultPath);
 				return true;
 			}
@@ -469,8 +466,7 @@ bool XPFileSelector::runModalInternal ()
 	}
 
 	UTF8StringHelper str (filePathBuffer);
-	char* resultPath = (char*)malloc (strlen (str) + 1);
-	strcpy (resultPath, str);
+	UTF8StringBuffer resultPath = String::newWithString (str);
 	result.push_back(resultPath);
 	return true;
 }

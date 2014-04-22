@@ -439,8 +439,8 @@ public:
 	void controlEndEdit (CControl* pControl) VSTGUI_OVERRIDE_VMETHOD;
 protected:
 	void updateNinePartTiledControls ();
-	static bool stringToValue (UTF8StringPtr txt, float& result, void* userData);
-	static bool valueToString (float value, char utf8String[256], void* userData);
+	static bool stringToValue (UTF8StringPtr txt, float& result, CTextEdit::StringToValueUserData* userData);
+	static bool valueToString (float value, char utf8String[256], CParamDisplay::ValueToStringUserData* userData);
 
 	IActionPerformer* actionPerformer;
 	SharedPointer<UIDescription> editDescription;
@@ -670,7 +670,11 @@ CView* UIBitmapSettingsController::verifyView (CView* view, const UIAttributes& 
 				if (textEdit)
 				{
 					textEdit->setPrecision (0);
+				#if VSTGUI_HAS_FUNCTIONAL
+					textEdit->setStringToValueFunction (stringToValue);
+				#else
 					textEdit->setStringToValueProc (stringToValue);
+				#endif
 				}
 				control->setMax ((float)bitmap->getWidth ());
 				break;
@@ -682,7 +686,11 @@ CView* UIBitmapSettingsController::verifyView (CView* view, const UIAttributes& 
 				if (textEdit)
 				{
 					textEdit->setPrecision (0);
+				#if VSTGUI_HAS_FUNCTIONAL
+					textEdit->setStringToValueFunction (stringToValue);
+				#else
 					textEdit->setStringToValueProc (stringToValue);
+				#endif
 				}
 				control->setMax ((float)bitmap->getHeight ());
 				break;
@@ -697,7 +705,11 @@ CView* UIBitmapSettingsController::verifyView (CView* view, const UIAttributes& 
 				CTextLabel* label = dynamic_cast<CTextLabel*>(control);
 				if (label)
 				{
+				#if VSTGUI_HAS_FUNCTIONAL
+					label->setValueToStringFunction (valueToString);
+				#else
 					label->setValueToStringProc (valueToString);
+				#endif
 				}
 				control->setValue (100);
 			}
@@ -722,19 +734,19 @@ CView* UIBitmapSettingsController::createView (const UIAttributes& attributes, c
 }
 
 //----------------------------------------------------------------------------------------------------
-bool UIBitmapSettingsController::valueToString (float value, char utf8String[256], void* userData)
+bool UIBitmapSettingsController::valueToString (float value, char utf8String[256], CParamDisplay::ValueToStringUserData* userData)
 {
 	int32_t intValue = (int32_t)value;
 	std::stringstream str;
 	str << intValue;
 	str << "%";
-	strcpy (utf8String, str.str ().c_str ());
+	std::strcpy (utf8String, str.str ().c_str ());
 	return true;
 }
 
 
 //----------------------------------------------------------------------------------------------------
-bool UIBitmapSettingsController::stringToValue (UTF8StringPtr txt, float& result, void* userData)
+bool UIBitmapSettingsController::stringToValue (UTF8StringPtr txt, float& result, CTextEdit::StringToValueUserData* userData)
 {
 	int32_t value = txt ? (int32_t)strtol (txt, 0, 10) : 0;
 	result = (float)value;
@@ -905,7 +917,7 @@ bool UIBitmapsController::valueToString (float value, char utf8String[256], void
 	int32_t intValue = (int32_t)value;
 	std::stringstream str;
 	str << intValue;
-	strcpy (utf8String, str.str ().c_str ());
+	std::strcpy (utf8String, str.str ().c_str ());
 	return true;
 }
 

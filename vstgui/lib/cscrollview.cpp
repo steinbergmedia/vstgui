@@ -119,15 +119,15 @@ void CScrollContainer::setScrollOffset (CPoint newOffset, bool redraw)
 {
 	newOffset.x = floor (newOffset.x + 0.5);
 	newOffset.y = floor (newOffset.y + 0.5);
-	if (containerSize.getWidth () >= getViewSize ().width ())
+	if (containerSize.getWidth () >= getViewSize ().getWidth ())
 	{
-		if (newOffset.x < containerSize.left - (containerSize.width () - getViewSize ().width ()))
-			newOffset.x = containerSize.left - (containerSize.width () - getViewSize ().width ());
+		if (newOffset.x < containerSize.left - (containerSize.getWidth () - getViewSize ().getWidth ()))
+			newOffset.x = containerSize.left - (containerSize.getWidth () - getViewSize ().getWidth ());
 	}
 	else
 	{
-		if (newOffset.x < containerSize.left - containerSize.width ())
-			newOffset.x = containerSize.left - containerSize.width ();
+		if (newOffset.x < containerSize.left - containerSize.getWidth ())
+			newOffset.x = containerSize.left - containerSize.getWidth ();
 	}
 	if (newOffset.x > containerSize.right)
 		newOffset.x = containerSize.right;
@@ -313,7 +313,7 @@ CScrollView::CScrollView (const CRect &size, const CRect &containerSize, int32_t
 #if VSTGUI_ENABLE_DEPRECATED_METHODS
 //-----------------------------------------------------------------------------
 CScrollView::CScrollView (const CRect &size, const CRect &containerSize, CFrame* pParent, int32_t style, CCoord scrollbarWidth, CBitmap* pBackground)
-: CViewContainer (size, pParent, pBackground)
+: CViewContainer (size)
 , sc (0)
 , vsb (0)
 , hsb (0)
@@ -322,6 +322,7 @@ CScrollView::CScrollView (const CRect &size, const CRect &containerSize, CFrame*
 , style (style)
 , activeScrollbarStyle (0)
 {
+	setBackground (pBackground);
 	recalculateSubViews ();
 }
 #endif
@@ -712,7 +713,7 @@ void CScrollView::valueChanged (CControl *pControl)
 			{
 				if (csize.getWidth () > vsize.getWidth ())
 				{
-					offset.x = (int32_t) (csize.left - (csize.width () - vsize.width ()) * value);
+					offset.x = (int32_t) (csize.left - (csize.getWidth () - vsize.getWidth ()) * value);
 					sc->setScrollOffset (offset, false);
 				}
 				else if (offset.x < 0)
@@ -726,7 +727,7 @@ void CScrollView::valueChanged (CControl *pControl)
 			{
 				if (csize.getHeight () > vsize.getHeight ())
 				{
-					offset.y = (int32_t) (csize.top + (csize.height () - vsize.height ()) * value);
+					offset.y = (int32_t) (csize.top + (csize.getHeight () - vsize.getHeight ()) * value);
 					sc->setScrollOffset (offset, false);
 				}
 				else if (offset.y > 0)
@@ -863,17 +864,17 @@ void CScrollbar::calculateScrollerLength ()
 	CCoord newScrollerLength;
 	if (direction == kHorizontal)
 	{
-		double factor = scrollSize.width () > 0. ? getViewSize ().width () / scrollSize.width () : 0.;
+		double factor = scrollSize.getWidth () > 0. ? getViewSize ().getWidth () / scrollSize.getWidth () : 0.;
 		if (factor >= 1.f)
 			factor = 0;
-		newScrollerLength = (CCoord) (getViewSize ().width () * factor);
+		newScrollerLength = (CCoord) (getViewSize ().getWidth () * factor);
 	}
 	else
 	{
-		double factor = scrollSize.height () > 0 ? getViewSize ().height () / scrollSize.height () : 0.;
+		double factor = scrollSize.getHeight () > 0 ? getViewSize ().getHeight () / scrollSize.getHeight () : 0.;
 		if (factor >= 1.f)
 			factor = 0;
-		newScrollerLength = (CCoord) (getViewSize ().height () * factor);
+		newScrollerLength = (CCoord) (getViewSize ().getHeight () * factor);
 	}
 	if (newScrollerLength < 8. && newScrollerLength > 0.)
 		newScrollerLength = 8.;
@@ -888,7 +889,7 @@ void CScrollbar::calculateScrollerLength ()
 CRect CScrollbar::getScrollerRect ()
 {
 	CRect scrollerRect (scrollerArea);
-	CCoord l = (direction == kHorizontal) ? scrollerArea.width () : scrollerArea.height ();
+	CCoord l = (direction == kHorizontal) ? scrollerArea.getWidth () : scrollerArea.getHeight ();
 	CCoord scrollerOffset = (CCoord) (value * (l - scrollerLength));
 	if (direction == kHorizontal)
 	{
@@ -917,16 +918,16 @@ void CScrollbar::doStepping ()
 	if (direction == kHorizontal)
 	{
 		if (dir)
-			newValue = value - (float)scrollerLength / (float)scrollerArea.width ();
+			newValue = value - (float)scrollerLength / (float)scrollerArea.getWidth ();
 		else
-			newValue = value + (float)scrollerLength / (float)scrollerArea.width ();
+			newValue = value + (float)scrollerLength / (float)scrollerArea.getWidth ();
 	}
 	else
 	{
 		if (dir)
-			newValue = value - (float)scrollerLength / (float)scrollerArea.height ();
+			newValue = value - (float)scrollerLength / (float)scrollerArea.getHeight ();
 		else
-			newValue = value + (float)scrollerLength / (float)scrollerArea.height ();
+			newValue = value + (float)scrollerLength / (float)scrollerArea.getHeight ();
 	}
 	if (newValue < 0.f) newValue = 0.f;
 	if (newValue > 1.f) newValue = 1.f;
@@ -1037,11 +1038,11 @@ CMouseEventResult CScrollbar::onMouseMoved (CPoint &where, const CButtonState& b
 			newPoint.y -= startPoint.y - scrollerRect.top;
 			if (direction == kHorizontal)
 			{
-				newValue = (float)((float)(newPoint.x - scrollerArea.left) / ((float)scrollerArea.width () - scrollerRect.width ()));
+				newValue = (float)((float)(newPoint.x - scrollerArea.left) / ((float)scrollerArea.getWidth () - scrollerRect.getWidth ()));
 			}
 			else
 			{
-				newValue = (float)((float)(newPoint.y - scrollerArea.top) / ((float)scrollerArea.height () - scrollerRect.height ()));
+				newValue = (float)((float)(newPoint.y - scrollerArea.top) / ((float)scrollerArea.getHeight () - scrollerRect.getHeight ()));
 			}
 			if (newValue < 0.f) newValue = 0.f;
 			if (newValue > 1.f) newValue = 1.f;

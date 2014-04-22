@@ -154,17 +154,11 @@ void CFontDesc::freePlatformFont ()
 //-----------------------------------------------------------------------------
 void CFontDesc::setName (UTF8StringPtr newName)
 {
-	if (newName && name && !strcmp (newName, name))
+	if (name && newName && UTF8StringView (name) == newName)
 		return;
 
-	if (name)
-		free (name);
-	name = 0;
-	if (newName)
-	{
-		name = (UTF8StringBuffer)malloc (strlen (newName) + 1);
-		strcpy (name, newName);
-	}
+	String::free (name);
+	name = String::newWithString (newName);
 	freePlatformFont ();
 }
 
@@ -194,7 +188,7 @@ CFontDesc& CFontDesc::operator = (const CFontDesc& f)
 //-----------------------------------------------------------------------------
 bool CFontDesc::operator == (const CFontDesc& f) const
 {
-	if (strcmp (name, f.getName ()))
+	if (UTF8StringView (name) == f.getName ())
 		return false;
 	if (size != f.getSize ())
 		return false;

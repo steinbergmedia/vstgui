@@ -121,7 +121,7 @@ bool IPlatformBitmap::createMemoryPNGRepresentation (IPlatformBitmap* bitmap, vo
 					if (CGImageDestinationFinalize (dest))
 					{
 						size = (uint32_t)CFDataGetLength (data);
-						*ptr = malloc (size);
+						*ptr = std::malloc (size);
 						CFDataGetBytes (data, CFRangeMake (0, size), (UInt8*)*ptr);
 						result = true;
 					}
@@ -186,7 +186,7 @@ CGBitmap::~CGBitmap ()
 	if (imageSource)
 		CFRelease (imageSource);
 	if (bits)
-		free (bits);
+		std::free (bits);
 }
 
 //-----------------------------------------------------------------------------
@@ -205,7 +205,7 @@ bool CGBitmap::load (const CResourceDescription& desc)
 		if (desc.type == CResourceDescription::kIntegerType)
 			sprintf (filename, "bmp%05d", (int32_t)desc.u.id);
 		else
-			strcpy (filename, desc.u.name);
+			std::strcpy (filename, desc.u.name);
 		CFStringRef cfStr = CFStringCreateWithCString (NULL, filename, kCFStringEncodingUTF8);
 		if (cfStr)
 		{

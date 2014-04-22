@@ -60,8 +60,8 @@ protected:
 	SharedPointer<UIDescription> editDescription;
 	SharedPointer<CTextEdit> gridControls[2];
 
-	static bool valueToString (float value, char utf8String[256], void* userData);
-	static bool stringToValue (UTF8StringPtr txt, float& result, void* userData);
+	static bool valueToString (float value, char utf8String[256], CParamDisplay::ValueToStringUserData* userData);
+	static bool stringToValue (UTF8StringPtr txt, float& result, CTextEdit::StringToValueUserData* userData);
 
 	enum {
 		kGridXTag,

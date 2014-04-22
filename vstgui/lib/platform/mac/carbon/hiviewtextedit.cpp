@@ -142,7 +142,7 @@ HIViewTextEdit::~HIViewTextEdit ()
 void HIViewTextEdit::freeText ()
 {
 	if (text)
-		free (text);
+		std::free (text);
 	text = 0;
 }
 
@@ -172,7 +172,7 @@ UTF8StringPtr HIViewTextEdit::getText ()
 		{
 			freeText ();
 			CFIndex textSize = CFStringGetMaximumSizeForEncoding (CFStringGetLength (cfstr), kCFStringEncodingUTF8);
-			text = (UTF8StringBuffer)malloc (textSize);
+			text = (UTF8StringBuffer)std::malloc (textSize);
 			
 			CFStringGetCString (cfstr, text, textSize, kCFStringEncodingUTF8);
 			CFRelease (cfstr);

@@ -50,6 +50,7 @@
 #include "../../lib/coffscreencontext.h"
 #include "../../lib/clayeredviewcontainer.h"
 #include "../../lib/idatapackage.h"
+#include <cassert>
 
 namespace VSTGUI {
 

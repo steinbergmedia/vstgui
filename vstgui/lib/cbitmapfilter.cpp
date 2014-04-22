@@ -52,7 +52,7 @@ Property::Property (Type type)
 Property::Property (int32_t intValue)
 : type (kInteger)
 {
-	value = malloc (sizeof (int32_t));
+	value = std::malloc (sizeof (int32_t));
 	memcpy (value, &intValue, sizeof (int32_t));
 }
 
@@ -60,7 +60,7 @@ Property::Property (int32_t intValue)
 Property::Property (double floatValue)
 : type (kFloat)
 {
-	value = malloc (sizeof (double));
+	value = std::malloc (sizeof (double));
 	memcpy (value, &floatValue, sizeof (double));
 }
 
@@ -68,7 +68,7 @@ Property::Property (double floatValue)
 Property::Property (CBaseObject* objectValue)
 : type (kObject)
 {
-	value = malloc (sizeof (CBaseObject*));
+	value = std::malloc (sizeof (CBaseObject*));
 	memcpy (value, &objectValue, sizeof (CBaseObject*));
 	objectValue->remember ();
 }
@@ -77,7 +77,7 @@ Property::Property (CBaseObject* objectValue)
 Property::Property (const CRect& rectValue)
 : type (kRect)
 {
-	value = malloc (sizeof (CRect));
+	value = std::malloc (sizeof (CRect));
 	memcpy (value, &rectValue, sizeof (CRect));
 }
 
@@ -85,7 +85,7 @@ Property::Property (const CRect& rectValue)
 Property::Property (const CPoint& pointValue)
 : type (kPoint)
 {
-	value = malloc (sizeof (CPoint));
+	value = std::malloc (sizeof (CPoint));
 	memcpy (value, &pointValue, sizeof (CPoint));
 }
 
@@ -93,7 +93,7 @@ Property::Property (const CPoint& pointValue)
 Property::Property (const CColor& colorValue)
 : type (kColor)
 {
-	value = malloc (sizeof (CColor));
+	value = std::malloc (sizeof (CColor));
 	memcpy (value, &colorValue, sizeof (CColor));
 }
 
@@ -101,7 +101,7 @@ Property::Property (const CColor& colorValue)
 Property::Property (const CGraphicsTransform& transformValue)
 : type (kTransformMatrix)
 {
-	value = malloc (sizeof (CGraphicsTransform));
+	value = std::malloc (sizeof (CGraphicsTransform));
 	memcpy (value, &transformValue, sizeof (CGraphicsTransform));
 }
 
@@ -120,7 +120,7 @@ Property::~Property ()
 	{
 		if (type == kObject)
 			getObject ()->forget ();
-		free (value);
+		std::free (value);
 	}
 }
 
@@ -149,7 +149,7 @@ Property& Property::operator=(const Property& p)
 	{
 		if (type == kObject)
 			getObject ()->forget ();
-		free (value);
+		std::free (value);
 		value = 0;
 	}
 	type = p.type;
@@ -169,7 +169,7 @@ Property& Property::operator=(const Property& p)
 		}
 		if (valueSize)
 		{
-			value = malloc (valueSize);
+			value = std::malloc (valueSize);
 			memcpy (value, p.value, valueSize);
 		}
 	}

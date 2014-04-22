@@ -98,10 +98,17 @@ public:
 	virtual void setFrameWidth (const CCoord& width);
 	CCoord getFrameWidth () const { return frameWidth; }
 
+#if VSTGUI_HAS_FUNCTIONAL
+	typedef CParamDisplay	ValueToStringUserData;
+#else
+	typedef void			ValueToStringUserData;
+#endif
+
 	VSTGUI_DEPRECATED(virtual void setValueToStringProc (CParamDisplayValueToStringProc proc, void* userData = 0);) ///< deprecated use setValueToStringFunction instead if you use c++11
 #if VSTGUI_HAS_FUNCTIONAL
 	typedef std::function<bool(float value, char utf8String[256], CParamDisplay* display)> ValueToStringFunction;
 	
+	void setValueToStringFunction (const ValueToStringFunction& valueToStringFunc);
 	void setValueToStringFunction (ValueToStringFunction&& valueToStringFunc);
 #endif
 

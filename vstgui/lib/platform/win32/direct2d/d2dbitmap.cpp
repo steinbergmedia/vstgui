@@ -144,7 +144,7 @@ bool D2DBitmap::createMemoryPNGRepresentation (void** ptr, uint32_t& size)
 										SIZE_T globalSize = GlobalSize (hGlobal);
 										if (globalSize && globalAddress)
 										{
-											*ptr = malloc (globalSize);
+											*ptr = std::malloc (globalSize);
 											size = (uint32_t)globalSize;
 											memcpy (*ptr, globalAddress, globalSize);
 											result = true;

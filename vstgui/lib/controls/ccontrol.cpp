@@ -307,7 +307,7 @@ void IMultiBitmapControl::autoComputeHeightOfOneImage ()
 	if (view)
 	{
 		CRect viewSize = view->getViewSize (viewSize);
-		heightOfOneImage = viewSize.height ();
+		heightOfOneImage = viewSize.getHeight ();
 	}
 }
 

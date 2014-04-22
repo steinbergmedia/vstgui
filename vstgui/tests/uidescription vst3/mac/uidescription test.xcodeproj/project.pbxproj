@@ -10,6 +10,7 @@
 		F40E268A1813FEC4001CAC0D /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F40E26891813FEC4001CAC0D /* QuartzCore.framework */; };
 		F41CA1C8112E99F000D425D7 /* animationtest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F41CA1C7112E99F000D425D7 /* animationtest.cpp */; };
 		F41CA21F112E9E6B00D425D7 /* AnimationTest.uidesc in Resources */ = {isa = PBXBuildFile; fileRef = F41CA21E112E9E6B00D425D7 /* AnimationTest.uidesc */; };
+		F420E6DB1906D45300AFD962 /* libvstgui c++11.a in Frameworks */ = {isa = PBXBuildFile; fileRef = F481925C165D3C050035058F /* libvstgui c++11.a */; };
 		F42731DE1125507F00BE2194 /* factory.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F42731DD1125507F00BE2194 /* factory.cpp */; };
 		F42731E51125516A00BE2194 /* subcontrollertest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F42731E41125516A00BE2194 /* subcontrollertest.cpp */; };
 		F427326A1125623200BE2194 /* SubControllerTest.uidesc in Resources */ = {isa = PBXBuildFile; fileRef = F42732691125623200BE2194 /* SubControllerTest.uidesc */; };
@@ -36,7 +37,6 @@
 		F496F16C119715B500DD3F7A /* Accelerate.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F496F16B119715B500DD3F7A /* Accelerate.framework */; };
 		F4C04ECE123B8E450082BA28 /* vst3sdksources.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4C04ECD123B8E450082BA28 /* vst3sdksources.cpp */; };
 		F4CF0E1B13B5E17A0027351A /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F4CF0E1A13B5E17A0027351A /* OpenGL.framework */; };
-		F4D7874A1380432A00B06ADC /* libvstgui.a in Frameworks */ = {isa = PBXBuildFile; fileRef = F4D787491380432A00B06ADC /* libvstgui.a */; };
 		F4F5DA8A10BFD28900DB6C33 /* TabController.png in Resources */ = {isa = PBXBuildFile; fileRef = F4F5DA8910BFD28900DB6C33 /* TabController.png */; };
 /* End PBXBuildFile section */
 
@@ -62,12 +62,12 @@
 			remoteGlobalIDString = F4E9C69317A8266200F42EF8;
 			remoteInfo = "vstgui-ios";
 		};
-		F464566D137FFD7400209366 /* PBXContainerItemProxy */ = {
+		F420E6D91906D45000AFD962 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = F40DCF9913119C240084A8AE /* vstgui.xcodeproj */;
 			proxyType = 1;
-			remoteGlobalIDString = F497F0AC1308094300F0A613;
-			remoteInfo = vstgui;
+			remoteGlobalIDString = F4F953F516510E61006EE1D1;
+			remoteInfo = "vstgui c++11";
 		};
 		F481925B165D3C050035058F /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -129,9 +129,9 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F420E6DB1906D45300AFD962 /* libvstgui c++11.a in Frameworks */,
 				F40E268A1813FEC4001CAC0D /* QuartzCore.framework in Frameworks */,
 				F4CF0E1B13B5E17A0027351A /* OpenGL.framework in Frameworks */,
-				F4D7874A1380432A00B06ADC /* libvstgui.a in Frameworks */,
 				F440754A10BE6D00003C59F6 /* Carbon.framework in Frameworks */,
 				F440754C10BE6D00003C59F6 /* Cocoa.framework in Frameworks */,
 				F496F16C119715B500DD3F7A /* Accelerate.framework in Frameworks */,
@@ -201,8 +201,8 @@
 			children = (
 				F40DCF9E13119C240084A8AE /* libvstgui.a */,
 				F481925C165D3C050035058F /* libvstgui c++11.a */,
-				F40E268F1813FEC4001CAC0D /* unittests */,
 				F40E26911813FEC4001CAC0D /* libvstgui-ios.a */,
+				F40E268F1813FEC4001CAC0D /* unittests */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -264,7 +264,7 @@
 			buildRules = (
 			);
 			dependencies = (
-				F464566E137FFD7400209366 /* PBXTargetDependency */,
+				F420E6DA1906D45000AFD962 /* PBXTargetDependency */,
 			);
 			name = "uidescription test";
 			productName = "uidescription test";
@@ -277,7 +277,7 @@
 		508817C409F0C9740071BF1A /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0420;
+				LastUpgradeCheck = 0510;
 			};
 			buildConfigurationList = 508817C509F0C9740071BF1A /* Build configuration list for PBXProject "uidescription test" */;
 			compatibilityVersion = "Xcode 3.2";
@@ -395,10 +395,10 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
-		F464566E137FFD7400209366 /* PBXTargetDependency */ = {
+		F420E6DA1906D45000AFD962 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			name = vstgui;
-			targetProxy = F464566D137FFD7400209366 /* PBXContainerItemProxy */;
+			name = "vstgui c++11";
+			targetProxy = F420E6D91906D45000AFD962 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -406,14 +406,23 @@
 		508817C609F0C9740071BF1A /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				GCC_INLINES_ARE_PRIVATE_EXTERN = YES;
 				GCC_OPTIMIZATION_LEVEL = 0;
 				GCC_PREFIX_HEADER = ../source/prefix.h;
 				GCC_PREPROCESSOR_DEFINITIONS = "DEVELOPMENT=1";
 				GCC_SYMBOLS_PRIVATE_EXTERN = YES;
 				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES;
+				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				GENERATE_PKGINFO_FILE = YES;
 				HEADER_SEARCH_PATHS = (
@@ -422,7 +431,7 @@
 				);
 				INFOPLIST_FILE = "uidescription test-Info.plist";
 				INFOPLIST_PREPROCESS = YES;
-				MACOSX_DEPLOYMENT_TARGET = 10.6;
+				MACOSX_DEPLOYMENT_TARGET = 10.7;
 				ONLY_ACTIVE_ARCH = YES;
 				PRESERVE_DEAD_CODE_INITS_AND_TERMS = NO;
 				PRODUCT_NAME = "uidescription test";
@@ -434,7 +443,12 @@
 		508817C709F0C9740071BF1A /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				DEAD_CODE_STRIPPING = NO;
 				DEPLOYMENT_POSTPROCESSING = YES;
 				GCC_INLINES_ARE_PRIVATE_EXTERN = YES;
@@ -442,7 +456,11 @@
 				GCC_PREPROCESSOR_DEFINITIONS = "RELEASE=1";
 				GCC_SYMBOLS_PRIVATE_EXTERN = YES;
 				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES;
+				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				GENERATE_PKGINFO_FILE = YES;
 				HEADER_SEARCH_PATHS = (
@@ -451,7 +469,7 @@
 				);
 				INFOPLIST_FILE = "uidescription test-Info.plist";
 				INFOPLIST_PREPROCESS = YES;
-				MACOSX_DEPLOYMENT_TARGET = 10.6;
+				MACOSX_DEPLOYMENT_TARGET = 10.7;
 				PRESERVE_DEAD_CODE_INITS_AND_TERMS = NO;
 				PRODUCT_NAME = "uidescription test";
 				SDKROOT = "";
@@ -463,6 +481,8 @@
 		508817D809F0C9AE0071BF1A /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_CXX_LANGUAGE_STANDARD = "c++0x";
+				CLANG_CXX_LIBRARY = "libc++";
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"\"$(SRCROOT)/../../../ide/xcode4/build/Debug\"",
@@ -473,6 +493,8 @@
 		508817D909F0C9AE0071BF1A /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_CXX_LANGUAGE_STANDARD = "c++0x";
+				CLANG_CXX_LIBRARY = "libc++";
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"\"$(SRCROOT)/../../../ide/xcode4/build/Release\"",

@@ -61,10 +61,17 @@ public:
 	/// @name CTextEdit Methods
 	//-----------------------------------------------------------------------------
 	//@{
+#if VSTGUI_HAS_FUNCTIONAL
+	typedef CTextEdit		StringToValueUserData;
+#else
+	typedef void			StringToValueUserData;
+#endif
+
 	VSTGUI_DEPRECATED(virtual void setStringToValueProc (CTextEditStringToValueProc proc, void* userData = 0);) ///< deprecated use setStringToValueFunction instead if you use c++11
 #if VSTGUI_HAS_FUNCTIONAL
 	typedef std::function<bool(UTF8StringPtr txt, float& result, CTextEdit* textEdit)> StringToValueFunction;
 	
+	void setStringToValueFunction (const StringToValueFunction& stringToValueFunc);
 	void setStringToValueFunction (StringToValueFunction&& stringToValueFunc);
 #endif
 	

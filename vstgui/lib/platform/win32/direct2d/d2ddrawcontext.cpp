@@ -40,6 +40,7 @@
 #include "d2dbitmap.h"
 #include "d2dgraphicspath.h"
 #include "d2dfont.h"
+#include <cassert>
 
 namespace VSTGUI {
 
@@ -550,9 +551,8 @@ void D2DDrawContext::drawPoint (const CPoint &point, const CColor& color)
 	setLineWidth (1);
 	setFrameColor (color);
 	CPoint point2 (point);
-	point2.h++;
-	moveTo (point);
-	lineTo (point2);
+	point2.x++;
+	drawLine (std::make_pair (point, point2));
 	restoreGlobalState ();
 }
 

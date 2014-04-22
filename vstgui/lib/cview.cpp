@@ -89,7 +89,7 @@ public:
 	~CViewAttributeEntry ()
 	{
 		if (data)
-			free (data);
+			std::free (data);
 	}
 
 	int32_t getSize () const { return size; }
@@ -99,14 +99,14 @@ public:
 	{
 		if (data && size != _size)
 		{
-			free (data);
+			std::free (data);
 			data = 0;
 		}
 		size = _size;
 		if (size)
 		{
 			if (data == 0)
-				data = malloc (_size);
+				data = std::malloc (_size);
 			memcpy (data, _data, size);
 		}
 	}

@@ -185,7 +185,7 @@ CKickButton::CKickButton (const CRect& size, CControlListener* listener, int32_t
 : CControl (size, listener, tag, background)
 , offset (offset)
 {
-	heightOfOneImage = size.height ();
+	heightOfOneImage = size.getHeight ();
 	setWantsFocus (true);
 }
 
@@ -404,14 +404,8 @@ CCheckBox::~CCheckBox ()
 //------------------------------------------------------------------------
 void CCheckBox::setTitle (UTF8StringPtr newTitle)
 {
-	if (title)
-		delete [] title;
-	title = 0;
-	if (newTitle)
-	{
-		title = new char [strlen (newTitle) + 1];
-		strcpy (title, newTitle);
-	}
+	String::free (title);
+	title = String::newWithString (newTitle);
 	if (style & kAutoSizeToFit)
 		sizeToFit ();
 }
