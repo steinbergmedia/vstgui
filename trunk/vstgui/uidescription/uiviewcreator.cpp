@@ -3447,7 +3447,7 @@ public:
 		}
 		return false;
 	}
-	bool getAttributeValueRange (const std::string& attributeName, double& minValue, double &maxValue) const
+	bool getAttributeValueRange (const std::string& attributeName, double& minValue, double &maxValue) const VSTGUI_OVERRIDE_VMETHOD
 	{
 		if (attributeName == kAttrShadowBlurSize)
 		{

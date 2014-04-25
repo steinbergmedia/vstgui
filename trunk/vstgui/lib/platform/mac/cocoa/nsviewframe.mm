@@ -635,7 +635,7 @@ public:
 	void set (NSViewFrame* nsViewFrame, const CRect& rect, const char* tooltip);
 	void hide ();
 
-	CMessageResult notify (CBaseObject* sender, IdStringPtr message);
+	CMessageResult notify (CBaseObject* sender, IdStringPtr message) VSTGUI_OVERRIDE_VMETHOD;
 protected:
 	CVSTGUITimer* timer;
 	CFrame* frame;

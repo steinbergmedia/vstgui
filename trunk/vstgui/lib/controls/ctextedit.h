@@ -106,17 +106,17 @@ protected:
 	void createPlatformTextEdit ();
 	void updateText (IPlatformTextEdit* pte);
 
-	CColor platformGetBackColor () const { return getBackColor (); }
-	CColor platformGetFontColor () const { return getFontColor (); }
-	CFontRef platformGetFont () const { return getFont (); }
-	CHoriTxtAlign platformGetHoriTxtAlign () const { return getHoriAlign (); }
-	UTF8StringPtr platformGetText () const { return text; }
-	CRect platformGetSize () const;
-	CRect platformGetVisibleSize () const;
-	CPoint platformGetTextInset () const { return getTextInset (); }
-	void platformLooseFocus (bool returnPressed);
-	bool platformOnKeyDown (const VstKeyCode& key);
-	void platformTextDidChange ();
+	CColor platformGetBackColor () const VSTGUI_OVERRIDE_VMETHOD { return getBackColor (); }
+	CColor platformGetFontColor () const VSTGUI_OVERRIDE_VMETHOD { return getFontColor (); }
+	CFontRef platformGetFont () const VSTGUI_OVERRIDE_VMETHOD { return getFont (); }
+	CHoriTxtAlign platformGetHoriTxtAlign () const VSTGUI_OVERRIDE_VMETHOD { return getHoriAlign (); }
+	UTF8StringPtr platformGetText () const VSTGUI_OVERRIDE_VMETHOD { return text; }
+	CRect platformGetSize () const VSTGUI_OVERRIDE_VMETHOD;
+	CRect platformGetVisibleSize () const VSTGUI_OVERRIDE_VMETHOD;
+	CPoint platformGetTextInset () const VSTGUI_OVERRIDE_VMETHOD { return getTextInset (); }
+	void platformLooseFocus (bool returnPressed) VSTGUI_OVERRIDE_VMETHOD;
+	bool platformOnKeyDown (const VstKeyCode& key) VSTGUI_OVERRIDE_VMETHOD;
+	void platformTextDidChange () VSTGUI_OVERRIDE_VMETHOD;
 
 	IPlatformTextEdit* platformControl;
 
