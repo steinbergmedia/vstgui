@@ -61,6 +61,7 @@ public:
 #if VSTGUI_HAS_FUNCTIONAL
 	typedef std::function<void(CVSTGUITimer*)> CallbackFunc;
 
+	CVSTGUITimer (const CallbackFunc& callback, int32_t fireTime = 100, bool doStart = true);
 	CVSTGUITimer (CallbackFunc&& callback, int32_t fireTime = 100, bool doStart = true);
 #endif
 	CVSTGUITimer (CBaseObject* timerObject, int32_t fireTime = 100, bool doStart = false);

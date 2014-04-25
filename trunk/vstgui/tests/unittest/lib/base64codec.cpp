@@ -38,7 +38,7 @@
 
 namespace VSTGUI {
 
-TESTCASE (Base64Codec,
+TESTCASE(Base64Codec,
 
 	TEST(EncodeAscii,
 		 std::string test ("ABCD");

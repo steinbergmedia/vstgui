@@ -230,7 +230,7 @@ protected:
 
 	// scale factor changed listener
 	typedef std::list<IScaleFactorChangedListener*> ScaleFactorChangedListenerList;
-	ScaleFactorChangedListenerList *pScaleFactorChangedListenerList;
+	ScaleFactorChangedListenerList* pScaleFactorChangedListenerList;
 
 	// platform frame
 	IPlatformFrame* platformFrame;

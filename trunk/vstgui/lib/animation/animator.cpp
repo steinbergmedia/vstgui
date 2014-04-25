@@ -249,9 +249,8 @@ void Animator::addAnimation (CView* view, IdStringPtr name, IAnimationTarget* ta
 	if (animations.empty ())
 		Timer::addAnimator (this);
 	removeAnimation (view, name); // cancel animation with same view and name
-	Animation* anim = new Animation (view, name, target, timingFunction, notificationObject);
+	SharedPointer<Animation> anim = owned (new Animation (view, name, target, timingFunction, notificationObject));
 	animations.push_back (anim);
-	anim->forget ();
 	#if DEBUG_LOG
 	DebugPrint ("new animation added: %p - %s\n", view, name);
 	#endif

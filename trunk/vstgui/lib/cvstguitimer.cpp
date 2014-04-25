@@ -71,6 +71,16 @@ CVSTGUITimer::CVSTGUITimer (CBaseObject* timerObject, int32_t fireTime, bool doS
 
 #if VSTGUI_HAS_FUNCTIONAL
 //-----------------------------------------------------------------------------
+CVSTGUITimer::CVSTGUITimer (const CallbackFunc& callback, int32_t fireTime, bool doStart)
+: fireTime (fireTime)
+, platformTimer (0)
+, callbackFunc (callback)
+{
+	if (doStart)
+		start ();
+}
+
+//-----------------------------------------------------------------------------
 CVSTGUITimer::CVSTGUITimer (CallbackFunc&& callback, int32_t fireTime, bool doStart)
 : fireTime (fireTime)
 , platformTimer (0)

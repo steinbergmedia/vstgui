@@ -197,6 +197,7 @@
 		F4E3905013080ECC00615042 /* uiviewfactory.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4E3902F13080ECC00615042 /* uiviewfactory.cpp */; };
 		F4E3905613080ECC00615042 /* uiviewswitchcontainer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4E3903513080ECC00615042 /* uiviewswitchcontainer.cpp */; };
 		F4E3905913080ECC00615042 /* xmlparser.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4E3903813080ECC00615042 /* xmlparser.cpp */; };
+		F4E706AC1907BC0000765574 /* utf8stringview_test.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4E706AB1907BC0000765574 /* utf8stringview_test.cpp */; };
 		F4E9C6A017A826D000F42EF8 /* animations.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F497F11A13080AD100F0A613 /* animations.cpp */; };
 		F4E9C6A117A826D000F42EF8 /* animator.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F497F11C13080AD100F0A613 /* animator.cpp */; };
 		F4E9C6A217A826D000F42EF8 /* timingfunctions.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F497F11E13080AD100F0A613 /* timingfunctions.cpp */; };
@@ -296,7 +297,7 @@
 		F4F9541E16510F40006EE1D1 /* macstring.mm in Sources */ = {isa = PBXBuildFile; fileRef = F4FC1A9F1328C8C40066E2F8 /* macstring.mm */; };
 		F4F9541F16510F40006EE1D1 /* quartzgraphicspath.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F497F17E13080B1C00F0A613 /* quartzgraphicspath.cpp */; };
 		F4F9542016510F40006EE1D1 /* cbitmap.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F497F0C213080A1C00F0A613 /* cbitmap.cpp */; };
-		F4F9542116510F40006EE1D1 /* cbitmapfilter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4CE1BE1141138F700CF75B6 /* cbitmapfilter.cpp */; settings = {COMPILER_FLAGS = "-Ofast"; }; };
+		F4F9542116510F40006EE1D1 /* cbitmapfilter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4CE1BE1141138F700CF75B6 /* cbitmapfilter.cpp */; };
 		F4F9542216510F40006EE1D1 /* ccolor.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F497F0C413080A1C00F0A613 /* ccolor.cpp */; };
 		F4F9542316510F40006EE1D1 /* cdatabrowser.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F497F0C613080A1C00F0A613 /* cdatabrowser.cpp */; };
 		F4F9542416510F40006EE1D1 /* cdrawcontext.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F497F0C813080A1C00F0A613 /* cdrawcontext.cpp */; };
@@ -607,6 +608,7 @@
 		F4E3905D1308190800615042 /* Changelog */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = Changelog; path = ../../Changelog; sourceTree = "<group>"; };
 		F4E3905F13081BA500615042 /* win32 */ = {isa = PBXFileReference; lastKnownFileType = folder; path = win32; sourceTree = "<group>"; };
 		F4E3906013081BCD00615042 /* doxygen */ = {isa = PBXFileReference; lastKnownFileType = folder; name = doxygen; path = ../../doxygen; sourceTree = "<group>"; };
+		F4E706AB1907BC0000765574 /* utf8stringview_test.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = utf8stringview_test.cpp; path = ../../tests/unittest/lib/utf8stringview_test.cpp; sourceTree = "<group>"; };
 		F4E9C69317A8266200F42EF8 /* libvstgui-ios.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libvstgui-ios.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		F4E9C69417A8266200F42EF8 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		F4E9C6ED17A82BC800F42EF8 /* uiviewframe.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = uiviewframe.mm; sourceTree = "<group>"; };
@@ -989,6 +991,7 @@
 				F4462D2B17563BD900E6835D /* ccolor_test.cpp */,
 				F4462D2D1756444800E6835D /* idependency_test.cpp */,
 				F44DC9F218A7C12F0029125A /* base64codec.cpp */,
+				F4E706AB1907BC0000765574 /* utf8stringview_test.cpp */,
 			);
 			name = lib;
 			sourceTree = "<group>";
@@ -1329,6 +1332,7 @@
 				F4462D381756474E00E6835D /* animator.cpp in Sources */,
 				F4462D391756474E00E6835D /* timingfunctions.cpp in Sources */,
 				F47D201B18A6648C00487CDB /* uiattributes.cpp in Sources */,
+				F4E706AC1907BC0000765574 /* utf8stringview_test.cpp in Sources */,
 				F4462D3A1756474E00E6835D /* cautoanimation.cpp in Sources */,
 				F4462D3B1756474E00E6835D /* cbuttons.cpp in Sources */,
 				F44DC9F318A7C12F0029125A /* base64codec.cpp in Sources */,
@@ -1748,6 +1752,10 @@
 				EXECUTABLE_PREFIX = lib;
 				GCC_C_LANGUAGE_STANDARD = c11;
 				MACOSX_DEPLOYMENT_TARGET = 10.7;
+				OTHER_CFLAGS = (
+					"-fsanitize-undefined-trap-on-error",
+					"-fsanitize=undefined-trap",
+				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Debug;
@@ -1762,6 +1770,10 @@
 				EXECUTABLE_PREFIX = lib;
 				GCC_C_LANGUAGE_STANDARD = c11;
 				MACOSX_DEPLOYMENT_TARGET = 10.7;
+				OTHER_CFLAGS = (
+					"-fsanitize-undefined-trap-on-error",
+					"-fsanitize=undefined-trap",
+				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Release;

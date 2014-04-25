@@ -86,6 +86,7 @@ TESTCASE(IDependencyTest,
 		EXPECT(dObj.notifyCalledCount == 0)
 		tObj.deferChanges (false);
 		EXPECT(dObj.notifyCalledCount == 1)
+		tObj.removeDependency (&dObj);
 	);
 
 	TEST(simpleDeferChangesTest,
@@ -99,6 +100,7 @@ TESTCASE(IDependencyTest,
 			EXPECT(dObj.notifyCalledCount == 0)
 		}
 		EXPECT(dObj.notifyCalledCount == 1)
+		tObj.removeDependency (&dObj);
 	);
 );
 
