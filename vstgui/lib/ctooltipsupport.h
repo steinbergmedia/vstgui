@@ -71,7 +71,7 @@ protected:
 	};
 
 	// CBaseObject
-	CMessageResult notify (CBaseObject* sender, IdStringPtr msg);
+	CMessageResult notify (CBaseObject* sender, IdStringPtr msg) VSTGUI_OVERRIDE_VMETHOD;
 
 	CVSTGUITimer* timer;
 	CFrame* frame;

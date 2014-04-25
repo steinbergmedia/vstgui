@@ -185,7 +185,7 @@ public:
 	DragResult doDrag (IDataPackage* source, const CPoint& offset, CBitmap* dragBitmap) VSTGUI_OVERRIDE_VMETHOD;
 	void setViewSize (const CRect& rect, bool invalid = true) VSTGUI_OVERRIDE_VMETHOD;
 
-	virtual VSTGUIEditorInterface* getEditor () const { return pEditor; }
+	virtual VSTGUIEditorInterface* getEditor () const VSTGUI_OVERRIDE_VMETHOD { return pEditor; }
 
 	#if DEBUG
 	virtual void dumpHierarchy ();

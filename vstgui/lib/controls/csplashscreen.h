@@ -70,7 +70,7 @@ public:
 protected:
 	~CSplashScreen ();
 	using CControl::valueChanged;
-	void valueChanged (CControl *pControl);
+	void valueChanged (CControl *pControl) VSTGUI_OVERRIDE_VMETHOD;
 
 	CRect	toDisplay;
 	CRect	keepSize;

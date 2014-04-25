@@ -67,7 +67,7 @@ public:
 	bool    isWindowOpened () const { return bWindowOpened; }
 	//@}
 
-	void setNumSubPixmaps (int32_t numSubPixmaps) { IMultiBitmapControl::setNumSubPixmaps (numSubPixmaps); invalid (); }
+	void setNumSubPixmaps (int32_t numSubPixmaps) VSTGUI_OVERRIDE_VMETHOD { IMultiBitmapControl::setNumSubPixmaps (numSubPixmaps); invalid (); }
 
 	CLASS_METHODS(CAutoAnimation, CControl)
 protected:

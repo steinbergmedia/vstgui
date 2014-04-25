@@ -439,17 +439,17 @@ public:
 		bitmap->forget ();
 	}
 
-	uint8_t* getAddress () const
+	uint8_t* getAddress () const VSTGUI_OVERRIDE_VMETHOD
 	{
 		return (uint8_t*)bitmap->getBits ();
 	}
 	
-	int32_t getBytesPerRow () const
+	int32_t getBytesPerRow () const VSTGUI_OVERRIDE_VMETHOD
 	{
 		return bitmap->getBytesPerRow ();
 	}
 	
-	PixelFormat getPixelFormat () const
+	PixelFormat getPixelFormat () const VSTGUI_OVERRIDE_VMETHOD
 	{
 		#ifdef __BIG_ENDIAN__
 		return kRGBA;
