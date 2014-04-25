@@ -54,26 +54,28 @@ public:
 class UIGroupAction : public IAction, public std::list<IAction*>
 {
 public:
+	static void doPerform (IAction* action) { action->perform (); }
+	static void doUndo (IAction* action) { action->undo (); }
+	static void doDelete (IAction* action) { delete action; }
+
 	UIGroupAction (UTF8StringPtr name) : name (name) {}
 	~UIGroupAction ()
 	{
-		for (const_iterator it = begin (); it != end (); it++)
-			delete (*it);
+		std::for_each (begin (), end (), doDelete);
 	}
-	
+
 	UTF8StringPtr getName () VSTGUI_OVERRIDE_VMETHOD { return name.c_str (); }
 
 	void perform () VSTGUI_OVERRIDE_VMETHOD
 	{
-		for (const_iterator it = begin (); it != end (); it++)
-			(*it)->perform ();
+		std::for_each (begin (), end (), doPerform);
 	}
 	
 	void undo () VSTGUI_OVERRIDE_VMETHOD
 	{
-		for (const_reverse_iterator it = rbegin (); it != rend (); it++)
-			(*it)->undo ();
+		std::for_each (rbegin (), rend (), doUndo);
 	}
+
 protected:
 	std::string name;
 };
@@ -112,13 +114,11 @@ void UIUndoManager::pushAndPerform (IAction* action)
 		while (position != end ())
 		{
 			if (position == savePosition)
-				savePosition = begin ();
+				savePosition = end ();
 			delete (*position);
 			position++;
 		}
 		erase (oldStack, end ());
-		if (savePosition == begin ())
-			savePosition = end ();
 	}
 	push_back (action);
 	position = end ();

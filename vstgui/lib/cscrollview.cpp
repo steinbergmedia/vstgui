@@ -598,7 +598,10 @@ void CScrollView::makeRectVisible (const CRect& rect)
 	}
 	if (vsb && newOffset.y != scrollOffset.y)
 	{
-		vsb->setValue ((float)(newOffset.y - vs.top) / (float)(containerSize.getHeight () - vs.getHeight ()));
+		if (containerSize.getHeight () == vs.getHeight ())
+			vsb->setValue (0.f);
+		else
+			vsb->setValue ((float)(newOffset.y - vs.top) / (float)(containerSize.getHeight () - vs.getHeight ()));
 		vsb->bounceValue ();
 		vsb->onVisualChange ();
 		vsb->invalid ();
@@ -606,7 +609,10 @@ void CScrollView::makeRectVisible (const CRect& rect)
 	}
 	if (hsb && newOffset.x != scrollOffset.x)
 	{
-		hsb->setValue (-(float)(newOffset.x - vs.left) / (float)(containerSize.getWidth () - vs.getWidth ()));
+		if (containerSize.getWidth () == vs.getWidth ())
+			hsb->setValue (0.f);
+		else
+			hsb->setValue (-(float)(newOffset.x - vs.left) / (float)(containerSize.getWidth () - vs.getWidth ()));
 		hsb->bounceValue ();
 		hsb->onVisualChange ();
 		hsb->invalid ();

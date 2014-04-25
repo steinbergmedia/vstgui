@@ -52,26 +52,31 @@ namespace VSTGUI {
 /// @cond ignore
 #define VSTGUI_CHECK_VIEW_RELEASING	DEBUG
 #if VSTGUI_CHECK_VIEW_RELEASING
-	typedef std::list<CView*> ViewList;
-	static ViewList gViewList;
-	int32_t gNbCView = 0;
+//------------------------------------------------------------------------
+namespace CViewInternal {
 
-	//-----------------------------------------------------------------------------
-	class AllocatedViews
+typedef std::list<CView*> ViewList;
+static ViewList gViewList;
+int32_t gNbCView = 0;
+
+//-----------------------------------------------------------------------------
+class AllocatedViews
+{
+public:
+	AllocatedViews () {}
+	~AllocatedViews ()
 	{
-	public:
-		AllocatedViews () {}
-		~AllocatedViews ()
+		if (gNbCView > 0)
 		{
-			if (gNbCView > 0)
-			{
-				DebugPrint ("Warning: There are %d unreleased CView objects.\n", gNbCView);
-				VSTGUI_RANGE_BASED_FOR_LOOP(ViewList, gViewList, CView*, view)
-					DebugPrint ("%s\n", typeid(view).name ());
-				VSTGUI_RANGE_BASED_FOR_LOOP_END
-			}
+			DebugPrint ("Warning: There are %d unreleased CView objects.\n", gNbCView);
+			VSTGUI_RANGE_BASED_FOR_LOOP(ViewList, gViewList, CView*, view)
+				DebugPrint ("%s\n", typeid(view).name ());
+			VSTGUI_RANGE_BASED_FOR_LOOP_END
 		}
-	};
+	}
+};
+
+} // CViewInternal
 
 #endif // DEBUG
 
@@ -158,11 +163,13 @@ public:
 	}
 
 protected:
+	typedef std::list<CView*> ViewContainer;
+
 	IdleViewUpdater ()
 	{
+		assert (gInstance == 0);
 		gInstance = this;
-		timer = new CVSTGUITimer (this, 1000/CView::idleRate);
-		timer->start ();
+		timer = new CVSTGUITimer (this, 1000/CView::idleRate, true);
 	}
 
 	~IdleViewUpdater ()
@@ -174,7 +181,7 @@ protected:
 	CMessageResult notify (CBaseObject* sender, IdStringPtr message)
 	{
 		CBaseObjectGuard guard (this);
-		for (std::list<CView*>::const_iterator it = views.begin (); it != views.end ();)
+		for (ViewContainer::const_iterator it = views.begin (); it != views.end ();)
 		{
 			CView* view = (*it);
 			it++;
@@ -183,7 +190,7 @@ protected:
 		return kMessageNotified;
 	}
 	CVSTGUITimer* timer;
-	std::list<CView*> views;
+	ViewContainer views;
 
 	static IdleViewUpdater* gInstance;
 };
@@ -217,9 +224,9 @@ CView::CView (const CRect& size)
 , alphaValue (1.f)
 {
 	#if VSTGUI_CHECK_VIEW_RELEASING
-	static AllocatedViews allocatedViews;
-	gNbCView++;
-	gViewList.push_back (this);
+	static CViewInternal::AllocatedViews allocatedViews;
+	CViewInternal::gNbCView++;
+	CViewInternal::gViewList.push_back (this);
 	#endif
 
 	viewFlags = kMouseEnabled | kVisible;
@@ -261,8 +268,8 @@ CView::~CView ()
 		delete it->second;
 
 	#if VSTGUI_CHECK_VIEW_RELEASING
-	gNbCView--;
-	gViewList.remove (this);
+	CViewInternal::gNbCView--;
+	CViewInternal::gViewList.remove (this);
 	#endif
 }
 
@@ -860,7 +867,7 @@ void* CDragContainerHelper::next (int32_t& outSize, int32_t& outType)
 {
 	IDataPackage::Type type;
 	const void* data = 0;
-	outSize = drag->getData (index, data, type);
+	outSize = static_cast<int32_t> (drag->getData (index, data, type));
 	switch (type)
 	{
 		case IDataPackage::kFilePath:
@@ -922,7 +929,7 @@ int32_t CDragContainerHelper::getType (int32_t idx) const
 //-----------------------------------------------------------------------------
 int32_t CDragContainerHelper::getCount () const
 {
-	return drag->getCount ();
+	return static_cast<int32_t> (drag->getCount ());
 }
 
 } // namespace

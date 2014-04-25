@@ -285,7 +285,7 @@ public:
 	//-----------------------------------------------------------------------------
 	//@{
 	CCoord getHeight () const { return size.getHeight (); }										///< get the height of the view
-	CCoord getWidth ()  const { return size.getWidth (); }											///< get the width of the view
+	CCoord getWidth ()  const { return size.getWidth (); }										///< get the width of the view
 	virtual void setViewSize (const CRect& rect, bool invalid = true);							///< set views size
 	CRect& getViewSize (CRect& rect) const { rect = size; return rect; }						///< returns the current view size
 	const CRect& getViewSize () const { return size; }											///< read only access to view size
@@ -314,8 +314,8 @@ public:
 	//@{
 	bool getAttributeSize (const CViewAttributeID id, int32_t& outSize) const;									///< get the size of an attribute
 	bool getAttribute (const CViewAttributeID id, const int32_t inSize, void* outData, int32_t& outSize) const;	///< get an attribute
-	bool setAttribute (const CViewAttributeID id, const int32_t inSize, const void* inData);						///< set an attribute
-	bool removeAttribute (const CViewAttributeID id);																///< remove an attribute
+	bool setAttribute (const CViewAttributeID id, const int32_t inSize, const void* inData);					///< set an attribute
+	bool removeAttribute (const CViewAttributeID id);															///< remove an attribute
 	//@}
 
 	//-----------------------------------------------------------------------------

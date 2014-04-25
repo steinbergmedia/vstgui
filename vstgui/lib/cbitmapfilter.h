@@ -143,8 +143,8 @@ public:
 	bool registerFilter (IdStringPtr name, IFilter::CreateFunction createFunction);
 	bool unregisterFilter (IdStringPtr name, IFilter::CreateFunction createFunction);
 protected:
-	typedef std::vector<std::pair<std::string, IFilter::CreateFunction> > FilterVector;
-	FilterVector filters;
+	typedef std::map<std::string, IFilter::CreateFunction > FilterMap;
+	FilterMap filters;
 };
 
 /** @brief Standard Bitmap Filter Names */

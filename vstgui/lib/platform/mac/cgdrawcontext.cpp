@@ -115,10 +115,7 @@ CGDrawContext::CGDrawContext (CGBitmap* _bitmap)
 {
 	if (scaleFactor != 1.)
 	{
-		CGRect clipBoundingBox = CGContextGetClipBoundingBox (cgContext);
 		CGContextConcatCTM (cgContext, CGAffineTransformMakeScale (scaleFactor, scaleFactor));
-		clipBoundingBox = CGContextGetClipBoundingBox (cgContext);
-		DebugPrint ("");
 	}
 
 	init ();

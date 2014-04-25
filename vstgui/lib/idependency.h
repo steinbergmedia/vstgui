@@ -149,7 +149,7 @@ inline IDependency::~IDependency ()
 #if DEBUG
 	if (dependents.size () != 0)
 	{
-		DebugPrint ("IDependency has depentent objects on destruction.\n");
+		DebugPrint ("IDependency has dependent objects on destruction.\n");
 	}
 #endif
 }

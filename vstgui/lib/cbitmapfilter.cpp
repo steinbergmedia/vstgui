@@ -246,41 +246,42 @@ uint32_t Factory::getNumFilters () const
 //----------------------------------------------------------------------------------------------------
 IdStringPtr Factory::getFilterName (uint32_t index) const
 {
-	if (getNumFilters () > index)
-		return filters[index].first.c_str ();
+	for (FilterMap::const_iterator it = filters.begin (), end = filters.end (); it != end; ++it, --index)
+	{
+		if (index == 0)
+			return it->first.c_str ();
+	}
 	return 0;
 }
 
 //----------------------------------------------------------------------------------------------------
 IFilter* Factory::createFilter (IdStringPtr name) const
 {
-	for (FilterVector::const_iterator it = filters.begin (); it != filters.end (); it++)
-	{
-		if ((*it).first == name)
-			return (*it).second (name);
-	}
+	FilterMap::const_iterator it = filters.find (name);
+	if (it != filters.end ())
+		return (*it).second (name);
 	return 0;
 }
 
 //----------------------------------------------------------------------------------------------------
 bool Factory::registerFilter (IdStringPtr name, IFilter::CreateFunction createFunction)
 {
-	filters.push_back (std::make_pair (name, createFunction));
+	FilterMap::iterator it = filters.find (name);
+	if (it != filters.end ())
+		it->second = createFunction;
+	else
+		filters.insert (std::make_pair (name, createFunction));
 	return true;
 }
 
 //----------------------------------------------------------------------------------------------------
 bool Factory::unregisterFilter (IdStringPtr name, IFilter::CreateFunction createFunction)
 {
-	for (FilterVector::iterator it = filters.begin (); it != filters.end (); it++)
-	{
-		if ((*it).first == name)
-		{
-			filters.erase (it);
-			return true;
-		}
-	}
-	return false;
+	FilterMap::iterator it = filters.find (name);
+	if (it == filters.end ())
+		return false;
+	filters.erase (it);
+	return true;
 }
 
 //----------------------------------------------------------------------------------------------------
