@@ -509,15 +509,15 @@ void CCheckBox::draw (CDrawContext* context)
 		else
 			off.y = 0;
 		if (hilight)
-			off.y += getDrawBackground ()->getHeight () / 2;
+			off.y += getDrawBackground ()->getHeight () / 2.;
 
 		getDrawBackground ()->draw (context, checkBoxSize, off);
 	}
 	else
 	{
-		checkBoxSize.setHeight (getFontCapHeight (font) + 2);
+		checkBoxSize.setHeight (std::floor (getFontCapHeight (font) + 2.5));
 		checkBoxSize.setWidth (checkBoxSize.getHeight ());
-		checkBoxSize.offset (1, ceil ((getViewSize ().getHeight () - checkBoxSize.getHeight ()) / 2));
+		checkBoxSize.offset (1., std::ceil ((getViewSize ().getHeight () - checkBoxSize.getHeight ()) / 2.));
 		context->setLineWidth (1);
 		context->setLineStyle (kLineSolid);
 		context->setDrawMode (kAntiAliasing|kIntegralMode);
@@ -531,13 +531,13 @@ void CCheckBox::draw (CDrawContext* context)
 			hilightColor.alpha /= 2;
 			context->setFrameColor (hilightColor);
 			CRect r (checkBoxSize);
-			r.inset (1, 1);
+			r.inset (1., 1.);
 			context->drawRect (r, kDrawStroked);
 		}
 
 		context->setDrawMode (kAntiAliasing|kIntegralMode);
 		context->setFrameColor (checkMarkColor);
-		context->setLineWidth (2);
+		context->setLineWidth (2.);
 
 		const CCoord cbInset = 2;
 		
@@ -545,7 +545,7 @@ void CCheckBox::draw (CDrawContext* context)
 		{
 			if (norm == 0.5f)
 			{
-				context->drawLine (std::make_pair (CPoint (checkBoxSize.left + cbInset, checkBoxSize.top + checkBoxSize.getHeight () / 2), CPoint (checkBoxSize.right - cbInset, checkBoxSize.top + checkBoxSize.getHeight () / 2)));
+				context->drawLine (std::make_pair (CPoint (checkBoxSize.left + cbInset, checkBoxSize.top + checkBoxSize.getHeight () / 2.), CPoint (checkBoxSize.right - cbInset, checkBoxSize.top + checkBoxSize.getHeight () / 2)));
 			}
 			else if (norm > 0.5f)
 			{
@@ -557,12 +557,12 @@ void CCheckBox::draw (CDrawContext* context)
 		{
 			if (norm == 0.5f)
 			{
-				context->drawLine (std::make_pair (CPoint (checkBoxSize.left + cbInset, checkBoxSize.top + checkBoxSize.getHeight () / 2), CPoint (checkBoxSize.right - cbInset, checkBoxSize.top + checkBoxSize.getHeight () / 2)));
+				context->drawLine (std::make_pair (CPoint (checkBoxSize.left + cbInset, checkBoxSize.top + checkBoxSize.getHeight () / 2.), CPoint (checkBoxSize.right - cbInset, checkBoxSize.top + checkBoxSize.getHeight () / 2)));
 			}
 			else if (norm > 0.5f)
 			{
-				context->drawLine (std::make_pair (CPoint (checkBoxSize.left + cbInset, checkBoxSize.top + checkBoxSize.getHeight () / 2), CPoint (checkBoxSize.left + checkBoxSize.getWidth () / 2, checkBoxSize.bottom - cbInset)));
-				context->drawLine (std::make_pair (CPoint (checkBoxSize.left + checkBoxSize.getWidth () / 2, checkBoxSize.bottom - cbInset), CPoint (checkBoxSize.right + 1, checkBoxSize.top - 1)));
+				context->drawLine (std::make_pair (CPoint (checkBoxSize.left + cbInset, checkBoxSize.top + checkBoxSize.getHeight () / 2.), CPoint (checkBoxSize.left + checkBoxSize.getWidth () / 2, checkBoxSize.bottom - cbInset)));
+				context->drawLine (std::make_pair (CPoint (checkBoxSize.left + checkBoxSize.getWidth () / 2., checkBoxSize.bottom - cbInset), CPoint (checkBoxSize.right + 1, checkBoxSize.top - 1)));
 			}
 		}
 	}
@@ -570,7 +570,7 @@ void CCheckBox::draw (CDrawContext* context)
 	if (title)
 	{
 		CPoint p (checkBoxSize.getBottomRight ());
-		p.offset (kCheckBoxTitleMargin, -1);
+		p.offset (kCheckBoxTitleMargin, -1.);
 		
 		context->setFont (font);
 		context->setFontColor (fontColor);
@@ -596,9 +596,9 @@ bool CCheckBox::getFocusPath (CGraphicsPath& outPath)
 		}
 		else
 		{
-			checkBoxSize.setHeight (getFontCapHeight (font) + 2);
+			checkBoxSize.setHeight (std::floor (getFontCapHeight (font) + 2.5));
 			checkBoxSize.setWidth (checkBoxSize.getHeight ());
-			checkBoxSize.offset (1, ceil ((getViewSize ().getHeight () - checkBoxSize.getHeight ()) / 2));
+			checkBoxSize.offset (1, std::ceil ((getViewSize ().getHeight () - checkBoxSize.getHeight ()) / 2));
 		}
 		outPath.addRect (checkBoxSize);
 		checkBoxSize.inset (-focusWidth, -focusWidth);
@@ -891,7 +891,7 @@ bool CTextButton::sizeToFit ()
 void CTextButton::draw (CDrawContext* context)
 {
 	bool highlight = value > 0.5 ? true : false;
-	context->setDrawMode (kAntiAliasing|kIntegralMode);
+	context->setDrawMode (kAntiAliasing);
 	context->setLineWidth (frameWidth);
 	context->setLineStyle (CLineStyle (CLineStyle::kLineCapRound, CLineStyle::kLineJoinRound));
 	context->setFrameColor (highlight ? frameColorHighlighted : frameColor);
@@ -902,21 +902,22 @@ void CTextButton::draw (CDrawContext* context)
 	{
 		CColor color1 = highlight ? gradientStartColorHighlighted : gradientStartColor;
 		CColor color2 = highlight ? gradientEndColorHighlighted : gradientEndColor;
-		CGradient* gradient = path->createGradient (0.2, 1, color1, color2);
+		SharedPointer<CGradient> gradient = owned (path->createGradient (0.2, 1, color1, color2));
 		if (gradient)
 		{
 			context->fillLinearGradient (path, *gradient, r.getTopLeft (), r.getBottomLeft (), false);
-			gradient->forget ();
 		}
 		else
 		{
 			context->setFillColor (highlight ? gradientStartColorHighlighted : gradientStartColor);
 			context->drawGraphicsPath (path, CDrawContext::kPathFilled);
 		}
+		context->setDrawMode (kAntiAliasing|kIntegralMode);
 		context->drawGraphicsPath (path, CDrawContext::kPathStroked);
 	}
 	else
 	{
+		context->setDrawMode (kAntiAliasing|kIntegralMode);
 		context->setFillColor (highlight ? gradientStartColorHighlighted : gradientStartColor);
 		context->drawRect (getViewSize (), kDrawFilledAndStroked);
 	}

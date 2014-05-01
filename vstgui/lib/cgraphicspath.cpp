@@ -40,6 +40,11 @@ namespace VSTGUI {
 //-----------------------------------------------------------------------------
 void CGraphicsPath::addRoundRect (const CRect& size, CCoord radius)
 {
+	if (radius == 0.)
+	{
+		addRect (size);
+		return;
+	}
 	CRect rect2 (size);
 	rect2.normalize ();
 	const CCoord left = rect2.left;

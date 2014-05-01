@@ -165,7 +165,7 @@ public:
 			}
 
 			CRect size (_size);
-			context->setDrawMode (kAliasing);
+			context->setDrawMode (kAliasing|kIntegralMode);
 			context->setLineStyle (kLineSolid);
 			context->setLineWidth (1.);
 			context->setFrameColor (lineColor);
@@ -178,7 +178,7 @@ public:
 				if (horizontal)
 				{
 					context->fillLinearGradient (path, *shading, CPoint (size.left, size.top), CPoint (size.right, size.top));
-					context->setDrawMode (kAntiAliasing|kIntegralMode);
+					context->setDrawMode (kAliasing|kIntegralMode);
 					if (drawBottomLine)
 						context->drawLine (std::make_pair (CPoint (size.left, size.top), CPoint (size.left, size.bottom)));
 					if (drawTopLine)
@@ -187,7 +187,7 @@ public:
 				else
 				{
 					context->fillLinearGradient (path, *shading, CPoint (size.left, size.top), CPoint (size.left, size.bottom));
-					context->setDrawMode (kAntiAliasing|kIntegralMode);
+					context->setDrawMode (kAliasing|kIntegralMode);
 					if (drawTopLine)
 						context->drawLine (std::make_pair (CPoint (size.left, size.top+1), CPoint (size.right, size.top+1)));
 					if (drawBottomLine)

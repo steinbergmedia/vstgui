@@ -191,7 +191,7 @@ void CLayeredViewContainer::drawViewLayer (CDrawContext* context, const CRect& _
 	dirtyRect.offset (p.x, p.y);
 	p.x *= -1.;
 	p.y *= -1.;
-	context->setOffset (p);
+	CDrawContext::Transform transform (*context, CGraphicsTransform ().translate (p.x, p.y));
 	CViewContainer::drawRect (context, dirtyRect);
 }
 

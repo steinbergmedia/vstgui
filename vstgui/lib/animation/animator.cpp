@@ -199,7 +199,7 @@ protected:
 			#if DEBUG_LOG
 			DebugPrint ("Current Animators : %d\n", animators.size ());
 			#endif
-			AnimatorList::iterator it = animators.begin ();
+			Animators::iterator it = animators.begin ();
 			while (it != animators.end ())
 			{
 				Animator* animator = *it++;
@@ -220,9 +220,9 @@ protected:
 
 	CVSTGUITimer* timer;
 	
-	typedef std::list<Animator*> AnimatorList;
-	AnimatorList animators;
-	AnimatorList toRemove;
+	typedef std::list<Animator*> Animators;
+	Animators animators;
+	Animators toRemove;
 	bool inTimer;
 	static Timer* gInstance;
 };

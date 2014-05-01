@@ -637,48 +637,6 @@ void CViewContainer::drawBackgroundRect (CDrawContext* pContext, const CRect& _u
 	}
 }
 
-#if VSTGUI_ENABLE_DEPRECATED_METHODS
-//-----------------------------------------------------------------------------
-void CViewContainer::drawBackToFront (CDrawContext* pContext, const CRect& updateRect)
-{
-	CCoord save[4];
-	modifyDrawContext (save, pContext);
-
-	CRect _updateRect (updateRect);
-	_updateRect.bound (getViewSize ());
-
-	CRect clientRect (_updateRect);
-
-	CRect oldClip;
-	pContext->getClipRect (oldClip);
-	CRect oldClip2 (oldClip);
-	
-	CRect newClip (clientRect);
-	newClip.bound (oldClip);
-	pContext->setClipRect (newClip);
-	
-	// draw the background
-	drawBackgroundRect (pContext, clientRect);
-	
-	// draw each view
-	FOREACHSUBVIEW
-		if (pV->checkUpdate (clientRect))
-		{
-			CRect viewSize = pV->getViewSize (viewSize);
-			viewSize.bound (newClip);
-			if (viewSize.getWidth () == 0 || viewSize.getHeight () == 0)
-				continue;
-			pContext->setClipRect (viewSize);
-
-			pV->drawRect (pContext, clientRect);
-		}
-	ENDFOREACHSUBVIEW
-
-	pContext->setClipRect (oldClip2);
-	restoreDrawContext (pContext, save);
-}
-#endif
-
 //-----------------------------------------------------------------------------
 /**
  * @param pContext the context which to use to draw
@@ -686,12 +644,8 @@ void CViewContainer::drawBackToFront (CDrawContext* pContext, const CRect& updat
  */
 void CViewContainer::drawRect (CDrawContext* pContext, const CRect& updateRect)
 {
-	CDrawContext* pC;
-	CCoord save[4];
-
-	pC = pContext;
-	modifyDrawContext (save, pContext);
-
+	CDrawContext::Transform transform (*pContext, CGraphicsTransform ().translate (getViewSize ().left, getViewSize ().top));
+	
 	CRect _updateRect (updateRect);
 	_updateRect.bound (getViewSize ());
 
@@ -704,10 +658,10 @@ void CViewContainer::drawRect (CDrawContext* pContext, const CRect& updateRect)
 	
 	CRect newClip (clientRect);
 	newClip.bound (oldClip);
-	pC->setClipRect (newClip);
+	pContext->setClipRect (newClip);
 	
 	// draw the background
-	drawBackgroundRect (pC, clientRect);
+	drawBackgroundRect (pContext, clientRect);
 	
 	CView* _focusView = 0;
 	IFocusDrawing* _focusDrawing = 0;
@@ -723,7 +677,7 @@ void CViewContainer::drawRect (CDrawContext* pContext, const CRect& updateRect)
 		{
 			if (_focusDrawing && _focusView == pV && !_focusDrawing->drawFocusOnTop ())
 			{
-				CGraphicsPath* focusPath = pC->createGraphicsPath ();
+				CGraphicsPath* focusPath = pContext->createGraphicsPath ();
 				if (focusPath)
 				{
 					if (_focusDrawing->getFocusPath (*focusPath))
@@ -731,10 +685,10 @@ void CViewContainer::drawRect (CDrawContext* pContext, const CRect& updateRect)
 						lastDrawnFocus = focusPath->getBoundingBox ();
 						if (!lastDrawnFocus.isEmpty ())
 						{
-							pC->setClipRect (oldClip2);
-							pC->setDrawMode (kAntiAliasing);
-							pC->setFillColor (getFrame ()->getFocusColor ());
-							pC->drawGraphicsPath (focusPath, CDrawContext::kPathFilledEvenOdd);
+							pContext->setClipRect (oldClip2);
+							pContext->setDrawMode (kAntiAliasing);
+							pContext->setFillColor (getFrame ()->getFocusColor ());
+							pContext->drawGraphicsPath (focusPath, CDrawContext::kPathFilledEvenOdd);
 						}
 						_focusDrawing = 0;
 						_focusView = 0;
@@ -749,20 +703,20 @@ void CViewContainer::drawRect (CDrawContext* pContext, const CRect& updateRect)
 				viewSize.bound (newClip);
 				if (viewSize.getWidth () == 0 || viewSize.getHeight () == 0)
 					continue;
-				pC->setClipRect (viewSize);
-				float globalContextAlpha = pC->getGlobalAlpha ();
-				pC->setGlobalAlpha (globalContextAlpha * pV->getAlphaValue ());
-				pV->drawRect (pC, clientRect);
-				pC->setGlobalAlpha (globalContextAlpha);
+				pContext->setClipRect (viewSize);
+				float globalContextAlpha = pContext->getGlobalAlpha ();
+				pContext->setGlobalAlpha (globalContextAlpha * pV->getAlphaValue ());
+				pV->drawRect (pContext, clientRect);
+				pContext->setGlobalAlpha (globalContextAlpha);
 			}
 		}
 	ENDFOREACHSUBVIEW
 
-	pC->setClipRect (oldClip2);
+	pContext->setClipRect (oldClip2);
 
 	if (_focusView)
 	{
-		CGraphicsPath* focusPath = pC->createGraphicsPath ();
+		CGraphicsPath* focusPath = pContext->createGraphicsPath ();
 		if (focusPath)
 		{
 			if (_focusDrawing)
@@ -781,16 +735,14 @@ void CViewContainer::drawRect (CDrawContext* pContext, const CRect& updateRect)
 			lastDrawnFocus = focusPath->getBoundingBox ();
 			if (!lastDrawnFocus.isEmpty ())
 			{
-				pC->setDrawMode (kAntiAliasing);
-				pC->setFillColor (getFrame ()->getFocusColor ());
-				pC->drawGraphicsPath (focusPath, CDrawContext::kPathFilledEvenOdd);
+				pContext->setDrawMode (kAntiAliasing);
+				pContext->setFillColor (getFrame ()->getFocusColor ());
+				pContext->drawGraphicsPath (focusPath, CDrawContext::kPathFilledEvenOdd);
 			}
 			focusPath->forget ();
 		}
 	}
 	
-	restoreDrawContext (pContext, save);
-
 	setDirty (false);
 }
 
@@ -1323,26 +1275,6 @@ bool CViewContainer::attached (CView* parent)
 		ENDFOREACHSUBVIEW
 	}
 	return result;
-}
-
-//-----------------------------------------------------------------------------
-void CViewContainer::modifyDrawContext (CCoord save[4], CDrawContext* pContext)
-{
-	// store
-	CPoint offset = pContext->getOffset ();
-	save[0] = offset.x;
-	save[1] = offset.y;
-	offset.x += getViewSize ().left;
-	offset.y += getViewSize ().top;
-	pContext->setOffset (offset);
-}
-
-//-----------------------------------------------------------------------------
-void CViewContainer::restoreDrawContext (CDrawContext* pContext, CCoord save[4])
-{
-	// restore
-	CPoint offset (save[0], save[1]);
-	pContext->setOffset (offset);
 }
 
 #if DEBUG

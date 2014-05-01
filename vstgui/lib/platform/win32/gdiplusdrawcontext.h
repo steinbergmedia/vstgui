@@ -98,6 +98,29 @@ protected:
 	Gdiplus::SolidBrush	*pFontBrush;
 };
 
+//-----------------------------------------------------------------------------
+struct GdiplusDrawScope
+{
+	GdiplusDrawScope (Gdiplus::Graphics* graphics, const CRect& clipRect, const CGraphicsTransform& transform)
+	: graphics (graphics)
+	{
+		graphics->SetClip (Gdiplus::RectF ((Gdiplus::REAL)clipRect.left, (Gdiplus::REAL)clipRect.top, (Gdiplus::REAL)clipRect.getWidth (), (Gdiplus::REAL)clipRect.getHeight ()), Gdiplus::CombineModeReplace);
+		if (transform.isInvariant () == false)
+		{
+			Gdiplus::Matrix matrix ((Gdiplus::REAL)transform.m11, (Gdiplus::REAL)transform.m12, (Gdiplus::REAL)transform.m21, (Gdiplus::REAL)transform.m22, (Gdiplus::REAL)transform.dx, (Gdiplus::REAL)transform.dy);
+			graphics->SetTransform (&matrix);
+		}
+	}
+
+	~GdiplusDrawScope ()
+	{
+		Gdiplus::Matrix matrix;
+		graphics->SetTransform (&matrix);
+	}
+
+	Gdiplus::Graphics* graphics;
+};
+
 } // namespace
 
 #endif // WINDOWS

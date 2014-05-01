@@ -140,7 +140,7 @@ void CShadowViewContainer::drawRect (CDrawContext* pContext, const CRect& update
 		if (offscreenContext)
 		{
 			offscreenContext->beginDraw ();
-			offscreenContext->setOffset (CPoint (-getViewSize ().left, -getViewSize ().top));
+			CDrawContext::Transform transform (*offscreenContext, CGraphicsTransform ().translate(-getViewSize ().left, -getViewSize ().top));
 			CViewContainer::draw (offscreenContext);
 			offscreenContext->endDraw ();
 			CBitmap* bitmap = offscreenContext->getBitmap ();

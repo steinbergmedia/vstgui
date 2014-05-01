@@ -621,13 +621,15 @@ void CView::takeFocus ()
  * @param newSize rect of new size of view
  * @param invalid if true set view dirty
  */
-void CView::setViewSize (const CRect& newSize, bool invalid)
+void CView::setViewSize (const CRect& newSize, bool doInvalid)
 {
 	if (size != newSize)
 	{
+		if (doInvalid && kDirtyCallAlwaysOnMainThread)
+			invalid ();
 		CRect oldSize = size;
 		size = newSize;
-		if (invalid)
+		if (doInvalid)
 			setDirty ();
 		if (getParentView ())
 			getParentView ()->notify (this, kMsgViewSizeChanged);

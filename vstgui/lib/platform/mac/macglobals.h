@@ -76,6 +76,12 @@ inline CPoint CPointFromCGPoint (const CGPoint& p)
 	return CPoint (p.x, p.y);
 }
 
+//-----------------------------------------------------------------------------
+inline CGPoint CGPointFromCPoint (const CPoint& p)
+{
+	return CGPointMake (p.x, p.y);
+}
+
 } // namespace
 
 #endif // MAC

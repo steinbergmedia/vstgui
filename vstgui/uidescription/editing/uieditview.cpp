@@ -495,8 +495,7 @@ void UIEditView::drawRect (CDrawContext *pContext, const CRect& updateRect)
 	newClip.offset (-getViewSize ().left, -getViewSize ().top);
 	pContext->setClipRect (updateRect);
 
-	CCoord save[4];
-	modifyDrawContext (save, pContext);
+	CDrawContext::Transform transform (*pContext, CGraphicsTransform ().translate (getViewSize ().left, getViewSize ().top));
 
 	const CCoord dashLength[] = {5, 5};
 	const CLineStyle lineDash (CLineStyle::kLineCapButt, CLineStyle::kLineJoinMiter, 0, 2, dashLength);
@@ -505,10 +504,6 @@ void UIEditView::drawRect (CDrawContext *pContext, const CRect& updateRect)
 	pContext->setDrawMode (kAliasing);
 	pContext->setFrameColor (kBlueCColor);
 	pContext->drawRect (CRect (0, 0, getWidth (), getHeight ()), kDrawStroked);
-
-	restoreDrawContext (pContext, save);
-	pContext->setClipRect (oldClip);
-	pContext->setDrawMode (kAliasing);
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -982,7 +977,7 @@ CBitmap* UIEditView::createBitmapFromSelection (UISelection* selection)
 		{
 			CPoint p;
 			view->getParentView ()->localToFrame (p);
-			context->setOffset (CPoint (-viewSize.left + p.x, -viewSize.top + p.y));
+			CDrawContext::Transform transform (*context, CGraphicsTransform ().translate (-viewSize.left + p.x, -viewSize.top + p.y));
 			context->setClipRect (view->getViewSize ());
 			if (IPlatformViewLayerDelegate* layer = dynamic_cast<IPlatformViewLayerDelegate*>(view))
 			{

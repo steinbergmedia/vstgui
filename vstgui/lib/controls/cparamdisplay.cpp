@@ -237,7 +237,7 @@ void CParamDisplay::drawBack (CDrawContext* pContext, CBitmap* newBack)
 			{
 				CRect pathRect = getViewSize ();
 				pathRect.inset (frameWidth/2., frameWidth/2.);
-				CGraphicsPath* path = pContext->createRoundRectGraphicsPath (pathRect, roundRectRadius);
+				SharedPointer<CGraphicsPath> path = owned (pContext->createRoundRectGraphicsPath (pathRect, roundRectRadius));
 				if (path)
 				{
 					pContext->setDrawMode (kAntiAliasing|kIntegralMode);
@@ -249,13 +249,12 @@ void CParamDisplay::drawBack (CDrawContext* pContext, CBitmap* newBack)
 						pContext->setFrameColor (frameColor);
 						pContext->drawGraphicsPath (path, CDrawContext::kPathStroked);
 					}
-					path->forget ();
 				}
 			}
 			else
 			{
 				pContext->setDrawMode (kAntiAliasing|kIntegralMode);
-				OwningPointer<CGraphicsPath> path = pContext->createGraphicsPath ();
+				SharedPointer<CGraphicsPath> path = owned (pContext->createGraphicsPath ());
 				if (path)
 				{
 					CRect frameRect = getViewSize ();
@@ -303,7 +302,7 @@ void CParamDisplay::drawBack (CDrawContext* pContext, CBitmap* newBack)
 			pContext->setFrameColor (frameColor);
 
 		CPoint p;
-		OwningPointer<CGraphicsPath> path = pContext->createGraphicsPath ();
+		SharedPointer<CGraphicsPath> path = owned (pContext->createGraphicsPath ());
 		if (path)
 		{
 			path->beginSubpath (p (r.left, r.bottom));
@@ -343,23 +342,24 @@ void CParamDisplay::drawText (CDrawContext* pContext, UTF8StringPtr string, cons
 {
 	if (!(style & kNoTextStyle) && UTF8StringView (string).calculateByteCount () > 1)
 	{
+		pContext->saveGlobalState ();
 		CRect textRect (size);
 		textRect.inset (textInset.x, textInset.y);
+
 		CRect oldClip;
 		pContext->getClipRect (oldClip);
 		CRect newClip (textRect);
 		newClip.bound (oldClip);
 		pContext->setClipRect (newClip);
 		
-		pContext->setDrawMode (kAntiAliasing|kIntegralMode);
-		pContext->setFont (fontID);
-
 		CPoint center (textRect.getCenter ());
-		center.offset (pContext->getOffset ().x, pContext->getOffset ().y);
 		CGraphicsTransform transform;
 		transform.rotate (textRotation, center);
 		CDrawContext::Transform ctxTransform (*pContext, transform);
 		
+		pContext->setDrawMode (kAntiAliasing|kIntegralMode);
+		pContext->setFont (fontID);
+
 		// draw darker text (as shadow)
 		if (style & kShadowText) 
 		{
@@ -370,7 +370,7 @@ void CParamDisplay::drawText (CDrawContext* pContext, UTF8StringPtr string, cons
 		}
 		pContext->setFontColor (fontColor);
 		pContext->drawString (string, textRect, horiTxtAlign, bAntialias);
-		pContext->setClipRect (oldClip);
+		pContext->restoreGlobalState ();
 	}
 }
 
