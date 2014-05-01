@@ -87,6 +87,18 @@ struct CGraphicsTransform
 		return translate (center.x, center.y).rotate (angle).translate (-center.x, -center.y);
 	}
 
+	CGraphicsTransform& skewX (double angle)
+	{
+		*this = CGraphicsTransform (1, std::tan (radians (angle)), 0, 1, 0, 0) * *this;
+		return *this;
+	}
+
+	CGraphicsTransform& skewY (double angle)
+	{
+		*this = CGraphicsTransform (1, 0, std::tan (radians (angle)), 1, 0, 0) * *this;
+		return *this;
+	}
+	
 	bool isInvariant () const
 	{
 		return *this == CGraphicsTransform ();
@@ -116,6 +128,22 @@ struct CGraphicsTransform
 	{
 		transform (r.left, r.right, r.top, r.bottom);
 		return r;
+	}
+
+	CGraphicsTransform inverse () const
+	{
+		CGraphicsTransform result;
+		const double denominator = m11 * m22 - m12 * m21;
+		if (denominator != 0)
+		{
+			result.m11 = m22 / denominator;
+			result.m12 = -m12 / denominator;
+			result.m21 = -m21 / denominator;
+			result.m22 = m11 / denominator;
+			result.dx = ((m12 * dy) - (m22 * dx)) / denominator;
+			result.dy = ((m21 * dx) - (m11 * dy)) / denominator;
+		}
+		return result;
 	}
 
 	CGraphicsTransform operator* (const CGraphicsTransform& t) const

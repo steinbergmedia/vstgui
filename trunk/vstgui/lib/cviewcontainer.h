@@ -100,9 +100,6 @@ public:
 	CDrawStyle getBackgroundColorDrawStyle () const { return backgroundColorDrawStyle; }
 	//@}
 
-	void modifyDrawContext (CCoord save[4], CDrawContext* pContext);
-	void restoreDrawContext (CDrawContext* pContext, CCoord save[4]);
-
 	virtual bool advanceNextFocusView (CView* oldFocus, bool reverse = false);
 	virtual bool invalidateDirtyViews ();
 	virtual CRect getVisibleSize (const CRect& rect) const;
@@ -247,7 +244,6 @@ protected:
 	~CViewContainer ();
 	virtual bool checkUpdateRect (CView* view, const CRect& rect);
 	virtual bool hitTestSubViews (const CPoint& where, const CButtonState buttons = -1);
-	VSTGUI_DEPRECATED(void drawBackToFront (CDrawContext* context, const CRect& rect);)
 
 	enum {
 		kAutosizeSubviews = 1 << (CView::kLastCViewFlag + 1)

@@ -846,7 +846,10 @@ void CDataBrowserView::drawRect (CDrawContext* context, const CRect& updateRect)
 				testRect.bound (updateRect);
 				if (testRect.isEmpty () == false)
 				{
-					db->dbDrawCell (context, r, row, col, std::find (selection.begin (), selection.end (), row) != selection.end () ? IDataBrowserDelegate::kRowSelected : 0, browser);
+					CRect cellSize (r);
+					cellSize.top--;
+					context->setClipRect (testRect);
+					db->dbDrawCell (context, cellSize, row, col, std::find (selection.begin (), selection.end (), row) != selection.end () ? IDataBrowserDelegate::kRowSelected : 0, browser);
 				}
 				r.offset (columnWidth, 0);
 				if (browser->getStyle () & CDataBrowser::kDrawColumnLines)
@@ -888,6 +891,7 @@ void CDataBrowserView::drawRect (CDrawContext* context, const CRect& updateRect)
 		}
 		if (lines.size ())
 		{
+			context->setClipRect (updateRect);
 			context->setDrawMode (kAliasing | kIntegralMode);
 			context->setLineWidth (lineWidth);
 			context->setFrameColor (lineColor);

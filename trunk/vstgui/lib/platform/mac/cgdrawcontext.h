@@ -89,15 +89,18 @@ public:
 	void drawGraphicsPath (CGraphicsPath* path, PathDrawMode mode = kPathFilled, CGraphicsTransform* transformation = 0) VSTGUI_OVERRIDE_VMETHOD;
 	void fillLinearGradient (CGraphicsPath* path, const CGradient& gradient, const CPoint& startPoint, const CPoint& endPoint, bool evenOdd = false, CGraphicsTransform* transformation = 0) VSTGUI_OVERRIDE_VMETHOD;
 	void fillRadialGradient (CGraphicsPath* path, const CGradient& gradient, const CPoint& center, CCoord radius, const CPoint& originOffset = CPoint (0, 0), bool evenOdd = false, CGraphicsTransform* transformation = 0) VSTGUI_OVERRIDE_VMETHOD;
-
+	double getScaleFactor () const VSTGUI_OVERRIDE_VMETHOD { return scaleFactor; }
+	
 	CGContextRef beginCGContext (bool swapYAxis = false, bool integralOffset = false);
 	void releaseCGContext (CGContextRef context);
 
 	CGContextRef getCGContext () const { return cgContext; }
 	void applyLineStyle (CGContextRef context);
 
-	double getScaleFactor () const VSTGUI_OVERRIDE_VMETHOD { return scaleFactor; }
-
+	CGRect pixelAlligned (const CGRect& r) const;
+	CGPoint pixelAlligned (const CGPoint& p) const;
+	CGPathRef pixelAllignedCopy (CGPathRef path) const;
+	
 //------------------------------------------------------------------------------------
 protected:
 	void init () VSTGUI_OVERRIDE_VMETHOD;

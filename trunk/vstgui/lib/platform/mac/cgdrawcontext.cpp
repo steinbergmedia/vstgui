@@ -56,37 +56,13 @@ static void addOvalToPath (CGContextRef c, CPoint center, CGFloat a, CGFloat b, 
 	CGContextSaveGState (c);
 	CGContextTranslateCTM (c, center.x, center.y);
 	CGContextScaleCTM (c, a, b);
-	CGContextRotateCTM (c, radians (-90.f));
+	CGContextRotateCTM (c, radians (-90.));
 	
 	CGContextMoveToPoint (c, cos (radians (start_angle)), sin (radians (start_angle)));
 	
 	CGContextAddArc(c, 0, 0, 1, radians (start_angle), radians (end_angle), 1);
 	
 	CGContextRestoreGState(c);
-}
-
-//-----------------------------------------------------------------------------
-static CCoord roundCoord (const CCoord c, double scaleFactor)
-{
-	return round (c * scaleFactor * 10) / (10 * scaleFactor);
-}
-
-//-----------------------------------------------------------------------------
-static void roundPoint (CPoint& p, double scaleFactor)
-{
-	p.x = roundCoord (p.x, scaleFactor);
-	p.y = roundCoord (p.y, scaleFactor);
-}
-
-//-----------------------------------------------------------------------------
-static CRect makeRectIntegral (const CRect r, double scaleFactor)
-{
-	CRect result;
-	result.left = roundCoord (r.left, scaleFactor);
-	result.right = roundCoord (r.right, scaleFactor);
-	result.top = roundCoord (r.top, scaleFactor);
-	result.bottom = roundCoord (r.bottom, scaleFactor);
-	return result;
 }
 
 }
@@ -180,24 +156,13 @@ void CGDrawContext::drawGraphicsPath (CGraphicsPath* _path, PathDrawMode mode, C
 	CGContextRef context = beginCGContext (true, currentState.drawMode.integralMode ());
 	if (context)
 	{
-		if (t)
-		{
-			CGContextSaveGState (context);
-			CGAffineTransform transform = QuartzGraphicsPath::createCGAfflineTransform (*t);
-			CGContextConcatCTM (context, transform);
-			CGContextAddPath (context, path->getCGPathRef ());
-			CGContextRestoreGState (context);
-		}
-		else
-			CGContextAddPath (context, path->getCGPathRef ());
-
 		CGPathDrawingMode cgMode;
 		switch (mode)
 		{
 			case kPathFilledEvenOdd: cgMode = kCGPathEOFill; break;
-			case kPathStroked: 
+			case kPathStroked:
 			{
-				cgMode = kCGPathStroke; 
+				cgMode = kCGPathStroke;
 				applyLineStyle (context);
 				if ((((int32_t)currentState.frameWidth) % 2))
 					CGContextTranslateCTM (context, 0.5f, -0.5f);
@@ -205,9 +170,28 @@ void CGDrawContext::drawGraphicsPath (CGraphicsPath* _path, PathDrawMode mode, C
 			}
 			default: cgMode = kCGPathFill; break;
 		}
+		
+		CGPathRef cgPath = path->getCGPathRef ();
+		if (currentState.drawMode.integralMode ())
+		{
+			cgPath = pixelAllignedCopy (cgPath);
+		}
+		if (t)
+		{
+			CGContextSaveGState (context);
+			CGAffineTransform transform = QuartzGraphicsPath::createCGAfflineTransform (*t);
+			CGContextConcatCTM (context, transform);
+			CGContextAddPath (context, cgPath);
+			CGContextRestoreGState (context);
+		}
+		else
+			CGContextAddPath (context, cgPath);
 
 		CGContextDrawPath (context, cgMode);
-		
+
+		if (cgPath != path->getCGPathRef ())
+			CFRelease (cgPath);
+
 		releaseCGContext (context);
 	}
 }
@@ -226,16 +210,21 @@ void CGDrawContext::fillLinearGradient (CGraphicsPath* _path, const CGradient& g
 	CGContextRef context = beginCGContext (true, currentState.drawMode.integralMode ());
 	if (context)
 	{
+		CGPathRef cgPath = path->getCGPathRef ();
+		if (currentState.drawMode.integralMode ())
+		{
+			cgPath = pixelAllignedCopy (cgPath);
+		}
 		if (t)
 		{
 			CGContextSaveGState (context);
 			CGAffineTransform transform = QuartzGraphicsPath::createCGAfflineTransform (*t);
 			CGContextConcatCTM (context, transform);
-			CGContextAddPath (context, path->getCGPathRef ());
+			CGContextAddPath (context, cgPath);
 			CGContextRestoreGState (context);
 		}
 		else
-			CGContextAddPath (context, path->getCGPathRef ());
+			CGContextAddPath (context, cgPath);
 
 		if (evenOdd)
 			CGContextEOClip (context);
@@ -243,6 +232,9 @@ void CGDrawContext::fillLinearGradient (CGraphicsPath* _path, const CGradient& g
 			CGContextClip (context);
 
 		CGContextDrawLinearGradient (context, *cgGradient, CGPointMake (startPoint.x, startPoint.y), CGPointMake (endPoint.x, endPoint.y), kCGGradientDrawsBeforeStartLocation | kCGGradientDrawsAfterEndLocation);
+
+		if (cgPath != path->getCGPathRef ())
+			CFRelease (cgPath);
 		
 		releaseCGContext (context);
 	}
@@ -262,16 +254,21 @@ void CGDrawContext::fillRadialGradient (CGraphicsPath* _path, const CGradient& g
 	CGContextRef context = beginCGContext (true, currentState.drawMode.integralMode ());
 	if (context)
 	{
+		CGPathRef cgPath = path->getCGPathRef ();
+		if (currentState.drawMode.integralMode ())
+		{
+			cgPath = pixelAllignedCopy (cgPath);
+		}
 		if (t)
 		{
 			CGContextSaveGState (context);
 			CGAffineTransform transform = QuartzGraphicsPath::createCGAfflineTransform (*t);
 			CGContextConcatCTM (context, transform);
-			CGContextAddPath (context, path->getCGPathRef ());
+			CGContextAddPath (context, cgPath);
 			CGContextRestoreGState (context);
 		}
 		else
-			CGContextAddPath (context, path->getCGPathRef ());
+			CGContextAddPath (context, cgPath);
 
 		if (evenOdd)
 			CGContextEOClip (context);
@@ -279,6 +276,9 @@ void CGDrawContext::fillRadialGradient (CGraphicsPath* _path, const CGradient& g
 			CGContextClip (context);
 
 		CGContextDrawRadialGradient (context, *cgGradient, CGPointMake (center.x + originOffset.x, center.y + originOffset.y), 0, CGPointMake (center.x, center.y), radius, kCGGradientDrawsBeforeStartLocation | kCGGradientDrawsAfterEndLocation);
+
+		if (cgPath != path->getCGPathRef ())
+			CFRelease (cgPath);
 		
 		releaseCGContext (context);
 	}
@@ -362,20 +362,17 @@ void CGDrawContext::drawLine (const LinePair& line)
 			CGContextTranslateCTM (context, 0.5f, -0.5f);
 		
 		CGContextBeginPath (context);
+		CGPoint first = CGPointFromCPoint (line.first);
+		CGPoint second = CGPointFromCPoint (line.second);
 		if (currentState.drawMode.integralMode ())
 		{
-			CPoint p (line.first);
-			CGDrawContextInternal::roundPoint (p, scaleFactor);
-			CGContextMoveToPoint (context, p.x, p.y);
-			p = line.second;
-			CGDrawContextInternal::roundPoint (p, scaleFactor);
-			CGContextAddLineToPoint (context, p.x, p.y);
+			first = pixelAlligned (first);
+			second = pixelAlligned (second);
 		}
-		else
-		{
-			CGContextMoveToPoint (context, line.first.x, line.first.y);
-			CGContextAddLineToPoint (context, line.second.x, line.second.y);
-		}
+
+		CGContextMoveToPoint (context, first.x, first.y);
+		CGContextAddLineToPoint (context, second.x, second.y);
+
 		CGContextDrawPath (context, kCGPathStroke);
 		releaseCGContext (context);
 	}
@@ -397,19 +394,12 @@ void CGDrawContext::drawLines (const LineList& lines)
 		CGPoint* cgPoints = new CGPoint[lines.size () * 2];
 		uint32_t index = 0;
 		VSTGUI_RANGE_BASED_FOR_LOOP(LineList, lines, LinePair, line)
+			cgPoints[index] = CGPointFromCPoint (line.first);
+			cgPoints[index+1] = CGPointFromCPoint (line.second);
 			if (currentState.drawMode.integralMode ())
 			{
-				cgPoints[index].x = CGDrawContextInternal::roundCoord (line.first.x, scaleFactor);
-				cgPoints[index+1].x = CGDrawContextInternal::roundCoord (line.second.x, scaleFactor);
-				cgPoints[index].y = CGDrawContextInternal::roundCoord (line.first.y, scaleFactor);
-				cgPoints[index+1].y = CGDrawContextInternal::roundCoord (line.second.y, scaleFactor);
-			}
-			else
-			{
-				cgPoints[index].x = line.first.x;
-				cgPoints[index+1].x = line.second.x;
-				cgPoints[index].y = line.first.y;
-				cgPoints[index+1].y = line.second.y;
+				cgPoints[index] = pixelAlligned (cgPoints[index]);
+				cgPoints[index+1] = pixelAlligned (cgPoints[index+1]);
 			}
 			index += 2;
 		VSTGUI_RANGE_BASED_FOR_LOOP_END
@@ -438,9 +428,17 @@ void CGDrawContext::drawPolygon (const PointList& polygonPointList, const CDrawS
 		applyLineStyle (context);
 
 		CGContextBeginPath (context);
-		CGContextMoveToPoint (context, polygonPointList[0].x, polygonPointList[0].y);
+		CGPoint p = CGPointFromCPoint(polygonPointList[0]);
+		if (currentState.drawMode.integralMode ())
+			p = pixelAlligned (p);
+		CGContextMoveToPoint (context, p.x, p.y);
 		for (uint32_t i = 1; i < polygonPointList.size (); i++)
-			CGContextAddLineToPoint (context, polygonPointList[i].x, polygonPointList[i].y);
+		{
+			p = CGPointFromCPoint (polygonPointList[i]);
+			if (currentState.drawMode.integralMode ())
+				p = pixelAlligned (p);
+			CGContextAddLineToPoint (context, p.x, p.y);
+		}
 		CGContextDrawPath (context, m);
 		releaseCGContext (context);
 	}
@@ -461,20 +459,13 @@ void CGDrawContext::drawRect (const CRect &rect, const CDrawStyle drawStyle)
 		}
 		applyLineStyle (context);
 
-		CGRect r;
+		CGRect r = CGRectMake (rect.left, rect.top + 1, rect.getWidth () - 1, rect.getHeight () - 1);
 		if (currentState.drawMode.integralMode ())
-		{
-			CRect ir = CGDrawContextInternal::makeRectIntegral (rect, scaleFactor);
-			r = CGRectMake (ir.left, ir.top + 1, ir.getWidth () - 1, ir.getHeight () - 1);
-		}
-		else
-		{
-			r = CGRectMake (rect.left, rect.top + 1, rect.getWidth () - 1, rect.getHeight () - 1);
-		}
+			r = pixelAlligned (r);
 
 		if ((((int32_t)currentState.frameWidth) % 2))
 			CGContextTranslateCTM (context, 0.5f, -0.5f);
-
+		
 		CGContextBeginPath (context);
 		CGContextAddRect (context, r);
 		CGContextDrawPath (context, m);
@@ -512,7 +503,7 @@ void CGDrawContext::drawEllipse (const CRect &rect, const CDrawStyle drawStyle)
 		    CGContextTranslateCTM (context, center.x, center.y);
 		    CGContextScaleCTM (context, a, b);
 		    CGContextMoveToPoint (context, 1, 0);
-		    CGContextAddArc (context, 0, 0, 1, radians (0), radians (360), 0);
+		    CGContextAddArc (context, 0, 0, 1, radians (0.), radians (360.), 0);
 
 			CGContextClosePath (context);
 			CGContextRestoreGState (context);
@@ -522,7 +513,7 @@ void CGDrawContext::drawEllipse (const CRect &rect, const CDrawStyle drawStyle)
 		{
 			CGFloat radius = rect.getWidth () * 0.5;
 			CGContextBeginPath (context);
-			CGContextAddArc (context, rect.left + radius, rect.top + radius, radius, radians (0), radians (360), 0);
+			CGContextAddArc (context, rect.left + radius, rect.top + radius, radius, radians (0.), radians (360.), 0);
 			CGContextClosePath (context);
 			CGContextDrawPath (context, m);
 		}
@@ -583,6 +574,7 @@ void CGDrawContext::drawBitmap (CBitmap* bitmap, const CRect& inRect, const CPoi
 		{
 			CRect rect (inRect);
 			rect.makeIntegral ();
+			
 			CPoint offset (inOffset);
 			offset.makeIntegral ();
 
@@ -644,14 +636,11 @@ void CGDrawContext::clearRect (const CRect& rect)
 	CGContextRef context = beginCGContext (true, currentState.drawMode.integralMode ());
 	if (context)
 	{
-		CGRect cgRect;
+		CGRect cgRect = CGRectFromCRect (rect);
 		if (currentState.drawMode.integralMode ())
 		{
-			CRect ir = CGDrawContextInternal::makeRectIntegral (rect, scaleFactor);
-			cgRect = CGRectFromCRect (ir);
+			cgRect = pixelAlligned (cgRect);
 		}
-		else
-			cgRect = CGRectFromCRect (rect);
 		CGContextClearRect (context, cgRect);
 		releaseCGContext (context);
 	}
@@ -690,32 +679,37 @@ void CGDrawContext::setFillColor (const CColor& color)
 	CDrawContext::setFillColor (color);
 }
 
+#if DEBUG
+bool showClip = false;
+#endif
+
 //-----------------------------------------------------------------------------
 CGContextRef CGDrawContext::beginCGContext (bool swapYAxis, bool integralOffset)
 {
 	if (cgContext)
 	{
+		CGRect cgClipRect = CGRectFromCRect (currentState.clipRect);
+		if (cgClipRect.size.width <= 0. || cgClipRect.size.height <= 0.)
+			return 0;
+
 		CGContextSaveGState (cgContext);
 
-		CRect clipRect = CGDrawContextInternal::makeRectIntegral (currentState.clipRect, scaleFactor);
-
-		CGRect cgClipRect = CGRectFromCRect (clipRect);
 		CGContextClipToRect (cgContext, cgClipRect);
+
+#if DEBUG
+		if (showClip)
+		{
+			CGContextSetRGBFillColor (cgContext, 1, 0, 0, 0.5);
+			CGContextFillRect (cgContext, cgClipRect);
+		}
+#endif
 
 		if (getCurrentTransform ().isInvariant () == false)
 			CGContextConcatCTM (cgContext, QuartzGraphicsPath::createCGAfflineTransform (getCurrentTransform ()));
 		
-		if (integralOffset)
-		{
-			CPoint offset (currentState.offset);
-			CGDrawContextInternal::roundPoint (offset, scaleFactor);
-			CGContextTranslateCTM (cgContext, offset.x, offset.y);
-		}
-		else
-			CGContextTranslateCTM (cgContext, currentState.offset.x, currentState.offset.y);
-
 		if (!swapYAxis)
 			CGContextScaleCTM (cgContext, 1, -1);
+		
 		return cgContext;
 	}
 	return 0;
@@ -755,6 +749,93 @@ void CGDrawContext::applyLineStyle (CGContextRef context)
 		CGContextSetLineDash (context, currentState.lineStyle.getDashPhase (), dashLengths, currentState.lineStyle.getDashCount ());
 		delete [] dashLengths;
 	}
+}
+
+//-----------------------------------------------------------------------------
+CGRect CGDrawContext::pixelAlligned (const CGRect& r) const
+{
+	CGRect result = CGContextConvertRectToDeviceSpace (cgContext, r);
+	result.origin.x = std::round (result.origin.x);
+	result.origin.y = std::round (result.origin.y);
+	result.size.width = std::round (result.size.width);
+	result.size.height = std::round (result.size.height);
+	result = CGContextConvertRectToUserSpace (cgContext, result);
+	return result;
+}
+
+//-----------------------------------------------------------------------------
+CGPoint CGDrawContext::pixelAlligned (const CGPoint& p) const
+{
+	CGPoint result = CGContextConvertPointToDeviceSpace (cgContext, p);
+	result.x = std::round (result.x);
+	result.y = std::round (result.y);
+	result = CGContextConvertPointToUserSpace (cgContext, result);
+	return result;
+}
+
+//-----------------------------------------------------------------------------
+CGPathRef CGDrawContext::pixelAllignedCopy (CGPathRef path) const
+{
+	struct PathIterator
+	{
+		CGMutablePathRef path;
+		const CGDrawContext& context;
+		CGAffineTransform transform;
+		
+		PathIterator (const CGDrawContext& context)
+		: context (context)
+		{
+			path = CGPathCreateMutable ();
+			transform = CGAffineTransformMakeTranslation (-0.5, 0.5);
+		}
+		void apply (const CGPathElement* element)
+		{
+			switch (element->type)
+			{
+				case kCGPathElementMoveToPoint:
+				{
+					element->points[0] = context.pixelAlligned (element->points[0]);
+					CGPathMoveToPoint (path, &transform, element->points[0].x, element->points[0].y);
+					break;
+				}
+				case kCGPathElementAddLineToPoint:
+				{
+					element->points[0] = context.pixelAlligned (element->points[0]);
+					CGPathAddLineToPoint (path, &transform, element->points[0].x, element->points[0].y);
+					break;
+				}
+				case kCGPathElementAddQuadCurveToPoint:
+				{
+					element->points[0] = context.pixelAlligned (element->points[0]);
+					element->points[1] = context.pixelAlligned (element->points[1]);
+					CGPathAddQuadCurveToPoint (path, &transform, element->points[0].x, element->points[0].y, element->points[1].x, element->points[1].y);
+					break;
+				}
+				case kCGPathElementAddCurveToPoint:
+				{
+					element->points[0] = context.pixelAlligned (element->points[0]);
+					element->points[1] = context.pixelAlligned (element->points[1]);
+					element->points[2] = context.pixelAlligned (element->points[2]);
+					CGPathAddCurveToPoint (path, &transform, element->points[0].x, element->points[0].y, element->points[1].x, element->points[1].y, element->points[2].x, element->points[2].y);
+					break;
+				}
+				case kCGPathElementCloseSubpath:
+				{
+					CGPathCloseSubpath (path);
+					break;
+				}
+			}
+		}
+		
+		static void apply (void* info, const CGPathElement* element)
+		{
+			PathIterator* This = static_cast<PathIterator*>(info);
+			This->apply (element);
+		}
+	};
+	PathIterator iterator (*this);
+	CGPathApply (path, &iterator, PathIterator::apply);
+	return iterator.path;
 }
 
 } // namespace

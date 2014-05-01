@@ -1,3 +1,9 @@
+2014-05-01 arne
+
+	* add Matrix Transformation support to CDrawContext and remove setOffset() getOffset() from it.
+	* redesign integral draw mode to draw pixel aligned
+	* removed setClipRect inside of CDrawContext::drawString() to support drawing rotated strings (clip rect needs to be set from outside now)
+
 2014-04-21 arne
 
 	* add support for drawing high resolution bitmaps on Retina Displays

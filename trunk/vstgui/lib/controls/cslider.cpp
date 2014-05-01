@@ -268,6 +268,8 @@ void CSlider::draw (CDrawContext *pContext)
 	
 	if (drawStyle != 0)
 	{
+		CRect r (getViewSize ());
+
 		pContext->setDrawMode (kAliasing | kIntegralMode);
 		pContext->setLineStyle (kLineSolid);
 		pContext->setLineWidth (1.);
@@ -280,12 +282,11 @@ void CSlider::draw (CDrawContext *pContext)
 				d = kDrawFilledAndStroked;
 			else if (drawStyle & kDrawFrame)
 				d = kDrawStroked;
-			pContext->drawRect (getViewSize (), d);
+			pContext->drawRect (r, d);
 		}
 		pContext->setDrawMode (kAntiAliasing | kIntegralMode);
 		if (drawStyle & kDrawValue)
 		{
-			CRect r (getViewSize ());
 			if (drawStyle & kDrawFrame)
 				r.inset (1., 1.);
 			float drawValue = getValueNormalized ();
@@ -325,8 +326,11 @@ void CSlider::draw (CDrawContext *pContext)
 						r.top = r.bottom - r.getHeight () * drawValue;
 				}
 			}
-			pContext->setFillColor (valueColor);
-			pContext->drawRect (r, kDrawFilled);
+			if (r.getWidth () && r.getHeight ())
+			{
+				pContext->setFillColor (valueColor);
+				pContext->drawRect (r, kDrawFilled);
+			}
 		}
 	}
 	

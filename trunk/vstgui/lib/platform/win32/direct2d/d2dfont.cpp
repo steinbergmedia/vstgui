@@ -125,7 +125,7 @@ void D2DFont::drawString (CDrawContext* context, const CString& string, const CP
 				renderTarget->SetTextAntialiasMode (antialias ? D2D1_TEXT_ANTIALIAS_MODE_CLEARTYPE : D2D1_TEXT_ANTIALIAS_MODE_ALIASED);
 				CRect clipRect;
 				D2DDrawContext::D2DApplyClip ac (d2dContext);
-				D2D1_POINT_2F origin = {(FLOAT)(p.x + context->getOffset ().x), (FLOAT)(p.y + context->getOffset ().y + 1.) - textFormat->GetFontSize ()};
+				D2D1_POINT_2F origin = {(FLOAT)(p.x), (FLOAT)(p.y + 1.) - textFormat->GetFontSize ()};
 				d2dContext->getRenderTarget ()->DrawTextLayout (origin, textLayout, d2dContext->getFontBrush ());
 				textLayout->Release ();
 			}

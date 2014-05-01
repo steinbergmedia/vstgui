@@ -108,15 +108,14 @@ GdiPlusFont::~GdiPlusFont ()
 }
 
 //-----------------------------------------------------------------------------
-void GdiPlusFont::drawString (CDrawContext* context, const CString& string, const CPoint& _point, bool antialias)
+void GdiPlusFont::drawString (CDrawContext* context, const CString& string, const CPoint& point, bool antialias)
 {
-	CPoint point (_point);
-	point.offset (context->getOffset ().x, context->getOffset ().y);
 	Gdiplus::Graphics* pGraphics = getGraphics (context);
 	Gdiplus::Brush* pFontBrush = getFontBrush (context);
 	const WinString* winString = dynamic_cast<const WinString*> (string.getPlatformString ());
 	if (pGraphics && font && pFontBrush && winString)
 	{
+		GdiplusDrawScope drawScope (pGraphics, context->getAbsoluteClipRect (), context->getCurrentTransform ());
 		pGraphics->SetTextRenderingHint (antialias ? Gdiplus::TextRenderingHintClearTypeGridFit : Gdiplus::TextRenderingHintSystemDefault);
 		Gdiplus::PointF gdiPoint ((Gdiplus::REAL)point.x, (Gdiplus::REAL)point.y + 1.f - font->GetHeight (pGraphics->GetDpiY ()));
 		pGraphics->DrawString (winString->getWideString (), -1, font, gdiPoint, pFontBrush);

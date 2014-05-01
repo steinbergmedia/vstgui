@@ -95,7 +95,7 @@ public:
 	class D2DApplyClip
 	{
 	public:
-		D2DApplyClip (D2DDrawContext* drawContext);
+		D2DApplyClip (D2DDrawContext* drawContext, bool halfPointOffset = false);
 		~D2DApplyClip ();
 	protected:
 		D2DDrawContext* drawContext;

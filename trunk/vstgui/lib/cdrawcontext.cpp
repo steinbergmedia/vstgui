@@ -65,7 +65,6 @@ CDrawContext::CDrawContextState& CDrawContext::CDrawContextState::operator= (con
 	fillColor = state.fillColor;
 	fontColor = state.fontColor;
 	frameWidth = state.frameWidth;
-	offset = state.offset;
 	penLoc = state.penLoc;
 	clipRect = state.clipRect;
 	lineStyle = state.lineStyle;
@@ -89,7 +88,6 @@ CDrawContext::CDrawContextState& CDrawContext::CDrawContextState::operator= (CDr
 	fillColor = std::move (state.fillColor);
 	fontColor = std::move (state.fontColor);
 	frameWidth = std::move (state.frameWidth);
-	offset = std::move (state.offset);
 	penLoc = std::move (state.penLoc);
 	clipRect = std::move (state.clipRect);
 	lineStyle = std::move (state.lineStyle);
@@ -102,14 +100,17 @@ CDrawContext::CDrawContextState& CDrawContext::CDrawContextState::operator= (CDr
 //-----------------------------------------------------------------------------
 CDrawContext::Transform::Transform (CDrawContext& context, const CGraphicsTransform& transformation)
 : context (context)
+, transformation (transformation)
 {
-	context.pushTransform (transformation);
+	if (transformation.isInvariant () == false)
+		context.pushTransform (transformation);
 }
 
 //-----------------------------------------------------------------------------
 CDrawContext::Transform::~Transform ()
 {
-	context.popTransform ();
+	if (transformation.isInvariant () == false)
+		context.popTransform ();
 }
 
 //-----------------------------------------------------------------------------
@@ -231,7 +232,7 @@ void CDrawContext::setDrawMode (CDrawMode mode)
 CRect& CDrawContext::getClipRect (CRect &clip) const
 {
 	clip = currentState.clipRect;
-	clip.offset (-currentState.offset.x, -currentState.offset.y);
+	getCurrentTransform ().inverse ().transform (clip);
 	return clip;
 }
 
@@ -239,7 +240,7 @@ CRect& CDrawContext::getClipRect (CRect &clip) const
 void CDrawContext::setClipRect (const CRect &clip)
 {
 	currentState.clipRect = clip;
-	currentState.clipRect.offset (currentState.offset.x, currentState.offset.y);
+	getCurrentTransform ().transform (currentState.clipRect);
 }
 
 //-----------------------------------------------------------------------------
@@ -290,12 +291,6 @@ void CDrawContext::setFont (const CFontRef newFont, const CCoord& size, const in
 void CDrawContext::setGlobalAlpha (float newAlpha)
 {
 	currentState.globalAlpha = newAlpha;
-}
-
-//-----------------------------------------------------------------------------
-void CDrawContext::setOffset (const CPoint& offset)
-{
-	currentState.offset = offset;
 }
 
 //-----------------------------------------------------------------------------
@@ -375,13 +370,9 @@ void CDrawContext::drawString (UTF8StringPtr _string, const CRect& _rect, const 
 		else
 			rect.left = (CCoord)(rect.left + (rect.getWidth () / 2.f) - (stringWidth / 2.f));
 	}
-	CRect oldClip;
-	getClipRect (oldClip);
-	CRect newClip (_rect);
-	newClip.bound (oldClip);
-	setClipRect (newClip);
+
 	painter->drawString (this, string, CPoint (rect.left, rect.bottom), antialias);
-	setClipRect (oldClip);
+
 	clearDrawString ();
 }
 
@@ -401,7 +392,7 @@ void CDrawContext::pushTransform (const CGraphicsTransform& transformation)
 {
 	assert (transformStack.size () > 0);
 	const CGraphicsTransform& currentTransform = transformStack.top ();
-	CGraphicsTransform newTransform = currentTransform * transformation;
+	CGraphicsTransform newTransform = transformation * currentTransform;
 	transformStack.push (newTransform);
 }
 

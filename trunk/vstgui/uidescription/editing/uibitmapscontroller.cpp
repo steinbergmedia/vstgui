@@ -54,25 +54,36 @@ public:
 	UIBitmapView (CBitmap* bitmap = 0)
 	: CView (CRect (0, 0, 0, 0))
 	, zoom (1.)
-	, fastZooming (true)
 	{
 		setBackground (bitmap);
 	}
 	
 	void draw (CDrawContext* context)
 	{
-		CView::draw (context);
-		if (getBackground ())
+		if (CBitmap* bitmap = getBackground ())
 		{
-			CNinePartTiledBitmap* bitmap = dynamic_cast<CNinePartTiledBitmap*>(getBackground ());
-			if (bitmap)
+			CGraphicsTransform matrix;
+			matrix.scale (zoom, zoom);
+			CDrawContext::Transform transform (*context, matrix);
+			CRect r (getViewSize ());
+			matrix.inverse ().transform (r);
+			bitmap->CBitmap::draw (context, r);
+			CNinePartTiledBitmap* nptBitmap = dynamic_cast<CNinePartTiledBitmap*>(bitmap);
+			if (nptBitmap)
 			{
 				static const CCoord kDefaultOnOffDashLength2[] = {2, 2};
 				const CLineStyle kLineOnOffDash2 (CLineStyle::kLineCapButt, CLineStyle::kLineJoinMiter, 0, 2, kDefaultOnOffDashLength2);
 
-				const CNinePartTiledBitmap::PartOffsets offsets = bitmap->getPartOffsets ();
-				CRect r (getViewSize ());
-				context->setDrawMode (kAliasing);
+				const CNinePartTiledBitmap::PartOffsets offsets = nptBitmap->getPartOffsets ();
+
+				CRect r;
+				r.setWidth (nptBitmap->getWidth());
+				r.setHeight (nptBitmap->getHeight());
+				CPoint p = getViewSize ().getTopLeft ();
+				matrix.inverse ().transform (p);
+				r.offset (p.x, p.y);
+
+				context->setDrawMode (kAntiAliasing);
 				context->setFrameColor (kBlueCColor);
 				context->setLineWidth (1);
 				context->setLineStyle (kLineSolid);
@@ -94,97 +105,44 @@ public:
 		}
 	}
 
-	void enableFastZooming (bool state)
-	{
-//		if (state != fastZooming)
-//		{
-//			fastZooming = state;
-//			if (state == false)
-//			{
-//				CCoord z = zoom;
-//				zoom -= 1;
-//				setZoom (z);
-//			}
-//		}
-	}
-
 	void setZoom (CCoord factor)
 	{
 		if (factor <= 0. || factor == zoom)
 			return;
-		if (unzoomedBitmap)
-		{
-			if (factor == 1.)
-			{
-				setBitmapToShow (unzoomedBitmap);
-			}
-			else
-			{
-				OwningPointer<BitmapFilter::IFilter> filter = BitmapFilter::Factory::getInstance ().createFilter (fastZooming ? BitmapFilter::Standard::kScaleLinear : BitmapFilter::Standard::kScaleBilinear);
-				if (filter)
-				{
-					filter->setProperty (BitmapFilter::Standard::Property::kInputBitmap, unzoomedBitmap.cast<CBaseObject> ());
-					CRect r;
-					r.setWidth (unzoomedBitmap->getWidth () * factor);
-					r.setHeight (unzoomedBitmap->getHeight () * factor);
-					filter->setProperty (BitmapFilter::Standard::Property::kOutputRect, r);
-					if (filter->run ())
-					{
-						BitmapFilter::Property prop = filter->getProperty (BitmapFilter::Standard::Property::kOutputBitmap);
-						CBitmap* bitmap = dynamic_cast<CBitmap*> (prop.getObject ());
-						if (bitmap)
-						{
-							if (CNinePartTiledBitmap* nptb = unzoomedBitmap.cast<CNinePartTiledBitmap> ())
-							{
-								CNinePartTiledBitmap::PartOffsets offsets = nptb->getPartOffsets ();
-								offsets.left *= factor;
-								offsets.right *= factor;
-								offsets.top *= factor;
-								offsets.bottom *= factor;
-								OwningPointer<CNinePartTiledBitmap> newBitmap = new CNinePartTiledBitmap (bitmap->getPlatformBitmap(), offsets);
-								setBitmapToShow (newBitmap);
-							}
-							else
-								setBitmapToShow (bitmap);
-						}
-					}
-				}
-			}
-		}
 		zoom = factor;
+		updateSize ();
 	}
 
-	void setBitmapToShow (CBitmap* bitmap)
+	void updateSize ()
 	{
-		CView::setBackground (bitmap);
-		CCoord width = bitmap ? bitmap->getWidth () : 0;
-		CCoord height = bitmap ? bitmap->getHeight () : 0;
-		CRect r (getViewSize ());
-		r.setWidth (width+1);
-		r.setHeight(height+1);
-		if (getViewSize () != r)
+		if (CBitmap* bitmap = getBackground ())
 		{
-			setViewSize (r);
-			setMouseableArea (r);
+			CCoord width = bitmap ? bitmap->getWidth () : 0;
+			CCoord height = bitmap ? bitmap->getHeight () : 0;
+			CRect r (getViewSize ());
+			
+			CGraphicsTransform ().scale (zoom, zoom).transform (width, height);
+			width = std::floor (width + 0.5);
+			height = std::floor (height + 0.5);
+			r.setWidth (width);
+			r.setHeight (height);
+			
+			if (getViewSize () != r)
+			{
+				setViewSize (r);
+				setMouseableArea (r);
+			}
 		}
 	}
 
-	void setBackground (CBitmap *background)
+	void setBackground (CBitmap *background) override
 	{
-		unzoomedBitmap = background;
-		if (zoom != 1.)
-		{
-			CCoord toZoom = zoom;
-			zoom = toZoom+1;
-			setZoom (toZoom);
-		}
-		else
-			setBitmapToShow (background);
+		CView::setBackground (background);
+		updateSize ();
 	}
+
 protected:
 	CCoord zoom;
-	bool fastZooming;
-	SharedPointer<CBitmap> unzoomedBitmap;
 };
 
 //----------------------------------------------------------------------------------------------------
@@ -577,19 +535,11 @@ void UIBitmapSettingsController::valueChanged (CControl* control)
 //----------------------------------------------------------------------------------------------------
 void UIBitmapSettingsController::controlBeginEdit (CControl* control)
 {
-	if (control->getTag () == kZoomTag)
-	{
-		bitmapView->enableFastZooming (true);
-	}
 }
 
 //----------------------------------------------------------------------------------------------------
 void UIBitmapSettingsController::controlEndEdit (CControl* control)
 {
-	if (control->getTag () == kZoomTag)
-	{
-		bitmapView->enableFastZooming (false);
-	}
 }
 
 //----------------------------------------------------------------------------------------------------

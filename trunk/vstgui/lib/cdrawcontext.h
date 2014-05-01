@@ -118,7 +118,7 @@ enum CDrawModeFlags
 	kAntialias = kAntiAliasing,		///< \deprecated use kAntiAliasing
 #endif
 
-	kIntegralMode = 0xF0000000		///< round coordinates to intragral values
+	kIntegralMode = 0xF0000000		///< round coordinates to pixel aligned values
 };
 
 //-----------
@@ -186,6 +186,7 @@ public:
 		
 	private:
 		CDrawContext& context;
+		const CGraphicsTransform& transformation;
 	};
 	
 	//-----------------------------------------------------------------------------
@@ -288,11 +289,11 @@ public:
 	//@}
 
 	//-----------------------------------------------------------------------------
-	/// @name Offset Transformation
+	/// @name Transformation
 	//-----------------------------------------------------------------------------
 	//@{
-	virtual void setOffset (const CPoint& offset);
-	const CPoint& getOffset () const { return currentState.offset; }
+	const CGraphicsTransform& getCurrentTransform () const;
+	const CRect& getAbsoluteClipRect () const { return currentState.clipRect; }
 	//@}
 
 	//-----------------------------------------------------------------------------
@@ -330,7 +331,6 @@ protected:
 
 	void pushTransform (const CGraphicsTransform& transformation);
 	void popTransform ();
-	const CGraphicsTransform& getCurrentTransform () const;
 
 	const CString& getDrawString (UTF8StringPtr string);
 	void clearDrawString ();
@@ -343,7 +343,6 @@ protected:
 		CColor fillColor;
 		CColor fontColor;
 		CCoord frameWidth;
-		CPoint offset;
 		CPoint penLoc;
 		CRect clipRect;
 		CLineStyle lineStyle;

@@ -131,8 +131,7 @@ void GdiplusDrawContext::drawGraphicsPath (CGraphicsPath* _path, PathDrawMode mo
 	GdiplusGraphicsPath* gdiPlusPath = dynamic_cast<GdiplusGraphicsPath*> (_path);
 	if (gdiPlusPath && pGraphics)
 	{
-		Gdiplus::GraphicsState state = pGraphics->Save ();
-		pGraphics->TranslateTransform ((Gdiplus::REAL)getOffset ().x, (Gdiplus::REAL)getOffset ().y);
+		GdiplusDrawScope drawScope (pGraphics, currentState.clipRect, getCurrentTransform ());
 
 		Gdiplus::GraphicsPath* path = gdiPlusPath->getGraphicsPath ();
 
@@ -152,7 +151,6 @@ void GdiplusDrawContext::drawGraphicsPath (CGraphicsPath* _path, PathDrawMode mo
 			path->SetFillMode (mode == kPathFilledEvenOdd ? Gdiplus::FillModeAlternate : Gdiplus::FillModeWinding);
 			pGraphics->FillPath (getBrush (), path);
 		}
-		pGraphics->Restore (state);
 		if (path != gdiPlusPath->getGraphicsPath ())
 			delete path;
 	}
@@ -168,8 +166,7 @@ void GdiplusDrawContext::fillLinearGradient (CGraphicsPath* _path, const CGradie
 	const GdiplusGradient* gdiPlusGradient = dynamic_cast<const GdiplusGradient*> (&gradient);
 	if (gdiPlusPath && pGraphics && gdiPlusGradient)
 	{
-		Gdiplus::GraphicsState state = pGraphics->Save ();
-		pGraphics->TranslateTransform ((Gdiplus::REAL)getOffset ().x, (Gdiplus::REAL)getOffset ().y);
+		GdiplusDrawScope drawScope (pGraphics, currentState.clipRect, getCurrentTransform ());
 
 		Gdiplus::GraphicsPath* path = gdiPlusPath->getGraphicsPath ();
 
@@ -198,7 +195,6 @@ void GdiplusDrawContext::fillLinearGradient (CGraphicsPath* _path, const CGradie
 		path->SetFillMode (evenOdd ? Gdiplus::FillModeAlternate : Gdiplus::FillModeWinding);
 
 		pGraphics->FillPath (&brush, path);
-		pGraphics->Restore (state);
 		if (path != gdiPlusPath->getGraphicsPath ())
 			delete path;
 		delete [] colors;
@@ -216,8 +212,7 @@ void GdiplusDrawContext::fillRadialGradient (CGraphicsPath* _path, const CGradie
 	const GdiplusGradient* gdiPlusGradient = dynamic_cast<const GdiplusGradient*> (&gradient);
 	if (gdiPlusPath && pGraphics && gdiPlusGradient)
 	{
-		Gdiplus::GraphicsState state = pGraphics->Save ();
-		pGraphics->TranslateTransform ((Gdiplus::REAL)getOffset ().x, (Gdiplus::REAL)getOffset ().y);
+		GdiplusDrawScope drawScope (pGraphics, currentState.clipRect, getCurrentTransform ());
 
 		Gdiplus::GraphicsPath* path = gdiPlusPath->getGraphicsPath ();
 
@@ -257,7 +252,6 @@ void GdiplusDrawContext::fillRadialGradient (CGraphicsPath* _path, const CGradie
 		brush.SetSurroundColors (colors+1, &count);
 
 		pGraphics->FillPath (&brush, path);
-		pGraphics->Restore (state);
 		if (path != gdiPlusPath->getGraphicsPath ())
 			delete path;
 		delete [] colors;
@@ -268,12 +262,13 @@ void GdiplusDrawContext::fillRadialGradient (CGraphicsPath* _path, const CGradie
 //-----------------------------------------------------------------------------
 void GdiplusDrawContext::drawLine (const LinePair& line)
 {
-	CPoint p1 (line.first);
-	p1.offset (currentState.offset.x, currentState.offset.y);
-	CPoint p2 (line.second);
-	p2.offset (currentState.offset.x, currentState.offset.y);
 	if (pGraphics && pPen)
 	{
+		GdiplusDrawScope drawScope (pGraphics, currentState.clipRect, getCurrentTransform ());
+
+		CPoint p1 (line.first);
+		CPoint p2 (line.second);
+
 		pGraphics->TranslateTransform (0.5f, 0.5f);
 		pGraphics->DrawLine (pPen, (Gdiplus::REAL)p1.x, (Gdiplus::REAL)p1.y, (Gdiplus::REAL)p2.x, (Gdiplus::REAL)p2.y);
 		pGraphics->TranslateTransform (-0.5f, -0.5f);
@@ -295,6 +290,9 @@ void GdiplusDrawContext::drawPolygon (const PointList& polygonPointList, const C
 {
 	if (polygonPointList.size () == 0)
 		return;
+
+	GdiplusDrawScope drawScope (pGraphics, currentState.clipRect, getCurrentTransform ());
+
 	Gdiplus::PointF points[30];
 	Gdiplus::PointF* polyPoints;
 	bool allocated = false;
@@ -308,8 +306,8 @@ void GdiplusDrawContext::drawPolygon (const PointList& polygonPointList, const C
 	
 	for (uint32_t i = 0; i < polygonPointList.size (); i++)
 	{
-		polyPoints[i].X = (Gdiplus::REAL)(polygonPointList[i].x + currentState.offset.x);
-		polyPoints[i].Y = (Gdiplus::REAL)(polygonPointList[i].y + currentState.offset.y);
+		polyPoints[i].X = (Gdiplus::REAL)(polygonPointList[i].x);
+		polyPoints[i].Y = (Gdiplus::REAL)(polygonPointList[i].y);
 	}
 
 	if (drawStyle == kDrawFilled || drawStyle == kDrawFilledAndStroked)
@@ -328,10 +326,11 @@ void GdiplusDrawContext::drawPolygon (const PointList& polygonPointList, const C
 //-----------------------------------------------------------------------------
 void GdiplusDrawContext::drawRect (const CRect &_rect, const CDrawStyle drawStyle)
 {
-	CRect rect (_rect);
-	rect.offset (currentState.offset.x, currentState.offset.y);
 	if (pGraphics)
 	{
+		GdiplusDrawScope drawScope (pGraphics, currentState.clipRect, getCurrentTransform ());
+
+		CRect rect (_rect);
 		rect.normalize ();
 		if (pBrush && (drawStyle == kDrawFilled || drawStyle == kDrawFilledAndStroked))
 		{
@@ -349,12 +348,12 @@ void GdiplusDrawContext::drawRect (const CRect &_rect, const CDrawStyle drawStyl
 }
 
 //-----------------------------------------------------------------------------
-void GdiplusDrawContext::drawArc (const CRect& _rect, const float _startAngle, const float _endAngle, const CDrawStyle drawStyle)
+void GdiplusDrawContext::drawArc (const CRect& rect, const float _startAngle, const float _endAngle, const CDrawStyle drawStyle)
 {
-	CRect rect (_rect);
-	rect.offset (currentState.offset.x, currentState.offset.y);
 	if (pGraphics)
 	{
+		GdiplusDrawScope drawScope (pGraphics, currentState.clipRect, getCurrentTransform ());
+
 		float endAngle = _endAngle;
 		if (endAngle < _startAngle)
 			endAngle += 360.f;
@@ -372,10 +371,11 @@ void GdiplusDrawContext::drawArc (const CRect& _rect, const float _startAngle, c
 //-----------------------------------------------------------------------------
 void GdiplusDrawContext::drawEllipse (const CRect &_rect, const CDrawStyle drawStyle)
 {
-	CRect rect (_rect);
-	rect.offset (currentState.offset.x, currentState.offset.y);
 	if (pGraphics)
 	{
+		GdiplusDrawScope drawScope (pGraphics, currentState.clipRect, getCurrentTransform ());
+
+		CRect rect (_rect);
 		rect.normalize ();
 		if (pBrush && (drawStyle == kDrawFilled || drawStyle == kDrawFilledAndStroked))
 		{
@@ -411,6 +411,8 @@ void GdiplusDrawContext::drawBitmap (CBitmap* cbitmap, const CRect& dest, const 
 	Gdiplus::Bitmap* bitmap = gpb ? gpb->getBitmap () : 0;
 	if (bitmap)
 	{
+		GdiplusDrawScope drawScope (pGraphics, currentState.clipRect, getCurrentTransform ());
+
 		Gdiplus::ImageAttributes imageAtt;
 		if (alpha != 1.f)
 		{
@@ -428,8 +430,8 @@ void GdiplusDrawContext::drawBitmap (CBitmap* cbitmap, const CRect& dest, const 
 				Gdiplus::ColorAdjustTypeBitmap);
 #if 1
 			Gdiplus::Rect	myDestRect(
-				(INT)dest.left + (INT)currentState.offset.x,
-				(INT)dest.top + (INT)currentState.offset.y,
+				(INT)dest.left,
+				(INT)dest.top,
 				(INT)dest.getWidth (),
 				(INT)dest.getHeight ());
 			pGraphics->DrawImage (
@@ -463,8 +465,8 @@ void GdiplusDrawContext::drawBitmap (CBitmap* cbitmap, const CRect& dest, const 
 				0);
 			// now transfer the temporary to the real context at the advised location
 			Gdiplus::Rect myDestRect (
-				(INT)dest.left + (INT)currentState.offset.h,
-				(INT)dest.top + (INT)currentState.offset.v,
+				(INT)dest.left,
+				(INT)dest.top,
 				(INT)dest.getWidth (),
 				(INT)dest.getHeight ());
 			// transfer from temporary bitmap to real context (with imageattr)
@@ -484,8 +486,8 @@ void GdiplusDrawContext::drawBitmap (CBitmap* cbitmap, const CRect& dest, const 
 		else
 		{
 			Gdiplus::Rect	myDestRect(
-				(INT)dest.left + (INT)currentState.offset.x,
-				(INT)dest.top + (INT)currentState.offset.y,
+				(INT)dest.left,
+				(INT)dest.top,
 				(INT)dest.getWidth (),
 				(INT)dest.getHeight ());
 			pGraphics->DrawImage (

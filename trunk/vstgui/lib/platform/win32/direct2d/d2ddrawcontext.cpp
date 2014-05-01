@@ -58,12 +58,19 @@ static D2D1_MATRIX_3X2_F convert (const CGraphicsTransform& t)
 }
 
 //-----------------------------------------------------------------------------
-D2DDrawContext::D2DApplyClip::D2DApplyClip (D2DDrawContext* drawContext)
+D2DDrawContext::D2DApplyClip::D2DApplyClip (D2DDrawContext* drawContext, bool halfPointOffset)
 : drawContext (drawContext)
 {
 	drawContext->getRenderTarget ()->PushAxisAlignedClip (makeD2DRect (drawContext->currentState.clipRect), D2D1_ANTIALIAS_MODE_PER_PRIMITIVE);
 	if (drawContext->getCurrentTransform ().isInvariant () == false)
-		drawContext->getRenderTarget ()->SetTransform (convert (drawContext->getCurrentTransform ()));
+	{
+		CGraphicsTransform transform = drawContext->getCurrentTransform ();
+		if (halfPointOffset)
+			transform.translate (-0.5, 0.5);
+		drawContext->getRenderTarget ()->SetTransform (convert (transform));
+	}
+	else if (halfPointOffset)
+		drawContext->getRenderTarget ()->SetTransform (D2D1::Matrix3x2F::Translation (0.f, 0.5f));
 }
 
 //-----------------------------------------------------------------------------
@@ -248,14 +255,10 @@ void D2DDrawContext::drawGraphicsPath (CGraphicsPath* _path, PathDrawMode mode, 
 			geometry->AddRef ();
 		}
 
-		getRenderTarget ()->SetTransform (D2D1::Matrix3x2F::Translation ((FLOAT)getOffset ().x, (FLOAT)getOffset ().y));
-
 		if (mode == kPathFilled || mode == kPathFilledEvenOdd)
 			getRenderTarget ()->FillGeometry (geometry, getFillBrush ());
 		else if (mode == kPathStroked)
 			getRenderTarget ()->DrawGeometry (geometry, getStrokeBrush (), (FLOAT)getLineWidth (), getStrokeStyle ());
-
-		getRenderTarget ()->SetTransform (D2D1::Matrix3x2F::Identity ());
 
 		geometry->Release ();
 	}
@@ -315,9 +318,7 @@ void D2DDrawContext::fillLinearGradient (CGraphicsPath* _path, const CGradient& 
 			properties.endPoint = makeD2DPoint (endPoint);
 			if (SUCCEEDED (getRenderTarget ()->CreateLinearGradientBrush (properties, collection, &brush)))
 			{
-				getRenderTarget ()->SetTransform (D2D1::Matrix3x2F::Translation ((FLOAT)getOffset ().x, (FLOAT)getOffset ().y));
 				getRenderTarget ()->FillGeometry (geometry, brush);
-				getRenderTarget ()->SetTransform (D2D1::Matrix3x2F::Identity ());
 				brush->Release ();
 			}
 			collection->Release ();
@@ -367,9 +368,7 @@ void D2DDrawContext::fillRadialGradient (CGraphicsPath* _path, const CGradient& 
 
 			if (SUCCEEDED (getRenderTarget ()->CreateRadialGradientBrush (properties, collection, &brush)))
 			{
-				getRenderTarget ()->SetTransform (D2D1::Matrix3x2F::Translation ((FLOAT)getOffset ().x, (FLOAT)getOffset ().y));
 				getRenderTarget ()->FillGeometry (geometry, brush);
-				getRenderTarget ()->SetTransform (D2D1::Matrix3x2F::Identity ());
 				brush->Release ();
 			}
 			collection->Release ();
@@ -404,7 +403,6 @@ void D2DDrawContext::drawBitmap (CBitmap* bitmap, const CRect& dest, const CPoin
 			{
 				D2DApplyClip clip (this);
 				CRect d (dest);
-				d.offset (currentState.offset.x, currentState.offset.y);
 				d.makeIntegral ();
 				CRect source (dest);
 				source.offset (-source.left, -source.top);
@@ -422,20 +420,15 @@ void D2DDrawContext::drawLine (const LinePair& line)
 	if (renderTarget)
 	{
 		CPoint penLocation (line.first);
-		penLocation.offset (currentState.offset.x, currentState.offset.y);
 		CPoint p (line.second);
-		p.offset (currentState.offset.x, currentState.offset.y);
 		if (currentState.drawMode.integralMode ())
 		{
 			p.makeIntegral ();
 			penLocation.makeIntegral ();
 		}
 
-		D2DApplyClip clip (this);
-		if ((((int32_t)currentState.frameWidth) % 2))
-			renderTarget->SetTransform (D2D1::Matrix3x2F::Translation (0.f, -0.5f));
+		D2DApplyClip clip (this, (((int32_t)currentState.frameWidth) % 2) != 0);
 		renderTarget->DrawLine (makeD2DPoint (penLocation), makeD2DPoint (p), strokeBrush, (FLOAT)currentState.frameWidth, strokeStyle);
-		renderTarget->SetTransform (D2D1::Matrix3x2F::Identity ());
 	}
 }
 
@@ -480,25 +473,23 @@ void D2DDrawContext::drawRect (const CRect &_rect, const CDrawStyle drawStyle)
 	if (renderTarget)
 	{
 		CRect rect (_rect);
-		rect.offset (currentState.offset.x, currentState.offset.y);
 		rect.normalize ();
 		if (currentState.drawMode.integralMode ())
 		{
 			rect.makeIntegral ();
 		}
-		D2DApplyClip clip (this);
+		bool halfPointOffset = (((int32_t)currentState.frameWidth) % 2) != 0;
 		if (drawStyle == kDrawFilled || drawStyle == kDrawFilledAndStroked)
 		{
+			D2DApplyClip clip (this);
 			renderTarget->FillRectangle (makeD2DRect (rect), fillBrush);
 		}
 		if (drawStyle == kDrawStroked || drawStyle == kDrawFilledAndStroked)
 		{
+			D2DApplyClip clip (this, halfPointOffset);
 			rect.left++;
 			rect.bottom--;
-			if ((((int32_t)currentState.frameWidth) % 2))
-				renderTarget->SetTransform (D2D1::Matrix3x2F::Translation (0.f, 0.5f));
 			renderTarget->DrawRectangle (makeD2DRect (rect), strokeBrush, (FLOAT)currentState.frameWidth, strokeStyle);
-			renderTarget->SetTransform (D2D1::Matrix3x2F::Identity ());
 		}
 	}
 }
@@ -524,7 +515,6 @@ void D2DDrawContext::drawEllipse (const CRect &_rect, const CDrawStyle drawStyle
 	if (renderTarget)
 	{
 		CRect rect (_rect);
-		rect.offset (currentState.offset.x, currentState.offset.y);
 		rect.normalize ();
 		D2DApplyClip clip (this);
 		CPoint center (rect.getTopLeft ());
