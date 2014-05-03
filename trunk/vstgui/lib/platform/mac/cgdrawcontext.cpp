@@ -164,8 +164,7 @@ void CGDrawContext::drawGraphicsPath (CGraphicsPath* _path, PathDrawMode mode, C
 			{
 				cgMode = kCGPathStroke;
 				applyLineStyle (context);
-				if ((((int32_t)currentState.frameWidth) % 2))
-					CGContextTranslateCTM (context, 0.5f, -0.5f);
+				applyLineWidthCTM (context);
 				break;
 			}
 			default: cgMode = kCGPathFill; break;
@@ -358,8 +357,7 @@ void CGDrawContext::drawLine (const LinePair& line)
 	{
 		applyLineStyle (context);
 		
-		if ((((int32_t)currentState.frameWidth) % 2))
-			CGContextTranslateCTM (context, 0.5f, -0.5f);
+		applyLineWidthCTM (context);
 		
 		CGContextBeginPath (context);
 		CGPoint first = CGPointFromCPoint (line.first);
@@ -388,8 +386,7 @@ void CGDrawContext::drawLines (const LineList& lines)
 	{
 		applyLineStyle (context);
 		
-		if ((((int32_t)currentState.frameWidth) % 2))
-			CGContextTranslateCTM (context, 0.5f, -0.5f);
+		applyLineWidthCTM (context);
 		
 		CGPoint* cgPoints = new CGPoint[lines.size () * 2];
 		uint32_t index = 0;
@@ -445,6 +442,14 @@ void CGDrawContext::drawPolygon (const PointList& polygonPointList, const CDrawS
 }
 
 //-----------------------------------------------------------------------------
+void CGDrawContext::applyLineWidthCTM (CGContextRef context) const
+{
+	int32_t frameWidth = static_cast<int32_t> (currentState.frameWidth);
+	if (frameWidth % 2)
+		CGContextTranslateCTM (context, 0.5f, -0.5f);
+}
+
+//-----------------------------------------------------------------------------
 void CGDrawContext::drawRect (const CRect &rect, const CDrawStyle drawStyle)
 {
 	CGContextRef context = beginCGContext (true, currentState.drawMode.integralMode ());
@@ -463,8 +468,7 @@ void CGDrawContext::drawRect (const CRect &rect, const CDrawStyle drawStyle)
 		if (currentState.drawMode.integralMode ())
 			r = pixelAlligned (r);
 
-		if ((((int32_t)currentState.frameWidth) % 2))
-			CGContextTranslateCTM (context, 0.5f, -0.5f);
+		applyLineWidthCTM (context);
 		
 		CGContextBeginPath (context);
 		CGContextAddRect (context, r);

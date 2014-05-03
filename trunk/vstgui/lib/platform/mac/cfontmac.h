@@ -80,6 +80,10 @@ protected:
 	bool underlineStyle;
 	CColor lastColor;
 	CFMutableDictionaryRef stringAttributes;
+	double ascent;
+	double descent;
+	double leading;
+	double capHeight;
 };
 
 } // namespace

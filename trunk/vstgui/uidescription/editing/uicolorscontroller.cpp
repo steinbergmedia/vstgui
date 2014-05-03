@@ -153,26 +153,26 @@ CMessageResult UIColorSlider::notify (CBaseObject* sender, IdStringPtr message)
 //----------------------------------------------------------------------------------------------------
 void UIColorSlider::updateBackground (CDrawContext* context)
 {
-	SharedPointer<COffscreenContext> offscreen = owned (COffscreenContext::create (getFrame (), getWidth (), getHeight ()));
+	double scaleFactor = context->getScaleFactor ();
+	SharedPointer<COffscreenContext> offscreen = owned (COffscreenContext::create (getFrame (), getWidth (), getHeight (), scaleFactor));
 	if (offscreen)
 	{
-		double kNumPoints = 256.;
-		if (style == kHue || style == kSaturation || style == kLightness)
-			kNumPoints = 512;
+		const int32_t kNumPoints = (style == kHue) ? 360 : 256;
 		CCoord width = getWidth ();
 		offscreen->beginDraw ();
 		offscreen->setDrawMode (kAliasing|kIntegralMode);
-		CCoord widthPerColor = width / kNumPoints;
+		CCoord minWidth = 1. / scaleFactor;
+		CCoord widthPerColor = width / static_cast<double> (kNumPoints - 1);
 		CRect r;
 		r.setHeight (getHeight ());
-		r.setWidth (widthPerColor < 2. ? 2. : std::ceil (widthPerColor));
+		r.setWidth (widthPerColor < minWidth ? minWidth : (std::ceil (widthPerColor * scaleFactor) / scaleFactor));
 		r.offset (-r.getWidth (), 0);
+		offscreen->setLineWidth (minWidth);
 		for (int32_t i = 0; i < kNumPoints; i++)
 		{
-			CCoord x = std::ceil (widthPerColor * i);
+			CCoord x = std::ceil (widthPerColor * i * scaleFactor) / scaleFactor;
 			if (x > r.right)
 			{
-				r.offset (r.getWidth (), 0);
 				CColor c = *color;
 				switch (style)
 				{
@@ -198,25 +198,29 @@ void UIColorSlider::updateBackground (CDrawContext* context)
 					}
 					case kHue:
 					{
-						double hue = ((double)i / kNumPoints) * 360.;
+						double hue = (static_cast<double> (i) / static_cast<double> (kNumPoints)) * 360.;
 						c.fromHSL (hue, color->saturation, color->lightness);
 						break;
 					}
 					case kSaturation:
 					{
-						double sat = ((double)i / kNumPoints);
+						double sat = (static_cast<double> (i) / static_cast<double> (kNumPoints));
 						c.fromHSL (color->hue, sat, color->lightness);
 						break;
 					}
 					case kLightness:
 					{
-						double light = ((double)i / kNumPoints);
+						double light = (static_cast<double> (i) / static_cast<double> (kNumPoints));
 						c.fromHSL (color->hue, color->saturation, light);
 						break;
 					}
 				}
-				offscreen->setFillColor (c);
-				offscreen->drawRect (r, kDrawFilled);
+				for (int32_t i = 0; i < r.getWidth () / minWidth; i++)
+				{
+					offscreen->setFrameColor (c);
+					offscreen->drawLine (std::make_pair (r.getTopLeft (), r.getBottomLeft ()));
+					r.offset (minWidth, 0);
+				}
 			}
 		}
 		offscreen->endDraw ();

@@ -139,7 +139,7 @@ public:
 
 //-----------------------------------------------------------------------------
 protected:
-	IPlatformFrame (IPlatformFrameCallback* frame = 0) : frame (frame) {}
+	IPlatformFrame (IPlatformFrameCallback* frame) : frame (frame) {}
 	IPlatformFrameCallback* frame;
 };
 

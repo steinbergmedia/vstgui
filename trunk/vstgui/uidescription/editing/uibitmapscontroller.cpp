@@ -43,6 +43,7 @@
 #include "../../lib/cbitmapfilter.h"
 #include "../../lib/cfileselector.h"
 #include "../../lib/idatapackage.h"
+#include "../../lib/cvstguitimer.h"
 #include "../../lib/controls/ccolorchooser.h"
 #include "../../lib/controls/ctextedit.h"
 
@@ -517,6 +518,15 @@ void UIBitmapSettingsController::valueChanged (CControl* control)
 			bitmap = editDescription->getBitmap (bitmapName.c_str ());
 			bitmapView->setBackground (bitmap);
 			updateNinePartTiledControls ();
+#if VSTGUI_HAS_FUNCTIONAL
+			SharedPointer<CTextEdit> textEdit = SharedPointer<CControl> (control).cast<CTextEdit> ();
+			if (textEdit && textEdit->bWasReturnPressed)
+			{
+				Call::later([textEdit] () {
+					textEdit->takeFocus();
+				});
+			}
+#endif
 			break;
 		}
 		case kZoomTag:

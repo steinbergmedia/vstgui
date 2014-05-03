@@ -96,6 +96,7 @@ public:
 
 	CGContextRef getCGContext () const { return cgContext; }
 	void applyLineStyle (CGContextRef context);
+	void applyLineWidthCTM (CGContextRef context) const;
 
 	CGRect pixelAlligned (const CGRect& r) const;
 	CGPoint pixelAlligned (const CGPoint& p) const;

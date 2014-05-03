@@ -721,11 +721,12 @@ void NSViewFrame::initClass ()
 
 //-----------------------------------------------------------------------------
 NSViewFrame::NSViewFrame (IPlatformFrameCallback* frame, const CRect& size, NSView* parent)
-: frame (frame)
+: IPlatformFrame (frame)
 , nsView (0)
 , tooltipWindow (0)
 , ignoreNextResignFirstResponder (false)
 , trackingAreaInitialized (false)
+, inDraw (false)
 , cursor (kCursorDefault)
 {
 	initClass ();
