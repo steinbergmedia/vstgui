@@ -121,6 +121,10 @@ CoreTextFont::CoreTextFont (UTF8StringPtr name, const CCoord& size, const int32_
 , underlineStyle (false)
 , lastColor (MakeCColor (0,0,0,0))
 , stringAttributes (0)
+, ascent (0.)
+, descent (0.)
+, leading (0.)
+, capHeight (0.)
 {
 	CFStringRef fontNameRef = CFStringCreateWithCString (kCFAllocatorDefault, name, kCFStringEncodingUTF8);
 	if (fontNameRef)
@@ -144,6 +148,13 @@ CoreTextFont::CoreTextFont (UTF8StringPtr name, const CCoord& size, const int32_
 		if (style & kItalicFace)
 			fontRef = CoreTextCreateTraitsVariant (fontRef, kCTFontItalicTrait);
 		CFRelease (fontNameRef);
+		if (fontRef)
+		{
+			ascent = CTFontGetAscent (fontRef);
+			descent = CTFontGetDescent (fontRef);
+			leading = CTFontGetLeading (fontRef);
+			capHeight = CTFontGetCapHeight (fontRef);
+		}
 	}
 }
 
@@ -159,25 +170,25 @@ CoreTextFont::~CoreTextFont ()
 //-----------------------------------------------------------------------------
 double CoreTextFont::getAscent () const
 {
-	return CTFontGetAscent (fontRef);
+	return ascent;
 }
 
 //-----------------------------------------------------------------------------
 double CoreTextFont::getDescent () const
 {
-	return CTFontGetDescent (fontRef);
+	return descent;
 }
 
 //-----------------------------------------------------------------------------
 double CoreTextFont::getLeading () const
 {
-	return CTFontGetLeading (fontRef);
+	return leading;
 }
 
 //-----------------------------------------------------------------------------
 double CoreTextFont::getCapHeight () const
 {
-	return CTFontGetCapHeight (fontRef);
+	return capHeight;
 }
 
 //-----------------------------------------------------------------------------

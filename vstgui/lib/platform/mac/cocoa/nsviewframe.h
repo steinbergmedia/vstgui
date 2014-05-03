@@ -96,7 +96,6 @@ public:
 protected:
 	static void initClass ();
 
-	IPlatformFrameCallback* frame;
 	NSView* nsView;
 	CocoaTooltipWindow* tooltipWindow;
 
