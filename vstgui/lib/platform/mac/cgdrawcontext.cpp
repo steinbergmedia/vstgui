@@ -692,14 +692,13 @@ CGContextRef CGDrawContext::beginCGContext (bool swapYAxis, bool integralOffset)
 {
 	if (cgContext)
 	{
-		CGRect cgClipRect = CGRectFromCRect (currentState.clipRect);
-		if (cgClipRect.size.width <= 0. || cgClipRect.size.height <= 0.)
+		if (currentState.clipRect.isEmpty ())
 			return 0;
 
 		CGContextSaveGState (cgContext);
 
+		CGRect cgClipRect = CGRectFromCRect (currentState.clipRect);
 		CGContextClipToRect (cgContext, cgClipRect);
-
 #if DEBUG
 		if (showClip)
 		{

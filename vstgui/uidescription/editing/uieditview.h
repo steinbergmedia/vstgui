@@ -61,6 +61,8 @@ public:
 	~UIEditView ();
 
 	void enableEditing (bool state);
+	void enableAutosizing (bool state);
+
 	void setEditView (CView* view);
 	CView* getEditView () const;
 
@@ -130,6 +132,7 @@ protected:
 	bool attached (CView* parent) VSTGUI_OVERRIDE_VMETHOD;
 
 	bool editing;
+	bool autosizing;
 	MouseEditMode mouseEditMode;
 	MouseSizeMode mouseSizeMode;
 	CPoint mouseStartPoint;

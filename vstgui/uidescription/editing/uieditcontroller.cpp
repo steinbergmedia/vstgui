@@ -338,6 +338,12 @@ CView* UIEditController::createView (const UIAttributes& attributes, const IUIDe
 	return 0;
 }
 
+enum {
+	kNotSavedTag = 666,
+	kEditingTag,
+	kAutosizeTag
+};
+
 //----------------------------------------------------------------------------------------------------
 CView* UIEditController::verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description)
 {
@@ -364,22 +370,26 @@ CView* UIEditController::verifyView (CView* view, const UIAttributes& attributes
 	CControl* control = dynamic_cast<CControl*>(view);
 	if (control)
 	{
-		if (control->getTag() == 666)
+		switch (control->getTag ())
 		{
-			notSavedControl = control;
-			notSavedControl->setAlphaValue (dirty ? 1.f : 0.f);
-		}
-		else
-		{
-			const std::string* name = attributes.getAttributeValue ("custom-view-name");
-			if (name)
+			case kNotSavedTag:
 			{
-				if (*name == "enableEditingControl")
-				{
-					enableEditingControl = control;
-					enableEditingControl->setValue (1.);
-					enableEditingControl->setListener (this);
-				}
+				notSavedControl = control;
+				notSavedControl->setAlphaValue (dirty ? 1.f : 0.f);
+				break;
+			}
+			case kAutosizeTag:
+			{
+				control->setListener (this);
+				control->setValue (1.);
+				break;
+			}
+			case kEditingTag:
+			{
+				enableEditingControl = control;
+				enableEditingControl->setValue (1.);
+				enableEditingControl->setListener (this);
+				break;
 			}
 		}
 	}
@@ -436,13 +446,25 @@ IController* UIEditController::createSubController (UTF8StringPtr name, const IU
 //----------------------------------------------------------------------------------------------------
 void UIEditController::valueChanged (CControl* control)
 {
-	if (editView && control == enableEditingControl)
+	if (editView)
 	{
-		selection->empty ();
-		CViewContainer* container = editView->getEditView () ? dynamic_cast<CViewContainer*>(editView->getEditView ()) : 0;
-		if (container)
-			resetScrollViewOffsets (container);
-		editView->enableEditing (control->getValue () == control->getMax () ? true : false);
+		switch (control->getTag ())
+		{
+			case kEditingTag:
+			{
+				selection->empty ();
+				CViewContainer* container = editView->getEditView () ? dynamic_cast<CViewContainer*>(editView->getEditView ()) : 0;
+				if (container)
+					resetScrollViewOffsets (container);
+				editView->enableEditing (control->getValue () == control->getMax () ? true : false);
+				break;
+			}
+			case kAutosizeTag:
+			{
+				editView->enableAutosizing (control->getValue () == 1.f);
+				break;
+			}
+		}
 	}
 }
 
@@ -734,6 +756,14 @@ CMessageResult UIEditController::onMenuItemSelection (CCommandMenuItem* item)
 			return kMessageNotified;
 		
 	}
+	else if (cmdCategory == "Selection")
+	{
+		if (cmdName == "Select All Children")
+		{
+			doSelectAllChildren ();
+			return kMessageNotified;
+		}
+	}
 	return kMessageUnknown;
 }
 
@@ -839,6 +869,15 @@ CMessageResult UIEditController::validateMenuItem (CCommandMenuItem* item)
 		item->setEnabled (enableItem);
 		return kMessageNotified;
 	}
+	else if (cmdCategory == "Selection")
+	{
+		if (cmdName == "Select All Children")
+		{
+			bool enable = selection->total () == 1 && selection->first () && dynamic_cast<CViewContainer*> (selection->first ());
+			item->setEnabled (enable);
+			return kMessageNotified;
+		}
+	}
 	return kMessageUnknown;
 }
 
@@ -892,6 +931,21 @@ bool UIEditController::doZOrderAction (bool lower)
 		return true;
 	}
 	return false;
+}
+
+//----------------------------------------------------------------------------------------------------
+void UIEditController::doSelectAllChildren ()
+{
+	CViewContainer* container = dynamic_cast<CViewContainer*> (selection->first ());
+	selection->empty ();
+	const IViewFactory* factory = editDescription->getViewFactory ();
+	ViewIterator it (container);
+	while (*it)
+	{
+		if (factory->getViewName (*it))
+			selection->add (*it);
+		it++;
+	}
 }
 
 //----------------------------------------------------------------------------------------------------

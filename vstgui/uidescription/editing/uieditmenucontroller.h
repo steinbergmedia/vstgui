@@ -121,6 +121,8 @@ static const MenuEntry editMenu[] = {
 	{ "SelectionZOrder", "Lower" , 0, kAlt, VKEY_UP },
 	{ "SelectionZOrder", "Raise" , 0, kAlt, VKEY_DOWN },
 	kSubMenuEnd,
+	kMenuSeparator,
+	{ "Selection", "Select All Children" , 0, 0, 0 },
 	
 	kSubMenuEnd,
 	kMenuSeparator,

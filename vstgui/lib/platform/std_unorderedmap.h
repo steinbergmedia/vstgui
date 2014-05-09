@@ -1,5 +1,7 @@
 #pragma once
 
+#include "../vstguibase.h"
+
 #if MAC
 	#ifdef _LIBCPP_VERSION
 		#include <unordered_map>

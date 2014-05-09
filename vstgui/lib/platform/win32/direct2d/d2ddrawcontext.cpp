@@ -61,7 +61,13 @@ static D2D1_MATRIX_3X2_F convert (const CGraphicsTransform& t)
 D2DDrawContext::D2DApplyClip::D2DApplyClip (D2DDrawContext* drawContext, bool halfPointOffset)
 : drawContext (drawContext)
 {
-	drawContext->getRenderTarget ()->PushAxisAlignedClip (makeD2DRect (drawContext->currentState.clipRect), D2D1_ANTIALIAS_MODE_PER_PRIMITIVE);
+	if (drawContext->currentClip != drawContext->currentState.clipRect)
+	{
+		if (drawContext->currentClip.isEmpty () == false)
+			drawContext->getRenderTarget ()->PopAxisAlignedClip ();
+		drawContext->getRenderTarget ()->PushAxisAlignedClip (makeD2DRect (drawContext->currentState.clipRect), D2D1_ANTIALIAS_MODE_PER_PRIMITIVE);
+		drawContext->currentClip = drawContext->currentState.clipRect;
+	}
 	if (drawContext->getCurrentTransform ().isInvariant () == false)
 	{
 		CGraphicsTransform transform = drawContext->getCurrentTransform ();
@@ -76,7 +82,6 @@ D2DDrawContext::D2DApplyClip::D2DApplyClip (D2DDrawContext* drawContext, bool ha
 //-----------------------------------------------------------------------------
 D2DDrawContext::D2DApplyClip::~D2DApplyClip ()
 {
-	drawContext->getRenderTarget ()->PopAxisAlignedClip ();
 	drawContext->getRenderTarget ()->SetTransform (D2D1::Matrix3x2F::Identity ());
 }
 
@@ -193,6 +198,11 @@ void D2DDrawContext::endDraw ()
 {
 	if (renderTarget)
 	{
+		if (currentClip.isEmpty () == false)
+		{
+			getRenderTarget ()->PopAxisAlignedClip ();
+			currentClip = CRect ();
+		}
 		renderTarget->Flush ();
 		HRESULT result = renderTarget->EndDraw ();
 		if (result == D2DERR_RECREATE_TARGET)

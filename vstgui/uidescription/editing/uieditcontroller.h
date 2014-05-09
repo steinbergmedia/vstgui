@@ -175,6 +175,7 @@ private:
 	bool doSelectionMove (const std::string& commandName, bool useGrid) const;
 	bool doSelectionSize (const std::string& commandName, bool useGrid) const;
 	bool doZOrderAction (bool lower);
+	void doSelectAllChildren ();
 	
 	void onUndoManagerChanged ();
 	template<typename NameChangeAction, IViewCreator::AttrType attrType> void performNameChange (UTF8StringPtr oldName, UTF8StringPtr newName, IdStringPtr groupActionName);

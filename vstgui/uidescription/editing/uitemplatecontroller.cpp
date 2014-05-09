@@ -297,6 +297,10 @@ void UITemplateController::dbSelectionChanged (int32_t selectedRow, GenericStrin
 
 			changed (kMsgTemplateChanged);
 		}
+		else
+		{
+			selection->setExclusive (templateView);
+		}
 		return;
 	}
 }
@@ -642,6 +646,8 @@ CMouseEventResult UITemplatesDataSource::dbOnMouseDown (const CPoint& where, con
 			browser->beginTextEdit (CDataBrowser::Cell (row, column), getStringList ()->at (row).c_str ());
 			return kMouseDownEventHandledButDontNeedMovedOrUpEvents;
 		}
+		delegate->dbSelectionChanged (row, this);
+		return kMouseDownEventHandledButDontNeedMovedOrUpEvents;
 	}
 	else if (buttons.isRightButton ())
 	{

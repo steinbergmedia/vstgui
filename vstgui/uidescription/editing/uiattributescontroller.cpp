@@ -1155,7 +1155,10 @@ void UIAttributesController::rebuildAttributesView ()
 		}
 		else if (selectedViews > 1)
 		{
-			viewNameLabel->setText ("Multiple Selection");
+			std::stringstream str;
+			str << selectedViews;
+			str << " Selected Views";
+			viewNameLabel->setText (str.str ().c_str ());
 		}
 		else
 		{
