@@ -1,3 +1,8 @@
+2014-05-09 arne
+
+	* improve D2D drawing performance
+	* fix buttons parameter on mouse up for Windows
+
 2014-05-01 arne
 
 	* add Matrix Transformation support to CDrawContext and remove setOffset() getOffset() from it.

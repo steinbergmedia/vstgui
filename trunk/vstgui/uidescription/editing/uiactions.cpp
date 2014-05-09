@@ -350,10 +350,11 @@ void ViewCopyOperation::undo ()
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
-ViewSizeChangeOperation::ViewSizeChangeOperation (UISelection* selection, bool sizing)
+ViewSizeChangeOperation::ViewSizeChangeOperation (UISelection* selection, bool sizing, bool autosizingEnabled)
 : BaseSelectionOperation<std::pair<SharedPointer<CView>, CRect> > (selection)
 , first (true)
 , sizing (sizing)
+, autosizing (autosizingEnabled)
 {
 	FOREACH_IN_SELECTION(selection, view)
 		push_back (std::make_pair (view, view->getViewSize ()));
@@ -391,13 +392,29 @@ void ViewSizeChangeOperation::undo ()
 	iterator it = begin ();
 	while (it != end ())
 	{
+		CView* view = (*it).first;
 		CRect size ((*it).second);
-		(*it).first->invalid ();
-		(*it).second = (*it).first->getViewSize ();
-		(*it).first->setViewSize (size);
-		(*it).first->setMouseableArea (size);
-		(*it).first->invalid ();
-		selection->add ((*it).first);
+		view->invalid ();
+		(*it).second = view->getViewSize ();
+		CViewContainer* container = 0;
+		bool oldAutosizing = false;
+		if (!autosizing)
+		{
+			container = dynamic_cast<CViewContainer*> (view);
+			if (container)
+			{
+				oldAutosizing = container->getAutosizingEnabled ();
+				container->setAutosizingEnabled (false);
+			}
+		}
+		view->setViewSize (size);
+		view->setMouseableArea (size);
+		view->invalid ();
+		selection->add (view);
+		if (!autosizing && container)
+		{
+			container->setAutosizingEnabled (oldAutosizing);
+		}
 		it++;
 	}
 }

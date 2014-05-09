@@ -1108,6 +1108,7 @@ namespace VST3EditorInternal {
 static int32_t getUIDescriptionSaveOptions (CFrame* frame)
 {
 	int32_t flags = 0;
+#if VSTGUI_LIVE_EDITING
 	UIEditController* editController = dynamic_cast<UIEditController*> (getViewController (frame->getView (0)));
 	if (editController)
 	{
@@ -1122,6 +1123,7 @@ static int32_t getUIDescriptionSaveOptions (CFrame* frame)
 			flags |= UIDescription::kWriteWindowsResourceFile;
 		}
 	}
+#endif
 	return flags;
 }
 } // namespace VST3EditorInternal

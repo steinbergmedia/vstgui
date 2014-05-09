@@ -936,11 +936,11 @@ LONG_PTR WINAPI Win32Frame::WindowProc (HWND hwnd, UINT message, WPARAM wParam, 
 			case WM_XBUTTONUP:
 			{
 				CButtonState buttons = 0;
-				if (wParam & MK_LBUTTON)
+				if (message & MK_LBUTTON || message == WM_LBUTTONUP)
 					buttons |= kLButton;
-				if (wParam & MK_RBUTTON)
+				if (wParam & MK_RBUTTON || message == WM_RBUTTONUP)
 					buttons |= kRButton;
-				if (wParam & MK_MBUTTON)
+				if (wParam & MK_MBUTTON || message == WM_MBUTTONUP)
 					buttons |= kMButton;
 				if (wParam & MK_XBUTTON1)
 					buttons |= kButton4;

@@ -3640,6 +3640,22 @@ public:
 		}
 		return false;
 	}
+	bool getAttributeValueRange (const std::string& attributeName, double& minValue, double &maxValue) const VSTGUI_OVERRIDE_VMETHOD
+	{
+		if (attributeName == kAttrGradientStartColorOffset || attributeName == kAttrGradientEndColorOffset)
+		{
+			minValue = 0.;
+			maxValue = 1.;
+			return true;
+		}
+		else if (attributeName == kAttrGradientAngle)
+		{
+			minValue = 0.;
+			maxValue = 360.;
+			return true;
+		}
+		return false;
+	}
 
 };
 CGradientViewCreator __gCGradientViewCreator;

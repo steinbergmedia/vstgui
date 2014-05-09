@@ -133,7 +133,7 @@ protected:
 class ViewSizeChangeOperation : public BaseSelectionOperation<std::pair<SharedPointer<CView>, CRect> >
 {
 public:
-	ViewSizeChangeOperation (UISelection* selection, bool sizing);
+	ViewSizeChangeOperation (UISelection* selection, bool sizing, bool autosizingEnabled);
 
 	~ViewSizeChangeOperation ();
 	
@@ -143,6 +143,7 @@ public:
 protected:
 	bool first;
 	bool sizing;
+	bool autosizing;
 };
 
 //----------------------------------------------------------------------------------------------------

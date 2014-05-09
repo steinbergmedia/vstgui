@@ -297,6 +297,7 @@ UIEditView::UIEditView (const CRect& size, UIDescription* uidescription)
 , editTimer (0)
 , mouseEditMode (kNoEditing)
 , editing (true)
+, autosizing (true)
 , grid (0)
 {
 }
@@ -346,6 +347,12 @@ void UIEditView::enableEditing (bool state)
 			lines = 0;
 		}
 	}
+}
+
+//----------------------------------------------------------------------------------------------------
+void UIEditView::enableAutosizing (bool state)
+{
+	autosizing = state;
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -783,7 +790,7 @@ void UIEditView::doKeyMove (const CPoint& delta)
 		if (getSelection ()->contains (getEditView ()))
 			return;
 		if (!moveSizeOperation)
-			moveSizeOperation = new ViewSizeChangeOperation (selection, false);
+			moveSizeOperation = new ViewSizeChangeOperation (selection, false, autosizing);
 		getSelection ()->moveBy (delta);
 		if (moveSizeOperation)
 		{
@@ -799,7 +806,7 @@ void UIEditView::doKeySize (const CPoint& delta)
 	if (delta.x || delta.y)
 	{
 		if (!moveSizeOperation)
-			moveSizeOperation = new ViewSizeChangeOperation (selection, true);
+			moveSizeOperation = new ViewSizeChangeOperation (selection, true, autosizing);
 		getSelection ()->changed (UISelection::kMsgSelectionViewWillChange);
 		FOREACH_IN_SELECTION (selection, view)
 			CRect viewSize = view->getViewSize ();
@@ -824,7 +831,7 @@ void UIEditView::doDragEditingMove (CPoint& where)
 	if (diff.x || diff.y)
 	{
 		if (!moveSizeOperation)
-			moveSizeOperation = new ViewSizeChangeOperation (selection, false);
+			moveSizeOperation = new ViewSizeChangeOperation (selection, false, autosizing);
 		getSelection ()->moveBy (diff);
 		mouseStartPoint = where;
 		if (editTimer)
@@ -848,7 +855,7 @@ void UIEditView::doDragEditingMove (CPoint& where)
 void UIEditView::doSizeEditingMove (CPoint& where)
 {
 	if (!moveSizeOperation)
-		moveSizeOperation = new ViewSizeChangeOperation (selection, true);
+		moveSizeOperation = new ViewSizeChangeOperation (selection, true, autosizing);
 	if (grid)
 	{
 		where.offset (grid->getSize ().x / 2., grid->getSize ().y / 2.);
@@ -877,10 +884,25 @@ void UIEditView::doSizeEditingMove (CPoint& where)
 		viewSize.bottom = viewSize.top;
 	if (viewSize != view->getViewSize ())
 	{
+		bool oldAutosizingEnabled = true;
+		CViewContainer* container = 0;
+		if (!autosizing)
+		{
+			container = dynamic_cast<CViewContainer*>(view);
+			if (container)
+			{
+				oldAutosizingEnabled = container->getAutosizingEnabled ();
+				container->setAutosizingEnabled (false);
+			}
+		}
 		getSelection ()->changed (UISelection::kMsgSelectionViewWillChange);
 		view->setViewSize (viewSize);
 		view->setMouseableArea (viewSize);
 		getSelection ()->changed (UISelection::kMsgSelectionViewChanged);
+		if (!autosizing && container)
+		{
+			container->setAutosizingEnabled (oldAutosizingEnabled);
+		}
 	}
 	if (lines)
 	{

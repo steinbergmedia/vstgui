@@ -119,6 +119,7 @@ protected:
 	ID2D1SolidColorBrush* strokeBrush;
 	ID2D1SolidColorBrush* fontBrush;
 	ID2D1StrokeStyle* strokeStyle;
+	CRect currentClip;
 };
 
 //-----------------------------------------------------------------------------
