@@ -235,6 +235,7 @@ void CGradientView::draw (CDrawContext* context)
 		
 		if (frameColor.alpha != 0 && frameWidth > 0.)
 		{
+			context->setDrawMode ((drawAntialiased ? kAntiAliasing : kAliasing) | kIntegralMode);
 			context->setFrameColor (frameColor);
 			context->setLineWidth (frameWidth);
 			context->setLineStyle (kLineSolid);

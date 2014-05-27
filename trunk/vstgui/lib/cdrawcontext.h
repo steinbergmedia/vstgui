@@ -168,6 +168,7 @@ class CGraphicsPath;
 class CGradient;
 class CString;
 struct CGraphicsTransform;
+struct CNinePartTiledDescription;
 
 //-----------------------------------------------------------------------------
 // CDrawContext Declaration
@@ -211,6 +212,9 @@ public:
 	virtual void drawEllipse (const CRect &rect, const CDrawStyle drawStyle = kDrawStroked) = 0;	///< draw an ellipse
 	virtual void drawPoint (const CPoint &point, const CColor& color) = 0;	///< draw a point
 	virtual void drawBitmap (CBitmap* bitmap, const CRect& dest, const CPoint& offset = CPoint (0, 0), float alpha = 1.f) = 0; ///< don't call directly, please use CBitmap::draw instead
+
+	virtual void drawBitmapNinePartTiled (CBitmap* bitmap, const CRect& dest, const CNinePartTiledDescription& desc, float alpha = 1.f);
+	virtual void fillRectWithBitmap (CBitmap* bitmap, const CRect& srcRect, const CRect& dstRect, float alpha);
 
 	virtual void clearRect (const CRect& rect) = 0;	///< clears the rect (makes r = 0, g = 0, b = 0, a = 0)
 	//@}

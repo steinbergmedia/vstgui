@@ -62,6 +62,7 @@ public:
 
 	void enableEditing (bool state);
 	void enableAutosizing (bool state);
+	void setScale (double scale);
 
 	void setEditView (CView* view);
 	CView* getEditView () const;

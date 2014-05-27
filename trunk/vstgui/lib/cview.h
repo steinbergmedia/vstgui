@@ -39,6 +39,7 @@
 #include "cpoint.h"
 #include "crect.h"
 #include "vstkeycode.h"
+#include "cgraphicstransform.h"
 #include <map>
 #include <vector>
 
@@ -381,9 +382,17 @@ public:
 	static int32_t idleRate;																	///< global idle rate in Hz, defaults to 30 Hz
 	//@}
 
+	//-----------------------------------------------------------------------------
+	/// @name View Listener Methods
+	//-----------------------------------------------------------------------------
+	//@{
 	void registerViewListener (IViewListener* listener);
 	void unregisterViewListener (IViewListener* listener);
-	
+	//@}
+
+	CGraphicsTransform getGlobalTransform () const;
+	template<typename T> T& translateToGlobal (T& t) const { getGlobalTransform ().transform (t); return t; } /// translates a local coordinate to a global one using parent transforms
+
 	#if DEBUG
 	virtual void dumpInfo ();
 	#endif

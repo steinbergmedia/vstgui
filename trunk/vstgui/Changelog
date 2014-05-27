@@ -1,3 +1,8 @@
+2014-05-27 arne
+
+	* add Matrix Transformation support to CViewContainer to draw contents transformed (works at least for scaling, rotation will not work)
+	* add drawBitmapNinePartTiled and fillRectWithBitmap methods to CDrawContext
+
 2014-05-09 arne
 
 	* improve D2D drawing performance

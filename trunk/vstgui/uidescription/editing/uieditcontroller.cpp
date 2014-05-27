@@ -341,7 +341,7 @@ CView* UIEditController::createView (const UIAttributes& attributes, const IUIDe
 enum {
 	kNotSavedTag = 666,
 	kEditingTag,
-	kAutosizeTag
+	kAutosizeTag,
 };
 
 //----------------------------------------------------------------------------------------------------
@@ -357,14 +357,34 @@ CView* UIEditController::verifyView (CView* view, const UIAttributes& attributes
 		splitViews.push_back (splitView);
 		if (splitViews.size () == 1)
 		{
+			CFontRef font = description->getFont ("control.font");
 			CTextLabel* label = new CTextLabel (CRect (0, 0, splitView->getWidth (), splitView->getSeparatorWidth ()), "Templates | View Hierarchy");
 			label->setTransparency (true);
 			label->setMouseEnabled (false);
-			CFontRef font = description->getFont ("control.font");
 			label->setFont (font);
 			label->setFontColor (kBlackCColor);
 			label->setAutosizeFlags (kAutosizeAll);
 			splitView->addViewToSeparator (0, label);
+			// Add Scale Menu
+			CRect scaleMenuRect (0, 0, 50, splitView->getSeparatorWidth ());
+			scaleMenuRect.offset (splitView->getWidth ()-scaleMenuRect.getWidth (), 0);
+			scaleMenuRect.inset (2, 2);
+			COptionMenu* scaleMenu = new COptionMenu (scaleMenuRect, 0, -1);
+			scaleMenu->setStyle (kPopupStyle|kCheckStyle);
+			scaleMenu->setFont (font);
+			scaleMenu->setFontColor (kWhiteCColor);
+			scaleMenu->setBackColor (kBlackCColor);
+			scaleMenu->setAutosizeFlags (kAutosizeRight|kAutosizeTop|kAutosizeBottom);
+			scaleMenu->addEntry (new CCommandMenuItem ("50%", this, "Scale", "50%"));
+			scaleMenu->addEntry (new CCommandMenuItem ("75%", this, "Scale", "75%"));
+			scaleMenu->addEntry (new CCommandMenuItem ("100%", this, "Scale", "100%"));
+			scaleMenu->addEntry (new CCommandMenuItem ("150%", this, "Scale", "150%"));
+			scaleMenu->addEntry (new CCommandMenuItem ("200%", this, "Scale", "200%"));
+			scaleMenu->addEntry (new CCommandMenuItem ("300%", this, "Scale", "300%"));
+			scaleMenu->addEntry (new CCommandMenuItem ("400%", this, "Scale", "400%"));
+			scaleMenu->addEntry (new CCommandMenuItem ("500%", this, "Scale", "500%"));
+			scaleMenu->setValue (2);
+			splitView->addViewToSeparator (0, scaleMenu);
 		}
 	}
 	CControl* control = dynamic_cast<CControl*>(view);
@@ -387,7 +407,7 @@ CView* UIEditController::verifyView (CView* view, const UIAttributes& attributes
 			case kEditingTag:
 			{
 				enableEditingControl = control;
-				enableEditingControl->setValue (1.);
+				enableEditingControl->setValue (1.f);
 				enableEditingControl->setListener (this);
 				break;
 			}
@@ -761,6 +781,16 @@ CMessageResult UIEditController::onMenuItemSelection (CCommandMenuItem* item)
 		if (cmdName == "Select All Children")
 		{
 			doSelectAllChildren ();
+			return kMessageNotified;
+		}
+	}
+	else if (cmdCategory == "Scale")
+	{
+		int32_t percent = static_cast<int32_t> (strtol (cmdName, NULL, 10));
+		if (percent > 0)
+		{
+			double scale = percent / 100.;
+			editView->setScale (scale);
 			return kMessageNotified;
 		}
 	}

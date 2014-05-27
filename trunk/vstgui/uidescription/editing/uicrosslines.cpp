@@ -36,14 +36,14 @@
 
 #if VSTGUI_LIVE_EDITING
 
-#include "../../lib/cview.h"
+#include "../../lib/cviewcontainer.h"
 #include "../../lib/cdrawcontext.h"
 #include "uiselection.h"
 
 namespace VSTGUI {
 
 //----------------------------------------------------------------------------------------------------
-UICrossLines::UICrossLines (CView* editView, int32_t style, const CColor& background, const CColor& foreground)
+UICrossLines::UICrossLines (CViewContainer* editView, int32_t style, const CColor& background, const CColor& foreground)
 : CView (CRect (0, 0, 0, 0))
 , editView (editView)
 , style (style)
@@ -80,10 +80,14 @@ void UICrossLines::viewSizeChanged (CView* view, const CRect& oldSize)
 void UICrossLines::update (UISelection* selection)
 {
 	invalid ();
-	currentRect = selection->getBounds ();
 	CPoint p;
-	getParentView ()->frameToLocal (p);
+	
+	currentRect = selection->getBounds ();
+	editView->localToFrame (p);
+	currentRect.offset (-p.x, -p.y);
+	editView->getTransform().transform (currentRect);
 	currentRect.offset (p.x, p.y);
+
 	invalid ();
 }
 
@@ -95,9 +99,11 @@ void UICrossLines::update (const CPoint& point)
 	currentRect.top = point.y-1;
 	currentRect.setWidth (1);
 	currentRect.setHeight (1);
+	editView->getTransform ().transform (currentRect);
 	CPoint p;
-	editView->localToFrame (p);
 	getParentView ()->frameToLocal (p);
+	currentRect.offset (p.x, p.y);
+	editView->localToFrame (p);
 	currentRect.offset (p.x, p.y);
 	invalid ();
 }

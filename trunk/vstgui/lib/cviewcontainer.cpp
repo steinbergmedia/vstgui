@@ -124,6 +124,12 @@ void CViewContainer::parentSizeChanged ()
 }
 
 //-----------------------------------------------------------------------------
+void CViewContainer::setTransform (const CGraphicsTransform& t)
+{
+	transform = t;
+}
+
+//-----------------------------------------------------------------------------
 void CViewContainer::setAutosizingEnabled (bool state)
 {
 	if (state)
@@ -578,6 +584,7 @@ void CViewContainer::invalidRect (const CRect& rect)
 	if (!isVisible ())
 		return;
 	CRect _rect (rect);
+	transform.transform (_rect);
 	_rect.offset (getViewSize ().left, getViewSize ().top);
 	_rect.bound (getViewSize ());
 	if (_rect.isEmpty ())
@@ -644,8 +651,9 @@ void CViewContainer::drawBackgroundRect (CDrawContext* pContext, const CRect& _u
  */
 void CViewContainer::drawRect (CDrawContext* pContext, const CRect& updateRect)
 {
-	CDrawContext::Transform transform (*pContext, CGraphicsTransform ().translate (getViewSize ().left, getViewSize ().top));
-	
+	CPoint offset (getViewSize ().left, getViewSize ().top);
+	CDrawContext::Transform offsetTransform (*pContext, CGraphicsTransform ().translate (offset.x, offset.y));
+
 	CRect _updateRect (updateRect);
 	_updateRect.bound (getViewSize ());
 
@@ -671,6 +679,12 @@ void CViewContainer::drawRect (CDrawContext* pContext, const CRect& updateRect)
 		_focusDrawing = dynamic_cast<IFocusDrawing*> (_focusView);
 	}
 
+	{
+	CDrawContext::Transform tr (*pContext, transform);
+	transform.inverse ().transform (newClip);
+	transform.inverse ().transform (clientRect);
+	transform.transform (oldClip2);
+	
 	// draw each view
 	FOREACHSUBVIEW
 		if (pV->isVisible ())
@@ -706,12 +720,13 @@ void CViewContainer::drawRect (CDrawContext* pContext, const CRect& updateRect)
 				pContext->setClipRect (viewSize);
 				float globalContextAlpha = pContext->getGlobalAlpha ();
 				pContext->setGlobalAlpha (globalContextAlpha * pV->getAlphaValue ());
-				pV->drawRect (pContext, clientRect);
+				pV->drawRect (pContext, viewSize);
 				pContext->setGlobalAlpha (globalContextAlpha);
 			}
 		}
 	ENDFOREACHSUBVIEW
-
+	}
+	
 	pContext->setClipRect (oldClip2);
 
 	if (_focusView)
@@ -767,6 +782,7 @@ bool CViewContainer::checkUpdateRect (CView* view, const CRect& rect)
 bool CViewContainer::hitTestSubViews (const CPoint& where, const CButtonState buttons)
 {
 	CPoint where2 (where);
+	transform.transform (where2);
 	where2.offset (-getViewSize ().left, -getViewSize ().top);
 
 	FOREACHSUBVIEW_REVERSE(true)
@@ -784,8 +800,9 @@ bool CViewContainer::hitTestSubViews (const CPoint& where, const CButtonState bu
  */
 bool CViewContainer::hitTest (const CPoint& where, const CButtonState& buttons)
 {
+	CPoint where2 (where);
 	//return hitTestSubViews (where); would change default behavior
-	return CView::hitTest (where, buttons);
+	return CView::hitTest (where2, buttons);
 }
 
 //-----------------------------------------------------------------------------
@@ -794,6 +811,7 @@ CMouseEventResult CViewContainer::onMouseDown (CPoint &where, const CButtonState
 	// convert to relativ pos
 	CPoint where2 (where);
 	where2.offset (-getViewSize ().left, -getViewSize ().top);
+	transform.inverse ().transform (where2);
 
 	FOREACHSUBVIEW_REVERSE(true)
 		if (pV && pV->isVisible () && pV->getMouseEnabled () && pV->hitTest (where2, buttons))
@@ -830,9 +848,9 @@ CMouseEventResult CViewContainer::onMouseUp (CPoint &where, const CButtonState& 
 	{
 		CBaseObjectGuard crg (mouseDownView);
 
-		// convert to relativ pos
 		CPoint where2 (where);
 		where2.offset (-getViewSize ().left, -getViewSize ().top);
+		transform.inverse ().transform (where2);
 		mouseDownView->onMouseUp (where2, buttons);
 		mouseDownView = 0;
 		return kMouseEventHandled;
@@ -847,9 +865,9 @@ CMouseEventResult CViewContainer::onMouseMoved (CPoint &where, const CButtonStat
 	{
 		CBaseObjectGuard crg (mouseDownView);
 
-		// convert to relativ pos
 		CPoint where2 (where);
 		where2.offset (-getViewSize ().left, -getViewSize ().top);
+		transform.inverse ().transform (where2);
 		CMouseEventResult mouseResult = mouseDownView->onMouseMoved (where2, buttons);
 		if (mouseResult != kMouseEventHandled && mouseResult != kMouseEventNotImplemented)
 		{
@@ -876,9 +894,9 @@ CMouseEventResult CViewContainer::onMouseCancel ()
 bool CViewContainer::onWheel (const CPoint &where, const CMouseWheelAxis &axis, const float &distance, const CButtonState &buttons)
 {
 	FOREACHSUBVIEW_REVERSE(true)
-		// convert to relativ pos
 		CPoint where2 (where);
 		where2.offset (-getViewSize ().left, -getViewSize ().top);
+		transform.inverse ().transform (where2);
 		if (pV && pV->isVisible () && pV->getMouseEnabled () && where2.isInside (pV->getMouseableArea ()))
 		{
 			if (pV->onWheel (where2, axis, distance, buttons))
@@ -904,9 +922,9 @@ bool CViewContainer::onDrop (IDataPackage* drag, const CPoint& where)
 
 	bool result = false;
 
-	// convert to relativ pos
 	CPoint where2 (where);
 	where2.offset (-getViewSize ().left, -getViewSize ().top);
+	transform.inverse ().transform (where2);
 
 	CView* view = getViewAt (where, false, true);
 	if (view != currentDragView)
@@ -931,9 +949,9 @@ void CViewContainer::onDragEnter (IDataPackage* drag, const CPoint& where)
 	if (!pParentFrame)
 		return;
 	
-	// convert to relativ pos
 	CPoint where2 (where);
 	where2.offset (-getViewSize ().left, -getViewSize ().top);
+	transform.inverse ().transform (where2);
 
 	if (currentDragView)
 		currentDragView->onDragLeave (drag, where2);
@@ -949,9 +967,9 @@ void CViewContainer::onDragLeave (IDataPackage* drag, const CPoint& where)
 	if (!pParentFrame)
 		return;
 	
-	// convert to relativ pos
 	CPoint where2 (where);
 	where2.offset (-getViewSize ().left, -getViewSize ().top);
+	transform.inverse ().transform (where2);
 
 	if (currentDragView)
 		currentDragView->onDragLeave (drag, where2);
@@ -964,9 +982,9 @@ void CViewContainer::onDragMove (IDataPackage* drag, const CPoint& where)
 	if (!pParentFrame)
 		return;
 	
-	// convert to relativ pos
 	CPoint where2 (where);
 	where2.offset (-getViewSize ().left, -getViewSize ().top);
+	transform.inverse ().transform (where2);
 
 	CView* view = getViewAt (where, false, true);
 	if (view != currentDragView)
@@ -1139,9 +1157,8 @@ bool CViewContainer::isDirty () const
 CView* CViewContainer::getViewAt (const CPoint& p, bool deep, bool mustbeMouseEnabled) const
 {
 	CPoint where (p);
-
-	// convert to relativ pos
 	where.offset (-getViewSize ().left, -getViewSize ().top);
+	transform.inverse ().transform (where);
 
 	FOREACHSUBVIEW_REVERSE(true)
 		if (pV && pV->isVisible () && where.isInside (pV->getMouseableArea ()))
@@ -1175,9 +1192,8 @@ bool CViewContainer::getViewsAt (const CPoint& p, ViewList& views, bool deep) co
 	bool result = false;
 
 	CPoint where (p);
-
-	// convert to relativ pos
 	where.offset (-getViewSize ().left, -getViewSize ().top);
+	transform.inverse ().transform (where);
 
 	FOREACHSUBVIEW_REVERSE(true)
 		if (pV && pV->isVisible () && where.isInside (pV->getMouseableArea ()))
@@ -1204,9 +1220,8 @@ bool CViewContainer::getViewsAt (const CPoint& p, ViewList& views, bool deep) co
 CViewContainer* CViewContainer::getContainerAt (const CPoint& p, bool deep, bool mustbeMouseEnabled) const
 {
 	CPoint where (p);
-
-	// convert to relativ pos
 	where.offset (-getViewSize ().left, -getViewSize ().top);
+	transform.inverse ().transform (where);
 
 	FOREACHSUBVIEW_REVERSE(true)
 		if (pV && pV->isVisible () && where.isInside (pV->getMouseableArea ()))

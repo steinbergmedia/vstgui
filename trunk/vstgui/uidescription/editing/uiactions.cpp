@@ -1054,7 +1054,7 @@ NinePartTiledBitmapChangeAction::NinePartTiledBitmapChangeAction (UIDescription*
 		CNinePartTiledBitmap* tiledBitmap = dynamic_cast<CNinePartTiledBitmap*>(bitmap);
 		if (tiledBitmap)
 		{
-			const CNinePartTiledBitmap::PartOffsets& offset = tiledBitmap->getPartOffsets ();
+			const CNinePartTiledDescription& offset = tiledBitmap->getPartOffsets ();
 			oldRect = new CRect;
 			oldRect->left = offset.left;
 			oldRect->top = offset.top;

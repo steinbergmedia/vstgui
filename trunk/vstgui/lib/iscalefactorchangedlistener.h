@@ -38,6 +38,7 @@
 namespace VSTGUI {
 class CFrame;
 
+//-----------------------------------------------------------------------------
 class IScaleFactorChangedListener
 {
 public:

@@ -492,6 +492,28 @@ CPoint& CView::localToFrame (CPoint& point) const
 }
 
 //-----------------------------------------------------------------------------
+CGraphicsTransform CView::getGlobalTransform () const
+{
+	CGraphicsTransform transform;
+	typedef std::list<CViewContainer*> ParentViews;
+	ParentViews parents;
+	
+	CViewContainer* parent = dynamic_cast<CViewContainer*>(getParentView ());
+	while (parent)
+	{
+		parents.push_front (parent);
+		parent = dynamic_cast<CViewContainer*>(parent->getParentView ());
+	}
+	VSTGUI_RANGE_BASED_FOR_LOOP (ParentViews, parents, CViewContainer*, parent)
+		transform.translate (parent->getViewSize ().left, parent->getViewSize ().top);
+		transform = parent->getTransform () * transform;
+	VSTGUI_RANGE_BASED_FOR_LOOP_END
+
+//	transform.translate (getViewSize ().left, getViewSize ().top);
+	return transform;
+}
+
+//-----------------------------------------------------------------------------
 /**
  * @param rect rect to invalidate
  */

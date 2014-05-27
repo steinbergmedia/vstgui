@@ -198,14 +198,14 @@ A nine-part tiled bitmap is tiled in nine parts which are drawing according to i
 
 */
 //-----------------------------------------------------------------------------
-CNinePartTiledBitmap::CNinePartTiledBitmap (const CResourceDescription& desc, const PartOffsets& offsets)
+CNinePartTiledBitmap::CNinePartTiledBitmap (const CResourceDescription& desc, const CNinePartTiledDescription& offsets)
 : CBitmap (desc)
 , offsets (offsets)
 {
 }
 
 //-----------------------------------------------------------------------------
-CNinePartTiledBitmap::CNinePartTiledBitmap (IPlatformBitmap* platformBitmap, const PartOffsets& offsets)
+CNinePartTiledBitmap::CNinePartTiledBitmap (IPlatformBitmap* platformBitmap, const CNinePartTiledDescription& offsets)
 : CBitmap (platformBitmap)
 , offsets (offsets)
 {
@@ -219,82 +219,7 @@ CNinePartTiledBitmap::~CNinePartTiledBitmap ()
 //-----------------------------------------------------------------------------
 void CNinePartTiledBitmap::draw (CDrawContext* inContext, const CRect& inDestRect, const CPoint& offset, float inAlpha)
 {
-	drawParts (inContext, inDestRect, inAlpha);
-}
-
-//-----------------------------------------------------------------------------
-void CNinePartTiledBitmap::drawParts (CDrawContext* inContext, const CRect& inDestRect, float inAlpha)
-{
-	CRect	myBitmapBounds (0, 0, getWidth (), getHeight ());
-	CRect	mySourceRect [kPartCount];
-	CRect	myDestRect [kPartCount];
-	
-	calcPartRects (myBitmapBounds, offsets, mySourceRect);
-	calcPartRects (inDestRect, offsets, myDestRect);
-	
-	for (size_t i = 0; i < kPartCount; i++)
-		drawPart (inContext, mySourceRect[i], myDestRect[i], inAlpha);
-}
-
-//-----------------------------------------------------------------------------
-void CNinePartTiledBitmap::calcPartRects(const CRect& inBitmapRect, const PartOffsets& inPartOffset, CRect* outRect)
-{
-	// Center
-	CRect myCenter = outRect[kPartCenter]	(inBitmapRect.left		+ inPartOffset.left,
-											 inBitmapRect.top		+ inPartOffset.top,
-											 inBitmapRect.right		- inPartOffset.right,
-											 inBitmapRect.bottom	- inPartOffset.bottom);
-	
-	// Edges
-	outRect[kPartTop]			(myCenter.left,		inBitmapRect.top,	myCenter.right,		myCenter.top);
-	outRect[kPartLeft]			(inBitmapRect.left,	myCenter.top,		myCenter.left,		myCenter.bottom);
-	outRect[kPartRight]			(myCenter.right,	myCenter.top,		inBitmapRect.right,	myCenter.bottom);
-	outRect[kPartBottom]		(myCenter.left,		myCenter.bottom,	myCenter.right,		inBitmapRect.bottom);
-	
-	// Corners
-	outRect[kPartTopLeft]		(inBitmapRect.left,	inBitmapRect.top,	myCenter.left,		myCenter.top);
-	outRect[kPartTopRight]		(myCenter.right,	inBitmapRect.top,	inBitmapRect.right,	myCenter.top);
-	outRect[kPartBottomLeft]	(inBitmapRect.left,	myCenter.bottom,	myCenter.left,		inBitmapRect.bottom);
-	outRect[kPartBottomRight]	(myCenter.right,	myCenter.bottom,	inBitmapRect.right,	inBitmapRect.bottom);
-}
-
-//-----------------------------------------------------------------------------
-void CNinePartTiledBitmap::drawPart (CDrawContext* inContext, const CRect& inSourceRect, const CRect& inDestRect, float inAlpha)
-{
-	if (	(inSourceRect.getWidth ()	<= 0)
-		||	(inSourceRect.getHeight ()	<= 0)
-		||	(inDestRect.getWidth ()		<= 0)
-		||	(inDestRect.getHeight ()	<= 0))
-		return;
-	
-	CCoord	myLeft;
-	CCoord	myTop;
-	CPoint	mySourceOffset (inSourceRect.left, inSourceRect.top);
-	CRect	myPartRect;
-	
-	for (myTop = inDestRect.top; myTop < inDestRect.bottom; myTop += inSourceRect.getHeight ())
-	{
-		myPartRect.top		= myTop;
-		myPartRect.bottom	= myTop + inSourceRect.getHeight ();
-		if (myPartRect.bottom > inDestRect.bottom)
-			myPartRect.bottom = inDestRect.bottom;
-		// The following should never be true, I guess
-		if (myPartRect.getHeight () > inSourceRect.getHeight ())
-			myPartRect.setHeight (inSourceRect.getHeight ());
-		
-		for (myLeft = inDestRect.left; myLeft < inDestRect.right; myLeft += inSourceRect.getWidth ())
-		{
-			myPartRect.left		= myLeft;
-			myPartRect.right	= myLeft + inSourceRect.getWidth ();
-			if (myPartRect.right > inDestRect.right)
-				myPartRect.right = inDestRect.right;
-			// The following should never be true, I guess
-			if (myPartRect.getWidth () > inSourceRect.getWidth ())
-				myPartRect.setWidth (inSourceRect.getWidth ());
-			
-			CBitmap::draw (inContext, myPartRect, mySourceOffset, inAlpha);
-		}
-	}
+	inContext->drawBitmapNinePartTiled (this, inDestRect, offsets, inAlpha);
 }
 
 //------------------------------------------------------------------------

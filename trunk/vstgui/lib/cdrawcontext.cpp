@@ -34,6 +34,7 @@
 
 #include "cdrawcontext.h"
 #include "cgraphicspath.h"
+#include "cbitmap.h"
 #include <cassert>
 
 namespace VSTGUI {
@@ -374,6 +375,56 @@ void CDrawContext::drawString (UTF8StringPtr _string, const CRect& _rect, const 
 	painter->drawString (this, string, CPoint (rect.left, rect.bottom), antialias);
 
 	clearDrawString ();
+}
+
+//-----------------------------------------------------------------------------
+void CDrawContext::fillRectWithBitmap (CBitmap* bitmap, const CRect& srcRect, const CRect& dstRect, float alpha)
+{
+	if (srcRect.isEmpty () || dstRect.isEmpty ())
+		return;
+
+	CRect bitmapPartRect;
+	CCoord left;
+	CCoord top;
+	CPoint sourceOffset (srcRect.left, srcRect.top);
+	
+	for (top = dstRect.top; top < dstRect.bottom; top += srcRect.getHeight ())
+	{
+		bitmapPartRect.top = top;
+		bitmapPartRect.bottom = top + srcRect.getHeight ();
+		if (bitmapPartRect.bottom > dstRect.bottom)
+			bitmapPartRect.bottom = dstRect.bottom;
+		// The following should never be true, I guess
+		if (bitmapPartRect.getHeight () > srcRect.getHeight ())
+			bitmapPartRect.setHeight (srcRect.getHeight ());
+		
+		for (left = dstRect.left; left < dstRect.right; left += srcRect.getWidth ())
+		{
+			bitmapPartRect.left = left;
+			bitmapPartRect.right = left + srcRect.getWidth ();
+			if (bitmapPartRect.right > dstRect.right)
+				bitmapPartRect.right = dstRect.right;
+			// The following should never be true, I guess
+			if (bitmapPartRect.getWidth () > srcRect.getWidth ())
+				bitmapPartRect.setWidth (srcRect.getWidth ());
+			
+			drawBitmap (bitmap, bitmapPartRect, sourceOffset, alpha);
+		}
+	}
+}
+
+//-----------------------------------------------------------------------------
+void CDrawContext::drawBitmapNinePartTiled (CBitmap* bitmap, const CRect& dest, const CNinePartTiledDescription& desc, float alpha)
+{
+	CRect myBitmapBounds (0, 0, bitmap->getWidth (), bitmap->getHeight ());
+	CRect mySourceRect [CNinePartTiledDescription::kPartCount];
+	CRect myDestRect [CNinePartTiledDescription::kPartCount];
+	
+	desc.calcRects (myBitmapBounds, mySourceRect);
+	desc.calcRects (dest, myDestRect);
+	
+	for (size_t i = 0; i < CNinePartTiledDescription::kPartCount; i++)
+		fillRectWithBitmap (bitmap, mySourceRect[i], myDestRect[i], alpha);
 }
 
 //-----------------------------------------------------------------------------

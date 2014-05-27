@@ -71,6 +71,8 @@ public:
 	void drawEllipse (const CRect &rect, const CDrawStyle drawStyle = kDrawStroked) VSTGUI_OVERRIDE_VMETHOD;
 	void drawPoint (const CPoint &point, const CColor& color) VSTGUI_OVERRIDE_VMETHOD;
 	void drawBitmap (CBitmap* bitmap, const CRect& dest, const CPoint& offset = CPoint (0, 0), float alpha = 1.f) VSTGUI_OVERRIDE_VMETHOD;
+	void drawBitmapNinePartTiled (CBitmap* bitmap, const CRect& dest, const CNinePartTiledDescription& desc, float alpha = 1.f) VSTGUI_OVERRIDE_VMETHOD;
+	void fillRectWithBitmap (CBitmap* bitmap, const CRect& srcRect, const CRect& dstRect, float alpha) VSTGUI_OVERRIDE_VMETHOD;
 	void clearRect (const CRect& rect) VSTGUI_OVERRIDE_VMETHOD;
 	void setLineStyle (const CLineStyle& style) VSTGUI_OVERRIDE_VMETHOD;
 	void setLineWidth (CCoord width) VSTGUI_OVERRIDE_VMETHOD;
@@ -105,6 +107,7 @@ public:
 //------------------------------------------------------------------------------------
 protected:
 	void init () VSTGUI_OVERRIDE_VMETHOD;
+	void drawCGImageRef (CGContextRef context, CGImageRef image, CGLayerRef layer, double imageScaleFactor, const CRect& inRect, const CPoint& inOffset, float alpha, CBitmap* bitmap);
 
 	CGContextRef cgContext;
 

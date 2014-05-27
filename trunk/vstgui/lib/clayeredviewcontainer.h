@@ -71,6 +71,7 @@ protected:
 	void drawRect (CDrawContext* pContext, const CRect& updateRect) VSTGUI_OVERRIDE_VMETHOD;
 	void drawViewLayer (CDrawContext* context, const CRect& dirtyRect) VSTGUI_OVERRIDE_VMETHOD;
 	void updateLayerSize ();
+	CGraphicsTransform getDrawTransform () const;
 
 	OwningPointer<IPlatformViewLayer>layer;
 	CLayeredViewContainer* parentLayerView;

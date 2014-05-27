@@ -84,6 +84,10 @@ public:
 
 	virtual void setAutosizingEnabled (bool state);					///< enable or disable autosizing subviews. Per default this is enabled.
 	bool getAutosizingEnabled () const { return (viewFlags & kAutosizeSubviews) ? true : false; }
+
+	/** get child views of type ViewClass. ContainerClass must be a stdc++ container */
+	template<class ViewClass, class ContainerClass>
+	uint32_t getChildViewsOfType (ContainerClass& result, bool deep = false) const;
 	//@}
 
 	//-----------------------------------------------------------------------------
@@ -104,6 +108,9 @@ public:
 	virtual bool invalidateDirtyViews ();
 	virtual CRect getVisibleSize (const CRect& rect) const;
 
+	void setTransform (const CGraphicsTransform& t);
+	const CGraphicsTransform& getTransform () const { return transform; }
+	
 	// CView
 	virtual void draw (CDrawContext* pContext) VSTGUI_OVERRIDE_VMETHOD;
 	virtual void drawRect (CDrawContext* pContext, const CRect& updateRect) VSTGUI_OVERRIDE_VMETHOD;
@@ -208,30 +215,6 @@ public:
 		ChildViewConstReverseIterator riterator;
 	};
 
-	/** get child views of type ViewClass. ContainerClass must be a stdc++ container */
-	template<class ViewClass, class ContainerClass>
-	uint32_t getChildViewsOfType (ContainerClass& result, bool deep = false) const
-	{
-		ChildViewConstIterator it = children.begin ();
-		while (it != children.end ())
-		{
-			ViewClass* vObj = (*it).cast<ViewClass> ();
-			if (vObj)
-			{
-				result.push_back (vObj);
-			}
-			if (deep)
-			{
-				if (CViewContainer* container = (*it).cast<CViewContainer> ())
-				{
-					container->getChildViewsOfType<ViewClass, ContainerClass> (result);
-				}
-			}
-			it++;
-		}
-		return static_cast<uint32_t> (result.size ());
-	}
-
 	//-------------------------------------------
 	CLASS_METHODS(CViewContainer, CView)
 
@@ -257,9 +240,12 @@ protected:
 	CColor backgroundColor;
 	CPoint backgroundOffset;
 	CRect lastDrawnFocus;
-
+	
 	CView* currentDragView;
 	CView* mouseDownView;
+
+private:
+	CGraphicsTransform transform;
 };
 
 /// @cond ignore
@@ -273,6 +259,30 @@ protected:
 
 typedef CViewContainer::Iterator<false> ViewIterator;
 typedef CViewContainer::Iterator<true> ReverseViewIterator;
+
+//-----------------------------------------------------------------------------
+template<class ViewClass, class ContainerClass>
+uint32_t CViewContainer::getChildViewsOfType (ContainerClass& result, bool deep) const
+{
+	ChildViewConstIterator it = children.begin ();
+	while (it != children.end ())
+	{
+		ViewClass* vObj = (*it).cast<ViewClass> ();
+		if (vObj)
+		{
+			result.push_back (vObj);
+		}
+		if (deep)
+		{
+			if (CViewContainer* container = (*it).cast<CViewContainer> ())
+			{
+				container->getChildViewsOfType<ViewClass, ContainerClass> (result);
+			}
+		}
+		it++;
+	}
+	return static_cast<uint32_t> (result.size ());
+}
 
 } // namespace
 

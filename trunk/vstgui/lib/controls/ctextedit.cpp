@@ -258,20 +258,14 @@ int32_t CTextEdit::onKeyDown (VstKeyCode& keyCode)
 CRect CTextEdit::platformGetSize () const
 {
 	CRect rect = getViewSize ();
-	CPoint p (0, 0);
-	localToFrame (p);
-	rect.offset (p.x, p.y);
-	return rect;
+	return translateToGlobal (rect);
 }
 
 //------------------------------------------------------------------------
 CRect CTextEdit::platformGetVisibleSize () const
 {
 	CRect rect = getVisibleViewSize ();
-	CPoint p (0, 0);
-	localToFrame (p);
-	rect.offset (p.x, p.y);
-	return rect;
+	return translateToGlobal (rect);
 }
 
 //------------------------------------------------------------------------
