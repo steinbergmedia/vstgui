@@ -102,7 +102,7 @@ void CRect::setBottomRight (const CPoint& inPoint)
 //-----------------------------------------------------------------------------
 CPoint CRect::getCenter () const
 {
-	CPoint myPoint (left + getWidth () / 2, top + getHeight () / 2);
+	CPoint myPoint (left + getWidth () / 2., top + getHeight () / 2.);
 	return myPoint;
 }
 
@@ -125,7 +125,19 @@ void CRect::centerInside (const CRect& r)
 {
 	CPoint cp = r.getCenter ();
 	CPoint cp2 = getCenter ();
-	offset (cp.x-cp2.x, cp.y-cp2.y);
+	offset (cp.x - cp2.x, cp.y - cp2.y);
+}
+
+//-----------------------------------------------------------------------------
+CRect& CRect::offset (const CPoint& p)
+{
+	return offset (p.x, p.y);
+}
+
+//-----------------------------------------------------------------------------
+CRect& CRect::offsetInverse (const CPoint& p)
+{
+	return offset (-p.x, -p.y);
 }
 
 } // namespace

@@ -33,9 +33,16 @@
 //-----------------------------------------------------------------------------
 
 #include "cpoint.h"
+#include "crect.h"
 #include <cmath>
 
 namespace VSTGUI {
+
+//-----------------------------------------------------------------------------
+bool CPoint::isInside (const CRect& r) const
+{
+	return x >= r.left && x <= r.right && y >= r.top && y <= r.bottom;
+}
 
 //-----------------------------------------------------------------------------
 void CPoint::makeIntegral ()

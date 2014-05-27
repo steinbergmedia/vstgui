@@ -36,9 +36,9 @@
 #define __cpoint__
 
 #include "vstguibase.h"
-#include "crect.h"
 
 namespace VSTGUI {
+struct CRect;
 
 //-----------------------------------------------------------------------------
 //! @brief Point structure
@@ -48,7 +48,7 @@ struct CPoint
 	CPoint (CCoord x = 0, CCoord y = 0) : x (x), y (y) {}
 	CPoint& operator () (CCoord x, CCoord y) { this->x = x; this->y = y; return *this; }
 
-	bool isInside (const CRect& r) const { return x >= r.left && x <= r.right && y >= r.top && y <= r.bottom; }
+	bool isInside (const CRect& r) const;
 
 	bool operator != (const CPoint &other) const { return (x != other.x || y != other.y); }
 	bool operator == (const CPoint &other) const { return (x == other.x && y == other.y); }
@@ -59,6 +59,8 @@ struct CPoint
 	CPoint operator - (const CPoint& other) const { return CPoint (x - other.x, y - other.y); }
 
 	CPoint& offset (const CCoord x, const CCoord y) { *this += CPoint (x, y); return *this; }
+	CPoint& offset (const CPoint& other) { *this += other; return *this; }
+	CPoint& offsetInverse (const CPoint& other) { *this -= other; return *this; }
 
 	void makeIntegral ();
 

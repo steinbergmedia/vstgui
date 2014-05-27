@@ -509,7 +509,9 @@ CGraphicsTransform CView::getGlobalTransform () const
 		transform = parent->getTransform () * transform;
 	VSTGUI_RANGE_BASED_FOR_LOOP_END
 
-//	transform.translate (getViewSize ().left, getViewSize ().top);
+	const CViewContainer* This = dynamic_cast<const CViewContainer*> (this);
+	if (This)
+		transform = This->getTransform () * transform;
 	return transform;
 }
 
