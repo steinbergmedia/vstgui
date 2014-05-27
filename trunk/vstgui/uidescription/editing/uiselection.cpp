@@ -142,20 +142,17 @@ CView* UISelection::first () const
 //----------------------------------------------------------------------------------------------------
 CRect UISelection::getBounds () const
 {
-	CRect result (50000, 50000, 0, 0);
+	CRect result;
+	if (UISelectionViewList::empty ())
+		return result;
 	const_iterator it = begin ();
+	result = getGlobalViewCoordinates (*it);
+	++it;
 	while (it != end ())
 	{
 		CRect vs = getGlobalViewCoordinates (*it);
-		if (result.left > vs.left)
-			result.left = vs.left;
-		if (result.right < vs.right)
-			result.right = vs.right;
-		if (result.top > vs.top)
-			result.top = vs.top;
-		if (result.bottom < vs.bottom)
-			result.bottom = vs.bottom;
-		it++;
+		result.unite (vs);
+		++it;
 	}
 	return result;
 }

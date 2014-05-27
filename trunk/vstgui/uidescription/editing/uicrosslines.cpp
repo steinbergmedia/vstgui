@@ -80,12 +80,12 @@ void UICrossLines::viewSizeChanged (CView* view, const CRect& oldSize)
 void UICrossLines::update (UISelection* selection)
 {
 	invalid ();
+
 	CPoint p;
-	
 	currentRect = selection->getBounds ();
 	editView->localToFrame (p);
 	currentRect.offset (-p.x, -p.y);
-	editView->getTransform().transform (currentRect);
+	editView->getTransform ().transform (currentRect);
 	currentRect.offset (p.x, p.y);
 
 	invalid ();
@@ -95,6 +95,7 @@ void UICrossLines::update (UISelection* selection)
 void UICrossLines::update (const CPoint& point)
 {
 	invalid ();
+
 	currentRect.left = point.x-1;
 	currentRect.top = point.y-1;
 	currentRect.setWidth (1);
@@ -105,6 +106,7 @@ void UICrossLines::update (const CPoint& point)
 	currentRect.offset (p.x, p.y);
 	editView->localToFrame (p);
 	currentRect.offset (p.x, p.y);
+
 	invalid ();
 }
 
