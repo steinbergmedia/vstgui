@@ -158,9 +158,14 @@ void UISelectionView::draw (CDrawContext* pContext)
 	CView* mainView = editView->getView (0);
 	CPoint p;
 	frameToLocal (p);
+	CPoint topLeft;
+	editView->frameToLocal (topLeft);
+	p.offset (topLeft.x, topLeft.y);
 	FOREACH_IN_SELECTION(selection, view)
 		CRect vs = selection->getGlobalViewCoordinates (view);
 		vs.offset (p.x, p.y);
+		editView->getTransform ().transform (vs);
+		vs.offset (-p.x, -p.y);
 		vs.inset (-1., -1.);
 		pContext->setFrameColor (lightColor);
 		pContext->drawRect (vs);
@@ -205,9 +210,14 @@ CMessageResult UISelectionView::notify (CBaseObject* sender, IdStringPtr message
 	{
 		CPoint p;
 		frameToLocal (p);
+		CPoint topLeft;
+		editView->frameToLocal (topLeft);
+		p.offset (topLeft.x, topLeft.y);
 		FOREACH_IN_SELECTION(selection, view)
 			CRect vs = selection->getGlobalViewCoordinates (view);
 			vs.offset (p.x, p.y);
+			editView->getTransform().transform (vs);
+			vs.offset (-p.x, -p.y);
 			vs.inset (-(handleInset + 1), -(handleInset + 1));
 			invalidRect (vs);
 		FOREACH_IN_SELECTION_END
@@ -264,7 +274,12 @@ void UIHighlightView::draw (CDrawContext* pContext)
 	CRect r = UISelection::getGlobalViewCoordinates (highlightView);
 	CPoint p;
 	frameToLocal (p);
+	CPoint topLeft;
+	editView->frameToLocal (topLeft);
+	p.offset (topLeft.x, topLeft.y);
 	r.offset (p.x, p.y);
+	editView->getTransform ().transform (r);
+	r.offset (-p.x, -p.y);
 	r.inset (2, 2);
 	pContext->setFillColor (fillColor);
 	pContext->setFrameColor (strokeColor);
@@ -300,6 +315,7 @@ UIEditView::UIEditView (const CRect& size, UIDescription* uidescription)
 , autosizing (true)
 , grid (0)
 {
+	setScale (1.);
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -309,6 +325,29 @@ UIEditView::~UIEditView ()
 		editTimer->forget ();
 	setUndoManager (0);
 	setSelection (0);
+}
+
+//----------------------------------------------------------------------------------------------------
+void UIEditView::setScale (double scale)
+{
+	scale = std::round (scale * 100) / 100.;
+	setTransform (CGraphicsTransform ().scale (scale, scale));
+	if (CView* view = getEditView ())
+	{
+		CRect r (getViewSize ());
+		CPoint size (view->getWidth (), view->getHeight ());
+		getTransform ().transform (size);
+		r.setSize (size);
+		if (r != getViewSize ())
+		{
+			setAutosizingEnabled (false);
+			setViewSize (r);
+			setMouseableArea (getViewSize ());
+			setAutosizingEnabled (true);
+			getParentView ()->invalid ();
+		}
+		
+	}
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -412,16 +451,19 @@ void UIEditView::setEditView (CView* view)
 		{
 			vs.setWidth (view->getWidth ());
 			vs.setHeight(view->getHeight ());
+			vs.offset (-getViewSize ().left, -getViewSize ().top);
+			getTransform ().transform (vs);
+			vs.offset (getViewSize ().left, getViewSize ().top);
 			setViewSize (vs);
-			setMouseableArea (vs);
+			setMouseableArea (getViewSize ());
 			addView (view);
 		}
 		else
 		{
 			vs.setWidth (0);
 			vs.setHeight (0);
-			setViewSize (vs);
 			setMouseableArea (vs);
+			setViewSize (vs);
 		}
 		invalid ();
 	}
@@ -460,6 +502,7 @@ CMessageResult UIEditView::notify (CBaseObject* sender, IdStringPtr message)
 			CRect r = getViewSize ();
 			r.setWidth (view->getWidth ());
 			r.setHeight (view->getHeight ());
+			getTransform ().transform (r);
 			if (r != getViewSize ())
 			{
 				setAutosizingEnabled (false);
@@ -586,12 +629,13 @@ static bool pointInResizeHandleRect (const CPoint& where, const CPoint& handle)
 //----------------------------------------------------------------------------------------------------
 UIEditView::MouseSizeMode UIEditView::selectionHitTest (const CPoint& where, CView** resultView)
 {
+	CPoint p;
+	frameToLocal (p);
+
 	CView* mainView = getView (0);
 	FOREACH_IN_SELECTION_REVERSE(getSelection (), view)
 		CRect r = getSelection ()->getGlobalViewCoordinates (view);
 		bool isMainView = (mainView == view) ? true : false;
-		CPoint p;
-		frameToLocal (p);
 		r.offset (p.x, p.y);
 		r.inset (-kResizeHandleSize, -kResizeHandleSize);
 		if (r.pointInside (where))
@@ -645,6 +689,7 @@ CMouseEventResult UIEditView::onMouseDown (CPoint &where, const CButtonState& bu
 			CView* selectionHitView = 0;
 			CPoint where2 (where);
 			where2.offset (-getViewSize ().left, -getViewSize ().top);
+			getTransform ().inverse ().transform (where2);
 			MouseSizeMode sizeMode = selectionHitTest (where2, &selectionHitView);
 			CView* mouseHitView = getViewAt (where, true);
 			if (mouseHitView == 0)
@@ -921,6 +966,7 @@ CMouseEventResult UIEditView::onMouseMoved (CPoint &where, const CButtonState& b
 	{
 		CPoint where2 (where);
 		where2.offset (-getViewSize ().left, -getViewSize ().top);
+		getTransform ().inverse ().transform (where2);
 		if (buttons & kLButton)
 		{
 			if (getSelection ()->total () > 0)
@@ -941,7 +987,7 @@ CMouseEventResult UIEditView::onMouseMoved (CPoint &where, const CButtonState& b
 			}
 			return kMouseEventHandled;
 		}
-		else if (buttons.getButtonState() == 0)
+		else if (buttons.getButtonState () == 0)
 		{
 			CView* view = 0;
 			CCursorType ctype = kCursorDefault;
@@ -987,6 +1033,7 @@ CMouseEventResult UIEditView::onMouseExited (CPoint& where, const CButtonState& 
 CBitmap* UIEditView::createBitmapFromSelection (UISelection* selection)
 {
 	CRect viewSize = getSelection ()->getBounds ();
+	getTransform ().transform (viewSize);
 	
 	COffscreenContext* context = COffscreenContext::create (getFrame (), viewSize.getWidth (), viewSize.getHeight ());
 	context->beginDraw ();
@@ -994,6 +1041,8 @@ CBitmap* UIEditView::createBitmapFromSelection (UISelection* selection)
 	context->setFrameColor (CColor (255, 255, 255, 40));
 	context->drawRect (CRect (0, 0, viewSize.getWidth (), viewSize.getHeight ()), kDrawFilledAndStroked);
 
+	{
+	CDrawContext::Transform tr (*context, getTransform ());
 	FOREACH_IN_SELECTION(getSelection (), view)
 		if (!getSelection ()->containsParent (view))
 		{
@@ -1013,6 +1062,8 @@ CBitmap* UIEditView::createBitmapFromSelection (UISelection* selection)
 			}
 		}
 	FOREACH_IN_SELECTION_END
+
+	}
 
 	context->endDraw ();
 	CBitmap* bitmap = context->getBitmap ();
@@ -1096,8 +1147,9 @@ bool UIEditView::onDrop (IDataPackage* drag, const CPoint& where)
 				highlightView->setHighlightView (0);
 			}
 			CPoint where2 (where);
-			where2.offset (dragSelection->getDragOffset ().x, dragSelection->getDragOffset ().y);
 			where2.offset (-getViewSize ().left, -getViewSize ().top);
+			getTransform ().inverse ().transform (where2);
+			where2.offset (dragSelection->getDragOffset ().x, dragSelection->getDragOffset ().y);
 			if (grid)
 			{
 				where2.offset (grid->getSize ().x / 2., grid->getSize ().y / 2.);
@@ -1189,7 +1241,9 @@ void UIEditView::onDragMove (IDataPackage* drag, const CPoint& where)
 					where2.offset (grid->getSize ().x / 2., grid->getSize ().y / 2.);
 					grid->process (where2);
 				}
-				lines->update (where2);
+				CPoint where3 (where2);
+				getTransform ().inverse ().transform (where3);
+				lines->update (where3);
 				if (highlightView)
 				{
 					CRect visibleRect = getVisibleViewSize ();

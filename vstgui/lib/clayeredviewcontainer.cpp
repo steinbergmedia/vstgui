@@ -191,8 +191,21 @@ void CLayeredViewContainer::drawViewLayer (CDrawContext* context, const CRect& _
 	dirtyRect.offset (p.x, p.y);
 	p.x *= -1.;
 	p.y *= -1.;
-	CDrawContext::Transform transform (*context, CGraphicsTransform ().translate (p.x, p.y));
+	CDrawContext::Transform transform (*context, getDrawTransform () * CGraphicsTransform ().translate (p.x, p.y));
 	CViewContainer::drawRect (context, dirtyRect);
+}
+
+//-----------------------------------------------------------------------------
+CGraphicsTransform CLayeredViewContainer::getDrawTransform () const
+{
+	CGraphicsTransform result;
+	CViewContainer* parent = dynamic_cast<CViewContainer*>(getParentView ());
+	while (parent)
+	{
+		result = parent->getTransform () * result;
+		parent = dynamic_cast<CViewContainer*>(parent->getParentView ());
+	}
+	return result;
 }
 
 }

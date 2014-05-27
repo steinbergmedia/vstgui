@@ -561,8 +561,19 @@ void CCheckBox::draw (CDrawContext* context)
 			}
 			else if (norm > 0.5f)
 			{
-				context->drawLine (std::make_pair (CPoint (checkBoxSize.left + cbInset, checkBoxSize.top + checkBoxSize.getHeight () / 2.), CPoint (checkBoxSize.left + checkBoxSize.getWidth () / 2, checkBoxSize.bottom - cbInset)));
-				context->drawLine (std::make_pair (CPoint (checkBoxSize.left + checkBoxSize.getWidth () / 2., checkBoxSize.bottom - cbInset), CPoint (checkBoxSize.right + 1, checkBoxSize.top - 1)));
+				SharedPointer<CGraphicsPath> path = owned (context->createGraphicsPath ());
+				if (path)
+				{
+					path->beginSubpath (CPoint (checkBoxSize.left + cbInset, checkBoxSize.top + checkBoxSize.getHeight () / 2.));
+					path->addLine (CPoint (checkBoxSize.left + checkBoxSize.getWidth () / 2, checkBoxSize.bottom - cbInset));
+					path->addLine (CPoint (checkBoxSize.right + 1, checkBoxSize.top - 1));
+					context->drawGraphicsPath (path, CDrawContext::kPathStroked);
+				}
+				else
+				{
+					context->drawLine (std::make_pair (CPoint (checkBoxSize.left + cbInset, checkBoxSize.top + checkBoxSize.getHeight () / 2.), CPoint (checkBoxSize.left + checkBoxSize.getWidth () / 2, checkBoxSize.bottom - cbInset)));
+					context->drawLine (std::make_pair (CPoint (checkBoxSize.left + checkBoxSize.getWidth () / 2., checkBoxSize.bottom - cbInset), CPoint (checkBoxSize.right + 1, checkBoxSize.top - 1)));
+				}
 			}
 		}
 	}

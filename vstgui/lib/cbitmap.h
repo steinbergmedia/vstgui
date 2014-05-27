@@ -114,45 +114,8 @@ protected:
 };
 
 //-----------------------------------------------------------------------------
-// CNinePartTiledBitmap Declaration
-/// @brief a nine-part tiled bitmap
-/// @ingroup new_in_4_0
-//-----------------------------------------------------------------------------
-class CNinePartTiledBitmap : public CBitmap
+struct CNinePartTiledDescription
 {
-public:
-	struct PartOffsets
-	{
-		CCoord left;
-		CCoord top;
-		CCoord right;
-		CCoord bottom;
-		
-		PartOffsets (CCoord left = 0, CCoord top = 0, CCoord right = 0, CCoord bottom = 0)
-		: left (left), top (top), right (right), bottom (bottom) {}
-	};
-
-	CNinePartTiledBitmap (const CResourceDescription& desc, const PartOffsets& offsets);
-	CNinePartTiledBitmap (IPlatformBitmap* platformBitmap, const PartOffsets& offsets);
-	~CNinePartTiledBitmap ();
-	
-	//-----------------------------------------------------------------------------
-	/// @name Part Offsets
-	//-----------------------------------------------------------------------------
-	//@{
-	void setPartOffsets (const PartOffsets& partOffsets) { offsets = partOffsets; }
-	const PartOffsets& getPartOffsets () const { return offsets; }
-	//@}
-
-	virtual void draw (CDrawContext* context, const CRect& rect, const CPoint& offset = CPoint (0, 0), float alpha = 1.f) VSTGUI_OVERRIDE_VMETHOD;
-
-//-----------------------------------------------------------------------------
-	CLASS_METHODS_NOCOPY(CNinePartTiledBitmap, CBitmap)
-protected:
-	virtual void drawParts (CDrawContext* pContext, const CRect& rect, float alpha = 1.f);
-	virtual void calcPartRects(const CRect& inBitmapRect, const PartOffsets& inPartOffset, CRect* outRect);
-	virtual void drawPart (CDrawContext* inContext, const CRect& inSourceRect, const CRect& inDestRect, float inAlpha = 1.f);
-
 	enum
 	{
 		kPartTopLeft,
@@ -166,8 +129,65 @@ protected:
 		kPartBottomRight,
 		kPartCount
 	};
+	
+	CCoord left;
+	CCoord top;
+	CCoord right;
+	CCoord bottom;
+	
+	CNinePartTiledDescription (CCoord left = 0, CCoord top = 0, CCoord right = 0, CCoord bottom = 0)
+	: left (left), top (top), right (right), bottom (bottom) {}
 
-	PartOffsets offsets;
+	//-----------------------------------------------------------------------------
+	inline void calcRects (const CRect& inBitmapRect, CRect outRect[kPartCount]) const
+	{
+		// Center
+		CRect myCenter = outRect[kPartCenter]	(inBitmapRect.left		+ left,
+												 inBitmapRect.top		+ top,
+												 inBitmapRect.right		- right,
+												 inBitmapRect.bottom	- bottom);
+		
+		// Edges
+		outRect[kPartTop]			(myCenter.left,		inBitmapRect.top,	myCenter.right,		myCenter.top);
+		outRect[kPartLeft]			(inBitmapRect.left,	myCenter.top,		myCenter.left,		myCenter.bottom);
+		outRect[kPartRight]			(myCenter.right,	myCenter.top,		inBitmapRect.right,	myCenter.bottom);
+		outRect[kPartBottom]		(myCenter.left,		myCenter.bottom,	myCenter.right,		inBitmapRect.bottom);
+		
+		// Corners
+		outRect[kPartTopLeft]		(inBitmapRect.left,	inBitmapRect.top,	myCenter.left,		myCenter.top);
+		outRect[kPartTopRight]		(myCenter.right,	inBitmapRect.top,	inBitmapRect.right,	myCenter.top);
+		outRect[kPartBottomLeft]	(inBitmapRect.left,	myCenter.bottom,	myCenter.left,		inBitmapRect.bottom);
+		outRect[kPartBottomRight]	(myCenter.right,	myCenter.bottom,	inBitmapRect.right,	inBitmapRect.bottom);
+	}
+	
+};
+
+//-----------------------------------------------------------------------------
+// CNinePartTiledBitmap Declaration
+/// @brief a nine-part tiled bitmap
+/// @ingroup new_in_4_0
+//-----------------------------------------------------------------------------
+class CNinePartTiledBitmap : public CBitmap
+{
+public:
+	CNinePartTiledBitmap (const CResourceDescription& desc, const CNinePartTiledDescription& offsets);
+	CNinePartTiledBitmap (IPlatformBitmap* platformBitmap, const CNinePartTiledDescription& offsets);
+	~CNinePartTiledBitmap ();
+	
+	//-----------------------------------------------------------------------------
+	/// @name Part Offsets
+	//-----------------------------------------------------------------------------
+	//@{
+	void setPartOffsets (const CNinePartTiledDescription& partOffsets) { offsets = partOffsets; }
+	const CNinePartTiledDescription& getPartOffsets () const { return offsets; }
+	//@}
+
+	virtual void draw (CDrawContext* context, const CRect& rect, const CPoint& offset = CPoint (0, 0), float alpha = 1.f) VSTGUI_OVERRIDE_VMETHOD;
+
+//-----------------------------------------------------------------------------
+	CLASS_METHODS_NOCOPY(CNinePartTiledBitmap, CBitmap)
+protected:
+	CNinePartTiledDescription offsets;
 };
 
 //------------------------------------------------------------------------

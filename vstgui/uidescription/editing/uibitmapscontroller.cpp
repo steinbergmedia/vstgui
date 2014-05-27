@@ -75,7 +75,7 @@ public:
 				static const CCoord kDefaultOnOffDashLength2[] = {2, 2};
 				const CLineStyle kLineOnOffDash2 (CLineStyle::kLineCapButt, CLineStyle::kLineJoinMiter, 0, 2, kDefaultOnOffDashLength2);
 
-				const CNinePartTiledBitmap::PartOffsets offsets = nptBitmap->getPartOffsets ();
+				const CNinePartTiledDescription& offsets = nptBitmap->getPartOffsets ();
 
 				CRect r;
 				r.setWidth (nptBitmap->getWidth());
@@ -448,7 +448,7 @@ void UIBitmapSettingsController::updateNinePartTiledControls ()
 	if (nptb)
 	{
 		controls[kNinePartTiledTag]->setValueNormalized (1);
-		const CNinePartTiledBitmap::PartOffsets offsets = nptb->getPartOffsets ();
+		const CNinePartTiledDescription& offsets = nptb->getPartOffsets ();
 		controls[kNinePartTiledLeftTag]->setValue ((float)offsets.left);
 		controls[kNinePartTiledTopTag]->setValue ((float)offsets.top);
 		controls[kNinePartTiledRightTag]->setValue ((float)offsets.right);

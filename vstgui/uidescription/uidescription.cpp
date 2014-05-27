@@ -2837,7 +2837,7 @@ CBitmap* UIBitmapNode::getBitmap ()
 			CRect offsets;
 			if (attributes->getRectAttribute ("nineparttiled-offsets", offsets))
 			{
-				bitmap = new CNinePartTiledBitmap (CResourceDescription (path->c_str ()), CNinePartTiledBitmap::PartOffsets (offsets.left, offsets.top, offsets.right, offsets.bottom));
+				bitmap = new CNinePartTiledBitmap (CResourceDescription (path->c_str ()), CNinePartTiledDescription (offsets.left, offsets.top, offsets.right, offsets.bottom));
 			}
 			else
 			{
@@ -2902,7 +2902,7 @@ void UIBitmapNode::setNinePartTiledOffset (const CRect* offsets)
 		CNinePartTiledBitmap* tiledBitmap = dynamic_cast<CNinePartTiledBitmap*> (bitmap);
 		if (offsets && tiledBitmap)
 		{
-			tiledBitmap->setPartOffsets (CNinePartTiledBitmap::PartOffsets (offsets->left, offsets->top, offsets->right, offsets->bottom));
+			tiledBitmap->setPartOffsets (CNinePartTiledDescription (offsets->left, offsets->top, offsets->right, offsets->bottom));
 		}
 		else
 		{

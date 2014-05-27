@@ -564,6 +564,56 @@ void CGDrawContext::drawArc (const CRect &rect, const float _startAngle, const f
 }
 
 //-----------------------------------------------------------------------------
+void CGDrawContext::drawBitmapNinePartTiled (CBitmap* bitmap, const CRect& inRect, const CNinePartTiledDescription& desc, float alpha)
+{
+	// TODO: When drawing on a scaled transform the bitmaps are not alligned correctly
+	CDrawContext::drawBitmapNinePartTiled (bitmap, inRect, desc, alpha);
+	return;
+}
+
+//-----------------------------------------------------------------------------
+void CGDrawContext::fillRectWithBitmap (CBitmap* bitmap, const CRect& srcRect, const CRect& dstRect, float alpha)
+{
+	if (bitmap == 0 || alpha == 0.f || srcRect.isEmpty () || dstRect.isEmpty ())
+		return;
+
+	if (!(srcRect.left == 0 && srcRect.right == 0 && srcRect.right == bitmap->getWidth () && srcRect.bottom == bitmap->getHeight ()))
+	{
+		// CGContextDrawTiledImage does not work with parts of a bitmap
+		CDrawContext::fillRectWithBitmap(bitmap, srcRect, dstRect, alpha);
+		return;
+	}
+
+	IPlatformBitmap* platformBitmap = bitmap->getBestPlatformBitmapForScaleFactor (scaleFactor);
+	CPoint bitmapSize = platformBitmap->getSize ();
+	if (srcRect.right > bitmapSize.x || srcRect.bottom > bitmapSize.y)
+		return;
+
+	CGBitmap* cgBitmap = platformBitmap ? dynamic_cast<CGBitmap*> (platformBitmap) : 0;
+	CGImageRef image = cgBitmap ? cgBitmap->getCGImage () : 0;
+	if (image)
+	{
+		CGContextRef context = beginCGContext (false, true);
+		if (context)
+		{
+			// TODO: Check if this works with retina images
+			CGRect clipRect = CGRectFromCRect (dstRect);
+			clipRect.origin.y = -(clipRect.origin.y) - clipRect.size.height;
+			clipRect = pixelAlligned (clipRect);
+			CGContextClipToRect (context, clipRect);
+			
+			CGRect r = {};
+			r.size.width = CGImageGetWidth (image);
+			r.size.height = CGImageGetHeight (image);
+			
+			CGContextDrawTiledImage (context, r, image);
+			
+			releaseCGContext (context);
+		}
+	}
+}
+
+//-----------------------------------------------------------------------------
 void CGDrawContext::drawBitmap (CBitmap* bitmap, const CRect& inRect, const CPoint& inOffset, float alpha)
 {
 	if (bitmap == 0 || alpha == 0.f)
@@ -576,39 +626,6 @@ void CGDrawContext::drawBitmap (CBitmap* bitmap, const CRect& inRect, const CPoi
 		CGContextRef context = beginCGContext (false, true);
 		if (context)
 		{
-			CRect rect (inRect);
-			rect.makeIntegral ();
-			
-			CPoint offset (inOffset);
-			offset.makeIntegral ();
-
-			CGContextSetAlpha (context, (CGFloat)alpha*currentState.globalAlpha);
-
-			CGRect dest;
-			dest.origin.x = rect.left - offset.x;
-			dest.origin.y = -(rect.top) - (bitmap->getHeight () - offset.y);
-			dest.size.width = bitmap->getWidth ();
-			dest.size.height = bitmap->getHeight ();
-			
-			CGRect clipRect2;
-			clipRect2.origin.x = rect.left;
-			clipRect2.origin.y = -(rect.top) - rect.getHeight ();
-			clipRect2.size.width = rect.getWidth ();
-			clipRect2.size.height = rect.getHeight ();
-		
-			const double bitmapScaleFactor = cgBitmap->getScaleFactor ();
-			if (bitmapScaleFactor != 1.)
-			{
-				CGContextConcatCTM (context, CGAffineTransformMakeScale (1./bitmapScaleFactor, 1./bitmapScaleFactor));
-				CGAffineTransform transform = CGAffineTransformMakeScale (bitmapScaleFactor, bitmapScaleFactor);
-				clipRect2.origin = CGPointApplyAffineTransform (clipRect2.origin, transform);
-				clipRect2.size = CGSizeApplyAffineTransform (clipRect2.size, transform);
-				dest.origin = CGPointApplyAffineTransform (dest.origin, transform);
-				dest.size = CGSizeApplyAffineTransform (dest.size, transform);
-			}
-			
-			CGContextClipToRect (context, clipRect2);
-
 			CGLayerRef layer = cgBitmap->getCGLayer ();
 			if (layer == 0)
 			{
@@ -616,7 +633,6 @@ void CGDrawContext::drawBitmap (CBitmap* bitmap, const CRect& inRect, const CPoi
 				if (it == bitmapDrawCount.end ())
 				{
 					bitmapDrawCount.insert (std::pair<CGBitmap*, int32_t> (cgBitmap, 1));
-					CGContextDrawImage (context, dest, image);
 				}
 				else
 				{
@@ -624,13 +640,54 @@ void CGDrawContext::drawBitmap (CBitmap* bitmap, const CRect& inRect, const CPoi
 					layer = cgBitmap->createCGLayer (context);
 				}
 			}
-			if (layer)
-			{
-				CGContextDrawLayerInRect (context, dest, layer);
-			}
+
+			drawCGImageRef (context, image, layer, cgBitmap->getScaleFactor (), inRect, inOffset, alpha, bitmap);
 
 			releaseCGContext (context);
 		}
+	}
+}
+
+//-----------------------------------------------------------------------------
+void CGDrawContext::drawCGImageRef (CGContextRef context, CGImageRef image, CGLayerRef layer, double bitmapScaleFactor, const CRect& inRect, const CPoint& inOffset, float alpha, CBitmap* bitmap)
+{
+	CRect rect (inRect);
+	CPoint offset (inOffset);
+	
+	CGContextSetAlpha (context, (CGFloat)alpha*currentState.globalAlpha);
+	
+	CGRect dest;
+	dest.origin.x = rect.left - offset.x;
+	dest.origin.y = -(rect.top) - (bitmap->getHeight () - offset.y);
+	dest.size.width = bitmap->getWidth ();
+	dest.size.height = bitmap->getHeight ();
+	
+	CGRect clipRect;
+	clipRect.origin.x = rect.left;
+	clipRect.origin.y = -(rect.top) - rect.getHeight ();
+	clipRect.size.width = rect.getWidth ();
+	clipRect.size.height = rect.getHeight ();
+	
+	if (bitmapScaleFactor != 1.)
+	{
+		CGContextConcatCTM (context, CGAffineTransformMakeScale (1./bitmapScaleFactor, 1./bitmapScaleFactor));
+		CGAffineTransform transform = CGAffineTransformMakeScale (bitmapScaleFactor, bitmapScaleFactor);
+		clipRect.origin = CGPointApplyAffineTransform (clipRect.origin, transform);
+		clipRect.size = CGSizeApplyAffineTransform (clipRect.size, transform);
+		dest.origin = CGPointApplyAffineTransform (dest.origin, transform);
+		dest.size = CGSizeApplyAffineTransform (dest.size, transform);
+	}
+	dest = pixelAlligned (dest);
+	
+	CGContextClipToRect (context, clipRect);
+	
+	if (layer)
+	{
+		CGContextDrawLayerInRect (context, dest, layer);
+	}
+	else
+	{
+		CGContextDrawImage (context, dest, image);
 	}
 }
 
