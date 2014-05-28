@@ -83,10 +83,8 @@ void UICrossLines::update (UISelection* selection)
 
 	CPoint p;
 	currentRect = selection->getBounds ();
-	editView->localToFrame (p);
+	localToFrame (p);
 	currentRect.offset (-p.x, -p.y);
-	editView->getTransform ().transform (currentRect);
-	currentRect.offset (p.x, p.y);
 
 	invalid ();
 }

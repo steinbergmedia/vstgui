@@ -286,15 +286,16 @@ PlatformOptionMenuResult NSViewOptionMenu::popup (COptionMenu* optionMenu)
 		return result;
 	NSViewFrame* nsViewFrame = dynamic_cast<NSViewFrame*> (frame->getPlatformFrame ());
 
+	CRect globalSize = optionMenu->translateToGlobal (optionMenu->getViewSize ());
+
 	bool multipleCheck = optionMenu->getStyle () & (kMultipleCheckStyle & ~kCheckStyle);
 	NSView* view = nsViewFrame->getPlatformControl ();
 	NSMenu* nsMenu = [[menuClass alloc] initWithOptionMenu:(id)optionMenu];
-	CPoint p (optionMenu->getViewSize ().left, optionMenu->getViewSize ().top);
-	optionMenu->localToFrame (p);
+	CPoint p = globalSize.getTopLeft ();
 	NSRect cellFrameRect = {{0}};
 	cellFrameRect.origin = nsPointFromCPoint (p);
-	cellFrameRect.size.width = optionMenu->getViewSize ().getWidth ();
-	cellFrameRect.size.height = optionMenu->getViewSize ().getHeight ();
+	cellFrameRect.size.width = globalSize.getWidth ();
+	cellFrameRect.size.height = globalSize.getHeight ();
 	if (!(optionMenu->getStyle () & kPopupStyle))
 	{
 		NSMenuItem* item = [nsMenu insertItemWithTitle:@"" action:nil keyEquivalent:@"" atIndex:0];
