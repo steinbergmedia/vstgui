@@ -257,15 +257,13 @@ int32_t CTextEdit::onKeyDown (VstKeyCode& keyCode)
 //------------------------------------------------------------------------
 CRect CTextEdit::platformGetSize () const
 {
-	CRect rect = getViewSize ();
-	return translateToGlobal (rect);
+	return translateToGlobal (getViewSize ());
 }
 
 //------------------------------------------------------------------------
 CRect CTextEdit::platformGetVisibleSize () const
 {
-	CRect rect = getVisibleViewSize ();
-	return translateToGlobal (rect);
+	return translateToGlobal (getVisibleViewSize ());
 }
 
 //------------------------------------------------------------------------

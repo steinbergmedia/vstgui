@@ -158,14 +158,9 @@ void UISelectionView::draw (CDrawContext* pContext)
 	CView* mainView = editView->getView (0);
 	CPoint p;
 	frameToLocal (p);
-	CPoint topLeft;
-	editView->frameToLocal (topLeft);
-	p.offset (topLeft.x, topLeft.y);
 	FOREACH_IN_SELECTION(selection, view)
 		CRect vs = selection->getGlobalViewCoordinates (view);
-		vs.offset (p.x, p.y);
-		editView->getTransform ().transform (vs);
-		vs.offset (-p.x, -p.y);
+		vs.offsetInverse (p);
 		vs.inset (-1., -1.);
 		pContext->setFrameColor (lightColor);
 		pContext->drawRect (vs);
@@ -210,14 +205,9 @@ CMessageResult UISelectionView::notify (CBaseObject* sender, IdStringPtr message
 	{
 		CPoint p;
 		frameToLocal (p);
-		CPoint topLeft;
-		editView->frameToLocal (topLeft);
-		p.offset (topLeft.x, topLeft.y);
 		FOREACH_IN_SELECTION(selection, view)
 			CRect vs = selection->getGlobalViewCoordinates (view);
-			vs.offset (p.x, p.y);
-			editView->getTransform().transform (vs);
-			vs.offset (-p.x, -p.y);
+			vs.offsetInverse (p);
 			vs.inset (-(handleInset + 1), -(handleInset + 1));
 			invalidRect (vs);
 		FOREACH_IN_SELECTION_END
@@ -274,12 +264,7 @@ void UIHighlightView::draw (CDrawContext* pContext)
 	CRect r = UISelection::getGlobalViewCoordinates (highlightView);
 	CPoint p;
 	frameToLocal (p);
-	CPoint topLeft;
-	editView->frameToLocal (topLeft);
-	p.offset (topLeft.x, topLeft.y);
-	r.offset (p.x, p.y);
-	editView->getTransform ().transform (r);
-	r.offset (-p.x, -p.y);
+	r.offsetInverse (p);
 	r.inset (2, 2);
 	pContext->setFillColor (fillColor);
 	pContext->setFrameColor (strokeColor);
@@ -627,8 +612,10 @@ static bool pointInResizeHandleRect (const CPoint& where, const CPoint& handle)
 } // namespace UIEditViewInternal
 
 //----------------------------------------------------------------------------------------------------
-UIEditView::MouseSizeMode UIEditView::selectionHitTest (const CPoint& where, CView** resultView)
+UIEditView::MouseSizeMode UIEditView::selectionHitTest (const CPoint& _where, CView** resultView)
 {
+	CPoint where (_where);
+	where.offset (-getViewSize ().left, -getViewSize ().top);
 	CPoint p;
 	frameToLocal (p);
 
@@ -636,7 +623,7 @@ UIEditView::MouseSizeMode UIEditView::selectionHitTest (const CPoint& where, CVi
 	FOREACH_IN_SELECTION_REVERSE(getSelection (), view)
 		CRect r = getSelection ()->getGlobalViewCoordinates (view);
 		bool isMainView = (mainView == view) ? true : false;
-		r.offset (p.x, p.y);
+		r.offset (p);
 		r.inset (-kResizeHandleSize, -kResizeHandleSize);
 		if (r.pointInside (where))
 		{
@@ -690,7 +677,7 @@ CMouseEventResult UIEditView::onMouseDown (CPoint &where, const CButtonState& bu
 			CPoint where2 (where);
 			where2.offset (-getViewSize ().left, -getViewSize ().top);
 			getTransform ().inverse ().transform (where2);
-			MouseSizeMode sizeMode = selectionHitTest (where2, &selectionHitView);
+			MouseSizeMode sizeMode = selectionHitTest (where, &selectionHitView);
 			CView* mouseHitView = getViewAt (where, true);
 			if (mouseHitView == 0)
 				mouseHitView = getContainerAt (where, true);
@@ -991,7 +978,7 @@ CMouseEventResult UIEditView::onMouseMoved (CPoint &where, const CButtonState& b
 		{
 			CView* view = 0;
 			CCursorType ctype = kCursorDefault;
-			int32_t mode = selectionHitTest (where2, &view);
+			int32_t mode = selectionHitTest (where, &view);
 			if (view)
 			{
 				switch (mode)
@@ -1033,7 +1020,6 @@ CMouseEventResult UIEditView::onMouseExited (CPoint& where, const CButtonState& 
 CBitmap* UIEditView::createBitmapFromSelection (UISelection* selection)
 {
 	CRect viewSize = getSelection ()->getBounds ();
-	getTransform ().transform (viewSize);
 	
 	COffscreenContext* context = COffscreenContext::create (getFrame (), viewSize.getWidth (), viewSize.getHeight ());
 	context->beginDraw ();
@@ -1042,13 +1028,18 @@ CBitmap* UIEditView::createBitmapFromSelection (UISelection* selection)
 	context->drawRect (CRect (0, 0, viewSize.getWidth (), viewSize.getHeight ()), kDrawFilledAndStroked);
 
 	{
+	
 	CDrawContext::Transform tr (*context, getTransform ());
+	getTransform ().inverse ().transform (viewSize);
+	CDrawContext::Transform tr2 (*context, CGraphicsTransform ().translate (-viewSize.left, -viewSize.top));
+	
 	FOREACH_IN_SELECTION(getSelection (), view)
 		if (!getSelection ()->containsParent (view))
 		{
 			CPoint p;
 			view->getParentView ()->localToFrame (p);
-			CDrawContext::Transform transform (*context, CGraphicsTransform ().translate (-viewSize.left + p.x, -viewSize.top + p.y));
+			getTransform ().inverse ().transform (p);
+			CDrawContext::Transform transform (*context, CGraphicsTransform ().translate (p.x, p.y));
 			context->setClipRect (view->getViewSize ());
 			if (IPlatformViewLayerDelegate* layer = dynamic_cast<IPlatformViewLayerDelegate*>(view))
 			{
@@ -1081,8 +1072,8 @@ void UIEditView::startDrag (CPoint& where)
 
 	CRect selectionBounds = getSelection ()->getBounds ();
 	CPoint p;
-	getParentView ()->frameToLocal (p);
-	selectionBounds.offset (p.x, p.y);
+	getParentView ()->localToFrame (p);
+	selectionBounds.offsetInverse (p);
 
 	CPoint offset;
 	offset.x = (selectionBounds.left - where.x);
@@ -1147,17 +1138,19 @@ bool UIEditView::onDrop (IDataPackage* drag, const CPoint& where)
 				highlightView->setHighlightView (0);
 			}
 			CPoint where2 (where);
-			where2.offset (-getViewSize ().left, -getViewSize ().top);
-			getTransform ().inverse ().transform (where2);
 			where2.offset (dragSelection->getDragOffset ().x, dragSelection->getDragOffset ().y);
+			where2.offset (-getViewSize ().left, -getViewSize ().top);
 			if (grid)
 			{
 				where2.offset (grid->getSize ().x / 2., grid->getSize ().y / 2.);
+				getTransform ().inverse ().transform (where2);
 				grid->process (where2);
+				getTransform ().transform (where2);
 			}
 			CViewContainer* viewContainer = getContainerAt (where2, true);
 			if (viewContainer)
 			{
+				getTransform ().inverse ().transform (where2);
 				CPoint containerOffset;
 				viewContainer->localToFrame (containerOffset);
 				frameToLocal (containerOffset);
@@ -1239,7 +1232,9 @@ void UIEditView::onDragMove (IDataPackage* drag, const CPoint& where)
 				if (grid)
 				{
 					where2.offset (grid->getSize ().x / 2., grid->getSize ().y / 2.);
+					getTransform ().inverse ().transform (where2);
 					grid->process (where2);
+					getTransform ().transform (where2);
 				}
 				CPoint where3 (where2);
 				getTransform ().inverse ().transform (where3);

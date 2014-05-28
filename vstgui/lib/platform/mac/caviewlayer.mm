@@ -131,6 +131,8 @@ static void VSTGUI_CALayer_SetDrawDelegate (id self, SEL _cmd, VSTGUI::IPlatform
 	
 }
 
+#define VISUALIZE_LAYER 0
+
 //-----------------------------------------------------------------------------
 static void VSTGUI_CALayer_DrawInContext (id self, SEL _cmd, CGContextRef ctx)
 {

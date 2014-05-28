@@ -392,6 +392,9 @@ public:
 
 	CGraphicsTransform getGlobalTransform () const;
 	template<typename T> T& translateToGlobal (T& t) const { getGlobalTransform ().transform (t); return t; } /// translates a local coordinate to a global one using parent transforms
+	template<typename T> T translateToGlobal (const T& t) const { T tmp (t); getGlobalTransform ().transform (tmp); return tmp; } /// translates a local coordinate to a global one using parent transforms
+	template<typename T> T& translateToLocal (T& t) const { getGlobalTransform ().inverse ().transform (t); return t; } /// translates a global coordinate to a local one using parent transforms
+	template<typename T> T translateToLocal (const T& t) const { T tmp (t); getGlobalTransform ().inverse ().transform (tmp); return tmp; } /// translates a local coordinate to a global one using parent transforms
 
 	#if DEBUG
 	virtual void dumpInfo ();

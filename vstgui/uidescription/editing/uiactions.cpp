@@ -284,7 +284,7 @@ ViewCopyOperation::ViewCopyOperation (UISelection* copySelection, UISelection* w
 		if (!copySelection->containsParent (view))
 		{
 			CRect viewSize = UISelection::getGlobalViewCoordinates (view);
-			CRect newSize (0, 0, viewSize.getWidth (), viewSize.getHeight ());
+			CRect newSize (0, 0, view->getWidth (), view->getHeight ());
 			newSize.offset (offset.x, offset.y);
 			newSize.offset (viewSize.left - selectionBounds.left, viewSize.top - selectionBounds.top);
 

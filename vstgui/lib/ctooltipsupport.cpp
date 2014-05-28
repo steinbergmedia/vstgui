@@ -240,10 +240,7 @@ bool CTooltipSupport::showTooltip ()
 			currentView = 0;
 			return false;
 		}
-		CRect r (currentView->getVisibleViewSize ());
-		CPoint p;
-		currentView->localToFrame (p);
-		r.offset (p.x, p.y);
+		CRect r = currentView->translateToGlobal (currentView->getVisibleViewSize ());
 
 		UTF8StringBuffer tooltip = getTooltipFromView (currentView);
 		

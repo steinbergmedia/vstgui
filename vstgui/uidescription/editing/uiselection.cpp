@@ -160,13 +160,7 @@ CRect UISelection::getBounds () const
 //----------------------------------------------------------------------------------------------------
 CRect UISelection::getGlobalViewCoordinates (CView* view)
 {
-	CRect r = view->getViewSize (r);
-	CPoint p;
-	if (dynamic_cast<CViewContainer*>(view))
-		p.offset (-r.left, -r.top);
-	view->localToFrame (p);
-	r.offset (p.x, p.y);
-	return r;
+	return view->translateToGlobal (view->getViewSize ());
 }
 
 //----------------------------------------------------------------------------------------------------

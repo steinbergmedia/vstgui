@@ -596,7 +596,8 @@ bool CRockerSwitch::onWheel (const CPoint& where, const float &distance, const C
 	if (isDirty ())
 	{
 		invalid ();
-		beginEdit ();
+		if (!isEditing ())
+			beginEdit ();
 		valueChanged ();
 	}
 
@@ -613,9 +614,16 @@ CMessageResult CRockerSwitch::notify (CBaseObject* sender, IdStringPtr message)
 {
 	if (sender == resetValueTimer)
 	{
-		value = (getMax () - getMin ()) / 2.f + getMin ();
-		valueChanged ();
-		endEdit ();
+		float newValue = (getMax () - getMin ()) / 2.f + getMin ();
+		if (value != newValue)
+		{
+			value = newValue;
+			if (!isEditing ())
+				beginEdit ();
+			valueChanged ();
+			endEdit ();
+			setDirty (true);
+		}
 		resetValueTimer->forget ();
 		resetValueTimer = 0;
 		return kMessageNotified;
