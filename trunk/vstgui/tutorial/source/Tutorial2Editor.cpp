@@ -68,14 +68,19 @@ AEffGUIEditor* createEditor (AudioEffectX* effect)
 TutorialEditor::TutorialEditor (void* ptr)
 : AEffGUIEditor (ptr)
 {
+	rect.left = 0;
+	rect.top = 0;
+	rect.right = 300;
+	rect.bottom = 300;
 }
 
 //-----------------------------------------------------------------------------------
 bool TutorialEditor::open (void* ptr)
 {
 	//-- first we create the frame with a size of 300, 300 and set the background to white
-	CRect frameSize (0, 0, 300, 300);
-	CFrame* newFrame = new CFrame (frameSize, ptr, this);
+	CRect frameSize (rect.left, rect.top, rect.right, rect.bottom);
+	CFrame* newFrame = new CFrame (frameSize, this);
+	newFrame->open (ptr);
 	newFrame->setBackgroundColor (kWhiteCColor);
 
 	//-- load some bitmaps we need
