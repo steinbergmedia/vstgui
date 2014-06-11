@@ -321,7 +321,7 @@ void CParamDisplay::drawBack (CDrawContext* pContext, CBitmap* newBack)
 		else
 			pContext->setFrameColor (backColor);
 
-		path = pContext->createGraphicsPath ();
+		path = owned (pContext->createGraphicsPath ());
 		if (path)
 		{
 			path->beginSubpath (p (r.right, r.top));
