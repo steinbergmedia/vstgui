@@ -127,6 +127,7 @@ Property::~Property ()
 #if VSTGUI_RVALUE_REF_SUPPORT
 //----------------------------------------------------------------------------------------------------
 Property::Property (Property&& p) noexcept
+: value (nullptr)
 {
 	*this = std::move (p);
 }
@@ -134,6 +135,12 @@ Property::Property (Property&& p) noexcept
 //----------------------------------------------------------------------------------------------------
 Property& Property::operator=(Property&& p) noexcept
 {
+	if (value)
+	{
+		if (type == kObject)
+			getObject ()->forget ();
+		std::free (value);
+	}
 	type = p.type;
 	value = p.value;
 	p.value = nullptr;

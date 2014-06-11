@@ -71,6 +71,10 @@ CFileExtension::~CFileExtension ()
 #if VSTGUI_RVALUE_REF_SUPPORT
 //-----------------------------------------------------------------------------
 CFileExtension::CFileExtension (CFileExtension&& ext) noexcept
+: description (nullptr)
+, extension (nullptr)
+, mimeType (nullptr)
+, uti (nullptr)
 {
 	*this = std::move (ext);
 }
@@ -78,6 +82,10 @@ CFileExtension::CFileExtension (CFileExtension&& ext) noexcept
 //-----------------------------------------------------------------------------
 CFileExtension& CFileExtension::operator=(CFileExtension&& ext) noexcept
 {
+	String::free (description);
+	String::free (extension);
+	String::free (mimeType);
+	String::free (uti);
 	description = ext.description;
 	extension = ext.extension;
 	mimeType = ext.mimeType;

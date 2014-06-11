@@ -421,6 +421,7 @@ inline SharedPointer<I>::~SharedPointer ()
 //------------------------------------------------------------------------
 template <class I>
 inline SharedPointer<I>::SharedPointer (SharedPointer<I>&& mp) noexcept
+: ptr (nullptr)
 {
 	*this = std::move (mp);
 }
@@ -429,6 +430,8 @@ inline SharedPointer<I>::SharedPointer (SharedPointer<I>&& mp) noexcept
 template <class I>
 inline SharedPointer<I>& SharedPointer<I>::operator=(SharedPointer<I>&& mp) noexcept
 {
+	if (ptr)
+		ptr->forget ();
 	ptr = mp.ptr;
 	mp.ptr = nullptr;
 	return *this;
