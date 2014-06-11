@@ -187,7 +187,7 @@ public:
 		
 	private:
 		CDrawContext& context;
-		const CGraphicsTransform& transformation;
+		const CGraphicsTransform transformation;
 	};
 	
 	//-----------------------------------------------------------------------------
