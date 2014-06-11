@@ -126,6 +126,8 @@ public:
 
 	CViewAttributeEntry& operator=(CViewAttributeEntry&& me) noexcept
 	{
+		if (data)
+			std::free (data);
 		size = me.size;
 		data = me.data;
 		me.size = 0;
