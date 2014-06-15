@@ -46,6 +46,12 @@
 	typedef float CGFloat;
 #endif // CGFLOAT_DEFINED
 
+#if __cplusplus < 201103L
+namespace std {
+	using ::round;
+}
+#endif
+
 namespace VSTGUI {
 
 namespace CGDrawContextInternal {

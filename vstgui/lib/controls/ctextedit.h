@@ -67,7 +67,7 @@ public:
 	typedef void			StringToValueUserData;
 #endif
 
-	VSTGUI_DEPRECATED(virtual void setStringToValueProc (CTextEditStringToValueProc proc, void* userData = 0);) ///< deprecated use setStringToValueFunction instead if you use c++11
+	VSTGUI_DEPRECATED_FUNCTIONAL(virtual void setStringToValueProc (CTextEditStringToValueProc proc, void* userData = 0);) ///< deprecated use setStringToValueFunction instead if you use c++11
 #if VSTGUI_HAS_FUNCTIONAL
 	typedef std::function<bool(UTF8StringPtr txt, float& result, CTextEdit* textEdit)> StringToValueFunction;
 	

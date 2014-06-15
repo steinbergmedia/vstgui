@@ -52,6 +52,12 @@
 #include "../../lib/idatapackage.h"
 #include <cassert>
 
+#if __cplusplus < 201103L
+namespace std {
+	using ::round;
+}
+#endif
+
 namespace VSTGUI {
 
 namespace UIEditViewInternal {

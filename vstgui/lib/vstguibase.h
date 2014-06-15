@@ -225,6 +225,12 @@
 	#define VSTGUI_DEPRECATED(x)
 #endif
 
+#if VSTGUI_HAS_FUNCTIONAL
+	#define VSTGUI_DEPRECATED_FUNCTIONAL(x)	VSTGUI_DEPRECATED(x)
+#else
+	#define VSTGUI_DEPRECATED_FUNCTIONAL(x)	x
+#endif
+
 //----------------------------------------------------
 // Helper makros
 //----------------------------------------------------

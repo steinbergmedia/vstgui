@@ -94,7 +94,7 @@ CTextEdit::~CTextEdit ()
 		looseFocus ();
 }
 
-#if VSTGUI_ENABLE_DEPRECATED_METHODS
+#if VSTGUI_ENABLE_DEPRECATED_METHODS || !VSTGUI_HAS_FUNCTIONAL
 //------------------------------------------------------------------------
 void CTextEdit::setStringToValueProc (CTextEditStringToValueProc proc, void* userData)
 {
