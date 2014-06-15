@@ -240,7 +240,7 @@ HIDDEN int32_t eventButton (NSEvent* theEvent)
 //-----------------------------------------------------------------------------
 HIDDEN void convertPointToGlobal (NSView* view, NSPoint& p)
 {
-	p = [view convertPoint:p fromView:nil];
+	p = [view convertPoint:p toView:nil];
 	NSRect r = {};
 	r.origin = p;
 	r = [[view window] convertRectToScreen:r];
