@@ -615,17 +615,22 @@ void D2DDrawContext::setLineWidth (CCoord width)
 //-----------------------------------------------------------------------------
 void D2DDrawContext::setDrawMode (CDrawMode mode)
 {
-	if (currentState.drawMode != mode)
-	{
-		if (renderTarget)
-		{
-			if (mode == kAntiAliasing)
-				renderTarget->SetAntialiasMode (D2D1_ANTIALIAS_MODE_PER_PRIMITIVE);
-			else
-				renderTarget->SetAntialiasMode (D2D1_ANTIALIAS_MODE_ALIASED);
-		}
-	}
+	if (currentState.drawMode == mode)
+		return;
+	setDrawModeInternal (mode);
 	COffscreenContext::setDrawMode (mode);
+}
+
+//-----------------------------------------------------------------------------
+void D2DDrawContext::setDrawModeInternal (CDrawMode mode)
+{
+	if (renderTarget)
+	{
+		if (mode == kAntiAliasing)
+			renderTarget->SetAntialiasMode (D2D1_ANTIALIAS_MODE_PER_PRIMITIVE);
+		else
+			renderTarget->SetAntialiasMode (D2D1_ANTIALIAS_MODE_ALIASED);
+	}
 }
 
 //-----------------------------------------------------------------------------
@@ -736,6 +741,7 @@ void D2DDrawContext::restoreGlobalState ()
 	CColor prevFrameColor = currentState.frameColor;
 	CColor prevFontColor = currentState.fontColor;
 	CLineStyle prevLineStye = currentState.lineStyle;
+	CDrawMode prevDrawMode = currentState.drawMode;
 	float prevAlpha = currentState.globalAlpha;
 	COffscreenContext::restoreGlobalState ();
 	if (prevAlpha != currentState.globalAlpha)
@@ -750,18 +756,22 @@ void D2DDrawContext::restoreGlobalState ()
 		{
 			setFillColorInternal (currentState.fillColor);
 		}
-		if (prevFrameColor != currentState.fillColor)
+		if (prevFrameColor != currentState.frameColor)
 		{
 			setFrameColorInternal (currentState.frameColor);
 		}
-		if (prevFontColor != currentState.fillColor)
+		if (prevFontColor != currentState.fontColor)
 		{
 			setFontColorInternal (currentState.fontColor);
 		}
-		if (prevLineStye != currentState.lineStyle)
-		{
-			setLineStyleInternal (currentState.lineStyle);
-		}
+	}
+	if (prevLineStye != currentState.lineStyle)
+	{
+		setLineStyleInternal (currentState.lineStyle);
+	}
+	if (prevDrawMode != currentState.drawMode)
+	{
+		setDrawModeInternal (currentState.drawMode);
 	}
 }
 

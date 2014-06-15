@@ -112,6 +112,7 @@ protected:
 	void setFrameColorInternal (const CColor& color);
 	void setFontColorInternal (const CColor& color);
 	void setLineStyleInternal (const CLineStyle& style);
+	void setDrawModeInternal (CDrawMode mode);
 
 	HWND window;
 	ID2D1RenderTarget* renderTarget;
