@@ -768,7 +768,7 @@ public:
 
 private:
 	SetColor ()
-	: SimpleFilter ("A Set Color Filter", processSetColor)
+	: SimpleFilter<SimpleFilterProcessFunction> ("A Set Color Filter", processSetColor)
 	{
 		registerProperty (Property::kIgnoreAlphaColorValue, BitmapFilter::Property ((int32_t)1));
 		registerProperty (Property::kInputColor, BitmapFilter::Property (kWhiteCColor));
@@ -789,7 +789,7 @@ private:
 	{
 		inputColor = getProperty (Property::kInputColor).getColor ();
 		ignoreAlpha = getProperty (Property::kIgnoreAlphaColorValue).getInteger () > 0;
-		return SimpleFilter::run (replace);
+		return SimpleFilter<SimpleFilterProcessFunction>::run (replace);
 	}
 };
 
@@ -806,7 +806,7 @@ public:
 
 private:
 	Grayscale ()
-	: SimpleFilter ("A Grayscale Filter", processGrayscale)
+	: SimpleFilter<SimpleFilterProcessFunction> ("A Grayscale Filter", processGrayscale)
 	{
 	}
 
@@ -830,7 +830,7 @@ public:
 
 private:
 	ReplaceColor ()
-	: SimpleFilter ("A Replace Color Filter", processReplace)
+	: SimpleFilter<SimpleFilterProcessFunction> ("A Replace Color Filter", processReplace)
 	{
 		registerProperty (Property::kInputColor, BitmapFilter::Property (kWhiteCColor));
 		registerProperty (Property::kOutputColor, BitmapFilter::Property (kTransparentCColor));
