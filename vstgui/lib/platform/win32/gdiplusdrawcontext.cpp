@@ -514,6 +514,13 @@ void GdiplusDrawContext::setLineStyle (const CLineStyle& style)
 {
 	if (currentState.lineStyle == style)
 		return;
+	setLineStyleInternal (style);
+	COffscreenContext::setLineStyle (style);
+}
+
+//-----------------------------------------------------------------------------
+void GdiplusDrawContext::setLineStyleInternal (const CLineStyle& style)
+{
 	if (pPen)
 	{
 		Gdiplus::LineCap lineCap;
@@ -549,7 +556,6 @@ void GdiplusDrawContext::setLineStyle (const CLineStyle& style)
 			delete [] dashes; 
 		}
 	}
-	COffscreenContext::setLineStyle (style);
 }
 
 //-----------------------------------------------------------------------------
@@ -557,9 +563,15 @@ void GdiplusDrawContext::setLineWidth (CCoord width)
 {
 	if (currentState.frameWidth == width)
 		return;
+	setLineWidthInternal (width);
+	COffscreenContext::setLineWidth (width);
+}
+
+//-----------------------------------------------------------------------------
+void GdiplusDrawContext::setLineWidthInternal (CCoord width)
+{
 	if (pPen)
 		pPen->SetWidth ((Gdiplus::REAL)width);
-	COffscreenContext::setLineWidth (width);
 }
 
 //-----------------------------------------------------------------------------
@@ -567,6 +579,13 @@ void GdiplusDrawContext::setDrawMode (CDrawMode mode)
 {
 	if (currentState.drawMode == mode)
 		return;
+	setDrawModeInternal (mode);
+	COffscreenContext::setDrawMode (mode);
+}
+
+//-----------------------------------------------------------------------------
+void GdiplusDrawContext::setDrawModeInternal (CDrawMode mode)
+{
 	if (pGraphics)
 	{
 		if (mode == kAntiAliasing)
@@ -574,23 +593,18 @@ void GdiplusDrawContext::setDrawMode (CDrawMode mode)
 		else
 			pGraphics->SetSmoothingMode (Gdiplus::SmoothingModeNone);
 	}
-	COffscreenContext::setDrawMode (mode);
 }
 
 //-----------------------------------------------------------------------------
 void GdiplusDrawContext::setClipRect (const CRect &clip)
 {
 	COffscreenContext::setClipRect (clip);
-	if (pGraphics)
-		pGraphics->SetClip (Gdiplus::RectF ((Gdiplus::REAL)currentState.clipRect.left, (Gdiplus::REAL)currentState.clipRect.top, (Gdiplus::REAL)currentState.clipRect.getWidth (), (Gdiplus::REAL)currentState.clipRect.getHeight ()), Gdiplus::CombineModeReplace);
 }
 
 //-----------------------------------------------------------------------------
 void GdiplusDrawContext::resetClipRect ()
 {
 	COffscreenContext::resetClipRect ();
-	if (pGraphics)
-		pGraphics->SetClip (Gdiplus::RectF ((Gdiplus::REAL)currentState.clipRect.left, (Gdiplus::REAL)currentState.clipRect.top, (Gdiplus::REAL)currentState.clipRect.getWidth (), (Gdiplus::REAL)currentState.clipRect.getHeight ()), Gdiplus::CombineModeReplace);
 }
 
 //-----------------------------------------------------------------------------
@@ -598,9 +612,15 @@ void GdiplusDrawContext::setFillColor (const CColor& color)
 {
 	if (currentState.fillColor == color)
 		return;
+	setFillColorInternal (color);
+	COffscreenContext::setFillColor (color);
+}
+
+//-----------------------------------------------------------------------------
+void GdiplusDrawContext::setFillColorInternal (const CColor& color)
+{
 	if (pBrush)
 		pBrush->SetColor (Gdiplus::Color ((BYTE)((float)color.alpha * currentState.globalAlpha), color.red, color.green, color.blue));
-	COffscreenContext::setFillColor (color);
 }
 
 //-----------------------------------------------------------------------------
@@ -608,9 +628,15 @@ void GdiplusDrawContext::setFrameColor (const CColor& color)
 {
 	if (currentState.frameColor == color)
 		return;
+	setFrameColorInternal (color);
+	COffscreenContext::setFrameColor (color);
+}
+
+//-----------------------------------------------------------------------------
+void GdiplusDrawContext::setFrameColorInternal (const CColor& color)
+{
 	if (pPen)
 		pPen->SetColor (Gdiplus::Color ((BYTE)((float)color.alpha * currentState.globalAlpha), color.red, color.green, color.blue));
-	COffscreenContext::setFrameColor (color);
 }
 
 //-----------------------------------------------------------------------------
@@ -618,9 +644,15 @@ void GdiplusDrawContext::setFontColor (const CColor& color)
 {
 	if (currentState.fontColor == color)
 		return;
+	setFontColorInternal (color);
+	COffscreenContext::setFontColor (color);
+}
+
+//-----------------------------------------------------------------------------
+void GdiplusDrawContext::setFontColorInternal (const CColor& color)
+{
 	if (pFontBrush)
 		pFontBrush->SetColor (Gdiplus::Color ((BYTE)((float)color.alpha * currentState.globalAlpha), color.red, color.green, color.blue));
-	COffscreenContext::setFontColor (color);
 }
 
 //-----------------------------------------------------------------------------
@@ -629,15 +661,9 @@ void GdiplusDrawContext::setGlobalAlpha (float newAlpha)
 	if (currentState.globalAlpha == newAlpha)
 		return;
 	COffscreenContext::setGlobalAlpha (newAlpha);
-	CColor color (currentState.frameColor);
-	currentState.frameColor = kTransparentCColor;
-	setFrameColor (color);
-	color = currentState.fillColor;
-	currentState.fillColor = kTransparentCColor;
-	setFillColor (color);
-	color = currentState.fontColor;
-	currentState.fontColor = kTransparentCColor;
-	setFontColor (color);
+	setFrameColorInternal (currentState.frameColor);
+	setFillColorInternal (currentState.fillColor);
+	setFontColorInternal (currentState.fontColor);
 }
 
 //-----------------------------------------------------------------------------
@@ -649,7 +675,47 @@ void GdiplusDrawContext::saveGlobalState ()
 //-----------------------------------------------------------------------------
 void GdiplusDrawContext::restoreGlobalState ()
 {
+	CColor prevFillColor = currentState.fillColor;
+	CColor prevFrameColor = currentState.frameColor;
+	CColor prevFontColor = currentState.fontColor;
+	CLineStyle prevLineStye = currentState.lineStyle;
+	CCoord prevFrameWidth = currentState.frameWidth;
+	CDrawMode prevDrawMode = currentState.drawMode;
+	float prevAlpha = currentState.globalAlpha;
 	COffscreenContext::restoreGlobalState ();
+	if (prevAlpha != currentState.globalAlpha)
+	{
+		float prevAlpha = currentState.globalAlpha;
+		currentState.globalAlpha = -1.f;
+		setGlobalAlpha (prevAlpha);
+	}
+	else
+	{
+		if (prevFillColor != currentState.fillColor)
+		{
+			setFillColorInternal (currentState.fillColor);
+		}
+		if (prevFrameColor != currentState.frameColor)
+		{
+			setFrameColorInternal (currentState.frameColor);
+		}
+		if (prevFontColor != currentState.fontColor)
+		{
+			setFontColorInternal (currentState.fontColor);
+		}
+	}
+	if (prevLineStye != currentState.lineStyle)
+	{
+		setLineStyleInternal (currentState.lineStyle);
+	}
+	if (prevFrameWidth != currentState.frameWidth)
+	{
+		setLineWidthInternal (currentState.frameWidth);
+	}
+	if (prevDrawMode != currentState.drawMode)
+	{
+		setDrawModeInternal (currentState.drawMode);
+	}
 }
 
 } // namespace
