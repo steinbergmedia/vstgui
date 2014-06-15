@@ -510,7 +510,7 @@ void D2DDrawContext::drawArc (const CRect& _rect, const float _startAngle, const
 	CGraphicsPath* path = createGraphicsPath ();
 	if (path)
 	{
-		path->addArc (_rect, _startAngle, _endAngle, false);
+		path->addArc (_rect, _startAngle, _endAngle, true);
 		if (drawStyle == kDrawFilled || drawStyle == kDrawFilledAndStroked)
 			drawGraphicsPath (path, kPathFilled);
 		if (drawStyle == kDrawStroked || drawStyle == kDrawFilledAndStroked)

@@ -62,11 +62,10 @@ static void addOvalToPath (CGContextRef c, CPoint center, CGFloat a, CGFloat b, 
 	CGContextSaveGState (c);
 	CGContextTranslateCTM (c, center.x, center.y);
 	CGContextScaleCTM (c, a, b);
-	CGContextRotateCTM (c, radians (-90.));
 	
 	CGContextMoveToPoint (c, cos (radians (start_angle)), sin (radians (start_angle)));
 	
-	CGContextAddArc(c, 0, 0, 1, radians (start_angle), radians (end_angle), 1);
+	CGContextAddArc(c, 0, 0, 1, radians (start_angle), radians (end_angle), 0);
 	
 	CGContextRestoreGState(c);
 }
@@ -561,9 +560,7 @@ void CGDrawContext::drawArc (const CRect &rect, const float _startAngle, const f
 		applyLineStyle (context);
 
 		CGContextBeginPath (context);
-		CGDrawContextInternal::addOvalToPath (context, CPoint (rect.left + rect.getWidth () / 2., rect.top + rect.getHeight () / 2.), rect.getWidth () / 2., rect.getHeight () / 2., -_startAngle, -_endAngle);
-		if (drawStyle == kDrawFilled || kDrawFilledAndStroked)
-			CGContextAddLineToPoint (context, rect.left + rect.getWidth () / 2., rect.top + rect.getHeight () / 2.);
+		CGDrawContextInternal::addOvalToPath (context, CPoint (rect.left + rect.getWidth () / 2., rect.top + rect.getHeight () / 2.), rect.getWidth () / 2., rect.getHeight () / 2., _startAngle, _endAngle);
 		CGContextDrawPath (context, m);
 		releaseCGContext (context);
 	}
