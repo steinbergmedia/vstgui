@@ -136,7 +136,7 @@ public:
 		}
 	}
 
-	void setBackground (CBitmap *background) override
+	void setBackground (CBitmap *background) VSTGUI_OVERRIDE_VMETHOD
 	{
 		CView::setBackground (background);
 		updateSize ();

@@ -131,7 +131,7 @@ void CParamDisplay::setPrecision (uint8_t precision)
 	}
 }
 
-#if VSTGUI_ENABLE_DEPRECATED_METHODS
+#if VSTGUI_ENABLE_DEPRECATED_METHODS || !VSTGUI_HAS_FUNCTIONAL
 //------------------------------------------------------------------------
 void CParamDisplay::setValueToStringProc (CParamDisplayValueToStringProc proc, void* userData)
 {
