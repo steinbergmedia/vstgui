@@ -140,13 +140,13 @@ void CScrollContainer::setScrollOffset (CPoint newOffset, bool redraw)
 		return;
 	inScrolling = true;
 	FOREACHSUBVIEW
-		CRect r;
+		CRect r, mr;
 		pV->getViewSize (r);
+		pV->getMouseableArea (mr);
 		r.offset (diff.x , diff.y);
 		pV->setViewSize (r, false);
-		pV->getMouseableArea (r);
-		r.offset (diff.x , diff.y);
-		pV->setMouseableArea (r);
+		mr.offset (diff.x , diff.y);
+		pV->setMouseableArea (mr);
 	ENDFOREACHSUBVIEW
 	inScrolling = false;
 	offset = newOffset;
