@@ -62,6 +62,7 @@ public:
 	void setSize (const CRect& size) VSTGUI_OVERRIDE_VMETHOD;
 	void setZIndex (uint32_t zIndex) VSTGUI_OVERRIDE_VMETHOD;
 	void setAlpha (float alpha) VSTGUI_OVERRIDE_VMETHOD;
+	void draw (CDrawContext* context, const CRect& updateRect) VSTGUI_OVERRIDE_VMETHOD;
 
 	CALayer* getLayer () const { return layer; }
 //-----------------------------------------------------------------------------

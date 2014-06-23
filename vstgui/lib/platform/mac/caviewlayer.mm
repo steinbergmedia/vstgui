@@ -270,6 +270,11 @@ void CAViewLayer::setAlpha (float alpha)
 		layer.opacity = alpha;
 }
 
+//-----------------------------------------------------------------------------
+void CAViewLayer::draw (CDrawContext* context, const CRect& updateRect)
+{
+}
+
 } // namespace
 
 #endif // MAC_COCOA
