@@ -180,7 +180,9 @@ void CLayeredViewContainer::setAlphaValue (float alpha)
 //-----------------------------------------------------------------------------
 void CLayeredViewContainer::drawRect (CDrawContext* pContext, const CRect& updateRect)
 {
-	if (layer == 0)
+	if (layer)
+		layer->draw (pContext, updateRect);
+	else
 		CViewContainer::drawRect (pContext, updateRect);
 }
 

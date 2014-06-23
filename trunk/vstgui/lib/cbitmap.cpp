@@ -159,12 +159,21 @@ bool CBitmap::addBitmap (IPlatformBitmap* platformBitmap)
 //-----------------------------------------------------------------------------
 IPlatformBitmap* CBitmap::getBestPlatformBitmapForScaleFactor (double scaleFactor) const
 {
+	if (bitmaps.empty ())
+		return 0;
+	IPlatformBitmap* bestBitmap = bitmaps[0];
+	double bestDiff = std::abs (scaleFactor - bestBitmap->getScaleFactor ());
 	VSTGUI_RANGE_BASED_FOR_LOOP (BitmapVector, bitmaps, BitmapPointer, bitmap)
 		if (bitmap->getScaleFactor () == scaleFactor)
 			return bitmap;
+		else if (std::abs (scaleFactor - bitmap->getScaleFactor ()) <= bestDiff && bitmap->getScaleFactor () > bestBitmap->getScaleFactor ())
+		{
+			bestBitmap = bitmap;
+			bestDiff = std::abs (scaleFactor - bitmap->getScaleFactor ());
+		}
 	VSTGUI_RANGE_BASED_FOR_LOOP_END
 
-	return getPlatformBitmap ();
+	return bestBitmap;
 }
 
 //-----------------------------------------------------------------------------

@@ -58,6 +58,7 @@ public:
 	virtual void setSize (const CRect& size) = 0; ///< size is relative to platformParent
 	virtual void setZIndex (uint32_t zIndex) = 0;
 	virtual void setAlpha (float alpha) = 0;
+	virtual void draw (CDrawContext* context, const CRect& updateRect) = 0;
 };
 
 }
