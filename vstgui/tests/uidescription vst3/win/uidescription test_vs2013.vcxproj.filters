@@ -47,6 +47,12 @@
     <ClCompile Include="..\source\vst3sdksources.cpp">
       <Filter>Source Files\VST3 SDK</Filter>
     </ClCompile>
+    <ClCompile Include="..\source\zoomtest.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\plugin-bindings\vst3groupcontroller.cpp">
+      <Filter>Source Files\VSTGUI</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\source\animationtest.h">
@@ -65,6 +71,12 @@
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\plugin-bindings\vst3editor.h">
+      <Filter>Source Files\VSTGUI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\zoomtest.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\plugin-bindings\vst3groupcontroller.h">
       <Filter>Source Files\VSTGUI</Filter>
     </ClInclude>
   </ItemGroup>

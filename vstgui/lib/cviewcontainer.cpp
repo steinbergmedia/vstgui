@@ -155,6 +155,7 @@ void CViewContainer::setViewSize (const CRect &rect, bool invalid)
 	{
 		CCoord widthDelta = rect.getWidth () - oldSize.getWidth ();
 		CCoord heightDelta = rect.getHeight () - oldSize.getHeight ();
+		getTransform ().inverse ().transform (widthDelta, heightDelta);
 
 		if (widthDelta != 0 || heightDelta != 0)
 		{

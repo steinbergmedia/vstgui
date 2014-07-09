@@ -255,6 +255,19 @@ int32_t CTextEdit::onKeyDown (VstKeyCode& keyCode)
 }
 
 //------------------------------------------------------------------------
+CFontRef CTextEdit::platformGetFont () const
+{
+	CFontRef font = getFont ();
+	CCoord fontSize = font->getSize ();
+	fontSize *= getGlobalTransform ().m11;
+	if (fontSize == font->getSize ())
+		return font;
+	platformFont = owned (new CFontDesc (*font));
+	platformFont->setSize (fontSize);
+	return platformFont;
+}
+
+//------------------------------------------------------------------------
 CRect CTextEdit::platformGetSize () const
 {
 	return translateToGlobal (getViewSize ());

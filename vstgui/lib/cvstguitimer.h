@@ -103,7 +103,7 @@ namespace Call
 	typedef std::function<void ()> FunctionCallback;
 
 	/** Trigger a function call at a later timer */
-	static void later (FunctionCallback callback, int32_t delayInMilliseconds = 10)
+	inline void later (FunctionCallback callback, int32_t delayInMilliseconds = 10)
 	{
 		new CVSTGUITimer ([callback] (CVSTGUITimer* timer) {
 			callback ();

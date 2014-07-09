@@ -403,7 +403,12 @@ void D2DDrawContext::clearRect (const CRect& rect)
 //-----------------------------------------------------------------------------
 void D2DDrawContext::drawBitmap (CBitmap* bitmap, const CRect& dest, const CPoint& offset, float alpha)
 {
-	D2DBitmap* d2dBitmap = bitmap->getPlatformBitmap () ? dynamic_cast<D2DBitmap*> (bitmap->getPlatformBitmap ()) : 0;
+	double transformedScaleFactor = getScaleFactor ();
+	CGraphicsTransform t = getCurrentTransform ();
+	if (t.m11 == t.m22 && t.m12 == 0 && t.m21 == 0)
+		transformedScaleFactor *= t.m11;
+	IPlatformBitmap* platformBitmap = bitmap->getBestPlatformBitmapForScaleFactor (transformedScaleFactor);
+	D2DBitmap* d2dBitmap = platformBitmap ? dynamic_cast<D2DBitmap*> (platformBitmap) : 0;
 	if (renderTarget && d2dBitmap)
 	{
 		if (d2dBitmap->getSource ())
@@ -411,12 +416,21 @@ void D2DDrawContext::drawBitmap (CBitmap* bitmap, const CRect& dest, const CPoin
 			ID2D1Bitmap* d2d1Bitmap = D2DBitmapCache::instance ()->getBitmap (d2dBitmap, renderTarget);
 			if (d2d1Bitmap)
 			{
+				double bitmapScaleFactor = platformBitmap->getScaleFactor ();
+				CGraphicsTransform bitmapTransform;
+				bitmapTransform.scale (bitmapScaleFactor, bitmapScaleFactor);
+				Transform transform (*this, bitmapTransform.inverse ());
+
 				D2DApplyClip clip (this);
 				CRect d (dest);
 				d.makeIntegral ();
 				CRect source (dest);
 				source.offset (-source.left, -source.top);
 				source.offset (offset.x, offset.y);
+
+				bitmapTransform.transform (source);
+				bitmapTransform.transform (d);
+
 				D2D1_RECT_F sourceRect = makeD2DRect (source);
 				renderTarget->DrawBitmap (d2d1Bitmap, makeD2DRect (d), alpha * currentState.globalAlpha, D2D1_BITMAP_INTERPOLATION_MODE_LINEAR, &sourceRect);
 			}

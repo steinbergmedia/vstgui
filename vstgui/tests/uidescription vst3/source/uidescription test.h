@@ -65,9 +65,12 @@ public:
 	Steinberg::tresult PLUGIN_API initialize (Steinberg::FUnknown* context) VSTGUI_OVERRIDE_VMETHOD;
 	Steinberg::tresult PLUGIN_API setBusArrangements (Steinberg::Vst::SpeakerArrangement* inputs, Steinberg::int32 numIns, Steinberg::Vst::SpeakerArrangement* outputs, Steinberg::int32 numOuts) VSTGUI_OVERRIDE_VMETHOD;
 	Steinberg::tresult PLUGIN_API process (Steinberg::Vst::ProcessData& data) VSTGUI_OVERRIDE_VMETHOD;
+	Steinberg::tresult PLUGIN_API setProcessing (Steinberg::TBool state) VSTGUI_OVERRIDE_VMETHOD;
 
 	static Steinberg::FUnknown* createInstance (void*) { return (Steinberg::Vst::IAudioProcessor*)new UIDescriptionTestProcessor; }
 	static Steinberg::FUID cid;
+private:
+	float peak;
 };
 
 //------------------------------------------------------------------------

@@ -60,6 +60,19 @@
 namespace Steinberg {
 
 //-----------------------------------------------------------------------------
+class UpdateHandlerInit
+{
+public:
+	UpdateHandlerInit ()
+	{
+		get ();
+	}
+	UpdateHandler* get () { return UpdateHandler::instance (); }
+};
+
+static UpdateHandlerInit gUpdateHandlerInit;
+
+//-----------------------------------------------------------------------------
 class IdleUpdateHandler : public FObject, public ITimerCallback
 {
 public:
@@ -68,14 +81,13 @@ public:
 protected:
 	IdleUpdateHandler () 
 	{
-		UpdateHandler::instance ();
 		timer = Timer::create (this, 1000/30); // 30 Hz timer
 		CView::kDirtyCallAlwaysOnMainThread = true; // we will always call CView::setDirty() on the main thread
 	}
 	~IdleUpdateHandler () { timer->release (); }
 	void onTimer (Timer* timer)
 	{
-		UpdateHandler::instance ()->triggerDeferedUpdates ();
+		gUpdateHandlerInit.get ()->triggerDeferedUpdates ();
 	}
 
 	Steinberg::Timer* timer;
@@ -412,8 +424,8 @@ Steinberg::tresult PLUGIN_API VST3Editor::queryInterface (const Steinberg::TUID 
 //-----------------------------------------------------------------------------
 void VST3Editor::init ()
 {
+	zoomFactor = 1.;
 	setIdleRate (300);
-	Steinberg::IdleUpdateHandler::instance ();
 	if (description->parse ())
 	{
 		// get sizes
@@ -485,8 +497,8 @@ bool VST3Editor::exchangeView (UTF8StringPtr newViewName)
 void VST3Editor::enableTooltips (bool state)
 {
 	tooltipsEnabled = state;
-	if (frame)
-		frame->enableTooltips (state);
+	if (getFrame ())
+		getFrame ()->enableTooltips (state);
 }
 
 //-----------------------------------------------------------------------------
@@ -499,18 +511,18 @@ bool VST3Editor::setEditorSizeConstrains (const CPoint& newMinimumSize, const CP
 		if (frame)
 		{
 			CRect currentSize, newSize;
-			frame->getSize (currentSize);
+			getFrame ()->getSize (currentSize);
 			newSize = currentSize;
 			CCoord width = currentSize.getWidth ();
 			CCoord height = currentSize.getHeight ();
-			if (width > maxSize.x)
-				currentSize.setWidth (maxSize.x);
-			else if (width < minSize.x)
-				currentSize.setWidth (minSize.x);
-			if (height > maxSize.y)
-				currentSize.setHeight (maxSize.y);
-			else if (height < minSize.y)
-				currentSize.setHeight (minSize.y);
+			if (width > maxSize.x * zoomFactor)
+				currentSize.setWidth (maxSize.x * zoomFactor);
+			else if (width < minSize.x * zoomFactor)
+				currentSize.setWidth (minSize.x * zoomFactor);
+			if (height > maxSize.y * zoomFactor)
+				currentSize.setHeight (maxSize.y * zoomFactor);
+			else if (height < minSize.y * zoomFactor)
+				currentSize.setHeight (minSize.y * zoomFactor);
 			if (newSize != currentSize)
 				requestResize (CPoint (newSize.getWidth (), newSize.getHeight ()));
 		}
@@ -521,11 +533,35 @@ bool VST3Editor::setEditorSizeConstrains (const CPoint& newMinimumSize, const CP
 }
 
 //-----------------------------------------------------------------------------
+void VST3Editor::setZoomFactor (double factor)
+{
+	if (zoomFactor == factor)
+		return;
+
+	zoomFactor = factor;
+
+	if (getFrame () == 0)
+		return;
+
+	CView* view = getFrame ()->getView (0);
+	if (view == 0)
+		return;
+
+	CCoord width = view->getWidth () * zoomFactor;
+	CCoord height = view->getHeight () * zoomFactor;
+	getFrame ()->setAutosizingEnabled (false);
+	getFrame ()->setSize (width, height);
+	getFrame ()->setTransform (CGraphicsTransform ().scale (zoomFactor, zoomFactor));
+	requestResize (CPoint (width, height));
+	getFrame ()->setAutosizingEnabled (true);
+}
+
+//-----------------------------------------------------------------------------
 bool VST3Editor::requestResize (const CPoint& newSize)
 {
 	CCoord width = newSize.x;
 	CCoord height = newSize.y;
-	if (width >= minSize.x && width <= maxSize.x && height >= minSize.y && height <= maxSize.y)
+	if (width >= minSize.x * zoomFactor && width <= maxSize.x * zoomFactor && height >= minSize.y * zoomFactor && height <= maxSize.y * zoomFactor)
 	{
 		Steinberg::ViewRect vr;
 		vr.right = width;
@@ -676,7 +712,7 @@ void VST3Editor::onViewRemoved (CFrame* frame, CView* view)
 int32_t VST3Editor::onKeyDown (const VstKeyCode& code, CFrame* frame)
 {
 #if VSTGUI_LIVE_EDITING
-	if (code.modifier == MODIFIER_CONTROL && frame->getModalView () == 0)
+	if (code.modifier == MODIFIER_CONTROL && getFrame ()->getModalView () == 0)
 	{
 		if (code.character == 'e')
 		{
@@ -775,6 +811,27 @@ CMouseEventResult VST3Editor::onMouseDown (CFrame* frame, const CPoint& where, c
 	if (buttons.isRightButton ())
 	{
 		COptionMenu* controllerMenu = (delegate && editingEnabled == false) ? delegate->createContextMenu (where, this) : 0;
+		if (allowedZoomFactors.empty () == false)
+		{
+			if (controllerMenu == 0)
+				controllerMenu = new COptionMenu ();
+			else
+				controllerMenu->addSeparator ();
+			COptionMenu* zoomMenu = new COptionMenu ();
+			zoomMenu->setStyle (kMultipleCheckStyle);
+			char zoomFactorString[128];
+			int32_t zoomFactorTag = 0;
+			for (std::vector<double>::const_iterator it = allowedZoomFactors.begin (), end = allowedZoomFactors.end (); it != end; ++it, ++zoomFactorTag)
+			{
+				sprintf (zoomFactorString, "%d%%", static_cast<int>((*it) * 100));
+				CMenuItem* item = zoomMenu->addEntry (new CCommandMenuItem (zoomFactorString, this, "Zoom", zoomFactorString));
+				item->setTag (zoomFactorTag);
+				if (zoomFactor == *it)
+					item->setChecked (true);
+			}
+			CMenuItem* item = controllerMenu->addEntry ("UI Zoom");
+			item->setSubmenu (zoomMenu);
+		}
 	#if VSTGUI_LIVE_EDITING
 		if (editingEnabled == false)
 		{
@@ -787,7 +844,7 @@ CMouseEventResult VST3Editor::onMouseDown (CFrame* frame, const CPoint& where, c
 		}
 	#endif
 		CViewContainer::ViewList views;
-		if (editingEnabled == false && frame->getViewsAt (where, views, true))
+		if (editingEnabled == false && getFrame ()->getViewsAt (where, views, true))
 		{
 			VSTGUI_RANGE_BASED_FOR_LOOP(CViewContainer::ViewList, views, SharedPointer<CView>, view)
 				IContextMenuController* contextMenuController = dynamic_cast<IContextMenuController*> (getViewController (view));
@@ -811,9 +868,11 @@ CMouseEventResult VST3Editor::onMouseDown (CFrame* frame, const CPoint& where, c
 			Steinberg::Vst::IContextMenu* contextMenu = handler->createContextMenu (this, paramFound ? &paramID : 0);
 			if (contextMenu)
 			{
+				CPoint where2 (where);
+				getFrame ()->getTransform ().transform (where2);
 				if (controllerMenu)
 					VST3EditorInternal::addCOptionMenuEntriesToIContextMenu (this, controllerMenu, contextMenu);
-				if (contextMenu->popup (where.x, where.y) == Steinberg::kResultTrue)
+				if (contextMenu->popup (where2.x, where2.y) == Steinberg::kResultTrue)
 					result = kMouseEventHandled;
 				contextMenu->release ();
 			}
@@ -822,8 +881,10 @@ CMouseEventResult VST3Editor::onMouseDown (CFrame* frame, const CPoint& where, c
 	#endif
 		if (controllerMenu)
 		{
+			CPoint where2 (where);
+			getFrame ()->getTransform ().transform (where2);
 			controllerMenu->setStyle (kPopupStyle|kMultipleCheckStyle);
-			controllerMenu->popup (frame, where);
+			controllerMenu->popup (frame, where2);
 			result = kMouseEventHandled;
 		}
 		if (controllerMenu)
@@ -836,7 +897,7 @@ CMouseEventResult VST3Editor::onMouseDown (CFrame* frame, const CPoint& where, c
 Steinberg::tresult PLUGIN_API VST3Editor::findParameter (Steinberg::int32 xPos, Steinberg::int32 yPos, Steinberg::Vst::ParamID& resultTag)
 {
 	std::list<SharedPointer<CView> > views;
-	if (frame && frame->getViewsAt (CPoint (xPos, yPos), views))
+	if (frame && getFrame ()->getViewsAt (CPoint (xPos, yPos), views))
 	{
 		CControl* control = 0;
 		std::list<SharedPointer<CView> >::const_iterator it = views.begin ();
@@ -934,21 +995,21 @@ void VST3Editor::recreateView ()
 bool PLUGIN_API VST3Editor::open (void* parent, const PlatformType& type)
 {
 	frame = new CFrame (CRect (0, 0, 0, 0), this);
-	frame->setViewAddedRemovedObserver (this);
-	frame->setTransparency (true);
-	frame->registerMouseObserver (this);
+	getFrame ()->setViewAddedRemovedObserver (this);
+	getFrame ()->setTransparency (true);
+	getFrame ()->registerMouseObserver (this);
 #if VSTGUI_LIVE_EDITING
-	frame->registerKeyboardHook (this);
+	getFrame ()->registerKeyboardHook (this);
 #endif
-	frame->enableTooltips (tooltipsEnabled);
+	getFrame ()->enableTooltips (tooltipsEnabled);
 
 	if (!enableEditing (false))
 	{
-		frame->forget ();
+		getFrame ()->forget ();
 		return false;
 	}
 
-	frame->open (parent, type);
+	getFrame ()->open (parent, type);
 
 	if (delegate)
 		delegate->didOpen (this);
@@ -968,19 +1029,19 @@ void PLUGIN_API VST3Editor::close ()
 	if (frame)
 	{
 	#if VSTGUI_LIVE_EDITING
-		frame->unregisterKeyboardHook (this);
+		getFrame ()->unregisterKeyboardHook (this);
 	#endif
-		frame->unregisterMouseObserver (this);
-		frame->removeAll (true);
-		int32_t refCount = frame->getNbReference ();
+		getFrame ()->unregisterMouseObserver (this);
+		getFrame ()->removeAll (true);
+		int32_t refCount = getFrame ()->getNbReference ();
 		if (refCount == 1)
 		{
-			frame->close ();
+			getFrame ()->close ();
 			frame = 0;
 		}
 		else
 		{
-			frame->forget ();
+			getFrame ()->forget ();
 		}
 	}
 }
@@ -1007,14 +1068,14 @@ Steinberg::tresult PLUGIN_API VST3Editor::checkSizeConstraint (Steinberg::ViewRe
 #endif
 	CCoord width = rect->right - rect->left;
 	CCoord height = rect->bottom - rect->top;
-	if (width < minSize.x)
-		width = minSize.x;
-	else if (width > maxSize.x)
-		width = maxSize.x;
-	if (height < minSize.y)
-		height = minSize.y;
-	else if (height > maxSize.y)
-		height = maxSize.y;
+	if (width < minSize.x * zoomFactor)
+		width = minSize.x * zoomFactor;
+	else if (width > maxSize.x * zoomFactor)
+		width = maxSize.x * zoomFactor;
+	if (height < minSize.y * zoomFactor)
+		height = minSize.y * zoomFactor;
+	else if (height > maxSize.y * zoomFactor)
+		height = maxSize.y * zoomFactor;
 	if (width != rect->right - rect->left || height != rect->bottom - rect->top)
 	{
 		rect->right = (Steinberg::int32)width + rect->left;
@@ -1062,39 +1123,49 @@ CMessageResult VST3Editor::notify (CBaseObject* sender, IdStringPtr message)
 		CCommandMenuItem* item = dynamic_cast<CCommandMenuItem*>(sender);
 		if (item)
 		{
-			if (strcmp (item->getCommandCategory (), "Edit") == 0)
+			UTF8StringView cmdCategory = item->getCommandCategory ();
+			UTF8StringView cmdName = item->getCommandName ();
+			if (cmdCategory == "Edit")
 			{
-				if (strcmp (item->getCommandName (), "Sync Parameter Tags") == 0)
+				if (cmdName == "Sync Parameter Tags")
 				{
 					syncParameterTags ();
 					return kMessageNotified;
 				}
 			}
-			else if (strcmp (item->getCommandCategory (), "File") == 0)
+			else if (cmdCategory == "File")
 			{
-				if (strcmp (item->getCommandName (), "Open UIDescription Editor") == 0)
+				if (cmdName == "Open UIDescription Editor")
 				{
 					editingEnabled = true;
 					doCreateView = true;
 					return kMessageNotified;
 				}
-				else if (strcmp (item->getCommandName (), "Close UIDescription Editor") == 0)
+				else if (cmdName == "Close UIDescription Editor")
 				{
 					editingEnabled = false;
 					doCreateView = true;
 					return kMessageNotified;
 				}
-				else if (strcmp (item->getCommandName (), "Save") == 0)
+				else if (cmdName == "Save")
 				{
 					save (false);
 					item->setChecked (false);
 					return kMessageNotified;
 				}
-				else if (strcmp (item->getCommandName (), "Save As") == 0)
+				else if (cmdName == "Save As")
 				{
 					save (true);
 					item->setChecked (false);
 					return kMessageNotified;
+				}
+			}
+			else if (cmdCategory == "Zoom")
+			{
+				int32_t index = item->getTag ();
+				if (index < allowedZoomFactors.size ())
+				{
+					setZoomFactor (allowedZoomFactors[index]);
 				}
 			}
 		}
@@ -1246,25 +1317,26 @@ bool VST3Editor::enableEditing (bool state)
 	#if VSTGUI_LIVE_EDITING
 		if (state)
 		{
-			nonEditRect = frame->getViewSize ();
+			getFrame ()->setTransform (CGraphicsTransform ());
+			nonEditRect = getFrame ()->getViewSize ();
 			description->setController (this);
 			UIEditController* editController = new UIEditController (description);
 			CView* view = editController->createEditView ();
 			if (view)
 			{
-				frame->setSize (view->getWidth (), view->getHeight ());
-				frame->addView (view);
+				getFrame ()->setSize (view->getWidth (), view->getHeight ());
+				getFrame ()->addView (view);
 
 				rect.right = rect.left + (Steinberg::int32)view->getWidth ();
 				rect.bottom = rect.top + (Steinberg::int32)view->getHeight ();
 				plugFrame->resizeView (this, &rect);
 
-				frame->enableTooltips (true);
+				getFrame ()->enableTooltips (true);
 				CColor focusColor = kBlueCColor;
 				editController->getEditorDescription ().getColor ("focus", focusColor);
-				frame->setFocusColor (focusColor);
-				frame->setFocusDrawingEnabled (true);
-				frame->setFocusWidth (1);
+				getFrame ()->setFocusColor (focusColor);
+				getFrame ()->setFocusDrawingEnabled (true);
+				getFrame ()->setFocusWidth (1);
 				
 				COptionMenu* fileMenu = editController->getMenuController ()->getFileMenu ();
 				if (fileMenu)
@@ -1294,8 +1366,11 @@ bool VST3Editor::enableEditing (bool state)
 			CView* view = description->createView (viewName.c_str (), this);
 			if (view)
 			{
-				frame->setSize (view->getWidth (), view->getHeight ());
-				frame->addView (view);
+				CCoord width = view->getWidth () * zoomFactor;
+				CCoord height = view->getHeight () * zoomFactor;
+				getFrame ()->setSize (width, height);
+				getFrame ()->addView (view);
+				getFrame ()->setTransform (CGraphicsTransform ().scale (zoomFactor, zoomFactor));
 				if (nonEditRect.isEmpty () == false)
 				{
 					rect.right = rect.left + (Steinberg::int32)nonEditRect.getWidth ();
@@ -1306,9 +1381,10 @@ bool VST3Editor::enableEditing (bool state)
 				{
 					checkSizeConstraint (&rect);
 					onSize (&rect);
+					requestResize (CPoint (rect.getWidth (), rect.getHeight ()));
 				}
 
-				frame->setFocusDrawingEnabled (false);
+				getFrame ()->setFocusDrawingEnabled (false);
 
 				// focus drawing support
 				UIAttributes* attributes = description->getCustomAttributes ("FocusDrawing", true);
@@ -1343,19 +1419,19 @@ bool VST3Editor::enableEditing (bool state)
 				const std::string* attr = attributes->getAttributeValue ("enabled");
 				if (attr && *attr == "true")
 				{
-					frame->setFocusDrawingEnabled (true);
+					getFrame ()->setFocusDrawingEnabled (true);
 					attr = attributes->getAttributeValue ("color");
 					if (attr)
 					{
 						CColor focusColor;
 						if (description->getColor (attr->c_str (), focusColor))
-							frame->setFocusColor (focusColor);
+							getFrame ()->setFocusColor (focusColor);
 					}
 					attr = attributes->getAttributeValue ("width");
 					if (attr)
 					{
 						double focusWidth = strtod (attr->c_str (), 0);
-						frame->setFocusWidth (focusWidth);
+						getFrame ()->setFocusWidth (focusWidth);
 					}
 				}
 				return true;

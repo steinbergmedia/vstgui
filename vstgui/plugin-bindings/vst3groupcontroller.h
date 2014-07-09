@@ -51,7 +51,7 @@ public:
 	GroupController (Steinberg::Vst::Parameter* parameter, Steinberg::Vst::EditController* editController);
 	~GroupController ();
 
-	CView* verifyView (CView* view, const UIAttributes& attributes, IUIDescription* description) VSTGUI_OVERRIDE_VMETHOD;
+	CView* verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description) VSTGUI_OVERRIDE_VMETHOD;
 	
 	void valueChanged (CControl* pControl) VSTGUI_OVERRIDE_VMETHOD;
 	void controlBeginEdit (CControl* pControl) VSTGUI_OVERRIDE_VMETHOD;
