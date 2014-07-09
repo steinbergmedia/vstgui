@@ -108,7 +108,7 @@ protected:
 
 	CColor platformGetBackColor () const VSTGUI_OVERRIDE_VMETHOD { return getBackColor (); }
 	CColor platformGetFontColor () const VSTGUI_OVERRIDE_VMETHOD { return getFontColor (); }
-	CFontRef platformGetFont () const VSTGUI_OVERRIDE_VMETHOD { return getFont (); }
+	CFontRef platformGetFont () const VSTGUI_OVERRIDE_VMETHOD;
 	CHoriTxtAlign platformGetHoriTxtAlign () const VSTGUI_OVERRIDE_VMETHOD { return getHoriAlign (); }
 	UTF8StringPtr platformGetText () const VSTGUI_OVERRIDE_VMETHOD { return text; }
 	CRect platformGetSize () const VSTGUI_OVERRIDE_VMETHOD;
@@ -128,6 +128,7 @@ protected:
 #endif
 
 	bool immediateTextChange;
+	mutable SharedPointer<CFontDesc> platformFont;
 };
 
 } // namespace

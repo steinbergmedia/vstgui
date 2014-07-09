@@ -60,6 +60,7 @@ protected:
 //-----------------------------------------------------------------------------
 D2DBitmap::D2DBitmap ()
 : source (0)
+, scaleFactor (1.)
 {
 }
 
@@ -67,6 +68,7 @@ D2DBitmap::D2DBitmap ()
 D2DBitmap::D2DBitmap (const CPoint& size)
 : source (0)
 , size (size)
+, scaleFactor (1.)
 {
 	REFWICPixelFormatGUID pixelFormat = GUID_WICPixelFormat32bppPBGRA;
 	WICBitmapCreateCacheOption options = WICBitmapCacheOnLoad;

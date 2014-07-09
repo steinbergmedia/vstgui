@@ -199,6 +199,7 @@ public:
 					{
 						CFrame* frame = pControl->getFrame ();
 						CPoint center = frame->getViewSize ().getCenter ();
+						frame->getTransform ().inverse ().transform (center);
 						CRect viewSize = view->getViewSize ();
 						viewSize.offset (center.x - viewSize.getWidth () / 2, center.y - viewSize.getHeight () / 2);
 						view->setViewSize (viewSize);
@@ -429,7 +430,16 @@ IPlugView* PLUGIN_API UIDescriptionTestController::createView (FIDString name)
 {
 	if (strcmp (name, ViewType::kEditor) == 0)
 	{
-		return new VST3Editor (this, "view", "myEditor.uidesc");
+		VST3Editor* editor = new VST3Editor (this, "view", "myEditor.uidesc");
+		std::vector<double> zoomFactors;
+		zoomFactors.push_back (0.75);
+		zoomFactors.push_back (1.);
+		zoomFactors.push_back (1.25);
+		zoomFactors.push_back (1.5);
+		zoomFactors.push_back (1.75);
+		zoomFactors.push_back (2.);
+		editor->setAllowedZoomFactors (zoomFactors);
+		return editor;
 	}
 	return 0;
 }
@@ -526,6 +536,7 @@ void UIDescriptionTestController::willClose (VST3Editor* editor)
 //------------------------------------------------------------------------
 //------------------------------------------------------------------------
 UIDescriptionTestProcessor::UIDescriptionTestProcessor ()
+: peak (0.f)
 {
 	setControllerClass (UIDescriptionTestController::cid);
 }
@@ -553,9 +564,16 @@ tresult PLUGIN_API UIDescriptionTestProcessor::setBusArrangements (SpeakerArrang
 }
 
 //------------------------------------------------------------------------
+tresult PLUGIN_API UIDescriptionTestProcessor::setProcessing (Steinberg::TBool state)
+{
+	peak = 0.f;
+	return AudioEffect::setProcessing (state);
+}
+
+//------------------------------------------------------------------------
 tresult PLUGIN_API UIDescriptionTestProcessor::process (ProcessData& data)
 {
-	ParamValue peak = 0.;
+	ParamValue localPeak = 0.;
 	for (int32 sample = 0; sample < data.numSamples; sample++)
 	{
 		for (int32 channel = 0; channel < data.inputs[0].numChannels; channel++)
@@ -563,12 +581,21 @@ tresult PLUGIN_API UIDescriptionTestProcessor::process (ProcessData& data)
 			float value = data.inputs[0].channelBuffers32[channel][sample];
 			data.outputs[0].channelBuffers32[channel][sample] = value;
 			value = fabs (value);
-			if (value > peak)
-				peak = value;
+			if (value > localPeak)
+				localPeak = value;
 		}
 	}
 	if (data.outputParameterChanges)
 	{
+		if (localPeak < peak)
+		{
+			float vuDecrease = data.numSamples > 0 ? data.numSamples / processSetup.sampleRate : 0.001f;
+			peak -= vuDecrease;
+			if (peak < 0.f)
+				peak = 0.f;
+		}
+		else
+			peak = localPeak;
 		int32 index;
 		IParamValueQueue* queue = data.outputParameterChanges->addParameterData (kPeakParam, index);
 		if (queue)

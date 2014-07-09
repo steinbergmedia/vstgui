@@ -450,13 +450,16 @@ void CFrame::checkMouseViews (const CPoint& where, const CButtonState& buttons)
 //-----------------------------------------------------------------------------
 CMouseEventResult CFrame::onMouseDown (CPoint &where, const CButtonState& buttons)
 {
+	CPoint where2 (where);
+	getTransform ().inverse ().transform (where2);
+
 	// reset views
 	mouseDownView = 0;
 	if (pFocusView && dynamic_cast<CTextEdit*> (pFocusView))
 		setFocusView (0);
 
 	if (pTooltips)
-		pTooltips->onMouseDown (where);
+		pTooltips->onMouseDown (where2);
 
 	CMouseEventResult result = callMouseObserverMouseDown (where, buttons);
 	if (result != kMouseEventNotHandled)
@@ -466,9 +469,9 @@ CMouseEventResult CFrame::onMouseDown (CPoint &where, const CButtonState& button
 	{
 		CBaseObjectGuard rg (pModalView);
 
-		if (pModalView->isVisible () && pModalView->getMouseEnabled () && pModalView->hitTest (where, buttons))
+		if (pModalView->isVisible () && pModalView->getMouseEnabled () && pModalView->hitTest (where2, buttons))
 		{
-			CMouseEventResult result = pModalView->onMouseDown (where, buttons);
+			CMouseEventResult result = pModalView->onMouseDown (where2, buttons);
 			if (result == kMouseEventHandled)
 			{
 				mouseDownView = pModalView;
@@ -493,8 +496,11 @@ CMouseEventResult CFrame::onMouseUp (CPoint &where, const CButtonState& buttons)
 //-----------------------------------------------------------------------------
 CMouseEventResult CFrame::onMouseMoved (CPoint &where, const CButtonState& buttons)
 {
+	CPoint where2 (where);
+	getTransform ().inverse ().transform (where2);
+	
 	if (pTooltips)
-		pTooltips->onMouseMoved (where);
+		pTooltips->onMouseMoved (where2);
 
 	checkMouseViews (where, buttons);
 
@@ -505,7 +511,7 @@ CMouseEventResult CFrame::onMouseMoved (CPoint &where, const CButtonState& butto
 	if (pModalView)
 	{
 		CBaseObjectGuard rg (pModalView);
-		result = pModalView->onMouseMoved (where, buttons);
+		result = pModalView->onMouseMoved (where2, buttons);
 	}
 	else
 	{
@@ -860,7 +866,13 @@ void CFrame::endEdit (int32_t index)
 bool CFrame::getCurrentMouseLocation (CPoint &where) const
 {
 	if (platformFrame)
-		return platformFrame->getCurrentMousePosition (where);
+	{
+		if (platformFrame->getCurrentMousePosition (where))
+		{
+			getTransform().transform (where);
+			return true;
+		}
+	}
 	return false;
 }
 
@@ -1075,14 +1087,16 @@ CView* CFrame::getViewAt (const CPoint& where, bool deep, bool mustbeMouseEnable
 {
 	if (pModalView)
 	{
-		if (where.isInside (pModalView->getViewSize ()))
+		CPoint where2 (where);
+		getTransform ().inverse ().transform (where2);
+		if (where2.isInside (pModalView->getViewSize ()))
 		{
 			if (deep)
 			{
 				CViewContainer* container = dynamic_cast<CViewContainer*> (pModalView);
 				if (container)
 				{
-					return container->getViewAt (where, deep, mustbeMouseEnabled);
+					return container->getViewAt (where2, deep, mustbeMouseEnabled);
 				}
 			}
 			return pModalView;
@@ -1097,13 +1111,15 @@ CViewContainer* CFrame::getContainerAt (const CPoint& where, bool deep, bool mus
 {
 	if (pModalView)
 	{
-		if (where.isInside (pModalView->getViewSize ()))
+		CPoint where2 (where);
+		getTransform ().inverse ().transform (where2);
+		if (where2.isInside (pModalView->getViewSize ()))
 		{
 			CViewContainer* container = dynamic_cast<CViewContainer*> (pModalView);
 			if (container)
 			{
 				if (deep)
-					return container->getContainerAt (where, deep, mustbeMouseEnabled);
+					return container->getContainerAt (where2, deep, mustbeMouseEnabled);
 				return container;
 			}
 		}
@@ -1222,10 +1238,12 @@ void CFrame::invalidate (const CRect &rect)
 //-----------------------------------------------------------------------------
 void CFrame::invalidRect (const CRect& rect)
 {
-	if (!isVisible ())
+	if (!isVisible () || !platformFrame)
 		return;
-	if (platformFrame)
-		platformFrame->invalidRect (rect);
+
+	CRect _rect (rect);
+	getTransform ().transform (_rect);
+	platformFrame->invalidRect (_rect);
 }
 
 //-----------------------------------------------------------------------------
@@ -1353,11 +1371,14 @@ void CFrame::callMouseObserverMouseExited (CView* view)
 }
 
 //-----------------------------------------------------------------------------
-CMouseEventResult CFrame::callMouseObserverMouseDown (const CPoint& where, const CButtonState& buttons)
+CMouseEventResult CFrame::callMouseObserverMouseDown (const CPoint& _where, const CButtonState& buttons)
 {
 	CMouseEventResult result = kMouseEventNotHandled;
 	if (pMouseObservers)
 	{
+		CPoint where (_where);
+		getTransform ().inverse ().transform (where);
+		
 		for (MouseObserverList::const_iterator it = pMouseObservers->begin (), end = pMouseObservers->end (); it != end; it++)
 		{
 			CMouseEventResult result2 = (*it)->onMouseDown (this, where, buttons);
@@ -1371,11 +1392,14 @@ CMouseEventResult CFrame::callMouseObserverMouseDown (const CPoint& where, const
 }
 
 //-----------------------------------------------------------------------------
-CMouseEventResult CFrame::callMouseObserverMouseMoved (const CPoint& where, const CButtonState& buttons)
+CMouseEventResult CFrame::callMouseObserverMouseMoved (const CPoint& _where, const CButtonState& buttons)
 {
 	CMouseEventResult result = kMouseEventNotHandled;
 	if (pMouseObservers)
 	{
+		CPoint where (_where);
+		getTransform ().inverse ().transform (where);
+		
 		for (MouseObserverList::const_iterator it = pMouseObservers->begin (), end = pMouseObservers->end (); it != end; it++)
 		{
 			CMouseEventResult result2 = (*it)->onMouseMoved (this, where, buttons);

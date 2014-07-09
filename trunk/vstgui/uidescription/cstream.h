@@ -186,7 +186,7 @@ static const int8_t windowsPathSeparator = '\\';
 /**
 	Helper function to transform all Windows path separators to unix ones
  */
-static void unixfyPath (std::string& path)
+inline void unixfyPath (std::string& path)
 {
 	std::replace (path.begin (), path.end (), windowsPathSeparator, unixPathSeparator);
 }

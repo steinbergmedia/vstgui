@@ -614,6 +614,36 @@ static UIViewFactory* getGenericViewFactory ()
 	return &genericViewFactory;
 }
 
+namespace UIDescriptionPrivate {
+//-----------------------------------------------------------------------------
+static bool decodeScaleFactorFromName (std::string name, double& scaleFactor)
+{
+	size_t index = name.find_last_of ("#");
+	if (index == std::string::npos)
+		return false;
+	name.erase (0, index+1);
+	index = name.find_last_of (".");
+	if (index != std::string::npos)
+		name.erase (index);
+	index = name.find_last_of ("x");
+	if (index == std::string::npos)
+		return false;
+	name.erase (index);
+	scaleFactor = strtod (name.c_str (), 0);
+	return true;
+}
+
+//-----------------------------------------------------------------------------
+static std::string removeScaleFactorFromName (std::string name)
+{
+	size_t index = name.find_last_of ("#");
+	if (index == std::string::npos)
+		return "";
+	name.erase (index);
+	return name;
+}
+} // UIDescriptionPrivate
+
 //-----------------------------------------------------------------------------
 IdStringPtr UIDescription::kMessageTagChanged = "kMessageTagChanged";
 IdStringPtr UIDescription::kMessageColorChanged = "kMessageColorChanged";
@@ -1369,14 +1399,25 @@ CBitmap* UIDescription::getBitmap (UTF8StringPtr name) const
 		}
 		if (bitmapNode->getScaledBitmapsAdded () == false)
 		{
-			UTF8StringView nameStr (name);
-			if (nameStr.endsWith ("@2x") == false)
+			double scaleFactor;
+			if (!UIDescriptionPrivate::decodeScaleFactorFromName (name, scaleFactor))
 			{
-				std::string scaledBitmapName (name);
-				scaledBitmapName += "@2x";
-				CBitmap* scaledBitmap = getBitmap (scaledBitmapName.c_str ());
-				if (scaledBitmap && scaledBitmap->getPlatformBitmap ())
-					bitmap->addBitmap (scaledBitmap->getPlatformBitmap ());
+				// find scaled versions for this bitmap
+				UINode* bitmapsNode = getBaseNode (MainNodeNames::kBitmap);
+				for (UIDescList::const_iterator it = bitmapsNode->getChildren ().begin (), end = bitmapsNode->getChildren ().end (); it != end; ++it)
+				{
+					UIBitmapNode* childNode = dynamic_cast<UIBitmapNode*>(*it);
+					if (childNode == 0 || childNode == bitmapNode)
+						continue;
+					const std::string* childNodeBitmapName = childNode->getAttributes()->getAttributeValue ("name");
+					if (childNodeBitmapName == 0)
+						continue;
+					std::string nameWithoutScaleFactor = UIDescriptionPrivate::removeScaleFactorFromName (*childNodeBitmapName);
+					if (nameWithoutScaleFactor == name && childNode->getBitmap ())
+					{
+						bitmap->addBitmap (childNode->getBitmap ()->getPlatformBitmap ());
+					}
+				}
 			}
 			bitmapNode->setScaledBitmapsAdded ();
 		}
@@ -2869,15 +2910,11 @@ CBitmap* UIBitmapNode::getBitmap ()
 		}
 		if (bitmap && path && bitmap->getPlatformBitmap () && bitmap->getPlatformBitmap ()->getScaleFactor () == 1.)
 		{
-			std::string pathStr (*path);
-			size_t pos = pathStr.find_last_of (".");
-			if (pos != std::string::npos)
-				pathStr.erase (pos);
-			pos = pathStr.rfind ("@2x");
-			if (pos == pathStr.length () - 3)
+			double scaleFactor = 1.;
+			if (UIDescriptionPrivate::decodeScaleFactorFromName (*path, scaleFactor))
 			{
-				bitmap->getPlatformBitmap ()->setScaleFactor (2.);
-				attributes->setDoubleAttribute ("scale-factor", 2.);
+				bitmap->getPlatformBitmap ()->setScaleFactor (scaleFactor);
+				attributes->setDoubleAttribute ("scale-factor", scaleFactor);
 			}
 		}
 	}

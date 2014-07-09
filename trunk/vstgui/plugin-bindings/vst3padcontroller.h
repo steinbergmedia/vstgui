@@ -50,7 +50,7 @@ public:
 	PadController (IController* baseController, Steinberg::Vst::EditController* editController, Steinberg::Vst::Parameter* xParam, Steinberg::Vst::Parameter* yParam);
 	~PadController ();
 	
-	CView* verifyView (CView* view, const UIAttributes& attributes, IUIDescription* description) VSTGUI_OVERRIDE_VMETHOD;
+	CView* verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description) VSTGUI_OVERRIDE_VMETHOD;
 
 	void valueChanged (CControl* pControl) VSTGUI_OVERRIDE_VMETHOD;
 	void controlBeginEdit (CControl* pControl) VSTGUI_OVERRIDE_VMETHOD;

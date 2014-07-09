@@ -175,6 +175,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\..\plugin-bindings\vst3groupcontroller.cpp" />
     <ClCompile Include="..\source\animationtest.cpp" />
     <ClCompile Include="..\source\factory.cpp" />
     <ClCompile Include="..\source\graphicstest.cpp" />
@@ -185,14 +186,17 @@
     <ClCompile Include="..\..\..\vstgui_uidescription_win32.cpp" />
     <ClCompile Include="..\..\..\vstgui_win32.cpp" />
     <ClCompile Include="..\source\vst3sdksources.cpp" />
+    <ClCompile Include="..\source\zoomtest.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\..\plugin-bindings\vst3groupcontroller.h" />
     <ClInclude Include="..\source\animationtest.h" />
     <ClInclude Include="..\source\graphicstest.h" />
     <ClInclude Include="..\source\openglviewtest.h" />
     <ClInclude Include="..\source\subcontrollertest.h" />
     <ClInclude Include="..\source\uidescription test.h" />
     <ClInclude Include="..\..\..\plugin-bindings\vst3editor.h" />
+    <ClInclude Include="..\source\zoomtest.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="uidescription test.rc" />

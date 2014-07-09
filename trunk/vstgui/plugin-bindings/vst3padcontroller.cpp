@@ -56,7 +56,7 @@ PadController::~PadController ()
 }
 
 //------------------------------------------------------------------------
-CView* PadController::verifyView (CView* view, const UIAttributes& attributes, IUIDescription* description)
+CView* PadController::verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description)
 {
 	CXYPad* pad = dynamic_cast<CXYPad*>(view);
 	if (pad)

@@ -39,6 +39,7 @@
 #include "pluginterfaces/vst/ivstplugview.h"
 #include "../uidescription/uidescription.h"
 #include <string>
+#include <vector>
 #include <map>
 
 namespace VSTGUI {
@@ -96,6 +97,11 @@ public:
 	bool setEditorSizeConstrains (const CPoint& newMinimumSize, const CPoint& newMaximumSize);
 	void getEditorSizeConstrains (CPoint& minimumSize, CPoint& maximumSize) const;
 	bool requestResize (const CPoint& newSize);
+
+	void setZoomFactor (double factor);
+	double getZoomFactor () const { return zoomFactor; }
+	
+	void setAllowedZoomFactors (std::vector<double> zoomFactors) { allowedZoomFactors = zoomFactors; }
 
 //-----------------------------------------------------------------------------
 	DELEGATE_REFCOUNT(Steinberg::Vst::VSTGUIEditor)
@@ -160,6 +166,9 @@ protected:
 	bool tooltipsEnabled;
 	bool doCreateView;
 	bool editingEnabled;
+
+	double zoomFactor;
+	std::vector<double> allowedZoomFactors;
 	
 	CPoint minSize;
 	CPoint maxSize;

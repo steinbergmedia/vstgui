@@ -156,7 +156,14 @@ IPlugView* PLUGIN_API GraphicsTestController::createView (FIDString name)
 {
 	if (strcmp (name, ViewType::kEditor) == 0)
 	{
-		return new VST3Editor (this, "view", "GraphicsTest.uidesc");
+		VST3Editor* editor = new VST3Editor (this, "view", "GraphicsTest.uidesc");
+		std::vector<double> zoomFactors;
+		zoomFactors.push_back (0.75);
+		zoomFactors.push_back (1.);
+		zoomFactors.push_back (1.5);
+		zoomFactors.push_back (2.);
+		editor->setAllowedZoomFactors (zoomFactors);
+		return editor;
 	}
 	return 0;
 }
