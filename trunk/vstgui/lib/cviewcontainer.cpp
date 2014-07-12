@@ -415,11 +415,11 @@ bool CViewContainer::removeAll (bool withForget)
 	while (it != children.end ())
 	{
 		CView* view = *it;
+		it = children.erase (it);
 		if (isAttached ())
 			view->removed (this);
 		if (withForget)
 			view->forget ();
-		it = children.erase (it);
 	}
 	return true;
 }
@@ -440,11 +440,11 @@ bool CViewContainer::removeView (CView *pView, bool withForget)
 			mouseDownView = 0;
 		if (pView == currentDragView)
 			currentDragView = 0;
+		children.erase (it);
 		if (isAttached ())
 			pView->removed (this);
 		if (withForget)
 			pView->forget ();
-		children.erase (it);
 		return true;
 	}
 	return false;
