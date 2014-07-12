@@ -53,7 +53,7 @@ GdiplusBitmap::GdiplusBitmap (const CPoint& size)
 , size (size)
 {
 	GDIPlusGlobals::enter ();
-	bitmap = new Gdiplus::Bitmap ((INT)size.x, (INT)size.y, PixelFormat32bppARGB);
+	bitmap = ::new Gdiplus::Bitmap ((INT)size.x, (INT)size.y, PixelFormat32bppARGB);
 }
 
 //-----------------------------------------------------------------------------

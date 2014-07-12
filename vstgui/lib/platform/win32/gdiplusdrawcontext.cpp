@@ -58,7 +58,7 @@ GdiplusDrawContext::GdiplusDrawContext (HWND window, const CRect& drawSurface)
 , pBrush (0)
 , pFontBrush (0)
 {
-	pGraphics = new Gdiplus::Graphics (window);
+	pGraphics = ::new Gdiplus::Graphics (window);
 
 	init ();
 }
@@ -71,7 +71,7 @@ GdiplusDrawContext::GdiplusDrawContext (GdiplusBitmap* inBitmap)
 , pBrush (0)
 , pFontBrush (0)
 {
-	pGraphics = new Gdiplus::Graphics (inBitmap->getBitmap ());
+	pGraphics = ::new Gdiplus::Graphics (inBitmap->getBitmap ());
 
 	init ();
 
@@ -92,15 +92,16 @@ GdiplusDrawContext::~GdiplusDrawContext ()
 }
 
 // CDrawContext
+
 //-----------------------------------------------------------------------------
 void GdiplusDrawContext::init ()
 {
 	pGraphics->SetInterpolationMode (Gdiplus::InterpolationModeLowQuality);
 	pGraphics->SetPageUnit (Gdiplus::UnitPixel);
 	pGraphics->SetPixelOffsetMode (Gdiplus::PixelOffsetModeHalf);
-	pPen = new Gdiplus::Pen (Gdiplus::Color (0, 0, 0), 1);
-	pBrush = new Gdiplus::SolidBrush (Gdiplus::Color (0, 0, 0));
-	pFontBrush = new Gdiplus::SolidBrush (Gdiplus::Color (0, 0, 0));
+	pPen = ::new Gdiplus::Pen (Gdiplus::Color (0, 0, 0), 1);
+	pBrush = ::new Gdiplus::SolidBrush (Gdiplus::Color (0, 0, 0));
+	pFontBrush = ::new Gdiplus::SolidBrush (Gdiplus::Color (0, 0, 0));
 
 	COffscreenContext::init ();
 }
