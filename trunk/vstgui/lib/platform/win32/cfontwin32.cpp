@@ -47,11 +47,11 @@ namespace VSTGUI {
 bool IPlatformFont::getAllPlatformFontFamilies (std::list<std::string>& fontFamilyNames)
 {
 	Gdiplus::InstalledFontCollection fonts;
-	if (fonts.GetFamilyCount () > 0)
+	INT numFonts = fonts.GetFamilyCount ();
+	if (numFonts > 0)
 	{
-		Gdiplus::FontFamily* families = new Gdiplus::FontFamily[fonts.GetFamilyCount ()];
-		INT numFonts = fonts.GetFamilyCount ();
-		if (fonts.GetFamilies (fonts.GetFamilyCount (), families, &numFonts) == Gdiplus::Ok)
+		Gdiplus::FontFamily* families = ::new Gdiplus::FontFamily[numFonts];
+		if (fonts.GetFamilies (numFonts, families, &numFonts) == Gdiplus::Ok)
 		{
 			WCHAR familyName[LF_FACESIZE];
 			for (INT i = 0; i < numFonts; i++)
@@ -66,7 +66,6 @@ bool IPlatformFont::getAllPlatformFontFamilies (std::list<std::string>& fontFami
 	}
 	return false;
 }
-
 //-----------------------------------------------------------------------------
 static Gdiplus::Graphics* getGraphics (CDrawContext* context)
 {
@@ -80,7 +79,6 @@ static Gdiplus::Brush* getFontBrush (CDrawContext* context)
 	GdiplusDrawContext* gpdc = dynamic_cast<GdiplusDrawContext*> (context);
 	return gpdc ? gpdc->getFontBrush () : 0;
 }
-
 //-----------------------------------------------------------------------------
 GdiPlusFont::GdiPlusFont (const char* name, const CCoord& size, const int32_t& style)
 : font (0)
@@ -97,9 +95,8 @@ GdiPlusFont::GdiPlusFont (const char* name, const CCoord& size, const int32_t& s
 
 	WCHAR tempName [200];
 	mbstowcs (tempName, name, 200);
-	font = new Gdiplus::Font (tempName, (Gdiplus::REAL)size, gdiStyle, Gdiplus::UnitPixel);
+	font = ::new Gdiplus::Font (tempName, (Gdiplus::REAL)size, gdiStyle, Gdiplus::UnitPixel);
 }
-
 //-----------------------------------------------------------------------------
 GdiPlusFont::~GdiPlusFont ()
 {
@@ -134,7 +131,7 @@ CCoord GdiPlusFont::getStringWidth (CDrawContext* context, const CString& string
 		if (context == 0)
 		{
 			hdc = CreateCompatibleDC (0);
-			pGraphics = new Gdiplus::Graphics (hdc);
+			pGraphics = ::new Gdiplus::Graphics (hdc);
 		}
 		if (pGraphics && font)
 		{

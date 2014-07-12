@@ -52,7 +52,7 @@ GdiplusGraphicsPath::GdiplusGraphicsPath ()
 //-----------------------------------------------------------------------------
 GdiplusGraphicsPath::GdiplusGraphicsPath (const GdiPlusFont* font, UTF8StringPtr text)
 {
-	platformPath = new Gdiplus::GraphicsPath ();
+	platformPath = ::new Gdiplus::GraphicsPath ();
 
 	Gdiplus::Font* gdiFont = font->getFont ();
 	Gdiplus::FontFamily fontFamily;
@@ -90,7 +90,7 @@ Gdiplus::GraphicsPath* GdiplusGraphicsPath::getGraphicsPath ()
 {
 	if (platformPath == 0)
 	{
-		platformPath = new Gdiplus::GraphicsPath ();
+		platformPath = ::new Gdiplus::GraphicsPath ();
 		Gdiplus::PointF pos;
 		for (ElementList::const_iterator it = elements.begin (); it != elements.end (); it++)
 		{
