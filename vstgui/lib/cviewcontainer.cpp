@@ -415,11 +415,12 @@ bool CViewContainer::removeAll (bool withForget)
 	while (it != children.end ())
 	{
 		CView* view = *it;
-		it = children.erase (it);
+		children.erase (it);
 		if (isAttached ())
 			view->removed (this);
 		if (withForget)
 			view->forget ();
+		it = children.begin ();
 	}
 	return true;
 }
