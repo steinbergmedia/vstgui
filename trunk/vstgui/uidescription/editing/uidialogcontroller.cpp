@@ -239,7 +239,7 @@ CView* UIDialogController::verifyView (CView* view, const UIAttributes& attribut
 			}
 		}
 	}
-	const std::string* name = attributes.getAttributeValue ("custom-view-name");
+	const std::string* name = attributes.getAttributeValue (IUIDescription::kCustomViewName);
 	if (name)
 	{
 		if (*name == "view")

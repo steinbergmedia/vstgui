@@ -375,6 +375,30 @@ template<typename T> std::string numberToString (T value)
 	return str.str ();
 }
 
+//------------------------------------------------------------------------
+static void addGradientToUIDescription (const IUIDescription* description, CGradient* gradient, UTF8StringPtr baseName)
+{
+	if (!description->lookupGradientName (gradient))
+	{
+		UIDescription* uiDesc = dynamic_cast<UIDescription*>(const_cast<IUIDescription*> (description));
+		if (uiDesc)
+		{
+			uint32_t index = 0;
+			std::stringstream str;
+			do {
+				index++;
+				str = std::stringstream ();
+				str << baseName;
+				if (index > 1)
+				{
+					str << " ";
+					str << index;
+				}
+			} while (description->getGradient (str.str ().c_str ()) != 0);
+			uiDesc->changeGradient (str.str ().c_str (), gradient);
+		}
+	}
+}
 
 //-----------------------------------------------------------------------------
 // attributes used in more than one view creator
@@ -392,6 +416,7 @@ static const std::string kAttrZoomFactor = "zoom-factor";
 static const std::string kAttrHandleBitmap = "handle-bitmap";
 static const std::string kAttrOrientation = "orientation";
 static const std::string kAttrAnimationTime = "animation-time";
+static const std::string kAttrGradient = "gradient";
 
 //-----------------------------------------------------------------------------
 // CViewCreator attributes
@@ -404,7 +429,7 @@ static const std::string kAttrBitmap = "bitmap";
 static const std::string kAttrDisabledBitmap = "disabled-bitmap";
 static const std::string kAttrAutosize = "autosize";
 static const std::string kAttrTooltip = "tooltip";
-static const std::string kAttrCustomViewName = "custom-view-name";
+static const std::string kAttrCustomViewName = IUIDescription::kCustomViewName;
 static const std::string kAttrSubController = "sub-controller";
 static const std::string kAttrOpacity = "opacity";
 
@@ -1919,6 +1944,7 @@ static const std::string kAttrIcon = "icon";
 static const std::string kAttrIconHighlighted = "icon-highlighted";
 static const std::string kAttrIconPosition = "icon-position";
 static const std::string kAttrIconTextMargin = "icon-text-margin";
+static const std::string kAttrGradientHighlighted = "gradient-highlighted";
 
 //-----------------------------------------------------------------------------
 class CTextButtonCreator : public IViewCreator
@@ -1927,7 +1953,15 @@ public:
 	CTextButtonCreator () { UIViewFactory::registerViewCreator (*this); }
 	IdStringPtr getViewName () const VSTGUI_OVERRIDE_VMETHOD { return "CTextButton"; }
 	IdStringPtr getBaseViewName () const VSTGUI_OVERRIDE_VMETHOD { return "CControl"; }
-	CView* create (const UIAttributes& attributes, const IUIDescription* description) const VSTGUI_OVERRIDE_VMETHOD { return new CTextButton (CRect (0, 0, 100, 20), 0, -1, ""); }
+	CView* create (const UIAttributes& attributes, const IUIDescription* description) const VSTGUI_OVERRIDE_VMETHOD
+	{
+		CTextButton* button = new CTextButton (CRect (0, 0, 100, 20), 0, -1, "");
+		if (!description->lookupGradientName (button->getGradient ()))
+			addGradientToUIDescription (description, button->getGradient (), "Default TextButton Gradient");
+		if (!description->lookupGradientName (button->getGradientHighlighted ()))
+			addGradientToUIDescription (description, button->getGradientHighlighted (), "Default TextButton Gradient Highlighted");
+		return button;
+	}
 	bool apply (CView* view, const UIAttributes& attributes, const IUIDescription* description) const VSTGUI_OVERRIDE_VMETHOD
 	{
 		CTextButton* button = dynamic_cast<CTextButton*> (view);
@@ -1953,14 +1987,6 @@ public:
 			button->setTextColor (color);
 		if (stringToColor (attributes.getAttributeValue (kAttrTextColorHighlighted), color, description))
 			button->setTextColorHighlighted (color);
-		if (stringToColor (attributes.getAttributeValue (kAttrGradientStartColor), color, description))
-			button->setGradientStartColor (color);
-		if (stringToColor (attributes.getAttributeValue (kAttrGradientStartColorHighlighted), color, description))
-			button->setGradientStartColorHighlighted (color);
-		if (stringToColor (attributes.getAttributeValue (kAttrGradientEndColor), color, description))
-			button->setGradientEndColor (color);
-		if (stringToColor (attributes.getAttributeValue (kAttrGradientEndColorHighlighted), color, description))
-			button->setGradientEndColorHighlighted (color);
 		if (stringToColor (attributes.getAttributeValue (kAttrFrameColor), color, description))
 			button->setFrameColor (color);
 		if (stringToColor (attributes.getAttributeValue (kAttrFrameColorHighlighted), color, description))
@@ -2018,6 +2044,32 @@ public:
 				align = kRightText;
 			button->setTextAlignment (align);
 		}
+		const std::string* gradientName = attributes.getAttributeValue (kAttrGradient);
+		if (gradientName)
+			button->setGradient (description->getGradient (gradientName->c_str ()));
+		const std::string* gradientHighlightedName = attributes.getAttributeValue (kAttrGradientHighlighted);
+		if (gradientHighlightedName)
+			button->setGradientHighlighted (description->getGradient (gradientHighlightedName->c_str ()));
+
+		if (gradientName == 0 && gradientHighlightedName == 0)
+		{
+			CColor startColor, highlightedStartColor, endColor, highlightedEndColor;
+			if (!stringToColor (attributes.getAttributeValue (kAttrGradientStartColor), startColor, description))
+				return false;
+			if (!stringToColor (attributes.getAttributeValue (kAttrGradientStartColorHighlighted), highlightedStartColor, description))
+				return false;
+			if (!stringToColor (attributes.getAttributeValue (kAttrGradientEndColor), endColor, description))
+				return false;
+			if (!stringToColor (attributes.getAttributeValue (kAttrGradientEndColorHighlighted), highlightedEndColor, description))
+				return false;
+			SharedPointer<CGradient> gradient = owned (CGradient::create (0, 1, startColor, endColor));
+			button->setGradient (gradient);
+			addGradientToUIDescription (description, gradient, "TextButton");
+			gradient = owned (CGradient::create (0, 1, highlightedStartColor, highlightedEndColor));
+			button->setGradientHighlighted (gradient);
+			addGradientToUIDescription (description, gradient, "TextButton Highlighted");
+		}
+
 		return true;
 	}
 	bool getAttributeNames (std::list<std::string>& attributeNames) const VSTGUI_OVERRIDE_VMETHOD
@@ -2027,10 +2079,8 @@ public:
 		attributeNames.push_back (kAttrFont);
 		attributeNames.push_back (kAttrTextColor);
 		attributeNames.push_back (kAttrTextColorHighlighted);
-		attributeNames.push_back (kAttrGradientStartColor);
-		attributeNames.push_back (kAttrGradientStartColorHighlighted);
-		attributeNames.push_back (kAttrGradientEndColor);
-		attributeNames.push_back (kAttrGradientEndColorHighlighted);
+		attributeNames.push_back (kAttrGradient);
+		attributeNames.push_back (kAttrGradientHighlighted);
 		attributeNames.push_back (kAttrFrameColor);
 		attributeNames.push_back (kAttrFrameColorHighlighted);
 		attributeNames.push_back (kAttrRoundRadius);
@@ -2048,10 +2098,8 @@ public:
 		if (attributeName == kAttrFont) return kFontType;
 		if (attributeName == kAttrTextColor) return kColorType;
 		if (attributeName == kAttrTextColorHighlighted) return kColorType;
-		if (attributeName == kAttrGradientStartColor) return kColorType;
-		if (attributeName == kAttrGradientStartColorHighlighted) return kColorType;
-		if (attributeName == kAttrGradientEndColor) return kColorType;
-		if (attributeName == kAttrGradientEndColorHighlighted) return kColorType;
+		if (attributeName == kAttrGradient) return kGradientType;
+		if (attributeName == kAttrGradientHighlighted) return kGradientType;
 		if (attributeName == kAttrFrameColor) return kColorType;
 		if (attributeName == kAttrFrameColorHighlighted) return kColorType;
 		if (attributeName == kAttrFrameWidth) return kFloatType;
@@ -2114,26 +2162,6 @@ public:
 		else if (attributeName == kAttrTextColorHighlighted)
 		{
 			colorToString (button->getTextColorHighlighted (), stringValue, desc);
-			return true;
-		}
-		else if (attributeName == kAttrGradientStartColor)
-		{
-			colorToString (button->getGradientStartColor (), stringValue, desc);
-			return true;
-		}
-		else if (attributeName == kAttrGradientStartColorHighlighted)
-		{
-			colorToString (button->getGradientStartColorHighlighted (), stringValue, desc);
-			return true;
-		}
-		else if (attributeName == kAttrGradientEndColor)
-		{
-			colorToString (button->getGradientEndColor (), stringValue, desc);
-			return true;
-		}
-		else if (attributeName == kAttrGradientEndColorHighlighted)
-		{
-			colorToString (button->getGradientEndColorHighlighted (), stringValue, desc);
 			return true;
 		}
 		else if (attributeName == kAttrFrameColor)
@@ -2217,6 +2245,26 @@ public:
 				case kLeftText: stringValue = "left"; break;
 				case kRightText: stringValue = "right"; break;
 				case kCenterText: stringValue = "center"; break;
+			}
+			return true;
+		}
+		else if (attributeName == kAttrGradient)
+		{
+			CGradient* gradient = button->getGradient ();
+			if (gradient)
+			{
+				UTF8StringPtr gradientName = desc->lookupGradientName (gradient);
+				stringValue = gradientName ? gradientName : "";
+			}
+			return true;
+		}
+		else if (attributeName == kAttrGradientHighlighted)
+		{
+			CGradient* gradient = button->getGradientHighlighted ();
+			if (gradient)
+			{
+				UTF8StringPtr gradientName = desc->lookupGradientName (gradient);
+				stringValue = gradientName ? gradientName : "";
 			}
 			return true;
 		}
@@ -3484,7 +3532,21 @@ public:
 	CGradientViewCreator () { UIViewFactory::registerViewCreator (*this); }
 	IdStringPtr getViewName () const VSTGUI_OVERRIDE_VMETHOD { return "CGradientView"; }
 	IdStringPtr getBaseViewName () const VSTGUI_OVERRIDE_VMETHOD { return "CView"; }
-	CView* create (const UIAttributes& attributes, const IUIDescription* description) const VSTGUI_OVERRIDE_VMETHOD { return new CGradientView (CRect (0, 0, 100, 100)); }
+	CView* create (const UIAttributes& attributes, const IUIDescription* description) const VSTGUI_OVERRIDE_VMETHOD
+	{
+		CGradientView* gradientView = new CGradientView (CRect (0, 0, 100, 100));
+		const UIDescription* uiDesc = dynamic_cast<const UIDescription*>(description);
+		if (uiDesc)
+		{
+			std::list<const std::string*> gradients;
+			uiDesc->collectGradientNames (gradients);
+			if (gradients.size () > 0)
+			{
+				gradientView->setGradient (description->getGradient (gradients.front ()->c_str ()));
+			}
+		}
+		return gradientView;
+	}
 	bool apply (CView* view, const UIAttributes& attributes, const IUIDescription* description) const VSTGUI_OVERRIDE_VMETHOD
 	{
 		CGradientView* gv = dynamic_cast<CGradientView*> (view);
@@ -3493,18 +3555,10 @@ public:
 		CColor color;
 		if (stringToColor (attributes.getAttributeValue (kAttrFrameColor), color, description))
 			gv->setFrameColor (color);
-		if (stringToColor (attributes.getAttributeValue (kAttrGradientStartColor), color, description))
-			gv->setGradientStartColor (color);
-		if (stringToColor (attributes.getAttributeValue (kAttrGradientEndColor), color, description))
-			gv->setGradientEndColor (color);
 
 		double d;
 		if (attributes.getDoubleAttribute (kAttrGradientAngle, d))
 			gv->setGradientAngle (d);
-		if (attributes.getDoubleAttribute (kAttrGradientStartColorOffset, d))
-			gv->setGradientStartColorOffset (d);
-		if (attributes.getDoubleAttribute (kAttrGradientEndColorOffset, d))
-			gv->setGradientEndColorOffset (d);
 		if (attributes.getDoubleAttribute (kAttrRoundRectRadius, d))
 			gv->setRoundRectRadius (d);
 		if (attributes.getDoubleAttribute (kAttrFrameWidth, d))
@@ -3527,17 +3581,37 @@ public:
 			gv->setRadialCenter (p);
 		if (attributes.getDoubleAttribute (kAttrRadialRadius, d))
 			gv->setRadialRadius (d);
+		
+		attr = attributes.getAttributeValue (kAttrGradient);
+		if (attr)
+		{
+			CGradient* gradient = description->getGradient (attr->c_str ());
+			gv->setGradient (gradient);
+		}
+		else
+		{ // support old version
+			CColor startColor, endColor;
+			if (!stringToColor (attributes.getAttributeValue (kAttrGradientStartColor), startColor, description))
+				return false;
+			if (!stringToColor (attributes.getAttributeValue (kAttrGradientEndColor), endColor, description))
+				return false;
+			double startOffset, endOffset;
+			if (!attributes.getDoubleAttribute (kAttrGradientStartColorOffset, startOffset))
+				return false;
+			if (!attributes.getDoubleAttribute (kAttrGradientEndColorOffset, endOffset))
+				return false;
+			SharedPointer<CGradient> gradient = owned (CGradient::create (startOffset, endOffset, startColor, endColor));
+			gv->setGradient (gradient);
+			addGradientToUIDescription (description, gradient, "GradientView");
+		}
 		return true;
 	}
 	bool getAttributeNames (std::list<std::string>& attributeNames) const VSTGUI_OVERRIDE_VMETHOD
 	{
 		attributeNames.push_back (kAttrGradientStyle);
+		attributeNames.push_back (kAttrGradient);
 		attributeNames.push_back (kAttrFrameColor);
-		attributeNames.push_back (kAttrGradientStartColor);
-		attributeNames.push_back (kAttrGradientEndColor);
 		attributeNames.push_back (kAttrGradientAngle);
-		attributeNames.push_back (kAttrGradientStartColorOffset);
-		attributeNames.push_back (kAttrGradientEndColorOffset);
 		attributeNames.push_back (kAttrRoundRectRadius);
 		attributeNames.push_back (kAttrFrameWidth);
 		attributeNames.push_back (kAttrDrawAntialiased);
@@ -3548,12 +3622,9 @@ public:
 	AttrType getAttributeType (const std::string& attributeName) const VSTGUI_OVERRIDE_VMETHOD
 	{
 		if (attributeName == kAttrGradientStyle) return kListType;
+		if (attributeName == kAttrGradient) return kGradientType;
 		if (attributeName == kAttrFrameColor) return kColorType;
-		if (attributeName == kAttrGradientStartColor) return kColorType;
-		if (attributeName == kAttrGradientEndColor) return kColorType;
 		if (attributeName == kAttrGradientAngle) return kFloatType;
-		if (attributeName == kAttrGradientStartColorOffset) return kFloatType;
-		if (attributeName == kAttrGradientEndColorOffset) return kFloatType;
 		if (attributeName == kAttrRoundRectRadius) return kFloatType;
 		if (attributeName == kAttrFrameWidth) return kFloatType;
 		if (attributeName == kAttrDrawAntialiased) return kBooleanType;
@@ -3571,29 +3642,9 @@ public:
 			colorToString (gv->getFrameColor (), stringValue, desc);
 			return true;
 		}
-		if (attributeName == kAttrGradientStartColor)
-		{
-			colorToString (gv->getGradientStartColor (), stringValue, desc);
-			return true;
-		}
-		if (attributeName == kAttrGradientEndColor)
-		{
-			colorToString (gv->getGradientEndColor (), stringValue, desc);
-			return true;
-		}
 		if (attributeName == kAttrGradientAngle)
 		{
 			stringValue = numberToString (gv->getGradientAngle ());
-			return true;
-		}
-		if (attributeName == kAttrGradientStartColorOffset)
-		{
-			stringValue = numberToString (gv->getGradientStartColorOffset ());
-			return true;
-		}
-		if (attributeName == kAttrGradientEndColorOffset)
-		{
-			stringValue = numberToString (gv->getGradientEndColorOffset ());
 			return true;
 		}
 		if (attributeName == kAttrRoundRectRadius)
@@ -3613,7 +3664,7 @@ public:
 		}
 		if (attributeName == kAttrGradientStyle)
 		{
-			stringValue = gv->getGradientStyle() == CGradientView::kLinearGradient ? "linear" : "radial";
+			stringValue = gv->getGradientStyle () == CGradientView::kLinearGradient ? "linear" : "radial";
 			return true;
 		}
 		if (attributeName == kAttrRadialRadius)
@@ -3624,6 +3675,16 @@ public:
 		if (attributeName == kAttrRadialCenter)
 		{
 			pointToString (gv->getRadialCenter (), stringValue);
+			return true;
+		}
+		if (attributeName == kAttrGradient)
+		{
+			CGradient* gradient = gv->getGradient ();
+			if (gradient)
+			{
+				UTF8StringPtr gradientName = desc->lookupGradientName (gradient);
+				stringValue = gradientName ? gradientName : "";
+			}
 			return true;
 		}
 		return false;
@@ -3642,13 +3703,7 @@ public:
 	}
 	bool getAttributeValueRange (const std::string& attributeName, double& minValue, double &maxValue) const VSTGUI_OVERRIDE_VMETHOD
 	{
-		if (attributeName == kAttrGradientStartColorOffset || attributeName == kAttrGradientEndColorOffset)
-		{
-			minValue = 0.;
-			maxValue = 1.;
-			return true;
-		}
-		else if (attributeName == kAttrGradientAngle)
+		if (attributeName == kAttrGradientAngle)
 		{
 			minValue = 0.;
 			maxValue = 360.;

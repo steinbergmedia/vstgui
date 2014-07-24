@@ -233,7 +233,7 @@ D2DGraphicsPath::~D2DGraphicsPath ()
 //-----------------------------------------------------------------------------
 CGradient* D2DGraphicsPath::createGradient (double color1Start, double color2Start, const CColor& color1, const CColor& color2)
 {
-	return new D2DGradient (color1Start, color2Start, color1, color2);
+	return CGradient::create (color1Start, color2Start, color1, color2);
 }
 
 //-----------------------------------------------------------------------------
@@ -487,6 +487,13 @@ ID2D1PathGeometry* D2DGraphicsPath::getPath (int32_t fillMode)
 	}
 	return path;
 }
+
+//-----------------------------------------------------------------------------
+CGradient* CGradient::create (const ColorStopMap& colorStopMap)
+{
+	return new CGradient (colorStopMap);
+}
+
 
 } // namespace
 

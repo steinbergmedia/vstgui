@@ -1145,6 +1145,86 @@ void BitmapFilterChangeAction::undo ()
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
+GradientChangeAction::GradientChangeAction (UIDescription* description, UTF8StringPtr name, CGradient* gradient, bool remove, bool performOrUndo)
+: description(description)
+, name (name)
+, gradient (gradient)
+, remove (remove)
+, performOrUndo (performOrUndo)
+{
+	originalGradient = description->getGradient (name);
+}
+
+//----------------------------------------------------------------------------------------------------
+UTF8StringPtr GradientChangeAction::getName ()
+{
+	return originalGradient ? "Change Gradient" : "Add New Gradient";
+}
+
+//----------------------------------------------------------------------------------------------------
+void GradientChangeAction::perform ()
+{
+	if (performOrUndo)
+	{
+		if (remove)
+		{
+			description->removeGradient (name.c_str ());
+		}
+		else
+		{
+			description->changeGradient (name.c_str (), gradient);
+		}
+	}
+}
+
+//----------------------------------------------------------------------------------------------------
+void GradientChangeAction::undo ()
+{
+	if (performOrUndo == false)
+	{
+		if (originalGradient)
+		{
+			description->changeGradient (name.c_str (), originalGradient);
+		}
+		else
+		{
+			description->removeGradient (name.c_str ());
+		}
+	}
+}
+
+//----------------------------------------------------------------------------------------------------
+GradientNameChangeAction::GradientNameChangeAction (UIDescription* description, UTF8StringPtr oldName, UTF8StringPtr newName, bool performOrUndo)
+: description(description)
+, oldName (oldName)
+, newName (newName)
+, performOrUndo (performOrUndo)
+{
+}
+
+//----------------------------------------------------------------------------------------------------
+UTF8StringPtr GradientNameChangeAction::getName ()
+{
+	return "Change Gradient Name";
+}
+
+//----------------------------------------------------------------------------------------------------
+void GradientNameChangeAction::perform ()
+{
+	if (performOrUndo)
+		description->changeGradientName (oldName.c_str(), newName.c_str());
+}
+
+//----------------------------------------------------------------------------------------------------
+void GradientNameChangeAction::undo ()
+{
+	if (performOrUndo == false)
+		description->changeGradientName (newName.c_str(), oldName.c_str());
+}
+
+//----------------------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------
 FontChangeAction::FontChangeAction (UIDescription* description, UTF8StringPtr name, CFontRef font, bool remove, bool performOrUndo)
 : description(description)
 , name (name)

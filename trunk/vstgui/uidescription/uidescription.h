@@ -87,6 +87,7 @@ public:
 	CBitmap* getBitmap (UTF8StringPtr name) const VSTGUI_OVERRIDE_VMETHOD;
 	CFontRef getFont (UTF8StringPtr name) const VSTGUI_OVERRIDE_VMETHOD;
 	bool getColor (UTF8StringPtr name, CColor& color) const VSTGUI_OVERRIDE_VMETHOD;
+	CGradient* getGradient (UTF8StringPtr name) const VSTGUI_OVERRIDE_VMETHOD;
 	int32_t getTagForName (UTF8StringPtr name) const VSTGUI_OVERRIDE_VMETHOD;
 	CControlListener* getControlListener (UTF8StringPtr name) const VSTGUI_OVERRIDE_VMETHOD;
 	IController* getController () const VSTGUI_OVERRIDE_VMETHOD { return controller; }
@@ -95,6 +96,7 @@ public:
 	UTF8StringPtr lookupColorName (const CColor& color) const VSTGUI_OVERRIDE_VMETHOD;
 	UTF8StringPtr lookupFontName (const CFontRef font) const VSTGUI_OVERRIDE_VMETHOD;
 	UTF8StringPtr lookupBitmapName (const CBitmap* bitmap) const VSTGUI_OVERRIDE_VMETHOD;
+	UTF8StringPtr lookupGradientName (const CGradient* gradient) const VSTGUI_OVERRIDE_VMETHOD;
 	UTF8StringPtr lookupControlTagName (const int32_t tag) const VSTGUI_OVERRIDE_VMETHOD;
 
 	bool getVariable (UTF8StringPtr name, double& value) const VSTGUI_OVERRIDE_VMETHOD;
@@ -104,15 +106,18 @@ public:
 	void collectColorNames (std::list<const std::string*>& names) const;
 	void collectFontNames (std::list<const std::string*>& names) const;
 	void collectBitmapNames (std::list<const std::string*>& names) const;
+	void collectGradientNames (std::list<const std::string*>& names) const;
 	void collectControlTagNames (std::list<const std::string*>& names) const;
 	
 	void changeColorName (UTF8StringPtr oldName, UTF8StringPtr newName);
 	void changeTagName (UTF8StringPtr oldName, UTF8StringPtr newName);
 	void changeFontName (UTF8StringPtr oldName, UTF8StringPtr newName);
 	void changeBitmapName (UTF8StringPtr oldName, UTF8StringPtr newName);
+	void changeGradientName (UTF8StringPtr oldName, UTF8StringPtr newName);
 
 	void changeColor (UTF8StringPtr name, const CColor& newColor);
 	void changeFont (UTF8StringPtr name, CFontRef newFont);
+	void changeGradient (UTF8StringPtr name, CGradient* newGradient);
 	void changeBitmap (UTF8StringPtr name, UTF8StringPtr newName, const CRect* nineparttiledOffset = 0);
 
 	void changeBitmapFilters (UTF8StringPtr bitmapName, const std::list<SharedPointer<UIAttributes> >& filters);
@@ -122,6 +127,7 @@ public:
 	void removeTag (UTF8StringPtr name);
 	void removeFont (UTF8StringPtr name);
 	void removeBitmap (UTF8StringPtr name);
+	void removeGradient (UTF8StringPtr name);
 
 	void changeAlternativeFontNames (UTF8StringPtr name, UTF8StringPtr alternativeFonts);
 	bool getAlternativeFontNames (UTF8StringPtr name, std::string& alternativeFonts) const;
@@ -130,6 +136,7 @@ public:
 	bool hasTagName (UTF8StringPtr name) const;
 	bool hasFontName (UTF8StringPtr name) const;
 	bool hasBitmapName (UTF8StringPtr name) const;
+	bool hasGradientName (UTF8StringPtr name) const;
 
 	void updateViewDescription (UTF8StringPtr name, CView* view);
 	bool getTemplateNameFromView (CView* view, std::string& templateName) const;
@@ -156,6 +163,7 @@ public:
 	static IdStringPtr kMessageFontChanged;
 	static IdStringPtr kMessageBitmapChanged;
 	static IdStringPtr kMessageTemplateChanged;
+	static IdStringPtr kMessageGradientChanged;
 	static IdStringPtr kMessageBeforeSave;
 protected:
 	CView* createViewFromNode (UINode* node) const;

@@ -63,18 +63,17 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
     <_ProjectFileVersion>10.0.40219.1</_ProjectFileVersion>
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(Platform)\$(Configuration)\</OutDir>
-    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(Platform)\$(Configuration)\objects\</IntDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">build\$(Platform)\$(Configuration)\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">build\$(Platform)\$(Configuration)\objects\</IntDir>
     <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">build\$(Platform)\$(Configuration)\</OutDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">build\$(Platform)\$(Configuration)\objects\</IntDir>
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(Platform)\$(Configuration)\</OutDir>
-    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(Platform)\$(Configuration)\objects\</IntDir>
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(Platform)\$(Configuration)\</OutDir>
-    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(Platform)\$(Configuration)\objects\</IntDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">build\$(Platform)\$(Configuration)\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">build\$(Platform)\$(Configuration)\objects\</IntDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">build\$(Platform)\$(Configuration)\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">build\$(Platform)\$(Configuration)\objects\</IntDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
-      <AdditionalOptions>/MP %(AdditionalOptions)</AdditionalOptions>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WINDOWS=1; _WIN32;_CRT_SECURE_NO_WARNINGS; VSTGUI_LIVE_EDITING; DEBUG=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
@@ -97,7 +96,6 @@
       <TargetEnvironment>X64</TargetEnvironment>
     </Midl>
     <ClCompile>
-      <AdditionalOptions>/MP %(AdditionalOptions)</AdditionalOptions>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WINDOWS=1; _WIN32;_CRT_SECURE_NO_WARNINGS; VSTGUI_LIVE_EDITING; DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
@@ -107,6 +105,7 @@
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Lib>
       <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
@@ -115,7 +114,6 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
-      <AdditionalOptions>/MP %(AdditionalOptions)</AdditionalOptions>
       <Optimization>MaxSpeed</Optimization>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WINDOWS=1; _WIN32;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -128,6 +126,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -135,7 +134,6 @@
       <TargetEnvironment>X64</TargetEnvironment>
     </Midl>
     <ClCompile>
-      <AdditionalOptions>/MP %(AdditionalOptions)</AdditionalOptions>
       <Optimization>MaxSpeed</Optimization>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WINDOWS=1; _WIN32;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -148,6 +146,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -215,6 +214,10 @@
     <ClCompile Include="..\..\..\lib\platform\win32\direct2d\d2dfont.cpp" />
     <ClCompile Include="..\..\..\lib\platform\win32\direct2d\d2dgraphicspath.cpp" />
     <ClCompile Include="..\..\..\uidescription\cstream.cpp" />
+    <ClCompile Include="..\..\..\uidescription\editing\uicolor.cpp" />
+    <ClCompile Include="..\..\..\uidescription\editing\uicolorchoosercontroller.cpp" />
+    <ClCompile Include="..\..\..\uidescription\editing\uicolorslider.cpp" />
+    <ClCompile Include="..\..\..\uidescription\editing\uigradientscontroller.cpp" />
     <ClCompile Include="..\..\..\uidescription\uiattributes.cpp" />
     <ClCompile Include="..\..\..\uidescription\uidescription.cpp" />
     <ClCompile Include="..\..\..\uidescription\uiviewcreator.cpp" />
@@ -323,8 +326,13 @@
     <ClInclude Include="..\..\..\uidescription\cstream.h" />
     <ClInclude Include="..\..\..\uidescription\delegationcontroller.h" />
     <ClInclude Include="..\..\..\uidescription\doc.h" />
+    <ClInclude Include="..\..\..\uidescription\editing\uicolor.h" />
+    <ClInclude Include="..\..\..\uidescription\editing\uicolorchoosercontroller.h" />
+    <ClInclude Include="..\..\..\uidescription\editing\uicolorslider.h" />
+    <ClInclude Include="..\..\..\uidescription\editing\uigradientscontroller.h" />
     <ClInclude Include="..\..\..\uidescription\icontroller.h" />
     <ClInclude Include="..\..\..\uidescription\iuidescription.h" />
+    <ClInclude Include="..\..\..\uidescription\iviewcreator.h" />
     <ClInclude Include="..\..\..\uidescription\iviewfactory.h" />
     <ClInclude Include="..\..\..\uidescription\uiattributes.h" />
     <ClInclude Include="..\..\..\uidescription\uidescription.h" />

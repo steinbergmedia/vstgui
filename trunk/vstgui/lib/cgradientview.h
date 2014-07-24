@@ -61,12 +61,9 @@ public:
 	};
 	
 	void setGradientStyle (GradientStyle style);
+	void setGradient (CGradient* gradient);
 	void setFrameColor (const CColor& newColor);
-	void setGradientStartColor (const CColor& newColor);
-	void setGradientEndColor (const CColor& newColor);
 	void setGradientAngle (double angle);
-	void setGradientStartColorOffset (double offset);
-	void setGradientEndColorOffset (double offset);
 	void setRoundRectRadius (CCoord radius);
 	void setFrameWidth (CCoord width);
 	void setDrawAntialiased (bool state);
@@ -74,12 +71,9 @@ public:
 	void setRadialRadius (CCoord radius);
 
 	GradientStyle getGradientStyle () const { return gradientStyle; }
+	CGradient* getGradient () const { return gradient; }
 	const CColor& getFrameColor () const { return frameColor; }
-	const CColor& getGradientStartColor () const { return gradientStartColor; }
-	const CColor& getGradientEndColor () const { return gradientEndColor; }
 	double getGradientAngle () const { return gradientAngle; }
-	double getGradientStartColorOffset () const { return gradientStartColorOffset; }
-	double getGradientEndColorOffset () const { return gradientEndColorOffset; }
 	CCoord getRoundRectRadius () const { return roundRectRadius; }
 	CCoord getFrameWidth () const { return frameWidth; }
 	bool getDrawAntialised () const { return drawAntialiased; }
@@ -93,11 +87,7 @@ public:
 protected:
 	GradientStyle gradientStyle;
 	CColor frameColor;
-	CColor gradientStartColor;
-	CColor gradientEndColor;
 	double gradientAngle;
-	double gradientStartColorOffset;
-	double gradientEndColorOffset;
 	CCoord roundRectRadius;
 	CCoord frameWidth;
 	CCoord radialRadius;
@@ -105,7 +95,7 @@ protected:
 	bool drawAntialiased;
 
 	OwningPointer<CGraphicsPath> path;
-	OwningPointer<CGradient> gradient;
+	SharedPointer<CGradient> gradient;
 };
 	
 } // namespace

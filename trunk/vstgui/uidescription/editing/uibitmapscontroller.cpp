@@ -681,7 +681,7 @@ CView* UIBitmapSettingsController::verifyView (CView* view, const UIAttributes& 
 //----------------------------------------------------------------------------------------------------
 CView* UIBitmapSettingsController::createView (const UIAttributes& attributes, const IUIDescription* description)
 {
-	const std::string* name = attributes.getAttributeValue ("custom-view-name");
+	const std::string* name = attributes.getAttributeValue (IUIDescription::kCustomViewName);
 	if (name)
 	{
 		if (*name == "BitmapView")
@@ -743,7 +743,7 @@ void UIBitmapsController::showSettingsDialog ()
 //----------------------------------------------------------------------------------------------------
 CView* UIBitmapsController::createView (const UIAttributes& attributes, const IUIDescription* description)
 {
-	const std::string* name = attributes.getAttributeValue ("custom-view-name");
+	const std::string* name = attributes.getAttributeValue (IUIDescription::kCustomViewName);
 	if (name)
 	{
 		if (*name == "BitmapsBrowser")

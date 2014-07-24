@@ -708,10 +708,10 @@ CTextButton::CTextButton (const CRect& size, CControlListener* listener, int32_t
 	setFont (kSystemFont);
 	setTextColor (kBlackCColor);
 	setTextColorHighlighted (kWhiteCColor);
-	setGradientStartColor (CColor (220, 220, 220, 255));
-	setGradientStartColorHighlighted (CColor (180, 180, 180, 255));
-	setGradientEndColor (CColor (180, 180, 180, 255));
-	setGradientEndColorHighlighted (CColor (100, 100, 100, 255));
+	
+	gradient = owned (CGradient::create (0, 1, CColor (220, 220, 220, 255), CColor (180, 180, 180, 255)));
+	gradientHighlighted = owned (CGradient::create (0, 1, CColor (180, 180, 180, 255), CColor (100, 100, 100, 255)));
+	
 	setFrameColor (kBlackCColor);
 	setFrameColorHighlighted (kBlackCColor);
 	setWantsFocus (true);
@@ -759,16 +759,16 @@ void CTextButton::setTextColor (const CColor& color)
 }
 
 //------------------------------------------------------------------------
-void CTextButton::setGradientStartColor (const CColor& color)
+void CTextButton::setGradient (CGradient* newGradient)
 {
-	gradientStartColor = color;
+	gradient = newGradient;
 	invalid ();
 }
 
 //------------------------------------------------------------------------
-void CTextButton::setGradientEndColor (const CColor& color)
+void CTextButton::setGradientHighlighted (CGradient* newGradient)
 {
-	gradientEndColor = color;
+	gradientHighlighted = newGradient;
 	invalid ();
 }
 
@@ -783,20 +783,6 @@ void CTextButton::setFrameColor (const CColor& color)
 void CTextButton::setTextColorHighlighted (const CColor& color)
 {
 	textColorHighlighted = color;
-	invalid ();
-}
-
-//------------------------------------------------------------------------
-void CTextButton::setGradientStartColorHighlighted (const CColor& color)
-{
-	gradientStartColorHighlighted = color;
-	invalid ();
-}
-
-//------------------------------------------------------------------------
-void CTextButton::setGradientEndColorHighlighted (const CColor& color)
-{
-	gradientEndColorHighlighted = color;
 	invalid ();
 }
 
@@ -908,29 +894,19 @@ void CTextButton::draw (CDrawContext* context)
 	context->setFrameColor (highlight ? frameColorHighlighted : frameColor);
 	CRect r (getViewSize ());
 	r.inset (frameWidth / 2., frameWidth / 2.);
-	CGraphicsPath* path = getPath (context);
-	if (path)
+	if (gradient && gradientHighlighted)
 	{
-		CColor color1 = highlight ? gradientStartColorHighlighted : gradientStartColor;
-		CColor color2 = highlight ? gradientEndColorHighlighted : gradientEndColor;
-		SharedPointer<CGradient> gradient = owned (path->createGradient (0.2, 1, color1, color2));
-		if (gradient)
+		CGraphicsPath* path = getPath (context);
+		if (path)
 		{
-			context->fillLinearGradient (path, *gradient, r.getTopLeft (), r.getBottomLeft (), false);
+			CGradient* drawGradient = highlight ? gradientHighlighted : gradient;
+			if (drawGradient)
+			{
+				context->fillLinearGradient (path, *drawGradient, r.getTopLeft (), r.getBottomLeft (), false);
+			}
+			context->setDrawMode (kAntiAliasing|kIntegralMode);
+			context->drawGraphicsPath (path, CDrawContext::kPathStroked);
 		}
-		else
-		{
-			context->setFillColor (highlight ? gradientStartColorHighlighted : gradientStartColor);
-			context->drawGraphicsPath (path, CDrawContext::kPathFilled);
-		}
-		context->setDrawMode (kAntiAliasing|kIntegralMode);
-		context->drawGraphicsPath (path, CDrawContext::kPathStroked);
-	}
-	else
-	{
-		context->setDrawMode (kAntiAliasing|kIntegralMode);
-		context->setFillColor (highlight ? gradientStartColorHighlighted : gradientStartColor);
-		context->drawRect (getViewSize (), kDrawFilledAndStroked);
 	}
 	CRect titleRect = getViewSize ();
 	titleRect.inset (frameWidth / 2., frameWidth / 2.);

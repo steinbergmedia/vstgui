@@ -1,6 +1,6 @@
 //-----------------------------------------------------------------------------
 // VST Plug-Ins SDK
-// VSTGUI: Graphical User Interface Framework for VST plugins
+// VSTGUI: Graphical User Interface Framework not only for VST plugins
 //
 // Version 4.2
 //
@@ -32,50 +32,51 @@
 // OF THE POSSIBILITY OF SUCH DAMAGE.
 //-----------------------------------------------------------------------------
 
-#ifndef __iuidescription__
-#define __iuidescription__
+#ifndef __uicolorslider__
+#define __uicolorslider__
 
-#include "../lib/cfont.h"
+#include "../../lib/vstguibase.h"
 
-class CControlListener;
+#if VSTGUI_LIVE_EDITING
+
+#include "../../lib/controls/cslider.h"
 
 namespace VSTGUI {
+class UIColor;
 
-class IController;
-class IViewFactory;
-class CBitmap;
-class CGradient;
-struct CColor;
-
-//-----------------------------------------------------------------------------
-class IUIDescription
+//----------------------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------
+class UIColorSlider : public CSlider
 {
 public:
-	virtual ~IUIDescription () {}
+	enum {
+		kHue,
+		kSaturation,
+		kLightness,
+		kRed,
+		kGreen,
+		kBlue,
+		kAlpha
+	};
+	UIColorSlider (UIColor* color, int32_t style);
+	~UIColorSlider ();
 
-	virtual CBitmap* getBitmap (UTF8StringPtr name) const = 0;
-	virtual CFontRef getFont (UTF8StringPtr name) const = 0;
-	virtual bool getColor (UTF8StringPtr name, CColor& color) const = 0;
-	virtual CGradient* getGradient (UTF8StringPtr name) const = 0;
-	virtual int32_t getTagForName (UTF8StringPtr name) const = 0;
-	virtual CControlListener* getControlListener (UTF8StringPtr name) const = 0;
-	virtual IController* getController () const = 0;
+protected:
+	void draw (CDrawContext* context) VSTGUI_OVERRIDE_VMETHOD;
+	void setViewSize (const CRect& rect, bool invalid = true) VSTGUI_OVERRIDE_VMETHOD;
+	CMessageResult notify (CBaseObject* sender, IdStringPtr message) VSTGUI_OVERRIDE_VMETHOD;
+	void updateBackground (CDrawContext* context);
 
-	virtual UTF8StringPtr lookupColorName (const CColor& color) const = 0;
-	virtual UTF8StringPtr lookupFontName (const CFontRef font) const = 0;
-	virtual UTF8StringPtr lookupBitmapName (const CBitmap* bitmap) const = 0;
-	virtual UTF8StringPtr lookupGradientName (const CGradient* gradient) const = 0;
-	virtual UTF8StringPtr lookupControlTagName (const int32_t tag) const = 0;
-
-	virtual bool getVariable (UTF8StringPtr name, double& value) const = 0;
-	virtual bool getVariable (UTF8StringPtr name, std::string& value) const = 0;
-
-	virtual const IViewFactory* getViewFactory () const = 0;
-
-	static IdStringPtr kCustomViewName;
+	SharedPointer<UIColor> color;
+	int32_t style;
 };
 
 
-} // namespace VSTGUI
+} // namespace
 
-#endif // __iuidescription__
+#endif // VSTGUI_LIVE_EDITING
+
+#endif // __uicolorslider__

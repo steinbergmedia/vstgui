@@ -242,6 +242,13 @@ CRect QuartzGraphicsPath::getBoundingBox ()
 }
 
 //-----------------------------------------------------------------------------
+QuartzGradient::QuartzGradient (const ColorStopMap& map)
+: CGradient (map)
+, gradient (0)
+{
+}
+
+//-----------------------------------------------------------------------------
 QuartzGradient::QuartzGradient (double _color1Start, double _color2Start, const CColor& _color1, const CColor& _color2)
 : CGradient (_color1Start, _color2Start, _color1, _color2)
 , gradient (0)
@@ -255,14 +262,18 @@ QuartzGradient::~QuartzGradient ()
 }
 
 //-----------------------------------------------------------------------------
-void QuartzGradient::addColorStop (const std::pair<double, CColor>& colorStop)
+void QuartzGradient::addColorStop (std::pair<double, CColor> colorStop)
 {
+#if VSTGUI_RVALUE_REF_SUPPORT
+	CGradient::addColorStop (std::move (colorStop));
+#else
 	CGradient::addColorStop (colorStop);
+#endif
 	releaseCGGradient ();
 }
 
 //-----------------------------------------------------------------------------
-void QuartzGradient::createCGGradient ()
+void QuartzGradient::createCGGradient () const
 {
 	CGFloat* locations = new CGFloat [colorStops.size ()];
 	CFMutableArrayRef colors = CFArrayCreateMutable (kCFAllocatorDefault, colorStops.size (), &kCFTypeArrayCallBacks);
@@ -296,10 +307,15 @@ QuartzGradient::operator CGGradientRef () const
 {
 	if (gradient == 0)
 	{
-		QuartzGradient* This = const_cast<QuartzGradient*>(this);
-		This->createCGGradient ();
+		createCGGradient ();
 	}
 	return gradient;
+}
+
+//-----------------------------------------------------------------------------
+CGradient* CGradient::create (const ColorStopMap& colorStopMap)
+{
+	return new QuartzGradient (colorStopMap);
 }
 
 } // namespace

@@ -1,6 +1,6 @@
 //-----------------------------------------------------------------------------
 // VST Plug-Ins SDK
-// VSTGUI: Graphical User Interface Framework for VST plugins
+// VSTGUI: Graphical User Interface Framework not only for VST plugins
 //
 // Version 4.2
 //
@@ -32,50 +32,59 @@
 // OF THE POSSIBILITY OF SUCH DAMAGE.
 //-----------------------------------------------------------------------------
 
-#ifndef __iuidescription__
-#define __iuidescription__
+#ifndef __uicolorchoosercontroller__
+#define __uicolorchoosercontroller__
 
-#include "../lib/cfont.h"
+#include "../../lib/vstguibase.h"
 
-class CControlListener;
+#if VSTGUI_LIVE_EDITING
+
+#include "../delegationcontroller.h"
+#include "../../lib/controls/ctextedit.h"
 
 namespace VSTGUI {
+class UIColor;
 
-class IController;
-class IViewFactory;
-class CBitmap;
-class CGradient;
-struct CColor;
-
-//-----------------------------------------------------------------------------
-class IUIDescription
+//----------------------------------------------------------------------------------------------------
+class UIColorChooserController : public CBaseObject, public DelegationController
 {
 public:
-	virtual ~IUIDescription () {}
+	UIColorChooserController (IController* baseController, UIColor* color);
+	~UIColorChooserController ();
+	
+protected:
+	CMessageResult notify (CBaseObject* sender, IdStringPtr message) VSTGUI_OVERRIDE_VMETHOD;
+	CView* createView (const UIAttributes& attributes, const IUIDescription* description) VSTGUI_OVERRIDE_VMETHOD;
+	CView* verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description) VSTGUI_OVERRIDE_VMETHOD;
+	CControlListener* getControlListener (UTF8StringPtr name) VSTGUI_OVERRIDE_VMETHOD;
+	void valueChanged (CControl* pControl) VSTGUI_OVERRIDE_VMETHOD;
+	void controlBeginEdit (CControl* pControl) VSTGUI_OVERRIDE_VMETHOD;
+	void controlEndEdit (CControl* pControl) VSTGUI_OVERRIDE_VMETHOD;
 
-	virtual CBitmap* getBitmap (UTF8StringPtr name) const = 0;
-	virtual CFontRef getFont (UTF8StringPtr name) const = 0;
-	virtual bool getColor (UTF8StringPtr name, CColor& color) const = 0;
-	virtual CGradient* getGradient (UTF8StringPtr name) const = 0;
-	virtual int32_t getTagForName (UTF8StringPtr name) const = 0;
-	virtual CControlListener* getControlListener (UTF8StringPtr name) const = 0;
-	virtual IController* getController () const = 0;
+	void updateColorSlider (CControl* control);
+	void updateColorSliders ();
 
-	virtual UTF8StringPtr lookupColorName (const CColor& color) const = 0;
-	virtual UTF8StringPtr lookupFontName (const CFontRef font) const = 0;
-	virtual UTF8StringPtr lookupBitmapName (const CBitmap* bitmap) const = 0;
-	virtual UTF8StringPtr lookupGradientName (const CGradient* gradient) const = 0;
-	virtual UTF8StringPtr lookupControlTagName (const int32_t tag) const = 0;
+	static bool valueToString (float value, char utf8String[256], CParamDisplay::ValueToStringUserData* userData);
+	static bool stringToValue (UTF8StringPtr txt, float& result, CTextEdit::StringToValueUserData* userData);
 
-	virtual bool getVariable (UTF8StringPtr name, double& value) const = 0;
-	virtual bool getVariable (UTF8StringPtr name, std::string& value) const = 0;
+	SharedPointer<UIColor> color;
+	typedef std::list<SharedPointer<CControl> > ControlList;
+	ControlList controls;
 
-	virtual const IViewFactory* getViewFactory () const = 0;
-
-	static IdStringPtr kCustomViewName;
+	enum {
+		kHueTag = 0,
+		kSaturationTag,
+		kLightnessTag,
+		kRedTag,
+		kGreenTag,
+		kBlueTag,
+		kAlphaTag,
+		kNumTags
+	};
 };
+	
+} // namespace
 
+#endif // VSTGUI_LIVE_EDITING
 
-} // namespace VSTGUI
-
-#endif // __iuidescription__
+#endif // __uicolorchoosercontroller__

@@ -85,6 +85,7 @@ namespace MainNodeNames {
 	static const IdStringPtr kVariable = "variables";
 	static const IdStringPtr kTemplate = "template";
 	static const IdStringPtr kCustom = "custom";
+	static const IdStringPtr kGradient = "gradients";
 }
 
 class UINode;
@@ -262,6 +263,20 @@ public:
 	CLASS_METHODS(UIColorNode, UINode)
 protected:
 	CColor color;
+};
+
+//-----------------------------------------------------------------------------
+class UIGradientNode : public UINode
+{
+public:
+	UIGradientNode (const std::string& name, UIAttributes* attributes);
+	UIGradientNode (const UIGradientNode& n);
+	CGradient* getGradient ();
+	void setGradient (CGradient* g);
+	CLASS_METHODS(UIGradientNode, UINode)
+protected:
+	SharedPointer<CGradient> gradient;
+	
 };
 
 //-----------------------------------------------------------------------------
@@ -644,12 +659,15 @@ static std::string removeScaleFactorFromName (std::string name)
 }
 } // UIDescriptionPrivate
 
+IdStringPtr IUIDescription::kCustomViewName = "custom-view-name";
+
 //-----------------------------------------------------------------------------
 IdStringPtr UIDescription::kMessageTagChanged = "kMessageTagChanged";
 IdStringPtr UIDescription::kMessageColorChanged = "kMessageColorChanged";
 IdStringPtr UIDescription::kMessageFontChanged = "kMessageFontChanged";
 IdStringPtr UIDescription::kMessageBitmapChanged = "kMessageBitmapChanged";
 IdStringPtr UIDescription::kMessageTemplateChanged = "kMessageTemplateChanged";
+IdStringPtr UIDescription::kMessageGradientChanged = "kMessageGradientChanged";
 IdStringPtr UIDescription::kMessageBeforeSave = "kMessageBeforeSave";
 
 //-----------------------------------------------------------------------------
@@ -1287,6 +1305,13 @@ bool UIDescription::hasBitmapName (UTF8StringPtr name) const
 }
 
 //-----------------------------------------------------------------------------
+bool UIDescription::hasGradientName (UTF8StringPtr name) const
+{
+	UIGradientNode* node = dynamic_cast<UIGradientNode*> (findChildNodeByNameAttribute (getBaseNode (MainNodeNames::kGradient), name));
+	return node ? true : false;
+}
+
+//-----------------------------------------------------------------------------
 CControlListener* UIDescription::getControlListener (UTF8StringPtr name) const
 {
 	if (controller)
@@ -1431,9 +1456,7 @@ CFontRef UIDescription::getFont (UTF8StringPtr name) const
 {
 	UIFontNode* fontNode = dynamic_cast<UIFontNode*> (findChildNodeByNameAttribute (getBaseNode (MainNodeNames::kFont), name));
 	if (fontNode)
-	{
 		return fontNode->getFont ();
-	}
 	return 0;
 }
 
@@ -1452,6 +1475,14 @@ bool UIDescription::getColor (UTF8StringPtr name, CColor& color) const
 	return false;
 }
 
+//-----------------------------------------------------------------------------
+CGradient* UIDescription::getGradient (UTF8StringPtr name) const
+{
+	UIGradientNode* gradientNode = dynamic_cast<UIGradientNode*> (findChildNodeByNameAttribute (getBaseNode(MainNodeNames::kGradient), name));
+	if (gradientNode)
+		return gradientNode->getGradient ();
+	return 0;
+}
 
 //-----------------------------------------------------------------------------
 template<typename NodeType, typename ObjType, typename CompareFunction> UTF8StringPtr UIDescription::lookupName (const ObjType& obj, IdStringPtr mainNodeName, CompareFunction compare) const
@@ -1491,7 +1522,7 @@ UTF8StringPtr UIDescription::lookupFontName (const CFontRef font) const
 			return node->getFont () && node->getFont () == font;
 		}
 	};
-	return lookupName<UIFontNode> (font, MainNodeNames::kFont, Compare ());
+	return font ? lookupName<UIFontNode> (font, MainNodeNames::kFont, Compare ()) : 0;
 }
 
 //-----------------------------------------------------------------------------
@@ -1502,9 +1533,20 @@ UTF8StringPtr UIDescription::lookupBitmapName (const CBitmap* bitmap) const
 			return node->getBitmap() == bitmap;
 		}
 	};
-	return lookupName<UIBitmapNode> (bitmap, MainNodeNames::kBitmap, Compare ());
+	return bitmap ? lookupName<UIBitmapNode> (bitmap, MainNodeNames::kBitmap, Compare ()) : 0;
 }
 
+//-----------------------------------------------------------------------------
+UTF8StringPtr UIDescription::lookupGradientName (const CGradient* gradient) const
+{
+	struct Compare {
+		bool operator () (const UIDescription* desc, UIGradientNode* node, const CGradient* gradient) const {
+			return node->getGradient() == gradient || (node->getGradient () && gradient->getColorStops () == node->getGradient ()->getColorStops ());
+		}
+	};
+	return gradient ? lookupName<UIGradientNode> (gradient, MainNodeNames::kGradient, Compare ()) : 0;
+}
+	
 //-----------------------------------------------------------------------------
 UTF8StringPtr UIDescription::lookupControlTagName (const int32_t tag) const
 {
@@ -1562,6 +1604,12 @@ void UIDescription::changeBitmapName (UTF8StringPtr oldName, UTF8StringPtr newNa
 }
 
 //-----------------------------------------------------------------------------
+void UIDescription::changeGradientName (UTF8StringPtr oldName, UTF8StringPtr newName)
+{
+	changeNodeName<UIGradientNode> (oldName, newName, MainNodeNames::kGradient, kMessageGradientChanged);
+}
+
+//-----------------------------------------------------------------------------
 void UIDescription::changeColor (UTF8StringPtr name, const CColor& newColor)
 {
 	UINode* colorsNode = getBaseNode (MainNodeNames::kColor);
@@ -1615,6 +1663,34 @@ void UIDescription::changeFont (UTF8StringPtr name, CFontRef newFont)
 			fontsNode->getChildren ().add (node);
 			fontsNode->sortChildren ();
 			changed (kMessageFontChanged);
+		}
+	}
+}
+
+//-----------------------------------------------------------------------------
+void UIDescription::changeGradient (UTF8StringPtr name, CGradient* newGradient)
+{
+	UINode* gradientsNode = getBaseNode (MainNodeNames::kGradient);
+	UIGradientNode* node = dynamic_cast<UIGradientNode*> (findChildNodeByNameAttribute (gradientsNode, name));
+	if (node)
+	{
+		if (!node->noExport ())
+		{
+			node->setGradient (newGradient);
+			changed (kMessageGradientChanged);
+		}
+	}
+	else
+	{
+		if (gradientsNode)
+		{
+			UIAttributes* attr = new UIAttributes;
+			attr->setAttribute ("name", name);
+			UIGradientNode* node = new UIGradientNode ("gradient", attr);
+			node->setGradient (newGradient);
+			gradientsNode->getChildren ().add (node);
+			gradientsNode->sortChildren ();
+			changed (kMessageGradientChanged);
 		}
 	}
 }
@@ -1765,6 +1841,12 @@ void UIDescription::removeBitmap (UTF8StringPtr name)
 }
 
 //-----------------------------------------------------------------------------
+void UIDescription::removeGradient (UTF8StringPtr name)
+{
+	removeNode (name, MainNodeNames::kGradient, kMessageGradientChanged);
+}
+
+//-----------------------------------------------------------------------------
 void UIDescription::changeAlternativeFontNames (UTF8StringPtr name, UTF8StringPtr alternativeFonts)
 {
 	UIFontNode* node = dynamic_cast<UIFontNode*> (findChildNodeByNameAttribute (getBaseNode (MainNodeNames::kFont), name));
@@ -1835,6 +1917,12 @@ void UIDescription::collectFontNames (std::list<const std::string*>& names) cons
 void UIDescription::collectBitmapNames (std::list<const std::string*>& names) const
 {
 	collectNamesFromNode<UIBitmapNode> (MainNodeNames::kBitmap, names);
+}
+
+//-----------------------------------------------------------------------------
+void UIDescription::collectGradientNames (std::list<const std::string*>& names) const
+{
+	collectNamesFromNode<UIGradientNode> (MainNodeNames::kGradient, names);
 }
 
 //-----------------------------------------------------------------------------
@@ -2479,7 +2567,9 @@ void UIDescription::startXmlElement (Xml::Parser* parser, IdStringPtr elementNam
 				// only allowed second level elements
 				if (name == MainNodeNames::kControlTag || name == MainNodeNames::kColor || name == MainNodeNames::kBitmap)
 					newNode = new UINode (name, new UIAttributes (elementAttributes), true);
-				else if (name == MainNodeNames::kFont || name == MainNodeNames::kTemplate || name == MainNodeNames::kControlTag || name == MainNodeNames::kCustom || name == MainNodeNames::kVariable)
+				else if (name == MainNodeNames::kFont || name == MainNodeNames::kTemplate
+					  || name == MainNodeNames::kControlTag || name == MainNodeNames::kCustom
+					  || name == MainNodeNames::kVariable || name == MainNodeNames::kGradient)
 					newNode = new UINode (name, new UIAttributes (elementAttributes));
 				else
 					parser->stop ();
@@ -2516,6 +2606,13 @@ void UIDescription::startXmlElement (Xml::Parser* parser, IdStringPtr elementNam
 			{
 				if (name == "var")
 					newNode = new UIVariableNode (name, new UIAttributes (elementAttributes));
+				else
+					parser->stop ();
+			}
+			else if (parent->getName () == MainNodeNames::kGradient)
+			{
+				if (name == "gradient")
+					newNode = new UIGradientNode (name, new UIAttributes (elementAttributes));
 				else
 					parser->stop ();
 			}
@@ -3137,6 +3234,65 @@ void UIColorNode::setColor (const CColor& newColor)
 	UIViewCreator::colorToString (newColor, colorString, 0);
 	attributes->setAttribute ("rgba", colorString);
 	color = newColor;
+}
+
+//-----------------------------------------------------------------------------
+UIGradientNode::UIGradientNode (const std::string& name, UIAttributes* attributes)
+: UINode (name, attributes)
+{
+}
+
+//-----------------------------------------------------------------------------
+UIGradientNode::UIGradientNode (const UIGradientNode& n)
+: UINode (n)
+{
+}
+
+//-----------------------------------------------------------------------------
+CGradient* UIGradientNode::getGradient ()
+{
+	if (gradient == 0)
+	{
+		CGradient::ColorStopMap colorStops;
+		double start;
+		CColor color;
+		for (UIDescList::const_iterator it = getChildren ().begin (), end = getChildren ().end (); it != end; ++it)
+		{
+			UINode* colorNode = *it;
+			if (colorNode->getName () == "color-stop")
+			{
+				const std::string* rgba = colorNode->getAttributes ()->getAttributeValue ("rgba");
+				if (rgba == 0 || colorNode->getAttributes()->getDoubleAttribute ("start", start) == false)
+					continue;
+				if (UIDescription::parseColor (*rgba, color) == false)
+					continue;
+				colorStops.insert (std::make_pair (start, color));
+			}
+		}
+		if (colorStops.size () > 1)
+			gradient = CGradient::create (colorStops);
+	}
+	return gradient;
+}
+
+//-----------------------------------------------------------------------------
+void UIGradientNode::setGradient (CGradient* g)
+{
+	gradient = g;
+	getChildren ().removeAll ();
+	if (gradient == 0)
+		return;
+
+	const CGradient::ColorStopMap colorStops = gradient->getColorStops ();
+	for (CGradient::ColorStopMap::const_iterator it = colorStops.begin (), end = colorStops.end (); it != end; ++it)
+	{
+		UINode* node = new UINode ("color-stop");
+		node->getAttributes ()->setDoubleAttribute ("start", (*it).first);
+		std::string colorString;
+		UIViewCreator::colorToString ((*it).second, colorString, 0);
+		node->getAttributes ()->setAttribute ("color", colorString);
+		getChildren ().add (node);
+	}
 }
 
 } // namespace

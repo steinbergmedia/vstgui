@@ -40,6 +40,7 @@
 #include "uiattributescontroller.h"
 #include "uibitmapscontroller.h"
 #include "uicolorscontroller.h"
+#include "uigradientscontroller.h"
 #include "uieditmenucontroller.h"
 #include "uifontscontroller.h"
 #include "uigridcontroller.h"
@@ -143,7 +144,7 @@ public:
 	, drawBottomLine (drawBottomLine)
 	{}
 
-	void draw (CDrawContext* context)
+	void draw (CDrawContext* context) VSTGUI_OVERRIDE_VMETHOD
 	{
 		drawGradient (context, getViewSize (), horizontal, drawTopLine, drawBottomLine);
 	}
@@ -209,14 +210,14 @@ class UIEditControllerTextSwitch : public CParamDisplay
 public:
 	UIEditControllerTextSwitch ();
 
-	bool attached (CView *parent);
-	void setViewSize (const CRect& rect, bool invalid = true);
+	bool attached (CView *parent) VSTGUI_OVERRIDE_VMETHOD;
+	void setViewSize (const CRect& rect, bool invalid = true) VSTGUI_OVERRIDE_VMETHOD;
 	void addValue (UTF8StringPtr name);
-	CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons);
-	int32_t onKeyDown (VstKeyCode& keyCode);
-	void draw (CDrawContext* pContext);
+	CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons) VSTGUI_OVERRIDE_VMETHOD;
+	int32_t onKeyDown (VstKeyCode& keyCode) VSTGUI_OVERRIDE_VMETHOD;
+	void draw (CDrawContext* pContext) VSTGUI_OVERRIDE_VMETHOD;
 protected:
-	virtual void setMax (float val) {}
+	virtual void setMax (float val) VSTGUI_OVERRIDE_VMETHOD {}
 	void updateValues ();
 
 	struct Value {
@@ -289,7 +290,7 @@ CView* UIEditController::createEditView ()
 //----------------------------------------------------------------------------------------------------
 CView* UIEditController::createView (const UIAttributes& attributes, const IUIDescription* description)
 {
-	const std::string* name = attributes.getAttributeValue ("custom-view-name");
+	const std::string* name = attributes.getAttributeValue (IUIDescription::kCustomViewName);
 	if (name)
 	{
 		if (*name == "UIEditView")
@@ -324,6 +325,7 @@ CView* UIEditController::createView (const UIAttributes& attributes, const IUIDe
 			textSwitch->addValue ("Views");
 			textSwitch->addValue ("Tags");
 			textSwitch->addValue ("Colors");
+			textSwitch->addValue ("Gradients");
 			textSwitch->addValue ("Bitmaps");
 			textSwitch->addValue ("Fonts");
 			tabSwitchControl = textSwitch;
@@ -446,6 +448,10 @@ IController* UIEditController::createSubController (UTF8StringPtr name, const IU
 	else if (subControllerName == "ColorEditController")
 	{
 		return new UIColorsController (this, editDescription, this);
+	}
+	else if (subControllerName == "GradientEditController")
+	{
+		return new UIGradientsController (this, editDescription, this);
 	}
 	else if (subControllerName == "BitmapEditController")
 	{
@@ -1226,6 +1232,20 @@ void UIEditController::performBitmapChange (UTF8StringPtr bitmapName, UTF8String
 	undoManager->endGroupAction ();
 }
 
+//------------------------------------------------------------------------
+void UIEditController::performGradientChange (UTF8StringPtr gradientName, CGradient* newGradient, bool remove)
+{
+	std::list<CView*> views;
+	getTemplateViews (views);
+	
+	GradientChangeAction* action = new GradientChangeAction (editDescription, gradientName, newGradient, remove, true);
+	undoManager->startGroupAction (remove ? "Delete Bitmap" : action->isAddGradient () ? "Add New Gradient" :"Change Gradient");
+	undoManager->pushAndPerform (action);
+	undoManager->pushAndPerform (new MultipleAttributeChangeAction (editDescription, views, IViewCreator::kGradientType, gradientName, remove ? "" : gradientName));
+	undoManager->pushAndPerform (new GradientChangeAction (editDescription, gradientName, newGradient, remove, false));
+	undoManager->endGroupAction ();
+}
+
 //----------------------------------------------------------------------------------------------------
 void UIEditController::performFontChange (UTF8StringPtr fontName, CFontRef newFont, bool remove)
 {
@@ -1269,6 +1289,12 @@ void UIEditController::performTagNameChange (UTF8StringPtr oldName, UTF8StringPt
 void UIEditController::performFontNameChange (UTF8StringPtr oldName, UTF8StringPtr newName)
 {
 	performNameChange<FontNameChangeAction, IViewCreator::kFontType> (oldName, newName, "Change Font Name");
+}
+
+//----------------------------------------------------------------------------------------------------
+void UIEditController::performGradientNameChange (UTF8StringPtr oldName, UTF8StringPtr newName)
+{
+	performNameChange<GradientNameChangeAction, IViewCreator::kGradientType> (oldName, newName, "Change Gradient Name");
 }
 
 //----------------------------------------------------------------------------------------------------

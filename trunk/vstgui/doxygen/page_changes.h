@@ -18,10 +18,11 @@ It's recommended to start new projects with version 4 while old projects should 
 
 @subsection version4_3 Version 4.3
 
+- last version to support Windows XP and Mac OS X 10.6
 - support for creating a graphics path from a string
 - add support for adding a custom view to the split view separator
 - transformation matrix support in VSTGUI::CDrawContext
-- OS X/iOS Retina Display support
+- HiDPI support (aka Retina support)
 - use c++11 callback functions for VSTGUI::CFileSelector::run(), VSTGUI::CVSTGUITimer, VSTGUI::CParamDisplay::setValueToStringFunction, VSTGUI::CTextEdit::setStringToValueFunction and VSTGUI::CCommandMenuItem::setActions
 
 @subsection version4_2 Version 4.2
@@ -57,8 +58,11 @@ It's recommended to start new projects with version 4 while old projects should 
 
 @subsection code_changes_4_2_to_4_3 VSTGUI 4.2 -> VSTGUI 4.3
 
-- CDrawContext::drawString (UTF8StringPtr string, const CRect& rect, const CHoriTxtAlign hAlign, bool antialias) does not set the clip to rect by itself anymore. If you call this method in your code, you need to set the clip yourself now.
+- VSTGUI::CDrawContext::drawString (UTF8StringPtr string, const CRect& rect, const CHoriTxtAlign hAlign, bool antialias) does not set the clip to rect by itself anymore. If you call this method in your code, you need to set the clip yourself now.
 - the interfaces for VSTGUI::IController and VSTGUI::IViewCreator have changed and if you have inherited from them you need to change your implementations accordingly.
+- VSTGUI::CGradient can now be created without a VSTGUI::CDrawContext object
+- VSTGUI::CGradientView takes now a VSTGUI::CGradient. Setting the gradient colors and start offsets are removed.
+- VSTGUI::CTextButton takes now VSTGUI::CGradient objects instead of colors and start offsets.
 
 @subsection code_changes_4_1_to_4_2 VSTGUI 4.1 -> VSTGUI 4.2
 

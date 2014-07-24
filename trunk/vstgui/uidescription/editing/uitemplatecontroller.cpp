@@ -368,7 +368,7 @@ void UITemplateController::setTemplateView (CViewContainer* view)
 //----------------------------------------------------------------------------------------------------
 CView* UITemplateController::createView (const UIAttributes& attributes, const IUIDescription* description)
 {
-	const std::string* name = attributes.getAttributeValue ("custom-view-name");
+	const std::string* name = attributes.getAttributeValue (IUIDescription::kCustomViewName);
 	if (name)
 	{
 		if (*name == "TemplateBrowser")

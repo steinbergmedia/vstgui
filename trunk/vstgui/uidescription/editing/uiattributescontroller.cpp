@@ -628,7 +628,7 @@ public:
 
 	CView* createView (const UIAttributes& attributes, const IUIDescription* description) VSTGUI_OVERRIDE_VMETHOD
 	{
-		const std::string* attr = attributes.getAttributeValue ("custom-view-name");
+		const std::string* attr = attributes.getAttributeValue (IUIDescription::kCustomViewName);
 		if (attr && *attr == "ColorView")
 		{
 			colorView = new ColorView ();
@@ -650,6 +650,83 @@ protected:
 		CColor color;
 	};
 	SharedPointer<ColorView> colorView;
+};
+
+//----------------------------------------------------------------------------------------------------
+class GradientController : public MenuController
+{
+public:
+	GradientController (IController* baseController, const std::string& attrName, UIDescription* description)
+	: MenuController (baseController, attrName, description) {}
+
+	void collectMenuItemNames (StringPtrList& names) VSTGUI_OVERRIDE_VMETHOD
+	{
+		description->collectGradientNames (names);
+	}
+	
+	void validateMenuEntry (CCommandMenuItem* item) VSTGUI_OVERRIDE_VMETHOD
+	{
+		const CCoord size = 15;
+		if (CGradient* gradient = description->getGradient (item->getTitle ()))
+		{
+			COffscreenContext* context = COffscreenContext::create (menu->getFrame (), size, size);
+			if (context)
+			{
+				context->beginDraw ();
+				SharedPointer<CGraphicsPath> path = owned (context->createGraphicsPath ());
+				path->addRect (CRect (0, 0, size, size));
+				context->fillLinearGradient(path, *gradient, CPoint (0, 0), CPoint (size, 0));
+				context->endDraw ();
+				item->setIcon (context->getBitmap ());
+				context->forget ();
+			}
+		}
+	}
+	
+	void setValue (const std::string& value) VSTGUI_OVERRIDE_VMETHOD
+	{
+		MenuController::setValue (value);
+		if (gradientView)
+		{
+			if (hasDifferentValues ())
+			{
+				gradientView->gradient = 0;
+			}
+			else
+			{
+				gradientView->gradient = description->getGradient (value.c_str ());
+			}
+			gradientView->invalid ();
+		}
+	}
+
+	CView* createView (const UIAttributes& attributes, const IUIDescription* description) VSTGUI_OVERRIDE_VMETHOD
+	{
+		const std::string* attr = attributes.getAttributeValue (IUIDescription::kCustomViewName);
+		if (attr && *attr == "GradientView")
+		{
+			gradientView = new GradientView ();
+			return gradientView;
+		}
+		return 0;
+	}
+protected:
+	class GradientView : public CView
+	{
+	public:
+		GradientView () : CView (CRect (0, 0, 0, 0)) {}
+		void draw (CDrawContext* context) VSTGUI_OVERRIDE_VMETHOD
+		{
+			if (gradient == 0)
+				return;
+			CRect r = getViewSize ();
+			SharedPointer<CGraphicsPath> path = owned (context->createGraphicsPath ());
+			path->addRect (r);
+			context->fillLinearGradient (path, *gradient, r.getTopLeft (), r.getTopRight ());
+		}
+		SharedPointer<CGradient> gradient;
+	};
+	SharedPointer<GradientView> gradientView;
 };
 
 //----------------------------------------------------------------------------------------------------
@@ -863,6 +940,10 @@ IController* UIAttributesController::createSubController (IdStringPtr _name, con
 		{
 			return new UIAttributeControllers::ColorController (this, *currentAttributeName, editDescription);
 		}
+		else if (name == "GradientController")
+		{
+			return new UIAttributeControllers::GradientController (this, *currentAttributeName, editDescription);
+		}
 		else if (name == "TagController")
 		{
 			return new UIAttributeControllers::TagController (this, *currentAttributeName, editDescription);
@@ -962,6 +1043,8 @@ CView* UIAttributesController::createValueViewForAttributeType (const UIViewFact
 			return UIEditController::getEditorDescription ().createView ("attributes.tag", this);
 		case IViewCreator::kColorType:
 			return UIEditController::getEditorDescription ().createView ("attributes.color", this);
+		case IViewCreator::kGradientType:
+			return UIEditController::getEditorDescription ().createView ("attributes.gradient", this);
 		case IViewCreator::kBooleanType:
 			return UIEditController::getEditorDescription ().createView ("attributes.boolean", this);
 		case IViewCreator::kListType:

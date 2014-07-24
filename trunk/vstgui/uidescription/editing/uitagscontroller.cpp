@@ -173,7 +173,7 @@ UITagsController::~UITagsController ()
 //----------------------------------------------------------------------------------------------------
 CView* UITagsController::createView (const UIAttributes& attributes, const IUIDescription* description)
 {
-	const std::string* name = attributes.getAttributeValue ("custom-view-name");
+	const std::string* name = attributes.getAttributeValue (IUIDescription::kCustomViewName);
 	if (name)
 	{
 		if (*name == "TagsBrowser")
