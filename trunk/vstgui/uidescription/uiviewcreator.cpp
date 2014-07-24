@@ -3610,13 +3610,13 @@ public:
 	{
 		attributeNames.push_back (kAttrGradientStyle);
 		attributeNames.push_back (kAttrGradient);
-		attributeNames.push_back (kAttrFrameColor);
 		attributeNames.push_back (kAttrGradientAngle);
+		attributeNames.push_back (kAttrRadialCenter);
+		attributeNames.push_back (kAttrRadialRadius);
+		attributeNames.push_back (kAttrFrameColor);
 		attributeNames.push_back (kAttrRoundRectRadius);
 		attributeNames.push_back (kAttrFrameWidth);
 		attributeNames.push_back (kAttrDrawAntialiased);
-		attributeNames.push_back (kAttrRadialCenter);
-		attributeNames.push_back (kAttrRadialRadius);
 		return true;
 	}
 	AttrType getAttributeType (const std::string& attributeName) const VSTGUI_OVERRIDE_VMETHOD

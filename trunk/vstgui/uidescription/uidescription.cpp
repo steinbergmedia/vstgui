@@ -3290,7 +3290,7 @@ void UIGradientNode::setGradient (CGradient* g)
 		node->getAttributes ()->setDoubleAttribute ("start", (*it).first);
 		std::string colorString;
 		UIViewCreator::colorToString ((*it).second, colorString, 0);
-		node->getAttributes ()->setAttribute ("color", colorString);
+		node->getAttributes ()->setAttribute ("rgba", colorString);
 		getChildren ().add (node);
 	}
 }
