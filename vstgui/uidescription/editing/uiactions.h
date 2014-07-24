@@ -394,6 +394,42 @@ protected:
 };
 
 //----------------------------------------------------------------------------------------------------
+class GradientChangeAction : public IAction
+{
+public:
+	GradientChangeAction (UIDescription* description, UTF8StringPtr name, CGradient* gradient, bool remove, bool performOrUndo);
+
+	virtual UTF8StringPtr getName () VSTGUI_OVERRIDE_VMETHOD;
+	virtual void perform () VSTGUI_OVERRIDE_VMETHOD;
+	virtual void undo () VSTGUI_OVERRIDE_VMETHOD;
+	
+	bool isAddGradient () const { return originalGradient == 0; }
+protected:
+	SharedPointer<UIDescription> description;
+	std::string name;
+	SharedPointer<CGradient> gradient;
+	SharedPointer<CGradient> originalGradient;
+	bool remove;
+	bool performOrUndo;
+};
+
+//----------------------------------------------------------------------------------------------------
+class GradientNameChangeAction : public IAction
+{
+public:
+	GradientNameChangeAction (UIDescription* description, UTF8StringPtr oldName, UTF8StringPtr newName, bool performOrUndo);
+
+	virtual UTF8StringPtr getName () VSTGUI_OVERRIDE_VMETHOD;
+	virtual void perform () VSTGUI_OVERRIDE_VMETHOD;
+	virtual void undo () VSTGUI_OVERRIDE_VMETHOD;
+protected:
+	SharedPointer<UIDescription> description;
+	std::string oldName;
+	std::string newName;
+	bool performOrUndo;
+};
+
+//----------------------------------------------------------------------------------------------------
 class FontChangeAction : public IAction
 {
 public:

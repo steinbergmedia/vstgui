@@ -164,8 +164,7 @@ void GdiplusDrawContext::fillLinearGradient (CGraphicsPath* _path, const CGradie
 	DebugPrint ("WARNING: GdiplusDrawContext::fillLinearGradient is not working as expected ! FIXME");
 #endif
 	GdiplusGraphicsPath* gdiPlusPath = dynamic_cast<GdiplusGraphicsPath*> (_path);
-	const GdiplusGradient* gdiPlusGradient = dynamic_cast<const GdiplusGradient*> (&gradient);
-	if (gdiPlusPath && pGraphics && gdiPlusGradient)
+	if (gdiPlusPath && pGraphics)
 	{
 		GdiplusDrawScope drawScope (pGraphics, currentState.clipRect, getCurrentTransform ());
 
@@ -178,10 +177,10 @@ void GdiplusDrawContext::fillLinearGradient (CGraphicsPath* _path, const CGradie
 			path->Transform (&matrix);
 		}
 
-		Gdiplus::Color* colors = new Gdiplus::Color [gdiPlusGradient->getColorStops ().size ()];
-		Gdiplus::REAL* positions = new Gdiplus::REAL [gdiPlusGradient->getColorStops ().size ()];
+		Gdiplus::Color* colors = new Gdiplus::Color [gradient.getColorStops ().size ()];
+		Gdiplus::REAL* positions = new Gdiplus::REAL [gradient.getColorStops ().size ()];
 		uint32_t index = 0;
-		for (CGradient::ColorStopMap::const_iterator it = gdiPlusGradient->getColorStops ().begin (); it != gdiPlusGradient->getColorStops ().end (); ++it, ++index)
+		for (CGradient::ColorStopMap::const_iterator it = gradient.getColorStops ().begin (); it != gradient.getColorStops ().end (); ++it, ++index)
 		{
 			CColor color = it->second;
 			color.alpha = (int8_t)((float)color.alpha * currentState.globalAlpha);
@@ -191,8 +190,8 @@ void GdiplusDrawContext::fillLinearGradient (CGraphicsPath* _path, const CGradie
 
 		Gdiplus::PointF c1p ((Gdiplus::REAL)(startPoint.x), (Gdiplus::REAL)(startPoint.y));
 		Gdiplus::PointF c2p ((Gdiplus::REAL)(endPoint.x), (Gdiplus::REAL)(endPoint.y));
-		Gdiplus::LinearGradientBrush brush (c1p, c2p, colors[0], colors[gdiPlusGradient->getColorStops ().size () - 1]);
-		brush.SetInterpolationColors (colors, positions, static_cast<INT> (gdiPlusGradient->getColorStops ().size ()));
+		Gdiplus::LinearGradientBrush brush (c1p, c2p, colors[0], colors[gradient.getColorStops ().size () - 1]);
+		brush.SetInterpolationColors (colors, positions, static_cast<INT> (gradient.getColorStops ().size ()));
 		path->SetFillMode (evenOdd ? Gdiplus::FillModeAlternate : Gdiplus::FillModeWinding);
 
 		pGraphics->FillPath (&brush, path);
@@ -210,8 +209,7 @@ void GdiplusDrawContext::fillRadialGradient (CGraphicsPath* _path, const CGradie
 	DebugPrint ("WARNING: GdiplusDrawContext::fillRadialGradient is not working as expected ! FIXME");
 #endif
 	GdiplusGraphicsPath* gdiPlusPath = dynamic_cast<GdiplusGraphicsPath*> (_path);
-	const GdiplusGradient* gdiPlusGradient = dynamic_cast<const GdiplusGradient*> (&gradient);
-	if (gdiPlusPath && pGraphics && gdiPlusGradient)
+	if (gdiPlusPath && pGraphics)
 	{
 		GdiplusDrawScope drawScope (pGraphics, currentState.clipRect, getCurrentTransform ());
 
@@ -238,10 +236,10 @@ void GdiplusDrawContext::fillRadialGradient (CGraphicsPath* _path, const CGradie
 		// set center
 		brush.SetCenterPoint (c1p);
 		// set the colors
-		Gdiplus::Color* colors = new Gdiplus::Color [gdiPlusGradient->getColorStops ().size ()];
-		Gdiplus::REAL* positions = new Gdiplus::REAL [gdiPlusGradient->getColorStops ().size ()];
+		Gdiplus::Color* colors = new Gdiplus::Color [gradient.getColorStops ().size ()];
+		Gdiplus::REAL* positions = new Gdiplus::REAL [gradient.getColorStops ().size ()];
 		uint32_t index = 0;
-		for (CGradient::ColorStopMap::const_iterator it = gdiPlusGradient->getColorStops ().begin (); it != gdiPlusGradient->getColorStops ().end (); ++it, ++index)
+		for (CGradient::ColorStopMap::const_iterator it = gradient.getColorStops ().begin (); it != gradient.getColorStops ().end (); ++it, ++index)
 		{
 			CColor color = it->second;
 			color.alpha = (int8_t)((float)color.alpha * currentState.globalAlpha);
@@ -249,7 +247,7 @@ void GdiplusDrawContext::fillRadialGradient (CGraphicsPath* _path, const CGradie
 			positions[index] = (Gdiplus::REAL)it->first;
 		}
 		brush.SetCenterColor (colors[0]);
-		INT count = static_cast<INT> (gdiPlusGradient->getColorStops ().size ()) - 1;
+		INT count = static_cast<INT> (gradient.getColorStops ().size ()) - 1;
 		brush.SetSurroundColors (colors+1, &count);
 
 		pGraphics->FillPath (&brush, path);

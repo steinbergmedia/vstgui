@@ -99,10 +99,12 @@ protected:
 	virtual void performColorChange (UTF8StringPtr colorName, const CColor& newColor, bool remove = false) VSTGUI_OVERRIDE_VMETHOD;
 	virtual void performTagChange (UTF8StringPtr tagName, UTF8StringPtr tagString, bool remove = false) VSTGUI_OVERRIDE_VMETHOD;
 	virtual void performBitmapChange (UTF8StringPtr bitmapName, UTF8StringPtr bitmapPath, bool remove = false) VSTGUI_OVERRIDE_VMETHOD;
+	virtual void performGradientChange (UTF8StringPtr gradientName, CGradient* newGradient, bool remove = false) VSTGUI_OVERRIDE_VMETHOD;
 	virtual void performFontChange (UTF8StringPtr fontName, CFontRef newFont, bool remove = false) VSTGUI_OVERRIDE_VMETHOD;
 	virtual void performColorNameChange (UTF8StringPtr oldName, UTF8StringPtr newName) VSTGUI_OVERRIDE_VMETHOD;
 	virtual void performTagNameChange (UTF8StringPtr oldName, UTF8StringPtr newName) VSTGUI_OVERRIDE_VMETHOD;
 	virtual void performFontNameChange (UTF8StringPtr oldName, UTF8StringPtr newName) VSTGUI_OVERRIDE_VMETHOD;
+	virtual void performGradientNameChange (UTF8StringPtr oldName, UTF8StringPtr newName) VSTGUI_OVERRIDE_VMETHOD;
 	virtual void performBitmapNameChange (UTF8StringPtr oldName, UTF8StringPtr newName) VSTGUI_OVERRIDE_VMETHOD;
 	virtual void performBitmapNinePartTiledChange (UTF8StringPtr bitmapName, const CRect* offsets) VSTGUI_OVERRIDE_VMETHOD;
 	virtual void performBitmapFiltersChange (UTF8StringPtr bitmapName, const std::list<SharedPointer<UIAttributes> >& filterDescription) VSTGUI_OVERRIDE_VMETHOD;

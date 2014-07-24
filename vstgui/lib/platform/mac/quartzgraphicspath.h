@@ -78,18 +78,19 @@ protected:
 class QuartzGradient : public CGradient
 {
 public:
+	QuartzGradient (const ColorStopMap& map);
 	QuartzGradient (double _color1Start, double _color2Start, const CColor& _color1, const CColor& _color2);
 	~QuartzGradient ();
 
 	operator CGGradientRef () const;
 
-	void addColorStop (const std::pair<double, CColor>& colorStop) VSTGUI_OVERRIDE_VMETHOD;
+	void addColorStop (std::pair<double, CColor> colorStop) VSTGUI_OVERRIDE_VMETHOD;
 
 protected:
-	void createCGGradient ();
+	void createCGGradient () const;
 	void releaseCGGradient ();
 
-	CGGradientRef gradient;
+	mutable CGGradientRef gradient;
 };
 
 } // namespace

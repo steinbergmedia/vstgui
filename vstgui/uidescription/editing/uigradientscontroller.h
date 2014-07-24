@@ -1,6 +1,6 @@
 //-----------------------------------------------------------------------------
 // VST Plug-Ins SDK
-// VSTGUI: Graphical User Interface Framework for VST plugins
+// VSTGUI: Graphical User Interface Framework not only for VST plugins
 //
 // Version 4.2
 //
@@ -32,50 +32,52 @@
 // OF THE POSSIBILITY OF SUCH DAMAGE.
 //-----------------------------------------------------------------------------
 
-#ifndef __iuidescription__
-#define __iuidescription__
+#ifndef __uigradientscontroller__
+#define __uigradientscontroller__
 
-#include "../lib/cfont.h"
+#include "../uidescription.h"
 
-class CControlListener;
+#if VSTGUI_LIVE_EDITING
+
+#include "../delegationcontroller.h"
+#include "../../lib/cdatabrowser.h"
 
 namespace VSTGUI {
 
-class IController;
-class IViewFactory;
-class CBitmap;
-class CGradient;
-struct CColor;
+class UIGradientsDataSource;
+class IActionPerformer;
 
-//-----------------------------------------------------------------------------
-class IUIDescription
+//----------------------------------------------------------------------------------------------------
+class UIGradientsController : public CBaseObject, public DelegationController, public IGenericStringListDataBrowserSourceSelectionChanged
 {
 public:
-	virtual ~IUIDescription () {}
+	UIGradientsController (IController* baseController, UIDescription* description, IActionPerformer* actionPerformer);
+	~UIGradientsController ();
 
-	virtual CBitmap* getBitmap (UTF8StringPtr name) const = 0;
-	virtual CFontRef getFont (UTF8StringPtr name) const = 0;
-	virtual bool getColor (UTF8StringPtr name, CColor& color) const = 0;
-	virtual CGradient* getGradient (UTF8StringPtr name) const = 0;
-	virtual int32_t getTagForName (UTF8StringPtr name) const = 0;
-	virtual CControlListener* getControlListener (UTF8StringPtr name) const = 0;
-	virtual IController* getController () const = 0;
+protected:
+	CView* createView (const UIAttributes& attributes, const IUIDescription* description) VSTGUI_OVERRIDE_VMETHOD;
+	CView* verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description) VSTGUI_OVERRIDE_VMETHOD;
+	CControlListener* getControlListener (UTF8StringPtr name) VSTGUI_OVERRIDE_VMETHOD;
+	void valueChanged (CControl* pControl) VSTGUI_OVERRIDE_VMETHOD;
+	void dbSelectionChanged (int32_t selectedRow, GenericStringListDataBrowserSource* source) VSTGUI_OVERRIDE_VMETHOD;
 
-	virtual UTF8StringPtr lookupColorName (const CColor& color) const = 0;
-	virtual UTF8StringPtr lookupFontName (const CFontRef font) const = 0;
-	virtual UTF8StringPtr lookupBitmapName (const CBitmap* bitmap) const = 0;
-	virtual UTF8StringPtr lookupGradientName (const CGradient* gradient) const = 0;
-	virtual UTF8StringPtr lookupControlTagName (const int32_t tag) const = 0;
+	void showEditDialog ();
 
-	virtual bool getVariable (UTF8StringPtr name, double& value) const = 0;
-	virtual bool getVariable (UTF8StringPtr name, std::string& value) const = 0;
-
-	virtual const IViewFactory* getViewFactory () const = 0;
-
-	static IdStringPtr kCustomViewName;
+	SharedPointer<UIDescription> editDescription;
+	SharedPointer<CControl> editButton;
+	IActionPerformer* actionPerformer;
+	UIGradientsDataSource* dataSource;
+	
+	enum {
+		kAddTag = 0,
+		kRemoveTag,
+		kSearchTag,
+		kEditTag
+	};
 };
 
+} // namespace
 
-} // namespace VSTGUI
+#endif // VSTGUI_LIVE_EDITING
 
-#endif // __iuidescription__
+#endif // __uigradientscontroller__

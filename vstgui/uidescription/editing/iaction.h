@@ -43,6 +43,7 @@
 
 namespace VSTGUI {
 class UIAttributes;
+class CGradient;
 
 //----------------------------------------------------------------------------------------------------
 class IAction
@@ -65,12 +66,14 @@ public:
 	virtual void performColorChange (UTF8StringPtr colorName, const CColor& newColor, bool remove = false) = 0;
 	virtual void performTagChange (UTF8StringPtr tagName, UTF8StringPtr tagString, bool remove = false) = 0;
 	virtual void performBitmapChange (UTF8StringPtr bitmapName, UTF8StringPtr bitmapPath, bool remove = false) = 0;
+	virtual void performGradientChange (UTF8StringPtr gradientName, CGradient* newGradient, bool remove = false) = 0;
 	virtual void performFontChange (UTF8StringPtr fontName, CFontRef newFont, bool remove = false) = 0;
 
 	virtual void performColorNameChange (UTF8StringPtr oldName, UTF8StringPtr newName) = 0;
 	virtual void performTagNameChange (UTF8StringPtr oldName, UTF8StringPtr newName) = 0;
 	virtual void performFontNameChange (UTF8StringPtr oldName, UTF8StringPtr newName) = 0;
 	virtual void performBitmapNameChange (UTF8StringPtr oldName, UTF8StringPtr newName) = 0;
+	virtual void performGradientNameChange (UTF8StringPtr oldName, UTF8StringPtr newName) = 0;
 
 	virtual void performAlternativeFontChange (UTF8StringPtr fontName, UTF8StringPtr newAlternativeFonts) = 0;
 

@@ -41,7 +41,6 @@
 
 #include "../uiattributes.h"
 #include "../../lib/cdatabrowser.h"
-#include "uieditcontroller.h"
 #include "uisearchtextfield.h"
 #include <sstream>
 #include <algorithm>

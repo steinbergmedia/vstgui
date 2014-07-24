@@ -45,7 +45,7 @@
 #include <stack>
 
 namespace VSTGUI {
-class D2DGradient;
+class CGradient;
 
 //-----------------------------------------------------------------------------
 class D2DDrawContext : public COffscreenContext
@@ -106,7 +106,7 @@ protected:
 	void init () VSTGUI_OVERRIDE_VMETHOD;
 	void createRenderTarget ();
 	void releaseRenderTarget ();
-	ID2D1GradientStopCollection* createGradientStopCollection (const D2DGradient* gradient) const;
+	ID2D1GradientStopCollection* createGradientStopCollection (const CGradient& gradient) const;
 
 	void setFillColorInternal (const CColor& color);
 	void setFrameColorInternal (const CColor& color);

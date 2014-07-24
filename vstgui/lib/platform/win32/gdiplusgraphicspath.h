@@ -66,17 +66,6 @@ protected:
 	Gdiplus::GraphicsPath* platformPath;
 };
 
-//-----------------------------------------------------------------------------
-class GdiplusGradient : public CGradient
-{
-public:
-	GdiplusGradient (double color1Start, double color2Start, const CColor& color1, const CColor& color2)
-	: CGradient (color1Start, color2Start, color1, color2) {}
-
-	const ColorStopMap& getColorStops () const { return colorStops; }
-};
-
-
 } // namespace
 
 #endif // WINDOWS

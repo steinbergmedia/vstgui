@@ -1,3 +1,7 @@
+2014-07-24 arne
+
+	* CTextButton and CGradientView now takes CGradient objects instead of colors and start offsets.
+
 2014-07-09 arne
 
 	* support drawing the best CBitmap representation according to the scale factor in the D2D backend

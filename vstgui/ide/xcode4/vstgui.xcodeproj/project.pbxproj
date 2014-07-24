@@ -178,6 +178,22 @@
 		F497F1B413080B4800F0A613 /* nsviewoptionmenu.mm in Sources */ = {isa = PBXBuildFile; fileRef = F497F1A613080B4800F0A613 /* nsviewoptionmenu.mm */; };
 		F49B43FE1666081900461790 /* xmlparser.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4E3903813080ECC00615042 /* xmlparser.cpp */; };
 		F4A63DE814023EB400023102 /* uifontscontroller.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4A63DE714023EB300023102 /* uifontscontroller.cpp */; };
+		F4C0F1F3197AA20700A48B02 /* uicolorslider.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4C0F1F1197AA20700A48B02 /* uicolorslider.cpp */; };
+		F4C0F1F4197AA20700A48B02 /* uicolorslider.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4C0F1F1197AA20700A48B02 /* uicolorslider.cpp */; };
+		F4C0F1F6197AA20700A48B02 /* uicolorslider.h in Headers */ = {isa = PBXBuildFile; fileRef = F4C0F1F2197AA20700A48B02 /* uicolorslider.h */; };
+		F4C0F1F7197AA20700A48B02 /* uicolorslider.h in Headers */ = {isa = PBXBuildFile; fileRef = F4C0F1F2197AA20700A48B02 /* uicolorslider.h */; };
+		F4C0F1FB197BC2F900A48B02 /* uicolorchoosercontroller.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4C0F1F9197BC2F900A48B02 /* uicolorchoosercontroller.cpp */; };
+		F4C0F1FC197BC2F900A48B02 /* uicolorchoosercontroller.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4C0F1F9197BC2F900A48B02 /* uicolorchoosercontroller.cpp */; };
+		F4C0F1FD197BC2F900A48B02 /* uicolorchoosercontroller.h in Headers */ = {isa = PBXBuildFile; fileRef = F4C0F1FA197BC2F900A48B02 /* uicolorchoosercontroller.h */; };
+		F4C0F1FE197BC2F900A48B02 /* uicolorchoosercontroller.h in Headers */ = {isa = PBXBuildFile; fileRef = F4C0F1FA197BC2F900A48B02 /* uicolorchoosercontroller.h */; };
+		F4C0F208197BC67300A48B02 /* uicolor.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4C0F206197BC67300A48B02 /* uicolor.cpp */; };
+		F4C0F209197BC67300A48B02 /* uicolor.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4C0F206197BC67300A48B02 /* uicolor.cpp */; };
+		F4C0F20A197BC67300A48B02 /* uicolor.h in Headers */ = {isa = PBXBuildFile; fileRef = F4C0F207197BC67300A48B02 /* uicolor.h */; };
+		F4C0F20B197BC67300A48B02 /* uicolor.h in Headers */ = {isa = PBXBuildFile; fileRef = F4C0F207197BC67300A48B02 /* uicolor.h */; };
+		F4C0F20E197BD3DE00A48B02 /* uigradientscontroller.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4C0F20C197BD3DE00A48B02 /* uigradientscontroller.cpp */; };
+		F4C0F20F197BD3DE00A48B02 /* uigradientscontroller.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4C0F20C197BD3DE00A48B02 /* uigradientscontroller.cpp */; };
+		F4C0F210197BD3DE00A48B02 /* uigradientscontroller.h in Headers */ = {isa = PBXBuildFile; fileRef = F4C0F20D197BD3DE00A48B02 /* uigradientscontroller.h */; };
+		F4C0F211197BD3DE00A48B02 /* uigradientscontroller.h in Headers */ = {isa = PBXBuildFile; fileRef = F4C0F20D197BD3DE00A48B02 /* uigradientscontroller.h */; };
 		F4C3D7F917DF35B0005AE5BB /* uitextedit.mm in Sources */ = {isa = PBXBuildFile; fileRef = F4C3D7F717DF35B0005AE5BB /* uitextedit.mm */; };
 		F4CA76BE13F1A1F700BB1842 /* uicrosslines.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4CA76BD13F1A1F700BB1842 /* uicrosslines.cpp */; };
 		F4CA76C613F27A4900BB1842 /* uieditcontroller.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4CA76C513F27A4900BB1842 /* uieditcontroller.cpp */; };
@@ -565,6 +581,14 @@
 		F497F1A613080B4800F0A613 /* nsviewoptionmenu.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = nsviewoptionmenu.mm; sourceTree = "<group>"; };
 		F4A63DE514023EAD00023102 /* uifontscontroller.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = uifontscontroller.h; sourceTree = "<group>"; };
 		F4A63DE714023EB300023102 /* uifontscontroller.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = uifontscontroller.cpp; sourceTree = "<group>"; };
+		F4C0F1F1197AA20700A48B02 /* uicolorslider.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = uicolorslider.cpp; sourceTree = "<group>"; };
+		F4C0F1F2197AA20700A48B02 /* uicolorslider.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = uicolorslider.h; sourceTree = "<group>"; };
+		F4C0F1F9197BC2F900A48B02 /* uicolorchoosercontroller.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = uicolorchoosercontroller.cpp; sourceTree = "<group>"; };
+		F4C0F1FA197BC2F900A48B02 /* uicolorchoosercontroller.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = uicolorchoosercontroller.h; sourceTree = "<group>"; };
+		F4C0F206197BC67300A48B02 /* uicolor.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = uicolor.cpp; sourceTree = "<group>"; };
+		F4C0F207197BC67300A48B02 /* uicolor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = uicolor.h; sourceTree = "<group>"; };
+		F4C0F20C197BD3DE00A48B02 /* uigradientscontroller.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = uigradientscontroller.cpp; sourceTree = "<group>"; };
+		F4C0F20D197BD3DE00A48B02 /* uigradientscontroller.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = uigradientscontroller.h; sourceTree = "<group>"; };
 		F4C3D7F717DF35B0005AE5BB /* uitextedit.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = uitextedit.mm; sourceTree = "<group>"; };
 		F4C3D7F817DF35B0005AE5BB /* uitextedit.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = uitextedit.h; sourceTree = "<group>"; };
 		F4CA76BB13F1A1EF00BB1842 /* uicrosslines.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = uicrosslines.h; sourceTree = "<group>"; };
@@ -687,8 +711,14 @@
 				F4FB92AC13FBD12F007D72DE /* uibasedatasource.h */,
 				F4FB92B013FBEC8F007D72DE /* uibitmapscontroller.cpp */,
 				F4FB92AE13FBEC89007D72DE /* uibitmapscontroller.h */,
+				F4C0F206197BC67300A48B02 /* uicolor.cpp */,
+				F4C0F207197BC67300A48B02 /* uicolor.h */,
+				F4C0F1F9197BC2F900A48B02 /* uicolorchoosercontroller.cpp */,
+				F4C0F1FA197BC2F900A48B02 /* uicolorchoosercontroller.h */,
 				F485F11813F97FFD0001A913 /* uicolorscontroller.cpp */,
 				F485F11613F97FF70001A913 /* uicolorscontroller.h */,
+				F4C0F1F1197AA20700A48B02 /* uicolorslider.cpp */,
+				F4C0F1F2197AA20700A48B02 /* uicolorslider.h */,
 				F4CA76BD13F1A1F700BB1842 /* uicrosslines.cpp */,
 				F4CA76BB13F1A1EF00BB1842 /* uicrosslines.h */,
 				F406E380140426B100F550B7 /* uidialogcontroller.cpp */,
@@ -703,6 +733,8 @@
 				F41DA9311406860300EDAB4B /* uifocussettingscontroller.h */,
 				F4A63DE714023EB300023102 /* uifontscontroller.cpp */,
 				F4A63DE514023EAD00023102 /* uifontscontroller.h */,
+				F4C0F20C197BD3DE00A48B02 /* uigradientscontroller.cpp */,
+				F4C0F20D197BD3DE00A48B02 /* uigradientscontroller.h */,
 				F4CA76BF13F1A5C300BB1842 /* uigrid.h */,
 				F40329C513FE3AB100466973 /* uigridcontroller.cpp */,
 				F40329C313FE3AA800466973 /* uigridcontroller.h */,
@@ -1066,7 +1098,11 @@
 				F47D201C18A6648C00487CDB /* uiattributes.h in Headers */,
 				F42D5F6617B016F900B85FE8 /* cxypad.h in Headers */,
 				F40E63FF16821A6300426847 /* cgradientview.h in Headers */,
+				F4C0F1FD197BC2F900A48B02 /* uicolorchoosercontroller.h in Headers */,
 				F440F8D017A8FF7600616683 /* itouchevent.h in Headers */,
+				F4C0F210197BD3DE00A48B02 /* uigradientscontroller.h in Headers */,
+				F4C0F20A197BC67300A48B02 /* uicolor.h in Headers */,
+				F4C0F1F6197AA20700A48B02 /* uicolorslider.h in Headers */,
 				F47883A718045A300054ED06 /* caviewlayer.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -1079,7 +1115,11 @@
 				F47D201D18A6648C00487CDB /* uiattributes.h in Headers */,
 				F42D5F6717B016F900B85FE8 /* cxypad.h in Headers */,
 				F40E640016821A6300426847 /* cgradientview.h in Headers */,
+				F4C0F1FE197BC2F900A48B02 /* uicolorchoosercontroller.h in Headers */,
 				F440F8D117A8FF7600616683 /* itouchevent.h in Headers */,
+				F4C0F211197BD3DE00A48B02 /* uigradientscontroller.h in Headers */,
+				F4C0F20B197BC67300A48B02 /* uicolor.h in Headers */,
+				F4C0F1F7197AA20700A48B02 /* uicolorslider.h in Headers */,
 				F47883A818045A300054ED06 /* caviewlayer.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -1232,6 +1272,7 @@
 				F497F0F413080A1C00F0A613 /* cdropsource.cpp in Sources */,
 				F497F0F613080A1C00F0A613 /* cfileselector.cpp in Sources */,
 				F497F0F813080A1C00F0A613 /* cfont.cpp in Sources */,
+				F4C0F1F3197AA20700A48B02 /* uicolorslider.cpp in Sources */,
 				F497F0FA13080A1C00F0A613 /* cframe.cpp in Sources */,
 				F497F0FC13080A1C00F0A613 /* cgraphicspath.cpp in Sources */,
 				F497F0FE13080A1C00F0A613 /* coffscreencontext.cpp in Sources */,
@@ -1286,6 +1327,7 @@
 				F4E3904C13080ECC00615042 /* uiselection.cpp in Sources */,
 				F4E3904E13080ECC00615042 /* uiviewcreator.cpp in Sources */,
 				F4E3905013080ECC00615042 /* uiviewfactory.cpp in Sources */,
+				F4C0F1FB197BC2F900A48B02 /* uicolorchoosercontroller.cpp in Sources */,
 				F4E3905613080ECC00615042 /* uiviewswitchcontainer.cpp in Sources */,
 				F4E3905913080ECC00615042 /* xmlparser.cpp in Sources */,
 				F45BD679131817CD00C46C02 /* csplitview.cpp in Sources */,
@@ -1299,12 +1341,14 @@
 				F453B22913F19BC40067C1C2 /* uieditview.cpp in Sources */,
 				F4CA76BE13F1A1F700BB1842 /* uicrosslines.cpp in Sources */,
 				F4CA76C613F27A4900BB1842 /* uieditcontroller.cpp in Sources */,
+				F4C0F20E197BD3DE00A48B02 /* uigradientscontroller.cpp in Sources */,
 				F4CA76CA13F27E6700BB1842 /* uitemplatecontroller.cpp in Sources */,
 				F48BCB4213F545350010DCC1 /* uieditmenucontroller.cpp in Sources */,
 				F48BCB4613F569890010DCC1 /* uiviewcreatecontroller.cpp in Sources */,
 				F48BCB4A13F5803B0010DCC1 /* uisearchtextfield.cpp in Sources */,
 				F48BCB4E13F69BB90010DCC1 /* uiattributescontroller.cpp in Sources */,
 				F485F11513F8F7770001A913 /* uitagscontroller.cpp in Sources */,
+				F4C0F208197BC67300A48B02 /* uicolor.cpp in Sources */,
 				F485F11913F97FFE0001A913 /* uicolorscontroller.cpp in Sources */,
 				F4FB92B113FBEC8F007D72DE /* uibitmapscontroller.cpp in Sources */,
 				F40329C613FE3AB100466973 /* uigridcontroller.cpp in Sources */,
@@ -1483,6 +1527,7 @@
 				F4F953FE16510F40006EE1D1 /* cbuttons.cpp in Sources */,
 				F4F953FF16510F40006EE1D1 /* ccolorchooser.cpp in Sources */,
 				F4F9540016510F40006EE1D1 /* ccontrol.cpp in Sources */,
+				F4C0F1F4197AA20700A48B02 /* uicolorslider.cpp in Sources */,
 				F4F9540116510F40006EE1D1 /* cfontchooser.cpp in Sources */,
 				F4F9540216510F40006EE1D1 /* cknob.cpp in Sources */,
 				F4F9540316510F40006EE1D1 /* cmoviebitmap.cpp in Sources */,
@@ -1537,6 +1582,7 @@
 				F4F9543216510F40006EE1D1 /* cstring.cpp in Sources */,
 				F4F9543316510F40006EE1D1 /* ctabview.cpp in Sources */,
 				F4F9543416510F40006EE1D1 /* ctooltipsupport.cpp in Sources */,
+				F4C0F1FC197BC2F900A48B02 /* uicolorchoosercontroller.cpp in Sources */,
 				F4F9543516510F40006EE1D1 /* cview.cpp in Sources */,
 				F4F9543616510F40006EE1D1 /* cviewcontainer.cpp in Sources */,
 				F4F9543716510F40006EE1D1 /* cvstguitimer.cpp in Sources */,
@@ -1550,12 +1596,14 @@
 				F4F9543F16510F40006EE1D1 /* uieditcontroller.cpp in Sources */,
 				F4F9544016510F40006EE1D1 /* uieditmenucontroller.cpp in Sources */,
 				F4F9544116510F40006EE1D1 /* uieditview.cpp in Sources */,
+				F4C0F20F197BD3DE00A48B02 /* uigradientscontroller.cpp in Sources */,
 				F4F9544216510F40006EE1D1 /* uifocussettingscontroller.cpp in Sources */,
 				F4F9544316510F40006EE1D1 /* uifontscontroller.cpp in Sources */,
 				F4F9544416510F40006EE1D1 /* uigridcontroller.cpp in Sources */,
 				F4F9544516510F40006EE1D1 /* uisearchtextfield.cpp in Sources */,
 				F4F9544616510F40006EE1D1 /* uiselection.cpp in Sources */,
 				F4F9544716510F40006EE1D1 /* uitagscontroller.cpp in Sources */,
+				F4C0F209197BC67300A48B02 /* uicolor.cpp in Sources */,
 				F4F9544816510F40006EE1D1 /* uitemplatecontroller.cpp in Sources */,
 				F4F9544916510F40006EE1D1 /* uitemplatesettingscontroller.cpp in Sources */,
 				F4F9544A16510F40006EE1D1 /* uiundomanager.cpp in Sources */,

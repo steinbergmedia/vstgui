@@ -1,6 +1,6 @@
 //-----------------------------------------------------------------------------
 // VST Plug-Ins SDK
-// VSTGUI: Graphical User Interface Framework for VST plugins
+// VSTGUI: Graphical User Interface Framework not only for VST plugins
 //
 // Version 4.2
 //
@@ -32,50 +32,67 @@
 // OF THE POSSIBILITY OF SUCH DAMAGE.
 //-----------------------------------------------------------------------------
 
-#ifndef __iuidescription__
-#define __iuidescription__
+#ifndef __uicolor__
+#define __uicolor__
 
-#include "../lib/cfont.h"
+#include "../../lib/vstguibase.h"
 
-class CControlListener;
+#if VSTGUI_LIVE_EDITING
+
+#include "../../lib/ccolor.h"
+#include "../../lib/idependency.h"
 
 namespace VSTGUI {
 
-class IController;
-class IViewFactory;
-class CBitmap;
-class CGradient;
-struct CColor;
-
-//-----------------------------------------------------------------------------
-class IUIDescription
+//----------------------------------------------------------------------------------------------------
+class UIColor : protected CColor, public CBaseObject, public IDependency
 {
 public:
-	virtual ~IUIDescription () {}
+	UIColor () : CColor (kTransparentCColor), hue (0), saturation (0), lightness (0) {}
 
-	virtual CBitmap* getBitmap (UTF8StringPtr name) const = 0;
-	virtual CFontRef getFont (UTF8StringPtr name) const = 0;
-	virtual bool getColor (UTF8StringPtr name, CColor& color) const = 0;
-	virtual CGradient* getGradient (UTF8StringPtr name) const = 0;
-	virtual int32_t getTagForName (UTF8StringPtr name) const = 0;
-	virtual CControlListener* getControlListener (UTF8StringPtr name) const = 0;
-	virtual IController* getController () const = 0;
+	UIColor& operator= (const CColor& c);
+	const CColor& base () const { return *this; }
 
-	virtual UTF8StringPtr lookupColorName (const CColor& color) const = 0;
-	virtual UTF8StringPtr lookupFontName (const CFontRef font) const = 0;
-	virtual UTF8StringPtr lookupBitmapName (const CBitmap* bitmap) const = 0;
-	virtual UTF8StringPtr lookupGradientName (const CGradient* gradient) const = 0;
-	virtual UTF8StringPtr lookupControlTagName (const int32_t tag) const = 0;
+	double getRed () const { return r; }
+	double getGreen () const { return g; }
+	double getBlue () const { return b; }
+	double getAlpha () const { return alpha; }
+	
+	double getHue () const { return hue; }
+	double getSaturation () const { return saturation; }
+	double getLightness () const { return lightness; }
+	
+	void setHue (double h);
+	void setSaturation (double s);
+	void setLightness (double l);
 
-	virtual bool getVariable (UTF8StringPtr name, double& value) const = 0;
-	virtual bool getVariable (UTF8StringPtr name, std::string& value) const = 0;
+	void setRed (double nr);
+	void setGreen (double ng);
+	void setBlue (double nb);
+	void setAlpha (double na);
 
-	virtual const IViewFactory* getViewFactory () const = 0;
+	void beginEdit ();
+	void endEdit ();
+	
+	static IdStringPtr kMsgChanged;
+	static IdStringPtr kMsgEditChange;
+	static IdStringPtr kMsgBeginEditing;
+	static IdStringPtr kMsgEndEditing;
+private:
+	enum HSLUpdateDirection
+	{
+		kFrom,
+		kTo
+	};
 
-	static IdStringPtr kCustomViewName;
+	void updateHSL (HSLUpdateDirection direction);
+	
+	double hue, saturation, lightness;
+	double r, g, b;
 };
 
+} // namespace
 
-} // namespace VSTGUI
+#endif // VSTGUI_LIVE_EDITING
 
-#endif // __iuidescription__
+#endif // __uicolor__

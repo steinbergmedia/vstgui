@@ -42,11 +42,7 @@ CGradientView::CGradientView (const CRect& size)
 : CView (size)
 , gradientStyle (kLinearGradient)
 , frameColor (kBlackCColor)
-, gradientStartColor (kBlueCColor)
-, gradientEndColor (kCyanCColor)
 , gradientAngle (0.)
-, gradientStartColorOffset (0.)
-, gradientEndColorOffset (0.)
 , roundRectRadius (5.)
 , frameWidth (1.)
 , drawAntialiased (true)
@@ -71,6 +67,16 @@ void CGradientView::setGradientStyle (GradientStyle style)
 	}
 }
 
+//------------------------------------------------------------------------
+void CGradientView::setGradient (CGradient* newGradient)
+{
+	if (gradient != newGradient)
+	{
+		gradient = newGradient;
+		invalid ();
+	}
+}
+
 //-----------------------------------------------------------------------------
 void CGradientView::setFrameColor (const CColor& newColor)
 {
@@ -82,55 +88,11 @@ void CGradientView::setFrameColor (const CColor& newColor)
 }
 
 //-----------------------------------------------------------------------------
-void CGradientView::setGradientStartColor (const CColor& newColor)
-{
-	if (newColor != gradientStartColor)
-	{
-		gradientStartColor = newColor;
-		gradient = 0;
-		invalid ();
-	}
-}
-
-//-----------------------------------------------------------------------------
-void CGradientView::setGradientEndColor (const CColor& newColor)
-{
-	if (newColor != gradientEndColor)
-	{
-		gradientEndColor = newColor;
-		gradient = 0;
-		invalid ();
-	}
-}
-
-//-----------------------------------------------------------------------------
 void CGradientView::setGradientAngle (double angle)
 {
 	if (angle != gradientAngle)
 	{
 		gradientAngle = angle;
-		invalid ();
-	}
-}
-
-//-----------------------------------------------------------------------------
-void CGradientView::setGradientStartColorOffset (double offset)
-{
-	if (offset != gradientStartColorOffset)
-	{
-		gradientStartColorOffset = offset;
-		gradient = 0;
-		invalid ();
-	}
-}
-
-//-----------------------------------------------------------------------------
-void CGradientView::setGradientEndColorOffset (double offset)
-{
-	if (offset != gradientEndColorOffset)
-	{
-		gradientEndColorOffset = offset;
-		gradient = 0;
 		invalid ();
 	}
 }
@@ -205,10 +167,6 @@ void CGradientView::draw (CDrawContext* context)
 		CRect r = getViewSize ();
 		r.inset (frameWidth / 2., frameWidth / 2.);
 		path = context->createRoundRectGraphicsPath (r, roundRectRadius);
-	}
-	if (gradient == 0)
-	{
-		gradient = path->createGradient (gradientStartColorOffset, 1. - gradientEndColorOffset, gradientStartColor, gradientEndColor);
 	}
 	if (path && gradient)
 	{

@@ -211,15 +211,10 @@ public:
 	virtual void setTextColorHighlighted (const CColor& color);
 	const CColor& getTextColorHighlighted () const { return textColorHighlighted; }
 	
-	virtual void setGradientStartColor (const CColor& color);
-	const CColor& getGradientStartColor () const { return gradientStartColor; }
-	virtual void setGradientStartColorHighlighted (const CColor& color);
-	const CColor& getGradientStartColorHighlighted () const { return gradientStartColorHighlighted; }
-	
-	virtual void setGradientEndColor (const CColor& color);
-	const CColor& getGradientEndColor () const { return gradientEndColor; }
-	virtual void setGradientEndColorHighlighted (const CColor& color);
-	const CColor& getGradientEndColorHighlighted () const { return gradientEndColorHighlighted; }
+	virtual void setGradient (CGradient* gradient);
+	CGradient* getGradient () const { return gradient; }
+	virtual void setGradientHighlighted (CGradient* gradient);
+	CGradient* getGradientHighlighted () const { return gradientHighlighted; }
 	
 	virtual void setFrameColor (const CColor& color);
 	const CColor& getFrameColor () const { return frameColor; }
@@ -280,15 +275,13 @@ protected:
 	CGraphicsPath* _path;
 	SharedPointer<CBitmap> icon;
 	SharedPointer<CBitmap> iconHighlighted;
+	SharedPointer<CGradient> gradient;
+	SharedPointer<CGradient> gradientHighlighted;
 	
 	CColor textColor;
-	CColor gradientStartColor;
-	CColor gradientEndColor;
 	CColor frameColor;
 
 	CColor textColorHighlighted;
-	CColor gradientStartColorHighlighted;
-	CColor gradientEndColorHighlighted;
 	CColor frameColorHighlighted;
 
 	CCoord frameWidth;

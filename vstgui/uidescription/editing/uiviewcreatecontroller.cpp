@@ -82,7 +82,7 @@ UIViewCreatorController::~UIViewCreatorController ()
 //----------------------------------------------------------------------------------------------------
 CView* UIViewCreatorController::createView (const UIAttributes& attributes, const IUIDescription* _description)
 {
-	const std::string* name = attributes.getAttributeValue ("custom-view-name");
+	const std::string* name = attributes.getAttributeValue (IUIDescription::kCustomViewName);
 	if (name)
 	{
 		if (*name == "ViewDataBrowser")

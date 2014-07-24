@@ -298,6 +298,18 @@
     <ClCompile Include="..\..\..\uidescription\uiattributes.cpp">
       <Filter>Source Files\uidescription</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\uidescription\editing\uicolor.cpp">
+      <Filter>Source Files\uidescription\editing</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\uidescription\editing\uicolorchoosercontroller.cpp">
+      <Filter>Source Files\uidescription\editing</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\uidescription\editing\uicolorslider.cpp">
+      <Filter>Source Files\uidescription\editing</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\uidescription\editing\uigradientscontroller.cpp">
+      <Filter>Source Files\uidescription\editing</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\lib\cbitmap.h">
@@ -641,6 +653,21 @@
     </ClInclude>
     <ClInclude Include="..\..\..\lib\iscalefactorchangedlistener.h">
       <Filter>Source Files\lib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\uidescription\editing\uicolor.h">
+      <Filter>Source Files\uidescription\editing</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\uidescription\editing\uicolorchoosercontroller.h">
+      <Filter>Source Files\uidescription\editing</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\uidescription\editing\uicolorslider.h">
+      <Filter>Source Files\uidescription\editing</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\uidescription\editing\uigradientscontroller.h">
+      <Filter>Source Files\uidescription\editing</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\uidescription\iviewcreator.h">
+      <Filter>Source Files\uidescription</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

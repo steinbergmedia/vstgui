@@ -424,6 +424,7 @@ Steinberg::tresult PLUGIN_API VST3Editor::queryInterface (const Steinberg::TUID 
 //-----------------------------------------------------------------------------
 void VST3Editor::init ()
 {
+	Steinberg::IdleUpdateHandler::instance ();
 	zoomFactor = 1.;
 	setIdleRate (300);
 	if (description->parse ())
@@ -559,6 +560,8 @@ void VST3Editor::setZoomFactor (double factor)
 //-----------------------------------------------------------------------------
 bool VST3Editor::requestResize (const CPoint& newSize)
 {
+	if (!plugFrame)
+		return false;
 	CCoord width = newSize.x;
 	CCoord height = newSize.y;
 	if (width >= minSize.x * zoomFactor && width <= maxSize.x * zoomFactor && height >= minSize.y * zoomFactor && height <= maxSize.y * zoomFactor)
@@ -946,7 +949,7 @@ CView* VST3Editor::createView (const UIAttributes& attributes, const IUIDescript
 {
 	if (delegate)
 	{
-		const std::string* customViewName = attributes.getAttributeValue ("custom-view-name");
+		const std::string* customViewName = attributes.getAttributeValue (IUIDescription::kCustomViewName);
 		if (customViewName)
 		{
 			CView* view = delegate->createCustomView (customViewName->c_str (), attributes, description, this);

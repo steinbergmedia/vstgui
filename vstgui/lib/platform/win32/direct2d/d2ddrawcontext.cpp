@@ -275,17 +275,17 @@ void D2DDrawContext::drawGraphicsPath (CGraphicsPath* _path, PathDrawMode mode, 
 }
 
 //-----------------------------------------------------------------------------
-ID2D1GradientStopCollection* D2DDrawContext::createGradientStopCollection (const D2DGradient* d2dGradient) const
+ID2D1GradientStopCollection* D2DDrawContext::createGradientStopCollection (const CGradient& d2dGradient) const
 {
 	ID2D1GradientStopCollection* collection = 0;
-	D2D1_GRADIENT_STOP* gradientStops = new D2D1_GRADIENT_STOP [d2dGradient->getColorStops ().size ()];
+	D2D1_GRADIENT_STOP* gradientStops = new D2D1_GRADIENT_STOP [d2dGradient.getColorStops ().size ()];
 	uint32_t index = 0;
-	for (CGradient::ColorStopMap::const_iterator it = d2dGradient->getColorStops ().begin (); it != d2dGradient->getColorStops ().end (); ++it, ++index)
+	for (CGradient::ColorStopMap::const_iterator it = d2dGradient.getColorStops ().begin (); it != d2dGradient.getColorStops ().end (); ++it, ++index)
 	{
 		gradientStops[index].position = (FLOAT)it->first;
 		gradientStops[index].color = D2D1::ColorF (it->second.red/255.f, it->second.green/255.f, it->second.blue/255.f, it->second.alpha/255.f * currentState.globalAlpha);
 	}
-	getRenderTarget ()->CreateGradientStopCollection (gradientStops, static_cast<UINT32> (d2dGradient->getColorStops ().size ()), &collection);
+	getRenderTarget ()->CreateGradientStopCollection (gradientStops, static_cast<UINT32> (d2dGradient.getColorStops ().size ()), &collection);
 	delete [] gradientStops;
 	return collection;
 }
@@ -297,8 +297,7 @@ void D2DDrawContext::fillLinearGradient (CGraphicsPath* _path, const CGradient& 
 		return;
 
 	D2DGraphicsPath* d2dPath = dynamic_cast<D2DGraphicsPath*> (_path);
-	const D2DGradient* d2dGradient = dynamic_cast<const D2DGradient*> (&gradient);
-	if (d2dPath == 0 || d2dGradient == 0)
+	if (d2dPath == 0)
 		return;
 
 	ID2D1PathGeometry* path = d2dPath->getPath (evenOdd ? D2D1_FILL_MODE_ALTERNATE : D2D1_FILL_MODE_WINDING);
@@ -319,7 +318,7 @@ void D2DDrawContext::fillLinearGradient (CGraphicsPath* _path, const CGradient& 
 			geometry->AddRef ();
 		}
 
-		ID2D1GradientStopCollection* collection = createGradientStopCollection (d2dGradient);
+		ID2D1GradientStopCollection* collection = createGradientStopCollection (gradient);
 		if (collection)
 		{
 			ID2D1LinearGradientBrush* brush = 0;
@@ -344,8 +343,7 @@ void D2DDrawContext::fillRadialGradient (CGraphicsPath* _path, const CGradient& 
 		return;
 
 	D2DGraphicsPath* d2dPath = dynamic_cast<D2DGraphicsPath*> (_path);
-	const D2DGradient* d2dGradient = dynamic_cast<const D2DGradient*> (&gradient);
-	if (d2dPath == 0 || d2dGradient == 0)
+	if (d2dPath == 0)
 		return;
 
 	ID2D1PathGeometry* path = d2dPath->getPath (evenOdd ? D2D1_FILL_MODE_ALTERNATE : D2D1_FILL_MODE_WINDING);
@@ -365,7 +363,7 @@ void D2DDrawContext::fillRadialGradient (CGraphicsPath* _path, const CGradient& 
 			geometry = path;
 			geometry->AddRef ();
 		}
-		ID2D1GradientStopCollection* collection = createGradientStopCollection (d2dGradient);
+		ID2D1GradientStopCollection* collection = createGradientStopCollection (gradient);
 		if (collection)
 		{
 			// brush properties

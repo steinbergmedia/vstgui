@@ -180,6 +180,16 @@ class CGradient : public CBaseObject
 {
 public:
 	typedef std::multimap<double, CColor> ColorStopMap;
+
+	static CGradient* create (const ColorStopMap& colorStopMap);
+	static CGradient* create (double color1Start, double color2Start, const CColor& color1, const CColor& color2)
+	{
+		ColorStopMap map;
+		map.insert (std::make_pair (color1Start, color1));
+		map.insert (std::make_pair (color2Start, color2));
+		return create (map);
+	}
+	
 	//-----------------------------------------------------------------------------
 	/// @name Member Access
 	//-----------------------------------------------------------------------------
@@ -190,11 +200,16 @@ public:
 		addColorStop (std::make_pair (start, color));
 	}
 	
-	virtual void addColorStop (const std::pair<double, CColor>& colorStop)
+	virtual void addColorStop (std::pair<double, CColor> colorStop)
 	{
+#if VSTGUI_RVALUE_REF_SUPPORT
+		colorStops.insert (std::move (colorStop));
+#else
 		colorStops.insert (colorStop);
+#endif
 	}
 	
+	const ColorStopMap& getColorStops () const { return colorStops; }
 	//@}
 //-----------------------------------------------------------------------------
 	CLASS_METHODS_NOCOPY(CGradient, CBaseObject)
@@ -204,7 +219,8 @@ protected:
 		addColorStop (color1Start, color1);
 		addColorStop (color2Start, color2);
 	}
-	
+	CGradient (const ColorStopMap& colorStopMap) : colorStops (colorStopMap) {}
+
 	ColorStopMap colorStops;
 };
 

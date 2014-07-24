@@ -72,7 +72,7 @@ GdiplusGraphicsPath::~GdiplusGraphicsPath ()
 //-----------------------------------------------------------------------------
 CGradient* GdiplusGraphicsPath::createGradient (double color1Start, double color2Start, const CColor& color1, const CColor& color2)
 {
-	return new GdiplusGradient (color1Start, color2Start, color1, color2);
+	return CGradient::create (color1Start, color2Start, color1, color2);
 }
 
 //-----------------------------------------------------------------------------
