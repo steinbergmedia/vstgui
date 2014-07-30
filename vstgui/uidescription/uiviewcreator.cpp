@@ -387,7 +387,7 @@ static void addGradientToUIDescription (const IUIDescription* description, CGrad
 			std::stringstream str;
 			do {
 				index++;
-				str = std::stringstream ();
+				str.str ("");
 				str << baseName;
 				if (index > 1)
 				{
