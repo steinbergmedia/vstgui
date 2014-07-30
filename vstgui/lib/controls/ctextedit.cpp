@@ -352,6 +352,8 @@ void CTextEdit::looseFocus ()
 	if (platformControl == 0)
 		return;
 
+	CBaseObjectGuard guard (this);
+
 	IPlatformTextEdit* _platformControl = platformControl;
 	platformControl = 0;
 	
