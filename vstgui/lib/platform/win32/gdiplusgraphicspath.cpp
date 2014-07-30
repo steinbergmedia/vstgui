@@ -66,7 +66,7 @@ GdiplusGraphicsPath::GdiplusGraphicsPath (const GdiPlusFont* font, UTF8StringPtr
 GdiplusGraphicsPath::~GdiplusGraphicsPath ()
 {
 	if (platformPath)
-		delete platformPath;
+		::delete platformPath;
 }
 
 //-----------------------------------------------------------------------------
@@ -80,7 +80,7 @@ void GdiplusGraphicsPath::dirty ()
 {
 	if (platformPath)
 	{
-		delete platformPath;
+		::delete platformPath;
 		platformPath = 0;
 	}
 }

@@ -43,6 +43,7 @@ namespace VSTGUI {
 //-----------------------------------------------------------------------------
 GdiplusBitmap::GdiplusBitmap ()
 : bitmap (0)
+, allocatedByGdi (false)
 {
 	GDIPlusGlobals::enter ();
 }
@@ -51,6 +52,7 @@ GdiplusBitmap::GdiplusBitmap ()
 GdiplusBitmap::GdiplusBitmap (const CPoint& size)
 : bitmap (0)
 , size (size)
+, allocatedByGdi (false)
 {
 	GDIPlusGlobals::enter ();
 	bitmap = ::new Gdiplus::Bitmap ((INT)size.x, (INT)size.y, PixelFormat32bppARGB);
@@ -60,7 +62,12 @@ GdiplusBitmap::GdiplusBitmap (const CPoint& size)
 GdiplusBitmap::~GdiplusBitmap ()
 {
 	if (bitmap)
-		delete bitmap;
+	{
+		if (allocatedByGdi)
+			delete bitmap;
+		else
+			::delete bitmap;
+	}
 	GDIPlusGlobals::exit ();
 }
 
@@ -72,6 +79,7 @@ bool GdiplusBitmap::loadFromStream (IStream* stream)
 	bitmap = Gdiplus::Bitmap::FromStream (stream, TRUE);
 	if (bitmap)
 	{
+		allocatedByGdi = true;
 		size.x = (CCoord)bitmap->GetWidth ();
 		size.y = (CCoord)bitmap->GetHeight ();
 	}
@@ -98,6 +106,7 @@ bool GdiplusBitmap::load (const CResourceDescription& desc)
 			bitmap = Gdiplus::Bitmap::FromResource (GetInstance (), desc.type == CResourceDescription::kIntegerType ? (WCHAR*)MAKEINTRESOURCE(desc.u.id) : (WCHAR*)desc.u.name);
 		if (bitmap)
 		{
+			allocatedByGdi = true;
 			size.x = (CCoord)bitmap->GetWidth ();
 			size.y = (CCoord)bitmap->GetHeight ();
 			return true;

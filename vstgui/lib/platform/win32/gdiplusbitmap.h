@@ -83,6 +83,7 @@ protected:
 	};
 	Gdiplus::Bitmap* bitmap;
 	CPoint size;
+	bool allocatedByGdi;
 };
 
 } // namespace

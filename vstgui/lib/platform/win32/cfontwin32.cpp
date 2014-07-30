@@ -61,7 +61,7 @@ bool IPlatformFont::getAllPlatformFontFamilies (std::list<std::string>& fontFami
 				fontFamilyNames.push_back (std::string (str));
 			}
 		}
-		delete [] families;
+		::delete [] families;
 		return true;
 	}
 	return false;
@@ -101,7 +101,7 @@ GdiPlusFont::GdiPlusFont (const char* name, const CCoord& size, const int32_t& s
 GdiPlusFont::~GdiPlusFont ()
 {
 	if (font)
-		delete font;
+		::delete font;
 }
 
 //-----------------------------------------------------------------------------
@@ -142,7 +142,7 @@ CCoord GdiPlusFont::getStringWidth (CDrawContext* context, const CString& string
 		}
 		if (hdc)
 		{
-			delete pGraphics;
+			::delete pGraphics;
 			DeleteDC (hdc);
 		}
 	}
