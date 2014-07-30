@@ -82,13 +82,13 @@ GdiplusDrawContext::GdiplusDrawContext (GdiplusBitmap* inBitmap)
 GdiplusDrawContext::~GdiplusDrawContext ()
 {
 	if (pFontBrush)
-		delete pFontBrush;
+		::delete pFontBrush;
 	if (pBrush)
-		delete pBrush;
+		::delete pBrush;
 	if (pPen)
-		delete pPen;
+		::delete pPen;
 	if (pGraphics)
-		delete pGraphics;
+		::delete pGraphics;
 }
 
 // CDrawContext
