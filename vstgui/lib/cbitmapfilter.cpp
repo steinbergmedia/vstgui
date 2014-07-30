@@ -165,7 +165,7 @@ Property& Property::operator=(const Property& p)
 		uint32_t valueSize;
 		switch (type)
 		{
-			case kInteger: valueSize = sizeof (int64_t); break;
+			case kInteger: valueSize = sizeof (int32_t); break;
 			case kFloat: valueSize = sizeof (double); break;
 			case kObject: valueSize = sizeof (CBaseObject*); p.getObject ()->remember (); break;
 			case kRect: valueSize = sizeof (CRect); break;
