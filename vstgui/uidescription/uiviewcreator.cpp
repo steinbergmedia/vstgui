@@ -264,10 +264,6 @@ public:
 #include "../vstgui.h"
 #include <sstream>
 
-#if WINDOWS
-#define strtof	(float)strtod
-#endif
-
 namespace VSTGUI {
 namespace UIViewCreator {
 
@@ -822,7 +818,7 @@ public:
 		attr = attributes.getAttributeValue (kAttrSpacing);
 		if (attr)
 		{
-			CCoord spacing = strtof (attr->c_str (), 0);
+			CCoord spacing = UTF8StringView (attr->c_str ()).toDouble ();
 			rcv->setSpacing (spacing);
 		}
 		CRect margin;

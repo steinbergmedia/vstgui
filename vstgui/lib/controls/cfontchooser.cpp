@@ -94,7 +94,7 @@ protected:
 #if !VSTGUI_HAS_FUNCTIONAL
 static bool stringToValue (UTF8StringPtr txt, float& result, void* userData)
 {
-	result = (float)strtod (txt, 0);
+	result = UTF8StringView (txt).toFloat ();
 	return true;
 }
 #endif
@@ -167,7 +167,7 @@ CFontChooser::CFontChooser (IFontChooserDelegate* delegate, CFontRef initialFont
 	sizeEdit->setValue (2000);
 	sizeEdit->sizeToFit ();
 #if VSTGUI_HAS_FUNCTIONAL
-	sizeEdit->setStringToValueFunction ([] (UTF8StringPtr txt, float& result, CTextEdit* textEdit) { result = (float)strtod (txt, 0); return true; });
+	sizeEdit->setStringToValueFunction ([] (UTF8StringPtr txt, float& result, CTextEdit* textEdit) { result = UTF8StringView (txt).toFloat (); return true; });
 #else
 	sizeEdit->setStringToValueProc (CFontChooserInternal::stringToValue, 0);
 #endif

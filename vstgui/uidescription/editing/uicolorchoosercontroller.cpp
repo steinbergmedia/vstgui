@@ -159,8 +159,13 @@ bool UIColorChooserController::valueToString (float value, char utf8String[256],
 //----------------------------------------------------------------------------------------------------
 bool UIColorChooserController::stringToValue (UTF8StringPtr txt, float& result, CTextEdit::StringToValueUserData* userData)
 {
+	std::locale origLocale;
+	std::locale::global (std::locale::classic ());
+	
 	char* endptr = 0;
 	result = (float)strtod (txt, &endptr);
+
+	std::locale::global (origLocale);
 	if (endptr != txt)
 	{
 		CParamDisplay* display = static_cast<CParamDisplay*>(userData);

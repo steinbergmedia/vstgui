@@ -1433,7 +1433,7 @@ bool VST3Editor::enableEditing (bool state)
 					attr = attributes->getAttributeValue ("width");
 					if (attr)
 					{
-						double focusWidth = strtod (attr->c_str (), 0);
+						double focusWidth = UTF8StringView (attr->c_str ()).toDouble ();
 						getFrame ()->setFocusWidth (focusWidth);
 					}
 				}
