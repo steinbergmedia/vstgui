@@ -304,7 +304,7 @@ bool CColorChooser::convertAngleToString (float value, char string[256], CParamD
 //-----------------------------------------------------------------------------
 bool CColorChooser::convertNormalized (UTF8StringPtr string, float& output, CTextEdit::StringToValueUserData* userData)
 {
-	output = (float)strtod (string, 0);
+	output = UTF8StringView (string).toFloat ();
 	if (output < 0.f)
 		output = 0.f;
 	else if (output > 1.f)
@@ -315,7 +315,7 @@ bool CColorChooser::convertNormalized (UTF8StringPtr string, float& output, CTex
 //-----------------------------------------------------------------------------
 bool CColorChooser::convertColorValue (UTF8StringPtr string, float& output, CTextEdit::StringToValueUserData* userData)
 {
-	output = (float)strtod (string, 0);
+	output = UTF8StringView (string).toFloat ();
 	if (output < 0.f)
 		output = 0.f;
 	else if (output > 255.f)
@@ -327,7 +327,7 @@ bool CColorChooser::convertColorValue (UTF8StringPtr string, float& output, CTex
 //-----------------------------------------------------------------------------
 bool CColorChooser::convertAngle (UTF8StringPtr string, float& output, CTextEdit::StringToValueUserData* userData)
 {
-	output = (float)strtod (string, 0);
+	output = UTF8StringView (string).toFloat ();
 	if (output < 0.f)
 		output = 0.f;
 	else if (output > 359.f)

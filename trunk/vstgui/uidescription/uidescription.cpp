@@ -644,7 +644,7 @@ static bool decodeScaleFactorFromName (std::string name, double& scaleFactor)
 	if (index == std::string::npos)
 		return false;
 	name.erase (index);
-	scaleFactor = strtod (name.c_str (), 0);
+	scaleFactor = UTF8StringView (name.c_str ()).toDouble ();
 	return true;
 }
 
@@ -2217,6 +2217,23 @@ bool UIDescription::getVariable (UTF8StringPtr name, std::string& value) const
 namespace UIDescriptionPrivate {
 
 //-----------------------------------------------------------------------------
+struct Locale
+{
+	Locale ()
+	{
+		origLocal = std::locale ();
+		std::locale::global (std::locale::classic ());
+	}
+
+	~Locale ()
+	{
+		std::locale::global (origLocal);
+	}
+
+	std::locale origLocal;
+};
+
+//-----------------------------------------------------------------------------
 class StringToken : public std::string
 {
 public:
@@ -2478,6 +2495,8 @@ static bool computeTokens (StringTokenList& tokens, double& result)
 //-----------------------------------------------------------------------------
 bool UIDescription::calculateStringValue (UTF8StringPtr _str, double& result) const
 {
+	UIDescriptionPrivate::Locale localeResetter;
+
 	char* endPtr = 0;
 	result = strtod (_str, &endPtr);
 	if (endPtr == _str + strlen (_str))

@@ -37,6 +37,7 @@
 
 #include "vstguibase.h"
 #include <string>
+#include <sstream>
 
 namespace VSTGUI {
 
@@ -98,6 +99,12 @@ public:
 
 	/** checks this string if it ends with endString */
 	bool endsWith (const UTF8StringView& endString) const;
+
+	/** converts the string to a double */
+	double toDouble (uint32_t precision = 8) const;
+	
+	/** converts the string to a float */
+	float toFloat (uint32_t precision = 8) const;
 	
 	bool operator== (const UTF8StringPtr otherString) const;
 	bool operator!= (const UTF8StringPtr otherString) const;
@@ -246,6 +253,23 @@ inline bool UTF8StringView::endsWith (const UTF8StringView& endString) const
 	if (endStringLen > thisLen)
 		return false;
 	return endString == UTF8StringView (str + (thisLen - endStringLen));
+}
+
+//-----------------------------------------------------------------------------
+inline double UTF8StringView::toDouble (uint32_t precision) const
+{
+	std::istringstream sstream (str);
+	sstream.imbue (std::locale::classic ());
+	sstream.precision (precision);
+	double result;
+	sstream >> result;
+	return result;
+}
+
+//-----------------------------------------------------------------------------
+inline float UTF8StringView::toFloat (uint32_t precision) const
+{
+	return static_cast<float>(toDouble (precision));
 }
 
 //-----------------------------------------------------------------------------

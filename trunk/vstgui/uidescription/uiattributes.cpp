@@ -36,6 +36,7 @@
 #include "cstream.h"
 #include "../lib/cpoint.h"
 #include "../lib/crect.h"
+#include "../lib/cstring.h"
 #include <sstream>
 #include <algorithm>
 
@@ -120,6 +121,7 @@ void UIAttributes::removeAttribute (const std::string& name)
 void UIAttributes::setDoubleAttribute (const std::string& name, double value)
 {
 	std::stringstream str;
+	str.imbue (std::locale::classic ());
 	str.precision (40);
 	str << value;
 	setAttribute (name, str.str ());
@@ -131,7 +133,10 @@ bool UIAttributes::getDoubleAttribute (const std::string& name, double& value) c
 	const std::string* str = getAttributeValue (name);
 	if (str)
 	{
-		value = strtod (str->c_str (), 0);
+		std::istringstream sstream (*str);
+		sstream.imbue (std::locale::classic ());
+		sstream.precision (40);
+		sstream >> value;
 		return true;
 	}
 	return false;
@@ -215,8 +220,8 @@ bool UIAttributes::getPointAttribute (const std::string& name, CPoint& p) const
 			subStrings.push_back (name);
 			if (subStrings.size () == 2)
 			{
-				p.x = strtod (subStrings[0].c_str (), 0);
-				p.y = strtod (subStrings[1].c_str (), 0);
+				p.x = UTF8StringView (subStrings[0].c_str ()).toDouble ();
+				p.y = UTF8StringView (subStrings[1].c_str ()).toDouble ();
 				return true;
 			}
 		}
@@ -260,10 +265,10 @@ bool UIAttributes::getRectAttribute (const std::string& name, CRect& r) const
 			subStrings.push_back (name);
 			if (subStrings.size () == 4)
 			{
-				r.left = strtod (subStrings[0].c_str (), 0);
-				r.top = strtod (subStrings[1].c_str (), 0);
-				r.right = strtod (subStrings[2].c_str (), 0);
-				r.bottom = strtod (subStrings[3].c_str (), 0);
+				r.left = UTF8StringView (subStrings[0].c_str ()).toDouble ();
+				r.top = UTF8StringView (subStrings[1].c_str ()).toDouble ();
+				r.right = UTF8StringView (subStrings[2].c_str ()).toDouble ();
+				r.bottom = UTF8StringView (subStrings[3].c_str ()).toDouble ();
 				return true;
 			}
 		}

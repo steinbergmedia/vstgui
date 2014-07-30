@@ -168,7 +168,7 @@ bool UIFocusSettingsController::stringToValue (UTF8StringPtr txt, float& result,
 {
 	if (txt)
 	{
-		float value = (float)strtod (txt, 0);
+		float value = UTF8StringView (txt).toFloat ();
 		result = value;
 		return true;
 	}
