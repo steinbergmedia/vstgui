@@ -126,6 +126,7 @@ protected:
 	virtual void drawHandleAsCircle (CDrawContext* pContext) const;
 	virtual void drawHandleAsLine (CDrawContext* pContext) const;
 	void compute ();
+	void addArc (CGraphicsPath* path, const CRect& r, double startAngle, double sweepAngle) const;
 
 	CPoint offset;
 	

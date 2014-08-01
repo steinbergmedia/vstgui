@@ -701,7 +701,7 @@ CTextButton::CTextButton (const CRect& size, CControlListener* listener, int32_t
 , frameWidth (1.)
 , roundRadius (6.)
 , textMargin (0.)
-, iconPosition (kLeft)
+, iconPosition (CDrawMethods::kIconLeft)
 , horiTxtAlign (kCenterText)
 , style (style)
 {
@@ -835,7 +835,7 @@ void CTextButton::setIconHighlighted (CBitmap* bitmap)
 }
 
 //------------------------------------------------------------------------
-void CTextButton::setIconPosition (IconPosition pos)
+void CTextButton::setIconPosition (CDrawMethods::IconPosition pos)
 {
 	if (iconPosition != pos)
 	{
@@ -901,9 +901,7 @@ void CTextButton::draw (CDrawContext* context)
 		{
 			CGradient* drawGradient = highlight ? gradientHighlighted : gradient;
 			if (drawGradient)
-			{
 				context->fillLinearGradient (path, *drawGradient, r.getTopLeft (), r.getBottomLeft (), false);
-			}
 			context->setDrawMode (kAntiAliasing|kIntegralMode);
 			context->drawGraphicsPath (path, CDrawContext::kPathStroked);
 		}
@@ -912,84 +910,7 @@ void CTextButton::draw (CDrawContext* context)
 	titleRect.inset (frameWidth / 2., frameWidth / 2.);
 
 	CBitmap* iconToDraw = highlight ? (iconHighlighted ? iconHighlighted : icon) : (icon ? icon : iconHighlighted);
-	if (iconToDraw)
-	{
-		CRect iconRect (0, 0, iconToDraw->getWidth (), iconToDraw->getHeight ());
-		iconRect.offset (titleRect.left, titleRect.top);
-		switch (iconPosition)
-		{
-			case kLeft:
-			{
-				iconRect.offset (textMargin, titleRect.getHeight () / 2. - iconRect.getHeight () / 2.);
-				titleRect.left = iconRect.right;
-				titleRect.right -= textMargin;
-				if (getTextAlignment () == kLeftText)
-					titleRect.left += textMargin;
-				break;
-			}
-			case kRight:
-			{
-				iconRect.offset (titleRect.getWidth () - (textMargin + iconRect.getWidth ()), titleRect.getHeight () / 2. - iconRect.getHeight () / 2.);
-				titleRect.right = iconRect.left;
-				titleRect.left += textMargin;
-				if (getTextAlignment () == kRightText)
-					titleRect.right -= textMargin;
-				break;
-			}
-			case kCenterAbove:
-			{
-				iconRect.offset (titleRect.getWidth () / 2. - iconRect.getWidth () / 2., 0);
-				if (title.size () > 0)
-				{
-					iconRect.offset (0, titleRect.getHeight () / 2. - (iconRect.getHeight () / 2. + (textMargin + font->getSize ()) / 2.));
-					titleRect.top = iconRect.bottom + textMargin;
-					titleRect.setHeight (font->getSize ());
-					if (getTextAlignment () == kLeftText)
-						titleRect.left += textMargin;
-					else if (getTextAlignment () == kRightText)
-						titleRect.right -= textMargin;
-				}
-				else
-				{
-					iconRect.offset (0, titleRect.getHeight () / 2. - iconRect.getHeight () / 2.);
-				}
-				break;
-			}
-			case kCenterBelow:
-			{
-				iconRect.offset (titleRect.getWidth () / 2. - iconRect.getWidth () / 2., 0);
-				if (title.size () > 0)
-				{
-					iconRect.offset (0, titleRect.getHeight () / 2. - (iconRect.getHeight () / 2.) + (textMargin + font->getSize ()) / 2.);
-					titleRect.top = iconRect.top - (textMargin + font->getSize ());
-					titleRect.setHeight (font->getSize ());
-					if (getTextAlignment () == kLeftText)
-						titleRect.left += textMargin;
-					else if (getTextAlignment () == kRightText)
-						titleRect.right -= textMargin;
-				}
-				else
-				{
-					iconRect.offset (0, titleRect.getHeight () / 2. - iconRect.getHeight () / 2.);
-				}
-				break;
-			}
-		}
-		context->drawBitmap (iconToDraw, iconRect);
-	}
-	else
-	{
-		if (getTextAlignment () == kLeftText)
-			titleRect.left += textMargin;
-		else if (getTextAlignment () == kRightText)
-			titleRect.right -= textMargin;
-	}
-	if (title.size () > 0)
-	{
-		context->setFont (font);
-		context->setFontColor (highlight ? textColorHighlighted : textColor);
-		context->drawString (title.c_str (), titleRect, horiTxtAlign);
-	}
+	CDrawMethods::drawIconAndText (context, iconToDraw, iconPosition, getTextAlignment (), getTextMargin (), titleRect, title, getFont (), highlight ? getTextColorHighlighted () : getTextColor ());
 	setDirty (false);
 }
 
@@ -1005,6 +926,12 @@ bool CTextButton::getFocusPath (CGraphicsPath& outPath)
 	r.inset (frameWidth / 2., frameWidth / 2.);
 	outPath.addRoundRect (r, roundRadius);
 	return true;
+}
+
+//------------------------------------------------------------------------
+bool CTextButton::drawFocusOnTop ()
+{
+	return false;
 }
 
 //------------------------------------------------------------------------

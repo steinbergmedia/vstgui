@@ -191,6 +191,20 @@ void CKnob::draw (CDrawContext *pContext)
 }
 
 //------------------------------------------------------------------------
+void CKnob::addArc (CGraphicsPath* path, const CRect& r, double startAngle, double sweepAngle) const
+{
+	CCoord w = r.getWidth ();
+	CCoord h = r.getHeight ();
+	double endAngle = startAngle + sweepAngle;
+	if (w != h)
+	{
+		startAngle = atan2 (sin (startAngle) * h, cos (startAngle) * w);
+		endAngle = atan2 (sin (endAngle) * h, cos (endAngle) * w);
+	}
+	path->addArc (r, startAngle / kPI * 180, endAngle / kPI * 180, sweepAngle >= 0);
+}
+
+//------------------------------------------------------------------------
 void CKnob::drawCoronaOutline (CDrawContext* pContext) const
 {
 	OwningPointer<CGraphicsPath> path = pContext->createGraphicsPath ();
@@ -198,9 +212,7 @@ void CKnob::drawCoronaOutline (CDrawContext* pContext) const
 		return;
 	CRect corona (getViewSize ());
 	corona.inset (coronaInset, coronaInset);
-	double rangeDegree = (rangeAngle / kPI * 180.);
-	double startDegree = (startAngle / kPI * 180.);
-	path->addArc (corona, startDegree, startDegree + rangeDegree, rangeDegree > 0);
+	addArc (path, corona, startAngle, rangeAngle);
 	pContext->setFrameColor (colorShadowHandle);
 	CLineStyle lineStyle (kLineSolid);
 	lineStyle.setLineCap (CLineStyle::kLineCapRound);
@@ -221,27 +233,14 @@ void CKnob::drawCorona (CDrawContext* pContext) const
 		coronaValue = 1.f - coronaValue;
 	CRect corona (getViewSize ());
 	corona.inset (coronaInset, coronaInset);
-	double rangeDegree = rangeAngle / kPI * 180.;
 	if (drawStyle & kCoronaFromCenter)
-	{
-		double startDegree = 270.;
-		double dd = rangeDegree * (coronaValue - 0.5);
-		path->addArc (corona, startDegree, startDegree + dd, dd > 0.0);
-	}
+		addArc (path, corona, 1.5 * kPI, rangeAngle * (coronaValue - 0.5));
 	else
 	{
 		if (drawStyle & kCoronaInverted)
-		{
-			double startDegree = (startAngle / kPI * 180.)  + rangeDegree;
-			rangeDegree *= coronaValue;
-			path->addArc (corona, startDegree, startDegree - rangeDegree, rangeDegree <= 0.0);
-		}
+			addArc (path, corona, startAngle + rangeAngle, -rangeAngle * coronaValue);
 		else
-		{
-			double startDegree = (startAngle / kPI * 180.);
-			rangeDegree *= coronaValue;
-			path->addArc (corona, startDegree, startDegree + rangeDegree, rangeDegree >= 0.0);
-		}
+			addArc (path, corona, startAngle, rangeAngle * coronaValue);
 	}
 	pContext->setFrameColor (coronaColor);
 	CLineStyle lineStyle (drawStyle & kCoronaLineDashDot ? kLineOnOffDash : kLineSolid);

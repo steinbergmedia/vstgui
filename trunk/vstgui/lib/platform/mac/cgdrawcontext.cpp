@@ -63,9 +63,16 @@ static void addOvalToPath (CGContextRef c, CPoint center, CGFloat a, CGFloat b, 
 	CGContextTranslateCTM (c, center.x, center.y);
 	CGContextScaleCTM (c, a, b);
 	
-	CGContextMoveToPoint (c, cos (radians (start_angle)), sin (radians (start_angle)));
+	double startAngle = radians (start_angle);
+	double endAngle = radians (end_angle);
+	if (a != b)
+	{
+		startAngle = atan2 (sin (startAngle) * a, cos (startAngle) * b);
+		endAngle = atan2 (sin (endAngle) * a, cos (endAngle) * b);
+	}
+	CGContextMoveToPoint (c, cos (startAngle), sin (startAngle));
 	
-	CGContextAddArc(c, 0, 0, 1, radians (start_angle), radians (end_angle), 0);
+	CGContextAddArc(c, 0, 0, 1, startAngle, endAngle, 0);
 	
 	CGContextRestoreGState(c);
 }
@@ -169,32 +176,30 @@ void CGDrawContext::drawGraphicsPath (CGraphicsPath* _path, PathDrawMode mode, C
 			{
 				cgMode = kCGPathStroke;
 				applyLineStyle (context);
-				applyLineWidthCTM (context);
 				break;
 			}
 			default: cgMode = kCGPathFill; break;
 		}
 		
-		CGPathRef cgPath = path->getCGPathRef ();
+		applyLineWidthCTM (context);
+
 		if (currentState.drawMode.integralMode ())
 		{
-			cgPath = pixelAllignedCopy (cgPath);
+			path->pixelAlign (this, t);
+			CGContextAddPath (context, path->getCGPathRef ());
 		}
-		if (t)
+		else if (t)
 		{
 			CGContextSaveGState (context);
 			CGAffineTransform transform = QuartzGraphicsPath::createCGAfflineTransform (*t);
 			CGContextConcatCTM (context, transform);
-			CGContextAddPath (context, cgPath);
+			CGContextAddPath (context, path->getCGPathRef ());
 			CGContextRestoreGState (context);
 		}
 		else
-			CGContextAddPath (context, cgPath);
-
+			CGContextAddPath (context, path->getCGPathRef ());
+		
 		CGContextDrawPath (context, cgMode);
-
-		if (cgPath != path->getCGPathRef ())
-			CFRelease (cgPath);
 
 		releaseCGContext (context);
 	}
@@ -214,21 +219,21 @@ void CGDrawContext::fillLinearGradient (CGraphicsPath* _path, const CGradient& g
 	CGContextRef context = beginCGContext (true, currentState.drawMode.integralMode ());
 	if (context)
 	{
-		CGPathRef cgPath = path->getCGPathRef ();
 		if (currentState.drawMode.integralMode ())
 		{
-			cgPath = pixelAllignedCopy (cgPath);
+			path->pixelAlign (this, t);
+			CGContextAddPath (context, path->getCGPathRef ());
 		}
-		if (t)
+		else if (t)
 		{
 			CGContextSaveGState (context);
 			CGAffineTransform transform = QuartzGraphicsPath::createCGAfflineTransform (*t);
 			CGContextConcatCTM (context, transform);
-			CGContextAddPath (context, cgPath);
+			CGContextAddPath (context, path->getCGPathRef ());
 			CGContextRestoreGState (context);
 		}
 		else
-			CGContextAddPath (context, cgPath);
+			CGContextAddPath (context, path->getCGPathRef ());
 
 		if (evenOdd)
 			CGContextEOClip (context);
@@ -237,9 +242,6 @@ void CGDrawContext::fillLinearGradient (CGraphicsPath* _path, const CGradient& g
 
 		CGContextDrawLinearGradient (context, *cgGradient, CGPointMake (startPoint.x, startPoint.y), CGPointMake (endPoint.x, endPoint.y), kCGGradientDrawsBeforeStartLocation | kCGGradientDrawsAfterEndLocation);
 
-		if (cgPath != path->getCGPathRef ())
-			CFRelease (cgPath);
-		
 		releaseCGContext (context);
 	}
 }
@@ -258,22 +260,22 @@ void CGDrawContext::fillRadialGradient (CGraphicsPath* _path, const CGradient& g
 	CGContextRef context = beginCGContext (true, currentState.drawMode.integralMode ());
 	if (context)
 	{
-		CGPathRef cgPath = path->getCGPathRef ();
 		if (currentState.drawMode.integralMode ())
 		{
-			cgPath = pixelAllignedCopy (cgPath);
+			path->pixelAlign (this, t);
+			CGContextAddPath (context, path->getCGPathRef ());
 		}
-		if (t)
+		else if (t)
 		{
 			CGContextSaveGState (context);
 			CGAffineTransform transform = QuartzGraphicsPath::createCGAfflineTransform (*t);
 			CGContextConcatCTM (context, transform);
-			CGContextAddPath (context, cgPath);
+			CGContextAddPath (context, path->getCGPathRef ());
 			CGContextRestoreGState (context);
 		}
 		else
-			CGContextAddPath (context, cgPath);
-
+			CGContextAddPath (context, path->getCGPathRef ());
+		
 		if (evenOdd)
 			CGContextEOClip (context);
 		else
@@ -281,9 +283,6 @@ void CGDrawContext::fillRadialGradient (CGraphicsPath* _path, const CGradient& g
 
 		CGContextDrawRadialGradient (context, *cgGradient, CGPointMake (center.x + originOffset.x, center.y + originOffset.y), 0, CGPointMake (center.x, center.y), radius, kCGGradientDrawsBeforeStartLocation | kCGGradientDrawsAfterEndLocation);
 
-		if (cgPath != path->getCGPathRef ())
-			CFRelease (cgPath);
-		
 		releaseCGContext (context);
 	}
 }
@@ -838,71 +837,6 @@ CGPoint CGDrawContext::pixelAlligned (const CGPoint& p) const
 	result.y = std::round (result.y);
 	result = CGContextConvertPointToUserSpace (cgContext, result);
 	return result;
-}
-
-//-----------------------------------------------------------------------------
-CGPathRef CGDrawContext::pixelAllignedCopy (CGPathRef path) const
-{
-	struct PathIterator
-	{
-		CGMutablePathRef path;
-		const CGDrawContext& context;
-		CGAffineTransform transform;
-		
-		PathIterator (const CGDrawContext& context)
-		: context (context)
-		{
-			path = CGPathCreateMutable ();
-			transform = CGAffineTransformMakeTranslation (-0.5, 0.5);
-		}
-		void apply (const CGPathElement* element)
-		{
-			switch (element->type)
-			{
-				case kCGPathElementMoveToPoint:
-				{
-					element->points[0] = context.pixelAlligned (element->points[0]);
-					CGPathMoveToPoint (path, &transform, element->points[0].x, element->points[0].y);
-					break;
-				}
-				case kCGPathElementAddLineToPoint:
-				{
-					element->points[0] = context.pixelAlligned (element->points[0]);
-					CGPathAddLineToPoint (path, &transform, element->points[0].x, element->points[0].y);
-					break;
-				}
-				case kCGPathElementAddQuadCurveToPoint:
-				{
-					element->points[0] = context.pixelAlligned (element->points[0]);
-					element->points[1] = context.pixelAlligned (element->points[1]);
-					CGPathAddQuadCurveToPoint (path, &transform, element->points[0].x, element->points[0].y, element->points[1].x, element->points[1].y);
-					break;
-				}
-				case kCGPathElementAddCurveToPoint:
-				{
-					element->points[0] = context.pixelAlligned (element->points[0]);
-					element->points[1] = context.pixelAlligned (element->points[1]);
-					element->points[2] = context.pixelAlligned (element->points[2]);
-					CGPathAddCurveToPoint (path, &transform, element->points[0].x, element->points[0].y, element->points[1].x, element->points[1].y, element->points[2].x, element->points[2].y);
-					break;
-				}
-				case kCGPathElementCloseSubpath:
-				{
-					CGPathCloseSubpath (path);
-					break;
-				}
-			}
-		}
-		
-		static void apply (void* info, const CGPathElement* element)
-		{
-			PathIterator* This = static_cast<PathIterator*>(info);
-			This->apply (element);
-		}
-	};
-	PathIterator iterator (*this);
-	CGPathApply (path, &iterator, PathIterator::apply);
-	return iterator.path;
 }
 
 } // namespace

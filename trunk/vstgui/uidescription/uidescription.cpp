@@ -2803,6 +2803,8 @@ UIVariableNode::UIVariableNode (const std::string& name, UIAttributes* attribute
 	}
 	if (valueStr)
 	{
+		UIDescriptionPrivate::Locale localeResetter;
+
 		const char* strPtr = valueStr->c_str ();
 		if (type == kUnknown)
 		{

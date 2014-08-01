@@ -108,7 +108,7 @@ bool CVSTGUITimer::start ()
 		platformTimer = CFRunLoopTimerCreate (kCFAllocatorDefault, CFAbsoluteTimeGetCurrent () + fireTime * 0.001f, fireTime * 0.001f, 0, 0, timerCallback, &timerContext);
 		if (platformTimer)
 		{
-		#if MAC_OS_X_VERSION_MAX_ALLOWED > MAC_OS_X_VERSION_10_8
+		#if MAC_OS_X_VERSION_MIN_REQUIRED > MAC_OS_X_VERSION_10_8
 			if (CFRunLoopTimerSetTolerance)
 				CFRunLoopTimerSetTolerance ((CFRunLoopTimerRef)platformTimer, fireTime * 0.0001f);
 		#endif

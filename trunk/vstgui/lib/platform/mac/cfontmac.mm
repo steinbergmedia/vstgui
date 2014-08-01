@@ -263,7 +263,9 @@ void CoreTextFont::drawString (CDrawContext* context, const CString& string, con
 		CGContextRef cgContext = cgDrawContext ? cgDrawContext->beginCGContext (true, context->getDrawMode ().integralMode ()) : 0;
 		if (cgContext)
 		{
+			CGContextSetAllowsAntialiasing (cgContext, antialias);
 			CGContextSetShouldAntialias (cgContext, antialias);
+			CGContextSetAllowsFontSmoothing (cgContext, true);
 			CGContextSetShouldSmoothFonts (cgContext, true);
 			CGContextSetTextPosition (cgContext, point.x, point.y);
 			CTLineDraw (line, cgContext);

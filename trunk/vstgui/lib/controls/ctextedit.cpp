@@ -34,6 +34,7 @@
 
 #include "ctextedit.h"
 #include "../cframe.h"
+#include <cassert>
 
 namespace VSTGUI {
 
@@ -90,8 +91,7 @@ CTextEdit::CTextEdit (const CTextEdit& v)
 CTextEdit::~CTextEdit ()
 {
 	listener = 0;
-	if (platformControl)
-		looseFocus ();
+	assert (platformControl == 0);
 }
 
 #if VSTGUI_ENABLE_DEPRECATED_METHODS || !VSTGUI_HAS_FUNCTIONAL

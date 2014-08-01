@@ -66,33 +66,46 @@
 
 namespace VSTGUI {
 
-static UIDescription* gUIDescription = 0;
+//----------------------------------------------------------------------------------------------------
+class UIEditControllerDescription
+{
+public:
+	UIDescription& get ()
+	{
+		if (uiDesc == 0)
+		{
+			std::string descPath (__FILE__);
+			unixfyPath (descPath);
+			size_t sepPos = descPath.find_last_of (unixPathSeparator);
+			if (sepPos != std::string::npos)
+			{
+				descPath.erase (sepPos+1);
+				descPath += "uidescriptioneditor.uidesc";
+				CFileStream stream;
+				if (stream.open (descPath.c_str (), CFileStream::kReadMode))
+				{
+					Xml::InputStreamContentProvider xmlProvider (stream);
+					UIDescription* editorDesc = new UIDescription (&xmlProvider);
+					if (editorDesc->parse ())
+						uiDesc = owned (editorDesc);
+					else
+						editorDesc->forget ();
+				}
+			}
+		}
+		return *uiDesc;
+	}
+
+private:
+	mutable SharedPointer<UIDescription> uiDesc;
+};
+
+static UIEditControllerDescription gUIDescription;
 
 //----------------------------------------------------------------------------------------------------
 UIDescription& UIEditController::getEditorDescription ()
 {
-	if (gUIDescription == 0)
-	{
-		std::string descPath (__FILE__);
-		unixfyPath (descPath);
-		size_t sepPos = descPath.find_last_of (unixPathSeparator);
-		if (sepPos != std::string::npos)
-		{
-			descPath.erase (sepPos+1);
-			descPath += "uidescriptioneditor.uidesc";
-			CFileStream stream;
-			if (stream.open (descPath.c_str (), CFileStream::kReadMode))
-			{
-				Xml::InputStreamContentProvider xmlProvider (stream);
-				UIDescription* editorDesc = new UIDescription (&xmlProvider);
-				if (editorDesc->parse ())
-					gUIDescription = editorDesc;
-				else
-					editorDesc->forget ();
-			}
-		}
-	}
-	return *gUIDescription;
+	return gUIDescription.get ();
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -244,7 +257,6 @@ UIEditController::UIEditController (UIDescription* description)
 	undoManager->addDependency (this);
 	menuController = new UIEditMenuController (this, selection, undoManager, editDescription, this);
 	onTemplatesChanged ();
-	getEditorDescription ().remember ();
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -256,13 +268,6 @@ UIEditController::~UIEditController ()
 		templateController->removeDependency (this);
 	undoManager->removeDependency (this);
 	editDescription->removeDependency (this);
-	int32_t refCount = gUIDescription->getNbReference ();
-	gUIDescription->forget ();
-	if (refCount == 2)
-	{
-		gUIDescription->forget ();
-		gUIDescription = 0;
-	}
 }
 
 //----------------------------------------------------------------------------------------------------

@@ -303,6 +303,12 @@ void D2DGraphicsPath::dirty ()
 }
 
 //-----------------------------------------------------------------------------
+void D2DGraphicsPath::pixelAlign (CDrawContext* context, CGraphicsTransform* transform)
+{
+	// nothing to do yet
+}
+
+//-----------------------------------------------------------------------------
 ID2D1PathGeometry* D2DGraphicsPath::getPath (int32_t fillMode)
 {
 	if (!elements.empty () && (path == 0 || fillMode != currentPathFillMode))
@@ -334,15 +340,20 @@ ID2D1PathGeometry* D2DGraphicsPath::getPath (int32_t fillMode)
 				case Element::kArc:
 				{
 					bool clockwise = e.instruction.arc.clockwise;
-					double startAngle = e.instruction.arc.startAngle;
-					double endAngle = e.instruction.arc.endAngle;
+					double startAngle = radians (e.instruction.arc.startAngle);
+					double endAngle = radians (e.instruction.arc.endAngle);
 					CRect o_r (e.instruction.arc.rect.left, e.instruction.arc.rect.top, e.instruction.arc.rect.right, e.instruction.arc.rect.bottom);
 					CRect r (o_r);
 					o_r.originize ();
 					CPoint center = o_r.getCenter ();
+					if (center.x != center.y)
+					{
+						startAngle = atan2 (sin (startAngle) * center.x, cos (startAngle) * center.y);
+						endAngle = atan2 (sin (endAngle) * center.x, cos (endAngle) * center.y);
+					}
 					CPoint start;
-					start.x = r.left + center.x + center.x * cos (radians (startAngle));
-					start.y = r.top + center.y + center.y * sin (radians (startAngle));
+					start.x = r.left + center.x + center.x * cos (startAngle);
+					start.y = r.top + center.y + center.y * sin (startAngle);
 					if (!figureOpen)
 					{
 						sink->BeginFigure (makeD2DPoint (start), D2D1_FIGURE_BEGIN_FILLED);
@@ -357,27 +368,27 @@ ID2D1PathGeometry* D2DGraphicsPath::getPath (int32_t fillMode)
 					if (clockwise) {
 						// sweepangle positive
 						while (sweepangle < 0.0)
-							sweepangle += 360.0;
-						while (sweepangle > 360.0)
-							sweepangle -= 360.0;
+							sweepangle += 2 * M_PI;
+						while (sweepangle > 2 * M_PI)
+							sweepangle -= 2 * M_PI;
 					} else {
 						// sweepangle negative
 						while (sweepangle > 0.0)
-							sweepangle -= 360.0;
-						while (sweepangle < -360.0)
-							sweepangle += 360.0;
+							sweepangle -= 2 * M_PI;
+						while (sweepangle < -2 * M_PI)
+							sweepangle += 2 * M_PI;
 					}
 
 					CPoint endPoint;
-					endPoint.x = r.left + center.x + center.x * cos (radians (endAngle));
-					endPoint.y = r.top + center.y + center.y * sin (radians (endAngle));
+					endPoint.x = r.left + center.x + center.x * cos (endAngle);
+					endPoint.y = r.top + center.y + center.y * sin (endAngle);
 
 					D2D1_ARC_SEGMENT arc;
 					arc.size = makeD2DSize (r.getWidth ()/2., r.getHeight ()/2.);
 					arc.rotationAngle = 0;
 					arc.sweepDirection = clockwise ? D2D1_SWEEP_DIRECTION_CLOCKWISE : D2D1_SWEEP_DIRECTION_COUNTER_CLOCKWISE;
 					arc.point = makeD2DPoint (endPoint);
-					arc.arcSize = fabs(sweepangle) <= 180. ? D2D1_ARC_SIZE_SMALL : D2D1_ARC_SIZE_LARGE;
+					arc.arcSize = fabs(sweepangle) <= M_PI ? D2D1_ARC_SIZE_SMALL : D2D1_ARC_SIZE_LARGE;
 					sink->AddArc (arc);
 					lastPos = endPoint;
 					break;

@@ -40,6 +40,7 @@
 #include "../ccolor.h"
 #include "../cbitmap.h"
 #include "../cdrawcontext.h"
+#include "../cdrawmethods.h"
 
 namespace VSTGUI {
 
@@ -230,21 +231,14 @@ public:
 	virtual void setStyle (Style style);
 	Style getStyle () const { return style; }
 
-	enum IconPosition {
-		kLeft,			///< icon left, text centered in the area next to the icon
-		kCenterAbove,	///< icon centered above the text, text centered
-		kCenterBelow,	///< icon centered below the text, text centered
-		kRight			///< icon right, text centered in the area next to the icon
-	};
-	
 	virtual void setIcon (CBitmap* bitmap);
 	CBitmap* getIcon () const { return icon; }
 	
 	virtual void setIconHighlighted (CBitmap* bitmap);
 	CBitmap* getIconHighlighted () const { return iconHighlighted; }
 
-	virtual void setIconPosition (IconPosition pos);
-	IconPosition getIconPosition () const { return iconPosition; }
+	virtual void setIconPosition (CDrawMethods::IconPosition pos);
+	CDrawMethods::IconPosition getIconPosition () const { return iconPosition; }
 	
 	virtual void setTextMargin (CCoord margin);
 	CCoord getTextMargin () const { return textMargin; }
@@ -256,6 +250,7 @@ public:
 	// overrides
 	void draw (CDrawContext* context) VSTGUI_OVERRIDE_VMETHOD;
 	bool getFocusPath (CGraphicsPath& outPath) VSTGUI_OVERRIDE_VMETHOD;
+	bool drawFocusOnTop () VSTGUI_OVERRIDE_VMETHOD;
 	void setViewSize (const CRect& rect, bool invalid = true) VSTGUI_OVERRIDE_VMETHOD;
 	bool removed (CView* parent) VSTGUI_OVERRIDE_VMETHOD;
 	virtual bool sizeToFit () VSTGUI_OVERRIDE_VMETHOD;
@@ -289,7 +284,7 @@ protected:
 	CCoord textMargin;
 	
 	CHoriTxtAlign horiTxtAlign;
-	IconPosition iconPosition;
+	CDrawMethods::IconPosition iconPosition;
 	Style style;
 	std::string title;
 private:

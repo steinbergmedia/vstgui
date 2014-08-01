@@ -102,7 +102,6 @@ public:
 
 	CGRect pixelAlligned (const CGRect& r) const;
 	CGPoint pixelAlligned (const CGPoint& p) const;
-	CGPathRef pixelAllignedCopy (CGPathRef path) const;
 	
 //------------------------------------------------------------------------------------
 protected:
