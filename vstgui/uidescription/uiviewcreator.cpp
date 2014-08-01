@@ -2011,22 +2011,22 @@ public:
 		attr = attributes.getAttributeValue (kAttrIconPosition);
 		if (attr)
 		{
-			CTextButton::IconPosition pos = CTextButton::kLeft;
+			CDrawMethods::IconPosition pos = CDrawMethods::kIconLeft;
 			if (*attr == "left")
 			{
-				pos = CTextButton::kLeft;
+				pos = CDrawMethods::kIconLeft;
 			}
 			else if (*attr == "right")
 			{
-				pos = CTextButton::kRight;
+				pos = CDrawMethods::kIconRight;
 			}
 			else if (*attr == "center above text")
 			{
-				pos = CTextButton::kCenterAbove;
+				pos = CDrawMethods::kIconCenterAbove;
 			}
 			else if (*attr == "center below text")
 			{
-				pos = CTextButton::kCenterBelow;
+				pos = CDrawMethods::kIconCenterBelow;
 			}
 			button->setIconPosition (pos);
 		}
@@ -2205,22 +2205,22 @@ public:
 		{
 			switch (button->getIconPosition ())
 			{
-				case CTextButton::kLeft:
+				case CDrawMethods::kIconLeft:
 				{
 					stringValue = "left";
 					break;
 				}
-				case CTextButton::kRight:
+				case CDrawMethods::kIconRight:
 				{
 					stringValue = "right";
 					break;
 				}
-				case CTextButton::kCenterAbove:
+				case CDrawMethods::kIconCenterAbove:
 				{
 					stringValue = "center above text";
 					break;
 				}
-				case CTextButton::kCenterBelow:
+				case CDrawMethods::kIconCenterBelow:
 				{
 					stringValue = "center below text";
 					break;
@@ -3596,7 +3596,7 @@ public:
 				return false;
 			if (!attributes.getDoubleAttribute (kAttrGradientEndColorOffset, endOffset))
 				return false;
-			SharedPointer<CGradient> gradient = owned (CGradient::create (startOffset, endOffset, startColor, endColor));
+			SharedPointer<CGradient> gradient = owned (CGradient::create (startOffset, 1. - endOffset, startColor, endColor));
 			gv->setGradient (gradient);
 			addGradientToUIDescription (description, gradient, "GradientView");
 		}

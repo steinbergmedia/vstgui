@@ -49,6 +49,7 @@
 
 namespace VSTGUI {
 class CoreTextFont;
+class CDrawContext;
 
 //------------------------------------------------------------------------------------
 class QuartzGraphicsPath : public CGraphicsPath
@@ -58,6 +59,7 @@ public:
 	QuartzGraphicsPath (const CoreTextFont* font, UTF8StringPtr text);
 	~QuartzGraphicsPath ();
 
+	void pixelAlign (CDrawContext* context, CGraphicsTransform* transform = 0) VSTGUI_OVERRIDE_VMETHOD;
 	CGPathRef getCGPathRef ();
 	void dirty () VSTGUI_OVERRIDE_VMETHOD;
 
@@ -72,6 +74,7 @@ public:
 //------------------------------------------------------------------------------------
 protected:
 	CGMutablePathRef path;
+	bool isPixelAlligned;
 };
 
 //-----------------------------------------------------------------------------

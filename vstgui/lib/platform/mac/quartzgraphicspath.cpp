@@ -57,11 +57,13 @@ CGAffineTransform QuartzGraphicsPath::createCGAfflineTransform (const CGraphicsT
 //-----------------------------------------------------------------------------
 QuartzGraphicsPath::QuartzGraphicsPath ()
 : path (0)
+, isPixelAlligned (false)
 {
 }
 
 //-----------------------------------------------------------------------------
 QuartzGraphicsPath::QuartzGraphicsPath (const CoreTextFont* font, UTF8StringPtr text)
+: isPixelAlligned (false)
 {
 	path = CGPathCreateMutable ();
 	
@@ -137,10 +139,17 @@ CGPathRef QuartzGraphicsPath::getCGPathRef ()
 					CGAffineTransform transform = CGAffineTransformMakeTranslation (centerX, centerY);
 					transform = CGAffineTransformScale (transform, radiusX, radiusY);
 					
+					double startAngle = radians (e.instruction.arc.startAngle);
+					double endAngle = radians (e.instruction.arc.endAngle);
+					if (radiusX != radiusY)
+					{
+						startAngle = atan2 (sin (startAngle) * radiusX, cos (startAngle) * radiusY);
+						endAngle = atan2 (sin (endAngle) * radiusX, cos (endAngle) * radiusY);
+					}
 					if (CGPathIsEmpty (path))
-						CGPathMoveToPoint (path, &transform, cos (radians (e.instruction.arc.startAngle)), sin (radians (e.instruction.arc.startAngle)));
+						CGPathMoveToPoint (path, &transform, cos (startAngle), sin (startAngle));
 
-					CGPathAddArc (path, &transform, 0, 0, 1, radians (e.instruction.arc.startAngle), radians (e.instruction.arc.endAngle), !e.instruction.arc.clockwise);
+					CGPathAddArc (path, &transform, 0, 0, 1, startAngle, endAngle, !e.instruction.arc.clockwise);
 					break;
 				}
 				case Element::kEllipse:
@@ -241,6 +250,96 @@ CRect QuartzGraphicsPath::getBoundingBox ()
 	return r;
 }
 
+//-----------------------------------------------------------------------------
+void QuartzGraphicsPath::pixelAlign (CDrawContext* context, CGraphicsTransform* transform)
+{
+	CGDrawContext* cgDrawContext = dynamic_cast<CGDrawContext*>(context);
+	if (cgDrawContext == 0)
+		return;
+
+	if (isPixelAlligned)
+		dirty ();
+
+	struct PathIterator
+	{
+		CGMutablePathRef path;
+		const CGDrawContext& context;
+		CGAffineTransform transform;
+		CGraphicsTransform* contextTransform;
+		
+		PathIterator (const CGDrawContext& context, CGraphicsTransform* cTransform)
+		: context (context)
+		, contextTransform (cTransform)
+		{
+			path = CGPathCreateMutable ();
+			transform = CGAffineTransformMakeTranslation (-0.5, 0.5);
+		}
+		void applyContextTransform (CGPoint& p)
+		{
+			if (contextTransform)
+				contextTransform->transform (p.x, p.y);
+		}
+		void apply (const CGPathElement* element)
+		{
+			switch (element->type)
+			{
+				case kCGPathElementMoveToPoint:
+				{
+					applyContextTransform (element->points[0]);
+					element->points[0] = context.pixelAlligned (element->points[0]);
+					CGPathMoveToPoint (path, &transform, element->points[0].x, element->points[0].y);
+					break;
+				}
+				case kCGPathElementAddLineToPoint:
+				{
+					applyContextTransform (element->points[0]);
+					element->points[0] = context.pixelAlligned (element->points[0]);
+					CGPathAddLineToPoint (path, &transform, element->points[0].x, element->points[0].y);
+					break;
+				}
+				case kCGPathElementAddQuadCurveToPoint:
+				{
+					applyContextTransform (element->points[0]);
+					applyContextTransform (element->points[1]);
+					element->points[0] = context.pixelAlligned (element->points[0]);
+					element->points[1] = context.pixelAlligned (element->points[1]);
+					CGPathAddQuadCurveToPoint (path, &transform, element->points[0].x, element->points[0].y, element->points[1].x, element->points[1].y);
+					break;
+				}
+				case kCGPathElementAddCurveToPoint:
+				{
+					applyContextTransform (element->points[0]);
+					applyContextTransform (element->points[1]);
+					applyContextTransform (element->points[2]);
+					element->points[0] = context.pixelAlligned (element->points[0]);
+					element->points[1] = context.pixelAlligned (element->points[1]);
+					element->points[2] = context.pixelAlligned (element->points[2]);
+					CGPathAddCurveToPoint (path, &transform, element->points[0].x, element->points[0].y, element->points[1].x, element->points[1].y, element->points[2].x, element->points[2].y);
+					break;
+				}
+				case kCGPathElementCloseSubpath:
+				{
+					CGPathCloseSubpath (path);
+					break;
+				}
+			}
+		}
+		
+		static void apply (void* info, const CGPathElement* element)
+		{
+			PathIterator* This = static_cast<PathIterator*>(info);
+			This->apply (element);
+		}
+	};
+	PathIterator iterator (*cgDrawContext, transform);
+	CGPathApply (getCGPathRef (), &iterator, PathIterator::apply);
+	dirty ();
+	path = iterator.path;
+	isPixelAlligned = true;
+}
+
+//-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 QuartzGradient::QuartzGradient (const ColorStopMap& map)
 : CGradient (map)

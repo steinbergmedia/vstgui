@@ -63,6 +63,7 @@ public:
 	CPoint getCurrentPosition () VSTGUI_OVERRIDE_VMETHOD;
 	CRect getBoundingBox () VSTGUI_OVERRIDE_VMETHOD;
 	void dirty () VSTGUI_OVERRIDE_VMETHOD;
+	void pixelAlign (CDrawContext* context, CGraphicsTransform* transform = 0) VSTGUI_OVERRIDE_VMETHOD;
 protected:
 	ID2D1PathGeometry* path;
 	int32_t currentPathFillMode;

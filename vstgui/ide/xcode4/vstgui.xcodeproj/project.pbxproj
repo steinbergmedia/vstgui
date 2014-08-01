@@ -93,6 +93,11 @@
 		F4462D731756479A00E6835D /* macclipboard.mm in Sources */ = {isa = PBXBuildFile; fileRef = F40B7835140E106600E2BF16 /* macclipboard.mm */; };
 		F4462D741756479A00E6835D /* macfileselector.mm in Sources */ = {isa = PBXBuildFile; fileRef = F497F17B13080B1C00F0A613 /* macfileselector.mm */; };
 		F4462D751756479A00E6835D /* macstring.mm in Sources */ = {isa = PBXBuildFile; fileRef = F4FC1A9F1328C8C40066E2F8 /* macstring.mm */; };
+		F44C25FA198B9A8E008434DB /* cdrawmethods.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F44C25F8198B9A8E008434DB /* cdrawmethods.cpp */; };
+		F44C25FB198B9A8E008434DB /* cdrawmethods.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F44C25F8198B9A8E008434DB /* cdrawmethods.cpp */; };
+		F44C25FC198B9A8E008434DB /* cdrawmethods.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F44C25F8198B9A8E008434DB /* cdrawmethods.cpp */; };
+		F44C25FD198B9A8E008434DB /* cdrawmethods.h in Headers */ = {isa = PBXBuildFile; fileRef = F44C25F9198B9A8E008434DB /* cdrawmethods.h */; };
+		F44C25FE198B9A8E008434DB /* cdrawmethods.h in Headers */ = {isa = PBXBuildFile; fileRef = F44C25F9198B9A8E008434DB /* cdrawmethods.h */; };
 		F44DC9F118A7C0780029125A /* cstream.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4E3901913080ECC00615042 /* cstream.cpp */; };
 		F44DC9F318A7C12F0029125A /* base64codec.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F44DC9F218A7C12F0029125A /* base64codec.cpp */; };
 		F452950813A211E6006EEF82 /* cocoaopenglview.mm in Sources */ = {isa = PBXBuildFile; fileRef = F452950613A211E6006EEF82 /* cocoaopenglview.mm */; };
@@ -425,6 +430,8 @@
 		F4462D34175646EE00E6835D /* vstgui_win32.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = vstgui_win32.cpp; path = ../../vstgui_win32.cpp; sourceTree = "<group>"; };
 		F4462D35175646EE00E6835D /* vstgui.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = vstgui.cpp; path = ../../vstgui.cpp; sourceTree = "<group>"; };
 		F4462D7617564B4700E6835D /* libprofile_rt.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libprofile_rt.dylib; path = /usr/lib/libprofile_rt.dylib; sourceTree = "<absolute>"; };
+		F44C25F8198B9A8E008434DB /* cdrawmethods.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = cdrawmethods.cpp; sourceTree = "<group>"; };
+		F44C25F9198B9A8E008434DB /* cdrawmethods.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = cdrawmethods.h; sourceTree = "<group>"; };
 		F44DC9F218A7C12F0029125A /* base64codec.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = base64codec.cpp; path = ../../tests/unittest/lib/base64codec.cpp; sourceTree = "<group>"; };
 		F452950513A211E6006EEF82 /* cocoaopenglview.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = cocoaopenglview.h; sourceTree = "<group>"; };
 		F452950613A211E6006EEF82 /* cocoaopenglview.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = cocoaopenglview.mm; sourceTree = "<group>"; };
@@ -807,6 +814,8 @@
 				F497F0C713080A1C00F0A613 /* cdatabrowser.h */,
 				F497F0C813080A1C00F0A613 /* cdrawcontext.cpp */,
 				F497F0C913080A1C00F0A613 /* cdrawcontext.h */,
+				F44C25F8198B9A8E008434DB /* cdrawmethods.cpp */,
+				F44C25F9198B9A8E008434DB /* cdrawmethods.h */,
 				F497F0CA13080A1C00F0A613 /* cdropsource.cpp */,
 				F497F0CB13080A1C00F0A613 /* cdropsource.h */,
 				F497F0CC13080A1C00F0A613 /* cfileselector.cpp */,
@@ -1094,6 +1103,7 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F44C25FD198B9A8E008434DB /* cdrawmethods.h in Headers */,
 				F47883AE180469580054ED06 /* clayeredviewcontainer.h in Headers */,
 				F47D201C18A6648C00487CDB /* uiattributes.h in Headers */,
 				F42D5F6617B016F900B85FE8 /* cxypad.h in Headers */,
@@ -1111,6 +1121,7 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F44C25FE198B9A8E008434DB /* cdrawmethods.h in Headers */,
 				F47883AF180469580054ED06 /* clayeredviewcontainer.h in Headers */,
 				F47D201D18A6648C00487CDB /* uiattributes.h in Headers */,
 				F42D5F6717B016F900B85FE8 /* cxypad.h in Headers */,
@@ -1267,6 +1278,7 @@
 				F497F0EC13080A1C00F0A613 /* cbitmap.cpp in Sources */,
 				F497F0EE13080A1C00F0A613 /* ccolor.cpp in Sources */,
 				F497F0F013080A1C00F0A613 /* cdatabrowser.cpp in Sources */,
+				F44C25FA198B9A8E008434DB /* cdrawmethods.cpp in Sources */,
 				F42D5F6317B016F900B85FE8 /* cxypad.cpp in Sources */,
 				F497F0F213080A1C00F0A613 /* cdrawcontext.cpp in Sources */,
 				F497F0F413080A1C00F0A613 /* cdropsource.cpp in Sources */,
@@ -1451,6 +1463,7 @@
 				F4E9C6A117A826D000F42EF8 /* animator.cpp in Sources */,
 				F4E9C6A217A826D000F42EF8 /* timingfunctions.cpp in Sources */,
 				F4E9C6A317A826D400F42EF8 /* cautoanimation.cpp in Sources */,
+				F44C25FC198B9A8E008434DB /* cdrawmethods.cpp in Sources */,
 				F4E9C6A417A826D400F42EF8 /* cbuttons.cpp in Sources */,
 				F4E9C6A517A826D400F42EF8 /* ccolorchooser.cpp in Sources */,
 				F4E9C6A617A826D400F42EF8 /* ccontrol.cpp in Sources */,
@@ -1522,6 +1535,7 @@
 				F4F953FA16510F40006EE1D1 /* animations.cpp in Sources */,
 				F4F953FB16510F40006EE1D1 /* animator.cpp in Sources */,
 				F4F953FC16510F40006EE1D1 /* timingfunctions.cpp in Sources */,
+				F44C25FB198B9A8E008434DB /* cdrawmethods.cpp in Sources */,
 				F42D5F6417B016F900B85FE8 /* cxypad.cpp in Sources */,
 				F4F953FD16510F40006EE1D1 /* cautoanimation.cpp in Sources */,
 				F4F953FE16510F40006EE1D1 /* cbuttons.cpp in Sources */,

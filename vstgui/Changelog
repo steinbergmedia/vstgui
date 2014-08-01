@@ -1,3 +1,7 @@
+2014-08-01 arne
+
+	* add CGraphicsPath::pixelAlign to align the path to pixel boundaries
+
 2014-07-24 arne
 
 	* CTextButton and CGradientView now takes CGradient objects instead of colors and start offsets.

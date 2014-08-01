@@ -155,6 +155,7 @@
     <ClCompile Include="..\..\..\lib\ccolor.cpp" />
     <ClCompile Include="..\..\..\lib\cdatabrowser.cpp" />
     <ClCompile Include="..\..\..\lib\cdrawcontext.cpp" />
+    <ClCompile Include="..\..\..\lib\cdrawmethods.cpp" />
     <ClCompile Include="..\..\..\lib\cdropsource.cpp" />
     <ClCompile Include="..\..\..\lib\cfileselector.cpp" />
     <ClCompile Include="..\..\..\lib\cfont.cpp" />
@@ -250,6 +251,7 @@
     <ClInclude Include="..\..\..\lib\ccolor.h" />
     <ClInclude Include="..\..\..\lib\cdatabrowser.h" />
     <ClInclude Include="..\..\..\lib\cdrawcontext.h" />
+    <ClInclude Include="..\..\..\lib\cdrawmethods.h" />
     <ClInclude Include="..\..\..\lib\cdropsource.h" />
     <ClInclude Include="..\..\..\lib\cfileselector.h" />
     <ClInclude Include="..\..\..\lib\cfont.h" />

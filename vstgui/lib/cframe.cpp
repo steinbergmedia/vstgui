@@ -1076,7 +1076,11 @@ bool CFrame::removeView (CView* pView, bool withForget)
 bool CFrame::removeAll (bool withForget)
 {
 	setModalView (0);
-	pFocusView = 0;
+	if (pFocusView)
+	{
+		pFocusView->looseFocus ();
+		pFocusView = 0;
+	}
 	pActiveFocusView = 0;
 	clearMouseViews (CPoint (0, 0), 0, false);
 	return CViewContainer::removeAll (withForget);

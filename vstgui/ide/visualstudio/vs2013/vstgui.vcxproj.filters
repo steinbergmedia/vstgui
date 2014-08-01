@@ -310,6 +310,9 @@
     <ClCompile Include="..\..\..\uidescription\editing\uigradientscontroller.cpp">
       <Filter>Source Files\uidescription\editing</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\lib\cdrawmethods.cpp">
+      <Filter>Source Files\lib</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\lib\cbitmap.h">
@@ -668,6 +671,9 @@
     </ClInclude>
     <ClInclude Include="..\..\..\uidescription\iviewcreator.h">
       <Filter>Source Files\uidescription</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\lib\cdrawmethods.h">
+      <Filter>Source Files\lib</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

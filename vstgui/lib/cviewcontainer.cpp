@@ -693,7 +693,7 @@ void CViewContainer::drawRect (CDrawContext* pContext, const CRect& updateRect)
 		{
 			if (_focusDrawing && _focusView == pV && !_focusDrawing->drawFocusOnTop ())
 			{
-				CGraphicsPath* focusPath = pContext->createGraphicsPath ();
+				SharedPointer<CGraphicsPath> focusPath = owned (pContext->createGraphicsPath ());
 				if (focusPath)
 				{
 					if (_focusDrawing->getFocusPath (*focusPath))
@@ -709,7 +709,6 @@ void CViewContainer::drawRect (CDrawContext* pContext, const CRect& updateRect)
 						_focusDrawing = 0;
 						_focusView = 0;
 					}
-					focusPath->forget ();
 				}
 			}
 
@@ -733,7 +732,7 @@ void CViewContainer::drawRect (CDrawContext* pContext, const CRect& updateRect)
 
 	if (_focusView)
 	{
-		CGraphicsPath* focusPath = pContext->createGraphicsPath ();
+		SharedPointer<CGraphicsPath> focusPath = owned (pContext->createGraphicsPath ());
 		if (focusPath)
 		{
 			if (_focusDrawing)
@@ -756,7 +755,6 @@ void CViewContainer::drawRect (CDrawContext* pContext, const CRect& updateRect)
 				pContext->setFillColor (getFrame ()->getFocusColor ());
 				pContext->drawGraphicsPath (focusPath, CDrawContext::kPathFilledEvenOdd);
 			}
-			focusPath->forget ();
 		}
 	}
 	
