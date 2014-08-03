@@ -313,6 +313,9 @@
     <ClCompile Include="..\..\..\lib\cdrawmethods.cpp">
       <Filter>Source Files\lib</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\lib\controls\csegmentbutton.cpp">
+      <Filter>Source Files\lib\controls</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\lib\cbitmap.h">
@@ -674,6 +677,9 @@
     </ClInclude>
     <ClInclude Include="..\..\..\lib\cdrawmethods.h">
       <Filter>Source Files\lib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\lib\controls\csegmentbutton.h">
+      <Filter>Source Files\lib\controls</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

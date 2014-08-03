@@ -56,6 +56,7 @@ public:
 	virtual ~VST3EditorDelegate () {}
 	
 	virtual CView* createCustomView (UTF8StringPtr name, const UIAttributes& attributes, const IUIDescription* description, VST3Editor* editor) { return 0; } ///< create a custom view
+	virtual CView* verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description, VST3Editor* editor) { return view; } ///< verify a view after it was created
 	virtual bool findParameter (const CPoint& pos, Steinberg::Vst::ParamID& paramID, VST3Editor* editor) { return false; } ///< find a parameter
 	virtual bool isPrivateParameter (const Steinberg::Vst::ParamID paramID) { return false; } ///< check if parameter ID is private and should not be exposed to the host
 	virtual void didOpen (VST3Editor* editor) {}	///< called after the editor was opened

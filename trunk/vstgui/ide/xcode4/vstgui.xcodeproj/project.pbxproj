@@ -98,6 +98,11 @@
 		F44C25FC198B9A8E008434DB /* cdrawmethods.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F44C25F8198B9A8E008434DB /* cdrawmethods.cpp */; };
 		F44C25FD198B9A8E008434DB /* cdrawmethods.h in Headers */ = {isa = PBXBuildFile; fileRef = F44C25F9198B9A8E008434DB /* cdrawmethods.h */; };
 		F44C25FE198B9A8E008434DB /* cdrawmethods.h in Headers */ = {isa = PBXBuildFile; fileRef = F44C25F9198B9A8E008434DB /* cdrawmethods.h */; };
+		F44C2602198BA5B4008434DB /* csegmentbutton.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F44C2600198BA5B4008434DB /* csegmentbutton.cpp */; };
+		F44C2603198BA5B4008434DB /* csegmentbutton.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F44C2600198BA5B4008434DB /* csegmentbutton.cpp */; };
+		F44C2604198BA5B4008434DB /* csegmentbutton.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F44C2600198BA5B4008434DB /* csegmentbutton.cpp */; };
+		F44C2605198BA5B4008434DB /* csegmentbutton.h in Headers */ = {isa = PBXBuildFile; fileRef = F44C2601198BA5B4008434DB /* csegmentbutton.h */; };
+		F44C2606198BA5B4008434DB /* csegmentbutton.h in Headers */ = {isa = PBXBuildFile; fileRef = F44C2601198BA5B4008434DB /* csegmentbutton.h */; };
 		F44DC9F118A7C0780029125A /* cstream.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4E3901913080ECC00615042 /* cstream.cpp */; };
 		F44DC9F318A7C12F0029125A /* base64codec.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F44DC9F218A7C12F0029125A /* base64codec.cpp */; };
 		F452950813A211E6006EEF82 /* cocoaopenglview.mm in Sources */ = {isa = PBXBuildFile; fileRef = F452950613A211E6006EEF82 /* cocoaopenglview.mm */; };
@@ -432,6 +437,8 @@
 		F4462D7617564B4700E6835D /* libprofile_rt.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libprofile_rt.dylib; path = /usr/lib/libprofile_rt.dylib; sourceTree = "<absolute>"; };
 		F44C25F8198B9A8E008434DB /* cdrawmethods.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = cdrawmethods.cpp; sourceTree = "<group>"; };
 		F44C25F9198B9A8E008434DB /* cdrawmethods.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = cdrawmethods.h; sourceTree = "<group>"; };
+		F44C2600198BA5B4008434DB /* csegmentbutton.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = csegmentbutton.cpp; sourceTree = "<group>"; };
+		F44C2601198BA5B4008434DB /* csegmentbutton.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = csegmentbutton.h; sourceTree = "<group>"; };
 		F44DC9F218A7C12F0029125A /* base64codec.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = base64codec.cpp; path = ../../tests/unittest/lib/base64codec.cpp; sourceTree = "<group>"; };
 		F452950513A211E6006EEF82 /* cocoaopenglview.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = cocoaopenglview.h; sourceTree = "<group>"; };
 		F452950613A211E6006EEF82 /* cocoaopenglview.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = cocoaopenglview.mm; sourceTree = "<group>"; };
@@ -910,6 +917,8 @@
 				F497F13813080AE500F0A613 /* coptionmenu.h */,
 				F497F13913080AE500F0A613 /* cparamdisplay.cpp */,
 				F497F13A13080AE500F0A613 /* cparamdisplay.h */,
+				F44C2600198BA5B4008434DB /* csegmentbutton.cpp */,
+				F44C2601198BA5B4008434DB /* csegmentbutton.h */,
 				F497F13B13080AE500F0A613 /* cslider.cpp */,
 				F497F13C13080AE500F0A613 /* cslider.h */,
 				F497F13D13080AE500F0A613 /* cspecialdigit.cpp */,
@@ -1103,6 +1112,7 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F44C2605198BA5B4008434DB /* csegmentbutton.h in Headers */,
 				F44C25FD198B9A8E008434DB /* cdrawmethods.h in Headers */,
 				F47883AE180469580054ED06 /* clayeredviewcontainer.h in Headers */,
 				F47D201C18A6648C00487CDB /* uiattributes.h in Headers */,
@@ -1121,6 +1131,7 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F44C2606198BA5B4008434DB /* csegmentbutton.h in Headers */,
 				F44C25FE198B9A8E008434DB /* cdrawmethods.h in Headers */,
 				F47883AF180469580054ED06 /* clayeredviewcontainer.h in Headers */,
 				F47D201D18A6648C00487CDB /* uiattributes.h in Headers */,
@@ -1372,6 +1383,7 @@
 				F4CE1BE2141138F700CF75B6 /* cbitmapfilter.cpp in Sources */,
 				F42E1F8A14239E48005E0BD7 /* cshadowviewcontainer.cpp in Sources */,
 				F40E63FD16821A6300426847 /* cgradientview.cpp in Sources */,
+				F44C2602198BA5B4008434DB /* csegmentbutton.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1468,6 +1480,7 @@
 				F4E9C6A517A826D400F42EF8 /* ccolorchooser.cpp in Sources */,
 				F4E9C6A617A826D400F42EF8 /* ccontrol.cpp in Sources */,
 				F4E9C6A717A826D400F42EF8 /* cfontchooser.cpp in Sources */,
+				F44C2604198BA5B4008434DB /* csegmentbutton.cpp in Sources */,
 				F4E9C6A817A826D400F42EF8 /* cknob.cpp in Sources */,
 				F4E9C6A917A826D400F42EF8 /* cmoviebitmap.cpp in Sources */,
 				F4E9C6AA17A826D400F42EF8 /* cmoviebutton.cpp in Sources */,
@@ -1629,6 +1642,7 @@
 				F4F9545016510F40006EE1D1 /* uiviewswitchcontainer.cpp in Sources */,
 				F49B43FE1666081900461790 /* xmlparser.cpp in Sources */,
 				F40E63FE16821A6300426847 /* cgradientview.cpp in Sources */,
+				F44C2603198BA5B4008434DB /* csegmentbutton.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

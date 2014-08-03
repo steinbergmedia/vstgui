@@ -86,6 +86,7 @@ public:
 
 	IController* createSubController (const char* name, const IUIDescription* description, VST3Editor* editor) VSTGUI_OVERRIDE_VMETHOD;
 	CView* createCustomView (UTF8StringPtr name, const UIAttributes& attributes, const IUIDescription* description, VST3Editor* editor) VSTGUI_OVERRIDE_VMETHOD;
+	CView* verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description, VST3Editor* editor) VSTGUI_OVERRIDE_VMETHOD;
 
 	static Steinberg::FUnknown* createInstance (void*) { return (Steinberg::Vst::IEditController*)new UIDescriptionTestController; }
 	static Steinberg::FUID cid;

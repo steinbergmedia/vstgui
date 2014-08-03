@@ -1,3 +1,8 @@
+2014-08-03 arne
+
+	* add new Control: CSegmentButton
+	* changed Direct2D termination to not depend on __try __except (thanks to Andreas Persson)
+
 2014-08-01 arne
 
 	* add CGraphicsPath::pixelAlign to align the path to pixel boundaries

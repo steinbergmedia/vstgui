@@ -406,25 +406,22 @@ UINode* UIDescList::findChildNodeWithAttributeValue (const std::string& attribut
 	return 0;
 }
 
-namespace UIDescListPrivate {
-struct Compare {
-	bool operator () (const UINode* n1, const UINode* n2) const
-	{
-		const std::string* str1 = n1->getAttributes ()->getAttributeValue ("name");
-		const std::string* str2 = n2->getAttributes ()->getAttributeValue ("name");
-		if (str1 && str2)
-			return *str1 < *str2;
-		else if (str1)
-			return true;
-		return false;
-	}
-};
-}
-
 //-----------------------------------------------------------------------------
 void UIDescList::sort ()
 {
-	std::sort (begin (), end (), UIDescListPrivate::Compare ());
+	struct Compare {
+		bool operator () (const UINode* n1, const UINode* n2) const
+		{
+			const std::string* str1 = n1->getAttributes ()->getAttributeValue ("name");
+			const std::string* str2 = n2->getAttributes ()->getAttributeValue ("name");
+			if (str1 && str2)
+				return *str1 < *str2;
+			else if (str1)
+				return true;
+			return false;
+		}
+	};
+	std::sort (begin (), end (), Compare ());
 }
 
 //-----------------------------------------------------------------------------

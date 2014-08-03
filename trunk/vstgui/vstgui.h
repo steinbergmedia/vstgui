@@ -75,6 +75,7 @@
 #include "lib/controls/cmoviebutton.h"
 #include "lib/controls/coptionmenu.h"
 #include "lib/controls/cparamdisplay.h"
+#include "lib/controls/csegmentbutton.h"
 #include "lib/controls/cslider.h"
 #include "lib/controls/cspecialdigit.h"
 #include "lib/controls/csplashscreen.h"
