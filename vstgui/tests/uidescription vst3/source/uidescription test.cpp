@@ -397,11 +397,11 @@ tresult PLUGIN_API UIDescriptionTestController::initialize (FUnknown* context)
 	{
 		// add ui parameters
 		StringListParameter* slp = new StringListParameter (USTRING("TabController"), 20000);
-		slp->appendString (USTRING("Tab1"));
-		slp->appendString (USTRING("Tab2"));
-		slp->appendString (USTRING("Tab3"));
-		slp->appendString (USTRING("Tab4"));
-		slp->appendString (USTRING("Tab5"));
+		slp->appendString (USTRING("Controls"));
+		slp->appendString (USTRING("Miscellaneous"));
+		slp->appendString (USTRING("ScrollView"));
+		slp->appendString (USTRING("SplitView"));
+		slp->appendString (USTRING("Fonts/LineStyle"));
 		uiParameters.addParameter (slp);
 		
 		slp = new StringListParameter (USTRING("LineStyle"), 20001);
@@ -520,6 +520,25 @@ CView* UIDescriptionTestController::createCustomView (UTF8StringPtr name, const 
 		return new LineStyleTestView (CRect (0, 0, 0, 0));
 	}
 	return 0;
+}
+
+//------------------------------------------------------------------------
+CView* UIDescriptionTestController::verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description, VST3Editor* editor)
+{
+	CSegmentButton* button = dynamic_cast<CSegmentButton*>(view);
+	if (button && button->getTag () == 20000)
+	{
+		StringListParameter* slp = dynamic_cast<StringListParameter*> (getParameterObject (20000));
+		for (uint32 i = 0; i <= slp->getInfo ().stepCount; i++)
+		{
+			String128 str = {};
+			slp->toString (slp->toNormalized (i), str);
+			Steinberg::String str2 (str);
+			str2.toMultiByte (kCP_Utf8);
+			button->getSegments ()[i].name = str2.text8 ();
+		}
+	}
+	return view;
 }
 
 //------------------------------------------------------------------------

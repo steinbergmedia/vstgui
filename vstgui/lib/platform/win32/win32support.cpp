@@ -88,17 +88,8 @@ public:
 		if (d2d1Dll)
 		{
 			HRESULT hr = S_OK;
-			D2D1CreateFactoryProc _D2D1CreateFactory = (D2D1CreateFactoryProc)GetProcAddress (d2d1Dll, "D2D1CreateFactory");
-			if (_D2D1CreateFactory)
-			{
-				D2D1_FACTORY_OPTIONS* options = 0;
-			#if 0 //DEBUG
-				D2D1_FACTORY_OPTIONS debugOptions;
-				debugOptions.debugLevel = D2D1_DEBUG_LEVEL_INFORMATION;
-				options = &debugOptions;
-			#endif
-				hr = _D2D1CreateFactory (D2D1_FACTORY_TYPE_MULTI_THREADED, __uuidof(ID2D1Factory), options, (void**)&factory);
-			}
+			_D2D1CreateFactory = (D2D1CreateFactoryProc)GetProcAddress (d2d1Dll, "D2D1CreateFactory");
+			getFactory ();
 			dwriteDll = LoadLibraryA ("dwrite.dll");
 			if (dwriteDll)
 			{
@@ -117,18 +108,32 @@ public:
 			writeFactory->Release ();
 		if (dwriteDll)
 			FreeLibrary (dwriteDll);
-		if (factory)
-		{
-			__try { // since the Direct2D hotfix (KB2028560) this is necessary
-				factory->Release ();
-			} __except (VSTGUI_Eval_Exception (GetExceptionCode ())) {}
-		}
 		if (d2d1Dll)
 			FreeLibrary (d2d1Dll);
 	}
-	ID2D1Factory* getFactory () const { return factory; }
+	ID2D1Factory* getFactory () const
+	{
+		if (_D2D1CreateFactory && !factory)
+		{
+			D2D1_FACTORY_OPTIONS* options = 0;
+		#if 0 //DEBUG
+			D2D1_FACTORY_OPTIONS debugOptions;
+			debugOptions.debugLevel = D2D1_DEBUG_LEVEL_INFORMATION;
+			options = &debugOptions;
+		#endif
+			_D2D1CreateFactory (D2D1_FACTORY_TYPE_MULTI_THREADED, __uuidof(ID2D1Factory), options, (void**)&factory);
+		}
+		return factory;
+	}
+	void releaseFactory ()
+	{
+		if (factory)
+			factory->Release ();
+		factory = 0;
+	}
 	IDWriteFactory* getWriteFactory () const { return writeFactory; }
 protected:
+	D2D1CreateFactoryProc _D2D1CreateFactory;
 	ID2D1Factory* factory;
 	IDWriteFactory* writeFactory;
 	HMODULE d2d1Dll;
@@ -150,6 +155,13 @@ ID2D1Factory* getD2DFactory ()
 	return getD2DFactoryInstance ().getFactory ();
 #else
 	return 0;
+#endif
+}
+
+void releaseD2DFactory ()
+{
+#if VSTGUI_DIRECT2D_SUPPORT
+	getD2DFactoryInstance ().releaseFactory ();
 #endif
 }
 

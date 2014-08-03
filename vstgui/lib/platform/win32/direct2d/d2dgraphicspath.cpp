@@ -499,13 +499,6 @@ ID2D1PathGeometry* D2DGraphicsPath::getPath (int32_t fillMode)
 	return path;
 }
 
-//-----------------------------------------------------------------------------
-CGradient* CGradient::create (const ColorStopMap& colorStopMap)
-{
-	return new CGradient (colorStopMap);
-}
-
-
 } // namespace
 
 #endif // WINDOWS

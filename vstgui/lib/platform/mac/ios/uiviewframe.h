@@ -83,7 +83,6 @@ public:
 //-----------------------------------------------------------------------------
 protected:
 	UIView* uiView;
-	IPlatformFrameCallback* frame;
 };
 
 }

@@ -225,7 +225,7 @@ IPlatformFrame* IPlatformFrame::createPlatformFrame (IPlatformFrameCallback* fra
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 UIViewFrame::UIViewFrame (IPlatformFrameCallback* frame, const CRect& size, UIView* parent)
-: frame (frame)
+: IPlatformFrame (frame)
 , uiView (0)
 {
 	uiView = [[VSTGUI_UIView alloc] initWithUIViewFrame:this parent:parent size:&size];

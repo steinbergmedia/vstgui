@@ -64,6 +64,7 @@ class CDrawContext;
 extern HINSTANCE GetInstance ();
 extern const OSVERSIONINFOEX& getSystemVersion ();
 extern ID2D1Factory* getD2DFactory ();
+extern void releaseD2DFactory ();
 extern IDWriteFactory* getDWriteFactory ();
 extern CDrawContext* createDrawContext (HWND window, HDC device, const CRect& surfaceRect);
 

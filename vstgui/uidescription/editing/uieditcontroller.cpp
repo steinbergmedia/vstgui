@@ -56,6 +56,7 @@
 #include "uifocussettingscontroller.h"
 #include "../uiattributes.h"
 #include "../../lib/controls/coptionmenu.h"
+#include "../../lib/controls/csegmentbutton.h"
 #include "../../lib/animation/animations.h"
 #include "../../lib/animation/timingfunctions.h"
 #include "../../lib/cdropsource.h"
@@ -167,16 +168,9 @@ public:
 		SharedPointer<CGraphicsPath> path = owned (context->createGraphicsPath ());
 		if (path)
 		{
-			static CColor lineColor, shadingTopColor, shadingBottomColor, shadingMiddleColor;
-			static bool once = true;
-			if (once)
-			{
+			static CColor lineColor = kBlackCColor;
+			if (lineColor == kBlackCColor)
 				UIEditController::getEditorDescription ().getColor ("shading.light.frame", lineColor);
-				UIEditController::getEditorDescription ().getColor ("shading.light.top", shadingTopColor);
-				UIEditController::getEditorDescription ().getColor ("shading.light.bottom", shadingBottomColor);
-				UIEditController::getEditorDescription ().getColor ("shading.light.middle", shadingMiddleColor);
-				once = false;
-			}
 
 			CRect size (_size);
 			context->setDrawMode (kAliasing|kIntegralMode);
@@ -184,10 +178,9 @@ public:
 			context->setLineWidth (1.);
 			context->setFrameColor (lineColor);
 
-			SharedPointer<CGradient> shading = owned (path->createGradient (0., 1., shadingTopColor, shadingBottomColor));
+			CGradient* shading = UIEditController::getEditorDescription ().getGradient ("shading.light");
 			if (shading)
 			{
-				shading->addColorStop (0.5, shadingMiddleColor);
 				path->addRect (size);
 				if (horizontal)
 				{
@@ -215,30 +208,6 @@ protected:
 	bool horizontal;
 	bool drawTopLine;
 	bool drawBottomLine;
-};
-
-//----------------------------------------------------------------------------------------------------
-class UIEditControllerTextSwitch : public CParamDisplay
-{
-public:
-	UIEditControllerTextSwitch ();
-
-	bool attached (CView *parent) VSTGUI_OVERRIDE_VMETHOD;
-	void setViewSize (const CRect& rect, bool invalid = true) VSTGUI_OVERRIDE_VMETHOD;
-	void addValue (UTF8StringPtr name);
-	CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons) VSTGUI_OVERRIDE_VMETHOD;
-	int32_t onKeyDown (VstKeyCode& keyCode) VSTGUI_OVERRIDE_VMETHOD;
-	void draw (CDrawContext* pContext) VSTGUI_OVERRIDE_VMETHOD;
-protected:
-	virtual void setMax (float val) VSTGUI_OVERRIDE_VMETHOD {}
-	void updateValues ();
-
-	struct Value {
-		std::string name;
-		CRect rect;
-	};
-	
-	std::vector<Value> values;
 };
 
 //----------------------------------------------------------------------------------------------------
@@ -324,23 +293,6 @@ CView* UIEditController::createView (const UIAttributes& attributes, const IUIDe
 		{
 			return new UISearchTextField (CRect (0, 0, 0, 0), 0, -2);
 		}
-		else if (*name == "UIEditControllerTextSwitch")
-		{
-			UIEditControllerTextSwitch* textSwitch = new UIEditControllerTextSwitch ();
-			textSwitch->addValue ("Views");
-			textSwitch->addValue ("Tags");
-			textSwitch->addValue ("Colors");
-			textSwitch->addValue ("Gradients");
-			textSwitch->addValue ("Bitmaps");
-			textSwitch->addValue ("Fonts");
-			tabSwitchControl = textSwitch;
-			tabSwitchControl->addDependency (this);
-			int32_t value = 0;
-			getSettings ()->getIntegerAttribute ("TabSwitchValue", value);
-			textSwitch->setValue ((float)value);
-			return textSwitch;
-		}
-		
 	}
 	return 0;
 }
@@ -349,6 +301,7 @@ enum {
 	kNotSavedTag = 666,
 	kEditingTag,
 	kAutosizeTag,
+	kTabSwitchTag = 123456
 };
 
 //----------------------------------------------------------------------------------------------------
@@ -416,6 +369,34 @@ CView* UIEditController::verifyView (CView* view, const UIAttributes& attributes
 				enableEditingControl = control;
 				enableEditingControl->setValue (1.f);
 				enableEditingControl->setListener (this);
+				break;
+			}
+			case kTabSwitchTag:
+			{
+				CSegmentButton* button = dynamic_cast<CSegmentButton*>(control);
+				if (button)
+				{
+					button->removeAllSegments ();
+					CSegmentButton::Segment segment;
+					segment.name = "Views";
+					button->addSegment (segment);
+					segment.name = "Tags";
+					button->addSegment (segment);
+					segment.name = "Colors";
+					button->addSegment (segment);
+					segment.name = "Gradients";
+					button->addSegment (segment);
+					segment.name = "Bitmaps";
+					button->addSegment (segment);
+					segment.name = "Fonts";
+					button->addSegment (segment);
+					button->setMax (static_cast<float> (button->getSegments ().size ()));
+					tabSwitchControl = button;
+					tabSwitchControl->addDependency (this);
+					int32_t value = 0;
+					getSettings ()->getIntegerAttribute ("TabSwitchValue", value);
+					button->setSelectedSegment (static_cast<uint32_t> (value));
+				}
 				break;
 			}
 		}
@@ -1468,166 +1449,6 @@ void UIEditController::onTemplatesChanged ()
 		if (!found)
 		{
 			it = templates.erase (it);
-		}
-	}
-}
-
-//----------------------------------------------------------------------------------------------------
-//----------------------------------------------------------------------------------------------------
-//----------------------------------------------------------------------------------------------------
-UIEditControllerTextSwitch::UIEditControllerTextSwitch ()
-: CParamDisplay (CRect (0, 0, 0, 0))
-{
-	setWantsFocus (true);
-}
-
-//----------------------------------------------------------------------------------------------------
-bool UIEditControllerTextSwitch::attached (CView *parent)
-{
-	if (CParamDisplay::attached (parent))
-	{
-		updateValues ();
-		return true;
-	}
-	return false;
-}
-
-//----------------------------------------------------------------------------------------------------
-void UIEditControllerTextSwitch::addValue (UTF8StringPtr name)
-{
-	Value v;
-	v.name = name;
-	values.push_back (v);
-	CControl::setMax ((float)values.size ());
-	updateValues ();
-}
-
-//----------------------------------------------------------------------------------------------------
-void UIEditControllerTextSwitch::setViewSize (const CRect& rect, bool invalid)
-{
-	CParamDisplay::setViewSize (rect, invalid);
-	updateValues ();
-}
-
-//----------------------------------------------------------------------------------------------------
-CMouseEventResult UIEditControllerTextSwitch::onMouseDown (CPoint& where, const CButtonState& buttons)
-{
-	if (buttons.isLeftButton ())
-	{
-		int32_t newValue = 0;
-		for (std::vector<Value>::const_iterator it = values.begin (); it != values.end (); it++, newValue++)
-		{
-			if ((*it).rect.pointInside (where))
-			{
-				setValue ((float)newValue);
-				valueChanged ();
-				invalid ();
-				break;
-			}
-		}
-	}
-	return kMouseDownEventHandledButDontNeedMovedOrUpEvents;
-}
-
-//----------------------------------------------------------------------------------------------------
-int32_t UIEditControllerTextSwitch::onKeyDown (VstKeyCode& keyCode)
-{
-	if (keyCode.modifier == 0 && keyCode.character == 0)
-	{
-		switch (keyCode.virt)
-		{
-			case VKEY_LEFT:
-			{
-				if (getValue () > getMin ())
-				{
-					beginEdit ();
-					setValue (getValue () - 1.f);
-					valueChanged ();
-					endEdit ();
-					invalid ();
-					return 1;
-				}
-				break;
-			}
-			case VKEY_RIGHT:
-			{
-				if (getValue () < getMax () - 1.f)
-				{
-					beginEdit ();
-					setValue (getValue () + 1.f);
-					valueChanged ();
-					endEdit ();
-					invalid ();
-					return 1;
-				}
-				break;
-			}
-		}
-	}
-	return -1;
-}
-
-//----------------------------------------------------------------------------------------------------
-void UIEditControllerTextSwitch::draw (CDrawContext* pContext)
-{
-	CRect valueRect (values.at ((int32_t)getValue ()).rect);
-
-	pContext->setDrawMode (kAliasing|kIntegralMode);
-	if (!getTransparency ())
-	{
-		pContext->setFillColor (backColor);
-		pContext->drawRect (valueRect, kDrawFilled);
-
-		if (!(style & (k3DIn|k3DOut|kNoFrame))) 
-		{
-			pContext->setLineStyle (kLineSolid);
-			pContext->setLineWidth (1);
-			pContext->setFrameColor (frameColor);
-			pContext->drawRect (valueRect);
-		}
-	}
-	if (style & (k3DIn|k3DOut)) 
-	{
-		CRect r (valueRect);
-		r.right--; r.top++;
-		pContext->setLineWidth (1);
-		pContext->setLineStyle (kLineSolid);
-		if (style & k3DIn)
-			pContext->setFrameColor (backColor);
-		else
-			pContext->setFrameColor (frameColor);
-		
-		pContext->drawLine (std::make_pair (CPoint (r.left, r.bottom), CPoint (r.left, r.top)));
-		pContext->drawLine (std::make_pair (CPoint (r.left, r.top), CPoint (r.right, r.top)));
-
-		if (style & k3DIn)
-			pContext->setFrameColor (frameColor);
-		else
-			pContext->setFrameColor (backColor);
-
-		pContext->drawLine (std::make_pair (CPoint (r.right, r.top), CPoint (r.right, r.bottom)));
-		pContext->drawLine (std::make_pair (CPoint (r.right, r.bottom), CPoint (r.left, r.bottom)));
-	}
-	
-	for (std::vector<Value>::const_iterator it = values.begin (); it != values.end (); it++)
-	{
-		drawText (pContext, (*it).name.c_str (), (*it).rect);
-	}
-	
-}
-
-//----------------------------------------------------------------------------------------------------
-void UIEditControllerTextSwitch::updateValues ()
-{
-	if (isAttached ())
-	{
-		CCoord width = getWidth () / values.size ();
-		CRect r (getViewSize ());
-		r.setWidth (width);
-		for (std::vector<Value>::iterator it = values.begin (); it != values.end (); it++)
-		{
-			(*it).rect = r;
-			r.offset (width, 0);
 		}
 	}
 }

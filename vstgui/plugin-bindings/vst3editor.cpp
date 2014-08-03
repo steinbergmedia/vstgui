@@ -962,6 +962,8 @@ CView* VST3Editor::createView (const UIAttributes& attributes, const IUIDescript
 //-----------------------------------------------------------------------------
 CView* VST3Editor::verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description)
 {
+	if (delegate)
+		view = delegate->verifyView (view, attributes, description, this);
 	CControl* control = dynamic_cast<CControl*> (view);
 	if (control && control->getTag () != -1 && control->getListener () == this)
 	{

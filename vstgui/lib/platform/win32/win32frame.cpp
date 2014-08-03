@@ -224,6 +224,8 @@ Win32Frame::~Win32Frame ()
 	if (backBuffer)
 		backBuffer->forget ();
 	destroyWindowClass ();
+
+	releaseD2DFactory ();
 }
 
 //-----------------------------------------------------------------------------
@@ -1402,6 +1404,12 @@ STDMETHODIMP Win32DataObject::DUnadvise (DWORD dwConnection)
 STDMETHODIMP Win32DataObject::EnumDAdvise (IEnumSTATDATA** ppenumAdvise)
 {
 	return E_NOTIMPL;
+}
+
+//-----------------------------------------------------------------------------
+CGradient* CGradient::create (const ColorStopMap& colorStopMap)
+{
+	return new CGradient (colorStopMap);
 }
 
 } // namespace

@@ -2271,6 +2271,243 @@ public:
 CTextButtonCreator __gCTextButtonCreator;
 
 //-----------------------------------------------------------------------------
+// CSegmentButtonCreator attributes
+//-----------------------------------------------------------------------------
+static const std::string kAttrStyle = "style";
+static const std::string kAttrSegmentCount = "segment-count";
+
+//-----------------------------------------------------------------------------
+class CSegmentButtonCreator : public IViewCreator
+{
+public:
+	CSegmentButtonCreator () { UIViewFactory::registerViewCreator (*this); }
+	IdStringPtr getViewName () const VSTGUI_OVERRIDE_VMETHOD { return "CSegmentButton"; }
+	IdStringPtr getBaseViewName () const VSTGUI_OVERRIDE_VMETHOD { return "CControl"; }
+	CView* create (const UIAttributes& attributes, const IUIDescription* description) const VSTGUI_OVERRIDE_VMETHOD
+	{
+		CSegmentButton* button = new CSegmentButton (CRect (0, 0, 100, 20));
+		updateSegmentCount (button, 4);
+		return button;
+	}
+	void updateSegmentCount (CSegmentButton* button, uint32_t numSegments) const
+	{
+		if (button->getSegments ().size () != numSegments)
+		{
+			button->removeAllSegments ();
+			for (uint32_t i = 0; i < numSegments; i++)
+			{
+				std::stringstream str;
+				str << "Segment ";
+				str << i + 1;
+				CSegmentButton::Segment seg;
+				seg.name = str.str ();
+				button->addSegment (seg);
+			}
+		}
+		
+	}
+	bool apply (CView* view, const UIAttributes& attributes, const IUIDescription* description) const VSTGUI_OVERRIDE_VMETHOD
+	{
+		CSegmentButton* button = dynamic_cast<CSegmentButton*> (view);
+		if (!button)
+			return false;
+
+		const std::string* attr = attributes.getAttributeValue (kAttrFont);
+		if (attr)
+		{
+			CFontRef font = description->getFont (attr->c_str ());
+			if (font)
+			{
+				button->setFont (font);
+			}
+		}
+
+		attr = attributes.getAttributeValue (kAttrStyle);
+		if (attr)
+			button->setStyle (*attr == "horizontal" ? CSegmentButton::kHorizontal : CSegmentButton::kVertical);
+
+		CColor color;
+		if (stringToColor (attributes.getAttributeValue (kAttrTextColor), color, description))
+			button->setTextColor (color);
+		if (stringToColor (attributes.getAttributeValue (kAttrTextColorHighlighted), color, description))
+			button->setTextColorHighlighted (color);
+		if (stringToColor (attributes.getAttributeValue (kAttrFrameColor), color, description))
+			button->setFrameColor (color);
+
+		double d;
+		if (attributes.getDoubleAttribute (kAttrFrameWidth, d))
+			button->setFrameWidth (d);
+		if (attributes.getDoubleAttribute (kAttrRoundRadius, d))
+			button->setRoundRadius (d);
+		if (attributes.getDoubleAttribute (kAttrIconTextMargin, d))
+			button->setTextMargin (d);
+		
+		attr = attributes.getAttributeValue (kAttrTextAlignment);
+		if (attr)
+		{
+			CHoriTxtAlign align = kCenterText;
+			if (*attr == "left")
+				align = kLeftText;
+			else if (*attr == "right")
+				align = kRightText;
+			button->setTextAlignment (align);
+		}
+		const std::string* gradientName = attributes.getAttributeValue (kAttrGradient);
+		if (gradientName)
+			button->setGradient (description->getGradient (gradientName->c_str ()));
+		const std::string* gradientHighlightedName = attributes.getAttributeValue (kAttrGradientHighlighted);
+		if (gradientHighlightedName)
+			button->setGradientHighlighted (description->getGradient (gradientHighlightedName->c_str ()));
+
+		int32_t segmentCount;
+		if (attributes.getIntegerAttribute (kAttrSegmentCount, segmentCount))
+			updateSegmentCount (button, segmentCount);
+		return true;
+	}
+	bool getAttributeNames (std::list<std::string>& attributeNames) const VSTGUI_OVERRIDE_VMETHOD
+	{
+		attributeNames.push_back (kAttrStyle);
+		attributeNames.push_back (kAttrSegmentCount);
+		attributeNames.push_back (kAttrFont);
+		attributeNames.push_back (kAttrTextColor);
+		attributeNames.push_back (kAttrTextColorHighlighted);
+		attributeNames.push_back (kAttrGradient);
+		attributeNames.push_back (kAttrGradientHighlighted);
+		attributeNames.push_back (kAttrFrameColor);
+		attributeNames.push_back (kAttrRoundRadius);
+		attributeNames.push_back (kAttrFrameWidth);
+		attributeNames.push_back (kAttrIconTextMargin);
+		attributeNames.push_back (kAttrTextAlignment);
+		return true;
+	}
+	AttrType getAttributeType (const std::string& attributeName) const VSTGUI_OVERRIDE_VMETHOD
+	{
+		if (attributeName == kAttrStyle) return kListType;
+		if (attributeName == kAttrSegmentCount) return kIntegerType;
+		if (attributeName == kAttrFont) return kFontType;
+		if (attributeName == kAttrTextColor) return kColorType;
+		if (attributeName == kAttrTextColorHighlighted) return kColorType;
+		if (attributeName == kAttrGradient) return kGradientType;
+		if (attributeName == kAttrGradientHighlighted) return kGradientType;
+		if (attributeName == kAttrFrameColor) return kColorType;
+		if (attributeName == kAttrFrameWidth) return kFloatType;
+		if (attributeName == kAttrRoundRadius) return kFloatType;
+		if (attributeName == kAttrIconTextMargin) return kFloatType;
+		if (attributeName == kAttrTextAlignment) return kStringType;
+		return kUnknownType;
+	}
+	bool getPossibleListValues (const std::string& attributeName, std::list<const std::string*>& values) const VSTGUI_OVERRIDE_VMETHOD
+	{
+		if (attributeName == kAttrStyle)
+		{
+			static std::string positions[] = {
+				"horizontal",
+				"vertical",
+				""
+			};
+			int32_t index = 0;
+			while (positions[index].size () > 0)
+			{
+				values.push_back(&positions[index]);
+				index++;
+			}
+			return true;
+		}
+		return false;
+	}
+	bool getAttributeValue (CView* view, const std::string& attributeName, std::string& stringValue, const IUIDescription* desc) const VSTGUI_OVERRIDE_VMETHOD
+	{
+		CSegmentButton* button = dynamic_cast<CSegmentButton*> (view);
+		if (!button)
+			return false;
+		if (attributeName == kAttrFont)
+		{
+			UTF8StringPtr fontName = desc->lookupFontName (button->getFont ());
+			if (fontName)
+			{
+				stringValue = fontName;
+				return true;
+			}
+			return false;
+		}
+		else if (attributeName == kAttrSegmentCount)
+		{
+			stringValue = numberToString (button->getSegments ().size ());
+			return true;
+		}
+		else if (attributeName == kAttrTextColor)
+		{
+			colorToString (button->getTextColor (), stringValue, desc);
+			return true;
+		}
+		else if (attributeName == kAttrTextColorHighlighted)
+		{
+			colorToString (button->getTextColorHighlighted (), stringValue, desc);
+			return true;
+		}
+		else if (attributeName == kAttrFrameColor)
+		{
+			colorToString (button->getFrameColor (), stringValue, desc);
+			return true;
+		}
+		else if (attributeName == kAttrFrameWidth)
+		{
+			stringValue = numberToString (button->getFrameWidth ());
+			return true;
+		}
+		else if (attributeName == kAttrRoundRadius)
+		{
+			stringValue = numberToString (button->getRoundRadius ());
+			return true;
+		}
+		else if (attributeName == kAttrStyle)
+		{
+			stringValue = button->getStyle() == CSegmentButton::kHorizontal ? "horizontal" : "vertical";
+			return true;
+		}
+		else if (attributeName == kAttrIconTextMargin)
+		{
+			stringValue = numberToString (button->getTextMargin ());
+			return true;
+		}
+		else if (attributeName == kAttrTextAlignment)
+		{
+			CHoriTxtAlign align = button->getTextAlignment ();
+			switch (align)
+			{
+				case kLeftText: stringValue = "left"; break;
+				case kRightText: stringValue = "right"; break;
+				case kCenterText: stringValue = "center"; break;
+			}
+			return true;
+		}
+		else if (attributeName == kAttrGradient)
+		{
+			CGradient* gradient = button->getGradient ();
+			if (gradient)
+			{
+				UTF8StringPtr gradientName = desc->lookupGradientName (gradient);
+				stringValue = gradientName ? gradientName : "";
+			}
+			return true;
+		}
+		else if (attributeName == kAttrGradientHighlighted)
+		{
+			CGradient* gradient = button->getGradientHighlighted ();
+			if (gradient)
+			{
+				UTF8StringPtr gradientName = desc->lookupGradientName (gradient);
+				stringValue = gradientName ? gradientName : "";
+			}
+			return true;
+		}
+		return false;
+	}
+
+};
+CSegmentButtonCreator __gCSegmentButtonCreator;
+
+//-----------------------------------------------------------------------------
 // CKnobCreator attributes
 //-----------------------------------------------------------------------------
 static const std::string kAttrAngleStart = "angle-start";
