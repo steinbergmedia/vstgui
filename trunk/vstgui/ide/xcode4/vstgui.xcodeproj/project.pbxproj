@@ -435,6 +435,8 @@
 		F4462D34175646EE00E6835D /* vstgui_win32.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = vstgui_win32.cpp; path = ../../vstgui_win32.cpp; sourceTree = "<group>"; };
 		F4462D35175646EE00E6835D /* vstgui.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = vstgui.cpp; path = ../../vstgui.cpp; sourceTree = "<group>"; };
 		F4462D7617564B4700E6835D /* libprofile_rt.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libprofile_rt.dylib; path = /usr/lib/libprofile_rt.dylib; sourceTree = "<absolute>"; };
+		F449AC0C19924DE600C6B976 /* ianimationtarget.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ianimationtarget.h; sourceTree = "<group>"; };
+		F449AC0D19924E5B00C6B976 /* itimingfunction.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = itimingfunction.h; sourceTree = "<group>"; };
 		F44C25F8198B9A8E008434DB /* cdrawmethods.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = cdrawmethods.cpp; sourceTree = "<group>"; };
 		F44C25F9198B9A8E008434DB /* cdrawmethods.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = cdrawmethods.h; sourceTree = "<group>"; };
 		F44C2600198BA5B4008434DB /* csegmentbutton.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = csegmentbutton.cpp; sourceTree = "<group>"; };
@@ -888,6 +890,8 @@
 				F497F11B13080AD100F0A613 /* animations.h */,
 				F497F11C13080AD100F0A613 /* animator.cpp */,
 				F497F11D13080AD100F0A613 /* animator.h */,
+				F449AC0C19924DE600C6B976 /* ianimationtarget.h */,
+				F449AC0D19924E5B00C6B976 /* itimingfunction.h */,
 				F497F11E13080AD100F0A613 /* timingfunctions.cpp */,
 				F497F11F13080AD100F0A613 /* timingfunctions.h */,
 			);

@@ -38,39 +38,17 @@
 #include "../vstguibase.h"
 #include <list>
 #include <string>
+#if VSTGUI_HAS_FUNCTIONAL
+#include <functional>
+#endif
 
 namespace VSTGUI {
 class CVSTGUITimer;
 class CView;
 
 namespace Animation {
-
-//-----------------------------------------------------------------------------
-/// @brief Animation target interface
-///	@ingroup new_in_4_0
-//-----------------------------------------------------------------------------
-class IAnimationTarget
-{
-public:
-	virtual ~IAnimationTarget () {}
-
-	virtual void animationStart (CView* view, IdStringPtr name) = 0;						///< animation starts
-	virtual void animationTick (CView* view, IdStringPtr name, float pos) = 0;				///< pos is a normalized value between zero and one
-	virtual void animationFinished (CView* view, IdStringPtr name, bool wasCanceled) = 0;	///< animation ended
-};
-
-//-----------------------------------------------------------------------------
-/// @brief Animation timing function interface
-///	@ingroup new_in_4_0
-//-----------------------------------------------------------------------------
-class ITimingFunction
-{
-public:
-	virtual ~ITimingFunction () {}
-
-	virtual float getPosition (uint32_t milliseconds) = 0;
-	virtual bool isDone (uint32_t milliseconds) = 0;
-};
+class IAnimationTarget;
+class ITimingFunction;
 
 //-----------------------------------------------------------------------------
 /// @brief Animation runner
@@ -90,6 +68,16 @@ public:
 	*/
 	void addAnimation (CView* view, IdStringPtr name, IAnimationTarget* target, ITimingFunction* timingFunction, CBaseObject* notificationObject = 0);
 
+#if VSTGUI_HAS_FUNCTIONAL
+	typedef std::function<void (CView*, const IdStringPtr, IAnimationTarget*)> NotificationFunction;
+
+	/** adds an animation.
+		Animation and timingFunction is now owned by the animator.
+		An already running animation for view with name will be canceled.
+		The notification function will be called when the animation has finished.
+	*/
+	void addAnimation (CView* view, IdStringPtr name, IAnimationTarget* target, ITimingFunction* timingFunction, NotificationFunction notification);
+#endif
 	/** removes an animation.
 		If animation is a CBaseObject forget() will be called otherwise it is deleted.
 		The same will be done with the timingFunction.
@@ -113,14 +101,22 @@ protected:
 	class Animation : public CBaseObject
 	{
 	public:
+	#if VSTGUI_HAS_FUNCTIONAL
+		Animation (CView* view, const std::string& name, IAnimationTarget* at, ITimingFunction* t, NotificationFunction notification);
+	#else
 		Animation (CView* view, const std::string& name, IAnimationTarget* at, ITimingFunction* t, CBaseObject* notificationObject);
+	#endif
 		~Animation ();
 
 		std::string name;
 		SharedPointer<CView> view;
 		IAnimationTarget* target;
 		ITimingFunction* timingFunction;
+	#if VSTGUI_HAS_FUNCTIONAL
+		NotificationFunction notification;
+	#else
 		SharedPointer<CBaseObject> notificationObject;
+	#endif
 		uint32_t startTime;
 		float lastPos;
 		bool done;

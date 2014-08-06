@@ -36,6 +36,7 @@
 #define __timingfunctions__
 
 #include "animator.h"
+#include "itimingfunction.h"
 #include <map>
 
 namespace VSTGUI {

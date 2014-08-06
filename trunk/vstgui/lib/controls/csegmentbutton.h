@@ -44,6 +44,9 @@
 namespace VSTGUI {
 
 //-----------------------------------------------------------------------------
+///	@brief Control which draws a segmented button
+///	@ingroup new_in_4_3
+//-----------------------------------------------------------------------------
 class CSegmentButton : public CControl
 {
 public:
@@ -67,6 +70,10 @@ public:
 
 	CSegmentButton (const CRect& size, CControlListener* listener = 0, int32_t tag = -1);
 
+	//-----------------------------------------------------------------------------
+	/// @name Segment Methods
+	//-----------------------------------------------------------------------------
+	//@{
 	void addSegment (Segment segment, uint32_t index = UInt32Limit::max ());
 	void removeSegment (uint32_t index);
 	void removeAllSegments ();
@@ -74,7 +81,12 @@ public:
 
 	void setSelectedSegment (uint32_t index);
 	uint32_t getSelectedSegment () const;
+	//@}
 
+	//-----------------------------------------------------------------------------
+	/// @name CSegmentButton Style Methods
+	//-----------------------------------------------------------------------------
+	//@{
 	void setStyle (Style newStyle);
 	Style getStyle () const { return style; }
 
@@ -107,6 +119,7 @@ public:
 	
 	void setFrameWidth (CCoord newWidth);
 	CCoord getFrameWidth () const { return frameWidth; }
+	//@}
 	
 	// overrides
 	bool attached (CView *parent) VSTGUI_OVERRIDE_VMETHOD;
