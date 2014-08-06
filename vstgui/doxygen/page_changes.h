@@ -20,6 +20,7 @@ It's recommended to start new projects with version 4 while old projects should 
 
 - last version to support Windows XP and Mac OS X 10.6
 - support for creating a graphics path from a string
+- new Control : VSTGUI::CSegmentButton
 - add support for adding a custom view to the split view separator
 - transformation matrix support in VSTGUI::CDrawContext
 - HiDPI support (aka Retina support)

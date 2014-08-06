@@ -36,6 +36,7 @@
 #define __animation__
 
 #include "animator.h"
+#include "ianimationtarget.h"
 #include "../crect.h"
 #include "../vstguibase.h"
 

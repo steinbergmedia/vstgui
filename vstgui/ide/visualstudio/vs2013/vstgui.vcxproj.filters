@@ -681,5 +681,11 @@
     <ClInclude Include="..\..\..\lib\controls\csegmentbutton.h">
       <Filter>Source Files\lib\controls</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\lib\animation\ianimationtarget.h">
+      <Filter>Source Files\lib\animation</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\lib\animation\itimingfunction.h">
+      <Filter>Source Files\lib\animation</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

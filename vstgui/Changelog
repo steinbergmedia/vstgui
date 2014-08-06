@@ -1,3 +1,7 @@
+2014-08-06 arne
+
+	* add c++11 lambda alternative for Animation finished message
+
 2014-08-03 arne
 
 	* add new Control: CSegmentButton

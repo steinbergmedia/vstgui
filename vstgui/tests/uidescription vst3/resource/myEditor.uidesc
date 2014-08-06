@@ -238,7 +238,7 @@
 		</gradient>
 		<gradient name="Unselected Segment">
 			<color-stop start="0" rgba="#cececeff"/>
-			<color-stop start="0.5973992598684210175719044855213724076748" rgba="#9b9b9bff"/>
+			<color-stop start="0.5218236019736841591054599120980128645897" rgba="#9b9b9bff"/>
 			<color-stop start="1" rgba="#b4b4b4ff"/>
 		</gradient>
 	</gradients>

@@ -247,6 +247,8 @@
     <ClCompile Include="..\..\..\uidescription\editing\uiviewcreatecontroller.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\..\lib\animation\ianimationtarget.h" />
+    <ClInclude Include="..\..\..\lib\animation\itimingfunction.h" />
     <ClInclude Include="..\..\..\lib\cbitmap.h" />
     <ClInclude Include="..\..\..\lib\cbitmapfilter.h" />
     <ClInclude Include="..\..\..\lib\ccolor.h" />
